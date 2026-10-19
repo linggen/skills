@@ -20,10 +20,12 @@
 import { Matter } from './physics.js';
 import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
+import { frame as juiceFrame, muted, muteLabel, viewAttr } from './juice.js';
 import { ARROW, fxPicture, projectileOf, shapeOf, tapNow, trayOf, turnsWithFlight } from './throws.js';
 import { segCircle, segEllipse, segSeg, targetOf } from './targets.js';
+import { arrowAt, atRest, cue, deerSensor, FILTER, firstStruck, heavier, isSmashKind, KINDS, listen, ride, scoreMoves, settleBlows, shatter, smashThing } from './smash.js';
 
-const { Engine, Bodies, Body, Composite } = Matter;
+const { Engine, Bodies, Body, Composite, Sleeping } = Matter;
 
 export const meta = {
   id: 'deerarc',
@@ -52,12 +54,13 @@ const T = {
     short: '箭扎进了草里。', long: '箭飞过了头，落进了溪里。', turned: '箭碰着了，打着转掉下来。',
     alert: '鹿抬起头，竖着耳朵听了一会儿——又低下头去。',
     snap: '芦苇应声折断。',
+    stuck: '笃的一声，箭钉进了木头里。', flushed: '哗啦一声——鹿惊得蹿了出来，站住了，回头看。', felled: '轰隆一下，砸个正着——鹿倒了。',
     dash: '一点——它直冲出去。', tray: '扔什么',
     glance: '叫它的皮弹开了。等它吸气——翅膀根翻开那一霎。',
     hint: '……风。往左偏半寸。',
     gone: '箭筒空了。鹿走远了。再来。',
     pull: '往后拉……', full: '拉满了 · 松手',
-    retry: '重来', next: '下一处', last: '收弓', again: '再来，争三星',
+    score: '得分', retry: '重来', next: '下一处', last: '收弓', again: '再来，争三星',
     clear: '这一处：', end: '溪边{n}处，都射中了。', one: '溪边那一处，射中了。', stars: '共得 {s} 星。',
     empty: '溪边没有鹿。',
   },
@@ -69,12 +72,13 @@ const T = {
     short: 'The arrow sticks in the grass.', long: 'Over its back — the arrow drops into the stream.', turned: 'It strikes something and tumbles down.',
     alert: 'The deer lifts its head, listens — and drinks again.',
     snap: 'A reed snaps.',
+    stuck: 'Thock — the arrow bites into the wood.', flushed: 'A crash — the deer bolts into the open, stops, looks back.', felled: 'Down it comes, square on the deer — it falls.',
     dash: 'A tap — and it shoots straight on.', tray: 'Throw',
     glance: 'The hide turns it. Wait for the breath — the instant the wing root opens.',
     hint: '…The wind. Half an inch left.',
     gone: 'The quiver is empty. The deer has wandered off. Again.',
     pull: 'Pull back…', full: 'Full — let go',
-    retry: 'Again', next: 'Next spot', last: 'Unstring the bow', again: 'Again, for three stars',
+    score: 'Score', retry: 'Again', next: 'Next spot', last: 'Unstring the bow', again: 'Again, for three stars',
     clear: 'This spot: ', end: '{n} spots by the stream, each one hit.', one: 'The spot by the stream: hit.', stars: '{s} stars in all.',
     empty: 'No deer by the stream.',
   },
@@ -114,7 +118,8 @@ export function rollWind(level, seed, li, k) {
   return Math.round(strength * dirs[Math.floor(next() * dirs.length) % dirs.length] * 100) / 100;
 }
 /** The level as this arrow meets it: its wind the arrow's rolled base. */
-export const levelNow = (s) => (s.windBase == null ? s.levels[s.li] : { ...s.levels[s.li], wind: s.windBase });
+export const levelNow = (s) => (s.windBase == null && s.flushAt == null ? s.levels[s.li]
+  : { ...s.levels[s.li], ...(s.windBase == null ? {} : { wind: s.windBase }), ...(s.flushAt == null ? {} : { flushAt: s.flushAt }) });
 const withWind = (s) => ({ ...s, windBase: s.levels[s.li]?.roll ? rollWind(s.levels[s.li], s.seed, s.li, s.used) : null });
 
 /* ── The deer: a declared schedule (where, facing, head down or up) ──────────────────────────── */
@@ -128,9 +133,17 @@ const swell = (v, len) => (v < 0 || v >= len ? 0 : ease(Math.min(v, len - v) / R
     head up), up, phase }. Every pose eases into the next; the zones follow the same `lift`. */
 export function deerAt(level, ms) {
   const d = level.deer, at = Math.max(0, ms);
+  if (d.flee && level.flushAt != null && at >= level.flushAt) return fled(d, at - level.flushAt, at);
   const pos = d.walk ? walkAt(d, at) : { x: d.x, face: d.face ?? 1, walking: false, lift: 0 };
   const lift = Math.max(pos.lift, liftAt(d, at));
   return { ...pos, lift, up: lift > 0.5, phase: at };
+}
+
+/** Flushed (what fell on it, or near): it bounds to `flee.x`, then stands, head up, looking back. */
+export const FLEE_MS = 900;
+function fled(d, u, at) {
+  const k = ease(u / FLEE_MS), x = d.x + (d.flee.x - d.x) * k, run = u < FLEE_MS;
+  return { x, face: run ? Math.sign(d.flee.x - d.x) || -1 : d.flee.face ?? d.face ?? -1, walking: run, running: run, lift: 1, up: true, phase: at };
 }
 
 /** Back and forth along the bank: it starts and stops easily (eased), head up while it walks. */
@@ -187,27 +200,61 @@ function pierces(p, q) {
 /* ── The world: the arrow and what stands in its way ─────────────────────────────────────────── */
 
 const NONE = { group: -1, category: 0x0002, mask: 0 };
-const GROUND_HIT = { category: 0x0004, mask: 0x0008 };
-const GROUNDED = { category: 0x0008, mask: 0x0004 }; // debris falls to the ground, never props on itself
+const GROUND_HIT = FILTER.ground;
+const GROUNDED = FILTER.chaff; // reed debris falls to the ground, never props on itself
 
-/** A reed or a branch: a static stroke until an arrow snaps it (then it falls, a body). */
-function obstacleOf(o) {
+/** A reed or a branch: a body held where it grows, on a damped angular spring about its root — a
+    reed bends under a blow and springs back, a branch swings on its joint and settles — until an
+    arrow snaps it (then it is a free body and falls). A reed wall (`breaks` 99) does not give. */
+function obstacleOf(o, i) {
+  if (isSmashKind(o.kind)) return smashThing(o, i);
   const [a, b] = o.kind === 'reed' ? [o.at, [o.at[0] + (o.lean ?? 0), o.at[1] - o.h]] : [o.from, o.to];
   if (o.kind === 'wall') return { kind: 'wall', a, b, breaks: null, bounce: o.bounce, body: null, broken: false };
   const len = Math.hypot(b[0] - a[0], b[1] - a[1]), angle = Math.atan2(b[1] - a[1], b[0] - a[0]);
   const body = Bodies.rectangle((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, len, o.kind === 'reed' ? 3 : 6,
-    { angle, collisionFilter: GROUNDED, frictionAir: 0.02, density: 0.002, label: o.kind });
-  Body.setStatic(body, true); // made static after, so a snap (setStatic false) gets its real mass back
-  return { kind: o.kind, a, b, breaks: o.kind === 'reed' ? (o.breaks ?? BREAK_V) : (o.breaks ?? null), body, broken: false };
+    { angle, collisionFilter: GROUNDED, frictionAir: o.kind === 'reed' ? 0.06 : 0.04, density: 0.002, label: o.kind });
+  const breaks = o.kind === 'reed' ? (o.breaks ?? BREAK_V) : (o.breaks ?? null);
+  Body.setStatic(body, true); // static after, so a snap (setStatic false) gets its real mass back
+  const t = { kind: o.kind, a, b, len, angle, breaks, body, broken: false };
+  // The spring: a reed is quick and light (it whips back), a branch slow and heavy (it swings).
+  if (!(breaks != null && breaks >= 99)) t.bend = { th: 0, w: 0, k: o.kind === 'reed' ? 0.02 : 0.006, c: o.kind === 'reed' ? 0.06 : 0.025 };
+  return t;
+}
+
+/** One step of every held reed and branch: θ'' = −kθ − cθ', laid about its root. */
+function springThings(world) {
+  for (const t of world.things) {
+    const b = t.bend;
+    if (!b || t.broken || (!b.th && !b.w)) continue;
+    b.w += -b.k * b.th - b.c * b.w;
+    b.th += b.w;
+    if (Math.abs(b.th) < 1e-4 && Math.abs(b.w) < 1e-4) { b.th = 0; b.w = 0; }
+    const ang = t.angle + b.th, h = t.len / 2;
+    Body.setAngle(t.body, ang);
+    Body.setPosition(t.body, { x: t.a[0] + Math.cos(ang) * h, y: t.a[1] + Math.sin(ang) * h });
+  }
+}
+
+/** A reed or branch's line as it stands now (it bends and swings): its root and its tip. */
+function lineOf2(t) {
+  if (!t.body || !t.bend || t.broken || (!t.bend.th && !t.bend.w)) return [t.a, t.b];
+  const { x, y } = t.body.position, c = Math.cos(t.body.angle), s = Math.sin(t.body.angle), h = t.len / 2;
+  return [[x - c * h, y - s * h], [x + c * h, y + s * h]];
 }
 
 /** A level's world, as it stands before any arrow: the ground and the things in the way. */
 export function build(level) {
-  const engine = Engine.create({ gravity: { x: 0, y: GRAVITY } });
-  const ground = Bodies.rectangle(W / 2, GROUND + 30, W * 2, 60, { isStatic: true, collisionFilter: GROUND_HIT });
+  const engine = Engine.create({ gravity: { x: 0, y: GRAVITY }, enableSleeping: true, positionIterations: 10, velocityIterations: 8 });
+  // The ground is the banks' own line: the far bank, the slope up, his bank (groundAt).
+  const ground = [Bodies.rectangle(165, GROUND + 30, 390, 60, { isStatic: true, collisionFilter: GROUND_HIT, label: 'ground', friction: 1 }),
+    Bodies.rectangle(W / 2 + 230, BANK + 30, 220, 60, { isStatic: true, collisionFilter: GROUND_HIT, label: 'ground', friction: 1 }),
+    Bodies.fromVertices(355, (GROUND + BANK) / 2 + 30, [[{ x: 330, y: GROUND }, { x: 380, y: BANK }, { x: 380, y: GROUND + 60 }, { x: 330, y: GROUND + 60 }]], { isStatic: true, collisionFilter: GROUND_HIT, label: 'ground', friction: 1 })];
   const things = (level.things ?? []).map(obstacleOf);
-  Composite.add(engine.world, [ground, ...things.filter((t) => t.body).map((t) => t.body)]);
-  return { engine, things, arrow: null, acc: 0 };
+  const sensor = level.deer && !level.target ? deerSensor() : null;
+  Composite.add(engine.world, [...ground, ...things.filter((t) => t.body).map((t) => t.body), ...(sensor ? [sensor] : [])]);
+  const world = { engine, things, arrow: null, acc: 0, sensor, real: !level.target, score: 0, cues: [], cueN: 0 };
+  listen(world);
+  return world;
 }
 
 /** The pull → the arrow's velocity: `a` degrees above the level (toward the deer, left), `p` 0–1. */
@@ -219,12 +266,22 @@ export function velocityOf({ a, p }) {
 /** An arrow on the string, loosed: a body that only flies (it touches nothing matter knows). */
 export function shoot(world, aim, proj = ARROW) {
   const v0 = velocityOf(aim), v = { x: v0.x * proj.speed, y: v0.y * proj.speed }, sp = Math.hypot(v.x, v.y) || 1;
-  const body = Bodies.rectangle(BOW[0], BOW[1], Math.max(4, proj.half * 2), 2, { collisionFilter: NONE, frictionAir: proj.drag, density: 0.001 });
+  // A stone, a log, a pot by the stream (`real`): a body that strikes, bounces and rolls with the rest.
+  const real = Boolean(proj.real && world.real);
+  const body = real ? realBody(proj) : Bodies.rectangle(BOW[0], BOW[1], Math.max(4, proj.half * 2), 2, { collisionFilter: NONE, frictionAir: proj.drag, density: 0.001 });
   Composite.add(world.engine.world, body);
+  cue(world, 'twang', BOW, Math.max(0.3, aim.p ?? 0.6), { proj: proj.id });
   Body.setAngle(body, Math.atan2(v.y, v.x));
   Body.setVelocity(body, v);
-  world.arrow = { body, proj, dir: [v.x / sp, v.y / sp], true: true, path: [[BOW[0], BOW[1]]], tip: tipOf(body, proj.half), steps: 0 };
+  world.arrow = { body, proj, real, dir: [v.x / sp, v.y / sp], true: true, path: [[BOW[0], BOW[1]]], tip: tipOf(body, proj.half), steps: 0 };
   return world;
+}
+
+/** A real throw's body: a stone round, a 柴 log long, a pot round and brittle. */
+function realBody(proj) {
+  const o = { collisionFilter: FILTER.proj, frictionAir: proj.drag ?? 0, label: 'proj', restitution: proj.restitution ?? 0.35, friction: 0.6, density: proj.density ?? 0.01 };
+  const [w, h] = proj.size ?? [12, 12];
+  return proj.shape === 'log' ? Bodies.rectangle(BOW[0], BOW[1], w, h, { ...o, chamfer: { radius: 3 } }) : Bodies.circle(BOW[0], BOW[1], w / 2, o);
 }
 
 /** The point that strikes: an arrow's or a blade's tip along its flight; a stone's middle. */
@@ -239,33 +296,110 @@ export function stepWorld(world, level, ms = 0) {
   const ar = world.arrow;
   world.t = (world.t ?? 0) + STEP_MS;
   // The wind pushes a light thing more: its accel is over the thing's mass.
-  if (ar && ar.true) Body.setVelocity(ar.body, { x: ar.body.velocity.x + (WIND_ACC * windAt(level, ms)) / (ar.proj?.mass ?? 1), y: ar.body.velocity.y });
+  if (ar && ar.true && !ar.done) Body.setVelocity(ar.body, { x: ar.body.velocity.x + (WIND_ACC * windAt(level, ms)) / (ar.proj?.mass ?? 1), y: ar.body.velocity.y });
+  if (world.sensor) placeSensor(world.sensor, level, ms);
+  springThings(world);
+  heavier(world);
   Engine.update(world.engine, STEP_MS);
+  settleBlows(world);
+  scoreMoves(world);
+  if (ar?.stuckIn && !ride(world, ar)) { ar.stuckIn = null; ar.done = true; Body.setStatic(ar.body, true); }
+  world.riders = (world.riders ?? []).filter((r) => ride(world, r));
   if (!ar || ar.done) return null;
+  if (ar.real) return realStep(world, ar);
   if (ar.true) Body.setAngle(ar.body, Math.atan2(ar.body.velocity.y, ar.body.velocity.x));
   const from = ar.tip, to = tipOf(ar.body, ar.proj?.half ?? ARROW_HALF);
   ar.prev = from;
   ar.tip = to;
   ar.steps += 1;
   if (ar.steps % TRAIL_EVERY === 0) ar.path.push([n(to[0]), n(to[1])]);
-  return (ar.true ? struck(world, from, to) : null) ?? landed(ar, to);
+  if (ar.stuckIn) return null; // riding what it stuck in
+  return (ar.true ? smashed(world, from, to) ?? struck(world, from, to) : null) ?? landed(ar, to, world);
+}
+
+/** The stag's sensor follows it (its barrel), so what falls on it is heard. */
+function placeSensor(sensor, level, ms) {
+  if (!level.deer) return;
+  const d = deerAt(level, ms);
+  Body.setPosition(sensor, { x: d.x, y: groundAt(d.x) + BODY[1] * DEER_S });
+}
+
+/** The arrow's step against the smash bodies (the 柴垛, the rack, jars, the rock): what its material does. */
+function smashed(world, from, to) {
+  const hit = firstStruck(world, from, to);
+  if (!hit) return null;
+  const r = arrowAt(world, hit, world.arrow.proj ?? ARROW);
+  if (r === 'stuck' || r === 'swallowed' || r === 'skim') { world.arrow.tip = hit.at; return 'stuck'; }
+  return r; // 'glance' (off the rock, still flying) · 'broke' (through the clay, flying on)
+}
+
+/** A real throw's step: matter moved it and struck what it met; here only the stag, reeds and the end. */
+function realStep(world, ar) {
+  const from = ar.tip, to = [ar.body.position.x, ar.body.position.y];
+  ar.prev = from;
+  ar.tip = to;
+  ar.steps += 1;
+  if (ar.steps % TRAIL_EVERY === 0) ar.path.push([n(to[0]), n(to[1])]);
+  if (ar.proj.shatters && ar.struckHard) return potBurst(world, ar);
+  const ev = ar.true ? struck(world, from, to) : null;
+  if (ev) return ev;
+  const v = ar.body.velocity, slow = Math.hypot(v.x, v.y) < 0.12 && Math.abs(ar.body.angularVelocity) < 0.02;
+  ar.still = slow ? (ar.still ?? 0) + 1 : 0;
+  const out = to[0] < -30 || to[0] > W + 30 || to[1] > H + 20;
+  if (out || ar.still > 8 || ar.body.isSleeping || ar.steps > 900) {
+    ar.done = true;
+    Body.setStatic(ar.body, true);
+    return out ? 'out' : 'ground';
+  }
+  return null;
+}
+
+/** The clay pot breaks where it strikes: its shards fly, and what stands near takes the blow. */
+function potBurst(world, ar) {
+  const at = [ar.body.position.x, ar.body.position.y], v = ar.body.velocity;
+  ar.done = true;
+  ar.true = false;
+  Composite.remove(world.engine.world, ar.body);
+  Body.setStatic(ar.body, true);
+  const pot = { kind: 'pot', body: ar.body, size: ar.proj.size ?? [16, 18], id: 97, broken: false };
+  world.things.push(pot);
+  pot.id = world.things.length - 1;
+  shatterPot(world, pot, at, v);
+  // A splash of what was in it: a short shove outward to every body near.
+  for (const t of world.things) {
+    if (!t.smash || t.broken || t.body.isStatic) continue;
+    const dx = t.body.position.x - at[0], dy = t.body.position.y - at[1], d = Math.hypot(dx, dy);
+    if (d < 46) { Sleeping.set(t.body, false); Body.setVelocity(t.body, { x: t.body.velocity.x + (dx / (d || 1)) * 1.6, y: t.body.velocity.y + (dy / (d || 1)) * 1.6 - 0.8 }); }
+  }
+  for (const t of world.things) if (t.kind === 'reed' && !t.broken && segCircle(...lineOf2(t), at, 26)) snap(world, t, { x: v.x * 0.5, y: -1.2 });
+  return 'burst';
+}
+function shatterPot(world, pot, at, v) {
+  // The pot as a smash thing for the moment it breaks (its painting cut, its shards flying).
+  pot.smash = true;
+  pot.home = at;
+  pot.body = Bodies.circle(at[0], at[1], pot.size[0] / 2, { collisionFilter: FILTER.thing });
+  shatter(world, pot, at, { x: v.x * 0.5, y: v.y * 0.5 });
 }
 
 function struck(world, from, to) {
-  const t = world.things.find((x) => !x.broken && segSeg(from, to, x.a, x.b, x.kind === 'reed' ? 2.5 : 4));
+  const t = world.things.find((x) => !x.smash && !x.broken && segSeg(from, to, ...lineOf2(x), x.kind === 'reed' ? 2.5 : 4));
   if (!t) return null;
   const ar = world.arrow, v = ar.body.velocity, speed = Math.hypot(v.x, v.y), proj = ar.proj ?? ARROW;
   if (t.kind === 'wall') return offWall(ar, t, v);
   // An arrow pierces reeds (up to its `pierce`) at any speed; a heavy stone knocks over what a
   // throw half as fast would snap; else only a fast throw. A reed wall (`breaks` 99) stops them all.
   const pierces = proj.pierce && t.breaks <= proj.pierce; // a reed no thicker than its `pierce`
-  return t.breaks != null && (speed >= t.breaks || pierces || (proj.knock && speed >= t.breaks * 0.5)) ? snap(world, t, v) : turn(ar, t, v);
+  return t.breaks != null && (speed >= t.breaks || pierces || (proj.knock && speed >= t.breaks * 0.5)) ? snap(world, t, v) : turn(world, ar, t, v);
 }
 
 function snap(world, t, v) {
   t.broken = true;
   t.stub = t.kind === 'reed' ? [t.a, [t.a[0] + (t.b[0] - t.a[0]) * 0.3, t.a[1] + (t.b[1] - t.a[1]) * 0.3]] : null;
   scatter(world, world.arrow.tip, v);
+  t.bend = null;
+  cue(world, t.kind === 'reed' ? 'snap' : 'crack', world.arrow.tip, 1, { mat: t.kind });
+  Sleeping.set(t.body, false);
   Body.setStatic(t.body, false);
   Body.setVelocity(t.body, { x: v.x * 0.25, y: v.y * 0.25 - 0.6 });
   Body.setAngularVelocity(t.body, Math.sign(v.x || 1) * 0.14);
@@ -299,20 +433,24 @@ function offWall(ar, t, v) {
 }
 
 /** Turned: off the thing's face, slowed; the arrow tumbles and is spent. */
-function turn(ar, t, v) {
-  const ux = t.b[0] - t.a[0], uy = t.b[1] - t.a[1], l = Math.hypot(ux, uy) || 1, nx = -uy / l, ny = ux / l;
+function turn(world, ar, t, v) {
+  const [ta, tb] = lineOf2(t), ux = tb[0] - ta[0], uy = tb[1] - ta[1], l = Math.hypot(ux, uy) || 1, nx = -uy / l, ny = ux / l;
   const dot = v.x * nx + v.y * ny;
   if (t.kind === 'branch') t.shake = 1;
+  // The thing takes the blow: a reed bends and springs back, a branch swings on its joint.
+  if (t.bend) t.bend.w += Math.sign(v.x * uy - v.y * ux || 1) * Math.min(0.09, Math.hypot(v.x, v.y) * 0.014) * (t.kind === 'reed' ? 1 : 0.6);
+  cue(world, t.kind === 'reed' ? 'grass' : 'wood', ar.tip, 0.6, { mat: t.kind });
   Body.setVelocity(ar.body, { x: (v.x - 2 * dot * nx) * TURN, y: (v.y - 2 * dot * ny) * TURN });
   Body.setAngularVelocity(ar.body, 0.25);
   ar.true = false;
   return 'turned';
 }
 
-function landed(ar, [x, y]) {
+function landed(ar, [x, y], world = null) {
   const end = x < -30 || x > W + 30 || y > H + 20 ? 'out' : y >= groundAt(x) ? 'ground' : null;
   if (end === 'ground' && bounces(ar)) return 'bounce';
   if (end) { ar.done = true; Body.setStatic(ar.body, true); }
+  if (end === 'ground' && world) cue(world, 'thud', [x, groundAt(x)], Math.min(1, Math.hypot(ar.body.velocity.x, ar.body.velocity.y) / 6), { angle: ar.body.angle });
   return end;
 }
 
@@ -356,6 +494,9 @@ export function burstHit(level, ms, [x, y], r) {
   return ((lx - cx) / (rx + lr)) ** 2 + ((ly - cy) / (ry + lr)) ** 2 <= 1 ? 'body' : null;
 }
 
+/** What a step may say while the throw still flies: a reed snapped, a skip, a glance off rock, clay broken through. */
+const GOES_ON = new Set(['snap', 'bounce', 'wall', 'glance', 'broke']);
+
 /** A shot flown in a fresh world, against the deer as it moves from `at` ms: the bot's search
     and the tests use it — the same steps the game takes. → { hit, steps, tip, snapped } */
 export function flight(level, aim, at = 0, limit = 600, { proj = ARROW, tapAt = null } = {}) {
@@ -373,7 +514,7 @@ export function flight(level, aim, at = 0, limit = 600, { proj = ARROW, tapAt = 
     if (hit) return { hit, steps: k, tip: world.arrow.tip, snapped };
     const landedHit = ev === 'ground' ? targetOf(level)?.land?.(level, world.arrow.tip) : null; // a stone in the cave
     if (landedHit) return { hit: landedHit, steps: k, tip: world.arrow.tip, snapped };
-    if (ev && ev !== 'snap' && ev !== 'bounce' && ev !== 'wall') return { hit: null, end: ev, steps: k, tip: world.arrow.tip, snapped };
+    if (ev && !GOES_ON.has(ev)) return { hit: null, end: ev, steps: k, tip: world.arrow.tip, snapped, world };
   }
   return { hit: null, end: 'out', steps: limit, tip: world.arrow.tip, snapped };
 }
@@ -386,7 +527,7 @@ function lay(s, li) {
   const world = build(s.levels[li]);
   watch(s.seed, world);
   const ammo = trayOf(s.levels[li], s.kit, s.owned), pick = ammo.includes(s.pick) ? s.pick : ammo[0];
-  return withWind({ ...s, li, ammo, pick, phase: 'aim', t: 0, clock: 0, used: 0, pull: null, world, stuck: [], trail: s.li === li ? s.trail : null, said: null, slowAt: null, alertAt: null, hint: s.li === li ? s.hint : false });
+  return withWind({ ...s, li, ammo, pick, phase: 'aim', t: 0, clock: 0, used: 0, pull: null, world, stuck: [], flushAt: null, points: 0, trail: s.li === li ? s.trail : null, said: null, slowAt: null, alertAt: null, hint: s.li === li ? s.hint : false });
 }
 
 export function newGame(seed, _level = 1, deal = {}) {
@@ -421,7 +562,11 @@ function hold(s, d) {
 }
 function move(s, d) {
   if (!canAim(s) || !s.press || !Number.isFinite(Number(d.x))) return null;
-  return { ...s, pull: aimOf(s.press[0], s.press[1], Number(d.x), Number(d.y)) };
+  const pull = aimOf(s.press[0], s.press[1], Number(d.x), Number(d.y));
+  // The bow creaks as the string comes back: once at a third, two thirds, and full.
+  const notch = (p) => (p >= 0.98 ? 3 : p >= 0.66 ? 2 : p >= 0.33 ? 1 : 0);
+  if (s.world && notch(pull.p) > notch(s.pull?.p ?? 0)) cue(s.world, 'creak', BOW, pull.p);
+  return { ...s, pull };
 }
 /** Drawn directly to an aim (the bot, the tests; a keyboard later): `a` degrees, `p` 0–1. */
 function draw(s, d) {
@@ -456,7 +601,7 @@ const VERBS = {
   hold, move, draw, tap, pick: pickVerb,
   release: loose, loose,
   // 重来 keeps the last arrow's trail (as 愤怒小鸟 does): the try before is what the next one learns from.
-  retry: (s) => (['aim', 'fly', 'clear', 'gone', 'spook'].includes(s.phase) ? lay({ ...s, trail: s.world.arrow?.path ?? s.trail }, s.li) : null),
+  retry: (s) => (['aim', 'fly', 'clear', 'gone', 'spook', 'settle'].includes(s.phase) ? lay({ ...s, trail: s.world.arrow?.path ?? s.trail }, s.li) : null),
   next: (s) => (s.phase === 'clear' ? advance(s) : null),
 };
 
@@ -473,6 +618,9 @@ function flying(s) {
   const level = levelOf(s), ev = stepWorld(s.world, level, s.clock), ar = s.world.arrow;
   const hit = ar.true ? targetHit(level, s.clock, ar.prev, ar.tip) : null;
   if (hit === 'glance') return glance(s);
+  // By the creek's smash levels a stone or a pot only startles the stag (it bolts, comes back); a
+  // thrown 柴 log fells it; the arrow is the hunter's.
+  if (hit && level.smash && ar.real) return ar.proj.id === 'log' ? clean({ ...s, said: 'felled' }, true, 'felled') : graze(s);
   if (hit) return hit === 'graze' ? graze(s) : clean(s, hit === 'body');
   if (ev === 'snap') return { ...s, said: 'snap', saidAt: s.clock };
   if (ev === 'turned') return { ...s, said: 'turned', saidAt: s.clock };
@@ -485,12 +633,21 @@ function flying(s) {
 export const starsForHit = (used, offHeart = false) => Math.max(1, starsFor(used) - (offHeart ? 1 : 0));
 
 /** A hit: the heart (`offHeart` false) or the body — either way the deer is off and the level done. */
-function clean(s, offHeart = false) {
-  const ar = s.world.arrow;
-  ar.done = true;
-  const best = s.best.map((b, i) => (i === s.li ? Math.max(b, starsForHit(s.used, offHeart)) : b));
-  return { ...s, phase: 'hit', t: 0, best, at: ar.tip, deerGone: levelOf(s).deer ? deerAt(levelOf(s), s.clock) : null, trail: ar.path, said: offHeart ? 'body' : 'clean', offHeart };
+function clean(s, offHeart = false, how = null) {
+  const ar = s.world.arrow, level = levelOf(s);
+  if (ar) ar.done = true;
+  const d = level.deer ? deerAt(level, s.clock) : null;
+  const at = ar && how !== 'felled' ? ar.tip : d ? [d.x, groundAt(d.x) + BODY[1] * DEER_S] : [W / 2, H / 2];
+  // A smash level scores by what he broke, the stag, and every throw left (愤怒小鸟's way).
+  const points = level.score ? (s.world.score ?? 0) + (offHeart ? 2000 : 3000) + Math.max(0, quiverOf(s) - s.used) * 500 : null;
+  const won = level.score ? starsForScore(level.score, points) : starsForHit(s.used, offHeart);
+  const best = s.best.map((b, i) => (i === s.li ? Math.max(b, won) : b));
+  if (s.world) cue(s.world, 'hit', at, offHeart ? 0.7 : 1, { heart: !offHeart, how });
+  return { ...s, phase: 'hit', t: 0, best, at, deerGone: d, trail: ar?.path ?? s.trail, said: how ?? (offHeart ? 'body' : 'clean'), offHeart, points, levelStars: won };
 }
+
+/** Stars for a smash level's points: its `score` [one, two, three] thresholds (one at least). */
+export const starsForScore = (score, points) => Math.max(1, score.filter((x) => points >= x).length);
 
 /** The hide turns the blade (the 鯥): spent, the next at once — wait for the breath. */
 function glance(s) {
@@ -511,36 +668,55 @@ function land(s, ev) {
   const level = levelOf(s), ar = s.world.arrow, tx = level.deer ? deerAt(level, s.clock).x : level.target?.x ?? midOf(level.target?.deep);
   const near = level.deer && Math.abs(ar.tip[0] - tx) < 80;
   const said = ['turned', 'glance'].includes(s.said) ? s.said : ar.tip[0] < tx ? 'long' : 'short';
-  const stuck = ev === 'out' || ev === 'burst' ? s.stuck : [...s.stuck, [n(ar.body.position.x), n(ar.body.position.y), n((ar.body.angle * 180) / Math.PI), ar.proj?.id ?? 'arrow']];
-  return reload({ ...s, trail: ar.path, said, stuck, alertAt: near ? s.clock : s.alertAt, hint: s.hint || Boolean(level.hint) });
+  const stuck = ev === 'out' || ev === 'burst' || ar.stuckIn ? s.stuck : [...s.stuck, [n(ar.body.position.x), n(ar.body.position.y), n((ar.body.angle * 180) / Math.PI), ar.proj?.id ?? 'arrow']];
+  if (said === 'long' && ev === 'ground' && level.deer) cue(s.world, 'splash', [ar.tip[0], ar.tip[1] + 4], 1);
+  const next = { ...s, trail: ar.path, said: ev === 'stuck' ? 'stuck' : said, stuck, alertAt: near ? s.clock : s.alertAt, hint: s.hint || Boolean(level.hint) };
+  // A smash level waits for what he knocked to come down before the next throw.
+  return smashy(level) ? { ...next, phase: 'settle', t: 0 } : reload(next);
 }
 
 const midOf = (r) => (r ? (r[0] + r[1]) / 2 : W / 2);
 
+/** How many throws a level gives: a smash level its own `quiver`, else four. */
+export const quiverOf = (s) => s.levels?.[s.li]?.quiver ?? QUIVER;
+/** A smash level (things that topple and break): it waits for the world to settle between throws. */
+const smashy = (level) => (level?.things ?? []).some((t) => isSmashKind(t.kind));
+
 /** After a shot that did not end the level: aim again, or (the quiver empty) the deer is gone. */
-const reload = (s) => (s.used >= QUIVER ? { ...s, phase: 'gone', t: 0, said: 'gone', misses: s.misses.map((m, i) => (i === s.li ? m + 1 : m)) } : withWind(clearArrow({ ...s, phase: 'aim', t: 0 })));
+const reload = (s) => (s.used >= quiverOf(s) ? { ...s, phase: 'gone', t: 0, said: 'gone', misses: s.misses.map((m, i) => (i === s.li ? m + 1 : m)) } : withWind(clearArrow({ ...s, phase: 'aim', t: 0 })));
 
 function clearArrow(s) {
-  if (s.world.arrow) Composite.remove(s.world.engine.world, s.world.arrow.body);
+  const ar = s.world.arrow;
+  // One stuck in a log rides it on (the log may still roll): kept, with the rest it rode.
+  if (ar?.stuckIn) s.world.riders = [...(s.world.riders ?? []), ar];
+  else if (ar) Composite.remove(s.world.engine.world, ar.body);
   s.world.arrow = null;
   return s;
 }
 
 function advance(s) {
-  if (s.li + 1 < s.levels.length) return lay({ ...s, trail: null, hint: false }, s.li + 1);
+  if (s.li + 1 < s.levels.length) return lay({ ...s, trail: null, hint: false, flushAt: null }, s.li + 1);
   const stars = starsOf(s);
   // A row may name its grades by stars (the task's marks: 扔石听声 sure · lucky, 鯥 still · hasty).
   return { ...s, phase: 'end', live: false, won: true, stars, grade: s.grades?.[stars] ?? gradeOf(stars) };
 }
 
 /** The deer bolts and, a while later, is back at the stream where its schedule starts again. */
-const backAgain = (s) => withWind(clearArrow({ ...s, phase: s.used >= QUIVER ? 'gone' : 'aim', t: 0, clock: 0, alertAt: null, said: s.used >= QUIVER ? 'gone' : s.said }));
+const backAgain = (s) => withWind(clearArrow({ ...s, phase: s.used >= quiverOf(s) ? 'gone' : 'aim', t: 0, clock: 0, alertAt: null, flushAt: null, said: s.used >= quiverOf(s) ? 'gone' : s.said }));
 
+/** The level's stars ring: a chime, a pop for each star (juice.js plays them). */
+function chimed(s) {
+  if (s.world) { cue(s.world, 'chime', [W / 2, H / 2], 1); for (let i = 0; i < (s.best[s.li] ?? 0); i++) cue(s.world, 'pop', [W / 2, H / 2], 0.6, { i }); }
+  return s;
+}
+const SETTLE_MIN = 350, SETTLE_MAX = 3500;
 const PHASES = {
   aim: (s) => (stepWorld(s.world, levelOf(s), s.clock), s),
   fly: flying,
+  // What he knocked comes down; the next throw when it lies still (never more than 3.5 s).
+  settle: (s) => (stepWorld(s.world, levelOf(s), s.clock), (s.t >= SETTLE_MIN && atRest(s.world)) || s.t >= SETTLE_MAX ? reload(s) : s),
   spook: (s) => (stepWorld(s.world, levelOf(s), s.clock), s.t < SPOOK_MS ? s : backAgain(s)),
-  hit: (s) => (s.t < HIT_MS ? s : { ...s, phase: 'clear', t: 0 }),
+  hit: (s) => (s.t < HIT_MS ? s : chimed({ ...s, phase: 'clear', t: 0 })),
   // Three stars go on by themselves; fewer wait for 下一处 or 再来.
   clear: (s) => (s.t < CLEAR_MS || s.best[s.li] < 3 ? s : advance(s)),
   gone: (s) => (s.t < GONE_MS ? s : lay({ ...s }, s.li)),
@@ -554,15 +730,41 @@ export function tick(state, ms) {
     s.world.acc -= STEP_MS * slowness(s);
     s = { ...s, t: s.t + STEP_MS, clock: s.clock + STEP_MS };
     s = PHASES[s.phase]?.(s) ?? s;
+    s = felt(s);
     if (s.world) s.world.drift = (s.world.drift ?? 0) + windAt(levelOf(s), s.clock) * STEP_MS;
   }
   s.world.wall = globalThis.performance?.now() ?? 0;
   s.world.clock = s.clock;
+  s.world.phase = s.phase;
+  s.world.art = s.art;
   s.world.level = levelOf(s);
   s.world.rate = slowness(s);
   return s;
 }
 
+const NOISE_R = 140;
+/** What fell on the stag: a light blow flushes it (it bolts into the open), a heavy one fells it. */
+function felt(s) {
+  const w = s.world, level = s.levels[s.li];
+  if (!w || !level?.deer || !['aim', 'fly', 'settle'].includes(s.phase)) return s;
+  if ((w.deerBlow ?? 0) > 0) {
+    w.deerBlow = 0;
+    if (s.phase === 'fly') s.world.arrow.done = true;
+    return clean({ ...s, said: 'felled' }, true, 'felled');
+  }
+  // A crash near it (a jar, a stack of tiles, a 草垛 bursting) startles it as surely as a blow.
+  const d = deerAt(levelOf(s), s.clock);
+  const heard = (w.broke ?? []).slice(w.heardBroke ?? 0).some((b) => !b.topple && Math.abs(b.at[0] - d.x) < NOISE_R);
+  w.heardBroke = (w.broke ?? []).length;
+  if (heard) w.flushed = true;
+  if (w.flushed && s.flushAt == null && level.deer.flee) {
+    cue(w, 'bolt', [deerAt(levelOf(s), s.clock).x, groundAt(level.deer.x) - 30], 1);
+    return { ...s, flushAt: s.clock, said: 'flushed', saidAt: s.clock };
+  }
+  return s;
+}
+
+const STOP = 7, STOP_MS = 50, BREAK_STOP = 3;
 const calm = (s) => Boolean(s?.still) || still();
 
 /** The slow-motion beat (a clean hit): the last steps before the arrow lands, and the burst's first
@@ -570,6 +772,9 @@ const calm = (s) => Boolean(s?.still) || still();
 function slowness(s) {
   if (calm(s)) return 1;
   if (s.phase === 'fly' && s.slowAt != null && (s.world.arrow?.steps ?? 0) >= s.slowAt) return SLOW;
+  // The heart hit: a beat held (hit-stop), then slow; a big break holds a shorter beat.
+  if (s.phase === 'hit' && s.t < STOP_MS && !s.offHeart) return STOP;
+  if (s.world?.stopUntil != null && (s.world.t ?? 0) < s.world.stopUntil) return BREAK_STOP;
   return s.phase === 'hit' && s.t < SLOW_HIT_MS ? SLOW : 1;
 }
 
@@ -638,7 +843,7 @@ export function windPicture(level, s) {
   // Leaves stream across with the wind: more of them, and faster, the stronger it blows; none in a calm.
   const count = Math.abs(w) < 0.06 ? 0 : Math.min(9, 2 + Math.round(Math.abs(w) * 9));
   const drift = calm(s) ? 0 : s.world?.drift ?? 0;
-  const leaves = Array.from({ length: count }, (_, i) => leafAt(i, drift, t)).join('');
+  const leaves = Array.from({ length: count }, (_, i) => leafAt(i, drift, t, s.art?.leaf)).join('');
   return tuft(FAR_TUFTS) + tuft(TUFT) + ragPicture(tip, lean, flutter) + leaves;
 }
 
@@ -656,13 +861,15 @@ function ragPicture([px, top], lean, flutter) {
   return `<path class="g-da-streamer" d="M${n(px)} ${n(top + 2)} Q${n((px + ex) / 2)} ${n(top + 2 + flutter + hang * 10)} ${n(ex)} ${n(ey + flutter)} L${n(ex + wx)} ${n(ey + 6 + flutter)} Q${n((px + ex) / 2 + wx)} ${n(top + 9 + flutter + hang * 10)} ${n(px + wx)} ${n(top + 8)}Z"/>`;
 }
 
-function leafAt(i, carried, t) {
+function leafAt(i, carried, t, art = null) {
   const span = W + 60, x = ((i * 113 + carried * 0.11 * (1 + (i % 3) * 0.25)) % span + span) % span - 30;
-  const y = 40 + ((i * 47) % 190) + Math.sin(t / 500 + i) * 8;
-  return `<path class="g-da-leaf" d="M0 0 q5 -5 12 0 q-5 5 -12 0Z" transform="translate(${n(x)} ${n(y)}) rotate(${n(t / 9 + i * 50)})"/>`;
+  const y = 40 + ((i * 47) % 190) + Math.sin(t / 500 + i) * 8, at = `translate(${n(x)} ${n(y)}) rotate(${n(t / 9 + i * 50)})`;
+  if (art?.file) return `<g class="g-da-leaf-art" transform="${at}">${sprite({ ...art, w: 11, h: 11, at: [0.5, 0.5] }, 0.9)}</g>`;
+  return `<path class="g-da-leaf" d="M0 0 q5 -5 12 0 q-5 5 -12 0Z" transform="${at}"/>`;
 }
 
 function thingPicture(t, s) {
+  if (t.smash) return t.broken ? '' : smashPicture(t, s);
   // A wall of rock is the painting's own (the cave); in ink, a faint line where it stands.
   if (t.kind === 'wall') return s.art?.backdrop ? '' : `<path class="g-tg-wall" d="M${n(t.a[0])} ${n(t.a[1])} L${n(t.b[0])} ${n(t.b[1])}"/>`;
   const { x, y } = t.body.position, len = Math.hypot(t.b[0] - t.a[0], t.b[1] - t.a[1]);
@@ -672,6 +879,30 @@ function thingPicture(t, s) {
   const deg = (t.body.angle * 180) / Math.PI + sway, art = s.art?.[t.kind];
   const body = art ? lengthSprite(art, from, len / 2, Math.cos(t.body.angle) < 0) : inkThing(t, from, len);
   return `${stubPicture(t, s)}<g transform="translate(${n(x)} ${n(y + shiver)}) rotate(${n(deg)})">${body}</g>`;
+}
+
+/** A smash body: its painting (games.json `art`, by KINDS[kind].art) laid on the body, turned with it;
+    PLACEHOLDER ink while its painting is missing. `data-body` lets the painter carry it between steps. */
+function smashPicture(t, s) {
+  const { x, y } = t.body.position, deg = (t.body.angle * 180) / Math.PI, [w, h] = t.size;
+  return `<g class="g-sm-thing g-sm-${t.kind}" data-body="${t.id}" transform="translate(${n(x)} ${n(y)}) rotate(${n(deg)})">${bodyArt(s, t.kind, w, h)}</g>`;
+}
+/** A painted piece filling a w × h box about the origin (or its ink stand-in). */
+function bodyArt(s, kind, w, h) {
+  const a = s.art?.[KINDS[kind]?.art ?? kind];
+  if (a?.file) return `<image class="g-da-sprite" href="${artUrl(a.file)}" x="${n(-w / 2 - (a.pad ?? 0) * w)}" y="${n(-h / 2 - (a.padY ?? a.pad ?? 0) * h)}" width="${n(w * (1 + 2 * (a.pad ?? 0)))}" height="${n(h * (1 + 2 * (a.padY ?? a.pad ?? 0)))}" preserveAspectRatio="none"/>`;
+  return `<rect class="g-sm-ink is-${KINDS[kind]?.mat ?? 'wood'}" x="${n(-w / 2)}" y="${n(-h / 2)}" width="${n(w)}" height="${n(h)}" rx="${kind === 'jar' || kind === 'hay' ? n(Math.min(w, h) * 0.4) : 1.5}"/>`;
+}
+
+/** The shards of what broke: each a cut of the same painting (clipped to its piece), tumbling. */
+function shardsPicture(s) {
+  const id = clipId(s);
+  return (s.world.frags ?? []).map((f, i) => {
+    const { x, y } = f.body.position, deg = ((f.body.angle + f.ang0) * 180) / Math.PI, [w, h] = f.size;
+    const pts = f.poly.map(([px, py]) => `${n(px)},${n(py)}`).join(' ');
+    return `<g class="g-sm-shard" data-frag="${i}" transform="translate(${n(x)} ${n(y)}) rotate(${n(deg)})"><clipPath id="${id}-f${i}"><polygon points="${pts}"/></clipPath>`
+      + `<g clip-path="url(#${id}-f${i})"><g transform="translate(${n(-f.off[0])} ${n(-f.off[1])})">${bodyArt(s, f.kind === 'pot' ? 'jar' : f.kind, w, h)}</g></g></g>`;
+  }).join('');
 }
 
 /** The code-drawn reed or branch (the fallback until its painting lands), from `from` to len/2. */
@@ -744,21 +975,38 @@ function inkDeer(d, lift) {
 
 /** The bow by his bank, drawn back along the pull, the arrow nocked toward the deer. */
 export function bowPicture(s) {
-  const pull = s.phase === 'aim' ? s.pull : null, p = pull?.p ?? 0, a = pull ? pull.a : 12;
-  // The tension: the limbs bend in and the tips come back as the string stretches; full, it trembles.
+  const pull = s.phase === 'aim' ? s.pull : null, p = pull?.p ?? 0;
+  // Just loosed: the bow stays on the line it shot along and kicks back, the string ringing.
+  const since = s.phase === 'fly' && s.aimed ? s.t : null, kick = since != null && since < RECOIL_MS && !calm(s) ? 1 - since / RECOIL_MS : 0;
+  const a = pull ? pull.a : kick ? s.aimed.a : 12;
+  // The tension: the limbs bend in and the tips come back as the string stretches; it trembles more
+  // the further it comes, and hard at full.
   const back = 4 + p * 30, bend = 14 + p * 12, tipX = 4 - p * 7, tipY = 28 - p * 4;
-  const shake = p >= 0.98 && !calm(s) ? n(Math.sin(s.clock / 23) * 0.8) : 0;
+  const shake = calm(s) || !pull ? 0 : n(Math.sin(s.clock / 23) * (p >= 0.98 ? 1.2 : p * p * 0.6));
+  const recoil = kick ? n(-7 * kick * Math.cos(since / 30)) : 0, ring = kick ? n(Math.sin(since / 9) * 2.4 * kick) : 0;
   const nocked = s.phase !== 'aim' ? '' : nockedShape(s, p, back);
   // Painted (bow_rest → bow_drawn, cross-faded by the pull; each painted pointing right, the grip
   // at its `at`), else drawn: the limbs bend in and the string comes back with the pull.
-  if (projectileOf(s.kit, s.pick).shape !== 'arrow') return handPicture(s, p, a, back);
+  if (projectileOf(s.kit, s.pick).shape !== 'arrow') return handPicture(s, p, a, back) + (pull && p >= MIN_POWER ? readPicture(p, a) : '');
   const bow = s.art?.bow_rest || s.art?.bow_drawn
     ? paintedBow(s.art, p)
     : `<path class="g-da-limb" d="M${n(tipX)} ${n(-tipY)} Q${n(bend)} 0 ${n(tipX)} ${n(tipY)}"/>`
       + `<path class="g-da-string${p > 0 ? ' is-taut' : ''}" d="M${n(tipX)} ${n(-tipY)} L${n(4 - back)} 0 L${n(tipX)} ${n(tipY)}"/>`;
   // Mirrored (it points left), so the screen's clockwise rotate takes −a: local +x then runs along
   // (−cos a, −sin a), the launch vector (velocityOf) — up for a > 0. Hanli 10-16: it pointed down.
-  return `<g class="g-da-bow${p >= 0.98 ? ' is-full' : ''}" transform="translate(${BOW[0]} ${n(BOW[1] + shake)}) scale(-1 1) rotate(${n(-a)})">${bow}${nocked}</g>`;
+  const strum = kick ? `<path class="g-da-string is-ring" d="M2 -26 Q${n(-3 + ring)} 0 2 26"/>` : '';
+  return `<g class="g-da-bow${p >= 0.98 ? ' is-full' : ''}" transform="translate(${BOW[0]} ${n(BOW[1] + shake)}) scale(-1 1) rotate(${n(-a)})${recoil ? ` translate(${recoil} 0)` : ''}">${bow}${nocked}${strum}</g>`
+    + (pull && p >= MIN_POWER ? readPicture(p, a) : '');
+}
+const RECOIL_MS = 200;
+
+/** The pull, read: an ink arc round his hand filling with the power, and the power and angle. */
+function readPicture(p, a) {
+  const r = 40, from = Math.PI * 0.62, to = from + Math.PI * 0.76 * p, [cx, cy] = [BOW[0] + 6, BOW[1]];
+  const pt = (t) => `${n(cx + Math.cos(t) * r)} ${n(cy + Math.sin(t) * r)}`;
+  return `<path class="g-da-read-bed" d="M${pt(from)} A${r} ${r} 0 0 1 ${pt(from + Math.PI * 0.76)}"/>`
+    + `<path class="g-da-read${p >= 0.98 ? ' is-full' : ''}" d="M${pt(from)} A${r} ${r} 0 ${to - from > Math.PI ? 1 : 0} 1 ${pt(to)}"/>`
+    + `<text class="g-da-read-num" x="${n(cx)}" y="${n(cy + r + 13)}" text-anchor="middle">${Math.round(p * 100)}% · ${Math.round(a)}°</text>`;
 }
 
 /** The nocked arrow: fading as the painted drawn bow (which holds its own) comes in, or on the string. */
@@ -806,8 +1054,11 @@ function guidePicture(s) {
 /** The spent arrows stuck in the grass this try, and the chaff a snapped reed threw. */
 function spentPicture(s) {
   const stuck = (s.stuck ?? []).map(([x, y, a, id]) => `<g class="g-da-spent" transform="translate(${x} ${y}) rotate(${a})">${thrownShape(s, id, true)}</g>`).join('');
-  const bits = (s.world.bits ?? []).map((b) => `<path class="g-da-bit" d="M-3 0 L3 0" transform="translate(${n(b.position.x)} ${n(b.position.y)}) rotate(${n((b.angle * 180) / Math.PI)})"/>`).join('');
-  return stuck + bits;
+  const chaff = s.art?.straw;
+  const bits = (s.world.bits ?? []).map((b) => `<g transform="translate(${n(b.position.x)} ${n(b.position.y)}) rotate(${n((b.angle * 180) / Math.PI)})">${chaff ? sprite({ ...chaff, w: 9, h: 5, at: [0.5, 0.5] }, 0.9) : '<path class="g-da-bit" d="M-3 0 L3 0"/>'}</g>`).join('');
+  // Arrows stuck in a log ride it as it rolls.
+  const riders = (s.world.riders ?? []).map((r) => `<g class="g-da-spent" transform="translate(${n(r.body.position.x)} ${n(r.body.position.y)}) rotate(${n((r.body.angle * 180) / Math.PI)})">${thrownShape(s, r.proj?.id ?? 'arrow', true)}</g>`).join('');
+  return stuck + bits + riders;
 }
 
 /** The last arrow's path: a bold ink stroke on a paper rim (`marks.trail` its width), or ink dots. */
@@ -823,14 +1074,18 @@ function arrowPicture(s) {
   const ar = s.world.arrow, fx = (ar?.fx ?? []).map((f) => fxPicture(f, (s.world.t ?? 0) - (f.t ?? s.world.t ?? 0), calm(s))).join('');
   if (!ar || ['hit', 'spook', 'clear'].includes(s.phase)) return fx;
   const { x, y } = ar.body.position, proj = ar.proj ?? ARROW;
-  const deg = turnsWithFlight(proj) || !ar.true ? (ar.body.angle * 180) / Math.PI : (s.world.t ?? 0) * 0.6; // a stone tumbles
+  const deg = ar.real || turnsWithFlight(proj) || !ar.true ? (ar.body.angle * 180) / Math.PI : (s.world.t ?? 0) * 0.6; // a stone tumbles
   return `${fx}<g class="g-da-arrow${proj.shape !== 'arrow' ? ' g-tk-proj' : ''}" data-arrow="" transform="translate(${n(x)} ${n(y)}) rotate(${n(deg)})">${thrownShape(s, proj.id)}</g>`;
 }
 
 /** What he threw, drawn: the arrow (painted or ink), or the kit's shape for the rest. */
 function thrownShape(s, id = 'arrow', spent = false) {
   const proj = projectileOf(s.kit, id);
-  return proj.shape === 'arrow' ? arrowShape(s.art, 0, spent) : shapeOf(proj);
+  if (proj.shape === 'arrow') return arrowShape(s.art, 0, spent);
+  // A 柴 log or a pot is the scene's own painted log and jar, at its size; a stone its pebble.
+  const own = { log: 'log', pot: 'jar', stone: 'pebble', sword: 'sword', talisman: 'talisman' }[proj.shape], [w, h] = proj.size ?? [12, 12];
+  if (own && s.art?.[own]?.file) return bodyArt(s, own === 'jar' ? 'jar' : own === 'log' ? 'log' : own, proj.shape === 'sword' ? 30 : proj.shape === 'talisman' ? 8 : w, proj.shape === 'sword' ? 5 : proj.shape === 'talisman' ? 22 : h);
+  return shapeOf(proj);
 }
 
 /** 「往左偏半寸」: after a miss on a level that hints it, a small tick half an inch left of the deer. */
@@ -872,7 +1127,7 @@ function burstPicture(s) {
   if (!['hit', 'spook'].includes(s.phase) || !s.at) return '';
   const [x, y] = s.at;
   if (s.phase === 'spook') return calm(s) ? '' : splash(x, y, s.t, { r: 8 });
-  const stars = starsPicture(x, y - 34, starsForHit(s.used, s.offHeart), calm(s) ? 1 : s.t);
+  const stars = starsPicture(x, y - 34, s.levelStars ?? starsForHit(s.used, s.offHeart), calm(s) ? 1 : s.t);
   const own = targetOf(levelOf(s))?.burst; // the cave answers with an echo, not ink
   if (own) return own(s, calm(s)) + stars;
   if (calm(s)) return `<circle class="g-da-burst" cx="${n(x)}" cy="${n(y)}" r="14"/>${stars}`;
@@ -910,9 +1165,23 @@ export function settle(s) {
 function playScene(s) {
   const level = levelOf(s);
   const drag = `<rect class="g-da-pad" x="0" y="0" width="${W}" height="${H}" data-g-drag="bow"/>`;
-  return scene(W, H, `<g class="g-da-world"${settle(s)}>${bankPicture(s) + windPicture(level, s) + trailPicture(s) + hintPicture(level, s) + spentPicture(s)
-    + deerNow(level, s) + zonesPicture(level, s) + s.world.things.map((x) => thingPicture(x, s)).join('') + burstPicture(s) + bowPicture(s) + guidePicture(s)
+  // The camera and the shake (juice.js, at the screen's rate) ride on the world: written here too,
+  // so a repaint keeps them; with none (node, reduced motion) a hit's own short settle.
+  const view = s.world.view ? ` transform="${viewAttr(s.world.view)}"` : settle(s);
+  const svg = scene(W, H, `<g class="g-da-world"${view}>${bankPicture(s) + windPicture(level, s) + trailPicture(s) + hintPicture(level, s) + spentPicture(s)
+    + deerNow(level, s) + zonesPicture(level, s) + s.world.things.map((x) => thingPicture(x, s)).join('') + shardsPicture(s) + burstPicture(s) + popsPicture(s) + bowPicture(s) + guidePicture(s)
     + arrowPicture(s)}</g>${drag}`, 'g-da-scene').replace('<svg ', `<svg data-arc="${esc(s.seed)}" `);
+  return `<div class="g-da-stage">${svg}<canvas class="g-da-fx" data-fx="" width="960" height="600" aria-hidden="true"></canvas></div>`;
+}
+
+/** What each break scored, popping up where it broke and fading (愤怒小鸟's numbers). */
+function popsPicture(s) {
+  const now = s.world.t ?? 0;
+  return (s.world.broke ?? []).filter((b) => now - b.t < 1100).map((b) => {
+    const age = now - b.t, k = Math.min(1, age / 160), pop = calm(s) ? 1 : k < 1 ? 0.4 + 0.9 * Math.sin((k * Math.PI) / 1.25) : 1;
+    const o = age < 700 ? 1 : 1 - (age - 700) / 400, y = b.at[1] - 16 - (calm(s) ? 0 : age / 40);
+    return `<text class="g-sm-pop${b.topple ? ' is-small' : ''}" x="${n(b.at[0])}" y="${n(y)}" text-anchor="middle" opacity="${n(o, 2)}" transform="translate(${n(b.at[0])} ${n(y)}) scale(${n(pop, 2)}) translate(${n(-b.at[0])} ${n(-y)})">+${b.points}</text>`;
+  }).join('');
 }
 
 /** The wind as it blows now, in a word: how strong, and whether in his face or at his back. */
@@ -924,12 +1193,14 @@ function windWord(w, t) {
 const starRow = (k, pop = false) => [0, 1, 2].map((i) => `<i class="g-da-star${i < k ? ' is-on' : ''}${pop ? ' g-da-pop' : ''}" style="--i:${i}">${i < k ? '★' : '☆'}</i>`).join('');
 
 function head(s, t) {
-  const level = levelOf(s), left = Math.max(0, QUIVER - s.used);
+  const level = levelOf(s), left = Math.max(0, quiverOf(s) - s.used);
   // The count is of what he throws: 箭 at 射鹿, the picked thing in the kit's tray.
   const proj = projectileOf(s.kit, s.pick), what = proj.id === 'arrow' ? t.arrows : proj.name?.[t === T.en ? 'en' : 'zh'] ?? t.arrows;
-  const quiver = `<span>${what} <b>${'│'.repeat(left)}</b>${'·'.repeat(QUIVER - left)}</span>`;
+  const quiver = `<span>${what} <b>${'│'.repeat(left)}</b>${'·'.repeat(quiverOf(s) - left)}</span>`;
+  // A smash level shows its points where the wind word would be (its air is still).
+  const mid = level.score ? `<span class="g-da-windword g-sm-score">${t.score} <b>${(s.world?.score ?? 0) + 0}</b></span>` : `<span class="g-da-windword">${windWord(windAt(level, s.clock), t)}</span>`;
   return `<div class="g-head g-da-top"><span>${t.level.replace('{i}', String(s.li + 1)).replace('{n}', String(s.levels.length))}</span>`
-    + `<span class="g-da-windword">${windWord(windAt(level, s.clock), t)}</span>${quiver}</div>`;
+    + `${mid}${quiver}</div>`;
 }
 
 /** The end line, counting the spots he shot (the story deals two, the 游戏厅 all). */
@@ -946,7 +1217,7 @@ const rowWord = (s, key, lang) => s.words?.[key]?.[lang] ?? s.words?.[key]?.zh ?
 
 function lineOf(s, t, lang) {
   const level = levelOf(s);
-  const said = { glance: t.glance, dash: t.dash, clean: t.clean, body: t.body, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: rowWord(s, 'gone', lang) ?? t.gone };
+  const said = { stuck: t.stuck, flushed: t.flushed, felled: t.felled, glance: t.glance, dash: t.dash, clean: t.clean, body: t.body, graze: t.graze[(s.grazes ?? 1) % t.graze.length], short: t.short, long: t.long, turned: t.turned, snap: t.snap, gone: rowWord(s, 'gone', lang) ?? t.gone };
   if (s.phase === 'clear') return `${t.clear}${starRow(s.best[s.li], true)}`;
   if (s.phase === 'aim' && s.pull) return s.pull.p >= 0.98 ? t.full : t.pull;
   const proj = projectileOf(s.kit, s.pick);
@@ -962,10 +1233,13 @@ function lineOf(s, t, lang) {
   return level.say?.[lang] ?? level.say?.zh ?? '';
 }
 
-function controls(s, t) {
+/** The sound's toggle (juice.js keeps it, per browser): never a game verb. */
+const muteBtn = (lang) => { const m = muted(); return `<button type="button" class="g-btn g-btn-quiet g-da-mute" data-da-mute="" data-lang="${lang}" aria-pressed="${m}">${muteLabel(m, lang)}</button>`; };
+
+function controls(s, t, lang = 'zh') {
   if (s.phase === 'clear' && s.best[s.li] < 3) return `<div class="g-pair">${btn(s.li + 1 < s.levels.length ? t.next : t.last, 'data-g="next"', 'main')}${btn(t.again, 'data-g="retry"', 'soft')}</div>`;
-  if (['aim', 'fly', 'gone', 'spook'].includes(s.phase)) return `<div class="g-bread-row">${btn(t.retry, 'data-g="retry"', 'quiet')}</div>`;
-  return '<div class="g-bread-row"></div>';
+  if (['aim', 'fly', 'gone', 'spook', 'settle'].includes(s.phase)) return `<div class="g-bread-row">${btn(t.retry, 'data-g="retry"', 'quiet')}${muteBtn(lang)}</div>`;
+  return `<div class="g-bread-row">${muteBtn(lang)}</div>`;
 }
 
 export function html(state, lang = 'zh') {
@@ -975,7 +1249,7 @@ export function html(state, lang = 'zh') {
     return `<div class="g-deerarc g-ink is-won"><p class="g-da-stars">${starRow(state.stars)}</p>`
       + `<p class="g-line-say">${rowWord(state, 'end', lang) ?? endLine(state, t, lang)}<br>${t.stars.replace('{s}', String(state.stars))}</p></div>`;
   }
-  return `<div class="g-deerarc g-ink">${head(state, t)}${playScene(state)}${trayPicture(state, t, lang)}<p class="g-line-say">${lineOf(state, t, lang)}</p>${controls(state, t)}</div>`;
+  return `<div class="g-deerarc g-ink">${head(state, t)}${playScene(state)}${trayPicture(state, t, lang)}<p class="g-line-say">${lineOf(state, t, lang)}</p>${controls(state, t, lang)}</div>`;
 }
 
 /** The tray: what he holds for this level (only his own things, the card law), when it is more
@@ -1019,14 +1293,19 @@ function paintDeer(svg, w, k) {
 }
 
 function paintFrame() {
+  requestAnimationFrame(paintFrame); // first: one bad frame never stops the painter
   for (const svg of document.querySelectorAll('svg[data-arc]')) {
     const w = WORLDS.get(svg.dataset.arc);
     if (!w?.wall) continue;
     const k = Math.min(3, Math.max(0, (performance.now() - w.wall) / (STEP_MS * (w.rate ?? 1))));
-    paintArrow(svg, w, k);
-    paintDeer(svg, w, k);
+    try {
+      paintArrow(svg, w, k);
+      paintDeer(svg, w, k);
+      juiceFrame(svg, w);
+    } catch (e) {
+      if (!paintFrame.said) { paintFrame.said = true; console.error('deerarc painter', e); }
+    }
   }
-  requestAnimationFrame(paintFrame);
 }
 
 /* ── Standalone: the mount() contract (games/mount.js); alone it reads its row of games.json. */

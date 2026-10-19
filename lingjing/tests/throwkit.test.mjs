@@ -20,8 +20,10 @@ const LEVELS = ROW.levels;
 const level = (id) => LEVELS.find((l) => l.id === id);
 const deal = (levels, extra = {}) => ({ levels, projectiles: PROJ, ...extra });
 
-test('the kit is data: four things, each his by a card the book names (or always his), a level for each and one with all', () => {
-  assert.deepEqual(Object.keys(PROJ), ['arrow', 'stone', 'sword', 'talisman']);
+test('the kit is data: six things, each his by a card the book names (or always his), a level for each and one with all', () => {
+  // 柴 and 陶罐 (Hanli 10-19: 「没有丢东西, 砸碎东西的快感」) lie by the creek: no card, always his.
+  assert.deepEqual(Object.keys(PROJ), ['arrow', 'stone', 'sword', 'talisman', 'log', 'pot']);
+  assert.ok(PROJ.stone.real && PROJ.log.real && PROJ.pot.real && PROJ.pot.shatters, 'the stone, the log and the pot are real bodies');
   const cards = new Set(content.cards.cards.map((c) => c.id));
   for (const [id, p] of Object.entries(PROJ)) {
     assert.ok(p.name?.zh && p.name?.en, id);
@@ -81,13 +83,17 @@ test('each throws its own way: the burst level is the talisman\'s alone; the ree
   assert.ok(solve(burst, 0, projectileOf(PROJ, 'talisman')));
 });
 
-test('a stone skips once off the ground and knocks a reed over; an arrow pierces a reed the stone cannot', () => {
+test('a stone is a real body: it bounces, rolls and comes to rest on the bank; an arrow pierces a reed the stone cannot', () => {
   const open = { ...level('stone'), deer: { x: -999 }, things: [] };
   const w = da.shoot(da.build(open), { a: 10, p: 0.5 }, projectileOf(PROJ, 'stone'));
-  const evs = [];
-  for (let i = 0; i < 400 && !w.arrow.done; i++) evs.push(da.stepWorld(w, open, i * da.STEP_MS));
-  assert.equal(evs.filter((e) => e === 'bounce').length, 1, 'one skip');
-  assert.ok(w.arrow.fx.some((f) => f.kind === 'bounce'), 'dust where it struck');
+  assert.ok(w.arrow.real, 'a matter body that collides');
+  const evs = [], ys = [];
+  for (let i = 0; i < 900 && !w.arrow.done; i++) { evs.push(da.stepWorld(w, open, i * da.STEP_MS)); ys.push(w.arrow.body.position.y); }
+  assert.equal(evs.at(-1), 'ground', 'it comes to rest');
+  // It struck the ground and rose again (a bounce), then rolled on along it.
+  const low = ys.findIndex((y) => y > 240);
+  assert.ok(low > 0 && Math.min(...ys.slice(low, low + 30)) < ys[low] - 2, 'it bounced');
+  assert.ok(w.cues.some((c) => c.k === 'thud' || c.k === 'stone'), 'heard where it struck');
   const wall = { ...level('pierce'), deer: { x: -999 } };
   const flat = { a: 14, p: 0.6 };
   assert.ok(da.flight(wall, flat, 0, 600, { proj: projectileOf(PROJ, 'arrow') }).snapped > 0, 'the arrow through');

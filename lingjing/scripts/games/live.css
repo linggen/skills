@@ -571,3 +571,21 @@
     box-shadow: 0 0 0 1px rgba(110, 84, 46, .32), 0 0 0 5px rgba(205, 184, 145, .55), 0 0 0 6px rgba(110, 84, 46, .25), 0 18px 48px rgba(0, 0, 0, .38);
   }
 }
+/* 射鹿's smash bodies (smash.js): ink stand-ins until their paintings land; the paintings carry their own alpha. */
+.g-da-scene .g-sm-ink { stroke: #2e2416; stroke-width: 1; }
+.g-da-scene .g-sm-ink.is-wood, .g-da-scene .g-sm-ink.is-rotten { fill: #7a5a3a; opacity: .85; }
+.g-da-scene .g-sm-ink.is-clay { fill: #9a6a44; }
+.g-da-scene .g-sm-ink.is-straw { fill: #c9a85a; opacity: .9; }
+.g-da-scene .g-sm-ink.is-stone { fill: #8a8478; }
+.g-da-scene .g-sm-thing .g-da-sprite, .g-da-scene .g-sm-shard .g-da-sprite { filter: drop-shadow(0 0 .8px #f6efe0); }
+.g-deerarc .g-da-stage { position: relative; width: 100%; }
+.g-deerarc .g-da-stage > canvas.g-da-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.g-da-scene .g-sm-pop { font: 700 13px var(--font-serif, serif); fill: var(--seal); stroke: #f6efe0; stroke-width: 2.4; paint-order: stroke; }
+.g-da-scene .g-sm-pop.is-small { font-size: 9px; fill: #2e2416; }
+.g-da-scene .g-da-read-bed { fill: none; stroke: #f6efe0; stroke-width: 3.4; opacity: .7; stroke-linecap: round; }
+.g-da-scene .g-da-read { fill: none; stroke: #2e2416; stroke-width: 2.2; stroke-linecap: round; opacity: .85; }
+.g-da-scene .g-da-read.is-full { stroke: var(--seal); }
+.g-da-scene .g-da-read-num { font: 600 9px var(--font-serif, serif); fill: #2e2416; stroke: #f6efe0; stroke-width: 2; paint-order: stroke; }
+.g-da-scene .g-da-string.is-ring { fill: none; stroke: #2e2416; stroke-width: .9; opacity: .8; }
+.g-deerarc .g-sm-score b { color: var(--seal); }
+.g-deerarc .g-da-mute { font-size: 13px; }

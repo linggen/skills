@@ -115,7 +115,7 @@ test('a throw row says its own end and its own empty hand — the cave is no str
     s = { ...s, won: true, stars: 3 };
     const end = mod.html(s, 'zh');
     assert.ok(end.includes(r.words.end.zh), `${id}: its own end line`);
-    assert.ok(!end.includes('溪边四处'), `${id}: not the deer's`);
+    assert.ok(!/溪边.处/.test(end), `${id}: not the deer's`);
     assert.ok(mod.html(s, 'en').includes(r.words.end.en), `${id}: en`);
   }
 });

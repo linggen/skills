@@ -48,6 +48,8 @@ const SHAPES = {
   arrow: () => '', // deerarc.js draws the arrow (painted or ink) itself
   stone: () => '<ellipse class="g-tk-stone" rx="7" ry="5.8"/><path class="g-tk-stone-lit" d="M-3.6 -2.5 q2.8 -2 5.3 -.6"/>',
   sword: () => '<path class="g-tk-blade" d="M-9 -1.4 L7 -1.2 L11 0 L7 1.2 L-9 1.4Z"/><path class="g-tk-guard" d="M-9 -3.6 L-9 3.6"/><path class="g-tk-hilt" d="M-9 0 L-14 0"/>',
+  log: () => '<rect class="g-sm-ink is-wood" x="-15" y="-4.5" width="30" height="9" rx="3"/>',
+  pot: () => '<ellipse class="g-sm-ink is-clay" rx="8" ry="8"/>',
   talisman: () => '<rect class="g-tk-paper" x="-6" y="-8" width="12" height="16" rx="1"/><path class="g-tk-glyph" d="M-3 -5 L3 -5 M0 -5 L0 5 M-3 0 L3 0 M-2.5 3 L2.5 5"/>',
 };
 

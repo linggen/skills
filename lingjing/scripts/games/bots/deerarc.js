@@ -5,7 +5,7 @@
 // closely around each clean one and takes the one with the most clean neighbours — the steadiest,
 // since a hand is never exact (nor a tap's moment). Then it picks, draws, lets go, and taps.
 // A level under three stars is played once more. Small grids on purpose: the host is shared.
-import { flight, levelNow, STEP_MS } from '../deerarc.js';
+import { FLEE_MS, flight, levelNow, STEP_MS } from '../deerarc.js';
 import { projectileOf } from '../throws.js';
 
 export const LEAD = 520; // draw → the hand lands → a glance → let go → the hand lands (board-bots)
@@ -74,6 +74,8 @@ export function bot(s, see = {}) {
   }
   if (s.phase === 'fly') return inFlight(s);
   if (s.phase !== 'aim') { plan = null; return null; }
+  const lv = s.levels[s.li];
+  if (lv?.smash) return smashTurn(s, lv);
   const level = levelNow(s); // this throw's rolled wind
   if (!plan || plan.li !== s.li || plan.used !== s.used) plan = { ...planFor(s, level, s.clock), li: s.li, used: s.used };
   if (plan.a == null) return null;
@@ -81,4 +83,16 @@ export function bot(s, see = {}) {
   if (!s.pull || s.pull.a !== plan.a || s.pull.p !== plan.p) return { g: 'draw', a: plan.a, p: plan.p };
   // Drawn: let go when the moment comes (the hand takes ~200 ms to land).
   return s.clock + (see.lead ?? 200) >= plan.at ? { g: 'loose' } : null;
+}
+
+/* A smash level (things that topple and break) is played from its answers (games.json `bot`: the
+   throws [a, p, pick] in order, as a person who has found the trick would play it — the bread.js
+   way): its world stands still between throws (bodies asleep, no wind), so only the aim decides;
+   the bot waits for a flushed stag to stop running before the next. Beyond the answers it lets go. */
+function smashTurn(s, lv) {
+  if (s.flushAt != null && s.clock - s.flushAt < FLEE_MS + 200) return null;
+  const [a, p, pick] = lv.bot?.[s.used] ?? lv.bot?.at(-1) ?? [20, 0.8, 'arrow'];
+  if (pick && s.pick !== pick && s.ammo?.includes(pick)) return { g: 'pick', p: pick };
+  if (!s.pull || s.pull.a !== a || s.pull.p !== p) return { g: 'draw', a, p };
+  return { g: 'loose' };
 }

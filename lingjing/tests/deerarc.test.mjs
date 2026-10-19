@@ -17,6 +17,8 @@ import { TO_HALL, walk } from './prologue.mjs';
 const content = loadContent();
 const GAME = content.games.games.find((g) => g.id === 'deerarc');
 const LEVELS = GAME.levels;
+const PROJ = content.games.projectiles;
+const AIMED = LEVELS.filter((l) => !l.smash); // the wind and the deer's levels: the aim search's
 const byId = (id) => LEVELS.find((l) => l.id === id);
 
 /** One level: wait to `at` ms on a `step` clock, draw to `aim`, loose, play out. */
@@ -31,8 +33,10 @@ function shot(level, aim, { step = 10, at = 0, limit = 8000 } = {}) {
   return { s, released };
 }
 
-test('the levels are the registry\'s: four, still · wind · walking · reeds and a branch; separate from the story\'s 射鹿', () => {
-  assert.deepEqual(LEVELS.map((l) => l.id), ['still', 'wind', 'walk', 'reeds']);
+test('the levels are the registry\'s: still · wind · walking · reeds and a branch, then the smash three; separate from the story\'s 射鹿', () => {
+  assert.deepEqual(LEVELS.map((l) => l.id), ['still', 'wind', 'walk', 'reeds', 'pile', 'rack', 'yard']);
+  assert.deepEqual(LEVELS.filter((l) => l.smash).map((l) => l.id), ['pile', 'rack', 'yard']);
+  assert.ok(LEVELS.filter((l) => l.smash).every((l) => !l.story), 'the smash levels are the 游戏厅\'s');
   // The story's 射鹿 plays this board since 2026-10-16 (Hanli: 「好像还不错」 — go).
   assert.equal(GAME.task, 'deer-wind');
   const task = content.tasks.tasks.find((t) => t.id === 'deer-wind');
@@ -45,7 +49,7 @@ test('the levels are the registry\'s: four, still · wind · walking · reeds an
   assert.ok(byId('reeds').things.some((t) => t.kind === 'reed') && byId('reeds').things.some((t) => t.kind === 'branch'));
 });
 
-for (const level of LEVELS) {
+for (const level of AIMED) {
   test(`level ${level.id}: the aim search finds a clean shot, and it hits clean in the game at a 10 ms and a 50 ms clock`, () => {
     for (const step of [10, 50]) {
       // The release lands on the clock's step: solve for the moment it really leaves the string.
@@ -254,7 +258,7 @@ test('重来 any time lays the level fresh; a short pull lets the string go with
 
 test('stars: one arrow 3, two 2, more 1; the whole by the board bot: won, three stars, clean', () => {
   assert.deepEqual([1, 2, 3, 4].map(da.starsFor), [3, 2, 1, 1]);
-  const r = playOnce(da, bot, { seed: 'bot-1', deal: { levels: LEVELS } });
+  const r = playOnce(da, bot, { seed: 'bot-1', deal: { levels: LEVELS, projectiles: PROJ } });
   assert.equal(r.won, true);
   assert.equal(r.grade, 'clean');
   assert.ok(r.ms < 90000, `${r.ms} ms`);
@@ -271,7 +275,7 @@ test('drawn in both languages: the scene takes the drag, 重来, stars that pop;
   assert.match(da.html(clear, 'zh'), /g-da-pop/);
   assert.match(da.html(clear, 'zh'), /data-g="next"/);
   const end = { ...s, phase: 'end', won: true, live: false, stars: 3 };
-  assert.match(da.html(end, 'zh'), /溪边四处/);
+  assert.match(da.html(end, 'zh'), /溪边七处/);
   assert.match(da.html(end, 'en'), /3 stars/);
   assert.equal(da.newGame('t', 1, {}).live, false);
   assert.match(da.html(da.newGame('t', 1, {}), 'zh'), /溪边没有鹿/);

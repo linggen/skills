@@ -101,6 +101,60 @@ SUBJECTS = {
     '(no hole, no ring, not hollow), a few flung drops and short flicks around it, the edges bleeding softly into the paper. '
     'Black ink only, nothing else.'),
 
+  # 射鹿's smash pieces (Hanli 10-19: 「没有丢东西, 砸碎东西的快感」): what stands by the creek to be knocked down or
+  # broken — a woodcutter's pile, a hunter's drying rack and his jars, a rotten fence. A shard is a cut of its parent.
+  'deer/log': ('sprite', (480, 160), (1024, 384), 2,
+    'ONE short thick round log of firewood lying perfectly horizontal, cut flat at both ends showing the pale end grain with '
+    'growth rings at the RIGHT end, rough dark bark along it, a knot. Brown-grey ink wash and dark ink strokes.'),
+  'deer/prop': ('sprite', (120, 560), (512, 1280), 1,
+    'ONE thin straight wooden prop stick standing perfectly upright, a forked Y at its top like a slingshot crotch, rough '
+    'bark, the bottom end cut to a point. Dry grey-brown ink strokes.'),
+  'deer/pole': ('sprite', (640, 60), (1536, 256), 1,
+    'ONE long thin straight wooden pole lying perfectly horizontal across the picture, a peeled sapling, a few bark rings '
+    'and stubs of cut twigs. Pale brown wash and dark ink line.'),
+  'deer/jar': ('sprite', (300, 360), (768, 896), 1,
+    'ONE old Chinese earthenware storage jar (a tan zi) standing upright, seen from the side: round wide belly, short neck, '
+    'a lid of folded cloth tied with string, a dark brown glaze running unevenly over the top half and bare buff clay below, '
+    'a small chip in the rim. Ink outline and warm brown wash.'),
+  'deer/haystack': ('sprite', (480, 400), (1024, 832), 2,
+    'ONE small round stack of dry golden rice straw piled on the ground, a dome shape, loose straws sticking out all round, '
+    'tied round its middle with a twist of straw rope. Pale muted ochre wash with fine dry ink strokes for the straws.'),
+  'deer/fence': ('sprite', (120, 520), (512, 1280), 2,
+    'ONE single rotten old wooden fence stake standing upright, a split weathered grey plank with a broken jagged top, '
+    'cracks along the grain, moss at its foot. Grey ink wash and dry dark strokes.'),
+  'deer/tile': ('sprite', (320, 120), (1024, 384), 1,
+    'A short neat stack of four old grey Chinese clay roof tiles lying horizontal, curved tiles nested one on another, '
+    'seen from the side. Grey ink wash with dark ink edges.'),
+  'deer/rock': ('sprite', (480, 320), (1024, 704), 1,
+    'ONE big rounded grey river boulder, smooth on top and flat at the bottom, a few cracks and a patch of moss. '
+    'Grey ink wash with dark ink outline, texture strokes in the old cun manner.'),
+  'deer/leaf': ('sprite', (120, 120), (512, 512), 1,
+    'ONE single dry fallen autumn leaf, curled a little, brown and ochre with dark ink veins.'),
+  'deer/dust': ('sprite', (240, 160), (768, 512), 2,
+    'ONE small low puff of dry dust and earth kicked up from the ground, a soft rounded cloud of pale grey-brown wash with '
+    'a few flecks of grit flying out, nothing else.'),
+  'deer/specks': ('sprite', (240, 240), (768, 768), 1,
+    'A few small scattered flecks and drops of black ink flung on paper, six or seven small dots and short flicks of '
+    'different sizes, spread apart. Black ink only, nothing else.'),
+  'deer/straw': ('sprite', (200, 120), (768, 512), 2,
+    'A small loose wisp of a few dry golden straws, tangled, lying horizontal. Pale ochre wash and fine dry ink strokes.'),
+  'deer/chip': ('sprite', (120, 80), (512, 384), 1,
+    'ONE small splinter of wood, a sharp chip of broken branch with bark on one side and pale torn wood on the other. '
+    'Brown ink wash and dark ink line.'),
+  'deer/grass': ('sprite', (160, 120), (512, 384), 1,
+    'A small torn tuft of green-grey grass blades and a clod of earth, flicked up, a few blades flying. Muted green-grey ink wash.'),
+  'deer/splash': ('sprite', (280, 220), (768, 576), 1,
+    'A small splash of stream water thrown up in a crown of drops, seen from the side, drawn the old Chinese way in pale blue-grey '
+    'ink wash and fine dark lines for the droplets. Nothing else.'),
+  'deer/pebble': ('sprite', (120, 100), (512, 448), 2,
+    'ONE small smooth round grey river pebble, a little flat, a pale vein across it. Grey ink wash with a dark ink outline.'),
+  'deer/sword': ('sprite', (480, 80), (1024, 192), 2,
+    'ONE short Chinese flying sword lying perfectly horizontal, pointing RIGHT: a slim straight double-edged steel blade with a '
+    'faint ridge, a small round guard, a short hilt wrapped in dark cord at the LEFT. Pale grey-blue ink wash and fine dark line.'),
+  'deer/talisman': ('sprite', (160, 240), (512, 768), 2,
+    'ONE Taoist paper talisman, a narrow upright strip of yellow paper with a few loose red brush marks down it like '
+    'a thunder charm, curling slightly at the bottom. Muted yellow ochre wash, cinnabar red strokes, no readable characters.'),
+
   # ── 喂饼 (00-cave/00-fox, the 割绳子 puzzle): the 饼 swings on vines in the cave to the fox.
   'bread/cave': ('vignette', (720, 880), (720, 880), 2,
     'The inside of a small mountain cave seen straight on, a tall picture. Top: a heavy overhanging rock ceiling in dark ink and '

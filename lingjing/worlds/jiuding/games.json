@@ -41,9 +41,11 @@
  "_projectiles": "What 小满 throws on the 射鹿 board and the boards built on it (games/throws.js; Hanli 2026-10-16: 「投掷类都可以换. 可以多设计一些工具, 特效, 让它更好玩」). `from`: the card that makes it his (cards.json; the card law: only his own things) — none, always his; a level's first `ammo` is the scene's own tool, always his. `mass` (the wind's push is over it), `speed` (× the pull's), `drag` (the air), `half` (where it strikes: a tip that far ahead, 0 its middle), `pierce` (snaps a reed no thicker than that — its `breaks` — at any speed, barely slowed; 99 is a wall), `knock` (snaps them, slowed), `bounce` (skips once off the ground), `ability` one tap in flight: dash (straight on along the line it was loosed on, × `dash`) or burst (lightning, reach `radius`). `tip`: the line while it flies.",
  "projectiles": {
   "arrow": {"name": {"zh": "箭", "en": "Arrow"}, "shape": "arrow", "mass": 1, "speed": 1, "drag": 0, "half": 13, "pierce": 40},
-  "stone": {"name": {"zh": "石子", "en": "Stone"}, "from": "shizi", "shape": "stone", "mass": 2.2, "speed": 0.94, "drag": 0.003, "half": 0, "knock": true, "bounce": 0.42},
+  "stone": {"name": {"zh": "石子", "en": "Stone"}, "from": "shizi", "shape": "stone", "mass": 2.2, "speed": 0.94, "drag": 0.003, "half": 0, "knock": true, "bounce": 0.42, "real": true, "size": [12, 12], "density": 0.02, "restitution": 0.38},
   "sword": {"name": {"zh": "短飞剑", "en": "Short flying sword"}, "from": "feijian", "shape": "sword", "mass": 0.8, "speed": 1, "drag": 0, "half": 9, "pierce": 40, "ability": "dash", "dash": 1.7, "tip": {"zh": "飞行中点一下：剑直冲出去。", "en": "Tap in flight: the sword shoots straight on."}},
-  "talisman": {"name": {"zh": "五雷符", "en": "Thunder talisman"}, "from": "wulei-fu", "shape": "talisman", "mass": 0.6, "speed": 0.9, "drag": 0.006, "half": 0, "ability": "burst", "radius": 70, "tip": {"zh": "飞行中点一下：五雷炸开。", "en": "Tap in flight: the thunder bursts."}}
+  "talisman": {"name": {"zh": "五雷符", "en": "Thunder talisman"}, "from": "wulei-fu", "shape": "talisman", "mass": 0.6, "speed": 0.9, "drag": 0.006, "half": 0, "ability": "burst", "radius": 70, "tip": {"zh": "飞行中点一下：五雷炸开。", "en": "Tap in flight: the thunder bursts."}},
+  "log": {"name": {"zh": "柴", "en": "Firewood"}, "shape": "log", "mass": 3, "speed": 0.62, "drag": 0.002, "half": 0, "knock": true, "real": true, "size": [30, 9], "density": 0.008, "restitution": 0.12},
+  "pot": {"name": {"zh": "陶罐", "en": "Clay pot"}, "shape": "pot", "mass": 1.6, "speed": 0.78, "drag": 0.003, "half": 0, "knock": true, "real": true, "shatters": true, "size": [16, 16], "density": 0.006, "restitution": 0.1}
  },
  "_throws": "Every throw in 卷一, from the book (Hanli 2026-10-16: 「投掷类都可以换」), each a level set on the 射鹿 board (deerarc.js; the target by `target.kind`, targets.js): 1 第一回 00-cave 扔石听声 「先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的」 — BUILT, row caveecho, task cave-stone (石子; the echo deep is the clean); 2 第二回 00-deer 射鹿 「往左偏半寸」 — BUILT, row deerarc, task deer-wind (箭); 3 古七 09-yishui 芦苇里那一等 「他扣在指间的那口短飞剑，诀一掐，放了出去，一道白光贴着滩上的泥飞过去，从那块粉红的肉里钻了进去」 — BUILT, row luwing, task yishui-reed (短飞剑, the wing root as it breathes in); 4 第五回 暗河 邹青松 「左手在地上摸了一块石子，往左边黑里一丢。……就这一亮……他一箭奔那团红光去了」 — PROPOSED: two throws, a stone into the dark to draw the gourd's light, then the arrow at the light (a dark level; the target shows only after the stone lands); 5 第五回 凶崖 「一箭奔面门。邹青松左臂一抬，箭头撞在……赤铜小盾上」 — PROPOSED as the first throw of 4 (a shield that turns the arrow: a branch-kind thing that moves); 6 第八回 黑松岭 合窳 「飞剑头一下奔它的眼睛，它一偏头，剑擦着那张人脸过去」 — PROPOSED: a 短飞剑 at a beast on a cliff path whose head turns away (a graze teaches: wait for the 灵力 to show); 7 第三回 三试 「一颗石子从人堆里飞进来……打在蠪侄的后腿上」 — the 家丁's throw, not 小满's: no level (the book's own); 8 第四回/第五回 饭桶 「石子、半个窝头……一样一样往里扔」「抬手往饭桶里一扔：『吃！你吃！』」 — already a game (喂饭桶, fantong); 9 第一回 爹 射山鸡 「先看风，后看鹿」 — his father's shot: told, the lesson 射鹿 plays.",
  "games": [
@@ -948,12 +950,66 @@
       }
      }
     },
-    "marks": {
+    "log": {
+    "file": "games/deer/log.webp"
+   },
+   "prop": {
+    "file": "games/deer/prop.webp"
+   },
+   "pole": {
+    "file": "games/deer/pole.webp"
+   },
+   "jar": {
+    "file": "games/deer/jar.webp"
+   },
+   "haystack": {
+    "file": "games/deer/haystack.webp"
+   },
+   "fence": {
+    "file": "games/deer/fence.webp"
+   },
+   "tile": {
+    "file": "games/deer/tile.webp"
+   },
+   "rock": {
+    "file": "games/deer/rock.webp"
+   },
+   "pebble": {
+    "file": "games/deer/pebble.webp"
+   },
+   "leaf": {
+    "file": "games/deer/leaf.webp"
+   },
+   "dust": {
+    "file": "games/deer/dust.webp"
+   },
+   "specks": {
+    "file": "games/deer/specks.webp"
+   },
+   "straw": {
+    "file": "games/deer/straw.webp"
+   },
+   "chip": {
+    "file": "games/deer/chip.webp"
+   },
+   "grass": {
+    "file": "games/deer/grass.webp"
+   },
+   "splash": {
+    "file": "games/deer/splash.webp"
+   },
+   "sword": {
+    "file": "games/deer/sword.webp"
+   },
+   "talisman": {
+    "file": "games/deer/talisman.webp"
+   },
+   "marks": {
      "dot": 4.6,
      "trail": 2.4
     }
    },
-   "_levels": "射鹿 · 拉弓, a 愤怒小鸟-style prototype (2026-10-16) — in the 游戏厅 only; the story's 射鹿 is still `deer`. World 480×300: he stands on the near bank at the right (the bow at 426,192), the deer drinks to the left. `deer`: `x`, `face` (-1 looks left), `lift` {every, for} ms its head comes up, `walk` {to, ms, rest} back and forth. `wind`: + blows in his face (pushes the arrow right), − at his back; `roll` {min, max, dirs?} deals each arrow its own wind (strength, and a direction from dirs: 1 in his face, −1 at his back), seeded by the try and the arrow's number so 重来 deals the same again — the header and the board show it before he pulls; `gust` {amp, period, phase?} makes it rise and fall on top (a sine on top, the streamer, tufts and leaves show it as it is). `things`: a `reed` {at, h, lean?, breaks? (speed, default 5)} snaps when the arrow is fast enough, else turns it; a `branch` {from, to} turns it always. `hint`: after a miss, 银月's 「往左偏半寸」 and a tick left of the deer. games/bots/deerarc.js searches each level's aim.",
+   "_levels": "射鹿 · 拉弓, a 愤怒小鸟-style prototype (2026-10-16) — in the 游戏厅 only; the story's 射鹿 is still `deer`. World 480×300: he stands on the near bank at the right (the bow at 426,192), the deer drinks to the left. `deer`: `x`, `face` (-1 looks left), `lift` {every, for} ms its head comes up, `walk` {to, ms, rest} back and forth. `wind`: + blows in his face (pushes the arrow right), − at his back; `roll` {min, max, dirs?} deals each arrow its own wind (strength, and a direction from dirs: 1 in his face, −1 at his back), seeded by the try and the arrow's number so 重来 deals the same again — the header and the board show it before he pulls; `gust` {amp, period, phase?} makes it rise and fall on top (a sine on top, the streamer, tufts and leaves show it as it is). `things`: a `reed` {at, h, lean?, breaks? (speed, default 5)} snaps when the arrow is fast enough, else turns it; a `branch` {from, to} turns it always. `hint`: after a miss, 银月's 「往左偏半寸」 and a tick left of the deer. games/bots/deerarc.js searches each level's aim. Levels 5–7 (柴垛 · 晾肉架 · 院角, Hanli 10-19: 「没有丢东西, 砸碎东西的快感」) are `smash` levels — the 游戏厅's only (the story deals the `story` ones): `things` of a smash kind (smash.js KINDS: log, prop, pole, fence, jar, tile, hay, rock) are real bodies {kind, at (middle), size [w, h], angle?} that sleep until touched, topple, and break into pieces of their painting when a blow beats their material; a falling one flushes the stag (`deer.flee` {x, face}: it bolts there and stands, head up) or fells it; `quiver` the throws, `ammo` the tray, `score` [one, two, three]-star points (each break its points, a topple 100, the heart 3000 / body 2000, each throw left 500); `bot` the answers [a, p, pick] the board bot plays (the world stands still between throws, so only the aim decides).",
    "levels": [
     {
      "id": "still",
@@ -1105,7 +1161,391 @@
       "zh": "芦苇挡在中间，头上横着枯枝；风一阵一阵的，等它歇。",
       "en": "Reeds in the way, a dead branch overhead, and the wind comes in gusts: wait for a lull."
      }
-    }
+    },
+   {
+    "id": "pile",
+    "smash": true,
+    "quiver": 4,
+    "ammo": [
+     "arrow",
+     "stone",
+     "log"
+    ],
+    "score": [
+     3000,
+     3900,
+     4400
+    ],
+    "deer": {
+     "x": 96,
+     "face": -1,
+     "flee": {
+      "x": 40,
+      "face": 1
+     }
+    },
+    "wind": 0,
+    "things": [
+     {
+      "kind": "log",
+      "at": [
+       246,
+       212
+      ],
+      "size": [
+       80,
+       16
+      ],
+      "angle": 90
+     },
+     {
+      "kind": "log",
+      "at": [
+       214,
+       212
+      ],
+      "size": [
+       80,
+       16
+      ],
+      "angle": 90
+     },
+     {
+      "kind": "log",
+      "at": [
+       182,
+       212
+      ],
+      "size": [
+       80,
+       16
+      ],
+      "angle": 90
+     },
+     {
+      "kind": "log",
+      "at": [
+       150,
+       212
+      ],
+      "size": [
+       80,
+       16
+      ],
+      "angle": 90
+     },
+     {"kind": "rock", "at": [286, 236], "size": [50, 32]}
+    ],
+    "say": {
+     "zh": "溪边立着一排晾干的柴，鹿就在柴后头。推倒第一根。",
+     "en": "A row of firewood stood on end to dry, the deer just past it. Push the first one over."
+    },
+    "bot": [
+     [
+      20,
+      0.84,
+      "log"
+     ],
+     [
+      14,
+      0.88,
+      "arrow"
+     ]
+    ]
+   },
+   {
+    "id": "rack",
+    "smash": true,
+    "quiver": 5,
+    "ammo": [
+     "arrow",
+     "stone",
+     "pot"
+    ],
+    "score": [
+     3500,
+     4800,
+     5600
+    ],
+    "deer": {
+     "x": 80,
+     "face": -1,
+     "flee": {
+      "x": 30,
+      "face": 1
+     }
+    },
+    "wind": 0,
+    "things": [
+     {
+      "kind": "hay",
+      "at": [
+       150,
+       222
+      ],
+      "size": [
+       78,
+       60
+      ]
+     },
+     {
+      "kind": "prop",
+      "at": [
+       212,
+       215
+      ],
+      "size": [
+       12,
+       74
+      ]
+     },
+     {
+      "kind": "prop",
+      "at": [
+       300,
+       215
+      ],
+      "size": [
+       12,
+       74
+      ]
+     },
+     {
+      "kind": "pole",
+      "at": [
+       256,
+       175
+      ],
+      "size": [
+       120,
+       6
+      ]
+     },
+     {
+      "kind": "tile",
+      "at": [
+       222,
+       165
+      ],
+      "size": [
+       34,
+       14
+      ]
+     },
+     {
+      "kind": "tile",
+      "at": [
+       256,
+       165
+      ],
+      "size": [
+       34,
+       14
+      ]
+     },
+     {
+      "kind": "tile",
+      "at": [
+       290,
+       165
+      ],
+      "size": [
+       34,
+       14
+      ]
+     },
+     {
+      "kind": "jar",
+      "at": [
+       240,
+       235
+      ],
+      "size": [
+       26,
+       34
+      ]
+     },
+     {
+      "kind": "jar",
+      "at": [
+       272,
+       235
+      ],
+      "size": [
+       26,
+       34
+      ]
+     }
+    ],
+    "say": {
+     "zh": "猎户的晾肉架，架上压着瓦，底下两只坛子。鹿在草垛后面。",
+     "en": "A hunter's drying rack weighted with tiles, two jars beneath. The deer is behind the straw stack."
+    },
+    "bot": [
+     [
+      2,
+      0.32,
+      "stone"
+     ],
+     [
+      17,
+      0.84,
+      "arrow"
+     ]
+    ]
+   },
+   {
+    "id": "yard",
+    "smash": true,
+    "quiver": 5,
+    "ammo": [
+     "stone",
+     "pot",
+     "arrow"
+    ],
+    "score": [
+     3500,
+     5000,
+     6400
+    ],
+    "deer": {
+     "x": 72,
+     "face": -1,
+     "flee": {
+      "x": 28,
+      "face": 1
+     }
+    },
+    "wind": 0,
+    "things": [
+     {
+      "kind": "fence",
+      "at": [
+       148,
+       236
+      ],
+      "size": [
+       17,
+       32
+      ]
+     },
+     {
+      "kind": "fence",
+      "at": [
+       166,
+       236
+      ],
+      "size": [
+       17,
+       32
+      ]
+     },
+     {
+      "kind": "fence",
+      "at": [
+       184,
+       236
+      ],
+      "size": [
+       17,
+       32
+      ]
+     },
+     {
+      "kind": "jar",
+      "at": [
+       218,
+       235
+      ],
+      "size": [
+       26,
+       34
+      ]
+     },
+     {
+      "kind": "tile",
+      "at": [
+       218,
+       211
+      ],
+      "size": [
+       34,
+       14
+      ]
+     },
+     {
+      "kind": "jar",
+      "at": [
+       218,
+       187
+      ],
+      "size": [
+       26,
+       34
+      ]
+     },
+     {
+      "kind": "tile",
+      "at": [
+       218,
+       163
+      ],
+      "size": [
+       34,
+       14
+      ]
+     },
+     {
+      "kind": "jar",
+      "at": [
+       218,
+       139
+      ],
+      "size": [
+       26,
+       34
+      ]
+     },
+     {
+      "kind": "hay",
+      "at": [
+       270,
+       222
+      ],
+      "size": [
+       70,
+       60
+      ]
+     },
+     {
+      "kind": "jar",
+      "at": [
+       270,
+       175
+      ],
+      "size": [
+       26,
+       34
+      ]
+     }
+    ],
+    "say": {
+     "zh": "破篱笆后头是人家的院角，坛子瓦片摞得老高。鹿就在篱笆那边。",
+     "en": "Past a rotten fence, a yard corner: jars and tiles stacked high. The deer is just beyond the fence."
+    },
+    "bot": [
+     [
+      -7,
+      0.68,
+      "stone"
+     ],
+     [
+      14,
+      0.96,
+      "arrow"
+     ]
+    ]
+   }
    ]
   },
   {

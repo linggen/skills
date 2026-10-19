@@ -256,6 +256,11 @@ rolled and looked at beside the house sheet on paper and on a dark ground; the k
 - `games/deer/` — the stag drinking (seed 2), lifting its head (2), walking (1), bolting (1): 640×480 on one canvas,
   facing right; the bow at rest (2) and fully drawn (4, a re-roll: the first prompt's seeds bent the bow the wrong way),
   the arrow (2), a reed (3), a snapped reed (3), a dead branch (2), the ink burst (3, re-rolled solid — the first drew rings).
+  2026-10-19, the smash pass (Hanli: 「没有丢东西, 砸碎东西的快感」), two seeds a piece: a firewood log (2), a forked prop
+  stick (1), a drying-rack pole (1), a clay jar (1), a straw stack (2), a rotten fence stake (1), a stack of roof tiles (1),
+  a river boulder (1); the thrown pebble (2), short flying sword (2) and thunder talisman (2); and the particles the
+  physics throws — ink specks (1), a dust puff (2), a wood chip (1), a straw wisp (2), a grass tuft (1), a water splash (1),
+  a falling leaf (1). A broken thing's shards are cuts of its own painting (smash.js), never drawn.
 - `games/bread/` — 喂饼's cave (a vignette, 720×880, seed 2, laid on the house paper), the 饼 (2), its torn corner (1),
   the stone slab (3), the vine's sprig (2), the puff of wind at the cave mouth (2).
 - `games/rain/` — 接雨's wooden basin (1) and the wet thatch beam (1).
@@ -267,3 +272,29 @@ rolled and looked at beside the house sheet on paper and on a dark ground; the k
   brambles, facing left) and the 沂水 shoal at night (a vignette, 960×600, seed 1), for 芦苇里那一等 on the throwing board.
 - `games/feather/` — 吹鹅毛's goose feather (1), 小满's face in profile breathing out (1), the bamboo strip (3).
 
+
+## Sounds
+
+`worlds/jiuding/sound/deer/*.mp3` (beside this art folder) — 射鹿's sound effects (2026-10-19), each cut short and re-encoded mono 22 kHz MP3 with ffmpeg
+(trimmed, faded, some pitched or layered); every source is **CC0** (public domain dedication), so no credit is owed —
+it is given anyway.
+
+| File | What | Source (license) |
+|---|---|---|
+| creak | the bow drawn | Kenney, *RPG Audio* — `creak3.ogg` (CC0, kenney.nl/assets/rpg-audio) |
+| twang | the string let go | Kenney, *Interface Sounds* — `pluck_002.ogg` pitched down (CC0, kenney.nl/assets/interface-sounds), under artisticdude's *Swishes Sound Pack* `swish-3.wav` (CC0, opengameart.org/content/swishes-sound-pack) |
+| whoosh | the arrow in the air | artisticdude, *Swishes Sound Pack* — `swish-9.wav` (CC0, opengameart.org/content/swishes-sound-pack) |
+| thud | an arrow into earth | Kenney, *Impact Sounds* — `impactSoft_medium_000.ogg` (CC0, kenney.nl/assets/impact-sounds) |
+| grass | a reed brushed, grass flicked | Kenney, *Impact Sounds* — `footstep_grass_001.ogg` (CC0) |
+| splash | an arrow into the stream | ezwa / qubodup, *6 Short Water Splashes* — `water_splash-02.flac` (CC0, opengameart.org/content/6-short-water-splashes) |
+| snap | a reed snapped | Jan Schupke, *Tinysized SFX* — `wood-twigs-break-01.wav` (CC0, opengameart.org/content/fantasy-sound-effects-tinysized-sfx) |
+| crack | dry wood broken | Jan Schupke, *Tinysized SFX* — `wood-twigs-break-02.wav` pitched down (CC0) |
+| wood | a knock on wood | Kenney, *Impact Sounds* — `impactWood_medium_000.ogg` (CC0) |
+| logs | logs coming down | Kenney, *Impact Sounds* — `impactPlank_medium_001.ogg` + `impactWood_heavy_002.ogg` (CC0) |
+| shatter | clay broken | Kenney, *Impact Sounds* — `impactPlate_heavy_001.ogg` + `impactGlass_light_002.ogg` (CC0) |
+| straw | a straw stack burst | Kenney, *RPG Audio* — `cloth2.ogg` + artisticdude `swish-6.wav` (CC0) |
+| stone | stone struck | Kenney, *Impact Sounds* — `impactMining_001.ogg` (CC0) |
+| hit | the arrow home | Kenney, *Impact Sounds* — `impactPunch_medium_001.ogg` pitched down (CC0) |
+| bolt | the stag bolting | Kenney, *Impact Sounds* — `footstep_grass_000/002/004.ogg` in a run (CC0) |
+| chime | a level won | Kenney, *Impact Sounds* — `impactBell_heavy_001.ogg` pitched up (CC0) |
+| pop | a star | Kenney, *Interface Sounds* — `select_002.ogg` (CC0) |

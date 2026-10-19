@@ -49,6 +49,21 @@ sixth board — then, the same day, approved to go with 射鹿 · 等风: **cut 
 00-cave's passage whole again (word for word), 喂饼 the scene's one board; the task (marked `cut`, so a
 save holding it offered lets it go on load), row, module and bot stay for the 游戏厅.
 
+## 射鹿 · 拉弓 — physical, with the juice (10-19, the 愤怒小鸟 benchmark)
+
+Hanli 10-19: 「射鹿的问题是没有碰撞, 重力, 物理引擎等」, 「没有丢东西, 砸碎东西的快感」. `deerarc` (row `deerarc`):
+the story's deer-wind deals **静 then 风** only (levels marked `story`); the 游戏厅 (`arcade.html?dev=1&game=deerarc`)
+plays all seven — the four aiming levels, then three **smash** levels (games/smash.js): **柴垛** (four logs stood on
+end: knock the first and they fall one into the next onto the stag), **晾肉架** (knock a leg: the pole tips, the tiles
+slide, the jars below shatter), **院角** (a rotten fence, a jar-and-tile tower, a 草垛 that bursts into straw). Every
+thing is a matter.js body that sleeps until touched; a hard enough blow shatters it into pieces of its own painting;
+the arrow sticks in wood, glances off stone, breaks clay; 石子 · 柴 · 陶罐 are real bodies; what falls on the stag
+flushes it into the open (then the arrow) or fells it. Points: each break, each topple 100, heart 3000 / body 2000,
+500 a throw left; stars by the level's `score`. The juice (games/juice.js): painted particles, a camera that leans in
+after the throw, shake, hit-stop and slow-mo on the heart, +points pops, the bow's tremble, read and recoil, CC0
+sound behind 有声/静音. Wants Hanli's play: are the levels too easy (the answers are found by search, not by a
+designer's eye), is the camera too much at 390.
+
 ## 射鹿 · 等风 — the hunting-aim board (10-19, 游戏厅 only)
 
 Hanli 10-19: 「愤怒小鸟的类型不好玩. 太简单, 没有花样」 (割绳子 is fine). A static target with an arc hint is
@@ -165,7 +180,7 @@ Also **replace with 割绳子 or another proven mechanic if it isn't fun** — H
 | 一 · 00-yinyue | 认路 `way` | 「崖壁上一段划了一道」 | a small grid seen a step around him; follow his marks | the marks lead straight | **cut** | 7 s | 75 s | no | **cut 10-16 (before 入门)** — module kept |
 | 一 · 00-cave | 扔石听声 `stone` | 「先往里扔一块石头」 | a stone into each of three hollows; go into the one that knocks | the how-line names the right sound; one decision | **cut** | 4 s | 2 wrong | no | **cut** (its passage whole again: 1,148 → 1,241 字 before 喂饼) |
 | 一 · 00-cave / 00-fox | 喂饼 `bread` ★ | 那张厚饼，分它一半 | seven pieces: to the fox or to himself | two buttons, nothing moves | **built 10-16** → 割绳子 physics puzzle: the 饼 on vines in the cave, cut them (tap or swipe) so it swings to the fox's mouth; four levels (一根藤 · 两根藤 · 石板 · 洞口风), a 饼角 a star (3), the order of cuts is the answer, never the timing; instant retry | 5 s | 75 s | no (银月 is already a card) | kept (the six) |
-| 二 · 00-deer | 射鹿 `deer` ★ | 「风。往左偏半寸。」 | set the aim (‹ = left), hold to draw, let go in a lull | the skill is pressing ‹ once; a static target | **keep** → 愤怒小鸟 drag-and-arc (`deerarc`, the beat since 10-16) → **狩猎瞄准 `deerhunt`** (built 10-19, 游戏厅; the beat once Hanli has played it) | 5 s | 3 misses | yes — 先看风，后看鹿 (爹's lesson to him) | kept (the six) |
+| 二 · 00-deer | 射鹿 `deer` ★ | 「风。往左偏半寸。」 | set the aim (‹ = left), hold to draw, let go in a lull | the skill is pressing ‹ once; a static target | **keep** → 愤怒小鸟 drag-and-arc (`deerarc`, the beat since 10-16; **10-19 physical**: real bodies, breakables, the juice — § below; the story plays 静 · 风 only, step 下一处) → **狩猎瞄准 `deerhunt`** (built 10-19, 游戏厅; the beat once Hanli has played it) | 5 s | 3 misses | yes — 先看风，后看鹿 (爹's lesson to him) | kept (the six) |
 | 二 · 00-cliff | 攀 `climb` | 「右手抓一根荆条」 | each reach, pick the branch in leaf; rest on the stone | a two-way pick, always readable | **cut** | 7 s | 2 slips | no | **cut** |
 | 二 · 00-sleep | 忍 `xisui` | 「疼，别喊」 | hold to grit while three sticks burn | holding a button for half a minute | **cut** (the 洗髓 passage is stronger read) | 27 s | 75 s | no | **cut 10-16 (before 入门)** — module kept |
 | 二 · 00-rent | 算账 `scale` | 皮抵欠，肉二十斤抵租 | hand the hide; tag cuts (weights shown) to 20 斤; 称 | the weights are printed — a sum, not a weigh | **cut** (or: rough weights, a live beam, 马三 waits three weighs) | 5 s | 75 s | no | **cut 10-16 (before 入门)** — module kept |
