@@ -1657,6 +1657,7 @@
   },
   {
    "id": "deerhunt",
+   "replaced": "deerarc",
    "group": "prologue",
    "hui": "第二回 · 试作",
    "mechanic": "狩猎瞄准",
