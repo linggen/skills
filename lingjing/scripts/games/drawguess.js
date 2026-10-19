@@ -265,6 +265,11 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     root.querySelectorAll('[data-who]').forEach((b) => { b.disabled = fixed || !CHOOSE.has(p); b.classList.toggle('is-on', b.dataset.who === g.who); });
     // 笔 · 擦 answer on fresh paper too: the first stroke starts the round.
     if (p === 'ready') root.querySelectorAll('.g-dg-tool').forEach((b) => { b.disabled = false; });
+    // Free play: the word is dealt on fresh paper, so he sees what to draw before the first stroke.
+    if (p === 'ready' && !g.rounds && !data.word && typeof data.begin !== 'function') {
+      g.next = pickWord(g.words, Math.random, lastWord);
+      $('.g-dg-word b').textContent = lang === 'en' ? `${g.next.zh} · ${g.next.en}` : g.next.zh;
+    }
   };
   const sub = (s) => fill(s, { who: names[g.who] });
 
@@ -451,7 +456,8 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       if (!r?.ok) { foot(r?.say ?? ''); goBtn.disabled = Boolean(r?.done); return; }
       word = r.word ?? word;
     }
-    g.word = word ?? pickWord(g.words, Math.random, lastWord);
+    g.word = word ?? g.next ?? pickWord(g.words, Math.random, lastWord);
+    g.next = null;
     lastWord = g.word.zh;
     $('.g-dg-word b').textContent = lang === 'en' ? `${g.word.zh} · ${g.word.en}` : g.word.zh;
     g.strokes = [];
