@@ -39,7 +39,7 @@ SUBJECTS = {
 }
 
 # id: (kept seed, crop box in the 512 picture or None (to the subject), output size, paper threshold or None (opaque))
-KEPT = {'board': (1, (16, 16, 496, 496), (480, 480), None), 'black': (1, None, 96, 30), 'white': (1, None, 96, 18)}
+KEPT = {'board': (1, (16, 16, 496, 496), (480, 480), None), 'black': (2, None, 96, 90), 'white': (3, None, 96, 140)}
 
 
 def gpu_free():
@@ -58,20 +58,24 @@ def paint(out, subject, seed):
 
 
 def to_webp(png, webp, box, size, threshold):
-  crop = f".crop({tuple(box)!r})" if box else ''
-  if threshold is None:  # an opaque texture
-    code = (f"from PIL import Image; im = Image.open({str(png)!r}).convert('RGB'){crop}; "
+  """The board: cropped and scaled, opaque. A stone: its disc found on the paper (rows and columns holding
+  enough ink — paper grain never does), cut by an ellipse fitted to it; its painted shadow left behind (the
+  CSS lays a soft one). A white stone is nearly the paper's colour, so keying the paper out would hollow it."""
+  if threshold is None:
+    code = (f"from PIL import Image; im = Image.open({str(png)!r}).convert('RGB').crop({tuple(box)!r}); "
             f"im = im.resize({tuple(size)!r}, Image.LANCZOS); im.save({str(webp)!r}, 'WEBP', quality=84)")
   else:
-    code = (f"from PIL import Image; import numpy as np; im = Image.open({str(png)!r}).convert('RGB'){crop}; "
+    code = (f"from PIL import Image, ImageDraw, ImageFilter; import numpy as np; im = Image.open({str(png)!r}).convert('RGB'); "
             "a = np.asarray(im).astype(float); "
             "c = np.concatenate([a[:8, :8].reshape(-1, 3), a[:8, -8:].reshape(-1, 3), a[-8:, :8].reshape(-1, 3), a[-8:, -8:].reshape(-1, 3)]); "
             "d = np.sqrt(((a - np.median(c, axis=0)) ** 2).sum(axis=2)); "
-            f"al = np.clip((d - {threshold}) * 6, 0, 255); "
-            "img = Image.fromarray(np.dstack([a, al]).astype('uint8'), 'RGBA'); "
-            + ("" if box else "ys, xs = np.where(al > 220); m = 4; img = img.crop((max(0, xs.min() - m), max(0, ys.min() - m), min(img.width, xs.max() + m), min(img.height, ys.max() + m))); ")
-            + f"k = {size} / max(img.size); img = img.resize((max(1, round(img.width * k)), max(1, round(img.height * k))), Image.LANCZOS); "
-            + f"img.save({str(webp)!r}, 'WEBP', quality=88)")
+            f"m = d > {threshold}; rows = np.where(m.sum(axis=1) > 12)[0]; cols = np.where(m.sum(axis=0) > 12)[0]; "
+            # the disc is as wide as it is tall: the painted shadow below/right is cut off by taking the width
+            "x0, x1 = cols.min(), cols.max(); y0 = rows.min(); y1 = y0 + (x1 - x0); "
+            "sub = im.crop((x0, y0, x1 + 1, y1 + 1)); "
+            "mask = Image.new('L', (sub.width * 4, sub.height * 4), 0); ImageDraw.Draw(mask).ellipse((2, 2, sub.width * 4 - 3, sub.height * 4 - 3), fill=255); "
+            "mask = mask.resize(sub.size, Image.LANCZOS); sub.putalpha(mask); "
+            f"sub = sub.resize(({size}, {size}), Image.LANCZOS); sub.save({str(webp)!r}, 'WEBP', quality=90)")
   subprocess.run([str(PY), '-c', code], check=True)
 
 

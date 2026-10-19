@@ -18,9 +18,8 @@
   box-sizing: border-box;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background:
-    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--ling-soft) 55%, transparent), transparent 70%),
-    color-mix(in srgb, var(--ling-soft) 70%, var(--raised));
+  /* The board: a pale stone slab painted by the local FLUX (tools/paint-wuziqi-flux.py); the lines stay ink in CSS. */
+  background: url('../../worlds/jiuding/art/games/wuziqi/board.webp') center / cover, color-mix(in srgb, var(--ling-soft) 70%, var(--raised));
   box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--ling) 12%, transparent);
 }
 
@@ -29,10 +28,10 @@
   content: '';
   position: absolute;
   inset: calc(100% / (var(--n) * 2));
-  border: 1px solid color-mix(in srgb, var(--ling) 55%, transparent);
+  border: 1px solid rgba(40, 34, 28, 0.62);
   background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--ling) 45%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--ling) 45%, transparent) 1px, transparent 1px);
+    linear-gradient(to right, rgba(40, 34, 28, 0.42) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(40, 34, 28, 0.42) 1px, transparent 1px);
   background-size: calc(100% / (var(--n) - 1)) calc(100% / (var(--n) - 1));
   pointer-events: none;
 }
@@ -75,14 +74,12 @@ button.g-wuziqi-cell:focus-visible { outline: 2px solid var(--ling); outline-off
   position: relative;
 }
 .g-wuziqi-stone.is-b {
-  background: radial-gradient(circle at 35% 30%, #5a5652, #141210 70%);
+  background: url('../../worlds/jiuding/art/games/wuziqi/black.webp') center / contain no-repeat, radial-gradient(circle at 35% 30%, #5a5652, #141210 70%);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 .g-wuziqi-stone.is-w {
-  background: radial-gradient(circle at 35% 30%, #ffffff, #ece6d8 75%);
-  border: 1px solid var(--faint);
-  box-sizing: border-box;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  background: url('../../worlds/jiuding/art/games/wuziqi/white.webp') center / contain no-repeat, radial-gradient(circle at 35% 30%, #ffffff, #ece6d8 75%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 /* The last stone (the rival's reply) wears a seal-red dot; his own just set, a ring. */
 .g-wuziqi-stone.is-last::after {
