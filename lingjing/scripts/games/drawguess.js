@@ -70,7 +70,7 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-paper.is-erasing canvas{cursor:none}
 .g-dg-foot{font-size:11px;color:var(--faint);font-family:var(--ui);min-height:1em}
 .g-dg-letter{width:100%;box-sizing:border-box;padding:6px 10px;border-left:2px solid var(--line);font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--text)}
-.g-dg-letter:empty{display:none}.g-dg-letter small{display:block;font-size:11px;color:var(--faint);font-family:var(--ui)}
+.g-dg-letter:empty{display:none}.g-dg-letter .g-dg-ask{display:block;margin-top:4px;font-size:16px;color:var(--accent,#8a5a1f)}.g-dg-letter small{display:block;font-size:11px;color:var(--faint);font-family:var(--ui)}
 .g-dg.is-fixed .g-dg-who{display:none}`;
 
 function styleOnce(doc) {
@@ -281,6 +281,13 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (!r) { el.textContent = ''; return; }
     el.innerHTML = '';
     el.append(pickLang(r.line));
+    // What to draw, said in the box itself (Hanli 10-19: 「这句话不清楚, 需要写明让画盆」).
+    if (r.word) {
+      const ask = doc.createElement('b');
+      ask.className = 'g-dg-ask';
+      ask.textContent = lang === 'en' ? `Beside it, draw a ${r.word.en} for Mother.` : `在这句旁边，画一个${r.word.zh}给娘看。`;
+      el.append(ask);
+    }
     const n = doc.createElement('small');
     n.textContent = `${g.i + 1} / ${g.rounds.length}`;
     el.append(n);
