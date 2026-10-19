@@ -79,11 +79,11 @@ async function openSave(page, base, save) {
 
 /* ── Boards ── */
 async function boardHost(page, id) {
-  return page.evaluate(`(() => { const h = document.querySelector('[data-game="${id}"]'); if (!h || !h.getClientRects().length) return false; h.scrollIntoView({ block: 'center' }); return true; })()`);
+  return page.evaluate(`(() => { const h = document.querySelector('[data-game="${id}"], [data-mount="${id}"]'); if (!h || !h.getClientRects().length) return false; h.scrollIntoView({ block: 'center' }); return true; })()`);
 }
 /* Where an action lands: the control's centre, found by its data, inside the board's host. */
 const TARGET = (id, a) => `(() => {
-  const host = document.querySelector('[data-game="${id}"]'); if (!host) return null;
+  const host = document.querySelector('[data-game="${id}"], [data-mount="${id}"]'); if (!host) return null;
   const a = ${JSON.stringify(a)};
   const sel = a.hold ? '[data-g-hold],[data-g-drag]' : '[data-g]';
   const want = a.hold ?? a;

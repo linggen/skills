@@ -247,7 +247,8 @@ test('every game is in both languages, its task pays nothing, and its scene wait
     assert.ok(mod.meta.name.zh && mod.meta.name.en && mod.meta.how.zh && mod.meta.how.en, mod.meta.id);
     const g = mod.newGame('x');
     assert.ok(mod.html(g, 'zh').includes('g-jin') && mod.html(g, 'en').includes('g-jin'));
-    const t = content.tasks.tasks.find(x => x.game === mod.meta.id);
+    // 一千米 · 罚球 · 黑地 · 最后一罚 are played as 气走经脉 levels since 10-19; their modules stay in the 游戏厅.
+    const t = content.tasks.tasks.find(x => x.game === mod.meta.id) ?? content.tasks.tasks.find(x => x.id === `jin-${mod.meta.id}` && x.game === 'qimai');
     assert.ok(t && /^jin-/.test(t.id), mod.meta.id);
     assert.equal(t.grant.progress ?? 0, 0);
     assert.equal(t.grant.wealth ?? 0, 0);

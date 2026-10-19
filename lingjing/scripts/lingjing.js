@@ -55,7 +55,7 @@ import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
-import { beatHost } from './beat-host.js';
+import { beatHost, mountOnly } from './beat-host.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
@@ -181,7 +181,7 @@ function taleBoard(taskId) {
   const mod = gameMod(b.page);
   if (!mod) return null;
   // A game that keeps only the mount() contract (画猜: 银月 reads the picture) is dealt by its own mount, with the step's deal.
-  if (!mod.newGame) boards.set(taskId, { taskId, mod, day: taskId, data: mountData(b), state: { won: false } });
+  if (mountOnly(mod)) boards.set(taskId, { taskId, mod, day: taskId, data: mountData(b), state: { won: false } });
   else boards.set(taskId, { taskId, mod, day: taskId, state: mod.newGame(`${taskId}|${look.seed ?? ''}`, b.level ?? 1) });
   return boards.get(taskId);
 }
@@ -215,7 +215,7 @@ function boardFor(taskId) {
     if (!old || old.day !== day || spent) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
       // A game that keeps only the mount() contract (beat-host.js) is dealt by its own mount, not here.
-      if (!mod.newGame) boards.set(taskId, { taskId, mod, day, round, data: mountData(task), state: { won: false } });
+      if (mountOnly(mod)) boards.set(taskId, { taskId, mod, day, round, data: mountData(task), state: { won: false } });
       else boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, { ...(task.deal ?? {}), ...(task.done_line ? { solved: task.done_line } : {}) }) });
     }
     // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.

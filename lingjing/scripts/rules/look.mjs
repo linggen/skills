@@ -505,7 +505,8 @@ function personBrief(content, state, creature) {
    with the cards he holds (`owned`: the tray shows only his own things — the card law). A row whose
    levels mark some `story` deals the story only those (射鹿, Hanli 10-19: 静 then 风); the 游戏厅 keeps all. */
 function dealOf(content, task, state) {
-  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game) : null;
+  // A game with a row a level (气走经脉, 10-19: every `qimai` row is one level) deals the row that names this task.
+  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game && g.task === task.id) ?? games.find(g => g.id === task.game) : null;
   const levels = row?.levels?.some(l => l.story) ? row.levels.filter(l => l.story) : row?.levels;
   if (!task.deal && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;

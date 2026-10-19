@@ -6,10 +6,12 @@
 .g-qm-board { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); cursor: pointer;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .g-qm-scene.g-scene { display: block; width: 100%; height: auto; color: var(--text); border: 0; border-radius: 0; }
-.g-qm-scene .g-qm-paper { fill: var(--surface); }
-.g-qm-scene .g-qm-body { fill: var(--ling-soft); opacity: .55; }
-.g-qm-scene .g-qm-wall { fill: none; stroke: var(--text); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; opacity: .85; }
-.g-qm-scene .g-qm-wall-wash { fill: none; stroke: var(--text); stroke-width: 9; stroke-linejoin: round; opacity: .08; }
+.g-qimai { --qm-tint: var(--ling-soft); --qm-ink: var(--text); --qm-trail: var(--text); }
+.g-qm-scene .g-qm-paper { fill: color-mix(in srgb, var(--surface) 84%, var(--qm-tint)); }
+.g-qm-scene .g-qm-body { fill: color-mix(in srgb, var(--surface) 45%, var(--qm-tint)); opacity: .55; }
+.g-qm-scene .g-qm-glyph { font-family: var(--serif); font-size: 120px; text-anchor: middle; fill: var(--qm-ink); opacity: .07; pointer-events: none; }
+.g-qm-scene .g-qm-wall { fill: none; stroke: color-mix(in srgb, var(--text) 55%, var(--qm-ink)); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; opacity: .85; }
+.g-qm-scene .g-qm-wall-wash { fill: none; stroke: var(--qm-ink); stroke-width: 9; stroke-linejoin: round; opacity: .08; }
 .g-qm-scene .g-qm-gold { fill: none; stroke: var(--metal); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 1 5; opacity: .95; }
 .g-qm-scene .g-qm-current { fill: none; stroke: var(--water); stroke-width: 1.6; stroke-linecap: round; opacity: .55; }
 .g-qm-scene .g-qm-wave { fill: none; stroke: var(--water); stroke-width: 2.2; stroke-linecap: round; opacity: .7; }
@@ -22,7 +24,7 @@
 .g-qm-scene .g-qm-xue.is-lit .g-qm-xue-dot { fill: var(--seal); stroke: var(--seal); }
 .g-qm-scene .g-qm-goal-ring { fill: none; stroke: var(--seal); stroke-width: 2; stroke-dasharray: 3 4; }
 .g-qm-scene .g-qm-darkzone { fill: var(--text); opacity: .9; }
-.g-qm-scene .g-qm-trail { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; color: var(--text); }
+.g-qm-scene .g-qm-trail { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; color: var(--qm-trail); }
 .g-qm-scene .g-qm-bead-glow { fill: var(--ling); opacity: .18; transition: opacity .25s, transform .25s; transform-box: fill-box; transform-origin: center; }
 .g-qm-scene .g-qm-bead-core { fill: var(--ling); stroke: var(--text); stroke-width: 1.2; }
 .g-qm-scene .g-qm-bead.is-in .g-qm-bead-glow { opacity: .42; transform: scale(1.35); }
@@ -40,6 +42,17 @@
 @keyframes g-qm-splash { from { opacity: .7; transform: scale(.6); } to { opacity: 0; transform: scale(3.4); } }
 .g-qm-scene .g-qm-teach { fill: none; stroke: var(--seal); stroke-width: 2; stroke-dasharray: 4 5; animation: g-teach 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 .g-qimai .g-teach-say { color: var(--seal); }
+/* a turning wind (currents with `flip`): the way it blows now */
+.g-qm-scene .g-qm-turn .g-qm-way { transition: opacity .3s; }
+.g-qm-scene .g-qm-turn .g-qm-way.is-b, .g-qm-scene .g-qm-turn.is-flipped .g-qm-way.is-a { opacity: 0; }
+.g-qm-scene .g-qm-turn.is-flipped .g-qm-way.is-b { opacity: 1; }
+/* the level's title card, over the board until the first breath */
+.g-qm-card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 18px; text-align: center; pointer-events: none; opacity: 0; transition: opacity .45s;
+  background: color-mix(in srgb, var(--surface) 78%, transparent); }
+.g-qm-card b { font-family: var(--serif); font-size: 22px; letter-spacing: .2em; color: color-mix(in srgb, var(--text) 60%, var(--qm-ink)); }
+.g-qm-card span { font-size: 13px; color: var(--dim); max-width: 32em; }
+.g-qimai.is-titled .g-qm-card { opacity: 1; }
 .g-qm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .g-qm-hint { font-size: 12px; color: var(--faint); }
 @media (prefers-reduced-motion: reduce) {

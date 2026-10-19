@@ -14,11 +14,18 @@
 //   xue    [{x, name}]          穴位: a checkpoint along the way, no narrowing
 //   currents [{from, to, push}] 乱流: a steady push (+ down, − up), u/s²
 //   waves  [{from, to, push?}]  浪头: a heavy push down that only a long hold rides out
-//   heart  [{from, to, beat?, kick?}]  心跳乱流: on every beat a kick up or down (seeded), lub-dub
+//   heart  [{from, to, beat?, kick?, jitter?}]  心跳乱流: on every beat a kick up or down (seeded), lub-dub;
+//                               `jitter` (0…1) lets each beat come early or late by that share of `beat`
+//                               (seeded per beat, so a 10 ms and a 50 ms clock still play alike)
+//   currents may `flip` (ms): the push turns over every `flip` ms of play — a changing wind
 //   gold   [{from, to, amp?, period?, rise?, off?}]  金线: a thread that rises over `rise` of its period
 //                               and falls over the rest (吸四吐六: rise 0.4) — hug it for the star
 //   dark   [{from, to, r?}]     暗: the channel unlit but for a small round about the bead
-//   speed (u/s), len (u), say · book · end ({zh, en})
+//   speed (u/s), len (u), say · book · end · title ({zh, en})
+//   goldTol, goldNeed           the 金线's bar for ★3 (within goldTol of it for goldNeed of its length)
+//   grades {3, 2, 1}            the story task's grade for each star count (its `marks` keys)
+//   look {tint, ink, trail, glyph}  the level's own paper tint, channel ink, trail colour and the big
+//                               faint character behind the channel (Hanli 10-19: every level its own)
 // Failing: touching a wall costs one 气 (of three); the third is 岔气 — at once, back to the last 关
 // or 穴 passed, 气 full again. Stars: through (1) · no wall touched (2) · the gold thread kept (3).
 // Physics: a fixed 1/60 s step inside `tick`, so a 10 ms and a 50 ms clock play the same world.
@@ -69,6 +76,9 @@ export const T = {
 
 export const meta = {
   id: 'qimai',
+  // The story lays it through its own mount (beat-host.js): html() is the first frame, mount() paints
+  // the lamp, trail, ring and bead each animation frame — the page's 50 ms html redraw would lose them.
+  beat: 'mount',
   name: { zh: '气走经脉', en: 'Qi through the meridians' },
   how: {
     zh: '按住是吸，气往上走；松开是吐，气往下沉。别碰脉壁，贴着金线走。',
@@ -164,7 +174,7 @@ export function newGame(seed, _level = 1, deal = {}) {
     cps: checkpoints(level), lessons: lessons(level, ch), taught: [], teaching: null,
     phase: 'ready', t: 0, clock: 0, acc: 0, x: 0, y: wallsAt(ch, 0).mid, vy: 0, holding: false,
     qi: QI, touches: 0, chas: 0, cp: 0, touchAt: -1e9, touch: null, chaAt: null, pressAt: -1e9, releaseAt: -1e9, startAt: 0,
-    gold: (level.gold ?? []).map(() => ({ on: 0, hug: 0 })), trail: [], beat: null, first: true,
+    gold: (level.gold ?? []).map(() => ({ on: 0, hug: 0 })), trail: [], beat: null, first: true, hb: [],
   };
   return s;
 }
@@ -173,7 +183,7 @@ const goldShare = (s) => {
   const on = s.gold.reduce((a, g) => a + g.on, 0), hug = s.gold.reduce((a, g) => a + g.hug, 0);
   return on > 0 ? hug / on : null;
 };
-export const goldKept = (s) => !s.level.gold?.length || (goldShare(s) ?? 0) >= GOLD_NEED;
+export const goldKept = (s) => !s.level.gold?.length || (goldShare(s) ?? 0) >= (s.level.goldNeed ?? GOLD_NEED);
 export const starsOf = (s) => 1 + (s.touches === 0 ? 1 : 0) + (s.level.gold?.length && goldKept(s) ? 1 : 0);
 export { goldShare };
 
@@ -181,7 +191,7 @@ export { goldShare };
 function reset(s, cp, full = false) {
   const at = s.cps[cp];
   const x = at.x;
-  Object.assign(s, { phase: 'ready', t: 0, x, y: wallsAt(s.ch, x).mid, vy: 0, qi: QI, cp, trail: [], beat: null, touch: null, holding: false });
+  Object.assign(s, { phase: 'ready', t: 0, x, y: wallsAt(s.ch, x).mid, vy: 0, qi: QI, cp, trail: [], beat: null, touch: null, holding: false, hb: [] });
   for (const [i, g] of (s.level.gold ?? []).entries()) if (full || g.to > x) s.gold[i] = { on: 0, hug: 0 };
   if (full) Object.assign(s, { touches: 0, chas: 0, taught: [], teaching: null, first: true, clock: 0, acc: 0 });
   return s;
@@ -219,12 +229,15 @@ export function act(state, data = {}) {
 function forces(s, x) {
   const L = s.level;
   let a = 0, kick = 0;
-  for (const c of L.currents ?? []) if (inZone(c, x)) a += c.push * ramp(c, x);
+  for (const c of L.currents ?? []) if (inZone(c, x)) a += c.push * flipOf(s, c) * ramp(c, x);
   for (const w of L.waves ?? []) if (inZone(w, x)) a += (w.push ?? WAVE_PUSH) * Math.sin(Math.PI * (x - w.from) / (w.to - w.from));
   for (const [i, h] of (L.heart ?? []).entries()) {
     if (!inZone(h, x)) continue;
-    const beat = h.beat ?? HEART_BEAT, k = Math.floor((s.clock - s.startAt) / beat), into = (s.clock - s.startAt) - k * beat;
-    const lub = into < STEP_MS, dub = into >= beat * 0.18 && into < beat * 0.18 + STEP_MS;
+    const beat = h.beat ?? HEART_BEAT, hb = (s.hb[i] ??= { k: 0, at: s.clock + beat });
+    // each beat comes `jitter` early or late (seeded per beat): the heart never settles into a rhythm
+    if (s.clock >= hb.at) { hb.k += 1; hb.lub = hb.at; hb.at += beat * (1 + (h.jitter ?? 0) * (2 * rng(`${s.seed}|${i}|j${hb.k}`)() - 1)); }
+    const into = hb.lub == null ? -1 : s.clock - hb.lub, k = hb.k;
+    const lub = into >= 0 && into < STEP_MS, dub = into >= beat * 0.18 && into < beat * 0.18 + STEP_MS;
     if (lub || dub) {
       const dir = rng(`${s.seed}|${i}|${k}`)() < 0.5 ? -1 : 1;
       kick += dir * (h.kick ?? HEART_KICK) * (lub ? 1 : 0.55);
@@ -233,6 +246,9 @@ function forces(s, x) {
   }
   return { a, kick };
 }
+
+/** A current's sign now: +1, or −1 through every other `flip` ms of play (a wind that turns). */
+export const flipOf = (s, c) => (c.flip ? (Math.floor((s.clock - s.startAt + (c.phase ?? 0)) / c.flip) % 2 === 0 ? 1 : -1) : 1);
 
 function touchWall(s, side, top, bot) {
   s.y = side < 0 ? top + R : bot - R;
@@ -270,14 +286,14 @@ function step(s) {
   for (const [i, g] of (L.gold ?? []).entries()) {
     if (!inZone(g, s.x)) continue;
     s.gold[i].on += STEP_MS;
-    if (Math.abs(s.y - goldAt(L, s.ch, s.x)) <= GOLD_TOL) s.gold[i].hug += STEP_MS;
+    if (Math.abs(s.y - goldAt(L, s.ch, s.x)) <= (L.goldTol ?? GOLD_TOL)) s.gold[i].hug += STEP_MS;
   }
   while (s.cp + 1 < s.cps.length && s.x >= s.cps[s.cp + 1].x) s.cp += 1;
   teach(s);
   if (Math.round(s.clock / STEP_MS) % 2 === 0) { s.trail.push([s.x, s.y]); if (s.trail.length > 70) s.trail.shift(); }
   if (s.x >= L.len) {
     s.x = L.len; s.phase = 'won'; s.won = true; s.live = false; s.holding = false;
-    s.stars = starsOf(s); s.grade = s.stars === 3 ? 'even' : s.touches === 0 ? 'clean' : 'through';
+    s.stars = starsOf(s); s.grade = L.grades?.[s.stars] ?? (s.stars === 3 ? 'even' : s.touches === 0 ? 'clean' : 'through');
   }
 }
 
@@ -312,13 +328,19 @@ function worldSvg(s, lang, id) {
   const body = `${line(ch, ch.top)} ${line(ch, ch.bot).split(' ').reverse().join(' ')}`;
   // 暗: the zone's ink wash, with a hole where the bead's small round of light is (the shade mask)
   const darks = (L.dark ?? []).length ? `<g mask="url(#${id}-shade)">${L.dark.map((d) => `<rect class="g-qm-darkzone" data-from="${d.from}" data-to="${d.to}" x="${d.from}" y="-20" width="${d.to - d.from}" height="${H + 40}"/>`).join('')}</g>` : '';
-  const currents = (L.currents ?? []).map((c) => {
-    const up = c.push < 0, marks = [];
+  const arrows = (c, up) => {
+    const marks = [];
     for (let x = c.from + 20; x < c.to - 10; x += 46) {
       const m = wallsAt(ch, x).mid, y0 = m + (up ? 14 : -14), y1 = m + (up ? -14 : 14);
       marks.push(`<path class="g-qm-current" d="M${fmt(x - 6)} ${fmt(y0)} Q${fmt(x + 6)} ${fmt((y0 + y1) / 2)} ${fmt(x - 2)} ${fmt(y1)} m-4 ${up ? 5 : -5} l4 ${up ? -5 : 5} l4 ${up ? 4 : -4}"/>`);
     }
-    return `<g class="g-qm-zone is-${up ? 'up' : 'down'}">${marks.join('')}</g>`;
+    return marks.join('');
+  };
+  // a turning wind (`flip`) draws both ways; the page shows the way it blows now (is-flipped)
+  const currents = (L.currents ?? []).map((c, i) => {
+    const up = c.push < 0, now = flipOf(s, c) < 0 ? ' is-flipped' : '';
+    if (!c.flip) return `<g class="g-qm-zone is-${up ? 'up' : 'down'}">${arrows(c, up)}</g>`;
+    return `<g class="g-qm-zone g-qm-turn${now}" data-cur="${i}"><g class="g-qm-way is-a">${arrows(c, up)}</g><g class="g-qm-way is-b">${arrows(c, !up)}</g></g>`;
   }).join('');
   const waves = (L.waves ?? []).map((w) => {
     const curls = [];
@@ -394,20 +416,34 @@ function sayOf(s, t, lang) {
   return tr(s.level.book, lang) || tr(s.level.say, lang);
 }
 
+/** The level's own look as CSS custom properties on the board (qimai.css mixes them into the theme). */
+const COLOR = /^#[0-9a-f]{3,8}$/i;
+function lookStyle(L) {
+  const k = L?.look ?? {}, v = [['tint', '--qm-tint'], ['ink', '--qm-ink'], ['trail', '--qm-trail']].filter(([f]) => COLOR.test(k[f] ?? '')).map(([f, n]) => `${n}:${k[f]}`);
+  return v.length ? ` style="${v.join(';')}"` : '';
+}
+/** The level's title card over the board before its first breath: its name and the book's line. */
+function titleCard(s, lang) {
+  const name = tr(s.level.title ?? s.level.name, lang);
+  if (!name) return '';
+  return `<div class="g-qm-card" aria-hidden="${s.phase === 'ready' && s.first ? 'false' : 'true'}"><b>${esc(name)}</b><span>${esc(tr(s.level.book, lang))}</span></div>`;
+}
+
 /** The board's whole markup for a state (the page lays it once a level, then moves it each frame). */
 export function html(s, lang = 'zh', id = 'qm') {
   const t = T[lang] || T.zh;
   if (!s.level) return `<div class="g-qimai g-ink"><p class="g-line-say">—</p></div>`;
-  return `<div class="g-qimai g-ink${s.won ? ' is-won' : ''}">`
+  return `<div class="g-qimai g-ink${s.won ? ' is-won' : ''}${s.phase === 'ready' && s.first ? ' is-titled' : ''}"${lookStyle(s.level)} data-level="${esc(s.level.id ?? '')}">`
     + `<div class="g-head g-qm-head">${headHtml(s, t)}</div>`
     + `<div class="g-qm-board g-hold" data-g-hold="">`
     + `<svg class="g-scene g-qm-scene" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tr(s.level.name ?? meta.name, lang))}" focusable="false">${defsSvg(s, id)}`
     + `<rect class="g-qm-paper" x="0" y="0" width="${W}" height="${H}"/>`
+    + (s.level.look?.glyph ? `<text class="g-qm-glyph" x="${W - 62}" y="${H / 2 + 44}">${esc(s.level.look.glyph)}</text>` : '')
     + `<g class="g-qm-world" transform="translate(${fmt(BX - s.x)} 0)">${worldSvg(s, lang, id)}</g>`
     + `<path class="g-qm-trail" stroke="url(#${id}-trail)" d=""/>`
     + `<g class="g-qm-pulses"></g>`
     + `<g class="g-qm-bead" transform="translate(${BX} ${fmt(s.y)})"><circle class="g-qm-bead-glow" r="${R * 2.2}"/><circle class="g-qm-bead-core" r="${R}"/></g>`
-    + `</svg></div>`
+    + `</svg>${titleCard(s, lang)}</div>`
     + `<p class="g-line-say">${esc(sayOf(s, t, lang))}</p>`
     + `<div class="g-qm-row"><span class="g-qm-hint">${t.hint}</span><button type="button" class="g-btn g-btn-quiet" data-g="restart">${t.restart}</button></div>`
     + `</div>`;
@@ -456,7 +492,7 @@ export async function mount(container, opts = {}) {
   const $ = (q) => host.querySelector(q);
   const board = $('.g-qm-board'), world = $('.g-qm-world'), bead = $('.g-qm-bead'), trail = $('.g-qm-trail'), pulses = $('.g-qm-pulses');
   const head = $('.g-qm-head'), say = $('.g-line-say'), lamps = [...host.querySelectorAll('.g-qm-lamp')], ring = $('.g-qm-teach'), root = $('.g-qimai');
-  const xues = [...host.querySelectorAll('.g-qm-xue')];
+  const xues = [...host.querySelectorAll('.g-qm-xue')], turns = [...host.querySelectorAll('.g-qm-turn')];
   let last = { head: '', say: '', cls: '' };
 
   const pulse = (k) => {
@@ -500,6 +536,8 @@ export async function mount(container, opts = {}) {
     if (s.chas > seenCha) { seenCha = s.chas; ink(BX, s.y, 'g-qm-splash is-cha'); }
     if (s.beat && s.beat !== seenBeat) { seenBeat = s.beat; board.classList.remove('is-beat'); void board.offsetWidth; board.classList.add('is-beat'); }
     root.classList.toggle('is-dark', (s.level.dark ?? []).some((d) => s.x >= d.from && s.x <= d.to));
+    root.classList.toggle('is-titled', s.phase === 'ready' && s.first);
+    for (const z of turns) z.classList.toggle('is-flipped', flipOf(s, s.level.currents[Number(z.dataset.cur)]) < 0);
   };
 
   return new Promise((resolve) => {

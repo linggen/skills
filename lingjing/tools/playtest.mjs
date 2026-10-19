@@ -472,7 +472,7 @@ async function playFight(page, snap, { rec, sceneId, shot, outcome, reload = nul
    board's chooser, real pointer / touch at the casual policy's pace; every act judged (a control that
    changes nothing is a soft board-dead-tap). Answers 'won' | 'gone' | 'skipped' | 'timeout'. ── */
 async function playBoardHands(page, { rec, sceneId, shot, task, policy, hand, r, seconds = 240 }) {
-  const host = `[data-game="${task}"]`, game = GAME_OF_TASK[task] ?? task, choose = CHOOSERS[chooserOf(game)], P = POLICIES.casual;
+  const host = `[data-game="${task}"], [data-mount="${task}"]`, game = GAME_OF_TASK[task] ?? task, choose = CHOOSERS[chooserOf(game)], P = POLICIES.casual;
   const evaluate = (e) => page.evaluate(e);
   console.log(`    ✋ ${task} (${game}) by hand, ${policy}`);
   await page.evaluate(`document.querySelector(${JSON.stringify(host)})?.scrollIntoView({ block: 'center' })`);

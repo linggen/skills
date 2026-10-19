@@ -7,8 +7,9 @@
 // win and its grade, then onWin → the rules' `win`, the pay, beat-won.js). A pure board module
 // (html · act) never comes here: the page draws those itself, as ever.
 
-/** A board whose module keeps only the contract (a `mount`, no `html` of its own). */
-export const mountOnly = (mod) => Boolean(mod?.mount && !mod.html);
+/** A board whose module keeps only the contract (a `mount`, no `html` of its own), or one that asks for
+    its own mount in the story (`meta.beat: 'mount'` — 气走经脉 paints every animation frame itself). */
+export const mountOnly = (mod) => Boolean(mod?.mount && (!mod.html || mod.meta?.beat === 'mount'));
 
 /** The board card's body for such a board: the host the game is laid into. */
 export const mountHostHtml = (id, esc) => `<div class="game g-mounthost" data-mount="${esc(id)}"></div>`;

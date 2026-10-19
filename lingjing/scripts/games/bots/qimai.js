@@ -63,11 +63,14 @@ export const HANDS = {
   practised: { delay: 200, jitter: 30, noise: 3, lapse: 0, kd: 0.3, predict: true },
   casual: { delay: 240, jitter: 50, noise: 6, lapse: 0.05, kd: 0.22, predict: false },
   sloppy: { delay: 320, jitter: 80, noise: 10, lapse: 0.15, kd: 0.15, predict: false },
+  // node-only, fitted 10-19 to play-human's live casual hand on 9527 (its 30 ms look and the page's lag
+  // on top of HANDS.casual): the 11 rows of games.md's first table, within a run or so a level. Tune with this.
+  live: { delay: 280, jitter: 60, noise: 7, lapse: 0.07, kd: 0.2, predict: false, look: 40 },
   idle: { idle: true },
 };
 
 /** One run of a level by a hand, on a `step` ms clock, up to `limit` ms. */
-export function simulate(level, hand = HANDS.casual, { seed = 'sim', step = 16, limit = 120000, look = 33 } = {}) {
+export function simulate(level, hand = HANDS.casual, { seed = 'sim', step = 16, limit = 120000, look = hand.look ?? 33 } = {}) {
   const r = rng(`${seed}|${level.id}`);
   let s = newGame(seed, 1, { levels: [level] });
   const snaps = [];

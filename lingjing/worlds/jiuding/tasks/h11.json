@@ -16,7 +16,7 @@
     {
       "id": "jiuge-sui",
       "kind": "board",
-      "game": "leafsui",
+      "game": "qimai",
       "period": "once",
       "title": { "zh": "随叶 · 跟着它走", "en": "Follow the leaf · Go with it" },
       "grant": { "table": "task", "progress": 5 },
@@ -48,7 +48,7 @@
     {
       "id": "furnace-ding",
       "kind": "board",
-      "game": "leafding",
+      "game": "qimai",
       "period": "once",
       "title": { "zh": "定风 · 看见它起来", "en": "Settle the wind · See it rise" },
       "grant": { "table": "task", "progress": 5 },
