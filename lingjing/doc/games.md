@@ -44,8 +44,47 @@ the exit's `needs`; each passage merged whole, `story_after` into `story`): 忍�
 「吐纳 · 先吐」 now from the 00-halfyear passage (爹's line), as a story card. No line read a cut
 board's mark. The reading cap gives way here — the story is the point (tests/opening-beats.test.mjs
 holds the five).
-Hanli 10-19 「留着」: 扔石听声 `cave-stone` (row `caveecho`, 00-cave, before 喂饼) stays in 第一回 as a
-sixth board — two stones on the throwing board, the 拉弓 feel taught before 射鹿.
+Hanli 10-19 「留着」: 扔石听声 `cave-stone` (row `caveecho`, 00-cave, before 喂饼) stayed in 第一回 as a
+sixth board — then, the same day, approved to go with 射鹿 · 等风: **cut again 10-19**, the 10-16 way —
+00-cave's passage whole again (word for word), 喂饼 the scene's one board; the task (marked `cut`, so a
+save holding it offered lets it go on load), row, module and bot stay for the 游戏厅.
+
+## 射鹿 · 等风 — the hunting-aim board (10-19, 游戏厅 only)
+
+Hanli 10-19: 「愤怒小鸟的类型不好玩. 太简单, 没有花样」 (割绳子 is fine). A static target with an arc hint is
+darts, and a miss's trail teaches the next shot. `deerhunt` (games/deerhunt.js, row `deerhunt`, 狩猎瞄准)
+takes its tension from waiting for the moment — 「先看风，后看鹿」, 「往左偏半寸」 — a proven genre (Deer
+Hunter-style hunting aim), on 射鹿's paintings. **Not in the story yet**: deer-wind plays `deerarc` until
+Hanli has played this in the 游戏厅 (`arcade.html?dev=1&game=deerhunt`).
+
+- **Controls (one hand, mouse and touch alike):** press anywhere on the scene and hold — the bow draws
+  (1.5 s to full; a half draw falls short and low); slide to move the sight (relative, so the finger
+  never covers it at 390); full, the sight sways and the sway grows; **hold still** at full and he holds
+  his breath (屏气, after 0.4 s still): the sway drops to an eighth for 2.6 s (a ring drains), then the
+  arms shake worse; let go to loose; let go **off the scene** to ease off. A press mid-flight rings the
+  seal-red refusal (mount.js).
+- **Wind:** gusts and lulls on a seeded timetable (the rag, the leaves, the reeds; the head says 风歇 lit);
+  the arrow drifts with the wind at release (a wind of 1 carries it ~105 units over the stream), so a gust
+  shot at the heart lands behind it — the miss line names the side: 「一阵风，把箭推到右边去了。往左偏半寸——等风歇。」
+- **Deer:** grazes (head down), lifts its head (wary), sometimes walks (lead it). A loose with its head up
+  jumps the string; an arrow near it, or on the antlers, spooks it: it bolts, comes back a few seconds
+  later, looks round, grazes. A wide quiet miss only lifts its head — another arrow.
+- **Stars and grade:** the heart · the first arrow · calm (no spook), at least one for a hit; grades
+  clean · steady · rough by stars, as deerarc's — deer-wind has no `marks`, so any win gives 一箭 · 偏左半寸
+  (tests/deerhunt.test.mjs holds the forward path).
+- **Levels:** `story` (the one a beat would deal: one level, the win frame ends it — no in-board 往下),
+  then the 游戏厅's `walk` (a walking deer, lead it), `gusty` (short lulls, both ways) and `dusk` (low
+  light); between them 「下一处」 / 「再来这一处」 under three stars.
+- **Feel:** the slow beat on a clean hit (the arrow's last third ×3) and the ink burst; the stars stamped
+  over the strike.
+- **Tuning (story level):** wind gust 6–9 s, lull 3.2–4.2 s, gust strength 0.75–1.1 in his face (a gust
+  shot drifts ~80–120 units: past the heart, into the haunch or beside it — a spook); the deer grazes
+  2–3.6 s, looks up 1.6–2.6 s; draw 1.5 s, still 0.4 s, breath 2.6 s; heart r 9 deer units; a miss within
+  2.3× the body's reach is loud. Node bots (20 seeds): patient median 16 s (max 59), all 3★ but four 1★;
+  impatient (looses at full) 0/20 won, 20/20 spooked. play-human on the try page (story level only),
+  last two settings: gust 6–9 s — casual 8/8 won (1440: 24 · 79 · 11 · 22 s; 390: 23 · 32 · 22 · 10 s, a
+  hand that drew early 2% a look); gust 7–10 s with a more patient hand — 70 · 94 · 50 s. Sloppy (looses
+  at full) never won in 120 s and spooked it again and again; idle never won. Kept: gust 6–9 s.
 
 **灵石 for a small game (Hanli 10-16):** after 入门, a board's first clear pays plain 5 · good 10 ·
 best 15 (balance.json `boards`), on top of its grant, shown in the win line; a replay pays nothing,
@@ -126,7 +165,7 @@ Also **replace with 割绳子 or another proven mechanic if it isn't fun** — H
 | 一 · 00-yinyue | 认路 `way` | 「崖壁上一段划了一道」 | a small grid seen a step around him; follow his marks | the marks lead straight | **cut** | 7 s | 75 s | no | **cut 10-16 (before 入门)** — module kept |
 | 一 · 00-cave | 扔石听声 `stone` | 「先往里扔一块石头」 | a stone into each of three hollows; go into the one that knocks | the how-line names the right sound; one decision | **cut** | 4 s | 2 wrong | no | **cut** (its passage whole again: 1,148 → 1,241 字 before 喂饼) |
 | 一 · 00-cave / 00-fox | 喂饼 `bread` ★ | 那张厚饼，分它一半 | seven pieces: to the fox or to himself | two buttons, nothing moves | **built 10-16** → 割绳子 physics puzzle: the 饼 on vines in the cave, cut them (tap or swipe) so it swings to the fox's mouth; four levels (一根藤 · 两根藤 · 石板 · 洞口风), a 饼角 a star (3), the order of cuts is the answer, never the timing; instant retry | 5 s | 75 s | no (银月 is already a card) | kept (the six) |
-| 二 · 00-deer | 射鹿 `deer` ★ | 「风。往左偏半寸。」 | set the aim (‹ = left), hold to draw, let go in a lull | the skill is pressing ‹ once; a static target | **keep** → 愤怒小鸟 drag-and-arc, after launch; now UI/stuck fixes only | 5 s | 3 misses | yes — 先看风，后看鹿 (爹's lesson to him) | kept (the six) |
+| 二 · 00-deer | 射鹿 `deer` ★ | 「风。往左偏半寸。」 | set the aim (‹ = left), hold to draw, let go in a lull | the skill is pressing ‹ once; a static target | **keep** → 愤怒小鸟 drag-and-arc (`deerarc`, the beat since 10-16) → **狩猎瞄准 `deerhunt`** (built 10-19, 游戏厅; the beat once Hanli has played it) | 5 s | 3 misses | yes — 先看风，后看鹿 (爹's lesson to him) | kept (the six) |
 | 二 · 00-cliff | 攀 `climb` | 「右手抓一根荆条」 | each reach, pick the branch in leaf; rest on the stone | a two-way pick, always readable | **cut** | 7 s | 2 slips | no | **cut** |
 | 二 · 00-sleep | 忍 `xisui` | 「疼，别喊」 | hold to grit while three sticks burn | holding a button for half a minute | **cut** (the 洗髓 passage is stronger read) | 27 s | 75 s | no | **cut 10-16 (before 入门)** — module kept |
 | 二 · 00-rent | 算账 `scale` | 皮抵欠，肉二十斤抵租 | hand the hide; tag cuts (weights shown) to 20 斤; 称 | the weights are printed — a sum, not a weigh | **cut** (or: rough weights, a live beam, 马三 waits three weighs) | 5 s | 75 s | no | **cut 10-16 (before 入门)** — module kept |

@@ -35,10 +35,10 @@ export const FULL_MS = 1500; //    press → full draw
 export const MIN_P = 0.3; //       let go before this: the bow was never drawn
 export const STILL_MS = 400; //    still this long at full draw: he holds his breath
 export const BREATH_MS = 2600; //  the breath steadies this long, then the arms shake worse
-export const DRIFT = 105; //        a wind of 1 carries the arrow this far over the stream (300 units)
+export const DRIFT = 125; //        a wind of 1 carries the arrow this far over the stream (300 units)
 const SHORT = 46, DROP = 64; //    a half-drawn arrow falls short and low
 const SWAY0 = 3, SWAY_GROW = 9, SWAY_MAX = 46, GASP = 1.5, GASP_GROW = 16, CALM = 0.12;
-const HEART_R = 9, NEAR = 1.55; // the heart (deer units); a miss inside NEAR × the body's reach is loud
+const HEART_R = 9, NEAR = 2.3; // the heart (deer units); a miss inside NEAR × the body's reach is loud
 const HIT_MS = 1700, CLEAR_MS = 1800, SLOW = 3, SLOW_HIT_MS = 500, BOLT_MS = 1000, RAMP = 320;
 export const STUCK_SPOOKS = 4, STUCK_SHOTS = 8;
 
@@ -51,6 +51,7 @@ const T = {
     windR: '一阵风，把箭推到右边去了。往左偏半寸——等风歇。', windL: '风从背后推，箭飘到左边去了。往右偏半寸——等风歇。',
     missL: '偏左了。', missR: '偏右了。', missHi: '高了。', missLo: '低了，扎进了草里。', weak: '没拉满，箭软软地落进了草里。',
     near: '箭落在它跟前——它一惊，跳进了芦苇。等它回来。', graze: '擦着鹿角过去了。它一惊，跑了。等它回来。',
+    haunch: '箭擦过后胯，没吃住——它一惊，跑了。等它回来。',
     jumped: '它正抬着头，弦一响，它先跳开了。等它低头再放。', far: '它抬起头，听了一会儿。',
     away: '溪边空了。等它回来……', back: '它回来了，还在张望。',
     next: '下一处', again: '再来这一处', clear: '这一处：',
@@ -64,6 +65,7 @@ const T = {
     windR: 'A gust pushed it right. Half an inch left — and wait for the lull.', windL: 'The wind at your back carried it left. Half an inch right — wait for the lull.',
     missL: 'Wide left.', missR: 'Wide right.', missHi: 'High.', missLo: 'Low — into the grass.', weak: 'Not drawn full: it drops limp into the grass.',
     near: 'It lands at its feet — the stag bolts into the reeds. Wait for it to come back.', graze: 'It skims the antlers. The stag bolts. Wait for it.',
+    haunch: 'It glances off the haunch — the stag bolts. Wait for it.',
     jumped: 'Its head was up: at the twang it leapt first. Loose when it drinks.', far: 'It lifts its head and listens a while.',
     away: 'The stream is empty. Wait for it…', back: 'It is back, still looking round.',
     next: 'Next spot', again: 'This spot again', clear: 'This spot: ',
@@ -149,7 +151,7 @@ export function stepDeer(d, level, seed, dt, now) {
     const v = (mode === 'back' ? spec.speed * 1.6 : spec.speed) * (dt / 1000), left = d.to - x;
     if (Math.abs(left) <= v) { x = d.to; arrived = true; } else x += Math.sign(left) * v;
   }
-  const want = mode === 'wary' || mode === 'back' ? 1 : 0;
+  const want = mode === 'wary' || mode === 'back' || mode === 'bolt' ? 1 : 0;
   const lift = d.lift + Math.sign(want - d.lift) * Math.min(Math.abs(want - d.lift), dt / RAMP);
   const gone = mode === 'bolt' ? Math.min(1.4, d.gone + dt / 700) : d.gone;
   let next = { ...d, x, lift, gone };
@@ -173,7 +175,8 @@ const segDist = ([px, py], [ax, ay], [bx, by]) => {
   return Math.hypot(px - ax - dx * k, py - ay - dy * k);
 };
 
-/** A point (world) on the deer `d`: 'clean' (the heart), 'body', 'graze' (head, antlers), 'near'
+/** A point (world) on the deer `d`: 'clean' (the heart), 'body' (the fore half), 'haunch' (the hind
+    half: it startles, the arrow does not hold), 'graze' (head, antlers), 'near'
     (a miss close enough to startle it) or null. */
 export function struck(d, [x, y]) {
   if (['bolt', 'away'].includes(d.mode) || d.x < -20) return null;
@@ -182,7 +185,9 @@ export function struck(d, [x, y]) {
   const antler = [head[0] + lerp(ANTLER_DOWN[0], ANTLER_UP[0], lift), head[1] + lerp(ANTLER_DOWN[1], ANTLER_UP[1], lift)];
   if (Math.hypot(lx - HEART[0], ly - HEART[1]) <= HEART_R) return 'clean';
   const [cx, cy, rx, ry] = BODY, e = Math.hypot((lx - cx) / rx, (ly - cy) / ry);
-  if (e <= 1 || segDist([lx, ly], [20, -38], head) <= 6) return 'body';
+  // The fore half (the chest, the shoulder, the neck) takes the arrow; the haunch only startles it.
+  if (segDist([lx, ly], [20, -38], head) <= 6) return 'body';
+  if (e <= 1) return lx >= cx ? 'body' : 'haunch';
   if (Math.hypot(lx - head[0], ly - head[1]) <= 8 || Math.hypot(lx - antler[0], ly - antler[1]) <= ANTLER_R) return 'graze';
   return e <= NEAR ? 'near' : null;
 }
@@ -303,7 +308,7 @@ function arrive(s) {
   const stuckAt = [n(sh.to[0] - 10), n(Math.max(sh.to[1], groundAt(sh.to[0] - 10) - 2)), n(angleOf(sh) * 57.3)];
   const base = { ...s, phase: 'wait', t: 0, shot: null, stuck: [...s.stuck, stuckAt].slice(-4) };
   if (sh.jumped) return say(base, 'jumped');
-  if (hit === 'graze' || hit === 'near') return say({ ...base, deer: spook(s.deer, s.clock), spooks: s.spooks + 1, spooksAll: s.spooksAll + 1 }, hit === 'graze' ? 'graze' : missWord(s, sh, 'near'));
+  if (hit === 'graze' || hit === 'haunch' || hit === 'near') return say({ ...base, deer: spook(s.deer, s.clock), spooks: s.spooks + 1, spooksAll: s.spooksAll + 1 }, hit === 'graze' ? hit : missWord(s, sh, hit));
   // Wide and quiet: it only looks up a while — another arrow.
   const deer = ['graze', 'walk'].includes(s.deer.mode) ? { ...s.deer, mode: 'wary', until: s.clock + 1600, to: null } : s.deer;
   return say({ ...base, deer }, missWord(s, sh, 'far'));
@@ -391,8 +396,8 @@ function deerNow(s) {
   if (d.mode === 'away' || s.phase === 'clear') return '';
   if (d.mode === 'bolt' && calm(s)) return '';
   const walking = d.mode === 'walk' || d.mode === 'back';
-  const pic = deerPicture({ x: d.x, face: d.face, walking, lift: walking ? 1 : d.lift, phase: s.clock }, { gone: d.mode === 'bolt' ? d.gone : 0, art: s.art });
-  return `<g data-hunt-deer="" data-head="${headUp(d) ? 'up' : 'down'}" data-walk="${walking ? 1 : 0}" data-face="${d.face}">${pic.replace(' data-deer=""', '')}</g>`;
+  const pic = deerPicture({ x: d.x, face: d.face, walking, lift: walking || d.mode === 'bolt' ? 1 : d.lift, phase: s.clock }, { gone: d.mode === 'bolt' ? d.gone : 0, art: s.art });
+  return `<g data-see="deer" data-head="${headUp(d) ? 'up' : 'down'}" data-walk="${walking ? 1 : 0}" data-face="${d.face}">${pic.replace(' data-deer=""', '')}</g>`;
 }
 
 /** The sight: a ring and a cross where the arrow is aimed now (sway and all — never the wind), a
@@ -403,7 +408,7 @@ function sightPicture(s) {
   const k = breathing(s) ? 1 - (s.clock - s.draw.breathAt) / BREATH_MS : 0, C = 2 * Math.PI * (r + 5);
   const breath = k > 0 ? `<circle class="g-dh-aim-breath" r="${n(r + 5)}" style="stroke-dasharray:${n(C * k)} ${n(C)}"/>` : '';
   const cls = `g-dh-aim${p >= 1 ? ' is-full' : ''}${gasping(s) ? ' is-gasp' : ''}${breathing(s) ? ' is-breath' : ''}`;
-  return `<g class="${cls}" data-reticle="" transform="translate(${n(x)} ${n(y)})"><circle class="g-dh-aim-ring" r="${n(r)}"/>`
+  return `<g class="${cls}" data-see="sight" transform="translate(${n(x)} ${n(y)})"><circle class="g-dh-aim-ring" r="${n(r)}"/>`
     + `<path class="g-dh-aim-cross" d="M${n(-r - 4)} 0 H${n(-r + 3)} M${n(r - 3)} 0 H${n(r + 4)} M0 ${n(-r - 4)} V${n(-r + 3)} M0 ${n(r - 3)} V${n(r + 4)}"/>${breath}</g>`;
 }
 
@@ -434,6 +439,10 @@ function burstNow(s) {
   return (s.hitKind === 'clean' ? inkHit(s.art?.ink_hit, x, y, s.t) : splash(x, y, s.t, { r: 12 })) + ring + stars;
 }
 
+/** A press let go before the bow was drawn: a seal-red ring at the bow a moment (never a silent tap). */
+const nopeNow = (s) => (['nodraw', 'ease'].includes(s.said) && s.clock - s.saidAt < 450
+  ? `<circle class="g-dh-nope-ring" cx="${BOW[0]}" cy="${BOW[1]}" r="${n(18 + (s.clock - s.saidAt) / 25)}" opacity="${n(1 - (s.clock - s.saidAt) / 450, 2)}"/>` : '');
+
 /** Dusk: the light low over the creek (a level's `dusk`, 0–1). */
 const duskNow = (level) => (level.dusk ? `<rect class="g-dh-dusk-wash" width="${W}" height="${H}" style="opacity:${level.dusk}"/>` : '');
 
@@ -441,7 +450,7 @@ function playScene(s) {
   const level = levelOf(s), w = windAt(level, s.seed, s.clock);
   const pad = `<rect class="g-da-pad" x="0" y="0" width="${W}" height="${H}" data-g-drag="bow"/>`;
   const rag = windPicture({ wind: w }, { clock: s.clock, art: s.art, world: { drift: s.drift }, still: s.still });
-  const world = bankPicture(s) + rag + spentNow(s) + deerNow(s) + duskNow(level) + burstNow(s) + bowNow(s) + arrowNow(s) + sightPicture(s);
+  const world = bankPicture(s) + rag + spentNow(s) + deerNow(s) + duskNow(level) + burstNow(s) + bowNow(s) + nopeNow(s) + arrowNow(s) + sightPicture(s);
   return scene(W, H, `<g class="g-da-world"${settle(s)}>${world}</g>${pad}`, 'g-da-scene g-dh-scene');
 }
 
@@ -463,7 +472,9 @@ function lineOf(s, t, lang) {
   if (s.phase === 'clear') return `${t.clear}${starRow(s.best[s.li], true)}`;
   if (s.draw) return breathing(s) ? t.breath : gasping(s) ? t.gasp : powerOf(s) >= 1 ? t.full : t.draw;
   if (s.phase === 'hit') return t[s.hitKind];
-  const said = typeof s.said === 'object' && s.said ? `${t[s.said.side] ?? ''}${s.said.kind === 'near' ? t.near : t.far}` : s.said ? t[s.said] : null;
+  // A miss (or the haunch) said with its side: the wind's 「往左偏半寸」 first when the wind carried it.
+  const side = (o) => (o.kind === 'haunch' && !/^wind/.test(o.side) ? '' : t[o.side] ?? '');
+  const said = typeof s.said === 'object' && s.said ? `${side(s.said)}${t[s.said.kind] ?? t.far}` : s.said ? t[s.said] : null;
   const fresh = s.saidAt != null && s.clock - s.saidAt < 4200;
   if (said && fresh) return said;
   if (s.deer.mode === 'away' || s.deer.mode === 'bolt') return t.away;
@@ -492,7 +503,7 @@ const onServer = async (file) => {
   try { return (await fetch(new URL(`../../worlds/jiuding/art/${file}`, import.meta.url), { method: 'HEAD' })).ok; } catch { return false; }
 };
 export async function mount(container, opts = {}) {
-  const row = opts.data?.levels ? {} : await rowOf(meta.id);
+  const row = opts.data?.levels && opts.data?.art ? {} : await rowOf(meta.id);
   const levels = opts.data?.levels ?? row.levels ?? [], art = await presentArt(opts.data?.art ?? row.art, onServer);
   const quiet = opts.reducedMotion ? { still: true } : {};
   return mountPure({ newGame, act, tick, html })(container, { ...opts, data: { ...(opts.data ?? {}), levels, art, ...quiet } });

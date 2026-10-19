@@ -503,6 +503,7 @@
 .g-dh-scene .g-dh-aim.is-full .g-dh-aim-ring, .g-dh-scene .g-dh-aim.is-full .g-dh-aim-cross { stroke: var(--seal); }
 .g-dh-scene .g-dh-aim.is-gasp .g-dh-aim-ring { stroke-dasharray: 3 3; }
 .g-dh-scene .g-dh-aim-breath { fill: none; stroke: #f6efe0; stroke-width: 2.4; opacity: .9; transform: rotate(-90deg); }
+.g-dh-scene .g-dh-nope-ring { fill: none; stroke: var(--seal); stroke-width: 2.4; }
 .g-dh-scene .g-dh-dusk-wash { fill: #1d1a2a; mix-blend-mode: multiply; pointer-events: none; }
 .g-deerhunt .g-da-windword.is-lull { color: var(--ling); font-weight: 600; }
 .g-deerhunt .g-line-say { min-height: 3.4em; }

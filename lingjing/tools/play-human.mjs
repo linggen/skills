@@ -37,7 +37,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const gauss = (r) => Math.sqrt(-2 * Math.log(r() || 1e-9)) * Math.cos(2 * Math.PI * r());
 
 /* Boards being cut or rebuilt (games.md, 10-16) — not played unless named with --games. */
-export const SKIP = new Set(['storm', 'rentrope', 'feather', 'tauntrope', 'griddle', 'wayrope', 'carry', 'villageday', 'villagedong', 'villageeve', 'xisui', 'deer', 'reed']);
+export const SKIP = new Set(['storm', 'rentrope', 'feather', 'tauntrope', 'griddle', 'wayrope', 'carry', 'villageday', 'villagedong', 'villageeve', 'xisui', 'deer', 'reed', 'caveecho']); // caveecho: off 00-cave 10-19, the 游戏厅's
 /* What looks like a tool a first-time player would poke. */
 export const TOOL_LOOKS = '.g-rope-spring, .g-rope-seal, .g-rope-crow, .g-puff, .g-ft-bubble, .g-ft-thorns, .g-regrow, .g-tk-pick, [class*="tool"]';
 /* Shapes allowed to be code-drawn: invisible hit areas, the UI's glyphs and short-lived effects. */
@@ -59,7 +59,9 @@ export const SEE = (host) => `(() => {
   const won = Boolean(host.querySelector('.is-won')) || /^成/.test(document.getElementById('won')?.textContent || '');
   const say = [...host.querySelectorAll('.g-line-say')].map((e) => e.textContent.trim()).join(' / ');
   const head = [...host.querySelectorAll('.g-head')].map((e) => e.textContent.trim()).join(' / ');
-  return { controls, tools, won, say, head, host: box(host), W, H };
+  // What a game marks for the eye ([data-see]: the stag, the sight) — a person sees them on the painting.
+  const figures = [...host.querySelectorAll('[data-see]')].filter(vis).map((e) => ({ ...e.dataset, cls: e.getAttribute('class') || '', ...box(e) }));
+  return { controls, tools, won, say, head, figures, host: box(host), W, H };
 })()`;
 
 /* What the board shows, as tokens: each element's tag, class, data and own words — never its
@@ -130,7 +132,7 @@ export function handsFor(page, cdp, touch) {
 /* ── Policies: what a person does with what they see ── */
 export const POLICIES = {
   casual: { react: [400, 1200], aim: 1, lapse: 0.06, wrong: 0.05, curious: true },
-  sloppy: { react: [600, 1200], aim: 2.6, lapse: 0.15, wrong: 0.25, curious: false },
+  sloppy: { react: [600, 1200], aim: 2.6, lapse: 0.15, wrong: 0.25, curious: false, sloppy: true },
   idle: { react: [400, 900], aim: 1, lapse: 0, wrong: 0, idle: true },
 };
 export const START = /^(start|play|begin|go|next|again)$/;
@@ -163,6 +165,17 @@ export const CHOOSERS = {
     const len = mem.vec.p * Math.min(pad.w, 700), x0 = pad.x + pad.w * 0.1, y0 = pad.y;
     return { kind: 'drag', from: [x0, y0], to: [x0 + Math.cos(mem.vec.a) * len, y0 - Math.sin(mem.vec.a) * len] };
   },
+  // 射鹿 · 等风 (deerhunt): the eye waits for the moment, then the hand draws and aims (hunt(), below).
+  // A patient (casual) hand waits for 风歇 and the head down; a sloppy one draws whenever the deer is there.
+  hunt: (seen, r, mem) => {
+    const next = seen.controls.find((c) => c.g === 'next');
+    if (next) return { kind: 'tap', c: next };
+    const pad = seen.controls.find((c) => c.kind === 'drag'), deer = seen.figures?.find((f) => f.see === 'deer');
+    if (!pad || !deer || mem.settleUntil > Date.now()) return null;
+    const patient = !mem.P?.sloppy;
+    if (patient && (deer.head !== 'down' || !/风歇|Lull/.test(seen.head)) && r() > 0.003) return null; // now and then he tries anyway
+    return { kind: 'hunt', pad, patient };
+  },
   any: (seen, r) => {
     const pool = seen.controls.filter((c) => !QUIT.test(c.g ?? '') && c.g !== 'retry');
     if (!pool.length) return null;
@@ -171,7 +184,7 @@ export const CHOOSERS = {
     return c.kind === 'hold' || c.kind === 'drag' ? { kind: 'hold', c, ms: 300 + r() * 2200 } : c.kind === 'swipe' ? { kind: 'swipe', c } : { kind: 'tap', c };
   },
 };
-export const chooserOf = (game) => (game === 'rain' ? 'rain' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'caveecho', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
+export const chooserOf = (game) => (game === 'rain' ? 'rain' : game === 'deerhunt' ? 'hunt' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'caveecho', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
 export const LOSS = { rain: /成河/ };
 /* A story board's task id (its [data-game] host) → its game kind (the chooser's key): games.json. */
 export const GAME_OF_TASK = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/games.json'), 'utf8')).games.filter((g) => g.task).map((g) => [g.task, g.id]));
@@ -261,7 +274,7 @@ async function playOnce(browser, t, { width, policy, seed, seconds, out, base })
       const e = touched.get(key) ?? { n: 0, changed: 0 }; e.n++; if (got !== 'dead') e.changed++; touched.set(key, e);
       return got;
     };
-    const t0 = Date.now(), mem = {};
+    const t0 = Date.now(), mem = { P };
     let lapseUntil = 0, poked = new Set(), lossSeen = false, deadLogged = new Set();
     while (Date.now() - t0 < seconds * 1000) {
       seen = await page.evaluate(SEE(t.host));
@@ -300,7 +313,7 @@ async function playOnce(browser, t, { width, policy, seed, seconds, out, base })
       if (!a) { await sleep(80); continue; }
       await sleep(P.react[0] + r() * (P.react[1] - P.react[0]) - 270); // the reaction (the judge's sampling is the rest)
       res.taps++;
-      const m = motion(hand, a, r, P, touch);
+      const m = a.kind === 'hunt' ? { key: 'hunt', run: () => hunt(page, hand, t.host, a, r, P, touch, mem) } : motion(hand, a, r, P, touch);
       const got = await judged(m.key, m.run);
       if (a.kind === 'tap' || a.kind === 'tap-at') {
         if (got === 'dead' && a.c && !deadLogged.has(m.key)) { deadLogged.add(m.key); findings.push({ kind: 'dead-tap', what: `${a.c.key} "${a.c.text}"`, x: Math.round(m.x), y: Math.round(m.y), at: seen.say }); }
@@ -326,6 +339,51 @@ async function playOnce(browser, t, { width, policy, seed, seconds, out, base })
   if (!failed) fs.rmSync(vdir, { recursive: true, force: true });
   else if (video) res.video = await video.path().catch(() => null);
   return res;
+}
+
+/* 射鹿 · 等风 by hand: press on the scene, then a closed loop at a person's ~70 ms — the finger slides
+   the sight toward the stag's chest (where a person aims on the painting: the chest behind the
+   foreleg, by its box), stops when close (and so holds the breath), and lets go — the patient hand
+   inside the breath with the wind down and the head down, else it eases off (slides off the scene);
+   the sloppy hand as soon as the bow is full. Only what the screen shows; never the game's state. */
+const HUNT_SEE = (host) => `(() => { const h = document.querySelector(${JSON.stringify(host)}); if (!h) return null;
+  const f = (s) => { const e = h.querySelector('[data-see="' + s + '"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { ...e.dataset, cls: e.getAttribute('class') || '', x: r.left + r.width / 2, y: r.top + r.height / 2, l: r.left, t: r.top, w: r.width, h: r.height }; };
+  return { deer: f('deer'), sight: f('sight'), head: h.querySelector('.g-head')?.textContent || '', say: h.querySelector('.g-line-say')?.textContent || '', won: Boolean(h.querySelector('.is-won')) }; })()`;
+async function hunt(page, hand, host, a, r, P, touch, mem) {
+  const { pad, patient } = a, err = (touch ? 5 : 3) * P.aim;
+  const x0 = pad.l + pad.w * (0.45 + r() * 0.35), y0 = pad.t + pad.h * (0.35 + r() * 0.4);
+  let fx = x0, fy = y0, last = null, offAim = [gauss(r) * err, gauss(r) * err], settled = false, fullAt = null;
+  await hand.down(fx, fy);
+  const t0 = Date.now();
+  const letGo = async (ease) => {
+    if (ease) { const to = pad.b + 24 + r() * 30, from = fy; for (let k = 1; k <= 6; k++) { fy = from + (to - from) * k / 6; await hand.move(fx, fy); await sleep(16); } } // off the scene's bottom
+    await hand.up(fx, fy);
+    mem.settleUntil = Date.now() + (ease ? 600 : 1800) + r() * 800;
+  };
+  while (Date.now() - t0 < 9000) {
+    await sleep(55 + r() * 30);
+    const v = await page.evaluate(HUNT_SEE(host));
+    if (!v?.sight) { if (Date.now() - t0 > 1500) return letGo(false); continue; } // the bow never took
+    const d = v.deer;
+    if (!d) return letGo(true);
+    // The chest on the painting, led a little if it walks (its pace from the last look).
+    let tx = d.l + d.w * (Number(d.face) < 0 ? 0.49 : 0.51), ty = d.t + d.h * 0.55;
+    if (last && d.walk === '1') tx += (tx - last) * 9;
+    last = d.l + d.w * (Number(d.face) < 0 ? 0.49 : 0.51);
+    tx += offAim[0]; ty += offAim[1];
+    const ex = tx - v.sight.x, ey = ty - v.sight.y, far = Math.hypot(ex, ey);
+    if (!settled && far > Math.max(3, err)) { fx += ex * 0.55 + gauss(r) * 0.8; fy += ey * 0.55 + gauss(r) * 0.8; await hand.move(fx, fy); continue; }
+    if (far > 14 && d.walk === '1') { fx += ex * 0.5; fy += ey * 0.5; await hand.move(fx, fy); continue; } // follow a walker
+    settled = true;
+    const full = /is-full/.test(v.sight.cls), breath = /is-breath/.test(v.sight.cls), gasp = /is-gasp/.test(v.sight.cls);
+    if (full && fullAt == null) fullAt = Date.now();
+    if (!patient) { if (full && Date.now() - fullAt > 150 + r() * 400) return letGo(false); continue; }
+    if (gasp) return letGo(true);
+    const calm = /风歇|Lull/.test(v.head) && d.head === 'down';
+    if (breath && calm && far < 4 + err) return letGo(false);
+    if (breath && !calm && r() < 0.15) return letGo(true); // the moment broke: ease off and wait
+  }
+  return letGo(true);
 }
 
 export const tapAt = async (hand, x, y) => { await hand.down(x, y); await sleep(70 + Math.random() * 60); await hand.up(x, y); };
@@ -372,6 +430,14 @@ function targets(content, at, only) {
     list.push(tryRow(`fantongcut-${u.el}`, 'fantongcut', `&data=${encodeURIComponent(JSON.stringify(data))}`));
   }
   if (!only || only.has('throwkit')) list.push(tryRow('throwkit', 'throwkit'));
+  // 射鹿 · 等风 in the 游戏厅 (10-19, not in the story yet): the story's level alone on the try page, and
+  // the whole row as Hanli opens it (arcade.html?dev=1&game=deerhunt).
+  const hunt = reg.games.find((g) => g.id === 'deerhunt');
+  if (hunt && (!only || only.has('deerhunt') || only.has('deerhunt-story'))) {
+    const story = { levels: hunt.levels.filter((l) => l.story) };
+    list.push({ ...tryRow('deerhunt-story', 'deerhunt', `&data=${encodeURIComponent(JSON.stringify(story))}`), chooser: 'hunt' });
+    if (!only || only.has('deerhunt')) list.push({ name: 'deerhunt', game: 'deerhunt', chooser: 'hunt', host: '#slot', url: (base) => `${base}/apps/lingjing/scripts/arcade.html?dev=1&game=deerhunt` });
+  }
   return list;
 }
 

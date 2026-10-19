@@ -52,8 +52,11 @@ test('no in-board step says 往下 · 接着 · 继续; a level step says 下一
   let s = dh.newGame('w', 1, { levels: ROW.levels, still: true });
   const words = JSON.stringify(dh.meta) + dh.html(s, 'zh');
   assert.doesNotMatch(words, /往下|接着|继续/);
-  const r = play([STORY, byId('walk')], handOf(), { limit: 60000 });
+  const r = play([STORY, byId('walk')], handOf(), { limit: 180000 });
   assert.ok(r.s.li === 1 || r.won, 'the story level was cleared');
+  const clear = dh.html({ ...s, phase: 'clear', best: [2, 0, 0, 0] }, 'zh');
+  assert.match(clear, /下一处/);
+  assert.doesNotMatch(clear, /往下|接着|继续/);
 });
 
 for (const level of ROW.levels) {
