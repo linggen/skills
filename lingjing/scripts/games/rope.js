@@ -264,6 +264,29 @@ export function stepWorld(w, level) {
 
 /** Still enough to think: slow, and not turning. */
 export const calm = (w) => w.bread.speed < 0.12 && Math.abs(w.bread.angularSpeed) < 0.02;
+
+/* No waiting (2026-10-16 「不要等」): after a move the swing plays at its own pace a moment, then
+   time quickens — eased in over RAMP_MS, gentler on a big fast swing — up to FAST× while it only
+   settles (hung on a vine or held in a bubble, no puff). A fall, a roll, a puff: always its own pace.
+   Here, not in the kit, so the level generator plays a hand's reaction on the same clock (a reaction
+   is wall time: a quickened swing runs on under the hand). */
+export const FAST = 4;
+export const FAST_AFTER = 300;
+export const RAMP_MS = 500;
+const ease = (x) => x * x * (3 - 2 * x);
+/** How many times its own pace the world runs, `since` ms of world time after the last move. */
+export function paceAfter(w, since, level) {
+  // A level built on swinging (`air`, 拽): the swing is the clock he times a cut by — never quickened.
+  if (level.air != null) return 1;
+  const k = since - FAST_AFTER;
+  if (k <= 0) return 1;
+  // A crow walking is a clock the player races: its time is never quickened.
+  if (w.gust > 0 || calm(w) || w.crows?.some((c) => c.state === 'walking')) return 1;
+  if (!(w.vines.some((v) => v.cut == null) || held(w))) return 1;
+  const up = ease(Math.min(1, k / RAMP_MS));
+  const down = 1 - 0.45 * ease(Math.min(1, Math.max(0, (w.bread.speed - 2) / 6)));
+  return 1 + (FAST - 1) * up * down;
+}
 /** Off the board, or on the floor. */
 export function outOf(w) {
   const p = w.bread.position, r = w.bread.circleRadius;

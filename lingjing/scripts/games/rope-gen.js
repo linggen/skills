@@ -11,7 +11,7 @@
 //   4. three stars along a second winning path when there is one (a better way to find), else
 //      along the plan's own path.
 // Bounded tries, then a hand-made level that always works. Pure: the same seed, the same level.
-import { blowGust, buildWorld, calm, cutVine, dist, outOf, popBubble, stepWorld, BREAD_R, FLOOR, W } from './rope.js';
+import { blowGust, buildWorld, calm, cutVine, dist, outOf, paceAfter, popBubble, stepWorld, BREAD_R, FLOOR, W } from './rope.js';
 
 export const MOUTH_Y = FLOOR - 92;
 export const MOUTH_R = 34;
@@ -19,6 +19,15 @@ export const MOUTH_R = 34;
 const PAIR_PX = 64;
 export const STAR_R = 13;
 const CALM_MS = 400, LATE_MS = 320, SLOW_MS = 1500, END_MS = 900, LIMIT_MS = 11000, STEP = 1000 / 60;
+/* The hand (2026-10-19, once 弹竹 truly bounced): a person decides once the thing has hung still
+   CALM_MS, and the move lands a reaction later — 200 ms ± 40 (board-bots' REACTION/JITTER), never
+   under 120 — whatever the thing does meanwhile. "Still" (calm) is also the slow turn of a wide swing,
+   so a move decided there lands in motion — and the kit quickens a swing up to FAST× (paceAfter), so
+   it runs on further under the hand. A level is kept only if it feeds at every reaction across that
+   spread (a level won only near one moment is a lottery, not a puzzle). HAND_MS is the mean; HANDS
+   the spread proved, the mean and the ends first. */
+export const HAND_MS = 200;
+export const HANDS = [200, 120, 320, 160, 280, 240];
 export const TRIES = 24;
 const MAX_PLANS = 8;
 /* The work a day's level may take, in physics steps (not time: the same seed makes the same level on
@@ -48,12 +57,18 @@ const round = (v) => Math.round(v);
 
 /* ── Playing a plan, the way a person does: each move once the thing has hung still ── */
 
-/** Play `plan` ([{g:'cut',v} | {g:'gust'} | {g:'pop',i}]) on a fresh world; every step's place kept. */
-export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
+/** Play `plan` ([{g:'cut',v} | {g:'gust'} | {g:'pop',i}]) on a fresh world; every step's place kept.
+    `late`: a longer think (still that much longer before deciding); `hand`: the reaction — the move
+    lands that many ms of the player's clock after the decision, still or not, while the world runs
+    at the module's pace (paceAfter: a swing quickened up to FAST× runs on under the hand). */
+export function playPlan(level, plan, { late = 0, hand = 0, limit = LIMIT_MS } = {}) {
   const w = buildWorld(level), path = [];
-  let still = 0, i = 0, t = 0, after = 0, broke = false, wait = late;
+  let still = 0, i = 0, t = 0, after = 0, broke = false, wait = late, due = null, movedAt = 0;
   while (t < limit) {
-    if (i < plan.length && still >= CALM_MS + wait) {
+    if (i < plan.length && due == null && still >= CALM_MS + wait) due = hand;
+    if (due != null && due <= 1e-6) {
+      due = null;
+      movedAt = t;
       const m = plan[i++];
       // A pop only of the bubble that holds the thing: a bubble never reached is no move at all.
       const ok = m.g === 'cut' ? cutVine(w, m.v, Math.floor(w.vines[m.v].joints.length / 2))
@@ -63,6 +78,8 @@ export function playPlan(level, plan, { late = 0, limit = LIMIT_MS } = {}) {
       if (i === 1) path.first = path.length;
       path.last = path.length;
     }
+    // The hand still on its way: this step is STEP of the world's clock, less of the player's.
+    if (due != null) due -= STEP / (i ? paceAfter(w, t - movedAt, level) : 1);
     const ev = stepWorld(w, level);
     spent++;
     t += STEP;
@@ -317,12 +334,14 @@ export function prove(level, thorns, runs, main, mate, u, opts) {
     if (touches(main.path, level.thorns[0], 0, fedMain + 1)) return { why: 'thorn-on-plan' };
   }
   level.mouth = mouth;
-  // The human hand: every move a little late, and every move slow (a long think while a vine regrows),
-  // and it still feeds.
+  // The human hand: every move landing a reaction after the decision, at every reaction a hand has
+  // (never a timing lottery: a level won only near one moment is no level), every move a little late,
+  // and every move slow (a long think while a vine regrows), and it still feeds.
   // With a vine that grows back, a think longer than its regrowth too: the answer may never be a race.
   const regrowMs = Math.max(0, ...level.vines.map((v) => v.regrow ?? 0));
-  for (const late of [LATE_MS, SLOW_MS, ...(regrowMs ? [regrowMs + 600] : [])]) {
-    const lateRun = playPlan(level, main.plan, { late });
+  const hands = [...HANDS.map((hand) => ({ hand })), ...[LATE_MS, SLOW_MS, ...(regrowMs ? [regrowMs + 600] : [])].map((late) => ({ late, hand: HAND_MS }))];
+  for (const h of hands) {
+    const lateRun = playPlan(level, main.plan, h);
     const lateFed = fedAt(lateRun.path, mouth);
     if (lateFed < 0 || lateRun.broke || (level.thorns && touches(lateRun.path, level.thorns[0], 0, lateFed + 1))) return { why: 'late-misses' };
   }

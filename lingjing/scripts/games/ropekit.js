@@ -19,7 +19,7 @@
 import { Matter } from './physics.js';
 import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
-import { blowGust, buildWorld, cutPack, cutVine, dist, outOf, popBubble, stepWorld, calm as hangsStill, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
+import { blowGust, buildWorld, cutPack, cutVine, dist, outOf, paceAfter, popBubble, stepWorld, calm as hangsStill, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
 import { FALLBACK, MOUTH_R, STAR_R } from './rope-gen.js';
 import { crowsPicture, sealsPicture, springPicture, toolMark } from './rope-art.js';
 
@@ -27,9 +27,7 @@ const { Body } = Matter;
 
 export const EAT_MS = 1400;
 export const MAX_MISSES = 4;
-export const FAST = 4;
-export const FAST_AFTER = 300;
-export const RAMP_MS = 500;
+export { FAST, FAST_AFTER, RAMP_MS } from './rope.js';
 const MISS_MS = 650, REST_MS = 700, FLECK_MS = 420, POP_MS = 520;
 const ART = new URL('../../worlds/jiuding/art/', import.meta.url).href;
 const BUBBLE = `${ART}games/bubble.webp`, THORNS = `${ART}games/thorns.webp`, PUFF = `${ART}games/bread/puff.webp`, SPARK = `${ART}games/spark.webp`;
@@ -41,24 +39,11 @@ const anyHeld = (w) => w.bubbles.some((b) => b.state === 'held');
 const mayRegrow = (w) => w.vines.some((v) => v.regrow && v.cut != null && dist(w.bread.position, v.at) <= v.len);
 const starsNow = (s) => s.caught.filter(Boolean).length;
 const calmOf = (s) => Boolean(s?.still) || still();
-const ease = (x) => x * x * (3 - 2 * x);
 
-/* No waiting (2026-10-16 「不要等」): after a move the swing plays at its own pace a moment, then
-   time quickens — eased in over RAMP_MS, gentler on a big fast swing — up to FAST× while it only
-   settles (hung on a vine or held in a bubble, no puff). A fall, a roll, a puff: always its own pace. */
+/* No waiting: the world's pace after a move (rope.js paceAfter) — only while it plays, after a move. */
 export function paceOf(s) {
   if (s.phase !== 'play' || !s.moves) return 1;
-  // A level built on swinging (`air`, 拽): the swing is the clock he times a cut by — never quickened.
-  if (s.level.air != null) return 1;
-  const since = s.clock - (s.movedAt ?? 0) - FAST_AFTER;
-  if (since <= 0) return 1;
-  const w = s.swing;
-  // A crow walking is a clock the player races: its time is never quickened.
-  if (w.gust > 0 || hangsStill(w) || w.crows?.some((c) => c.state === 'walking')) return 1;
-  if (!(w.vines.some((v) => v.cut == null) || anyHeld(w))) return 1;
-  const up = ease(Math.min(1, since / RAMP_MS));
-  const down = 1 - 0.45 * ease(Math.min(1, Math.max(0, (w.bread.speed - 2) / 6)));
-  return 1 + (FAST - 1) * up * down;
+  return paceAfter(s.swing, s.clock - (s.movedAt ?? 0), s.level);
 }
 
 /* ── Drawing helpers, the same for every scene ── */

@@ -7,7 +7,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as cut from '../scripts/games/fantongcut.js';
 import { bot } from '../scripts/games/bots/fantongcut.js';
-import { generate, FALLBACK, STEP_BUDGET } from '../scripts/games/rope-gen.js';
+import { generate, playPlan, FALLBACK, HAND_MS, STEP_BUDGET } from '../scripts/games/rope-gen.js';
+import { STEP_MS } from '../scripts/games/rope.js';
 import { playOnce } from '../tools/board-bots.mjs';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
@@ -197,4 +198,34 @@ test('the new tools: each one\'s first day features it, met on the way (bounced 
       assert.ok(r.won, `${must} ${k}: won`);
     }
   }
+});
+
+/* ── the hand's clock (2026-10-19): once 弹竹 truly bounced, the prover passed a level the bot never won ── */
+
+test('the prover\'s hand lands where the module\'s does: decided once still, a reaction later on the quickened clock', () => {
+  // The level the old prover kept (tool2|spring): its plan fed only when each cut came the instant the
+  // thing turned still — the slow turn of a swing; a reaction later, quickened, it was a miss.
+  const level = { bread: [257, 132], vines: [{ at: [230, 34] }, { at: [324, 34], regrow: 2185 }], gust: { at: [336, 138], to: [-1, 0], band: 50 },
+    springs: [{ x: 290, y: 266, w: 101, a: 17 }], thorns: [{ x: 326, y: 170, w: 64, h: 18, a: 5 }], mouth: [109, 330], stars: [[231, 222], [163, 122], [168, 266]] };
+  const plan = [{ g: 'cut', v: 1 }, { g: 'cut', v: 0 }];
+  // The module, played as board-bots plays it (10 ms looks, still 400 ms, the hand HAND_MS later), no jitter.
+  let s = cut.newGame('hand', 1, { level: structuredClone(level), plan }), t = 0, calm = 0, at = null;
+  const frames = [];
+  while (t < 8000 && s.phase === 'play') {
+    if (at != null && t >= at) {
+      const m = plan[s.moves];
+      frames.push(Math.round(s.swing.clock / STEP_MS));
+      s = cut.act(s, { g: 'cut', v: String(m.v), k: String(Math.floor(s.swing.vines[m.v].joints.length / 2)) }).state; at = null; calm = 0;
+    }
+    if (at == null && s.moves < plan.length && calm >= 400) at = t + HAND_MS;
+    s = cut.tick(s, 10); t += 10;
+    calm = s.swing.bread.speed < 0.12 && Math.abs(s.swing.bread.angularSpeed) < 0.02 ? calm + 10 : 0;
+  }
+  const run = playPlan(level, plan, { hand: HAND_MS });
+  assert.equal(frames.length, 2);
+  assert.ok(Math.abs(run.path.first - frames[0]) <= 2 && Math.abs(run.path.last - frames[1]) <= 2, `prover ${run.path.first}/${run.path.last}, module ${frames}`);
+  assert.notEqual(s.phase, 'eat', 'the module misses it');
+  // …and the generator no longer keeps it: tool2|spring is now a level the bot wins.
+  const m = generate('tool2|spring', { tier: 2, els: ['gust', 'bubble', 'thorns', 'regrow', 'spring'], must: 'spring' });
+  assert.notDeepEqual(m.level.springs, level.springs);
 });
