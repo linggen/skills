@@ -22,8 +22,8 @@ export const meta = {
   ai: true, // the other half is a model's (no bot plays it: tests/board-bots.test.mjs)
 };
 
-// She looks when the hand has rested 3 s, or at once on 「画好了」 (Hanli 10-19: 「玩家动作停止3秒或者点画完了的时候, 让yingyue猜」).
-export const ROUND_MS = 60000, IDLE_MS = 3000, MAX_LOOKS = 4, EXPORT_PX = 448;
+// She looks when the hand has rested 2 s, or at once on 「画好了」 (Hanli 10-19: 「玩家动作停止3秒或者点画完了的时候, 让yingyue猜」; then 「3秒太长, 2秒吧」).
+export const ROUND_MS = 60000, IDLE_MS = 2000, MAX_LOOKS = 4, EXPORT_PX = 448;
 const PAPER = '#e4cfab', INK = '#1d1813';
 
 const T = {
