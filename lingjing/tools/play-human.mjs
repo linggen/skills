@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
 import { savesAtScenes, boardSeeder, CLEAR, HOME } from './page-crawl.mjs';
 import { rng } from './board-bots.mjs';
+import { HANDS as BREATH_HANDS } from '../scripts/games/bots/qimai.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -184,7 +185,7 @@ export const CHOOSERS = {
     return c.kind === 'hold' || c.kind === 'drag' ? { kind: 'hold', c, ms: 300 + r() * 2200 } : c.kind === 'swipe' ? { kind: 'swipe', c } : { kind: 'tap', c };
   },
 };
-export const chooserOf = (game) => (game === 'rain' ? 'rain' : game === 'deerhunt' ? 'hunt' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'caveecho', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
+export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'rain' ? 'rain' : game === 'deerhunt' ? 'hunt' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'caveecho', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
 export const LOSS = { rain: /成河/ };
 /* A story board's task id (its [data-game] host) → its game kind (the chooser's key): games.json. */
 export const GAME_OF_TASK = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/games.json'), 'utf8')).games.filter((g) => g.task).map((g) => [g.task, g.id]));
@@ -228,6 +229,86 @@ export function motion(hand, a, r, P, touch) {
   }
   const x = ax(a.c.x), y = ay(a.c.y); // hold
   return { key: a.c.key, run: async () => { await hand.down(x, y); await sleep(a.ms); await hand.up(x, y); } };
+}
+
+/* ── The breath hand (气走经脉): hold to rise, let go to sink — steered all the time, as a person does.
+   It sees only what is drawn: the bead, the two walls (their polylines, through the scene's own
+   transform), the gold thread, and in a dark stretch only what the bead's round of light shows. It acts
+   on what it saw `delay` ms ago (± jitter), with aim noise and lapses (bots/qimai.js HANDS, the same
+   hands the node sims tune with); it does not predict over its own lag. */
+export const SIGHT = (host) => `(() => {
+  const host = document.querySelector(${JSON.stringify(host)}); if (!host) return null;
+  const won = Boolean(host.querySelector('.is-won')); const bead = host.querySelector('.g-qm-bead-core'), svg = host.querySelector('svg.g-qm-scene');
+  if (!bead || !svg) return { won, gone: true };
+  const b = bead.getBoundingClientRect(), s = svg.getBoundingClientRect(), k = s.width / svg.viewBox.baseVal.width;
+  const read = (el) => { const m = el.getScreenCTM(); return el.getAttribute('points').trim().split(/\\s+/).map((p) => { const [x, y] = p.split(',').map(Number); return [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]; }); };
+  const at = (pts, x) => { let lo = 0, hi = pts.length - 1; if (!pts.length || x < pts[0][0] || x > pts[hi][0]) return null; while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (pts[mid][0] <= x) lo = mid; else hi = mid; } const [x0, y0] = pts[lo], [x1, y1] = pts[hi]; return y0 + (y1 - y0) * ((x - x0) / ((x1 - x0) || 1)); };
+  const walls = [...host.querySelectorAll('.g-qm-wall')]; const top = read(walls.find((w) => w.dataset.side === 'top')), bot = read(walls.find((w) => w.dataset.side === 'bot'));
+  const golds = [...host.querySelectorAll('.g-qm-gold')].map(read);
+  const darks = [...host.querySelectorAll('.g-qm-darkzone')].map((d) => d.getBoundingClientRect()).map((r) => [r.left, r.right]);
+  const lamp = host.querySelector('.g-qm-lamp'); const lampR = lamp ? Number(lamp.getAttribute('r')) * k * 0.9 : 0;
+  const bx = b.left + b.width / 2, by = b.top + b.height / 2, seen = [];
+  for (let d = 0; d <= 60 * k; d += 3 * k) {
+    const x = bx + d, dark = darks.some(([l, r]) => x >= l && x <= r);
+    if (dark && d > lampR) break;
+    const g = golds.map((p) => at(p, x)).find((v) => v != null);
+    seen.push([d, at(top, x), at(bot, x), g ?? null]);
+  }
+  return { won, t: performance.now(), bx, by, k, r: b.height / 2, seen, cha: bead.closest('.g-qm-bead')?.classList.contains('is-cha') ?? false,
+    box: [s.left, s.top, s.width, s.height] };
+})()`;
+
+async function breathe(page, hand, policy, r, host, judgeOnce, stintMs = 4000) {
+  const H = BREATH_HANDS[policy] ?? BREATH_HANDS.casual;
+  const out = { presses: 0, chas: 0, dead: false };
+  const hist = [];
+  let held = false, frozenUntil = 0, aimNoise = 0, noiseUntil = 0, wasCha = false, at = null;
+  const t0 = Date.now();
+  const press = async (down) => {
+    if (down === held) return;
+    if (down) {
+      const box = hist.at(-1)?.box;
+      at = box ? [box[0] + box[2] * (0.3 + r() * 0.4), box[1] + box[3] * (0.3 + r() * 0.4)] : at;
+      const judged = judgeOnce();
+      if (judged) { const got = await judged('hold', () => hand.down(...at)); if (got === 'dead') out.dead = true; }
+      else await hand.down(...at);
+      out.presses++;
+    } else await hand.up(...at);
+    held = down;
+  };
+  try {
+    while (Date.now() - t0 < stintMs) {
+      const v = await page.evaluate(SIGHT(host));
+      if (!v || v.won || v.gone) break;
+      const now = Date.now();
+      hist.push({ ...v, now });
+      while (hist.length > 2 && hist[1].now <= now - H.delay - 400) hist.shift();
+      if (v.cha && !wasCha) out.chas++;
+      wasCha = v.cha;
+      if (now >= frozenUntil) {
+        if (r() < (H.lapse ?? 0) * 0.04) frozenUntil = now + 300 + r() * 500;
+        else {
+          const lag = Math.max(0, H.delay + gauss(r) * H.jitter);
+          const o = [...hist].reverse().find((h) => h.now <= now - lag) ?? hist[0];
+          const prev = [...hist].reverse().find((h) => h.now <= o.now - 90) ?? hist[0];
+          const vy = prev !== o ? (o.by - prev.by) / ((o.now - prev.now) / 1000) : 0;
+          if (now >= noiseUntil) { aimNoise = gauss(r) * H.noise * o.k; noiseUntil = now + 400; }
+          // aim: a little ahead, the gold thread where it runs, kept inside the tightest of what is seen
+          let lo = -Infinity, hi = Infinity, want = null;
+          for (const [d, top, bot, g] of o.seen) {
+            if (top != null && bot != null && d <= 45 * o.k) { lo = Math.max(lo, top + o.r + 3 * o.k); hi = Math.min(hi, bot - o.r - 3 * o.k); }
+            if (want == null && d >= 22 * o.k && top != null && bot != null) want = g ?? (top + bot) / 2;
+          }
+          if (want == null) want = o.seen.length ? (o.seen.at(-1)[1] + o.seen.at(-1)[2]) / 2 : o.by;
+          const aim = lo > hi ? (lo + hi) / 2 : Math.max(lo, Math.min(hi, want));
+          const u = (o.by + aimNoise - aim) + H.kd * vy, db = 3 * o.k;
+          if (u > db) await press(true); else if (u < -db) await press(false);
+        }
+      }
+      await sleep(30);
+    }
+  } finally { if (held) await hand.up(...at); }
+  return out;
 }
 
 /* ── One run ── */
@@ -293,6 +374,13 @@ async function playOnce(browser, t, { width, policy, seed, seconds, out, base })
         const go = seen.controls.find((c) => START.test(c.g ?? '') && c.g !== 'again');
         if (go) { await sleep(P.react[0]); await tapAt(hand, go.x, go.y); }
         await sleep(200); continue;
+      }
+      // a hold-to-rise board (气走经脉): the hand steers continuously for a stint, then looks again
+      if ((t.chooser ?? chooserOf(t.game)) === 'breath') {
+        const st = await breathe(page, hand, policy, r, t.host, () => (mem.firstPress ? null : (mem.firstPress = true, judged)));
+        res.taps += st.presses; res.lost += st.chas;
+        if (st.dead && !deadLogged.has('hold')) { deadLogged.add('hold'); findings.push({ kind: 'dead-tap', what: 'hold (the board)', at: seen.say }); }
+        continue;
       }
       if (Date.now() < lapseUntil) { await sleep(100); continue; }
       if (r() < P.lapse / 10) { lapseUntil = Date.now() + 2000 + r() * 3000; continue; } // looks away
@@ -437,6 +525,12 @@ function targets(content, at, only) {
     const story = { levels: hunt.levels.filter((l) => l.story) };
     list.push({ ...tryRow('deerhunt-story', 'deerhunt', `&data=${encodeURIComponent(JSON.stringify(story))}`), chooser: 'hunt' });
     if (!only || only.has('deerhunt')) list.push({ name: 'deerhunt', game: 'deerhunt', chooser: 'hunt', host: '#slot', url: (base) => `${base}/apps/lingjing/scripts/arcade.html?dev=1&game=deerhunt` });
+  }
+  // 气走经脉: one try-page row per level of the kit (games.json `qimai` rows, the ladder by `n`).
+  const qimai = reg.games.filter((g) => g.id === 'qimai').flatMap((g) => g.levels ?? []).sort((a, b) => (a.n ?? 99) - (b.n ?? 99));
+  for (const [i, l] of qimai.entries()) {
+    if (only && !only.has('qimai') && !only.has(`qimai-${l.id}`)) continue;
+    list.push(tryRow(`qimai-${l.id}`, 'qimai', `&level=${i + 1}`));
   }
   return list;
 }

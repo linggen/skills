@@ -210,6 +210,43 @@ No cards — 今线 is not 小满's world. They already have a stake (the heart 
 | 今三 · j07-guan | 晨脉 `pulse` | 坑填平了才许摸球 | count the morning pulse | cut | 75 s | kept until replaced |
 | 今四 · j09-final | 最后一罚 `lastshot` | 带着怕投 | two long outs, shoot at the end of one | **keep** | 3 misses | kept (the six) |
 
+All seven breath games (and 小周天) have a 气走经脉 level beside them in the 游戏厅 since 10-19 (below); which replaces which in the story is Hanli's after he plays.
+
+## 气走经脉 — the breath kit (built 10-19, 游戏厅 only)
+
+Hanli 10-19 approved: the seven 调息 games (吹鹅毛 · 洗髓 · 藏息 · 一千米补测 · 黑地十一步 · 罚球 · 最后一罚) all make one
+move — watch a ring or bar, hold and let go to keep it centred; no route, no obstacle, no climb. 「割绳子 works,
+homemade mechanics don't」, so the breath gets a proven genre: **hold-to-rise** (the helicopter game, Jetpack
+Joyride). `games/qimai.js` (+ qimai.css, bots/qimai.js, tests/qimai.test.mjs); one games.json row a level
+(`id: qimai`, `mechanic: 调息`, `data.level`, the level in `levels`), each beside the old game it may replace.
+**The old rows and modules stay; no story wiring until Hanli plays it.**
+
+- **Play:** a 气 bead travels left → right along a meridian drawn in ink. Hold (mouse, touch, or Space) = 吸, it
+  rises with momentum; let go = 吐, it sinks (a breath's own damping keeps it floaty, not twitchy). A soft ring on
+  each breath, an ink trail, the 成 seal on the win, the shared tapNope ring on a wall and on a refused press.
+- **Fail:** a wall costs one 气 (of three); the third is 岔气 — at once back to the last 关 or 穴 passed, 气 full.
+- **Stars:** through · no wall touched · the 金线 kept (within 10 of it for 70% of its length).
+- **Elements** (data per level, each taught the first time it comes into view with a ring and a line):
+  窄脉 (half-width ≤ 36) · 关窍 (尾闾 · 夹脊 · 玉枕) · 乱流 · 金线 (rises 4, falls 6: 吸四吐六) · 浪头 · 心跳乱流 · 暗.
+
+| n | level (row group · scene) | the book | elements | casual hand (1440 / 390) |
+|---|---|---|---|---|
+| 1 | 吹鹅毛 (古二 · 00-halfyear) | 「吐气，毛不许动」 | 宽脉 + 金线 | won ★2 / ★1, no 岔气 |
+| 2 | 洗髓 (古二 · 00-sleep) | 「疼，别喊」 · 浪头上别松口 | 浪头 | won ★1 / ★1 |
+| 3 | 先吐 (今一 · j01-retest) | 先吐，再吸 | 窄脉 + 乱流 | won, 3 / 1 岔气 |
+| 4 | 罚球 (今二 · j04-line) | 吸四吐六 | 心跳乱流 | won, 1 / 0 岔气 |
+| 5 | 小周天 (古四 · wm-zhoutian) | 尾闾 · 夹脊 · 玉枕 | 三关 (玉枕 26) | won, 1 / 1 岔气 |
+| 6 | 藏息 (古六 · wm-zhaojing) | 「它听见的不是你喘，是你心慌」 | 窄脉 + 乱流 | lost (13 岔气) / won 2 岔气 |
+| 7 | 黑地十一步 (今三 · j07-dark) | 「吐得比吸的长」 | 暗 | won 7 / 1 岔气 |
+| 8 | 最后一罚 (今四 · j09-final) | 带着怕投 | 心跳乱流, 窄 | lost / won 10 岔气 |
+| 9–11 | 冲脉 · 带脉 · 大周天 (气走经脉 · 试作) | — | everything mixed | needs practice |
+
+Order is story order (`hui`) with one change: 吹鹅毛 comes first as the gentlest (the book has 洗髓 the night
+before). Node sims (bots/qimai.js, 20 seeds, 90 s): a casual hand clears 吹鹅毛 20/20 at ★1–2 (5/15), a practised
+hand ★3 everywhere but the late ones; sloppy fails 藏息 · 最后一罚 · 带脉; idle never wins (≈12 岔气 a minute).
+**His call:** feel (fall/rise 260, damping 3), the width of 窄脉, the 暗 round's size, whether 岔气 should send
+him further back; no paintings yet (the channel and bead are ink drawn in code).
+
 ## Daily boards, 秘境, 密室 (not story beats; no card)
 
 炼丹 (pair herbs) · 押宝 (four doors, three bets) · 洛书 (鼎封) · 华容道 (秘境) · 七巧 · 五子 ·

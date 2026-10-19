@@ -30,6 +30,8 @@ async function modOf(id) {
 }
 const mountOf = (mod) => mod?.mount ?? (mod?.html ? mountPure(mod) : null);
 const nameOf = (mod, id) => mod?.meta?.name?.[lang()] ?? mod?.meta?.name?.zh ?? id;
+// A kit's rows (气走经脉, one level a row) carry their own `name`; else the module's.
+const titleOf = (g, mod) => g?.name?.[lang()] ?? g?.name?.zh ?? nameOf(mod, g?.id);
 const howOf = (mod) => mod?.meta?.how?.[lang()] ?? mod?.meta?.how?.zh ?? '';
 // Opened from the game (dev-arcade.js, the builder's chip): every page keeps `from=game` and shows the way back.
 // A scratch save (`save=`) rides along so the way back lands on that save, not the player's own.
@@ -49,7 +51,7 @@ async function tileHtml(g, i) {
   const where = [g.hui, g.scene].filter(Boolean).join(' · ');
   const kind = kindOf(g);
   return `<a class="arcade-tile${mod ? '' : ' is-missing'}" data-kind="${esc(g.mechanic ?? '')}" href="${href({ game: g.id, n: String(i) })}">`
-    + `<span class="arcade-tile-top"><b>${esc(nameOf(mod, g.id))}</b>${kind ? `<em class="arcade-kind">${esc(kind)}</em>` : ''}</span>`
+    + `<span class="arcade-tile-top"><b>${esc(titleOf(g, mod))}</b>${kind ? `<em class="arcade-kind">${esc(kind)}</em>` : ''}</span>`
     + `<small>${esc(where || g.task || '')}</small></a>`;
 }
 
@@ -89,7 +91,7 @@ async function playPage(id, n) {
   const row = reg.games[Number(n)]?.id === id ? reg.games[Number(n)] : reg.games.find((g) => g.id === id) ?? { id };
   const mod = await modOf(id), mount = mountOf(mod);
   root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${home()}</header>`
-    + `<article class="card gamecard scenegame arcade-play"><div class="cardtitle">${esc(nameOf(mod, id))}</div>`
+    + `<article class="card gamecard scenegame arcade-play"><div class="cardtitle">${esc(titleOf(row, mod))}</div>`
     + `<div class="small dim g-goal">${esc(howOf(mod))}</div><div class="arcade-slot" id="slot"></div>`
     + `<div class="arcade-result" id="result"></div></article>`;
   if (!mount) { document.getElementById('slot').textContent = w().missing; return; }
