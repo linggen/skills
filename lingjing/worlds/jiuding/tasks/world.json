@@ -35,7 +35,8 @@
     },
     {
       "_restored": "扔石听声, cut 2026-10-16 morning (903a00c0) as a weak board, back the same day on the throwing board (Hanli: 「投掷类都可以换」): two stones into the cave, the echo deep is the clean (games.json caveecho).",
-      "id": "cave-stone", "kind": "board", "game": "caveecho", "period": "once",
+      "_cut": "Off 00-cave again 2026-10-19 (Hanli approved, with 射鹿 · 等风): the passage whole, 喂饼 the scene's one board; the task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",
+      "id": "cave-stone", "kind": "board", "game": "caveecho", "period": "once", "cut": "2026-10-19",
       "title": {"zh": "扔石听声 · 先往里扔一块石头", "en": "A stone and an ear · Throw one in first"},
       "how": {"zh": "往后拉，松手，把石子扔进洞里。落得越深，回声越真。", "en": "Pull back and let go: throw the stone into the cave. The deeper it lands, the truer the echo."},
       "stars": 3,

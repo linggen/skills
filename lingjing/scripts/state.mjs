@@ -637,7 +637,8 @@ export function fitWorld(saved, content) {
   const here = chapter?.scenes?.[fix.scene ?? state.scene];
   // A board cut since (the small games cut 10-16): offered and never done, it can never be won —
   // let go. What was done stays, for the record.
-  const known = content.tasks?.tasks ? new Set(content.tasks.tasks.map(t => t.id)) : null;
+  // A board taken off the story but kept for the 游戏厅 (its task marked `cut`, 扔石听声 2026-10-19) goes the same way.
+  const known = content.tasks?.tasks ? new Set(content.tasks.tasks.filter(t => !t.cut).map(t => t.id)) : null;
   const raw = fix.tasks ?? state.tasks ?? {};
   const held = Object.fromEntries(Object.entries(raw).filter(([id, t]) => !known || t?.status === 'done' || known.has(id)));
   const unoffered = (here?.offers?.tasks ?? []).filter(id => !held[id]);

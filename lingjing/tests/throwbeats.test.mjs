@@ -1,5 +1,5 @@
-// The throws of 卷一 on the one throwing board (2026-10-16, Hanli: 「投掷类都可以换」): 扔石听声 (00-cave,
-// caveecho — two stones, the echo deep) and 芦苇里那一等 (09-yishui, luwing — the 短飞剑 into the 鯥's wing
+// The throws of 卷一 on the one throwing board (2026-10-16, Hanli: 「投掷类都可以换」): 扔石听声 (caveecho —
+// two stones, the echo deep; off 00-cave since 2026-10-19, the 游戏厅's) and 芦苇里那一等 (09-yishui, luwing — the 短飞剑 into the 鯥's wing
 // root as it breathes in). Each level is won by the bot's aim at a 10 ms and a 50 ms clock; a stone
 // that lands shallow is a hit a star fewer; a blade on the hide is turned; the grades name the
 // tasks' marks; the story deals each its levels; the throw moments are listed with the book's lines.
@@ -93,10 +93,11 @@ test('the grades name the tasks\' marks: 扔石听声 sure · lucky, 鯥 still �
   }
 });
 
-test('the story deals them: 00-cave plays 扔石听声 before 喂饼, 09-yishui plays the 鯥 with the 短飞剑', () => {
+test('the story deals the 鯥 at 09-yishui with the 短飞剑; 扔石听声 is the 游戏厅\'s only since 2026-10-19 (00-cave plays 喂饼 alone)', () => {
   const caveScene = content.chapters['00-prologue'].scenes['00-cave'];
-  assert.deepEqual(caveScene.show.filter((c) => c.card === 'board').map((c) => c.id), ['cave-stone', 'bread-share']);
-  assert.ok(caveScene.story_after?.zh.includes('火镰'), 'the fire after the stones, as the book has it');
+  assert.deepEqual(caveScene.show.filter((c) => c.card === 'board').map((c) => c.id), ['bread-share']);
+  assert.ok(caveScene.story.zh.includes('火镰'), 'the passage whole: the stones, then the fire');
+  assert.equal(row('caveecho').task, 'cave-stone', 'the row and its task stay');
   assert.equal(content.tasks.tasks.find((t) => t.id === 'yishui-reed').game, 'luwing');
   assert.equal(row('reed').task, undefined, 'the old reed board is the 游戏厅\'s only');
 });

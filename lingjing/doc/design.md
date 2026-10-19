@@ -705,7 +705,7 @@ and left by 「算了，往下走」 only when stuck (§ Skip below). The rhythm
 | `griddle` | `kitchen-griddle` | 00-kitchen | 烙饼: the passage split after 「一张厚，一张薄」; he minds the fire and calls 「翻！」 when a side goes golden — early she waits, late it scorches, silent she turns it; thin then thick | golden · scorched (mark) |
 | ~~`listen`~~ | ~~`storm-listen`~~ | 00-storm | 听: cut 10-16 (doc/games.md); the passage whole again | — |
 | `storm` | `fall-storm` | 00-fall | 拽: the 2026-09-30 暴雨, redrawn in ink (the slope, the drop, 爹 hauled toward the rock pull by pull, rain slanting with the wind), its limit cut to 30 s, a skip | clean · steady · rough |
-| ~~`stone`~~ | ~~`cave-stone`~~ | 00-cave | 扔石听声: cut 10-16 (doc/games.md); the passage whole again, 喂饼 the scene's one board | — |
+| ~~`stone`~~ | ~~`cave-stone`~~ | 00-cave | 扔石听声: cut 10-16 (doc/games.md), back on the throwing board the same day (`caveecho`), cut again 10-19 (task `cut`; row and module in the 游戏厅); the passage whole again, 喂饼 the scene's one board | — |
 | `way` | `yinyue-way` | 00-yinyue | 认路: the valley a small grid seen a step around him, the grass glowing where he walked; his marks on the cells by the cliff are the only way from the cave to the moss; a rock only stops him; after 30 steps she points | straight · wandered (mark) |
 | ~~`climb`~~ | ~~`cliff-climb`~~ | 00-cliff (h02) | 攀: cut 10-16 (doc/games.md) | — |
 | `carry` | `halfyear-carry` | 00-halfyear (second of two) | 练功: the fifth and sixth loads up the slope — step as the buckets swing through the middle; on the swing it slops and the breath climbs; out of breath he stops a beat; after the winter's passage, before 开春 | even · panting (mark) |
@@ -765,9 +765,10 @@ mechanics millions already love (the mechanic only; names and art are ours), eac
 
 | Mechanic | Where | Status |
 |---|---|---|
-| 割绳子 physics puzzle | 喂饼 (第一回 00-cave, after 扔石听声): cut vines, use wind and stones so the 饼 reaches the hurt fox (银月's first meeting) | **built** 2026-10-16 (`games/bread.js`, levels in `games.json`; 饼角 = stars on the save, `stars` in Look) |
+| 割绳子 physics puzzle | 喂饼 (第一回 00-cave, its one board): cut vines, use wind and stones so the 饼 reaches the hurt fox (银月's first meeting) | **built** 2026-10-16 (`games/bread.js`, levels in `games.json`; 饼角 = stars on the save, `stars` in Look) |
 | 愤怒小鸟 drag-and-arc | 射鹿 (第二回 00-deer): pull the bow, read the wind, lead the deer; 「往左偏半寸」 is the answer | **the beat** since 2026-10-16 (`games/deerarc.js` plays `deer-wind`; levels and paintings in `games.json`, dealt by Look; each arrow its own wind; a hit on the body finishes, the heart is three stars; the old `deer` board stays in the 游戏厅 only) |
-| 愤怒小鸟 · the kit | every throw in 卷一 on the 射鹿 board: 石子 · 箭 · 短飞剑 · 五雷符 (games.json `projectiles`, each made his by a card), one tap in flight each | **built** 2026-10-16: the kit in the 游戏厅 (`throwkit`); the throws of 卷一 listed in games.json `_throws` — 扔石听声 (`caveecho`, back at 00-cave), 射鹿 (`deerarc`), 鯥 (`luwing`, 09-yishui) on the board; 暗河 石子+箭, 凶崖's shield and 合窳 proposed |
+| 狩猎瞄准 (Deer Hunter-style) | 射鹿 (第二回 00-deer): hold to draw, the sight sways at full, hold still to 屏气; wait for 风歇 and the head down — 「先看风，后看鹿」, the miss line names the side (「往左偏半寸」); a head up or a near miss spooks it | **built** 2026-10-19 in the 游戏厅 (`games/deerhunt.js`, row `deerhunt`: story · walk · gusty · dusk); replaces the drag-and-arc at deer-wind once Hanli has played it (Hanli 10-19: 「愤怒小鸟的类型不好玩. 太简单, 没有花样」) |
+| 愤怒小鸟 · the kit | every throw in 卷一 on the 射鹿 board: 石子 · 箭 · 短飞剑 · 五雷符 (games.json `projectiles`, each made his by a card), one tap in flight each | **built** 2026-10-16: the kit in the 游戏厅 (`throwkit`); the throws of 卷一 listed in games.json `_throws` — 扔石听声 (`caveecho`, off 00-cave again 10-19, the 游戏厅's), 射鹿 (`deerarc`), 鯥 (`luwing`, 09-yishui) on the board; 暗河 石子+箭, 凶崖's shield and 合窳 proposed |
 | 几何冲刺 one-tap runner | 顺风溜 (古七): the shoes' run down the mountain, forgiving (checkpoints, skippable) | after the first launch |
 
 Rules: 60–90 s, one thumb, instant retry; three stars (stars set the reward, a balance.json knob);

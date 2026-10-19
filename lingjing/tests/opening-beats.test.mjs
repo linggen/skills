@@ -138,7 +138,7 @@ const BEATS = [
    射鹿 · 洛书门 (and the village maps, another lane's). These scenes read whole and go on with no board. */
 const CUT = [['00-masan', 'masan-taunt', 'endure'], ['00-yinyue', 'yinyue-way', 'follow'], ['00-kitchen', 'kitchen-griddle', 'go'],
   ['00-rent', 'rent-scale', 'dumb'], ['00-halfyear', 'feather-breath', 'on'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-sleep', 'xisui-hold', 'bath']];
-const KEPT = { '00-shiao': ['rain-basins'], '00-fall': ['fall-storm'], '00-cave': ['cave-stone', 'bread-share'], '00-deer': ['deer-wind'], '00-luoshu': ['gate-luoshu'] };
+const KEPT = { '00-shiao': ['rain-basins'], '00-fall': ['fall-storm'], '00-cave': ['bread-share'], '00-deer': ['deer-wind'], '00-luoshu': ['gate-luoshu'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
 
 test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 拽 · 喂饼 · 射鹿 · 洛书门', () => {
@@ -219,8 +219,25 @@ test('喂饼: the grade takes 分它一半 or 自己吃 — the amount a mark fo
     assert.equal(on.state.scene, '00-yinyue', 'the dawn either way: she eats the corner');
     assert.ok(on.state.marks.includes(exit === 'share' ? 'shared-bread' : 'kept-bread'));
   }
-  const stoned = won(cave, 'cave-stone', 'sure'); // 扔石听声 first (back 2026-10-16)
-  assert.equal(win(stoned, content, ctx(), { id: 'bread-share', grade: 'all' }).state.grades?.['bread-share'], undefined, 'a grade the task does not name is not kept');
+  assert.equal(win(cave, content, ctx(), { id: 'bread-share', grade: 'all' }).state.grades?.['bread-share'], undefined, 'a grade the task does not name is not kept');
+});
+
+// Cut again 2026-10-19 (Hanli approved, with 射鹿 · 等风): 扔石听声 leaves 00-cave the 10-16 way.
+test('扔石听声 has left 00-cave: the passage whole (the book\'s, word for word), 喂饼 the one board; an old save holding it offered lets it go', () => {
+  const sc = scenes['00-cave'];
+  assert.ok(!(sc.show ?? []).some(c => c.id === 'cave-stone') && !(sc.offers?.tasks ?? []).includes('cave-stone'));
+  assert.ok(!sc.exits.some(e => e.needs?.task === 'cave-stone'));
+  assert.equal(sc.story_after, undefined, 'no passage split for it');
+  assert.match(sc.story.zh, /先往里扔了一块石头[\s\S]*还是进去了。\n\n他用他爹教的法子[\s\S]*最后的一点白面。$/);
+  assert.equal(content.games.games.find(g => g.id === 'caveecho')?.task, 'cave-stone', 'the row stays for the 游戏厅');
+  const s = atScene('00-cave');
+  const old = { ...s, tasks: { ...s.tasks, 'cave-stone': { status: 'offered' } }, tell_owed: ['after/00-cave'] };
+  const fit = fitWorld(old, content);
+  assert.equal(fit.tasks['cave-stone'], undefined, 'never winnable here now: let go');
+  assert.equal(fit.tasks['bread-share'].status, 'offered');
+  assert.deepEqual(fit.tell_owed ?? [], [], 'the merged passage is owed nowhere');
+  const fed = won(fit, 'bread-share', 'half');
+  assert.equal(resolve(fed, content, ctx(), { exit: 'share' }).state.scene, '00-yinyue');
 });
 
 test('射鹿 keeps its two ways: the board won takes 往左偏半寸; 照直射 stays, as before', () => {

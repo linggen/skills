@@ -66,8 +66,7 @@ test('a graded board left writes no grade or mark, owes the rest of the passage,
   assert.ok((first.tell_owed ?? []).includes('after/wm-qianye'), 'the passage after the first board is owed, as after a win');
   assert.ok(!(first.marks ?? []).some((m) => m.startsWith('qiajue-')), 'no mark');
   const { s, now } = at('00-prologue/00-cave');
-  // 扔石听声 (back 2026-10-16) plays before 喂饼: left too, so 喂饼 is next.
-  const one = must(task, s, now, { action: 'skip', id: 'cave-stone' });
+  const one = s; // 喂饼 is 00-cave's one board (扔石听声 cut again 2026-10-19)
   const two = must(task, one, now, { action: 'skip', id: 'bread-share' });
   assert.equal(two.grades?.['bread-share'], undefined);
   assert.ok(!(two.marks ?? []).some((m) => m.startsWith('bread-')), 'no mark');
@@ -80,38 +79,38 @@ test('a graded board left writes no grade or mark, owes the rest of the passage,
 });
 
 test('a board left comes back by itself on a later day, the stage idle — won then, it pays in full: grant, grade, mark', async () => {
-  // 扔石听声, 00-cave's first board (the prologue's two-board scene, 00-halfyear, lost its boards 2026-10-16).
+  // 喂饼, 00-cave's one board (扔石听声 cut again 2026-10-19).
   const { s, now } = at('00-prologue/00-cave');
-  // Both cave boards left (the stage idle), 扔石听声 first: it is the one that comes back.
-  const left = must(task, must(task, s, now, { action: 'skip', id: 'cave-stone' }), now, { action: 'skip', id: 'bread-share' });
+  // Left (the stage idle): it is the one that comes back.
+  const left = must(task, s, now, { action: 'skip', id: 'bread-share' });
   const n = { ...left, tell_owed: [], told_scenes: [...(left.told_scenes ?? []), left.scene] };
   assert.equal(look(n, content, ctxAt(now)).replay, undefined, 'never the same day');
   const tomorrow = later(now);
   const lk = look(n, content, ctxAt(tomorrow));
-  assert.equal(lk.replay?.task, 'cave-stone');
+  assert.equal(lk.replay?.task, 'bread-share');
   // On the stage: under the scene card, never alone without 下一步's way on.
   const cards = stageCards(lk);
   assert.ok(cards.some((c) => c.card === 'replay'));
-  assert.ok(lk.tasks.some((t) => t.id === 'cave-stone' && t.status === 'done' && t.skipped), 'Look still knows it is over (the stage never deals it fresh)');
+  assert.ok(lk.tasks.some((t) => t.id === 'bread-share' && t.status === 'done' && t.skipped), 'Look still knows it is over (the stage never deals it fresh)');
   assert.equal(CARD_KINDS.replay.holds, false);
   assert.ok(stageSlots(lk, cards), 'it has a slot');
   // Played: the board stands offered again, as on its first day; its win pays the grant, grade and mark.
-  const open = must(task, n, tomorrow, { action: 'replay', id: 'cave-stone' });
-  assert.equal(open.tasks['cave-stone'].status, 'offered');
-  assert.equal(open.tasks['cave-stone'].replay, true);
+  const open = must(task, n, tomorrow, { action: 'replay', id: 'bread-share' });
+  assert.equal(open.tasks['bread-share'].status, 'offered');
+  assert.equal(open.tasks['bread-share'].replay, true);
   assert.equal(look(open, content, ctxAt(tomorrow)).replay, undefined, 'one at a time');
   const { panelActsHtml, WORDS } = await import('../scripts/cards.js');
   const inBox = panelActsHtml({ look: lk, words: WORDS.zh }, { inBox: true });
-  assert.match(inBox, /data-replay-play="cave-stone"/);
-  assert.match(inBox, /data-replay-later="cave-stone"/);
-  const paid = task(must(win, open, tomorrow, { id: 'cave-stone', grade: 'sure', stars: 2 }), content, ctxAt(tomorrow), { action: 'done', id: 'cave-stone' });
+  assert.match(inBox, /data-replay-play="bread-share"/);
+  assert.match(inBox, /data-replay-later="bread-share"/);
+  const paid = task(must(win, open, tomorrow, { id: 'bread-share', grade: 'half', stars: 2 }), content, ctxAt(tomorrow), { action: 'done', id: 'bread-share' });
   assert.equal(paid.result.ok, true, JSON.stringify(paid.result));
   const p = paid.state;
-  assert.deepEqual(paid.result.paid, task(must(win, { ...s }, now, { id: 'cave-stone', grade: 'sure', stars: 2 }), content, ctxAt(now), { action: 'done', id: 'cave-stone' }).result.paid, 'the original grant, as on its day');
-  assert.equal(p.grades['cave-stone'], 'sure');
-  assert.ok(p.marks.includes('stone-sure'), 'its mark');
-  assert.equal(p.tasks['cave-stone'].status, 'done');
-  assert.equal(p.tasks['cave-stone'].skipped, undefined, 'paid now, not left');
+  assert.deepEqual(paid.result.paid, task(must(win, { ...s }, now, { id: 'bread-share', grade: 'half', stars: 2 }), content, ctxAt(now), { action: 'done', id: 'bread-share' }).result.paid, 'the original grant, as on its day');
+  assert.equal(p.grades['bread-share'], 'half');
+  assert.ok(p.marks.includes('bread-half'), 'its mark');
+  assert.equal(p.tasks['bread-share'].status, 'done');
+  assert.equal(p.tasks['bread-share'].skipped, undefined, 'paid now, not left');
   assert.deepEqual(p.tell_owed ?? [], [], 'its passage was told the day it was left — never again');
 });
 

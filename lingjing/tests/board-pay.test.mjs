@@ -78,10 +78,10 @@ test('a board left (skipped) pays nothing; won later on its replay day, that is 
   assert.equal(twice.state.wealth, done.state.wealth, 'and only once');
 });
 
-test('before 入门 nothing is paid, and nothing is marked paid (扔石听声 at the cave)', () => {
+test('before 入门 nothing is paid, and nothing is marked paid (喂饼 at the cave)', () => {
   const { s, now } = at('00-prologue/00-cave');
-  const done = clear(s, now, 'cave-stone', 'sure', 3);
+  const done = clear(s, now, 'bread-share', 'half', 3);
   assert.equal(done.state.wealth ?? 0, s.wealth ?? 0);
   assert.equal(done.result.paid?.board, undefined);
-  assert.ok(!(done.state.boards_paid ?? []).includes('cave-stone'), 'still owed nothing later');
+  assert.ok(!(done.state.boards_paid ?? []).includes('bread-share'), 'still owed nothing later');
 });

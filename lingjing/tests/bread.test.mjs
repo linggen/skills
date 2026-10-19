@@ -136,9 +136,6 @@ const atCave = () => {
   let s = newState(content, 'zh', NOW);
   for (const step of TO_VALLEY) { if (s.scene === '00-cave') break; s = walk(s, [step], content, NOW); }
   assert.equal(s.scene, '00-cave');
-  // 扔石听声 (back 2026-10-16 on the throwing board) plays first: 喂饼 waits for the stone.
-  s = tellOf(content, s)?.keep ?? s;
-  s = task(win(s, content, ctx(), { id: 'cave-stone', grade: 'sure' }).state, content, ctx(), { action: 'done', id: 'cave-stone' }).state;
   return tellOf(content, s)?.keep ?? s;
 };
 
