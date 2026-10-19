@@ -229,21 +229,25 @@ Joyride). `games/qimai.js` (+ qimai.css, bots/qimai.js, tests/qimai.test.mjs); o
 - **Elements** (data per level, each taught the first time it comes into view with a ring and a line):
   窄脉 (half-width ≤ 36) · 关窍 (尾闾 · 夹脊 · 玉枕) · 乱流 · 金线 (rises 4, falls 6: 吸四吐六) · 浪头 · 心跳乱流 · 暗.
 
-| n | level (row group · scene) | the book | elements | casual hand (1440 / 390) |
+| n | level (row group · scene) | the book | elements | live casual hand, 1440 + 390 (4 runs, ≤ 90 s) |
 |---|---|---|---|---|
-| 1 | 吹鹅毛 (古二 · 00-halfyear) | 「吐气，毛不许动」 | 宽脉 + 金线 | won ★2 / ★1, no 岔气 |
-| 2 | 洗髓 (古二 · 00-sleep) | 「疼，别喊」 · 浪头上别松口 | 浪头 | won ★1 / ★1 |
-| 3 | 先吐 (今一 · j01-retest) | 先吐，再吸 | 窄脉 + 乱流 | won, 3 / 1 岔气 |
-| 4 | 罚球 (今二 · j04-line) | 吸四吐六 | 心跳乱流 | won, 1 / 0 岔气 |
-| 5 | 小周天 (古四 · wm-zhoutian) | 尾闾 · 夹脊 · 玉枕 | 三关 (玉枕 26) | won, 1 / 1 岔气 |
-| 6 | 藏息 (古六 · wm-zhaojing) | 「它听见的不是你喘，是你心慌」 | 窄脉 + 乱流 | lost (13 岔气) / won 2 岔气 |
-| 7 | 黑地十一步 (今三 · j07-dark) | 「吐得比吸的长」 | 暗 | won 7 / 1 岔气 |
-| 8 | 最后一罚 (今四 · j09-final) | 带着怕投 | 心跳乱流, 窄 | lost / won 10 岔气 |
-| 9–11 | 冲脉 · 带脉 · 大周天 (气走经脉 · 试作) | — | everything mixed | needs practice |
+| 1 | 吹鹅毛 (古二 · 00-halfyear) | 「吐气，毛不许动」 | 宽脉 + 金线 | 4/4, all ★2, 22 s, no 岔气 |
+| 2 | 洗髓 (古二 · 00-sleep) | 「疼，别喊」 · 浪头上别松口 | 浪头 | 4/4, ★2 ×1 ★1 ×3, 26 s |
+| 3 | 先吐 (今一 · j01-retest) | 先吐，再吸 | 窄脉 + 乱流 | 4/4, 27–43 s, 0–2 岔气 |
+| 4 | 罚球 (今二 · j04-line) | 吸四吐六 | 心跳乱流 | 4/4, 28 s |
+| 5 | 小周天 (古四 · wm-zhoutian) | 尾闾 · 夹脊 · 玉枕 | 三关 (玉枕 26) | 4/4, ~40 s, 1 岔气 each |
+| 6 | 藏息 (古六 · wm-zhaojing) | 「它听见的不是你喘，是你心慌」 | 窄脉 + 乱流 | eased after 1/4: now 4/4, 45–81 s, 3–10 岔气 |
+| 7 | 黑地十一步 (今三 · j07-dark) | 「吐得比吸的长」 | 暗 | 4/4, 38–47 s, 1–2 岔气 |
+| 8 | 最后一罚 (今四 · j09-final) | 带着怕投 | 心跳乱流, 窄 | 1/4 (80 s, 6 岔气) |
+| 9 | 冲脉 (气走经脉 · 试作) | — | 浪头 · 乱流 · 两关 · 金线 | 3/4, 44–61 s |
+| 10 | 带脉 (试作) | — | 窄 · 心跳 · 暗 · 一关 | eased after 0/4: now 1/4 (35 s), 4–6 岔气 when lost |
+| 11 | 大周天 (试作) | — | everything | 3/4, 52–76 s, 3–6 岔气 |
+
+Sloppy hands: win 吹鹅毛 · 洗髓 · 罚球 · 小周天, lose the rest. Idle: 0/22 (≈12 岔气 a minute).
 
 Order is story order (`hui`) with one change: 吹鹅毛 comes first as the gentlest (the book has 洗髓 the night
-before). Node sims (bots/qimai.js, 20 seeds, 90 s): a casual hand clears 吹鹅毛 20/20 at ★1–2 (5/15), a practised
-hand ★3 everywhere but the late ones; sloppy fails 藏息 · 最后一罚 · 带脉; idle never wins (≈12 岔气 a minute).
+before). Node sims (bots/qimai.js, 20 seeds, 90 s): a casual hand clears 吹鹅毛 20/20 at ★1–2 (5/15); a practised hand
+clears every level (★3 on most); idle never wins.
 **His call:** feel (fall/rise 260, damping 3), the width of 窄脉, the 暗 round's size, whether 岔气 should send
 him further back; no paintings yet (the channel and bead are ink drawn in code).
 
