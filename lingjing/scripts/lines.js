@@ -58,8 +58,10 @@ export function screensOf(text, lang = 'zh') {
    2026-10-16, his: 慢 · 中 · 快 give way to three ways to read — 自动 (`mid`, today's 中),
    全文 (`fast`, the column) and 跳过 (`skip`: every passage straight to its end and its
    choices, dialogue.js fitMode — 「如果读者先读了小说的话, 直接跳过更合理」). 慢 is offered no
-   more: a viewer who kept it reads 自动. */
-export const SPEEDS = { slow: 1, mid: 0.45, fast: 0.3, skip: 0.45 };
+   more: a viewer who kept it reads 自动.
+   2026-10-19, his: 「自动显示剧情文字的速度,调快一点」 — 自动 ×0.45 → ×0.33 (a 70-字 sentence
+   5.6 s → 4.1 s; a short one 1.2 s → 0.9 s). */
+export const SPEEDS = { slow: 1, mid: 0.33, fast: 0.3, skip: 0.33 };
 /* 跳过 is no mode (Hanli, 2026-10-16: 「跳过不能是一个模式」 · 「点一次, 只能跳过一次」): one tap skips the
    passage on show and nothing after it, so it is never kept — a browser that kept it reads 自动. */
 export const READ_MODES = ['mid', 'fast'];

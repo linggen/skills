@@ -35,9 +35,9 @@ test('the pace: ~165 ms a character, never under 2.6 s nor over 11 s, the screen
   assert.equal(paceOf('一'.repeat(40), { f: SPEEDS.fast }), Math.round((900 + 40 * 165) * SPEEDS.fast));
   // 2026-10-15, his: 「中可以用现在快的速度」 — 慢 the old 中 (×1), 中 the old 快 (×0.45); 快 is the whole passage at once
   assert.equal(SPEEDS.slow, 1);
-  assert.equal(SPEEDS.mid, 0.45);
+  assert.equal(SPEEDS.mid, 0.33);
   assert.equal(WHOLE, 'fast');
-  assert.equal(paceOf('短。', { f: SPEEDS.mid }), Math.round(2600 * 0.45), 'the floor scales with the speed: a short sentence 1.2 s at 中');
+  assert.equal(paceOf('短。', { f: SPEEDS.mid }), Math.round(2600 * 0.33), 'the floor scales with the speed: a short sentence 0.9 s at 自动');
   assert.ok(paceOf('a'.repeat(60), { lang: 'en' }) < paceOf('一'.repeat(60)), 'English reads by the word');
   // 自动 全文 跳过 (2026-10-16, over 慢 中 快) is kept in this browser; storage off, it is 自动 (`mid`)
   const mem = new Map(), store = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
