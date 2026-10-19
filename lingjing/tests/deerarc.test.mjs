@@ -245,8 +245,8 @@ test('重来 any time lays the level fresh; a short pull lets the string go with
   s = da.act(s, { g: 'release' }).state;
   assert.equal(s.phase, 'aim');
   assert.equal(s.used, 0, 'too short a pull: nothing loosed');
-  s = da.act(s, { g: 'hold', x: 300, y: 150 }).state;
-  s = da.act(s, { g: 'move', x: 400, y: 100 }).state;
+  s = da.act(s, { g: 'hold', x: da.BOW[0], y: da.BOW[1] }).state;
+  s = da.act(s, { g: 'move', x: da.BOW[0] + 100, y: da.BOW[1] - 50 }).state;
   assert.ok(s.pull.p > 0.9 && s.pull.a > 20 && s.pull.a < 30, 'pulled back and up: a strong shot, up and toward the deer (Hanli 10-19: the bow tilts the way the hand goes)');
   s = da.act(s, { g: 'release' }).state;
   assert.equal(s.phase, 'fly');
@@ -297,8 +297,9 @@ test('the bow, the nocked arrow and the hint point along the launch; the flying 
   // Pulled up-right (shoots up), flat, down-right (shoots down), steep, and toward the deer (still back).
   for (const [x, y] of [[60, -50], [70, 0], [70, 25], [40, -90], [-70, -30]]) {
     let s = da.newGame('t', 1, { levels: [still] });
-    s = da.act(s, { g: 'hold', x: 300, y: 150 }).state;
-    s = da.act(s, { g: 'move', x: 300 + x, y: 150 + y }).state;
+    // Pressed at the bow, so the hand's place against the bow is the pull itself (Hanli 10-19).
+    s = da.act(s, { g: 'hold', x: da.BOW[0], y: da.BOW[1] }).state;
+    s = da.act(s, { g: 'move', x: da.BOW[0] + x, y: da.BOW[1] + y }).state;
     const v = da.velocityOf(s.pull), launch = angleOf([v.x, v.y]);
     // Toward the deer always; up as the hand goes up (Hanli 10-19), never turned round.
     assert.ok(near(launch, angleOf([-Math.max(Math.abs(x), 1), y])), 'the launch: toward the deer, tilted with the hand');
@@ -438,4 +439,15 @@ test('the story\'s two spots: the step on reads 下一处 (never 往下 · 接�
   const end = da.html({ ...s, won: true, stars: 3 }, 'zh');
   assert.match(end, /溪边两处/);
   assert.ok(!/往下|接着|继续/.test(end));
+});
+
+test('the tilt is the hand against the bow, wherever the press began (Hanli 10-19: 「当鼠标在弓右边的时候, 上划的时候, 石头往下走」)', () => {
+  const still = byId('still');
+  let s = da.newGame('t', 1, { levels: [still] });
+  // Pressed low and right of the bow, then swept up to above it: it aims up.
+  s = da.act(s, { g: 'hold', x: da.BOW[0] + 40, y: da.BOW[1] + 60 }).state;
+  s = da.act(s, { g: 'move', x: da.BOW[0] + 90, y: da.BOW[1] - 30 }).state;
+  assert.ok(s.pull.a > 10, `above the bow aims up (${s.pull.a})`);
+  s = da.act(s, { g: 'move', x: da.BOW[0] + 90, y: da.BOW[1] + 40 }).state;
+  assert.ok(s.pull.a < 0, `below the bow aims down (${s.pull.a})`);
 });

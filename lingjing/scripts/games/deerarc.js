@@ -552,13 +552,16 @@ export const gradeOf = (stars) => (stars >= 3 ? 'clean' : stars === 2 ? 'steady'
 /** Stuck: the same level's quiver emptied again and again. */
 export const stuck = (s) => !s.won && (s.misses?.[s.li] ?? 0) >= STUCK_MISSES;
 
-/** The pull from a press at (x0, y0) to a pointer at (x, y). The hand draws the string back (away
-    from the deer) and the bow tilts the way the hand goes: drag up, it aims up; drag down, it aims
-    down (Hanli 10-19: 「鼠标拖动和弓的方向调整反了」 — the slingshot's opposite tilt read as reversed).
-    A drag toward the deer still draws (its length is the power) but never turns the bow round. */
+/** The pull from a press at (x0, y0) to a pointer at (x, y). The bow tilts the way the hand is:
+    above the bow it aims up, below it aims down (Hanli 10-19: 「鼠标拖动和弓的方向调整反了」 — the
+    slingshot's opposite tilt read as reversed). A hand toward the deer still draws (the pull's length
+    is the power) but never turns the bow round. */
 export function aimOf(x0, y0, x, y) {
-  const back = Math.abs(x - x0), up = y0 - y, len = Math.hypot(x - x0, y - y0);
-  const a = (Math.atan2(up, Math.max(back, 1)) * 180) / Math.PI;
+  // The tilt is read from where the hand is against the bow, not from where the press began
+  // (Hanli 10-19: 「当鼠标在弓右边的时候, 上划的时候, 石头往下走, 反了」): the hand above the bow
+  // aims up, below it aims down. The pull's length from the press is still the power.
+  const back = Math.abs(x - BOW[0]), up = BOW[1] - y, len = Math.hypot(x - x0, y - y0);
+  const a = (Math.atan2(up, Math.max(back, 12)) * 180) / Math.PI;
   return { a: Math.max(-30, Math.min(85, a)), p: Math.min(1, len / MAX_PULL) };
 }
 
