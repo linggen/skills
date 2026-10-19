@@ -44,7 +44,7 @@ const run = (mod, s, verbs) => verbs.reduce((x, d) => mod.act(x, d).state, s);
 const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i = 0; i < 6000 && !done(x); i += 1) x = step(mod.tick(x, 50)); return x; };
 
 const H11 = ['09-snow', '09-jiuge', '09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie', '09-futian'];
-const BOARDS = { '09-snow': ['snow-fantong'], '09-jiuge': ['jiuge-sui', 'jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-year': ['year-smell'], '09-yishui': ['yishui-reed'], '09-xie': ['xie-wind'] };
+const BOARDS = { '09-snow': ['snow-fantong'], '09-jiuge': ['jiuge-sui', 'jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'], '09-xie': ['xie-wind'] };
 const FIGHTS = { '09-lingcao': ['fight', 'lingcao-qiuyu', 'qiuyu'], '09-futian': ['spar', 'futian-qinyan', 'foe-shijie'] };
 const RISES = { '09-furnace/fire': 5, '09-year/futian': 5, '09-yishui/night': 6, '09-futian/spar': 7 };
 
@@ -119,7 +119,7 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   assert.ok(s.bag['qi-pill'] > 0, '认方: a 聚气丹');
   s = go(s, 'fire');
   assert.deepEqual([s.scene, s.step], ['09-year', 4], '定风 lifts nothing: 五层 is ground');
-  s = go(play(s, 'year-smell', 'nose'), 'qingming');
+  s = go(s, 'qingming'); // 闻焦 cut 2026-10-19: no board in 09-year
   s = go(s, 'futian');
   assert.deepEqual([s.scene, s.step], ['09-lingcao', 4], '伏天 moves nothing');
   const lc = look(s, content, ctx()).scene.exits.find((e) => e.id === 'fight');
@@ -157,8 +157,8 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
   assert.deepEqual(health(content, fitted, NOW).filter((p) => p.level === 'error'), [], 'nothing broken');
   // Mid-09-year: the old furnace never rose him (the cap held 四层); 伏天 lands on 灵草谷, and lifts him to 五层 as the furnace would have.
   const mid = fitWorld(at('09-year', { marks: ['y-qingming'], done_scenes: ['wm-heluo', '09-snow', '09-furnace'] }), content);
-  assert.equal(mid.tasks['year-smell']?.status, 'offered', 'the board 09-year was given is offered to a save standing there');
-  const on = go(play(mid, 'year-smell'), 'futian');
+  assert.equal(mid.tasks['year-smell'], undefined, '闻焦 cut 2026-10-19: no board offered there');
+  const on = go(mid, 'futian');
   assert.deepEqual([on.scene, on.step], ['09-lingcao', 4]);
   // Standing in 09-furnace from before: its boards are offered, the way on is the 定风 morning.
   const fur = fitWorld(at('09-furnace', { tasks: {} }), content);
@@ -255,4 +255,21 @@ test('顺风溜: facing into the wind and stepping back glides; any other way is
   while (!s.won) { const w = windOf(s.seed, s.k); s = run(wind, s, [{ g: 'face', d: w }, { g: 'back' }]); }
   assert.equal(s.grade, 'puff');
   assert.ok(s.qi <= 0.5 + 1e-9, 'three glides and a puff: half the 丹田 and more');
+});
+
+// Cut 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): 闻焦 leaves 09-year the 10-16 way.
+test('闻焦 has left 09-year: the passage whole (story_after merged, word for word), 伏天 waits on 清明 alone; an old save holding it offered lets it go', () => {
+  const sc = CH.scenes['09-year'];
+  assert.ok(!(sc.show ?? []).some((c) => c.id === 'year-smell') && !(sc.offers?.tasks ?? []).includes('year-smell'));
+  assert.ok(!sc.exits.some((e) => e.needs?.task === 'year-smell'));
+  assert.equal(sc.story_after, undefined);
+  assert.equal(sc.story_after_full, undefined);
+  assert.match(sc.story.zh, /头一回有人问到我答不上的。」\n\n就在闵丹师出神的当口，炉里的药气变了，多出了一丝焦。/);
+  assert.match(sc.story_full.zh, /头一回有人问到我答不上的。」\n\n就在闵丹师出神的当口/);
+  assert.equal(content.tasks.tasks.find((t) => t.id === 'year-smell').cut, '2026-10-19');
+  assert.equal(content.games.games.find((g) => g.id === 'huohousmell')?.task, 'year-smell', 'the row stays for the 游戏厅');
+  const old = fitWorld(at('09-year', { marks: ['y-qingming'], tasks: { 'year-smell': { status: 'offered' } }, tell_owed: ['after/09-year'] }), content);
+  assert.equal(old.tasks['year-smell'], undefined, 'never winnable here now: let go');
+  assert.deepEqual(old.tell_owed ?? [], [], 'the merged passage is owed nowhere');
+  assert.equal(go(old, 'futian').scene, '09-lingcao');
 });

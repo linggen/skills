@@ -47,7 +47,7 @@ function step(s, exit) {
 }
 
 /* 古六's boards (the per-回 plan, 2026-10-15): the board each way on waits on, played (won, counted) before it. */
-const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror', 'zhaojing-fantong'], go: ['laba-diche'], up: ['dabi-sneeze'], final: ['laoyin-zhuqingting'], rest: ['jiaxin-letter'], read: ['heluo-kaipian'] };
+const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror', 'zhaojing-fantong'], go: ['laba-diche'], up: ['dabi-sneeze'], rest: ['jiaxin-letter'], read: ['heluo-kaipian'] };
 function before(s, exit, now = DAY1) {
   // a save set down in a scene by hand (not walked in) has not been offered its boards yet: offer them, as arriving does
   for (const id of BOARD_BEFORE[exit] ?? []) s = must(task, must(win, { ...s, tasks: { [id]: { status: 'offered' }, ...s.tasks } }, { id }, now), { action: 'done', id }, now);

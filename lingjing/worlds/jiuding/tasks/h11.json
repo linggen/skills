@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_about": "古七's boards (h11; the per-回 plan 2026-10-15, Wave 2 D): each the book's own action where its scene stands, every one skippable once stuck (the page's 算了，往下走), and each pays what the plan names — 修为 for cultivation (随叶, 禹步, 定风, 顺风溜), 灵石 / a thing for the rest (认方 a 聚气丹, 闻焦 and 芦苇 灵石). The two fights (灵草谷's 犰狳, 崖顶's 秦雁) are scene duels on their exits, paid there.",
-  "_economy": "Pay declared here for the economy model (tools/balance.mjs reads tasks/*.json): the 修为 is +20 over 古七 from boards (jiuge-sui 5, jiuge-yubu 5, furnace-ding 5, xie-wind 5), +30 the 犰狳 (09-lingcao/fight, scene table) and +30 the 秦雁 bout (09-futian/spar, trial table, paid after the 七层 rise); 灵石 +3 (year-smell), +2 (yishui-reed), +20 (犰狳), +20 (秦雁); items: qi-pill (furnace-recipe), huochai-jian and shunfeng-liu (on the ways on). The three rises — 五层 (09-furnace/fire, and 09-year/futian as a catch-up), 六层 (09-yishui/night), 七层 (09-futian/spar, the 秦雁 bout's way on) — each wait on the 阶段任务: 圆满 of the layer held (caps.hui.h11.gates: [{layer 4, 09-furnace, [fire]}, {layer 4, 09-year, [futian]}, {layer 5, 09-yishui, [night]}, {layer 6, 09-futian, [spar]}]).",
+  "_economy": "Pay declared here for the economy model (tools/balance.mjs reads tasks/*.json): the 修为 is +20 over 古七 from boards (jiuge-sui 5, jiuge-yubu 5, furnace-ding 5, xie-wind 5), +30 the 犰狳 (09-lingcao/fight, scene table) and +30 the 秦雁 bout (09-futian/spar, trial table, paid after the 七层 rise); 灵石 +2 (yishui-reed; year-smell's +3 went with its cut 2026-10-19), +20 (犰狳), +20 (秦雁); items: qi-pill (furnace-recipe), huochai-jian and shunfeng-liu (on the ways on). The three rises — 五层 (09-furnace/fire, and 09-year/futian as a catch-up), 六层 (09-yishui/night), 七层 (09-futian/spar, the 秦雁 bout's way on) — each wait on the 阶段任务: 圆满 of the layer held (caps.hui.h11.gates: [{layer 4, 09-furnace, [fire]}, {layer 4, 09-year, [futian]}, {layer 5, 09-yishui, [night]}, {layer 6, 09-futian, [spar]}]).",
   "tasks": [
     {
       "id": "snow-fantong",
@@ -56,6 +56,8 @@
       "done_line": { "zh": "他看见了它起来的那一下。", "en": "He has seen the moment it rose." }
     },
     {
+      "_cut": "Off 09-year 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): the passage whole again (story_after merged), 伏天 needs only 清明; the task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",
+      "cut": "2026-10-19",
       "id": "year-smell",
       "kind": "board",
       "game": "huohousmell",

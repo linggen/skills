@@ -68,26 +68,8 @@
    "beat": [],
    "next": "wm-jiaxin",
    "wakes": true,
-   "_wakes": "That night she comes out of the 木牌 for the 火锅 (wm-jiaxin: 「银月钻了出来，蹲在锅沿上」) and talks him through the mirror late into the night; she sleeps again on the way on (wm-jiaxin `rest`). Awake that night, she can read his 家信 (2026-10-19, the drawn letter).",
-   "needs": {
-    "task": "laoyin-zhuqingting"
-   },
-   "refuse": {
-    "zh": "香还没烧到一指——攥着那张猪，等风掉头。",
-    "en": "The incense isn't down to a finger yet — hold the paper pig, and wait for the wind to turn."
-   }
+   "_wakes": "That night she comes out of the 木牌 for the 火锅 (wm-jiaxin: 「银月钻了出来，蹲在锅沿上」) and talks him through the mirror late into the night; she sleeps again on the way on (wm-jiaxin `rest`). Awake that night, she can read his 家信 (2026-10-19, the drawn letter)."
   }
  ],
- "show": [
-  {
-   "card": "board",
-   "id": "laoyin-zhuqingting"
-  }
- ],
- "offers": {
-  "tasks": [
-   "laoyin-zhuqingting"
-  ]
- },
- "_beats": "古六 (2026-10-15): 猪蜻蜓 · 等风掉头 (laoyin-zhuqingting) — 祁长松 has no creatures.json row; the final's lead (决赛 … 「香，烧过一半了」) is the scene's story now, the board plays the wait for the wind and the slap, and the way on (`final`) still tells the book's end from 「从怀里摸出一个油纸包」 to 「……祁长松，胜。」 — no 筑基丹."
+ "_beats": "古六 (2026-10-15): 猪蜻蜓 · 等风掉头 (laoyin-zhuqingting) — 祁长松 has no creatures.json row; the final's lead (决赛 … 「香，烧过一半了」) is the scene's story now, the board plays the wait for the wind and the slap, and the way on (`final`) still tells the book's end from 「从怀里摸出一个油纸包」 to 「……祁长松，胜。」 — no 筑基丹. Cut 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): 猪蜻蜓 leaves the scene the 10-16 way — no board between 「香，烧过一半了」 and 摸出那个油纸包 (the passage was never split); the task is marked `cut`, the row and module stay in the 游戏厅."
 }

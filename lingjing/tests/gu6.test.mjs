@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, lint } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { fitWorld, newState } from '../scripts/state.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { fightSetup, readOf } from '../scripts/rules/cards.mjs';
 import { foeOf } from '../scripts/rules/world.mjs';
@@ -38,7 +38,7 @@ const run = (mod, s, verbs) => verbs.reduce((x, d) => mod.act(x, d).state, s);
 const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i = 0; i < 4000 && !done(x); i += 1) x = step(mod.tick(x, 100)); return x; };
 
 const H08 = ['wm-qianye', 'wm-zhaojing', 'wm-laba', 'wm-dabi', 'wm-lun1', 'wm-fushi', 'wm-lun2', 'wm-juesai', 'wm-laoyin', 'wm-jiaxin', 'wm-baishi', 'wm-caowu', 'wm-heluo'];
-const BOARDS = { 'wm-qianye': ['qianye-qiajue', 'qianye-xiangke'], 'wm-zhaojing': ['zhaojing-mirror', 'zhaojing-fantong'], 'wm-laba': ['laba-diche'], 'wm-dabi': ['dabi-sneeze'], 'wm-laoyin': ['laoyin-zhuqingting'], 'wm-jiaxin': ['jiaxin-letter'], 'wm-heluo': ['heluo-kaipian'] };
+const BOARDS = { 'wm-qianye': ['qianye-qiajue', 'qianye-xiangke'], 'wm-zhaojing': ['zhaojing-mirror', 'zhaojing-fantong'], 'wm-laba': ['laba-diche'], 'wm-dabi': ['dabi-sneeze'], 'wm-jiaxin': ['jiaxin-letter'], 'wm-heluo': ['heluo-kaipian'] };
 
 test('tasks/*.json are one list: 古六\'s boards come from tasks/h08.json, and an id defined twice fails the lint', () => {
   for (const id of Object.values(BOARDS).flat()) assert.ok(content.tasks.tasks.some((t) => t.id === id), id);
@@ -95,7 +95,7 @@ test('walking 古六 by its boards: 修为 rises at each cultivation board, the 
   s = must(resolve, play(s, 'laba-diche', 'kept'), { exit: 'go' });
   s = must(resolve, play(s, 'dabi-sneeze', 'clean'), { exit: 'up' });
   assert.equal(s.scene, 'wm-lun1');
-  s = must(resolve, play({ ...s, scene: 'wm-laoyin', place: 'zhengdian' }, 'laoyin-zhuqingting', 'caught'), { exit: 'final' });
+  s = must(resolve, { ...s, scene: 'wm-laoyin', place: 'zhengdian' }, { exit: 'final' }); // 猪蜻蜓 cut 2026-10-19: no board before it
   assert.equal(s.scene, 'wm-jiaxin');
   assert.equal(s.bag['foundation-pill'], undefined, 'no 筑基丹');
   assert.match(CH.scenes['wm-laoyin'].exits[0].story.zh, /……祁长松，胜。/);
@@ -109,7 +109,7 @@ test('walking 古六 by its boards: 修为 rises at each cultivation board, the 
 });
 
 test('a way on waits on its board: refused in the world\'s words until the board is counted', () => {
-  for (const [scene, place, exit] of [['wm-qianye', 'waimen', 'eve'], ['wm-zhaojing', 'waimen', 'sleep'], ['wm-laba', 'waimen', 'go'], ['wm-dabi', 'zhengdian', 'up'], ['wm-laoyin', 'zhengdian', 'final'], ['wm-jiaxin', 'waimen', 'rest'], ['wm-heluo', 'houshan', 'read']]) {
+  for (const [scene, place, exit] of [['wm-qianye', 'waimen', 'eve'], ['wm-zhaojing', 'waimen', 'sleep'], ['wm-laba', 'waimen', 'go'], ['wm-dabi', 'zhengdian', 'up'], ['wm-jiaxin', 'waimen', 'rest'], ['wm-heluo', 'houshan', 'read']]) {
     const out = resolve(at(scene, place), content, ctx(), { exit });
     assert.equal(out.result.ok, false, `${scene}/${exit}`);
     assert.ok(out.result.say, `${scene}/${exit} says why`);
@@ -262,4 +262,17 @@ test('念开篇: his mother\'s rhyme lays the 洛书 — 戴九履一，左三�
   for (const n of [9, 1, 3, 7, 2, 4, 6, 8, 5]) s = kaipian.act(s, { g: 'cell', i: String(kaipian.SQUARE.indexOf(n)) }).state;
   assert.equal(s.won, true);
   assert.deepEqual(s.cells, kaipian.SQUARE);
+});
+
+// Cut 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): 猪蜻蜓 leaves wm-laoyin the 10-16 way.
+test('猪蜻蜓 has left wm-laoyin: no board before 摸出那个油纸包; an old save holding it offered lets it go', () => {
+  const sc = CH.scenes['wm-laoyin'];
+  assert.ok(!(sc.show ?? []).some((c) => c.id === 'laoyin-zhuqingting') && !(sc.offers?.tasks ?? []).includes('laoyin-zhuqingting'));
+  assert.ok(!sc.exits.some((e) => e.needs?.task === 'laoyin-zhuqingting'));
+  assert.match(sc.story.zh, /香，烧过一半了。$/);
+  assert.equal(content.tasks.tasks.find((t) => t.id === 'laoyin-zhuqingting').cut, '2026-10-19');
+  assert.equal(content.games.games.find((g) => g.id === 'zhuqingting')?.task, 'laoyin-zhuqingting', 'the row stays for the 游戏厅');
+  const old = fitWorld(at('wm-laoyin', 'zhengdian', { tasks: { 'laoyin-zhuqingting': { status: 'offered' } } }), content);
+  assert.equal(old.tasks['laoyin-zhuqingting'], undefined, 'never winnable here now: let go');
+  assert.equal(must(resolve, old, { exit: 'final' }).scene, 'wm-jiaxin');
 });

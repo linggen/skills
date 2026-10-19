@@ -132,6 +132,8 @@
       }
     },
     {
+      "_cut": "Off wm-laoyin 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): no board before 摸出那个油纸包; the task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",
+      "cut": "2026-10-19",
       "id": "laoyin-zhuqingting",
       "kind": "board",
       "game": "zhuqingting",

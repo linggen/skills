@@ -210,6 +210,12 @@ the strap cut like a vine) dragging under him. The ledge is on the cliff side, o
 
 ## 古四 → 古七
 
+**Cut 10-19** (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): 猪蜻蜓 (wm-laoyin) and 闻焦 (09-year), the 10-16 way —
+the passage whole, the task marked `cut` (a save holding it offered lets it go), the row and module kept in the
+游戏厅. 喷嚏符 stays. Their pay goes with them (猪蜻蜓 修为 +5, 闻焦 灵石 +3), so `balance.mjs --fit` raised 练气
+五–九层 by 50 each to hold 古六/古七's days. Rhythm: 大比 决赛 → 家信 now reads 3,414 字 without play (was 1,571 +
+1,843), and 定风 → 灵草谷 2,175 — over the 1,500 cap, as the story's point here.
+
 | 回 · scene | game | the book | how it plays now | what's wrong | proposal | skip | 得牌? | cut 10-16 |
 |---|---|---|---|---|---|---|---|---|
 | 四 · wm-zhoutian | 小周天 `zhoutian` | 冲三关 | in · out · still; push only in the stillness; 玉枕 wants three | a real timing read | second tier | 75 s | yes — 小周天 | **→ 气走经脉 · 小周天 (10-19)** — module in the 游戏厅 |
@@ -220,7 +226,7 @@ the strap cut like a vine) dragging under him. The ledge is on the cliff side, o
 | 六 · wm-zhaojing | 喂饭桶 `fantongqianye` | 开炉夜 | press the lid open, feed things | a sequence | **cut** (the free 饭桶 feed stays) | 75 s | ? (饭桶 is a thing he uses) | kept until replaced |
 | 六 · wm-laba | 底册 `diche` | 看完烧了 | read each line twice, burn it | reading | **cut** | 4 | no | kept until replaced |
 | 六 · wm-dabi | 喷嚏符 `sneeze` | 让一拳 | watch the shoulder, 让; a touch of 送气; 推 mid-sneeze | a read with three verbs — the most fight-like | **keep** | 5 | yes — 喷嚏符, a 符 | kept (the six) |
-| 六 · wm-laoyin | 猪蜻蜓 `zhuqingting` | 等风掉头 | wait; 拍 as he steps behind | one timing tap | **cut** | 4 misses | ? | kept until replaced |
+| 六 · wm-laoyin | 猪蜻蜓 `zhuqingting` | 等风掉头 | wait; 拍 as he steps behind | one timing tap | **cut** | 4 misses | ? | **cut 10-19** (Hanli: 「时机, 调息不好玩的可以删掉或者改进」) — no board before 摸出那个油纸包; task `cut`, row and module in the 游戏厅 |
 | 六 · wm-jiaxin | 写信 `letter` | 擦了又写 | write line by line, erase what must not be said | a choice | **cut** | 75 s | no | kept until replaced |
 | 六 · wm-heluo | 念开篇 `kaipian` | 戴九履一 | each line of the verse into the nine squares | a recall drill | **cut** | 6 wrong | no | kept until replaced |
 | 七 · 09-snow | 喂饭桶 `fantonghuochai` | 扔了干净 | drop two scraps in | two taps | **cut** | 75 s | no | kept until replaced |
@@ -228,7 +234,7 @@ the strap cut like a vine) dragging under him. The ledge is on the cliff side, o
 | 七 · 09-jiuge | 禹步 `yubujiuge` | 九格 | left, right behind, step in — one to nine | a rhythm | second tier | 5 trips | yes — 禹步 | kept (second tier) — replace with 割绳子 or another proven mechanic if it isn't fun (his play) |
 | 七 · 09-furnace | 认方 `recipe` | 三张方子 | match heaps, leads, pills | a memory puzzle | **cut** | 5 ash | no | kept until replaced |
 | 七 · 09-furnace | 定风 `leafding` | 看见它起来 | wait for the rising leaf; 挪半步 | one timing tap | **cut** | 75 s | ? | **→ 气走经脉 · 定风 (10-19)** — module in the 游戏厅 |
-| 七 · 09-year | 闻焦 `huohousmell` | 半口气 | say it when the scent turns scorched | one timing tap | **cut** | 3 lost | ? (火候) | kept until replaced |
+| 七 · 09-year | 闻焦 `huohousmell` | 半口气 | say it when the scent turns scorched | one timing tap | **cut** | 3 lost | ? (火候) | **cut 10-19** — 09-year's passage whole again (story_after merged), 伏天 needs 清明 only; task `cut`, row and module in the 游戏厅 |
 | 七 · 09-yishui | 芦苇里那一等 `reed` | 「放剑」 | loose when the wing-root shows | one timing tap | **cut** | 4 wasted | no | kept until replaced |
 | 七 · 09-xie | 顺风溜 `wind` | 背后有风 | read the wind, turn, 退一步 | a read and a tap | **keep** → 几何冲刺 one-tap runner, after launch | 3 puffs | yes — 顺风溜 | kept (the six) |
 
