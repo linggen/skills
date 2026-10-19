@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "_retired": "An entry with `retired: true` is never drawn again (rules/qiyu.mjs), but stays so a run already holding it rolled still finds its frame — 洛书 left the pool 10-19 (Hanli: 「9宫格出现一次就可以了」), 五子棋 took its weight.",
   "_about": "奇遇 in a 秘境 rerun (rules/qiyu.mjs; Hanli 2026-10-19: 「秘境里可以有随机游戏. 设计一个剧情触发一下了」). Keyed by the rerun's beat id. As a run is entered each of its rooms rolls `chance` (≈ one room in three or four); a hit draws an entry by `weight`, never the game the room before drew nor the one the previous run drew last, and an entry that `needs: \"her\"` (你画我猜: 银月 names the picture) only while she is awake beside him on her own line. `task` is the board (tasks/world.json, `qiyu: true`); one of `frames` is its line on the board (facts, never her words); a frame's `item` is the thing hung on the vines (割绳子); `words` names the drawguess word list (games.json drawguess data) the thing drawn is dealt from. A win pays a find drawn from the rerun's own `finds`, and its first clear ever the small-game 灵石 (balance.json `boards`). On a 测试存档, `rerun enter --qiyu=<task>` forces that entry into the first room.",
   "mijing": {
     "chance": 0.3,
@@ -36,7 +37,15 @@
         ]
       },
       {
-        "task": "qiyu-luoshu", "weight": 1,
+        "task": "qiyu-wuziqi", "weight": 1,
+        "frames": [
+          { "zh": "岔口那块平石上刻着纵横十五道，旁边两只石罐，一黑一白。罐底刻着一行字：「与石对弈，胜者自取。」", "en": "On a flat stone at the fork, fifteen lines are cut each way, with two stone pots beside it, one black, one white. Cut in a pot's floor: \"Play the stone. The winner takes.\"" },
+          { "zh": "凶崖石阶半腰的平台上刻着一盘棋，边上倚着一具前人的枯骨，指骨里还捏着一颗白子。", "en": "Halfway down the cliff stair, a board is cut into a ledge; beside it leans the bones of one who came before, a white stone still pinched in the finger bones." },
+          { "zh": "干了的暗河床上铺着一盘石子棋，黑白两色都是河卵石。棋盘边上刻着一行小字：赢一局，取一物。", "en": "In the dry bed of the dark river a board is laid out with river pebbles, black and white. Cut along its edge: win a game, take a thing." }
+        ]
+      },
+      {
+        "task": "qiyu-luoshu", "weight": 1, "retired": true,
         "frames": [
           { "zh": "石缝里卡着一只石匣，匣盖上刻着残缺的九宫。", "en": "A stone casket is wedged in a crack, a broken nine-square carved on its lid." },
           { "zh": "暗河边的石台上九个凹坑，数对了才肯开。", "en": "Nine hollows in a stone ledge by the dark river; it opens only when the numbers are right." }

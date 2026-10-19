@@ -52,12 +52,21 @@
   cursor: default;
 }
 
-button.g-wuziqi-cell { cursor: pointer; border-radius: 50%; }
-button.g-wuziqi-cell:hover,
-button.g-wuziqi-cell:focus-visible {
-  background: radial-gradient(circle, color-mix(in srgb, var(--ling) 35%, transparent) 0 22%, transparent 24%);
-  outline: none;
+button.g-wuziqi-cell { cursor: pointer; border-radius: 50%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+button.g-wuziqi-cell.is-taken,
+.g-wuziqi:not(.is-open) button.g-wuziqi-cell { cursor: default; }
+/* The point under the mouse shows a faint black stone — where it would land (no hover on touch). */
+@media (hover: hover) {
+  .g-wuziqi.is-open button.g-wuziqi-cell:not(.is-taken):hover::before {
+    content: '';
+    width: 84%;
+    height: 84%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #5a5652, #141210 70%);
+    opacity: 0.32;
+  }
 }
+button.g-wuziqi-cell:focus-visible { outline: 2px solid var(--ling); outline-offset: -2px; }
 
 .g-wuziqi-stone {
   width: 84%;
@@ -75,13 +84,31 @@ button.g-wuziqi-cell:focus-visible {
   box-sizing: border-box;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
+/* The last stone (the rival's reply) wears a seal-red dot; his own just set, a ring. */
 .g-wuziqi-stone.is-last::after {
   content: '';
   position: absolute;
-  inset: 36%;
+  inset: 34%;
   border-radius: 50%;
-  background: var(--ling);
+  background: var(--seal, #b5332e);
 }
+/* Only a move just made animates (the board's is-fresh, wuziqi.js FRESH): a later repaint of the stage
+   replaces every node, and the stones must not drop in again. */
+.is-fresh .g-wuziqi-stone.is-mine { animation: g-wuziqi-set 160ms ease-out both; }
+/* The rival answers a breath later — its stone drops in after his has landed. */
+.is-fresh .g-wuziqi-stone.is-w.is-last { animation: g-wuziqi-set 200ms ease-out 260ms both; }
+.is-fresh .g-wuziqi-stone.is-w.is-last::after { animation: g-wuziqi-dot 1ms linear 460ms both; }
+@keyframes g-wuziqi-set { from { transform: scale(1.35); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes g-wuziqi-dot { from { opacity: 0; } to { opacity: 1; } }
+/* The five that won (or lost) the game: a ring of 灵 light round each (seal red on a loss). */
+.g-wuziqi-stone.is-win { box-shadow: 0 0 0 2px var(--ling), 0 0 10px 2px color-mix(in srgb, var(--ling) 60%, transparent); }
+.is-fresh .g-wuziqi-stone.is-win { animation: g-wuziqi-glow 900ms ease-in-out 2 alternate; }
+.g-wuziqi.is-lost .g-wuziqi-stone.is-win { box-shadow: 0 0 0 2px var(--seal, #b5332e), 0 0 8px 2px color-mix(in srgb, var(--seal, #b5332e) 50%, transparent); }
+@keyframes g-wuziqi-glow { from { filter: brightness(1); } to { filter: brightness(1.25); } }
+@media (prefers-reduced-motion: reduce) {
+  .g-wuziqi-stone, .g-wuziqi-stone::after { animation: none !important; }
+}
+.g-wuziqi-stars { color: var(--seal, #b5332e); letter-spacing: 2px; font-size: 15px; }
 
 .g-wuziqi-foot {
   display: flex;

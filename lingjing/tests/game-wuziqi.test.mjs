@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { meta, newGame, html, act, isFive } from '../scripts/games/wuziqi.js';
+import { meta, newGame, html, act, isFive, fiveAt, starsFor, QUICK, STEADY } from '../scripts/games/wuziqi.js';
+import { pick as casualPick } from '../scripts/games/bots/wuziqi.js';
 
 const N = 15;
 const idx = (r, c) => r * N + c;
@@ -13,8 +14,8 @@ function deepFreeze(o) {
   return o;
 }
 
-function withStones(level, black, white, seed = 's') {
-  const st = newGame(seed, level);
+function withStones(level, black, white, seed = 's', opts = {}) {
+  const st = newGame(seed, level, opts);
   for (const [r, c] of black) st.board[idx(r, c)] = 1;
   for (const [r, c] of white) st.board[idx(r, c)] = 2;
   st.moves = black.length + white.length;
@@ -26,7 +27,11 @@ test('meta and fresh state', () => {
   const st = newGame('x', 2);
   assert.equal(st.board.length, N * N);
   assert.equal(st.outcome, 'open');
-  assert.equal(st.level, 2);
+  assert.equal(st.ai, 3, 'the rival one step above the realm\'s level');
+  assert.equal(newGame('x', 1).ai, 2);
+  assert.equal(newGame('x', 3).ai, 4);
+  assert.equal(newGame('x', 3, { ai: 2 }).ai, 2, 'a story board names its rival outright');
+  assert.equal(newGame('x', 1, { ai: 9 }).ai, 4);
   assert.deepEqual(JSON.parse(JSON.stringify(st)), st);
 });
 
@@ -54,7 +59,63 @@ test('player making five wins via act', () => {
   assert.equal(r.state.outcome, 'won');
   assert.match(html(r.state), /你胜了/);
   assert.match(html(r.state, 'en'), /You win/);
-  assert.doesNotMatch(html(r.state), /data-g="play"/);
+  assert.equal(r.state.won, true, 'the host reads state.won (mount.js, held wins)');
+  assert.equal(act(r.state, { g: 'play', i: idx(9, 9) }).state, r.state, 'no move after the end — the same state, so the host rings');
+});
+
+test('the win: stars by his stones, the five drawn, the task\'s line said', () => {
+  assert.equal(starsFor(QUICK), 3);
+  assert.equal(starsFor(QUICK + 1), 2);
+  assert.equal(starsFor(STEADY), 2);
+  assert.equal(starsFor(STEADY + 1), 1);
+  const st = withStones(1, [[5, 1], [5, 2], [5, 3], [5, 4]], [[0, 0], [0, 10], [10, 0], [10, 10]], 's', { solved: { zh: '阵眼按下去了。', en: 'The eye goes down.' } });
+  const r = act(st, { g: 'play', i: idx(5, 5) });
+  assert.equal(r.state.stars, 3);
+  assert.deepEqual(r.state.line, [idx(5, 1), idx(5, 2), idx(5, 3), idx(5, 4), idx(5, 5)]);
+  assert.equal((html(r.state).match(/is-win/g) || []).length, 5);
+  assert.match(html(r.state), /阵眼按下去了。/);
+  assert.match(html(r.state, 'en'), /The eye goes down\./);
+  assert.match(html(r.state), /★★★/);
+  const b = new Array(N * N).fill(0);
+  for (const c of [3, 4, 5, 6, 7, 8]) b[idx(2, c)] = 2;
+  assert.equal(fiveAt(b, idx(2, 5), 2).length, 6, 'six in a row is drawn whole');
+  assert.equal(fiveAt(b, idx(9, 9), 2), null);
+});
+
+test('a loss names the rival (the 阵), draws its five, and deals 再来一局 at the same rival', () => {
+  const st = withStones(1, [[5, 2], [5, 3], [5, 4], [0, 5]], [[8, 1], [8, 2], [8, 3], [8, 4]], 'r', { ai: 2, rival: { zh: '阵', en: 'The binding' } });
+  const lost = act(st, { g: 'play', i: idx(5, 5) }).state;
+  assert.equal(lost.outcome, 'lost');
+  assert.match(html(lost), /阵连成了五子/);
+  assert.match(html(lost, 'en'), /The binding made five/);
+  assert.equal((html(lost).match(/is-win/g) || []).length, 5);
+  const again = act(lost, { g: 'again' }).state;
+  assert.equal(again.ai, 2);
+  assert.deepEqual(again.rival, { zh: '阵', en: 'The binding' });
+});
+
+test('a board dealt before 10-19 (level, no ai) still plays, one step above its level', () => {
+  const old = { game: 'wuziqi', seed: 'o', base: 'o', again: 0, level: 1, board: new Array(N * N).fill(0), turn: 'black', outcome: 'open', last: null, moves: 0 };
+  const r = act(old, { g: 'play', i: idx(7, 7) });
+  assert.equal(r.state.moves, 2);
+  assert.equal(r.state.board.filter(Boolean).length, 2);
+});
+
+test('the rival rises: a casual hand wins most against 公道 (2), and fewer against each stronger one', () => {
+  // Node sims on fixed seeds (bots/wuziqi.js, a casual eye: no lookahead, no 跳三).
+  const rng = (seed) => { let a = 0; for (const ch of seed) a = Math.imul(a ^ ch.codePointAt(0), 2654435761) >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+  const wins = (ai) => {
+    let n = 0;
+    for (let k = 0; k < 24; k++) {
+      let st = newGame(`rise-${k}`, 1, { ai });
+      const r = rng(`hand-${k}`);
+      while (st.outcome === 'open') st = act(st, { g: 'play', i: casualPick(st.board, r) }).state;
+      if (st.outcome === 'won') n++;
+    }
+    return n;
+  };
+  const [one, two, three] = [wins(1), wins(2), wins(3)];
+  assert.ok(one > two && two > three, `wins 1:${one} 2:${two} 3:${three}`);
 });
 
 for (const level of [1, 2, 3]) {
@@ -71,7 +132,7 @@ for (const level of [1, 2, 3]) {
     const r = act(st, { g: 'play', i: idx(5, 5) });
     assert.equal(r.state.outcome, 'lost');
     assert.ok([idx(8, 0), idx(8, 5)].includes(r.state.last.i));
-    assert.match(html(r.state), /对手连成五子/);
+    assert.match(html(r.state), /对手连成了五子/);
     assert.match(html(r.state), /data-g="again"/);
   });
 }
@@ -80,7 +141,8 @@ test('determinism: same seed and moves give the same game', () => {
   const play = () => {
     let st = newGame('seed-7', 2);
     for (const i of [60, 61, 49, 71, 38]) if (st.board[i] === 0) st = act(st, { g: 'play', i }).state;
-    return st;
+    const { at, ...rest } = st; // `at`: when the last move was made (the drop-in plays only for a fresh one)
+    return rest;
   };
   assert.deepEqual(play(), play());
 });
@@ -114,7 +176,7 @@ function scripted(board) {
 test('a scripted player beats level 1 within 30 moves; AI never plays on an occupied cell', () => {
   let wins = 0;
   for (let k = 0; k < 8; k++) {
-    let st = newGame(`seed-${k}`, 1);
+    let st = newGame(`seed-${k}`, 1, { ai: 1 });
     for (let m = 0; m < 30 && st.outcome === 'open'; m++) {
       const i = scripted(st.board);
       const before = st.board;
@@ -140,7 +202,7 @@ test("'again' after a loss deals a fresh board at the same level", () => {
   const r = act(lost, { g: 'again' });
   assert.equal(r.won, false);
   assert.equal(r.state.outcome, 'open');
-  assert.equal(r.state.level, 2);
+  assert.equal(r.state.ai, 3);
   assert.equal(r.state.again, 1);
   assert.equal(r.state.seed, 'base|again1');
   assert.ok(r.state.board.every((v) => v === 0));
@@ -162,11 +224,13 @@ test('act never mutates its input; illegal moves return the same state', () => {
   assert.equal(r2.state.moves, 4);
 });
 
-test('html: every empty cell is a play button; last move marked', () => {
+test('html: every point is a play button (a stone too: refused, so the host rings); last move marked', () => {
   let st = newGame('h', 1);
   st = act(st, { g: 'play', i: 60 }).state;
   const out = html(st);
-  assert.equal((out.match(/data-g="play"/g) || []).length, N * N - 2);
+  assert.equal((out.match(/data-g="play"/g) || []).length, N * N);
+  assert.equal((out.match(/is-taken/g) || []).length, 2);
+  assert.equal(act(st, { g: 'play', i: 60 }).state, st, 'a stone tapped: the same state back');
   assert.equal((out.match(/is-last/g) || []).length, 1);
   assert.match(out, /执黑落子/);
   assert.doesNotMatch(out, /data-g="again"/);

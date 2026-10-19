@@ -16,8 +16,8 @@ never touched.
   (its `source` is the heritage — name it in the ending). A **hook** — one
   strange sight; a small **mystery** the clues build; a **turn** at step 2 or
   3 (the helper lied, the poison came from the rescuer); a **finale** that
-  answers it. Each step is a game framed in the story (`frames`: 洛书 a tomb
-  door, 华容道 rocks off a road, 炼丹 an antidote…) — at least three different
+  answers it. Each step is a game framed in the story (`frames`: 五子棋 a hermit
+  who talks after a game, 华容道 rocks off a road, 炼丹 an antidote…) — at least three different
   games, never the same twice running; each place within `reach` of the last.
   你画我猜 is in the seed only while 银月 is awake beside him (she names what
   he draws): give it a `word` from its `words`, or leave it to the rules.

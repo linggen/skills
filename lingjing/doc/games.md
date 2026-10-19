@@ -172,14 +172,14 @@ Also **replace with 割绳子 or another proven mechanic if it isn't fun** — H
 | 二 · 00-halfyear | 吹鹅毛 `feather` ★ | 「吐气，毛不许动」 | press and draw slow circles, 20 s a breath, three breaths | circling a mouse is a chore; the feather barely moves; the pad sits far from the feather | **keep**, new loop: hold to breathe out, let go to ease — keep the breath inside a band; too strong the feather shakes and flies, too weak the chest bursts; the band narrows as the count climbs (needs his go) | 23 s | 75 s | yes — 吐纳 · 先吐 (the scroll's, his) | **cut 10-16 (before 入门)** — module kept |
 | 二 · 00-halfyear | 练功 `carry` | 挑水上坡不喘 | step when the swinging buckets pass the middle | fine, but the same beat as 吹鹅毛's scene | **cut** (one beat a scene) | 15 s | 75 s | ? (one breath card with 吹鹅毛) | **cut 10-16 (before 入门)** — module kept |
 | 二 · 00-uncle | 算盘 `abacus` | 「一笔一笔地算账」 | three sums on the beads | arithmetic, not play | **cut** | 6 s | 4 wrong | no | **cut** |
-| 三 · 00-luoshu | 二试 `luoshu` | 洛书九宫 | fill the magic square | a puzzle; the test the book sets | keep (a test, not a beat) | ~60 s | 75 s | no | — (a test) |
+| 三 · 00-luoshu | 二试 `luoshu` | 洛书九宫 | fill the magic square | a puzzle; the test the book sets | keep (a test, not a beat) — **the one 九宫格 in the story** (Hanli 10-19: 「9宫格出现一次就可以了」) | ~60 s | 75 s | no | — (a test) |
 
 ## 古四 → 古七
 
 | 回 · scene | game | the book | how it plays now | what's wrong | proposal | skip | 得牌? | cut 10-16 |
 |---|---|---|---|---|---|---|---|---|
 | 四 · wm-zhoutian | 小周天 `zhoutian` | 冲三关 | in · out · still; push only in the stillness; 玉枕 wants three | a real timing read | second tier | 75 s | yes — 小周天 | kept (second tier) — replace with 割绳子 or another proven mechanic if it isn't fun (his play) |
-| 五 · wm-kunzhen | 困阵 `luoshu` | 「正中那个是空的」 | the 洛书 square again | the same puzzle as 二试 | **cut** (or a different fill) | 75 s | no | — (a test) |
+| 五 · wm-kunzhen | 困阵 `wuziqi` (was `luoshu`) | 「正中那个是空的」 | **五子棋 since 10-19**: the eye's stone has fifteen lines under its face, the binding plays white (公道, ai 2); five in a row holds the eye down | — | done 10-19 (§ 五子棋 below) | 75 s | no | — |
 | 六 · wm-qianye | 讲堂三日 `qiajue` | 掐、咒、扣 | tap the 文, the eight lines in order, hold the 扣 | three drills | **cut** | 6 wrong | yes — 掐诀 (褚先生 teaches him) | kept until replaced |
 | 六 · wm-qianye | 相克 `xiangke` | 五句 | answer an element with what overcomes it | a quiz | **cut** | 5 misses | ? | kept until replaced |
 | 六 · wm-zhaojing | 藏息 `mirrortongpu` | 镜光扫过来 | hold 「吐」 long and slow as the light passes | a timing hold | **cut** | 3 flares | ? (藏息 his?) | kept until replaced |
@@ -197,6 +197,53 @@ Also **replace with 割绳子 or another proven mechanic if it isn't fun** — H
 | 七 · 09-year | 闻焦 `huohousmell` | 半口气 | say it when the scent turns scorched | one timing tap | **cut** | 3 lost | ? (火候) | kept until replaced |
 | 七 · 09-yishui | 芦苇里那一等 `reed` | 「放剑」 | loose when the wing-root shows | one timing tap | **cut** | 4 wasted | no | kept until replaced |
 | 七 · 09-xie | 顺风溜 `wind` | 背后有风 | read the wind, turn, 退一步 | a read and a tap | **keep** → 几何冲刺 one-tap runner, after launch | 3 puffs | yes — 顺风溜 | kept (the six) |
+
+## 五子棋 in the 九宫格's place (10-19)
+
+Hanli 10-19: 「五子棋是好游戏, 可以放进去. 可以替代9宫格游戏」, then 「9宫格出现一次就可以了」. The 洛书 square is
+played **once**, at 洛书门 (`gate-luoshu`, 00-luoshu, 第四回 — the first 九宫格 in story order, the book's own
+二试); every other 九宫格 slot deals 五子棋 (games/wuziqi.js, mechanic 棋牌):
+
+| where | task (id kept) | the frame (the board's line; the book's passage untouched) | rival |
+|---|---|---|---|
+| 困阵 · wm-kunzhen (第五回) | `mijing-zhenyan` | 石面底下刻着纵横十五道——前人布这困阵，布的是一盘棋，阵自己执白。银月：「连成五颗，阵眼才压得死。」 | 公道 (ai 2), named 「阵」 on a loss |
+| 执事堂 · 周衡's 差事 | `guan-zhishi-ledger` → board `wuziqi` | 「对了一上午的账，眼都花了。」…「陪我下一盘，换换眼睛。五个连成一线就算——让你执黑。」 (was 对账 · 九格) | by the realm |
+| the place game (8 hosts: 执事堂 · 云龙山 · 碣石 · 濮水 · 崂山 · 陇山 · 巫峡 · 震泽) | `wuziqi` (daily) | — (the notice's) | by the realm |
+| 秘境 奇遇 | `qiyu-wuziqi` (weight 1, 洛书's) | 岔口: two stone pots, 「与石对弈，胜者自取。」 · 凶崖: a board cut in a ledge, the bones of one before with a white stone in hand · 暗河: a pebble board, 「赢一局，取一物。」 | by the realm |
+| 今日传闻 | tale.json `wuziqi` (its three frames) | the example's 云龙山 step: the old Taoist opens only after a game | by the realm (+1 the last step) |
+
+**The rival rises** (games/wuziqi.js `ai`; a story task names it in `deal.ai`, else Look's realm level 1–3 + 1):
+1 新手 (blocks only fives — the 游戏厅's easy, no story slot) · **2 公道** (the 困阵, and every place game at
+realm level 1 — the first two realms: plays its own lines at 0.4 of their worth, makes a four only 30% of the times it could, misses
+your open three 70% of the time, a second thought on 40% of its quiet moves; never blind to a five, nor to your four) ·
+**3 稳当** (reads every pattern both ways, no slips: realm level 2) · **4 老辣** (3 plus one reply looked ahead over its
+eight best: realm level 3, and a tale's last step from level 2). Node sims, 100 games each, a greedy hand (bots/wuziqi.js; no
+lookahead, no 跳三 — a person's 跳三 the AI does not read, so a real hand does better):
+
+| rival | newbie hand | casual hand | careful hand |
+|---|---|---|---|
+| 1 新手 | 91/100 (6 moves) | 97 | 98 |
+| 2 公道 | 22 | 33 (+23 drawn) | 45 (+43 drawn) |
+| 3 稳当 | 8 | 18 | 35 |
+| 4 老辣 | 8 | 16 | 30 |
+
+(A "draw" is the greedy sim filling the board; a person ends a game long before.) A loss is never a dead end:
+「再来一局」 deals a fresh board against the same rival at once; the stuck skip (75 s unwon) as every board.
+
+**Grade:** stars by his own stones on the win — ≤ 12 ★★★, ≤ 20 ★★, more ★ (`starsFor`); the 困阵 task has
+`stars: 3`, so the small-game 灵石 ranks best · good · plain by them (it was always plain as 洛书). No marks
+(洛书 had none; no later line reads one). **The board:** every point is a button — a stone, or the board after the
+end, is refused and rings the seal-red refusal (no dead tap); the last stone wears a seal-red dot; his stone drops
+in, the rival's answers 0.26 s later; the five that ended it ring in 灵 light (seal red on a loss); a faint black
+stone under the mouse (hover only); no undo; the move count in the foot. Animations play only for a move just made
+(the stage repaints by replacing its nodes). **Old saves:** a save holding 困阵 offered deals the 五子棋 on load
+(boards are the page's, never the save's); a 秘境 run that already rolled 奇遇 · 洛书 still deals it (qiyu.json
+`retired`: never drawn again); a 传闻 already made with a 洛书 step still deals it (tale.json `retired`: not in
+the seed, refused by the lint). **Kept in the 游戏厅:** the 洛书 module, its bot, and its two rows (二试 · 洛书九宫,
+the daily 洛书 · 破一道鼎封) — the daily task stays, now hosted nowhere. **Left as they are (not the 洛书 game):**
+念开篇 · 洛书 (`heluo-kaipian`, wm-heluo — the rhyme 戴九履一 into nine squares is the book's own moment, 瞿老
+hearing his mother's rhyme; a 五子棋 has no ground there), the 密室's 洛书 lid (one mechanism of a room), 禹步's 九格
+(footwork). Hanli's call if any of these should go too.
 
 ## 今线 — the breath games (games/breath.js)
 
@@ -253,9 +300,10 @@ him further back; no paintings yet (the channel and bead are ink drawn in code).
 
 ## Daily boards, 秘境, 密室 (not story beats; no card)
 
-炼丹 (pair herbs) · 押宝 (four doors, three bets) · 洛书 (鼎封) · 华容道 (秘境) · 七巧 · 五子 ·
+炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 七巧 · 五子 ·
 残局 · 守夜 (药园) · 下崖 / 拾遗 (秘境) · 密室 (he sees the mechanisms, 银月 reads the pages).
-Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
+洛书 was the same square three times (二试, 困阵, daily); since 10-19 it is played once, at 洛书门 —
+the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ below).
 
 ## AI games (the model talks; the rules hold the secret and the score; no card)
 
@@ -313,7 +361,7 @@ Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
     - **秘境 · 奇遇** (rules/qiyu.mjs, worlds/jiuding/qiyu.json; a pool, not one spot): as a rerun of the 外圈 is
       entered, each room (岔口 · 凶崖 · 暗河) rolls 0.3 — about one room a run; a hit draws by weight 你画我猜 3
       (only while 银月 is awake; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 割藤 2 (rope-gen.js, the frame's thing hung over the
-      饭桶) · 华容道 2 · 七巧 1 · 洛书 1, never the game the room before drew nor the last run's last. Each entry
+      饭桶) · 华容道 2 · 七巧 1 · 五子棋 1 (洛书 until 10-19), never the game the room before drew nor the last run's last. Each entry
       has 2–3 frames grounded in the rooms (the 岔口's carved 「凶」 crack, the 凶崖's steps, the dry 暗河's
       flat stone…) — the board's line, facts only. A win pays a find from the run's own `finds` (as 拾遗) and its
       first clear ever the small-game 灵石. A drawing round ≤ 3 looks ≈ 26k tokens. On a 测试存档:

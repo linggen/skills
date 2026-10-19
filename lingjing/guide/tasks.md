@@ -6,7 +6,7 @@
 
 - **Before the gate** (Look's `locked`): no 每日/每周, 一次 or 差事 exist yet — never offer one; Quest and Practice `check` are refused `not-yet` (speak its `say`). A scene's own board (the trials) still plays, and pays no 修为.
 - **Boards** stand on the stage when the story or an errand asks for one —
-  a scene's board, or a place's game (洛书 · 华容道 · 七巧 · 五子 · 残局 · 论道)
+  a scene's board, or a place's game (华容道 · 七巧 · 五子 · 残局 · 论道)
   that a notice sent them to; none is a daily chore, and 今日传闻's steps are
   boards of their own. They are played by the player alone. Point to the
   board as a thing before them — *丹炉就在你面前。* The page counts a won board

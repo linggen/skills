@@ -55,7 +55,8 @@ test('seed: today\'s seed of the province, the games with their story uses, the 
   assert.match(r.seed.id, /^xu-/);
   assert.ok(r.seed.line && r.seed.source);
   assert.equal(r.here.id, 'sishui');
-  assert.ok(r.shape.games.find(g => g.id === 'luoshu').frames.length >= 2);
+  assert.ok(r.shape.games.find(g => g.id === 'wuziqi').frames.length >= 2);
+  assert.ok(!r.shape.games.some(g => g.id === 'luoshu'), '洛书 is retired (10-19): never in a new tale');
   assert.ok(r.shape.places.some(p => p.id === 'yunlong'));
   assert.ok(!r.shape.places.some(p => p.id === 'lvliang'), 'not beyond the realm');
   assert.ok(r.shape.haunts.some(h => h.creature === 'fuzhu'));
@@ -129,7 +130,7 @@ test('play: each step a board of its own at its place, handed in there, the next
   assert.ok(!miss.result.step.riddle.choices.includes('井'));
   assert.ok(!JSON.stringify(look(miss.state, content, ctx()).tale).includes('"answers"'), 'the answer never rides Look');
   s = must(miss.state, { action: 'answer', answer: '枕头' }).state;
-  assert.equal(look(s, content, ctx()).tale.step.game, 'luoshu');
+  assert.equal(look(s, content, ctx()).tale.step.game, 'wuziqi');
   assert.deepEqual(look(s, content, ctx()).tale.clues.length, 2, 'what the steps revealed');
   s = must(walk(s, 'yunlong'), { action: 'win', board: `tale:${ID}:2` }).state;
   // the finale: a fight at 夫诸's haunt — won, the tale ends with the drop, and the people are remembered
@@ -169,7 +170,7 @@ test('the pay: the tables\' caps, a fifth step eating into the finale — nothin
   assert.deepEqual(four.step, { table: 'tale', ...r.tables.tale });
   assert.equal(four.end.progress, r.tables.tale_end.progress);
   const t = example();
-  t.steps.push({ game: 'wuziqi', at: 'sibei', giver: 'old-fisher', line: '再下一局。', clue: '老祁说出了实话。' },
+  t.steps.push({ game: 'huarong', at: 'sibei', giver: 'old-fisher', line: '把这堆石头挪开。', clue: '老祁说出了实话。' },
     { game: 'qiqiao', at: 'sishui', giver: 'xiucai', line: '拼回这道符。', clue: '符上写着河伯的名字。' });
   const five = made(open(), t).tale.grants;
   assert.equal(5 * five.step.progress + five.end.progress, r.tale.cap.progress);

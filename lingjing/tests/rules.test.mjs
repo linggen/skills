@@ -3105,21 +3105,21 @@ test('a place\'s game is no daily chore: it opens there only for an errand that 
   const at = ctx();
   const s = { ...toOpenWorld(), place: 'yunlong', tier: 'core', stamina: 100, stamina_at: NOW.toISOString() };
   // No errand asks: the game is not on offer, not even once a day (redesign-v2 § 四).
-  assert.equal(look(s, content, at).tasks.find(t => t.id === 'luoshu'), undefined);
-  refused(win, s, { id: 'luoshu' }, 'not-here', at);
+  assert.equal(look(s, content, at).tasks.find(t => t.id === 'wuziqi'), undefined);
+  refused(win, s, { id: 'wuziqi' }, 'not-here', at);
   // A market's notice asks for it here: now it stands, for the errand.
   const asked = { ...s, quests: { 'daily-20260911-trial-yunlong': { took: '2026-09-11', have: {} } } };
-  const seen = look(asked, content, at).tasks.find(t => t.id === 'luoshu');
+  const seen = look(asked, content, at).tasks.find(t => t.id === 'wuziqi');
   assert.equal(seen?.status, 'offered');
-  assert.deepEqual([seen.game, seen.level, seen.for_errand, seen.pays], ['luoshu', 2, true, null], '结丹 plays level 2; the errand pays');
-  refused(win, { ...asked, place: 'sishui' }, { id: 'luoshu' }, 'not-here', at);
-  const won = must(win, asked, { id: 'luoshu' }, at);
-  const done = must(task, won.state, { action: 'done', id: 'luoshu' }, at);
+  assert.deepEqual([seen.game, seen.level, seen.for_errand, seen.pays], ['wuziqi', 2, true, null], '结丹 plays level 2; the errand pays');
+  refused(win, { ...asked, place: 'sishui' }, { id: 'wuziqi' }, 'not-here', at);
+  const won = must(win, asked, { id: 'wuziqi' }, at);
+  const done = must(task, won.state, { action: 'done', id: 'wuziqi' }, at);
   assert.equal(done.result.paid, null, 'the game pays nothing of its own');
   assert.deepEqual(done.result.handed.map(h => h.id), ['daily-20260911-trial-yunlong']);
   assert.ok(done.result.handed[0].paid.wealth > 0, 'the notice pays — stones: a game for the board is 杂役');
   assert.equal(done.state.stamina, 100 - content.rewards.stamina.cost.game, 'a game\'s 体力');
-  assert.equal(look(done.state, content, at).tasks.find(t => t.id === 'luoshu'), undefined, 'met, it is gone');
+  assert.equal(look(done.state, content, at).tasks.find(t => t.id === 'wuziqi'), undefined, 'met, it is gone');
   const tomorrow = ctx({ now: new Date(NOW.getTime() + 86400000) });
   assert.equal(look(done.state, content, tomorrow).tasks.find(t => t.id === 'luoshu'), undefined, 'and not back tomorrow by itself');
 });
@@ -3250,15 +3250,15 @@ test('论道 in Progress: open, Yinyue sees the prompt and her help rule; closed
   assert.equal(prog({ ...open.state, lundao: { ...l, outcome: 'won' } }).lundao, undefined, 'won, closed');
 });
 
-// His screen 2026-09-23: a notice for 碣石's 洛书 put the board on the stage at 邺城.
+// His screen 2026-09-23: a notice for 碣石's 洛书 put the board on the stage at 邺城 (碣石 hosts 五子棋 since 10-19).
 test('a notice for a place\'s game opens it only at that place', () => {
   const at = ctx();
   const s = { ...toOpenWorld(), place: 'ye', tier: 'core', quests: { 'daily-20260911-trial-jieshi': { took: '2026-09-11', have: {} } } };
-  assert.ok(!look(s, content, at).tasks.some(t => t.id === 'luoshu'), 'not at 邺城');
-  refused(win, s, { id: 'luoshu' }, 'not-here', at);
+  assert.ok(!look(s, content, at).tasks.some(t => t.id === 'wuziqi'), 'not at 邺城');
+  refused(win, s, { id: 'wuziqi' }, 'not-here', at);
   const there = { ...s, place: 'jieshi' };
-  assert.equal(look(there, content, at).tasks.find(t => t.id === 'luoshu')?.status, 'offered');
-  const done = must(task, must(win, there, { id: 'luoshu' }, at).state, { action: 'done', id: 'luoshu' }, at);
+  assert.equal(look(there, content, at).tasks.find(t => t.id === 'wuziqi')?.status, 'offered');
+  const done = must(task, must(win, there, { id: 'wuziqi' }, at).state, { action: 'done', id: 'wuziqi' }, at);
   assert.ok(done.state.quests['daily-20260911-trial-jieshi'].done_at, 'the win there meets the notice');
 });
 

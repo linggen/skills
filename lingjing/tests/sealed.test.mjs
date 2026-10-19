@@ -224,12 +224,15 @@ test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'
   assert.deepEqual(place('mijing-anhe').has, { pool: 'mijing-anhe', games: ['mijing-gather'] });
   const pools = content.places['徐'].pools;
   assert.deepEqual(pools['mijing-anhe'].beasts.map(b => b.creature), ['heyu', 'qiuyu']);
-  // 「左手边那块石头。按下去。」: 「三天。」 waits on the binding's 洛书.
+  // 「左手边那块石头。按下去。」: 「三天。」 waits on the binding — a 五子棋 since 10-19 (was 洛书).
   let s = { ...inside(), scene: 'wm-kunzhen', place: 'mijing-yabi', done_scenes: [...inside().done_scenes, 'wm-wangzuo'] };
   // Reached as an old save reaches it: the first Look writes what it is offered there.
   s = VERBS.look(s, content, ctx(), {}).state ?? s;
   const l = look(s, content, ctx());
-  assert.ok(l.tasks.some(t => t.id === 'mijing-zhenyan' && t.game === 'luoshu'), 'the 洛书 stands with the scene (offered on reaching it, an old save too)');
+  const board = l.tasks.find(t => t.id === 'mijing-zhenyan');
+  assert.equal(board?.game, 'wuziqi', 'the 五子棋 stands with the scene (offered on reaching it, an old save too)');
+  assert.equal(board.deal.ai, 2, 'the first rival he meets: 公道');
+  assert.match(board.how, /一盘棋/);
   assert.equal(resolve(s, content, ctx(), { exit: 'go' }).result.refused, 'needs');
   s = must(win, s, { id: 'mijing-zhenyan' });
   s = must(task, s, { action: 'done', id: 'mijing-zhenyan' });

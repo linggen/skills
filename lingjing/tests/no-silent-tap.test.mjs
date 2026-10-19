@@ -48,3 +48,15 @@ test('answered: a changed picture, a verb sent, a turn handed on', () => {
   assert.equal(answered('a', 'a', { state: {}, send: { verb: 'x' } }), true);
   assert.equal(answered('a', 'a', { state: { wait: true } }), true);
 });
+
+test('五子棋 (10-19, 困阵): a tap on a stone, or on the board after the end, is refused — the host rings it', async () => {
+  const wz = await import('../scripts/games/wuziqi.js');
+  let s = wz.act(wz.newGame('nope', 1, { ai: 2 }), { g: 'play', i: 112 }).state;
+  const stone = s.last.i;
+  assert.match(wz.html(s), new RegExp(`data-g="play" data-i="${stone}"`), 'a stone is a button too');
+  const r = wz.act(s, { g: 'play', i: stone });
+  assert.equal(answered(wz.html(s), wz.html(r.state), r), false, 'a stone tapped: rung');
+  const free = s.board.findIndex((v) => v === 0);
+  const ok = wz.act(s, { g: 'play', i: free });
+  assert.equal(answered(wz.html(s), wz.html(ok.state), ok), true, 'a free point: answered');
+});

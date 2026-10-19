@@ -1639,12 +1639,14 @@
    ]
   },
   {
-   "id": "luoshu",
+   "id": "wuziqi",
    "group": "later",
-   "mechanic": "解谜",
+   "mechanic": "棋牌",
    "scene": "wm-kunzhen",
    "hui": "第五回",
-   "task": "mijing-zhenyan"
+   "task": "mijing-zhenyan",
+   "data": {"ai": 2, "rival": {"zh": "阵", "en": "The binding"}},
+   "_was": "洛书 until 10-19 (Hanli: 「9宫格出现一次就可以了」): the 洛书 square stays at 洛书门 (00-luoshu) and in its 游戏厅 rows."
   },
   {
    "id": "qiajue",

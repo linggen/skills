@@ -51,7 +51,8 @@ export function rollQiyu(content, state, { rerunId, rooms, seed, draw, force = n
   rooms.forEach((room, i) => {
     const forced = force && i === 0 ? data.pool.find(e => e.task === force) : null;
     if (!forced && draw(`${seed}|${room}|qiyu`) >= (data.chance ?? 0)) return;
-    const pool = data.pool.filter(e => e.task !== last && entryUp(content, state, e) && taskOf(content, e.task));
+    // `retired` (10-19, 洛书): never drawn again, but kept so a run already holding it finds its frame.
+    const pool = data.pool.filter(e => !e.retired && e.task !== last && entryUp(content, state, e) && taskOf(content, e.task));
     const e = forced ?? (pool.length ? byWeight(pool, draw(`${seed}|${room}|qiyu|pick`)) : null);
     if (!e) return;
     const frame = Math.floor(draw(`${seed}|${room}|qiyu|frame`) * e.frames.length);

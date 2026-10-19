@@ -76,8 +76,8 @@
     {
       "id": "guan-zhishi-ledger",
       "title": {
-        "zh": "对账",
-        "en": "Checking the ledger"
+        "zh": "陪下一盘",
+        "en": "A game to rest the eyes"
       },
       "from": {
         "place": "zhishi",
@@ -87,17 +87,17 @@
         }
       },
       "say": {
-        "zh": "周衡把账簿推过来：「九格，横竖斜，一样的数，才叫账平。我眼花了，你替我对一遍。」",
-        "en": "Zhou Heng pushes the ledger across: \"Nine squares — across, down and corner to corner the same sum; that is a balanced book. My eyes are tired. Check it for me.\""
+        "zh": "周衡把账簿一合，揉了揉眼睛：「对了一上午的账，眼都花了。」他从抽屉里摸出一副旧棋子：「陪我下一盘，换换眼睛。五个连成一线就算——让你执黑。」",
+        "en": "Zhou Heng shuts the ledger and rubs his eyes: \"A whole morning on the books; my eyes are swimming.\" He takes an old set of stones from the drawer: \"Play me a game to rest them. Five in a line wins — you take black.\""
       },
       "done": {
-        "zh": "你对完了。周衡拿指头一格一格点过去，点到末了：「账平了。」",
-        "en": "You finish. Zhou Heng runs a finger square by square to the last one: \"The books balance.\""
+        "zh": "周衡拈着一颗白子看了半天，放回罐里：「……眼睛是换过来了。账，下午再对。」",
+        "en": "Zhou Heng holds a white stone a long while, then drops it back in the pot: \"…My eyes are rested, anyway. The books can wait till afternoon.\""
       },
       "need": [
         {
           "kind": "board",
-          "task": "luoshu",
+          "task": "wuziqi",
           "n": 1,
           "at": "zhishi"
         }

@@ -16,10 +16,11 @@
     "zh": { "title": 12, "hook": 60, "line": 60, "clue": 40, "ending": 120, "name": 8, "role": 12, "voice": 30, "q": 40, "choice": 10, "prompt": 12, "boss": 40 },
     "en": { "title": 40, "hook": 200, "line": 200, "clue": 140, "ending": 400, "name": 24, "role": 40, "voice": 100, "q": 140, "choice": 30, "prompt": 40, "boss": 100 }
   },
-  "_games": "Each step is one of these, played on the stage at its place. `page` is the board the page deals (scripts/games/<page>.js, or the herb board for lianliankan); riddle and lundao are words: Ling writes the riddle (its answers among 3–4 choices) or the 论道 prompt, the rules judge. `frames` are the story uses a game lends itself to — handed to Ling with the seed. A game with `needs: \"her\"` (你画我猜: the player draws, 银月 names it) is in the seed and passes the lint only while 银月 is awake beside him and on her own line; its `word` (optional, one of the seed's `words`) is the thing drawn, else the rules deal one; `deal` is what its page is handed.",
+  "_games": "Each step is one of these, played on the stage at its place. `page` is the board the page deals (scripts/games/<page>.js, or the herb board for lianliankan); riddle and lundao are words: Ling writes the riddle (its answers among 3–4 choices) or the 论道 prompt, the rules judge. `frames` are the story uses a game lends itself to — handed to Ling with the seed. A game with `needs: \"her\"` (你画我猜: the player draws, 银月 names it) is in the seed and passes the lint only while 银月 is awake beside him and on her own line; its `word` (optional, one of the seed's `words`) is the thing drawn, else the rules deal one; `deal` is what its page is handed. A game marked `retired` (洛书, 10-19 — Hanli: 「9宫格出现一次就可以了」) is never in the seed nor passed by the lint; it stays so a tale already made with it still deals its board.",
   "games": {
     "luoshu": {
       "page": "luoshu",
+      "retired": true,
       "name": { "zh": "洛书", "en": "Luo Shu" },
       "frames": [
         { "zh": "一道机关锁，九宫皆合方开", "en": "A mechanism lock that opens only when all nine cells agree" },
@@ -124,7 +125,7 @@
         { "game": "alchemy", "at": "sishui", "giver": "old-fisher", "line": "这鱼是中了毒的。你懂药么？先救活我这网里的几条。", "clue": "毒是从上游一口古井里渗出来的。" },
         { "game": "riddle", "at": "sibei", "giver": "xiucai", "line": "井边立着一块碑，碑上有谜，我解了三天也没解开。", "clue": "碑文说井底锁着一只河伯的信物。",
           "riddle": { "q": "有眼无珠腹中空，头上长草肚里松。", "answers": ["枕头"], "choices": ["枕头", "井", "鱼篓"] } },
-        { "game": "luoshu", "at": "yunlong", "giver": "xiucai", "line": "信物在云龙山的石室里，门上是一道九宫锁。", "clue": "信物是一枚裂了的玉珏，毒正是从裂缝里出来的。" }
+        { "game": "wuziqi", "at": "yunlong", "giver": "xiucai", "line": "信物在云龙山的石室里，守室的老道士只肯下完一局棋才开门。", "clue": "信物是一枚裂了的玉珏，毒正是从裂缝里出来的。" }
       ],
       "finale": { "kind": "duel", "creature": "fuzhu", "giver": "old-fisher", "line": "夫诸守着那口井。降了它，毒才散得开。", "boss": { "open": "井是吾的。再近一步，水就漫过你。", "won": "罢了，毒随吾去，井还给你们。", "lost": "回去吧。这口井，谁也拿不走。" } },
       "ending": "井水清了。老祁把第一网鱼分给了你，书生说要把这事写进他的笔记里。"
@@ -140,7 +141,7 @@
         { "game": "alchemy", "at": "sishui", "giver": "old-fisher", "line": "These fish were poisoned. Do you know medicine? Save the ones in my net first.", "clue": "The poison seeps from an old well upstream." },
         { "game": "riddle", "at": "sibei", "giver": "xiucai", "line": "There is a stele by the well with a riddle on it. Three days and I have not solved it.", "clue": "The stele says a token of the River Lord is locked at the bottom of the well.",
           "riddle": { "q": "What has a neck but no head, and wears a cap?", "answers": ["bottle"], "choices": ["bottle", "well", "fish"] } },
-        { "game": "luoshu", "at": "yunlong", "giver": "xiucai", "line": "The token is in a stone room on Yunlong Mountain, behind a nine-square lock.", "clue": "It is a cracked jade ring — the poison leaks from the crack." }
+        { "game": "wuziqi", "at": "yunlong", "giver": "xiucai", "line": "The token is in a stone room on Yunlong Mountain; the old Taoist who keeps it opens the door only after a game of stones.", "clue": "It is a cracked jade ring — the poison leaks from the crack." }
       ],
       "finale": { "kind": "duel", "creature": "fuzhu", "giver": "old-fisher", "line": "Fuzhu guards the well. Subdue it and the poison can clear.", "boss": { "open": "The well is mine. Another step and the water takes you.", "won": "Enough. The poison leaves with me; the well is yours.", "lost": "Go home. No one takes this well from me." } },
       "ending": "The well runs clear. Old Qi shares his first catch with you, and the scholar says he will write it all down."

@@ -183,7 +183,8 @@ test('奇遇: a room rolls one small game from the pool — about one in three, 
     games.forEach((g, i) => { assert.notEqual(g, games[i - 1]); seen.set(g, (seen.get(g) ?? 0) + 1); });
   }
   assert.ok(hits / all > 0.22 && hits / all < 0.38, `one room in three or four (${(hits / all).toFixed(2)})`);
-  for (const id of ['qiyu-drawguess', 'qiyu-rope', 'qiyu-huarong', 'qiyu-qiqiao', 'qiyu-luoshu']) assert.ok(seen.get(id) > 0, id);
+  for (const id of ['qiyu-drawguess', 'qiyu-rope', 'qiyu-huarong', 'qiyu-qiqiao', 'qiyu-wuziqi']) assert.ok(seen.get(id) > 0, id);
+  assert.ok(!seen.has('qiyu-luoshu'), '洛书 retired from the pool (10-19): never drawn');
   for (let n = 0; n < 200; n += 1) {
     const q = rollQiyu(content, asleep(s), { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw });
     assert.ok(!Object.values(q).some((x) => x.task === 'qiyu-drawguess'), 'she sleeps: no drawing');
