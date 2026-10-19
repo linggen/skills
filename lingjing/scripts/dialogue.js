@@ -148,6 +148,9 @@ export function advance(r, lang = 'zh') {
 // the rest of THIS 回's passages; the next 回's begin after its turn, from their first beat.
 export function showAll(r, lang = 'zh') {
   if (!playing(r) || atLast(r, lang)) return r;
+  // Words only: a set piece's beat ahead stops it there, from its first word (it plays, in 自动).
+  const all = flat(r, lang), stop = stopAfter(r, lang, current(r, lang).at);
+  if (stop >= 0) return { ...r, i: all[stop].i, j: all[stop].j, all: null };
   const i = huiEndOf(r);
   if (i === r.i && r.j >= lastJ(r, i, lang)) return r;
   return { ...r, all: { i: r.i, j: Math.min(r.j, lastJ(r, r.i, lang)) }, i, j: lastJ(r, i, lang) };
@@ -157,10 +160,29 @@ export function showAll(r, lang = 'zh') {
    last beat, where the reading then stands, so its choices, its count and every order rule are
    跳过's. `all.whole` marks the column; a 回's turn still comes between two columns. */
 export function wholeOf(r, lang = 'zh') {
-  if (!playing(r) || r.all?.whole) return r;
+  if (!playing(r) || r.all?.whole || pieceHere(r, lang)) return r;
   const i = huiEndOf(r), from = r.all ?? { i: r.i, j: Math.min(r.j, lastJ(r, r.i, lang)) };
+  // The column holds words only: it ends before a set piece's beat, which plays after it in 自动.
+  const all = flat(r, lang), stop = stopAfter(r, lang, all.findIndex((b) => b.i === from.i && b.j === from.j));
+  if (stop >= 0) return { ...r, all: { i: from.i, j: from.j, whole: true }, i: all[stop - 1].i, j: all[stop - 1].j };
   return { ...r, all: { i: from.i, j: from.j, whole: true }, i, j: lastJ(r, i, lang) };
 }
+/* A set piece is no words (Hanli, 2026-10-19): 「跳过不能跳过大场面, 小游戏等, 只能跳文字」 and 「播放大场面时, 切到
+   自动模式, 确保大场面能被看到」. A beat that carries one (`{景=id}`, rules/tell.mjs beatsOf `piece`) is a stop:
+   跳过 lands on it (showAll), 全文's column ends before it (wholeOf), and its beat reads in 自动 whatever
+   his way of reading (modeAt) — never kept: the next beat reads as he reads. (A board, a fight, a
+   得牌 reveal, the choices come after the passage, never inside it: a passage skipped to its end opens them.) */
+const isStop = (b) => Boolean(b?.piece && !b.recap);
+/* The first stop after place `at` (among every beat), up to this 回's last beat; -1 when none. */
+function stopAfter(r, lang, at) {
+  const all = flat(r, lang), end = huiEndOf(r), endJ = lastJ(r, end, lang);
+  const last = all.findIndex((b) => b.i === end && b.j === endJ);
+  return all.findIndex((b, k) => k > at && (last < 0 || k <= last) && isStop(b));
+}
+/* Does the beat on show (never a column) carry a set piece? */
+export const pieceHere = (r, lang = 'zh') => Boolean(playing(r) && !r.all?.whole && isStop(current(r, lang).beat));
+/* The way the beat on show reads: 自动 on a set piece's beat, else his own (`mode`, lines.js speedNow). */
+export const modeAt = (r, mode, lang = 'zh') => (pieceHere(r, lang) ? 'mid' : mode);
 /* 慢 or 中 picked over a column (2026-10-15, his: 「由快切回中时, 仍然是全屏」): paced again at
    once, from the beat he was reading (`at`, the paragraph at the top of the column's view; else
    where it opened) — never from its end. What stood above it is in 回看. */
@@ -177,11 +199,19 @@ export function pacedAt(r, at = null, lang = 'zh') {
    for a reader). Every passage stays drawn and told, in 回看 and 读原著 (2026-10-16). */
 export function fitMode(r, mode, { lang = 'zh', at = null } = {}) {
   if (!playing(r)) return r;
-  if (mode === 'fast') return r.all?.whole ? r : wholeOf(r, lang);
+  if (mode === 'fast') return r.all?.whole ? fitColumn(r, lang) : wholeOf(r, lang);
   const p = r.all?.whole ? pacedAt(r, at, lang) : r;
   if (mode !== 'skip' || atLast(p, lang)) return p;
   const s = showAll(p, lang);
   return s !== p ? s : advance(p, lang);
+}
+/* A column kept from before the stops (a reload, a browser that kept 全文) that runs over a set piece's
+   beat: cut where the piece stands — or, the piece its first beat, that beat read in 自动. */
+function fitColumn(r, lang) {
+  const beats = wholeBeats(r, lang), k = beats.findIndex(isStop);
+  if (k < 0) return r;
+  if (k === 0) return { ...r, i: beats[0].i, j: beats[0].j, all: null };
+  return { ...r, i: beats[k - 1].i, j: beats[k - 1].j };
 }
 /* Does the passage on the stage hold the rest of the page (Hanli, 2026-10-16: 「读剧情, 可以简单点,
    把其他都lock, 玩家读完或跳过才能继续」)? While it is shown and not yet at its end — its last beat,

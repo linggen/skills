@@ -35,6 +35,8 @@ MODEL = 'ar9av/FLUX.2-klein-4B-mflux-4bit'
 CAVE = WORLD / 'art' / 'places' / 'yingu-cave.webp'
 HER = WORLD / 'art' / 'people' / 'yinyue.webp'
 ITEM = WORLD / 'art' / 'items' / 'chonglou.webp'
+# The cave of 2026-10-16 (yaowang-cave.webp, cave seed 6) as it was before her figure was redrawn: `git show 484e926a:lingjing/worlds/jiuding/art/setpiece/yaowang-cave.webp`.
+CAVE_1016 = Path(os.environ.get('CAVE_1016', '/tmp/yaowang-cave-1016.webp'))
 
 INK = ('Chinese ink wash with light colour (shuimo dancai) on warm aged rice paper: fine ink linework, soft grey washes, muted '
        'mineral colours, like a plate from a finely illustrated old Chinese novel. Old China, not Japanese, not Western. No text, no '
@@ -43,8 +45,14 @@ ALONE = ('The one subject alone on plain empty pale rice paper that runs to ever
          'no shadow, no sky wash.')
 CUT = ('Match the attached reference picture EXACTLY in style: Chinese ink wash on pale aged rice paper, fine ink outlines, soft '
        'washes, muted colours. Replace its subject entirely: draw none of it. ' + ALONE + ' No text, no seal, no border.')
-GIRL = ('the same girl as the reference: a slight girl of fourteen, very long straight silver hair to her waist, gold eyes, a plain '
-        'snow-white robe with a sash, barefoot, ONE big silver fox tail')
+GIRL = ('the same girl as the reference, exactly her: a slight girl of fourteen, very long loose wispy silver-grey hair falling past '
+        'her waist in fine strands, gold slit-pupil eyes, a sly half-grin, a plain pale robe with faint patterning, crossed collar '
+        'and a sash at the waist, wide sleeves, barefoot, ONE big bushy grey fox tail')
+# 2026-10-19, his: 「腾云里面的yinyue形象不一致」 — the first stand/sit came out as clean anime figures, not the house portrait's
+# pencil-and-wash drawing. Her figures are drawn in the portrait's own hand.
+HER_HAND = ('Drawn exactly in the style of the reference picture: fine sketchy pencil and light grey ink-wash lines on pale aged '
+            'paper, soft sepia and grey tones, delicate hatching on the robe and the fur, no clean digital colouring, not anime, not '
+            'a cartoon. ')
 
 # id: (prompt, (w, h) painted, reference, kind) — kind 'scene' (kept whole) or a cut-out:
 #   ('cut', (w, h) out, anchor 'foot'|'mid', solid below the outline?)
@@ -55,6 +63,13 @@ SUBJECTS = {
            'single silver fox tail, only one, curled on the ground to her right side. Her right hand raises one small torn '
            'corner of flatbread to her mouth, chewing; her left hand rests on her knee. Just one piece of bread. The campfire is out, cold ashes and a thin wisp of smoke. Grey dawn light outside after rain. No seal, no '
            'text.', (1536, 1024), CAVE, 'scene'),
+  # 2026-10-19: her figure in the cave again, in the portrait's hand — the cave of 10-16 (git: yaowang-cave.webp before
+  # this change, kept seed 6) as the picture to repaint, so the place stays as it was.
+  'cave2': ('The same picture, the same cave mouth, rocks, trees, light and composition, unchanged. Redraw only the girl sitting at '
+            'the mouth of the cave with her back to us, in fine sketchy pencil and light grey ink-wash lines like the rest: her very '
+            'long hair loose and wispy, silver-grey, falling past her waist in fine soft strands, not sleek; a plain pale robe with a '
+            'sash; barefoot; ONE big bushy grey fox tail, as large as her body, curling up beside her on her right. Her right hand '
+            'still raises the torn corner of flatbread to her mouth. No text, no seal.', (1536, 1024), CAVE_1016, 'scene'),
   'sky': ('A vast night sky over the eight wildernesses, a Chinese ink-wash painting: deep indigo and slate-grey washes, soft '
           'luminous banks of cloud parting in the middle, a pale silver glow low on the horizon in the middle. NO moon anywhere '
           'in the sky: the moon has not risen yet. At the very bottom many layered far mountain ranges, faint. Grand, empty and '
@@ -82,23 +97,26 @@ SUBJECTS = {
   'cloud': ('A small round puffy cloud of white mist, auspicious-cloud style: soft rounded billows with a clean thin grey ink '
             'outline and curling wisps, pale white inside with a faint grey wash at the bottom. Just the one small cloud. ' + CUT,
             (768, 512), ITEM, ('cut', (512, 320), 'mid', False)),
-  'stand': (f'Full body, standing, {GIRL}: chin up, hands on her hips, a proud smug look, bare feet together, the tail behind '
-            'her. Exactly the reference girl, on plain empty paper, no ground. No text, no seal.', (512, 1024), HER,
-            ('cut', (384, 768), 'foot', False)),
-  'sit': (f'Full body, {GIRL}, fallen and sitting flat on her bottom on the ground, legs out in front with her two bare feet up '
-          'in the air, hands back on the ground, face red, cross and embarrassed, the tail splayed. Exactly the reference girl, '
-          'seen from the side, on plain empty paper, no ground. No text, no seal.', (768, 768), HER, ('cut', (512, 448), 'foot', False)),
+  'stand': (HER_HAND + f'Full body, standing, {GIRL}: chin up, hands on her hips, the sly half-grin, bare feet apart, the tail '
+            'sweeping up behind her on her right. The very girl of the reference in her own pose, alone on plain empty pale paper, no '
+            'ground, no moon, no clouds. No text, no seal.', (512, 1024), HER, ('cut', (384, 768), 'foot', False)),
+  'sit': (HER_HAND + f'Full body, {GIRL}, just fallen and sitting flat on her bottom on the ground, legs out in front with her two '
+          'bare feet up, hands back on the ground, cheeks pink, cross and embarrassed, pouting, the tail splayed behind her. The very '
+          'girl of the reference, seen from the side, alone on plain empty pale paper, no ground. No text, no seal.', (768, 768), HER,
+          ('cut', (512, 448), 'foot', False)),
   'ring': ('A flat ring of glowing grass seen from above at a low angle, a wide thin ellipse: blades of grass lit with a soft pale '
            'jade-green and silver light, in a ring with an empty middle. Just the ring of lit grass. ' + CUT, (1024, 512), ITEM,
            ('cut', (512, 512), 'mid', False, False)),
 }
 NAMES = {'cave': 'yaowang-cave', 'sky': 'yaowang-sky', 'moon': 'yaowang-moon', 'tail': 'yaowang-tail', 'ridge': 'yaowang-ridge',
          'yao': 'yaowang-yao', 'peak': 'yaowang-peak', 'flower': 'yaowang-flower', 'cloud': 'tengyun-cloud',
-         'stand': 'tengyun-stand', 'sit': 'tengyun-sit', 'ring': 'tengyun-ring'}
+         'cave2': 'yaowang-cave', 'stand': 'tengyun-stand', 'sit': 'tengyun-sit', 'ring': 'tengyun-ring'}
 
 # id: (kept seed, paper threshold) — every seed looked at (2026-10-16); what was wrong with the rest:
 KEPT = {
-  'cave': (6, 0),     # 1–3: two tails (or two tufts) and a bread in each hand; 4: a fist raised; 5: two breads
+  'cave': (6, 0),
+  'cave2': (2, 0),    # 10-19, the 10-16 cave repainted for her figure: the portrait's sash, finer hair; 1, 3 the same
+                      # less the sash. FLUX keeps her tail small here whatever the prompt (seen from behind, curled on the floor).     # 1–3: two tails (or two tufts) and a bread in each hand; 4: a fist raised; 5: two breads
   'sky': (3, 0),      # 1, 2: a small moon already painted in (the moon rises on its own); 4: heavy, no glow
   'moon': (4, 0),     # 1, 2 (the outlined disc on paper, a round): ovals; 3: paper corners round its night
   'tail': (5, 30),    # 1–3 (the first prompt): feathers, a quill, blue; 4: a paisley; 6: dark at the root
@@ -106,8 +124,11 @@ KEPT = {
   'peak': (2, 30),    # 1: squat, a stack of cones
   'flower': (1, 30),  # 2: a round bush, less of a spray
   'cloud': (1, 30),   # 2: the outline broken at the left
-  'stand': (1, 30),   # 2: the tail cut by the frame
-  'sit': (2, 30),     # 1: kneeling and looking up, not sat down hard
+  # 2026-10-19, repainted in the portrait's hand (HER_HAND; 「腾云里面的yinyue形象不一致」 — seeds 1, 2 of 10-16 were clean
+  # anime figures). stand 11: the tail small behind her; 13: the tail low behind the robe; 14: the tail on the wrong side,
+  # thin. sit 11: cross-legged, not fallen; 12: a second fur clump at her feet; 14: two tails, one each side.
+  'stand': (12, 30),  # the portrait's pose and hand: hands on hips, the big tail on her right, the sly grin
+  'sit': (13, 30),    # sat down hard, hands back, cross and pink; one tail wrapping round behind her
   'ring': (1, 22),    # 2: a grey square of wash behind it
   'yao': (3, 30),     # 1, 2 (the first prompt): a thin file of walking beasts in profile, coloured, none bowing;
                       # 4, 5: two crowds with a gap of bare paper between. 3 is one band, heads down toward the middle

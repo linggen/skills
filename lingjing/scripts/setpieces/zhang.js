@@ -34,6 +34,8 @@ export const BEATS = [
 ];
 
 export const TITLE = { zh: '漳水立起', en: 'The Zhang Stands Up' };
+/// What follows it in the game (setpiece.html's end line): her memory, then the 鼎归.
+export const AFTER = { zh: '（完。这里接银月的记忆与鼎归。）', en: '(End. Her memory and the homing play next.)' };
 /// The paintings (Codex, 2026-09-30; art/CREDITS.md), all 1536×1024.
 export const ART = {
   a: 'art/setpiece/zhang-a.webp', b: 'art/setpiece/zhang-b.webp', c: 'art/setpiece/zhang-c.webp',

@@ -67,6 +67,8 @@ export const SPEEDS = { slow: 1, mid: 0.33, fast: 0.3, skip: 0.33 };
 export const READ_MODES = ['mid', 'fast'];
 export const WHOLE = 'fast';
 export const END_PAUSE_MS = 1800;
+/* How often words held for a picture look again (createLines `gate`). */
+export const GATE_POLL_MS = 120;
 export function paceOf(sentence, { f = 1, last = false, lang = 'zh' } = {}) {
   const n = String(sentence ?? '').length * (lang === 'en' ? 1 / 3 : 1);
   return Math.round((Math.min(11000, Math.max(2600, 900 + n * 165)) + (last ? END_PAUSE_MS : 0)) * f);
@@ -203,11 +205,16 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
     paint();
     onDone(key);
   }
+  /* The words wait for a picture (`opts.gate`, lingjing.js pieceGate — a set piece under the beat): asked
+     before each sentence comes up (its text) and before the beat ends (null); true holds it, looked at again soon. */
+  const gated = (text) => Boolean(opts.gate?.(text));
+  const waitGate = () => armAt(step, GATE_POLL_MS, f());
   function step() {
     clear();
     if (!host || done) return;
     const ss = sents();
     if (ki < ss.length) {
+      if (gated(ss[ki].textContent)) { waitGate(); return; }
       ki += 1;
       paint();
       if (paused) return;
@@ -220,6 +227,7 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
       arm(() => { si += 1; ki = 0; paint(); onScreen(key, si); step(); }, 420);
       return;
     }
+    if (gated(null)) { waitGate(); return; }
     finish();
   }
   return {
@@ -238,7 +246,7 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
       paint();
       arm(step, o.lead ?? 500);
     },
-    /* A tap: the next sentence now; read through, the beat's way on. */
+    /* A tap: the next sentence now; read through, the beat's way on. Words held for a picture stay held. */
     tap() {
       if (!host) return;
       if (done) { onDone(key, true); return; }

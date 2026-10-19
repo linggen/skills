@@ -9,9 +9,10 @@
 //            bow; on 一怒 a peak cracks and falls in its dust; on 一笑 the slopes burst into flower;
 //   cut    — 「那你为什么吃我的饼？」: the vision runs like ink dropped in water and the cave mouth
 //            soaks back over it — a barefoot girl, her back to him, chewing his bread-corner.
-// The comedy is the contrast: the vision is the whole stage, grand, ~6–8 s, paced to the words as
-// lines.js paces them at 自动 (zh: 「饿了」 comes up ~7 s in; en reads longer — `TEMPO`). Its nine
-// tails are the ones the stumps at her one tail's root will be counted against later.
+// The comedy is the contrast: the vision is the whole stage, grand, ~9 s at its own pace — never the
+// words' (Hanli, 2026-10-19: 「动画太快了, 一下子就过去了」) — and the words wait for it (`CUES`): the boast's
+// second half comes up as the 万妖 rise, 「——饿了」 only once the cave is back. Its nine tails are the
+// ones the stumps at her one tail's root will be counted against later.
 //
 // Painted, never drawn (his rule, 2026-09-30): every picture is a painting (tools/paint-yaowang.py,
 // local FLUX; art/CREDITS.md). Code only places, moves and composites them — one tail painted once
@@ -21,16 +22,15 @@
 import { tweenBag } from './bag.js';
 import { paintedStage } from './painted.js';
 import { fibreCanvas } from '../fx.js';
-import { SPEEDS } from '../lines.js';
 
 const BOOK_ZH = '本王乃青丘之主，仙界妖王。统御万妖，号令八荒，一怒则山崩，一笑则花开——」小满插口道：「那你为什么吃我的饼？」';
 const BOOK_EN = '"This queen is Lady of Qingqiu, Demon Queen of the immortal realm. Ten thousand demons answer to me; the eight wildernesses obey my word. When I rage, mountains fall; when I smile, flowers bloom—" Xiaoman cut in: "Then why are you eating my flatbread?"';
 
-/// The beats: `ms` the vision's own length at zh's pace, `hold` how long it stands before the cut
-/// (short: the question cuts in), `line` the book's words for it, verbatim (the test holds them so).
+/// The beats: `ms` each one's length as it plays (zh), `hold` how long the vision stands whole before
+/// the cut, `line` the book's words for it, verbatim (the test holds them so).
 export const BEATS = [
-  { id: 'vision', art: 'sky', ms: 5800, hold: 200, line: { zh: BOOK_ZH.slice(0, BOOK_ZH.indexOf('」')), en: BOOK_EN.slice(0, BOOK_EN.indexOf('" Xiaoman') + 1) } },
-  { id: 'cut', art: 'cave', ms: 1500, line: { zh: '小满插口道：「那你为什么吃我的饼？」她道：「——饿了。」', en: 'Xiaoman cut in: "Then why are you eating my flatbread?" She said, "—I was hungry."' } },
+  { id: 'vision', art: 'sky', ms: 8700, hold: 600, line: { zh: BOOK_ZH.slice(0, BOOK_ZH.indexOf('」')), en: BOOK_EN.slice(0, BOOK_EN.indexOf('" Xiaoman') + 1) } },
+  { id: 'cut', art: 'cave', ms: 2700, line: { zh: '小满插口道：「那你为什么吃我的饼？」她道：「——饿了。」', en: 'Xiaoman cut in: "Then why are you eating my flatbread?" She said, "—I was hungry."' } },
 ];
 
 export const TITLE = { zh: '青丘之主', en: 'Lady of Qingqiu' };
@@ -50,11 +50,11 @@ export const SIZES = {
 /// The nine tails, left to right as they unfurl: the angle off upright (degrees) and the length (× the
 /// fan's reach). The left ones are the painting mirrored, so every tail curls outward.
 export const TAILS = [-76, -57, -38, -19, 0, 19, 38, 57, 76].map((deg, k) => ({ deg, len: [0.86, 0.94, 1, 1.04, 1.08, 1.04, 1, 0.94, 0.86][k] }));
-/// zh's words are paced quicker than en's (lines.js paceOf): the vision slows to the language's.
-export const TEMPO = { zh: 1, en: 1.35 };
-/// Timed at 自动 ×0.45; 自动 reads at SPEEDS.mid now (×0.33 since 2026-10-19), and the piece keeps up with it
-/// (live 2026-10-19: at ×0.33 the next beat came before the cut, and the joke was lost).
-export const tempoOf = (lang) => (TEMPO[lang] ?? 1) * (SPEEDS.mid / 0.45);
+/// The piece's own pace, apart from the words' speed (2026-10-19: tied to 自动, it ran shorter as 自动 got
+/// faster, and Hanli saw it flash by): each timeline below plays this many times its drawn length — the
+/// vision ~9 s (en a little longer, its words read longer), the cut ~2.7 s. `ms` above is zh's.
+export const TEMPO = { zh: 1.5, en: 1.6 };
+export const tempoOf = (lang) => TEMPO[lang] ?? TEMPO.zh;
 /// Where the cave mouth's girl sits in yaowang-cave.webp (0–1): the cut soaks back from her.
 export const MARKS = { girl: [0.5, 0.56] };
 
@@ -90,7 +90,7 @@ export function layout(W, H) {
   };
 }
 
-// Seconds into the beat, at zh's pace (lines.js, 自动): 「放下。」 first, then the boast from ~1.5 s.
+// Seconds on the beat's drawn timeline (×`TEMPO` as it plays): 「放下。」 first, then the boast.
 const OPEN = 1.3; // the vision soaks in over the cave as 「本王乃青丘之主」 comes up
 const SOAK_IN = 1.0;
 const MOON_RISE = [1.45, 2.2]; // start, length
@@ -101,6 +101,13 @@ const BLOOM_AT = 5.0; // 一笑则花开
 const VISION_END = 5.8;
 const CUT_S = 1.2; // the cut: the cave soaks back over the running ink, done as 「——饿了」 comes up
 
+/// The words that wait for the picture (lingjing.js pieceGate): a sentence holding `text` comes up only
+/// once beat `beat` stands at `t` (s, its own timeline). The boast's 「统御万妖…」 with the 万妖 rising;
+/// 「——饿了」 once the cave has soaked back. The page goes past the paragraph only after the last frame.
+export const CUES = [
+  { beat: 'vision', t: YAO_AT, text: { zh: '统御万妖', en: 'Ten thousand demons' } },
+  { beat: 'cut', t: CUT_S + 0.1, text: { zh: '饿了', en: 'I was hungry' } },
+];
 /// Build the stage and one paused timeline per beat (setpiece.js hands in the env).
 export function build({ PIXI, gsap, app, root, W, H, art, lang = 'zh' }) {
   const bag = tweenBag(gsap);
@@ -231,7 +238,7 @@ export function build({ PIXI, gsap, app, root, W, H, art, lang = 'zh' }) {
       .fromTo(ink, { run: 0 }, { run: 1, duration: CUT_S, ease: 'power1.in' }, 0)
       .fromTo(L.back.soak, { v: 0 }, { v: 1, duration: CUT_S, ease: 'power2.in' }, 0.1)
       .fromTo(L.back.view, { s: 1.2 }, { s: 1.06, fy: cover.fy, duration: CUT_S + 0.6, ease: 'power2.out' }, 0.1)
-      .timeScale(Math.min(1, 1 / tempo)),
+      .timeScale(1 / tempo),
   };
   stage.apply();
   return {

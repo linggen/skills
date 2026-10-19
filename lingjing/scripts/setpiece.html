@@ -20,7 +20,8 @@
 </head>
 <body>
   <!-- A set piece alone, to watch before a scene is wired to it:
-       ?name=zhang&lang=zh|en&auto=1&still=1. Nothing is saved; the page only plays the piece. -->
+       ?name=zhang&lang=zh|en&still=1. It plays by itself at the piece's own pace (&auto=0: a tap
+       for each beat); 重播 plays it again. Nothing is saved; the page only plays the piece. -->
   <div class="spv">
     <h1 id="title">…</h1>
     <div class="spstage" id="stage" title="点一下：下一段"></div>
@@ -43,22 +44,25 @@
     const name = (q.get('name') || 'zhang').replace(/[^a-z]/g, '');
     const lang = q.get('lang') === 'en' ? 'en' : 'zh';
     const still = q.get('still') === '1' || matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let auto = q.get('auto') === '1';
+    let auto = q.get('auto') !== '0';
     // &beats=still,rise,bingyi plays a run of the piece, as a scene declares it.
     const beats = (q.get('beats') || '').split(',').map((x) => x.trim()).filter(Boolean);
     const def = await import(`./setpieces/${name}.js`);
     const $ = (id) => document.getElementById(id);
     $('title').textContent = def.TITLE?.[lang] ?? name;
-    const W = { zh: { next: '下一段 ›', skip: '跳过', again: '重播', auto: '自动', end: '（完。这里接银月的记忆与鼎归。）' }, en: { next: 'Next ›', skip: 'Skip', again: 'Replay', auto: 'Auto', end: '(End. Her memory and the homing play next.)' } }[lang];
+    const W = { zh: { next: '下一段 ›', skip: '跳过', again: '重播', auto: '自动', end: '（完）' }, en: { next: 'Next ›', skip: 'Skip', again: 'Replay', auto: 'Auto', end: '(End.)' } }[lang];
+    // What follows the piece in the game, where the piece says (zhang: her memory and the 鼎归); else just the end.
+    const after = def.AFTER?.[lang] ?? W.end;
     for (const k of ['next', 'skip', 'again', 'auto']) $(k).textContent = W[k];
     let ctl = null;
     const start = async () => {
       ctl?.destroy();
       $('line').textContent = '';
+      const t0 = performance.now();
       ctl = await playSetPiece($('stage'), name, {
-        lang, still, auto, beats: beats.length ? beats : null,
+        lang, still, auto, hold: 600, beats: beats.length ? beats : null, // the game's hold (lingjing.js layBeatPiece)
         onBeat: (i, b) => { $('line').textContent = b.text; $('count').textContent = `${i + 1} / ${beats.length || def.BEATS.length} · ${b.id}`; },
-        onDone: () => { $('line').textContent += ` ${W.end}`; },
+        onDone: () => { $('line').textContent += ` ${after}`; $('count').textContent += ` · ${((performance.now() - t0) / 1000).toFixed(1)} s`; },
       });
       window.__sp = ctl;
     };

@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { END_PAUSE_MS, READ_MODES, SPEEDS, WHOLE, createLines, keepSpeed, linesHtml, paceOf, paraHtml, screensOf, sentencesOf, speedNow, voiceOf, wholeNow } from '../scripts/lines.js';
+import { END_PAUSE_MS, GATE_POLL_MS, READ_MODES, SPEEDS, WHOLE, createLines, keepSpeed, linesHtml, paceOf, paraHtml, screensOf, sentencesOf, speedNow, voiceOf, wholeNow } from '../scripts/lines.js';
 import { DAYPARTS, WEATHER, backdropOf } from '../scripts/atmos.js';
 import { KINDS } from '../scripts/rules/weather.mjs';
 
@@ -120,6 +120,30 @@ test('the clock: sentence after sentence by itself, screen after screen, then th
   lines.sync(host, 'b1');
   lines.tap();
   assert.deepEqual(done.at(-1), ['b1', true]);
+});
+
+test('the words wait for a picture: a gated sentence, or the beat\'s end, holds — a tap too — until the gate opens', () => {
+  const t = clock(), done = [];
+  let open = false;
+  const lines = createLines({ onDone: (k) => done.push(k), timer: t, f: () => 1 });
+  const { host, lit } = fakeHost([['甲。', '乙饿了。']]);
+  lines.sync(host, 'g1', { gate: (text) => !open && (text == null || text.includes('饿了')) });
+  t.next();
+  assert.deepEqual(lit(), [1]);
+  t.next();
+  assert.deepEqual(lit(), [1], 'the cue\'s sentence waits for the picture');
+  assert.deepEqual(t.pending(), [GATE_POLL_MS], 'looked at again soon');
+  lines.tap();
+  assert.deepEqual(lit(), [1], 'a tap does not bring it either');
+  open = true;
+  t.next();
+  assert.deepEqual(lit(), [2], 'the picture there: the sentence comes up');
+  open = false;
+  t.next();
+  assert.deepEqual(done, [], 'read through, the beat still waits for the picture\'s end');
+  open = true;
+  t.next();
+  assert.deepEqual(done, ['g1']);
 });
 
 test('a tap brings the next sentence now; holding stops the clock, letting go goes on; 跳过 shows the beat whole', () => {
@@ -299,7 +323,9 @@ test('English sentences keep their space when laid side by side (快\'s column, 
 });
 test('跳过 in 全文 turns the column to its last page (Hanli 2026-10-16: 「点跳过没有反应」)', () => {
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
-  assert.match(src, /function skipPassage\(\) \{\n[^\n]*\n  if \(pager\.on\) \{ while \(pager\.turn\(1\)\); return; \}/);
+  assert.match(src, /function skipPassage\(\) \{\n(?:[^\n]*\n){1,3}  if \(pager\.on\) \{ while \(pager\.turn\(1\)\); return; \}/);
+  // …but never past a set piece playing under the beat (Hanli 2026-10-19: 「跳过不能跳过大场面」): its last frame first.
+  assert.match(src, /function skipPassage\(\) \{\n[^\n]*\n  if \(piecePlays\(\)\) \{ pieceToEnd\(\); return; \}/);
 });
 test('after Restart or Load Ling says nothing more: the fresh chat asks for the opening (Hanli 2026-10-16)', () => {
   const steer = fs.readFileSync(path.join(ROOT, 'guide/steer.md'), 'utf8');

@@ -7,18 +7,18 @@
 // words): she stamps; a small cloud gathers under her bare feet and lifts her, slowly; at half a
 // zhang it wobbles and pops; she drops and sits; and the grass lights up in rings around where she
 // sits. Small on purpose, beside the boast (setpieces/yaowang.js): the same girl, the same valley.
-// Paced to lines.js's 自动 (zh: 「散了」 comes up ~5.8 s in, 「扑通」 ~8.2 s; en a little later — `TEMPO`).
+// At its own pace, ~6 s, never the words' (Hanli, 2026-10-19: 「动画太快了」); the words wait for it (`CUES`):
+// 「晃了一晃…散了」 as the cloud wobbles, 「扑通」 as she lands.
 //
 // Painted, never drawn: the valley is the house painting of 银叶谷 (art/places/yingu.webp); she
 // standing, she sitting, the cloud and the ring of lit grass are cut-outs (tools/paint-yaowang.py,
 // local FLUX). Code places and moves them; it draws nothing.
 import { tweenBag } from './bag.js';
 import { paintedStage, stillOf } from './painted.js';
-import { SPEEDS } from '../lines.js';
 
 export const BEATS = [
   {
-    id: 'yun', art: 'vale', ms: 9600,
+    id: 'yun', art: 'vale', ms: 6100,
     line: {
       zh: '说着两只光脚在地下轻轻一跺，只见她脚底下腾起一团白蒙蒙的云气，托着她，悠悠地升了起来',
       en: 'She stamped her two bare feet lightly on the ground, and a puff of milky cloud rose up under her and bore her up, floating gently',
@@ -35,9 +35,9 @@ export const ART = {
 export const SIZES = { vale: [1536, 1024], stand: [384, 768], sit: [512, 448], cloud: [512, 320], ring: [512, 512] };
 /// The ring of lit grass lies on the ground: its painting (seen from above) laid flat.
 const FLAT = 0.34;
-export const TEMPO = { zh: 1, en: 1.1 };
-/// Timed at 自动 ×0.45; it keeps up with 自动 as it reads now (SPEEDS.mid, ×0.33 since 2026-10-19).
-export const tempoOf = (lang) => (TEMPO[lang] ?? 1) * (SPEEDS.mid / 0.45);
+/// The piece's own pace (×its drawn length), apart from the words' speed: ~6 s, she sits at ~4.6 s.
+export const TEMPO = { zh: 1, en: 1 };
+export const tempoOf = (lang) => TEMPO[lang] ?? TEMPO.zh;
 /// The camera on the valley: a little low, on the grass before the stream.
 export const SHOT = [{ s: 1.3, fx: 0.42, fy: 0.74 }, { s: 1.3, fx: 0.42, fy: 0.74 }]; // held: she stands on its grass
 
@@ -50,7 +50,14 @@ export function layout(W, H) {
   return { x, y, h, rise: h * 0.62, ringW: h * 1.05 };
 }
 
-const STAMP = 2.2, RISE = [2.5, 3.1], WOBBLE = [5.9, 1.0], POP = 7.0, DROP_S = 0.36, RINGS = 7.5, RING_GAP = 0.4, END = 9.6;
+// Seconds on the drawn timeline: the valley soaks in, she stamps, rises slowly, wobbles, pops, sits, the grass lights.
+const SOAK = 1.0, STAMP = 1.5, RISE = [1.8, 1.4], WOBBLE = [3.2, 1.0], POP = 4.25, DROP_S = 0.36, RINGS = 4.7, RING_GAP = 0.2, RING_S = 1.0, END = 6.1;
+/// The words that wait for the picture (lingjing.js pieceGate): a sentence holding `text` comes up only once
+/// beat `beat` stands at `t` (s, its own timeline) — the wobble with 「晃了一晃」, the landing with 「扑通」.
+export const CUES = [
+  { beat: 'yun', t: WOBBLE[0], text: { zh: '晃了一晃', en: 'wobbled' } },
+  { beat: 'yun', t: POP + 0.05 + DROP_S, text: { zh: '扑通', en: 'thump' } },
+];
 
 export function build({ PIXI, gsap, app, root, W, H, art, lang = 'zh' }) {
   const bag = tweenBag(gsap);
@@ -91,7 +98,7 @@ export function build({ PIXI, gsap, app, root, W, H, art, lang = 'zh' }) {
       const tl = bag.timeline({ paused: true });
       const cs = cloud.scale.x, ss = stand.scale.x;
       tl.call(unseen, null, 0)
-        .fromTo(L.soak, { v: 0 }, { v: 1, duration: 1.4, ease: 'power1.inOut' }, 0)
+        .fromTo(L.soak, { v: 0 }, { v: 1, duration: SOAK, ease: 'power1.inOut' }, 0)
         .fromTo(L.view, { ...SHOT[0] }, { ...SHOT[1], duration: END, ease: 'sine.inOut' }, 0)
         // The stamp: a little dip, and the cloud gathers under her feet.
         .fromTo(stand.scale, { y: ss }, { y: ss * 0.96, duration: 0.12, yoyo: true, repeat: 1, ease: 'power1.inOut' }, STAMP)
@@ -113,8 +120,8 @@ export function build({ PIXI, gsap, app, root, W, H, art, lang = 'zh' }) {
       // 那草一圈一圈地亮开去: ring after ring of lit grass opens out from where she sits, and stays faintly lit.
       rings.forEach((r, k) => {
         const to = ringScale * [1, 1.75, 2.6][k];
-        tl.fromTo(r.scale, { x: to * 0.35, y: to * 0.35 * FLAT }, { x: to, y: to * FLAT, duration: 1.4, ease: 'power2.out' }, RINGS + k * RING_GAP)
-          .fromTo(r, { alpha: 0 }, { keyframes: [{ alpha: 0.95, duration: 0.45 }, { alpha: [0.7, 0.5, 0.35][k], duration: 0.95 }], ease: 'sine.out' }, RINGS + k * RING_GAP);
+        tl.fromTo(r.scale, { x: to * 0.35, y: to * 0.35 * FLAT }, { x: to, y: to * FLAT, duration: RING_S, ease: 'power2.out' }, RINGS + k * RING_GAP)
+          .fromTo(r, { alpha: 0 }, { keyframes: [{ alpha: 0.95, duration: 0.4 }, { alpha: [0.7, 0.5, 0.35][k], duration: RING_S - 0.4 }], ease: 'sine.out' }, RINGS + k * RING_GAP);
       });
       tl.to({}, { duration: 0.01 }, END);
       return tl.timeScale(1 / tempo);

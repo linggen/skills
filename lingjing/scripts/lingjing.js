@@ -48,7 +48,7 @@ import { placeArtOf } from './placeart.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, beatKey, choicesUp, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
+import { advance, atLast, beatKey, choicesUp, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
 import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lines.js';
 import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
@@ -2337,7 +2337,7 @@ function dialogBoxHtml(slots) {
   if (boxYields(slots)) return log;
   const voice = hasAudio(audio) ? dubOn() : null;
   const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
-  const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: speedNow(), faces: r.all?.whole ? firstFaces() : [] }) : '';
+  const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: modeAt(r, speedNow(), lang()), faces: r.all?.whole ? firstFaces() : [] }) : '';
   return story + log;
 }
 
@@ -2365,12 +2365,13 @@ function openFromTray(id) {
    same beat carries on; a new beat starts at its first sentence. Read through, the page goes
    on by itself — the same `advance` a tap was (dialogue.js), so every order rule holds as it
    did: the 回's turn, the games after the passage, the choices at its last beat. */
-const lines = createLines({ onDone: (key, tapped) => storyDone(key, tapped) });
+// A set piece's beat reads in 自动 whatever his way (dialogue.js modeAt): its words at 自动's pace.
+const lines = createLines({ onDone: (key, tapped) => storyDone(key, tapped), f: () => SPEEDS[modeAt(readingHere(), speedNow(), lang())] });
 function syncLines() {
   const el = $('dlg')?.querySelector('.story'), r = readingHere();
   if (!el || !playing(r)) { lines.sync(null); pager.sync(null); syncLock(); return; }
   // 跳过 stands on the 回's last beat shown whole, read at once; 快's column is read at once too.
-  lines.sync(el, el.dataset.story, { lang: lang(), instant: Boolean(r.all && (r.all.whole || atLast(r, lang()))) });
+  lines.sync(el, el.dataset.story, { lang: lang(), instant: Boolean(r.all && (r.all.whole || atLast(r, lang()))), gate: pieceGate });
   pager.sync(el);
   syncLock();
 }
@@ -2498,7 +2499,8 @@ function storyDone(key, tapped = false) {
   // 快's column is his to read: it goes on only at his 「接着往下」 (or a key), never by itself —
   // and never past its choices.
   if (r.all?.whole && (!tapped || (last && $('dlg')?.querySelector('.story .wholecol .wayacts')))) return;
-  const held = view.logOpen || view.luOpen || view.gearOpen || lines.paused || document.body.classList.contains('reading')
+  // The set piece under the beat plays to its last frame before the page goes past its paragraph.
+  const held = piecePlays() || view.logOpen || view.luOpen || view.gearOpen || lines.paused || document.body.classList.contains('reading')
     || (last && (look?.tell_owed || drawingTold)) || (!tapped && narrator.sounding);
   if (held) { doneWait = setTimeout(() => storyDone(key), 700); return; }
   nextBeat();
@@ -2517,6 +2519,8 @@ function nudgeWays() {
 let holdSwallow = false;
 function storyTap() {
   if (holdSwallow) { holdSwallow = false; return; }
+  // A set piece playing under the beat: a tap brings its last frame, never the next paragraph (the words go on by themselves).
+  if (piecePlays()) { pieceToEnd(); return; }
   if (lines.key && $('dlg')?.querySelector('.story')) lines.tap();
   else nextBeat();
 }
@@ -2525,6 +2529,8 @@ function storyTap() {
 function setSpeed(v) { if (v === 'skip') return skipPassage(); keepSpeed(v); render(); }
 /* 跳过 — once (Hanli, 2026-10-16: 「点一次, 只能跳过一次」): this passage to its end and its choices; the next reads as he reads. */
 function skipPassage() {
+  // Words only (Hanli, 2026-10-19: 「跳过不能跳过大场面」): during a set piece, its last frame — never past it.
+  if (piecePlays()) { pieceToEnd(); return; }
   // 全文: the passage already stands whole as a column; 跳过 turns to its last page (its choices).
   if (pager.on) { while (pager.turn(1)); return; }
   const r = readingHere();
@@ -4175,7 +4181,7 @@ function watchMemory() {
   if (last) playMemory(last.n);
 }
 /* 大场面 · 筑基天象 (setpiece.js, one runner for both): a box over the whole stage.
-   A tap plays the next beat (with the dialogue box's rhythm), 跳过 ends it, and
+   A tap plays the next beat (with the dialogue box's rhythm), 跳过 brings its last frame, and
    after the last beat a tap (or a while) puts it away. The book's line for each
    beat is said under the picture, in DOM; reduced motion plays still frames. */
 let pieceOn = null;
@@ -4204,7 +4210,9 @@ async function playPiece(id, beats = null, said = null) {
   const mine = pieceOn = { id, box, ctl: null, over: false };
   const close = () => { if (pieceOn !== mine) return; mine.ctl?.destroy?.(); box.remove(); pieceOn = null; render(); };
   box.addEventListener('click', (e) => {
-    if (e.target.closest('.spskip')) { mine.ctl?.skip?.(); close(); } else if (mine.over) close();
+    // 跳过 here is its last frame (Hanli, 2026-10-19: 「跳过不能跳过大场面」); once over, a tap puts it away.
+    if (mine.over) close();
+    else if (e.target.closest('.spskip')) mine.ctl?.skip?.();
     else mine.ctl?.tap?.();
   });
   try {
@@ -4237,12 +4245,32 @@ const playedPieces = () => {
   if (!piecesPlayed) { try { piecesPlayed = new Set(JSON.parse(localStorage.getItem(PIECES_KEY) ?? '[]')); } catch { piecesPlayed = new Set(); } }
   return piecesPlayed;
 };
-let beatBack = null; // { key, box, ctl } — the piece under the beat on show
+let beatBack = null; // { key, box, ctl, def, again, at, ff } — the piece under the beat on show
+/* Is the piece under the beat still playing (first time here; its last frame not yet up)? The page waits for it:
+   its paragraph's words that wait for a picture (the piece's `CUES`), the paragraph's end, a tap, 跳过. A piece
+   seen before on this save shows still and holds nothing; one whose paintings never come holds 5 s at most. */
+const PIECE_LOAD_MS = 5000;
+const piecePlays = () => Boolean(beatBack && !beatBack.again && (beatBack.ctl ? !beatBack.ctl.ended : performance.now() - beatBack.at < PIECE_LOAD_MS));
+/* A tap (or 跳过) during the piece: its last frame now; the words then go on by themselves. */
+function pieceToEnd() {
+  const b = beatBack;
+  if (!b) return;
+  if (b.ctl) b.ctl.skip(); else b.ff = true;
+}
+/* lines.js's gate: a sentence (its text) — or the paragraph's end (null) — waits while the piece has not reached it. */
+function pieceGate(text) {
+  if (!piecePlays()) return false;
+  const b = beatBack;
+  if (!b.ctl) return true;
+  if (text == null) return true;
+  const cue = (b.def?.CUES ?? []).find((c) => text.includes(c.text?.[lang()] ?? c.text?.zh));
+  return Boolean(cue) && !b.ctl.reached(cue);
+}
 function beatPiece(slots) {
   const r = readingHere();
   if (pieceOn || !playing(r) || boxYields(slots) || momentPending.size || stageBusy()) return dropBeatPiece();
-  // 快's column lays the first set piece it holds under all of it: the words stand over its picture.
-  const beat = r.all?.whole ? wholeBeats(r, lang()).find((b) => b.piece && !b.recap) : current(r, lang()).beat;
+  // 全文's column holds no piece (dialogue.js wholeOf ends it before one): the piece's beat reads in 自动.
+  const beat = r.all?.whole ? null : current(r, lang()).beat;
   if (!beat?.piece || beat.recap) return dropBeatPiece();
   const key = `${look?.run ?? ''}|${r.items[beat.i ?? r.i]?.id}|${beat.piece}`;
   if (beatBack?.key === key) return;
@@ -4266,13 +4294,15 @@ async function layBeatPiece(key, id, still) {
   box.className = 'spback';
   box.dataset.piece = id;
   view$.insertBefore(box, view$.querySelector('.shade')?.nextSibling ?? null);
-  const mine = beatBack = { key, box, ctl: null };
+  const mine = beatBack = { key, box, ctl: null, def: null, again: still, at: performance.now(), ff: false };
   try {
-    const def = await import(`./setpieces/${id}.js`);
+    const def = mine.def = await import(`./setpieces/${id}.js`);
     const name = def.TITLE?.[lang()] ?? def.TITLE?.zh;
     if (name) box.insertAdjacentHTML('beforeend', `<div class="sptitle"><b>${esc(name)}</b></div>`);
-    mine.ctl = await playSetPiece(box, id, { lang: lang(), still: still || stillMotion(), cover: true, auto: true });
+    // `auto`: beat after beat at the piece's own pace (setpieces/<id>.js TEMPO), never the words'.
+    mine.ctl = await playSetPiece(box, id, { lang: lang(), still: still || stillMotion(), cover: true, auto: true, hold: 600 });
     if (beatBack !== mine) mine.ctl?.destroy?.();
+    else if (mine.ff) mine.ctl.skip();
   } catch (e) { console.warn('[lingjing] set piece', id, e); if (beatBack === mine) dropBeatPiece(); }
 }
 

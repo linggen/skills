@@ -1,8 +1,8 @@
 // 青丘之主 and 腾云 (setpieces/yaowang.js, tengyun.js): 第一回's dawn in 银叶谷 (00-yinyue). Her boast
 // made visible — the moon, nine tails, the 万妖 bowing, a peak falling, the slopes flowering — cut off by
 // 「那你为什么吃我的饼？」; and her little cloud that pops. Each plays AT its paragraph (`{景=id}`, the
-// page's beatPiece), inside the passage: 全文 lays the first under the column, 跳过 skips it with the
-// passage, reduced motion shows its last frame, standing as long as the beat would have played.
+// page's beatPiece), inside the passage, at its own pace; the words wait for it. 跳过 stops at it, 全文's column
+// ends before it (it reads in 自动), reduced motion shows its last frame, standing as long as the beat plays.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { playOf, tellOf } from '../scripts/rules/tell.mjs';
-import { advance, atLast, current, emptyReading, fitMode, wholeBeats, withTold } from '../scripts/dialogue.js';
+import { advance, atLast, current, emptyReading, fitMode, modeAt, wholeBeats, withTold } from '../scripts/dialogue.js';
 import { paceOf, screensOf, SPEEDS } from '../scripts/lines.js';
 import { checkJieben } from '../scripts/jieben.mjs';
 import { beatStepper } from '../scripts/setpiece.js';
@@ -42,16 +42,6 @@ function readingAt(lang, id) {
   let r = withTold(emptyReading('00-cave'), tell, s.scene);
   for (let k = 0; k < 200 && current(r, lang).beat.piece !== id; k += 1) r = advance(r, lang);
   return r;
-}
-/* When each sentence of a beat comes up at 自动 (lines.js: the clock's lead, then each sentence's pace). */
-function cues(text, lang) {
-  const f = SPEEDS.mid, out = [];
-  let t = 500 * f;
-  for (const screen of screensOf(text, lang)) {
-    screen.forEach((s, i) => { out.push([t / 1000, s]); t += paceOf(s, { f, last: i === screen.length - 1, lang }); });
-    t += 420 * f;
-  }
-  return out;
 }
 const at = (cs, re) => cs.find(([, s]) => re.test(s))?.[0];
 
@@ -106,40 +96,91 @@ test('each plays at its own paragraph of the dawn\'s passage, once, and nowhere 
   }
 });
 
-test('the vision keeps time with the words at 自动: it opens on 「本王乃…」 and the cave is back as 「——饿了」 comes up', () => {
-  for (const lang of ['zh', 'en']) {
-    const text = readingAt(lang, 'yaowang');
-    const beat = current(text, lang).beat;
-    const cs = cues(beat.text, lang);
-    const boast = at(cs, lang === 'zh' ? /本王乃/ : /This queen is/), hungry = at(cs, lang === 'zh' ? /饿了/ : /hungry/);
-    const tempo = Y.tempoOf(lang);
-    const [vision, cut] = Y.BEATS;
-    const opens = 1.3 * tempo, cutDone = (vision.ms / 1000) * tempo + vision.hold / 1000 + (cut.ms / 1000) * Math.min(1, tempo);
-    assert.ok(Math.abs(opens - boast) < 0.6, `${lang}: the vision opens at ${opens.toFixed(1)} s, the boast at ${boast.toFixed(1)} s`);
-    assert.ok(cutDone <= hungry + 0.5 && cutDone >= hungry - 1.5, `${lang}: the cave back at ${cutDone.toFixed(1)} s, 「饿了」 at ${hungry.toFixed(1)} s`);
-    assert.ok((vision.ms / 1000) * tempo - 1.3 * tempo >= 3, `${lang}: the vision holds the whole stage for seconds, not a flash`);
+/* The piece's clock (s): where each beat starts as it plays — its own pace (`TEMPO`), never the words'. */
+function pieceClock(P, lang) {
+  const k = P.tempoOf(lang) / P.tempoOf('zh'), out = {};
+  let t = 0;
+  for (const b of P.BEATS) { out[b.id] = t; t += (b.ms / 1000) * k + (b.hold ?? 0) / 1000; }
+  return { start: out, end: t - ((P.BEATS.at(-1).hold ?? 0) / 1000), tempo: P.tempoOf(lang) };
+}
+/* When each sentence comes up at 自动 with the piece under it: its reading pace, but never before the piece
+   reached its cue (lingjing.js pieceGate) — and when the beat may end (the piece's last frame up). */
+function shown(P, text, lang) {
+  const clk = pieceClock(P, lang), f = SPEEDS.mid, out = [];
+  let t = 0.5 * f;
+  for (const screen of screensOf(text, lang)) {
+    screen.forEach((s, i) => {
+      const cue = P.CUES.find((c) => s.includes(c.text[lang]));
+      if (cue) t = Math.max(t, clk.start[cue.beat] + (cue.t === 'end' ? 0 : cue.t * clk.tempo));
+      out.push([t, s]);
+      t += paceOf(s, { f, last: i === screen.length - 1, lang }) / 1000;
+    });
   }
-  // The cloud: up as she stamps, popped as 「散了」 is read, down by 「扑通」.
-  const cs = cues(readingAt('zh', 'tengyun') && current(readingAt('zh', 'tengyun'), 'zh').beat.text, 'zh');
-  // The piece's own marks, at its tempo (tengyun.js: the stamp at 2.2 s, the pop at 7.0 s, ×tempoOf).
-  const t = T.tempoOf('zh'), stamp = 2.2 * t, pop = 7.0 * t;
-  assert.ok(at(cs, /跺/) <= stamp + 0.5 && Math.abs(at(cs, /散了/) - pop) < 1.2 && at(cs, /扑通/) >= pop - 0.5, `the cloud's cues against the words: 跺 ${at(cs, /跺/).toFixed(1)}, 散了 ${at(cs, /散了/).toFixed(1)}, 扑通 ${at(cs, /扑通/).toFixed(1)}; pop ${pop.toFixed(1)}`);
+  return { out, ends: Math.max(t, clk.end), clk };
+}
+
+test('each plays at its own pace, apart from 自动\'s speed: the vision ~9 s before the cut, the cloud ~6 s', () => {
+  for (const P of [Y, T]) assert.doesNotMatch(read(`scripts/setpieces/${P === Y ? 'yaowang' : 'tengyun'}.js`), /SPEEDS|lines\.js/, 'not tied to the words\' speed');
+  for (const lang of ['zh', 'en']) {
+    const y = pieceClock(Y, lang), t = pieceClock(T, lang);
+    assert.ok(y.start.cut >= 8 && y.start.cut <= 12, `${lang}: the vision ${y.start.cut.toFixed(1)} s before the cut`);
+    assert.ok(t.end >= 4 && t.end <= 7, `${lang}: the cloud ${t.end.toFixed(1)} s`);
+  }
 });
 
-test('跳过 skips the piece with the passage; 全文 lays the boast under the column', () => {
+test('the words wait for the picture: 「统御万妖」 with the 万妖, 「——饿了」 right after the cut; the cloud\'s 「扑通」 as she lands', () => {
   for (const lang of ['zh', 'en']) {
-    const r = readingAt(lang, 'yaowang');
-    assert.equal(current(r, lang).beat.piece, 'yaowang');
-    const skipped = fitMode(r, 'skip', { lang });
-    assert.ok(atLast(skipped, lang) || skipped.closed || skipped.i > r.i, `${lang}: 跳过 goes to the passage's end`);
-    assert.equal(current(skipped, lang).beat.piece, undefined, `${lang}: no piece on the beat it stands on`);
-    const whole = fitMode(r, 'fast', { lang });
-    assert.equal(wholeBeats(whole, lang).find((b) => b.piece && !b.recap)?.piece, 'yaowang', `${lang}: the column's first piece`);
+    for (const [id, P] of Object.entries(PIECES)) {
+      const beat = current(readingAt(lang, id), lang).beat;
+      // Every cue is in one sentence of the game's paragraph.
+      for (const c of P.CUES) assert.equal(screensOf(beat.text, lang).flat().filter((s) => s.includes(c.text[lang])).length, 1, `${id} ${lang}: 「${c.text[lang]}」 in one sentence`);
+    }
+    const { out, clk, ends } = shown(Y, current(readingAt(lang, 'yaowang'), lang).beat.text, lang);
+    const hungry = at(out, lang === 'zh' ? /饿了/ : /hungry/), cutDone = clk.start.cut + (1.2 + 0.1) * clk.tempo;
+    assert.ok(hungry >= cutDone && hungry < cutDone + 0.3, `${lang}: 「饿了」 at ${hungry.toFixed(1)} s, the cave back at ${cutDone.toFixed(1)} s`);
+    assert.ok(hungry >= 8 && hungry <= 13, `${lang}: the punchline ${hungry.toFixed(1)} s in`);
+    assert.ok(ends >= clk.end, `${lang}: the paragraph ends after the piece's last frame`);
+    const c = shown(T, current(readingAt(lang, 'tengyun'), lang).beat.text, lang);
+    const land = at(c.out, lang === 'zh' ? /扑通/ : /thump/);
+    assert.ok(land >= c.clk.end - 2.5 && land <= c.clk.end + 0.5, `${lang}: 「扑通」 at ${land.toFixed(1)} s, the cloud ends ${c.clk.end.toFixed(1)} s`);
   }
-  // The page drops the piece when the beat on show carries none (跳过's last beat), and plays it only where the story shows it.
+  // The page: the clock's gate is the piece's, a tap during it brings its last frame, the paragraph waits for it.
+  assert.match(page, /gate: pieceGate/);
+  assert.match(page, /function storyTap\(\) \{\n[^\n]*\n[^\n]*\n  if \(piecePlays\(\)\) \{ pieceToEnd\(\); return; \}/);
+  assert.match(page, /const held = piecePlays\(\) \|\|/);
+  assert.match(runner, /get ended\(\) \{ return lastBeat\(\); \}/);
+});
+
+test('跳过 skips words only: it stops at each piece\'s beat; 全文\'s column ends before it and the piece reads in 自动', () => {
+  for (const lang of ['zh', 'en']) {
+    const { s, tell } = atDawn(lang);
+    let r = withTold(emptyReading('00-cave'), tell, s.scene);
+    r = { ...r, i: tell.findIndex((t) => t.of === 'scene' && t.id === '00-yinyue'), j: 0 };
+    // 跳过 from the passage's first beat: onto the boast, then onto the cloud, then the end.
+    const s1 = fitMode(r, 'skip', { lang });
+    assert.equal(current(s1, lang).beat.piece, 'yaowang', `${lang}: 跳过 stops at the boast`);
+    assert.equal(s1.all, null, `${lang}: from its first word, not shown whole`);
+    assert.equal(modeAt(s1, 'fast', lang), 'mid', `${lang}: a piece's beat reads in 自动`);
+    assert.equal(fitMode(s1, 'fast', { lang }), s1, `${lang}: 全文 leaves the piece's beat in 自动`);
+    const s2 = fitMode(s1, 'skip', { lang });
+    assert.equal(current(s2, lang).beat.piece, 'tengyun', `${lang}: then at the cloud`);
+    const s3 = fitMode(s2, 'skip', { lang });
+    assert.ok(atLast(s3, lang) && !current(s3, lang).beat.piece, `${lang}: then the end`);
+    // 全文: the column runs up to the beat before the boast; on from it, the beat after the boast up to before the cloud.
+    const w1 = fitMode(r, 'fast', { lang });
+    assert.ok(w1.all?.whole && !wholeBeats(w1, lang).some((b) => b.piece), `${lang}: no piece in the column`);
+    assert.equal(current(advance(w1, lang), lang).beat.piece, 'yaowang', `${lang}: 接着往下 → the boast's beat`);
+    const w2 = fitMode(advance(s1, lang), 'fast', { lang });
+    assert.ok(!wholeBeats(w2, lang).some((b) => b.piece) && current(advance(w2, lang), lang).beat.piece === 'tengyun', `${lang}: and so for the cloud`);
+    // A column kept from before (a reload) over the boast is cut where it stands.
+    const kept = { ...r, all: { i: r.i, j: 0, whole: true }, i: s3.i, j: s3.j };
+    assert.ok(!wholeBeats(fitMode(kept, 'fast', { lang }), lang).some((b) => b.piece), `${lang}: a kept column cut before the piece`);
+  }
+  // The page drops the piece when the beat on show carries none, and plays it only where the story shows it.
   const fn = page.slice(page.indexOf('function beatPiece('), page.indexOf('function beatPiece(') + 900);
   assert.match(fn, /if \(!beat\?\.piece \|\| beat\.recap\) return dropBeatPiece\(\);/);
   assert.doesNotMatch(fn, /yaowang|tengyun|00-yinyue/, 'no scene or piece named in code');
+  assert.match(page, /function skipPassage\(\) \{\n[^\n]*\n  if \(piecePlays\(\)\) \{ pieceToEnd\(\); return; \}/, '跳过 during a piece: its last frame');
 });
 
 test('reduced motion: the last frame, standing as long as the beat would play', () => {

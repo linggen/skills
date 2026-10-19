@@ -147,9 +147,23 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
   };
   react(steps.start());
 
+  // Where the play stands against a piece's `CUES` (the words that wait for the picture, lingjing.js
+  // pieceGate): beat `beat` reached its time `t` (s, on the beat's own timeline) — or ended, `t: 'end'`.
+  const lastBeat = () => steps.phase === 'done' || (steps.phase === 'hold' && steps.i === BEATS.length - 1);
+  const reached = ({ beat, t = 'end' } = {}) => {
+    const k = BEATS.findIndex((b) => b.id === beat);
+    if (k < 0 || steps.phase === 'done' || steps.i > k) return true;
+    if (steps.i < k) return false;
+    if (steps.phase === 'hold') return true;
+    return t !== 'end' && Boolean(tl) && tl.time() >= t;
+  };
+
   return {
     get i() { return steps.i; },
     get phase() { return steps.phase; },
+    /// The last beat played to its end (its last frame up), held or done.
+    get ended() { return lastBeat(); },
+    reached,
     tap: () => react(steps.tap()),
     /// A look at beat `k` at progress `p` (0–1), drawn at once: for checking frames
     /// where the page's clock does not run (a hidden tab). Not for play.
