@@ -957,6 +957,7 @@
    "levels": [
     {
      "id": "still",
+     "story": true,
      "deer": {
       "x": 160,
       "face": -1
@@ -969,6 +970,7 @@
     },
     {
      "id": "wind",
+     "story": true,
      "deer": {
       "x": 110,
       "face": -1,

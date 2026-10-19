@@ -57,8 +57,8 @@ const T = {
     hint: '……风。往左偏半寸。',
     gone: '箭筒空了。鹿走远了。再来。',
     pull: '往后拉……', full: '拉满了 · 松手',
-    retry: '重来', next: '往下', again: '再来，争三星',
-    clear: '这一处：', end: '溪边四处，都射中了。', stars: '共得 {s} 星。',
+    retry: '重来', next: '下一处', last: '收弓', again: '再来，争三星',
+    clear: '这一处：', end: '溪边{n}处，都射中了。', one: '溪边那一处，射中了。', stars: '共得 {s} 星。',
     empty: '溪边没有鹿。',
   },
   en: {
@@ -74,8 +74,8 @@ const T = {
     hint: '…The wind. Half an inch left.',
     gone: 'The quiver is empty. The deer has wandered off. Again.',
     pull: 'Pull back…', full: 'Full — let go',
-    retry: 'Again', next: 'On', again: 'Again, for three stars',
-    clear: 'This spot: ', end: 'Four spots by the stream, each one hit.', stars: '{s} stars in all.',
+    retry: 'Again', next: 'Next spot', last: 'Unstring the bow', again: 'Again, for three stars',
+    clear: 'This spot: ', end: '{n} spots by the stream, each one hit.', one: 'The spot by the stream: hit.', stars: '{s} stars in all.',
     empty: 'No deer by the stream.',
   },
 };
@@ -541,7 +541,7 @@ const PHASES = {
   fly: flying,
   spook: (s) => (stepWorld(s.world, levelOf(s), s.clock), s.t < SPOOK_MS ? s : backAgain(s)),
   hit: (s) => (s.t < HIT_MS ? s : { ...s, phase: 'clear', t: 0 }),
-  // Three stars go on by themselves; fewer wait for 往下 or 再来.
+  // Three stars go on by themselves; fewer wait for 下一处 or 再来.
   clear: (s) => (s.t < CLEAR_MS || s.best[s.li] < 3 ? s : advance(s)),
   gone: (s) => (s.t < GONE_MS ? s : lay({ ...s }, s.li)),
 };
@@ -932,6 +932,15 @@ function head(s, t) {
     + `<span class="g-da-windword">${windWord(windAt(level, s.clock), t)}</span>${quiver}</div>`;
 }
 
+/** The end line, counting the spots he shot (the story deals two, the 游戏厅 all). */
+const COUNT_ZH = ['', '一', '两', '三', '四', '五', '六', '七', '八', '九', '十'];
+function endLine(s, t, lang) {
+  const k = s.levels.length;
+  if (k === 1) return t.one;
+  const word = lang === 'en' ? (['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][k] ?? String(k)) : (COUNT_ZH[k] ?? String(k));
+  return t.end.replace('{n}', word);
+}
+
 /** A row's own word (games.json row `words`), else null for the deer's. */
 const rowWord = (s, key, lang) => s.words?.[key]?.[lang] ?? s.words?.[key]?.zh ?? null;
 
@@ -954,7 +963,7 @@ function lineOf(s, t, lang) {
 }
 
 function controls(s, t) {
-  if (s.phase === 'clear' && s.best[s.li] < 3) return `<div class="g-pair">${btn(t.next, 'data-g="next"', 'main')}${btn(t.again, 'data-g="retry"', 'soft')}</div>`;
+  if (s.phase === 'clear' && s.best[s.li] < 3) return `<div class="g-pair">${btn(s.li + 1 < s.levels.length ? t.next : t.last, 'data-g="next"', 'main')}${btn(t.again, 'data-g="retry"', 'soft')}</div>`;
   if (['aim', 'fly', 'gone', 'spook'].includes(s.phase)) return `<div class="g-bread-row">${btn(t.retry, 'data-g="retry"', 'quiet')}</div>`;
   return '<div class="g-bread-row"></div>';
 }
@@ -964,7 +973,7 @@ export function html(state, lang = 'zh') {
   if (state.phase === 'empty') return `<div class="g-deerarc g-ink"><p class="g-line-say">${t.empty}</p></div>`;
   if (state.won) {
     return `<div class="g-deerarc g-ink is-won"><p class="g-da-stars">${starRow(state.stars)}</p>`
-      + `<p class="g-line-say">${rowWord(state, 'end', lang) ?? t.end}<br>${t.stars.replace('{s}', String(state.stars))}</p></div>`;
+      + `<p class="g-line-say">${rowWord(state, 'end', lang) ?? endLine(state, t, lang)}<br>${t.stars.replace('{s}', String(state.stars))}</p></div>`;
   }
   return `<div class="g-deerarc g-ink">${head(state, t)}${playScene(state)}${trayPicture(state, t, lang)}<p class="g-line-say">${lineOf(state, t, lang)}</p>${controls(state, t)}</div>`;
 }

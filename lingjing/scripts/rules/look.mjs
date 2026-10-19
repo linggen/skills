@@ -502,9 +502,11 @@ function personBrief(content, state, creature) {
 /* What a board is dealt: the task's own `deal`, and a small game's levels from the registry
    (games.json, 2026-10-16 — 喂饼's 割绳子 levels live there once, for the beat and the 游戏厅), its
    paintings (`art`, or the row it names), and for a throwing board the registry's `projectiles`
-   with the cards he holds (`owned`: the tray shows only his own things — the card law). */
+   with the cards he holds (`owned`: the tray shows only his own things — the card law). A row whose
+   levels mark some `story` deals the story only those (射鹿, Hanli 10-19: 静 then 风); the 游戏厅 keeps all. */
 function dealOf(content, task, state) {
-  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game) : null, levels = row?.levels;
+  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game) : null;
+  const levels = row?.levels?.some(l => l.story) ? row.levels.filter(l => l.story) : row?.levels;
   if (!task.deal && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   const throws = levels?.some(l => l.ammo) ? { projectiles: content.games.projectiles ?? {}, owned: ownedCards(content, state) } : {};

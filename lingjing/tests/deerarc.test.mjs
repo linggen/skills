@@ -132,7 +132,7 @@ test('a graze spooks the deer: it bolts and comes back, the arrow is spent, the 
 });
 
 // Hanli 10-16 「射中了也没完成游戏」: he hit the deer's body, it counted as a graze, he never left 静.
-test('a hit on the body clears the level too (a star fewer); 往下 goes on to 风, and the header shows the wind', () => {
+test('a hit on the body clears the level too (a star fewer); 下一处 goes on to 风, and the header shows the wind', () => {
   const still = byId('still'), aim = find(still, (f) => f.hit === 'body');
   assert.ok(aim, 'a body hit exists');
   let s = da.newGame('t', 1, { levels: LEVELS });
@@ -392,7 +392,8 @@ test('the story: Look deals 射鹿 its levels and paintings; a win keeps its sta
   const s = atDeer();
   const t = look(s, content, ctx()).tasks.find((x) => x.id === 'deer-wind');
   assert.equal(t.game, 'deerarc');
-  assert.equal(t.deal.levels.length, LEVELS.length, 'the levels reach the page');
+  // Hanli 10-19: the story plays two spots, 静 then 风 (the book's 「往左偏半寸」); the 游戏厅 keeps all.
+  assert.deepEqual(t.deal.levels.map((l) => l.id), ['still', 'wind'], 'the story deals 静 and 风 only');
   assert.ok(t.deal.art?.drink && t.deal.art?.backdrop, 'and the paintings');
   // The bot wins the board as the page would deal it, and the rules take its grade and stars.
   const r = playOnce(da, bot, { seed: 'story', deal: t.deal });
@@ -414,4 +415,21 @@ test('an old save on the old board: a win sent with the old grades and no stars 
     assert.ok(done.cards.includes('yijian'));
     assert.equal(resolve(done, content, ctx(), { exit: 'left' }).state.scene, '00-dusk');
   }
+});
+
+test('the story\'s two spots: the step on reads 下一处 (never 往下 · 接着 · 继续), the last 收弓, the end counts two', () => {
+  const deal = { levels: LEVELS.filter((l) => l.story) };
+  assert.deepEqual(deal.levels.map((l) => l.id), ['still', 'wind']);
+  let s = da.newGame('t', 1, deal);
+  // A two-arrow win on 静 stops at 「这一处」 with its buttons.
+  s = { ...s, phase: 'clear', best: [2, 0] };
+  for (const lang of ['zh', 'en']) {
+    const h = da.html(s, lang);
+    assert.ok(!/往下|接着|继续/.test(h), lang);
+  }
+  assert.match(da.html(s, 'zh'), /data-g="next"[^>]*>下一处</);
+  assert.match(da.html({ ...s, li: 1 }, 'zh'), /data-g="next"[^>]*>收弓</);
+  const end = da.html({ ...s, won: true, stars: 3 }, 'zh');
+  assert.match(end, /溪边两处/);
+  assert.ok(!/往下|接着|继续/.test(end));
 });
