@@ -17,8 +17,6 @@ import { stagePick, atmosOf } from '../scripts/atmos.js';
 import { placeArtOf } from '../scripts/placeart.js';
 import { plateHtml } from '../scripts/plate.js';
 import { walk, TO_OPEN } from './prologue.mjs';
-import * as descend from '../scripts/games/descend.js';
-import * as gather from '../scripts/games/gather.js';
 import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
@@ -252,37 +250,7 @@ test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'
   assert.ok(paid.wealth > s.wealth, 'and stones');
 });
 
-// 下崖 and the old 拾遗 board left the 秘境 2026-10-19; their modules stay in the 游戏厅 and are still held here.
-test('the two new boards: a control at open, both languages, played well and badly — and no skip of their own (the page\'s stuck gate, 2026-10-15)', () => {
-  for (const [mod, control] of [[descend, /data-g="start"/], [gather, /data-g="pull"/]]) {
-    const g = mod.newGame('seed');
-    assert.match(mod.html(g, 'zh'), control);
-    for (const lang of ['zh', 'en']) { assert.doesNotMatch(mod.html(g, lang), /undefined|NaN/); assert.doesNotMatch(mod.html(g, lang), /data-g="skip"/); }
-    // No Chinese leaks into the English board (played: 「before the 九层 come this way」).
-    assert.doesNotMatch(mod.meta.how.en + mod.meta.name.en, /[\u4e00-\u9fff]/);
-  }
-  // 下崖: listening first, never a slip — steady; grabbing the wet side — scraped, and three stabs ask a breath.
-  let d = descend.act(descend.newGame('x'), { g: 'start' }).state;
-  while (!d.won) { d = descend.act(d, { g: 'listen' }).state; d = descend.act(d, { g: d.heard === 0 ? 'right' : 'left' }).state; }
-  assert.equal(d.grade, 'steady');
-  let w = descend.act(descend.newGame('x'), { g: 'start' }).state;
-  for (let i = 0; i < descend.STABS; i += 1) w = descend.act(w, { g: w.wet[w.at] === 0 ? 'left' : 'right' }).state;
-  assert.equal(w.note, 'hurt');
-  assert.equal(descend.act(w, { g: 'left' }).state, w, 'no reach while the rib asks a breath');
-  w = descend.act(w, { g: 'breathe' }).state;
-  while (!w.won) w = descend.act(w, { g: w.wet[w.at] === 0 ? 'right' : 'left' }).state;
-  assert.equal(w.grade, 'scraped');
-  for (const lang of ['zh', 'en']) assert.doesNotMatch(descend.html(w, lang), /undefined|NaN/);
-  // 拾遗: four pulls; the gold one among them is rich.
-  let g = gather.newGame('y');
-  const gold = g.cracks.indexOf('high');
-  for (const i of [gold, ...g.cracks.map((_, k) => k).filter(k => k !== gold)].slice(0, gather.PULLS)) g = gather.act(g, { g: 'pull', i }).state;
-  assert.equal(g.won, true); assert.equal(g.grade, 'rich');
-  let p = gather.newGame('y');
-  for (const i of p.cracks.map((k, n) => [k, n]).filter(([k]) => k !== 'high').map(([, n]) => n).slice(0, gather.PULLS)) p = gather.act(p, { g: 'pull', i }).state;
-  assert.equal(p.grade, 'plain');
-  assert.equal(gather.act(gather.newGame('y'), { g: 'pull', i: 99 }).won, false);
-});
+// 下崖 and the old 拾遗 board: their games deleted 2026-10-19 (「没用在游戏中的, 都删了吧」) — the climb is the room's line, 拾遗 a 割藤.
 
 // 古五 (2026-10-15): wm-chu is told outside the stone door, and the header read 「崖壁」, its room. The header
 // takes where the scene says it is told; a scene saying its room is the room.

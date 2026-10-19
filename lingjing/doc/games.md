@@ -233,6 +233,20 @@ holding it offered lets it go on load); ids, grants and the marks later lines re
 | 喂饭桶 `fantongqianye` · `fantonghuochai` | wm-zhaojing · 09-snow | **left** | another agent's (扔了干净 → a 大场面, `huochai`) |
 | 写信 `letter` | wm-jiaxin | — | replaced by 家信 · 画给娘看 (drawguess) 10-19 |
 
+**Deleted 10-19** (Hanli: 「射鹿 · 等风 没用在游戏中的, 都删了吧」 — delete, not fold into 旧版): every board nothing in play
+uses — row, module, bot, tests, its CSS and dead art: 射鹿 · 等风 `deerhunt`; the old boards the story replaced — 拽 `storm`,
+射鹿 `deer` (row only), 烙饼 `griddle`, 练功 `carry`, 吹鹅毛 `feather`, 忍 `xisui`, 小周天 `zhoutian`, 藏息 `mirrortongpu`,
+随叶 `leafsui`, 定风 `leafding`, 闻焦 `huohousmell`, 猪蜻蜓 `zhuqingting`, 写信 `letter`, 芦苇 `reed`, 一千米 `qianmi`, 罚球 `faqiu`,
+黑地 `dark`, 最后一罚 `lastshot` (with their shared breath.js · leaf.js · huohou.js · mirror.js), 扔石听声 `caveecho` (and
+art/games/stone/); this sweep's 讲堂三日 `qiajue`, 相克 `xiangke`, 底册 `diche`, 晨脉 `pulse`, 认方 `recipe`, 念开篇 `kaipian`,
+顺风溜 `wind`, 下崖 `descend`, 拾遗 `gather`, 守夜 `shouye`; and the orphan modules 算账 `scale`, 忍字 `taunt`, 认路 `way`.
+Every task id stays (`cut`), so an old save holding one offered lets it go. **Kept:** `deer.js` (deerarc.js imports it),
+the 文 as `games/wen.js` (the 密室's 铜掌; qiajue.js deleted), `yubu.js` (禹步), `throwkit` (the throw kit's own 游戏厅
+sandbox), the 气走经脉 试作 levels (the kit's climb), art/games/feather/ (rope-art.js draws with it). **Left for their
+agents:** the 割绳子 trio `rentrope` · `tauntrope` · `wayrope` (their scenes lost the boards 10-16; the code is in
+ropebeats.js, off limits to this sweep) and the two 喂饭桶 boards. The arcade's 旧版 fold is empty now; its code stays for a
+row replaced later.
+
 **Rhythm** (rhythm.mjs, cap 1,500 字): wm-xirang → 讲堂三日 6,187 → 6,414 (+227, day one told; over before);
 讲堂三日 → 藏息 789; 开炉夜 → 喷嚏符 848 (the 底册 piece between); 黑地十一步 → 喂饭桶 (09-snow) 2,444 → 2,773 (晨脉 cut;
 over before); 禹步 → 定风 1,343; **家信 → the end of 古六 1,635 — a new stretch over the cap** (念开篇 cut).

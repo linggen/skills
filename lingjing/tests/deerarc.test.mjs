@@ -42,7 +42,7 @@ test('the levels are the registry\'s: still · wind · walking · reeds and a br
   const task = content.tasks.tasks.find((t) => t.id === 'deer-wind');
   assert.equal(task.game, 'deerarc');
   assert.equal(task.stars, 3);
-  assert.equal(content.games.games.find((g) => g.id === 'deer').task, undefined, 'the old board is the 游戏厅\'s only');
+  assert.equal(content.games.games.find((g) => g.id === 'deer'), undefined, 'the old board\'s row deleted 2026-10-19 (deer.js stays: deerarc.js imports it)');
   for (const l of LEVELS) assert.ok(l.say?.zh && l.say?.en, `${l.id} says what to do in both languages`);
   assert.ok(byId('wind').wind > 0 && byId('wind').hint, 'the wind level hints 「往左偏半寸」');
   assert.ok(byId('walk').deer.walk);

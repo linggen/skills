@@ -7,7 +7,7 @@
 // live-games.js). The page routes [data-g] taps here and runs what `act` hands back:
 // `send` — a rules verb to run, its answer fed to `heard`; `her` — turn to 银月 (the ask bar).
 import { btn, n, scene } from './ink.js';
-import { WEN } from './qiajue.js';
+import { WEN } from './wen.js';
 
 export const meta = {
   id: 'mishi',
@@ -153,7 +153,7 @@ function dialHtml(state, p, t, lang) {
 
 function handHtml(state, p, t) {
   // The bronze hand: thirteen studs, unmarked (the names are on her page).
-  // Where qiajue.js draws each 文 (FX 70…220 of 320, LY 138…42 of 160), as a share of the picture.
+  // Where the old 讲堂三日 board drew each 文 (FX 70…220 of 320, LY 138…42 of 160), as a share of the picture.
   const FXp = [21.9, 37.5, 53.1, 68.8], LYp = [86.3, 66.3, 46.3, 26.3];
   const at = (w) => [FXp[w.f], w.lv === 1.5 ? 56.3 : LYp[w.lv]];
   const fingers = [70, 120, 170, 220].map((x, f) => `<path class="g-line" d="M${x - 16} 150 V${30 + (f === 0 ? 14 : f === 2 ? -6 : 0)} q16 -18 32 0 V150"/>`).join('');

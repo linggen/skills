@@ -50,188 +50,6 @@
  "_throws": "Every throw in 卷一, from the book (Hanli 2026-10-16: 「投掷类都可以换」), each a level set on the 射鹿 board (deerarc.js; the target by `target.kind`, targets.js): 1 第一回 00-cave 扔石听声 「先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的」 — BUILT, row caveecho, task cave-stone (石子; the echo deep is the clean); 2 第二回 00-deer 射鹿 「往左偏半寸」 — BUILT, row deerarc, task deer-wind (箭); 3 古七 09-yishui 芦苇里那一等 「他扣在指间的那口短飞剑，诀一掐，放了出去，一道白光贴着滩上的泥飞过去，从那块粉红的肉里钻了进去」 — BUILT, row luwing, task yishui-reed (短飞剑, the wing root as it breathes in); 4 第五回 暗河 邹青松 「左手在地上摸了一块石子，往左边黑里一丢。……就这一亮……他一箭奔那团红光去了」 — PROPOSED: two throws, a stone into the dark to draw the gourd's light, then the arrow at the light (a dark level; the target shows only after the stone lands); 5 第五回 凶崖 「一箭奔面门。邹青松左臂一抬，箭头撞在……赤铜小盾上」 — PROPOSED as the first throw of 4 (a shield that turns the arrow: a branch-kind thing that moves); 6 第八回 黑松岭 合窳 「飞剑头一下奔它的眼睛，它一偏头，剑擦着那张人脸过去」 — PROPOSED: a 短飞剑 at a beast on a cliff path whose head turns away (a graze teaches: wait for the 灵力 to show); 7 第三回 三试 「一颗石子从人堆里飞进来……打在蠪侄的后腿上」 — the 家丁's throw, not 小满's: no level (the book's own); 8 第四回/第五回 饭桶 「石子、半个窝头……一样一样往里扔」「抬手往饭桶里一扔：『吃！你吃！』」 — already a game (喂饭桶, fantong); 9 第一回 爹 射山鸡 「先看风，后看鹿」 — his father's shot: told, the lesson 射鹿 plays.",
  "games": [
   {
-   "id": "caveecho",
-   "group": "prologue",
-   "scene": "00-cave",
-   "hui": "第一回",
-   "task": "cave-stone",
-   "mechanic": "投掷",
-   "stars": 3,
-   "_words": "The board's own lines over the deer's (deerarc.js rowWord, 2026-10-19 live play: the cave's win said 「溪边四处，都射中了」).",
-   "words": {
-    "end": { "zh": "两块石头，两声回响——是空的。", "en": "Two stones, two echoes: empty." },
-    "gone": { "zh": "石子扔完了。再捡几块，重来。", "en": "Out of stones. Pick up a few more and try again." }
-   },
-   "_levels": "扔石听声 (00-cave, restored 2026-10-16 on the throwing board): 「先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的」. Two stones, as the book's two. The target is a `zone`: where the stone comes down — deep (`deep`) the echo he listens for, `mid` a dull knock (a hit, a star fewer); `wall`s of rock (the roof, the back) it bounces off. Grades for the task's marks: sure (★★–★★★) · lucky (★).",
-   "levels": [
-    {
-     "id": "first",
-     "ammo": [
-      "stone"
-     ],
-     "wind": 0,
-     "target": {
-      "kind": "zone",
-      "deep": [
-       98,
-       170
-      ],
-      "mid": [
-       170,
-       262
-      ],
-      "floor": 252
-     },
-     "things": [
-      {
-       "kind": "wall",
-       "from": [
-        478,
-        70
-       ],
-       "to": [
-        100,
-        108
-       ],
-       "bounce": 0.45
-      },
-      {
-       "kind": "wall",
-       "from": [
-        96,
-        252
-       ],
-       "to": [
-        96,
-        108
-       ],
-       "bounce": 0.5
-      }
-     ],
-     "say": {
-      "zh": "先往里扔一块石头，听一听。落得越深，听得越真。",
-      "en": "Throw a stone in first, and listen. The deeper it lands, the truer the sound."
-     },
-     "words": {
-      "clean": {
-       "zh": "咚……咚……回声从深处慢慢荡回来——是空的。",
-       "en": "Tock… tock… the echo comes back slowly from deep inside — empty."
-      },
-      "body": {
-       "zh": "笃的一声，落得浅了，听不真。",
-       "en": "A dull knock: too shallow to tell."
-      },
-      "short": {
-       "zh": "石子落在洞口外头，什么也没听出来。",
-       "en": "The stone falls outside the mouth. Nothing to hear."
-      },
-      "long": {
-       "zh": "石子撞在石壁上，滚回来了。",
-       "en": "It hits the rock and rolls back."
-      }
-     },
-     "indoor": true
-    },
-    {
-     "id": "second",
-     "ammo": [
-      "stone"
-     ],
-     "wind": 0,
-     "target": {
-      "kind": "zone",
-      "deep": [
-       98,
-       136
-      ],
-      "mid": [
-       136,
-       240
-      ],
-      "floor": 252
-     },
-     "things": [
-      {
-       "kind": "wall",
-       "from": [
-        478,
-        70
-       ],
-       "to": [
-        100,
-        108
-       ],
-       "bounce": 0.45
-      },
-      {
-       "kind": "wall",
-       "from": [
-        96,
-        252
-       ],
-       "to": [
-        96,
-        108
-       ],
-       "bounce": 0.5
-      }
-     ],
-     "say": {
-      "zh": "又扔一块。这回要更深——贴着最里头的石壁落下去。",
-      "en": "Another. Deeper this time: down against the far wall."
-     },
-     "words": {
-      "clean": {
-       "zh": "又是咚的一声，又是空的。",
-       "en": "Tock again — empty again."
-      },
-      "body": {
-       "zh": "笃。浅了。",
-       "en": "A knock. Shallow."
-      },
-      "short": {
-       "zh": "没进去。",
-       "en": "It didn't go in."
-      },
-      "long": {
-       "zh": "撞回来了。",
-       "en": "It came back off the rock."
-      }
-     },
-     "indoor": true
-    }
-   ],
-   "art": {
-    "_about": "The cave of 扔石听声, painted for the throwing board (tools/paint-games.py stone/cave, seed 2): the overhang along the top, the back wall at the left, the floor along the bottom; the walls and the deep in the levels follow it.",
-    "backdrop": {
-     "file": "games/stone/cave.webp",
-     "size": [
-      960,
-      600
-     ],
-     "crop": [
-      10,
-      10,
-      940,
-      588
-     ],
-     "wash": {
-      "archer": {
-       "at": [
-        372,
-        168
-       ],
-       "r": [
-        90,
-        96
-       ],
-       "o": 0.45
-      }
-     }
-    }
-   }
-  },
-  {
    "id": "luwing",
    "group": "later",
    "scene": "09-yishui",
@@ -625,14 +443,6 @@
    "art": "deerarc"
   },
   {
-   "id": "storm",
-   "replaced": "fallrope",
-   "group": "prologue",
-   "mechanic": "时机",
-   "hui": "第一回 · 旧版",
-   "_retired": "The old 拽 board (three pulls in the lulls between gusts), kept for the 游戏厅 only; 00-fall's fall-storm plays fallrope (割绳子) since 2026-10-19."
-  },
-  {
    "id": "fallrope",
    "group": "prologue",
    "scene": "00-fall",
@@ -737,14 +547,6 @@
      }
     }
    ]
-  },
-  {
-   "id": "deer",
-   "replaced": "deerarc",
-   "group": "prologue",
-   "mechanic": "狩猎瞄准",
-   "hui": "第二回 · 旧版",
-   "_retired": "The old 射鹿 board (hold to draw, aim ‹ ›), kept for the 游戏厅 only; the beat plays deerarc since 2026-10-16."
   },
   {
    "id": "rain",
@@ -1656,216 +1458,6 @@
    ]
   },
   {
-   "id": "deerhunt",
-   "replaced": "deerarc",
-   "group": "prologue",
-   "hui": "第二回 · 试作",
-   "mechanic": "狩猎瞄准",
-   "stars": 3,
-   "art": "deerarc",
-   "_about": "射鹿 · 等风 (2026-10-19, Hanli: 「愤怒小鸟的类型不好玩. 太简单, 没有花样」): a hunting-aim game, 游戏厅 only until Hanli has played it — 00-deer's deer-wind still plays deerarc. Hold to draw (FULL_MS), slide to aim (relative), hold still at full to hold the breath (BREATH_MS), let go to loose, let go off the scene to ease off. The arrow drifts with the wind at release; the deer jumps the string with its head up, and an arrow landing near it spooks it. Stars: heart · first arrow · calm; grades clean · steady · rough by stars, as deerarc's (deer-wind has no marks: any win gives 一箭 · 偏左半寸). Paintings: deerarc's (`art` names that row).",
-   "_levels": "Level 1 `story` is the one a story beat would deal (only it: one level, the win frame ends it); the rest are the 游戏厅's. `deer`: x, face, graze/wary [min, max] ms, walk (the chance a graze ends in a walk), speed (units/s), range [x, x] where it walks and comes back to, back [min, max] ms away after a spook, first (ms before its first mood change). `wind`: first (gust | lull), gust/lull [min, max] ms, strength [min, max] in a gust, dirs (+1 in his face: pushes the arrow right, toward him — 往左偏半寸), calm (a lull's breath). `dusk`: the low light, 0–1. deerhunt.js holds the tuning (DRIFT, sway, breath).",
-   "levels": [
-    {
-     "id": "story",
-     "story": true,
-     "deer": {
-      "x": 140,
-      "face": -1,
-      "graze": [
-       2000,
-       3600
-      ],
-      "wary": [
-       1600,
-       2600
-      ],
-      "walk": 0.12,
-      "speed": 26,
-      "range": [
-       110,
-       190
-      ],
-      "back": [
-       3000,
-       4200
-      ],
-      "first": 5200
-     },
-     "wind": {
-      "first": "gust",
-      "gust": [
-       6000,
-       9000
-      ],
-      "lull": [
-       3200,
-       4200
-      ],
-      "strength": [
-       0.75,
-       1.1
-      ],
-      "dirs": [
-       1
-      ]
-     },
-     "say": {
-      "zh": "溪边，那头鹿低着头吃草。先看风，后看鹿。",
-      "en": "By the stream the stag grazes. Wind first, then the deer."
-     }
-    },
-    {
-     "id": "walk",
-     "deer": {
-      "x": 190,
-      "face": -1,
-      "graze": [
-       1800,
-       3200
-      ],
-      "wary": [
-       900,
-       1500
-      ],
-      "walk": 0.75,
-      "speed": 40,
-      "range": [
-       80,
-       220
-      ],
-      "back": [
-       3000,
-       4200
-      ],
-      "first": 1800
-     },
-     "wind": {
-      "first": "gust",
-      "gust": [
-       1600,
-       2800
-      ],
-      "lull": [
-       2600,
-       4000
-      ],
-      "strength": [
-       0.5,
-       0.9
-      ],
-      "dirs": [
-       1,
-       -1
-      ]
-     },
-     "say": {
-      "zh": "它边走边吃。箭要等它——往它前头放。",
-      "en": "It grazes as it walks. Lead it: loose ahead of it."
-     }
-    },
-    {
-     "id": "gusty",
-     "deer": {
-      "x": 120,
-      "face": -1,
-      "graze": [
-       3200,
-       5200
-      ],
-      "wary": [
-       800,
-       1400
-      ],
-      "walk": 0.1,
-      "speed": 26,
-      "range": [
-       100,
-       180
-      ],
-      "back": [
-       3000,
-       4200
-      ],
-      "first": 3000
-     },
-     "wind": {
-      "first": "gust",
-      "gust": [
-       2400,
-       4000
-      ],
-      "lull": [
-       1900,
-       2700
-      ],
-      "strength": [
-       0.8,
-       1.25
-      ],
-      "dirs": [
-       1,
-       -1,
-       1
-      ]
-     },
-     "say": {
-      "zh": "风一阵紧过一阵，风歇只有一会儿。",
-      "en": "Gust after gust; the lulls are short."
-     }
-    },
-    {
-     "id": "dusk",
-     "dusk": 0.42,
-     "deer": {
-      "x": 105,
-      "face": -1,
-      "graze": [
-       2400,
-       4200
-      ],
-      "wary": [
-       1100,
-       1900
-      ],
-      "walk": 0.2,
-      "speed": 24,
-      "range": [
-       90,
-       170
-      ],
-      "back": [
-       3200,
-       4500
-      ],
-      "first": 2600
-     },
-     "wind": {
-      "first": "gust",
-      "gust": [
-       1800,
-       3000
-      ],
-      "lull": [
-       2400,
-       3800
-      ],
-      "strength": [
-       0.6,
-       1.0
-      ],
-      "dirs": [
-       1
-      ]
-     },
-     "say": {
-      "zh": "天擦黑了，溪边只剩个影子。",
-      "en": "Dusk: by the stream, only a shape."
-     }
-    }
-   ]
-  },
-  {
    "id": "rentrope",
    "group": "prologue",
    "scene": "00-rent",
@@ -1945,15 +1537,6 @@
      }
     }
    ]
-  },
-  {
-   "id": "feather",
-   "replaced": "qimai",
-   "group": "prologue",
-   "mechanic": "调息",
-   "scene": "00-halfyear",
-   "hui": "第二回",
-   "task": "feather-breath"
   },
   {
    "id": "qimai",
@@ -2059,15 +1642,6 @@
    ]
   },
   {
-   "id": "griddle",
-   "replaced": "laobing",
-   "group": "prologue",
-   "mechanic": "时机",
-   "scene": "00-kitchen",
-   "hui": "第一回",
-   "task": "kitchen-griddle"
-  },
-  {
    "id": "wayrope",
    "group": "prologue",
    "scene": "00-yinyue",
@@ -2143,24 +1717,6 @@
    ]
   },
   {
-   "id": "carry",
-   "replaced": "cut",
-   "group": "prologue",
-   "mechanic": "时机",
-   "scene": "00-halfyear",
-   "hui": "第二回",
-   "task": "halfyear-carry"
-  },
-  {
-   "id": "xisui",
-   "replaced": "qimai",
-   "group": "prologue",
-   "mechanic": "调息",
-   "scene": "00-sleep",
-   "hui": "第二回",
-   "task": "xisui-hold"
-  },
-  {
    "id": "qimai",
    "group": "prologue",
    "mechanic": "调息",
@@ -2180,14 +1736,6 @@
    "scene": "00-luoshu",
    "hui": "第三回",
    "task": "gate-luoshu"
-  },
-  {
-   "id": "zhoutian",
-   "replaced": "qimai",
-   "group": "later",
-   "mechanic": "时机",
-   "scene": "wm-zhoutian",
-   "hui": "第四回"
   },
   {
    "id": "qimai",
@@ -2214,14 +1762,6 @@
    "_was": "洛书 until 10-19 (Hanli: 「9宫格出现一次就可以了」): the 洛书 square stays at 洛书门 (00-luoshu) and in its 游戏厅 rows."
   },
   {
-   "id": "qiajue",
-   "replaced": "qimai",
-   "group": "later",
-   "mechanic": "判断",
-   "scene": "wm-qianye",
-   "hui": "第六回"
-  },
-  {
    "id": "qimai",
    "group": "later",
    "mechanic": "调息",
@@ -2234,23 +1774,6 @@
    "levels": [
     {"id":"qiajue","n":6,"title":{"zh":"循臂而行","en":"Along the arm"},"speed":98,"len":2700,"book":{"zh":"「手是沟，咒是赶水的人。」一句话走一截路，八句话，正好从肩膀走到指头尖。","en":"\"The hand is the channel; the chant is the man who drives the water.\" Each line moves it a stretch — eight lines, shoulder to fingertip."},"say":{"zh":"一句一步，从肩膀领到指头尖。肘弯那一截窄，落一句，气就停在半道上。末了一掐，掐在午文上。","en":"A line a step, from the shoulder to the fingertip. The elbow is narrow; drop a line and the qi stops half-way. Last, the pinch on the wu mark."},"end":{"zh":"「急急如律令！」掌心里滚出一颗火弹，栗子大。","en":"\"Swift as the statutes command!\" A fireball rolls out of the palm, the size of a chestnut."},"path":[[0,96],[350,100],[700,118],[1000,140],[1200,142],[1450,128],[1800,108],[2100,96],[2400,84],[2700,78]],"width":[[0,46],[800,40],[980,30],[1380,30],[1550,38],[2300,36],[2700,36]],"xue":[{"x":300,"name":{"zh":"天地自然","en":"Heaven and earth"}},{"x":600,"name":{"zh":"丙丁涌出","en":"Bing and ding"}},{"x":900,"name":{"zh":"火郎火女","en":"Fire-lad, fire-lass"}},{"x":1200,"name":{"zh":"从天降下","en":"Down from heaven"}},{"x":1500,"name":{"zh":"南离正炁","en":"The southern Li"}},{"x":1800,"name":{"zh":"循臂而行","en":"Along the arm"}},{"x":2100,"name":{"zh":"聚于掌心","en":"In the palm"}},{"x":2350,"name":{"zh":"一点成丸","en":"One point, a ball"}}],"gates":[{"x":2580,"gap":28,"y":80,"name":{"zh":"午文","en":"The wu mark"}}],"currents":[{"from":1020,"to":1360,"push":-120},{"from":1650,"to":2050,"push":100,"flip":1400}],"gold":[{"from":1550,"to":2450,"amp":12,"period":260,"rise":0.4}],"goldTol":8,"grades":{"3":"tight","2":"tight","1":"loose"},"look":{"tint":"#e2c4a6","ink":"#6a2f22","trail":"#c8502d","glyph":"午"}}
    ]
-  },
-  {
-   "id": "xiangke",
-   "replaced": "cut",
-   "group": "later",
-   "mechanic": "判断",
-   "scene": "wm-qianye",
-   "hui": "第六回",
-   "task": "qianye-xiangke"
-  },
-  {
-   "id": "mirrortongpu",
-   "replaced": "qimai",
-   "group": "later",
-   "mechanic": "调息",
-   "scene": "wm-zhaojing",
-   "hui": "第六回"
   },
   {
    "id": "qimai",
@@ -2275,47 +1798,12 @@
    "task": "zhaojing-fantong"
   },
   {
-   "id": "diche",
-   "replaced": "setpiece",
-   "group": "later",
-   "mechanic": "判断",
-   "scene": "wm-laba",
-   "hui": "第六回",
-   "task": "laba-diche"
-  },
-  {
    "id": "sneeze",
    "group": "later",
    "mechanic": "时机",
    "scene": "wm-dabi",
    "hui": "第六回",
    "task": "dabi-sneeze"
-  },
-  {
-   "id": "zhuqingting",
-   "replaced": "cut",
-   "group": "later",
-   "mechanic": "时机",
-   "scene": "wm-laoyin",
-   "hui": "第六回",
-   "task": "laoyin-zhuqingting"
-  },
-  {
-   "id": "letter",
-   "replaced": "drawguess",
-   "group": "later",
-   "mechanic": "剧情",
-   "hui": "第六回 · 旧版",
-   "_retired": "The old 写信 · 擦了又写 board (a 剧情 tap, no fail), kept for the 游戏厅 only; since 2026-10-19 the 家信 at wm-jiaxin is drawn for 娘 and read by 银月 (drawguess, set jiaxin)."
-  },
-  {
-   "id": "kaipian",
-   "replaced": "cut",
-   "group": "later",
-   "mechanic": "解谜",
-   "scene": "wm-heluo",
-   "hui": "第六回",
-   "task": "heluo-kaipian"
   },
   {
    "id": "fantonghuochai",
@@ -2325,14 +1813,6 @@
    "scene": "09-snow",
    "hui": "第七回",
    "task": "snow-fantong"
-  },
-  {
-   "id": "leafsui",
-   "replaced": "qimai",
-   "group": "later",
-   "mechanic": "时机",
-   "scene": "09-jiuge",
-   "hui": "第七回"
   },
   {
    "id": "qimai",
@@ -2357,23 +1837,6 @@
    "task": "jiuge-yubu"
   },
   {
-   "id": "recipe",
-   "replaced": "cut",
-   "group": "later",
-   "mechanic": "解谜",
-   "scene": "09-furnace",
-   "hui": "第七回",
-   "task": "furnace-recipe"
-  },
-  {
-   "id": "leafding",
-   "replaced": "qimai",
-   "group": "later",
-   "mechanic": "时机",
-   "scene": "09-furnace",
-   "hui": "第七回"
-  },
-  {
    "id": "qimai",
    "group": "later",
    "mechanic": "调息",
@@ -2386,30 +1849,6 @@
    "levels": [
     {"id":"ding","n":9,"title":{"zh":"定风","en":"Settle the wind"},"speed":100,"len":3000,"book":{"zh":"每天天不亮上崖顶，站到巽那一格上，看落叶打转。他看见了它起来的那一下。","en":"Every dawn on the Xun square, watching leaves spin. He saw the moment it rose."},"say":{"zh":"叶子打转，风一阵一阵掉头——眼睛别跟着转。看见它起来的那一下，挪半步。","en":"Leaves spin; the wind turns and turns — don't let the eyes spin. The moment it rises, half a step aside."},"end":{"zh":"那片叶子贴着他的耳朵飘过去了。","en":"The leaf floats past his ear."},"path":[[0,112],[400,112],[700,96],[1000,124],[1300,100],[1600,122],[1900,98],[2200,118],[2500,104],[2700,84],[3000,100]],"width":[[0,46],[600,40],[3000,36]],"gates":[{"x":2720,"gap":26,"y":84,"name":{"zh":"挪半步","en":"Half a step"}}],"xue":[{"x":1350,"name":{"zh":"巽位","en":"On Xun"}}],"currents":[{"from":550,"to":1250,"push":100,"flip":1100},{"from":1450,"to":2300,"push":-90,"flip":1200,"phase":300}],"waves":[{"from":2300,"to":2560,"push":200}],"gold":[{"from":1250,"to":1450,"amp":9,"period":220,"rise":0.4}],"goldTol":7,"grades":{"3":"still","2":"still","1":"shaky"},"look":{"tint":"#e4d6b2","ink":"#6a5a3a","trail":"#c9a040","glyph":"风"}}
    ]
-  },
-  {
-   "id": "huohousmell",
-   "replaced": "cut",
-   "group": "later",
-   "mechanic": "时机",
-   "scene": "09-year",
-   "hui": "第七回",
-   "task": "year-smell"
-  },
-  {
-   "id": "reed",
-   "group": "later",
-   "mechanic": "时机",
-   "hui": "第七回 · 旧版",
-   "_retired": "The old 芦苇里那一等 board (hold still in the reeds), kept for the 游戏厅 only; the beat plays luwing since 2026-10-16."
-  },
-  {
-   "id": "wind",
-   "replaced": "qimai",
-   "group": "later",
-   "mechanic": "判断",
-   "scene": "09-xie",
-   "hui": "第七回"
   },
   {
    "id": "qimai",
@@ -2426,14 +1865,6 @@
    ]
   },
   {
-   "id": "qianmi",
-   "replaced": "qimai",
-   "group": "jin",
-   "mechanic": "调息",
-   "scene": "j01-retest",
-   "hui": "今 · 一"
-  },
-  {
    "id": "qimai",
    "group": "jin",
    "mechanic": "调息",
@@ -2446,14 +1877,6 @@
    "levels": [
     {"id":"qianmi","n":3,"title":{"zh":"先吐","en":"Out first"},"speed":94,"len":2600,"book":{"zh":"喘得又快又浅，一半是白喘。先吐，再吸。","en":"Quick shallow pants are half wasted. Out first, then in."},"say":{"zh":"跑起来了，气道一阵窄一阵宽。窄的地方，一口别吸满。","en":"Running now; the airway narrows and opens. Where it narrows, never a full breath."},"end":{"zh":"「沈芒，四分二十九。……过了。」","en":"\"Shen Mang, four twenty-nine. … Passed.\""},"path":[[0,112],[500,110],[800,96],[1100,122],[1400,100],[1700,118],[2000,98],[2300,116],[2600,108]],"width":[[0,50],[520,50],[620,33],[960,33],[1060,46],[1300,46],[1400,33],[1850,33],[1950,44],[2150,44],[2230,33],[2600,35]],"xue":[{"x":1350,"name":{"zh":"气海","en":"Qihai"}}],"currents":[{"from":680,"to":980,"push":-110},{"from":1450,"to":1800,"push":-120},{"from":2230,"to":2560,"push":110}],"gold":[{"from":1080,"to":1320,"amp":10,"period":240,"rise":0.4}],"goldTol":8,"look":{"tint":"#d6a98e","ink":"#8a4b2f","trail":"#c0623a","glyph":"吐"}}
    ]
-  },
-  {
-   "id": "faqiu",
-   "replaced": "qimai",
-   "group": "jin",
-   "mechanic": "调息",
-   "scene": "j04-line",
-   "hui": "今 · 二"
   },
   {
    "id": "qimai",
@@ -2470,14 +1893,6 @@
    ]
   },
   {
-   "id": "dark",
-   "replaced": "qimai",
-   "group": "jin",
-   "mechanic": "调息",
-   "scene": "j07-dark",
-   "hui": "今 · 三"
-  },
-  {
    "id": "qimai",
    "group": "jin",
    "mechanic": "调息",
@@ -2490,23 +1905,6 @@
    "levels": [
     {"id":"dark","n":11,"title":{"zh":"黑地十一步","en":"Eleven steps in the dark"},"speed":100,"len":3100,"book":{"zh":"「小宝哥。跟着我喘。吐得比吸的长。」","en":"\"Xiaobao. Breathe with me. Out longer than in.\""},"say":{"zh":"九点整，灯灭了。脉一折一折地拐，只看得见眼前一小圈——记住它往哪拐。","en":"Nine o'clock, the lights go. The channel switches back and forth; you see only a small round — remember where it bends."},"end":{"zh":"「……手不麻了。」","en":"\"… My hands aren't numb any more.\""},"path":[[0,110],[400,110],[600,76],[800,144],[1000,76],[1200,144],[1400,100],[1650,104],[1850,72],[2050,146],[2250,74],[2450,146],[2650,76],[2850,140],[3100,110]],"width":[[0,44],[500,37],[3100,34]],"xue":[{"x":1500,"name":{"zh":"第四步","en":"Step four"}}],"heart":[{"from":2100,"to":2900,"beat":720,"kick":40,"jitter":0.35}],"gold":[{"from":1420,"to":1720,"amp":10,"period":250,"rise":0.4}],"dark":[{"from":500,"to":1400,"r":52},{"from":1750,"to":3000,"r":48}],"goldTol":7,"look":{"tint":"#7d8496","ink":"#1f2430","trail":"#8fa0c8","glyph":"黑"}}
    ]
-  },
-  {
-   "id": "pulse",
-   "replaced": "cut",
-   "group": "jin",
-   "mechanic": "判断",
-   "scene": "j07-guan",
-   "hui": "今 · 三",
-   "task": "jin-pulse"
-  },
-  {
-   "id": "lastshot",
-   "replaced": "qimai",
-   "group": "jin",
-   "mechanic": "调息",
-   "scene": "j09-final",
-   "hui": "今 · 四"
   },
   {
    "id": "qimai",
@@ -2571,27 +1969,6 @@
    "group": "daily",
    "mechanic": "棋牌",
    "task": "xiangqi"
-  },
-  {
-   "id": "shouye",
-   "replaced": "cut",
-   "group": "daily",
-   "mechanic": "判断",
-   "task": "shouye"
-  },
-  {
-   "id": "descend",
-   "replaced": "cut",
-   "group": "daily",
-   "mechanic": "判断",
-   "task": "mijing-descend"
-  },
-  {
-   "id": "gather",
-   "replaced": "fantongcut",
-   "group": "daily",
-   "mechanic": "判断",
-   "task": "mijing-gather"
   },
   {
    "id": "drawguess",

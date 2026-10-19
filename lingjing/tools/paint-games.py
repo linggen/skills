@@ -215,14 +215,6 @@ SUBJECTS = {
     'little away, his right hand raised in front of his chest holding a small paper talisman between two fingers. A patched '
     'hemp jacket crossed at the front, rope belt, loose trousers, straw sandals, hair in a small topknot. Old Chinese '
     'storybook figure. Ink lines and soft grey wash.'),
-  # ── 扔石听声 (00-cave, the throwing board, row caveecho): 「先往里扔了一块石头，听了听」. Side-on: the cave at the
-  # LEFT (its deep end at the far left), the hillside and the mouth at the right where he throws from.
-  'stone/cave': ('vignette', (960, 600), (1536, 960), 2,
-    'ONE single continuous picture, not panels, not a diptych, no dividing line: a long low shallow cave in a cliff, cut away '
-    'and seen from the side like a stage. A heavy overhang of rock runs along the whole top edge in dark ink and grey wash and '
-    'comes down into a rock wall at the far LEFT edge; a flat dim earth floor with a few pebbles runs along the whole bottom; '
-    'the hollow between is a dusky grey wash, deeper and darker toward the left. At the far RIGHT the overhang ends and the open '
-    'dusk hillside with a little grass shows. No animals, no people, no fire.'),
   # ── 芦苇里那一等 (09-yishui, row luwing): the 鯥 pinned on the shoal, 「翅膀根上那块皮翻开来……露出底下粉红的肉」.
   'lu/lu': ('pose', (640, 480), (1024, 768), 1,
     'A mythical river beast of the Shanhaijing, the Lu: the body of an ox, crouched low and side-on, facing LEFT, an ox head with '

@@ -63,6 +63,7 @@
       "done_line": { "zh": "皮抵了去年的欠，肉抵了今年的租。", "en": "The hide for last year, the meat for this." }
     },
     {
+      "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
       "id": "feather-breath", "kind": "board", "game": "feather", "period": "once",
       "title": { "zh": "吹鹅毛 · 吐气，毛不许动", "en": "The goose feather · It mustn't stir" },
       "grant": { "table": "task", "progress": 5 },
@@ -78,6 +79,7 @@
       "done_line": {"zh": "那块桂花糕，还在马小宝手里。", "en": "The osmanthus cake is still in Ma Xiaobao's hand."}
     },
     {
+      "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
       "id": "kitchen-griddle", "kind": "board", "game": "griddle", "period": "once",
       "title": {"zh": "烙饼 · 一张厚，一张薄", "en": "The flatbreads · One thick, one thin"},
       "grant": { "table": "task", "progress": 5 },
@@ -92,6 +94,7 @@
       "done_line": {"zh": "崖壁上的道道，一道都还在。", "en": "The lines on the cliff are all still there."}
     },
     {
+      "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
       "id": "halfyear-carry", "kind": "board", "game": "carry", "period": "once",
       "title": {"zh": "练功 · 挑水上坡不喘", "en": "Practice · Water up the slope without a pant"},
       "grant": { "table": "task", "progress": 5 },
@@ -99,6 +102,7 @@
       "done_line": {"zh": "六担水，缸满了。", "en": "Six loads of water; the vat is full."}
     },
     {
+      "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },
       "grant": { "table": "task", "progress": 5 },

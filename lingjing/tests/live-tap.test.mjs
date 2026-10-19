@@ -3,8 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runsLive, tapGate, wireLiveGames } from '../scripts/live-games.js';
-import * as dark from '../scripts/games/dark.js';
-import * as carry from '../scripts/games/carry.js';
+import * as sneeze from '../scripts/games/sneeze.js';
 import * as wuziqi from '../scripts/games/wuziqi.js';
 
 test('a pointerdown tap acts once: the click after it is swallowed, once', () => {
@@ -22,10 +21,10 @@ test('a pointerdown tap acts once: the click after it is swallowed, once', () =>
 });
 
 test('only a game running in time takes taps on pointerdown', () => {
-  const live = { mod: dark, state: dark.newGame('t') };
+  const live = { mod: sneeze, state: walking() };
   assert.equal(runsLive(live), true);
-  assert.equal(runsLive({ mod: dark, state: { ...live.state, won: true } }), false);
-  assert.equal(runsLive({ mod: carry, state: carry.newGame('t') }), false, 'carry before 起步 is not live: click path');
+  assert.equal(runsLive({ mod: sneeze, state: { ...live.state, won: true } }), false);
+  assert.equal(runsLive({ mod: sneeze, state: sneeze.newGame('t') }), false, 'a board before its start is not live: click path');
   assert.equal(runsLive({ mod: wuziqi, state: wuziqi.newGame('t') }), false, 'no tick: click path');
   assert.equal(runsLive(null), false);
 });
@@ -37,7 +36,7 @@ test('wired: pointerdown on a live board acts once, the click is stopped; a keyb
   globalThis.setInterval = () => 0;
   try {
     let acts = 0;
-    const mod = { ...dark, act: (s, d) => { acts += 1; return dark.act(s, d); }, html: () => '' };
+    const mod = { ...sneeze, act: (s, d) => { acts += 1; return sneeze.act(s, d); }, html: () => '' };
     const g = { taskId: 'j07-dark', mod, state: walking() };
     wireLiveGames({ boardFor: () => g, lang: () => 'zh', onWon: () => {} });
     const host = { dataset: { game: 'j07-dark' }, isConnected: false, closest: () => host };
@@ -61,28 +60,5 @@ test('wired: pointerdown on a live board acts once, the click is stopped; a keyb
   } finally { Object.assign(globalThis, saved); }
 });
 
-const walking = () => dark.act(dark.newGame('t'), { g: 'start' }).state;
-const until = (s, pred) => { let x = s; for (let i = 0; i < 2000 && !pred(x); i++) x = dark.tick(x, 5); return x; };
-
-test('黑地: a step inside the band lands, one outside it wobbles', () => {
-  const inBand = until(dark.tick(walking(), 300), (x) => Math.abs(dark.swayOf(x)) < dark.STEADY * 0.9);
-  const landed = dark.act(inBand, { g: 'step' }).state;
-  assert.equal(landed.step, 1);
-  assert.equal(landed.wobbles, 0);
-  const outBand = until(walking(), (x) => Math.abs(dark.swayOf(x)) > dark.STEADY * 1.1);
-  const wobbled = dark.act(outBand, { g: 'step' }).state;
-  assert.equal(wobbled.step, 0);
-  assert.equal(wobbled.wobbles, 1);
-  assert.equal(wobbled.note, 'wobble');
-});
-
-test('黑地: the middle lasts at least 250 ms every step, and the band drawn is the rule', () => {
-  for (const seed of ['t', 'a', 'Mon Oct 15 2026||j07-dark', 'x9']) {
-    for (const p of dark.swings(seed)) assert.ok(dark.windowMs(p) >= 250, `period ${p} → ${Math.round(dark.windowMs(p))} ms`);
-  }
-  assert.match(dark.html(walking(), 'zh'), new RegExp(`--steady:${dark.STEADY}`));
-});
-
-test('挑水: the middle of the swing lasts at least 250 ms', () => {
-  assert.ok((Math.asin(carry.MID) / Math.PI) * carry.PERIOD >= 250);
-});
+// The 黑地 and 挑水 tests went with their games, deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); any board that runs in time does here.
+function walking() { return sneeze.act(sneeze.newGame('t'), { g: 'start' }).state; }

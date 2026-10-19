@@ -35,7 +35,7 @@ const windowOf = (head, tail, to = 3000, step = 50) => {
   return won;
 };
 
-test('fall-storm plays fallrope: the task keeps its id, title and line; grades clean · steady · rough; the old board kept in the 游戏厅', () => {
+test('fall-storm plays fallrope: the task keeps its id, title and line; grades clean · steady · rough; the old board deleted', () => {
   const t = content.tasks.tasks.find((x) => x.id === 'fall-storm');
   assert.equal(t.game, 'fallrope');
   assert.equal(t.stars, 3);
@@ -44,7 +44,7 @@ test('fall-storm plays fallrope: the task keeps its id, title and line; grades c
   assert.equal(row.scene, '00-fall');
   assert.equal(row.mechanic, '割绳子');
   const old = content.games.games.find((g) => g.id === 'storm');
-  assert.ok(old && !old.task && !old.scene, 'storm stays, off the story');
+  assert.equal(old, undefined, 'the old 拽 board deleted 2026-10-19 (「没用在游戏中的, 都删了吧」)');
   assert.ok(level.pack && level.air && level.gust && level.reach, 'pack, a swing level, the storm\'s gust, a ledge');
 });
 

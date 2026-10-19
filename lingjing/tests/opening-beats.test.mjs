@@ -13,8 +13,6 @@ import { storyChars, stretchesOf } from '../scripts/rhythm.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { TO_HALL, TO_VALLEY, walk } from './prologue.mjs';
 import * as rain from '../scripts/games/rain.js';
-import * as scale from '../scripts/games/scale.js';
-import * as feather from '../scripts/games/feather.js';
 
 const content = loadContent();
 const NOW = new Date('2026-10-14T10:00:00');
@@ -28,7 +26,7 @@ const bothLangs = (mod, s) => { for (const lang of ['zh', 'en']) assert.ok(mod.h
 
 test('every game: meta in both languages, opens with a control to touch, draws in both languages', () => {
   // 喂饼 is dealt its levels (games.json, since 2026-10-16); its own tests are bread.test.mjs.
-  for (const [mod, control] of [[rain, /data-g="start"/], [scale, /data-g="hide"/], [feather, /data-g-drag="breath"/]]) {
+  for (const [mod, control] of [[rain, /data-g="start"/]]) {
     assert.ok(mod.meta.name.zh && mod.meta.name.en && mod.meta.how.zh && mod.meta.how.en, mod.meta.id);
     const s = mod.newGame('seed');
     assert.match(mod.html(s, 'zh'), control, mod.meta.id);
@@ -67,45 +65,7 @@ test('接雨: seventeen leaks caught — quick hands keep the floor dry, slow on
   assert.match(rain.html(watch, 'en'), /fifth watch/);
 });
 
-test('算账: the hide, then twenty catties on the pan — exact keeps the most at home, over gives the Mas the rest; light is never taken', () => {
-  let s = scale.act(scale.newGame('r'), { g: 'hide' }).state;
-  for (const id of ['hind', 'fore1', 'loin']) s = scale.act(s, { g: 'cut', id }).state;
-  assert.equal(scale.weightOf(s.pan), 15);
-  s = scale.act(s, { g: 'weigh' }).state;
-  assert.equal(s.won, false);
-  assert.equal(s.note, 'light');
-  s = scale.act(s, { g: 'cut', id: 'fore2' }).state;
-  const exact = scale.act(s, { g: 'weigh' }).state;
-  assert.equal(exact.grade, 'exact');
-  const over = scale.act(scale.act(s, { g: 'cut', id: 'ribs' }).state, { g: 'weigh' }).state;
-  assert.equal(over.grade, 'over');
-  assert.match(scale.html(over, 'zh'), /多出来的 4 斤/);
-  assert.match(scale.html(exact, 'en'), /twenty catties/);
-  assert.equal(scale.act(scale.newGame('r'), { g: 'cut', id: 'hind' }).won, false, 'the hide first');
-});
-
-test('吹鹅毛: a slow, even stroke is a long breath out; holding it bursts, rushing it flies — three breaths, the best counts', () => {
-  const breathe = (s, pxs, ms) => {
-    s = feather.act(s, { g: 'hold' }).state;
-    for (let t = 0; t < ms && s.phase === 'out'; t += 100) {
-      for (let k = 0; k < 5; k += 1) s = feather.act(s, { g: 'move', d: pxs / 50 }).state;
-      s = feather.tick(s, 100);
-    }
-    return s.phase === 'out' ? feather.act(s, { g: 'release' }).state : s;
-  };
-  let s = breathe(feather.newGame('f'), 0, 4000);
-  assert.equal(s.note, 'burst', 'held: it bursts, as on the first night');
-  s = breathe(s, 400, 4000);
-  assert.equal(s.note, 'puff', 'rushed: the feather flies');
-  s = breathe(s, 45, 30000);
-  assert.equal(s.won, true);
-  assert.equal(s.grade, 'still');
-  assert.ok(s.best >= feather.STILL);
-  const poor = [0, 400, 400].reduce((st, v) => breathe(st, v, 4000), feather.newGame('f'));
-  assert.equal(poor.won, true, 'three breaths and it is over, whatever the count');
-  assert.equal(poor.grade, 'shaky');
-  assert.match(feather.html(poor, 'zh'), /鸡窝乱了几回/);
-});
+// 算账 (scale) and 吹鹅毛 (feather): their games deleted 2026-10-19 (「没用在游戏中的, 都删了吧」), their scenes' boards cut 10-16.
 
 /* ── the scenes ── */
 
@@ -229,7 +189,7 @@ test('扔石听声 has left 00-cave: the passage whole (the book\'s, word for wo
   assert.ok(!sc.exits.some(e => e.needs?.task === 'cave-stone'));
   assert.equal(sc.story_after, undefined, 'no passage split for it');
   assert.match(sc.story.zh, /先往里扔了一块石头[\s\S]*还是进去了。\n\n他用他爹教的法子[\s\S]*最后的一点白面。$/);
-  assert.equal(content.games.games.find(g => g.id === 'caveecho')?.task, 'cave-stone', 'the row stays for the 游戏厅');
+  assert.equal(content.games.games.find(g => g.id === 'caveecho'), undefined, 'its game deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); the task id stays, cut');
   const s = atScene('00-cave');
   const old = { ...s, tasks: { ...s.tasks, 'cave-stone': { status: 'offered' } }, tell_owed: ['after/00-cave'] };
   const fit = fitWorld(old, content);

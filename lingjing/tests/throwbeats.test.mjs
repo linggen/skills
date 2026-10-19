@@ -1,18 +1,15 @@
-// The throws of 卷一 on the one throwing board (2026-10-16, Hanli: 「投掷类都可以换」): 扔石听声 (caveecho —
-// two stones, the echo deep; off 00-cave since 2026-10-19, the 游戏厅's) and 芦苇里那一等 (09-yishui, luwing — the 短飞剑 into the 鯥's wing
+// The throws of 卷一 on the one throwing board (2026-10-16, Hanli: 「投掷类都可以换」): 芦苇里那一等 (扔石听声's caveecho
+// was deleted 2026-10-19, off 00-cave and unused: 「没用在游戏中的, 都删了吧」; (09-yishui, luwing — the 短飞剑 into the 鯥's wing
 // root as it breathes in). Each level is won by the bot's aim at a 10 ms and a 50 ms clock; a stone
 // that lands shallow is a hit a star fewer; a blade on the hide is turned; the grades name the
 // tasks' marks; the story deals each its levels; the throw moments are listed with the book's lines.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as cave from '../scripts/games/caveecho.js';
 import * as lu from '../scripts/games/luwing.js';
 import { solve } from '../scripts/games/bots/deerarc.js';
-import { bot } from '../scripts/games/bots/caveecho.js';
 import { flight, levelNow } from '../scripts/games/deerarc.js';
 import { luAt } from '../scripts/games/targets.js';
 import { projectileOf } from '../scripts/games/throws.js';
-import { playOnce } from '../tools/board-bots.mjs';
 import { loadContent } from '../scripts/content.mjs';
 
 const content = loadContent();
@@ -39,7 +36,7 @@ test('the throw moments of 卷一 are listed with the book\'s lines; three built
   assert.ok((note.match(/PROPOSED/g) ?? []).length >= 3);
 });
 
-for (const [mod, id] of [[cave, 'caveecho'], [lu, 'luwing']]) {
+for (const [mod, id] of [[lu, 'luwing']]) {
   for (const lv of row(id).levels) {
     test(`${id} ${lv.id}: a clean throw found, and it lands at a 10 ms and a 50 ms clock`, () => {
       const proj = projectileOf(PROJ, lv.ammo[0]);
@@ -55,20 +52,6 @@ for (const [mod, id] of [[cave, 'caveecho'], [lu, 'luwing']]) {
   }
 }
 
-test('扔石听声: deep is the echo; a stone that comes down shallow is a hit a star fewer; one that bounces off the roof still lands and is judged', () => {
-  const lv = row('caveecho').levels[0], stone = projectileOf(PROJ, 'stone');
-  let shallow = null;
-  for (let a = 4; a <= 60 && !shallow; a += 4) for (let p = 0.15; p <= 1 && !shallow; p += 0.03) if (flight(lv, { a, p }, 0, 600, { proj: stone }).hit === 'body') shallow = { a, p };
-  assert.ok(shallow, 'a shallow landing exists');
-  const s = cave.tick(throwOnce(cave, lv, shallow), 300);
-  assert.equal(s.phase, 'hit');
-  assert.equal(s.best[0], 2, 'one stone, shallow: two stars');
-  assert.match(cave.html(s, 'zh'), /笃的一声/);
-  assert.match(cave.html(s, 'zh'), /g-tg-echo/, 'the echo, not an ink bloom');
-  const steep = flight(lv, { a: 60, p: 0.9 }, 0, 600, { proj: stone });
-  assert.notEqual(steep.end, 'wall', 'the roof bounces it; it flies on and comes down');
-});
-
 test('鯥: the hide turns the blade while the wing root is shut; the next throw at once, and the words say wait', () => {
   const lv = row('luwing').levels[0], sword = projectileOf(PROJ, 'sword');
   const shutAt = [0, 200, 400].find((ms) => luAt(lv, ms + 600).open < 0.1);
@@ -81,8 +64,8 @@ test('鯥: the hide turns the blade while the wing root is shut; the next throw 
   assert.ok(luAt(lv, 2400 - 700 + 300).open > 0.5 && luAt(lv, 100).open === 0, 'it opens, briefly, every breath');
 });
 
-test('the grades name the tasks\' marks: 扔石听声 sure · lucky, 鯥 still · hasty', () => {
-  for (const [mod, id, three, one] of [[cave, 'caveecho', 'sure', 'lucky'], [lu, 'luwing', 'still', 'hasty']]) {
+test('the grades name the task\'s marks: 鯥 still · hasty', () => {
+  for (const [mod, id, three, one] of [[lu, 'luwing', 'still', 'hasty']]) {
     const task = content.tasks.tasks.find((t) => t.game === id);
     assert.ok(task.marks[three] && task.marks[one], `${id}: ${Object.keys(task.marks)}`);
     let s = mod.newGame('t', 1, deal(row(id).levels));
@@ -97,19 +80,14 @@ test('the story deals the 鯥 at 09-yishui with the 短飞剑; 扔石听声 is t
   const caveScene = content.chapters['00-prologue'].scenes['00-cave'];
   assert.deepEqual(caveScene.show.filter((c) => c.card === 'board').map((c) => c.id), ['bread-share']);
   assert.ok(caveScene.story.zh.includes('火镰'), 'the passage whole: the stones, then the fire');
-  assert.equal(row('caveecho').task, 'cave-stone', 'the row and its task stay');
+  assert.equal(row('caveecho'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
+  assert.equal(content.tasks.tasks.find((t) => t.id === 'cave-stone').cut, '2026-10-19');
   assert.equal(content.tasks.tasks.find((t) => t.id === 'yishui-reed').game, 'luwing');
-  assert.equal(row('reed').task, undefined, 'the old reed board is the 游戏厅\'s only');
-});
-
-test('the whole cave by the bot', () => {
-  const r = playOnce(cave, bot, { seed: 'cave-1', deal: deal(row('caveecho').levels) });
-  assert.equal(r.won, true);
-  assert.ok(['sure', 'lucky'].includes(r.grade));
+  assert.equal(row('reed'), undefined, 'the old reed board deleted 2026-10-19');
 });
 
 test('a throw row says its own end and its own empty hand — the cave is no stream of deer (2026-10-19 live play)', () => {
-  for (const [mod, id] of [[cave, 'caveecho'], [lu, 'luwing']]) {
+  for (const [mod, id] of [[lu, 'luwing']]) {
     const r = row(id);
     let s = mod.newGame('t', 1, { ...deal(r.levels), words: r.words });
     s = { ...s, won: true, stars: 3 };

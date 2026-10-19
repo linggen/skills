@@ -50,61 +50,6 @@
 .g-zt-pips span { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--ling); }
 .g-zt-pips span.is-on { background: var(--ling); }
 
-/* 今线 (2026-10-05): 一千米 (.g-qianmi), 罚球 (.g-faqiu), 黑地 (.g-dark), 晨脉 (.g-pulse),
-   最后一罚 (.g-lastshot) — one family, .g-jin; the breath they share is games/breath.js. */
-.g-jin { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 360px; margin: 0 auto; position: relative; }
-.g-jin-line { font-family: var(--serif); font-size: 15px; line-height: 1.7; margin: 0; text-align: center; min-height: 3.4em; }
-.g-jin-btn {
-  min-height: 52px; min-width: 60%; padding: 10px 22px; border-radius: 10px; border: 1px solid var(--water);
-  background: color-mix(in srgb, var(--water) 12%, var(--surface)); color: var(--water); font-size: 18px; cursor: pointer;
-  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
-}
-.g-jin-btn.is-held, .g-jin-btn:active { background: var(--water); color: var(--surface); }
-.g-jin-btn.is-small { min-height: 44px; min-width: 0; font-size: 15px; padding: 8px 14px; }
-.g-jin-btn.is-trap { border-color: var(--seal); color: var(--seal); background: var(--seal-soft); }
-.g-jin-pair { display: flex; gap: 10px; width: 100%; justify-content: center; }
-.g-jin-pair .g-jin-btn { flex: 1; min-width: 0; }
-.g-jin-meter { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 12px; color: var(--faint); }
-.g-jin-meter > span:first-child { min-width: 3.2em; }
-.g-jin-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--raised); overflow: hidden; }
-.g-jin-bar i { display: block; height: 100%; background: var(--water); transition: width .1s linear; }
-.g-jin-bar.is-low i { background: var(--seal); }
-.g-jin-bar.is-full i { background: var(--seal); opacity: .7; }
-.g-jin-track { position: relative; width: 100%; height: 10px; border-radius: 5px; background: color-mix(in srgb, #b5523b 30%, var(--raised)); }
-.g-jin-track i { position: absolute; top: -3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--water); transition: left .1s linear; }
-.g-jin-hr { display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; color: var(--text); }
-.g-jin-hr b { font-size: 34px; font-weight: 600; }
-.g-jin-hr.is-fast b { color: var(--seal); }
-.g-jin-beat { min-height: 1.4em; font-size: 14px; color: var(--water); letter-spacing: .1em; }
-.g-jin-dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
-.g-jin-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--dim); }
-.g-jin-dot.is-on { background: var(--water); border-color: var(--water); }
-.g-jin-sway { position: relative; width: 100%; height: 22px; border-radius: 11px; background: var(--raised); }
-/* The steady band is the rule's own number (dark.js STEADY → --steady); the dot sits at 50% + sway·45%. */
-.g-jin-sway .g-jin-mid { position: absolute; left: calc(50% - var(--steady, .3) * 45%); width: calc(var(--steady, .3) * 90%); top: 0; bottom: 0; border-radius: 11px; background: color-mix(in srgb, var(--water) 22%, transparent); }
-.g-jin-sway i { position: absolute; top: 3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--text); }
-.g-dark { padding: 10px; border-radius: 10px; background: color-mix(in srgb, #0d0f12 70%, var(--surface)); color: #d9dde2; }
-.g-dark .g-jin-line { color: #d9dde2; }
-/* The steps on the dark card: light rims, the taken ones filled light (live, 2026-10-15: --dim rims vanished on it). */
-.g-dark .g-jin-dot { border-color: rgb(217 221 226 / 55%); }
-.g-dark .g-jin-dot.is-on { background: #d9dde2; border-color: #d9dde2; }
-.g-lastshot .g-jin-hr b { display: inline-block; animation: g-jin-shake .12s infinite alternate; }
-@keyframes g-jin-shake { from { transform: translateX(calc(var(--shake, .3) * -2px)); } to { transform: translateX(calc(var(--shake, .3) * 2px)); } }
-@media (prefers-reduced-motion: reduce) { .g-lastshot .g-jin-hr b { animation: none; } }
-/* 最后一罚 on the house palette (2026-10-16): modern, not ink — but the page's own tokens, not a blue button and a
-   red counter. The breath button is the main button's 灵 brown (filled while held), 出手 a quiet one; the heart
-   rate in ink, the shake in a muted earth, the breaths counted in 灵. */
-.g-lastshot .g-jin-btn { border-color: var(--ling); background: var(--ling-soft); color: var(--ling); letter-spacing: .2em; }
-.g-lastshot .g-jin-btn.is-held, .g-lastshot .g-jin-btn:active { background: var(--ling); color: var(--surface); }
-.g-lastshot .g-jin-btn.is-small { border-color: var(--line); background: var(--surface); color: var(--dim); letter-spacing: .1em; }
-.g-lastshot .g-jin-hr.is-fast b { color: var(--text); }
-.g-lastshot .g-jin-hr span { color: var(--dim); }
-.g-lastshot .g-jin-bar { background: var(--raised); border: 1px solid var(--line); }
-.g-lastshot .g-jin-bar i, .g-lastshot .g-jin-bar.is-low i { background: var(--earth); opacity: .8; }
-.g-lastshot .g-jin-dot { border-color: var(--line); }
-.g-lastshot .g-jin-dot.is-on { background: var(--ling); border-color: var(--ling); }
-.g-lastshot .g-jin-beat { color: var(--ling); }
-
 /* 2026-10-14 — the opening's playable beats, in ink (his: 「小游戏的UI太粗糙了，美化一下」):
    接雨 (.g-rain), 喂饼 (.g-bread), 射鹿 (.g-deer), 算账 (.g-scale), 吹鹅毛
    (.g-feather) share .g-ink — a scene drawn in currentColor on the stage's paper (games/ink.js),
@@ -497,17 +442,6 @@
 .g-da-stars .g-da-star { animation: g-da-pop .5s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * .25s); }
 @media (prefers-reduced-motion: reduce) { .g-da-pop, .g-da-stars .g-da-star { animation: none; } }
 .g-da-scene .g-da-sprite { mix-blend-mode: normal; } /* the paintings carry their own alpha */
-/* 射鹿 · 等风 (games/deerhunt.js, 2026-10-19) — the hunting-aim board on 射鹿's creek: the sight
-   (ink ring and cross on a paper rim; seal red at full draw, a breath ring that drains), the dusk wash,
-   and the wind word lit in a lull (风歇). */
-.g-dh-scene .g-dh-aim-ring, .g-dh-scene .g-dh-aim-cross { fill: none; stroke: #2e2416; stroke-width: 1.6; stroke-linecap: round; filter: drop-shadow(0 0 1px #f6efe0) drop-shadow(0 0 1px #f6efe0); }
-.g-dh-scene .g-dh-aim.is-full .g-dh-aim-ring, .g-dh-scene .g-dh-aim.is-full .g-dh-aim-cross { stroke: var(--seal); }
-.g-dh-scene .g-dh-aim.is-gasp .g-dh-aim-ring { stroke-dasharray: 3 3; }
-.g-dh-scene .g-dh-aim-breath { fill: none; stroke: #f6efe0; stroke-width: 2.4; opacity: .9; transform: rotate(-90deg); }
-.g-dh-scene .g-dh-nope-ring { fill: none; stroke: var(--seal); stroke-width: 2.4; }
-.g-dh-scene .g-dh-dusk-wash { fill: #1d1a2a; mix-blend-mode: multiply; pointer-events: none; }
-.g-deerhunt .g-da-windword.is-lull { color: var(--ling); font-weight: 600; }
-.g-deerhunt .g-line-say { min-height: 3.4em; }
 /* 投掷 · the kit (games/throws.js): the things he throws in ink until painted, their one tap's
    effect, and the tray — only his own things, each at least 44px. */
 .g-da-scene .g-tk-stone { fill: #5d5448; stroke: #f6efe0; stroke-width: .8; }
