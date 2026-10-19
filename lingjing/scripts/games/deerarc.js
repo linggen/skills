@@ -512,6 +512,11 @@ export function burstHit(level, ms, [x, y], r) {
   return ((lx - cx) / (rx + lr)) ** 2 + ((ly - cy) / (ry + lr)) ** 2 <= 1 ? 'body' : null;
 }
 
+/** An untapped 五雷符 striking something solid (not brushing a bush, snapping a reed or piercing clay):
+    it bursts there by itself. */
+const PASSES = new Set(['snap', 'brushed', 'pierced']);
+const strikes = (ar, hit, ev) => ar?.proj?.ability === 'burst' && !ar.tapped && !ar.done && Boolean(hit || (ev && !PASSES.has(ev)));
+
 /** What a step may say while the throw still flies: a reed snapped, a skip, a glance off rock, clay broken through. */
 const GOES_ON = new Set(['snap', 'bounce', 'wall', 'glance', 'broke', 'pierced', 'brushed', 'deflect']);
 
@@ -528,6 +533,11 @@ export function flight(level, aim, at = 0, limit = 600, { proj = ARROW, tapAt = 
     const ev = stepWorld(world, level, at + k * STEP_MS);
     if (ev === 'snap') snapped++;
     const hit = world.arrow.true ? targetHit(level, at + k * STEP_MS, world.arrow.prev, world.arrow.tip) : null;
+    if (strikes(world.arrow, hit, ev)) {
+      world.arrow.true = true;
+      const r = tapWorld(world, level, at + k * STEP_MS);
+      if (r?.kind === 'burst') return { hit: r.hit, end: r.hit ? null : 'burst', steps: k, tip: world.arrow.tip, snapped };
+    }
     if (hit === 'glance') return { hit: null, end: 'glance', steps: k, tip: world.arrow.tip, snapped };
     if (hit) return { hit, steps: k, tip: world.arrow.tip, snapped };
     const landedHit = ev === 'ground' ? targetOf(level)?.land?.(level, world.arrow.tip) : null; // a stone in the cave
@@ -649,6 +659,13 @@ export function act(state, data = {}) {
 function flying(s) {
   const level = levelOf(s), ev = stepWorld(s.world, level, s.clock), ar = s.world.arrow;
   const hit = ar.true ? targetHit(level, s.clock, ar.prev, ar.tip) : null;
+  // A 五雷符 not tapped in flight bursts where it first strikes, as a thunder charm should
+  // (Hanli 10-19: 「雷符不会炸」); the tap is for bursting it early, in the air.
+  if (strikes(ar, hit, ev)) {
+    ar.true = true;
+    const b = tap(s);
+    if (b) return b;
+  }
   if (hit === 'glance') return glance(s);
   // By the creek's smash levels a stone or a pot only startles the stag (it bolts, comes back); a
   // thrown 柴 log fells it; the arrow is the hunter's.

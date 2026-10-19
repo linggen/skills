@@ -43,7 +43,7 @@
   "arrow": {"name": {"zh": "箭", "en": "Arrow"}, "shape": "arrow", "mass": 1, "speed": 1, "drag": 0, "half": 13, "pierce": 40},
   "stone": {"name": {"zh": "石子", "en": "Stone"}, "from": "shizi", "shape": "stone", "mass": 2.2, "speed": 0.94, "drag": 0.003, "half": 0, "knock": true, "bounce": 0.42, "real": true, "size": [12, 12], "density": 0.02, "restitution": 0.38},
   "sword": {"name": {"zh": "短飞剑", "en": "Short flying sword"}, "from": "feijian", "shape": "sword", "mass": 0.8, "speed": 1, "drag": 0, "half": 9, "pierce": 40, "ability": "dash", "dash": 1.7, "tip": {"zh": "飞行中点一下：剑直冲出去。", "en": "Tap in flight: the sword shoots straight on."}},
-  "talisman": {"name": {"zh": "五雷符", "en": "Thunder talisman"}, "from": "wulei-fu", "shape": "talisman", "mass": 0.6, "speed": 0.9, "drag": 0.006, "half": 0, "ability": "burst", "radius": 70, "tip": {"zh": "飞行中点一下：五雷炸开。", "en": "Tap in flight: the thunder bursts."}},
+  "talisman": {"name": {"zh": "五雷符", "en": "Thunder talisman"}, "from": "wulei-fu", "shape": "talisman", "mass": 0.6, "speed": 0.9, "drag": 0.006, "half": 0, "ability": "burst", "radius": 70, "tip": {"zh": "一碰就炸；飞行中点一下，提前炸开。", "en": "Bursts on a strike; tap in flight to burst it early."}},
   "log": {"name": {"zh": "柴", "en": "Firewood"}, "shape": "log", "mass": 3, "speed": 0.62, "drag": 0.002, "half": 0, "knock": true, "real": true, "size": [30, 9], "density": 0.008, "restitution": 0.12},
   "pot": {"name": {"zh": "陶罐", "en": "Clay pot"}, "shape": "pot", "mass": 1.6, "speed": 0.78, "drag": 0.003, "half": 0, "knock": true, "real": true, "shatters": true, "size": [16, 16], "density": 0.006, "restitution": 0.1}
  },
@@ -1414,7 +1414,7 @@
     ],
     "say": {"zh": "山里人垒的石墙，搭了个棚。石子砸不动，箭也打不进——得先开墙。", "en": "A dry-stone wall with a roof over it. A stone won't move it, an arrow won't go in — open the wall first."},
     "bot": [
-     [9, 0.475, "talisman", 48],
+     [11, 0.7, "talisman"],
      [-3, 0.775, "arrow"]
     ]
    },
