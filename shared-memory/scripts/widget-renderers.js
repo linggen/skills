@@ -1178,8 +1178,8 @@ function renderTable(w) {
         const factText = [...row].reverse().find(c => typeof c === 'string');
         if (!factText) return;
         if (!(await confirmDialog(`Delete from ${memFile}?\n\n"${factText}"`))) return;
-        const tr = btn.closest('tr');
-        tr.style.opacity = '0.4';
+        const rowEl = btn.closest('tr');
+        rowEl.style.opacity = '0.4';
         btn.disabled = true;
         try {
           const resp = await fetch('/api/memory/fact', {
@@ -1189,9 +1189,9 @@ function renderTable(w) {
           });
           if (!resp.ok) throw new Error(await resp.text());
           // Remove the row from the DOM — instant, no dashboard rebuild.
-          tr.remove();
+          rowEl.remove();
         } catch (e) {
-          tr.style.opacity = '1';
+          rowEl.style.opacity = '1';
           btn.disabled = false;
           alert(tr('mem.deleteFailedMessage', { message: e.message || e }));
         }
@@ -1203,14 +1203,14 @@ function renderTable(w) {
         const idx = parseInt(btn.dataset.idx, 10);
         const row = (w.rows || [])[idx];
         if (!row) return;
-        const tr = btn.closest('tr');
-        if (!tr || tr.classList.contains('editing')) return;
-        const factCell = tr.querySelector('.cell-fact');
-        const actionsCell = tr.querySelector('.fact-actions-cell');
+        const rowEl = btn.closest('tr');
+        if (!rowEl || rowEl.classList.contains('editing')) return;
+        const factCell = rowEl.querySelector('.cell-fact');
+        const actionsCell = rowEl.querySelector('.fact-actions-cell');
         if (!factCell || !actionsCell) return;
         const oldText = [...row].reverse().find(c => typeof c === 'string') || '';
 
-        tr.classList.add('editing');
+        rowEl.classList.add('editing');
         const origFactHtml = factCell.innerHTML;
         const origActionsHtml = actionsCell.innerHTML;
         factCell.innerHTML = `<textarea class="fact-edit-ta" rows="2">${esc(oldText)}</textarea>`;
@@ -1234,7 +1234,7 @@ function renderTable(w) {
         const restore = () => {
           factCell.innerHTML = origFactHtml;
           actionsCell.innerHTML = origActionsHtml;
-          tr.classList.remove('editing');
+          rowEl.classList.remove('editing');
           // Re-wire this row's buttons since we reset innerHTML.
           const newEdit = actionsCell.querySelector('.fact-edit-btn');
           const newDel = actionsCell.querySelector('.fact-del-btn');
@@ -1248,7 +1248,7 @@ function renderTable(w) {
           const newText = ta.value.trim();
           if (!newText) { restore(); return; }
           if (newText === oldText.trim()) { restore(); return; }
-          tr.style.opacity = '0.6';
+          rowEl.style.opacity = '0.6';
           try {
             const resp = await fetch('/api/memory/fact', {
               method: 'PATCH',
@@ -1258,10 +1258,10 @@ function renderTable(w) {
             if (!resp.ok) throw new Error(await resp.text());
             factCell.innerHTML = esc(newText);
             actionsCell.innerHTML = origActionsHtml;
-            tr.classList.remove('editing');
-            tr.style.opacity = '1';
+            rowEl.classList.remove('editing');
+            rowEl.style.opacity = '1';
           } catch (e) {
-            tr.style.opacity = '1';
+            rowEl.style.opacity = '1';
             alert(tr('mem.editFailedMessage', { message: e.message || e }));
           }
         };

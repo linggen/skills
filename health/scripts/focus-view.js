@@ -8,6 +8,7 @@
 // share as bars — never an unrelated measurement.
 
 import { entryOf, homeOf, selectedOf } from './home.js';
+import { t as tr } from './strings.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const svg = (tag, attrs = {}) => {
@@ -50,7 +51,7 @@ export function focusView(report, { change, explore, ask, canUndo, entryId, head
   const section = el('section', 'home-section focus');
   if (header) {
     const head = el('div', 'focus-head');
-    head.append(el('h2', null, 'Focus'));
+    head.append(el('h2', null, tr('h.focus')));
     section.append(head);
   }
 
@@ -62,7 +63,7 @@ export function focusView(report, { change, explore, ask, canUndo, entryId, head
         'dim',
         home.fallback || home.catalog.length
           ? home.why
-          : 'Not enough recorded yet to draw anything. It fills in as the phone reads its history.',
+          : tr('h.notEnoughRecordedYet'),
       ),
     );
     return section;
@@ -138,7 +139,7 @@ function line(e) {
     head(
       withUnit(last, e.unit),
       isNum(e.normal)
-        ? `your normal ${fmt(e.normal)} · ${fmt(lo)} to ${fmt(hi)}`
+        ? tr('h.yourNormalFmtP1', { fmt: fmt(e.normal), p1: fmt(lo), p2: fmt(hi) })
         : `${fmt(lo)} to ${fmt(hi)}`,
     ),
   );
@@ -179,7 +180,7 @@ function bars(e) {
     fill.style.width = `${isNum(v) ? (v / max) * 100 : 0}%`;
     fill.style.background = PALETTE[i % PALETTE.length];
     track.append(fill);
-    r.append(track, el('span', 'v num', isNum(v) ? withUnit(v, e.unit) : 'no reading'));
+    r.append(track, el('span', 'v num', isNum(v) ? withUnit(v, e.unit) : tr('h.noReading')));
     wrap.append(r);
   });
   return wrap;
@@ -325,7 +326,7 @@ function progress(e) {
   const fill = el('div');
   fill.style.width = `${frac * 100}%`;
   track.append(fill);
-  wrap.append(track, el('p', 'dim small', `Target: ${e.target_source}`));
+  wrap.append(track, el('p', 'dim small', tr('h.targetTargetSource', { target_source: e.target_source })));
   return wrap;
 }
 
@@ -340,7 +341,7 @@ function controls(home, entry, { change, explore, ask, canUndo }) {
     return b;
   };
   const pinned = home.pinned === entry.subject;
-  bar.append(button(pinned ? 'Unpin' : 'Pin this', () => change({ action: pinned ? 'unpin' : 'pin', id: entry.id })));
+  bar.append(button(pinned ? tr('h.unpin') : tr('h.pinThis'), () => change({ action: pinned ? 'unpin' : 'pin', id: entry.id })));
   for (const p of entry.periods || []) {
     if (p === entry.id) continue;
     const sib = home.catalog.find((c) => c.id === p);
@@ -350,11 +351,11 @@ function controls(home, entry, { change, explore, ask, canUndo }) {
     if (k !== entry.kind) bar.append(button(`As ${kindWords(k)}`, () => change({ action: 'kind', id: entry.id, kind: k })));
   }
   bar.append(picker(home, entry, change));
-  bar.append(button('Explore', explore));
-  bar.append(button('Why this?', () => explain(home)));
-  if (canUndo) bar.append(button('Undo', () => change({ action: 'undo' })));
-  bar.append(button('Show less of this', () => change({ action: 'hide', id: entry.id }), 'ask quiet'));
-  if (ask) bar.append(button('Ask Ling about this', () => ask(`On my Health page: ${entry.question} (${entry.title}, ${entry.period}). ${describe(entry)} What should I make of it?`)));
+  bar.append(button(tr('h.explore'), explore));
+  bar.append(button(tr('h.whyThis'), () => explain(home)));
+  if (canUndo) bar.append(button(tr('h.undo'), () => change({ action: 'undo' })));
+  bar.append(button(tr('h.showLessOfThis'), () => change({ action: 'hide', id: entry.id }), 'ask quiet'));
+  if (ask) bar.append(button(tr('h.askLingAboutThis'), () => ask(`On my Health page: ${entry.question} (${entry.title}, ${entry.period}). ${describe(entry)} What should I make of it?`)));
   return bar;
 }
 
@@ -374,9 +375,9 @@ const kindWords = (k) => ({ share: 'a share', bars: 'bars', line: 'a line', nigh
 function picker(home, entry, change) {
   const select = document.createElement('select');
   select.className = 'focus-pick';
-  select.setAttribute('aria-label', 'Show something else');
+  select.setAttribute('aria-label', tr('h.showSomethingElse'));
   const empty = document.createElement('option');
-  empty.textContent = 'Something else…';
+  empty.textContent = tr('h.somethingElse');
   empty.value = '';
   select.append(empty);
   const hidden = new Set(home.hidden || []);

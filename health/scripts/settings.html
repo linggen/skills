@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Health — Settings</title>
+  <title data-i18n="h.set.title">Health — Settings</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <link rel="stylesheet" href="health.css" />
   <!-- Its engine calls ride the data channel, never plain HTTP (first, so
@@ -11,12 +11,16 @@
   <script src="/shared/channel.js"></script>
 </head>
 <body>
-  <header class="top"><h1>Health — Settings</h1></header>
+  <header class="top"><h1 data-i18n="h.set.title">Health — Settings</h1></header>
   <main class="main" id="main"></main>
   <script type="module">
     // Settings says what is true and offers only what this side actually
     // owns. The body data belongs to the phone; nothing here can change it.
     import { verb, runBash } from './bash.js';
+    import { applyI18n, loadLanguage, t as tr } from './strings.js';
+
+    await loadLanguage();
+    applyI18n();
 
     const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
     const card = (title, ...kids) => { const c = el('section', 'card'); if (title) c.append(el('span', 'eyebrow', title)); kids.forEach((k) => k && c.append(k)); return c; };
@@ -30,18 +34,18 @@
       ]);
       const c = JSON.parse(cfg.trim() || '{}');
       const devices = Object.entries(l.devices || {});
-      main.append(card('This mirror',
-        row('Where', '~/.linggen/skills/health/data', 'samples, and the files the phone derives'),
-        row('Holds', `${(l.held.samples || 0).toLocaleString()} samples`, `${l.held.types} types, since ${(l.held.first || '—').slice(0, 10)}`),
-        row('Phones', devices.length ? `${devices.length} sending` : 'none paired yet',
-          devices.length ? `last heard ${(devices[0][1].at || '').slice(0, 10)}` : 'Apple Health only exists on an iPhone'),
-        row('Identity', l.mirror_id, 'a phone remembers how far it has sent against this')));
-      main.append(card('Config',
-        row('Units', c.units || 'metric', 'edit config.json to change it'),
-        row('Workspaces', (c.workspaces || []).join(', ') || 'none',
-          'folders the work signals read commit times from; empty means no work signals and no card claiming them')));
+      main.append(card(tr('h.set.mirror'),
+        row(tr('h.set.where'), '~/.linggen/skills/health/data', tr('h.set.whereNote')),
+        row(tr('h.set.holds'), tr('h.set.samples', { n: (l.held.samples || 0).toLocaleString() }), tr('h.set.typesSince', { n: l.held.types, since: (l.held.first || '—').slice(0, 10) })),
+        row(tr('h.set.phones'), devices.length ? tr('h.set.sending', { n: devices.length }) : tr('h.set.nonePaired'),
+          devices.length ? tr('h.set.lastHeard', { at: (devices[0][1].at || '').slice(0, 10) }) : tr('h.set.onlyIphone')),
+        row(tr('h.set.identity'), l.mirror_id, tr('h.set.identityNote'))));
+      main.append(card(tr('h.set.config'),
+        row(tr('h.set.units'), c.units || 'metric', tr('h.set.unitsNote')),
+        row(tr('h.set.workspaces'), (c.workspaces || []).join(', ') || tr('h.set.none'),
+          tr('h.set.workspacesNote'))));
     } catch (e) {
-      main.append(card('Something went wrong', el('p', 'err', String(e.message || e))));
+      main.append(card(tr('h.somethingWentWrong'), el('p', 'err', String(e.message || e))));
     }
   </script>
 </body>

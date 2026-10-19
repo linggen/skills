@@ -21,6 +21,7 @@ import { listSkillSessions } from '/shared/api.js';
 import { verb } from './bash.js';
 import { focusView } from './focus-view.js';
 import { candidatesOf, cardsOf, homeOf } from './home.js';
+import { applyI18n, loadLanguage, t as tr } from './strings.js';
 
 const SKILL = 'health';
 const $ = (id) => document.getElementById(id);
@@ -66,16 +67,24 @@ const value = (v, unit) => {
   return unit ? `${n} ${unit}` : n;
 };
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const days = () => tr('h.dow').split('|');
+
+/// A measurement's name in the person's language; the phone's English label
+/// when this page has no word for it.
+const typeName = (f) => {
+  const k = `h.type.${f?.type}`;
+  const w = tr(k);
+  return w === k ? f?.label || '' : w;
+};
 
 // The four verdicts, in the words the user reads and the class that colours
 // them. `thin` is an absence — too few days to have a normal at all — and is
 // never dressed as a judgement.
 const VERDICT = {
-  doc: ['worth a doctor', 'doc'],
-  see: ['worth seeing', 'see'],
-  normal: ['at your normal', 'ok'],
-  thin: ['nothing to judge yet', 'thin'],
+  get doc() { return [tr('h.v.doc'), 'doc']; },
+  get see() { return [tr('h.v.see'), 'see']; },
+  get normal() { return [tr('h.v.normal'), 'ok']; },
+  get thin() { return [tr('h.v.thin'), 'thin']; },
 };
 
 // ── state ────────────────────────────────────────────────────────────────────
@@ -94,12 +103,12 @@ let tab = 'highlights';
 function tabs() {
   const has = (k) => report && report[k] != null;
   return [
-    { id: 'highlights', name: 'Highlights', on: true },
-    { id: 'review', name: 'Review', on: true },
-    { id: 'body', name: 'Body', on: has('profile') || has('targets') },
-    { id: 'week', name: 'Week', on: has('plan') },
-    { id: 'today', name: 'Today', on: has('checklist') },
-    { id: 'data', name: 'Data', on: true },
+    { id: 'highlights', name: tr('h.tab.highlights'), on: true },
+    { id: 'review', name: tr('h.tab.review'), on: true },
+    { id: 'body', name: tr('h.tab.body'), on: has('profile') || has('targets') },
+    { id: 'week', name: tr('h.tab.week'), on: has('plan') },
+    { id: 'today', name: tr('h.tab.today'), on: has('checklist') },
+    { id: 'data', name: tr('h.tab.data'), on: true },
   ].filter((t) => t.on);
 }
 
@@ -127,11 +136,11 @@ function render() {
   main.textContent = '';
 
   if (error) {
-    main.append(card('Something went wrong', el('p', 'err', error)));
+    main.append(card(tr('h.somethingWentWrong'), el('p', 'err', error)));
     return;
   }
   if (!report) {
-    main.append(card(null, el('p', 'dim', 'Reading what this Mac holds…')));
+    main.append(card(null, el('p', 'dim', tr('h.readingWhatThisMac'))));
     return;
   }
 
@@ -164,31 +173,28 @@ function render() {
 function stripLine() {
   const r = report.review;
   const h = report.held;
-  const held = h && h.samples ? `mirror ${num(h.samples)} samples since ${day(h.first)}` : null;
+  const held = h && h.samples ? tr('h.mirrorNumSamplesSince', { num: num(h.samples), day: day(h.first) }) : null;
   const found =
     r && r.date === report.today
       ? [
-          `${num(r.examined)} types examined`,
-          `${num(r.normal)} at your normal`,
-          `${num(r.see)} worth seeing`,
-          `${num(r.doc)} worth a doctor`,
+          tr('h.numTypesExamined', { num: num(r.examined) }),
+          tr('h.numAtYourNormal', { num: num(r.normal) }),
+          tr('h.numWorthSeeing', { num: num(r.see) }),
+          tr('h.numWorthADoctor', { num: num(r.doc) }),
         ].join(' · ')
-      : 'no examination today yet';
+      : tr('h.noExaminationTodayYet');
   return [found, held].filter(Boolean).join(' · ');
 }
 
 function pairCard() {
   const c = card(null);
   c.classList.add('pair');
-  c.append(el('h2', null, 'No iPhone paired'));
+  c.append(el('h2', null, tr('h.noIphonePaired')));
   c.append(
     el(
       'p',
       null,
-      'Apple Health only exists on an iPhone, so this Mac has no body data of ' +
-        'its own — none of it can be inferred from here. Open Linggen on your ' +
-        'iPhone, pair it with this Mac, and Health will fill this page in ' +
-        'within the first minute.',
+      tr('h.noIphone'),
     ),
   );
   c.append(el('p', 'dim', report.healthkit));
@@ -264,7 +270,7 @@ function highlightsTab() {
   return [
     ...nodes,
     alsoToday(cards, byId, draw),
-    askButton('What should I focus on in Health, given my goals?', 'Ask Ling'),
+    askButton(tr('h.whatShouldIFocus'), tr('h.askLing')),
   ];
 }
 
@@ -284,10 +290,10 @@ function alsoToday(cards, byId, draw) {
   if (!rest.length) return null;
   const s = el('section', 'home-section also');
   const head = el('div', 'focus-head');
-  head.append(el('h2', null, 'Also today'));
+  head.append(el('h2', null, tr('h.alsoToday')));
   s.append(head);
   s.append(
-    el('p', 'dim small', 'Ranked below what is above, and on this screen there is room for it.'),
+    el('p', 'dim small', tr('h.rankedBelowWhatIs')),
   );
   let firstFocus = true;
   for (const cand of rest) {
@@ -305,14 +311,14 @@ function briefSection() {
   const fresh = r && r.date === report.today;
   const s = el('section', 'home-section');
   const head = el('div', 'focus-head');
-  head.append(el('h2', null, 'Brief'));
+  head.append(el('h2', null, tr('h.brief')));
   s.append(head);
   const text =
     report.brief?.date === report.today && typeof report.brief.text === 'string'
       ? report.brief.text
       : fresh
         ? line(r)
-        : 'No examination today yet.';
+        : tr('h.noExaminationTodayYet2');
   s.append(el('p', 'big', text));
   s.append(
     el(
@@ -322,8 +328,8 @@ function briefSection() {
         ? `${num(r.examined)} measurements examined · ${num(r.normal)} at your normal · ` +
           `${num(r.see)} worth seeing · ${num(r.doc)} worth a doctor`
         : r
-          ? `Latest examination: ${day(r.date)}`
-          : 'The first examination has not run.',
+          ? tr('h.latestExaminationDay', { day: day(r.date) })
+          : tr('h.theFirstExaminationHas'),
     ),
   );
   return s;
@@ -333,7 +339,7 @@ function briefSection() {
 /// nutrition list waiting for their word. The label is the candidate's; where
 /// the card leads is the phone's business, so this names it and stops.
 function noticeCard(cand) {
-  const c = card(cand.label || 'Something for you');
+  const c = card(cand.label || tr('h.somethingForYou'));
   // The letter is on this Mac; a card pointing at the phone while holding the
   // text was the phone's card drawn on a screen with room for the letter.
   const letter = cand.route === 'letters' ? report.letter : null;
@@ -345,8 +351,8 @@ function noticeCard(cand) {
     c.append(el('p', 'why', '— Yinyue'));
     return c;
   }
-  const where = { letters: 'Letters', doctor: 'For your doctor', nutrition: 'Nutrition' }[cand.route];
-  c.append(el('p', 'why', where ? `${where} — open it on your phone.` : 'Open it on your phone.'));
+  const where = { letters: tr('h.letters'), doctor: tr('h.forYourDoctor'), nutrition: tr('h.nutrition') }[cand.route];
+  c.append(el('p', 'why', where ? tr('h.whereOpenItOn', { where }) : tr('h.openItOnYour')));
   return c;
 }
 
@@ -355,13 +361,13 @@ function noticeCard(cand) {
 function findingDetail(f) {
   const parts = [];
   if (typeof f.held_days === 'number' && f.held_days > 0) {
-    parts.push(`held ${f.held_days} day${f.held_days === 1 ? '' : 's'}`);
+    parts.push(tr('h.held', { n: f.held_days }));
   }
   if (typeof f.z === 'number' && Number.isFinite(f.z)) {
-    parts.push(`${Math.abs(f.z).toFixed(1)}× your usual spread ${f.z < 0 ? 'below' : 'above'}`);
+    parts.push(tr(f.z < 0 ? 'h.spreadBelow' : 'h.spreadAbove', { z: Math.abs(f.z).toFixed(1) }));
   }
   if (typeof f.days === 'number' && f.days > 0) {
-    parts.push(`your normal is from ${f.days} measured day${f.days === 1 ? '' : 's'}`);
+    parts.push(tr('h.normalFrom', { n: f.days }));
   }
   return parts.length ? el('p', 'pn', `${parts.join(' · ')}.`) : null;
 }
@@ -371,9 +377,9 @@ function findingDetail(f) {
 /// same validator, and it travels back on the next sync.
 function dismissable(node, cand) {
   if (!node || cand.dismissable !== true) return node;
-  const b = el('button', 'dismiss', 'Got it');
+  const b = el('button', 'dismiss', tr('h.gotIt'));
   b.type = 'button';
-  b.title = 'Take this off the page until something changes';
+  b.title = tr('h.takeThisOffThe');
   b.addEventListener('click', async () => {
     b.disabled = true;
     try {
@@ -411,16 +417,16 @@ function legacyHomeTab() {
       ? report.brief.text
       : fresh
         ? line(r)
-        : 'No examination today yet.';
+        : tr('h.noExaminationTodayYet2');
   const proof = fresh
     ? `${num(r.examined)} measurements examined · ${num(r.normal)} at your normal`
     : r
-      ? `Latest examination: ${day(r.date)}`
-      : 'The first examination has not run.';
+      ? tr('h.latestExaminationDay', { day: day(r.date) })
+      : tr('h.theFirstExaminationHas');
   const proofLine = el('p', 'dim small', proof);
   return [
     ...shown.filter((f) => f.verdict === 'doc').map((f) => findingCard(f, r)),
-    section('Brief', el('p', 'big', brief), proofLine),
+    section(tr('h.brief'), el('p', 'big', brief), proofLine),
     focusView(report, {
       change: changeFocus,
       explore: () => {
@@ -431,18 +437,18 @@ function legacyHomeTab() {
       canUndo: typeof report.layout?.previous === 'string',
     }),
     attention.length || gaps.length
-      ? section('Attention', ...attention.map((f) => findingCard(f, r)), ...gaps.map(gapCard))
+      ? section(tr('h.attention'), ...attention.map((f) => findingCard(f, r)), ...gaps.map(gapCard))
       : null,
-    askButton('What should I focus on in Health, given my goals?', 'Ask Ling'),
+    askButton(tr('h.whatShouldIFocus'), tr('h.askLing')),
   ];
 }
 
 /// A data issue: something this person usually records and lately has not.
 /// Neutral on purpose — it is not a finding, and it must never read as one.
 function gapCard(g) {
-  const c = card(`Data · ${g.label || ''}`);
+  const c = card(`${tr('h.tab.data')} · ${g.label || ''}`);
   c.append(el('p', 'big', g.text || ''));
-  c.append(el('p', 'why', 'Not a health concern — a gap in what is being recorded. The source is on the phone.'));
+  c.append(el('p', 'why', tr('h.notAHealthConcern')));
   return c;
 }
 
@@ -470,16 +476,13 @@ function reviewTab() {
     return [
       card(
         'Today',
-        el('p', 'big', 'Not examined yet today.'),
+        el('p', 'big', tr('h.notExaminedYetToday')),
         el(
           'p',
           'why',
           r
-            ? `The last examination this Mac has is from ${day(r.date)}. It runs on ` +
-              'your iPhone and reaches this Mac on the next sync — nothing here is ' +
-              'a verdict until it has.'
-            : 'The examination runs on your iPhone. Nothing here is a verdict ' +
-              'until one has reached this Mac.',
+            ? tr('h.lastExamFrom', { day: day(r.date) })
+            : tr('h.examOnIphone'),
         ),
       ),
       insights.length ? insightCards() : null,
@@ -506,12 +509,12 @@ function reviewTab() {
 ///
 /// Dead until the conversation is up, and it says so rather than swallowing
 /// the click.
-function askButton(question, label = 'Ask Ling about this') {
+function askButton(question, label = tr('h.askLingAboutThis')) {
   const b = el('button', 'ask', label);
   b.type = 'button';
   if (!chat) {
     b.disabled = true;
-    b.title = 'The conversation is not up yet.';
+    b.title = tr('h.theConversationIsNot');
     return b;
   }
   b.addEventListener('click', () => chat.send(question));
@@ -529,7 +532,7 @@ function statusCard(r) {
   box.append(el('span', 'eyebrow', 'Today'));
   box.append(el('p', 'big', line(r)));
   box.append(el('p', 'why', madeOf(r)));
-  box.append(askButton(todayQuestion(r), 'Ask Ling about today'));
+  box.append(askButton(todayQuestion(r), tr('h.askLingAboutToday')));
   c.append(box);
   return c;
 }
@@ -539,25 +542,24 @@ function statusCard(r) {
 function todayQuestion(r) {
   const found =
     r.doc > 0 || r.see > 0
-      ? `The examination raised ${num(r.see + r.doc)} thing${r.see + r.doc === 1 ? '' : 's'} against my own normal today.`
-      : 'The examination found nothing off my own normal today.';
+      ? tr('h.q.raised', { n: num(r.see + r.doc) })
+      : tr('h.theExaminationFoundNothing');
   return (
-    `${found} Explain what that is actually saying about me, and ` +
-    `given what you know of my goal, what would help.`
+    tr('h.q.explain', { found })
   );
 }
 
 /// The sentence the status line leads with — the same words the phone used,
 /// because it is the same verdict.
 function line(r) {
-  if (r.doc > 0) return 'Something has held long enough to show a doctor.';
-  if (r.see === 1) return 'One thing worth seeing.';
-  if (r.see > 1) return `${r.see} things worth seeing.`;
-  return 'Nothing needs you today.';
+  if (r.doc > 0) return tr('h.somethingHasHeldLong');
+  if (r.see === 1) return tr('h.oneThingWorthSeeing');
+  if (r.see > 1) return tr('h.seeThingsWorthSeeing', { see: r.see });
+  return tr('h.nothingNeedsYouToday');
 }
 
 function madeOf(r) {
-  return `${num(r.examined)} measurements examined against your own normal.`;
+  return tr('h.numMeasurementsExaminedAgainst', { num: num(r.examined) });
 }
 
 const list = (xs) =>
@@ -573,7 +575,7 @@ const svg = (tag, attrs) => {
 
 /// The four counts. Each says what it is made of, so a zero can be read.
 function tilesCard(r, shown) {
-  const c = card('Last night');
+  const c = card(tr('h.lastNight'));
   const at = clock(r.at);
   const box = el('div', 'tiles');
   const tile = (n, k, note, cls) => {
@@ -583,24 +585,24 @@ function tilesCard(r, shown) {
     t.append(el('span', 's', note));
     box.append(t);
   };
-  tile(r.examined, 'Types examined', at ? `examined at ${at}` : 'by your iPhone');
-  tile(r.normal, 'At your normal', 'nothing to say');
+  tile(r.examined, tr('h.typesExamined'), at ? tr('h.examinedAtAt', { at }) : tr('h.byYourIphone'));
+  tile(r.normal, tr('h.atYourNormal'), tr('h.nothingToSay'));
   tile(
     r.see,
-    'Worth seeing',
+    tr('h.worthSeeing'),
     shown
       .filter((f) => f.verdict === 'see')
-      .map((f) => f.label)
-      .join(', ') || 'none today',
+      .map(typeName)
+      .join(', ') || tr('h.noneToday'),
     r.see > 0 ? 'warm' : null,
   );
   tile(
     r.doc,
-    'Worth a doctor',
+    tr('h.worthADoctor'),
     shown
       .filter((f) => f.verdict === 'doc')
-      .map((f) => f.label)
-      .join(', ') || 'clear',
+      .map(typeName)
+      .join(', ') || tr('h.clear'),
     r.doc > 0 ? 'crit' : null,
   );
   c.append(box);
@@ -609,8 +611,7 @@ function tilesCard(r, shown) {
       el(
         'p',
         'why',
-        `${num(r.thin)} more are kept but have no normal yet — too few days, or ` +
-          'nothing that moves against a baseline. They are in Data with the reason.',
+        tr('h.thinKept', { n: num(r.thin) }),
       ),
     );
   }
@@ -632,9 +633,9 @@ function findingCard(f, r) {
       'eyebrow warm',
       alarm
         ? f.held_days
-          ? `Worth a doctor · ${f.held_days} days`
-          : 'Worth a doctor · today'
-        : `Worth seeing · ${f.label}`,
+          ? tr('h.worthADoctorHeld', { held_days: f.held_days })
+          : tr('h.worthADoctorToday')
+        : tr('h.worthSeeingLabel', { label: typeName(f) }),
     ),
   );
   const gap =
@@ -649,9 +650,8 @@ function findingCard(f, r) {
       'big',
       f.headline ||
         (gap == null
-          ? `${f.label} is ${value(f.now, f.unit)}`
-          : `${f.label} is ${value(f.now, f.unit)}, ${value(gap, f.unit)} ` +
-            `${f.now < f.normal ? 'below' : 'above'} your normal`),
+          ? tr('h.isValue', { what: typeName(f), v: value(f.now, f.unit) })
+          : tr(f.now < f.normal ? 'h.isBelow' : 'h.isAbove', { what: typeName(f), v: value(f.now, f.unit), gap: value(gap, f.unit) })),
     ),
   );
   const chart = spark(f);
@@ -667,8 +667,7 @@ function findingCard(f, r) {
       el(
         'p',
         'why',
-        'A change this size, held this long, is worth showing a doctor. ' +
-          'Nothing here can tell you what is causing it.',
+        `${tr('h.heldDoctor')} ${tr('h.nothingHereCanTell')}`,
       ),
     );
   }
@@ -680,19 +679,17 @@ function findingCard(f, r) {
 /// so the answer is about this measurement and not about the idea of it.
 function findingQuestion(f, gap) {
   if (f.headline) {
-    return `${f.headline}. Explain what that means for me, and what would help.`;
+    return tr('h.q.explainThis', { what: f.headline });
   }
   const where =
     gap == null
-      ? `${f.label} is ${value(f.now, f.unit)}`
-      : `${f.label} is ${value(f.now, f.unit)}, ${value(gap, f.unit)} ` +
-        `${f.now < f.normal ? 'below' : 'above'} my normal of ` +
-        `${value(f.normal, f.unit)}`;
+      ? tr('h.isValue', { what: typeName(f), v: value(f.now, f.unit) })
+      : tr(f.now < f.normal ? 'h.q.below' : 'h.q.above', { what: typeName(f), v: value(f.now, f.unit), gap: value(gap, f.unit), normal: value(f.normal, f.unit) });
   const ev = Array.isArray(f.evidence) && f.evidence.length
     ? ` ${sentence(f.evidence)}`
     : '';
   return (
-    `${where}.${ev} Explain what that means for me, and what would help.`
+    tr('h.q.explainThis', { what: `${where}.${ev}` })
   );
 }
 
@@ -703,13 +700,13 @@ function indexCard(r) {
   if (!idx || !idx.picked) return null;
   const f = findingsOf(r).find((x) => x.type === idx.picked);
   if (!f) return null;
-  const c = card('Worth watching');
-  c.append(el('p', 'big', `${f.label} is ${value(f.now, f.unit)}, at your normal`));
+  const c = card(tr('h.worthWatching'));
+  c.append(el('p', 'big', tr('h.labelIsValueAt', { label: typeName(f), value: value(f.now, f.unit) })));
   const chart = spark(f);
   if (chart) c.append(chart);
   const note = chartNote(f, r);
   if (note) c.append(note);
-  if (idx.why) c.append(el('p', 'why', `Picked for you: ${idx.why}.`));
+  if (idx.why) c.append(el('p', 'why', tr('h.pickedForYouWhy', { why: idx.why })));
   return c;
 }
 
@@ -720,11 +717,11 @@ function chartNote(f, r) {
   const held = (f.series || []).filter((v) => typeof v === 'number').length;
   if (!held) return null;
   const end = f.series_to || r.date;
-  const norm = typeof f.normal === 'number' ? `, your normal ${value(f.normal, f.unit)}` : '';
+  const norm = typeof f.normal === 'number' ? tr('h.yourNormalValue', { value: value(f.normal, f.unit) }) : '';
   return el(
     'p',
     'pn',
-    `The fortnight to ${day(end)} — ${held} day${held === 1 ? '' : 's'} measured${norm}.`,
+    tr('h.fortnight', { day: day(end), n: held, norm }),
   );
 }
 
@@ -755,7 +752,7 @@ function spark(f) {
     viewBox: `0 0 ${w} ${h}`,
     preserveAspectRatio: 'none',
     role: 'img',
-    'aria-label': `${f.label}, the last ${values.length} days`,
+    'aria-label': tr('h.labelTheLastLength', { label: typeName(f), length: values.length }),
   });
   if (typeof f.normal === 'number') {
     s.append(svg('line', { class: 'base', x1: 0, y1: y(f.normal), x2: w, y2: y(f.normal) }));
@@ -817,8 +814,8 @@ function dataTab() {
           Math.abs(b.adverse || 0) - Math.abs(a.adverse || 0) ||
           String(a.label).localeCompare(String(b.label)),
       );
-    const c = card(`Everything examined · ${day(r.date)}`);
-    c.append(el('p', 'why', `${num(rows.length)} measurements, every one of them.`));
+    const c = card(tr('h.everythingExaminedDay', { day: day(r.date) }));
+    c.append(el('p', 'why', tr('h.numMeasurementsEveryOne', { num: num(rows.length) })));
     c.append(verdictTable(rows, { why: true }));
     out.push(c);
   }
@@ -830,7 +827,7 @@ function verdictTable(rows, opts = {}) {
   const wrap = el('div', 'tablewrap');
   const t = el('table', 'mini');
   const head = el('tr');
-  for (const h of ['Measurement', 'Your normal', 'Now', 'Verdict']) {
+  for (const h of [tr('h.measurement'), tr('h.yourNormal'), tr('h.now'), tr('h.verdict')]) {
     head.append(el('th', null, h));
   }
   const thead = el('thead');
@@ -838,15 +835,15 @@ function verdictTable(rows, opts = {}) {
   t.append(thead);
   const body = el('tbody');
   for (const f of rows) {
-    const tr = el('tr');
-    tr.append(el('td', null, f.label));
-    tr.append(el('td', 'n', value(f.normal, f.unit)));
-    tr.append(el('td', 'n', value(f.now, f.unit)));
+    const row = el('tr');
+    row.append(el('td', null, typeName(f)));
+    row.append(el('td', 'n', value(f.normal, f.unit)));
+    row.append(el('td', 'n', value(f.now, f.unit)));
     const [word, cls] = VERDICT[f.verdict] || VERDICT.thin;
     // A thin row says which kind of absence it is, in its own words, because
     // "nothing to judge yet" on its own claims more than we know.
-    tr.append(el('td', cls, opts.why && f.why ? f.why : word));
-    body.append(tr);
+    row.append(el('td', cls, opts.why && f.why ? f.why : word));
+    body.append(row);
   }
   t.append(body);
   wrap.append(t);
@@ -854,7 +851,7 @@ function verdictTable(rows, opts = {}) {
 }
 
 function insightCards() {
-  const c = card('What I found');
+  const c = card(tr('h.whatIFound'));
   for (const i of insights) {
     const box = el('div', 'row');
     box.append(el('div', 'k', i.tone || 'info'));
@@ -877,7 +874,7 @@ const SHOWN = 0.6;
 function profileCard() {
   const p = report.profile;
   if (!p) return null;
-  const c = card('Who you are');
+  const c = card(tr('h.whoYouAre'));
   const a = p.athlete || {};
   const body = p.body || {};
   const routine = p.routine || {};
@@ -895,7 +892,7 @@ function profileCard() {
   if ((a.confidence ?? 0) >= SHOWN) {
     c.append(
       row(
-        'Training',
+        tr('h.training'),
         [a.environment, a.kind].filter(Boolean).join(' '),
         [
           a.sessions_per_week ? `${a.sessions_per_week} a week` : null,
@@ -910,17 +907,17 @@ function profileCard() {
   if (typeof body.weight_kg === 'number') {
     c.append(
       row(
-        'Weight',
+        tr('h.weight'),
         `${body.weight_kg} kg`,
-        body.weight_at ? `last weighed in ${body.weight_at}` : null,
+        body.weight_at ? tr('h.lastWeighedInWeight', { weight_at: body.weight_at }) : null,
       ),
     );
   }
   if ((routine.confidence ?? 0) >= SHOWN && routine.wake) {
-    c.append(row('Routine', `up around ${routine.wake}`, (routine.evidence || [])[0]));
+    c.append(row(tr('h.routine'), tr('h.upAroundWake', { wake: routine.wake }), (routine.evidence || [])[0]));
   } else if (routine.evidence?.length) {
     // Absent for a reason, and the reason is worth more than a blank.
-    c.append(row('Routine', 'not enough to say', routine.evidence[0]));
+    c.append(row(tr('h.routine'), tr('h.notEnoughToSay'), routine.evidence[0]));
   }
   return c;
 }
@@ -929,12 +926,12 @@ const goalWords = (g) => {
   const kind = typeof g === 'string' ? g : g?.kind;
   return (
     {
-      bulking: 'Bulking',
-      cutting: 'Cutting',
-      race: 'A race',
-      distance: 'Run further',
-      sleep: 'Sleep better',
-      move: 'Just move',
+      bulking: tr('h.goal.bulking'),
+      cutting: tr('h.goal.cutting'),
+      race: tr('h.goal.race'),
+      distance: tr('h.goal.distance'),
+      sleep: tr('h.goal.sleep'),
+      move: tr('h.goal.move'),
     }[kind] || kind || '—'
   );
 };
@@ -942,25 +939,25 @@ const goalWords = (g) => {
 function targetsCard() {
   const t = report.targets;
   if (!t) return null;
-  const c = card('Targets');
+  const c = card(tr('h.targets'));
   const add = (label, value, formula) => {
     if (value == null) return;
     c.append(row(label, value, formula));
   };
-  add('Protein', `${num(t.protein_g)} g`, t.protein_formula);
-  add('Energy', t.kcal ? `${num(t.kcal)} kcal` : null, t.kcal_formula);
-  add('Water', t.water_ml ? `${num(t.water_ml)} ml` : null, t.water_formula);
-  add('Sessions', t.sessions_per_week, t.sessions_formula);
+  add(tr('h.protein'), `${num(t.protein_g)} g`, t.protein_formula);
+  add(tr('h.energy'), t.kcal ? `${num(t.kcal)} kcal` : null, t.kcal_formula);
+  add(tr('h.water'), t.water_ml ? `${num(t.water_ml)} ml` : null, t.water_formula);
+  add(tr('h.sessions'), t.sessions_per_week, t.sessions_formula);
   const supps = Array.isArray(t.supplements) ? t.supplements : [];
   for (const s of supps) {
-    c.append(row(s.name || '', s.dose || 'not needed', s.evidence));
+    c.append(row(s.name || '', s.dose || tr('h.notNeeded'), s.evidence));
   }
   if (t.weight_stale) {
     c.append(
       el(
         'p',
         'why',
-        `Every number above is per kilo, and the weight they use was measured on ${t.weight_at}.`,
+        tr('h.everyNumberAboveIs', { weight_at: t.weight_at }),
       ),
     );
   }
@@ -970,16 +967,16 @@ function targetsCard() {
 function planCard() {
   const p = report.plan;
   if (!p) return null;
-  const c = card(`This week · from ${day(p.week || report.week)}`);
+  const c = card(tr('h.thisWeekFromDay', { day: day(p.week || report.week) }));
   if (p.why) c.append(el('p', 'why', p.why));
   for (const d of p.days || []) {
     const r = el('div', 'day');
     if (d.date === report.today) r.classList.add('today');
     const date = new Date(`${d.date}T12:00:00`);
-    r.append(el('div', 'd', Number.isNaN(date.getTime()) ? '' : DAYS[date.getDay()]));
+    r.append(el('div', 'd', Number.isNaN(date.getTime()) ? '' : days()[date.getDay()]));
     const s = el('div', 's');
     const session = d.session;
-    s.append(el('div', null, d.rest || !session ? 'Rest' : session.name || session.kind || ''));
+    s.append(el('div', null, d.rest || !session ? tr('h.rest') : session.name || session.kind || ''));
     const note = [session?.detail, d.why].filter(Boolean).join(' — ');
     if (note) s.append(el('small', null, note));
     r.append(s);
@@ -996,7 +993,7 @@ function planCard() {
 function checklistCard() {
   const l = report.checklist;
   if (!l) return null;
-  const c = card(`Today · ${day(l.date || report.today)}`);
+  const c = card(tr('h.todayDay', { day: day(l.date || report.today) }));
   for (const i of l.items || []) {
     const r = el('div', `item${i.done ? ' done' : ''}`);
     r.append(el('div', 'box'));
@@ -1008,12 +1005,12 @@ function checklistCard() {
     r.append(v);
     c.append(r);
   }
-  if (!(l.items || []).length) c.append(el('p', 'empty', 'Nothing on today’s list yet.'));
+  if (!(l.items || []).length) c.append(el('p', 'empty', tr('h.nothingOnTodayS')));
   return c;
 }
 
 function ledgerCard() {
-  const c = card('What this Mac keeps');
+  const c = card(tr('h.whatThisMacKeeps'));
   const types = ledger?.types || {};
   const rows = Object.entries(types)
     .filter(([, v]) => (v.count || 0) > 0)
@@ -1024,8 +1021,8 @@ function ledgerCard() {
         'p',
         'empty',
         report.phone_paired
-          ? 'Your iPhone has paired but has not sent anything yet.'
-          : 'Nothing — Apple Health lives on your iPhone.',
+          ? tr('h.yourIphoneHasPaired')
+          : tr('h.nothingAppleHealthLives'),
       ),
     );
     return c;
@@ -1046,7 +1043,7 @@ function ledgerCard() {
       el(
         'p',
         'why',
-        `${devices.length} phone${devices.length > 1 ? 's' : ''} sending; last heard ${day(d.at)}.`,
+        tr('h.phonesSending', { n: devices.length, at: day(d.at) }),
       ),
     );
   }
@@ -1167,5 +1164,9 @@ function applyPageUpdate(args) {
 }
 
 $('refresh').addEventListener('click', load);
-load();
-mountChat();
+// The setting first: every renderer reads its words from it.
+loadLanguage().then(() => {
+  applyI18n();
+  load();
+  mountChat();
+});
