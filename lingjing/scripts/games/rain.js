@@ -3,8 +3,9 @@
 // learned roof on 蒙山: it knows where the rain comes from, and where it goes.
 // 打地鼠 (Hanli 2026-10-16: 「要类似打地鼠, 一个或2个地方漏雨, 只能相应的盆」 — and 「直接放6个盆
 // 就好了」 was the old board's flaw): a leak pops up at one spot — its stain first, the first drop
-// LEAD later — drips CAP times and stops; another pops up elsewhere. Early in the night one at a
-// time, toward the fifth watch quicker and up to two at once. A basin goes only where it leaks
+// LEAD later — drips CAP times and stops; another pops up elsewhere. Harder 10-19 (「同时放两个盆,
+// 或者快一点」): the first TEACH leaks come alone, then two open together — two basins to set — and
+// from THREE of the night a pair or three; the drops quicker. A basin goes only where it leaks
 // NOW (a tap on a dry spot is a wasted trip: the hand is busy a beat); when the leak stops, the
 // basin is carried to the 水缸, poured, and is back to hand by itself — basins never run out and
 // no spot can be covered ahead. A leak a basin caught counts toward the seventeen; a drop with no
@@ -34,16 +35,22 @@ export const DRY = 10; //         puddles at most for a dry floor
 export const LEAD = 900; //       the stain shows this long before a leak's first drop
 export const MISS_MS = 500; //    a tap on a dry spot: the hand is busy this long
 export const NOPE_MS = 350; //    a refused tap shakes its spot this long
-/* Puddles that lose the night — picked by play (2026-10-16, 60 seeds, one night's puddles; doc/games.md):
-   a person's pace (the bot) 0; a casual hand, 0.6 s to see and tap, max 3; 1 s max 18; 1.3 s max 28;
-   looking away 3 s of every 8, max 29 (29 live too) — 40 leaves that one room. Idle floods at ~31 s;
-   away 5 s of every 10 (42 of 60), tapping every spot in turn (53), missing 1 leak in 3 (25) flood. */
-export const FLOOD = 40;
+/* Puddles that lose the night — re-picked by play 2026-10-19, when the rain went to pairs (Hanli:
+   「提高一点难度, 同时放两个盆, 或者快一点」). 60 seeds, one night's puddles, the flood off; a hand lands
+   its tap its pace after the stain shows, and ~0.35 s after its last tap (two stains seen together
+   are tapped one after the other, not each seen afresh): a person's pace (the bot) 0; a 0.6 s hand
+   median 2, max 5 — puddles, never near the line; 1 s median 18, max 21 — 16 of 60 reach 19, tight;
+   1.3 s median 27 (60 of 60 reach 19); away 3 s of every 8 median 25 (57); away 5 s of 10 (60). Idle
+   reaches 19 at ~11 s. (Before, one leak at a time to a quarter of the night: 0.6 s max 3, 1 s max 18,
+   FLOOD 40 — nobody but the idle lost.) */
+export const FLOOD = 19;
 const CALM = 1500; //             after a flood: the line stands, no drip, then the rain again
 const AT = 1500; //               the first leak
-const GAP = [3000, 1500]; //      leak to leak, dusk → the fifth watch
-const ONE = 0.25; //              this much of the night: one leak at a time
-const BEAT = [600, 500]; //       drop to drop within a leak, dusk → the fifth watch
+const GAP = [2400, 1200]; //    leaks to leaks, dusk → the fifth watch (and never over the cap)
+export const TEACH = 2; //        the first leaks come one at a time; then two open together
+export const THREE = 0.25; //     from this much of the night, a pair or three, three live at most
+export const JIT = 250; //        the leaks of one pair open this close together
+const BEAT = [500, 400]; //       drop to drop within a leak, dusk → the fifth watch
 const AFTER = 300; //             the leak's last drop → the basin carried off
 
 export const SPOTS = [
@@ -65,6 +72,7 @@ const T = {
     poured: '那处不漏了。盆端去倒进水缸，又回到手边。',
     spill: '「嗒。」地上又汪了一片。',
     thick: '雨紧了——两处一起漏。',
+    thicker: '雨又紧了——三处一起漏。',
     dry: '五更天，雨停了。十七个盆，一个不少，地上干干的。',
     wet: '五更天，雨停了。盆接满了，地上也汪着好几片水。',
     short: '五更天，雨停了。盆没接满，地上倒汪着好几片水。',
@@ -80,6 +88,7 @@ const T = {
     poured: 'It stopped there. The basin goes to the vat, is poured out, and is back to hand.',
     spill: '*Drip.* Another puddle on the floor.',
     thick: 'The rain thickens — two leaks at once.',
+    thicker: 'Heavier still — three leaks at once.',
     dry: 'At the fifth watch the rain stops. Seventeen basins, not one missing, and the floor dry.',
     wet: 'At the fifth watch the rain stops. The basins are full, and the floor has its puddles too.',
     short: 'At the fifth watch the rain stops. Not every basin is full, and the floor has its puddles.',
@@ -90,33 +99,44 @@ const T = {
 
 const lerp = ([a, b], f) => a + (b - a) * Math.min(1, Math.max(0, f));
 
-/** The night's rain: every leak (spot, from, to, drops), never more than two at once, never two
-    beginning within LEAD of each other, never the spot that just stopped. */
+/** The night's rain: every leak (spot, from, to, drops). The first TEACH come one at a time; then
+    they open in pairs — two stains at once (JIT apart at most), two basins to set — and from THREE of
+    the night a pair or three. Never more than two live before THREE, three after; a pair never
+    opens on a spot still leaking or one the last leaks just left. */
 export function schedule(seed) {
   const rnd = rng(`rain:${seed}`);
   const leaks = [];
-  let at = AT, last = -1, thick = null;
-  for (;;) {
-    const f = at / LIMIT, beat = Math.round(lerp(BEAT, f));
-    if (at + LEAD + (CAP - 1) * beat >= LIMIT) break;
-    const live = leaks.filter((l) => l.to > at);
-    if (live.length && thick == null) thick = at;
-    const taken = new Set([last, ...live.map((l) => l.spot)]);
-    const free = SPOTS.map((_, i) => i).filter((i) => !taken.has(i));
-    const spot = free[Math.floor(rnd() * free.length)];
-    const drops = Array.from({ length: CAP }, (_, k) => at + LEAD + k * beat);
-    leaks.push({ spot, from: at, to: drops.at(-1) + AFTER, drops });
-    last = spot;
-    let next = Math.max(at + LEAD, Math.round(at + lerp(GAP, f) * (0.85 + rnd() * 0.3)));
-    const ends = leaks.map((l) => l.to).filter((to) => to > next).sort((a, b) => a - b);
-    if (ends.length >= 2) next = ends[ends.length - 2]; // a third would open: wait for one to stop
-    else if (ends.length && next < LIMIT * ONE) next = ends[0]; // the first part of the night: one at a time
+  // How many open together, and how many may be live then: one alone while it teaches, then pairs.
+  const waveOf = (wave, at) => (wave < TEACH ? [1, 1] : at / LIMIT >= THREE ? [rnd() < 0.5 ? 3 : 2, 3] : [2, 2]);
+  let at = AT, last = [], thick = null, thicker = null, [size, cap] = waveOf(0, AT);
+  for (let wave = 0; ; ) {
+    const beat = Math.round(lerp(BEAT, at / LIMIT));
+    if (at + JIT + LEAD + (CAP - 1) * beat >= LIMIT) break;
+    const live = leaks.filter((l) => l.to > at).map((l) => l.spot);
+    let free = SPOTS.map((_, i) => i).filter((i) => !live.includes(i) && !last.includes(i));
+    if (free.length < size) free = SPOTS.map((_, i) => i).filter((i) => !live.includes(i));
+    const opened = Array.from({ length: size }, (_, m) => {
+      const spot = free.splice(Math.floor(rnd() * free.length), 1)[0];
+      const from = at + (m ? Math.round(rnd() * JIT) : 0);
+      const drops = Array.from({ length: CAP }, (_, k) => from + LEAD + k * beat);
+      return { spot, from, to: drops.at(-1) + AFTER, drops };
+    }).sort((x, y) => x.from - y.from);
+    leaks.push(...opened);
+    last = opened.map((l) => l.spot);
+    if (live.length + size >= 2) thick ??= at;
+    if (live.length + size >= 3) thicker ??= at;
+    // The next leaks: GAP on, but never over their cap — wait for enough of these to stop.
+    let next = Math.max(at + LEAD, Math.round(at + lerp(GAP, at / LIMIT) * (0.85 + rnd() * 0.3)));
+    [size, cap] = waveOf(++wave, next);
+    const ends = leaks.map((l) => l.to).filter((to) => to > next).sort((x, y) => x - y);
+    const over = ends.length + size - cap;
+    if (over > 0) next = ends[over - 1];
     at = next;
   }
   const windows = SPOTS.map((_, i) => leaks.filter((l) => l.spot === i).map((l) => [l.from, l.to]));
   const drips = leaks.flatMap((l) => l.drops.map((d) => ({ at: d, spot: l.spot }))).sort((a, b) => a.at - b.at || a.spot - b.spot);
   const ends = leaks.map((l, i) => i).sort((a, b) => leaks[a].to - leaks[b].to);
-  return { leaks, windows, drips, ends, thick };
+  return { leaks, windows, drips, ends, thick, thicker };
 }
 
 /** Is this spot leaking at `t` (its stain showing, or dripping)? */
@@ -173,8 +193,9 @@ export function tick(state, ms) {
   if (!state.live || state.won) return state;
   const prev = fit(state);
   const s = { ...prev, t: prev.t + ms, basins: [...prev.basins] };
-  const { drips, leaks, ends, thick } = s.sched;
+  const { drips, leaks, ends, thick, thicker } = s.sched;
   if (thick != null && thick > prev.t && thick <= s.t) s.note = 'thick';
+  if (thicker != null && thicker > prev.t && thicker <= s.t) s.note = 'thicker';
   // Drops and leaks stopping, in the order they happen.
   for (;;) {
     const d = drips[s.k], l = leaks[ends[s.e]];
@@ -244,8 +265,8 @@ function spotHtml(s, i, t, lang) {
     + `${drip ? `<span class="g-sr">${t.drip}</span>` : ''}</button>`;
 }
 
-/* The floor's count: wet past DRY, close to the flood in its last ten. */
-const floorMark = (p) => (p >= FLOOD - 10 ? 'is-wet is-near' : p > DRY ? 'is-wet' : '');
+/* The floor's count: wet past DRY, close to the flood in its last five. */
+const floorMark = (p) => (p >= FLOOD - 5 ? 'is-wet is-near' : p > DRY ? 'is-wet' : '');
 
 const bowls = (full) => `<div class="g-rain-pips" aria-hidden="true">${Array.from({ length: NEED }, (_, i) => `<i class="${i < full ? 'is-on' : ''}"></i>`).join('')}</div>`;
 

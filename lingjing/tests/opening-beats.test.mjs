@@ -53,7 +53,7 @@ test('接雨: seventeen leaks caught — quick hands keep the floor dry, slow on
   assert.equal(well.grade, 'dry');
   assert.equal(rain.fullCount(well), rain.NEED);
   assert.ok(well.t < 90000, 'about a minute');
-  const slow = rainBot('a', 1500);
+  const slow = rainBot('a', 1800); // a glance every 1.8 s, every leaking spot set at once (pairs since 10-19)
   assert.equal(slow.won, true);
   assert.equal(slow.grade, 'wet');
   assert.equal(slow.floods, 0, 'slow but trying: never flooded');
