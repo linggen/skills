@@ -188,9 +188,11 @@ export const askGuess = (who, prev, context = null) => `${headOf(context)}图上
 export const askReveal = (who, word, prev, won, context = null) => `${headOf(context)}这一局小满画的是「${word}」。`
   + (prev.length ? `你先后猜过：${prev.join('、')}。` : '你一眼都没猜。')
   + (won ? '你猜中了。' : '你没猜中。')
-  + `${VOICE[who]}。看着这张画，把此刻的情绪说足：没猜中就懊恼、不服、嘴硬找补（差一点的要说差一点）；猜中就得意。`
-  + '再具体评一句他的画——哪一笔画得像，哪一笔把你带偏了。'
-  + '只回两行：第一行一句中文，不超过三十五字；第二行同一句的英文。';
+  + `${VOICE[who]}。看着这张画，按你的性子把情绪说足，再具体点评他的画：`
+  + (won ? '猜中了——惊喜又得意，顺口夸他一句，夸也要居高临下。' : '没猜中——懊恼、不服，把锅甩给他的画：说清这东西该怎么画才对（缺了哪一笔、哪一笔把你带偏了）；差一点的要说差一点。')
+  + '口气参考（别照抄，用你自己的话）：猜中时像「哇，果然是${word}！小满，你这画在凡人里也算不赖了」；'
+  + '猜错时像「你小子乱画什么！鸡要有尖嘴和爪子——凡人果然是凡人」。'
+  + '只回两行：第一行一句中文，不超过四十字；第二行同一句的英文。';
 
 // The engine's verdict on sight, once a page per guesser and model: { blind, line, model }. A
 // refusal (`absent`, `unavailable`) is not kept: the save may meet her while the page is open.

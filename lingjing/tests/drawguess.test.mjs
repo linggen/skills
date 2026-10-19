@@ -231,9 +231,9 @@ test('the 游戏厅\'s chat panel (Hanli 10-19): every look is traced — the PN
   assert.equal(typeof stop, 'function');
   stop();
   const src = read('games/drawguess.js');
-  // Both ways a look goes out (the opening, and every guess) log a `sent` row with the picture and the words.
-  assert.equal((src.match(/log\(\{ kind: 'sent'[^\n]*\{ png, prompt \}\)/g) ?? []).length, 2);
-  for (const kind of ['open', 'guess', 'refused', 'blind', 'far', 'error', 'begin', 'end']) assert.match(src, new RegExp(`kind: '${kind}'`), kind);
+  // Every way a look goes out (the opening, every guess, the reveal) logs a `sent` row with the picture and the words.
+  assert.equal((src.match(/log\(\{ kind: 'sent'[^\n]*\{ png, prompt \}\)/g) ?? []).length, 3);
+  for (const kind of ['open', 'guess', 'refused', 'blind', 'far', 'error', 'begin', 'end', 'reveal']) assert.match(src, new RegExp(`kind: '${kind}'`), kind);
   // The panel sends nothing and keeps nothing: no engine calls, no storage.
   const panel = read('arcade-trace.js').replace(/^\s*\/\/.*$/gm, '');
   assert.doesNotMatch(panel, /\/shared\/|LinggenChannel|fetch\(|localStorage/);
