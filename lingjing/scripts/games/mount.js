@@ -19,6 +19,8 @@ import { crosses, stroke } from './swipe.js';
 const STEP = 50;
 const WIN_HOLD = 1600; // the won frame (its seal) stands this long before the game settles
 
+/** Where a finger went down, as tapNope takes an element (its ring goes there, not the pad's middle). */
+const atFinger = (e) => ({ getBoundingClientRect: () => ({ left: e.clientX, top: e.clientY, width: 0, height: 0 }) });
 const live = (mod, s) => Boolean(mod.tick && s?.live && !s.won && !s.wait);
 const settled = (s, left = false) => (left ? { won: false, left: true } : { won: true, ...(s.grade != null ? { grade: s.grade } : {}), ...(s.stars != null ? { stars: s.stars } : {}) });
 
@@ -48,11 +50,14 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       resolve(result);
     };
     const check = () => { if (g.state?.won && !done) { done = true; clearInterval(clock); off.forEach((f) => f()); setTimeout(() => resolve(settled(g.state)), winHold); } };
-    const apply = (d, el = null) => {
-      const before = el ? mod.html(g.state, lang) : null;
+    // `refused`: a press on a drag pad the game turned down (it answered the same state) rings too —
+    // a drag's press changes the board only later, so only a refusal is judged (射鹿 · 等风 mid-flight).
+    const apply = (d, el = null, refused = null) => {
+      const before = el ? mod.html(g.state, lang) : null, was = g.state;
       const r = mod.act(g.state, d);
       g.state = r.state ?? g.state;
       if (el && !answered(before, mod.html(g.state, lang), r)) tapNope(doc, el); // never a silent tap
+      else if (refused && g.state === was && !r.send) tapNope(doc, refused);
       paint();
       check();
     };
@@ -75,7 +80,7 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
         e.preventDefault();
         g.held = { drag: hold.hasAttribute('data-g-drag'), x: e.clientX, y: e.clientY };
         if (g.held.drag) try { host.setPointerCapture(e.pointerId); } catch { /* the document still hears it */ }
-        apply({ ...hold.dataset, g: 'hold', ...sceneAt(host, e) });
+        apply({ ...hold.dataset, g: 'hold', ...sceneAt(host, e) }, null, g.held.drag ? atFinger(e) : null);
         return;
       }
       if (!live(mod, g.state)) return; // a board not in time acts on its click, below

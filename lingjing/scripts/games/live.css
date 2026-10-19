@@ -496,6 +496,16 @@
 .g-da-stars .g-da-star { animation: g-da-pop .5s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * .25s); }
 @media (prefers-reduced-motion: reduce) { .g-da-pop, .g-da-stars .g-da-star { animation: none; } }
 .g-da-scene .g-da-sprite { mix-blend-mode: normal; } /* the paintings carry their own alpha */
+/* 射鹿 · 等风 (games/deerhunt.js, 2026-10-19) — the hunting-aim board on 射鹿's creek: the sight
+   (ink ring and cross on a paper rim; seal red at full draw, a breath ring that drains), the dusk wash,
+   and the wind word lit in a lull (风歇). */
+.g-dh-scene .g-dh-aim-ring, .g-dh-scene .g-dh-aim-cross { fill: none; stroke: #2e2416; stroke-width: 1.6; stroke-linecap: round; filter: drop-shadow(0 0 1px #f6efe0) drop-shadow(0 0 1px #f6efe0); }
+.g-dh-scene .g-dh-aim.is-full .g-dh-aim-ring, .g-dh-scene .g-dh-aim.is-full .g-dh-aim-cross { stroke: var(--seal); }
+.g-dh-scene .g-dh-aim.is-gasp .g-dh-aim-ring { stroke-dasharray: 3 3; }
+.g-dh-scene .g-dh-aim-breath { fill: none; stroke: #f6efe0; stroke-width: 2.4; opacity: .9; transform: rotate(-90deg); }
+.g-dh-scene .g-dh-dusk-wash { fill: #1d1a2a; mix-blend-mode: multiply; pointer-events: none; }
+.g-deerhunt .g-da-windword.is-lull { color: var(--ling); font-weight: 600; }
+.g-deerhunt .g-line-say { min-height: 3.4em; }
 /* 投掷 · the kit (games/throws.js): the things he throws in ink until painted, their one tap's
    effect, and the tray — only his own things, each at least 44px. */
 .g-da-scene .g-tk-stone { fill: #5d5448; stroke: #f6efe0; stroke-width: .8; }

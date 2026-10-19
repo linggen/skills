@@ -1102,6 +1102,215 @@
    ]
   },
   {
+   "id": "deerhunt",
+   "group": "prologue",
+   "hui": "第二回 · 试作",
+   "mechanic": "狩猎瞄准",
+   "stars": 3,
+   "art": "deerarc",
+   "_about": "射鹿 · 等风 (2026-10-19, Hanli: 「愤怒小鸟的类型不好玩. 太简单, 没有花样」): a hunting-aim game, 游戏厅 only until Hanli has played it — 00-deer's deer-wind still plays deerarc. Hold to draw (FULL_MS), slide to aim (relative), hold still at full to hold the breath (BREATH_MS), let go to loose, let go off the scene to ease off. The arrow drifts with the wind at release; the deer jumps the string with its head up, and an arrow landing near it spooks it. Stars: heart · first arrow · calm; grades clean · steady · rough by stars, as deerarc's (deer-wind has no marks: any win gives 一箭 · 偏左半寸). Paintings: deerarc's (`art` names that row).",
+   "_levels": "Level 1 `story` is the one a story beat would deal (only it: one level, the win frame ends it); the rest are the 游戏厅's. `deer`: x, face, graze/wary [min, max] ms, walk (the chance a graze ends in a walk), speed (units/s), range [x, x] where it walks and comes back to, back [min, max] ms away after a spook, first (ms before its first mood change). `wind`: first (gust | lull), gust/lull [min, max] ms, strength [min, max] in a gust, dirs (+1 in his face: pushes the arrow right, toward him — 往左偏半寸), calm (a lull's breath). `dusk`: the low light, 0–1. deerhunt.js holds the tuning (DRIFT, sway, breath).",
+   "levels": [
+    {
+     "id": "story",
+     "story": true,
+     "deer": {
+      "x": 140,
+      "face": -1,
+      "graze": [
+       2400,
+       4400
+      ],
+      "wary": [
+       1200,
+       2000
+      ],
+      "walk": 0.12,
+      "speed": 26,
+      "range": [
+       110,
+       190
+      ],
+      "back": [
+       3000,
+       4200
+      ],
+      "first": 3400
+     },
+     "wind": {
+      "first": "gust",
+      "gust": [
+       2500,
+       4500
+      ],
+      "lull": [
+       2200,
+       3600
+      ],
+      "strength": [
+       0.75,
+       1.1
+      ],
+      "dirs": [
+       1
+      ]
+     },
+     "say": {
+      "zh": "溪边，那头鹿低着头吃草。先看风，后看鹿。",
+      "en": "By the stream the stag grazes. Wind first, then the deer."
+     }
+    },
+    {
+     "id": "walk",
+     "deer": {
+      "x": 190,
+      "face": -1,
+      "graze": [
+       1800,
+       3200
+      ],
+      "wary": [
+       900,
+       1500
+      ],
+      "walk": 0.75,
+      "speed": 40,
+      "range": [
+       80,
+       220
+      ],
+      "back": [
+       3000,
+       4200
+      ],
+      "first": 1800
+     },
+     "wind": {
+      "first": "gust",
+      "gust": [
+       1600,
+       2800
+      ],
+      "lull": [
+       2600,
+       4000
+      ],
+      "strength": [
+       0.5,
+       0.9
+      ],
+      "dirs": [
+       1,
+       -1
+      ]
+     },
+     "say": {
+      "zh": "它边走边吃。箭要等它——往它前头放。",
+      "en": "It grazes as it walks. Lead it: loose ahead of it."
+     }
+    },
+    {
+     "id": "gusty",
+     "deer": {
+      "x": 120,
+      "face": -1,
+      "graze": [
+       3200,
+       5200
+      ],
+      "wary": [
+       800,
+       1400
+      ],
+      "walk": 0.1,
+      "speed": 26,
+      "range": [
+       100,
+       180
+      ],
+      "back": [
+       3000,
+       4200
+      ],
+      "first": 3000
+     },
+     "wind": {
+      "first": "gust",
+      "gust": [
+       2400,
+       4000
+      ],
+      "lull": [
+       1900,
+       2700
+      ],
+      "strength": [
+       0.8,
+       1.25
+      ],
+      "dirs": [
+       1,
+       -1,
+       1
+      ]
+     },
+     "say": {
+      "zh": "风一阵紧过一阵，风歇只有一会儿。",
+      "en": "Gust after gust; the lulls are short."
+     }
+    },
+    {
+     "id": "dusk",
+     "dusk": 0.42,
+     "deer": {
+      "x": 105,
+      "face": -1,
+      "graze": [
+       2400,
+       4200
+      ],
+      "wary": [
+       1100,
+       1900
+      ],
+      "walk": 0.2,
+      "speed": 24,
+      "range": [
+       90,
+       170
+      ],
+      "back": [
+       3200,
+       4500
+      ],
+      "first": 2600
+     },
+     "wind": {
+      "first": "gust",
+      "gust": [
+       1800,
+       3000
+      ],
+      "lull": [
+       2400,
+       3800
+      ],
+      "strength": [
+       0.6,
+       1.0
+      ],
+      "dirs": [
+       1
+      ]
+     },
+     "say": {
+      "zh": "天擦黑了，溪边只剩个影子。",
+      "en": "Dusk: by the stream, only a shape."
+     }
+    }
+   ]
+  },
+  {
    "id": "rentrope",
    "group": "prologue",
    "scene": "00-rent",

@@ -154,6 +154,8 @@ const ANTLER_DOWN = [-4, -36], ANTLER_UP = [-15, -16];
 /** The head between drinking (0) and up (1). */
 const headOf = (lift) => [DOWN[0] + (UP[0] - DOWN[0]) * lift, DOWN[1] + (UP[1] - DOWN[1]) * lift];
 const ANTLER_R = 18;
+/** The stag's zones (its own frame, deer units), for a board that judges a point, not a flight (deerhunt.js). */
+export const STAG = { HEART, BODY, DOWN, UP, ANTLER_DOWN, ANTLER_UP, ANTLER_R };
 
 /** What a throw's point, from `a` to `b`, struck: the stag (below), or the level's `target`. */
 export function targetHit(level, ms, a, b) {
@@ -579,7 +581,7 @@ const bankD = () => `M${groundPts().join(' L')} V${H} H0Z`;
 
 /** The stream and the banks: painted (games.json `art`: `backdrop` the 黑松岭 creek behind,
     `bank` and `water` cut from it into the ground and the stream), else drawn in ink. */
-function bankPicture(s) {
+export function bankPicture(s) {
   const a = s.art, id = clipId(s);
   if (!a?.backdrop) return inkBank();
   const clip = (name, d) => `<clipPath id="${id}-${name}"><path d="${d}"/></clipPath>`;
@@ -627,7 +629,7 @@ const RAG_REED = FAR_TUFTS[3]; // the red rag: on the far bank, mid-board, never
 
 /** The wind, read: a red rag tied to the tallest reed by the stream, the reeds leaning,
     and leaves drifting the way it blows now. No post: the reed is the post. */
-function windPicture(level, s) {
+export function windPicture(level, s) {
   if (level.indoor) return ''; // in a cave: no rag, no reeds, no leaves
   const t = calm(s) ? 0 : s.clock, w = windAt(level, s.clock), flutter = calm(s) ? 0 : Math.sin(t / 140) * (1 + 3 * Math.abs(w));
   const lean = Math.max(-1, Math.min(1, w)), sway = calm(s) ? 0 : Math.sin(t / 380) * (0.3 + Math.abs(w));
@@ -703,7 +705,7 @@ export function deerPicture(d, { alert = 0, gone = 0, art = null } = {}) {
    frame (facing +x, feet at 0) — `file` under worlds/jiuding/art, `w` × `h` in deer units, `at` the
    point in the picture (fractions) that stands on the deer's origin, `flip` if it faces left.
    The poses cross-fade by `lift`: drinking → looking (or walking, on the move; or bolting). */
-const artUrl = (file) => new URL(`../../worlds/jiuding/art/${file}`, import.meta.url).href;
+export const artUrl = (file) => new URL(`../../worlds/jiuding/art/${file}`, import.meta.url).href;
 function sprite(a, opacity) {
   if (!a || opacity < 0.02) return '';
   const flip = a.flip ? -1 : 1, x = -a.at[0] * a.w, y = -a.at[1] * a.h;
@@ -741,7 +743,7 @@ function inkDeer(d, lift) {
 }
 
 /** The bow by his bank, drawn back along the pull, the arrow nocked toward the deer. */
-function bowPicture(s) {
+export function bowPicture(s) {
   const pull = s.phase === 'aim' ? s.pull : null, p = pull?.p ?? 0, a = pull ? pull.a : 12;
   // The tension: the limbs bend in and the tips come back as the string stretches; full, it trembles.
   const back = 4 + p * 30, bend = 14 + p * 12, tipX = 4 - p * 7, tipY = 28 - p * 4;
@@ -784,7 +786,7 @@ function paintedBow(art, p) {
 }
 
 /** An arrow along local +x, its middle at `cx`: the `arrow` painting (pointing right), or ink. */
-function arrowShape(art, cx = 0, spent = false) {
+export function arrowShape(art, cx = 0, spent = false) {
   if (art?.arrow) return `<g transform="translate(${n(cx)} 0)">${sprite(art.arrow, 1)}</g>`;
   const t = cx - ARROW_HALF, h = cx + ARROW_HALF;
   return `<path class="g-da-shaft" d="M${n(t)} 0 L${n(spent ? h - 4 : h)} 0"/>${spent ? '' : `<path class="g-da-head-tip" d="M${n(h)} 0 l-6 -3 l0 6Z"/>`}`
@@ -880,7 +882,7 @@ function burstPicture(s) {
 }
 
 /** The bloom: the `ink_hit` painting opening and fading, or two ink splashes a beat apart. */
-function inkHit(a, x, y, t) {
+export function inkHit(a, x, y, t) {
   if (!a) return splash(x, y, t, { r: 30 }) + splash(x - 8, y + 4, t - 90, { r: 16 });
   if (t > 1100) return '';
   // Wash-strength, not a solid blot: it opens wide and soft over the painted coat, then fades.
@@ -889,7 +891,7 @@ function inkHit(a, x, y, t) {
 }
 
 /** The level's stars, stamped one after another over the strike (each pops in, eased with a kick). */
-function starsPicture(x, y, k, t) {
+export function starsPicture(x, y, k, t) {
   return [0, 1, 2].map((i) => {
     const age = typeof t === 'number' ? t - 120 - i * 110 : 999, f = age <= 0 ? 0 : Math.min(1, age / 180);
     if (!f) return '';
@@ -899,7 +901,7 @@ function starsPicture(x, y, k, t) {
 }
 
 /** A clean hit settles the scene: a short, damped shake (nothing under reduced motion). */
-function settle(s) {
+export function settle(s) {
   if (s.phase !== 'hit' || calm(s) || s.t > 220) return '';
   const k = 1 - s.t / 220;
   return ` style="transform: translate(${n(Math.sin(s.t / 14) * 3 * k)}px, ${n(Math.cos(s.t / 11) * 2 * k)}px)"`;
@@ -1034,7 +1036,7 @@ const onServer = async (file) => {
 };
 
 /** A row of games.json: its levels and paintings (`art`), and the registry's `projectiles`. */
-async function rowOf(id) {
+export async function rowOf(id) {
   const res = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url));
   const reg = await res.json(), row = reg.games.find((g) => g.id === id) ?? {};
   // `art` may name another row whose paintings it shares (the kit plays on 射鹿's creek).
