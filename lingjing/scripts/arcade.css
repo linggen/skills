@@ -32,37 +32,3 @@ body { overflow: auto; }
 .arcade-result { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; margin-top: 10px; }
 .arcade-won { font-family: var(--serif); font-size: 20px; color: var(--seal); font-weight: 700; }
 @media (max-width: 480px) { .arcade-grid { grid-template-columns: 1fr 1fr; } .arcade-play { padding: 10px; } }
-/* A game the model plays (画猜) with its chat panel (arcade-trace.js): side by side on a Mac, the panel
-   under the board on a phone. The board keeps its own 440px; the panel scrolls inside its height. */
-.arcade-duo { display: grid; grid-template-columns: minmax(0, 440px) minmax(280px, 380px); justify-content: center; gap: 16px; align-items: start; }
-.arcade-duo .arcade-play { margin: 0; width: 100%; box-sizing: border-box; }
-.arcade-chat { position: sticky; top: 12px; display: flex; flex-direction: column; height: min(720px, calc(100vh - 80px)); border: 1px solid var(--line);
-  border-radius: 12px; background: var(--surface); overflow: hidden; }
-.arcade-chat header { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
-.arcade-chat header b { font-family: var(--serif); font-size: 15px; letter-spacing: .12em; }
-.arcade-chat header small { color: var(--faint); font-size: 11px; line-height: 1.5; }
-.arcade-chat-log { flex: 1; overflow-y: auto; margin: 0; padding: 10px 12px; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-.arcade-chat-log li { font-size: 13px; line-height: 1.55; }
-.arcade-chat-log p { margin: 0; }
-.arcade-chat-sys { align-self: center; max-width: 92%; text-align: center; color: var(--dim); font-size: 12px !important; }
-.arcade-chat-sys.is-empty { color: var(--faint); margin-top: 24px; }
-.arcade-chat-me { align-self: flex-end; max-width: 88%; padding: 7px 11px; border-radius: 10px; background: var(--ling-soft); color: var(--text); }
-.arcade-chat-me small { color: var(--faint); font-size: 11px; }
-.arcade-chat-img { font: inherit; padding: 0 4px; border: 1px solid var(--ling); border-radius: 4px; background: transparent; color: var(--ling); cursor: zoom-in; }
-.arcade-chat-me details { margin-top: 4px; font-size: 11px; color: var(--dim); }
-.arcade-chat-me summary { cursor: pointer; }
-.arcade-chat-me pre { margin: 4px 0 0; white-space: pre-wrap; word-break: break-word; font: 11px/1.5 var(--ui, sans-serif); }
-.arcade-chat-her { align-self: flex-start; max-width: 88%; padding: 7px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); }
-.arcade-chat-her b { font-family: var(--serif); color: var(--ling); font-size: 13px; }
-.arcade-chat-her small { display: block; margin-top: 3px; color: var(--faint); font-size: 10.5px; }
-.arcade-chat-guess { color: var(--dim); font-size: 12px; }
-.arcade-chat-guess.is-ok { color: var(--seal); font-weight: 600; }
-.arcade-chat-view { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(20, 16, 12, .55); cursor: zoom-out; }
-.arcade-chat-view figure { margin: 0; text-align: center; }
-.arcade-chat-view img { width: min(448px, 86vw); height: auto; image-rendering: pixelated; border-radius: 6px; box-shadow: 0 8px 30px rgba(0, 0, 0, .3); }
-.arcade-chat-view figcaption { margin-top: 6px; color: #f3e6c8; font-size: 12px; }
-@media (max-width: 760px) {
-  .arcade-duo { grid-template-columns: minmax(0, 1fr); }
-  .arcade-duo .arcade-play { max-width: 440px; margin: 0 auto; }
-  .arcade-chat { position: static; height: auto; max-height: 60vh; min-height: 180px; }
-}

@@ -204,7 +204,7 @@ test('guide `tell` has Ling resolve typed words against the exits, then the hots
   assert.match(guide, /\*\*A hotspot\*\*.*\*\*Look with `at`\*\*/s);
   assert.match(guide, /`seen`/);
   const md = fs.readFileSync(path.resolve(import.meta.dirname, '../SKILL.md'), 'utf8');
-  assert.match(md, /look --said=\{\{said\}\} --at=\{\{at\}\} --for=ling/);
+  assert.match(md, /look --said=\{\{said\}\} --at=\{\{at\}\} --save=\{\{session\.save\}\} --for=ling/);
 });
 
 test('图鉴 at the pit: 「小银狐 · 生物」 — no name, nothing of 青丘; 银月 · 人物 only at dawn, when she names herself; 录 folds one into the other', () => {

@@ -73,7 +73,7 @@ export const CLEAR = `(() => {
 })()`;
 
 async function openSave(page, base, save) {
-  await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}`);
+  await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}&chat=off`);
   await sleep(3500);
 }
 

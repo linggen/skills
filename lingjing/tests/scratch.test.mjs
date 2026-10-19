@@ -99,14 +99,17 @@ test('a save name is one plain word: a path is refused before anything is read',
   }
 });
 
-test('the page: every verb carries --save, and scratch mode never opens the chat or tells 银月', () => {
+test('the page: every verb carries --save; a test save has its chat bound to that save, and `&chat=off` (the crawlers) asks no one', () => {
   assert.deepEqual(flagsOf({ id: 'x' }, 'test'), ['--id=x', '--save=test']);
   assert.deepEqual(flagsOf({ id: 'x' }, null), ['--id=x']);
   const page = fs.readFileSync(path.join(ROOT, 'scripts', 'lingjing.js'), 'utf8');
   const body = (name) => page.slice(page.indexOf(`function ${name}(`), page.indexOf('\n}\n', page.indexOf(`function ${name}(`)));
-  assert.match(body('mountChat'), /if \(SCRATCH\)[^\n]*return false;/, 'no chat mounted: no opening, no recap');
-  assert.match(page, /post: \(id, fact, flags, opts\) => \(SCRATCH \? Promise\.resolve\(false\)/, 'no 银月 events');
-  assert.match(body('deliver'), /if \(SCRATCH\)/, 'no message to Ling');
+  // Hanli 10-19: a test save plays like the real game — Ling and 银月 live, its chat bound to the save
+  // (SKILL.md session-params; tests/session-save.test.mjs) — only `&chat=off` keeps the old quiet page.
+  assert.match(body('mountChat'), /if \(CHATLESS\)[^\n]*return false;/, 'chat=off: no chat mounted, no opening, no recap');
+  assert.doesNotMatch(body('mountChat'), /if \(SCRATCH\)/, 'a test save mounts its chat');
+  assert.match(page, /post: \(id, fact, flags, opts\) => \(CHATLESS \? Promise\.resolve\(false\)/, 'chat=off: no 银月 events');
+  assert.match(body('deliver'), /if \(CHATLESS\)/, 'chat=off: no message to Ling');
   // 古九's tester (2026-10-15): the scratch note read 「测试存档 · x · [scene] won gate-longzhi」 — code words on the stage.
   assert.match(body('deliver'), /if \(!hidden && !\/\^\\\[\[a-z\]\+\\\]\/\.test\(text\)\)/, 'a hidden report never shows on the stage');
   assert.match(body('readCloud'), /if \(SCRATCH\) return/, 'no cloud sync');

@@ -391,8 +391,13 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
   - **In the story (10-19; Hanli: 「ai游戏放到游戏中吧, 还挺好玩的. 但要结合剧情」, 「秘境里也放一个. AI猜都是Yinyue猜」,
     「秘境里可以有随机游戏」, 「AI猜画可以多放几个地方」).** The guesser is always 银月, in her 妖王 voice (the code hands
     her the picture and one line of where they are, `data.context`; her words are hers). No opening look in the
-    story (a look is ~8.7k tokens): the first guess says whether the model can see. A 测试存档 never calls her:
-    `&her=stub` answers on the page (a marked miss, then the word), else she is not asked at all.
+    story (a look is ~8.7k tokens): the first guess says whether the model can see. **Every look is a turn in
+    the game's own chat (10-19):** 「@银月 我画了一样东西，你猜是什么？」 with the picture (`/api/chat` `images`),
+    her reply in the chat as hers and in the paper's bubble; no throwaway session, so a look never restates
+    her earlier guesses. A 测试存档 has that chat too, bound to its save (SKILL.md `session-params`);
+    `&her=stub` answers on the page (a marked miss, then the word), `&chat=off` (the crawlers) asks no one.
+    The 游戏厅's 试玩 of 画猜 opens the game page itself (`index.html?save=arcade-drawguess&seed=ji-home&board=drawguess`,
+    arcade-board.js) with the board on the stage and the chat beside it; the old side panel is gone.
     - **第六回 · 家信 · 画给娘看** (wm-jiaxin, task `jiaxin-letter`, was 写信 · 擦了又写): 娘 cannot read, so beside
       three of the letter's own lines he draws — 「盆可以收起来了，十七个都收。」 a basin · 「给我爹买一副护膝，狗皮的。」
       爹's bow · 「我在这里很好。」 the moon over the mountain (games.json drawguess `sets.jiaxin`). She is out that

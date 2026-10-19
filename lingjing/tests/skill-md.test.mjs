@@ -79,6 +79,10 @@ test('the list shape that broke the skill is caught', () => {
 /* The `place:` block (skill-spec § Place; engine `record::Places`): keyed by
    agent id, each a plain string or `{text, absent_until: {file, path}}`. The
    gate's path must be the one the rules write when she joins. */
+const flowMap = (inner) => Object.fromEntries(inner.split(/,\s*(?=[\w-]+:)/).map((kv) => {
+  const at = kv.indexOf(':');
+  return [kv.slice(0, at).trim(), kv.slice(at + 1).trim().replace(/^"(.*)"$/, '$1')];
+}));
 export function readPlace(md) {
   const lines = md.split('\n');
   const fm = lines.slice(1, lines.indexOf('---', 1));
@@ -94,8 +98,9 @@ export function readPlace(md) {
     if (kv && agent) {
       key = kv[1];
       const v = kv[2].trim();
-      const flow = /^\{\s*file:\s*([^,}]+),\s*path:\s*([^,}]+)\}$/.exec(v);
-      place[agent][key] = flow ? { file: flow[1].trim(), path: flow[2].trim() } : v === '>-' || v === '>' || v === '|' ? '' : v;
+      // A flow map (`{file: …, session_file: "…", path: …}`): its keys, a quoted value unquoted.
+      const flow = /^\{(.*)\}$/.exec(v);
+      place[agent][key] = flow ? flowMap(flow[1]) : v === '>-' || v === '>' || v === '|' ? '' : v;
       continue;
     }
     if (agent && key && /^ {6}/.test(line)) place[agent][key] = `${place[agent][key]} ${line.trim()}`.trim();
@@ -108,11 +113,15 @@ test("place: 银月 is a guest with her own text, absent until the save says she
   assert.deepEqual(Object.keys(place), ['yinyue'], 'only guests (Ling\'s place is the SKILL.md body)');
   const her = place.yinyue;
   assert.ok(her.text.length > 40 && her.text.length < 400, 'one or two short lines');
-  assert.deepEqual(her.absent_until, { file: 'data/state.json', path: 'companion.awake' });
+  // A chat bound to a test save reads that save's state (skill-spec § Session parameters): the file
+  // the rules write for `--save=<name>`, the same `companion.awake` the her-game hold sets there.
+  assert.deepEqual(her.absent_until, { file: 'data/state.json', session_file: 'data/saves/{{session.save}}/state.json', path: 'companion.awake' });
   // The rules keep the save at data/state.json in the skill folder …
   const { dataDir } = await import('../scripts/rules/files.mjs');
   const skillDir = path.resolve(path.dirname(SKILL_MD));
   if (!process.env.LINGJING_DATA) assert.equal(path.relative(skillDir, path.join(dataDir(), 'state.json')), her.absent_until.file);
+  const { scratchDir } = await import('../scripts/rules/files.mjs');
+  if (!process.env.LINGJING_DATA) assert.equal(path.relative(skillDir, path.join(scratchDir('cc-x'), 'state.json')), her.absent_until.session_file.replace('{{session.save}}', 'cc-x'));
   // … and `companion.awake` is what joining (and waking) writes and sleeping
   // takes away (prologue-v3: asleep in the fox token), read the engine's way
   // (set = present and not null/false/0/""/[]/{}).

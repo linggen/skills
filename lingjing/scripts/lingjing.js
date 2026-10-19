@@ -10,6 +10,14 @@ import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud,
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
+import { arcadeGameOf, arcadeRow, isArcadeBoard, withArcade } from './arcade-board.js';
+/// A test save with no chat at all (`&chat=off`): the crawlers' opt-out (tools/playtest.mjs,
+/// page-crawl.mjs, play-human.mjs) — no Ling, no 银月, a word from the stage only shown. Without it a
+/// test save plays like the real game, its chat bound to that save (SKILL.md session-params).
+const CHATLESS = Boolean(SCRATCH) && new URLSearchParams(location.search).get('chat') === 'off';
+/// The 游戏厅's 试玩 (arcade-board.js): a test save's `&board=<game>` stands that game on the stage.
+const ARCADE_GAME = arcadeGameOf(location.search, SCRATCH);
+let arcadeDeal = { row: null, title: null };
 import { plateHtml } from './plate.js';
 import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
@@ -116,8 +124,8 @@ const herNear = () => herNow() !== 'absent';
    木牌 through 卷一, no 问银月 and no bubble — as her chip reads 「木牌 · 睡着」). */
 const herFights = (b) => herNear() && (b?.brief?.setup?.you?.party ?? []).some((m) => m.id === look?.companion?.id);
 const voice = createVoice({
-  // A scratch save (?save=) tells 银月 nothing: she lives in the real game.
-  post: (id, fact, flags, opts) => (SCRATCH ? Promise.resolve(false) : postMoment(fact, flags, opts)),
+  // A test save (?save=) tells her too: its chat is bound to that save (SKILL.md session-params).
+  post: (id, fact, flags, opts) => (CHATLESS ? Promise.resolve(false) : postMoment(fact, flags, opts)),
   sees: () => ({ fighting: Boolean(bout), present: herHere() }),
 });
 /// Resolves true when she will hear it; false when nobody will (the pet off
@@ -178,12 +186,14 @@ function taleBoard(taskId) {
   else boards.set(taskId, { taskId, mod, day: taskId, state: mod.newGame(`${taskId}|${look.seed ?? ''}`, b.level ?? 1) });
   return boards.get(taskId);
 }
-/* What a mount-only board is dealt (beat-host.js hands it to mount): the task's deal from Look, and
-   — on a 测试存档, which never calls 银月 — the scratch seam (`&her=stub` answers on the page, else
-   she is not asked at all). A deal that names a rules verb (`begin`: 本王考考你) gets its call. */
+/* What a mount-only board is dealt (beat-host.js hands it to mount): the task's deal from Look, the
+   game's own chat (`session`: a model turn — 画猜's look — runs there, as hers), and on a 测试存档 the
+   opt-in seam (`&her=stub` answers on the page, no model). A deal that names a rules verb (`begin`:
+   本王考考你) gets its call. */
 function mountData(task) {
   const deal = { ...(task?.deal ?? {}) };
-  if (SCRATCH) deal.seam = HER_SEAM === 'stub' ? 'stub' : 'off';
+  if (HER_SEAM === 'stub' || CHATLESS) deal.seam = HER_SEAM === 'stub' ? 'stub' : 'off';
+  deal.session = () => chat?.getSessionId?.() ?? null;
   // A board that needs her (Look's `her`: the task or 传闻 game declares `needs: "her"`) wakes her out
   // of the 木牌 as its round begins, and puts her back as it ends (rules/hergame.mjs).
   if (task?.her && task.id) { deal.wake = () => herOut(task.id, true); deal.rest = () => herOut(task.id, false); }
@@ -227,7 +237,7 @@ function boardFor(taskId) {
     }
     // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.
     const g = boards.get(taskId);
-    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herHere() && !SCRATCH });
+    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herHere() });
     return g;
   }
   if (!boards.has(taskId)) {
@@ -579,7 +589,7 @@ async function readOnce() {
     if (look?.scene && seen?.scene?.id !== look.scene.id) leftLook(look);
     stageQuestDone(look, seen);
     gainedCards(look, seen);
-    look = seen;
+    look = withArcade(seen, ARCADE_GAME, arcadeDeal);
     if (look?.engine && !engineAt) engineAt = look.engine;
     watchRun();
     if (look.divination) keep({ casting: false });
@@ -1785,6 +1795,7 @@ async function settleWin(taskId, won, grade) {
   // A board the scene stands on its stage is a story beat (the opening's 接雨, 射鹿 …), not a day's practice.
   const story = (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === taskId);
   if (isTale(taskId)) return taleWon(taskId);
+  if (isArcadeBoard(taskId)) return arcadeWon(taskId, grade);
   const stars = won?.state?.stars; // a small game's stars (喂饼's corners), kept on the save
   const r = await write('win', { id: taskId, ...(grade ? { grade } : {}), ...(Number.isFinite(stars) ? { stars } : {}) }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
@@ -1812,6 +1823,15 @@ async function settleWin(taskId, won, grade) {
   // A passage owed after the game (the rest of the scene's, `story_after`): the box tells it first,
   // and the way on stays his to take — never tapped over the words still to come.
   if (on && !look?.tell_owed) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
+  return true;
+}
+
+/* A 试玩 board won (arcade-board.js): nothing to pay, nothing told to Ling — the grade on the note,
+   and the board dealt again. */
+function arcadeWon(taskId, grade) {
+  boards.delete(taskId);
+  keep({ doNote: `${lang() === 'en' ? 'Won' : '成'}${grade ? ` · ${grade}` : ''}` });
+  render();
   return true;
 }
 
@@ -1932,10 +1952,10 @@ function turnEnded() {
 /// waits its turn behind it (his "should it queue instead of hiding the ask
 /// user widget", 2026-09-17 — the skill declares the queue).
 function deliver(text, hidden) {
-  // A scratch save (?save=) never messages Ling: the word is shown, the turn ends.
+  // A chatless test save (`&chat=off`): the word is shown, the turn ends.
+  if (CHATLESS) { if (!hidden && !/^\[[a-z]+\]/.test(text)) keep({ doNote: `${SCRATCH_BADGE} · 「${text.split('\n')[0]}」` }); turnEnded(); return; }
   // A hidden report (`[scene] won gate-longzhi`) is Ling's alone: nothing of it on the stage — its code words
   // read as noise there (古九's tester, 2026-10-15). A word he said shows, plain, as said.
-  if (SCRATCH) { if (!hidden && !/^\[[a-z]+\]/.test(text)) keep({ doNote: `${SCRATCH_BADGE} · 「${text.split('\n')[0]}」` }); turnEnded(); return; }
   if (hidden) chat?.sendHidden(text);
   else chat?.send(text);
 }
@@ -2577,7 +2597,7 @@ function companionBeat(shown) {
 }
 function quietCopy(line) {
   if (chat) { chat.addMessage('assistant', line); return; }
-  // A scratch save has no chat: the line goes into its quiet transcript beside the stage.
+  // A chatless test save (`&chat=off`): the line goes into its quiet transcript beside the stage.
   const log = document.querySelector('#chat-panel .scratch-lines');
   if (log) { log.insertAdjacentHTML('beforeend', `<div class="scratch-line">${esc(line)}</div>`); log.scrollTop = log.scrollHeight; }
 }
@@ -3163,13 +3183,12 @@ async function boardSends(g, send) {
   if (res?.ok && res.out && res.escaped) herSay.say('rare', lang() === 'en' ? `Escaped the hidden room, nothing skipped.${res.paid?.wealth ? ` +${res.paid.wealth} stones.` : ''}` : `走出了密室，一道机关都没跳过。${res.paid?.wealth ? `得灵石${res.paid.wealth}。` : ''}`, { key: `mishi|${Date.now()}` });
   await refresh();
 }
-/* 问银月 from a board: the ask bar turned to her, when she is here to hear it (a scratch save never
-   messages her); her clock starts when the words go (sendAsk). Absent, it starts now — the module
+/* 问银月 from a board: the ask bar turned to her, when she is here to hear it; her clock starts when the words go (sendAsk). Absent, it starts now — the module
    waits out its short wait and offers the torn page itself. */
 let boardWaitsOnHer = null;
 function boardAsksHer(g) {
   boardWaitsOnHer = g;
-  if (herHere() && !SCRATCH) openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue));
+  if (herHere() && !CHATLESS) openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue));
   else herClock(g);
 }
 function herClock(g) {
@@ -3475,9 +3494,9 @@ function herLineCame(text) {
   herWaiter = null;
   w?.(text);
 }
-/* 测试存档 only: `&her=stub` answers each fight word after 1.5 s with a marked
-   stub line (the model path's plumbing, no model), `&her=slow` never answers
-   (the timeout's fallback). A scratch save otherwise tells her nothing. */
+/* 测试存档 only, opt-in: `&her=stub` answers each fight word after 1.5 s with a
+   marked stub line (the model path's plumbing, no model), `&her=slow` never
+   answers (the timeout's fallback). Without it a test save asks the real her. */
 const HER_SEAM = SCRATCH ? new URLSearchParams(location.search).get('her') : null;
 let herFactsSent = null; // the last facts, for the scratch seam's checks
 const HER_MOOD = { ask: 'neutral', charge: 'neutral', low: 'sad', big: 'happy', won: 'happy', lost: 'sad' };
@@ -3558,10 +3577,9 @@ const HER_MOMENT_ID = { rise: 'rise', hui: 'chapter', tamed: 'tamed' };
 function herMomentAsk(kind, facts, { mode, mood }) {
   herFactsSent = { kind, facts };
   if (mode !== 'awake') return { sent: Promise.resolve(false), line: new Promise(() => {}) };
-  if (SCRATCH) {
-    if (HER_SEAM === 'stub') return { sent: Promise.resolve(true), line: new Promise((done) => setTimeout(() => done(`[stub] ${kind} · ${[...facts].length}`), 1500)) };
-    if (HER_SEAM === 'slow') return { sent: Promise.resolve(true), line: new Promise(() => {}) };
-  }
+  if (HER_SEAM === 'stub') return { sent: Promise.resolve(true), line: new Promise((done) => setTimeout(() => done(`[stub] ${kind} · ${[...facts].length}`), 1500)) };
+  if (HER_SEAM === 'slow') return { sent: Promise.resolve(true), line: new Promise(() => {}) };
+  if (CHATLESS) return { sent: Promise.resolve(false), line: new Promise(() => {}) };
   const line = herNextLine();
   const id = HER_MOMENT_ID[kind] ?? (mood === 'sad' ? 'comfort' : 'cheer');
   const r = voice.moment(id, { zh: facts, en: facts }, { mood });
@@ -3859,9 +3877,13 @@ async function settleBout(b = bout) {
 
 /// The day's chat to pick up: the newest one spoken in, within today's
 /// stretch — the app session rule. An empty session is no day.
+/* The chat this page is bound as (SKILL.md session-params): a test save's (`{save}`) or the main
+   save's (none). The main page never picks up a test save's chat, nor a test save the main one. */
+const CHAT_PARAMS = SCRATCH ? { save: SCRATCH } : undefined;
+const boundAsPage = (list) => (sharedApi.boundTo ? sharedApi.boundTo(list, CHAT_PARAMS ?? {}) : SCRATCH ? [] : list);
 async function recentSessionId() {
   try {
-    return pickResumable(await listSkillSessions(SKILL));
+    return pickResumable(boundAsPage(await listSkillSessions(SKILL)));
   } catch {
     return null;
   }
@@ -3942,10 +3964,10 @@ function watchRun() {
   freshChatWhenFree();
 }
 async function freshChatWhenFree() {
-  if (!freshOwed || streaming || saying || !chat || SCRATCH) return;
+  if (!freshOwed || streaming || saying || !chat) return;
   freshOwed = false;
   try {
-    const { id } = await createSession('Lingjing', SKILL);
+    const { id } = await createSession('Lingjing', SKILL, CHAT_PARAMS);
     if (!id) return;
     await chat.setSession(id);
     chat.addMessage('assistant', FRESH_LINE[lang()]);
@@ -3972,8 +3994,9 @@ function greetUnanswered(text = null) {
 async function mountChat() {
   // The chat folds away on a handle at the seam; the stage then has the whole width (sight.js).
   mountChatToggle(document.querySelector('.shell'), lang);
-  // A scratch save (?save=) never starts or messages Ling's chat: no recap, no opening turn.
-  if (SCRATCH) { $('chat-panel').innerHTML = `<div class="scratch-chat" style="padding:24px 16px;color:#8a7a66;font-size:13px;line-height:1.8;text-align:center">${esc(SCRATCH_BADGE)}<br>${esc(SCRATCH_NOTE)}</div><div class="scratch-lines"></div>`; return false; }
+  // A test save (?save=) has a real chat too, bound to that save: Ling's and 银月's tools there play
+  // data/saves/<name>/ only (SKILL.md `--save={{session.save}}`), never the main save.
+  if (CHATLESS) { $('chat-panel').innerHTML = `<div class="scratch-chat" style="padding:24px 16px;color:#8a7a66;font-size:13px;line-height:1.8;text-align:center">${esc(SCRATCH_BADGE)} · chat=off</div><div class="scratch-lines"></div>`; return false; }
   const resume = await recentSessionId();
   chat = await window.LinggenUI.mount($('chat-panel'), {
     skillName: SKILL,
@@ -3982,6 +4005,7 @@ async function mountChat() {
     // 「你想怎么做？」 — every scene can be answered in words (invite.js).
     placeholder: words().chatHint,
     sessionId: resume || undefined,
+    params: CHAT_PARAMS,
     // A new chat begun from the panel's own button, after the page is up.
     onSessionCreated: (sid) => { if (mounted && sid !== resume) openWith(sid); },
     // Her guest turns (`@银月 …`) stream in this chat too. Only Ling's stream
@@ -4510,7 +4534,7 @@ function recapTold() {
    draws nothing (his, 2026-09-29: app里的3D模型 hidden while playing). Loaded
    once she is found and awake; unloading it gives her back to the corner. */
 function holdHerVoice(on) {
-  if (SCRATCH) on = false; // her voice is the real game's: a scratch save never calls her over
+  if (CHATLESS) on = false;
   const f = $('herVoice');
   if (!on) { if (f.dataset.on) { delete f.dataset.on; f.src = 'about:blank'; } return; }
   if (f.dataset.on) return;
@@ -4614,7 +4638,7 @@ async function greetByHer(grew = null) {
    `&days=N` moves its clock N days ahead, then the URL forgets both so a
    reload plays on. */
 const SCRATCH_BADGE = SCRATCH ? `测试存档 · ${SCRATCH}` : '';
-const SCRATCH_NOTE = '不连 Ling，不发 银月 — 只读写 data/saves/' + (SCRATCH ?? '') + '/';
+const SCRATCH_NOTE = 'Ling 和 银月 都在，只读写 data/saves/' + (SCRATCH ?? '') + '/ — 不碰主存档，不同步云端';
 async function scratchBoot() {
   // Low in the right corner (2026-10-05): over the top strip it hid the 回 and the place.
   document.body.insertAdjacentHTML('beforeend', `<div class="scratch-badge" title="${esc(SCRATCH_NOTE)}" style="position:fixed;top:0;left:8px;z-index:99;padding:0 6px;border:1px solid #b33a2b;border-top:0;border-radius:0 0 3px 3px;background:#fff8ef;color:#b33a2b;font:600 10px/1.4 var(--ui, sans-serif);letter-spacing:.06em;opacity:.75;pointer-events:none">${esc(SCRATCH_BADGE)}</div>`);
@@ -4672,8 +4696,19 @@ if (SCRATCH) {
   };
 }
 
+/* 试玩: the game's registry row (its deal) and its name, before the first Look stands it. */
+async function arcadeBoot() {
+  const [reg, mod] = await Promise.all([
+    fetch('../worlds/jiuding/games.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+    import(`./games/${ARCADE_GAME}.js`).catch(() => null),
+  ]);
+  const name = mod?.meta?.name;
+  arcadeDeal = { row: arcadeRow(reg, ARCADE_GAME), title: name ? `${name.zh}${name.en ? ` · ${name.en}` : ''}` : ARCADE_GAME };
+}
+
 async function boot() {
   if (SCRATCH) await scratchBoot();
+  if (ARCADE_GAME) await arcadeBoot();
   devArcade({ scratch: SCRATCH }); // the builder's test-arcade chip: developer or scratch only
   $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh.loading)} · ${esc(WORDS.en.loading)}</div>`;
   await readCloud();

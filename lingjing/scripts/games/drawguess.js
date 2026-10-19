@@ -1,19 +1,19 @@
 // 画猜 · 你画，灵猜 — a Pictionary / Quick, Draw! prototype (Hanli 2026-10-16: 「玩家画AI猜, 试一下吧」).
-// In the 游戏厅 only; no story beat embeds it yet. A word from 卷一 (games.json `drawguess`
+// In the story (家信, 本王考考你, a 秘境 奇遇) and the 游戏厅's 试玩 (the game page on a test save). A word from 卷一 (games.json `drawguess`
 // `data.words`, each with the spellings that count), sixty seconds, a brush in ink on rice paper.
-// When the hand rests, or on 「画好了」, the paper goes to Ling as a picture (drawguess-ling.js: the
-// engine's chat with `images`) and she guesses in a line, zh and en; the guess is checked HERE
+// When the hand rests, or on 「画好了」, the paper goes to her as a picture — a turn of the player's in
+// the game's own chat (drawguess-ling.js: 「@银月 …」 with `images`) — and she guesses in a line there,
+// as hers; the board shows that line in the paper's bubble. The guess is checked HERE
 // against the word and its spellings (drawguess-rules.js) — the model never says it was right.
 // One look at a time, at most four a round. If the bound model cannot see, the engine's vision
-// gate says so on the first look (a blank sheet, her opening line): the game says it plainly and
-// does not start. A 画符 mode (draw a talisman's strokes in order) is a note in doc/games.md only.
+// gate says so on the first look: the game says it plainly and stops. A 画符 mode (draw a talisman's strokes in order) is a note in doc/games.md only.
 // 猜者 (Hanli 10-16: 「游戏里可以让yinyue猜」): Ling, or 银月 — her guest turn at Lingjing's table
 // (SKILL.md `place.yinyue`: her tools there are Voice · AppTool · Story, no memory), in her proud
-// 妖王 voice, her lines on the paper only. She is gated as in the world: until the save has met her
+// 妖王 voice, her lines in the chat and in the paper's bubble. She is gated as in the world: until the save has met her
 // (`absent_until`) the engine runs no turn and answers `absent` — the game says so and won't start.
 // The paper and the player's own strokes are the only things drawn here; nothing is painted in code.
 import { ERASER, guessLoop, isBlindReply, letterGrade, matches, parseReply, pickWord, roundsOf, starsFor, strokeOp, stubReply } from './drawguess-rules.js';
-import { askLing, askOnce, closeRound, declaredBlind, dropOpen, openRound, reachable } from './drawguess-ling.js';
+import { askInChat, declaredBlind, reachable } from './drawguess-ling.js';
 
 export const meta = {
   id: 'drawguess',
@@ -30,18 +30,18 @@ const T = {
   zh: {
     draw: '画', start: '开始', pen: '笔', eraser: '擦', clear: '清空', done: '画好了', who: '猜者', names: { ling: '灵', yinyue: '银月' },
     checking: '{who}在看纸……', looking: '{who}在看……', looks: '还能看 {n} 眼',
-    blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', err: '{who}没看清，再画画。',
+    blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', nochat: '这里没有对话，画猜在游戏里玩。', err: '{who}没看清，再画画。',
     absent: '还没遇见银月。', unavailable: '银月不在。', asleep: '银月在木牌里睡着，叫不应。',
     won: '对了，是「{w}」。', time: '时间到。是「{w}」。',
-    next: '下一句', again: '再画一张', write: '就写字吧', off: '测试存档不叫银月。', plain: '这一句只写了字：「{w}」。',
+    next: '下一句', again: '再画一张', write: '就写字吧', off: '这个测试存档不叫银月（chat=off）。', plain: '这一句只写了字：「{w}」。',
   },
   en: {
     draw: 'Draw', start: 'Start', pen: 'Brush', eraser: 'Eraser', clear: 'Clear', done: 'Done', who: 'Guesser', names: { ling: 'Ling', yinyue: 'Yinyue' },
     checking: '{who} is looking at the paper…', looking: '{who} is looking…', looks: '{n} looks left',
-    blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', err: '{who} couldn\'t make it out. Keep drawing.',
+    blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', nochat: 'No chat here: play it in the game.', err: '{who} couldn\'t make it out. Keep drawing.',
     absent: 'You haven\'t met Yinyue yet.', unavailable: 'Yinyue isn\'t here.', asleep: 'Yinyue is asleep in the token and does not answer.',
     won: 'Right — {w}.', time: 'Time. It was {w}.',
-    next: 'Next line', again: 'Draw another', write: 'Just write it', off: 'A scratch save does not call Yinyue.', plain: 'This line is in words only: {w}.',
+    next: 'Next line', again: 'Draw another', write: 'Just write it', off: 'This test save calls no one (chat=off).', plain: 'This line is in words only: {w}.',
   },
 };
 const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -166,38 +166,37 @@ export function paperPng(doc, strokes, px = EXPORT_PX) {
 }
 
 // ── what the guesser is asked ──────────────────────────────────────────────────────────────
+// Each look is the player's own line in the game's chat (Hanli 10-19): her name, a few plain words,
+// and one short note of the reply's shape — never a brief. She sees the dialogue, so her earlier
+// guesses are not repeated to her; her voice is her own (SKILL.md `place.yinyue`).
 
 export const GUESSERS = ['ling', 'yinyue'];
-const HEAD = '[画猜] 小游戏试玩，与故事无关；不调用任何工具，不提游戏或模型。';
-// In the story (a 家信, 本王考考你, a 秘境 奇遇, a 传闻's step) the round carries a line of facts
-// (`data.context`: where they are, what the picture is for) in place of 「与故事无关」.
-const headOf = (context) => (context ? `[画猜] ${context}；不调用任何工具，不提游戏或模型。` : HEAD);
-const VOICE = {
-  ling: '照你平常说话的样子',
-  yinyue: '你是银月，骄傲的妖王，自称本王：画得糟就毒舌一句，猜中了才勉强满意，话要短',
+const AT = { zh: { yinyue: '@银月 ', ling: '' }, en: { yinyue: '@yinyue ', ling: '' } };
+const at = (who, lang) => (AT[lang] ?? AT.zh)[who] ?? '';
+const SHAPE = {
+  zh: '（一句话就好，最后一行写「猜：」加一个名词。）',
+  en: ' (Just a line, then a last line "Guess: " and one noun.)',
 };
-export const askOpen = (who, context = null) => `${headOf(context)}纸还空着，小满要画一样东西给你猜。${VOICE[who]}。`
-  + '只回两行：第一行一句中文开场，不超过十二字；第二行同一句的英文。';
-export const askGuess = (who, prev, context = null) => `${headOf(context)}图上是小满用毛笔画的一样寻常东西，也许还没画完。${VOICE[who]}，猜它是什么。`
-  + '只回三行：第一行一句中文，不超过二十字；第二行同一句的英文；第三行「猜：」加一个中文名词。'
-  // A wrong guess is said to be wrong, and never guessed again (Hanli 10-19: 「第一次猜错了, 第二次还猜一样的」).
-  + (prev.length ? `你先前猜的${prev.map((g) => `「${g}」`).join('、')}都不对，别再猜这些，也别猜它们的近义词；换个思路，看看画上新添的笔。` : '');
-
+/** The player's line for a look: the first of a round (`n` 1) with where they are (`context`), the next ones short. */
+export const askGuess = (who, n = 1, context = null, lang = 'zh') => {
+  const en = lang === 'en';
+  const scene = context ? (en ? `(${context}) ` : `（${context}）`) : '';
+  const said = n <= 1 ? (en ? 'I drew something — what is it?' : '我画了一样东西，你猜是什么？') : (en ? 'I added a few strokes. Another guess?' : '我又添了几笔，再猜猜？');
+  return `${at(who, lang)}${scene}${said}${SHAPE[en ? 'en' : 'zh']}`;
+};
 /* The reveal (Hanli 10-19: 「最后解释答案的时候, 让yingyue表达一下懊恼等感情, 评论一下作者的画. 把情绪价值拉满」):
    one more look at the finished picture, now with the answer — she owns the miss or crows over the hit,
    and says something about the drawing itself. */
-export const askReveal = (who, word, prev, won, context = null) => `${headOf(context)}这一局小满画的是「${word}」。`
-  + (prev.length ? `你先后猜过：${prev.join('、')}。` : '你一眼都没猜。')
-  + (won ? '你猜中了。' : '你没猜中。')
-  + `${VOICE[who]}。看着这张画，按你的性子把情绪说足，再具体点评他的画：`
-  + (won ? '猜中了——惊喜又得意，顺口夸他一句，夸也要居高临下。' : '没猜中——懊恼、不服，把锅甩给他的画：说清这东西该怎么画才对（缺了哪一笔、哪一笔把你带偏了）；差一点的要说差一点。')
-  + `口气参考（别照抄，用你自己的话）：猜中时像「哇，果然是${word}！小满，你这画在凡人里也算不赖了」；`
-  + '猜错时像「你小子乱画什么！鸡要有尖嘴和爪子——凡人果然是凡人」。'
-  + '只回两行：第一行一句中文，不超过四十字；第二行同一句的英文。';
+export const askReveal = (who, word, won, lang = 'zh') => {
+  const en = lang === 'en';
+  if (en) {
+    return `${at(who, lang)}${won ? `Yes — it's ${word}!` : `Time's up. It was ${word}.`} What do you make of my drawing?`
+      + (won ? ' (A line or two: crow over it, and say something about the drawing.)' : ' (A line or two: let the miss sting, and say what the drawing got wrong.)');
+  }
+  return `${at(who, lang)}${won ? `对了，就是「${word}」！` : `时间到——我画的是「${word}」。`}你说说我这画？`
+    + (won ? '（一两句：得意就说足，再点评一下这幅画。）' : '（一两句：懊恼不服就说足，再说说这东西该怎么画。）');
+};
 
-// The engine's verdict on sight, once a page per guesser and model: { blind, line, model }. A
-// refusal (`absent`, `unavailable`) is not kept: the save may meet her while the page is open.
-const sight = new Map();
 let lastWord = null; // the word just drawn on this page: never twice running
 
 // Who guesses: always 银月 (Hanli 10-19: 「让yinyue猜吧, 不要选ling或者yinyue了」); `data.who` only for tests.
@@ -207,41 +206,26 @@ function whoKept(data) {
 }
 function keepWho(who) { try { globalThis.localStorage?.setItem(WHO_KEY, who); } catch { /* no storage */ } }
 
-async function lookFirst(doc, who, model, { open = true, seam = null, context = null } = {}) {
-  // The scratch seam: a 测试存档 never calls her (`stub` answers on the page, `off` not at all).
+/* Whether a round can be played here: a 测试存档's opt-in seam (`stub` answers on the page, `off` not
+   at all), a way to the engine, the game's chat to look in (`sid`), and a model that is not declared
+   blind. No opening look is spent (a look is a model turn): the first guess says whether she can see. */
+async function lookFirst(model, { seam = null, sid = null } = {}) {
   if (seam === 'stub') return { blind: false, model: { id: 'stub' } };
   if (seam) return { off: true };
-  const key = `${who}|${model ?? ''}`;
-  if (sight.has(key)) return sight.get(key);
   if (!(await reachable())) return { far: true };
+  if (!sid) return { nochat: true };
   const named = model ? null : await declaredBlind().catch(() => null);
   if (named) return { blind: true, model: { id: named } };
-  // In the story no opening look is spent (a look is ~8.7k tokens): the first guess says whether she can see.
-  if (!open) return { blind: false, model: null };
-  const png = paperPng(doc, [], 32), prompt = askOpen(who, context);
-  log({ kind: 'sent', who, open: true }, { png, prompt });
-  const r = await askOnce({ agent: who, png, prompt, model });
-  log({ kind: 'open', who, ms: r.ms, model: r.model?.id, tools: r.tools, text: r.text, refused: r.refused });
-  if (r.refused) return { refused: r.refused };
-  const seen = isBlindReply(r.text) ? { blind: true, model: r.model, said: r.text } : { blind: false, model: r.model, line: parseReply(r.text) };
-  sight.set(key, seen);
-  return seen;
+  return { blind: false, model: null };
 }
 
-/** What each look cost and said, for the test page's console (and a live check's script). `full`
- *  (the picture and the words sent) goes to the tracers only — never into the console. */
-function log(row, full = null) {
+/** What each look cost and said, for the console (and a live check's script). The picture and the
+ *  words themselves are in the game's chat, where they were sent. */
+function log(row) {
   const all = (globalThis.__drawguess ??= []);
-  const at = Date.now();
-  all.push({ at, ...row });
+  all.push({ at: Date.now(), ...row });
   console.info('[drawguess]', JSON.stringify(row));
-  for (const fn of tracers) { try { fn({ at, ...row, ...full }); } catch { /* a tracer never breaks the round */ } }
 }
-// Who hears every look as it goes — the 游戏厅's side panel (arcade-trace.js): what was sent (the
-// PNG, the words) and what came back, as it happened. In the story nobody listens.
-const tracers = new Set();
-/** Hear every row; answers the way to stop. */
-export function onTrace(fn) { tracers.add(fn); return () => tracers.delete(fn); }
 
 // ── the game ───────────────────────────────────────────────────────────────────────────────
 
@@ -250,12 +234,14 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const w = T[lang] ?? T.zh;
   styleOnce(doc);
   // In the story (`data.fixed`) the guesser is set — always 银月 — and no picker shows; no opening
-  // look is spent (`data.open`), the round may say where it is (`data.context`), a 测试存档 never
-  // calls her (`data.seam`: 'stub' answers on the page, 'off' not at all), the rules may hand the
+  // look is spent, the round may say where it is (`data.context`), every look is a turn in the game's
+  // chat (`data.session()`: its id), a 测试存档 may opt out of the model (`data.seam`: 'stub' answers
+  // on the page, 'off' not at all), the rules may hand the
   // word as the round begins (`data.begin()`), and a 家信 (`data.set`) is several lines in a row.
   const fixed = true; // no 猜者 picker: she always guesses (story or 游戏厅)
   const max = Math.max(1, Number(data.maxLooks) || MAX_LOOKS);
   const ctxLine = typeof data.context === 'string' ? data.context : null;
+  const sessionOf = () => (typeof data.session === 'function' ? data.session() : data.session ?? null);
   const root = doc.createElement('div');
   root.className = `g-ink g-dg${fixed ? ' is-fixed' : ''}`;
   const names = w.names;
@@ -422,7 +408,6 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     rest();
     clearInterval(g.timer);
     g.loop?.stop();
-    g.sid?.then((sid) => closeRound(sid), () => {});
     setPhase(phase);
     veil.textContent = text;
     foot('');
@@ -434,7 +419,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (isBlindReply(r.text)) { log({ kind: 'blind', who: g.who, text: r.text }); foot(r.text); return cannot('blind', w.blind); }
     const p = parseReply(r.text);
     const ok = p.guess != null && matches(p.guess, g.word);
-    log({ kind: 'guess', who: g.who, word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, tools: r.tools, zh: p.zh, en: p.en }, { text: r.text });
+    log({ kind: 'guess', who: g.who, word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, zh: p.zh, en: p.en });
     g.note = '';
     if (p.guess) g.guesses.push(p.guess);
     sayParsed(p.zh || p.en ? p : { zh: p.guess, en: null });
@@ -460,16 +445,16 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (!g.loop.busy) end(false);
   };
 
-  /* One look: the page's stub on a 测试存档 (`&her=stub`), else her turn through the engine. */
+  /* One look: the page's stub on a 测试存档 (`&her=stub`), else the player's turn to her in the game's chat. */
   const send = async () => {
     foot(sub(w.looking));
     if (data.seam === 'stub') {
       await new Promise((r) => setTimeout(r, 1200));
       return { text: stubReply(g.word, g.loop.calls), ms: 1200, model: { id: 'stub' }, tools: 0 };
     }
-    const png = paperPng(doc, g.strokes), prompt = askGuess(g.who, g.guesses, ctxLine);
-    log({ kind: 'sent', who: g.who, word: g.word.zh, n: g.loop.calls }, { png, prompt });
-    return askLing({ sid: await g.sid, agent: g.who, png, prompt, model: data.model ?? null, signal });
+    const png = paperPng(doc, g.strokes), text = askGuess(g.who, g.loop.calls, g.loop.calls <= 1 ? ctxLine : null, lang);
+    log({ kind: 'sent', who: g.who, word: g.word.zh, n: g.loop.calls });
+    return askInChat({ sid: sessionOf(), agent: g.who, png, text, model: data.model ?? null, signal });
   };
 
   const begin = async () => {
@@ -493,7 +478,6 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     veil.textContent = '';
     tools(true);
     goBtn.textContent = w.done;
-    if (data.seam !== 'stub') { g.sid = openRound(); g.sid.catch(() => {}); } else g.sid = null;
     g.loop = guessLoop({
       max,
       idleMs: IDLE_MS,
@@ -511,27 +495,26 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   };
 
   const reveal = async (won) => {
-    const sidP = g.sid;
+    const sid = data.seam === 'stub' ? null : sessionOf();
     try {
       if (data.seam === 'stub') {
         await new Promise((r) => setTimeout(r, 800));
         say(won ? `[stub] 哼，本王一眼就看出是${g.word.zh}。` : `[stub] 这是${g.word.zh}？……你画得也太随意了。`, '');
-      } else if (sidP && g.strokes.length) {
+      } else if (sid && g.strokes.length) {
         foot(sub(w.looking));
-        const png = paperPng(doc, g.strokes), prompt = askReveal(g.who, g.word.zh, g.guesses, won, ctxLine);
-        log({ kind: 'sent', who: g.who, word: g.word.zh, reveal: true }, { png, prompt });
-        const r = await Promise.race([askLing({ sid: await sidP, agent: g.who, png, prompt, model: data.model ?? null, signal }),
+        const png = paperPng(doc, g.strokes), text = askReveal(g.who, lang === 'en' ? g.word.en : g.word.zh, won, lang);
+        log({ kind: 'sent', who: g.who, word: g.word.zh, reveal: true });
+        const r = await Promise.race([askInChat({ sid, agent: g.who, png, text, model: data.model ?? null, signal }),
           new Promise((ok) => setTimeout(() => ok(null), 12000))]);
         if (r?.text) {
           const p = parseReply(r.text);
-          log({ kind: 'reveal', who: g.who, word: g.word.zh, won, ms: r.ms, model: r.model?.id, zh: p.zh, en: p.en }, { text: r.text });
+          log({ kind: 'reveal', who: g.who, word: g.word.zh, won, ms: r.ms, model: r.model?.id, zh: p.zh, en: p.en });
           sayParsed(p);
         }
         foot(fill(won ? w.won : (g.rounds ? w.plain : w.time), { w: lang === 'en' ? g.word.en : g.word.zh }));
       }
       await new Promise((r) => setTimeout(r, 2200)); // a beat to read her line
     } catch { /* no reaction: the board goes on */ }
-    sidP?.then((sid) => closeRound(sid), () => {});
   };
 
   const rest = () => { if (typeof data.rest === 'function') Promise.resolve(data.rest(g.who)).catch(() => {}); };
@@ -544,7 +527,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     lefts();
     const word = lang === 'en' ? g.word.en : g.word.zh;
     log({ kind: 'end', who: g.who, word: g.word.zh, won });
-    // Her reaction to the answer, then the round's session goes; the board waits for it (at most ~12 s).
+    // Her reaction to the answer, in the chat; the board waits for it (at most ~12 s).
     const said = reveal(won);
     if (last) said.then(rest);
     const after = (ms, fn) => said.then(() => setTimeout(fn, ms));
@@ -599,8 +582,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       ro.disconnect();
       resolve(result);
     };
-    signal?.addEventListener('abort', () => { finish({ won: false, left: true }); dropOpen(); }, { once: true });
-    globalThis.addEventListener?.('pagehide', () => dropOpen(), { once: true });
+    signal?.addEventListener('abort', () => finish({ won: false, left: true }), { once: true });
     start();
   });
 
@@ -619,14 +601,13 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     g.rounds = await setOf(data);
     letter();
     let s;
-    // An opening look (the 游戏厅) is hers too: she is woken for it (`data.wake`, the guesser named).
-    if (data.open ?? !fixed) await wake();
-    try { s = await lookFirst(doc, who, data.model ?? null, { open: data.open ?? !fixed, seam: data.seam ?? null, context: ctxLine }); } catch (e) { s = { far: true, err: e }; }
+    try { s = await lookFirst(data.model ?? null, { seam: data.seam ?? null, sid: sessionOf() }); } catch (e) { s = { far: true, err: e }; }
     if (who !== g.who) return; // the guesser changed while this one was asked
     g.model = s.model?.id ?? null;
     foot(modelLine());
     if (s.off) return cannot('off', w.off);
     if (s.far) { log({ kind: 'far', who }); return cannot('far', w.far); }
+    if (s.nochat) { log({ kind: 'far', who, nochat: true }); return cannot('far', w.nochat); }
     if (s.refused) return cannot('absent', s.refused === 'absent' && fixed ? w.asleep : w[s.refused]);
     if (s.blind) {
       cannot('blind', w.blind);

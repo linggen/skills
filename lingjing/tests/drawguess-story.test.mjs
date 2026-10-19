@@ -72,7 +72,8 @@ test('the scratch seam: a stub that misses once, then names the word — no mode
   const src = fs.readFileSync(new URL('../scripts/games/drawguess.js', import.meta.url), 'utf8');
   assert.match(src, /data\.seam === 'stub'/);
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /if \(SCRATCH\) deal\.seam = HER_SEAM === 'stub' \? 'stub' : 'off';/, 'a 测试存档 never calls her');
+  // A 测试存档 asks the real her (its chat is bound to that save); the stub is opt-in, and `&chat=off` asks no one.
+  assert.match(page, /if \(HER_SEAM === 'stub' \|\| CHATLESS\) deal\.seam = HER_SEAM === 'stub' \? 'stub' : 'off';/);
 });
 
 /* ── 今日传闻 ── */

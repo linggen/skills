@@ -4,7 +4,8 @@
 
 /// A scratch save for live checks (`?save=test`): every verb carries
 /// `--save=<name>` and the rules play data/saves/<name>/ — never the player's
-/// own save. The page in this mode never opens Ling's chat (lingjing.js).
+/// own save. Its chat is bound to that save too (SKILL.md session-params): Ling's and 银月's tools
+/// there carry `--save={{session.save}}`, so they play the same files (lingjing.js).
 export const SCRATCH = (() => {
   try {
     const name = new URLSearchParams(globalThis.location?.search ?? '').get('save');

@@ -561,7 +561,7 @@ function targets(content, at, only) {
     const save = `ph-${row.task}`.slice(0, 31).toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const seeder = boardSeeder(at, sc, row.task, save, row.scene);
     list.push({ name: row.task, game: row.id, board: row.task, save: seeder, saveName: save, host: `[data-game="${row.task}"], [data-mount="${row.task}"]`, // a mount() beat (气走经脉) lays [data-mount]
-      url: (base) => `${base}/apps/lingjing/scripts/index.html?save=${save}` });
+      url: (base) => `${base}/apps/lingjing/scripts/index.html?save=${save}&chat=off` });
   }
   // The 饭桶's daily puzzle, one try-page row per tool day (fantong.json `puzzle.unlock`), and the throwing kit.
   const ft = JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/fantong.json'), 'utf8')).puzzle ?? {};

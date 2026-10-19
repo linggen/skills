@@ -127,7 +127,7 @@ export function guessLoop({ send, onReply = () => {}, onError = () => {}, onSett
   };
 }
 
-/** The scratch seam's guesser (a 测试存档 never calls her: `&her=stub`): no model, no call — a
+/** The scratch seam's guesser (a 测试存档's opt-in `&her=stub`): no model, no call — a
     marked miss on the first look, the word on the second, so a live check walks both paths. */
 export function stubReply(word, n) {
   if (n <= 1) return '[stub] 这画的什么东西？\n[stub] What is this?\n猜：石头';

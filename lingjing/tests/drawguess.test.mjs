@@ -173,21 +173,50 @@ test('throttle on the real clock (the default timers, called unbound as a page c
   loop.stop();
 });
 
-test('猜者: Ling or 银月; she is asked in her own voice, and the engine\'s refusal (not met yet, pet off) is read as such', async () => {
-  const { GUESSERS, askOpen, askGuess } = await import('../scripts/games/drawguess.js');
+test('猜者: Ling or 银月; each look is the player\'s short line to her in the game\'s chat, and the engine\'s refusal (not met yet, pet off) is read as such', async () => {
+  const { GUESSERS, askGuess, askReveal } = await import('../scripts/games/drawguess.js');
   assert.deepEqual(GUESSERS, ['ling', 'yinyue']);
-  assert.match(askGuess('yinyue', []), /银月.*妖王.*本王/);
-  assert.match(askOpen('yinyue'), /本王/);
-  assert.doesNotMatch(askGuess('ling', []), /银月/);
-  for (const who of GUESSERS) {
-    assert.match(askGuess(who, ['桥']), /不调用任何工具.*不超过二十字.*猜：.*你先前猜的「桥」都不对，别再猜这些/s, who);
+  // Her name opens the line (her guest turn), Ling's never; a short line, and one note of the reply's shape.
+  assert.match(askGuess('yinyue', 1), /^@银月 我画了一样东西，你猜是什么？（.*「猜：」.*）$/);
+  assert.match(askGuess('yinyue', 1, null, 'en'), /^@yinyue I drew something.*"Guess: "/);
+  assert.doesNotMatch(askGuess('ling', 1), /@|银月/);
+  // Where they are rides the round's first look only; later looks are short. She sees the dialogue:
+  // nothing restates her earlier guesses, and no brief tells her who she is.
+  assert.match(askGuess('yinyue', 1, '腊八夜里'), /^@银月 （腊八夜里）/);
+  for (const n of [1, 2, 3]) {
+    const line = askGuess('yinyue', n);
+    assert.ok([...line].length < 60, `${n}: ${line}`);
+    assert.doesNotMatch(line, /先前猜|别再猜|妖王|本王|不调用|\[画猜\]/, line);
   }
+  assert.match(askGuess('yinyue', 2), /又添了几笔/);
+  // The reveal: the word, won or not, and her feeling and her word on the drawing asked for.
+  assert.match(askReveal('yinyue', '鸡', true), /^@银月 对了，就是「鸡」！.*点评/);
+  assert.match(askReveal('yinyue', '鸡', false), /^@银月 时间到——我画的是「鸡」。.*懊恼/);
   assert.equal(refusalOf({ status: 'absent', agent_id: 'yinyue' }), 'absent');
   assert.equal(refusalOf({ status: 'unavailable' }), 'unavailable');
   assert.equal(refusalOf({ status: 'started' }), null);
   assert.equal(refusalOf(null), null);
+});
+
+test('画猜\'s turn shape (Hanli 10-19): the picture rides a turn in the game\'s own chat — no throwaway session, nothing cleared', async () => {
+  const { lookTurn, replyPast } = await import('../scripts/games/drawguess-ling.js');
+  const turn = lookTurn({ sid: 'game-sid', agent: 'yinyue', png: 'iVBORw0KGgo', text: '@银月 我画了一样东西，你猜是什么？' });
+  assert.deepEqual(turn, { project_root: '', agent_id: 'yinyue', message: '@银月 我画了一样东西，你猜是什么？', session_id: 'game-sid', skill_name: 'lingjing', images: ['iVBORw0KGgo'] });
+  assert.equal(lookTurn({ sid: 's', agent: 'yinyue', png: 'x', text: 't', model: 'm1' }).model_id, 'm1');
   const ling = fs.readFileSync(new URL('../scripts/games/drawguess-ling.js', import.meta.url), 'utf8');
-  assert.match(ling, /agent_id: agent/, 'the guesser is the turn\'s agent');
+  assert.match(ling, /import\('\/shared\/api\.js'\)/, 'sessions and models from the engine\'s api.js');
+  for (const gone of [/\/api\/chat\/clear/, /removeSkillSession/, /createSession/, /openRound|closeRound|askOnce|dropOpen/]) assert.doesNotMatch(ling, gone);
+  // Her reply is the first of hers past what she had said before the look (the chat holds the day).
+  const said = [[{ from: 'yinyue', to: 'user' }, '早先的话'], [{ from: 'yinyue', to: 'user' }, '哼，是鸡。\n猜：鸡']];
+  assert.equal(replyPast(said.slice(0, 1), 1), null, 'her earlier line is not this look\'s answer');
+  assert.equal(replyPast(said, 1), '哼，是鸡。\n猜：鸡');
+  assert.match(ling, /const seen = \(await linesOf\(sid, agent\)\)\.length;\n  const res = await post\('\/api\/chat'/, 'counted before the turn goes');
+  const src = fs.readFileSync(new URL('../scripts/games/drawguess.js', import.meta.url), 'utf8');
+  assert.match(src, /askInChat\(\{ sid: sessionOf\(\), agent: g\.who, png, text/, 'a guess goes to the game\'s chat');
+  assert.match(src, /askInChat\(\{ sid, agent: g\.who, png, text/, 'the reveal too');
+  // The page hands the board its chat (the session it is bound to now).
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /deal\.session = \(\) => chat\?\.getSessionId\?\.\(\) \?\? null;/);
 });
 
 test('the eraser: its strokes cut the ink (never the paper), and a rub counts as a change the next look sends', async () => {
@@ -216,30 +245,40 @@ test('the module keeps the contract and the registry places it in the 游戏厅 
   const src = fs.readFileSync(new URL('../scripts/games/drawguess.js', import.meta.url), 'utf8');
   assert.match(src, /export function mount\(/);
   assert.doesNotMatch(src, /<svg/i, 'nothing drawn as SVG: the paper and his strokes only');
-  const ling = fs.readFileSync(new URL('../scripts/games/drawguess-ling.js', import.meta.url), 'utf8');
-  assert.match(ling, /import\('\/shared\/api\.js'\)/, 'sessions and models from the engine\'s api.js');
-  assert.match(ling, /removeSkillSession/, 'every call\'s session is removed');
   assert.ok(!ROW.task && !ROW.scene, 'the first row is the 游戏厅\'s own');
   const story = reg.games.filter((g) => g.id === 'drawguess' && g.task);
   assert.deepEqual(story.map((g) => g.task), ['jiaxin-letter'], 'the story\'s 家信 is its second row (tests/drawguess-story.test.mjs)');
 });
 
-test('the 游戏厅\'s chat panel (Hanli 10-19): every look is traced — the PNG and the words sent, then the reply — and the panel only shows it', async () => {
+test('the 游戏厅\'s 试玩 of a game the model plays (Hanli 10-19) is the real game page on a test save, the board on its stage', async () => {
   const read = (p) => fs.readFileSync(new URL(`../scripts/${p}`, import.meta.url), 'utf8');
-  const { onTrace } = await import('../scripts/games/drawguess.js');
-  const heard = [], stop = onTrace((r) => heard.push(r));
-  assert.equal(typeof stop, 'function');
-  stop();
-  const src = read('games/drawguess.js');
-  // Every way a look goes out (the opening, every guess, the reveal) logs a `sent` row with the picture and the words.
-  assert.equal((src.match(/log\(\{ kind: 'sent'[^\n]*\{ png, prompt \}\)/g) ?? []).length, 3);
-  for (const kind of ['open', 'guess', 'refused', 'blind', 'far', 'error', 'begin', 'end', 'reveal']) assert.match(src, new RegExp(`kind: '${kind}'`), kind);
-  // The panel sends nothing and keeps nothing: no engine calls, no storage.
-  const panel = read('arcade-trace.js').replace(/^\s*\/\/.*$/gm, '');
-  assert.doesNotMatch(panel, /\/shared\/|LinggenChannel|fetch\(|localStorage/);
-  assert.match(panel, /\[image\$\{two\(n\)\}\]/, 'each look is 「@her [imageNN]」, numbered');
-  // The arcade lays it beside a game the model plays, and never stubs her: the real model only.
+  assert.ok(!fs.existsSync(new URL('../scripts/arcade-trace.js', import.meta.url)), 'the side panel is gone');
+  const { arcadePlayUrl, arcadeGameOf, arcadeRow, isArcadeBoard, withArcade, ARCADE_SEED } = await import('../scripts/arcade-board.js');
+  assert.equal(arcadePlayUrl('drawguess'), `index.html?save=arcade-drawguess&seed=${ARCADE_SEED}&board=drawguess`);
+  // The fixture it begins from has 银月 joined and awake (the engine's gate, SKILL.md absent_until).
+  const fixture = JSON.parse(fs.readFileSync(new URL(`fixtures/saves/${ARCADE_SEED}.json`, import.meta.url), 'utf8'));
+  assert.ok((fixture.state ?? fixture).companion?.joined && (fixture.state ?? fixture).companion?.awake);
+  // `board=` is a test save's only: the main page never stands it.
+  assert.equal(arcadeGameOf('?save=arcade-drawguess&board=drawguess', 'arcade-drawguess'), 'drawguess');
+  assert.equal(arcadeGameOf('?board=drawguess', null), null);
+  assert.equal(arcadeGameOf('?save=x&board=../x', 'x'), null);
+  // The game's own registry row deals it; on Look it is a light board standing open, hers to guess.
+  const row = arcadeRow(reg, 'drawguess');
+  assert.ok(row && !row.task && row.data.words.length);
+  const look = withArcade({ tasks: [{ id: 'x' }] }, 'drawguess', { row, title: '画猜' });
+  const t = look.tasks.find((x) => isArcadeBoard(x.id));
+  assert.deepEqual({ id: t.id, kind: t.kind, game: t.game, light: t.light, open: t.open, her: t.her, who: t.deal.who, fixed: t.deal.fixed }, { id: 'arcade:drawguess', kind: 'board', game: 'drawguess', light: true, open: true, her: true, who: 'yinyue', fixed: true });
+  assert.equal(withArcade(look, 'drawguess', { row }), look, 'once');
+  assert.equal(withArcade(look, null), look);
+  const { stageCards } = await import('../scripts/stage.mjs');
+  assert.ok(stageCards({ tasks: look.tasks }).some((c) => c.card === 'board' && c.id === 'arcade:drawguess'), 'on the stage');
+  // The arcade links an AI game there (an old ?game= link too), and never plays it beside a panel of its own.
   const arcade = read('arcade.js');
-  assert.match(arcade, /mod\?\.meta\?\.ai && mod\.onTrace/);
-  assert.doesNotMatch(arcade, /seam|stub/);
+  assert.match(arcade, /mod\?\.meta\?\.ai \? arcadePlayUrl\(g\.id\)/);
+  assert.match(arcade, /if \(mod\?\.meta\?\.ai\) \{ location\.replace\(arcadePlayUrl\(id\)\); return; \}/);
+  assert.doesNotMatch(arcade, /arcade-trace|onTrace|hergame|seam|stub/);
+  // The page: a win there pays nothing and deals it again; the hold is the story's (`arcade:<game>`, rules/hergame.mjs).
+  const page = read('lingjing.js');
+  assert.match(page, /if \(isArcadeBoard\(taskId\)\) return arcadeWon\(taskId, grade\);/);
+  assert.match(page, /look = withArcade\(seen, ARCADE_GAME, arcadeDeal\);/);
 });

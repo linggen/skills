@@ -11,7 +11,7 @@
 // --phone is 390×844 at DPR 3, every tap a touch. Every /api request is timed: one over 1.5 s or failed
 // is a soft `api` finding, and an unanswered or slow tap names what was in flight (the engine, or the page).
 //
-// It opens `index.html?save=<name>` (a scratch save — never the player's own;
+// It opens `index.html?save=<name>&chat=off` (a scratch save with no chat — never the player's own;
 // a name the rules would not take is refused here) in a headless Chrome of its
 // own (tools/cdp.mjs), then loops: observe → choose → tap (a real mouse click,
 // hit-tested) → settle → assert. At every step it asserts:
@@ -281,7 +281,7 @@ export async function crawl(opts) {
       if (opts.reloads && n > 0 && n % Number(opts.reloads) === 0) {
         console.log(`    ⟳ reload @ ${sceneId}`);
         rec.seen('reloads', sceneId);
-        await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}${opts.phone ? '' : ''}`);
+        await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}&chat=off`);
         await sleep(4000);
       }
       const snap = { ...(await page.evaluate(OBSERVE)), sceneId };
@@ -329,7 +329,7 @@ export async function crawl(opts) {
         rec.find({ kind: 'fight', scene: sceneId, what: 'a fourth fight here on one run — the fight never ends the scene', shot: await shot(`fights-${sceneId}`) });
         break;
       }
-      if (act.kind === 'fight') { await playFight(page, snap, { rec, sceneId, shot, outcome: ctx.fightMode(sceneId), reload: opts.reloads && ctx.fights[sceneId] === 1 ? async () => { await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}`); await sleep(5000); } : null }); continue; }
+      if (act.kind === 'fight') { await playFight(page, snap, { rec, sceneId, shot, outcome: ctx.fightMode(sceneId), reload: opts.reloads && ctx.fights[sceneId] === 1 ? async () => { await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}&chat=off`); await sleep(5000); } : null }); continue; }
       if (act.kind === 'game-stuck') {
         const ok = await page.evaluate(`globalThis.__lingjingPlay?.stuck?.(${JSON.stringify(act.game)}) ?? 'no-seam'`);
         if (ok === 'no-seam') throw new Error('the page has no __lingjingPlay.stuck seam — install the skill first');

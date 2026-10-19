@@ -503,6 +503,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   try {
     const { for: reader, save, ...args } = parseArgs(rest);
     // A scratch save (files.mjs): every read and write below goes to data/saves/<name>/.
+    // An empty `--save=` is the main save: a chat bound to no save renders SKILL.md's
+    // `--save={{session.save}}` as `--save=''`, and parseArgs drops an empty value (and an
+    // unrendered `{{…}}`) before it gets here — never `bad-save` (tests/session-save.test.mjs).
     if (save != null && !SAVE_NAME.test(String(save))) {
       console.log(JSON.stringify({ ok: false, refused: 'bad-save', say: null }));
       process.exit(0);

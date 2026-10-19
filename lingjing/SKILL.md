@@ -50,6 +50,15 @@ senses: [weather, user_words]
 # and never moves it: her tools here are her own read of it (AppTool →
 # Progress) and the book (Story) — no Resolve, no question widget.
 members: [ling, yinyue]
+# A chat may be bound to a test save (skill-spec § Session parameters): the
+# page's `?save=<name>` binds its session, and every tool below carries
+# `--save={{session.save}}` — '' (the main save) in an unbound chat — so a
+# test save's Ling and 银月 read and write data/saves/<name>/ only, never
+# data/state.json (Hanli, 2026-10-19). The page's own Verb carries its flag.
+session-params:
+  save:
+    pattern: "[a-z0-9][a-z0-9_-]{0,31}"
+    description: A test save under data/saves/<name>/.
 place:
   yinyue:
     tools: [AppTool, Story]
@@ -60,7 +69,7 @@ place:
       moves. In this world you are the wounded silver fox the player found
       in 黑松岭's valley — the fox is you, never someone else: say 本王 / 我,
       never 「那只狐狸」. `companion.away` (今, no you): SILENT.
-    absent_until: {file: data/state.json, path: companion.awake}
+    absent_until: {file: data/state.json, session_file: "data/saves/{{session.save}}/state.json", path: companion.awake}
 permission:
   paths:
     # `edit`: a tool's tier is checked against the session's CWD — this
@@ -80,7 +89,7 @@ tools:
       whenever unsure. With `at`, the player looks at one thing of
       `scene.look` (看): its finding, free — typed words that look, touch or
       search go here (guide `tell`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}} --at={{at}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}} --at={{at}} --save={{session.save}} --for=ling"
     tier: read
     # What Yinyue reads of it at the table: where they are and what is
     # before them — never Ling's `then` and guide (skill-spec § What others read);
@@ -108,7 +117,7 @@ tools:
       only from `recalled` and `stance`; ask nothing for yourself. Only `away`
       on a line you do not live on (a 今 interlude): stay silent. Changes
       nothing.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --for=yinyue"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --save={{session.save}} --for=yinyue"
     tier: read
     pet: true
     page_only: true
@@ -119,7 +128,7 @@ tools:
       The 九鼎录 — the story so far as a book: cauldrons, chapters reached, people
       met, what Yinyue recalled, open mysteries (guide `story`). Changes
       nothing.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs story --short=true --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs story --short=true --save={{session.save}} --for=ling"
     tier: read
     timeout_ms: 8000
 
@@ -128,7 +137,7 @@ tools:
       Take one exit of the current scene; the rules check, judge, pay and move
       the story. Result: `beat`, `paid`, `show`, next `scene`, `her_beat`. A
       refusal changed nothing.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs resolve --exit={{exit}} --value={{value}} --answer={{answer}} --said={{said}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs resolve --exit={{exit}} --value={{value}} --answer={{answer}} --said={{said}} --save={{session.save}} --for=ling"
     tier: edit
     others_read: [chose, beat, her_beat, scene.line, scene.place, scene.setup]
     timeout_ms: 8000
@@ -154,7 +163,7 @@ tools:
   - name: Judge
     description: >-
       Check an answer against a riddle key outside an exit (guide `look`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs judge --key={{key}} --answer={{answer}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs judge --key={{key}} --answer={{answer}} --save={{session.save}} --for=ling"
     tier: read
     timeout_ms: 8000
     args:
@@ -171,7 +180,7 @@ tools:
     description: >-
       `done` pays a won board (or `festival`, today's), `check` a real-life
       quest its app recorded, `list` re-reads both (guide `tasks`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs task --action={{action}} --id={{id}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs task --action={{action}} --id={{id}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -187,7 +196,7 @@ tools:
   - name: Tale
     description: >-
       今日传闻 — seed, make, answer, drop, info (guide `tale`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs tale --action={{action}} --tale={{tale}} --answer={{answer}} --ok={{ok}} --reply={{reply}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs tale --action={{action}} --tale={{tale}} --answer={{answer}} --ok={{ok}} --reply={{reply}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -216,7 +225,7 @@ tools:
     description: >-
       Go to a place the player names, at once, by id or name — the rules walk
       the whole road. Refusals say why and `here` (guide `road`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --place={{place}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --place={{place}} --save={{session.save}} --for=ling"
     tier: read
     others_read: [place.name, place.line, via.name, handed.title]
     timeout_ms: 8000
@@ -229,7 +238,7 @@ tools:
   - name: Trade
     description: >-
       Buy or sell at a market, or use a thing from the bag (guide `road`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs trade --action={{action}} --id={{id}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs trade --action={{action}} --id={{id}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -245,7 +254,7 @@ tools:
   - name: Lundao
     description: >-
       论道 — the scholar's word games at 稷下: open, turn (guide `lundao`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lundao --action={{action}} --answer={{answer}} --ok={{ok}} --reply={{reply}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lundao --action={{action}} --answer={{answer}} --ok={{ok}} --reply={{reply}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -266,7 +275,7 @@ tools:
   - name: Haggle
     description: >-
       讨价还价 at a keeper's shelf: open, turn, deal, walk (guide `haggle`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs haggle --action={{action}} --id={{id}} --reason={{reason}} --grade={{grade}} --item={{item}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs haggle --action={{action}} --id={{id}} --reason={{reason}} --grade={{grade}} --item={{item}} --save={{session.save}} --for=ling"
     tier: edit
     others_read: [haggle.item.name, haggle.ask, haggle.qty, deal, price]
     timeout_ms: 8000
@@ -291,7 +300,7 @@ tools:
   - name: Case
     description: >-
       断案 — open, ask, look, accuse; you play the people (guide `case`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs case --action={{action}} --who={{who}} --topic={{topic}} --at={{at}} --evidence={{evidence}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs case --action={{action}} --who={{who}} --topic={{topic}} --at={{at}} --evidence={{evidence}} --save={{session.save}} --for=ling"
     tier: edit
     others_read: [case.title, case.asked, found.name, right]
     timeout_ms: 8000
@@ -317,7 +326,7 @@ tools:
     description: >-
       对对子 — grade the player's 下联, answer his 上联, or submit what he typed
       (guide `duizi`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs duizi --action={{action}} --down={{down}} --pos={{pos}} --sense={{sense}} --art={{art}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs duizi --action={{action}} --down={{down}} --pos={{pos}} --sense={{sense}} --art={{art}} --save={{session.save}} --for=ling"
     tier: edit
     others_read: [duizi.round.up, duizi.round.down, graded, mark.name]
     timeout_ms: 8000
@@ -344,7 +353,7 @@ tools:
     # reaches only her answer. Never Ling's (page_only); counts on the save.
     description: >-
       二十问 — you host it: host, ask, guess. Follow `host` in the answer.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs twenty --action={{action}} --question={{question}} --answer={{answer}} --guess={{guess}} --for=yinyue"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs twenty --action={{action}} --question={{question}} --answer={{answer}} --guess={{guess}} --save={{session.save}} --for=yinyue"
     tier: read
     pet: true
     page_only: true
@@ -370,7 +379,7 @@ tools:
     # rules.mjs answers no other reader). Never Ling's (page_only), never Look.
     description: >-
       密室 — your old pages in the hidden room. Follow `how`.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs mishi --action=read --for=yinyue"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs mishi --action=read --save={{session.save}} --for=yinyue"
     tier: read
     pet: true
     page_only: true
@@ -383,7 +392,7 @@ tools:
     description: >-
       对对子 — read the couplet set, give one hint, or offer your own 下联.
       Follow `how`.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs duizi --action={{action}} --down={{down}} --for=yinyue"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs duizi --action={{action}} --down={{down}} --save={{session.save}} --for=yinyue"
     tier: read
     pet: true
     page_only: true
@@ -402,7 +411,7 @@ tools:
     description: >-
       Feed or offer a beaten beast what it likes, asked in words (guide
       `fight`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs tame --creature={{creature}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs tame --creature={{creature}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -414,7 +423,7 @@ tools:
   - name: Refine
     description: >-
       炼化本命 past 结丹, asked in words — the player names it (guide `fight`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs refine --material={{material}} --name={{name}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs refine --material={{material}} --name={{name}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -436,7 +445,7 @@ tools:
     description: >-
       摇铃 — the bell rung where water holds a moon, while she is still to be
       found (guide `her`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs ring --answer={{answer}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs ring --answer={{answer}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -449,7 +458,7 @@ tools:
     description: >-
       问卦 — the day's one reading of fight luck, on the player's word (guide
       `divine`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
 
@@ -457,7 +466,7 @@ tools:
     description: >-
       Set the language, asked outright — Linggen's own setting, so all of
       Linggen follows (guide `look`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lang --lang={{lang}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lang --lang={{lang}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -470,7 +479,7 @@ tools:
     description: >-
       A scene of the player's own: nothing → the template; `scene` → kept or
       `not-playable` (guide `made`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs make --scene={{scene}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs make --scene={{scene}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -482,7 +491,7 @@ tools:
   - name: Enter
     description: >-
       Step into a made scene by id (guide `made`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs enter --scene={{scene}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs enter --scene={{scene}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -494,7 +503,7 @@ tools:
   - name: Leave
     description: >-
       Back to the main story from a made scene (guide `made`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs leave --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs leave --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
 
@@ -502,7 +511,7 @@ tools:
     description: >-
       A world of the player's own: nothing → the template; `world` → kept and
       entered (guide `made`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs build --world={{world}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs build --world={{world}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 15000
     args:
@@ -515,14 +524,14 @@ tools:
     description: >-
       Begin this world again — only on the player's word and one AskUser
       confirming it (guide `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs init --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs init --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
 
   - name: Go
     description: >-
       Straight to a scene by id, on the player's word (guide `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs go --scene={{scene}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs go --scene={{scene}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -535,7 +544,7 @@ tools:
     description: >-
       Take back the last change, on the player's word and one AskUser (guide
       `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs undo --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs undo --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
 
@@ -547,14 +556,14 @@ tools:
       where the story waits. Never pays, never skips a scene. Its first call
       carries the one `ask`; `fixed` says what changed; Undo takes it back
       (guide `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs unstick --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs unstick --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
 
   - name: Saves
     description: >-
       The kept games, newest first (guide `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs saves --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs saves --save={{session.save}} --for=ling"
     tier: read
     timeout_ms: 8000
 
@@ -562,7 +571,7 @@ tools:
     description: >-
       Keep the game under a title in the player's words, on their word (guide
       `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs save --title={{title}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs save --title={{title}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -574,7 +583,7 @@ tools:
   - name: Load
     description: >-
       Take up a kept save, after one AskUser (guide `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs load --id={{id}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs load --id={{id}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -586,7 +595,7 @@ tools:
   - name: Forget
     description: >-
       Let a named save go, after one AskUser (guide `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs forget --id={{id}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs forget --id={{id}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -598,14 +607,14 @@ tools:
   - name: Worlds
     description: >-
       Every world there is, and which this save plays (guide `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs worlds --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs worlds --save={{session.save}} --for=ling"
     tier: read
     timeout_ms: 8000
 
   - name: Travel
     description: >-
       Go to another world by id; this save is kept (guide `steer`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs travel --world={{world}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs travel --world={{world}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -617,7 +626,7 @@ tools:
   - name: Amend
     description: >-
       Add a creature or a place to the player's own world (guide `made`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs amend --creature={{creature}} --at={{at}} --place={{place}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs amend --creature={{creature}} --at={{at}} --place={{place}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -637,7 +646,7 @@ tools:
   - name: Art
     description: >-
       Give a made world's creature (or map) its picture (guide `made`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs art --creature={{creature}} --file={{file}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs art --creature={{creature}} --file={{file}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -654,7 +663,7 @@ tools:
     description: >-
       路上 — the one thing an arrival met: answer, pass, take, offer (a 抉择's ways)
       (guides `road`, `trial`). Never reveal.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs meet --action={{action}} --answer={{answer}} --options={{options}} --n={{n}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs meet --action={{action}} --answer={{answer}} --options={{options}} --n={{n}} --save={{session.save}} --for=ling"
     tier: edit
     args:
       action:
@@ -680,7 +689,7 @@ tools:
     description: >-
       差事 — take, turn or drop an errand the world offers; never invent one
       (guide `tasks`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs quest --action={{action}} --id={{id}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs quest --action={{action}} --id={{id}} --save={{session.save}} --for=ling"
     tier: edit
     args:
       action:
@@ -698,7 +707,7 @@ tools:
       gate, tribulation, item, duel, treasure, codex — exactly as the rules
       gave them (guide `look`). The panel, the people and the goal are the page's own —
       never Show them.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs show --cards={{cards}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs show --cards={{cards}} --save={{session.save}} --for=ling"
     tier: edit
     args:
       cards:
@@ -711,7 +720,7 @@ tools:
     description: >-
       恩仇簿 — write a real moment with someone (恩 · 仇 · 诺), with the
       player's own words; or settle a 诺 (guide `tell`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs remember --action={{action}} --who={{who}} --kind={{kind}} --what={{what}} --quote={{quote}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs remember --action={{action}} --who={{who}} --kind={{kind}} --what={{what}} --quote={{quote}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -744,7 +753,7 @@ tools:
       tasks, lundao, haggle, case, twenty, duizi, tale, her, divine, made, steer, story. A result's `guide`
       hands a part over the first time the game gets there; read this one when
       you need a part you do not have.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs guide --topic={{topic}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs guide --topic={{topic}} --save={{session.save}} --for=ling"
     tier: read
     timeout_ms: 8000
     args:

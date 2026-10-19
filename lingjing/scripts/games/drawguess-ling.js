@@ -1,27 +1,22 @@
-// drawguess-ling.js — 画猜's one way to the model: Ling, through the engine's own chat (POST
-// /api/chat with `images`, the path every chat surface uses; chat/structured.rs gates the image on
-// the bound model's vision). Sessions and models come from the engine's /shared/api.js; only the
-// calls that are this game's own live here.
-// A round has a skill session of its own (`openRound`), emptied before every look so no earlier
-// picture rides along a second time, and removed when the round ends (`closeRound`) — so nothing
-// it said is ever the player's day chat (pickResumable takes the newest spoken lingjing session).
-// (Live 10-16 on gpt-6-luna: ~8.7k prompt tokens a look — Ling's lingjing prompt and tools, the
-// picture ~250 — none of it served from the provider's cache, whether a look had a session of its
-// own or shared the round's.)
+// drawguess-ling.js — 画猜's one way to the model: a turn in the game's own chat (POST /api/chat with
+// `images`, the path every chat surface uses; chat/structured.rs gates the image on the bound model's
+// vision). Each look is the player's own line to the guesser in that chat — 「@银月 …」 and the picture,
+// her guest turn at Lingjing's table — and her reply lands there as hers (Hanli, 2026-10-19: no
+// throwaway session; she sees the dialogue, so a look never restates what she guessed before). The
+// engine sends a picture to the model once, with the turn that carries it; later turns read it as a
+// numbered note. Sessions and models come from the engine's /shared/api.js.
 // The model only ever guesses: what counts as right is drawguess-rules.js's.
 
 import { refusalOf } from './drawguess-rules.js';
 
 const SKILL = 'lingjing';
-const TITLE = 'Lingjing 画猜';
-const POLL_MS = 400;
+const POLL_MS = 500;
 export const TIMEOUT_MS = 25000;
 
 let apiP = null;
 const api = () => (apiP ??= import('/shared/api.js'));
 const channel = (url, init) => globalThis.LinggenChannel.fetch(url, init);
 const post = (url, body) => channel(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-const open = new Set(); // sessions made and not yet removed
 
 /** The model a session is bound to, as the engine assembles its prompt: { provider, id }. */
 async function boundModel(sid) {
@@ -39,69 +34,49 @@ export async function declaredBlind() {
   return m && (m.tags ?? []).some((t) => /^no-vision$/i.test(t)) ? id : null;
 }
 
-/** A round's session. */
-export async function openRound() {
-  const { createSession } = await api();
-  const { id } = await createSession(TITLE, SKILL);
-  open.add(id);
-  return id;
-}
-
-/** The round is over: its session goes. */
-export async function closeRound(sid, { keepalive = false } = {}) {
-  if (!sid || !open.delete(sid)) return;
-  const { removeSkillSession } = await api();
-  await removeSkillSession(SKILL, sid, { keepalive }).catch(() => {});
-}
-
-/** The guesser's reply in a session: their first line to the user after ours. */
-async function replyIn(sid, agent, deadline, signal) {
+/** The guesser's lines to the player in the session so far (`[row, text]` pairs, oldest first). */
+async function linesOf(sid, agent) {
   const { fetchSessionMessages } = await api();
+  const rows = await fetchSessionMessages(SKILL, sid).catch(() => []);
+  return rows.filter(([m]) => m?.from === agent && m.to === 'user');
+}
+
+/** The guesser's first line past the `seen` they had said before this look, or null: the chat holds
+    the day, so an earlier line of hers is never taken for this look's answer. */
+export const replyPast = (said, seen) => (said.length > seen ? said[seen][1] : null);
+
+async function replyAfter(sid, agent, seen, deadline, signal) {
   while (performance.now() < deadline) {
     if (signal?.aborted) throw new Error('left');
     await new Promise((r) => setTimeout(r, POLL_MS));
-    const rows = await fetchSessionMessages(SKILL, sid).catch(() => []);
-    const hers = rows.filter(([m]) => m?.from === agent);
-    const said = hers.find(([m]) => m.to === 'user');
-    if (said) return { text: said[1], tools: hers.length - 1 };
+    const text = replyPast(await linesOf(sid, agent), seen);
+    if (text != null) return { text };
   }
   throw new Error('timeout');
 }
 
+/** The turn a look sends: the player's line to the guesser and the picture, in the game's chat. */
+export const lookTurn = ({ sid, agent, png, text, model = null }) => ({
+  project_root: '', agent_id: agent, message: text, session_id: sid, skill_name: SKILL, images: [png], ...(model ? { model_id: model } : {}),
+});
+
 /**
- * One look in the round's session: the PNG (bare base64) and the words, to the guesser — `agent`
- * 'ling', or 'yinyue' (her guest turn at Lingjing's table: SKILL.md `place.yinyue`, her tools there
- * Voice · AppTool · Story, no memory). Answers { text, ms, model, tools } — `tools` > 0 means a tool
- * was reached for (they are asked not to) — or { refused: 'absent' | 'unavailable' } when the
- * engine runs no turn for her (not met yet in the save, `absent_until`; or the pet is off).
- * `model`: a model id for the session instead of the default (a test's `data.model`).
+ * One look in the game's chat `sid`: the PNG (bare base64) and the player's words, to the guesser —
+ * `agent` 'yinyue' (her guest turn at Lingjing's table: SKILL.md `place.yinyue`), or 'ling'. Answers
+ * { text, ms, model } or { refused: 'absent' | 'unavailable' } when the engine runs no turn for her
+ * (not awake in the save the chat is bound to, `absent_until`; or the pet is off).
+ * `model`: a model id for the turn instead of the session's (a test's `data.model`).
  */
-export async function askLing({ sid, agent = 'ling', png, prompt, model = null, signal, timeoutMs = TIMEOUT_MS }) {
+export async function askInChat({ sid, agent = 'yinyue', png, text, model = null, signal, timeoutMs = TIMEOUT_MS }) {
   const t0 = performance.now();
-  await post('/api/chat/clear', { session_id: sid });
-  const body = { project_root: '', agent_id: agent, message: prompt, session_id: sid, skill_name: SKILL, images: [png], ...(model ? { model_id: model } : {}) };
-  const res = await post('/api/chat', body);
+  const seen = (await linesOf(sid, agent)).length;
+  const res = await post('/api/chat', lookTurn({ sid, agent, png, text, model }));
   if (!res.ok) throw new Error(`chat ${res.status}`);
   const refused = refusalOf(await res.json().catch(() => null));
   if (refused) return { refused };
-  const got = await replyIn(sid, agent, t0 + timeoutMs, signal);
+  const got = await replyAfter(sid, agent, seen, t0 + timeoutMs, signal);
   const bound = await boundModel(sid).catch(() => null);
   return { ...got, ms: Math.round(performance.now() - t0), model: bound };
-}
-
-/** One look in a session made and removed for it (the opening look, once a page). */
-export async function askOnce(o) {
-  const sid = await openRound();
-  try {
-    return await askLing({ ...o, sid });
-  } finally {
-    closeRound(sid);
-  }
-}
-
-/** The page is going: remove what is still open (a pagehide cleanup). */
-export function dropOpen() {
-  for (const id of [...open]) closeRound(id, { keepalive: true });
 }
 
 /** Whether the page has a way to the engine at all. */
