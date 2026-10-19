@@ -32,3 +32,4 @@ body { overflow: auto; }
 .arcade-result { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; margin-top: 10px; }
 .arcade-won { font-family: var(--serif); font-size: 20px; color: var(--seal); font-weight: 700; }
 @media (max-width: 480px) { .arcade-grid { grid-template-columns: 1fr 1fr; } .arcade-play { padding: 10px; } }
+.arcade-old{margin:28px 0 8px;opacity:.75}.arcade-old summary{cursor:pointer;font-family:var(--serif);font-size:15px;color:var(--dim);padding:6px 0}

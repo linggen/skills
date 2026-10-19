@@ -626,6 +626,7 @@
   },
   {
    "id": "storm",
+   "replaced": "fallrope",
    "group": "prologue",
    "mechanic": "时机",
    "hui": "第一回 · 旧版",
@@ -733,6 +734,7 @@
   },
   {
    "id": "deer",
+   "replaced": "deerarc",
    "group": "prologue",
    "mechanic": "狩猎瞄准",
    "hui": "第二回 · 旧版",
@@ -1939,6 +1941,7 @@
   },
   {
    "id": "feather",
+   "replaced": "qimai",
    "group": "prologue",
    "mechanic": "调息",
    "scene": "00-halfyear",
@@ -2050,6 +2053,7 @@
   },
   {
    "id": "griddle",
+   "replaced": "laobing",
    "group": "prologue",
    "mechanic": "时机",
    "scene": "00-kitchen",
@@ -2133,6 +2137,7 @@
   },
   {
    "id": "carry",
+   "replaced": "cut",
    "group": "prologue",
    "mechanic": "时机",
    "scene": "00-halfyear",
@@ -2141,6 +2146,7 @@
   },
   {
    "id": "xisui",
+   "replaced": "qimai",
    "group": "prologue",
    "mechanic": "调息",
    "scene": "00-sleep",
@@ -2170,6 +2176,7 @@
   },
   {
    "id": "zhoutian",
+   "replaced": "qimai",
    "group": "later",
    "mechanic": "时机",
    "scene": "wm-zhoutian",
@@ -2217,6 +2224,7 @@
   },
   {
    "id": "mirrortongpu",
+   "replaced": "qimai",
    "group": "later",
    "mechanic": "调息",
    "scene": "wm-zhaojing",
@@ -2262,6 +2270,7 @@
   },
   {
    "id": "zhuqingting",
+   "replaced": "cut",
    "group": "later",
    "mechanic": "时机",
    "scene": "wm-laoyin",
@@ -2270,6 +2279,7 @@
   },
   {
    "id": "letter",
+   "replaced": "drawguess",
    "group": "later",
    "mechanic": "剧情",
    "hui": "第六回 · 旧版",
@@ -2293,6 +2303,7 @@
   },
   {
    "id": "leafsui",
+   "replaced": "qimai",
    "group": "later",
    "mechanic": "时机",
    "scene": "09-jiuge",
@@ -2330,6 +2341,7 @@
   },
   {
    "id": "leafding",
+   "replaced": "qimai",
    "group": "later",
    "mechanic": "时机",
    "scene": "09-furnace",
@@ -2351,6 +2363,7 @@
   },
   {
    "id": "huohousmell",
+   "replaced": "cut",
    "group": "later",
    "mechanic": "时机",
    "scene": "09-year",
@@ -2374,6 +2387,7 @@
   },
   {
    "id": "qianmi",
+   "replaced": "qimai",
    "group": "jin",
    "mechanic": "调息",
    "scene": "j01-retest",
@@ -2395,6 +2409,7 @@
   },
   {
    "id": "faqiu",
+   "replaced": "qimai",
    "group": "jin",
    "mechanic": "调息",
    "scene": "j04-line",
@@ -2416,6 +2431,7 @@
   },
   {
    "id": "dark",
+   "replaced": "qimai",
    "group": "jin",
    "mechanic": "调息",
    "scene": "j07-dark",
@@ -2445,6 +2461,7 @@
   },
   {
    "id": "lastshot",
+   "replaced": "qimai",
    "group": "jin",
    "mechanic": "调息",
    "scene": "j09-final",

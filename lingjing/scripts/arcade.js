@@ -13,8 +13,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已被新游戏替换' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · replaced' },
 };
 const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
@@ -75,17 +75,26 @@ function filterBy(kind) {
   for (const s of root.querySelectorAll('section')) s.hidden = !s.querySelector('.arcade-tile:not([hidden])');
 }
 
+/* Boards a newer game replaced in the story (a row's `replaced`: the new game's id, or 'cut'): kept for
+   comparison, folded at the end, never mixed in with what plays now (Hanli 10-19 opened the old 拽 by mistake). */
+async function oldHtml(reg) {
+  const rows = reg.games.map((g, i) => [g, i]).filter(([g]) => g.replaced);
+  if (!rows.length) return '';
+  const tiles = await Promise.all(rows.map(([g, i]) => tileHtml(g, i)));
+  return `<details class="arcade-old"><summary>${esc(w().old)} <span class="dim small">${rows.length}</span></summary><div class="arcade-grid">${tiles.join('')}</div></details>`;
+}
+
 async function listPage() {
   const reg = await registry();
   const groups = await Promise.all(reg.groups.map(async (gr) => {
-    const rows = reg.games.map((g, i) => [g, i]).filter(([g]) => g.group === gr.id);
+    const rows = reg.games.map((g, i) => [g, i]).filter(([g]) => g.group === gr.id && !g.replaced);
     if (!rows.length) return '';
     const tiles = await Promise.all(rows.map(([g, i]) => tileHtml(g, i)));
     return `<section><h2>${esc(gr[lang()] ?? gr.zh)}</h2><div class="arcade-grid">${tiles.join('')}</div></section>`;
   }));
   root.innerHTML = `<header class="arcade-head"><h1>${esc(w().title)}</h1><span class="dim small">${esc(w().note)}</span>`
     + `<a class="arcade-lang" href="?${new URLSearchParams(kept(lang() !== 'en'))}">${esc(w().lang)}</a>${home()}</header>`
-    + `${kindsHtml(reg.games)}${groups.join('')}`;
+    + `${kindsHtml(reg.games.filter((g) => !g.replaced))}${groups.join('')}${await oldHtml(reg)}`;
   for (const b of root.querySelectorAll('.arcade-kindchip')) b.onclick = () => filterBy(b.dataset.kind);
 }
 
