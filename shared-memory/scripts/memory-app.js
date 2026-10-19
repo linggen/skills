@@ -28,6 +28,7 @@ import {
   writeJsonFile,
 } from './memory-api.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
+import { applyI18n, loadLanguage, t as tr } from './strings.js';
 
 // The REGISTERED skill name — session create resolves the skill's
 // declared cwd and binds its permission grants by this exact name.
@@ -73,6 +74,9 @@ let sawAssistantReply = false;
 let sawUserSend = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // The setting first: every renderer below reads its words from it.
+  await loadLanguage();
+  applyI18n();
   if (!modelId) {
     try {
       const defaultModel = await fetchDefaultModel();
@@ -282,7 +286,7 @@ async function paintDashboard() {
 function buildReviewQueue(issuesData) {
   const issues = issuesData?.issues || [];
   if (!issues.length) return null;
-  return { type: 'review-queue', title: 'Review queue', issues };
+  return { type: 'review-queue', title: tr('mem.reviewQueue'), issues };
 }
 
 // Shape the daemon's rollup into the dream-calendar widget: a per-day
@@ -293,7 +297,7 @@ function buildDreamCalendar(daysData) {
   for (const d of daysData?.days || []) {
     if (d?.date) days[d.date] = d;
   }
-  return { type: 'dream-calendar', title: 'Dream activity', days };
+  return { type: 'dream-calendar', title: tr('mem.dreamActivity'), days };
 }
 
 // Kick the dream mission (nightly protocol: all undreamed days, then the
@@ -306,12 +310,12 @@ async function triggerDreamMission() {
       body: JSON.stringify({}),
     });
     if (res.status === 409) {
-      if (chat) chat.addMessage('A dream run is already in flight — the calendar updates as it works.');
+      if (chat) chat.addMessage(tr('mem.aDreamRunIs'));
       return;
     }
-    if (chat) chat.addMessage('Dream mission started — remembering undreamed days, then the forget sweep. The calendar updates as it works.');
+    if (chat) chat.addMessage(tr('mem.dreamMissionStartedRemembering'));
   } catch {
-    if (chat) chat.addMessage('Could not reach the mission API — is the daemon running?');
+    if (chat) chat.addMessage(tr('mem.couldNotReachThe'));
     return;
   }
   let ticks = 0;
@@ -402,12 +406,12 @@ function fmtBytes(b) {
 
 function buildFooter({ daysData }) {
   const last = lastRememberedAt(daysData);
-  const parts = [last ? `last dream ${ageOf(last)}` : 'last dream: never'];
+  const parts = [last ? tr('mem.lastDreamAgeof', { ageOf: ageOf(last) }) : tr('mem.lastDreamNever')];
   const undreamed = undreamedDays(daysData).length;
   if (undreamed > 0) parts.push(`${undreamed} day${undreamed === 1 ? '' : 's'} undreamed`);
   const openIssues = daysData?.open_issues || 0;
   if (openIssues > 0) parts.push(`${openIssues} to review`);
-  if (daysData?.ttl_days) parts.push(`short-term keeps ${daysData.ttl_days}d`);
+  if (daysData?.ttl_days) parts.push(tr('mem.shortTermKeepsTtl', { ttl_days: daysData.ttl_days }));
   if (lastStats?.total != null) {
     const disk = fmtBytes(lastStats.disk_bytes?.total);
     parts.push(`${lastStats.total} rows${disk ? ` · ${disk} on disk` : ''}`);
@@ -419,37 +423,37 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
   const totalRows = (coreC?.count || 0) + (semC?.count || 0) + (epC?.count || 0);
   const undreamed = undreamedDays(daysData);
   const last = lastRememberedAt(daysData);
-  const runDream = { label: 'Run dream', icon: '📖', message: '/shared-memory dream', kind: 'primary' };
+  const runDream = { label: tr('mem.runDream'), icon: '📖', message: '/shared-memory dream', kind: 'primary' };
 
   const openIssues = daysData?.open_issues || 0;
-  const runSolve = { label: 'Review queue', icon: '🧩', message: '/shared-memory solve', kind: 'primary' };
+  const runSolve = { label: tr('mem.reviewQueue'), icon: '🧩', message: '/shared-memory solve', kind: 'primary' };
 
   let title, primary;
   if (undreamed.length > 0) {
     title = undreamed.length === 1
-      ? `1 day is waiting to be dreamed (${undreamed[0].date}).`
-      : `${undreamed.length} days are waiting to be dreamed — oldest ${undreamed[0].date}.`;
+      ? tr('mem.1DayIsWaiting', { undreamed: undreamed[0].date })
+      : tr('mem.lengthDaysAreWaiting', { length: undreamed.length, undreamed: undreamed[0].date });
     primary = runDream;
   } else if (openIssues > 0) {
     title = openIssues === 1
-      ? '1 review item is waiting — the dream queued it for your judgment.'
-      : `${openIssues} review items are waiting — the dream queued them for your judgment.`;
+      ? tr('mem.1ReviewItemIs')
+      : tr('mem.openissuesReviewItemsAre', { openIssues });
     primary = runSolve;
   } else if (totalRows === 0) {
-    title = "Welcome — your memory's empty. It fills as you work; dream remembers each day.";
-    primary = { label: 'Browse all ↗', href: memBrowseUrl, kind: 'primary' };
+    title = tr('mem.welcomeYourMemoryS');
+    primary = { label: tr('mem.browseAll'), href: memBrowseUrl, kind: 'primary' };
   } else {
     title = last
-      ? `All caught up — last dream ${ageOf(last)}, ${totalRows} rows across all tiers.`
-      : `Memory holds ${totalRows} rows — nothing to dream tonight.`;
-    primary = { label: 'Browse all ↗', href: memBrowseUrl, kind: 'primary' };
+      ? tr('mem.allCaughtUpLast', { ageOf: ageOf(last), totalRows })
+      : tr('mem.memoryHoldsTotalrowsRows', { totalRows });
+    primary = { label: tr('mem.browseAll'), href: memBrowseUrl, kind: 'primary' };
   }
 
   return {
     type: 'greeting',
     icon: '📖',
     title,
-    stats: 'Dream = remember + forget: each day\'s staging is judged once (durable signal promoted to long-term), then judged rows age out after the short-term window.',
+    stats: tr('mem.dreamRememberForgetEach'),
     // Single contextual CTA — the header bar already carries the
     // persistent Dream + Browse actions, so don't duplicate them here.
     actions: [primary],

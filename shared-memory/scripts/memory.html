@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memory</title>
+  <title data-i18n="mem.memory">Memory</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="memory.css">
 </head>
 <body>
   <div class="header">
-    <h1>Memory</h1>
+    <h1 data-i18n="mem.memory">Memory</h1>
     <nav class="action-bar" id="action-bar">
-      <div class="action-group" title="Remember every pending day (oldest first), then run the forget sweep.">
-        <button type="button" id="dream-btn" class="action-btn">📖 Dream</button>
+      <div class="action-group" title="Remember every pending day (oldest first), then run the forget sweep." data-i18n-title="mem.rememberEveryPendingDay">
+        <button type="button" id="dream-btn" class="action-btn" data-i18n="mem.dream">📖 Dream</button>
       </div>
       <a id="browse-link" href="http://127.0.0.1:9528" target="_blank" rel="noopener"
          class="action-btn action-link"
-         title="Open the ling-mem daemon's full data browser (filter / edit / delete row-level).">
+         title="Open the ling-mem daemon's full data browser (filter / edit / delete row-level)." data-i18n-title="mem.openTheLingMem" data-i18n="mem.browse">
         Browse ↗
       </a>
     </nav>

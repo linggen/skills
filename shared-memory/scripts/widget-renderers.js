@@ -1,3 +1,4 @@
+import { t as tr } from './strings.js';
 // Widget renderers — one function per widget type.
 // Each returns a DOM node. Top bar widgets are compact cards.
 // Body widgets are content panels.
@@ -29,7 +30,7 @@ function confirmDialog(message) {
       return b;
     };
     row.append(
-      mk('Cancel', false, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
+      mk(tr('mem.cancel'), false, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
       mk('OK', true, 'padding:6px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;'),
     );
     card.append(msg, row);
@@ -161,9 +162,9 @@ function dcalBucket(rec) {
   return 'none';
 }
 
-const DCAL_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const DCAL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
+// Read at render time, so the words follow the language the page loaded in.
+const dcalDow = () => tr('mem.dow').split('|');
+const dcalMonths = () => tr('mem.months').split('|');
 
 function dcalStartOfDay(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -250,7 +251,7 @@ async function dcalTriggerDream(day, btn) {
       body: JSON.stringify({ day, attended: true }),
     });
     if (res.status === 409) {
-      btn.textContent = 'dream running…';
+      btn.textContent = tr('mem.dreamRunning');
       setTimeout(() => { btn.disabled = false; btn.textContent = 'dream'; }, 5000);
       return;
     }
@@ -301,7 +302,7 @@ function dcalDayControls(iso, rec) {
     // not just a label (the run may end with an AskUser question there).
     const sid = dcalDreaming?.sessionId;
     const chip = el('div', 'dcal-chip dcal-chip-running',
-      sid ? 'dreaming in mission →' : 'dreaming in mission…');
+      sid ? tr('mem.dreamingInMission') : tr('mem.dreamingInMission2'));
     if (sid) {
       chip.classList.add('dcal-chip-link');
       chip.title = `${iso} · dream mission in flight — click to watch the run in its session (it may ask for your call there).`;
@@ -327,7 +328,7 @@ function dcalDayControls(iso, rec) {
     wrap.appendChild(chip);
   } else {
     const dim = el('div', 'dcal-chip dcal-chip-dim', 'dream');
-    dim.title = `${iso} · nothing staged to dream — scan first if you worked this day.`;
+    dim.title = tr('mem.isoNothingStagedTo', { iso });
     wrap.appendChild(dim);
   }
 
@@ -335,19 +336,19 @@ function dcalDayControls(iso, rec) {
 }
 
 function dcalTooltip(iso, rec, isToday) {
-  if (!rec) return `${iso} · no memory activity`;
-  if (isToday) return `${iso} · today · ${rec.rows} rows staging — dreamable after midnight`;
+  if (!rec) return tr('mem.isoNoMemoryActivity', { iso });
+  if (isToday) return tr('mem.isoTodayRowsRows', { iso, rows: rec.rows });
   switch (dcalBucket(rec)) {
     case 'undreamed':
-      return `${iso} · undreamed · ${rec.unjudged}/${rec.rows} rows to judge — click for details`;
+      return tr('mem.isoUndreamedUnjudgedRows', { iso, unjudged: rec.unjudged, rows: rec.rows });
     case 'dreamed':
       return rec.rows
-        ? `${iso} · dreamed · ${rec.promoted} promoted · ${rec.rows} short-term rows kept`
+        ? tr('mem.isoDreamedPromotedPromoted', { iso, promoted: rec.promoted, rows: rec.rows })
         : `${iso} · dreamed ${rec.promoted ? `(${rec.promoted} promoted)` : ''} · short-term aged out`;
     case 'scanned':
-      return `${iso} · scanned — logs walked, nothing awaiting judgment`;
+      return tr('mem.isoScannedLogsWalked', { iso });
     default:
-      return `${iso} · no memory activity`;
+      return tr('mem.isoNoMemoryActivity', { iso });
   }
 }
 
@@ -362,22 +363,22 @@ function dcalOpenPopover(anchorCell, iso, rec, todayIso) {
   const bucket = dcalBucket(rec);
   const lines = [];
   if (!rec || (!rec.rows && !rec.remembered_at)) {
-    lines.push('No memory activity on this day.');
+    lines.push(tr('mem.noMemoryActivityOn'));
   } else if (iso === todayIso) {
-    lines.push(`${rec.rows} rows staging today. Dreamable after midnight.`);
+    lines.push(tr('mem.rowsRowsStagingToday', { rows: rec.rows }));
   } else if (bucket === 'undreamed') {
-    lines.push(`${rec.unjudged} of ${rec.rows} rows await judgment.`);
-    if (rec.remembered_at) lines.push('New rows arrived after the last dream.');
+    lines.push(tr('mem.unjudgedOfRowsRows', { unjudged: rec.unjudged, rows: rec.rows }));
+    if (rec.remembered_at) lines.push(tr('mem.newRowsArrivedAfter'));
   } else if (bucket === 'dreamed') {
     lines.push(rec.rows
-      ? `Dreamed — ${rec.promoted} promoted, ${rec.rows} short-term rows kept.`
-      : `Dreamed — ${rec.promoted} promoted, ${rec.forgotten} aged out.`);
+      ? tr('mem.dreamedPromotedPromotedRows', { promoted: rec.promoted, rows: rec.rows })
+      : tr('mem.dreamedPromotedPromotedForgotten', { promoted: rec.promoted, forgotten: rec.forgotten }));
   }
   for (const t of lines) pop.appendChild(el('div', 'dcal-pop-line', t));
 
   // Detail-only: the scan/dream buttons on the cell own the actions.
   const actions = el('div', 'dcal-pop-actions');
-  const close = el('button', 'dcal-pop-btn', 'Close');
+  const close = el('button', 'dcal-pop-btn', tr('mem.close'));
   close.addEventListener('click', () => pop.remove());
   actions.appendChild(close);
   pop.appendChild(actions);
@@ -418,10 +419,10 @@ function renderDreamCalendar(w) {
     // Header: "May 2026" + prev / Today / next.
     const head = el('div', 'dcal-head');
     head.appendChild(el('div', 'dcal-title',
-      `<strong>${DCAL_MONTHS[view.getMonth()]}</strong> ${view.getFullYear()}`));
+      `<strong>${dcalMonths()[view.getMonth()]}</strong> ${view.getFullYear()}`));
     const nav = el('div', 'dcal-nav');
     const prev = el('button', 'dcal-navbtn', '‹');
-    const todayBtn = el('button', 'dcal-todaybtn', 'Today');
+    const todayBtn = el('button', 'dcal-todaybtn', tr('mem.today'));
     const next = el('button', 'dcal-navbtn', '›');
     const go = (d) => { view = d; dcalViewMonth = d.getTime(); build(); };
     prev.addEventListener('click', () => go(new Date(view.getFullYear(), view.getMonth() - 1, 1)));
@@ -433,7 +434,7 @@ function renderDreamCalendar(w) {
 
     // Weekday header (Sun → Sat).
     const wd = el('div', 'dcal-weekdays');
-    DCAL_DOW.forEach((name) => wd.appendChild(el('div', 'dcal-wd', name)));
+    dcalDow().forEach((name) => wd.appendChild(el('div', 'dcal-wd', name)));
     panel.appendChild(wd);
 
     // Grid: from the Sunday on/before the 1st, covering whole weeks.
@@ -503,7 +504,7 @@ function renderDreamCalendar(w) {
     addRow('dream', `judges the day's staged rows — durable signal moves to long-term, `
       + `the rest fades after the short-term window`);
     const note = el('span', 'dcal-legend-note');
-    note.textContent = 'hover a day button for details · first click arms it, second click runs';
+    note.textContent = tr('mem.hoverADayButton');
     legend.appendChild(note);
     panel.appendChild(legend);
   }
@@ -539,7 +540,7 @@ function renderReviewQueue(w) {
   head.appendChild(el('div', 'rq-title',
     `<strong>${esc(w.title || 'Review queue')}</strong> · ${issues.length} open`));
   const solve = el('button', 'rq-solve-btn', '🧩 Solve');
-  solve.title = 'Work the queue with the agent — evidence is gathered per item; you are asked one item at a time when your call is needed.';
+  solve.title = tr('mem.workTheQueueWith');
   solve.addEventListener('click', () => {
     if (window._chatSend) window._chatSend('/shared-memory solve');
   });
@@ -547,7 +548,7 @@ function renderReviewQueue(w) {
   panel.appendChild(head);
 
   if (!issues.length) {
-    panel.appendChild(el('div', 'rq-empty', 'Review queue empty — nothing needs your judgment.'));
+    panel.appendChild(el('div', 'rq-empty', tr('mem.reviewQueueEmptyNothing')));
     return panel;
   }
 
@@ -774,7 +775,7 @@ async function handleFactDelete(source, isCore, isRag, ragType, item, row, btn) 
       // Edit/Write. Sending a message keeps that contract — no direct file
       // writes from the webpage, no markdown-parsing server endpoint to keep
       // in sync with the engine.
-      if (!window._chatSend) throw new Error('Chat bridge unavailable.');
+      if (!window._chatSend) throw new Error(tr('mem.chatBridgeUnavailable'));
       window._chatSend(`Delete this bullet from ${source} and re-render the dashboard:\n\n"${item.content}"`);
       row.style.opacity = '0.6';
     } else if (isRag && item.id) {
@@ -782,12 +783,12 @@ async function handleFactDelete(source, isCore, isRag, ragType, item, row, btn) 
       await callMemoryTool('Memory_write', { verb: 'delete', id: item.id });
       row.remove();
     } else {
-      throw new Error('Row has no identifier to delete by.');
+      throw new Error(tr('mem.rowHasNoIdentifier'));
     }
   } catch (e) {
     row.style.opacity = '1';
     btn.disabled = false;
-    alert(`Delete failed: ${e.message || e}`);
+    alert(tr('mem.deleteFailedMessage', { message: e.message || e }));
   }
 }
 
@@ -839,7 +840,7 @@ function handleFactEdit(source, isCore, isRag, ragType, item, row) {
     try {
       if (isCore) {
         // Agent-mediated (see handleFactDelete for the rationale).
-        if (!window._chatSend) throw new Error('Chat bridge unavailable.');
+        if (!window._chatSend) throw new Error(tr('mem.chatBridgeUnavailable'));
         window._chatSend(`In ${source}, replace this bullet:\n\n"${item.content}"\n\nwith:\n\n"${newText}"\n\nThen re-render the dashboard.`);
         // Optimistic update so the row stays interactive until the
         // agent re-emits PageUpdate.
@@ -869,11 +870,11 @@ function handleFactEdit(source, isCore, isRag, ragType, item, row) {
           if (d2) d2.addEventListener('click', () => handleFactDelete(source, isCore, isRag, ragType, item, row, d2));
         }
       } else {
-        throw new Error('Row has no identifier to edit by.');
+        throw new Error(tr('mem.rowHasNoIdentifier2'));
       }
     } catch (e) {
       row.style.opacity = '1';
-      alert(`Edit failed: ${e.message || e}`);
+      alert(tr('mem.editFailedMessage', { message: e.message || e }));
     }
   };
 
@@ -934,7 +935,7 @@ function renderCta(w) {
   const buttonEl = panel.querySelector('.cta-button');
   buttonEl.addEventListener('click', () => {
     if (!window._chatSend) return;
-    const msg = btn.message || btn.label || 'Start';
+    const msg = btn.message || btn.label || tr('mem.start');
     window._chatSend(msg);
   });
   return panel;
@@ -1150,7 +1151,7 @@ function renderTable(w) {
   }
   if (restRows.length > 0) {
     const restCount = restRows.length;
-    const headText = memFile && changeRows.length > 0 ? `All facts (${restCount})` : '';
+    const headText = memFile && changeRows.length > 0 ? tr('mem.allFactsRestcount', { restCount }) : '';
     body += `
       <div class="widget-table-section rest-section">
         ${headText ? `<div class="widget-table-section-head">${esc(headText)}</div>` : ''}
@@ -1192,7 +1193,7 @@ function renderTable(w) {
         } catch (e) {
           tr.style.opacity = '1';
           btn.disabled = false;
-          alert(`Delete failed: ${e.message || e}`);
+          alert(tr('mem.deleteFailedMessage', { message: e.message || e }));
         }
       });
     });
@@ -1261,7 +1262,7 @@ function renderTable(w) {
             tr.style.opacity = '1';
           } catch (e) {
             tr.style.opacity = '1';
-            alert(`Edit failed: ${e.message || e}`);
+            alert(tr('mem.editFailedMessage', { message: e.message || e }));
           }
         };
         const doCancel = () => restore();
