@@ -44,6 +44,8 @@ the exit's `needs`; each passage merged whole, `story_after` into `story`): 忍�
 「吐纳 · 先吐」 now from the 00-halfyear passage (爹's line), as a story card. No line read a cut
 board's mark. The reading cap gives way here — the story is the point (tests/opening-beats.test.mjs
 holds the five).
+Hanli 10-19 「留着」: 扔石听声 `cave-stone` (row `caveecho`, 00-cave, before 喂饼) stays in 第一回 as a
+sixth board — two stones on the throwing board, the 拉弓 feel taught before 射鹿.
 
 **灵石 for a small game (Hanli 10-16):** after 入门, a board's first clear pays plain 5 · good 10 ·
 best 15 (balance.json `boards`), on top of its grant, shown in the win line; a replay pays nothing,
