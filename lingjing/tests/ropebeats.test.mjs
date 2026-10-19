@@ -25,18 +25,12 @@ for (const [id, [task, tool, grades]] of Object.entries(BEATS)) {
     const r = playOnce(mod, bot, { seed: 'b1', deal: { levels: row.levels }, limit: 60000 });
     assert.ok(r.won, 'the plain way wins');
     assert.ok(grades.includes(r.grade), r.grade);
-    // The star way: all three 灵光.
-    let s = mod.newGame('s', 1, { levels: row.levels, plan: starPlans.one }), wall = 0, calm = 0, i = 0;
-    const plan = starPlans.one;
-    while (!s.won && wall < 60000) {
-      if (s.phase === 'play' && i < plan.length && calm >= 400) {
-        const m = plan[i++];
-        s = mod.act(s, m.g === 'cut' ? { g: 'cut', v: String(m.v), k: String(Math.floor(s.swing.vines[m.v].joints.length / 2)) } : m.g === 'pop' ? { g: 'pop', i: '0' } : { g: m.g }).state;
-        calm = 0;
-      }
-      s = mod.tick(s, 20); wall += 20;
-      calm = s.phase === 'play' && s.swing.bread.speed < 0.12 ? calm + 20 : 0;
-    }
+    // The star way: all three 灵光 — played by the human-timed hand (board-bots' playOnce: the press
+    // lands ~200 ms after it decides), which is what the levels are proved for.
+    const { planBot } = await import('../scripts/games/bots/rope-plan.js');
+    let s = null;
+    const keep = { ...mod, tick: (st, ms) => (s = mod.tick(st, ms)), act: (st, d) => { const r = mod.act(st, d); s = r.state ?? st; return r; } };
+    playOnce(keep, planBot({ one: starPlans.one }), { seed: 'star', deal: { levels: row.levels }, limit: 60000 });
     assert.ok(s.won, 'the star way wins');
     assert.equal(s.stars, 3, 'three 灵光');
     assert.equal(s.grade, grades[0]);
