@@ -88,7 +88,7 @@ const lu = {
       lifted with the pink root showing), the snake tail, and 阿禾's brambles round its hind legs. */
   picture(level, s, groundAt, sprite) {
     const d = luAt(level, s.clock), gy = groundAt(d.x), o = d.open;
-    if (s.art?.lu && sprite) return paintedLu(s.art.lu, d, gy, sprite);
+    if (s.art?.lu && sprite) return paintedLu(s.art.lu, d, gy, sprite, s.art.lu_folded ?? null, String(s.seed ?? 'lu').replace(/[^a-z0-9]/gi, '').slice(-10) || 'lu');
     const wingTip = [-10 + o * 6, -62 - o * 26];
     const wing = `<path class="g-tg-wing" d="M${LU.root[0]} ${LU.root[1]} Q${n(-20)} ${n(-50 - o * 20)} ${n(wingTip[0])} ${n(wingTip[1])} Q${n(16 + o * 10)} ${n(-48 - o * 10)} ${n(30)} ${n(-38)}Z"/>`;
     const root = o > 0.05 ? `<ellipse class="g-tg-root" cx="${LU.root[0]}" cy="${LU.root[1]}" rx="${n(3 + o * 6)}" ry="${n(2 + o * 4)}" opacity="${n(o, 2)}"/>` : '';
@@ -101,12 +101,22 @@ const lu = {
   },
 };
 
-/** The painted 鯥 (games.json art `lu`, in its own frame like the stag's poses), and over it the
-    wing root's pink as it opens — where the painting's `root` says, else the ink one's. */
-function paintedLu(a, d, gy, sprite) {
-  const [rx, ry] = a.root ?? LU.root, o = d.open;
+/** The painted 鯥 (games.json art `lu`, in its own frame like the stag's poses), breathing (Hanli 10-19:
+    「翅膀也不张开」 — it was one sprite, wings always spread): its body with the wings folded (`lu_folded`),
+    and over it the spread wings (`lu`, cut to `wing` [x0, y0, x1, y1]) lifting out from the root as it
+    breathes in — up from flat along the back, the pink root showing — and folding again. With no folded
+    painting, the spread one alone, its wings still lifting. */
+export const LU_WING = [-10, -72, 62, -26];
+function paintedLu(a, d, gy, sprite, folded = null, clip = 'lu') {
+  const [rx, ry] = a.root ?? LU.root, o = d.open, [x0, y0, x1, y1] = a.wing ?? LU_WING;
   const glow = o > 0.05 ? `<ellipse class="g-tg-root" cx="${rx}" cy="${ry}" rx="${n(3 + o * 6)}" ry="${n(2 + o * 4)}" opacity="${n(o, 2)}"/>` : '';
-  return `<g class="g-tg-lu" transform="translate(${n(d.x)} ${n(gy)}) scale(${n(d.size, 2)})">${sprite(a, 1)}${glow}</g>`;
+  // Shut, the wings lie flat along the back (squashed to the root and turned down a little); open, as painted.
+  const lift = `translate(${rx} ${ry}) rotate(${n(14 * (1 - o))}) scale(${n(0.7 + 0.3 * o, 3)} ${n(0.25 + 0.75 * o, 3)}) translate(${-rx} ${-ry})`;
+  const id = `g-tg-wing-${clip}`;
+  const wings = `<clipPath id="${id}"><rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"/></clipPath>`
+    + `<g class="g-tg-wings" transform="${lift}"><g clip-path="url(#${id})">${sprite(a, folded ? Math.min(1, o * 1.6) : 1)}</g></g>`;
+  const body = folded ? sprite(folded, 1) : `<clipPath id="${id}-b"><path d="M-200 -200 H200 V200 H-200Z M${x0} ${y0} V${y1} H${x1} V${y0}Z" clip-rule="evenodd"/></clipPath><g clip-path="url(#${id}-b)">${sprite(a, 1)}</g>`;
+  return `<g class="g-tg-lu" data-open="${n(o, 2)}" transform="translate(${n(d.x)} ${n(gy)}) scale(${n(d.size, 2)})">${body}${wings}${glow}</g>`;
 }
 
 /** The kinds, by `level.target.kind`. */

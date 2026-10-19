@@ -119,3 +119,27 @@ test('a throw row says its own end and its own empty hand — the cave is no str
     assert.ok(mod.html(s, 'en').includes(r.words.end.en), `${id}: en`);
   }
 });
+
+// Hanli 10-19 「翅膀也不张开」: the painted 鯥 was one sprite, wings always spread. While he aims the clock
+// runs its breath: `open` rises and falls, and the picture follows — folded flat, then lifted with the
+// pink root showing, then folded again.
+test('鯥: while he aims, the breath cycles — the wings lift from folded, the root shows, and they fold again', () => {
+  const lv = row('luwing').levels[0], art = { lu: { ...row('luwing').art.lu }, lu_folded: { ...row('luwing').art.lu, file: 'games/lu/lu-folded.webp' } };
+  let s = lu.newGame('t', 1, { ...deal([lv]), art });
+  s = lu.act(s, { g: 'draw', a: 20, p: 0.6 }).state; // drawing: still aiming
+  const seen = [], wings = new Set();
+  for (let t = 0; t < 2 * lv.target.open.every; t += 50) {
+    s = lu.tick(s, 50);
+    assert.equal(s.phase, 'aim');
+    seen.push(luAt(lv, s.clock).open);
+    const h = lu.html(s, 'zh');
+    wings.add(/class="g-tg-wings" transform="([^"]+)"/.exec(h)[1]);
+    if (luAt(lv, s.clock).open > 0.5) assert.match(h, /g-tg-root/, 'the pink root shows');
+  }
+  const opens = seen.filter((o, i) => o > 0.9 && (seen[i - 1] ?? 0) <= 0.9).length;
+  assert.ok(opens >= 2, `it breathed in twice in two cycles (${opens})`);
+  assert.ok(seen.filter((o) => o === 0).length > seen.length / 3, 'and lay shut between');
+  assert.ok(wings.size > 5, 'the wing layer moves with the breath');
+  const h = lu.html(s, 'zh');
+  assert.match(h, /lu-folded\.webp/, 'the folded body under the spread wings');
+});
