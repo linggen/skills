@@ -56,3 +56,25 @@ for (const [id, [task, tool, grades]] of Object.entries(BEATS)) {
     assert.doesNotMatch(mod.html({ ...s, misses: 4 }, 'zh'), /data-g="skip"/, 'the page lays 「算了，往下走」, not the beat');
   });
 }
+
+/* 10-19 (Hanli: 「这里的弹竹完全不弹」): matter.js zeroes a static body's restitution as it is made static,
+   so the 弹竹 never bounced; it must come back higher than it fell, and 忍字 must use it. */
+test('弹竹 bounces: a thing dropped on it rebounds above where it struck, and 忍字\'s level lands on it', async () => {
+  const R = await import('../scripts/games/rope.js');
+  const level = { bread: [200, 60], vines: [{ at: [200, 30] }], springs: [{ x: 200, y: 300, w: 140, a: 0 }], mouth: [40, 330], stars: [] };
+  const w = R.buildWorld(level);
+  assert.equal(w.engine.world.bodies.find((b) => b.label === 'spring').restitution > 1, true, 'the spring keeps its restitution');
+  R.cutVine(w, 0, 0);
+  let hit = null, peak = Infinity;
+  for (let i = 0; i < 240; i++) {
+    R.stepWorld(w, level);
+    const y = w.bread.position.y;
+    if (hit == null && w.bread.velocity.y < 0) hit = y;
+    if (hit != null) peak = Math.min(peak, y);
+  }
+  assert.ok(hit != null, 'it bounced at all');
+  assert.ok(hit - peak > 60, `it came back up a long way (${(hit - peak).toFixed(0)} px)`);
+  const fs = await import('node:fs');
+  const g = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8')).games.find((x) => x.id === 'tauntrope');
+  assert.ok(!(g.levels[0].stones ?? []).length, '忍字: no stone lies over the bamboo');
+});

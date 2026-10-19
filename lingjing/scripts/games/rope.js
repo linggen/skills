@@ -82,7 +82,14 @@ function vineOf(v, bread) {
   return { at: [ax, ay], len, ...vineBodies(ax, ay, bread, len), cut: null, ...(v.regrow ? { regrow: v.regrow, cutAt: null } : {}) };
 }
 
-const slab = (s, opts) => Bodies.rectangle(s.x, s.y, s.w, s.h, { isStatic: true, angle: ((s.a ?? 0) * Math.PI) / 180, ...opts });
+// matter.js zeroes a static body's restitution (and sets friction 1) when it is made static, so a 弹竹
+// made with `restitution` never bounced (Hanli 10-19: 「这里的弹竹完全不弹」): set them after.
+const slab = (s, { restitution, friction, ...opts }) => {
+  const b = Bodies.rectangle(s.x, s.y, s.w, s.h, { isStatic: true, angle: ((s.a ?? 0) * Math.PI) / 180, ...opts });
+  if (restitution != null) b.restitution = restitution;
+  if (friction != null) b.friction = friction;
+  return b;
+};
 const stoneOf = (s) => slab(s, { restitution: s.bounce ?? 0.3, friction: 0.02, label: 'stone' });
 const springOf = (s) => slab({ ...s, h: s.h ?? 12 }, { restitution: SPRING_BOUNCE, friction: 0, label: 'spring' });
 
