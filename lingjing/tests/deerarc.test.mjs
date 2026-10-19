@@ -189,7 +189,9 @@ test('a miss: the next arrow is on the string at once, the spent one stays stuck
   assert.equal(s.stuck.length, 1);
   assert.ok(s.trail?.length > 3, 'the last arrow\'s trail to learn from');
   assert.match(da.html(s, 'zh'), /抬起头/);
-  assert.doesNotMatch(da.html({ ...s, pull: { a: 30, p: 0.5 } }, 'zh'), /g-da-guide/, 'the arc hint is for the first arrow only');
+  // The guide follows every draw, not just the first (Hanli 10-19: 「第二次拉弓, 轨迹虚线就不变化了」).
+  const dotAt = (a) => da.html({ ...s, pull: { a, p: 0.5 } }, 'zh').match(/class="g-da-guide" cx="[-\d.]+" cy="[-\d.]+"/g)?.at(-1);
+  assert.ok(dotAt(30) && dotAt(10) && dotAt(30) !== dotAt(10), 'the second draw\'s guide moves with the aim');
   const fresh = da.act(da.newGame('t', 1, { levels: [still] }), { g: 'draw', a: 30, p: 0.5 }).state;
   assert.match(da.html(fresh, 'zh'), /g-da-guide/);
 });

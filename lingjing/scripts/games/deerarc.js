@@ -1072,10 +1072,10 @@ export function arrowShape(art, cx = 0, spent = false) {
     + `<path class="g-da-fletch" d="M${n(t)} 0 l-4 -3 M${n(t + 3)} 0 l-4 -3 M${n(t)} 0 l-4 3 M${n(t + 3)} 0 l-4 3"/>`;
 }
 
-/** While drawing the level's first arrow only: the first stretch of the arc, as if there were no
-    wind — the wind is his to read; after that, the last arrow's trail is the teacher. */
+/** While drawing, every throw: the first stretch of the arc, as if there were no wind — it moves
+    with the hand; the wind is his to read, and the last throw's trail stays beside it to learn from. */
 function guidePicture(s) {
-  if (s.phase !== 'aim' || !s.pull || s.pull.p < MIN_POWER || s.used > 0 || s.trail) return '';
+  if (s.phase !== 'aim' || !s.pull || s.pull.p < MIN_POWER) return '';
   const v = velocityOf(s.pull), g = GRAVITY * 0.001 * STEP_MS * STEP_MS, dots = [];
   const r0 = s.art?.marks?.dot ?? 2.4, o = projectileOf(s.kit, s.pick).shape !== 'arrow' && s.pull.hand ? s.pull.hand : BOW;
   for (let k = 4; k <= 40; k += 4) dots.push(`<circle class="g-da-guide" cx="${n(o[0] + v.x * k)}" cy="${n(o[1] + v.y * k + 0.5 * g * k * k)}" r="${n(r0 * (1 - k / 80))}"/>`);
