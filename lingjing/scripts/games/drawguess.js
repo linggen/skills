@@ -30,7 +30,7 @@ const T = {
     draw: '画', start: '开始', pen: '笔', eraser: '擦', clear: '清空', done: '画好了', who: '猜者', names: { ling: '灵', yinyue: '银月' },
     checking: '{who}在看纸……', looking: '{who}在看……', looks: '还能看 {n} 眼',
     blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', err: '{who}没看清，再画画。',
-    absent: '还没遇见银月。', unavailable: '银月不在。',
+    absent: '还没遇见银月。', unavailable: '银月不在。', asleep: '银月在木牌里睡着，叫不应。',
     won: '对了，是「{w}」。', time: '时间到。是「{w}」。',
     next: '下一句', again: '再画一张', write: '就写字吧', off: '测试存档不叫银月。', plain: '这一句只写了字：「{w}」。',
   },
@@ -38,7 +38,7 @@ const T = {
     draw: 'Draw', start: 'Start', pen: 'Brush', eraser: 'Eraser', clear: 'Clear', done: 'Done', who: 'Guesser', names: { ling: 'Ling', yinyue: 'Yinyue' },
     checking: '{who} is looking at the paper…', looking: '{who} is looking…', looks: '{n} looks left',
     blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', err: '{who} couldn\'t make it out. Keep drawing.',
-    absent: 'You haven\'t met Yinyue yet.', unavailable: 'Yinyue isn\'t here.',
+    absent: 'You haven\'t met Yinyue yet.', unavailable: 'Yinyue isn\'t here.', asleep: 'Yinyue is asleep in the token and does not answer.',
     won: 'Right — {w}.', time: 'Time. It was {w}.',
     next: 'Next line', again: 'Draw another', write: 'Just write it', off: 'A scratch save does not call Yinyue.', plain: 'This line is in words only: {w}.',
   },
@@ -372,11 +372,12 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     g.sid?.then((sid) => closeRound(sid), () => {});
     setPhase(phase);
     veil.textContent = text;
+    foot('');
     tools(false);
     if (data.fallback) { goBtn.textContent = w.write; goBtn.disabled = false; }
   };
   const onReply = (r) => {
-    if (r.refused) return cannot('absent', w[r.refused] ?? w.absent);
+    if (r.refused) return cannot('absent', (r.refused === 'absent' && fixed ? w.asleep : w[r.refused]) ?? w.absent);
     if (isBlindReply(r.text)) { foot(r.text); return cannot('blind', w.blind); }
     const p = parseReply(r.text);
     const ok = p.guess != null && matches(p.guess, g.word);
@@ -533,7 +534,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     foot(modelLine());
     if (s.off) return cannot('off', w.off);
     if (s.far) return cannot('far', w.far);
-    if (s.refused) { foot(''); return cannot('absent', w[s.refused]); }
+    if (s.refused) return cannot('absent', s.refused === 'absent' && fixed ? w.asleep : w[s.refused]);
     if (s.blind) {
       cannot('blind', w.blind);
       foot(s.said ?? '');
