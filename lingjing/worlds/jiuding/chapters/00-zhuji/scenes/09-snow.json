@@ -51,7 +51,7 @@
     "zh": "扔进饭桶，扔了干净",
     "en": "Toss them into the Rice Bucket, just to be rid of them"
    },
-   "means": "tosses the red-copper gourd and the shield shards into the Rice Bucket to be rid of them, wanting nothing (the 喂饭桶 board plays it); it spits out a plain sword, Matchstick — 剑起火升，攻守兼备",
+   "means": "tosses the red-copper gourd and the shield shards into the Rice Bucket to be rid of them, wanting nothing; it chews, draws five breaths from him and spits out a plain sword, Matchstick — 剑起火升，攻守兼备 (the 大场面 扔了干净 plays it, setpieces/huochai.js)",
    "grant": {
     "table": "scene",
     "item": "huochai-jian"
@@ -61,33 +61,15 @@
     "held": true
    },
    "story": {
-    "zh": "一口剑，三尺来长，剑身暗红，剑脊上一溜锤印，像镇上铁匠铺里学徒打坏了的。剑脊近柄那一截，锤印当中歪歪扭扭刻着两个字：火柴；底下一行小字：剑起火升，攻守兼备。",
-    "en": "A sword, about three feet long, the blade dark red. Along the spine ran a row of hammer marks, like something a blacksmith's apprentice in town had botched. On the spine near the hilt, among the hammer marks, two crooked characters were cut: Matchstick. Below them, a line of small writing: The sword rises, the fire climbs; good for attack and defence."
+    "zh": "他摸进柴房，按开饭桶，一股脑儿倒了进去，心里什么也没想——扔了干净。\n\n饭桶嚼了很久。「咯嘣」，「咯嘣」，嚼一阵，歇一歇，像一个没牙的老头啃一块冻硬了的饼；歇一回，吸他一口气，吸到第五口，他眼前一阵一阵发黑。末了，盖子「咔哒」一弹，一道红光窜出来，「笃」的一声，钉在了门板上，剑柄还在嗡嗡地颤。小狰一头扎进了柴堆。{景=huochai}\n\n一口剑，三尺来长，剑身暗红，剑脊上一溜锤印，像镇上铁匠铺里学徒打坏了的。剑脊近柄那一截，锤印当中歪歪扭扭刻着两个字：火柴；底下一行小字：剑起火升，攻守兼备。",
+    "en": "He slipped into the woodshed, opened the Rice Bucket and tipped the lot in, thinking nothing at all. Good riddance.\n\nThe Rice Bucket chewed for a long time. *Crunch*, *crunch*: it chewed a while, rested a while, like a toothless old man gnawing a frozen flatbread. Each time it rested it drew a breath from him, and by the fifth breath his sight was going dark in waves. At last the lid sprang open with a *click*, a red light shot out, and with a *thock* it stuck fast in the door, the hilt still humming. The little zheng dived headfirst into the woodpile.{景=huochai}\n\nA sword, about three feet long, the blade dark red. Along the spine ran a row of hammer marks, like something a blacksmith's apprentice in town had botched. On the spine near the hilt, among the hammer marks, two crooked characters were cut: Matchstick. Below them, a line of small writing: The sword rises, the fire climbs; good for attack and defence."
    },
    "story_full": {
-    "zh": "他拔出剑来，门板上只留一道缝，顺着木纹一直裂到底，齐得像刨过。一口剑，三尺来长，剑身暗红，是那葫芦和盾片的铜色，火纹一道也没有了；剑脊上一溜锤印，坑坑洼洼，像镇上铁匠铺里学徒打坏了的。灌一丝灵力进去，剑身上浮起薄薄一层光，像一层油——是件法器，最寻常的那一种。剑脊近柄那一截，锤印当中歪歪扭扭刻着两个字：火柴；底下一行小字：剑起火升，攻守兼备。",
-    "en": "He pulled the sword out. All it had left in the door was one crack, running straight down the grain to the bottom, clean as if planed. A sword, about three feet long, the blade dark red, the copper colour of the gourd and the shield, with not one fire pattern left on it. Along the spine ran a row of hammer marks, pitted and dented, like something a blacksmith's apprentice in town had botched. He put a thread of spiritual power into it, and a thin layer of light rose on the blade, like a skin of oil: a magic tool, the most ordinary kind. On the spine near the hilt, among the hammer marks, two crooked characters were cut: Matchstick. Below them, a line of small writing: The sword rises, the fire climbs; good for attack and defence."
+    "zh": "他摸进柴房，按开饭桶，一股脑儿倒了进去，心里什么也没想——扔了干净。\n\n饭桶嚼了很久。「咯嘣」，「咯嘣」，嚼一阵，歇一歇，像一个没牙的老头啃一块冻硬了的饼；歇一回，吸他一口气，吸到第五口，他眼前一阵一阵发黑。末了，盖子「咔哒」一弹，一道红光窜出来，「笃」的一声，钉在了门板上，剑柄还在嗡嗡地颤。小狰一头扎进了柴堆。{景=huochai}\n\n他拔出剑来，门板上只留一道缝，顺着木纹一直裂到底，齐得像刨过。一口剑，三尺来长，剑身暗红，是那葫芦和盾片的铜色，火纹一道也没有了；剑脊上一溜锤印，坑坑洼洼，像镇上铁匠铺里学徒打坏了的。灌一丝灵力进去，剑身上浮起薄薄一层光，像一层油——是件法器，最寻常的那一种。剑脊近柄那一截，锤印当中歪歪扭扭刻着两个字：火柴；底下一行小字：剑起火升，攻守兼备。",
+    "en": "He slipped into the woodshed, opened the Rice Bucket and tipped the lot in, thinking nothing at all. Good riddance.\n\nThe Rice Bucket chewed for a long time. *Crunch*, *crunch*: it chewed a while, rested a while, like a toothless old man gnawing a frozen flatbread. Each time it rested it drew a breath from him, and by the fifth breath his sight was going dark in waves. At last the lid sprang open with a *click*, a red light shot out, and with a *thock* it stuck fast in the door, the hilt still humming. The little zheng dived headfirst into the woodpile.{景=huochai}\n\nHe pulled the sword out. All it had left in the door was one crack, running straight down the grain to the bottom, clean as if planed. A sword, about three feet long, the blade dark red, the copper colour of the gourd and the shield, with not one fire pattern left on it. Along the spine ran a row of hammer marks, pitted and dented, like something a blacksmith's apprentice in town had botched. He put a thread of spiritual power into it, and a thin layer of light rose on the blade, like a skin of oil: a magic tool, the most ordinary kind. On the spine near the hilt, among the hammer marks, two crooked characters were cut: Matchstick. Below them, a line of small writing: The sword rises, the fire climbs; good for attack and defence."
    },
-   "next": "09-jiuge",
-   "needs": {
-    "task": "snow-fantong"
-   },
-   "refuse": {
-    "zh": "饭桶的盖子还合着——倒进去，由它嚼完了再走。",
-    "en": "The Rice Bucket's lid is still shut — tip them in and let it finish chewing first."
-   }
+   "next": "09-jiuge"
   }
  ],
- "show": [
-  {
-   "card": "board",
-   "id": "snow-fantong"
-  }
- ],
- "offers": {
-  "tasks": [
-   "snow-fantong"
-  ]
- },
- "_beats": "古七 (the per-回 plan, 2026-10-15): 喂饭桶 (snow-fantong, the shared 饭桶 board's stop `huochai`) plays the feeding — 「心里什么也没想——扔了干净」, the chewing, a breath drawn each rest, the red light in the door; the way on hands over 火柴 (a story thing: a skipped board still gives it) and tells the sword. 腊月十五's lesson moved to 09-jiuge."
+ "_beats": "古七 (the per-回 plan, 2026-10-15): the feeding — 「心里什么也没想——扔了干净」, the chewing, a breath drawn each rest, the red light in the door. Since 2026-10-19 (Hanli: 「「扔了干净」这一幕改成大场面」) it is no board: the way on tells the book's two paragraphs and the chewing one is the 大场面 扔了干净 (`{景=huochai}`, setpieces/huochai.js); the board (snow-fantong, row fantonghuochai) is `cut`, kept in the 游戏厅 under 旧版. The way on hands over 火柴 (a story thing) and tells the sword. 腊月十五's lesson moved to 09-jiuge."
 }

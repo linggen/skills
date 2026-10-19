@@ -2302,6 +2302,7 @@
   },
   {
    "id": "fantonghuochai",
+   "replaced": "setpiece",
    "group": "later",
    "mechanic": "剧情",
    "scene": "09-snow",

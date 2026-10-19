@@ -75,7 +75,7 @@ function filterBy(kind) {
   for (const s of root.querySelectorAll('section')) s.hidden = !s.querySelector('.arcade-tile:not([hidden])');
 }
 
-/* Boards a newer game replaced in the story (a row's `replaced`: the new game's id, or 'cut'): kept for
+/* Boards a newer game replaced in the story (a row's `replaced`: the new game's id, 'cut', or 'setpiece' — a 大场面 plays it now): kept for
    comparison, folded at the end, never mixed in with what plays now (Hanli 10-19 opened the old 拽 by mistake). */
 async function oldHtml(reg) {
   const rows = reg.games.map((g, i) => [g, i]).filter(([g]) => g.replaced);

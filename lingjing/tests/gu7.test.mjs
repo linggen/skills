@@ -44,7 +44,8 @@ const run = (mod, s, verbs) => verbs.reduce((x, d) => mod.act(x, d).state, s);
 const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i = 0; i < 6000 && !done(x); i += 1) x = step(mod.tick(x, 50)); return x; };
 
 const H11 = ['09-snow', '09-jiuge', '09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie', '09-futian'];
-const BOARDS = { '09-snow': ['snow-fantong'], '09-jiuge': ['jiuge-sui', 'jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'], '09-xie': ['xie-wind'] };
+// 09-snow has no board since 2026-10-19: its feeding is the 大场面 扔了干净 (tests/setpiece-huochai.test.mjs).
+const BOARDS = { '09-jiuge': ['jiuge-sui', 'jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'], '09-xie': ['xie-wind'] };
 const FIGHTS = { '09-lingcao': ['fight', 'lingcao-qiuyu', 'qiuyu'], '09-futian': ['spar', 'futian-qinyan', 'foe-shijie'] };
 const RISES = { '09-furnace/fire': 5, '09-year/futian': 5, '09-yishui/night': 6, '09-futian/spar': 7 };
 
@@ -105,7 +106,7 @@ test('every board pays what the plan names: 修为 for cultivation, a pill or �
 
 test('walking 古七 by its boards and fights: 修为 rises at each cultivation board, the realm 四 → 五 → 六 by his own work behind each gate, never by a choice', () => {
   let s = at('09-snow');
-  s = go(play(s, 'snow-fantong'), 'feed');
+  s = go(s, 'feed'); // 扔了干净 is a 大场面 on the way on (2026-10-19): nothing to play first
   assert.equal(s.bag['huochai-jian'], 1);
   assert.equal(s.scene, '09-jiuge');
   const p0 = s.progress;
@@ -140,7 +141,7 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
 });
 
 test('a way on waits on its board: refused in the world\'s words until the board is counted', () => {
-  for (const [scene, exit] of [['09-snow', 'feed'], ['09-jiuge', 'down'], ['09-furnace', 'fire'], ['09-yishui', 'night'], ['09-xie', 'go']]) {
+  for (const [scene, exit] of [['09-jiuge', 'down'], ['09-furnace', 'fire'], ['09-yishui', 'night'], ['09-xie', 'go']]) {
     const out = resolve(at(scene), content, ctx(), { exit });
     assert.equal(out.result.ok, false, `${scene}/${exit}`);
     assert.ok(out.result.say, `${scene}/${exit} says why`);
@@ -180,7 +181,7 @@ test('no 古七 board draws its own skip (the page lays it), each says what it i
   }
 });
 
-test('喂饭桶 · 扔了干净: the lid opens at once; the gourd, then the shards — the red light in the door', () => {
+test('喂饭桶 · 扔了干净 (the 游戏厅\'s 旧版 since 2026-10-19): the lid opens at once; the gourd, then the shards — the red light in the door', () => {
   const s = run(fantong, fantong.newGame('a'), [{ g: 'press' }, { g: 'feed', f: 'gourd' }, { g: 'feed', f: 'shards' }]);
   assert.equal(s.won, true);
   assert.match(fantong.html(s, 'zh'), /钉在了门板上/);

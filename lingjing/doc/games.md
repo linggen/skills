@@ -229,7 +229,7 @@ the passage whole, the task marked `cut` (a save holding it offered lets it go),
 | 六 · wm-laoyin | 猪蜻蜓 `zhuqingting` | 等风掉头 | wait; 拍 as he steps behind | one timing tap | **cut** | 4 misses | ? | **cut 10-19** (Hanli: 「时机, 调息不好玩的可以删掉或者改进」) — no board before 摸出那个油纸包; task `cut`, row and module in the 游戏厅 |
 | 六 · wm-jiaxin | 写信 `letter` | 擦了又写 | write line by line, erase what must not be said | a choice | **cut** | 75 s | no | kept until replaced |
 | 六 · wm-heluo | 念开篇 `kaipian` | 戴九履一 | each line of the verse into the nine squares | a recall drill | **cut** | 6 wrong | no | kept until replaced |
-| 七 · 09-snow | 喂饭桶 `fantonghuochai` | 扔了干净 | drop two scraps in | two taps | **cut** | 75 s | no | kept until replaced |
+| 七 · 09-snow | 喂饭桶 `fantonghuochai` | 扔了干净 | drop two scraps in | two taps | **cut** | 75 s | no | **→ 大场面 扔了干净 (10-19)** (Hanli: 「「扔了干净」这一幕改成大场面」) — `{景=huochai}` on the way on's chewing paragraph (setpieces/huochai.js); task `cut`, row `replaced: "setpiece"`, module in the 游戏厅 |
 | 七 · 09-jiuge | 随叶 `leafsui` | 跟着它走 | hold 随左 / 随右 with the leaf | a tracking hold | **cut** | 75 s | ? | **→ 气走经脉 · 随叶 (10-19)** — module in the 游戏厅 |
 | 七 · 09-jiuge | 禹步 `yubujiuge` | 九格 | left, right behind, step in — one to nine | a rhythm | second tier | 5 trips | yes — 禹步 | kept (second tier) — replace with 割绳子 or another proven mechanic if it isn't fun (his play) |
 | 七 · 09-furnace | 认方 `recipe` | 三张方子 | match heaps, leads, pills | a memory puzzle | **cut** | 5 ash | no | kept until replaced |
