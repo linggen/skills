@@ -39,7 +39,7 @@ import { todayBrief } from './festival.mjs';
 import { seasonBrief, storySky, weatherBrief, windBrief } from './weather.mjs';
 import { newHere, portraitOf } from './codex.mjs';
 import { withoutSealed } from './sealed.mjs';
-import { rerunBoardId, rerunBrief, runBoardHere } from './rerun.mjs';
+import { rerunBoardId, rerunBrief, runBoardHere, runRow } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 import { mishiHosted, mishiLook } from './mishi.mjs';
 import { kaoBrief, kaoHosted } from './kao.mjs';
@@ -451,6 +451,8 @@ function tasksBrief(content, state, ctx) {
         ...(task.kao ? { light: true, ...kaoBrief(content, state, ctx.now) } : {}),
         // A 奇遇: its frame is the board's line, its deal the game's (rules/qiyu.mjs).
         ...(task.qiyu ? qiyuRow(content, state, id) : {}),
+        // A run's 拾遗 (割藤 since 2026-10-19): the room's find hung on the vines (rules/rerun.mjs).
+        ...(task.run ? runRow(content, state, id) : {}),
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
         pays: again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
@@ -510,7 +512,9 @@ function dealOf(content, task, state) {
   if (!task.deal && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   const throws = levels?.some(l => l.ammo) ? { projectiles: content.games.projectiles ?? {}, owned: ownedCards(content, state) } : {};
-  return { deal: { ...(task.deal ?? {}), ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}), ...throws } };
+  // A thing a 割藤 deal hangs on the vines, named in both languages (拾遗's 灵芝): the reader's.
+  const item = task.deal?.item?.zh ? { item: { name: pick(task.deal.item, state.lang) } } : {};
+  return { deal: { ...(task.deal ?? {}), ...item, ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}), ...throws } };
 }
 
 export function look(state, content, ctx) {

@@ -248,6 +248,14 @@ export function runSpoils(content, state, game) {
 
 /* The run's 拾遗 board, while in a run. */
 export const rerunBoardId = (content, state) => (state?.rerun ? rerunById(content, state.rerun.id)?.rerun.board ?? null : null);
+/* The Look row's own for the run's 拾遗: the room's find is the thing hung on the vines (割藤, 2026-10-19). */
+export function runRow(content, state, id) {
+  const room = state?.rerun?.rooms?.[state.place];
+  if (!runBoardHere(content, state, id) || !room?.find?.item) return {};
+  const name = pick(content.items?.items?.find?.(i => i.id === room.find.item)?.name ?? null, state.lang);
+  const t = (content.tasks?.tasks ?? []).find(x => x.id === id);
+  return name ? { deal: { ...(t?.deal ?? {}), item: { name } } } : {};
+}
 /* The run's 拾遗 stands in a room that holds a find not yet taken. */
 export function runBoardHere(content, state, id) {
   const run = state?.rerun, r = run ? rerunById(content, run.id) : null;
@@ -263,7 +271,11 @@ export function runFindDone(state, content, ctx, id) {
   const grade = s.grades?.[id] ?? null;
   const got = [give(content, s, room.find.item, room.find.n)];
   const lines = [pick(room.find.line, s.lang)];
-  if (room.cache && r.rerun.cache?.grade && grade === r.rerun.cache.grade) {
+  // The cache under it: on a play of the cache's grade, or (`stars`, the 割藤 拾遗 since 2026-10-19) of that many 灵光.
+  const stars = s.stars?.[id] ?? 0;
+  if (s.stars) delete s.stars[id]; // the round's, as a 奇遇's: the next room starts clean
+  const rich = r.rerun.cache?.stars ? stars >= r.rerun.cache.stars : Boolean(r.rerun.cache?.grade && grade === r.rerun.cache.grade);
+  if (room.cache && rich) {
     got.push(give(content, s, room.cache.item, room.cache.n));
     lines.push(pick(r.rerun.cache.line, s.lang));
     room.cache_found = true;

@@ -12,10 +12,12 @@ import { playModule } from '../tools/board-bots.mjs';
 const reg = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
 const rows = reg.games.filter((g) => g.id === 'qimai');
 const ladder = qm.ladderOf(reg);
-const BREATH = ['feather', 'xisui', 'zhoutian', 'mirrortongpu', 'qianmi', 'faqiu', 'dark', 'lastshot', 'leafsui', 'leafding'];
+const BREATH = ['feather', 'xisui', 'zhoutian', 'mirrortongpu', 'qianmi', 'faqiu', 'dark', 'lastshot', 'leafsui', 'leafding', 'qiajue', 'wind'];
 /* The story boards the kit took over (Hanli 10-19: 「气走经脉 可以」): task → level. 吹鹅毛 and 洗髓 stay cut
    (their scenes lost their boards 10-16), their levels in the 游戏厅 only. */
-const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'jiuge-sui': 'sui', 'furnace-ding': 'ding', 'jin-qianmi': 'qianmi', 'jin-faqiu': 'faqiu', 'jin-dark': 'dark', 'jin-lastshot': 'lastshot' };
+const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'jiuge-sui': 'sui', 'furnace-ding': 'ding', 'jin-qianmi': 'qianmi', 'jin-faqiu': 'faqiu', 'jin-dark': 'dark', 'jin-lastshot': 'lastshot',
+  // the weak-board sweep (2026-10-19, the standing rule Hanli approved): 讲堂三日's chant up the arm, 顺风溜's glide
+  'qianye-qiajue': 'qiajue', 'xie-wind': 'wind' };
 const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/tasks/${f}.json`, import.meta.url), 'utf8')).tasks);
 
 /** Played to the end by `policy(state)` (true = hold), on a `step` ms clock. */

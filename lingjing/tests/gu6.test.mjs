@@ -38,10 +38,12 @@ const run = (mod, s, verbs) => verbs.reduce((x, d) => mod.act(x, d).state, s);
 const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i = 0; i < 4000 && !done(x); i += 1) x = step(mod.tick(x, 100)); return x; };
 
 const H08 = ['wm-qianye', 'wm-zhaojing', 'wm-laba', 'wm-dabi', 'wm-lun1', 'wm-fushi', 'wm-lun2', 'wm-juesai', 'wm-laoyin', 'wm-jiaxin', 'wm-baishi', 'wm-caowu', 'wm-heluo'];
-const BOARDS = { 'wm-qianye': ['qianye-qiajue', 'qianye-xiangke'], 'wm-zhaojing': ['zhaojing-mirror', 'zhaojing-fantong'], 'wm-laba': ['laba-diche'], 'wm-dabi': ['dabi-sneeze'], 'wm-jiaxin': ['jiaxin-letter'], 'wm-heluo': ['heluo-kaipian'] };
+// 2026-10-19 (the standing rule Hanli approved 10-19): 讲堂三日 is a 气走经脉 level (id kept), 相克 cut (a quiz), 底册
+// a 大场面 (setpieces/diche.js) — wm-laba has no board; the marks they wrote come with the ways on.
+const BOARDS = { 'wm-qianye': ['qianye-qiajue'], 'wm-zhaojing': ['zhaojing-mirror', 'zhaojing-fantong'], 'wm-dabi': ['dabi-sneeze'], 'wm-jiaxin': ['jiaxin-letter'] };
 
 test('tasks/*.json are one list: 古六\'s boards come from tasks/h08.json, and an id defined twice fails the lint', () => {
-  for (const id of Object.values(BOARDS).flat()) assert.ok(content.tasks.tasks.some((t) => t.id === id), id);
+  for (const id of [...Object.values(BOARDS).flat(), 'qianye-xiangke', 'laba-diche', 'heluo-kaipian']) assert.ok(content.tasks.tasks.some((t) => t.id === id), id);
   assert.ok(content.tasks.tasks.some((t) => t.id === 'kitchen-griddle'), 'world.json still read');
   assert.deepEqual(lint(content), []);
   const twice = { ...content, tasks: { ...content.tasks, tasks: [...content.tasks.tasks, content.tasks.tasks[0]] } };
@@ -80,19 +82,17 @@ test('walking 古六 by its boards: 修为 rises at each cultivation board, the 
   const before = s.progress;
   s = play(s, 'qianye-qiajue', 'tight');
   assert.ok(s.progress > before, '讲堂三日 raised 修为');
-  assert.equal(s.tell_owed.at(-1), 'after/wm-qianye', 'the rest of the lesson is told right after the first board');
-  const stones = s.wealth;
-  s = play(s, 'qianye-xiangke', 'clean');
-  // Its grant's 3, and a first clean clear's 灵石 (balance.json `boards`, Hanli 2026-10-16).
-  assert.equal(s.wealth, stones + 3 + content.balance.boards.best);
-  assert.ok(s.marks.includes('xiangke'));
+  assert.equal(s.tell_owed.at(-1), 'after/wm-qianye', 'the rest of the lesson is told right after the board');
+  assert.ok(!(s.marks ?? []).includes('xiangke'));
   s = must(resolve, s, { exit: 'eve' });
+  assert.ok(s.marks.includes('xiangke'), 'the 五句 told, the way on writes the mark the 大比 reads');
   assert.equal(s.scene, 'wm-zhaojing');
   s = play(play(s, 'zhaojing-mirror', 'still'), 'zhaojing-fantong');
   s = must(resolve, s, { exit: 'sleep' });
   for (const id of ['zipai-jing', 'penti-fu', 'yangyang-zhen', 'niuzhi-ganlu']) assert.ok(s.bag[id] > 0, id);
   assert.equal(s.scene, 'wm-laba');
-  s = must(resolve, play(s, 'laba-diche', 'kept'), { exit: 'go' });
+  s = must(resolve, s, { exit: 'go' }); // 底册 is a 大场面 since 2026-10-19: no board before the way on
+  assert.ok(s.marks.includes('diche'), 'the page burnt, the way on writes `diche`');
   s = must(resolve, play(s, 'dabi-sneeze', 'clean'), { exit: 'up' });
   assert.equal(s.scene, 'wm-lun1');
   s = must(resolve, { ...s, scene: 'wm-laoyin', place: 'zhengdian' }, { exit: 'final' }); // 猪蜻蜓 cut 2026-10-19: no board before it
@@ -103,17 +103,51 @@ test('walking 古六 by its boards: 修为 rises at each cultivation board, the 
   s = play(s, 'jiaxin-letter');
   assert.equal(s.ledger.length, n + 1);
   assert.match(s.ledger.at(-1).what.zh, /我倒了七回，起来了七回/);
-  s = play({ ...s, scene: 'wm-heluo', place: 'houshan' }, 'heluo-kaipian');
-  s = must(resolve, s, { exit: 'read' });
+  s = must(resolve, { ...s, scene: 'wm-heluo', place: 'houshan' }, { exit: 'read' }); // 念开篇 cut 2026-10-19: the rhyme is the way on's
   assert.ok(s.bag.heluo > 0);
 });
 
 test('a way on waits on its board: refused in the world\'s words until the board is counted', () => {
-  for (const [scene, place, exit] of [['wm-qianye', 'waimen', 'eve'], ['wm-zhaojing', 'waimen', 'sleep'], ['wm-laba', 'waimen', 'go'], ['wm-dabi', 'zhengdian', 'up'], ['wm-jiaxin', 'waimen', 'rest'], ['wm-heluo', 'houshan', 'read']]) {
+  for (const [scene, place, exit] of [['wm-qianye', 'waimen', 'eve'], ['wm-zhaojing', 'waimen', 'sleep'], ['wm-dabi', 'zhengdian', 'up'], ['wm-jiaxin', 'waimen', 'rest']]) {
     const out = resolve(at(scene, place), content, ctx(), { exit });
     assert.equal(out.result.ok, false, `${scene}/${exit}`);
     assert.ok(out.result.say, `${scene}/${exit} says why`);
   }
+});
+
+test('the 10-19 sweep: 讲堂三日 plays 气走经脉 (掐诀), 相克 and 底册 are off the story — their passages told, their marks from the ways on, old saves fine', () => {
+  const t = (id) => content.tasks.tasks.find((x) => x.id === id);
+  assert.equal(t('qianye-qiajue').game, 'qimai');
+  const row = content.games.games.find((g) => g.id === 'qimai' && g.task === 'qianye-qiajue');
+  assert.equal(row.levels[0].xue.length, 8, 'the chant\'s eight lines, a 穴 each');
+  assert.equal(t('qianye-xiangke').cut, '2026-10-19');
+  assert.equal(t('laba-diche').cut, '2026-10-19');
+  const q = CH.scenes['wm-qianye'], l = CH.scenes['wm-laba'];
+  assert.match(q.story.zh, /头一天他不教法术，先教手[\s\S]*第二天他教咒。$/, 'day one told before the board');
+  assert.match(q.story_after.zh, /^第三天，褚先生教的是扣。[\s\S]*木得金而伐/, 'day three and the 五句 after it');
+  assert.equal(q.exits[0].mark, 'xiangke');
+  assert.equal(l.show, undefined); assert.equal(l.exits[0].needs, undefined);
+  assert.equal(l.exits[0].mark, 'diche');
+  for (const k of ['story', 'story_full']) {
+    assert.match(l[k].zh, /小满把那张纸凑到灶口，看着它卷起来，黑了。纸上的字，他已经一个一个记进了肚子里。\{景=diche\}$/);
+    assert.match(l[k].en, /\{景=diche\}$/);
+  }
+  // an old save holding the cut boards offered lets them go; the way on is open and writes the marks
+  let s = fitWorld({ ...at('wm-qianye', 'waimen'), tasks: { 'qianye-qiajue': { status: 'done' }, 'qianye-xiangke': { status: 'offered' } } }, content);
+  assert.equal(s.tasks['qianye-xiangke'], undefined);
+  s = must(resolve, s, { exit: 'eve' });
+  s = fitWorld({ ...s, scene: 'wm-laba', tasks: { ...s.tasks, 'laba-diche': { status: 'offered' } } }, content);
+  assert.equal(s.tasks['laba-diche'], undefined);
+  s = must(resolve, s, { exit: 'go' });
+  assert.ok(s.marks.includes('xiangke') && s.marks.includes('diche'));
+  // 念开篇 cut too (a recall drill): the rhyme is the way on's own passage; an old save holding it offered lets it go.
+  assert.equal(t('heluo-kaipian').cut, '2026-10-19');
+  const h = CH.scenes['wm-heluo'];
+  assert.equal(h.show, undefined); assert.equal(h.exits[0].needs, undefined);
+  assert.match(h.exits[0].story.zh, /戴九履一，左三右七，二四为肩，六八为足，五居中央。/);
+  const old = fitWorld({ ...at('wm-heluo', 'houshan'), tasks: { 'heluo-kaipian': { status: 'offered' } } }, content);
+  assert.equal(old.tasks['heluo-kaipian'], undefined);
+  assert.ok(must(resolve, old, { exit: 'read' }).bag.heluo > 0, 'the scroll still comes');
 });
 
 test('刮鞋底 at the 草屋: a choice before the 拜师帖 — 瞿老\'s 「两个」 only for a boy who scraped on the steps; either choice hides both', () => {

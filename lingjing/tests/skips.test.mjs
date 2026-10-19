@@ -59,9 +59,10 @@ test('a skip pays nothing: no 修为, no 灵石, no grade, no mark — and the w
 });
 
 test('a graded board left writes no grade or mark, owes the rest of the passage, and both grade-gated ways open (wm-qianye, 00-cave 喂饼)', () => {
+  // Played in `show` order: 随叶 before 禹步 (wm-qianye's 相克 was cut 2026-10-19, 00-halfyear's two boards 10-16).
+  const j = at('00-zhuji/09-jiuge');
+  assert.equal(task(j.s, content, ctxAt(j.now), { action: 'skip', id: 'jiuge-yubu' }).result.refused, 'board-waits');
   const h = at('00-waimen/wm-qianye');
-  // Played in `show` order: 掐诀 before 相克 (00-halfyear's two boards were cut 10-16).
-  assert.equal(task(h.s, content, ctxAt(h.now), { action: 'skip', id: 'qianye-xiangke' }).result.refused, 'board-waits');
   const first = must(task, h.s, h.now, { action: 'skip', id: 'qianye-qiajue' });
   assert.ok((first.tell_owed ?? []).includes('after/wm-qianye'), 'the passage after the first board is owed, as after a win');
   assert.ok(!(first.marks ?? []).some((m) => m.startsWith('qiajue-')), 'no mark');

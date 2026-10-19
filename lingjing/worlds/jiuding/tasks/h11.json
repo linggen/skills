@@ -37,6 +37,8 @@
       "_reward": "修为 5, and the mark `yubu` either way (he walked it) — 古九's 量河滩 board reads it."
     },
     {
+      "_cut": "Off 09-furnace 2026-10-19 (the standing rule Hanli approved 10-19: a memory puzzle, button-only, fits no kit): the passage whole again (story_after merged), 定风 the scene's one board; its 聚气丹 is the way on's (09-furnace/fire grant). `cut` lets a save holding it offered let it go on load (state.mjs fitWorld); row and module stay in the 游戏厅.",
+      "cut": "2026-10-19",
       "id": "furnace-recipe",
       "kind": "board",
       "game": "recipe",
@@ -84,9 +86,10 @@
       "_reward": "灵石 +2 — the book's split of the 四块 (「阿禾一块，孙二狗一块，他两块」); the hide and membrane are told (no item rows)."
     },
     {
+      "_qimai": "A 气走经脉 level since 2026-10-19 (the standing rule Hanli approved 10-19): the boots' two 「鳃」 open and close on a thread of qi, the glide a foot off the ground, the north wind turning — 「迎着风」 it slides, against it 「噗」 (games.json qimai `wind`). Id, marks and pay kept; the boots still come with the way on; the old board stays in the 游戏厅.",
       "id": "xie-wind",
       "kind": "board",
-      "game": "wind",
+      "game": "qimai",
       "period": "once",
       "title": { "zh": "顺风溜 · 背后有风", "en": "Tailwind · Wind at your back" },
       "grant": { "table": "task", "progress": 5 },

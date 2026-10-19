@@ -47,6 +47,8 @@ const H11 = ['09-snow', '09-jiuge', '09-furnace', '09-year', '09-lingcao', '09-y
 // 09-snow has no board since 2026-10-19: its feeding is the 大场面 扔了干净 (tests/setpiece-huochai.test.mjs).
 const BOARDS = { '09-jiuge': ['jiuge-sui', 'jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'], '09-xie': ['xie-wind'] };
 const FIGHTS = { '09-lingcao': ['fight', 'lingcao-qiuyu', 'qiuyu'], '09-futian': ['spar', 'futian-qinyan', 'foe-shijie'] };
+// 认方 cut 2026-10-19 (the standing rule Hanli approved 10-19: a memory puzzle): 定风 is 09-furnace's one board.
+BOARDS['09-furnace'] = ['furnace-ding'];
 const RISES = { '09-furnace/fire': 5, '09-year/futian': 5, '09-yishui/night': 6, '09-futian/spar': 7 };
 
 test('古七 runs in the book\'s order on the `next` chain — eight scenes, every one h11, then 古八\'s 09-dabi', () => {
@@ -93,7 +95,8 @@ test('the layers are ground one at a time (2026-10-16: no story rise): 定风 wa
 test('every board pays what the plan names: 修为 for cultivation, a pill or 灵石 for the rest; the story things come with the ways on', () => {
   const t = (id) => content.tasks.tasks.find((x) => x.id === id);
   for (const id of ['jiuge-sui', 'jiuge-yubu', 'furnace-ding', 'xie-wind']) assert.equal(t(id).grant.progress, 5, id);
-  assert.equal(t('furnace-recipe').grant.item, 'qi-pill');
+  assert.equal(t('furnace-recipe').cut, '2026-10-19');
+  assert.equal(CH.scenes['09-furnace'].exits[0].grant.item, 'qi-pill', '认方\'s 聚气丹 comes with the way on');
   assert.equal(t('year-smell').grant.wealth, 3);
   assert.equal(t('yishui-reed').grant.wealth, 2);
   assert.deepEqual(Object.values(t('jiuge-yubu').marks), ['yubu', 'yubu'], '古九\'s beach reads `yubu`');
@@ -116,9 +119,9 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   s = go(play(s, 'jiuge-yubu', 'quiet'), 'down');
   assert.ok(s.marks.includes('yubu'));
   assert.equal(s.step, 4);
-  s = play(play(s, 'furnace-recipe', 'clean'), 'furnace-ding', 'still');
-  assert.ok(s.bag['qi-pill'] > 0, '认方: a 聚气丹');
+  s = play(s, 'furnace-ding', 'still');
   s = go(s, 'fire');
+  assert.ok(s.bag['qi-pill'] > 0, 'the way on: a 聚气丹 (认方 cut 2026-10-19)');
   assert.deepEqual([s.scene, s.step], ['09-year', 4], '定风 lifts nothing: 五层 is ground');
   s = go(s, 'qingming'); // 闻焦 cut 2026-10-19: no board in 09-year
   s = go(s, 'futian');
@@ -161,9 +164,11 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
   assert.equal(mid.tasks['year-smell'], undefined, '闻焦 cut 2026-10-19: no board offered there');
   const on = go(mid, 'futian');
   assert.deepEqual([on.scene, on.step], ['09-lingcao', 4]);
-  // Standing in 09-furnace from before: its boards are offered, the way on is the 定风 morning.
-  const fur = fitWorld(at('09-furnace', { tasks: {} }), content);
-  assert.deepEqual(['furnace-recipe', 'furnace-ding'].map((id) => fur.tasks[id]?.status), ['offered', 'offered']);
+  // Standing in 09-furnace from before: its board is offered (认方 cut 2026-10-19: one held offered is let go), the way on is the 定风 morning.
+  const fur = fitWorld(at('09-furnace', { tasks: { 'furnace-recipe': { status: 'offered' } } }), content);
+  assert.deepEqual(['furnace-recipe', 'furnace-ding'].map((id) => fur.tasks[id]?.status), [undefined, 'offered']);
+  assert.match(CH.scenes['09-furnace'].story.zh, /足足九道。\n\n打这以后，饭桶吐一颗聚气丹[\s\S]*看落叶打转。$/, 'the passage whole again, word for word');
+  assert.equal(CH.scenes['09-furnace'].story_after, undefined);
 });
 
 /* ── the boards themselves ── */
