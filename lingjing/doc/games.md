@@ -253,11 +253,15 @@ Fine as they are; 洛书 is the same square three times (二试, 困阵, daily).
     - **第六回 · 家信 · 画给娘看** (wm-jiaxin, task `jiaxin-letter`, was 写信 · 擦了又写): 娘 cannot read, so beside
       three of the letter's own lines he draws — 「盆可以收起来了，十七个都收。」 a basin · 「给我爹买一副护膝，狗皮的。」
       爹's bow · 「我在这里很好。」 the moon over the mountain (games.json drawguess `sets.jiaxin`). She is out that
-      night (the 火锅). A line counts once she names it; three looks a line, then it is written in words only and
+      night (the 火锅) — and now so in the save too: asleep in the 木牌 since 00-xiuxian, she wakes on wm-laoyin
+      `final` and sleeps again on wm-jiaxin `rest` (else the engine would answer `absent`). A line counts once she names it; three looks a line, then it is written in words only and
       the next line comes — no fail. Grade all · some · none (灵石 15 · 10 · 5, first clear, after 入门). She cannot
       be asked (blind model, no engine, a 测试存档): 「就写字吧」 writes it in words (`written`, plain). ≤ 9 looks ≈ 78k
       tokens, a typical letter 4–5 looks ≈ 40k. The book's passage untouched; 孙二狗's 恩仇簿 line kept;
       games/letter.js stays in the 游戏厅.
+    - **Where she is awake (10-19):** the save has her asleep in the 木牌 from 00-xiuxian through all of 卷一's
+      观 and 秘境, but for the 家信 night. So 本王考考你, the 秘境's 你画我猜 and the 传闻's stand dormant in 卷一
+      today (the rules gate them on her); they come alive wherever the story wakes her (an exit's `wakes`).
     - **本王考考你** (rules/kao.mjs, task `benwang-kao`): on a night (19:00–06:00) she is awake beside him, after
       入门, out of any run or fight — a light offer: its board stands only on an empty stage, beside the coins
       (as 二十问), or while a round is under way. Each round counted as it begins (`kao open`), 3 a night; the word

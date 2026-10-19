@@ -234,3 +234,12 @@ test('the stage: 本王考考你 stands only on an empty stage (as 二十问), o
   const under = { ...busy, tasks: lk.tasks.map((t) => (t.id === 'benwang-kao' ? { ...t, open: true } : t)) };
   if (lk.tasks.some((t) => t.id === 'benwang-kao')) assert.ok(stageCards(under).some((c) => c.card === 'board' && c.id === 'benwang-kao'), 'a round under way stands');
 });
+
+test('her presence at the 家信: asleep in the 木牌 through the 观, out that one night (wm-laoyin `final` wakes, wm-jiaxin `rest` sleeps)', () => {
+  const start = new Date('2026-10-15T09:00:00+08:00');
+  const at = (target) => playTo(content, newState(content, 'zh', start), target, { now: start }).state;
+  assert.equal(at('wm-laoyin').companion.asleep, true, 'asleep before the final');
+  const night = at('wm-jiaxin');
+  assert.ok(night.companion.joined && !night.companion.asleep, 'out for the 火锅 and the letter');
+  assert.equal(at('wm-baishi').companion.asleep, true, 'back in the 木牌 after');
+});
