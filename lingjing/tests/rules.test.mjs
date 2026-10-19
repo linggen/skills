@@ -164,7 +164,7 @@ test('the prologue walks from 石坳村 to its end by exits alone', () => {
   assert.deepEqual(s.traits, ['metal', 'wood', 'water', 'fire', 'earth'], '五行杂灵根');
   assert.deepEqual(s.cast, [], 'no beast tamed: the trials are the child\'s own');
   assert.equal(s.gender, 'male');
-  assert.deepEqual(s.companion, { joined: '2026-09-11', awake: true }, 'found in the valley; in the fox token only while a passage is told (2026-10-19)');
+  assert.deepEqual(s.companion, { joined: '2026-09-11', asleep: true }, 'found in the valley, asleep in the fox token');
   assert.equal(s.step, 0, 'the prologue ends at the bottom of 练气 (the source: 练气零层)');
   assert.equal(s.progress, 0, 'the trials were a mortal child\'s: 修为 begins in the outer court');
   assert.equal(s.wealth, 2, 'three stones of the allowance, one to the 公中');
@@ -1313,7 +1313,8 @@ test('too-hard with her beside him: her word is her beat — kept on the save un
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-toohard-'));
   try {
     const file = path.join(data, 'state.json');
-    fs.writeFileSync(file, JSON.stringify({ ...toOpenWorld(), companion: { joined: '2026-09-01', awake: true }, updated: NOW.toISOString() }));
+    // 卷一 has her in the 木牌 (the book); beside him only for a round of a game that needs her (rules/hergame.mjs, 2026-10-19).
+    fs.writeFileSync(file, JSON.stringify({ ...toOpenWorld(), companion: { joined: '2026-09-01', asleep: true, awake: true }, her_game: { task: 'benwang-kao', since: new Date().toISOString() }, updated: NOW.toISOString() }));
     const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
     const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
     const ling = cli('move', '--place=lvliang', '--for=ling');

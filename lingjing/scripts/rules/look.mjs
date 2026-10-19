@@ -8,8 +8,7 @@ import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup, heldMark, ownedCards, pouchBrief, readOf } from './cards.mjs';
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
-import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, questBrief, recalledOf } from './companion.mjs';
-import { readingNow } from './reading.mjs';
+import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, herGameNow, questBrief, recalledOf } from './companion.mjs';
 import { clone, paysOf, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
@@ -445,7 +444,7 @@ function tasksBrief(content, state, ctx) {
         // what it asks and what it pays, so Ling can tell the practice
         ...(task.game ? { game: task.game, level: gameLevel(content, state) } : {}),
         // The board's own words and deal where the task has them (二试's 洛书 is no 秘境 seal).
-        ...(task.how ? { how: pick(task.how, lang) } : {}), ...dealOf(content, task, state),
+        ...(task.how ? { how: pick(task.how, lang) } : {}), ...dealOf(content, task, state), ...(task.needs === 'her' ? { her: true } : {}),
         ...(task.game && task.done_line ? { done_line: pick(task.done_line, lang) } : {}),
         ...(hosted[id] ? { hosted: true } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
@@ -570,7 +569,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep ? { asleep: true } : {}), ...(readingNow(state, ctx.now) ? { telling: true } : {}), ...(herAway(content, state) ? { away: herAway(content, state) } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep && !herGameNow(state, ctx.now) ? { asleep: true } : {}), ...(state.companion.asleep && herGameNow(state, ctx.now) ? { out_for: state.her_game.task } : {}), ...(herAway(content, state) ? { away: herAway(content, state) } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
     // 银月的记忆 (rules/memories.mjs): the ones unlocked, and what Ling may say of them — never one still locked.
     ...(memoriesLook(content, state) ? { memories: memoriesLook(content, state) } : {}),
     quest: questBrief(content, state, ctx.now),

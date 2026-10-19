@@ -7,7 +7,6 @@ import { hashOf } from './travel.mjs';
 import { memoriesOf } from './memories.mjs';
 import { inMade, placeName, placeOf, placeOpen, sceneOf, tooHard } from './world.mjs';
 import { sceneLine } from './hui.mjs';
-import { readingNow } from './reading.mjs';
 
 /* The thread — the pull: the scene while one runs, else the next chapter
    and when it opens; nothing when the spine has run out. */
@@ -19,40 +18,44 @@ import { readingNow } from './reading.mjs';
    be given, and the stage stands empty (his rule, 2026-09-17). */
 const companionOf = content => content.world.companion ?? null;
 export const hasCompanion = state => Boolean(state.companion?.joined);
-/* Found, and awake (Hanli, 2026-10-19: 「小游戏的时候, 可以让Yinyue醒过来. Yinyue随时可以醒过来,
-   走剧情的时候再回到木牌里就好了」). Once met she is awake by default — the small games, free play,
-   the map, the 秘境, the nights, the chat — and back in 吴婆婆's fox token only while the story is
-   told: while a passage holds the stage (the page's `reading` hold, rules/reading.mjs, the same one
-   that holds Ling's hands). It ends, she is awake again. The book may still put her out for a
-   reason of its own — an exit's `sleeps`, until a `wakes` (the prologue's faint at the deer):
-   `companion.asleep`, kept only while the save stands inside that span (sleepSpan). Asleep or in
-   the token she walks with the player — her past, her card — but is not present: no lines of hers,
-   no moments, and the engine keeps her out of the chat (SKILL.md `absent_until: companion.awake`). */
-export const herAwake = (state, now = new Date()) => Boolean(state.companion?.joined && !state.companion?.asleep && !readingNow(state, now));
-/* The scenes a book sleep holds: from each `sleeps` exit's next scene, on along the exits, to
-   the first scene that `wakes` her (taken in). A save's `asleep` stands only inside one — an
-   older save left asleep by a sleep the book has since dropped (the token through 卷一,
-   before 2026-10-19) wakes as it is read. */
-const spans = new WeakMap();
-export function sleepSpan(content) {
-  if (spans.has(content)) return spans.get(content);
-  const out = new Set();
-  for (const ch of Object.values(content.chapters ?? {})) {
-    const scenes = ch.scenes ?? {};
-    for (const sc of Object.values(scenes)) for (const e of sc.exits ?? []) {
-      if (!e.sleeps || !e.next) continue;
-      const edge = [e.next];
-      while (edge.length) {
-        const id = edge.shift();
-        if (out.has(id) || !scenes[id]) continue;
-        out.add(id);
-        if ((scenes[id].exits ?? []).some(x => x.wakes)) continue;
-        edge.push(...(scenes[id].exits ?? []).map(x => x.next).filter(Boolean));
-      }
-    }
+/* Found, and awake. The book has her sleep in 吴婆婆's fox token (an exit's `sleeps`: the faint at
+   the deer; the 木牌 from 00-xiuxian), waking where it says (`wakes`: the 火锅 night at wm-laoyin).
+   Asleep she walks with the player — her past, her card in the bag — but she is not present: no
+   lines of hers, no moments, no fights, and the engine keeps her out of the chat (SKILL.md
+   `absent_until: companion.awake`). One thing wakes her outside the book: a small game that needs
+   her (a task or 传闻 game declaring `needs: "her"` — the 画猜 rounds), for as long as its round
+   holds (`her_game`, rules/hergame.mjs; Hanli, 2026-10-19: 「平时和剧情对齐, 只有在小游戏里需要时醒着」).
+   The game over, she is back in the 木牌. */
+export const HER_GAME_TTL_MS = 5 * 60 * 1000;
+export function herGameNow(state, now = new Date()) {
+  const since = Date.parse(state?.her_game?.since ?? '');
+  return Number.isFinite(since) && now.getTime() - since < HER_GAME_TTL_MS;
+}
+export const herAwake = (state, now = new Date()) => Boolean(state.companion?.joined && (!state.companion?.asleep || herGameNow(state, now)));
+/* Met and on her own line, awake or in the 木牌: a game that needs her may be offered from the token
+   (本王考考你, the 秘境 and 传闻 drawings) — starting it wakes her. */
+export const herNear = (content, state) => Boolean(state.companion?.joined && !herAway(content, state));
+/* Asleep by the book, as the save has walked it: the last scene passed whose ways on all put her to
+   sleep (`sleeps`) or all wake her (`wakes`) says which — null when none has. Never a made world's. */
+const sceneIndex = new WeakMap();
+function sceneById(content, id) {
+  if (!sceneIndex.has(content)) {
+    const m = new Map();
+    for (const ch of Object.values(content.chapters ?? {})) for (const [k, sc] of Object.entries(ch.scenes ?? {})) m.set(k, sc);
+    sceneIndex.set(content, m);
   }
-  spans.set(content, out);
-  return out;
+  return sceneIndex.get(content).get(id) ?? null;
+}
+export function bookAsleep(content, state) {
+  if (inMade(state)) return null;
+  let asleep = null;
+  for (const id of state.done_scenes ?? []) {
+    const ways = (sceneById(content, id)?.exits ?? []).filter(e => e.next || e.ends);
+    if (!ways.length) continue;
+    if (ways.every(e => e.sleeps)) asleep = true;
+    else if (ways.every(e => e.wakes)) asleep = false;
+  }
+  return asleep;
 }
 /* Away: the scene stands on a line of the book she does not live on
    (companion.json `lines` — 银月 is the 修仙 world's; a 今 interlude is
@@ -65,17 +68,19 @@ export function herAway(content, state) {
   return line && !lore.lines.includes(line) ? pick(lore.away, state.lang) : null;
 }
 /* The flag the engine's presence reads (SKILL.md `absent_until:
-   companion.awake`): found, not asleep, not in the token for a passage on
-   the stage (herAwake), and not away — so on a line she does not live on,
-   nothing of hers runs: no turn, no moment, no AppTool. Fitted as a save is
-   read and before it is written (the page's `reading` hold too); the same
-   object when it fits already. An `asleep` outside every book sleep goes. */
+   companion.awake`): found, awake (herAwake: not asleep, or out of the token
+   for a game that needs her), and not away — so on a line she does not live
+   on, nothing of hers runs: no turn, no moment, no AppTool. Fitted as a save
+   is read and before it is written (the page's `hergame` hold too); the same
+   object when it fits already. A save the book has asleep and the save does
+   not (written awake through 卷一 by the 10-19 morning's rule, 504b73fc) goes
+   back to the 木牌 as it is read. */
 export function fitPresence(content, state, now = new Date()) {
   const c0 = state?.companion;
   if (!c0?.joined) return state;
-  const stale = c0.asleep && !inMade(state) && !sleepSpan(content).has(state.scene);
-  const c = stale ? (({ asleep, ...rest }) => rest)(c0) : c0;
-  const s = stale ? { ...state, companion: c } : state;
+  const back = !c0.asleep && bookAsleep(content, state) === true;
+  const s = back ? { ...state, companion: { ...c0, asleep: true } } : state;
+  const c = s.companion;
   const want = !herAwake(s, now) ? {} : herAway(content, s) ? { away: true } : { awake: true };
   if (Boolean(c.awake) === Boolean(want.awake) && Boolean(c.away) === Boolean(want.away)) return s;
   const { awake, away, ...rest } = c;

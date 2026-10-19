@@ -55,6 +55,7 @@ export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
 import { fitPresence } from './rules/companion.mjs';
+import { pageHerGame } from './rules/hergame.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';
 export { heardOf, openPromises, remember, settlePromise, writeLedger } from './rules/ledger.mjs';
 export { oddsOf, rollOf } from './rules/breakthrough.mjs';
@@ -162,11 +163,17 @@ function runLocked(verb, args, stateFile, reader) {
   // page's verb says when; never logged: Undo takes back moves, not what was read.
   if (verb === 'reading' && !reader) {
     const r = pageReading(state, args, now);
-    // …and her presence with it: in the token while the passage holds, awake again when it ends
-    // (companion.mjs herAwake) — written now, for the engine reads the file.
+    if (r.keep) writeAtomic(stateFile, stateText(r.keep));
+    return r.result;
+  }
+  // 银月 out of the 木牌 for a small game that needs her, while its round holds (rules/hergame.mjs) —
+  // her presence written with it, for the engine reads the file; never logged.
+  if (verb === 'hergame' && !reader) {
+    const r = pageHerGame(content, state, args, now);
     const keep = r.keep ? fitPresence(content, r.keep, now) : raw && state !== raw ? state : null;
     if (keep) writeAtomic(stateFile, stateText(keep));
-    return r.result;
+    const c = (keep ?? state).companion;
+    return { ...r.result, awake: Boolean(c?.awake), asleep: Boolean(c?.asleep && !c?.awake) };
   }
   // 密室: her old pages are read by her own tool alone (SKILL.md Mishi, `--for=yinyue`) — never
   // Ling's, never the page's door, never in Look (rules/mishi.mjs herMishi).

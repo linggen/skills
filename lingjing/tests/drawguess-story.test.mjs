@@ -89,13 +89,13 @@ const drawTale = (word) => {
   return t;
 };
 
-test('今日传闻: 你画我猜 is Ling\'s to pick only while 银月 is awake — the seed and the lint, not a prompt', () => {
+test('今日传闻: 你画我猜 is Ling\'s to pick once 银月 is met — from the 木牌 too (its round wakes her, 2026-10-19) — the seed and the lint, not a prompt', () => {
   const seedOf = (s) => tale(s, juan, tc(), { action: 'seed' }).result.shape.games.map((g) => g.id);
   assert.ok(!seedOf(taleOpen()).includes('drawguess'), 'not met: not in the seed');
-  assert.ok(!seedOf(asleep(taleOpen())).includes('drawguess'), 'asleep in the 木牌: not in the seed');
+  assert.ok(seedOf(asleep(taleOpen())).includes('drawguess'), 'asleep in the 木牌: in the seed — the round wakes her');
   const up = tale(awake(taleOpen()), juan, tc(), { action: 'seed' }).result.shape.games.find((g) => g.id === 'drawguess');
   assert.ok(up && up.frames.length === 3 && up.words.includes('灯'), 'awake: in the seed, with its frames and words');
-  const refused = tale(asleep(taleOpen()), juan, tc(), { action: 'make', tale: JSON.stringify(drawTale()) }).result;
+  const refused = tale(taleOpen(), juan, tc(), { action: 'make', tale: JSON.stringify(drawTale()) }).result;
   assert.equal(refused.refused, 'not-playable');
   assert.ok(refused.problems.some((p) => /steps\[0\]\.game.*Yinyue/.test(p)), JSON.stringify(refused.problems));
   const bad = tale(awake(taleOpen()), juan, tc(), { action: 'make', tale: JSON.stringify(drawTale('飞机')) }).result;
@@ -120,11 +120,11 @@ const noon = () => { const d = night(); d.setHours(13); return d; };
 const kaoRow = (s, now) => look(s, content, at(now)).tasks?.find((t) => t.id === 'benwang-kao') ?? null;
 const ok = (out) => { assert.equal(out.result.ok, true, JSON.stringify(out.result)); return out.state ?? null; };
 
-test('本王考考你: offered on a night she is awake beside him, after 入门 — not by day, not while she sleeps', () => {
+test('本王考考你: offered on a night she is beside him, after 入门 — from the 木牌 too (its round wakes her) — not by day', () => {
   const s = past();
   assert.ok(kaoRow(s, night()), 'a night, awake');
   assert.equal(kaoRow(s, noon()), null, 'by day: no');
-  assert.equal(kaoRow(asleep(s), night()), null, 'asleep in the 木牌: no');
+  assert.ok(kaoRow(asleep(s), night())?.her, 'asleep in the 木牌: offered, a game that needs her');
   const row = kaoRow(s, night());
   assert.equal(row.light, true, 'a light offer');
   assert.equal(row.deal.who, 'yinyue');
@@ -173,7 +173,7 @@ const RERUN = Object.values(content.chapters).flatMap((c) => c.beats ?? []).find
 const openAt = () => new Date(new Date(PLAYED.state.reruns[RERUN.id].ended_at).getTime() + RERUN.sealed.rerun.every_h * 3600000);
 const atDoor = (s = past(), now = openAt()) => ({ ...s, place: RERUN.sealed.rerun.door, stamina: 100, stamina_at: now.toISOString() });
 
-test('奇遇: a room rolls one small game from the pool — about one in three, never the same twice running, 你画我猜 only while she is awake', () => {
+test('奇遇: a room rolls one small game from the pool — about one in three, never the same twice running, 你画我猜 once she is met (the 木牌 too)', () => {
   const rooms = RERUN.sealed.rerun.rooms, s = past(), seen = new Map();
   let hits = 0, all = 0;
   for (let n = 0; n < 400; n += 1) {
@@ -185,10 +185,14 @@ test('奇遇: a room rolls one small game from the pool — about one in three, 
   assert.ok(hits / all > 0.22 && hits / all < 0.38, `one room in three or four (${(hits / all).toFixed(2)})`);
   for (const id of ['qiyu-drawguess', 'qiyu-rope', 'qiyu-huarong', 'qiyu-qiqiao', 'qiyu-wuziqi']) assert.ok(seen.get(id) > 0, id);
   assert.ok(!seen.has('qiyu-luoshu'), '洛书 retired from the pool (10-19): never drawn');
+  const unmet = { ...s, companion: undefined };
+  let slept = 0;
   for (let n = 0; n < 200; n += 1) {
-    const q = rollQiyu(content, asleep(s), { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw });
-    assert.ok(!Object.values(q).some((x) => x.task === 'qiyu-drawguess'), 'she sleeps: no drawing');
+    const q = rollQiyu(content, unmet, { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw });
+    assert.ok(!Object.values(q).some((x) => x.task === 'qiyu-drawguess'), 'not met: no drawing');
+    slept += Object.values(rollQiyu(content, asleep(s), { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw })).filter((x) => x.task === 'qiyu-drawguess').length;
   }
+  assert.ok(slept > 0, 'in the 木牌: a drawing may roll — its round wakes her');
   const last = { ...s, reruns: { ...s.reruns, [RERUN.id]: { ...s.reruns[RERUN.id], qiyu_last: 'qiyu-huarong' } } };
   for (let n = 0; n < 200; n += 1) {
     const q = rollQiyu(content, last, { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw });
@@ -236,12 +240,11 @@ test('the stage: 本王考考你 stands only on an empty stage (as 二十问), o
   if (lk.tasks.some((t) => t.id === 'benwang-kao')) assert.ok(stageCards(under).some((c) => c.card === 'board' && c.id === 'benwang-kao'), 'a round under way stands');
 });
 
-test('her presence at the 家信: awake through the 观 off the passages — no wake or sleep of its own (folded 2026-10-19)', () => {
+test('her presence at the 家信: asleep in the 木牌 through the 观, out that one night (wm-laoyin `final` wakes, wm-jiaxin `rest` sleeps)', () => {
   const start = new Date('2026-10-15T09:00:00+08:00');
   const at = (target) => playTo(content, newState(content, 'zh', start), target, { now: start }).state;
-  for (const id of ['wm-laoyin', 'wm-jiaxin', 'wm-baishi']) {
-    const c = at(id).companion;
-    assert.ok(c.joined && !c.asleep, `${id}: awake`);
-  }
-  for (const id of ['wm-laoyin', 'wm-jiaxin']) for (const e of Object.values(content.chapters).map((ch) => ch.scenes[id]).find(Boolean).exits) assert.ok(!e.wakes && !e.sleeps, `${id}/${e.id}`);
+  assert.equal(at('wm-laoyin').companion.asleep, true, 'asleep before the final');
+  const night = at('wm-jiaxin');
+  assert.ok(night.companion.joined && !night.companion.asleep, 'out for the 火锅 and the letter');
+  assert.equal(at('wm-baishi').companion.asleep, true, 'back in the 木牌 after');
 });

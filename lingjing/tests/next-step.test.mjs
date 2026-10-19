@@ -32,11 +32,7 @@ test('at 外门 with the story at 柴房: the stage holds 下一步, and its one
   const l = look(s, content, { now: NOW, quests: [] });
   // As he stood: every errand here taken or done (no offer, no board), the 序章's 「完」 put away (the page's 合上).
   const bare = { ...l, offers: [], tasks: [], chapter: { ...l.chapter, close: null } };
-  // 银月 awake in 卷一 (Hanli, 2026-10-19): her 二十问 is on the stage too — it waits behind 下一步, never hides it.
-  assert.ok(stageCards(bare).some((c) => c.card === 'twenty'), 'her day game is there');
   assert.deepEqual(kinds(stageSlots(bare, stageCards(bare)).main), ['next'], JSON.stringify(stageCards(bare)));
-  const asleep = { ...bare, companion: { ...bare.companion, asleep: true }, twenty: undefined };
-  assert.deepEqual(kinds(stageSlots(asleep, stageCards(asleep)).main), ['next'], 'asleep by the book: 下一步 alone');
   assert.equal(l.waypoint.toward.id, 'chaifang');
   const html = cardHtml({ card: 'next' }, { look: { ...l, offers: [] }, words: WORDS.zh, lang: 'zh' });
   assert.match(html, /data-go="chaifang"/);

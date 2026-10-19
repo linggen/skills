@@ -81,9 +81,7 @@ test('the page wires it: the guard, what it locks, its calls, its look, the hint
   assert.doesNotMatch(js, /\[data-dlg-all\]/, 'no 跳过 of its own: it is in the control');
   assert.match(js, /lines\.sync\(null\); pager\.sync\(null\); syncLock\(\); return;/, 'a passage gone from the stage lets the page go');
   assert.match(js, /holdLing\(on\);/, 'and Ling\'s hands with it (rules/reading.mjs)');
-  assert.match(js, /verb\('reading', \{ hold: on \? 1 : 0 \}\)\.then\(\(r\) => \{ back\(\); if \(!on && r\?\.held\) report\('\[scene\] read'\); \}\)/, 'held meanwhile, she hears [scene] read');
-  // 银月 into the 木牌 with the hold, out once the rules answered its end (Hanli, 2026-10-19).
-  assert.match(js, /if \(on && !presenceHeld\) \{ presenceHeld = true;/);
+  assert.match(js, /verb\('reading', \{ hold: on \? 1 : 0 \}\)\.then\(\(r\) => \{ if \(!on && r\?\.held\) report\('\[scene\] read'\); \}\)/, 'held meanwhile, she hears [scene] read');
 });
 
 /* A story element with a 全文 column of six one-line sentences, 40px each, in a 90px band. */

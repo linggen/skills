@@ -4,6 +4,7 @@
 // no seeding, no pay; the result is shown, and 再来 deals a fresh one.
 import { esc } from './esc.js';
 import { mountPure } from './games/mount.js';
+import { verb } from './rules.js';
 
 const q = new URLSearchParams(location.search);
 export const devOnly = (params) => params.get('dev') === '1';
@@ -101,13 +102,20 @@ async function playPage(id, n) {
   if (trace) trace.wireTrace(root.querySelector('.arcade-chat'), mod, lang());
   deal(mount, row);
 }
+/* 银月 as the guesser (画猜): the rules hold her out of the 木牌 for the round, as in the story
+   (rules/hergame.mjs `arcade:<game>` — only her presence, the flag the engine reads; nothing of the
+   story is written), and let her go after. Ling as the guesser needs no hold. */
+function herHold(row) {
+  const hold = (on) => verb('hergame', { hold: on ? 1 : 0, task: `arcade:${row.id}` }).catch(() => null);
+  return { wake: (who) => hold(who === 'yinyue'), rest: () => hold(false) };
+}
 async function deal(mount, row) {
   stop?.abort();
   stop = new AbortController();
   const slot = document.getElementById('slot'), out = document.getElementById('result');
   out.innerHTML = '';
   const reducedMotion = Boolean(matchMedia?.('(prefers-reduced-motion: reduce)').matches);
-  const r = await mount(slot, { lang: lang(), reducedMotion, seed: `arcade|${Date.now()}`, data: row.data ?? {}, signal: stop.signal });
+  const r = await mount(slot, { lang: lang(), reducedMotion, seed: `arcade|${Date.now()}`, data: { ...(row.data ?? {}), ...herHold(row) }, signal: stop.signal });
   if (r.left) return;
   out.innerHTML = `<span class="arcade-won">${esc(r.won ? w().won : w().left)}</span>`
     + (r.grade ? `<span class="dim small">${esc(w().grade)} · ${esc(r.grade)}</span>` : '')

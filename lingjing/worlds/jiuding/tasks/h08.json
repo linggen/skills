@@ -158,6 +158,7 @@
       "id": "jiaxin-letter",
       "kind": "board",
       "game": "drawguess",
+      "needs": "her",
       "period": "once",
       "_game": "Hanli 10-19 (「ai游戏放到游戏中吧……但要结合剧情」; 「AI猜都是Yinyue猜」): 娘 cannot read, so beside each line of his first letter home 小满 draws a small picture (games.json drawguess `sets.jiaxin`: the basins, 爹's bow, the moon over the mountain) and 银月 — out at the 火锅 that night — has to read it; a line counts as written once she names it, in words only when she does not. Never stuck on the model: she cannot be asked (a blind model, no engine, a 测试存档) and 「就写字吧」 writes it in words (`written`). Up to 3 looks a line, no opening look: ~8.7k tokens a look, 9 at most (~78k). Was the 写信 · 擦了又写 tap (games/letter.js, 游戏厅 only now).",
       "title": {

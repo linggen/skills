@@ -277,6 +277,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const who0 = fixed && GUESSERS.includes(data.who) ? data.who : whoKept(data);
   const g = { phase: 'check', who: who0, tool: 'pen', word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null, rounds: null, i: 0, got: 0 };
   let finish = () => {};
+  const wake = () => (typeof data.wake === 'function' ? Promise.resolve(data.wake(g.who)).catch(() => {}) : Promise.resolve());
   root.dataset.phase = g.phase;
   const CHOOSE = new Set(['ready', 'blind', 'far', 'absent']); // the guesser may change only before a round
   const CANT = new Set(['blind', 'far', 'absent', 'off']); //     she cannot be asked: a 家信 may still be written (`data.fallback`)
@@ -418,6 +419,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
 
   /* The engine ran no turn for her mid-round, or the model turned out blind on the first look. */
   const cannot = (phase, text) => {
+    rest();
     clearInterval(g.timer);
     g.loop?.stop();
     g.sid?.then((sid) => closeRound(sid), () => {});
@@ -473,6 +475,9 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const begin = async () => {
     goBtn.disabled = true;
     let word = g.rounds?.[g.i]?.word ?? data.word ?? null;
+    // A round 银月 plays wakes her out of the 木牌 first (`data.wake`: the page's hold on the rules,
+    // rules/hergame.mjs), so the engine has her present for the look; `data.rest` puts her back.
+    await wake();
     // The rules may hand the round its word, and count it (本王考考你's night cap): refused, no round.
     if (typeof data.begin === 'function') {
       const r = await Promise.resolve(data.begin()).catch((e) => ({ ok: false, say: String(e?.message ?? e) }));
@@ -529,15 +534,19 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     sidP?.then((sid) => closeRound(sid), () => {});
   };
 
+  const rest = () => { if (typeof data.rest === 'function') Promise.resolve(data.rest(g.who)).catch(() => {}); };
   const end = (won) => {
     if (g.phase === 'over' || g.phase === 'between') return;
     clearInterval(g.timer);
+    // The round is over: back to the 木牌 once her reaction is said — but for a 家信 with lines still to draw.
+    const last = !g.rounds || g.i + 1 >= g.rounds.length;
     g.loop?.stop();
     lefts();
     const word = lang === 'en' ? g.word.en : g.word.zh;
     log({ kind: 'end', who: g.who, word: g.word.zh, won });
     // Her reaction to the answer, then the round's session goes; the board waits for it (at most ~12 s).
     const said = reveal(won);
+    if (last) said.then(rest);
     const after = (ms, fn) => said.then(() => setTimeout(fn, ms));
     const calls = g.loop?.calls ?? 0;
     // A 家信: the line is written whether she got its picture or not; then the next line, or the letter done.
@@ -584,6 +593,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     finish = (result) => {
       if (settled) return;
       settled = true;
+      rest();
       clearInterval(g.timer);
       g.loop?.stop();
       ro.disconnect();
@@ -609,6 +619,8 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     g.rounds = await setOf(data);
     letter();
     let s;
+    // An opening look (the 游戏厅) is hers too: she is woken for it (`data.wake`, the guesser named).
+    if (data.open ?? !fixed) await wake();
     try { s = await lookFirst(doc, who, data.model ?? null, { open: data.open ?? !fixed, seam: data.seam ?? null, context: ctxLine }); } catch (e) { s = { far: true, err: e }; }
     if (who !== g.who) return; // the guesser changed while this one was asked
     g.model = s.model?.id ?? null;

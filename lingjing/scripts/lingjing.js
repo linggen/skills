@@ -103,29 +103,22 @@ const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动�
 /// She is in Lingjing only once the player has found her (the save's
 /// `companion.joined`; SKILL.md `place.yinyue.absent_until` — the engine keeps
 /// her out of this skill's sessions until then). Every call to her asks this.
-/// Asleep by the book (`companion.asleep`: the faint at the deer) she walks with the
-/// player but is not present: no moments, no body on the stage. Nor on a line of the
-/// book she does not live on (`companion.away`: a 今 interlude, 沈芒's world — the rules
-/// drop her presence flag there too). Otherwise she is here (Hanli, 2026-10-19: awake in
-/// the games, the map, the nights) — and only steps into the 木牌 while a passage holds
-/// the stage (`herTelling`): what is told her then waits it out (voice.js `telling`).
+/// Asleep in 吴婆婆's fox token (prologue-v3), she walks with the player but is
+/// not present: no moments, no body on the stage (`companion.asleep`). Nor on
+/// a line of the book she does not live on (`companion.away`: a 今 interlude,
+/// 沈芒's world — the rules drop her presence flag there too).
 const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.asleep && !look?.companion?.away);
-/// In the 木牌 for a passage: from the page's hold sent (holdLing) until the rules have
-/// written her awake again (the hold's end answered), so nothing reaches her before the
-/// engine's presence (`companion.awake`) says she is back.
-let presenceHeld = false;
-const herTelling = () => presenceHeld;
 /// Her companion moments (hersay.js) reach her asleep too: from the 木牌, in its voice.
 /// 'absent' (not met, or 今线) · 'asleep' · 'awake'.
-const herNow = () => herMode(look, { telling: herTelling() });
+const herNow = () => herMode(look);
 const herNear = () => herNow() !== 'absent';
-/* In a fight she speaks only when she stands in its row (party.json: a member from 卷二; in 卷一's
-   fights, no 问银月 and no bubble). */
+/* In a fight she speaks only when she stands in its row (party.json: a member from 卷二; asleep in the
+   木牌 through 卷一, no 问银月 and no bubble — as her chip reads 「木牌 · 睡着」). */
 const herFights = (b) => herNear() && (b?.brief?.setup?.you?.party ?? []).some((m) => m.id === look?.companion?.id);
 const voice = createVoice({
   // A scratch save (?save=) tells 银月 nothing: she lives in the real game.
   post: (id, fact, flags, opts) => (SCRATCH ? Promise.resolve(false) : postMoment(fact, flags, opts)),
-  sees: () => ({ fighting: Boolean(bout), present: herHere(), telling: herTelling() }),
+  sees: () => ({ fighting: Boolean(bout), present: herHere() }),
 });
 /// Resolves true when she will hear it; false when nobody will (the pet off
 /// answers 503 at once) — a page that waits on her must not wait then.
@@ -191,6 +184,9 @@ function taleBoard(taskId) {
 function mountData(task) {
   const deal = { ...(task?.deal ?? {}) };
   if (SCRATCH) deal.seam = HER_SEAM === 'stub' ? 'stub' : 'off';
+  // A board that needs her (Look's `her`: the task or 传闻 game declares `needs: "her"`) wakes her out
+  // of the 木牌 as its round begins, and puts her back as it ends (rules/hergame.mjs).
+  if (task?.her && task.id) { deal.wake = () => herOut(task.id, true); deal.rest = () => herOut(task.id, false); }
   if (deal.begin) {
     const { verb: name, ...args } = deal.begin;
     deal.begin = async () => {
@@ -201,6 +197,17 @@ function mountData(task) {
   return deal;
 }
 const isTale = (id) => String(id ?? '').startsWith('tale:');
+/* 银月 out of the 木牌 for a round of a game that needs her, or back in it (Hanli, 2026-10-19:
+   「平时和剧情对齐, 只有在小游戏里需要时醒着」): the rules hold her presence (`companion.awake`, what the
+   engine reads) and the chip follows their answer. Awake by the book already, nothing changes. */
+async function herOut(taskId, on) {
+  const r = await verb('hergame', { hold: on ? 1 : 0, task: taskId }).catch(() => null);
+  const c = look?.companion;
+  if (!r?.ok || !c) return r;
+  if (on && c.asleep) { delete c.asleep; c.out_for = taskId; render(); }
+  if (!on && c.out_for) { delete c.out_for; if (r.asleep) c.asleep = true; render(); }
+  return r;
+}
 
 function boardFor(taskId) {
   if (isTale(taskId)) return taleBoard(taskId);
@@ -1197,10 +1204,8 @@ function herTokenHtml() {
   const w = words(), e = codexNow()?.get?.(`${c.id}-fox`) ?? codexNow()?.get?.(c.id);
   const dir = look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding';
   const pic = e?.image ? `<img src="${esc(worldPath(dir, e.image))}" alt="">` : '';
-  // 「木牌 · 睡着」 only while she is in it: a passage on the stage, or a sleep of the book's.
-  const asleep = herNow() === 'asleep';
-  const label = asleep ? w.herAsleep : c.name;
-  return `<button class="yytoken${asleep ? ' sleep' : ''}${herBub ? ' saying' : ''}" data-ask-her title="${esc(w.askHer.replace('{name}', c.name))}">${pic}<span>${esc(label)}</span></button>`;
+  const label = c.asleep ? w.herAsleep : c.name;
+  return `<button class="yytoken${c.asleep ? ' sleep' : ''}${herBub ? ' saying' : ''}" data-ask-her title="${esc(w.askHer.replace('{name}', c.name))}">${pic}<span>${esc(label)}</span></button>`;
 }
 
 /* The weather chip names where the hero stands (Hanli, 2026-10-05: 「蒙山·晴」
@@ -2402,15 +2407,7 @@ function holdLing(on) {
   if (on === lingHeld && (!on || Date.now() - lingHeldAt < HOLD_RENEW_MS)) return;
   lingHeld = on;
   lingHeldAt = Date.now();
-  // 银月 into the 木牌 with it, and out once the rules have her awake again (herTelling).
-  if (on && !presenceHeld) { presenceHeld = true; queueMicrotask(render); }
-  const back = () => {
-    if (on || lingHeld !== false || !presenceHeld) return;
-    presenceHeld = false;
-    if (look?.companion?.telling) delete look.companion.telling;
-    render();
-  };
-  verb('reading', { hold: on ? 1 : 0 }).then((r) => { back(); if (!on && r?.held) report('[scene] read'); }).catch(back);
+  verb('reading', { hold: on ? 1 : 0 }).then((r) => { if (!on && r?.held) report('[scene] read'); }).catch(() => {});
 }
 setInterval(() => { if (lingHeld) holdLing(true); }, HOLD_RENEW_MS);
 let lockHintTimer = null;

@@ -356,10 +356,14 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
       be asked (blind model, no engine, a 测试存档): 「就写字吧」 writes it in words (`written`, plain). ≤ 9 looks ≈ 78k
       tokens, a typical letter 4–5 looks ≈ 40k. The book's passage untouched; 孙二狗's 恩仇簿 line kept;
       games/letter.js stays in the 游戏厅.
-    - **Where she is awake (10-19):** the save has her asleep in the 木牌 from 00-xiuxian through all of 卷一's
-      观 and 秘境, but for the 家信 night. So 本王考考你, the 秘境's 你画我猜 and the 传闻's stand dormant in 卷一
-      today (the rules gate them on her); they come alive wherever the story wakes her (an exit's `wakes`).
-    - **本王考考你** (rules/kao.mjs, task `benwang-kao`): on a night (19:00–06:00) she is awake beside him, after
+    - **Where she is awake (10-19, Hanli: 「平时和剧情对齐, 只有在小游戏里需要时醒着」):** as the book has it —
+      asleep in the 木牌 from 00-xiuxian through 卷一, out the 家信 night (wm-laoyin `final` → wm-jiaxin `rest`) —
+      and for the round of a board that declares `needs: "her"` (tasks 家信 · 本王考考你 · 奇遇 你画我猜, tale.json's
+      drawguess, qiyu.json's entry). Those are offered from the 木牌; the round's start holds her out
+      (`hergame --hold=1 --task=<id>`, rules/hergame.mjs: `companion.awake` written, 5 min TTL, each round renews),
+      its end lets her go. The 游戏厅's 画猜 with her as the guesser holds as `arcade:drawguess` (presence only).
+      二十问 and 问卦's coins are no her-game: they wait for the book to wake her.
+    - **本王考考你** (rules/kao.mjs, task `benwang-kao`): on a night (19:00–06:00) she is beside him (the 木牌 too), after
       入门, out of any run or fight — a light offer: its board stands only on an empty stage, beside the coins
       (as 二十问), or while a round is under way. Each round counted as it begins (`kao open`), 3 a night; the word
       is the rules', one of games.json drawguess `met` the save has met (饼 · 木牌 · 鹿 · 饭桶 · 牙签 · 火锅 · 镜子 ·
@@ -368,7 +372,7 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
       another round. ≤ 3 looks a round: ≤ 9 looks ≈ 78k tokens a night.
     - **秘境 · 奇遇** (rules/qiyu.mjs, worlds/jiuding/qiyu.json; a pool, not one spot): as a rerun of the 外圈 is
       entered, each room (岔口 · 凶崖 · 暗河) rolls 0.3 — about one room a run; a hit draws by weight 你画我猜 3
-      (only while 银月 is awake; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 割藤 2 (rope-gen.js, the frame's thing hung over the
+      (once 银月 is met, the 木牌 too; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 割藤 2 (rope-gen.js, the frame's thing hung over the
       饭桶) · 华容道 2 · 七巧 1 · 五子棋 1 (洛书 until 10-19), never the game the room before drew nor the last run's last. Each entry
       has 2–3 frames grounded in the rooms (the 岔口's carved 「凶」 crack, the 凶崖's steps, the dry 暗河's
       flat stone…) — the board's line, facts only. A win pays a find from the run's own `finds` (as 拾遗) and its
@@ -376,7 +380,7 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
       `rerun enter --qiyu=<task>` forces one into the first room.
     - **今日传闻**: tale.json `drawguess` (`needs: "her"`) — a mute witness who can only sign what he saw, a
       child's half-washed drawing on a wall, a ghost that answers only to a picture. In the seed and past the
-      lint only while 银月 is awake beside him on her line (rules/tale.mjs, never the prompt); Ling may name the
+      lint once 银月 is met and on her line, the 木牌 too (rules/tale.mjs, never the prompt); Ling may name the
       thing (`word`, one of the 卷一 words), else the rules deal it. ≤ 3 looks a step.
     - **断案**: no clean slot — its witnesses talk, and 画猜 runs one way (he draws, she names); a witness who
       draws for him would need the model to draw. Not built.

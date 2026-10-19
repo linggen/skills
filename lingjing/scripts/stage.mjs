@@ -379,9 +379,7 @@ export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'b
 export function withNext(look, cards) {
   if (!look || look.fight || look.seclusion || cards.some(c => c.card === 'next')) return cards;
   if (sideLineOf(look) && !sideStep(look).length) return cards;
-  // 银月's own day game (二十问) is no step of the story: awake through 卷一 now (Hanli, 2026-10-19), it is on
-  // the stage nearly everywhere, and must not hide where the story goes.
-  const doing = cards.some(c => sceneGame(look, c) || (!TELLS_ONLY(look, c) && !HERS.has(c.card) && MAIN.some(r => !r.filler && r.kinds.includes(c.card) && r.kinds[0] !== 'next')));
+  const doing = cards.some(c => sceneGame(look, c) || (!TELLS_ONLY(look, c) && MAIN.some(r => !r.filler && r.kinds.includes(c.card) && r.kinds[0] !== 'next')));
   return doing ? cards : [...cards, { card: 'next' }];
 }
 /* A side-line scene's own next step: its ways on (the scene card's taps), none turned down. */
@@ -390,7 +388,6 @@ export const sideStep = look => (sideLineOf(look) ? (look.scene.panel?.taps ?? [
    treasure's record — is no thing to do: 下一步 stands before it (the crawler, 2026-10-15: after
    药园's fight the stage held 狰's 已收服 card and nothing said 柴房 was next). A shelf, the map's
    roads and a beast still to win over are things to do. */
-const HERS = new Set(['twenty']);
 const TELLING = new Set(['codex', 'creature', 'traits', 'gate', 'tribulation', 'treasure']);
 const TELLS_ONLY = (look, c) => c.card === 'replay' /* optional: 下一步 still stands */ || TELLING.has(c.card) && !(c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id);
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
@@ -422,11 +419,10 @@ export const MAIN = [
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
-  { kinds: ['board', 'duel', 'lundao', 'haggle', 'case', 'duizi', 'rerun'] }, //  a game to play here
+  { kinds: ['board', 'duel', 'lundao', 'twenty', 'haggle', 'case', 'duizi', 'rerun'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do
-  { kinds: ['twenty'] }, //                                              银月's 二十问, the day's game of hers: behind 下一步 (awake in 卷一, 2026-10-19)
   { kinds: ['codex', 'creature', 'item', 'map', 'traits', 'gate', 'tribulation', 'treasure'] }, // what Ling showed
   { kinds: ['hexagram'], filler: true }, //                              the day's coins
 ];

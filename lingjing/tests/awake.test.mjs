@@ -1,152 +1,133 @@
-// 银月 awake through 卷一 (Hanli, 2026-10-19: 「小游戏的时候, 可以让Yinyue醒过来. Yinyue随时可以醒过来,
-// 走剧情的时候再回到木牌里就好了」). Once met she is awake by default — the small games, free play, the
-// map, the 秘境, the nights, the chat — and in 吴婆婆's 木牌 only while a passage of the story holds
-// the stage: the page's `reading` hold (rules/reading.mjs), the one that holds Ling's hands too. The
-// rules answer it (companion.mjs herAwake), the engine's presence flag follows it (fitPresence →
-// `companion.awake`), and the page's voice waits it out (voice.js `telling`).
+// 银月's presence follows the book, and she wakes only for a small game that needs her (Hanli,
+// 2026-10-19: 「平时和剧情对齐, 只有在小游戏里需要时醒着」). In 卷一 she sleeps in 吴婆婆's 木牌 from
+// 00-xiuxian (out the 火锅 night, wm-laoyin → wm-jiaxin); a task or 传闻 game that declares
+// `needs: "her"` is offered from the 木牌, and its round holds her out (rules/hergame.mjs): the rules
+// answer it (companion.mjs herAwake), the engine's presence flag follows (fitPresence →
+// `companion.awake`), and when the round ends she is back in the 木牌.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent, lint } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, playTo, VERBS } from '../scripts/rules.mjs';
-import { fitPresence, herAwake, sleepSpan } from '../scripts/rules/companion.mjs';
-import { pageReading, READING_TTL_MS } from '../scripts/rules/reading.mjs';
-import { rollQiyu } from '../scripts/rules/qiyu.mjs';
-import { draw } from '../scripts/rules/rerun.mjs';
+import { bookAsleep, fitPresence, herAwake, HER_GAME_TTL_MS } from '../scripts/rules/companion.mjs';
+import { needsHer, pageHerGame } from '../scripts/rules/hergame.mjs';
 import { herMode } from '../scripts/hersay.js';
-import { createVoice } from '../scripts/voice.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
 const ROOT = path.resolve(import.meta.dirname, '..');
 const START = new Date('2026-10-15T09:00:00+08:00');
-/* 卷一, past the 秘境 story (古六's door) and well past 00-xiuxian, where the 木牌 once held her for good. */
+/* 卷一, past the 秘境 story (古六's door) and well past 00-xiuxian, where the 木牌 holds her. */
 const PLAYED = playTo(content, newState(content, 'zh', START), 'wm-qianye', { now: START });
 const NIGHT = (() => { const d = new Date(PLAYED.now); d.setDate(d.getDate() + 1); d.setHours(22, 0, 0, 0); return d; })();
 const at = (now) => ({ now, quests: [] });
 const kaoRow = (s, now) => look(s, content, at(now)).tasks?.find((t) => t.id === 'benwang-kao') ?? null;
-const RERUN = Object.values(content.chapters).flatMap((c) => c.beats ?? []).find((b) => b.sealed?.rerun);
-const qiyuGames = (s, n = 300) => {
-  const out = new Set();
-  for (let i = 0; i < n; i += 1) for (const q of Object.values(rollQiyu(content, s, { rerunId: RERUN.id, rooms: RERUN.sealed.rerun.rooms, seed: `aw|${i}`, draw }))) out.add(q.task);
-  return out;
-};
-const telling = (s, now = new Date()) => ({ ...s, reading: { since: now.toISOString() } });
+const hold = (s, task, now = NIGHT) => fitPresence(content, pageHerGame(content, s, { hold: 1, task }, now).keep, now);
 
-test('卷一, off the passages: awake — the save, the presence flag, Look, her mode', () => {
-  const s = structuredClone(PLAYED.state);
-  assert.ok(s.ended.length === 0 || !s.ended.includes('01-ji'), '卷一');
-  assert.ok(s.companion.joined && !s.companion.asleep, JSON.stringify(s.companion));
-  assert.equal(herAwake(s), true);
-  assert.equal(fitPresence(content, s).companion.awake, true, 'the engine reads her present');
+test('卷一 by the book: asleep in the 木牌 — the save, the presence flag, Look, her chip', () => {
+  const s = fitPresence(content, structuredClone(PLAYED.state), NIGHT);
+  assert.deepEqual(Object.keys(s.companion).sort(), ['asleep', 'joined']);
+  assert.equal(herAwake(s, NIGHT), false);
   const l = look(s, content, at(NIGHT));
-  assert.equal(l.companion.asleep, undefined);
-  assert.equal(l.companion.telling, undefined);
-  assert.equal(herMode(l), 'awake');
-});
-
-test('awake in a small game, on the map, at night and in the 秘境 (no awake() forced: the save as played)', () => {
-  const s = structuredClone(PLAYED.state);
-  // her own small game, 二十问: on the stage and open to a tap
-  assert.ok(look(s, content, at(NIGHT)).twenty, '二十问 offered');
-  assert.notEqual(VERBS.twenty(s, content, at(NIGHT), { action: 'open' }).result.refused, 'no-host');
-  // free play on the map: no scene, another place
-  const roam = { ...s, scene: null, place: 'shanmen' };
-  assert.equal(herAwake(roam), true);
-  assert.equal(fitPresence(content, roam).companion.awake, true);
-  // 本王考考你: a night beside him
-  assert.ok(kaoRow(s, NIGHT), '本王考考你 at 22:00');
-  // the 秘境's 奇遇: 你画我猜 may roll
-  assert.ok(qiyuGames(s).has('qiyu-drawguess'), 'the 秘境 drawing');
-});
-
-test('while a passage reads she is in the 木牌: presence off, Look says so, her games wait', () => {
-  const s = telling(structuredClone(PLAYED.state));
-  assert.equal(herAwake(s), false);
-  const fitted = fitPresence(content, s);
-  assert.equal(fitted.companion.awake, undefined, 'the engine keeps her away (absent_until companion.awake)');
-  assert.equal(fitted.companion.asleep, undefined, 'and nothing lasting is written: no `asleep`');
-  const l = look(fitted, content, at(new Date()));
-  assert.equal(l.companion.telling, true);
+  assert.equal(l.companion.asleep, true);
   assert.equal(herMode(l), 'asleep', 'her chip: 木牌 · 睡着');
-  assert.equal(kaoRow(fitted, NIGHT), null, '本王考考你 waits');
-  assert.ok(!qiyuGames(fitted, 120).has('qiyu-drawguess'), 'no drawing');
-  // The page's own hold reads the same before the rules have answered.
-  assert.equal(herMode(look(structuredClone(PLAYED.state), content, at(NIGHT)), { telling: true }), 'asleep');
+  // free play on the map: no scene, the book still has her asleep
+  const roam = fitPresence(content, { ...s, scene: null, place: 'shanmen' }, NIGHT);
+  assert.equal(roam.companion.asleep, true);
+  assert.equal(roam.companion.awake, undefined);
 });
 
-test('when the passage ends she is awake again — ended by the page, or a hold nobody ended lapsing', () => {
-  const now = new Date();
-  const held = fitPresence(content, pageReading(structuredClone(PLAYED.state), { hold: 1 }, now).keep, now);
-  assert.equal(held.companion.awake, undefined);
-  const ended = fitPresence(content, pageReading(held, { hold: 0 }, now).keep, now);
-  assert.equal(ended.reading, undefined);
-  assert.equal(ended.companion.awake, true);
-  const later = new Date(now.getTime() + READING_TTL_MS + 1000);
-  assert.equal(fitPresence(content, held, later).companion.awake, true, 'a tab shut mid-passage: back on the next write');
+test('her day game stays with the book: no 二十问 while she sleeps (问卦 coins and 筑基 her odds ask the same herAwake)', () => {
+  const s = structuredClone(PLAYED.state);
+  const l = look(s, content, at(NIGHT));
+  assert.equal(l.twenty ?? null, null, '二十问 waits for her waking');
+  assert.equal(VERBS.twenty(s, content, at(NIGHT), { action: 'open' }).result.refused, 'no-host');
 });
 
-test('the command line: `reading --hold=1` writes her out of the chat, `--hold=0` back in', () => {
+test('the games that need her are declared, and offered from the 木牌', () => {
+  for (const id of ['jiaxin-letter', 'benwang-kao', 'qiyu-drawguess']) assert.equal(needsHer(content, PLAYED.state, id), true, id);
+  assert.equal(needsHer(content, PLAYED.state, 'mishi'), false);
+  assert.equal(needsHer(content, PLAYED.state, 'arcade:drawguess'), true, 'the 游戏厅\'s 画猜, a game her tasks play');
+  assert.equal(needsHer(content, PLAYED.state, 'arcade:huarong'), false);
+  assert.deepEqual(lint(content), []);
+  // 本王考考你 at night, she asleep: offered, its Look row says it needs her
+  const row = kaoRow(PLAYED.state, NIGHT);
+  assert.ok(row, '本王考考你 offered from the 木牌');
+  assert.equal(row.her, true);
+  assert.equal(VERBS.kao(PLAYED.state, content, at(NIGHT), { action: 'open' }).result.ok, true, 'a round may begin');
+});
+
+test('a round of a game that needs her wakes her; its end puts her back', () => {
+  const s = structuredClone(PLAYED.state);
+  const out = hold(s, 'benwang-kao');
+  assert.equal(out.her_game.task, 'benwang-kao');
+  assert.equal(herAwake(out, NIGHT), true);
+  assert.equal(out.companion.awake, true, 'the engine reads her present for the look');
+  assert.equal(out.companion.asleep, true, 'the book\'s sleep is kept underneath');
+  const l = look(out, content, at(NIGHT));
+  assert.equal(l.companion.asleep, undefined);
+  assert.equal(l.companion.out_for, 'benwang-kao');
+  assert.equal(herMode(l), 'awake');
+  const back = fitPresence(content, pageHerGame(content, out, { hold: 0, task: 'benwang-kao' }, NIGHT).keep, NIGHT);
+  assert.equal(back.her_game, undefined);
+  assert.equal(back.companion.awake, undefined);
+  assert.equal(herMode(look(back, content, at(NIGHT))), 'asleep', 'back in the 木牌');
+  // a hold the page never ended lapses
+  const later = new Date(NIGHT.getTime() + HER_GAME_TTL_MS + 1000);
+  assert.equal(fitPresence(content, out, later).companion.awake, undefined);
+});
+
+test('only a game that needs her, and only her own line', () => {
+  const s = structuredClone(PLAYED.state);
+  assert.equal(pageHerGame(content, s, { hold: 1, task: 'mishi' }, NIGHT).result.refused, 'not-hers');
+  const unmet = { ...s, companion: undefined };
+  assert.equal(pageHerGame(content, unmet, { hold: 1, task: 'benwang-kao' }, NIGHT).result.refused, 'no-host');
+});
+
+test('the 火锅 night is the book\'s own wake: wm-laoyin `final` wakes her, wm-jiaxin `rest` puts her back', () => {
+  const to = (target) => playTo(content, newState(content, 'zh', START), target, { now: START }).state;
+  assert.equal(to('wm-laoyin').companion.asleep, true);
+  const night = to('wm-jiaxin');
+  assert.ok(night.companion.joined && !night.companion.asleep, 'out for the 火锅 and the letter');
+  assert.equal(to('wm-baishi').companion.asleep, true);
+});
+
+test('a save written awake through 卷一 by the morning\'s rule (504b73fc) goes back to the 木牌 as it is read', () => {
+  for (const f of ['waimen.json', 'zhuji-cliff.json', 'mijing-kunzhen.json', 'ji-altar.json']) {
+    const s = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/fixtures/saves', f), 'utf8'));
+    assert.equal(bookAsleep(content, s), true, f);
+    const woken = { ...s, companion: { joined: s.companion.joined, awake: true } };
+    const fitted = fitPresence(content, woken);
+    assert.equal(fitted.companion.asleep, true, f);
+    assert.equal(fitted.companion.awake, undefined, f);
+    assert.equal(fitPresence(content, fitted), fitted, `${f}: fitted once`);
+  }
+  // before the 木牌 the book has no word: a save found before prologue-v3 (the bell at 结丹) stays awake
+  assert.equal(bookAsleep(content, { done_scenes: [] }), null);
+});
+
+test('the command line: `hergame --hold=1` writes her into the chat, `--hold=0` back out', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-awake-'));
   try {
     const file = path.join(data, 'state.json');
     fs.writeFileSync(file, JSON.stringify(PLAYED.state));
     const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], {
       cwd: ROOT, encoding: 'utf8',
-      env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: new Date().toISOString() },
+      env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NIGHT.toISOString() },
     }).stdout);
     const saved = () => JSON.parse(fs.readFileSync(file, 'utf8')).companion;
-    cli('reading', '--hold=1');
+    const on = cli('hergame', '--hold=1', '--task=arcade:drawguess');
+    assert.deepEqual([on.ok, on.awake, on.asleep], [true, true, false]);
+    assert.equal(saved().awake, true, 'present for the engine');
+    const off = cli('hergame', '--hold=0', '--task=arcade:drawguess');
+    assert.deepEqual([off.ok, off.awake, off.asleep], [true, false, true]);
     assert.equal(saved().awake, undefined, 'in the 木牌');
-    assert.equal(cli('look').companion.telling, true);
-    cli('reading', '--hold=0');
-    assert.equal(saved().awake, true, 'awake again');
+    assert.equal(saved().asleep, true);
   } finally {
     fs.rmSync(data, { recursive: true, force: true });
   }
-});
-
-test('the book\'s own sleep stays: the faint at the deer, until she wakes that night — and only there', () => {
-  assert.deepEqual([...sleepSpan(content)].sort(), ['00-dusk', '00-rent']);
-  const faint = { ...structuredClone(PLAYED.state), chapter: '00-prologue', scene: '00-rent', companion: { joined: '2026-10-01', asleep: true } };
-  assert.equal(fitPresence(content, faint).companion.asleep, true);
-  assert.equal(herAwake(faint), false);
-});
-
-test('old saves load fine: `asleep` from the 木牌 through 卷一 wakes as the save is read', () => {
-  for (const f of ['waimen.json', 'zhuji-cliff.json', 'mijing-kunzhen.json', 'ji-altar.json']) {
-    const s = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/fixtures/saves', f), 'utf8'));
-    assert.equal(s.companion.asleep, true, `${f} was saved asleep`);
-    const fitted = fitPresence(content, s);
-    assert.equal(fitted.companion.asleep, undefined, f);
-    assert.equal(fitted.companion.awake, true, f);
-    assert.equal(fitPresence(content, fitted), fitted, `${f}: fitted once`);
-  }
-});
-
-test('the page\'s voice waits a passage out: every moment held (big ones too), said once it ends', () => {
-  let t = 1_000_000;
-  const posts = [];
-  const seen = { fighting: false, present: true, telling: true };
-  const v = createVoice({ now: () => t, post: (id) => { posts.push(id); return true; }, sees: () => seen });
-  assert.equal(v.moment('scene_end', 'a scene passed').verdict, 'held', 'a story node mid-passage');
-  assert.equal(v.moment('won', 'x').verdict, 'held');
-  t += 10_000;
-  assert.equal(v.tick(), null, 'nothing while the passage holds');
-  assert.deepEqual(posts, []);
-  seen.telling = false;
-  t += 1000;
-  assert.deepEqual(v.tick(), ['scene_end', 'won'], 'the story node reaches her after the reading');
-  assert.deepEqual(posts, ['scene_end', 'won']);
-  // A big one held over a passage goes whatever the budget: a line just heard does not hold it back.
-  seen.telling = true;
-  v.moment('chapter', 'a chapter ended');
-  v.heard();
-  seen.telling = false;
-  t += 1000;
-  assert.deepEqual(v.tick(), ['chapter']);
 });

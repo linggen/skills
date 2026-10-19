@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "斗法小队 (cards.md § 1 · § 5, Hanli 2026-10-16): who stands beside 小满 in a fight. A member is a person with their own deck and 气血 (a share of his), never a card; their cards are theirs (cards.json `owner`) and they play them. `by_hui` is who fights beside him in a 回 of the book (第七回 h11: 阿禾 and 孙二狗 on the errands — 「一年里他们揭的第七块牌」; 第八回 h09 and 第九回 h10: 阿禾 — 「孙二狗没有来」); a scene's fight says its own (`foe.party` on the exit game: 第五回's 邹青松 with 阿禾 behind the wall, 秦雁's spar and the 双龙 alone). 银月 is a member from the 卷 named (`juan`: 卷二), never a card in a fight before it — awake in 卷一 off the story's passages (Hanli, 2026-10-19), she still fights none of its fights.",
+  "_about": "斗法小队 (cards.md § 1 · § 5, Hanli 2026-10-16): who stands beside 小满 in a fight. A member is a person with their own deck and 气血 (a share of his), never a card; their cards are theirs (cards.json `owner`) and they play them. `by_hui` is who fights beside him in a 回 of the book (第七回 h11: 阿禾 and 孙二狗 on the errands — 「一年里他们揭的第七块牌」; 第八回 h09 and 第九回 h10: 阿禾 — 「孙二狗没有来」); a scene's fight says its own (`foe.party` on the exit game: 第五回's 邹青松 with 阿禾 behind the wall, 秦雁's spar and the 双龙 alone). 银月 sleeps in the 木牌 through 卷一: she is a member from the 卷 she wakes in (`juan`), never a card in a fight before it.",
   "lead": "xiaoman",
   "members": {
     "ahe": {

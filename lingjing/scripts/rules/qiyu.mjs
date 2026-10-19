@@ -5,15 +5,15 @@
 // The pool, its odds and each entry's frames are data (worlds/<id>/qiyu.json, keyed by the rerun's
 // beat id): as a run is entered (rules/rerun.mjs enterRun) each room rolls `chance`; a hit draws an
 // entry by `weight` — never the game the room before it drew, nor the last one the previous run drew,
-// and an entry that `needs: "her"` (你画我猜: 银月 names the picture) only while she is awake beside
-// him on her own line. The board stands in that room while the run is on (Look's tasks, `qiyu`); its
+// and an entry that `needs: "her"` (你画我猜: 银月 names the picture) only once she is met and on her
+// own line — asleep in the 木牌 too: the round wakes her (rules/hergame.mjs). The board stands in that room while the run is on (Look's tasks, `qiyu`); its
 // win counted pays a find drawn from the run's own `finds` (as 拾遗 does) and, its first clear ever,
 // the small-game 灵石 (balance.json `boards`, tasks.mjs boardPay). Nothing here names a 秘境.
 import fs from 'node:fs';
 import path from 'node:path';
 import { pick } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
-import { herAwake, herAway } from './companion.mjs';
+import { herNear } from './companion.mjs';
 import { stow } from './pouch.mjs';
 // rerun.mjs rolls the 奇遇 as a run is entered; its `draw` and `rerunsOf` are function declarations, safe across the cycle.
 import { draw as drawOf, rerunsOf } from './rerun.mjs';
@@ -30,8 +30,8 @@ export function qiyuData(content) {
 }
 const poolOf = (content, rerunId) => qiyuData(content)?.[rerunId] ?? null;
 const taskOf = (content, id) => (content.tasks?.tasks ?? []).find(t => t.id === id) ?? null;
-const herHere = (content, state) => herAwake(state) && !herAway(content, state);
-const entryUp = (content, state, e) => e.needs !== 'her' || herHere(content, state);
+// Met and on her own line, in the 木牌 or not: the drawing's round wakes her (rules/hergame.mjs).
+const entryUp = (content, state, e) => e.needs !== 'her' || herNear(content, state);
 const wordsOf = (content, e) => (e.words ? (content.games?.games ?? []).find(g => g.id === 'drawguess' && g.data?.[e.words])?.data[e.words] ?? [] : []);
 
 const byWeight = (list, u) => {

@@ -11,7 +11,7 @@
 // FIRST clear only, by the looks it took (balance.json `boards`: 1 look best, 2 good, more plain).
 import { dayKey, pick, seedOf } from '../state.mjs';
 import { clone, refuse, spendStamina } from './core.mjs';
-import { herAwake, herAway } from './companion.mjs';
+import { herNear } from './companion.mjs';
 import { isLocked } from './locks.mjs';
 import { hashOf } from './travel.mjs';
 import { nightNow, passed } from './world.mjs';
@@ -25,10 +25,10 @@ export function nightKey(now) {
 }
 const tonight = (state, now) => (state.kao?.night === nightKey(now) ? state.kao : null);
 
-/* Whether she may set him one now: night, she awake beside him on her own line, after 入门, out of
-   any instance, run or fight. */
+/* Whether she may set him one now: night, she beside him on her own line — from the 木牌 too: the
+   round wakes her (rules/hergame.mjs) — after 入门, out of any instance, run or fight. */
 function kaoUp(content, state, now) {
-  return Boolean(kaoTask(content)) && herAwake(state) && !herAway(content, state) && nightNow(content, now)
+  return Boolean(kaoTask(content)) && herNear(content, state) && nightNow(content, now)
     && !isLocked(content, state, 'wealth') && !state.sealed && !state.rerun && !state.fight;
 }
 

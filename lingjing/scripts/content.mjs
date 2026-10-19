@@ -1189,6 +1189,9 @@ function lintTask(task, content, ids, bad) {
   // A board's own words (`how`, in place of its game's) and deal (`deal`, handed to the game's newGame).
   if (task.how != null && !(task.kind === 'board' && task.game && pair(task.how))) bad(where, 'how is a game board\'s line, in zh and en');
   if (task.deal != null && !(task.kind === 'board' && task.game && typeof task.deal === 'object' && !Array.isArray(task.deal))) bad(where, 'deal is a game board\'s options object');
+  // A board 银月 plays in (she guesses: `deal.who`) wakes her for its round — and says so (rules/hergame.mjs).
+  if (task.needs != null && task.needs !== 'her') bad(where, 'needs is "her" or nothing');
+  if (task.deal?.who === 'yinyue' && task.needs !== 'her') bad(where, '银月 plays it (deal.who): it needs: "her"');
   for (const e of task.ledger ?? []) if (!['恩', '仇', '诺'].includes(e.kind) || !pair(e.what) || !(content.people?.people ?? []).some(p => p.id === e.who)) bad(where, 'a ledger line needs a known person, 恩/仇/诺, and its what in zh and en');
 }
 

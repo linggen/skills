@@ -213,7 +213,7 @@ field. The fields:
 | exit `key` | A riddle or a pool: the day's is one unseen, `choices` offered; a miss brings the `hint` and greys that answer; it never shuts (2026-10-15) — from the second miss (`stuck`) the page offers 「算了，往下走」 (Resolve `pass`: the way on, no reward). |
 | exit `value` · `born` | A name the player gives on the page's card (none ships since the hero was fixed; a `gender` on it is refused); 生辰 → 灵根 (rules/roots.mjs, private, skippable). |
 | exit `game`, `stamina`, `mark`, `ledger`, `set` | A board or fight the page witnesses; toil that costs 体力; a remembered choice; 恩仇簿 entries; state set. |
-| exit `joins` · `sleeps` · `wakes` · `memory` | 银月 found; asleep by the book's own reason (the deer faint) and woken; a colour memory granted (only from a 鼎). Otherwise she is awake, in the 木牌 only while a passage holds the stage (the page's `reading` hold → `companion.awake` unset; Hanli, 2026-10-19). |
+| exit `joins` · `sleeps` · `wakes` · `memory` | 银月 found, asleep in the token, woken; a colour memory granted (only from a 鼎). The book's sleep is hers to keep: she is out of the 木牌 otherwise only for a round of a board that declares `needs: "her"` (a task row, a 传闻 game, 奇遇 entry; offered from the 木牌 — the page's `hergame` hold, rules/hergame.mjs; Hanli, 2026-10-19). |
 | exit `next` · `stay` · `ends` | Exactly one. |
 
 The lint also refuses an unreachable scene, a chapter with no ending, a
