@@ -153,7 +153,7 @@ test('the scene is ready for the juice: a canvas over the scene, the mute toggle
   assert.match(h, /<canvas class="g-da-fx" data-fx=""/);
   assert.match(h, /data-da-mute=""/);
   assert.match(h, /class="g-da-read/);
-  assert.match(h, /\d+% · \d+°/);
+  assert.match(h, /\d+% · -?\d+°/);
   assert.ok(s.world.cues.some((c) => c.k === 'creak'), 'the bow creaks as it comes back');
   s = da.act(s, { g: 'release' }).state;
   assert.ok(s.world.cues.some((c) => c.k === 'twang'), 'and twangs');
