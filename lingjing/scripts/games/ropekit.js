@@ -10,13 +10,16 @@
 //   grade(s)                the won grade (from s.best, the stars); `skipGrade` when fed by hand
 //   quote                   the book's line, shown above the board (optional)
 //   cls                     the board's own class
+//   pack(s, r)              坠's picture (the weight under the thing), centred on 0,0 (radius r)
+//   stone(st)               a stone's picture when the scene paints its own (a ledge, a spur); '' draws none
+//   backdrop(s)             the board's ground (the cave's by default)
 // The kit keeps the rest the same everywhere: cut (tap or swipe), puff, pop; a miss lays it again at
 // once; after `max_misses` the skip button; the settle eased up to FAST×; flecks, popping stars,
 // the teaching ring for the tool met the first time; the frame painter; the mount contract.
 import { Matter } from './physics.js';
 import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
-import { blowGust, buildWorld, cutVine, dist, outOf, popBubble, stepWorld, calm as hangsStill, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
+import { blowGust, buildWorld, cutPack, cutVine, dist, outOf, popBubble, stepWorld, calm as hangsStill, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
 import { FALLBACK, MOUTH_R, STAR_R } from './rope-gen.js';
 import { crowsPicture, sealsPicture, springPicture, toolMark } from './rope-art.js';
 
@@ -29,7 +32,7 @@ export const FAST_AFTER = 300;
 export const RAMP_MS = 500;
 const MISS_MS = 650, REST_MS = 700, FLECK_MS = 420, POP_MS = 520;
 const ART = new URL('../../worlds/jiuding/art/', import.meta.url).href;
-const BUBBLE = `${ART}games/bubble.webp`, THORNS = `${ART}games/thorns.webp`;
+const BUBBLE = `${ART}games/bubble.webp`, THORNS = `${ART}games/thorns.webp`, PUFF = `${ART}games/bread/puff.webp`, SPARK = `${ART}games/spark.webp`;
 export const esc = (v) => String(v).replace(/[&"<>]/g, (c) => `&#${c.charCodeAt(0)};`);
 export const fill = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 
@@ -45,6 +48,8 @@ const ease = (x) => x * x * (3 - 2 * x);
    settles (hung on a vine or held in a bubble, no puff). A fall, a roll, a puff: always its own pace. */
 export function paceOf(s) {
   if (s.phase !== 'play' || !s.moves) return 1;
+  // A level built on swinging (`air`, 拽): the swing is the clock he times a cut by — never quickened.
+  if (s.level.air != null) return 1;
   const since = s.clock - (s.movedAt ?? 0) - FAST_AFTER;
   if (since <= 0) return 1;
   const w = s.swing;
@@ -91,6 +96,24 @@ function bubblePicture(w, i) {
 const thornPicture = (t) => `<g class="g-ft-thorns" transform="translate(${t.x} ${t.y}) rotate(${t.a ?? 0})"><image href="${THORNS}" x="${-t.w / 2 - 8}" y="${-t.h / 2 - 10}" width="${t.w + 16}" height="${t.h + 20}" preserveAspectRatio="none"/></g>`;
 const stonePicture = (st) => `<g transform="translate(${st.x} ${st.y}) rotate(${st.a ?? 0})"><rect class="g-b-stone" x="${-st.w / 2}" y="${-st.h / 2}" width="${st.w}" height="${st.h}" rx="${n(st.h / 2.4)}"/>`
   + `<path class="g-b-stone-line" d="M${-st.w / 2 + 6} ${-st.h / 2 + 2} q${st.w / 3} -3 ${st.w - 14} 1"/></g>`;
+/* 坠: the strap (a vine-like line, cut like one) and the weight on it; once cut, the weight falls alone. */
+function strapPoints(w, at = (b) => b.position) {
+  return [at(w.bread), at(w.pack.body)];
+}
+function packPicture(s, spec, live) {
+  const p = s.swing.pack;
+  if (!p) return '';
+  const b = p.body, r = b.circleRadius;
+  const strap = p.cut ? '' : `<g data-strap="">${vineStrokes(strapPoints(s.swing), null)}</g>`;
+  if (b.position.y > H + 60) return strap;
+  return strap + `<g class="g-rope-pack" transform="translate(${n(b.position.x)} ${n(b.position.y)}) rotate(${n((b.angle * 180) / Math.PI)})">${spec.pack?.(s, r) ?? `<circle class="g-b-stone" r="${r}"/>`}</g>`;
+}
+function strapHit(s, live) {
+  const p = s.swing.pack;
+  if (!p || p.cut || !live) return '';
+  const [a, b] = strapPoints(s.swing);
+  return `<line class="g-vine-hit" x1="${n(a.x)}" y1="${n(a.y)}" x2="${n(b.x)}" y2="${n(b.y)}" data-g="cut" data-g-swipe="" data-v="pack" data-k="0"/>`;
+}
 function gustPicture(s) {
   const g = s.level.gust;
   if (!g) return '';
@@ -99,17 +122,20 @@ function gustPicture(s) {
   const streaks = on ? [-0.6, -0.2, 0.25, 0.65].map((f, i) => `<path class="g-gust-streak" d="M${n(x + dir * 26)} ${n(y + f * band)} q${n(dir * (120 + i * 30) * reach * 0.5)} ${n(-6 + i * 3)} ${n(dir * (120 + i * 30) * reach)} 0"/>`).join('') : '';
   return `<rect class="g-gust-band" x="0" y="${y - band}" width="${W}" height="${band * 2}"/>${streaks}`
     + `<g class="g-puff${on ? ' is-on' : ''}${s.must === 'gust' ? ' g-teach' : ''}" transform="translate(${x} ${y})" data-g="gust"><circle class="g-puff-hit" r="30"/>`
-    + `<path class="g-puff-cloud" d="M-16 6 q-6 -12 6 -14 q4 -10 14 -4 q10 -4 12 6 q8 2 4 10 q-6 6 -36 2Z" transform="scale(${dir} 1)"/></g>`;
+    // the painted puff (喂饼's, local FLUX) — no code-drawn cloud (Hanli 10-19, on 忍字's frame)
+    + `<image class="g-puff-art" href="${PUFF}" x="-26" y="-16" width="52" height="32" transform="scale(${dir} 1)"/></g>`;
 }
+// 灵光: the painted mote (local FLUX, 2026-10-19 — they were code-drawn red dots)
+const sparkImg = () => `<image class="g-ft-spark" href="${SPARK}" x="${-STAR_R * 1.6}" y="${-STAR_R * 1.6}" width="${STAR_R * 3.2}" height="${STAR_R * 3.2}"/>`;
 function starsPicture(s) {
   return s.level.stars.map(([x, y], i) => {
     if (s.caught[i]) {
       const age = s.clock - (s.starI === i ? s.starAt : -1e9);
       if (!(age >= 0 && age < POP_MS) || calmOf(s)) return '';
       const k = age / POP_MS;
-      return `<g class="g-ft-star is-pop" transform="translate(${x} ${y}) scale(${n(1 + k * 1.6, 2)})" opacity="${n(1 - k, 2)}"><circle r="${STAR_R - 3}"/></g>`;
+      return `<g class="g-ft-star is-pop" transform="translate(${x} ${y}) scale(${n(1 + k * 1.6, 2)})" opacity="${n(1 - k, 2)}">${sparkImg()}</g>`;
     }
-    return `<g class="g-ft-star" transform="translate(${x} ${y})"><circle class="g-ft-glow" r="${STAR_R}"/><circle r="${STAR_R - 6}"/></g>`;
+    return `<g class="g-ft-star" transform="translate(${x} ${y})">${sparkImg()}</g>`;
   }).join('');
 }
 const flecks = (s) => (calmOf(s) ? '' : (s.swing.cuts ?? []).map((c) => splash(c.x, c.y, (s.swing.clock - c.at) * (700 / FLECK_MS), { r: 7 })).join(''));
@@ -140,9 +166,15 @@ function watch(key, swing) {
 function paintSwing(svg, w) {
   const k = Math.min(3, Math.max(0, (performance.now() - (w.wall ?? 0)) / STEP_MS));
   const at = (b) => ({ x: b.position.x + b.velocity.x * k, y: b.position.y + b.velocity.y * k });
-  const p = at(w.bread), a = w.bread.angle + w.bread.angularVelocity * k;
+  const p = at(w.bread), a = w.upright ? 0 : w.bread.angle + w.bread.angularVelocity * k;
   svg.querySelector('.g-ft-item')?.setAttribute('transform', `translate(${n(p.x)} ${n(p.y)}) rotate(${n((a * 180) / Math.PI)})`);
   w.vines.forEach((v, i) => { const g = svg.querySelector(`[data-vine="${i}"]`); if (g) g.innerHTML = vineStrokes(vinePoints(v, w.bread, at), v.cut); });
+  if (w.pack) {
+    const q = at(w.pack.body);
+    svg.querySelector('.g-rope-pack')?.setAttribute('transform', `translate(${n(q.x)} ${n(q.y)}) rotate(${n((w.pack.body.angle * 180) / Math.PI)})`);
+    const g = svg.querySelector('[data-strap]');
+    if (g) g.innerHTML = w.pack.cut ? '' : vineStrokes(strapPoints(w, at), null);
+  }
   w.bubbles.forEach((b, i) => { if (b.state === 'held') svg.querySelector(`.g-ft-bubble[data-i="${i}"]`)?.setAttribute('transform', `translate(${n(p.x)} ${n(p.y)})`); });
 }
 function paintFrame() {
@@ -160,6 +192,7 @@ export function makeRopeGame(spec) {
   function lay(s) {
     const swing = buildWorld(s.level);
     swing.cuts = [];
+    swing.upright = Boolean(spec.upright); // a person hangs upright; a 饼 tumbles
     watch(s.key, swing);
     return { ...s, phase: 'play', t: 0, moves: 0, swing, caught: s.level.stars.map(() => false) };
   }
@@ -183,9 +216,17 @@ export function makeRopeGame(spec) {
     if (a && b) s.swing.cuts.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, at: s.swing.clock });
     return true;
   }
+  // 坠: the strap under the thing, cut like a vine (one segment); the weight falls away.
+  function strapCut(s) {
+    const p = s.swing.pack;
+    if (!p || p.cut || !cutPack(s.swing)) return false;
+    const a = s.swing.bread.position, b = p.body.position;
+    s.swing.cuts.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, at: s.swing.clock });
+    return true;
+  }
   const moved = (s, note) => ({ ...s, note, moves: s.moves + 1, movedAt: s.clock });
   const VERBS = {
-    cut: (s, d) => (s.phase === 'play' && cutAt(s, Number(d.v), Number(d.k)) ? moved(s, 'cut') : null),
+    cut: (s, d) => (s.phase === 'play' && (d.v === 'pack' ? strapCut(s) : cutAt(s, Number(d.v), Number(d.k))) ? moved(s, 'cut') : null),
     gust: (s) => (s.phase === 'play' && blowGust(s.swing, s.level) ? { ...moved(s, 'gust'), gustAt: s.clock } : null),
     pop: (s, d) => (s.phase === 'play' && popBubble(s.swing, Number(d.i ?? 0)) ? { ...moved(s, 'pop'), popAt: s.clock } : null),
     retry: (s) => (['play', 'miss'].includes(s.phase) ? lay({ ...s, note: 'lay' }) : null),
@@ -205,7 +246,8 @@ export function makeRopeGame(spec) {
     });
     if (ev.broke) return miss(s, 'broke');
     if (ev.stolen) return miss(s, 'stolen');
-    if (s.moves > 0 && dist(p, L.mouth) < MOUTH_R + BREAD_R * 0.4) return eat(s);
+    // `reach`: a level whose goal is a ledge, not a mouth, may set how near counts (拽, 2026-10-19).
+    if (s.moves > 0 && dist(p, L.mouth) < (L.reach ?? MOUTH_R + BREAD_R * 0.4)) return eat(s);
     const free = w.vines.every((v) => v.cut != null) && !anyHeld(w);
     w.rest = free && hangsStill(w) ? w.rest + STEP_MS : 0;
     if (outOf(w) || (w.rest >= REST_MS && !L.gust && !mayRegrow(w))) return miss(s, 'miss');
@@ -239,7 +281,7 @@ export function makeRopeGame(spec) {
 
   function thingAt(s, x, y, angle, scale = 1) {
     const r = s.level.r ?? BREAD_R;
-    return `<g class="g-bing g-ft-item" transform="translate(${n(x)} ${n(y)}) rotate(${n((angle * 180) / Math.PI)}) scale(${n(scale, 2)})">${spec.thing(s, r)}</g>`;
+    return `<g class="g-bing g-ft-item" data-see="thing" transform="translate(${n(x)} ${n(y)}) rotate(${n(spec.upright ? 0 : (angle * 180) / Math.PI)}) scale(${n(scale, 2)})">${spec.thing(s, r)}</g>`;
   }
   function playScene(s) {
     const w = s.swing, live = s.phase === 'play', b = w.bread, L = s.level;
@@ -249,12 +291,12 @@ export function makeRopeGame(spec) {
       thing = k < 1 ? thingAt(s, f.x + (mx - f.x) * k, f.y + (my + 8 - f.y) * k, b.angle, 1 - 0.7 * k) : '';
     } else if (s.phase !== 'end') thing = thingAt(s, b.position.x, b.position.y, b.angle);
     const fx = s.phase === 'miss' && !calmOf(s) ? splash(b.position.x, Math.min(b.position.y, FLOOR - 4), s.t, { r: 11 }) : '';
-    return scene(W, H, (spec.backdrop?.(s) ?? ground()) + gustPicture(s) + (L.stones ?? []).map(stonePicture).join('') + (L.springs ?? []).map((sp) => springPicture(sp)).join('')
+    return scene(W, H, (spec.backdrop?.(s) ?? ground()) + gustPicture(s) + (L.stones ?? []).map((st) => spec.stone?.(st) ?? stonePicture(st)).join('') + (L.springs ?? []).map((sp) => springPicture(sp)).join('')
       + (L.thorns ?? []).map(thornPicture).join('') + sealsPicture(w, L)
       + spec.target(s, calmOf(s)) + starsPicture(s) + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase)).join('') + crowsPicture(w)
-      + w.bubbles.map((_, i) => bubblePicture(w, i)).join('') + thing + flecks(s) + fx + (s.must && s.must !== 'gust' ? teachMark(s) : '')
+      + w.bubbles.map((_, i) => bubblePicture(w, i)).join('') + thing + packPicture(s, spec, live) + flecks(s) + fx + (s.must && s.must !== 'gust' ? teachMark(s) : '')
       // The vines' cut lines lie over everything: a tap on a vine above a bubble cuts the vine, never pops it.
-      + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase, 'hits')).join(''), `g-bread-cave g-ft-cave ${spec.cls ?? ''}`)
+      + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase, 'hits')).join('') + strapHit(s, live), `g-bread-cave g-ft-cave ${spec.cls ?? ''}`)
       .replace('<svg ', `<svg data-swing="${esc(s.key)}" `);
   }
   function lineOf(s, t) {

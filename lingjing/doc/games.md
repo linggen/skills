@@ -144,7 +144,7 @@ Each slot: the scene, what the book drops or steers, the element it brings.
 | 算盘 | 00-uncle (cut; empty) | the night's sums; 「五两银子，一年」 | five taels → 舅舅's purse (only if Hanli wants a beat here) | regrowing vine | 3 |
 
 **The module's tools** (rope.js `ELEMENTS`, each data-declared, taught the first time with a ring and a line):
-风 (puff) · 灵气泡 · 荆棘 · 会再长的藤 · 弹竹 · 双印 (twin seals) · 乌鸦 (crow). The 饭桶 brings them one a day
+风 (puff) · 灵气泡 · 荆棘 · 会再长的藤 · 弹竹 · 双印 (twin seals) · 乌鸦 (crow) · 坠 (a weight on a strap under the thing, 拽 10-19; story only, not in the 饭桶's days). The 饭桶 brings them one a day
 (days 2–8); the three story beats teach 弹竹 (忍字), 灵气泡 (认路) and 乌鸦 (算账). Not built yet, proposed:
 浮空符 (flip the thing's gravity a moment — a 符 he owns, so the card law gates it), 磁石 (pulls metal: 火柴, 铜钱),
 旋风 (spins and lifts it).
@@ -157,10 +157,29 @@ quoted, the page's skip and the task's pay — Hanli picks which to build):
 - 算盘 (00-uncle): five taels dropped through twin seals into 舅舅's purse — 「五两银子，一年」 (only if he wants a beat here).
 - 扔石听声 (00-cave): going to the throw module (射鹿's), not this one.
 - Second tier, if he finds them not fun: 烙饼 (the flatbread flipped onto a springy bamboo into the pan), 拽
-  (爹's rope: cut his pack free so he swings to the ledge), 禹步 (a 灵气泡 carried square to square past 荆棘).
+  (爹's rope: cut his pack free so he swings to the ledge — **built 10-19**, `fallrope`, § 拽 below), 禹步 (a 灵气泡 carried square to square past 荆棘).
 
 Also **replace with 割绳子 or another proven mechanic if it isn't fun** — Hanli plays and decides:
 烙饼, 拽, 小周天, 禹步 (the second tier) and 吹鹅毛.
+
+## 拽 · 拽爹上崖 — 割绳子 with a timed cut (built 10-19, `fallrope`)
+
+Hanli 10-19 「拽爹的也不好玩」, and harder than 喂饼. 00-fall's `fall-storm` (id, title, line, grades kept)
+plays one hand-made level on the kit: 爹 hangs over the drop on two ropes — 0 from a pine root out over the
+drop, 1 from the root above the slope — his pack (**坠**, new in rope.js: a weight on a strap under the thing,
+the strap cut like a vine) dragging under him. The ledge is on the cliff side, out past the end of his swing.
+- **The read:** with the pack on, his swing in snags on the rock spur below (no order wins); rope 1 first
+  swings him out over the drop. So: the strap, rope 0, and rope 1 **cut as he comes to the end of his swing
+  toward the ledge** — a 0.40 s window ~1.1 s after the cut, early drops him in the drop, late swings him back.
+- **The storm's gust** (the puff): tapped as he swings in, it carries him higher — the cut window widens to
+  0.6–1.1 s and the third 灵光 lies only up there. Stars 3 → clean, 1–2 → steady, 0 → rough.
+- A swing level (`air` 0.008 on the hung thing, never quickened): the swing is the clock; it keeps going a few
+  times, so one lay gives two or three chances. A snag can be saved: strap, then the gust.
+- **Hands** (bots/fallrope.js, the same `decide` in the node sims and in play-human's swing hand on the live
+  page): casual 20/20 won in 90 s, median 31 s, most after 1–4 misses, ★3 on about half; sloppy 15/20,
+  median 49 s; idle never. The first-ever 割绳子 the player meets (拽 comes before 喂饼) — the teach ring and
+  line point at the strap.
+- Art: 爹, the pack, the ledge, the spur and the storm cliff painted by local FLUX (tools/paint-rope-flux.py).
 
 ## 古一 · 古二 — the prologue's beats
 
@@ -176,7 +195,7 @@ Also **replace with 割绳子 or another proven mechanic if it isn't fun** — H
 | 一 · 00-shiao, 00-xiuxian, 00-notice | ~~石坳村 `village*`~~ | the village | (was: a map with a few optional errands — shoo hens, name prints, pick 艾草, guess prices, guess the tale) | homemade quizzes (Hanli 10-16: 「轰鸡这几个小游戏, 不太好玩」, 「这几个要不要删掉? 有用吗?」) | — | — | — | no | **cut 10-16** — the passages carry 阿禾's cabbage, 吴婆婆, 爹's knee; code, bots, tasks gone; the map painting stays at art/backdrop/village.webp |
 | 一 · 00-heisong | 追踪 `track` | 「一百步刻一道」 | pick the deer's sign of five; walk; 刻 at 100 steps | the count is on screen — wait for 100, tap | **cut** (or: the count fades at 50, keep it in your head) | 22 s | 75 s | ? (his tracking) | **cut** |
 | 一 · 00-storm | 听 `listen` | 「鸟忽然全停了」 | say 「不对」 when the birds stop, then pick the sign | the cue is only text; the how-line gives the sign | **cut** (拽 follows straight after) | 11 s | 75 s | no | **cut** |
-| 一 · 00-fall | 拽 `storm` | 拽爹上崖 | three pulls in the lulls between gusts | fine | second tier; kit only | 12 s | 75 s | no | kept (second tier) — replace with 割绳子 or another proven mechanic if it isn't fun (his play) |
+| 一 · 00-fall | 拽 `storm` → **`fallrope`** | 拽爹上崖 | (was: three pulls in the lulls between gusts) **割绳子 since 10-19** (Hanli: 「拽爹的也不好玩」): 爹 over the drop on two ropes, his pack (坠) on a strap under him; the strap first, the outer rope, the last rope cut at the end of his swing toward the ledge, or the storm's gust swung in first (§ 拽 below) | (was: one timing tap, no read) | built | casual ~30 s | 75 s | no | **replaced 10-19** — `storm` kept in the 游戏厅 |
 | 一 · 00-yinyue | 认路 `way` | 「崖壁上一段划了一道」 | a small grid seen a step around him; follow his marks | the marks lead straight | **cut** | 7 s | 75 s | no | **cut 10-16 (before 入门)** — module kept |
 | 一 · 00-cave | 扔石听声 `stone` | 「先往里扔一块石头」 | a stone into each of three hollows; go into the one that knocks | the how-line names the right sound; one decision | **cut** | 4 s | 2 wrong | no | **cut** (its passage whole again: 1,148 → 1,241 字 before 喂饼) |
 | 一 · 00-cave / 00-fox | 喂饼 `bread` ★ | 那张厚饼，分它一半 | seven pieces: to the fox or to himself | two buttons, nothing moves | **built 10-16** → 割绳子 physics puzzle: the 饼 on vines in the cave, cut them (tap or swipe) so it swings to the fox's mouth; four levels (一根藤 · 两根藤 · 石板 · 洞口风), a 饼角 a star (3), the order of cuts is the answer, never the timing; instant retry | 5 s | 75 s | no (银月 is already a card) | kept (the six) |

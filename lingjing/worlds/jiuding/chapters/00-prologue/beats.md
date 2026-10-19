@@ -28,7 +28,7 @@ the bow, and the 九月初六 departure on 00-notice's `go`), h04 = 00-gate … 
 | `00-duanbei` 断碑 | 三 | 看碑背 (`stele-fox`, task 7) · 三条规矩 (`three-rules`, task 6) · 回村 / 独自进 stay |
 | `00-heisong` 黑松岭 | 三 | 一百步一记 (体力 −3, `marks-cut`, task 8); the stone clue gates `carve` (追踪's board `track-marks` cut 10-16, doc/games.md) |
 | `00-storm` 暴雨 | 四 | 掉头 (体力 −4) · 再追半里 (体力 −10) (task 9) — the rain breaks; the haul is 00-fall's board (听's board `storm-listen` cut 10-16; the passage whole again) |
-| `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (拽 — lane MG's 暴雨: haul 爹 back in the lulls; drawn in ink and cut to half a minute in batch two) gates 把爹拽回山壁 — then the fall, 查伤, 爷爷's 火镰, the light (task 10); `at` heisong |
+| `00-fall` 第二十七道记号 | 五 · 六 | **board `fall-storm`** (拽 — a 割绳子 level since 2026-10-19, `fallrope`: 爹 over the drop, the pack's strap, the outer rope, the last rope timed to the swing; was lane MG's ink pull-in-the-lulls 暴雨) gates 把爹拽回山壁 — then the fall, 查伤, 爷爷's 火镰, the light (task 10); `at` heisong |
 | `00-fox` 银光 | 七 | 裹起它 · 别碰 (stay) — task 11 |
 | `00-cave` 那一夜 | 八 | 分它一半 · 自己吃 (task 12); **board `bread-share`** (扔石听声's `cave-stone` cut 10-16, back 10-16 on the throwing board, cut again 10-19; the passage whole again) (喂饼: seven pieces to the fox or to himself, the corner kept for the dawn) — its grade takes the way on: none · little → 自己吃, half · most → 分它一半; `bread-<grade>` marks how much (欠饼) |
 | `00-yinyue` 天亮 | 九 | 带她出谷 → she joins (`joins`, task 13); **board `yinyue-way`** (认路: the valley a fogged grid, his marks by the cliff lead from the cave to the moss; grade straight · wandered → `way-straight` · `way-wandered`) gates 带她出谷 |

@@ -15,7 +15,7 @@ One FLUX job at a time on the GPU: wait while another mflux process runs.
 Kept (2026-10-16, four seeds each looked at — one subject, no text, no seal): 灵气泡 seed 1 (a clean
 ink ring, jade-and-gold wash, a wisp of mist), 荆棘 seed 1 (a dense crossed bramble, rust leaves).
 """
-import argparse, json, os, subprocess, tempfile
+import argparse, json, os, subprocess, tempfile, time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -55,7 +55,25 @@ SUBJECTS = {
           'cord ending in a loop, as a hunter would hang it.',
   'moss': 'A low soft cushion of green moss and small ferns on a flat stone at the mouth of a valley, a few blades of '
           'grass, gentle and inviting, seen from the side.',
+  # 2026-10-19, 拽爹上崖 (00-fall) on the kit: 爹 over the drop, his pack, the ledge, the rock spur, the storm cliff
+  'dad': 'A middle-aged Chinese village hunter seen from the front, hanging in the air with both arms raised straight up '
+         'above his head as if gripping a rope, legs dangling, a short straw rain cape over his shoulders, a cloth belt, '
+         'soaked by rain, a worried face. Whole figure, just the one man, nothing in his hands.',
+  'pack': 'A single heavy hunter\'s bundle: a fat cloth sack wrapped in a straw rain mat and tied round with rough cords, '
+          'a coil of hemp rope tucked under the cords, soaked dark by the rain. Just the one bundle.',
+  'ledge': 'A narrow flat rock ledge jutting sideways out of a cliff, wet dark grey stone with a flat top, a few tufts of '
+           'grass and a small bent pine root on its top, seen from the side, much wider than it is tall.',
+  'spur': 'A single jagged pointed rock spur sticking up diagonally, wet grey stone with dark cracks and a little moss, '
+          'seen from the side. Just the one rock.',
+  # 2026-10-19: the 灵光 a level's stars are (they were code-drawn red dots — Hanli on 忍字's frame)
+  'spark': 'A single small glowing mote of spirit light floating in the air, a soft round glow of pale gold with a faint '
+           'jade green halo and a few fine short rays, a bright white core. Just the one small light, nothing else.',
+  'fallcliff': 'A tall view of a sheer rain-soaked cliff face rising along the LEFT edge of the picture only, dark wet rock '
+               'with cracks and small pines, the rest of the picture an empty grey misty drop with slanting rain streaks '
+               'and a faint far ridge low down, gloomy storm light. No people.',
 }
+# A backdrop painted taller than wide, kept opaque (no paper taken out).
+SIZE = {'fallcliff': (512, 640)}
 
 # id: (kept seed, crop box in the 512 picture, output size, paper threshold)
 # A box of None: cropped to the subject itself (where the paper's alpha is out), a 12 px margin, the
@@ -63,11 +81,26 @@ SUBJECTS = {
 KEPT = {'bubble': (1, (120, 120, 392, 392), (256, 256), 10), 'thorns': (1, (10, 170, 502, 350), (492, 180), 26),
         'crow': (1, None, 256, 34), 'seal': (1, (165, 165, 347, 347), (120, 120), 34), 'dog': (1, None, 320, 34),
         'cake': (1, (150, 100, 340, 390), (114, 174), 34), 'steelyard': (5, None, 320, 30),
-        'meat': (2, None, 240, 40), 'moss': (1, None, 320, 34)}
+        'meat': (2, None, 240, 40), 'moss': (1, None, 320, 34),
+        # 拽 (2026-10-19, three seeds each looked at): 爹 seed 1 (straw cape, arms up; the stick he held cropped
+        # off — the ropes go to his chest), the pack seed 1, the ledge seed 1 (juts right, grass on its flat top),
+        # the spur seed 2 (drawn mirrored on the board), the storm cliff seed 1 (opaque, the cliff down the left).
+        'dad': (1, (140, 64, 372, 500), None, 30), 'pack': (1, None, 200, 30), 'ledge': (1, None, 360, 30),
+        'spur': (2, None, 200, 48), 'spark': (1, (156, 156, 356, 356), (96, 96), 8), 'fallcliff': (1, (0, 0, 512, 640), (720, 880), -999)}
+# Where a sprite is written under art/games/ (its id, unless named here).
+OUTNAME = {'dad': 'fall/dad', 'pack': 'fall/pack', 'ledge': 'fall/ledge', 'spur': 'fall/spur', 'fallcliff': 'fall/cliff'}
 
 
-def paint(out, subject, seed):
-  req = {'model': MODEL, 'prompt': f'{subject} Style: {STYLE}', 'out': str(out), 'width': 512, 'height': 512, 'seed': seed,
+def busy():
+  # A FLUX job itself (a python running mlx_picture.py or mflux), not a shell that waits naming them.
+  r = subprocess.run(['pgrep', '-lf', 'mflux|mlx_picture'], capture_output=True, text=True)
+  return any('python' in line.split(' ', 2)[1] for line in r.stdout.splitlines() if ' ' in line)
+
+
+def paint(out, subject, seed, sid=None):
+  while busy(): time.sleep(0.4)
+  w, h = SIZE.get(sid, (512, 512))
+  req = {'model': MODEL, 'prompt': f'{subject} Style: {STYLE}', 'out': str(out), 'width': w, 'height': h, 'seed': seed,
          'reference': str(REFERENCE)}
   env = dict(os.environ, HF_HOME=str(Path.home() / '.linggen/models/hf-hub'), HF_HUB_OFFLINE='1')
   r = subprocess.run([str(PY), str(SCRIPT)], input=json.dumps(req), text=True, capture_output=True, env=env)
@@ -83,7 +116,7 @@ def to_webp(png, webp, box, size, threshold):
           f"al = np.clip((d - {threshold}) * 6, 0, 255); "
           "img = Image.fromarray(np.dstack([a, al]).astype('uint8'), 'RGBA'); "
           + ("" if box else "ys, xs = np.where(al > 220); m = 12; img = img.crop((max(0, xs.min() - m), max(0, ys.min() - m), min(img.width, xs.max() + m), min(img.height, ys.max() + m))); ")
-          + (f"img = img.resize({tuple(size)!r}, Image.LANCZOS); " if isinstance(size, tuple) else
+          + ("" if size is None else f"img = img.resize({tuple(size)!r}, Image.LANCZOS); " if isinstance(size, tuple) else
              f"k = {size} / max(img.size); img = img.resize((max(1, round(img.width * k)), max(1, round(img.height * k))), Image.LANCZOS); ")
           + f"img.save({str(webp)!r}, 'WEBP', quality=88)")
   subprocess.run([str(PY), '-c', code], check=True)
@@ -102,22 +135,25 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for sid in [k for k in a.cut.split(',') if k]:
       seed, box, size, threshold = KEPT[sid]
-      to_webp(Path(a.review) / f'{sid}-{seed}.png', OUT / f'{sid}.webp', box, size, threshold); print(sid, '→', OUT / f'{sid}.webp')
+      out = OUT / f'{OUTNAME.get(sid, sid)}.webp'; out.parent.mkdir(parents=True, exist_ok=True)
+      to_webp(Path(a.review) / f'{sid}-{seed}.png', out, box, size, threshold); print(sid, '→', out)
     return
   if a.keep:
     OUT.mkdir(parents=True, exist_ok=True)
     for sid in [k for k in a.keep.split(',') if k]:
       seed, box, size, threshold = KEPT[sid]
       png = Path(tempfile.gettempdir()) / f'rope-flux-{sid}.png'
-      err = paint(png, SUBJECTS[sid], seed)
+      err = paint(png, SUBJECTS[sid], seed, sid)
       if err: print(sid, 'failed', err); continue
-      to_webp(png, OUT / f'{sid}.webp', box, size, threshold); print(sid, '→', OUT / f'{sid}.webp')
+      out = OUT / f'{OUTNAME.get(sid, sid)}.webp'; out.parent.mkdir(parents=True, exist_ok=True)
+      to_webp(png, out, box, size, threshold); print(sid, '→', out)
     return
   review = Path(a.review); review.mkdir(parents=True, exist_ok=True)
   for sid in ids:
     for seed in [int(s) for s in a.seeds.split(',')]:
       out = review / f'{sid}-{seed}.png'
-      err = paint(out, SUBJECTS[sid], seed)
+      if out.exists(): continue
+      err = paint(out, SUBJECTS[sid], seed, sid)
       print(sid, seed, err or out, flush=True)
 
 

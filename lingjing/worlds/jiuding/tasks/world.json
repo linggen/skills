@@ -12,8 +12,10 @@
       "done_line": { "zh": "八味灵草配齐，丹成。还剩一株灵芝。", "en": "All eight herbs paired. The pill is made — one lingzhi left over." }
     },
     {
-      "id": "fall-storm", "kind": "board", "game": "storm", "period": "once",
+      "_rope": "2026-10-19 (Hanli: 「拽爹的也不好玩」): plays fallrope, a 割绳子 level on the kit (games.json), was the ink pull-in-the-lulls board `storm` (kept in the 游戏厅). The grades stay clean · steady · rough, now from the 灵光 (3 · 1–2 · 0).",
+      "id": "fall-storm", "kind": "board", "game": "fallrope", "stars": 3, "period": "once",
       "title": { "zh": "暴雨 · 拽爹上崖", "en": "The storm · Haul Father back" },
+      "how": { "zh": "划断绳，让爹荡回崖边的石台。背上的包太沉——那根背带也划得断。", "en": "Cut the ropes so Father swings back onto the ledge. His pack drags him — its strap can be cut too." },
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "爹扒住了崖壁。", "en": "Father clings to the cliff face." }
     },

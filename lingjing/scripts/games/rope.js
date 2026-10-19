@@ -15,6 +15,11 @@
 //                           that enters one comes out of the other, moving as it was
 //   crows   [{v, ms}]       乌鸦: walks down vine `v` from its anchor and reaches the thing after `ms`
 //                           — it takes the thing, unless that vine is cut first (the crow flies off)
+//   air     the air on a hung thing (AIR_HUNG): a level built on swinging (拽, a man on a rope in the
+//           storm, 2026-10-19) lets its swing carry longer, so the moment of a cut matters
+//   pack    {len, r?, density?}  坠: a weight hung under the thing on a strap (爹's pack, 2026-10-19) — it
+//                           drags the swing (a puff pushes the thing, not the weight) and catches on the
+//                           rock it meets; cutting the strap (cutPack) lets it fall away into the drop
 // Each element is the same three things for every game: its data here, its physics here, and a
 // game's own picture and teaching line (the ELEMENTS table below names them once).
 // The world keeps the field names the games' frame painters read: `bread` (the thing), `vines`,
@@ -46,10 +51,13 @@ export const ELEMENTS = {
   spring: { zh: '弹竹', en: 'Springy bamboo' },
   seals: { zh: '双印', en: 'Twin seals' },
   crow: { zh: '乌鸦', en: 'Crow' },
+  pack: { zh: '坠', en: 'Dead weight' },
 };
 const SPRING_BOUNCE = 1.15, SEAL_R = 22, SEAL_COOL = 500;
 
 const NO_HIT = { group: -1, category: 0x0002, mask: 0 };
+const PACKED = -7; // the thing and its pack never touch each other; both touch the rock
+const PACK_R = 13, PACK_DENSITY = 0.004;
 export const dist = (p, [x, y]) => Math.hypot(p.x - x, p.y - y);
 
 /* ── Building ─────────────────────────────────────────────────────────────────────────────── */
@@ -78,21 +86,31 @@ const slab = (s, opts) => Bodies.rectangle(s.x, s.y, s.w, s.h, { isStatic: true,
 const stoneOf = (s) => slab(s, { restitution: s.bounce ?? 0.3, friction: 0.02, label: 'stone' });
 const springOf = (s) => slab({ ...s, h: s.h ?? 12 }, { restitution: SPRING_BOUNCE, friction: 0, label: 'spring' });
 
+/* 坠: the weight on its strap under the thing — a short stiff strap, the weight heavier than the thing. */
+function packOf(p, bread) {
+  const { x, y } = bread.position, len = p.len ?? 40;
+  const body = Bodies.circle(x, y + len, p.r ?? PACK_R, { restitution: 0.1, friction: 0.3, frictionAir: AIR_FREE, density: p.density ?? PACK_DENSITY, label: 'pack', collisionFilter: { group: PACKED } });
+  const strap = Constraint.create({ bodyA: bread, bodyB: body, length: len, stiffness: 0.9, damping: 0.1 });
+  return { body, strap, len, cut: false };
+}
+
 /** A level's world, hung and settled off-stage (the thing is shown at rest). */
 export function buildWorld(level) {
   const engine = Engine.create({ positionIterations: 10, velocityIterations: 8, constraintIterations: 12 });
   const [bx, by] = level.bread;
-  const bread = Bodies.circle(bx, by, level.r ?? BREAD_R, { restitution: 0.3, friction: 0.04, frictionAir: AIR_HUNG, density: 0.002, label: 'bread' });
+  const bread = Bodies.circle(bx, by, level.r ?? BREAD_R, { restitution: 0.3, friction: 0.04, frictionAir: level.air ?? AIR_HUNG, density: 0.002, label: 'bread', ...(level.pack ? { collisionFilter: { group: PACKED } } : {}) });
   const vines = (level.vines ?? []).map((v) => vineOf(v, bread));
+  const pack = level.pack ? packOf(level.pack, bread) : null;
   const stones = [...(level.stones ?? []).map(stoneOf), ...(level.springs ?? []).map(springOf)];
   const floor = Bodies.rectangle(W / 2, FLOOR + 40, W * 3, 80, { isStatic: true, label: 'floor' });
   // A roof only where a bubble may lift the thing to it (喂饼's own levels never had one).
   const roof = level.bubbles?.length ? [Bodies.rectangle(W / 2, ROOF - 40, W * 3, 80, { isStatic: true, label: 'roof' })] : [];
-  Composite.add(engine.world, [bread, floor, ...roof, ...stones, ...vines.flatMap((v) => [...v.links, ...v.joints])]);
+  Composite.add(engine.world, [bread, floor, ...roof, ...stones, ...vines.flatMap((v) => [...v.links, ...v.joints]), ...(pack ? [pack.body, pack.strap] : [])]);
   for (let i = 0; i < SETTLE_STEPS; i++) Engine.update(engine, STEP_MS);
   Body.setVelocity(bread, { x: 0, y: 0 });
+  if (pack) Body.setVelocity(pack.body, { x: 0, y: 0 });
   return {
-    engine, bread, vines, acc: 0, rest: 0, gust: 0, clock: 0,
+    engine, bread, vines, pack, hungAir: level.air ?? AIR_HUNG, acc: 0, rest: 0, gust: 0, clock: 0,
     bubbles: (level.bubbles ?? []).map((b) => ({ at: [...b.at], r: b.r ?? BUBBLE_R, state: 'free' })),
     thorns: (level.thorns ?? []).map((t) => slab(t, { isSensor: true, label: 'thorns' })),
     seals: (level.seals ?? []).map((p) => ({ a: [...p.a], b: [...p.b], r: p.r ?? SEAL_R, until: 0 })),
@@ -103,7 +121,7 @@ export function buildWorld(level) {
 /* ── What the hand does ───────────────────────────────────────────────────────────────────── */
 
 const held = (w) => w.bubbles.some((b) => b.state === 'held');
-const airOf = (w) => (held(w) ? AIR_BUBBLE : w.vines.every((x) => x.cut != null) ? AIR_FREE : AIR_HUNG);
+const airOf = (w) => (held(w) ? AIR_BUBBLE : w.vines.every((x) => x.cut != null) ? AIR_FREE : w.hungAir ?? AIR_HUNG);
 
 /** Cut vine `v` at joint `k`; false when there is no such joint or it is cut already. */
 export function cutVine(w, v, k) {
@@ -115,6 +133,17 @@ export function cutVine(w, v, k) {
   if (vine.regrow) vine.cutAt = w.clock;
   // On its vines the thing settles soon (a swing is to be watched, not chased); a free one flies true.
   w.bread.frictionAir = airOf(w);
+  return true;
+}
+
+/** Cut the pack's strap: the weight falls away; false when there is none or it is gone already. */
+export function cutPack(w) {
+  if (!w.pack || w.pack.cut) return false;
+  Composite.remove(w.engine.world, w.pack.strap);
+  w.pack.cut = true;
+  w.pack.cutAt = w.clock;
+  w.pack.body.frictionAir = AIR_FREE;
+  w.started = true;
   return true;
 }
 

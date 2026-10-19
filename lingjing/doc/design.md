@@ -679,7 +679,7 @@ seeded (the board's seed is the day's, the save's `seed`, the task id).
 
 | game | task id | scene | the play | the book it plays |
 |---|---|---|---|---|
-| `storm` | `fall-storm` | 00-storm / 00-fall (h01) | three pulls in the lulls between gusts; a pull into a gust slides 爹 back; never fails — at 60 s the last pull is by main force; `grade` clean · steady · rough flavours the closing line | 小满 hauls 爹 back, then the mud gives |
+| `fallrope` | `fall-storm` | 00-fall (h01) | 割绳子 (2026-10-19): cut the pack's strap, the outer rope, then the last rope as 爹 swings to the ledge — or puff the storm's gust into the swing first; the old pull-in-the-lulls `storm` stays in the 游戏厅; `grade` clean · steady · rough from the 灵光 | 小满 hauls 爹 back, then the mud gives |
 | `deer` | `deer-wind` | 00-deer (h02) | hold to draw (1.2 s to full; past 4 s the swollen wrist shakes it down), let go in the still wind; a miss → the stag drinks again; 2 misses or 15 s → 银月 「风。往左偏半寸。」 and more wind is forgiven | 「先看风，后看鹿」 |
 | `xisui` | `xisui-hold` | 00-sleep (h02) | hold to grit — three sticks of incense burn only while held; holding spends breath, a trough gives it back; letting go (or running out) on a wave restarts the stick; then 「蹦一下」 into the beam | 「疼，别喊」 |
 | `zhoutian` | `zhoutian-sanguan` | wm-zhoutian (h05) | on the 三关 figure: in · out · still; push the qi only in the stillness; 尾闾 and 夹脊 open at one push (银月 dug them), 玉枕 wants three, a push out of time sets it back one | 「最后那半道，得你自己撞」 |
@@ -704,7 +704,7 @@ and left by 「算了，往下走」 only when stuck (§ Skip below). The rhythm
 | `taunt` | `masan-taunt` | 00-masan | 忍字: 马小宝's taunt heard once, then said back piece by piece from near misses (猫叫, 咬一口, 「汪！」); a wrong piece and every second close the fist | word · fist (mark); 原样说回去 / 攥紧拳头 both wait, his choice |
 | `griddle` | `kitchen-griddle` | 00-kitchen | 烙饼: the passage split after 「一张厚，一张薄」; he minds the fire and calls 「翻！」 when a side goes golden — early she waits, late it scorches, silent she turns it; thin then thick | golden · scorched (mark) |
 | ~~`listen`~~ | ~~`storm-listen`~~ | 00-storm | 听: cut 10-16 (doc/games.md); the passage whole again | — |
-| `storm` | `fall-storm` | 00-fall | 拽: the 2026-09-30 暴雨, redrawn in ink (the slope, the drop, 爹 hauled toward the rock pull by pull, rain slanting with the wind), its limit cut to 30 s, a skip | clean · steady · rough |
+| `fallrope` | `fall-storm` | 00-fall | 拽 (割绳子 since 2026-10-19; the ink pull board `storm` kept in the 游戏厅): 爹 over the drop on two ropes, his pack (坠) under him snagging the swing on a rock spur — the strap, the rope out over the drop, then the last rope cut at the end of the swing toward the ledge (a ~0.4 s window), or the storm's gust swung into first (wider, the third 灵光) | clean · steady · rough (3 · 1–2 · 0 灵光) |
 | ~~`stone`~~ | ~~`cave-stone`~~ | 00-cave | 扔石听声: cut 10-16 (doc/games.md), back on the throwing board the same day (`caveecho`), cut again 10-19 (task `cut`; row and module in the 游戏厅); the passage whole again, 喂饼 the scene's one board | — |
 | `way` | `yinyue-way` | 00-yinyue | 认路: the valley a small grid seen a step around him, the grass glowing where he walked; his marks on the cells by the cliff are the only way from the cave to the moss; a rock only stops him; after 30 steps she points | straight · wandered (mark) |
 | ~~`climb`~~ | ~~`cliff-climb`~~ | 00-cliff (h02) | 攀: cut 10-16 (doc/games.md) | — |

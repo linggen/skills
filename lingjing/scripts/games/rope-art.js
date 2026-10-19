@@ -43,6 +43,7 @@ export function crowsPicture(w) {
 export function toolMark(w, level, el) {
   if (el === 'spring' && level.springs?.[0]) return [level.springs[0].x, level.springs[0].y, 60];
   if (el === 'seals' && level.seals?.[0]) return [level.seals[0].a[0], level.seals[0].a[1], 34];
+  if (el === 'pack' && w.pack && !w.pack.cut) return [w.pack.body.position.x, w.pack.body.position.y, 30];
   if (el === 'crow' && w.crows?.[0]?.state === 'walking') { const p = crowAt(w, w.crows[0]); return [p.x, p.y - 8, 28]; }
   return null;
 }

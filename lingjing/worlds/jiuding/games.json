@@ -628,9 +628,108 @@
    "id": "storm",
    "group": "prologue",
    "mechanic": "时机",
+   "hui": "第一回 · 旧版",
+   "_retired": "The old 拽 board (three pulls in the lulls between gusts), kept for the 游戏厅 only; 00-fall's fall-storm plays fallrope (割绳子) since 2026-10-19."
+  },
+  {
+   "id": "fallrope",
+   "group": "prologue",
    "scene": "00-fall",
    "hui": "第一回",
-   "task": "fall-storm"
+   "task": "fall-storm",
+   "mechanic": "割绳子",
+   "stars": 3,
+   "_levels": "拽爹上崖 on the kit (2026-10-19, Hanli: 「拽爹的也不好玩」; games.md § 割绳子 slots: 爹's rope, cut his pack free so he swings to the ledge). Written by hand and proved by games/bots/fallrope.js (plans, starPlans, the timing windows in tests/fallrope.test.mjs): 爹 hangs over the drop on two ropes (0 the pine root out over the drop, 1 the root above the slope), his pack (坠) on its strap under him. With the pack on, the swing in snags on the rock spur; strap first, then rope 0, and cut rope 1 as he comes to the end of his swing toward the cliff — he lands on the ledge (`reach` from `mouth`). The storm's gust swings him higher: the third 灵光 is only up there. `air` lets the swing carry (and keeps it from being quickened). Stone `kind`s are for the picture: ledge · wall (the cliff face) · spur.",
+   "levels": [
+    {
+     "id": "one",
+     "bread": [
+      290,
+      150
+     ],
+     "r": 22,
+     "air": 0.008,
+     "vines": [
+      {
+       "at": [
+        340,
+        34
+       ]
+      },
+      {
+       "at": [
+        170,
+        34
+       ]
+      }
+     ],
+     "pack": {
+      "len": 40
+     },
+     "stones": [
+      {
+       "kind": "ledge",
+       "x": 30,
+       "y": 300,
+       "w": 60,
+       "h": 16,
+       "a": 0
+      },
+      {
+       "kind": "wall",
+       "x": -2,
+       "y": 146,
+       "w": 20,
+       "h": 292,
+       "a": 0
+      },
+      {
+       "kind": "spur",
+       "x": 170,
+       "y": 259,
+       "w": 34,
+       "h": 16,
+       "a": 45
+      }
+     ],
+     "gust": {
+      "at": [
+       336,
+       181
+      ],
+      "to": [
+       -1,
+       0
+      ],
+      "band": 70,
+      "power": 0.5
+     },
+     "mouth": [
+      30,
+      270
+     ],
+     "reach": 36,
+     "stars": [
+      [
+       190,
+       214
+      ],
+      [
+       40,
+       160
+      ],
+      [
+       66,
+       225
+      ]
+     ],
+     "must": "pack",
+     "teach": {
+      "zh": "坠：爹背上那只包，拖着他往下——背带也划得断。",
+      "en": "Dead weight: the pack on Father's back drags him down — its strap can be cut."
+     }
+    }
+   ]
   },
   {
    "id": "deer",

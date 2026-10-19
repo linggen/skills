@@ -49,7 +49,7 @@ export const taunt = beat({
   target(s, calm) {
     const [mx, my] = s.level.mouth, x = mx - DOG_MOUTH[0] * DOG_W, y = my - DOG_MOUTH[1] * DOG_H;
     const hop = s.phase === 'eat' && !calm ? Math.abs(Math.sin(s.t / 160)) * 10 * Math.max(0, 1 - s.t / 1200) : 0;
-    return `<g class="g-rope-target">${img('games/dog.webp', x, y - hop, DOG_W, DOG_H)}</g><ellipse class="g-ft-mouth" cx="${mx}" cy="${my}" rx="30" ry="7"/>`;
+    return `<g class="g-rope-target">${img('games/dog.webp', x, y - hop, DOG_W, DOG_H)}</g>`;
   },
   grade: (s) => (s.best >= 3 ? 'word' : 'fist'),
   cls: 'g-rope-taunt',
@@ -69,7 +69,7 @@ export const way = beat({
   target(s, calm) {
     const [mx, my] = s.level.mouth, x = mx - 0.55 * MOSS_W, y = my - 0.3 * MOSS_H;
     const sway = s.phase === 'eat' && !calm ? Math.sin(s.t / 120) * 2 : 0;
-    return `<g class="g-rope-target" transform="rotate(${n(sway)} ${n(mx)} ${n(my + 40)})">${img('games/moss.webp', x, y, MOSS_W, MOSS_H)}</g><ellipse class="g-ft-mouth" cx="${mx}" cy="${my}" rx="34" ry="7"/>`;
+    return `<g class="g-rope-target" transform="rotate(${n(sway)} ${n(mx)} ${n(my + 40)})">${img('games/moss.webp', x, y, MOSS_W, MOSS_H)}</g>`;
   },
   grade: (s) => (s.best >= 3 ? 'straight' : 'wandered'),
   rests: true,
@@ -93,9 +93,47 @@ export const rent = beat({
     const tilt = s.phase === 'eat' || s.phase === 'end' ? -8 * flip * (calm ? 1 : Math.min(1, (s.t ?? 1e9) / 500)) : 0;
     return `<path class="g-rope-cord" d="M${n(hookX)} 22 L${n(hookX)} ${n(y0 + 6)}"/>`
       + `<g class="g-rope-target" transform="rotate(${n(tilt)} ${n(hookX)} ${n(y0 + 6)}) translate(${n(x0)} ${n(y0)}) scale(${flip} 1)">${img('games/steelyard.webp', 0, 0, YARD_W, YARD_H)}</g>`
-      + `<ellipse class="g-ft-mouth" cx="${mx}" cy="${my}" rx="30" ry="7"/>`;
+      + ``;
   },
   grade: (s) => (s.best >= 3 ? 'exact' : 'over'),
   rests: true,
   cls: 'g-rope-rent',
+});
+
+/* ── 拽 · 爹 over the drop, swung back onto the ledge (00-fall, 2026-10-19) ──
+   The storm on 黑松岭: 爹 has gone over the edge and hangs on two ropes, his pack dragging under him.
+   With the pack on, his swing snags on the rock spur below; cut its strap first. Cut the rope that
+   holds him out over the drop and he swings in toward the cliff — cut the last one as he comes to the
+   end of the swing, and he lands on the ledge. The storm's gust (the puff) swings him higher: the
+   third 灵光 is only up there. A swing level (`air`): the swing is never quickened. */
+const DAD_W = 42, DAD_H = 79, PACK_W = 46, PACK_H = 27, LEDGE = 92, LEDGE_TOP = 0.44, LEDGE_EDGE = 0.74;
+const fallArt = (file) => `${ART}games/fall/${file}.webp`;
+export const fall = beat({
+  meta: { id: 'fallrope', name: { zh: '拽 · 拽爹上崖', en: 'The haul · Father back onto the rock' }, how: { zh: '划断绳，让爹荡回崖边的石台。背上的包太沉——那根背带也划得断。', en: 'Cut the ropes so Father swings back onto the ledge. His pack drags him — its strap can be cut too.' } },
+  quote: { zh: '「去拉他，爷儿俩可能一起下去；不拉他，他一定下去。」', en: '"Pull him, and maybe they both go over. Don\'t pull him, and he certainly goes over."' },
+  T: words({
+    zh: { name: '爹', say: '划断绳，把爹荡回崖边的石台上。', miss: ['没够着石台。再来。', '荡空了。再来。', '差一点就扒住了。再来。'], eat: ['爹一把扒住了石台。'], done: '爹扒住了崖壁。' },
+    en: { name: 'Father', say: 'Cut the ropes: swing Father back onto the ledge.', miss: ['He didn\'t reach the ledge. Again.', 'He swung short. Again.', 'He nearly had it. Again.'], eat: ['Father grabs the ledge.'], done: 'Father clings to the cliff face.' },
+  }),
+  upright: true,
+  // the ropes are tied round his chest: the circle sits there, his fists above it, his boots below
+  thing: (s, r) => img('games/fall/dad.webp', -DAD_W / 2, -DAD_H * 0.36, DAD_W, DAD_H),
+  pack: (s, r) => img('games/fall/pack.webp', -PACK_W / 2, -PACK_H * 0.6, PACK_W, PACK_H),
+  // the storm cliff, its rock pulled toward the left edge (the wall in the world is a few px wide)
+  backdrop: () => `<image class="g-rope-backdrop" href="${fallArt('cliff')}" x="-44" y="0" width="${W + 44}" height="440" preserveAspectRatio="none"/>`,
+  stone(st) {
+    if (st.kind === 'wall') return ''; // the cliff face: the backdrop's
+    // the rock spur, mirrored so its face slopes down to the right as the slab does
+    if (st.kind === 'spur') return `<g transform="translate(${st.x} ${st.y}) scale(-1 1)">${img('games/fall/spur.webp', -26, -30, 50, 60)}</g>`;
+    return ''; // the ledge: the target's picture
+  },
+  target(s, calm) {
+    const [mx, my] = s.level.mouth, ledge = s.level.stones?.find((st) => st.kind === 'ledge');
+    // the painted ledge's flat top on the slab's top, its jutting edge at the slab's right end
+    const right = ledge ? ledge.x + ledge.w / 2 : mx + 30, top = ledge ? ledge.y - ledge.h / 2 : my + 22;
+    return `<g class="g-rope-target" data-see="goal">${img('games/fall/ledge.webp', right - LEDGE * LEDGE_EDGE, top - LEDGE * LEDGE_TOP, LEDGE, LEDGE)}</g>`;
+  },
+  grade: (s) => (s.best >= 3 ? 'clean' : s.best >= 1 ? 'steady' : 'rough'),
+  rests: true,
+  cls: 'g-rope-fall',
 });

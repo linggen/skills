@@ -31,6 +31,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { savesAtScenes, boardSeeder, CLEAR, HOME } from './page-crawl.mjs';
 import { rng } from './board-bots.mjs';
 import { HANDS as BREATH_HANDS } from '../scripts/games/bots/qimai.js';
+import { HANDS as SWING_HANDS, decide as swingDecide } from '../scripts/games/bots/fallrope.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -185,7 +186,7 @@ export const CHOOSERS = {
     return c.kind === 'hold' || c.kind === 'drag' ? { kind: 'hold', c, ms: 300 + r() * 2200 } : c.kind === 'swipe' ? { kind: 'swipe', c } : { kind: 'tap', c };
   },
 };
-export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'rain' ? 'rain' : game === 'deerhunt' ? 'hunt' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'caveecho', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
+export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'fallrope' ? 'swing' : game === 'rain' ? 'rain' : game === 'deerhunt' ? 'hunt' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'caveecho', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
 export const LOSS = { rain: /成河/ };
 /* A story board's task id (its [data-game] host) → its game kind (the chooser's key): games.json. */
 export const GAME_OF_TASK = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/games.json'), 'utf8')).games.filter((g) => g.task).map((g) => [g.task, g.id]));
@@ -382,6 +383,12 @@ async function playOnce(browser, t, { width, policy, seed, seconds, out, base })
         if (st.dead && !deadLogged.has('hold')) { deadLogged.add('hold'); findings.push({ kind: 'dead-tap', what: 'hold (the board)', at: seen.say }); }
         continue;
       }
+      // a timed 割绳子 (拽): the swing hand watches and cuts for a stint, then looks again
+      if ((t.chooser ?? chooserOf(t.game)) === 'swing') {
+        const st = await swing(page, hand, policy, r, t.host, touch, judged);
+        res.taps += st.moves;
+        continue;
+      }
       if (Date.now() < lapseUntil) { await sleep(100); continue; }
       if (r() < P.lapse / 10) { lapseUntil = Date.now() + 2000 + r() * 3000; continue; } // looks away
       // a curious first touch on each thing that looks like a tool
@@ -473,6 +480,55 @@ async function hunt(page, hand, host, a, r, P, touch, mem) {
   }
   return letGo(true);
 }
+
+/* ── The swing hand (拽, fallrope): a 割绳子 level whose last cut is timed. It reads what is drawn — the
+   thing's place (its transform), the ledge, each rope's anchor (its cut line's first point), the strap,
+   the puff, 重来 — in board units, and plays bots/fallrope.js's `decide` (the hand the node sims tune),
+   acting on what it saw `delay` ms ago; a cut is a real swipe across the rope, a puff a tap. */
+export const SWING_SIGHT = (host) => `(() => {
+  const host = document.querySelector(${JSON.stringify(host)}); if (!host) return null;
+  const svg = host.querySelector('svg[data-swing]'), won = Boolean(host.querySelector('.is-won'));
+  if (!svg || won) return { won, play: false };
+  const m = svg.getScreenCTM(), inv = m.inverse();
+  const scr = (x, y) => [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f];
+  const brd = (x, y) => [inv.a * x + inv.c * y + inv.e, inv.b * x + inv.d * y + inv.f];
+  const item = svg.querySelector('.g-ft-item'), tr = /translate\(([-\d.]+) ([-\d.]+)\)/.exec(item?.getAttribute('transform') || '');
+  const goalEl = svg.querySelector('[data-see="goal"]'), gb = goalEl?.getBoundingClientRect();
+  const goal = gb ? brd(gb.left + gb.width / 2, gb.top + gb.height / 2) : [0, 0];
+  const lines = [...svg.querySelectorAll('line[data-g="cut"]')].map((e) => ({ v: e.dataset.v, k: Number(e.dataset.k), x1: +e.getAttribute('x1'), y1: +e.getAttribute('y1'), x2: +e.getAttribute('x2'), y2: +e.getAttribute('y2') }));
+  const vines = {}; for (const l of lines) if (l.v !== 'pack') { (vines[l.v] ??= []).push(l); }
+  const mid = (ls) => { const l = ls[Math.floor(ls.length / 2)]; return [...scr(l.x1, l.y1), ...scr(l.x2, l.y2)]; };
+  const puff = host.querySelector('[data-g="gust"]'), pb = puff?.getBoundingClientRect(), retry = host.querySelector('button[data-g="retry"]')?.getBoundingClientRect();
+  return { play: Boolean(tr), won,
+    thing: tr ? { x: +tr[1], y: +tr[2] } : { x: 0, y: 0 }, goal: { x: goal[0], y: goal[1] },
+    vines: Object.entries(vines).map(([v, ls]) => ({ v: Number(v), at: [ls.sort((a, b) => a.k - b.k)[0].x1, ls[0].y1], line: mid(ls) })),
+    strap: lines.filter((l) => l.v === 'pack').map((l) => [...scr(l.x1, l.y1), ...scr(l.x2, l.y2)])[0] ?? null,
+    gust: Boolean(puff && !puff.classList.contains('is-on')), puff: pb ? [pb.left + pb.width / 2, pb.top + pb.height / 2] : null,
+    retry: retry ? [retry.left + retry.width / 2, retry.top + retry.height / 2] : null };
+})()`;
+
+async function swing(page, hand, policy, r, host, touch, judged, stintMs = 4000) {
+  const H = SWING_HANDS[policy] ?? SWING_HANDS.casual, P = POLICIES[policy] ?? POLICIES.casual;
+  const out = { moves: 0 };
+  const t0 = Date.now(), mem = swing.mem.get(host + policy) ?? {};
+  swing.mem.set(host + policy, mem);
+  while (Date.now() - t0 < stintMs) {
+    const v = await page.evaluate(SWING_SIGHT(host));
+    if (!v || v.won) break;
+    const m = swingDecide({ ...v, t: Date.now(), strap: Boolean(v.strap), retry: Boolean(v.retry) }, mem, r, H);
+    if (m) {
+      out.moves++;
+      if (m.g === 'cut') {
+        const line = m.v === 'pack' ? v.strap : v.vines.find((x) => x.v === m.v)?.line;
+        if (line) { const mo = motion(hand, { kind: 'swipe', c: { key: `cut:${m.v}`, line } }, r, P, touch); await judged(mo.key, mo.run); }
+      } else if (m.g === 'gust' && v.puff) await judged('gust', () => tapAt(hand, ...v.puff));
+      else if (m.g === 'retry' && v.retry) await judged('retry', () => tapAt(hand, ...v.retry));
+    }
+    await sleep(30);
+  }
+  return out;
+}
+swing.mem = new Map();
 
 export const tapAt = async (hand, x, y) => { await hand.down(x, y); await sleep(70 + Math.random() * 60); await hand.up(x, y); };
 

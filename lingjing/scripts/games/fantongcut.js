@@ -9,7 +9,7 @@
 // The game itself is ropekit.js's; here only the 饭桶's own: its words, its level, the pot and how it eats.
 import { n } from './ink.js';
 import { W } from './rope.js';
-import { generate, MOUTH_R } from './rope-gen.js';
+import { generate } from './rope-gen.js';
 import { makeRopeGame, EAT_MS } from './ropekit.js';
 
 export { FAST } from './ropekit.js';
@@ -73,7 +73,7 @@ function target(s, calm) {
   const gulp = eating ? (t < 260 ? -Math.sin((t / 260) * Math.PI) * 0.5 : Math.sin(Math.min(1, (t - 260) / 360) * Math.PI)) : 0;
   const shake = eating && t > 300 ? Math.sin(t / 38) * 6 * Math.max(0, 1 - (t - 300) / 700) : 0;
   const pot = `<g class="g-ft-pot${s.phase === 'eat' ? ' is-eating' : ''}" transform="translate(${n(x)} ${n(y - gulp * 12)}) rotate(${n(shake)} ${n(POT_W / 2)} ${n(POT_H)}) scale(1 ${n(1 - gulp * 0.07, 3)})">`
-    + `<image href="${POT}" width="${POT_W}" height="${n(POT_H)}"/></g><ellipse class="g-ft-mouth" cx="${mx}" cy="${my}" rx="${MOUTH_R + 6}" ry="7"/>`;
+    + `<image href="${POT}" width="${POT_W}" height="${n(POT_H)}"/></g>`;
   return pot + (s.phase === 'eat' ? steam(s, mx, my, eating) + burpSeal(mx, my) : '');
 }
 function steam(s, mx, my, moving) {
