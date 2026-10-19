@@ -82,6 +82,8 @@
   ],
   "puzzle": {
     "_about": "Feeding is a 割绳子 puzzle (Hanli, 2026-10-16: 「割绳子挺好玩，可以反复出现，不同的割法」): the thing he chose hangs on vines over the 饭桶 and he cuts and steers it into its mouth (games/fantongcut.js; the level made from the seed by games/rope-gen.js and proved solvable before it is shown). What comes out, the cooldown and the pay are as before — the puzzle only stands between the choice and the feed. A miss retries at once; after `max_misses` on one level 「直接喂」 feeds it as before (stars 0). `tier_every`: one step harder every that many feeds (0 … 4). `unlock`: on his n-th day of feeding (distinct days), that element joins the mix — one a day, never all at once; the day's first puzzle features it and says `teach`. Stars (0–3, 灵光 caught on the way) are kept on the save, unpaid.",
+    "_games": "Which small game stands before a feed (Hanli 2026-10-16: 烙饼 out of the story into the 饭桶's daily rotation): the first of `games` on the very first feed and whenever the day's first feed teaches a new 割绳子 element (`unlock`), else they take turns by the feed count (fantongcut on even feeds, laobing on odd). The result's stars are kept unpaid either way; what comes out, the cooldown and the pay are the feed's as before.",
+    "games": ["fantongcut", "laobing"],
     "max_misses": 4,
     "tier_every": 3,
     "unlock": [

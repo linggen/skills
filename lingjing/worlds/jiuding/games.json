@@ -2453,6 +2453,13 @@
    ]
   },
   {
+   "id": "laobing",
+   "group": "daily",
+   "mechanic": "时机",
+   "stars": 3,
+   "_how": "喂饭桶's feed on its turn (fantong.json `puzzle.games`; Hanli 2026-10-16, 烙饼 out of the story): a 40 s round at 娘's 鏊子, two to four flatbreads browning at their own pace — tap to turn when the underside is golden, tap again to take it off when both are; wood in the stove mouth cooks faster. 8 golden meets the quota; stars by golden and bad; short of it, another batch. Alone it plays one round."
+  },
+  {
    "id": "fantongcut",
    "group": "daily",
    "mechanic": "割绳子",

@@ -348,6 +348,12 @@ after; idle never wins. `n` is story order (古七 before 今三), and the climb
 
 ## Daily boards, 秘境, 密室 (not story beats; no card)
 
+**烙饼 · 一鏊子** (`laobing`, 10-19 in the 饭桶's rotation; 00-kitchen's story board `griddle` stays cut): a 40 s
+round at 娘's 鏊子, two → three → four breads at 11/22 s, tap to turn when the underside is golden, tap again to
+take it off when both are; wood in the stove mouth cooks faster (×1.7, 6 s a stick); 8 golden is the quota;
+stars 1 + ≥10 golden + ≤1 bad. The 饭桶 takes turns: 割绳子 on the first feed and every teaching feed, else the
+other of the last. Bots: perfect 12.5 golden, slow 450 ms 39/40 won, distracted 40 %, idle 0.
+
 炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 七巧 · 五子 ·
 残局 · 守夜 (药园) · 下崖 / 拾遗 (秘境) · 密室 (he sees the mechanisms, 银月 reads the pages).
 洛书 was the same square three times (二试, 困阵, daily); since 10-19 it is played once, at 洛书门 —
