@@ -78,3 +78,27 @@ test('弹竹 bounces: a thing dropped on it rebounds above where it struck, and 
   const g = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8')).games.find((x) => x.id === 'tauntrope');
   assert.ok(!(g.levels[0].stones ?? []).length, '忍字: no stone lies over the bamboo');
 });
+
+/* ── what the ropes hang from (2026-10-19, Hanli on 拽: 「把爹的图片拴在绳子上有点奇怪」) ── */
+
+test('no rope hangs from the sky: every kit level draws what each vine is tied to; 爹 hangs by his hands', async () => {
+  for (const id of [...Object.keys(BEATS), 'fantongcut']) {
+    const mod = await import(`../scripts/games/${id}.js`);
+    const row = content.games.games.find((g) => g.id === id);
+    const s = mod.newGame('a', 1, row?.levels ? { levels: row.levels } : {});
+    const h = mod.html(s, 'zh');
+    assert.equal((h.match(/class="g-rope-anchor"/g) ?? []).length, s.level.vines.length, `${id}: an anchor picture per vine`);
+  }
+  // 拽: the ropes are tied round the old pine's limb (the backdrop's), laid on the level's two anchors.
+  const fall = await import('../scripts/games/fallrope.js');
+  const row = content.games.games.find((g) => g.id === 'fallrope');
+  let s = fall.newGame('a', 1, { levels: row.levels });
+  assert.match(fall.html(s, 'zh'), /fall\/pine\.webp/);
+  assert.doesNotMatch(fall.html(s, 'zh'), /g-rope-anchor/);
+  // …and he turns along the rope he holds: with only the inner rope left he leans toward its anchor.
+  s = fall.act(s, { g: 'cut', v: 'pack', k: '0' }).state;
+  s = fall.act(s, { g: 'cut', v: '0', k: '3' }).state;
+  for (let i = 0; i < 6; i++) s = fall.tick(s, 50);
+  const [ax] = row.levels[0].vines[1].at, { x } = s.swing.bread.position;
+  assert.ok(Math.sign(s.swing.hangA) === Math.sign(ax - x) && Math.abs(s.swing.hangA) > 0.2, `turned ${s.swing.hangA}`);
+});

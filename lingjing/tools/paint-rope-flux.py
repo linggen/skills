@@ -71,9 +71,18 @@ SUBJECTS = {
   'fallcliff': 'A tall view of a sheer rain-soaked cliff face rising along the LEFT edge of the picture only, dark wet rock '
                'with cracks and small pines, the rest of the picture an empty grey misty drop with slanting rain streaks '
                'and a faint far ridge low down, gloomy storm light. No people.',
+  # 2026-10-19, anchors (Hanli on 拽: 「把爹的图片拴在绳子上有点奇怪」 — nothing held the ropes): what a vine hangs from
+  'fallpine': 'An ancient gnarled pine tree growing out of a rock at the far LEFT edge of the picture, its thick twisted '
+              'trunk leaning out and running almost level across the whole TOP of the picture to the far right, one long '
+              'bare crooked limb at the end, a few dark tufts of pine needles along it, soaked by rain. The lower part of '
+              'the picture is empty paper.',
+  'peg': 'A single short thick old wooden peg driven into a crack of dark rock, seen from the side, the rock a small '
+         'rough lump around it, a few turns of rough hemp cord knotted round the peg. Just the peg in its rock.',
+  'branch': 'A single short gnarled tree branch reaching out sideways, dark bark, a few small green leaves near its tip, '
+            'a twist of vine wound round it. Just the one branch.',
 }
 # A backdrop painted taller than wide, kept opaque (no paper taken out).
-SIZE = {'fallcliff': (512, 640)}
+SIZE = {'fallcliff': (512, 640), 'fallpine': (768, 320)}
 
 # id: (kept seed, crop box in the 512 picture, output size, paper threshold)
 # A box of None: cropped to the subject itself (where the paper's alpha is out), a 12 px margin, the
@@ -86,9 +95,18 @@ KEPT = {'bubble': (1, (120, 120, 392, 392), (256, 256), 10), 'thorns': (1, (10, 
         # off — the ropes go to his chest), the pack seed 1, the ledge seed 1 (juts right, grass on its flat top),
         # the spur seed 2 (drawn mirrored on the board), the storm cliff seed 1 (opaque, the cliff down the left).
         'dad': (1, (140, 64, 372, 500), None, 30), 'pack': (1, None, 200, 30), 'ledge': (1, None, 360, 30),
-        'spur': (2, None, 200, 48), 'spark': (1, (156, 156, 356, 356), (96, 96), 8), 'fallcliff': (1, (0, 0, 512, 640), (720, 880), -999)}
+        'spur': (2, None, 200, 48), 'spark': (1, (156, 156, 356, 356), (96, 96), 8), 'fallcliff': (1, (0, 0, 512, 640), (720, 880), -999),
+        # anchors (2026-10-19, three seeds each looked at): 拽's pine seed 1 (the trunk on the cliff-top rock at
+        # the left, its limb level across the top: the whole frame kept, so the board places it by its own
+        # pixels), the peg seed 1 (turned over: the rock overhead, the peg down, the cord wound on it), the branch seed 1
+        # (bark, a vine wound on it, leaves at the tip: the tie near the tip, the base off the board's side)
+        'fallpine': (1, (0, 0, 768, 320), (768, 320), 60), 'peg': (1, None, 120, 30), 'branch': (1, None, 200, 34)}
+# Turned before it is cut (degrees): a peg painted standing in its rock hangs from the rock overhead.
+TURN = {'peg': 180}
+# Its alpha faded out over the bottom px: the pine's rock melts into the cliff it grows from, no cut edge.
+FADE = {'fallpine': 90}
 # Where a sprite is written under art/games/ (its id, unless named here).
-OUTNAME = {'dad': 'fall/dad', 'pack': 'fall/pack', 'ledge': 'fall/ledge', 'spur': 'fall/spur', 'fallcliff': 'fall/cliff'}
+OUTNAME = {'fallpine': 'fall/pine', 'peg': 'anchor/peg', 'branch': 'anchor/branch', 'dad': 'fall/dad', 'pack': 'fall/pack', 'ledge': 'fall/ledge', 'spur': 'fall/spur', 'fallcliff': 'fall/cliff'}
 
 
 def busy():
@@ -107,14 +125,15 @@ def paint(out, subject, seed, sid=None):
   return None if r.returncode == 0 and Path(out).exists() else (r.stdout.strip()[-200:] or r.stderr.strip()[-200:])
 
 
-def to_webp(png, webp, box, size, threshold):
-  crop = f".crop({tuple(box)!r})" if box else ''
+def to_webp(png, webp, box, size, threshold, turn=0, fade=0):
+  crop = (f".crop({tuple(box)!r})" if box else '') + (f".rotate({turn})" if turn else '')
   code = (f"from PIL import Image; import numpy as np; im = Image.open({str(png)!r}).convert('RGB'){crop}; "
           "a = np.asarray(im).astype(float); "
           "c = np.concatenate([a[:8, :8].reshape(-1, 3), a[:8, -8:].reshape(-1, 3), a[-8:, :8].reshape(-1, 3), a[-8:, -8:].reshape(-1, 3)]); "
           "d = np.sqrt(((a - np.median(c, axis=0)) ** 2).sum(axis=2)); "
           f"al = np.clip((d - {threshold}) * 6, 0, 255); "
-          "img = Image.fromarray(np.dstack([a, al]).astype('uint8'), 'RGBA'); "
+          + (f"al = al * np.clip((al.shape[0] - np.arange(al.shape[0]))[:, None] / {fade}, 0, 1); " if fade else '')
+          + "img = Image.fromarray(np.dstack([a, al]).astype('uint8'), 'RGBA'); "
           + ("" if box else "ys, xs = np.where(al > 220); m = 12; img = img.crop((max(0, xs.min() - m), max(0, ys.min() - m), min(img.width, xs.max() + m), min(img.height, ys.max() + m))); ")
           + ("" if size is None else f"img = img.resize({tuple(size)!r}, Image.LANCZOS); " if isinstance(size, tuple) else
              f"k = {size} / max(img.size); img = img.resize((max(1, round(img.width * k)), max(1, round(img.height * k))), Image.LANCZOS); ")
@@ -136,7 +155,7 @@ def main():
     for sid in [k for k in a.cut.split(',') if k]:
       seed, box, size, threshold = KEPT[sid]
       out = OUT / f'{OUTNAME.get(sid, sid)}.webp'; out.parent.mkdir(parents=True, exist_ok=True)
-      to_webp(Path(a.review) / f'{sid}-{seed}.png', out, box, size, threshold); print(sid, '→', out)
+      to_webp(Path(a.review) / f'{sid}-{seed}.png', out, box, size, threshold, TURN.get(sid, 0), FADE.get(sid, 0)); print(sid, '→', out)
     return
   if a.keep:
     OUT.mkdir(parents=True, exist_ok=True)
@@ -146,7 +165,7 @@ def main():
       err = paint(png, SUBJECTS[sid], seed, sid)
       if err: print(sid, 'failed', err); continue
       out = OUT / f'{OUTNAME.get(sid, sid)}.webp'; out.parent.mkdir(parents=True, exist_ok=True)
-      to_webp(png, out, box, size, threshold); print(sid, '→', out)
+      to_webp(png, out, box, size, threshold, TURN.get(sid, 0), FADE.get(sid, 0)); print(sid, '→', out)
     return
   review = Path(a.review); review.mkdir(parents=True, exist_ok=True)
   for sid in ids:

@@ -73,6 +73,7 @@ export const way = beat({
   },
   grade: (s) => (s.best >= 3 ? 'straight' : 'wandered'),
   rests: true,
+  anchor: 'branch', // the valley's: branches reaching over it from its sides
   cls: 'g-rope-way',
 });
 
@@ -97,6 +98,7 @@ export const rent = beat({
   },
   grade: (s) => (s.best >= 3 ? 'exact' : 'over'),
   rests: true,
+  anchor: 'branch', // the crow walks down off a branch, as crows do
   cls: 'g-rope-rent',
 });
 
@@ -107,6 +109,15 @@ export const rent = beat({
    end of the swing, and he lands on the ledge. The storm's gust (the puff) swings him higher: the
    third 灵光 is only up there. A swing level (`air`): the swing is never quickened. */
 const DAD_W = 42, DAD_H = 79, PACK_W = 46, PACK_H = 27, LEDGE = 92, LEDGE_TOP = 0.44, LEDGE_EDGE = 0.74;
+/* The pine (768 × 320, art/games/fall/pine.webp): two points on its limb in its own pixels, laid on the
+   level's two anchors — scaled and turned so the ropes are tied round the limb wherever the level hangs them. */
+const PINE = { size: [768, 320], ties: [[590, 112], [300, 100]] };
+function pinePicture(level) {
+  const [a, b] = level.vines.map((v) => v.at), [p, q] = PINE.ties;
+  const k = Math.hypot(b[0] - a[0], b[1] - a[1]) / Math.hypot(q[0] - p[0], q[1] - p[1]);
+  const turn = (Math.atan2(b[1] - a[1], b[0] - a[0]) - Math.atan2(q[1] - p[1], q[0] - p[0])) * 180 / Math.PI;
+  return `<g transform="translate(${n(a[0])} ${n(a[1])}) rotate(${n(turn, 2)}) scale(${n(k, 3)}) translate(${-p[0]} ${-p[1]})">${img('games/fall/pine.webp', 0, 0, PINE.size[0], PINE.size[1], 'g-rope-pine')}</g>`;
+}
 const fallArt = (file) => `${ART}games/fall/${file}.webp`;
 export const fall = beat({
   meta: { id: 'fallrope', name: { zh: '拽 · 拽爹上崖', en: 'The haul · Father back onto the rock' }, how: { zh: '划断绳，让爹荡回崖边的石台。背上的包太沉——那根背带也划得断。', en: 'Cut the ropes so Father swings back onto the ledge. His pack drags him — its strap can be cut too.' } },
@@ -116,11 +127,17 @@ export const fall = beat({
     en: { name: 'Father', say: 'Cut the ropes: swing Father back onto the ledge.', miss: ['He didn\'t reach the ledge. Again.', 'He swung short. Again.', 'He nearly had it. Again.'], eat: ['Father grabs the ledge.'], done: 'Father clings to the cliff face.' },
   }),
   upright: true,
-  // the ropes are tied round his chest: the circle sits there, his fists above it, his boots below
-  thing: (s, r) => img('games/fall/dad.webp', -DAD_W / 2, -DAD_H * 0.36, DAD_W, DAD_H),
+  // He hangs by his hands (Hanli 10-19: 「把爹的图片拴在绳子上有点奇怪」): the ropes end in his fists, the
+  // circle there; his body hangs below, turned along the ropes' pull; the pack on his back by its strap.
+  hang: { shoulder: DAD_H * 0.3 },
+  thing: (s, r) => img('games/fall/dad.webp', -DAD_W / 2, -DAD_H * 0.03, DAD_W, DAD_H),
   pack: (s, r) => img('games/fall/pack.webp', -PACK_W / 2, -PACK_H * 0.6, PACK_W, PACK_H),
   // the storm cliff, its rock pulled toward the left edge (the wall in the world is a few px wide)
-  backdrop: () => `<image class="g-rope-backdrop" href="${fallArt('cliff')}" x="-44" y="0" width="${W + 44}" height="440" preserveAspectRatio="none"/>`,
+  // …and the old pine leaning out from the cliff top over the drop, the ropes tied round its limb
+  // (each vine `from: 'tied'`: the knot on the pine, nothing floating in the sky)
+  backdrop: (s) => `<image class="g-rope-backdrop" href="${fallArt('cliff')}" x="-44" y="0" width="${W + 44}" height="440" preserveAspectRatio="none"/>`
+    + pinePicture(s.level),
+  anchor: 'tied',
   stone(st) {
     if (st.kind === 'wall') return ''; // the cliff face: the backdrop's
     // the rock spur, mirrored so its face slopes down to the right as the slab does
