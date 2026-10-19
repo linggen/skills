@@ -69,6 +69,7 @@ export const WHOLE = 'fast';
 export const END_PAUSE_MS = 1800;
 /* How often words held for a picture look again (createLines `gate`). */
 export const GATE_POLL_MS = 120;
+const GATED = 'gated';
 export function paceOf(sentence, { f = 1, last = false, lang = 'zh' } = {}) {
   const n = String(sentence ?? '').length * (lang === 'en' ? 1 / 3 : 1);
   return Math.round((Math.min(11000, Math.max(2600, 900 + n * 165)) + (last ? END_PAUSE_MS : 0)) * f);
@@ -214,7 +215,7 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
     if (!host || done) return;
     const ss = sents();
     if (ki < ss.length) {
-      if (gated(ss[ki].textContent)) { waitGate(); return; }
+      if (gated(ss[ki].textContent)) { waitGate(); return GATED; }
       ki += 1;
       paint();
       if (paused) return;
@@ -227,7 +228,7 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
       arm(() => { si += 1; ki = 0; paint(); onScreen(key, si); step(); }, 420);
       return;
     }
-    if (gated(null)) { waitGate(); return; }
+    if (gated(null)) { waitGate(); return GATED; }
     finish();
   }
   return {
@@ -246,12 +247,13 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
       paint();
       arm(step, o.lead ?? 500);
     },
-    /* A tap: the next sentence now; read through, the beat's way on. Words held for a picture stay held. */
+    /* A tap: the next sentence now; read through, the beat's way on. Words held for a picture stay held:
+       then it answers false (nothing came up — the page may bring the picture on, lingjing.js storyTap). */
     tap() {
-      if (!host) return;
-      if (done) { onDone(key, true); return; }
-      if (paused) { this.hold(false); return; }
-      step();
+      if (!host) return false;
+      if (done) { onDone(key, true); return true; }
+      if (paused) { this.hold(false); return true; }
+      return step() !== GATED;
     },
     /* Held down: the clock stops; let go, it goes on. */
     hold(on) {

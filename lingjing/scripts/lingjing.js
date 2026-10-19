@@ -2519,8 +2519,9 @@ function nudgeWays() {
 let holdSwallow = false;
 function storyTap() {
   if (holdSwallow) { holdSwallow = false; return; }
-  // A set piece playing under the beat: a tap brings its last frame, never the next paragraph (the words go on by themselves).
-  if (piecePlays()) { pieceToEnd(); return; }
+  // A set piece playing under the beat: a tap brings the next sentence while one is free to come; once the words
+  // wait for the picture, the tap brings its last frame — never the next paragraph (the words then go on by themselves).
+  if (piecePlays()) { if (!(lines.key && $('dlg')?.querySelector('.story') && lines.tap())) pieceToEnd(); return; }
   if (lines.key && $('dlg')?.querySelector('.story')) lines.tap();
   else nextBeat();
 }

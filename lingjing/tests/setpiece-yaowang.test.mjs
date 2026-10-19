@@ -146,7 +146,7 @@ test('the words wait for the picture: 「统御万妖」 with the 万妖, 「—
   }
   // The page: the clock's gate is the piece's, a tap during it brings its last frame, the paragraph waits for it.
   assert.match(page, /gate: pieceGate/);
-  assert.match(page, /function storyTap\(\) \{\n[^\n]*\n[^\n]*\n  if \(piecePlays\(\)\) \{ pieceToEnd\(\); return; \}/);
+  assert.match(page, /if \(piecePlays\(\)\) \{ if \(!\(lines\.key && \$\('dlg'\)\?\.querySelector\('\.story'\) && lines\.tap\(\)\)\) pieceToEnd\(\); return; \}/);
   assert.match(page, /const held = piecePlays\(\) \|\|/);
   assert.match(runner, /get ended\(\) \{ return lastBeat\(\); \}/);
 });

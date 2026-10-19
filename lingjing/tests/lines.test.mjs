@@ -133,8 +133,8 @@ test('the words wait for a picture: a gated sentence, or the beat\'s end, holds 
   t.next();
   assert.deepEqual(lit(), [1], 'the cue\'s sentence waits for the picture');
   assert.deepEqual(t.pending(), [GATE_POLL_MS], 'looked at again soon');
-  lines.tap();
-  assert.deepEqual(lit(), [1], 'a tap does not bring it either');
+  assert.equal(lines.tap(), false, 'a tap does not bring it either — it says so');
+  assert.deepEqual(lit(), [1]);
   open = true;
   t.next();
   assert.deepEqual(lit(), [2], 'the picture there: the sentence comes up');
