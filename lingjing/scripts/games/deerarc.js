@@ -345,10 +345,15 @@ function realStep(world, ar) {
   if (ev) return ev;
   const v = ar.body.velocity, slow = Math.hypot(v.x, v.y) < 0.12 && Math.abs(ar.body.angularVelocity) < 0.02;
   ar.still = slow ? (ar.still ?? 0) + 1 : 0;
+  // Down on the bank it may roll on a while: the throw is over half a second after it lands (the
+  // body stays in the world, rolling, a thing like the rest).
+  const down = to[1] >= groundAt(to[0]) - (ar.proj.size?.[1] ?? 12) / 2 - 3;
+  ar.downFor = down ? (ar.downFor ?? 0) + 1 : ar.downFor ?? 0;
   const out = to[0] < -30 || to[0] > W + 30 || to[1] > H + 20;
-  if (out || ar.still > 8 || ar.body.isSleeping || ar.steps > 900) {
+  if (out || ar.still > 8 || ar.body.isSleeping || ar.downFor > 30 || ar.steps > 600) {
     ar.done = true;
-    Body.setStatic(ar.body, true);
+    ar.true = false;
+    if (out) Body.setStatic(ar.body, true);
     return out ? 'out' : 'ground';
   }
   return null;
@@ -555,8 +560,14 @@ export function aimOf(x0, y0, x, y) {
 
 const canAim = (s) => s.phase === 'aim';
 
+/** While the knocked things still come down he need not wait: past a short beat, a press takes
+    up the next throw at once (the bot, which plays by the clock, waits for the world to rest). */
+const EAGER_MS = 500;
+const takeUp = (s) => (s.phase === 'settle' && s.t >= EAGER_MS ? reload(s) : s);
+
 function hold(s, d) {
   if (s.phase === 'fly') return tap(s); // a press in flight is the tap
+  s = takeUp(s);
   if (!canAim(s) || !Number.isFinite(Number(d.x))) return null;
   return { ...s, press: [Number(d.x), Number(d.y)], pull: { a: 15, p: 0 } };
 }
@@ -595,7 +606,7 @@ function tap(s) {
 }
 
 /** Choose what to throw (the tray), between throws. */
-const pickVerb = (s, d) => (canAim(s) && s.ammo?.includes(d.p) && d.p !== s.pick ? { ...s, pick: d.p, pull: null, press: null } : null);
+const pickVerb = (s, d) => ((s = takeUp(s)), canAim(s) && s.ammo?.includes(d.p) && d.p !== s.pick ? { ...s, pick: d.p, pull: null, press: null } : null);
 
 const VERBS = {
   hold, move, draw, tap, pick: pickVerb,
@@ -668,7 +679,7 @@ function land(s, ev) {
   const level = levelOf(s), ar = s.world.arrow, tx = level.deer ? deerAt(level, s.clock).x : level.target?.x ?? midOf(level.target?.deep);
   const near = level.deer && Math.abs(ar.tip[0] - tx) < 80;
   const said = ['turned', 'glance'].includes(s.said) ? s.said : ar.tip[0] < tx ? 'long' : 'short';
-  const stuck = ev === 'out' || ev === 'burst' || ar.stuckIn ? s.stuck : [...s.stuck, [n(ar.body.position.x), n(ar.body.position.y), n((ar.body.angle * 180) / Math.PI), ar.proj?.id ?? 'arrow']];
+  const stuck = ev === 'out' || ev === 'burst' || ar.stuckIn || (ar.real && !ar.body.isStatic) ? s.stuck : [...s.stuck, [n(ar.body.position.x), n(ar.body.position.y), n((ar.body.angle * 180) / Math.PI), ar.proj?.id ?? 'arrow']];
   if (said === 'long' && ev === 'ground' && level.deer) cue(s.world, 'splash', [ar.tip[0], ar.tip[1] + 4], 1);
   const next = { ...s, trail: ar.path, said: ev === 'stuck' ? 'stuck' : said, stuck, alertAt: near ? s.clock : s.alertAt, hint: s.hint || Boolean(level.hint) };
   // A smash level waits for what he knocked to come down before the next throw.
@@ -689,6 +700,7 @@ function clearArrow(s) {
   const ar = s.world.arrow;
   // One stuck in a log rides it on (the log may still roll): kept, with the rest it rode.
   if (ar?.stuckIn) s.world.riders = [...(s.world.riders ?? []), ar];
+  else if (ar?.real && !ar.body.isStatic) s.world.thrown = [...(s.world.thrown ?? []), ar]; // a stone, a log: still in the world
   else if (ar) Composite.remove(s.world.engine.world, ar.body);
   s.world.arrow = null;
   return s;
@@ -1058,7 +1070,8 @@ function spentPicture(s) {
   const bits = (s.world.bits ?? []).map((b) => `<g transform="translate(${n(b.position.x)} ${n(b.position.y)}) rotate(${n((b.angle * 180) / Math.PI)})">${chaff ? sprite({ ...chaff, w: 9, h: 5, at: [0.5, 0.5] }, 0.9) : '<path class="g-da-bit" d="M-3 0 L3 0"/>'}</g>`).join('');
   // Arrows stuck in a log ride it as it rolls.
   const riders = (s.world.riders ?? []).map((r) => `<g class="g-da-spent" transform="translate(${n(r.body.position.x)} ${n(r.body.position.y)}) rotate(${n((r.body.angle * 180) / Math.PI)})">${thrownShape(s, r.proj?.id ?? 'arrow', true)}</g>`).join('');
-  return stuck + bits + riders;
+  const thrown = (s.world.thrown ?? []).map((r) => `<g class="g-tk-proj" transform="translate(${n(r.body.position.x)} ${n(r.body.position.y)}) rotate(${n((r.body.angle * 180) / Math.PI)})">${thrownShape(s, r.proj?.id ?? 'stone')}</g>`).join('');
+  return stuck + bits + riders + thrown;
 }
 
 /** The last arrow's path: a bold ink stroke on a paper rim (`marks.trail` its width), or ink dots. */
@@ -1259,7 +1272,10 @@ function trayPicture(s, t, lang) {
   const on = s.phase === 'aim';
   const items = s.ammo.map((id) => {
     const proj = projectileOf(s.kit, id), name = proj.name?.[lang] ?? proj.name?.zh ?? id;
-    const icon = proj.shape === 'arrow' ? '<path class="g-da-shaft" d="M-11 0 L11 0"/><path class="g-da-head-tip" d="M11 0 l-5 -3 l0 6Z"/>' : shapeOf(proj);
+    // Painted where the thing has its painting (the arrow, the pebble, the log, the jar…), else ink.
+    const own = proj.shape === 'arrow' ? s.art?.arrow : s.art?.[{ log: 'log', pot: 'jar', stone: 'pebble', sword: 'sword', talisman: 'talisman' }[proj.shape]];
+    const icon = own?.file ? `<g transform="scale(${proj.shape === 'arrow' ? 0.7 : 1})">${thrownShape(s, id)}</g>`
+      : proj.shape === 'arrow' ? '<path class="g-da-shaft" d="M-11 0 L11 0"/><path class="g-da-head-tip" d="M11 0 l-5 -3 l0 6Z"/>' : shapeOf(proj);
     return `<button type="button" class="g-tk-pick${id === s.pick ? ' is-on' : ''}" data-g="pick" data-p="${id}"${on ? '' : ' disabled'}>`
       + `<svg class="g-tk-icon" viewBox="-16 -10 32 20" aria-hidden="true">${icon}</svg><span>${name}</span></button>`;
   }).join('');

@@ -159,3 +159,21 @@ test('the scene is ready for the juice: a canvas over the scene, the mute toggle
   assert.ok(s.world.cues.some((c) => c.k === 'twang'), 'and twangs');
   assert.match(da.html(s, 'zh'), /g-da-string is-ring/, 'the string rings after the loose');
 });
+
+test('no waiting on the dust: past half a second of settling, a press takes up the next throw; a thrown stone stays in the world', () => {
+  const rack = byId('rack');
+  let s = da.newGame('t', 1, { levels: [rack], projectiles: PROJ });
+  s = da.tick(s, 300);
+  s = da.act(s, { g: 'pick', p: 'stone' }).state;
+  s = da.act(da.act(s, { g: 'draw', a: rack.bot[0][0], p: rack.bot[0][1] }).state, { g: 'loose' }).state;
+  while (s.phase === 'fly') s = da.tick(s, 50);
+  assert.equal(s.phase, 'settle');
+  assert.equal(da.act(s, { g: 'hold', x: 300, y: 150 }).state, s, 'not at once');
+  while (s.phase === 'settle' && s.t < 520) s = da.tick(s, 50);
+  if (s.phase === 'settle') {
+    const r = da.act(s, { g: 'hold', x: 300, y: 150 }).state;
+    assert.equal(r.phase, 'aim', 'the press takes up the next throw');
+    assert.ok(r.press);
+    assert.ok((r.world.thrown ?? []).some((t) => t.proj.id === 'stone'), 'the stone lies where it rolled');
+  }
+});

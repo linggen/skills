@@ -92,7 +92,7 @@ const LOOKS = {
   shatter: { s: ['shatter', 0.9], p: [['specks', 3, 16, 2.2, 1.8, 0.12, 700], ['dust', 2, 26, 0.6, 0.5, 0.01, 800]], shake: 2.5 },
   clink: { s: ['stone', 0.5] },
   straw: { s: ['straw', 0.9], p: [['straw', 9, 14, 2.2, 2, 0.06, 1300], ['dust', 2, 26, 0.5, 0.5, 0.01, 800]], shake: 1.5 },
-  stone: { s: ['stone', 0.8], p: [['dust', 2, 14, 0.8, 0.8, 0.02, 500], ['specks', 1, 10, 1, 1, 0.1, 400]] },
+  stone: { s: ['stone', 0.8], p: [['dust', 3, 22, 0.9, 0.8, 0.02, 600], ['specks', 3, 16, 2, 1.4, 0.1, 500], ['chip', 2, 8, 1.6, 1.4, 0.14, 600]] },
   hit: { s: ['hit', 1], also: ['bolt', 0.8, 260], p: [['specks', 6, 20, 2.6, 2, 0.12, 900], ['dust', 2, 30, 0.7, 0.6, 0.01, 800]], shake: 4 },
   bolt: { s: ['bolt', 0.9], p: [['grass', 4, 12, 1.4, 1.6, 0.12, 700], ['dust', 3, 26, 0.6, 0.4, 0.01, 800]] },
   chime: { s: ['chime', 0.7] },
@@ -120,7 +120,7 @@ function spawn(f, art, c, [key, count, size, speed, up, grav, life]) {
     const ang = -Math.PI / 2 + (rnd() - 0.5) * Math.PI * 1.3;
     const v = speed * k * (0.5 + rnd());
     f.parts.push({ url, x: c.at[0] + (rnd() - 0.5) * 6, y: c.at[1] + (rnd() - 0.5) * 6, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v - up * k * rnd() * 0.6,
-      r: rnd() * 6.28, vr: (rnd() - 0.5) * 0.3, s: size * (0.6 + rnd() * 0.6) * (key === 'splash' || key === 'dust' ? k : 1), g: grav, life, age: 0, grow: key === 'dust' ? 0.9 : key === 'splash' ? 0.5 : 0 });
+      r: rnd() * 6.28, vr: (rnd() - 0.5) * 0.3, s: size * 1.5 * (0.6 + rnd() * 0.6) * (key === 'splash' || key === 'dust' ? k : 1), g: grav, life, age: 0, grow: key === 'dust' ? 0.9 : key === 'splash' ? 0.5 : 0 });
   }
   if (f.parts.length > 160) f.parts.splice(0, f.parts.length - 160);
 }
