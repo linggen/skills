@@ -112,11 +112,16 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
     const root = new PIXI.Container();
     root.scale.set(Wpx / W);
     app.stage.addChild(root);
-    scene = def.build({ PIXI, gsap, app, root, W, H, art });
+    scene = def.build({ PIXI, gsap, app, root, W, H, art, lang });
     // A later run starts where the earlier beats left the picture (the river up, the trial over).
     for (const b of before) scene.beat(b.id).progress(1);
   }
 
+  // A beat may name its own hold (`hold`, ms: the boast's vision goes straight into the cut). Shown
+  // still (reduced motion, played before), such a beat's last frame stands as long as it would have
+  // played, so the still keeps time with the words paced over it.
+  const heldFor = (b) => (b.hold != null ? b.hold + (still || !scene ? b.ms : 0)
+    : typeof hold === 'function' ? hold({ ...b, text: b.line?.[lang] ?? b.line?.zh }) : hold);
   const say = (i) => onBeat?.(i, { ...BEATS[i], text: BEATS[i].line?.[lang] ?? BEATS[i].line?.zh }, BEATS.length);
   const react = (ev) => {
     if (gone) return;
@@ -133,7 +138,7 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
       react({ hold: ev.finish });
     } else if ('hold' in ev) {
       onHold?.(ev.hold);
-      if (auto) timer = setTimeout(() => react(steps.tap()), typeof hold === 'function' ? hold({ ...BEATS[ev.hold], text: BEATS[ev.hold].line?.[lang] ?? BEATS[ev.hold].line?.zh }) : hold);
+      if (auto) timer = setTimeout(() => react(steps.tap()), heldFor(BEATS[ev.hold]));
     } else if ('skip' in ev) {
       // The last frame: every beat left, run to its end in order.
       if (scene) { tl?.progress(1); for (let k = Math.max(0, ev.skip + 1); k < BEATS.length; k += 1) scene.beat(BEATS[k].id).progress(1); } else box.innerHTML = still_(BEATS.at(-1).id);

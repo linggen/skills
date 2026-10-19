@@ -156,7 +156,9 @@ test('a still held at a beat\'s end goes on by itself at 中 and 快, and says �
   assert.match(body, /onHold: \(\) => box\.classList\.add\('held'\)/);
   assert.match(body, /class="sphint">\$\{en \? 'Tap to go on' : '轻触继续'\}/);
   const runner = fsm.readFileSync(new URL('../scripts/setpiece.js', import.meta.url), 'utf8');
-  assert.match(runner, /onHold\?\.\(ev\.hold\);\n\s+if \(auto\) timer = setTimeout\(\(\) => react\(steps\.tap\(\)\), typeof hold === 'function'/);
+  assert.match(runner, /onHold\?\.\(ev\.hold\);\n\s+if \(auto\) timer = setTimeout\(\(\) => react\(steps\.tap\(\)\), heldFor\(BEATS\[ev\.hold\]\)\)/);
+  // A beat's own `hold` (yaowang's vision, cut short by the question) first; else the line's reading time.
+  assert.match(runner, /const heldFor = \(b\) => \(b\.hold != null \? b\.hold \+ \(still \|\| !scene \? b\.ms : 0\)\s+: typeof hold === 'function' \? hold\(/);
   const css = fsm.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
   assert.match(css, /\.spstage\.held \.sphint, \.spstage\.over \.sphint \{ visibility: visible/);
 });
