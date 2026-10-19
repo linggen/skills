@@ -7,6 +7,7 @@
 
 import { runBash, sq } from './bash.js';
 import { esc } from './ui.js';
+import { t as tr } from './strings.js';
 
 // The one live player in THIS page. Closing it hides to a mini-bar (keeps
 // playing); opening a new one stops the previous.
@@ -146,7 +147,7 @@ export async function openPlayer(startTrack, opts = {}) {
 
   async function findLyrics(btn) {
     if (!opts.fetchLyrics) return;
-    if (btn) { btn.disabled = true; btn.textContent = 'Finding lyrics…'; }
+    if (btn) { btn.disabled = true; btn.textContent = tr('dj.findingLyrics'); }
     await opts.fetchLyrics(track); // fetch for the CURRENT track (queue may have advanced)
     if (track.lrc) {
       const text = await runBash(`cat ${sq(track.lrc)} 2>/dev/null || true`).catch(() => '');
@@ -154,7 +155,7 @@ export async function openPlayer(startTrack, opts = {}) {
       words = lines.length ? [] : plainLines(text);
     }
     renderLyrics();
-    if (!lines.length) opts.toast?.('No lyrics found for this track.');
+    if (!lines.length) opts.toast?.(tr('dj.noLyricsFoundFor2'));
   }
 
   function renderLyrics() {

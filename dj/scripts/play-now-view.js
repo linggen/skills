@@ -6,11 +6,12 @@ import { composeRows } from './play-now.js';
 import { play } from './lib-view.js';
 import { state, savedUi, saveUi } from './state.js';
 import { $, esc, plural } from './ui.js';
+import { t as tr } from './strings.js';
 
 const LEAD_STORE = 'dj.playNowLead';
 const LEAD_TTL = 24 * 3600 * 1000;
 
-const TITLES = { recent: 'Just in', stale: 'Not played in a while', phone: 'On your phone' };
+const TITLES = { recent: tr('dj.justIn'), stale: tr('dj.notPlayedInA'), phone: tr('dj.onYourPhone2') };
 
 let lead = null;
 try {
@@ -28,7 +29,7 @@ const shortDate = (iso) => {
 function factLine(row) {
   const bits = [plural(row.count, 'song')];
   if (row.id === 'recent' && row.newest) bits.push(`newest ${shortDate(row.newest)}`);
-  if (row.playlist) bits.push(row.last_played ? `last played ${shortDate(row.last_played)}` : 'never played here');
+  if (row.playlist) bits.push(row.last_played ? tr('dj.lastPlayedShortdate', { shortDate: shortDate(row.last_played) }) : tr('dj.neverPlayedHere'));
   return bits.join(' · ');
 }
 

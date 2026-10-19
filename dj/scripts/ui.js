@@ -1,3 +1,4 @@
+import { t } from './strings.js';
 // ui.js — the page helpers every DJ page shares: element lookup, HTML
 // escaping, the toast, and the confirm dialog (window.confirm is a silent
 // no-op inside the app shell's sandboxed iframe).
@@ -59,4 +60,5 @@ export function debounce(fn, ms) {
   };
 }
 
-export const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+/// "3 songs" / "3 首歌": a counted noun in the person's language.
+export const plural = (n, word) => t(`dj.count.${word.replace(/ /g, '_')}`, { n });

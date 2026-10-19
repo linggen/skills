@@ -10,6 +10,7 @@ import { runAction, runBash, sq } from './bash.js';
 import { trackKey } from './library.js';
 import { attachLyrics } from './lyrics.js';
 import { state, toast } from './state.js';
+import { t as tr } from './strings.js';
 
 const LYRICS_RETRY_MS = 30 * 24 * 3600 * 1000;
 
@@ -89,14 +90,14 @@ async function backfillOnce(onChange) {
 
 /// The player's "find lyrics" for one song.
 export async function fetchTrackLyrics(t, onChange) {
-  if (!t.file) { toast('No audio file for this song.'); return null; }
-  toast(`Looking for lyrics — ${t.title}`);
+  if (!t.file) { toast(tr('dj.noAudioFileFor')); return null; }
+  toast(tr('dj.lookingForLyricsTitle', { title: t.title }));
   try {
     const got = await attachLyrics(t, t.file);
     await record(t, got);
-    if (!got) { toast(`No lyrics found for “${t.title}”.`); return null; }
+    if (!got) { toast(tr('dj.noLyricsFoundFor', { title: t.title })); return null; }
     onChange?.();
-    toast(`Got lyrics for “${t.title}”.`);
+    toast(tr('dj.gotLyricsForTitle', { title: t.title }));
     return got.lrc;
   } catch (e) {
     toast(String(e.message || e));

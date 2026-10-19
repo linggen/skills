@@ -1,3 +1,4 @@
+import { t as tr } from './strings.js';
 // bash.js — the one path the DJ pages use to touch the machine: /api/bash.
 // These are USER actions (the user clicked something), so they're ungated.
 //
@@ -41,7 +42,7 @@ export const lastJson = (out) => {
 // A refusal is a fact ({ unavailable, reason } — reach.mjs); the page shows
 // it as a plain status line, keyed by the reason.
 const REFUSED = {
-  youtube_unreachable: 'Downloads unavailable — YouTube is unreachable from this Mac',
+  youtube_unreachable: tr('dj.downloadsUnavailableYoutubeIs'),
 };
 
 export async function runAction(verb, ...args) {

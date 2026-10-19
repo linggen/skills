@@ -41,53 +41,53 @@
   <script src="/shared/channel.js"></script>
 </head>
 <body>
-  <h1>DJ settings</h1>
+  <h1 data-i18n="dj.djSettings">DJ settings</h1>
 
   <div class="field">
-    <label for="library_dir">Library folder</label>
+    <label for="library_dir" data-i18n="dj.libraryFolder">Library folder</label>
     <input id="library_dir" type="text" placeholder="~/Music/DJ" />
-    <div class="hint">Where downloaded MP3s are saved on this Mac.</div>
+    <div class="hint" data-i18n="dj.whereDownloadedMp3sAre">Where downloaded MP3s are saved on this Mac.</div>
   </div>
 
   <div class="field">
-    <label for="bitrate">Quality</label>
+    <label for="bitrate" data-i18n="dj.quality">Quality</label>
     <select id="bitrate">
       <option value="320">320 kbps (best MP3)</option>
       <option value="256">256 kbps</option>
       <option value="192">192 kbps</option>
-      <option value="best">Best available</option>
+      <option value="best" data-i18n="dj.bestAvailable">Best available</option>
     </select>
   </div>
 
   <div class="field">
-    <label for="karaoke_source">Karaoke source</label>
+    <label for="karaoke_source" data-i18n="dj.karaokeSource">Karaoke source</label>
     <select id="karaoke_source">
-      <option value="audio">Audio — lighter, drag lyrics to sync</option>
-      <option value="video">Video — lyrics on screen, guaranteed in sync</option>
+      <option value="audio" data-i18n="dj.audioLighterDragLyrics">Audio — lighter, drag lyrics to sync</option>
+      <option value="video" data-i18n="dj.videoLyricsOnScreen">Video — lyrics on screen, guaranteed in sync</option>
     </select>
-    <div class="hint">Audio grabs a small instrumental MP3 and finds lyrics; video downloads the full karaoke clip. Audio syncs to your phone.</div>
+    <div class="hint" data-i18n="dj.audioGrabsASmall">Audio grabs a small instrumental MP3 and finds lyrics; video downloads the full karaoke clip. Audio syncs to your phone.</div>
   </div>
 
   <div class="field">
-    <label for="naming_template">File naming</label>
+    <label for="naming_template" data-i18n="dj.fileNaming">File naming</label>
     <input id="naming_template" type="text" placeholder="%(artist)s - %(title)s" />
     <div class="hint">Fields: <code>%(artist)s</code>, <code>%(title)s</code>, <code>%(year)s</code>.</div>
   </div>
 
   <fieldset>
-    <legend>Phone</legend>
+    <legend data-i18n="dj.phone">Phone</legend>
 
     <!-- Linggen Mobile pulls the library itself over the paired channel;
          nothing to configure here. A device card when paired, the pairing QR
          when not. -->
     <div id="lm-card" class="lm-card">
-      <div class="hint">Checking for paired phones…</div>
+      <div class="hint" data-i18n="dj.checkingForPairedPhones">Checking for paired phones…</div>
     </div>
 
   </fieldset>
 
   <div class="bar">
-    <button class="btn" id="save-btn">Save</button>
+    <button class="btn" id="save-btn" data-i18n="dj.save">Save</button>
     <span class="status" id="save-status"></span>
   </div>
 
@@ -95,6 +95,9 @@
     import { loadConfig, saveConfig, loadLibrary } from './library.js';
     import { phoneDevices, coverage, pairQr, agoLabel } from './phone.js';
     import { $, esc } from './ui.js';
+    import { applyI18n, loadLanguage, t as tr } from './strings.js';
+    await loadLanguage();
+    applyI18n();
     let cfg = {};
 
     // The Linggen Mobile card: paired → per-device coverage; not paired → the
@@ -111,19 +114,19 @@
             ? `${c.waiting} waiting`
             : `up to date • ${agoLabel(d.last_fetch)}`;
           return `<div class="lm-device">
-            <div class="who"><b>📱 ${esc(d.name)}</b><div class="hint">${c.synced}/${c.total} songs • ${waiting}</div></div>
+            <div class="who"><b>📱 ${esc(d.name)}</b><div class="hint">${tr('dj.set.songsOf', { synced: c.synced, total: c.total })} • ${waiting}</div></div>
             <div class="lm-cover"><i style="width:${pct}%"></i></div>
           </div>`;
         }).join('');
-        card.innerHTML = `<div class="lm-title">Linggen Mobile <span class="lm-badge">wireless</span></div>
-          <div class="hint">Your phone carries the songs you add to it and fetches them itself.</div>${rows}`;
+        card.innerHTML = `<div class="lm-title">Linggen Mobile <span class="lm-badge">${tr('dj.set.wireless')}</span></div>
+          <div class="hint">${tr('dj.set.carries')}</div>${rows}`;
         return;
       }
       const qr = await pairQr();
-      card.innerHTML = `<div class="lm-title">Linggen Mobile <span class="lm-badge">recommended</span></div>
-        <div class="hint">Wireless sync, offline play, synced lyrics — no cables, no third-party player.</div>
+      card.innerHTML = `<div class="lm-title">Linggen Mobile <span class="lm-badge">${tr('dj.set.recommended')}</span></div>
+        <div class="hint">${tr('dj.set.pitch')}</div>
         <div class="lm-qr">${qr ? qr.svg : ''}
-          <div class="lm-steps">1. Get Linggen Mobile on your iPhone<br/>2. Scan this code with the Camera app<br/>3. Confirm on this Mac — music syncs itself</div>
+          <div class="lm-steps">${tr('dj.set.steps')}</div>
         </div>`;
     }
     renderPhoneCard();
@@ -145,7 +148,7 @@
       const s = $('save-status');
       try {
         await saveConfig(cfg);
-        s.textContent = 'Saved ✓'; s.className = 'status ok';
+        s.textContent = tr('dj.set.saved'); s.className = 'status ok';
       } catch (e) {
         s.textContent = String(e.message || e); s.className = 'status bad';
       }

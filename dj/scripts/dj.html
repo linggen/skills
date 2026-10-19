@@ -12,11 +12,11 @@
     <header class="topbar">
       <div class="brand">
         <span class="logo">DJ</span>
-        <span class="tagline">your disc jockey</span>
+        <span class="tagline" data-i18n="dj.yourDiscJockey">your disc jockey</span>
       </div>
       <div class="actions">
-        <button id="party-btn" class="btn" title="Karaoke — sing on the big screen">🎤 Karaoke</button>
-        <button id="settings-btn" class="btn ghost" title="Settings" aria-label="Settings">⚙</button>
+        <button id="party-btn" class="btn" title="Karaoke — sing on the big screen" data-i18n-title="dj.karaokeSingOnThe" data-i18n="dj.karaoke2">🎤 Karaoke</button>
+        <button id="settings-btn" class="btn ghost" title="Settings" data-i18n-title="dj.settings" aria-label="Settings" data-i18n-aria="dj.settings">⚙</button>
       </div>
     </header>
 
@@ -24,21 +24,21 @@
       <section class="left">
         <!-- Primary call-to-action: describe a vibe → Build. -->
         <div class="build">
-          <div class="build-hint">Tell DJ a vibe — it builds the set; Get pulls in clean MP3s with lyrics, ready for your phone.</div>
+          <div class="build-hint" data-i18n="dj.tellDjAVibe">Tell DJ a vibe — it builds the set; Get pulls in clean MP3s with lyrics, ready for your phone.</div>
           <div class="build-row">
-            <input id="build-input" type="text" placeholder="Make a list of 90s English songs" autocomplete="off" />
-            <button id="build-btn" class="btn">Build</button>
+            <input id="build-input" type="text" placeholder="Make a list of 90s English songs" data-i18n-placeholder="dj.makeAListOf" autocomplete="off" />
+            <button id="build-btn" class="btn" data-i18n="dj.build">Build</button>
           </div>
           <div class="quick-row">
-            <span class="quick-label">or let DJ pick:</span>
-            <button id="lucky-btn" class="btn ghost small" title="A set built from what DJ knows about you">✦ Lucky find</button>
-            <button id="trending-btn" class="btn ghost small" title="A set from what's popular right now">⌁ Trending find</button>
+            <span class="quick-label" data-i18n="dj.orLetDjPick">or let DJ pick:</span>
+            <button id="lucky-btn" class="btn ghost small" title="A set built from what DJ knows about you" data-i18n-title="dj.aSetBuiltFrom" data-i18n="dj.luckyFind">✦ Lucky find</button>
+            <button id="trending-btn" class="btn ghost small" title="A set from what's popular right now" data-i18n-title="dj.aSetFromWhat" data-i18n="dj.trendingFind">⌁ Trending find</button>
           </div>
           <div class="chips" id="build-chips">
-            <button class="chip" type="button">Hong Kong 90s top 50</button>
-            <button class="chip" type="button">Best of Beyond</button>
-            <button class="chip" type="button">Rainy-Sunday jazz</button>
-            <button class="chip" type="button">Upbeat workout mix</button>
+            <button class="chip" type="button" data-i18n="dj.hongKong90sTop">Hong Kong 90s top 50</button>
+            <button class="chip" type="button" data-i18n="dj.bestOfBeyond">Best of Beyond</button>
+            <button class="chip" type="button" data-i18n="dj.rainySundayJazz">Rainy-Sunday jazz</button>
+            <button class="chip" type="button" data-i18n="dj.upbeatWorkoutMix">Upbeat workout mix</button>
           </div>
         </div>
 
@@ -48,17 +48,17 @@
         <!-- The first view is Play now — a few rows composed from the library's
              own facts (play-now.js); the whole library is one tab away. -->
         <div class="view-tabs" role="tablist">
-          <button class="view-tab" data-tab="now" role="tab">Play now</button>
-          <button class="view-tab" data-tab="library" role="tab">Library</button>
+          <button class="view-tab" data-tab="now" role="tab" data-i18n="dj.playNow">Play now</button>
+          <button class="view-tab" data-tab="library" role="tab" data-i18n="dj.library">Library</button>
         </div>
         <div id="play-now" class="play-now"></div>
 
         <!-- FIXED: the library the page owns. The agent never touches this. -->
         <div class="library-wrap">
           <div class="lib-toolbar">
-            <h2 class="section-title">Your library</h2>
-            <button id="play-all" class="btn small" title="Play this list">▶ Play</button>
-            <button id="mode-btn" class="btn ghost small" title="Playback order"></button>
+            <h2 class="section-title" data-i18n="dj.yourLibrary">Your library</h2>
+            <button id="play-all" class="btn small" title="Play this list" data-i18n-title="dj.playThisList" data-i18n="dj.play2">▶ Play</button>
+            <button id="mode-btn" class="btn ghost small" title="Playback order" data-i18n-title="dj.playbackOrder"></button>
             <!-- Which library you are in, beside the verbs that act on it.
                  `lib-count` keeps its id: the source switch replaced the count
                  chip that used to live up in the topbar. The wrapper is what
@@ -68,8 +68,8 @@
               <div class="lib-count" id="lib-count"></div>
               <span class="src-menu" id="src-menu" hidden></span>
             </div>
-            <button id="sync-btn" class="btn ghost small" title="Tell your phone to fetch what it's missing" hidden>⇅ Sync</button>
-            <input id="lib-search" class="lib-search" type="search" placeholder="Search your library…" autocomplete="off" />
+            <button id="sync-btn" class="btn ghost small" title="Tell your phone to fetch what it's missing" data-i18n-title="dj.tellYourPhoneTo" hidden data-i18n="dj.sync">⇅ Sync</button>
+            <input id="lib-search" class="lib-search" type="search" placeholder="Search your library…" data-i18n-placeholder="dj.searchYourLibrary" autocomplete="off" />
           </div>
           <!-- A background errand's progress (retained `tasks` topic) — the
                same numbers the phone's relay card shows. Hidden when quiet. -->
@@ -89,7 +89,7 @@
         </div>
       </section>
 
-      <div id="pane-resizer" title="Drag to resize the chat — double-click to reset"></div>
+      <div id="pane-resizer" title="Drag to resize the chat — double-click to reset" data-i18n-title="dj.dragToResizeThe"></div>
 
       <section class="right">
         <div id="chat-panel" class="chat-panel"></div>

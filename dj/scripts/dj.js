@@ -21,6 +21,7 @@ import { afterRefresh, refreshLibrary, renderLibrary, playlists, startKaraoke, l
 import { state, setCollection, toast } from './state.js';
 import { ensureThumbs } from './thumbs.js';
 import { $, plural } from './ui.js';
+import { applyI18n, loadLanguage, t as tr } from './strings.js';
 
 const SKILL = 'dj';
 const params = new URLSearchParams(location.search);
@@ -56,9 +57,9 @@ async function pollTaskStrip() {
 // a renamed song's places. At boot (announced) and whenever the page is shown.
 
 const drift = (r) => [
-  r.adopted && `${plural(r.adopted, 'new song')} found`,
-  r.renamed && `${plural(r.renamed, 'song')} renamed`,
-  r.retired && `${r.retired} missing removed`,
+  r.adopted && tr('dj.found', { what: plural(r.adopted, 'new song') }),
+  r.renamed && tr('dj.renamed', { what: plural(r.renamed, 'song') }),
+  r.retired && tr('dj.missingRemoved', { n: r.retired }),
 ].filter(Boolean);
 
 let reindexing = false;
@@ -84,6 +85,9 @@ document.addEventListener('visibilitychange', () => {
 
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
+  // The setting before any words are drawn.
+  await loadLanguage();
+  applyI18n();
   // The strip first: one cheap topic read, and a mid-download reload must
   // show the run at once.
   pollTaskStrip();
@@ -134,7 +138,7 @@ const TRENDING_PROMPT =
 let chat = null;
 
 function sendToAgent(text) {
-  if (!chat) { toast('Connecting to DJ…'); return; }
+  if (!chat) { toast(tr('dj.connectingToDj')); return; }
   chat.send(text);
 }
 

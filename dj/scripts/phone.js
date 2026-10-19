@@ -1,3 +1,4 @@
+import { t as tr } from './strings.js';
 // phone.js — Linggen Mobile as DJ's native sync target. The phone pulls the
 // library itself over the paired channel, so there is nothing to push from
 // here: this module only reads state — which devices are paired (the engine's
@@ -47,9 +48,9 @@ export async function pairQr() {
 
 /// "just now" / "2h ago" / "3d ago" — for the device card's last-sync line.
 export function agoLabel(tsSeconds) {
-  if (!tsSeconds) return 'never synced';
+  if (!tsSeconds) return tr('dj.neverSynced');
   const mins = Math.max(0, Math.floor(Date.now() / 1000 - tsSeconds) / 60);
-  if (mins < 2) return 'just now';
+  if (mins < 2) return tr('dj.justNow');
   if (mins < 60) return `${Math.floor(mins)}m ago`;
   if (mins < 60 * 24) return `${Math.floor(mins / 60)}h ago`;
   return `${Math.floor(mins / 60 / 24)}d ago`;

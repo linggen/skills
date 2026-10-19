@@ -22,49 +22,49 @@
     <div id="koffset" class="koffset hidden"></div>
 
     <div class="ktop">
-      <button id="back" class="kbtn" title="Back to library">← Library</button>
+      <button id="back" class="kbtn" title="Back to library" data-i18n-title="dj.backToLibrary" data-i18n="dj.library2">← Library</button>
       <div id="nowtitle" class="ktitle"></div>
-      <button id="fs" class="kbtn" title="Fullscreen">⛶</button>
+      <button id="fs" class="kbtn" title="Fullscreen" data-i18n-title="dj.fullscreen">⛶</button>
     </div>
 
     <!-- Mix panel (mic + voice/music balance). Opens from the 🎚 button. -->
     <div id="mixpanel" class="kmix hidden">
-      <button id="mic" class="kbtn mic" title="Turn the microphone on">🎤 Mic off</button>
-      <div class="kmeter" title="Mic level"><i id="meterfill"></i></div>
+      <button id="mic" class="kbtn mic" title="Turn the microphone on" data-i18n-title="dj.turnTheMicrophoneOn" data-i18n="dj.micOff">🎤 Mic off</button>
+      <div class="kmeter" title="Mic level" data-i18n-title="dj.micLevel"><i id="meterfill"></i></div>
       <label class="kslider">🎙 Voice <input id="voice" type="range" min="0" max="200" value="100" /></label>
       <label class="kslider">🎵 Music <input id="music" type="range" min="0" max="150" value="100" /></label>
       <label class="kslider">🌫 Reverb <input id="reverb" type="range" min="0" max="100" value="30" /></label>
       <label class="kslider">🔁 Echo <input id="echo" type="range" min="0" max="100" value="0" /></label>
-      <div class="kkey" title="Shift the song's key to fit your range">
+      <div class="kkey" title="Shift the song's key to fit your range" data-i18n-title="dj.shiftTheSongS">
         🎼 Key
-        <button id="key-dn" class="kkeybtn" title="Lower key">−</button>
+        <button id="key-dn" class="kkeybtn" title="Lower key" data-i18n-title="dj.lowerKey">−</button>
         <span id="key-val">0</span>
-        <button id="key-up" class="kkeybtn" title="Raise key">＋</button>
+        <button id="key-up" class="kkeybtn" title="Raise key" data-i18n-title="dj.raiseKey">＋</button>
       </div>
     </div>
 
     <div id="controls" class="kctrl">
-      <button id="prev" class="kc" title="Previous">⏮</button>
-      <button id="play" class="kc kplay" title="Play / pause">▶</button>
-      <button id="next" class="kc" title="Next">⏭</button>
+      <button id="prev" class="kc" title="Previous" data-i18n-title="dj.previous">⏮</button>
+      <button id="play" class="kc kplay" title="Play / pause" data-i18n-title="dj.playPause">▶</button>
+      <button id="next" class="kc" title="Next" data-i18n-title="dj.next">⏭</button>
       <span id="cur" class="ktime">0:00</span>
       <input id="seek" class="kseek" type="range" min="0" max="1000" value="0" />
       <span id="dur" class="ktime">0:00</span>
-      <button id="mixbtn" class="kbtn" title="Mic & mix">🎚 Mix</button>
-      <button id="setupbtn" class="kbtn" title="Audio setup — mic & speaker">⚙ Audio</button>
-      <button id="srcbtn" class="kbtn" title="Switch version — original, karaoke audio, or karaoke video">🎛 Version</button>
-      <button id="queue" class="kbtn" title="Up next">📋</button>
+      <button id="mixbtn" class="kbtn" title="Mic & mix" data-i18n-title="dj.micMix" data-i18n="dj.mix">🎚 Mix</button>
+      <button id="setupbtn" class="kbtn" title="Audio setup — mic & speaker" data-i18n-title="dj.audioSetupMicSpeaker" data-i18n="dj.audio">⚙ Audio</button>
+      <button id="srcbtn" class="kbtn" title="Switch version — original, karaoke audio, or karaoke video" data-i18n-title="dj.switchVersionOriginalKaraoke" data-i18n="dj.version">🎛 Version</button>
+      <button id="queue" class="kbtn" title="Up next" data-i18n-title="dj.upNext">📋</button>
     </div>
 
     <!-- Audio setup: device pickers + warnings. Opens from ⚙ Audio. -->
     <div id="setup" class="ksetup hidden">
       <div class="ksetup-card">
-        <div class="ksetup-head">Audio setup <button id="setup-close" class="kbtn" title="Close">×</button></div>
+        <div class="ksetup-head">Audio setup <button id="setup-close" class="kbtn" title="Close" data-i18n-title="dj.close">×</button></div>
         <label class="ksetup-row">🎙 Microphone
-          <select id="dev-mic"><option value="">Default</option></select>
+          <select id="dev-mic"><option value="" data-i18n="dj.default">Default</option></select>
         </label>
         <label class="ksetup-row">🔊 Sound output
-          <select id="dev-out"><option value="">Default</option></select>
+          <select id="dev-out"><option value="" data-i18n="dj.default">Default</option></select>
         </label>
         <div id="dev-warn" class="ksetup-warn hidden"></div>
         <label class="ksetup-check">
@@ -72,7 +72,7 @@
         </label>
         <div class="ksetup-tip">Tip: send video to the TV (HDMI/AirPlay) and keep the
           sound on a speaker — not the TV. Wired beats Bluetooth for live singing.</div>
-        <div id="dev-hint" class="ksetup-hint hidden">Turn the mic on once to see device names.</div>
+        <div id="dev-hint" class="ksetup-hint hidden" data-i18n="dj.turnTheMicOn">Turn the mic on once to see device names.</div>
       </div>
     </div>
 

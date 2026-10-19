@@ -13,6 +13,7 @@ import { KaraokeAudio } from './karaoke-audio.js';
 import { createDrawer } from './karaoke-drawer.js';
 import { wireMix, wireSetup } from './karaoke-mix.js';
 import { esc, makeToast } from './ui.js';
+import { applyI18n, loadLanguage, t as tr } from './strings.js';
 
 const kaudio = new KaraokeAudio();
 const toast = makeToast('ktoast');
@@ -52,11 +53,13 @@ const onDisk = (p) => !!p && have.has(p);
 
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
+  await loadLanguage();
+  applyI18n();
   [state.config, state.library] = await Promise.all([loadConfig(), loadLibrary()]);
   state.source = state.config.karaoke_source === 'video' ? 'video' : 'audio';
   state.queue = resolveQueue();
   if (!state.queue.length) {
-    $('#lyrics').innerHTML = `<div class="kempty">Nothing to sing yet.<br><button class="kbtn" id="goback">← Back to library</button></div>`;
+    $('#lyrics').innerHTML = `<div class="kempty">${tr('dj.k.nothingYet')}<br><button class="kbtn" id="goback">${tr('dj.k.backLib')}</button></div>`;
     stage.classList.add('audio');
     $('#goback').onclick = back;
     return;
@@ -108,7 +111,7 @@ async function load(t) {
     if (!live()) return;
     if (!t.lrc) {
       useVideo = true;
-      toast('No lyrics for this song — switching to a karaoke video.');
+      toast(tr('dj.noLyricsForThis'));
     }
   }
   if (useVideo) {
@@ -203,10 +206,10 @@ async function fetchKaraoke(t, kind) {
   state.busy = true;
   state.fetchingKind = kind === 'video' ? 'video' : 'karaoke';
   refreshSrcPanel();
-  progress(kind === 'video' ? 'Finding a karaoke video…' : 'Finding karaoke audio…');
+  progress(kind === 'video' ? tr('dj.findingAKaraokeVideo') : tr('dj.findingKaraokeAudio'));
   try {
     const r = await downloadKaraoke(t, kind);
-    if (!r.ok) { toast(r.error || 'Nothing found.'); return; }
+    if (!r.ok) { toast(r.error || tr('dj.nothingFound')); return; }
     setField(t, kind === 'video' ? 'karaoke_video' : 'karaoke_audio', r.file);
     have.add(r.file);
     await runAction('track-set-karaoke', t.file, kind === 'video' ? 'video' : 'audio', r.file);
@@ -224,7 +227,7 @@ async function fetchKaraoke(t, kind) {
 async function fetchLyricsAuto(t) {
   const src = onDisk(t.file) ? t.file : t.karaoke_audio;
   if (!src) return null;
-  progress('Finding lyrics…');
+  progress(tr('dj.findingLyrics'));
   try {
     const got = await attachLyrics(t, src);
     if (!got) return null;
@@ -387,18 +390,18 @@ function renderLyrics() {
 
 async function findLyrics() {
   const t = track();
-  if (!t || !(t.file || t.karaoke_audio)) { toast('No audio file for this song.'); return; }
+  if (!t || !(t.file || t.karaoke_audio)) { toast(tr('dj.noAudioFileFor')); return; }
   const btn = $('#find-lyrics');
   if (btn) { btn.disabled = true; btn.textContent = '🔎 Finding…'; }
   const got = await fetchLyricsAuto(t);
   if (!got) {
-    toast(`No lyrics found for “${t.title}”.`);
-    if (btn) { btn.disabled = false; btn.textContent = '🔎 Find lyrics'; }
+    toast(tr('dj.noLyricsFoundFor', { title: t.title }));
+    if (btn) { btn.disabled = false; btn.textContent = tr('dj.findLyrics'); }
     return;
   }
   if (t !== track()) return;
   await showLyrics(t);
-  toast(`Got lyrics for “${t.title}”.`);
+  toast(tr('dj.gotLyricsForTitle', { title: t.title }));
 }
 
 function highlight(cur) {
@@ -487,7 +490,7 @@ function toggleFullscreen() {
 const SOURCES = {
   video: async (t) => {
     if (!onDisk(t.karaoke_video)) await fetchKaraoke(t, 'video');
-    if (!onDisk(t.karaoke_video)) { toast('No karaoke video found.'); return false; }
+    if (!onDisk(t.karaoke_video)) { toast(tr('dj.noKaraokeVideoFound')); return false; }
     setMode('video');
     renderLyrics();
     await playFile(t.karaoke_video, 'mp4');
@@ -495,7 +498,7 @@ const SOURCES = {
   },
   karaoke: async (t) => {
     if (!onDisk(t.karaoke_audio)) await fetchKaraoke(t, 'audio');
-    if (!onDisk(t.karaoke_audio)) { toast('No karaoke audio found.'); return false; }
+    if (!onDisk(t.karaoke_audio)) { toast(tr('dj.noKaraokeAudioFound')); return false; }
     await withLyrics(t);
     await playFile(t.karaoke_audio, 'mp3');
     return true;
@@ -550,9 +553,9 @@ async function renderSourcePanel() {
   if (!panel || !t) return;
   await checkDisk(t);
   const rows = [
-    { k: 'karaoke', ic: '🎤', label: 'Karaoke', sub: 'vocals removed', has: onDisk(t.karaoke_audio) },
-    { k: 'video', ic: '🎬', label: 'Karaoke video', sub: 'lyrics on screen', has: onDisk(t.karaoke_video) },
-    { k: 'original', ic: '🎵', label: 'Original', sub: 'with vocals', has: onDisk(t.file) || !!t.file },
+    { k: 'karaoke', ic: '🎤', label: tr('dj.karaoke'), sub: tr('dj.vocalsRemoved'), has: onDisk(t.karaoke_audio) },
+    { k: 'video', ic: '🎬', label: tr('dj.karaokeVideo'), sub: tr('dj.lyricsOnScreen'), has: onDisk(t.karaoke_video) },
+    { k: 'original', ic: '🎵', label: tr('dj.original'), sub: tr('dj.withVocals'), has: onDisk(t.file) || !!t.file },
   ];
   panel.innerHTML = rows.map((r) => {
     const on = state.playingSrc === r.k;
@@ -567,9 +570,9 @@ async function renderSourcePanel() {
 }
 
 const BADGE = {
-  karaoke: ['🎤 Karaoke — vocals removed', 'src-karaoke'],
-  original: ['🎵 Original — with vocals', 'src-original'],
-  video: ['🎬 Karaoke video', 'src-karaoke'],
+  karaoke: [tr('dj.karaokeVocalsRemoved'), 'src-karaoke'],
+  original: [tr('dj.originalWithVocals'), 'src-original'],
+  video: [tr('dj.karaokeVideo2'), 'src-karaoke'],
 };
 
 // The chip under the title: which audio the singer is hearing.
@@ -579,7 +582,7 @@ function setSourceBadge(kind) {
   const [text, cls] = BADGE[kind] || BADGE.original;
   el.textContent = text;
   el.className = `ksrc ${cls}`;
-  el.title = 'Switch version';
+  el.title = tr('dj.switchVersion');
   el.onclick = toggleSrcPanel;
 }
 

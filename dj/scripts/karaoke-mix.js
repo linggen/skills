@@ -3,13 +3,14 @@
 // (pickers, a Bluetooth warning, external-mixer mode).
 
 import { esc } from './ui.js';
+import { t as tr } from './strings.js';
 
 const $ = (sel) => document.querySelector(sel);
 
 function setMicBtn(on) {
   const b = $('#mic');
   b.classList.toggle('on', on);
-  b.textContent = on ? '🎤 Mic on' : '🎤 Mic off';
+  b.textContent = on ? tr('dj.micOn') : tr('dj.micOff');
 }
 
 // Animate the level meter while the mic is live.
@@ -37,15 +38,15 @@ export function wireMix({ kaudio, media, toast }) {
         await kaudio.enable(media());
         meterLoop(kaudio);
         setMicBtn(true);
-        toast('Mic on — use earbuds or a separate speaker so it doesn’t echo.');
+        toast(tr('dj.micOnUseEarbuds'));
       } else {
         const on = await kaudio.toggleMic();
         setMicBtn(on);
-        toast(on ? 'Mic on.' : 'Mic off.');
+        toast(on ? tr('dj.micOn2') : tr('dj.micOff2'));
       }
     } catch {
       setMicBtn(kaudio.micOn);
-      toast('Mic blocked — allow microphone access for this page.');
+      toast(tr('dj.micBlockedAllowMicrophone'));
     } finally {
       micBtn.disabled = false;
     }
@@ -63,7 +64,7 @@ export function wireMix({ kaudio, media, toast }) {
     key = Math.max(-7, Math.min(7, key + delta));
     $('#key-val').textContent = key > 0 ? `+${key}` : `${key}`;
     try { await kaudio.ensureEngine(media()); kaudio.setKey(key); }
-    catch { toast('Couldn’t start the audio engine.'); }
+    catch { toast(tr('dj.couldnTStartThe')); }
   };
   $('#key-dn').onclick = () => applyKey(-1);
   $('#key-up').onclick = () => applyKey(1);
@@ -82,7 +83,7 @@ function updateWarn() {
   const outLabel = $('#dev-out').selectedOptions[0]?.textContent || '';
   const warn = $('#dev-warn');
   const laggy = isLaggy(micLabel) || isLaggy(outLabel);
-  warn.textContent = laggy ? '⚠ Bluetooth adds delay, so your voice can echo. Wired is best.' : '';
+  warn.textContent = laggy ? tr('dj.bluetoothAddsDelaySo') : '';
   warn.classList.toggle('hidden', !laggy);
 }
 
@@ -125,7 +126,7 @@ export function wireSetup({ kaudio, toast }) {
     prefs.outId = e.target.value;
     saveAudioPrefs(prefs);
     const ok = await kaudio.setOutputDevice(prefs.outId);
-    if (!ok && prefs.outId) toast('This browser can’t redirect output — pick the speaker in macOS Sound instead.');
+    if (!ok && prefs.outId) toast(tr('dj.thisBrowserCanT'));
     updateWarn();
   };
   $('#dev-external').checked = !!prefs.external;

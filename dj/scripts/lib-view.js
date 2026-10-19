@@ -13,6 +13,7 @@ import { closeRowMenu, showRowMenu } from './row-menu.js';
 import { state, savedUi, saveUi, setCollection, toast } from './state.js';
 import { ensureThumbs, thumbUrl } from './thumbs.js';
 import { $, esc, confirmDialog, debounce, plural } from './ui.js';
+import { t as tr } from './strings.js';
 
 /// Who else repaints from the library when it is re-read (the Play now tab).
 export const afterRefresh = new Set();
@@ -125,8 +126,8 @@ function renderSource() {
     `<span class="src-n">${plural(n, 'song')}${sub ? ` · ${esc(sub)}` : ''}</span></button>`;
   const others = state.phone.filter((d) => d.id !== dev?.id);
   el.innerHTML =
-    tab('mac', 'This Mac', macN, '') +
-    tab('phone', dev ? dev.name : 'Phone', phoneN, behind ? `${carried} here` : dev ? 'up to date' : 'not paired') +
+    tab('mac', tr('dj.thisMac'), macN, '') +
+    tab('phone', dev ? dev.name : tr('dj.phone'), phoneN, behind ? `${carried} here` : dev ? tr('dj.upToDate') : tr('dj.notPaired')) +
     (others.length ? `<button class="src-pick" id="src-pick" title="Another paired phone">▾</button>` : '');
   el.querySelectorAll('.src').forEach((b) => (b.onclick = () => setView(b.dataset.src)));
   const pick = $('src-pick');
@@ -170,9 +171,9 @@ async function syncPhone(btn) {
       body: JSON.stringify({ topic: 'dj', op: 'library-changed', payload: {}, retain: false }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    toast(`Sync sent to ${dev.name}.`);
+    toast(tr('dj.syncSentToName', { name: dev.name }));
   } catch (e) {
-    toast(`Couldn't reach your phone: ${String(e.message || e)}`);
+    toast(tr('dj.couldnTReachYour', { String: String(e.message || e) }));
   } finally {
     btn.disabled = false;
   }
@@ -203,7 +204,7 @@ function renderSidebar() {
   };
   const pls = playlists();
   const el = $('lib-sidebar');
-  el.innerHTML = item('all', '', 'All songs') + item('recent', '', 'Recently added') +
+  el.innerHTML = item('all', '', tr('dj.allSongs')) + item('recent', '', tr('dj.recentlyAdded')) +
     `<div class="side-head">Playlists</div>` +
     (pls.length ? pls.map((p) => item('playlist', p, p)).join('') : `<div class="side-empty">none yet</div>`);
   el.querySelectorAll('.side-item').forEach((d) => (d.onclick = (e) => {
@@ -256,7 +257,7 @@ function renamePlaylist(oldName, newName) {
     const r = await action('playlist-rename', oldName, newName, state.view);
     if (inPlaylistView() && state.collection.name === oldName) setCollection({ kind: 'playlist', name: newName });
     return r;
-  }, (r) => (r.merged ? `Merged into “${newName}”.` : `Renamed to “${newName}”.`));
+  }, (r) => (r.merged ? tr('dj.mergedIntoNewname', { newName }) : tr('dj.renamedToNewname', { newName })));
 }
 
 function deletePlaylist(name) {
@@ -264,7 +265,7 @@ function deletePlaylist(name) {
     const r = await action('playlist-delete', name, state.view);
     if (inPlaylistView() && state.collection.name === name) setCollection({ kind: 'all' });
     return r;
-  }, `Deleted playlist “${name}”. Songs kept.`);
+  }, tr('dj.deletedPlaylistNameSongs', { name }));
 }
 
 // ── cards ────────────────────────────────────────────────────────────────────
@@ -272,9 +273,9 @@ function deletePlaylist(name) {
 /// An icon on a card is a STATE, never a verb; every verb is behind the ⋯.
 const BADGES = [
   // In the phone view every row is on the phone, so 📱 would say nothing.
-  { key: 'phone', icon: '📱', label: 'on your phone', has: (t) => !onPhoneView() && !!t.on_phone },
+  { key: 'phone', icon: '📱', label: tr('dj.onYourPhone'), has: (t) => !onPhoneView() && !!t.on_phone },
   { key: 'lyr', icon: '♪', label: 'lyrics', has: (t) => !!t.lrc },
-  { key: 'kar', icon: '🎤', label: 'karaoke ready', has: (t) => !!(t.karaoke_audio || t.karaoke_video) },
+  { key: 'kar', icon: '🎤', label: tr('dj.karaokeReady'), has: (t) => !!(t.karaoke_audio || t.karaoke_video) },
 ];
 
 function rowHtml(t) {
@@ -317,8 +318,8 @@ const selectedFiles = () =>
 /// files and exists only on the Mac side; the phone side's strongest verb
 /// takes a song off the phone.
 function removeLabel() {
-  if (inPlaylistView()) return 'Remove from playlist';
-  return onPhoneView() ? 'Remove from phone' : 'Delete from library';
+  if (inPlaylistView()) return tr('dj.removeFromPlaylist');
+  return onPhoneView() ? tr('dj.removeFromPhone') : tr('dj.deleteFromLibrary');
 }
 
 function renderSelbar() {
@@ -363,7 +364,7 @@ async function phoneAdd(files) {
   }, (r) => {
     const dev = currentDevice();
     return dev?.present
-      ? `${plural(r.added, 'song')} on your phone — ${dev.name} is fetching.`
+      ? tr('dj.pluralOnYourPhone', { plural: plural(r.added, 'song'), name: dev.name })
       : `${plural(r.added, 'song')} added — your phone picks ${r.added === 1 ? 'it' : 'them'} up when it wakes.`;
   });
 }
@@ -375,7 +376,7 @@ async function phoneRemove(files) {
     const r = await action('phone-remove', JSON.stringify(files));
     state.selected.clear();
     return r;
-  }, (r) => `${plural(r.removed, 'song')} off your phone — still on this Mac.`);
+  }, (r) => tr('dj.pluralOffYourPhone', { plural: plural(r.removed, 'song') }));
 }
 
 function showAddMenu() {
@@ -412,7 +413,7 @@ async function removeSelected() {
   if (!files.length) return;
   if (inPlaylistView()) { await unfile(files, state.collection.name); return; }
   if (onPhoneView()) { await phoneRemove(files); return; }
-  if (!(await confirmDialog(`Delete ${plural(files.length, 'song')} from your library?`, 'Delete', true))) return;
+  if (!(await confirmDialog(tr('dj.deletePluralFromYour', { plural: plural(files.length, 'song') }), tr('dj.delete'), true))) return;
   await deleteTracks(files);
 }
 
@@ -446,7 +447,7 @@ export function play(start, queue, shuffle = false) {
 /// Hand a queue to the full-screen karaoke page via localStorage.
 export function startKaraoke(start, queue) {
   const view = (queue || libraryView()).filter((t) => t.file);
-  if (!view.length) { toast('Nothing to sing here.'); return; }
+  if (!view.length) { toast(tr('dj.nothingToSingHere')); return; }
   try {
     localStorage.setItem('dj:karaoke', JSON.stringify({ ids: view.map(trackKey), start: trackKey(start || view[0]) }));
   } catch { /* private mode: the karaoke page falls back to the whole library */ }
@@ -455,7 +456,7 @@ export function startKaraoke(start, queue) {
 
 function playAll() {
   const view = libraryView();
-  if (!view.length) { toast('Nothing to play here.'); return; }
+  if (!view.length) { toast(tr('dj.nothingToPlayHere')); return; }
   play(state.shuffle ? view[Math.floor(Math.random() * view.length)] : view[0], view, state.shuffle);
 }
 
@@ -468,9 +469,9 @@ const VERBS = {
   tophone: (t) => phoneAdd([t.file]),
   fromphone: (t) => phoneRemove([t.file]),
   unlist: (t) => unfile([t.file], state.collection.name),
-  another: (t) => act(() => redownload(t.file), (r) => (r.added ? `Looking for another source for “${t.title}”.` : `“${t.title}” is already queued.`)),
+  another: (t) => act(() => redownload(t.file), (r) => (r.added ? tr('dj.lookingForAnotherSource', { title: t.title }) : tr('dj.titleIsAlreadyQueued', { title: t.title }))),
   delete: async (t) => {
-    if (await confirmDialog(`Delete “${t.title}” from your library?`, 'Delete', true)) await deleteTracks([t.file]);
+    if (await confirmDialog(tr('dj.deleteTitleFromYour', { title: t.title }), tr('dj.delete'), true)) await deleteTracks([t.file]);
   },
 };
 
@@ -478,16 +479,16 @@ const VERBS = {
 /// the selection bar answers for many songs.
 function rowVerbs(t) {
   const verbs = [
-    { act: 'play', label: 'Play', icon: '▶' },
-    { act: 'karaoke', label: 'Karaoke', icon: '🎤' },
+    { act: 'play', label: tr('dj.play'), icon: '▶' },
+    { act: 'karaoke', label: tr('dj.karaoke'), icon: '🎤' },
   ];
-  if (onPhoneView()) verbs.push({ act: 'fromphone', label: 'Remove from phone', icon: '📴' });
-  else if (!t.on_phone) verbs.push({ act: 'tophone', label: 'Add to phone', icon: '📱' });
-  else verbs.push({ act: 'fromphone', label: 'Take off phone', icon: '📴' });
-  verbs.push({ act: 'reveal', label: 'Show in Finder', icon: '📂' });
-  if (!onPhoneView()) verbs.push({ act: 'another', label: 'Find another source', icon: '↻' });
-  if (inPlaylistView()) verbs.push({ act: 'unlist', label: 'Remove from this playlist', icon: '✕', sep: true });
-  else if (!onPhoneView()) verbs.push({ act: 'delete', label: 'Delete from library', icon: '🗑', sep: true, danger: true });
+  if (onPhoneView()) verbs.push({ act: 'fromphone', label: tr('dj.removeFromPhone'), icon: '📴' });
+  else if (!t.on_phone) verbs.push({ act: 'tophone', label: tr('dj.addToPhone'), icon: '📱' });
+  else verbs.push({ act: 'fromphone', label: tr('dj.takeOffPhone'), icon: '📴' });
+  verbs.push({ act: 'reveal', label: tr('dj.showInFinder'), icon: '📂' });
+  if (!onPhoneView()) verbs.push({ act: 'another', label: tr('dj.findAnotherSource'), icon: '↻' });
+  if (inPlaylistView()) verbs.push({ act: 'unlist', label: tr('dj.removeFromThisPlaylist'), icon: '✕', sep: true });
+  else if (!onPhoneView()) verbs.push({ act: 'delete', label: tr('dj.deleteFromLibrary'), icon: '🗑', sep: true, danger: true });
   return verbs;
 }
 
@@ -526,7 +527,7 @@ function onRowCheck(e) {
 
 function updateModeBtn() {
   const b = $('mode-btn');
-  if (b) b.textContent = state.shuffle ? '🔀 Shuffle' : '→ In order';
+  if (b) b.textContent = state.shuffle ? '🔀 Shuffle' : tr('dj.inOrder');
 }
 
 export function wireLibrary() {

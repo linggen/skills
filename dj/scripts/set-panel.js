@@ -10,6 +10,7 @@ import { play, refreshLibrary } from './lib-view.js';
 import { state, toast } from './state.js';
 import { thumbUrl } from './thumbs.js';
 import { $, esc, plural } from './ui.js';
+import { t as tr } from './strings.js';
 
 // ── what the queue says about a song ─────────────────────────────────────────
 
@@ -84,7 +85,7 @@ export function extractKey(args, key) {
 function applyAgentPlay(pp) {
   const byKey = new Map((state.library.tracks || []).filter((t) => t.file).map((t) => [trackKey(t), t]));
   const queue = (pp.tracks || []).map((t) => byKey.get(trackId(t))).filter(Boolean);
-  if (!queue.length) { toast('None of those are downloaded yet.'); return; }
+  if (!queue.length) { toast(tr('dj.noneOfThoseAre')); return; }
   play(queue[0], queue);
 }
 
@@ -94,7 +95,7 @@ export function applyPageUpdate(args) {
   const tl = extractKey(args, 'tracklist');
   if (!tl || !Array.isArray(tl.tracks)) return;
   state.set = {
-    name: tl.name || 'New set',
+    name: tl.name || tr('dj.newSet'),
     brief: tl.brief || '',
     tracks: tl.tracks.map((t) => ({
       artist: t.artist || '', title: t.title || '', year: t.year || '', note: t.note || '', selected: true,
@@ -232,7 +233,7 @@ async function getAll() {
   const playlist = cleanPlaylistName(state.set.name);
   try {
     const r = await enqueue(todo.map((t) => ({ artist: t.artist, title: t.title, year: t.year || undefined, playlist })));
-    toast(`${plural(r.added, 'song')} queued — they keep downloading if you close DJ.`);
+    toast(tr('dj.pluralQueuedTheyKeep', { plural: plural(r.added, 'song') }));
   } catch (e) {
     toast(String(e.message || e));
   }
