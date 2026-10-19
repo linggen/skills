@@ -9,6 +9,7 @@ import { fightSetup, heldMark, ownedCards, pouchBrief, readOf } from './cards.mj
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, questBrief, recalledOf } from './companion.mjs';
+import { readingNow } from './reading.mjs';
 import { clone, paysOf, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
@@ -566,7 +567,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep ? { asleep: true } : {}), ...(herAway(content, state) ? { away: herAway(content, state) } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep ? { asleep: true } : {}), ...(readingNow(state, ctx.now) ? { telling: true } : {}), ...(herAway(content, state) ? { away: herAway(content, state) } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
     // 银月的记忆 (rules/memories.mjs): the ones unlocked, and what Ling may say of them — never one still locked.
     ...(memoriesLook(content, state) ? { memories: memoriesLook(content, state) } : {}),
     quest: questBrief(content, state, ctx.now),

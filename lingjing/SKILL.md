@@ -41,8 +41,9 @@ senses: [weather, user_words]
 # Ling and 银月 share Lingjing's table (doc/shared-session-spec.md): one
 # thread — she reads the scenes and Ling's Look as he plays them — Ling
 # leading. She is found, not given: until the player finds her in the
-# prologue's valley — and while she sleeps in 吴婆婆's fox token
-# (prologue-v3) — she is not here at all (the save's `companion.awake`):
+# prologue's valley — and while a passage of the story is told on the
+# stage, when she is in 吴婆婆's fox token (Hanli, 2026-10-19; awake the
+# rest of the time) — she is not here at all (the save's `companion.awake`):
 # `@银月` runs no turn and the page says 「查无此人。」, and no app moment
 # reaches her (Hanli, 2026-09-25 / 09-28). At the table she reads the game
 # and never moves it: her tools here are her own read of it (AppTool →
@@ -908,8 +909,8 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 
 ## Yinyue
 
-- **Found in the prologue**, then asleep in 吴婆婆's token
-  (`companion.asleep`): absent (guide `tell`).
+- **Found in the prologue**; in 吴婆婆's token (absent) only while a
+  passage plays, else awake (guide `tell`).
 - Found, she is glad, dry and devoted — warm, brief, at the player's side, in
   the game's language; the same Yinyue as in the rest of Linggen.
 - **Her past is `companion.recalled`, and nothing more.** From the fourth

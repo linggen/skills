@@ -7,6 +7,7 @@ import { hashOf } from './travel.mjs';
 import { memoriesOf } from './memories.mjs';
 import { inMade, placeName, placeOf, placeOpen, sceneOf, tooHard } from './world.mjs';
 import { sceneLine } from './hui.mjs';
+import { readingNow } from './reading.mjs';
 
 /* The thread — the pull: the scene while one runs, else the next chapter
    and when it opens; nothing when the spine has run out. */
@@ -18,12 +19,41 @@ import { sceneLine } from './hui.mjs';
    be given, and the stage stands empty (his rule, 2026-09-17). */
 const companionOf = content => content.world.companion ?? null;
 export const hasCompanion = state => Boolean(state.companion?.joined);
-/* Found, and awake: prologue-v3 has her sleep in 吴婆婆's fox token (an exit's
-   `sleeps`), waking rarely (`wakes`). Asleep she walks with the player — her
-   past, her card in the bag — but she is not present: no lines of hers, no
-   moments, no fights, and the engine keeps her out of the chat
-   (SKILL.md `absent_until: companion.awake`). */
-export const herAwake = state => Boolean(state.companion?.joined && !state.companion?.asleep);
+/* Found, and awake (Hanli, 2026-10-19: 「小游戏的时候, 可以让Yinyue醒过来. Yinyue随时可以醒过来,
+   走剧情的时候再回到木牌里就好了」). Once met she is awake by default — the small games, free play,
+   the map, the 秘境, the nights, the chat — and back in 吴婆婆's fox token only while the story is
+   told: while a passage holds the stage (the page's `reading` hold, rules/reading.mjs, the same one
+   that holds Ling's hands). It ends, she is awake again. The book may still put her out for a
+   reason of its own — an exit's `sleeps`, until a `wakes` (the prologue's faint at the deer):
+   `companion.asleep`, kept only while the save stands inside that span (sleepSpan). Asleep or in
+   the token she walks with the player — her past, her card — but is not present: no lines of hers,
+   no moments, and the engine keeps her out of the chat (SKILL.md `absent_until: companion.awake`). */
+export const herAwake = (state, now = new Date()) => Boolean(state.companion?.joined && !state.companion?.asleep && !readingNow(state, now));
+/* The scenes a book sleep holds: from each `sleeps` exit's next scene, on along the exits, to
+   the first scene that `wakes` her (taken in). A save's `asleep` stands only inside one — an
+   older save left asleep by a sleep the book has since dropped (the token through 卷一,
+   before 2026-10-19) wakes as it is read. */
+const spans = new WeakMap();
+export function sleepSpan(content) {
+  if (spans.has(content)) return spans.get(content);
+  const out = new Set();
+  for (const ch of Object.values(content.chapters ?? {})) {
+    const scenes = ch.scenes ?? {};
+    for (const sc of Object.values(scenes)) for (const e of sc.exits ?? []) {
+      if (!e.sleeps || !e.next) continue;
+      const edge = [e.next];
+      while (edge.length) {
+        const id = edge.shift();
+        if (out.has(id) || !scenes[id]) continue;
+        out.add(id);
+        if ((scenes[id].exits ?? []).some(x => x.wakes)) continue;
+        edge.push(...(scenes[id].exits ?? []).map(x => x.next).filter(Boolean));
+      }
+    }
+  }
+  spans.set(content, out);
+  return out;
+}
 /* Away: the scene stands on a line of the book she does not live on
    (companion.json `lines` — 银月 is the 修仙 world's; a 今 interlude is
    沈芒's, where there is no 灵气 and no her, DESIGN § 四·六). Her words for
@@ -35,17 +65,21 @@ export function herAway(content, state) {
   return line && !lore.lines.includes(line) ? pick(lore.away, state.lang) : null;
 }
 /* The flag the engine's presence reads (SKILL.md `absent_until:
-   companion.awake`): found, not asleep in the token, and not away — so on a
-   line she does not live on, nothing of hers runs: no turn, no moment, no
-   AppTool. Fitted as a save is read and before it is written; the same
-   object when it fits already. */
-export function fitPresence(content, state) {
-  const c = state?.companion;
-  if (!c?.joined) return state;
-  const want = c.asleep ? {} : herAway(content, state) ? { away: true } : { awake: true };
-  if (Boolean(c.awake) === Boolean(want.awake) && Boolean(c.away) === Boolean(want.away)) return state;
+   companion.awake`): found, not asleep, not in the token for a passage on
+   the stage (herAwake), and not away — so on a line she does not live on,
+   nothing of hers runs: no turn, no moment, no AppTool. Fitted as a save is
+   read and before it is written (the page's `reading` hold too); the same
+   object when it fits already. An `asleep` outside every book sleep goes. */
+export function fitPresence(content, state, now = new Date()) {
+  const c0 = state?.companion;
+  if (!c0?.joined) return state;
+  const stale = c0.asleep && !inMade(state) && !sleepSpan(content).has(state.scene);
+  const c = stale ? (({ asleep, ...rest }) => rest)(c0) : c0;
+  const s = stale ? { ...state, companion: c } : state;
+  const want = !herAwake(s, now) ? {} : herAway(content, s) ? { away: true } : { awake: true };
+  if (Boolean(c.awake) === Boolean(want.awake) && Boolean(c.away) === Boolean(want.away)) return s;
   const { awake, away, ...rest } = c;
-  return { ...state, companion: { ...rest, ...want } };
+  return { ...s, companion: { ...rest, ...want } };
 }
 const callDue = (content, state) => {
   const c = companionOf(content);

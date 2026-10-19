@@ -24,7 +24,7 @@ const NOW = new Date('2026-10-15T09:00:00+08:00'); // the day the AI games' test
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 const nextDay = (n = 1) => ctx({ now: new Date(NOW.getTime() + n * 86400000) });
 
-/* 古七's opening (古六's 掐诀 lesson behind him), at the 讲堂 — 银月 asleep in the token, as in 卷一. */
+/* 古七's opening (古六's 掐诀 lesson behind him), at the 讲堂 — 银月 awake, as in 卷一 off the story's passages (Hanli, 2026-10-19). */
 const played = playTo(content, newState(content, 'zh', NOW), '古七', { now: NOW }).state;
 const base = { ...played, place: 'jiangtang', scene: null };
 const awake = (() => { const { asleep, ...c } = base.companion; return { ...base, companion: { ...c, awake: true } }; })();
@@ -279,14 +279,18 @@ test('reverse: his 上联, the teacher\'s 下联 checked by the rules; no pay, a
 
 /* ════════ 银月 ════════ */
 
-test('银月 asleep in the token: her part is simply absent', () => {
-  assert.ok(base.companion.asleep || !base.companion.awake, '卷一: she sleeps');
-  assert.equal(look(base, content, ctx()).duizi.her, undefined);
-  const { s } = must(base, { action: 'open' });
-  assert.equal(run(s, { action: 'hint' }, asHer()).r.refused, 'no-host');
-  assert.equal(run(s, { action: 'offer', down: '风' }, asHer()).r.refused, 'no-host');
-  const html = cardHtml({ card: 'duizi' }, { look: look(s, content, ctx()), words: WORDS.zh });
-  assert.ok(!html.includes('data-duizi-her'), 'no 银月 buttons');
+test('银月 asleep (a sleep of the book\'s, or in the 木牌 while a passage holds the stage): her part is simply absent', () => {
+  assert.ok(!base.companion.asleep, '卷一, off the passages: she is awake');
+  const slept = { ...base, companion: { joined: base.companion.joined, asleep: true } };
+  const telling = { ...base, reading: { since: new Date().toISOString() } };
+  for (const st of [slept, telling]) {
+    assert.equal(look(st, content, ctx()).duizi.her, undefined);
+    const { s } = must(st, { action: 'open' });
+    assert.equal(run(s, { action: 'hint' }, asHer()).r.refused, 'no-host');
+    assert.equal(run(s, { action: 'offer', down: '风' }, asHer()).r.refused, 'no-host');
+    const html = cardHtml({ card: 'duizi' }, { look: look(s, content, ctx()), words: WORDS.zh });
+    assert.ok(!html.includes('data-duizi-her'), 'no 银月 buttons');
+  }
 });
 
 test('银月 awake: one hint a round, one 下联 of her own — checked, never scored', () => {

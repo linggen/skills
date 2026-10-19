@@ -99,8 +99,9 @@ export function flagsOf(id, table = MOMENTS) {
 
 /* One voice budget for the page.
    post(id, fact, flags, opts) → Promise<boolean> (true when she will hear it).
-   sees() → { fighting, present } — a fight on the stage; she walks with the
-   player and is here. */
+   sees() → { fighting, present, telling } — a fight on the stage; she walks with the
+   player and is here; a passage of the story holds the stage (she is in the 木牌 for it,
+   Hanli 2026-10-19): every moment, big or asked too, waits it out and is said after. */
 export function createVoice({ now = () => Date.now(), post, sees = () => ({}), table = MOMENTS } = {}) {
   const st = {
     lastLine: -Infinity, // any line, Ling's or hers
@@ -145,6 +146,10 @@ export function createVoice({ now = () => Date.now(), post, sees = () => ({}), t
       // Before the player finds her she is not in Lingjing at all: nothing
       // goes to her, however big or asked (SKILL.md place.yinyue).
       if (!sees().present) return { verdict: 'absent', said: Promise.resolve(false) };
+      if (sees().telling) {
+        st.held = [...st.held.filter((h) => h.id !== id), { id, fact, opts }].slice(-HOLD_MAX);
+        return { verdict: 'held', said: Promise.resolve(false) };
+      }
       if (m.priority === 'big' || m.priority === 'asked') {
         stamp(t);
         return { verdict: 'sent', said: send(id, fact, opts, t) };
@@ -175,11 +180,12 @@ export function createVoice({ now = () => Date.now(), post, sees = () => ({}), t
       const t = now();
       const seen = sees();
       if (!seen.present) { st.held = []; return null; }
-      if (seen.fighting || bursting(t)) return null;
+      if (seen.telling || seen.fighting || bursting(t)) return null;
       if (st.held.length) {
         const held = st.held;
         st.held = [];
-        const open = held.filter((h) => gate(h.id, t) === 'open');
+        // A big or asked moment held over a passage is said whatever the budget; the small ones weigh in.
+        const open = held.filter((h) => ['big', 'asked'].includes(table[h.id]?.priority) || gate(h.id, t) === 'open');
         if (!open.length) return null;
         stamp(t);
         for (const h of open) send(h.id, h.fact, h.opts, t);

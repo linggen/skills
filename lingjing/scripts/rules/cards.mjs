@@ -179,7 +179,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const insight = Math.max(state.insight ?? 0, fortune?.sight ?? 0, read);
   const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
   // 小队 (party.json, cards.md § 5): who stands beside him in this fight. 银月 is a member, never
-  // a card in hand: asleep in the 木牌 through 卷一, she stands in the row from the 卷 she wakes in.
+  // a card in hand: awake in 卷一 (2026-10-19) but never in its fights, she stands in the row from 卷二.
   const party = partyFor(content, state, creature, game);
   const withHer = party.some(m => m.id === 'yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
@@ -217,8 +217,8 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
 }
 
 /* Who stands beside him (party.json): the fight's own word (an exit game's `foe.party`, carried
-   on the foe), else the 回 he stands in (`by_hui`); a member of a 卷 not yet open (银月, asleep in
-   卷一) never. Each member as the fight takes it: id, name, root, share of 气血, 嘲讽, deck. */
+   on the foe), else the 回 he stands in (`by_hui`); a member of a 卷 not yet open (银月, a member
+   from 卷二) never. Each member as the fight takes it: id, name, root, share of 气血, 嘲讽, deck. */
 export function partyFor(content, state, creature, game = null) {
   const p = content.party;
   if (!p) return [];

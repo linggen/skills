@@ -82,9 +82,12 @@ test('银月 is away on the 今: the presence flag drops, her read says only tha
   assert.deepEqual([back.companion.awake, back.companion.away], [true, undefined]);
   assert.equal(herAway(content, back), null);
   assert.ok(progress(back, content, ctx).result.stamina);
-  // Asleep in the token she stays asleep, on either line.
-  const asleep = fitPresence(content, { ...s, companion: { joined: '2026-10-01', asleep: true } });
-  assert.deepEqual(asleep.companion, { joined: '2026-10-01', asleep: true });
+  // An `asleep` no sleep of the book holds any more (the 木牌 through 卷一, before 2026-10-19) goes as
+  // the save is read: on the 今 she is away; inside a book sleep (the faint at the deer) she stays asleep.
+  const old = fitPresence(content, { ...s, companion: { joined: '2026-10-01', asleep: true } });
+  assert.deepEqual(old.companion, { joined: '2026-10-01', away: true });
+  const faint = fitPresence(content, { ...s, chapter: '00-prologue', scene: '00-dusk', companion: { joined: '2026-10-01', asleep: true } });
+  assert.deepEqual(faint.companion, { joined: '2026-10-01', asleep: true });
   assert.deepEqual(lint(content), []);
 });
 

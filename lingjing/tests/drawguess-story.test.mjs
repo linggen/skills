@@ -235,11 +235,12 @@ test('the stage: 本王考考你 stands only on an empty stage (as 二十问), o
   if (lk.tasks.some((t) => t.id === 'benwang-kao')) assert.ok(stageCards(under).some((c) => c.card === 'board' && c.id === 'benwang-kao'), 'a round under way stands');
 });
 
-test('her presence at the 家信: asleep in the 木牌 through the 观, out that one night (wm-laoyin `final` wakes, wm-jiaxin `rest` sleeps)', () => {
+test('her presence at the 家信: awake through the 观 off the passages — no wake or sleep of its own (folded 2026-10-19)', () => {
   const start = new Date('2026-10-15T09:00:00+08:00');
   const at = (target) => playTo(content, newState(content, 'zh', start), target, { now: start }).state;
-  assert.equal(at('wm-laoyin').companion.asleep, true, 'asleep before the final');
-  const night = at('wm-jiaxin');
-  assert.ok(night.companion.joined && !night.companion.asleep, 'out for the 火锅 and the letter');
-  assert.equal(at('wm-baishi').companion.asleep, true, 'back in the 木牌 after');
+  for (const id of ['wm-laoyin', 'wm-jiaxin', 'wm-baishi']) {
+    const c = at(id).companion;
+    assert.ok(c.joined && !c.asleep, `${id}: awake`);
+  }
+  for (const id of ['wm-laoyin', 'wm-jiaxin']) for (const e of Object.values(content.chapters).map((ch) => ch.scenes[id]).find(Boolean).exits) assert.ok(!e.wakes && !e.sleeps, `${id}/${e.id}`);
 });

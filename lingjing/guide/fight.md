@@ -46,7 +46,7 @@ is sold. **Only cards obtained** go in the deck — each says where it came from
 board won, the beast that fought with it, a thing bought, a tame; none at the root test; two of a
 card while he holds under ten), and the 功法 of a root lent by a worn sword or the treasure. **The
 party** stands in his row: 阿禾 (heals, binds) and 孙二狗 (guards) in 古七, 阿禾 from 古八 — each
-plays their own cards; Yinyue is a member from 卷二, asleep in the token through 卷一. **Gear counts**: a worn weapon strengthens
+plays their own cards; Yinyue is a member from 卷二 — awake in 卷一, but never in its fights. **Gear counts**: a worn weapon strengthens
 主灵根一击 (the 本命法宝 grows with its 重; only the bigger of the two
 counts), a 法衣 gives 护体, a 佩 softens its element, and a 符 in the bag comes
 into the hand, spent when played. Learned arts are not in fights. The day's

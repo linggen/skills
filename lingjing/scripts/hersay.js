@@ -24,12 +24,14 @@ export const WAIT_MS = 7000;
 
 /* Where she is for the player right now (Look's `companion`):
    absent — not met yet, or away on a line she does not live on (今线);
-   asleep — met, sleeping in the 木牌 (卷一): drowsy, clipped, still proud;
-   awake  — walking with the player (herHere). */
-export function herMode(look) {
+   asleep — met, in the 木牌: while a passage of the story holds the stage
+            (Look's `telling`, or the page's own hold, `{ telling: true }`),
+            or a sleep the book gives her (`asleep`): drowsy, clipped, still proud;
+   awake  — walking with the player (herHere): the games, the map, the nights, the chat. */
+export function herMode(look, { telling = false } = {}) {
   const c = look?.companion;
   if (!c?.joined || c.away) return 'absent';
-  return c.asleep ? 'asleep' : 'awake';
+  return c.asleep || c.telling || telling ? 'asleep' : 'awake';
 }
 
 /* ── The moments, declared ──

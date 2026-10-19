@@ -111,9 +111,10 @@ it matters (「那块青石上的青苔——你记得的」), never as a list.
 - **爹**: old, kind, honest to a fault, a boar-gored knee. **娘**: clever, a
   poor schoolmaster's daughter — says half and lets the child reckon the rest.
 - **银月**: 青丘's fox, one tail of nine, 金丹, her name all she remembers;
-  proud (本王), dry, badly hurt. From the night after the rent she sleeps in
-  吴婆婆's fox token (`companion.asleep`) — it warms, it burns; she wakes
-  rarely, for a word.
+  proud (本王), dry, badly hurt. From the night after the rent she lives in
+  吴婆婆's fox token — it warms, it burns. The book has her sleep there; the
+  game has her in it only while a passage is told (`companion.telling`) and
+  awake for the rest — the games, the map, the nights (Hanli, 2026-10-19).
 - Everyone else keeps their `voice` (Look's `scene.people`).
 
 ## 恩仇簿

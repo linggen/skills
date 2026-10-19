@@ -142,7 +142,7 @@ function runLocked(verb, args, stateFile, reader) {
   // earlier day closed — both written with whatever this call writes.
   // Her presence fitted to the scene (companion.mjs fitPresence) — the flag the engine reads.
   // A stage quest behind him never handed in is paid once, here (rules/gates.mjs settleStages).
-  const saved = raw && raw.world === worldId ? settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now)), now) : raw;
+  const saved = raw && raw.world === worldId ? settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now), now), now) : raw;
   const state = verb === 'init' || !saved ? freshState(content, langNow(), now, saved) : saved;
   // 前情提要 owed as a sitting opens (story.mjs): a chat session of Ling's seen
   // first on her Look, or a while away. Marked in place, and kept below
@@ -162,7 +162,10 @@ function runLocked(verb, args, stateFile, reader) {
   // page's verb says when; never logged: Undo takes back moves, not what was read.
   if (verb === 'reading' && !reader) {
     const r = pageReading(state, args, now);
-    if (r.keep) writeAtomic(stateFile, stateText(r.keep));
+    // …and her presence with it: in the token while the passage holds, awake again when it ends
+    // (companion.mjs herAwake) — written now, for the engine reads the file.
+    const keep = r.keep ? fitPresence(content, r.keep, now) : raw && state !== raw ? state : null;
+    if (keep) writeAtomic(stateFile, stateText(keep));
     return r.result;
   }
   // 密室: her old pages are read by her own tool alone (SKILL.md Mishi, `--for=yinyue`) — never
@@ -205,7 +208,7 @@ function runLocked(verb, args, stateFile, reader) {
   // What the page did, written down with it, so Ling and Yinyue can read it.
   const noted = (!reader && notePage(verb, args, out.result, changed, content, now)) || changed;
   // Into a 今 interlude or out of it: her presence follows the scene it is written with.
-  const next = noted && fitPresence(content, noted);
+  const next = noted && fitPresence(content, noted, now);
   // Something of the story happened: 传闻's quiet clock starts again (tale.mjs storyDue).
   if (next && out.result?.ok && STORY_VERBS.has(verb)) next.story_at = now.toISOString();
   if (next) {

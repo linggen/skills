@@ -598,9 +598,10 @@ function joinHer(content, s, ctx) {
   return { id: c.id };
 }
 
-/* She sleeps (an exit's `sleeps` — prologue-v3 § 十四, 吴婆婆's fox token) or
-   wakes (`wakes`): only a companion found; `awake` is the flag the engine's
-   presence reads (SKILL.md `absent_until`). */
+/* She sleeps (an exit's `sleeps` — a sleep of the book's own: the faint at the deer) or
+   wakes (`wakes`): only a companion found; `awake` is the flag the engine's presence
+   reads (SKILL.md `absent_until`). The 木牌 while a passage is told is no exit's: it is
+   the page's `reading` hold (companion.mjs herAwake, 2026-10-19). */
 function restHer(s, exit) {
   if (!s.companion?.joined || !(exit.sleeps || exit.wakes)) return null;
   const { awake, asleep, ...rest } = s.companion;

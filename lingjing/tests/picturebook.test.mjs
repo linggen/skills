@@ -205,18 +205,19 @@ test('her lines in the book are the book\'s: played in place, awake or asleep (h
   assert.match(cliff.text, /让开/, 'her book line told in place');
   assert.doesNotMatch(cliff.text, /〔银月〕|⟪|⟫/);
   assert.doesNotMatch(out.result.her_beat?.facts?.line ?? '', /让开/, 'never handed to her as well');
-  // she faints at the deer, wakes at night, sleeps in the token the night she leaves (before the bath)
+  // she faints at the deer (a sleep of the book's), wakes at night; into the token the night she leaves —
+  // only while that passage is told, since 2026-10-19 (Hanli: 「走剧情的时候再回到木牌里就好了」), so the save has her awake
   let s = walk(out.state, [['resolve', { exit: 'climb' }], ['win', { id: 'deer-wind' }], ['task', { action: 'done', id: 'deer-wind' }], ['resolve', { exit: 'left' }]], content, NOW);
   assert.deepEqual(s.companion, { joined: '2026-09-28', asleep: true });
   assert.equal(look(s, content, ctx()).companion.asleep, true);
   s = walk(s, [['resolve', { exit: 'visit' }], ['resolve', { exit: 'dumb' }]], content, NOW);
   assert.equal(s.companion.awake, true);
   s = walk(s, [['resolve', { exit: 'on' }], ['resolve', { exit: 'bath' }]], content, NOW);
-  assert.deepEqual(s.companion, { joined: '2026-09-28', asleep: true });
-  // asleep: the token's one word at the 蠪侄 is the story's, told by Ling; no beat for her; no card of hers in the fight
+  assert.deepEqual(s.companion, { joined: '2026-09-28', awake: true });
+  // the token's one word at the 蠪侄 is the story's, told by Ling; no beat for her; no card of hers in the fight (a member from 卷二)
   const trial = walk(start(), upTo(TO_HALL, 'subdue'), content, NOW);
   const fight = look({ ...trial, wins: { 'gate-longzhi': NOW.toISOString() } }, content, ctx()).scene.exits.find(e => e.id === 'subdue');
-  assert.ok(!fight.duel.setup.you.extra.includes('yinyue') && !(fight.duel.setup.you.party ?? []).some(m => m.id === 'yinyue'), 'asleep, she fights nothing');
+  assert.ok(!fight.duel.setup.you.extra.includes('yinyue') && !(fight.duel.setup.you.party ?? []).some(m => m.id === 'yinyue'), '卷一: she fights nothing');
   assert.deepEqual(fight.duel.setup.you.extra, ['yigun', 'shizi'], "the 三试's own: 一滚, 石子");
   const won = resolve({ ...trial, wins: { 'gate-longzhi': NOW.toISOString() } }, content, ctx(), { exit: 'subdue' });
   assert.equal(won.result.her_beat, undefined);
