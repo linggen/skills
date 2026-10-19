@@ -182,6 +182,16 @@ export const askGuess = (who, prev, context = null) => `${headOf(context)}图上
   + '只回三行：第一行一句中文，不超过二十字；第二行同一句的英文；第三行「猜：」加一个中文名词。'
   + (prev.length ? `你先前猜过：${prev.join('、')}。画添了笔，可以改口。` : '');
 
+/* The reveal (Hanli 10-19: 「最后解释答案的时候, 让yingyue表达一下懊恼等感情, 评论一下作者的画. 把情绪价值拉满」):
+   one more look at the finished picture, now with the answer — she owns the miss or crows over the hit,
+   and says something about the drawing itself. */
+export const askReveal = (who, word, prev, won, context = null) => `${headOf(context)}这一局小满画的是「${word}」。`
+  + (prev.length ? `你先后猜过：${prev.join('、')}。` : '你一眼都没猜。')
+  + (won ? '你猜中了。' : '你没猜中。')
+  + `${VOICE[who]}。看着这张画，把此刻的情绪说足：没猜中就懊恼、不服、嘴硬找补（差一点的要说差一点）；猜中就得意。`
+  + '再具体评一句他的画——哪一笔画得像，哪一笔把你带偏了。'
+  + '只回两行：第一行一句中文，不超过三十五字；第二行同一句的英文。';
+
 // The engine's verdict on sight, once a page per guesser and model: { blind, line, model }. A
 // refusal (`absent`, `unavailable`) is not kept: the save may meet her while the page is open.
 const sight = new Map();
@@ -492,14 +502,40 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     redraw();
   };
 
+  const reveal = async (won) => {
+    const sidP = g.sid;
+    try {
+      if (data.seam === 'stub') {
+        await new Promise((r) => setTimeout(r, 800));
+        say(won ? `[stub] 哼，本王一眼就看出是${g.word.zh}。` : `[stub] 这是${g.word.zh}？……你画得也太随意了。`, '');
+      } else if (sidP && g.strokes.length) {
+        foot(sub(w.looking));
+        const png = paperPng(doc, g.strokes), prompt = askReveal(g.who, g.word.zh, g.guesses, won, ctxLine);
+        log({ kind: 'sent', who: g.who, word: g.word.zh, reveal: true }, { png, prompt });
+        const r = await Promise.race([askLing({ sid: await sidP, agent: g.who, png, prompt, model: data.model ?? null, signal }),
+          new Promise((ok) => setTimeout(() => ok(null), 12000))]);
+        if (r?.text) {
+          const p = parseReply(r.text);
+          log({ kind: 'reveal', who: g.who, word: g.word.zh, won, ms: r.ms, model: r.model?.id, zh: p.zh, en: p.en }, { text: r.text });
+          sayParsed(p);
+        }
+        foot(fill(won ? w.won : (g.rounds ? w.plain : w.time), { w: lang === 'en' ? g.word.en : g.word.zh }));
+      }
+      await new Promise((r) => setTimeout(r, 2200)); // a beat to read her line
+    } catch { /* no reaction: the board goes on */ }
+    sidP?.then((sid) => closeRound(sid), () => {});
+  };
+
   const end = (won) => {
     if (g.phase === 'over' || g.phase === 'between') return;
     clearInterval(g.timer);
     g.loop?.stop();
-    g.sid?.then((sid) => closeRound(sid), () => {});
     lefts();
     const word = lang === 'en' ? g.word.en : g.word.zh;
     log({ kind: 'end', who: g.who, word: g.word.zh, won });
+    // Her reaction to the answer, then the round's session goes; the board waits for it (at most ~12 s).
+    const said = reveal(won);
+    const after = (ms, fn) => said.then(() => setTimeout(fn, ms));
     const calls = g.loop?.calls ?? 0;
     // A 家信: the line is written whether she got its picture or not; then the next line, or the letter done.
     if (g.rounds) {
@@ -509,14 +545,14 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       if (g.i < g.rounds.length) {
         setPhase('between');
         tools(false);
-        setTimeout(() => { freshPaper(); letter(); goBtn.textContent = w.next; setPhase('ready'); goBtn.disabled = false; }, won ? 1400 : 900);
+        after(won ? 1400 : 900, () => { freshPaper(); letter(); goBtn.textContent = w.next; setPhase('ready'); goBtn.disabled = false; });
         return;
       }
       setPhase('over');
       tools(false);
       if (g.got) root.classList.add('is-won');
       const grade = letterGrade(g.got, g.rounds.length);
-      setTimeout(() => finish({ won: true, stars: g.got, grade }), 1600);
+      after(1600, () => finish({ won: true, stars: g.got, grade }));
       return;
     }
     foot(fill(won ? w.won : w.time, { w: word }));
@@ -524,14 +560,14 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (fixed && !won && data.retry !== false) {
       setPhase('between');
       tools(false);
-      setTimeout(() => { freshPaper(); goBtn.textContent = w.again; setPhase('ready'); goBtn.disabled = false; }, 900);
+      after(900, () => { freshPaper(); goBtn.textContent = w.again; setPhase('ready'); goBtn.disabled = false; });
       return;
     }
     setPhase('over');
     tools(false);
     if (won) root.classList.add('is-won');
     // In the story a grade is a mark id the task may name (`look1` · `look2` …: how many looks it took).
-    setTimeout(() => finish(won ? { won: true, stars: starsFor(calls), grade: fixed ? `look${calls}` : `${calls}` } : { won: false, grade: `${word}` }), won ? 1800 : 600);
+    after(won ? 1800 : 600, () => finish(won ? { won: true, stars: starsFor(calls), grade: fixed ? `look${calls}` : `${calls}` } : { won: false, grade: `${word}` }));
   };
   /* She cannot be asked: the 家信 goes in words only (`written`), so the story never waits on a model. */
   const writeOut = () => {

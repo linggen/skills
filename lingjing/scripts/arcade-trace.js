@@ -65,6 +65,7 @@ export function wireTrace(el, mod, lang) {
     far: () => sys(w.far),
     error: (r) => sys(fill(w.error, { m: r.message })),
     end: (r) => sys(fill(r.won ? w.won : w.lost, { w: r.word })),
+    reveal: (r) => her(r, r.text, null),
   };
   const her = (r, text, g) => {
     const meta = [r.model, r.ms != null ? `${(r.ms / 1000).toFixed(1)} s` : null, r.tools ? `tools ${r.tools}` : null].filter(Boolean).join(' · ');
