@@ -146,7 +146,9 @@ test('the words wait for the picture: 「统御万妖」 with the 万妖, 「—
   }
   // The page: the clock's gate is the piece's, a tap during it brings its last frame, the paragraph waits for it.
   assert.match(page, /gate: pieceGate/);
-  assert.match(page, /if \(piecePlays\(\)\) \{ if \(!\(lines\.key && \$\('dlg'\)\?\.querySelector\('\.story'\) && lines\.tap\(\)\)\) pieceToEnd\(\); return; \}/);
+  // A tap at the words' wait does nothing; a double tap brings the last frame.
+  assert.match(page, /if \(piecePlays\(\)\) \{\n\s+if \(lines\.key && \$\('dlg'\)\?\.querySelector\('\.story'\) && lines\.tap\(\)\) return;\n\s+const now = performance\.now\(\);\n\s+if \(now - gateTapAt < DOUBLE_TAP_MS\) \{ gateTapAt = 0; pieceToEnd\(\); \} else gateTapAt = now;/);
+  assert.match(read('scripts/story.css'), /\.story \{[^}]*touch-action: manipulation;/, 'a double tap never zooms');
   assert.match(page, /const held = piecePlays\(\) \|\|/);
   assert.match(runner, /get ended\(\) \{ return lastBeat\(\); \}/);
 });

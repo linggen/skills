@@ -116,7 +116,7 @@ body.fighting .view > .shade { display: none; }
 .dlgwrap:empty { display: none; }
 .dlgwrap > * { pointer-events: auto; }
 body.storying .slots { visibility: hidden; }
-.story { position: absolute; inset: 0; color: var(--on-stage); cursor: pointer; user-select: none; -webkit-user-select: none; outline: none; }
+.story { position: absolute; inset: 0; color: var(--on-stage); cursor: pointer; user-select: none; -webkit-user-select: none; outline: none; touch-action: manipulation; } /* a double tap brings a set piece's last frame, never a zoom */
 .story:focus-visible { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ling-glow) 60%, transparent); }
 .story .lines { position: absolute; left: 0; right: 0; bottom: 74px; display: flex; justify-content: center; padding: 0 56px; pointer-events: none; transition: opacity .45s ease; }
 .story .screen { width: min(44em, 100%); font-family: var(--serif); font-size: 19px; line-height: 1.95; letter-spacing: .03em; text-shadow: 0 1px 12px rgba(0, 0, 0, .55); transition: opacity calc(.42s * var(--pace, 1)) ease; }

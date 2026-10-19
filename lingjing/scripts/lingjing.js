@@ -2517,11 +2517,19 @@ function nudgeWays() {
 }
 /* A tap on the stage: the next sentence now (lines.js); read through, the next beat. */
 let holdSwallow = false;
+let gateTapAt = 0;
+const DOUBLE_TAP_MS = 350;
 function storyTap() {
   if (holdSwallow) { holdSwallow = false; return; }
-  // A set piece playing under the beat: a tap brings the next sentence while one is free to come; once the words
-  // wait for the picture, the tap brings its last frame — never the next paragraph (the words then go on by themselves).
-  if (piecePlays()) { if (!(lines.key && $('dlg')?.querySelector('.story') && lines.tap())) pieceToEnd(); return; }
+  // A set piece playing under the beat (Hanli, 2026-10-19: 「必须自动才能看到吗?」): a tap brings the next sentence while
+  // one is free to come; where the words wait for the picture a tap does nothing — a double tap (or 跳过) brings its last
+  // frame, never the next paragraph (the words then go on by themselves).
+  if (piecePlays()) {
+    if (lines.key && $('dlg')?.querySelector('.story') && lines.tap()) return;
+    const now = performance.now();
+    if (now - gateTapAt < DOUBLE_TAP_MS) { gateTapAt = 0; pieceToEnd(); } else gateTapAt = now;
+    return;
+  }
   if (lines.key && $('dlg')?.querySelector('.story')) lines.tap();
   else nextBeat();
 }
