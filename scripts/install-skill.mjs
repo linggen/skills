@@ -173,12 +173,32 @@ const RE = {
   exportDecl: /^[ \t]*export\s+(?:async\s+)?(?:function\s*\*?|class|const|let|var)\s+([\w$]+)/gm,
   exportDestructure: /^[ \t]*export\s+(?:const|let|var)\s*[{[]([^}\]]*)[}\]]/gm,
   exportDefault: /^[ \t]*export\s+default\b/m,
+  // `export const W = 480, H = 300;` — the declarators after the first, on the statement's own line.
+  exportMulti: /^[ \t]*export\s+(?:const|let|var)\s+[\w$]+\s*=([^\n]*)/gm,
 };
 
 const splitNames = list => list.split(',').map(s => s.trim()).filter(Boolean).map(s => {
   const m = /^([\w$]+)(?:\s+as\s+([\w$]+))?$/.exec(s.replace(/\s+/g, ' '));
   return m ? { from: m[1], as: m[2] ?? m[1] } : null;
 }).filter(Boolean);
+
+/* The names declared after top-level commas in a declaration's rest of line (`= 480, H = 300;`):
+   brackets, braces, parens and strings are stepped over; a line comment ends it. */
+function laterDeclarators(rest) {
+  const names = [];
+  let depth = 0, quote = null;
+  for (let i = 0; i < rest.length; i++) {
+    const ch = rest[i];
+    if (quote) { if (ch === '\\') i++; else if (ch === quote) quote = null; continue; }
+    if (ch === '"' || ch === "'" || ch === '`') quote = ch;
+    else if (ch === '/' && rest[i + 1] === '/') break;
+    else if ('([{'.includes(ch)) depth++;
+    else if (')]}'.includes(ch)) depth--;
+    else if (ch === ';' && depth === 0) break;
+    else if (ch === ',' && depth === 0) { const m = /^\s*([\w$]+)\s*=(?!=)/.exec(rest.slice(i + 1)); if (m) names.push(m[1]); }
+  }
+  return names;
+}
 
 function parseModule(src) {
   const imports = []; // { spec, names: [imported names] }
@@ -206,6 +226,7 @@ function parseModule(src) {
   }
   for (const m of src.matchAll(RE.exportList)) for (const n of splitNames(m[1])) exports.add(n.as);
   for (const m of src.matchAll(RE.exportDecl)) exports.add(m[1]);
+  for (const m of src.matchAll(RE.exportMulti)) for (const n of laterDeclarators(m[1])) exports.add(n);
   for (const m of src.matchAll(RE.exportDestructure)) {
     for (const part of m[1].split(',')) {
       const name = part.split(':').pop().split('=')[0].trim().replace(/^\.\.\./, '');

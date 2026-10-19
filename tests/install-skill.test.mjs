@@ -105,6 +105,22 @@ test('a broken import in the ref aborts with nothing installed', () => {
   assert.match(m.stderr, /gone\.js/);
 });
 
+test('a name declared after a comma (`export const W = 480, H = 300`) is exported', () => {
+  // Live 2026-10-19: deerhunt.js imports { H } from deerarc.js's `export const W = 480, H = 300;` and the
+  // pre-flight refused main as a broken link.
+  const t = setup();
+  t.write('demo/scripts/lib.mjs', "export function hello() {}\nexport const W = 480, H = { a: 1, b: [2, 3] }, twice = (x, y = 1) => x * y; // , no = 1\n");
+  t.write('demo/scripts/main.mjs', "import { hello, W, H, twice } from './lib.mjs';\nconsole.log(hello, W, H, twice);\n");
+  t.commit('multi');
+  const r = t.run('demo', '--ref', 'HEAD');
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  t.write('demo/scripts/main.mjs', "import { no } from './lib.mjs';\nconsole.log(no);\n");
+  t.commit('comment');
+  const c = t.run('demo', '--ref', 'HEAD');
+  assert.notEqual(c.status, 0, 'a name in a trailing comment is no export');
+  assert.match(c.stderr, /\{ no \}/);
+});
+
 test('user state (data/, config.json, cloud.save) is never touched; never-tracked files stay', () => {
   const t = setup();
   fs.mkdirSync(t.installed('data'), { recursive: true });
