@@ -6,7 +6,8 @@
 //   bread   [x, y]          the thing that hangs (the 饼, the 饭桶's meal); `r` its radius (19)
 //   vines   [{at, slack?, regrow?}]  hung from `at`; `regrow` ms: a cut vine grows back from its
 //                           anchor and takes the thing again once it is within the vine's reach
-//   stones  [{x, y, w, h, a}]        to bounce or roll on (a: degrees)
+//   stones  [{x, y, w, h, a, bounce?, grip?}]  to bounce or roll on (a: degrees); `bounce` its
+//                           restitution (0.3), `grip` its friction (0.02): a snag is bounce 0, grip 1
 //   gust    {at, to, band?, power?}  a puff from `at` blowing `to` across a band of ±band px
 //   bubbles [{at, r?}]      灵气泡: the thing that touches one is held in it and lifted; a tap pops it
 //   thorns  [{x, y, w, h, a}]        荆棘: the thing touching them breaks
@@ -90,7 +91,7 @@ const slab = (s, { restitution, friction, ...opts }) => {
   if (friction != null) b.friction = friction;
   return b;
 };
-const stoneOf = (s) => slab(s, { restitution: s.bounce ?? 0.3, friction: 0.02, label: 'stone' });
+const stoneOf = (s) => slab(s, { restitution: s.bounce ?? 0.3, friction: s.grip ?? 0.02, label: 'stone' });
 const springOf = (s) => slab({ ...s, h: s.h ?? 12 }, { restitution: SPRING_BOUNCE, friction: 0, label: 'spring' });
 
 /* 坠: the weight on its strap under the thing — a short stiff strap, the weight heavier than the thing. */
