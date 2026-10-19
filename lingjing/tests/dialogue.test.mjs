@@ -351,7 +351,7 @@ test('the story on the page: the whole stage, the keys that go on, and what it y
   assert.ok(src.indexOf("['[data-look-at]'") < src.indexOf("['[data-dlg-next]'"));
   // Read through, the page goes on by itself — the same advance a tap was — never past the way on.
   const done = src.slice(src.indexOf('function storyDone('), src.indexOf('function storyDone(') + 900);
-  assert.match(done, /if \(last && \$\('dlg'\)\?\.querySelector\('\.story \.ways'\)\) return;/, 'the choices up: his tap');
+  assert.match(done, /if \(last && \$\('dlg'\)\?\.querySelector\('\.story \.ways'\)\) \{ if \(tapped\) nudgeWays\(\); return; \}/, 'the choices up: his tap (a tap on the text flashes them)');
   assert.match(done, /\(last && \(look\?\.tell_owed \|\| drawingTold\)\)/, 'never closes the reading while more is still to be drawn');
   assert.match(done, /nextBeat\(\);/);
   const css = fs.readFileSync(path.join(ROOT, 'scripts/story.css'), 'utf8');

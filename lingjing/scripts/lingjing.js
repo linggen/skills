@@ -2460,7 +2460,7 @@ function storyDone(key, tapped = false) {
   const r = readingHere();
   if (!playing(r) || beatKey(r, lang()) !== key) return;
   const last = atLast(r, lang());
-  if (last && $('dlg')?.querySelector('.story .ways')) return;
+  if (last && $('dlg')?.querySelector('.story .ways')) { if (tapped) nudgeWays(); return; }
   // 快's column is his to read: it goes on only at his 「接着往下」 (or a key), never by itself —
   // and never past its choices.
   if (r.all?.whole && (!tapped || (last && $('dlg')?.querySelector('.story .wholecol .wayacts')))) return;
@@ -2468,6 +2468,16 @@ function storyDone(key, tapped = false) {
     || (last && (look?.tell_owed || drawingTold)) || (!tapped && narrator.sounding);
   if (held) { doneWait = setTimeout(() => storyDone(key), 700); return; }
   nextBeat();
+}
+/* A tap on the read-through passage while its way on is its choices or its 看 chips: never silent
+   (live 2026-10-19 at 黑松岭: the last line tapped again and again, nothing moved) — the ways flash once. */
+function nudgeWays() {
+  const ways = $('dlg')?.querySelector('.story .ways');
+  if (!ways) return;
+  ways.classList.remove('nudge');
+  void ways.offsetWidth; // restart the flash on a second tap
+  ways.classList.add('nudge');
+  setTimeout(() => ways.classList.remove('nudge'), 1300);
 }
 /* A tap on the stage: the next sentence now (lines.js); read through, the next beat. */
 let holdSwallow = false;

@@ -32,3 +32,10 @@ test('no way on yet, only things to look at: the chips not yet looked at beckon'
 test('the 完 card\'s next-回 line stays on one line at a phone\'s width', () => {
   assert.match(read('story.css'), /@container scene \(max-width: 640px\) \{ \.focus \.card\.closecard \.closecoming \{ white-space: nowrap;[^}]*font-size: min\(13px, 3\.1cqi\); \} \}/);
 });
+
+test('the last line tapped again where only its ways go on (黑松岭\'s 看 chips): the ways flash — never a silent tap (2026-10-19)', () => {
+  const src = read('lingjing.js');
+  assert.match(src, /if \(last && \$\('dlg'\)\?\.querySelector\('\.story \.ways'\)\) \{ if \(tapped\) nudgeWays\(\); return; \}/);
+  assert.match(src, /function nudgeWays\(\) \{[\s\S]*?ways\.classList\.add\('nudge'\);/);
+  assert.match(read('story.css'), /\.story \.ways\.nudge \.wayacts button:not\(:disabled\) \{ animation: waysNudge/);
+});

@@ -190,6 +190,10 @@ body.storying .slots { visibility: hidden; }
 .story .wayacts .replaybeat .act.quiet { background: transparent; color: var(--on-dim); }
 .story .wayacts .lookfound li b { color: var(--on-stage); margin-right: .6em; }
 .story .wayacts .lookfound { list-style: none; margin: 0; padding: 0; width: min(44em, 100%); font-family: var(--serif); line-height: 1.7; }
+/* A tap on the passage's last line where only its ways go on: they flash (lingjing.js nudgeWays). */
+.story .ways.nudge .wayacts button:not(:disabled) { animation: waysNudge .6s ease-in-out 2; }
+@keyframes waysNudge { 0%, 100% { box-shadow: 0 0 0 0 rgba(227, 192, 126, 0); } 50% { box-shadow: 0 0 0 4px rgba(227, 192, 126, .6); } }
+@media (prefers-reduced-motion: reduce) { .story .ways.nudge .wayacts button:not(:disabled) { animation: none; box-shadow: 0 0 0 3px rgba(227, 192, 126, .6); } }
 .story .wayacts .lookchip { background: rgba(13, 17, 20, .35); color: var(--on-stage); border-color: rgba(241, 236, 225, .4); }
 /* A finding on the stage: light words on a wash of ink, not pale pink on paper (2026-10-15). */
 /* What a choice that stayed in the scene said (cards.js saidHtml): the book's voice, under the choices. */
