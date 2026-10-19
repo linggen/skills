@@ -19,7 +19,7 @@ export const STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '�
 export const BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
 const STEMS_EN = ['jia', 'yi', 'bing', 'ding', 'wu', 'ji', 'geng', 'xin', 'ren', 'gui'];
 const BRANCHES_EN = ['zi', 'chou', 'yin', 'mao', 'chen', 'si', 'wu', 'wei', 'shen', 'you', 'xu', 'hai'];
-/* The thirteen 文 of the left hand, as 古六 teaches them (games/qiajue.js WEN — the same ids):
+/* The thirteen 文 of the left hand, as 古六 teaches them (games/wen.js WEN — the same ids):
    the twelve branches, and 中 (土, the middle finger's middle joint). */
 export const WEN_IDS = [...BRANCHES_EN, 'yuqing'];
 const WEN_CH = [...BRANCHES, '中'];

@@ -12,7 +12,6 @@ import { playModule } from '../tools/board-bots.mjs';
 const reg = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
 const rows = reg.games.filter((g) => g.id === 'qimai');
 const ladder = qm.ladderOf(reg);
-const BREATH = ['feather', 'xisui', 'zhoutian', 'mirrortongpu', 'qianmi', 'faqiu', 'dark', 'lastshot', 'leafsui', 'leafding', 'qiajue', 'wind'];
 /* The story boards the kit took over (Hanli 10-19: 「气走经脉 可以」): task → level. 吹鹅毛 and 洗髓 stay cut
    (their scenes lost their boards 10-16), their levels in the 游戏厅 only. */
 const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'jiuge-sui': 'sui', 'furnace-ding': 'ding', 'jin-qianmi': 'qianmi', 'jin-faqiu': 'faqiu', 'jin-dark': 'dark', 'jin-lastshot': 'lastshot',
@@ -48,18 +47,13 @@ test('the rows: one level each, 调息, placed beside the breath games, every le
     const secs = L.len / (L.speed ?? 90);
     assert.ok(secs >= 18 && secs <= 45, `${L.id}: ${secs.toFixed(0)} s a run`);
   }
-  // each story level sits right after its old breath game (or after the kit rows already there)
-  for (const old of BREATH) {
-    const i = reg.games.findIndex((g) => g.id === old && g.scene);
-    let k = i + 1;
-    while (reg.games[k]?.id === 'qimai' && reg.games[k].group === reg.games[i].group) k++;
-    assert.ok(k > i + 1, `${old}: a 气走经脉 level follows it`);
-  }
+  // the old breath and timing boards these levels replaced were deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」)
+  for (const old of ['feather', 'xisui', 'zhoutian', 'mirrortongpu', 'qianmi', 'faqiu', 'dark', 'lastshot', 'leafsui', 'leafding', 'qiajue', 'wind']) assert.ok(!reg.games.some((g) => g.id === old), `${old}: deleted`);
   assert.ok(reg.groups.some((g) => g.id === 'qimai'), 'the arcade-only levels have their group');
   assert.equal(ladder.length, rows.length);
 });
 
-test('the story: each board the kit took keeps its task id, marks and pay; its row is the one that names it; the old rows keep the 游戏厅', () => {
+test('the story: each board the kit took keeps its task id, marks and pay; its row is the one that names it', () => {
   for (const [id, level] of Object.entries(STORY)) {
     const t = tasks.find((x) => x.id === id);
     assert.equal(t.game, 'qimai', id);
@@ -70,7 +64,6 @@ test('the story: each board the kit took keeps its task id, marks and pay; its r
     if (t.marks) for (const k of [1, 2, 3]) assert.ok(Object.hasOwn(t.marks, L.grades?.[k]), `${id}: ★${k} → ${L.grades?.[k]}`);
     assert.ok(!reg.games.some((g) => g.id !== 'qimai' && g.task === id), `${id}: one row owns it`);
   }
-  for (const old of BREATH) assert.ok(reg.games.some((g) => g.id === old), `${old} stays in the 游戏厅`);
   for (const [id, scene] of [['feather-breath', '00-halfyear'], ['xisui-hold', '00-sleep']]) {
     assert.ok(!rows.find((r) => r.data.level === (id === 'feather-breath' ? 'feather' : 'xisui')).task, `${id}: still cut, no story row`);
     assert.ok(scene);

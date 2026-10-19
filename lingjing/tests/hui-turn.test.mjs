@@ -18,7 +18,7 @@ import { stageSlots } from '../scripts/stage.mjs';
 import { atTurn, atTurnCards, bookAhead, boxGivesWay } from '../scripts/queue.js';
 import { advance, atLast, emptyReading, showAll, withTold } from '../scripts/dialogue.js';
 import { wireLiveGames } from '../scripts/live-games.js';
-import * as qianmi from '../scripts/games/qianmi.js';
+import * as sneeze from '../scripts/games/sneeze.js';
 
 
 const content = loadContent();
@@ -94,14 +94,14 @@ test('显示全文 never runs past a 回\'s turn: 古二\'s last passage shows w
   assert.equal(atLast(rest), true, 'inside 今 · 一, 显示全文 shows the rest and the choices');
 });
 
-test('a game on the clock lays its board again only when it changed: 起跑 stays one button until it is tapped', async () => {
+test('a game on the clock lays its board again only when it changed: its start stays one button until it is tapped (喷嚏符; 一千米\'s old board deleted 2026-10-19)', async () => {
   // Idle before 起跑, and over after a fall: the clock changes nothing on the board.
-  const idle = qianmi.newGame('x');
-  assert.equal(qianmi.html(qianmi.tick(idle, 100)), qianmi.html(idle));
+  const idle = sneeze.newGame('x');
+  assert.equal(sneeze.html(sneeze.tick(idle, 100)), sneeze.html(idle));
   // The clock, on a stand-in host.
   let writes = 0, html = '';
-  const host = { dataset: { game: 'jin-qianmi' }, isConnected: true, get innerHTML() { return html; }, set innerHTML(v) { writes += 1; html = v; } };
-  const g = { taskId: 'jin-qianmi', mod: qianmi, state: qianmi.newGame('x') };
+  const host = { dataset: { game: 'dabi-sneeze' }, isConnected: true, get innerHTML() { return html; }, set innerHTML(v) { writes += 1; html = v; } };
+  const g = { taskId: 'dabi-sneeze', mod: sneeze, state: sneeze.newGame('x') };
   const was = { document: globalThis.document };
   const timers = [];
   const realSet = globalThis.setInterval;
@@ -111,10 +111,9 @@ test('a game on the clock lays its board again only when it changed: 起跑 stay
     wireLiveGames({ boardFor: () => g, lang: () => 'zh', onWon: () => {}, step: 10 });
     await new Promise(r => setTimeout(r, 120));
     assert.equal(writes, 0, 'the page\'s own board stands: no button laid over it under the finger');
-    g.state = qianmi.act(g.state, { g: 'start' }).state;
-    await new Promise(r => setTimeout(r, 120));
-    assert.ok(writes > 0, 'running, the metres move');
-    assert.match(html, /data-g-hold="out"/);
+    g.state = sneeze.act(g.state, { g: 'start' }).state;
+    await new Promise(r => setTimeout(r, 1800)); // the shoulder's first drop comes ~1.5 s in
+    assert.ok(writes > 0, 'running, the board moves');
   } finally {
     timers.forEach(clearInterval);
     globalThis.setInterval = realSet;

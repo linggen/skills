@@ -26,11 +26,5 @@ for (const id of [...modules.keys()].sort()) {
   });
 }
 
-test('the human model is slow: a bot that only reacts to the mark in the middle misses a swing a person must aim at', async () => {
-  // 黑地十一步's walk, played by a bot that presses only once it SEES the mark in the band:
-  // the hand lands ~200 ms late — the reaction is in the harness, not left to the bot.
-  const { mod } = await loadPair('dark');
-  const naive = (s) => (s.phase === 'ready' ? { g: 'start' } : s.phase === 'walk' && Math.abs(Math.sin((2 * Math.PI * s.st) / s.swing[Math.min(s.step, 10)])) < 0.12 ? { g: 'step' } : null);
-  const r = playOnce(mod, naive, { seed: 'bot-1', limit: 60000 });
-  assert.ok(r.won === false && r.acts > 0);
-});
+// (「the human model is slow」 played 黑地十一步's walk; that board was deleted 2026-10-19 — the harness's reaction delay is
+// still what every hand-like run in the qimai, fallrope and rain tests goes through.)

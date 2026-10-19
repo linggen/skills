@@ -9,15 +9,8 @@ import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { fightSetup, readOf } from '../scripts/rules/cards.mjs';
 import { foeOf } from '../scripts/rules/world.mjs';
 import { TO_OPEN, walk } from './prologue.mjs';
-import * as qiajue from '../scripts/games/qiajue.js';
-import * as xiangke from '../scripts/games/xiangke.js';
-import * as mirror from '../scripts/games/mirrortongpu.js';
 import * as fantong from '../scripts/games/fantongqianye.js';
-import * as diche from '../scripts/games/diche.js';
 import * as sneeze from '../scripts/games/sneeze.js';
-import * as zqt from '../scripts/games/zhuqingting.js';
-import * as letter from '../scripts/games/letter.js';
-import * as kaipian from '../scripts/games/kaipian.js';
 import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
@@ -185,7 +178,7 @@ test('the 大比 reads what 古六 taught: 底册 lends 望气 to the 卢方 and
 /* ── the boards themselves ── */
 
 test('no 古六 board draws its own skip (the page lays it, 2026-10-15), and each says what it is in both languages', () => {
-  for (const mod of [qiajue, xiangke, mirror, fantong, diche, sneeze, zqt, letter, kaipian]) {
+  for (const mod of [fantong, sneeze]) { // the rest of 古六's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」)
     const s = mod.newGame('t');
     for (const lang of ['zh', 'en']) {
       assert.doesNotMatch(mod.html(s, lang), /data-g="skip"/);
@@ -198,44 +191,6 @@ test('no 古六 board draws its own skip (the page lays it, 2026-10-15), and eac
   }
 });
 
-test('讲堂三日: the right 文 for each spell, all eight lines in order, the fist gripped through the sweat → tight; slips → loose', () => {
-  let s = run(qiajue, qiajue.newGame('a'), [{ g: 'start' }]);
-  s = run(qiajue, s, s.order.map((id) => ({ g: 'pinch', w: qiajue.SPELLS.find((x) => x.id === id).wen })));
-  assert.equal(s.phase, 'chant-ready');
-  s = run(qiajue, s, [{ g: 'start' }, { g: 'say', i: qiajue.DECOY }]);
-  assert.match(qiajue.html(s, 'zh'), /倒打出一个嗝来/);
-  s = run(qiajue, s, [...qiajue.CHANT.keys()].map((i) => ({ g: 'say', i: String(i) })));
-  assert.equal(s.phase, 'kou-ready');
-  s = liveUntil(qiajue, run(qiajue, s, [{ g: 'start' }]), (x) => (x.note === 'sweat' ? qiajue.act(x, { g: 'grip' }).state : x));
-  assert.equal(s.grade, 'tight', 'one burp is forgiven (two slips at most)');
-  assert.equal(qiajue.gradeOf({ wrongs: 3, outs: 0 }), 'loose');
-  let idle = run(qiajue, qiajue.newGame('b'), [{ g: 'start' }]);
-  idle = run(qiajue, idle, idle.order.map((id) => ({ g: 'pinch', w: qiajue.SPELLS.find((x) => x.id === id).wen })));
-  idle = run(qiajue, idle, [{ g: 'start' }, ...[...qiajue.CHANT.keys()].map((i) => ({ g: 'say', i: String(i) })), { g: 'start' }]);
-  idle = liveUntil(qiajue, idle, (x) => x, (x) => x.phase !== 'kou');
-  assert.equal(idle.phase, 'kou-out', 'an ungripped fist leaks out — 白掐一回');
-  assert.equal(qiajue.gradeOf({ wrongs: 0, outs: 0 }), 'tight');
-});
-
-test('相克: answering each throw with what eats it is clean; a wrong answer gets the 素问 line and the throw comes back', () => {
-  let s = run(xiangke, xiangke.newGame('a'), [{ g: 'start' }]);
-  const first = s.queue[0], wrong = xiangke.SPELLS.find((x) => x !== xiangke.EATS[first]);
-  s = run(xiangke, s, [{ g: 'answer', x: wrong }]);
-  assert.equal(s.queue.at(-1), first);
-  while (!s.won) s = xiangke.act(s, { g: 'answer', x: xiangke.EATS[s.queue[0]] }).state;
-  assert.equal(s.grade, 'clean');
-  assert.equal(xiangke.EATS.wall, 'vine', '土得木而达');
-  assert.equal(xiangke.EATS.vine, 'blade', '木得金而伐');
-});
-
-test('藏息: breathing out long under the light keeps it still; doing nothing flares the token and the light lingers', () => {
-  const good = liveUntil(mirror, run(mirror, mirror.newGame('a'), [{ g: 'start' }]), (x) => (Math.abs(x.p - 7) < 0.5 && !x.out ? mirror.act(x, { g: 'hold' }).state : x));
-  assert.equal(good.grade, 'still');
-  const idle = liveUntil(mirror, run(mirror, mirror.newGame('b'), [{ g: 'start' }]), (x) => x);
-  assert.equal(idle.grade, 'shaky');
-  assert.ok(idle.flares > 0);
-});
-
 test('喂饭桶: the lid gives on the fourth press; the stone waits till the common things are fed; the book\'s outputs', () => {
   let s = run(fantong, fantong.newGame('a'), [{ g: 'press' }, { g: 'press' }, { g: 'press' }]);
   assert.equal(s.phase, 'ready');
@@ -246,15 +201,6 @@ test('喂饭桶: the lid gives on the fourth press; the stone waits till the com
   const html = fantong.html(s, 'zh');
   assert.match(html, /猪蜻蜓；乘风而起，见木而栖/);
   assert.match(html, /收破烂的/);
-});
-
-test('底册: only the book\'s three lines are legible; by heart before the burn is `kept`', () => {
-  const html = diche.html(run(diche, diche.newGame('a'), [{ g: 'start' }, { g: 'read', r: 'lufang' }]), 'zh');
-  assert.match(html, /使完金刃，要喘一口气/);
-  assert.equal((html.match(/is-blur/g) ?? []).length, diche.ROWS.filter((r) => !r.reads).length);
-  const kept = run(diche, diche.newGame('a'), [{ g: 'start' }, ...['lufang', 'lufang', 'qinyan', 'qinyan', 'qichangsong'].map((r) => ({ g: 'read', r })), { g: 'burn' }]);
-  assert.equal(kept.grade, 'kept');
-  assert.equal(run(diche, diche.newGame('a'), [{ g: 'start' }, { g: 'burn' }]).grade, 'hasty');
 });
 
 test('喷嚏符: step aside on the shoulder\'s drop, a thread of qi, push on the third sneeze → clean; idle, the fist lands', () => {
@@ -271,41 +217,13 @@ test('喷嚏符: step aside on the shoulder\'s drop, a thread of qi, push on the
   assert.ok(hit.hits >= 1);
 });
 
-test('猪蜻蜓: shoving bounces; the slap before dusk is held back; after it, on the back foot\'s lift — and the result is still 「……祁长松，胜。」', () => {
-  let s = run(zqt, zqt.newGame('a'), [{ g: 'start' }, { g: 'shove' }, { g: 'slap' }]);
-  assert.equal(s.early, 1);
-  assert.equal(s.phase, 'press');
-  s = liveUntil(zqt, s, (x) => (x.phase === 'close' && x.note === 'light' ? zqt.act(x, { g: 'slap' }).state : x));
-  assert.ok(['caught', 'late'].includes(s.grade));
-  assert.match(zqt.html(s, 'zh'), /……祁长松，胜。/);
-});
-
-test('写信: the boasts are rubbed out, the letter signed and 漏勺 added; 孙二狗\'s never names who knocked him down', () => {
-  let s = run(letter, letter.newGame('a'), [{ g: 'start' }, { g: 'write', l: 'xian' }, { g: 'write', l: 'ma' }, { g: 'write', l: 'men' }]);
-  assert.match(letter.html(s, 'zh'), /<s>娘，我打赢了马小宝<\/s>/);
-  s = run(letter, s, [...letter.BODY.map((b) => ({ g: 'write', l: b.id })), { g: 'sign' }, { g: 'add' }, { g: 'write', l: 'who' }, { g: 'write', l: 'qi' }]);
-  assert.equal(s.won, true);
-  const html = letter.html(s, 'zh');
-  assert.match(html, /娘，漏勺也能打水。/);
-  assert.match(html, /<s>是内门的卢方把我打倒的。<\/s>/);
-});
-
-test('念开篇: his mother\'s rhyme lays the 洛书 — 戴九履一，左三右七，二四为肩，六八为足，五居中央 — every line fifteen', () => {
-  let s = run(kaipian, kaipian.newGame('a'), [{ g: 'start' }, { g: 'cell', i: '0' }]);
-  assert.equal(s.note, 'wrong', 'the nine is on the head, not the left shoulder');
-  for (const n of [9, 1, 3, 7, 2, 4, 6, 8, 5]) s = kaipian.act(s, { g: 'cell', i: String(kaipian.SQUARE.indexOf(n)) }).state;
-  assert.equal(s.won, true);
-  assert.deepEqual(s.cells, kaipian.SQUARE);
-});
-
-// Cut 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): 猪蜻蜓 leaves wm-laoyin the 10-16 way.
 test('猪蜻蜓 has left wm-laoyin: no board before 摸出那个油纸包; an old save holding it offered lets it go', () => {
   const sc = CH.scenes['wm-laoyin'];
   assert.ok(!(sc.show ?? []).some((c) => c.id === 'laoyin-zhuqingting') && !(sc.offers?.tasks ?? []).includes('laoyin-zhuqingting'));
   assert.ok(!sc.exits.some((e) => e.needs?.task === 'laoyin-zhuqingting'));
   assert.match(sc.story.zh, /香，烧过一半了。$/);
   assert.equal(content.tasks.tasks.find((t) => t.id === 'laoyin-zhuqingting').cut, '2026-10-19');
-  assert.equal(content.games.games.find((g) => g.id === 'zhuqingting')?.task, 'laoyin-zhuqingting', 'the row stays for the 游戏厅');
+  assert.equal(content.games.games.find((g) => g.id === 'zhuqingting'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
   const old = fitWorld(at('wm-laoyin', 'zhengdian', { tasks: { 'laoyin-zhuqingting': { status: 'offered' } } }), content);
   assert.equal(old.tasks['laoyin-zhuqingting'], undefined, 'never winnable here now: let go');
   assert.equal(must(resolve, old, { exit: 'final' }).scene, 'wm-jiaxin');

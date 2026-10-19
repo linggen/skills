@@ -11,17 +11,8 @@ import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { health } from '../scripts/rules/health.mjs';
 import { huiNow } from '../scripts/rules/hui.mjs';
 import * as fantong from '../scripts/games/fantonghuochai.js';
-import * as sui from '../scripts/games/leafsui.js';
-import * as ding from '../scripts/games/leafding.js';
 import * as yubu from '../scripts/games/yubujiuge.js';
-import * as recipe from '../scripts/games/recipe.js';
-import * as smell from '../scripts/games/huohousmell.js';
-import * as reed from '../scripts/games/reed.js';
-import * as wind from '../scripts/games/wind.js';
 import { GRID } from '../scripts/games/yubu.js';
-import { leafX, SUI } from '../scripts/games/leaf.js';
-import { HEAVE, PINK } from '../scripts/games/reed.js';
-import { windOf } from '../scripts/games/wind.js';
 import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
@@ -174,7 +165,7 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
 /* ── the boards themselves ── */
 
 test('no 古七 board draws its own skip (the page lays it), each says what it is in both languages, and a skip still draws a line', () => {
-  for (const mod of [fantong, sui, ding, yubu, recipe, smell, reed, wind]) {
+  for (const mod of [fantong, yubu]) { // the rest of 古七's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」)
     const s = mod.newGame('t');
     for (const lang of ['zh', 'en']) {
       assert.doesNotMatch(mod.html(s, lang), /data-g="skip"/);
@@ -192,28 +183,6 @@ test('喂饭桶 · 扔了干净 (the 游戏厅\'s 旧版 since 2026-10-19): the 
   assert.match(fantong.html(s, 'zh'), /钉在了门板上/);
 });
 
-test('随叶: following the leaf down lands it on the broom tip (follow); cutting blows it off', () => {
-  const follow = liveUntil(sui, run(sui, sui.newGame('a'), [{ g: 'start' }]), (x) => {
-    const want = Math.sign(leafX(`${x.seed}|${x.drop}`, x.t - x.at + 150) + x.gust - x.bx);
-    return want === x.dir ? x : want === 0 ? sui.act(x, { g: 'release' }).state : sui.act(x, { g: 'hold', dir: want < 0 ? 'l' : 'r' }).state;
-  });
-  assert.equal(follow.grade, 'follow');
-  const cut = run(sui, sui.newGame('b'), [{ g: 'start' }, { g: 'chop' }]);
-  assert.equal(cut.note, 'cut');
-  assert.notEqual(cut.gust, 0, 'the blade\'s wind pushes it off');
-  assert.ok(SUI.fall > 5000, 'a fall long enough to follow');
-});
-
-test('定风: a step while the leaves spin is the eye turning with them; the step in the rise wins; idle, the leaf slaps the face', () => {
-  let s = run(ding, ding.newGame('a'), [{ g: 'start' }, { g: 'step' }]);
-  assert.equal(s.eyes, 1);
-  s = liveUntil(ding, s, (x) => (x.note === 'rise' ? ding.act(x, { g: 'step' }).state : x));
-  assert.equal(s.grade, 'shaky');
-  assert.equal(liveUntil(ding, run(ding, ding.newGame('b'), [{ g: 'start' }]), (x) => (x.note === 'rise' ? ding.act(x, { g: 'step' }).state : x)).grade, 'still');
-  const idle = liveUntil(ding, run(ding, ding.newGame('c'), [{ g: 'start' }]), (x) => x, (x) => x.slaps >= 1);
-  assert.equal(idle.note, 'slap');
-});
-
 test('禹步: 左脚 · 右脚绕 · the next square, 一 to 九, on the 洛书 (戴九履一) → quiet; a beat out of order trips', () => {
   assert.deepEqual(GRID, [4, 9, 2, 3, 5, 7, 8, 1, 6]);
   let s = run(yubu, yubu.newGame('a'), [{ g: 'start' }, { g: 'right' }]);
@@ -225,45 +194,6 @@ test('禹步: 左脚 · 右脚绕 · the next square, 一 to 九, on the 洛书 
   assert.match(yubu.html(s, 'zh'), /猎户的脚/);
 });
 
-test('认方: the three recipes from the footprints — 黄精+灵石, 黄芪+灵力, 紫玉参+灵力; mixed any other way is ash', () => {
-  let s = run(recipe, recipe.newGame('a'), [{ g: 'start' }, { g: 'heap', h: 'huangqi' }, { g: 'yin', y: 'stone' }, { g: 'feed' }]);
-  assert.equal(s.note, 'again');
-  for (const r of recipe.RECIPES) s = run(recipe, s, [{ g: 'heap', h: r.heap }, { g: 'yin', y: r.yin }, { g: 'feed' }]);
-  assert.equal(s.won, true);
-  assert.equal(s.grade, 'clean', 'one ash is forgiven');
-  assert.match(recipe.html(recipe.act(recipe.newGame('c'), { g: 'start' }).state, 'zh'), /黄精、一块灵石 —— <b>聚气丹<\/b>/);
-});
-
-test('闻焦: speaking in the bitter or the sweet is early; in the scorch\'s half breath it wins; idle, the batch is lost', () => {
-  let s = run(smell, smell.newGame('a'), [{ g: 'start' }, { g: 'say' }]);
-  assert.equal(s.note, 'early');
-  s = liveUntil(smell, s, (x) => (x.note === 'jiao' ? smell.act(x, { g: 'say' }).state : x));
-  assert.equal(s.grade, 'late');
-  const idle = liveUntil(smell, run(smell, smell.newGame('b'), [{ g: 'start' }]), (x) => x, (x) => x.lost >= 1);
-  assert.equal(idle.note, 'lost');
-});
-
-test('芦苇里那一等: a sword let go during the charges glances off the hide; in the pink instant it goes in', () => {
-  let s = run(reed, reed.newGame('a'), [{ g: 'start' }, { g: 'throw' }]);
-  assert.equal(s.note, 'glance');
-  s = liveUntil(reed, s, (x) => (reed.pinkNow(x) ? reed.act(x, { g: 'throw' }).state : x));
-  assert.equal(s.grade, 'hasty');
-  const clean = liveUntil(reed, run(reed, reed.newGame('b'), [{ g: 'start' }]), (x) => (reed.pinkNow(x) ? reed.act(x, { g: 'throw' }).state : x));
-  assert.equal(clean.grade, 'still');
-  assert.match(reed.html(clean, 'zh'), /粉红的肉里钻了进去/);
-  assert.ok(PINK >= 450 && HEAVE.every((h) => h > PINK), 'a moment a person can catch');
-});
-
-test('顺风溜: facing into the wind and stepping back glides; any other way is 「噗，噗」; three glides end it', () => {
-  let s = run(wind, wind.newGame('a'), [{ g: 'start' }, { g: 'face', d: 's' }, { g: 'back' }]);
-  assert.equal(s.note, 'puff', 'the first night\'s wind is north: facing south and stepping back goes nowhere');
-  assert.equal(windOf('a', 0), 'n');
-  while (!s.won) { const w = windOf(s.seed, s.k); s = run(wind, s, [{ g: 'face', d: w }, { g: 'back' }]); }
-  assert.equal(s.grade, 'puff');
-  assert.ok(s.qi <= 0.5 + 1e-9, 'three glides and a puff: half the 丹田 and more');
-});
-
-// Cut 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): 闻焦 leaves 09-year the 10-16 way.
 test('闻焦 has left 09-year: the passage whole (story_after merged, word for word), 伏天 waits on 清明 alone; an old save holding it offered lets it go', () => {
   const sc = CH.scenes['09-year'];
   assert.ok(!(sc.show ?? []).some((c) => c.id === 'year-smell') && !(sc.offers?.tasks ?? []).includes('year-smell'));
@@ -273,7 +203,7 @@ test('闻焦 has left 09-year: the passage whole (story_after merged, word for w
   assert.match(sc.story.zh, /头一回有人问到我答不上的。」\n\n就在闵丹师出神的当口，炉里的药气变了，多出了一丝焦。/);
   assert.match(sc.story_full.zh, /头一回有人问到我答不上的。」\n\n就在闵丹师出神的当口/);
   assert.equal(content.tasks.tasks.find((t) => t.id === 'year-smell').cut, '2026-10-19');
-  assert.equal(content.games.games.find((g) => g.id === 'huohousmell')?.task, 'year-smell', 'the row stays for the 游戏厅');
+  assert.equal(content.games.games.find((g) => g.id === 'huohousmell'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
   const old = fitWorld(at('09-year', { marks: ['y-qingming'], tasks: { 'year-smell': { status: 'offered' } }, tell_owed: ['after/09-year'] }), content);
   assert.equal(old.tasks['year-smell'], undefined, 'never winnable here now: let go');
   assert.deepEqual(old.tell_owed ?? [], [], 'the merged passage is owed nowhere');

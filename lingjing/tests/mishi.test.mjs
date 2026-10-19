@@ -12,7 +12,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { dayKey, newState } from '../scripts/state.mjs';
 import { checkInput, dealRoom, herMishi, look, mishi, mishiData, mishiOffer, mishiRoll, playTo, targetOf } from '../scripts/rules.mjs';
 import { STEMS, BRANCHES, LUOSHU, ORIENTS, WEN_IDS, yearIndex } from '../scripts/rules/mishi.mjs';
-import { WEN } from '../scripts/games/qiajue.js';
+import { WEN } from '../scripts/games/wen.js';
 import { stageCards } from '../scripts/stage.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
@@ -63,7 +63,7 @@ test('the data: rooms declared (at least two), each 2–3 mechanisms of known ki
   for (const e of data.entries) assert.ok(content.tasks.tasks.some((t) => t.id === e.task), e.task);
 });
 
-test('the knowledge is the game\'s own: the 文 are qiajue.js\'s, the 洛书 is 戴九履一 and every lid a magic square, every 干支 year a real one', () => {
+test('the knowledge is the game\'s own: the 文 are wen.js\'s, the 洛书 is 戴九履一 and every lid a magic square, every 干支 year a real one', () => {
   assert.deepEqual(WEN_IDS, WEN.map((w) => w.id));
   assert.equal(LUOSHU[1], 9); assert.equal(LUOSHU[7], 1); assert.equal(LUOSHU[3], 3); assert.equal(LUOSHU[5], 7);
   const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];

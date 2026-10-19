@@ -15,11 +15,6 @@ import { codexFiles } from '../scripts/content.mjs';
 import { bookEntries } from '../scripts/book-order.js';
 import { huiEnded } from '../scripts/rules/hui.mjs';
 import { throughJin } from './prologue.mjs';
-import * as qianmi from '../scripts/games/qianmi.js';
-import * as faqiu from '../scripts/games/faqiu.js';
-import * as dark from '../scripts/games/dark.js';
-import * as pulse from '../scripts/games/pulse.js';
-import * as lastshot from '../scripts/games/lastshot.js';
 
 
 const content = loadContent();
@@ -144,120 +139,20 @@ test('an interlude the book holds back (`draft`) is not played', async () => {
 
 /* ── the games: each completable, each failure the book's, never stuck ── */
 
-const run = (mod, s, ms, step = 50) => { for (let t = 0; t < ms && !s.won && !s.failed; t += step) s = mod.tick(s, step); return s; };
-const hold = (mod, s, gHold, ms) => run(mod, mod.act(s, { g: 'hold', gHold }).state, ms);
-const release = (mod, s) => mod.act(s, { g: 'release' }).state;
-
-test('一千米: out first, then in — the thousand run; panting throws up, and he runs again', () => {
-  let s = qianmi.act(qianmi.newGame('t'), { g: 'start' }).state;
-  for (let i = 0; i < 40 && !s.won; i++) {
-    s = release(qianmi, hold(qianmi, s, 'out', 1800));
-    s = release(qianmi, hold(qianmi, s, 'in', 1600));
-  }
-  assert.ok(s.won, `ran ${s.d}m with ${s.air} air`);
-  assert.match(qianmi.html(s, 'zh'), /四分二十九/);
-  let p = qianmi.act(qianmi.newGame('p'), { g: 'start' }).state;
-  for (let i = 0; i < 200 && !p.failed; i++) p = release(qianmi, hold(qianmi, release(qianmi, hold(qianmi, p, 'out', 200)), 'in', 200));
-  assert.ok(p.failed, 'quick shallow panting runs out of air');
-  assert.equal(p.note, 'vomit');
-  assert.match(qianmi.html(p, 'en'), /data-g="again"/);
-  const again = qianmi.act(p, { g: 'again' }).state;
-  assert.equal(again.live, true);
-  assert.equal(again.tries, 1);
-});
-
-test('一千米: 算了 waits for two falls — the page hands newGame the task level, never a run count', () => {
-  // lingjing.js lays a board with mod.newGame(seed, task.level ?? 1): level 1 is not a fallen run.
-  const fall = (s) => { for (let i = 0; i < 400 && !s.failed; i++) s = run(qianmi, s, 200); return s; };
-  let s = qianmi.act(qianmi.newGame('lv', 1), { g: 'start' }).state;
-  assert.equal(qianmi.stuck(s), false, 'not stuck before a single run');
-  s = fall(s);
-  s = qianmi.act(s, { g: 'again' }).state;
-  assert.equal(qianmi.stuck(s), false, 'one fall is not stuck yet');
-  s = qianmi.act(fall(s), { g: 'again' }).state;
-  assert.equal(qianmi.stuck(s), true, 'two falls: stuck');
-});
-
-test('罚球: in four, out six brings the heart down and three go in; holding the breath shakes it off the rim', () => {
-  let s = faqiu.newGame('t');
-  assert.equal(faqiu.act(s, { g: 'bieshot' }).state.note, 'shake');
-  for (let i = 0; i < 12 && s.hr > faqiu.STEADY; i++) s = run(faqiu, release(faqiu, hold(faqiu, s, 'in', 4000)), 6000);
-  s = faqiu.act(s, { g: 'hold' }).state; // the last breath counted
-  s = run(faqiu, release(faqiu, run(faqiu, s, 4000)), 6000);
-  assert.ok(s.hr <= faqiu.STEADY, `heart ${s.hr}`);
-  for (let i = 0; i < 6 && !s.won; i++) {
-    s = faqiu.act(s, { g: 'shoot' }).state;
-    if (!s.won) s = run(faqiu, release(faqiu, hold(faqiu, s, 'in', 4000)), 6000);
-  }
-  assert.ok(s.won);
-  let h = run(faqiu, faqiu.act(faqiu.newGame('h'), { g: 'hold' }).state, 7000);
-  assert.equal(h.note, 'held');
-});
-
-test('黑地: eleven steps landed in the middle of the sway, three wobbles and he starts again; then lead him out of the numbness', () => {
-  let s = dark.act(dark.newGame('t'), { g: 'start' }).state;
-  // A wobble: put down at the swing's far end.
-  const far = (st) => { let x = st; for (let i = 0; i < 60 && Math.abs(dark.swayOf(x)) < 0.9; i++) x = dark.tick(x, 25); return x; };
-  for (let i = 0; i < dark.FALLS; i++) s = dark.act(far(s), { g: 'step' }).state;
-  assert.equal(s.note, 'fall');
-  assert.equal(s.step, 0);
-  for (let i = 0; i < 40 && s.phase === 'walk'; i++) {
-    let x = s;
-    for (let k = 0; k < 200 && Math.abs(dark.swayOf(x)) >= dark.STEADY * 0.8; k++) x = dark.tick(x, 10);
-    s = dark.act(x, { g: 'step' }).state;
-  }
-  assert.equal(s.phase, 'lead');
-  assert.equal(s.note, 'door');
-  for (let i = 0; i < 10 && !s.won; i++) s = run(dark, release(dark, hold(dark, s, 'in', 3000)), 5000);
-  s = dark.act(s, { g: 'hold' }).state;
-  assert.ok(s.won);
-  assert.match(dark.html(s, 'zh'), /二氧化碳/);
-});
-
-test('晨脉: rest till it is under seventy, then the ball; touching it early digs the pit again, three times and back to the ward', () => {
-  let s = pulse.newGame('t');
-  s = pulse.act(s, { g: 'train' }).state;
-  assert.equal(s.note, 'dug');
-  s = pulse.act(s, { g: 'train' }).state;
-  s = pulse.act(s, { g: 'train' }).state;
-  assert.equal(s.note, 'ward');
-  assert.equal(s.pulse, pulse.START);
-  const days = [s.pulse];
-  while (s.pulse >= pulse.LIMIT) { s = pulse.act(s, { g: 'rest' }).state; days.push(s.pulse); }
-  assert.deepEqual(days, [76, 72, 69], 'as the book counts it');
-  assert.ok(pulse.act(s, { g: 'train' }).won);
-});
-
-test('最后一罚: chants push the heart up, the long breath brakes it but never stills the hands; two breaths and shoot late in the out-breath', () => {
-  let s = lastshot.newGame('t');
-  s = lastshot.act(s, { g: 'shoot' }).state;
-  assert.equal(s.note, 'miss', 'before the breaths, the front of the rim');
-  for (let i = 0; i < 3; i++) s = run(lastshot, release(lastshot, hold(lastshot, s, 'in', 4000)), 6000);
-  assert.ok(s.hr >= lastshot.FLOOR);
-  assert.ok(lastshot.shakeOf(s.hr) > 0, 'the hands still shake');
-  // The third hold closes the second breath; then shoot four beats into the out-breath.
-  s = run(lastshot, release(lastshot, run(lastshot, lastshot.act(s, { g: 'hold' }).state, 4000)), 4000);
-  const r = lastshot.act(s, { g: 'shoot' });
-  assert.ok(r.won);
-  assert.match(lastshot.html(r.state, 'zh'), /掉了进去/);
-});
-
-test('every game is in both languages, its task pays nothing, and its scene waits on it', () => {
-  for (const mod of [qianmi, faqiu, dark, pulse, lastshot]) {
-    assert.ok(mod.meta.name.zh && mod.meta.name.en && mod.meta.how.zh && mod.meta.how.en, mod.meta.id);
-    const g = mod.newGame('x');
-    assert.ok(mod.html(g, 'zh').includes('g-jin') && mod.html(g, 'en').includes('g-jin'));
-    // 一千米 · 罚球 · 黑地 · 最后一罚 are played as 气走经脉 levels since 10-19; their modules stay in the 游戏厅.
-    const t = content.tasks.tasks.find(x => x.game === mod.meta.id) ?? content.tasks.tasks.find(x => x.id === `jin-${mod.meta.id}` && x.game === 'qimai');
-    assert.ok(t && /^jin-/.test(t.id), mod.meta.id);
+// 今线's four boards play 气走经脉 levels since 10-19 (tests/qimai.test.mjs); the old breath boards were deleted the
+// same day (Hanli: 「没用在游戏中的, 都删了吧」), and 晨脉 is cut.
+test('every 今线 board is a 气走经脉 level: its task pays nothing, and its scene waits on it', () => {
+  const ids = ['jin-qianmi', 'jin-faqiu', 'jin-dark', 'jin-lastshot'];
+  for (const id of ids) {
+    const t = content.tasks.tasks.find(x => x.id === id);
+    assert.equal(t.game, 'qimai', id);
     assert.equal(t.grant.progress ?? 0, 0);
     assert.equal(t.grant.wealth ?? 0, 0);
-    const at = scenes().find(({ sc }) => sc.offers?.tasks?.includes(t.id));
-    // 晨脉 cut 2026-10-19 (the standing rule Hanli approved 10-19: counting a pulse lying still fits no kit)
-    if (t.cut) { assert.equal(at, undefined, `${t.id}: cut, offered nowhere`); continue; }
-    assert.ok(at && /^j\d\d$/.test(at.sc.hui), `${t.id} is an interlude's`);
-    assert.ok(at.sc.exits.some(e => e.needs?.task === t.id && e.refuse?.zh && e.refuse?.en));
+    const at = scenes().find(({ sc }) => sc.offers?.tasks?.includes(id));
+    assert.ok(at && /^j\d\d$/.test(at.sc.hui), `${id} is an interlude's`);
+    assert.ok(at.sc.exits.some(e => e.needs?.task === id && e.refuse?.zh && e.refuse?.en));
   }
+  assert.ok(!scenes().some(({ sc }) => sc.offers?.tasks?.includes('jin-pulse')), '晨脉: cut, offered nowhere');
 });
 
 test('晨脉 is off j07-guan (2026-10-19): the way on tells the 六十九 as before, unasked; an old save holding it offered lets it go', () => {

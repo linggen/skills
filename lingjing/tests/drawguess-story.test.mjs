@@ -60,7 +60,7 @@ test('第六回\'s 家信: the board is drawn for 娘, 银月 reads it; the line
   assert.deepEqual([3, 2, 0].map((n) => letterGrade(n, 3)), ['all', 'some', 'none']);
   for (const g of ['all', 'some', 'none', 'written']) assert.ok(Object.hasOwn(t.ranks, g) && Object.hasOwn(t.marks, g), g);
   // The 游戏厅 keeps the old 写信 board; the story's row is drawguess at wm-jiaxin.
-  assert.ok(reg.games.some((g) => g.id === 'letter' && !g.scene && !g.task));
+  assert.ok(!reg.games.some((g) => g.id === 'letter'), 'the old 写信 board deleted 2026-10-19 (「没用在游戏中的, 都删了吧」)');
   assert.ok(reg.games.some((g) => g.id === 'drawguess' && g.scene === 'wm-jiaxin' && g.task === 'jiaxin-letter' && g.mechanic === '你画我猜'));
 });
 

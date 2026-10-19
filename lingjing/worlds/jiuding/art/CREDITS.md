@@ -275,8 +275,6 @@ rolled and looked at beside the house sheet on paper and on a dark ground; the k
 - `games/rain/` — 接雨's wooden basin (1) and the wet thatch beam (1).
 - `games/sneeze/` — 喷嚏符's 何七 squared up (2) and punching (2), 小满 with the charm (1), the stone stage's edge (3);
   the first round drew 何七 in a karate gi and belt, so the prompt spells out a Chinese short jacket and a knotted sash.
-- `games/stone/` — 扔石听声's cave, side-on (a vignette, 960×600, seed 2; the first prompt's seeds painted two panels, so
-  the second asks for one continuous picture).
 - `games/lu/` — the 鯥 of 沂水 (a pose, 640×480, seed 1: ox-headed, bat-winged, snake-tailed, its legs bound by the
   brambles, facing left) and the 沂水 shoal at night (a vignette, 960×600, seed 1), for 芦苇里那一等 on the throwing board.
   2026-10-19 (Hanli: 「翅膀也不张开」): the same 鯥 with its wings folded along its back (`lu-folded`, seed 2) — an edit

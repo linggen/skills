@@ -34,3 +34,16 @@ test('taken first, the errand still counts the 狰 tamed after it (the ordinary 
   assert.equal(book(taken).ready, false);
   assert.equal(book({ ...taken, cast: [...taken.cast, 'zheng'] }).ready, true);
 });
+
+// Off the 药园 2026-10-19 (the standing rule Hanli approved 10-19: a guess among four spots, button-only, fits no kit):
+// the story's wm-yaoyuan catches the 狰 with its radish; a cut catch board is never offered at the haunt, and the
+// beast still runs from a raised hand. Its game was deleted the same day (Hanli: 「没用在游戏中的, 都删了吧」); the task id stays, `cut`.
+test('守夜 is cut: never offered at the 狰\'s haunt, the 狰 still caught, never fought', async () => {
+  const { catchHere } = await import('../scripts/rules/tasks.mjs');
+  assert.equal(content.tasks.tasks.find((t) => t.id === 'shouye').cut, '2026-10-19');
+  const zheng = content.creatures.creatures.find((c) => c.id === 'zheng');
+  assert.equal(zheng.catch, 'shouye', 'still a catch, so never a fight (rules/tasks.mjs `runs`)');
+  assert.equal(catchHere(content, { place: 'yaoyuan', cast: [], tasks: {} }, 'shouye'), false);
+  const tame = content.chapters['00-waimen'].scenes['wm-yaoyuan'].exits.find((e) => e.id === 'tame');
+  assert.equal(tame.grant.cast, 'zheng', 'the story brings it in');
+});
