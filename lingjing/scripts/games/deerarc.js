@@ -40,6 +40,7 @@ export const W = 480, H = 300;
 export const STEP_MS = 1000 / 60;
 export const BOW = [378, 164]; // his hand on the near bank, held up out of the grass, clear of the edge
 export const MAX_PULL = 120, MIN_POWER = 0.12, MIN_V = 3, MAX_V = 7.2;
+const HAND_REACH = 64; // how far from the bow a held stone follows the hand
 export const QUIVER = 4, STUCK_MISSES = 3;
 const GRAVITY = 0.36, WIND_ACC = 0.02, ARROW_HALF = 13, TRAIL_EVERY = 3;
 const BREAK_V = 5, AFTER_BREAK = 0.88, TURN = 0.32, SLOW = 3, SLOW_STEPS = 12, SLOW_HIT_MS = 450;
@@ -582,7 +583,10 @@ function move(s, d) {
   // The bow creaks as the string comes back: once at a third, two thirds, and full.
   const notch = (p) => (p >= 0.98 ? 3 : p >= 0.66 ? 2 : p >= 0.33 ? 1 : 0);
   if (s.world && notch(pull.p) > notch(s.pull?.p ?? 0)) cue(s.world, 'creak', BOW, pull.p);
-  return { ...s, pull };
+  // Where the hand is (scene units), held within an arm's reach of the bow: a thing thrown by hand
+  // sits there until it goes (Hanli 10-19: 「在射之前, 石头的位置应该跟随鼠标走」).
+  const dx = Number(d.x) - BOW[0], dy = Number(d.y) - BOW[1], r = Math.hypot(dx, dy), k = r > HAND_REACH ? HAND_REACH / r : 1;
+  return { ...s, pull: { ...pull, hand: [BOW[0] + dx * k, BOW[1] + dy * k] } };
 }
 /** Drawn directly to an aim (the bot, the tests; a keyboard later): `a` degrees, `p` 0–1. */
 function draw(s, d) {
@@ -1035,6 +1039,13 @@ function nockedShape(s, p, back) {
     pull, the thing in it, an arm's arc, over the same soft light. */
 function handPicture(s, p, a, back) {
   const proj = projectileOf(s.kit, s.pick), held = s.phase === 'aim';
+  // Drawn by the hand: the thing is where the hand is, a band of ink back to the bow.
+  const hand = held ? s.pull?.hand : null;
+  if (hand) {
+    const [hx, hy] = hand;
+    return `<g class="g-da-bow g-tk-hand"><ellipse class="g-da-halo" cx="${BOW[0]}" cy="${BOW[1]}" rx="34" ry="30"/>`
+      + `<path class="g-tk-arm" d="M${BOW[0]} ${BOW[1]} L${n(hx)} ${n(hy)}"/><g transform="translate(${n(hx)} ${n(hy)})">${shapeOf(proj)}</g></g>`;
+  }
   const arm = `<path class="g-tk-arm" d="M10 0 Q${n(-back * 0.4)} ${n(-10 - p * 8)} ${n(-back)} 0"/>`;
   const thing = held ? `<g transform="translate(${n(-back)} 0)">${shapeOf(proj)}</g>` : '';
   return `<g class="g-da-bow g-tk-hand" transform="translate(${BOW[0]} ${BOW[1]}) scale(-1 1) rotate(${n(-a)})"><ellipse class="g-da-halo" cx="-10" cy="0" rx="34" ry="30"/>${arm}${thing}</g>`;
