@@ -104,7 +104,8 @@ test('the gate: only the rooms open to him; a way out is refused in the instance
   assert.ok(!l.place.plate.file, 'no painting: the 去往 list draws it in ink');
   assert.ok(!JSON.stringify(l.place).includes('mijing-shishi'), 'the chamber is not named before the wall opens');
   assert.deepEqual(l.director.near.map(p => p.id), ['mijing-xiongya']);
-  // The 凶崖 holds the way down (places' has.guard): the walk stops there, and from there it is refused, until its room is played.
+  // The 凶崖 holds the way down (places' has.guard): the walk stops there, and from there it is refused, until its 犰狳 is beaten
+  // (下崖's board cut 2026-10-19 — the standing rule Hanli approved: the climb is the 断崖下 room's line, the book's paragraph).
   const walked = move(s, content, ctx(), { place: 'mijing-duanya' });
   assert.equal(walked.state.place, 'mijing-xiongya');
   assert.match(walked.result.guarded, /犰狳/);
@@ -112,7 +113,7 @@ test('the gate: only the rooms open to him; a way out is refused in the instance
   assert.equal(move(s, content, ctx(), { place: 'mijing-duanya' }).result.refused, 'guarded');
   const room = look(s, content, ctx());
   assert.equal(room.place.encounter?.creature.id, 'qiuyu', 'the 犰狳 on the stair is the room\'s fight');
-  assert.ok(room.tasks.some(t => t.id === 'mijing-descend' && t.status === 'offered'), 'the 下崖 board stands in the room');
+  assert.ok(!room.tasks.some(t => t.id === 'mijing-descend'), 'no 下崖 board in the room');
   // Fought for real until won (a loss leaves it there to fight again).
   for (let k = 0; k < 6 && !(s.hunted?.['mijing-xiongya'] >= 1); k += 1) {
     const out = fightOut(fresh(s), look(fresh(s), content, ctx()).place.encounter.game.id);
@@ -121,10 +122,8 @@ test('the gate: only the rooms open to him; a way out is refused in the instance
     if (out.result.outcome === 'won') assert.ok(out.result.paid?.progress > 0 || out.result.paid?.converted?.wealth > 0, 'a won fight shows its gain');
   }
   assert.equal(s.hunted['mijing-xiongya'], 1);
-  assert.match(move(fresh(s), content, ctx(), { place: 'mijing-duanya' }).result.say, /爬下去/, 'the board still asks');
-  s = must(win, fresh(s), { id: 'mijing-descend', grade: 'steady' });
-  s = must(task, s, { action: 'done', id: 'mijing-descend' });
   s = must(move, fresh(s), { place: 'mijing-duanya' });
+  assert.match(look(s, content, ctx()).place.line ?? '', /顺着崖壁往下爬[\s\S]*塞了一根针[\s\S]*窄窄的石台/, 'the climb told as the room\'s line, then the room');
   assert.equal(look(s, content, ctx()).scene?.id, 'wm-wangzuo', 'the scene runs in its room');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   assert.equal(s.place, 'mijing-yabi', 'the story carries him to its next room');
@@ -217,10 +216,11 @@ test('an old save mid-秘境 (Hanli\'s, 2026-10-15: wm-kunzhen, standing at the 
   assert.ok(again.result.tasks.some(t => t.id === 'mijing-zhenyan' && t.status === 'offered'), 'and stands for him');
 });
 
-test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'s 犰狳 and 下崖, the 困阵\'s 洛书, the dry river\'s 合窳 and its herbs', () => {
+test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'s 犰狳 (下崖 told since 10-19), the 困阵\'s 五子棋, the dry river\'s 合窳 and its herbs on the vines', () => {
   const place = id => content.places['徐'].places.find(p => p.id === id);
   assert.deepEqual(place('mijing-kou').has.games, ['mijing-huarong']);
   assert.equal(place('mijing-xiongya').has.pool, 'mijing-ya');
+  assert.equal(place('mijing-xiongya').has.games, undefined, '下崖 cut 2026-10-19: the 犰狳 alone holds the stair');
   assert.deepEqual(place('mijing-anhe').has, { pool: 'mijing-anhe', games: ['mijing-gather'] });
   const pools = content.places['徐'].pools;
   assert.deepEqual(pools['mijing-anhe'].beasts.map(b => b.creature), ['heyu', 'qiuyu']);
@@ -242,13 +242,17 @@ test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'
   s = must(move, fresh(s), { place: 'mijing-anhe' });
   const r = look(s, content, ctx());
   assert.ok(['heyu', 'qiuyu'].includes(r.place.encounter?.creature.id));
-  assert.ok(r.tasks.some(t => t.id === 'mijing-gather'));
-  s = must(win, s, { id: 'mijing-gather', grade: 'rich' });
+  // 拾遗 is the 秘境's 割藤 since 2026-10-19 (games/fantongcut.js): the 灵芝 hung on the vines, named in his language.
+  const glean = r.tasks.find(t => t.id === 'mijing-gather');
+  assert.equal(glean?.game, 'fantongcut');
+  assert.equal(glean.deal.item.name, '灵芝');
+  s = must(win, s, { id: 'mijing-gather', stars: 3 });
   const paid = must(task, s, { action: 'done', id: 'mijing-gather' });
   assert.equal(paid.bag.lingzhi, (s.bag.lingzhi ?? 0) + 1, 'gleaning pays a herb');
   assert.ok(paid.wealth > s.wealth, 'and stones');
 });
 
+// 下崖 and the old 拾遗 board left the 秘境 2026-10-19; their modules stay in the 游戏厅 and are still held here.
 test('the two new boards: a control at open, both languages, played well and badly — and no skip of their own (the page\'s stuck gate, 2026-10-15)', () => {
   for (const [mod, control] of [[descend, /data-g="start"/], [gather, /data-g="pull"/]]) {
     const g = mod.newGame('seed');

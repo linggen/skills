@@ -9,7 +9,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { lint, loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { fitWorld, newState } from '../scripts/state.mjs';
 import { look, resolve, story, task, win } from '../scripts/rules.mjs';
 import { codexFiles } from '../scripts/content.mjs';
 import { bookEntries } from '../scripts/book-order.js';
@@ -253,9 +253,26 @@ test('every game is in both languages, its task pays nothing, and its scene wait
     assert.equal(t.grant.progress ?? 0, 0);
     assert.equal(t.grant.wealth ?? 0, 0);
     const at = scenes().find(({ sc }) => sc.offers?.tasks?.includes(t.id));
+    // 晨脉 cut 2026-10-19 (the standing rule Hanli approved 10-19: counting a pulse lying still fits no kit)
+    if (t.cut) { assert.equal(at, undefined, `${t.id}: cut, offered nowhere`); continue; }
     assert.ok(at && /^j\d\d$/.test(at.sc.hui), `${t.id} is an interlude's`);
     assert.ok(at.sc.exits.some(e => e.needs?.task === t.id && e.refuse?.zh && e.refuse?.en));
   }
+});
+
+test('晨脉 is off j07-guan (2026-10-19): the way on tells the 六十九 as before, unasked; an old save holding it offered lets it go', () => {
+  const sc = scenes().find(({ sc }) => sc.id === 'j07-guan').sc;
+  assert.equal(sc.show, undefined);
+  const out = sc.exits.find(e => e.id === 'out');
+  assert.equal(out.needs, undefined);
+  assert.match(out.story.zh, /六十九[\s\S]*「出关了。」/);
+  assert.equal(content.tasks.tasks.find(t => t.id === 'jin-pulse').cut, '2026-10-19');
+  const s = { ...newState(content, 'zh', new Date('2026-10-19T10:00:00')), chapter: '00-zhuji', scene: 'j07-guan', tasks: { 'jin-pulse': { status: 'offered' } } };
+  const fit = fitWorld(s, content);
+  assert.equal(fit.tasks['jin-pulse'], undefined, 'let go on load');
+  const on = resolve(fit, content, { now: new Date('2026-10-19T10:00:00'), quests: [] }, { exit: 'out' });
+  assert.ok(on.result.ok, JSON.stringify(on.result).slice(0, 200));
+  assert.equal(on.state.scene, '09-snow');
 });
 
 test("今线's people: a card in the book at their first appearance (今 · 一), never brought on or met in play (Hanli 2026-10-05: 「放到原著书里」)", async () => {

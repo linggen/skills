@@ -208,6 +208,35 @@ the strap cut like a vine) dragging under him. The ledge is on the cliff side, o
 | 二 · 00-uncle | 算盘 `abacus` | 「一笔一笔地算账」 | three sums on the beads | arithmetic, not play | **cut** | 6 s | 4 wrong | no | **cut** |
 | 三 · 00-luoshu | 二试 `luoshu` | 洛书九宫 | fill the magic square | a puzzle; the test the book sets | keep (a test, not a beat) — **the one 九宫格 in the story** (Hanli 10-19: 「9宫格出现一次就可以了」) | ~60 s | 75 s | no | — (a test) |
 
+## The weak-board sweep (10-19, the standing rule)
+
+Hanli 10-19 approved a standing rule (「我和 agent 照规矩直接处理, 可以, 按你说的做」): each remaining weak board (the 判断
+and 剧情 types, and anything button-only like them) becomes (a) a level of a proven kit where one fits the book's action —
+割绳子 · 气走经脉 · 射鹿 throw/smash · 打地鼠 (接雨) · 五子棋 · 你画我猜 —, else (b) the book's told passage (merged whole,
+the board cut the 10-16 way), or (c) a short 大场面 where the moment is strongly visual (FLUX art, its own pace, forced
+自动, never skipped by 跳过). No new homemade mechanics, no quizzes, no big-button taps. Every old row is marked
+`replaced` (the new game's id, `setpiece` or `cut`) and folds into the 游戏厅's 旧版; every dropped task is `cut` (a save
+holding it offered lets it go on load); ids, grants and the marks later lines read are kept.
+
+| board | where | decision | why |
+|---|---|---|---|
+| 讲堂三日 `qiajue` | wm-qianye `qianye-qiajue` | **(a) 气走经脉 · 掐诀** (level `qiajue`, n 6) | 「一句话走一截路，八句话，正好从肩膀走到指头尖…落一个字，气就停在半道上」 is the kit's own model: the chant's eight lines are the arm's eight 穴 (checkpoints), the elbow 窄 with the spark's push, 午文 the last 关. The passage now tells day one (the hand, 「火弹，掐午文」) before it and day three (the 扣) after it |
+| 相克 `xiangke` | wm-qianye `qianye-xiangke` | **(b) cut** | a quiz. The 五句 are the passage's (story_after); the way on (`eve`) writes the mark `xiangke` the 大比's three bouts read for their hint |
+| 底册 `diche` | wm-laba `laba-diche` | **(c) 大场面 `diche`** | 「看完烧了」 — the page under the lamp, its three lines lit (卢方 · 秦雁 · 祁长松's four words), carried to the 灶口, curling black (setpieces/diche.js, ~4 s, `{景=diche}` on the book's own sentence, now in the passage). The way on (`go`) writes `diche` (望气 and the hints at the 卢方 and 秦雁 bouts) |
+| 顺风溜 `wind` | 09-xie `xie-wind` | **(a) 气走经脉 · 顺风溜** (level `wind`, n 10) | the boots' 「鳃」 open and close on a thread of qi; the glide low (「脚离地不过一尺」), the north wind turning (`flip`): 迎着风 it slides, against it 「噗」; 墙根 the last 关. The 几何冲刺 runner it was earmarked for is not built; this is today's kit |
+| 晨脉 `pulse` | j07-guan `jin-pulse` | **(b) cut** | counting a pulse lying still fits no kit; the way on (`out`) already tells the 六十九 |
+| 认方 `recipe` | 09-furnace `furnace-recipe` | **(b) cut** | a memory puzzle; story_after merged back (word for word), 定风 the scene's one board; its 聚气丹 comes with the way on (`fire`) |
+| 念开篇 `kaipian` | wm-heluo `heluo-kaipian` | **(b) cut** | a recall drill (was 「Hanli's call」 below; the rule now covers it); the rhyme is the way on's own passage, the scroll still granted |
+| 下崖 `descend` | 秘境 凶崖 `mijing-descend` | **(b) cut** | two holds to pick; the climb is told as the 断崖下 room's line (05-第五回.md's paragraph whole); the 犰狳 on the stair still holds the way down |
+| 拾遗 `gather` | 秘境 暗河 `mijing-gather`, rerun `mijing-rerun-gather` | **(a) 割藤** (`fantongcut`, as 奇遇 · 割藤) | four of nine glowing cracks, button-only → the 秘境's own 割绳子: the 灵芝 (story) or the room's find (rerun, rules/rerun.mjs runRow) hung on the vines; the rerun's cache on three 灵光 (was the `rich` grade); ids and pay kept |
+| 守夜 `shouye` | 药园 (the 狰's catch) | **(b) cut** | a guess among four spots; wm-yaoyuan already catches the 狰 with its radish (`tame`); the 狰 still runs from a raised hand; a cut catch board is never offered (rules/tasks.mjs) |
+| 喂饭桶 `fantongqianye` · `fantonghuochai` | wm-zhaojing · 09-snow | **left** | another agent's (扔了干净 → a 大场面, `huochai`) |
+| 写信 `letter` | wm-jiaxin | — | replaced by 家信 · 画给娘看 (drawguess) 10-19 |
+
+**Rhythm** (rhythm.mjs, cap 1,500 字): wm-xirang → 讲堂三日 6,187 → 6,414 (+227, day one told; over before);
+讲堂三日 → 藏息 789; 开炉夜 → 喷嚏符 848 (the 底册 piece between); 黑地十一步 → 喂饭桶 (09-snow) 2,444 → 2,773 (晨脉 cut;
+over before); 禹步 → 定风 1,343; **家信 → the end of 古六 1,635 — a new stretch over the cap** (念开篇 cut).
+
 ## 古四 → 古七
 
 **Cut 10-19** (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): 猪蜻蜓 (wm-laoyin) and 闻焦 (09-year), the 10-16 way —
@@ -220,23 +249,23 @@ the passage whole, the task marked `cut` (a save holding it offered lets it go),
 |---|---|---|---|---|---|---|---|---|
 | 四 · wm-zhoutian | 小周天 `zhoutian` | 冲三关 | in · out · still; push only in the stillness; 玉枕 wants three | a real timing read | second tier | 75 s | yes — 小周天 | **→ 气走经脉 · 小周天 (10-19)** — module in the 游戏厅 |
 | 五 · wm-kunzhen | 困阵 `wuziqi` (was `luoshu`) | 「正中那个是空的」 | **五子棋 since 10-19**: the eye's stone has fifteen lines under its face, the binding plays white (公道, ai 2); five in a row holds the eye down | — | done 10-19 (§ 五子棋 below) | 75 s | no | — |
-| 六 · wm-qianye | 讲堂三日 `qiajue` | 掐、咒、扣 | tap the 文, the eight lines in order, hold the 扣 | three drills | **cut** | 6 wrong | yes — 掐诀 (褚先生 teaches him) | kept until replaced |
-| 六 · wm-qianye | 相克 `xiangke` | 五句 | answer an element with what overcomes it | a quiz | **cut** | 5 misses | ? | kept until replaced |
+| 六 · wm-qianye | 讲堂三日 `qiajue` | 掐、咒、扣 | tap the 文, the eight lines in order, hold the 扣 | three drills | **cut** | 6 wrong | yes — 掐诀 (褚先生 teaches him) | **→ 气走经脉 · 掐诀 (10-19, the sweep)** — module in the 游戏厅 |
+| 六 · wm-qianye | 相克 `xiangke` | 五句 | answer an element with what overcomes it | a quiz | **cut** | 5 misses | ? | **cut 10-19 (the sweep)** — the 五句 told, the mark from the way on |
 | 六 · wm-zhaojing | 藏息 `mirrortongpu` | 镜光扫过来 | hold 「吐」 long and slow as the light passes | a timing hold | **cut** | 3 flares | ? (藏息 his?) | **→ 气走经脉 · 藏息 (10-19)** — module in the 游戏厅 |
 | 六 · wm-zhaojing | 喂饭桶 `fantongqianye` | 开炉夜 | press the lid open, feed things | a sequence | **cut** (the free 饭桶 feed stays) | 75 s | ? (饭桶 is a thing he uses) | kept until replaced |
-| 六 · wm-laba | 底册 `diche` | 看完烧了 | read each line twice, burn it | reading | **cut** | 4 | no | kept until replaced |
+| 六 · wm-laba | 底册 `diche` | 看完烧了 | read each line twice, burn it | reading | **cut** | 4 | no | **→ 大场面 `diche` (10-19, the sweep)** — the mark from the way on |
 | 六 · wm-dabi | 喷嚏符 `sneeze` | 让一拳 | watch the shoulder, 让; a touch of 送气; 推 mid-sneeze | a read with three verbs — the most fight-like | **keep** | 5 | yes — 喷嚏符, a 符 | kept (the six) |
 | 六 · wm-laoyin | 猪蜻蜓 `zhuqingting` | 等风掉头 | wait; 拍 as he steps behind | one timing tap | **cut** | 4 misses | ? | **cut 10-19** (Hanli: 「时机, 调息不好玩的可以删掉或者改进」) — no board before 摸出那个油纸包; task `cut`, row and module in the 游戏厅 |
 | 六 · wm-jiaxin | 写信 `letter` | 擦了又写 | write line by line, erase what must not be said | a choice | **cut** | 75 s | no | kept until replaced |
-| 六 · wm-heluo | 念开篇 `kaipian` | 戴九履一 | each line of the verse into the nine squares | a recall drill | **cut** | 6 wrong | no | kept until replaced |
+| 六 · wm-heluo | 念开篇 `kaipian` | 戴九履一 | each line of the verse into the nine squares | a recall drill | **cut** | 6 wrong | no | **cut 10-19 (the sweep)** — the rhyme is the way on's passage |
 | 七 · 09-snow | 喂饭桶 `fantonghuochai` | 扔了干净 | drop two scraps in | two taps | **cut** | 75 s | no | **→ 大场面 扔了干净 (10-19)** (Hanli: 「「扔了干净」这一幕改成大场面」) — `{景=huochai}` on the way on's chewing paragraph (setpieces/huochai.js); task `cut`, row `replaced: "setpiece"`, module in the 游戏厅 |
 | 七 · 09-jiuge | 随叶 `leafsui` | 跟着它走 | hold 随左 / 随右 with the leaf | a tracking hold | **cut** | 75 s | ? | **→ 气走经脉 · 随叶 (10-19)** — module in the 游戏厅 |
 | 七 · 09-jiuge | 禹步 `yubujiuge` | 九格 | left, right behind, step in — one to nine | a rhythm | second tier | 5 trips | yes — 禹步 | kept (second tier) — replace with 割绳子 or another proven mechanic if it isn't fun (his play) |
-| 七 · 09-furnace | 认方 `recipe` | 三张方子 | match heaps, leads, pills | a memory puzzle | **cut** | 5 ash | no | kept until replaced |
+| 七 · 09-furnace | 认方 `recipe` | 三张方子 | match heaps, leads, pills | a memory puzzle | **cut** | 5 ash | no | **cut 10-19 (the sweep)** — passage whole, the 聚气丹 on the way on |
 | 七 · 09-furnace | 定风 `leafding` | 看见它起来 | wait for the rising leaf; 挪半步 | one timing tap | **cut** | 75 s | ? | **→ 气走经脉 · 定风 (10-19)** — module in the 游戏厅 |
 | 七 · 09-year | 闻焦 `huohousmell` | 半口气 | say it when the scent turns scorched | one timing tap | **cut** | 3 lost | ? (火候) | **cut 10-19** — 09-year's passage whole again (story_after merged), 伏天 needs 清明 only; task `cut`, row and module in the 游戏厅 |
 | 七 · 09-yishui | 芦苇里那一等 `reed` | 「放剑」 | loose when the wing-root shows | one timing tap | **cut** | 4 wasted | no | kept until replaced |
-| 七 · 09-xie | 顺风溜 `wind` | 背后有风 | read the wind, turn, 退一步 | a read and a tap | **keep** → 几何冲刺 one-tap runner, after launch | 3 puffs | yes — 顺风溜 | kept (the six) |
+| 七 · 09-xie | 顺风溜 `wind` | 背后有风 | read the wind, turn, 退一步 | a read and a tap | **keep** → 几何冲刺 one-tap runner, after launch | 3 puffs | yes — 顺风溜 | **→ 气走经脉 · 顺风溜 (10-19, the sweep)** — module in the 游戏厅 |
 
 ## 五子棋 in the 九宫格's place (10-19)
 
@@ -283,7 +312,7 @@ the seed, refused by the lint). **Kept in the 游戏厅:** the 洛书 module, it
 the daily 洛书 · 破一道鼎封) — the daily task stays, now hosted nowhere. **Left as they are (not the 洛书 game):**
 念开篇 · 洛书 (`heluo-kaipian`, wm-heluo — the rhyme 戴九履一 into nine squares is the book's own moment, 瞿老
 hearing his mother's rhyme; a 五子棋 has no ground there), the 密室's 洛书 lid (one mechanism of a room), 禹步's 九格
-(footwork). Hanli's call if any of these should go too.
+(footwork). Hanli's call if any of these should go too. — 10-19, the sweep: 念开篇 cut under the standing rule (a recall drill).
 
 ## 今线 — the breath games (games/breath.js)
 
@@ -294,7 +323,7 @@ No cards — 今线 is not 小满's world. They already have a stake (the heart 
 | 今一 · j01-retest | 一千米补测 `qianmi` | 先吐 | out clean, then in; run | cut | 2 tries | **→ 气走经脉 · 先吐 (10-19)** — module in the 游戏厅 |
 | 今二 · j04-line | 罚球 `faqiu` | 吸四吐六 | in four, out six, shoot on the out | cut (最后一罚 is the same, better) | 75 s | **→ 气走经脉 · 罚球 (10-19)** — module in the 游戏厅 |
 | 今三 · j07-dark | 黑地十一步 `dark` | 领着喘 | step when the ankle is centred; lead his breath | cut | 2 falls | **→ 气走经脉 · 黑地十一步 (10-19)** — module in the 游戏厅 |
-| 今三 · j07-guan | 晨脉 `pulse` | 坑填平了才许摸球 | count the morning pulse | cut | 75 s | kept until replaced |
+| 今三 · j07-guan | 晨脉 `pulse` | 坑填平了才许摸球 | count the morning pulse | cut | 75 s | **cut 10-19 (the sweep)** — the way on tells it |
 | 今四 · j09-final | 最后一罚 `lastshot` | 带着怕投 | two long outs, shoot at the end of one | **keep** | 3 misses | **→ 气走经脉 · 最后一罚 (10-19)** — module in the 游戏厅 |
 
 Since 10-19 the 今线's four boards are played as 气走经脉 levels (below); the modules above stay in the 游戏厅.
@@ -318,7 +347,7 @@ so the second pass made it one clear notch harder and gave every level its own l
   (with `jitter`: the beat comes early or late, seeded) · 暗.
 - **Its own look:** `look` {tint, ink, trail, glyph} — the paper's tint, the channel's ink, the trail's colour and a big
   faint character behind the channel; a title card (`title` + the book's line) stands over the board until the first breath.
-- **In the story (10-19):** the eight boards below play their level through the module's own mount (`meta.beat: 'mount'`,
+- **In the story (10-19):** the ten boards below (掐诀 and 顺风溜 joined in the weak-board sweep) play their level through the module's own mount (`meta.beat: 'mount'`,
   beat-host.js), the task ids, marks and pay unchanged; the row that names the task (`task`) is the one dealt (look.mjs
   dealOf). A level's `grades` turn its stars into the task's grades (★2–3 = the clean one: no wall touched). Old saves
   holding a board offered load as ever (only the module behind the task changed). **Left cut:** 吹鹅毛 (00-halfyear) and
@@ -331,14 +360,16 @@ so the second pass made it one clear notch harder and gave every level its own l
 | 3 | 先吐 · `jin-qianmi` (今一) | the airway: three 窄脉 runs (33) with the panting push up between open stretches; track brick, 吐 | 窄脉 · 乱流 | 22/24, 2 岔气, 46 s | 游戏厅 3/4 (4–9 岔气); story 2/2 at 390, won 46–51 s |
 | 4 | 罚球 · `jin-faqiu` (今二) | 吸四吐六 front and centre: one 金线 the whole court (tol 8, 72%) through a heart out of time; amber, 罚 | 心跳 (jitter) · 金线 | 20/24, 3 岔气, 49 s | 游戏厅 3/4 (4–7 岔气); story 2/3 |
 | 5 | 小周天 · `zhoutian-sanguan` (古四) | up the spine from the floor to the roof through 尾闾 32 · 夹脊 27 · 玉枕 22, then down the front: one circuit; dusk blue, 周 | 三关 · 乱流 · 金线 | 24/24, 2 岔气, 44 s | 游戏厅 4/4 (1–4 岔气, 36–52 s); story 390 2/2 |
-| 6 | 藏息 · `zhaojing-mirror` (古六) | the thinnest breath: 窄脉 the whole way (34), the mirror's light as pushes that start to turn, the thread tight (tol 6, 75%); firelight, 藏 | 窄脉 · 乱流 + 转向 · 金线 | 15/24, 5 岔气, 45 s | 游戏厅 2/4 (2–8 岔气) |
-| 7 | 随叶 · `jiuge-sui` (古七) | the 金线 is the leaf's way down, one long swing the whole level, and the wind turns under it; snow grey, 巽 | 转向乱流 · 金线 | 15/24, 6 岔气, 68 s | 游戏厅 1/4 (5–12 岔气) |
-| 8 | 定风 · `furnace-ding` (古七) | leaves spinning: the wind turns fast, a 浪头 gust, then the half step aside — a 26 关 at the end; dawn, 风 | 转向乱流 · 浪头 · 关 | 12/24, 6 岔气, 71 s | 游戏厅 1/4 (6–13 岔气) |
-| 9 | 黑地十一步 · `jin-dark` (今三) | dark switchbacks — sharp bends seen only in a small round, his panic beating in the second dark; slate, 黑 | 暗 · 窄 · 心跳 | 5/24, 7 岔气, 55 s | 0/4 (7–11 岔气) |
-| 10 | 最后一罚 · `jin-lastshot` (今四) | all 今线 taught, faster (104): two hearts out of time, a 浪头, a turning push, the thread to shoot on (tol 6, 75%); red, 惧 | 心跳 · 浪头 · 转向 · 金线 | 4/24, 8 岔气, 56 s | 0/4 (9–15 岔气) |
-| 11 | 冲脉 (试作) | straight up and down the body: steep zigzags, two 浪头, turning currents, two 关 | everything but 暗 | 2/24 | — |
-| 12 | 带脉 (试作) | round the waist: narrow, heart, dark, turning wind, one late 关 | 窄 · 心跳 · 暗 · 转向 · 关 | 2/24 | — |
-| 13 | 大周天 (试作) | the whole body at 110: three 关 (玉枕 22), every element, the longest run | everything | 3/24 | — |
+| 6 | 掐诀 · `qianye-qiajue` (古六, the sweep) | the arm, shoulder to fingertip: the chant's eight lines its eight 穴, the elbow 窄 (30) with the spark's push, 午文 a 28 关 at the end; cinnabar, 午 | 窄 · 乱流 + 转向 · 关 · 金线 | 24/24, 3 岔气, 38 s | — |
+| 7 | 藏息 · `zhaojing-mirror` (古六) | the thinnest breath: 窄脉 the whole way (34), the mirror's light as pushes that start to turn, the thread tight (tol 6, 75%); firelight, 藏 | 窄脉 · 乱流 + 转向 · 金线 | 15/24, 5 岔气, 45 s | 游戏厅 2/4 (2–8 岔气) |
+| 8 | 随叶 · `jiuge-sui` (古七) | the 金线 is the leaf's way down, one long swing the whole level, and the wind turns under it; snow grey, 巽 | 转向乱流 · 金线 | 15/24, 6 岔气, 68 s | 游戏厅 1/4 (5–12 岔气) |
+| 9 | 定风 · `furnace-ding` (古七) | leaves spinning: the wind turns fast, a 浪头 gust, then the half step aside — a 26 关 at the end; dawn, 风 | 转向乱流 · 浪头 · 关 | 12/24, 6 岔气, 71 s | 游戏厅 1/4 (6–13 岔气) |
+| 10 | 顺风溜 · `xie-wind` (古七, the sweep) | the glide a foot off the floor (a low channel), the north wind turning three times, faster each, 墙根 a 26 关; slate green, 溜 | 转向乱流 · 关 · 金线 | 15/24, 6 岔气, 51 s | — |
+| 11 | 黑地十一步 · `jin-dark` (今三) | dark switchbacks — sharp bends seen only in a small round, his panic beating in the second dark; slate, 黑 | 暗 · 窄 · 心跳 | 5/24, 7 岔气, 55 s | 0/4 (7–11 岔气) |
+| 12 | 最后一罚 · `jin-lastshot` (今四) | all 今线 taught, faster (104): two hearts out of time, a 浪头, a turning push, the thread to shoot on (tol 6, 75%); red, 惧 | 心跳 · 浪头 · 转向 · 金线 | 4/24, 8 岔气, 56 s | 0/4 (9–15 岔气) |
+| 13 | 冲脉 (试作) | straight up and down the body: steep zigzags, two 浪头, turning currents, two 关 | everything but 暗 | 2/24 | — |
+| 14 | 带脉 (试作) | round the waist: narrow, heart, dark, turning wind, one late 关 | 窄 · 心跳 · 暗 · 转向 · 关 | 2/24 | — |
+| 15 | 大周天 (试作) | the whole body at 110: three 关 (玉枕 22), every element, the longest run | everything | 3/24 | — |
 
 Live (play-human on 9527, 10-19, casual 2 seeds × 1440 mouse + 390 touch; the story rows on `ph-*` saves at 390 — the
 first 1440 story runs met the old modules still cached and are left out): the arcade 试作 casual 0/4 each (8–16 岔气);
@@ -360,7 +391,8 @@ stars 1 + ≥10 golden + ≤1 bad. The 饭桶 takes turns: 割绳子 on the firs
 other of the last. Bots: perfect 12.5 golden, slow 450 ms 39/40 won, distracted 40 %, idle 0.
 
 炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 七巧 · 五子 ·
-残局 · 守夜 (药园) · 下崖 / 拾遗 (秘境) · 密室 (he sees the mechanisms, 银月 reads the pages).
+残局 · 密室 (he sees the mechanisms, 银月 reads the pages). 守夜 (药园) and 下崖 (秘境) cut 10-19 (the sweep); 拾遗 (秘境,
+and the rerun's) is a 割藤 since — the find hung on the vines.
 洛书 was the same square three times (二试, 困阵, daily); since 10-19 it is played once, at 洛书门 —
 the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ below).
 

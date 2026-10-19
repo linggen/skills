@@ -93,10 +93,12 @@ function gameLevel(content, state) {
 }
 
 /* The board a beast here is caught with (creatures.json `catch`: 狰's 守夜),
-   open at its haunt until it is caught — never fought, never tamed first. */
+   open at its haunt until it is caught — never fought, never tamed first. A catch board taken off
+   (its task `cut`: 守夜 2026-10-19, the story's wm-yaoyuan catches the 狰 with its radish) is never
+   offered: the beast still runs from a raised hand (`runs`), and the story brings it in. */
 function catchHere(content, state, id) {
   const cid = placeOf(content, state.place)?.has?.creature, c = cid ? creatureOf(content, cid) : null;
-  return Boolean(c?.catch === id && !(state.cast ?? []).includes(cid) && state.tasks?.[id]?.status !== 'done');
+  return Boolean(c?.catch === id && !taskOf(content, id)?.cut && !(state.cast ?? []).includes(cid) && state.tasks?.[id]?.status !== 'done');
 }
 
 /* Offered, and not yet done this period — or wanted by an errand (reopened,

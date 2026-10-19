@@ -289,13 +289,17 @@ test('a fight in the run: the room\'s beast, paid as a haunt, the room moves on,
 import { runSpoils } from '../scripts/rules/rerun.mjs';
 const runSpoilsOf = (state, game) => runSpoils(content, state, game);
 
-test('拾遗 in the dry river: the run\'s find in the bag, once a run; a cache under it on a rich play when the run hid one', () => {
+// 拾遗 is a 割藤 since 2026-10-19 (the standing rule Hanli approved: the old board picked four of nine glowing cracks): the
+// room's find hangs on the vines (games/fantongcut.js), and the cache is found on three 灵光 (chapter.json rerun.cache `stars`).
+test('拾遗 in the dry river: the run\'s find on the vines and in the bag, once a run; a cache under it on a three-灵光 play when the run hid one', () => {
   const now = openAt();
   let s = must(move, fresh(inside(now), now), { place: 'mijing-anhe' }, now);
   const board = RERUN.board;
-  assert.ok(look(s, content, at(now)).tasks.some(t => t.id === board && t.game === 'gather'), 'the board stands in the room');
+  const row = look(s, content, at(now)).tasks.find(t => t.id === board);
+  assert.equal(row?.game, 'fantongcut', 'the 割藤 stands in the room');
   const find = s.rerun.rooms['mijing-anhe'].find, before = s.bag[find.item] ?? 0;
-  s = must(win, s, { id: board, grade: 'plain' }, now);
+  assert.equal(row.deal.item.name, content.items.items.find(i => i.id === find.item).name.zh, 'the find is the thing on the vines');
+  s = must(win, s, { id: board, stars: 2 }, now);
   const done = task(s, content, at(now), { action: 'done', id: board });
   assert.equal(done.result.ok, true, JSON.stringify(done.result));
   assert.equal(done.state.bag[find.item], before + find.n, `the find: ${find.item} ×${find.n}`);
@@ -303,6 +307,7 @@ test('拾遗 in the dry river: the run\'s find in the bag, once a run; a cache u
   assert.equal(done.state.marks?.includes('gather-rich') ?? false, s.marks?.includes('gather-rich') ?? false, 'a rerun writes no story mark');
   assert.ok(!look(done.state, content, at(now)).tasks.some(t => t.id === board && t.status === 'offered'), 'once a run');
   assert.equal(win(done.state, content, at(now), { id: board }).result.ok, false);
+  assert.equal(done.state.stars?.[board], undefined, 'the round\'s stars go with it');
   // A run that hid a cache: found on a rich play.
   const r = rerunHere(content, past());
   let seed = null;
@@ -311,7 +316,9 @@ test('拾遗 in the dry river: the run\'s find in the bag, once a run; a cache u
   let c = structuredClone(s);
   c.rerun = { ...c.rerun, seed, rooms: rollRun(content, past(), r, seed) };
   const cache = c.rerun.rooms['mijing-anhe'].cache;
-  c = must(win, c, { id: board, grade: 'rich' }, now);
+  const two = task(must(win, structuredClone(c), { id: board, stars: 2 }, now), content, at(now), { action: 'done', id: board });
+  assert.ok(!two.result.cache, 'two 灵光: no cache');
+  c = must(win, c, { id: board, stars: 3 }, now);
   const rich = task(c, content, at(now), { action: 'done', id: board });
   assert.equal(rich.result.cache, true);
   assert.ok(rich.result.found.some(f => f.id === cache.item), 'the cache\'s thing');
