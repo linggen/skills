@@ -177,6 +177,11 @@
   <!-- Its engine calls ride the data channel, never plain HTTP (first, so
        every script below has it). -->
   <script src="/shared/channel.js"></script>
+  <script type="module">
+    // Settings speaks the person's language too: its English, put into it as it lands.
+    import { loadLanguage, watchDom } from './strings.js';
+    loadLanguage().then(() => watchDom());
+  </script>
 </head>
 <body>
   <div class="wrap">

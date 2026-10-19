@@ -387,6 +387,20 @@ const en = {
   "sh.steadySwapUnderLight": "Steady swap under light use is the sign worth acting on, not the number itself.",
   "sh.gbGbInUse": "{gb} GB in use",
   "sh.loadAverageAvg": "Load average {avg}",
+  "sh.appleShifuSettings": "Apple Shifu Settings",
+  "sh.appleShifuRunsOn": "Apple Shifu runs on",
+  "sh.saved": "Saved",
+  "sh.webSearch": "Web Search",
+  "sh.toggleVisibility": "Toggle visibility",
+  "sh.showHide": "Show/hide",
+  "sh.save": "Save",
+  "sh.desktopPet": "Desktop pet",
+  "sh.yinyueYourCompanionOn": "Yinyue, your companion on screen. Drag her body to move her anywhere.",
+  "sh.showYinyue": "Show Yinyue",
+  "sh.yourDesktopCompanionTurn": "Your desktop companion. Turn off to hide her entirely.",
+  "sh.alwaysOnTop": "Always on top",
+  "sh.stayVisibleEvenWhen": "Stay visible even when you switch to another app.",
+  "sh.appleShifuRunsOn2": "Apple Shifu runs on DeepSeek by default — no key needed to start. Optionally bring your own model below, plus a Tavily key for web lookups.",
 };
 
 const zh = {
@@ -702,6 +716,20 @@ const zh = {
   "sh.steadySwapUnderLight": "轻度使用下持续使用交换才值得处理，数字本身不重要。",
   "sh.gbGbInUse": "已用 {gb} GB",
   "sh.loadAverageAvg": "平均负载 {avg}",
+  "sh.appleShifuSettings": "Apple Shifu 设置",
+  "sh.appleShifuRunsOn": "Apple Shifu 使用",
+  "sh.saved": "已保存",
+  "sh.webSearch": "网页搜索",
+  "sh.toggleVisibility": "切换显示",
+  "sh.showHide": "显示/隐藏",
+  "sh.save": "保存",
+  "sh.desktopPet": "桌面宠物",
+  "sh.yinyueYourCompanionOn": "银月，屏幕上的伙伴。拖动她就能把她放到任何地方。",
+  "sh.showYinyue": "显示银月",
+  "sh.yourDesktopCompanionTurn": "你的桌面伙伴。关闭后会完全隐藏。",
+  "sh.alwaysOnTop": "总在最前",
+  "sh.stayVisibleEvenWhen": "切换到其他应用时也保持可见。",
+  "sh.appleShifuRunsOn2": "Apple Shifu 默认使用 DeepSeek — 无需密钥即可开始。你也可以在下面换成自己的模型，并加一个 Tavily 密钥用于网页查询。",
 };
 
 export const TABLES = { en, 'zh-Hans': zh };
