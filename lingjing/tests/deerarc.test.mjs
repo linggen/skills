@@ -246,8 +246,8 @@ test('重来 any time lays the level fresh; a short pull lets the string go with
   assert.equal(s.phase, 'aim');
   assert.equal(s.used, 0, 'too short a pull: nothing loosed');
   s = da.act(s, { g: 'hold', x: da.BOW[0], y: da.BOW[1] }).state;
-  s = da.act(s, { g: 'move', x: da.BOW[0] + 100, y: da.BOW[1] - 50 }).state;
-  assert.ok(s.pull.p > 0.9 && s.pull.a > 20 && s.pull.a < 30, 'pulled back and up: a strong shot, up and toward the deer (Hanli 10-19: the bow tilts the way the hand goes)');
+  s = da.act(s, { g: 'move', x: da.BOW[0] + 100, y: da.BOW[1] + 50 }).state;
+  assert.ok(s.pull.p > 0.9 && s.pull.a > 20 && s.pull.a < 30, 'pulled back and down: a strong shot, up and toward the deer (a slingshot about the bow, Hanli 10-19)');
   s = da.act(s, { g: 'release' }).state;
   assert.equal(s.phase, 'fly');
   s = da.act(s, { g: 'retry' }).state;
@@ -294,15 +294,15 @@ const near = (a, b, tol = 0.03) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos
 
 test('the bow, the nocked arrow and the hint point along the launch; the flying arrow along its flight (Hanli 10-16: the bow pointed down)', () => {
   const still = byId('still');
-  // Pulled up-right (shoots up), flat, down-right (shoots down), steep, and toward the deer (still back).
-  for (const [x, y] of [[60, -50], [70, 0], [70, 25], [40, -90], [-70, -30]]) {
+  // Pulled down-right (shoots up), flat, up-right (shoots down), steep, and toward the deer (still back).
+  for (const [x, y] of [[60, 50], [70, 0], [70, -25], [40, 90], [-70, 30]]) {
     let s = da.newGame('t', 1, { levels: [still] });
     // Pressed at the bow, so the hand's place against the bow is the pull itself (Hanli 10-19).
     s = da.act(s, { g: 'hold', x: da.BOW[0], y: da.BOW[1] }).state;
     s = da.act(s, { g: 'move', x: da.BOW[0] + x, y: da.BOW[1] + y }).state;
     const v = da.velocityOf(s.pull), launch = angleOf([v.x, v.y]);
-    // Toward the deer always; up as the hand goes up (Hanli 10-19), never turned round.
-    assert.ok(near(launch, angleOf([-Math.max(Math.abs(x), 1), y])), 'the launch: toward the deer, tilted with the hand');
+    // Toward the deer always, from the hand through the bow (a slingshot, Hanli 10-19), never turned round.
+    assert.ok(near(launch, angleOf([-Math.max(Math.abs(x), 12), -y])), 'the launch: toward the deer, from the hand through the bow');
     const h = da.html(s, 'zh');
     assert.ok(near(angleOf(bowDir(h)), launch), `bow along the launch for a pull (${x}, ${y})`);
     const dot = h.match(/class="g-da-guide" cx="([-\d.]+)" cy="([-\d.]+)"/);
@@ -441,13 +441,12 @@ test('the story\'s two spots: the step on reads 下一处 (never 往下 · 接�
   assert.ok(!/往下|接着|继续/.test(end));
 });
 
-test('the tilt is the hand against the bow, wherever the press began (Hanli 10-19: 「当鼠标在弓右边的时候, 上划的时候, 石头往下走」)', () => {
+test('a slingshot about the bow, wherever the press began: the hand below-right aims up, above-right aims down (Hanli 10-19)', () => {
   const still = byId('still');
   let s = da.newGame('t', 1, { levels: [still] });
-  // Pressed low and right of the bow, then swept up to above it: it aims up.
-  s = da.act(s, { g: 'hold', x: da.BOW[0] + 40, y: da.BOW[1] + 60 }).state;
-  s = da.act(s, { g: 'move', x: da.BOW[0] + 90, y: da.BOW[1] - 30 }).state;
-  assert.ok(s.pull.a > 10, `above the bow aims up (${s.pull.a})`);
-  s = da.act(s, { g: 'move', x: da.BOW[0] + 90, y: da.BOW[1] + 40 }).state;
-  assert.ok(s.pull.a < 0, `below the bow aims down (${s.pull.a})`);
+  s = da.act(s, { g: 'hold', x: da.BOW[0] + 40, y: da.BOW[1] - 60 }).state;
+  s = da.act(s, { g: 'move', x: da.BOW[0] + 90, y: da.BOW[1] + 30 }).state;
+  assert.ok(s.pull.a > 10, `the hand below the bow aims up (${s.pull.a})`);
+  s = da.act(s, { g: 'move', x: da.BOW[0] + 90, y: da.BOW[1] - 40 }).state;
+  assert.ok(s.pull.a < 0, `the hand above the bow aims down (${s.pull.a})`);
 });
