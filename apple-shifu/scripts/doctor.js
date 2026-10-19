@@ -18,6 +18,7 @@ import { startLiveTopBar } from './live.js';
 import { flashToast, showToast } from './shifu-io.js';
 import { overviewCards, parseLayout, orderCards, securityFromReadout } from './overview.js';
 import { renderOverview } from './overview-view.js';
+import { loadLanguage, watchDom } from './strings.js';
 
 const SKILL_NAME = 'apple-shifu';
 const params = new URLSearchParams(window.location.search);
@@ -215,6 +216,9 @@ function wireSettingsButton() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // The setting first; then every node the page renders reads in it.
+  await loadLanguage();
+  watchDom();
   wireSettingsButton();
   // The shell must exist before any tab registers — media.js registers from
   // its own DOMContentLoaded, which can land while this handler is awaiting.
