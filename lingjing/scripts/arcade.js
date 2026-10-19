@@ -10,10 +10,17 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game' },
 };
 const w = () => W[lang()];
+// A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
+// (Hanli, 10-19: 「能在游戏大厅标一下游戏类型吗, 是割绳子还是投掷等」). The English words live here.
+const KIND_EN = {
+  割绳子: 'Cut the rope', 投掷: 'Throw', 狩猎瞄准: 'Hunt & aim', 打地鼠: 'Whack-a-mole', 时机: 'Timing', 节奏: 'Rhythm',
+  调息: 'Breath', 解谜: 'Puzzle', 棋牌: 'Board & table', 判断: 'Read & pick', 剧情: 'Story', 你画我猜: 'Draw & guess',
+};
+const kindOf = (g) => (lang() === 'en' ? KIND_EN[g.mechanic] ?? g.mechanic : g.mechanic) ?? '';
 
 const mods = new Map();
 async function modOf(id) {
@@ -40,8 +47,26 @@ async function registry() {
 async function tileHtml(g, i) {
   const mod = await modOf(g.id);
   const where = [g.hui, g.scene].filter(Boolean).join(' · ');
-  return `<a class="arcade-tile${mod ? '' : ' is-missing'}" href="${href({ game: g.id, n: String(i) })}">`
-    + `<b>${esc(nameOf(mod, g.id))}</b><small>${esc(where || g.task || '')}</small></a>`;
+  const kind = kindOf(g);
+  return `<a class="arcade-tile${mod ? '' : ' is-missing'}" data-kind="${esc(g.mechanic ?? '')}" href="${href({ game: g.id, n: String(i) })}">`
+    + `<span class="arcade-tile-top"><b>${esc(nameOf(mod, g.id))}</b>${kind ? `<em class="arcade-kind">${esc(kind)}</em>` : ''}</span>`
+    + `<small>${esc(where || g.task || '')}</small></a>`;
+}
+
+// The type filter: one chip a type (with its count), 全部 first; a tap hides the other tiles and any
+// group left empty. Page-only — nothing kept in the address.
+function kindsHtml(games) {
+  const n = new Map();
+  for (const g of games) if (g.mechanic) n.set(g.mechanic, (n.get(g.mechanic) ?? 0) + 1);
+  const chip = (k, label, count) => `<button type="button" class="arcade-kindchip" data-kind="${esc(k)}" aria-pressed="${k ? 'false' : 'true'}">`
+    + `${esc(label)}${count ? ` <span>${count}</span>` : ''}</button>`;
+  return `<nav class="arcade-kinds">${chip('', w().all, games.length)}`
+    + [...n].map(([k, c]) => chip(k, kindOf({ mechanic: k }), c)).join('') + '</nav>';
+}
+function filterBy(kind) {
+  for (const b of root.querySelectorAll('.arcade-kindchip')) b.setAttribute('aria-pressed', String(b.dataset.kind === kind));
+  for (const t of root.querySelectorAll('.arcade-tile')) t.hidden = Boolean(kind) && t.dataset.kind !== kind;
+  for (const s of root.querySelectorAll('section')) s.hidden = !s.querySelector('.arcade-tile:not([hidden])');
 }
 
 async function listPage() {
@@ -53,7 +78,9 @@ async function listPage() {
     return `<section><h2>${esc(gr[lang()] ?? gr.zh)}</h2><div class="arcade-grid">${tiles.join('')}</div></section>`;
   }));
   root.innerHTML = `<header class="arcade-head"><h1>${esc(w().title)}</h1><span class="dim small">${esc(w().note)}</span>`
-    + `<a class="arcade-lang" href="?${new URLSearchParams(kept(lang() !== 'en'))}">${esc(w().lang)}</a>${home()}</header>${groups.join('')}`;
+    + `<a class="arcade-lang" href="?${new URLSearchParams(kept(lang() !== 'en'))}">${esc(w().lang)}</a>${home()}</header>`
+    + `${kindsHtml(reg.games)}${groups.join('')}`;
+  for (const b of root.querySelectorAll('.arcade-kindchip')) b.onclick = () => filterBy(b.dataset.kind);
 }
 
 let stop = null;

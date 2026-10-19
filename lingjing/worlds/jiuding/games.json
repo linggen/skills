@@ -48,7 +48,7 @@
    "scene": "00-cave",
    "hui": "第一回",
    "task": "cave-stone",
-   "mechanic": "愤怒小鸟",
+   "mechanic": "投掷",
    "stars": 3,
    "_words": "The board's own lines over the deer's (deerarc.js rowWord, 2026-10-19 live play: the cave's win said 「溪边四处，都射中了」).",
    "words": {
@@ -230,7 +230,7 @@
    "scene": "09-yishui",
    "hui": "古七",
    "task": "yishui-reed",
-   "mechanic": "愤怒小鸟",
+   "mechanic": "投掷",
    "stars": 3,
    "words": {
     "end": { "zh": "鯥不动了。", "en": "The lu lies still." },
@@ -362,7 +362,7 @@
   {
    "id": "throwkit",
    "group": "kit",
-   "mechanic": "愤怒小鸟",
+   "mechanic": "投掷",
    "stars": 3,
    "_levels": "The 射鹿 board with the kit: one level for each thing he throws, then all of them (games/throwkit.js). Not a beat yet: each throw moment in 卷一 takes its own row (see `_throws`).",
    "levels": [
@@ -620,6 +620,7 @@
   {
    "id": "storm",
    "group": "prologue",
+   "mechanic": "时机",
    "scene": "00-fall",
    "hui": "第一回",
    "task": "fall-storm"
@@ -627,12 +628,14 @@
   {
    "id": "deer",
    "group": "prologue",
+   "mechanic": "狩猎瞄准",
    "hui": "第二回 · 旧版",
    "_retired": "The old 射鹿 board (hold to draw, aim ‹ ›), kept for the 游戏厅 only; the beat plays deerarc since 2026-10-16."
   },
   {
    "id": "rain",
    "group": "prologue",
+   "mechanic": "打地鼠",
    "scene": "00-shiao",
    "hui": "第一回",
    "task": "rain-basins"
@@ -801,7 +804,7 @@
    "scene": "00-deer",
    "hui": "第二回",
    "task": "deer-wind",
-   "mechanic": "愤怒小鸟",
+   "mechanic": "投掷",
    "stars": 3,
    "art": {
     "_about": "Every painted part of 射鹿, one entry each; an entry whose file is not there yet is left out at mount (presentArt) and that part is drawn in ink, so a file landing at its path drops in with no code change. `at` is the picture's anchor (fractions), `w` × `h` its size. Stag poses (drink · look · walk · bolt; one 640×480 canvas facing right, one ground line): `at` over the deer's origin (the barrel's middle on the ground), in deer units (0.18 a pixel); the hit zones in deerarc.js are fitted to these. bow_rest · bow_drawn (cross-faded by the pull) and arrow: painted pointing right, `at` the grip / the arrow's middle, in scene units. reed · reed_stub (`axis` up: painted standing, `at` the base) and branch (`axis` right, `at` the end it grows from): `w` × `h` only their shape, the length in the level sets their size. ink_hit: `at` its centre. backdrop: the 00-deer scene's own painting (backdrops.json heisong-creek), `crop` [x, y, w, h] of its `size` in pixels laid over the whole board: its stream and stones run under the far bank where the deer drinks, its grass is his bank (the physics ground, deerarc.js groundAt, sits on them); optional `bank` and `water` entries cut other crops into the ground and the stream. The geometry of the parts still coming is a first guess: fix it here when the file lands.",
@@ -1182,6 +1185,7 @@
   {
    "id": "feather",
    "group": "prologue",
+   "mechanic": "调息",
    "scene": "00-halfyear",
    "hui": "第二回",
    "task": "feather-breath"
@@ -1266,6 +1270,7 @@
   {
    "id": "griddle",
    "group": "prologue",
+   "mechanic": "时机",
    "scene": "00-kitchen",
    "hui": "第一回",
    "task": "kitchen-griddle"
@@ -1348,6 +1353,7 @@
   {
    "id": "carry",
    "group": "prologue",
+   "mechanic": "时机",
    "scene": "00-halfyear",
    "hui": "第二回",
    "task": "halfyear-carry"
@@ -1355,6 +1361,7 @@
   {
    "id": "xisui",
    "group": "prologue",
+   "mechanic": "调息",
    "scene": "00-sleep",
    "hui": "第二回",
    "task": "xisui-hold"
@@ -1362,6 +1369,7 @@
   {
    "id": "luoshu",
    "group": "prologue",
+   "mechanic": "解谜",
    "scene": "00-luoshu",
    "hui": "第三回",
    "task": "gate-luoshu"
@@ -1369,6 +1377,7 @@
   {
    "id": "zhoutian",
    "group": "later",
+   "mechanic": "时机",
    "scene": "wm-zhoutian",
    "hui": "第四回",
    "task": "zhoutian-sanguan"
@@ -1376,6 +1385,7 @@
   {
    "id": "luoshu",
    "group": "later",
+   "mechanic": "解谜",
    "scene": "wm-kunzhen",
    "hui": "第五回",
    "task": "mijing-zhenyan"
@@ -1383,6 +1393,7 @@
   {
    "id": "qiajue",
    "group": "later",
+   "mechanic": "判断",
    "scene": "wm-qianye",
    "hui": "第六回",
    "task": "qianye-qiajue"
@@ -1390,6 +1401,7 @@
   {
    "id": "xiangke",
    "group": "later",
+   "mechanic": "判断",
    "scene": "wm-qianye",
    "hui": "第六回",
    "task": "qianye-xiangke"
@@ -1397,6 +1409,7 @@
   {
    "id": "mirrortongpu",
    "group": "later",
+   "mechanic": "调息",
    "scene": "wm-zhaojing",
    "hui": "第六回",
    "task": "zhaojing-mirror"
@@ -1404,6 +1417,7 @@
   {
    "id": "fantongqianye",
    "group": "later",
+   "mechanic": "剧情",
    "scene": "wm-zhaojing",
    "hui": "第六回",
    "task": "zhaojing-fantong"
@@ -1411,6 +1425,7 @@
   {
    "id": "diche",
    "group": "later",
+   "mechanic": "判断",
    "scene": "wm-laba",
    "hui": "第六回",
    "task": "laba-diche"
@@ -1418,6 +1433,7 @@
   {
    "id": "sneeze",
    "group": "later",
+   "mechanic": "时机",
    "scene": "wm-dabi",
    "hui": "第六回",
    "task": "dabi-sneeze"
@@ -1425,6 +1441,7 @@
   {
    "id": "zhuqingting",
    "group": "later",
+   "mechanic": "时机",
    "scene": "wm-laoyin",
    "hui": "第六回",
    "task": "laoyin-zhuqingting"
@@ -1432,6 +1449,7 @@
   {
    "id": "letter",
    "group": "later",
+   "mechanic": "剧情",
    "scene": "wm-jiaxin",
    "hui": "第六回",
    "task": "jiaxin-letter"
@@ -1439,6 +1457,7 @@
   {
    "id": "kaipian",
    "group": "later",
+   "mechanic": "解谜",
    "scene": "wm-heluo",
    "hui": "第六回",
    "task": "heluo-kaipian"
@@ -1446,6 +1465,7 @@
   {
    "id": "fantonghuochai",
    "group": "later",
+   "mechanic": "剧情",
    "scene": "09-snow",
    "hui": "第七回",
    "task": "snow-fantong"
@@ -1453,6 +1473,7 @@
   {
    "id": "leafsui",
    "group": "later",
+   "mechanic": "时机",
    "scene": "09-jiuge",
    "hui": "第七回",
    "task": "jiuge-sui"
@@ -1460,6 +1481,7 @@
   {
    "id": "yubujiuge",
    "group": "later",
+   "mechanic": "节奏",
    "scene": "09-jiuge",
    "hui": "第七回",
    "task": "jiuge-yubu"
@@ -1467,6 +1489,7 @@
   {
    "id": "recipe",
    "group": "later",
+   "mechanic": "解谜",
    "scene": "09-furnace",
    "hui": "第七回",
    "task": "furnace-recipe"
@@ -1474,6 +1497,7 @@
   {
    "id": "leafding",
    "group": "later",
+   "mechanic": "时机",
    "scene": "09-furnace",
    "hui": "第七回",
    "task": "furnace-ding"
@@ -1481,6 +1505,7 @@
   {
    "id": "huohousmell",
    "group": "later",
+   "mechanic": "时机",
    "scene": "09-year",
    "hui": "第七回",
    "task": "year-smell"
@@ -1488,12 +1513,14 @@
   {
    "id": "reed",
    "group": "later",
+   "mechanic": "时机",
    "hui": "第七回 · 旧版",
    "_retired": "The old 芦苇里那一等 board (hold still in the reeds), kept for the 游戏厅 only; the beat plays luwing since 2026-10-16."
   },
   {
    "id": "wind",
    "group": "later",
+   "mechanic": "判断",
    "scene": "09-xie",
    "hui": "第七回",
    "task": "xie-wind"
@@ -1501,6 +1528,7 @@
   {
    "id": "qianmi",
    "group": "jin",
+   "mechanic": "调息",
    "scene": "j01-retest",
    "hui": "今 · 一",
    "task": "jin-qianmi"
@@ -1508,6 +1536,7 @@
   {
    "id": "faqiu",
    "group": "jin",
+   "mechanic": "调息",
    "scene": "j04-line",
    "hui": "今 · 二",
    "task": "jin-faqiu"
@@ -1515,6 +1544,7 @@
   {
    "id": "dark",
    "group": "jin",
+   "mechanic": "调息",
    "scene": "j07-dark",
    "hui": "今 · 三",
    "task": "jin-dark"
@@ -1522,6 +1552,7 @@
   {
    "id": "pulse",
    "group": "jin",
+   "mechanic": "判断",
    "scene": "j07-guan",
    "hui": "今 · 三",
    "task": "jin-pulse"
@@ -1529,6 +1560,7 @@
   {
    "id": "lastshot",
    "group": "jin",
+   "mechanic": "调息",
    "scene": "j09-final",
    "hui": "今 · 四",
    "task": "jin-lastshot"
@@ -1543,46 +1575,55 @@
   {
    "id": "yabao",
    "group": "daily",
+   "mechanic": "棋牌",
    "task": "yabao"
   },
   {
    "id": "luoshu",
    "group": "daily",
+   "mechanic": "解谜",
    "task": "luoshu"
   },
   {
    "id": "huarong",
    "group": "daily",
+   "mechanic": "解谜",
    "task": "huarong"
   },
   {
    "id": "qiqiao",
    "group": "daily",
+   "mechanic": "解谜",
    "task": "qiqiao"
   },
   {
    "id": "wuziqi",
    "group": "daily",
+   "mechanic": "棋牌",
    "task": "wuziqi"
   },
   {
    "id": "xiangqi",
    "group": "daily",
+   "mechanic": "棋牌",
    "task": "xiangqi"
   },
   {
    "id": "shouye",
    "group": "daily",
+   "mechanic": "判断",
    "task": "shouye"
   },
   {
    "id": "descend",
    "group": "daily",
+   "mechanic": "判断",
    "task": "mijing-descend"
   },
   {
    "id": "gather",
    "group": "daily",
+   "mechanic": "判断",
    "task": "mijing-gather"
   },
   {

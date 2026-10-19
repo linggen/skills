@@ -22,6 +22,14 @@ test('every registered game is a module on the contract: a mount of its own, or 
   }
 });
 
+test('every registered game has a type (`mechanic`) from the 游戏厅\'s small vocabulary, with its English', () => {
+  // Hanli 10-19: 「能在游戏大厅标一下游戏类型吗, 是割绳子还是投掷等」. A new row picks one of these; a new type
+  // is added to arcade.js's KIND_EN (its English) on purpose, not by a typo.
+  const vocab = new Set([...read('../scripts/arcade.js').match(/const KIND_EN = \{([\s\S]*?)\};/)[1].matchAll(/([^\s,:'{}]+):\s*'/g)].map((m) => m[1]));
+  assert.ok(vocab.size >= 8 && vocab.size <= 14, `a small vocabulary (${vocab.size})`);
+  for (const g of reg.games) assert.ok(vocab.has(g.mechanic), `${g.id}: mechanic ${g.mechanic ?? '(none)'} is one of ${[...vocab].join(' ')}`);
+});
+
 test('the beats polished on 10-16 export mount() themselves', async () => {
   for (const id of ['rain', 'deer', 'feather', 'scale', 'taunt', 'griddle', 'storm', 'way', 'carry', 'xisui', 'zhoutian', 'sneeze', 'wind', 'lastshot']) {
     const mod = await import(`../scripts/games/${id}.js`);
