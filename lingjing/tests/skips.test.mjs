@@ -210,3 +210,12 @@ test('the skip slot empties once its board is won or left, and fills only when s
   assert.equal(slotNext({ ...g, state: { won: false }, skipped: true }, STUCK_MS + 2, true), 'clear', 'left: cleared');
   assert.equal(slotNext(undefined, 0, true), 'clear', 'gone: cleared');
 });
+
+test('the way out comes into sight: a skip slot filled below the stage\'s fold scrolls #focus to it, never the page (live 390, 2026-10-19)', () => {
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(src, /slot\.innerHTML = skipButton\(slot\.dataset\.skipSlot, lang\(\)\);\s*bringIntoFocus\(slot\.firstElementChild\);/);
+  const fn = src.slice(src.indexOf('function bringIntoFocus('), src.indexOf('function bringIntoFocus(') + 500);
+  assert.match(fn, /const box = \$\('focus'\);/);
+  assert.match(fn, /box\.scrollBy\(/);
+  assert.doesNotMatch(fn, /scrollIntoView/, 'scrollIntoView would move the hidden .view too');
+});

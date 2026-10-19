@@ -3064,12 +3064,22 @@ function openStuckSlots() {
     const next = slotNext(boards.get(slot.dataset.skipSlot), Date.now(), Boolean(slot.firstElementChild));
     if (next === 'fill') {
       slot.innerHTML = skipButton(slot.dataset.skipSlot, lang());
+      bringIntoFocus(slot.firstElementChild);
       // Stuck: she spurs him once a board, and may point to Ling (hersay.js stuck).
       herSay.say('stuck', '', { key: slot.dataset.skipSlot });
     } else if (next === 'clear') slot.innerHTML = '';
   }
 }
 setInterval(openStuckSlots, 1000);
+/* The way out shows where he is looking (live 2026-10-19, 喂饼 at 390: 「算了，往下走」 came under the
+   stage's fold, cut in half): the stage's own scroller (#focus) moves just enough — never the page. */
+function bringIntoFocus(el) {
+  const box = $('focus');
+  if (!el || !box?.contains(el)) return;
+  const r = el.getBoundingClientRect(), f = box.getBoundingClientRect();
+  const down = r.bottom + 12 - f.bottom;
+  if (down > 0) box.scrollBy({ top: down, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+}
 /* A board left on an earlier day, offered again (Look's replay): 再试一回 lays it as it was; 改日 puts it off. */
 async function replayTap(id, play) {
   const r = await write('task', { action: play ? 'replay' : 'later', id }).catch(failed);
