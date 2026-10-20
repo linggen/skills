@@ -1,4 +1,8 @@
 import { tr } from "../../zhazhai/i18n";
+import { Runtime } from "../../zhazhai/runtime";
+
+// 砸寨's title is two characters in Chinese; the English line is long, so it is set smaller.
+const TITLE_SCALE = (): number => (Runtime.lang === "en" ? 0.6 : 1);
 import Phaser from "phaser";
 import {
   MenuTitleConfig,
@@ -85,7 +89,7 @@ export class MenuSceneChoreographer {
 
     const outerGlow = this.scene.add.text(0, 0, tr(MenuTitleConfig.text), {
       fontFamily: MenuTitleConfig.fontFamily,
-      fontSize: `${MenuTitleConfig.outerGlow.fontSize}px`,
+      fontSize: `${Math.round(MenuTitleConfig.outerGlow.fontSize * TITLE_SCALE())}px`,
       color: MenuTitleConfig.outerGlow.color,
     });
     outerGlow.setOrigin(0.5);
@@ -94,7 +98,7 @@ export class MenuSceneChoreographer {
 
     const innerGlow = this.scene.add.text(0, 0, tr(MenuTitleConfig.text), {
       fontFamily: MenuTitleConfig.fontFamily,
-      fontSize: `${MenuTitleConfig.innerGlow.fontSize}px`,
+      fontSize: `${Math.round(MenuTitleConfig.innerGlow.fontSize * TITLE_SCALE())}px`,
       color: MenuTitleConfig.innerGlow.color,
     });
     innerGlow.setOrigin(0.5);
@@ -107,7 +111,7 @@ export class MenuSceneChoreographer {
       tr(MenuTitleConfig.text),
       {
         fontFamily: MenuTitleConfig.fontFamily,
-        fontSize: `${MenuTitleConfig.shadow.fontSize}px`,
+        fontSize: `${Math.round(MenuTitleConfig.shadow.fontSize * TITLE_SCALE())}px`,
         color: MenuTitleConfig.shadow.color,
       }
     );
@@ -116,7 +120,7 @@ export class MenuSceneChoreographer {
 
     const titleText = this.scene.add.text(0, 0, tr(MenuTitleConfig.text), {
       fontFamily: MenuTitleConfig.fontFamily,
-      fontSize: `${MenuTitleConfig.mainText.fontSize}px`,
+      fontSize: `${Math.round(MenuTitleConfig.mainText.fontSize * TITLE_SCALE())}px`,
       color: MenuTitleConfig.mainText.color,
       stroke: MenuTitleConfig.mainText.stroke,
       strokeThickness: MenuTitleConfig.mainText.strokeThickness,

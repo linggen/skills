@@ -10,7 +10,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const out = join(here, '../../scripts/games/zhazhai');
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
-const common = { bundle: true, format: 'esm', minify: true, target: 'es2020', legalComments: 'none', logLevel: 'warning',
+const common = { bundle: true, format: 'esm', minify: !process.env.ZHAZHAI_DEBUG, target: 'es2020', legalComments: 'none', logLevel: 'warning',
   define: { 'process.env.NODE_ENV': '"production"' } };
 await build({ ...common, entryPoints: [join(here, 'src/embed.ts')], outfile: join(out, 'zhazhai.min.mjs'),
   banner: { js: '/* 砸寨 — a re-skin of Angry Aliens (MIT, LICENSE.txt here); Phaser 3.90.0 (MIT); matter-js 0.20.0 (MIT). Built by tools/zhazhai/build.mjs; do not edit. */' } });

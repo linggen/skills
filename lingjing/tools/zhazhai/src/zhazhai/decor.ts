@@ -43,7 +43,7 @@ export function menuDecor(scene: Phaser.Scene, w: number, h: number): void {
 export function fortName(scene: Phaser.Scene, level: number): Phaser.GameObjects.Text {
   const name = getLevelById(level)?.name ?? "";
   return scene.add.text(0, 118, name, {
-    fontFamily: FAMILY, fontSize: Runtime.lang === "zh" ? "34px" : "26px", color: "#ffffff", stroke: "#3d2817", strokeThickness: 7,
-    align: "center", wordWrap: { width: 300 },
+    fontFamily: FAMILY, fontSize: Runtime.lang === "zh" ? "34px" : "24px", color: "#ffffff", stroke: "#3d2817", strokeThickness: 7,
+    align: "center", wordWrap: { width: 210 }, // cards stand ~275 units apart
   }).setOrigin(0.5, 0);
 }

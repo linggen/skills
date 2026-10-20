@@ -13,6 +13,7 @@ import { MobileManager } from "./systems/mobile";
 import type { IMobileSettingsProvider } from "./interfaces/IMobileSettings";
 import { Runtime, type Lang, type LevelResult } from "./zhazhai/runtime";
 import { LEVELS, LEVEL_WORDS } from "./data/levels";
+import { gameEvents } from "./events/EventBus";
 
 /** The forts, for the host (their count, names and shots). */
 export const levels = () => LEVELS.map((l) => ({ id: l.levelId, birds: l.birds.map((b) => b.type), pigs: l.pigs.length, blocks: l.structures.length, words: LEVEL_WORDS[l.levelId] }));
@@ -31,6 +32,9 @@ export interface StartOptions {
 }
 
 export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave }: StartOptions): Phaser.Game {
+  // One game a page at a time, but the event bus is module-wide: a game taken down (the arcade's 再来) must not
+  // leave its scenes listening, or the next game's first event reaches a dead HUD.
+  gameEvents.removeAllListeners();
   Runtime.lang = lang;
   Runtime.directLevel = LEVELS.some((l) => l.levelId === level) ? level : 0;
   Runtime.onResult = onResult ?? (() => {});
@@ -71,6 +75,7 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave 
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, autoRound: true, width: 1920, height: 1080 },
     scene: [BootScene, TransitionScene, MenuScene, LevelSelectScene, ParallaxScene, GameScene, UIScene],
   });
+  game.events.once(Phaser.Core.Events.DESTROY, () => gameEvents.removeAllListeners());
   // A handle for the page's checks (tools, screenshots): the host element's `zhazhaiGame`.
   (parent as HTMLElement & { zhazhaiGame?: Phaser.Game }).zhazhaiGame = game;
   return game;
