@@ -26,12 +26,12 @@ export const WORDS = {
   zh: {
     feed: '开 炉', press: '按住，压盖！', early: '压早了', late: '压晚了', good: '压住了！', take: '收 下', back: '再配一锅',
     stones: '灵石', have: '（有{n}）', empty: '把东西拖进饭桶嘴里，最多三样', none: '没有能喂的东西。', click: '咔哒！', chew: '咯嘣……咯嘣……',
-    spat: '呸！', twin: '一锅两样！', fresh: '新！', page: '{n}/{need}',
+    spat: '呸！', fresh: '新！',
   },
   en: {
     feed: 'FIRE IT', press: 'Hold — press the lid!', early: 'Too early', late: 'Too late', good: 'Pressed!', take: 'Take it', back: 'Another pot',
     stones: 'Spirit stones', have: '(have {n})', empty: 'Drag things into its mouth — three at most', none: 'Nothing here will go in.', click: 'Click!', chew: 'Crunch… crunch…',
-    spat: 'Ptoo!', twin: 'Two from one pot!', fresh: 'New!', page: '{n}/{need}',
+    spat: 'Ptoo!', fresh: 'New!',
   },
 };
 const fill = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
@@ -491,9 +491,9 @@ export class KailuScene extends Phaser.Scene {
     };
     if (outs.length === 1) one(outs[0], W / 2, true);
     else outs.forEach((o, k) => one(o, W / 2 + (k ? 170 : -170), false));
-    if (r.her) this.ui.add(this.text(W / 2, 182, r.say ?? '', 22, { color: '#f6e6c4', wrap: W - 80 }));
-    else if (r.twin) this.ui.add(this.text(W / 2, 182, this.w.twin, 32, { color: '#ffe08a' }));
-    if (r.discovered) this.ui.add(this.text(W / 2, 226, `${r.discovered.in}${r.discovered.lingshi ? ` + ${r.discovered.lingshi} ${this.w.stones}` : ''} → ${r.discovered.out}`, 26, { color: '#9fe39a' }));
+    // Under the cards, never under the shell's bubble at the top: her gag's whole line, a 方子 worked out.
+    if (r.her) this.ui.add(this.text(W / 2, 920, r.say ?? '', 20, { color: '#f6e6c4', wrap: W - 80 }));
+    if (r.discovered) this.ui.add(this.text(W / 2, 930, `${r.discovered.in}${r.discovered.lingshi ? ` + ${r.discovered.lingshi} ${this.w.stones}` : ''} → ${r.discovered.out}`, 26, { color: '#9fe39a' }));
     const btn = this.button(W / 2, BTN_Y, 300, 84, this.w.take, () => this.done(), { color: 0x3f9b4a, size: 44 });
     btn.setAlpha(0);
     this.tweens.add({ targets: btn, alpha: 1, duration: 300 });
