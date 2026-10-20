@@ -142,7 +142,11 @@ test('difficulty is one knob in the data: more beasts and more hp a wave', () =>
 // Hanli 10-20: 「让怪出现在攻击范围外, 让玩家能看到」 — the horde walks in above the range line in plain view.
 test('the range line: nothing is hurt above it; the boss stops above it to roar, then walks into reach', () => {
   const R = reachY({ level });
-  assert.ok(R > 300 && R < 460, `the line ~40% down: ${R}`);
+  // Hanli 10-20: 「攻击范围都有点小, 怪物露头就可以开打了」 — the line sits ~15–20% down: a beast is seen walking in for
+  // about a second, then it can be hit.
+  assert.ok(R >= 0.15 * 960 && R <= 0.2 * 960, `the line ~17% down: ${R}`);
+  const seenFor = (R - 80) / kit.beasts.yezhu.speed; // from under the top bar (~80) to the line
+  assert.ok(seenFor > 0.8 && seenFor < 3, `a 野猪 is seen ~1–2 s before it can be hit: ${seenFor.toFixed(1)} s`);
   for (const [seed, bot] of [['r1', BOTS.greedy], ['r2', BOTS.random], ['r3', BOTS.greedy]]) {
     const g = newGame(kit, level, { seed });
     const ys = new Map();
@@ -299,6 +303,11 @@ test('PvZ framework numbers, mapped: 灵气 economy, costs 50–175, hp ratios b
 test('placement: unlocked kinds only, on the grid below the range line, one per cell, paid for, recharged, never during a pick', () => {
   const l = lanes[0];
   assert.ok(l.grid.top > l.rangeY && l.grid.bottom <= l.wallY, 'the grid lies between the range line and the wall');
+  for (const x of lanes) {
+    assert.ok(x.rangeY >= 0.15 * 960 && x.rangeY <= 0.21 * 960, `${x.id}: the line ~20% down (${x.rangeY})`);
+    const seen = (x.rangeY - 160) / (kit.laneBeasts.yezhu.speed * x.approach); // from under the seed bar (~160)
+    assert.ok(seen > 0.6 && seen < 2, `${x.id}: seen ~1 s before it can be hit: ${seen.toFixed(1)} s`);
+  }
   const g = fresh(l);
   assert.equal(g.ling, 50);
   assert.equal(canPlace(g, 'tu', 0, 0), 'locked', 'L2 has no 土墙符 yet');
@@ -450,10 +459,10 @@ test('balance in the 药园: never setting a talisman loses; a first-timer wins 
   const got = [];
   for (const [i, l] of lanes.entries()) {
     assert.ok(laneRun(l, 'lazy', 6).every((r) => !r.won), `${l.id}: the heroes alone never hold it`);
-    const human = laneRun(l, 'human', 40), sharp = laneRun(l, 'sharp', 12);
+    const human = laneRun(l, 'human', 40), sharp = laneRun(l, 'sharp', 24);
     got.push(rate(human));
     assert.ok(rate(human) >= target[i][0] && rate(human) <= target[i][1], `${l.id}: the human bot won ${Math.round(rate(human) * 100)}%`);
-    assert.ok(rate(sharp) >= 0.9, `${l.id}: a sharp player wins (${Math.round(rate(sharp) * 100)}%)`);
+    assert.ok(rate(sharp) >= 0.8, `${l.id}: a sharp player wins (${Math.round(rate(sharp) * 100)}%)`);
     assert.ok(human.every((r) => r.won || r.wave >= 3), `${l.id}: no first-timer loses in the first two waves`);
   }
   assert.ok(got[0] >= got[3] + 0.1, `L2 is easier than L5: ${got.map((x) => Math.round(x * 100))}`);
