@@ -283,7 +283,7 @@ each where the book breathes, neither across a key moment:
 
 The ladder: 挑水 is now the first 气走经脉 a player meets, so n 3 (after the two cut 古二 levels, both 游戏厅-only), 边跑边念
 n 4, 先吐 on moved up two. Sims (bots/qimai.js HANDS.live, 24 runs): 洗髓 23/24, 1.7 岔气, 38 s · **挑水 24/24, 1.9, 39 s** ·
-**边跑边念 24/24, 2.7, 40 s** · 先吐 21/24, 2.8, 44 s. Live: LIVE_QIMAI_SUMMARY.
+**边跑边念 24/24, 2.7, 40 s** · 先吐 21/24, 2.8, 44 s. Live: play-human casual at 390 on scratch saves (installed build, headed): 挑水 3/3 in 41 · 52 · 44 s (1–3 岔气), 边跑边念 3/3 in 53 · 57 · 47 s (4 岔气 each) — 先吐 on the 10-19 run 2/2 in 46–51 s, so the live hand finds 边跑边念 about as hard as 先吐; the sims keep it just under.
 
 | stretch (before) | before | after | what went in |
 |---|---|---|---|
@@ -302,19 +302,19 @@ down (2.8 s) — anywhere from 0.6 s on puts it on the chute and into the pan. B
 crow's vine first: it hangs over the floor on the other. Waiting: the crow takes it. ★3: the cut as the swing reaches its
 far end (1.05–1.5 s), through the 灵光 there. No puff any more. Its stolen line is 「乌鸦叼走了。再来——它那根藤，要赶在它前头断。」
 and the teach line names the order. Found by a scratch search on rope.js; a node imitation of play-human's cut hand: the old
-level 9 s median (30/30), the new **37 s** (53/60 within 90 s). Live: LIVE_RENT.
+level 9 s median (30/30), the new **37 s** (53/60 within 90 s). Live: casual at 390, 3 seeds: won 3/3 in 39 · 21 · 55 s, ★2 each (was 5 · 7 · 12 s).
 
 **忍字 agrees with the book.** Both of 00-masan's ways on end with 马小宝 「当着他的面，把那块桂花糕一口塞进嘴里，腮帮子鼓得像
 两个包子」; the game fed it to a yard dog. The level, mechanic and grades are unchanged; the target is now 马小宝's open mouth
 (a new local-FLUX sprite, art/games/xiaobao.webp, in the dog's ink-and-wash), title 「忍字 · 那块桂花糕」, how 「划断绳，让
 桂花糕落回马小宝自己嘴里——不学狗叫，也不伸手」, eat 「他一口塞进嘴里，腮帮子鼓得像两个包子。」, done 「桂花糕进了马小宝自己的嘴。
-那声狗叫，你没学。」. The dog's picture went (nothing else drew it). Live: LIVE_TAUNT.
+那声狗叫，你没学。」. The dog's picture went (nothing else drew it). Live: casual at 390: 6/6 in 12 · 9 · 21 · 33 · 11 · 9 s, ★3 each (two runs of 3); the end frame shows him, cheeks full.
 
 | in story order (割绳子) | level | live won | time | ★ |
 |---|---|---|---|---|
-| 1 · 00-masan | 忍字 → 马小宝 (unchanged level) | LIVE_TAUNT_ROW |
+| 1 · 00-masan | 忍字 → 马小宝 (unchanged level) | 6/6 | 9–33 s | 3 each |
 | 4 · 00-yinyue | 认路 | 3/3 (10-20) | 25 · 36 · 44 s | 3 · 2 · 2 |
-| 5 · 00-rent | 算账, re-laid (chute, crow 2.8 s) | LIVE_RENT_ROW |
+| 5 · 00-rent | 算账, re-laid (chute, crow 2.8 s) | 3/3 | 21 · 39 · 55 s | 2 · 2 · 2 |
 
 **For the 砸寨 port agent (throws, not built here):** 今一 has two throws in j01-track — 阿禾's 「你投一个给我看看」 (the ball
 over the rim and the board, into 马小宝's 摇杯: 「球飞得很高，很有信心…砸翻了马小宝的摇杯」) and the 罚球 at the end
@@ -485,8 +485,8 @@ so the second pass made it one clear notch harder and gave every level its own l
 |---|---|---|---|---|---|
 | 1 | 吹鹅毛 (古二 · cut) | a gentle long wave, the 金线 nearly all the way; warm paper, 羽 | 宽脉 → 40 · 金线 | 24/24, ★1 mostly, 0 岔气, 25 s | 4/4, ★1, 0–2 岔气, 23–34 s |
 | 2 | 洗髓 (古二 · cut) | four 浪头 surges, each heavier — a long hold or the floor; 墨绿 water, 髓 | 浪头 ×4 · 金线 | 24/24, 1 岔气, 37 s | 4/4, ★1, 1–8 岔气, 29–85 s |
-| 3 | 挑水上坡 · `halfyear-carry` (古二, the reading cap 10-20; the first in the story) | the book's carrying under the yoke, 「从四担挑到了六担，上坡不喘」: a channel climbing in three slopes, the buckets' swing three 浪头, 缸口 a 34 关, the 金线 the even breath at the top; yoke-wood paper, 担 | 浪头 ×3 · 关 · 金线 | 24/24, 1.9 岔气, 39 s (the live-fitted hand) | LIVE_TIAOSHUI |
-| 4 | 边跑边念 · `jin-paobu` (今一, the reading cap 10-20) | the dawn run, 「边跑边能说整句话」: the 金线 the talking pace most of the lap (tol 9, 65%), the 穴 the channels he can say (手太阴 · 手阳明 · 足阳明), then 「足……足……」 a narrow 32 with a surge; plum, 念 | 金线 · 窄 · 浪头 | 24/24, 2.7 岔气, 40 s | LIVE_PAOBU |
+| 3 | 挑水上坡 · `halfyear-carry` (古二, the reading cap 10-20; the first in the story) | the book's carrying under the yoke, 「从四担挑到了六担，上坡不喘」: a channel climbing in three slopes, the buckets' swing three 浪头, 缸口 a 34 关, the 金线 the even breath at the top; yoke-wood paper, 担 | 浪头 ×3 · 关 · 金线 | 24/24, 1.9 岔气, 39 s (the live-fitted hand) | 390 story 3/3, 1–3 岔气, 41–52 s, ★1 (10-20) |
+| 4 | 边跑边念 · `jin-paobu` (今一, the reading cap 10-20) | the dawn run, 「边跑边能说整句话」: the 金线 the talking pace most of the lap (tol 9, 65%), the 穴 the channels he can say (手太阴 · 手阳明 · 足阳明), then 「足……足……」 a narrow 32 with a surge; plum, 念 | 金线 · 窄 · 浪头 | 24/24, 2.7 岔气, 40 s | 390 story 3/3, 4 岔气 each, 47–57 s, ★1 (10-20) |
 | 5 | 先吐 · `jin-qianmi` (今一) | the airway: three 窄脉 runs (33) with the panting push up between open stretches; track brick, 吐 | 窄脉 · 乱流 | 22/24, 2 岔气, 46 s | 游戏厅 3/4 (4–9 岔气); story 2/2 at 390, won 46–51 s |
 | 6 | 罚球 · `jin-faqiu` (今二) | 吸四吐六 front and centre: one 金线 the whole court (tol 8, 72%) through a heart out of time; amber, 罚 | 心跳 (jitter) · 金线 | 20/24, 3 岔气, 49 s | 游戏厅 3/4 (4–7 岔气); story 2/3 |
 | 7 | 小周天 · `zhoutian-sanguan` (古四) | up the spine from the floor to the roof through 尾闾 32 · 夹脊 27 · 玉枕 22, then down the front: one circuit; dusk blue, 周 | 三关 · 乱流 · 金线 | 24/24, 2 岔气, 44 s | 游戏厅 4/4 (1–4 岔气, 36–52 s); story 390 2/2 |
