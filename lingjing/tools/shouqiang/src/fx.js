@@ -139,13 +139,14 @@ const PRESETS = {
   dust: ['soft', { speed: { min: 30, max: 90 }, angle: { min: 180, max: 360 }, lifespan: 500, scale: { start: 0.5, end: 1.2 }, alpha: { start: 0.6, end: 0 }, tint: [0xcdb89a, 0xa89277] }],
 };
 
-/** One emitter per preset, all idle until fired. `budget` thins bursts under reduced motion. */
+/** One emitter per preset, all idle until fired. `em.budget` thins bursts (reduced motion; the play's quality steps). */
 export function makeEmitters(scene, depth, budget = 1) {
   const em = {};
   for (const [name, [tex, cfg]] of Object.entries(PRESETS)) {
     em[name] = scene.add.particles(0, 0, tex, { ...cfg, emitting: false }).setDepth(depth);
   }
-  em.burst = (name, n, x, y) => em[name].explode(Math.max(1, Math.round(n * budget)), x, y);
+  em.budget = budget;
+  em.burst = (name, n, x, y) => em[name].explode(Math.max(1, Math.round(n * em.budget)), x, y);
   return em;
 }
 

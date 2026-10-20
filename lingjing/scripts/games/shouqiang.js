@@ -43,7 +43,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     + 'aspect-ratio:9/16;width:min(100%, calc((100dvh - 150px) * 9 / 16));margin:0 auto;user-select:none;-webkit-user-select:none';
   container.replaceChildren(box);
   const search = globalThis.location?.search ?? '';
-  const showFps = /(?:^|[?&])(?:fps|dev)=1/.test(search);
+  const q = new URLSearchParams(search);
+  const dev = q.get('dev') === '1', showFps = dev && q.get('fps') === '1'; // the counter only on ?dev=1&fps=1
   return new Promise((resolve) => {
     let game = null, done = false;
     const finish = (r) => { if (!done) { done = true; resolve(r); } };
@@ -54,7 +55,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       if (done) return;
       game = start({
         parent: box, base: new URL('./shouqiang/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
-        kit, level: levelAsked(kit, data, search), seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, showFps, lines, onEvent,
+        kit, level: levelAsked(kit, data, search), seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent,
         onEnd: (r) => finish(r),
       });
     }, () => {

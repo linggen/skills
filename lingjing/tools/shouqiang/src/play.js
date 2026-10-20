@@ -1,12 +1,20 @@
 // play.js — 守墙关's scene: draws what the engine (scripts/games/shouqiang/core.js) holds, turns its events into
 // juice, and takes the two inputs the game has: a card pick, and (optional) a tap on a beast to focus it.
 import * as Phaser from 'phaser';
-import { newGame, step, pick, setFocus, HERO, FOX, W, H } from 'shouqiang-core';
-import { FONT, makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
-import { Hud, WORDS } from './hud.js';
+import { newGame, step, pick, setFocus, reachY, HERO, FOX, W, H } from 'shouqiang-core';
+import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
+import { Hud, WORDS, bar, setBarW } from './hud.js';
 
-const ICONS = ['jian-more', 'jian-pierce', 'jian-return', 'huo-blast', 'huo-ground', 'han-slow', 'han-freeze', 'lei-chain', 'lei-strike', 'yy-foxfire', 'yy-howl'];
+const ICONS = ['jian-more', 'jian-pierce', 'jian-arc', 'huo-blast', 'huo-ground', 'han-slow', 'han-freeze', 'lei-chain', 'lei-strike', 'yy-foxfire', 'yy-howl'];
 const HIT_TINT = { sword: 0xffffff, fire: 0xffb347, frost: 0x9fe8ff, thunder: 0xfff27a, fox: 0xcfe0ff, howl: 0xd9c2ff, ground: 0xff9a52 };
+const TRAILS = { sword: 'trailSword', fox: 'trailFox', foxfire: 'trailFoxfire', huo: 'trailHuo', han: 'trailHan' };
+const SPARK = { sword: ['hitStreak', 5], fox: ['spark', 4], thunder: ['bolt', 4], fire: ['spark', 2], frost: ['snow', 3], howl: ['spark', 2], ground: [null] };
+const SPARK_ELSE = ['spark', 3];
+// Quality steps, taken one at a time (never back up) when frames keep missing the budget: the look stays; a slow device
+// first gets fewer particles, then a canvas at the board's own size, then fewer particles again.
+export const ZOOM_MAX = 1.5;
+const QUALITY = [{ budget: 1, zoom: null }, { budget: 0.6, zoom: null }, { budget: 0.6, zoom: 1 }, { budget: 0.35, zoom: 1 }];
+const SLOW_MS = 1000 / 45;
 const D = { bg: 0, decal: 2, ground: 3, shadow: 4, beast: 10, wall: 20, hero: 30, shot: 40, fx: 50, num: 60, light: 70, hud: 80, modal: 90 };
 
 export class PlayScene extends Phaser.Scene {
@@ -32,7 +40,7 @@ export class PlayScene extends Phaser.Scene {
     this.load.on('loaderror', (f) => this.missing.add(f.key));
     const bar = this.add.graphics();
     this.load.on('progress', (p) => {
-      bar.clear().fillStyle(0x000000, 0.4).fillRoundedRect(120, 470, 300, 20, 10).fillStyle(0xffd34d, 1).fillRoundedRect(122, 472, 296 * p, 16, 8);
+      bar.clear().fillStyle(0x000000, 0.4).fillRect(120, 470, 300, 20).fillStyle(0xffd34d, 1).fillRect(122, 472, 296 * p, 16);
     });
     this.load.on('complete', () => bar.destroy());
   }
@@ -52,6 +60,10 @@ export class PlayScene extends Phaser.Scene {
     makeNumberFont(this, 'num', { fill: '#ffffff' });
     makeNumberFont(this, 'numBig', { fill: ['#fff7c2', '#ffd23f', '#ff8a00'], stroke: '#5a0d00', size: 60 });
     this.em = makeEmitters(this, D.fx, this.calm ? 0.45 : 1);
+    this.quality = 0;
+    this.frameMs = 1000 / 60;
+    this.qualityAt = 4000; // never judge the first seconds (textures upload, the font settles)
+    this.frame = 0;
     this.world();
     this.beasts = new Map();
     this.shotSprites = new Map();
@@ -59,7 +71,6 @@ export class PlayScene extends Phaser.Scene {
     this.nums = [];
     this.zap = this.add.graphics().setDepth(D.fx + 1).setBlendMode(Phaser.BlendModes.ADD);
     this.zapT = 0;
-    this.bars = this.add.graphics().setDepth(D.num - 1);
     this.reticle = this.add.image(0, 0, 'reticle').setDepth(D.num - 2).setVisible(false).setScale(0.8);
     this.hud = new Hud(this, { depth: D.hud, modal: D.modal });
     this.paused = false;
@@ -90,6 +101,7 @@ export class PlayScene extends Phaser.Scene {
       .setAngle(-28).setDisplaySize(W * 2.2, 230).setAlpha(0.42);
     if (!this.calm) this.tweens.add({ targets: this.band, alpha: 0.26, x: W * 0.47, duration: 5200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.add.image(W / 2, H / 2, 'vignette').setDisplaySize(W, H).setDepth(D.light + 1);
+    this.rangeLine();
     const wy = this.g.level.wallY;
     this.wall = this.add.image(W / 2, wy - 22, 'wall').setOrigin(0.5, 0).setDepth(D.wall);
     this.wall.setScale((W + 30) / this.wall.width);
@@ -107,6 +119,26 @@ export class PlayScene extends Phaser.Scene {
       this.yyScale = 92 / 150;
       this.yy.setScale(this.yyScale);
       this.yyIdle = 0;
+    }
+  }
+
+  // The range line (Hanli 10-20: 「让怪出现在攻击范围外, 让玩家能看到」): 小满's and 银月's reach ends here. A rope of
+  // talismans strung across the road on a band of mist; above it the horde walks in, seen and untouchable.
+  rangeLine() {
+    const y = reachY(this.g);
+    if (!Number.isFinite(y)) return;
+    this.add.image(W / 2, y, 'band').setDisplaySize(W * 1.15, 110).setTint(0xeaf6ff).setAlpha(0.32).setDepth(D.ground);
+    const spans = 5, pts = [];
+    for (let i = 0; i <= spans * 8; i += 1) {
+      const t = i / 8, x = -12 + ((W + 24) * t) / spans;
+      pts.push(new Phaser.Math.Vector2(x, y - 8 + Math.sin(Math.PI * (t % 1)) * 9));
+    }
+    this.add.graphics().setDepth(D.ground).lineStyle(5, 0x2e1a0c, 0.85).strokePoints(pts).lineStyle(2, 0xe2c27e, 0.95).strokePoints(pts);
+    const FU = ['fu-huo', 'fu-han', 'fu-lei'];
+    for (let i = 0; i < spans; i += 1) {
+      const x = -12 + ((W + 24) * (i + 0.5)) / spans;
+      const fu = this.add.image(x, y + 1, FU[i % 3]).setOrigin(0.5, 0.04).setDisplaySize(20, 42).setDepth(D.ground).setAlpha(0.95);
+      if (!this.calm) this.tweens.add({ targets: fu, angle: { from: -5, to: 5 }, duration: 1300 + i * 170, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     }
   }
 
@@ -137,8 +169,13 @@ export class PlayScene extends Phaser.Scene {
 
   // ---- the frame -----------------------------------------------------------------------------------------------
 
-  update(time, delta) {
-    const dt = Math.min(delta, 50) / 1000;
+  update(time) {
+    // Phaser's own `delta` is smoothed and held to the 60 fps target (a 60 ms frame reports ~17), so a slow device
+    // played in slow motion and never looked slow. The raw frame time drives both the clock and the budget.
+    const raw = this.game.loop.rawDelta || 1000 / 60;
+    this.frame += 1;
+    this.watchFrames(time, raw);
+    const dt = Math.min(raw, 50) / 1000;
     if (!this.paused && !this.hitStop) step(this.g, dt);
     if (this.hitStop) this.hitStop = Math.max(0, this.hitStop - dt);
     for (const e of this.g.events) this.on(e);
@@ -147,11 +184,34 @@ export class PlayScene extends Phaser.Scene {
     this.syncBeasts(time, dt);
     this.syncShots(dt);
     this.syncGrounds();
-    this.drawBars();
     this.moveNums(dt);
     this.heroes(dt);
     if (this.zapT > 0 && (this.zapT -= dt) <= 0) this.zap.clear();
     this.hud.update(this.g, dt, this.game.loop.actualFps);
+  }
+
+  // The frame budget: a running mean of the frame time; 2 s over budget (under ~45 fps) → one quality step down.
+  watchFrames(time, delta) {
+    if (this.paused || document.hidden || delta > 250) return;
+    this.frameMs += (delta - this.frameMs) * 0.03;
+    if (this.frameMs < SLOW_MS) { this.slowSince = null; return; }
+    this.slowSince ??= time;
+    if (time < this.qualityAt || time - this.slowSince < 2000 || this.quality >= QUALITY.length - 1) return;
+    this.setQuality(this.quality + 1);
+    this.qualityAt = time + 3000;
+    this.slowSince = null;
+  }
+
+  setQuality(q) {
+    const was = QUALITY[this.quality], now = QUALITY[q];
+    this.quality = q;
+    this.em.budget = now.budget * (this.calm ? 0.45 : 1);
+    const zoom = Math.min(this.cfg.zoom ?? 1, now.zoom ?? Infinity);
+    if (zoom !== Math.min(this.cfg.zoom ?? 1, was.zoom ?? Infinity)) {
+      this.scale.resize(Math.round(W * zoom), Math.round(H * zoom));
+      this.cameras.main.setZoom(zoom).centerOn(W / 2, H / 2);
+    }
+    this.fact({ t: 'quality', q });
   }
 
   heroes(dt) {
@@ -170,16 +230,17 @@ export class PlayScene extends Phaser.Scene {
     frames.forEach((f, i) => this.time.delayedCall(i * each * 1000, () => this.yy?.setTexture(sheetOf(f), f)));
   }
 
+  // Sprites follow the engine's beasts; one gone from the engine (killed: its sprite went with the kill event) drops.
+  // A frame stamp marks the live ones — no Set allocated a frame.
   syncBeasts(time, dt) {
-    const seen = new Set();
+    let f = null;
     for (const b of this.g.beasts) {
-      seen.add(b.id);
-      let s = this.beasts.get(b.id);
-      if (!s) s = this.makeBeast(b);
+      const s = this.beasts.get(b.id) ?? this.makeBeast(b);
+      s.seen = this.frame;
       this.poseBeast(s, b, time, dt);
+      if (b.id === this.g.focus) f = b;
     }
-    for (const [id, s] of this.beasts) if (!seen.has(id)) this.dropBeast(id, s, false);
-    const f = this.g.beasts.find((b) => b.id === this.g.focus);
+    for (const [id, s] of this.beasts) if (s.seen !== this.frame) this.dropBeast(id, s, false);
     this.reticle.setVisible(Boolean(f));
     if (f) this.reticle.setPosition(f.x, f.y - this.kit(f).size * 0.42).setAngle(time / 8);
   }
@@ -194,7 +255,11 @@ export class PlayScene extends Phaser.Scene {
     spr.setScale(scale);
     const shadow = this.add.image(b.x, b.y, 'shadow').setDepth(D.shadow).setScale(k.size / 64 * (b.fly ? 0.7 : 1.05), k.size / 64);
     const s = { spr, shadow, scale, kind: b.kind, hitT: 0, flashT: 0, phase: Math.random() * 6, frames: [walk1, this.tex(`${b.kind}-walk-2`, walk1)],
-      hit: this.tex(`${b.kind}-hit`, walk1), stars: null };
+      hit: this.tex(`${b.kind}-hit`, walk1), stars: null, tint: null, hpW: Math.max(34, k.size * 0.6), hpBg: null, hpFill: null };
+    if (!b.boss) {
+      s.hpBg = bar(this, 0, 0, s.hpW + 4, 9, 4, 0x1b0d06, 0.85).setDepth(D.num - 1).setVisible(false);
+      s.hpFill = bar(this, 0, 0, s.hpW, 5, 2, 0xff4b3a).setDepth(D.num - 1).setVisible(false);
+    }
     spr.setAlpha(0);
     this.tweens.add({ targets: spr, alpha: 1, duration: 260 });
     this.beasts.set(b.id, s);
@@ -220,14 +285,28 @@ export class PlayScene extends Phaser.Scene {
     s.spr.setScale(s.scale * squash * (b.boss ? 1 : 1), s.scale / squash).setAngle(moving ? step * 4 : 0);
     this.tintBeast(s, b);
     this.starsOver(s, b, k, time);
+    this.hpBar(s, b, k);
     if (b.burnT > 0 && Math.random() < 0.3) this.em.burst('burn', 1, b.x + (Math.random() - 0.5) * k.size * 0.5, b.y - k.size * 0.3);
   }
 
   tintBeast(s, b) {
-    if (s.flashT > 0) return void s.spr.setTintFill(0xffffff);
-    const TINTS = [[b.freezeT > 0, 0x8fe3ff], [b.wailT > 0, 0xff9a9a], [b.slowT > 0, 0xbfe2ff], [b.id === this.g.focus, 0xffe0e0]];
-    const t = TINTS.find(([on]) => on);
-    if (t) s.spr.setTint(t[1]); else s.spr.clearTint();
+    const t = s.flashT > 0 ? 'flash' : b.freezeT > 0 ? 0x8fe3ff : b.wailT > 0 ? 0xff9a9a : b.slowT > 0 ? 0xbfe2ff : b.id === this.g.focus ? 0xffe0e0 : null;
+    if (t === s.tint) return;
+    s.tint = t;
+    if (t === 'flash') s.spr.setTintFill(0xffffff);
+    else if (t === null) s.spr.clearTint();
+    else s.spr.setTint(t);
+  }
+
+  hpBar(s, b, k) {
+    if (!s.hpBg) return;
+    const on = b.hp < b.max;
+    s.hpBg.setVisible(on);
+    s.hpFill.setVisible(on);
+    if (!on) return;
+    const x = b.x - s.hpW / 2, y = s.spr.y - k.size * 0.95;
+    s.hpBg.setPosition(x - 2, y - 2);
+    setBarW(s.hpFill.setPosition(x, y), (s.hpW * b.hp) / b.max);
   }
 
   starsOver(s, b, k, time) {
@@ -248,8 +327,10 @@ export class PlayScene extends Phaser.Scene {
     this.beasts.delete(id);
     s.stars?.forEach((x) => x.destroy());
     s.shadow.destroy();
+    s.hpBg?.destroy();
+    s.hpFill?.destroy();
     if (!dead) return void s.spr.destroy();
-    s.spr.setTexture(s.hit).setTintFill(0xffffff);
+    s.spr.setTexture(s.hit).setTintFill(0xffffff).setVisible(true);
     const dir = (at?.x ?? s.spr.x) < W / 2 ? -1 : 1;
     this.tweens.add({ targets: s.spr, y: s.spr.y - 60, x: s.spr.x + dir * 50, angle: dir * 200, scaleX: s.scale * 0.4, scaleY: s.scale * 0.4, alpha: 0,
       duration: 420, ease: 'Quad.out', onComplete: () => s.spr.destroy() });
@@ -259,15 +340,14 @@ export class PlayScene extends Phaser.Scene {
   // ---- shots ---------------------------------------------------------------------------------------------------
 
   syncShots(dt) {
-    const seen = new Set();
     for (const sh of this.g.shots) {
-      seen.add(sh.id);
       let s = this.shotSprites.get(sh.id);
       if (!s) { s = this.makeShot(sh); this.shotSprites.set(sh.id, s); }
+      s.seen = this.frame;
       this.poseShot(s, sh, dt);
     }
     for (const [id, s] of this.shotSprites) {
-      if (seen.has(id)) continue;
+      if (s.seen === this.frame) continue;
       s.parts.forEach((p) => p.destroy());
       this.shotSprites.delete(id);
     }
@@ -288,49 +368,37 @@ export class PlayScene extends Phaser.Scene {
   poseShot(s, sh, dt) {
     const [p, shadow] = s.kind === 'sword' ? [s.parts[1], s.parts[0]] : s.parts;
     s.t += dt;
-    const TRAILS = { sword: 'trailSword', fox: 'trailFox', foxfire: 'trailFoxfire', huo: 'trailHuo', han: 'trailHan' };
     if (sh.lob) {
       p.setPosition(sh.x, sh.y - (sh.z ?? 0)).setAngle(s.t * 900);
       shadow?.setPosition(sh.x, sh.y);
     } else {
       p.setPosition(sh.x, sh.y);
       const a = Math.atan2(sh.vy, sh.vx);
+      // The sword's art points up-right (−45°): +45° turns its tip along the flight (the engine never flies one down).
       if (s.kind === 'sword') { p.setRotation(a + Math.PI / 4); shadow.setPosition(sh.x, sh.y); }
       if (s.kind === 'foxfire') p.setFrame(`foxfire-${1 + (Math.floor(s.t * 14) % 3)}`).setRotation(a + Math.PI / 2);
     }
-    this.em[TRAILS[s.kind]].emitParticleAt(p.x, p.y, s.kind === 'sword' ? 2 : 1);
+    if (this.em.budget >= 1 || Math.random() < this.em.budget) this.em[TRAILS[s.kind]].emitParticleAt(p.x, p.y, s.kind === 'sword' ? 2 : 1);
   }
 
   syncGrounds() {
-    const live = new Set();
     for (const z of this.g.grounds) {
-      live.add(z.id);
-      if (!this.groundDecals.has(z.id)) {
-        const d = this.add.image(z.x, z.y, 'scorch').setDepth(D.decal).setDisplaySize(z.r * 2.3, z.r * 1.4).setAlpha(0);
+      let d = this.groundDecals.get(z.id);
+      if (!d) {
+        d = this.add.image(z.x, z.y, 'scorch').setDepth(D.decal).setDisplaySize(z.r * 2.3, z.r * 1.4).setAlpha(0);
         this.tweens.add({ targets: d, alpha: 1, duration: 200 });
         this.groundDecals.set(z.id, d);
       }
+      d.seen = this.frame;
       if (Math.random() < (this.calm ? 0.4 : 0.9)) {
         const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * z.r;
         this.em.burn.emitParticleAt(z.x + Math.cos(a) * r, z.y + Math.sin(a) * r * 0.6, 1);
       }
     }
     for (const [id, d] of this.groundDecals) {
-      if (live.has(id)) continue;
+      if (d.seen === this.frame) continue;
       this.groundDecals.delete(id);
       this.tweens.add({ targets: d, alpha: 0, duration: 500, onComplete: () => d.destroy() });
-    }
-  }
-
-  drawBars() {
-    const g = this.bars.clear();
-    for (const b of this.g.beasts) {
-      if (b.boss || b.hp >= b.max) continue;
-      const s = this.beasts.get(b.id);
-      if (!s) continue;
-      const w = Math.max(34, this.kit(b).size * 0.6), x = b.x - w / 2, y = s.spr.y - this.kit(b).size * 0.95;
-      g.fillStyle(0x1b0d06, 0.85).fillRoundedRect(x - 2, y - 2, w + 4, 9, 4);
-      g.fillStyle(0xff4b3a, 1).fillRoundedRect(x, y, Math.max(2, (w * b.hp) / b.max), 5, 2);
     }
   }
 
@@ -376,9 +444,9 @@ export class PlayScene extends Phaser.Scene {
       n.vy += 220 * dt;
       n.o.setAlpha(n.t > n.life * 0.6 ? Math.max(0, 1 - (n.t - n.life * 0.6) / (n.life * 0.4)) : 1);
     }
-    const gone = this.nums.filter((n) => n.t >= n.life);
-    gone.forEach((n) => n.o.destroy());
-    if (gone.length) this.nums = this.nums.filter((n) => n.t < n.life);
+    let k = 0;
+    for (const n of this.nums) if (n.t >= n.life) n.o.destroy(); else this.nums[k++] = n;
+    this.nums.length = k;
   }
 
   shake(ms, k) { if (!this.calm) this.cameras.main.shake(ms, k); }
@@ -394,8 +462,7 @@ export class PlayScene extends Phaser.Scene {
       const y = e.y - size * 0.45;
       if (s) { s.flashT = 0.05; s.hitT = Math.max(s.hitT, 0.12); }
       this.tally(e, y - size * 0.3);
-      const SPARK = { sword: ['hitStreak', 5], fox: ['spark', 4], thunder: ['bolt', 4], fire: ['spark', 2], frost: ['snow', 3], howl: ['spark', 2], ground: [null] };
-      const [preset, n] = SPARK[e.kind] ?? ['spark', 3];
+      const [preset, n] = SPARK[e.kind] ?? SPARK_ELSE;
       if (preset) this.em.burst(preset, n, e.x, y);
       if (e.big) this.shake(90, 0.004);
     },
@@ -460,6 +527,18 @@ export class PlayScene extends Phaser.Scene {
       for (let i = 0; i < 3; i += 1) this.time.delayedCall(i * 140, () => this.ring(e.x, e.y - 30, 620, 0xdcd2ff, 900));
       this.cameras.main.flash(160, 200, 190, 255);
       this.shake(200, 0.006);
+    },
+    roar(e) {
+      const b = this.g.beasts.find((o) => o.id === e.id);
+      const y = e.y - (b ? this.kit(b).size : 120) * 0.5;
+      for (let i = 0; i < 2; i += 1) this.time.delayedCall(i * 220, () => this.ring(e.x, y, 300, 0xffb08a, 700));
+      this.em.burst('dust', 10, e.x, e.y);
+      this.hud.bubbleAt(e.x, e.y - 200, this.w.roar, 1400);
+      this.shake(500, 0.012);
+    },
+    fade(e) {
+      this.em.burst('spark', 5, e.x, e.y);
+      this.flare(e.x, e.y, 80, 0xcfeaff);
     },
     wail(e) {
       this.ring(e.x, e.y - 60, 220, 0xff7a7a, 700);

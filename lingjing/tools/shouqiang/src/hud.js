@@ -6,10 +6,10 @@ import { FONT } from './fx.js';
 
 export const WORDS = {
   zh: { wave: '波次', waveN: (n) => `第 ${n} 波`, cleared: '守住了！', pick: '选一张符', fresh: '新', lv: (n) => `Lv.${n}`,
-    boss: '合窳 来袭', bossName: '合窳', wail: '哇——哇——', won: '山门守住了！', lost: '山门破了', kills: (n) => `击退 ${n}`,
+    boss: '合窳 来袭', bossName: '合窳', wail: '哇——哇——', roar: '吼——！', won: '山门守住了！', lost: '山门破了', kills: (n) => `击退 ${n}`,
     wallLeft: (p) => `城墙 ${p}%`, paused: '暂停', resume: '点一下继续', next: '下一波', focus: '点兽群里一只：集火它' },
   en: { wave: 'Wave', waveN: (n) => `Wave ${n}`, cleared: 'Held!', pick: 'Pick a talisman', fresh: 'NEW', lv: (n) => `Lv.${n}`,
-    boss: 'The Heyu comes', bossName: 'Heyu', wail: 'Waaah—', won: 'The gate holds!', lost: 'The gate fell', kills: (n) => `${n} driven off`,
+    boss: 'The Heyu comes', bossName: 'Heyu', wail: 'Waaah—', roar: 'ROAAAR!', won: 'The gate holds!', lost: 'The gate fell', kills: (n) => `${n} driven off`,
     wallLeft: (p) => `Wall ${p}%`, paused: 'Paused', resume: 'Tap to go on', next: 'Next wave', focus: 'Tap a beast: everyone hits it' },
 };
 
@@ -31,7 +31,44 @@ function rounded(c, x, y, w, h, r) {
   c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
 }
 
+// Bars and panels are NineSlices over small white rounded textures (drawn at 2×, shown at ½), never Graphics rounded
+// rects: Phaser's WebGL Graphics re-triangulates every rounded path (earcut) on every frame it draws — half the CPU of
+// a frame went there, on the static bar backs too (measured 10-20, a 4× CPU throttle).
+function barTex(scene, h, r) {
+  const key = `bar-${h}-${r}`;
+  canvasTex(scene, key, 4 * r + 4, 2 * h, (c, w, hh) => { rounded(c, 0, 0, w, hh, 2 * r); c.fillStyle = '#fff'; c.fill(); });
+  return key;
+}
+
+/** A rounded bar (top-left at x, y; w × h board px; corner r), tinted; `setBarW` changes its width. */
+export function bar(scene, x, y, w, h, r, color, alpha = 1) {
+  const n = scene.add.nineslice(x, y, barTex(scene, h, r), undefined, w * 2, 2 * h, 2 * r + 1, 2 * r + 1, 0, 0)
+    .setOrigin(0, 0).setScale(0.5).setTint(color).setAlpha(alpha);
+  n.minW = 4 * r + 2;
+  return n;
+}
+
+export function setBarW(n, w) {
+  const ww = Math.max(n.minW, Math.round(w * 2));
+  if (ww !== n.width) n.setSize(ww, n.height);
+  return n;
+}
+
+/** A rounded panel of any size (9-slice): `key` a texture from makeHudTextures. */
+function panel(scene, key, x, y, w, h, corner) {
+  return scene.add.nineslice(x, y, key, undefined, w * 2, h * 2, corner * 2, corner * 2, corner * 2, corner * 2).setScale(0.5);
+}
+
 function makeHudTextures(scene) {
+  canvasTex(scene, 'panel', 96, 96, (c, w, h) => { rounded(c, 0, 0, w, h, 36); c.fillStyle = '#fff'; c.fill(); });
+  canvasTex(scene, 'bubble', 96, 96, (c, w, h) => {
+    rounded(c, 4, 4, w - 8, h - 8, 26); c.fillStyle = '#fff'; c.fill();
+    c.lineWidth = 8; c.strokeStyle = '#3b2210'; c.stroke();
+  });
+  canvasTex(scene, 'wallbg', 732, 72, (c, w, h) => {
+    rounded(c, 6, 6, w - 12, h - 12, 30); c.fillStyle = 'rgba(27,13,6,0.85)'; c.fill();
+    c.lineWidth = 6; c.strokeStyle = '#ffd86b'; c.stroke();
+  });
   for (const [fam, [a, b, edge]] of Object.entries(FAMILY)) {
     canvasTex(scene, `card-${fam}`, 470, 150, (c, w, h) => {
       rounded(c, 6, 8, w - 12, h - 12, 26); c.fillStyle = 'rgba(0,0,0,0.45)'; c.fill();
@@ -115,44 +152,53 @@ export class Hud {
     this.pauseBtn.on('pointerdown', (p, x, y, ev) => { ev?.stopPropagation?.(); s.togglePause(); });
     const title = g.level.title?.[this.lang] ?? g.level.title?.zh ?? '';
     this.text(W / 2 - 10, 30, title, 26, { color: '#fff6d8' });
-    this.progBg = s.add.graphics().setDepth(this.d);
-    this.prog = s.add.graphics().setDepth(this.d);
-    this.progBg.fillStyle(0x000000, 0.5).fillRoundedRect(W / 2 - 110, 56, 200, 12, 6);
+    bar(s, W / 2 - 110, 56, 200, 12, 6, 0x000000, 0.5).setDepth(this.d);
+    this.prog = bar(s, W / 2 - 108, 58, 196, 8, 4, 0xff8a3a).setDepth(this.d);
     s.add.image(472, 38, 'pill').setDepth(this.d).setScale(0.82);
     this.waveText = this.text(472, 38, '', 22, { color: '#ffe27a' }).setDepth(this.d + 1);
     this.fps = s.cfg.showFps ? this.text(18, 84, '', 16, { color: '#7dff7a', origin: 0 }) : null;
     this.bossBox = s.add.container(0, 0).setDepth(this.d).setVisible(false);
-    const bg = s.add.graphics();
-    bg.fillStyle(0x1b0d06, 0.85).fillRoundedRect(W / 2 - 190, 92, 380, 22, 11);
-    this.bossFill = s.add.graphics();
+    const bg = bar(s, W / 2 - 190, 92, 380, 22, 11, 0x1b0d06, 0.85);
+    this.bossFill = bar(s, W / 2 - 186, 95, 372, 16, 8, 0xd61f2c);
     this.bossBox.add([bg, this.bossFill, this.text(W / 2, 103, this.w.bossName, 18, { color: '#ffe0e0' })]);
   }
 
   wallBar() {
     const s = this.s;
     const y = H - 30;
-    this.wallBg = s.add.graphics().setDepth(this.d);
-    this.wallBg.fillStyle(0x1b0d06, 0.85).fillRoundedRect(W / 2 - 180, y - 15, 360, 30, 15).lineStyle(3, 0xffd86b, 1).strokeRoundedRect(W / 2 - 180, y - 15, 360, 30, 15);
-    this.wallFill = s.add.graphics().setDepth(this.d);
+    s.add.image(W / 2, y, 'wallbg').setDisplaySize(366, 36).setDepth(this.d);
+    this.wallFill = bar(s, W / 2 - 176, y - 11, 352, 22, 11, 0x3fe060).setDepth(this.d);
+    this.wallShine = bar(s, W / 2 - 172, y - 9, 344, 7, 3, 0xffffff, 0.3).setDepth(this.d);
+    this.wallCol = 0x3fe060;
     s.add.image(W / 2 - 194, y, 'heart').setDepth(this.d + 1).setScale(0.9);
     this.wallText = this.text(W / 2, y, '', 22, { color: '#ffffff' }).setDepth(this.d + 1);
     this.wallY = y;
   }
 
   update(g, dt, fps) {
-    this.waveText.setText(`${this.w.wave} ${Math.max(1, g.wave)}/${g.waves}`);
+    if (g.wave !== this.shownWave) {
+      this.shownWave = g.wave;
+      this.waveText.setText(`${this.w.wave} ${Math.max(1, g.wave)}/${g.waves}`);
+    }
     const left = g.wall / g.wallMax;
     this.wallFlash = Math.max(0, this.wallFlash - dt);
-    const col = left < 0.3 ? 0xff4b3a : left < 0.6 ? 0xffc23a : 0x3fe060;
-    this.wallFill.clear().fillStyle(this.wallFlash > 0 ? 0xffffff : col, 1).fillRoundedRect(W / 2 - 176, this.wallY - 11, Math.max(10, 352 * left), 22, 11);
-    this.wallFill.fillStyle(0xffffff, 0.3).fillRoundedRect(W / 2 - 172, this.wallY - 9, Math.max(6, 344 * left), 7, 4);
+    const col = this.wallFlash > 0 ? 0xffffff : left < 0.3 ? 0xff4b3a : left < 0.6 ? 0xffc23a : 0x3fe060;
+    if (col !== this.wallCol) this.wallFill.setTint((this.wallCol = col));
+    setBarW(this.wallFill, 352 * left);
+    setBarW(this.wallShine, 344 * left);
     this.wallText.setText(`${Math.ceil(g.wall)}`);
-    const total = g.phase === 'wave' ? g.level.waves[g.wave - 1].reduce((n, [, c]) => n + c, 0) : 1;
-    const remaining = g.phase === 'wave' ? g.spawns.length + g.beasts.length : 0;
-    this.prog.clear().fillStyle(0xff8a3a, 1).fillRoundedRect(W / 2 - 108, 58, Math.max(0, 196 * (1 - remaining / Math.max(total, remaining))), 8, 4);
-    const boss = g.beasts.find((b) => b.boss);
+    // The wave bar: beasts still to come or alive, of all the wave holds (spawns appear, and a wail adds some).
+    if (g.phase === 'wave') {
+      const remaining = g.spawns.length + g.beasts.length;
+      this.waveTotal = Math.max(remaining, this.waveTotal ?? 0);
+      const done = 1 - remaining / Math.max(1, this.waveTotal);
+      this.prog.setVisible(done > 0.02);
+      setBarW(this.prog, 196 * done);
+    } else if (this.waveTotal) { this.waveTotal = 0; this.prog.setVisible(false); }
+    let boss = null;
+    for (const b of g.beasts) if (b.boss) boss = b;
     this.bossBox.setVisible(Boolean(boss));
-    if (boss) this.bossFill.clear().fillStyle(0xd61f2c, 1).fillRoundedRect(W / 2 - 186, 95, 372 * Math.max(0, boss.hp / boss.max), 16, 8);
+    if (boss) setBarW(this.bossFill, 372 * Math.max(0, boss.hp / boss.max));
     if (this.fps) this.fps.setText(`FPS:${Math.round(fps)}`);
     this.tickCountdown(g);
   }
@@ -195,8 +241,10 @@ export class Hud {
   storyLine(str, slot) {
     const s = this.s;
     const t = this.text(W / 2, 360, str, 30, { color: '#ffffff', wrap: 440 }).setDepth(this.d + 3).setAlpha(0);
-    const back = s.add.graphics().setDepth(this.d + 2).fillStyle(0x000000, 0.5).fillRoundedRect(30, 360 - t.height / 2 - 18, W - 60, t.height + 36, 18).setAlpha(0);
-    s.tweens.add({ targets: [t, back], alpha: 1, duration: 260 });
+    const back = panel(s, 'panel', W / 2, 360, W - 60, t.height + 36, 18).setTint(0x000000).setDepth(this.d + 2).setAlpha(0);
+    back.alphaTo = 0.5;
+    s.tweens.add({ targets: t, alpha: 1, duration: 260 });
+    s.tweens.add({ targets: back, alpha: back.alphaTo, duration: 260 });
     s.tweens.add({ targets: [t, back], alpha: 0, delay: slot * 1000 - 260, duration: 240, onComplete: () => { t.destroy(); back.destroy(); } });
   }
 
@@ -215,12 +263,13 @@ export class Hud {
     t.setShadow(0, 0, 'rgba(0,0,0,0)', 0);
     const w = t.width + 28, h = t.height + 18;
     const bx = Phaser.Math.Clamp(x, w / 2 + 8, W - w / 2 - 8);
+    const box = panel(s, 'bubble', 0, 0, w, h, 14);
+    // The tail: triangles and lines only (no rounded path to triangulate each frame).
     const g = s.add.graphics();
-    g.fillStyle(0xffffff, 1).lineStyle(4, 0x3b2210, 1);
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, 14).strokeRoundedRect(-w / 2, -h / 2, w, h, 14);
     const tx = Phaser.Math.Clamp(x - bx, -w / 2 + 18, w / 2 - 18);
-    g.fillTriangle(tx - 9, h / 2 - 2, tx + 9, h / 2 - 2, tx, h / 2 + 14).lineBetween(tx - 9, h / 2, tx, h / 2 + 14).lineBetween(tx + 9, h / 2, tx, h / 2 + 14);
-    const c = s.add.container(bx, y, [g, t]).setDepth(this.d + 1).setScale(0.3).setAlpha(0);
+    g.fillStyle(0xffffff, 1).lineStyle(4, 0x3b2210, 1);
+    g.fillTriangle(tx - 9, h / 2 - 3, tx + 9, h / 2 - 3, tx, h / 2 + 14).lineBetween(tx - 9, h / 2, tx, h / 2 + 14).lineBetween(tx + 9, h / 2, tx, h / 2 + 14);
+    const c = s.add.container(bx, y, [box, g, t]).setDepth(this.d + 1).setScale(0.3).setAlpha(0);
     s.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 220, ease: 'Back.out' });
     s.tweens.add({ targets: c, alpha: 0, delay: ms, duration: 250, onComplete: () => c.destroy() });
   }

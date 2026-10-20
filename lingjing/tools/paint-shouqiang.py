@@ -82,7 +82,7 @@ ICON = ('A glossy ROUND mobile-game skill icon: a perfect circular medallion wit
 ICONS = {
   'icon-jian-more': ('deep blue to bright cyan', 'three glowing silver flying swords fanned out pointing up'),
   'icon-jian-pierce': ('indigo to sky blue', 'one glowing flying sword piercing straight through two small red targets in a line'),
-  'icon-jian-return': ('teal to aqua', 'a flying sword curving round in a circular arrow loop, a glowing trail behind it'),
+  'icon-jian-arc': ('teal to aqua', 'a flying sword swinging round in a sideways arc, a glowing circular trail behind it'),
   'icon-huo-blast': ('dark red to bright orange', 'a yellow talisman exploding into a big round fireball burst'),
   'icon-huo-ground': ('crimson to amber', 'a patch of ground with tall flames burning on it, cracked glowing earth'),
   'icon-han-slow': ('navy to icy cyan', 'a pale blue talisman with a big white snowflake'),

@@ -8,7 +8,7 @@
 // → won | lost. The game never waits for a "start wave" tap; only the pick waits.
 //
 // What happened in a step is pushed to `g.events` (the play drains it): spawn, hit, kill, boom, chain, strike, howl,
-// wail, cast, wall, wave, clear, offer, boss, low, won, lost.
+// wail, roar, cast, fade, wall, wave, clear, offer, boss, low, won, lost.
 
 export const W = 540, H = 960;
 export const HERO = { x: 270, y: 846 };
@@ -50,18 +50,22 @@ const emit = (g, e) => { g.events.push(e); };
 
 function startWave(g) {
   g.phase = 'wave';
-  const grow = 1 + (g.level.growth ?? 0) * g.wave;
+  // `difficulty` (the level's one knob, 1 = as tuned) scales every wave's beast count and hp — never the boss count.
+  const k = g.level.difficulty ?? 1, mul = waveMul(g, g.wave) * k;
   g.spawns = g.level.waves[g.wave].flatMap(([kind, n, gap, delay]) =>
-    Array.from({ length: n }, (_, i) => ({ kind, at: g.t + delay + i * gap, mul: (g.level.hpMul ?? 1) * grow })));
+    Array.from({ length: g.kit.beasts[kind].boss ? n : Math.max(1, Math.round(n * k)) }, (_, i) => ({ kind, at: g.t + delay + i * gap, mul })));
   g.wave += 1;
   emit(g, { t: 'wave', n: g.wave, of: g.waves });
 }
+
+/** The beasts' hp × for wave `i` (0-based): hpMul grown by `growth` a wave. */
+const waveMul = (g, i) => (g.level.hpMul ?? 1) * (1 + (g.level.growth ?? 0) * i);
 
 function spawn(g, { kind, mul }, near) {
   const b = g.kit.beasts[kind];
   const x = near ? Math.max(60, Math.min(W - 60, near.x + (g.rnd() - 0.5) * 140)) : 70 + g.rnd() * (W - 140);
   const y = near ? near.y + 20 : -40 - g.rnd() * 30;
-  const hp = Math.round(b.hp * (b.boss ? (g.level.hpMul ?? 1) : mul));
+  const hp = Math.round(b.hp * (b.boss ? (g.level.hpMul ?? 1) * (g.level.difficulty ?? 1) : mul));
   const beast = { id: g.nextId++, kind, x, y, hp, max: hp, speed: b.speed * (0.9 + g.rnd() * 0.2), r: b.r,
     fly: Boolean(b.fly), boss: Boolean(b.boss), slow: 0, slowT: 0, freezeT: 0, stunT: 0, burnT: 0, burn: 0,
     wailT: 0, wailIn: b.wail?.every ?? 0, atWall: false, sway: g.rnd() * 6.28, hitBy: new Set() };
@@ -79,7 +83,7 @@ function runSpawns(g) {
 
 /** Hurt one beast; `kind` is sword | fire | frost | thunder | fox | howl | ground (armour reads it). */
 export function hurt(g, b, dmg, kind, extra = {}) {
-  if (b.hp <= 0) return 0;
+  if (!inReach(g, b)) return 0;
   const k = g.kit.beasts[b.kind];
   let d = dmg * (k.armor?.[kind] ?? 1);
   if (b.freezeT > 0) d *= at(card(g, 'han-freeze').takes, lv(g, 'han-freeze')) ?? 1;
@@ -97,7 +101,10 @@ function kill(g, b) {
   emit(g, { t: 'kill', id: b.id, kind: b.kind, x: b.x, y: b.y, boss: b.boss });
 }
 
-const alive = (g) => g.beasts.filter((b) => b.hp > 0);
+/** The range line: 小满's and 银月's reach ends at `rangeY` (level data). Above it a beast is seen, never hit. */
+export const reachY = (g) => g.level.rangeY ?? -Infinity;
+const inReach = (g, b) => b.hp > 0 && b.y >= reachY(g);
+const alive = (g) => g.beasts.filter((b) => inReach(g, b));
 
 function inRadius(g, x, y, r, { air = true } = {}) {
   return alive(g).filter((b) => (air || !b.fly) && Math.hypot(b.x - x, b.y - y) <= r + b.r * 0.5);
@@ -105,11 +112,11 @@ function inRadius(g, x, y, r, { air = true } = {}) {
 
 // The one to shoot: the focus while it lives, else the one nearest the wall.
 function target(g) {
-  const f = g.beasts.find((b) => b.id === g.focus && b.hp > 0 && b.y > -20);
-  if (f) return f;
-  if (g.focus) g.focus = null;
+  const f = g.beasts.find((b) => b.id === g.focus && b.hp > 0);
+  if (f && inReach(g, f)) return f;
+  if (!f && g.focus) g.focus = null;
   let best = null;
-  for (const b of g.beasts) if (b.hp > 0 && b.y > -10 && (!best || b.y > best.y)) best = b;
+  for (const b of g.beasts) if (inReach(g, b) && (!best || b.y > best.y)) best = b;
   return best;
 }
 
@@ -143,7 +150,7 @@ function fireSwords(g) {
   for (let i = 0; i < n; i += 1) {
     const spread = (i - (n - 1) / 2) * 0.13;
     shoot(g, { kind: 'sword', x: HERO.x + (i - (n - 1) / 2) * 14, y: HERO.y - 30, ...aim(HERO, t, h.speed, spread),
-      dmg, r: h.r, pierce: 1 + pierce, back: lv(g, 'jian-return') > 0, home: t.id });
+      dmg, r: h.r, pierce: 1 + pierce, home: t.id });
   }
   emit(g, { t: 'cast', who: 'xm', kind: 'sword' });
 }
@@ -261,46 +268,58 @@ function moveShot(g, s, dt) {
     if (k >= 1) { burst(g, s); s.dead = true; }
     return;
   }
-  // Homing a little toward the one it was fired at (a sword that curls in looks alive; misses look broken).
+  // Homing a little toward the one it was fired at (a sword that curls in looks alive; misses look broken). A 回旋
+  // sword turns harder, so its sideways start bends into an arc.
   const home = g.beasts.find((b) => b.id === s.home && b.hp > 0);
-  if (home && !s.returning) {
-    const want = Math.atan2(home.y - s.y, home.x - s.x), sp = Math.hypot(s.vx, s.vy);
+  if (home) {
+    const want = Math.atan2(home.y - s.y, home.x - s.x), sp = Math.hypot(s.vx, s.vy), turn = s.arcing ? 7 : 6;
     let cur = Math.atan2(s.vy, s.vx), d = want - cur;
     d = Math.atan2(Math.sin(d), Math.cos(d));
-    cur += Math.max(-6 * dt, Math.min(6 * dt, d));
+    cur += Math.max(-turn * dt, Math.min(turn * dt, d));
     s.vx = Math.cos(cur) * sp; s.vy = Math.sin(cur) * sp;
   }
-  if (s.returning) {
-    const sp = Math.hypot(s.vx, s.vy);
-    const a = Math.atan2(HERO.y - 30 - s.y, HERO.x - s.x);
-    s.vx = Math.cos(a) * sp; s.vy = Math.sin(a) * sp;
-    if (Math.hypot(HERO.x - s.x, HERO.y - 30 - s.y) < 24) s.dead = true;
+  // A sword never heads back down toward the wall and 小满 (Hanli 10-20: 「别对着自己」): a curl that would turn it
+  // round runs it level across the road instead.
+  if (s.kind === 'sword' && s.vy > 0) { const sp = Math.hypot(s.vx, s.vy); s.vy = 0; s.vx = Math.sign(s.vx || 1) * sp; }
+  if (s.arcing) {
+    s.arcAge += dt;
+    if (s.arcAge > 1.1) return fade(g, s);
   }
   s.x += s.vx * dt; s.y += s.vy * dt;
   for (const b of g.beasts) {
-    if (b.hp <= 0 || s.hit.has(b.id) || Math.hypot(b.x - s.x, b.y - s.y) > b.r + s.r) continue;
+    if (!inReach(g, b) || s.hit.has(b.id) || Math.hypot(b.x - s.x, b.y - s.y) > b.r + s.r) continue;
     s.hit.add(b.id);
     if (s.splash) { burst(g, { ...s, radius: s.splash }); s.dead = true; return; }
-    const back = s.returning ? at(card(g, 'jian-return').back, lv(g, 'jian-return')) : 1;
-    hurt(g, b, s.dmg * back, s.kind === 'sword' ? 'sword' : 'fox');
+    const arc = s.arcing ? at(card(g, 'jian-arc').dmg, lv(g, 'jian-arc')) : 1;
+    hurt(g, b, s.dmg * arc, s.kind === 'sword' ? 'sword' : 'fox');
     s.pierce -= 1;
-    if (s.pierce <= 0) { turnOrDie(s); return; }
+    if (s.pierce <= 0) return void arcOrEnd(g, s);
   }
-  if (s.y < -60 || s.x < -60 || s.x > W + 60 || s.y > H) turnOrDie(s);
+  if (s.y < -60 || s.x < -60 || s.x > W + 60 || s.y > H) s.dead = true;
 }
 
-function turnOrDie(s) {
-  if (s.back && !s.returning) {
-    s.returning = true;
-    s.hit = new Set();
-    s.pierce = 99;
-  } else if (!s.returning) s.dead = true;
+// 剑阵 · 回旋: a sword that has struck swings off sideways in an arc to one more beast (two at L2), never back
+// toward the wall, then dissolves in light up the road. No 回旋 (or no beast to swing to): it ends where it hit.
+function arcOrEnd(g, s) {
+  const L = s.kind === 'sword' && !s.arcing ? lv(g, 'jian-arc') : 0;
+  const next = L ? alive(g).filter((b) => !s.hit.has(b.id) && b.y < s.y + 30 && b.y > -10 && dist(b, s) < 320)
+    .sort((a, b) => dist(a, s) - dist(b, s))[0] : null;
+  if (!next) return s.arcing ? fade(g, s) : void (s.dead = true);
+  const sp = Math.hypot(s.vx, s.vy), side = next.x >= s.x ? 1 : -1;
+  s.arcing = true; s.arcAge = 0; s.home = next.id;
+  s.pierce = at(card(g, 'jian-arc').hits, L);
+  s.vx = side * sp * 0.92; s.vy = -sp * 0.4;
+}
+
+function fade(g, s) {
+  s.dead = true;
+  emit(g, { t: 'fade', x: s.x, y: s.y });
 }
 
 // ---- beasts ------------------------------------------------------------------------------------------------------
 
 function moveBeast(g, b, dt) {
-  for (const k of ['slowT', 'freezeT', 'stunT', 'burnT']) b[k] = Math.max(0, b[k] - dt);
+  for (const k of ['slowT', 'freezeT', 'stunT', 'burnT', 'wailT']) b[k] = Math.max(0, b[k] - dt);
   const k = g.kit.beasts[b.kind];
   if (k.wail) wail(g, b, k.wail, dt);
   const held = b.freezeT > 0 || b.stunT > 0;
@@ -318,21 +337,35 @@ function moveBeast(g, b, dt) {
     return;
   }
   if (held) return;
-  const sp = b.speed * (b.slowT > 0 ? 1 - b.slow : 1) * (b.wailT > 0 ? 0 : 1);
+  if (k.march && march(g, b, k.march, dt)) return;
+  const sp = (k.march && !b.roared ? k.march.speed : b.speed) * (b.slowT > 0 ? 1 - b.slow : 1) * (b.wailT > 0 ? 0 : 1);
   b.sway += dt * 3;
   b.x = Math.max(40, Math.min(W - 40, b.x + Math.sin(b.sway) * (b.fly ? 22 : 8) * dt));
   b.y = Math.min(wallY, b.y + sp * dt);
 }
 
+// A boss with a `march` strides down the road in plain view, stops just above the range line and roars for
+// `march.roar` seconds (true while it stands), then crawls on into reach.
+function march(g, b, m, dt) {
+  if (!b.roared && b.y >= reachY(g) - (m.stop ?? 40)) {
+    b.roared = true;
+    b.roarT = m.roar;
+    emit(g, { t: 'roar', id: b.id, x: b.x, y: b.y });
+  }
+  if (!(b.roarT > 0)) return false;
+  b.roarT -= dt;
+  return true;
+}
+
 function wail(g, b, w, dt) {
   if (b.wailT > 0) return;
   b.wailIn -= dt;
-  if (b.wailIn > 0 || b.y < 40) return;
+  if (b.wailIn > 0 || !inReach(g, b)) return;
   b.wailIn = w.every;
   b.wailT = w.for;
   emit(g, { t: 'wail', id: b.id, x: b.x, y: b.y });
   const [kind, n] = w.calls;
-  for (let i = 0; i < n; i += 1) spawn(g, { kind, mul: (g.level.hpMul ?? 1) * (1 + (g.level.growth ?? 0) * (g.wave - 1)) }, b);
+  for (let i = 0; i < n; i += 1) spawn(g, { kind, mul: waveMul(g, g.wave - 1) * (g.level.difficulty ?? 1) }, b);
 }
 
 function burnGrounds(g, dt) {
@@ -453,21 +486,56 @@ export function setFocus(g, id) {
 
 /** The sensible build (the greedy bot): a wide answer first — fire for herds, thunder for chains, then depth. */
 export const GREEDY = ['huo-blast', 'lei-chain', 'jian-more', 'huo-ground', 'han-slow', 'yy-foxfire', 'lei-chain', 'huo-blast',
-  'jian-pierce', 'lei-strike', 'han-freeze', 'yy-howl', 'jian-more', 'huo-blast', 'lei-chain', 'yy-foxfire', 'jian-return'];
+  'jian-pierce', 'lei-strike', 'han-freeze', 'yy-howl', 'jian-more', 'huo-blast', 'lei-chain', 'yy-foxfire', 'jian-arc'];
+
+// A first-time human: picks a card that looks good (a rough sense of value plus whim, never the build list), reacts
+// ~0.4 s late, and taps a beast now and then (and the boss, sometimes, when it wails) — far from the bots' perfect play.
+const LOOKS = { 'huo-blast': 3, 'lei-chain': 3, 'jian-more': 3, 'han-slow': 2.4, 'yy-foxfire': 2.4, 'jian-pierce': 2.2,
+  'huo-ground': 2, 'lei-strike': 2, 'yy-howl': 1.6, 'han-freeze': 1.6, 'jian-arc': 2 };
+const REACT = 0.4;
+
+function humanBot(seed) {
+  const r = rng(`human|${seed}`);
+  let tap = null, think = 0;
+  return {
+    pick: (g) => g.offer.map((id) => [id, (LOOKS[id] ?? 2) + (g.skills[id] ? 0.4 : 0) + r() * 2.2]).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
+    act(g, dt) {
+      if (tap && (tap.in -= dt) <= 0) { setFocus(g, tap.id); tap = null; }
+      if ((think -= dt) > 0 || tap) return;
+      think = 1;
+      const boss = g.beasts.find((b) => b.boss && b.wailT > 0);
+      const near = alive(g).reduce((m, b) => (!m || b.y > m.y ? b : m), null);
+      const want = boss && r() < 0.5 ? boss : near && r() < 0.03 ? near : null;
+      if (want) tap = { id: want.id, in: REACT };
+    },
+  };
+}
 
 export const BOTS = {
   lazy: () => null,
   random: (g) => g.offer[Math.floor(g.rnd() * g.offer.length)],
   greedy: (g) => GREEDY.find((id) => g.offer.includes(id)) ?? g.offer[0],
+  human: { make: humanBot },
 };
 
-/** Play a whole level with a chooser; returns { won, stars, wave, wallLeft, kills, skills }. */
+/** Play a whole level with a bot (a chooser `(g) → card id`, or `{ make(seed) → { pick, act } }`); returns
+ *  { won, stars, wave, wallLeft, walls (the wall after each wave), kills, skills, bossY (where the boss fell) }. */
 export function sim(kit, level, chooser, { seed = 'sim', limit = 900 } = {}) {
   const g = newGame(kit, level, { seed });
+  const bot = chooser.make ? chooser.make(seed) : { pick: chooser };
+  const walls = [];
+  let bossY = null;
   while (!['won', 'lost'].includes(g.phase) && g.t < limit) {
-    if (g.phase === 'pick') pick(g, chooser(g));
-    else step(g, 0.1);
+    if (g.phase === 'pick') pick(g, bot.pick(g));
+    else {
+      if (g.phase === 'wave') bot.act?.(g, 0.1);
+      step(g, 0.1);
+    }
+    for (const e of g.events) {
+      if (e.t === 'clear' || e.t === 'lost') walls.push(Math.round(g.wall));
+      if (e.t === 'kill' && e.boss) bossY = Math.round(e.y);
+    }
     g.events.length = 0;
   }
-  return { won: g.phase === 'won', stars: stars(g), wave: g.wave, wallLeft: g.wall / g.wallMax, kills: g.kills, skills: g.skills };
+  return { won: g.phase === 'won', stars: stars(g), wave: g.wave, wallLeft: g.wall / g.wallMax, walls, kills: g.kills, skills: g.skills, bossY };
 }

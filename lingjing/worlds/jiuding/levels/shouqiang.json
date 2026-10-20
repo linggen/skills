@@ -6,7 +6,7 @@
   "zheng": {"hp": 17, "speed": 84, "bite": 5, "size": 76, "r": 26, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
   "qiuyu": {"hp": 43, "speed": 30, "bite": 9, "size": 78, "r": 27, "armor": {"sword": 0.4, "fire": 1.5}, "frames": ["walk-1", "walk-2", "hit"], "gold": 2},
   "qique": {"hp": 19, "speed": 70, "bite": 6, "size": 80, "r": 26, "fly": true, "armor": {"ground": 0}, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
-  "heyu": {"hp": 2400, "speed": 14, "bite": 60, "size": 200, "r": 74, "boss": true, "wail": {"every": 7, "for": 2.2, "takes": 2, "calls": ["yezhu", 3]}, "frames": ["walk-1", "hit"], "gold": 20}
+  "heyu": {"hp": 2400, "speed": 14, "bite": 60, "size": 200, "r": 74, "boss": true, "wail": {"every": 7, "for": 2.2, "takes": 2, "calls": ["yezhu", 3]}, "march": {"speed": 40, "roar": 1.6}, "frames": ["walk-1", "hit"], "gold": 20}
  },
  "hero": {
   "_about": "小满's flying swords and 银月's spirit bolt: what plays before any card.",
@@ -16,7 +16,7 @@
  "cards": [
   {"id": "jian-more", "family": "jian", "max": 3, "name": {"zh": "剑阵 · 添剑", "en": "Sword array · one more"}, "say": {"zh": "每轮多飞出一把剑。", "en": "One more flying sword per volley."}, "n": [1, 2, 3]},
   {"id": "jian-pierce", "family": "jian", "max": 3, "name": {"zh": "剑阵 · 穿心", "en": "Sword array · pierce"}, "say": {"zh": "飞剑穿透，多刺几只。", "en": "Swords pierce through more beasts."}, "n": [2, 3, 5], "dmg": [4, 8, 12]},
-  {"id": "jian-return", "family": "jian", "max": 2, "name": {"zh": "剑阵 · 回剑", "en": "Sword array · return"}, "say": {"zh": "飞剑飞回手里，来回各斩一遍。", "en": "Swords fly back, cutting both ways."}, "back": [0.7, 1]},
+  {"id": "jian-arc", "family": "jian", "max": 2, "name": {"zh": "剑阵 · 回旋", "en": "Sword array · arc"}, "say": {"zh": "飞剑斩中后一折，横掠去斩下一只。", "en": "A sword that strikes swings on to the next beast."}, "dmg": [0.7, 1], "hits": [1, 2]},
   {"id": "huo-blast", "family": "huo", "max": 3, "name": {"zh": "火符 · 爆炎", "en": "Fire talisman · blast"}, "say": {"zh": "火符落进兽群，炸开一片。", "en": "A fire talisman bursts in the herd."}, "every": [2.6, 2.3, 2.0], "dmg": [30, 46, 64], "radius": [72, 88, 104]},
   {"id": "huo-ground", "family": "huo", "max": 2, "needs": "huo-blast", "name": {"zh": "火符 · 焚地", "en": "Fire talisman · burning ground"}, "say": {"zh": "炸过的地方烧上一阵。", "en": "The blast leaves the ground burning."}, "dps": [14, 24], "for": [3, 4.5]},
   {"id": "han-slow", "family": "han", "max": 3, "name": {"zh": "寒符 · 霜降", "en": "Frost talisman · frost"}, "say": {"zh": "寒气一片，兽群慢下来。", "en": "A cold burst slows the herd."}, "every": [3, 2.6, 2.2], "dmg": [10, 16, 22], "radius": [84, 100, 116], "slow": [0.45, 0.55, 0.62], "for": [3, 3.5, 4]},
@@ -43,7 +43,9 @@
    "between": 3,
    "wall": 1200,
    "wallY": 760,
-   "hpMul": 2.1,
+   "rangeY": 384,
+   "difficulty": 1,
+   "hpMul": 1.3,
    "growth": 0.28,
    "stars": [0.7, 0.35],
    "moments": {

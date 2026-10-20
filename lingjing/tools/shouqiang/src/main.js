@@ -2,10 +2,10 @@
 // (build.mjs), so the browser loads the one shared Phaser beside every game.
 import * as Phaser from 'phaser';
 import { W, H } from 'shouqiang-core';
-import { PlayScene } from './play.js';
+import { PlayScene, ZOOM_MAX } from './play.js';
 
 /**
- * start({ parent, base, lang, kit, level, seed, reducedMotion, showFps, lines, onEvent, onEnd })
+ * start({ parent, base, lang, kit, level, seed, reducedMotion, dev, showFps, lines, onEvent, onEnd })
  *   → { destroy(), say(who, text) }
  * `base`: the URL of games/shouqiang/ (art beside it). `lines`: 银月's prefetched lines by moment (台词预取), else the
  * level's own. `onEvent`: the facts out (start · wave · wave_cleared · boss · low · end). `onEnd({won, stars, stats})`.
@@ -13,8 +13,10 @@ import { PlayScene } from './play.js';
 export function start(opts) {
   const box = opts.parent.getBoundingClientRect();
   const dpr = globalThis.devicePixelRatio || 1;
-  // The canvas at (about) the screen's own pixels, capped at 2× the board: crisp on a phone, cheap on a desk.
-  const zoom = Math.max(1, Math.min(2, ((box.width || W) * dpr) / W));
+  // The canvas at (about) the screen's own pixels, capped at 1.5× the board (810×1440): a 3× phone or a wide desk card
+  // would otherwise fill 2× (1080×1920, 1.8× the pixels) for a sharpness the painted art doesn't have. The play steps
+  // it down further on its own when frames run long (play.js, quality).
+  const zoom = Math.max(1, Math.min(ZOOM_MAX, ((box.width || W) * dpr) / W));
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: opts.parent,
@@ -29,7 +31,7 @@ export function start(opts) {
     disableContextMenu: true,
   });
   game.scene.add('play', PlayScene, true, { ...opts, zoom });
-  if (opts.showFps) globalThis.__shouqiang = game; // the 游戏厅 (dev=1) only: a live check reads fps and phase from here
+  if (opts.dev) globalThis.__shouqiang = game; // the 游戏厅 (dev=1) only: a live check reads fps and phase from here
   return {
     destroy: () => game.destroy(true),
     say: (who, text) => game.scene.getScene('play')?.say?.(who, text),
