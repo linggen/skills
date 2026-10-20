@@ -110,7 +110,7 @@
       }
     ]
   },
-  "_stamina": "stamina is the pace — design.md § 灵气. Refills by the clock, full in refill_hours; actions cost it; a quest paid refills it (the app's own `qi`, else refill.quest).",
+  "_stamina": "stamina is the pace — design.md § 灵气. Refills by the clock, full in refill_hours; actions cost it; a quest paid refills it (the app's own `qi`, else refill.quest). `shouchao`: a night of 兽潮 (2026-10-20) costs a fight's, taken as the night is counted.",
   "stamina": {
     "max": 100,
     "refill_hours": 5,
@@ -123,6 +123,7 @@
       },
       "step": 3,
       "duel": 8,
+      "shouchao": 8,
       "game": 3,
       "trial": 3,
       "tame": 3,

@@ -43,6 +43,7 @@ import { rerunBoardId, rerunBrief, runBoardHere, runRow } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 import { mishiHosted, mishiLook } from './mishi.mjs';
 import { kaoBrief, kaoHosted } from './kao.mjs';
+import { shouchaoHosted, shouchaoRow } from './shouchao.mjs';
 import { qiyuHosted, qiyuRow } from './qiyu.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
@@ -423,6 +424,8 @@ function tasksBrief(content, state, ctx) {
   Object.assign(hosted, mishiHosted(content, state, ctx.now));
   // 本王考考你 (rules/kao.mjs) on a night she is awake, and a 秘境 rerun's 奇遇 in its room (rules/qiyu.mjs).
   Object.assign(hosted, kaoHosted(content, state, ctx.now), qiyuHosted(content, state));
+  // 兽潮 (rules/shouchao.mjs): 守墙关's next night at 沉鼎观, in 酉时.
+  Object.assign(hosted, shouchaoHosted(content, state, ctx.now));
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
   const hereShows = new Set((sceneOf(content, state)?.show ?? []).filter(c => c.card === 'board').map(c => c.id));
@@ -451,6 +454,8 @@ function tasksBrief(content, state, ctx) {
         ...(task.kao ? { light: true, ...kaoBrief(content, state, ctx.now) } : {}),
         // A 奇遇: its frame is the board's line, its deal the game's (rules/qiyu.mjs).
         ...(task.qiyu ? qiyuRow(content, state, id) : {}),
+        // 兽潮: tonight's row of 守墙关's table (or the rise past it), its title and lead (rules/shouchao.mjs).
+        ...(task.shouchao ? shouchaoRow(content, state, ctx.now) : {}),
         // A run's 拾遗 (割藤 since 2026-10-19): the room's find hung on the vines (rules/rerun.mjs).
         ...(task.run ? runRow(content, state, id) : {}),
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,

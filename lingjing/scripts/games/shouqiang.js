@@ -35,8 +35,12 @@ export function levelAsked(kit, data, search) {
   return byId ?? (Number.isInteger(n) && n >= 1 && n <= kit.levels.length ? kit.levels[n - 1] : kit.levels[0]);
 }
 
+/** …and as the story deals it: `data.over` laid on the row — 兽潮's night (rules/shouchao.mjs: its title, its lead
+    with 银月's telling, and past the table the rise's `difficulty` · `hpMul` · `growth` · `waves`). */
+export const levelDealt = (kit, data, search) => (data?.over ? { ...levelAsked(kit, data, search), ...data.over } : levelAsked(kit, data, search));
+
 /** The level a mount will play, before it mounts: the host's 台词预取 (games/prefetch.js) reads its moments. */
-export const levelOf = (data, search = globalThis.location?.search ?? '') => fetch(LEVELS).then((r) => r.json()).then((kit) => ({ kit, level: levelAsked(kit, data, search) }));
+export const levelOf = (data, search = globalThis.location?.search ?? '') => fetch(LEVELS).then((r) => r.json()).then((kit) => ({ kit, level: levelDealt(kit, data, search) }));
 
 async function loadFont(doc) {
   if (!globalThis.FontFace || !doc.fonts) return;
@@ -76,7 +80,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     signal?.addEventListener('abort', leave, { once: true });
     Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), import('./shouqiang/core.js'), loadFont(doc)]).then(async ([kit, { start }, { openingOf }]) => {
       if (done) return;
-      let level = levelAsked(kit, data, search);
+      let level = levelDealt(kit, data, search);
       // In the shell: the story lines read on its lead card, over the field standing still; the canvas keeps the big
       // banners and its 3-2-1 (with an opening pick, the pick comes straight after the card and they follow it).
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join('') : '';
@@ -88,7 +92,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         held: Boolean(said), // the field drawn behind the shell's lead card, standing still till it is read (Hanli 10-20: 「开场卡后面先画出画面」)
         onEnd: (r) => {
           if (onResize) win.removeEventListener('resize', onResize);
-          const nx = kit.levels[kit.levels.indexOf(levelAsked(kit, data, search)) + 1]; // 下一关 (the shell's, off the story)
+          const nx = data?.over ? null : kit.levels[kit.levels.indexOf(levelAsked(kit, data, search)) + 1]; // 下一关 (the shell's, off the story)
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });

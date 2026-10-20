@@ -237,7 +237,7 @@ overflow pays more.
 
 | | |
 |---|---|
-| Daily routine (~15–20 min) | 功课 · a 秘境 rerun (3 h cooldown; open through 古七/古八 too, the same 观) · 饭桶 (1 h cooldown) · pool fights (30 min rest; 体力 is the day's only limit) |
+| Daily routine (~15–20 min) | 功课 · a 秘境 rerun (3 h cooldown; open through 古七/古八 too, the same 观) · 饭桶 (1 h cooldown) · pool fights (30 min rest; 体力 is the day's only limit) · 兽潮 in 酉时 (one night, ≤ ~20 min, below) |
 | Story + its boards (~1 h a 回) | unlimited, at the player's pace, up to the 回's stage quest |
 | A 回 | typical ≈4–7 days (古六 ≈7.4: thirteen scenes behind its quest), heavy ≈3–5, light ≈10–16 (体力 on) |
 | 古一–古三 | fast — no quest; a first sitting or two |
@@ -279,6 +279,22 @@ overflow pays more.
 - **Every hand-in visibly gains 修为 or 灵石.** 零层's 功课 pays 5 灵石.
 - **Old saves** keep their 层 and how full it stood (state v10 `paceLayer`, `thresholds_were` by
   version: a v8 save is read against the oldest ladder it was played on).
+
+**兽潮 — the daily tide at 沉鼎观** 【已建】 (Hanli, 2026-10-20: 「兽潮塔防可以作为游戏里才有的一个情节. 比如每天固定时间有兽潮
+攻击沉鼎观. 在游戏里交代一下就好了」): a plot the game alone has, never the book's. 银月 tells it once, on the first
+night's lead (at dusk the 九鼎 veins swell and draw the beasts down; the outer disciples man the wall). Rules:
+rules/shouchao.mjs; the knobs: tasks/world.json `shouchao`.
+- **When**: 酉时 (17:00–19:00 local; a night begun in it counts 30 min after), once a night, from 古四's 小周天
+  (wm-zhoutian, his first 灵力); only at 沉鼎观, never inside a beat's lock, the 秘境, a rerun or a fight.
+- **Cost and pay**: 8 灵气 (a fight's), taken as the night is counted — a lost night costs nothing, an empty pool
+  shuts the board. By stars: 1★ 修为 10 + 灵石 5 · 2★ 20 + 10 + an herb · 3★ 30 + 15 + an herb (修为 on the
+  `haunt` table, layer-scaled, past the 回's mark as 灵石; 灵石 the small-game ranks). A night missed is never
+  punished: the seniors hold, only its pay is gone.
+- **Levels**: each night the next row of 守墙关's table (levels/shouqiang.json) with a `tide` number and no `story`,
+  whose beasts are all of his 回 (creatures.json `hui`, book order); a won night moves on, a lost one comes again.
+  Past the rows: the rise on the last that fits (+2% `difficulty`, +0.004 `growth`, gaps −1% a night; a boss of his
+  回 in the row's boss's place). A row added later is played first. Rows now: 兽潮 1–3 (野猪 · 狰, 古四), 4 (犰狳,
+  古五), the 山门 (鬿雀 · 合窳, 古八).
 
 ### 境界 in the game 【已建】
 

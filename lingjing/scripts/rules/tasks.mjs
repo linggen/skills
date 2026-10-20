@@ -19,6 +19,7 @@ import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, po
 import { runBoardHere, runFindDone, runSpoils } from './rerun.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
 import { qiyuDone, qiyuHere } from './qiyu.mjs';
+import { shouchaoDone, shouchaoHere } from './shouchao.mjs';
 
 /* ── Tasks and quests ── */
 
@@ -106,7 +107,7 @@ function catchHere(content, state, id) {
 function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   if (!t) return false;
-  if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id) || stallHere(content, state, id, now) || runBoardHere(content, state, id) || kaoHere(content, state, id, now) || qiyuHere(content, state, id)) return true;
+  if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id) || stallHere(content, state, id, now) || runBoardHere(content, state, id) || kaoHere(content, state, id, now) || qiyuHere(content, state, id) || shouchaoHere(content, state, id, now)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
@@ -118,6 +119,8 @@ function taskDone(state, content, ctx, id) {
   if (runBoardHere(content, state, id)) return runFindDone(state, content, ctx, id);
   // 本王考考你 (rules/kao.mjs): a word's first clear, paid by its looks.
   if (kaoHere(content, state, id, ctx.now)) return kaoDone(state, content, ctx, id);
+  // 兽潮 (rules/shouchao.mjs): the night counted — its 灵气, the pay by stars, the next night.
+  if (shouchaoHere(content, state, id, ctx.now)) return shouchaoDone(state, content, ctx, id);
   // A 秘境 rerun's 奇遇 (rules/qiyu.mjs): paid by a find of the run's, and its first clear's 灵石.
   if (qiyuHere(content, state, id)) return qiyuDone(state, content, ctx, id, (s, t, paid) => boardPay(content, s, t, id, paid));
   const again = reopened(content, state, id, ctx.now);

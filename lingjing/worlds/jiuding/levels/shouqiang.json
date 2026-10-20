@@ -67,6 +67,7 @@
    "kit": "shouqiang",
    "story": null,
    "place": "shanmen",
+   "tide": 5,
    "title": {"zh": "沉鼎观 · 守山门", "en": "Chending Temple · Hold the gate"},
    "lead": [
     {"zh": "沉鼎观的山门，只剩一道墙。", "en": "Of Chending Temple's gate, only the wall still stands."},
@@ -302,6 +303,151 @@
     [["qiuyu", 2, 8, 3], ["qique", 3, 5, 6], ["zheng", 3, 5, 10], ["yezhu", 4, 4, 4]],
     [["yezhu", 6, 3, 3], ["qique", 3, 5, 6], ["qiuyu", 2, 8, 8], ["zheng", 2, 5, 12]],
     [["yezhu", 5, 3, 3], ["heyu", 1, 1, 10, 2], ["qique", 3, 4, 14], ["zheng", 3, 3, 18], ["yezhu", 8, 1, 30], ["qiuyu", 2, 3, 32]]
+   ]
+  },
+  {
+   "id": "shouchao-1",
+   "kit": "shouqiang",
+   "story": null,
+   "place": "shanmen",
+   "tide": 1,
+   "title": {"zh": "兽潮 · 头一夜", "en": "The beast tide · the first night"},
+   "lead": [
+    {"zh": "日头落到山后，山道上起了尘。", "en": "The sun drops behind the hills; dust rises on the mountain road."},
+    {"zh": "兽潮来袭！", "en": "Here they come!", "big": true},
+    {"zh": "守住山门！", "en": "Hold the gate!", "big": true}
+   ],
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 3.2,
+   "growth": 0.22,
+   "stars": [0.7, 0.35],
+   "moments": {
+    "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "师兄们在左边，咱们守中间。", "en": "Our seniors have the left. We hold the middle."}],
+    "low": [{"zh": "墙要塌了！", "en": "The wall is cracking!"}],
+    "win": [{"zh": "兽潮退了。", "en": "The tide drains away."}]
+   },
+   "waves": [
+    [["yezhu", 8, 0.8, 0]],
+    [["yezhu", 12, 0.55, 0]],
+    [["zheng", 8, 0.6, 0], ["yezhu", 8, 0.5, 4]],
+    [["yezhu", 16, 0.4, 0]],
+    [["zheng", 14, 0.4, 0], ["yezhu", 10, 0.4, 3]],
+    [["yezhu", 20, 0.3, 0], ["zheng", 14, 0.35, 5]]
+   ]
+  },
+  {
+   "id": "shouchao-2",
+   "kit": "shouqiang",
+   "story": null,
+   "place": "shanmen",
+   "tide": 2,
+   "title": {"zh": "兽潮 · 狰群", "en": "The beast tide · the zheng pack"},
+   "lead": [
+    {"zh": "黄昏，药园那边一片红毛乱窜。", "en": "Dusk: a flurry of red fur over by the herb garden."},
+    {"zh": "兽潮来袭！", "en": "Here they come!", "big": true},
+    {"zh": "守住山门！", "en": "Hold the gate!", "big": true}
+   ],
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.8,
+   "growth": 0.24,
+   "stars": [0.7, 0.35],
+   "moments": {
+    "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "师兄们在左边，咱们守中间。", "en": "Our seniors have the left. We hold the middle."}],
+    "low": [{"zh": "墙要塌了！", "en": "The wall is cracking!"}],
+    "win": [{"zh": "兽潮退了。", "en": "The tide drains away."}]
+   },
+   "waves": [
+    [["yezhu", 10, 0.7, 0]],
+    [["zheng", 10, 0.5, 0], ["yezhu", 6, 0.6, 4]],
+    [["yezhu", 18, 0.4, 0]],
+    [["zheng", 16, 0.35, 0], ["yezhu", 10, 0.4, 3]],
+    [["yezhu", 24, 0.3, 0]],
+    [["zheng", 20, 0.3, 0], ["yezhu", 14, 0.35, 4]],
+    [["yezhu", 26, 0.25, 0], ["zheng", 20, 0.3, 6]]
+   ]
+  },
+  {
+   "id": "shouchao-3",
+   "kit": "shouqiang",
+   "story": null,
+   "place": "shanmen",
+   "tide": 3,
+   "title": {"zh": "兽潮 · 满山", "en": "The beast tide · the whole mountain"},
+   "lead": [
+    {"zh": "今天的灵脉涨得格外高，山道上黑压压一片。", "en": "The veins run high tonight; the road is black with beasts."},
+    {"zh": "兽潮来袭！", "en": "Here they come!", "big": true},
+    {"zh": "守住山门！", "en": "Hold the gate!", "big": true}
+   ],
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.2,
+   "growth": 0.26,
+   "stars": [0.7, 0.35],
+   "moments": {
+    "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "师兄们在左边，咱们守中间。", "en": "Our seniors have the left. We hold the middle."}],
+    "low": [{"zh": "墙要塌了！", "en": "The wall is cracking!"}],
+    "win": [{"zh": "兽潮退了。", "en": "The tide drains away."}]
+   },
+   "waves": [
+    [["yezhu", 12, 0.6, 0]],
+    [["zheng", 12, 0.45, 0], ["yezhu", 8, 0.5, 4]],
+    [["yezhu", 20, 0.35, 0], ["zheng", 6, 0.6, 5]],
+    [["zheng", 20, 0.3, 0], ["yezhu", 12, 0.4, 3]],
+    [["yezhu", 28, 0.25, 0]],
+    [["zheng", 24, 0.28, 0], ["yezhu", 16, 0.3, 4]],
+    [["yezhu", 30, 0.22, 0], ["zheng", 20, 0.28, 5]],
+    [["zheng", 30, 0.22, 0], ["yezhu", 26, 0.25, 4]]
+   ]
+  },
+  {
+   "id": "shouchao-4",
+   "kit": "shouqiang",
+   "story": null,
+   "place": "shanmen",
+   "tide": 4,
+   "title": {"zh": "兽潮 · 甲兽", "en": "The beast tide · the armoured ones"},
+   "lead": [
+    {"zh": "秘境里的东西也闻着味儿出来了，一身硬甲。", "en": "Things from the hidden realm have caught the scent too — hard-shelled ones."},
+    {"zh": "兽潮来袭！", "en": "Here they come!", "big": true},
+    {"zh": "守住山门！", "en": "Hold the gate!", "big": true}
+   ],
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.0,
+   "growth": 0.27,
+   "stars": [0.7, 0.35],
+   "moments": {
+    "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "师兄们在左边，咱们守中间。", "en": "Our seniors have the left. We hold the middle."}],
+    "low": [{"zh": "墙要塌了！", "en": "The wall is cracking!"}],
+    "win": [{"zh": "兽潮退了。", "en": "The tide drains away."}]
+   },
+   "waves": [
+    [["yezhu", 13, 0.6, 0]],
+    [["zheng", 14, 0.45, 0], ["yezhu", 8, 0.5, 4]],
+    [["qiuyu", 8, 0.9, 0], ["yezhu", 14, 0.4, 3]],
+    [["zheng", 22, 0.3, 0], ["qiuyu", 6, 0.8, 4]],
+    [["yezhu", 30, 0.25, 0], ["qiuyu", 8, 0.75, 4]],
+    [["qiuyu", 14, 0.6, 0], ["zheng", 22, 0.3, 3]],
+    [["yezhu", 30, 0.22, 0], ["zheng", 22, 0.25, 4], ["qiuyu", 10, 0.7, 8]],
+    [["qiuyu", 18, 0.5, 0], ["zheng", 28, 0.22, 3], ["yezhu", 20, 0.3, 8]]
    ]
   }
  ]
