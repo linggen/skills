@@ -153,8 +153,9 @@ export function wireShell(doc = globalThis.document, { onAct = () => {} } = {}) 
 /* ── Off the story: one game alone in its shell (游戏厅, the try page) ── */
 
 /** Play `mount` in a shell inside `root`; 再来 deals it again. A won game that names its next level (`r.next`, a
-    level id or number) gets 下一关, which `next(r.next)` opens. */
-export function playAlone(root, mount, { id, title, kind, how, timed, tall, lang = 'zh', opts = {}, leadLine = '', next = null } = {}) {
+    level id or number) gets 下一关, which `next(r.next)` opens. `prefetch({ signal })`, when given (a dev page's
+    `?prefetch=1`), is asked once a deal for the mount's 台词预取 options (`{ lines }`, games/prefetch.js). */
+export function playAlone(root, mount, { id, title, kind, how, timed, tall, lang = 'zh', opts = {}, leadLine = '', next = null, prefetch = null } = {}) {
   root.innerHTML = frameHtml({ id, title, kind, how, timed, tall, lang, body: '<div class="gshell-slot" id="slot"></div>' });
   root.querySelector('.gshell').dataset.lang = lang;
   let stop = null, n = 0, last = null;
@@ -166,7 +167,8 @@ export function playAlone(root, mount, { id, title, kind, how, timed, tall, lang
     const slot = root.querySelector('#slot');
     await lead(id, leadLine, { count: timed, reducedMotion: opts.reducedMotion });
     const seed = n++ ? `${opts.seed ?? id}|${n}` : opts.seed; // 再来 deals a fresh one
-    const r = await mount(slot, { ...opts, seed, lang, signal: stop.signal, shell: shellFor(id) });
+    const her = prefetch?.({ signal: stop.signal }) ?? null;
+    const r = await mount(slot, { ...opts, ...(her ?? {}), seed, lang, signal: stop.signal, shell: shellFor(id) });
     if (r?.left) return;
     const on = Boolean(next && r?.won && r?.next != null);
     last = r;

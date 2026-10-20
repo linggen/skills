@@ -29,6 +29,7 @@
   <script type="module">
     import { mountPure } from './games/mount.js';
     import { playAlone, timedOf } from './games/shell.js';
+    import { devPrefetch } from './games/prefetch-ling.js';
     const q = new URLSearchParams(location.search);
     const root = document.getElementById('try');
     if (q.get('dev') !== '1') root.textContent = '—';
@@ -46,6 +47,7 @@
       playAlone(document.getElementById('play'), mount, {
         id: `try-${id}`, title: mod.meta?.name?.[lang] ?? id, how: mod.meta?.how?.[lang] ?? '', timed: timedOf(mod), lang,
         opts: { data, seed: q.get('seed') || String(Date.now()), level: Number(q.get('level') || 1) },
+        prefetch: devPrefetch(mod, { data, lang }), // 台词预取 only with &prefetch=1
       });
     }
   </script>

@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { WORDS, cardHtml } from '../scripts/cards.js';
-import { anyPaused, forget, frameHtml, isPaused, say, setPaused, shellFor, showResult, timedOf } from '../scripts/games/shell.js';
+import { anyPaused, forget, frameHtml, isPaused, playAlone, say, setPaused, shellFor, showResult, timedOf } from '../scripts/games/shell.js';
 
 const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
 const REG = JSON.parse(read('../worlds/jiuding/games.json'));
@@ -87,4 +87,23 @@ test('every game in the registry can be hosted in the shell, and every place a g
   assert.equal(timedOf({ tick() {} }), true);
   assert.equal(timedOf({ meta: { pause: true } }), true);
   assert.equal(timedOf({ mount() {} }), false, 'a kit with its own loop and no pause yet shows no pause button');
+});
+
+test('off the story, 台词预取 only when asked (`prefetch`, a dev page\'s ?prefetch=1): once a deal, its lines into the mount', async () => {
+  const fakeRoot = () => ({ innerHTML: '', querySelector: (q) => (q === '.gshell' ? { dataset: {} } : {}), ownerDocument: { addEventListener() {}, removeEventListener() {} } });
+  const seen = [];
+  const mount = async (_slot, o) => { seen.push(o); return { left: true }; };
+  let asked = 0;
+  const lines = { win: ['守住了。'] };
+  const stop = playAlone(fakeRoot(), mount, { id: 'pa1', opts: { seed: 's' }, prefetch: ({ signal }) => { asked += 1; assert.ok(signal); return { lines }; } });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(asked, 1);
+  assert.equal(seen[0].lines, lines, 'her lines reach the game');
+  assert.ok(seen[0].shell?.say, 'the shell still rides along');
+  stop();
+  const plain = playAlone(fakeRoot(), mount, { id: 'pa2', opts: {} });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(seen[1].lines, undefined, 'no prefetch: the level\'s own lines');
+  plain();
+  assert.match(read('../scripts/beat-host.js'), /prefetch\(id, g\)/, 'the story\'s host asks as it mounts');
 });

@@ -33,6 +33,9 @@ export function levelAsked(kit, data, search) {
   return byId ?? (Number.isInteger(n) && n >= 1 && n <= kit.levels.length ? kit.levels[n - 1] : kit.levels[0]);
 }
 
+/** The level a mount will play, before it mounts: the host's 台词预取 (games/prefetch.js) reads its moments. */
+export const levelOf = (data, search = globalThis.location?.search ?? '') => fetch(LEVELS).then((r) => r.json()).then((kit) => ({ kit, level: levelAsked(kit, data, search) }));
+
 async function loadFont(doc) {
   if (!globalThis.FontFace || !doc.fonts) return;
   if ([...doc.fonts].some((f) => f.family === 'SQKuaiLe')) return;

@@ -16,7 +16,9 @@ export const mountOnly = (mod) => Boolean(mod?.mount && (!mod.html || mod.meta?.
 /** The board card's body for such a board: the host the game is laid into. */
 export const mountHostHtml = (id, esc) => `<div class="game g-mounthost" data-mount="${esc(id)}"></div>`;
 
-export function beatHost({ boardFor, lang, onSettled, doc = globalThis.document }) {
+/* `prefetch(id, board)`: the page's 台词预取 for a game with moments (games/prefetch.js) — `{ lines, onEvent }` for
+   the mount, asked once as the game is mounted; null when there is nothing to ask. */
+export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc = globalThis.document }) {
   const hosted = new Map(); // task id → { node, board }
   const start = (id, g) => {
     const node = doc.createElement('div');
@@ -24,7 +26,9 @@ export function beatHost({ boardFor, lang, onSettled, doc = globalThis.document 
     const entry = { node, board: g };
     hosted.set(id, entry);
     const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
-    Promise.resolve(g.mod.mount(node, { lang: lang(), reducedMotion, seed: `${g.day ?? ''}|${id}`, data: g.data ?? {}, winHold: 0, shell: shellFor(id) }))
+    let her = null;
+    try { her = prefetch(id, g); } catch (e) { console.warn('[lingjing] prefetch', id, e); }
+    Promise.resolve(g.mod.mount(node, { lang: lang(), reducedMotion, seed: `${g.day ?? ''}|${id}`, data: g.data ?? {}, winHold: 0, shell: shellFor(id), ...(her ?? {}) }))
       .then((result) => onSettled(g, result ?? { won: false }))
       .catch((e) => console.warn('[lingjing] beat', id, e));
     return entry;

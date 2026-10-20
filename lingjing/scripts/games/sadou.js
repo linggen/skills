@@ -13,6 +13,7 @@
 export const meta = {
   id: 'sadou',
   pause: true, // the shell's bar pauses the play (tools/sadou/src/play.js setPaused)
+  lines: 'one', // 台词预取: the play reads one line a moment (play.js say: a string), not a pool
   name: { zh: '撒豆成兵', en: 'Beans into Soldiers' }, // the game's name; the level's own (山道) is the canvas's top bar
   how: {
     zh: '左右拖动，带豆兵穿过加倍的符门，躲开陷阱，撞翻兽潮，最后打倒合窳。',
@@ -30,6 +31,9 @@ export function levelAsked(kit, data, search) {
   const n = Number(lv);
   return byId ?? (Number.isInteger(n) && n >= 1 && n <= kit.levels.length ? kit.levels[n - 1] : kit.levels[0]);
 }
+
+/** The level a mount will play, before it mounts: the host's 台词预取 (games/prefetch.js) reads its moments. */
+export const levelOf = (data, search = globalThis.location?.search ?? '') => fetch(LEVELS).then((r) => r.json()).then((kit) => ({ kit, level: levelAsked(kit, data, search) }));
 
 async function loadFont(doc) {
   if (!globalThis.FontFace || !doc.fonts) return;

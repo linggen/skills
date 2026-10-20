@@ -153,6 +153,18 @@ channel on the phone. The message shapes are identical, so a kit is written once
   level's moment list once, and she writes a short line for each. The kit keeps them and shows
   each one the instant its moment comes. That's one extra call per level and zero latency in
   play. Only the end-of-level comment and the AI games ask live.
+  **Built 10-20:** `games/prefetch.js` turns the level into facts (its title, scene, beasts by name,
+  and each moment with its meaning and the level's own lines as tone) and checks her reply line by
+  line: only the level's keys, at most 16 字 (60 chars in English), in the player's language, no
+  code. Anything that fails falls back to the data line for that moment. `games/prefetch-ling.js`
+  asks her through `/api/chat`, in a side session bound to the same save with her tools withheld,
+  and removes the session afterwards. Her reply is `LINES {json}` and then `SILENT`, so nothing is
+  spoken aloud and the chat reader keeps the JSON. The story's host (`beat-host.js` `prefetch`)
+  asks once per mount, as the lead card shows, for any game that exports `levelOf`: 守墙关 and
+  撒豆成兵 (`meta.lines: 'one'`: it reads a single line rather than a pool). It asks only when she
+  is awake. The game reads `lines[moment]` lazily, so a late reply still serves the moments that
+  are left. The 游戏厅 and the try page keep the data lines unless `?prefetch=1` is set. A test
+  save takes `&her=stub` or `&her=slow`.
 - **Layout:** while playing, the chat is folded (10-14). Her lines appear on the field. After
   the play the chat opens and she comments, then the story goes on.
 

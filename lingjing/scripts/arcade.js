@@ -8,6 +8,7 @@ import { esc } from './esc.js';
 import { mountPure } from './games/mount.js';
 import { playAlone, timedOf } from './games/shell.js';
 import { arcadePlayUrl } from './arcade-board.js';
+import { devPrefetch } from './games/prefetch-ling.js';
 
 const q = new URLSearchParams(location.search);
 export const devOnly = (params) => params.get('dev') === '1';
@@ -142,6 +143,8 @@ async function playPage(id, n) {
     opts: { reducedMotion, seed: `arcade|${Date.now()}`, data: row.data ?? {} },
     // 下一关: a game with levels names its next one when won (`r.next`); the page opens it by `lv`
     next: (lv) => { location.href = href({ game: id, n: String(n ?? ''), lv: String(lv) }); },
+    // 台词预取 off the story only on `?prefetch=1` (a dev check); else the level's own lines.
+    prefetch: devPrefetch(mod, { data: row.data ?? {}, lang: lang() }),
   });
 }
 

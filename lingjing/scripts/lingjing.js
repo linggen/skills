@@ -44,6 +44,8 @@ import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
 import { CLOSE_AT, POOR_AT, createHerSay, herMode } from './hersay.js';
+import { factsFor, prefetchLines } from './games/prefetch.js';
+import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
 import { raiseUnease } from './unease.js';
 import { keepTogether, LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
@@ -162,7 +164,7 @@ const words = () => {
    html, act), loaded the first time a place shows one. */
 const GAMES = {};
 /* The beats on the mount() contract, laid into their hosts after every draw (beat-host.js). */
-const beats = beatHost({ boardFor: (id) => boardFor(id), lang: () => lang(), onSettled: (g, r) => beatSettled(g, r) });
+const beats = beatHost({ boardFor: (id) => boardFor(id), lang: () => lang(), onSettled: (g, r) => beatSettled(g, r), prefetch: (id, g) => prefetchFor(id, g) });
 function gameMod(id) {
   if (GAMES[id] !== undefined) return GAMES[id];
   GAMES[id] = null;
@@ -3571,6 +3573,25 @@ function herCues(b, before, mark, mine) {
   if (kinds.length) b.say.cue(kinds, after, (k) => fightFacts(after, herFactsCtx(b), k, { what: big }));
 }
 
+/* ── 台词预取 (games/prefetch.js; Hanli 10-20: 「台词预取, 好主意! 就这么做」) ──
+   A game with moments (its module reads its level: `levelOf`) is mounted with `lines`: she is asked once, as it
+   mounts, for a short line at each of its moments, and the game shows each the instant its moment comes. Asleep in
+   the 木牌, absent, or a chatless test save: no call, the level's own lines stand — as they do when she is late,
+   fails, or answers something unusable. `&her=stub` / `&her=slow` (test saves) as for the fight. */
+let prefetchLog = null;
+const stubLines = (text) => JSON.stringify(Object.fromEntries([...text.matchAll(/^- ([a-z_]+)/gm)].map(([, m]) => [m, [`（桩）${m}`]])));
+function prefetchFor(id, g) {
+  if (typeof g?.mod?.levelOf !== 'function' || CHATLESS || herNow() !== 'awake') return null;
+  const ask = HER_SEAM === 'slow' ? () => new Promise(() => {})
+    : HER_SEAM === 'stub' ? (text) => new Promise((done) => setTimeout(() => done(`${stubLines(text)}\nSILENT`), 1500))
+      : (text, o) => askHerLines(text, { ...o, params: CHAT_PARAMS });
+  const p = prefetchLines({ facts: factsFor(g.mod, { data: g.data ?? {}, lang: lang() }), ask, shape: g.mod.meta?.lines });
+  if (!p) return null;
+  prefetchLog = { id, asking: true };
+  p.done.then((r) => { prefetchLog = { id, ...r }; console.info('[lingjing] 台词预取', id, r.ok ? `${Object.keys(r.got).length} moments` : r.why, `${r.ms} ms`); });
+  return { lines: p.lines };
+}
+
 /* ── 银月 as companion (hersay.js; Hanli, 2026-10-15) ──
    Every won fight and every loss, a realm risen, a 回 done, a beast tamed, a
    rare find, a first win, a failed 渡劫, a board left or stuck on: the page
@@ -3884,7 +3905,9 @@ async function settleBout(b = bout) {
 /* The chat this page is bound as (SKILL.md session-params): a test save's (`{save}`) or the main
    save's (none). The main page never picks up a test save's chat, nor a test save the main one. */
 const CHAT_PARAMS = SCRATCH ? { save: SCRATCH } : undefined;
-const boundAsPage = (list) => (sharedApi.boundTo ? sharedApi.boundTo(list, CHAT_PARAMS ?? {}) : SCRATCH ? [] : list);
+// 台词预取's side session (games/prefetch-ling.js) is never the day's chat, should one outlive its ask.
+const notPrefetch = (list) => list.filter((s) => s.title !== PREFETCH_TITLE);
+const boundAsPage = (list) => notPrefetch(sharedApi.boundTo ? sharedApi.boundTo(list, CHAT_PARAMS ?? {}) : SCRATCH ? [] : list);
 async function recentSessionId() {
   try {
     return pickResumable(boundAsPage(await listSkillSessions(SKILL)));
@@ -4687,6 +4710,8 @@ if (SCRATCH) {
     stuck: (id) => { const g = boardFor(id); if (!g) return false; g.shownAt = 0; openStuckSlots(); return true; },
     skip: (id) => { const g = boardFor(id); if (!g?.mod) return false; g.shownAt = 0; return skipGame(id); },
     // 银月 in the fight (fightsay.js): her bubble, the counts, the last facts sent.
+    // 台词预取: the last level's ask — its state, her lines by moment, how long it took.
+    prefetch: () => prefetchLog,
     her: () => ({ line: bout?.her ?? null, asks: bout?.say?.st.asks ?? null, cues: bout?.say?.st.cues ?? null, told: [...(bout?.say?.st.told ?? [])], facts: herFactsSent }),
     // 银月 as companion (hersay.js): her mode, her last line and bubble, the day's counts.
     companion: () => ({ mode: herNow(), line: herSay.st.line, bubble: herBub?.text ?? null, shown: document.querySelector('.slotfoot > .yysay')?.textContent ?? null, mem: herSay.mem, facts: herFactsSent }),
