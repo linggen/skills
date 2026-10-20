@@ -4,13 +4,17 @@
 // loading the one shared scripts/vendor/phaser.min.mjs); the engine is games/shouqiang/core.js; the level, waves and
 // cards are data (worlds/jiuding/levels/shouqiang.json). This module keeps the small-game contract (games/mount.js):
 //
-//   mount(container, { lang, data, signal, reducedMotion, seed, lines, onEvent }) → Promise<{ won, stars, stats } | { left }>
+//   mount(container, { lang, data, signal, reducedMotion, seed, lines, onEvent, shell }) → Promise<{ won, stars, stats } | { left }>
+//
+// In the one shell (games/shell.js, `shell`): the level's story lines are the shell's lead card, its pause is the shell's,
+// and the result is the shell's; the canvas keeps the big 「兽潮来袭！」 banners and its own 3-2-1 into the first wave.
 //
 // `data.lv` / the page's `?lv=` picks a level row by id or 1-based number: 1 the 山门, 2–5 the 药园 (talismans in
 // lanes). A 药园 level in a landscape window gets option A (Hanli 10-20 「竖屏, 横屏可以切换?」「按A可以」): the same
 // portrait field centred with side panels; turning the window flips it live. Nothing touches the save.
 export const meta = {
   id: 'shouqiang',
+  pause: true, // the shell's bar pauses the play (tools/shouqiang/src/play.js setPaused)
   name: { zh: '守墙关', en: 'Hold the Wall' },
   how: {
     zh: '兽潮下山，小满和银月在墙上自动出手。每守住一波，三张符里挑一张；点一只兽，大家集火它。第二关起在药园布符：聚灵阵攒灵气，剑符守一畦。',
@@ -36,7 +40,7 @@ async function loadFont(doc) {
   doc.fonts.add(await face.load().catch(() => face));
 }
 
-export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, seed, lines, onEvent } = {}) {
+export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, seed, lines, onEvent, shell } = {}) {
   const doc = container.ownerDocument;
   const box = doc.createElement('div');
   box.className = 'shouqiang-stage';
@@ -64,13 +68,18 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     const leave = () => { if (onResize) win.removeEventListener('resize', onResize); game?.destroy(); game = null; finish({ won: false, left: true }); };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
-    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), loadFont(doc)]).then(([kit, { start }]) => {
+    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), loadFont(doc)]).then(async ([kit, { start }]) => {
       if (done) return;
-      const level = levelAsked(kit, data, search);
+      let level = levelAsked(kit, data, search);
+      // In the shell: the story lines read on its lead card first; the canvas keeps the big banners and its 3-2-1.
+      const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join('') : '';
+      if (said) level = { ...level, lead: (level.lead ?? []).filter((l) => l.big), leadSec: 3.4 };
+      await shell?.lead?.(said, { auto: reducedMotion ? 2400 : 4200 });
+      if (done) return;
       let landscape = shape(Boolean(level.grid));
       game = start({
         parent: box, base: new URL('./shouqiang/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
-        kit, level, seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, landscape,
+        kit, level, seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, landscape, shell,
         onEnd: (r) => { if (onResize) win.removeEventListener('resize', onResize); finish(r); },
       });
       if (level.grid) {

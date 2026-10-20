@@ -79,7 +79,13 @@ export class PlayScene extends Phaser.Scene {
     this.paused = false;
     this.input.on('pointerdown', (p) => this.tapField(p));
     this.input.on('pointerup', (p) => this.lanes?.release(p));
-    this.events.once('shutdown', () => this.hud.destroy());
+    this.events.once('shutdown', () => { this.hud.destroy(); this.offShell?.(); });
+    // In the one shell (games/shell.js): the shell's bar pauses it and its foot shows the result, so the canvas's own
+    // pause button and result screen stand down — nothing twice.
+    if (this.cfg.shell) {
+      this.hud.pauseBtn.setVisible(false).disableInteractive();
+      this.offShell = this.cfg.shell.onPause?.((on) => this.setPaused(on, false));
+    }
     this.hud.lead(level.lead, level.leadSec ?? 5);
     if (this.lanes) this.layout(Boolean(this.cfg.landscape));
     this.fact({ t: 'start', level: level.id });
@@ -184,10 +190,13 @@ export class PlayScene extends Phaser.Scene {
     if (best) this.em.burst('spark', 6, best.x, best.y - 20);
   }
 
-  togglePause() {
-    this.paused = !this.paused;
-    this.hud.showPause(this.paused);
-    if (this.paused) this.tweens.pauseAll(); else this.tweens.resumeAll();
+  togglePause() { this.setPaused(!this.paused, true); }
+
+  setPaused(on, veil) {
+    if (this.paused === on) return;
+    this.paused = on;
+    if (veil) this.hud.showPause(on);
+    if (on) this.tweens.pauseAll(); else this.tweens.resumeAll();
   }
 
   choose(id) {
@@ -673,7 +682,7 @@ export class PlayScene extends Phaser.Scene {
     if (won) this.moment('win');
     this.fact({ t: 'end', won, stars });
     this.time.delayedCall(won ? 900 : 600, () => {
-      this.hud.result(won, stars, this.g);
+      if (!this.cfg.shell) this.hud.result(won, stars, this.g);
       this.cfg.onEnd?.({ won, stars, stats: { kills: this.g.kills, wall: Math.round((100 * this.g.wall) / this.g.wallMax) } });
     });
   }

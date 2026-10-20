@@ -11,7 +11,7 @@
 //               result (stars, 再来 / 下一关 off the story; the story's own pay and 得牌 follow its win as
 //               ever), and `say(id, who, text)`, a bubble over the stage (台词预取's lines land there).
 //
-// A game hears the shell through its mount options: `shell: { paused(), say(who, text), event(e) }`.
+// A game hears the shell through its mount options: `shell: { paused(), onPause(fn), say(who, text), lead(text, o) }`.
 // mountPure (games/mount.js) stops a pure board's clock and hands while paused; a kit that runs its own loop
 // (Phaser) reads `paused()` or listens with `onPause`. Nothing here knows a game.
 
@@ -103,14 +103,15 @@ export function say(id, who, text, ms = 3200) {
 /** The result in the frame's foot: { won, stars?, grade?, acts: [{ id: 'again' | 'next', main? }] }. */
 export function showResult(id, result) { entry(id).result = result; paint(id); }
 
-/** The lead card before a game: its line, then a 3-2-1 for a game in time (`count`), else a 开始 tap.
-    Resolves when the game may start. */
-export function lead(id, text, { count = false, reducedMotion = false } = {}) {
+/** The lead card before a game: its line, then a 3-2-1 for a game in time (`count`), else a 开始 tap — which
+    `auto` (ms) also gives on its own once the line has been read. Resolves when the game may start. */
+export function lead(id, text, { count = false, auto = 0, reducedMotion = false } = {}) {
   const s = entry(id);
   return new Promise((resolve) => {
     if (!text) { resolve(); return; }
-    const done = () => { s.lead = null; paint(id); resolve(); };
-    if (!count) { s.lead = { text, go: done }; paint(id); return; }
+    let over = false;
+    const done = () => { if (over) return; over = true; s.lead = null; paint(id); resolve(); };
+    if (!count) { s.lead = { text, go: done }; paint(id); if (auto) setTimeout(done, auto); return; }
     let n = 3;
     s.lead = { text, count: n };
     paint(id);
@@ -129,6 +130,7 @@ export function shellFor(id) {
   return {
     paused: () => isPaused(id),
     say: (who, text, ms) => say(id, who, text, ms),
+    lead: (text, o) => lead(id, text, o),
     onPause: (fn) => onShell((k, s) => { if (k === id) fn(s.paused); }),
   };
 }
