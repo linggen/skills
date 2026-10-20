@@ -9,6 +9,10 @@
 import { btn, n, scene } from './ink.js';
 import { WEN } from './wen.js';
 
+// The painted room, dial and bronze hand (tools/paint-mishi-flux.py, Hanli 10-20: 「代码画的都查一下, 用flux画吧」):
+// the puzzle stays text and buttons over the paint.
+const art = (name) => new URL(`./mishi/${name}.webp`, import.meta.url).href;
+
 export const meta = {
   id: 'mishi',
   name: { zh: '密室', en: 'The hidden room' },
@@ -127,16 +131,15 @@ export function tick(state, ms) {
 const hintOpen = (state, v) => !state.spoke && Boolean(v?.hint_at) && state.wait <= 0 && !state.live && Date.now() >= new Date(v.hint_at).getTime();
 
 function roomScene(v) {
-  // The room in ink: a dark doorway, the mechanisms in their niches — sealed red once open.
+  // The painted room: the mechanisms in their painted niches — a shut one dimmed, the open one lit,
+  // a seal pressed on each one done.
   const kinds = v.puzzles.map((p) => p.at);
   const niche = (x, i) => {
     const at = kinds[i], seal = at === 'solved' || at === 'skipped', now = at === 'open';
-    return `<g class="g-mishi-niche${now ? ' is-now' : ''}"><path class="g-line g-thin${at === 'shut' ? ' g-faint' : ''}" d="M${x - 22} 92 V44 q22 -20 44 0 V92"/>${seal ? `<circle class="g-mishi-seal" cx="${x}" cy="62" r="7"/>` : ''}${now ? `<circle class="g-mishi-glow" cx="${x}" cy="62" r="12"/>` : ''}</g>`;
+    return `<g class="g-mishi-niche${now ? ' is-now' : ''}${at === 'shut' ? ' is-shut' : ''}">${now ? `<circle class="g-mishi-glow" cx="${x}" cy="66" r="24"/>` : ''}<image href="${art('niche')}" x="${x - 22}" y="36" width="44" height="58" preserveAspectRatio="xMidYMax meet"/>${seal ? `<circle class="g-mishi-seal" cx="${x}" cy="66" r="7"/>` : ''}</g>`;
   };
   const xs = v.puzzles.map((_, i) => 80 + (i * 160) / Math.max(1, v.puzzles.length - 1));
-  const floor = '<path class="g-line g-thin g-faint" d="M14 96 H306"/><path class="g-line g-thin g-faint" d="M30 96 L60 112 M290 96 L260 112"/>';
-  const door = '<path class="g-line" d="M20 96 V30 q0 -10 10 -10 h8 V96"/><rect class="g-wash" x="22" y="22" width="14" height="74"/>';
-  return scene(320, 116, floor + door + xs.map(niche).join(''));
+  return scene(320, 116, `<image href="${art('room')}" width="320" height="116" preserveAspectRatio="xMidYMid slice"/>${xs.map(niche).join('')}`, 'g-mishi-room');
 }
 
 function dialHtml(state, p, t, lang) {
@@ -145,7 +148,7 @@ function dialHtml(state, p, t, lang) {
     const a = ((i - at) / labels.length) * Math.PI * 2 - Math.PI / 2, x = 160 + r * Math.cos(a), y = 90 + r * Math.sin(a);
     return `<text class="g-mishi-ch ${cls}${i === at ? ' is-top' : ''}" x="${n(x)}" y="${n(y + 5)}" text-anchor="middle">${ch}</text>`;
   }).join('');
-  const pic = scene(320, 180, `<circle class="g-line g-thin" cx="160" cy="90" r="84" fill="none"/><circle class="g-line g-thin g-faint" cx="160" cy="90" r="58" fill="none"/><circle class="g-line g-thin g-faint" cx="160" cy="90" r="34" fill="none"/><path class="g-mishi-pointer" d="M160 2 l-6 -0 l6 10 l6 -10 z"/>${ring(STEMS, 71, s, 'is-stem')}${ring(BRANCHES, 46, b, 'is-branch')}`, 'g-mishi-dial');
+  const pic = scene(320, 180, `<image href="${art('dial')}" x="70" y="0" width="180" height="180"/><path class="g-mishi-pointer" d="M160 2 l-6 -0 l6 10 l6 -10 z"/>${ring(STEMS, 71, s, 'is-stem')}${ring(BRANCHES, 46, b, 'is-branch')}`, 'g-mishi-dial');
   const turn = (ring, d, label) => `<button type="button" class="g-nudgebtn" data-g="turn" data-ring="${ring}" data-d="${d}" aria-label="${esc(label)}">${d < 0 ? '‹' : '›'}</button>`;
   const row = (ring, label) => `<div class="g-nudge"><span class="g-nudgesay">${esc(label)}</span>${turn(ring, -1, `${label} −1`)}${turn(ring, 1, `${label} +1`)}</div>`;
   return `${pic}<p class="g-mishi-read">${esc(t.reads)}<b>${STEMS[s]}${BRANCHES[b]}</b></p>${row('outer', t.outer)}${row('inner', t.inner)}${row('both', t.both)}`;
@@ -156,9 +159,8 @@ function handHtml(state, p, t) {
   // Where the old 讲堂三日 board drew each 文 (FX 70…220 of 320, LY 138…42 of 160), as a share of the picture.
   const FXp = [21.9, 37.5, 53.1, 68.8], LYp = [86.3, 66.3, 46.3, 26.3];
   const at = (w) => [FXp[w.f], w.lv === 1.5 ? 56.3 : LYp[w.lv]];
-  const fingers = [70, 120, 170, 220].map((x, f) => `<path class="g-line" d="M${x - 16} 150 V${30 + (f === 0 ? 14 : f === 2 ? -6 : 0)} q16 -18 32 0 V150"/>`).join('');
-  const thumb = '<path class="g-line" d="M240 150 q30 -10 44 -44 q8 -18 -8 -22 q-14 -2 -22 20 q-6 14 -18 18"/>';
-  const pic = scene(320, 160, `<path class="g-line g-thin g-faint" d="M54 150 q90 26 186 0"/>${fingers}${thumb}`, 'g-mishi-handpic');
+  // painted by an edit pass from the old drawing, so the fingers sit where the studs are
+  const pic = scene(320, 160, `<image href="${art('hand')}" width="320" height="160"/>`, 'g-mishi-handpic');
   const studs = WEN.map((w) => {
     const [x, y] = at(w), k = state.picks.indexOf(w.id);
     return `<button type="button" class="g-mishi-stud${k >= 0 ? ' is-on' : ''}" style="left:${x}%;top:${y}%" data-g="pick" data-i="${w.id}" aria-label="${k >= 0 ? k + 1 : ''}">${k >= 0 ? k + 1 : ''}</button>`;

@@ -2,10 +2,13 @@
    the room in its niches, the mechanism before him, the ask to 银月, the torn page. Every control
    at least 44px; light and dark from the page's tokens. */
 .g-mishi .g-scene .g-mishi-seal { fill: var(--seal); opacity: .85; }
-.g-mishi .g-scene .g-mishi-glow { fill: none; stroke: var(--ling); stroke-width: 1.4; opacity: .7; }
+.g-mishi .g-scene .g-mishi-glow { fill: #ffcf6b; opacity: .45; }
+.g-mishi .g-mishi-niche.is-shut image { opacity: .55; }
+.g-mishi .g-scene.g-mishi-room { border-radius: 10px; overflow: hidden; }
+.g-mishi .g-scene text.g-mishi-ch { paint-order: stroke; stroke: #fff6dc; stroke-width: 3px; stroke-linejoin: round; }
 .g-mishi .g-scene .g-mishi-pointer { fill: var(--seal); }
 .g-mishi .g-scene .g-mishi-notch { stroke: var(--seal); stroke-width: 2; }
-.g-mishi .g-scene text.g-mishi-ch { fill: var(--dim); font-size: 13px; font-family: var(--serif); }
+.g-mishi .g-scene text.g-mishi-ch { fill: #4a3518; font-size: 13px; font-family: var(--serif); }
 .g-mishi .g-scene text.g-mishi-ch.is-top { fill: var(--seal); font-size: 17px; font-weight: 700; }
 .g-mishi .g-scene text.g-mishi-sym { fill: var(--dim); font-size: 12px; font-family: var(--serif); }
 .g-mishi .g-scene circle.g-mishi-white { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
