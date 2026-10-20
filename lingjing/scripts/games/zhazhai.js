@@ -88,7 +88,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         onResult: (r) => {
           if (!r.won || (level ? r.level !== level && r.key !== level : !shell)) return;
           const grade = gradeOf(data.grades, r.stars);
-          finish({ won: true, stars: r.stars, ...(grade ? { grade } : {}) });
+          const all = levels(), nx = all[all.findIndex((l) => l.id === r.level) + 1];
+          // 下一关 (the shell's, off the story): the forts run on, one to the next; a story throw stands alone
+          finish({ won: true, stars: r.stars, ...(grade ? { grade } : {}), ...(!r.key && nx && !nx.key ? { next: nx.id } : {}) });
         },
         onLeave: leave,
       });

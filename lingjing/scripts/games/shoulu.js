@@ -241,7 +241,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       const win_ = g.over === 'win', st = win_ ? starsOf(g.hp) : 0, row = levels[li];
       if (win_) keepStars(row.id, st);
       // in the shell: its foot shows the result and 再来, won or lost; the board stays up under it
-      if (shell) { $('[data-a="pick"]').disabled = true; finish(win_ ? { won: true, stars: st } : { won: false, stars: 0 }); return; }
+      if (shell) { $('[data-a="pick"]').disabled = true; finish(win_ ? { won: true, stars: st, ...(li + 1 < levels.length ? { next: li + 2 } : {}) } : { won: false, stars: 0 }); return; }
       const more = li + 1 < levels.length;
       card.innerHTML = win_
         ? `<h3>${t.won}</h3><div class="sl-stars">${'★'.repeat(st)}<s>${'★'.repeat(3 - st)}</s></div><p>${t.wonLine(g.hp)}</p>`

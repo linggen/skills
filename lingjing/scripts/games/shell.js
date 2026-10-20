@@ -152,11 +152,12 @@ export function wireShell(doc = globalThis.document, { onAct = () => {} } = {}) 
 
 /* ── Off the story: one game alone in its shell (游戏厅, the try page) ── */
 
-/** Play `mount` in a shell inside `root`; 再来 deals it again (and 下一关 when `next` is given). */
+/** Play `mount` in a shell inside `root`; 再来 deals it again. A won game that names its next level (`r.next`, a
+    level id or number) gets 下一关, which `next(r.next)` opens. */
 export function playAlone(root, mount, { id, title, kind, how, timed, tall, lang = 'zh', opts = {}, leadLine = '', next = null } = {}) {
   root.innerHTML = frameHtml({ id, title, kind, how, timed, tall, lang, body: '<div class="gshell-slot" id="slot"></div>' });
   root.querySelector('.gshell').dataset.lang = lang;
-  let stop = null, n = 0;
+  let stop = null, n = 0, last = null;
   const deal = async () => {
     stop?.abort();
     stop = new AbortController();
@@ -167,9 +168,11 @@ export function playAlone(root, mount, { id, title, kind, how, timed, tall, lang
     const seed = n++ ? `${opts.seed ?? id}|${n}` : opts.seed; // 再来 deals a fresh one
     const r = await mount(slot, { ...opts, seed, lang, signal: stop.signal, shell: shellFor(id) });
     if (r?.left) return;
-    showResult(id, { ...r, acts: [{ id: 'again', main: !r?.won || !next }, ...(next && r?.won ? [{ id: 'next', main: true }] : [])] });
+    const on = Boolean(next && r?.won && r?.next != null);
+    last = r;
+    showResult(id, { ...r, acts: [{ id: 'again', main: !on }, ...(on ? [{ id: 'next', main: true }] : [])] });
   };
-  const off = wireShell(root.ownerDocument, { onAct: (k, act) => { if (k !== id) return; if (act === 'again') deal(); else if (act === 'next') next?.(); } });
+  const off = wireShell(root.ownerDocument, { onAct: (k, act) => { if (k !== id) return; if (act === 'again') deal(); else if (act === 'next') next?.(last?.next); } });
   deal();
   return () => { off(); stop?.abort(); forget(id); };
 }

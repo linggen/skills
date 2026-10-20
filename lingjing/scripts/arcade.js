@@ -124,6 +124,8 @@ async function playPage(id, n) {
     id: `arcade-${id}`, title: titleOf(row, mod), kind: kindOf(row), how: howOf(mod), timed: timedOf(mod), tall: TALL.has(row.mechanic), lang: lang(),
     leadLine: row.lead?.[lang()] ?? row.lead?.zh ?? '',
     opts: { reducedMotion, seed: `arcade|${Date.now()}`, data: row.data ?? {} },
+    // 下一关: a game with levels names its next one when won (`r.next`); the page opens it by `lv`
+    next: (lv) => { location.href = href({ game: id, n: String(n ?? ''), lv: String(lv) }); },
   });
 }
 

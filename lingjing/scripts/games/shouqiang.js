@@ -80,7 +80,11 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         parent: box, base: new URL('./shouqiang/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
         kit, level, seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, landscape, shell,
         held: Boolean(said), // the field drawn behind the shell's lead card, standing still till it is read (Hanli 10-20: 「开场卡后面先画出画面」)
-        onEnd: (r) => { if (onResize) win.removeEventListener('resize', onResize); finish(r); },
+        onEnd: (r) => {
+          if (onResize) win.removeEventListener('resize', onResize);
+          const nx = kit.levels[kit.levels.indexOf(levelAsked(kit, data, search)) + 1]; // 下一关 (the shell's, off the story)
+          finish(r.won && nx ? { ...r, next: nx.id } : r);
+        },
       });
       if (said) shell.lead(said, { auto: reducedMotion ? 2400 : 4200 }).then(() => game?.go());
       if (level.grid) {
