@@ -162,7 +162,7 @@ export const CHOOSERS = {
     return c.kind === 'hold' || c.kind === 'drag' ? { kind: 'hold', c, ms: 300 + r() * 2200 } : c.kind === 'swipe' ? { kind: 'swipe', c } : { kind: 'tap', c };
   },
 };
-export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'fallrope' ? 'swing' : game === 'rain' ? 'rain' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : 'any');
+export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'fallrope' ? 'swing' : game === 'rain' ? 'rain' : ['bread', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : 'any');
 export const LOSS = { rain: /成河/ };
 /* A story board's task id (its [data-game] host) → its game kind (the chooser's key): games.json. */
 export const GAME_OF_TASK = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/games.json'), 'utf8')).games.filter((g) => g.task).map((g) => [g.task, g.id]));
@@ -494,16 +494,7 @@ function targets(content, at, only) {
     list.push({ name: row.task, game: row.id, board: row.task, save: seeder, saveName: save, host: `[data-game="${row.task}"], [data-mount="${row.task}"]`, // a mount() beat (气走经脉) lays [data-mount]
       url: (base) => `${base}/apps/lingjing/scripts/index.html?save=${save}&chat=off` });
   }
-  // The 饭桶's daily puzzle, one try-page row per tool day (fantong.json `puzzle.unlock`), and the throwing kit.
-  const ft = JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/fantong.json'), 'utf8')).puzzle ?? {};
-  const unlock = ft.unlock ?? [];
   const tryRow = (name, game, extra = '') => ({ name, game, host: '#slot', url: (base) => `${base}/apps/lingjing/scripts/try-game.html?dev=1&game=${game}${extra}&save=ph-try` });
-  for (const u of unlock) {
-    if (only && !only.has('fantongcut') && !only.has(`fantongcut-${u.el}`)) continue;
-    const els = unlock.filter((x) => x.day <= u.day).map((x) => x.el);
-    const data = { tier: 2, els, must: u.el, ...(ft.teach?.[u.el] ? { teach: ft.teach[u.el].zh ?? ft.teach[u.el] } : {}) };
-    list.push(tryRow(`fantongcut-${u.el}`, 'fantongcut', `&data=${encodeURIComponent(JSON.stringify(data))}`));
-  }
   // The throws (射鹿, 芦苇里那一等) are levels of 砸寨 since 2026-10-20: a Phaser canvas, played by its own bot
   // (tools/zhazhai/bot.mjs), not by these DOM hands.
   // 气走经脉: one try-page row per level of the kit (games.json `qimai` rows, the ladder by `n`).

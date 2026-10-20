@@ -6,7 +6,7 @@
     FLUX_REVIEW=<scratch> $PY tools/paint-items-comic-flux.py sheet [--only id,…]                    # contact sheets to look at
     FLUX_REVIEW=<scratch> $PY tools/paint-items-comic-flux.py cut                                     # the KEPT seeds → art/items-comic/
 
-Every item 喂饭桶 · 割藤 (games/fantongcut.js) can hang: what the 饭桶 eats (items.json less fantong.json `never`), the
+Every item 喂饭桶 · 割藤 (games/fantongcut.js, deleted 2026-10-20; the set is kept for the games to come) could hang: what the 饭桶 eats (items.json less fantong.json `never`), the
 秘境's finds (鼎苔 · 灵芝 · 人参 · 铜矿石) and the 奇遇's 药篓. art/items/ is 水墨 and stays the story's and the bag's; this
 set is for the small games only (Hanli 10-19: small games are comic, story pages keep ink). Where an item has an ink
 picture of its OWN (art/items/<id>.webp) the comic one is an edit pass from it, so it keeps its shape and colours;

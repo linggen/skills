@@ -84,7 +84,7 @@ test('弹竹 bounces: a thing dropped on it rebounds above where it struck, and 
 /* ── what the ropes hang from (2026-10-19, Hanli on 拽: 「把爹的图片拴在绳子上有点奇怪」) ── */
 
 test('no rope hangs from the sky: every kit level draws what each vine is tied to; 爹 hangs by his hands', async () => {
-  for (const id of [...Object.keys(BEATS), 'fantongcut']) {
+  for (const id of Object.keys(BEATS)) {
     const mod = await import(`../scripts/games/${id}.js`);
     const row = content.games.games.find((g) => g.id === id);
     const s = mod.newGame('a', 1, row?.levels ? { levels: row.levels } : {});

@@ -80,31 +80,6 @@
       }
     }
   ],
-  "puzzle": {
-    "_about": "Feeding is a 割绳子 puzzle (Hanli, 2026-10-16: 「割绳子挺好玩，可以反复出现，不同的割法」): the thing he chose hangs on vines over the 饭桶 and he cuts and steers it into its mouth (games/fantongcut.js; the level made from the seed by games/rope-gen.js and proved solvable before it is shown). What comes out, the cooldown and the pay are as before — the puzzle only stands between the choice and the feed. A miss retries at once; after `max_misses` on one level 「直接喂」 feeds it as before (stars 0). `tier_every`: one step harder every that many feeds (0 … 4). `unlock`: on his n-th day of feeding (distinct days), that element joins the mix — one a day, never all at once; the day's first puzzle features it and says `teach`. Stars (0–3, 灵光 caught on the way) are kept on the save, unpaid.",
-    "_games": "Which small game stands before a feed (Hanli 2026-10-16: 烙饼 out of the story into the 饭桶's daily rotation): the first of `games` on the very first feed and whenever the day's first feed teaches a new 割绳子 element (`unlock`), else they take turns by the feed count (fantongcut on even feeds, laobing on odd). The result's stars are kept unpaid either way; what comes out, the cooldown and the pay are the feed's as before.",
-    "games": ["fantongcut", "laobing"],
-    "max_misses": 4,
-    "tier_every": 3,
-    "unlock": [
-      { "day": 2, "el": "gust" },
-      { "day": 3, "el": "bubble" },
-      { "day": 4, "el": "thorns" },
-      { "day": 5, "el": "regrow" },
-      { "day": 6, "el": "spring" },
-      { "day": 7, "el": "seals" },
-      { "day": 8, "el": "crow" }
-    ],
-    "teach": {
-      "gust": { "zh": "灶口有风：东西落上石台，点一下那团风。", "en": "A draught at the stove mouth: once it rests on the ledge, tap the puff." },
-      "bubble": { "zh": "灵气泡：东西碰到它就飘起来，点一下泡就破。", "en": "A qi bubble: what touches it floats up. Tap it to pop." },
-      "thorns": { "zh": "荆棘：一碰就碎，换个先后，绕开它。", "en": "Thorns: one touch and it breaks. Cut in another order, around them." },
-      "regrow": { "zh": "这根藤断了还会再长，够得着就又缠上。", "en": "This vine grows back, and takes hold again if it can reach." },
-      "spring": { "zh": "弹竹：落上去，弹得比来时还高。", "en": "Springy bamboo: whatever lands on it bounces higher than it came." },
-      "seals": { "zh": "双印：从这个印进去，从那个印出来。", "en": "Twin seals: in at one, out at the other." },
-      "crow": { "zh": "乌鸦顺着藤往下爬——先断它那根。", "en": "A crow is walking down a vine — cut that one first." }
-    }
-  },
   "words": {
     "zh": {
       "spit": "「咯嘣」，「咔哒」——吐出来：{name}。",

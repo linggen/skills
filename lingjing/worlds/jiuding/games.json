@@ -556,15 +556,6 @@
    "task": "dabi-sneeze"
   },
   {
-   "id": "fantonghuochai",
-   "replaced": "setpiece",
-   "group": "later",
-   "mechanic": "剧情",
-   "scene": "09-snow",
-   "hui": "第七回",
-   "task": "snow-fantong"
-  },
-  {
    "id": "yubujiuge",
    "group": "later",
    "mechanic": "节奏",
@@ -656,20 +647,6 @@
    "levels": [
     {"id":"lastshot","n":12,"title":{"zh":"最后一罚","en":"The last free throw"},"speed":104,"len":3300,"book":{"zh":"惧是油门，长吐是刹车——刹得住一截，刹不干净。带着怕投。","en":"Fear is the throttle, a long breath out the brake: it slows, never stops. Shoot with the fear."},"say":{"zh":"零点六秒，落后一分。看台在喊「百分之一！」心跳没有准点。","en":"Point six seconds, one behind. The stand chants \"One per cent!\" The heart keeps no time."},"end":{"zh":"它掉了进去。","en":"It drops in."},"path":[[0,110],[500,104],[850,124],[1200,94],[1550,122],[1900,96],[2250,122],[2600,98],[2950,116],[3300,108]],"width":[[0,44],[550,38],[3300,34]],"xue":[{"x":1600,"name":{"zh":"第一罚","en":"First shot"}}],"currents":[{"from":2150,"to":2550,"push":140,"flip":1100}],"waves":[{"from":1200,"to":1420,"push":210}],"heart":[{"from":450,"to":1450,"beat":680,"kick":40,"jitter":0.35},{"from":1750,"to":2900,"beat":600,"kick":36,"jitter":0.4}],"gold":[{"from":1450,"to":1750,"amp":9,"period":240,"rise":0.4},{"from":2950,"to":3280,"amp":9,"period":240,"rise":0.4}],"goldTol":6,"goldNeed":0.75,"look":{"tint":"#d29a7c","ink":"#6a2a1a","trail":"#d0502a","glyph":"惧","land":"dusk"}}
    ]
-  },
-  {
-   "id": "laobing",
-   "group": "daily",
-   "mechanic": "时机",
-   "stars": 3,
-   "_how": "喂饭桶's feed on its turn (fantong.json `puzzle.games`; Hanli 2026-10-16, 烙饼 out of the story): a 40 s round at 娘's 鏊子, two to four flatbreads browning at their own pace — tap to turn when the underside is golden, tap again to take it off when both are; wood in the stove mouth cooks faster. 8 golden meets the quota; stars by golden and bad; short of it, another batch. Alone it plays one round."
-  },
-  {
-   "id": "fantongcut",
-   "group": "daily",
-   "mechanic": "割绳子",
-   "stars": 3,
-   "_how": "喂饭桶's feed (古四 on, the 物品 panel's 饭桶): the thing he chose hung on vines over the 饭桶, a level made each feed from the day's seed (rope-gen.js) and proved solvable before it is shown; alone it plays a sample day (`level` 1–5: tier 0–4 with the elements of that many days)."
   },
   {
    "id": "yabao",

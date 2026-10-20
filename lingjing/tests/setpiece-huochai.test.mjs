@@ -93,14 +93,10 @@ test('the way on tells the book\'s two paragraphs, the chewing one marked `{景=
   assert.equal(feed.grant.item, 'huochai-jian', '火柴 handed over as before');
 });
 
-test('the board stays for the 游戏厅 under 旧版: the task `cut` with its grant and done line, the row `replaced: "setpiece"`', () => {
-  const t = content.tasks.tasks.find((x) => x.id === 'snow-fantong');
-  assert.equal(t.cut, '2026-10-19');
-  assert.deepEqual(t.grant, { table: 'task' });
-  assert.equal(t.done_line.zh, '一道红光窜出来，钉在了门板上，剑柄还在嗡嗡地颤。');
-  const row = content.games.games.find((g) => g.id === 'fantonghuochai');
-  assert.deepEqual([row.replaced, row.task, row.scene], ['setpiece', 'snow-fantong', '09-snow']);
-  assert.ok(fs.existsSync(path.join(ROOT, 'scripts/games/fantonghuochai.js')), 'its module stays');
+test('the old board is gone (2026-10-20, Hanli: 「试做或者不要的, 可以删了吧?」): no task, no 游戏厅 row, no module', () => {
+  assert.equal(content.tasks.tasks.find((x) => x.id === 'snow-fantong'), undefined);
+  assert.equal(content.games.games.find((g) => g.id === 'fantonghuochai'), undefined);
+  assert.ok(!fs.existsSync(path.join(ROOT, 'scripts/games/fantonghuochai.js')));
 });
 
 test('it plays at its paragraph of the way on\'s passage, once, and nowhere else', () => {

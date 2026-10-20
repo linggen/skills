@@ -10,7 +10,6 @@ import { fitWorld, newState } from '../scripts/state.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { health } from '../scripts/rules/health.mjs';
 import { huiNow } from '../scripts/rules/hui.mjs';
-import * as fantong from '../scripts/games/fantonghuochai.js';
 import * as yubu from '../scripts/games/yubujiuge.js';
 import { GRID } from '../scripts/games/yubu.js';
 import { earnedFor } from './earn.mjs';
@@ -166,7 +165,7 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
 /* ── the boards themselves ── */
 
 test('no 古七 board draws its own skip (the page lays it), each says what it is in both languages, and a skip still draws a line', () => {
-  for (const mod of [fantong, yubu]) { // the rest of 古七's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」)
+  for (const mod of [yubu]) { // the rest of 古七's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); 喂饭桶 · 扔了干净 2026-10-20
     const s = mod.newGame('t');
     for (const lang of ['zh', 'en']) {
       assert.doesNotMatch(mod.html(s, lang), /data-g="skip"/);
@@ -176,12 +175,6 @@ test('no 古七 board draws its own skip (the page lays it), each says what it i
     const left = { ...mod.act(s, { g: 'start' }).state, won: true, grade: null };
     assert.match(mod.html(left, 'zh'), /g-line-say">[^<]+/);
   }
-});
-
-test('喂饭桶 · 扔了干净 (the 游戏厅\'s 旧版 since 2026-10-19): the lid opens at once; the gourd, then the shards — the red light in the door', () => {
-  const s = run(fantong, fantong.newGame('a'), [{ g: 'press' }, { g: 'feed', f: 'gourd' }, { g: 'feed', f: 'shards' }]);
-  assert.equal(s.won, true);
-  assert.match(fantong.html(s, 'zh'), /钉在了门板上/);
 });
 
 test('禹步: 左脚 · 右脚绕 · the next square, 一 to 九, on the 洛书 (戴九履一) → quiet; a beat out of order trips', () => {

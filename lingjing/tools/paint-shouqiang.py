@@ -9,7 +9,7 @@
 `paint`: Codex paints each piece (masters first; a beast's other frames, and every icon after the first, carry their
 master so a set stays one model). Pieces on flat green are keyed by chroma (paint-shoulu.py's key — white coats
 survive), trimmed: art/games/shouqiang/<id>.webp (+ <id>.green.webp, the raw painting). The 山道 is a full scene.
-`flux`: the LOCAL FLUX (FLUX.2 klein 4B edit, paint-laobing-flux.py's recipe) for a piece that has a master — used
+`flux`: the LOCAL FLUX (FLUX.2 klein 4B edit, the recipe of paint-laobing-flux.py, deleted 2026-10-20 — in git history) for a piece that has a master — used
 2026-10-20 when Codex ran out of credits mid-set (the skill icons after the first, xiaoman-cast): the master is the
 reference, so the medallion / the boy keeps its shape and only the colours and emblem / pose change.
 `pack`: sized for phones and written as webp into scripts/games/shouqiang/art/ (what the game loads).

@@ -1,23 +1,39 @@
 // fantong-free.js — 喂饭桶's free play (Hanli, 2026-10-15): a small board in the
 // 物品 panel. Pure drawing — the rules' `fantong` brief and the last feed's
 // answer in, HTML out, every word esc()'d — plus the drag that drops a thing
-// into the bucket's mouth. The bucket is the story's own drawing
-// (games/fantong.js drawBucket). The rules roll everything; the page shows the
-// name and the one line of small print, never the effect.
+// into the bucket's mouth. The bucket is drawn here (drawBucket; it was the
+// story's 饭桶 stops' too, deleted 2026-10-20 with the old play). The rules roll
+// everything; the page shows the name and the one line of small print, never the effect.
 import { esc } from './esc.js';
-import { drawBucket } from './games/fantong.js';
+import { n, scene, splash } from './games/ink.js';
 import { zhuanHtml } from './pouch.js';
+
+/* ── The picture: the copper furnace under the woodpile, its lid up once it may eat; what came out lies in a
+   row on the floor, a seal for each (`seals`); the 丹田 a bowl drawn beside it, `left` of it full; `spit` the
+   splash of a thing coming out (`seal`: with its seal). Painted (tools/paint-fantong-flux.py, local FLUX,
+   2026-10-20): the woodpile, the 饭桶 shut or open, the bowl; the code draws only what moves or counts. */
+const PIC = Object.fromEntries(['woodpile', 'pot-shut', 'pot-open', 'bowl'].map((k) => [k, new URL(`./games/fantong/${k}.webp`, import.meta.url).href]));
+const pic = (k, x, y, w, h) => `<image href="${PIC[k]}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMax meet"/>`;
+export function drawBucket({ open = false, seals = 0, left = 1, spit = false, seal = true } = {}) {
+  const pile = pic('woodpile', 2, 40, 116, 80);
+  const pot = pic(open ? 'pot-open' : 'pot-shut', 112, 8, 100, 112);
+  const row = Array.from({ length: seals }, (_, i) => `<circle class="g-dot is-seal" cx="${n(232 + (i % 3) * 22)}" cy="${n(98 + Math.floor(i / 3) * 14)}" r="5"/>`).join('');
+  const bowl = pic('bowl', 218, 14, 70, 56)
+    + (left > 0.02 ? `<ellipse class="g-waterfill" cx="252" cy="${n(38 + 10 * (1 - left))}" rx="${n(24 * Math.sqrt(left))}" ry="${n(4 * Math.sqrt(left))}"/>` : '');
+  const fx = spit ? splash(160, 52, 260, { r: 12, seal }) : '';
+  return scene(320, 124, pile + pot + row + bowl + fx);
+}
 
 export const FANTONG_WORDS = {
   zh: {
     chip: '饭桶', title: '喂饭桶', open: '饭桶张着嘴，等你喂。', pick: '把一样东西拖进饭桶的嘴里，或点一下再点「喂」。',
     feed: '喂{name}', lingshi: '搭灵石', around: '柴垛边', recipes: '方子', found: '新认出一张方子：', back: '回储物袋', none: '没有能喂的东西。',
-    stored: '存进洞府待取', cancel: '换一样',
+    stored: '存进洞府待取',
   },
   en: {
     chip: 'Rice Bucket', title: 'Feed the Rice Bucket', open: 'The Rice Bucket gapes, waiting.', pick: 'Drag a thing into its mouth, or tap it and then Feed.',
     feed: 'Feed {name}', lingshi: 'Add spirit stones', around: 'by the woodpile', recipes: 'Recipes', found: 'A recipe worked out: ', back: 'Back to the pouch', none: 'Nothing here will go in.',
-    stored: 'waits at the abode', cancel: 'Choose another',
+    stored: 'waits at the abode',
   },
 };
 const say = (t, vars) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
@@ -48,18 +64,11 @@ function tileHtml(i, sel, base) {
 
 /// The board. `fb` is the rules' brief (rules/fantong.mjs fantongBrief); `ui`
 /// the page's own: `sel` (the thing tapped), `lingshi`, `result` (the last
-/// feed's answer), `note` (a refusal in the rules' words), `at` (when it spat),
-/// `puzzle` (the thing hung for the feed's 割绳子 puzzle, 2026-10-16: the game is
-/// mounted into the empty host by fantong-puzzle.js, never drawn here).
+/// feed's answer), `note` (a refusal in the rules' words), `at` (when it spat).
 export function fantongHtml(fb, { lang = 'zh', artBase = '', ui = {}, nowMs = Date.now() } = {}) {
   const w = wordsOf(lang);
   const back = `<button class="act quiet pback" data-pouch-pane="">${esc(w.back)}</button>`;
   if (!fb) return `${back}<section class="psec ftong"><div class="loading">…</div></section>`;
-  if (ui.puzzle) {
-    return `${back}<section class="psec ftong puzzle" aria-label="${esc(w.title)}"><h3>${esc(w.title)}</h3>
-      <div class="game g-mounthost ftpuzzle" data-ft-puzzle><p class="small dim">…</p></div>
-      <div class="ftacts"><button class="act quiet" data-fantong-cancel>${esc(w.cancel)}</button></div></section>`;
-  }
   const spat = ui.result?.out && nowMs - (ui.at ?? 0) < 700;
   const bucket = drawBucket({ open: fb.ready, left: bowlOf(fb, nowMs), spit: spat, seal: ui.result?.grade !== 'junk', seals: 0 });
   const status = ui.note || (fb.ready ? w.open : fb.wait);

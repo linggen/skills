@@ -4,18 +4,6 @@
   "_economy": "Pay declared here for the economy model (tools/balance.mjs reads tasks/*.json): the 修为 is +10 over 古七 from boards (jiuge-yubu 5, furnace-ding 5; 随叶 and 顺风溜's 5 each went with the 调息 cut 2026-10-20, told), +30 the 犰狳 (09-lingcao/fight, scene table) and +30 the 秦雁 bout (09-futian/spar, trial table, paid after the 七层 rise); 灵石 +2 (yishui-reed; year-smell's +3 went with its cut 2026-10-19), +20 (犰狳), +20 (秦雁); items: qi-pill (furnace-recipe), huochai-jian and shunfeng-liu (on the ways on). The three rises — 五层 (09-furnace/fire, and 09-year/futian as a catch-up), 六层 (09-yishui/night), 七层 (09-futian/spar, the 秦雁 bout's way on) — each wait on the 阶段任务: 圆满 of the layer held (caps.hui.h11.gates: [{layer 4, 09-furnace, [fire]}, {layer 4, 09-year, [futian]}, {layer 5, 09-yishui, [night]}, {layer 6, 09-futian, [spar]}]).",
   "tasks": [
     {
-      "_cut": "Off 09-snow 2026-10-19 (Hanli: 「「扔了干净」这一幕改成大场面」): the feeding is the 大场面 扔了干净 now (setpieces/huochai.js, `{景=huochai}` on the way on's chewing paragraph); the way on needs nothing and still hands over 火柴. The task (its grant and done line as they were), row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",
-      "cut": "2026-10-19",
-      "id": "snow-fantong",
-      "kind": "board",
-      "game": "fantonghuochai",
-      "period": "once",
-      "title": { "zh": "喂饭桶 · 扔了干净", "en": "Feeding the Rice Bucket · Good riddance" },
-      "grant": { "table": "task" },
-      "done_line": { "zh": "一道红光窜出来，钉在了门板上，剑柄还在嗡嗡地颤。", "en": "A red light shot out and stuck fast in the door, the hilt still humming." },
-      "_reward": "What it makes (火柴, huochai-jian) is handed over by the way on (09-snow/feed's grant) — a story thing every later fight wears, so a skipped board still gives it."
-    },
-    {
       "id": "jiuge-yubu",
       "kind": "board",
       "game": "yubujiuge",

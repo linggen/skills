@@ -60,7 +60,7 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
 
 test('the winter and the years: 火柴 at the move, the furnace\'s culls, the seasons and the five years — the story\'s own, free of 体力 but a story step (Hanli, 2026-10-01), in order, once; the layers one at a time (2026-10-15)', () => {
   // Every 古七 board counted and its two fights won (tests/gu7.test.mjs plays them): the ways on are the story's.
-  const H11 = ['snow-fantong', 'jiuge-yubu', 'furnace-recipe', 'furnace-ding', 'year-smell', 'yishui-reed'];
+  const H11 = ['jiuge-yubu', 'furnace-recipe', 'furnace-ding', 'year-smell', 'yishui-reed'];
   const placed = (s) => full({ ...s, place: CH.scenes[s.scene]?.at ?? s.place });
   let s = { ...atSnow({ step: 4 }), tasks: Object.fromEntries(H11.map(id => [id, { status: 'done' }])), wins: { 'lingcao-qiuyu': NOW.toISOString(), 'futian-qinyan': NOW.toISOString() } };
   assert.deepEqual(buttons(s), ['feed'], 'the gourd and the shards tossed into the 饭桶 to be rid of them — nothing asked (Hanli 2026-10-06)');

@@ -12,7 +12,7 @@ const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
 const reg = JSON.parse(read('../worlds/jiuding/games.json'));
 
 test('every registered game is a module on the contract: a mount of its own, or a pure board mountPure can run', async () => {
-  assert.ok(reg.games.length >= 40);
+  assert.ok(reg.games.length >= 35); // the 饭桶's old play (5 rows) deleted 2026-10-20
   const groups = new Set(reg.groups.map((g) => g.id));
   for (const g of reg.games) {
     assert.ok(groups.has(g.group), `${g.id}: group ${g.group}`);
