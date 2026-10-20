@@ -103,7 +103,9 @@ const PAGE_DID = {
         : r.chose ? `chose 「${r.chose}」 under the picture${r.ledger?.length ? ` — 恩仇簿: ${r.ledger.map(e => `${e.kind} ${e.who}`).join(', ')}` : ''}` : null),
   // 储物袋: a thing waiting at the 洞府 taken in, a slot thrown away.
   // 喂饭桶 (rules/fantong.mjs): what went in, what came out with its small print.
-  fantong: (r, a) => (a.action === 'feed' ? `fed the 饭桶 ${r.fed?.name}${r.fed?.lingshi ? ` with ${r.fed.lingshi} 灵石` : ''}${r.her ? ' (银月 touched it first)' : ''} — out came ${r.out?.name}「${r.out?.hint ?? ''}」${r.with ? ` and ${r.with.name}` : ''}${r.discovered ? ` — a 方子 found: ${r.discovered.in} → ${r.discovered.out}` : ''}` : null),
+  fantong: (r, a) => (a.action !== 'feed' ? null
+    : r.spat_back ? `fed the 饭桶 ${(r.fed?.ids ?? []).join(', ')} — it chewed and spat the pot back whole, nothing spent`
+      : `fed the 饭桶 ${r.fed?.name}${r.fed?.lingshi ? ` with ${r.fed.lingshi} 灵石` : ''}${r.fed?.press ? ', the lid pressed on the gold' : ''}${r.her ? ' (银月 touched it first)' : ''} — out came ${(r.outs ?? [r.out]).filter(Boolean).map(o => `${o.name}${o.wealth ? ` ×${o.n}` : `「${o.hint ?? ''}」`}`).join(' and ')} (${r.grade_name ?? r.grade})${r.with ? ` with ${r.with.name}` : ''}${r.story ? ' — the book\'s own pot' : ''}${r.discovered ? ` — a 方子 found: ${r.discovered.in} → ${r.discovered.out}` : ''}`),
   bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),
   // AI mini-games (rules/aigames.mjs): the page's taps on their cards — facts only, never a secret.
   twenty: (r, a, x) => (a.action === 'open' && r.opened ? 'began 二十问 with Yinyue on the page card'

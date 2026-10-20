@@ -172,7 +172,17 @@
       "lingshi": "灵石",
       "page": "又一张方子残页（{n}/{need}）。",
       "too_many": "一锅最多三样。",
-      "grades": { "junk": "凡", "useful": "有用", "rare": "珍品", "best": "逆天" }
+      "grades": { "junk": "凡", "useful": "有用", "rare": "珍品", "best": "逆天" },
+      "_quips": "银月's line at the reveal, by grade (games/kailu.js says one in the shell's bubble): the data's until 台词预取 writes hers.",
+      "quips": {
+        "junk": ["又是破烂。", "它吃得香，吐得也香。", "这个……你留着吧。"],
+        "useful": ["嗯，还算能用。", "这口饭没白喂。"],
+        "rare": ["哟，有点东西。", "收好，别让人看见。"],
+        "best": ["……它今天心情好。", "快收起来！"],
+        "spat": ["它嫌弃你。"],
+        "twin": ["一锅两样，它撑着了。"],
+        "story": ["……这一口，是它欠你的。"]
+      }
     },
     "en": {
       "spit": "*Crunch*, *click* — out comes: {name}.",
@@ -188,7 +198,16 @@
       "lingshi": "Spirit stones",
       "page": "Another torn recipe page ({n}/{need}).",
       "too_many": "Three things to a pot at most.",
-      "grades": { "junk": "Common", "useful": "Useful", "rare": "Treasure", "best": "Heaven-defying" }
+      "grades": { "junk": "Common", "useful": "Useful", "rare": "Treasure", "best": "Heaven-defying" },
+      "quips": {
+        "junk": ["Rubbish again.", "It eats with relish and spits with relish.", "That one… you keep it."],
+        "useful": ["Hm. That'll do.", "Not a wasted meal."],
+        "rare": ["Oh? That's something.", "Put it away before anyone sees."],
+        "best": ["…It's in a good mood today.", "Quick, put it away!"],
+        "spat": ["It doesn't like you."],
+        "twin": ["Two from one pot. It's stuffed."],
+        "story": ["…That one it owed you."]
+      }
     }
   }
 }

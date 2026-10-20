@@ -312,7 +312,9 @@ test('饭桶图鉴: the first time a thing comes out it is recorded with its gra
   assert.ok(!again.result.first?.includes(id));
   const book = VERBS.story(r.state, content, ctx(), {}).result;
   assert.equal(book.fantong_book.seen[0].id, id);
-  assert.equal(book.fantong_book.of, fantongAll(T).length);
+  const reach = fantongAll(T, content, r.state);
+  assert.equal(book.fantong_book.of, reach.length, 'the whole is what this save can get');
+  assert.ok(!reach.includes('huochai-jian') && !reach.includes('qingtong-jian') && !reach.includes('dansha'), 'not the book\'s two, a later 回\'s or a later 卷\'s');
   assert.match(luHtml(book), /饭桶图鉴 · 1\//);
 });
 

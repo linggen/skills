@@ -97,6 +97,7 @@ function rowOpen(content, state, t, row) {
   if (!state || !content) return true; // the bare roll (tests, the 游戏厅's sample) sees every row
   if (row.hui && huiOrder(content, row.hui) > huiOrder(content, huiNow(content, state))) return false;
   if (row.beast && !(state.beasts?.[row.beast]?.won > 0)) return false;
+  if (row.wealth) return !isLocked(content, state, 'wealth'); // no 灵石 out while 灵石 are not his yet
   if (!row.item) return true;
   const item = itemOf(content, row.item);
   if (!item || (item.juan ?? 1) > 1) return false;
@@ -110,8 +111,9 @@ const sameSet = (a, b) => a.length === b.length && [...a].sort().join('|') === [
 const liveStory = (content, t) => (t.recipes?.story?.list ?? []).filter(r => !content || r.in.every(id => itemOf(content, id)));
 const storyFor = (content, t, ids) => liveStory(content, t).find(r => sameSet(r.in, ids)) ?? null;
 const storyIn = (content, t, ids) => liveStory(content, t).filter(r => ids.some(id => r.in.includes(id)));
-const recipeFor = (t, ids, lingshi, found = null) => (ids.length === 1
-  ? (t.recipes?.list ?? []).find(r => r.in === ids[0] && (r.lingshi ?? 0) === lingshi && (!r.pages || found?.includes(r.id))) ?? null : null);
+const recipeFor = (t, ids, lingshi, found = null, content = null, state = null) => (ids.length === 1
+  ? (t.recipes?.list ?? []).find(r => r.in === ids[0] && (r.lingshi ?? 0) === lingshi && (!r.pages || found?.includes(r.id))
+    && rowOpen(content, state, t, { hui: r.hui })) ?? null : null);
 
 /* The pure roll, for the rules, the tests and the 游戏厅's sample alike: what one pot gives.
    `ids` what went in, `lingshi`, `realm` (realmOf), `press` (the lid pressed on a gold puff), `herHere`,
@@ -130,7 +132,7 @@ export function rollFeed(t, { seed, ids, id, lingshi = 0, realm = 0, press = fal
   const counts = {};
   for (const x of ids) counts[kindOf(t, x)] = (counts[kindOf(t, x)] ?? 0) + 1;
   const power = powerOf(t, { tier: potTier(t, ids), realm, lingshi });
-  const recipe = recipeFor(t, ids, lingshi, found);
+  const recipe = recipeFor(t, ids, lingshi, found, content, state);
   const one = (pityNow) => {
     let grade = weighted(u(), gradeWeights(t, recipe ? 0 : power, recipe?.grades ?? t.odds?.grades));
     const pickU = u(), withU = u(), nU = u();
@@ -233,13 +235,18 @@ export function fantongRecipes(content, state) {
   }));
 }
 
-/* Every thing the table can give (the 图鉴's whole): the pools, the 方子, the gag, the book's two. */
-export function fantongAll(t) {
-  const ids = new Set();
-  for (const g of GRADES) for (const r of t.pools?.[g] ?? []) { ids.add(r.item ?? LINGSHI); if (r.with) ids.add(r.with); }
-  for (const r of t.recipes?.list ?? []) { ids.add(r.out); ids.add(r.best); }
+/* Every thing the table can give: the pools, the 方子, the gag, the book's two. With `content` and `state`, only
+   what this save can get by the lottery — the 图鉴's whole (rows its 回 and 卷 open, never the book's two, which the
+   story hands over; a thing it has already had stays counted). */
+export function fantongAll(t, content = null, state = null) {
+  const ids = new Set(), save = Boolean(content && state);
+  for (const g of GRADES) for (const r of t.pools?.[g] ?? []) {
+    if (save && !rowOpen(content, state, t, r) && !hasFound(state, r.item)) continue;
+    ids.add(r.item ?? LINGSHI); if (r.with) ids.add(r.with);
+  }
+  for (const r of t.recipes?.list ?? []) if (!save || rowOpen(content, state, t, { hui: r.hui })) { ids.add(r.out); ids.add(r.best); }
   for (const e of t.events ?? []) ids.add(e.out);
-  for (const r of t.recipes?.story?.list ?? []) ids.add(r.out);
+  if (!save) for (const r of t.recipes?.story?.list ?? []) ids.add(r.out);
   return [...ids];
 }
 /* 饭桶图鉴: what has come out, in the order it first did, with its grade; and how many the table holds. */
@@ -251,7 +258,7 @@ export function fantongBook(content, state) {
   return {
     seen: seen.map(s => (s.id === LINGSHI ? { id: LINGSHI, name: wordsOf(t, lang).lingshi, grade: s.grade }
       : { id: s.id, name: itemName(itemOf(content, s.id), state, lang) ?? s.id, hint: pick(itemOf(content, s.id)?.hint, lang), grade: s.grade })),
-    of: fantongAll(t).length, grades: wordsOf(t, lang).grades ?? {},
+    of: new Set([...fantongAll(t, content, state), ...seen.map(s => s.id)]).size, grades: wordsOf(t, lang).grades ?? {},
   };
 }
 
@@ -271,9 +278,9 @@ export function fantongBrief(content, state, now) {
   return {
     name: itemName(itemOf(content, t.needs.item), state, lang), ready: !next, ...(next ? { next_at: next.toISOString(), wait: fullSay(t, lang, next, now) } : {}),
     limit: { ...(t.limit?.cooldown_min ? { cooldown_min: t.limit.cooldown_min } : {}), ...(t.limit?.per_day ? { per_day: t.limit.per_day, today: state.fantong?.day === dayKey(now) ? state.fantong.today ?? 0 : 0 } : {}) },
-    inputs, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {},
+    inputs, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {}, quips: wordsOf(t, lang).quips ?? {},
     lingshi: locked ? null : { max: t.lingshi?.max ?? 0, have: state.wealth ?? 0 },
-    recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0, seen: (state.fantong?.seen ?? []).length, of: fantongAll(t).length,
+    recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0, seen: (state.fantong?.seen ?? []).length, of: new Set([...fantongAll(t, content, state), ...(state.fantong?.seen ?? []).map(s => s.id)]).size,
   };
 }
 
