@@ -68,10 +68,12 @@
   {
    "id": "on",
    "label": {
-    "zh": "把丹裹好，收起来",
-    "en": "Wrap the pill and put it away"
+    "zh": "把丹裹好，收起来——大比，明日",
+    "en": "Wrap the pill and put it away — the contest is tomorrow"
    },
    "means": "wraps the nine-turn Foundation pill in three layers of oiled paper and hides it; trains through the month to the contest's eve",
+   "mark": "dabi-eve",
+   "_mark": "周衡's notice 「明日腊八，宗门大比」 is this way on's last paragraph (the book's bridge, moved here from wm-chu's rest 2026-10-20 with wm-luobo): the goal line reads 明日 from here (chapter.json `_goal`).",
    "story": {
     "zh": "那以后的夜里，他练功不为账，也不为藏。瞿老头也不抬，只把扫帚往旁边让了一让：「步子轻了。」",
     "en": "On the nights after that, he trained neither for the books nor to hide. Without lifting his head, Elder Qu just moved the broom aside a little: \"Your step's gone light.\""
