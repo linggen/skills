@@ -289,17 +289,21 @@ test('a fight in the run: the room\'s beast, paid as a haunt, the room moves on,
 import { runSpoils } from '../scripts/rules/rerun.mjs';
 const runSpoilsOf = (state, game) => runSpoils(content, state, game);
 
-// 拾遗 is a 割藤 since 2026-10-19 (the standing rule Hanli approved: the old board picked four of nine glowing cracks): the
-// room's find hangs on the vines (games/fantongcut.js), and the cache is found on three 灵光 (chapter.json rerun.cache `stars`).
-test('拾遗 in the dry river: the run\'s find on the vines and in the bag, once a run; a cache under it on a three-灵光 play when the run hid one', () => {
+// The run's board is a short 守炉 since 2026-10-20 (was 割藤, deleted with the 饭桶's old play): the room's find is its pay,
+// the cache is found on three stars (chapter.json rerun.cache `stars`), and each run deals the next 秘境 level after the
+// last he won (rules/climb.mjs; games.json shoulu `realm: mijing`).
+test('守火 in the dry river: the run\'s find in the bag, once a run, the next level each win; a cache under it on a three-star play when the run hid one', () => {
   const now = openAt();
   let s = must(move, fresh(inside(now), now), { place: 'mijing-anhe' }, now);
   const board = RERUN.board;
   const row = look(s, content, at(now)).tasks.find(t => t.id === board);
-  assert.equal(row?.game, 'fantongcut', 'the 割藤 stands in the room');
+  assert.equal(row?.game, 'shoulu', 'the short 守炉 stands in the room');
+  assert.equal(row.deal.lv, 'mijing-1', 'the first time: the first 秘境 level');
+  assert.ok(row.deal.levels.some(l => l.id === 'mijing-1') && !row.deal.levels.some(l => l.id === 'shiao'), 'the 秘境\'s levels, never the 游戏厅\'s ladder');
   const find = s.rerun.rooms['mijing-anhe'].find, before = s.bag[find.item] ?? 0;
-  assert.equal(row.deal.item.name, content.items.items.find(i => i.id === find.item).name.zh, 'the find is the thing on the vines');
   s = must(win, s, { id: board, stars: 2 }, now);
+  assert.equal(s.climb.shoulu, 1, 'won: the next deal climbs');
+  assert.equal(look(s, content, at(now)).tasks.find(t => t.id === board).deal.lv, 'mijing-2');
   const done = task(s, content, at(now), { action: 'done', id: board });
   assert.equal(done.result.ok, true, JSON.stringify(done.result));
   assert.equal(done.state.bag[find.item], before + find.n, `the find: ${find.item} ×${find.n}`);

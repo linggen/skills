@@ -1,6 +1,7 @@
 // rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, 论道.
 // Part of the rules engine; rules.mjs is its one door.
 import { festivalDone } from './festival.mjs';
+import { climbWon } from './climb.mjs';
 import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
 import { addStamina, dayKey, lockedOf, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
@@ -236,6 +237,8 @@ export function win(state, content, ctx, args) {
   // how many it has, his best ever — a knob pay can scale on later (balance.json), paid on nothing yet.
   const stars = starsOf(content, id, args.stars);
   if (stars != null) s.stars = { ...s.stars, [id]: Math.max(stars, s.stars?.[id] ?? 0) };
+  // A board that climbs (rules/climb.mjs): the level he was dealt is behind him; the next deal is the one after.
+  climbWon(s, content.tasks.tasks.find(t => t.id === id));
   // A board won gives the card its book action is (cards.json `from: {kind: 'beat', task}` —
   // 射鹿 → 一箭 · 偏左半寸, 吹鹅毛 → 吐纳). Won, never skipped: a skip pays nothing (rules/skips.mjs).
   const cards = grantFrom(content, s, 'beat', id, { how: 'beat', day: dayKey(ctx.now) });

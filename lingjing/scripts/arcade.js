@@ -72,7 +72,7 @@ async function tileHtml(g, i) {
 async function levelsOf(g) {
   const name = (l) => { const n = l?.title ?? l?.name; return typeof n === 'string' ? n : n?.[lang()] ?? n?.zh ?? l?.id ?? ''; };
   if (g.group !== 'main') return []; // the main games' ladders; a board's own deals are not levels to pick
-  if (Array.isArray(g.levels)) return g.levels.filter((l) => !l.story).map(name); // a story level (守炉's 药园巡夜) has its own tile, off the ladder
+  if (Array.isArray(g.levels)) return g.levels.filter((l) => !l.story && !l.realm).map(name); // a story level (守炉's 药园巡夜) has its own tile, off the ladder
   const r = await fetch(`../worlds/jiuding/levels/${g.id}.json`).catch(() => null);
   const kit = r?.ok ? await r.json().catch(() => null) : null;
   return (kit?.levels ?? []).map(name);

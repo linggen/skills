@@ -184,7 +184,7 @@ test('奇遇: a room rolls one small game from the pool — about one in three, 
     games.forEach((g, i) => { assert.notEqual(g, games[i - 1]); seen.set(g, (seen.get(g) ?? 0) + 1); });
   }
   assert.ok(hits / all > 0.22 && hits / all < 0.38, `one room in three or four (${(hits / all).toFixed(2)})`);
-  for (const id of ['qiyu-drawguess', 'qiyu-rope', 'qiyu-huarong', 'qiyu-qiqiao', 'qiyu-wuziqi']) assert.ok(seen.get(id) > 0, id);
+  for (const id of ['qiyu-drawguess', 'qiyu-sadou', 'qiyu-huarong', 'qiyu-qiqiao', 'qiyu-wuziqi']) assert.ok(seen.get(id) > 0, id);
   assert.ok(!seen.has('qiyu-luoshu'), '洛书 retired from the pool (10-19): never drawn');
   const unmet = { ...s, companion: undefined };
   let slept = 0;

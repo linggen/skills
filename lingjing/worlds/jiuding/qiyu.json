@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_retired": "An entry with `retired: true` is never drawn again (rules/qiyu.mjs), but stays so a run already holding it rolled still finds its frame — 洛书 left the pool 10-19 (Hanli: 「9宫格出现一次就可以了」), 五子棋 took its weight.",
-  "_about": "奇遇 in a 秘境 rerun (rules/qiyu.mjs; Hanli 2026-10-19: 「秘境里可以有随机游戏. 设计一个剧情触发一下了」). Keyed by the rerun's beat id. As a run is entered each of its rooms rolls `chance` (≈ one room in three or four); a hit draws an entry by `weight`, never the game the room before drew nor the one the previous run drew last, and an entry that `needs: \"her\"` (你画我猜: 银月 names the picture) only while she is awake beside him on her own line. `task` is the board (tasks/world.json, `qiyu: true`); one of `frames` is its line on the board (facts, never her words); a frame's `item` is the thing hung on the vines (割绳子); `words` names the drawguess word list (games.json drawguess data) the thing drawn is dealt from. A win pays a find drawn from the rerun's own `finds`, and its first clear ever the small-game 灵石 (balance.json `boards`). On a 测试存档, `rerun enter --qiyu=<task>` forces that entry into the first room.",
+  "_about": "奇遇 in a 秘境 rerun (rules/qiyu.mjs; Hanli 2026-10-19: 「秘境里可以有随机游戏. 设计一个剧情触发一下了」). Keyed by the rerun's beat id. As a run is entered each of its rooms rolls `chance` (≈ one room in three or four); a hit draws an entry by `weight`, never the game the room before drew nor the one the previous run drew last, and an entry that `needs: \"her\"` (你画我猜: 银月 names the picture) only while she is awake beside him on her own line. `task` is the board (tasks/world.json, `qiyu: true`); one of `frames` is its line on the board (facts, never her words); `words` names the drawguess word list (games.json drawguess data) the thing drawn is dealt from. A win pays a find drawn from the rerun's own `finds` (鼎苔 · 灵芝 · 人参 · 铜矿石), and its first clear ever the small-game 灵石 (balance.json `boards`). On a 测试存档, `rerun enter --qiyu=<task>` forces that entry into the first room.",
   "mijing": {
     "chance": 0.3,
     "pool": [
@@ -14,11 +14,11 @@
         ]
       },
       {
-        "task": "qiyu-rope", "weight": 2,
+        "task": "qiyu-sadou", "weight": 3,
         "frames": [
-          { "zh": "崖缝上垂下几根老藤，藤梢吊着一块鼎苔，够不着。饭桶在底下张着嘴。", "en": "Old vines hang from a crack in the cliff, a lump of cauldron moss on their ends, out of reach. The Rice Bucket gapes below.", "item": { "id": "dingtai", "zh": "鼎苔", "en": "cauldron moss" } },
-          { "zh": "暗河上头的石缝里垂下藤来，吊着一株灵芝，晃晃悠悠。", "en": "Vines trail from a crack above the dark river, a lingzhi swinging on them.", "item": { "id": "lingzhi", "zh": "灵芝", "en": "lingzhi" } },
-          { "zh": "崖壁上挂着一只前人的药篓，藤快断了，篓里还有东西。", "en": "Someone's old herb basket hangs on the cliff face, its vines nearly through; there is something still in it.", "item": { "id": "yaolou", "zh": "药篓", "en": "herb basket" } }
+          { "zh": "凶崖的石阶上，犰狳一只挨一只横在路上装死。袖子里还有一把豆子。", "en": "On the cliff stair the armadillos lie across the way one after another, playing dead. There is still a handful of beans in your sleeve." },
+          { "zh": "干了的河床那头，有个人脸的东西在哭，像个娃娃；它身前的兽，一群一群。", "en": "Far down the dry riverbed something with a man's face is crying like a baby; before it, the beasts stand in herds." },
+          { "zh": "岔口的石壁上刻着一道道符门，前人撒过豆子——地上还滚着几粒，是活的。", "en": "Gates of talismans are cut into the wall at the fork; someone scattered beans here once. A few still roll on the ground, alive." }
         ]
       },
       {

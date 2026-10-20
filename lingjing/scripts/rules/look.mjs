@@ -45,6 +45,7 @@ import { mishiHosted, mishiLook } from './mishi.mjs';
 import { kaoBrief, kaoHosted } from './kao.mjs';
 import { shouchaoHosted, shouchaoRow } from './shouchao.mjs';
 import { qiyuHosted, qiyuRow } from './qiyu.mjs';
+import { dealtOf } from './climb.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -437,6 +438,10 @@ function tasksBrief(content, state, ctx) {
     .filter(([id]) => taskOf(content, id))
     .map(([id, t]) => {
       const task = taskOf(content, id);
+      // The deal: the task's own (and its game's levels), a 奇遇's frame, 兽潮's night and a run's find laid over it — one deal.
+      const own = dealOf(content, task, state), q = task.qiyu ? qiyuRow(content, state, id) : {}, rr = task.run ? runRow(content, state, id) : {};
+      const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : {};
+      const deal = own.deal || q.deal || sc.deal || rr.deal ? { deal: { ...own.deal, ...q.deal, ...sc.deal, ...rr.deal } } : {};
       return {
         id, title: boardTitle(content, state, id, task, again.has(id)), kind: task.kind, status: t.status,
         won: Boolean(state.wins?.[id]),
@@ -449,17 +454,17 @@ function tasksBrief(content, state, ctx) {
         // what it asks and what it pays, so Ling can tell the practice
         ...(task.game ? { game: task.game, level: gameLevel(content, state) } : {}),
         // The board's own words and deal where the task has them (二试's 洛书 is no 秘境 seal).
-        ...(task.how ? { how: pick(task.how, lang) } : {}), ...dealOf(content, task, state), ...(task.needs === 'her' ? { her: true } : {}),
+        ...(task.how ? { how: pick(task.how, lang) } : {}), ...(task.needs === 'her' ? { her: true } : {}),
         ...(task.game && task.done_line ? { done_line: pick(task.done_line, lang) } : {}),
         ...(hosted[id] ? { hosted: true } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
         ...(task.kao ? { light: true, ...kaoBrief(content, state, ctx.now) } : {}),
         // A 奇遇: its frame is the board's line, its deal the game's (rules/qiyu.mjs).
-        ...(task.qiyu ? qiyuRow(content, state, id) : {}),
+        ...q,
         // 兽潮: tonight's row of 守墙关's table (or the rise past it), its title and lead (rules/shouchao.mjs).
-        ...(task.shouchao ? shouchaoRow(content, state, ctx.now) : {}),
-        // A run's 拾遗 (割藤 since 2026-10-19): the room's find hung on the vines (rules/rerun.mjs).
-        ...(task.run ? runRow(content, state, id) : {}),
+        ...sc,
+        // A run's board (a short 守炉 since 2026-10-20): the room's find named, its pay (rules/rerun.mjs).
+        ...rr, ...deal,
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
         pays: again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
@@ -514,13 +519,16 @@ function personBrief(content, state, creature) {
    throws are the book's there, the card law kept in the level itself — no tray of cards dealt.) */
 function dealOf(content, task, state) {
   // A game with a row a level (气走经脉, 10-19: every `qimai` row is one level) deals the row that names this task.
-  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game && g.task === task.id) ?? games.find(g => g.id === task.game) : null;
-  const levels = row?.levels?.some(l => l.story) ? row.levels.filter(l => l.story) : row?.levels;
-  if (!task.deal && !levels) return {};
+  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game && g.task === task.id) ?? games.find(g => g.id === task.game && g.levels) ?? games.find(g => g.id === task.game) : null;
+  // …and a game whose table holds story or realm levels (守炉) deals only those: the 游戏厅's ladder is never a board's.
+  const off = l => l.story || l.realm;
+  const levels = row?.levels?.some(off) ? row.levels.filter(off) : row?.levels;
+  const own = dealtOf(state, task);
+  if (!task.deal && !task.climb && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   // A thing a 割藤 deal hangs on the vines, named in both languages (拾遗's 灵芝): the reader's.
   const item = task.deal?.item?.zh ? { item: { ...(task.deal.item.id ? { id: task.deal.item.id } : {}), name: pick(task.deal.item, state.lang) } } : {};
-  return { deal: { ...(task.deal ?? {}), ...item, ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}) } };
+  return { deal: { ...own, ...item, ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}) } };
 }
 
 export function look(state, content, ctx) {

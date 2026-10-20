@@ -506,3 +506,24 @@ test('药园巡夜, tuned for a first-time player: the human hand always wins, m
   assert.ok(mean(jian) < mean(run(xunye, 'mixed')) - 3, `剑阵 alone scrapes through, fire is the herd's answer: ${jian.map((x) => x.hp)}`);
   assert.ok(rs.every((x) => x.time < 240), `about three minutes: ${rs.map((x) => x.time)}`);
 });
+
+/* The 秘境's short 守炉 (2026-10-20; 割藤 deleted with the 饭桶's old play): three levels of three waves, `realm: mijing`,
+   off the 游戏厅's ladder and opened by id — the run's board deals the next after the last he won (rules/climb.mjs).
+   Only the 秘境's own beasts: 犰狳, then 合窳. Each harder than the one before for the bots; the human hand wins them all. */
+test('the 秘境\'s short 守炉: three levels off the ladder, three waves each, the 秘境\'s beasts, harder each time, all won by the human hand', () => {
+  const realm = all.filter((l) => l.realm === 'mijing');
+  assert.deepEqual(realm.map((l) => l.id), ['mijing-1', 'mijing-2', 'mijing-3']);
+  for (const l of realm) {
+    assert.ok(!levels.includes(l) && !stories.includes(l), `${l.id}: neither the ladder nor a story level`);
+    assert.equal(l.waves.length, 3, `${l.id}: short`);
+    assert.ok(beastsOf(l).every((b) => ['qiuyu', 'heyu'].includes(b)), `${l.id}: ${beastsOf(l)}`);
+    assert.equal(all[levelAt(all, l.id)], l, 'opened by its id');
+    assert.equal(nextLv(all, all.indexOf(l)), 0, 'no 下一关 from the board');
+    assert.ok(allWin(run(l, 'human')), `${l.id}: the human hand wins`);
+    assert.ok(allLose(run(l, 'none')), `${l.id}: nothing laid loses`);
+  }
+  const fire = realm.map((l) => Math.min(...run(l, 'mixed').map((x) => x.hp)));
+  assert.ok(fire[0] > fire[1] && fire[1] > fire[2], `less fire kept each level: ${fire}`);
+  const tasks = JSON.parse(readFileSync(new URL('../worlds/jiuding/tasks/world.json', import.meta.url), 'utf8')).tasks;
+  assert.deepEqual(tasks.find((t) => t.id === 'mijing-rerun-gather').climb, realm.map((l) => l.id), 'the run\'s board climbs them');
+});

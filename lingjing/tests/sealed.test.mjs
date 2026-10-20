@@ -214,7 +214,7 @@ test('an old save mid-秘境 (Hanli\'s, 2026-10-15: wm-kunzhen, standing at the 
   assert.ok(again.result.tasks.some(t => t.id === 'mijing-zhenyan' && t.status === 'offered'), 'and stands for him');
 });
 
-test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'s 犰狳 (下崖 told since 10-19), the 困阵\'s 五子棋, the dry river\'s 合窳 and its herbs on the vines', () => {
+test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'s 犰狳 (下崖 told since 10-19), the 困阵\'s 五子棋, the dry river\'s 合窳 and its herbs past the beasts (撒豆成兵)', () => {
   const place = id => content.places['徐'].places.find(p => p.id === id);
   assert.deepEqual(place('mijing-kou').has.games, ['mijing-huarong']);
   assert.equal(place('mijing-xiongya').has.pool, 'mijing-ya');
@@ -240,11 +240,12 @@ test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'
   s = must(move, fresh(s), { place: 'mijing-anhe' });
   const r = look(s, content, ctx());
   assert.ok(['heyu', 'qiuyu'].includes(r.place.encounter?.creature.id));
-  // 拾遗 is the 秘境's 割藤 since 2026-10-19 (games/fantongcut.js): the 灵芝 hung on the vines, named in his language.
+  // 拾遗 is 撒豆成兵 since 2026-10-20 (割藤 deleted with the 饭桶's old play): its first level, the climb counted (rules/climb.mjs).
   const glean = r.tasks.find(t => t.id === 'mijing-gather');
-  assert.equal(glean?.game, 'fantongcut');
-  assert.equal(glean.deal.item.name, '灵芝');
+  assert.equal(glean?.game, 'sadou');
+  assert.equal(glean.deal.lv, 1, 'the first time: 撒豆成兵\'s first level');
   s = must(win, s, { id: 'mijing-gather', stars: 3 });
+  assert.equal(s.climb.sadou, 1, 'the run\'s 撒豆成兵 deals the one after it');
   const paid = must(task, s, { action: 'done', id: 'mijing-gather' });
   assert.equal(paid.bag.lingzhi, (s.bag.lingzhi ?? 0) + 1, 'gleaning pays a herb');
   assert.ok(paid.wealth > s.wealth, 'and stones');

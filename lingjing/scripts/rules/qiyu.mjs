@@ -15,6 +15,7 @@ import { pick } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { herNear } from './companion.mjs';
 import { stow } from './pouch.mjs';
+import { dealtOf } from './climb.mjs';
 // rerun.mjs rolls the 奇遇 as a run is entered; its `draw` and `rerunsOf` are function declarations, safe across the cycle.
 import { draw as drawOf, rerunsOf } from './rerun.mjs';
 
@@ -82,7 +83,7 @@ export function qiyuRow(content, state, id) {
   const lang = state.lang, frame = e.frames[q.frame] ?? e.frames[0], t = taskOf(content, id);
   const word = q.word ? wordsOf(content, e).find(w => w.zh === q.word) : null;
   const deal = {
-    ...(t?.deal ?? {}),
+    ...dealtOf(state, t),
     ...(word ? { word, context: `秘境外圈，${pick(frame, 'zh')}` } : {}),
     ...(frame.item ? { item: { ...(frame.item.id ? { id: frame.item.id } : {}), name: pick(frame.item, lang) } } : {}),
   };

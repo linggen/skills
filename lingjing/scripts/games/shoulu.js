@@ -21,7 +21,8 @@
 // The levels: `data.levels` (a story's), else the `shoulu` row of worlds/jiuding/games.json. A level with a
 // `story` (its scene) is a story level, played once at its 回 (Hanli 10-20: 守炉 is the main game; each 回 from
 // 古四 on gets one new level at its climax): never on the 游戏厅's ladder (the select, `lv=<n>`, 下一关), opened
-// by its id — the story task's `deal.lv`, or `?lv=<id>`. The level to open: `data.lv` (1… on the ladder, or a
+// by its id — the story task's `deal.lv`, or `?lv=<id>`. A level with a `realm` (the 秘境's short 守炉, 10-20) stands
+// off the ladder the same way, dealt by the 秘境's board as it climbs (rules/climb.mjs). The level to open: `data.lv` (1… on the ladder, or a
 // level's id), else the page's `?lv=` (the 游戏厅: ?dev=1&game=shoulu&lv=3) — straight into it, settling
 // { won, stars } when it is won (the game stays up, its own card over it). Without one: the level select, and
 // the game owns 再来 / 下一关; it settles only when taken down. Stars live in this browser's localStorage
@@ -99,7 +100,7 @@ export function levelAsked(data, search) {
   return Number.isInteger(n) && n > 0 ? n : 0;
 }
 /** The 游戏厅's ladder: the levels with no `story`, in the order they climb. */
-export const ladderOf = (levels) => levels.filter((l) => !l.story);
+export const ladderOf = (levels) => levels.filter((l) => !l.story && !l.realm);
 /** Where the asked level sits in `levels` (-1: none asked, or none such): an id anywhere, a number on the ladder. */
 export function levelAt(levels, asked) {
   if (typeof asked === 'string') return levels.findIndex((l) => l.id === asked);
@@ -144,7 +145,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
   const levels = await levelsOf(data).catch(() => []);
   const asked = levelAsked(data, win?.location?.search), askedAt = levelAt(levels, asked);
   // a story level plays alone: no level select to wander off to from the story's board
-  const solo = Boolean(levels[askedAt]?.story), pickBtn = solo ? '' : `<button type="button" data-a="pick">${t.pick}</button>`;
+  const solo = Boolean(levels[askedAt]?.story || levels[askedAt]?.realm), pickBtn = solo ? '' : `<button type="button" data-a="pick">${t.pick}</button>`;
   const root = doc.createElement('div');
   root.className = 'g-shoulu';
   root.innerHTML = `<div class="sl-hud"><span class="sl-stat sl-fire">${t.fire} <b data-k="hp">10</b></span><span class="sl-stat sl-stone">${t.stone} <b data-k="money">0</b></span>`

@@ -36,7 +36,7 @@ function rnd(seed) { let s = seed; return () => { s = (s * 16807) % 2147483647; 
 export function makePaper(doc, L, label) {
   const k = 2, p = doc.createElement('canvas');
   p.width = W * k; p.height = H * k;
-  const pics = ['pine', 'rock', 'bush', `ground-${L.id}`];
+  const pics = ['pine', 'rock', 'bush', `ground-${L.ground ?? L.id}`]; // `ground`: another level's painting (the 秘境's rows)
   const paint = () => {
     const ready = pics.map((n) => artImg(doc, n)).every(okImg);
     const c = p.getContext('2d');
