@@ -111,6 +111,25 @@ Design for both from the start:
 - Smooth on a mid-range phone: atlases sized for it, a particle budget, `reducedMotion` honoured.
 - Audio starts on the first tap (iOS). Fonts are bundled, never system-only.
 
+## Game and chat (decided 10-20, Hanli: 「台词预取, 好主意! 就这么做」)
+
+The play canvas never talks to the model. It sends **facts** out and takes **commands** in.
+The host relays both ways: the page's chat bridge on Mac, Flutter's game controller over the JS
+channel on the phone. The message shapes are identical, so a kit is written once.
+
+- **Facts out:** `start {level}`, the kit's key moments (`boss`, `low`, `wave_cleared`…),
+  `end {won, stars}`, and for AI games `{drawn, image}`. Ordinary hits and kills stay
+  inside: they only drive haptics and sound.
+- **Commands in:** `say {who, text}` shows a speech bubble over that character;
+  `guess`/`answer` serve the AI games.
+- **台词预取 (line prefetch).** Every word is 银月's (the "Yinyue writes every message" rule),
+  but a model reply takes 1–3 s, which is too slow mid-fight. So at `start` the host sends the
+  level's moment list once, and she writes a short line for each. The kit keeps them and shows
+  each one the instant its moment comes. That's one extra call per level and zero latency in
+  play. Only the end-of-level comment and the AI games ask live.
+- **Layout:** while playing, the chat is folded (10-14). Her lines appear on the field. After
+  the play the chat opens and she comments, then the story goes on.
+
 ## Not on linggensite
 
 The source of truth is this repo, and the games ship inside the skill (Mac) and inside the app
