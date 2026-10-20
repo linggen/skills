@@ -8,19 +8,53 @@ import { BEASTS, HERO, SKILLS, TOWERS, W, H, posOnPath, offRoad, cleared, waves 
 export const INK = '#2a241d';
 const LVNAME = { zh: ['一重', '二重', '三重'], en: ['I', 'II', 'III'] };
 
+// The board's pictures (2026-10-20, Hanli: 「代码画的都查一下, 用flux画吧」): the beasts are 守墙's comic frames packed on
+// art/beasts.webp (+ FLUX's second steps), the talismans, the 丹炉, the ground of each map and its pines / rocks /
+// bushes painted by the local FLUX (tools/paint-shoulu-flux.py). Each draw falls back to its code figure while a
+// picture loads or if it fails; the road stays drawn from the level's data, on the painted ground.
+const ART = { cells: null, beasts: null, img: {} };
+const okImg = (im) => im && im.complete && im.naturalWidth > 0;
+function artImg(doc, name, then) {
+  let im = ART.img[name];
+  if (!im) { im = ART.img[name] = doc.createElement('img'); im.src = new URL(`./art/${name}.webp`, import.meta.url).href; }
+  if (then && !okImg(im)) im.addEventListener('load', then, { once: true });
+  return im;
+}
+function loadBoardArt(doc) {
+  if (ART.beasts) return;
+  ART.beasts = doc.createElement('img');
+  fetch(new URL('./art/beasts.json', import.meta.url)).then((r) => r.json()).then((m) => {
+    ART.cells = m.cells; ART.beasts.src = new URL('./art/beasts.webp', import.meta.url).href;
+  }).catch(() => {});
+  artImg(doc, 'furnace');
+  for (const k of Object.keys(TOWERS)) for (let lv = 1; lv <= 3; lv += 1) artImg(doc, `tower-${k}-${lv}`);
+}
+
 function rnd(seed) { let s = seed; return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
 
 /** The board under everything, painted once a level: paper, hills, grass, rocks and pines off the road, the road. */
 export function makePaper(doc, L, label) {
   const k = 2, p = doc.createElement('canvas');
   p.width = W * k; p.height = H * k;
-  const c = p.getContext('2d');
-  c.scale(k, k);
+  const pics = ['pine', 'rock', 'bush', `ground-${L.id}`];
+  const paint = () => {
+    const ready = pics.map((n) => artImg(doc, n)).every(okImg);
+    const c = p.getContext('2d');
+    c.setTransform(k, 0, 0, k, 0, 0); c.clearRect(0, 0, W, H);
+    paintBoard(c, L, label, ready ? Object.fromEntries(pics.map((n) => [n.startsWith('ground') ? 'ground' : n, ART.img[n]])) : null);
+  };
+  let left = pics.length;
+  pics.forEach((n) => artImg(doc, n, () => { left -= 1; if (left <= 0 || pics.every((m) => okImg(ART.img[m]))) paint(); }));
+  paint();
+  return p;
+}
+function paintBoard(c, L, label, art) {
   const r = rnd(7 + L.road.points.length * 13);
+  if (art) c.drawImage(art.ground, 0, 0, W, H);
   const gr = c.createLinearGradient(0, 0, 0, H);
   gr.addColorStop(0, L.paper?.[0] ?? '#f4ecda'); gr.addColorStop(1, L.paper?.[1] ?? '#efe4cc');
-  c.fillStyle = gr; c.fillRect(0, 0, W, H);
-  for (let i = 0; i < 900; i += 1) {
+  if (!art) c.fillStyle = gr, c.fillRect(0, 0, W, H);
+  for (let i = 0; i < (art ? 0 : 900); i += 1) {
     c.strokeStyle = `rgba(120,95,60,${0.03 + r() * 0.05})`; c.lineWidth = 0.5;
     const x = r() * W, y = r() * H, a = r() * 6.28, l = 2 + r() * 8;
     c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); c.stroke();
@@ -32,18 +66,21 @@ export function makePaper(doc, L, label) {
   for (let x = 0; x <= W; x += 40) c.lineTo(x, 30 + rr() * 28);
   c.lineTo(W, 62); c.closePath(); c.fill();
   const free = (x, y, m) => offRoad(L.road, x, y) > m && L.spots.every(([sx, sy]) => Math.hypot(sx - x, sy - y) > (m > 40 ? 60 : 34)) && Math.hypot(L.furn.x - x, L.furn.y - y) > 60;
-  for (let i = 0; i < 160; i += 1) {
+  for (let i = 0; i < (art ? 0 : 160); i += 1) {
     const x = r() * W, y = 70 + r() * (H - 70);
     if (!free(x, y, 30)) continue;
     c.strokeStyle = `rgba(70,90,60,${0.12 + r() * 0.15})`; c.lineWidth = 1;
     c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + 2, y - 5, x + (r() * 6 - 3), y - 8 - r() * 5); c.stroke();
   }
+  const sprite = (im, x, y, h) => { const w = im.naturalWidth * h / im.naturalHeight; c.drawImage(im, x - w / 2, y - h, w, h); };
   const rock = (x, y, s) => {
+    if (art) return sprite(r() < 0.5 ? art.rock : art.bush, x, y + s * 0.4, s * 2.6);
     c.fillStyle = 'rgba(80,75,70,0.16)'; c.beginPath(); c.moveTo(x - s, y);
     c.quadraticCurveTo(x - s * 0.6, y - s * 1.1, x, y - s * 0.9); c.quadraticCurveTo(x + s * 0.8, y - s * 0.8, x + s, y); c.closePath(); c.fill();
     c.strokeStyle = 'rgba(42,36,29,0.45)'; c.lineWidth = 1; c.stroke();
   };
   const pine = (x, y, s) => {
+    if (art) return sprite(art.pine, x, y + s * 0.2, s * 3.2);
     c.strokeStyle = 'rgba(42,36,29,0.7)'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x - 3, y - s, x + 2, y - s * 2); c.stroke();
     for (let j = 0; j < 3; j += 1) {
       const yy = y - s * 0.8 - j * s * 0.45, w = s * (1.1 - j * 0.25);
@@ -59,7 +96,8 @@ export function makePaper(doc, L, label) {
   }
   const pts = L.road.points;
   const road = (w, col) => { c.strokeStyle = col; c.lineWidth = w; c.lineJoin = 'round'; c.lineCap = 'round'; c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (const [x, y] of pts) c.lineTo(x, y); c.stroke(); };
-  road(56, 'rgba(60,48,35,0.10)'); road(48, 'rgba(60,48,35,0.16)'); road(42, '#e9dcc0'); road(30, 'rgba(250,244,230,0.55)');
+  if (art) { road(50, '#4a3320'); road(44, '#b98a52'); road(30, 'rgba(226,190,130,0.75)'); } // a comic dirt road, outlined
+  else { road(56, 'rgba(60,48,35,0.10)'); road(48, 'rgba(60,48,35,0.16)'); road(42, '#e9dcc0'); road(30, 'rgba(250,244,230,0.55)'); }
   for (let i = 0; i < 400; i += 1) { const pp = posOnPath(L.road, r() * L.road.len, (r() * 2 - 1) * 20); c.fillStyle = `rgba(90,70,50,${0.08 + r() * 0.12})`; c.beginPath(); c.arc(pp.x, pp.y, 0.6 + r() * 1.4, 0, 6.28); c.fill(); }
   for (let i = 0; i < 160; i += 1) { const side = r() < 0.5 ? -1 : 1, pp = posOnPath(L.road, r() * L.road.len, side * 22); c.strokeStyle = `rgba(42,36,29,${0.15 + r() * 0.2})`; c.lineWidth = 0.8 + r(); c.beginPath(); c.moveTo(pp.x, pp.y); c.lineTo(pp.x + (r() * 6 - 3), pp.y + (r() * 6 - 3)); c.stroke(); }
   if (L.air) { // the fliers' line: a faint dashed sky-way
@@ -71,7 +109,6 @@ export function makePaper(doc, L, label) {
   c.fillStyle = 'rgba(42,36,29,0.55)'; c.font = 'bold 15px "Songti SC","STSong",serif'; c.fillText(label, lx, ly);
   c.strokeStyle = 'rgba(176,65,46,0.7)'; c.lineWidth = 1.5; c.strokeRect(W - 40, H - 42, 26, 26);
   c.fillStyle = 'rgba(176,65,46,0.75)'; c.font = 'bold 11px serif'; c.fillText('守', W - 33, H - 31); c.fillText('炉', W - 33, H - 19);
-  return p;
 }
 
 function eye(c, x, y, r, red) { c.fillStyle = red ? '#e8d4b0' : '#f6efe0'; c.beginPath(); c.arc(x, y, r, 0, 6.28); c.fill(); c.fillStyle = red ? '#b0412e' : '#111'; c.beginPath(); c.arc(x + r * 0.25, y, r * 0.55, 0, 6.28); c.fill(); }
@@ -148,10 +185,25 @@ export function drawBeast(c, type, x, y, t, face, flash, s = 1, b = null) {
     c.strokeStyle = thin ? 'rgba(230,200,120,0.25)' : 'rgba(230,200,120,0.75)'; c.lineWidth = thin ? 1 : 3;
     c.setLineDash(thin ? [3, 6] : []); c.beginPath(); c.ellipse(0, -2, r * 2.2 * s, r * 1.4 * s, 0, 0, 6.28); c.stroke(); c.setLineDash([]);
   }
+  if (beastArt(c, type, B, t, face, flash, s)) { c.restore(); return; }
   c.scale(face * s, s);
   const col = flash > 0 ? '#fff4dc' : B.color;
   FIGURES[type](c, r, col, t, Math.sin(t * 10) * 1.2, flash, b);
   c.restore();
+}
+/** A beast's painted height on the board (its figure's r is the hit size; the picture reads a little bigger). */
+const BEAST_H = { yezhu: 50, zheng: 43, qiuyu: 52, qique: 44, heyu: 112 };
+/** The painted beast (walk steps, the hit frame while it flashes); false while the sheet loads. The art faces left. */
+function beastArt(c, type, B, t, face, flash, s) {
+  const cells = ART.cells;
+  if (!cells || !okImg(ART.beasts)) return false;
+  const step = `${type}-walk-${1 + (Math.floor(t * (B.fly ? 9 : 6)) % 2)}`;
+  const cell = (flash > 0 && cells[`${type}-hit`]) || cells[step] || cells[`${type}-walk-1`];
+  if (!cell) return false;
+  const [sx, sy, w, h] = cell, hh = BEAST_H[type] * s, ww = w * hh / h, foot = B.fly ? hh / 2 : B.r * 0.85 * s;
+  c.scale(-face, 1);
+  c.drawImage(ART.beasts, sx, sy, w, h, -ww / 2, foot - hh + (B.fly ? 0 : Math.abs(Math.sin(t * 10)) * -1.5), ww, hh);
+  return true;
 }
 function hpBar(c, b) {
   const B = BEASTS[b.type], w = B.boss ? 54 : 22, x = b.x - w / 2, y = b.y - B.r - (B.fly ? 14 : 10) - (B.boss ? 14 : 0), h = B.boss ? 6 : 4;
@@ -175,6 +227,16 @@ function drawFurnace(c, g, t) {
     c.fillStyle = k === 1 ? 'rgba(240,170,60,0.9)' : 'rgba(214,92,40,0.85)';
     c.beginPath(); c.moveTo(fx - 5, y + 24); c.quadraticCurveTo(fx - 4, y + 24 - h * 0.6, fx, y + 24 - h); c.quadraticCurveTo(fx + 4, y + 24 - h * 0.6, fx + 5, y + 24); c.closePath(); c.fill();
   }
+  const pic = ART.img.furnace;
+  if (okImg(pic)) { // the painted 丹炉, reddening as the waves are held
+    const h = 84, w = pic.naturalWidth * h / pic.naturalHeight, heat = Math.min(1, prog);
+    c.save(); if (heat > 0.05) { c.shadowColor = `rgba(240,120,40,${0.5 * heat})`; c.shadowBlur = 18 * heat; }
+    c.drawImage(pic, x - w / 2, y + 30 - h, w, h); c.restore();
+    if (g.furnFlash > 0) { c.fillStyle = `rgba(200,40,30,${g.furnFlash * 0.6})`; c.beginPath(); c.arc(x, y, 40, 0, 6.28); c.fill(); }
+    c.strokeStyle = `rgba(90,90,95,${0.18 + prog * 0.15})`; c.lineWidth = 2;
+    for (let k = 0; k < 3; k += 1) { c.beginPath(); const sx = x - 10 + k * 10; c.moveTo(sx, y - 40); for (let j = 1; j < 6; j += 1) c.lineTo(sx + Math.sin(t * 1.5 + j * 0.9 + k) * 6, y - 40 - j * 8 - prog * 6); c.stroke(); }
+    return;
+  }
   c.strokeStyle = INK; c.lineWidth = 4; c.lineCap = 'round';
   c.beginPath(); c.moveTo(x - 18, y + 8); c.lineTo(x - 22, y + 28); c.moveTo(x + 18, y + 8); c.lineTo(x + 22, y + 28); c.stroke();
   const heat = Math.min(1, prog);
@@ -197,7 +259,16 @@ function drawSword(c, s) {
   c.restore();
 }
 function drawTower(c, tw, t) {
-  const D = TOWERS[tw.type], x = tw.x, y = tw.y;
+  const D = TOWERS[tw.type], x = tw.x, y = tw.y, pic = ART.img[`tower-${tw.type}-${Math.min(3, tw.lvl + 1)}`];
+  if (okImg(pic)) { // the painted talisman: it rocks back as it fires, glowing its colour
+    const h = 66 + tw.lvl * 6, w = pic.naturalWidth * h / pic.naturalHeight;
+    c.fillStyle = 'rgba(40,30,20,0.22)'; c.beginPath(); c.ellipse(x, y + 10, 20, 7, 0, 0, 6.28); c.fill();
+    c.save(); c.translate(x, y + 12); c.rotate(tw.anim > 0 ? -0.12 * tw.anim : Math.sin(t * 2 + x * 0.1) * 0.02);
+    if (tw.anim > 0) { c.shadowColor = D.color; c.shadowBlur = 14; }
+    c.drawImage(pic, -w / 2, -h, w, h); c.restore();
+    if (tw.type === 'lei' && tw.anim > 0) { c.strokeStyle = 'rgba(150,110,230,0.85)'; c.lineWidth = 1.4; for (let k = 0; k < 3; k += 1) { const a = Math.random() * 6.28; c.beginPath(); c.moveTo(x, y - h * 0.6); c.lineTo(x + Math.cos(a) * 18, y - h * 0.6 + Math.sin(a) * 12); c.stroke(); } }
+    return;
+  }
   c.fillStyle = 'rgba(60,50,40,0.18)'; c.beginPath(); c.ellipse(x, y + 10, 22, 8, 0, 0, 6.28); c.fill();
   c.fillStyle = '#d6cbb3'; c.beginPath(); c.ellipse(x, y + 6, 18, 7, 0, 0, 6.28); c.fill(); c.strokeStyle = 'rgba(42,36,29,0.6)'; c.lineWidth = 1; c.stroke();
   c.strokeStyle = INK; c.lineWidth = 2; c.beginPath(); c.moveTo(x, y + 6); c.lineTo(x, y - 34); c.stroke();
@@ -218,6 +289,7 @@ function drawTower(c, tw, t) {
 const YY = { img: null, skills: null, meta: null }, HERO_H = 64, FOOT = 12, seen = new WeakMap();
 /** Load 银月's frames once (the page calls it; the tests never do): her sheet, and her skills' (pounce, cast, fox-fire). */
 export function loadArt(doc) {
+  loadBoardArt(doc);
   if (YY.img) return;
   const img = doc.createElement('img'), sk = doc.createElement('img');
   YY.img = img; YY.skills = sk;
