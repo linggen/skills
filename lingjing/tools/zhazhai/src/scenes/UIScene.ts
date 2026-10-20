@@ -1,7 +1,7 @@
 import { Runtime } from "../zhazhai/runtime";
 import { BaseScene } from "./BaseScene";
 import { BirdType } from "../types/BirdType";
-import { getTotalLevels } from "../data/levels";
+import { LEVELS } from "../data/levels";
 import { HUDManager } from "../ui/hud/HUDManager";
 import { ResultsDialog } from "../ui/dialogs/ResultsDialog";
 import { PauseDialog } from "../ui/dialogs/PauseDialog";
@@ -210,11 +210,11 @@ export class UIScene extends BaseScene {
   }
 
   private showResultsDialog(data: ResultsData): void {
-    const totalLevels = getTotalLevels();
-    const nextLevel = data.level < totalLevels ? data.level + 1 : data.level;
     const levelData = getLevelById(data.level)!;
+    // 砸寨: 下一关 stays in its own ladder — fort to fort, a story throw to the next throw.
+    const nextLevel = LEVELS.find((l) => l.levelId > data.level && Boolean(l.key) === Boolean(levelData.key))?.levelId ?? data.level;
 
-    Runtime.onResult({ level: data.level, won: data.won, stars: data.stars, score: data.score });
+    Runtime.onResult({ level: data.level, key: levelData.key ?? null, won: data.won, stars: data.stars, score: data.score });
     const dialog = new ResultsDialog(this, {
       level: data.level,
       levelName: levelData.name,

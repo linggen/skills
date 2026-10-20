@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { Pig } from "../objects/Pig";
+import { Pig, type PigLook } from "../objects/Pig";
 import { PigSize } from "../constants";
 import type { IWakeCascadeManager } from "../interfaces/IWakeCascadeManager";
 
@@ -9,6 +9,8 @@ export interface PigCreateOptions {
   size?: PigSize;
   id?: string;
   wakeManager?: IWakeCascadeManager;
+  /** 砸寨: a target that is not a weasel (zhazhai/targets.ts). */
+  look?: PigLook;
 }
 
 export interface IPigFactory {
@@ -29,7 +31,8 @@ export class PigFactory implements IPigFactory {
       options.y,
       options.size ?? PigSize.MEDIUM,
       options.id,
-      options.wakeManager ?? this.wakeManager
+      options.wakeManager ?? this.wakeManager,
+      options.look
     );
   }
 }

@@ -154,28 +154,6 @@ export const CHOOSERS = {
     mem.settleUntil = Date.now() + 900 + r() * 1400; // watches it swing before the next move
     return pool[Math.floor(r() * pool.length)];
   },
-  arc: (seen, r, mem) => {
-    const next = seen.controls.find((c) => c.g === 'next');
-    if (next) return { kind: 'tap', c: next };
-    const pad = seen.controls.find((c) => c.kind === 'drag');
-    if (!pad || mem.settleUntil > Date.now()) return mem.flying && r() < 0.02 ? { kind: 'tap-at', x: pad?.x ?? seen.host.x, y: pad?.y ?? seen.host.y } : null;
-    const lvl = seen.head; if (mem.level !== lvl) { mem.level = lvl; mem.vec = null; }
-    // Now and then something else from the tray (a stone, the sword, the talisman), before the pull.
-    const picks = seen.controls.filter((c) => c.g === 'pick' && !/is-on/.test(c.cls));
-    if (picks.length && !mem.picked && r() < 0.3) { mem.picked = true; return { kind: 'tap', c: picks[Math.floor(r() * picks.length)] }; }
-    mem.picked = false;
-    // the last pull, corrected a little (he watched where it went), else a first guess; and now and
-    // then a fresh idea — a lob over what is in the way, or a flat one. `a` the aim up (radians), `p`
-    // the power (0–1 of a full draw).
-    const base = mem.vec ?? { a: -0.35 + r() * 0.9, p: 0.6 + r() * 0.4 };
-    mem.vec = r() < 0.25 ? { a: -0.35 + r() * 1.65, p: 0.5 + r() * 0.5 } : { a: base.a + gauss(r) * 0.12, p: Math.max(0.3, Math.min(1, base.p + gauss(r) * 0.08)) };
-    mem.settleUntil = Date.now() + 2600; mem.flying = true;
-    // A slingshot about the bow (Hanli 10-19, 「弹弓式」): he presses on the bow and pulls back to the
-    // right — below it to aim up, above it to aim down; the pull's length is the power (deerarc.js
-    // aimOf: BOW [378, 164] of the 480 × 300 scene, a full draw 120).
-    const k = pad.w / 480, bx = pad.l + 378 * k, by = pad.t + 164 * (pad.h / 300), len = mem.vec.p * 120 * k;
-    return { kind: 'drag', from: [bx, by], to: [bx + Math.cos(mem.vec.a) * len, by + Math.sin(mem.vec.a) * len] };
-  },
   any: (seen, r) => {
     const pool = seen.controls.filter((c) => !QUIT.test(c.g ?? '') && c.g !== 'retry');
     if (!pool.length) return null;
@@ -184,7 +162,7 @@ export const CHOOSERS = {
     return c.kind === 'hold' || c.kind === 'drag' ? { kind: 'hold', c, ms: 300 + r() * 2200 } : c.kind === 'swipe' ? { kind: 'swipe', c } : { kind: 'tap', c };
   },
 };
-export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'fallrope' ? 'swing' : game === 'rain' ? 'rain' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : ['deerarc', 'luwing', 'throwkit'].includes(game) ? 'arc' : 'any');
+export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'fallrope' ? 'swing' : game === 'rain' ? 'rain' : ['bread', 'fantongcut', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : 'any');
 export const LOSS = { rain: /成河/ };
 /* A story board's task id (its [data-game] host) → its game kind (the chooser's key): games.json. */
 export const GAME_OF_TASK = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/games.json'), 'utf8')).games.filter((g) => g.task).map((g) => [g.task, g.id]));
@@ -526,14 +504,8 @@ function targets(content, at, only) {
     const data = { tier: 2, els, must: u.el, ...(ft.teach?.[u.el] ? { teach: ft.teach[u.el].zh ?? ft.teach[u.el] } : {}) };
     list.push(tryRow(`fantongcut-${u.el}`, 'fantongcut', `&data=${encodeURIComponent(JSON.stringify(data))}`));
   }
-  if (!only || only.has('throwkit')) list.push(tryRow('throwkit', 'throwkit'));
-  // 射鹿 · 拉弓's forts (10-19): each fort alone, as Hanli opens it (arcade.html?dev=1&game=deerarc&lv=<id>),
-  // with the row's paintings; `deerarc` is the whole row.
-  const arc = reg.games.find((g) => g.id === 'deerarc');
-  for (const l of (arc?.levels ?? []).filter((x) => x.smash)) {
-    if (only && !only.has('deerarc') && !only.has(`deerarc-${l.id}`)) continue;
-    list.push({ name: `deerarc-${l.id}`, game: 'deerarc', chooser: 'arc', host: '#slot', url: (base) => `${base}/apps/lingjing/scripts/arcade.html?dev=1&game=deerarc&lv=${l.id}` });
-  }
+  // The throws (射鹿, 芦苇里那一等) are levels of 砸寨 since 2026-10-20: a Phaser canvas, played by its own bot
+  // (tools/zhazhai/bot.mjs), not by these DOM hands.
   // 气走经脉: one try-page row per level of the kit (games.json `qimai` rows, the ladder by `n`).
   const qimai = reg.games.filter((g) => g.id === 'qimai').flatMap((g) => g.levels ?? []).sort((a, b) => (a.n ?? 99) - (b.n ?? 99));
   for (const [i, l] of qimai.entries()) {

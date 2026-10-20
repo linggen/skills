@@ -75,8 +75,10 @@
     {
       "id": "yishui-reed",
       "kind": "board",
-      "game": "luwing",
-      "how": { "zh": "往后拉，松手放剑，飞行中点一下，剑直冲出去。等它吸气，翅膀根翻开的那一霎。", "en": "Pull back and let go; tap in flight and the sword flies straight. Wait for its breath: the instant the wing root opens." },
+      "_zhazhai": "2026-10-20 (Hanli: 「其他投掷类都用砸寨的不同关卡代替」): a level of 砸寨, the throw kit (tools/zhazhai/src/data/throws.ts `yishui-reed`); was the 射鹿-board row `luwing`, deleted. `grades`: the game's stars → the marks (★★–★★★ still, ★ hasty).",
+      "game": "zhazhai",
+      "deal": { "lv": "yishui-reed", "grades": { "3": "still", "2": "still", "1": "hasty" } },
+      "how": { "zh": "往后拉，松手放剑，越过浮木落到它背上；飞行中点一下，剑直冲出去。等它吸气，翅膀根翻开的那一霎。", "en": "Pull back and let go: over the driftwood, onto its back; tap in flight and the sword flies straight. Wait for its breath: the instant the wing root opens." },
       "stars": 3,
       "period": "once",
       "title": { "zh": "芦苇里那一等", "en": "The wait in the reeds" },

@@ -12,4 +12,11 @@ export const dump = () =>
     materials: [...new Set(l.structures.map((s) => s.material))],
     stars: l.starThresholds,
     words: LEVEL_WORDS[l.levelId],
+    // 砸寨: a story throw's name, place, target and paintings (data/throws.ts).
+    ...(l.key ? {
+      key: l.key,
+      place: l.place ?? null,
+      target: l.target?.kind ?? "weasel",
+      art: [...new Set([...(l.place ? [`place-${l.place}`] : []), ...l.structures.flatMap((s) => (s.skin ? [s.skin.replace(/^zz:/, "")] : [])), ...(l.decor ?? []).map((d) => d.art)])],
+    } : {}),
   }));

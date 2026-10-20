@@ -36,6 +36,8 @@ export interface BirdPhysicsConfig {
   splitAngle?: number;
   splitVelocityRatio?: number;
   activateOnCollision?: boolean;
+  /** 砸寨: drawn this long (a long thing on a small round body: the arrow). */
+  visualLength?: number;
 }
 
 export const BIRD_PHYSICS: Record<BirdType, BirdPhysicsConfig> = {
@@ -86,6 +88,16 @@ export const BIRD_PHYSICS: Record<BirdType, BirdPhysicsConfig> = {
     splitCount: 3,
     splitAngle: 30,
     splitVelocityRatio: 0.95,
+  },
+  // 砸寨 箭: a small heavy point (it flies flat and far, and a hit on a beast is a kill), drawn as a long arrow.
+  [BirdType.ARROW]: {
+    density: 0.006,
+    restitution: 0.05,
+    friction: 0.9,
+    frictionAir: 0.0002,
+    radius: 16,
+    hasAbility: false,
+    visualLength: 150,
   },
 } as const;
 
@@ -294,6 +306,7 @@ export const BIRD_ASSET_MAP: Record<BirdType, string> = {
   [BirdType.BLACK]: "alienBeige_round",
   [BirdType.WHITE]: "alienPink_square",
   [BirdType.BLUE]: "alienBlue_round",
+  [BirdType.ARROW]: "zz:proj-arrow", // 砸寨: its own painting (zhazhai/skin.ts)
 };
 
 export const BOUNCE_CONFIG = {

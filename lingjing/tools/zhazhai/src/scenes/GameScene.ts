@@ -46,6 +46,7 @@ import { gameEvents, SubscriptionGroup } from "../events/EventBus";
 import { DestructionTracker } from "../systems/DestructionTracker";
 import { SCENE_KEYS } from "../config/UIConstants";
 import { clearGeneratedTextures } from "../config/assetManifest";
+import { placeBackdrop, placeDecor, tintGround } from "../zhazhai/props";
 import type { TransitionScene } from "./TransitionScene";
 import type { Slingshot } from "../objects/Slingshot";
 import { ComboTracker } from "../systems/ComboTracker";
@@ -217,6 +218,10 @@ export class GameScene extends Phaser.Scene {
 
     this.createSlingshot();
     this.buildLevel();
+    // 砸寨: a story throw's place — its painting, its brush and reeds, its ground.
+    placeBackdrop(this, this.levelData?.place);
+    placeDecor(this, this.levelData?.decor);
+    tintGround(this, this.levelData?.place);
 
     this.setupEvents();
     this.launchUIScene();

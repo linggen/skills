@@ -8,8 +8,15 @@ import { getLevelById } from "../data/levels";
 // basket-back / basket-front: the 竹篮 the throws rest in (systems/BirdQueue.ts, drawn by atlas.py basket()).
 export const ART = ["weasel-s", "weasel-m", "weasel-l", "proj-stone", "slingshot", "basket-back", "basket-front"] as const;
 
+// The story throws' paintings (tools/paint-zhazhai-throws.py): their targets, props and places (data/throws.ts).
+export const THROW_ART = [
+  "deer-graze", "deer-look", "deer-bolt", "lu-shut", "lu-open", "proj-arrow",
+  "prop-pine", "prop-deadtree", "prop-log", "prop-rock", "prop-bush", "prop-reeds", "prop-bramble", "prop-torch", "prop-crown",
+  "place-creek", "place-shoal",
+] as const;
+
 export function loadArt(load: Phaser.Loader.LoaderPlugin): void {
-  for (const k of ART) load.image(`zz-${k}`, `art/${k}.webp`);
+  for (const k of [...ART, ...THROW_ART]) load.image(`zz-${k}`, `art/${k}.webp`);
 }
 
 const FAMILY = '"Kenney Bold", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif';

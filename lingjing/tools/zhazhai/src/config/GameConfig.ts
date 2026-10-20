@@ -101,6 +101,14 @@ export const GameConfig = {
         [BlockMaterial.METAL]: 1.5,
         [BlockMaterial.EXPLOSIVE]: 1.0,
       },
+      // 砸寨 箭: sticks in wood, glances off stone.
+      [BirdType.ARROW]: {
+        [BlockMaterial.GLASS]: 1,
+        [BlockMaterial.WOOD]: 0.6,
+        [BlockMaterial.STONE]: 0.2,
+        [BlockMaterial.METAL]: 0.1,
+        [BlockMaterial.EXPLOSIVE]: 1,
+      },
       [BirdType.BLUE]: {
         [BlockMaterial.GLASS]: 2,
         [BlockMaterial.WOOD]: 0.5,

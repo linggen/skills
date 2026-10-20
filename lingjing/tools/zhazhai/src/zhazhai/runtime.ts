@@ -5,6 +5,8 @@ export type Lang = "zh" | "en";
 
 export interface LevelResult {
   level: number;
+  /** 砸寨: a story throw's key (`deer-wind`), else null. */
+  key?: string | null;
   won: boolean;
   stars: number;
   score: number;

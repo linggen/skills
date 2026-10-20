@@ -24,6 +24,7 @@ import { BlockMaterial } from "../constants/Materials";
 import { BirdStateMachine } from "./bird/BirdStateMachine";
 import type { IWakeCascadeManager } from "../interfaces/IWakeCascadeManager";
 import { TimeScaleCompensator } from "../utils/TimeScaleCompensator";
+import { texOf } from "../zhazhai/skin";
 
 export { BirdType, BirdState };
 
@@ -104,7 +105,8 @@ export class Bird implements IBird {
       bodyShape = { type: "circle", radius: config.radius };
     }
 
-    this.matterImage = this.scene.matter.add.image(x, y, "level", assetKey, {
+    const [texKey, texFrame] = texOf(assetKey); // 砸寨: a thing may be its own painting (the arrow)
+    this.matterImage = this.scene.matter.add.image(x, y, texKey, texFrame, {
       shape: bodyShape,
       density: config.density,
       restitution: config.restitution,
@@ -118,7 +120,10 @@ export class Bird implements IBird {
     const frameWidth = frame ? frame.cutWidth : texture.source[0].width;
     const frameHeight = frame ? frame.cutHeight : texture.source[0].height;
 
-    if (config.width && config.height) {
+    if (config.visualLength) {
+      // 砸寨: a long thing (the arrow) on a small round body, drawn its own length.
+      this.matterImage.setScale(config.visualLength / frameWidth);
+    } else if (config.width && config.height) {
       const scaleX = config.width / frameWidth;
       const scaleY = config.height / frameHeight;
       this.matterImage.setScale(scaleX, scaleY);
@@ -244,10 +249,11 @@ export class Bird implements IBird {
     }
 
     const launchAngle = Math.atan2(velocityY, velocityX);
+    // 砸寨: the stretch is over the thing's own scale (upstream's atlas frames sat at ~1; a painting does not).
     const stretchX =
-      1.0 + Math.abs(Math.cos(launchAngle)) * BIRD_LAUNCH_ANIMATION_CONFIG.stretchFactor;
+      this.matterImage.scaleX * (1.0 + Math.abs(Math.cos(launchAngle)) * BIRD_LAUNCH_ANIMATION_CONFIG.stretchFactor);
     const stretchY =
-      1.0 + Math.abs(Math.sin(launchAngle)) * BIRD_LAUNCH_ANIMATION_CONFIG.stretchFactor;
+      this.matterImage.scaleY * (1.0 + Math.abs(Math.sin(launchAngle)) * BIRD_LAUNCH_ANIMATION_CONFIG.stretchFactor);
 
     this.scene.tweens.add({
       targets: this.matterImage,

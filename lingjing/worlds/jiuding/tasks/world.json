@@ -20,9 +20,10 @@
       "done_line": { "zh": "爹扒住了崖壁。", "en": "Father clings to the cliff face." }
     },
     {
-      "id": "deer-wind", "kind": "board", "game": "deerarc", "period": "once",
+      "_zhazhai": "2026-10-20 (Hanli: 「射鹿可以用砸寨代替」): a level of 砸寨, the throw kit (tools/zhazhai/src/data/throws.ts `deer-wind`); was the 射鹿 · 拉弓 board `deerarc`, deleted.",
+      "id": "deer-wind", "kind": "board", "game": "zhazhai", "deal": { "lv": "deer-wind" }, "period": "once",
       "title": { "zh": "射鹿 · 先看风，后看鹿", "en": "The stag · Wind first, then the deer" },
-      "how": { "zh": "往后拉，拉得越长越有劲，松手放箭。先看风，后看鹿；走着的鹿，箭要等它。", "en": "Pull back — longer is stronger — and let go. Wind first, then the deer; a walking deer, lead it." },
+      "how": { "zh": "往后拉，拉得越长越有劲，松手放箭。越过倒木射那头鹿；箭擦着它过去，它就跑了，过一会儿换个地方回来。", "en": "Pull back — longer is stronger — and let go: over the fallen log, at the stag. An arrow whizzing past and it bolts, then comes back somewhere else." },
       "stars": 3,
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "溪边那头鹿，倒下了。", "en": "The stag by the stream is down." }

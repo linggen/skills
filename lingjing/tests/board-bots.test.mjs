@@ -5,6 +5,7 @@
 // page with real pointer events, is `node tools/page-crawl.mjs --boards`.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { juanOneModules, loadPair, playModule, playOnce } from '../tools/board-bots.mjs';
 
 const modules = await juanOneModules();
@@ -12,8 +13,10 @@ const modules = await juanOneModules();
 test('every module 卷一\'s boards are played on has a bot', async () => {
   const missing = [];
   // A game a model plays the other half of (画猜: 银月 names the picture — `meta.ai`) has no bot to win it;
-  // its page-side rules are tests/drawguess*.test.mjs's.
-  for (const id of modules.keys()) { const p = await loadPair(id); if (!p.bot && !p.mod?.meta?.ai) missing.push(`${id} (${modules.get(id).join(', ')})`); }
+  // its page-side rules are tests/drawguess*.test.mjs's. A Phaser game (砸寨) is played by a bot of its own in headless
+  // Chromium (`meta.bot`, its test plays every story level: tests/game-zhazhai.test.mjs).
+  const own = (p) => p.mod?.meta?.bot && fs.existsSync(new URL(`../${p.mod.meta.bot}`, import.meta.url));
+  for (const id of modules.keys()) { const p = await loadPair(id); if (!p.bot && !p.mod?.meta?.ai && !own(p)) missing.push(`${id} (${modules.get(id).join(', ')})`); }
   assert.deepEqual(missing, []);
 });
 

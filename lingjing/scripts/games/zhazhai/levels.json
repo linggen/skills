@@ -1,5 +1,5 @@
 {
- "source": "af777a41f2644a5bc1407219cefa77b13ac1504c097ea7ab358cb8234460fb42",
+ "source": "e1858bc93ef4f0cad1197c4dd7469127cc16193126ad47dc9837d523c1a77932",
  "levels": [
   {
    "id": 1,
@@ -183,6 +183,98 @@
      "teachingFocus": "Work from the top: bring the chief down first."
     }
    }
+  },
+  {
+   "id": 6,
+   "theme": "forest",
+   "shots": [
+    "arrow",
+    "arrow",
+    "arrow"
+   ],
+   "weasels": [
+    "SMALL"
+   ],
+   "blocks": 5,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 15000,
+    "threeStars": 25000
+   },
+   "words": {
+    "zh": {
+     "name": "射鹿",
+     "description": "溪边，那头雄鹿低着头喝水。",
+     "teachingFocus": "先看风，后看鹿。擦着它过去，它就跑了。"
+    },
+    "en": {
+     "name": "The Stag",
+     "description": "By the stream the stag drinks, head down.",
+     "teachingFocus": "Wind first, then the deer. Graze it and it bolts."
+    }
+   },
+   "key": "deer-wind",
+   "place": "creek",
+   "target": "deer",
+   "art": [
+    "place-creek",
+    "prop-pine",
+    "prop-rock",
+    "prop-log",
+    "prop-deadtree",
+    "prop-crown",
+    "prop-bush",
+    "prop-reeds"
+   ]
+  },
+  {
+   "id": 7,
+   "theme": "forest",
+   "shots": [
+    "yellow",
+    "yellow",
+    "yellow"
+   ],
+   "weasels": [
+    "SMALL"
+   ],
+   "blocks": 4,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 15000,
+    "threeStars": 25000
+   },
+   "words": {
+    "zh": {
+     "name": "芦苇里那一等",
+     "description": "沂水滩上，鯥叫荆棘钉住了。皮厚，刀剑不入。",
+     "teachingFocus": "等它吸气——翅膀根翻开的那一霎。飞行中点一下，剑直冲出去。"
+    },
+    "en": {
+     "name": "The Wait in the Reeds",
+     "description": "On the Yi shoal the lu is caught in the brambles. Its hide turns a blade.",
+     "teachingFocus": "Wait for its breath: the instant the wing root opens. Tap in flight and the sword flies straight."
+    }
+   },
+   "key": "yishui-reed",
+   "place": "shoal",
+   "target": "lu",
+   "art": [
+    "place-shoal",
+    "prop-rock",
+    "prop-log",
+    "prop-torch",
+    "prop-bramble",
+    "prop-reeds"
+   ]
   }
  ]
 }

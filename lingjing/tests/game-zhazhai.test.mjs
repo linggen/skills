@@ -1,15 +1,18 @@
-// 砸寨 (games/zhazhai.js) — the re-skin of Angry Aliens. Phaser cannot run in node, so this checks what can be:
-// the module's contract and words, its row in the 游戏厅, the vendored bundle and its licence, every asset the
-// bundle asks for, the forts (games/zhazhai/levels.json, written by the build), and that the bundle was rebuilt
-// after the last change to its source (tools/zhazhai/hash.mjs).
+// 砸寨 (games/zhazhai.js) — the re-skin of Angry Aliens, the one throw kit. Phaser cannot run in node, so this checks
+// what can be: the module's contract and words, its row in the 游戏厅, the vendored bundle and its licence, every asset
+// the bundle asks for, the forts and the story's throws (games/zhazhai/levels.json, written by the build), the story
+// beats that point at them, and that the bundle was rebuilt after the last change to its source (tools/zhazhai/hash.mjs).
+// With playwright installed (cd tools && npm install), the levels are played in headless Chromium by the bot's hands
+// (tools/zhazhai/bot.mjs): each story throw won by a sensible hand and not by a lazy one, each later one tighter.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { meta, levelAsked, mount } from '../scripts/games/zhazhai.js';
+import { meta, levelAsked, gradeOf, mount } from '../scripts/games/zhazhai.js';
 import { sourceHash } from '../tools/zhazhai/hash.mjs';
+import { fieldOf, playLevel, playwrightOrNull, serve, windowOf } from '../tools/zhazhai/bot.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'scripts/games/zhazhai');
@@ -21,31 +24,67 @@ test('meta: a name and a how-line in both languages', () => {
   assert.equal(typeof mount, 'function');
 });
 
-test('the fort asked for: data.lv first, then the page’s ?lv=, else the title screen', () => {
+test('the level asked for: data.lv first, then the page’s ?lv=; a fort by number, a throw by key; else the title screen', () => {
   assert.equal(levelAsked({ lv: 3 }, '?lv=5'), 3);
   assert.equal(levelAsked({}, '?dev=1&game=zhazhai&lv=5'), 5);
+  assert.equal(levelAsked({ lv: 'deer-wind' }, '?lv=2'), 'deer-wind');
+  assert.equal(levelAsked({}, '?dev=1&game=zhazhai&lv=yishui-reed'), 'yishui-reed');
   assert.equal(levelAsked({}, '?dev=1'), 0);
-  assert.equal(levelAsked({}, '?lv=temple'), 0);
+  assert.equal(levelAsked({}, '?lv=Temple%20door!'), 0);
   assert.equal(levelAsked(undefined, ''), 0);
 });
 
-test('registered in the 游戏厅 as a throw (plays wide)', () => {
+test('a won level’s grade for the story: the task’s `grades` maps stars to it', () => {
+  const grades = { 3: 'still', 2: 'still', 1: 'hasty' };
+  assert.equal(gradeOf(grades, 3), 'still');
+  assert.equal(gradeOf(grades, 1), 'hasty');
+  assert.equal(gradeOf(undefined, 3), undefined);
+});
+
+test('registered in the 游戏厅 as a throw (plays wide); the story’s throw beats play its levels by key', () => {
   const reg = JSON.parse(readFileSync(join(root, 'worlds/jiuding/games.json'), 'utf8'));
   const row = reg.games.find((g) => g.id === 'zhazhai');
   assert.ok(row, 'games.json row');
   assert.equal(row.mechanic, '投掷');
   assert.ok(reg.groups.some((g) => g.id === row.group), 'its group exists');
-  assert.ok(!row.scene && !row.task, 'not placed in the story yet (after Hanli plays it)');
+  for (const gone of ['deerarc', 'luwing', 'throwkit', 'caveecho', 'deerhunt', 'deer']) assert.ok(!reg.games.some((g) => g.id === gone), `${gone}: retired, 砸寨 plays it`);
+  assert.equal(reg.projectiles, undefined, 'the old board’s projectile table went with it');
+  const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(readFileSync(join(root, `worlds/jiuding/tasks/${f}.json`), 'utf8')).tasks);
+  const keys = new Set(forts.levels.filter((l) => l.key).map((l) => l.key));
+  const beats = Object.fromEntries(tasks.filter((t) => t.game === 'zhazhai').map((t) => [t.id, t.deal?.lv]));
+  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'yishui-reed': 'yishui-reed' });
+  for (const lv of Object.values(beats)) assert.ok(keys.has(lv), `${lv}: a level of the build`);
+  // The marks a beat reads come from its grades.
+  const reed = tasks.find((t) => t.id === 'yishui-reed');
+  for (const g of Object.values(reed.deal.grades)) assert.ok(Object.hasOwn(reed.marks, g), `grade ${g} is one of its marks`);
 });
 
-test('three to five forts, each winnable in kind: weasels to knock out, shots to do it with, words in both languages', () => {
-  const { levels } = forts;
-  assert.ok(levels.length >= 3 && levels.length <= 5, `${levels.length} forts`);
+test('the story’s throws: the book’s place, target and the one thing 小满 has there (the card law)', () => {
+  const byKey = Object.fromEntries(forts.levels.filter((l) => l.key).map((l) => [l.key, l]));
+  // 第二回: grandfather's bow, before 三试 (no 石子 card yet), no flying sword (bought in 古七).
+  assert.deepEqual(byKey['deer-wind'].shots, ['arrow', 'arrow', 'arrow']);
+  assert.equal(byKey['deer-wind'].target, 'deer');
+  assert.equal(byKey['deer-wind'].place, 'creek');
+  // 古七: the short flying sword he bought from 钱掌柜 that winter.
+  assert.deepEqual(byKey['yishui-reed'].shots, ['yellow', 'yellow', 'yellow']);
+  assert.equal(byKey['yishui-reed'].target, 'lu');
+  assert.equal(byKey['yishui-reed'].place, 'shoal');
+  for (const l of Object.values(byKey)) {
+    // Wood and stone by a stream or on a shoal — no tiles, iron or powder kegs (Hanli 10-19: no temple doors in a forest).
+    for (const m of l.materials) assert.ok(['wood', 'stone'].includes(m), `${l.key}: ${m}`);
+    for (const lang of ['zh', 'en']) for (const k of ['name', 'description', 'teachingFocus']) assert.ok(l.words[lang][k], `${l.key} ${lang} ${k}`);
+    for (const a of l.art) assert.ok(existsSync(join(out, 'art', `${a}.webp`)), `${l.key}: art/${a}.webp`);
+  }
+});
+
+test('five forts, each winnable in kind: weasels to knock out, shots to do it with, words in both languages', () => {
+  const levels = forts.levels.filter((l) => !l.key);
+  assert.equal(levels.length, 5, `${levels.length} forts`);
   levels.forEach((l, i) => {
     assert.equal(l.id, i + 1, 'ids run 1…n');
     assert.equal(l.theme, 'forest', 'one world, the re-skinned one');
     assert.ok(l.weasels.length >= 1 && l.shots.length >= 1 && l.blocks >= 1);
-    for (const s of l.shots) assert.ok(['red', 'yellow', 'blue', 'black'].includes(s), `shot ${s} has a 砸寨 skin`);
+    for (const s of l.shots) assert.ok(['red', 'yellow', 'blue', 'black', 'arrow'].includes(s), `shot ${s} has a 砸寨 skin`);
     for (const lang of ['zh', 'en']) for (const k of ['name', 'description', 'teachingFocus']) assert.ok(l.words[lang][k], `${l.id} ${lang} ${k}`);
     assert.ok(l.stars.oneStar < l.stars.twoStars && l.stars.twoStars < l.stars.threeStars);
   });
@@ -69,11 +108,39 @@ test('every asset the bundle loads is shipped beside it', () => {
   const paths = new Set([...bundle.matchAll(/"((?:atlases|audio|shaders|UI|art)\/[\w./-]+\.(?:png|json|frag|woff2?|ogg|webp))"/g)].map((m) => m[1]));
   assert.ok(paths.size >= 8, `found ${paths.size} asset paths`);
   for (const p of paths) assert.ok(existsSync(join(out, p)), p);
-  for (const k of ['weasel-s', 'weasel-m', 'weasel-l', 'proj-stone', 'slingshot']) assert.ok(existsSync(join(out, 'art', `${k}.webp`)), k);
+  for (const k of ['weasel-s', 'weasel-m', 'weasel-l', 'proj-stone', 'slingshot', 'proj-arrow', 'deer-graze', 'lu-shut', 'place-creek', 'place-shoal']) assert.ok(existsSync(join(out, 'art', `${k}.webp`)), k);
   const audio = JSON.parse(readFileSync(join(out, 'audio/sprites/sfx-master.json'), 'utf8'));
   for (const r of audio.resources) assert.ok(existsSync(join(out, 'audio/sprites', r.replace(/^.*\//, ''))), r);
 });
 
 test('the bundle was rebuilt after its source last changed (cd tools/zhazhai && npm run build)', () => {
   assert.equal(forts.source, sourceHash(join(root, 'tools/zhazhai')));
+});
+
+// The levels played: headless Chromium on the built bundle, under a fake clock (tools/zhazhai/bot.mjs). Skipped without
+// playwright (CI installs none); run it before a push that touches tools/zhazhai.
+const pw = playwrightOrNull();
+const STORY = ['deer-wind', 'yishui-reed']; // story order
+test('each story throw is won by a sensible hand and not by a lazy one, and each is tighter than the one before', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 900000 }, async () => {
+  const srv = await serve();
+  const browser = await pw.chromium.launch();
+  try {
+    let room = Infinity;
+    for (const lv of STORY) {
+      const field = await fieldOf(browser, srv.url, lv);
+      assert.ok(field, `${lv}: the level starts`);
+      const w = windowOf(field);
+      assert.ok(w > 0 && w < room, `${lv}: room for a first throw ${(w * 100).toFixed(2)}% (the one before: ${(room * 100).toFixed(2)}%)`);
+      room = w;
+      const sensible = [], lazy = [];
+      for (const seed of [1, 2, 3]) sensible.push(await playLevel(browser, srv.url, lv, 'sensible', seed));
+      for (const seed of [1, 2]) lazy.push(await playLevel(browser, srv.url, lv, 'lazy', seed));
+      assert.ok(sensible.filter((r) => r.won).length >= 2, `${lv}: sensible ${JSON.stringify(sensible)}`);
+      assert.equal(lazy.filter((r) => r.won).length, 0, `${lv}: lazy ${JSON.stringify(lazy)}`);
+      for (const r of [...sensible, ...lazy]) assert.ok(!r.errors?.length && !r.failed, `${lv}: no page error ${JSON.stringify(r)}`);
+    }
+  } finally {
+    await browser.close();
+    srv.close();
+  }
 });
