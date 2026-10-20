@@ -73,13 +73,17 @@ export const STOPS = {
    the floor, a seal for each (`seals`); the 丹田 a bowl drawn beside it, `left` of it full; `spit`
    the splash of a thing coming out (`seal`: with its seal). Exported for 喂饭桶's free play
    (fantong-free.js), so the story's stops and the free bucket are one drawing. */
+// The woodshed, painted (tools/paint-fantong-flux.py, local FLUX, 2026-10-20: 「代码画的都查一下, 用flux画吧」): the
+// woodpile, the 饭桶 shut or with its lid up, the 丹田 bowl. The code draws only what moves or counts: the bowl's
+// water (qi left), the seals (things fed), the splash when it spits.
+const PIC = Object.fromEntries(['woodpile', 'pot-shut', 'pot-open', 'bowl'].map((k) => [k, new URL(`./fantong/${k}.webp`, import.meta.url).href]));
+const pic = (k, x, y, w, h) => `<image href="${PIC[k]}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMax meet"/>`;
 export function drawBucket({ open = false, seals = 0, left = 1, spit = false, seal = true } = {}) {
-  const lid = open ? -6 : 0;
-  const pile = '<path class="g-line g-thin g-faint" d="M14 40 h90 M10 52 h100 M16 28 h80"/>';
-  const pot = `<path class="g-line" d="M120 60 q0 44 40 44 q40 0 40 -44 Z"/><path class="g-line" d="M130 104 l-6 12 M190 104 l6 12 M160 104 v12"/>`
-    + `<path class="g-line" d="M118 ${56 + lid} h84"/><path class="g-line g-thin" d="M150 ${50 + lid} q10 -10 20 0"/>`;
-  const row = Array.from({ length: seals }, (_, i) => `<circle class="g-dot is-seal" cx="${n(222 + (i % 3) * 30)}" cy="${n(100 + Math.floor(i / 3) * 14)}" r="5"/>`).join('');
-  const bowl = `<path class="g-line g-thin" d="M228 40 q24 30 48 0"/><path class="g-water" d="M${n(252 - 22 * left)} ${n(40 + 14 * (1 - left))} h${n(44 * left)}"/>`;
+  const pile = pic('woodpile', 2, 40, 116, 80);
+  const pot = pic(open ? 'pot-open' : 'pot-shut', 112, 8, 100, 112);
+  const row = Array.from({ length: seals }, (_, i) => `<circle class="g-dot is-seal" cx="${n(232 + (i % 3) * 22)}" cy="${n(98 + Math.floor(i / 3) * 14)}" r="5"/>`).join('');
+  const bowl = pic('bowl', 218, 14, 70, 56)
+    + (left > 0.02 ? `<ellipse class="g-waterfill" cx="252" cy="${n(38 + 10 * (1 - left))}" rx="${n(24 * Math.sqrt(left))}" ry="${n(4 * Math.sqrt(left))}"/>` : '');
   const fx = spit ? splash(160, 52, 260, { r: 12, seal }) : '';
   return scene(320, 124, pile + pot + row + bowl + fx);
 }
