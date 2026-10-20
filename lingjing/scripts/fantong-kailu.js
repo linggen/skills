@@ -1,21 +1,30 @@
 // fantong-kailu.js — 喂饭桶 · 开炉 in the 物品 panel (Hanli 2026-10-20): the 饭桶's pane holds the game (games/kailu.js)
 // in the one shell (games/shell.js), so 银月's line has its bubble. The pouch pane redraws its HTML whenever it changes,
 // so a canvas living in it would die on every redraw: the game is mounted ONCE into a node of its own and that node is
-// laid into whatever host `[data-ft-kailu]` the redraw made (fantong-puzzle.js's way, before it). The game feeds through
+// laid into whatever host `[data-ft-kailu]` the redraw made (beat-host.js's way). The game feeds through
 // `feed(ids, lingshi, press)` — the page's `fantong feed`, the rules' roll — and shows what comes back; after 收下 it
 // comes up again on the brief that feed answered with (full, until the cooldown is over). Nothing here knows the rules.
 import { esc } from './esc.js';
 import { forget, frameHtml, shellFor } from './games/shell.js';
-import { meta, mount } from './games/kailu.js';
 
 export const KAILU_SHELL = 'fantong-kailu';
 const BACK = { zh: '回储物袋', en: 'Back to the pouch' };
+// The game's module, fetched on first open — never a static import: the page's own modules must not declare the
+// engine's helper names (`mount`) at the top level when the relay inlines the page (tests/pages.test.mjs).
+let game = null;
+const kailu = () => (game ??= import('./games/kailu.js'));
+// Its name and how-to, the shell's bar (games/kailu.js `meta`, which the 游戏厅 reads).
+const NAME = { zh: '喂饭桶 · 开炉', en: 'Feed the Rice Bucket' };
+const HOW = {
+  zh: '把最多三样东西拖进饭桶嘴里，可搭灵石。开炉后饭桶嚼着，盖子冒红烟、金烟——金烟冒起时按住压盖，品级升一档。',
+  en: 'Drag up to three things into its mouth, add spirit stones if you like. As it chews the lid puffs red and gold — press it down on a gold puff to lift the grade a notch.',
+};
 
 /** The pane: back to the pouch, then the shell round an empty host the live game is laid into. */
 export function kailuPaneHtml(lang = 'zh') {
   const L = lang === 'en' ? 'en' : 'zh';
   return `<button class="act quiet pback" data-pouch-pane="">${esc(BACK[L])}</button><section class="psec ftong kailu" style="--game-reserve:230px">`
-    + frameHtml({ id: KAILU_SHELL, title: meta.name[L], how: meta.how[L], body: '<div class="gshell-slot" data-ft-kailu></div>', timed: false, lang: L })
+    + frameHtml({ id: KAILU_SHELL, title: NAME[L], how: HOW[L], body: '<div class="gshell-slot" data-ft-kailu></div>', timed: false, lang: L })
     + '</section>';
 }
 
@@ -42,8 +51,9 @@ export function fantongKailu({ feed, onFed = () => {}, doc = globalThis.document
       onFed(r);
       return r;
     };
-    mount(node, { lang: o.lang, data: { brief, roll }, signal: ctrl.signal, reducedMotion: o.reducedMotion, shell: shellFor(KAILU_SHELL), onGame: (g) => { me.game = g; } })
-      .then((r) => { if (cur === me && !r?.left) start(latest ?? brief, o); }); // 收下: up again, on the brief the feed left
+    kailu().then(({ mount }) => (cur === me ? mount(node, { lang: o.lang, data: { brief, roll }, signal: ctrl.signal, reducedMotion: o.reducedMotion, shell: shellFor(KAILU_SHELL), onGame: (g) => { me.game = g; } }) : { left: true }))
+      .then((r) => { if (cur === me && !r?.left) start(latest ?? brief, o); }) // 收下: up again, on the brief the feed left
+      .catch((e) => console.warn('[kailu]', e));
   }
   function attach() {
     const h = host();

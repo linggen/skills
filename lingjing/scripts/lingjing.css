@@ -637,39 +637,9 @@ body.fighting .footrow { display: none; }
 .pheld { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px dashed var(--line); }
 .pheld img, .pheld .noart { width: 48px; height: 36px; flex: none; object-fit: cover; border-radius: 6px; background: var(--raised); }
 .pheld .act { margin-left: auto; }
-/* 喂饭桶 (fantong-free.js): a small board in the pouch, the story's bucket drawn small; a thing dragged or tapped into its mouth. */
+/* 喂饭桶 · 开炉 (fantong-kailu.js): the game in the shell, in the pouch's grid place. */
 .pchip[data-pouch-pane="fantong"] { border-color: var(--gold, var(--seal)); }
-.ftong { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 460px; margin-left: auto; margin-right: auto; }
-.ftong h3 { align-self: flex-start; }
-.ftbucket { width: 100%; max-width: 320px; color: var(--text); border-radius: 12px; cursor: pointer; transition: background .15s; }
-.ftbucket .g-scene { width: 100%; height: auto; display: block; }
-.ftbucket.dropover { background: var(--seal-soft); }
-.ftong.full .ftbucket { opacity: .75; cursor: default; }
-.ftbucket.shake { animation: ftshake .5s ease-in-out; }
-@keyframes ftshake { 0%, 100% { transform: none; } 20% { transform: rotate(-3deg) translateY(-2px); } 45% { transform: rotate(3deg); } 70% { transform: rotate(-2deg) translateY(-1px); } }
-.ftstatus { margin: 0; font-family: var(--serif); font-size: 14px; text-align: center; }
-.ftstatus.refused { color: var(--seal); }
-.ftout { width: 100%; border: 1px solid var(--seal); border-radius: 10px; padding: 8px 12px; background: var(--surface); animation: yaoIn .4s ease-out; }
-.ftout.her { border-color: var(--ling); }
-.ftsay { margin: 0 0 6px; font-family: var(--serif); font-size: 14px; line-height: 1.7; }
-.ftthing { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
-.ftthing img, .ftthing .noart { width: 48px; height: 48px; flex: none; object-fit: cover; border-radius: 8px; background: var(--raised); }
-.ftname { font-family: var(--serif); font-size: 16px; letter-spacing: .08em; display: block; }
-.fthint { display: block; color: var(--seal); font-size: 12px; letter-spacing: .05em; }
-.ftfound { margin: 6px 0 0; font-size: 13px; color: var(--ling); }
-.ftinputs { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; align-items: center; }
-.ftgroup { width: 100%; }
-.fttile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 4px; font: inherit; font-size: 11.5px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); cursor: grab; touch-action: none; user-select: none; }
-.fttile img, .fttile .noart { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; background: var(--raised); pointer-events: none; }
-.fttile span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fttile .pn { position: absolute; top: 2px; right: 4px; font-size: 10.5px; }
-.fttile.sel { border-color: var(--seal); background: var(--seal-soft); }
-.ftghost { position: fixed; left: 0; top: 0; z-index: 9999; pointer-events: none; opacity: .85; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
-.ftacts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: center; }
-.ftstones { display: flex; align-items: center; gap: 4px; font-size: 12.5px; }
-.ftstone { font: inherit; min-width: 26px; padding: 1px 6px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
-.ftstone.on { border-color: var(--seal); background: var(--seal-soft); color: var(--seal); }
-.ftrecipes { width: 100%; display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--dim); }
+.ftong.kailu { display: block; max-width: 520px; margin-left: auto; margin-right: auto; }
 .lurecipe { margin: 2px 0; font-size: 13.5px; }
 .luftgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; margin-top: 6px; }
 .luft { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 6px 4px; border-radius: 10px; border: 2px solid #9aa0a6; background: rgba(154, 160, 166, .08); }

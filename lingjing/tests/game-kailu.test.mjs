@@ -37,3 +37,14 @@ test('the 游戏厅\'s bare roll is the rules\' own roll', () => {
     assert.deepEqual(roll(t, o), rollFeed(t, o));
   }
 });
+
+test('the pouch pane names the game as its module does (the pane imports it only when opened)', async () => {
+  const { kailuPaneHtml } = await import('../scripts/fantong-kailu.js');
+  for (const L of ['zh', 'en']) {
+    const html = kailuPaneHtml(L);
+    assert.ok(html.includes(kailu.meta.name[L]), `${L} name`);
+    assert.ok(html.includes(kailu.meta.how[L].replace(/"/g, '&quot;').replace(/'/g, '&#39;')), `${L} how`);
+    assert.match(html, /data-ft-kailu/);
+  }
+  assert.doesNotMatch(readFileSync(at('scripts/fantong-kailu.js'), 'utf8'), /^import[^\n]*games\/kailu\.js/m, 'never a static import');
+});

@@ -114,7 +114,7 @@ export function pouchHtml(ctx, ui = {}) {
   if (!g) return `<div class="lu pouch"><header class="luhead"><b>${esc(pw.title)}</b>${close}</header><div class="loading">…</div></div>`;
   const p = g.pouch ?? { used: g.bag.length, cap: null, held: [] };
   const heldN = p.held.reduce((n, h) => n + h.n, 0);
-  // 饭桶 (fantong-free.js): its board in the grid's place, drawn by the page and handed in as `ctx.fantongPane`.
+  // 饭桶 (fantong-kailu.js): the 开炉 game in the grid's place, its pane drawn by the page and handed in as `ctx.fantongPane`.
   const pane = ui.pane === 'held' && heldN ? 'held' : ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong' : null;
   const head = `<header class="luhead phead"><b>${esc(pw.title)}</b>
     ${p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : ''}
