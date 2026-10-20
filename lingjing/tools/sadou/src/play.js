@@ -475,7 +475,7 @@ export class PlayScene extends Phaser.Scene {
     this.bossJolt = (this.bossJolt ?? 0) * 0.8;
     if (this.bossHitT > 0) { this.bossHitT -= dt; if (this.bossHitT <= 0) { s.setTexture(`${this.cfg.level.boss.beast}-walk-1`); s.clearTint(); } }
     if (this.hud.bossFill) this.hud.drawBoss(g.boss.hp);
-    if (this.zone) this.zone.setAlpha(0.45 + Math.sin(t * 18) * 0.25);
+    if (this.zone) this.zone.setAlpha(0.75 + Math.sin(t * 18) * 0.25);
   }
 
   // ---------------------------------------------------------------- ghosts (the dying, the charging) and numbers
@@ -727,7 +727,8 @@ export class PlayScene extends Phaser.Scene {
   on_slam_warn(e) {
     this.zone?.destroy();
     const x = roadX(e.side ? 0.5 : -0.5);
-    this.zone = this.add.image(x, CROWD_Y - 10, 'zone').setDisplaySize(ROAD.half * 1.04, 240).setDepth(D.decal + 1).setBlendMode(Phaser.BlendModes.ADD);
+    // the warned half lit red from the boss's feet down past the crowd, so it shows around the soldiers
+    this.zone = this.add.image(x, CROWD_Y - 60, 'zone').setDisplaySize(ROAD.half * 1.04, 460).setDepth(D.decal + 1).setBlendMode(Phaser.BlendModes.ADD);
     this.hud.banner(this.w.slam, { color: '#ff8a7a', y: 560 });
     this.say('slam', true);
     this.sfx.tick();
