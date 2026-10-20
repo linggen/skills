@@ -1,3 +1,9 @@
+// 砸寨 御物 (Hanli 10-20: queued throws walking and hopping to the sling 「有点不太make sense」 — option A, 「按A改」):
+// upstream queued living aliens that walked in along the ground and hopped into the pouch. 砸寨's throws are things
+// (石子, 飞剑, 陶罐, 五雷符), so they rest in a bamboo basket (竹篮) beside the slingshot, each one showing, and when
+// it is a thing's turn it rises out of the basket on a wisp of 灵光 (a halo and a few sparkles), bobs at the top, and
+// floats into the pouch. Nothing moves on the ground by itself; a spent thing leaves its slot empty. Reduced motion:
+// the thing is simply in the pouch.
 import Phaser from "phaser";
 import { BirdType } from "../types/BirdType";
 import { BIRD_PHYSICS, BIRD_ASSET_MAP } from "../config/PhysicsConfig";
@@ -5,213 +11,97 @@ import { LEVEL_ATLAS_KEY } from "../config/assetManifest";
 import { BirdQueueConfig } from "../config/BirdQueueConfig";
 import type { IBirdQueue } from "../interfaces/IBirdQueue";
 import type { Position } from "../types/Vector2";
-import { getMobileSafeBlendMode } from "../utils/MobileBlendMode";
-import { PerformanceManager } from "./PerformanceManager";
-import { MobileManager } from "./mobile/MobileManager";
+import { Runtime } from "../zhazhai/runtime";
+
+type OnBounce = (
+  birdSprite: Phaser.GameObjects.Image,
+  bounceY: (t: number) => number,
+  onComplete: () => void
+) => void;
+
+const C = BirdQueueConfig;
 
 export class BirdQueue implements IBirdQueue {
   private scene: Phaser.Scene;
   private queue: BirdType[] = [];
-  private birdSprites: Phaser.GameObjects.Image[] = [];
+  /** The things in the basket, queue order: [0] goes next (the slot nearest the sling). */
+  private items: Phaser.GameObjects.Image[] = [];
   private pouchRestPos: Phaser.Math.Vector2;
   private groundY: number;
-  private trailEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
-  private dustEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
-  private idleTweens: Map<Phaser.GameObjects.Image, Phaser.Tweens.Tween> = new Map();
-  private firstBirdReady: boolean = false;
+  private basketBack: Phaser.GameObjects.Image | null = null;
+  private basketFront: Phaser.GameObjects.Image | null = null;
+  private sparkles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
+  /** What a float in progress made, so a teardown mid-float stops it cleanly. */
+  private flight: { tweens: Phaser.Tweens.Tween[]; glow: Phaser.GameObjects.Image | null } | null = null;
   private isDestroyed: boolean = false;
-  private pendingJump: {
-    onBounce: (
-      birdSprite: Phaser.GameObjects.Image,
-      bounceY: (t: number) => number,
-      onComplete: () => void
-    ) => void;
-    onComplete: (landingX: number, landingY: number) => void;
-  } | null = null;
 
   constructor(scene: Phaser.Scene, pouchRestPos: Phaser.Math.Vector2, groundY: number) {
     this.scene = scene;
     this.pouchRestPos = pouchRestPos;
     this.groundY = groundY;
-    this.createParticleEmitters();
+    this.createBasket();
+    this.createSparkles();
   }
 
-  /**
-   * Get queue position for a bird at given index
-   * First bird is closest to pouch (100px left), subsequent birds further left
-   */
-  private getQueuePosition(index: number): Position {
-    const firstBirdX = this.pouchRestPos.x - BirdQueueConfig.layout.firstBirdOffset;
-    const x = firstBirdX - index * BirdQueueConfig.layout.birdSpacing;
-    return { x, y: this.groundY };
+  private basketX(): number {
+    return this.pouchRestPos.x - C.basket.offsetX;
+  }
+
+  /** The near rim's top, in world y: things rest just above it, their lower part behind the woven wall. */
+  private rimY(): number {
+    const h = this.basketFront?.displayHeight ?? C.basket.width * 0.52;
+    return this.groundY - h + h * C.basket.rimY;
+  }
+
+  /** Slot i of n: centred in the basket, slot 0 at the sling's side. */
+  private slotPosition(i: number, n: number): Position {
+    const x = this.basketX() + ((n - 1) / 2 - i) * C.items.spacing;
+    const y = this.rimY() - C.items.peek + (i % 2) * C.items.stagger;
+    return { x, y };
   }
 
   getSpawnPosition(): Position {
-    return { x: BirdQueueConfig.layout.spawnX, y: this.groundY };
+    return this.slotPosition(0, Math.max(1, this.queue.length));
   }
 
-  private createParticleEmitters(): void {
-    if (this.scene.textures.exists("vfx")) {
-      this.trailEmitter = this.scene.add.particles(0, 0, "vfx", {
-        frame: "trace_01",
-        lifespan: BirdQueueConfig.trail.lifespan,
-        speed: { min: BirdQueueConfig.trail.speedMin, max: BirdQueueConfig.trail.speedMax },
-        scale: { start: BirdQueueConfig.trail.scaleStart, end: BirdQueueConfig.trail.scaleEnd },
-        alpha: { start: BirdQueueConfig.trail.alphaStart, end: BirdQueueConfig.trail.alphaEnd },
-        tint: [...BirdQueueConfig.trail.tints],
-        blendMode: getMobileSafeBlendMode(
-          PerformanceManager.getQualityMultiplier(this.scene),
-          MobileManager.getInstance().isMobile()
-        ),
-        emitting: false,
-      });
-      this.trailEmitter.setDepth(BirdQueueConfig.trail.depth);
+  private createBasket(): void {
+    const put = (key: string, depth: number) => {
+      if (!this.scene.textures.exists(key)) return null;
+      const img = this.scene.add.image(this.basketX(), this.groundY, key).setOrigin(0.5, 1).setDepth(depth);
+      img.setScale(C.basket.width / img.width);
+      return img;
+    };
+    this.basketBack = put("zz-basket-back", C.depth.basketBack);
+    this.basketFront = put("zz-basket-front", C.depth.basketFront);
+  }
 
-      this.dustEmitter = this.scene.add.particles(0, 0, "vfx", {
-        frame: "smoke_01",
-        lifespan: BirdQueueConfig.dust.lifespan,
-        speed: { min: BirdQueueConfig.dust.speedMin, max: BirdQueueConfig.dust.speedMax },
-        angle: { min: BirdQueueConfig.dust.angleMin, max: BirdQueueConfig.dust.angleMax },
-        scale: { start: BirdQueueConfig.dust.scaleStart, end: BirdQueueConfig.dust.scaleEnd },
-        alpha: { start: BirdQueueConfig.dust.alphaStart, end: BirdQueueConfig.dust.alphaEnd },
-        tint: [...BirdQueueConfig.dust.tints],
-        blendMode: "NORMAL",
-        emitting: false,
-      });
-      this.dustEmitter.setDepth(BirdQueueConfig.dust.depth);
-    }
+  private createSparkles(): void {
+    if (!this.scene.textures.exists("vfx")) return;
+    this.sparkles = this.scene.add.particles(0, 0, "vfx", {
+      frame: [...C.sparkle.frames],
+      lifespan: C.sparkle.lifespan,
+      speed: { min: C.sparkle.speedMin, max: C.sparkle.speedMax },
+      scale: { start: C.sparkle.scaleStart, end: C.sparkle.scaleEnd },
+      alpha: { start: C.sparkle.alphaStart, end: C.sparkle.alphaEnd },
+      tint: [...C.sparkle.tints],
+      blendMode: "ADD",
+      emitting: false,
+    });
+    this.sparkles.setDepth(C.depth.sparkle);
   }
 
   setQueue(birdTypes: BirdType[]): void {
+    this.stopFlight();
     this.queue = [...birdTypes];
-
-    this.birdSprites.forEach((sprite) => sprite.destroy());
-    this.birdSprites = [];
-    this.idleTweens.forEach((tween) => tween.stop());
-    this.idleTweens.clear();
-
-    this.firstBirdReady = false;
-    this.pendingJump = null;
-
-    this.animateWalkIn();
-  }
-
-  private animateWalkIn(): void {
-    const birdTextures: Record<BirdType, string> = {
-      [BirdType.RED]: "alienPink_round",
-      [BirdType.YELLOW]: "alienYellow_round",
-      [BirdType.BLACK]: "alienBeige_round",
-      [BirdType.WHITE]: "alienPink_square",
-      [BirdType.BLUE]: "alienBlue_round",
-    };
-
-    this.queue.forEach((birdType, index) => {
-      const targetPos = this.getQueuePosition(index);
-      const texture = birdTextures[birdType];
-      const scale = this.getDisplayScale(birdType);
-
-      const sprite = this.scene.add.image(
-        BirdQueueConfig.layout.spawnX,
-        this.groundY,
-        LEVEL_ATLAS_KEY,
-        texture
-      );
-
-      sprite.setOrigin(0.5, 1);
-      sprite.setScale(scale);
-      sprite.setDepth(BirdQueueConfig.depth);
-      sprite.setAlpha(1);
-      this.birdSprites.push(sprite);
-
-      this.animateWalkToPosition(
-        sprite,
-        targetPos.x,
-        targetPos.y,
-        index * BirdQueueConfig.walk.staggerDelay,
-        index === 0
-      );
+    this.items.forEach((s) => s.destroy());
+    this.items = this.queue.map((type, i) => {
+      const pos = this.slotPosition(i, this.queue.length);
+      const img = this.scene.add.image(pos.x, pos.y, LEVEL_ATLAS_KEY, BIRD_ASSET_MAP[type]);
+      img.setScale(this.getDisplayScale(type) * C.items.scale);
+      img.setRotation((i % 2 ? 1 : -1) * C.items.tilt);
+      img.setDepth(C.depth.item);
+      return img;
     });
-  }
-
-  private animateWalkToPosition(
-    sprite: Phaser.GameObjects.Image,
-    targetX: number,
-    targetY: number,
-    delay: number,
-    skipDust: boolean = false,
-    onComplete?: () => void
-  ): void {
-    const startX = sprite.x;
-    const walkProgress = { t: 0 };
-
-    this.scene.tweens.add({
-      targets: walkProgress,
-      t: 1,
-      duration: BirdQueueConfig.walk.duration,
-      delay: delay,
-      ease: "Linear",
-      onUpdate: () => {
-        const t = walkProgress.t;
-        const x = Phaser.Math.Linear(startX, targetX, t);
-        const y = targetY;
-
-        const bob =
-          Math.sin(t * Math.PI * BirdQueueConfig.walk.bobFrequency) *
-          BirdQueueConfig.walk.bobAmplitude;
-        sprite.setPosition(x, y + bob);
-
-        sprite.setRotation(
-          Math.sin(t * Math.PI * BirdQueueConfig.walk.bobFrequency) *
-            BirdQueueConfig.walk.waddleRotation
-        );
-
-        if (!skipDust && Math.random() > BirdQueueConfig.walk.dustThreshold && this.dustEmitter) {
-          this.dustEmitter.emitParticle(1, x + BirdQueueConfig.dust.offsetX, this.groundY);
-        }
-      },
-      onComplete: () => {
-        sprite.setPosition(targetX, targetY);
-        sprite.setRotation(0);
-        this.startIdleAnimation(sprite);
-        onComplete?.();
-
-        const spriteIndex = this.birdSprites.indexOf(sprite);
-        if (spriteIndex === 0) {
-          this.firstBirdReady = true;
-
-          if (this.pendingJump) {
-            const pending = this.pendingJump;
-            this.pendingJump = null;
-            this.executeJumpToPouch(pending.onBounce, pending.onComplete);
-          }
-        }
-      },
-    });
-  }
-
-  private startIdleAnimation(sprite: Phaser.GameObjects.Image): void {
-    const existingTween = this.idleTweens.get(sprite);
-    if (existingTween) {
-      existingTween.stop();
-    }
-
-    const idleTween = this.scene.tweens.add({
-      targets: sprite,
-      y: this.groundY - BirdQueueConfig.idle.yOffset,
-      duration: BirdQueueConfig.idle.duration,
-      yoyo: true,
-      repeat: -1,
-      ease: BirdQueueConfig.idle.ease,
-    });
-    this.idleTweens.set(sprite, idleTween);
-  }
-
-  private stopIdleAnimation(sprite: Phaser.GameObjects.Image): void {
-    const tween = this.idleTweens.get(sprite);
-    if (tween) {
-      tween.stop();
-      this.idleTweens.delete(sprite);
-    }
   }
 
   getNextBird(): BirdType | null {
@@ -220,18 +110,12 @@ export class BirdQueue implements IBirdQueue {
 
   popBird(): BirdType | null {
     const bird = this.queue.shift();
-    if (bird && this.birdSprites.length > 0) {
-      const sprite = this.birdSprites.shift();
-      if (sprite) {
-        this.stopIdleAnimation(sprite);
-        sprite.destroy();
-      }
-    }
+    this.items.shift()?.destroy();
     return bird ?? null;
   }
 
   peekNext(): BirdType | null {
-    return this.queue.length > 0 ? this.queue[0] : null;
+    return this.getNextBird();
   }
 
   getQueueLength(): number {
@@ -242,194 +126,143 @@ export class BirdQueue implements IBirdQueue {
     return [...this.queue];
   }
 
+  /** Where each thing still in the basket rests (the win screen's leftovers start there). */
+  getRestPositions(): Position[] {
+    return this.items.map((s) => ({ x: s.x, y: s.y }));
+  }
+
   private getDisplayScale(birdType: BirdType): number {
     const config = BIRD_PHYSICS[birdType];
-    const assetKey = BIRD_ASSET_MAP[birdType];
-    const texture = this.scene.textures.get(LEVEL_ATLAS_KEY);
-    const frame = texture?.get(assetKey);
+    const frame = this.scene.textures.get(LEVEL_ATLAS_KEY)?.get(BIRD_ASSET_MAP[birdType]);
     const frameWidth = frame ? frame.cutWidth : 70;
     return (config.radius * 2) / frameWidth;
   }
 
-  jumpToPouch(
-    onBounce: (
-      birdSprite: Phaser.GameObjects.Image,
-      bounceY: (t: number) => number,
-      onComplete: () => void
-    ) => void,
-    onComplete: (landingX: number, landingY: number) => void
-  ): void {
-    if (this.birdSprites.length === 0 || this.queue.length === 0) {
+  /** Upstream's name: the next thing goes to the pouch. In 砸寨 it floats there. */
+  jumpToPouch(onBounce: OnBounce, onComplete: (landingX: number, landingY: number) => void): void {
+    if (this.items.length === 0 || this.queue.length === 0) {
       onComplete(0, 0);
       return;
     }
-
-    if (!this.firstBirdReady) {
-      this.pendingJump = { onBounce, onComplete };
-      return;
-    }
-
-    this.executeJumpToPouch(onBounce, onComplete);
-  }
-
-  private executeJumpToPouch(
-    onBounce: (
-      birdSprite: Phaser.GameObjects.Image,
-      bounceY: (t: number) => number,
-      onComplete: () => void
-    ) => void,
-    onComplete: (landingX: number, landingY: number) => void
-  ): void {
-    const sprite = this.birdSprites[0];
-    const birdType = this.queue[0];
-    const scale = this.getDisplayScale(birdType);
-
-    this.stopIdleAnimation(sprite);
-
-    const startX = sprite.x;
-    const startY = this.groundY;
+    const sprite = this.items[0];
     const pouchX = this.pouchRestPos.x;
     const pouchY = this.pouchRestPos.y;
+    const done = () => {
+      if (this.isDestroyed) return;
+      this.flight = null;
+      this.items.shift();
+      this.queue.shift();
+      sprite.destroy();
+      onComplete(pouchX, pouchY);
+    };
+    if (Runtime.reducedMotion) {
+      done();
+      return;
+    }
+    this.floatToPouch(sprite, pouchX, pouchY, onBounce, done);
+  }
 
-    this.scene.tweens.add({
+  private floatToPouch(
+    sprite: Phaser.GameObjects.Image,
+    pouchX: number,
+    pouchY: number,
+    onBounce: OnBounce,
+    done: () => void
+  ): void {
+    const type = this.queue[0];
+    const scale = this.getDisplayScale(type);
+    const startX = sprite.x;
+    const startY = sprite.y;
+    const topY = startY - C.float.riseHeight;
+    sprite.setDepth(C.depth.floating);
+
+    const glow = this.scene.textures.exists("vfx")
+      ? this.scene.add
+          .image(startX, startY, "vfx", C.glow.frame)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setTint(C.glow.tint)
+          .setAlpha(0)
+          .setDepth(C.depth.floating - 1)
+      : null;
+    if (glow) glow.setScale((sprite.displayWidth / glow.width) * C.glow.scale * 2);
+    this.flight = { tweens: [], glow };
+    this.sparkles?.emitParticle(C.sparkle.puff, startX, this.rimY());
+
+    const follow = () => {
+      glow?.setPosition(sprite.x, sprite.y);
+      if (this.sparkles && Math.random() < C.sparkle.perFrame) {
+        this.sparkles.emitParticle(1, sprite.x + Phaser.Math.Between(-14, 14), sprite.y + Phaser.Math.Between(-10, 14));
+      }
+    };
+    const tween = (cfg: Phaser.Types.Tweens.TweenBuilderConfig) => {
+      const t = this.scene.tweens.add(cfg);
+      this.flight?.tweens.push(t);
+      return t;
+    };
+
+    // Up out of the basket: straightening, growing to its size in the sling, a small overshoot for the bob.
+    if (glow) tween({ targets: glow, alpha: C.glow.alpha, duration: C.float.riseDuration, ease: "Sine.easeOut" });
+    tween({
       targets: sprite,
-      scaleX: scale * BirdQueueConfig.jump.anticipationSquashX,
-      scaleY: scale * BirdQueueConfig.jump.anticipationSquashY,
-      y: startY + BirdQueueConfig.jump.anticipationYOffset,
-      duration: BirdQueueConfig.jump.anticipationDuration,
-      ease: "Sine.easeIn",
+      y: topY,
+      rotation: 0,
+      scaleX: scale,
+      scaleY: scale,
+      duration: C.float.riseDuration,
+      ease: C.float.riseEase,
+      onUpdate: follow,
       onComplete: () => {
-        const jumpProgress = { t: 0 };
-
-        if (this.trailEmitter) {
-          this.trailEmitter.start();
-        }
-
-        this.scene.tweens.add({
-          targets: jumpProgress,
+        // Then across, on a shallow arc, into the pouch.
+        const p = { t: 0 };
+        const midY = Math.min(topY, pouchY) - C.float.glideArc;
+        tween({
+          targets: p,
           t: 1,
-          duration: BirdQueueConfig.jump.jumpDuration,
-          ease: "Sine.easeOut",
+          duration: C.float.glideDuration,
+          ease: C.float.glideEase,
           onUpdate: () => {
-            const t = jumpProgress.t;
-
-            const currentX = Phaser.Math.Linear(startX, pouchX, this.easeOutQuad(t));
-
-            const arcY = -BirdQueueConfig.jump.jumpHeight * Math.sin(t * Math.PI);
-            const currentY = startY + (pouchY - startY) * t + arcY;
-
-            sprite.setPosition(currentX, currentY);
-            sprite.setRotation(t * BirdQueueConfig.jump.fullRotation);
-
-            const vel = Math.cos(t * Math.PI);
-            const ss = Math.abs(vel) * BirdQueueConfig.jump.squashStretch;
-            if (t < 0.5) {
-              sprite.setScale(scale * (1 - ss), scale * (1 + ss));
-            } else {
-              sprite.setScale(scale * (1 + ss), scale * (1 - ss));
-            }
-
-            if (this.trailEmitter && Math.random() > BirdQueueConfig.trail.emitThreshold) {
-              this.trailEmitter.emitParticle(
-                1,
-                currentX + BirdQueueConfig.trail.offsetX,
-                currentY + BirdQueueConfig.trail.offsetY
-              );
-            }
+            const t = p.t;
+            const u = 1 - t;
+            sprite.setPosition(
+              Phaser.Math.Linear(startX, pouchX, t),
+              u * u * topY + 2 * u * t * midY + t * t * pouchY
+            );
+            follow();
           },
           onComplete: () => {
-            if (this.trailEmitter) {
-              this.trailEmitter.stop();
-            }
-
-            sprite.setOrigin(0.5, 0.5);
+            if (this.isDestroyed) return;
             sprite.setPosition(pouchX, pouchY);
-            sprite.setRotation(0);
-            sprite.setScale(scale, scale);
-
-            onBounce(
-              sprite,
-              (bounceT: number) => {
-                const bounceDepth = BirdQueueConfig.bounce.depth;
-
-                if (bounceT < BirdQueueConfig.bounce.phase1End) {
-                  return (
-                    pouchY +
-                    bounceDepth * this.easeOutQuad(bounceT / BirdQueueConfig.bounce.phase1End)
-                  );
-                } else if (bounceT < BirdQueueConfig.bounce.phase2End) {
-                  const tt =
-                    (bounceT - BirdQueueConfig.bounce.phase1End) /
-                    (BirdQueueConfig.bounce.phase2End - BirdQueueConfig.bounce.phase1End);
-                  const y = pouchY + bounceDepth * (1 - tt);
-                  const overshoot =
-                    bounceDepth * BirdQueueConfig.bounce.overshootFactor * Math.sin(tt * Math.PI);
-                  return y - overshoot;
-                } else {
-                  const tt =
-                    (bounceT - BirdQueueConfig.bounce.phase2End) /
-                    (1 - BirdQueueConfig.bounce.phase2End);
-                  const bounce =
-                    Math.sin(tt * Math.PI * BirdQueueConfig.bounce.settleBounceCount) *
-                    (1 - tt) *
-                    bounceDepth *
-                    BirdQueueConfig.bounce.settleAmplitude;
-                  return pouchY - bounce;
-                }
-              },
-              () => {
-                this.birdSprites.shift();
-                this.queue.shift();
-                this.shiftQueue();
-                sprite.destroy();
-                onComplete(pouchX, pouchY);
-              }
-            );
+            if (glow) {
+              tween({ targets: glow, alpha: 0, duration: 220, onComplete: () => glow.destroy() });
+              if (this.flight) this.flight.glow = null;
+            }
+            this.sparkles?.emitParticle(C.sparkle.puff, pouchX, pouchY);
+            const depth = C.float.settleDepth;
+            // A soft settle: the pouch dips a little under it and comes back.
+            onBounce(sprite, (t) => pouchY + depth * Math.sin(t * Math.PI) * (1 - t * 0.6), done);
           },
         });
       },
     });
   }
 
-  private shiftQueue(): void {
-    this.firstBirdReady = false;
-    if (this.birdSprites.length === 0) return;
-
-    this.birdSprites.forEach((sprite, index) => {
-      const targetPos = this.getQueuePosition(index);
-
-      this.stopIdleAnimation(sprite);
-      this.animateWalkToPosition(
-        sprite,
-        targetPos.x,
-        targetPos.y,
-        index * BirdQueueConfig.walk.shiftDelay
-      );
-    });
-  }
-
-  private easeOutQuad(t: number): number {
-    return t * (2 - t);
+  private stopFlight(): void {
+    if (!this.flight) return;
+    this.flight.tweens.forEach((t) => t.stop());
+    this.flight.glow?.destroy();
+    this.flight = null;
   }
 
   destroy(): void {
     if (this.isDestroyed) return;
     this.isDestroyed = true;
-
-    this.idleTweens.forEach((tween) => tween.stop());
-    this.idleTweens.clear();
-
-    this.birdSprites.forEach((sprite) => sprite.destroy());
-    this.birdSprites = [];
-
-    if (this.trailEmitter) {
-      this.trailEmitter.destroy();
-      this.trailEmitter = null;
-    }
-
-    if (this.dustEmitter) {
-      this.dustEmitter.destroy();
-      this.dustEmitter = null;
-    }
+    this.stopFlight();
+    this.items.forEach((s) => s.destroy());
+    this.items = [];
+    this.basketBack?.destroy();
+    this.basketFront?.destroy();
+    this.basketBack = this.basketFront = null;
+    this.sparkles?.destroy();
+    this.sparkles = null;
   }
 }

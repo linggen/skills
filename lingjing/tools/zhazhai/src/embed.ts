@@ -29,9 +29,11 @@ export interface StartOptions {
   level?: number;
   onResult?: (r: LevelResult) => void;
   onLeave?: () => void;
+  /** 砸寨: reduced motion (default: the system's prefers-reduced-motion). */
+  reducedMotion?: boolean;
 }
 
-export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave }: StartOptions): Phaser.Game {
+export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave, reducedMotion }: StartOptions): Phaser.Game {
   // One game a page at a time, but the event bus is module-wide: a game taken down (the arcade's 再来) must not
   // leave its scenes listening, or the next game's first event reaches a dead HUD.
   gameEvents.removeAllListeners();
@@ -39,6 +41,7 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave 
   Runtime.directLevel = LEVELS.some((l) => l.levelId === level) ? level : 0;
   Runtime.onResult = onResult ?? (() => {});
   Runtime.onLeave = onLeave ?? (() => {});
+  Runtime.reducedMotion = reducedMotion ?? Boolean(globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
   if (!booted) {
     bootstrapServices();
     const mobileSettings = getServiceContainer().resolve<IMobileSettingsProvider>(ServiceTokens.MOBILE_SETTINGS);

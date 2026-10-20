@@ -3,7 +3,7 @@ import { Bird } from "../../objects/Bird";
 import { BIRD_PHYSICS } from "../../config/PhysicsConfig";
 import { DesignTokens } from "../../config/DesignTokens";
 import { CAMERA_LAUNCH_EFFECTS_CONFIG } from "../../config/VFXConfig";
-import { FOLLOW_CONFIG, SHAKE_CONFIG } from "../../config/CameraConfig";
+import { FOLLOW_CONFIG } from "../../config/CameraConfig";
 import { SlingshotState, type PullData } from "../../objects/slingshot-modules/SlingshotConfig";
 import type { ICameraController } from "../../systems/camera/ICameraController";
 import type { ISFXPlayer } from "../../interfaces/audio";
@@ -120,8 +120,8 @@ export class BirdLaunchOrchestrator {
 
     this.deps.birdQueueSystem?.jumpToPouch(
       (birdSprite, getBounceY, onBounceComplete) => {
+        // 砸寨 御物: a thing floats into the pouch — no camera thump (upstream: an alien landed hard, a shake).
         slingshot.onBirdLanded(birdSprite, getBounceY, onBounceComplete);
-        this.deps.cameraEffects.shakeFromImpact(SHAKE_CONFIG.birdLandIntensity);
       },
       (landingX, landingY) => {
         this.currentBird = gameObjectFactory.createBird(this.deps.scene, {

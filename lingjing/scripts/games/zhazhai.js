@@ -4,7 +4,7 @@
 // beside this one (games/zhazhai/zhazhai.min.mjs, with its worker, atlases, sounds and LICENSE.txt). This module
 // only keeps the small-game contract (games/mount.js):
 //
-//   mount(container, { lang, data, signal }) → Promise<{ won, stars?, left? }>
+//   mount(container, { lang, data, signal, reducedMotion }) → Promise<{ won, stars?, left? }>
 //
 // The fort to open: `data.lv` (a story's), else the page's `?lv=` (the 游戏厅: ?dev=1&game=zhazhai&lv=3) — straight
 // into that fort, settling when it falls, with its stars. Without one: the game's own title screen and fort select,
@@ -26,7 +26,7 @@ export function levelAsked(data, search) {
   return Number.isInteger(n) && n > 0 ? n : 0;
 }
 
-export function mount(container, { lang = 'zh', data = {}, signal } = {}) {
+export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion } = {}) {
   const doc = container.ownerDocument;
   const box = doc.createElement('div');
   box.className = 'zhazhai-stage';
@@ -54,6 +54,7 @@ export function mount(container, { lang = 'zh', data = {}, signal } = {}) {
         base: new URL('./zhazhai/', import.meta.url).href,
         lang: lang === 'en' ? 'en' : 'zh',
         level,
+        reducedMotion, // undefined: the game reads the system's setting itself
         // Asked for one fort: it settles when that fort falls (the game's own results stay up over it).
         onResult: (r) => { if (level && r.won && r.level === level) finish({ won: true, stars: r.stars }); },
         onLeave: leave,

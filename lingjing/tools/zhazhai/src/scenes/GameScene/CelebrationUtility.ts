@@ -26,8 +26,14 @@ export class CelebrationUtility {
 
     const queue = config.birdQueueSystem?.getQueue() ?? [];
     const pouchRestPos = config.slingshot?.getBirdRestPosition();
+    // 砸寨 御物: the leftovers are in the basket, not lined up on the ground.
+    const rest = config.birdQueueSystem?.getRestPositions?.() ?? [];
 
     queue.forEach((birdType, index) => {
+      if (rest[index]) {
+        positions.push({ ...rest[index], texture: BIRD_ASSET_MAP[birdType] });
+        return;
+      }
       const texture = BIRD_ASSET_MAP[birdType];
       const firstBirdX =
         (pouchRestPos?.x ?? CELEBRATION_CONFIG.defaultPouchRestX) -

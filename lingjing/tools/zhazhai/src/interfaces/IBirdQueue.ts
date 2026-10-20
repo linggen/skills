@@ -18,5 +18,7 @@ export interface IBirdQueue {
     ) => void,
     onComplete: (landingX: number, landingY: number) => void
   ): void;
+  /** 砸寨: where each thing still in the basket rests. */
+  getRestPositions?(): Position[];
   destroy(): void;
 }

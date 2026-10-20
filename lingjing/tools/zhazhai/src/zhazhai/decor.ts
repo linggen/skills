@@ -5,7 +5,8 @@ import { tr } from "./i18n";
 import { Runtime } from "./runtime";
 import { getLevelById } from "../data/levels";
 
-export const ART = ["weasel-s", "weasel-m", "weasel-l", "proj-stone", "slingshot"] as const;
+// basket-back / basket-front: the 竹篮 the throws rest in (systems/BirdQueue.ts, drawn by atlas.py basket()).
+export const ART = ["weasel-s", "weasel-m", "weasel-l", "proj-stone", "slingshot", "basket-back", "basket-front"] as const;
 
 export function loadArt(load: Phaser.Loader.LoaderPlugin): void {
   for (const k of ART) load.image(`zz-${k}`, `art/${k}.webp`);

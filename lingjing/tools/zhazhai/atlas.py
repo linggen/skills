@@ -358,8 +358,77 @@ def hero_art():
     im.resize((int(im.width * s), int(im.height * s)), Image.LANCZOS).save(d / f'{k}.webp', quality=86, method=6)
 
 
+def basket():
+  """砸寨 御物 (2026-10-20): the bamboo basket (竹篮) the throws rest in beside the slingshot (systems/BirdQueue.ts),
+  drawn as the blocks are — bold outline, flat straw fill, a top light — in two layers so the things sit IN it:
+  basket-back (the far rim and the dark inside, behind them) and basket-front (the woven wall and the near rim,
+  over them). 1000×520 drawn, 500×260 kept; the near rim's top is at 0.42 of the height (BirdQueueConfig.basket.rimY).
+  Codex was to paint it (tools/paint-zhazhai.py) but had no credits that day; this stands in, in the same style."""
+  W, H, k = 1000, 520, 2
+  cx, cy, rx, ry, band = 500, 140, 470, 104, 30  # the rim: an ellipse, a band of bound bamboo strips
+  straw, light, dark, line = (232, 184, 92), (252, 222, 140), (176, 124, 52), (78, 46, 18)
+  inside0, inside1 = (120, 76, 34), (62, 36, 14)
+  foot_y, foot_rx, foot_ry = 440, 390, 62
+  def ell(x0, y0, ax, ay, a0, a1, n=90):
+    return [(x0 + ax * math.cos(t), y0 + ay * math.sin(t)) for t in np.linspace(a0, a1, n)]
+
+  back = Image.new('RGBA', (W, H)); bd = ImageDraw.Draw(back)
+  bd.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=(*line, 255))
+  bd.ellipse([cx - rx + 8, cy - ry + 8, cx + rx - 8, cy + ry - 8], fill=(*straw, 255))
+  bd.ellipse([cx - rx + band, cy - ry + band, cx + rx - band, cy + ry - band], fill=(*line, 255))
+  irx, iry = rx - band - 6, ry - band - 6
+  for i in range(60):  # the inside: the far wall's woven face, darkening down into the bottom
+    t = i / 59
+    c = lerp(inside0, inside1, t)
+    bd.ellipse([cx - irx * (1 - t * 0.12), cy - iry + t * iry * 0.9, cx + irx * (1 - t * 0.12), cy + iry], fill=(*c, 255))
+  for x in range(int(cx - irx) + 30, int(cx + irx), 46):  # the far wall's ribs, seen from inside
+    yt = cy - iry * math.sqrt(max(0, 1 - ((x - cx) / irx) ** 2))
+    bd.line([(x, yt + 4), (x + (x - cx) * 0.05, yt + 40)], fill=(*lerp(inside0, line, 0.5), 255), width=5)
+  for t0 in np.linspace(math.pi * 1.05, math.pi * 1.95, 14):  # bindings on the far rim
+    x, y = cx + (rx - band / 2) * math.cos(t0), cy + (ry - band / 2) * math.sin(t0)
+    bd.line([(x - 5, y - 12), (x + 5, y + 12)], fill=(*dark, 255), width=6)
+  bd.arc([cx - rx + 14, cy - ry + 12, cx + rx - 14, cy + ry - 12], 200, 340, fill=(*light, 255), width=7)
+
+  front = Image.new('RGBA', (W, H)); fd = ImageDraw.Draw(front)
+  wall = ell(cx, cy, rx - 4, ry - 4, 0, math.pi)  # the near rim, right (0) → left (π)
+  body = wall + [(cx - foot_rx - 8, foot_y - 20)] + ell(cx, foot_y, foot_rx, foot_ry, math.pi, 0) + [(cx + foot_rx + 8, foot_y - 20)]
+  mask = Image.new('L', (W, H)); ImageDraw.Draw(mask).polygon(body, fill=255)
+  fill = Image.new('RGBA', (W, H)); ff = ImageDraw.Draw(fill)
+  for y in range(H):  # a top light, a darker foot
+    t = y / H
+    ff.line([(0, y), (W, y)], fill=(*(lerp(light, straw, min(1, t * 2.4)) if t < 0.42 else lerp(straw, dark, (t - 0.42) / 0.58 * 0.85)), 255))
+  weave = Image.new('RGBA', (W, H)); wd = ImageDraw.Draw(weave)
+  for x in range(-H, W + H, 48):  # the criss-cross weave: dark gaps between strips, a glint on each strip
+    for sgn in (1, -1):
+      x0, x1 = (x, x + H * 0.7) if sgn > 0 else (x + H * 0.7, x)
+      wd.line([(x0, 0), (x1, H)], fill=(*dark, 230), width=6)
+      wd.line([(x0 + 16, 0), (x1 + 16, H)], fill=(*light, 120), width=3)
+  for i in range(80):  # the wall turns away at the sides: shade them
+    a = int(110 * (1 - i / 80))
+    for x in (cx - foot_rx - 80 + i, cx + foot_rx + 80 - i):
+      wd.line([(x, 0), (x, H)], fill=(*line, a), width=1)
+  fill.alpha_composite(weave)
+  front.paste(fill, (0, 0), mask)
+  fd = ImageDraw.Draw(front)
+  fd.line(ell(cx, foot_y, foot_rx, foot_ry, 0.1, math.pi - 0.1), fill=(*lerp(dark, line, 0.4), 255), width=26)  # the foot band
+  fd.line(body + [body[0]], fill=(*line, 255), width=10, joint='curve')
+  # the near rim: the band of bound strips over the wall's top
+  outer, inner = ell(cx, cy, rx, ry, 0, math.pi), ell(cx, cy, rx - band, ry - band, math.pi, 0)
+  fd.polygon(outer + inner, fill=(*straw, 255))
+  fd.line(ell(cx, cy, rx - band * 0.62, ry - band * 0.62, 0.15, math.pi - 0.15), fill=(*light, 255), width=8)
+  for t0 in np.linspace(0.12, math.pi - 0.12, 15):
+    x, y = cx + (rx - band / 2) * math.cos(t0), cy + (ry - band / 2) * math.sin(t0)
+    fd.line([(x - 6, y - 14), (x + 6, y + 14)], fill=(*dark, 255), width=7)
+  fd.line(outer, fill=(*line, 255), width=10, joint='curve')
+  fd.line(inner, fill=(*line, 255), width=8, joint='curve')
+  d = HERE / 'game-assets' / 'art'
+  for name, im in (('basket-back', back), ('basket-front', front)):
+    im.resize((W // k, H // k), Image.LANCZOS).save(d / f'{name}.webp', quality=88, method=6)
+
+
 if __name__ == '__main__':
   hero_art()
+  basket()
   level_atlas()
   background_atlas()
   print('atlases →', OUT)

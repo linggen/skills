@@ -18,6 +18,8 @@ export const Runtime = {
   onLeave: (): void => {},
   /** Inside a page (always, for 砸寨): no fullscreen, no rotate overlay. */
   embedded: true,
+  /** Reduced motion (the mount's, else the system's): a thing from the basket is simply in the pouch. */
+  reducedMotion: false,
 };
 
 /** localStorage, namespaced: the lingjing page shares this origin. */
