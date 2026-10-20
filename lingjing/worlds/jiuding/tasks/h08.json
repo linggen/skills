@@ -73,24 +73,6 @@
       }
     },
     {
-      "id": "zhaojing-fantong",
-      "kind": "board",
-      "game": "fantongqianye",
-      "period": "once",
-      "title": {
-        "zh": "喂饭桶 · 开炉夜",
-        "en": "Feeding the Rice Bucket · The night before"
-      },
-      "grant": {
-        "table": "task"
-      },
-      "done_line": {
-        "zh": "喷嚏符、痒痒针、自拍镜，末了一张画着猪的黄纸。",
-        "en": "A sneezing charm, tickle needles, a selfie mirror, and last a yellow paper with a pig on it."
-      },
-      "_reward": "What it makes is handed over by the way on (wm-zhaojing/sleep's grant: zipai-jing, penti-fu, yangyang-zhen ×3, niuzhi-ganlu) — story things every 大比 passage spends, so a skipped board still gives them."
-    },
-    {
       "_cut": "Off wm-laba 2026-10-19 (the standing rule Hanli approved 10-19): 「看完烧了」 is a 大场面 now (setpieces/diche.js, `{景=diche}` in the passage — the page under the lamp, its three lines lit, the paper curling in the 灶口); the way on writes the mark `diche` the 大比's 望气 and hints read. The task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",
       "cut": "2026-10-19",
       "id": "laba-diche",

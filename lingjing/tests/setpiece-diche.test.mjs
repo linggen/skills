@@ -32,7 +32,7 @@ const PIECE = /\{景=([a-z]+)\}/g;
 function atLaba(lang) {
   let s = { ...walk(newState(content, lang, NOW), TO_OPEN, content, NOW), stamina: 100, stamina_at: NOW.toISOString() };
   s = { ...s, scene: 'wm-zhaojing', place: 'waimen', step: 4, progress: 0, done_scenes: ['wm-ahe', 'wm-chu', 'wm-qianye'], tell_owed: [] };
-  for (const id of ['zhaojing-mirror', 'zhaojing-fantong']) {
+  for (const id of ['zhaojing-mirror']) {
     s = win({ ...s, tasks: { [id]: { status: 'offered' }, ...s.tasks } }, content, ctx(), { id }).state;
     s = task(s, content, ctx(), { action: 'done', id }).state;
   }

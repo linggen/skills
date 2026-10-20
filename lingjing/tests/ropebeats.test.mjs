@@ -51,45 +51,6 @@ for (const [id, [task, tool, grades]] of Object.entries(BEATS)) {
   });
 }
 
-/* 喂息珠 (wm-luobo, 2026-10-20; the reading cap): the 秘境's 息珠 fed to the 饭桶 — its level frozen from rope-gen (灵气泡 and the
-   woodpile's 荆棘: the other order swings it into the brambles), harder than 喂饼's last (洞口风: one vine), proved both ways. */
-test('xizhurope: the task luobo-xizhu plays it in wm-luobo; 灵气泡 and 荆棘, the wrong order breaks it; plain and star ways win', async () => {
-  const mod = await import('../scripts/games/xizhurope.js');
-  const { bot, starPlans, plans } = await import('../scripts/games/bots/xizhurope.js');
-  const t = content.tasks.tasks.find((x) => x.id === 'luobo-xizhu');
-  assert.equal(t.game, 'xizhurope');
-  assert.equal(t.stars, 3);
-  const row = content.games.games.find((g) => g.id === 'xizhurope');
-  assert.equal(row.task, 'luobo-xizhu');
-  assert.equal(row.scene, 'wm-luobo');
-  const level = row.levels[0];
-  assert.ok(level.bubbles?.length && level.thorns?.length, 'its tools are in the level');
-  assert.equal(level.must, 'thorns', 'the brambles taught with a ring and a line');
-  const bread = content.games.games.find((g) => g.id === 'bread').levels.at(-1);
-  assert.ok(level.vines.length > bread.vines.length, 'more to read than 喂饼\'s last');
-  const r = playOnce(mod, bot, { seed: 'b1', deal: { levels: row.levels }, limit: 60000 });
-  assert.ok(r.won, 'the plain way wins');
-  // the other order: vine 1 first sends it into the thorns
-  const { playPlan } = await import('../scripts/games/rope-gen.js');
-  const wrong = playPlan(level, [{ g: 'cut', v: 1 }, { g: 'cut', v: 0 }, { g: 'pop', i: 0 }]);
-  assert.ok(wrong.broke || wrong.end !== 'fed', 'the other order does not feed it');
-  assert.ok(playPlan(level, plans.one).done, 'the answer plays through');
-  const { planBot } = await import('../scripts/games/bots/rope-plan.js');
-  let s = null;
-  const keep = { ...mod, tick: (st, ms) => (s = mod.tick(st, ms)), act: (st, d) => { const x = mod.act(st, d); s = x.state ?? st; return x; } };
-  playOnce(keep, planBot({ one: starPlans.one }), { seed: 'star', deal: { levels: row.levels }, limit: 60000 });
-  assert.ok(s.won, 'the star way wins');
-  assert.equal(s.stars, 3, 'three 灵光');
-  assert.equal(s.grade, 'whole');
-  for (const lang of ['zh', 'en']) {
-    const h = mod.html(mod.newGame('x', 1, { levels: row.levels }), lang);
-    assert.match(h, /g-rope-quote/);
-    assert.match(h, /items\/xizhu\.webp/, 'the 息珠 itself');
-    assert.match(h, /fantong-pot\.webp/, 'into the 饭桶');
-    assert.doesNotMatch(h, /data-g="skip"/);
-  }
-});
-
 /* 10-19 (Hanli: 「这里的弹竹完全不弹」): matter.js zeroes a static body's restitution as it is made static,
    so the 弹竹 never bounced; it must come back higher than it fell, and 忍字 must use it. */
 test('弹竹 bounces: a thing dropped on it rebounds above where it struck, and 忍字\'s level lands on it', async () => {

@@ -5,11 +5,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, lint } from '../scripts/content.mjs';
 import { fitWorld, newState } from '../scripts/state.mjs';
+import { checkJieben } from '../scripts/jieben.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { fightSetup, readOf } from '../scripts/rules/cards.mjs';
 import { foeOf } from '../scripts/rules/world.mjs';
 import { TO_OPEN, walk } from './prologue.mjs';
-import * as fantong from '../scripts/games/fantongqianye.js';
 import * as sneeze from '../scripts/games/sneeze.js';
 import { earnedFor } from './earn.mjs';
 
@@ -32,8 +32,9 @@ const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i
 
 const H08 = ['wm-qianye', 'wm-zhaojing', 'wm-laba', 'wm-dabi', 'wm-lun1', 'wm-fushi', 'wm-lun2', 'wm-juesai', 'wm-laoyin', 'wm-jiaxin', 'wm-baishi', 'wm-caowu', 'wm-heluo'];
 // 2026-10-19 (the standing rule Hanli approved 10-19): 讲堂三日 is a 气走经脉 level (id kept), 相克 cut (a quiz), 底册
-// a 大场面 (setpieces/diche.js) — wm-laba has no board; the marks they wrote come with the ways on.
-const BOARDS = { 'wm-qianye': ['qianye-qiajue'], 'wm-zhaojing': ['zhaojing-mirror', 'zhaojing-fantong'], 'wm-dabi': ['dabi-sneeze'], 'wm-jiaxin': ['jiaxin-letter'] };
+// a 大场面 (setpieces/diche.js) — wm-laba has no board; the marks they wrote come with the ways on. 喂饭桶 · 开炉夜
+// told since 2026-10-20 (the 饭桶's old play deleted): wm-zhaojing's one board is 藏息.
+const BOARDS = { 'wm-qianye': ['qianye-qiajue'], 'wm-zhaojing': ['zhaojing-mirror'], 'wm-dabi': ['dabi-sneeze'], 'wm-jiaxin': ['jiaxin-letter'] };
 
 test('tasks/*.json are one list: 古六\'s boards come from tasks/h08.json, and an id defined twice fails the lint', () => {
   for (const id of [...Object.values(BOARDS).flat(), 'qianye-xiangke', 'laba-diche', 'heluo-kaipian']) assert.ok(content.tasks.tasks.some((t) => t.id === id), id);
@@ -80,7 +81,7 @@ test('walking 古六 by its boards: 修为 rises at each cultivation board, the 
   s = must(resolve, s, { exit: 'eve' });
   assert.ok(s.marks.includes('xiangke'), 'the 五句 told, the way on writes the mark the 大比 reads');
   assert.equal(s.scene, 'wm-zhaojing');
-  s = play(play(s, 'zhaojing-mirror', 'still'), 'zhaojing-fantong');
+  s = play(s, 'zhaojing-mirror', 'still'); // 开炉夜 told since 2026-10-20
   s = must(resolve, s, { exit: 'sleep' });
   for (const id of ['zipai-jing', 'penti-fu', 'yangyang-zhen', 'niuzhi-ganlu']) assert.ok(s.bag[id] > 0, id);
   assert.equal(s.scene, 'wm-laba');
@@ -178,7 +179,7 @@ test('the 大比 reads what 古六 taught: 底册 lends 望气 to the 卢方 and
 /* ── the boards themselves ── */
 
 test('no 古六 board draws its own skip (the page lays it, 2026-10-15), and each says what it is in both languages', () => {
-  for (const mod of [fantong, sneeze]) { // the rest of 古六's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」)
+  for (const mod of [sneeze]) { // the rest of 古六's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); 喂饭桶 · 开炉夜 2026-10-20
     const s = mod.newGame('t');
     for (const lang of ['zh', 'en']) {
       assert.doesNotMatch(mod.html(s, lang), /data-g="skip"/);
@@ -191,16 +192,12 @@ test('no 古六 board draws its own skip (the page lays it, 2026-10-15), and eac
   }
 });
 
-test('喂饭桶: the lid gives on the fourth press; the stone waits till the common things are fed; the book\'s outputs', () => {
-  let s = run(fantong, fantong.newGame('a'), [{ g: 'press' }, { g: 'press' }, { g: 'press' }]);
-  assert.equal(s.phase, 'ready');
-  s = run(fantong, s, [{ g: 'press' }, { g: 'feed', f: 'stone' }]);
-  assert.equal(s.note, 'wait');
-  s = run(fantong, s, ['hair', 'whisker', 'mirror', 'sandal', 'stone'].map((f) => ({ g: 'feed', f })));
-  assert.equal(s.won, true);
-  const html = fantong.html(s, 'zh');
-  assert.match(html, /猪蜻蜓；乘风而起，见木而栖/);
-  assert.match(html, /收破烂的/);
+test('开炉夜 told (2026-10-20): the lid on the fourth press and the five feeds read in the book\'s words, after the mirror\'s board', () => {
+  const sc = CH.scenes['wm-zhaojing'];
+  for (const lang of ['zh', 'en']) assert.ok(checkJieben(sc.story_after[lang], sc.story_after_full[lang], lang).ok, lang);
+  assert.match(sc.story_after.zh, /按到第四回，「咔哒」[\s\S]*喷嚏符[\s\S]*痒痒针[\s\S]*自拍镜[\s\S]*「嗝」[\s\S]*猪蜻蜓；乘风而起，见木而栖[\s\S]*收破烂的/);
+  const old = fitWorld({ ...at('wm-zhaojing', 'waimen'), tasks: { 'zhaojing-fantong': { status: 'offered' } } }, content);
+  assert.equal(old.tasks['zhaojing-fantong'], undefined, 'a save holding the old board offered lets it go');
 });
 
 test('喷嚏符: step aside on the shoulder\'s drop, a thread of qi, push on the third sneeze → clean; idle, the fist lands', () => {

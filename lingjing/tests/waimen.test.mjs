@@ -47,9 +47,9 @@ function step(s, exit) {
 }
 
 /* 古六's boards (the per-回 plan, 2026-10-15): the board each way on waits on, played (won, counted) before it. */
-const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror', 'zhaojing-fantong'], go: ['laba-diche'], up: ['dabi-sneeze'], rest: ['jiaxin-letter'], read: ['heluo-kaipian'],
-  // the reading cap (2026-10-20): 息壤 · 五门 before the second night, 喂息珠 in the woodshed, 后山 behind 瞿老
-  sit: ['xirang-wumen'], on: ['luobo-xizhu'], follow: ['baishi-houshan'],
+const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror'], go: ['laba-diche'], up: ['dabi-sneeze'], rest: ['jiaxin-letter'], read: ['heluo-kaipian'],
+  // the reading cap (2026-10-20): 息壤 · 五门 before the second night, 后山 behind 瞿老 (喂息珠 told since 10-20)
+  sit: ['xirang-wumen'], follow: ['baishi-houshan'],
   // 暗河's throw (2026-10-20, 砸寨 anhe-dark): the swallow passage split at its stone
   light: ['anhe-dark'] };
 function before(s, exit, now = DAY1) {

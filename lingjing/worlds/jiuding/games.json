@@ -549,19 +549,6 @@
    ]
   },
   {
-   "id": "xizhurope",
-   "group": "later",
-   "scene": "wm-luobo",
-   "hui": "第五回",
-   "task": "luobo-xizhu",
-   "mechanic": "割绳子",
-   "stars": 3,
-   "_levels": "Frozen from rope-gen.js (2026-10-20, seed xizhu-3: tier 3, 灵气泡 and 荆棘; the wrong order swings it into the brambles) and proved by games/bots/xizhurope.js; the beat's book line and art are ropebeats.js's (the 息珠 item, the 饭桶's pot). Reading cap (Hanli 10-20): it breaks wm-kaikai → 讲堂.",
-   "levels": [
-    {"id": "one", "bread": [190, 151], "vines": [{"at": [54, 34]}, {"at": [254, 34]}], "bubbles": [{"at": [286, 164]}], "thorns": [{"x": 52, "y": 223, "w": 64, "h": 18, "a": -11}], "mouth": [262, 330], "stars": [[261, 147], [263, 51], [262, 105]], "must": "thorns", "teach": {"zh": "柴垛上的荆条：息珠碰上就碎。先断哪一根，它才不往那边荡？", "en": "The brambles on the woodpile: touch them and the pearl breaks. Which vine first, so it doesn't swing that way?"}}
-   ]
-  },
-  {
    "id": "qimai",
    "group": "later",
    "mechanic": "调息",
@@ -588,14 +575,6 @@
    "levels": [
     {"id":"cangxi","n":11,"title":{"zh":"藏息","en":"Hidden breath"},"speed":98,"len":3000,"book":{"zh":"「它听见的不是你喘，是你心慌。」镜光扫过来，吐气要长要慢。","en":"\"It doesn't hear you breathe; it hears you panic.\" The light sweeps over — breathe out long and slow."},"say":{"zh":"大通铺里，镜光一铺一铺照过来。气要藏得细——脉窄，一路窄到底。","en":"In the long dormitory the light comes bunk by bunk. Keep the breath thin — the channel narrow all the way."},"end":{"zh":"镜光过去了，牌子是凉的。","en":"The light has passed; the token is cold."},"path":[[0,112],[400,112],[700,96],[1000,122],[1300,98],[1600,120],[1900,96],[2200,120],[2500,100],[3000,110]],"width":[[0,44],[450,36],[3000,34]],"xue":[{"x":1500,"name":{"zh":"第七铺","en":"Bunk seven"}}],"currents":[{"from":650,"to":950,"push":-100},{"from":1150,"to":1450,"push":110},{"from":1750,"to":2050,"push":-110,"flip":1500},{"from":2350,"to":2650,"push":120,"flip":1300,"phase":600}],"gold":[{"from":2050,"to":2350,"amp":8,"period":240,"rise":0.4},{"from":2650,"to":2950,"amp":8,"period":240,"rise":0.4}],"goldTol":6,"goldNeed":0.75,"grades":{"3":"still","2":"still","1":"shaky"},"look":{"tint":"#d9b088","ink":"#5a3a2a","trail":"#b8742e","glyph":"藏","land":"dusk"}}
    ]
-  },
-  {
-   "id": "fantongqianye",
-   "group": "later",
-   "mechanic": "剧情",
-   "scene": "wm-zhaojing",
-   "hui": "第六回",
-   "task": "zhaojing-fantong"
   },
   {
    "id": "sneeze",

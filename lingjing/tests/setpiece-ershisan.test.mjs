@@ -118,12 +118,13 @@ test('painted, not drawn: every picture on disk at its size; the blows land abov
   }
 });
 
-test('the reading cap: wm-kaikai → 讲堂 (3,811 字 on 10-20) now stands under the cap on each side of the blows and of 喂息珠', () => {
+// 喂息珠 (wm-luobo's 割绳子) was cut 2026-10-20 with the 饭桶's old play (Hanli: 「喂饭桶那个没啥玩的好像」): the
+// blows' far side reads on to 讲堂 again, over the cap (doc/games.md § 读太长) until something else breaks it.
+test('the reading cap: wm-kaikai → 讲堂 (3,811 字 on 10-20) stands under the cap up to the blows; past them it runs to 讲堂', () => {
   const parts = stretchesOf(content.chapters['00-waimen']);
   const at = parts.findIndex((p) => p.to === 'wm-chu{景=ershisan}');
   assert.ok(at > 0, 'the blows are a beat');
   assert.equal(parts[at].from, 'wm-kaikai');
-  for (const p of parts.slice(at, at + 3)) assert.ok(p.chars <= RHYTHM_CAP, `${p.from} → ${p.to}: ${p.chars}`);
-  assert.equal(parts[at + 1].to, 'wm-luobo');
-  assert.equal(parts[at + 2].to, 'wm-qianye');
+  assert.ok(parts[at].chars <= RHYTHM_CAP, `${parts[at].from} → ${parts[at].to}: ${parts[at].chars}`);
+  assert.equal(parts[at + 1].to, 'wm-qianye');
 });

@@ -8,12 +8,9 @@
 //   认路 (00-yinyue) the little fox carried in a 灵气泡 to the moss at the valley mouth: 「先带本王出去。」
 //   算账 (00-rent)   the meat swung out onto a stone chute and down into 马三's steelyard before the crow walks
 //                    down to it: 「肉二十斤，抵今年的。」
-//   喂息珠 (wm-luobo, 2026-10-20) the 息珠 he brought out of the 秘境, into the 饭桶 in the woodshed — the
-//                    bramble in the woodpile on the wrong swing: 「喂进饭桶，兴许开出一颗筑基丹来。」
 import { n } from './ink.js';
 import { W } from './rope.js';
 import { makeRopeGame } from './ropekit.js';
-import { target as potTarget } from './fantongcut.js';
 
 const ART = new URL('../../worlds/jiuding/art/', import.meta.url).href;
 const img = (file, x, y, w, h, cls = '') => `<image${cls ? ` class="${cls}"` : ''} href="${ART}${file}" x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}"/>`;
@@ -108,26 +105,6 @@ export const rent = beat({
   rests: true,
   anchor: 'branch', // the crow walks down off a branch, as crows do
   cls: 'g-rope-rent',
-});
-
-/* ── 喂息珠 · the 息珠 into the 饭桶 (wm-luobo, 2026-10-20) ──
-   Back from the 秘境, in the woodshed: what he paid for with his life laid out on the chopping block, the
-   息珠 first — 「息珠攥在手心里，像攥着一颗心。」 It hangs on two vines from the beam over the 饭桶; a 灵气泡
-   by it, and the bramble in the woodpile (荆棘) on the swing that goes wrong. The 饭桶 eats as it does
-   every day (fantongcut.js's pot). Reading cap: it breaks wm-kaikai → 讲堂 (doc/games.md § 读太长). */
-export const xizhu = beat({
-  meta: { id: 'xizhurope', name: { zh: '喂饭桶 · 那粒息珠', en: 'Feeding the Rice Bucket · The breath pearl' }, how: { zh: '划断藤，让息珠落进饭桶嘴里——别碰柴垛上的荆条。', en: 'Cut the vines and drop the breath pearl into the Rice Bucket\'s mouth — keep it off the brambles on the woodpile.' } },
-  quote: { zh: '「喂进饭桶，兴许开出一颗筑基丹来。」', en: '"Feed them to the Rice Bucket, and it might just turn out a Foundation Pill."' },
-  T: words({
-    zh: { name: '息珠', say: '把息珠送进饭桶嘴里。', broke: '碰上荆条了。再来。', eat: ['「咯嘣」——饭桶一口吞了。'], done: '息珠进了饭桶。' },
-    en: { name: 'breath pearl', say: 'Bring the breath pearl down into the Rice Bucket\'s mouth.', broke: 'It touched the brambles. Again.', eat: ['*Crunch* — the Rice Bucket swallows it whole.'], done: 'The breath pearl is in the Rice Bucket.' },
-  }),
-  thing: (s, r) => `<clipPath id="g-rope-xizhu"><circle r="${r}"/></clipPath><circle class="g-ft-ring" r="${r}"/>`
-    + `<image href="${ART}items/xizhu.webp" x="${-r * 1.4}" y="${-r * 1.4}" width="${r * 2.8}" height="${r * 2.8}" clip-path="url(#g-rope-xizhu)" preserveAspectRatio="xMidYMid slice"/>`,
-  target: potTarget,
-  grade: (s) => (s.best >= 3 ? 'whole' : 'fed'),
-  rests: true,
-  cls: 'g-rope-xizhu',
 });
 
 /* ── 拽 · 爹 over the drop, swung back onto the ledge (00-fall, 2026-10-19) ──
