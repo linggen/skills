@@ -1,0 +1,69 @@
+{
+ "_about": "守墙关 — wall defense, the 塔防 kit's second level type (Hanli 10-20: 「可否加一个类似这个的关卡, 让塔防多样性」, 「做原型吧」; the reference is 《向僵尸开炮》). Beasts come down the 山道 in waves; 小满 casts from the 山门 wall, 银月 sits beside him; after each wave the player picks 1 of 3 cards (the 守炉 kit as skills). The engine: scripts/games/shouqiang/core.js (pure, seeded, node-testable); the play: scripts/games/shouqiang/shouqiang.min.mjs (Phaser, built from tools/shouqiang/). Board 540×960, y grows down; the wall's face is at `wallY`. Numbers in arrays are per card level (1…max).",
+ "beasts": {
+  "_about": "hp before the level's hpMul and the wave's growth; speed px/s; bite: wall hp per second at the wall; size: the drawn height px; r: hit radius; armor: damage taken × this per kind (missing = 1); fly: over the burning ground, straight at the wall; frames: the painted ones (art/<id>-<frame>.webp — one walk frame steps by a bob).",
+  "yezhu": {"hp": 25, "speed": 42, "bite": 7, "size": 84, "r": 28, "frames": ["walk-1", "hit"], "gold": 1},
+  "zheng": {"hp": 17, "speed": 84, "bite": 5, "size": 76, "r": 26, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
+  "qiuyu": {"hp": 43, "speed": 30, "bite": 9, "size": 78, "r": 27, "armor": {"sword": 0.4, "fire": 1.5}, "frames": ["walk-1", "walk-2", "hit"], "gold": 2},
+  "qique": {"hp": 19, "speed": 70, "bite": 6, "size": 80, "r": 26, "fly": true, "armor": {"ground": 0}, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
+  "heyu": {"hp": 2400, "speed": 14, "bite": 60, "size": 200, "r": 74, "boss": true, "wail": {"every": 7, "for": 2.2, "takes": 2, "calls": ["yezhu", 3]}, "frames": ["walk-1", "hit"], "gold": 20}
+ },
+ "hero": {
+  "_about": "小满's flying swords and 银月's spirit bolt: what plays before any card.",
+  "sword": {"every": 0.7, "dmg": 16, "speed": 820, "r": 14},
+  "fox": {"every": 1.1, "dmg": 11, "speed": 560, "r": 12}
+ },
+ "cards": [
+  {"id": "jian-more", "family": "jian", "max": 3, "name": {"zh": "剑阵 · 添剑", "en": "Sword array · one more"}, "say": {"zh": "每轮多飞出一把剑。", "en": "One more flying sword per volley."}, "n": [1, 2, 3]},
+  {"id": "jian-pierce", "family": "jian", "max": 3, "name": {"zh": "剑阵 · 穿心", "en": "Sword array · pierce"}, "say": {"zh": "飞剑穿透，多刺几只。", "en": "Swords pierce through more beasts."}, "n": [2, 3, 5], "dmg": [4, 8, 12]},
+  {"id": "jian-return", "family": "jian", "max": 2, "name": {"zh": "剑阵 · 回剑", "en": "Sword array · return"}, "say": {"zh": "飞剑飞回手里，来回各斩一遍。", "en": "Swords fly back, cutting both ways."}, "back": [0.7, 1]},
+  {"id": "huo-blast", "family": "huo", "max": 3, "name": {"zh": "火符 · 爆炎", "en": "Fire talisman · blast"}, "say": {"zh": "火符落进兽群，炸开一片。", "en": "A fire talisman bursts in the herd."}, "every": [2.6, 2.3, 2.0], "dmg": [30, 46, 64], "radius": [72, 88, 104]},
+  {"id": "huo-ground", "family": "huo", "max": 2, "needs": "huo-blast", "name": {"zh": "火符 · 焚地", "en": "Fire talisman · burning ground"}, "say": {"zh": "炸过的地方烧上一阵。", "en": "The blast leaves the ground burning."}, "dps": [14, 24], "for": [3, 4.5]},
+  {"id": "han-slow", "family": "han", "max": 3, "name": {"zh": "寒符 · 霜降", "en": "Frost talisman · frost"}, "say": {"zh": "寒气一片，兽群慢下来。", "en": "A cold burst slows the herd."}, "every": [3, 2.6, 2.2], "dmg": [10, 16, 22], "radius": [84, 100, 116], "slow": [0.45, 0.55, 0.62], "for": [3, 3.5, 4]},
+  {"id": "han-freeze", "family": "han", "max": 2, "needs": "han-slow", "name": {"zh": "寒符 · 冰封", "en": "Frost talisman · freeze"}, "say": {"zh": "冻住了，挨打更疼。", "en": "Frozen solid, and hit harder."}, "for": [1, 1.6], "takes": [1.3, 1.5]},
+  {"id": "lei-chain", "family": "lei", "max": 3, "name": {"zh": "雷符 · 连雷", "en": "Thunder talisman · chain"}, "say": {"zh": "雷光一只连一只跳。", "en": "Lightning leaps beast to beast."}, "every": [1.6, 1.4, 1.2], "dmg": [26, 34, 44], "jumps": [3, 5, 7], "reach": 150},
+  {"id": "lei-strike", "family": "lei", "max": 2, "name": {"zh": "雷符 · 天雷", "en": "Thunder talisman · strike"}, "say": {"zh": "天雷劈最硬的那只。", "en": "A sky bolt strikes the toughest."}, "every": [5, 3.8], "dmg": [180, 320], "radius": 56, "stun": 0.6},
+  {"id": "yy-foxfire", "family": "yy", "max": 3, "name": {"zh": "银月 · 狐火", "en": "Yinyue · fox-fire"}, "say": {"zh": "银月吐狐火，落地烧一团。", "en": "Yinyue spits fox-fire that splashes."}, "dmg": [22, 32, 44], "radius": [48, 58, 70], "shots": [1, 2, 3]},
+  {"id": "yy-howl", "family": "yy", "max": 2, "name": {"zh": "银月 · 啸月", "en": "Yinyue · moon howl"}, "say": {"zh": "一声长啸，满山的兽都愣住。", "en": "One howl stuns every beast on the road."}, "every": [10, 7.5], "stun": [1.2, 1.8], "dmg": [16, 28]}
+ ],
+ "levels": [
+  {
+   "id": "shanmen",
+   "kit": "shouqiang",
+   "story": null,
+   "place": "shanmen",
+   "title": {"zh": "沉鼎观 · 守山门", "en": "Chending Temple · Hold the gate"},
+   "lead": [
+    {"zh": "沉鼎观的山门，只剩一道墙。", "en": "Of Chending Temple's gate, only the wall still stands."},
+    {"zh": "山道上，黑压压的兽潮涌下来。", "en": "Down the mountain road a black tide of beasts pours."},
+    {"zh": "兽潮来袭！", "en": "Here they come!", "big": true},
+    {"zh": "守住山门！", "en": "Hold the gate!", "big": true}
+   ],
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "hpMul": 2.1,
+   "growth": 0.28,
+   "stars": [0.7, 0.35],
+   "moments": {
+    "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "再来多少都一样。", "en": "Bring more."}],
+    "low": [{"zh": "墙要塌了！", "en": "The wall is cracking!"}],
+    "boss": [{"zh": "合窳来了——它一哭，就打它！", "en": "The heyu! When it wails, hit it!"}],
+    "win": [{"zh": "山门守住了。", "en": "The gate holds."}]
+   },
+   "waves": [
+    [["yezhu", 13, 0.69, 0]],
+    [["yezhu", 16, 0.5, 0], ["zheng", 6, 0.56, 6]],
+    [["zheng", 19, 0.34, 0], ["yezhu", 13, 0.44, 4]],
+    [["qiuyu", 10, 0.87, 0], ["yezhu", 19, 0.34, 3]],
+    [["qique", 13, 0.5, 0], ["zheng", 19, 0.31, 4]],
+    [["yezhu", 32, 0.22, 0], ["qiuyu", 10, 0.75, 4], ["qique", 10, 0.56, 8]],
+    [["zheng", 35, 0.2, 0], ["qique", 16, 0.44, 5]],
+    [["qiuyu", 19, 0.56, 0], ["yezhu", 29, 0.25, 3], ["zheng", 22, 0.25, 9]],
+    [["qique", 26, 0.31, 0], ["zheng", 29, 0.22, 3], ["qiuyu", 13, 0.62, 7]],
+    [["yezhu", 26, 0.28, 0], ["heyu", 1, 1, 4], ["zheng", 26, 0.31, 10], ["qique", 16, 0.44, 16]]
+   ]
+  }
+ ]
+}

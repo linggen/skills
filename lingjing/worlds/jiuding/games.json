@@ -1892,6 +1892,13 @@
    ]
   },
   {
+   "id": "shouqiang",
+   "group": "main",
+   "mechanic": "塔防",
+   "stars": 3,
+   "_about": "守墙关 — wall defense, the 塔防 kit's second level type, a prototype (Hanli 10-20: 「可否加一个类似这个的关卡, 让塔防多样性」, 「做原型吧」; the bar: 《向僵尸开炮》, 「做的漂亮, 好看, 好玩」). Portrait: beasts pour down the 山道 at 沉鼎观's 山门 in waves; 小满 casts from the wall, 银月 beside him; after each wave the player picks 1 of 3 cards (剑阵 · 火符 · 寒符 · 雷符 · 银月, the 守炉 kit as skills); a tap on a beast focuses it. The first wave comes on a countdown with the lead-in, never a tap. Stars from the wall left. Phaser on the shared scripts/vendor/phaser.min.mjs (tools/shouqiang/ → games/shouqiang/shouqiang.min.mjs); the engine games/shouqiang/core.js; the level, waves and cards: worlds/jiuding/levels/shouqiang.json; the bots: tests/game-shouqiang.test.mjs. Not placed in the story yet: after Hanli plays it."
+  },
+  {
    "id": "shoulu",
    "group": "main",
    "mechanic": "塔防",

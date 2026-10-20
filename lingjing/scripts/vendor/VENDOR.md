@@ -32,3 +32,23 @@ Still Kenney's in our build: the UI atlas (panels, buttons, icons), the VFX atla
 the star and coin icons, and the cloud layers. Repainted (`tools/zhazhai/atlas.py`): every block (瓦/木/石/铁/火药桶),
 the weasels and the four throws (Codex, `tools/paint-zhazhai.py`), the slingshot and its foot, the karst/pine layers.
 Fetched 2026-10-20.
+
+## The shared game engine (doc/game-kit.md § Layers, 1 Engine)
+
+`phaser.min.mjs` is the ONE Phaser every game kit loads: a game's bundle marks `phaser` external and imports
+`../../vendor/phaser.min.mjs` (esbuild, e.g. `tools/shouqiang/build.mjs`), so the browser fetches Phaser once.
+守墙关 is its first user; 砸寨 still bundles its own copy until it moves onto the shared layer.
+
+| File | Package | Licence | Source tarball sha256 | File sha256 |
+|---|---|---|---|---|
+| `phaser.min.mjs` | phaser 3.90.0 (`dist/phaser.esm.min.js`, ESM, named exports → `import * as Phaser`) | MIT — `LICENSE.phaser.txt` | c4e3a8da498ab94aa8859c7a32cb89140d94bfd95d769bee36a98cdef1bea6e6 | 9327deb5e2f7d382cd054842f641fd504b9a784a730a2bdb94ea63516790ead1 |
+
+Fetched with `npm pack phaser@3.90.0` on 2026-10-20.
+
+## 守墙关's font (games/shouqiang/font/)
+
+| File | Font | Licence | Source sha256 |
+|---|---|---|---|
+| `games/shouqiang/font/zcool-kuaile.woff2` | ZCOOL KuaiLe 站酷快乐体 (google/fonts `ofl/zcoolkuaile/ZCOOLKuaiLe-Regular.ttf`, kept whole in `tools/shouqiang/font/`), cut to the game's characters by `tools/shouqiang/font.py` | SIL OFL 1.1 — `OFL.txt` beside it | 812a6fc1fe54b6d73a419245c32dfeba8aa33104d5be90d1cf6af082007cb71d |
+
+Fetched from github.com/google/fonts (main) on 2026-10-20.

@@ -8,3 +8,6 @@ tools/node_modules/
 
 # 砸寨 build deps (tools/zhazhai/package.json) — never committed
 tools/zhazhai/node_modules/
+
+# 守墙关 build deps (tools/shouqiang/package.json) — never committed
+tools/shouqiang/node_modules/
