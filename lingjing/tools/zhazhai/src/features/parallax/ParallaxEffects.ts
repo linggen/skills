@@ -73,7 +73,11 @@ export class ParallaxEffects {
   }
 
   fadeToBlack(duration: number, callback?: () => void): void {
-    if (!this.fadeOverlay || this.isFading) return;
+    // 砸寨: never swallow the way on (the PLAY tap went dead when an overlay was missing or mid-fade).
+    if (!this.fadeOverlay || this.isFading) {
+      callback?.();
+      return;
+    }
     this.isFading = true;
 
     this.scene.tweens.add({

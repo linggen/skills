@@ -106,12 +106,12 @@ export const CAMERA_CONFIG: GroupedCameraConfig = {
   // 砸寨 plays in a page card, not a whole screen: everything a notch wider, so at rest the slingshot and the
   // fort are both in view (upstream: min 0.6, max 1.0, aimMin 0.8, launch 0.75, far 0.6, arrival 0.8).
   zoom: {
-    min: 0.5,
-    max: 0.8,
-    aimMin: 0.7,
-    launch: 0.66,
-    far: 0.52,
-    arrival: 0.7,
+    min: 0.48,
+    max: 0.7,
+    aimMin: 0.64,
+    launch: 0.6,
+    far: 0.5,
+    arrival: 0.64,
     launchSpeedThreshold: 5,
     midDistance: 120,
     farDistance: 640,

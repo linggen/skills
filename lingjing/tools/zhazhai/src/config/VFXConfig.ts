@@ -61,7 +61,7 @@ export const PIG_DEATH_CONFIG: PigDeathConfig = {
     atlasKey: VFX_ATLAS_KEY,
     textures: ["splat02", "splat10", "splat11", "splat12", "splat32", "splat33"],
     scale: 0.7,
-    color: 0x44aa44,
+    color: 0xe0a040, // 砸寨: a weasel goes up in an ochre puff of fur (upstream: green goo, 0x44aa44)
     bounceScale: 1.15,
     duration: 200,
     lingerDuration: 500,

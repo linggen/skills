@@ -45,6 +45,8 @@ export class InputHandler implements IInputHandler {
     this.scene.input.on("pointerdown", this.handlePointerDown, this);
     this.scene.input.on("pointermove", this.handlePointerMove, this);
     this.scene.input.on("pointerup", this.handlePointerUp, this);
+    // 砸寨 plays in a small page card: a pull that ends outside the canvas still lets go (upstream: stuck aiming).
+    this.scene.input.on("pointerupoutside", this.handlePointerUp, this);
     this.scene.input.on("wheel", this.handleWheel, this);
   }
 
@@ -337,6 +339,7 @@ export class InputHandler implements IInputHandler {
     this.scene.input.off("pointerdown", this.handlePointerDown, this);
     this.scene.input.off("pointermove", this.handlePointerMove, this);
     this.scene.input.off("pointerup", this.handlePointerUp, this);
+    this.scene.input.off("pointerupoutside", this.handlePointerUp, this);
     this.scene.input.off("wheel", this.handleWheel, this);
 
     // Remove keyboard listeners

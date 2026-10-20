@@ -139,9 +139,9 @@ export const UI_COMPONENTS_CONFIG: UIComponentsConfigType = {
   levelCard: {
     starScale: 0.65,
     lockScale: 0.75,
-    hexagonScaleX: 2.25,
-    hexagonScaleY: 2,
-    hitAreaRadius: 55,
+    hexagonScaleX: 3,
+    hexagonScaleY: 2.7,
+    hitAreaRadius: 80,
     lockedAlpha: 0.6,
     lockIconAlpha: 0.7,
     hoverScale: 1.1,

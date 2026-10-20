@@ -1,3 +1,4 @@
+import { fortName } from "../../zhazhai/decor";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { UI_COMPONENTS_CONFIG } from "../../config/UIComponentsConfig";
@@ -42,6 +43,7 @@ export class LevelCard extends Phaser.GameObjects.Container {
 
     this.createHexagon();
     this.createLevelText();
+    this.add(fortName(this.scene, this.config.level));
 
     if (config.unlocked) {
       this.createStars();

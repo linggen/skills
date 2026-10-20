@@ -51,3 +51,18 @@ export function tr(s: string): string {
   const w = WORDS[s];
   return w ? w[Runtime.lang] : s;
 }
+
+Object.assign(WORDS, {
+  "A weasel gang stole the village's chickens.": { zh: "黄鼠狼精偷了村里的鸡，躲进寨子了！", en: "The weasels stole the village's chickens!" },
+  "Drag slingshot to aim, release to launch": { zh: "拉住弹弓往后拽，松手就飞", en: "Pull the slingshot back, let go to fling" },
+  "Destroy all Greenelings to win": { zh: "黄鼠狼精一只不剩，就赢了", en: "Knock out every weasel to win" },
+  "Fewer Aliens = higher score": { zh: "用得越少，分越高", en: "Fewer throws, higher score" },
+  "Touch & drag slingshot to aim": { zh: "按住弹弓往后拽，瞄准", en: "Touch and drag the slingshot to aim" },
+  "Tap mid-air for ability": { zh: "飞行中点一下，各有一手", en: "Tap in flight for its trick" },
+  "Pinch to zoom, one-finger drag to pan": { zh: "两指缩放，一指拖动看全景", en: "Pinch to zoom, drag to look around" },
+  "Click & drag slingshot to aim": { zh: "按住弹弓往后拽，瞄准", en: "Click and drag the slingshot to aim" },
+  "Click mid-air for ability": { zh: "飞行中点一下，各有一手", en: "Click in flight for its trick" },
+  "Scroll to zoom, drag anywhere to pan": { zh: "滚轮缩放，拖动看全景", en: "Scroll to zoom, drag to look around" },
+  "Auto adapts quality from device and frame rate.": { zh: "按设备和帧率自动调画质。", en: "Quality follows your device and frame rate." },
+  "This game is best played in landscape mode": { zh: "横屏玩更好", en: "Best played sideways" },
+});

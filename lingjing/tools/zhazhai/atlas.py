@@ -347,7 +347,19 @@ def background_atlas():
   out.save(OUT / 'background.png', optimize=True)
 
 
+def hero_art():
+  """The title screen's big pieces (src/zhazhai/decor.ts), from the paintings, at a size the card needs."""
+  d = HERE / 'game-assets' / 'art'
+  d.mkdir(exist_ok=True)
+  for k in ('weasel-s', 'weasel-m', 'weasel-l', 'proj-stone', 'slingshot'):
+    im = Image.open(ART / f'{k}.png').convert('RGBA')
+    im = im.crop(im.getbbox())
+    s = 420 / max(im.size)
+    im.resize((int(im.width * s), int(im.height * s)), Image.LANCZOS).save(d / f'{k}.webp', quality=86, method=6)
+
+
 if __name__ == '__main__':
+  hero_art()
   level_atlas()
   background_atlas()
   print('atlases →', OUT)

@@ -1,0 +1,188 @@
+{
+ "source": "d5dfc4960ad8cce174cde8bd365e9e02e5080d3566bdd845bb9c66b2eee57e10",
+ "levels": [
+  {
+   "id": 1,
+   "theme": "forest",
+   "shots": [
+    "red"
+   ],
+   "weasels": [
+    "SMALL"
+   ],
+   "blocks": 4,
+   "materials": [
+    "glass"
+   ],
+   "stars": {
+    "oneStar": 5000,
+    "twoStars": 5100,
+    "threeStars": 7310
+   },
+   "words": {
+    "zh": {
+     "name": "偷鸡的瓦棚",
+     "description": "一只小黄鼠狼精，躲在瓦搭的棚子里啃鸡腿。",
+     "teachingFocus": "往后拉，松手。瓦一碰就碎。"
+    },
+    "en": {
+     "name": "The Chicken Thief's Shed",
+     "description": "One little weasel in a shed of roof tiles, gnawing a drumstick.",
+     "teachingFocus": "Pull back and let go. Tiles shatter at a touch."
+    }
+   }
+  },
+  {
+   "id": 2,
+   "theme": "forest",
+   "shots": [
+    "yellow",
+    "red",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 9,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 15000,
+    "twoStars": 27600,
+    "threeStars": 39560
+   },
+   "words": {
+    "zh": {
+     "name": "柴门木屋",
+     "description": "三只躲在木屋里。木头结实，要快。",
+     "teachingFocus": "短飞剑：飞行中点一下，直冲出去，木头一穿就透。"
+    },
+    "en": {
+     "name": "The Log Cabin",
+     "description": "Three hide in a cabin of logs. Wood is tough: be quick.",
+     "teachingFocus": "Flying sword: tap in flight and it shoots straight on, through wood."
+    }
+   }
+  },
+  {
+   "id": 3,
+   "theme": "forest",
+   "shots": [
+    "blue",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 9,
+   "materials": [
+    "glass"
+   ],
+   "stars": {
+    "oneStar": 10000,
+    "twoStars": 15600,
+    "threeStars": 22360
+   },
+   "words": {
+    "zh": {
+     "name": "瓦楼",
+     "description": "两层瓦楼，上下各藏一只。",
+     "teachingFocus": "陶罐：飞行中点一下，碎成三块，各砸各的。"
+    },
+    "en": {
+     "name": "The Tile Tower",
+     "description": "A two-storey tile tower, one weasel up, one down.",
+     "teachingFocus": "Clay pot: tap in flight and it breaks into three."
+    }
+   }
+  },
+  {
+   "id": 4,
+   "theme": "forest",
+   "shots": [
+    "yellow",
+    "black",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL",
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 29,
+   "materials": [
+    "stone",
+    "wood",
+    "explosive"
+   ],
+   "stars": {
+    "oneStar": 25000,
+    "twoStars": 52236,
+    "threeStars": 74871
+   },
+   "words": {
+    "zh": {
+     "name": "火药房",
+     "description": "三座木楼，中间垫着火药桶。",
+     "teachingFocus": "五雷符：一碰就炸；点燃一个火药桶，连着一串都炸。"
+    },
+    "en": {
+     "name": "The Powder Store",
+     "description": "Three wooden towers with powder kegs between them.",
+     "teachingFocus": "Thunder talisman: it bursts on a strike. Light one keg and the chain goes up."
+    }
+   }
+  },
+  {
+   "id": 5,
+   "theme": "forest",
+   "shots": [
+    "red",
+    "blue",
+    "black",
+    "black",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL",
+    "SMALL",
+    "SMALL",
+    "LARGE"
+   ],
+   "blocks": 22,
+   "materials": [
+    "stone",
+    "wood",
+    "metal",
+    "glass",
+    "explosive"
+   ],
+   "stars": {
+    "oneStar": 30000,
+    "twoStars": 51048,
+    "threeStars": 73168
+   },
+   "words": {
+    "zh": {
+     "name": "大王寨",
+     "description": "黄鼠狼大王坐在寨顶，石头、铁、瓦，一层一层。",
+     "teachingFocus": "从上往下拆：先砸塌顶上的大王。"
+    },
+    "en": {
+     "name": "The Chief's Keep",
+     "description": "The weasel chief sits on top: stone, iron and tile, layer on layer.",
+     "teachingFocus": "Work from the top: bring the chief down first."
+    }
+   }
+  }
+ ]
+}

@@ -1,3 +1,4 @@
+import { loadArt } from "../zhazhai/decor";
 import { Runtime } from "../zhazhai/runtime";
 import { tr } from "../zhazhai/i18n";
 import Phaser from "phaser";
@@ -192,6 +193,7 @@ export class BootScene extends Phaser.Scene {
 
   private loadAssets(): void {
     this.loadFonts();
+    this.loadArt();
     this.loadBackgrounds();
     this.loadUI();
     this.loadLevel();
@@ -203,6 +205,10 @@ export class BootScene extends Phaser.Scene {
   private loadShaders(): void {
     this.load.glsl("ExplosionShader", "shaders/explosion.frag");
     this.load.glsl("TransitionShader", "shaders/transition.frag");
+  }
+
+  private loadArt(): void {
+    loadArt(this.load);
   }
 
   private loadFonts(): void {

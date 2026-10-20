@@ -16,25 +16,25 @@ export const MenuTitleConfig = {
     overshoot: 1.08,
   },
   outerGlow: {
-    fontSize: 78,
+    fontSize: 150,
     color: "#FFD700",
   },
   innerGlow: {
-    fontSize: 74,
+    fontSize: 144,
     color: "#FFFFFF",
   },
   shadow: {
     offsetX: 5,
     offsetY: 6,
-    fontSize: 72,
+    fontSize: 140,
     color: "#3d2817",
     alpha: 0.85,
   },
   mainText: {
-    fontSize: 72,
+    fontSize: 140,
     color: "#F5EFD6",
     stroke: "#6B5A35",
-    strokeThickness: 10,
+    strokeThickness: 16,
   },
   entrance: {
     duration: 380,

@@ -1,3 +1,4 @@
+import { menuDecor } from "../zhazhai/decor";
 import { Runtime } from "../zhazhai/runtime";
 import { BaseScene } from "./BaseScene";
 import { DesignTokens as T } from "../config/DesignTokens";
@@ -43,6 +44,7 @@ export class MenuScene extends BaseScene {
     });
 
     this.menuDirector.start();
+    menuDecor(this, this.viewportWidth, this.viewportHeight);
     this.playEntryAnimation();
 
     // Trigger transition reveal if arriving via shader transition
@@ -55,6 +57,7 @@ export class MenuScene extends BaseScene {
   private createMenuDirector(): void {
     this.menuDirector = new MenuDirector({
       scene: this,
+      theme: "forest", // 砸寨 has one world (upstream: a random theme each visit)
       audioSystem: this.audioSystem,
       onButtonsReady: () => {
         this.showButtons();

@@ -34,12 +34,13 @@ export const DesignTokens = {
   fonts: {
     family: '"Kenney Bold", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif',
     sizes: {
-      display: 72,
-      title: 48,
-      subtitle: 32,
-      button: 24,
-      label: 18,
-      caption: 12,
+      // 砸寨 plays in a page card, not a whole screen: type a size up (upstream 72/48/32/24/18/12).
+      display: 96,
+      title: 64,
+      subtitle: 42,
+      button: 32,
+      label: 24,
+      caption: 17,
     },
   },
 
