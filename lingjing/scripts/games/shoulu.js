@@ -42,7 +42,7 @@ const T = {
     lastWave: '已是最后一波 · 守住即成', waveN: (n) => `第${n}波：`, xi: '息', paused: '暂 停',
     says: { back: '回来了。', grow: '月华更盛了。', howl: '嗷呜——！', cry: '啼哭中', paused: '暂 停' },
     yinyue: '银月', away: (s) => `${s}息后归来`, autoOn: '自动施放：开', autoOff: '自动施放：关', cooling: '还在冷却', noHair: '没有狐毛了',
-    skillAt: (l) => `${['', '二重', '三重'][l]}解锁`, aimAt: (n) => `${n}：点选目标 · 右键或 Esc 取消`,
+    skillAt: (l) => `${['', '二重', '三重'][l]}解锁`, aimAt: (n, touch) => `${n}：点选目标 · ${touch ? '再点按钮取消' : '右键或 Esc 取消'}`,
   },
   en: {
     fire: 'Fire', stone: 'Stones', wave: 'wave', first: 'Wave 1', next: 'Next wave', sec: 's', early: 'early',
@@ -56,7 +56,7 @@ const T = {
     lastWave: 'The last wave: hold it', waveN: (n) => `Wave ${n}:`, xi: 'breaths', paused: 'Paused',
     says: { back: 'Back.', grow: 'The moon grows in me.', howl: 'Awooo—!', cry: 'wailing', paused: 'Paused' },
     yinyue: 'Yinyue', away: (s) => `back in ${s}s`, autoOn: 'Autocast on', autoOff: 'Autocast off', cooling: 'Still cooling', noHair: 'No fox hair left',
-    skillAt: (l) => `Opens at ${['', 'II', 'III'][l]}`, aimAt: (n) => `${n}: pick a target · right-click or Esc cancels`,
+    skillAt: (l) => `Opens at ${['', 'II', 'III'][l]}`, aimAt: (n, touch) => `${n}: pick a target · ${touch ? 'tap the button again to cancel' : 'right-click or Esc cancels'}`,
   },
 };
 /** Her skills' names and lines. */
@@ -121,7 +121,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
   const icons = {};
   const iconOf = (type) => (icons[type] ??= beastIcon(doc, type));
   // S: the selection (core.js `pointer`): 银月 selected, the skill being aimed; `sel` is the spot whose menu is open (S.spot)
-  let g = null, li = -1, paper = null, speed = 1, paused = false, S = noSel(), aimAt = null, sel = -1, raf = 0, last = 0, acc = 0, shown = false, sc = 1, dpr = 1, previewKey = '';
+  let g = null, li = -1, paper = null, speed = 1, paused = false, S = noSel(), aimAt = null, touchy = false, sel = -1, raf = 0, last = 0, acc = 0, shown = false, sc = 1, dpr = 1, previewKey = '';
   let AC = null;
   const sagaQ = [], toastQ = [];
   let sagaT = 0, toastT = 0;
@@ -234,7 +234,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       if (r.did === 'spot') openMenu(r.spot); else if (S.spot < 0 && sel >= 0) closeMenu();
       if ((r.did === 'move' || r.did === 'attack') && p) g.fx.push({ k: 'mark', x: p.x, y: p.y, life: 0.6, max: 0.6 });
       if (r.did === 'no' && k) refuse(k);
-      if (r.did === 'aim') toast(t.aimAt(SK[lang][S.aim][0]));
+      if (r.did === 'aim') toast(t.aimAt(SK[lang][S.aim][0], touchy));
       if (r.did === 'centre') centre();
       cv.style.cursor = S.aim ? 'crosshair' : '';
     }
@@ -250,6 +250,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       const right = e.button === 2 || (e.button === 0 && e.ctrlKey); // a Mac's ctrl-click is a right-click
       if (e.button !== 0 && e.button !== 2) return;
       const p = toWorld(e), aimed = S.aim;
+      touchy = e.pointerType !== 'mouse';
       aimAt = p;
       apply(pointer(g, { ...S, spot: sel }, { ...p, button: right ? 2 : 0, shift: e.shiftKey, touch: e.pointerType !== 'mouse' }), p, aimed);
     });
@@ -276,6 +277,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       if (e.target.closest('[data-hero]')) { apply(pressKey(g, { ...S, spot: sel }, '1', performance.now() / 1000)); return; }
       const k = e.target.closest('[data-skill]')?.dataset.skill;
       if (!k) return;
+      touchy = e.pointerType ? e.pointerType !== 'mouse' : touchy;
       if (S.aim === k) { apply({ sel: { ...S, aim: null }, did: 'cancel' }); return; } // its button again: put it away
       apply(pressSkill(g, { ...S, spot: sel }, k), null, k);
     });
