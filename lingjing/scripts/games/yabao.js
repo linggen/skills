@@ -8,6 +8,9 @@
 // one ring: the market's (tasks/world.json `yabao`).
 // Pure module: newGame / html / act. The host routes [data-g] clicks to act().
 
+// the four doors painted (tools/paint-boards-flux.py): each its beast in relief; the name stays text
+const DOOR_ART = new URL('./boards/', import.meta.url).href;
+
 export const meta = {
   id: 'yabao',
   name: { zh: '押宝 · 钱掌柜的摊子', en: 'The bet · Money Qian’s stall' },
@@ -99,7 +102,7 @@ export function html(state, lang = 'zh') {
   const doors = DOORS.map((d) => {
     const tags = [state.pointed.includes(d) ? t.pointed : '', !over && d === last ? t.bet : ''].filter(Boolean);
     const cls = `g-shouye-spot${state.pointed.includes(d) ? ' is-used' : ''}${d === last ? ' is-watched' : ''}`;
-    return `<button type="button" class="${cls}" data-g="bet" data-door="${d}"${over ? ' disabled' : ''}><b>${NAMES[lang][d]}</b>${tags.length ? `<small>${tags.join(' · ')}</small>` : ''}</button>`;
+    return `<button type="button" class="${cls}" data-g="bet" data-door="${d}"${over ? ' disabled' : ''}><img class="g-yabao-door" src="${DOOR_ART}door-${d}.webp" alt=""><b>${NAMES[lang][d]}</b>${tags.length ? `<small>${tags.join(' · ')}</small>` : ''}</button>`;
   }).join('');
   const log = state.log.map((e, i) => `<p class="${e.hit ? 'g-shouye-caught' : 'g-shouye-miss'}">${fillIn(e.hit ? t.hit : t.miss, lang, e)}${!e.hit && i === 0 ? ` ${t.habit}` : ''}</p>`).join('');
   return `<div class="g-shouye g-yabao${state.won ? ' is-won' : ''}">

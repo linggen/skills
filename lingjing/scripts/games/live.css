@@ -545,3 +545,15 @@
 .g-lb-scene .g-lb-steam { fill: none; stroke: #fff8e8; stroke-width: 2.2; stroke-linecap: round; }
 .g-lb-scene .g-lb-smoke { fill: none; stroke: #3a3128; stroke-width: 3; stroke-linecap: round; }
 .g-lb.is-hot .g-lb-clock { color: var(--seal); }
+
+/* 禹步's painted terrace; 押宝's painted doors (tools/paint-boards-flux.py) */
+.g-yubu .g-scene.g-yubu-pic { border-radius: 10px; overflow: hidden; }
+.g-yubu .g-yubu-pic .g-line { stroke: #2d3a46; }
+.g-yabao .g-shouye-spots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+.g-yabao .g-shouye-spot { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; min-height: 44px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; font: inherit; color: inherit; }
+.g-yabao .g-shouye-spot:disabled { cursor: default; }
+.g-yabao .g-shouye-spot.is-used { opacity: .55; }
+.g-yabao .g-shouye-spot.is-watched { border-color: var(--seal); }
+.g-yabao .g-yabao-door { width: 100%; max-width: 96px; aspect-ratio: 2 / 3; object-fit: contain; }
+.g-yabao .g-shouye-spot small { font-size: 11px; color: var(--dim); }

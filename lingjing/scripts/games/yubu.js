@@ -8,6 +8,8 @@
 // be added the same way. Pure: makeYubu(stop) → { meta, newGame, act, tick, html, stuck }.
 import { btn, n, scene, skipped, splash } from './ink.js';
 
+const ART = new URL('./boards/', import.meta.url).href;
+
 export const GRID = [4, 9, 2, 3, 5, 7, 8, 1, 6]; // row by row: 戴九履一，左三右七，二四为肩，六八为足，五居中央
 export const HASTE = 180; // ms: a beat faster than this is a footfall heard
 const NUM = { zh: ['一', '二', '三', '四', '五', '六', '七', '八', '九'], en: ['1', '2', '3', '4', '5', '6', '7', '8', '9'] };
@@ -65,6 +67,9 @@ export function makeYubu(stop) {
      inked over, his foot on the last. */
   function picture(s) {
     const cell = 34, x0 = 109, y0 = 8;
+    // painted (tools/paint-boards-flux.py): the clifftop terrace and the bluestone slab; the grid and dots stay drawn
+    const ground = `<image href="${ART}yubu-ground.webp" width="320" height="120" preserveAspectRatio="xMidYMid slice"/>`
+      + `<image href="${ART}yubu-slab.webp" x="${x0 - 7}" y="${y0 - 6}" width="${cell * 3 + 14}" height="${cell * 3 + 12}" preserveAspectRatio="none"/>`;
     const lines = [0, 1, 2, 3].map((i) => `<path class="g-line g-thin" d="M${x0} ${y0 + i * cell} h${cell * 3} M${x0 + i * cell} ${y0} v${cell * 3}"/>`).join('');
     const marks = GRID.map((v, i) => {
       const cx = x0 + (i % 3) * cell + cell / 2, cy = y0 + Math.floor(i / 3) * cell + cell / 2;
@@ -72,7 +77,7 @@ export function makeYubu(stop) {
       return dots + (v === s.k ? `<circle class="g-line" cx="${n(cx)}" cy="${n(cy)}" r="14"/>` : '');
     }).join('');
     const fx = s.fx ? splash(160, 60, s.t - s.fx.at, { r: 10, seal: s.fx.ok }) : '';
-    return scene(320, 120, lines + marks + fx);
+    return scene(320, 120, ground + lines + marks + fx, 'g-yubu-pic');
   }
 
   function html(state, lang = 'zh') {

@@ -5,8 +5,8 @@
   position: relative;
   width: min(100%, 360px);
   aspect-ratio: 9 / 10;
-  background: var(--raised);
-  border: 1px solid var(--line);
+  background: #c9944f url(boards/xq-board.webp) center / cover; /* painted wood (tools/paint-boards-flux.py) */
+  border: 3px solid #6b4423;
   border-radius: 8px;
 }
 .g-xiangqi-lines {
@@ -16,11 +16,11 @@
   height: 100%;
   pointer-events: none;
 }
-.g-xiangqi-lines path { fill: none; stroke: var(--faint); stroke-width: 0.03; stroke-linecap: square; }
+.g-xiangqi-lines path { fill: none; stroke: #5a3b1c; stroke-width: 0.03; stroke-linecap: square; }
 .g-xiangqi-lines text {
   font-family: var(--serif);
   font-size: 0.42px;
-  fill: var(--faint);
+  fill: #5a3b1c;
   text-anchor: middle;
   dominant-baseline: middle;
 }
@@ -53,8 +53,8 @@ button.g-xiangqi-pt { cursor: pointer; }
   width: 86%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--surface);
-  border: 2px solid currentColor;
+  background: center / contain no-repeat;
+  border: 0;
   font-family: var(--serif);
   font-size: clamp(14px, 4.6vw, 22px);
   font-weight: 700;
@@ -62,10 +62,11 @@ button.g-xiangqi-pt { cursor: pointer; }
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   transition: transform 0.12s;
 }
-.g-xiangqi-piece.is-red { color: #a33a2c; }
-.g-xiangqi-piece.is-black { color: #222; }
+/* painted blank discs (tools/paint-boards-flux.py); the glyph stays text */
+.g-xiangqi-piece.is-red { color: #a33a2c; background-image: url(boards/xq-red.webp); }
+.g-xiangqi-piece.is-black { color: #222; background-image: url(boards/xq-black.webp); }
 button.g-xiangqi-pt:hover .g-xiangqi-piece { transform: scale(1.06); }
-.g-xiangqi-pt.is-sel .g-xiangqi-piece { box-shadow: 0 0 0 3px var(--ling); }
+.g-xiangqi-pt.is-sel .g-xiangqi-piece { box-shadow: 0 0 0 3px var(--ling); border-radius: 50%; }
 .g-xiangqi-pt.is-last::before {
   content: '';
   position: absolute;

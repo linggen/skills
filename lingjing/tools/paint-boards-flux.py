@@ -64,7 +64,8 @@ for k, what in DOORS.items():
   JOBS[f'door-{k}'] = dict(key='magenta', w=512, h=768, prompt=DOOR + what + '. No writing, no plaque. ' + STYLE + ' '
                            + fc.ON_MAGENTA)
 
-KEPT = {'cave': 1}
+KEPT = {'cave': 1, 'yubu-ground': 1, 'yubu-slab': 2, 'xq-board': 2, 'xq-red': 1, 'xq-black': 1, 'qq-lacquer': 1,
+        'door-long': 1, 'door-hu': 2, 'door-que': 1, 'door-wu': 1}
 SIZE = {'cave': 720, 'yubu-ground': 1024, 'yubu-slab': 256, 'xq-board': 512, 'xq-red': 96, 'xq-black': 96,
         'qq-lacquer': 256}
 

@@ -1,6 +1,7 @@
 // 七巧板 — 布阵. Slot-based tangram: pick a piece, turn it, lay it into a numbered slot.
 // Pure module: newGame / html / act. No DOM access; state is plain JSON.
 
+const LACQUER = new URL('./boards/qq-lacquer.webp', import.meta.url).href;
 export const meta = {
   id: 'qiqiao',
   name: { zh: '七巧板', en: 'Tangram' },
@@ -184,11 +185,13 @@ function board(state, sil) {
   const w = Math.max(...xs) - x0 + pad, h = Math.max(...ys) - y0 + pad;
   const polys = sil.slots.map((slot, i) => {
     const p = state.slots[i];
-    if (p != null) return `<polygon class="qq-fill qq-c${p}" points="${ptsAttr(slot.points)}"/>`;
+    if (p != null) return `<polygon class="qq-fill qq-c${p}" points="${ptsAttr(slot.points)}"/><polygon class="qq-gloss" points="${ptsAttr(slot.points)}"/>`;
     const [cx, cy] = centroid(slot.points);
     return `<polygon class="qq-slot" points="${ptsAttr(slot.points)}"/><text class="qq-num" x="${f2(cx)}" y="${f2(cy)}">${i + 1}</text>`;
   });
-  return `<svg class="qq-board" viewBox="${f2(x0)} ${f2(y0)} ${f2(w)} ${f2(h)}" role="img" aria-label="${sil.zh} / ${sil.en}">${polys.join('')}</svg>`;
+  // a placed piece is lacquered wood: the painted grain (tools/paint-boards-flux.py) laid over its colour
+  const lac = `<defs><pattern id="qq-lac" patternContentUnits="objectBoundingBox" width="1" height="1"><image href="${LACQUER}" width="1" height="1" preserveAspectRatio="none"/></pattern></defs>`;
+  return `<svg class="qq-board" viewBox="${f2(x0)} ${f2(y0)} ${f2(w)} ${f2(h)}" role="img" aria-label="${sil.zh} / ${sil.en}">${lac}${polys.join('')}</svg>`;
 }
 
 export function html(state, lang = 'zh') {
