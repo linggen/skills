@@ -8,7 +8,7 @@
 What draw.js drew in code: the talismans (four kinds × three levels), the 丹炉, the ground of each of the five
 maps, and the pines and rocks round the road. The road itself stays drawn from the level's data, on the
 painted ground. The beasts are 守墙's (Codex comic, art/games/shouqiang/<beast>-walk-*/hit: one 野猪 serves
-every kit, game-kit.md § Shared assets); FLUX paints only the frames 守墙 lacks (野猪 and 合窳's second step),
+every kit, game-kit.md § Shared assets); FLUX paints only 野猪's second step (合窳 stays exactly 守墙关's / 撒豆成兵's, Hanli 10-20),
 as edit passes from their first step. `cut` packs the beasts too: scripts/games/shoulu/art/beasts.webp + .json.
 """
 import json, sys
@@ -65,7 +65,6 @@ STEP = ('The attached image is the MASTER drawing of this beast: draw the SAME b
         'same size and the same three-quarter view, only the legs change: the other step of its walk, the legs '
         'that were forward now back and the others forward. ' + fc.ON_GREEN)
 JOBS['yezhu-walk-2'] = dict(w=640, h=640, refs=[QIANG / 'yezhu-walk-1.green.webp'], key='green', prompt=STEP)
-JOBS['heyu-walk-2'] = dict(w=640, h=640, refs=[QIANG / 'heyu-walk-1.green.webp'], key='green', prompt=STEP)
 
 # Looked at 2026-10-20 (2 seeds each): every talisman reads its kind by shape (sword, flame, snowflake, bolt) with no
 # writing; the three levels climb post → lacquered pillar → roofed stone shrine. Grounds: flowers, gravel, herbs,
@@ -73,7 +72,7 @@ JOBS['heyu-walk-2'] = dict(w=640, h=640, refs=[QIANG / 'heyu-walk-1.green.webp']
 KEPT = {'tower-jian-1': 2, 'tower-jian-2': 2, 'tower-jian-3': 1, 'tower-huo-1': 2, 'tower-huo-2': 2, 'tower-huo-3': 1,
         'tower-han-1': 1, 'tower-han-2': 2, 'tower-han-3': 1, 'tower-lei-1': 1, 'tower-lei-2': 2, 'tower-lei-3': 1,
         'furnace': 1, 'ground-shiao': 1, 'ground-shanlu': 2, 'ground-yaoyuan': 1, 'ground-houshan': 1, 'ground-heisong': 1,
-        'pine': 1, 'rock': 2, 'bush': 2, 'yezhu-walk-2': 1, 'heyu-walk-2': 1}
+        'pine': 1, 'rock': 2, 'bush': 2, 'yezhu-walk-2': 1}
 
 
 def cut():
@@ -94,7 +93,7 @@ def cut():
 
 
 BEASTS = {'yezhu': ['walk-1', 'walk-2', 'hit'], 'zheng': ['walk-1', 'walk-2', 'hit'], 'qiuyu': ['walk-1', 'walk-2', 'hit'],
-          'qique': ['walk-1', 'walk-2', 'hit'], 'heyu': ['walk-1', 'walk-2', 'hit']}
+          'qique': ['walk-1', 'walk-2', 'hit'], 'heyu': ['walk-1', 'hit']}  # 合窳 exactly as 撒豆成兵 shows it (Hanli 10-20)
 
 
 def beasts():
