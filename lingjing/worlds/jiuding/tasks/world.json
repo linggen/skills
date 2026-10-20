@@ -103,6 +103,13 @@
       "done_line": {"zh": "六担水，缸满了。", "en": "Six loads of water; the vat is full."}
     },
     {
+      "_beats": "00-notice, the third beat of the reading cap before 入门 (Hanli 10-20: 「可以, 把水桶那关也加上」): 气走经脉 · 水桶落井. Nothing paid before 入门.",
+      "id": "notice-shuitong", "kind": "board", "game": "qimai", "period": "once",
+      "title": {"zh": "练功 · 水桶落井", "en": "Practice · The bucket goes down"},
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": {"zh": "那一缕热沉到肚脐，稳稳地落住了。", "en": "The thread of warmth sank to his navel and settled there, steady."}
+    },
+    {
       "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
       "id": "xisui-hold", "kind": "board", "game": "xisui", "period": "once",
       "title": { "zh": "洗髓 · 疼，别喊", "en": "Marrow washing · Don't cry out" },

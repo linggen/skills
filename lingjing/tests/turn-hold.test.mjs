@@ -26,24 +26,28 @@ const ctx = { now: NOW, quests: [] };
 const save = (name) => { const d = JSON.parse(fs.readFileSync(new URL(`./fixtures/saves/${name}.json`, import.meta.url), 'utf8')); return d.state ?? d; };
 const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
 
-/* 古二's last choice taken: the save on j01-track, the reading the page draws there. */
+/* A 回's last choice taken, its passage still to tell: 古一's `follow` at 00-yinyue, onto 古二's 00-cliff.
+   (古二 → 今 · 一 was the case till 2026-10-20: 00-notice's rest is its scene's own now, told after 水桶落井
+   before the way on, so that way on tells nothing.) */
+const FOLLOW = TO_HALL.findIndex(([v, a]) => v === 'resolve' && a.exit === 'follow');
 function turned({ catchup = true } = {}) {
-  const s = resolve(save('jin-notice'), content, ctx, { exit: 'go' }).state;
+  const at = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, FOLLOW), content, NOW);
+  const s = resolve(at, content, ctx, { exit: 'follow' }).state;
   const tell = playOf(content, s, tellOf(content, s).tell).filter((t) => catchup || t.of !== 'catchup');
   return { s, l: look(s, content, ctx), r: withTold(null, tell, s.scene) };
 }
 const at = (r, of) => { let x = r; while (x.items[x.i].of !== of) x = advance(x); return x; };
 
-test('the count never runs across a 回\'s turn: 今 · 一\'s first beat is 1 / its own, 古二\'s tail counts alone', () => {
+test('the count never runs across a 回\'s turn: the new 回\'s first beat is 1 / its own, the old 回\'s tail counts alone', () => {
   for (const catchup of [false, true]) {
     const { r } = turned({ catchup });
     const gu = r.items.find((t) => t.of === 'choice'), jin = r.items.find((t) => t.of === 'scene');
-    assert.deepEqual([gu.hui, jin.hui], ['h02', 'j01']);
+    assert.deepEqual([gu.hui, jin.hui], ['h01', 'h02']);
     const tail = r.items.filter((t) => t.of !== 'scene').reduce((n, t) => n + t.beats.zh.length, 0);
     // 古二's last passage (with the 前情 that leads into it): its own count.
     const old = current(at(r, 'choice'));
     assert.equal(old.n, tail, `古二's tail alone (catchup ${catchup})`);
-    // 今 · 一's first beat: 1 / 55, not 8 / 62.
+    // The new 回's first beat: 1 / its own (今 · 一 read 8 / 62, live 2026-10-14).
     const first = current(at(r, 'scene'));
     assert.deepEqual([first.k, first.n, first.before], [0, jin.beats.zh.length, false], `catchup ${catchup}`);
   }
@@ -54,13 +58,13 @@ test('the count never runs across a 回\'s turn: 今 · 一\'s first beat is 1 /
 
 test('the 回 line keeps 古二 while its last passage is told — from the close, even in a tab that never saw 古二', () => {
   const { l, r } = turned();
-  const line = huiLabel(content, 'h02', 'zh', 'head');
-  assert.equal(l.chapter.close.id, 'h02');
+  const line = huiLabel(content, 'h01', 'zh', 'head');
+  assert.equal(l.chapter.close.id, 'h01');
   assert.equal(l.chapter.close.line, line, 'the ended 回\'s heading rides on its close');
   // The box's 回: a 前情 leads into 古二's passage and tells its 回; then 今 · 一.
-  assert.equal(huiAt(r), 'h02', 'on the 前情');
-  assert.equal(huiAt(at(r, 'choice')), 'h02');
-  assert.equal(huiAt(at(r, 'scene')), 'j01');
+  assert.equal(huiAt(r), 'h01', 'on the 前情');
+  assert.equal(huiAt(at(r, 'choice')), 'h01');
+  assert.equal(huiAt(at(r, 'scene')), 'h02');
   // A fresh tab: the only title known is the one the close brings.
   const titles = { [l.chapter.hui]: l.chapter.title, [l.chapter.close.id]: l.chapter.close.line };
   const lineOf = (x) => huiLineOf({ hui: l.chapter.hui, title: l.chapter.title, telling: huiAt(x), titles });

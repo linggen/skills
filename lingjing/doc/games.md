@@ -288,11 +288,12 @@ n 4, 先吐 on moved up two. Sims (bots/qimai.js HANDS.live, 24 runs): 洗髓 23
 | stretch (before) | before | after | what went in |
 |---|---|---|---|
 | 00-rent → j01-retest | 11,661 | 3,385 · 5,255 · 3,106 | 挑水上坡 at 00-halfyear, 边跑边念 at j01-track |
+| 00-halfyear → j01-track | 5,255 | 2,695 · 2,568 | 水桶落井 at 00-notice (Hanli 10-20: 「可以, 把水桶那关也加上」) |
 
 Still over: 3,385 (马三's bow, 鼎湖, 银月 into the 木牌, 洗髓 — 洗髓 is the night she leaves, and its old board was cut as
 a held button), 5,255 (the man in white, the mirror, 舅舅's 「沉鼎」, the notice, 今一's first day — the mirror and the 木牌
 lighting at 「沉鼎」 are the two moments of 古二; the one kit action between, 00-notice's 「心口底下那只卡了一夏天的水桶，忽然
-『咯噔』一声，自己往下走了」, is a 气走经脉 level waiting if Hanli wants a third: it would cut the 5,255 into 2,687 · 2,568) and 3,106
+『咯噔』一声，自己往下走了」, became the third 气走经脉 level, 水桶落井 (`notice-shuitong`): the passage ends on the book's 「再往下，便没了。」, the rest of 00-notice is its `story_after`, and the 5,255 is 2,695 · 2,568) and 3,106
 (马小宝's dunk, the scales, the 十投一 — and the lab).
 
 **算账 re-laid** (the live hand won it in 5–12 s with one low swipe: play-human's cut hand swipes each vine's lowest

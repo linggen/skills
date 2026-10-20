@@ -18,17 +18,21 @@ import { stageSlots } from '../scripts/stage.mjs';
 import { atTurn, atTurnCards, bookAhead, boxGivesWay } from '../scripts/queue.js';
 import { advance, atLast, emptyReading, showAll, withTold } from '../scripts/dialogue.js';
 import { wireLiveGames } from '../scripts/live-games.js';
+import { newState } from '../scripts/state.mjs';
+import { TO_HALL, walk } from './prologue.mjs';
 import * as sneeze from '../scripts/games/sneeze.js';
 
 
 const content = loadContent();
 const ctx = { now: new Date('2026-10-05T10:00:00'), quests: [] };
 const save = name => { const d = JSON.parse(fs.readFileSync(new URL(`./fixtures/saves/${name}.json`, import.meta.url), 'utf8')); return d.state ?? d; };
+/* 00-notice's 水桶落井 (气走经脉, 2026-10-20) waits before its way on: played, as the walk does. */
+const bucketPlayed = (st) => ({ ...st, tasks: { ...st.tasks, 'notice-shuitong': { status: 'done' } } });
 const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
 
 /* 古二's last choice taken: the save on j01-track, 今 · 一's first scene. */
 function turned() {
-  const s = resolve(save('jin-notice'), content, ctx, { exit: 'go' }).state;
+  const s = resolve(bucketPlayed(save('jin-notice')), content, ctx, { exit: 'go' }).state;
   return { s, l: look(s, content, ctx) };
 }
 
@@ -73,25 +77,27 @@ test('the turn lasts until the new 回\'s seal has played: the box holds the pas
   assert.match(src, /cards = atTurnCards\(cards, \{ turn: atHuiTurn\(\), ahead: storyAhead\(\) \}\);/);
 });
 
-test('显示全文 never runs past a 回\'s turn: 古二\'s last passage shows whole, 今 · 一\'s begins after the turn from its first beat', () => {
-  const before = save('jin-notice');
-  const { s } = turned();
-  // What the page draws at j01-track: the choice's passage (古二's) and the scene's (今 · 一's).
+test('显示全文 never runs past a 回\'s turn: the old 回\'s last passage shows whole, the new 回\'s begins after the turn from its first beat', () => {
+  // 古一's `follow` (00-yinyue → 古二's 00-cliff): a 回's last choice that tells a passage of its own. (古二 → 今 · 一
+  // was the case till 2026-10-20; 00-notice's rest is its scene's own now, after 水桶落井.)
+  const FOLLOW = TO_HALL.findIndex(([v, a]) => v === 'resolve' && a.exit === 'follow');
+  const before = walk(newState(content, 'zh', ctx.now), TO_HALL.slice(0, FOLLOW), content, ctx.now);
+  const s = resolve(before, content, ctx, { exit: 'follow' }).state;
   const tell = playOf(content, s, tellOf(content, s).tell);
   // (A 前情 may lead in: a recap of earlier 回s, read with the passage it leads into.)
-  assert.deepEqual(tell.filter(t => t.of !== 'catchup').map(t => [t.of, t.hui]), [['choice', 'h02'], ['scene', 'j01']]);
+  assert.deepEqual(tell.filter(t => t.of !== 'catchup').map(t => [t.of, t.hui]), [['choice', 'h01'], ['scene', 'h02']]);
   const gu = tell.findIndex(t => t.of === 'choice');
   const r = withTold(emptyReading(before.scene), tell, s.scene);
   assert.equal(r.i, 0);
   const all = showAll(r);
-  assert.equal(all.i, gu, '古二\'s passage (and the 前情 before it) only');
+  assert.equal(all.i, gu, '古一\'s passage (and the 前情 before it) only');
   assert.equal(atLast(all), false, 'no choice yet: the turn comes first');
   assert.equal(showAll(all), all, 'and 显示全文 again goes no further');
   const on = advance(all);
-  assert.deepEqual([on.i, on.j], [gu + 1, 0], 'a tap: 今 · 一\'s first beat — where the turn holds the box');
-  assert.equal(on.items[on.i].hui, 'j01');
+  assert.deepEqual([on.i, on.j], [gu + 1, 0], 'a tap: 古二\'s first beat — where the turn holds the box');
+  assert.equal(on.items[on.i].hui, 'h02');
   const rest = showAll(on);
-  assert.equal(atLast(rest), true, 'inside 今 · 一, 显示全文 shows the rest and the choices');
+  assert.equal(atLast(rest), true, 'inside 古二, 显示全文 shows the rest and the choices');
 });
 
 test('a game on the clock lays its board again only when it changed: its start stays one button until it is tapped (喷嚏符; 一千米\'s old board deleted 2026-10-19)', async () => {

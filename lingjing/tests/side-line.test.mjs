@@ -29,7 +29,7 @@ const scene = id => Object.values(content.chapters).map(ch => ch.scenes[id]).fin
 const gameTitle = (id, lang) => pick(content.tasks.tasks.find(t => t.id === id).title, lang);
 
 /* 古二's last scene, 银月 found and awake (not in the token): the next step is 今 · 一. */
-const beforeJin = () => ({ ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'], companion: { joined: '2026-10-01', awake: true } });
+const beforeJin = () => ({ ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'], companion: { joined: '2026-10-01', awake: true }, tasks: { 'notice-shuitong': { status: 'done' } } }); // 水桶落井 played (2026-10-20)
 const inJin = () => resolve(beforeJin(), content, ctx, { exit: 'go' }).state;
 
 test('the 今 stage keeps none of the 古\'s furniture; the 古 stage keeps all of it', () => {

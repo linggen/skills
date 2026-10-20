@@ -336,7 +336,9 @@ test('an old save whose prologue scene the rewrite took away lands on the neares
 
 test('the catchphrase rides the book\'s beats: the bowl night first, the bow, the beam, nine heads (the vine line went with the jokes in danger, 2026-10-02)', () => {
   const scenes = content.chapters['00-prologue'].scenes;
-  const story = (id, exit) => (exit ? scenes[id].exits.find(e => e.id === exit) : scenes[id]).story;
+  // a scene split for its board (00-notice since 2026-10-20) reads on in `story_after`
+  const whole = (sc) => (sc.story_after ? { zh: `${sc.story.zh}\n\n${sc.story_after.zh}`, en: `${sc.story.en}\n\n${sc.story_after.en}` } : sc.story);
+  const story = (id, exit) => (exit ? scenes[id].exits.find(e => e.id === exit).story : whole(scenes[id]));
   const beats = [['00-masan', 'endure', /在心里骂得极响：\*\*你爷爷的。\*\*/], ['00-masan', 'strike', /在心里骂得极响：\*\*你爷爷的。\*\*/],
     ['00-notice', null, /「你爷爷的。你拿着。」[\s\S]*「……爹，这话听着像骂人。」[\s\S]*「你爷爷的弓。」/],
     ['00-sleep', 'bath', /顶梁。「你爷爷的——」/]];

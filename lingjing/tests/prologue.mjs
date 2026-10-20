@@ -75,6 +75,9 @@ export const TO_HALL = [
   ['task', { action: 'done', id: 'halfyear-carry' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'go' }],
+  // 水桶落井 (气走经脉, the reading cap's third beat 2026-10-20): the breath sinks past the heart
+  ['win', { id: 'notice-shuitong' }],
+  ['task', { action: 'done', id: 'notice-shuitong' }],
   ['resolve', { exit: 'go' }],
   ...JIN_ONE,
   ['resolve', { exit: 'steady' }],

@@ -1750,9 +1750,9 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   const ids = seen.tasks.map(t => t.id);
   // 忍字 · 认路 · 算账 back 2026-10-20 as 割绳子 levels (「可以, 放宽, 把那三关加进去」); the old weak boards stay cut.
   // 00-halfyear's 挑水上坡 (气走经脉) the same day, on the cut 练功's task id (the reading cap).
-  for (const id of ['rain-basins', 'masan-taunt', 'fall-storm', 'bread-share', 'yinyue-way', 'deer-wind', 'rent-scale', 'halfyear-carry', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  for (const id of ['rain-basins', 'masan-taunt', 'fall-storm', 'bread-share', 'yinyue-way', 'deer-wind', 'rent-scale', 'halfyear-carry', 'notice-shuitong', 'gate-luoshu']) assert.ok(ids.includes(id), id);
   for (const id of ['xisui-hold', 'feather-breath', 'kitchen-griddle']) assert.ok(!ids.includes(id), `${id}: cut before 入门 (10-16)`);
-  const order = ['rain-basins', 'masan-taunt', 'bread-share', 'yinyue-way', 'deer-wind', 'rent-scale', 'halfyear-carry', 'gate-luoshu'];
+  const order = ['rain-basins', 'masan-taunt', 'bread-share', 'yinyue-way', 'deer-wind', 'rent-scale', 'halfyear-carry', 'notice-shuitong', 'gate-luoshu'];
   assert.deepEqual(ids.filter(id => order.includes(id)), order, 'in the order they were played');
 });
 
