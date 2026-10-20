@@ -1,0 +1,10 @@
+export type { IVFXManager } from "./IVFXManager";
+export type { ICameraEffects } from "./ICameraEffects";
+export type { ICameraShake, ICameraFlash, ICameraTimeEffects } from "./camera";
+export type { IScorePopupManager, ScorePopupConfig } from "./IScorePopupManager";
+export type { IDamageable } from "./IDamageable";
+export type { IGroundManager } from "./IGroundManager";
+export type { IBirdQueue } from "./IBirdQueue";
+export type { IPhysicsSettleDetector } from "./IPhysicsSettleDetector";
+export type { IFragmentManager, IFragmentCollidable } from "./IFragmentManager";
+export type { IWakeCascadeManager } from "./IWakeCascadeManager";

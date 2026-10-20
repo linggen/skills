@@ -1,0 +1,5374 @@
+{
+	"textures": [
+		{
+			"image": "level",
+			"format": "RGBA8888",
+			"size": {
+				"w": 2004,
+				"h": 2268
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "wood_rectangle_cracked_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 2,
+						"y": 2,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 2,
+						"y": 76,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 356,
+						"y": 2,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 76,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 430,
+						"y": 76,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 150,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 504,
+						"y": 76,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 224,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 578,
+						"y": 76,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 298,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 2,
+						"y": 430,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 372,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 430,
+						"y": 430,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 504,
+						"y": 430,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 446,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 578,
+						"y": 430,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 520,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 710,
+						"y": 2,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 652,
+						"y": 356,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 594,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 668,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 784,
+						"y": 2,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 742,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 726,
+						"y": 356,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 858,
+						"y": 2,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 430,
+						"y": 784,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 2,
+						"y": 858,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 800,
+						"y": 356,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_1x5",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 350
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 350
+					},
+					"frame": {
+						"x": 932,
+						"y": 2,
+						"w": 70,
+						"h": 350
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_5x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 350,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 350,
+						"h": 70
+					},
+					"frame": {
+						"x": 652,
+						"y": 710,
+						"w": 350,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 874,
+						"y": 356,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 356,
+						"y": 858,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 640,
+						"y": 858,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 2,
+						"y": 932,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 932,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 1006,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 360,
+						"y": 932,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 434,
+						"y": 932,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 1080,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 508,
+						"y": 932,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 582,
+						"y": 932,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 582,
+						"y": 1006,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 582,
+						"y": 1080,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 866,
+						"y": 932,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 784,
+						"y": 784,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 948,
+						"y": 356,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 1006,
+						"y": 2,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 924,
+						"y": 858,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 940,
+						"y": 932,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 1006,
+						"y": 640,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 1154,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 1208,
+						"y": 714,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 1014,
+						"y": 998,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 582,
+						"y": 1154,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 1088,
+						"y": 998,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 1290,
+						"y": 2,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 1162,
+						"y": 998,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_4x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 280,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 280,
+						"h": 70
+					},
+					"frame": {
+						"x": 1290,
+						"y": 76,
+						"w": 280,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 1236,
+						"y": 998,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_1x4",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 280
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 280
+					},
+					"frame": {
+						"x": 1282,
+						"y": 714,
+						"w": 70,
+						"h": 280
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 1356,
+						"y": 150,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 1356,
+						"y": 294,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1290,
+						"y": 438,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 360,
+						"y": 1216,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 1356,
+						"y": 652,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1080,
+						"y": 2,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1434,
+						"y": 438,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 1356,
+						"y": 796,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 1356,
+						"y": 870,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 1310,
+						"y": 1014,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1080,
+						"y": 216,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 1310,
+						"y": 1088,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 1022,
+						"y": 430,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1236,
+						"y": 150,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 2,
+						"y": 1216,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 2,
+						"y": 1430,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 216,
+						"y": 1290,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 290,
+						"y": 1290,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 364,
+						"y": 1290,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 1310,
+						"y": 1232,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 508,
+						"y": 1306,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 866,
+						"y": 1216,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 722,
+						"y": 1228,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1010,
+						"y": 1282,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1154,
+						"y": 1282,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 1228,
+						"y": 1306,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 2,
+						"y": 1504,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 216,
+						"y": 1504,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 430,
+						"y": 1504,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 644,
+						"y": 1496,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 858,
+						"y": 1496,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 858,
+						"y": 1570,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1228,
+						"y": 1380,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1372,
+						"y": 1380,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1446,
+						"y": 1306,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1508,
+						"y": 438,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1574,
+						"y": 2,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1570,
+						"y": 652,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 1446,
+						"y": 1520,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 430,
+						"y": 1578,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1520,
+						"y": 1306,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1570,
+						"y": 216,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1570,
+						"y": 866,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1524,
+						"y": 1080,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1072,
+						"y": 1496,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 644,
+						"y": 1640,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 2,
+						"y": 1648,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 858,
+						"y": 1644,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1648,
+						"y": 2,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1652,
+						"y": 430,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 216,
+						"y": 1648,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 644,
+						"y": 1718,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 1598,
+						"y": 1080,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_2x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 210
+					},
+					"frame": {
+						"x": 1714,
+						"y": 216,
+						"w": 140,
+						"h": 210
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 858,
+						"y": 1718,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_3x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 140
+					},
+					"frame": {
+						"x": 1598,
+						"y": 1224,
+						"w": 210,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1726,
+						"y": 430,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1714,
+						"y": 644,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_3x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 210,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 210,
+						"h": 70
+					},
+					"frame": {
+						"x": 1072,
+						"y": 1710,
+						"w": 210,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_1x3",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 210
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 210
+					},
+					"frame": {
+						"x": 1788,
+						"y": 644,
+						"w": 70,
+						"h": 210
+					}
+				},
+				{
+					"filename": "slingshot",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 85,
+						"h": 202
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 85,
+						"h": 202
+					},
+					"frame": {
+						"x": 1714,
+						"y": 858,
+						"w": 85,
+						"h": 202
+					}
+				},
+				{
+					"filename": "slingshot_base",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 150,
+						"h": 80
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 150,
+						"h": 80
+					},
+					"frame": {
+						"x": 1216,
+						"y": 1594,
+						"w": 150,
+						"h": 80
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 574,
+						"y": 1228,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 1068,
+						"y": 714,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_triangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1286,
+						"y": 1678,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_triangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1370,
+						"y": 1594,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_triangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1430,
+						"y": 1668,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_square_pristine_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1594,
+						"y": 1368,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 1738,
+						"y": 1368,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_square_dented_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1574,
+						"y": 1594,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_square_cracked_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1718,
+						"y": 1512,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1718,
+						"y": 1656,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1718,
+						"y": 1730,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_pristine_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 430,
+						"y": 1722,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 504,
+						"y": 1722,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1574,
+						"y": 1738,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_rectangle_dented_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 76,
+						"y": 1228,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 2,
+						"y": 1792,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_square_cracked_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 2,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "stone_square_dented_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 146,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "stone_square_pristine_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 290,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "stone_triangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1430,
+						"y": 1742,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_triangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 146,
+						"y": 1792,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_triangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 434,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 508,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "metal_rectangle_cracked_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 652,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "glass_triangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1286,
+						"y": 1752,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_triangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 796,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 578,
+						"y": 1792,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_triangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 870,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 722,
+						"y": 1792,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_square_dented_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 944,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "glass_square_cracked_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1088,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 866,
+						"y": 1792,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1232,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "glass_rectangle_pristine_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1376,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1010,
+						"y": 1792,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_dented_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1520,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_rectangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1664,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1738,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_rectangle_cracked_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 2,
+						"y": 1866,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_triangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1718,
+						"y": 1804,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_triangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1574,
+						"y": 1812,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_triangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1812,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 76,
+						"y": 1866,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_square_pristine_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1430,
+						"y": 1816,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_square_dented_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 150,
+						"y": 1866,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_square_cracked_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 294,
+						"y": 1866,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_rectangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1718,
+						"y": 1878,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1574,
+						"y": 1886,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_pristine_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 438,
+						"y": 1866,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1886,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_rectangle_dented_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 512,
+						"y": 1866,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_rectangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 586,
+						"y": 1866,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_square_cracked_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 730,
+						"y": 1866,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_square_pristine_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 874,
+						"y": 1866,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "wood_triangle_cracked_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1018,
+						"y": 1866,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_triangle_dented_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1162,
+						"y": 1826,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_triangle_pristine_2x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 70
+					},
+					"frame": {
+						"x": 1162,
+						"y": 1900,
+						"w": 140,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_rectangle_dented_1x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 140
+					},
+					"frame": {
+						"x": 1306,
+						"y": 1826,
+						"w": 70,
+						"h": 140
+					}
+				},
+				{
+					"filename": "glass_square_pristine_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 1718,
+						"y": 1952,
+						"w": 140,
+						"h": 140
+					}
+				},
+				{
+					"filename": "explosive_triangle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 2,
+						"y": 784,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienYellow_square",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1236,
+						"y": 364,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_triangle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 290,
+						"y": 1792,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienYellow_suit",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 586,
+						"y": 1940,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_triangle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 2,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "coinBronze",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_circle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 150,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_circle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 224,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_circle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 298,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_square_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 372,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_square_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 446,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "coinDiamond",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 520,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_square_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 594,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_square_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1018,
+						"y": 1940,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_square_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 668,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "coinGold",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 742,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_triangle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 816,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_square_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 890,
+						"y": 2010,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_triangle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 964,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_square_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1038,
+						"y": 2014,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_triangle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 1960,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "coinSilver",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1862,
+						"y": 2034,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_circle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1112,
+						"y": 1974,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_circle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1112,
+						"y": 2048,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_circle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1186,
+						"y": 1974,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_square_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1186,
+						"y": 2048,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_triangle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1260,
+						"y": 1974,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_square_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1260,
+						"y": 2048,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_circle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1334,
+						"y": 1970,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_triangle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1334,
+						"y": 2044,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_triangle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1408,
+						"y": 1960,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_triangle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1408,
+						"y": 2034,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_circle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1482,
+						"y": 1960,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_triangle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1482,
+						"y": 2034,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "glass_triangle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1556,
+						"y": 1960,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "starBronze",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1630,
+						"y": 1960,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "starDiamond",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1556,
+						"y": 2034,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "starGold",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1630,
+						"y": 2034,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "starSilver",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 890,
+						"y": 2084,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_circle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 964,
+						"y": 2122,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_circle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1038,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "stone_circle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1112,
+						"y": 2122,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_circle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1186,
+						"y": 2122,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_circle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1260,
+						"y": 2122,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_circle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1334,
+						"y": 2118,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "metal_circle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1408,
+						"y": 2108,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienBeige_round",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1482,
+						"y": 2108,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienBeige_suit",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1556,
+						"y": 2108,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienBlue_round",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1630,
+						"y": 2108,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienBlue_square",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1704,
+						"y": 2108,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienBlue_suit",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1778,
+						"y": 2096,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienGreen_round",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1852,
+						"y": 2108,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienGreen_square",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1926,
+						"y": 2108,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienGreen_suit",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 2,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienPink_round",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 76,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_square_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 150,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_square_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 224,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_square_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 298,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_square_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 372,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienPink_square",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 446,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_triangle_cracked_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 520,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_square_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 594,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_triangle_dented_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 668,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienPink_suit",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 742,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_triangle_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 816,
+						"y": 2088,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "explosive_square_pristine_1x1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1038,
+						"y": 2162,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "dirt",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1778,
+						"y": 2170,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "grass-purple",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 890,
+						"y": 2158,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "grass",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 964,
+						"y": 2196,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "sand",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1112,
+						"y": 2196,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienYellow_round",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1186,
+						"y": 2196,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "alienBeige_square",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1260,
+						"y": 2196,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "snow",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 70,
+						"h": 70
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 70,
+						"h": 70
+					},
+					"frame": {
+						"x": 1334,
+						"y": 2192,
+						"w": 70,
+						"h": 70
+					}
+				},
+				{
+					"filename": "wood_square_dented_2x2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 140,
+						"h": 140
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 140,
+						"h": 140
+					},
+					"frame": {
+						"x": 730,
+						"y": 1866,
+						"w": 140,
+						"h": 140
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "http://free-tex-packer.com",
+		"version": "0.6.7"
+	}
+}

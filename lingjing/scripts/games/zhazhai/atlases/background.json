@@ -1,0 +1,292 @@
+{
+	"textures": [
+		{
+			"image": "background",
+			"format": "RGBA8888",
+			"size": {
+				"w": 1026,
+				"h": 5244
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "hills",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 400
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 400
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 1024,
+						"h": 400
+					}
+				},
+				{
+					"filename": "cloudLayer1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 400
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 400
+					},
+					"frame": {
+						"x": 1,
+						"y": 403,
+						"w": 1024,
+						"h": 400
+					}
+				},
+				{
+					"filename": "cloudLayerB1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 400
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 400
+					},
+					"frame": {
+						"x": 1,
+						"y": 805,
+						"w": 1024,
+						"h": 400
+					}
+				},
+				{
+					"filename": "cloudLayerB2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 400
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 400
+					},
+					"frame": {
+						"x": 1,
+						"y": 1207,
+						"w": 1024,
+						"h": 400
+					}
+				},
+				{
+					"filename": "groundLayer1",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 400
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 400
+					},
+					"frame": {
+						"x": 1,
+						"y": 1609,
+						"w": 1024,
+						"h": 400
+					}
+				},
+				{
+					"filename": "groundLayer2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 200
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 200
+					},
+					"frame": {
+						"x": 1,
+						"y": 2011,
+						"w": 1024,
+						"h": 200
+					}
+				},
+				{
+					"filename": "cloudLayer2",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 400
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 400
+					},
+					"frame": {
+						"x": 1,
+						"y": 2213,
+						"w": 1024,
+						"h": 400
+					}
+				},
+				{
+					"filename": "hillsLarge",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 400
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 400
+					},
+					"frame": {
+						"x": 1,
+						"y": 2615,
+						"w": 1024,
+						"h": 400
+					}
+				},
+				{
+					"filename": "mountains",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 400
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 400
+					},
+					"frame": {
+						"x": 1,
+						"y": 3017,
+						"w": 1024,
+						"h": 400
+					}
+				},
+				{
+					"filename": "backgroundForest",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 1024,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 1024,
+						"h": 1024
+					},
+					"frame": {
+						"x": 1,
+						"y": 3419,
+						"w": 1024,
+						"h": 1024
+					}
+				},
+				{
+					"filename": "mountainC",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 306,
+						"h": 444
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 306,
+						"h": 444
+					},
+					"frame": {
+						"x": 1,
+						"y": 4445,
+						"w": 306,
+						"h": 444
+					}
+				},
+				{
+					"filename": "mountainA",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 356,
+						"h": 352
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 356,
+						"h": 352
+					},
+					"frame": {
+						"x": 1,
+						"y": 4891,
+						"w": 356,
+						"h": 352
+					}
+				},
+				{
+					"filename": "mountainB",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 340,
+						"h": 278
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 340,
+						"h": 278
+					},
+					"frame": {
+						"x": 309,
+						"y": 4445,
+						"w": 340,
+						"h": 278
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "http://free-tex-packer.com",
+		"version": "0.6.7"
+	}
+}

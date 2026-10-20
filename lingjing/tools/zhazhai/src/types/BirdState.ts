@@ -1,0 +1,7 @@
+export enum BirdState {
+  IDLE = "IDLE",
+  AIMING = "AIMING",
+  FLYING = "FLYING",
+  LANDED = "LANDED",
+  ABILITY_ACTIVATED = "ABILITY_ACTIVATED",
+}

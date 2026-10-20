@@ -3,3 +3,6 @@ data/
 
 # play-human (tools/package.json devDependency) — never committed
 tools/node_modules/
+
+# 砸寨 build deps (tools/zhazhai/package.json) — never committed
+tools/zhazhai/node_modules/
