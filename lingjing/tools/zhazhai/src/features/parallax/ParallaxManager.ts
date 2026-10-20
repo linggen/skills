@@ -147,11 +147,9 @@ export class ParallaxManager {
 
     for (const config of configs) {
       const baseTint = colors[config.tintKey as keyof ThemeColors];
-      const tint = this.applyEnhancedAtmosphericPerspective(
-        baseTint,
-        config.atmosphericBlend,
-        colors
-      );
+      const tint = config.painted
+        ? 0xffffff
+        : this.applyEnhancedAtmosphericPerspective(baseTint, config.atmosphericBlend, colors);
 
       this.createTileLayer(config, tint);
     }

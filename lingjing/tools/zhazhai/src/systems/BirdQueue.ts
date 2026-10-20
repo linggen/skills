@@ -49,7 +49,7 @@ export class BirdQueue implements IBirdQueue {
 
   /** The near rim's top, in world y: things rest just above it, their lower part behind the woven wall. */
   private rimY(): number {
-    const h = this.basketFront?.displayHeight ?? C.basket.width * 0.52;
+    const h = this.basketFront?.displayHeight ?? C.basket.width * 0.77;
     return this.groundY - h + h * C.basket.rimY;
   }
 

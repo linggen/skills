@@ -9,6 +9,8 @@ export interface LayerConfig {
   opacity: number;
   tintKey: string;
   atmosphericBlend: number;
+  /** 砸寨 (2026-10-20): a layer painted by FLUX (tools/paint-zhazhai-flux.py) shows its own colours — no theme tint. */
+  painted?: boolean;
 }
 
 export const THEME_LAYERS: Record<ThemeType, LayerConfig[]> = {
@@ -23,14 +25,15 @@ export const THEME_LAYERS: Record<ThemeType, LayerConfig[]> = {
       atmosphericBlend: 0.7,
     },
     {
-      asset: "hillsLarge",
+      asset: "mountains",
       scrollFactor: 0.05,
       depth: -75,
-      screenY: 380,
+      screenY: 400,
       screenX: 200,
-      opacity: 0.75,
+      opacity: 0.7,
       tintKey: "hill",
       atmosphericBlend: 0.9,
+      painted: true,
     },
     {
       asset: "cloudLayerB1",
@@ -47,18 +50,20 @@ export const THEME_LAYERS: Record<ThemeType, LayerConfig[]> = {
       depth: -70,
       screenY: 600,
       screenX: -150,
-      opacity: 0.75,
+      opacity: 0.92,
       tintKey: "hill",
       atmosphericBlend: 0.51,
+      painted: true,
     },
     {
       asset: "hills",
       scrollFactor: 0.3,
       depth: -58,
       screenY: 850,
-      opacity: 0.75,
+      opacity: 1,
       tintKey: "hill",
       atmosphericBlend: 0.5,
+      painted: true,
     },
     {
       asset: "groundLayer2",

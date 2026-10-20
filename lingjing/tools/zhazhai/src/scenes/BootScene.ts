@@ -216,7 +216,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   private loadBackgrounds(): void {
-    this.load.atlas("backgrounds", "atlases/background.png", "atlases/background.json");
+    this.load.atlas("backgrounds", "atlases/background.webp", "atlases/background.json");
   }
 
   private loadUI(): void {
@@ -224,7 +224,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   private loadLevel(): void {
-    this.load.atlas("level", "atlases/level.png", "atlases/level.json");
+    this.load.atlas("level", "atlases/level.webp", "atlases/level.json");
   }
 
   private loadVFX(): void {

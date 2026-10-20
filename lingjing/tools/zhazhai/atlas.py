@@ -15,6 +15,13 @@ level atlas (game-assets/atlases/level.png, its .json kept as upstream's):
 background atlas: the forest theme's layers (the only theme 砸寨 uses) redrawn as silhouettes the game tints —
   karst peaks with a pagoda, rolling hills with pines — in upstream's own pale colour, so its tints still work.
 Reads upstream's pictures from upstream-atlases/ (kept for exactly this), writes game-assets/atlases/.
+
+2026-10-20 (Hanli: 「代码画的都查一下, 用flux画吧」): what this file drew is now PAINTED by the local FLUX
+(tools/paint-zhazhai-flux.py → art/games/zhazhai/flux/): each block is filled from its material's painted texture
+(the keg fitted whole, a log's end for the wooden circles) under the code's outline, rim light and cracks (the
+shape and wear are the physics'); the basket, the slingshot's boulder, the three parallax layers (shown untinted,
+LayerConfigs `painted`) and the level-select backdrop are the paintings themselves. The 火 label on the keg is
+gone (a glyph is not a picture). The drawn versions below stay only as the fallback when a painting is missing.
 """
 import json, math, random
 from pathlib import Path
@@ -137,6 +144,36 @@ def cracks(d, w, h, n, rnd, color, width):
       d.line([(bx, by), (bx + math.cos(a2) * 12, by + math.sin(a2) * 12)], fill=color, width=max(1, width - 1))
 
 
+FLUX = ART / 'flux'  # tools/paint-zhazhai-flux.py (2026-10-20): the painted materials, basket, boulder and layers
+TEX = {'wood': 'tex-wood', 'glass': 'tex-tile', 'stone': 'tex-stone', 'metal': 'tex-iron', 'explosive': 'tex-keg'}
+TEX_SCALE = {'wood': 0.55, 'glass': 0.5, 'stone': 0.6, 'metal': 0.6, 'explosive': 0.5}
+_tex = {}
+
+
+def painted(material, w, h, rnd, upright):
+  """A crop of the material's painted texture (FLUX), tiled if the frame is larger; None when not painted."""
+  path = FLUX / f'{TEX[material]}.webp'
+  if not path.exists():
+    return None
+  if material not in _tex:
+    im = Image.open(path).convert('RGB')
+    k = TEX_SCALE[material]
+    _tex[material] = im.resize((int(im.width * k), int(im.height * k)), Image.LANCZOS)
+  t = _tex[material]
+  if material == 'explosive':  # a keg is fitted whole: staves along its length, both hoops showing
+    src = Image.open(path).convert('RGB')
+    if not upright:
+      src = src.transpose(Image.Transpose.ROTATE_90)
+    return src.resize((w, h), Image.LANCZOS)
+  tw, th = t.size
+  big = Image.new('RGB', (max(w, tw) * 2, max(h, th) * 2))
+  for x in range(0, big.width, tw):
+    for y in range(0, big.height, th):
+      big.paste(t, (x, y))
+  x0, y0 = rnd.randrange(0, max(1, tw)), rnd.randrange(0, max(1, th))
+  return big.crop((x0, y0, x0 + w, y0 + h))
+
+
 def block(name, crop):
   material, shape, cond, size = name.split('_')
   w, h = crop.size
@@ -155,9 +192,20 @@ def block(name, crop):
       for _ in range(1 if cond == 'dented' else 3):
         a = rnd.uniform(0, math.tau); r = min(w, h) / 2
         cv2.circle(mask, (int(w / 2 + math.cos(a) * r), int(h / 2 + math.sin(a) * r)), int(r * 0.22), 0, -1)
-  if h > w:  # an upright frame: the grain, the bricks, the hoops run along its length
+  fill = None
+  if material == 'wood' and shape == 'circle' and (FLUX / 'log.webp').exists():  # a log's end, painted
+    lg = Image.open(FLUX / 'log.webp').convert('RGBA')
+    lg = lg.crop(lg.getbbox()).resize((w, h), Image.LANCZOS)
+    fill = Image.new('RGB', (w, h), PAL['wood'][0]); fill.paste(lg, (0, 0), lg)
+  elif not (material == 'wood' and shape == 'circle'):
+    if h > w and material != 'explosive':  # an upright frame: the grain, the courses run along its length
+      fill = painted(material, h, w, rnd, False)
+      fill = fill and fill.transpose(Image.Transpose.ROTATE_90)
+    else:
+      fill = painted(material, w, h, rnd, h >= w)
+  if fill is None and h > w:
     fill = pattern(material, shape, h, w, rnd).transpose(Image.Transpose.ROTATE_90)
-  else:
+  elif fill is None:
     fill = pattern(material, shape, w, h, rnd)
   d = ImageDraw.Draw(fill)
   dark, line = PAL[material][2], PAL[material][3]
@@ -167,8 +215,9 @@ def block(name, crop):
     cracks(d, w, h, 4 + (w * h) // 14000, rnd, line, 3)
   rgb = np.asarray(fill).copy()
   # the bold outline: the mask's edge band; an inner light just inside the top edge
-  k = max(3, int(round(min(w, h) / 16)))
-  inner = cv2.erode(mask, np.ones((2 * k + 1, 2 * k + 1), np.uint8))
+  k = max(3, int(round(min(w, h) / 14)))
+  # outside the frame counts as empty, so a block filling its frame still gets its outline on every side
+  inner = cv2.erode(mask, np.ones((2 * k + 1, 2 * k + 1), np.uint8), borderType=cv2.BORDER_CONSTANT, borderValue=0)
   edge = (mask > 0) & (inner == 0)
   rgb[edge] = line
   shifted = np.zeros_like(inner); shifted[k:, :] = inner[:-k, :]
@@ -178,6 +227,12 @@ def block(name, crop):
   if material == 'glass':
     a = a * 0.94
   return Image.fromarray(np.dstack([rgb, a.clip(0, 255).astype(np.uint8)]), 'RGBA')
+
+
+def save_atlas(im, name):
+  """Painted atlases ship as WebP (a PNG of painted textures is ~4 MB; phones load this), BootScene loads .webp."""
+  im.save(OUT / f'{name}.webp', 'WEBP', quality=88, alpha_quality=100, method=6, exact=True)
+  (OUT / f'{name}.png').unlink(missing_ok=True)
 
 
 # ── pieces ────────────────────────────────────────────────────────────────────────────────────
@@ -207,7 +262,11 @@ def slingshot(w, h):
 
 
 def pedestal(w, h):
-  """The slingshot's foot: a squat mossy boulder, drawn as the stone blocks are."""
+  """The slingshot's foot: a squat mossy boulder — painted (FLUX), else drawn as the stone blocks are."""
+  if (FLUX / 'boulder.webp').exists():
+    im = Image.open(FLUX / 'boulder.webp').convert('RGBA')
+    im = im.crop(im.getbbox()).resize((w, h), Image.LANCZOS)
+    return im
   base, light, dark, line = PAL['stone']
   im = Image.new('RGBA', (w, h))
   d = ImageDraw.Draw(im)
@@ -247,7 +306,7 @@ def level_atlas():
       continue
     out.paste(Image.new('RGBA', (f['w'], f['h'])), box[:2])
     out.paste(tile, box[:2])
-  out.save(OUT / 'level.png', optimize=True)
+  save_atlas(out, 'level')
 
 
 # ── backgrounds: silhouettes the game tints ───────────────────────────────────────────────────
@@ -311,6 +370,18 @@ def hills_pines(w, h, fill, light, rnd):
   return silhouette(w, h, top, fill, light, deco)
 
 
+def seamless(im, w, h, overlap=0.14):
+  """A painted layer made to tile: its left edge cross-faded into its right, then fitted to the frame."""
+  a = np.asarray(im).astype(np.float32)
+  W = a.shape[1]
+  o = int(W * overlap)
+  body = a[:, :W - o].copy()
+  t = np.linspace(0, 1, o)[None, :, None]
+  body[:, :o] = a[:, W - o:] * (1 - t) + a[:, :o] * t
+  out = Image.fromarray(body.clip(0, 255).astype(np.uint8), 'RGBA')
+  return out.resize((w, h), Image.LANCZOS)
+
+
 def background_atlas():
   src = Image.open(UP / 'background.png').convert('RGBA')
   out = src.copy()
@@ -329,6 +400,13 @@ def background_atlas():
     out.paste(Image.new('RGBA', (f['w'], f['h'])), (f['x'], f['y']))
     out.paste(im, (f['x'], f['y']))
 
+  if all((FLUX / f'{k}.webp').exists() for k in ('far', 'mid', 'near', 'select')):
+    for name, k in (('mountains', 'far'), ('hillsLarge', 'mid'), ('hills', 'near')):
+      f = fr[name]; put(name, seamless(Image.open(FLUX / f'{k}.webp').convert('RGBA'), f['w'], f['h']))
+    f = fr['backgroundForest']
+    put('backgroundForest', Image.open(FLUX / 'select.webp').convert('RGBA').resize((f['w'], f['h']), Image.LANCZOS))
+    save_atlas(out, 'background')
+    return
   f = fr['hillsLarge']; put('hillsLarge', karst(f['w'], f['h'], *tone('hillsLarge'), rnd))
   f = fr['hills']; put('hills', hills_pines(f['w'], f['h'], *tone('hills'), rnd))
   f = fr['mountains']; put('mountains', karst(f['w'], f['h'], *tone('mountains'), rnd, n=9, pagoda=False))
@@ -344,7 +422,7 @@ def background_atlas():
   near = hills_pines(f['w'], 360, (176, 226, 246), (204, 238, 250), rnd)
   bg.alpha_composite(near, (0, 700))
   put('backgroundForest', bg)
-  out.save(OUT / 'background.png', optimize=True)
+  save_atlas(out, 'background')
 
 
 def hero_art():
@@ -359,6 +437,29 @@ def hero_art():
 
 
 def basket():
+  """The 竹篮, painted by FLUX (tools/paint-zhazhai-flux.py): basket-back is the whole basket, basket-front the same
+  with its open mouth (flux/basket.json: the inner rim's ellipse, fractions of the picture) cut away, so the
+  throws sit in it. Falls back to the drawn one below when not painted."""
+  src = FLUX / 'basket.webp'
+  if not src.exists():
+    return basket_drawn()
+  im = Image.open(src).convert('RGBA')
+  e = json.loads((FLUX / 'basket.json').read_text())
+  W, H = im.size
+  front = im.copy()
+  hole = Image.new('L', (W, H), 0)
+  ImageDraw.Draw(hole).ellipse([(e['cx'] - e['rx']) * W, (e['cy'] - e['ry']) * H, (e['cx'] + e['rx']) * W, (e['cy'] + e['ry']) * H], fill=255)
+  a = np.asarray(front).copy()
+  a[..., 3] = np.where(np.asarray(hole) > 0, 0, a[..., 3])
+  front = Image.fromarray(a, 'RGBA')
+  d = HERE / 'game-assets' / 'art'
+  k = 500 / W
+  for name, layer in (('basket-back', im), ('basket-front', front)):
+    layer.resize((500, round(H * k)), Image.LANCZOS).save(d / f'{name}.webp', quality=88, method=6)
+  print('basket rimY (BirdQueueConfig.basket.rimY):', round(e['cy'] + e['ry'], 3))
+
+
+def basket_drawn():
   """砸寨 御物 (2026-10-20): the bamboo basket (竹篮) the throws rest in beside the slingshot (systems/BirdQueue.ts),
   drawn as the blocks are — bold outline, flat straw fill, a top light — in two layers so the things sit IN it:
   basket-back (the far rim and the dark inside, behind them) and basket-front (the woven wall and the near rim,

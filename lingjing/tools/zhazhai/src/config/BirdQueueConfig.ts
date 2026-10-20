@@ -5,10 +5,10 @@ export const BirdQueueConfig = {
   basket: {
     /** The basket's centre, this far left of the pouch, standing on the ground. */
     offsetX: 215,
-    /** Its drawn width (world units); the height follows the drawing (atlas.py basket()). */
+    /** Its drawn width (world units); the height follows the painting (atlas.py basket(), FLUX 2026-10-20). */
     width: 250,
     /** The front wall's top, as a fraction of the basket's height from its top (the drawing's rim line). */
-    rimY: 0.42,
+    rimY: 0.65,
   },
   items: {
     /** An item in the basket, as a fraction of its size in the sling. */
