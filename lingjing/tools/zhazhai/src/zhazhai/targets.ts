@@ -112,7 +112,7 @@ function everyFrame(scene: Phaser.Scene, pig: Pig, fn: (dt: number) => void, sub
 function still(pig: Pig, spec: Extract<TargetSpec, { kind: "still" }>): void {
   const img = pig.getMatterImage();
   if (!img) return;
-  dresser(img, spec.art, spec.draw, spec.h);
+  dresser(img, spec.art, spec.draw, spec.h).pose(spec.art); // drawn `draw` wide, its foot on the body's
   const box = () => ({ x0: img.x - spec.w / 2, y0: img.y - spec.h / 2, x1: img.x + spec.w / 2, y1: img.y + spec.h / 2 });
   views.set(pig, () => ({ kind: "still", x: img.x, y: img.y, state: "standing", aim: { x: img.x, y: img.y, r: Math.min(spec.w, spec.h) / 2, box: box() }, body: box() }));
 }
