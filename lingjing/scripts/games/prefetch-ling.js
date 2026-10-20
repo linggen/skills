@@ -15,6 +15,13 @@ export const PREFETCH_TITLE = '台词预取';
 /** Her tools in Lingjing (SKILL.md `place.yinyue.tools`): withheld here — writing lines touches nothing. */
 export const WITHHELD = ['AppTool', 'Story'];
 
+/** Side sessions left behind by a page closed mid-ask: older than `ageSec`, removed. Answers their ids. */
+export function sweep(sessions, remove, { nowSec = Date.now() / 1000, ageSec = 120 } = {}) {
+  const old = (sessions ?? []).filter((x) => x.title === PREFETCH_TITLE && nowSec - (x.created_at ?? 0) > ageSec).map((x) => x.id);
+  for (const id of old) Promise.resolve(remove(SKILL, id)).catch(() => {});
+  return old;
+}
+
 let apiP = null;
 const api = () => (apiP ??= import('/shared/api.js'));
 const channel = (url, init) => globalThis.LinggenChannel.fetch(url, init);
@@ -27,7 +34,9 @@ const post = (url, body) => channel(url, { method: 'POST', headers: { 'Content-T
  */
 export async function askHer(text, { params = null, signal, model = null, giveUpMs = 60000 } = {}) {
   const until = Date.now() + giveUpMs;
-  const { fetchSessionMessages, removeSkillSession } = await api();
+  const { fetchSessionMessages, listSkillSessions, removeSkillSession } = await api();
+  // A side session whose page closed before she answered is swept here (the page never resumes one either way).
+  sweep(await listSkillSessions(SKILL).catch(() => []), removeSkillSession);
   const bound = params && Object.keys(params).length ? { params } : {};
   const made = await post('/api/sessions', { title: PREFETCH_TITLE, skill: SKILL, withheld_tools: WITHHELD, ...bound });
   if (!made.ok) throw new Error(`session ${made.status}`);

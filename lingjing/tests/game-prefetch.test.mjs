@@ -6,6 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { register } from 'node:module';
+import { PREFETCH_TITLE, WITHHELD, sweep } from '../scripts/games/prefetch-ling.js';
 import { MAX, beastsIn, factsFor, factsOf, linesOf, linesView, momentsOf, prefetchLines, promptOf } from '../scripts/games/prefetch.js';
 
 const read = (p) => JSON.parse(fs.readFileSync(new URL(p, import.meta.url), 'utf8'));
@@ -36,6 +37,13 @@ test('the facts: the level\'s title, scene and beasts by name, and each moment w
   assert.equal(factsZh.moments.find((m) => m.name === 'win').n, 1);
   const tw = factsOf({ kit: SQ, level: yaoyuan1, game: 'shouqiang', names: NAMES, lang: 'zh' }).moments.find((m) => m.name === 'twist');
   assert.match(tw.means, /「野猪」/, 'the new beast named in its moment');
+  for (const [kit, game] of [[SQ, 'shouqiang'], [SD, 'sadou']]) {
+    for (const level of kit.levels) {
+      for (const lang of ['zh', 'en']) {
+        for (const m of factsOf({ kit, level, game, names: NAMES, lang }).moments) assert.notEqual(m.means, m.name, `${level.id} ${m.name}: she is told what it means`);
+      }
+    }
+  }
   const en = factsOf({ kit: SD, level: road, game: 'sadou', names: NAMES, lang: 'en' });
   assert.equal(en.lang, 'en');
   assert.ok(en.moments.every((m) => m.means && !/[㐀-鿿]/.test(m.means + m.sample.join(''))), 'English facts in English');
@@ -167,4 +175,19 @@ test('the two games read her lines at their moments: 守墙关 from her pool, �
   assert.equal(hud.pop(), '合窳！扑上去！');
   sd.say.call(run, 'clash', true);
   assert.equal(hud.pop(), road.moments.clash[0].zh, 'a moment she did not write keeps its own');
+});
+
+test('the side session: her save tools withheld; one left by a page closed mid-ask is swept, never the day\'s chat', () => {
+  assert.deepEqual(WITHHELD, ['AppTool', 'Story']);
+  const gone = [];
+  const now = 10_000;
+  const ids = sweep([
+    { id: 'a', title: PREFETCH_TITLE, created_at: now - 600 },
+    { id: 'b', title: PREFETCH_TITLE, created_at: now - 10 }, // another page's ask, still running
+    { id: 'c', title: 'Lingjing', created_at: now - 600 },
+  ], (skill, id) => gone.push([skill, id]), { nowSec: now });
+  assert.deepEqual(ids, ['a']);
+  assert.deepEqual(gone, [['lingjing', 'a']]);
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /title !== PREFETCH_TITLE/, 'the page never resumes it');
 });
