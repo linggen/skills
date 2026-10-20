@@ -79,11 +79,16 @@ export async function loadPair(id) {
 }
 
 /* The deal the world gives the module (a task's `deal`, as the page hands it to newGame): a
-   small game's levels are the registry's (worlds/jiuding/games.json, 喂饼's). */
+   small game's levels are the registry's (worlds/jiuding/games.json, 喂饼's) — as Look deals them
+   (rules/look.mjs dealOf): the row that names a story task first, and of a row that marks some levels
+   `story`, only those (射鹿's 静 · 风; its eight forts are the 游戏厅's since 10-19, never a story deal). */
 async function dealOf(id) {
   const { loadContent } = await import('../scripts/content.mjs');
-  const content = loadContent(), levels = content.games?.games?.find(g => g.id === id)?.levels;
-  const deal = content.tasks.tasks.find(t => t.game === id && t.deal)?.deal;
+  const content = loadContent(), games = content.games?.games ?? [];
+  const task = content.tasks.tasks.find(t => t.game === id && !t.cut && games.some(g => g.id === id && g.task === t.id)) ?? content.tasks.tasks.find(t => t.game === id && t.deal);
+  const row = games.find(g => g.id === id && task && g.task === task.id) ?? games.find(g => g.id === id);
+  const levels = row?.levels?.some(l => l.story) ? row.levels.filter(l => l.story) : row?.levels;
+  const deal = task?.deal ?? content.tasks.tasks.find(t => t.game === id && t.deal)?.deal;
   return levels ? { ...(deal ?? {}), levels } : deal;
 }
 

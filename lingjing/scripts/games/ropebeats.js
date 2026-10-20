@@ -111,9 +111,12 @@ export const rent = beat({
 const DAD_W = 42, DAD_H = 79, PACK_W = 46, PACK_H = 27, LEDGE = 92, LEDGE_TOP = 0.44, LEDGE_EDGE = 0.74;
 /* The pine (768 × 320, art/games/fall/pine.webp): two points on its limb in its own pixels, laid on the
    level's two anchors — scaled and turned so the ropes are tied round the limb wherever the level hangs them. */
-const PINE = { size: [768, 320], ties: [[590, 112], [300, 100]] };
+const PINE = { size: [768, 320], ties: [[590, 112], [300, 100]], span: 170 };
 function pinePicture(level) {
-  const [a, b] = level.vines.map((v) => v.at), [p, q] = PINE.ties;
+  // A level of one rope (the kit's FALLBACK, before a level is dealt) is tied round the limb too: its second tie
+  // where 拽's own level has it, the span toward the board's middle — never a rope from the sky, never a crash (skips.test lays every module bare).
+  const [a, b0] = level.vines.map((v) => v.at), [p, q] = PINE.ties;
+  const b = b0 ?? [a[0] + (a[0] > W / 2 ? -1 : 1) * PINE.span, a[1]];
   const k = Math.hypot(b[0] - a[0], b[1] - a[1]) / Math.hypot(q[0] - p[0], q[1] - p[1]);
   const turn = (Math.atan2(b[1] - a[1], b[0] - a[0]) - Math.atan2(q[1] - p[1], q[0] - p[0])) * 180 / Math.PI;
   return `<g transform="translate(${n(a[0])} ${n(a[1])}) rotate(${n(turn, 2)}) scale(${n(k, 3)}) translate(${-p[0]} ${-p[1]})">${img('games/fall/pine.webp', 0, 0, PINE.size[0], PINE.size[1], 'g-rope-pine')}</g>`;
