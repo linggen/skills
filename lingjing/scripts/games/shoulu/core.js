@@ -438,7 +438,8 @@ function ordersGoal(g) {
       h.post = { x: o.x, y: o.y }; h.orders.shift(); h.wanderT = 3; continue;
     }
     if (o.k === 'attack') {
-      if (o.b.dead || dist(h, o.b) > o.lose) { h.orders.shift(); if (!h.orders.length) h.post = { x: h.x, y: h.y }; h.foe = null; continue; }
+      // done with it, she goes back to her post — a tower defense wants her on her choke point, not where it fell (Hanli 10-20)
+      if (o.b.dead || dist(h, o.b) > o.lose) { h.orders.shift(); if (!h.orders.length) h.homing = true; h.foe = null; continue; }
       h.foe = o.b;
       return dist(h, o.b) > HERO.reach ? go(o.b) : null;
     }

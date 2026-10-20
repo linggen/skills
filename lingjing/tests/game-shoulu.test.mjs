@@ -153,7 +153,10 @@ test('hero: an attack order chases its beast and bites it to death; a flier can\
   assert.ok(orderAttack(g, b));
   run_(g, 15);
   assert.ok(b.dead, 'she ran it down');
-  assert.ok(Math.hypot(g.hero.post.x - b.x, g.hero.post.y - b.y) < 60, 'and stands guard where it fell');
+  const post0 = { ...quiet().hero.post };
+  assert.deepEqual(g.hero.post, post0, 'her post stays where it was');
+  run_(g, 8);
+  assert.ok(Math.hypot(g.hero.x - post0.x, g.hero.y - post0.y) <= HERO.wander + 3, 'and she goes back to it');
   const g2 = quiet(), far = still(g2, 'yezhu', dAt(g2, 290, 330));
   assert.ok(orderAttack(g2, far)); step(g2, STEP);
   assert.equal(g2.hero.orders[0]?.b, far, 'a far click is still her order');

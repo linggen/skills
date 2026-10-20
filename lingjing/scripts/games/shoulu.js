@@ -266,13 +266,32 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       apply(pressKey(g, { ...S, spot: sel }, k, performance.now() / 1000), null, k);
     });
     const bar = $('.sl-herobar');
+    let touchAt = -1e9; // a phone's long press also fires contextmenu: let the press timer alone toggle
     on(bar, 'contextmenu', (e) => {
       e.preventDefault();
+      if (performance.now() - touchAt < 1500) return;
       const k = e.target.closest('[data-skill]')?.dataset.skill;
       if (g && k && toggleAuto(g, k)) toast(`${SK[lang][k][0]} · ${g.hero.auto[k] ? t.autoOn : t.autoOff}`);
     });
+    // a long press on a skill toggles its autocast on a phone, as the right-click does on a Mac (Hanli 10-20)
+    let press = null, pressed = false;
+    on(bar, 'pointerdown', (e) => {
+      const k = e.target.closest('[data-skill]')?.dataset.skill;
+      if (!k || e.pointerType === 'mouse') return;
+      touchAt = performance.now();
+      clearTimeout(press);
+      press = setTimeout(() => {
+        press = null;
+        if (g && toggleAuto(g, k)) { pressed = true; toast(`${SK[lang][k][0]} · ${g.hero.auto[k] ? t.autoOn : t.autoOff}`); }
+      }, 500);
+    });
+    const unpress = () => { clearTimeout(press); press = null; };
+    on(bar, 'pointerup', unpress);
+    on(bar, 'pointercancel', unpress);
+    on(bar, 'pointerleave', unpress);
     on(bar, 'click', (e) => {
       wake();
+      if (pressed) { pressed = false; return; } // the long press's own click
       if (!g || g.over) return;
       if (e.target.closest('[data-hero]')) { apply(pressKey(g, { ...S, spot: sel }, '1', performance.now() / 1000)); return; }
       const k = e.target.closest('[data-skill]')?.dataset.skill;
