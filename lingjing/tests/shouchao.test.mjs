@@ -100,6 +100,7 @@ test('once a night; a night missed costs nothing — the next one is the same ni
   const one = night(s, day(20, 17, 30));
   assert.equal(one.result.night, 1);
   assert.equal(offered(one.state, day(20, 18, 0))?.status ?? 'done', 'done', 'counted: done for tonight');
+  assert.match(offered(one.state, day(20, 18, 0)).title, /第1夜/, 'named by the night just held');
   assert.equal(win(one.state, content, ctx(day(20, 18, 0)), { id: T.id, stars: 3 }).result.ok, false, 'not twice a night');
   // Three nights missed: nothing taken, nothing lost; the tide is back, on night 2.
   const back = { ...structuredClone(one.state), stamina: 100 };

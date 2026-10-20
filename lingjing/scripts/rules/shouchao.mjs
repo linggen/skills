@@ -136,7 +136,10 @@ export function shouchaoRow(content, state, now) {
   const t = tideTask(content), kit = wallKit(content), night = tonightLevel(content, state);
   if (!t || !night) return {};
   const lang = state.lang, c = t.shouchao, row = night.row;
-  const title = { zh: `${pick(c.title, 'zh')} · 第${night.n}夜`, en: `${pick(c.title, 'en')} · night ${night.n}` };
+  const nameOf = n => ({ zh: `${pick(c.title, 'zh')} · 第${n}夜`, en: `${pick(c.title, 'en')} · night ${n}` });
+  // Counted tonight: the row names the night just held, and deals nothing more.
+  if (doneTonight(state, t, now)) return { tide: true, night: night.n - 1, title: pick(nameOf(night.n - 1), lang) };
+  const title = nameOf(night.n);
   // 银月's telling, the first night only (until a night is won): the shell's lead card reads it.
   const told = Boolean(state.shouchao?.told);
   const lead = [...(told ? [] : c.tell ?? []), ...(row.lead ?? [])];
