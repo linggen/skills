@@ -1,15 +1,15 @@
 // hud.js — 守墙关's HUD and its modal moments: the top bar (pause · title · wave), the skill column (round icons with
 // level badges), the wall's HP bar, the lead-in and countdown, banners, 银月's bubbles, the 3-card pick, the result.
 import * as Phaser from 'phaser';
-import { W, H } from 'shouqiang-core';
+import { W, H, opening } from 'shouqiang-core';
 import { FONT } from './fx.js';
 
 export const WORDS = {
-  zh: { wave: '波次', waveN: (n) => `第 ${n} 波`, cleared: '守住了！', pick: '选一张符', fresh: '新', lv: (n) => `Lv.${n}`,
+  zh: { wave: '波次', waveN: (n) => `第 ${n} 波`, cleared: '守住了！', pick: '选一张符', open: '先选一门本事', fresh: '新', lv: (n) => `Lv.${n}`,
     boss: '合窳 来袭', bossName: '合窳', wail: '哇——哇——', roar: '吼——！', won: '山门守住了！', lost: '山门破了', kills: (n) => `击退 ${n}`,
     wallLeft: (p) => `城墙 ${p}%`, paused: '暂停', resume: '点一下继续', next: '下一波', focus: '点兽群里一只：集火它',
     place: '点一张符，再点畦里一格', wonLanes: '药园守住了！', lostLanes: '药园失守了' },
-  en: { wave: 'Wave', waveN: (n) => `Wave ${n}`, cleared: 'Held!', pick: 'Pick a talisman', fresh: 'NEW', lv: (n) => `Lv.${n}`,
+  en: { wave: 'Wave', waveN: (n) => `Wave ${n}`, cleared: 'Held!', pick: 'Pick a talisman', open: 'Pick your attack', fresh: 'NEW', lv: (n) => `Lv.${n}`,
     boss: 'The Heyu comes', bossName: 'Heyu', wail: 'Waaah—', roar: 'ROAAAR!', won: 'The gate holds!', lost: 'The gate fell', kills: (n) => `${n} driven off`,
     wallLeft: (p) => `Wall ${p}%`, paused: 'Paused', resume: 'Tap to go on', next: 'Next wave', focus: 'Tap a beast: everyone hits it',
     place: 'Tap a talisman, then a bed cell', wonLanes: 'The garden holds!', lostLanes: 'The garden fell' },
@@ -122,7 +122,8 @@ function makeHudTextures(scene) {
   });
 }
 
-const cardOf = (g, id) => g.kit.cards.find((k) => k.id === id) ?? g.kit.unitCards?.find((k) => k.id === id);
+const cardOf = (g, id) => g.kit.cards.find((k) => k.id === id) ?? g.kit.unitCards?.find((k) => k.id === id)
+  ?? g.kit.opening?.lines.find((k) => k.id === id);
 
 export class Hud {
   constructor(scene, { depth, modal }) {
@@ -208,7 +209,9 @@ export class Hud {
   }
 
   tickCountdown(g) {
-    const on = (g.phase === 'lead' || g.phase === 'count') && g.timer <= 3.2;
+    // No 3-2-1 into the opening pick: it counts in after the pick (the `count` phase). From 3 down (at ≤ 3.2 the
+    // ceiling showed a stray 「4」 for a fifth of a second).
+    const on = ((g.phase === 'lead' && !opening(g)) || g.phase === 'count') && g.timer <= 3;
     const n = on ? Math.max(1, Math.ceil(g.timer)) : null;
     if (n === this.lastCount) return;
     this.lastCount = n;
@@ -230,7 +233,8 @@ export class Hud {
     return c;
   }
 
-  lead(lines, sec) {
+  /** Lines over `sec` seconds (the big ones as banners); `hint`: the how-to-play line near its end. */
+  lead(lines, sec, { hint = true } = {}) {
     const slot = (sec - 0.4) / Math.max(1, lines.length);
     lines.forEach((l, i) => this.s.time.delayedCall(i * slot * 1000, () => {
       const str = l[this.lang] ?? l.zh;
@@ -239,7 +243,7 @@ export class Hud {
         this.s.shake(260, 0.008);
       } else this.storyLine(str, slot);
     }));
-    this.s.time.delayedCall(Math.max(0, (sec - 2.5) * 1000), () => this.hint(this.s.g.grid ? this.w.place : this.w.focus));
+    if (hint) this.s.time.delayedCall(Math.max(0, (sec - 2.5) * 1000), () => this.hint(this.s.g.grid ? this.w.place : this.w.focus));
   }
 
   storyLine(str, slot) {
@@ -282,12 +286,13 @@ export class Hud {
 
   // ---- the pick ------------------------------------------------------------------------------------------------
 
-  offer(ids, g, onPick) {
+  /** The 3-card pick; `opening`: the first one, 小满's main attack (titled so, no level marks on the cards). */
+  offer(ids, g, onPick, { opening: first = false } = {}) {
     const s = this.s;
     this.modalOpen = true;
     const dim = s.add.rectangle(W / 2, H / 2, W, H, 0x0a0614, 0.62).setDepth(this.dm).setInteractive().setAlpha(0);
     s.tweens.add({ targets: dim, alpha: 1, duration: 200 });
-    const title = this.banner(this.w.pick, { size: 44, y: 372, hold: 1e9 });
+    const title = this.banner(first ? this.w.open : this.w.pick, { size: 44, y: 372, hold: 1e9 });
     title.setDepth(this.dm + 1);
     let chosen = false;
     const cards = ids.map((id, i) => {
@@ -321,12 +326,14 @@ export class Hud {
     const icon = s.add.image(-160, -2, s.tex(c.icon ?? `icon-${id}`, 'icon-jian-more')).setDisplaySize(104, 104);
     const name = this.text(-95, -30, c.name[this.lang] ?? c.name.zh, 28, { color: '#fffbe8', origin: 0 });
     const say = this.text(-95, 18, c.say[this.lang] ?? c.say.zh, 19, { color: '#fff3d0', origin: 0, wrap: 320 });
-    const lvl = have ? this.w.lv(have + 1) : this.w.fresh;
-    const tag = s.add.image(186, -46, 'badge').setScale(have ? 1.25 : 1.4);
-    const tagText = this.text(186, -47, lvl, have ? 15 : 17, { color: '#ffffff' });
-    const pips = [];
-    for (let i = 0; i < c.max; i += 1) pips.push(s.add.image(-95 + 22 * i + 290 - c.max * 22, 50, 'star').setScale(0.42).setTint(i < have + 1 ? 0xffd23f : 0x4a3a5a));
-    const cont = s.add.container(x, y, [bg, icon, name, say, tag, tagText, ...pips]);
+    const marks = [];
+    // An opening line has no level yet to show; a card shows NEW or its next level, and its pips.
+    if (!c.line) {
+      const lvl = have ? this.w.lv(have + 1) : this.w.fresh;
+      marks.push(s.add.image(186, -46, 'badge').setScale(have ? 1.25 : 1.4), this.text(186, -47, lvl, have ? 15 : 17, { color: '#ffffff' }));
+      for (let i = 0; i < c.max; i += 1) marks.push(s.add.image(-95 + 22 * i + 290 - c.max * 22, 50, 'star').setScale(0.42).setTint(i < have + 1 ? 0xffd23f : 0x4a3a5a));
+    }
+    const cont = s.add.container(x, y, [bg, icon, name, say, ...marks]);
     cont.hit = bg.setInteractive({ useHandCursor: true });
     return cont;
   }
@@ -352,7 +359,7 @@ export class Hud {
       s.tweens.add({ targets: entry.icon, scaleX: entry.icon.scaleX * 1.3, scaleY: entry.icon.scaleY * 1.3, duration: 160, yoyo: true });
       s.em.burst('spark', 10, at.x, at.y);
     }
-    entry.n.setText(String(g.skills[id]));
+    entry.n.setText(String(g.skills[id] ?? 1));
   }
 
   // Where the i-th held card's icon sits: the 山门, a column down the right edge; the 药园 in portrait, a row along the

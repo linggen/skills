@@ -52,6 +52,15 @@
   {"id": "yy-foxfire", "family": "yy", "max": 3, "name": {"zh": "银月 · 狐火", "en": "Yinyue · fox-fire"}, "say": {"zh": "银月吐狐火，落地烧一团。", "en": "Yinyue spits fox-fire that splashes."}, "dmg": [22, 32, 44], "radius": [48, 58, 70], "shots": [1, 2, 3]},
   {"id": "yy-howl", "family": "yy", "max": 2, "name": {"zh": "银月 · 啸月", "en": "Yinyue · moon howl"}, "say": {"zh": "一声长啸，满山的兽都愣住。", "en": "One howl stuns every beast on the road."}, "every": [10, 7.5], "stun": [1.2, 1.8], "dmg": [16, 28]}
  ],
+ "opening": {
+  "_about": "The opening pick (Hanli 10-20 after playing: 「守墙第一关玩家啥也做不了. 可否上来先选一个基础攻击?」 — 《向僵尸开炮》's starting weapon): after the lead-in and before wave 1, the same 3-card pick offers 小满's main attack. The line chosen is what he casts from the first wave, at level 1 of that line (`gives`: that line's first card at Lv.1): `jian` his flying swords at 剑阵 · 添剑 Lv.1 (two a volley), `huo` the 火符 at huo-blast Lv.1, `lei` the 雷符 at lei-chain Lv.1. He throws swords only on the 剑阵 line or once a 剑阵 card is taken. Balanced so each line wins level 1 for a first-timer (tests/game-shouqiang.test.mjs): the swords alone were the weakest start (a fire or thunder Lv.1 outguns one sword a volley), so the 剑阵 line starts at 添剑 Lv.1, and the 山门's `growth` went 0.28 → 0.35 to take back what a free line gives. The first `lean` between-wave offers lean to the chosen line: the first holds `lean` cards of its family, the next `lean` − 1, … (when that many are open). On every level unless a level says `\"opening\": false` — the 药园 does: the player sets talismans from the first second there, and 小满 only guards the wall's foot.",
+  "lean": 2,
+  "lines": [
+   {"id": "open-jian", "line": "jian", "family": "jian", "gives": "jian-more", "icon": "icon-jian-more", "name": {"zh": "剑阵 · 飞剑", "en": "Sword array · flying swords"}, "say": {"zh": "一轮两把飞剑，追着兽斩。", "en": "Two flying swords a volley, hunting beasts down."}},
+   {"id": "open-huo", "line": "huo", "family": "huo", "gives": "huo-blast", "icon": "icon-huo-blast", "name": {"zh": "火符 · 爆炎", "en": "Fire talisman · blast"}, "say": {"zh": "火符砸进兽群，一炸一片。", "en": "Fire talismans burst a whole bunch at once."}},
+   {"id": "open-lei", "line": "lei", "family": "lei", "gives": "lei-chain", "icon": "icon-lei-chain", "name": {"zh": "雷符 · 连雷", "en": "Thunder talisman · chain"}, "say": {"zh": "雷光一只连一只跳。", "en": "Lightning leaps beast to beast."}}
+  ]
+ },
  "levels": [
   {
    "id": "shanmen",
@@ -67,14 +76,16 @@
    ],
    "leadSec": 6,
    "between": 3,
+   "countIn": 3.4,
    "wall": 1200,
    "wallY": 760,
    "rangeY": 160,
    "difficulty": 1,
    "hpMul": 1.75,
-   "growth": 0.28,
+   "growth": 0.35,
    "stars": [0.7, 0.35],
    "moments": {
+    "open": [{"zh": "先挑一门本事！", "en": "Pick your attack first!"}],
     "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "再来多少都一样。", "en": "Bring more."}],
     "low": [{"zh": "墙要塌了！", "en": "The wall is cracking!"}],
     "boss": [{"zh": "合窳来了——它一哭，就打它！", "en": "The heyu! When it wails, hit it!"}],
@@ -98,6 +109,7 @@
    "kit": "shouqiang",
    "story": null,
    "place": "yaoyuan",
+   "opening": false,
    "art": {"bg": "yaoyuan-bg", "wall": "yaoyuan-wall"},
    "leadSec": 8,
    "between": 6,
@@ -146,6 +158,7 @@
    "kit": "shouqiang",
    "story": null,
    "place": "yaoyuan",
+   "opening": false,
    "art": {"bg": "yaoyuan-bg", "wall": "yaoyuan-wall"},
    "leadSec": 8,
    "between": 6,
@@ -194,6 +207,7 @@
    "kit": "shouqiang",
    "story": null,
    "place": "yaoyuan",
+   "opening": false,
    "art": {"bg": "yaoyuan-bg", "wall": "yaoyuan-wall"},
    "leadSec": 8,
    "between": 6,
@@ -242,6 +256,7 @@
    "kit": "shouqiang",
    "story": null,
    "place": "yaoyuan",
+   "opening": false,
    "art": {"bg": "yaoyuan-bg", "wall": "yaoyuan-wall"},
    "leadSec": 8,
    "between": 6,

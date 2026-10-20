@@ -11,7 +11,7 @@ import { SIDE } from './lanes.js';
  * `held`: draw the field but stand still until `go()` (the shell's lead card is up over it).
  * `landscape` (a 药园 level only): option A — the same portrait field centred, side panels either side.
  * `base`: the URL of games/shouqiang/ (art beside it). `lines`: 银月's prefetched lines by moment (台词预取), else the
- * level's own. `onEvent`: the facts out (start · wave · wave_cleared · boss · low · end). `onEnd({won, stars, stats})`.
+ * level's own. `onEvent`: the facts out (start · opening · wave · wave_cleared · boss · low · end). `onEnd({won, stars, stats})`.
  * `shell` (games/shell.js): the one outer shell — its pause drives the play, and the canvas keeps no pause button or
  * result screen of its own.
  */

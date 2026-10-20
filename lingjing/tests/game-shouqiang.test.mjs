@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, HAND, W, canPlace, towardHim, cellAt, collect, hurt, newGame, offerCards, open, pick, place, reachY, setFocus, sim, step, stars } from '../scripts/games/shouqiang/core.js';
+import { BOTS, HAND, W, canPlace, towardHim, cellAt, collect, hurt, newGame, offerCards, open, opening, pick, place, reachY, setFocus, sim, step, stars } from '../scripts/games/shouqiang/core.js';
 import { levelAsked, meta } from '../scripts/games/shouqiang.js';
 import { sourceHash } from '../tools/shouqiang/hash.mjs';
 
@@ -17,7 +17,10 @@ const reg = JSON.parse(readFileSync(at('worlds/jiuding/games.json'), 'utf8'));
 const creatures = JSON.parse(readFileSync(at('worlds/jiuding/creatures.json'), 'utf8')).creatures;
 const SEEDS = Array.from({ length: 12 }, (_, i) => `s${i}`);
 const advance = (g, secs) => { for (let t = 0; t < secs; t += 0.1) step(g, 0.1); };
-const run = (bot) => SEEDS.map((seed) => sim(kit, level, BOTS[bot], { seed }));
+const run = (bot, line) => SEEDS.map((seed) => sim(kit, level, BOTS[bot], { seed, open: line }));
+const LINES = ['jian', 'huo', 'lei'];
+// Through the lead-in and the opening pick (the 剑阵 line unless told), to the first moment of wave 1.
+const toWave1 = (g, line = 'jian') => { advance(g, level.leadSec + 0.2); pick(g, `open-${line}`); advance(g, level.countIn + 0.2); return g; };
 
 test('registered: meta, the 游戏厅 row (塔防, plays tall), the level asked for', () => {
   assert.equal(meta.id, 'shouqiang');
@@ -69,10 +72,54 @@ test('about ten cards across the 守炉 kit, every number list as long as its le
   }
 });
 
-test('the first wave comes on its own after the lead-in; the game only waits on a pick', () => {
+// Hanli 10-20 after playing: 「守墙第一关玩家啥也做不了. 可否上来先选一个基础攻击?」 — the lead-in, then the opening pick
+// (小满's main attack: 剑阵, 火符 or 雷符), waiting with nothing on the road; then the 3-2-1 and wave 1.
+test('the opening: after the lead-in the game waits on a pick of three main attacks, then counts into wave 1', () => {
+  assert.deepEqual(kit.opening.lines.map((l) => l.line), LINES);
+  for (const l of kit.opening.lines) {
+    assert.ok(l.name.zh && l.name.en && l.say.zh && l.say.en && l.icon, l.id);
+    assert.equal(kit.cards.find((c) => c.id === l.gives)?.family, l.line, `${l.id} gives its line's card`);
+  }
+  assert.ok(kit.levels.slice(1).every((l) => l.opening === false && l.grid), 'the 药园 is marked off: talismans from the first second');
+  assert.ok(level.countIn >= 3 && level.countIn <= 4, 'a 3-2-1 after the pick');
+  for (const line of LINES) {
+    const g = newGame(kit, level, { seed: `open-${line}` });
+    advance(g, level.leadSec + 0.2);
+    assert.equal(g.phase, 'pick');
+    assert.ok(opening(g));
+    assert.deepEqual(g.offer, ['open-jian', 'open-huo', 'open-lei']);
+    assert.ok(g.events.some((e) => e.t === 'offer' && e.opening));
+    advance(g, 30);
+    assert.equal(g.phase, 'pick', 'no timer on it');
+    assert.equal(g.wave, 0);
+    assert.equal(g.beasts.length + g.spawns.length, 0, 'nothing on the road while it is up');
+    assert.ok(pick(g, `open-${line}`));
+    assert.equal(g.main, line);
+    const gives = kit.opening.lines.find((l) => l.line === line).gives;
+    assert.deepEqual(g.skills, { [gives]: 1 }, 'the line at level 1');
+    assert.equal(g.phase, 'count');
+    advance(g, level.countIn - 0.3);
+    assert.equal(g.phase, 'count');
+    advance(g, 0.5);
+    assert.equal(g.phase, 'wave');
+    // Only that line fires: swords on the 剑阵 line alone, the talisman on its own.
+    const kinds = new Set();
+    for (let i = 0; i < 600 && g.phase === 'wave'; i += 1) { step(g, 1 / 30); for (const e of g.events) if (e.t === 'cast' && e.who === 'xm') kinds.add(e.kind); g.events.length = 0; }
+    assert.deepEqual([...kinds], [{ jian: 'sword', huo: 'huo', lei: 'lei' }[line]], `${line}: ${[...kinds]}`);
+  }
+  // The lazy bot (null), or anything that is not a line, takes the first line: today's swords.
+  for (const id of [null, 'huo-blast']) {
+    const g = newGame(kit, level, { seed: 'lazy-open' });
+    advance(g, level.leadSec + 0.2);
+    assert.ok(pick(g, id));
+    assert.equal(g.main, 'jian');
+  }
+});
+
+test('the first wave comes on its own after the opening; the game only waits on a pick', () => {
   const g = newGame(kit, level, { seed: 'auto' });
   assert.equal(g.phase, 'lead');
-  advance(g, level.leadSec + 0.2);
+  toWave1(g);
   assert.equal(g.phase, 'wave');
   assert.ok(g.events.some((e) => e.t === 'wave' && e.n === 1));
   for (let i = 0; i < 3000 && g.phase === 'wave'; i += 1) step(g, 0.05);
@@ -90,6 +137,20 @@ test('the first wave comes on its own after the lead-in; the game only waits on 
   assert.ok(g.t > t);
 });
 
+test('the first between-wave offers lean to the opening line: two of its family, then one, then any', () => {
+  for (const line of LINES) {
+    let first = 0, second = 0;
+    for (let i = 0; i < 20; i += 1) {
+      const g = toWave1(newGame(kit, level, { seed: `lean-${line}-${i}` }), line);
+      const fam = () => offerCards(g).filter((id) => kit.cards.find((c) => c.id === id).family === line).length;
+      g.wave = 1; first += fam() >= 2 ? 1 : 0;
+      g.wave = 2; second += fam() >= 1 ? 1 : 0;
+    }
+    assert.equal(first, 20, `${line}: two of its family in the first offer`);
+    assert.equal(second, 20, `${line}: one in the second`);
+  }
+});
+
 test('cards: a maxed card and one whose need is missing are never offered', () => {
   const g = newGame(kit, level, { seed: 'cards' });
   const blocked = kit.cards.filter((c) => c.needs).map((c) => c.id);
@@ -100,18 +161,22 @@ test('cards: a maxed card and one whose need is missing are never offered', () =
 });
 
 test('focus: a tap on a beast makes it the target; a dead or unknown one clears it', () => {
-  const g = newGame(kit, level, { seed: 'focus' });
-  advance(g, level.leadSec + 3);
+  const g = toWave1(newGame(kit, level, { seed: 'focus' }));
+  advance(g, 3);
   const b = g.beasts[0];
   assert.equal(setFocus(g, b.id), b.id);
   assert.equal(setFocus(g, 99999), null);
 });
 
-test('balance: never picking loses; random picks win some; the sensible build wins every seed', () => {
-  const lazy = run('lazy'), random = run('random'), greedy = run('greedy');
-  assert.ok(lazy.every((r) => !r.won && r.wave <= 6), `lazy reached waves ${lazy.map((r) => r.wave)}`);
-  const rw = random.filter((r) => r.won).length;
-  assert.ok(rw >= 2 && rw <= SEEDS.length - 2, `random won ${rw}/${SEEDS.length}: the cards must matter`);
+test('balance: never picking loses on every opening line; random picks lose some; the sensible build wins every seed', () => {
+  for (const line of LINES) {
+    const lazy = run('lazy', line);
+    assert.ok(lazy.every((r) => !r.won && r.wave <= 6), `lazy on ${line} reached waves ${lazy.map((r) => r.wave)}`);
+  }
+  const SEEDS40 = Array.from({ length: 40 }, (_, i) => `s${i}`);
+  const random = SEEDS40.map((seed) => sim(kit, level, BOTS.random, { seed })), greedy = run('greedy');
+  const rw = random.filter((r) => r.won).length, r3 = random.filter((r) => r.stars === 3).length;
+  assert.ok(rw <= 39 && r3 <= 32, `random won ${rw}/40, ${r3} with 3 stars: the cards must matter`);
   assert.ok(greedy.every((r) => r.won), `greedy lost on ${greedy.filter((r) => !r.won).length} seeds`);
   assert.ok(greedy.filter((r) => r.stars === 3).length >= SEEDS.length * 0.75, 'a sharp build keeps most of the wall: 3 stars');
   assert.ok(greedy.some((r) => r.wallLeft < 0.95), 'and still feels the pressure');
@@ -128,11 +193,26 @@ test('balance for a human: the human-like bot wins most seeds, never near death 
   assert.ok(run('lazy').every((r) => !r.won), 'never picking still loses');
 });
 
+// 《向僵尸开炮》's starting weapon: whichever line a first-timer opens with, level 1 is winnable with sensible play.
+test('balance per opening line: the sensible build and the human-like bot win level 1 on each of 剑阵, 火符, 雷符', () => {
+  const SEEDS30 = Array.from({ length: 30 }, (_, i) => `p${i}`);
+  for (const line of LINES) {
+    const greedy = SEEDS30.map((seed) => sim(kit, level, BOTS.greedy, { seed, open: line }));
+    const human = SEEDS30.map((seed) => sim(kit, level, BOTS.human, { seed, open: line }));
+    const gw = greedy.filter((r) => r.won).length, hw = human.filter((r) => r.won).length;
+    assert.ok(gw >= 27, `${line}: greedy won ${gw}/30`);
+    assert.ok(hw >= 22, `${line}: human won ${hw}/30`);
+    assert.ok(human.every((r) => r.main === line));
+  }
+});
+
 test('difficulty is one knob in the data: more beasts and more hp a wave', () => {
   assert.equal(level.difficulty, 1);
   const wave1 = (k) => {
     const g = newGame(kit, { ...level, difficulty: k }, { seed: 'k' });
     advance(g, level.leadSec + 0.2);
+    pick(g, 'open-jian');
+    advance(g, level.countIn + 0.05);
     return { n: g.spawns.length + g.beasts.length, hp: g.spawns[0]?.mul };
   };
   const a = wave1(1), b = wave1(1.5);
@@ -166,8 +246,8 @@ test('the range line: nothing is hurt above it; the boss stops above it to roar,
       assert.ok(bossKill.y >= R + 40, `and fell well inside reach (y=${Math.round(bossKill.y)})`);
     }
   }
-  const g = newGame(kit, level, { seed: 'above' });
-  advance(g, level.leadSec + 1);
+  const g = toWave1(newGame(kit, level, { seed: 'above' }));
+  advance(g, 0.8);
   const b = g.beasts[0];
   assert.ok(b.y < R);
   assert.equal(hurt(g, b, 999, 'thunder'), 0, 'a beast above the line takes nothing');
@@ -182,7 +262,7 @@ test('swords never point at 小满 (they launch from his raised hand); 回旋 ar
   for (const seed of ['a1', 'a2']) {
     const g = newGame(kit, level, { seed });
     while (!['won', 'lost'].includes(g.phase) && g.t < 900) {
-      if (g.phase === 'pick') pick(g, g.offer.includes('jian-arc') ? 'jian-arc' : BOTS.greedy(g)); else step(g, 1 / 60);
+      if (g.phase === 'pick') pick(g, opening(g) ? 'open-jian' : g.offer.includes('jian-arc') ? 'jian-arc' : BOTS.greedy(g)); else step(g, 1 / 60);
       for (const s of g.shots) {
         if (s.kind !== 'sword') continue;
         swords += 1;

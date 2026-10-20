@@ -88,7 +88,7 @@ export class PlayScene extends Phaser.Scene {
     }
     // `held` (the shell's lead card is up): the field is drawn and stands still behind it; `go()` starts the lead-in.
     this.held = Boolean(this.cfg.hold?.on);
-    if (!this.held) this.hud.lead(level.lead, level.leadSec ?? 5);
+    if (!this.held) this.leadIn();
     if (this.lanes) this.layout(Boolean(this.cfg.landscape));
     this.fact({ t: 'start', level: level.id });
   }
@@ -195,7 +195,27 @@ export class PlayScene extends Phaser.Scene {
   go() {
     if (!this.held) return;
     this.held = false;
-    this.hud.lead(this.g.level.lead, this.g.level.leadSec ?? 5);
+    this.leadIn();
+  }
+
+  // The lead-in. With an opening pick, only the story lines read here; the big 「兽潮来袭！」 banners and the how-to hint
+  // wait for the count-in after the pick, right before the beasts come.
+  leadIn() {
+    const { lead = [], leadSec = 5 } = this.g.level;
+    if (!this.g.opening) return this.hud.lead(lead, leadSec);
+    this.hud.lead(lead.filter((l) => !l.big), leadSec, { hint: false });
+  }
+
+  // The opening chosen: 小满's raised hand holds that line's talisman (his sword only on the 剑阵 line), and the count-in
+  // into wave 1 carries the big banners.
+  opened(e) {
+    const FU = { huo: ['fu-huo', 0xffa040], lei: ['fu-lei', 0xc08bff] };
+    if (FU[e.line]) {
+      this.handSword.setTexture(FU[e.line][0]).setDisplaySize(30, 62).setRotation(0);
+      this.handGlow.setTint(FU[e.line][1]).setScale(1.3);
+    }
+    this.hud.lead((this.g.level.lead ?? []).filter((l) => l.big), this.g.level.countIn ?? 3.4);
+    this.fact({ t: 'opening', line: e.line });
   }
 
   togglePause() { this.setPaused(!this.paused, true); }
@@ -606,7 +626,7 @@ export class PlayScene extends Phaser.Scene {
       this.shake(300, 0.005);
     },
     cast(e) {
-      if (e.who === 'xm') { if (e.kind === 'sword') this.handBack = 0.32; return this.xmCastPose(); }
+      if (e.who === 'xm') { if (e.kind === 'sword' || e.kind === this.g.main) this.handBack = 0.32; return this.xmCastPose(); }
       this.yyPose(['cast-1', 'cast-2']);
     },
     wall(e) {
@@ -623,7 +643,10 @@ export class PlayScene extends Phaser.Scene {
       if (this.g.grid && e.kind === this.g.level.twist && !this.twistSaid) { this.twistSaid = true; this.time.delayedCall(1200, () => this.moment('twist')); }
     },
     huge() { this.moment('huge'); this.fact({ t: 'huge' }); },
-    picked(e) { this.hud.picked(e.id, this.g); },
+    picked(e) {
+      this.hud.picked(e.gives ?? e.id, this.g);
+      if (e.opening) this.opened(e);
+    },
     wave(e) {
       if (this.g.level.huge?.includes(e.n)) this.time.delayedCall(1500, () => this.hud.waveBanner(e.n, e.of));
       else this.hud.waveBanner(e.n, e.of);
@@ -634,7 +657,10 @@ export class PlayScene extends Phaser.Scene {
       this.moment('wave_cleared');
       this.fact({ t: 'wave_cleared', n: e.n });
     },
-    offer(e) { this.time.delayedCall(900, () => this.hud.offer(e.cards, this.g, (id) => this.choose(id))); },
+    offer(e) {
+      if (e.opening) this.moment('open');
+      this.time.delayedCall(e.opening ? 250 : 900, () => this.hud.offer(e.cards, this.g, (id) => this.choose(id), { opening: e.opening }));
+    },
     boss() {
       this.hud.bossBanner();
       this.cameras.main.flash(300, 120, 0, 0);

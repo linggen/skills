@@ -8,6 +8,8 @@
 //
 // In the one shell (games/shell.js, `shell`): the level's story lines are the shell's lead card, its pause is the shell's,
 // and the result is the shell's; the canvas keeps the big 「兽潮来袭！」 banners and its own 3-2-1 into the first wave.
+// The opening pick (小满's main attack, Hanli 10-20 「可否上来先选一个基础攻击?」) comes between: lead card → pick → 3-2-1
+// → wave 1; without the shell, the canvas's own lead-in lines → pick → 3-2-1 → wave 1.
 //
 // `data.lv` / the page's `?lv=` picks a level row by id or 1-based number: 1 the 山门, 2–5 the 药园 (talismans in
 // lanes). A 药园 level in a landscape window gets option A (Hanli 10-20 「竖屏, 横屏可以切换?」「按A可以」): the same
@@ -72,13 +74,13 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     const leave = () => { if (onResize) win.removeEventListener('resize', onResize); game?.destroy(); game = null; finish({ won: false, left: true }); };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
-    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), loadFont(doc)]).then(async ([kit, { start }]) => {
+    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), import('./shouqiang/core.js'), loadFont(doc)]).then(async ([kit, { start }, { openingOf }]) => {
       if (done) return;
       let level = levelAsked(kit, data, search);
       // In the shell: the story lines read on its lead card, over the field standing still; the canvas keeps the big
-      // banners and its 3-2-1.
+      // banners and its 3-2-1 (with an opening pick, the pick comes straight after the card and they follow it).
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join('') : '';
-      if (said) level = { ...level, lead: (level.lead ?? []).filter((l) => l.big), leadSec: 3.4 };
+      if (said) level = { ...level, lead: (level.lead ?? []).filter((l) => l.big), leadSec: openingOf(kit, level) ? 0.5 : 3.4 };
       let landscape = shape(Boolean(level.grid));
       game = start({
         parent: box, base: new URL('./shouqiang/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',

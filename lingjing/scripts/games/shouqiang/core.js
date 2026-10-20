@@ -3,9 +3,11 @@
 // file (worlds/jiuding/levels/shouqiang.json): beasts, the heroes' base shots, the cards.
 //
 // The board is 540×960, y down. Beasts come down from above the top edge to the wall's face (`wallY`), stop there and
-// bite the wall. 小满 (on the wall) throws flying swords and, with cards, the talismans; 银月 beside him spits a spirit
-// bolt. Phases: lead (the first countdown, the lead-in lines) → wave → pick (the game waits for a card) → count → wave …
-// → won | lost. The game never waits for a "start wave" tap; only the pick waits.
+// bite the wall. 小满 (on the wall) casts his main attack — the line picked at the opening: flying swords, the 火符 or
+// the 雷符 — and, with cards, more; 银月 beside him spits a spirit bolt. Phases: lead (the lead-in lines) → pick (the
+// OPENING: 小满's main attack, Hanli 10-20 「可否上来先选一个基础攻击?」) → count (3-2-1) → wave → pick (the game waits
+// for a card) → count → wave … → won | lost. The game never waits for a "start wave" tap; only a pick waits. A level
+// marked `"opening": false` (the 药园) has no opening: lead (its lead-in and 3-2-1) → wave, 小满 on swords.
 //
 // What happened in a step is pushed to `g.events` (the play drains it): spawn, hit, kill, boom, chain, strike, howl,
 // wail, roar, cast, fade, wall, wave, clear, offer, boss, low, won, lost.
@@ -50,6 +52,7 @@ export function newGame(kit, level, { seed = 'x' } = {}) {
     wave: 0, waves: level.waves.length, wall: level.wall, wallMax: level.wall,
     beasts: [], shots: [], grounds: [], spawns: [], nextId: 1,
     skills: {}, cool: { sword: 0.4, fox: 0.8 }, focus: null, offer: null,
+    opening: openingOf(kit, level), main: null,
     kills: 0, low: false, events: [],
     beastKit: beastsOf(kit, level),
     ...(level.grid ? laneState(kit, level) : {}),
@@ -62,6 +65,14 @@ export function beastsOf(kit, level) {
   return Object.fromEntries(Object.entries(kit.beasts).filter(([k]) => !k.startsWith('_'))
     .map(([k, b]) => [k, { ...b, ...(kit.laneBeasts?.[k] ?? {}) }]));
 }
+
+/** The opening's lines (小满's main attack to pick before wave 1), or null: a lane level, or one marked `opening: false`. */
+export function openingOf(kit, level) {
+  return level.grid || level.opening === false || !kit.opening?.lines?.length ? null : kit.opening.lines;
+}
+
+/** True while the opening pick is still to come or up (nothing has been chosen yet). */
+export const opening = (g) => Boolean(g.opening && !g.main);
 
 const lv = (g, id) => g.skills[id] ?? 0;
 const card = (g, id) => g.kit.cards.find((c) => c.id === id);
@@ -207,7 +218,7 @@ function fireFox(g) {
 
 // A talisman lobbed at a spot: lands after `fly` seconds and bursts.
 function lob(g, kind, to, extra) {
-  shoot(g, { kind, x: HERO.x, y: HERO.y - 30, fromX: HERO.x, fromY: HERO.y - 30, toX: to.x, toY: to.y + 18, fly: 0.45, lob: true, ...extra });
+  shoot(g, { kind, x: HAND.x, y: HAND.y, fromX: HAND.x, fromY: HAND.y, toX: to.x, toY: to.y + 18, fly: 0.45, lob: true, ...extra });
   emit(g, { t: 'cast', who: 'xm', kind });
 }
 
@@ -230,7 +241,7 @@ const CASTS = {
     const L = lv(g, 'lei-chain'), c = card(g, 'lei-chain');
     const first = target(g);
     if (!first) return false;
-    const pts = [{ x: HERO.x, y: HERO.y - 40 }];
+    const pts = [{ x: HAND.x, y: HAND.y }];
     let cur = first, dmg = at(c.dmg, L);
     const done = new Set();
     for (let j = 0; cur && j <= at(c.jumps, L); j += 1) {
@@ -439,9 +450,12 @@ function burnGrounds(g, dt) {
 
 // ---- the clock ---------------------------------------------------------------------------------------------------
 
+// 小满 throws swords on the 剑阵 line, once a 剑阵 card is taken, or on a level with no opening at all.
+const swordsOn = (g) => !g.opening || g.main === 'jian' || g.kit.cards.some((c) => c.family === 'jian' && lv(g, c.id));
+
 function heroes(g, dt) {
   for (const k of Object.keys(g.cool)) g.cool[k] -= dt;
-  if (g.cool.sword <= 0 && target(g)) { fireSwords(g); g.cool.sword = g.kit.hero.sword.every; }
+  if (g.cool.sword <= 0 && swordsOn(g) && target(g)) { fireSwords(g); g.cool.sword = g.kit.hero.sword.every; }
   if (g.cool.fox <= 0 && target(g)) { fireFox(g); g.cool.fox = g.kit.hero.fox.every; }
   for (const [cast, need] of Object.entries(CAST_NEEDS)) {
     if (!lv(g, need)) continue;
@@ -455,7 +469,7 @@ function tick(g, dt) {
   g.t += dt;
   if (g.grid && g.phase !== 'pick' && g.phase !== 'won' && g.phase !== 'lost') economy(g, dt);
   const TIMED = {
-    lead: () => { g.timer -= dt; if (g.timer <= 0) startWave(g); },
+    lead: () => { g.timer -= dt; if (g.timer <= 0) (opening(g) ? offerOpening(g) : startWave(g)); },
     count: () => { g.timer -= dt; if (g.timer <= 0) startWave(g); },
     wave: () => fight(g, dt),
   };
@@ -515,17 +529,52 @@ export function open(g) {
   return g.kit.cards.filter((c) => lv(g, c.id) < c.max && (!c.needs || lv(g, c.needs) > 0));
 }
 
-/** Three different cards (fewer if fewer are open), drawn by the seed. */
+/** Three different cards (fewer if fewer are open), drawn by the seed. The first between-wave offers lean to the
+ *  opening's line: after wave n (1-based), `lean − n + 1` of the three are its family's (as many as are open). */
 export function offerCards(g) {
   const pool = open(g).map((c) => c.id);
   const out = [];
-  while (out.length < 3 && pool.length) out.push(pool.splice(Math.floor(g.rnd() * pool.length), 1)[0]);
+  const draw = (from) => out.push(pool.splice(pool.indexOf(from[Math.floor(g.rnd() * from.length)]), 1)[0]);
+  const fam = g.main && (g.kit.opening.lean ?? 0) - g.wave + 1;
+  for (let i = 0; i < fam; i += 1) {
+    const mine = pool.filter((id) => card(g, id).family === g.main);
+    if (!mine.length || out.length >= 3) break;
+    draw(mine);
+  }
+  while (out.length < 3 && pool.length) draw(pool);
+  // Shuffle, so the line's card is not always in the top slot.
+  for (let i = out.length - 1; i > 0; i -= 1) { const j = Math.floor(g.rnd() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
   return out;
+}
+
+// The lead-in is over: the opening pick comes up, and the game waits for it (no timer, no beast on the road).
+function offerOpening(g) {
+  g.phase = 'pick';
+  g.offer = g.opening.map((l) => l.id);
+  emit(g, { t: 'offer', cards: g.offer, opening: true });
+}
+
+// The opening chosen (null or unknown: the first line — the lazy bot keeps today's swords): 小满's main attack is that
+// line at level 1, then the 3-2-1 into wave 1.
+function takeOpening(g, id) {
+  const l = g.opening.find((x) => x.id === id) ?? g.opening[0];
+  g.main = l.line;
+  if (l.gives) {
+    g.skills[l.gives] = 1;
+    const cast = Object.keys(CAST_NEEDS).find((k) => CAST_NEEDS[k] === l.gives);
+    if (cast) g.cool[cast] = 0.4;
+  }
+  emit(g, { t: 'picked', id: l.id, gives: l.gives ?? null, line: l.line, opening: true });
+  g.offer = null;
+  g.phase = 'count';
+  g.timer = g.level.countIn ?? 3.4;
+  return true;
 }
 
 /** Take one of the offered cards (null: take none — the lazy bot) and count down to the next wave. */
 export function pick(g, id) {
   if (g.phase !== 'pick') return false;
+  if (opening(g)) return takeOpening(g, id);
   if (id != null) {
     if (!g.offer.includes(id)) return false;
     g.skills[id] = lv(g, id) + 1;
@@ -792,13 +841,14 @@ function cardTaken(g, id) {
 
 // ---- headless play -----------------------------------------------------------------------------------------------
 
-/** The sensible build (the greedy bot): a wide answer first — fire for herds, thunder for chains, then depth. */
-export const GREEDY = ['huo-blast', 'lei-chain', 'jian-more', 'huo-ground', 'han-slow', 'yy-foxfire', 'lei-chain', 'huo-blast',
+/** The sensible build (the greedy bot): a wide answer first — fire for herds, thunder for chains, then depth. Its
+ *  opening is the 火符 (the herds come first). */
+export const GREEDY = ['open-huo', 'huo-blast', 'lei-chain', 'jian-more', 'huo-ground', 'han-slow', 'yy-foxfire', 'lei-chain', 'huo-blast',
   'jian-pierce', 'lei-strike', 'han-freeze', 'yy-howl', 'jian-more', 'huo-blast', 'lei-chain', 'yy-foxfire', 'jian-arc'];
 
 // A first-time human: picks a card that looks good (a rough sense of value plus whim, never the build list), reacts
 // ~0.4 s late, and taps a beast now and then (and the boss, sometimes, when it wails) — far from the bots' perfect play.
-const LOOKS = { 'huo-blast': 3, 'lei-chain': 3, 'jian-more': 3, 'han-slow': 2.4, 'yy-foxfire': 2.4, 'jian-pierce': 2.2,
+const LOOKS = { 'open-jian': 3, 'open-huo': 3, 'open-lei': 3, 'huo-blast': 3, 'lei-chain': 3, 'jian-more': 3, 'han-slow': 2.4, 'yy-foxfire': 2.4, 'jian-pierce': 2.2,
   'huo-ground': 2, 'lei-strike': 2, 'yy-howl': 1.6, 'han-freeze': 1.6, 'jian-arc': 2 };
 const REACT = 0.4;
 
@@ -960,11 +1010,13 @@ export const BOTS = {
   humanLane: { make: humanLane },
 };
 
-/** Play a whole level with a bot (a chooser `(g) → card id`, or `{ make(seed) → { pick, act } }`); returns
- *  { won, stars, wave, wallLeft, walls (the wall after each wave), kills, skills, bossY (where the boss fell) }. */
-export function sim(kit, level, chooser, { seed = 'sim', limit = 900 } = {}) {
+/** Play a whole level with a bot (a chooser `(g) → card id`, or `{ make(seed) → { pick, act } }`); `open` forces the
+ *  opening line (jian | huo | lei), else the bot picks it. Returns { won, stars, wave, wallLeft, walls (the wall after
+ *  each wave), kills, skills, main (the opening line), bossY (where the boss fell) }. */
+export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line } = {}) {
   const g = newGame(kit, level, { seed });
-  const bot = chooser.make ? chooser.make(seed) : { pick: chooser };
+  const made = chooser.make ? chooser.make(seed) : { pick: chooser };
+  const bot = line ? { ...made, pick: (gg) => (opening(gg) ? `open-${line}` : made.pick(gg)) } : made;
   const walls = [], placed = {};
   let bossY = null;
   while (!['won', 'lost'].includes(g.phase) && g.t < limit) {
@@ -980,6 +1032,6 @@ export function sim(kit, level, chooser, { seed = 'sim', limit = 900 } = {}) {
     }
     g.events.length = 0;
   }
-  return { won: g.phase === 'won', stars: stars(g), wave: g.wave, wallLeft: g.wall / g.wallMax, walls, kills: g.kills, skills: g.skills, bossY,
+  return { won: g.phase === 'won', stars: stars(g), wave: g.wave, wallLeft: g.wall / g.wallMax, walls, kills: g.kills, skills: g.skills, main: g.main, bossY,
     units: g.grid ? placed : undefined, t: Math.round(g.t) };
 }
