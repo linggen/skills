@@ -229,3 +229,31 @@ test('the prover\'s hand lands where the module\'s does: decided once still, a r
   const m = generate('tool2|spring', { tier: 2, els: ['gust', 'bubble', 'thorns', 'regrow', 'spring'], must: 'spring' });
   assert.notDeepEqual(m.level.springs, level.springs);
 });
+
+// The comic item set (2026-10-20, Hanli: 「A, 画一套漫画风的道具」; tools/paint-items-comic-flux.py): everything the
+// 割藤 can hang — what the 饭桶 eats, the 秘境's finds and deals — has its icon in art/items-comic/, looked up by id;
+// a thing with none draws its name's first character in the ring. art/items/ (ink) is the story's and the bag's.
+test('every thing the 割藤 can hang has its comic icon by id; none → the glyph; no item → the 柴火棍', async () => {
+  const { readFileSync, existsSync } = await import('node:fs');
+  const { comicArt } = await import('../scripts/games/items-comic.js');
+  const W = new URL('../worlds/jiuding/', import.meta.url);
+  const json = (p) => JSON.parse(readFileSync(new URL(p, W), 'utf8'));
+  const ft = json('fantong.json'), never = new Set(ft.never.items), kinds = new Set(ft.never.kinds);
+  const fed = json('items.json').items.filter((i) => !kinds.has(i.kind) && !never.has(i.id)).map((i) => i.id);
+  const finds = Object.values(json('chapters/00-waimen/chapter.json').beats.flatMap((b) => (b.sealed?.rerun ? Object.values(b.sealed.rerun.finds).flat() : []))).map((f) => f.item);
+  const frames = json('qiyu.json').mijing.pool.flatMap((e) => e.frames).filter((f) => f.item).map((f) => f.item.id);
+  const deals = json('tasks/world.json').tasks.filter((t) => t.game === 'fantongcut' && t.deal?.item).map((t) => t.deal.item.id);
+  const all = [...new Set([...fed, ...finds, ...frames, ...deals])];
+  assert.ok(all.length > 100 && finds.length && frames.length === 3 && deals.length === 1, `${all.length} things, ${finds.length} finds`);
+  for (const id of all) {
+    assert.ok(id, 'every 秘境 deal names its item id');
+    const url = comicArt(id);
+    assert.ok(url, `${id}: a comic icon`);
+    assert.ok(existsSync(new URL(url)), `${id}: ${url} on disk`);
+  }
+  const drawn = (item) => cut.html(cut.newGame('icon', 1, { item }), 'zh');
+  assert.match(drawn({ id: 'lingzhi', name: '灵芝' }), /items-comic\/lingzhi\.webp/);
+  assert.doesNotMatch(drawn({ id: 'lingzhi', name: '灵芝' }), /art\/items\//, 'never the ink');
+  assert.match(drawn({ id: 'no-such', name: '怪东西' }), /g-ft-glyph[^>]*>怪</);
+  assert.match(drawn(undefined), /items-comic\/chaihuo\.webp/);
+});

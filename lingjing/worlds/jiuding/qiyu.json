@@ -16,9 +16,9 @@
       {
         "task": "qiyu-rope", "weight": 2,
         "frames": [
-          { "zh": "崖缝上垂下几根老藤，藤梢吊着一块鼎苔，够不着。饭桶在底下张着嘴。", "en": "Old vines hang from a crack in the cliff, a lump of cauldron moss on their ends, out of reach. The Rice Bucket gapes below.", "item": { "zh": "鼎苔", "en": "cauldron moss" } },
-          { "zh": "暗河上头的石缝里垂下藤来，吊着一株灵芝，晃晃悠悠。", "en": "Vines trail from a crack above the dark river, a lingzhi swinging on them.", "item": { "zh": "灵芝", "en": "lingzhi" } },
-          { "zh": "崖壁上挂着一只前人的药篓，藤快断了，篓里还有东西。", "en": "Someone's old herb basket hangs on the cliff face, its vines nearly through; there is something still in it.", "item": { "zh": "药篓", "en": "herb basket" } }
+          { "zh": "崖缝上垂下几根老藤，藤梢吊着一块鼎苔，够不着。饭桶在底下张着嘴。", "en": "Old vines hang from a crack in the cliff, a lump of cauldron moss on their ends, out of reach. The Rice Bucket gapes below.", "item": { "id": "dingtai", "zh": "鼎苔", "en": "cauldron moss" } },
+          { "zh": "暗河上头的石缝里垂下藤来，吊着一株灵芝，晃晃悠悠。", "en": "Vines trail from a crack above the dark river, a lingzhi swinging on them.", "item": { "id": "lingzhi", "zh": "灵芝", "en": "lingzhi" } },
+          { "zh": "崖壁上挂着一只前人的药篓，藤快断了，篓里还有东西。", "en": "Someone's old herb basket hangs on the cliff face, its vines nearly through; there is something still in it.", "item": { "id": "yaolou", "zh": "药篓", "en": "herb basket" } }
         ]
       },
       {

@@ -11,6 +11,7 @@ import { n } from './ink.js';
 import { W } from './rope.js';
 import { generate } from './rope-gen.js';
 import { makeRopeGame, EAT_MS } from './ropekit.js';
+import { comicArt } from './items-comic.js';
 
 export { FAST } from './ropekit.js';
 export { FAST_AFTER } from './ropekit.js';
@@ -56,13 +57,15 @@ function makeLevel(seed, level, data) {
   return generate(data.seed ?? String(seed), { tier: data.tier ?? tier, els: data.els ?? SAMPLE_ELS[tier], must: data.must ?? null });
 }
 
-/* The thing he chose: its own picture in a round, else its name's first character in an ink ring. */
+/* The thing he chose: its comic icon by item id (art/items-comic/, the small games' set — art/items/ is the story's
+   ink), over a ring; else its name's first character in the ring. No item handed in (the 游戏厅, the try page): the
+   柴火棍 by the woodpile. */
 function thing(s, r) {
-  const it = s.item;
-  const face = it?.art
-    ? `<clipPath id="g-ft-clip"><circle r="${r}"/></clipPath><image href="${it.art}" x="${-r * 1.6}" y="${-r * 1.2}" width="${r * 3.2}" height="${r * 2.4}" clip-path="url(#g-ft-clip)" preserveAspectRatio="xMidYMid slice"/>`
-    : `<text class="g-ft-glyph" y="6" text-anchor="middle">${(it?.name ?? '柴').slice(0, 1)}</text>`;
-  return `<circle class="g-ft-ring" r="${r}"/>${face}`;
+  const it = s.item ?? { id: 'chaihuo' }, art = comicArt(it.id), k = r * 2.5;
+  const face = art
+    ? `<image class="g-ft-icon" href="${art}" x="${n(-k / 2)}" y="${n(-k / 2)}" width="${n(k)}" height="${n(k)}" preserveAspectRatio="xMidYMid meet"/>`
+    : `<text class="g-ft-glyph" y="6" text-anchor="middle">${(it.name ?? '柴').slice(0, 1)}</text>`;
+  return `<circle class="g-ft-ring${art ? ' has-icon' : ''}" r="${r}"/>${face}`;
 }
 
 /* The 饭桶 eats: a gulp (it squats, then hops), a shake that dies away, a puff of steam from the lid,

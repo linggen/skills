@@ -57,7 +57,7 @@ export function fantongPuzzle({ onDone, doc = globalThis.document }) {
       const rope = isRope(p);
       const [{ mount }, lv] = await Promise.all([import(`./games/${gameOf(p)}.js`), rope ? levelFor(p) : null]);
       if (cur?.node !== node) return;
-      const thing = { name: item.name, art: item.art };
+      const thing = { id: item.id, name: item.name, art: item.art };
       const data = rope ? { level: structuredClone(lv.level), plan: lv.plan, item: thing, must: p.must, teach: p.teach ?? null, max_misses: p.max_misses }
         : { item: thing };
       this.attach();

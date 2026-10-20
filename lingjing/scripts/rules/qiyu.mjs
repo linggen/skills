@@ -84,7 +84,7 @@ export function qiyuRow(content, state, id) {
   const deal = {
     ...(t?.deal ?? {}),
     ...(word ? { word, context: `秘境外圈，${pick(frame, 'zh')}` } : {}),
-    ...(frame.item ? { item: { name: pick(frame.item, lang) } } : {}),
+    ...(frame.item ? { item: { ...(frame.item.id ? { id: frame.item.id } : {}), name: pick(frame.item, lang) } } : {}),
   };
   return { qiyu: true, how: pick(frame, lang), deal };
 }

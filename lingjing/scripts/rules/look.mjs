@@ -512,7 +512,7 @@ function dealOf(content, task, state) {
   if (!task.deal && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   // A thing a 割藤 deal hangs on the vines, named in both languages (拾遗's 灵芝): the reader's.
-  const item = task.deal?.item?.zh ? { item: { name: pick(task.deal.item, state.lang) } } : {};
+  const item = task.deal?.item?.zh ? { item: { ...(task.deal.item.id ? { id: task.deal.item.id } : {}), name: pick(task.deal.item, state.lang) } } : {};
   return { deal: { ...(task.deal ?? {}), ...item, ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}) } };
 }
 
