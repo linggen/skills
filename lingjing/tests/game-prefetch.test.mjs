@@ -14,8 +14,8 @@ const SD = read('../worlds/jiuding/levels/sadou.json');
 const NAMES = Object.fromEntries(read('../worlds/jiuding/creatures.json').creatures.map((c) => [c.id, c.name]));
 const shanmen = SQ.levels[0], yaoyuan1 = SQ.levels[1], road = SD.levels[0];
 const factsZh = factsOf({ kit: SQ, level: shanmen, game: 'shouqiang', names: NAMES, lang: 'zh' });
-const MOMENTS = ['wave_cleared', 'low', 'boss', 'win'];
-const GOOD = 'LINES {"wave_cleared":["山道暂清，挑道符。","野猪退了，墙还在。"],"low":["墙要被啃穿了！"],"boss":["合窳一哭，就打它！"],"win":["山门守住了。"]}\nSILENT';
+const MOMENTS = ['open', 'wave_cleared', 'low', 'boss', 'win'];
+const GOOD = 'LINES {"open":["先挑一门本事！"],"wave_cleared":["山道暂清，挑道符。","野猪退了，墙还在。"],"low":["墙要被啃穿了！"],"boss":["合窳一哭，就打它！"],"win":["山门守住了。"]}\nSILENT';
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
 test('the facts: the level\'s title, scene and beasts by name, and each moment with its meaning, count and own lines', () => {
@@ -59,7 +59,7 @@ test('the request: every moment and its count, her own voice, the cap, the reply
 
 test('her reply checked line by line: right keys, the cap, no empty lines, the player\'s language; anything else falls back', () => {
   assert.deepEqual(linesOf(GOOD, MOMENTS), {
-    wave_cleared: ['山道暂清，挑道符。', '野猪退了，墙还在。'], low: ['墙要被啃穿了！'], boss: ['合窳一哭，就打它！'], win: ['山门守住了。'],
+    open: ['先挑一门本事！'], wave_cleared: ['山道暂清，挑道符。', '野猪退了，墙还在。'], low: ['墙要被啃穿了！'], boss: ['合窳一哭，就打它！'], win: ['山门守住了。'],
   });
   assert.deepEqual(linesOf('```json\n{"win":"守住了。"}\n```\nSILENT', MOMENTS), { win: ['守住了。'] }, 'a fence and a bare string are taken');
   const mixed = linesOf(JSON.stringify({

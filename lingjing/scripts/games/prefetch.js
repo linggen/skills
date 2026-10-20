@@ -10,6 +10,8 @@
 
 /* What each moment means, for her: one plain line a moment, by kit (`kit.moment`) or by name. Facts, not lines. */
 const MEANS = {
+  'shouqiang.open': { zh: '开打前，玩家先从三门本事（飞剑、火符、雷符）里挑小满的看家一门。', en: 'Before the fight the player picks Xiaoman\'s main attack: flying swords, fire or thunder talismans.' },
+  'shouqiang.lane': { zh: '头一波兽全走同一畦，提醒玩家守住那一畦。', en: 'The first wave all comes down one bed: tell the player to hold that bed.' },
   'shouqiang.wave_cleared': { zh: '一波兽打退了，玩家接着从三张符里挑一张。', en: 'A wave is beaten; the player now picks 1 of 3 talismans.' },
   'shouqiang.low': { zh: '墙快被兽啃塌了。', en: 'The wall is close to falling.' },
   'shouqiang.boss': { zh: '巨兽合窳来了；它一哭嚎，就是打它的时候。', en: 'The giant heyu arrives; when it wails, that is the time to hit it.' },
