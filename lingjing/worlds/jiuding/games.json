@@ -1291,77 +1291,9 @@
    "task": "rent-scale",
    "mechanic": "割绳子",
    "stars": 3,
-   "_levels": "Frozen from rope-gen.js (2026-10-16) and proved by games/bots/rentrope.js; the beat's book line and art are ropebeats.js's.",
+   "_levels": "Frozen from rope-gen.js (2026-10-16) and proved by games/bots/rentrope.js; the beat's book line and art are ropebeats.js's. 2026-10-20 (back in 00-rent, last of the story's 割绳子 before 入门, so the hardest): the crow 4,388 → 2,400 ms — the safe way is the crow's vine first, then the other, the meat resting on the slab, then the puff (★2); ★3 only by cutting the other vine first and racing the crow: its vine cut 1.2–2.3 s later, as the swing comes back (was any time 0.6–4.3 s, and it won with no puff and no thought).",
    "levels": [
-    {
-     "id": "one",
-     "bread": [
-      101,
-      169
-     ],
-     "vines": [
-      {
-       "at": [
-        282,
-        34
-       ]
-      },
-      {
-       "at": [
-        151,
-        34
-       ]
-      }
-     ],
-     "stones": [
-      {
-       "x": 139,
-       "y": 282,
-       "w": 95,
-       "h": 14,
-       "a": 0
-      }
-     ],
-     "gust": {
-      "at": [
-       24,
-       252
-      ],
-      "to": [
-       1,
-       0
-      ]
-     },
-     "crows": [
-      {
-       "v": 0,
-       "ms": 4388
-      }
-     ],
-     "mouth": [
-      277,
-      330
-     ],
-     "stars": [
-      [
-       167,
-       256
-      ],
-      [
-       303,
-       272
-      ],
-      [
-       224,
-       261
-      ]
-     ],
-     "must": "crow",
-     "teach": {
-      "zh": "乌鸦顺着藤往下爬——先断它那根。",
-      "en": "A crow is walking down a vine — cut that one first."
-     }
-    }
+     {"id": "one", "bread": [101, 169], "vines": [{"at": [282, 34]}, {"at": [151, 34]}], "stones": [{"x": 139, "y": 282, "w": 95, "h": 14, "a": 0}], "gust": {"at": [24, 252], "to": [1, 0]}, "crows": [{"v": 0, "ms": 2400}], "mouth": [277, 330], "stars": [[167, 256], [303, 272], [224, 261]], "must": "crow", "teach": {"zh": "乌鸦顺着藤往下爬——先断它那根。", "en": "A crow is walking down a vine — cut that one first."}}
    ]
   },
   {
@@ -1406,65 +1338,9 @@
    "task": "masan-taunt",
    "mechanic": "割绳子",
    "stars": 3,
-   "_levels": "Frozen from rope-gen.js (2026-10-16) and proved by games/bots/tauntrope.js; the beat's book line and art are ropebeats.js's.",
+   "_levels": "Re-laid 2026-10-20 (back in 00-masan, the first 割绳子 in the story — Hanli 10-20 「可以, 放宽, 把那三关加进去」): the 10-19 level (puff the cake swinging, then cut) fed only on a cut within 0.4 s of the puff, a reflex — play-human's casual hand lost it 0/2 in 90 s. Now one thought at a time: cut, the 桂花糕 comes to rest on the slab, puff it off onto the 弹竹, which springs it to the dog. A plain cut still misses (Hanli 10-19: 「道具的风用不上」); the puff any time after it rests feeds, ★3 on the one arc (scratchpad search, proved by rope-gen playPlan at every HANDS reaction and a 0.3/1.5/3 s think; bots/tauntrope.js).",
    "levels": [
-    {
-     "id": "one",
-     "bread": [
-      174,
-      165
-     ],
-     "vines": [
-      {
-       "at": [
-        180,
-        34
-       ]
-      }
-     ],
-     "gust": {
-      "at": [
-       336,
-       260
-      ],
-      "to": [
-       -1,
-       0
-      ],
-      "band": 50
-     },
-     "springs": [
-      {
-       "x": 172,
-       "y": 253,
-       "w": 127,
-       "a": -10
-      }
-     ],
-     "mouth": [
-      75,
-      330
-     ],
-     "stars": [
-      [
-       172,
-       218
-      ],
-      [
-       144,
-       190
-      ],
-      [
-       109,
-       201
-      ]
-     ],
-     "teach": {
-      "zh": "弹竹：落上去，弹得比来时还高。",
-      "en": "Springy bamboo: whatever lands on it bounces higher than it came."
-     },
-     "must": "spring"
-    }
+     {"id": "one", "bread": [281, 135], "vines": [{"at": [274, 34]}], "stones": [{"x": 304, "y": 218, "w": 78, "h": 14, "a": 0}], "gust": {"at": [336, 200], "to": [-1, 0], "band": 40}, "springs": [{"x": 178, "y": 305, "w": 128, "a": 10}], "mouth": [88, 330], "stars": [[240, 207], [150, 203], [112, 207]], "teach": {"zh": "弹竹：落上去，弹得比来时还高。糕停在石板上了？点那团风。", "en": "Springy bamboo: whatever lands on it bounces higher than it came. Cake stuck on the slab? Tap the puff."}, "must": "spring"}
    ]
   },
   {

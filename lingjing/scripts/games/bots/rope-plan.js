@@ -1,6 +1,7 @@
 // A human-like player for a 割绳子 level with a written answer (the story's beats): the plan for the
 // level's id, each move once the thing has hung still a moment — thought, never reflexes. A miss
 // lays the level again; it plays the plan again. (The 饭桶's bot plays the plan the level carries.)
+// A move with `after` (ms) is a timed one — made that long after the move before it, still or not (a race).
 const CALM_MS = 400;
 
 function move(s, m) {
@@ -11,10 +12,10 @@ function move(s, m) {
 
 /** A bot for `plans` ({ levelId: [moves] }), or for the plan a state carries when none is named. */
 export function planBot(plans = {}) {
-  let calm = 0, lastT = -1;
+  let calm = 0, lastT = -1, movedAt = 0;
   return function bot(s, see = {}) {
     const t = see.t ?? 0;
-    if (t < lastT) { calm = 0; lastT = -1; }
+    if (t < lastT) { calm = 0; lastT = -1; movedAt = 0; }
     const dt = lastT < 0 ? 0 : t - lastT;
     lastT = t;
     if (s.won || !s.live || s.phase !== 'play') { calm = 0; return null; }
@@ -22,8 +23,11 @@ export function planBot(plans = {}) {
     if (!plan) return null;
     const w = s.swing;
     calm = w.bread.speed < 0.12 && Math.abs(w.bread.angularSpeed) < 0.02 ? calm + dt : 0;
-    if (s.moves >= plan.length || calm < CALM_MS) return null;
+    if (s.moves >= plan.length) return null;
+    const next = plan[s.moves];
+    if (next.after != null ? t - movedAt < next.after : calm < CALM_MS) return null;
     calm = 0;
-    return move(s, plan[s.moves]);
+    movedAt = t;
+    return move(s, next);
   };
 }

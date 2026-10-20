@@ -109,7 +109,15 @@ test('弹竹 bounces: a thing dropped on it rebounds above where it struck, and 
   assert.ok(hit - peak > 60, `it came back up a long way (${(hit - peak).toFixed(0)} px)`);
   const fs = await import('node:fs');
   const g = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8')).games.find((x) => x.id === 'tauntrope');
-  assert.ok(!(g.levels[0].stones ?? []).length, '忍字: no stone lies over the bamboo');
+  // 忍字's way (re-laid 10-20: cut, it rests on the slab, the puff): the 桂花糕 strikes the 弹竹 on it — no stone hides it.
+  const RG = await import('../scripts/games/rope-gen.js');
+  const way = RG.playPlan(g.levels[0], [{ g: 'cut', v: 0 }, { g: 'gust' }]);
+  const sp = g.levels[0].springs[0], seg = way.path.slice(way.path.last);
+  // the fall turns to a rise right over the bamboo: a bounce, not a pass
+  const bounced = seg.some((q, k) => k > 0 && k < seg.length - 1 && seg[k - 1][1] < q[1] && seg[k + 1][1] < q[1] && Math.abs(q[0] - sp.x) < sp.w / 2 + 4 && Math.abs(q[1] - sp.y) < 45);
+  assert.ok(bounced, '忍字: the puffed 桂花糕 bounces off the 弹竹');
+  for (const st of g.levels[0].stones ?? []) assert.ok(st.x - st.w / 2 > sp.x + sp.w / 2 || st.x + st.w / 2 < sp.x - sp.w / 2, '忍字: no stone lies over the bamboo');
+  assert.equal(RG.playPlan(g.levels[0], [{ g: 'cut', v: 0 }]).end, 'rest', '忍字: a plain cut leaves it on the slab (the puff is the answer)');
 });
 
 /* ── what the ropes hang from (2026-10-19, Hanli on 拽: 「把爹的图片拴在绳子上有点奇怪」) ── */
