@@ -255,7 +255,7 @@ function hurt(g, b, d, src) {
   const C = BEASTS[b.type].cry;
   if (C) d *= b.crying > 0 ? C.mult : bare ? 1 : C.guard;
   b.hp -= d;
-  b.flash = 0.1;
+  if (src !== 'fox') b.flash = 0.1; // a burn ticks every frame: no flash, or it would glow white the whole time
   if (!g.headless && src !== 'han' && src !== 'fox') addFx(g, { k: 'txt', x: b.x + (Math.random() * 10 - 5), y: b.y - BEASTS[b.type].r - 4, s: String(Math.round(d)), col: src === 'jian' && b.armor ? '#7a7066' : b.crying > 0 ? '#b0412e' : '#2a241d', life: 0.6, max: 0.6, vy: -30, size: b.crying > 0 ? 14 : 11 });
   if (b.hp > 0) return;
   b.dead = true;

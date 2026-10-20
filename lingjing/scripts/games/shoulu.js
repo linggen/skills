@@ -382,7 +382,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       panel.port.classList.toggle('is-away', h.dead > 0);
       for (const k of SKEYS) {
         const st = skillState(g, k), b = panel.sk[k], S_ = SKILLS[k];
-        b.classList.toggle('is-locked', st.locked || (S_.charges && st.charges <= 0));
+        b.classList.toggle('is-locked', Boolean(st.locked || (S_.charges && st.charges <= 0)));
         b.classList.toggle('is-ready', st.ready);
         b.classList.toggle('is-auto', st.auto);
         b.classList.toggle('is-aim', S.aim === k);
