@@ -35,6 +35,9 @@ const PIECE = /\{景=([a-z]+)\}/g;
 function atGate(lang) {
   let s = { ...newState(content, lang, NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
   s = resolve(s, content, ctx, { exit: 'go' }).state;
+  // 今一's dawn run (边跑边念, 2026-10-20) is played before the track's way on
+  s = win(s, content, ctx, { id: 'jin-paobu' }).state;
+  s = task(s, content, ctx, { action: 'done', id: 'jin-paobu' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   s = win(s, content, ctx, { id: 'jin-qianmi' }).state;

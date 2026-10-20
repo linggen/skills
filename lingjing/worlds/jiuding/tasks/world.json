@@ -95,8 +95,8 @@
       "done_line": {"zh": "出谷的路，认出来了。", "en": "The way out of the valley, found."}
     },
     {
-      "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
-      "id": "halfyear-carry", "kind": "board", "game": "carry", "period": "once",
+      "_beats": "Back 2026-10-20 as 气走经脉 · 挑水上坡 (the reading cap before 入门, games.md § 读太长): the book's 「从四担挑到了六担，上坡不喘」 under the yoke — a new level (tiaoshui), not the cut 练功 board (its game deleted 10-19). Grades only marks; nothing paid before 入门.",
+      "id": "halfyear-carry", "kind": "board", "game": "qimai", "period": "once",
       "title": {"zh": "练功 · 挑水上坡不喘", "en": "Practice · Water up the slope without a pant"},
       "grant": { "table": "task", "progress": 5 },
       "marks": {"even": "carry-even", "panting": "carry-panting"},
@@ -114,6 +114,13 @@
       "title": { "zh": "小周天 · 冲三关", "en": "The small circuit · Three passes" },
       "grant": { "table": "task", "progress": 10 },
       "done_line": { "zh": "三关俱开，小周天通了。", "en": "All three passes open; the small circuit is through." }
+    },
+    {
+      "_jin": "今一's dawn run (2026-10-20, the reading cap before 入门): pays nothing, like every 今 game.",
+      "id": "jin-paobu", "kind": "board", "game": "qimai", "period": "once",
+      "title": { "zh": "晨跑 · 边跑边念", "en": "The dawn run · Run and recite" },
+      "grant": { "table": "task" },
+      "done_line": { "zh": "「念得出整句，就是速度对了。」", "en": "\"If you can get whole sentences out, you're at the right speed.\"" }
     },
     {
       "_jin": "今线's games (the interludes, 2026-10-05): the science lesson of each 今 played; they pay nothing — the 今 never lifts the 古 (Hanli: 不跨线).",

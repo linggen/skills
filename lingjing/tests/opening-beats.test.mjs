@@ -98,17 +98,20 @@ const BEATS = [
   ['00-yinyue', 'yinyue-way', 'follow', ['straight', 'wandered'], { straight: 'way-straight', wandered: 'way-wandered' }],
   ['00-rent', 'rent-scale', 'dumb', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
   ['00-rent', 'rent-scale', 'truth', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
+  // 气走经脉 · 挑水上坡 (the reading cap, 2026-10-20): the winter's carrying, a new level on the cut 练功's task id.
+  ['00-halfyear', 'halfyear-carry', 'on', ['even', 'panting'], { even: 'carry-even', panting: 'carry-panting' }],
 ];
 
 /* Cut 2026-10-16 (Hanli 「入门前的怎么办? 减少数量, 推动剧情」): before 入门 the boards were only 接雨 · 拽 · 喂饼 ·
    射鹿 · 洛书门 (and the village maps, another lane's). Relaxed 2026-10-20 (「可以, 放宽, 把那三关加进去」): the
    built 割绳子 levels 忍字 · 认路 · 算账 are back in their scenes; the old weak boards stay cut — these scenes read
-   whole and go on with no board. */
-const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-halfyear', 'feather-breath', 'on'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-sleep', 'xisui-hold', 'bath']];
-const KEPT = { '00-shiao': ['rain-basins'], '00-masan': ['masan-taunt'], '00-fall': ['fall-storm'], '00-cave': ['bread-share'], '00-yinyue': ['yinyue-way'], '00-deer': ['deer-wind'], '00-rent': ['rent-scale'], '00-luoshu': ['gate-luoshu'] };
+   whole and go on with no board. 00-halfyear's 吹鹅毛 stays cut; the scene has a board again since 2026-10-20 (the
+   reading cap): 气走经脉 · 挑水上坡 on the cut 练功's task id — a new level, not the old board. */
+const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-sleep', 'xisui-hold', 'bath']];
+const KEPT = { '00-shiao': ['rain-basins'], '00-masan': ['masan-taunt'], '00-fall': ['fall-storm'], '00-cave': ['bread-share'], '00-yinyue': ['yinyue-way'], '00-deer': ['deer-wind'], '00-rent': ['rent-scale'], '00-halfyear': ['halfyear-carry'], '00-luoshu': ['gate-luoshu'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
 
-test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 忍字 · 拽 · 喂饼 · 认路 · 射鹿 · 算账 · 洛书门', () => {
+test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 忍字 · 拽 · 喂饼 · 认路 · 射鹿 · 算账 · 挑水 · 洛书门', () => {
   const ch = content.chapters['00-prologue'];
   const boards = {};
   // The 古 line's scenes (the 今 interlude spliced in is its own line, not counted here).
@@ -135,6 +138,9 @@ test('a cut board has left its scene — not shown, not offered, no way on waits
     assert.notEqual(on.state.scene, sid, `${sid}: the story moved on`);
     for (const m of on.state.marks ?? []) assert.doesNotMatch(m, /^(taunt|way|griddle|rent|feather|carry)-/, `${sid}: no cut board's mark`);
   }
+  // 吹鹅毛 stays cut in 00-halfyear, beside the scene's 挑水上坡 (2026-10-20)
+  const hy = scenes['00-halfyear'];
+  assert.ok(!(hy.show ?? []).some(c => c.id === 'feather-breath') && !(hy.offers?.tasks ?? []).includes('feather-breath'), '00-halfyear: 吹鹅毛 still cut');
 });
 
 test('each scene stands its board on the stage, offers it, and its way on waits for it', () => {
@@ -235,11 +241,11 @@ test('a save already standing in a scene that has since been given a board is of
 
 test('a save from before the cut (10-16): a cut board offered is let go, one done stays, a passage owed after it is not owed', () => {
   const s = atScene('00-storm');
-  const old = { ...s, tasks: { ...s.tasks, 'storm-listen': { status: 'offered' }, 'cave-stone': { status: 'done', done_at: NOW.toISOString() } }, tell_owed: ['after/00-storm', 'after/00-halfyear'] };
+  const old = { ...s, tasks: { ...s.tasks, 'storm-listen': { status: 'offered' }, 'cave-stone': { status: 'done', done_at: NOW.toISOString() } }, tell_owed: ['after/00-storm'] };
   const fit = fitWorld(old, content);
   assert.equal(fit.tasks['storm-listen'], undefined, 'never winnable now: let go');
   assert.equal(fit.tasks['cave-stone'].status, 'done', 'what was done stays');
-  assert.deepEqual(fit.tell_owed, [], 'a merged passage is owed nowhere (00-halfyear\'s too since its boards were cut)');
+  assert.deepEqual(fit.tell_owed, [], 'a merged passage is owed nowhere');
   const on = resolve(fit, content, ctx(), { exit: 'turn' });
   assert.equal(on.result.ok, true, JSON.stringify(on.result));
 });
@@ -265,8 +271,8 @@ test('the rhythm: the main line read between two beats, a board resetting it whe
   assert.equal(parts[0].chars, storyChars(ch.scenes['00-shiao'].story), 'a board waits for the passage that leads into it');
   assert.equal(parts[1].from, '00-shiao');
   assert.ok(parts[1].chars >= storyChars(ch.scenes['00-shiao'].story_after), 'the rest of a split passage is read after its board');
-  // 00-halfyear lost its boards 2026-10-16 (the cut before 入门): its passage reads on. 忍字 · 认路 · 算账 back 10-20.
-  for (const at of ['00-masan', '00-heisong/carve', '00-cave', '00-yinyue', '00-deer', '00-rent']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
+  // 忍字 · 认路 · 算账 back 10-20; 00-halfyear's 挑水上坡 and 今一's 边跑边念 the same day (the reading cap: 00-rent → j01-retest read 11,661).
+  for (const at of ['00-masan', '00-heisong/carve', '00-cave', '00-yinyue', '00-deer', '00-rent', '00-halfyear', 'j01-track']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
   const warn = warnings(content, { chapters: ['00-prologue'] });
   assert.ok(warn.every(w => w.startsWith('00-prologue: ') && w.includes('(cap 1500)')));
   console.log(`rhythm warnings (00-prologue, cap ${RHYTHM_CAP}):\n${warn.join('\n')}`);

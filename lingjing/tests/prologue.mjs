@@ -41,6 +41,9 @@ export const TO_VALLEY = [
    Marked `jin`: walked only where the save stands in it — a world without
    the interludes (withoutInterludes) walks past them. */
 export const JIN_ONE = [
+  // 边跑边念 (气走经脉, the reading cap 2026-10-20): the dawn run, the channels recited
+  ['win', { id: 'jin-paobu' }, 'jin'],
+  ['task', { action: 'done', id: 'jin-paobu' }, 'jin'],
   ['resolve', { exit: 'on' }, 'jin'],
   ['resolve', { exit: 'on' }, 'jin'],
   ['win', { id: 'jin-qianmi' }, 'jin'],
@@ -67,6 +70,9 @@ export const TO_HALL = [
   ['resolve', { exit: 'dumb' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'bath' }],
+  // 挑水上坡 (气走经脉, the reading cap 2026-10-20): the winter's carrying under the yoke
+  ['win', { id: 'halfyear-carry' }],
+  ['task', { action: 'done', id: 'halfyear-carry' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'go' }],
   ['resolve', { exit: 'go' }],
