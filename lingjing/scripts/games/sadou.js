@@ -9,7 +9,8 @@
 // In the one shell (games/shell.js, `shell`): the level's story lines are the shell's lead card, its pause is the shell's,
 // and the result is the shell's; the canvas keeps the big 「撒豆成兵！」 with its scatter and its own 3-2-1 into the run.
 //
-// `data.lv` / the page's `?lv=` picks a level row by id or 1-based number (one level today). Nothing touches the save.
+// `data.lv` / the page's `?lv=` picks a level row by id or 1-based number (five, 山道 → 黑松岭); a won level names the
+// next one (`next`, its id) so the shell offers 下一关. Nothing touches the save.
 export const meta = {
   id: 'sadou',
   pause: true, // the shell's bar pauses the play (tools/sadou/src/play.js setPaused)
@@ -71,7 +72,10 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         parent: box, base: new URL('./sadou/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
         kit, level, seed: seed ?? `sadou|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, shell,
         held: Boolean(said), // the road drawn behind the shell's lead card, standing still till it is read (Hanli 10-20: 「开场卡后面先画出画面」)
-        onEnd: (r) => finish(r),
+        onEnd: (r) => {
+          const nx = kit.levels[kit.levels.indexOf(levelAsked(kit, data, search)) + 1]; // 下一关 (the shell's, off the story)
+          finish(r.won && nx ? { ...r, next: nx.id } : r);
+        },
       });
       if (said) shell.lead(said, { auto: reducedMotion ? 2400 : 4200 }).then(() => game?.go());
     }, () => {

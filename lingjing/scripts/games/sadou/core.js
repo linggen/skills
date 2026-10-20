@@ -7,8 +7,15 @@
 //
 // Space: the 山道 runs up the screen; `g.dist` is how far the crowd has come (px). Lateral `x` is −1 (the road's left
 // edge) … 1 (its right). Every track item has `at` (px along the road); the crowd's front meets it when g.dist ≥ at.
-// Events go out on g.events (drained by the caller each step): gate · beans · hazard · clash · clash_end · boss · hit ·
-// slam_warn · slam · low · end.
+// Events go out on g.events (drained by the caller each step): gate · beans · hazard · rock · clash · clash_end · boss ·
+// hit · slam_warn · slam · low · end.
+//
+// The ladder's new pieces are data, each one a field a level may use (worlds/jiuding/levels/sadou.json):
+//   gates `flip` (px)   the two faces swap every `flip` px of road until the crowd reaches them (翻符门)
+//   rocks               falls of 落石 at `at` + i·`gap`, each on [x − r, x + r], shadowed `warn` px ahead
+//   horde `span`        a horde on one lane only; the crowd that runs round it fights nothing
+//   boss `moves`        the slam's pattern, in turn: half (the half the crowd stands in) · edges · middle
+//   `difficulty`        the level's one knob (1 = as tuned): scales every horde's beasts and the boss's hp
 
 export const W = 540, H = 960;
 export const ROAD = { cx: 270, half: 190 };   // the road's centre and half-width on screen (px)
@@ -49,8 +56,24 @@ export function hazardSpan(hz, t) {
 /** Where along the road the level ends: the boss. */
 export const trackEnd = (level) => level.boss.at;
 
+/** The gates as they stand with the crowd `dist` along: a flipping pair has swapped once per `flip` px still to run. */
+export function gatesAt(it, dist) {
+  if (!it.flip) return it.gates;
+  return Math.floor(Math.max(0, it.at - dist) / it.flip) % 2 ? [it.gates[1], it.gates[0]] : it.gates;
+}
+
+/** The slam's zones for a move: spans of the road (−1…1) that the blow lands on. */
+export function slamZones(move, x) {
+  if (move === 'edges') return [[-1, -0.3], [0.3, 1]];
+  if (move === 'middle') return [[-0.42, 0.42]];
+  return x < 0 ? [[-1, 0]] : [[0, 1]];
+}
+
+const zonesHit = (x, h, zones) => zones.reduce((s, [a, b]) => s + overlap(x, h, a, b), 0);
+
 export function newGame(kit, level, { seed = 'sadou' } = {}) {
-  const items = level.track.map((it, i) => ({ ...it, i, done: false, left: it.type === 'horde' ? horde(kit, it) : null }));
+  const k = level.difficulty ?? 1;
+  const items = level.track.map((it, i) => ({ ...it, i, done: false, next: 0, left: it.type === 'horde' ? horde(kit, it, k) : null }));
   return {
     kit, level, seed,
     t: 0,                         // seconds since the run began (after the lead-in)
@@ -60,16 +83,16 @@ export function newGame(kit, level, { seed = 'sadou' } = {}) {
     x: 0, target: 0,
     items,
     clash: null,                  // the horde being fought
-    boss: { ...level.boss, hpMax: level.boss.hp, slamT: level.boss.slamEvery, warn: null, feed: 0 },
+    boss: { ...level.boss, hp: Math.round(level.boss.hp * k), hpMax: Math.round(level.boss.hp * k), slamT: level.boss.slamEvery, warn: null, feed: 0, slams: 0 },
     acc: 0,                       // fractional losses carried between steps
     low: false,
     events: [],
-    stats: { gates: 0, good: 0, bad: 0, beans: 0, lostHazard: 0, lostClash: 0, lostSlam: 0, beasts: 0 },
+    stats: { gates: 0, good: 0, bad: 0, beans: 0, lostHazard: 0, lostRocks: 0, lostClash: 0, lostSlam: 0, beasts: 0 },
   };
 }
 
-function horde(kit, it) {
-  const units = it.beasts.map(([b, n]) => ({ b, n, p: kit.beasts[b].power }));
+function horde(kit, it, k = 1) {
+  const units = it.beasts.map(([b, n]) => ({ b, n: Math.max(1, Math.round(n * k)), p: kit.beasts[b].power }));
   return { units, hp: units.reduce((s, u) => s + u.n * u.p, 0) };
 }
 
@@ -138,7 +161,7 @@ function runItems(g, dt) {
     if (it.type === 'gates') {
       it.done = true;
       const side = g.x < 0 ? 0 : 1;
-      const gate = it.gates[side];
+      const gate = gatesAt(it, g.dist)[side];
       if (!gate) { g.events.push({ t: 'gate_miss', i: it.i, side }); continue; }
       const from = g.count;
       g.count = applyOp(g.count, gate);
@@ -156,6 +179,20 @@ function runItems(g, dt) {
         g.stats.beans += it.n;
       }
       g.events.push({ t: 'beans', i: it.i, got: Boolean(f), n: it.n });
+    } else if (it.type === 'rocks') {
+      // each rock lands as the crowd reaches its place and takes the share of the crowd under it
+      while (it.next < it.falls.length && g.dist >= it.at + it.next * it.gap) {
+        const j = it.next, x = it.falls[j], r = it.r ?? 0.3;
+        it.next += 1;
+        const f = overlap(g.x, h, x - r, x + r);
+        const k = Math.min(g.count, Math.round(g.count * f * it.kill));
+        g.count -= k;
+        g.stats.lostRocks += k;
+        g.events.push({ t: 'rock', i: it.i, j, x, killed: k });
+        checkLow(g);
+        if (g.phase !== 'run') return;
+      }
+      if (it.next >= it.falls.length) it.done = true;
     } else if (it.type === 'hazard') {
       // the crowd crosses the hazard over `len` px; each step kills the share of the crowd over it
       if (g.dist >= it.at + (it.len ?? 60)) { it.done = true; g.events.push({ t: 'hazard_end', i: it.i }); continue; }
@@ -213,14 +250,16 @@ function bossFight(g, dt) {
   // the slam: warned `warnSec` ahead on the half the crowd stands in; step out of it
   bs.slamT -= dt;
   if (!bs.warn && bs.slamT <= bs.warnSec) {
-    bs.warn = { side: g.x < 0 ? 0 : 1 };
-    g.events.push({ t: 'slam_warn', side: bs.warn.side, sec: bs.warnSec });
+    const moves = bs.moves ?? ['half'];
+    const move = moves[bs.slams % moves.length];
+    bs.slams += 1;
+    bs.warn = { side: g.x < 0 ? 0 : 1, move, zones: slamZones(move, g.x) };
+    g.events.push({ t: 'slam_warn', side: bs.warn.side, move, zones: bs.warn.zones, sec: bs.warnSec });
   }
   if (bs.slamT <= 0) {
-    const [a, b] = bs.warn.side === 0 ? [-1, 0] : [0, 1];
-    const f = overlap(g.x, crowdHalf(g.count), a, b);
+    const f = Math.min(1, zonesHit(g.x, crowdHalf(g.count), bs.warn.zones));
     const k = lose(g, g.count * f * bs.slamKill, 'lostSlam');
-    g.events.push({ t: 'slam', side: bs.warn.side, killed: k });
+    g.events.push({ t: 'slam', side: bs.warn.side, move: bs.warn.move, zones: bs.warn.zones, killed: k });
     bs.warn = null;
     bs.slamT = bs.slamEvery;
   }
@@ -246,30 +285,64 @@ export function step(g, dt) {
 // ---------------------------------------------------------------- bots (the level's balance tests play these)
 
 const ahead = (g, type, range) => g.items.find((it) => !it.done && it.type === type && it.at >= g.dist - 1 && it.at - g.dist < range);
+const lim = (g) => 1 - crowdHalf(g.count) * 0.8;
+
+/** The x where the crowd is least under `zones` (ties: the nearest to where it runs now). */
+export function safeX(g, zones, worst = false) {
+  const h = crowdHalf(g.count), L = lim(g);
+  const xs = [g.x, -L, L, 0];
+  for (const [a, b] of zones) xs.push(a - h - 0.05, b + h + 0.05);
+  const ok = xs.filter((v) => v >= -L && v <= L);
+  const cost = (v) => (worst ? -1 : 1) * zonesHit(v, h, zones) + Math.abs(v - g.x) * 1e-3;
+  return ok.sort((p, q) => cost(p) - cost(q))[0];
+}
 
 /** The x that keeps the crowd off a hazard's span (or the nearer side of it). */
 function dodge_(g, hz) {
-  const h = crowdHalf(g.count);
-  const [a, b] = hazardSpan(hz, g.t + (hz.at - g.dist) / g.speed);
-  const left = a - h - 0.05, right = b + h + 0.05;
-  const lim = 1 - h * 0.8;
-  const opts = [left, right].filter((v) => v >= -lim && v <= lim);
-  if (!opts.length) return a + 1 > 1 - b ? -lim : lim;
-  return opts.sort((p, q) => Math.abs(p - g.x) - Math.abs(q - g.x))[0];
+  return safeX(g, [hazardSpan(hz, g.t + (hz.at - g.dist) / g.speed)]);
 }
 
-function gateSide(g, it, best) {
+/** The next rock still to fall within `range` px: { it, j, zone }. */
+function rockAhead(g, range) {
+  for (const it of g.items) {
+    if (it.done || it.type !== 'rocks') continue;
+    const j = it.next, land = it.at + j * it.gap;
+    if (j < it.falls.length && land - g.dist < range) return { it, j, zone: [it.falls[j] - (it.r ?? 0.3), it.falls[j] + (it.r ?? 0.3)] };
+  }
+  return null;
+}
+
+/** The side to take at a gate pair as it will stand when the crowd reaches it (`shown`: as it stands now). */
+function gateSide(g, it, best, shown = false) {
   const val = (gate) => (gate ? applyOp(g.count, gate) : g.count);
-  const [l, r] = it.gates.map(val);
+  const [l, r] = gatesAt(it, shown ? g.dist : it.at).map(val);
   return best ? (l >= r ? -0.5 : 0.5) : (l <= r ? -0.5 : 0.5);
 }
 
+/** A horde on one lane: run through it (and take the gate behind it on that side) or round it (the other gate)? */
+function lanePlan(g, hd) {
+  const [a, b] = hd.span;
+  const through = Math.max(0, g.count - hd.left.hp);
+  const side = a + b > 0 ? 1 : 0;
+  const gt = g.items.find((it) => !it.done && it.type === 'gates' && it.at > hd.at && it.at - hd.at < 900);
+  const val = (n, s) => { const gate = gt && gatesAt(gt, gt.at)[s]; return gate ? applyOp(n, gate) : n; };
+  const goThrough = val(through, side) > val(g.count, 1 - side);
+  const h = crowdHalf(g.count), L = lim(g);
+  const round = side ? Math.max(-L, a - h - 0.05) : Math.min(L, b + h + 0.05);
+  return { through: goThrough, x: goThrough ? (a + b) / 2 : round, round };
+}
+const laneHorde = (g, range) => g.items.find((it) => !it.done && it.type === 'horde' && it.span && it.at - g.dist < range && it.at >= g.dist - 1);
+
 export const BOTS = {
-  /** Takes the better gate, steps off hazards, grabs beans, sidesteps the boss's slam. */
+  /** Takes the better gate, steps off hazards and falling rocks, grabs beans, plays a lane horde right, dodges the slam. */
   good(g) {
-    if (g.phase === 'boss') return g.boss.warn ? (g.boss.warn.side === 0 ? 0.6 : -0.6) : g.x;
+    if (g.phase === 'boss') return g.boss.warn ? safeX(g, g.boss.warn.zones) : g.x;
     const hz = ahead(g, 'hazard', 220) ?? g.items.find((it) => !it.done && it.type === 'hazard' && g.dist >= it.at);
     if (hz) return dodge_(g, hz);
+    const rk = rockAhead(g, 240);
+    if (rk) return safeX(g, [rk.zone]);
+    const ln = laneHorde(g, 420);
+    if (ln) return lanePlan(g, ln).x;
     const gt = ahead(g, 'gates', 420);
     if (gt) return gateSide(g, gt, true);
     const bn = ahead(g, 'beans', 260);
@@ -278,9 +351,11 @@ export const BOTS = {
   },
   /** Takes the worse gate and walks into everything. */
   bad(g) {
-    if (g.phase === 'boss') return g.boss.warn ? (g.boss.warn.side === 0 ? -0.5 : 0.5) : g.x;
+    if (g.phase === 'boss') return g.boss.warn ? safeX(g, g.boss.warn.zones, true) : g.x;
     const gt = ahead(g, 'gates', 420);
     if (gt) return gateSide(g, gt, false);
+    const rk = rockAhead(g, 240);
+    if (rk) return (rk.zone[0] + rk.zone[1]) / 2;
     const hz = ahead(g, 'hazard', 220);
     if (hz) { const [a, b] = hazardSpan(hz, g.t); return (a + b) / 2; }
     return g.x;
@@ -310,9 +385,10 @@ export function seeded(seed) {
 
 /**
  * A first-time human (the coordinator's lesson from 守墙关 10-20: a level tuned by perfect bots was too hard for
- * Hanli): sees things late and reacts ~`react` s after, picks the worse gate `wrong` of the time, steps off a hazard
- * only `dodge` of the time, goes for beans `beans` of the time, sidesteps the boss's slam `slam` of the time, and
- * never lands exactly where meant.
+ * Hanli): sees things late and reacts ~`react` s after, picks the worse gate `wrong` of the time (and reads a flipping
+ * pair as it stands NOW, not as it will land), steps off a hazard or a falling rock only `dodge` of the time, plays a
+ * lane horde wrong `wrong` of the time, goes for beans `beans` of the time, sidesteps the boss's slam `slam` of the
+ * time, and never lands exactly where meant.
  */
 export function humanBot(seed, { react = 0.4, wrong = 0.2, dodge = 0.65, beans = 0.5, slam = 0.5, aim = 0.12 } = {}) {
   const r = seeded(`human|${seed}`);
@@ -323,13 +399,23 @@ export function humanBot(seed, { react = 0.4, wrong = 0.2, dodge = 0.65, beans =
   const wants = (g) => {
     if (g.phase === 'boss') {
       if (!g.boss.warn) return null;
-      const k = `slam${slams}`;
-      return once(k, () => (r() < slam ? (g.boss.warn.side === 0 ? 0.6 : -0.6) : null));
+      return once(`slam${slams}`, () => r() < slam) ? safeX(g, g.boss.warn.zones) : null;
     }
     const hz = ahead(g, 'hazard', 200);
     if (hz && once(hz.i, () => r() < dodge)) return dodge_(g, hz);
+    const rk = rockAhead(g, 220);
+    if (rk && once(`${rk.it.i}.${rk.j}`, () => r() < dodge)) return safeX(g, [rk.zone]);
+    const ln = laneHorde(g, 360);
+    if (ln) {
+      const right = once(`lane${ln.i}`, () => r() >= wrong);
+      const p = lanePlan(g, ln);
+      return right === p.through ? (ln.span[0] + ln.span[1]) / 2 : p.round;
+    }
     const gt = ahead(g, 'gates', 380);
-    if (gt) return once(gt.i, () => gateSide(g, gt, r() >= wrong) + (r() - 0.5) * 2 * aim);
+    if (gt) {
+      const right = once(gt.i, () => r() >= wrong), off = once(`aim${gt.i}`, () => (r() - 0.5) * 2 * aim);
+      return gateSide(g, gt, right, true) + off;
+    }
     const bn = ahead(g, 'beans', 240);
     if (bn && once(bn.i, () => r() < beans)) return bn.x;
     return null;

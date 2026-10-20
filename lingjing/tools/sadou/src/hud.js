@@ -5,10 +5,12 @@ import { W, H } from 'sadou-core';
 import { FONT, canvasTex, rounded } from './fx.js';
 
 export const WORDS = {
-  zh: { go: '冲！', boss: '合窳 拦路', bossName: '合窳', won: '大胜！', lost: '豆兵散了', left: (n) => `剩下 ${n} 个豆兵`,
-    hint: '左右拖动 · 带队', keys: 'A / D 或 ← / → 也行', yinyue: '银月', slam: '它要砸了！' },
-  en: { go: 'GO!', boss: 'The Heyu blocks the road', bossName: 'Heyu', won: 'Victory!', lost: 'The beans scattered',
-    left: (n) => `${n} soldiers left`, hint: 'Drag left · right to lead', keys: 'A / D or ← / → work too', yinyue: 'Yinyue', slam: 'It\'s slamming!' },
+  zh: { go: '冲！', boss: (n) => `${n} 拦路`, bossName: '合窳', won: '大胜！', lost: '豆兵散了', left: (n) => `剩下 ${n} 个豆兵`,
+    hint: '左右拖动 · 带队', keys: 'A / D 或 ← / → 也行', yinyue: '银月', slam: '它要砸了！',
+    slams: { edges: '尾巴扫两边！站中间！', middle: '砸中间！闪开！' } },
+  en: { go: 'GO!', boss: (n) => `The ${n} blocks the road`, bossName: 'Heyu', won: 'Victory!', lost: 'The beans scattered',
+    left: (n) => `${n} soldiers left`, hint: 'Drag left · right to lead', keys: 'A / D or ← / → work too', yinyue: 'Yinyue', slam: 'It\'s slamming!',
+    slams: { edges: 'Tails sweep both sides! Stay in the middle!', middle: 'It smashes the middle! Get out!' } },
 };
 
 const text = (scene, x, y, s, size, o = {}) => scene.add.text(x, y, s, {
@@ -77,7 +79,7 @@ export class Hud {
     // the road to the boss: a bar, a bean at the crowd's place, the boss's face at its end
     this.barBack = s.add.image(W / 2, 72, 'bar-back').setDepth(depth);
     this.barFill = s.add.graphics().setDepth(depth + 1);
-    this.barIcon = s.add.image(W / 2 + 160, 70, 'heyu-face').setDepth(depth + 2).setDisplaySize(44, 44);
+    this.barIcon = s.add.image(W / 2 + 160, 70, 'boss-face').setDepth(depth + 2).setDisplaySize(44, 44);
     this.bean = s.add.image(W / 2 - 140, 72, 'units', 'bean').setDepth(depth + 3).setScale(0.55);
     this.fps = scene.cfg.showFps ? text(s, 10, 104, '', 16, { ox: 0, color: '#9dff9d' }).setDepth(depth + 1) : null;
     this.bossBar = null;
@@ -159,12 +161,12 @@ export class Hud {
     });
   }
 
-  showBoss(hp) {
+  showBoss(hp, name = this.w.bossName) {
     const s = this.s;
     this.bossHp = hp;
     this.bossBack = s.add.image(W / 2, 112, 'bar-back').setDepth(this.d).setScale(1.3, 1.1);
     this.bossFill = s.add.graphics().setDepth(this.d + 1);
-    this.bossName = text(s, W / 2 - 200, 112, this.w.bossName, 22, { color: '#ffd0c0' }).setDepth(this.d + 2);
+    this.bossName = text(s, W / 2 - 200, 112, name, 22, { color: '#ffd0c0' }).setDepth(this.d + 2);
     this.bossNum = s.add.bitmapText(W / 2 + 10, 112, 'numSmall', String(hp), 26).setOrigin(0.5).setDepth(this.d + 2);
     this.bossShown = hp;
     this.bossLag = hp;

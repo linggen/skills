@@ -1,12 +1,13 @@
-// 撒豆成兵 (the crowd run) — the level file is sound (卷一 beasts only, the 合窳 boss at the end, a 60–90 s run, words in
-// both languages), the engine's arithmetic holds (gates, beans, hazards, the clash, the boss's slam), the balance holds
-// (a bot taking the good gates wins, one taking the bad gates loses, one that never steers loses), and what Phaser draws
-// exists: the bundle is current, Phaser is the one shared vendored build, every picture it asks for is there, the
-// font covers every word.
+// 撒豆成兵 (the crowd run) — the level file is sound (five levels, 山道 → 黑松岭, each bringing one new thing; 卷一
+// beasts only, a boss at the end, a 60–90 s run, words in both languages), the engine's arithmetic holds (gates, flipping
+// gates, beans, hazards, falling rocks, lane hordes, the clash, the boss's slams), the balance holds on EVERY level (a bot
+// taking the good gates wins, one taking the bad gates loses, one that never steers loses, a first-time human wins most
+// runs and fewer as the ladder climbs), and what Phaser draws exists: the bundle is current, Phaser is the one shared
+// vendored build, every picture it asks for is there, the font covers every word.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, humanBot, applyOp, crowdHalf, hordeCount, hordeLeft, newGame, overlap, sim, stars, steer, step } from '../scripts/games/sadou/core.js';
+import { BOTS, humanBot, applyOp, crowdHalf, gatesAt, hordeCount, hordeLeft, newGame, overlap, safeX, sim, slamZones, stars, steer, step } from '../scripts/games/sadou/core.js';
 import { levelAsked, meta } from '../scripts/games/sadou.js';
 import { sourceHash } from '../tools/sadou/hash.mjs';
 
@@ -28,13 +29,41 @@ test('registered: meta, the 游戏厅 row (塔防, featured), the level asked fo
   assert.equal(levelAsked(kit, { lv: 'shandao' }, ''), level);
   assert.equal(levelAsked(kit, {}, '?lv=1'), level);
   assert.equal(levelAsked(kit, {}, '?lv=99'), level, 'an unknown level falls back to the first');
+  kit.levels.forEach((l, i) => {
+    assert.equal(levelAsked(kit, { lv: l.id }, ''), l, l.id);
+    assert.equal(levelAsked(kit, {}, `?lv=${i + 1}`), l, `?lv=${i + 1}`);
+  });
 });
 
-test('the level is data: kit, title, a lead-in that ends on 撒豆成兵, a countdown, stars, moments in both languages', () => {
+test('a ladder of five: own ids, places and titles, each level brings exactly one new thing, and 下一关 names the next', () => {
+  assert.equal(kit.levels.length, 5);
+  assert.equal(new Set(kit.levels.map((l) => l.id)).size, 5);
+  assert.equal(new Set(kit.levels.map((l) => l.title.zh)).size, 5);
+  // what each level is the first to bring (in data): a flipping gate, falling rocks, a lane horde, a new boss
+  const brings = (l) => new Set([
+    ...l.track.filter((t) => t.type === 'gates' && t.flip).map(() => 'flip'),
+    ...l.track.filter((t) => t.type === 'rocks').map(() => 'rocks'),
+    ...l.track.filter((t) => t.type === 'horde' && t.span).map(() => 'lane'),
+    `boss:${l.boss.beast}`,
+  ]);
+  const seen = new Set();
+  const news = kit.levels.map((l) => { const n = [...brings(l)].filter((k) => !seen.has(k)); brings(l).forEach((k) => seen.add(k)); return n; });
+  assert.deepEqual(news, [['boss:heyu'], ['flip'], ['rocks'], ['lane'], ['boss:longzhi']]);
+  // the shell's 下一关: sadou.js names the following level's id on a win, nothing after the last
+  const src = readFileSync(at('scripts/games/sadou.js'), 'utf8');
+  assert.match(src, /next: nx\.id/);
+  // the road runs no slower as the ladder climbs (how much harder each level plays is the human test below)
+  for (let i = 1; i < kit.levels.length; i += 1) assert.ok(kit.levels[i].speed >= kit.levels[i - 1].speed, kit.levels[i].id);
+});
+
+for (const level of kit.levels) test(`${level.id}: the level is data — kit, title, a lead-in that ends on a big line, a countdown, stars, moments in both languages`, () => {
   assert.equal(level.kit, 'sadou');
   assert.ok(level.story === null && both(level.title));
   assert.ok(level.lead.length >= 2 && level.lead.every(both));
-  assert.ok(level.lead.at(-1).big && level.lead.at(-1).zh.includes('撒豆成兵'));
+  assert.ok(level.lead.at(-1).big && level.lead.slice(0, -1).every((l) => !l.big), 'one big banner line, the last');
+  if (level === kit.levels[0]) assert.ok(level.lead.at(-1).zh.includes('撒豆成兵'));
+  assert.ok((level.difficulty ?? 1) > 0 && (level.difficulty ?? 1) <= 1.5, 'the one knob');
+  if (level.tone) assert.ok(/^#[0-9a-f]{6}$/i.test(level.tone.color) && level.tone.alpha > 0 && level.tone.alpha < 0.6);
   assert.ok(level.leadSec >= 3 && level.countdown >= 1, 'it starts by itself after the lead-in — no start tap');
   assert.ok(level.stars[0] > level.stars[1] && level.stars[1] > 0);
   for (const [k, lines] of Object.entries(level.moments)) if (!k.startsWith('_')) assert.ok(lines.length && lines.every(both), k);
@@ -44,28 +73,34 @@ test('the level is data: kit, title, a lead-in that ends on 撒豆成兵, a coun
   assert.deepEqual(ats, [...ats].sort((a, b) => a - b), 'the track is in road order');
   assert.ok(ats.at(-1) < level.boss.at);
   for (const it of level.track) {
-    assert.ok(['gates', 'beans', 'hazard', 'horde'].includes(it.type), it.type);
+    assert.ok(['gates', 'beans', 'hazard', 'horde', 'rocks'].includes(it.type), it.type);
     if (it.type === 'gates') {
       assert.equal(it.gates.length, 2);
       for (const g of it.gates.filter(Boolean)) assert.ok(['+', '-', 'x', '/'].includes(g.op) && g.n > 0);
+      if (it.flip) assert.ok(it.flip >= 180, 'a flip slow enough to read and steer to');
     }
+    if (it.type === 'rocks') assert.ok(it.falls.length && it.gap >= 180 && it.falls.every((x) => Math.abs(x) <= 0.7));
+    if (it.type === 'horde' && it.span) assert.ok(it.span[1] - it.span[0] <= 1.2, 'a lane horde leaves a lane open');
   }
+  for (const m of level.boss.moves ?? []) assert.ok(['half', 'edges', 'middle'].includes(m), m);
   const kinds = new Set(level.track.filter((t) => t.type === 'gates').flatMap((t) => t.gates.filter(Boolean).map((g) => g.op)));
   assert.deepEqual([...kinds].sort(), ['+', '-', '/', 'x'], 'every kind of gate, the traps too');
 });
 
-test('卷一 beasts only (野猪 狰 犰狳 鬿雀, the 合窳 boss), each one a creature of the world, no 夔牛', () => {
+test('卷一 beasts only (野猪 狰 犰狳 鬿雀, the 合窳 and 蠪侄 bosses), each one a creature of the world, no 夔牛', () => {
   const ids = new Set(creatures.map((c) => c.id));
   const juan = Object.fromEntries(creatures.map((c) => [c.id, c.juan]));
-  const used = new Set(level.track.filter((t) => t.type === 'horde').flatMap((t) => t.beasts.map(([b]) => b)));
-  used.add(level.boss.beast);
+  const used = new Set(kit.levels.flatMap((l) => l.track.filter((t) => t.type === 'horde').flatMap((t) => t.beasts.map(([b]) => b))));
+  for (const l of kit.levels) used.add(l.boss.beast);
   for (const b of used) {
     assert.ok(kit.beasts[b], `${b}: stats`);
     assert.ok(ids.has(b), `${b}: in creatures.json`);
     assert.ok(!juan[b] || juan[b] === 1, `${b}: not from a later 卷`);
   }
-  assert.deepEqual([...used].sort(), ['heyu', 'qique', 'qiuyu', 'yezhu', 'zheng']);
+  assert.deepEqual([...used].sort(), ['heyu', 'longzhi', 'qique', 'qiuyu', 'yezhu', 'zheng']);
   assert.equal(level.boss.beast, 'heyu');
+  assert.equal(kit.levels.at(-1).boss.beast, 'longzhi');
+  for (const b of ['heyu', 'longzhi']) assert.ok(both(kit.beasts[b].name), `${b}: a name for the boss bar`);
 });
 
 test('the arithmetic: gates, overlap, the horde, stars', () => {
@@ -131,31 +166,121 @@ test('the clash stops the run and trades soldiers for beasts; the boss slams the
   assert.ok(killed.true * 3 < killed.false, `stepping out saves most (${killed.true} vs ${killed.false}); a big crowd can't clear it all`);
 });
 
-test('balance: good gates win ★★★, bad gates lose, never steering loses, careless wins with fewer stars', () => {
-  const good = sim(kit, level, BOTS.good);
-  assert.ok(good.won, JSON.stringify(good));
-  assert.equal(good.stars, 3);
-  assert.ok(good.sec >= 60 && good.sec <= 95, `${good.sec.toFixed(0)} s`);
-  assert.ok(good.peak >= 250, `the crowd snowballs: peak ${good.peak}`);
-  const bad = sim(kit, level, BOTS.bad);
-  assert.ok(!bad.won && bad.left === 0, JSON.stringify(bad));
-  const idle = sim(kit, level, BOTS.idle);
-  assert.ok(!idle.won, JSON.stringify(idle));
-  // good gates but careless (walks into every hazard, stands under the slam): a win, with fewer stars
-  const careless = sim(kit, level, BOTS.careless);
-  assert.ok(careless.won && careless.stars < 3, JSON.stringify(careless));
+test('a flipping gate swaps its faces every `flip` px until the crowd reaches it, and the crowd gets the face it meets', () => {
+  const lv = kit.levels.find((l) => l.track.some((t) => t.flip));
+  const it = lv.track.find((t) => t.flip);
+  assert.deepEqual(gatesAt(it, it.at), it.gates, 'lands as written');
+  assert.deepEqual(gatesAt(it, it.at - it.flip - 1), [it.gates[1], it.gates[0]], 'one flip out: swapped');
+  assert.deepEqual(gatesAt(it, it.at - 2 * it.flip - 1), it.gates);
+  for (const side of [0, 1]) {
+    const g = newGame(kit, lv);
+    g.items.forEach((t) => { if (t.at < it.at) t.done = true; });
+    g.dist = it.at - 600;
+    steer(g, side ? 0.6 : -0.6);
+    while (g.dist < it.at + 20) step(g, 1 / 30);
+    const ev = g.events.find((e) => e.t === 'gate');
+    assert.deepEqual(ev.gate, it.gates[side]);
+  }
 });
 
-test('a first-time human wins: ~400 ms reactions, a wrong gate one time in five, half the dodges', () => {
-  // the lesson from 守墙关 (10-20): a level tuned by perfect bots was too hard for Hanli's first play
+test('falling rocks land one by one, each taking the share of the crowd under it; a lane horde is fought only by those who run into it', () => {
+  const lv = kit.levels.find((l) => l.track.some((t) => t.type === 'rocks'));
+  const ri = lv.track.findIndex((t) => t.type === 'rocks'), it = { ...lv.track[ri], i: ri };
+  const run = (x) => {
+    const g = newGame(kit, lv);
+    g.items.forEach((t) => { if (t !== g.items[it.i]) t.done = true; });
+    g.dist = it.at - 50;
+    g.count = 100;
+    const rocks = [];
+    while (g.dist < it.at + it.falls.length * it.gap) { steer(g, x(g)); step(g, 1 / 30); rocks.push(...g.events.filter((e) => e.t === 'rock')); g.events.length = 0; }
+    return rocks;
+  };
+  const under = run((g) => { const n = g.items[it.i].next; return it.falls[Math.min(n, it.falls.length - 1)]; });
+  const off = run((g) => BOTS.good(g));
+  assert.equal(under.length, it.falls.length);
+  assert.ok(under.reduce((s, e) => s + e.killed, 0) > 20, 'standing under them costs');
+  assert.ok(off.reduce((s, e) => s + e.killed, 0) * 3 < under.reduce((s, e) => s + e.killed, 0), 'stepping out of the shadows saves most');
+  // a lane horde
+  const ll = kit.levels.find((l) => l.track.some((t) => t.type === 'horde' && t.span));
+  const hd = ll.track.find((t) => t.type === 'horde' && t.span);
+  for (const into of [true, false]) {
+    const g = newGame(kit, ll);
+    g.items.forEach((t) => { if (t.at < hd.at) t.done = true; });
+    g.dist = hd.at - 300;
+    g.count = 80;
+    const x = (hd.span[0] + hd.span[1]) / 2;
+    steer(g, into ? x : -Math.sign(x) * 0.8);
+    while (g.dist < hd.at + 20 && g.phase !== 'clash') step(g, 1 / 30);
+    assert.equal(g.phase === 'clash', into, into ? 'ran into it' : 'ran round it');
+  }
+});
+
+test('the boss slams in its pattern: 蠪侄 sweeps both edges (stand in the middle) and smashes the middle (step aside)', () => {
+  assert.deepEqual(slamZones('half', -0.3), [[-1, 0]]);
+  assert.deepEqual(slamZones('half', 0.3), [[0, 1]]);
+  const lz = kit.levels.at(-1);
+  assert.ok(lz.boss.moves.includes('edges') && lz.boss.moves.includes('middle'));
+  // a small crowd that fits in any safe lane; the boss outlasts it and is fed none, so the slams are what's measured
+  const slamsOf = (bot) => {
+    const b = newGame(kit, lz);
+    b.dist = lz.boss.at - 1;
+    b.count = 30;
+    Object.assign(b.boss, { hp: 1e6, feedMin: 0, feedRate: 0 });
+    b.items.forEach((it) => { it.done = true; });
+    const slams = [];
+    while (slams.length < lz.boss.moves.length && b.t < 60 && b.phase !== 'lost') {
+      steer(b, bot(b));
+      step(b, 1 / 30);
+      slams.push(...b.events.filter((e) => e.t === 'slam'));
+      b.events.length = 0;
+    }
+    return slams;
+  };
+  const dodged = slamsOf(BOTS.good), stood = slamsOf((g) => (g.boss.warn ? safeX(g, g.boss.warn.zones, true) : 0));
+  assert.deepEqual(dodged.map((e) => e.move), lz.boss.moves);
+  assert.ok(dodged.every((e) => e.killed === 0), `dodged: ${dodged.map((e) => e.killed)}`);
+  assert.ok(stood.every((e) => e.killed > 0), `stood under: ${stood.map((e) => e.killed)}`);
+});
+
+// the ladder: a first-time human (~400 ms reactions, a wrong gate one time in five, two dodges in three) wins at least
+// this many of 40 runs per level — fewer as it climbs, and never the 秘境 pool's wall
+const HUMAN = { shandao: 32, 'shandao-ye': 28, houshan: 26, yaoyuan: 24, heisong: 22 };
+
+for (const level of kit.levels) {
+  test(`${level.id}: good gates win ★★★, bad gates lose, never steering loses, careless loses or wins with fewer stars`, () => {
+    const good = sim(kit, level, BOTS.good);
+    assert.ok(good.won, JSON.stringify(good));
+    assert.equal(good.stars, 3);
+    assert.ok(good.sec >= 60 && good.sec <= 95, `${good.sec.toFixed(0)} s`);
+    assert.ok(good.peak >= 250, `the crowd snowballs: peak ${good.peak}`);
+    const bad = sim(kit, level, BOTS.bad);
+    assert.ok(!bad.won && bad.left === 0, JSON.stringify(bad));
+    const idle = sim(kit, level, BOTS.idle);
+    assert.ok(!idle.won, JSON.stringify(idle));
+    // good gates but careless (walks into every hazard, stands under the slam): at best a win with fewer stars
+    const careless = sim(kit, level, BOTS.careless);
+    assert.ok(!careless.won || careless.stars < 3, JSON.stringify(careless));
+  });
+
+  test(`${level.id}: a first-time human wins most runs (≥ ${HUMAN[level.id]}/40); a sloppy one wins fewer`, () => {
+    // the lesson from 守墙关 (10-20): a level tuned by perfect bots was too hard for Hanli's first play
+    const seeds = Array.from({ length: 40 }, (_, i) => `h${i}`);
+    const human = seeds.map((s) => sim(kit, level, humanBot(s), { seed: s }));
+    const wins = human.filter((r) => r.won).length;
+    assert.ok(wins >= HUMAN[level.id], `a first-timer wins ${wins}/40`);
+    assert.ok(wins < 40 || level === kit.levels[0], 'not a walkover');
+    assert.ok(human.some((r) => r.won && r.stars === 3) && human.some((r) => r.won && r.stars < 3), 'stars spread');
+    const sloppy = seeds.map((s) => sim(kit, level, humanBot(s, { react: 0.6, wrong: 0.35, dodge: 0.4, slam: 0.25 }), { seed: s }));
+    const sw = sloppy.filter((r) => r.won).length;
+    assert.ok(sw >= 2 && sw < wins, `a sloppy player wins ${sw}/40 — playing better pays`);
+  });
+}
+
+test('the ladder climbs: a first-time human wins no more on a later level than on the one before (one run of slack)', () => {
   const seeds = Array.from({ length: 40 }, (_, i) => `h${i}`);
-  const human = seeds.map((s) => sim(kit, level, humanBot(s), { seed: s }));
-  const wins = human.filter((r) => r.won).length;
-  assert.ok(wins >= 32, `a first-timer wins ${wins}/40`);
-  assert.ok(human.some((r) => r.won && r.stars === 3) && human.some((r) => r.won && r.stars < 3), 'stars spread');
-  const sloppy = seeds.map((s) => sim(kit, level, humanBot(s, { react: 0.6, wrong: 0.35, dodge: 0.4, slam: 0.25 }), { seed: s }));
-  const sw = sloppy.filter((r) => r.won).length;
-  assert.ok(sw >= 10 && sw < wins, `a sloppy player wins ${sw}/40 — playing better pays`);
+  const wins = kit.levels.map((l) => seeds.filter((s) => sim(kit, l, humanBot(s), { seed: s }).won).length);
+  for (let i = 1; i < wins.length; i += 1) assert.ok(wins[i] <= wins[i - 1] + 1, `${wins}`);
+  assert.ok(wins.at(-1) < wins[0], `${wins}`);
 });
 
 test('the bundle is current, loads the one shared Phaser, and every picture and word it needs is there', () => {
@@ -173,11 +298,12 @@ test('the bundle is current, loads the one shared Phaser, and every picture and 
   for (const f of ['soldier-1', 'soldier-2', 'bean', 'pine', 'rock', 'lantern', 'log', 'spikes']) assert.ok(atlas.frames[f], `atlas frame ${f}`);
   for (const [b, k] of Object.entries(kit.beasts)) {
     if (b.startsWith('_')) continue;
-    for (const f of [...k.frames, k.hit]) assert.ok(existsSync(at(`scripts/games/shouqiang/art/${b}-${f}.webp`)), `${b}-${f} (守墙关's, shared)`);
+    const dir = k.art === 'sadou' ? 'sadou' : 'shouqiang'; // 守墙关's frames, shared; the 黑松岭 boss is this game's own
+    for (const f of [...k.frames, k.hit]) assert.ok(existsSync(at(`scripts/games/${dir}/art/${b}-${f}.webp`)), `${b}-${f} (${dir})`);
   }
   assert.ok(existsSync(at('scripts/games/shouqiang/art/xiaoman-cast.webp')));
   const chars = readFileSync(at('scripts/games/sadou/font/chars.txt'), 'utf8');
-  const words = JSON.stringify([level.title, level.lead, level.moments, meta]);
+  const words = JSON.stringify([kit.levels.map((l) => [l.title, l.lead, l.moments]), kit.beasts, meta]);
   for (const ch of words.match(/[　-鿿＀-￯]/g)) assert.ok(chars.includes(ch), `font lacks ${ch}`);
   assert.ok(existsSync(at('scripts/games/sadou/font/OFL.txt')));
 });

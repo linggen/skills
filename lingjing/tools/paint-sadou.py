@@ -5,6 +5,7 @@ the art benchmark 《向僵尸开炮》: chunky outlined cartoon, painted ground
     PY=~/.linggen/runtime/envs/pictures/bin/python
     $PY tools/paint-sadou.py paint [--only id,…] [--seeds 1,2,3] [--force]   # every seed → $FLUX_REVIEW/sadou/, to be looked at
     $PY tools/paint-sadou.py cut                                             # the KEPT seeds → scripts/games/sadou/art/
+    $PY tools/paint-sadou.py cut --only longzhi                              # one boss's frames only (the 黑松岭 boss)
 
 `paint` writes every seed for review (fake glyphs, off-model, wrong view → not kept); KEPT names the seed taken.
 A piece whose `ref` is another piece is an EDIT pass from that piece's kept seed (a run frame from its master, the
@@ -91,10 +92,25 @@ JOBS = {
   'bean': dict(key='magenta', w=384, h=384, prompt=(
     f'ONE single glossy golden-yellow SOYBEAN, plump and oval with a small dark seam, a bright shine, faint golden '
     f'sparkles round it. {STYLE} {MAGENTA}')),
+  # the 黑松岭 boss (level 5): 蠪侄 of 卷一's 序章 trial (creatures.json `longzhi`), in 守墙关's beast view — walking
+  # TOWARD the viewer, top-down 3/4 — so it stands at the road's end like 合窳 does
+  'longzhi-walk-1': dict(key='green', w=768, h=768, prompt=(
+    'The LONGZHI boss beast of Chinese myth: a HUGE fox-like beast as big as an ox, sleek russet-orange fox body with a '
+    'cream chest, NINE fluffy fox TAILS fanned out wide behind it like a peacock fan, NINE small fox HEADS on short '
+    'necks clustered on its shoulders (one big middle head, four smaller heads each side), every head with sharp ears, '
+    'glowing gold eyes and a wailing open mouth, big striped TIGER PAWS with long claws. Seen in TOP-DOWN 3/4 VIEW from '
+    'above and in front (the camera high, looking down at about 50 degrees), walking straight TOWARD the viewer, its faces '
+    f'toward us, menacing. {STYLE} {GREEN}')),
+  'longzhi-hit': dict(key='green', w=768, h=768, ref='longzhi-walk-1', prompt=(
+    'The SAME nine-headed nine-tailed fox beast HIT hard: recoiling backward, all its heads jerked back with eyes squeezed '
+    'shut in a comic wince, mouths open in a yelp, a few fur tufts flying, the tails bristling. The same view, colours, '
+    f'outline and size in the frame. {STYLE} {GREEN}')),
 }
+# the boss's frames: one cell per set, feet on the floor (paint-shouqiang.py's pack), loaded by the kit's `art: sadou`
+BOSS = {'longzhi': 420}
 
 # id: seed — chosen after looking at every seed in REVIEW (one subject, on-model, no fake glyphs).
-KEPT = {'soldier-1': 3, 'gate-good': 3, 'tex-road': 3, 'tex-side': 2, 'edge': 3, 'pine': 1, 'rock': 2, 'lantern': 1, 'soldier-2': 1, 'gate-bad': 1, 'log': 1, 'spikes': 1, 'bean': 1}
+KEPT = {'longzhi-walk-1': 1, 'longzhi-hit': 3, 'soldier-1': 3, 'gate-good': 3, 'tex-road': 3, 'tex-side': 2, 'edge': 3, 'pine': 1, 'rock': 2, 'lantern': 1, 'soldier-2': 1, 'gate-bad': 1, 'log': 1, 'spikes': 1, 'bean': 1}
 # atlas frames (the crowd and every small sprite) and how big each one is drawn into it (longest side, px)
 ATLAS = {'soldier-1': 96, 'soldier-2': 96, 'bean': 48, 'pine': 220, 'rock': 160, 'lantern': 140, 'log': 300,
          'spikes': 300}
@@ -207,9 +223,32 @@ def fit(im, side):
   return im.resize((max(1, round(im.width * k)), max(1, round(im.height * k))), Image.LANCZOS) if k < 1 else im
 
 
-def cut():
+def cut_boss(name, side):
+  """A boss's frames (walk-1, hit) → webp on one cell: scaled to the same painted area, feet on the floor, centred."""
+  import numpy as np
+  from PIL import Image
+  ids = [k for k in KEPT if k.startswith(f'{name}-')]
+  ims = {k: key(REVIEW / f'{k}-{KEPT[k]}.png', JOBS[k]['key']) for k in ids}
+  area = lambda im: (np.asarray(im)[..., 3] > 128).sum()
+  first = f'{name}-walk-1'
+  k0, a0 = side / max(ims[first].size), area(ims[first])
+  sc = {k: im.resize((max(1, round(im.width * k0 * (a0 / area(im)) ** 0.5)), max(1, round(im.height * k0 * (a0 / area(im)) ** 0.5))), Image.LANCZOS)
+        for k, im in ims.items()}
+  cw, ch = max(i.width for i in sc.values()) + 4, max(i.height for i in sc.values()) + 4
+  for k, im in sc.items():
+    cell = Image.new('RGBA', (cw, ch), (0, 0, 0, 0))
+    cell.alpha_composite(im, ((cw - im.width) // 2, ch - 2 - im.height))
+    cell.save(GAME / f'{k}.webp', 'WEBP', quality=88, method=6, exact=True)
+    print(k, '→', GAME / f'{k}.webp', cell.size)
+
+
+def cut(only=''):
   from PIL import Image
   GAME.mkdir(parents=True, exist_ok=True)
+  if only:  # one boss set only: the atlas needs every kept seed of the first set, painted 10-20 and not kept on disk
+    for name in only.split(','):
+      cut_boss(name, BOSS[name])
+    return
   pieces = {}
   for jid, seed in KEPT.items():
     j, src = JOBS[jid], REVIEW / f'{jid}-{seed}.png'
@@ -249,4 +288,4 @@ if __name__ == '__main__':
   ap.add_argument('--seeds', default='1,2,3')
   ap.add_argument('--force', action='store_true')
   a = ap.parse_args()
-  paint(a) if a.cmd == 'paint' else cut()
+  paint(a) if a.cmd == 'paint' else cut(a.only)

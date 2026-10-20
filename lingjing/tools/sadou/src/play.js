@@ -5,7 +5,7 @@
 // their positions ease toward packed slots (a sunflower spiral) — no physics. Deaths, charges and pops are pooled
 // ghosts and pooled bitmap numbers, updated by hand (no tween per soldier).
 import * as Phaser from 'phaser';
-import { newGame, step, steer, crowdHalf, hazardSpan, hordeLeft, hordeCount, W, H, ROAD, CROWD_Y, SPACING } from 'sadou-core';
+import { newGame, step, steer, crowdHalf, hazardSpan, hordeLeft, hordeCount, gatesAt, W, H, ROAD, CROWD_Y, SPACING } from 'sadou-core';
 import { makeTextures, makeNumberFont, makeEmitters, rng, FONT } from './fx.js';
 import { Hud, WORDS } from './hud.js';
 import { Sfx } from './sfx.js';
@@ -43,9 +43,10 @@ export class PlayScene extends Phaser.Scene {
     this.load.atlas('units', `${art}units.webp`, `${art}units.json`);
     for (const k of ['gate-good', 'gate-bad', 'tex-road', 'tex-side', 'edge']) this.load.image(k, `${art}${k}.webp`);
     // the beasts, the boss and 小满 are 守墙关's frames, shared (doc/game-kit.md: one 野猪 for every kit)
+    // (a beast with `art: "sadou"` is this game's own: the 黑松岭 boss)
     for (const [b, k] of Object.entries(this.cfg.kit.beasts)) {
       if (b.startsWith('_')) continue;
-      for (const f of [...k.frames, k.hit]) this.load.image(`${b}-${f}`, `${sq}${b}-${f}.webp`);
+      for (const f of [...k.frames, k.hit]) this.load.image(`${b}-${f}`, `${k.art === 'sadou' ? art : sq}${b}-${f}.webp`);
     }
     this.load.image('xiaoman', `${sq}xiaoman-cast.webp`);
     this.load.image('yy', `${sl}yinyue.webp`);
@@ -151,10 +152,12 @@ export class PlayScene extends Phaser.Scene {
   /** Named frames cut from whole pictures: the boss's face for the road bar, 银月's portrait for her bubble. */
   frames() {
     // (a frame added to a texture would become its default frame, so the face is a texture of its own)
-    const src = this.textures.get('heyu-walk-1').getSourceImage();
+    const { beast } = this.cfg.level.boss, kb = this.cfg.kit.beasts[beast];
+    const src = this.textures.get(`${beast}-${kb.frames[0]}`).getSourceImage();
     const big = src.width > 300;
-    const [fx, fy, fw, fh] = big ? [src.width * 0.45, src.height * 0.38, src.width * 0.4, src.height * 0.36] : [0, 0, src.width, src.height];
-    const face = this.textures.createCanvas('heyu-face', Math.round(fw), Math.round(fh));
+    const [cx, cy, cw, ch] = kb.face ?? [0.45, 0.38, 0.4, 0.36]; // the face's box in the frame (fractions)
+    const [fx, fy, fw, fh] = big ? [src.width * cx, src.height * cy, src.width * cw, src.height * ch] : [0, 0, src.width, src.height];
+    const face = this.textures.createCanvas('boss-face', Math.round(fw), Math.round(fh));
     face.getContext().drawImage(src, fx, fy, fw, fh, 0, 0, fw, fh);
     face.refresh();
     const meta = this.cache.json.get('yy-meta');
@@ -186,15 +189,19 @@ export class PlayScene extends Phaser.Scene {
     }
     // the vignette that frames the play (one normal-blend quad; no additive light shafts — fill-rate)
     this.add.image(W / 2, H / 2, 'vignette').setDisplaySize(W, H).setDepth(D.light + 1);
+    // the level's light (night, mist, dusk): one tinted quad over the world, under the vignette and the HUD
+    const tone = this.cfg.level.tone;
+    if (tone) this.add.rectangle(W / 2, H / 2, W, H, Phaser.Display.Color.HexStringToColor(tone.color).color, tone.alpha).setDepth(D.light);
     // scenery along both sides: seeded, so the road is the same every play
     this.props = [];
     const r = rng(`sadou-props|${this.cfg.level.id}`);
     const end = this.cfg.level.boss.at + 1400;
+    const mix = this.cfg.level.props ?? { pine: 0.62, rock: 0.24, lantern: 0.14 };
     for (let at = -400; at < end; at += 70 + r() * 70) {
       for (const sideSign of [-1, 1]) {
         if (r() < 0.35) continue;
         const roll = r();
-        const kind = roll < 0.62 ? 'pine' : roll < 0.86 ? 'rock' : 'lantern';
+        const kind = roll < mix.pine ? 'pine' : roll < mix.pine + mix.rock ? 'rock' : 'lantern';
         const near = kind === 'lantern' ? 16 + r() * 10 : kind === 'rock' ? 10 + r() * 40 : 20 + r() * 60;
         const x = sideSign < 0 ? ROAD.cx - ROAD.half - near : ROAD.cx + ROAD.half + near;
         const h = kind === 'pine' ? 90 + r() * 60 : kind === 'rock' ? 34 + r() * 24 : 52;
@@ -364,16 +371,31 @@ export class PlayScene extends Phaser.Scene {
   spawnItem(it) {
     const v = { it, parts: [] };
     if (it.type === 'gates') {
-      v.gates = it.gates.map((gate, side) => {
+      v.faces = gatesAt(it, this.g.dist);
+      v.gates = v.faces.map((gate, side) => {
         if (!gate) return null;
-        const good = gate.op === '+' || gate.op === 'x';
         const x = roadX(side ? 0.5 : -0.5);
-        const img = this.add.image(x, 0, good ? 'gate-good' : 'gate-bad').setOrigin(0.5, 0.8);
+        const img = this.add.image(x, 0, 'gate-good').setOrigin(0.5, 0.8);
         img.setScale((ROAD.half * 1.02) / img.width);
-        const glow = this.add.image(x, 0, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(good ? 0x7fd8ff : 0xff4a3a).setAlpha(0.35).setScale(4.2, 1.6);
-        const label = this.add.bitmapText(x, 0, good ? 'numGood' : 'numBad', `${gate.op}${gate.n}`, 58).setOrigin(0.5);
-        return { img, glow, label, good, side };
+        const glow = this.add.image(x, 0, 'glow').setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.35).setScale(4.2, 1.6);
+        const label = this.add.bitmapText(x, 0, 'numGood', '', 58).setOrigin(0.5);
+        const gt = { img, glow, label, side, sx: img.scaleX, turn: 0 };
+        this.face(gt, gate);
+        return gt;
       });
+      // a flipping pair wears a spinning ring of light on each pillar pair, so it reads as "this one moves"
+      if (it.flip) v.rings = v.gates.filter(Boolean).map((gt) => this.add.image(gt.img.x, 0, 'ring').setTint(0xd6a8ff).setAlpha(0.5).setScale(1.1, 0.45));
+      if (it.flip && !this.saidFlip) { this.saidFlip = true; this.say('flip', true); }
+    } else if (it.type === 'rocks') {
+      // each fall: a shadow on the road that darkens as the rock comes, then the rock dropping onto it
+      const r = it.r ?? 0.3;
+      v.falls = it.falls.map((x) => ({
+        x, sh: this.add.image(roadX(x), 0, 'shadow').setDisplaySize(r * 2 * ROAD.half, r * ROAD.half * 0.7).setAlpha(0).setDepth(D.decal + 0.4),
+        rock: this.add.image(roadX(x), 0, 'units', 'rock').setOrigin(0.5, 0.8).setVisible(false),
+        down: false,
+      }));
+      v.falls.forEach((f) => f.rock.setScale((r * 1.5 * ROAD.half) / f.rock.frame.width));
+      if (!this.saidRock) { this.saidRock = true; this.say('rock', true); }
     } else if (it.type === 'beans') {
       v.beans = Array.from({ length: Math.min(it.n, 24) }, (_, i) => {
         const [ox, oy] = slot(i);
@@ -390,11 +412,12 @@ export class PlayScene extends Phaser.Scene {
       const left = hordeLeft(it.left);
       const all = left.flatMap((u) => Array.from({ length: u.n }, () => u.b));
       // ranks across the road, the front rank nearest the crowd; the first kind listed stands at the back
-      const per = 7;
+      const [a, b2] = it.span ?? [-1, 1], lane = (b2 - a) * 0.9;
+      const per = Math.max(3, Math.round(7 * (lane / 1.8)));
       all.forEach((b, i) => {
         const row = Math.floor(i / per), col = i % per;
         const rowN = Math.min(per, all.length - row * per);
-        const x = roadX(((col + 0.5) / rowN) * 1.8 - 0.9 + (this.rand() - 0.5) * 0.08);
+        const x = roadX(((col + 0.5) / rowN) * lane + (a + b2) / 2 - lane / 2 + (this.rand() - 0.5) * 0.08);
         const kb = this.cfg.kit.beasts[b];
         const s = this.add.image(x, 0, `${b}-${kb.frames[0]}`).setOrigin(0.5, 0.9);
         s.setScale(kb.size / s.height);
@@ -406,6 +429,8 @@ export class PlayScene extends Phaser.Scene {
       v.beasts.forEach((bs, i) => { bs.oy = -Math.floor(i / per) * 46 - this.rand() * 12; });
       v.pill = this.add.image(0, 0, 'pill-red');
       v.num = this.add.bitmapText(0, 0, 'numSmall', String(all.length), 32).setOrigin(0.5);
+      v.cx = roadX(((it.span ?? [-1, 1])[0] + (it.span ?? [-1, 1])[1]) / 2);
+      if (it.span && !this.saidLane) { this.saidLane = true; this.say('lane', true); }
     }
     this.vis.set(it.i, v);
     return v;
@@ -416,27 +441,57 @@ export class PlayScene extends Phaser.Scene {
     if (!v) return;
     const kill = (o) => o?.destroy();
     v.gates?.forEach((gt) => gt && [gt.img, gt.glow, gt.label].forEach(kill));
+    v.rings?.forEach(kill);
+    v.falls?.forEach((f) => { kill(f.sh); kill(f.rock); });
     v.beans?.forEach((b) => kill(b.s));
     v.beasts?.forEach((b) => kill(b.s));
     [v.label, v.img, v.shadow, v.pill, v.num].forEach(kill);
     this.vis.delete(i);
   }
 
+  /** Dresses a gate in its face: good (blue, + ×) or cursed (red, − ÷), its number. */
+  face(gt, gate) {
+    const good = gate.op === '+' || gate.op === 'x';
+    gt.good = good;
+    gt.img.setTexture(good ? 'gate-good' : 'gate-bad');
+    gt.glow.setTint(good ? 0x7fd8ff : 0xff4a3a);
+    gt.label.setFont(good ? 'numGood' : 'numBad').setText(`${gate.op}${gate.n}`);
+  }
+
   drawItems(dt) {
     const g = this.g, t = this.time.now / 1000;
     for (const it of g.items) {
       const y = this.ySc(it.at);
-      const near = y > -220 && y < H + 220;
+      // (a patch of falling rocks reaches `gap` px further up the road per rock)
+      const top = it.type === 'rocks' ? this.ySc(it.at + (it.falls.length - 1) * it.gap) : y;
+      const near = top < H + 220 && y > -220;
       let v = this.vis.get(it.i);
-      if (near && !v && !(it.done && y > CROWD_Y + 60)) v = this.spawnItem(it);
+      if (near && !v && !(it.done && top > CROWD_Y + 60)) v = this.spawnItem(it);
       if (!v) continue;
       if (!near) { this.dropItem(it.i); continue; }
       if (it.type === 'gates') {
+        const faces = it.done ? v.faces : gatesAt(it, g.dist);
+        if (faces !== v.faces) { // a flipping pair turned: each side shows the other face, with a quick turn
+          v.faces = faces;
+          v.gates.forEach((gt, side) => { if (gt && !gt.gone) { gt.turn = 1; gt.next = faces[side]; } });
+          this.sfx.tick();
+        }
+        v.rings?.forEach((rg, k) => rg.setPosition(v.gates.filter(Boolean)[k].img.x, y - 30).setDepth(depthOf(y + 8) - 0.002)
+          .setAlpha(it.done ? 0 : 0.35 + Math.sin(t * 8) * 0.15).setRotation(t * 2));
         for (const gt of v.gates) {
           if (!gt || gt.gone) continue;
+          if (gt.turn > 0) { // squash to a sliver, swap the face at the middle, open again
+            const was = gt.turn;
+            gt.turn = Math.max(0, gt.turn - dt * 6);
+            if (was > 0.5 && gt.turn <= 0.5) this.face(gt, gt.next);
+            const k = Math.abs(gt.turn - 0.5) * 2;
+            gt.img.scaleX = gt.sx * Math.max(0.05, k);
+            gt.label.scaleX = Math.max(0.05, k);
+          }
           gt.img.setY(y + 8).setDepth(depthOf(y + 8));
           gt.glow.setY(y - 26).setDepth(depthOf(y + 8) - 0.001).setAlpha(0.28 + Math.sin(t * 5 + gt.side) * 0.08);
-          gt.label.setY(y - 32).setDepth(depthOf(y + 8) + 0.002).setScale(1 + Math.sin(t * 6 + gt.side * 2) * 0.04);
+          gt.label.setY(y - 32).setDepth(depthOf(y + 8) + 0.002);
+          if (!gt.turn) gt.label.setScale(1 + Math.sin(t * 6 + gt.side * 2) * 0.04);
         }
       } else if (it.type === 'beans') {
         for (const b of v.beans) {
@@ -444,6 +499,17 @@ export class PlayScene extends Phaser.Scene {
           b.s.setPosition(roadX(it.x) + b.ox, y + b.oy - Math.abs(Math.sin(t * 4 + b.ph)) * 4).setDepth(depthOf(y + b.oy));
         }
         if (!v.taken) v.label.setPosition(roadX(it.x), y - 52).setDepth(D.num);
+      } else if (it.type === 'rocks') {
+        const warn = it.warn ?? 380;
+        v.falls.forEach((f, j) => {
+          const land = it.at + j * it.gap, d = land - g.dist, yy = this.ySc(land);
+          if (f.down) { f.sh.setY(yy).setAlpha(Math.max(0, f.sh.alpha - dt * 2)); return; }
+          const near = Phaser.Math.Clamp(1 - d / warn, 0, 1);
+          f.sh.setY(yy).setAlpha(near * 0.85).setScale(f.sh.scaleX, f.sh.scaleY);
+          if (d < 240) { // the rock in the air over its shadow, falling the last stretch
+            f.rock.setVisible(true).setPosition(roadX(f.x), yy - Math.max(0, d) * 2.2).setDepth(D.fx - 2).setRotation(t * 3 + j);
+          }
+        });
       } else if (it.type === 'hazard') {
         const [a, b] = hazardSpan(it, g.t);
         const x = roadX((a + b) / 2);
@@ -467,8 +533,8 @@ export class PlayScene extends Phaser.Scene {
           bs.s.setY(yy + lunge - Math.abs(Math.sin(t * 7 + bs.ph)) * (bs.kb.fly ? 8 : 3)).setDepth(depthOf(yy));
         }
         const n = hordeCount(it.left);
-        v.pill.setPosition(ROAD.cx, top - 64).setDepth(D.num).setVisible(n > 0);
-        v.num.setPosition(ROAD.cx, top - 67).setDepth(D.num + 1).setText(String(n)).setVisible(n > 0);
+        v.pill.setPosition(v.cx, top - 64).setDepth(D.num).setVisible(n > 0);
+        v.num.setPosition(v.cx, top - 67).setDepth(D.num + 1).setText(String(n)).setVisible(n > 0);
       }
     }
   }
@@ -499,9 +565,9 @@ export class PlayScene extends Phaser.Scene {
     s.setScale(this.bossBase * (1 + breathe + this.bossSquash * 0.18), this.bossBase * (1 - breathe - this.bossSquash * 0.22));
     this.bossShadow.setPosition(ROAD.cx, y + 44);
     this.bossJolt = (this.bossJolt ?? 0) * 0.8;
-    if (this.bossHitT > 0) { this.bossHitT -= dt; if (this.bossHitT <= 0) { s.setTexture(`${this.cfg.level.boss.beast}-walk-1`); s.clearTint(); } }
+    if (this.bossHitT > 0) { this.bossHitT -= dt; if (this.bossHitT <= 0) { s.setTexture(`${this.cfg.level.boss.beast}-${this.cfg.kit.beasts[this.cfg.level.boss.beast].frames[0]}`); s.clearTint(); } }
     if (this.hud.bossFill) this.hud.drawBoss(g.boss.hp);
-    if (this.zone) this.zone.setAlpha(0.75 + Math.sin(t * 18) * 0.25);
+    this.zone?.forEach((z) => z.setAlpha(0.75 + Math.sin(t * 18) * 0.25));
   }
 
   // ---------------------------------------------------------------- ghosts (the dying, the charging) and numbers
@@ -582,6 +648,12 @@ export class PlayScene extends Phaser.Scene {
     if (!line) return;
     this.saidAt = now;
     this.hud.say(line);
+  }
+
+  /** The boss's name, from the kit (合窳, 蠪侄 …). */
+  bossName() {
+    const kb = this.cfg.kit.beasts[this.cfg.level.boss.beast];
+    return kb.name?.[this.lang] ?? kb.name?.zh ?? this.w.bossName;
   }
 
   /** Facts out (doc/game-kit.md § Game and chat): start · go · gate · clash · boss · low · end. */
@@ -665,6 +737,21 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  on_rock(e) {
+    const v = this.vis.get(e.i), f = v?.falls?.[e.j];
+    const x = roadX(e.x), y = f ? f.sh.y : CROWD_Y - 40;
+    if (f) { f.down = true; f.rock.setVisible(false); }
+    this.sfx.thud();
+    this.shake(200, 0.012);
+    this.em.burst('debris', 10, x, y - 10);
+    this.em.burst('dust', 12, x, y);
+    for (let i = 0; i < Math.min(14, e.killed); i += 1) { const p = this.manAt(); this.die(p.x, p.y, -1.2); }
+    if (e.killed) {
+      this.num(this.cx(), CROWD_Y - 100, `-${e.killed}`, 'numBad', 56, { rise: 60 });
+      this.shown = this.g.count;
+    }
+  }
+
   on_clash(e) {
     this.sfx.thud();
     this.shake(180, 0.01);
@@ -714,8 +801,8 @@ export class PlayScene extends Phaser.Scene {
   }
 
   on_boss(e) {
-    this.hud.banner(this.w.boss, { ribbon: true, y: 330 });
-    this.hud.showBoss(e.hp);
+    this.hud.banner(this.w.boss(this.bossName()), { ribbon: true, y: 330 });
+    this.hud.showBoss(e.hp, this.bossName());
     this.shake(300, 0.012);
     this.sfx.slam();
     this.say('boss', true);
@@ -751,27 +838,29 @@ export class PlayScene extends Phaser.Scene {
   }
 
   on_slam_warn(e) {
-    this.zone?.destroy();
-    const x = roadX(e.side ? 0.5 : -0.5);
-    // the warned half lit red from the boss's feet down past the crowd, so it shows around the soldiers
-    this.zone = this.add.image(x, CROWD_Y - 60, 'zone').setDisplaySize(ROAD.half * 1.04, 460).setDepth(D.decal + 1).setBlendMode(Phaser.BlendModes.ADD);
-    this.hud.banner(this.w.slam, { color: '#ff8a7a', y: 560 });
+    this.zone?.forEach((z) => z.destroy());
+    // the warned spans lit red from the boss's feet down past the crowd, so they show around the soldiers
+    this.zone = e.zones.map(([a, b]) => this.add.image(roadX((a + b) / 2), CROWD_Y - 60, 'zone')
+      .setDisplaySize((b - a) * ROAD.half * 1.04, 460).setDepth(D.decal + 1).setBlendMode(Phaser.BlendModes.ADD));
+    this.hud.banner(this.w.slams[e.move] ?? this.w.slam, { color: '#ff8a7a', y: 560 });
     this.say('slam', true);
     this.sfx.tick();
     this.tweens.add({ targets: this, bossSquash: 1, duration: e.sec * 900, ease: 'Quad.easeIn' });
   }
 
   on_slam(e) {
-    const x = roadX(e.side ? 0.5 : -0.5);
-    this.zone?.destroy();
+    this.zone?.forEach((z) => z.destroy());
     this.zone = null;
     this.bossSquash = 0;
     this.sfx.slam();
     this.shake(320, 0.02);
-    this.em.burst('dust', 26, x, CROWD_Y);
-    this.em.burst('debris', 12, x, CROWD_Y);
-    const ring = this.add.image(x, CROWD_Y, 'ring').setDepth(D.fx).setScale(0.3, 0.15).setTint(0xffd0a0);
-    this.tweens.add({ targets: ring, scaleX: 3.2, scaleY: 1.4, alpha: 0, duration: 450, onComplete: () => ring.destroy() });
+    for (const [a, b] of e.zones) {
+      const x = roadX((a + b) / 2), k = (b - a) / 1;
+      this.em.burst('dust', Math.round(26 * k), x, CROWD_Y);
+      this.em.burst('debris', Math.round(12 * k), x, CROWD_Y);
+      const ring = this.add.image(x, CROWD_Y, 'ring').setDepth(D.fx).setScale(0.3, 0.15).setTint(0xffd0a0);
+      this.tweens.add({ targets: ring, scaleX: 3.2 * k, scaleY: 1.4, alpha: 0, duration: 450, onComplete: () => ring.destroy() });
+    }
     for (let i = 0; i < Math.min(24, e.killed); i += 1) { const p = this.manAt(); this.die(p.x, p.y, -1.4); }
     if (e.killed) this.num(this.cx(), CROWD_Y - 100, `-${e.killed}`, 'numBad', 62, { rise: 60 });
     this.shown = this.g.count;
@@ -782,7 +871,7 @@ export class PlayScene extends Phaser.Scene {
   on_end(e) {
     if (this.ended) return;
     this.ended = true;
-    this.zone?.destroy();
+    this.zone?.forEach((z) => z.destroy());
     this.fact({ t: 'end', won: e.won, stars: e.stars });
     if (e.won && this.boss) {
       const s = this.boss;
@@ -796,7 +885,7 @@ export class PlayScene extends Phaser.Scene {
           this.em.burst('stars', 8, s.x, s.y - 120);
         });
       }
-      s.setTexture(`${this.cfg.level.boss.beast}-hit`);
+      s.setTexture(`${this.cfg.level.boss.beast}-${this.cfg.kit.beasts[this.cfg.level.boss.beast].hit}`);
       this.tweens.add({ targets: s, angle: 12, alpha: 0, y: s.y + 30, scaleY: s.scaleY * 0.6, delay: 500, duration: 700, ease: 'Quad.easeIn' });
       this.hud.banner(this.w.won, { color: '#ffe36b', ribbon: true, y: 330 });
       this.say('won', true);
