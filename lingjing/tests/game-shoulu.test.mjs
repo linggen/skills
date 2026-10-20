@@ -1,17 +1,19 @@
 // 守炉 · tower defense — the level rows (games.json `shoulu`) are sound, each level brings one new
 // thing and climbs, waves come on their own, 银月 goes where she's sent and holds the road, and the
-// balance holds: on every level a sensible mixed build wins and no build, a 剑阵-only build and a
-// 火符-only build lose (L1, the tutorial, lets 火符 alone through — its herds are 火符's lesson).
+// balance holds for a human: the levels are tuned for `human` (core.js — a sensible plan, 1–2 s late,
+// 银月 moved now and then, her skills late), not the perfect bots (Hanli 10-20: a game no open-source
+// game's players have proven must lean gentle). The optimal bot (`mixed`) still loses a little fire late;
+// no build loses everywhere; the counters (犰狳 vs 剑阵, 鬿雀 vs 火符) still bite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, callWave, cast, heroOf, layLevel, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
+import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
   keepSel, posOnPath, sendHero, sim, STRATS, skillState, spawnAt, step, toggleAuto, waves } from '../scripts/games/shoulu/core.js';
 import { levelAsked, meta } from '../scripts/games/shoulu.js';
 
 const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
 const row = reg.games.find((g) => g.id === 'shoulu');
-const levels = row.levels;
+const levels = levelsFrom(row);
 const creatures = new Set(JSON.parse(readFileSync(new URL('../worlds/jiuding/creatures.json', import.meta.url), 'utf8')).creatures.map((c) => c.id));
 const places = new Set(['ji', 'jing', 'liang', 'qing', 'xu', 'yan', 'yang', 'yong', 'yu'].flatMap((p) => JSON.parse(readFileSync(new URL(`../worlds/jiuding/places/${p}.json`, import.meta.url), 'utf8')).places.map((x) => x.id)));
 const SEEDS = ['a', 'b', 'c', 'd', 'e'];
@@ -96,16 +98,20 @@ test('银月 goes where she is sent, and holds two ground beasts there', () => {
   assert.ok(g.stats.kills > 0, 'and bit');
 });
 
-/* The balance: every seed agrees. */
-const run = (r, s) => SEEDS.map((seed) => sim(r, s, { seed }));
+/* The balance. The bots: every seed of a–e agrees. */
+const run = (r, s, seeds = SEEDS) => seeds.map((seed) => sim(r, s, { seed }));
 const allWin = (rs) => rs.every((x) => x.result === 'win');
 const allLose = (rs) => rs.every((x) => x.result === 'lose');
 levels.forEach((r, i) => {
-  test(`balance L${i + 1} ${r.id}: mixed wins, none and mono lose`, () => {
+  test(`balance L${i + 1} ${r.id}: mixed wins, none loses; the mono builds struggle`, () => {
     const mixed = run(r, 'mixed');
     assert.ok(allWin(mixed), `mixed: ${mixed.map((x) => `${x.result}@${x.wave}`)}`);
     assert.ok(allLose(run(r, 'none')), 'none loses');
-    assert.ok(allLose(run(r, 'jian')), '剑阵 alone loses');
+    const jian = run(r, 'jian');
+    // L1–L2 are gentle enough that 剑阵 alone can scrape through; never cleanly, and never as well as a mixed build
+    const mean = (rs) => rs.reduce((a, x) => a + x.hp, 0) / rs.length;
+    if (i < 2) assert.ok(mean(jian) < mean(mixed) - 1.5, `剑阵 alone: ${jian.map((x) => x.hp)}`);
+    else assert.ok(allLose(jian), '剑阵 alone loses');
     if (i > 0) assert.ok(allLose(run(r, 'huo')), '火符 alone loses');
   });
 });
@@ -118,6 +124,66 @@ test('the counters: 犰狳 levels beat 剑阵 alone; 鬿雀 levels beat 火符 a
   for (const i of [2, 3, 4]) assert.ok(beastsOf(levels[i]).includes('qiuyu') && allLose(run(levels[i], 'jian')));
   for (const i of [3, 4]) assert.ok(run(levels[i], 'huo').every((x) => x.leaks.qique > 0));
   assert.equal(waves(newGame(levels[4], { headless: true })), levels[4].waves.length);
+});
+
+/* The balance a person feels: the human-like bot over twenty seeds. */
+const SEEDS20 = Array.from({ length: 20 }, (_, i) => `h${i}`);
+const share = (rs, f) => rs.filter(f).length / rs.length;
+const TARGET = [ // win share at least · and what its stars look like
+  { win: 0.95, ok: (rs) => share(rs, (x) => x.stars === 3) >= 0.5, says: 'nearly always, mostly 3★' },
+  { win: 0.85, ok: (rs) => share(rs, (x) => x.stars >= 2) >= 0.6, says: '≥85%, usually 2–3★' },
+  { win: 0.85, ok: (rs) => share(rs, (x) => x.stars >= 2) >= 0.6, says: '≥85%, usually 2–3★' },
+  { win: 0.75, ok: (rs) => share(rs, (x) => x.stars === 3) <= 0.5, says: '≥75%, 1–2★ typical' },
+  { win: 0.65, ok: (rs) => share(rs, (x) => x.stars === 3) <= 0.5 && rs.reduce((a, x) => a + x.hp, 0) / rs.length <= 8, says: '≥65%, a real fight' },
+];
+levels.forEach((r, i) => {
+  test(`a human's balance L${i + 1} ${r.id}: ${TARGET[i].says}`, () => {
+    const rs = run(r, 'human', SEEDS20), T = TARGET[i];
+    const line = `win ${Math.round(share(rs, (x) => x.result === 'win') * 100)}%, ★ ${rs.map((x) => x.stars).join('')}`;
+    assert.ok(share(rs, (x) => x.result === 'win') >= T.win, line);
+    assert.ok(T.ok(rs), line);
+  });
+});
+test('the optimal bot still loses a few 炉火 on L4 and L5', () => {
+  for (const i of [3, 4]) {
+    const rs = run(levels[i], 'mixed', SEEDS20), mean = rs.reduce((a, x) => a + x.hp, 0) / rs.length;
+    assert.ok(allWin(rs) && mean <= 9.5 && share(rs, (x) => x.hp < 10) >= 0.25, `L${i + 1} mixed: ${rs.map((x) => x.hp)}`);
+  }
+});
+test('the human bot is a human: late, never calls a wave early, moves 银月 now and then', () => {
+  let early = 0, moves = 0, post = null;
+  const r = sim(levels[2], (g) => { const w = g.wave, m = g.money; human(g); if (g.wave > w) early += 1; if (post && (post.x !== g.hero.post.x || post.y !== g.hero.post.y)) moves += 1; post = { ...g.hero.post }; }, { seed: 'h0' });
+  assert.equal(early, 0, 'no wave called');
+  assert.ok(moves >= 1 && moves <= r.time / 6, `moves: ${moves} in ${r.time} s`);
+  // a build waits a beat after it can be afforded
+  const g = newGame(levels[0], { seed: 'late', headless: true });
+  human(g);
+  assert.equal(g.towers.filter(Boolean).length, 0, 'not on the first look');
+  for (let t = 0; t < 0.9; t += 0.25) { step(g, 0.25); human(g); }
+  assert.equal(g.towers.filter(Boolean).length, 0, 'not within a second');
+  for (let t = 0; t < 1.5; t += 0.25) { step(g, 0.25); human(g); }
+  assert.ok(g.towers.filter(Boolean).length >= 1, 'built within two');
+});
+
+/* The difficulty knob: data only — a level's `difficulty` × the row's, on beasts' hp and count. */
+test('difficulty: default 1; a level\'s and the row\'s multiply; hp and count scale, a boss stays one', () => {
+  assert.equal(row.difficulty ?? 1, 1, 'the game is tuned at 1');
+  assert.ok(levels.every((l) => difficultyOf(l) === 1), 'every level at 1');
+  assert.equal(difficultyOf({}), 1);
+  assert.ok(Math.abs(difficultyOf(levelsFrom({ difficulty: 1.5, levels: [{ difficulty: 0.8 }] })[0]) - 1.2) < 1e-9);
+  assert.equal(countAt('yezhu', 10, 0.7), 7);
+  assert.equal(countAt('yezhu', 1, 0.3), 1, 'never none');
+  assert.equal(countAt('heyu', 1, 2), 1, 'a boss stays one');
+  const queued = (l) => { const g = newGame(l, { headless: true }); callWave(g); return g.queue.length; };
+  const base = levels[4], easy = { ...base, difficulty: 0.7 }, hard = levelsFrom({ ...row, difficulty: 1.5 })[4];
+  assert.ok(queued(easy) < queued(base) && queued(hard) > queued(base), `${queued(easy)} < ${queued(base)} < ${queued(hard)}`);
+  const hp = (l) => spawnAt(newGame(l, { headless: true }), 'heyu').max;
+  assert.equal(hp(easy), Math.round(hp(base) * 0.7));
+  assert.equal(hp(hard), Math.round(hp(base) * 1.5));
+  const last = (l) => { const g = newGame(l, { headless: true }); g.wave = l.waves.length - 1; callWave(g); return g.queue.filter((q) => q.type === 'heyu').length; };
+  assert.equal(last(hard), 1, 'one 合窳 at any difficulty');
+  const win = (l) => share(run(l, 'human', SEEDS20.slice(0, 8)), (x) => x.result === 'win');
+  assert.ok(win({ ...base, difficulty: 1.4 }) < win(base), 'harder is harder for a person');
 });
 
 /* 银月 as a 魔兽争霸 hero: orders, her post, the leash, her four skills, the selection. */
@@ -345,10 +411,11 @@ test('the sim plays her skills (a plain autocast bot); none leaves her on 啸月
     sim(levels[i], (g) => { strat(g); for (const k of Object.keys(seen)) { if (g.hero.cds[k] > last[k] + 0.5) seen[k] += 1; last[k] = g.hero.cds[k]; } }, { seed: 'a' });
     return seen;
   };
-  const withBot = casts(STRATS.mixed), l3 = casts(STRATS.mixed, 2);
-  assert.ok(withBot.q > 0 && withBot.w > 0, JSON.stringify(withBot));
+  const withBot = casts(STRATS.mixed), l3 = casts(STRATS.mixed, 2), person = casts(STRATS.human);
+  assert.ok(withBot.q > 0, JSON.stringify(withBot));
   assert.ok(withBot.r >= 1, `狐毛 on 合窳: ${JSON.stringify(withBot)}`);
-  assert.ok(l3.e > 0, `狐火 once she is 三重 (药园): ${JSON.stringify(l3)}`);
+  assert.ok(l3.w > 0 && l3.e > 0, `月影扑 and 狐火 once she is 三重 (药园): ${JSON.stringify(l3)}`);
+  assert.ok(person.w > 0 && person.e > 0 && person.r >= 1, `the human bot casts them too, late: ${JSON.stringify(person)}`);
   const alone = casts(STRATS.none);
   assert.ok(alone.q > 0 && alone.w + alone.e + alone.r === 0, JSON.stringify(alone));
 });

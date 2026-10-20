@@ -84,12 +84,21 @@ export function offRoad(road, x, y) {
 
 // ── A level, laid ────────────────────────────────────────────────────────────────────────────
 /** The level a row describes, with its road built (the row itself stays data). */
+/** The difficulty knob, data only: a level's `difficulty` (default 1) × the whole game's (the games.json row's
+    `difficulty`, stamped on each level as `globalDifficulty` by `levelsFrom`). It scales every beast's hp and how
+    many come in each group (a boss stays one). */
+export const difficultyOf = (row) => (row.difficulty ?? 1) * (row.globalDifficulty ?? 1);
+/** The levels of a games.json `shoulu` row, each carrying the row's global `difficulty`. */
+export const levelsFrom = (gameRow) => (gameRow?.levels ?? []).map((l) => ({ ...l, globalDifficulty: gameRow.difficulty ?? 1 }));
+/** A wave group's count at a difficulty. */
+export const countAt = (type, n, diff) => (BEASTS[type]?.boss ? n : Math.max(1, Math.round(n * diff)));
+
 export function layLevel(row) {
   const road = roadOf(row.road);
   const [fx, fy] = row.furnace;
   const air = row.air ? { x: row.air[0], y: row.air[1] } : null;
   return { ...row, road, furn: { x: fx, y: fy }, air, airLen: air ? Math.hypot(fx - air.x, fy - 18 - air.y) : 0,
-    towers: row.towers ?? TORDER, unlock: row.unlock ?? {}, gap: row.gap ?? 20, first: row.first ?? 25, hpScale: row.hpScale ?? 0.12, hpMul: row.hpMul ?? 1 };
+    towers: row.towers ?? TORDER, unlock: row.unlock ?? {}, gap: row.gap ?? 20, first: row.first ?? 25, hpScale: row.hpScale ?? 0.12, hpMul: row.hpMul ?? 1, diff: difficultyOf(row) };
 }
 export const beastsOf = (row) => [...new Set(row.waves.flat().map(([t]) => t))];
 /** A row's 银月: `hero` is her post [x, y], or { at: [x, y], hair } — `hair`: 狐毛 charges the story has given her (古五 on). */
@@ -101,7 +110,7 @@ export function heroOf(row) {
 export function newGame(row, { seed = 'shoulu', headless = false } = {}) {
   const L = layLevel(row);
   const { at: [hx, hy], hair } = heroOf(row);
-  return { L, t: 0, hp: HP, money: row.money, wave: 0, queue: [], nextTimer: L.first, beasts: [], towers: row.spots.map(() => null), proj: [], fx: [], fires: [],
+  return { L, seed, t: 0, hp: HP, money: row.money, wave: 0, queue: [], nextTimer: L.first, beasts: [], towers: row.spots.map(() => null), proj: [], fx: [], fires: [],
     hero: { x: hx, y: hy, tx: hx, ty: hy, hp: HERO.hp[0], lvl: 0, xp: 0, cd: 0, dead: 0, face: -1, anim: 0, say: null, held: [],
       post: { x: hx, y: hy }, orders: [], foe: null, homing: false, dash: null, cast: null, act: null, wanderT: 4, moving: false,
       cds: { q: SKILLS.q.first, w: 0, e: 0, r: 0 }, auto: { q: true }, hair, rnd: rng(`${seed}|yinyue`) },
@@ -128,7 +137,7 @@ function place(g, b) {
 }
 function spawn(g, type) {
   const B = BEASTS[type], L = g.L;
-  const hp = Math.round(B.hp * L.hpMul * (B.boss ? 1 : 1 + L.hpScale * (g.wave - 1)));
+  const hp = Math.round(B.hp * L.hpMul * L.diff * (B.boss ? 1 : 1 + L.hpScale * (g.wave - 1)));
   const b = { id: ++g.uid, type, hp, max: hp, speed: B.speed * (0.95 + g.rnd() * 0.1), d: 0, off: B.boss ? 0 : g.rnd() * 16 - 8, fly: Boolean(B.fly),
     armor: Boolean(B.armor), reward: B.reward, dmg: B.dmg || 1, len: B.fly ? L.airLen : L.road.len, slowT: 0, slowF: 0, stunT: 0, held: false,
     flash: 0, face: 1, x: 0, y: 0, dead: false, cry: B.cry ? B.cry.every : 0, crying: 0 };
@@ -151,7 +160,7 @@ export function callWave(g, early = false) {
   g.wave += 1;
   emit(g, { banner: g.wave });
   const q = [];
-  for (const [type, n, gap, st] of g.L.waves[g.wave - 1]) for (let i = 0; i < n; i += 1) q.push({ at: g.t + st + i * gap, type });
+  for (const [type, n, gap, st] of g.L.waves[g.wave - 1]) for (let i = 0; i < countAt(type, n, g.L.diff); i += 1) q.push({ at: g.t + st + i * gap, type });
   q.sort((a, b) => a.at - b.at);
   g.queue = q;
   g.nextTimer = g.L.gap;
@@ -697,6 +706,130 @@ export const MIXED = ['huo', 'jian', 'han', 'huo', 'lei', 'jian', 'lei', 'huo', 
 // a level with fliers: the swords come first (the wave preview shows them coming)
 export const MIXED_AIR = ['jian', 'huo', 'jian', 'han', 'lei', 'huo', 'lei', 'jian', 'han', 'huo', 'lei', 'jian'];
 const mixed = [recipe(MIXED), recipe(MIXED_AIR)];
+
+/* A human-like player — the bot the balance is tuned for (Hanli 10-20: a game tuned by perfect bots alone, never by
+   an open-source game's players, must lean gentle). Not optimal, on purpose: one of a few sensible plans, the spot
+   picked among the better ones, not always the best; each build and upgrade 1–2 s after it could have been made;
+   银月 moved only now and then (every ~10 s, toward the busiest stretch of road); her skills cast late (0.5–1 s after
+   ready), 月影扑 and 狐火 sometimes forgotten for a while; 狐毛 kept for the boss; never a wave called early. */
+const HUMAN_PLANS = [
+  ['huo', 'jian', 'han', 'huo', 'jian', 'lei', 'huo', 'jian', 'lei', 'han', 'huo', 'jian'],
+  ['jian', 'huo', 'jian', 'huo', 'han', 'lei', 'jian', 'huo', 'lei', 'jian', 'han', 'huo'],
+  ['huo', 'huo', 'jian', 'han', 'jian', 'lei', 'huo', 'lei', 'jian', 'han', 'huo', 'jian'],
+];
+// fliers on the level: the lead-in says fire can't reach them, so a sword or two goes up early
+const HUMAN_PLANS_AIR = [
+  ['jian', 'huo', 'jian', 'han', 'huo', 'lei', 'jian', 'lei', 'huo', 'han', 'jian', 'huo'],
+  ['huo', 'jian', 'jian', 'huo', 'lei', 'han', 'jian', 'lei', 'huo', 'jian', 'han', 'huo'],
+  ['jian', 'jian', 'huo', 'han', 'lei', 'huo', 'jian', 'lei', 'huo', 'han', 'jian', 'huo'],
+];
+function humanOf(g) {
+  if (g._hb) return g._hb;
+  const rnd = rng(`${g.seed}|human`), air = beastsOf(g.L).some((t) => BEASTS[t].fly);
+  const plans = air ? HUMAN_PLANS_AIR : HUMAN_PLANS;
+  g._hb = { rnd, plan: plans[Math.floor(rnd() * plans.length)], next: 0, act: null, moveT: 8 + rnd() * 4, sk: {} };
+  return g._hb;
+}
+/** A free spot for a talisman: among the three that see the most road, the better ones likelier. */
+function humanSpot(g, type, rnd, o) {
+  const D = TOWERS[type], fliers = beastsOf(g.L).some((t) => BEASTS[t].fly);
+  const free = g.L.spots.map(([x, y], i) => ({ i, v: g.towers[i] ? -1 : coverage(g.L, x, y, D.range[0], D.air && fliers ? 3 : 0) }))
+    .filter((s) => s.v >= 0).sort((a, b) => b.v - a.v).slice(0, 3);
+  if (!free.length) return -1;
+  const r = o.best ? 0 : rnd();
+  return free[r < 0.55 || free.length === 1 ? 0 : r < 0.85 || free.length === 2 ? 1 : 2].i;
+}
+/** What the player means to do next: the plan's next talisman (the next one open, if that one is locked), or an upgrade. */
+// what a player builds when a beast gets through: a sword for what flies, fire for what's armored, frost for what leaps
+const answerTo = (B) => (B.fly ? 'jian' : B.armor ? 'huo' : B.leap ? 'han' : null);
+function humanWant(g, hb) {
+  // the furnace was hit: the answer to what hit it goes to the front of the plan (once for each two that got through)
+  for (const [type, n] of Object.entries(g.stats.leaks)) {
+    const a = answerTo(BEASTS[type]), seen = hb.leaks?.[type] ?? 0;
+    if (!a || n < seen + 2 || !g.L.towers.includes(a)) continue;
+    (hb.leaks ??= {})[type] = n;
+    hb.plan = [a, ...hb.plan];
+  }
+  const built = g.towers.filter(Boolean).length, full = built >= g.L.spots.length || hb.next >= hb.plan.length;
+  const ups = g.towers.map((tw, i) => (tw && tw.lvl < 2 ? i : -1)).filter((i) => i >= 0);
+  if (!full && (built < 3 || !ups.length || hb.rnd() < 0.55)) {
+    for (let k = hb.next; k < hb.plan.length; k += 1) {
+      const t = hb.plan[k];
+      if (!g.L.towers.includes(t)) continue;
+      if (locked(g, t)) continue;
+      return { k: 'build', type: t, idx: k };
+    }
+  }
+  if (!ups.length) return null;
+  // the cheapest upgrade, now and then just the one she likes
+  const i = hb.rnd() < 0.7 ? ups.reduce((a, b) => (upgradeCost(g.towers[b]) < upgradeCost(g.towers[a]) ? b : a)) : ups[Math.floor(hb.rnd() * ups.length)];
+  return { k: 'up', i };
+}
+function humanBuild(g, hb, o) {
+  if (!hb.act) { hb.act = humanWant(g, hb); hb.at = null; if (!hb.act) return; }
+  const a = hb.act;
+  const cost = a.k === 'build' ? TOWERS[a.type].cost[0] : g.towers[a.i] ? upgradeCost(g.towers[a.i]) : Infinity;
+  if (a.k === 'up' && (!g.towers[a.i] || g.towers[a.i].lvl >= 2)) { hb.act = null; return; }
+  if (g.money < cost) { hb.at = null; return; }
+  if (hb.at === null) { hb.at = g.t + (o.delay ? 1 + hb.rnd() : 0); if (o.delay) return; } // she notices she can afford it, a beat later
+  if (g.t < hb.at) return;
+  if (a.k === 'build') {
+    const s = humanSpot(g, a.type, hb.rnd, o);
+    if (s >= 0 && build(g, s, a.type)) { hb.plan = [...hb.plan]; hb.plan.splice(a.idx, 1); }
+    else if (s < 0) hb.next = hb.plan.length;
+  } else upgrade(g, a.i);
+  hb.act = null;
+}
+/** The busiest stretch of the road's lower half: the ground beast (past 40% of its road) with the most others within 80. */
+function busiest(g) {
+  const list = g.beasts.filter((b) => !b.dead && !b.fly && b.d > b.len * 0.4); // the ones that got past the first talismans
+  let best = null, bn = 0;
+  for (const b of list) { const n = list.filter((c) => dist(b, c) <= 80).length; if (n > bn) { bn = n; best = b; } }
+  return best;
+}
+function humanHero(g, hb, o) {
+  const h = g.hero;
+  if (h.dead > 0) return;
+  hb.moveT -= 0.25;
+  if (o.move && hb.moveT <= 0) {
+    hb.moveT = 8 + hb.rnd() * 4;
+    // not while she has beasts in her jaws, nor when the crowd is coming to her anyway; else onto the road where it is
+    const b = h.held.length ? null : busiest(g);
+    // she stays about her stretch of road: a player doesn't send the guard across the board
+    if (b && dist(b, h.post) > HERO.acquire) {
+      const p = posOnPath(g.L.road, b.d), k = Math.min(1, 120 / Math.max(1, dist(p, g.home)));
+      orderMove(g, g.home.x + (p.x - g.home.x) * k, g.home.y + (p.y - g.home.y) * k);
+    }
+  }
+  if (h.dash || h.orders.length) return;
+  const groundIn = (R) => groundNear(g, h, R);
+  for (const key of ['r', 'e', 'w']) {
+    const st = skillState(g, key), sk = (hb.sk[key] ??= { at: null });
+    if (!st.ready) { sk.at = null; continue; }
+    if (sk.at === null) sk.at = o.late ? g.t + 0.5 + hb.rnd() * 0.5 + (key !== 'r' && hb.rnd() < 0.3 ? 4 + hb.rnd() * 6 : 0) : g.t; // late, and now and then forgotten
+    if (g.t < sk.at) continue;
+    if (key === 'r') { // 狐毛: the boss wave only
+      const boss = groundIn(SKILLS.r.range).find((b) => BEASTS[b.type].boss);
+      if (boss) cast(g, 'r', { b: boss });
+    } else if (key === 'e') {
+      const list = groundIn(SKILLS.e.range);
+      let best = null, bn = 0;
+      for (const b of list) { const n = list.filter((c) => dist(b, c) <= SKILLS.e.r).length; if (n > bn) { bn = n; best = b; } }
+      if (best && (bn >= 3 || BEASTS[best.type].boss)) cast(g, 'e', { x: best.x, y: best.y });
+    } else {
+      const list = groundIn(SKILLS.w.range);
+      if (list.length) cast(g, 'w', { b: list[Math.floor(hb.rnd() * list.length)] });
+    }
+    if (!skillState(g, key).ready) sk.at = null;
+  }
+}
+/** The human-like player, called four times a second like every strategy. */
+export const humanBot = (opts = {}) => {
+  const o = { move: true, delay: true, best: false, late: true, ...opts };
+  return (g) => { const hb = humanOf(g); humanBuild(g, hb, o); humanHero(g, hb, o); };
+};
+export const human = humanBot();
+
 // every build but `none` plays 银月's skills too (`none`: she is left on 啸月's autocast alone)
 const withHero = (pol) => (g) => { pol(g); heroBot(g); };
 export const STRATS = {
@@ -706,6 +839,7 @@ export const STRATS = {
   mixed: withHero((g) => mixed[beastsOf(g.L).some((t) => BEASTS[t].fly) ? 1 : 0](g)),
   // a thin first-timer: two talismans, then only upgrades them
   thin: withHero(recipe(['jian', 'huo'], { cap: 2 })),
+  human,
 };
 /** Play a level headless: `strategy` a STRATS name or (g) => void, called four times a second. */
 export function sim(row, strategy = 'mixed', { seed = 'sim', dt = 1 / 30 } = {}) {

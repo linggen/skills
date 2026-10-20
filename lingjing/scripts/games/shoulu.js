@@ -16,7 +16,7 @@
 // settling { won, stars } when it is won (the game stays up, its own card over it). Without one: the level
 // select, and the game owns 再来 / 下一关; it settles only when taken down. Stars live in this browser's
 // localStorage (`lingjing.shoulu.stars`), never the save.
-import { BEASTS, EARLY_RATE, H, HERO, SKEYS, SKILLS, TOWERS, TORDER, W, build, callWave, canBuild, cleared, keepSel, locked, newGame, noSel,
+import { BEASTS, EARLY_RATE, H, HERO, SKEYS, SKILLS, TOWERS, TORDER, W, build, callWave, canBuild, cleared, keepSel, levelsFrom, locked, newGame, noSel,
   pointer, pressKey, pressSkill, refund, sell, skillState, starsOf, step, toggleAuto, upgrade, upgradeCost, waves } from './shoulu/core.js';
 import { beastIcon, draw, loadArt, makePaper, markEvent, portraitStyle, stepFx } from './shoulu/draw.js';
 
@@ -88,7 +88,7 @@ export function levelAsked(data, search) {
 export async function levelsOf(data) {
   if (Array.isArray(data?.levels) && data.levels.length) return data.levels;
   const res = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url));
-  return (await res.json()).games.find((g) => g.id === meta.id)?.levels ?? [];
+  return levelsFrom((await res.json()).games.find((g) => g.id === meta.id)); // each carries the row's global `difficulty`
 }
 function ensureCss(doc) {
   if (doc.getElementById('g-shoulu-css')) return;
