@@ -40,7 +40,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   box.className = 'shouqiang-stage';
   // Portrait 9:16, as tall as the window lets it (a phone fills its width; a desk gets a tall column).
   box.style.cssText = 'position:relative;overflow:hidden;border-radius:12px;background:#1a2416;touch-action:none;'
-    + 'aspect-ratio:9/16;width:min(100%, calc((100dvh - 150px) * 9 / 16));margin:0 auto;user-select:none;-webkit-user-select:none';
+    + 'aspect-ratio:9/16;width:min(100%, calc((100dvh - var(--game-reserve, 150px)) * 9 / 16));margin:0 auto;user-select:none;-webkit-user-select:none';
   container.replaceChildren(box);
   const search = globalThis.location?.search ?? '';
   const q = new URLSearchParams(search);
