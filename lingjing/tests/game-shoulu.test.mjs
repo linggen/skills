@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
+import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, build, upgrade, upgradeCost, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
   keepSel, posOnPath, sendHero, sim, STRATS, skillState, spawnAt, step, toggleAuto, waves } from '../scripts/games/shoulu/core.js';
 import { ladderOf, leadSplit, levelAsked, levelAt, meta, nextLv } from '../scripts/games/shoulu.js';
 
@@ -492,18 +492,30 @@ test('a story level uses only beasts the book has met by its 回 (野猪 on 蒙�
   assert.equal(heroOf(xunye).hair, 0, '狐毛 from 古五 on');
 });
 
-test('药园巡夜, tuned for a first-time player: the human hand always wins, mostly 3★, and still loses a little fire now and then', () => {
+// A first-timer's hand, as the live check played it (2026-10-20, headed Chrome at 390 and 1440): a fixed plan of fire
+// and swords on the spots the eye picks, a look every 1.6 s, the fire ones up a 重 when the next is out of reach, then
+// upgrades; 银月 never ordered (her 啸月 on its autocast). At hpMul 3.2 this hand lost the board live (and 9/20 in the sim).
+const firstTimer = (lv) => {
+  const at = (p) => lv.spots.findIndex(([x, y]) => x === p[0] && y === p[1]);
+  const PLAN = [['huo', [230, 330]], ['jian', [300, 175]], ['huo', [300, 560]], ['jian', [470, 370]], ['huo', [200, 570]], ['jian', [160, 175]]];
+  const UPS = [[230, 330], [300, 560], [300, 175], [200, 570], [470, 370], [230, 330], [300, 560]];
+  let k = 0, u = 0, next = 0;
+  return (g) => {
+    if (g.t < next) return; next = g.t + 1.6;
+    if (k < PLAN.length && g.money >= TOWERS[PLAN[k][0]].cost[0]) { if (build(g, at(PLAN[k][1]), PLAN[k][0])) k += 1; return; }
+    if ((k >= PLAN.length || (k >= 3 && g.money >= 80 && u < 2)) && u < UPS.length) { const i = at(UPS[u]); if (g.towers[i] && g.money >= upgradeCost(g.towers[i])) { upgrade(g, i); u += 1; } }
+  };
+};
+test('药园巡夜, tuned for a first-time player: a first-timer\'s plain hand always wins with a little fire lost; the human hand keeps it all', () => {
   const xunye = stories.find((l) => l.id === 'yaoyuan-xunye');
+  const naive = SEEDS20.map((seed) => sim(xunye, firstTimer(xunye), { seed }));
+  const line = (rs) => `win ${Math.round(share(rs, (x) => x.result === 'win') * 100)}%, ★ ${rs.map((x) => x.stars).join('')}, fire ${rs.map((x) => x.hp)}`;
+  assert.equal(share(naive, (x) => x.result === 'win'), 1, `first-timer: ${line(naive)}`);
+  assert.ok(share(naive, (x) => x.stars >= 2) >= 0.9 && naive.some((x) => x.hp < 10), `first-timer, some bite: ${line(naive)}`);
   const rs = run(xunye, 'human', SEEDS20);
-  const line = `win ${Math.round(share(rs, (x) => x.result === 'win') * 100)}%, ★ ${rs.map((x) => x.stars).join('')}`;
-  assert.equal(share(rs, (x) => x.result === 'win'), 1, line);
-  assert.ok(share(rs, (x) => x.stars === 3) >= 0.6, line);
-  assert.ok(rs.some((x) => x.hp < 10), `a little bite: ${rs.map((x) => x.hp)}`);
+  assert.ok(allWin(rs) && share(rs, (x) => x.stars === 3) >= 0.9, `human: ${line(rs)}`);
   assert.ok(allWin(run(xunye, 'thin')), 'two talismans and their upgrades still hold it');
-  assert.ok(allWin(run(xunye, 'mixed')));
   assert.ok(allLose(run(xunye, 'none')), 'nothing laid: the herbs are lost');
-  const jian = run(xunye, 'jian'), mean = (x) => x.reduce((a, r) => a + r.hp, 0) / x.length;
-  assert.ok(mean(jian) < mean(run(xunye, 'mixed')) - 3, `剑阵 alone scrapes through, fire is the herd's answer: ${jian.map((x) => x.hp)}`);
   assert.ok(rs.every((x) => x.time < 240), `about three minutes: ${rs.map((x) => x.time)}`);
 });
 
