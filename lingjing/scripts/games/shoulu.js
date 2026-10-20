@@ -145,8 +145,8 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     function fit() {
       const wrapW = root.clientWidth || 360;
       const top = stage.getBoundingClientRect().top + (win.scrollY || 0);
-      const below = $('.sl-preview').offsetHeight + $('.sl-controls').offsetHeight + 24;
-      const availH = Math.max(320, (win.innerHeight || 800) - Math.min(top, 160) - below);
+      const below = Math.max(24, $('.sl-preview').offsetHeight) + $('.sl-controls').offsetHeight + 34;
+      const availH = Math.max(320, (win.innerHeight || 800) - top - below);
       const w = Math.floor(Math.max(260, Math.min(wrapW, availH * W / H))), h = Math.floor(w * H / W);
       dpr = Math.min(2, win.devicePixelRatio || 1);
       cv.style.width = `${w}px`; cv.style.height = `${h}px`; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
