@@ -116,11 +116,12 @@
     },
     {"id": "yaoyuan-xunye", "kind": "board", "game": "shoulu", "deal": {"lv": "yaoyuan-xunye"}, "period": "once", "stars": 3, "title": {"zh": "守炉 · 药园巡夜", "en": "Guard the Furnace · The herb garden at night"}, "how": {"zh": "爪印从西头的崖根底下来。点虚线圈布符——剑阵、火符——守住灵草，守到丑时。", "en": "The pawprints come from the foot of the west cliff. Tap a dashed ring to lay a talisman (swords, fire) and hold the herbs till the hour of the Ox."}, "grant": {"table": "task", "progress": 5}, "done_line": {"zh": "崖根底下，又静了。", "en": "At the foot of the cliff, all is quiet again."}, "_shoulu": "2026-10-20 (Hanli: 守炉 is the main game, a new level a 回 from 古四 on, at the 回's climax — 「可以」): wm-yaoyuan's second night, the passage cut at 「天地再大，他只认得脸上的风。」 — the board is the dark he waits through before the 狰 shows; then 丑时 and the 狰 by the 紫玉参 (`story_after`), then the radish. The level is games.json `shoulu` `yaoyuan-xunye`: 野猪 only (the 狰 is never fought, the book tames it), 剑阵 · 火符. Pays as the 古四 boards: progress 5, and the board's 灵石 (three 灵光 best 15, else plain 5)."},
     {
-      "_jin": "今一's dawn run (2026-10-20, the reading cap before 入门): pays nothing, like every 今 game.",
-      "id": "jin-paobu", "kind": "board", "game": "qimai", "period": "once",
-      "title": { "zh": "晨跑 · 边跑边念", "en": "The dawn run · Run and recite" },
+      "_jin": "今一's 百团大战 (the 调息 cut, 2026-10-20, Hanli: 「调息感觉太多了」 → 「可以」): 阿禾's 「你投一个给我看看。」 as a level of 砸寨 (tools/zhazhai/src/data/throws.ts `toulan`) — the ball over the rim and the board, onto 马小宝's 摇杯. Was 气走经脉 · 边跑边念 (`jin-paobu`, the dawn run, told now). Pays nothing, like every 今 game.",
+      "id": "jin-toulan", "kind": "board", "game": "zhazhai", "deal": { "lv": "toulan" }, "stars": 3, "period": "once",
+      "title": { "zh": "投一个给我看看", "en": "Shoot one for me" },
+      "how": { "zh": "往后拉，松手，把球投出去——越过篮筐，越过篮板，砸翻后头桌上马小宝的摇杯。", "en": "Pull back and let go: shoot the ball over the rim, over the backboard, and knock over Ma Xiaobao's shaker on the table behind." },
       "grant": { "table": "task" },
-      "done_line": { "zh": "「念得出整句，就是速度对了。」", "en": "\"If you can get whole sentences out, you're at the right speed.\"" }
+      "done_line": { "zh": "不偏不倚，砸翻了马小宝的摇杯。", "en": "Dead on: Ma Xiaobao's shaker goes over." }
     },
     {
       "_jin": "今线's games (the interludes, 2026-10-05): the science lesson of each 今 played; they pay nothing — the 今 never lifts the 古 (Hanli: 不跨线).",

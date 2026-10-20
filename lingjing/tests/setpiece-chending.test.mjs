@@ -37,8 +37,8 @@ function atGate(lang) {
   s = { ...s, tasks: { ...s.tasks, 'notice-shuitong': { status: 'done' } } }; // 水桶落井 played (2026-10-20)
   s = resolve(s, content, ctx, { exit: 'go' }).state;
   // 今一's dawn run (边跑边念, 2026-10-20) is played before the track's way on
-  s = win(s, content, ctx, { id: 'jin-paobu' }).state;
-  s = task(s, content, ctx, { action: 'done', id: 'jin-paobu' }).state;
+  s = win(s, content, ctx, { id: 'jin-toulan' }).state;
+  s = task(s, content, ctx, { action: 'done', id: 'jin-toulan' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   s = win(s, content, ctx, { id: 'jin-qianmi' }).state;

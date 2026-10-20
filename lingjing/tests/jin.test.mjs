@@ -71,10 +71,15 @@ test('a save walks 古二 → 今 · 一 → 古三: the close of 第二回, the
   assert.ok(l.chapter.title.includes('今 · 一'), l.chapter.title);
   assert.equal(huiEnded(content, s), 'h02');
   assert.ok(l.scene.people.some(p => p.name === '沈芒' && p.art === 'art/people/jin-shenmang.webp'), 'his 人物志 portrait (2026-10-05)');
-  // the dawn run first (边跑边念, 气走经脉; the reading cap 2026-10-20): the track's way on waits for it
-  assert.equal(resolve(s, content, ctx, { exit: 'on' }).result.refused, 'needs', 'the dawn run is run first');
-  s = win(s, content, ctx, { id: 'jin-paobu' }).state;
-  s = task(s, content, ctx, { action: 'done', id: 'jin-paobu' }).state;
+  // the ball first (投一个给我看看, 砸寨; the 调息 cut 2026-10-20, was 边跑边念): the track's way on waits for it
+  assert.equal(resolve(s, content, ctx, { exit: 'on' }).result.refused, 'needs', 'the ball is thrown first');
+  assert.match(content.chapters['00-prologue'].scenes['j01-track'].story.zh, /「你投一个给我看看。」$/, 'the passage stops on her line; the throw is told after the game');
+  // a save from before the cut, holding 边跑边念 offered here, loads with the ball offered instead
+  const old = fitWorld({ ...s, tasks: { ...s.tasks, 'jin-paobu': { status: 'offered' } } }, content);
+  assert.equal(old.tasks['jin-paobu'], undefined, 'the old board let go');
+  assert.equal(old.tasks['jin-toulan']?.status, 'offered');
+  s = win(s, content, ctx, { id: 'jin-toulan' }).state;
+  s = task(s, content, ctx, { action: 'done', id: 'jin-toulan' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   assert.equal(s.scene, 'j01-retest');

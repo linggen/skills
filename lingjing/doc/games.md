@@ -66,7 +66,9 @@ than the one before — the share of a pull grid whose flight reaches the soft s
 | beat | level | target | ammo | setting | room |
 |---|---|---|---|---|---|
 | 第二回 00-deer 射鹿 `deer-wind` | `deer-wind` | the stag, bolts | 箭 ×3 | the valley stream by day: a log on two stones, a pine, a dead pine leaning over it | 1.93% |
+| 今一 j01-track 投一个给我看看 `jin-toulan` (10-20, the 调息 cut) | `toulan` | 马小宝's 摇杯 on a folding table behind the hoop | 篮球 ×3 (no trick) | the 百团大战 square: the portable hoop (a hidden backboard body under the painting) | 1.68% |
 | 第五回 wm-anhe 暗河 `anhe-dark` | `anhe-dark` | 邹青松's gourd, lit by a stone | 石子 · 箭 · 石子 · 箭 | the dry underground river, dark: a boulder he crouches behind | 1.63% |
+| 第六回 wm-qianye 讲堂试法 `qianye-qiajue` (10-20, the 调息 cut) | `jiangtang` | three straw dummies (`still`): behind a bench, behind a post, on a bench | 火弹 · 冰锥 · 金刃 · 火弹 — his 四层 (burst · split · dash, 金刃 cuts wood) | the back of the lecture hall | 1.49% |
 | 古七 09-yishui 芦苇里那一等 `yishui-reed` | `yishui-reed` | the 鯥, its wing root on a breath | 短飞剑 ×3 (tap: dash) | the 沂水 shoal by night: driftwood on stones, 孙二狗's board and torch | 1.40% |
 
 Bots (headless Chromium on the built bundle, a fake clock): a sensible hand (aims along the flight it knows, σ 0.6° and
@@ -335,6 +337,32 @@ level 9 s median (30/30), the new **37 s** (53/60 within 90 s). Live: casual at 
 over the rim and the board, into 马小宝's 摇杯: 「球飞得很高，很有信心…砸翻了马小宝的摇杯」) and the 罚球 at the end
 (「他投了十个，只进了一个」). If 今线 takes 砸寨 levels at all (so far it plays only the breath kit), the first is the one —
 but it lies only ~500 字 before 边跑边念, so it adds play more than it breaks a read. His call.
+
+## 调息 cut (10-20)
+
+Hanli 10-20: 「调息感觉太多了」, then 「可以」 to the audit's plan: of the 15 气走经脉 story boards, 8 stay (水桶落井 · 小周天 · 息壤 ·
+藏息 · 先吐 · 罚球 · 黑地十一步 · 最后一罚), 3 become games in the same slot, 4 are told.
+
+- **Told** (board, task row, qimai row, level and emblem gone; a split passage merged back word for word): 挑水上坡
+  `halfyear-carry` (00-halfyear; a save holding it offered lets it go, done stays — look skips a task whose row is gone),
+  后山 `baishi-houshan` (wm-baishi), 随叶 `jiuge-sui` (09-jiuge — 禹步 is now its one board, after the whole lesson),
+  顺风溜 `xie-wind` (09-xie; the boots still come with the way on). 古七's board 修为 is +10, not +20.
+- **砸寨 · 讲堂试法** (`qianye-qiajue`, `jiangtang`): after 「第二天他教咒。」 the spells thrown at straw dummies, four for his
+  四层 — 「扔一回，丹田便空一截」. New throws: 火弹 (burst), 冰锥 (tap: three), 金刃 (tap: dash; 金克木), each painted.
+- **守墙关 · 药园巡夜 · 开春** (`furnace-ding`, levels/shouqiang.json `yaoyuan-spring`, `story: "09-furnace"`): 野猪 and 狰
+  only; 兽潮 (tideRows) and the 游戏厅 ladder skip a `story` row, and it names no 下一关. Sims: human 37/40, sharp 22/24.
+- **砸寨 · 投一个给我看看** (`jin-toulan`, `toulan`): j01-track cut on 阿禾's 「你投一个给我看看。」 — the ball over the board,
+  the 摇杯, the dawn run (边跑边念, told) after the game. A save holding `jin-paobu` offered is given the ball instead.
+- The qimai ladder renumbered 1…13 (feather · xisui · 水桶 · 先吐 · 罚球 · 小周天 · 息壤 · 藏息 · 黑地 · 最后一罚 · 试作 ×3).
+
+| stretch | before | after |
+|---|---|---|
+| 00-rent → 00-notice (第二回) | 3,385 · 2,695 | **6,080** (the accepted cost) |
+| 00-notice → j01-retest (今一) | 2,568 · 3,106 | 1,980 · 3,694 |
+| wm-jiaxin → end (古六) | 486 · 1,149 | 1,635 |
+| 09-snow → 09-furnace (古七) | 605 · 331 · 1,343 | 936 · 1,343 |
+| 09-yishui → 09-futian (古七) | 1,122 · 497 | 1,619 |
+| wm-luobo → wm-zhaojing, 09-furnace → 09-lingcao | — | unchanged (the game in the same slot) |
 
 ## The weak-board sweep (10-19, the standing rule)
 

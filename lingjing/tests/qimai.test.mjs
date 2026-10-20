@@ -19,7 +19,6 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   // the reading cap (2026-10-20, Hanli: 「剧情连续阅读太长的地方, 你处理一下」): 息壤's circle, 后山's narrowing path
   'xirang-wumen': 'xirang',
   // the reading cap before 入门 (2026-10-20): 00-halfyear's 挑水上坡 (on the cut 练功's task id), 今一's 边跑边念
-  'jin-paobu': 'paobu',
   // the 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」): 挑水上坡, 后山, 随叶 and 顺风溜 told — rows, levels and tasks gone
   // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket
   'notice-shuitong': 'shuitong' };
@@ -205,7 +204,7 @@ test('the climb (10-19, 「提高一点难度」): the first level learnable, th
   const first = runs(by.feather, 'live', 12);
   assert.ok(first.filter((r) => r.won).length >= 10, 'a casual hand wins 吹鹅毛');
   assert.ok(first.filter((r) => r.stars <= 2).length >= 10, `mostly ★1–2: ${first.map((r) => r.stars)}`);
-  for (const id of ['xisui', 'shuitong', 'paobu', 'qianmi', 'faqiu', 'zhoutian']) {
+  for (const id of ['xisui', 'shuitong', 'qianmi', 'faqiu', 'zhoutian']) {
     const rs = runs(by[id], 'live', 12);
     assert.ok(rs.filter((r) => r.won).length >= 8, `${id}: a casual hand wins it most times`);
     assert.ok(rs.some((r) => r.chas > 0), `${id}: but not without a 岔气`);

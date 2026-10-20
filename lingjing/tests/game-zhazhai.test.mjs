@@ -53,7 +53,7 @@ test('registered in the 游戏厅 as a throw (plays wide); the story’s throw b
   const keys = new Set(forts.levels.filter((l) => l.key).map((l) => l.key));
   const beats = Object.fromEntries(tasks.filter((t) => t.game === 'zhazhai').map((t) => [t.id, t.deal?.lv]));
   // + the 调息 cut (2026-10-20): 讲堂试法 on 第六回's 讲堂 board, 投一个给我看看 on 今一's.
-  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'anhe-dark': 'anhe-dark', 'qianye-qiajue': 'jiangtang', 'yishui-reed': 'yishui-reed' });
+  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'anhe-dark': 'anhe-dark', 'qianye-qiajue': 'jiangtang', 'yishui-reed': 'yishui-reed', 'jin-toulan': 'toulan' });
   for (const lv of Object.values(beats)) assert.ok(keys.has(lv), `${lv}: a level of the build`);
   // The marks a beat reads come from its grades.
   const reed = tasks.find((t) => t.id === 'yishui-reed');

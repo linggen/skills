@@ -124,8 +124,8 @@ test('SKILL.md: what she reads of Look carries `companion.away`, and her place t
 test('目前任务 in a scene is the scene\'s own written words — its game, else its setup\'s first sentence; zh and en', () => {
   // j01-track offers its dawn run (边跑边念, 2026-10-20): the game until it is played, then the setup's words.
   const fresh = inJin();
-  assert.equal(taskLine(content, fresh, ctx), `目前任务：${gameTitle('jin-paobu', 'zh')}`);
-  const s = { ...fresh, tasks: { ...fresh.tasks, 'jin-paobu': { status: 'done' } } };
+  assert.equal(taskLine(content, fresh, ctx), `目前任务：${gameTitle('jin-toulan', 'zh')}`);
+  const s = { ...fresh, tasks: { ...fresh.tasks, 'jin-toulan': { status: 'done' } } };
   const track = scene('j01-track');
   assert.equal(taskLine(content, s, ctx), `目前任务：${firstSentence(track.setup.zh)}`);
   assert.equal(taskLine(content, s, ctx), '目前任务：入学第十二天，体测一千米。');
