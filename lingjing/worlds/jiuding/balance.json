@@ -398,6 +398,10 @@
     },
     "fit": {
       "player": "heavy",
+      "hold": {
+        "h11": 1040
+      },
+      "_hold": "2026-10-20 (Hanli 「可以, 按你说的做」): 古七 (h11) holds 练气五–九层 at 1040…1120. After the 10-19 weak-board sweep the heavy player's 古七 is flat at 3.2 days from 960 to 1310, so its 3.7 target lands on the next step, 1390 — which puts the typical 古八 (h09) at 7.7 days, outside its 5–7.5 band. 1040 keeps every band and the old pace.",
       "days": {
         "default": 4.5,
         "h05": 3.4,

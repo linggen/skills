@@ -6,7 +6,8 @@
 // a day and one 回 a week; the story is the reward; 古一–古三 fast.
 //   --fit     re-derives the 练气 thresholds the 回s' stage quests hold him on, so `model.fit.player`
 //             meets `model.fit.days`, and writes them into balance.json `layers.qi`
-//             (the 层 a rise jumps over sit between their neighbours);
+//             (the 层 a rise jumps over sit between their neighbours); a 回 named in `model.fit.hold`
+//             is not searched — its first layer stays at the held number (a decision, `_hold` says why);
 //   --json    the rows as JSON.
 // tests/balance.test.mjs holds the bands (`model.bands`).
 //
@@ -310,6 +311,8 @@ export function fit(content) {
     fill(sorted[0]);
     let lo = th[sorted[0] - 1] + step, hi = 20000;
     const set = x => { sorted.forEach((l, k) => { th[l] = Math.round(x / 10) * 10 + k * step; }); ladder.tiers[0].thresholds = [...th]; };
+    // Held by decision (`model.fit.hold`): the 回's layers start at the held number, unsearched.
+    if (model.fit.hold?.[hui] != null) { set(Math.max(lo, model.fit.hold[hui])); continue; }
     for (let k = 0; k < 30; k++) { const mid = (lo + hi) / 2; set(mid); if (daysOf(hui) < want) lo = mid; else hi = mid; }
     set(lo);
   }
