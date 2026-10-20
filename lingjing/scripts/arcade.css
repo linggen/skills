@@ -31,6 +31,16 @@ body { overflow: auto; }
 .arcade:has(.arcade-play.is-wide) { max-width: none; }
 .arcade-play.is-wide { max-width: max(440px, min(1280px, calc((100vh - 300px) * 1.6 + 28px))); }
 .arcade-play.is-tall { max-width: max(440px, min(720px, calc((100vh - 230px) * 0.79 + 28px))); }
+/* A Mac window: a tall board takes the window's height, its title and how-to in a column beside it */
+@media (min-width: 900px) {
+  .arcade:has(.arcade-play.is-tall) { max-width: none; padding-bottom: 8px; }
+  .arcade:has(.arcade-play.is-tall) .arcade-head { margin-bottom: 6px; }
+  .arcade-play.is-tall { display: grid; grid-template-columns: 200px auto; grid-template-rows: auto 1fr; column-gap: 18px;
+    max-width: calc(200px + 18px + (100vh - 84px) * var(--ar, .79) + 22px); padding: 10px; }
+  .arcade-play.is-tall .arcade-side { grid-column: 1; grid-row: 1 / span 2; align-self: start; padding-top: 6px; }
+  .arcade-play.is-tall .arcade-slot { grid-column: 2; grid-row: 1 / span 2; }
+  .arcade-play.is-tall .arcade-result { grid-column: 1; grid-row: 2; flex-direction: column; align-items: flex-start; align-self: end; }
+}
 .arcade-play .cardtitle { font-family: var(--serif); font-size: 16px; font-weight: 600; letter-spacing: .12em; margin-bottom: 4px; }
 .arcade-result { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; margin-top: 10px; }
 .arcade-won { font-family: var(--serif); font-size: 20px; color: var(--seal); font-weight: 700; }

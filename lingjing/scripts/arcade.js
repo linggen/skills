@@ -113,8 +113,11 @@ async function playPage(id, n) {
   // A game the model plays is the real page's (an old link to it lands there).
   if (mod?.meta?.ai) { location.replace(arcadePlayUrl(id)); return; }
   root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${home()}</header>`
-    + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${playClass(row.mechanic)}"><div class="cardtitle">${esc(titleOf(row, mod))}</div>`
-    + `<div class="small dim g-goal">${esc(howOf(mod))}</div><div class="arcade-slot" id="slot"></div>`
+    // a tall board's width/height (row.aspect) sizes it to the window's height on a Mac; its title and
+    // how-to sit beside it there, not above, so the board gets the height (Hanli 10-20: 「mac上游戏画面可以大一点」)
+    + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${playClass(row.mechanic)}"${row.aspect ? ` style="--ar:${Number(row.aspect)}"` : ''}>`
+    + `<div class="arcade-side"><div class="cardtitle">${esc(titleOf(row, mod))}</div>`
+    + `<div class="small dim g-goal">${esc(howOf(mod))}</div></div><div class="arcade-slot" id="slot"></div>`
     + `<div class="arcade-result" id="result"></div></article></div>`;
   if (!mount) { document.getElementById('slot').textContent = w().missing; return; }
   deal(mount, row);

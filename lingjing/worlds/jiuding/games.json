@@ -1934,6 +1934,7 @@
   },
   {
    "id": "sadou",
+   "aspect": 0.5625,
    "group": "main",
    "mechanic": "塔防",
    "stars": 3,
@@ -1941,6 +1942,7 @@
   },
   {
    "id": "shouqiang",
+   "aspect": 0.5625,
    "group": "main",
    "mechanic": "塔防",
    "stars": 3,
