@@ -1,46 +1,56 @@
-/* 气走经脉 (games/qimai.js) — the meridian in ink on the stage's paper. Loaded by the module itself. */
+/* 气走经脉 (games/qimai.js) — the meridian as a cloud road through a painted inner landscape (内景山水,
+   10-20): sky and parallax strips behind the SVG, the gorge rock and the code-drawn walls in it. Loaded by the module itself. */
 .g-qimai { display: flex; flex-direction: column; gap: 8px; align-items: stretch; position: relative; }
 .g-qm-head b { color: var(--text); font-weight: 600; letter-spacing: .08em; }
 .g-qm-qi.is-low b { color: var(--seal); }
 .g-qm-stars { color: var(--seal); font-weight: 600; }
 .g-qm-board { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); cursor: pointer;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.g-qm-scene.g-scene { display: block; width: 100%; height: auto; color: var(--text); border: 0; border-radius: 0; }
+.g-qm-scene.g-scene { position: relative; display: block; width: 100%; height: auto; color: var(--text); border: 0; border-radius: 0; background: none; }
+/* the land: a still sky (cover), and two strips repeated sideways that the page slides (translate3d, composited) */
+.g-qm-land { position: absolute; inset: 0; overflow: hidden; background: #1d2740 center / cover no-repeat; pointer-events: none; }
+.g-qm-strip { position: absolute; left: 0; width: 300%; background-repeat: repeat-x; background-size: auto 100%; background-position: 0 100%; will-change: transform; }
+.g-qm-strip.is-far { bottom: 8%; height: 54%; }
+.g-qm-strip.is-mid { bottom: 0; height: 40%; }
 .g-qimai { --qm-tint: var(--ling-soft); --qm-ink: var(--text); --qm-trail: var(--text); }
-.g-qm-scene .g-qm-paper { fill: color-mix(in srgb, var(--surface) 84%, var(--qm-tint)); }
-.g-qm-scene .g-qm-body { fill: color-mix(in srgb, var(--surface) 45%, var(--qm-tint)); opacity: .55; }
-.g-qm-scene .g-qm-glyph { font-family: var(--serif); font-size: 120px; text-anchor: middle; fill: var(--qm-ink); opacity: .07; pointer-events: none; }
-.g-qm-scene .g-qm-wall { fill: none; stroke: color-mix(in srgb, var(--text) 55%, var(--qm-ink)); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; opacity: .85; }
-.g-qm-scene .g-qm-wall-wash { fill: none; stroke: var(--qm-ink); stroke-width: 9; stroke-linejoin: round; opacity: .08; }
-.g-qm-scene .g-qm-gold { fill: none; stroke: var(--metal); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 1 5; opacity: .95; }
-.g-qm-scene .g-qm-current { fill: none; stroke: var(--water); stroke-width: 1.6; stroke-linecap: round; opacity: .55; }
-.g-qm-scene .g-qm-wave { fill: none; stroke: var(--water); stroke-width: 2.2; stroke-linecap: round; opacity: .7; }
-.g-qm-scene .g-qm-heart { fill: none; stroke: var(--seal); stroke-width: 1.4; stroke-linejoin: round; opacity: .45; }
+.g-qm-scene .g-qm-body { fill: #fff; opacity: .1; }
+.g-qm-scene .g-qm-rock { stroke: none; }
+/* the walls: a bold comic outline on the rock's edge, and a pale rim of light just inside the channel */
+.g-qm-scene .g-qm-wall { fill: none; stroke: #2a1d14; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.g-qm-scene .g-qm-wall-wash { fill: none; stroke: #fff; stroke-width: 6; stroke-linejoin: round; opacity: .28; }
+/* the gold thread: a faint line of light (a wide soft glow under a thin bright core) */
+.g-qm-scene .g-qm-gold-glow { fill: none; stroke: #ffd257; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; opacity: .22; }
+.g-qm-scene .g-qm-gold { fill: none; stroke: #fff1b0; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 6 4; opacity: .9; }
+.g-qm-scene .g-qm-current { opacity: .8; }
+.g-qm-scene .g-qm-wave { opacity: .95; }
+.g-qm-scene .g-qm-heart-glow { fill: none; stroke: #fff; stroke-width: 4; stroke-linejoin: round; opacity: .35; }
+.g-qm-scene .g-qm-heart { fill: none; stroke: #e2453a; stroke-width: 1.6; stroke-linejoin: round; opacity: .8; }
 .g-qm-board.is-beat .g-qm-scene .g-qm-heart { animation: g-qm-beat .32s ease-out; }
-@keyframes g-qm-beat { 0% { opacity: .95; stroke-width: 2.4; } 100% { opacity: .45; stroke-width: 1.4; } }
-.g-qm-scene .g-qm-gate-ink { fill: none; stroke: var(--seal); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-.g-qm-scene .g-qm-name { font-family: var(--serif); font-size: 10px; fill: var(--dim); text-anchor: middle; letter-spacing: .1em; }
-.g-qm-scene .g-qm-xue-dot { fill: none; stroke: var(--dim); stroke-width: 1.2; }
-.g-qm-scene .g-qm-xue.is-lit .g-qm-xue-dot { fill: var(--seal); stroke: var(--seal); }
-.g-qm-scene .g-qm-goal-ring { fill: none; stroke: var(--seal); stroke-width: 2; stroke-dasharray: 3 4; }
-.g-qm-scene .g-qm-darkzone { fill: var(--text); opacity: .9; }
-.g-qm-scene .g-qm-trail { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; color: var(--qm-trail); }
-.g-qm-scene .g-qm-bead-glow { fill: var(--ling); opacity: .18; transition: opacity .25s, transform .25s; transform-box: fill-box; transform-origin: center; }
-.g-qm-scene .g-qm-bead-core { fill: var(--ling); stroke: var(--text); stroke-width: 1.2; }
-.g-qm-scene .g-qm-bead.is-in .g-qm-bead-glow { opacity: .42; transform: scale(1.35); }
-.g-qm-scene .g-qm-bead.is-hurt .g-qm-bead-core { fill: var(--seal); animation: g-qm-flick .16s steps(2) infinite; }
-.g-qm-scene .g-qm-bead.is-cha .g-qm-bead-core { fill: var(--seal); opacity: .5; }
+@keyframes g-qm-beat { 0% { opacity: 1; stroke-width: 2.6; } 100% { opacity: .8; stroke-width: 1.6; } }
+/* names over paint: white with a dark edge, readable on any land */
+.g-qm-scene .g-qm-name { font-family: var(--serif); font-size: 10px; font-weight: 700; fill: #fff; stroke: #2a1d14; stroke-width: 2.4; paint-order: stroke; stroke-linejoin: round; text-anchor: middle; letter-spacing: .1em; }
+.g-qm-scene .g-qm-xue-dot { fill: #6b5a44; stroke: #2a1d14; stroke-width: 1.2; }
+.g-qm-scene .g-qm-xue.is-lit .g-qm-xue-dot { fill: #ffd257; stroke: #2a1d14; }
+.g-qm-scene .g-qm-goal-ring { fill: none; stroke: #ffd257; stroke-width: 2; stroke-dasharray: 3 4; }
+.g-qm-scene .g-qm-goal-glow { opacity: .9; }
+.g-qm-scene .g-qm-darkzone { fill: #0b0d16; opacity: .93; }
+.g-qm-scene .g-qm-trail { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; color: color-mix(in srgb, #fff 55%, var(--qm-trail)); }
+.g-qm-scene .g-qm-bead-glow { opacity: .55; transition: opacity .25s, transform .25s; transform-box: fill-box; transform-origin: center; }
+/* the painted pearl; the circle over it only shows a state (hurt, 岔气) */
+.g-qm-scene .g-qm-bead-core { fill: transparent; stroke: none; }
+.g-qm-scene .g-qm-bead.is-in .g-qm-bead-glow { opacity: .95; transform: scale(1.3); }
+.g-qm-scene .g-qm-bead.is-hurt .g-qm-bead-core { fill: #e2453a; opacity: .7; animation: g-qm-flick .16s steps(2) infinite; }
+.g-qm-scene .g-qm-bead.is-cha .g-qm-bead-core { fill: #e2453a; opacity: .6; }
 .g-qm-scene .g-qm-bead.is-ready .g-qm-bead-glow { animation: g-qm-wait 1.4s ease-in-out infinite; }
-.g-qimai.is-dark .g-qm-scene .g-qm-bead-core { stroke: var(--surface); }
 @keyframes g-qm-flick { 50% { opacity: .35; } }
 @keyframes g-qm-wait { 50% { opacity: .4; transform: scale(1.5); } }
-.g-qm-scene .g-qm-pulse { fill: none; stroke: var(--ling); stroke-width: 1.4; transform-box: fill-box; transform-origin: center; animation: g-qm-pulse .65s ease-out forwards; }
-.g-qm-scene .g-qm-pulse.is-out { stroke: var(--water); }
+.g-qm-scene .g-qm-pulse { fill: none; stroke: #fff; stroke-width: 1.4; transform-box: fill-box; transform-origin: center; animation: g-qm-pulse .65s ease-out forwards; }
+.g-qm-scene .g-qm-pulse.is-out { stroke: #8fe3ff; }
 @keyframes g-qm-pulse { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(3.6); } }
 .g-qm-scene .g-qm-splash { fill: var(--seal); transform-box: fill-box; transform-origin: center; animation: g-qm-splash .75s ease-out forwards; }
 .g-qm-scene .g-qm-splash.is-cha { fill: var(--text); }
 @keyframes g-qm-splash { from { opacity: .7; transform: scale(.6); } to { opacity: 0; transform: scale(3.4); } }
-.g-qm-scene .g-qm-teach { fill: none; stroke: var(--seal); stroke-width: 2; stroke-dasharray: 4 5; animation: g-teach 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.g-qm-scene .g-qm-teach { fill: none; stroke: #ffd257; stroke-width: 2; stroke-dasharray: 4 5; animation: g-teach 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 .g-qimai .g-teach-say { color: var(--seal); }
 /* a turning wind (currents with `flip`): the way it blows now */
 .g-qm-scene .g-qm-turn .g-qm-way { transition: opacity .3s; }
@@ -49,7 +59,8 @@
 /* the level's title card, over the board until the first breath */
 .g-qm-card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   padding: 12px 18px; text-align: center; pointer-events: none; opacity: 0; transition: opacity .45s;
-  background: color-mix(in srgb, var(--surface) 78%, transparent); }
+  background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.g-qm-emblem { width: 64px; height: 64px; object-fit: contain; }
 .g-qm-card b { font-family: var(--serif); font-size: 22px; letter-spacing: .2em; color: color-mix(in srgb, var(--text) 60%, var(--qm-ink)); }
 .g-qm-card span { font-size: 13px; color: var(--dim); max-width: 32em; }
 .g-qimai.is-titled .g-qm-card { opacity: 1; }

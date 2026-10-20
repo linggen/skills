@@ -24,14 +24,34 @@
 //   speed (u/s), len (u), say · book · end · title ({zh, en})
 //   goldTol, goldNeed           the 金线's bar for ★3 (within goldTol of it for goldNeed of its length)
 //   grades {3, 2, 1}            the story task's grade for each star count (its `marks` keys)
-//   look {tint, ink, trail, glyph}  the level's own paper tint, channel ink, trail colour and the big
-//                               faint character behind the channel (Hanli 10-19: every level its own)
+//   look {tint, ink, trail, glyph, land}  the level's own tint, wall ink, trail colour, its character
+//                               (now only its name; the title card shows a painted emblem) and its LAND
+//                               (Hanli 10-19: every level its own)
+// The board is an inner landscape (内景山水, Hanli 10-20): the channel is a cloud road through mountains
+// seen from the side. Painted (tools/paint-qimai-flux.py → qimai/art/): per land a still sky, two
+// parallax strips (far peaks, mid ridges) behind the SVG and a cliff rock that fills the gorge walls
+// outside the channel; the pass gates (a round moon gate centred on each gate's gap), the 灵珠 pearl and
+// its glow, wind gusts for currents, wave crests, an emblem per level. The code still draws the
+// channel's walls from the level's data (the outline the bead collides with), the gold thread, the trail.
 // Failing: touching a wall costs one 气 (of three); the third is 岔气 — at once, back to the last 关
 // or 穴 passed, 气 full again. Stars: through (1) · no wall touched (2) · the gold thread kept (3).
 // Physics: a fixed 1/60 s step inside `tick`, so a 10 ms and a 50 ms clock play the same world.
 // Pure model: newGame / act / tick (the bots and tests drive these); the page is `mount` (its own
 // frame loop, pointer and Space; games/mount.js's contract).
 import { rng } from './seeded.js';
+
+/* ── The painted inner landscape ──────────────────────────────────────────────────────────── */
+
+export const LANDS = ['dawn', 'dusk', 'jade', 'mist', 'moon', 'star'];
+const art = (name) => new URL(`./qimai/art/${name}.webp`, import.meta.url).href;
+/** Measured by the paint script's cut (qimai/art/art.json): each strip's aspect, each gate's round hole
+    (centre and radii as shares of its picture) and the picture's aspect. */
+export const ART = {"gates":{"weilv":{"cx":0.4984,"cy":0.5684,"rx":0.1838,"ry":0.1911,"aspect":1.0264},"jiaji":{"cx":0.5047,"cy":0.7112,"rx":0.1398,"ry":0.1436,"aspect":1.0446},"yuzhen":{"cx":0.5114,"cy":0.6096,"rx":0.1974,"ry":0.1901,"aspect":0.976},"pass":{"cx":0.5104,"cy":0.6434,"rx":0.1806,"ry":0.1601,"aspect":0.9128}},"sky-dawn":{"w":1024,"h":640},"far-dawn":{"w":1536,"h":336},"mid-dawn":{"w":1536,"h":336},"sky-dusk":{"w":1024,"h":640},"far-dusk":{"w":1536,"h":336},"mid-dusk":{"w":1536,"h":336},"sky-jade":{"w":1024,"h":640},"far-jade":{"w":1536,"h":336},"mid-jade":{"w":1536,"h":336},"sky-mist":{"w":1024,"h":640},"far-mist":{"w":1536,"h":336},"mid-mist":{"w":1536,"h":336},"sky-moon":{"w":1024,"h":640},"far-moon":{"w":1536,"h":336},"mid-moon":{"w":1536,"h":336},"sky-star":{"w":1024,"h":640},"far-star":{"w":1536,"h":336},"mid-star":{"w":1536,"h":336}};
+export const landOf = (L) => (LANDS.includes(L?.look?.land) ? L.look.land : 'moon');
+const gateArt = (g) => ({ 尾闾: 'weilv', 夹脊: 'jiaji', 玉枕: 'yuzhen' })[g?.name?.zh] ?? 'pass';
+const HOLE0 = { cx: 0.5, cy: 0.5, rx: 0.2, ry: 0.2, aspect: 1 };
+const ROCK_U = 150; //               the rock tile's side in world units
+const PARALLAX = { far: 0.12, mid: 0.38 };
 
 export const W = 360;
 export const H = 220;
@@ -324,15 +344,20 @@ function line(ch, arr, from = 0, to = ch.len, stepU = 6) {
 
 /** The static world of one level, in world units (scrolled by one transform). */
 function worldSvg(s, lang, id) {
-  const L = s.level, ch = s.ch, len = L.len;
+  const L = s.level, ch = s.ch, len = L.len, X0 = -BX - 20, X1 = len + W;
   const body = `${line(ch, ch.top)} ${line(ch, ch.bot).split(' ').reverse().join(' ')}`;
+  // the gorge walls: everything above the top wall and below the bottom one, filled with the land's rock
+  const above = `${fmt(X0)},-30 ${line(ch, ch.top, X0, X1)} ${fmt(X1)},-30`;
+  const below = `${fmt(X0)},${H + 30} ${line(ch, ch.bot, X0, X1)} ${fmt(X1)},${H + 30}`;
   // 暗: the zone's ink wash, with a hole where the bead's small round of light is (the shade mask)
   const darks = (L.dark ?? []).length ? `<g mask="url(#${id}-shade)">${L.dark.map((d) => `<rect class="g-qm-darkzone" data-from="${d.from}" data-to="${d.to}" x="${d.from}" y="-20" width="${d.to - d.from}" height="${H + 40}"/>`).join('')}</g>` : '';
+  const gust = art('gust');
+  // a current is a row of painted wind gusts blowing the way it pushes (up or down)
   const arrows = (c, up) => {
     const marks = [];
     for (let x = c.from + 20; x < c.to - 10; x += 46) {
-      const m = wallsAt(ch, x).mid, y0 = m + (up ? 14 : -14), y1 = m + (up ? -14 : 14);
-      marks.push(`<path class="g-qm-current" d="M${fmt(x - 6)} ${fmt(y0)} Q${fmt(x + 6)} ${fmt((y0 + y1) / 2)} ${fmt(x - 2)} ${fmt(y1)} m-4 ${up ? 5 : -5} l4 ${up ? -5 : 5} l4 ${up ? 4 : -4}"/>`);
+      const m = wallsAt(ch, x).mid;
+      marks.push(`<image class="g-qm-current" href="${gust}" x="-15" y="-8" width="30" height="16" preserveAspectRatio="xMidYMid meet" transform="translate(${fmt(x)} ${fmt(m)}) rotate(${up ? -90 : 90})"/>`);
     }
     return marks.join('');
   };
@@ -342,11 +367,12 @@ function worldSvg(s, lang, id) {
     if (!c.flip) return `<g class="g-qm-zone is-${up ? 'up' : 'down'}">${arrows(c, up)}</g>`;
     return `<g class="g-qm-zone g-qm-turn${now}" data-cur="${i}"><g class="g-qm-way is-a">${arrows(c, up)}</g><g class="g-qm-way is-b">${arrows(c, !up)}</g></g>`;
   }).join('');
+  const wave = art('wave');
   const waves = (L.waves ?? []).map((w) => {
     const curls = [];
-    for (let x = w.from + 16; x < w.to - 8; x += 34) {
+    for (let x = w.from + 18; x < w.to - 10; x += 38) {
       const t = wallsAt(ch, x).top;
-      curls.push(`<path class="g-qm-wave" d="M${fmt(x - 14)} ${fmt(t + 4)} q8 -2 14 6 q4 8 -4 10 q-6 0 -4 -6"/>`);
+      curls.push(`<image class="g-qm-wave" href="${wave}" x="${fmt(x - 18)}" y="${fmt(t - 2)}" width="36" height="18" preserveAspectRatio="xMidYMin meet"/>`);
     }
     return `<g class="g-qm-zone">${curls.join('')}</g>`;
   }).join('');
@@ -356,38 +382,46 @@ function worldSvg(s, lang, id) {
       const b = wallsAt(ch, x).bot - 8;
       pts.push(`M${fmt(x)} ${fmt(b)} h10 l4 -9 l5 16 l4 -7 h17`);
     }
-    return `<path class="g-qm-heart" d="${pts.join(' ')}"/>`;
+    return `<path class="g-qm-heart-glow" d="${pts.join(' ')}"/><path class="g-qm-heart" d="${pts.join(' ')}"/>`;
   }).join('');
   const gold = (L.gold ?? []).map((g) => {
     const pts = [];
     for (let x = g.from; x <= g.to; x += 4) pts.push(`${fmt(x)},${fmt(goldAt(L, ch, x))}`);
-    return `<polyline class="g-qm-gold" points="${pts.join(' ')}"/>`;
+    const p = pts.join(' ');
+    return `<polyline class="g-qm-gold-glow" points="${p}"/><polyline class="g-qm-gold" points="${p}"/>`;
   }).join('');
+  // a pass gate: the painted moon gate, its round hole on the gap (the walls' pinch is the collision)
   const gates = (L.gates ?? []).map((g) => {
-    const { top, bot } = wallsAt(ch, g.x);
-    return `<g class="g-qm-gate"><path class="g-qm-gate-ink" d="M${g.x - 4} ${fmt(top - 16)} L${g.x} ${fmt(top)} L${g.x + 4} ${fmt(top - 16)} M${g.x - 4} ${fmt(bot + 16)} L${g.x} ${fmt(bot)} L${g.x + 4} ${fmt(bot + 16)}"/>`
-      + `<text class="g-qm-name" x="${g.x}" y="${fmt(Math.max(12, top - 20))}">${esc(tr(g.name, lang))}</text></g>`;
+    const { top, bot } = wallsAt(ch, g.x), a = ART.gates[gateArt(g)] ?? HOLE0, gy = (top + bot) / 2;
+    const h = (bot - top) / 2 / a.ry, w = h * a.aspect;
+    return `<g class="g-qm-gate"><image class="g-qm-gate-art" href="${art(`gate-${gateArt(g)}`)}" x="${fmt(g.x - a.cx * w)}" y="${fmt(gy - a.cy * h)}" width="${fmt(w)}" height="${fmt(h)}"/>`
+      + `<text class="g-qm-name" x="${g.x}" y="${fmt(Math.max(12, gy - a.cy * h - 4))}">${esc(tr(g.name, lang))}</text></g>`;
   }).join('');
   const xue = (L.xue ?? []).map((p, i) => {
     const { bot } = wallsAt(ch, p.x);
-    return `<g class="g-qm-xue" data-xue="${i}"><circle class="g-qm-xue-dot" cx="${p.x}" cy="${fmt(bot + 8)}" r="3.2"/>`
+    return `<g class="g-qm-xue" data-xue="${i}"><circle class="g-qm-xue-dot" cx="${p.x}" cy="${fmt(bot + 8)}" r="3.6"/>`
       + `<text class="g-qm-name" x="${p.x}" y="${fmt(Math.min(H - 3, bot + 22))}">${esc(tr(p.name, lang))}</text></g>`;
   }).join('');
-  const lit = `<g mask="url(#${id}-lamp)">`
-    + `<polygon class="g-qm-body" points="${body}"/>${gold}`
-    + `<polyline class="g-qm-wall-wash" points="${line(ch, ch.top)}"/><polyline class="g-qm-wall-wash" points="${line(ch, ch.bot)}"/>`
-    + `<polyline class="g-qm-wall" data-side="top" points="${line(ch, ch.top)}"/><polyline class="g-qm-wall" data-side="bot" points="${line(ch, ch.bot)}"/>`
-    + `${currents}${waves}${hearts}${gates}${xue}</g>`;
-  const end = wallsAt(ch, len);
-  const goal = `<g class="g-qm-goal"><circle class="g-qm-goal-ring" cx="${len}" cy="${fmt(end.mid)}" r="${fmt(Math.min(24, (end.bot - end.top) / 2))}"/></g>`;
+  const inner = `<polygon class="g-qm-body" points="${body}"/>`
+    + `<polygon class="g-qm-rock" points="${above}" style="fill:url(#${id}-rock)"/><polygon class="g-qm-rock is-below" points="${below}" style="fill:url(#${id}-rock)"/>`
+    + `<polyline class="g-qm-wall-wash" points="${line(ch, ch.top, X0, X1)}"/><polyline class="g-qm-wall-wash" points="${line(ch, ch.bot, X0, X1)}"/>`
+    + `<polyline class="g-qm-wall" data-side="top" points="${line(ch, ch.top, X0, X1)}"/><polyline class="g-qm-wall" data-side="bot" points="${line(ch, ch.bot, X0, X1)}"/>`
+    + `${gold}${currents}${waves}${hearts}${gates}${xue}`;
+  // only a level with 暗 masks the world by the bead's lamp (a moving mask over bitmaps costs every frame)
+  const lit = (L.dark ?? []).length ? `<g mask="url(#${id}-lamp)">${inner}</g>` : inner;
+  const end = wallsAt(ch, len), gr = Math.min(24, (end.bot - end.top) / 2);
+  const goal = `<g class="g-qm-goal"><image class="g-qm-goal-glow" href="${art('glow')}" x="${fmt(len - gr * 2)}" y="${fmt(end.mid - gr * 2)}" width="${fmt(gr * 4)}" height="${fmt(gr * 4)}"/>`
+    + `<circle class="g-qm-goal-ring" cx="${len}" cy="${fmt(end.mid)}" r="${fmt(gr)}"/></g>`;
   const ring = '<circle class="g-teach-ring g-qm-teach" r="22" cx="-99" cy="-99"/>';
-  return `${darks}${lit}${goal}${ring}`;
+  return `${lit}${darks}${goal}${ring}`;
 }
 
 function defsSvg(s, id) {
   const lampR = (s.level.dark ?? [])[0]?.r ?? DARK_R;
   const darks = (s.level.dark ?? []).map((d) => `<rect x="${d.from}" y="-40" width="${d.to - d.from}" height="${H + 80}" style="fill:#000"/>`).join('');
-  return `<defs><radialGradient id="${id}-glow"><stop offset="0.55" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`
+  const rock = `<pattern id="${id}-rock" patternUnits="userSpaceOnUse" width="${ROCK_U}" height="${ROCK_U}" x="0" y="0">`
+    + `<image href="${art(`rock-${landOf(s.level)}`)}" width="${ROCK_U}" height="${ROCK_U}" preserveAspectRatio="none"/></pattern>`;
+  return `<defs>${rock}<radialGradient id="${id}-glow"><stop offset="0.55" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`
     + `<linearGradient id="${id}-trail" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${BX}" y2="0"><stop offset="0" stop-opacity="0" stop-color="currentColor"/><stop offset="1" stop-opacity="0.75" stop-color="currentColor"/></linearGradient>`
     + `<mask id="${id}-lamp" maskUnits="userSpaceOnUse" x="-100" y="-100" width="${s.level.len + 600}" height="${H + 200}">`
     + `<rect x="-100" y="-100" width="${s.level.len + 600}" height="${H + 200}" style="fill:#fff"/>${darks}`
@@ -422,11 +456,21 @@ function lookStyle(L) {
   const k = L?.look ?? {}, v = [['tint', '--qm-tint'], ['ink', '--qm-ink'], ['trail', '--qm-trail']].filter(([f]) => COLOR.test(k[f] ?? '')).map(([f, n]) => `${n}:${k[f]}`);
   return v.length ? ` style="${v.join(';')}"` : '';
 }
+/** The land behind the channel: a still sky and two strips that scroll slower than the world (parallax). */
+function landHtml(L) {
+  const land = landOf(L);
+  const strip = (k) => `<div class="g-qm-strip is-${k}" style="background-image:url(${art(`${k}-${land}`)})"></div>`;
+  return `<div class="g-qm-land" data-land="${land}" style="background-image:url(${art(`sky-${land}`)})">${strip('far')}${strip('mid')}</div>`;
+}
+/** The levels that have a painted emblem for their title card. */
+const EMBLEMS = new Set(["cangxi", "chongmai", "daimai", "dark", "dazhoutian", "ding", "faqiu", "feather", "houshan", "lastshot", "qiajue", "qianmi", "sui", "wind", "xirang", "xisui", "zhoutian"]);
+
 /** The level's title card over the board before its first breath: its name and the book's line. */
 function titleCard(s, lang) {
   const name = tr(s.level.title ?? s.level.name, lang);
   if (!name) return '';
-  return `<div class="g-qm-card" aria-hidden="${s.phase === 'ready' && s.first ? 'false' : 'true'}"><b>${esc(name)}</b><span>${esc(tr(s.level.book, lang))}</span></div>`;
+  const em = s.level.id && EMBLEMS.has(s.level.id) ? `<img class="g-qm-emblem" src="${art(`em-${s.level.id}`)}" alt="">` : '';
+  return `<div class="g-qm-card" aria-hidden="${s.phase === 'ready' && s.first ? 'false' : 'true'}">${em}<b>${esc(name)}</b><span>${esc(tr(s.level.book, lang))}</span></div>`;
 }
 
 /** The board's whole markup for a state (the page lays it once a level, then moves it each frame). */
@@ -435,14 +479,13 @@ export function html(s, lang = 'zh', id = 'qm') {
   if (!s.level) return `<div class="g-qimai g-ink"><p class="g-line-say">—</p></div>`;
   return `<div class="g-qimai g-ink${s.won ? ' is-won' : ''}${s.phase === 'ready' && s.first ? ' is-titled' : ''}"${lookStyle(s.level)} data-level="${esc(s.level.id ?? '')}">`
     + `<div class="g-head g-qm-head">${headHtml(s, t)}</div>`
-    + `<div class="g-qm-board g-hold" data-g-hold="">`
+    + `<div class="g-qm-board g-hold" data-g-hold="">${landHtml(s.level)}`
     + `<svg class="g-scene g-qm-scene" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tr(s.level.name ?? meta.name, lang))}" focusable="false">${defsSvg(s, id)}`
-    + `<rect class="g-qm-paper" x="0" y="0" width="${W}" height="${H}"/>`
-    + (s.level.look?.glyph ? `<text class="g-qm-glyph" x="${W - 62}" y="${H / 2 + 44}">${esc(s.level.look.glyph)}</text>` : '')
     + `<g class="g-qm-world" transform="translate(${fmt(BX - s.x)} 0)">${worldSvg(s, lang, id)}</g>`
     + `<path class="g-qm-trail" stroke="url(#${id}-trail)" d=""/>`
     + `<g class="g-qm-pulses"></g>`
-    + `<g class="g-qm-bead" transform="translate(${BX} ${fmt(s.y)})"><circle class="g-qm-bead-glow" r="${R * 2.2}"/><circle class="g-qm-bead-core" r="${R}"/></g>`
+    + `<g class="g-qm-bead" transform="translate(${BX} ${fmt(s.y)})"><image class="g-qm-bead-glow" href="${art('glow')}" x="${-R * 3}" y="${-R * 3}" width="${R * 6}" height="${R * 6}"/>`
+    + `<image class="g-qm-bead-pearl" href="${art('pearl')}" x="${-R - 1}" y="${-R - 1}" width="${2 * R + 2}" height="${2 * R + 2}"/><circle class="g-qm-bead-core" r="${R}"/></g>`
     + `</svg>${titleCard(s, lang)}</div>`
     + `<p class="g-line-say">${esc(sayOf(s, t, lang))}</p>`
     + `<div class="g-qm-row"><span class="g-qm-hint">${t.hint}</span><button type="button" class="g-btn g-btn-quiet" data-g="restart">${t.restart}</button></div>`
@@ -491,7 +534,30 @@ export async function mount(container, opts = {}) {
   const t = T[lang] || T.zh;
   const $ = (q) => host.querySelector(q);
   const board = $('.g-qm-board'), world = $('.g-qm-world'), bead = $('.g-qm-bead'), trail = $('.g-qm-trail'), pulses = $('.g-qm-pulses');
-  const head = $('.g-qm-head'), say = $('.g-line-say'), lamps = [...host.querySelectorAll('.g-qm-lamp')], ring = $('.g-qm-teach'), root = $('.g-qimai');
+  const head = $('.g-qm-head'), say = $('.g-line-say'), ring = $('.g-qm-teach'), root = $('.g-qimai');
+  const lamps = s.level.dark?.length ? [...host.querySelectorAll('.g-qm-lamp')] : [];
+  // the parallax strips: each tile's width in px follows the board's size (measured on resize, not per frame)
+  const land = landOf(s.level);
+  const strips = [...host.querySelectorAll('.g-qm-strip')].map((el) => ({ el, k: PARALLAX[el.classList.contains('is-far') ? 'far' : 'mid'], a: ART[`${el.classList.contains('is-far') ? 'far' : 'mid'}-${land}`], tile: 0, px: -1 }));
+  let unit = 1;
+  const measure = () => {
+    unit = board.clientWidth / W;
+    for (const st of strips) {
+      st.tile = st.el.clientHeight * (st.a ? st.a.w / st.a.h : 3);
+      st.el.style.width = `${Math.ceil(board.clientWidth + st.tile + 4)}px`;
+      st.px = -1;
+    }
+  };
+  const scroll = () => {
+    for (const st of strips) {
+      if (!st.tile) continue;
+      const px = Math.round(((s.x * unit * st.k) % st.tile) * 2) / 2;
+      if (px !== st.px) { st.px = px; st.el.style.transform = `translate3d(${-px}px,0,0)`; }
+    }
+  };
+  const ro = win.ResizeObserver ? new win.ResizeObserver(() => { measure(); scroll(); }) : null;
+  ro?.observe(board);
+  measure();
   const xues = [...host.querySelectorAll('.g-qm-xue')], turns = [...host.querySelectorAll('.g-qm-turn')];
   let last = { head: '', say: '', cls: '' };
 
@@ -520,6 +586,7 @@ export async function mount(container, opts = {}) {
   const paint = () => {
     const cam = BX - s.x;
     world.setAttribute('transform', `translate(${fmt(cam)} 0)`);
+    scroll();
     bead.setAttribute('transform', `translate(${BX} ${fmt(s.y)})`);
     const cls = `g-qm-bead${s.holding ? ' is-in' : ''}${s.clock - s.touchAt < 650 ? ' is-hurt' : ''}${s.phase === 'cha' ? ' is-cha' : ''}${s.phase === 'ready' ? ' is-ready' : ''}`;
     if (cls !== last.cls) { bead.setAttribute('class', cls); last.cls = cls; }
@@ -544,6 +611,7 @@ export async function mount(container, opts = {}) {
     let done = false, raf = 0, prev = win.performance.now(), keyDown = false, pointerDown = false;
     const off = [];
     const on = (el, type, fn, o) => { el.addEventListener(type, fn, o); off.push(() => el.removeEventListener(type, fn, o)); };
+    off.push(() => ro?.disconnect());
     const finish = (r) => { if (done) return; done = true; win.cancelAnimationFrame(raf); off.forEach((f) => f()); resolve(r); };
     const settle = () => {
       root.classList.add('is-won');
