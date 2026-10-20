@@ -16,10 +16,10 @@ export const HP = 10;
 
 /** The four talismans. `air`: can strike a flier. Costs: build, then the 二重 and 三重 upgrades. */
 export const TOWERS = {
-  jian: { glyph: '剑', color: '#35566e', cost: [60, 60, 90], range: [120, 128, 138], rate: [0.5, 0.45, 0.4], dmg: [10, 14, 20], air: true },
-  huo: { glyph: '火', color: '#b0412e', cost: [90, 80, 120], range: [110, 116, 124], rate: [1.6, 1.5, 1.4], dmg: [26, 36, 50], splash: [42, 48, 56], air: false, shot: 160 },
-  han: { glyph: '寒', color: '#3f87a6', cost: [80, 70, 100], range: [95, 105, 115], rate: [0.5, 0.5, 0.5], dmg: [2, 3.5, 5.5], slow: [0.5, 0.55, 0.6], air: true },
-  lei: { glyph: '雷', color: '#6a4c86', cost: [140, 120, 160], range: [130, 138, 146], rate: [1.5, 1.4, 1.3], dmg: [32, 44, 60], jumps: 3, air: true },
+  jian: { glyph: '剑', color: '#35566e', cost: [60, 60, 90], range: [156, 166, 180], rate: [0.5, 0.45, 0.4], dmg: [10, 14, 20], air: true },
+  huo: { glyph: '火', color: '#b0412e', cost: [90, 80, 120], range: [143, 151, 161], rate: [1.6, 1.5, 1.4], dmg: [26, 36, 50], splash: [42, 48, 56], air: false, shot: 160 },
+  han: { glyph: '寒', color: '#3f87a6', cost: [80, 70, 100], range: [124, 137, 150], rate: [0.5, 0.5, 0.5], dmg: [2, 3.5, 5.5], slow: [0.5, 0.55, 0.6], air: true },
+  lei: { glyph: '雷', color: '#6a4c86', cost: [140, 120, 160], range: [169, 179, 190], rate: [1.5, 1.4, 1.3], dmg: [32, 44, 60], jumps: 3, air: true },
 };
 export const TORDER = ['jian', 'huo', 'han', 'lei'];
 
@@ -41,7 +41,7 @@ export const BEASTS = {
     engages a ground beast that comes within `acquire`, and gives up the chase and goes home past `leash`.
     An attack order chases its beast until it falls or gets `lose` away (or further than it was when ordered). */
 export const HERO = { hp: [300, 380, 470], dmg: [20, 28, 38], rate: 0.8, speed: 120, reach: 30, block: 2, regen: 12, respawn: 12, xp: [60, 150],
-  wander: 25, acquire: 110, leash: 170, lose: 240, meet: true };
+  wander: 25, acquire: 143, leash: 220, lose: 300, meet: true };
 /** Her skills (Q W E R). `unlock`: the 重 (hero level, 0…2) it opens at. `aim`: what it needs — null (cast at once), 'point',
     or 'any' (a beast or a point). `range`: how far she casts (out of range, she walks in first). 狐毛 is paid in charges
     (the level row's `hero.hair`), not by level. */

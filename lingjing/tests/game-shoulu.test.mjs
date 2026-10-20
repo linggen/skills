@@ -144,10 +144,12 @@ levels.forEach((r, i) => {
     assert.ok(T.ok(rs), line);
   });
 });
+// L5's bar is a little lower since the wider ranges (Hanli 10-20: 「怪物露头就可以开打了」): the optimal bot covers nearly
+// the whole road, and hp enough to make it bleed more would sink the human bot below ~85%. It still loses fire in about a quarter.
 test('the optimal bot still loses a few 炉火 on L4 and L5', () => {
-  for (const i of [3, 4]) {
+  for (const [i, top, some] of [[3, 9.5, 0.25], [4, 9.8, 0.2]]) {
     const rs = run(levels[i], 'mixed', SEEDS20), mean = rs.reduce((a, x) => a + x.hp, 0) / rs.length;
-    assert.ok(allWin(rs) && mean <= 9.5 && share(rs, (x) => x.hp < 10) >= 0.25, `L${i + 1} mixed: ${rs.map((x) => x.hp)}`);
+    assert.ok(allWin(rs) && mean <= top && share(rs, (x) => x.hp < 10) >= some, `L${i + 1} mixed: ${rs.map((x) => x.hp)}`);
   }
 });
 test('the human bot is a human: late, never calls a wave early, moves 银月 now and then', () => {
@@ -230,18 +232,18 @@ test('hero: an attack order chases its beast and bites it to death; a flier can\
   assert.equal(orderAttack(g, bird), false);
 });
 
-test('hero: she engages a ground beast inside 110, not before, and walks home past the leash', () => {
+test('hero: she engages a ground beast inside her sight (`acquire`), not before, and walks home past the leash', () => {
   const g = quiet(), h = g.hero;
-  const p0 = posOnPath(g.L.road, 300); // a post on 石坳's long top straight: the road runs on 170 and more past it
+  const p0 = posOnPath(g.L.road, 300); // a post on 石坳's long top straight: the road runs on past the leash
   h.x = h.post.x = p0.x; h.y = h.post.y = p0.y;
   const post = { ...h.post };
-  const far = still(g, 'yezhu', 160); far.hp = far.max = 1e6;
+  const far = still(g, 'yezhu', dAt(g, HERO.acquire + 20, HERO.acquire + 40)); far.hp = far.max = 1e6;
   run_(g, 2);
   assert.equal(h.foe, null, `${Math.round(near(g, far))} away: not yet`);
   far.speed = 30; // it walks on, into her sight
   let met = false;
   for (let t = 0; t < 4 && !met; t += STEP) { step(g, STEP); if (h.foe === far) met = Math.hypot(far.x - post.x, far.y - post.y) <= HERO.acquire + 1; }
-  assert.ok(met, 'engaged inside 110');
+  assert.ok(met, `engaged inside ${HERO.acquire}`);
   // it bounds away down the road (unheld): she follows, then gives up past the leash and goes home
   far.speed = 100;
   let homed = false;
@@ -284,7 +286,7 @@ test('Q 啸月: stuns and hurts the crowd around her, then cools; autocast toggl
 
 test('W 月影扑: locked before 二重; a dash nothing can bite, the strike on landing, then the cooldown', () => {
   const g = quiet(), h = g.hero;
-  const b = still(g, 'yezhu', dAt(g, 120, 140)); b.hp = b.max = 1000;
+  const b = still(g, 'yezhu', dAt(g, HERO.acquire + 10, SKILLS.w.range - 10)); b.hp = b.max = 1000; // out of her sight, in the dash's
   assert.equal(skillState(g, 'w').locked, true);
   assert.equal(cast(g, 'w', { b }), false, 'locked at 一重');
   h.lvl = 1;
@@ -303,7 +305,7 @@ test('W 月影扑: locked before 二重; a dash nothing can bite, the strike on 
 
 test('E 狐火: locked before 三重; a patch that burns the beasts walking through it', () => {
   const g = quiet(), h = g.hero;
-  const b = still(g, 'qiuyu', dAt(g, 100, 120)); b.hp = b.max = 1e6;
+  const b = still(g, 'qiuyu', dAt(g, HERO.acquire + 10, SKILLS.e.range - 10)); b.hp = b.max = 1e6; // out of her sight
   h.lvl = 1;
   assert.equal(cast(g, 'e', { x: b.x, y: b.y }), false, 'locked at 二重');
   h.lvl = 2;
