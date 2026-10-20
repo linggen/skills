@@ -435,6 +435,13 @@ export const slotKey = c => `${c.card}:${c.id ?? ''}`;
    the scene card, in the same thing, never behind 还有 1 件 › with the scene
    card left without a choice (live, 2026-09-29: 马小宝's round showed its
    caption and no way to fight). */
+/** The scene still has a game of its own to play (a board it shows, or a way on that needs one), other than `except`. */
+function ownGameOpen(look, except) {
+  const open = (id) => id !== except && !(look.tasks ?? []).some(t => t.id === id && (t.status === 'done' || t.won));
+  return (look.scene?.show ?? []).some(s => s.card === 'board' && open(s.id))
+    || (look.scene?.exits ?? []).some(e => (e.needs?.task && open(e.needs.task)) || (e.game?.kind === 'duel'));
+}
+
 export function sceneGame(look, c) {
   if (!look?.scene?.panel || (c.card !== 'duel' && c.card !== 'board')) return false;
   // …and a board the scene stands itself (`show`), though no way on waits on it: the first of two (吹鹅毛, batch two).
@@ -444,7 +451,8 @@ export function sceneGame(look, c) {
   if (c.card === 'board' && replayBoard(look, c.id)) return true;
   // …and 兽潮's night (rules/shouchao.mjs, Look's `tide`): its 酉时 window is short, so it stands with the scene card
   // as a board offered again does, never queued behind a scene that may stand all evening.
-  if (c.card === 'board' && (look.tasks ?? []).some(t => t.id === c.id && t.tide && t.status !== 'done')) return true;
+  // Not while the scene has a game of its own still to play (药园巡夜's 守炉): one game on the stage at a time.
+  if (c.card === 'board' && (look.tasks ?? []).some(t => t.id === c.id && t.tide && t.status !== 'done') && !ownGameOpen(look, c.id)) return true;
   return (look.scene.exits ?? []).some(e => (c.card === 'duel' ? e.game?.kind === 'duel' && e.game.id === c.id : e.needs?.task === c.id));
 }
 
