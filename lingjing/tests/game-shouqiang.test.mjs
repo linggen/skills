@@ -319,7 +319,7 @@ test('the play: bundle current, Phaser the one shared vendored build, every pict
 // ---- the 药园 levels (2–5): talismans in lanes ---------------------------------------------------------------------
 // Hanli 10-20: 「植物大战僵尸方向好, 策略更多」「第一关没有"植物", 后面可以布置植物」「药园正好符合」. PvZ's numbers, our
 // names; one new talisman and one new beast twist a level; the range line still holds; a first-timer wins L2 easily.
-const lanes = kit.levels.slice(1);
+const lanes = kit.levels.filter((l) => l.grid && !l.tide); // the 药园 levels (兽潮's `tide` rows stand on the 山门, rules/shouchao.mjs)
 const laneRun = (lvl, bot, n = 20, extra = {}) => Array.from({ length: n }, (_, i) => sim(kit, { ...lvl, ...extra }, BOTS[bot], { seed: `ln${i}`, limit: 1500 }));
 const fresh = (lvl, seed = 'f') => { const g = newGame(kit, lvl, { seed }); g.events.length = 0; return g; };
 const beastAt = (g, kind, col, y) => {
