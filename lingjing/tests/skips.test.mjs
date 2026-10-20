@@ -59,9 +59,13 @@ test('a skip pays nothing: no 修为, no 灵石, no grade, no mark — and the w
 });
 
 test('a graded board left writes no grade or mark, owes the rest of the passage, and both grade-gated ways open (wm-qianye, 00-cave 喂饼)', () => {
-  // Played in `show` order: 随叶 before 禹步 (wm-qianye's 相克 was cut 2026-10-19, 00-halfyear's two boards 10-16).
+  // Played in `show` order. No scene stands two boards since 2026-10-20 (09-jiuge's 随叶 told in the 调息 cut, wm-zhaojing's
+  // 饭桶 told the same day), so the order is checked on 09-jiuge given a board before 禹步.
   const j = at('00-zhuji/09-jiuge');
-  assert.equal(task(j.s, content, ctxAt(j.now), { action: 'skip', id: 'jiuge-yubu' }).result.refused, 'board-waits');
+  const zj = content.chapters['00-zhuji'], jg = zj.scenes['09-jiuge'];
+  const twoBoards = { ...content, chapters: { ...content.chapters, '00-zhuji': { ...zj, scenes: { ...zj.scenes, '09-jiuge': { ...jg, show: [{ card: 'board', id: 'furnace-ding' }, ...jg.show] } } } } };
+  assert.equal(task(j.s, twoBoards, ctxAt(j.now), { action: 'skip', id: 'jiuge-yubu' }).result.refused, 'board-waits');
+  assert.notEqual(task(j.s, content, ctxAt(j.now), { action: 'skip', id: 'jiuge-yubu' }).result.refused, 'board-waits', '禹步 alone waits on nothing');
   const h = at('00-waimen/wm-qianye');
   const first = must(task, h.s, h.now, { action: 'skip', id: 'qianye-qiajue' });
   assert.ok((first.tell_owed ?? []).includes('after/wm-qianye'), 'the passage after the first board is owed, as after a win');

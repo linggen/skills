@@ -50,8 +50,8 @@ function step(s, exit) {
 
 /* 古六's boards (the per-回 plan, 2026-10-15): the board each way on waits on, played (won, counted) before it. */
 const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror'], go: ['laba-diche'], up: ['dabi-sneeze'], rest: ['jiaxin-letter'], read: ['heluo-kaipian'],
-  // the reading cap (2026-10-20): 息壤 · 五门 before the second night, 后山 behind 瞿老 (喂息珠 told since 10-20)
-  sit: ['xirang-wumen'], follow: ['baishi-houshan'],
+  // the reading cap (2026-10-20): 息壤 · 五门 before the second night (喂息珠 told since 10-20; 后山 told again 10-20, the 调息 cut)
+  sit: ['xirang-wumen'],
   // 暗河's throw (2026-10-20, 砸寨 anhe-dark): the swallow passage split at its stone
   light: ['anhe-dark'],
   // 守炉's first story level (2026-10-20): the 药园's second night, before the 狰 shows and the 萝卜

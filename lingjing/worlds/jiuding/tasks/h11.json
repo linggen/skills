@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "_about": "古七's boards (h11; the per-回 plan 2026-10-15, Wave 2 D): each the book's own action where its scene stands, every one skippable once stuck (the page's 算了，往下走), and each pays what the plan names — 修为 for cultivation (随叶, 禹步, 定风, 顺风溜), 灵石 / a thing for the rest (认方 a 聚气丹, 闻焦 and 芦苇 灵石). The two fights (灵草谷's 犰狳, 崖顶's 秦雁) are scene duels on their exits, paid there.",
-  "_economy": "Pay declared here for the economy model (tools/balance.mjs reads tasks/*.json): the 修为 is +20 over 古七 from boards (jiuge-sui 5, jiuge-yubu 5, furnace-ding 5, xie-wind 5), +30 the 犰狳 (09-lingcao/fight, scene table) and +30 the 秦雁 bout (09-futian/spar, trial table, paid after the 七层 rise); 灵石 +2 (yishui-reed; year-smell's +3 went with its cut 2026-10-19), +20 (犰狳), +20 (秦雁); items: qi-pill (furnace-recipe), huochai-jian and shunfeng-liu (on the ways on). The three rises — 五层 (09-furnace/fire, and 09-year/futian as a catch-up), 六层 (09-yishui/night), 七层 (09-futian/spar, the 秦雁 bout's way on) — each wait on the 阶段任务: 圆满 of the layer held (caps.hui.h11.gates: [{layer 4, 09-furnace, [fire]}, {layer 4, 09-year, [futian]}, {layer 5, 09-yishui, [night]}, {layer 6, 09-futian, [spar]}]).",
+  "_about": "古七's boards (h11; the per-回 plan 2026-10-15, Wave 2 D): each the book's own action where its scene stands, every one skippable once stuck (the page's 算了，往下走), and each pays what the plan names — 修为 for cultivation (禹步, 定风), 灵石 / a thing for the rest (认方 a 聚气丹, 闻焦 and 芦苇 灵石). The two fights (灵草谷's 犰狳, 崖顶's 秦雁) are scene duels on their exits, paid there.",
+  "_economy": "Pay declared here for the economy model (tools/balance.mjs reads tasks/*.json): the 修为 is +10 over 古七 from boards (jiuge-yubu 5, furnace-ding 5; 随叶 and 顺风溜's 5 each went with the 调息 cut 2026-10-20, told), +30 the 犰狳 (09-lingcao/fight, scene table) and +30 the 秦雁 bout (09-futian/spar, trial table, paid after the 七层 rise); 灵石 +2 (yishui-reed; year-smell's +3 went with its cut 2026-10-19), +20 (犰狳), +20 (秦雁); items: qi-pill (furnace-recipe), huochai-jian and shunfeng-liu (on the ways on). The three rises — 五层 (09-furnace/fire, and 09-year/futian as a catch-up), 六层 (09-yishui/night), 七层 (09-futian/spar, the 秦雁 bout's way on) — each wait on the 阶段任务: 圆满 of the layer held (caps.hui.h11.gates: [{layer 4, 09-furnace, [fire]}, {layer 4, 09-year, [futian]}, {layer 5, 09-yishui, [night]}, {layer 6, 09-futian, [spar]}]).",
   "tasks": [
     {
       "_cut": "Off 09-snow 2026-10-19 (Hanli: 「「扔了干净」这一幕改成大场面」): the feeding is the 大场面 扔了干净 now (setpieces/huochai.js, `{景=huochai}` on the way on's chewing paragraph); the way on needs nothing and still hands over 火柴. The task (its grant and done line as they were), row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",
@@ -14,16 +14,6 @@
       "grant": { "table": "task" },
       "done_line": { "zh": "一道红光窜出来，钉在了门板上，剑柄还在嗡嗡地颤。", "en": "A red light shot out and stuck fast in the door, the hilt still humming." },
       "_reward": "What it makes (火柴, huochai-jian) is handed over by the way on (09-snow/feed's grant) — a story thing every later fight wears, so a skipped board still gives it."
-    },
-    {
-      "id": "jiuge-sui",
-      "kind": "board",
-      "game": "qimai",
-      "period": "once",
-      "title": { "zh": "随叶 · 跟着它走", "en": "Follow the leaf · Go with it" },
-      "grant": { "table": "task", "progress": 5 },
-      "marks": { "follow": "sui-follow", "chase": "sui-chase" },
-      "done_line": { "zh": "叶子正落在扫帚把尖上。「你得随它，跟着它走。」", "en": "The leaf lands right on the tip of the broom. \"You have to go with it. Follow it.\"" }
     },
     {
       "id": "jiuge-yubu",
@@ -86,18 +76,6 @@
       "marks": { "still": "reed-still", "hasty": "reed-hasty" },
       "done_line": { "zh": "它叫了一声，翅膀张了一半，塌了下去。", "en": "It bellowed; the wings half opened and collapsed." },
       "_reward": "灵石 +2 — the book's split of the 四块 (「阿禾一块，孙二狗一块，他两块」); the hide and membrane are told (no item rows)."
-    },
-    {
-      "_qimai": "A 气走经脉 level since 2026-10-19 (the standing rule Hanli approved 10-19): the boots' two 「鳃」 open and close on a thread of qi, the glide a foot off the ground, the north wind turning — 「迎着风」 it slides, against it 「噗」 (games.json qimai `wind`). Id, marks and pay kept; the boots still come with the way on; the old board stays in the 游戏厅.",
-      "id": "xie-wind",
-      "kind": "board",
-      "game": "qimai",
-      "period": "once",
-      "title": { "zh": "顺风溜 · 背后有风", "en": "Tailwind · Wind at your back" },
-      "grant": { "table": "task", "progress": 5 },
-      "marks": { "read": "wind-read", "puff": "wind-puff" },
-      "done_line": { "zh": "这双鞋，不是打架的，是跑的。", "en": "These shoes weren't for fighting. They were for running." },
-      "_reward": "修为 5; the boots (shunfeng-liu) come with the way on (09-xie/go)."
     }
   ]
 }

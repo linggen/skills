@@ -70,9 +70,7 @@ export const TO_HALL = [
   ['resolve', { exit: 'dumb' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'bath' }],
-  // 挑水上坡 (气走经脉, the reading cap 2026-10-20): the winter's carrying under the yoke
-  ['win', { id: 'halfyear-carry' }],
-  ['task', { action: 'done', id: 'halfyear-carry' }],
+  // half a year, told whole (挑水上坡 cut 2026-10-20, the 调息 cut)
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'go' }],
   // 水桶落井 (气走经脉, the reading cap's third beat 2026-10-20): the breath sinks past the heart

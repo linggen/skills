@@ -36,7 +36,8 @@ const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i
 
 const H11 = ['09-snow', '09-jiuge', '09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie', '09-futian'];
 // 09-snow has no board since 2026-10-19: its feeding is the 大场面 扔了干净 (tests/setpiece-huochai.test.mjs).
-const BOARDS = { '09-jiuge': ['jiuge-sui', 'jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'], '09-xie': ['xie-wind'] };
+const BOARDS = { '09-jiuge': ['jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'] };
+// 随叶 and 顺风溜 told again 2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」): 禹步 is 09-jiuge's one board, 09-xie reads whole.
 const FIGHTS = { '09-lingcao': ['fight', 'lingcao-qiuyu', 'qiuyu'], '09-futian': ['spar', 'futian-qinyan', 'foe-shijie'] };
 // 认方 cut 2026-10-19 (the standing rule Hanli approved 10-19: a memory puzzle): 定风 is 09-furnace's one board.
 BOARDS['09-furnace'] = ['furnace-ding'];
@@ -85,7 +86,8 @@ test('the layers are ground one at a time (2026-10-16: no story rise): 定风 wa
 
 test('every board pays what the plan names: 修为 for cultivation, a pill or 灵石 for the rest; the story things come with the ways on', () => {
   const t = (id) => content.tasks.tasks.find((x) => x.id === id);
-  for (const id of ['jiuge-sui', 'jiuge-yubu', 'furnace-ding', 'xie-wind']) assert.equal(t(id).grant.progress, 5, id);
+  for (const id of ['jiuge-yubu', 'furnace-ding']) assert.equal(t(id).grant.progress, 5, id);
+  for (const id of ['jiuge-sui', 'xie-wind']) assert.equal(t(id), undefined, `${id}: told (the 调息 cut)`);
   assert.equal(t('furnace-recipe').cut, '2026-10-19');
   assert.equal(CH.scenes['09-furnace'].exits[0].grant.item, 'qi-pill', '认方\'s 聚气丹 comes with the way on');
   assert.equal(t('year-smell').grant.wealth, 3);
@@ -104,10 +106,9 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   assert.equal(s.bag['huochai-jian'], 1);
   assert.equal(s.scene, '09-jiuge');
   const p0 = s.progress;
-  s = play(s, 'jiuge-sui', 'follow');
-  assert.ok(s.progress > p0, '随叶 raised 修为');
-  assert.equal(s.tell_owed.at(-1), 'after/09-jiuge', 'the rest of the lesson is told right after the first board');
-  s = go(play(s, 'jiuge-yubu', 'quiet'), 'down');
+  s = play(s, 'jiuge-yubu', 'quiet');
+  assert.ok(s.progress > p0, '禹步 raised 修为');
+  s = go(s, 'down');
   assert.ok(s.marks.includes('yubu'));
   assert.equal(s.step, 4);
   s = play(s, 'furnace-ding', 'still');
@@ -123,7 +124,7 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   assert.deepEqual([s.scene, s.step], ['09-yishui', 5], 'the boards\' 修为 banked past 四层 steps him once 伏天 is behind him — his own');
   s = go(play(s, 'yishui-reed', 'still'), 'night');
   assert.deepEqual([s.scene, s.step], ['09-xie', 5], '沂水 waited on 五层圆满, earned; it lifts nothing');
-  s = go(play(s, 'xie-wind', 'read'), 'go');
+  s = go(s, 'go'); // 顺风溜 told (the 调息 cut): the boots with the way on
   assert.equal(s.bag['shunfeng-liu'], 1);
   const door = look(s, content, ctx()).scene.exits.find((e) => e.id === 'spar').duel;
   assert.match(door.creature.goal, /整座崖，没有台边/, '秦雁 on the 崖顶: the scene\'s goal over the 大比\'s');
@@ -135,7 +136,7 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
 });
 
 test('a way on waits on its board: refused in the world\'s words until the board is counted', () => {
-  for (const [scene, exit] of [['09-jiuge', 'down'], ['09-furnace', 'fire'], ['09-yishui', 'night'], ['09-xie', 'go']]) {
+  for (const [scene, exit] of [['09-jiuge', 'down'], ['09-furnace', 'fire'], ['09-yishui', 'night']]) { // 09-xie/go waits on nothing since 顺风溜 was told (2026-10-20)
     const out = resolve(at(scene), content, ctx(), { exit });
     assert.equal(out.result.ok, false, `${scene}/${exit}`);
     assert.ok(out.result.say, `${scene}/${exit} says why`);
