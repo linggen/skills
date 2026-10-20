@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { CONFIRM_DIALOG_CONFIG } from "../../config/UIDialogsConfig";
@@ -37,7 +38,7 @@ export class ConfirmDialog extends Phaser.GameObjects.Container {
 
     this.add(this.modal);
 
-    const titleText = scene.add.text(0, CONFIRM_DIALOG_CONFIG.titleY, config.title, {
+    const titleText = scene.add.text(0, CONFIRM_DIALOG_CONFIG.titleY, tr(config.title), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.subtitle}px`,
       color: config.danger ? T.colors.accent.red : T.colors.neutral.white,
@@ -47,7 +48,7 @@ export class ConfirmDialog extends Phaser.GameObjects.Container {
     titleText.setOrigin(0.5);
     this.add(titleText);
 
-    const messageText = scene.add.text(0, CONFIRM_DIALOG_CONFIG.messageY, config.message, {
+    const messageText = scene.add.text(0, CONFIRM_DIALOG_CONFIG.messageY, tr(config.message), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.label}px`,
       color: T.colors.neutral.white,

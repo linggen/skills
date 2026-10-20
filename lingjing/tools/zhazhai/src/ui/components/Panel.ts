@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { PANEL_INSETS } from "../../config/DesignTokens";
@@ -66,7 +67,7 @@ export class Panel extends Phaser.GameObjects.Container {
       const titleX = config.titleX ?? 0;
       const titleY = config.titleY ?? -config.height / 2 + T.panel.padding;
 
-      this.titleText = scene.add.text(titleX, titleY, config.title, {
+      this.titleText = scene.add.text(titleX, titleY, tr(config.title ?? ""), {
         fontFamily: T.fonts.family,
         fontSize: `${T.fonts.sizes.subtitle}px`,
         color: T.colors.text.onCream,

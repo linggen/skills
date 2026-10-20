@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { LayoutManager } from "../LayoutManager";
@@ -41,11 +42,11 @@ export class HelpDialog extends Phaser.GameObjects.Container {
   private createContent(): void {
     let y = -this.DIALOG_HEIGHT / 2 + T.spacing.md;
 
-    y = this.addSectionHeader("INFO", y, T.colors.accent.gold);
+    y = this.addSectionHeader(tr("INFO"), y, T.colors.accent.gold);
     y = this.addLevelInfo(y + T.spacing.xxl);
-    y = this.addSectionHeader("HOW TO PLAY", y + T.spacing.xxl, T.colors.accent.gold);
+    y = this.addSectionHeader(tr("HOW TO PLAY"), y + T.spacing.xxl, T.colors.accent.gold);
     y = this.addMechanics(y + T.spacing.md);
-    y = this.addSectionHeader("CONTROLS", y + T.spacing.xxl, T.colors.accent.gold);
+    y = this.addSectionHeader(tr("CONTROLS"), y + T.spacing.xxl, T.colors.accent.gold);
     this.addControls(y + T.spacing.md);
   }
 
@@ -90,7 +91,7 @@ export class HelpDialog extends Phaser.GameObjects.Container {
     }
 
     if (this.config.teachingFocus) {
-      const focusLabel = this.scene.add.text(0, y, "Focus:", {
+      const focusLabel = this.scene.add.text(0, y, tr("Focus:"), {
         fontFamily: T.fonts.family,
         fontSize: `${T.fonts.sizes.caption + 2}px`,
         color: T.colors.accent.blue,
@@ -127,7 +128,7 @@ export class HelpDialog extends Phaser.GameObjects.Container {
     };
 
     lines.forEach((line) => {
-      const text = this.scene.add.text(0, y, line, style);
+      const text = this.scene.add.text(0, y, tr(line), style);
       text.setOrigin(0.5, 0);
       this.add(text);
       y += text.height + 2;
@@ -161,7 +162,7 @@ export class HelpDialog extends Phaser.GameObjects.Container {
     };
 
     lines.forEach((line) => {
-      const text = this.scene.add.text(0, y, line, style);
+      const text = this.scene.add.text(0, y, tr(line), style);
       text.setOrigin(0.5, 0);
       this.add(text);
       y += text.height + 2;

@@ -5,7 +5,7 @@ import type {
 import { MISC_TIMING_CONFIG } from "../config/TimingConfig";
 
 export class TimeEffectsSettingsStore implements ITimeEffectsSettingsProvider {
-  private static readonly STORAGE_KEY = "angry-aliens-time-effects-settings";
+  private static readonly STORAGE_KEY = "lingjing.zhazhai-time-effects-settings";
 
   private settings: TimeEffectsSettings;
   private listeners: Set<(settings: TimeEffectsSettings) => void> = new Set();

@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { LayoutManager } from "../LayoutManager";
@@ -39,7 +40,7 @@ export class PauseDialog extends Phaser.GameObjects.Container {
   }
 
   private createTitle(): void {
-    const title = this.scene.add.text(0, -this.DIALOG_HEIGHT / 2 + T.spacing.md, "PAUSED", {
+    const title = this.scene.add.text(0, -this.DIALOG_HEIGHT / 2 + T.spacing.md, tr("PAUSED"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.subtitle}px`,
       color: T.colors.accent.gold,

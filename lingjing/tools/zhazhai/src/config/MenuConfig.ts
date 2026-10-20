@@ -1,6 +1,6 @@
 export const MenuTitleConfig = {
   text: "ANGRY ALIENS",
-  fontFamily: "Kenney Bold",
+  fontFamily: '"Kenney Bold", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif',
   depth: 100,
   particleDepth: 101,
   sparkleDepth: 102,

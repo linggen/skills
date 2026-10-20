@@ -1,3 +1,4 @@
+import { Runtime } from "../zhazhai/runtime";
 import { BaseScene } from "./BaseScene";
 import { BirdType } from "../types/BirdType";
 import { getTotalLevels } from "../data/levels";
@@ -213,6 +214,7 @@ export class UIScene extends BaseScene {
     const nextLevel = data.level < totalLevels ? data.level + 1 : data.level;
     const levelData = getLevelById(data.level)!;
 
+    Runtime.onResult({ level: data.level, won: data.won, stars: data.stars, score: data.score });
     const dialog = new ResultsDialog(this, {
       level: data.level,
       levelName: levelData.name,

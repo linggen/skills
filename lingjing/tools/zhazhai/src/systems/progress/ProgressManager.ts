@@ -2,8 +2,8 @@ import type { LevelData } from "../../data/levels";
 import type { IProgressManager, LevelProgress } from "./IProgressManager";
 
 export class ProgressManager implements IProgressManager {
-  private static readonly LEVEL_KEY_PREFIX = "angry-aliens-level-";
-  private static readonly MAX_LEVEL_KEY = "angry-aliens-max-level";
+  private static readonly LEVEL_KEY_PREFIX = "lingjing.zhazhai-level-";
+  private static readonly MAX_LEVEL_KEY = "lingjing.zhazhai-max-level";
 
   public saveProgress(levelId: number, stars: number, score: number): void {
     try {

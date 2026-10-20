@@ -2,7 +2,7 @@ import type { ISettingsProvider, AudioSettings } from "../../../interfaces/audio
 import { SETTINGS_DEBOUNCE_MS } from "../config/AudioConfig";
 
 export class SettingsStore implements ISettingsProvider {
-  private static readonly STORAGE_KEY = "angry-aliens-audio-settings";
+  private static readonly STORAGE_KEY = "lingjing.zhazhai-audio-settings";
 
   private settings: AudioSettings;
   private listeners: Set<(settings: AudioSettings) => void> = new Set();

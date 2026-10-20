@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { LayoutManager } from "../LayoutManager";
@@ -48,7 +49,7 @@ export class OrientationOverlay extends Phaser.GameObjects.Container {
     });
 
     // Main message
-    const messageText = this.scene.add.text(0, 40, "Please rotate your device", {
+    const messageText = this.scene.add.text(0, 40, tr("Please rotate your device"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.title}px`,
       color: T.colors.neutral.white,
@@ -62,7 +63,7 @@ export class OrientationOverlay extends Phaser.GameObjects.Container {
     const subMessageText = this.scene.add.text(
       0,
       90,
-      "This game is best played in landscape mode",
+      tr("This game is best played in landscape mode"),
       {
         fontFamily: T.fonts.family,
         fontSize: `${T.fonts.sizes.label}px`,

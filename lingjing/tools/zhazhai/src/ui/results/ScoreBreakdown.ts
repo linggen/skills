@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 
@@ -48,7 +49,7 @@ export class ScoreBreakdown extends Phaser.GameObjects.Container {
     this.categories.forEach((category, index) => {
       const y = index * this.LINE_HEIGHT;
 
-      const categoryText = this.scene.add.text(-this.VALUE_OFFSET, y, category.name, {
+      const categoryText = this.scene.add.text(-this.VALUE_OFFSET, y, tr(category.name), {
         fontFamily: T.fonts.family,
         fontSize: `${T.fonts.sizes.label}px`,
         color: T.colors.text.onCream,
@@ -85,7 +86,7 @@ export class ScoreBreakdown extends Phaser.GameObjects.Container {
     this.divider.setAlpha(0);
     this.add(this.divider);
 
-    this.totalLabel = this.scene.add.text(-this.VALUE_OFFSET, totalY + 16, totalLabelStr, {
+    this.totalLabel = this.scene.add.text(-this.VALUE_OFFSET, totalY + 16, tr(totalLabelStr), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.button}px`,
       color: T.colors.text.onCream,

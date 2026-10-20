@@ -11,6 +11,11 @@ import { bootstrapServices, getServiceContainer, ServiceTokens } from "./config/
 import { WORLD_CONFIG } from "./config/PhysicsConfig";
 import { MobileManager } from "./systems/mobile";
 import type { IMobileSettingsProvider } from "./interfaces/IMobileSettings";
+import { Runtime, type Lang, type LevelResult } from "./zhazhai/runtime";
+import { LEVELS, LEVEL_WORDS } from "./data/levels";
+
+/** The forts, for the host (their count, names and shots). */
+export const levels = () => LEVELS.map((l) => ({ id: l.levelId, birds: l.birds.map((b) => b.type), pigs: l.pigs.length, blocks: l.structures.length, words: LEVEL_WORDS[l.levelId] }));
 
 let booted = false;
 
@@ -18,9 +23,18 @@ export interface StartOptions {
   parent: HTMLElement;
   /** Where the assets live (the bundle's own folder). */
   base: string;
+  lang?: Lang;
+  /** Open straight into this fort (1…); 0: the title screen and the level select. */
+  level?: number;
+  onResult?: (r: LevelResult) => void;
+  onLeave?: () => void;
 }
 
-export function start({ parent, base }: StartOptions): Phaser.Game {
+export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave }: StartOptions): Phaser.Game {
+  Runtime.lang = lang;
+  Runtime.directLevel = LEVELS.some((l) => l.levelId === level) ? level : 0;
+  Runtime.onResult = onResult ?? (() => {});
+  Runtime.onLeave = onLeave ?? (() => {});
   if (!booted) {
     bootstrapServices();
     const mobileSettings = getServiceContainer().resolve<IMobileSettingsProvider>(ServiceTokens.MOBILE_SETTINGS);
@@ -28,7 +42,7 @@ export function start({ parent, base }: StartOptions): Phaser.Game {
     booted = true;
   }
   const isMobile = MobileManager.getInstance().isMobile();
-  return new Phaser.Game({
+  const game = new Phaser.Game({
     type: Phaser.AUTO,
     width: 1920,
     height: 1080,
@@ -57,4 +71,7 @@ export function start({ parent, base }: StartOptions): Phaser.Game {
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, autoRound: true, width: 1920, height: 1080 },
     scene: [BootScene, TransitionScene, MenuScene, LevelSelectScene, ParallaxScene, GameScene, UIScene],
   });
+  // A handle for the page's checks (tools, screenshots): the host element's `zhazhaiGame`.
+  (parent as HTMLElement & { zhazhaiGame?: Phaser.Game }).zhazhaiGame = game;
+  return game;
 }

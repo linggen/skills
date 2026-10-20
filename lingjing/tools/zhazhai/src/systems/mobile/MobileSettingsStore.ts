@@ -2,7 +2,7 @@ import type { IMobileSettingsProvider, MobileSettings } from "../../interfaces/I
 import { MISC_TIMING_CONFIG } from "../../config/TimingConfig";
 
 export class MobileSettingsStore implements IMobileSettingsProvider {
-  private static readonly STORAGE_KEY = "angry-aliens-mobile-settings";
+  private static readonly STORAGE_KEY = "lingjing.zhazhai-mobile-settings";
 
   private settings: MobileSettings;
   private listeners: Set<(settings: MobileSettings) => void> = new Set();

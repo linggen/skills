@@ -368,6 +368,13 @@
    }
   },
   {
+   "id": "zhazhai",
+   "group": "kit",
+   "mechanic": "投掷",
+   "stars": 3,
+   "_about": "砸寨 — the assault on the 黄鼠狼精's fort, the Angry-Birds gold sample (Hanli 10-20: 「re-skin Angry Aliens」; STYLE RULING 10-19: comic, not ink). A re-skin of Angry Aliens (MIT; tools/zhazhai/, bundled into games/zhazhai/). Its five forts, its four throws (石子 · 短飞剑 dash · 陶罐 splits in three · 五雷符 bursts) and its words live in the game (tools/zhazhai/src/data/levels.ts); `lv=<1…5>` opens one fort straight away. Not placed in the story yet: after Hanli plays it."
+  },
+  {
    "id": "throwkit",
    "group": "kit",
    "mechanic": "投掷",

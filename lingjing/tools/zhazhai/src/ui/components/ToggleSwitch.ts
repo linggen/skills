@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { UI_COMPONENTS_CONFIG } from "../../config/UIComponentsConfig";
@@ -75,7 +76,7 @@ export class ToggleSwitch extends Phaser.GameObjects.Container {
 
   private createLabel(): void {
     if (this.config.label) {
-      this.label = this.scene.add.text(-this.TRACK_WIDTH / 2 - T.spacing.md, 0, this.config.label, {
+      this.label = this.scene.add.text(-this.TRACK_WIDTH / 2 - T.spacing.md, 0, tr(this.config.label), {
         fontFamily: T.fonts.family,
         fontSize: `${T.fonts.sizes.label}px`,
         color: T.colors.text.onCream,

@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { SETTINGS_DIALOG_CONFIG } from "../../config/UIDialogsConfig";
@@ -67,7 +68,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     });
     this.add(this.modal);
 
-    const title = scene.add.text(0, SETTINGS_DIALOG_CONFIG.titleY, "SETTINGS", {
+    const title = scene.add.text(0, SETTINGS_DIALOG_CONFIG.titleY, tr("SETTINGS"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.subtitle}px`,
       color: T.colors.accent.gold,
@@ -90,7 +91,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     const labelX = SETTINGS_DIALOG_CONFIG.performanceLabelX;
     const controlCenterX = SETTINGS_DIALOG_CONFIG.performanceControlCenterX;
 
-    const performanceLabel = scene.add.text(labelX, startY, "Performance", {
+    const performanceLabel = scene.add.text(labelX, startY, tr("Performance"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.label}px`,
       color: T.colors.text.onCream,
@@ -144,7 +145,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     const hintText = scene.add.text(
       0,
       startY + SETTINGS_DIALOG_CONFIG.performanceHintY,
-      "Auto adapts quality from device and frame rate.",
+      tr("Auto adapts quality from device and frame rate."),
       {
         fontFamily: T.fonts.family,
         fontSize: `${T.fonts.sizes.caption}px`,
@@ -163,7 +164,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     const toggleX = SETTINGS_DIALOG_CONFIG.performanceControlCenterX;
     const rowGap = SETTINGS_DIALOG_CONFIG.effectsRowGap;
 
-    const hapticLabel = scene.add.text(labelX, startY, "Haptics", {
+    const hapticLabel = scene.add.text(labelX, startY, tr("Haptics"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.label}px`,
       color: T.colors.text.onCream,
@@ -181,7 +182,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     });
     this.add(this.hapticToggle);
 
-    const hitPauseLabel = scene.add.text(labelX, startY + rowGap, "Hit Pause", {
+    const hitPauseLabel = scene.add.text(labelX, startY + rowGap, tr("Hit Pause"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.label}px`,
       color: T.colors.text.onCream,
@@ -199,7 +200,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     });
     this.add(this.hitPauseToggle);
 
-    const slowMotionLabel = scene.add.text(labelX, startY + rowGap * 2, "Slow Motion", {
+    const slowMotionLabel = scene.add.text(labelX, startY + rowGap * 2, tr("Slow Motion"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.label}px`,
       color: T.colors.text.onCream,
@@ -217,7 +218,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     });
     this.add(this.slowMotionToggle);
 
-    const screenFlashLabel = scene.add.text(labelX, startY + rowGap * 3, "Screen Flash", {
+    const screenFlashLabel = scene.add.text(labelX, startY + rowGap * 3, tr("Screen Flash"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.label}px`,
       color: T.colors.text.onCream,
@@ -241,7 +242,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     const labelX = SETTINGS_DIALOG_CONFIG.performanceLabelX;
     const toggleX = SETTINGS_DIALOG_CONFIG.performanceControlCenterX;
 
-    const musicLabel = scene.add.text(labelX, startY, "Music", {
+    const musicLabel = scene.add.text(labelX, startY, tr("Music"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.label}px`,
       color: T.colors.text.onCream,
@@ -286,7 +287,7 @@ export class SettingsDialog extends Phaser.GameObjects.Container {
     const labelX = SETTINGS_DIALOG_CONFIG.performanceLabelX;
     const toggleX = SETTINGS_DIALOG_CONFIG.performanceControlCenterX;
 
-    const sfxLabel = scene.add.text(labelX, startY, "Sound Effects", {
+    const sfxLabel = scene.add.text(labelX, startY, tr("Sound Effects"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.label}px`,
       color: T.colors.text.onCream,

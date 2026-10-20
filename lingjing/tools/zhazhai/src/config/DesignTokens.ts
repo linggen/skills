@@ -32,7 +32,7 @@ export const DesignTokens = {
   },
 
   fonts: {
-    family: "Kenney Bold",
+    family: '"Kenney Bold", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif',
     sizes: {
       display: 72,
       title: 48,

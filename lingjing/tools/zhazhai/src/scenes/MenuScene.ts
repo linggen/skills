@@ -1,3 +1,4 @@
+import { Runtime } from "../zhazhai/runtime";
 import { BaseScene } from "./BaseScene";
 import { DesignTokens as T } from "../config/DesignTokens";
 import { Button } from "../ui/components/Button";
@@ -258,12 +259,8 @@ export class MenuScene extends BaseScene {
       height: 280,
       danger: true,
       onConfirm: () => {
-        const win = window as { close?: () => void };
-        if (win.close) {
-          win.close();
-        } else {
-          logger.debug("Quit requested - window.close() not available");
-        }
+        logger.debug("Quit requested: the host takes the game down");
+        Runtime.onLeave();
       },
     });
 

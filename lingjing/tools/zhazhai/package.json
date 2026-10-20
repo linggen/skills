@@ -2,10 +2,14 @@
   "private": true,
   "type": "module",
   "_about": "砸寨 — a re-skin of Angry Aliens (feliperyba/angry-aliens-phaser @ 25ee4a5, MIT, LICENSE here). Dev build only: `npm ci && npm run build` writes the one ESM bundle and its assets into scripts/games/zhazhai/. node_modules is never committed.",
-  "scripts": { "build": "node build.mjs" },
+  "scripts": {
+    "build": "node build.mjs"
+  },
   "devDependencies": {
+    "@types/matter-js": "0.19.8",
     "esbuild": "0.28.1",
     "matter-js": "0.20.0",
-    "phaser": "3.90.0"
+    "phaser": "3.90.0",
+    "typescript": "5.7.2"
   }
 }

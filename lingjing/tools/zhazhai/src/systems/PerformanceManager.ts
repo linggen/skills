@@ -33,7 +33,7 @@ const PERFORMANCE_MODE_LABELS: Record<PerformanceMode, string> = {
 };
 
 export class PerformanceManager {
-  private static readonly STORAGE_KEY = "angry-aliens.performanceMode";
+  private static readonly STORAGE_KEY = "lingjing.zhazhai.performanceMode";
 
   public static getAvailableModes(): readonly PerformanceMode[] {
     return PERFORMANCE_MODES;

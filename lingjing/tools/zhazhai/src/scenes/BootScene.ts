@@ -1,3 +1,5 @@
+import { Runtime } from "../zhazhai/runtime";
+import { tr } from "../zhazhai/i18n";
 import Phaser from "phaser";
 import { bootstrapAudio } from "../config/bootstrap";
 import { DesignTokens as T } from "../config/DesignTokens";
@@ -73,7 +75,7 @@ export class BootScene extends Phaser.Scene {
     this.progressBarFill = this.add.graphics();
     this.drawProgressFill(0);
 
-    this.loadingText = this.add.text(CENTER_X, CENTER_Y + C.loadingTextY, "LOADING...", {
+    this.loadingText = this.add.text(CENTER_X, CENTER_Y + C.loadingTextY, tr("LOADING..."), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.button}px`,
       color: T.colors.neutral.white,
@@ -163,7 +165,7 @@ export class BootScene extends Phaser.Scene {
       duration: T.duration.fast,
       ease: "Quad.In",
       onComplete: () => {
-        this.tipText.setText(`"${tip}"`);
+        this.tipText.setText(tr(tip));
         this.tweens.add({
           targets: this.tipText,
           alpha: 1,
@@ -177,13 +179,14 @@ export class BootScene extends Phaser.Scene {
   }
 
   private onLoadComplete(): void {
-    this.loadingText.setText("READY!");
+    this.loadingText.setText(tr("READY!"));
 
     FragmentWorkerClient.getInstance();
 
     this.cameras.main.fadeOut(C.fadeOutDuration, 0, 0, 0);
     this.time.delayedCall(C.fadeOutDuration, () => {
-      this.scene.start("MenuScene");
+      if (Runtime.directLevel) this.scene.start("GameScene", { level: Runtime.directLevel });
+      else this.scene.start("MenuScene");
     });
   }
 
@@ -234,6 +237,7 @@ export class BootScene extends Phaser.Scene {
 
   private setupMobileFeatures(): void {
     const mobileManager = MobileManager.getInstance();
+    if (Runtime.embedded) return; // a card in a page: no fullscreen grab, no orientation lock
 
     // Setup auto-fullscreen on first touch for mobile
     if (mobileManager.isMobile()) {

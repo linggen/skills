@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { RESULTS_DIALOG_CONFIG } from "../../config/UIDialogsConfig";
@@ -71,7 +72,7 @@ export class ResultsDialog extends Phaser.GameObjects.Container {
     const titleText = this.scene.add.text(
       0,
       -this.DIALOG_HEIGHT / 2 + RESULTS_DIALOG_CONFIG.titleY,
-      this.config.won ? "LEVEL COMPLETE!" : "LEVEL FAILED",
+      tr(this.config.won ? "LEVEL COMPLETE!" : "LEVEL FAILED"),
       {
         fontFamily: T.fonts.family,
         fontSize: `${T.fonts.sizes.subtitle}px`,

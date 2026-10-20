@@ -1,3 +1,4 @@
+import { tr } from "../zhazhai/i18n";
 import { BaseScene } from "./BaseScene";
 import { GameScene } from "./GameScene";
 import { DesignTokens as T } from "../config/DesignTokens";
@@ -55,7 +56,7 @@ export class LevelSelectScene extends BaseScene {
   }
 
   private showTitle(): void {
-    const title = this.add.text(this.centerX, 60, "SELECT LEVEL", {
+    const title = this.add.text(this.centerX, 60, tr("SELECT LEVEL"), {
       fontFamily: T.fonts.family,
       fontSize: `${T.fonts.sizes.title}px`,
       color: T.colors.neutral.white,

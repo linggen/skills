@@ -1,3 +1,4 @@
+import { Runtime } from "../zhazhai/runtime";
 import Phaser from "phaser";
 import { LayoutManager } from "../ui/LayoutManager";
 import { DesignTokens as T } from "../config/DesignTokens";
@@ -15,7 +16,8 @@ export abstract class BaseScene extends Phaser.Scene {
   protected setupOrientationOverlay(): void {
     const mobileManager = MobileManager.getInstance();
 
-    if (!mobileManager.isMobile()) {
+    // 砸寨 plays inside a page card that is always landscape: never the rotate-your-phone overlay.
+    if (Runtime.embedded || !mobileManager.isMobile()) {
       return;
     }
 

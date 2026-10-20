@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import {
   MenuTitleConfig,
@@ -82,7 +83,7 @@ export class MenuSceneChoreographer {
     const container = this.scene.add.container(this.centerX, startY);
     container.setDepth(MenuTitleConfig.depth);
 
-    const outerGlow = this.scene.add.text(0, 0, MenuTitleConfig.text, {
+    const outerGlow = this.scene.add.text(0, 0, tr(MenuTitleConfig.text), {
       fontFamily: MenuTitleConfig.fontFamily,
       fontSize: `${MenuTitleConfig.outerGlow.fontSize}px`,
       color: MenuTitleConfig.outerGlow.color,
@@ -91,7 +92,7 @@ export class MenuSceneChoreographer {
     outerGlow.setAlpha(0);
     outerGlow.setBlendMode(_blend);
 
-    const innerGlow = this.scene.add.text(0, 0, MenuTitleConfig.text, {
+    const innerGlow = this.scene.add.text(0, 0, tr(MenuTitleConfig.text), {
       fontFamily: MenuTitleConfig.fontFamily,
       fontSize: `${MenuTitleConfig.innerGlow.fontSize}px`,
       color: MenuTitleConfig.innerGlow.color,
@@ -103,7 +104,7 @@ export class MenuSceneChoreographer {
     const shadow = this.scene.add.text(
       MenuTitleConfig.shadow.offsetX,
       MenuTitleConfig.shadow.offsetY,
-      MenuTitleConfig.text,
+      tr(MenuTitleConfig.text),
       {
         fontFamily: MenuTitleConfig.fontFamily,
         fontSize: `${MenuTitleConfig.shadow.fontSize}px`,
@@ -113,7 +114,7 @@ export class MenuSceneChoreographer {
     shadow.setOrigin(0.5);
     shadow.setAlpha(MenuTitleConfig.shadow.alpha);
 
-    const titleText = this.scene.add.text(0, 0, MenuTitleConfig.text, {
+    const titleText = this.scene.add.text(0, 0, tr(MenuTitleConfig.text), {
       fontFamily: MenuTitleConfig.fontFamily,
       fontSize: `${MenuTitleConfig.mainText.fontSize}px`,
       color: MenuTitleConfig.mainText.color,

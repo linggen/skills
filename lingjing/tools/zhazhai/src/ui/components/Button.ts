@@ -1,3 +1,4 @@
+import { tr } from "../../zhazhai/i18n";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { BUTTON_INSETS } from "../../config/DesignTokens";
@@ -78,7 +79,7 @@ export class Button extends Phaser.GameObjects.Container {
     }
 
     if (config.size !== "icon") {
-      this.labelText = scene.add.text(0, 0, config.label, {
+      this.labelText = scene.add.text(0, 0, tr(config.label ?? ""), {
         fontFamily: T.fonts.family,
         fontSize: `${T.fonts.sizes.button}px`,
         color: T.colors.neutral.white,
