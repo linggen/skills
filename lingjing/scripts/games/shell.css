@@ -22,7 +22,12 @@
   padding: 24px; text-align: center; border-radius: 12px; background: color-mix(in srgb, var(--ground) 82%, transparent);
   backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
 .gshell-veil b { font-family: var(--serif); font-size: 20px; letter-spacing: .2em; color: var(--text); }
-.gshell-lead p { margin: 0; max-width: 28em; font-family: var(--serif); font-size: 16px; line-height: 1.7; color: var(--text); }
+/* The lead card lets the game's picture show through (it is drawn and standing still behind it). */
+.gshell-veil.gshell-lead { background: linear-gradient(transparent, rgba(10, 8, 6, .55) 30%, rgba(10, 8, 6, .55) 70%, transparent);
+  backdrop-filter: none; -webkit-backdrop-filter: none; }
+.gshell-lead p { margin: 0; max-width: 24em; font-family: var(--serif); font-size: 17px; line-height: 1.8; color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+.gshell-lead .gshell-count { color: #fff !important; text-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
 .gshell-count { font-size: 44px !important; color: var(--seal) !important; animation: gshell-count .8s ease-out; }
 @keyframes gshell-count { from { transform: scale(1.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .gshell-bubble { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); max-width: min(86%, 26em); padding: 8px 14px;

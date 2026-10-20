@@ -86,7 +86,9 @@ export class PlayScene extends Phaser.Scene {
       this.hud.pauseBtn.setVisible(false).disableInteractive();
       this.offShell = this.cfg.shell.onPause?.((on) => this.setPaused(on, false));
     }
-    this.hud.lead(level.lead, level.leadSec ?? 5);
+    // `held` (the shell's lead card is up): the field is drawn and stands still behind it; `go()` starts the lead-in.
+    this.held = Boolean(this.cfg.hold?.on);
+    if (!this.held) this.hud.lead(level.lead, level.leadSec ?? 5);
     if (this.lanes) this.layout(Boolean(this.cfg.landscape));
     this.fact({ t: 'start', level: level.id });
   }
@@ -190,6 +192,12 @@ export class PlayScene extends Phaser.Scene {
     if (best) this.em.burst('spark', 6, best.x, best.y - 20);
   }
 
+  go() {
+    if (!this.held) return;
+    this.held = false;
+    this.hud.lead(this.g.level.lead, this.g.level.leadSec ?? 5);
+  }
+
   togglePause() { this.setPaused(!this.paused, true); }
 
   setPaused(on, veil) {
@@ -212,7 +220,7 @@ export class PlayScene extends Phaser.Scene {
     this.frame += 1;
     this.watchFrames(time, raw);
     const dt = Math.min(raw, 50) / 1000;
-    if (!this.paused && !this.hitStop) step(this.g, dt);
+    if (!this.paused && !this.hitStop && !this.held) step(this.g, dt);
     if (this.hitStop) this.hitStop = Math.max(0, this.hitStop - dt);
     for (const e of this.g.events) this.on(e);
     this.g.events.length = 0;

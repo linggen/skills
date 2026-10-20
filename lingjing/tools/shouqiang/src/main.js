@@ -7,7 +7,8 @@ import { SIDE } from './lanes.js';
 
 /**
  * start({ parent, base, lang, kit, level, seed, reducedMotion, dev, showFps, lines, onEvent, onEnd, landscape, shell })
- *   → { destroy(), say(who, text), layout(landscape) }
+ *   → { destroy(), say(who, text), layout(landscape), go() }
+ * `held`: draw the field but stand still until `go()` (the shell's lead card is up over it).
  * `landscape` (a 药园 level only): option A — the same portrait field centred, side panels either side.
  * `base`: the URL of games/shouqiang/ (art beside it). `lines`: 银月's prefetched lines by moment (台词预取), else the
  * level's own. `onEvent`: the facts out (start · wave · wave_cleared · boss · low · end). `onEnd({won, stars, stats})`.
@@ -36,11 +37,14 @@ export function start(opts) {
     banner: false,
     disableContextMenu: true,
   });
-  game.scene.add('play', PlayScene, true, { ...opts, zoom, landscape });
+  const hold = { on: Boolean(opts.held) }; // read by the scene as it is made; go() lets it run (it may not be made yet)
+  game.scene.add('play', PlayScene, true, { ...opts, zoom, landscape, hold });
   if (opts.dev) globalThis.__shouqiang = game; // the 游戏厅 (dev=1) only: a live check reads fps and phase from here
   return {
     destroy: () => game.destroy(true),
     say: (who, text) => game.scene.getScene('play')?.say?.(who, text),
+    // `held` was given: the lead-in and the clock start now (the field already stands drawn behind the shell's lead card)
+    go: () => { hold.on = false; game.scene.getScene('play')?.go?.(); },
     layout: (l) => game.scene.getScene('play')?.layout?.(Boolean(l && opts.level.grid)),
   };
 }

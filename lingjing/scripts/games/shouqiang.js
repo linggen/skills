@@ -71,17 +71,18 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), loadFont(doc)]).then(async ([kit, { start }]) => {
       if (done) return;
       let level = levelAsked(kit, data, search);
-      // In the shell: the story lines read on its lead card first; the canvas keeps the big banners and its 3-2-1.
+      // In the shell: the story lines read on its lead card, over the field standing still; the canvas keeps the big
+      // banners and its 3-2-1.
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join('') : '';
       if (said) level = { ...level, lead: (level.lead ?? []).filter((l) => l.big), leadSec: 3.4 };
-      await shell?.lead?.(said, { auto: reducedMotion ? 2400 : 4200 });
-      if (done) return;
       let landscape = shape(Boolean(level.grid));
       game = start({
         parent: box, base: new URL('./shouqiang/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
         kit, level, seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, landscape, shell,
+        held: Boolean(said), // the field drawn behind the shell's lead card, standing still till it is read (Hanli 10-20: 「开场卡后面先画出画面」)
         onEnd: (r) => { if (onResize) win.removeEventListener('resize', onResize); finish(r); },
       });
+      if (said) shell.lead(said, { auto: reducedMotion ? 2400 : 4200 }).then(() => game?.go());
       if (level.grid) {
         onResize = () => { const now = shape(true); if (now !== landscape) { landscape = now; game?.layout(now); } };
         win.addEventListener('resize', onResize);
