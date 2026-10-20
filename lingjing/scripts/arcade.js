@@ -14,8 +14,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已被新游戏替换' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · replaced' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已被新游戏替换', levels: '关卡' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · replaced', levels: 'Levels' },
 };
 const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
@@ -56,9 +56,25 @@ async function tileHtml(g, i) {
   const where = [g.hui, g.scene].filter(Boolean).join(' · ');
   const kind = kindOf(g);
   const to = mod?.meta?.ai ? arcadePlayUrl(g.id) : href({ game: g.id, n: String(i) });
-  return `<a class="arcade-tile${mod ? '' : ' is-missing'}" data-kind="${esc(g.mechanic ?? '')}" href="${esc(to)}">`
-    + `<span class="arcade-tile-top"><b>${esc(titleOf(g, mod))}</b>${kind ? `<em class="arcade-kind">${esc(kind)}</em>` : ''}</span>`
-    + `<small>${esc(where || g.task || '')}</small></a>`;
+  const top = `<span class="arcade-tile-top"><b>${esc(titleOf(g, mod))}</b>${kind ? `<em class="arcade-kind">${esc(kind)}</em>` : ''}</span>`
+    + `<small>${esc(where || g.task || '')}</small>`;
+  const lvs = await levelsOf(g);
+  if (lvs.length < 2) return `<a class="arcade-tile${mod ? '' : ' is-missing'}" data-kind="${esc(g.mechanic ?? '')}" href="${esc(to)}">${top}</a>`;
+  // A game with a level table: each level straight from its tile (Hanli 10-20, of 守墙关's 药园: 「这个放到游戏大厅了吗?」)
+  const chips = lvs.map((l, k) => `<a class="arcade-lv" href="${esc(href({ game: g.id, n: String(i), lv: String(k + 1) }))}" title="${esc(l)}">${k + 1}</a>`).join('');
+  return `<div class="arcade-tile has-lv${mod ? '' : ' is-missing'}" data-kind="${esc(g.mechanic ?? '')}"><a class="arcade-tile-main" href="${esc(to)}">${top}</a>`
+    + `<nav class="arcade-lvs" aria-label="${esc(w().levels)}">${chips}</nav></div>`;
+}
+
+/* A game's levels, by name in the reader's language: the registry row's own (`levels`, 守炉), else its level file
+   (worlds/jiuding/levels/<id>.json: 守墙关, 撒豆成兵). None for the rest. */
+async function levelsOf(g) {
+  const name = (l) => { const n = l?.title ?? l?.name; return typeof n === 'string' ? n : n?.[lang()] ?? n?.zh ?? l?.id ?? ''; };
+  if (g.group !== 'main') return []; // the main games' ladders; a board's own deals are not levels to pick
+  if (Array.isArray(g.levels)) return g.levels.map(name);
+  const r = await fetch(`../worlds/jiuding/levels/${g.id}.json`).catch(() => null);
+  const kit = r?.ok ? await r.json().catch(() => null) : null;
+  return (kit?.levels ?? []).map(name);
 }
 
 // The type filter: one chip a type (with its count), 全部 first; a tap hides the other tiles and any
