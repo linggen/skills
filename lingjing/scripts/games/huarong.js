@@ -6,8 +6,13 @@ export const meta = {
   id: 'huarong',
   name: { zh: '华容道', en: 'Huarong Pass' },
   how: {
-    zh: '点一块再点箭头或旁边空格，一次滑一格；把金色的「你」移到下方出口。',
-    en: 'Tap a block, then an arrow or an empty cell beside it; slide the gold block to the bottom exit.',
+    zh: '点一块再点箭头或旁边空格，一次滑一格；键盘 WASD 或方向键也行（没选时动「你」）。把金色的「你」移到下方出口。',
+    en: 'Tap a block, then an arrow or an empty cell beside it; or WASD / arrow keys (they move the gold block when none is picked). Slide the gold block to the bottom exit.',
+  },
+  // WASD and the arrow keys slide the picked block (Hanli 2026-10-20: 「可以用wsad触发移动吗」).
+  keys: {
+    w: { g: 'move', dir: 'up' }, a: { g: 'move', dir: 'left' }, s: { g: 'move', dir: 'down' }, d: { g: 'move', dir: 'right' },
+    ArrowUp: { g: 'move', dir: 'up' }, ArrowLeft: { g: 'move', dir: 'left' }, ArrowDown: { g: 'move', dir: 'down' }, ArrowRight: { g: 'move', dir: 'right' },
   },
 };
 
@@ -117,8 +122,11 @@ export function act(state, data = {}) {
     return { state: { ...state, sel: state.sel === id ? null : id }, won: false };
   }
   if (g === 'move') {
-    if (state.sel == null || !DIRS[data.dir]) return { state, won: false };
-    return slide(state, state.sel, data.dir);
+    if (!DIRS[data.dir]) return { state, won: false };
+    // Nothing picked: a key moves 你 (an arrow button stays disabled until a block is picked).
+    const id = state.sel ?? state.blocks.find((b) => b.t === 'k')?.id;
+    if (id == null) return { state, won: false };
+    return slide(state, id, data.dir);
   }
   if (g === 'cell') {
     const x = Number(data.x), y = Number(data.y);

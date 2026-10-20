@@ -3,6 +3,10 @@
 //
 //   mount(container, { data, lang, reducedMotion, seed, level, signal, winHold }) → Promise<{ won, grade?, stars?, left? }>
 //
+// A module may declare `meta.keys` — { key: action } — and a key press acts like the tap it names
+// (华容道's WASD, Hanli 2026-10-20: 「点箭头有点远, 可以用wsad触发移动吗」). Keys are e.key,
+// lower-cased for letters; a press inside a text field is never a game key.
+//
 // A game knows nothing of the story, the save or the pay: it draws itself into `container`, takes
 // the player's hands there, and settles with how it went. What the result means — the story's way
 // on, the pay, the 得牌 card — is the beat wrapper's (lingjing.js, beat-won.js), never the game's.
@@ -116,6 +120,14 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
     const up = () => { if (!g.held) return; g.held = null; apply({ g: 'release' }); };
     on(doc, 'pointerup', up);
     on(doc, 'pointercancel', up);
+    const keys = mod.meta?.keys;
+    if (keys) on(doc, 'keydown', (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.('input,textarea,select,[contenteditable]')) return;
+      const action = keys[e.key.length === 1 ? e.key.toLowerCase() : e.key];
+      if (!action || !host.isConnected) return;
+      e.preventDefault();
+      apply({ ...action });
+    });
     on(host, 'contextmenu', (e) => { if (e.target.closest?.('[data-g-hold],[data-g-drag]')) e.preventDefault(); });
     if (signal) {
       if (signal.aborted) return finish(settled(g.state, true));

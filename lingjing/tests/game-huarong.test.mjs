@@ -198,3 +198,14 @@ test('html renders data-g buttons, grid placement, and the gold 2x2', () => {
   const sel = act(s, { g: 'block', b: '0' }).state;
   assert.match(html(sel), /is-sel/);
 });
+
+test('keys: WASD and arrows name moves; with nothing picked a move slides 你', () => {
+  for (const [k, dir] of [['w', 'up'], ['a', 'left'], ['s', 'down'], ['d', 'right'], ['ArrowUp', 'up'], ['ArrowLeft', 'left'], ['ArrowDown', 'down'], ['ArrowRight', 'right']])
+    assert.deepEqual(meta.keys[k], { g: 'move', dir });
+  // A board with room around 你 (every dealt layout starts it boxed in).
+  const s = { ...newGame('keys', 1), sel: null, moves: 0, won: false, blocks: [{ id: 0, t: 'k', x: 1, y: 0 }] };
+  const r = act(s, { g: 'move', dir: 'down' }).state;
+  assert.deepEqual([r.blocks[0].x, r.blocks[0].y], [1, 1]);
+  assert.equal(act(s, { g: 'move', dir: 'up' }).state.moves, 0, 'a blocked key does nothing');
+  assert.equal(r.moves, 1);
+});
