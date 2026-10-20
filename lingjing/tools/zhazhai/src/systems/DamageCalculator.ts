@@ -42,7 +42,7 @@ export class DamageCalculator {
       case BlockMaterial.EXPLOSIVE:
         return true;
       case BlockMaterial.WOOD:
-        return birdType === BirdType.YELLOW;
+        return birdType === BirdType.YELLOW || birdType === BirdType.METAL; // 砸寨: 金克木
       case BlockMaterial.STONE:
       case BlockMaterial.METAL:
         return false;

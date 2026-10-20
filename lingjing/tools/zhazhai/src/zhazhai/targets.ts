@@ -52,6 +52,7 @@ const LU = { w: 330, h: 190, draw: 470, health: 30 };
 const ZOU = { w: 220, h: 250, draw: 250, health: 20 };
 
 export function lookOf(spec: TargetSpec): PigLook {
+  if (spec.kind === "still") return { texture: `zz:${spec.art}`, width: spec.w, height: spec.h, shape: "rect", health: spec.health, density: 0.002, label: `pig-${spec.art}` };
   if (spec.kind === "deer") return { texture: "zz:deer-graze", width: DEER.w, height: DEER.h, shape: "rect", health: DEER.health, density: 0.003, label: "pig-deer" };
   if (spec.kind === "gourd") return { texture: "zz:zou", width: ZOU.w, height: ZOU.h, shape: "rect", health: ZOU.health, pinned: true, label: "pig-zou" };
   return { texture: "zz:lu-shut", width: LU.w, height: LU.h, shape: "rect", health: LU.health, pinned: true, label: "pig-lu" };
@@ -84,7 +85,8 @@ function dresser(img: Phaser.Physics.Matter.Image, first: string, draw: number, 
 }
 
 export function attachTarget(scene: Phaser.Scene, pig: Pig, spec: TargetSpec): void {
-  if (spec.kind === "deer") deer(scene, pig, spec);
+  if (spec.kind === "still") still(pig, spec);
+  else if (spec.kind === "deer") deer(scene, pig, spec);
   else if (spec.kind === "gourd") gourd(scene, pig, spec);
   else lu(scene, pig, spec);
 }
@@ -104,6 +106,15 @@ function everyFrame(scene: Phaser.Scene, pig: Pig, fn: (dt: number) => void, sub
   scene.events.on("update", tick);
   scene.events.once("shutdown", stop);
   return stop;
+}
+
+/** A thing that stands and takes the blow: no behaviour, its painting on its body (it topples as the body does). */
+function still(pig: Pig, spec: Extract<TargetSpec, { kind: "still" }>): void {
+  const img = pig.getMatterImage();
+  if (!img) return;
+  dresser(img, spec.art, spec.draw, spec.h);
+  const box = () => ({ x0: img.x - spec.w / 2, y0: img.y - spec.h / 2, x1: img.x + spec.w / 2, y1: img.y + spec.h / 2 });
+  views.set(pig, () => ({ kind: "still", x: img.x, y: img.y, state: "standing", aim: { x: img.x, y: img.y, r: Math.min(spec.w, spec.h) / 2, box: box() }, body: box() }));
 }
 
 function deer(scene: Phaser.Scene, pig: Pig, spec: Extract<TargetSpec, { kind: "deer" }>): void {

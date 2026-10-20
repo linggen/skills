@@ -464,7 +464,7 @@ function landHtml(L) {
   return `<div class="g-qm-land" data-land="${land}" style="background-image:url(${art(`sky-${land}`)})">${strip('far')}${strip('mid')}</div>`;
 }
 /** The levels that have a painted emblem for their title card. */
-const EMBLEMS = new Set(["cangxi", "chongmai", "daimai", "dark", "dazhoutian", "ding", "faqiu", "feather", "lastshot", "qiajue", "qianmi", "xirang", "xisui", "zhoutian"]);
+const EMBLEMS = new Set(["cangxi", "chongmai", "daimai", "dark", "dazhoutian", "ding", "faqiu", "feather", "lastshot", "qianmi", "xirang", "xisui", "zhoutian"]);
 
 /** The level's title card over the board before its first breath: its name and the book's line. */
 function titleCard(s, lang) {

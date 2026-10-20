@@ -17,7 +17,10 @@ interface PooledImage {
 const MAX_POOL_SIZE = 20;
 
 export class SpeedBoostAbility extends BaseBirdAbility {
-  public readonly birdType = BirdType.YELLOW;
+  // 砸寨: one dash for the 短飞剑 and the 金刃.
+  constructor(public readonly birdType: BirdType = BirdType.YELLOW) {
+    super();
+  }
   private tracePool: PooledImage[] = [];
   private glowPool: PooledImage[] = [];
 

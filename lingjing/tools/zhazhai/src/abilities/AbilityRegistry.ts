@@ -18,6 +18,10 @@ export class AbilityRegistry {
     this.register(new ExplosionAbility());
     this.register(new EggDropAbility());
     this.register(new SplitAbility());
+    // 砸寨 讲堂试法: the three spells take the tricks the forts' throws have.
+    this.register(new ExplosionAbility(BirdType.FIRE));
+    this.register(new SplitAbility(BirdType.ICE));
+    this.register(new SpeedBoostAbility(BirdType.METAL));
   }
 
   /**

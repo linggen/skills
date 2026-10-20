@@ -109,11 +109,13 @@ test('a way on waits on its board: refused in the world\'s words until the board
   }
 });
 
-test('the 10-19 sweep: 讲堂三日 plays 气走经脉 (掐诀), 相克 and 底册 are off the story — their passages told, their marks from the ways on, old saves fine', () => {
+test('the 10-19 sweep and the 10-20 调息 cut: 讲堂 plays 砸寨 (讲堂试法), 相克 and 底册 are off the story — their passages told, their marks from the ways on, old saves fine', () => {
   const t = (id) => content.tasks.tasks.find((x) => x.id === id);
-  assert.equal(t('qianye-qiajue').game, 'qimai');
-  const row = content.games.games.find((g) => g.id === 'qimai' && g.task === 'qianye-qiajue');
-  assert.equal(row.levels[0].xue.length, 8, 'the chant\'s eight lines, a 穴 each');
+  // 气走经脉 · 掐诀 (10-19) gave way to 砸寨 · 讲堂试法 (10-20, Hanli: 「调息感觉太多了」 → 「可以」), in the same slot.
+  assert.equal(t('qianye-qiajue').game, 'zhazhai');
+  assert.equal(t('qianye-qiajue').deal.lv, 'jiangtang');
+  assert.ok(!content.games.games.some((g) => g.id === 'qimai' && g.task === 'qianye-qiajue'), 'no 气走经脉 row names it');
+  for (const g of Object.values(t('qianye-qiajue').deal.grades)) assert.ok(Object.hasOwn(t('qianye-qiajue').marks, g), `grade ${g}`);
   assert.equal(t('qianye-xiangke').cut, '2026-10-19');
   assert.equal(t('laba-diche').cut, '2026-10-19');
   const q = CH.scenes['wm-qianye'], l = CH.scenes['wm-laba'];

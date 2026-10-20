@@ -40,6 +40,8 @@ function block(
 const SLINGSHOT = { x: SLINGSHOT_X, y: GROUND_Y - U };
 /** Stars by what was left in the basket: the first throw ★★★, the second ★★, the last ★ (a kill is 5000, a spare 10000). */
 const STARS = { oneStar: 0, twoStars: 15000, threeStars: 25000 };
+const HOOP = 1350;
+const PILLAR = 2140, DUMMY1 = 2680, TABLE = 2550;
 const on = (x: number) => ({ x, y: GROUND_Y - U / 2, size: PigSize.SMALL });
 
 export const THROW_LEVELS: LevelData[] = [
@@ -136,6 +138,57 @@ export const THROW_LEVELS: LevelData[] = [
     starThresholds: STARS,
     bot: { timed: true },
   },
+  // 今一 j01-track 「你投一个给我看看」 (the 调息 cut, 2026-10-20): the club fair on the central square, the portable hoop
+  // by 阿禾's folding table, and behind it, on a second table, 马小宝's 摇杯. 「球飞得很高，很有信心，越过篮筐，越过篮板，不偏
+  // 不倚，砸翻了马小宝的摇杯」 — the ball has to sail over the backboard and come down on the cup. 沈芒's, the one ball, three goes.
+  {
+    levelId: 9,
+    key: "toulan",
+    name: "Throw One for Me",
+    description: "The club fair: the hoop, and Ma Xiaobao's shaker.",
+    theme: "forest",
+    place: "campus",
+    teachingFocus: "Over the rim, over the board.",
+    birds: [{ type: BirdType.BALL }, { type: BirdType.BALL }, { type: BirdType.BALL }],
+    structures: [
+      // The hoop's backboard and its pole: bodies under the painting (decor prop-hoop), fixed.
+      block(BlockMaterial.WOOD, "rectangle", 1, 3, HOOP - 30, GROUND_Y - 3.6 * U, { fixed: true, hidden: true }),
+      block(BlockMaterial.WOOD, "rectangle", 1, 4, HOOP + 74, GROUND_Y, { fixed: true, hidden: true }),
+      // The folding table behind it, the cup on it.
+      block(BlockMaterial.WOOD, "rectangle", 4, 2, TABLE, GROUND_Y, { skin: "zz:prop-table", fixed: true }),
+    ],
+    pigs: [{ x: TABLE, y: GROUND_Y - 2 * U - 35, size: PigSize.SMALL }],
+    target: { kind: "still", art: "shaker", w: 72, h: 160, draw: 80, health: 6 },
+    decor: [{ art: "prop-hoop", x: HOOP, y: GROUND_Y + 6, h: 6.4 * U }],
+    slingshot: SLINGSHOT,
+    starThresholds: STARS,
+    bot: {},
+  },
+  // 第六回 wm-qianye 讲堂试法 (the 调息 cut, 2026-10-20): after 褚先生's 掐 and 咒, 小满 tries the spells at the back of the
+  // hall — 「扔一回，丹田便空一截」: he is 四层, four throws. Straw dummies, one behind a bench, one on a lecture desk, one
+  // behind a lacquered pillar; 火弹 bursts where it strikes, 冰锥 splits in three on a tap, 金刃 dashes on a tap and cuts
+  // wood through (金克木 — but never the pillar).
+  {
+    levelId: 10,
+    key: "jiangtang",
+    name: "Trying the Spells",
+    description: "The back of the lecture hall: straw dummies.",
+    theme: "forest",
+    place: "jiangtang",
+    teachingFocus: "Each throw empties the dantian a notch.",
+    birds: [{ type: BirdType.FIRE }, { type: BirdType.ICE }, { type: BirdType.METAL }, { type: BirdType.FIRE }],
+    structures: [
+      block(BlockMaterial.WOOD, "rectangle", 4, 1, 1640, GROUND_Y, { skin: "zz:prop-bench" }),
+      block(BlockMaterial.WOOD, "rectangle", 1, 5, PILLAR, GROUND_Y, { fixed: true }),
+      block(BlockMaterial.WOOD, "rectangle", 4, 1, 2860, GROUND_Y, { skin: "zz:prop-bench" }),
+    ],
+    pigs: [on(DUMMY1), on(1800), { x: 2860, y: GROUND_Y - U - 35, size: PigSize.SMALL }],
+    target: { kind: "still", art: "dummy", w: 80, h: 185, draw: 130, health: 10 },
+    decor: [],
+    slingshot: SLINGSHOT,
+    starThresholds: STARS,
+    bot: {},
+  },
 ];
 
 /** The throws' words, in both languages (the forts' are in levels.ts LEVEL_WORDS). */
@@ -147,6 +200,14 @@ export const THROW_WORDS: Record<number, Record<"zh" | "en", { name: string; des
   7: {
     zh: { name: "暗河里那一团红光", description: "干了的暗河，黑里蹲着邹青松，葫芦塞着。黑里射不着人。", teachingFocus: "先往黑里丢一块石子——葫芦一开，就有光。再一箭奔那团红光。" },
     en: { name: "The Red Light in the Dark", description: "The dry river under the mountain: Zou Qingsong crouched in the dark, his gourd stoppered. You can't shoot a man in the dark.", teachingFocus: "A stone into the dark first: open the gourd and there is light. Then the arrow at the red light." },
+  },
+  9: {
+    zh: { name: "你投一个给我看看", description: "百团大战，校篮球队的摊子。「你投一个给我看看。」", teachingFocus: "越过篮筐，越过篮板——马小宝的摇杯在后头那张桌上。" },
+    en: { name: "Throw One for Me", description: "The club fair, the basketball team's stall. \"Throw one for me.\"", teachingFocus: "Over the rim, over the backboard: Ma Xiaobao's shaker is on the table behind." },
+  },
+  10: {
+    zh: { name: "讲堂试法", description: "「手是沟，咒是赶水的人。」讲堂后头立着一排草人。", teachingFocus: "扔一回，丹田便空一截——四层，四回。火弹落地就炸；冰锥、金刃飞行中点一下。" },
+    en: { name: "Trying the Spells", description: "\"The hand is the ditch; the chant drives the water.\" At the back of the lecture hall stands a row of straw dummies.", teachingFocus: "Each throw empties the dantian a notch: fourth layer, four throws. The fireball bursts where it strikes; tap the ice spike or the gold blade in flight." },
   },
   8: {
     zh: { name: "芦苇里那一等", description: "沂水滩上，鯥叫荆棘钉住了。皮厚，刀剑不入。", teachingFocus: "等它吸气——翅膀根翻开的那一霎。飞行中点一下，剑直冲出去。" },

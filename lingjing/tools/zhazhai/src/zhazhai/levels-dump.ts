@@ -1,6 +1,7 @@
 // levels-dump.ts — run by build.mjs under node: the forts as plain data (games/zhazhai/levels.json), for the host
 // and the tests (which cannot load Phaser). Imports no Phaser.
 import { LEVELS, LEVEL_WORDS } from "../data/levels";
+import { BIRD_ASSET_MAP } from "../config/PhysicsConfig";
 
 export const dump = () =>
   LEVELS.map((l) => ({
@@ -17,6 +18,8 @@ export const dump = () =>
       key: l.key,
       place: l.place ?? null,
       target: l.target?.kind ?? "weasel",
-      art: [...new Set([...(l.place ? [`place-${l.place}`] : []), ...l.structures.flatMap((s) => (s.skin ? [s.skin.replace(/^zz:/, "")] : [])), ...(l.decor ?? []).map((d) => d.art)])],
+      art: [...new Set([...(l.place ? [`place-${l.place}`] : []), ...(l.target?.kind === "still" ? [l.target.art] : []),
+        ...l.birds.flatMap((b) => (BIRD_ASSET_MAP[b.type].startsWith("zz:") ? [BIRD_ASSET_MAP[b.type].slice(3)] : [])),
+        ...l.structures.flatMap((s) => (s.skin ? [s.skin.replace(/^zz:/, "")] : [])), ...(l.decor ?? []).map((d) => d.art)])],
     } : {}),
   }));

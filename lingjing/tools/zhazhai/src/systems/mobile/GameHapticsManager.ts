@@ -157,6 +157,8 @@ export class GameHapticsManager {
       [BirdType.BLUE]: haptic.split,
       [BirdType.WHITE]: haptic.eggDrop,
       [BirdType.BLACK]: haptic.explosion,
+      [BirdType.FIRE]: haptic.explosion,
+      [BirdType.ICE]: haptic.split,
     };
 
     const pattern = typePatterns[payload.type] ?? haptic.speedBoost;

@@ -54,8 +54,8 @@
     "task": "qianye-qiajue"
    },
    "refuse": {
-    "zh": "讲堂里还没散——八句咒，从肩膀领到指头尖。",
-    "en": "The lecture hall isn't out yet — eight lines, shoulder to fingertip."
+    "zh": "讲堂后头的草人还立着——一样一样地试。",
+    "en": "The straw dummies at the back of the hall are still standing. Try the spells one by one."
    },
    "mark": "xiangke",
    "_mark": "The 五句 are told in the passage since 2026-10-19 (相克 · 五句 cut, a quiz): the way on writes `xiangke`, which the 大比's three bouts read for their 相克 hint."
@@ -88,5 +88,5 @@
    "qianye-qiajue"
   ]
  },
- "_beats": "古六 (the per-回 plan, 2026-10-15, Hanli 「可以，开工，先做古六」): the eve was one scene of 押冠军 → 讲堂 → 大比前夜 → 开炉; split into three (wm-qianye · wm-zhaojing · wm-laba). Here: 押冠军/验修为 is the story; 讲堂三日 (qianye-qiajue) plays 褚先生's 掐、咒、扣 — the lessons' own words are the board's, so the rest of the passage (`story_after`) keeps only the 扣's rules and the 相克 lesson; 相克 · 五句 (qianye-xiangke) closes it. 2026-10-19 (the standing rule Hanli approved 10-19): 讲堂三日 is a 气走经脉 level (掐诀 · 循臂而行: the chant's eight lines the arm's eight 穴, 午文 the last 关); the passage now tells the first day (the hand, 「火弹，掐午文」) before it and the third (the 扣) after it. 相克 · 五句 cut (a quiz): the 五句 are the passage's, the way on writes the mark `xiangke`."
+ "_beats": "古六 (the per-回 plan, 2026-10-15, Hanli 「可以，开工，先做古六」): the eve was one scene of 押冠军 → 讲堂 → 大比前夜 → 开炉; split into three (wm-qianye · wm-zhaojing · wm-laba). Here: 押冠军/验修为 is the story; 讲堂三日 (qianye-qiajue) plays 褚先生's 掐、咒、扣 — the lessons' own words are the board's, so the rest of the passage (`story_after`) keeps only the 扣's rules and the 相克 lesson; 相克 · 五句 (qianye-xiangke) closes it. 2026-10-19 (the standing rule Hanli approved 10-19): 讲堂三日 is a 气走经脉 level (掐诀 · 循臂而行: the chant's eight lines the arm's eight 穴, 午文 the last 关); the passage now tells the first day (the hand, 「火弹，掐午文」) before it and the third (the 扣) after it. 相克 · 五句 cut (a quiz): the 五句 are the passage's, the way on writes the mark `xiangke`. 2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」 → 「可以」): the board in the same slot is **砸寨 · 讲堂试法** (`qianye-qiajue`, level `jiangtang`) — after 「第二天他教咒。」 he tries the spells at the back of the hall (火弹 · 冰锥 · 金刃 at straw dummies, four throws for his 四层: the book's 「扔一回，丹田便空一截」); the 咒's own line 「手是沟，咒是赶水的人」 is the level's lead card; the 扣 and the 相克 read after it as before."
 }

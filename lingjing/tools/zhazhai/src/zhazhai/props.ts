@@ -22,7 +22,7 @@ export function placeBackdrop(scene: Phaser.Scene, place: string | undefined): v
 }
 
 /** The ground under a place: moonlit on the night shoal (upstream's grass tile, tinted). */
-const GROUND_TINT: Record<string, number> = { shoal: 0x7f89b0, anhe: 0x4c5270 };
+const GROUND_TINT: Record<string, number> = { shoal: 0x7f89b0, anhe: 0x4c5270, jiangtang: 0xb08a5e, campus: 0xc9c2b4 };
 
 export function tintGround(scene: Phaser.Scene, place: string | undefined): void {
   const tint = place ? GROUND_TINT[place] : undefined;

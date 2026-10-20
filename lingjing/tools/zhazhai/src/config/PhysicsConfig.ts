@@ -99,6 +99,50 @@ export const BIRD_PHYSICS: Record<BirdType, BirdPhysicsConfig> = {
     hasAbility: false,
     visualLength: 150,
   },
+  // 砸寨 讲堂试法 (第六回): the three spells 小满 throws at the back of the hall — each empties the 丹田 a notch.
+  // 火弹: heavy and round, bursts on what it strikes (the 五雷符's way, its own fire).
+  [BirdType.FIRE]: {
+    density: 0.0035,
+    restitution: 0.3,
+    friction: 0.5,
+    frictionAir: 0.0008,
+    radius: 34,
+    hasAbility: true,
+    activateOnCollision: true,
+    explosionRadius: 190,
+  },
+  // 冰锥: a light needle, drawn long; a tap splits it in three.
+  [BirdType.ICE]: {
+    density: 0.004,
+    restitution: 0.1,
+    friction: 0.6,
+    frictionAir: 0.0003,
+    radius: 18,
+    hasAbility: true,
+    splitCount: 3,
+    splitAngle: 9,
+    splitVelocityRatio: 0.95,
+    visualLength: 140,
+  },
+  // 金刃: a tap sends it straight (the sword's dash); wood goes in one cut.
+  [BirdType.METAL]: {
+    density: 0.0022,
+    restitution: 0.35,
+    friction: 0.3,
+    frictionAir: 0.0003,
+    radius: 30,
+    hasAbility: true,
+    abilityMultiplier: 2.4,
+  },
+  // 今一's basketball: big, bouncy, no trick.
+  [BirdType.BALL]: {
+    density: 0.0022,
+    restitution: 0.62,
+    friction: 0.5,
+    frictionAir: 0.0006,
+    radius: 36,
+    hasAbility: false,
+  },
 } as const;
 
 export type ExplosionTier = "blackBird" | "tntLarge" | "tntMedium" | "tntSmall";
@@ -307,6 +351,10 @@ export const BIRD_ASSET_MAP: Record<BirdType, string> = {
   [BirdType.WHITE]: "alienPink_square",
   [BirdType.BLUE]: "alienBlue_round",
   [BirdType.ARROW]: "zz:proj-arrow", // 砸寨: its own painting (zhazhai/skin.ts)
+  [BirdType.FIRE]: "zz:proj-fire",
+  [BirdType.ICE]: "zz:proj-ice",
+  [BirdType.METAL]: "zz:proj-metal",
+  [BirdType.BALL]: "zz:proj-ball",
 };
 
 export const BOUNCE_CONFIG = {

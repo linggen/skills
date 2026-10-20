@@ -5,7 +5,10 @@ import type { BirdAbilityContext } from "../types/BirdAbilityContext";
 import { gameEvents } from "../events/EventBus";
 
 export class ExplosionAbility extends BaseBirdAbility {
-  public readonly birdType = BirdType.BLACK;
+  // 砸寨: one burst for the 五雷符 and the 火弹.
+  constructor(public readonly birdType: BirdType = BirdType.BLACK) {
+    super();
+  }
 
   public activate(context: BirdAbilityContext): void {
     const { bird, config } = context;

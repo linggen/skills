@@ -3,14 +3,23 @@
   "_about": "古六's boards (h08; the per-回 plan 2026-10-15, Hanli 「可以，开工，先做古六」): each the book's own action where its scene stands; every one skippable (算了，往下走), and every one pays what the plan names — 修为 for cultivation (掐诀, 藏息, 让一拳, 等风掉头, 念开篇), 灵石 / a thing / a 恩仇簿 line for the rest.",
   "tasks": [
     {
-      "_qimai": "A 气走经脉 level since 2026-10-19 (the standing rule Hanli approved 10-19: a weak board becomes a level of a proven kit where one fits the book): 褚先生's 「八句话，正好从肩膀走到指头尖」 — the chant's eight lines are the arm channel's eight 穴, 午文 the last 关 (games.json qimai `qiajue`). Id, marks and pay kept; the old board stays in the 游戏厅 (and qiajue.js WEN for the 密室's 铜掌).",
+      "_zhazhai": "2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」 → 「可以」): a level of 砸寨, 讲堂试法 (tools/zhazhai/src/data/throws.ts `jiangtang`) — after 褚先生's 掐 and 咒, 小满 tries the spells at the back of the hall: 火弹 · 冰锥 · 金刃 at straw dummies, four throws for his 四层 (「扔一回，丹田便空一截」). Was 气走经脉 · 掐诀 (10-19). Id, marks and pay kept; `grades`: ★2–3 tight, ★1 loose.",
       "id": "qianye-qiajue",
       "kind": "board",
-      "game": "qimai",
+      "game": "zhazhai",
+      "deal": {
+        "lv": "jiangtang",
+        "grades": { "3": "tight", "2": "tight", "1": "loose" }
+      },
+      "stars": 3,
       "period": "once",
       "title": {
-        "zh": "讲堂三日 · 掐、咒、扣",
-        "en": "Three days in the lecture hall · Pinch, chant, hold"
+        "zh": "讲堂试法",
+        "en": "Trying the spells"
+      },
+      "how": {
+        "zh": "往后拉，松手，把法术扔向讲堂后头的草人。火弹落地就炸；冰锥飞行中点一下，一分为三；金刃点一下，直冲出去，木头一刀两断。扔一回，丹田便空一截——四回。",
+        "en": "Pull back and let go: throw the spells at the straw dummies at the back of the hall. The fireball bursts where it lands; tap the ice spike in flight and it splits in three; tap the gold blade and it shoots straight, cutting wood clean through. Each throw empties the dantian a notch: four throws."
       },
       "grant": {
         "table": "task",
@@ -21,8 +30,8 @@
         "loose": "qiajue-loose"
       },
       "done_line": {
-        "zh": "掐、咒、扣，三样都会了。",
-        "en": "Pinch, chant, hold — you have all three."
+        "zh": "草人倒了一排。丹田空了，手还在抖。",
+        "en": "The straw dummies are down in a row. The dantian is empty; the hands still shake."
       }
     },
     {

@@ -37,6 +37,8 @@ export interface LevelBlockConfig {
   skin?: string;
   /** 砸寨: rooted where it stands, never breaks (a live pine): it takes the arrow and holds. */
   fixed?: boolean;
+  /** 砸寨: a body with no picture of its own — the painting is set-dressing over it (`decor`: the hoop's backboard). */
+  hidden?: boolean;
 }
 
 /** 砸寨: what the throws are aimed at, when it is not the weasel gang (zhazhai/targets.ts). */
@@ -61,6 +63,16 @@ export type TargetSpec =
       struggle: { every: number; open: number };
       /** The wing root, from its middle (units). */
       root: { dx: number; dy: number; r: number };
+    }
+  | {
+      /** A thing that stands and takes the blow (讲堂试法's straw dummies, 马小宝's 摇杯): its painting (`art`, game-assets/art),
+          its body (units, `w` × `h`), drawn `draw` units wide, struck down at `health`. */
+      kind: "still";
+      art: string;
+      w: number;
+      h: number;
+      draw: number;
+      health: number;
     }
   | {
       kind: "gourd";

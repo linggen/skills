@@ -101,6 +101,7 @@ export class LevelBuilder implements ILevelBuilder {
       // 砸寨: rooted (stays static, never breaks) and drawn as the thing it is.
       newBlock.fixed = Boolean(block.fixed);
       if (block.skin) skinBlock(this.scene, newBlock, block.skin, block.width, block.height);
+      if (block.hidden) newBlock.getMatterImage()?.setAlpha(0);
 
       newBlock.callbacks.onDestroyed = (
         block: Block,

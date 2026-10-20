@@ -4,7 +4,10 @@ import type { BirdAbilityContext } from "../types/BirdAbilityContext";
 import { gameEvents } from "../events/EventBus";
 
 export class SplitAbility extends BaseBirdAbility {
-  public readonly birdType = BirdType.BLUE;
+  // 砸寨: one split for the 陶罐 and the 冰锥.
+  constructor(public readonly birdType: BirdType = BirdType.BLUE) {
+    super();
+  }
 
   public activate(context: BirdAbilityContext): void {
     const { bird, position, velocity, config } = context;

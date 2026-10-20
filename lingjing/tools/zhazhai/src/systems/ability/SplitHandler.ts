@@ -8,6 +8,8 @@ import type { AbilityVFXManager } from "../vfx/AbilityVFXManager";
 import type { ISFXPlayer } from "../../interfaces/audio";
 import type { IEventEmitter } from "../../interfaces/IEventEmitter";
 import { ABILITY_CONFIG } from "../../config/AbilityConfig";
+import { BIRD_ASSET_MAP, BIRD_PHYSICS } from "../../config/PhysicsConfig";
+import { SKIN, texOf } from "../../zhazhai/skin";
 
 export interface SplitHandlerDeps {
   vfxManager: AbilityVFXManager;
@@ -40,8 +42,14 @@ export class SplitHandler implements IAbilityHandler<"birdSplit"> {
     for (let i = -1; i <= 1; i++) {
       const splitAngle = baseAngle + i * angleRad;
 
-      const miniBird = scene.add.image(event.x, event.y, "level", "alienBlue_round");
-      miniBird.setScale(ABILITY_CONFIG.split.miniBirdScale);
+      // 砸寨: a thing with a painting of its own (the 冰锥) splits into three smaller ones of it, pointing where they fly.
+      const own = event.originalBird?.type ? BIRD_ASSET_MAP[event.originalBird.type] : undefined;
+      const painted = own?.startsWith(SKIN) && scene.textures.exists(texOf(own)[0]);
+      const miniBird = painted ? scene.add.image(event.x, event.y, texOf(own!)[0]) : scene.add.image(event.x, event.y, "level", "alienBlue_round");
+      if (painted) {
+        const cfg = BIRD_PHYSICS[event.originalBird!.type];
+        miniBird.setScale(((cfg.visualLength ?? cfg.radius * 2) * 0.7) / miniBird.width).setRotation(splitAngle);
+      } else miniBird.setScale(ABILITY_CONFIG.split.miniBirdScale);
 
       const miniBody = scene.matter.add.gameObject(miniBird, {
         shape: { type: "circle", radius: ABILITY_CONFIG.split.miniBirdRadius },

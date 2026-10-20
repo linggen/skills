@@ -136,7 +136,6 @@ EMBLEMS = {
   'xisui': 'a small round wooden wash basin full of glowing clear water',
   'zhoutian': 'a round flat pale jade BI disc with a hole in the middle',
   'xirang': 'a small clod of rich brown earth with a tiny green sprout on top',
-  'qiajue': 'a round glowing red-orange noon SUN with short rays',
   'cangxi': 'a closed pink LOTUS bud on a short stem with one round green leaf',
   'ding': 'a colourful paper PINWHEEL on a small stick',
   'qianmi': 'a white fluffy DANDELION seed head',

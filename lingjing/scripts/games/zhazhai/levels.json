@@ -1,5 +1,5 @@
 {
- "source": "0e0da2885859b61d69753eb7539cdbdd3ab1ef8d4b60b82d53fb1a6379717956",
+ "source": "9a4d0b2828ecc21256d7fc215f53c123bb698d79dcf8d8e7ec8800ecb422bade",
  "levels": [
   {
    "id": 1,
@@ -222,6 +222,7 @@
    "target": "deer",
    "art": [
     "place-creek",
+    "proj-arrow",
     "prop-pine",
     "prop-rock",
     "prop-log",
@@ -269,6 +270,7 @@
    "target": "gourd",
    "art": [
     "place-anhe",
+    "proj-arrow",
     "prop-rock",
     "prop-reeds"
    ]
@@ -316,6 +318,96 @@
     "prop-torch",
     "prop-bramble",
     "prop-reeds"
+   ]
+  },
+  {
+   "id": 9,
+   "theme": "forest",
+   "shots": [
+    "ball",
+    "ball",
+    "ball"
+   ],
+   "weasels": [
+    "SMALL"
+   ],
+   "blocks": 3,
+   "materials": [
+    "wood"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 15000,
+    "threeStars": 25000
+   },
+   "words": {
+    "zh": {
+     "name": "你投一个给我看看",
+     "description": "百团大战，校篮球队的摊子。「你投一个给我看看。」",
+     "teachingFocus": "越过篮筐，越过篮板——马小宝的摇杯在后头那张桌上。"
+    },
+    "en": {
+     "name": "Throw One for Me",
+     "description": "The club fair, the basketball team's stall. \"Throw one for me.\"",
+     "teachingFocus": "Over the rim, over the backboard: Ma Xiaobao's shaker is on the table behind."
+    }
+   },
+   "key": "toulan",
+   "place": "campus",
+   "target": "still",
+   "art": [
+    "place-campus",
+    "shaker",
+    "proj-ball",
+    "prop-table",
+    "prop-hoop"
+   ]
+  },
+  {
+   "id": 10,
+   "theme": "forest",
+   "shots": [
+    "fire",
+    "ice",
+    "metal",
+    "fire"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 3,
+   "materials": [
+    "wood"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 15000,
+    "threeStars": 25000
+   },
+   "words": {
+    "zh": {
+     "name": "讲堂试法",
+     "description": "「手是沟，咒是赶水的人。」讲堂后头立着一排草人。",
+     "teachingFocus": "扔一回，丹田便空一截——四层，四回。火弹落地就炸；冰锥、金刃飞行中点一下。"
+    },
+    "en": {
+     "name": "Trying the Spells",
+     "description": "\"The hand is the ditch; the chant drives the water.\" At the back of the lecture hall stands a row of straw dummies.",
+     "teachingFocus": "Each throw empties the dantian a notch: fourth layer, four throws. The fireball bursts where it strikes; tap the ice spike or the gold blade in flight."
+    }
+   },
+   "key": "jiangtang",
+   "place": "jiangtang",
+   "target": "still",
+   "art": [
+    "place-jiangtang",
+    "dummy",
+    "proj-fire",
+    "proj-ice",
+    "proj-metal",
+    "prop-bench"
    ]
   }
  ]

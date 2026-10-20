@@ -116,6 +116,36 @@ export const GameConfig = {
         [BlockMaterial.METAL]: 0.15,
         [BlockMaterial.EXPLOSIVE]: 1.0,
       },
+      // 砸寨 讲堂试法: 火弹 as the 五雷符 (its burst does the work), 冰锥 as a needle, 金刃 cuts wood (金克木).
+      [BirdType.FIRE]: {
+        [BlockMaterial.GLASS]: 1,
+        [BlockMaterial.WOOD]: 1.5,
+        [BlockMaterial.STONE]: 1,
+        [BlockMaterial.METAL]: 0.5,
+        [BlockMaterial.EXPLOSIVE]: 2,
+      },
+      [BirdType.ICE]: {
+        [BlockMaterial.GLASS]: 2,
+        [BlockMaterial.WOOD]: 0.6,
+        [BlockMaterial.STONE]: 0.25,
+        [BlockMaterial.METAL]: 0.15,
+        [BlockMaterial.EXPLOSIVE]: 1,
+      },
+      [BirdType.METAL]: {
+        [BlockMaterial.GLASS]: 0.5,
+        [BlockMaterial.WOOD]: 2,
+        [BlockMaterial.STONE]: 0.5,
+        [BlockMaterial.METAL]: 0.3,
+        [BlockMaterial.EXPLOSIVE]: 1,
+      },
+      // 砸寨 the basketball: it knocks things over, it breaks nothing.
+      [BirdType.BALL]: {
+        [BlockMaterial.GLASS]: 1,
+        [BlockMaterial.WOOD]: 0.3,
+        [BlockMaterial.STONE]: 0.1,
+        [BlockMaterial.METAL]: 0.1,
+        [BlockMaterial.EXPLOSIVE]: 1,
+      },
     } as const,
   } as const,
 } as const;

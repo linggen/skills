@@ -52,7 +52,8 @@ test('registered in the 游戏厅 as a throw (plays wide); the story’s throw b
   const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(readFileSync(join(root, `worlds/jiuding/tasks/${f}.json`), 'utf8')).tasks);
   const keys = new Set(forts.levels.filter((l) => l.key).map((l) => l.key));
   const beats = Object.fromEntries(tasks.filter((t) => t.game === 'zhazhai').map((t) => [t.id, t.deal?.lv]));
-  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'anhe-dark': 'anhe-dark', 'yishui-reed': 'yishui-reed' });
+  // + the 调息 cut (2026-10-20): 讲堂试法 on 第六回's 讲堂 board, 投一个给我看看 on 今一's.
+  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'anhe-dark': 'anhe-dark', 'qianye-qiajue': 'jiangtang', 'yishui-reed': 'yishui-reed' });
   for (const lv of Object.values(beats)) assert.ok(keys.has(lv), `${lv}: a level of the build`);
   // The marks a beat reads come from its grades.
   const reed = tasks.find((t) => t.id === 'yishui-reed');
@@ -73,6 +74,15 @@ test('the story’s throws: the book’s place, target and the one thing 小满 
   assert.deepEqual(byKey['yishui-reed'].shots, ['yellow', 'yellow', 'yellow']);
   assert.equal(byKey['yishui-reed'].target, 'lu');
   assert.equal(byKey['yishui-reed'].place, 'shoal');
+  // 第六回 讲堂试法 (the 调息 cut): the spells 褚先生 taught, four throws for his 四层 — 「扔一回，丹田便空一截」.
+  assert.deepEqual(byKey.jiangtang.shots, ['fire', 'ice', 'metal', 'fire']);
+  assert.equal(byKey.jiangtang.target, 'still');
+  assert.equal(byKey.jiangtang.place, 'jiangtang');
+  // 今一 「你投一个给我看看」: 沈芒's, the ball, over the board onto 马小宝's 摇杯.
+  assert.deepEqual(byKey.toulan.shots, ['ball', 'ball', 'ball']);
+  assert.equal(byKey.toulan.target, 'still');
+  assert.equal(byKey.toulan.place, 'campus');
+  for (const a of ['dummy', 'proj-fire', 'proj-ice', 'proj-metal', 'prop-bench', 'shaker', 'proj-ball', 'prop-hoop', 'prop-table']) assert.ok([...byKey.jiangtang.art, ...byKey.toulan.art].includes(a), a);
   for (const l of Object.values(byKey)) {
     // Wood and stone by a stream or on a shoal — no tiles, iron or powder kegs (Hanli 10-19: no temple doors in a forest).
     for (const m of l.materials) assert.ok(['wood', 'stone'].includes(m), `${l.key}: ${m}`);
@@ -124,7 +134,7 @@ test('the bundle was rebuilt after its source last changed (cd tools/zhazhai && 
 // The levels played: headless Chromium on the built bundle, under a fake clock (tools/zhazhai/bot.mjs). Skipped without
 // playwright (CI installs none); run it before a push that touches tools/zhazhai.
 const pw = playwrightOrNull();
-const STORY = ['deer-wind', 'anhe-dark', 'yishui-reed']; // story order: 第二回, 第五回, 古七
+const STORY = ['deer-wind', 'toulan', 'anhe-dark', 'jiangtang', 'yishui-reed']; // story order: 第二回, 今一, 第五回, 第六回, 古七
 test('each story throw is won by a sensible hand and not by a lazy one, and each is tighter than the one before', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 900000 }, async () => {
   const srv = await serve();
   const browser = await pw.chromium.launch();

@@ -29,6 +29,7 @@ export class DefaultCameraAbilityPolicy implements ICameraAbilityPolicy {
   getAbilityFeedback(birdType: BirdType): CameraAbilityFeedback {
     switch (birdType) {
       case BirdType.YELLOW:
+      case BirdType.METAL:
         return {
           hitPauseMs: 40,
           shake: {
@@ -37,6 +38,7 @@ export class DefaultCameraAbilityPolicy implements ICameraAbilityPolicy {
           },
         };
       case BirdType.BLUE:
+      case BirdType.ICE:
         return {
           hitPauseMs: 40,
           shake: {
