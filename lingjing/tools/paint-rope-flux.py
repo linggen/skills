@@ -115,7 +115,7 @@ TURN = {'peg': 180}
 FADE = {'fallpine': 90}
 # Only the paper joined to the picture's edge is taken out (a flood from the border over the paper-coloured pixels, the
 # figure's outline first thickened 5 px so a faint pencil line still closes it): a face as pale as the paper (马小宝's)
-# stays opaque inside its outline.
+# stays opaque inside its outline, and the paper outside goes wholly (an aged sheet is never one colour).
 FLOOD = {'xiaobao'}
 # Where a sprite is written under art/games/ (its id, unless named here).
 OUTNAME = {'fallpine': 'fall/pine', 'peg': 'anchor/peg', 'branch': 'anchor/branch', 'dad': 'fall/dad', 'pack': 'fall/pack', 'ledge': 'fall/ledge', 'spur': 'fall/spur', 'fallcliff': 'fall/cliff'}
@@ -147,7 +147,7 @@ def to_webp(png, webp, box, size, threshold, turn=0, fade=0, flood=False):
           + (f"from PIL import ImageDraw, ImageFilter; m = Image.fromarray(np.where(d > {threshold} + 46, 255, 0).astype('uint8'), 'L').filter(ImageFilter.MaxFilter(11)); "
              "[ImageDraw.floodfill(m, xy, 128) for xy in [(x, 0) for x in range(0, m.width, 4)] + [(x, m.height - 1) for x in range(0, m.width, 4)] + [(0, y) for y in range(0, m.height, 4)] + [(m.width - 1, y) for y in range(0, m.height, 4)] if m.getpixel(xy) == 0]; "
              "bg = Image.fromarray(np.where(np.asarray(m) == 128, 255, 0).astype('uint8'), 'L').filter(ImageFilter.MaxFilter(11)); "
-             "al = np.where(np.asarray(bg) == 255, al, 255).astype(float); " if flood else '')
+             "al = np.asarray(Image.fromarray(np.where(np.asarray(bg) == 255, 0, 255).astype('uint8'), 'L').filter(ImageFilter.GaussianBlur(1.2))).astype(float); " if flood else '')
           + (f"al = al * np.clip((al.shape[0] - np.arange(al.shape[0]))[:, None] / {fade}, 0, 1); " if fade else '')
           + "img = Image.fromarray(np.dstack([a, al]).astype('uint8'), 'RGBA'); "
           + ("" if box else "ys, xs = np.where(al > 220); m = 12; img = img.crop((max(0, xs.min() - m), max(0, ys.min() - m), min(img.width, xs.max() + m), min(img.height, ys.max() + m))); ")
