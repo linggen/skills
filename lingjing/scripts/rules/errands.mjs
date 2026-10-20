@@ -600,6 +600,7 @@ const EFFECT_BRIEF = {
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
   charm: () => ({ charm: true }),
   pouch: e => ({ pouch: e.pouch }),
+  waive: e => ({ waive: e.waive }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
   def: e => ({ def: e.def }),
   ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),

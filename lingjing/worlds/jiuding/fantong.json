@@ -1,12 +1,13 @@
 {
-  "version": 1,
-  "_about": "喂饭桶 — free play (Hanli, 2026-10-15): once he holds the 饭桶 (`needs`, the 小铜炉 古四 grants at wm-danlu), he feeds it one thing at a time from the 物品 panel and it spits one thing out. The rules roll it (rules/fantong.mjs, seeded by the day, the save's feed count and what went in); the page only shows. A thing that goes in is gone; what comes out goes into the pouch (待取 when full). Every output is an items.json row with a name and a `hint` — the one line of small print on it or its wrapper, never its effect (Hanli, 2026-10-06). The book's 饭桶 (古四, 古七): 喂凡物，多半出凡物; 灵石 is 「一口正经饭」; the 方子 say which pill, never how many 纹.",
+  "version": 2,
+  "_about": "喂饭桶 · 开炉 — the 饭桶's lottery (Hanli, 2026-10-20: 「现在可以, 但东西太少, 以后在扩吧. 装备武器饰品都可以出」; the 割绳子 in front of it is gone, 「喂饭桶那个没啥玩的」). Once he holds the 饭桶 (`needs`, the 小铜炉 古四 grants at wm-danlu) he puts up to three things and 0–3 灵石 into its mouth, presses the lid on a gold puff (压盖: the one skill step, `press`), and it spits something out (games/kailu.js on the shell). The rules roll it (rules/fantong.mjs, seeded by the day, the save's feed count, what went in and the 灵石 — never the press, so timing can't re-roll); the page only shows. The book's 饭桶 gives anything at all (Hanli 10-20: 「剧情里, 饭桶就是什么都出的, 但要关联喂入物品等级和人物等级」): there is no cap — the odds of high things rise smoothly with what goes in (`tiers`), his realm, the 灵石 (`odds.power`). Every output is an items.json row with a name and a `hint` — the one line of small print on it or its wrapper, never its effect (Hanli, 2026-10-06). The first time a thing lands it goes into the 饭桶图鉴 (录). Hanli will widen the table: add rows, never code.",
   "needs": { "item": "danlu" },
+  "max_in": 3,
   "limit": {
     "_about": "`cooldown_min`: after a feed, the bucket is full that long (Hanli, 2026-10-15: one feed, then an hour). `per_day`: at most that many feeds a local day. Either, both, or neither; the refusal says when the next feed is possible. The cooldown is balance.json's (`cooldowns.fantong_min`)."
   },
   "never": {
-    "_about": "What never goes in, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot). What the story still reads from the bag goes here too (2026-10-15): 鼎苔, the 筑基丹's 主药 (古五 → 古八); every realm's breakthrough pill (ladder.json breakthrough.pill.items); the five 天材地宝 a 本命法宝 is refined with (items.json effect.core). Ordinary gear (灰袍) stays feedable.",
+    "_about": "What never goes IN, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot). What the story still reads from the bag goes here too (2026-10-15): 鼎苔, the 筑基丹's 主药 (古五 → 古八); every realm's breakthrough pill (ladder.json breakthrough.pill.items — the breakthrough reaches for it in the bag); the five 天材地宝 a 本命法宝 is refined with (items.json effect.core). This list is inputs only: realm pills may still come OUT (Hanli 10-20: 「破镜, 筑基丹都可以出, 不用限制」). Ordinary gear (灰袍) stays feedable.",
     "kinds": ["key", "scroll", "artifact"],
     "items": ["old-bow", "dingtai", "foundation-pill", "foundation-pill-9", "firm-pill", "pojing-pill", "jingjin", "leijimu", "hanyu", "huojing", "xirang"]
   },
@@ -21,52 +22,128 @@
     ]
   },
   "kinds": {
-    "_about": "What went in decides the odds and the pools: each kind's grade weights (junk · useful · best, out of 100) and, per grade, the pool it draws from. An item not listed under any kind is `junk`. `best` is 卷一's 逆天: convenience, never a power card.",
-    "junk": { "grades": { "junk": 82, "useful": 16, "best": 2 }, "useful": "plain", "best": "lucky" },
-    "herb": { "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "luobo", "huangjing", "heshouwu", "fuling", "cangzhu", "chaihu", "yuanzhi", "chonglou", "shihu", "banxia", "songmo"], "grades": { "junk": 62, "useful": 33, "best": 5 }, "useful": "pills", "best": "pills-best" },
-    "beast": { "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua"], "grades": { "junk": 64, "useful": 31, "best": 5 }, "useful": "fu", "best": "lucky" }
+    "_about": "What went in sets the pot's LEAN: a pool row with `lean` weighs (1 + `odds.lean` × the inputs of that kind) — herbs → pills, beast parts → 符 and 妖丹, ores → 符纸 and 丹砂, junk → junk. An item under no kind is `junk`. `tint`: the colour the lid faintly shows as the pot fills (the page's hint, never a number).",
+    "junk": { "tint": "#9aa0a6" },
+    "herb": { "tint": "#6fcf6a", "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "luobo", "huangjing", "heshouwu", "fuling", "cangzhu", "chaihu", "yuanzhi", "chonglou", "shihu", "banxia", "songmo", "zixu-zhi", "juyou"] },
+    "beast": { "tint": "#e0703a", "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "houer-jiu"] },
+    "ore": { "tint": "#5aa9e6", "items": ["tongkuang", "tie-sha", "yunmu", "cishi", "xionghuang", "chishizhi", "dansha", "langgan", "qi-salt"] }
+  },
+  "tiers": {
+    "_about": "品阶 of every thing, in and out (Hanli 10-20: 「玩家等级高, 喂入等级高, 出高等级概率大」): 0 凡物 · 1 一阶 · 2 二阶 · 3 三阶 · 4 the top (九转筑基丹). An item not listed is 0. The pot's tier is its HIGHEST input (one good thing lifts the pot, so the third slot is never a trap — a mean would punish adding a 凡物). An output's tier sets how much the power lifts it (`odds.tier`).",
+    "1": ["huangjing", "fuling", "cangzhu", "chaihu", "yuanzhi", "banxia", "songmo", "yaodan-1", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "houer-jiu", "tie-sha", "cishi", "xionghuang", "chishizhi", "dansha", "talisman", "lianxi-fu", "tama-fu", "penti-fu", "qi-pill", "mend-pill", "huiqi-pill", "bamboo-sword", "duan-dao", "iron-sword", "pi-kanjian", "shi-zhui", "qiuyu-ci", "baina-dai", "pouch-low", "baoge-ling", "yinyue-lingdang", "fangzi-canye", "sang-paper", "jade-fish"],
+    "2": ["lingzhi", "ginseng", "heshouwu", "chonglou", "shihu", "yaodan-2", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "yunmu", "shujin", "qi-pill-3", "mend-pill-3", "wulei-fu", "yangyang-zhen", "zipai-jing", "niuzhi-ganlu", "lipi-kanjian", "chaiya-zhui", "jade-ring", "heyu-dao", "heyu-ao", "shisui-zhui", "chitong-hulu"],
+    "3": ["yaodan-3", "zixu-zhi", "langgan", "qingtong-jian", "anhe-yu", "foundation-pill", "qi-pill-9", "mend-pill-9", "xizhu"],
+    "4": ["foundation-pill-9"]
+  },
+  "odds": {
+    "_about": "The roll: first a grade (凡 junk · 有用 useful · 珍品 rare · 逆天 best — grey, blue, purple, gold), then a row of that grade's pool. `grades`: the weights at power 0 (a 凡物 fed by a 练气零层 with no 灵石: 70/25/4/1). POWER = `power.in` × the pot's tier + `power.realm` × his realm + `power.lingshi` × the 灵石. His realm counts `realm_per_tier` a whole realm (练气 0–2.7 by 层, 筑基 3+, …). Each grade's weight × `growth[grade]`^power; each pool row's weight × min(1, `tier.base`^t × `tier.growth`^(t × power)), t its tier (never above an ordinary row) — so a high thing is never impossible, only rare, and grows likelier smoothly with both what goes in and who feeds it. `lean`: see kinds. 压盖 (`press` 1): the grade rolled goes up one notch (逆天 stays).",
+    "grades": { "junk": 70, "useful": 25, "rare": 4, "best": 1 },
+    "power": { "in": 1, "realm": 0.5, "lingshi": 0.5 },
+    "realm_per_tier": 3,
+    "growth": { "junk": 0.85, "useful": 1, "rare": 1.25, "best": 1.45 },
+    "tier": { "base": 0.3, "growth": 1.3 },
+    "lean": 2
   },
   "lingshi": {
-    "_about": "灵石 fed with it (0 to `max`), each moving `shift` points of weight from junk to useful and best — 「这才是一口正经饭」.",
-    "max": 3,
-    "shift": { "junk": -12, "useful": 8, "best": 4 }
+    "_about": "灵石 fed with the pot (0 to `max`): each is power (`odds.power.lingshi`) — 「这才是一口正经饭」.",
+    "max": 3
+  },
+  "once": {
+    "_about": "Things of these kinds come out once ever (state.found — he has had it, by any door): the 饭桶 never hands him a second sword, robe, pendant, pouch or bell of hers. Hanli 10-20: equipment drops, \"each only once its 回 is reached\".",
+    "kinds": ["weapon", "robe", "pendant", "pouch", "artifact"]
+  },
+  "pity": {
+    "_about": "After `after` 凡 in a row, the next feed is at least 有用 (Hanli 10-20 asked for a pity; N = 5: at 70% 凡, five in a row comes about one run in six, so it bites now and then without flattening the odds).",
+    "after": 5
+  },
+  "quirks": {
+    "_about": "Small chances, out of 100, rolled before the grade: `refuse` — it chews, 「呸」, and spits the pot back whole (nothing spent, no wait); `twin` — two things out of one pot (a second roll). 银月's hair is `events`.",
+    "refuse": 3,
+    "twin": 4
   },
   "pools": {
+    "_about": "Per grade, the rows it draws from. `item` (with `n`, default 1) or `wealth` [min, max] 灵石. `w` its weight; `lean` the kind it leans to; `hui` the 回 the save must have reached (huiOrder ≤ the 回 it stands in) — the base pool opens with the 饭桶 (古四, h05); `beast`: only once he has beaten that beast (state.beasts won); `with` / `with_chance`: a second thing out with it, now and then. A thing of a `once` kind comes once ever. Nothing of a later 卷 (items.json `juan`) is ever drawn. The book's two fixed outputs (火柴, 顺风溜: `recipes.story`) are in no pool.",
     "junk": [
-      { "item": "yaqian", "w": 3 },
-      { "item": "guoba", "w": 3 },
-      { "item": "xiao-shizi", "w": 2 },
-      { "item": "yicuo-hui", "w": 4 },
-      { "item": "hanxiao-bandian", "w": 1, "with": "zhixiao-wan" }
+      { "item": "yaqian", "w": 3, "lean": "junk" },
+      { "item": "guoba", "w": 3, "lean": "junk" },
+      { "item": "xiao-shizi", "w": 2, "lean": "junk" },
+      { "item": "yicuo-hui", "w": 3, "lean": "junk" },
+      { "item": "kuye", "w": 2, "lean": "junk" },
+      { "item": "tama-defu", "w": 1 },
+      { "item": "hanxiao-bandian", "w": 1, "with": "zhixiao-wan", "with_chance": 50 },
+      { "item": "banjie-fanshao", "w": 2, "lean": "junk" },
+      { "item": "yike-daya", "w": 2, "lean": "beast" },
+      { "item": "yige-ge", "w": 2 }
     ],
-    "plain": [
-      { "item": "ganliang", "w": 3 },
-      { "item": "talisman", "w": 2 },
-      { "item": "qi-pill", "w": 2 }
+    "useful": [
+      { "item": "qi-pill", "w": 3, "lean": "herb" },
+      { "item": "mend-pill", "w": 3, "lean": "herb" },
+      { "item": "huiqi-pill", "w": 1, "lean": "herb" },
+      { "item": "ganliang", "w": 3, "lean": "junk" },
+      { "item": "talisman", "w": 3, "lean": "beast" },
+      { "item": "lianxi-fu", "w": 2, "lean": "beast" },
+      { "item": "tama-fu", "w": 2, "lean": "beast", "hui": "h07" },
+      { "item": "penti-fu", "w": 1, "lean": "beast", "hui": "h08" },
+      { "item": "sang-paper", "w": 2, "lean": "ore" },
+      { "item": "dansha", "w": 2, "lean": "ore" },
+      { "item": "xionghuang", "w": 1, "lean": "ore" },
+      { "item": "tie-sha", "w": 2, "lean": "ore" },
+      { "item": "yaodan-1", "w": 2, "lean": "beast" },
+      { "wealth": [1, 3], "w": 3 }
     ],
-    "pills": [
-      { "item": "qi-pill", "w": 3 },
-      { "item": "mend-pill", "w": 3 }
+    "rare": [
+      { "item": "qi-pill-3", "w": 2, "lean": "herb" },
+      { "item": "mend-pill-3", "w": 2, "lean": "herb" },
+      { "item": "wulei-fu", "w": 1, "lean": "beast", "hui": "h07" },
+      { "item": "yangyang-zhen", "w": 1, "hui": "h08" },
+      { "item": "zipai-jing", "w": 1, "hui": "h08" },
+      { "item": "niuzhi-ganlu", "w": 1, "hui": "h08" },
+      { "item": "yaodan-2", "w": 1, "lean": "beast" },
+      { "item": "yunmu", "w": 1, "lean": "ore" },
+      { "item": "langgan", "w": 1, "lean": "ore" },
+      { "item": "shujin", "w": 1 },
+      { "item": "fangzi-canye", "w": 2, "lean": "herb", "hui": "h11" },
+      { "item": "bamboo-sword", "w": 1 },
+      { "item": "duan-dao", "w": 1, "hui": "h07" },
+      { "item": "pi-kanjian", "w": 1, "hui": "h07" },
+      { "item": "shi-zhui", "w": 1, "hui": "h07" }
     ],
-    "pills-best": [
-      { "item": "qi-pill-3", "w": 1 },
-      { "item": "mend-pill-3", "w": 1 }
-    ],
-    "fu": [
-      { "item": "talisman", "w": 3 },
-      { "item": "lianxi-fu", "w": 2 }
-    ],
-    "lucky": [
-      { "item": "baina-dai", "w": 1 },
-      { "item": "qi-pill-3", "w": 1 }
+    "best": [
+      { "item": "baina-dai", "w": 2 },
+      { "item": "pouch-low", "w": 2 },
+      { "wealth": [10, 10], "w": 2 },
+      { "item": "baoge-ling", "w": 2 },
+      { "item": "yinyue-lingdang", "w": 1 },
+      { "item": "qingtong-jian", "w": 1, "hui": "h07" },
+      { "item": "lipi-kanjian", "w": 1, "beast": "shanli" },
+      { "item": "chaiya-zhui", "w": 1, "beast": "chai" },
+      { "item": "anhe-yu", "w": 1, "hui": "h07" },
+      { "item": "qi-pill-9", "w": 1, "lean": "herb" },
+      { "item": "mend-pill-9", "w": 1, "lean": "herb" },
+      { "item": "foundation-pill", "w": 1, "lean": "herb" },
+      { "item": "foundation-pill-9", "w": 1, "lean": "herb" }
     ]
   },
+  "pages": {
+    "_about": "方子残页: every one that lands is counted on the save; at `need` the 方子 named by `recipe` is worked out (said once, kept in 录) — 古七's third 方子, 回气丹.",
+    "item": "fangzi-canye",
+    "need": 3,
+    "recipe": "huiqi"
+  },
   "recipes": {
-    "_about": "古七's 方子 (认出三张方子): the right thing with the right 灵石 says which pill — useful draws `out`, best draws `best`; the 纹 stay the roll's. Recorded on the save the first time one lands, and shown in 录. 回气丹 has no item yet, so its 方子 waits.",
+    "_about": "古七's 方子 (认出三张方子): exactly the right thing (alone) with the right 灵石 says which pill — the roll uses the recipe's `grades` (out of 100), 有用 gives `out`, 珍品 or 逆天 gives `best`; the 纹 stay the roll's. Recorded on the save the first time one lands (or, `pages`, when its pages are all found), and shown in 录. `hui`: the 回 it opens in.",
     "list": [
-      { "id": "huangjing", "in": "huangjing-gen", "lingshi": 1, "out": "qi-pill", "best": "qi-pill-3", "grades": { "junk": 40, "useful": 55, "best": 5 } },
-      { "id": "huangqi", "in": "huangqi-canzhu", "lingshi": 0, "out": "mend-pill", "best": "mend-pill-3", "grades": { "junk": 40, "useful": 55, "best": 5 } }
-    ]
+      { "id": "huangjing", "in": "huangjing-gen", "lingshi": 1, "out": "qi-pill", "best": "qi-pill-3", "hui": "h11", "grades": { "junk": 40, "useful": 55, "rare": 5 } },
+      { "id": "huangqi", "in": "huangqi-canzhu", "lingshi": 0, "out": "mend-pill", "best": "mend-pill-3", "hui": "h11", "grades": { "junk": 40, "useful": 55, "rare": 5 } },
+      { "id": "huiqi", "in": "fuling", "lingshi": 1, "out": "huiqi-pill", "best": "huiqi-pill", "hui": "h11", "pages": true, "grades": { "junk": 40, "useful": 60 } }
+    ],
+    "story": {
+      "_about": "The book's two fixed outputs (Hanli 10-20: 「剧情里小满的飞剑就是饭桶出的」): exactly these inputs, together, give this thing every time, with the biggest gold reveal. The story already hands both over on its own way on (09-snow `feed` grants 火柴 and takes the gourd; 09-xie `go` grants 顺风溜) — that grant stays the book's, so here each is a GUARD: its inputs are refused until the scene `after` is done, and once it is, the pot gives the thing only if he doesn't already hold it (else 「这一口，它吃过了」). Neither output is in any pool, so no lottery hands them out early. 顺风溜's inputs (鯥皮, 翅膜) and 火柴's 盾片 are not items yet: a row whose inputs aren't all items is dormant (the gourd alone stands for 火柴's pot until the shards are an item).",
+      "list": [
+        { "id": "huochai", "in": ["chitong-hulu"], "_in": "the book: 赤铜葫芦 + 七八瓣赤铜盾片 (no item for the shards)", "out": "huochai-jian", "after": "09-snow" },
+        { "id": "shunfeng", "in": ["lu-pi", "lu-chimo"], "_in": "the book: 鯥's hide and gliding membrane (neither is an item yet — dormant)", "out": "shunfeng-liu", "after": "09-xie" }
+      ]
+    }
   },
   "events": [
     {
@@ -88,7 +165,14 @@
       "full": "饭桶还撑着，{when}后再喂。",
       "no_bucket": "手里没有饭桶。",
       "not_feedable": "这个不能喂。",
-      "no_lingshi": "灵石不够。"
+      "no_lingshi": "灵石不够。",
+      "twin": "一锅出了两样，又吐出来：{name}。",
+      "spat_back": "饭桶嚼了两口，「呸」——原样吐了回来。",
+      "had": "饭桶闻了闻，扭过头去——这一口，它吃过了。",
+      "lingshi": "灵石",
+      "page": "又一张方子残页（{n}/{need}）。",
+      "too_many": "一锅最多三样。",
+      "grades": { "junk": "凡", "useful": "有用", "rare": "珍品", "best": "逆天" }
     },
     "en": {
       "spit": "*Crunch*, *click* — out comes: {name}.",
@@ -97,7 +181,14 @@
       "full": "The Rice Bucket is still full — feed it again {when}.",
       "no_bucket": "You have no Rice Bucket.",
       "not_feedable": "That won't go in.",
-      "no_lingshi": "Not enough spirit stones."
+      "no_lingshi": "Not enough spirit stones.",
+      "twin": "Two from one pot — out comes: {name}.",
+      "spat_back": "The Rice Bucket chews twice, goes *ptoo*, and spits the lot back whole.",
+      "had": "The Rice Bucket sniffs and turns away: it has eaten this mouthful before.",
+      "lingshi": "Spirit stones",
+      "page": "Another torn recipe page ({n}/{need}).",
+      "too_many": "Three things to a pot at most.",
+      "grades": { "junk": "Common", "useful": "Useful", "rare": "Treasure", "best": "Heaven-defying" }
     }
   }
 }

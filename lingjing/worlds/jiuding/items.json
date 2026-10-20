@@ -89,6 +89,10 @@
         "zh": "练气者的第一把剑，斩不了妖，斩得了心。佩之借木。",
         "en": "A first sword: it cuts no demon, only doubt. Worn, it lends 木."
       },
+      "hint": {
+        "zh": "竹子做的，也是剑。",
+        "en": "Bamboo, and still a sword."
+      },
       "sold": [
         "徐"
       ],
@@ -238,6 +242,10 @@
         "zh": "练气九层圆满者冲关时服之，多几分把握。一转下品，一道纹，几点黑斑——全观一年只这一颗。",
         "en": "Taken at the Consummation of Qi Condensation, it steadies the breakthrough a little. One-turn, low grade: one ring, a few dark flecks — the whole temple gets one a year."
       },
+      "hint": {
+        "zh": "门在那里，丹在这里。",
+        "en": "The door is there; the pill is here."
+      },
       "sold": [],
       "effect": {
         "progress": 40,
@@ -258,6 +266,10 @@
       "about": {
         "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有，一个字也没有。沉鼎观三百年最好的一炉是三转。",
         "en": "A foundation pill from the rice-tub furnace: clear as a drop of frozen dew, nine gold rings, not one dark fleck, not one word on it. The best batch the temple made in three hundred years was three-turn."
+      },
+      "hint": {
+        "zh": "（一个字也没有。）",
+        "en": "(Not one word on it.)"
       },
       "sold": [],
       "effect": {
@@ -390,6 +402,10 @@
         "zh": "小铜炉里出来的回春丹。药铺柜台上的是一转，一道纹；它九道，金的。骨伤也治得好，修为也跟着涨一截。拿出去卖，没人认得——认得的，更坏。",
         "en": "A mending pill out of the little furnace. The one on the shop counter is one-turn, one ring; this has nine, in gold. It mends even broken bone, and your cultivation climbs with it. Nobody would know it at a counter — and whoever did would be worse."
       },
+      "hint": {
+        "zh": "九道，金的。",
+        "en": "Nine rings, all gold."
+      },
       "sold": [],
       "effect": {
         "progress": 60,
@@ -409,6 +425,10 @@
       "about": {
         "zh": "残株炼的聚气丹，出炉九道金纹。坊市的聚气丹抵半日打坐；它抵三日。",
         "en": "A qi-gathering pill from the garden's culls, nine gold rings on it. The market's is worth half a day's sitting; this, three days."
+      },
+      "hint": {
+        "zh": "九道，一道不少。",
+        "en": "Nine rings, not one missing."
       },
       "sold": [],
       "effect": {
@@ -478,6 +498,10 @@
       "about": {
         "zh": "濮阳桑门的纸，写符最好。",
         "en": "Paper from Puyang's Mulberry Gate; the best for writing talismans."
+      },
+      "hint": {
+        "zh": "濮阳桑门。",
+        "en": "Puyang, Mulberry Gate."
       },
       "sold": [
         "兖"
@@ -780,6 +804,10 @@
         "zh": "寻常妖兽腹中所结，暖如活物。",
         "en": "Formed in an ordinary beast's belly; it is warm, like something living."
       },
+      "hint": {
+        "zh": "还是温的。",
+        "en": "Still warm."
+      },
       "sold": []
     },
     {
@@ -794,6 +822,10 @@
       "about": {
         "zh": "气已凝而不散，握之微微跳。",
         "en": "The breath in it holds together now; it beats faintly in the hand."
+      },
+      "hint": {
+        "zh": "握紧了，它会跳。",
+        "en": "Hold it tight; it jumps."
       },
       "sold": []
     },
@@ -865,6 +897,10 @@
         "zh": "荆州贡丹。红得像火，炼丹的人离不开它。",
         "en": "Jing sent cinnabar as tribute. Red as fire; no alchemist can do without it."
       },
+      "hint": {
+        "zh": "荆州贡。",
+        "en": "Tribute of Jing."
+      },
       "sold": [
         "荆",
         "豫"
@@ -884,6 +920,10 @@
         "zh": "蜀地的锦，要在锦江里洗，颜色才鲜。",
         "en": "The brocade of Shu; washed in the Brocade River its colours come up bright, and in any other river they dull."
       },
+      "hint": {
+        "zh": "锦江水洗。",
+        "en": "Washed in the Brocade River."
+      },
       "sold": [
         "梁",
         "豫"
@@ -902,6 +942,10 @@
       "about": {
         "zh": "雍州厥贡球、琳、琅玕。琅玕是青绿色的美石，圆得像珠子。",
         "en": "Yong's tribute was qiu and lin jade and langgan — a blue-green stone, round as pearls."
+      },
+      "hint": {
+        "zh": "雍州贡。",
+        "en": "Tribute of Yong."
       },
       "sold": [
         "雍",
@@ -965,6 +1009,10 @@
       "about": {
         "zh": "灰布袋子，口上一道绳。主人死了，袋上的印记散了，到你手里便开。换上它，储物袋多出六格。",
         "en": "A grey cloth bag with a drawstring. Its owner is dead and the mark on it has faded, so it opens to your hand. Carry it and your pouch holds six more kinds."
+      },
+      "hint": {
+        "zh": "主人已故。",
+        "en": "Owner deceased."
       },
       "sold": [],
       "effect": {
@@ -1168,6 +1216,10 @@
       "about": {
         "zh": "凡铁，刀口缺了两个牙，后来又缺了一个。秘境那道干了的暗河里，从一个死人手里一根一根掰开指头拿下来的。猎户放血，就使这么一把。",
         "en": "Common iron, two nicks in the edge, and later a third. Taken in the hidden realm's dry underground river from a dead man's hand, one stiff finger at a time. A hunter bleeds a deer with a knife like this."
+      },
+      "hint": {
+        "zh": "缺三个牙。",
+        "en": "Three nicks in the edge."
       },
       "sold": [],
       "effect": {
@@ -1636,6 +1688,132 @@
       "art_source": "The 中品储物袋's picture until its own is painted."
     },
     {
+      "id": "banjie-fanshao",
+      "kind": "material",
+      "name": {
+        "zh": "半截饭勺",
+        "en": "Half a rice ladle"
+      },
+      "art": "art/items/bamboo-sword.webp",
+      "about": {
+        "zh": "半截木饭勺，断口参差，像被什么咬掉的。勺柄上刻着几个米粒大的字：半截饭勺；底下一行更小的。",
+        "en": "Half a wooden rice ladle, the break ragged, as if bitten off. Rice-grain letters on the handle: Half a Rice Ladle; and a smaller line."
+      },
+      "hint": {
+        "zh": "前半截它吃了。",
+        "en": "It ate the front half."
+      },
+      "sold": [],
+      "_about": "Free play's 饭桶 · 开炉 (worlds/jiuding/fantong.json, Hanli 2026-10-20 prize table): 凡. Junk.",
+      "art_source": "The bamboo-sword picture until its own ink is painted; the small games show its comic icon (art/items-comic/banjie-fanshao.webp)."
+    },
+    {
+      "id": "yike-daya",
+      "kind": "material",
+      "name": {
+        "zh": "一颗大牙",
+        "en": "A big tooth"
+      },
+      "art": "art/items/chai-ya.webp",
+      "about": {
+        "zh": "一颗大臼齿，黄白，比拇指还粗，牙根上缠着一圈红线，线头系着一张小签：一颗大牙；底下一行更小的。",
+        "en": "A big yellow-white molar, thicker than a thumb, a red thread round its root and a little tag on it: A Big Tooth; and a smaller line."
+      },
+      "hint": {
+        "zh": "不是你的，也不是它的。",
+        "en": "Not yours. Not its either."
+      },
+      "sold": [],
+      "_about": "Free play's 饭桶 · 开炉 (worlds/jiuding/fantong.json, Hanli 2026-10-20 prize table): 凡. Junk.",
+      "art_source": "The chai-ya picture until its own ink is painted; the small games show its comic icon (art/items-comic/yike-daya.webp)."
+    },
+    {
+      "id": "yige-ge",
+      "kind": "material",
+      "name": {
+        "zh": "一个嗝",
+        "en": "A burp"
+      },
+      "art": "art/items/sang-paper.webp",
+      "about": {
+        "zh": "一个半透明的泡，拳头大，里面一团雾慢慢地转。泡皮上浮着几个字：一个嗝；底下一行更小的。",
+        "en": "A see-through bubble the size of a fist, a little fog turning slowly inside. Letters float on its skin: A Burp; and a smaller line."
+      },
+      "hint": {
+        "zh": "装在泡里，拿着别捏。",
+        "en": "Kept in a bubble. Don't squeeze."
+      },
+      "sold": [],
+      "_about": "Free play's 饭桶 · 开炉 (worlds/jiuding/fantong.json, Hanli 2026-10-20 prize table): 凡. Junk.",
+      "art_source": "The yicuo-hui picture until its own ink is painted; the small games show its comic icon (art/items-comic/yige-ge.webp)."
+    },
+    {
+      "id": "fangzi-canye",
+      "kind": "material",
+      "name": {
+        "zh": "方子残页",
+        "en": "Torn recipe page"
+      },
+      "art": "art/items/sang-paper.webp",
+      "about": {
+        "zh": "一角发黄的方子，烧去了一半，剩下的字缺胳膊少腿。纸背有人用朱笔写着：方子残页；底下一行更小的。",
+        "en": "A yellowed corner of a recipe, half burned away, the words left missing arms and legs. On the back, in red: Torn Recipe Page; and a smaller line."
+      },
+      "hint": {
+        "zh": "字缺一半，药香还在。",
+        "en": "Half the words are gone. The smell stays."
+      },
+      "sold": [],
+      "_about": "Free play's 饭桶 · 开炉 (worlds/jiuding/fantong.json, Hanli 2026-10-20 prize table): 珍品. Every one landed is counted (fantong.json `pages`); at three the 回气丹 方子 is worked out. From 古七 (h11).",
+      "art_source": "The sang-paper picture until its own ink is painted; the small games show its comic icon (art/items-comic/fangzi-canye.webp)."
+    },
+    {
+      "id": "baoge-ling",
+      "kind": "treasure",
+      "name": {
+        "zh": "饱嗝令",
+        "en": "Full-belly token"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "一块油亮的小木牌，牌面上一个胖胖的「嗝」字。背面刻着：饱嗝令；底下一行小字。",
+        "en": "A small greasy wooden token, one fat character for \"burp\" on its face. On the back: Full-Belly Token; and a line of small print."
+      },
+      "hint": {
+        "zh": "吃饱了，才有力气。",
+        "en": "A full belly has strength to spare."
+      },
+      "sold": [],
+      "effect": {
+        "waive": "game"
+      },
+      "_about": "Free play's 饭桶 · 开炉 (worlds/jiuding/fantong.json, Hanli 2026-10-20 prize table): 逆天. In the bag, the next hosted game that would cost 灵气 costs none, and one token is spent (effect `waive: game`, rules/core.mjs spendStamina).",
+      "art_source": "The talisman picture until its own ink is painted; the small games show its comic icon (art/items-comic/baoge-ling.webp)."
+    },
+    {
+      "id": "yinyue-lingdang",
+      "kind": "artifact",
+      "name": {
+        "zh": "银月的小铃铛",
+        "en": "Yinyue's little bell"
+      },
+      "art": "art/items/moon-bell.webp",
+      "about": {
+        "zh": "一只指甲盖大的银铃铛，系着一截红绳，摇起来声音细得像一根针。铃舌上刻着：银月的小铃铛；底下一行更小的。",
+        "en": "A silver bell no bigger than a fingernail on a stub of red cord; its ring is thin as a needle. On the clapper: Yinyue's Little Bell; and a smaller line."
+      },
+      "hint": {
+        "zh": "叮。",
+        "en": "Ting."
+      },
+      "sold": [],
+      "effect": {
+        "wear": "yinyue"
+      },
+      "_about": "Free play's 饭桶 · 开炉 (worlds/jiuding/fantong.json, Hanli 2026-10-20 prize table): 逆天, cosmetic: 银月 wears it (effect `wear: yinyue`, no `lift`) and nothing else. An artifact of hers, so it never goes back in (fantong.json never.kinds).",
+      "art_source": "The moon-bell picture until its own ink is painted; the small games show its comic icon (art/items-comic/yinyue-lingdang.webp)."
+    },
+    {
       "id": "qiuyu-ci",
       "kind": "weapon",
       "rarity": "common",
@@ -1690,6 +1868,10 @@
         "zh": "外圈石缝里埋着的一把青铜剑，不知是哪一回开秘境时留下的。绿锈底下，刃还亮。佩之借金。",
         "en": "A bronze sword buried in a crack of the outer ring, left from some earlier opening of the realm. Under the green rust the edge still shines. Worn, it lends 金."
       },
+      "hint": {
+        "zh": "锈底下还亮。",
+        "en": "Bright under the rust."
+      },
       "sold": [],
       "effect": {
         "root": "metal",
@@ -1710,6 +1892,10 @@
       "about": {
         "zh": "一件旧皮坎肩，前人丢在外圈的，皮子还韧。",
         "en": "An old hide vest someone left in the outer ring. The leather is still tough."
+      },
+      "hint": {
+        "zh": "前人的，皮还韧。",
+        "en": "Someone else's first. Still supple."
       },
       "sold": [],
       "effect": {
@@ -1750,6 +1936,10 @@
       "about": {
         "zh": "暗河床上捡的一颗卵石，穿了孔挂在颈上。土气沉，挡得住一点土行法术。",
         "en": "A pebble from the dry riverbed, bored and hung at the neck. Its earth is heavy enough to turn a little of an earth spell."
+      },
+      "hint": {
+        "zh": "河里捡的。",
+        "en": "Picked out of the river."
       },
       "sold": [],
       "effect": {
@@ -1794,6 +1984,10 @@
       "about": {
         "zh": "暗河底下一块青玉，摸着是暖的。土行水行的法术打到身上，都轻了。",
         "en": "A piece of green jade from the bottom of the dry river, warm to the touch. Earth and water spells land lighter."
+      },
+      "hint": {
+        "zh": "摸着是暖的。",
+        "en": "Warm to the touch."
       },
       "sold": [],
       "effect": {

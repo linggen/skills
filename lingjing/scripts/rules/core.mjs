@@ -190,6 +190,18 @@ const CHAPTER_COSTS = new Set(['step', 'duel', 'move']);
 const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
   && Boolean(content.chapters[s.chapter]?.free) && !s.ended.includes(s.chapter);
 
+/* A thing in the bag that waives one cost of this kind (items.json effect `waive`: 饱嗝令, from the 饭桶 —
+   「下一关主力游戏免灵气」): one is spent instead of the 灵气, and only when there was a cost to waive. */
+function waived(content, s, kind) {
+  const c = content.rewards?.stamina?.cost?.[kind];
+  if (!c || !staminaLimited(content)) return false;
+  const id = Object.keys(s.bag ?? {}).find(x => s.bag[x] > 0 && content.items.items.find(i => i.id === x)?.effect?.waive === kind);
+  if (!id) return false;
+  s.bag[id] -= 1;
+  if (s.bag[id] <= 0) delete s.bag[id];
+  return true;
+}
+
 /* 体力 is the only limit on a day's play (his, 2026-09-23): moving costs by
    the road, a fight, a 奇遇, a story step, a choice and a taming cost, and a
    hosted game (the six boards, 炼丹 among them, and 论道) costs what a step
@@ -198,6 +210,7 @@ const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
    `n` is how many. */
 function spendStamina(content, s, ctx, kind, n = 1, fixed = null) {
   if (freeHere(content, s, kind)) return null;
+  if (waived(content, s, kind)) return null;
   settleStamina(content, s, ctx.now);
   if (!staminaLimited(content)) return null;
   // A trip is paid as one (his, 2026-09-23: 几分钟消耗光 — seven roads at 3

@@ -1599,8 +1599,10 @@ function lintItems(content, bad) {
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
     // 伤势 and 强化 were cut (redesign-v2 § 四): no `mend`, no `temper`.
-    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card', 'fight'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, fight, or arms (atk, def, ward)');
+    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card', 'fight', 'waive'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, fight, waive, or arms (atk, def, ward)');
+    // `waive`: one cost of that kind not paid, the thing spent instead (饱嗝令, rules/core.mjs spendStamina) — a kind with a cost.
+    if (e.waive != null && !(content.rewards?.stamina?.cost?.[e.waive] > 0)) bad(where, `waives ${e.waive}, which costs nothing`);
     // A pill for the 丹囊 (battle.js § pills): one whole number, 气血 (`heal`) or 灵力 (`mana`), on a pill.
     if (e.fight != null && (item.kind !== 'pill' || Object.keys(e.fight).length !== 1 || !['heal', 'mana'].some(k => Number.isInteger(e.fight[k]) && e.fight[k] > 0))) bad(where, 'a fight effect is a pill\'s heal or mana, a whole number above zero');
     // A thing bought for the card it carries (2026-10-16, cards.md: 每张牌都在剧情里收集或者购买): the card names this item as its shop.

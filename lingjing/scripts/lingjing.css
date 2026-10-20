@@ -671,6 +671,14 @@ body.fighting .footrow { display: none; }
 .ftstone.on { border-color: var(--seal); background: var(--seal-soft); color: var(--seal); }
 .ftrecipes { width: 100%; display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--dim); }
 .lurecipe { margin: 2px 0; font-size: 13.5px; }
+.luftgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; margin-top: 6px; }
+.luft { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 6px 4px; border-radius: 10px; border: 2px solid #9aa0a6; background: rgba(154, 160, 166, .08); }
+.luft img, .luft i { width: 48px; height: 48px; object-fit: contain; font-style: normal; font-size: 28px; line-height: 48px; }
+.luft b { font-size: 13px; }
+.luft small { font-size: 11px; opacity: .7; line-height: 1.3; }
+.luft.g-useful { border-color: #4a90e2; background: rgba(74, 144, 226, .08); }
+.luft.g-rare { border-color: #9b59d0; background: rgba(155, 89, 208, .1); }
+.luft.g-best { border-color: #e2b13c; background: rgba(226, 177, 60, .14); box-shadow: 0 0 10px rgba(226, 177, 60, .35); }
 @media (max-width: 560px) {
   .pbody { grid-template-columns: minmax(0, 1fr); }
   .pgrid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }

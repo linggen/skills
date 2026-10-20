@@ -18,7 +18,7 @@ import { gated } from './locks.mjs';
 import { look, stageAt } from './look.mjs';
 import { examine } from './examine.mjs';
 import { stageTurn } from './gates.mjs';
-import { fantong, fantongOpen, fantongRecipes } from './fantong.mjs';
+import { fantong, fantongBook, fantongOpen, fantongRecipes } from './fantong.mjs';
 import { mishi } from './mishi.mjs';
 import { kao } from './kao.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
@@ -62,10 +62,11 @@ export const VERBS = gated({
   twenty, haggle, case: caseVerb,
   // 对对子 (rules/duizi.mjs): the page opens and submits, Ling grades, 银月 hints and offers.
   duizi,
-  // 录 shows the 饭桶's 方子 found so far (rules/fantong.mjs).
+  // 录 shows the 饭桶's 方子 found so far and its 图鉴 (rules/fantong.mjs).
   story: (s, c, x, args) => {
     const out = story(s, c, x, args), found = out.result?.ok ? fantongRecipes(c, s) : [];
-    return found.length ? { ...out, result: { ...out.result, fantong: found } } : out;
+    const book = out.result?.ok ? fantongBook(c, s) : null; // and its 图鉴: every thing that has come out
+    return found.length || book ? { ...out, result: { ...out.result, ...(found.length ? { fantong: found } : {}), ...(book ? { fantong_book: book } : {}) } } : out;
   },
   // `fantong`: the 物品 panel's 饭桶 chip shows once he holds it.
   gear: (s, c, x) => ({ state: null, result: { ok: true, gear: { ...gearBrief(c, s, x?.now), ...(fantongOpen(c, s) ? { fantong: true } : {}) } } }),
