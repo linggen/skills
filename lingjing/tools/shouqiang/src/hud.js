@@ -7,10 +7,12 @@ import { FONT } from './fx.js';
 export const WORDS = {
   zh: { wave: '波次', waveN: (n) => `第 ${n} 波`, cleared: '守住了！', pick: '选一张符', fresh: '新', lv: (n) => `Lv.${n}`,
     boss: '合窳 来袭', bossName: '合窳', wail: '哇——哇——', roar: '吼——！', won: '山门守住了！', lost: '山门破了', kills: (n) => `击退 ${n}`,
-    wallLeft: (p) => `城墙 ${p}%`, paused: '暂停', resume: '点一下继续', next: '下一波', focus: '点兽群里一只：集火它' },
+    wallLeft: (p) => `城墙 ${p}%`, paused: '暂停', resume: '点一下继续', next: '下一波', focus: '点兽群里一只：集火它',
+    place: '点一张符，再点畦里一格', wonLanes: '药园守住了！', lostLanes: '药园失守了' },
   en: { wave: 'Wave', waveN: (n) => `Wave ${n}`, cleared: 'Held!', pick: 'Pick a talisman', fresh: 'NEW', lv: (n) => `Lv.${n}`,
     boss: 'The Heyu comes', bossName: 'Heyu', wail: 'Waaah—', roar: 'ROAAAR!', won: 'The gate holds!', lost: 'The gate fell', kills: (n) => `${n} driven off`,
-    wallLeft: (p) => `Wall ${p}%`, paused: 'Paused', resume: 'Tap to go on', next: 'Next wave', focus: 'Tap a beast: everyone hits it' },
+    wallLeft: (p) => `Wall ${p}%`, paused: 'Paused', resume: 'Tap to go on', next: 'Next wave', focus: 'Tap a beast: everyone hits it',
+    place: 'Tap a talisman, then a bed cell', wonLanes: 'The garden holds!', lostLanes: 'The garden fell' },
 };
 
 const FAMILY = {
@@ -119,6 +121,8 @@ function makeHudTextures(scene) {
     c.fillStyle = 'rgba(255,255,255,0.6)'; c.beginPath(); c.ellipse(13, 13, 4, 3, -0.6, 0, Math.PI * 2); c.fill();
   });
 }
+
+const cardOf = (g, id) => g.kit.cards.find((k) => k.id === id) ?? g.kit.unitCards?.find((k) => k.id === id);
 
 export class Hud {
   constructor(scene, { depth, modal }) {
@@ -235,7 +239,7 @@ export class Hud {
         this.s.shake(260, 0.008);
       } else this.storyLine(str, slot);
     }));
-    this.s.time.delayedCall(Math.max(0, (sec - 2.5) * 1000), () => this.hint(this.w.focus));
+    this.s.time.delayedCall(Math.max(0, (sec - 2.5) * 1000), () => this.hint(this.s.g.grid ? this.w.place : this.w.focus));
   }
 
   storyLine(str, slot) {
@@ -311,10 +315,10 @@ export class Hud {
 
   card(id, g, x, y) {
     const s = this.s;
-    const c = g.kit.cards.find((k) => k.id === id);
+    const c = cardOf(g, id);
     const have = g.skills[id] ?? 0;
     const bg = s.add.image(0, 0, `card-${c.family}`);
-    const icon = s.add.image(-160, -2, `icon-${id}`).setDisplaySize(104, 104);
+    const icon = s.add.image(-160, -2, s.tex(c.icon ?? `icon-${id}`, 'icon-jian-more')).setDisplaySize(104, 104);
     const name = this.text(-95, -30, c.name[this.lang] ?? c.name.zh, 28, { color: '#fffbe8', origin: 0 });
     const say = this.text(-95, 18, c.say[this.lang] ?? c.say.zh, 19, { color: '#fff3d0', origin: 0, wrap: 320 });
     const lvl = have ? this.w.lv(have + 1) : this.w.fresh;
@@ -332,21 +336,49 @@ export class Hud {
     const s = this.s;
     let entry = this.skillIcons.get(id);
     if (!entry) {
-      const i = this.skillIcons.size;
-      const y = 150 + i * 62;
-      const icon = s.add.image(W / 2, H / 2, `icon-${id}`).setDisplaySize(54, 54).setDepth(this.d);
-      const badge = s.add.image(W - 22, y + 18, 'badge').setScale(0.6).setDepth(this.d + 1).setAlpha(0);
-      const n = this.text(W - 22, y + 17, '1', 15, { color: '#ffffff' }).setDepth(this.d + 2).setAlpha(0);
-      entry = { icon, badge, n, y };
+      const c = cardOf(g, id);
+      const icon = s.add.image(W / 2, H / 2, s.tex(c.icon ?? `icon-${id}`, 'icon-jian-more')).setDisplaySize(54, 54).setDepth(this.d);
+      const badge = s.add.image(0, 0, 'badge').setScale(0.6).setDepth(this.d + 1).setAlpha(0);
+      const n = this.text(0, 0, '1', 15, { color: '#ffffff' }).setDepth(this.d + 2).setAlpha(0);
+      entry = { icon, badge, n, i: this.skillIcons.size };
       this.skillIcons.set(id, entry);
+      const at = this.iconAt(entry.i);
+      badge.setPosition(at.x + 16, at.y + 18); n.setPosition(at.x + 16, at.y + 17);
       icon.setScale(icon.scaleX * 2.2);
-      s.tweens.add({ targets: icon, x: W - 38, y, scaleX: 54 / icon.width, scaleY: 54 / icon.height, duration: 520, ease: 'Cubic.inOut',
-        onComplete: () => { s.tweens.add({ targets: [badge, n], alpha: 1, duration: 150 }); s.em.burst('spark', 10, W - 38, y); } });
+      s.tweens.add({ targets: icon, x: at.x, y: at.y, scaleX: at.size / icon.width, scaleY: at.size / icon.height, duration: 520, ease: 'Cubic.inOut',
+        onComplete: () => { s.tweens.add({ targets: [badge, n], alpha: 1, duration: 150 }); s.em.burst('spark', 10, at.x, at.y); } });
     } else {
+      const at = this.iconAt(entry.i);
       s.tweens.add({ targets: entry.icon, scaleX: entry.icon.scaleX * 1.3, scaleY: entry.icon.scaleY * 1.3, duration: 160, yoyo: true });
-      s.em.burst('spark', 10, W - 38, entry.y);
+      s.em.burst('spark', 10, at.x, at.y);
     }
     entry.n.setText(String(g.skills[id]));
+  }
+
+  // Where the i-th held card's icon sits: the 山门, a column down the right edge; the 药园 in portrait, a row along the
+  // bottom right (the right edge is lane 5's beds); in landscape, a grid in the right panel under 银月.
+  iconAt(i) {
+    if (!this.s.g.grid) return { x: W - 38, y: 150 + i * 62, size: 54 };
+    if (this.landscape) return { x: W + 70 + (i % 3) * 60, y: 520 + Math.floor(i / 3) * 64, size: 50 };
+    return { x: W - 30 - (i % 4) * 44, y: 880 - Math.floor(i / 4) * 44, size: 38 };
+  }
+
+  /** Re-place the held cards' icons for the layout (option A: landscape moves them into the right panel). */
+  layout(landscape) {
+    this.landscape = landscape;
+    for (const e of this.skillIcons.values()) {
+      const at = this.iconAt(e.i);
+      e.icon.setPosition(at.x, at.y).setDisplaySize(at.size, at.size);
+      e.badge.setPosition(at.x + 16, at.y + 18);
+      e.n.setPosition(at.x + 16, at.y + 17);
+    }
+  }
+
+  /** A short word that floats up and fades (a placement refused, …). */
+  floatText(x, y, str, color = '#ffffff') {
+    if (!str) return;
+    const t = this.text(x, y, str, 20, { color }).setDepth(this.d + 4);
+    this.s.tweens.add({ targets: t, y: y - 34, alpha: 0, delay: 500, duration: 500, onComplete: () => t.destroy() });
   }
 
   showPause(on) {
@@ -364,7 +396,8 @@ export class Hud {
     this.modalOpen = true;
     const dim = s.add.rectangle(W / 2, H / 2, W, H, 0x0a0614, 0.6).setDepth(this.dm).setInteractive().setAlpha(0);
     s.tweens.add({ targets: dim, alpha: 1, duration: 300 });
-    const title = this.banner(won ? this.w.won : this.w.lost, { size: 52, y: 330, hold: 1e9, color: won ? '#fff2a8' : '#d8d8d8' });
+    const words = g.grid ? [this.w.wonLanes, this.w.lostLanes] : [this.w.won, this.w.lost];
+    const title = this.banner(won ? words[0] : words[1], { size: 52, y: 330, hold: 1e9, color: won ? '#fff2a8' : '#d8d8d8' });
     title.setDepth(this.dm + 1);
     [0, 1, 2].forEach((i) => {
       const x = W / 2 + (i - 1) * 110, y = 470 - (i === 1 ? 24 : 0);

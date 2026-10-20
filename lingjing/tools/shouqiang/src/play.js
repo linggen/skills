@@ -4,6 +4,7 @@ import * as Phaser from 'phaser';
 import { newGame, step, pick, setFocus, reachY, HERO, FOX, W, H } from 'shouqiang-core';
 import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
 import { Hud, WORDS, bar, setBarW } from './hud.js';
+import { LaneView, SIDE } from './lanes.js';
 
 const ICONS = ['jian-more', 'jian-pierce', 'jian-arc', 'huo-blast', 'huo-ground', 'han-slow', 'han-freeze', 'lei-chain', 'lei-strike', 'yy-foxfire', 'yy-howl'];
 const HIT_TINT = { sword: 0xffffff, fire: 0xffb347, frost: 0x9fe8ff, thunder: 0xfff27a, fox: 0xcfe0ff, howl: 0xd9c2ff, ground: 0xff9a52 };
@@ -32,6 +33,7 @@ export class PlayScene extends Phaser.Scene {
     for (const k of ['bg', 'wall', 'xiaoman-idle', 'xiaoman-cast', 'fu-huo', 'fu-han', 'fu-lei', 'sword']) img(k);
     for (const [b, k] of Object.entries(this.cfg.kit.beasts)) for (const f of k.frames ?? []) img(`${b}-${f}`);
     for (const k of ICONS) img(`icon-${k}`);
+    if (this.cfg.level.grid) LaneView.preload(this, this.cfg.level, art);
     const yy = `${this.cfg.base}../shoulu/art/`;
     this.load.image('yy-sheet', `${yy}yinyue.webp`);
     this.load.image('yy-skills', `${yy}yinyue-skills.webp`);
@@ -46,7 +48,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /** A texture that loaded, else its stand-in (a beast's second walk frame → its first). */
-  tex(k, fallback) { return this.missing.has(k) || !this.textures.exists(k) ? fallback : k; }
+  tex(k, fallback) { return !k || this.missing.has(k) || !this.textures.exists(k) ? fallback : k; }
 
   create() {
     const { kit, level, seed, reducedMotion } = this.cfg;
@@ -73,10 +75,13 @@ export class PlayScene extends Phaser.Scene {
     this.zapT = 0;
     this.reticle = this.add.image(0, 0, 'reticle').setDepth(D.num - 2).setVisible(false).setScale(0.8);
     this.hud = new Hud(this, { depth: D.hud, modal: D.modal });
+    this.lanes = level.grid ? new LaneView(this, D) : null;
     this.paused = false;
     this.input.on('pointerdown', (p) => this.tapField(p));
+    this.input.on('pointerup', (p) => this.lanes?.release(p));
     this.events.once('shutdown', () => this.hud.destroy());
     this.hud.lead(level.lead, level.leadSec ?? 5);
+    if (this.lanes) this.layout(Boolean(this.cfg.landscape));
     this.fact({ t: 'start', level: level.id });
   }
 
@@ -94,16 +99,20 @@ export class PlayScene extends Phaser.Scene {
   // ---- the stage ---------------------------------------------------------------------------------------------
 
   world() {
-    const bg = this.add.image(W / 2, H / 2, 'bg').setDepth(D.bg);
+    const art = this.g.level.art ?? {};
+    const bg = this.add.image(W / 2, H / 2, this.tex(art.bg, 'bg')).setDepth(D.bg);
     bg.setScale(Math.max(W / bg.width, H / bg.height) * 1.02);
-    // The light band (a slow diagonal shaft over the road) and the vignette: the reference's lighting.
-    this.band = this.add.image(W * 0.55, H * 0.36, 'band').setDepth(D.light).setBlendMode(Phaser.BlendModes.ADD)
-      .setAngle(-28).setDisplaySize(W * 2.2, 230).setAlpha(0.42);
-    if (!this.calm) this.tweens.add({ targets: this.band, alpha: 0.26, x: W * 0.47, duration: 5200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    // The light band (a slow diagonal shaft over the road) and the vignette: the reference's lighting. The 药园 is at
+    // night: no sun shaft there.
+    if (!this.g.grid) {
+      this.band = this.add.image(W * 0.55, H * 0.36, 'band').setDepth(D.light).setBlendMode(Phaser.BlendModes.ADD)
+        .setAngle(-28).setDisplaySize(W * 2.2, 230).setAlpha(0.42);
+      if (!this.calm) this.tweens.add({ targets: this.band, alpha: 0.26, x: W * 0.47, duration: 5200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    }
     this.add.image(W / 2, H / 2, 'vignette').setDisplaySize(W, H).setDepth(D.light + 1);
     this.rangeLine();
     const wy = this.g.level.wallY;
-    this.wall = this.add.image(W / 2, wy - 22, 'wall').setOrigin(0.5, 0).setDepth(D.wall);
+    this.wall = this.add.image(W / 2, wy - 22, this.tex(art.wall, 'wall')).setOrigin(0.5, 0).setDepth(D.wall);
     this.wall.setScale((W + 30) / this.wall.width);
     this.wallX = this.wall.x;
     this.add.image(HERO.x, HERO.y + 26, 'shadow').setDepth(D.hero - 1).setScale(1.3, 1.2);
@@ -142,11 +151,24 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  /** Option A: landscape puts the same portrait field in the middle with side panels; portrait shows the field alone. */
+  layout(landscape) {
+    if (!this.lanes) return;
+    const z = this.cameras.main.zoom;
+    const gw = landscape ? W + 2 * SIDE : W;
+    this.scale.setGameSize(Math.round(gw * z), Math.round(H * z));
+    this.cameras.main.setSize(Math.round(gw * z), Math.round(H * z)).setZoom(z).centerOn(W / 2, H / 2);
+    this.lanes.layout(landscape);
+    this.hud.layout(landscape);
+  }
+
   // ---- input ---------------------------------------------------------------------------------------------------
 
   tapField(p) {
     if (this.hud.modalOpen || this.paused) return;
     const wp = this.cameras.main.getWorldPoint(p.x, p.y);
+    if (wp.x < 0 || wp.x > W) return;
+    if (this.lanes?.tap(wp)) return;
     if (wp.y > this.g.level.wallY + 30) return;
     let best = null, bd = 80;
     for (const b of this.g.beasts) {
@@ -186,6 +208,7 @@ export class PlayScene extends Phaser.Scene {
     this.syncGrounds();
     this.moveNums(dt);
     this.heroes(dt);
+    this.lanes?.update(dt);
     if (this.zapT > 0 && (this.zapT -= dt) <= 0) this.zap.clear();
     this.hud.update(this.g, dt, this.game.loop.actualFps);
   }
@@ -208,8 +231,9 @@ export class PlayScene extends Phaser.Scene {
     this.em.budget = now.budget * (this.calm ? 0.45 : 1);
     const zoom = Math.min(this.cfg.zoom ?? 1, now.zoom ?? Infinity);
     if (zoom !== Math.min(this.cfg.zoom ?? 1, was.zoom ?? Infinity)) {
-      this.scale.resize(Math.round(W * zoom), Math.round(H * zoom));
-      this.cameras.main.setZoom(zoom).centerOn(W / 2, H / 2);
+      const gw = this.lanes?.landscape ? W + 2 * SIDE : W;
+      this.scale.setGameSize(Math.round(gw * zoom), Math.round(H * zoom));
+      this.cameras.main.setSize(Math.round(gw * zoom), Math.round(H * zoom)).setZoom(zoom).centerOn(W / 2, H / 2);
     }
     this.fact({ t: 'quality', q });
   }
@@ -245,7 +269,7 @@ export class PlayScene extends Phaser.Scene {
     if (f) this.reticle.setPosition(f.x, f.y - this.kit(f).size * 0.42).setAngle(time / 8);
   }
 
-  kit(b) { return this.g.kit.beasts[b.kind]; }
+  kit(b) { return this.g.beastKit[b.kind]; }
 
   makeBeast(b) {
     const k = this.kit(b);
@@ -277,7 +301,7 @@ export class PlayScene extends Phaser.Scene {
     const step = Math.sin(s.phase);
     const lift = b.fly ? 34 + Math.sin(time / 180 + s.phase) * 6 : Math.abs(step) * 4;
     const lunge = b.atWall && !held ? Math.max(0, Math.sin(s.phase * 0.7)) * 10 : 0;
-    s.spr.setPosition(b.x, b.y - lift + lunge).setDepth(D.beast + b.y / 1000);
+    s.spr.setPosition(b.x, b.y - lift + lunge - (b.z ?? 0)).setDepth(D.beast + b.y / 1000 + (b.z ? 0.2 : 0));
     s.shadow.setPosition(b.x, b.y + 2).setAlpha(b.fly ? 0.45 : 0.8);
     const key = s.hitT > 0 ? s.hit : s.frames[(Math.floor(s.phase / Math.PI) & 1)];
     if (s.spr.texture.key !== key) s.spr.setTexture(key);
@@ -361,13 +385,19 @@ export class PlayScene extends Phaser.Scene {
       huo: () => [this.add.image(sh.x, sh.y, 'fu-huo').setDisplaySize(26, 54).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.5)],
       han: () => [this.add.image(sh.x, sh.y, 'fu-han').setDisplaySize(26, 54).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.5)],
     };
+    if (sh.lane != null) return { kind: sh.kind, parts: this.lanes.boltParts(sh), t: 0 };
     if (sh.kind === 'foxfire' && !this.textures.get('yy-skills').has('foxfire-1')) return { kind: sh.kind, parts: SHOTS.fox() };
     return { kind: sh.kind, parts: SHOTS[sh.kind](), t: 0 };
   }
 
   poseShot(s, sh, dt) {
-    const [p, shadow] = s.kind === 'sword' ? [s.parts[1], s.parts[0]] : s.parts;
+    const [p, shadow] = s.kind === 'sword' || sh.lane != null ? [s.parts[1], s.parts[0]] : s.parts;
     s.t += dt;
+    if (sh.lane != null) {
+      p.setPosition(sh.x, sh.y);
+      shadow.setPosition(sh.x, sh.y);
+      return;
+    }
     if (sh.lob) {
       p.setPosition(sh.x, sh.y - (sh.z ?? 0)).setAngle(s.t * 900);
       shadow?.setPosition(sh.x, sh.y);
@@ -453,7 +483,10 @@ export class PlayScene extends Phaser.Scene {
 
   // ---- events → juice ------------------------------------------------------------------------------------------
 
-  on(e) { this.ON[e.t]?.call(this, e); }
+  on(e) {
+    this.ON[e.t]?.call(this, e);
+    this.lanes?.on(e);
+  }
 
   ON = {
     hit(e) {
@@ -468,7 +501,7 @@ export class PlayScene extends Phaser.Scene {
     },
     kill(e) {
       const s = this.beasts.get(e.id);
-      const size = this.g.kit.beasts[e.kind].size;
+      const size = this.g.beastKit[e.kind].size;
       this.em.burst('poof', e.boss ? 24 : 7, e.x, e.y - size * 0.3);
       this.em.burst('stars', e.boss ? 18 : 4, e.x, e.y - size * 0.5);
       this.em.burst('gold', e.boss ? 20 : 2, e.x, e.y - size * 0.4);
@@ -558,10 +591,15 @@ export class PlayScene extends Phaser.Scene {
       }
     },
     ground() {},
-    spawn() {},
+    spawn(e) {
+      // 银月's line for the level's new beast, the first time it shows (the lesson comes with the beast).
+      if (this.g.grid && e.kind === this.g.level.twist && !this.twistSaid) { this.twistSaid = true; this.time.delayedCall(1200, () => this.moment('twist')); }
+    },
+    huge() { this.moment('huge'); this.fact({ t: 'huge' }); },
     picked(e) { this.hud.picked(e.id, this.g); },
     wave(e) {
-      this.hud.waveBanner(e.n, e.of);
+      if (this.g.level.huge?.includes(e.n)) this.time.delayedCall(1500, () => this.hud.waveBanner(e.n, e.of));
+      else this.hud.waveBanner(e.n, e.of);
       this.fact({ t: 'wave', n: e.n });
     },
     clear(e) {
@@ -612,7 +650,8 @@ export class PlayScene extends Phaser.Scene {
   }
 
   say(who, text) {
-    const at = who === 'xiaoman' ? [HERO.x + 30, HERO.y - 130] : [FOX.x - 10, FOX.y - 90];
+    const yy = this.lanes?.yyAt();
+    const at = who === 'xiaoman' ? [HERO.x + 30, HERO.y - 130] : yy ? [yy.x, yy.y] : [FOX.x - 10, FOX.y - 90];
     this.hud.bubbleAt(at[0], at[1], text, 2200);
   }
 

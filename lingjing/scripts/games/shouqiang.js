@@ -6,13 +6,15 @@
 //
 //   mount(container, { lang, data, signal, reducedMotion, seed, lines, onEvent }) → Promise<{ won, stars, stats } | { left }>
 //
-// `data.lv` / the page's `?lv=` picks a level row by id or 1-based number (one level today). Nothing touches the save.
+// `data.lv` / the page's `?lv=` picks a level row by id or 1-based number: 1 the 山门, 2–5 the 药园 (talismans in
+// lanes). A 药园 level in a landscape window gets option A (Hanli 10-20 「竖屏, 横屏可以切换?」「按A可以」): the same
+// portrait field centred with side panels; turning the window flips it live. Nothing touches the save.
 export const meta = {
   id: 'shouqiang',
-  name: { zh: '守墙关 · 守山门', en: 'Hold the Wall' },
+  name: { zh: '守墙关', en: 'Hold the Wall' },
   how: {
-    zh: '兽潮下山，小满和银月在墙上自动出手。每守住一波，三张符里挑一张；点一只兽，大家集火它。',
-    en: 'Beasts pour down the road; Xiaoman and Yinyue fight on their own. After each wave pick 1 of 3 talismans; tap a beast to focus it.',
+    zh: '兽潮下山，小满和银月在墙上自动出手。每守住一波，三张符里挑一张；点一只兽，大家集火它。第二关起在药园布符：聚灵阵攒灵气，剑符守一畦。',
+    en: 'Beasts pour down the road; Xiaoman and Yinyue fight on their own. After each wave pick 1 of 3 talismans; tap a beast to focus it. From level 2, set talismans in the herb garden: spirit arrays for qi, sword talismans for a bed.',
   },
 };
 
@@ -38,9 +40,19 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   const doc = container.ownerDocument;
   const box = doc.createElement('div');
   box.className = 'shouqiang-stage';
-  // Portrait 9:16, as tall as the window lets it (a phone fills its width; a desk gets a tall column).
+  // Portrait 9:16, as tall as the window lets it (a phone fills its width; a desk gets a tall column). A 药园 level in
+  // a landscape window: the field plus two side panels (W + 2·SIDE : H = 1040 : 960).
   box.style.cssText = 'position:relative;overflow:hidden;border-radius:12px;background:#1a2416;touch-action:none;'
-    + 'aspect-ratio:9/16;width:min(100%, calc((100dvh - var(--game-reserve, 150px)) * 9 / 16));margin:0 auto;user-select:none;-webkit-user-select:none';
+    + 'margin:0 auto;user-select:none;-webkit-user-select:none';
+  const win = doc.defaultView ?? globalThis;
+  const wide = () => (win.innerWidth ?? 0) > (win.innerHeight ?? 1) * 1.05;
+  const shape = (lanes) => {
+    const [a, b] = lanes && wide() ? [1040, 960] : [9, 16];
+    box.style.aspectRatio = `${a}/${b}`;
+    box.style.width = `min(100%, calc((100dvh - var(--game-reserve, 150px)) * ${a} / ${b}))`;
+    return lanes && wide();
+  };
+  shape(false);
   container.replaceChildren(box);
   const search = globalThis.location?.search ?? '';
   const q = new URLSearchParams(search);
@@ -48,16 +60,23 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   return new Promise((resolve) => {
     let game = null, done = false;
     const finish = (r) => { if (!done) { done = true; resolve(r); } };
-    const leave = () => { game?.destroy(); game = null; finish({ won: false, left: true }); };
+    let onResize = null;
+    const leave = () => { if (onResize) win.removeEventListener('resize', onResize); game?.destroy(); game = null; finish({ won: false, left: true }); };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
     Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), loadFont(doc)]).then(([kit, { start }]) => {
       if (done) return;
+      const level = levelAsked(kit, data, search);
+      let landscape = shape(Boolean(level.grid));
       game = start({
         parent: box, base: new URL('./shouqiang/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
-        kit, level: levelAsked(kit, data, search), seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent,
-        onEnd: (r) => finish(r),
+        kit, level, seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, landscape,
+        onEnd: (r) => { if (onResize) win.removeEventListener('resize', onResize); finish(r); },
       });
+      if (level.grid) {
+        onResize = () => { const now = shape(true); if (now !== landscape) { landscape = now; game?.layout(now); } };
+        win.addEventListener('resize', onResize);
+      }
     }, () => {
       box.textContent = lang === 'en' ? 'The game did not load.' : '游戏没加载出来。';
       finish({ won: false, left: true });
