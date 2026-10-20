@@ -114,8 +114,11 @@ Design for both from the start:
 ## Not on linggensite
 
 The source of truth is this repo, and the games ship inside the skill (Mac) and inside the app
-(phone). Skills don't phone home, and the games play offline. linggensite may later host a
-playable **demo** (a level or two of 砸寨 or 守炉) as launch material, once the games are polished.
+(phone), so they play offline and the game always matches its level data. Later, optionally, a
+**hot update**: the app checks linggen.dev for a newer game bundle, verifies and caches it, and
+falls back to the built-in one. That needs versioned level data and a check of Apple's current
+terms on remote code. linggensite may also host a playable **demo** (a level or two of 砸寨 or
+守炉) as launch material, once the games are polished.
 
 ## Risks
 
