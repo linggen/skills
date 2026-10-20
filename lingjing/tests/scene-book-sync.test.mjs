@@ -29,7 +29,7 @@ const BRANCHES = new Set([
 ]);
 // Game-only bridge paragraphs inside book passages: scene (or scene/exit) → opening words.
 const BRIDGES = [
-  ['wm-chu/rest', '腊月初七，离冬月初一周衡在执事房门口'],
+  ['wm-luobo/on', '腊月初七，离冬月初一周衡在执事房门口'],
   ['wm-mijing/pay', '执事房外头那片空场上'],
 ];
 

@@ -66,8 +66,9 @@ function thing(s, r) {
 }
 
 /* The 饭桶 eats: a gulp (it squats, then hops), a shake that dies away, a puff of steam from the lid,
-   and a 「嗝」 seal pressed beside it. Reduced motion: the seal only. */
-function target(s, calm) {
+   and a 「嗝」 seal pressed beside it. Reduced motion: the seal only. A story beat that feeds the 饭桶
+   (ropebeats.js 喂息珠) lays the same pot. */
+export function target(s, calm) {
   const [mx, my] = s.level.mouth, x = mx - POT_W / 2, y = my - RIM * POT_H, eating = s.phase === 'eat' && !calm;
   const t = s.t ?? 0;
   const gulp = eating ? (t < 260 ? -Math.sin((t / 260) * Math.PI) * 0.5 : Math.sin(Math.min(1, (t - 260) / 360) * Math.PI)) : 0;

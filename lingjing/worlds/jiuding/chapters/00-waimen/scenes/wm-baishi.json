@@ -35,8 +35,19 @@
   }
  },
  "story": {
-  "zh": "大比过后的第三天，腊月十一，小满挑水路过山门，瞿老正在山门台阶上扫地，扫帚忽然停了：「把桶放下。」",
-  "en": "On the third day after the contest, the eleventh of the twelfth month, Xiaoman was carrying water past the mountain gate. Elder Qu was sweeping the steps of the mountain gate, and his broom suddenly stopped: \"Put the buckets down.\""
+  "zh": "大比过后的第三天，腊月十一，小满挑水路过山门，瞿老正在山门台阶上扫地，扫帚忽然停了：「把桶放下。」\n\n小满把水桶放下。瞿老道：「跟我来。」扛起扫帚便往后山走。",
+  "en": "On the third day after the contest, the eleventh of the twelfth month, Xiaoman was carrying water past the mountain gate. Elder Qu was sweeping the steps of the mountain gate, and his broom suddenly stopped: \"Put the buckets down.\"\n\nXiaoman put the buckets down. Elder Qu said: \"Come with me.\" He shouldered his broom and set off up the back of the mountain."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "baishi-houshan"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "baishi-houshan"
+  ]
  },
  "lines": [],
  "buttons": [
@@ -51,11 +62,19 @@
    },
    "means": "sets down the water and follows Elder Qu",
    "story": {
-    "zh": "小满把水桶放下。瞿老道：「跟我来。」扛起扫帚便往后山走。山路越走越窄，窄得只容得下一只脚，小满跟在后头，气也不粗。瞿老头也不回：「四层了。腿倒比上回稳。」",
-    "en": "Xiaoman put the buckets down. Elder Qu said: \"Come with me.\" He shouldered his broom and set off up the back of the mountain. The path got narrower and narrower, until there was room for only one foot, and Xiaoman, following behind, didn't even breathe hard. Elder Qu didn't look back: \"Fourth layer now. Your legs are steadier than last time.\""
+    "zh": "山路越走越窄，窄得只容得下一只脚，小满跟在后头，气也不粗。瞿老头也不回：「四层了。腿倒比上回稳。」",
+    "en": "The path got narrower and narrower, until there was room for only one foot, and Xiaoman, following behind, didn't even breathe hard. Elder Qu didn't look back: \"Fourth layer now. Your legs are steadier than last time.\""
    },
    "beat": [],
-   "next": "wm-caowu"
+   "next": "wm-caowu",
+   "needs": {
+    "task": "baishi-houshan"
+   },
+   "refuse": {
+    "zh": "瞿老已经上了后山——跟上，气别粗。",
+    "en": "Elder Qu is already up the back of the mountain — keep up, and keep the breath easy."
+   }
   }
- ]
+ ],
+ "_beats": "2026-10-20 (Hanli: 「剧情连续阅读太长的地方, 你处理一下, 看是否可以加个小游戏等」; the standing rule of 10-19): 家信 → the end of 古六 read 1,635 字 without play. The walk up the back of the mountain is the book's own test of his breath — 「山路越走越窄，窄得只容得下一只脚，小满跟在后头，气也不粗。」 — so 后山 · 一只脚宽 (a 气走经脉 level, games.json qimai `houshan`) plays it, between 「跟我来」 and 瞿老's 「四层了。腿倒比上回稳。」; the 收徒 and the 剑诀 (瞿老 hearing his mother's rhyme) stay read."
 }

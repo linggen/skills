@@ -213,6 +213,25 @@
         "zh": "「戴九履一，左三右七，二四为肩，六八为足，五居中央。」",
         "en": "\"Nine on the head, one under the feet… five in the middle.\""
       }
+    },
+    {
+      "_qimai": "2026-10-20 (Hanli: 「剧情连续阅读太长的地方, 你处理一下」; the standing rule of 10-19): the walk up the back of the mountain behind 瞿老 — 「山路越走越窄，窄得只容得下一只脚，小满跟在后头，气也不粗。」 — as a 气走经脉 level (games.json qimai `houshan`): switchbacks up a channel that narrows to one foot, the 金线 the even breath the whole climb, a cliff wind that turns. It breaks 家信 → 古六's end (1,635 字); the 收徒 and the 剑诀 stay read. Its 修为 is 念开篇's (cut 10-19) back.",
+      "id": "baishi-houshan",
+      "kind": "board",
+      "game": "qimai",
+      "period": "once",
+      "title": {
+        "zh": "后山 · 一只脚宽",
+        "en": "The back of the mountain · One foot wide"
+      },
+      "grant": {
+        "table": "task",
+        "progress": 5
+      },
+      "done_line": {
+        "zh": "气也不粗。",
+        "en": "He didn't even breathe hard."
+      }
     }
   ]
 }

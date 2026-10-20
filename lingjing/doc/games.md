@@ -224,6 +224,45 @@ the strap cut like a vine) dragging under him. The ledge is on the cliff side, o
 | 二 · 00-uncle | 算盘 `abacus` | 「一笔一笔地算账」 | three sums on the beads | arithmetic, not play | **cut** | 6 s | 4 wrong | no | **cut** |
 | 三 · 00-luoshu | 二试 `luoshu` | 洛书九宫 | fill the magic square | a puzzle; the test the book sets | keep (a test, not a beat) — **the one 九宫格 in the story** (Hanli 10-19: 「9宫格出现一次就可以了」) | ~60 s | 75 s | no | — (a test) |
 
+## 读太长 — the reading cap, stretch by stretch (10-20)
+
+Hanli 10-20: 「剧情连续阅读太长的地方, 你处理一下, 看是否可以加个小游戏等」 — under the standing rule (10-19), each fill a level of
+a proven kit that fits the book's action there, else a 大场面; never across a key emotional moment. Measured by
+`scripts/rhythm.mjs` (the lint's warnings; cap 1,500 字 of the box's own passages between two beats). **The tool now
+counts a set piece laid under a paragraph** (`{景=id}`) as a beat, as it already counted an exit's `setpiece`: 银月's two
+(00-yinyue), 沉鼎山 (00-gate), 底册 (wm-laba), 扔了干净 (09-snow) and the new 二十三下. "Before" below is origin/main
+`e46b81c2` by the tool as it was; the 10-19 sweep's three (6,414 · 2,773 · 1,635) were the same stretches, counted to the
+pieces. 21 stretches of 卷一 ran over (by either count); 20 after — 1,635 gone, 6,367 down to one stretch of 2,556.
+
+| stretch (before) | before | after | what went in, and why it fits |
+|---|---|---|---|
+| wm-xirang/swallow → wm-qianye (古五 → 讲堂) | 6,367 | 2,556 · 1,150 · 1,337 · 1,494 | **气走经脉 · 息壤** (`xirang-wumen`, wm-kaikai): 银月's 「你推着它们走一圈。」「他便推…木、火、土、金、水，转了一圈」 is the kit's own move — five 关 in the 相生 order (木 heaves up · 火 beats · 土 the heaviest 浪头 · 金 the narrowest · 水 turns), between 罚球 and 掐诀 on the ladder (n 6; the live-fitted hand 11/24, 罚球 12/24; its winners take ~73 s, near the 75 s skip). The 息壤 paragraphs moved whole from the swallow passage to open wm-kaikai. **大场面 · 二十三下** (`{景=ershisan}`, wm-chu): the 23 blows at the stone door, counted, the last a tap — the book's own big moment, no kit's verb (FLUX: the ledge, the fist). **割绳子 · 喂息珠** (`luobo-xizhu`, new scene wm-luobo, the woodshed): 「喂进饭桶，兴许开出一颗筑基丹来」 — feeding the 饭桶 is already the kit's daily frame; 灵气泡 and the woodpile's 荆棘 (seed xizhu-3, harder than 喂饼 · 洞口风); the burp, the radish and the pill read after it. The first 2,556 (the dark-river fight's telling, the kill) waits on **a 砸寨 level for the port agent** (below). |
+| wm-jiaxin → end of 古六 | 1,635 | 486 · 1,149 | **气走经脉 · 后山** (`baishi-houshan`, wm-baishi): 「山路越走越窄，窄得只容得下一只脚，小满跟在后头，气也不粗」 — 瞿老 testing his breath on the way up; switchbacks narrowing to 31, the 金线 the whole climb, a turning cliff wind (n 9, after 藏息; live hand 13/24, 藏息 17/24). Its 修为 is 念开篇's (cut 10-19). 家信, 收徒 and 「我娘教的」 stay read. |
+| j07-dark → 09-snow (黑地 → 扔了干净) | 3,533 | 2,928 | not filled. 今三 (沈芒's world: the breath kit only). Its action is the 闭关三日 squats (the lesson is that he should not have done them), the hospital and 阿禾's silence — a game there breaks it; the one kit action, 「十投二」 free throws, is its last 60 字. The count is lower only because 扔了干净's piece now counts. |
+| 00-shiao → 00-heisong/carve | 4,767 | 4,767 | before 入门: five boards (Hanli 10-16, 「减少数量, 推动剧情」); the built 忍字 · 算账 · 认路 割绳子 levels wait off-scene. His call (taste note 1). |
+| 00-cave → 00-deer | 3,166 | 1,721 | before 入门; 银月's two pieces now count (00-yinyue). |
+| 00-deer → j01-retest | 12,867 | 12,867 | before 入门 (古二 and 今一's first two scenes). |
+| j01-retest → 00-luoshu | 3,382 | 2,571 | before 入门; 沉鼎山's piece now counts. |
+| 00-longzhi/subdue → end | 3,018 | 3,018 | 入门 itself (the hall, 外门, the door of the 秘境) — before 入门. |
+| start → wm-zhoutian (古四) | 2,035 | 2,035 | not filled (阿禾's debt, the first lesson) — no kit's verb. |
+| wm-zhoutian → j04-line | 12,328 | 12,328 | **守炉 ladder beat**: wm-yaoyuan (药园巡夜, 狰) is the ladder's first story level — left to it; it would cut this at ~1,500 (wm-qingshi + the 药园). The rest is 第一路 and 今二's gym (2,702 + 1,050). |
+| j04-line → wm-wangzuo/open | 4,668 | 4,668 | not filled (今二's dog, the 秘境's door, the 蛫 wall). |
+| wm-lun2/dodge → wm-juesai/face | 1,651 | 1,651 | between two duels (秦雁 · 马小宝); 151 over, the final's lead-in. Left. |
+| wm-juesai/face → wm-jiaxin | 3,414 | 3,414 | the 10-19 sweep's call: the story's point (猪蜻蜓 cut). |
+| start → j07-dark (今三) | 2,348 | 2,348 | 今线; 黑地十一步 is the beat at its end. |
+| 09-furnace → 09-lingcao/fight | 2,175 | 2,175 | the 10-19 sweep's call (定风 → 灵草谷). |
+| 09-lingcao/fight → 09-yishui | 1,893 | 1,893 | not filled (钱掌柜's shop, 秦雁's spar, 随风 — 随叶 already plays it). |
+| 09-futian/spar → 09-cliff/take | 4,676 | 4,676 | 古八 (瞿老's 筑基 lesson) into the 筑基 piece. |
+| 01-ji: start → j09-final | 2,888 | 2,888 | 今四; 最后一罚 at its end. |
+| j09-final → 01-altar/send | 4,689 | 4,689 | 今四's 冬至, 第九回's arrival. |
+| 01-rise/stand → 01-deep/seal | 2,164 | 2,164 | not filled. |
+| 01-deep/seal → end | 3,129 | 3,129 | 卷一's last pages (the cauldron). |
+
+**砸寨 levels to make (the port agent's; Hanli 10-20: 「其他投掷类都用砸寨的不同关卡代替」):** wm-xirang/swallow, the dry
+暗河 — 「小满搭上一支，左手在地上摸了一块石子，往左边黑里一丢。『嗒』。铜塞子『啵』地一响，葫芦嘴里亮起一团红光…他一箭奔那团红光去
+了」: a stone thrown into the dark to make the gourd open, then the arrow at its light, 邹青松 behind the rocks, four in the
+dark; it would cut the 2,556 at ~650.
+
 ## The weak-board sweep (10-19, the standing rule)
 
 Hanli 10-19 approved a standing rule (「我和 agent 照规矩直接处理, 可以, 按你说的做」): each remaining weak board (the 判断
@@ -390,16 +429,18 @@ so the second pass made it one clear notch harder and gave every level its own l
 | 3 | 先吐 · `jin-qianmi` (今一) | the airway: three 窄脉 runs (33) with the panting push up between open stretches; track brick, 吐 | 窄脉 · 乱流 | 22/24, 2 岔气, 46 s | 游戏厅 3/4 (4–9 岔气); story 2/2 at 390, won 46–51 s |
 | 4 | 罚球 · `jin-faqiu` (今二) | 吸四吐六 front and centre: one 金线 the whole court (tol 8, 72%) through a heart out of time; amber, 罚 | 心跳 (jitter) · 金线 | 20/24, 3 岔气, 49 s | 游戏厅 3/4 (4–7 岔气); story 2/3 |
 | 5 | 小周天 · `zhoutian-sanguan` (古四) | up the spine from the floor to the roof through 尾闾 32 · 夹脊 27 · 玉枕 22, then down the front: one circuit; dusk blue, 周 | 三关 · 乱流 · 金线 | 24/24, 2 岔气, 44 s | 游戏厅 4/4 (1–4 岔气, 36–52 s); story 390 2/2 |
-| 6 | 掐诀 · `qianye-qiajue` (古六, the sweep) | the arm, shoulder to fingertip: the chant's eight lines its eight 穴, the elbow 窄 (30) with the spark's push, 午文 a 28 关 at the end; cinnabar, 午 | 窄 · 乱流 + 转向 · 关 · 金线 | 24/24, 3 岔气, 38 s | — |
-| 7 | 藏息 · `zhaojing-mirror` (古六) | the thinnest breath: 窄脉 the whole way (34), the mirror's light as pushes that start to turn, the thread tight (tol 6, 75%); firelight, 藏 | 窄脉 · 乱流 + 转向 · 金线 | 15/24, 5 岔气, 45 s | 游戏厅 2/4 (2–8 岔气) |
-| 8 | 随叶 · `jiuge-sui` (古七) | the 金线 is the leaf's way down, one long swing the whole level, and the wind turns under it; snow grey, 巽 | 转向乱流 · 金线 | 15/24, 6 岔气, 68 s | 游戏厅 1/4 (5–12 岔气) |
-| 9 | 定风 · `furnace-ding` (古七) | leaves spinning: the wind turns fast, a 浪头 gust, then the half step aside — a 26 关 at the end; dawn, 风 | 转向乱流 · 浪头 · 关 | 12/24, 6 岔气, 71 s | 游戏厅 1/4 (6–13 岔气) |
-| 10 | 顺风溜 · `xie-wind` (古七, the sweep; Hanli on the old board: 「这个也不好玩」) | the glide a foot off the floor (a low channel, 窄 34), the north wind turning three times, faster each; the three 「噗」 (逆风, the gills only puff) are 关 to thread with the wind at his back, 墙根 the last; slate green, 溜 | 转向乱流 · 关 ×4 · 金线 | 19/24, 11 岔气, 72 s | — |
-| 11 | 黑地十一步 · `jin-dark` (今三) | dark switchbacks — sharp bends seen only in a small round, his panic beating in the second dark; slate, 黑 | 暗 · 窄 · 心跳 | 5/24, 7 岔气, 55 s | 0/4 (7–11 岔气) |
-| 12 | 最后一罚 · `jin-lastshot` (今四) | all 今线 taught, faster (104): two hearts out of time, a 浪头, a turning push, the thread to shoot on (tol 6, 75%); red, 惧 | 心跳 · 浪头 · 转向 · 金线 | 4/24, 8 岔气, 56 s | 0/4 (9–15 岔气) |
-| 13 | 冲脉 (试作) | straight up and down the body: steep zigzags, two 浪头, turning currents, two 关 | everything but 暗 | 2/24 | — |
-| 14 | 带脉 (试作) | round the waist: narrow, heart, dark, turning wind, one late 关 | 窄 · 心跳 · 暗 · 转向 · 关 | 2/24 | — |
-| 15 | 大周天 (试作) | the whole body at 110: three 关 (玉枕 22), every element, the longest run | everything | 3/24 | — |
+| 6 | 息壤 · `xirang-wumen` (古五, the reading cap 10-20) | 「你推着它们走一圈」: five 关 named for the five doors in the 相生 order — 木 a push up, 火 a heart out of time, 土 the heaviest 浪头, 金 the narrowest (22), 水 a turning current — then the 金线 as his hands stop shaking; earth paper, 壤 | 关 ×5 · 乱流 + 转向 · 心跳 · 浪头 · 金线 | 11/24 (罚球 12/24), 12 岔气, 73 s — practised 8/8 with 2 岔气 | — |
+| 7 | 掐诀 · `qianye-qiajue` (古六, the sweep) | the arm, shoulder to fingertip: the chant's eight lines its eight 穴, the elbow 窄 (30) with the spark's push, 午文 a 28 关 at the end; cinnabar, 午 | 窄 · 乱流 + 转向 · 关 · 金线 | 24/24, 3 岔气, 38 s | — |
+| 8 | 藏息 · `zhaojing-mirror` (古六) | the thinnest breath: 窄脉 the whole way (34), the mirror's light as pushes that start to turn, the thread tight (tol 6, 75%); firelight, 藏 | 窄脉 · 乱流 + 转向 · 金线 | 15/24, 5 岔气, 45 s | 游戏厅 2/4 (2–8 岔气) |
+| 9 | 后山 · `baishi-houshan` (古六, the reading cap 10-20) | up the back of the mountain behind 瞿老: switchbacks, the channel narrowing 48 → 31, the 金线 the even breath the whole climb, a cliff wind that turns past 半山; mountain green, 径 | 窄 · 转向乱流 · 金线 | 13/24, 5 岔气, 61 s | — |
+| 10 | 随叶 · `jiuge-sui` (古七) | the 金线 is the leaf's way down, one long swing the whole level, and the wind turns under it; snow grey, 巽 | 转向乱流 · 金线 | 15/24, 6 岔气, 68 s | 游戏厅 1/4 (5–12 岔气) |
+| 11 | 定风 · `furnace-ding` (古七) | leaves spinning: the wind turns fast, a 浪头 gust, then the half step aside — a 26 关 at the end; dawn, 风 | 转向乱流 · 浪头 · 关 | 12/24, 6 岔气, 71 s | 游戏厅 1/4 (6–13 岔气) |
+| 12 | 顺风溜 · `xie-wind` (古七, the sweep; Hanli on the old board: 「这个也不好玩」) | the glide a foot off the floor (a low channel, 窄 34), the north wind turning three times, faster each; the three 「噗」 (逆风, the gills only puff) are 关 to thread with the wind at his back, 墙根 the last; slate green, 溜 | 转向乱流 · 关 ×4 · 金线 | 19/24, 11 岔气, 72 s | — |
+| 13 | 黑地十一步 · `jin-dark` (今三) | dark switchbacks — sharp bends seen only in a small round, his panic beating in the second dark; slate, 黑 | 暗 · 窄 · 心跳 | 5/24, 7 岔气, 55 s | 0/4 (7–11 岔气) |
+| 14 | 最后一罚 · `jin-lastshot` (今四) | all 今线 taught, faster (104): two hearts out of time, a 浪头, a turning push, the thread to shoot on (tol 6, 75%); red, 惧 | 心跳 · 浪头 · 转向 · 金线 | 4/24, 8 岔气, 56 s | 0/4 (9–15 岔气) |
+| 15 | 冲脉 (试作) | straight up and down the body: steep zigzags, two 浪头, turning currents, two 关 | everything but 暗 | 2/24 | — |
+| 16 | 带脉 (试作) | round the waist: narrow, heart, dark, turning wind, one late 关 | 窄 · 心跳 · 暗 · 转向 · 关 | 2/24 | — |
+| 17 | 大周天 (试作) | the whole body at 110: three 关 (玉枕 22), every element, the longest run | everything | 3/24 | — |
 
 Live (play-human on 9527, 10-19, casual 2 seeds × 1440 mouse + 390 touch; the story rows on `ph-*` saves at 390 — the
 first 1440 story runs met the old modules still cached and are left out): the arcade 试作 casual 0/4 each (8–16 岔气);

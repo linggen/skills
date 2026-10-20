@@ -18,7 +18,9 @@
 // (00-halfyear: the boards play in `show` order) comes after `story_after`. On
 // the exit taken, a fight or board (`game`), a riddle (`key`), a look that must
 // find something first (`needs.seen`), or the 突破 card — before the exit's
-// passage; and a set piece (`setpiece`), which plays after it.
+// passage; and a set piece (`setpiece`), which plays after it. A set piece laid
+// under a paragraph of a passage (`{景=id}`, rules/tell.mjs) is a beat too: the
+// box stops on that paragraph while it plays, so the count resets after it.
 
 export const RHYTHM_CAP = 1500; // zh characters between two play beats
 
@@ -28,6 +30,18 @@ const strip = t => String(t ?? '')
   .replace(/\*\*|⟪|⟫/g, '')
   .replace(/\s+/g, '');
 export const storyChars = pair => [...strip(pair?.zh)].length;
+/* A passage cut at its `{景=id}` paragraphs: the characters read before each
+   piece (that paragraph included), then the rest. One part = no piece in it. */
+const PIECE = /\{景=([a-z]+)\}/;
+export function storyParts(pair) {
+  const parts = [{ chars: 0 }];
+  for (const para of String(pair?.zh ?? '').split(/\n+/)) {
+    parts[parts.length - 1].chars += [...strip(para)].length;
+    const m = para.match(PIECE);
+    if (m) { parts[parts.length - 1].piece = m[1]; parts.push({ chars: 0 }); }
+  }
+  return parts;
+}
 
 const showsGame = card => card?.card === 'board' || card?.card === 'duel';
 /* A game stands on the stage at this scene. */
@@ -48,19 +62,20 @@ export function stretchesOf(chapter) {
   const scenes = chapter.scenes ?? {}, out = [], seen = new Set();
   let from = 'start', chars = 0;
   const beat = (at) => { out.push({ from, to: at, chars }); from = at; chars = 0; };
+  const read = (pair, at) => { for (const p of storyParts(pair)) { chars += p.chars; if (p.piece) beat(`${at}{景=${p.piece}}`); } };
   let id = chapter.first_scene;
   while (id && scenes[id] && !seen.has(id)) {
     seen.add(id);
     const scene = scenes[id], boards = boardsOf(scene);
     if (duelAt(scene) && !boards.length) beat(id);
-    chars += storyChars(scene.story);
+    read(scene.story, id);
     if (boards.length) beat(id);
-    chars += storyChars(scene.story_after);
+    read(scene.story_after, id);
     for (const b of boards.slice(1)) beat(`${id}:${b}`);
     const exit = mainExit(scene);
     if (!exit) break;
     if (exitBeat(exit)) beat(`${id}/${exit.id}`);
-    chars += storyChars(exit.story);
+    read(exit.story, `${id}/${exit.id}`);
     if (pieceBeat(exit)) beat(`${id}/${exit.id}`);
     id = exit.next;
   }
