@@ -6,7 +6,7 @@
   "zheng": {"power": 3, "size": 60, "frames": ["walk-1", "walk-2"], "hit": "hit"},
   "qiuyu": {"power": 2, "size": 58, "frames": ["walk-1", "walk-2"], "hit": "hit"},
   "qique": {"power": 1, "size": 58, "frames": ["walk-1", "walk-2"], "hit": "hit", "fly": true},
-  "heyu": {"power": 1, "size": 300, "frames": ["walk-1"], "hit": "hit"}
+  "heyu": {"power": 1, "size": 360, "frames": ["walk-1"], "hit": "hit"}
  },
  "levels": [
   {
@@ -26,7 +26,7 @@
    "start": 15,
    "low": 8,
    "clashMin": 24,
-   "stars": [220, 80],
+   "stars": [180, 70],
    "_track": "In road order. gates: [left, right] (null = no gate on that side); op + − x /. beans: a line of beans at x, +n if the crowd runs over it. hazard: kind spikes|log over x [a, b] for `len` px, `kill` = the share of the soldiers over it lost while crossing; `swing`/`period` sway a log side to side. horde: [[beast, n], …] across the whole road (`span` narrows it), the first kind the back line.",
    "track": [
     {"type": "gates", "at": 900, "gates": [{"op": "+", "n": 5}, {"op": "x", "n": 3}]},
@@ -50,7 +50,7 @@
     {"type": "beans", "at": 16200, "x": -0.6, "n": 20},
     {"type": "gates", "at": 17000, "gates": [{"op": "+", "n": 40}, {"op": "-", "n": 30}]}
    ],
-   "boss": {"beast": "heyu", "at": 18200, "hp": 80, "dmg": 1, "feedRate": 0.15, "feedMin": 20, "slamEvery": 2.4, "warnSec": 1.0, "slamKill": 0.2},
+   "boss": {"beast": "heyu", "at": 18200, "hp": 90, "dmg": 1, "feedRate": 0.05, "feedMin": 16, "slamEvery": 2.4, "warnSec": 1.0, "slamKill": 0.2},
    "moments": {
     "_about": "银月's lines at the level's moments (the defaults; at start the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
     "start": [{"zh": "豆子落地，兵就起来了。往前冲！", "en": "Beans hit the ground, soldiers stand up. Charge!"}],

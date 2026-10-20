@@ -278,7 +278,8 @@ export class PlayScene extends Phaser.Scene {
     this.pill.setVisible(show);
     this.pillNum.setVisible(show);
     if (show) {
-      const py = CROWD_Y - r * 0.72 - 46;
+      // under the crowd, so the horde and the boss above stay clear
+      const py = CROWD_Y + r * 0.72 + 30;
       this.pillPunch = Math.max(0, this.pillPunch - dt * 3);
       const ps = 1 + this.pillPunch * 0.5;
       this.pill.setPosition(cx, py).setScale(ps * Math.max(1, 0.6 + String(g.count).length * 0.2), ps);
@@ -656,6 +657,10 @@ export class PlayScene extends Phaser.Scene {
       this.em.burst('spark', 3, p.x, frontY - 10);
     }
     if (e.lost) { this.sfx.hit(); this.shown = this.g.count; }
+    // the contact line: sparks and dust all along the crowd's front
+    const half = SPACING * Math.sqrt(Math.max(1, Math.min(MAXV, this.shown)));
+    this.em.burst('spark', 4, this.cx() + (this.rand() - 0.5) * half * 2, frontY - 16);
+    if (this.rand() < 0.3) this.em.burst('dust', 2, this.cx() + (this.rand() - 0.5) * half * 2, frontY - 10);
     if (v && e.killed) {
       let k = e.killed;
       for (const bs of v.beasts) {

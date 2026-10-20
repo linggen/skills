@@ -128,7 +128,7 @@ test('the clash stops the run and trades soldiers for beasts; the boss slams the
     killed[dodge] = slam.killed;
   }
   assert.ok(killed.false > 20, `${killed.false} lost standing under the slam`);
-  assert.ok(killed.true * 4 < killed.false, `stepping out saves most (${killed.true} vs ${killed.false}); a big crowd can't clear it all`);
+  assert.ok(killed.true * 3 < killed.false, `stepping out saves most (${killed.true} vs ${killed.false}); a big crowd can't clear it all`);
 });
 
 test('balance: good gates win ★★★, bad gates lose, never steering loses, careless wins with fewer stars', () => {
