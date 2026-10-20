@@ -17,7 +17,7 @@
 // localStorage (`lingjing.shoulu.stars`), never the save.
 import { BEASTS, EARLY_RATE, H, HERO, TOWERS, TORDER, W, build, callWave, canBuild, cleared, locked, newGame, refund, sell, sendHero,
   starsOf, step, upgrade, upgradeCost, waves } from './shoulu/core.js';
-import { beastIcon, draw, makePaper, markEvent, stepFx } from './shoulu/draw.js';
+import { beastIcon, draw, loadArt, makePaper, markEvent, stepFx } from './shoulu/draw.js';
 
 export const meta = {
   id: 'shoulu',
@@ -92,6 +92,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
   lang = lang === 'en' ? 'en' : 'zh';
   const t = T[lang], doc = container.ownerDocument, win = doc.defaultView;
   ensureCss(doc);
+  loadArt(doc);
   const levels = await levelsOf(data).catch(() => []);
   const asked = levelAsked(data, win?.location?.search);
   const root = doc.createElement('div');
@@ -207,7 +208,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       wake();
       if (!g || g.over) return;
       const p = toWorld(e), h = g.hero;
-      if (!h.dead && Math.hypot(p.x - h.x, p.y - (h.y - 6)) < 30) { heroSel = !heroSel; closeMenu(); return; }
+      if (!h.dead && Math.hypot(p.x - h.x, p.y - (h.y - 20)) < 36) { heroSel = !heroSel; closeMenu(); return; }
       if (heroSel) { heroSel = false; sendHero(g, p.x, p.y); g.fx.push({ k: 'mark', x: h.tx, y: h.ty, life: 0.6, max: 0.6 }); return; }
       let hit = -1, bd = 34 * 34;
       g.L.spots.forEach(([x, y], i) => { const dx = p.x - x, dy = p.y - (g.towers[i] ? y - 12 : y), d = dx * dx + dy * dy; if (d < bd) { bd = d; hit = i; } });

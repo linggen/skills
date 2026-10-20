@@ -1,6 +1,7 @@
 // shoulu/draw.js — 守炉's painting: the board (paper, road, decor), the furnace, the talismans, the
-// beasts, 银月, the shots and the marks. Code-drawn, a stopgap: the small games go comic (Angry-Birds
-// cartoon) when the art comes; every figure here is one function so a sprite can replace it alone.
+// beasts, 银月, the shots and the marks. 银月 is painted (comic frames, tools/paint-shoulu.py); the rest is still
+// code-drawn, a stopgap: the small games go comic (Angry-Birds cartoon) — every figure here is one function, so a
+// sprite can replace it alone.
 // Pure canvas: it reads the game (core.js) and never changes it.
 import { BEASTS, HERO, TOWERS, W, H, posOnPath, offRoad, cleared, waves } from './core.js';
 
@@ -210,38 +211,75 @@ function drawTower(c, tw, t) {
   if (tw.type === 'jian') { const a = t * 2.5 + x; c.save(); c.translate(x + Math.cos(a) * 13, y - 26 + Math.sin(a) * 4); c.rotate(tw.anim > 0 ? tw.ang : -1.2); drawSword(c, 0.7); c.restore(); }
   if (tw.type === 'lei' && tw.anim > 0) { c.strokeStyle = 'rgba(110,80,180,0.8)'; c.lineWidth = 1.3; for (let k = 0; k < 3; k += 1) { const a = Math.random() * 6.28; c.beginPath(); c.moveTo(x, y - 18); c.lineTo(x + Math.cos(a) * 16, y - 18 + Math.sin(a) * 16); c.stroke(); } }
 }
-function drawHero(c, h, t, sel, lang, says) {
-  if (h.dead > 0) return;
-  const moving = Math.hypot(h.tx - h.x, h.ty - h.y) > 2, run = moving ? Math.sin(t * 16) : 0, breath = Math.sin(t * 3) * 0.6, lunge = h.anim > 0 ? h.anim * 16 : 0;
-  if (moving) { c.setLineDash([3, 5]); c.strokeStyle = 'rgba(60,100,120,0.5)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(h.x, h.y); c.lineTo(h.tx, h.ty); c.stroke(); c.setLineDash([]); c.beginPath(); c.arc(h.tx, h.ty, 5, 0, 6.28); c.stroke(); }
-  c.save(); c.translate(h.x, h.y);
-  const glow = c.createRadialGradient(0, -4, 2, 0, -4, 34); glow.addColorStop(0, 'rgba(190,210,240,0.35)'); glow.addColorStop(1, 'rgba(190,210,240,0)');
-  c.fillStyle = glow; c.beginPath(); c.arc(0, -4, 34, 0, 6.28); c.fill();
-  if (sel) { c.setLineDash([5, 4]); c.strokeStyle = '#3c6478'; c.lineWidth = 2; c.beginPath(); c.ellipse(0, 12, 26, 9, 0, 0, 6.28); c.stroke(); c.setLineDash([]); }
-  c.fillStyle = 'rgba(40,30,20,0.16)'; c.beginPath(); c.ellipse(0, 12, 18, 5, 0, 0, 6.28); c.fill();
-  c.scale(h.face, 1);
+// 银月 is painted (tools/paint-shoulu.py: comic frames on one atlas, art/yinyue.webp + yinyue.json); the code only
+// picks the frame for what she is doing. The blob below is the fallback while the picture loads or if it fails.
+const YY = { img: null, meta: null }, HERO_H = 64, FOOT = 12, seen = new WeakMap();
+/** Load 银月's frames once (the page calls it; the tests never do). */
+export function loadArt(doc) {
+  if (YY.img) return;
+  const img = doc.createElement('img');
+  YY.img = img;
+  fetch(new URL('./art/yinyue.json', import.meta.url)).then((r) => r.json()).then((m) => { YY.meta = m; img.src = new URL('./art/yinyue.webp', import.meta.url).href; }).catch(() => {});
+}
+/** Which frame: dead → fade, a howl → howl, a bite → bite, a hard hit → hurt, moving → run, else idle (breathing). */
+function heroFrame(h, t, moving) {
+  const m = seen.get(h) ?? { hp: h.hp, dmg: 0, hurt: 0, t };
+  const dt = Math.max(0, Math.min(0.1, t - m.t)); m.t = t;
+  if (h.hp < m.hp) m.dmg += m.hp - h.hp; else m.dmg = Math.max(0, m.dmg - dt * 20);
+  m.hp = h.hp; m.hurt = Math.max(0, m.hurt - dt);
+  if (m.dmg > HERO.hp[h.lvl] * 0.08) { m.dmg = 0; m.hurt = 0.2; }
+  seen.set(h, m);
+  if (h.dead > 0) return 'fade';
+  const howled = HERO.howlCd - h.howl;
+  if (h.howl > 0.5 && howled < 0.6) return howled < 0.15 ? 'howl-1' : 'howl-2';
+  if (h.anim > 0) return h.anim > 0.1 ? 'bite-2' : 'bite-1';
+  if (m.hurt > 0) return 'hurt';
+  if (moving) return `run-${1 + (Math.floor(t * 12) % 4)}`;
+  if (h.held.length && h.cd < 0.25) return 'bite-1';
+  return Math.floor(t / 0.7) % 2 ? 'idle-2' : 'idle-1';
+}
+function drawHeroArt(c, f, t) {
+  const m = YY.meta, at = m.sheets.yinyue[f], [cw, ch] = m.cell, k = HERO_H / m.h0;
+  const bob = f.startsWith('idle') ? Math.sin(t * 2.4) * 0.6 : 0;
+  c.drawImage(YY.img, at[0], at[1], cw, ch, -cw / 2 * k, FOOT - m.foot * k + bob, cw * k, ch * k);
+}
+function drawHeroBlob(c, h, t, moving) {
+  const run = moving ? Math.sin(t * 16) : 0, breath = Math.sin(t * 3) * 0.6, lunge = h.anim > 0 ? h.anim * 16 : 0;
   c.strokeStyle = 'rgba(30,30,40,0.75)'; c.lineWidth = 2.6; c.lineCap = 'round';
   for (const [lx, ph] of [[-9, 0], [-4, 2], [6, 1], [11, 3]]) { c.beginPath(); c.moveTo(lx, 0); c.lineTo(lx + Math.sin(t * 16 + ph) * (moving ? 4 : 0), 11); c.stroke(); }
   c.beginPath(); c.moveTo(-13, -4); c.quadraticCurveTo(-26, -6 + run * 2, -30, -16 + run * 3); c.quadraticCurveTo(-22, -12, -14, -9); c.closePath(); blob(c, '#cfd6e2');
   c.beginPath(); c.ellipse(0, -3 + breath * 0.4, 16, 9, 0, 0, 6.28); blob(c, '#e6eaf1');
-  c.fillStyle = 'rgba(150,165,190,0.5)'; c.beginPath(); c.ellipse(-2, -8 + breath * 0.4, 10, 3, 0, 0, 6.28); c.fill();
   c.save(); c.translate(lunge * 0.6, 0);
   c.beginPath(); c.moveTo(16, -17); c.lineTo(13, -27); c.lineTo(20, -19); c.closePath(); blob(c, '#e6eaf1');
   c.beginPath(); c.moveTo(20, -17); c.lineTo(22, -27); c.lineTo(25, -17); c.closePath(); blob(c, '#e6eaf1');
   c.beginPath(); c.arc(18, -12, 8, 0, 6.28); blob(c, '#eef1f6');
   c.beginPath(); c.moveTo(23, -15); c.lineTo(32 + lunge * 0.3, -9); c.lineTo(23, -6); c.closePath(); blob(c, '#eef1f6');
-  c.fillStyle = '#1a1a22'; c.beginPath(); c.arc(31 + lunge * 0.3, -9, 1.6, 0, 6.28); c.fill();
   c.fillStyle = '#4a8fd0'; c.beginPath(); c.arc(20, -13, 1.9, 0, 6.28); c.fill();
   c.strokeStyle = '#c99a2e'; c.lineWidth = 1.6; c.beginPath(); c.arc(16, -17, 3, 0.6, 3.6); c.stroke();
-  c.restore(); c.restore();
-  const w = 30, x = h.x - w / 2, y = h.y - 38;
+  c.restore();
+}
+function drawHero(c, h, t, sel, lang, says) {
+  const moving = !h.dead && Math.hypot(h.tx - h.x, h.ty - h.y) > 2, f = heroFrame(h, t, moving);
+  const gone = h.dead > 0 ? Math.min(1, (HERO.respawn - h.dead) / 1.1) : 0; // she fades out over a second, then is away
+  if (gone >= 1) return;
+  if (moving) { c.setLineDash([3, 5]); c.strokeStyle = 'rgba(60,100,120,0.5)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(h.x, h.y); c.lineTo(h.tx, h.ty); c.stroke(); c.setLineDash([]); c.beginPath(); c.arc(h.tx, h.ty, 5, 0, 6.28); c.stroke(); }
+  c.save(); c.translate(h.x - gone * 14 * h.face, h.y); c.globalAlpha = 1 - gone;
+  const glow = c.createRadialGradient(0, -18, 4, 0, -18, 46); glow.addColorStop(0, 'rgba(200,220,250,0.42)'); glow.addColorStop(1, 'rgba(190,210,240,0)');
+  c.fillStyle = glow; c.beginPath(); c.arc(0, -18, 46, 0, 6.28); c.fill();
+  if (sel) { c.setLineDash([5, 4]); c.strokeStyle = '#3c6478'; c.lineWidth = 2; c.beginPath(); c.ellipse(0, FOOT, 30, 10, 0, 0, 6.28); c.stroke(); c.setLineDash([]); }
+  c.fillStyle = 'rgba(40,30,20,0.18)'; c.beginPath(); c.ellipse(0, FOOT, 22, 5.5, 0, 0, 6.28); c.fill();
+  c.scale(h.face, 1);
+  if (YY.meta && YY.img.naturalWidth) drawHeroArt(c, f, t); else drawHeroBlob(c, h, t, moving);
+  c.restore();
+  if (gone > 0) return;
+  const w = 34, x = h.x - w / 2, y = h.y - HERO_H - 2;
   c.fillStyle = 'rgba(42,36,29,0.55)'; c.fillRect(x - 1, y - 1, w + 2, 6); c.fillStyle = '#e9dfcc'; c.fillRect(x, y, w, 4);
   c.fillStyle = '#5a8fc0'; c.fillRect(x, y, w * Math.max(0, h.hp / HERO.hp[h.lvl]), 4);
   if (h.lvl > 0) { c.fillStyle = '#c99a2e'; c.font = 'bold 9px serif'; c.fillText(LVNAME[lang][h.lvl], x + w + 3, y + 5); }
   if (h.say) {
     const s = says[h.say.k] ?? '';
     c.font = 'bold 13px "Songti SC","STSong",serif';
-    const tw = c.measureText(s).width + 16, bx = Math.max(4, Math.min(W - tw - 4, h.x - tw / 2)), by = h.y - 70;
+    const tw = c.measureText(s).width + 16, bx = Math.max(4, Math.min(W - tw - 4, h.x - tw / 2)), by = h.y - HERO_H - 36;
     c.globalAlpha = Math.min(1, h.say.life * 2); c.fillStyle = '#fbf6ea'; c.strokeStyle = 'rgba(42,36,29,0.7)'; c.lineWidth = 1.2;
     c.beginPath(); c.roundRect(bx, by, tw, 24, 8); c.fill(); c.stroke();
     c.beginPath(); c.moveTo(h.x - 5, by + 24); c.lineTo(h.x, by + 31); c.lineTo(h.x + 5, by + 24); c.fill();
