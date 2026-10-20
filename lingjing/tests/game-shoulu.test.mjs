@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
   keepSel, posOnPath, sendHero, sim, STRATS, skillState, spawnAt, step, toggleAuto, waves } from '../scripts/games/shoulu/core.js';
-import { levelAsked, meta } from '../scripts/games/shoulu.js';
+import { leadSplit, levelAsked, meta } from '../scripts/games/shoulu.js';
 
 const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
 const row = reg.games.find((g) => g.id === 'shoulu');
@@ -27,6 +27,18 @@ test('registered: meta, the row in the 游戏厅, five levels', () => {
   assert.equal(levelAsked({}, '?dev=1&game=shoulu&lv=3'), 3);
   assert.equal(levelAsked({ lv: 2 }, '?lv=5'), 2);
   assert.equal(levelAsked({}, '?lv=x'), 0);
+});
+
+test('in the one shell: its bar pauses the play; each level\'s story is the lead card, the banner and tips stay on the board', () => {
+  assert.equal(meta.pause, true);
+  for (const r of levels) {
+    const { said, rest } = leadSplit(r.lead, 'zh');
+    assert.ok(said.length > 0, `${r.id}: a story line for the lead card`);
+    assert.ok(rest[0]?.big, `${r.id}: the 兽潮来袭 banner opens what stays on the board`);
+    assert.ok(!said.includes(rest[0].zh), r.id);
+    assert.match(leadSplit(r.lead, 'en').said, / /, `${r.id}: English lines joined by a space`);
+  }
+  assert.deepEqual(leadSplit(undefined), { said: '', rest: [] });
 });
 
 test('every level is sound: its road, its spots, its furnace, its words, 卷一 beasts and places', () => {

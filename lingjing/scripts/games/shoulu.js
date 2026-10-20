@@ -6,10 +6,17 @@
 // its lead-in, brings one new thing, and is harder than the last.
 //
 // Split as: shoulu/core.js (the engine, pure and seeded, with the headless balance sim), shoulu/draw.js
-// (the canvas), shoulu/shoulu.css, and this module — the small-game contract (games/mount.js) and a
-// minimal shell (HUD, build menu, level select, result card) until the shared small-game shell lands:
+// (the canvas), shoulu/shoulu.css, and this module — the small-game contract (games/mount.js) with the play's own
+// HUD, build menu, hero bar and level select:
 //
-//   mount(container, { lang, data, signal }) → Promise<{ won, stars?, left? }>
+//   mount(container, { lang, data, signal, reducedMotion, shell }) → Promise<{ won, stars?, left? }>
+//
+// In the one shell (games/shell.js, `shell`; Hanli 10-20: 「确保所有小游戏一套外壳」): a level's story lines (its lead
+// up to the 兽潮来袭 banner) are the shell's lead card, read on the drawn board before its clock starts; the banner,
+// the tips after it and the first wave's countdown stay on the board. The pause is the shell's (it stops the clock,
+// the beasts, 银月's orders, the talismans and the countdown), and the result is the shell's: a level settles
+// { won, stars } won or lost, and 再来 deals it again (back to the level select when no level was asked).
+// Without a shell, as before:
 //
 // The levels: `data.levels` (a story's), else the `shoulu` row of worlds/jiuding/games.json. The level
 // to open: `data.lv` (1…), else the page's `?lv=` (the 游戏厅: ?dev=1&game=shoulu&lv=3) — straight into it,
@@ -22,6 +29,7 @@ import { beastArtReady, beastIcon, draw, loadArt, makePaper, markEvent, portrait
 
 export const meta = {
   id: 'shoulu',
+  pause: true, // the shell's bar pauses the play (its own loop reads `shell.onPause`)
   name: { zh: '守炉', en: 'Guard the Furnace' },
   how: {
     zh: '点虚线圈布符，点符升级或拆。选中银月（点她或按 1），右键地面移动、右键野兽攻击；手机上点她再点。QWER 放技能。兽潮按时自来，守到最后一波。',
@@ -98,7 +106,18 @@ function ensureCss(doc) {
 }
 const word = (o, lang) => o?.[lang] ?? o?.zh ?? '';
 
-export async function mount(container, { lang = 'zh', data = {}, signal } = {}) {
+/** A level's lead split for the shell: its story (the lines before the first `big` banner) read on the lead card,
+    and the rest (the banner, the tips) left for the board. */
+export function leadSplit(lines, lang = 'zh') {
+  const all = Array.isArray(lines) ? lines : [];
+  const at = all.findIndex((l) => l?.big);
+  const story = at < 0 ? all : all.slice(0, at);
+  return { said: story.map((l) => word(l, lang)).filter(Boolean).join(lang === 'en' ? ' ' : ''), rest: at < 0 ? [] : all.slice(at) };
+}
+/** How long the lead card stays before the level starts on its own: long enough to read the line. */
+const leadMs = (said, lang, reducedMotion) => (reducedMotion ? 2400 : Math.min(8000, Math.max(4200, said.length * (lang === 'en' ? 55 : 180))));
+
+export async function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, shell } = {}) {
   lang = lang === 'en' ? 'en' : 'zh';
   const t = T[lang], doc = container.ownerDocument, win = doc.defaultView;
   ensureCss(doc);
@@ -115,12 +134,14 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     + `<div class="sl-skills">${SKEYS.map((k) => `<button type="button" class="sl-skill" data-skill="${k}" title="${SK[lang][k][0]} · ${SK[lang][k][1]}">`
       + `<b>${SK[lang][k][0]}</b><i class="sl-key">${k.toUpperCase()}</i><em class="sl-charges"></em><span class="sl-ring"></span></button>`).join('')}</div></div>`
     + `<div class="sl-preview"></div><div class="sl-controls"><button type="button" class="sl-main" data-a="next"></button><button type="button" data-a="speed">×1</button>`
-    + `<button type="button" data-a="pause">${t.pause}</button><button type="button" data-a="pick">${t.pick}</button></div>`;
+    + `${shell ? '' : `<button type="button" data-a="pause">${t.pause}</button>`}<button type="button" data-a="pick">${t.pick}</button></div>`;
   container.replaceChildren(root);
   const $ = (s) => root.querySelector(s), cv = $('canvas'), ctx = cv.getContext('2d'), stage = $('.sl-stage'), menu = $('.sl-menu'), over = $('.sl-over'), card = $('.sl-card');
   const icons = {};
   const iconOf = (type) => (beastArtReady() ? (icons[type] ??= beastIcon(doc, type)) : beastIcon(doc, type));
   // S: the selection (core.js `pointer`): 银月 selected, the skill being aimed; `sel` is the spot whose menu is open (S.spot)
+  // held: a level drawn but not started (the shell's lead card is up over it); frozen(): no clock, no orders
+  let held = false, leadTok = 0;
   let g = null, li = -1, paper = null, speed = 1, paused = false, S = noSel(), aimAt = null, touchy = false, sel = -1, raf = 0, last = 0, acc = 0, shown = false, sc = 1, dpr = 1, previewKey = '';
   let AC = null;
   const sagaQ = [], toastQ = [];
@@ -132,6 +153,10 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     const on = (el, type, fn, o) => { el?.addEventListener(type, fn, o); off.push(() => el?.removeEventListener(type, fn, o)); };
     const finish = (r) => { if (!done) { done = true; resolve(r); } };
     const leave = () => { win?.cancelAnimationFrame(raf); off.forEach((f) => f()); finish({ won: false, left: true }); };
+    // the shell's pause is the play's: the same flag the old button set (its own button is not drawn in the shell)
+    if (shell?.onPause) off.push(shell.onPause((on) => { paused = Boolean(on); }));
+    if (shell?.paused?.()) paused = true;
+    const frozen = () => paused || held;
     if (signal?.aborted) { leave(); return; }
     signal?.addEventListener('abort', leave, { once: true });
     if (!levels.length) { stage.textContent = lang === 'en' ? 'No levels.' : '没有关卡。'; return; }
@@ -179,18 +204,23 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       root.classList.remove('is-picking');
       g = newGame(row, { seed: `shoulu|${Date.now()}` });
       paper = makePaper(doc, g.L, word(row.name, lang).split(' · ')[0]);
-      paused = false; S = noSel(); aimAt = null; shown = false; acc = 0; previewKey = '';
-      $('[data-a="pause"]').textContent = t.pause;
+      S = noSel(); aimAt = null; shown = false; acc = 0; previewKey = '';
+      if (!shell) { paused = false; $('[data-a="pause"]').textContent = t.pause; }
       closeMenu(); over.hidden = true; toastQ.length = 0;
       $('[data-k="place"]').textContent = word(row.name, lang);
       $('[data-k="waves"]').textContent = String(waves(g));
-      saga(row.lead ?? []);
-      toast(t.hint);
       fit();
+      const { said, rest } = shell?.lead ? leadSplit(row.lead, lang) : { said: '', rest: row.lead ?? [] };
+      const go = () => { held = false; saga(rest); toast(t.hint); };
+      if (!said) { go(); return; }
+      // in the shell: the story read on its lead card over the drawn board; the clock waits for it
+      held = true; sagaQ.length = 0; sagaT = 0;
+      const tok = ++leadTok;
+      shell.lead(said, { auto: leadMs(said, lang, reducedMotion), reducedMotion }).then(() => { if (!done && tok === leadTok) go(); });
     }
     function pickLevels() {
       const stars = loadStars();
-      g = null; closeMenu(); root.classList.add('is-picking');
+      g = null; held = false; leadTok += 1; closeMenu(); root.classList.add('is-picking');
       card.innerHTML = `<h3>${t.select}</h3><div class="sl-levels">${levels.map((l, i) => {
         const s = stars[l.id] ?? 0, nw = [l.new?.beast && BN[lang][l.new.beast], l.new?.tower && TN[lang][l.new.tower]].filter(Boolean).join(' · ');
         return `<button type="button" class="sl-level" data-lv="${i}"><span>${i + 1}</span><b>${word(l.name, lang)}<br><small>${t.newThing}：${nw}</small></b><em>${'★'.repeat(s)}${'☆'.repeat(3 - s)}</em></button>`;
@@ -210,6 +240,8 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       shown = true; closeMenu();
       const win_ = g.over === 'win', st = win_ ? starsOf(g.hp) : 0, row = levels[li];
       if (win_) keepStars(row.id, st);
+      // in the shell: its foot shows the result and 再来, won or lost; the board stays up under it
+      if (shell) { $('[data-a="pick"]').disabled = true; finish(win_ ? { won: true, stars: st } : { won: false, stars: 0 }); return; }
       const more = li + 1 < levels.length;
       card.innerHTML = win_
         ? `<h3>${t.won}</h3><div class="sl-stars">${'★'.repeat(st)}<s>${'★'.repeat(3 - st)}</s></div><p>${t.wonLine(g.hp)}</p>`
@@ -246,7 +278,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     on(cv, 'pointermove', (e) => { aimAt = toWorld(e); });
     on(cv, 'pointerdown', (e) => {
       wake();
-      if (!g || g.over) return;
+      if (!g || g.over || frozen()) return;
       const right = e.button === 2 || (e.button === 0 && e.ctrlKey); // a Mac's ctrl-click is a right-click
       if (e.button !== 0 && e.button !== 2) return;
       const p = toWorld(e), aimed = S.aim;
@@ -255,7 +287,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       apply(pointer(g, { ...S, spot: sel }, { ...p, button: right ? 2 : 0, shift: e.shiftKey, touch: e.pointerType !== 'mouse' }), p, aimed);
     });
     on(doc, 'keydown', (e) => {
-      if (!g || g.over || done || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (!g || g.over || done || frozen() || e.metaKey || e.ctrlKey || e.altKey) return;
       const el = e.target;
       if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName ?? ''))) return;
       // by the key's place, so a Chinese input layout still finds Q W E R and 1
@@ -271,7 +303,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       e.preventDefault();
       if (performance.now() - touchAt < 1500) return;
       const k = e.target.closest('[data-skill]')?.dataset.skill;
-      if (g && k && toggleAuto(g, k)) toast(`${SK[lang][k][0]} · ${g.hero.auto[k] ? t.autoOn : t.autoOff}`);
+      if (g && k && !frozen() && toggleAuto(g, k)) toast(`${SK[lang][k][0]} · ${g.hero.auto[k] ? t.autoOn : t.autoOff}`);
     });
     // a long press on a skill toggles its autocast on a phone, as the right-click does on a Mac (Hanli 10-20)
     let press = null, pressed = false;
@@ -282,7 +314,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       clearTimeout(press);
       press = setTimeout(() => {
         press = null;
-        if (g && toggleAuto(g, k)) { pressed = true; toast(`${SK[lang][k][0]} · ${g.hero.auto[k] ? t.autoOn : t.autoOff}`); }
+        if (g && !frozen() && toggleAuto(g, k)) { pressed = true; toast(`${SK[lang][k][0]} · ${g.hero.auto[k] ? t.autoOn : t.autoOff}`); }
       }, 500);
     });
     const unpress = () => { clearTimeout(press); press = null; };
@@ -292,7 +324,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     on(bar, 'click', (e) => {
       wake();
       if (pressed) { pressed = false; return; } // the long press's own click
-      if (!g || g.over) return;
+      if (!g || g.over || frozen()) return;
       if (e.target.closest('[data-hero]')) { apply(pressKey(g, { ...S, spot: sel }, '1', performance.now() / 1000)); return; }
       const k = e.target.closest('[data-skill]')?.dataset.skill;
       if (!k) return;
@@ -300,7 +332,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       if (S.aim === k) { apply({ sel: { ...S, aim: null }, did: 'cancel' }); return; } // its button again: put it away
       apply(pressSkill(g, { ...S, spot: sel }, k), null, k);
     });
-    on(bar, 'dblclick', (e) => { if (g && e.target.closest('[data-hero]') && g.hero.dead <= 0) { S = { ...S, hero: true }; centre(); } });
+    on(bar, 'dblclick', (e) => { if (g && !frozen() && e.target.closest('[data-hero]') && g.hero.dead <= 0) { S = { ...S, hero: true }; centre(); } });
     function closeMenu() { sel = -1; S = { ...S, spot: -1 }; menu.hidden = true; menu.innerHTML = ''; }
     function openMenu(i) {
       sel = i; S = { ...S, spot: i, hero: false };
@@ -338,7 +370,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     }
     on(menu, 'click', (e) => {
       const b = e.target.closest('button');
-      if (!b || sel < 0 || !g) return;
+      if (!b || sel < 0 || !g || frozen()) return;
       const i = sel;
       if (b.dataset.build) {
         const k = b.dataset.build;
@@ -350,7 +382,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     on($('.sl-controls'), 'click', (e) => {
       const a = e.target.closest('button')?.dataset.a;
       wake();
-      if (a === 'next' && g) { sagaQ.length = 0; sagaT = 0; callWave(g, true); }
+      if (a === 'next' && g && !frozen()) { sagaQ.length = 0; sagaT = 0; callWave(g, true); }
       else if (a === 'speed') { speed = speed === 1 ? 2 : 1; e.target.closest('button').textContent = `×${speed}`; }
       else if (a === 'pause' && g) { paused = !paused; e.target.closest('button').textContent = paused ? t.resume : t.pause; }
       else if (a === 'pick') pickLevels();
@@ -418,7 +450,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       const rdt = Math.min(0.1, (now - last) / 1000);
       last = now;
       if (!g) return;
-      const run = !paused && !g.over;
+      const run = !frozen() && !g.over;
       if (run) { acc += rdt * speed; let n = 0; while (acc >= 1 / 60 && n < 12) { step(g, 1 / 60); acc -= 1 / 60; n += 1; } if (n >= 12) acc = 0; }
       stepFx(g, run ? rdt * speed : g.over ? rdt : 0);
       const was = S;
@@ -426,8 +458,8 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       if (S !== was) cv.style.cursor = '';
       for (const e of g.events) onEvent(e);
       g.events.length = 0;
-      pump(rdt);
-      draw(ctx, g, { paper, sc, dpr, t: now / 1000, heroSel: S.hero, sel, aim: S.aim ? { key: S.aim, x: aimAt?.x, y: aimAt?.y } : null, paused, lang, says: t.says, bossName: BN[lang].heyu });
+      if (!frozen()) pump(rdt); // the banner and tips wait under the lead card and the pause
+      draw(ctx, g, { paper, sc, dpr, t: now / 1000, heroSel: S.hero, sel, aim: S.aim ? { key: S.aim, x: aimAt?.x, y: aimAt?.y } : null, paused: !shell && paused, lang, says: t.says, bossName: BN[lang].heyu });
       hud();
       if (g.over && !shown) showOver();
     }
