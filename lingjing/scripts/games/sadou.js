@@ -13,7 +13,7 @@
 export const meta = {
   id: 'sadou',
   pause: true, // the shell's bar pauses the play (tools/sadou/src/play.js setPaused)
-  name: { zh: '撒豆成兵 · 山道', en: 'Beans into Soldiers' },
+  name: { zh: '撒豆成兵', en: 'Beans into Soldiers' }, // the game's name; the level's own (山道) is the canvas's top bar
   how: {
     zh: '左右拖动，带豆兵穿过加倍的符门，躲开陷阱，撞翻兽潮，最后打倒合窳。',
     en: 'Drag left and right: lead the bean soldiers through the gates that multiply, dodge the traps, crash through the beasts, and bring down the Heyu.',
