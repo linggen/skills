@@ -39,7 +39,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const gauss = (r) => Math.sqrt(-2 * Math.log(r() || 1e-9)) * Math.cos(2 * Math.PI * r());
 
 /* Boards being cut or rebuilt (games.md, 10-16) — not played unless named with --games. */
-export const SKIP = new Set(['rentrope', 'tauntrope', 'wayrope']); // the three 割绳子 levels whose scenes lost their boards 10-16 (the 游戏厅's); the old boards the story no longer plays were deleted 10-19
+export const SKIP = new Set([]); // none: the three 割绳子 levels (忍字 · 认路 · 算账) are back in their scenes 10-20; the old boards the story no longer plays were deleted 10-19
 /* What looks like a tool a first-time player would poke. */
 export const TOOL_LOOKS = '.g-rope-spring, .g-rope-seal, .g-rope-crow, .g-puff, .g-ft-bubble, .g-ft-thorns, .g-regrow, .g-tk-pick, [class*="tool"]';
 /* Shapes allowed to be code-drawn: invisible hit areas, the UI's glyphs and short-lived effects. */

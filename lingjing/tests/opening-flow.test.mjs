@@ -109,6 +109,7 @@ test('the header changes only when the story gets there: the last scene\'s holds
   s = task(win(s, content, ctx(), { id: 'rain-basins', grade: 'dry' }).state, content, ctx(), { action: 'done', id: 'rain-basins' }).state;
   s = resolve(tellOf(content, s).keep, content, ctx(), { exit: 'begin' }).state;
   s = tellOf(content, s).keep;
+  s = task(win(s, content, ctx(), { id: 'masan-taunt', grade: 'word' }).state, content, ctx(), { action: 'done', id: 'masan-taunt' }).state; // 忍字 (back 10-20)
   const out = resolve(s, content, ctx(), { exit: 'endure' });
   const { tell } = tellOf(content, out.state);
   assert.equal(tell[0].of, 'choice');

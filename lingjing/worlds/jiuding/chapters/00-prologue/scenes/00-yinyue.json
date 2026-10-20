@@ -60,8 +60,26 @@
    "story": {
     "zh": "她侧过耳朵，朝崖顶那边听了一听，又道：「你爹就在你拽他的那道坡上，喊了你一夜。这会儿不喊了。」小满心里一松，跟着又一紧：「……不喊了？」\n\n「他在解腰带，」她道，「解了腰带，又解绑腿，一截一截地接，一头拴在坡上的树根上。」她瞥了他一眼，「再不去，他要顺着崖往下爬了。」",
     "en": "She turned an ear towards the top of the cliff, listened a moment, and said, \"Your father is on that slope where you hauled him in. He called for you all night. He's stopped calling now.\" Xiaoman's heart eased, then tightened again. \"…Stopped calling?\"\n\n\"He's undoing his belt,\" she said. \"Undone his belt, now his leg wrappings, tying them together piece by piece, one end lashed to a tree root on the slope.\" She cast him a glance. \"If you don't go now, he's going to climb down the cliff.\""
+   },
+   "needs": {
+    "task": "yinyue-way"
+   },
+   "refuse": {
+    "zh": "她还坐在草地上，等你带她出谷。",
+    "en": "She is still sitting on the grass, waiting for you to take her out of the valley."
    }
   }
  ],
- "_beats": "Cut 2026-10-16 (Hanli 「入门前的怎么办? 减少数量, 推动剧情」): the board left this scene — the passage reads whole; before 入门 the only boards are 接雨 · 拽 · 喂饼 · 射鹿 · 洛书门. Was: 认路 (yinyue-way, batch two 2026-10-14): played at the end of the passage, on 「先带本王出去」 — the valley a small fogged grid, the grass glowing where he walks, his marks on the cells by the cliff; follow them from the cave back to the moss where he fell (she points the way after 30 steps); grade straight · wandered → `way-straight` · `way-wandered`; 带她出谷 waits for it"
+ "_beats": "Back 2026-10-20 (Hanli: 「可以, 放宽, 把那三关加进去」 — the 10-16 five-board rule before 入门 relaxed for the three 割绳子 levels, to break the long reading): 认路 (yinyue-way, `wayrope`): played at the end of the passage, on 「先带本王出去」 — the little fox swung into a 灵气泡 and floated to the moss at the valley mouth (two vines, the bubble taught with a ring, a puff along the roof). Grade straight · wandered (★3 · less) → `way-straight` · `way-wandered`, read by no line yet; 带她出谷 waits for it. No pay before 入门.",
+ "show": [
+  {
+   "card": "board",
+   "id": "yinyue-way"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "yinyue-way"
+  ]
+ }
 }

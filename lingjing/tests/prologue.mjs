@@ -17,6 +17,9 @@ const FNS = { resolve, task, win, look: VERBS.look };
    the clue at 黑松岭, the storm, the fall, the fox — and she joins at daybreak (`follow`). */
 export const TO_VALLEY = [
   ['resolve', { exit: 'begin' }],
+  // 忍字 (割绳子, back 2026-10-20): the cake to the yard dog, then the taunt said back
+  ['win', { id: 'masan-taunt' }],
+  ['task', { action: 'done', id: 'masan-taunt' }],
   ['resolve', { exit: 'endure' }],
   ['resolve', { exit: 'egg' }],
   ['resolve', { exit: 'go' }],
@@ -49,12 +52,18 @@ export const JIN_ONE = [
    down as the page would record it. */
 export const TO_HALL = [
   ...TO_VALLEY,
+  // 认路 (割绳子, back 2026-10-20): the little fox in a 灵气泡 to the moss at the valley mouth
+  ['win', { id: 'yinyue-way' }],
+  ['task', { action: 'done', id: 'yinyue-way' }],
   ['resolve', { exit: 'follow' }],
   ['resolve', { exit: 'climb' }],
   ['win', { id: 'deer-wind' }],
   ['task', { action: 'done', id: 'deer-wind' }],
   ['resolve', { exit: 'left' }],
   ['resolve', { exit: 'visit' }],
+  // 算账 (割绳子, back 2026-10-20): the venison onto 马三's steelyard
+  ['win', { id: 'rent-scale' }],
+  ['task', { action: 'done', id: 'rent-scale' }],
   ['resolve', { exit: 'dumb' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'bath' }],

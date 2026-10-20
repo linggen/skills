@@ -213,7 +213,7 @@ test('the rent is paid with the deer hide the shot brought, and refused without 
 });
 
 test('staying exits tell their passage and keep the scene; a staying choice made is not offered again', () => {
-  const s = walk(start(), TO_VALLEY.slice(0, 5), content, NOW);
+  const s = walk(start(), TO_VALLEY.slice(0, 7), content, NOW);
   assert.equal(s.scene, '00-duanbei');
   const back = must(resolve, s, { exit: 'back' });
   assert.equal(back.state.scene, '00-duanbei');
@@ -925,7 +925,7 @@ test('a later realm pays more for the same task; the day counts base', () => {
 
 test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
   let s = { ...start(), stamina: 0, stamina_at: NOW.toISOString() };
-  s = walk(s, TO_VALLEY.slice(0, 7), content, NOW);
+  s = walk(s, TO_VALLEY.slice(0, 9), content, NOW);
   assert.equal(s.scene, '00-heisong');
   assert.equal(s.stamina, 0, 'looking (看) is free');
   // …but an exit that is toil by itself (the marks, the storm, the steps) spends its own 体力
@@ -1544,7 +1544,7 @@ test('a key the story still needs cannot be sold', () => {
 test('an exit can grant a thing', () => {
   const c = structuredClone(content);
   c.chapters['00-prologue'].scenes['00-chushan'].exits[0].grant = { table: 'scene', item: 'straw-cloak' };
-  const out = resolve(walk(start(), TO_VALLEY.slice(0, 4), c, NOW), c, ctx(), { exit: 'lookout' });
+  const out = resolve(walk(start(), TO_VALLEY.slice(0, 6), c, NOW), c, ctx(), { exit: 'lookout' });
   assert.equal(out.result.ok, true);
   assert.equal(out.result.paid.item, 'straw-cloak');
   assert.deepEqual(out.state.bag, { 'straw-cloak': 1 });
@@ -1748,9 +1748,11 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   // The opening's play beats grow (batch two, 2026-10-14): every board on the way here done, the first six among them.
   assert.ok(seen.tasks.every(t => t.status === 'done'), JSON.stringify(seen.tasks.map(t => [t.id, t.status])));
   const ids = seen.tasks.map(t => t.id);
-  for (const id of ['rain-basins', 'fall-storm', 'bread-share', 'deer-wind', 'gate-luoshu']) assert.ok(ids.includes(id), id);
-  for (const id of ['rent-scale', 'xisui-hold', 'feather-breath', 'halfyear-carry', 'masan-taunt', 'yinyue-way', 'kitchen-griddle']) assert.ok(!ids.includes(id), `${id}: cut before 入门 (10-16)`);
-  assert.deepEqual(ids.filter(id => ['rain-basins', 'bread-share', 'deer-wind', 'gate-luoshu'].includes(id)), ['rain-basins', 'bread-share', 'deer-wind', 'gate-luoshu'], 'in the order they were played');
+  // 忍字 · 认路 · 算账 back 2026-10-20 as 割绳子 levels (「可以, 放宽, 把那三关加进去」); the old weak boards stay cut.
+  for (const id of ['rain-basins', 'masan-taunt', 'fall-storm', 'bread-share', 'yinyue-way', 'deer-wind', 'rent-scale', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  for (const id of ['xisui-hold', 'feather-breath', 'halfyear-carry', 'kitchen-griddle']) assert.ok(!ids.includes(id), `${id}: cut before 入门 (10-16)`);
+  const order = ['rain-basins', 'masan-taunt', 'bread-share', 'yinyue-way', 'deer-wind', 'rent-scale', 'gate-luoshu'];
+  assert.deepEqual(ids.filter(id => order.includes(id)), order, 'in the order they were played');
 });
 
 test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {

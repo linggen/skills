@@ -92,16 +92,23 @@ const won = (s, id, grade) => {
 
 const BEATS = [
   ['00-shiao', 'rain-basins', 'begin', ['dry', 'wet'], { dry: 'rain-caught', wet: 'rain-puddled' }],
+  // The three 割绳子 levels, back 2026-10-20 (Hanli: 「可以, 放宽, 把那三关加进去」): both ways on wait for each, the grade only a mark.
+  ['00-masan', 'masan-taunt', 'endure', ['word', 'fist'], { word: 'taunt-word', fist: 'taunt-fist' }],
+  ['00-masan', 'masan-taunt', 'strike', ['word', 'fist'], { word: 'taunt-word', fist: 'taunt-fist' }],
+  ['00-yinyue', 'yinyue-way', 'follow', ['straight', 'wandered'], { straight: 'way-straight', wandered: 'way-wandered' }],
+  ['00-rent', 'rent-scale', 'dumb', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
+  ['00-rent', 'rent-scale', 'truth', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
 ];
 
-/* Cut 2026-10-16 (Hanli 「入门前的怎么办? 减少数量, 推动剧情」): before 入门 the boards are only 接雨 · 拽 · 喂饼 ·
-   射鹿 · 洛书门 (and the village maps, another lane's). These scenes read whole and go on with no board. */
-const CUT = [['00-masan', 'masan-taunt', 'endure'], ['00-yinyue', 'yinyue-way', 'follow'], ['00-kitchen', 'kitchen-griddle', 'go'],
-  ['00-rent', 'rent-scale', 'dumb'], ['00-halfyear', 'feather-breath', 'on'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-sleep', 'xisui-hold', 'bath']];
-const KEPT = { '00-shiao': ['rain-basins'], '00-fall': ['fall-storm'], '00-cave': ['bread-share'], '00-deer': ['deer-wind'], '00-luoshu': ['gate-luoshu'] };
+/* Cut 2026-10-16 (Hanli 「入门前的怎么办? 减少数量, 推动剧情」): before 入门 the boards were only 接雨 · 拽 · 喂饼 ·
+   射鹿 · 洛书门 (and the village maps, another lane's). Relaxed 2026-10-20 (「可以, 放宽, 把那三关加进去」): the
+   built 割绳子 levels 忍字 · 认路 · 算账 are back in their scenes; the old weak boards stay cut — these scenes read
+   whole and go on with no board. */
+const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-halfyear', 'feather-breath', 'on'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-sleep', 'xisui-hold', 'bath']];
+const KEPT = { '00-shiao': ['rain-basins'], '00-masan': ['masan-taunt'], '00-fall': ['fall-storm'], '00-cave': ['bread-share'], '00-yinyue': ['yinyue-way'], '00-deer': ['deer-wind'], '00-rent': ['rent-scale'], '00-luoshu': ['gate-luoshu'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
 
-test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 拽 · 喂饼 · 射鹿 · 洛书门', () => {
+test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 忍字 · 拽 · 喂饼 · 认路 · 射鹿 · 算账 · 洛书门', () => {
   const ch = content.chapters['00-prologue'];
   const boards = {};
   // The 古 line's scenes (the 今 interlude spliced in is its own line, not counted here).
@@ -162,10 +169,19 @@ test('well or badly, each scene goes on — the grade only writes its mark', () 
   }
 });
 
-test('算账 has no board now: with the deer hide both ways on are open', () => {
-  const s = atScene('00-rent');
-  assert.equal(resolve(s, content, ctx(), { exit: 'truth' }).result.ok, true);
-  assert.equal(resolve(s, content, ctx(), { exit: 'dumb' }).result.ok, true);
+/* The three 割绳子 levels back before 入门 (2026-10-20): no pay — no 修为, no 灵石, nothing held back for later — and
+   算账 plays where 马三 calls 「称肉！」, the rest of the passage (「秤称完了…」) read after it. */
+test('忍字 · 认路 · 算账 pay nothing before 入门: the grade writes its mark, nothing else moves', () => {
+  for (const [sid, tid, grade] of [['00-masan', 'masan-taunt', 'word'], ['00-yinyue', 'yinyue-way', 'wandered'], ['00-rent', 'rent-scale', 'exact']]) {
+    const s = { ...atScene(sid), stamina: 100 };
+    const after = won(s, tid, grade);
+    for (const k of ['progress', 'wealth', 'tier', 'step']) assert.deepEqual(after[k], s[k], `${tid}: ${k} unchanged`);
+    assert.deepEqual(after.bag, s.bag, `${tid}: nothing in the bag`);
+  }
+  const sc = scenes['00-rent'];
+  assert.match(sc.story.zh, /……称肉！」$/);
+  assert.match(sc.story_after.zh, /^秤称完了，马三却没有走。/);
+  assert.match(sc.story_after_full.zh, /^少的那一条腿，他懒得追/);
 });
 
 test('喂饼: the grade takes 分它一半 or 自己吃 — the amount a mark for the 恩仇簿 and the story', () => {
@@ -209,9 +225,11 @@ test('射鹿 keeps its two ways: the board won takes 往左偏半寸; 照直射 
 });
 
 test('a save already standing in a scene that has since been given a board is offered it on load — never shut out', () => {
-  const s = atScene('00-cave');
-  const old = { ...s, tasks: {} };
-  assert.equal(fitWorld(old, content).tasks['bread-share'].status, 'offered');
+  for (const [sid, tid] of [['00-cave', 'bread-share'], ['00-masan', 'masan-taunt'], ['00-yinyue', 'yinyue-way'], ['00-rent', 'rent-scale']]) {
+    const s = atScene(sid);
+    const old = { ...s, tasks: Object.fromEntries(Object.entries(s.tasks).filter(([id]) => id !== tid)) };
+    assert.equal(fitWorld(old, content).tasks[tid].status, 'offered', sid);
+  }
   assert.equal(newState(content, 'zh', NOW).tasks['rain-basins'].status, 'offered', 'the first scene\'s board, from the start');
 });
 
@@ -247,8 +265,8 @@ test('the rhythm: the main line read between two beats, a board resetting it whe
   assert.equal(parts[0].chars, storyChars(ch.scenes['00-shiao'].story), 'a board waits for the passage that leads into it');
   assert.equal(parts[1].from, '00-shiao');
   assert.ok(parts[1].chars >= storyChars(ch.scenes['00-shiao'].story_after), 'the rest of a split passage is read after its board');
-  // 00-rent and 00-halfyear lost their boards 2026-10-16 (the cut before 入门): their passages read on.
-  for (const at of ['00-heisong/carve', '00-cave', '00-deer']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
+  // 00-halfyear lost its boards 2026-10-16 (the cut before 入门): its passage reads on. 忍字 · 认路 · 算账 back 10-20.
+  for (const at of ['00-masan', '00-heisong/carve', '00-cave', '00-yinyue', '00-deer', '00-rent']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
   const warn = warnings(content, { chapters: ['00-prologue'] });
   assert.ok(warn.every(w => w.startsWith('00-prologue: ') && w.includes('(cap 1500)')));
   console.log(`rhythm warnings (00-prologue, cap ${RHYTHM_CAP}):\n${warn.join('\n')}`);

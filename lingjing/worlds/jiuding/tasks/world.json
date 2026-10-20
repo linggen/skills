@@ -76,7 +76,7 @@
       "title": {"zh": "忍字 · 桂花糕喂狗", "en": "Holding it in · The cake to the dog"},
       "grant": { "table": "task", "progress": 5 },
       "marks": {"word": "taunt-word", "fist": "taunt-fist"},
-      "done_line": {"zh": "那块桂花糕，还在马小宝手里。", "en": "The osmanthus cake is still in Ma Xiaobao's hand."}
+      "done_line": {"zh": "那声狗叫，你没学。", "en": "You never did bark."}
     },
     {
       "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
@@ -91,7 +91,7 @@
       "title": {"zh": "认路 · 灵气泡送它出谷", "en": "Finding the way · Out in a qi bubble"},
       "grant": { "table": "task", "progress": 5 },
       "marks": {"straight": "way-straight", "wandered": "way-wandered"},
-      "done_line": {"zh": "崖壁上的道道，一道都还在。", "en": "The lines on the cliff are all still there."}
+      "done_line": {"zh": "出谷的路，认出来了。", "en": "The way out of the valley, found."}
     },
     {
       "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
