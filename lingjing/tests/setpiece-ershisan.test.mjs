@@ -109,7 +109,7 @@ test('painted, not drawn: every picture on disk at its size; the blows land abov
   for (const p of Object.values(P.ART)) assert.ok(credits.includes(path.basename(p)), `${p} credited`);
   for (const [w, h] of [[1440, 810], [390, 760]]) {
     const W = 1000, H = Math.round(W * h / w), L = P.layout(W, H);
-    assert.ok(L.hit[0] > L.h && L.hit[0] < W && L.hit[1] - L.h / 2 > 0 && L.hit[1] + L.h / 2 < H * 0.72, `${w}: the blows land above the words, in the frame`);
+    assert.ok(L.hit[0] > L.h && L.hit[0] < W && L.hit[1] - L.h / 2 > 0 && L.hit[1] + L.h / 2 < H * (H > W ? 0.6 : 0.72), `${w}: the blows land above the words, in the frame`);
   }
   for (const [W, H] of [[1000, 562], [1000, 2050]]) {
     const v = P.stillSvg('shu', { W, H });

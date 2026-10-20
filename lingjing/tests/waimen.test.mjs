@@ -452,9 +452,14 @@ test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 
 test('息壤 keeps his 修为 and lifts nothing; its moment is the five doors opening one by one, in ink (his, 2026-09-29)', async () => {
   const { doorsHtml } = await import('../scripts/doors.js');
   const { MAIN, CARD_KINDS, PAGE_OWNS } = await import('../scripts/stage.mjs');
-  const out = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
+  // Since 2026-10-20 the moment rides wm-kaikai's way on (the 息壤 paragraphs and 息壤 · 五门 moved there): after the soil has grown in.
+  const swallowed = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
+  assert.equal(swallowed.result.node?.doors, undefined, 'not before the earth is scattered');
+  const played = before(swallowed.state, 'sit'); // 息壤 · 五门 won: its own pay, the board's
+  const out = resolve(played, content, ctx(), { exit: 'sit' });
   // No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): the realm stands as he earned it.
-  assert.deepEqual([out.state.step, out.state.progress, out.result.rose], [2, 33, undefined], 'the story moved nothing');
+  assert.deepEqual([swallowed.state.step, swallowed.state.progress], [2, 33], 'the swallow moved nothing');
+  assert.deepEqual([out.state.step, out.state.progress, out.result.rose], [played.step, played.progress, undefined], 'the story moved nothing');
   const node = out.result.node;
   assert.deepEqual(node.doors.map(d => d.el), ['metal', 'wood', 'water', 'fire', 'earth']);
   assert.ok(node.doors.every(d => d.line.startsWith('第')));

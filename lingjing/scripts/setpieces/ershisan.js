@@ -56,7 +56,8 @@ export function layout(W, H) {
   const f = frameOf(SHOT[1], ...SIZES.ya, W, H);
   const [sx, sy] = [f.x + MARKS.stone[0] * SIZES.ya[0] * f.s, f.y + MARKS.stone[1] * SIZES.ya[1] * f.s];
   // Above the words' band over the stage's lower third, inside the frame.
-  const hit = [Math.min(W * 0.8, Math.max(W * 0.45, sx)), Math.min(H * 0.72 - h * 0.62, Math.max(H * 0.3, sy))];
+  // A tall stage (a phone) carries the words higher (from ~0.6 of it): the blows land well above them, at its middle.
+  const hit = [Math.min(W * 0.8, Math.max(W * 0.45, sx)), Math.min(tall ? H * 0.42 : H * 0.72 - h * 0.62, Math.max(H * 0.3, sy))];
   return { h, hit, from: [-h, hit[1]] };
 }
 

@@ -62,6 +62,34 @@
     "en": "Do not move"
    },
    "means": "stays buried in the breathing-soil mound inside the wall while Old Wilt climbs and falls — standing would tear the half-grown roots; does not open the binding",
+   "_doors": "The page's moment after this exit (story.mjs node `doors`): the five doors open one by one, a seal and a line each, in ink — colour is for 银月's memories alone. On wm-xirang's swallow until 2026-10-20; moved here when the 息壤 paragraphs and 息壤 · 五门 came to this scene (the reading cap), so the card stands after 「那座土丘『喀』地裂开了。息壤，都长进了他身子里」, never before the soil is even scattered.",
+   "doors": [
+    {
+     "el": "metal",
+     "zh": "第一扇，金。「铮」的一声——是爷爷那张弓的弦。",
+     "en": "The first, Metal. A twang — the string of Grandpa's bow."
+    },
+    {
+     "el": "wood",
+     "zh": "第二扇，木。吱吱呀呀，像黑松岭的松树，在没有风的夜里自己挪了一步。",
+     "en": "The second, Wood. Creak by creak, like the pines of Black Pine Ridge moving a step on a windless night."
+    },
+    {
+     "el": "water",
+     "zh": "第三扇，水。一冷——是那一盆洗髓的水；冷过了，化成一条清河。",
+     "en": "The third, Water. A chill — the marrow-washing basin; then it melts into a clear river."
+    },
+    {
+     "el": "fire",
+     "zh": "第四扇，火。灶膛里的火。娘拨一拨柴：「打不过就跑，跑不丢人。」",
+     "en": "The fourth, Fire. The fire in the stove. Ma pokes the wood: \"If you can't win, run. No shame in running.\""
+    },
+    {
+     "el": "earth",
+     "zh": "第五扇，土。一股锈味儿，越开越淡——底下，是开春翻开的新土。",
+     "en": "The fifth, Earth. A smell of rust, fainter as it opens — and underneath, new earth turned in spring."
+    }
+   ],
    "story": {
     "zh": "小满埋在土里，两只手按在膝盖上，指甲掐进了肉里。他只要从土里站起来——土一破，那些须子便断在半路。他没有动。\n\n墙外头，响起了一下一下往上爬的声音。小满数着。数到第十九下，那声音停了。然后是一声惨叫，很长，很长，越掉越远，越掉越细，细成一根线，断了。\n\n第三天天快亮，再吸半天，第五层的门槛也许便摸得着了。一个很困的声音在他耳朵里道：「够了。」小满道：「还没够。再吸半天，就五层了。」那声音道：「……你娘给你起的名字，叫什么？」\n\n满了就要溢出来，溢出来就糟践了；饱了一点，还没满，还知道饿。知道饿，才知道别人也饿。他慢慢地，把那口还没吸完的气吐了出去。隔着那面墙，传来马小宝的声音：「……沈小满。你在里头喘气，我听得见。」\n\n那座土丘「喀」地裂开了。息壤，都长进了他身子里。石壁里照出一个人影——那人影的皮肤底下，有光。五种颜色，像五条小河。换了昨天，他该咧着嘴笑。这时候他只觉得嘴里发苦。他把那只赤铜葫芦掏出来握着，葫芦肚里一点一点温了起来——他五扇门里，有一扇是火。包袱里还剩一根萝卜，他啃了。",
     "en": "Xiaoman was buried in the earth, both hands on his knees, his nails digging into his flesh. He had only to stand up out of the earth. But break the earth and those roots would snap halfway. He didn't move.\n\nOutside the wall came the sound of climbing, one pull at a time. Xiaoman counted. At nineteen, the sound stopped. Then a scream, long, long, further and further, thinner and thinner, thin as a thread, and then it broke.\n\nNear dawn on the third day: half a day more of drawing it in, and he might touch the threshold of the fifth layer. A very sleepy voice said in his ear: \"Enough.\" Xiaoman said: \"Not enough yet. Half a day more and it's the fifth layer.\" The voice said: \"...The name your mother gave you. What is it?\"\n\nWhen a thing's full it spills over, and what spills is wasted; a little fed, not yet full, you still know hunger. Knowing hunger is how you know other people are hungry. Slowly, he let out the breath he hadn't finished drawing. Through the wall came Ma Xiaobao's voice: \"...Shen Xiaoman. I can hear you breathing in there.\"\n\nThe mound of earth split open with a *crack*. The living soil had all grown into his body. In the wall was a reflection. And under that reflection's skin there was light. Five colours, like five little rivers. Yesterday he'd have grinned at this. Now there was only a bitter taste in his mouth. He took out the red-copper gourd and held it, and the belly of the gourd warmed little by little: of his five doors, one was fire. There was one radish left in his bundle. He ate it."
