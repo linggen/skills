@@ -22,6 +22,9 @@
 export const W = 540, H = 960;
 export const HERO = { x: 270, y: 846 };
 export const FOX = { x: 188, y: 868 };
+/** 小满's raised hand: his hovering sword waits there, tip up-field, and the volleys launch from it (Hanli 10-20:
+ *  「小满手上的剑, 不要剑锋对着自己」 — no blade, painted or flying, ever points at him). */
+export const HAND = { x: HERO.x + 40, y: HERO.y - 104 };
 const STEP = 1 / 60;
 
 /** A string seed → a small fast generator (games/seeded.js's, kept here so the bundle needs nothing else). */
@@ -166,7 +169,9 @@ function crowd(g, r) {
 // ---- shots (things in flight) ------------------------------------------------------------------------------------
 
 function shoot(g, s) {
-  g.shots.push({ id: g.nextId++, age: 0, hit: new Set(), ...s });
+  const shot = { id: g.nextId++, age: 0, hit: new Set(), ...s };
+  notAtHim(shot);
+  g.shots.push(shot);
 }
 
 function aim(from, to, speed, spread = 0) {
@@ -181,7 +186,7 @@ function fireSwords(g) {
   const dmg = h.dmg + (at(card(g, 'jian-pierce').dmg, lv(g, 'jian-pierce')) ?? 0);
   for (let i = 0; i < n; i += 1) {
     const spread = (i - (n - 1) / 2) * 0.13;
-    shoot(g, { kind: 'sword', x: HERO.x + (i - (n - 1) / 2) * 14, y: HERO.y - 30, ...aim(HERO, t, h.speed, spread),
+    shoot(g, { kind: 'sword', x: HAND.x + (i - (n - 1) / 2) * 14, y: HAND.y, ...aim(HAND, t, h.speed, spread),
       dmg, r: h.r, pierce: 1 + pierce, home: t.id });
   }
   emit(g, { t: 'cast', who: 'xm', kind: 'sword' });
@@ -290,6 +295,21 @@ function burst(g, s) {
   }
 }
 
+function notAtHim(s) {
+  if (s.kind !== 'sword' || !towardHim(s)) return;
+  const sp = Math.hypot(s.vx, s.vy);
+  s.vy = 0; s.vx = Math.sign(s.vx || 1) * sp;
+  if (towardHim(s)) s.vx = -s.vx;
+}
+
+/** True when a flying sword's line of flight runs through 小满 (within his body's ~36 px of his chest, ahead of it). */
+export function towardHim(s) {
+  const dx = HERO.x - s.x, dy = HERO.y - 50 - s.y, sp = Math.hypot(s.vx, s.vy);
+  if (!sp) return false;
+  const along = (dx * s.vx + dy * s.vy) / sp;
+  return along > 0 && Math.abs(dx * s.vy - dy * s.vx) / sp < 36;
+}
+
 function moveShot(g, s, dt) {
   s.age += dt;
   if (s.lane != null) return moveBolt(g, s, dt);
@@ -313,9 +333,10 @@ function moveShot(g, s, dt) {
     cur += Math.max(-turn * dt, Math.min(turn * dt, d));
     s.vx = Math.cos(cur) * sp; s.vy = Math.sin(cur) * sp;
   }
-  // A sword never heads back down toward the wall and 小满 (Hanli 10-20: 「别对着自己」): a curl that would turn it
-  // round runs it level across the road instead.
-  if (s.kind === 'sword' && s.vy > 0) { const sp = Math.hypot(s.vx, s.vy); s.vy = 0; s.vx = Math.sign(s.vx || 1) * sp; }
+  // A sword never points at 小满 (Hanli 10-20: 「别对着自己」「不要剑锋对着自己」): one whose line of flight would run
+  // through him runs level across the road instead. It may dip toward a beast biting the wall beside him (launched from his raised
+  // hand, those are a little below it), never at him.
+  notAtHim(s);
   if (s.arcing) {
     s.arcAge += dt;
     if (s.arcAge > 1.1) return fade(g, s);
@@ -344,6 +365,7 @@ function arcOrEnd(g, s) {
   s.arcing = true; s.arcAge = 0; s.home = next.id;
   s.pierce = at(card(g, 'jian-arc').hits, L);
   s.vx = side * sp * 0.92; s.vy = -sp * 0.4;
+  notAtHim(s);
 }
 
 function fade(g, s) {

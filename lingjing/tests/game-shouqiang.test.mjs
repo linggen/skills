@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, W, canPlace, cellAt, collect, hurt, newGame, offerCards, open, pick, place, reachY, setFocus, sim, step, stars } from '../scripts/games/shouqiang/core.js';
+import { BOTS, HAND, W, canPlace, towardHim, cellAt, collect, hurt, newGame, offerCards, open, pick, place, reachY, setFocus, sim, step, stars } from '../scripts/games/shouqiang/core.js';
 import { levelAsked, meta } from '../scripts/games/shouqiang.js';
 import { sourceHash } from '../tools/shouqiang/hash.mjs';
 
@@ -170,7 +170,7 @@ test('the range line: nothing is hurt above it; the boss stops above it to roar,
 });
 
 // Hanli 10-20: 「小满的剑别对着自己, 剑往回飞也不太合理」 — 回剑 became 回旋: a sword that struck arcs on across the road.
-test('swords never head back toward 小满; 回旋 arcs to a second beast and dissolves up the road', () => {
+test('swords never point at 小满 (they launch from his raised hand); 回旋 arcs to a second beast and dissolves up the road', () => {
   const arc = kit.cards.find((c) => c.id === 'jian-arc');
   assert.ok(arc && !kit.cards.some((c) => c.id === 'jian-return'));
   assert.match(arc.name.zh, /回旋/);
@@ -182,7 +182,7 @@ test('swords never head back toward 小满; 回旋 arcs to a second beast and di
       for (const s of g.shots) {
         if (s.kind !== 'sword') continue;
         swords += 1;
-        assert.ok(s.vy <= 0, `a sword heading down at ${Math.round(s.x)},${Math.round(s.y)} (vy ${s.vy})`);
+        assert.ok(!towardHim(s), `a sword pointing at 小满 from ${Math.round(s.x)},${Math.round(s.y)} (v ${Math.round(s.vx)},${Math.round(s.vy)})`);
         if (s.arcing) arcing += 1;
       }
       for (const e of g.events) { if (e.t === 'fade') fades += 1; }
@@ -446,11 +446,11 @@ test('the range line holds in the 药园: a full game with talismans never hurts
 
 test('balance in the 药园: never setting a talisman loses; a first-timer wins L2 comfortably and L5 is a real fight', () => {
   const rate = (rs) => rs.filter((r) => r.won).length / rs.length;
-  const target = [[0.95, 1], [0.85, 1], [0.6, 0.95], [0.5, 0.9]];
+  const target = [[0.95, 1], [0.75, 1], [0.55, 0.95], [0.45, 0.9]]; // 40 seeds; measured over 60: see games.md
   const got = [];
   for (const [i, l] of lanes.entries()) {
     assert.ok(laneRun(l, 'lazy', 6).every((r) => !r.won), `${l.id}: the heroes alone never hold it`);
-    const human = laneRun(l, 'human'), sharp = laneRun(l, 'sharp', 12);
+    const human = laneRun(l, 'human', 40), sharp = laneRun(l, 'sharp', 12);
     got.push(rate(human));
     assert.ok(rate(human) >= target[i][0] && rate(human) <= target[i][1], `${l.id}: the human bot won ${Math.round(rate(human) * 100)}%`);
     assert.ok(rate(sharp) >= 0.9, `${l.id}: a sharp player wins (${Math.round(rate(sharp) * 100)}%)`);

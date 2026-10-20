@@ -1,7 +1,7 @@
 // play.js — 守墙关's scene: draws what the engine (scripts/games/shouqiang/core.js) holds, turns its events into
 // juice, and takes the two inputs the game has: a card pick, and (optional) a tap on a beast to focus it.
 import * as Phaser from 'phaser';
-import { newGame, step, pick, setFocus, reachY, HERO, FOX, W, H } from 'shouqiang-core';
+import { newGame, step, pick, setFocus, reachY, HERO, FOX, HAND, W, H } from 'shouqiang-core';
 import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
 import { Hud, WORDS, bar, setBarW } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
@@ -120,6 +120,11 @@ export class PlayScene extends Phaser.Scene {
     this.xmScale = 150 / this.xm.height;
     this.xm.setScale(this.xmScale);
     this.tweens.add({ targets: this.xm, scaleY: this.xmScale * 1.03, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    // His sword hovers at his raised hand as its own sprite, tip UP the road toward the beasts (the painted frames
+    // hold no blade: Hanli 10-20 「不要剑锋对着自己」); it bobs, glows, and is gone for a beat while a volley launches.
+    this.handGlow = this.add.image(HAND.x, HAND.y, 'glow').setDepth(D.hero + 1).setBlendMode(Phaser.BlendModes.ADD).setTint(0x7fd0ff).setScale(1.1).setAlpha(0.5);
+    this.handSword = this.add.image(HAND.x, HAND.y, 'sword').setDisplaySize(58, 58).setRotation(-Math.PI / 4).setDepth(D.hero + 2);
+    this.handBack = 0;
     this.xmAura = this.add.image(HERO.x, HERO.y - 20, 'glow').setDepth(D.hero - 1).setBlendMode(Phaser.BlendModes.ADD).setScale(2.4).setTint(0x7fd0ff).setAlpha(0.25);
     this.add.image(FOX.x, FOX.y + 24, 'shadow').setDepth(D.hero - 1).setScale(1.2, 1);
     const yyKey = this.textures.get('yy-sheet').has('idle-1') ? 'yy-sheet' : null;
@@ -241,6 +246,11 @@ export class PlayScene extends Phaser.Scene {
   heroes(dt) {
     if (this.xmCast > 0 && (this.xmCast -= dt) <= 0) this.xm.setTexture('xiaoman-idle');
     this.xmAura.setAlpha(0.18 + Math.sin(this.time.now / 300) * 0.06);
+    const bob = Math.sin(this.time.now / 380) * 4;
+    if (this.handBack > 0) this.handBack = Math.max(0, this.handBack - dt);
+    const back = this.handBack > 0 ? 0 : 1;
+    this.handSword.setPosition(HAND.x, HAND.y + bob).setAlpha(back);
+    this.handGlow.setPosition(HAND.x, HAND.y + bob).setAlpha(back * (0.42 + Math.sin(this.time.now / 260) * 0.1));
     if (!this.yy) return;
     if (this.yyAct > 0) { this.yyAct -= dt; return; }
     this.yyIdle += dt;
@@ -579,7 +589,7 @@ export class PlayScene extends Phaser.Scene {
       this.shake(300, 0.005);
     },
     cast(e) {
-      if (e.who === 'xm') return this.xmCastPose();
+      if (e.who === 'xm') { if (e.kind === 'sword') this.handBack = 0.32; return this.xmCastPose(); }
       this.yyPose(['cast-1', 'cast-2']);
     },
     wall(e) {
@@ -626,7 +636,7 @@ export class PlayScene extends Phaser.Scene {
   xmCastPose() {
     this.xm.setTexture(this.tex('xiaoman-cast', 'xiaoman-idle'));
     this.xmCast = 0.16;
-    this.em.burst('spark', 3, HERO.x + 14, HERO.y - 70);
+    this.em.burst('spark', 3, HAND.x, HAND.y);
   }
 
   ring(x, y, r, color, ms = 380) {
