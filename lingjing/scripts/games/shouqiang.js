@@ -54,6 +54,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     const [a, b] = lanes && wide() ? [1040, 960] : [9, 16];
     box.style.aspectRatio = `${a}/${b}`;
     box.style.width = `min(100%, calc((100dvh - var(--game-reserve, 150px)) * ${a} / ${b}))`;
+    box.dataset.landscape = String(Boolean(lanes && wide())); // the page around it widens for it (arcade.css)
     return lanes && wide();
   };
   shape(false);

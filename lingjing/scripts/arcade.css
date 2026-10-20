@@ -42,6 +42,8 @@ body { overflow: auto; }
   .arcade:has(.arcade-play.is-tall) { max-width: none; padding-bottom: 8px; }
   .arcade:has(.arcade-play.is-tall) .arcade-head { margin-bottom: 6px; }
   .arcade-play.is-tall { max-width: calc(200px + 18px + (100vh - 84px) * var(--ar, .79) + 22px); padding: 10px; --game-reserve: 84px; }
+  /* a 药园 level in a landscape window: the field plus its side panels (1040 : 960), not the portrait column */
+  .arcade-play.is-tall:has([data-landscape="true"]) { max-width: calc(200px + 18px + (100vh - 84px) * 1.0833 + 22px); }
 }
 .arcade-play .cardtitle { font-family: var(--serif); font-size: 16px; font-weight: 600; letter-spacing: .12em; margin-bottom: 4px; }
 .arcade-result { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; margin-top: 10px; }

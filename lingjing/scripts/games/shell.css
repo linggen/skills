@@ -47,7 +47,7 @@
 
 /* A Mac window: a tall board takes the window's height, the bar and the result in a column beside it. */
 @media (min-width: 900px) {
-  .gshell.is-tall { display: grid; grid-template-columns: 200px auto; grid-template-rows: auto 1fr; column-gap: 18px; }
+  .gshell.is-tall { display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 18px; }
   .gshell.is-tall .gshell-bar { grid-column: 1; grid-row: 1; align-self: start; padding-top: 6px; }
   .gshell.is-tall .gshell-stage { grid-column: 2; grid-row: 1 / span 2; }
   .gshell.is-tall .gshell-foot { grid-column: 1; grid-row: 2; flex-direction: column; align-items: flex-start; align-self: end; }
