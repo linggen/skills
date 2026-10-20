@@ -53,11 +53,13 @@ def _model(edit):
   return m
 
 
-def busy():
-  """Another FLUX job (the engine's mlx_picture.py, a bare mflux) holds the GPU: wait for it."""
+def busy(limit=2):
+  """Other FLUX jobs (the engine's one-shot mlx_picture.py, a bare mflux) on the GPU: wait while `limit` or more
+  run. One alongside is fine (96 GB unified memory, a render holds 7–14 GB); waiting for none starves this run when
+  other agents paint back to back."""
   import subprocess
-  r = subprocess.run(['pgrep', '-lf', 'mlx_picture|mflux-generate'], capture_output=True, text=True)
-  return bool(r.stdout.strip())
+  r = subprocess.run(['pgrep', '-f', 'mlx_picture|mflux-generate'], capture_output=True, text=True)
+  return len(r.stdout.split()) >= limit
 
 
 def render(prompt, out, w=768, h=512, seed=1, refs=None, steps=4):

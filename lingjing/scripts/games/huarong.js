@@ -153,7 +153,7 @@ export function html(state, lang = 'zh') {
     const [w, h] = SIZE[b.t];
     const cls = `g-huarong-block g-huarong-${b.t}${state.sel === b.id ? ' is-sel' : ''}`;
     const label = b.t === 'k' ? t.you : t[b.t];
-    return `<button type="button" class="${cls}" data-g="block" data-b="${b.id}" style="grid-column:${b.x + 1} / span ${w};grid-row:${b.y + 1} / span ${h}"${state.won ? ' disabled' : ''}>${label}</button>`;
+    return `<button type="button" class="${cls}" data-g="block" data-b="${b.id}" aria-label="${label || b.t}" style="grid-column:${b.x + 1} / span ${w};grid-row:${b.y + 1} / span ${h}"${state.won ? ' disabled' : ''}></button>`;
   });
   const arrows = Object.keys(ARROW).map((dir) => {
     const ok = !state.won && state.sel != null && canMove(state.blocks, state.sel, dir);

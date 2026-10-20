@@ -18,7 +18,7 @@
   aspect-ratio: 4 / 5;
   padding: 6px;
   box-sizing: border-box;
-  background: var(--surface);
+  background-color: var(--surface);
   border: 2px solid var(--line);
   border-bottom-color: transparent;
   border-radius: 10px 10px 4px 4px;
@@ -29,6 +29,18 @@
   background-size: 25% 2px, 25% 2px;
   background-position: left bottom, right bottom;
   background-repeat: no-repeat;
+}
+
+/* Painted by FLUX (tools/paint-huarong-flux.py, 2026-10-20): the cave floor under the board, a picture per block
+   kind — 小满 (你, 2×2), a standing boulder (1×2), a vine-wrapped log (2×1), a rock (1×1). The glyph is only the
+   button's aria-label now. */
+.g-huarong-board {
+  background-image:
+    linear-gradient(var(--line), var(--line)),
+    linear-gradient(var(--line), var(--line)),
+    url('huarong/floor.webp');
+  background-size: 25% 2px, 25% 2px, cover;
+  background-position: left bottom, right bottom, center;
 }
 
 .g-huarong-exit {
@@ -78,9 +90,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: 6px;
-  background: var(--raised);
+  background: center / 100% 100% no-repeat;
   color: var(--faint);
   font-family: var(--serif);
   font-size: 15px;
@@ -88,9 +100,14 @@
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
+.g-huarong-k { background-image: url('huarong/k.webp'); }
+.g-huarong-v { background-image: url('huarong/v.webp'); }
+.g-huarong-h { background-image: url('huarong/h.webp'); }
+.g-huarong-s { background-image: url('huarong/s.webp'); }
+
 .g-huarong-k {
-  background: var(--ling);
   border-color: var(--ling);
+  border-width: 2px;
   color: var(--surface);
   font-size: 24px;
   font-weight: 600;
