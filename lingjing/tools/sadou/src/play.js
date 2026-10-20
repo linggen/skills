@@ -391,10 +391,14 @@ export class PlayScene extends Phaser.Scene {
       const r = it.r ?? 0.3;
       v.falls = it.falls.map((x) => ({
         x, sh: this.add.image(roadX(x), 0, 'shadow').setDisplaySize(r * 2 * ROAD.half, r * ROAD.half * 0.7).setAlpha(0).setDepth(D.decal + 0.4),
+        mark: this.add.image(roadX(x), 0, 'ring').setTint(0xff5a3a).setAlpha(0).setDepth(D.decal + 0.5),
         rock: this.add.image(roadX(x), 0, 'units', 'rock').setOrigin(0.5, 0.8).setVisible(false),
         down: false,
       }));
-      v.falls.forEach((f) => f.rock.setScale((r * 1.5 * ROAD.half) / f.rock.frame.width));
+      v.falls.forEach((f) => {
+        f.rock.setScale((r * 2.2 * ROAD.half) / f.rock.frame.width);
+        f.mark.setDisplaySize(r * 2 * ROAD.half, r * ROAD.half * 0.8);
+      });
       if (!this.saidRock) { this.saidRock = true; this.say('rock', true); }
     } else if (it.type === 'beans') {
       v.beans = Array.from({ length: Math.min(it.n, 24) }, (_, i) => {
@@ -442,7 +446,7 @@ export class PlayScene extends Phaser.Scene {
     const kill = (o) => o?.destroy();
     v.gates?.forEach((gt) => gt && [gt.img, gt.glow, gt.label].forEach(kill));
     v.rings?.forEach(kill);
-    v.falls?.forEach((f) => { kill(f.sh); kill(f.rock); });
+    v.falls?.forEach((f) => { kill(f.sh); kill(f.rock); kill(f.mark); });
     v.beans?.forEach((b) => kill(b.s));
     v.beasts?.forEach((b) => kill(b.s));
     [v.label, v.img, v.shadow, v.pill, v.num].forEach(kill);
@@ -503,9 +507,11 @@ export class PlayScene extends Phaser.Scene {
         const warn = it.warn ?? 380;
         v.falls.forEach((f, j) => {
           const land = it.at + j * it.gap, d = land - g.dist, yy = this.ySc(land);
-          if (f.down) { f.sh.setY(yy).setAlpha(Math.max(0, f.sh.alpha - dt * 2)); return; }
+          if (f.down) { f.sh.setY(yy).setAlpha(Math.max(0, f.sh.alpha - dt * 2)); f.mark.setAlpha(0); return; }
           const near = Phaser.Math.Clamp(1 - d / warn, 0, 1);
-          f.sh.setY(yy).setAlpha(near * 0.85).setScale(f.sh.scaleX, f.sh.scaleY);
+          f.sh.setY(yy).setAlpha(Math.min(1, near * 1.4));
+          // the spot it lands on, a red ring pulsing faster as the rock comes
+          f.mark.setY(yy).setAlpha(near > 0 ? 0.35 + near * 0.5 + Math.sin(t * (8 + near * 14)) * 0.15 : 0);
           if (d < 240) { // the rock in the air over its shadow, falling the last stretch
             f.rock.setVisible(true).setPosition(roadX(f.x), yy - Math.max(0, d) * 2.2).setDepth(D.fx - 2).setRotation(t * 3 + j);
           }
