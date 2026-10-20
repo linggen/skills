@@ -185,7 +185,7 @@ export function drawBeast(c, type, x, y, t, face, flash, s = 1, b = null) {
     c.strokeStyle = thin ? 'rgba(230,200,120,0.25)' : 'rgba(230,200,120,0.75)'; c.lineWidth = thin ? 1 : 3;
     c.setLineDash(thin ? [3, 6] : []); c.beginPath(); c.ellipse(0, -2, r * 2.2 * s, r * 1.4 * s, 0, 0, 6.28); c.stroke(); c.setLineDash([]);
   }
-  if (beastArt(c, type, B, t, face, flash, s)) { c.restore(); return; }
+  if (beastArt(c, type, B, t, face, flash || (b?.crying > 0 ? 1 : 0), s)) { c.restore(); return; } // wailing 合窳: its hit frame
   c.scale(face * s, s);
   const col = flash > 0 ? '#fff4dc' : B.color;
   FIGURES[type](c, r, col, t, Math.sin(t * 10) * 1.2, flash, b);
@@ -516,6 +516,8 @@ export function stepFx(g, dt) {
   const h = g.hero;
   if (h.say) { h.say.life -= dt; if (h.say.life <= 0) h.say = null; }
 }
+/** The beasts' sheet has loaded (a wave chip drawn before it would be the code figure: don't cache that one). */
+export const beastArtReady = () => !!ART.cells && okImg(ART.beasts);
 /** A small picture of a beast (the wave preview's chips). */
 export function beastIcon(doc, type) {
   const c = doc.createElement('canvas'); c.width = 56; c.height = 56;

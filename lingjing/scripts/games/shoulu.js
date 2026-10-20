@@ -18,7 +18,7 @@
 // localStorage (`lingjing.shoulu.stars`), never the save.
 import { BEASTS, EARLY_RATE, H, HERO, SKEYS, SKILLS, TOWERS, TORDER, W, build, callWave, canBuild, cleared, keepSel, levelsFrom, locked, newGame, noSel,
   pointer, pressKey, pressSkill, refund, sell, skillState, starsOf, step, toggleAuto, upgrade, upgradeCost, waves } from './shoulu/core.js';
-import { beastIcon, draw, loadArt, makePaper, markEvent, portraitStyle, stepFx } from './shoulu/draw.js';
+import { beastArtReady, beastIcon, draw, loadArt, makePaper, markEvent, portraitStyle, stepFx } from './shoulu/draw.js';
 
 export const meta = {
   id: 'shoulu',
@@ -119,7 +119,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
   container.replaceChildren(root);
   const $ = (s) => root.querySelector(s), cv = $('canvas'), ctx = cv.getContext('2d'), stage = $('.sl-stage'), menu = $('.sl-menu'), over = $('.sl-over'), card = $('.sl-card');
   const icons = {};
-  const iconOf = (type) => (icons[type] ??= beastIcon(doc, type));
+  const iconOf = (type) => (beastArtReady() ? (icons[type] ??= beastIcon(doc, type)) : beastIcon(doc, type));
   // S: the selection (core.js `pointer`): 银月 selected, the skill being aimed; `sel` is the spot whose menu is open (S.spot)
   let g = null, li = -1, paper = null, speed = 1, paused = false, S = noSel(), aimAt = null, touchy = false, sel = -1, raf = 0, last = 0, acc = 0, shown = false, sc = 1, dpr = 1, previewKey = '';
   let AC = null;
