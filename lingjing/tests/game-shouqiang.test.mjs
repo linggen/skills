@@ -319,7 +319,7 @@ test('the play: bundle current, Phaser the one shared vendored build, every pict
 // ---- the 药园 levels (2–5): talismans in lanes ---------------------------------------------------------------------
 // Hanli 10-20: 「植物大战僵尸方向好, 策略更多」「第一关没有"植物", 后面可以布置植物」「药园正好符合」. PvZ's numbers, our
 // names; one new talisman and one new beast twist a level; the range line still holds; a first-timer wins L2 easily.
-const lanes = kit.levels.filter((l) => l.grid && !l.tide); // the 药园 levels (兽潮's `tide` rows stand on the 山门, rules/shouchao.mjs)
+const lanes = kit.levels.filter((l) => l.grid && !l.tide && !l.story); // the 药园 levels (兽潮's `tide` rows stand on the 山门, rules/shouchao.mjs; a `story` row is the story's)
 const laneRun = (lvl, bot, n = 20, extra = {}) => Array.from({ length: n }, (_, i) => sim(kit, { ...lvl, ...extra }, BOTS[bot], { seed: `ln${i}`, limit: 1500 }));
 const fresh = (lvl, seed = 'f') => { const g = newGame(kit, lvl, { seed }); g.events.length = 0; return g; };
 const beastAt = (g, kind, col, y) => {
@@ -590,4 +590,23 @@ test('lane cards: only for the talismans a level has; a thicker wall thickens th
   const before = h.ling;
   pick(h, 'u-ling');
   assert.equal(h.ling, before + 75);
+});
+
+// The 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」 → 「可以」): 09-furnace's board is 守墙关's story row 药园巡夜 · 开春.
+test('the story row 药园巡夜 · 开春 (09-furnace): 野猪 and 狰 only, off the 兽潮 and the ladder, won by a first-timer most nights', async () => {
+  const row = kit.levels.find((l) => l.id === 'yaoyuan-spring');
+  assert.equal(row.story, '09-furnace');
+  assert.equal(row.tide, undefined, 'never a 兽潮 night');
+  const { tideRows } = await import('../scripts/rules/shouchao.mjs');
+  assert.ok(!tideRows(kit).includes(row), '兽潮 skips a story row');
+  assert.deepEqual([...new Set(row.waves.flat().map(([b]) => b))].sort(), ['yezhu', 'zheng'], '犰狳 first comes at 09-lingcao, the next scene');
+  assert.ok(row.lead.some((l) => l.big && l.zh.includes('兽潮来袭')) && row.lead.every((l) => l.zh && l.en));
+  assert.ok(kit.levels.indexOf(row) === kit.levels.length - 1, 'last: the ladder\'s numbers (lv=1…) stand');
+  const t = JSON.parse(readFileSync(at('worlds/jiuding/tasks/h11.json'), 'utf8')).tasks.find((x) => x.id === 'furnace-ding');
+  assert.deepEqual([t.game, t.deal.lv], ['shouqiang', 'yaoyuan-spring']);
+  const rate = (bot, n) => laneRun(row, bot, n).filter((r) => r.won).length / n;
+  assert.ok(laneRun(row, 'lazy', 4).every((r) => !r.won), 'the heroes alone never hold it');
+  const human = rate('human', 20);
+  assert.ok(human >= 0.8, `a first-timer wins most nights (${Math.round(human * 100)}%)`);
+  assert.ok(rate('sharp', 12) >= 0.8, 'a sharp player wins');
 });

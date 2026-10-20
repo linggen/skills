@@ -17,6 +17,7 @@
 export const meta = {
   id: 'shouqiang',
   pause: true, // the shell's bar pauses the play (tools/shouqiang/src/play.js setPaused)
+  bot: 'scripts/games/shouqiang/core.js', // its human-like hand (BOTS.human, headless): tests/game-shouqiang.test.mjs plays the story level (药园巡夜 · 开春) with it
   name: { zh: '守墙关', en: 'Hold the Wall' },
   how: {
     zh: '兽潮下山，小满和银月在墙上自动出手。每守住一波，三张符里挑一张；点一只兽，大家集火它。第二关起在药园布符：聚灵阵攒灵气，剑符守一畦。',
@@ -92,7 +93,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         held: Boolean(said), // the field drawn behind the shell's lead card, standing still till it is read (Hanli 10-20: 「开场卡后面先画出画面」)
         onEnd: (r) => {
           if (onResize) win.removeEventListener('resize', onResize);
-          const nx = data?.over ? null : kit.levels[kit.levels.indexOf(levelAsked(kit, data, search)) + 1]; // 下一关 (the shell's, off the story)
+          // 下一关 (the shell's, off the story): the next of the ladder — a story level (`story`, 药园巡夜 · 开春) names none and is none.
+          const here = levelAsked(kit, data, search), ladder = kit.levels.filter((l) => !l.story);
+          const nx = data?.over || here.story ? null : ladder[ladder.indexOf(here) + 1];
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });

@@ -14,7 +14,7 @@ const rows = reg.games.filter((g) => g.id === 'qimai');
 const ladder = qm.ladderOf(reg);
 /* The story boards the kit took over (Hanli 10-19: 「气走经脉 可以」): task → level. 吹鹅毛 and 洗髓 stay cut
    (their scenes lost their boards 10-16), their levels in the 游戏厅 only. */
-const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'furnace-ding': 'ding', 'jin-qianmi': 'qianmi', 'jin-faqiu': 'faqiu', 'jin-dark': 'dark', 'jin-lastshot': 'lastshot',
+const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'jin-qianmi': 'qianmi', 'jin-faqiu': 'faqiu', 'jin-dark': 'dark', 'jin-lastshot': 'lastshot',
   // the weak-board sweep (2026-10-19, the standing rule Hanli approved): 讲堂三日's chant up the arm, 顺风溜's glide
   // the reading cap (2026-10-20, Hanli: 「剧情连续阅读太长的地方, 你处理一下」): 息壤's circle, 后山's narrowing path
   'xirang-wumen': 'xirang',

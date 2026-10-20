@@ -28,14 +28,17 @@
       "_reward": "A 聚气丹 (qi-pill) — the plan's: a lesson, not cultivation."
     },
     {
+      "_shouqiang": "2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」 → 「可以」): 09-furnace's board in the same slot is 守墙关's story level `yaoyuan-spring` (levels/shouqiang.json, `story: \"09-furnace\"` — 兽潮 never serves it, the 游戏厅 keeps it off the ladder): spring, the herb garden opens, the 巡夜令 still his (「园里少一株，戒律堂头一个问你」); 野猪 and 狰 only. Was 气走经脉 · 定风 (10-19). Id and pay kept; the marks ding-still · ding-shaky (read by no line) went with the level.",
       "id": "furnace-ding",
       "kind": "board",
-      "game": "qimai",
+      "game": "shouqiang",
+      "deal": { "lv": "yaoyuan-spring" },
       "period": "once",
-      "title": { "zh": "定风 · 看见它起来", "en": "Settle the wind · See it rise" },
+      "stars": 3,
+      "title": { "zh": "药园巡夜 · 开春", "en": "Herb garden watch · Spring" },
+      "how": { "zh": "开春，药园开了园。点一张符，再点畦里一格布下去：聚灵阵攒灵气，剑符守一畦，土墙垫在狰的前头。一株也别丢。", "en": "Spring, and the herb garden is open. Tap a talisman, then a patch of bed, to set it: spirit arrays for qi, sword talismans to hold a bed, an earth wall in front of the zheng. Lose not one herb." },
       "grant": { "table": "task", "progress": 5 },
-      "marks": { "still": "ding-still", "shaky": "ding-shaky" },
-      "done_line": { "zh": "他看见了它起来的那一下。", "en": "He has seen the moment it rose." }
+      "done_line": { "zh": "天亮了，园里一株不少。", "en": "Dawn, and not one herb missing." }
     },
     {
       "_cut": "Off 09-year 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): the passage whole again (story_after merged), 伏天 needs only 清明; the task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",

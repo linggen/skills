@@ -565,20 +565,6 @@
   },
   {
    "id": "qimai",
-   "group": "later",
-   "mechanic": "调息",
-   "scene": "09-furnace",
-   "hui": "第七回",
-   "task": "furnace-ding",
-   "stars": 3,
-   "name": {"zh":"气走经脉 · 定风","en":"Qi path · Settle the wind"},
-   "data": {"level":"ding"},
-   "levels": [
-    {"id":"ding","n":10,"title":{"zh":"定风","en":"Settle the wind"},"speed":100,"len":3000,"book":{"zh":"每天天不亮上崖顶，站到巽那一格上，看落叶打转。他看见了它起来的那一下。","en":"Every dawn on the Xun square, watching leaves spin. He saw the moment it rose."},"say":{"zh":"叶子打转，风一阵一阵掉头——眼睛别跟着转。看见它起来的那一下，挪半步。","en":"Leaves spin; the wind turns and turns — don't let the eyes spin. The moment it rises, half a step aside."},"end":{"zh":"那片叶子贴着他的耳朵飘过去了。","en":"The leaf floats past his ear."},"path":[[0,112],[400,112],[700,96],[1000,124],[1300,100],[1600,122],[1900,98],[2200,118],[2500,104],[2700,84],[3000,100]],"width":[[0,46],[600,40],[3000,36]],"gates":[{"x":2720,"gap":26,"y":84,"name":{"zh":"挪半步","en":"Half a step"}}],"xue":[{"x":1350,"name":{"zh":"巽位","en":"On Xun"}}],"currents":[{"from":550,"to":1250,"push":100,"flip":1100},{"from":1450,"to":2300,"push":-90,"flip":1200,"phase":300}],"waves":[{"from":2300,"to":2560,"push":200}],"gold":[{"from":1250,"to":1450,"amp":9,"period":220,"rise":0.4}],"goldTol":7,"grades":{"3":"still","2":"still","1":"shaky"},"look":{"tint":"#e4d6b2","ink":"#6a5a3a","trail":"#c9a040","glyph":"风","land":"dawn"}}
-   ]
-  },
-  {
-   "id": "qimai",
    "group": "jin",
    "mechanic": "调息",
    "scene": "j01-track",
@@ -631,7 +617,7 @@
    "name": {"zh":"气走经脉 · 黑地十一步","en":"Qi path · Eleven steps in the dark"},
    "data": {"level":"dark"},
    "levels": [
-    {"id":"dark","n":11,"title":{"zh":"黑地十一步","en":"Eleven steps in the dark"},"speed":100,"len":3100,"book":{"zh":"「小宝哥。跟着我喘。吐得比吸的长。」","en":"\"Xiaobao. Breathe with me. Out longer than in.\""},"say":{"zh":"九点整，灯灭了。脉一折一折地拐，只看得见眼前一小圈——记住它往哪拐。","en":"Nine o'clock, the lights go. The channel switches back and forth; you see only a small round — remember where it bends."},"end":{"zh":"「……手不麻了。」","en":"\"… My hands aren't numb any more.\""},"path":[[0,110],[400,110],[600,76],[800,144],[1000,76],[1200,144],[1400,100],[1650,104],[1850,72],[2050,146],[2250,74],[2450,146],[2650,76],[2850,140],[3100,110]],"width":[[0,44],[500,37],[3100,34]],"xue":[{"x":1500,"name":{"zh":"第四步","en":"Step four"}}],"heart":[{"from":2100,"to":2900,"beat":720,"kick":40,"jitter":0.35}],"gold":[{"from":1420,"to":1720,"amp":10,"period":250,"rise":0.4}],"dark":[{"from":500,"to":1400,"r":52},{"from":1750,"to":3000,"r":48}],"goldTol":7,"look":{"tint":"#7d8496","ink":"#1f2430","trail":"#8fa0c8","glyph":"黑","land":"moon"}}
+    {"id":"dark","n":10,"title":{"zh":"黑地十一步","en":"Eleven steps in the dark"},"speed":100,"len":3100,"book":{"zh":"「小宝哥。跟着我喘。吐得比吸的长。」","en":"\"Xiaobao. Breathe with me. Out longer than in.\""},"say":{"zh":"九点整，灯灭了。脉一折一折地拐，只看得见眼前一小圈——记住它往哪拐。","en":"Nine o'clock, the lights go. The channel switches back and forth; you see only a small round — remember where it bends."},"end":{"zh":"「……手不麻了。」","en":"\"… My hands aren't numb any more.\""},"path":[[0,110],[400,110],[600,76],[800,144],[1000,76],[1200,144],[1400,100],[1650,104],[1850,72],[2050,146],[2250,74],[2450,146],[2650,76],[2850,140],[3100,110]],"width":[[0,44],[500,37],[3100,34]],"xue":[{"x":1500,"name":{"zh":"第四步","en":"Step four"}}],"heart":[{"from":2100,"to":2900,"beat":720,"kick":40,"jitter":0.35}],"gold":[{"from":1420,"to":1720,"amp":10,"period":250,"rise":0.4}],"dark":[{"from":500,"to":1400,"r":52},{"from":1750,"to":3000,"r":48}],"goldTol":7,"look":{"tint":"#7d8496","ink":"#1f2430","trail":"#8fa0c8","glyph":"黑","land":"moon"}}
    ]
   },
   {
@@ -645,7 +631,7 @@
    "name": {"zh":"气走经脉 · 最后一罚","en":"Qi path · The last free throw"},
    "data": {"level":"lastshot"},
    "levels": [
-    {"id":"lastshot","n":12,"title":{"zh":"最后一罚","en":"The last free throw"},"speed":104,"len":3300,"book":{"zh":"惧是油门，长吐是刹车——刹得住一截，刹不干净。带着怕投。","en":"Fear is the throttle, a long breath out the brake: it slows, never stops. Shoot with the fear."},"say":{"zh":"零点六秒，落后一分。看台在喊「百分之一！」心跳没有准点。","en":"Point six seconds, one behind. The stand chants \"One per cent!\" The heart keeps no time."},"end":{"zh":"它掉了进去。","en":"It drops in."},"path":[[0,110],[500,104],[850,124],[1200,94],[1550,122],[1900,96],[2250,122],[2600,98],[2950,116],[3300,108]],"width":[[0,44],[550,38],[3300,34]],"xue":[{"x":1600,"name":{"zh":"第一罚","en":"First shot"}}],"currents":[{"from":2150,"to":2550,"push":140,"flip":1100}],"waves":[{"from":1200,"to":1420,"push":210}],"heart":[{"from":450,"to":1450,"beat":680,"kick":40,"jitter":0.35},{"from":1750,"to":2900,"beat":600,"kick":36,"jitter":0.4}],"gold":[{"from":1450,"to":1750,"amp":9,"period":240,"rise":0.4},{"from":2950,"to":3280,"amp":9,"period":240,"rise":0.4}],"goldTol":6,"goldNeed":0.75,"look":{"tint":"#d29a7c","ink":"#6a2a1a","trail":"#d0502a","glyph":"惧","land":"dusk"}}
+    {"id":"lastshot","n":11,"title":{"zh":"最后一罚","en":"The last free throw"},"speed":104,"len":3300,"book":{"zh":"惧是油门，长吐是刹车——刹得住一截，刹不干净。带着怕投。","en":"Fear is the throttle, a long breath out the brake: it slows, never stops. Shoot with the fear."},"say":{"zh":"零点六秒，落后一分。看台在喊「百分之一！」心跳没有准点。","en":"Point six seconds, one behind. The stand chants \"One per cent!\" The heart keeps no time."},"end":{"zh":"它掉了进去。","en":"It drops in."},"path":[[0,110],[500,104],[850,124],[1200,94],[1550,122],[1900,96],[2250,122],[2600,98],[2950,116],[3300,108]],"width":[[0,44],[550,38],[3300,34]],"xue":[{"x":1600,"name":{"zh":"第一罚","en":"First shot"}}],"currents":[{"from":2150,"to":2550,"push":140,"flip":1100}],"waves":[{"from":1200,"to":1420,"push":210}],"heart":[{"from":450,"to":1450,"beat":680,"kick":40,"jitter":0.35},{"from":1750,"to":2900,"beat":600,"kick":36,"jitter":0.4}],"gold":[{"from":1450,"to":1750,"amp":9,"period":240,"rise":0.4},{"from":2950,"to":3280,"amp":9,"period":240,"rise":0.4}],"goldTol":6,"goldNeed":0.75,"look":{"tint":"#d29a7c","ink":"#6a2a1a","trail":"#d0502a","glyph":"惧","land":"dusk"}}
    ]
   },
   {
@@ -754,7 +740,7 @@
    "name": {"zh":"气走经脉 · 冲脉","en":"Qi path · The thoroughfare"},
    "data": {"level":"chongmai"},
    "levels": [
-    {"id":"chongmai","n":13,"title":{"zh":"冲脉","en":"The thoroughfare"},"speed":106,"len":3400,"book":{"zh":"冲脉直上直下，浪头和乱流挤在一条道上。","en":"The thoroughfare runs straight up and down; waves and currents crowd one road."},"say":{"zh":"浪头、转向的乱流、关口，一样一样来。","en":"Waves, turning currents, passes — one after another."},"end":{"zh":"冲脉通了。","en":"The thoroughfare is open."},"path":[[0,150],[500,140],[800,80],[1100,150],[1400,70],[1700,150],[2000,80],[2300,150],[2600,76],[2900,140],[3400,110]],"width":[[0,44],[1000,37],[3400,34]],"gates":[{"x":1150,"gap":30,"name":{"zh":"会阴","en":"Huiyin"}},{"x":2200,"gap":26,"name":{"zh":"膻中","en":"Shanzhong"}}],"currents":[{"from":1300,"to":1650,"push":-160,"flip":1000},{"from":2650,"to":2950,"push":160,"flip":800}],"waves":[{"from":500,"to":760,"push":210},{"from":2350,"to":2580,"push":220}],"gold":[{"from":1700,"to":2100,"amp":11,"period":250,"rise":0.4}],"goldTol":7,"look":{"tint":"#a3c2b4","ink":"#21483c","trail":"#3e8a6e","glyph":"冲","land":"jade"}}
+    {"id":"chongmai","n":12,"title":{"zh":"冲脉","en":"The thoroughfare"},"speed":106,"len":3400,"book":{"zh":"冲脉直上直下，浪头和乱流挤在一条道上。","en":"The thoroughfare runs straight up and down; waves and currents crowd one road."},"say":{"zh":"浪头、转向的乱流、关口，一样一样来。","en":"Waves, turning currents, passes — one after another."},"end":{"zh":"冲脉通了。","en":"The thoroughfare is open."},"path":[[0,150],[500,140],[800,80],[1100,150],[1400,70],[1700,150],[2000,80],[2300,150],[2600,76],[2900,140],[3400,110]],"width":[[0,44],[1000,37],[3400,34]],"gates":[{"x":1150,"gap":30,"name":{"zh":"会阴","en":"Huiyin"}},{"x":2200,"gap":26,"name":{"zh":"膻中","en":"Shanzhong"}}],"currents":[{"from":1300,"to":1650,"push":-160,"flip":1000},{"from":2650,"to":2950,"push":160,"flip":800}],"waves":[{"from":500,"to":760,"push":210},{"from":2350,"to":2580,"push":220}],"gold":[{"from":1700,"to":2100,"amp":11,"period":250,"rise":0.4}],"goldTol":7,"look":{"tint":"#a3c2b4","ink":"#21483c","trail":"#3e8a6e","glyph":"冲","land":"jade"}}
    ]
   },
   {
@@ -765,7 +751,7 @@
    "name": {"zh":"气走经脉 · 带脉","en":"Qi path · The girdle"},
    "data": {"level":"daimai"},
    "levels": [
-    {"id":"daimai","n":14,"title":{"zh":"带脉","en":"The girdle"},"speed":108,"len":3400,"book":{"zh":"带脉横着绕腰一圈，黑里走，心还在跳。","en":"The girdle runs round the waist — through the dark, with the heart still pounding."},"say":{"zh":"窄、暗、心跳，风还掉头。别慌，吐得比吸的长。","en":"Narrow, dark, a racing heart, a turning wind. Don't panic; out longer than in."},"end":{"zh":"带脉绕了一圈，回到了原处。","en":"Round the girdle, and back where it began."},"path":[[0,110],[450,96],[750,130],[1050,88],[1350,132],[1650,86],[1950,130],[2250,90],[2550,128],[2850,92],[3400,108]],"width":[[0,42],[700,36],[3400,34]],"gates":[{"x":3080,"gap":24,"name":{"zh":"带脉穴","en":"Daimai"}}],"xue":[{"x":1500,"name":{"zh":"章门","en":"Zhangmen"}}],"currents":[{"from":1700,"to":2200,"push":140,"flip":1100}],"heart":[{"from":600,"to":1500,"beat":700,"kick":32,"jitter":0.4},{"from":2350,"to":3000,"beat":640,"kick":36,"jitter":0.4}],"gold":[{"from":950,"to":1450,"amp":9,"period":240,"rise":0.4}],"dark":[{"from":1500,"to":2350,"r":50}],"goldTol":6,"look":{"tint":"#c9b48a","ink":"#4f3c1c","trail":"#a8782a","glyph":"带","land":"dawn"}}
+    {"id":"daimai","n":13,"title":{"zh":"带脉","en":"The girdle"},"speed":108,"len":3400,"book":{"zh":"带脉横着绕腰一圈，黑里走，心还在跳。","en":"The girdle runs round the waist — through the dark, with the heart still pounding."},"say":{"zh":"窄、暗、心跳，风还掉头。别慌，吐得比吸的长。","en":"Narrow, dark, a racing heart, a turning wind. Don't panic; out longer than in."},"end":{"zh":"带脉绕了一圈，回到了原处。","en":"Round the girdle, and back where it began."},"path":[[0,110],[450,96],[750,130],[1050,88],[1350,132],[1650,86],[1950,130],[2250,90],[2550,128],[2850,92],[3400,108]],"width":[[0,42],[700,36],[3400,34]],"gates":[{"x":3080,"gap":24,"name":{"zh":"带脉穴","en":"Daimai"}}],"xue":[{"x":1500,"name":{"zh":"章门","en":"Zhangmen"}}],"currents":[{"from":1700,"to":2200,"push":140,"flip":1100}],"heart":[{"from":600,"to":1500,"beat":700,"kick":32,"jitter":0.4},{"from":2350,"to":3000,"beat":640,"kick":36,"jitter":0.4}],"gold":[{"from":950,"to":1450,"amp":9,"period":240,"rise":0.4}],"dark":[{"from":1500,"to":2350,"r":50}],"goldTol":6,"look":{"tint":"#c9b48a","ink":"#4f3c1c","trail":"#a8782a","glyph":"带","land":"dawn"}}
    ]
   },
   {
@@ -776,7 +762,7 @@
    "name": {"zh":"气走经脉 · 大周天","en":"Qi path · The great circuit"},
    "data": {"level":"dazhoutian"},
    "levels": [
-    {"id":"dazhoutian","n":15,"title":{"zh":"大周天","en":"The great circuit"},"speed":110,"len":4200,"book":{"zh":"小周天转熟了，气才走得了大周天——什么都会碰上。","en":"Only once the small circuit is easy can the qi go the great one — and meet everything."},"say":{"zh":"一口气走完全身。前面什么都有，岔了气也只回到上一关。","en":"One breath through the whole body. Everything lies ahead; a broken breath goes back only to the last pass."},"end":{"zh":"大周天转了一圈，浑身通透。","en":"The great circuit turns once; the whole body clears."},"path":[[0,170],[500,150],[900,120],[1300,86],[1700,104],[2100,130],[2500,96],[2900,60],[3200,80],[3500,140],[3800,100],[4200,150]],"width":[[0,44],[1000,34],[4200,31]],"gates":[{"x":1150,"gap":30,"name":{"zh":"尾闾","en":"Weilü"}},{"x":2050,"gap":26,"name":{"zh":"夹脊","en":"Jiaji"}},{"x":2950,"gap":22,"y":60,"name":{"zh":"玉枕","en":"Yuzhen"}}],"currents":[{"from":1400,"to":1750,"push":150,"flip":900}],"waves":[{"from":450,"to":720,"push":230}],"heart":[{"from":2200,"to":2800,"beat":660,"kick":50,"jitter":0.4}],"gold":[{"from":1750,"to":2000,"amp":10,"period":240,"rise":0.4},{"from":3800,"to":4150,"amp":9,"period":240,"rise":0.4}],"dark":[{"from":3150,"to":3750,"r":48}],"goldTol":6,"look":{"tint":"#b5a7cc","ink":"#3a2c5a","trail":"#7a5ab0","glyph":"天","land":"star"}}
+    {"id":"dazhoutian","n":14,"title":{"zh":"大周天","en":"The great circuit"},"speed":110,"len":4200,"book":{"zh":"小周天转熟了，气才走得了大周天——什么都会碰上。","en":"Only once the small circuit is easy can the qi go the great one — and meet everything."},"say":{"zh":"一口气走完全身。前面什么都有，岔了气也只回到上一关。","en":"One breath through the whole body. Everything lies ahead; a broken breath goes back only to the last pass."},"end":{"zh":"大周天转了一圈，浑身通透。","en":"The great circuit turns once; the whole body clears."},"path":[[0,170],[500,150],[900,120],[1300,86],[1700,104],[2100,130],[2500,96],[2900,60],[3200,80],[3500,140],[3800,100],[4200,150]],"width":[[0,44],[1000,34],[4200,31]],"gates":[{"x":1150,"gap":30,"name":{"zh":"尾闾","en":"Weilü"}},{"x":2050,"gap":26,"name":{"zh":"夹脊","en":"Jiaji"}},{"x":2950,"gap":22,"y":60,"name":{"zh":"玉枕","en":"Yuzhen"}}],"currents":[{"from":1400,"to":1750,"push":150,"flip":900}],"waves":[{"from":450,"to":720,"push":230}],"heart":[{"from":2200,"to":2800,"beat":660,"kick":50,"jitter":0.4}],"gold":[{"from":1750,"to":2000,"amp":10,"period":240,"rise":0.4},{"from":3800,"to":4150,"amp":9,"period":240,"rise":0.4}],"dark":[{"from":3150,"to":3750,"r":48}],"goldTol":6,"look":{"tint":"#b5a7cc","ink":"#3a2c5a","trail":"#7a5ab0","glyph":"天","land":"star"}}
    ]
   },
   {

@@ -75,7 +75,7 @@ async function levelsOf(g) {
   if (Array.isArray(g.levels)) return g.levels.filter((l) => !l.story && !l.realm).map(name); // a story level (守炉's 药园巡夜) has its own tile, off the ladder
   const r = await fetch(`../worlds/jiuding/levels/${g.id}.json`).catch(() => null);
   const kit = r?.ok ? await r.json().catch(() => null) : null;
-  return (kit?.levels ?? []).map(name);
+  return (kit?.levels ?? []).filter((l) => !l.story).map(name); // 守墙关's story level (药园巡夜 · 开春) is the story's, off the ladder
 }
 
 // The type filter: one chip a type (with its count), 全部 first; a tap hides the other tiles and any

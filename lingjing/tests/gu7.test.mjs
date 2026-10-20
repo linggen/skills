@@ -110,7 +110,7 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   s = go(s, 'down');
   assert.ok(s.marks.includes('yubu'));
   assert.equal(s.step, 4);
-  s = play(s, 'furnace-ding', 'still');
+  s = play(s, 'furnace-ding'); // 守墙关 · 药园巡夜 · 开春 since the 调息 cut (2026-10-20): no grade
   s = go(s, 'fire');
   assert.ok(s.bag['qi-pill'] > 0, 'the way on: a 聚气丹 (认方 cut 2026-10-19)');
   assert.deepEqual([s.scene, s.step], ['09-year', 4], '定风 lifts nothing: 五层 is ground');

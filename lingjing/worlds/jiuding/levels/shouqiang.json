@@ -449,6 +449,56 @@
     [["yezhu", 30, 0.22, 0], ["zheng", 22, 0.25, 4], ["qiuyu", 10, 0.7, 8]],
     [["qiuyu", 18, 0.5, 0], ["zheng", 28, 0.22, 3], ["yezhu", 20, 0.3, 8]]
    ]
+  },
+  {
+   "id": "yaoyuan-spring",
+   "kit": "shouqiang",
+   "story": "09-furnace",
+   "_story": "The 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」 → 「可以」): 09-furnace's board (was 气走经脉 · 定风), task furnace-ding. A story level: `story` names its scene, so 兽潮 (rules/shouchao.mjs tideRows) never serves it, the 游戏厅 lists it off the ladder and it names no 下一关. 野猪 and 狰 only (犰狳 first comes at 09-lingcao, the next scene). Human-like bot 37/40, sharp 22/24, lazy 0/6.",
+   "place": "yaoyuan",
+   "opening": false,
+   "art": {"bg": "yaoyuan-bg", "wall": "yaoyuan-wall"},
+   "leadSec": 8,
+   "between": 6,
+   "wall": 1000,
+   "wallY": 770,
+   "rangeY": 196,
+   "spawnY": 96,
+   "approach": 4,
+   "guard": 70,
+   "grid": {"cols": 5, "rows": 5, "top": 300, "bottom": 760},
+   "ling": 50,
+   "sky": {"first": 5, "every": 10, "amount": 25},
+   "autoCollect": 7,
+   "difficulty": 1,
+   "stars": [0.7, 0.35],
+   "title": {"zh": "药园巡夜 · 开春", "en": "Herb garden watch · spring"},
+   "lead": [
+    {"zh": "好容易熬到开了春，药园开了园。巡夜令还挂在你腰上——「园里少一株，戒律堂头一个问你。」", "en": "At last it was spring, and the herb garden opened. The night-watch token still hangs at your belt: \"One herb missing, and the Discipline Hall asks you first.\""},
+    {"zh": "饿了一冬的野猪下山拱新芽，狰又跳上了墙头。", "en": "Boars hungry from the winter come down to root at the new shoots, and a zheng is back on the wall."},
+    {"zh": "兽潮来袭！", "en": "Here they come!", "big": true}
+   ],
+   "units": ["juling", "jian", "tu"],
+   "fresh": "tu",
+   "twist": "zheng",
+   "hpMul": 1.2,
+   "growth": 0.05,
+   "huge": [4, 6],
+   "moments": {
+    "twist": [{"zh": "狰！它跳过头一道符——前头垫一块土墙。", "en": "A zheng! It leaps the first talisman: put an earth wall in front."}],
+    "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "新芽一棵没少。", "en": "Not one shoot gone."}],
+    "huge": [{"zh": "一大波兽潮！", "en": "A huge wave!"}],
+    "low": [{"zh": "墙根要守不住了！", "en": "The wall's foot is giving!"}],
+    "win": [{"zh": "天亮了，园里一株不少。", "en": "Dawn, and not one herb missing."}]
+   },
+   "waves": [
+    [["yezhu", 4, 10, 24, [1, 2, 3]]],
+    [["yezhu", 4, 7, 3], ["zheng", 1, 1, 14, [0, 4]]],
+    [["yezhu", 5, 5, 3], ["zheng", 2, 6, 10]],
+    [["zheng", 2, 6, 3], ["yezhu", 6, 1.2, 20]],
+    [["yezhu", 6, 4, 3], ["zheng", 3, 6, 6]],
+    [["yezhu", 7, 3, 3], ["zheng", 3, 4, 8], ["yezhu", 7, 1.2, 24], ["zheng", 2, 3, 28]]
+   ]
   }
  ]
 }
