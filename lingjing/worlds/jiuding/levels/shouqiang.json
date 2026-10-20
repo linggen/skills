@@ -324,7 +324,7 @@
    "rangeY": 160,
    "difficulty": 1,
    "hpMul": 3.2,
-   "growth": 0.22,
+   "growth": 0.35,
    "stars": [0.7, 0.35],
    "moments": {
     "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "再来多少都一样。", "en": "Bring more."}],
@@ -359,7 +359,7 @@
    "rangeY": 160,
    "difficulty": 1,
    "hpMul": 2.8,
-   "growth": 0.24,
+   "growth": 0.38,
    "stars": [0.7, 0.35],
    "moments": {
     "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "再来多少都一样。", "en": "Bring more."}],
@@ -395,7 +395,7 @@
    "rangeY": 160,
    "difficulty": 1,
    "hpMul": 2.2,
-   "growth": 0.26,
+   "growth": 0.42,
    "stars": [0.7, 0.35],
    "moments": {
     "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "再来多少都一样。", "en": "Bring more."}],
@@ -432,7 +432,7 @@
    "rangeY": 160,
    "difficulty": 1,
    "hpMul": 2.0,
-   "growth": 0.27,
+   "growth": 0.42,
    "stars": [0.7, 0.35],
    "moments": {
     "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "再来多少都一样。", "en": "Bring more."}],

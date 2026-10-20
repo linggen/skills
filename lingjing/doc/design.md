@@ -292,7 +292,7 @@ rules/shouchao.mjs; the knobs: tasks/world.json `shouchao`.
   punished: the seniors hold, only its pay is gone.
 - **Levels**: each night the next row of 守墙关's table (levels/shouqiang.json) with a `tide` number and no `story`,
   whose beasts are all of his 回 (creatures.json `hui`, book order); a won night moves on, a lost one comes again.
-  Past the rows: the rise on the last that fits (+2% `difficulty`, +0.004 `growth`, gaps −1% a night; a boss of his
+  Past the rows: the rise on the last that fits (+1.5% `difficulty`, +0.002 `growth`, gaps −1% a night; a boss of his
   回 in the row's boss's place). A row added later is played first. Rows now: 兽潮 1–3 (野猪 · 狰, 古四), 4 (犰狳,
   古五), the 山门 (鬿雀 · 合窳, 古八).
 

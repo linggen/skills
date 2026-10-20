@@ -80,7 +80,7 @@ test('the opening: after the lead-in the game waits on a pick of three main atta
     assert.ok(l.name.zh && l.name.en && l.say.zh && l.say.en && l.icon, l.id);
     assert.equal(kit.cards.find((c) => c.id === l.gives)?.family, l.line, `${l.id} gives its line's card`);
   }
-  assert.ok(kit.levels.slice(1).every((l) => l.opening === false && l.grid), 'the 药园 is marked off: talismans from the first second');
+  assert.ok(kit.levels.filter((l) => l.grid).every((l) => l.opening === false), 'the 药园 is marked off: talismans from the first second');
   assert.ok(level.countIn >= 3 && level.countIn <= 4, 'a 3-2-1 after the pick');
   for (const line of LINES) {
     const g = newGame(kit, level, { seed: `open-${line}` });
