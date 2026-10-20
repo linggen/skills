@@ -141,7 +141,7 @@ export function shouchaoRow(content, state, now) {
   const told = Boolean(state.shouchao?.told);
   const lead = [...(told ? [] : c.tell ?? []), ...(row.lead ?? [])];
   const over = { title, lead, story: t.id, ...(night.rise ? riseOf(content, state, kit, row, night.rise, c.rise) : {}) };
-  return { night: night.n, ...(night.rise ? { rise: night.rise } : {}), deal: { lv: row.id, over }, title: pick(title, lang) };
+  return { tide: true, night: night.n, ...(night.rise ? { rise: night.rise } : {}), deal: { lv: row.id, over }, title: pick(title, lang) };
 }
 
 /* ── Counted ── */

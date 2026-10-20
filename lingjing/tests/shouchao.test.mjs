@@ -9,7 +9,7 @@ import { newState } from '../scripts/state.mjs';
 import { look, playTo, task, win } from '../scripts/rules.mjs';
 import { beastOpen, riseOf, shouchaoHosted, tideRows, tonightLevel, wallKit } from '../scripts/rules/shouchao.mjs';
 import { levelDealt } from '../scripts/games/shouqiang.js';
-import { stageCards } from '../scripts/stage.mjs';
+import { sceneGame, stageCards } from '../scripts/stage.mjs';
 
 const content = loadContent();
 const kit = wallKit(content);
@@ -186,4 +186,8 @@ test('on the stage: the night\'s board stands at 沉鼎观 in the window, titled
   const o = l.tasks.find((t) => t.id === T.id);
   assert.match(o.title, /兽潮 · 第1夜/);
   assert.ok(stageCards(l).some((c) => c.card === 'board' && c.id === T.id), 'a board card');
+  // …standing with the scene card, never queued behind it for the whole window (古五's 柴房: its choices stand).
+  const p = look(at('wm-luobo'), content, ctx(day(20, 17, 30)));
+  assert.ok(p.scene?.panel, 'a scene card stands');
+  assert.ok(sceneGame(p, { card: 'board', id: T.id }), 'the tide with the scene card');
 });
