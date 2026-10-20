@@ -9,11 +9,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
   keepSel, posOnPath, sendHero, sim, STRATS, skillState, spawnAt, step, toggleAuto, waves } from '../scripts/games/shoulu/core.js';
-import { leadSplit, levelAsked, meta } from '../scripts/games/shoulu.js';
+import { ladderOf, leadSplit, levelAsked, levelAt, meta, nextLv } from '../scripts/games/shoulu.js';
 
 const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
-const row = reg.games.find((g) => g.id === 'shoulu');
-const levels = levelsFrom(row);
+const row = reg.games.find((g) => g.id === 'shoulu' && g.levels);
+const all = levelsFrom(row);
+const levels = ladderOf(all); // the 游戏厅's ladder; the story levels (a `story` scene) stand after it
+const stories = all.filter((l) => l.story);
 const creatures = new Set(JSON.parse(readFileSync(new URL('../worlds/jiuding/creatures.json', import.meta.url), 'utf8')).creatures.map((c) => c.id));
 const places = new Set(['ji', 'jing', 'liang', 'qing', 'xu', 'yan', 'yang', 'yong', 'yu'].flatMap((p) => JSON.parse(readFileSync(new URL(`../worlds/jiuding/places/${p}.json`, import.meta.url), 'utf8')).places.map((x) => x.id)));
 const SEEDS = ['a', 'b', 'c', 'd', 'e'];
@@ -26,12 +28,13 @@ test('registered: meta, the row in the 游戏厅, five levels', () => {
   assert.equal(levels.length, 5);
   assert.equal(levelAsked({}, '?dev=1&game=shoulu&lv=3'), 3);
   assert.equal(levelAsked({ lv: 2 }, '?lv=5'), 2);
-  assert.equal(levelAsked({}, '?lv=x'), 0);
+  assert.equal(levelAt(all, levelAsked({}, '?lv=x')), -1, 'no such level: the select');
+  assert.equal(levelAsked({}, '?lv=0'), 0);
 });
 
 test('in the one shell: its bar pauses the play; each level\'s story is the lead card, the banner and tips stay on the board', () => {
   assert.equal(meta.pause, true);
-  for (const r of levels) {
+  for (const r of all) {
     const { said, rest } = leadSplit(r.lead, 'zh');
     assert.ok(said.length > 0, `${r.id}: a story line for the lead card`);
     assert.ok(rest[0]?.big, `${r.id}: the 兽潮来袭 banner opens what stays on the board`);
@@ -42,7 +45,7 @@ test('in the one shell: its bar pauses the play; each level\'s story is the lead
 });
 
 test('every level is sound: its road, its spots, its furnace, its words, 卷一 beasts and places', () => {
-  for (const r of levels) {
+  for (const r of all) {
     const L = layLevel(r);
     assert.ok(r.story === null || typeof r.story === 'string', r.id);
     assert.ok(places.has(r.place), `${r.id}: place ${r.place}`);
@@ -63,7 +66,7 @@ test('every level is sound: its road, its spots, its furnace, its words, 卷一 
     assert.ok(r.towers.every((k) => TOWERS[k]));
     if (beastsOf(r).some((b) => BEASTS[b].fly)) assert.ok(r.air, `${r.id}: fliers need a start`);
   }
-  assert.ok(!levels.some((r) => beastsOf(r).includes('kuiniu')), '夔牛 is 卷七: not in 卷一');
+  assert.ok(!all.some((r) => beastsOf(r).includes('kuiniu')), '夔牛 is 卷七: not in 卷一');
 });
 
 test('each level brings exactly one new beast, in the order 野猪 → 狰 → 犰狳 → 鬿雀 → 合窳, and its answer', () => {
@@ -432,4 +435,74 @@ test('the sim plays her skills (a plain autocast bot); none leaves her on 啸月
   assert.ok(person.w > 0 && person.e > 0 && person.r >= 1, `the human bot casts them too, late: ${JSON.stringify(person)}`);
   const alone = casts(STRATS.none);
   assert.ok(alone.q > 0 && alone.w + alone.e + alone.r === 0, JSON.stringify(alone));
+});
+
+/* The story levels (Hanli 10-20: 守炉 is the main game; a new level a 回 from 古四 on, at its climax). */
+const ROOT = new URL('..', import.meta.url);
+const tasks = JSON.parse(readFileSync(new URL('worlds/jiuding/tasks/world.json', ROOT), 'utf8')).tasks;
+const book = JSON.parse(readFileSync(new URL('story/jiuding-lu/book.json', ROOT), 'utf8'));
+const HUI = book.volumes.flatMap((v) => v.hui).map((h) => h.id); // the 回 in the order they are read
+const sceneOf = (id) => {
+  for (const ch of ['00-waimen', '00-zhuji', '00-prologue']) {
+    try { return JSON.parse(readFileSync(new URL(`worlds/jiuding/chapters/${ch}/scenes/${id}.json`, ROOT), 'utf8')); } catch { /* not this chapter */ }
+  }
+  return null;
+};
+
+test('the ladder is the 游戏厅\'s; a story level stands off it, opened by its id — never by number, never as 下一关', () => {
+  assert.ok(stories.length >= 1 && all.indexOf(stories[0]) >= levels.length, 'after the ladder in the table');
+  assert.ok(stories.every((l) => typeof l.story === 'string' && !l.new), 'a story level names its scene and brings no ladder `new`');
+  assert.equal(levelAsked({ lv: 'yaoyuan-xunye' }, ''), 'yaoyuan-xunye');
+  assert.equal(levelAsked({}, '?lv=yaoyuan-xunye'), 'yaoyuan-xunye');
+  assert.equal(all[levelAt(all, 'yaoyuan-xunye')].id, 'yaoyuan-xunye');
+  assert.equal(levelAt(all, 3), all.indexOf(levels[2]), 'a number is the ladder\'s');
+  assert.equal(levelAt(all, levels.length + 1), -1, 'no ladder level past the last');
+  assert.equal(levelAt(all, 0), -1);
+  assert.equal(nextLv(all, levelAt(all, 'yaoyuan-xunye')), 0, 'a story level names no 下一关');
+  assert.equal(nextLv(all, all.indexOf(levels.at(-1))), 0, 'nor the ladder\'s last (黑松岭 → no story level)');
+  assert.equal(nextLv(all, all.indexOf(levels[0])), 2);
+  // the story deals only its story levels (rules/look.mjs dealOf); the id still finds its own there
+  assert.equal(stories[levelAt(stories, 'yaoyuan-xunye')].story, 'wm-yaoyuan');
+});
+
+test('each story level is a board its scene shows, its task names it, its 游戏厅 row opens it', () => {
+  for (const l of stories) {
+    const t = tasks.find((x) => x.game === 'shoulu' && x.deal?.lv === l.id);
+    assert.ok(t, `${l.id}: a story task deals it`);
+    assert.equal(t.kind, 'board');
+    const sc = sceneOf(l.story);
+    assert.ok(sc, `${l.id}: its scene ${l.story}`);
+    assert.ok(sc.show?.some((c) => c.card === 'board' && c.id === t.id) && sc.offers?.tasks?.includes(t.id), `${l.story} shows and offers ${t.id}`);
+    const arcade = reg.games.find((g) => g.id === 'shoulu' && g.task === t.id);
+    assert.ok(arcade && arcade.scene === l.story && arcade.data?.lv === l.id && !arcade.levels, `${l.id}: the 游戏厅's row opens it by id`);
+  }
+});
+
+test('a story level uses only beasts the book has met by its 回 (野猪 on 蒙山 from 古四; the 狰 is never fought, it is tamed)', () => {
+  const pools = JSON.parse(readFileSync(new URL('worlds/jiuding/places/xu.json', ROOT), 'utf8')).pools ?? {};
+  const met = (beast, hui) => Object.values(pools).some((p) => (p.beasts ?? []).some((b) => b.creature === beast && b.from && HUI.indexOf(b.from) >= 0 && HUI.indexOf(b.from) <= HUI.indexOf(hui)));
+  for (const l of stories) {
+    const hui = sceneOf(l.story).hui;
+    for (const b of beastsOf(l)) assert.ok(met(b, hui), `${l.id} (${hui}): ${b} is met on the mountain by then`);
+    assert.ok(!beastsOf(l).includes('zheng') || HUI.indexOf(hui) > HUI.indexOf('h05'), `${l.id}: no 狰 fought in 古四 — the book tames it with a 萝卜`);
+  }
+  const xunye = stories.find((l) => l.id === 'yaoyuan-xunye');
+  assert.deepEqual(beastsOf(xunye), ['yezhu']);
+  assert.deepEqual(xunye.towers, ['jian', 'huo'], '剑阵 · 火符: the first two, nothing to answer yet');
+  assert.equal(heroOf(xunye).hair, 0, '狐毛 from 古五 on');
+});
+
+test('药园巡夜, tuned for a first-time player: the human hand always wins, mostly 3★, and still loses a little fire now and then', () => {
+  const xunye = stories.find((l) => l.id === 'yaoyuan-xunye');
+  const rs = run(xunye, 'human', SEEDS20);
+  const line = `win ${Math.round(share(rs, (x) => x.result === 'win') * 100)}%, ★ ${rs.map((x) => x.stars).join('')}`;
+  assert.equal(share(rs, (x) => x.result === 'win'), 1, line);
+  assert.ok(share(rs, (x) => x.stars === 3) >= 0.6, line);
+  assert.ok(rs.some((x) => x.hp < 10), `a little bite: ${rs.map((x) => x.hp)}`);
+  assert.ok(allWin(run(xunye, 'thin')), 'two talismans and their upgrades still hold it');
+  assert.ok(allWin(run(xunye, 'mixed')));
+  assert.ok(allLose(run(xunye, 'none')), 'nothing laid: the herbs are lost');
+  const jian = run(xunye, 'jian'), mean = (x) => x.reduce((a, r) => a + r.hp, 0) / x.length;
+  assert.ok(mean(jian) < mean(run(xunye, 'mixed')) - 3, `剑阵 alone scrapes through, fire is the herd's answer: ${jian.map((x) => x.hp)}`);
+  assert.ok(rs.every((x) => x.time < 240), `about three minutes: ${rs.map((x) => x.time)}`);
 });

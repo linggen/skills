@@ -6,6 +6,8 @@
 // the chapter ends on 古九's 「第N回 · 即将开放」.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { duel, look, move, quest, resolve, story, tame, task, trade, win } from '../scripts/rules.mjs';
@@ -51,7 +53,9 @@ const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaoji
   // the reading cap (2026-10-20): 息壤 · 五门 before the second night, 后山 behind 瞿老 (喂息珠 told since 10-20)
   sit: ['xirang-wumen'], follow: ['baishi-houshan'],
   // 暗河's throw (2026-10-20, 砸寨 anhe-dark): the swallow passage split at its stone
-  light: ['anhe-dark'] };
+  light: ['anhe-dark'],
+  // 守炉's first story level (2026-10-20): the 药园's second night, before the 狰 shows and the 萝卜
+  tame: ['yaoyuan-xunye'] };
 function before(s, exit, now = DAY1) {
   // a save set down in a scene by hand (not walked in) has not been offered its boards yet: offer them, as arriving does
   for (const id of BOARD_BEFORE[exit] ?? []) s = must(task, must(win, { ...s, tasks: { [id]: { status: 'offered' }, ...s.tasks } }, { id }, now), { action: 'done', id }, now);
@@ -68,7 +72,7 @@ function playThrough() {
   s = must(move, s, { place: 'waimen' });
   s = must(quest, s, { action: 'take', id: 'xu-yaoyuan-shouye' });
   s = must(move, s, { place: 'yaoyuan' });
-  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+  s = on(won(s, 'yaoyuan-zheng'), 'tame');
   s = must(move, s, { place: 'chaifang' });
   s = must(quest, s, { action: 'take', id: 'xu-sun-charm' });
   s = must(win, s, { id: 'qiqiao' }); s = must(task, s, { action: 'done', id: 'qiqiao' });
@@ -183,7 +187,7 @@ test('a key beat shuts the map from the scene after its entry to its last, in it
   // the next beat waits at its place, a waypoint with the goal's countdown before it
   // 小狰 first (十月初十): the story carries him to the 药园; then the next beat waits at its place
   assert.deepEqual([s.scene, s.place], ['wm-yaoyuan', 'yaoyuan']);
-  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+  s = on(won(s, 'yaoyuan-zheng'), 'tame');
   const w = look(s, content, ctx()).waypoint;
   assert.equal(w.scene, 'wm-chaifang');
   assert.equal(w.text, '外门大比 · 腊月初八。路通向沉鼎观 · 柴房。');
@@ -225,7 +229,7 @@ test('小狰 is the story\'s: at the 药园 the 萝卜, not a fight (cards.md §
   const l = look(s, content, ctx());
   const e = l.scene.exits.find(x => x.id === 'tame');
   assert.equal(e.game, undefined, 'no fight: a 萝卜 set down');
-  s = must(resolve, s, { exit: 'tame' });
+  s = on(s, 'tame');
   assert.ok(s.cast.includes('zheng') && s.cards.includes('zheng'), 'it walks with him, its card in the deck');
   assert.equal(s.scene, 'wm-chaifang');
   assert.match(tellOf(content, s).tell.map(t => t.text).join('\n'), /萝卜[\s\S]*睡着了/, 'the book\'s passage: the 萝卜, and it sleeps at his feet');
@@ -236,7 +240,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   let s = opened();
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
   s = must(move, s, { place: 'yaoyuan' });
-  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+  s = on(won(s, 'yaoyuan-zheng'), 'tame');
   s = must(move, fresh(s), { place: 'chaifang' });
   for (const exit of ['count', 'keep', 'save']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = throughJin(fresh(s), content, DAY1); // 今 · 二, between 古四 and 古五 (2026-10-05)
@@ -313,7 +317,7 @@ test('the woodshed is his (the boy\'s: 抱住了头, 血腥味) — the words ar
     let s = { ...opened(), gender };
     for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
     s = must(move, s, { place: 'yaoyuan' });
-    s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+    s = on(won(s, 'yaoyuan-zheng'), 'tame');
     s = must(move, fresh(s), { place: 'chaifang' });
     s = must(resolve, fresh(s), { exit: 'count' });
     return tellOf(content, s).tell.map(t => t.text).join('\n');
@@ -379,7 +383,7 @@ test('what is for a person is handed where that person is: 周衡 at 外门, 阿
   s = must(move, s, { place: 'waimen' });
   s = must(quest, s, { action: 'take', id: 'xu-yaoyuan-shouye' });
   s = must(move, s, { place: 'yaoyuan' });
-  s = must(resolve, won(s, 'yaoyuan-zheng'), { exit: 'tame' });
+  s = on(won(s, 'yaoyuan-zheng'), 'tame');
   assert.equal(s.quests['xu-yaoyuan-shouye'].done_at, undefined, 'tamed at the 药园: 周衡 is not here');
   const row = look(s, content, ctx()).book.find(b => b.id === 'xu-yaoyuan-shouye');
   assert.equal(row.ready, true);
@@ -594,4 +598,58 @@ test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物�
   let t = { ...opened(), scene: 'wm-xirang', place: 'shimen', bag: {} };
   t = must(resolve, won(t, 'mijing-zou'), { exit: 'swallow' });
   assert.deepEqual([t.bag['qi-pill'], t.bag.dingtai, t.bag['neimen-map'], t.bag['duan-dao']], [5, 3, 1, 1]);
+});
+
+/* 守炉's first story level (Hanli 2026-10-20: 守炉 is the main game, a new level a 回 from 古四 on, at its climax). */
+const bookParas = (file) => fs.readFileSync(path.join(import.meta.dirname, '..', 'story/jiuding-lu', file), 'utf8').split(/\n\s*\n/).map(normBook).filter(Boolean);
+function normBook(t) { return t.replace(/\[([^\]]*)\]\{[^}]*\}/g, '$1').replace(/\{[^}\n]*\}/g, '').replace(/\*\*|⟪|⟫/g, '').replace(/^#.*$/gm, '').replace(/^>\s?/gm, '').replace(/---/g, '').replace(/\s+/g, ''); }
+const atYaoyuan = () => { let s = opened(); for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit); return fresh(must(move, s, { place: 'yaoyuan' })); };
+
+test('药园巡夜: the second night\'s passage stops on the book\'s 「天地再大，他只认得脸上的风。」; the 守炉 board; then 丑时 and the 狰 (the scene\'s own `story_after`); then the 萝卜', () => {
+  const sc = CH.scenes['wm-yaoyuan'];
+  const paras = bookParas('04-第四回.md'), last = (p) => normBook(p.zh.split('\n\n').at(-1)), first = (p) => normBook(p.zh.split('\n\n')[0]);
+  for (const pair of [sc.story, sc.story_full]) assert.match(pair.zh, /天地再大，他只认得脸上的风。$/, 'the cut ends on the book\'s own sentence');
+  const at = paras.indexOf(last(sc.story_full));
+  assert.ok(at > 0, 'the book\'s paragraph, word for word');
+  assert.equal(paras[at + 1], first(sc.story_after_full), 'the rest starts on the book\'s next paragraph');
+  assert.equal(paras[at + 2], first(sc.exits.find((e) => e.id === 'tame').story_full), 'and the 萝卜 right after it');
+  assert.match(sc.story_after.zh, /^丑时过了一半/);
+  assert.deepEqual(sc.show, [{ card: 'board', id: 'yaoyuan-xunye' }]);
+  assert.deepEqual(sc.offers, { tasks: ['yaoyuan-xunye'] });
+  // the lead card: the board's lines from the book that the box's cut leaves out — never a line the box just read
+  const row = content.games.games.find((g) => g.id === 'shoulu' && g.levels).levels.find((l) => l.id === 'yaoyuan-xunye');
+  const lead = row.lead.slice(0, row.lead.findIndex((l) => l.big));
+  assert.ok(lead.length >= 2);
+  for (const l of lead) {
+    assert.ok(sc.story_full.zh.includes(l.zh) && sc.story_full.en.includes(l.en), `the book's: ${l.zh}`);
+    assert.ok(!sc.story.zh.includes(l.zh), `not read twice: ${l.zh}`);
+  }
+});
+
+test('药园巡夜 is offered at the scene and the 萝卜 waits on it; won, the rest is told, then the way on', () => {
+  let s = atYaoyuan();
+  assert.equal(s.scene, 'wm-yaoyuan');
+  const l = look(s, content, ctx());
+  const t = l.tasks.find((x) => x.id === 'yaoyuan-xunye');
+  assert.ok(t && t.status === 'offered' && t.game === 'shoulu', JSON.stringify(t));
+  assert.deepEqual(t.deal?.lv, 'yaoyuan-xunye', 'dealt its level by id');
+  assert.ok(!t.deal.levels || t.deal.levels.every((x) => x.story), 'the story is dealt no ladder level');
+  assert.equal(resolve(s, content, ctx(), { exit: 'tame' }).result.refused, 'needs', 'the 萝卜 waits on the board');
+  s = must(task, must(win, s, { id: 'yaoyuan-xunye', stars: 3 }), { action: 'done', id: 'yaoyuan-xunye' });
+  const told = tellOf(content, s).tell;
+  assert.ok(told.some((x) => x.of === 'after' && x.id === 'wm-yaoyuan/after' && /丑时过了一半/.test(x.text)), 'the rest of the night, the scene\'s own');
+  s = must(resolve, s, { exit: 'tame' });
+  assert.equal(s.scene, 'wm-chaifang');
+  assert.ok(s.cast.includes('zheng'), 'the 狰 is still the 萝卜\'s');
+});
+
+test('药园巡夜 pays as 古四\'s boards: progress, and the board\'s 灵石 by its 灵光 — three best, else plain; once', () => {
+  const B = content.balance.boards;
+  for (const [stars, rank] of [[3, 'best'], [2, 'plain'], [1, 'plain']]) {
+    const s = atYaoyuan();
+    const done = must(task, must(win, s, { id: 'yaoyuan-xunye', stars }), { action: 'done', id: 'yaoyuan-xunye' });
+    assert.equal(done.wealth - s.wealth, B[rank], `${stars}★ → ${rank}`);
+    assert.ok(done.progress > s.progress || done.step > s.step, 'its 修为 lands');
+    assert.ok(done.boards_paid.includes('yaoyuan-xunye'));
+  }
 });

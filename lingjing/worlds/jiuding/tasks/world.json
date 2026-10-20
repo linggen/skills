@@ -122,6 +122,7 @@
       "grant": { "table": "task", "progress": 10 },
       "done_line": { "zh": "三关俱开，小周天通了。", "en": "All three passes open; the small circuit is through." }
     },
+    {"id": "yaoyuan-xunye", "kind": "board", "game": "shoulu", "deal": {"lv": "yaoyuan-xunye"}, "period": "once", "stars": 3, "title": {"zh": "守炉 · 药园巡夜", "en": "Guard the Furnace · The herb garden at night"}, "how": {"zh": "爪印从西头的崖根底下来。点虚线圈布符——剑阵、火符——守住灵草，守到丑时。", "en": "The pawprints come from the foot of the west cliff. Tap a dashed ring to lay a talisman (swords, fire) and hold the herbs till the hour of the Ox."}, "grant": {"table": "task", "progress": 5}, "done_line": {"zh": "崖根底下，又静了。", "en": "At the foot of the cliff, all is quiet again."}, "_shoulu": "2026-10-20 (Hanli: 守炉 is the main game, a new level a 回 from 古四 on, at the 回's climax — 「可以」): wm-yaoyuan's second night, the passage cut at 「天地再大，他只认得脸上的风。」 — the board is the dark he waits through before the 狰 shows; then 丑时 and the 狰 by the 紫玉参 (`story_after`), then the radish. The level is games.json `shoulu` `yaoyuan-xunye`: 野猪 only (the 狰 is never fought, the book tames it), 剑阵 · 火符. Pays as the 古四 boards: progress 5, and the board's 灵石 (three 灵光 best 15, else plain 5)."},
     {
       "_jin": "今一's dawn run (2026-10-20, the reading cap before 入门): pays nothing, like every 今 game.",
       "id": "jin-paobu", "kind": "board", "game": "qimai", "period": "once",

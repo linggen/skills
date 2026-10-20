@@ -18,11 +18,14 @@
 // { won, stars } won or lost, and 再来 deals it again (back to the level select when no level was asked).
 // Without a shell, as before:
 //
-// The levels: `data.levels` (a story's), else the `shoulu` row of worlds/jiuding/games.json. The level
-// to open: `data.lv` (1…), else the page's `?lv=` (the 游戏厅: ?dev=1&game=shoulu&lv=3) — straight into it,
-// settling { won, stars } when it is won (the game stays up, its own card over it). Without one: the level
-// select, and the game owns 再来 / 下一关; it settles only when taken down. Stars live in this browser's
-// localStorage (`lingjing.shoulu.stars`), never the save.
+// The levels: `data.levels` (a story's), else the `shoulu` row of worlds/jiuding/games.json. A level with a
+// `story` (its scene) is a story level, played once at its 回 (Hanli 10-20: 守炉 is the main game; each 回 from
+// 古四 on gets one new level at its climax): never on the 游戏厅's ladder (the select, `lv=<n>`, 下一关), opened
+// by its id — the story task's `deal.lv`, or `?lv=<id>`. The level to open: `data.lv` (1… on the ladder, or a
+// level's id), else the page's `?lv=` (the 游戏厅: ?dev=1&game=shoulu&lv=3) — straight into it, settling
+// { won, stars } when it is won (the game stays up, its own card over it). Without one: the level select, and
+// the game owns 再来 / 下一关; it settles only when taken down. Stars live in this browser's localStorage
+// (`lingjing.shoulu.stars`), never the save.
 import { BEASTS, EARLY_RATE, H, HERO, SKEYS, SKILLS, TOWERS, TORDER, W, build, callWave, canBuild, cleared, keepSel, levelsFrom, locked, newGame, noSel,
   pointer, pressKey, pressSkill, refund, sell, skillState, starsOf, step, toggleAuto, upgrade, upgradeCost, waves } from './shoulu/core.js';
 import { beastArtReady, beastIcon, draw, loadArt, makePaper, markEvent, portraitStyle, stepFx } from './shoulu/draw.js';
@@ -30,6 +33,7 @@ import { beastArtReady, beastIcon, draw, loadArt, makePaper, markEvent, portrait
 export const meta = {
   id: 'shoulu',
   pause: true, // the shell's bar pauses the play (its own loop reads `shell.onPause`)
+  bot: 'scripts/games/shoulu/core.js', // its human-like hand (`human`, headless): tests/game-shoulu.test.mjs plays every story level with it
   name: { zh: '守炉', en: 'Guard the Furnace' },
   how: {
     zh: '点虚线圈布符，点符升级或拆。选中银月（点她或按 1），右键地面移动、右键野兽攻击；手机上点她再点。QWER 放技能。兽潮按时自来，守到最后一波。',
@@ -87,16 +91,31 @@ const STARS_KEY = 'lingjing.shoulu.stars';
 const loadStars = () => { try { return JSON.parse(globalThis.localStorage?.getItem(STARS_KEY) ?? '{}') ?? {}; } catch { return {}; } };
 const keepStars = (id, n) => { try { const s = loadStars(); if ((s[id] ?? 0) < n) { s[id] = n; globalThis.localStorage?.setItem(STARS_KEY, JSON.stringify(s)); } } catch { /* a private window: this page only */ } };
 
-/** The level a link or a story asks for: 1… (none: 0, the level select). */
+/** The level a link or a story asks for: 1… on the ladder, or a level's id (a story level's); none: 0, the level select. */
 export function levelAsked(data, search) {
-  const n = Number(data?.lv ?? new URLSearchParams(search ?? '').get('lv'));
+  const raw = data?.lv ?? new URLSearchParams(search ?? '').get('lv');
+  if (typeof raw === 'string' && /^[a-z][a-z0-9-]*$/.test(raw)) return raw;
+  const n = Number(raw);
   return Number.isInteger(n) && n > 0 ? n : 0;
 }
-/** The levels: a story's own, else the registry's `shoulu` row. */
+/** The 游戏厅's ladder: the levels with no `story`, in the order they climb. */
+export const ladderOf = (levels) => levels.filter((l) => !l.story);
+/** Where the asked level sits in `levels` (-1: none asked, or none such): an id anywhere, a number on the ladder. */
+export function levelAt(levels, asked) {
+  if (typeof asked === 'string') return levels.findIndex((l) => l.id === asked);
+  const row = asked > 0 ? ladderOf(levels)[asked - 1] : null;
+  return row ? levels.indexOf(row) : -1;
+}
+/** The ladder's next level after `levels[i]` (its 1-based ladder number), or 0: a story level, or the last. */
+export function nextLv(levels, i) {
+  const ladder = ladderOf(levels), k = ladder.indexOf(levels[i]);
+  return k >= 0 && k + 1 < ladder.length ? k + 2 : 0;
+}
+/** The levels: a story's own, else the registry's `shoulu` row (the one that holds them). */
 export async function levelsOf(data) {
   if (Array.isArray(data?.levels) && data.levels.length) return data.levels;
   const res = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url));
-  return levelsFrom((await res.json()).games.find((g) => g.id === meta.id)); // each carries the row's global `difficulty`
+  return levelsFrom((await res.json()).games.find((g) => g.id === meta.id && Array.isArray(g.levels))); // each carries the row's global `difficulty`
 }
 function ensureCss(doc) {
   if (doc.getElementById('g-shoulu-css')) return;
@@ -123,7 +142,9 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
   ensureCss(doc);
   loadArt(doc);
   const levels = await levelsOf(data).catch(() => []);
-  const asked = levelAsked(data, win?.location?.search);
+  const asked = levelAsked(data, win?.location?.search), askedAt = levelAt(levels, asked);
+  // a story level plays alone: no level select to wander off to from the story's board
+  const solo = Boolean(levels[askedAt]?.story), pickBtn = solo ? '' : `<button type="button" data-a="pick">${t.pick}</button>`;
   const root = doc.createElement('div');
   root.className = 'g-shoulu';
   root.innerHTML = `<div class="sl-hud"><span class="sl-stat sl-fire">${t.fire} <b data-k="hp">10</b></span><span class="sl-stat sl-stone">${t.stone} <b data-k="money">0</b></span>`
@@ -134,7 +155,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     + `<div class="sl-skills">${SKEYS.map((k) => `<button type="button" class="sl-skill" data-skill="${k}" title="${SK[lang][k][0]} · ${SK[lang][k][1]}">`
       + `<b>${SK[lang][k][0]}</b><i class="sl-key">${k.toUpperCase()}</i><em class="sl-charges"></em><span class="sl-ring"></span></button>`).join('')}</div></div>`
     + `<div class="sl-preview"></div><div class="sl-controls"><button type="button" class="sl-main" data-a="next"></button><button type="button" data-a="speed">×1</button>`
-    + `${shell ? '' : `<button type="button" data-a="pause">${t.pause}</button>`}<button type="button" data-a="pick">${t.pick}</button></div>`;
+    + `${shell ? '' : `<button type="button" data-a="pause">${t.pause}</button>`}${pickBtn}</div>`;
   container.replaceChildren(root);
   const $ = (s) => root.querySelector(s), cv = $('canvas'), ctx = cv.getContext('2d'), stage = $('.sl-stage'), menu = $('.sl-menu'), over = $('.sl-over'), card = $('.sl-card');
   const icons = {};
@@ -221,9 +242,9 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     function pickLevels() {
       const stars = loadStars();
       g = null; held = false; leadTok += 1; closeMenu(); root.classList.add('is-picking');
-      card.innerHTML = `<h3>${t.select}</h3><div class="sl-levels">${levels.map((l, i) => {
+      card.innerHTML = `<h3>${t.select}</h3><div class="sl-levels">${ladderOf(levels).map((l, n) => {
         const s = stars[l.id] ?? 0, nw = [l.new?.beast && BN[lang][l.new.beast], l.new?.tower && TN[lang][l.new.tower]].filter(Boolean).join(' · ');
-        return `<button type="button" class="sl-level" data-lv="${i}"><span>${i + 1}</span><b>${word(l.name, lang)}<br><small>${t.newThing}：${nw}</small></b><em>${'★'.repeat(s)}${'☆'.repeat(3 - s)}</em></button>`;
+        return `<button type="button" class="sl-level" data-lv="${levels.indexOf(l)}"><span>${n + 1}</span><b>${word(l.name, lang)}<br><small>${t.newThing}：${nw}</small></b><em>${'★'.repeat(s)}${'☆'.repeat(3 - s)}</em></button>`;
       }).join('')}</div>`;
       over.hidden = false;
     }
@@ -233,7 +254,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       wake();
       if (b.dataset.lv) start(Number(b.dataset.lv));
       else if (b.dataset.a === 'again') start(li);
-      else if (b.dataset.a === 'nextlv') start(li + 1);
+      else if (b.dataset.a === 'nextlv' && nextLv(levels, li)) start(levelAt(levels, nextLv(levels, li)));
       else if (b.dataset.a === 'pick') pickLevels();
     });
     function showOver() {
@@ -241,14 +262,14 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       const win_ = g.over === 'win', st = win_ ? starsOf(g.hp) : 0, row = levels[li];
       if (win_) keepStars(row.id, st);
       // in the shell: its foot shows the result and 再来, won or lost; the board stays up under it
-      if (shell) { $('[data-a="pick"]').disabled = true; finish(win_ ? { won: true, stars: st, ...(li + 1 < levels.length ? { next: li + 2 } : {}) } : { won: false, stars: 0 }); return; }
-      const more = li + 1 < levels.length;
+      if (shell) { const pk = $('[data-a="pick"]'); if (pk) pk.disabled = true; finish(win_ ? { won: true, stars: st, ...(nextLv(levels, li) ? { next: nextLv(levels, li) } : {}) } : { won: false, stars: 0 }); return; }
+      const more = nextLv(levels, li) > 0;
       card.innerHTML = win_
         ? `<h3>${t.won}</h3><div class="sl-stars">${'★'.repeat(st)}<s>${'★'.repeat(3 - st)}</s></div><p>${t.wonLine(g.hp)}</p>`
-          + `<div class="sl-row">${more ? `<button type="button" class="sl-main" data-a="nextlv">${t.nextLevel}</button>` : ''}<button type="button" data-a="again">${t.again}</button><button type="button" data-a="pick">${t.pick}</button></div>`
-        : `<h3>${t.lost}</h3><p>${t.lostLine(g.wave, Math.round(49 * cleared(g) / waves(g)))}</p><div class="sl-row"><button type="button" class="sl-main" data-a="again">${t.again}</button><button type="button" data-a="pick">${t.pick}</button></div>`;
+          + `<div class="sl-row">${more ? `<button type="button" class="sl-main" data-a="nextlv">${t.nextLevel}</button>` : ''}<button type="button" data-a="again">${t.again}</button>${pickBtn}</div>`
+        : `<h3>${t.lost}</h3><p>${t.lostLine(g.wave, Math.round(49 * cleared(g) / waves(g)))}</p><div class="sl-row"><button type="button" class="sl-main" data-a="again">${t.again}</button>${pickBtn}</div>`;
       over.hidden = false;
-      if (win_ && asked === li + 1) finish({ won: true, stars: st });
+      if (win_ && askedAt === li) finish({ won: true, stars: st });
     }
 
     // ── the board: 魔兽争霸's mouse on a Mac (left selects, right orders, shift queues), tap-tap on a phone ──
@@ -466,7 +487,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     // The page's hooks for a live check: the game now, and the hero's place.
     root.__shoulu = () => g;
     fit();
-    if (asked && asked <= levels.length) start(asked - 1); else pickLevels();
+    if (askedAt >= 0) start(askedAt); else pickLevels();
     last = performance.now();
     raf = win.requestAnimationFrame(frame);
   });
