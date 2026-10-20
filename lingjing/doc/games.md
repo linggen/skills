@@ -16,7 +16,7 @@ pop or number on each action, a seal stamped on the win, the main control under 
 UI, it ships without waiting; (2) **fewer and better**: keep six, cut the rest (below);
 (3) new core loops only where marked, after his read.
 
-**Keep in 卷一 (six):** 喂饼 → 割绳子 (built 10-16) · 射鹿 → 愤怒小鸟 (the beat since 10-16, `deerarc`) · 接雨 ·
+**Keep in 卷一 (six):** 喂饼 → 割绳子 (built 10-16) · 射鹿 → 砸寨 `deer-wind` (10-20; was `deerarc`) · 接雨 ·
 吹鹅毛 (new loop) · 喷嚏符 (already the most fight-like) · 顺风溜 → 几何冲刺 (after launch). Plus
 **最后一罚** as 今线's one. **Second tier** (good timing reads; keep only if he likes them on
 replay): 烙饼 · 拽 · 小周天 · 禹步. **Cut the rest** — each is a passage he can read in the time it
@@ -51,73 +51,27 @@ sixth board — then, the same day, approved to go with 射鹿 · 等风: **cut 
 00-cave's passage whole again (word for word), 喂饼 the scene's one board; the task (marked `cut`, so a
 save holding it offered lets it go on load), row, module and bot stay for the 游戏厅.
 
-## 射鹿 · 拉弓 — physical, with the juice; the forts (10-19)
+## The throws — levels of 砸寨 (10-20)
 
-Hanli 10-19: 「射鹿的问题是没有碰撞, 重力, 物理引擎等」, 「没有丢东西, 砸碎东西的快感」, then 「射鹿好一点了, 但是游戏里面
-没有箱子可以砸碎, 或者树等障碍, 难度比较低」. `deerarc` (row `deerarc`): the story's deer-wind deals **静 then 风**
-only (levels marked `story`; 风 now has a clump of stiff reeds in the line — lob over them); the 游戏厅
-(`arcade.html?dev=1&game=deerarc`, one level: `&lv=<id>`) plays the four aiming levels, then **eight forts**.
+Hanli 10-20: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」. Every throw in the story is a level of 砸寨, the one throw
+kit (tools/zhazhai/src/data/throws.ts; a task's `deal.lv` names it; 游戏厅 `arcade.html?dev=1&game=zhazhai&lv=<key>`). A level
+sets its place (a painted backdrop), its target (a body and a behaviour: `deer` bolts on a throw whizzing past and comes
+back elsewhere, `gourd` shows its light only after a stone lands in the dark, `lu` turns every blow but at the wing root
+while it breathes), props of wood and stone drawn as the things they are (log, boulder, pine, dead tree — a pine is
+`fixed`: it takes an arrow and stands), and only the throws 小满 owns there (the card law). In story order, each tighter
+than the one before — the share of a pull grid whose flight reaches the soft spot clear of what stands in the way
+(tools/zhazhai/bot.mjs `windowOf`), times how much of the time it shows:
 
-**The physics (games/smash.js, generic — 砸寨 imports it).** Every thing is a matter.js body asleep until touched;
-a blow over its material's `strength` shatters it into pieces of its own painting (an irregular seeded Voronoi cut,
-or planks for crates, beams, posts, doors). Materials: wood (crate 木箱 → planks, beam, post, door 庙门), bamboo
-(竹筐 · 背篓: light; an arrow goes through, shoving it), stone (石块: heavy; an arrow glances, a thrown stone only
-knocks it, the 五雷符 shatters it), ice (slides, an arrow skids off), and the trees: a pine `trunk` takes the arrow, a
-`bough` catches an arrow head on and turns one at a slant (still flying), a `deadtree` stands rooted until a heavy
-blow fells it (it hinges at its foot and comes down on what stands by), a `bush` lets throws through, slowed. What
-comes down on the stag fells it; a light touch flushes it into the open; a crash near it or a shard only lifts its
-head. The ammo: the arrow pierces bamboo and sticks in wood; 石子 is heavy and topples; 柴 rolls; the 短飞剑's tap
-dashes straight through one block; the 五雷符's tap bursts (narrow) and shatters stone. A big collapse cues the
-camera to look over the wreck (juice.js). Things may be `fixed` (a shrine's door and pillars: held until broken).
+| beat | level | target | ammo | setting | room |
+|---|---|---|---|---|---|
+| 第二回 00-deer 射鹿 `deer-wind` | `deer-wind` | the stag, bolts | 箭 ×3 | the valley stream by day: a log on two stones, a pine, a dead pine leaning over it | 1.93% |
+| 第五回 wm-anhe 暗河 `anhe-dark` | `anhe-dark` | 邹青松's gourd, lit by a stone | 石子 · 箭 · 石子 · 箭 | the dry underground river, dark: a boulder he crouches behind | 1.63% |
+| 古七 09-yishui 芦苇里那一等 `yishui-reed` | `yishui-reed` | the 鯥, its wing root on a breath | 短飞剑 ×3 (tap: dash) | the 沂水 shoal by night: driftwood on stones, 孙二狗's board and torch | 1.40% |
 
-**The forts, on a curve** (answers in games.json `bot`, stars by `score`):
-柴房 (crates stacked by the stag: a stone topples them on it) · 竹筐 (baskets on crates: the arrow goes through the
-weave) · 枯树 (a crate-and-basket wall under a pine bough: fell the dead tree onto it) · 窝棚 (posts, a beam, tiles: knock
-a post, then the arrow) · 冰 (ice blocks: the arrow skids; a stone slides them apart, then the arrow) · 石墙 (dry stone
-under a roof: the 五雷符 opens it, then the arrow) · 老松 (trunk and boughs: lob through the gap) · 山神庙 (stones
-before a fixed door under the eaves: the thunder, then the sword's dash through the door to the heart).
-Numbers (10-19, node, the board's own steps): one-shot wins over the whole aim grid — 柴房 10%, 竹筐 12%, 枯树 11%,
-窝棚 14%, 冰 8%, 石墙 0.8%, 老松 1.5%, 山神庙 0.1%; a modelled casual hand (random-walk aim, sometimes a lob or
-another tray item) wins 柴房 9/12, 竹筐 12/12, 枯树 10/12, 窝棚 8/12, 冰 8/12 in 1–8 tries, mostly ★–★★; 老松 3/12;
-石墙 and 山神庙 0/12 (they need the right thing in the right order, and a tap). The board bot wins the row ★★★.
-Wants Hanli's play: is the late pair too hard, is the camera's look at the wreck too much at 390.
-
-## 射鹿 · 等风 — the hunting-aim board (10-19, 游戏厅 only)
-
-Hanli 10-19: 「愤怒小鸟的类型不好玩. 太简单, 没有花样」 (割绳子 is fine). A static target with an arc hint is
-darts, and a miss's trail teaches the next shot. `deerhunt` (games/deerhunt.js, row `deerhunt`, 狩猎瞄准)
-takes its tension from waiting for the moment — 「先看风，后看鹿」, 「往左偏半寸」 — a proven genre (Deer
-Hunter-style hunting aim), on 射鹿's paintings. **Not in the story yet**: deer-wind plays `deerarc` until
-Hanli has played this in the 游戏厅 (`arcade.html?dev=1&game=deerhunt`).
-
-- **Controls (one hand, mouse and touch alike):** press anywhere on the scene and hold — the bow draws
-  (1.5 s to full; a half draw falls short and low); slide to move the sight (relative, so the finger
-  never covers it at 390); full, the sight sways and the sway grows; **hold still** at full and he holds
-  his breath (屏气, after 0.4 s still): the sway drops to an eighth for 2.6 s (a ring drains), then the
-  arms shake worse; let go to loose; let go **off the scene** to ease off. A press mid-flight rings the
-  seal-red refusal (mount.js).
-- **Wind:** gusts and lulls on a seeded timetable (the rag, the leaves, the reeds; the head says 风歇 lit);
-  the arrow drifts with the wind at release (a wind of 1 carries it ~105 units over the stream), so a gust
-  shot at the heart lands behind it — the miss line names the side: 「一阵风，把箭推到右边去了。往左偏半寸——等风歇。」
-- **Deer:** grazes (head down), lifts its head (wary), sometimes walks (lead it). A loose with its head up
-  jumps the string; an arrow near it, or on the antlers, spooks it: it bolts, comes back a few seconds
-  later, looks round, grazes. A wide quiet miss only lifts its head — another arrow.
-- **Stars and grade:** the heart · the first arrow · calm (no spook), at least one for a hit; grades
-  clean · steady · rough by stars, as deerarc's — deer-wind has no `marks`, so any win gives 一箭 · 偏左半寸
-  (tests/deerhunt.test.mjs holds the forward path).
-- **Levels:** `story` (the one a beat would deal: one level, the win frame ends it — no in-board 往下),
-  then the 游戏厅's `walk` (a walking deer, lead it), `gusty` (short lulls, both ways) and `dusk` (low
-  light); between them 「下一处」 / 「再来这一处」 under three stars.
-- **Feel:** the slow beat on a clean hit (the arrow's last third ×3) and the ink burst; the stars stamped
-  over the strike.
-- **Tuning (story level):** wind gust 6–9 s, lull 3.2–4.2 s, gust strength 0.75–1.1 in his face (a gust
-  shot drifts ~80–120 units: past the heart, into the haunch or beside it — a spook); the deer grazes
-  2–3.6 s, looks up 1.6–2.6 s; draw 1.5 s, still 0.4 s, breath 2.6 s; heart r 9 deer units; a miss within
-  2.3× the body's reach is loud. Node bots (20 seeds): patient median 16 s (max 59), all 3★ but four 1★;
-  impatient (looses at full) 0/20 won, 20/20 spooked. play-human on the try page (story level only),
-  last two settings: gust 6–9 s — casual 8/8 won (1440: 24 · 79 · 11 · 22 s; 390: 23 · 32 · 22 · 10 s, a
-  hand that drew early 2% a look); gust 7–10 s with a more patient hand — 70 · 94 · 50 s. Sloppy (looses
-  at full) never won in 120 s and spooked it again and again; idle never won. Kept: gust 6–9 s.
+Bots (headless Chromium on the built bundle, a fake clock): a sensible hand (aims along the flight it knows, σ 0.6° and
+1.2% of the draw; waits for a fled stag, the breath, the light) wins each 5/5 in two runs; a lazy one (a full draw at 45°,
+never a tap) 0/5. The old 射鹿 board (`deerarc`, its forts, `throwkit`, `luwing`, smash.js, the old ink `deer.js`, their
+bots, tests, art and sounds) was deleted with the port; the cut 扔石听声 (`cave-stone`) has no level.
 
 **灵石 for a small game (Hanli 10-16):** after 入门, a board's first clear pays plain 5 · good 10 ·
 best 15 (balance.json `boards`), on top of its grant, shown in the win line; a replay pays nothing,
@@ -264,6 +218,9 @@ pieces. 21 stretches of 卷一 ran over (by either count); 20 after — 1,635 go
 暗河 — 「小满搭上一支，左手在地上摸了一块石子，往左边黑里一丢。『嗒』。铜塞子『啵』地一响，葫芦嘴里亮起一团红光…他一箭奔那团红光去
 了」: a stone thrown into the dark to make the gourd open, then the arrow at its light, 邹青松 behind the rocks, four in the
 dark; it would cut the 2,556 at ~650.
+**Done (the port, 10-20):** 砸寨 `anhe-dark`, placed: wm-xirang's swallow passage is split at 「黑里射不着人」 into a new
+scene `wm-anhe` (its board, then the rest of the passage word for word; the fight's spoils and `was_rise` stay on swallow).
+The cut falls where the book throws, so the stretch reads 386 · board · 2,170 — still over the cap after the board.
 
 ### Before 入门: 忍字 · 认路 · 算账 back (10-20)
 

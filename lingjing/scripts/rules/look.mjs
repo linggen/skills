@@ -5,7 +5,7 @@ import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
-import { fightSetup, heldMark, ownedCards, pouchBrief, readOf } from './cards.mjs';
+import { fightSetup, heldMark, pouchBrief, readOf } from './cards.mjs';
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, herGameNow, questBrief, recalledOf } from './companion.mjs';
@@ -502,19 +502,18 @@ function personBrief(content, state, creature) {
 
 /* What a board is dealt: the task's own `deal`, and a small game's levels from the registry
    (games.json, 2026-10-16 — 喂饼's 割绳子 levels live there once, for the beat and the 游戏厅), its
-   paintings (`art`, or the row it names), and for a throwing board the registry's `projectiles`
-   with the cards he holds (`owned`: the tray shows only his own things — the card law). A row whose
-   levels mark some `story` deals the story only those (射鹿, Hanli 10-19: 静 then 风); the 游戏厅 keeps all. */
+   paintings (`art`, or the row it names). A row whose levels mark some `story` deals the story only
+   those; the 游戏厅 keeps all. (A throw is a level of 砸寨 named by the task's `deal.lv`, 2026-10-20: its
+   throws are the book's there, the card law kept in the level itself — no tray of cards dealt.) */
 function dealOf(content, task, state) {
   // A game with a row a level (气走经脉, 10-19: every `qimai` row is one level) deals the row that names this task.
   const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game && g.task === task.id) ?? games.find(g => g.id === task.game) : null;
   const levels = row?.levels?.some(l => l.story) ? row.levels.filter(l => l.story) : row?.levels;
   if (!task.deal && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
-  const throws = levels?.some(l => l.ammo) ? { projectiles: content.games.projectiles ?? {}, owned: ownedCards(content, state) } : {};
   // A thing a 割藤 deal hangs on the vines, named in both languages (拾遗's 灵芝): the reader's.
   const item = task.deal?.item?.zh ? { item: { name: pick(task.deal.item, state.lang) } } : {};
-  return { deal: { ...(task.deal ?? {}), ...item, ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}), ...throws } };
+  return { deal: { ...(task.deal ?? {}), ...item, ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}) } };
 }
 
 export function look(state, content, ctx) {

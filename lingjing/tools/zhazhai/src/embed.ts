@@ -12,11 +12,12 @@ import { WORLD_CONFIG } from "./config/PhysicsConfig";
 import { MobileManager } from "./systems/mobile";
 import type { IMobileSettingsProvider } from "./interfaces/IMobileSettings";
 import { Runtime, type Lang, type LevelResult } from "./zhazhai/runtime";
-import { LEVELS, LEVEL_WORDS } from "./data/levels";
+import { LEVELS, LEVEL_WORDS, levelIdOf } from "./data/levels";
+import { botHandle } from "./zhazhai/bot";
 import { gameEvents } from "./events/EventBus";
 
 /** The forts, for the host (their count, names and shots). */
-export const levels = () => LEVELS.map((l) => ({ id: l.levelId, birds: l.birds.map((b) => b.type), pigs: l.pigs.length, blocks: l.structures.length, words: LEVEL_WORDS[l.levelId] }));
+export const levels = () => LEVELS.map((l) => ({ id: l.levelId, key: l.key ?? null, birds: l.birds.map((b) => b.type), pigs: l.pigs.length, blocks: l.structures.length, words: LEVEL_WORDS[l.levelId] }));
 
 let booted = false;
 
@@ -25,8 +26,8 @@ export interface StartOptions {
   /** Where the assets live (the bundle's own folder). */
   base: string;
   lang?: Lang;
-  /** Open straight into this fort (1…); 0: the title screen and the level select. */
-  level?: number;
+  /** Open straight into this level (a fort's number, or a story throw's key: `deer-wind`); 0: the title screen and the level select. */
+  level?: number | string;
   onResult?: (r: LevelResult) => void;
   onLeave?: () => void;
   /** 砸寨: reduced motion (default: the system's prefers-reduced-motion). */
@@ -38,7 +39,7 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave,
   // leave its scenes listening, or the next game's first event reaches a dead HUD.
   gameEvents.removeAllListeners();
   Runtime.lang = lang;
-  Runtime.directLevel = LEVELS.some((l) => l.levelId === level) ? level : 0;
+  Runtime.directLevel = levelIdOf(level);
   Runtime.onResult = onResult ?? (() => {});
   Runtime.onLeave = onLeave ?? (() => {});
   Runtime.reducedMotion = reducedMotion ?? Boolean(globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
@@ -81,5 +82,7 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave,
   game.events.once(Phaser.Core.Events.DESTROY, () => gameEvents.removeAllListeners());
   // A handle for the page's checks (tools, screenshots): the host element's `zhazhaiGame`.
   (parent as HTMLElement & { zhazhaiGame?: Phaser.Game }).zhazhaiGame = game;
+  // 砸寨: the hands of tools/zhazhai/bot.mjs (the level tests): see the field and throw through the slingshot's own path.
+  (parent as HTMLElement & { zhazhaiBot?: unknown }).zhazhaiBot = botHandle(game);
   return game;
 }

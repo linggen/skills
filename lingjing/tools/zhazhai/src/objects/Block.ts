@@ -101,6 +101,8 @@ export class Block extends PhysicsEntity {
   public readonly gridH: number;
 
   public callbacks: BlockCallbacks = {};
+  /** 砸寨: rooted and unbreakable (a live pine, the board 孙二狗 holds): it takes a throw and stands. */
+  public fixed: boolean = false;
   private readonly minImpactSpeed: number = GameConfig.damage.minImpactSpeed;
   private lastImpactSpeed: number = 0;
   private lastImpactAngle: number = Math.PI / 2;
@@ -305,7 +307,7 @@ export class Block extends PhysicsEntity {
     impactX?: number,
     impactY?: number
   ): void {
-    if (this.destroyed) return;
+    if (this.destroyed || this.fixed) return;
 
     const oldCondition = this.currentCondition;
     this.currentHealth -= amount;

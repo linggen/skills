@@ -1,5 +1,5 @@
 {
- "source": "32ea355694fa863783299ee8bbea576f8d06fb63da7382f26b87adbad4f93d78",
+ "source": "fe2b905bab650e418024f8f17e161500dbeb1e66dc438b74b8a677bf0a44f23d",
  "levels": [
   {
    "id": 1,
@@ -183,6 +183,140 @@
      "teachingFocus": "Work from the top: bring the chief down first."
     }
    }
+  },
+  {
+   "id": 6,
+   "theme": "forest",
+   "shots": [
+    "arrow",
+    "arrow",
+    "arrow"
+   ],
+   "weasels": [
+    "SMALL"
+   ],
+   "blocks": 5,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 15000,
+    "threeStars": 25000
+   },
+   "words": {
+    "zh": {
+     "name": "射鹿",
+     "description": "溪边，那头雄鹿低着头喝水。",
+     "teachingFocus": "先看风，后看鹿。擦着它过去，它就跑了。"
+    },
+    "en": {
+     "name": "The Stag",
+     "description": "By the stream the stag drinks, head down.",
+     "teachingFocus": "Wind first, then the deer. Graze it and it bolts."
+    }
+   },
+   "key": "deer-wind",
+   "place": "creek",
+   "target": "deer",
+   "art": [
+    "place-creek",
+    "prop-pine",
+    "prop-rock",
+    "prop-log",
+    "prop-deadtree",
+    "prop-crown",
+    "prop-bush",
+    "prop-reeds"
+   ]
+  },
+  {
+   "id": 7,
+   "theme": "forest",
+   "shots": [
+    "red",
+    "arrow",
+    "red",
+    "arrow"
+   ],
+   "weasels": [
+    "SMALL"
+   ],
+   "blocks": 3,
+   "materials": [
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 15000,
+    "threeStars": 25000
+   },
+   "words": {
+    "zh": {
+     "name": "暗河里那一团红光",
+     "description": "干了的暗河，黑里蹲着邹青松，葫芦塞着。黑里射不着人。",
+     "teachingFocus": "先往黑里丢一块石子——葫芦一开，就有光。再一箭奔那团红光。"
+    },
+    "en": {
+     "name": "The Red Light in the Dark",
+     "description": "The dry river under the mountain: Zou Qingsong crouched in the dark, his gourd stoppered. You can't shoot a man in the dark.",
+     "teachingFocus": "A stone into the dark first: open the gourd and there is light. Then the arrow at the red light."
+    }
+   },
+   "key": "anhe-dark",
+   "place": "anhe",
+   "target": "gourd",
+   "art": [
+    "place-anhe",
+    "prop-rock",
+    "prop-reeds"
+   ]
+  },
+  {
+   "id": 8,
+   "theme": "forest",
+   "shots": [
+    "yellow",
+    "yellow",
+    "yellow"
+   ],
+   "weasels": [
+    "SMALL"
+   ],
+   "blocks": 4,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 15000,
+    "threeStars": 25000
+   },
+   "words": {
+    "zh": {
+     "name": "芦苇里那一等",
+     "description": "沂水滩上，鯥叫荆棘钉住了。皮厚，刀剑不入。",
+     "teachingFocus": "等它吸气——翅膀根翻开的那一霎。飞行中点一下，剑直冲出去。"
+    },
+    "en": {
+     "name": "The Wait in the Reeds",
+     "description": "On the Yi shoal the lu is caught in the brambles. Its hide turns a blade.",
+     "teachingFocus": "Wait for its breath: the instant the wing root opens. Tap in flight and the sword flies straight."
+    }
+   },
+   "key": "yishui-reed",
+   "place": "shoal",
+   "target": "lu",
+   "art": [
+    "place-shoal",
+    "prop-rock",
+    "prop-log",
+    "prop-torch",
+    "prop-bramble",
+    "prop-reeds"
+   ]
   }
  ]
 }

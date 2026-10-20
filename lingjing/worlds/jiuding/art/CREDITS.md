@@ -257,57 +257,28 @@ un-mixed from its colour, a washed body filled solid (so it holds over a dark gr
 stag pose keeps its whole canvas, so the poses share one scale and ground line. Three or four seeds a piece were
 rolled and looked at beside the house sheet on paper and on a dark ground; the kept seed is in the script. No outside source.
 
-- `games/deer/` — the stag drinking (seed 2), lifting its head (2), walking (1), bolting (1): 640×480 on one canvas,
-  facing right; the bow at rest (2) and fully drawn (4, a re-roll: the first prompt's seeds bent the bow the wrong way),
-  the arrow (2), a reed (3), a snapped reed (3), a dead branch (2), the ink burst (3, re-rolled solid — the first drew rings).
-  2026-10-19, the smash pass (Hanli: 「没有丢东西, 砸碎东西的快感」), two seeds a piece: a firewood log (2), a forked prop
-  stick (1), a drying-rack pole (1), a clay jar (1), a straw stack (2), a rotten fence stake (1), a stack of roof tiles (1),
-  a river boulder (1); the thrown pebble (2), short flying sword (2) and thunder talisman (2); and the particles the
-  physics throws — ink specks (1), a dust puff (2), a wood chip (1), a straw wisp (2), a grass tuft (1), a water splash (1),
-  a falling leaf (1). A broken thing's shards are cuts of its own painting (smash.js), never drawn.
-  2026-10-19, the forts (Hanli: 「游戏里面没有箱子可以砸碎, 或者树等障碍, 难度比较低」), two or three seeds a piece, each
-  painted in its body's proportions: a plank crate (2), a round bamboo basket (2), a back basket 背篓 (2), a squared
-  wall stone (1), a slab of river ice (2), a roof beam (2), a shrine pillar on its stone base (2), a studded shrine door
-  (2), a black-pine trunk (1, a re-roll: the first prompt painted whole trees with crowns), a pine bough (1), a dead
-  tree split by lightning (2; seed 1 painted a seal), a thorny bush (1).
+- `games/deer/` and `games/lu/` (射鹿 · 拉弓 and 芦苇里那一等 on the old throwing board) — deleted 2026-10-20 with the
+  board: both are levels of 砸寨 now, painted comic (below, 砸寨's story throws). They are in git before that day.
 - `games/bread/` — 喂饼's cave (a vignette, 720×880, seed 2, laid on the house paper), the 饼 (2), its torn corner (1),
   the stone slab (3), the vine's sprig (2), the puff of wind at the cave mouth (2).
 - `games/rain/` — 接雨's wooden basin (1) and the wet thatch beam (1).
 - `games/sneeze/` — 喷嚏符's 何七 squared up (2) and punching (2), 小满 with the charm (1), the stone stage's edge (3);
   the first round drew 何七 in a karate gi and belt, so the prompt spells out a Chinese short jacket and a knotted sash.
-- `games/lu/` — the 鯥 of 沂水 (a pose, 640×480, seed 1: ox-headed, bat-winged, snake-tailed, its legs bound by the
-  brambles, facing left) and the 沂水 shoal at night (a vignette, 960×600, seed 1), for 芦苇里那一等 on the throwing board.
-  2026-10-19 (Hanli: 「翅膀也不张开」): the same 鯥 with its wings folded along its back (`lu-folded`, seed 2) — an edit
-  pass of the local FLUX from `lu.webp` with the wings cleared from the reference, so it is the same beast on the same
-  canvas; the board lays the spread wings of `lu.webp` over it, lifting from the root as it breathes in.
 - `games/feather/` — 吹鹅毛's goose feather (1), 小满's face in profile breathing out (1), the bamboo strip (3).
+
+砸寨's story throws (2026-10-20, Hanli: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」): `tools/zhazhai/game-assets/art/`
+(built into `scripts/games/zhazhai/art/`) — the stag grazing (seed 2), head up (1) and bolting (1); the 鯥 with its wings
+folded (1) and lifted on a breath (1); the arrow (2); a pine trunk (2) and a pine bough for its crown (2), a dead tree (1), a
+fallen log (2), a boulder (1), a clump of brush (1), river reeds (1), brambles (1), a pine torch (2); the valley stream by
+day (2) and the 沂水 shoal under the moon (1). The local FLUX.2 klein 4B (mflux), `tools/paint-zhazhai-throws.py`: an edit
+pass of the old board's ink painting of the same thing (the torch from text alone), in 砸寨's comic style, on a flat green
+or magenta key that is keyed out. Two seeds a piece; the kept seed is in the script. No outside source.
 
 
 ## Sounds
 
-`worlds/jiuding/sound/deer/*.mp3` (beside this art folder) — 射鹿's sound effects (2026-10-19), each cut short and re-encoded mono 22 kHz MP3 with ffmpeg
-(trimmed, faded, some pitched or layered); every source is **CC0** (public domain dedication), so no credit is owed —
-it is given anyway.
-
-| File | What | Source (license) |
-|---|---|---|
-| creak | the bow drawn | Kenney, *RPG Audio* — `creak3.ogg` (CC0, kenney.nl/assets/rpg-audio) |
-| twang | the string let go | Kenney, *Interface Sounds* — `pluck_002.ogg` pitched down (CC0, kenney.nl/assets/interface-sounds), under artisticdude's *Swishes Sound Pack* `swish-3.wav` (CC0, opengameart.org/content/swishes-sound-pack) |
-| whoosh | the arrow in the air | artisticdude, *Swishes Sound Pack* — `swish-9.wav` (CC0, opengameart.org/content/swishes-sound-pack) |
-| thud | an arrow into earth | Kenney, *Impact Sounds* — `impactSoft_medium_000.ogg` (CC0, kenney.nl/assets/impact-sounds) |
-| grass | a reed brushed, grass flicked | Kenney, *Impact Sounds* — `footstep_grass_001.ogg` (CC0) |
-| splash | an arrow into the stream | ezwa / qubodup, *6 Short Water Splashes* — `water_splash-02.flac` (CC0, opengameart.org/content/6-short-water-splashes) |
-| snap | a reed snapped | Jan Schupke, *Tinysized SFX* — `wood-twigs-break-01.wav` (CC0, opengameart.org/content/fantasy-sound-effects-tinysized-sfx) |
-| crack | dry wood broken | Jan Schupke, *Tinysized SFX* — `wood-twigs-break-02.wav` pitched down (CC0) |
-| wood | a knock on wood | Kenney, *Impact Sounds* — `impactWood_medium_000.ogg` (CC0) |
-| logs | logs coming down | Kenney, *Impact Sounds* — `impactPlank_medium_001.ogg` + `impactWood_heavy_002.ogg` (CC0) |
-| shatter | clay broken | Kenney, *Impact Sounds* — `impactPlate_heavy_001.ogg` + `impactGlass_light_002.ogg` (CC0) |
-| straw | a straw stack burst | Kenney, *RPG Audio* — `cloth2.ogg` + artisticdude `swish-6.wav` (CC0) |
-| stone | stone struck | Kenney, *Impact Sounds* — `impactMining_001.ogg` (CC0) |
-| hit | the arrow home | Kenney, *Impact Sounds* — `impactPunch_medium_001.ogg` pitched down (CC0) |
-| bolt | the stag bolting | Kenney, *Impact Sounds* — `footstep_grass_000/002/004.ogg` in a run (CC0) |
-| chime | a level won | Kenney, *Impact Sounds* — `impactBell_heavy_001.ogg` pitched up (CC0) |
-| pop | a star | Kenney, *Interface Sounds* — `select_002.ogg` (CC0) |
+`worlds/jiuding/sound/deer/` — the old 射鹿 board's sound effects (CC0: Kenney, artisticdude, ezwa / qubodup, Jan Schupke)
+— deleted 2026-10-20 with the board; 砸寨 plays its own (Angry Aliens' CC0 sprite, `scripts/games/zhazhai/audio/`).
 
 For 古六's 底册 · 看完烧了 (setpieces/diche.js, wm-laba; the weak-board sweep, 2026-10-19 — the standing rule Hanli approved): `setpiece/diche-zao.webp` (1536×1024: the kitchen before dawn, the stove's fire mouth, the oil lamp on the ledge; the house's `places/shiao-zaojian.webp` as the style reference), and the cut-outs `diche-page.webp` (阿禾's page unfolded, ant-sized ink rows — FLUX can't write, the box says the book's words) and `diche-burn.webp` (the same page, black eating up from the bottom, a small flame), painted on a flat dark ground and cut off it. Painted by the local picture model (FLUX.2 klein 4B, mflux) with `tools/paint-diche.py` (paint-yaowang.py's painting and cutting): zao seed 1 of 1–3, page seed 1 of 1–2, burn seed 1 of 1–2 (`KEPT`, with what was wrong with the rest). Code only places, moves and lights them; nothing pictorial is drawn. Every picture looked at. No outside source.
 

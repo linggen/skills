@@ -766,9 +766,7 @@ mechanics millions already love (the mechanic only; names and art are ours), eac
 | Mechanic | Where | Status |
 |---|---|---|
 | 割绳子 physics puzzle | 喂饼 (第一回 00-cave, its one board): cut vines, use wind and stones so the 饼 reaches the hurt fox (银月's first meeting) | **built** 2026-10-16 (`games/bread.js`, levels in `games.json`; 饼角 = stars on the save, `stars` in Look) |
-| 愤怒小鸟 drag-and-arc | 射鹿 (第二回 00-deer): pull the bow, read the wind, lead the deer; 「往左偏半寸」 is the answer | **the beat** since 2026-10-16 (`games/deerarc.js` plays `deer-wind`; levels and paintings in `games.json`, dealt by Look; each arrow its own wind; a hit on the body finishes, the heart is three stars; the old `deer` board stays in the 游戏厅 only) |
-| 狩猎瞄准 (Deer Hunter-style) | 射鹿 (第二回 00-deer): hold to draw, the sight sways at full, hold still to 屏气; wait for 风歇 and the head down — 「先看风，后看鹿」, the miss line names the side (「往左偏半寸」); a head up or a near miss spooks it | **built** 2026-10-19 in the 游戏厅 (`games/deerhunt.js`, row `deerhunt`: story · walk · gusty · dusk); replaces the drag-and-arc at deer-wind once Hanli has played it (Hanli 10-19: 「愤怒小鸟的类型不好玩. 太简单, 没有花样」) |
-| 愤怒小鸟 · the kit | every throw in 卷一 on the 射鹿 board: 石子 · 箭 · 短飞剑 · 五雷符 (games.json `projectiles`, each made his by a card), one tap in flight each | **built** 2026-10-16: the kit in the 游戏厅 (`throwkit`); the throws of 卷一 listed in games.json `_throws` — 扔石听声 (`caveecho`, off 00-cave again 10-19, the 游戏厅's), 射鹿 (`deerarc`), 鯥 (`luwing`, 09-yishui) on the board; 暗河 石子+箭, 凶崖's shield and 合窳 proposed |
+| 愤怒小鸟 · 砸寨 | every throw in the story as a level of 砸寨 (tools/zhazhai): 射鹿 (第二回), 暗河 (第五回), 芦苇里那一等 (古七) — place, target and ammo per level, the card law | **the beats** since 2026-10-20 (doc/games.md § The throws; the old 射鹿 board `deerarc` deleted) |
 | 几何冲刺 one-tap runner | 顺风溜 (古七): the shoes' run down the mountain, forgiving (checkpoints, skippable) | after the first launch |
 
 Rules: 60–90 s, one thumb, instant retry; three stars (stars set the reward, a balance.json knob);

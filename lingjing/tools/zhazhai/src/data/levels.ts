@@ -11,6 +11,7 @@ import {
   GROUND_Y,
 } from "../config/GameConfig";
 import type { Position } from "../types/Vector2";
+import { THROW_LEVELS, THROW_WORDS } from "./throws";
 
 export type { ThemeType };
 
@@ -32,6 +33,67 @@ export interface LevelBlockConfig {
   material: BlockMaterial;
   rotation: number;
   elementIndex?: string;
+  /** 砸寨: drawn as this painting (`zz:<name>`, zhazhai/props.ts) instead of a plain block: a log, a rock, a pine. */
+  skin?: string;
+  /** 砸寨: rooted where it stands, never breaks (a live pine): it takes the arrow and holds. */
+  fixed?: boolean;
+}
+
+/** 砸寨: what the throws are aimed at, when it is not the weasel gang (zhazhai/targets.ts). */
+export type TargetSpec =
+  | {
+      kind: "deer";
+      /** A throw passing or landing this near (units) flushes it: it bolts. */
+      spook: number;
+      /** Head up after a scare, before it runs (ms). */
+      alert: number;
+      /** Gone this long before it comes back (ms). */
+      away: number;
+      /** Where it comes back to, in turn (x). */
+      spots: number[];
+    }
+  | {
+      kind: "lu";
+      /** One breath every `every` ms; the wing root shows for `open` ms of it. */
+      every: number;
+      open: number;
+      /** Struck on the hide, it fights the brambles: it breathes this fast after. */
+      struggle: { every: number; open: number };
+      /** The wing root, from its middle (units). */
+      root: { dx: number; dy: number; r: number };
+    }
+  | {
+      kind: "gourd";
+      /** A stone landing in the dark: after `delay` ms the gourd is unstoppered, its light showing until an arrow strikes, or `open` ms. */
+      delay: number;
+      open: number;
+      /** The gourd's mouth and the two fingers on its stopper, from his middle (units): the one place an arrow counts. */
+      root: { dx: number; dy: number; r: number };
+    };
+
+/** 砸寨: a painted thing with no body — the stream, the brush, the torch (zhazhai/props.ts). */
+export interface DecorConfig {
+  art: string;
+  x: number;
+  /** Its foot (world y). */
+  y: number;
+  /** Its drawn height (units). */
+  h: number;
+  /** In front of the targets and the blocks (else behind them). */
+  front?: boolean;
+  flip?: boolean;
+}
+
+/** 砸寨: the answer a sensible hand finds (tools/zhazhai/bot.mjs; tests/game-zhazhai.test.mjs). */
+export interface BotHint {
+  /** Aim at this point of the target (units from its middle), not its middle. */
+  aim?: { dx: number; dy: number };
+  /** Let go so the throw arrives while the target is open (the 鯥's breath). */
+  timed?: boolean;
+  /** Tap in flight when the throw's line points at the aim (the sword's dash). */
+  dash?: boolean;
+  /** Where a stone goes to draw the light (暗河: 「往左边黑里一丢」). */
+  decoy?: { x: number; y: number };
 }
 
 export interface LevelPigConfig {
@@ -56,6 +118,13 @@ export interface LevelData {
   slingshot: LevelSlingshotConfig;
   starThresholds: StarThresholds;
   teachingFocus: string;
+  /** 砸寨: a story throw's name for the level (`lv=deer-wind`); the forts go by number. */
+  key?: string;
+  /** 砸寨: the painted place it is set in (game-assets/art/place-<id>.webp); none: upstream's parallax. */
+  place?: string;
+  target?: TargetSpec;
+  decor?: DecorConfig[];
+  bot?: BotHint;
 }
 
 export interface GridBlockConfig {
@@ -512,7 +581,8 @@ function convertGridLevelToLevelData(gridLevel: GridLevelData): LevelData {
   };
 }
 
-export const LEVELS: LevelData[] = GRID_LEVELS.map(convertGridLevelToLevelData);
+/** 砸寨: the forts (1…5, the title screen's select), then the story's throws (data/throws.ts: by `key`). */
+export const LEVELS: LevelData[] = [...GRID_LEVELS.map(convertGridLevelToLevelData), ...THROW_LEVELS];
 
 /** 砸寨's words for each fort, in both languages (upstream's English names stay in GRID_LEVELS, unused). */
 export const LEVEL_WORDS: Record<number, Record<Lang, { name: string; description: string; teachingFocus: string }>> = {
@@ -536,6 +606,7 @@ export const LEVEL_WORDS: Record<number, Record<Lang, { name: string; descriptio
     zh: { name: "大王寨", description: "黄鼠狼大王坐在寨顶，石头、铁、瓦，一层一层。", teachingFocus: "从上往下拆：先砸塌顶上的大王。" },
     en: { name: "The Chief's Keep", description: "The weasel chief sits on top: stone, iron and tile, layer on layer.", teachingFocus: "Work from the top: bring the chief down first." },
   },
+  ...THROW_WORDS,
 };
 
 const localize = (level: LevelData): LevelData => ({ ...level, ...(LEVEL_WORDS[level.levelId]?.[Runtime.lang] ?? {}) });
@@ -547,4 +618,17 @@ export function getLevelById(id: number): LevelData | undefined {
 
 export function getTotalLevels(): number {
   return LEVELS.length;
+}
+
+/** 砸寨: the forts the title screen's select shows (the story's throws open by `lv=<key>` only). */
+export function getFortCount(): number {
+  return LEVELS.filter((l) => !l.key).length;
+}
+
+/** 砸寨: a level asked for by number or by a throw's key (`deer-wind`): its number, else 0. */
+export function levelIdOf(asked: number | string | undefined | null): number {
+  if (asked == null || asked === "") return 0;
+  const n = Number(asked);
+  if (Number.isInteger(n)) return LEVELS.some((l) => l.levelId === n) ? n : 0;
+  return LEVELS.find((l) => l.key === asked)?.levelId ?? 0;
 }

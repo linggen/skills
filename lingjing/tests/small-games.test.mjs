@@ -31,7 +31,7 @@ test('every registered game has a type (`mechanic`) from the 游戏厅\'s small 
 });
 
 test('the beats polished on 10-16 export mount() themselves', async () => {
-  for (const id of ['rain', 'deer', 'sneeze']) { // the rest of them deleted 2026-10-19 (「没用在游戏中的, 都删了吧」)
+  for (const id of ['rain', 'sneeze']) { // the rest of them deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); the old 射鹿 2026-10-20 (砸寨 plays it)
     const mod = await import(`../scripts/games/${id}.js`);
     assert.equal(typeof mod.mount, 'function', id);
     assert.equal(mountOnly(mod), false, `${id} keeps its html: the story page draws it as ever`);

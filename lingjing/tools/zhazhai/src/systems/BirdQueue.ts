@@ -7,11 +7,11 @@
 import Phaser from "phaser";
 import { BirdType } from "../types/BirdType";
 import { BIRD_PHYSICS, BIRD_ASSET_MAP } from "../config/PhysicsConfig";
-import { LEVEL_ATLAS_KEY } from "../config/assetManifest";
 import { BirdQueueConfig } from "../config/BirdQueueConfig";
 import type { IBirdQueue } from "../interfaces/IBirdQueue";
 import type { Position } from "../types/Vector2";
 import { Runtime } from "../zhazhai/runtime";
+import { sizeOf, texOf } from "../zhazhai/skin";
 
 type OnBounce = (
   birdSprite: Phaser.GameObjects.Image,
@@ -97,7 +97,7 @@ export class BirdQueue implements IBirdQueue {
     this.items.forEach((s) => s.destroy());
     this.items = this.queue.map((type, i) => {
       const pos = this.slotPosition(i, this.queue.length);
-      const img = this.scene.add.image(pos.x, pos.y, LEVEL_ATLAS_KEY, BIRD_ASSET_MAP[type]);
+      const img = this.scene.add.image(pos.x, pos.y, ...texOf(BIRD_ASSET_MAP[type]));
       img.setScale(this.getDisplayScale(type) * C.items.scale);
       img.setRotation((i % 2 ? 1 : -1) * C.items.tilt);
       img.setDepth(C.depth.item);
@@ -134,9 +134,8 @@ export class BirdQueue implements IBirdQueue {
 
   private getDisplayScale(birdType: BirdType): number {
     const config = BIRD_PHYSICS[birdType];
-    const frame = this.scene.textures.get(LEVEL_ATLAS_KEY)?.get(BIRD_ASSET_MAP[birdType]);
-    const frameWidth = frame ? frame.cutWidth : 70;
-    return (config.radius * 2) / frameWidth;
+    const frameWidth = sizeOf(this.scene, BIRD_ASSET_MAP[birdType]).w;
+    return (config.visualLength ?? config.radius * 2) / frameWidth;
   }
 
   /** Upstream's name: the next thing goes to the pouch. In 砸寨 it floats there. */

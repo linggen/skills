@@ -13,6 +13,21 @@ import { PigSize } from "../constants/PigSize";
 import { applyRadialImpulse } from "../utils/PhysicsUtils";
 import { TimeScaleCompensator } from "../utils/TimeScaleCompensator";
 import { BodyCache } from "../utils/BodyCache";
+import { texOf } from "../zhazhai/skin";
+
+/** 砸寨: a target that is not a weasel (the stag, the 鯥 — zhazhai/targets.ts): its painting, body and toughness. */
+export interface PigLook {
+  /** An asset key (zhazhai/skin.ts): `zz:<name>` for a painting of its own. */
+  texture: string;
+  width: number;
+  height: number;
+  shape: "rect" | "circle";
+  health: number;
+  density?: number;
+  /** Pinned where it stands (the 鯥 in the brambles): never falls or slides. */
+  pinned?: boolean;
+  label: string;
+}
 
 export { PigSize } from "../constants/PigSize";
 
@@ -40,6 +55,10 @@ export class Pig extends PhysicsEntity {
   public callbacks: PigCallbacks = {};
   private minImpactSpeed: number = PIG_DAMAGE_CONFIG.defaultMinImpactSpeed;
   private boundHandleCollision: (event: Phaser.Types.Physics.Matter.MatterCollisionData) => void;
+  /** 砸寨: what it looks like when it is not a weasel. */
+  public readonly look?: PigLook;
+  /** 砸寨: whether a blow gets through (`at`: where it landed, null for a blast). The 鯥's hide turns all but one spot. */
+  public guard?: (at: { x: number; y: number } | null, impactSpeed: number) => boolean;
 
   constructor(
     scene: Phaser.Scene,
@@ -47,19 +66,22 @@ export class Pig extends PhysicsEntity {
     y: number,
     size: PigSize = PigSize.MEDIUM,
     id?: string,
-    wakeManager?: IWakeCascadeManager
+    wakeManager?: IWakeCascadeManager,
+    look?: PigLook
   ) {
     const pigId = id ?? generateUniqueId("pig");
     const config = PIG_PHYSICS[size];
-    super(scene, pigId, config.health, wakeManager);
+    super(scene, pigId, look?.health ?? config.health, wakeManager);
 
     this.size = size;
+    this.look = look;
 
     this.boundHandleCollision = this.handleCollision.bind(this);
     this.createPhysicsBody(x, y);
   }
 
   private createPhysicsBody(x: number, y: number): void {
+    if (this.look) return this.createLookBody(x, y, this.look);
     const config = PIG_PHYSICS[this.size];
     const textureKey = PIG_ASSET_MAP[this.size];
     const shapeConfig = PIG_SHAPE_CONFIGS[this.size];
@@ -97,6 +119,26 @@ export class Pig extends PhysicsEntity {
     this.matterImage.setOnCollide(this.boundHandleCollision);
   }
 
+  /** 砸寨: a target of its own painting — a body of its own size (a stag is long, a 鯥 is big). */
+  private createLookBody(x: number, y: number, look: PigLook): void {
+    const [key, frame] = texOf(look.texture);
+    this.matterImage = this.scene.matter.add.image(x, y, key, frame, {
+      density: look.density ?? 0.002,
+      restitution: PIG_DAMAGE_CONFIG.defaultRestitution,
+      friction: 0.8,
+      label: look.label,
+    });
+    if (look.shape === "circle") this.matterImage.setCircle(Math.min(look.width, look.height) / 2);
+    else this.matterImage.setRectangle(look.width, look.height);
+    (this.matterImage.body as Matter.Body).label = look.label; // a new body: the label the rest of the game reads
+    this.matterImage.setFixedRotation();
+    if (look.pinned) this.matterImage.setStatic(true);
+    else Matter.Sleeping.set(this.matterImage.body as Matter.Body, false);
+    this.matterImage.setCollisionCategory(CollisionCategory.PIG);
+    this.matterImage.setDepth(DesignTokens.depth.pig);
+    this.matterImage.setOnCollide(this.boundHandleCollision);
+  }
+
   private handleCollision(event: Phaser.Types.Physics.Matter.MatterCollisionData): void {
     if (this.destroyed) return;
 
@@ -117,8 +159,17 @@ export class Pig extends PhysicsEntity {
     const impactSpeed = TimeScaleCompensator.compensateImpactSpeed(rawImpactSpeed, this.scene);
 
     if (impactSpeed >= this.minImpactSpeed) {
+      // 砸寨: where the blow landed, for a target whose hide turns all but one spot.
+      let at: { x: number; y: number } | undefined;
+      if (this.guard) {
+        // Where the striking thing is (its middle): a contact's support points are the corners of whichever shape.
+        const own = this.matterImage?.body;
+        const other = bodyA === own ? bodyB : bodyA;
+        at = { x: other.position.x, y: other.position.y };
+        if (!this.guard(at, impactSpeed)) return;
+      }
       const damage = Math.floor(impactSpeed * PIG_DAMAGE_CONFIG.impactSpeedDamageMultiplier);
-      this.takeDamage(damage);
+      this.takeDamage(damage, impactSpeed, 0, at);
 
       gameEvents.emit("pigCollision", {
         pig: this,
@@ -131,8 +182,10 @@ export class Pig extends PhysicsEntity {
     }
   }
 
-  public takeDamage(amount: number): void {
+  public takeDamage(amount: number, _impactSpeed?: number, _impactAngle?: number, at?: { x: number; y: number }): void {
     if (this.destroyed) return;
+    // 砸寨: a blast (no spot) asks the guard too; a blow already asked it in handleCollision.
+    if (this.guard && !at && !this.guard(null, 0)) return;
 
     this.currentHealth -= amount;
     this.callbacks.onDamage?.(this, amount, this.currentHealth);

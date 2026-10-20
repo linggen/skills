@@ -155,8 +155,8 @@ test('a board not on the stage cannot be left; Ling never leaves or offers one (
 });
 
 test('the stuck gate (scripts/stuck.js): never at the start; after STUCK_MS, or once the game says it is stuck', async () => {
-  const deer = await import('../scripts/games/deer.js');
-  const g = { mod: deer, state: deer.newGame('s') };
+  const rain = await import('../scripts/games/rain.js'); // was the old 射鹿 board's (deer.js, deleted 2026-10-20)
+  const g = { mod: rain, state: rain.newGame('s') };
   assert.equal(stuckNow(g, 0), false, 'never before it was laid');
   stampShown(g, 1000);
   stampShown(g, 5000);
@@ -165,12 +165,12 @@ test('the stuck gate (scripts/stuck.js): never at the start; after STUCK_MS, or 
   assert.equal(stuckNow(g, 1000 + STUCK_MS - 1), false);
   assert.equal(stuckNow(g, 1000 + STUCK_MS), true, 'stood unwon long enough');
   assert.ok(STUCK_MS >= 60000 && STUCK_MS <= 90000);
-  // Missed three times: stuck at once.
-  assert.equal(stuckNow({ ...g, state: { ...g.state, misses: 3 } }, 1001), true);
-  assert.equal(stuckNow({ ...g, state: { ...g.state, misses: 3, won: true } }, 1001), false, 'never once won');
+  // Flooded three times: stuck at once.
+  assert.equal(stuckNow({ ...g, state: { ...g.state, floods: 3 } }, 1001), true);
+  assert.equal(stuckNow({ ...g, state: { ...g.state, floods: 3, won: true } }, 1001), false, 'never once won');
   assert.equal(stuckNow({ ...g, skipped: true }, 1000 + STUCK_MS), false, 'never once left');
   // The games with a clear fail say when they are stuck.
-  const fails = { deer: { misses: 3 } }; // 黑地 · 最后一罚 · 一千米's old boards deleted 2026-10-19
+  const fails = { rain: { floods: 3 }, sneeze: { hits: 5 } }; // 黑地 · 最后一罚 · 一千米's old boards deleted 2026-10-19, the old 射鹿 2026-10-20
   for (const [id, at] of Object.entries(fails)) {
     const mod = await import(`../scripts/games/${id}.js`);
     const s = mod.newGame('s');

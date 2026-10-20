@@ -7,7 +7,7 @@ import { LevelGrid, LevelData } from "../ui/levelSelect";
 import type { IAudioSystem } from "../interfaces/audio";
 import { ServiceTokens } from "../config/registries/ServiceContainer";
 import { getServiceContainer } from "../config/bootstrap";
-import { getLevelById, getTotalLevels } from "../data/levels";
+import { getLevelById, getFortCount } from "../data/levels";
 import { SceneNavigator } from "../utils/SceneNavigator";
 
 export class LevelSelectScene extends BaseScene {
@@ -35,7 +35,7 @@ export class LevelSelectScene extends BaseScene {
     this.levelData = [];
 
     const maxUnlocked = GameScene.loadMaxUnlockedLevel();
-    const totalLevels = getTotalLevels();
+    const totalLevels = getFortCount(); // 砸寨: the forts; the story's throws open by key
 
     for (let i = 1; i <= totalLevels; i++) {
       const saved = GameScene.getLevelProgress(i);

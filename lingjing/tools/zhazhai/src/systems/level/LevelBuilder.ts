@@ -14,6 +14,8 @@ import {
 } from "./ILevelBuilder";
 import { BlockFactory } from "../../factories/BlockFactory";
 import { PigFactory } from "../../factories/PigFactory";
+import { attachTarget, lookOf } from "../../zhazhai/targets";
+import { skinBlock } from "../../zhazhai/props";
 
 export class LevelBuilder implements ILevelBuilder {
   private scene: Phaser.Scene;
@@ -55,9 +57,16 @@ export class LevelBuilder implements ILevelBuilder {
       { x: VIEWPORT_WIDTH * 0.72, y: groundY - 100, size: PigSize.SMALL },
     ];
 
+    // 砸寨: a story throw's target (the stag, the 鯥) is a pig of its own painting and behaviour, its foot where the
+    // level puts the pig's.
+    const target = levelData.target;
+    const look = target ? lookOf(target) : undefined;
     pigPositions.forEach((pos) => {
       const size = pos.size ?? PigSize.MEDIUM;
-      const pig = this.pigFactory.create(this.scene, { x: pos.x, y: pos.y, size });
+      const foot = pos.y + ({ [PigSize.SMALL]: 35, [PigSize.MEDIUM]: 70, [PigSize.LARGE]: 105 } as Record<PigSize, number>)[size];
+      const y = look ? foot - look.height / 2 : pos.y;
+      const pig = this.pigFactory.create(this.scene, { x: pos.x, y, size, look });
+      if (target) attachTarget(this.scene, pig, target);
 
       pig.callbacks.vfxManager = this.vfxManager;
       pig.callbacks.onDestroyed = () => {
@@ -89,6 +98,9 @@ export class LevelBuilder implements ILevelBuilder {
       });
 
       newBlock.setStatic(true);
+      // 砸寨: rooted (stays static, never breaks) and drawn as the thing it is.
+      newBlock.fixed = Boolean(block.fixed);
+      if (block.skin) skinBlock(this.scene, newBlock, block.skin, block.width, block.height);
 
       newBlock.callbacks.onDestroyed = (
         block: Block,
@@ -130,7 +142,7 @@ export class LevelBuilder implements ILevelBuilder {
 
   enableBlockPhysics(): void {
     this.blocks.forEach((block) => {
-      if (!block.isDestroyed()) {
+      if (!block.isDestroyed() && !block.fixed) {
         block.setStatic(false);
         block.sleep();
       }

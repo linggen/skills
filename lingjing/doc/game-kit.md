@@ -54,7 +54,7 @@ pause, the result screen. A kit only plays.
 
 | Kit | Games on it | Control | Physics |
 |---|---|---|---|
-| 投掷 throw | 砸寨, 射鹿 (merged) | pull and release | Matter |
+| 投掷 throw | 砸寨: the forts and every story throw as a level (射鹿 `deer-wind`, 暗河 `anhe-dark`, 芦苇里那一等 `yishui-reed`; 10-20) | pull and release | Matter |
 | 塔防 defense | 守炉, 兽潮, the 回 levels | place 符, move the hero (银月), cast 掐诀 | none |
 | 绳索 rope | 割绳子, 饭桶 | cut, bounce | Verlet |
 | 一键飞行 flight | 御剑 (tap), 气走经脉 (hold) | one button | none |
@@ -84,7 +84,7 @@ winnable by a sensible play and not by a lazy one.
 2. **Extract the shell** from 砸寨 into layers 1–3. `art-style.md` goes comic. 砸寨 re-hosts
    on the shared shell as its first user. **Gate: Hanli plays 砸寨 in the shell and approves.**
 3. **New games on the shell:** 守炉 moves on; 御剑 + 气走经脉 are built as one flight kit.
-4. **Old games, one at a time:** 射鹿 merges into the throw kit, then 割绳子/饭桶, then 接雨.
+4. **Old games, one at a time:** 射鹿 merged into the throw kit (done 10-20: every throw a level of 砸寨, deerarc deleted), then 割绳子/饭桶, then 接雨.
    Each port keeps the game's logic and bot, redraws on Phaser, and deletes the old file.
 
 ## Mac and phone (decided 10-20, Hanli: 「可以, 按你说的做」)

@@ -49,7 +49,9 @@ function step(s, exit) {
 /* 古六's boards (the per-回 plan, 2026-10-15): the board each way on waits on, played (won, counted) before it. */
 const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror', 'zhaojing-fantong'], go: ['laba-diche'], up: ['dabi-sneeze'], rest: ['jiaxin-letter'], read: ['heluo-kaipian'],
   // the reading cap (2026-10-20): 息壤 · 五门 before the second night, 喂息珠 in the woodshed, 后山 behind 瞿老
-  sit: ['xirang-wumen'], on: ['luobo-xizhu'], follow: ['baishi-houshan'] };
+  sit: ['xirang-wumen'], on: ['luobo-xizhu'], follow: ['baishi-houshan'],
+  // 暗河's throw (2026-10-20, 砸寨 anhe-dark): the swallow passage split at its stone
+  light: ['anhe-dark'] };
 function before(s, exit, now = DAY1) {
   // a save set down in a scene by hand (not walked in) has not been offered its boards yet: offer them, as arriving does
   for (const id of BOARD_BEFORE[exit] ?? []) s = must(task, must(win, { ...s, tasks: { [id]: { status: 'offered' }, ...s.tasks } }, { id }, now), { action: 'done', id }, now);
@@ -91,7 +93,7 @@ function playThrough() {
   // The 困阵 has one way, the book's: 「三天。」 (the 萝卜 branch was cut, 修改单-片三 6, 2026-10-02)
   assert.equal(refused(resolve, s, { exit: 'radish' }, 'unknown-exit').refused, 'unknown-exit');
   // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
-  for (const exit of ['go', 'swallow', 'sit', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : ['sit', 'on'].includes(exit) ? before(s, exit) : s, { exit });
+  for (const exit of ['go', 'swallow', 'light', 'sit', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : ['light', 'sit', 'on'].includes(exit) ? before(s, exit) : s, { exit });
   s = must(move, fresh(s), { place: 'waimen' });
   s = throughEve(fresh(s));
   s = fresh(s);
@@ -157,7 +159,7 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
     for (const e of CH.scenes[id].exits) if (e.next) todo.push(e.next);
   }
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
-  assert.equal(Object.keys(CH.scenes).length, 31); // + wm-zhaojing, wm-laba (古六's eve split, 2026-10-15); + wm-luobo (喂息珠, the reading cap, 2026-10-20)
+  assert.equal(Object.keys(CH.scenes).length, 32); // + wm-anhe (暗河, 砸寨's anhe-dark: the swallow passage split at its throw, 2026-10-20); + wm-zhaojing, wm-laba (古六's eve split, 2026-10-15); + wm-luobo (喂息珠, the reading cap, 2026-10-20)
   // // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六); + 今 · 二's three (2026-10-05)
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
   // 观内 (2026-10-15): every scene stands in the 观 — but the 秘境's, at 石门, whose road the story itself opens (world.mjs leaveOf).
@@ -247,7 +249,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   refused(resolve, s, { exit: 'open' }, 'game-not-won');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
-  for (const exit of ['go', 'swallow', 'sit', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : ['sit', 'on'].includes(exit) ? before(s, exit) : s, { exit });
+  for (const exit of ['go', 'swallow', 'light', 'sit', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : ['light', 'sit', 'on'].includes(exit) ? before(s, exit) : s, { exit });
   assert.equal(s.scene, 'wm-qianye');
   // The 秘境 over, he walks back up with the others (观内, 2026-10-15): set down at 外门 in the story's words, where the eve stands.
   const back = look(s, content, ctx(DAY1));
@@ -455,7 +457,9 @@ test('息壤 keeps his 修为 and lifts nothing; its moment is the five doors op
   // Since 2026-10-20 the moment rides wm-kaikai's way on (the 息壤 paragraphs and 息壤 · 五门 moved there): after the soil has grown in.
   const swallowed = resolve(won({ ...opened(), scene: 'wm-xirang', place: 'shimen', step: 2, progress: 33 }, 'mijing-zou'), content, ctx(), { exit: 'swallow' });
   assert.equal(swallowed.result.node?.doors, undefined, 'not before the earth is scattered');
-  const played = before(swallowed.state, 'sit'); // 息壤 · 五门 won: its own pay, the board's
+  // The dry river's throw first (wm-anhe, 2026-10-20: 砸寨 anhe-dark), then 息壤 · 五门.
+  const lit = resolve(before(swallowed.state, 'light'), content, ctx(), { exit: 'light' }).state;
+  const played = before(lit, 'sit'); // 息壤 · 五门 won: its own pay, the board's
   const out = resolve(played, content, ctx(), { exit: 'sit' });
   // No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): the realm stands as he earned it.
   assert.deepEqual([swallowed.state.step, swallowed.state.progress], [2, 33], 'the swallow moved nothing');
