@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   The shared small-game kit: one engine, one shell, one asset library, five play kits.
   The list of games and their verdicts is games.md; where games sit in the story is design.md.
-status: 2026-10-20 — approved (Hanli: 「可以, 统一用Phaser, 按这个计划做. 加一个design文档吧」). Nothing of the shared layer is built yet; 砸寨 is the first source and first user.
+status: 2026-10-20 — approved (Hanli: 「可以, 统一用Phaser, 按这个计划做. 加一个design文档吧」). The shell (layer 2) is built and every small game wears it (「确保所有小游戏一套外壳」); the Phaser kits still draw their own intro, pause and result inside it.
 ---
 
 # Lingjing — the game kit (小游戏统一外壳)
@@ -49,6 +49,27 @@ mount(container, { kit, level, lang, reducedMotion }) → Promise<{ won, stars, 
 A kit knows nothing of story, save or pay. The story's beat wrapper maps the result to rewards,
 cards and the next scene. The shell owns everything around the play: the intro card, countdown,
 pause, the result screen. A kit only plays.
+
+## The shell, as built (10-20)
+
+`scripts/games/shell.js` + `shell.css`. Every game, Phaser or not, plays inside one frame in all three places: the
+story's board card (`cards.js`), the 游戏厅 (`arcade.js`) and the try page. The frame wraps the game's own host
+(`[data-game]`, `[data-mount]` or the slot) untouched:
+
+- **Bar:** title and pause (shown for a game in time: `tick`, or `meta.pause` for a kit with its own loop).
+  The how-to line sits under it. On a Mac a tall board puts the bar in a column beside the stage.
+- **Layer over the stage:** the pause veil, the lead card (its line, then 3-2-1 for a game in time, else a 开始
+  tap), and the speech bubble (`say(id, who, text)`, where 台词预取's lines will land).
+- **Result line:** won or not, stars, grade, then 再来 or 下一关. Off the story only; in the story the win goes on
+  to the pay and the 得牌 card as before.
+- **State lives in a store keyed by the board, never the DOM.** The story lays its card again on every Look and
+  draws the frame from the store. A game hears the shell through `mount(…, { shell })`: `paused()`, `say()`,
+  `onPause()`. mountPure and 气走经脉's own loop stop their clock and input while paused, and the story's
+  clock stops as it does for 回看.
+- **`tests/game-shell.test.mjs`** loads every registry game as a `mount()` or a pure board, and checks that every
+  place a game plays uses the shell.
+- **Next:** the Phaser kits (守墙关, 撒豆成兵, 砸寨) and 守炉 hand their intro, pause and result to the shell
+  (`opts.shell`), so nothing shows twice. The prefetch call itself comes after that.
 
 ## Play kits
 
