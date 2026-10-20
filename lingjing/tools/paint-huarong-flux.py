@@ -36,14 +36,15 @@ JOBS = {
     'ONE round chunky grey cave rock, a lumpy stone roughly as wide as it is tall with a couple of chips and a fleck '
     'of moss, filling the picture. ' + fc.STYLE + ' ' + fc.ON_MAGENTA)),
   'floor': dict(w=768, h=960, prompt=(
-    'Seen from straight above: the floor of a cave passage, warm brown packed earth and flat stones with pebbles and '
-    'a few tufts of moss, evenly lit, a flat texture filling the WHOLE picture edge to edge. ' + fc.STYLE + ' '
+    'Seen from straight above: plain warm brown packed earth of a cave floor, smooth, with only faint cracks, tiny '
+    'specks of grit and a little dark moss at the very edges; NO rocks, NO stones, NO boulders, nothing standing up; '
+    'evenly lit, a flat texture filling the WHOLE picture edge to edge. ' + fc.STYLE + ' '
     + fc.SCENE)),
 }
 
 # Looked at 2026-10-20 (3 seeds each): k 1 (小满 on-model, arms out pushing), v 1 (a standing slab), h 3 (the vines
-# read best), s 2 (round, mossy), floor 2 (a pit ringed with rocks: the board sits in it).
-KEPT = {'k': 1, 'v': 1, 'h': 3, 's': 2, 'floor': 2}
+# read best), s 2 (round, mossy), floor 5 (plain earth, muted: seeds 1–3 painted rocks that read as pieces).
+KEPT = {'k': 1, 'v': 1, 'h': 3, 's': 2, 'floor': 5}
 SIZE = {'k': (320, 320), 'v': (160, 320), 'h': (320, 160), 's': (160, 160), 'floor': (480, 600)}
 
 

@@ -6,8 +6,8 @@ export const meta = {
   id: 'huarong',
   name: { zh: '华容道', en: 'Huarong Pass' },
   how: {
-    zh: '点一块再点箭头或旁边空格，一次滑一格；键盘 WASD 或方向键也行（没选时动「你」）。把金色的「你」移到下方出口。',
-    en: 'Tap a block, then an arrow or an empty cell beside it; or WASD / arrow keys (they move the gold block when none is picked). Slide the gold block to the bottom exit.',
+    zh: '点一块再点箭头或旁边空格，一次滑一格；键盘 WASD 或方向键也行（没选时动小满）。把小满挪到下方出口。',
+    en: 'Tap a block, then an arrow or an empty cell beside it; or WASD / arrow keys (they move Xiaoman when none is picked). Get Xiaoman out through the bottom exit.',
   },
   // WASD and the arrow keys slide the picked block (Hanli 2026-10-20: 「可以用wsad触发移动吗」).
   keys: {
