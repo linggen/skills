@@ -5,18 +5,20 @@ export const BirdQueueConfig = {
   basket: {
     /** The basket's centre, this far left of the pouch, standing on the ground. */
     offsetX: 215,
-    /** Its drawn width (world units); the height follows the painting. */
+    /** Its drawn width (world units); the height follows the drawing (atlas.py basket()). */
     width: 250,
-    /** The front wall's top, as a fraction of the basket's height from its top (the painting's rim line). */
+    /** The front wall's top, as a fraction of the basket's height from its top (the drawing's rim line). */
     rimY: 0.42,
   },
   items: {
     /** An item in the basket, as a fraction of its size in the sling. */
-    scale: 0.82,
-    /** Slot spacing (world units); slot 0 — the next to go — is nearest the sling. */
-    spacing: 44,
-    /** How far an item's centre sits above the rim: enough of it shows to tell what it is. */
-    peek: 14,
+    scale: 0.95,
+    /** Slot spacing (world units), narrowed so a full load fits the basket's mouth; slot 0 — the next to go — is
+     *  nearest the sling. */
+    spacing: 56,
+    mouth: 190,
+    /** How far an item's centre sits above the rim: most of it shows, enough to tell what it is. */
+    peek: 22,
     /** Alternate slots sit a little lower and tilt, so the pile reads as laid in, not lined up. */
     stagger: 9,
     tilt: 0.16,

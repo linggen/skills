@@ -55,7 +55,8 @@ export class BirdQueue implements IBirdQueue {
 
   /** Slot i of n: centred in the basket, slot 0 at the sling's side. */
   private slotPosition(i: number, n: number): Position {
-    const x = this.basketX() + ((n - 1) / 2 - i) * C.items.spacing;
+    const spacing = n > 1 ? Math.min(C.items.spacing, C.items.mouth / (n - 1)) : 0;
+    const x = this.basketX() + ((n - 1) / 2 - i) * spacing;
     const y = this.rimY() - C.items.peek + (i % 2) * C.items.stagger;
     return { x, y };
   }
