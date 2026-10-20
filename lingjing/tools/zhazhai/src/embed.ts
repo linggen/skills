@@ -90,5 +90,7 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave,
   (parent as HTMLElement & { zhazhaiGame?: Phaser.Game }).zhazhaiGame = game;
   // 砸寨: the hands of tools/zhazhai/bot.mjs (the level tests): see the field and throw through the slingshot's own path.
   (parent as HTMLElement & { zhazhaiBot?: unknown }).zhazhaiBot = botHandle(game);
+  // the 游戏厅 (dev=1) only: a live check reads the scenes from here (as 守墙关's __shouqiang)
+  if (new URLSearchParams(globalThis.location?.search ?? "").get("dev") === "1") (globalThis as Record<string, unknown>).__zhazhai = game;
   return game;
 }

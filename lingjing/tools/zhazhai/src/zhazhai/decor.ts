@@ -6,7 +6,10 @@ import { Runtime } from "./runtime";
 import { getLevelById } from "../data/levels";
 
 // basket-back / basket-front: the 竹篮 the throws rest in (systems/BirdQueue.ts, drawn by atlas.py basket()).
-export const ART = ["weasel-s", "weasel-m", "weasel-l", "proj-stone", "slingshot", "basket-back", "basket-front"] as const;
+// fx-thunder: the 五雷符's flight — the talisman, once let go, flies inside a ball of crackling 雷光 (Hanli 10-20:
+// 「符文飞出去有点奇怪, 一页纸来砸」). Painted on black by the local FLUX (seed 1, the prompt in objects/thunder.ts), keyed
+// by its brightness.
+export const ART = ["weasel-s", "weasel-m", "weasel-l", "proj-stone", "slingshot", "basket-back", "basket-front", "fx-thunder"] as const;
 
 // The story throws' paintings (tools/paint-zhazhai-throws.py): their targets, props and places (data/throws.ts).
 export const THROW_ART = [

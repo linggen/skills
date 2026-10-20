@@ -25,6 +25,8 @@ import { BirdStateMachine } from "./bird/BirdStateMachine";
 import type { IWakeCascadeManager } from "../interfaces/IWakeCascadeManager";
 import { TimeScaleCompensator } from "../utils/TimeScaleCompensator";
 import { texOf } from "../zhazhai/skin";
+import { Runtime } from "../zhazhai/runtime";
+import { ThunderAura } from "./thunder";
 
 export { BirdType, BirdState };
 
@@ -52,6 +54,8 @@ export class Bird implements IBird {
   private flightRotation: number = 0;
   private penetrationCount: number = 0;
   private _destroyed: boolean = false;
+  /** 砸寨: the 五雷符's 雷光 while it flies (objects/thunder.ts). */
+  private aura: ThunderAura | null = null;
 
   private static defaultAbilityRegistry: AbilityRegistry = new AbilityRegistry();
   private abilityRegistry: AbilityRegistry | null = null;
@@ -265,6 +269,9 @@ export class Bird implements IBird {
     });
 
     this.launched = true;
+    if (this.type === BirdType.BLACK && this.scene.textures.exists("zz-fx-thunder")) {
+      this.aura = new ThunderAura(this.scene, this.matterImage, Boolean(Runtime.reducedMotion));
+    }
     this.transitionToState("FLYING");
 
     gameEvents.emit("birdLaunched", {
@@ -348,6 +355,8 @@ export class Bird implements IBird {
     if (!this.canActivateAbility()) return;
 
     this.abilityActivated = true;
+    this.aura?.destroy(); // the ball bursts with it
+    this.aura = null;
     this.transitionToState("ABILITY_ACTIVATED");
 
     const config = BIRD_PHYSICS[this.type];
@@ -423,6 +432,8 @@ export class Bird implements IBird {
     this._destroyed = true;
 
     this.stateMachine.destroy();
+    this.aura?.destroy();
+    this.aura = null;
 
     // Clean up collision callback to prevent memory leak in Matter.js
     if (this.matterImage?.body) {
