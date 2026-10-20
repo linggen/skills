@@ -139,6 +139,7 @@
    "growth": 0.04,
    "huge": [5],
    "moments": {
+    "lane": [{"zh": "野猪下山了——守住中间这一畦。", "en": "The boars are coming down. Hold the middle bed."}],
     "twist": [{"zh": "野猪认准一畦往下拱。那一畦，先放剑符！", "en": "A boar keeps to its bed. Put a sword talisman in that one!"}],
     "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "灵珠别忘了捡。", "en": "Don't forget the orbs."}, {"zh": "聚灵阵多摆几个，后头好过。", "en": "More spirit arrays now, easier later."}],
     "huge": [{"zh": "一大波来了，每一畦都得有剑！", "en": "A big wave. Every bed needs a sword!"}],

@@ -617,6 +617,15 @@ function laneState(kit, level) {
 }
 
 export const laneX = (g, col) => (col + 0.5) * g.grid.cw;
+
+/** The one bed a lane level's first wave comes down, when every beast of it is sent down the same fixed lane (PvZ
+ *  1-1's lesson: one lane to hold) — else null. Read from the wave data, never the level's id. */
+export function firstLane(level) {
+  const w = level.grid ? level.waves?.[0] : null;
+  const lanes = new Set((w ?? []).map((e) => e[4]));
+  const [l] = lanes;
+  return lanes.size === 1 && Number.isInteger(l) ? l : null;
+}
 /** A cell's centre: row 0 is the one against the wall, `rows − 1` the one nearest the range line. */
 export const cellY = (g, row) => g.grid.bottom - (row + 0.5) * g.grid.ch;
 const clampCol = (g, c) => Math.max(0, Math.min(g.grid.cols - 1, c));

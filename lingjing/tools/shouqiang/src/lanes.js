@@ -7,7 +7,7 @@
 // Frame cost: nothing here allocates per frame or draws a Graphics path per frame — panels are NineSlices over small
 // canvas textures, the recharge shade is a scaled image, every sprite is made once per thing and pooled orbs reused.
 import * as Phaser from 'phaser';
-import { place, canPlace, collect, cellAt, cellY, laneX, unitStat, W, H } from 'shouqiang-core';
+import { place, canPlace, collect, cellAt, cellY, laneX, unitStat, firstLane, W, H } from 'shouqiang-core';
 import { FONT } from './fx.js';
 
 export const SIDE = 250; // a side panel's width in landscape (board px)
@@ -57,6 +57,19 @@ function laneTextures(scene) {
     c.lineWidth = 4; c.setLineDash([10, 7]); c.strokeStyle = 'rgba(255,248,200,0.95)'; c.stroke();
   });
   canvasTex(scene, 'px', 4, 4, (c) => { c.fillStyle = '#fff'; c.fillRect(0, 0, 4, 4); });
+  // The first wave's one bed: a soft column of light, brightest up top where the beasts come in, and a chevron.
+  canvasTex(scene, 'laneGlow', 64, 256, (c, w, h) => {
+    const g = c.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, 'rgba(255,226,140,1)'); g.addColorStop(0.5, 'rgba(255,226,140,0.55)'); g.addColorStop(1, 'rgba(255,226,140,0.12)');
+    const x = c.createLinearGradient(0, 0, w, 0);
+    x.addColorStop(0, 'rgba(0,0,0,1)'); x.addColorStop(0.5, 'rgba(0,0,0,0)'); x.addColorStop(1, 'rgba(0,0,0,1)');
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    c.globalCompositeOperation = 'destination-out'; c.fillStyle = x; c.fillRect(0, 0, w, h);
+  });
+  canvasTex(scene, 'chevron', 64, 40, (c, w, h) => {
+    c.lineWidth = 9; c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#fff1b0'; c.shadowColor = '#ffb627'; c.shadowBlur = 8;
+    c.beginPath(); c.moveTo(10, 8); c.lineTo(w / 2, h - 8); c.lineTo(w - 10, 8); c.stroke();
+  });
 }
 
 export class LaneView {
@@ -72,6 +85,7 @@ export class LaneView {
     this.sel = null;
     this.landscape = false;
     laneTextures(scene);
+    this.guide();
     this.cells();
     this.seedBar();
     this.sidePanels();
@@ -85,6 +99,39 @@ export class LaneView {
   }
 
   tex(k, fb) { return this.s.tex(k, fb); }
+
+  // ---- the first wave's one bed (Hanli 10-20: 「守药园, 所有开场野猪都走中路呢?」 — option A: keep the one lane, say so) --
+  // Shown from the lead-in until the first beast is down; the level's `moments.lane` line names it.
+
+  guide() {
+    const col = firstLane(this.g.level);
+    if (col == null) return;
+    const s = this.s, x = laneX(this.g, col), top = this.g.level.spawnY ?? 80, bottom = this.g.grid.bottom;
+    const glow = s.add.image(x, top, 'laneGlow').setOrigin(0.5, 0).setDisplaySize(this.g.grid.cw * 0.95, bottom - top)
+      .setDepth(this.D.decal).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.8);
+    // The chevrons point down the bed from its head, under the seed bar (portrait) and the range line.
+    const head = this.g.grid.top;
+    const arrows = [0, 1].map((i) => s.add.image(x, head + 4 + i * 30, 'chevron').setDepth(this.D.decal + 1).setScale(0.9).setAlpha(1 - i * 0.35));
+    if (!s.calm) {
+      s.tweens.add({ targets: glow, alpha: 0.5, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      s.tweens.add({ targets: arrows, y: '+=14', duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    }
+    this.guideParts = [glow, ...arrows];
+    s.time.delayedCall(300, () => this.guideSay());
+  }
+
+  guideSay() {
+    if (this.guideParts && !this.s.held) return void this.s.moment('lane');
+    if (this.guideParts) this.s.time.delayedCall(300, () => this.guideSay()); // behind the shell's lead card: wait for it
+  }
+
+  guideOff() {
+    if (!this.guideParts) return;
+    const parts = this.guideParts;
+    this.guideParts = null;
+    this.s.tweens.killTweensOf(parts);
+    this.s.tweens.add({ targets: parts, alpha: 0, duration: 500, onComplete: () => parts.forEach((p) => p.destroy()) });
+  }
 
   // ---- the grid marks: one image a cell, made once, shown while a seed is in hand -----------------------------------
 
@@ -266,6 +313,7 @@ export class LaneView {
   on(e) { this.ON[e.t]?.call(this, e); }
 
   ON = {
+    kill() { this.guideOff(); },
     place(e) {
       const s = this.s;
       const idle = this.tex(`unit-${e.kind}`, 'fu-huo'), act = this.tex(`unit-${e.kind}-2`, idle);

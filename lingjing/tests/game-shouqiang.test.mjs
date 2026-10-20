@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, HAND, W, canPlace, towardHim, cellAt, collect, hurt, newGame, offerCards, open, opening, pick, place, reachY, setFocus, sim, step, stars } from '../scripts/games/shouqiang/core.js';
+import { BOTS, HAND, W, canPlace, firstLane, towardHim, cellAt, collect, hurt, newGame, offerCards, open, opening, pick, place, reachY, setFocus, sim, step, stars } from '../scripts/games/shouqiang/core.js';
 import { levelAsked, meta } from '../scripts/games/shouqiang.js';
 import { sourceHash } from '../tools/shouqiang/hash.mjs';
 
@@ -561,6 +561,19 @@ test('difficulty is one knob in the data on a 药园 level too: more beasts and 
   assert.ok(b.n > a.n && b.hp > a.hp, JSON.stringify({ a, b }));
   const won = (k) => laneRun(l, 'human', 12, { difficulty: k }).filter((r) => r.won).length;
   assert.ok(won(1.6) < won(1), 'harder at 1.6');
+});
+
+// Hanli 10-20: 「守药园, 所有开场野猪都走中路呢?」 (option A): a first wave down one fixed bed keeps it, and says so — the
+// bed is marked and a line names it. Read from the waves, so any level whose first wave keeps to one bed gets it.
+test('the first wave down one bed: read from the wave data, and a level that does it has a line naming it', () => {
+  assert.equal(firstLane(level), null, 'the 山门 has no beds');
+  assert.equal(firstLane({ grid: {}, waves: [[['yezhu', 3, 12, 24, 1], ['zheng', 1, 1, 30, 1]]] }), 1);
+  assert.equal(firstLane({ grid: {}, waves: [[['yezhu', 3, 12, 24, 1], ['zheng', 1, 1, 30, 2]]] }), null, 'two beds');
+  assert.equal(firstLane({ grid: {}, waves: [[['yezhu', 3, 12, 24, [1, 2]]]] }), null, 'a drawn bed');
+  assert.equal(firstLane({ grid: {}, waves: [[['yezhu', 3, 12, 24]]] }), null, 'no bed given');
+  const one = lanes.filter((l) => firstLane(l) != null);
+  assert.ok(one.length >= 1);
+  for (const l of one) assert.ok(l.moments.lane?.length && l.moments.lane.every((x) => x.zh && x.en), `${l.id}: moments.lane`);
 });
 
 test('lane cards: only for the talismans a level has; a thicker wall thickens the standing ones; 月华 pays at once', () => {
