@@ -17,8 +17,8 @@ export const meta = {
   lines: 'one', // 台词预取: the play reads one line a moment (play.js say: a string), not a pool
   name: { zh: '撒豆成兵', en: 'Beans into Soldiers' }, // the game's name; the level's own (山道) is the canvas's top bar
   how: {
-    zh: '左右拖动，带豆兵穿过加倍的符门，躲开陷阱，撞翻兽潮，最后打倒合窳。',
-    en: 'Drag left and right: lead the bean soldiers through the gates that multiply, dodge the traps, crash through the beasts, and bring down the Heyu.',
+    zh: '左右拖动，带豆兵穿过加倍的符门，躲开陷阱，撞翻兽潮，最后打倒路尽头的大妖。',
+    en: 'Drag left and right: lead the bean soldiers through the gates that multiply, dodge the traps, crash through the beasts, and bring down the great beast at the road\'s end.',
   },
 };
 
