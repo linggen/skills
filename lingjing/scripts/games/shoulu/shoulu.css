@@ -49,3 +49,4 @@
 .g-shoulu .sl-level b { flex: 1; } .g-shoulu .sl-level small { color: var(--sl-dim); font-size: 12px; }
 .g-shoulu .sl-level em { font-style: normal; color: var(--sl-seal); letter-spacing: 1px; }
 @media (max-width: 420px) { .g-shoulu .sl-saga span { font-size: 17px; } .g-shoulu .sl-saga.is-big span { font-size: 23px; } .g-shoulu button { font-size: 13px; padding: 8px 7px; } }
+.g-shoulu.is-picking .sl-hud, .g-shoulu.is-picking .sl-preview, .g-shoulu.is-picking .sl-controls { visibility: hidden; }

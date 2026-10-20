@@ -158,6 +158,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     function start(i) {
       li = i;
       const row = levels[i];
+      root.classList.remove('is-picking');
       g = newGame(row, { seed: `shoulu|${Date.now()}` });
       paper = makePaper(doc, g.L, word(row.name, lang).split(' · ')[0]);
       paused = false; heroSel = false; shown = false; acc = 0; previewKey = '';
@@ -171,7 +172,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     }
     function pickLevels() {
       const stars = loadStars();
-      g = null; closeMenu();
+      g = null; closeMenu(); root.classList.add('is-picking');
       card.innerHTML = `<h3>${t.select}</h3><div class="sl-levels">${levels.map((l, i) => {
         const s = stars[l.id] ?? 0, nw = [l.new?.beast && BN[lang][l.new.beast], l.new?.tower && TN[lang][l.new.tower]].filter(Boolean).join(' · ');
         return `<button type="button" class="sl-level" data-lv="${i}"><span>${i + 1}</span><b>${word(l.name, lang)}<br><small>${t.newThing}：${nw}</small></b><em>${'★'.repeat(s)}${'☆'.repeat(3 - s)}</em></button>`;

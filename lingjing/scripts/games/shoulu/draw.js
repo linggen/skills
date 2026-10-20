@@ -30,7 +30,7 @@ export function makePaper(doc, L, label) {
   c.fillStyle = mg; c.beginPath(); c.moveTo(0, 62);
   for (let x = 0; x <= W; x += 40) c.lineTo(x, 30 + rr() * 28);
   c.lineTo(W, 62); c.closePath(); c.fill();
-  const free = (x, y, m) => offRoad(L.road, x, y) > m && L.spots.every(([sx, sy]) => Math.hypot(sx - x, sy - y) > 34) && Math.hypot(L.furn.x - x, L.furn.y - y) > 60;
+  const free = (x, y, m) => offRoad(L.road, x, y) > m && L.spots.every(([sx, sy]) => Math.hypot(sx - x, sy - y) > (m > 40 ? 60 : 34)) && Math.hypot(L.furn.x - x, L.furn.y - y) > 60;
   for (let i = 0; i < 160; i += 1) {
     const x = r() * W, y = 70 + r() * (H - 70);
     if (!free(x, y, 30)) continue;
