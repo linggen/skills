@@ -19,8 +19,8 @@
   },
   {
    "id": "kit",
-   "zh": "投掷 · 试作",
-   "en": "Throwing · prototypes"
+   "zh": "投掷",
+   "en": "Throwing"
   },
   {
    "id": "jin",
@@ -29,8 +29,8 @@
   },
   {
    "id": "qimai",
-   "zh": "气走经脉 · 试作",
-   "en": "Qi path · prototypes"
+   "zh": "气走经脉",
+   "en": "Qi path"
   },
   {
    "id": "daily",
@@ -39,8 +39,8 @@
   },
   {
    "id": "ai",
-   "zh": "AI · 试作",
-   "en": "AI · prototypes"
+   "zh": "AI",
+   "en": "AI"
   }
  ],
  "_throws": "Every throw in 卷一, from the book (Hanli 2026-10-16: 「投掷类都可以换」), each its own level of 砸寨 — the one throw kit (Hanli 2026-10-20: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」; tools/zhazhai/src/data/throws.ts, a task's `deal.lv` names it): 1 第一回 00-cave 扔石听声 「先往里扔了一块石头，听了听，是空的」 — cut 2026-10-19 (the passage whole), no level; 2 第二回 00-deer 射鹿 「往左偏半寸」 — `deer-wind` (箭 ×3, the stag at the stream behind a fallen log on two stones, a dead pine leaning over it; a throw whizzing past and it bolts, comes back elsewhere); 3 古七 09-yishui 芦苇里那一等 「他扣在指间的那口短飞剑，诀一掐，放了出去」 — `yishui-reed` (短飞剑 ×3, the 鯥 pinned in the brambles on the night shoal, its hide turns a blade but for the wing root as it breathes); 4 第五回 暗河 邹青松 「左手在地上摸了一块石子，往左边黑里一丢……他一箭奔那团红光去了」 — PROPOSED, not in the story; 5 第五回 凶崖 「一箭奔面门……赤铜小盾」 — PROPOSED; 6 第八回 黑松岭 合窳 「飞剑头一下奔它的眼睛」 — PROPOSED; 7 第三回 三试 the 家丁's stone — not 小满's, no level; 8 饭桶 — its own game (fantong); 9 第一回 爹 射山鸡 — told. Ammo is only what 小满 owns there (the card law): 箭 the bow's (ARROW, no trick), 石子 (RED), 短飞剑 (YELLOW: tap, dash), 陶罐 (BLUE: split), 五雷符 (BLACK: burst).",

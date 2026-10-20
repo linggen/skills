@@ -181,6 +181,20 @@ the strap cut like a vine) dragging under him. The ledge is on the cliff side, o
 | 二 · 00-uncle | 算盘 `abacus` | 「一笔一笔地算账」 | three sums on the beads | arithmetic, not play | **cut** | 6 s | 4 wrong | no | **cut** |
 | 三 · 00-luoshu | 二试 `luoshu` | 洛书九宫 | fill the magic square | a puzzle; the test the book sets | keep (a test, not a beat) — **the one 九宫格 in the story** (Hanli 10-19: 「9宫格出现一次就可以了」) | ~60 s | 75 s | no | — (a test) |
 
+## Pruned 10-20 — the 饭桶's old play and the trial games
+
+Hanli 10-20: 「喂饭桶那个没啥玩的好像」, then 「试做或者不要的, 可以删了吧?」. **Deleted** (module, bots, tests, CSS,
+art only they used, games.json row): 割藤 `fantongcut`, 烙饼 `laobing` (+ its 9 pictures and paint tool), 喂饭桶 · 开炉夜
+`fantongqianye`, 喂饭桶 · 那粒息珠 `xizhurope` (ropebeats' 喂息珠), 扔了干净's old board `fantonghuochai` (its 大场面 stays),
+the 饭桶 stops `games/fantong.js` and the feed puzzle (`fantong-puzzle.js`, fantong.json `puzzle`). **Told**: wm-luobo
+(the 秘境's spoils, the radish, the pill) and wm-zhaojing's 开炉 (the fourth press, the five feeds) read in the book's
+words; 藏息 is wm-zhaojing's one board. **Kept**: the free 饭桶 in the pouch (feeds straight in), what it eats and spits
+(fantong.json), its art, the comic item set, the rope kit. **秘境**: 拾遗 plays 撒豆成兵, the run's board a short 守炉
+(shoulu `realm: mijing`, three levels of three waves, 犰狳 then 合窳), the 奇遇's 割藤 is 撒豆成兵 — each dealt the next
+level after the last he won (rules/climb.mjs). Reading cap: wm-chu{景=ershisan} → wm-qianye 1,337 · 1,494 → **2,831**
+(over; a set piece for the radish and the pill would break it); wm-zhaojing (藏息) → wm-laba{景=diche} 103 · 466 → 1,130.
+The 游戏厅's groups lost 「试作」: 投掷 · 气走经脉 · AI.
+
 ## 读太长 — the reading cap, stretch by stretch (10-20)
 
 Hanli 10-20: 「剧情连续阅读太长的地方, 你处理一下, 看是否可以加个小游戏等」 — under the standing rule (10-19), each fill a level of
@@ -517,15 +531,9 @@ after; idle never wins. `n` is story order (古七 before 今三), and the climb
 
 ## Daily boards, 秘境, 密室 (not story beats; no card)
 
-**烙饼 · 一鏊子** (`laobing`, 10-19 in the 饭桶's rotation; 00-kitchen's story board `griddle` stays cut): a 40 s
-round at 娘's 鏊子, two → three → four breads at 11/22 s, tap to turn when the underside is golden, tap again to
-take it off when both are; wood in the stove mouth cooks faster (×1.7, 6 s a stick); 8 golden is the quota;
-stars 1 + ≥10 golden + ≤1 bad. The 饭桶 takes turns: 割绳子 on the first feed and every teaching feed, else the
-other of the last. Bots: perfect 12.5 golden, slow 450 ms 39/40 won, distracted 40 %, idle 0.
-
 炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 七巧 · 五子 ·
 残局 · 密室 (he sees the mechanisms, 银月 reads the pages). 守夜 (药园) and 下崖 (秘境) cut 10-19 (the sweep); 拾遗 (秘境,
-and the rerun's) is a 割藤 since — the find hung on the vines.
+and the rerun's) was a 割藤 10-19 → 10-20; now 撒豆成兵 (the story's) and a short 守炉 (the rerun's), § Pruned 10-20.
 洛书 was the same square three times (二试, 困阵, daily); since 10-19 it is played once, at 洛书门 —
 the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ below).
 
@@ -593,8 +601,8 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
       another round. ≤ 3 looks a round: ≤ 9 looks ≈ 78k tokens a night.
     - **秘境 · 奇遇** (rules/qiyu.mjs, worlds/jiuding/qiyu.json; a pool, not one spot): as a rerun of the 外圈 is
       entered, each room (岔口 · 凶崖 · 暗河) rolls 0.3 — about one room a run; a hit draws by weight 你画我猜 3
-      (once 银月 is met, the 木牌 too; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 割藤 2 (rope-gen.js, the frame's thing hung over the
-      饭桶) · 华容道 2 · 七巧 1 · 五子棋 1 (洛书 until 10-19), never the game the room before drew nor the last run's last. Each entry
+      (once 银月 is met, the 木牌 too; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 撒豆成兵 3 (割藤 until 10-20; the next level each
+      time, rules/climb.mjs) · 华容道 2 · 七巧 1 · 五子棋 1 (洛书 until 10-19), never the game the room before drew nor the last run's last. Each entry
       has 2–3 frames grounded in the rooms (the 岔口's carved 「凶」 crack, the 凶崖's steps, the dry 暗河's
       flat stone…) — the board's line, facts only. A win pays a find from the run's own `finds` (as 拾遗) and its
       first clear ever the small-game 灵石. A drawing round ≤ 3 looks ≈ 26k tokens. On a 测试存档:
