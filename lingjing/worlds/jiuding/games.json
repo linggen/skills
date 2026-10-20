@@ -641,6 +641,13 @@
    "task": "yabao"
   },
   {
+   "id": "kailu",
+   "group": "daily",
+   "mechanic": "开奖",
+   "stars": 3,
+   "_how": "喂饭桶 · 开炉 (Hanli 2026-10-20, replacing the 割绳子 before a feed: 「喂饭桶那个没啥玩的」): up to three things and 0–3 灵石 into the 饭桶's mouth (the lean shows as the steam's colour), the lid pressed on a gold puff (压盖, a grade up), and out spins one thing — 凡 grey, 有用 blue, 珍品 purple, 逆天 gold. The odds are the rules' (fantong.json, rules/fantong.mjs); in the story it is the 物品 panel's 饭桶 (fantong-kailu.js). Alone it plays a sample pot on the bare table, no save, no wait; `?force=best` rolls until a gold to look at its reveal. Stars are the grade (0–3)."
+  },
+  {
    "id": "luoshu",
    "group": "daily",
    "mechanic": "解谜",
