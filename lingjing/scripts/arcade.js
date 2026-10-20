@@ -102,6 +102,9 @@ async function listPage() {
 // A wide scene (the throws: 480×300) plays as large as the window lets it, not in the phone-wide card
 // (Hanli 10-19: 「射鹿…把画面调大一些, 就很像愤怒小鸟了」).
 const WIDE = new Set(['投掷']);
+// A tall board (守炉's 600×760) plays as tall as the window lets it.
+const TALL = new Set(['塔防']);
+const playClass = (m) => (WIDE.has(m) ? ' is-wide' : TALL.has(m) ? ' is-tall' : '');
 let stop = null;
 async function playPage(id, n) {
   const reg = await registry();
@@ -110,7 +113,7 @@ async function playPage(id, n) {
   // A game the model plays is the real page's (an old link to it lands there).
   if (mod?.meta?.ai) { location.replace(arcadePlayUrl(id)); return; }
   root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${home()}</header>`
-    + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${WIDE.has(row.mechanic) ? ' is-wide' : ''}"><div class="cardtitle">${esc(titleOf(row, mod))}</div>`
+    + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${playClass(row.mechanic)}"><div class="cardtitle">${esc(titleOf(row, mod))}</div>`
     + `<div class="small dim g-goal">${esc(howOf(mod))}</div><div class="arcade-slot" id="slot"></div>`
     + `<div class="arcade-result" id="result"></div></article></div>`;
   if (!mount) { document.getElementById('slot').textContent = w().missing; return; }
