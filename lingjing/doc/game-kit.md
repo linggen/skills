@@ -68,8 +68,13 @@ story's board card (`cards.js`), the 游戏厅 (`arcade.js`) and the try page. T
   clock stops as it does for 回看.
 - **`tests/game-shell.test.mjs`** loads every registry game as a `mount()` or a pure board, and checks that every
   place a game plays uses the shell.
-- **Next:** the Phaser kits (守墙关, 撒豆成兵, 砸寨) and 守炉 hand their intro, pause and result to the shell
-  (`opts.shell`), so nothing shows twice. The prefetch call itself comes after that.
+- **The kits in the shell (10-20):** 守墙关, 撒豆成兵, 守炉 and 砸寨 take `shell`. Their story lines go on the shell's
+  lead card, over the field already drawn and standing still (`held`, then `go()`; Hanli: 「开场卡后面先画出画面」).
+  The shell's pause drives their play, and their own pause button and result screen stand down; the big banners
+  and the in-play 3-2-1 stay on the canvas as play. A won level names its next one (`r.next`), and the 游戏厅
+  shows 下一关. 砸寨 restarts a lost level in place under the lead card, because a story board never settles a loss.
+- **Next:** the prefetch call itself (银月's lines into `say`). Sound and music settings: 砸寨's were only in its
+  own pause menu, so they are unreachable in the shell for now.
 
 ## Play kits
 
