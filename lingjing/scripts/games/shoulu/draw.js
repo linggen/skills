@@ -3,7 +3,7 @@
 // code-drawn, a stopgap: the small games go comic (Angry-Birds cartoon) — every figure here is one function, so a
 // sprite can replace it alone.
 // Pure canvas: it reads the game (core.js) and never changes it.
-import { BEASTS, HERO, TOWERS, W, H, posOnPath, offRoad, cleared, waves } from './core.js';
+import { BEASTS, HERO, SKILLS, TOWERS, W, H, posOnPath, offRoad, cleared, waves } from './core.js';
 
 export const INK = '#2a241d';
 const LVNAME = { zh: ['一重', '二重', '三重'], en: ['I', 'II', 'III'] };
@@ -144,7 +144,7 @@ export function drawBeast(c, type, x, y, t, face, flash, s = 1, b = null) {
   c.save(); c.translate(x, y);
   if (!B.fly) { c.fillStyle = 'rgba(40,30,20,0.16)'; c.beginPath(); c.ellipse(0, r * 0.85 * s, r * 1.2 * s, r * 0.3 * s, 0, 0, 6.28); c.fill(); }
   if (B.cry) { // 护体灵光: thick, and thin while it wails
-    const thin = b?.crying > 0;
+    const thin = b?.crying > 0 || b?.bareT > 0; // it wails, or 狐毛 has it bare
     c.strokeStyle = thin ? 'rgba(230,200,120,0.25)' : 'rgba(230,200,120,0.75)'; c.lineWidth = thin ? 1 : 3;
     c.setLineDash(thin ? [3, 6] : []); c.beginPath(); c.ellipse(0, -2, r * 2.2 * s, r * 1.4 * s, 0, 0, 6.28); c.stroke(); c.setLineDash([]);
   }
@@ -160,6 +160,8 @@ function hpBar(c, b) {
   const k = Math.max(0, b.hp / b.max);
   c.fillStyle = k > 0.5 ? '#5c7d4e' : k > 0.25 ? '#b9842f' : '#b0412e'; c.fillRect(x, y, w * k, h);
   if (b.slowT > 0) { c.fillStyle = 'rgba(63,135,166,0.9)'; c.fillRect(x, y + h + 1, w, 1.5); }
+  if (b.bareT > 0) { c.strokeStyle = 'rgba(200,215,240,0.95)'; c.lineWidth = 1.2; for (let k = 0; k < 3; k += 1) { const sx = x + 3 + k * (w - 6) / 2; c.beginPath(); c.moveTo(sx - 3, y - 6); c.quadraticCurveTo(sx + 2, y - 9, sx + 3, y - 3); c.stroke(); } }
+  if (b.burnT > 0) { c.fillStyle = 'rgba(80,150,240,0.9)'; c.beginPath(); c.arc(x + w + 4, y + 1, 2.4, 0, 6.28); c.fill(); }
   if (b.stunT > 0) { c.fillStyle = '#d6b052'; c.font = 'bold 11px serif'; c.textAlign = 'center'; c.fillText('✦ ✦', b.x, y - 3); c.textAlign = 'left'; }
 }
 function drawFurnace(c, g, t) {
@@ -213,15 +215,34 @@ function drawTower(c, tw, t) {
 }
 // 银月 is painted (tools/paint-shoulu.py: comic frames on one atlas, art/yinyue.webp + yinyue.json); the code only
 // picks the frame for what she is doing. The blob below is the fallback while the picture loads or if it fails.
-const YY = { img: null, meta: null }, HERO_H = 64, FOOT = 12, seen = new WeakMap();
-/** Load 银月's frames once (the page calls it; the tests never do). */
+const YY = { img: null, skills: null, meta: null }, HERO_H = 64, FOOT = 12, seen = new WeakMap();
+/** Load 银月's frames once (the page calls it; the tests never do): her sheet, and her skills' (pounce, cast, fox-fire). */
 export function loadArt(doc) {
   if (YY.img) return;
-  const img = doc.createElement('img');
-  YY.img = img;
-  fetch(new URL('./art/yinyue.json', import.meta.url)).then((r) => r.json()).then((m) => { YY.meta = m; img.src = new URL('./art/yinyue.webp', import.meta.url).href; }).catch(() => {});
+  const img = doc.createElement('img'), sk = doc.createElement('img');
+  YY.img = img; YY.skills = sk;
+  fetch(new URL('./art/yinyue.json', import.meta.url)).then((r) => r.json()).then((m) => {
+    YY.meta = m; img.src = new URL('./art/yinyue.webp', import.meta.url).href; sk.src = new URL('./art/yinyue-skills.webp', import.meta.url).href;
+  }).catch(() => {});
 }
-/** Which frame: dead → fade, a howl → howl, a bite → bite, a hard hit → hurt, moving → run, else idle (breathing). */
+const artReady = () => YY.meta && YY.img.naturalWidth;
+/** A frame by name, from whichever sheet holds it: [image, x, y] (null while loading). */
+function frameAt(f) {
+  const m = YY.meta;
+  if (m.sheets.yinyue[f]) return [YY.img, ...m.sheets.yinyue[f]];
+  const at = m.sheets['yinyue-skills']?.[f];
+  return at && YY.skills.naturalWidth ? [YY.skills, ...at] : null;
+}
+/** 狐火's flame (foxfire-1…3), drawn `hgt` tall with its foot at (x, y). */
+function drawFlame(c, x, y, hgt, n, alpha) {
+  const at = artReady() && frameAt(`foxfire-${n}`);
+  c.globalAlpha = alpha;
+  if (at) { const [img, sx, sy] = at, [cw, ch] = YY.meta.cell, k = hgt / 150; c.drawImage(img, sx, sy, cw, ch, x - cw / 2 * k, y - YY.meta.foot * k, cw * k, ch * k); }
+  else { c.fillStyle = 'rgba(90,160,245,0.8)'; c.beginPath(); c.ellipse(x, y - hgt * 0.35, hgt * 0.22, hgt * 0.35, 0, 0, 6.28); c.fill(); }
+  c.globalAlpha = 1;
+}
+/** Which frame: dead → fade, a dash → pounce, a skill → howl / cast, a bite → bite, a hard hit → hurt, moving → run,
+    idle — sniffing (crouched), sitting, a tail flick, else breathing. */
 function heroFrame(h, t, moving) {
   const m = seen.get(h) ?? { hp: h.hp, dmg: 0, hurt: 0, t };
   const dt = Math.max(0, Math.min(0.1, t - m.t)); m.t = t;
@@ -230,18 +251,23 @@ function heroFrame(h, t, moving) {
   if (m.dmg > HERO.hp[h.lvl] * 0.08) { m.dmg = 0; m.hurt = 0.2; }
   seen.set(h, m);
   if (h.dead > 0) return 'fade';
-  const howled = HERO.howlCd - h.howl;
-  if (h.howl > 0.5 && howled < 0.6) return howled < 0.15 ? 'howl-1' : 'howl-2';
+  if (h.dash) return h.cast?.k === 'w' && h.cast.t > 0.22 ? 'pounce-1' : 'pounce-2';
+  const k = h.cast?.k, ct = h.cast ? h.cast.max - h.cast.t : 0;
+  if (k === 'q') return ct < 0.15 ? 'howl-1' : 'howl-2';
+  if (k === 'e' || k === 'r') return ct < 0.18 ? 'cast-1' : 'cast-2';
   if (h.anim > 0) return h.anim > 0.1 ? 'bite-2' : 'bite-1';
   if (m.hurt > 0) return 'hurt';
-  if (moving) return `run-${1 + (Math.floor(t * 12) % 4)}`;
+  if (moving) return `run-${1 + (Math.floor(t * (h.wanderTo ? 7 : 12)) % 4)}`;
   if (h.held.length && h.cd < 0.25) return 'bite-1';
+  if (h.act?.k === 'sniff') return 'pounce-1';
+  if (h.act?.k === 'flick') return Math.floor(t / 0.18) % 2 ? 'idle-2' : 'idle-1';
   return Math.floor(t / 0.7) % 2 ? 'idle-2' : 'idle-1';
 }
-function drawHeroArt(c, f, t) {
-  const m = YY.meta, at = m.sheets.yinyue[f], [cw, ch] = m.cell, k = HERO_H / m.h0;
+function drawHeroArt(c, f, t, sit) {
+  const m = YY.meta, at = frameAt(f) ?? frameAt('idle-1'), [cw, ch] = m.cell, k = HERO_H / m.h0;
   const bob = f.startsWith('idle') ? Math.sin(t * 2.4) * 0.6 : 0;
-  c.drawImage(YY.img, at[0], at[1], cw, ch, -cw / 2 * k, FOOT - m.foot * k + bob, cw * k, ch * k);
+  if (sit) { c.translate(0, FOOT); c.scale(1, 0.9); c.translate(0, -FOOT); } // she sits: a little lower
+  c.drawImage(at[0], at[1], at[2], cw, ch, -cw / 2 * k, FOOT - m.foot * k + bob, cw * k, ch * k);
 }
 function drawHeroBlob(c, h, t, moving) {
   const run = moving ? Math.sin(t * 16) : 0, breath = Math.sin(t * 3) * 0.6, lunge = h.anim > 0 ? h.anim * 16 : 0;
@@ -258,18 +284,39 @@ function drawHeroBlob(c, h, t, moving) {
   c.strokeStyle = '#c99a2e'; c.lineWidth = 1.6; c.beginPath(); c.arc(16, -17, 3, 0.6, 3.6); c.stroke();
   c.restore();
 }
+/** Under her, while she is selected: her guard post, and the way her orders go (queued moves, the beast she hunts). */
+function drawOrders(c, h, t) {
+  if (h.dead > 0) return;
+  const p = h.post;
+  c.strokeStyle = 'rgba(60,100,120,0.55)'; c.lineWidth = 1.4; c.setLineDash([2, 4]);
+  c.beginPath(); c.ellipse(p.x, p.y + FOOT, HERO.wander, HERO.wander * 0.35, 0, 0, 6.28); c.stroke(); c.setLineDash([]);
+  c.fillStyle = '#3c6478'; c.beginPath(); c.moveTo(p.x, p.y + FOOT); c.lineTo(p.x, p.y + FOOT - 16); c.stroke();
+  c.beginPath(); c.moveTo(p.x, p.y + FOOT - 16); c.lineTo(p.x + 9, p.y + FOOT - 13); c.lineTo(p.x, p.y + FOOT - 10); c.fill();
+  let from = { x: h.x, y: h.y };
+  c.setLineDash([3, 5]); c.lineWidth = 1.5;
+  for (const o of h.orders) {
+    const to = o.b ?? o.at?.b ?? o.at ?? o;
+    c.strokeStyle = o.k === 'attack' ? 'rgba(176,65,46,0.6)' : 'rgba(60,100,120,0.6)';
+    c.beginPath(); c.moveTo(from.x, from.y); c.lineTo(to.x, to.y); c.stroke();
+    c.beginPath(); c.arc(to.x, to.y, 5, 0, 6.28); c.stroke();
+    from = to;
+  }
+  c.setLineDash([]);
+  const foe = h.foe && !h.foe.dead ? h.foe : null;
+  if (foe) { const r = BEASTS[foe.type].r + 6, a = t * 3; c.strokeStyle = 'rgba(176,65,46,0.85)'; c.lineWidth = 2; for (let k = 0; k < 4; k += 1) { c.beginPath(); c.arc(foe.x, foe.y, r, a + k * 1.57, a + k * 1.57 + 0.9); c.stroke(); } }
+}
 function drawHero(c, h, t, sel, lang, says) {
-  const moving = !h.dead && Math.hypot(h.tx - h.x, h.ty - h.y) > 2, f = heroFrame(h, t, moving);
+  const moving = !h.dead && h.moving, f = heroFrame(h, t, moving);
   const gone = h.dead > 0 ? Math.min(1, (HERO.respawn - h.dead) / 1.1) : 0; // she fades out over a second, then is away
   if (gone >= 1) return;
-  if (moving) { c.setLineDash([3, 5]); c.strokeStyle = 'rgba(60,100,120,0.5)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(h.x, h.y); c.lineTo(h.tx, h.ty); c.stroke(); c.setLineDash([]); c.beginPath(); c.arc(h.tx, h.ty, 5, 0, 6.28); c.stroke(); }
+  if (h.dash) { c.strokeStyle = 'rgba(190,210,245,0.5)'; c.lineWidth = 3; for (let k = 1; k <= 3; k += 1) { c.beginPath(); c.moveTo(h.x - h.face * (10 + k * 12), h.y - 16 + k * 5); c.lineTo(h.x - h.face * (30 + k * 14), h.y - 16 + k * 5); c.stroke(); } }
   c.save(); c.translate(h.x - gone * 14 * h.face, h.y); c.globalAlpha = 1 - gone;
   const glow = c.createRadialGradient(0, -18, 4, 0, -18, 46); glow.addColorStop(0, 'rgba(200,220,250,0.42)'); glow.addColorStop(1, 'rgba(190,210,240,0)');
   c.fillStyle = glow; c.beginPath(); c.arc(0, -18, 46, 0, 6.28); c.fill();
   if (sel) { c.setLineDash([5, 4]); c.strokeStyle = '#3c6478'; c.lineWidth = 2; c.beginPath(); c.ellipse(0, FOOT, 30, 10, 0, 0, 6.28); c.stroke(); c.setLineDash([]); }
   c.fillStyle = 'rgba(40,30,20,0.18)'; c.beginPath(); c.ellipse(0, FOOT, 22, 5.5, 0, 0, 6.28); c.fill();
   c.scale(h.face, 1);
-  if (YY.meta && YY.img.naturalWidth) drawHeroArt(c, f, t); else drawHeroBlob(c, h, t, moving);
+  if (artReady()) drawHeroArt(c, f, t, h.act?.k === 'sit' && !moving); else drawHeroBlob(c, h, t, moving);
   c.restore();
   if (gone > 0) return;
   const w = 34, x = h.x - w / 2, y = h.y - HERO_H - 2;
@@ -287,7 +334,7 @@ function drawHero(c, h, t, sel, lang, says) {
   }
 }
 
-/** One frame. `v`: { paper, sc, dpr, t, heroSel, sel, paused, lang, says, bossName }. */
+/** One frame. `v`: { paper, sc, dpr, t, heroSel, sel, aim, paused, lang, says, bossName } — `aim`: { key, x, y } while a skill is aimed. */
 export function draw(ctx, g, v) {
   const { sc, dpr, t } = v;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -313,6 +360,9 @@ export function draw(ctx, g, v) {
     ctx.setLineDash([6, 5]); ctx.strokeStyle = 'rgba(60,100,120,0.7)'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
   }
   for (const f of g.fx) if (f.k === 'frost') { const k = 1 - f.life / f.max; ctx.strokeStyle = `rgba(63,135,166,${0.45 * (1 - k)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.6 + 0.4 * k), 0, 6.28); ctx.stroke(); ctx.fillStyle = `rgba(120,180,210,${0.08 * (1 - k)})`; ctx.fill(); }
+  for (const f of g.fires) drawFire(ctx, f, t);
+  if (v.heroSel) drawOrders(ctx, g.hero, t);
+  if (v.aim) drawAim(ctx, g, v.aim);
   drawFurnace(ctx, g, t);
   const items = [];
   for (const b of g.beasts) items.push({ y: b.y + (b.fly ? 60 : 0), b });
@@ -332,6 +382,9 @@ export function draw(ctx, g, v) {
   for (const f of g.fx) {
     const a = Math.max(0, f.life / f.max);
     if (f.k === 'howl') { const k = 1 - a; ctx.strokeStyle = `rgba(150,185,230,${0.8 * a})`; ctx.lineWidth = 4 * a + 1; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.3 + 0.7 * k), 0, 6.28); ctx.stroke(); ctx.fillStyle = `rgba(190,210,240,${0.12 * a})`; ctx.fill(); }
+    else if (f.k === 'hair') { const k = 1 - a; ctx.strokeStyle = `rgba(215,225,245,${a})`; ctx.lineWidth = 1.6; for (let n = 0; n < 14; n += 1) { const an = n * 0.449 + f.x, r0 = f.r * 0.2 * k, r1 = f.r * (0.35 + 0.65 * k); ctx.beginPath(); ctx.moveTo(f.x + Math.cos(an) * r0, f.y + Math.sin(an) * r0 * 0.6); ctx.quadraticCurveTo(f.x + Math.cos(an + 0.3) * r1 * 0.7, f.y + Math.sin(an + 0.3) * r1 * 0.42 - 6, f.x + Math.cos(an) * r1, f.y + Math.sin(an) * r1 * 0.6); ctx.stroke(); } ctx.strokeStyle = `rgba(160,180,215,${0.6 * a})`; ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r, f.r * 0.6, 0, 0, 6.28); ctx.stroke(); }
+    else if (f.k === 'pounce') { const k = 1 - a; ctx.strokeStyle = `rgba(190,210,245,${a})`; ctx.lineWidth = 3 * a + 1; ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (0.4 + 0.8 * k), f.r * (0.25 + 0.5 * k), 0, 0, 6.28); ctx.stroke(); }
+    else if (f.k === 'ping') { const k = 1 - a; ctx.strokeStyle = `rgba(60,100,120,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(f.x, f.y - 20, 20 + 40 * k, 0, 6.28); ctx.stroke(); }
     else if (f.k === 'mark') { ctx.strokeStyle = `rgba(60,100,120,${a})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 6 + 14 * (1 - a), 0, 6.28); ctx.stroke(); }
     else if (f.k === 'boom') { const k = 1 - a; ctx.fillStyle = `rgba(225,100,45,${0.35 * a})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.4 + 0.6 * k), 0, 6.28); ctx.fill(); ctx.strokeStyle = `rgba(176,65,46,${0.7 * a})`; ctx.lineWidth = 2; ctx.stroke(); }
     else if (f.k === 'spark') { ctx.fillStyle = `rgba(235,140,50,${a})`; ctx.beginPath(); ctx.arc(f.x, f.y, 2, 0, 6.28); ctx.fill(); }
@@ -348,6 +401,28 @@ export function draw(ctx, g, v) {
     ctx.fillText(`${v.bossName} ${Math.ceil(Math.max(0, boss.hp))} / ${boss.max}${boss.crying > 0 ? ` · ${v.says.cry}` : ''}`, W / 2, by + 28); ctx.textAlign = 'left';
   }
   if (v.paused && !g.over) { ctx.fillStyle = 'rgba(42,36,29,0.25)'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#f6efdf'; ctx.font = 'bold 34px "Songti SC",serif'; ctx.textAlign = 'center'; ctx.fillText(v.says.paused, W / 2, H / 2); ctx.textAlign = 'left'; }
+}
+
+/** 狐火 on the ground: a blue glow and flames that flicker, fading in its last second. */
+function drawFire(c, f, t) {
+  const fade = Math.min(1, f.t, (f.max - f.t) * 4);
+  const gl = c.createRadialGradient(f.x, f.y, 4, f.x, f.y, f.r);
+  gl.addColorStop(0, `rgba(110,170,255,${0.42 * fade})`); gl.addColorStop(1, 'rgba(110,170,255,0)');
+  c.fillStyle = gl; c.beginPath(); c.ellipse(f.x, f.y, f.r, f.r * 0.6, 0, 0, 6.28); c.fill();
+  const spots = [[0, 0], [-0.55, -0.15], [0.55, -0.1], [-0.3, 0.35], [0.3, 0.38], [0, -0.45]];
+  spots.forEach(([dx, dy], i) => drawFlame(c, f.x + dx * f.r * 0.8, f.y + dy * f.r * 0.5, 22 + (i % 3) * 4, 1 + ((Math.floor(t * 8) + i) % 3), 0.9 * fade));
+}
+/** Aiming a skill: her reach, and the ground it will take. `aim`: { key, x, y } (the pointer, on the board). */
+function drawAim(c, g, aim) {
+  const h = g.hero, S = SKILLS[aim.key];
+  if (h.dead > 0 || !S) return;
+  c.setLineDash([6, 5]); c.strokeStyle = 'rgba(60,100,120,0.6)'; c.lineWidth = 1.5;
+  c.beginPath(); c.arc(h.x, h.y, S.range, 0, 6.28); c.stroke(); c.setLineDash([]);
+  if (aim.x == null) return;
+  const inR = Math.hypot(aim.x - h.x, aim.y - h.y) <= S.range;
+  c.fillStyle = aim.key === 'e' ? 'rgba(90,150,240,0.18)' : aim.key === 'r' ? 'rgba(200,210,235,0.22)' : 'rgba(176,65,46,0.14)';
+  c.strokeStyle = inR ? 'rgba(42,36,29,0.75)' : 'rgba(176,65,46,0.8)'; c.lineWidth = 2;
+  c.beginPath(); c.ellipse(aim.x, aim.y, S.r, S.r * 0.6, 0, 0, 6.28); c.fill(); c.stroke();
 }
 
 /** The page's own marks for what the engine reports (kills, booms): ink, drops, sparks. */
@@ -375,4 +450,11 @@ export function beastIcon(doc, type) {
   const x = c.getContext('2d'), big = BEASTS[type].boss;
   drawBeast(x, type, big ? 30 : 28, 32, 0.3, 1, 0, big ? 0.6 : 1.7);
   return c.toDataURL();
+}
+/** 银月's portrait for the hero panel: her idle frame's head, as a CSS background (null while the art loads). */
+export function portraitStyle(px) {
+  if (!artReady()) return null;
+  const m = YY.meta, [x, y] = m.sheets.yinyue['idle-1'], [cw] = m.cell, k = px / 70; // the head is ~70 px of her cell
+  const [iw, ih] = [YY.img.naturalWidth, YY.img.naturalHeight];
+  return { backgroundImage: `url("${YY.img.src}")`, backgroundSize: `${iw * k}px ${ih * k}px`, backgroundPosition: `${-(x + cw - 92) * k}px ${-(y + 14) * k}px` };
 }

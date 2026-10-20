@@ -1,6 +1,7 @@
 // shoulu.js — 守炉: tower defense, the 游戏厅's main game (Hanli 10-20: 「塔防这个好玩, 可以作为主力游戏」).
-// 小满 lays talismans by the road — 剑阵 · 火符 · 寒符 · 雷符 — and 银月 is the hero: tap her, then a place,
-// and she runs there, holds two ground beasts and bites, and howls to stun a crowd. Waves come on a
+// 小满 lays talismans by the road — 剑阵 · 火符 · 寒符 · 雷符 — and 银月 is the hero, played as in 魔兽争霸 III:
+// select her (click, 1 / F1, her portrait), right-click the ground to move her (her guard post) or a beast to attack it,
+// shift to queue; on the phone tap her, then tap. Her skills: Q 啸月 · W 月影扑 · E 狐火 · R 狐毛. Waves come on a
 // countdown, never by a tap; calling one early pays 灵石 for the seconds left. Each level opens with
 // its lead-in, brings one new thing, and is harder than the last.
 //
@@ -15,16 +16,16 @@
 // settling { won, stars } when it is won (the game stays up, its own card over it). Without one: the level
 // select, and the game owns 再来 / 下一关; it settles only when taken down. Stars live in this browser's
 // localStorage (`lingjing.shoulu.stars`), never the save.
-import { BEASTS, EARLY_RATE, H, HERO, TOWERS, TORDER, W, build, callWave, canBuild, cleared, locked, newGame, refund, sell, sendHero,
-  starsOf, step, upgrade, upgradeCost, waves } from './shoulu/core.js';
-import { beastIcon, draw, loadArt, makePaper, markEvent, stepFx } from './shoulu/draw.js';
+import { BEASTS, EARLY_RATE, H, HERO, SKEYS, SKILLS, TOWERS, TORDER, W, build, callWave, canBuild, cleared, keepSel, locked, newGame, noSel,
+  pointer, pressKey, pressSkill, refund, sell, skillState, starsOf, step, toggleAuto, upgrade, upgradeCost, waves } from './shoulu/core.js';
+import { beastIcon, draw, loadArt, makePaper, markEvent, portraitStyle, stepFx } from './shoulu/draw.js';
 
 export const meta = {
   id: 'shoulu',
   name: { zh: '守炉', en: 'Guard the Furnace' },
   how: {
-    zh: '点虚线圈布符，点符升级或拆。点银月，再点一处，调她迎敌。兽潮按时自来，守到最后一波。',
-    en: 'Tap a dashed ring to lay a talisman; tap one to upgrade or remove it. Tap Yinyue, then a place, to send her. The waves come on their own: hold to the last.',
+    zh: '点虚线圈布符，点符升级或拆。选中银月（点她或按 1），右键地面移动、右键野兽攻击；手机上点她再点。QWER 放技能。兽潮按时自来，守到最后一波。',
+    en: 'Tap a dashed ring to lay a talisman; tap one to upgrade or remove it. Select Yinyue (click her or press 1), right-click ground to move, a beast to attack; on a phone, tap her, then tap. QWER: her skills. Hold to the last wave.',
   },
 };
 
@@ -35,11 +36,13 @@ const T = {
     banner: (n, last) => (last ? '最后一波' : `第${CN[n - 1] ?? n}波`), speed: '×', pause: '暂停', resume: '继续', again: '再来', pick: '选关',
     nextLevel: '下一关', build: '布符', tap: '点选', full: '已满', upg: '升级', sellFor: '拆', lv: ['一重', '二重', '三重'], nextLv: '下一重', maxed: '已至三重',
     dmg: '伤', range: '距', slow: '减速', unlockAt: (w) => `第${CN[w - 1]}波解锁`, poor: '灵石不足', lockedMsg: (w) => `第${CN[w - 1]}波方解锁`,
-    hint: '点银月，再点一处，调她迎敌', earlyPaid: (n) => `提前召唤 +${n} 灵石`, unlocked: (t) => `${TN.zh[t]}已解锁`,
+    hint: '选中银月，右键（手机：再点）一处或一兽', earlyPaid: (n) => `提前召唤 +${n} 灵石`, unlocked: (t) => `${TN.zh[t]}已解锁`,
     heroDown: (s) => `银月负伤退下，${s}息后归来`, heroUp: (l) => `银月 · ${['', '二重', '三重'][l]}`, cry: '合窳啼哭——护体灵光薄了，快打！',
     wonLine: (hp) => `炉火余 ${hp} / 10`, lostLine: (w, x) => `炉火熄灭于第 ${w} 波。已守 ${x} 息。`, select: '守炉 · 选关', newThing: '新',
     lastWave: '已是最后一波 · 守住即成', waveN: (n) => `第${n}波：`, xi: '息', paused: '暂 停',
     says: { back: '回来了。', grow: '月华更盛了。', howl: '嗷呜——！', cry: '啼哭中', paused: '暂 停' },
+    yinyue: '银月', away: (s) => `${s}息后归来`, autoOn: '自动施放：开', autoOff: '自动施放：关', cooling: '还在冷却', noHair: '没有狐毛了',
+    skillAt: (l) => `${['', '二重', '三重'][l]}解锁`, aimAt: (n) => `${n}：点选目标 · 右键或 Esc 取消`,
   },
   en: {
     fire: 'Fire', stone: 'Stones', wave: 'wave', first: 'Wave 1', next: 'Next wave', sec: 's', early: 'early',
@@ -47,12 +50,19 @@ const T = {
     banner: (n, last) => (last ? 'Last wave' : `Wave ${n}`), speed: '×', pause: 'Pause', resume: 'Go on', again: 'Again', pick: 'Levels',
     nextLevel: 'Next level', build: 'Talisman', tap: 'pick one', full: 'Max', upg: 'Upgrade', sellFor: 'Remove', lv: ['I', 'II', 'III'], nextLv: 'Next', maxed: 'At III',
     dmg: 'dmg', range: 'range', slow: 'slow', unlockAt: (w) => `opens wave ${w}`, poor: 'Not enough stones', lockedMsg: (w) => `Opens on wave ${w}`,
-    hint: 'Tap Yinyue, then a place, to send her', earlyPaid: (n) => `Called early: +${n} stones`, unlocked: (t) => `${TN.en[t]} unlocked`,
+    hint: 'Select Yinyue, then right-click (phone: tap) a place or a beast', earlyPaid: (n) => `Called early: +${n} stones`, unlocked: (t) => `${TN.en[t]} unlocked`,
     heroDown: (s) => `Yinyue is hurt; back in ${s}s`, heroUp: (l) => `Yinyue · ${['', 'II', 'III'][l]}`, cry: 'The heyu wails: its shield thins. Strike now!',
     wonLine: (hp) => `Fire left: ${hp} / 10`, lostLine: (w, x) => `The fire went out on wave ${w}, ${x} breaths held.`, select: 'Guard the Furnace · levels', newThing: 'new',
     lastWave: 'The last wave: hold it', waveN: (n) => `Wave ${n}:`, xi: 'breaths', paused: 'Paused',
     says: { back: 'Back.', grow: 'The moon grows in me.', howl: 'Awooo—!', cry: 'wailing', paused: 'Paused' },
+    yinyue: 'Yinyue', away: (s) => `back in ${s}s`, autoOn: 'Autocast on', autoOff: 'Autocast off', cooling: 'Still cooling', noHair: 'No fox hair left',
+    skillAt: (l) => `Opens at ${['', 'II', 'III'][l]}`, aimAt: (n) => `${n}: pick a target · right-click or Esc cancels`,
   },
+};
+/** Her skills' names and lines. */
+const SK = {
+  zh: { q: ['啸月', '震慑身周群兽，自动施放'], w: ['月影扑', '扑向一兽或一处，途中不受伤'], e: ['狐火', '一片蓝火，烧过路的兽'], r: ['狐毛', '破甲、破护体灵光数息'] },
+  en: { q: ['Moon Howl', 'stuns all near; autocast'], w: ['Moon Pounce', 'dash to a beast or a place, untouchable'], e: ['Foxfire', 'blue fire that burns what walks through'], r: ['Fox Hair', 'armor and shield off for a while'] },
 };
 const CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 const TN = { zh: { jian: '剑阵', huo: '火符', han: '寒符', lei: '雷符' }, en: { jian: 'Swords', huo: 'Fire', han: 'Frost', lei: 'Thunder' } };
@@ -100,13 +110,18 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
   root.innerHTML = `<div class="sl-hud"><span class="sl-stat sl-fire">${t.fire} <b data-k="hp">10</b></span><span class="sl-stat sl-stone">${t.stone} <b data-k="money">0</b></span>`
     + `<span class="sl-stat"><b data-k="wave">0</b>/<span data-k="waves">0</span> ${t.wave}</span><span class="sl-place" data-k="place"></span></div>`
     + `<div class="sl-stage"><canvas></canvas><div class="sl-menu" hidden></div><div class="sl-toast"></div><div class="sl-saga"><span></span></div><div class="sl-over" hidden><div class="sl-card"></div></div></div>`
+    + `<div class="sl-herobar"><button type="button" class="sl-portrait" data-hero><span class="sl-face"></span><i class="sl-key">1</i>`
+    + `<span class="sl-hinfo"><span><b>${t.yinyue}</b> <small data-k="hlv">${t.lv[0]}</small></span><span class="sl-hp"><span></span></span><small data-k="hstate"></small></span></button>`
+    + `<div class="sl-skills">${SKEYS.map((k) => `<button type="button" class="sl-skill" data-skill="${k}" title="${SK[lang][k][0]} · ${SK[lang][k][1]}">`
+      + `<b>${SK[lang][k][0]}</b><i class="sl-key">${k.toUpperCase()}</i><em class="sl-charges"></em><span class="sl-ring"></span></button>`).join('')}</div></div>`
     + `<div class="sl-preview"></div><div class="sl-controls"><button type="button" class="sl-main" data-a="next"></button><button type="button" data-a="speed">×1</button>`
     + `<button type="button" data-a="pause">${t.pause}</button><button type="button" data-a="pick">${t.pick}</button></div>`;
   container.replaceChildren(root);
   const $ = (s) => root.querySelector(s), cv = $('canvas'), ctx = cv.getContext('2d'), stage = $('.sl-stage'), menu = $('.sl-menu'), over = $('.sl-over'), card = $('.sl-card');
   const icons = {};
   const iconOf = (type) => (icons[type] ??= beastIcon(doc, type));
-  let g = null, li = -1, paper = null, speed = 1, paused = false, heroSel = false, sel = -1, raf = 0, last = 0, acc = 0, shown = false, sc = 1, dpr = 1, previewKey = '';
+  // S: the selection (core.js `pointer`): 银月 selected, the skill being aimed; `sel` is the spot whose menu is open (S.spot)
+  let g = null, li = -1, paper = null, speed = 1, paused = false, S = noSel(), aimAt = null, sel = -1, raf = 0, last = 0, acc = 0, shown = false, sc = 1, dpr = 1, previewKey = '';
   let AC = null;
   const sagaQ = [], toastQ = [];
   let sagaT = 0, toastT = 0;
@@ -127,7 +142,9 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     let lastKill = 0;
     const SOUNDS = { build: () => blip(520, 0.12, 'triangle', 0.05), hit: () => blip(110, 0.35, 'sawtooth', 0.07), bite: () => blip(260, 0.05, 'square', 0.018),
       wave: () => { blip(330, 0.25, 'triangle', 0.05); setTimeout(() => blip(440, 0.3, 'triangle', 0.05), 120); },
-      howl: () => { blip(420, 0.5, 'sine', 0.05); setTimeout(() => blip(640, 0.6, 'sine', 0.04), 140); } };
+      howl: () => { blip(420, 0.5, 'sine', 0.05); setTimeout(() => blip(640, 0.6, 'sine', 0.04), 140); },
+      pounce: () => blip(300, 0.18, 'triangle', 0.05), foxfire: () => { blip(700, 0.3, 'sine', 0.035); setTimeout(() => blip(520, 0.4, 'sine', 0.03), 90); },
+      hair: () => { blip(980, 0.25, 'sine', 0.03); setTimeout(() => blip(1240, 0.3, 'sine', 0.025), 110); } };
     const wake = () => { if (!AC) { try { AC = new (win.AudioContext || win.webkitAudioContext)(); } catch { AC = null; } } };
 
     const saga = (lines) => { sagaQ.length = 0; sagaT = 0; sagaQ.push(...lines); };
@@ -146,7 +163,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
     function fit() {
       const wrapW = root.clientWidth || 360;
       const top = stage.getBoundingClientRect().top + (win.scrollY || 0);
-      const below = Math.max(24, $('.sl-preview').offsetHeight) + $('.sl-controls').offsetHeight + 34;
+      const below = Math.max(24, $('.sl-preview').offsetHeight) + $('.sl-controls').offsetHeight + $('.sl-herobar').offsetHeight + 40;
       const availH = Math.max(320, (win.innerHeight || 800) - top - below);
       const w = Math.floor(Math.max(260, Math.min(wrapW, availH * W / H))), h = Math.floor(w * H / W);
       dpr = Math.min(2, win.devicePixelRatio || 1);
@@ -162,7 +179,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       root.classList.remove('is-picking');
       g = newGame(row, { seed: `shoulu|${Date.now()}` });
       paper = makePaper(doc, g.L, word(row.name, lang).split(' · ')[0]);
-      paused = false; heroSel = false; shown = false; acc = 0; previewKey = '';
+      paused = false; S = noSel(); aimAt = null; shown = false; acc = 0; previewKey = '';
       $('[data-a="pause"]').textContent = t.pause;
       closeMenu(); over.hidden = true; toastQ.length = 0;
       $('[data-k="place"]').textContent = word(row.name, lang);
@@ -202,20 +219,70 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       if (win_ && asked === li + 1) finish({ won: true, stars: st });
     }
 
-    // ── the board's taps: 银月 (tap her, then a place), a spot (its menu) ──
+    // ── the board: 魔兽争霸's mouse on a Mac (left selects, right orders, shift queues), tap-tap on a phone ──
     const toWorld = (e) => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / sc, y: (e.clientY - r.top) / sc }; };
+    const refuse = (k) => {
+      const st = skillState(g, k), S_ = SKILLS[k];
+      if (g.hero.dead > 0) toast(t.heroDown(Math.ceil(g.hero.dead)));
+      else if (st.locked) toast(`${SK[lang][k][0]} · ${t.skillAt(S_.unlock)}`);
+      else if (S_.charges && st.charges <= 0) toast(t.noHair);
+      else toast(`${SK[lang][k][0]} · ${t.cooling}`);
+    };
+    /** What a click, a tap or a key did (core.js decides; the page shows it). */
+    function apply(r, p, k) {
+      S = r.sel;
+      if (r.did === 'spot') openMenu(r.spot); else if (S.spot < 0 && sel >= 0) closeMenu();
+      if ((r.did === 'move' || r.did === 'attack') && p) g.fx.push({ k: 'mark', x: p.x, y: p.y, life: 0.6, max: 0.6 });
+      if (r.did === 'no' && k) refuse(k);
+      if (r.did === 'aim') toast(t.aimAt(SK[lang][S.aim][0]));
+      if (r.did === 'centre') centre();
+      cv.style.cursor = S.aim ? 'crosshair' : '';
+    }
+    function centre() {
+      stage.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+      g.fx.push({ k: 'ping', x: g.hero.x, y: g.hero.y, life: 0.7, max: 0.7 });
+    }
+    on(stage, 'contextmenu', (e) => e.preventDefault());
+    on(cv, 'pointermove', (e) => { aimAt = toWorld(e); });
     on(cv, 'pointerdown', (e) => {
       wake();
       if (!g || g.over) return;
-      const p = toWorld(e), h = g.hero;
-      if (!h.dead && Math.hypot(p.x - h.x, p.y - (h.y - 20)) < 36) { heroSel = !heroSel; closeMenu(); return; }
-      if (heroSel) { heroSel = false; sendHero(g, p.x, p.y); g.fx.push({ k: 'mark', x: h.tx, y: h.ty, life: 0.6, max: 0.6 }); return; }
-      let hit = -1, bd = 34 * 34;
-      g.L.spots.forEach(([x, y], i) => { const dx = p.x - x, dy = p.y - (g.towers[i] ? y - 12 : y), d = dx * dx + dy * dy; if (d < bd) { bd = d; hit = i; } });
-      if (hit >= 0 && hit !== sel) { sel = hit; openMenu(hit); } else closeMenu();
+      const right = e.button === 2 || (e.button === 0 && e.ctrlKey); // a Mac's ctrl-click is a right-click
+      if (e.button !== 0 && e.button !== 2) return;
+      const p = toWorld(e), aimed = S.aim;
+      aimAt = p;
+      apply(pointer(g, { ...S, spot: sel }, { ...p, button: right ? 2 : 0, shift: e.shiftKey, touch: e.pointerType !== 'mouse' }), p, aimed);
     });
-    function closeMenu() { sel = -1; menu.hidden = true; menu.innerHTML = ''; }
+    on(doc, 'keydown', (e) => {
+      if (!g || g.over || done || e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName ?? ''))) return;
+      // by the key's place, so a Chinese input layout still finds Q W E R and 1
+      const k = /^Key[QWER]$/.test(e.code) ? e.code[3].toLowerCase() : e.code === 'Digit1' ? '1' : e.key === 'Esc' ? 'Escape' : e.key;
+      if (!['q', 'w', 'e', 'r', '1', 'F1', 'Escape'].includes(k)) return;
+      e.preventDefault();
+      if (k === 'Escape' && !S.hero && sel < 0 && !S.aim) return;
+      apply(pressKey(g, { ...S, spot: sel }, k, performance.now() / 1000), null, k);
+    });
+    const bar = $('.sl-herobar');
+    on(bar, 'contextmenu', (e) => {
+      e.preventDefault();
+      const k = e.target.closest('[data-skill]')?.dataset.skill;
+      if (g && k && toggleAuto(g, k)) toast(`${SK[lang][k][0]} · ${g.hero.auto[k] ? t.autoOn : t.autoOff}`);
+    });
+    on(bar, 'click', (e) => {
+      wake();
+      if (!g || g.over) return;
+      if (e.target.closest('[data-hero]')) { apply(pressKey(g, { ...S, spot: sel }, '1', performance.now() / 1000)); return; }
+      const k = e.target.closest('[data-skill]')?.dataset.skill;
+      if (!k) return;
+      if (S.aim === k) { apply({ sel: { ...S, aim: null }, did: 'cancel' }); return; } // its button again: put it away
+      apply(pressSkill(g, { ...S, spot: sel }, k), null, k);
+    });
+    on(bar, 'dblclick', (e) => { if (g && e.target.closest('[data-hero]') && g.hero.dead <= 0) { S = { ...S, hero: true }; centre(); } });
+    function closeMenu() { sel = -1; S = { ...S, spot: -1 }; menu.hidden = true; menu.innerHTML = ''; }
     function openMenu(i) {
+      sel = i; S = { ...S, spot: i, hero: false };
       const tw = g.towers[i];
       if (!tw) {
         menu.innerHTML = `<h4>${t.build}<span>${t.tap}</span></h4><div class="sl-grid">${TORDER.filter((k) => g.L.towers.includes(k)).map((k) => {
@@ -300,6 +367,29 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
         } else pv.innerHTML = g.over ? '' : `<span>${t.lastWave}</span>`;
       }
       refreshMenu();
+      heroPanel();
+    }
+    // the hero panel: her face, 重, HP; the skill bar (cooldown rings, locks, autocast, 狐毛's charges)
+    const panel = { face: false, hp: $('.sl-hp span'), lv: $('[data-k="hlv"]'), st: $('[data-k="hstate"]'), port: $('.sl-portrait'),
+      sk: Object.fromEntries(SKEYS.map((k) => [k, bar.querySelector(`[data-skill="${k}"]`)])) };
+    function heroPanel() {
+      const h = g.hero;
+      if (!panel.face) { const st = portraitStyle(44); if (st) { Object.assign($('.sl-face').style, st); panel.face = true; } }
+      panel.hp.style.width = `${Math.max(0, h.hp / HERO.hp[h.lvl]) * 100}%`;
+      panel.lv.textContent = t.lv[h.lvl];
+      panel.st.textContent = h.dead > 0 ? t.away(Math.ceil(h.dead)) : `${Math.ceil(h.hp)} / ${HERO.hp[h.lvl]}`;
+      panel.port.classList.toggle('is-on', S.hero);
+      panel.port.classList.toggle('is-away', h.dead > 0);
+      for (const k of SKEYS) {
+        const st = skillState(g, k), b = panel.sk[k], S_ = SKILLS[k];
+        b.classList.toggle('is-locked', st.locked || (S_.charges && st.charges <= 0));
+        b.classList.toggle('is-ready', st.ready);
+        b.classList.toggle('is-auto', st.auto);
+        b.classList.toggle('is-aim', S.aim === k);
+        b.style.setProperty('--cd', st.cd > 0 ? (st.cd / st.max).toFixed(3) : '0');
+        const ch = b.querySelector('.sl-charges'), txt = S_.charges ? `×${st.charges}` : st.locked ? t.lv[S_.unlock] : '';
+        if (ch.textContent !== txt) ch.textContent = txt;
+      }
     }
     function frame(now) {
       if (done) return;
@@ -310,11 +400,13 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
       const run = !paused && !g.over;
       if (run) { acc += rdt * speed; let n = 0; while (acc >= 1 / 60 && n < 12) { step(g, 1 / 60); acc -= 1 / 60; n += 1; } if (n >= 12) acc = 0; }
       stepFx(g, run ? rdt * speed : g.over ? rdt : 0);
-      if (g.hero.dead > 0) heroSel = false;
+      const was = S;
+      S = keepSel(g, S); // she is away: not selected (nor reselected when she is back)
+      if (S !== was) cv.style.cursor = '';
       for (const e of g.events) onEvent(e);
       g.events.length = 0;
       pump(rdt);
-      draw(ctx, g, { paper, sc, dpr, t: now / 1000, heroSel, sel, paused, lang, says: t.says, bossName: BN[lang].heyu });
+      draw(ctx, g, { paper, sc, dpr, t: now / 1000, heroSel: S.hero, sel, aim: S.aim ? { key: S.aim, x: aimAt?.x, y: aimAt?.y } : null, paused, lang, says: t.says, bossName: BN[lang].heyu });
       hud();
       if (g.over && !shown) showOver();
     }
@@ -328,4 +420,4 @@ export async function mount(container, { lang = 'zh', data = {}, signal } = {}) 
 }
 
 // Re-exported for the tests and a later shell: the level-free numbers.
-export { BEASTS, HERO, TOWERS };
+export { BEASTS, HERO, SKILLS, TOWERS };

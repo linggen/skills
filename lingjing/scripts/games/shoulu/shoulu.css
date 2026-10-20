@@ -50,3 +50,36 @@
 .g-shoulu .sl-level em { font-style: normal; color: var(--sl-seal); letter-spacing: 1px; }
 @media (max-width: 420px) { .g-shoulu .sl-saga span { font-size: 17px; } .g-shoulu .sl-saga.is-big span { font-size: 23px; } .g-shoulu button { font-size: 13px; padding: 8px 7px; } }
 .g-shoulu.is-picking .sl-hud, .g-shoulu.is-picking .sl-preview, .g-shoulu.is-picking .sl-controls { visibility: hidden; }
+/* 银月's panel, as in 魔兽争霸: her portrait (1 selects; double-click centres), HP and 重; the skill bar with hotkeys,
+   cooldown rings, locks, the autocast ring (right-click the button) and 狐毛's charges. Thumb-sized on a phone. */
+.g-shoulu .sl-herobar { display: flex; gap: 6px; align-items: stretch; align-self: center; width: 100%; max-width: 600px; }
+.g-shoulu .sl-portrait { position: relative; display: flex; align-items: center; gap: 7px; padding: 4px 8px 4px 4px; text-align: left; min-width: 0; flex: 0 1 190px; }
+.g-shoulu .sl-portrait.is-on { border-color: #3c6478; box-shadow: 0 0 0 2px rgba(60, 100, 120, .35); }
+.g-shoulu .sl-portrait.is-away .sl-face { filter: grayscale(1) opacity(.5); }
+.g-shoulu .sl-face { width: 44px; height: 44px; flex: none; border-radius: 9px; background-color: #dfe6ef; background-repeat: no-repeat; border: 1px solid var(--sl-line); }
+.g-shoulu .sl-hinfo { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; font-size: 13px; }
+.g-shoulu .sl-hinfo small { color: var(--sl-dim); font-size: 11px; font-variant-numeric: tabular-nums; }
+.g-shoulu .sl-hp { display: block; height: 6px; border-radius: 3px; background: #e9dfcc; overflow: hidden; border: 1px solid rgba(42, 36, 29, .35); }
+.g-shoulu .sl-hp span { display: block; height: 100%; background: #5a8fc0; }
+.g-shoulu .sl-key { position: absolute; top: 2px; right: 4px; font-style: normal; font-size: 10px; font-weight: 700; color: var(--sl-dim); font-family: ui-monospace, Menlo, monospace; }
+.g-shoulu .sl-portrait .sl-key { left: 4px; right: auto; top: 2px; background: var(--sl-panel); border-radius: 4px; padding: 0 3px; z-index: 1; }
+.g-shoulu .sl-skills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex: 1; }
+.g-shoulu .sl-skill { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 52px; padding: 6px 2px; white-space: normal; line-height: 1.15; }
+.g-shoulu .sl-skill b { position: relative; z-index: 1; font-size: 14px; }
+.g-shoulu .sl-skill .sl-charges { position: relative; z-index: 1; font-style: normal; font-size: 11px; color: var(--sl-gold); min-height: 12px; }
+.g-shoulu .sl-skill .sl-key { z-index: 1; }
+.g-shoulu .sl-skill .sl-ring { position: absolute; inset: 0; pointer-events: none;
+  background: conic-gradient(rgba(42, 36, 29, .42) calc(var(--cd) * 360deg), transparent 0); }
+.g-shoulu .sl-skill { --cd: 0; }
+.g-shoulu .sl-skill.is-ready { border-color: #3f87a6; }
+.g-shoulu .sl-skill.is-auto { box-shadow: inset 0 0 0 2px #c99a2e; }
+.g-shoulu .sl-skill.is-aim { background: #3c6478; color: #f6efdf; }
+.g-shoulu .sl-skill.is-locked { opacity: .45; }
+@media (max-width: 420px) {
+  .g-shoulu .sl-herobar { flex-direction: column; }
+  .g-shoulu .sl-portrait { flex: none; padding: 3px 8px 3px 3px; }
+  .g-shoulu .sl-hinfo { flex-direction: row; align-items: center; gap: 8px; }
+  .g-shoulu .sl-hp { flex: 1; }
+  .g-shoulu .sl-skill { min-height: 48px; }
+}
+.g-shoulu.is-picking .sl-herobar { visibility: hidden; }
