@@ -4,7 +4,7 @@ import * as Phaser from 'phaser';
 import { KailuScene, W, H, ZOOM_MAX } from './play.js';
 
 /**
- * start({ parent, base, lang, data, reducedMotion, dev, showFps, shell, onEnd }) → { destroy() }
+ * start({ parent, base, lang, data, reducedMotion, dev, showFps, shell, onEnd }) → { destroy(), refresh() }
  * `data`: { brief, roll(ids, lingshi, press) → Promise<result>, icon(id) → url|null } — the rules' brief of the 饭桶 and
  * the one door that feeds it (the page's `fantong feed`, or the 游戏厅's sample roll). The canvas only shows.
  * `onEnd({ won, stars, grade, result })` once the reveal is taken (收下), or `{ won: false, left: true }`.
@@ -28,5 +28,6 @@ export function start(opts) {
   });
   game.scene.add('kailu', KailuScene, true, { ...opts, zoom });
   if (opts.dev) globalThis.__kailu = game; // ?dev=1 only: a live check reads fps and the phase from here
-  return { destroy: () => game.destroy(true) };
+  // refresh(): the canvas was laid into a new host (the pouch pane redraws round it) — fit it again.
+  return { destroy: () => game.destroy(true), refresh: () => game.scale?.refresh() };
 }

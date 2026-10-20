@@ -4,7 +4,8 @@
 // scripts/vendor/phaser.min.mjs); the odds are the rules' (rules/fantong.mjs on a save, rules/fantong-roll.mjs bare).
 // This module keeps the small-game contract (games/mount.js):
 //
-//   mount(container, { lang, data, signal, reducedMotion, seed, shell, onEvent }) → Promise<{ won, stars, grade, result } | { left }>
+//   mount(container, { lang, data, signal, reducedMotion, seed, shell, onEvent, onGame }) → Promise<{ won, stars, grade, result } | { left }>
+//   (`onGame(g)`: the live game's handle, `g.refresh()` after its node is laid into a new host.)
 //
 // `data` (the page, fantong-kailu.js): { brief: the rules' fantong brief, roll(ids, lingshi, press) → the `fantong feed`
 // answer }. Without it (the 游戏厅, the try page) it plays a sample pot on the bare table with no save and no wait —
@@ -68,7 +69,7 @@ async function sample(lang, seed, force) {
   return { brief, roll: rollOne };
 }
 
-export function mount(container, { lang = 'zh', data = null, signal, reducedMotion = false, seed, shell, onEvent } = {}) {
+export function mount(container, { lang = 'zh', data = null, signal, reducedMotion = false, seed, shell, onEvent, onGame } = {}) {
   const doc = container.ownerDocument;
   const box = doc.createElement('div');
   box.className = 'kailu-stage';
@@ -94,6 +95,7 @@ export function mount(container, { lang = 'zh', data = null, signal, reducedMoti
         data: { brief: d.brief, roll: d.roll, icon },
         onEnd: (r) => finish(r),
       });
+      onGame?.(game);
     }, (e) => {
       console.warn('[kailu]', e);
       box.textContent = lang === 'en' ? 'The game did not load.' : '游戏没加载出来。';

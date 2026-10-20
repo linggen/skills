@@ -32,7 +32,7 @@ import { drainAt, drainOf, trialNudge } from './beats.js';
 import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton } from './cards.js';
 import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
-import { fantongHtml, wireFantongDrag } from './fantong-free.js';
+import { fantongKailu, kailuPaneHtml } from './fantong-kailu.js';
 import { spentBoard } from './board-deal.js';
 import { esc } from './esc.js';
 import { revealCards } from './card-reveal.js';
@@ -69,6 +69,8 @@ import { anyPaused, forget as forgetShell, wireShell } from './games/shell.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
+// 喂饭桶 · 开炉 (fantong-kailu.js): the game is made once here, so every draw may lay it into its host.
+const ftKailu = fantongKailu({ feed: (ids, lingshi, press) => feedFantong(ids, lingshi, press), onFed: (r) => fedFantong(r) });
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -322,11 +324,6 @@ const view = {
   pouchToss: null, //    the thing asking 丢? on the pane, until answered
   pouchPane: null, //    'held' (洞府 · 待取), 'deck' (牌组) or 'fantong' (饭桶) in the grid's place
   fantong: null, //      the rules' 饭桶 brief (rules/fantong.mjs), read when its board opens
-  ftSel: null, //        the thing tapped on the 饭桶 board
-  ftLingshi: 0, //       灵石 to feed with it
-  ftResult: null, //     the last feed's answer: what came out, its name and small print
-  ftAt: 0, //            when it spat (the bucket shakes, the splash fades)
-  ftNote: null, //       a refusal on the board, in the rules' words
   handin: null, //       an errand handed in: { place, title, seen, paid }, until put away or walked on
   spoils: null, //       what a won fight left: { place, cards, items }, until put away or walked on
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
@@ -2941,38 +2938,28 @@ function drawPouch() {
   const open = view.gearOpen && !bout;
   if (open) document.body.classList.add('reading');
   el.hidden = !open;
-  if (!open) { drawnPouch = null; return; }
-  const fantongPane = view.pouchPane === 'fantong'
-    ? fantongHtml(view.fantong, { lang: lang(), artBase: artBase(), ui: { sel: view.ftSel, lingshi: view.ftLingshi, result: view.ftResult, note: view.ftNote, at: view.ftAt } }) : null;
+  if (!open) { drawnPouch = null; ftKailu.stop(); return; }
+  const fantongPane = view.pouchPane === 'fantong' ? kailuPaneHtml(lang()) : null;
   const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), fantongPane },
     { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
+  if (view.pouchPane === 'fantong') ftKailu.show(view.fantong, { lang: lang(), reducedMotion: stillMotion() });
+  else ftKailu.stop();
 }
 
-/* 喂饭桶 (rules/fantong.mjs): the board's brief, read when it opens and again
-   when the bucket may eat; a feed is the page's own verb — no model turn. */
+/* 喂饭桶 · 开炉 (rules/fantong.mjs): the brief, read when the pane opens and again when the bucket may eat; a feed is
+   the page's own verb, sent by the game (fantong-kailu.js) with the pot and the press — no model turn. */
 async function loadFantong() {
   const r = await verb('fantong', { action: 'look' }).catch(failed);
-  if (view.gearOpen) show({ fantong: r?.fantong ?? null, ...(r?.ok ? {} : { ftNote: refusal(r) }) });
+  if (view.gearOpen) show({ fantong: r?.fantong ?? null });
 }
-/* A feed goes straight in (its 割绳子 / 烙饼 puzzle went with the 饭桶's old play, 2026-10-20). */
-function startFeed(id) {
-  const fb = view.fantong;
-  if (!id || !fb?.ready || !fb.inputs?.some((i) => i.id === id)) return;
-  run(`fantong:feed:${id}`, () => feedFantong(id));
-}
-async function feedFantong(id) {
-  if (!id) return;
-  const r = await write('fantong', { action: 'feed', id, lingshi: view.ftLingshi || 0 }).catch(failed);
-  if (!r.ok) { show({ ftNote: refusal(r) }); return loadFantong(); }
-  const sel = r.fantong?.inputs?.some((i) => i.id === id) ? id : null;
-  const at = Date.now();
-  show({ fantong: r.fantong, ftResult: r, ftAt: at, ftSel: sel, ftLingshi: 0, ftNote: null });
-  // 卷一's 逆天 out of the bucket: a rare find, worth her word.
-  if (r.grade === 'best') herSay.say('rare', lang() === 'en' ? `The rice bucket gave back its best: ${r.out?.name ?? ''}.` : `饭桶里喂出了最好的一档：${r.out?.name ?? ''}。`, { key: `fantong|${at}` });
-  setTimeout(() => { if (view.ftAt === at) render(); }, 750); // the splash fades
+const feedFantong = (ids, lingshi, press) => write('fantong', { action: 'feed', ids: ids.join(','), lingshi: lingshi || 0, press: press ? 1 : 0 }).catch(failed);
+/* What came out lands in the bag: the panel and the page read it again (the game keeps showing its reveal). */
+async function fedFantong(r) {
+  if (!r?.ok) return;
+  keep({ fantong: r.fantong ?? view.fantong });
   const g = await verb('gear').catch(() => null);
-  if (view.gearOpen && g?.gear) show({ gear: g.gear });
+  if (view.gearOpen && g?.gear) keep({ gear: g.gear });
   await refresh();
 }
 /* The bowl fills back while the board is open; the moment it may eat, the brief is read again. */
@@ -2982,7 +2969,6 @@ setInterval(() => {
   if (fb.next_at && Date.now() >= new Date(fb.next_at).getTime()) run('fantong:look', loadFantong);
   else render();
 }, 15_000);
-wireFantongDrag({ onDrop: (id) => startFeed(id), active: () => view.gearOpen && view.pouchPane === 'fantong' });
 
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
 async function dropErrand(id) {
@@ -3326,14 +3312,9 @@ const CLICKS = [
   ['[data-pouch-close]', () => show({ gearOpen: false, pouchToss: null })],
   ['[data-pouch-tab]', (el) => show({ pouchTab: el.dataset.pouchTab, pouchToss: null, pouchPane: null })],
   ['[data-pouch-pane]', (el) => {
-    show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null, ...(el.dataset.pouchPane === 'fantong' ? { ftResult: null, ftNote: null } : {}) });
+    show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null });
     if (el.dataset.pouchPane === 'fantong') run('fantong:look', loadFantong);
   }],
-  // 喂饭桶's board (fantong-free.js): tap a thing, then 喂 — or the bucket's mouth; a drag drops it in.
-  ['[data-fantong-pick]', (el) => show({ ftSel: el.dataset.fantongPick, ftNote: null })],
-  ['[data-fantong-lingshi]', (el) => show({ ftLingshi: Number(el.dataset.fantongLingshi) || 0 })],
-  ['[data-fantong-feed]', (el) => { if (!el.matches(':disabled')) startFeed(view.ftSel); }],
-  ['[data-fantong-mouth]', () => { if (view.ftSel && view.fantong?.ready) startFeed(view.ftSel); }],
   ['[data-pouch-item]', (el) => show({ pouchSel: el.dataset.pouchItem, pouchToss: null, pouchPane: null })],
   ['[data-sell]', (el) => run(`item:sell:${el.dataset.sell}`, () => useItem(el.dataset.sell, 'sell'))],
   ['[data-toss]', (el) => show({ pouchToss: el.dataset.toss })],

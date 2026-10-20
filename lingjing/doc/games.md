@@ -531,6 +531,16 @@ after; idle never wins. `n` is story order (古七 before 今三), and the climb
 
 ## Daily boards, 秘境, 密室 (not story beats; no card)
 
+**喂饭桶 · 开炉** (`kailu`, 10-20; Hanli: 「现在可以, 但东西太少, 以后在扩吧. 装备武器饰品都可以出」): the 饭桶's lottery, in
+the 物品 panel once he holds it (古四) and in the 游戏厅 (`daily`, a sample pot, no save; `?force=best`). Up to three things
+and 0–3 灵石 into the mouth (the steam takes the pot's lean colour), 压盖 on a gold puff lifts the grade a notch, 「咔哒」 and
+out it spins: 凡 grey ~70 · 有用 blue ~25 · 珍品 purple ~4 · 逆天 gold ~1 for a plain pot. No cap (Hanli 10-20: 「饭桶就是
+什么都出的」): the odds of high things rise smoothly with the pot's 品阶 (its best input) and his realm, 灵石 add to it.
+Pity: five 凡 in a row, the next is 有用 or better. Quirks: 3% it spits the pot back, 4% two things. The first of each
+thing lands in the 饭桶图鉴 (录). 古七's 方子, three 方子残页 → 回气丹; the book's 火柴 / 顺风溜 are guards, never drops;
+饱嗝令 waives the next hosted game's 灵气. All data: fantong.json (rows, tiers, odds); rules/fantong.mjs (on a save) and
+rules/fantong-roll.mjs (pure); the Phaser play tools/kailu/ → games/kailu/; the pane fantong-kailu.js.
+
 炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 七巧 · 五子 ·
 残局 · 密室 (he sees the mechanisms, 银月 reads the pages). 守夜 (药园) and 下崖 (秘境) cut 10-19 (the sweep); 拾遗 (秘境,
 and the rerun's) was a 割藤 10-19 → 10-20; now 撒豆成兵 (the story's) and a short 守炉 (the rerun's), § Pruned 10-20.

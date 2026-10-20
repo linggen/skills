@@ -150,6 +150,16 @@ ITEMS = {
   'cishi': dict(d='a dark grey lodestone lump with a few iron filings stuck to it'),
   'xionghuang': dict(key='green', d='a lump of bright orange-red realgar crystal'),
   'chishizhi': dict(key='green', d='a lump of smooth red-pink clay rock'),
+  # 喂饭桶 · 开炉's new prizes (Hanli 10-20 table) and what it gives that the old set lacked
+  'banjie-fanshao': dict(d='the handle half of a wooden rice paddle, snapped off with a ragged bitten edge where the scoop should be'),
+  'yike-daya': dict(d='one huge yellowish-white molar tooth with two roots, a red thread tied round its roots', scale=0.85),
+  'yige-ge': dict(d='one round see-through bubble the size of a fist with a little swirl of grey fog inside it', scale=0.85),
+  'lingshi': dict(d='spirit stones: three glowing pale-blue faceted crystals in a little cluster'),
+  'fangzi-canye': dict(d='a torn half-burned yellowed paper page with scorched brown edges and faint red brush strokes, no readable writing'),
+  'baoge-ling': dict(d='a small greasy brown wooden token with a fat round belly carved on its face and a red cord through a hole at the top, no writing'),
+  'yinyue-lingdang': dict(d='one tiny round silver bell on a short red cord tied in a bow', scale=0.7),
+  'foundation-pill': dict(txt=True, d='one round pale jade-white pill with one thin gold ring round its middle and a few dark specks on it'),
+  'foundation-pill-9': dict(txt=True, d='one round crystal-clear pill like a frozen dewdrop, nine thin gold rings round it, a radiant halo of golden light'),
 }
 
 # Looked at 2026-10-20: the seed taken for each (a contact sheet per batch; fake text and off items re-rolled).
@@ -262,6 +272,15 @@ KEPT = {
   'cishi': 1,
   'xionghuang': 1,
   'chishizhi': 2,
+  'banjie-fanshao': 2,
+  'yike-daya': 1,
+  'yige-ge': 2,
+  'lingshi': 3,
+  'fangzi-canye': 3,
+  'baoge-ling': 2,
+  'yinyue-lingdang': 2,
+  'foundation-pill': 2,
+  'foundation-pill-9': 2,
 }
 
 
