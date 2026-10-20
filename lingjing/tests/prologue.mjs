@@ -17,7 +17,7 @@ const FNS = { resolve, task, win, look: VERBS.look };
    the clue at 黑松岭, the storm, the fall, the fox — and she joins at daybreak (`follow`). */
 export const TO_VALLEY = [
   ['resolve', { exit: 'begin' }],
-  // 忍字 (割绳子, back 2026-10-20): the cake to the yard dog, then the taunt said back
+  // 忍字 (割绳子, back 2026-10-20): the cake back into 马小宝's own mouth, then the taunt said back
   ['win', { id: 'masan-taunt' }],
   ['task', { action: 'done', id: 'masan-taunt' }],
   ['resolve', { exit: 'endure' }],

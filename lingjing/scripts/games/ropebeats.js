@@ -2,10 +2,12 @@
 // 代替」), each a scene's own drop or steer on ropekit.js, its level written as data in games.json
 // (frozen from rope-gen.js and proved by its bot), its book line above the board. The page's skip
 // (stuck.js) and the task's pay stand as for every story board; stars go on the save (`stars`).
-//   忍字 (00-masan)  the 桂花糕 on its string, swung onto a springy bamboo, to the yard dog — never
-//                    to 马小宝's hand: 「学声狗叫，给你舔一口。」
+//   忍字 (00-masan)  the 桂花糕 on its string, off the slab and the springy bamboo, back into 马小宝's own
+//                    mouth — the book's (both ways on: 「把那块桂花糕一口塞进嘴里，腮帮子鼓得像两个包子」);
+//                    小满 never barks and never reaches for it: 「学声狗叫，给你舔一口。」
 //   认路 (00-yinyue) the little fox carried in a 灵气泡 to the moss at the valley mouth: 「先带本王出去。」
-//   算账 (00-rent)   the meat onto 马三's steelyard before the crow walks down to it: 「肉二十斤，抵今年的。」
+//   算账 (00-rent)   the meat swung out onto a stone chute and down into 马三's steelyard before the crow walks
+//                    down to it: 「肉二十斤，抵今年的。」
 //   喂息珠 (wm-luobo, 2026-10-20) the 息珠 he brought out of the 秘境, into the 饭桶 in the woodshed — the
 //                    bramble in the woodpile on the wrong swing: 「喂进饭桶，兴许开出一颗筑基丹来。」
 import { n } from './ink.js';
@@ -39,20 +41,23 @@ function beat(spec) {
   return game;
 }
 
-/* ── 忍字 · 桂花糕 to the yard dog ── */
-const DOG_W = 120, DOG_H = DOG_W * 277 / 320, DOG_MOUTH = [0.66, 0.2];
+/* ── 忍字 · the 桂花糕 back into 马小宝's mouth (2026-10-20: the book's, not a yard dog's) ──
+   He holds it under 小满's nose on its string; 小满 neither barks nor grabs. Cut the string, puff it off the slab,
+   the 弹竹 springs it back up — into 马小宝's wide-open mouth, as the book has him stuff it in himself. */
+const BAO_W = 130, BAO_H = BAO_W * 320 / 224, BAO_MOUTH = [0.48, 0.3];
 export const taunt = beat({
-  meta: { id: 'tauntrope', name: { zh: '忍字 · 桂花糕喂狗', en: 'Holding it in · The cake to the dog' }, how: { zh: '划断绳，让桂花糕落到大黄狗嘴里——不进马小宝的手。', en: 'Cut the string so the cake drops to the yard dog — never into Ma Xiaobao\'s hand.' } },
+  meta: { id: 'tauntrope', name: { zh: '忍字 · 那块桂花糕', en: 'Holding it in · That osmanthus cake' }, how: { zh: '划断绳，让桂花糕落回马小宝自己嘴里——不学狗叫，也不伸手。', en: 'Cut the string so the cake drops back into Ma Xiaobao\'s own mouth — no barking, no grabbing.' } },
   quote: { zh: '「学声狗叫，给你舔一口。」', en: '"Bark like a dog, and you can have a lick."' },
   T: words({
-    zh: { name: '桂花糕', say: '划断绳，把桂花糕送到大黄狗嘴里。', eat: ['大黄一口叼住，尾巴摇成了一朵花。'], done: '桂花糕进了狗嘴。马小宝的脸，比那块糕还黄。' },
-    en: { name: 'osmanthus cake', say: 'Cut the string and bring the cake down to the yard dog.', eat: ['The dog snaps it up, tail going like a flower.'], done: 'The cake went to the dog. Ma Xiaobao\'s face went yellower than the cake.' },
+    zh: { name: '桂花糕', say: '划断绳，把桂花糕送回马小宝嘴里。', eat: ['他一口塞进嘴里，腮帮子鼓得像两个包子。'], done: '桂花糕进了马小宝自己的嘴。那声狗叫，你没学。' },
+    en: { name: 'osmanthus cake', say: 'Cut the string and send the cake back into Ma Xiaobao\'s mouth.', eat: ['He stuffs it in whole, cheeks puffed out like two steamed buns.'], done: 'The cake went into Ma Xiaobao\'s own mouth. You never did bark.' },
   }),
   thing: (s, r) => img('games/cake.webp', -r * 0.95, -r * 1.45, r * 1.9, r * 2.9),
   target(s, calm) {
-    const [mx, my] = s.level.mouth, x = mx - DOG_MOUTH[0] * DOG_W, y = my - DOG_MOUTH[1] * DOG_H;
-    const hop = s.phase === 'eat' && !calm ? Math.abs(Math.sin(s.t / 160)) * 10 * Math.max(0, 1 - s.t / 1200) : 0;
-    return `<g class="g-rope-target">${img('games/dog.webp', x, y - hop, DOG_W, DOG_H)}</g>`;
+    const [mx, my] = s.level.mouth, x = mx - BAO_MOUTH[0] * BAO_W, y = my - BAO_MOUTH[1] * BAO_H;
+    // chewing: his cheeks puff, the whole of him bobs a little
+    const chew = s.phase === 'eat' && !calm ? 1 + Math.abs(Math.sin(s.t / 130)) * 0.06 * Math.max(0, 1 - s.t / 1200) : 1;
+    return `<g class="g-rope-target" transform="translate(${n(mx)} ${n(my)}) scale(${n(chew, 3)}) translate(${n(-mx)} ${n(-my)})">${img('games/xiaobao.webp', x, y, BAO_W, BAO_H)}</g>`;
   },
   grade: (s) => (s.best >= 3 ? 'word' : 'fist'),
   cls: 'g-rope-taunt',
@@ -83,11 +88,11 @@ export const way = beat({
 /* ── 算账 · the meat onto 马三's steelyard ── */
 const YARD_W = 210, YARD_H = YARD_W * 302 / 320, PAN = [0.2, 0.76], HOOK = 0.47;
 export const rent = beat({
-  meta: { id: 'rentrope', name: { zh: '算账 · 肉上秤', en: 'Settling up · The meat on the steelyard' }, how: { zh: '划断藤，让鹿肉落进秤盘——乌鸦顺着藤往下爬，先断它那根。', en: 'Cut the vines so the venison drops into the pan — a crow is walking down one: cut that first.' } },
+  meta: { id: 'rentrope', name: { zh: '算账 · 肉上秤', en: 'Settling up · The meat on the steelyard' }, how: { zh: '划断藤，让鹿肉荡上石板，滑进秤盘——乌鸦顺着一根藤往下爬，别让它先到。', en: 'Cut the vines so the venison swings onto the stone and slides into the pan — a crow is walking down one: get there first.' } },
   quote: { zh: '「肉二十斤，抵今年的。」', en: '"Twenty catties of meat, for this year\'s."' },
   T: words({
-    zh: { name: '鹿肉', say: '把鹿肉送进马三的秤盘。', eat: ['称满了二十斤，秤杆翘得跟马三的下巴一样高。'], done: '皮抵了去年的欠，肉抵了今年的租。' },
-    en: { name: 'venison', say: 'Bring the venison down into Ma San\'s scale pan.', eat: ['Twenty catties, and the beam tilts up as high as Ma San\'s chin.'], done: 'The hide for last year, the meat for this.' },
+    zh: { name: '鹿肉', say: '把鹿肉送进马三的秤盘。', stolen: '乌鸦叼走了。再来——它那根藤，要赶在它前头断。', eat: ['称满了二十斤，秤杆翘得跟马三的下巴一样高。'], done: '皮抵了去年的欠，肉抵了今年的租。' },
+    en: { name: 'venison', say: 'Bring the venison down into Ma San\'s scale pan.', stolen: 'The crow took it. Again — its vine has to go before it gets there.', eat: ['Twenty catties, and the beam tilts up as high as Ma San\'s chin.'], done: 'The hide for last year, the meat for this.' },
   }),
   thing: (s, r) => img('games/meat.webp', -r * 1.05, -r * 1.35, r * 2.1, r * 2.5),
   target(s, calm) {

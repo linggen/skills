@@ -143,3 +143,42 @@ test('no rope hangs from the sky: every kit level draws what each vine is tied t
   const [ax] = row.levels[0].vines[1].at, { x } = s.swing.bread.position;
   assert.ok(Math.sign(s.swing.hangA) === Math.sign(ax - x) && Math.abs(s.swing.hangA) > 0.2, `turned ${s.swing.hangA}`);
 });
+
+/* 算账 re-laid 2026-10-20 (play-human's casual hand won the 10-16 level in 5–12 s with one low swipe that cut both
+   vines): the meat must be swung onto the chute — the other vine first, the crow's before the crow gets down. */
+test('算账: one swipe across both vines never wins; the crow\'s vine first never wins; waiting, the crow takes it; the race wins over a wide window', async () => {
+  const R = await import('../scripts/games/rope.js');
+  const level = content.games.games.find((g) => g.id === 'rentrope').levels[0];
+  const reach = 34 + R.BREAD_R * 0.4;
+  const run = (moves) => {
+    const w = R.buildWorld(level), q = [...moves];
+    for (let t = 0; t < 9000; t += R.STEP_MS) {
+      while (q.length && q[0].t <= t) { const m = q.shift(); R.cutVine(w, m.v, Math.floor(w.vines[m.v].joints.length / 2)); }
+      const ev = R.stepWorld(w, level);
+      if (ev.stolen) return 'stolen';
+      if (Math.hypot(w.bread.position.x - level.mouth[0], w.bread.position.y - level.mouth[1]) < reach) return 'fed';
+      if (R.outOf(w)) return 'out';
+    }
+    return 'rest';
+  };
+  assert.ok(!level.gust, 'no puff: a resting thing is a miss');
+  assert.notEqual(run([{ t: 0, v: 0 }, { t: 0, v: 1 }]), 'fed', 'both at once: straight to the floor');
+  assert.notEqual(run([{ t: 0, v: 1 }, { t: 30, v: 0 }]), 'fed', 'one swipe crossing both, a frame apart');
+  for (const d of [600, 1500, 3000]) assert.notEqual(run([{ t: 0, v: 0 }, { t: d, v: 1 }]), 'fed', `the crow's vine first (then ${d} ms): over the floor`);
+  assert.equal(run([{ t: 0, v: 1 }]), 'stolen', 'the other vine alone: the crow gets there');
+  const wins = [];
+  for (let d = 700; d <= 2600; d += 100) wins.push(run([{ t: 0, v: 1 }, { t: d, v: 0 }]) === 'fed');
+  assert.ok(wins.filter(Boolean).length >= wins.length - 2, `the race wins almost anywhere from 0.7 s to the crow: ${wins.map(Number).join('')}`);
+});
+
+test('忍字: the cake goes back into 马小宝\'s own mouth (the book\'s, both ways on) — no yard dog', async () => {
+  const mod = await import('../scripts/games/tauntrope.js');
+  const row = content.games.games.find((g) => g.id === 'tauntrope');
+  const h = mod.html(mod.newGame('x', 1, { levels: row.levels }), 'zh');
+  assert.match(h, /games\/xiaobao\.webp/);
+  assert.doesNotMatch(h, /dog\.webp/);
+  const t = content.tasks.tasks.find((x) => x.id === 'masan-taunt');
+  assert.match(t.done_line.zh, /马小宝/);
+  assert.doesNotMatch(t.title.zh + mod.meta.how.zh, /狗嘴|喂狗/);
+  for (const ex of content.chapters['00-prologue'].scenes['00-masan'].exits) assert.match(ex.story_full?.zh ?? ex.story.zh, /桂花糕一口塞进嘴里/, `${ex.id}: the book has him eat it`);
+});

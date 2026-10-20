@@ -49,6 +49,12 @@ SUBJECTS = {
                'two pans. Plain, worn, used by a village landlord.',
   'dog': 'A scruffy yellow village dog sitting and looking up hopefully with its mouth slightly open, tongue showing, '
          'ears up, tail curled, a rope collar. Side view, whole body, just the dog.',
+  # 2026-10-20, 忍字 made to agree with the book (both its exits: 马小宝 stuffs the cake into his own mouth, 「腮帮子
+  # 鼓得像两个包子」): the target is his mouth, not a yard dog's
+  'xiaobao': 'A chubby round-faced village rich boy of about fourteen in a padded silk robe with a fine pattern, hair '
+             'tied up in a small bun on top, his mouth wide open waiting to be fed, cheeks plump, eyes squeezed shut in '
+             'smug delight, head tilted back a little. Head and shoulders and his belly, seen from the front, just the '
+             'one boy, nothing in his hands.',
   'cake': 'A single small square of pale golden osmanthus cake, soft layered steamed cake with tiny yellow osmanthus '
           'flowers on top, hanging from a short thin red string tied around it.',
   'meat': 'A single large cut of fresh deer meat, a thick red slab with a strip of pale fat, tied around with a straw '
@@ -91,6 +97,8 @@ KEPT = {'bubble': (1, (120, 120, 392, 392), (256, 256), 10), 'thorns': (1, (10, 
         'crow': (1, None, 256, 34), 'seal': (1, (165, 165, 347, 347), (120, 120), 34), 'dog': (1, None, 320, 34),
         'cake': (1, (150, 100, 340, 390), (114, 174), 34), 'steelyard': (5, None, 320, 30),
         'meat': (2, None, 240, 40), 'moss': (1, None, 320, 34),
+        # 忍字's 马小宝 (2026-10-20, four seeds looked at — no glyphs in any): seed 2, warm silk, the bun, mouth wide open
+        'xiaobao': (2, None, 320, 34),
         # 拽 (2026-10-19, three seeds each looked at): 爹 seed 1 (straw cape, arms up; the stick he held cropped
         # off — the ropes go to his chest), the pack seed 1, the ledge seed 1 (juts right, grass on its flat top),
         # the spur seed 2 (drawn mirrored on the board), the storm cliff seed 1 (opaque, the cliff down the left).
@@ -105,6 +113,10 @@ KEPT = {'bubble': (1, (120, 120, 392, 392), (256, 256), 10), 'thorns': (1, (10, 
 TURN = {'peg': 180}
 # Its alpha faded out over the bottom px: the pine's rock melts into the cliff it grows from, no cut edge.
 FADE = {'fallpine': 90}
+# Only the paper joined to the picture's edge is taken out (a flood from the border over the paper-coloured pixels, the
+# figure's outline first thickened 5 px so a faint pencil line still closes it): a face as pale as the paper (马小宝's)
+# stays opaque inside its outline.
+FLOOD = {'xiaobao'}
 # Where a sprite is written under art/games/ (its id, unless named here).
 OUTNAME = {'fallpine': 'fall/pine', 'peg': 'anchor/peg', 'branch': 'anchor/branch', 'dad': 'fall/dad', 'pack': 'fall/pack', 'ledge': 'fall/ledge', 'spur': 'fall/spur', 'fallcliff': 'fall/cliff'}
 
@@ -125,13 +137,17 @@ def paint(out, subject, seed, sid=None):
   return None if r.returncode == 0 and Path(out).exists() else (r.stdout.strip()[-200:] or r.stderr.strip()[-200:])
 
 
-def to_webp(png, webp, box, size, threshold, turn=0, fade=0):
+def to_webp(png, webp, box, size, threshold, turn=0, fade=0, flood=False):
   crop = (f".crop({tuple(box)!r})" if box else '') + (f".rotate({turn})" if turn else '')
   code = (f"from PIL import Image; import numpy as np; im = Image.open({str(png)!r}).convert('RGB'){crop}; "
           "a = np.asarray(im).astype(float); "
           "c = np.concatenate([a[:8, :8].reshape(-1, 3), a[:8, -8:].reshape(-1, 3), a[-8:, :8].reshape(-1, 3), a[-8:, -8:].reshape(-1, 3)]); "
           "d = np.sqrt(((a - np.median(c, axis=0)) ** 2).sum(axis=2)); "
           f"al = np.clip((d - {threshold}) * 6, 0, 255); "
+          + (f"from PIL import ImageDraw, ImageFilter; m = Image.fromarray(np.where(d > {threshold} + 46, 255, 0).astype('uint8'), 'L').filter(ImageFilter.MaxFilter(11)); "
+             "[ImageDraw.floodfill(m, xy, 128) for xy in [(x, 0) for x in range(0, m.width, 4)] + [(x, m.height - 1) for x in range(0, m.width, 4)] + [(0, y) for y in range(0, m.height, 4)] + [(m.width - 1, y) for y in range(0, m.height, 4)] if m.getpixel(xy) == 0]; "
+             "bg = Image.fromarray(np.where(np.asarray(m) == 128, 255, 0).astype('uint8'), 'L').filter(ImageFilter.MaxFilter(11)); "
+             "al = np.where(np.asarray(bg) == 255, al, 255).astype(float); " if flood else '')
           + (f"al = al * np.clip((al.shape[0] - np.arange(al.shape[0]))[:, None] / {fade}, 0, 1); " if fade else '')
           + "img = Image.fromarray(np.dstack([a, al]).astype('uint8'), 'RGBA'); "
           + ("" if box else "ys, xs = np.where(al > 220); m = 12; img = img.crop((max(0, xs.min() - m), max(0, ys.min() - m), min(img.width, xs.max() + m), min(img.height, ys.max() + m))); ")
@@ -155,7 +171,7 @@ def main():
     for sid in [k for k in a.cut.split(',') if k]:
       seed, box, size, threshold = KEPT[sid]
       out = OUT / f'{OUTNAME.get(sid, sid)}.webp'; out.parent.mkdir(parents=True, exist_ok=True)
-      to_webp(Path(a.review) / f'{sid}-{seed}.png', out, box, size, threshold, TURN.get(sid, 0), FADE.get(sid, 0)); print(sid, '→', out)
+      to_webp(Path(a.review) / f'{sid}-{seed}.png', out, box, size, threshold, TURN.get(sid, 0), FADE.get(sid, 0), sid in FLOOD); print(sid, '→', out)
     return
   if a.keep:
     OUT.mkdir(parents=True, exist_ok=True)
@@ -165,7 +181,7 @@ def main():
       err = paint(png, SUBJECTS[sid], seed, sid)
       if err: print(sid, 'failed', err); continue
       out = OUT / f'{OUTNAME.get(sid, sid)}.webp'; out.parent.mkdir(parents=True, exist_ok=True)
-      to_webp(png, out, box, size, threshold, TURN.get(sid, 0), FADE.get(sid, 0)); print(sid, '→', out)
+      to_webp(png, out, box, size, threshold, TURN.get(sid, 0), FADE.get(sid, 0), sid in FLOOD); print(sid, '→', out)
     return
   review = Path(a.review); review.mkdir(parents=True, exist_ok=True)
   for sid in ids:
