@@ -4,11 +4,15 @@
 // (games/sadou/sadou.min.mjs, built from tools/sadou/, loading the one shared scripts/vendor/phaser.min.mjs); the
 // engine is games/sadou/core.js; the level is data (worlds/jiuding/levels/sadou.json). The small-game contract:
 //
-//   mount(container, { lang, data, signal, reducedMotion, seed, lines, onEvent }) → Promise<{ won, stars, stats } | { left }>
+//   mount(container, { lang, data, signal, reducedMotion, seed, lines, onEvent, shell }) → Promise<{ won, stars, stats } | { left }>
+//
+// In the one shell (games/shell.js, `shell`): the level's story lines are the shell's lead card, its pause is the shell's,
+// and the result is the shell's; the canvas keeps the big 「撒豆成兵！」 with its scatter and its own 3-2-1 into the run.
 //
 // `data.lv` / the page's `?lv=` picks a level row by id or 1-based number (one level today). Nothing touches the save.
 export const meta = {
   id: 'sadou',
+  pause: true, // the shell's bar pauses the play (tools/sadou/src/play.js setPaused)
   name: { zh: '撒豆成兵 · 山道', en: 'Beans into Soldiers' },
   how: {
     zh: '左右拖动，带豆兵穿过加倍的符门，躲开陷阱，撞翻兽潮，最后打倒合窳。',
@@ -34,7 +38,7 @@ async function loadFont(doc) {
   doc.fonts.add(await face.load().catch(() => face));
 }
 
-export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, seed, lines, onEvent } = {}) {
+export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, seed, lines, onEvent, shell } = {}) {
   const doc = container.ownerDocument;
   const box = doc.createElement('div');
   box.className = 'sadou-stage';
@@ -54,11 +58,18 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     signal?.addEventListener('abort', leave, { once: true });
     Promise.all([fetch(LEVELS).then((r) => r.json()), import('./sadou/sadou.min.mjs'), loadFont(doc)]).then(([kit, { start }]) => {
       if (done) return;
+      let level = levelAsked(kit, data, search);
+      // In the shell: the story lines read on its lead card, over the road standing still; the canvas keeps the big line
+      // (the beans fly) and its 3-2-1.
+      const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join(lang === 'en' ? ' ' : '') : '';
+      if (said) level = { ...level, lead: (level.lead ?? []).filter((l) => l.big), leadSec: 1.6 };
       game = start({
         parent: box, base: new URL('./sadou/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
-        kit, level: levelAsked(kit, data, search), seed: seed ?? `sadou|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent,
+        kit, level, seed: seed ?? `sadou|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, shell,
+        held: Boolean(said), // the road drawn behind the shell's lead card, standing still till it is read (Hanli 10-20: 「开场卡后面先画出画面」)
         onEnd: (r) => finish(r),
       });
+      if (said) shell.lead(said, { auto: reducedMotion ? 2400 : 4200 }).then(() => game?.go());
     }, () => {
       box.textContent = lang === 'en' ? 'The game did not load.' : '游戏没加载出来。';
       finish({ won: false, left: true });

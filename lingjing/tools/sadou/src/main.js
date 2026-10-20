@@ -5,9 +5,13 @@ import { W, H } from 'sadou-core';
 import { PlayScene } from './play.js';
 
 /**
- * start({ parent, base, lang, kit, level, seed, reducedMotion, showFps, lines, onEvent, onEnd }) → { destroy(), say(who, text) }
+ * start({ parent, base, lang, kit, level, seed, reducedMotion, showFps, lines, onEvent, onEnd, shell, held })
+ *   → { destroy(), say(who, text), go() }
+ * `held`: draw the road but stand still until `go()` (the shell's lead card is up over it).
  * `base`: the URL of games/sadou/ (art beside it). `lines`: 银月's prefetched lines by moment (台词预取), else the
  * level's own. `onEvent`: the facts out (start · go · gate · clash · boss · low · end). `onEnd({won, stars, stats})`.
+ * `shell` (games/shell.js): the one outer shell — its pause freezes the play (the scene: loop, clock, tweens), and the
+ * canvas shows no result screen of its own.
  */
 export function start(opts) {
   const box = opts.parent.getBoundingClientRect();
@@ -28,10 +32,13 @@ export function start(opts) {
     banner: false,
     disableContextMenu: true,
   });
-  game.scene.add('play', PlayScene, true, { ...opts, zoom });
+  const hold = { on: Boolean(opts.held) }; // read by the scene as it is made; go() lets it run (it may not be made yet)
+  game.scene.add('play', PlayScene, true, { ...opts, zoom, hold });
   if (opts.dev) globalThis.__sadou = game; // the 游戏厅 (dev=1) only: a live check reads fps and the engine from here
   return {
     destroy: () => game.destroy(true),
     say: (who, text) => game.scene.getScene('play')?.sayLine?.(who, text),
+    // `held` was given: the lead-in (the beans, the 3-2-1) starts now; the road already stands drawn behind the lead card
+    go: () => { hold.on = false; game.scene.getScene('play')?.release?.(); },
   };
 }

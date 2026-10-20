@@ -93,13 +93,32 @@ export class PlayScene extends Phaser.Scene {
       this.target = Phaser.Math.Clamp(this.drag.t + ((p.worldX - this.drag.x) / ROAD.half) * 1.3, -1, 1);
     });
     this.input.keyboard?.on('keydown', () => this.sfx.wake());
-    this.events.once('shutdown', () => this.sfx.close());
+    this.events.once('shutdown', () => { this.sfx.close(); this.offShell?.(); this.offShell = null; });
+    // In the one shell (games/shell.js): the shell's bar pauses it and its foot shows the result — nothing twice.
+    if (this.cfg.shell) {
+      this.offShell = this.cfg.shell.onPause?.((on) => this.setPaused(on));
+      // paused before the scene stood up: pause once it runs (Phaser sets RUNNING after create, over a pause inside it)
+      if (this.cfg.shell.paused?.()) this.events.once('create', () => this.setPaused(Boolean(this.cfg.shell.paused?.())));
+    }
+    // `held` (the shell's lead card is up): the road is drawn and stands still behind it; `release()` starts the lead-in.
+    this.held = Boolean(this.cfg.hold?.on);
+    if (!this.held) this.leadIn();
+    this.fact({ t: 'start', level: level.id });
+  }
+
+  leadIn() {
+    const { level } = this.cfg;
     this.hud.lead(level.lead, level.leadSec ?? 4.5, level.countdown ?? 3, {
       onBig: () => this.scatter(),
       onTick: () => this.sfx.tick(),
       go: () => this.go(),
     });
-    this.fact({ t: 'start', level: level.id });
+  }
+
+  release() {
+    if (!this.held) return;
+    this.held = false;
+    this.leadIn();
   }
 
   /** A shared or painted picture that failed to load gets a plain stand-in, so the game still plays. */
@@ -298,6 +317,13 @@ export class PlayScene extends Phaser.Scene {
     }
     const s = this.men[i];
     return { x: s.x, y: s.y - 14 };
+  }
+
+  /** The shell's pause: the whole scene stands still — the loop, the clock (the lead-in's lines and 3-2-1), tweens. */
+  setPaused(on) {
+    if (!this.sys.isActive() && !this.sys.isPaused()) return; // gone already
+    if (on && !this.sys.isPaused()) { this.drag = null; this.scene.pause(); }
+    else if (!on && this.sys.isPaused()) this.scene.resume();
   }
 
   // ---------------------------------------------------------------- the lead-in
@@ -779,7 +805,8 @@ export class PlayScene extends Phaser.Scene {
       this.say('lost', true);
     }
     this.time.delayedCall(e.won ? 1500 : 900, () => {
-      this.hud.result(e.won, e.stars, e.left, () => this.cfg.onEnd?.({ won: e.won, stars: e.stars, stats: { left: e.left, peak: this.g.peak, ...this.g.stats } }));
+      const end = () => this.cfg.onEnd?.({ won: e.won, stars: e.stars, stats: { left: e.left, peak: this.g.peak, ...this.g.stats } });
+      if (this.cfg.shell) end(); else this.hud.result(e.won, e.stars, e.left, end);
     });
   }
 
