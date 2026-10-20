@@ -1,7 +1,7 @@
 // mount.js — the one contract a small game keeps (Hanli, 2026-10-16: each small game is built
 // standalone, then embedded):
 //
-//   mount(container, { data, lang, reducedMotion, seed, level, signal, winHold }) → Promise<{ won, grade?, stars?, left? }>
+//   mount(container, { data, lang, reducedMotion, seed, level, signal, winHold, shell }) → Promise<{ won, grade?, stars?, left? }>
 //
 // A module may declare `meta.keys` — { key: action } — and a key press acts like the tap it names
 // (华容道's WASD, Hanli 2026-10-20: 「点箭头有点远, 可以用wsad触发移动吗」). Keys are e.key,
@@ -16,6 +16,7 @@
 // act · html, and `tick` when it runs in time): it runs the module's clock, its taps (on pointerdown
 // while it runs in time, as live-games.js does), its holds and its strokes — all scoped to the
 // container, so a game on the 游戏厅 page and the same game on the story's stage play alike.
+// `shell` (games/shell.js `shellFor`): while the shell is paused the clock stops and the board takes no hands.
 // Nothing here knows a game.
 import { answered, morph, sceneAt, tapGate, tapInk, tapNope } from '../live-games.js';
 import { crosses, stroke } from './swipe.js';
@@ -34,7 +35,8 @@ export function mountPure(mod) {
   return (container, opts = {}) => run(mod, container, opts);
 }
 
-function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now()), level = 1, signal, winHold = WIN_HOLD } = {}) {
+function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now()), level = 1, signal, winHold = WIN_HOLD, shell } = {}) {
+  const paused = () => Boolean(shell?.paused?.());
   const doc = container.ownerDocument;
   const host = doc.createElement('div');
   host.className = 'game g-mounted';
@@ -68,13 +70,13 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
     const clock = setInterval(() => {
       const now = performance.now(), dt = Math.min(250, now - last);
       last = now;
-      if (!live(mod, g.state) || doc.visibilityState !== 'visible') return;
+      if (!live(mod, g.state) || doc.visibilityState !== 'visible' || paused()) return;
       g.state = mod.tick(g.state, dt);
       paint();
       check();
     }, STEP);
     on(host, 'pointerdown', (e) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || paused()) return;
       const hold = e.target.closest?.('[data-g-hold],[data-g-drag]');
       const tap = e.target.closest?.('[data-g]');
       const el = hold ?? tap;
@@ -93,7 +95,7 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
     });
     on(host, 'click', (e) => {
       const el = e.target.closest?.('[data-g]');
-      if (!el || el.disabled || !host.contains(el)) return;
+      if (!el || el.disabled || !host.contains(el) || paused()) return;
       if (gate.click('m') && e.detail !== 0) return; // already acted on as the finger went down
       apply({ ...el.dataset }, el);
     });
@@ -105,7 +107,7 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       swipe = e.button === 0 ? stroke(e.clientX, e.clientY, e.target.closest?.('[data-g-swipe]') ?? null) : null;
     }, true);
     on(doc, 'pointermove', (e) => {
-      if (!swipe || !(e.buttons & 1) || !live(mod, g.state)) return;
+      if (!swipe || !(e.buttons & 1) || !live(mod, g.state) || paused()) return;
       const el = doc.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-g-swipe]');
       if (crosses(swipe, e.clientX, e.clientY, el && host.contains(el) ? el : null)) apply({ ...el.dataset });
     });
@@ -124,7 +126,7 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
     if (keys) on(doc, 'keydown', (e) => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.('input,textarea,select,[contenteditable]')) return;
       const action = keys[e.key.length === 1 ? e.key.toLowerCase() : e.key];
-      if (!action || !host.isConnected) return;
+      if (!action || !host.isConnected || paused()) return;
       e.preventDefault();
       apply({ ...action });
     });

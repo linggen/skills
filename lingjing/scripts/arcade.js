@@ -6,6 +6,7 @@
 // its board on the stage, the real chat beside it — the same UI and logic as in the story.
 import { esc } from './esc.js';
 import { mountPure } from './games/mount.js';
+import { playAlone, timedOf } from './games/shell.js';
 import { arcadePlayUrl } from './arcade-board.js';
 
 const q = new URLSearchParams(location.search);
@@ -105,36 +106,25 @@ const WIDE = new Set(['投掷']);
 // A tall board (守炉's 600×760) plays as tall as the window lets it.
 const TALL = new Set(['塔防']);
 const playClass = (m) => (WIDE.has(m) ? ' is-wide' : TALL.has(m) ? ' is-tall' : '');
-let stop = null;
 async function playPage(id, n) {
   const reg = await registry();
   const row = reg.games[Number(n)]?.id === id ? reg.games[Number(n)] : reg.games.find((g) => g.id === id) ?? { id };
   const mod = await modOf(id), mount = mountOf(mod);
   // A game the model plays is the real page's (an old link to it lands there).
   if (mod?.meta?.ai) { location.replace(arcadePlayUrl(id)); return; }
+  // The game plays in the one shell (games/shell.js) the story's card wears too: its title, type and how-to in
+  // the bar (beside a tall board on a Mac, so the board gets the height — Hanli 10-20: 「mac上游戏画面可以大一点」),
+  // pause for a game in time, the result and 再来 under it. A row's `lead` is its story lead-in, read first.
   root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${home()}</header>`
-    // a tall board's width/height (row.aspect) sizes it to the window's height on a Mac; its title and
-    // how-to sit beside it there, not above, so the board gets the height (Hanli 10-20: 「mac上游戏画面可以大一点」)
-    + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${playClass(row.mechanic)}"${row.aspect ? ` style="--ar:${Number(row.aspect)}"` : ''}>`
-    + `<div class="arcade-side"><div class="cardtitle">${esc(titleOf(row, mod))}</div>`
-    + `<div class="small dim g-goal">${esc(howOf(mod))}</div></div><div class="arcade-slot" id="slot"></div>`
-    + `<div class="arcade-result" id="result"></div></article></div>`;
-  if (!mount) { document.getElementById('slot').textContent = w().missing; return; }
-  deal(mount, row);
-}
-async function deal(mount, row) {
-  stop?.abort();
-  stop = new AbortController();
-  const slot = document.getElementById('slot'), out = document.getElementById('result');
-  out.innerHTML = '';
+    + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${playClass(row.mechanic)}"${row.aspect ? ` style="--ar:${Number(row.aspect)}"` : ''}></article></div>`;
+  const card = root.querySelector('.arcade-play');
+  if (!mount) { card.textContent = w().missing; return; }
   const reducedMotion = Boolean(matchMedia?.('(prefers-reduced-motion: reduce)').matches);
-  const r = await mount(slot, { lang: lang(), reducedMotion, seed: `arcade|${Date.now()}`, data: row.data ?? {}, signal: stop.signal });
-  if (r.left) return;
-  out.innerHTML = `<span class="arcade-won">${esc(r.won ? w().won : w().left)}</span>`
-    + (r.grade ? `<span class="dim small">${esc(w().grade)} · ${esc(r.grade)}</span>` : '')
-    + (r.stars != null ? `<span>${'★'.repeat(r.stars)}${'☆'.repeat(Math.max(0, 3 - r.stars))}</span>` : '')
-    + `<button type="button" class="g-btn g-btn-soft" id="again">${esc(w().again)}</button>`;
-  document.getElementById('again').onclick = () => deal(mount, row);
+  playAlone(card, mount, {
+    id: `arcade-${id}`, title: titleOf(row, mod), kind: kindOf(row), how: howOf(mod), timed: timedOf(mod), tall: TALL.has(row.mechanic), lang: lang(),
+    leadLine: row.lead?.[lang()] ?? row.lead?.zh ?? '',
+    opts: { reducedMotion, seed: `arcade|${Date.now()}`, data: row.data ?? {} },
+  });
 }
 
 if (devOnly(q)) {

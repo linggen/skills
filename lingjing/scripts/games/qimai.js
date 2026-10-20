@@ -95,6 +95,7 @@ export const T = {
 };
 
 export const meta = {
+  pause: true, // its own loop reads the shell's pause
   id: 'qimai',
   // The story lays it through its own mount (beat-host.js): html() is the first frame, mount() paints
   // the lamp, trail, ring and bead each animation frame — the page's 50 ms html redraw would lose them.
@@ -519,7 +520,8 @@ function ensureCss(doc) {
 }
 
 export async function mount(container, opts = {}) {
-  const { lang = 'zh', seed = String(Date.now()), signal, winHold = 1600, reducedMotion = false } = opts;
+  const { lang = 'zh', seed = String(Date.now()), signal, winHold = 1600, reducedMotion = false, shell } = opts;
+  const paused = () => Boolean(shell?.paused?.()); // the shell's pause (games/shell.js): the bead stands still, no breath taken
   const doc = container.ownerDocument, win = doc.defaultView;
   ensureCss(doc);
   const level = await levelFor(opts);
@@ -633,7 +635,7 @@ export async function mount(container, opts = {}) {
       if (done) return;
       const dt = Math.min(100, now - prev);
       prev = now;
-      if (doc.visibilityState === 'visible') {
+      if (doc.visibilityState === 'visible' && !paused()) {
         s = tick(s, dt);
         // a finger (or Space) still down through a 岔气 breathes in again once the bead goes on
         if ((keyDown || pointerDown) && !s.holding && s.phase === 'play') { act(s, { g: 'hold' }); pulse('in'); }
@@ -643,7 +645,7 @@ export async function mount(container, opts = {}) {
       raf = win.requestAnimationFrame(frame);
     };
     on(board, 'pointerdown', (e) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || paused()) return;
       e.preventDefault();
       pointerDown = true;
       try { board.setPointerCapture(e.pointerId); } catch { /* the document still hears it */ }
@@ -659,7 +661,7 @@ export async function mount(container, opts = {}) {
     });
     const typing = (e) => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName ?? '') || e.target?.isContentEditable;
     on(doc, 'keydown', (e) => {
-      if (e.code !== 'Space' || typing(e) || !host.isConnected) return;
+      if (e.code !== 'Space' || typing(e) || !host.isConnected || paused()) return;
       e.preventDefault();
       if (e.repeat || keyDown) return;
       keyDown = true;

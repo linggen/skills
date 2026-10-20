@@ -145,6 +145,7 @@ import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogu
 import { TURNED_MS, turnedPays } from './turned.js';
 import { AI_WORDS, caseCard, duizi, haggle, twenty } from './aigames-cards.js';
 import { mountHostHtml, mountOnly } from './beat-host.js';
+import { frameHtml, timedOf } from './games/shell.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -518,15 +519,20 @@ function board(card, ctx) {
     : kept ? `<div class="small kept">${esc(ctx.words.keptWin)}</div>`
     : shut ? `<div class="small dim">${esc(ctx.words.emptyNoPlay)}</div>${isShut(ctx.look, 'seclusion') ? '' : `<div class="acts"><button class="act" data-seclude-open>${esc(ctx.words.secludeOpen)}</button></div>`}`
     : made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
-    : g?.mod ? `<div class="small dim g-goal">${esc(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? '')}</div>${mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>`}`
+    : g?.mod ? null
       : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
   const title = task?.game ? task.title : ctx.words.play;
+  // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
+  // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever.
+  const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod),
+    how: task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? '',
+    body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` }) : null;
   const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;
   // A scene's own game (the opening's beats, 射鹿 …) is played, not asked about: no 问询 in its corner.
   const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
   // A board offered again (Look's replay, rules/skips.mjs) may be left again, by the same gate.
   const skip = (own || task?.replay) && !today && !made && !shut ? skipBoard(g, id, ctx) : '';
-  return `<div class="card gamecard${own ? ' scenegame' : ''}"><div class="cardtitle">${esc(title)}</div>${body}${skip}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
+  return `<div class="card gamecard${own ? ' scenegame' : ''}">${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.

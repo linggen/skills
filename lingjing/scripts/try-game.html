@@ -12,13 +12,12 @@
   <link rel="stylesheet" href="games/wuziqi.css" />
   <link rel="stylesheet" href="games/xiangqi.css" />
   <link rel="stylesheet" href="games/live.css" />
+  <link rel="stylesheet" href="games/shell.css" />
   <style>
     body { overflow: auto; padding: 16px; }
     .try { max-width: 440px; margin: 0 auto; }
-    .try h1 { font-family: var(--serif); font-size: 18px; margin: 0 0 4px; }
     .try nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 14px; font-size: 13px; }
     .try nav a { color: var(--ling); }
-    .try .won { margin-top: 12px; color: var(--seal); font-size: 14px; text-align: center; min-height: 1.5em; }
   </style>
 </head>
 <body>
@@ -29,6 +28,7 @@
   <div class="try" id="try"></div>
   <script type="module">
     import { mountPure } from './games/mount.js';
+    import { playAlone, timedOf } from './games/shell.js';
     const q = new URLSearchParams(location.search);
     const root = document.getElementById('try');
     if (q.get('dev') !== '1') root.textContent = '—';
@@ -37,15 +37,16 @@
       const lang = q.get('lang') === 'en' ? 'en' : 'zh';
       const mod = await import(`./games/${id}.js`);
       const mount = mod.mount ?? mountPure(mod);
-      root.innerHTML = `<h1></h1><div class="small dim" id="how"></div><nav><a href="arcade.html?dev=1${lang === 'en' ? '&lang=en' : ''}">游戏厅</a>`
-        + `<a href="?dev=1&game=${id}&lang=${lang === 'en' ? 'zh' : 'en'}">${lang === 'en' ? '中' : 'En'}</a><a href="?dev=1&game=${id}&lang=${lang}">↺</a></nav><div id="slot"></div><div class="won" id="won"></div>`;
-      root.querySelector('h1').textContent = mod.meta?.name?.[lang] ?? id;
-      document.getElementById('how').textContent = mod.meta?.how?.[lang] ?? '';
+      root.innerHTML = `<nav><a href="arcade.html?dev=1${lang === 'en' ? '&lang=en' : ''}">游戏厅</a>`
+        + `<a href="?dev=1&game=${id}&lang=${lang === 'en' ? 'zh' : 'en'}">${lang === 'en' ? '中' : 'En'}</a><a href="?dev=1&game=${id}&lang=${lang}">↺</a></nav><div id="play"></div>`;
       // &data=<json>: the deal a story or daily board would hand it (a 饭桶 tool day: {"els":[…],"must":"spring"}) — tools/play-human.mjs.
       let data;
       try { data = q.get('data') ? JSON.parse(q.get('data')) : undefined; } catch { data = undefined; }
-      const r = await mount(document.getElementById('slot'), { lang, data, seed: q.get('seed') || String(Date.now()), level: Number(q.get('level') || 1) });
-      document.getElementById('won').textContent = `${r.won ? (lang === 'en' ? 'Won' : '成') : '—'}${r.grade ? ` · ${r.grade}` : ''}`;
+      // The one shell every small game wears (games/shell.js): title and how-to in its bar, the result and 再来 under it.
+      playAlone(document.getElementById('play'), mount, {
+        id: `try-${id}`, title: mod.meta?.name?.[lang] ?? id, how: mod.meta?.how?.[lang] ?? '', timed: timedOf(mod), lang,
+        opts: { data, seed: q.get('seed') || String(Date.now()), level: Number(q.get('level') || 1) },
+      });
     }
   </script>
 </body>

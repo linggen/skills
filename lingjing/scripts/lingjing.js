@@ -64,6 +64,7 @@ import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, li
 import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost, mountOnly } from './beat-host.js';
+import { anyPaused, forget as forgetShell, wireShell } from './games/shell.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
@@ -3417,12 +3418,15 @@ const CLICKS = [
 ];
 // A game that runs in time (a module with `tick`: 暴雨, 射鹿, 洗髓, 小周天) is
 // stepped and held here; its win goes the way a tapped win does.
-wireLiveGames({ boardFor, lang, paused: () => view.logOpen, onWon: (g) => { g.sent = true; openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
+// The shell's pause (games/shell.js) stops a board's clock and hands as 回看 does; its buttons are heard once, here.
+wireShell(document);
+wireLiveGames({ boardFor, lang, paused: () => view.logOpen || anyPaused(), onWon: (g) => { g.sent = true; forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 /* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
 function beatSettled(g, result) {
   if (!result?.won || g.sent || g.skipped) return;
   g.state = { ...g.state, won: true, grade: result.grade ?? null, stars: result.stars ?? null };
   g.sent = true;
+  forgetShell(g.taskId);
   openStuckSlots();
   run(`win:${g.taskId}`, () => onWin(g.taskId));
 }

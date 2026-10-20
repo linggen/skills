@@ -1,0 +1,49 @@
+/* shell.css — the small games' one outer shell (games/shell.js): the bar, the how-to line, the stage with its
+   layer (pause veil, lead card, speech bubble) and the result line. The same on the story's card, the 游戏厅
+   and the try page. Phone first; on a Mac a tall board puts the bar in a column beside the stage. */
+.gshell { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.gshell-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.gshell-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; flex: 1; }
+.gshell-title { font-family: var(--serif); font-size: 16px; font-weight: 600; letter-spacing: .12em; color: var(--text); }
+.gshell-kind { flex: none; font-style: normal; font-size: 11px; line-height: 1.5; padding: 0 6px; border: 1px solid var(--line);
+  border-radius: 999px; color: var(--seal); white-space: nowrap; }
+.gshell-tools { display: flex; gap: 6px; margin-left: auto; }
+.gshell-how { flex-basis: 100%; margin: 0; font-size: 13px; line-height: 1.55; color: var(--dim); }
+.gshell-btn { font: inherit; font-size: 13px; min-width: 32px; min-height: 32px; padding: 4px 12px; border: 1px solid var(--line);
+  border-radius: 999px; background: var(--surface); color: var(--text); cursor: pointer; }
+.gshell-btn:hover { border-color: var(--ling); }
+.gshell-btn.is-main { border-color: var(--seal); background: var(--seal); color: #fff; }
+.gshell-pause { padding: 4px 0; width: 32px; font-size: 12px; }
+
+.gshell-stage { position: relative; }
+.gshell-layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.gshell-layer > * { pointer-events: auto; }
+.gshell-veil { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding: 24px; text-align: center; border-radius: 12px; background: color-mix(in srgb, var(--ground) 82%, transparent);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+.gshell-veil b { font-family: var(--serif); font-size: 20px; letter-spacing: .2em; color: var(--text); }
+.gshell-lead p { margin: 0; max-width: 28em; font-family: var(--serif); font-size: 16px; line-height: 1.7; color: var(--text); }
+.gshell-count { font-size: 44px !important; color: var(--seal) !important; animation: gshell-count .8s ease-out; }
+@keyframes gshell-count { from { transform: scale(1.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.gshell-bubble { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); max-width: min(86%, 26em); padding: 8px 14px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); font-size: 14px; line-height: 1.5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .12); pointer-events: none; animation: gshell-in .25s ease-out; }
+.gshell-bubble[data-who]::before { content: attr(data-who) '：'; color: var(--seal); }
+@keyframes gshell-in { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+.gshell-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
+.gshell-foot:empty { display: none; }
+.gshell-won { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--seal); }
+.gshell-won.is-lost { color: var(--dim); }
+.gshell-stars { color: var(--seal); letter-spacing: .1em; }
+.gshell-grade { color: var(--dim); font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) { .gshell-count, .gshell-bubble { animation: none; } }
+
+/* A Mac window: a tall board takes the window's height, the bar and the result in a column beside it. */
+@media (min-width: 900px) {
+  .gshell.is-tall { display: grid; grid-template-columns: 200px auto; grid-template-rows: auto 1fr; column-gap: 18px; }
+  .gshell.is-tall .gshell-bar { grid-column: 1; grid-row: 1; align-self: start; padding-top: 6px; }
+  .gshell.is-tall .gshell-stage { grid-column: 2; grid-row: 1 / span 2; }
+  .gshell.is-tall .gshell-foot { grid-column: 1; grid-row: 2; flex-direction: column; align-items: flex-start; align-self: end; }
+}
