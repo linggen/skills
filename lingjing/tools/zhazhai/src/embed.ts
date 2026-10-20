@@ -11,7 +11,7 @@ import { bootstrapServices, getServiceContainer, ServiceTokens } from "./config/
 import { WORLD_CONFIG } from "./config/PhysicsConfig";
 import { MobileManager } from "./systems/mobile";
 import type { IMobileSettingsProvider } from "./interfaces/IMobileSettings";
-import { Runtime, type Lang, type LevelResult } from "./zhazhai/runtime";
+import { Runtime, type Lang, type LevelResult, type ShellHands } from "./zhazhai/runtime";
 import { LEVELS, LEVEL_WORDS, levelIdOf } from "./data/levels";
 import { botHandle } from "./zhazhai/bot";
 import { gameEvents } from "./events/EventBus";
@@ -32,9 +32,13 @@ export interface StartOptions {
   onLeave?: () => void;
   /** 砸寨: reduced motion (default: the system's prefers-reduced-motion). */
   reducedMotion?: boolean;
+  /** The page's one shell (scripts/games/shell.js): its pause drives the play; no pause, title or result screen in the canvas. */
+  shell?: ShellHands | null;
+  /** In the shell: the line the level asked for opens with, on the shell's lead card over its field standing still. */
+  lead?: string;
 }
 
-export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave, reducedMotion }: StartOptions): Phaser.Game {
+export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave, reducedMotion, shell, lead }: StartOptions): Phaser.Game {
   // One game a page at a time, but the event bus is module-wide: a game taken down (the arcade's 再来) must not
   // leave its scenes listening, or the next game's first event reaches a dead HUD.
   gameEvents.removeAllListeners();
@@ -43,6 +47,8 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave,
   Runtime.onResult = onResult ?? (() => {});
   Runtime.onLeave = onLeave ?? (() => {});
   Runtime.reducedMotion = reducedMotion ?? Boolean(globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
+  Runtime.shell = shell ?? null;
+  Runtime.leadLine = shell ? (lead ?? "") : "";
   if (!booted) {
     bootstrapServices();
     const mobileSettings = getServiceContainer().resolve<IMobileSettingsProvider>(ServiceTokens.MOBILE_SETTINGS);

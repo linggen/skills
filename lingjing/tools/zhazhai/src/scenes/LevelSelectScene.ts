@@ -1,3 +1,4 @@
+import { Runtime } from "../zhazhai/runtime";
 import { tr } from "../zhazhai/i18n";
 import { BaseScene } from "./BaseScene";
 import { GameScene } from "./GameScene";
@@ -26,7 +27,7 @@ export class LevelSelectScene extends BaseScene {
     this.initLevelData();
     this.showBackground();
     this.showTitle();
-    this.createBackButton();
+    if (!Runtime.shell) this.createBackButton(); // in the shell the fort select is the start: no title screen behind it
     this.createLevelGrid();
     this.playEntryAnimation();
   }

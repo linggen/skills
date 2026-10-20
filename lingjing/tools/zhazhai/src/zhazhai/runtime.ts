@@ -12,6 +12,13 @@ export interface LevelResult {
   score: number;
 }
 
+/** The one outer shell the page's small games wear (scripts/games/shell.js `shellFor`): its pause, its lead card. */
+export interface ShellHands {
+  paused(): boolean;
+  onPause(fn: (on: boolean) => void): () => void;
+  lead(text: string, o?: { count?: boolean; auto?: number; reducedMotion?: boolean }): Promise<void>;
+}
+
 export const Runtime = {
   lang: "zh" as Lang,
   /** Open straight into this level (skip the title and the level select). */
@@ -22,6 +29,12 @@ export const Runtime = {
   embedded: true,
   /** Reduced motion (the mount's, else the system's): a thing from the basket is simply in the pouch. */
   reducedMotion: false,
+  /** In the shell: its bar pauses the play and the page shows the result, so the canvas keeps no pause button,
+      pause menu, result screen or title screen of its own (Hanli 10-20: 「确保所有小游戏一套外壳」). Null: as ever. */
+  shell: null as ShellHands | null,
+  /** In the shell: the line the next level opens with on the shell's lead card — the field drawn behind it, standing
+      still till it is read (Hanli 10-20: 「开场卡后面先画出画面」). Taken by the GameScene that shows it. */
+  leadLine: "",
 };
 
 /** localStorage, namespaced: the lingjing page shares this origin. */

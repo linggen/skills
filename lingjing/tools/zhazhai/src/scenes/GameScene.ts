@@ -50,6 +50,7 @@ import { placeBackdrop, placeDecor, shadePlace, tintGround } from "../zhazhai/pr
 import type { TransitionScene } from "./TransitionScene";
 import type { Slingshot } from "../objects/Slingshot";
 import { ComboTracker } from "../systems/ComboTracker";
+import { Runtime } from "../zhazhai/runtime";
 import {
   initializeFastBodyCollisionDetector,
   destroyFastBodyCollisionDetector,
@@ -245,8 +246,58 @@ export class GameScene extends Phaser.Scene {
       if (ts?.scene?.isActive?.()) {
         ts.requestReveal();
       }
+      this.leadInShell();
     });
     this.pendingTimers.push(revealTimer);
+    this.hearShell();
+  }
+
+  // ==================== THE SHELL (scripts/games/shell.js) ====================
+  // 砸寨 in the one shell every small game wears (Hanli 10-20: 「确保所有小游戏一套外壳」): the shell's bar pauses the
+  // play — the whole scene stands still (Matter's step, the clock, the tweens, the camera, the input) and the sound
+  // with it; its lead card reads over the field, drawn and standing still behind it (「开场卡后面先画出画面」).
+
+  private offShell: (() => void) | null = null;
+  private heldForLead = false;
+
+  private hearShell(): void {
+    const shell = Runtime.shell;
+    this.heldForLead = false;
+    if (!shell) return;
+    this.offShell = shell.onPause(() => this.holdOrRun());
+    const off = () => {
+      this.offShell?.();
+      this.offShell = null;
+    };
+    this.events.once("shutdown", off);
+    this.events.once("destroy", off);
+  }
+
+  /** The level's line on the shell's lead card (taken once): the field stands still till it is read. */
+  private leadInShell(): void {
+    const shell = Runtime.shell, line = Runtime.leadLine;
+    if (!shell) return;
+    if (!line) return this.holdOrRun(); // a pause given before the play was drawn
+    Runtime.leadLine = "";
+    this.heldForLead = true;
+    this.holdOrRun();
+    void shell.lead(line, { auto: Runtime.reducedMotion ? 2400 : 4200 }).then(() => {
+      this.heldForLead = false;
+      this.holdOrRun();
+    });
+  }
+
+  private holdOrRun(): void {
+    const sys = this.sys;
+    if (!sys?.settings || !this.game?.isRunning) return;
+    const still = this.heldForLead || Boolean(Runtime.shell?.paused());
+    if (still && sys.isActive()) {
+      sys.pause();
+      this.sound.pauseAll();
+    } else if (!still && sys.isPaused()) {
+      sys.resume();
+      this.sound.resumeAll();
+    }
   }
 
   private configureMatterPhysics(): void {
@@ -577,6 +628,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private togglePause(): void {
+    if (Runtime.shell) return; // the shell's bar pauses (its store holds the pause; a key here cannot reach it)
     if (this.gameStateManager.isGameOver()) return;
 
     this.gameStateManager.togglePause();

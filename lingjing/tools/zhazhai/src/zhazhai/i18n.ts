@@ -20,6 +20,7 @@ const WORDS: Record<string, { zh: string; en: string }> = {
   MENU: { zh: "回 首 页", en: "MENU" },
   "LEVEL COMPLETE!": { zh: "寨子塌了！", en: "FORT DOWN!" },
   "LEVEL FAILED": { zh: "还 没 砸 塌", en: "STILL STANDING" },
+  "Still standing. Once more.": { zh: "还没砸塌。再来一回。", en: "Still standing. Once more." },
   TOTAL: { zh: "总 分", en: "TOTAL" },
   DESTRUCTION: { zh: "砸 毁", en: "WRECKAGE" },
   BONUSES: { zh: "奖 励", en: "BONUSES" },

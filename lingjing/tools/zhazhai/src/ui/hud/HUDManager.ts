@@ -1,3 +1,4 @@
+import { Runtime } from "../../zhazhai/runtime";
 import Phaser from "phaser";
 import { DesignTokens as T } from "../../config/DesignTokens";
 import { UI_COMPONENTS_CONFIG } from "../../config/UIComponentsConfig";
@@ -15,7 +16,7 @@ export interface HUDConfig {
 export class HUDManager {
   private scene: Phaser.Scene;
   private scorePanel!: ScorePanel;
-  private pauseButton!: Button;
+  private pauseButton?: Button;
   private helpButton!: Button;
   private subscriptions: SubscriptionGroup;
 
@@ -25,7 +26,8 @@ export class HUDManager {
 
     this.createScorePanel(config);
     this.createHelpButton();
-    this.createPauseButton();
+    if (!Runtime.shell) this.createPauseButton(); // in the shell its bar pauses
+
     this.setupEventListeners();
   }
 
@@ -105,6 +107,6 @@ export class HUDManager {
 
     this.scorePanel.destroy();
     this.helpButton.destroy();
-    this.pauseButton.destroy();
+    this.pauseButton?.destroy();
   }
 }

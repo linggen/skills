@@ -12,6 +12,12 @@
 // the grade the task's marks read (`data.grades`: stars → grade). Without one: the game's own title screen and fort
 // select, and the game owns 再来 / 下一寨 (it settles only when the player leaves it). Its progress and settings live
 // in this browser's localStorage under `lingjing.zhazhai*` — never the save.
+//
+// In the one shell (games/shell.js, `shell`; Hanli 10-20: 「确保所有小游戏一套外壳」): the shell's bar pauses the play,
+// a level asked for opens with its line on the shell's lead card over its field standing still, and a won level
+// settles to the shell (its foot shows the stars and 再来 off the story; the pay in it). The canvas keeps the play —
+// the slingshot, the basket, the score — and no pause button, pause menu, title screen or result screen; a lost
+// level is dealt again in place under the lead card. Without a level asked for, the fort select is the start.
 export const meta = {
   id: 'zhazhai',
   name: { zh: '砸寨', en: 'Smash the Fort' },
@@ -19,6 +25,7 @@ export const meta = {
     zh: '往后拉弹弓，松手，砸塌黄鼠狼精的寨子；飞行中点一下，各有一手。',
     en: 'Pull the slingshot back and let go: bring the weasel fort down. Tap in flight for each thing’s trick.',
   },
+  pause: true, // the shell's bar pauses the play (tools/zhazhai/src/scenes/GameScene.ts holdOrRun)
   // Its bot plays the built bundle in headless Chromium (tests/board-bots.test.mjs takes it for the module's bot).
   bot: 'tools/zhazhai/bot.mjs',
 };
@@ -38,7 +45,13 @@ export function gradeOf(grades, stars) {
   return typeof g === 'string' ? g : undefined;
 }
 
-export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion } = {}) {
+/** The line a level opens with on the shell's lead card: its own words, the book's moment (`description`). */
+export function leadOf(levels, level, lang) {
+  const row = (levels ?? []).find((l) => l.id === level || (l.key && l.key === level));
+  return row?.words?.[lang]?.description ?? row?.words?.zh?.description ?? '';
+}
+
+export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion, shell } = {}) {
   const doc = container.ownerDocument;
   const box = doc.createElement('div');
   box.className = 'zhazhai-stage';
@@ -59,17 +72,21 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
-    import('./zhazhai/zhazhai.min.mjs').then(({ start }) => {
+    import('./zhazhai/zhazhai.min.mjs').then(({ start, levels }) => {
       if (done) return;
+      const tongue = lang === 'en' ? 'en' : 'zh';
       game = start({
         parent: box,
         base: new URL('./zhazhai/', import.meta.url).href,
-        lang: lang === 'en' ? 'en' : 'zh',
+        lang: tongue,
         level,
         reducedMotion, // undefined: the game reads the system's setting itself
-        // Asked for one level: it settles when that level is won (the game's own results stay up over it).
+        shell: shell ?? null,
+        lead: shell && level ? leadOf(levels(), level, tongue) : '',
+        // Asked for one level: it settles when that level is won (the game's own results stay up over it, or, in the
+        // shell, the shell's). In the shell the fort select's forts settle too, each when won.
         onResult: (r) => {
-          if (!level || !r.won || (r.level !== level && r.key !== level)) return;
+          if (!r.won || (level ? r.level !== level && r.key !== level : !shell)) return;
           const grade = gradeOf(data.grades, r.stars);
           finish({ won: true, stars: r.stars, ...(grade ? { grade } : {}) });
         },

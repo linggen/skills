@@ -1,4 +1,5 @@
 import { Runtime } from "../zhazhai/runtime";
+import { tr } from "../zhazhai/i18n";
 import { BaseScene } from "./BaseScene";
 import { BirdType } from "../types/BirdType";
 import { LEVELS } from "../data/levels";
@@ -215,6 +216,15 @@ export class UIScene extends BaseScene {
     const nextLevel = LEVELS.find((l) => l.levelId > data.level && Boolean(l.key) === Boolean(levelData.key))?.levelId ?? data.level;
 
     Runtime.onResult({ level: data.level, key: levelData.key ?? null, won: data.won, stars: data.stars, score: data.score });
+    // In the shell the page shows the result (its foot off the story; the pay in it): no result screen here. A lost
+    // level is dealt again in place — the shell's lead card says so over the fresh field.
+    if (Runtime.shell) {
+      if (!data.won) {
+        Runtime.leadLine = tr("Still standing. Once more.");
+        this.transitionToGameScene(data.level);
+      }
+      return;
+    }
     const dialog = new ResultsDialog(this, {
       level: data.level,
       levelName: levelData.name,

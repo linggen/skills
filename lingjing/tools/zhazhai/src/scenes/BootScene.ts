@@ -186,8 +186,9 @@ export class BootScene extends Phaser.Scene {
 
     this.cameras.main.fadeOut(C.fadeOutDuration, 0, 0, 0);
     this.time.delayedCall(C.fadeOutDuration, () => {
+      // In the shell, without a level asked for: the fort select (the shell's bar is the title).
       if (Runtime.directLevel) this.scene.start("GameScene", { level: Runtime.directLevel });
-      else this.scene.start("MenuScene");
+      else this.scene.start(Runtime.shell ? "LevelSelectScene" : "MenuScene");
     });
   }
 
