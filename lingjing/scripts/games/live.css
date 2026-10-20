@@ -120,6 +120,7 @@
 /* 喂饼 · 割绳子 (2026-10-16): the cave in ink, vines as brush strokes; a stroke across a vine cuts it,
    so the board takes the finger (touch-action) — the page scrolls from outside it. */
 .g-bread .g-scene.g-bread-cave { width: min(100%, calc(min(62vh, 500px) * 360 / 440)); margin: 0 auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+.g-bread-cave .g-cave-art { opacity: .5; }
 .g-bread-cave .g-cave-roof { opacity: .16; }
 .g-bread-cave .g-cave-floor { opacity: .08; }
 .g-bread-cave .g-cave-line { fill: none; stroke: currentColor; stroke-width: 1.3; opacity: .45; }

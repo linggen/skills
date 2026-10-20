@@ -161,9 +161,11 @@ function starsPicture(s) {
   }).join('');
 }
 const flecks = (s) => (calmOf(s) ? '' : (s.swing.cuts ?? []).map((c) => splash(c.x, c.y, (s.swing.clock - c.at) * (700 / FLECK_MS), { r: 7 })).join(''));
+// The cave behind every rope board that brings no backdrop of its own: painted (tools/paint-boards-flux.py,
+// Hanli 10-20: 「代码画的都查一下, 用flux画吧」), washed light so the vines and the ink in front still read.
+const CAVE = new URL('./boards/cave.webp', import.meta.url).href;
 export function ground() {
-  return `<path class="g-cave-roof" d="M0 0 H${W} V18 C${W - 60} 26 ${W - 120} 14 ${W / 2} 22 C120 30 60 16 0 24Z"/>`
-    + `<path class="g-cave-floor" d="M0 ${FLOOR} C90 ${FLOOR - 3} 200 ${FLOOR + 3} ${W} ${FLOOR - 1} V${H} H0Z"/>`
+  return `<image class="g-cave-art" href="${CAVE}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
     + `<path class="g-cave-line" d="M0 ${FLOOR} C90 ${FLOOR - 3} 200 ${FLOOR + 3} ${W} ${FLOOR - 1}"/>`;
 }
 function teachMark(s) {
