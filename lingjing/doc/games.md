@@ -284,13 +284,26 @@ Measured by rhythm.mjs (cap 1,500), origin/main `4104f3ba` → after; 卷一's s
 | 00-yinyue{景=tengyun} → 00-deer | 1,721 | 264 · 1,457 | 认路 at 00-yinyue |
 | 00-deer → j01-retest | 12,867 | 1,206 · 11,661 | 算账 at 00-rent; the rest (马三 takes the bow, 鼎湖, 洗髓, 半年 2,190, 舅舅, 开山门, 今一's track 2,127 and lab 2,622) is still the longest read before 入门 |
 
-**The 割绳子 ladder in story order** (each level against the one before; share = of every order a person might try —
-the cuts in any order, the puff and the pop anywhere — what wins with a ~200 ms hand on the real module; rough):
-忍字 (1 string, puff, 弹竹: 1 of 3 wins — the puff first) → 拽 (2 ropes + strap, the last cut timed; casual median
-31 s, 1–4 misses) → 喂饼 (four levels, one vine → two → slab → 洞口风) → 认路 (2 vines, 灵气泡, puff: 15 of 38 —
-vine 0 before 1, the pop after; 3★ on 3) → 算账 (2 vines, slab, puff, the crow at 4.4 s: 3 of 8, 3★ on 2, and the
-clock). 忍字 now comes first of all — before 拽, which was the first 割绳子 a player met — and 喂饼 sits under 拽
-as it already did (Hanli asked 拽 harder). From 喂饼 on it rises. After 入门, 喂息珠 (wm-luobo) is next.
+**The 割绳子 ladder in story order, re-laid 10-20 after the live hand.** The first pass put the 10-16 levels back as they
+were, and play-human's casual hand at 390 found it upside down: 忍字 (now the first 割绳子 a player meets) lost 0/2 in 90 s,
+because its 10-19 level fed only on a cut within 0.4 s of the puff, a reflex. 算账 (the last) was won 2/2 in 5–12 s.
+`52e04c40` re-laid both. **忍字**: cut it, the 桂花糕 rests on a slab, puff it off, it bounces off the 弹竹 into the dog.
+A plain cut still misses (Hanli 10-19: 「道具的风用不上」), and the puff works any time after it rests (★3, one arc); the
+teach line names the puff. **算账**: the crow 4,388 → 2,400 ms. The safe way is the crow's vine first, the meat
+rests on the slab, then the puff (★2); ★3 only by racing the crow, cutting the other vine first and the crow's vine
+1.2–2.3 s later. Live, casual hand, 390, 3 seeds (the installed build, scratch saves):
+
+| in story order | level | won | time | ★ |
+|---|---|---|---|---|
+| 1 · 00-masan | 忍字 (1 string, slab, puff, 弹竹) | 3/3 | 9 · 10 · 29 s | 3 · 3 · 3 |
+| 2 · 00-fall | 拽 (timed last cut; 10-19 sims) | casual 20/20 | median 31 s | about half ★3 |
+| 3 · 00-cave | 喂饼 (four levels) | — | — | — |
+| 4 · 00-yinyue | 认路 (2 vines, 灵气泡, puff) | 3/3 | 25 · 36 · 44 s | 3 · 2 · 2 |
+| 5 · 00-rent | 算账 (2 vines, crow 2.4 s, slab, puff) | 3/3 | 5 · 7 · 12 s | 2 · 2 · 2 |
+
+忍字 → 认路 rises. **算账 does not, for the win:** one low swipe cuts both vines at once, the meat lands on the slab and
+one puff finishes it, and no slab width tried stopped that. Its ★3, the race with the crow, is the hardest move before
+入门, but the hand never earned it. Making the win itself harder needs a new layout (his call, taste note).
 
 ## The weak-board sweep (10-19, the standing rule)
 
