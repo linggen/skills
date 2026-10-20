@@ -52,3 +52,8 @@ Fetched with `npm pack phaser@3.90.0` on 2026-10-20.
 | `games/shouqiang/font/zcool-kuaile.woff2` | ZCOOL KuaiLe 站酷快乐体 (google/fonts `ofl/zcoolkuaile/ZCOOLKuaiLe-Regular.ttf`, kept whole in `tools/shouqiang/font/`), cut to the game's characters by `tools/shouqiang/font.py` | SIL OFL 1.1 — `OFL.txt` beside it | 812a6fc1fe54b6d73a419245c32dfeba8aa33104d5be90d1cf6af082007cb71d |
 
 Fetched from github.com/google/fonts (main) on 2026-10-20.
+
+## 撒豆成兵's font (games/sadou/font/)
+
+The same ZCOOL KuaiLe 站酷快乐体 (SIL OFL 1.1, `OFL.txt` beside it), cut from 守墙关's whole copy in `tools/shouqiang/font/`
+to this game's characters by `tools/sadou/font.py` — no second copy of the source font.

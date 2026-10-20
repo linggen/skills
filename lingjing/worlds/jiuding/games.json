@@ -1892,6 +1892,13 @@
    ]
   },
   {
+   "id": "sadou",
+   "group": "main",
+   "mechanic": "塔防",
+   "stars": 3,
+   "_about": "撒豆成兵 — the crowd run, a 塔防-family level type, a prototype (Hanli 10-20: 「对, 做一个撒豆成兵的关卡」; the genre: crowd + math gates, Count Masters / Mob Control; the bar: 《向僵尸开炮》). Portrait, one hand: drag left/right (A/D, ←/→) steers 小满's bean soldiers up the 山道 through 符门 gates (+ × good, − ÷ traps), past hazards and bean pickups, through the 兽潮 hordes (crowds cancel out) to 合窳; stars by soldiers left. The lead-in and countdown start it by themselves. The engine: games/sadou/core.js; the play: games/sadou/sadou.min.mjs (Phaser, tools/sadou/); the level: worlds/jiuding/levels/sadou.json."
+  },
+  {
    "id": "shouqiang",
    "group": "main",
    "mechanic": "塔防",

@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "type": "module",
+  "_about": "撒豆成兵 (the crowd run) — the play, bundled by esbuild with Phaser marked external: the bundle loads the one shared Phaser (scripts/vendor/phaser.min.mjs) and the engine beside it (scripts/games/sadou/core.js). Dev build only: `npm ci && npm run build`. node_modules is never committed.",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

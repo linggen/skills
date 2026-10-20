@@ -1,0 +1,172 @@
+{
+ "frames": {
+  "spikes": {
+   "frame": {
+    "x": 2,
+    "y": 2,
+    "w": 300,
+    "h": 235
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 300,
+    "h": 235
+   },
+   "sourceSize": {
+    "w": 300,
+    "h": 235
+   }
+  },
+  "pine": {
+   "frame": {
+    "x": 304,
+    "y": 2,
+    "w": 189,
+    "h": 220
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 189,
+    "h": 220
+   },
+   "sourceSize": {
+    "w": 189,
+    "h": 220
+   }
+  },
+  "log": {
+   "frame": {
+    "x": 495,
+    "y": 2,
+    "w": 300,
+    "h": 166
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 300,
+    "h": 166
+   },
+   "sourceSize": {
+    "w": 300,
+    "h": 166
+   }
+  },
+  "lantern": {
+   "frame": {
+    "x": 797,
+    "y": 2,
+    "w": 95,
+    "h": 140
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 95,
+    "h": 140
+   },
+   "sourceSize": {
+    "w": 95,
+    "h": 140
+   }
+  },
+  "rock": {
+   "frame": {
+    "x": 2,
+    "y": 239,
+    "w": 160,
+    "h": 131
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 131
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 131
+   }
+  },
+  "soldier-1": {
+   "frame": {
+    "x": 164,
+    "y": 239,
+    "w": 79,
+    "h": 96
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 79,
+    "h": 96
+   },
+   "sourceSize": {
+    "w": 79,
+    "h": 96
+   }
+  },
+  "soldier-2": {
+   "frame": {
+    "x": 245,
+    "y": 239,
+    "w": 79,
+    "h": 96
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 79,
+    "h": 96
+   },
+   "sourceSize": {
+    "w": 79,
+    "h": 96
+   }
+  },
+  "bean": {
+   "frame": {
+    "x": 326,
+    "y": 239,
+    "w": 40,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 40,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 40,
+    "h": 48
+   }
+  }
+ },
+ "meta": {
+  "image": "units.webp",
+  "size": {
+   "w": 1024,
+   "h": 512
+  },
+  "scale": "1"
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "_about": "撒豆成兵 — the crowd run, a 塔防-family level type, a prototype (Hanli 10-20: 「对, 做一个撒豆成兵的关卡」; the genre: crowd + math gates, Count Masters / Mob Control; the art bar: 《向僵尸开炮》). 小满 scatters beans that become a squad of bean soldiers; they charge up the 山道 through 符门 gates (+ × good, − ÷ traps), past hazards and bean pickups, crash into the 兽潮 hordes (crowds cancel out) and end at 合窳. Drag left/right (A/D, ←/→ on Mac) steers. The engine: scripts/games/sadou/core.js (pure, headless, bots); the play: scripts/games/sadou/sadou.min.mjs (Phaser, built from tools/sadou/). Distances (`at`, `len`) are px along the road at `speed` px/s; lateral `x` is −1 (the road's left edge) … 1 (its right).",
+ "beasts": {
+  "_about": "power: how many soldiers one beast is worth in a clash. size: the drawn height px. frames: 守墙关's painted frames, shared (scripts/games/shouqiang/art/<id>-<frame>.webp); `run` alternates the walk frames, `hit` flashes on a loss.",
+  "yezhu": {"power": 2, "size": 66, "frames": ["walk-1"], "hit": "hit"},
+  "zheng": {"power": 3, "size": 60, "frames": ["walk-1", "walk-2"], "hit": "hit"},
+  "qiuyu": {"power": 2, "size": 58, "frames": ["walk-1", "walk-2"], "hit": "hit"},
+  "qique": {"power": 1, "size": 58, "frames": ["walk-1", "walk-2"], "hit": "hit", "fly": true},
+  "heyu": {"power": 1, "size": 300, "frames": ["walk-1"], "hit": "hit"}
+ },
+ "levels": [
+  {
+   "id": "shandao",
+   "kit": "sadou",
+   "story": null,
+   "title": {"zh": "撒豆成兵 · 山道", "en": "Beans into Soldiers · the Mountain Road"},
+   "lead": [
+    {"zh": "蒙山的山道上，兽潮压下来了。", "en": "Down Mount Meng's road, the beast tide is coming."},
+    {"zh": "小满抓出一把黄豆，往山道上一撒——", "en": "Xiaoman grabs a fistful of beans and flings them down the road —"},
+    {"zh": "撒豆成兵！", "en": "Beans into soldiers!", "big": true}
+   ],
+   "leadSec": 4.6,
+   "countdown": 3,
+   "speed": 270,
+   "steer": 3.2,
+   "start": 15,
+   "low": 8,
+   "clashMin": 24,
+   "stars": [220, 80],
+   "_track": "In road order. gates: [left, right] (null = no gate on that side); op + − x /. beans: a line of beans at x, +n if the crowd runs over it. hazard: kind spikes|log over x [a, b] for `len` px, `kill` = the share of the soldiers over it lost while crossing; `swing`/`period` sway a log side to side. horde: [[beast, n], …] across the whole road (`span` narrows it), the first kind the back line.",
+   "track": [
+    {"type": "gates", "at": 900, "gates": [{"op": "+", "n": 5}, {"op": "x", "n": 3}]},
+    {"type": "beans", "at": 1700, "x": -0.55, "n": 8},
+    {"type": "gates", "at": 2500, "gates": [{"op": "-", "n": 5}, {"op": "+", "n": 20}]},
+    {"type": "hazard", "at": 3300, "kind": "spikes", "x": [0.0, 1.0], "len": 120, "kill": 0.35},
+    {"type": "horde", "at": 4100, "beasts": [["yezhu", 6]]},
+    {"type": "gates", "at": 5000, "gates": [{"op": "x", "n": 2}, {"op": "/", "n": 2}]},
+    {"type": "beans", "at": 5800, "x": 0.55, "n": 12},
+    {"type": "hazard", "at": 6600, "kind": "log", "x": [-0.35, 0.35], "len": 90, "kill": 0.5, "swing": 0.5, "period": 2.6},
+    {"type": "gates", "at": 7500, "gates": [{"op": "+", "n": 30}, {"op": "-", "n": 20}]},
+    {"type": "horde", "at": 8400, "beasts": [["zheng", 3], ["qiuyu", 6]]},
+    {"type": "gates", "at": 9300, "gates": [{"op": "+", "n": 25}, {"op": "x", "n": 2}]},
+    {"type": "hazard", "at": 10100, "kind": "spikes", "x": [-1.0, 0.0], "len": 120, "kill": 0.7},
+    {"type": "beans", "at": 10800, "x": 0.6, "n": 15},
+    {"type": "horde", "at": 11600, "beasts": [["qique", 30]]},
+    {"type": "gates", "at": 12500, "gates": [{"op": "+", "n": 50}, {"op": "x", "n": 2}]},
+    {"type": "hazard", "at": 13400, "kind": "log", "x": [-0.4, 0.4], "len": 90, "kill": 0.5, "swing": 0.55, "period": 2.2},
+    {"type": "gates", "at": 14300, "gates": [{"op": "-", "n": 30}, {"op": "+", "n": 60}]},
+    {"type": "horde", "at": 15300, "beasts": [["yezhu", 10], ["zheng", 7], ["qiuyu", 10]]},
+    {"type": "beans", "at": 16200, "x": -0.6, "n": 20},
+    {"type": "gates", "at": 17000, "gates": [{"op": "+", "n": 40}, {"op": "-", "n": 30}]}
+   ],
+   "boss": {"beast": "heyu", "at": 18200, "hp": 80, "dmg": 1, "feedRate": 0.15, "feedMin": 20, "slamEvery": 2.4, "warnSec": 1.0, "slamKill": 0.2},
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; at start the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [{"zh": "豆子落地，兵就起来了。往前冲！", "en": "Beans hit the ground, soldiers stand up. Charge!"}],
+    "good": [{"zh": "好门！人更多了。", "en": "A good gate! More of us."}, {"zh": "翻倍！", "en": "Doubled!"}],
+    "bad": [{"zh": "哎，那是个坏门。", "en": "Oops, that gate was a trap."}],
+    "clash": [{"zh": "撞上了！挤过去！", "en": "Contact! Push through!"}],
+    "low": [{"zh": "人不多了，找个加的门！", "en": "We're thin. Find a gate that adds!"}],
+    "boss": [{"zh": "合窳！全都扑上去！", "en": "The Heyu! Everyone, at it!"}],
+    "slam": [{"zh": "它要砸了，躲开！", "en": "It's about to slam. Move!"}],
+    "won": [{"zh": "合窳倒了！豆兵们，好样的。", "en": "The Heyu is down. Well done, bean soldiers."}],
+    "lost": [{"zh": "豆子撒完了……再来一把。", "en": "Out of beans… one more handful."}]
+   }
+  }
+ ]
+}
