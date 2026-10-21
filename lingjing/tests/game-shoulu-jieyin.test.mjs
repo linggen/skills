@@ -92,3 +92,17 @@ test('with 结印 the kills come faster and ★★★ is easier — where it is 
     assert.ok(hp(cast) > hp(none), `${id}: 炉火 ${hp(none)} → ${hp(cast)}`);
   }
 });
+
+test('the dock is handed ids the 手势斗法 kit knows: every 守炉 move is a 小招, 法术 or 大招 there (live 10-21: rows went in whole and no button was drawn)', async () => {
+  const kit = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/levels/jieyin.json', import.meta.url), 'utf8'));
+  const { duelId, offerJieyin } = await import('../scripts/games/shoulu.js');
+  const { tiersOf } = await import('../scripts/games/jieyin/helper.js');
+  for (const row of kit.hosts.shoulu.moves) {
+    const t = tiersOf(kit, [duelId(row)]);
+    assert.ok(t.xiao.length + t.fa.length + t.da.length === 1, `${row.id} → ${duelId(row)} is a 手势斗法 move`);
+  }
+  let handed = null;
+  const box = { ownerDocument: { defaultView: globalThis } };
+  await offerJieyin(kit.hosts.shoulu, box, { lang: 'zh', now: () => ({ g: null }), toast() {}, load: async () => ({ offerSeals: async (o) => { handed = o.moves; return null; } }) });
+  assert.ok(handed.every((m) => typeof m === 'string'), 'ids, not rows');
+});

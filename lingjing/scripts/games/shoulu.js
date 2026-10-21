@@ -41,15 +41,18 @@ export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (r
 /** The host's numbers for a level: hosts.shoulu with its pace's laid on. */
 export const jieyinCfg = (host, level) => ({ ...host, ...(host?.paces?.[level?.pace ?? 'rest'] ?? {}), pace: level?.pace ?? 'rest' });
 const OFF = { on: false, ready: false, cool: 0, coolOf: 0, boss: null };
+/** A host row's id in the 手势斗法 kit (jieyin.json `doufa`): its `jieyin`, else its own. */
+export const duelId = (row) => row.jieyin ?? row.id;
 /** Offer the dock for this mount: → Promise<handle | null> (null and nothing drawn without a camera — helper.js). */
 export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside, feed = false, load = () => import(SEALS.href), env } = {}) {
   const moves = (host?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const cfg = () => { const n = now(); return n.g ? jieyinCfg(host, n.level) : null; };
   return load().then(({ offerSeals }) => offerSeals({
-    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves, idle: host.idle,
+    // the dock knows the 手势斗法 ids (a row's `jieyin`, else its own id) and casts back an event naming one
+    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves: moves.map(duelId), idle: host.idle,
     state: () => { const c = cfg(); return c ? jieyinState(now().g, c) : OFF; },
-    cast: (id) => { const c = cfg(); return c ? jieyinCast(now().g, id, c) : false; },
+    cast: (e) => { const c = cfg(), row = moves.find((m) => duelId(m) === (e?.move ?? e)); return c && row ? jieyinCast(now().g, row.id, c) : false; },
     fizzle: () => toast(lang === 'en' ? 'Pfft — it fizzled.' : '噗——走火了。'), say: toast,
     call: () => word(host.say, lang), first: moves.some((m) => m.motion === 'jab' && !m.from) ? host.first : null,
     paused, aside,
