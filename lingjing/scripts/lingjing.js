@@ -51,6 +51,7 @@ import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
 import { liveBackdrop, liveCreature } from './fx-alive.js';
 import { watchMemories } from './fx-memory.js';
 import { liveWeather } from './fx-weather.js';
+import { huiTurn } from './fx-hui.js';
 import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
@@ -922,6 +923,7 @@ function featNow(kind, name, from = '', quiet = false, gains = '', her = null) {
   el.innerHTML = `<i class="rays"></i><div class="featbox${against ? ' low' : ''}">${against}<b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(keepTogether(name))}</span>${gains ? `<small class="featgain">${esc(gains)}</small>` : ''}</div>`;
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
+  if (kind === 'chapter') huiTurn($('view'), Math.max(0, riseAfter - performance.now()), el); // the page turns under the seal (fx-hui.js)
   const gone = () => { if (!el.isConnected) return; el.remove(); featOn = Boolean(document.querySelector('.feat')); if (kind === 'chapter') sealOwed = false; render(); };
   el.addEventListener('click', gone);
   // 「新的一回」 clears by itself in ~3.6 s (Hanli, 2026-10-14 choice 9: the 完 card's 合上 is the one tap); a realm's seal holds longer.

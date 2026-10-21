@@ -6,6 +6,7 @@
   <title>灵境 · 画面效果</title>
   <link rel="stylesheet" href="lingjing.css" />
   <link rel="stylesheet" href="memory.css" />
+  <link rel="stylesheet" href="story.css" />
   <style>
     body { overflow: auto; padding: 16px; background: #efe8d8; }
     .fxv { max-width: 760px; width: 100%; margin: 0 auto; box-sizing: border-box; }
@@ -20,6 +21,7 @@
   <!-- One 画面效果 moment alone (fx-*.js), to watch before the story brings it:
        ?moment=memory&n=1 — 银月's memory soaking into colour (fx-memory.js).
        ?moment=weather&kind=snow|rain|fog&wind=0.3&art=art/backdrop/snow-day.webp — the weather over a stage (fx-weather.js; &css=1 the CSS layer).
+       ?moment=hui&art=art/places/yingu.webp — a new 回's page turn under its seal (fx-hui.js).
        &still=1 shows what reduced motion shows. Nothing is saved. -->
   <div class="fxv">
     <h1 id="title">画面效果</h1>
@@ -31,6 +33,7 @@
     import { watchMemories } from './fx-memory.js';
     import { liveWeather } from './fx-weather.js';
     import { particlesHtml, windVars } from './atmos.js';
+    import { HUI_MS, huiTurn } from './fx-hui.js';
     const q = new URLSearchParams(location.search);
     const $ = (id) => document.getElementById(id);
     const WORLD = new URL('../worlds/jiuding/', import.meta.url).href;
@@ -71,7 +74,27 @@
       window.__weather = () => live;
     }
 
-    await ({ memory, weather }[moment] ?? memory)();
+    // A new 回: the stage's painting as paintBackdrop lays it, the seal as featNow lays it, and the turn.
+    async function hui() {
+      const art = q.get('art') || 'art/places/yingu.webp';
+      $('title').textContent = '新的一回';
+      $('slot').innerHTML = `<div class="stagebox view" id="view"><div class="backdrop painted" id="backdrop"></div></div>`;
+      const play = () => {
+        $('backdrop').innerHTML = `<i class="bd" style="--art:url(&quot;${new URL(art, WORLD).href}&quot;)"></i>`;
+        $('view').querySelector('.feat')?.remove();
+        const el = document.createElement('div');
+        el.className = 'feat';
+        el.innerHTML = '<i class="rays"></i><div class="featbox"><b>新的一回</b><span>第三回 · 石洞里的一夜</span></div>';
+        $('view').appendChild(el);
+        el.addEventListener('click', () => el.remove());
+        setTimeout(() => el.remove(), HUI_MS);
+        if (!still) huiTurn($('view'), 0, el);
+      };
+      $('again').onclick = play;
+      play();
+    }
+
+    await ({ memory, weather, hui }[moment] ?? memory)();
   </script>
 </body>
 </html>

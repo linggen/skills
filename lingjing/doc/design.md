@@ -1033,7 +1033,7 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
 - **Choices are one question:** the chat owns the question; while an AskUser
   is open the stage hides every button of the same name.
 
-## 哇时刻 — wow moments (his, 2026-09-29) 【在建】
+## 哇时刻 — wow moments (his, 2026-09-29) 【已建】 (7 【远景】)
 
 His order of value: **5 > 3 > 1 > 7 > 6 > 2 > 4**.
 
@@ -1093,7 +1093,7 @@ Not borrowed: gacha.
   never announces the real sky over the book's. The chip's popover still
   sets the city for every other scene.
 
-## 画面效果 — PixiJS + GSAP 【在建】
+## 画面效果 — PixiJS + GSAP 【已建】
 
 The page stays web UI; **PixiJS** paints what must be drawn (ink wicking,
 grain, particles, ink to colour); **GSAP** times one moment. Vendored, pinned
@@ -1118,7 +1118,11 @@ two sheets of paper-cloud drifting — carried by the stage's wind, laid right a
 (whose spans of those kinds step aside), 30 fps, asleep in a fight or under a set piece, gone when the layer
 is laid again. Petals, leaves, fireflies and a festival's own stay CSS. Preview:
 `scripts/fx.html?moment=weather&kind=snow|rain|fog&wind=0.6`.
-**Next, in order:** the big set pieces, chapter transitions.
+**Chapter transitions** (`fx-hui.js`, 2026-10-21): when 「新的一回」's seal rises, fresh 宣纸 soaks over the
+stage's painting from the middle (a light rim), the seal stands on a blank title page, then the painting
+soaks back in — 3.6 s, the seal's own time; a seal tapped away sends the painting back at once. Nothing on
+a pale stage (今线), no WebGL, reduced motion: the seal alone. Preview: `scripts/fx.html?moment=hui`.
+Each 卷's 大场面 comes with its 卷 (§ 规矩).
 
 ## Player state 【已建】
 
