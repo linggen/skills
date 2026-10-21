@@ -1,14 +1,14 @@
 // play.js — 守墙关's scene: draws what the engine (scripts/games/shouqiang/core.js) holds, turns its events into
 // juice, and takes the two inputs the game has: a card pick, and (optional) a tap on a beast to focus it.
 import * as Phaser from 'phaser';
-import { newGame, step, pick, setFocus, reachY, HERO, FOX, HAND, W, H } from 'shouqiang-core';
+import { newGame, step, pick, setFocus, reachY, castJieyin, HERO, FOX, HAND, W, H } from 'shouqiang-core';
 import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
 import { Hud, WORDS, bar, setBarW } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
 
 const ICONS = ['jian-more', 'jian-pierce', 'jian-arc', 'huo-blast', 'huo-ground', 'han-slow', 'han-freeze', 'lei-chain', 'lei-strike', 'yy-foxfire', 'yy-howl'];
 const HIT_TINT = { sword: 0xffffff, fire: 0xffb347, frost: 0x9fe8ff, thunder: 0xfff27a, fox: 0xcfe0ff, howl: 0xd9c2ff, ground: 0xff9a52 };
-const TRAILS = { sword: 'trailSword', fox: 'trailFox', foxfire: 'trailFoxfire', huo: 'trailHuo', han: 'trailHan' };
+const TRAILS = { sword: 'trailSword', fox: 'trailFox', foxfire: 'trailFoxfire', huo: 'trailHuo', han: 'trailHan', huodan: 'trailHuo' };
 const SPARK = { sword: ['hitStreak', 5], fox: ['spark', 4], thunder: ['bolt', 4], fire: ['spark', 2], frost: ['snow', 3], howl: ['spark', 2], ground: [null] };
 const SPARK_ELSE = ['spark', 3];
 // Quality steps, taken one at a time (never back up) when frames keep missing the budget: the look stays; a slow device
@@ -34,6 +34,8 @@ export class PlayScene extends Phaser.Scene {
     for (const [b, k] of Object.entries(this.cfg.kit.beasts)) for (const f of k.frames ?? []) img(`${b}-${f}`);
     for (const k of ICONS) img(`icon-${k}`);
     if (this.cfg.level.grid) LaneView.preload(this, this.cfg.level, art);
+    // 结印's 火蛋 and its 走火 (games/jieyin/art, local FLUX): only a page that offers 结印 casts them.
+    if (this.cfg.kit.jieyin) for (const k of ['huodan', 'fizzle']) this.load.image(`jy-${k}`, `${this.cfg.base}../jieyin/art/${k}.webp`);
     const yy = `${this.cfg.base}../shoulu/art/`;
     this.load.image('yy-sheet', `${yy}yinyue.webp`);
     this.load.image('yy-skills', `${yy}yinyue-skills.webp`);
@@ -229,6 +231,25 @@ export class PlayScene extends Phaser.Scene {
 
   choose(id) {
     pick(this.g, id);
+  }
+
+  // ---- 结印 (games/jieyin/helper.js makes the seals at the camera; the page calls these) ---------------------------
+
+  /** The four seals made: the 火蛋 flies (true), or not yet (cooling, between waves, nothing in reach). */
+  jieyin() {
+    if (this.paused || this.held || this.done) return false;
+    return castJieyin(this.g);
+  }
+
+  /** 走火: a charred egg pops from 小满's hand and drops — no other cost. */
+  fizzle() {
+    if (this.done) return;
+    this.say('xiaoman', this.w.fizzle);
+    if (!this.textures.exists('jy-fizzle')) return;
+    const o = this.add.image(HAND.x, HAND.y, 'jy-fizzle').setDepth(D.fx).setDisplaySize(48, 48).setAlpha(1);
+    this.em.burst('smoke', 6, HAND.x, HAND.y);
+    this.tweens.add({ targets: o, y: HAND.y - 40, duration: 260, ease: 'Quad.out',
+      onComplete: () => this.tweens.add({ targets: o, y: HAND.y + 70, angle: 25, alpha: 0, duration: 700, ease: 'Quad.in', onComplete: () => o.destroy() }) });
   }
 
   // ---- the frame -----------------------------------------------------------------------------------------------
@@ -431,6 +452,7 @@ export class PlayScene extends Phaser.Scene {
       foxfire: () => [this.add.image(sh.x, sh.y, 'yy-skills', 'foxfire-1').setScale(0.36).setDepth(D.shot)],
       huo: () => [this.add.image(sh.x, sh.y, 'fu-huo').setDisplaySize(26, 54).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.5)],
       han: () => [this.add.image(sh.x, sh.y, 'fu-han').setDisplaySize(26, 54).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.5)],
+      huodan: () => [this.add.image(sh.x, sh.y, this.tex('jy-huodan', 'glow')).setDisplaySize(52, 52).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.6)],
     };
     if (sh.lane != null) return { kind: sh.kind, parts: this.lanes.boltParts(sh), t: 0 };
     if (sh.kind === 'foxfire' && !this.textures.get('yy-skills').has('foxfire-1')) return { kind: sh.kind, parts: SHOTS.fox() };
@@ -576,6 +598,13 @@ export class PlayScene extends Phaser.Scene {
           this.em.burst('frost', 22, e.x, e.y);
           this.em.burst('snow', 26, e.x, e.y);
           this.flare(e.x, e.y, e.r * 1.8, 0xbff4ff);
+        },
+        huodan: () => {
+          this.ring(e.x, e.y, e.r * 1.3, 0xff7a2a);
+          this.em.burst('fire', 40, e.x, e.y);
+          this.em.burst('smoke', 8, e.x, e.y);
+          this.flare(e.x, e.y, e.r * 3, 0xffc070);
+          this.shake(160, 0.007);
         },
         foxfire: () => {
           this.ring(e.x, e.y, e.r, 0x7fc8ff);

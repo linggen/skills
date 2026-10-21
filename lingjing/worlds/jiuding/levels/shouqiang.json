@@ -13,6 +13,10 @@
   "sword": {"every": 0.7, "dmg": 16, "speed": 820, "r": 14},
   "fox": {"every": 1.1, "dmg": 11, "speed": 560, "r": 12}
  },
+ "jieyin": {
+  "_about": "结印 · 火蛋 — the player's helper, only where a camera is (Hanli 10-21: 「让用户结印发火弹帮忙打怪」, 「没摄像头时, 就不用用户结印帮打」): the four seals of levels/jieyin.json's `huodan` made at the camera lob a 火蛋 at the tapped beast, else the one nearest the wall (anywhere below the range line). dmg on that beast; splash: × dmg on others within radius px; cool: s before the next egg (the seals are not counted while it cools); fly: s in the air. Tuned to help, never to carry: tests/game-shouqiang.test.mjs § 结印.",
+  "dmg": 90, "radius": 64, "splash": 0.35, "cool": 6, "fly": 0.55
+ },
  "units": {
   "_about": "Lane mode (levels 2–5, the 药园): the talismans the player places on the grid, PvZ's proven numbers mapped onto ours (灵气 = the sun). cost: 灵气; recharge: s before the seed can be used again (startCool: at the level's start); hp: what a beast must chew through (100/s); shoot: a bolt up the lane (every s, dmg, speed px/s, slow × for s); make: 灵气 orbs (first s after placing, every s, amount); bomb: bursts after fuse s on every beast within `radius` lanes either side and `rows` cells up and down. art: unit-<id> (idle), unit-<id>-2 (firing / active / battered); seed-<id> the seed card.",
   "juling": {"cost": 50, "recharge": 7.5, "hp": 300, "make": {"first": 7, "every": 24, "amount": 25}, "name": {"zh": "聚灵阵", "en": "Spirit array"}, "say": {"zh": "聚起园里的灵气，隔一阵结一颗灵珠。", "en": "Gathers the garden's qi into a spirit orb now and then."}},

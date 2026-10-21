@@ -1,0 +1,43 @@
+/* helper.css — 结印 as a helper inside another game (games/jieyin/helper.js): a small 结印 seal-button in the field's
+   bottom-left corner (under the wall's face, left of 银月, above the wall bar) and, once tapped, a small frame there
+   standing for the camera's view — no camera picture (Hanli 10-21: 「最好不显示摄像头」): the next seal's hand, the hold
+   ring, a dot where the hand stands, the four seals as chips. Sizes are shares of the field, so 390 and a desk match. */
+.jyh-btn, .jyh-dock { position: absolute; left: 1.6%; bottom: 7.5%; z-index: 5; }
+.jyh-btn[hidden], .jyh-dock[hidden], .jyh-dot[hidden] { display: none !important; }
+.shouqiang-stage[data-landscape="true"] .jyh-btn, .shouqiang-stage[data-landscape="true"] .jyh-dock { left: 0.8%; }
+
+.jyh-btn { width: 13%; aspect-ratio: 1; min-width: 44px; border-radius: 50%; border: 2px solid #fff3c4; padding: 0; cursor: pointer;
+  font: 700 15px / 1 var(--serif, serif); letter-spacing: .08em; color: #fff;
+  background: radial-gradient(circle at 35% 30%, #f0643f, #a3221a 70%); box-shadow: 0 0 0 3px rgba(42, 18, 6, .55), 0 0 18px rgba(255, 140, 50, .55);
+  text-shadow: 0 1px 2px #3a0a04; animation: jyh-breathe 2.4s ease-in-out infinite; }
+.shouqiang-stage[data-landscape="true"] .jyh-btn { width: 7%; }
+
+.jyh-dock { width: 27%; display: flex; flex-direction: column; gap: 3px; }
+.shouqiang-stage[data-landscape="true"] .jyh-dock { width: 14%; }
+.jyh-frame { position: relative; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
+  background: linear-gradient(#f6ecd6, #e7d6b2); box-shadow: 0 0 0 2px #2a1206, 0 4px 12px rgba(0, 0, 0, .4); }
+.jyh-icon { position: absolute; inset: 8% 22% 18%; display: grid; place-items: center; opacity: .9; }
+.jyh-icon svg { width: 100%; height: 100%; }
+.jyh-dot { position: absolute; left: 50%; top: 50%; width: 12%; aspect-ratio: 1; margin: -6% 0 0 -6%; border-radius: 50%;
+  background: rgba(232, 67, 47, .35); box-shadow: 0 0 0 2px rgba(232, 67, 47, .8); pointer-events: none; transition: left .08s, top .08s; }
+.jyh-ring { position: absolute; right: 4%; top: 6%; width: 24%; transform: rotate(-90deg); }
+.jyh-ring circle { fill: none; stroke-width: 4; }
+.jyh-ring-bg { stroke: rgba(42, 18, 6, .2); }
+.jyh-ring-on { stroke: #d9a521; stroke-dasharray: 0 100; stroke-linecap: round; }
+.jyh-ring.is-right .jyh-ring-on { stroke: #e8432f; }
+.jyh-state { position: absolute; inset: auto 0 3%; text-align: center; font: 700 11px / 1.2 var(--serif, serif); color: #6a2a10; }
+.jyh-dock.is-cool .jyh-frame::after { content: ''; position: absolute; inset: 0; background: rgba(42, 18, 6, .45); }
+.jyh-dock.is-cool .jyh-state { z-index: 1; color: #fff3c4; inset: 40% 0 auto; font-size: 14px; }
+.jyh-dock.is-ready .jyh-frame { box-shadow: 0 0 0 2px #e8432f, 0 0 16px #ff8a2a; }
+.jyh-dock.is-shake { animation: jyh-shake .4s; }
+.jyh-chips { display: flex; gap: 3px; margin: 0; padding: 0; list-style: none; }
+.jyh-chips li { flex: 1; text-align: center; border-radius: 4px; font: 11px / 18px var(--serif, serif); color: #fff; background: rgba(42, 18, 6, .6); }
+.jyh-chips li.is-done { background: #b23a1e; }
+.jyh-chips li.is-next { background: #e8432f; box-shadow: 0 0 0 1px #fff3c4; }
+.jyh-off { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #fff3c4; padding: 0;
+  font: 16px / 1 sans-serif; color: #fff; background: #2a1206; cursor: pointer; }
+.jyh-video { position: absolute; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+
+@keyframes jyh-breathe { 50% { box-shadow: 0 0 0 3px rgba(42, 18, 6, .55), 0 0 28px rgba(255, 140, 50, .85); } }
+@keyframes jyh-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) { .jyh-btn, .jyh-dock.is-shake { animation: none; } }

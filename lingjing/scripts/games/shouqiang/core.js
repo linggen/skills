@@ -51,7 +51,7 @@ export function newGame(kit, level, { seed = 'x' } = {}) {
     kit, level, rnd: rng(seed), t: 0, phase: 'lead', timer: level.leadSec ?? 5,
     wave: 0, waves: level.waves.length, wall: level.wall, wallMax: level.wall,
     beasts: [], shots: [], grounds: [], spawns: [], nextId: 1,
-    skills: {}, cool: { sword: 0.4, fox: 0.8 }, focus: null, offer: null,
+    skills: {}, cool: { sword: 0.4, fox: 0.8, jieyin: 0 }, focus: null, offer: null,
     opening: openingOf(kit, level), main: null,
     kills: 0, low: false, events: [],
     beastKit: beastsOf(kit, level),
@@ -218,7 +218,7 @@ function fireFox(g) {
 
 // A talisman lobbed at a spot: lands after `fly` seconds and bursts.
 function lob(g, kind, to, extra) {
-  shoot(g, { kind, x: HAND.x, y: HAND.y, fromX: HAND.x, fromY: HAND.y, toX: to.x, toY: to.y + 18, fly: 0.45, lob: true, ...extra });
+  shoot(g, { kind, x: HAND.x, y: HAND.y, fromX: HAND.x, fromY: HAND.y, toX: to.x, toY: to.y + 18, lob: true, ...extra, fly: extra?.fly ?? 0.45 });
   emit(g, { t: 'cast', who: 'xm', kind });
 }
 
@@ -279,6 +279,36 @@ const CASTS = {
     return at(c.every, L);
   },
 };
+// ---- 结印 · 火蛋 (the player's hand seals at the camera; games/jieyin/panel.js) -------------------------------------
+//
+// Not a hero's cast: the player's. Four seals made at the camera (games/jieyin/helper.js judges them) → `castJieyin(g)`: a 火蛋 lobbed
+// at the beast the player tapped (the focus), else the one nearest the wall — anywhere below the range line, lane
+// levels too (the heroes' wall-foot guard is theirs, not the egg's). Its numbers are the kit's `jieyin` block. With
+// no camera nothing ever calls this, and the game is the game it always was.
+
+/** The egg's beast: the focus while it lives below the range line, else the one nearest the wall below it. */
+export function jieyinTarget(g) {
+  const f = g.beasts.find((b) => b.id === g.focus && inReach(g, b));
+  if (f) return f;
+  let best = null;
+  for (const b of g.beasts) if (inReach(g, b) && (!best || b.y > best.y)) best = b;
+  return best;
+}
+
+/** Seconds until the next egg may fly (0 = ready). */
+export const jieyinCool = (g) => Math.max(0, g.cool.jieyin ?? 0);
+
+/** The seals made: a 火蛋 flies, or `false` (cooling, no fight on, or no beast in reach — the seals are not spent). */
+export function castJieyin(g, c = g.kit.jieyin) {
+  if (!c || g.phase !== 'wave' || jieyinCool(g) > 0) return false;
+  const t = jieyinTarget(g);
+  if (!t) return false;
+  lob(g, 'huodan', t, { dmg: c.dmg, radius: c.radius, splash: c.splash, fly: c.fly, home: t.id });
+  g.cool.jieyin = c.cool;
+  g.eggs = (g.eggs ?? 0) + 1;
+  return true;
+}
+
 const CAST_NEEDS = { huo: 'huo-blast', han: 'han-slow', lei: 'lei-chain', strike: 'lei-strike', howl: 'yy-howl' };
 
 function burst(g, s) {
@@ -295,6 +325,7 @@ function burst(g, s) {
       hurt(g, b, s.dmg, 'frost');
     },
     foxfire: (b) => hurt(g, b, s.dmg, 'fox'),
+    huodan: (b) => hurt(g, b, b.id === s.home ? s.dmg : s.dmg * (s.splash ?? 0), 'fire', { big: b.id === s.home }),
   };
   for (const b of hits) BURSTS[s.kind](b);
   const G = lv(g, 'huo-ground');
@@ -325,6 +356,8 @@ function moveShot(g, s, dt) {
   s.age += dt;
   if (s.lane != null) return moveBolt(g, s, dt);
   if (s.lob) {
+    const home = s.home != null && g.beasts.find((b) => b.id === s.home && b.hp > 0);
+    if (home) { s.toX = home.x; s.toY = home.y + 18; } // the 火蛋 follows its beast down the road
     const k = Math.min(1, s.age / s.fly);
     s.x = s.fromX + (s.toX - s.fromX) * k;
     s.y = s.fromY + (s.toY - s.fromY) * k;
@@ -1020,10 +1053,11 @@ export const BOTS = {
 };
 
 /** Play a whole level with a bot (a chooser `(g) → card id`, or `{ make(seed) → { pick, act } }`); `open` forces the
- *  opening line (jian | huo | lei), else the bot picks it. Returns { won, stars, wave, wallLeft, walls (the wall after
+ *  opening line (jian | huo | lei), else the bot picks it; `seals` (s) adds a 结印 player casting the 火蛋. Returns { won, stars, wave, wallLeft, walls (the wall after
  *  each wave), kills, skills, main (the opening line), bossY (where the boss fell) }. */
-export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line } = {}) {
+export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line, seals } = {}) {
   const g = newGame(kit, level, { seed });
+  let sealT = seals ?? Infinity; // `seals`: a 结印 player who takes that many s to make the four seals, then casts (and again once it cools)
   const made = chooser.make ? chooser.make(seed) : { pick: chooser };
   const bot = line ? { ...made, pick: (gg) => (opening(gg) ? `open-${line}` : made.pick(gg)) } : made;
   const walls = [], placed = {};
@@ -1032,6 +1066,7 @@ export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line
     if (g.phase === 'pick') pick(g, bot.pick(g));
     else {
       if (g.phase === 'wave' || (g.grid && g.phase !== 'pick')) bot.act?.(g, 0.1);
+      if (g.phase === 'wave' && jieyinCool(g) <= 0 && (sealT -= 0.1) <= 0 && castJieyin(g)) sealT = seals;
       step(g, 0.1);
     }
     for (const e of g.events) {
@@ -1042,5 +1077,5 @@ export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line
     g.events.length = 0;
   }
   return { won: g.phase === 'won', stars: stars(g), wave: g.wave, wallLeft: g.wall / g.wallMax, walls, kills: g.kills, skills: g.skills, main: g.main, bossY,
-    units: g.grid ? placed : undefined, t: Math.round(g.t) };
+    units: g.grid ? placed : undefined, t: Math.round(g.t), eggs: g.eggs ?? 0 };
 }

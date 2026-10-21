@@ -671,10 +671,11 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
   - **画符 (idea, not built):** draw a talisman the book teaches (五雷符 …) stroke by stroke in its order;
     the page checks order and shape from the strokes themselves (no model), Ling only says how it looks.
 
-## 结印 — hand seals at the camera (prototype, test-only, 10-21)
+## 结印 — hand seals at the camera (10-21)
 
-Hanli 10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」. 游戏厅 only (`jieyin`, group 主力,
-type 结印); not in the story. The player makes 掐诀 seals at the camera; **推掌 · 剑诀 · 申文 · 午文** in order cast a
+Hanli 10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」, then 「很好玩啊」「可以作为lingjing的一个亮点」
+「放进去」 — in 卷一's launch scope. Two homes: the 游戏厅 prototype (`jieyin`, group 主力, type 结印) and **守墙关's helper**
+(below). The player makes 掐诀 seals at the camera; **推掌 · 剑诀 · 申文 · 午文** in order cast a
 火蛋 at the boar (three drive it off); a wrong seal held = 走火 (a charred egg pops, back to the first seal; stars count
 走火). Level 2 is the shape of 古六's 讲堂 teaching level (one seal at a time, 褚先生's line for each, a wrong one only
 tried again).
@@ -712,6 +713,35 @@ tried again).
   ≈8.3 ms a frame on GPU and ≈22 ms on CPU, the same at 640×480 / 2 hands and 320×240 / 1 hand — the model scales every frame to
   its own input size. The saving is the rate (≈30 → 15 runs a second: about half the model's time) and the smaller capture.
 - **Tested:** the judge on synthetic hands (pose.js), not recorded ones; real-camera recognition is Hanli's to try.
+
+### 结印 in 守墙关 — the 火蛋 helper
+
+- **Offered** only where `available()` is true: a round 结印 button in the field's bottom-left corner (under the wall's
+  face, left of 银月, above the wall bar; the left side panel in landscape). Never auto-starts: the tap starts the
+  camera. No camera / refused / no WebGL / no SIMD / the model fails → no button, no frame, the game exactly as before
+  (no tap stand-in). A refusal after the tap takes the button away for that level.
+- **The frame** (games/jieyin/helper.js + helper.css, `data-slot="handHint"`): NO camera picture (Hanli 10-21:
+  「最好不显示摄像头」) — the next seal's hand, the hold ring, a dot where the hand stands in the camera's view, the four
+  seals as chips, a × to stop. The shared `handHint` component goes into that slot when it lands.
+- **The move** is levels/jieyin.json's `moves.huodan` (same data, not a copy), this device's set (sets.js): a phone 推掌 →
+  剑诀 → 申文 → 午文 (one hand), a Mac 双掌 → 承剑 → 离火印 → 午文. Made → a 火蛋 lobbed at
+  the **tapped beast (the focus); none → the beast nearest the wall**, anywhere below the range line (lane levels too:
+  the heroes' wall-foot guard is theirs, not the egg's). Nothing in reach / between waves → the egg waits in hand and
+  flies the moment there is one. While it cools the seals are not counted. 走火 = the prototype's charred egg popping
+  from 小满's hand and his 「噗——走火了。」, nothing else.
+- **Numbers** (shouqiang.json `jieyin`): dmg 90 on its beast, splash 0.35 × in 64 px, cool 6 s, 0.55 s in the air.
+  Sims (core.js `sim(…, { seals })`, the four seals taking `seals` s after each cooldown; 40 nights, BOTS.human):
+  山门 37→38/40 won, wall 61→70%; 兽潮 night 2 36→40/40, 57→69%; 药园 L4 30→37/40, 57→86% (the egg is the only reach
+  past the wall's foot there — strongest in the 药园). No cards / no talismans + an egg every 2 s still loses every
+  level (3 nights each, tested).
+- **Camera lifecycle:** on after the button; off (tracks stopped) on the shell's pause or the canvas's own, while the
+  page is hidden, on × , at the level's end (the `end` fact, before the result) and on leave; back on by itself only if
+  the player had it on and nothing holds it paused. Local only.
+- **Where:** the story card, the 游戏厅 and 兽潮 (every 守墙关 mount); desktop and 390 (a phone page over plain http has
+  no camera API → not offered). Dev: `?dev=1&feed=1` offers it with no camera, hands from the console
+  (`window.jieyinFeed(hands)`).
+- **Tested:** tests/game-shouqiang-jieyin.test.mjs — target (focus vs nearest the wall, above-the-line focus), cooldown,
+  no camera → nothing drawn and the same game, the camera lifecycle on a fake page, the seals → cast / 走火 path, balance.
 
 ## 隔空指点 — point the 剑诀 at the screen (test game, 10-21)
 

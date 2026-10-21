@@ -14,6 +14,11 @@
 // `data.lv` / the page's `?lv=` picks a level row by id or 1-based number: 1 the 山门, 2–5 the 药园 (talismans in
 // lanes). A 药园 level in a landscape window gets option A (Hanli 10-20 「竖屏, 横屏可以切换?」「按A可以」): the same
 // portrait field centred with side panels; turning the window flips it live. Nothing touches the save.
+//
+// 结印 (Hanli 10-21: 「让用户结印发火弹帮忙打怪」「放进去」): where a camera is, a 结印 button in the field's corner; the
+// seals (games/jieyin/helper.js — the recognizer stays in the jieyin module) lob a 火蛋 (core.js castJieyin, numbers in
+// the kit's `jieyin`). No camera → no button, and the game is exactly the game without it. `?dev=1&feed=1` offers it
+// without a camera, hands fed from the console (the live check).
 export const meta = {
   id: 'shouqiang',
   pause: true, // the shell's bar pauses the play (tools/shouqiang/src/play.js setPaused)
@@ -28,6 +33,7 @@ export const meta = {
 };
 
 const LEVELS = new URL('../../worlds/jiuding/levels/shouqiang.json', import.meta.url);
+const SEALS = new URL('./jieyin/helper.js', import.meta.url);
 const FONT = new URL('./shouqiang/font/zcool-kuaile.woff2', import.meta.url);
 
 /** The level a story or link asks for: an id, or 1… ; anything else → the first. */
@@ -50,6 +56,16 @@ async function loadFont(doc) {
   if ([...doc.fonts].some((f) => f.family === 'SQKuaiLe')) return;
   const face = new FontFace('SQKuaiLe', `url(${FONT.href}) format('woff2')`);
   doc.fonts.add(await face.load().catch(() => face));
+}
+
+/** 结印's button in the field, where it may be offered (games/jieyin/helper.js decides; none → null, nothing drawn). */
+export function offerJieyin(kit, box, { lang, game, shell, feed = false, load = () => import(SEALS.href) }) {
+  if (!kit.jieyin) return Promise.resolve(null);
+  return load().then(({ offerSeals }) => offerSeals({
+    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis,
+    cast: () => game.jieyin(), fizzle: () => game.fizzle(), cool: () => game.jieyinCool(),
+    paused: () => Boolean(shell?.paused?.() || game.paused()),
+  })).catch((e) => { console.warn('[shouqiang] 结印', e); return null; });
 }
 
 export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, seed, lines, onEvent, shell } = {}) {
@@ -75,8 +91,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   const q = new URLSearchParams(search);
   const dev = q.get('dev') === '1', showFps = dev && q.get('fps') === '1'; // the counter only on ?dev=1&fps=1
   return new Promise((resolve) => {
-    let game = null, done = false;
-    const finish = (r) => { if (!done) { done = true; resolve(r); } };
+    let game = null, done = false, seals = null;
+    const finish = (r) => { if (!done) { done = true; seals?.then((h) => h?.close()); resolve(r); } };
     let onResize = null;
     const leave = () => { if (onResize) win.removeEventListener('resize', onResize); game?.destroy(); game = null; finish({ won: false, left: true }); };
     if (signal?.aborted) return leave();
@@ -91,7 +107,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       let landscape = shape(Boolean(level.grid));
       game = start({
         parent: box, base: new URL('./shouqiang/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
-        kit, level, seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, landscape, shell,
+        kit, level, seed: seed ?? `shouqiang|${Date.now()}`, reducedMotion, dev, showFps, lines, landscape, shell,
+        // The level over: the camera off at once (the result card comes a beat later).
+        onEvent: (f) => { if (f.t === 'end') seals?.then((h) => h?.close()); onEvent?.(f); },
         held: Boolean(said), // the field drawn behind the shell's lead card, standing still till it is read (Hanli 10-20: 「开场卡后面先画出画面」)
         onEnd: (r) => {
           if (onResize) win.removeEventListener('resize', onResize);
@@ -101,6 +119,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });
+      seals = offerJieyin(kit, box, { lang, game, shell, feed: dev && q.get('feed') === '1' });
       if (said) shell.lead(said, { auto: 'read', lang }).then(() => game?.go());
       if (level.grid) {
         onResize = () => { const now = shape(true); if (now !== landscape) { landscape = now; game?.layout(now); } };
