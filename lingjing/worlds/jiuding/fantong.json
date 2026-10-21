@@ -12,7 +12,7 @@
     "items": ["old-bow", "foundation-pill", "foundation-pill-9", "firm-pill", "pojing-pill", "jingjin", "leijimu", "hanyu", "huojing", "xirang"]
   },
   "keep": {
-    "_about": "Fed only past what the story still reads from the bag (Hanli 2026-10-21: 鼎苔 from the 秘境 stacked with no use — one steadies the 筑基 throw, ladder.json pill.bonus_of). The bucket sees, and may eat, only the rest; it eats it as a 凡物 (no tier row).",
+    "_about": "Fed only past what the story still reads from the bag (Hanli 2026-10-21: 鼎苔 from the 秘境 stacked with no use — one steadies the 筑基 throw, ladder.json pill.bonus_of). The bucket sees, and may eat, only the rest; it eats it as a 凡物 (no tier row). A kept thing a breakthrough reaches for (ladder.json breakthrough.pill.items) is kept only while that breakthrough is still ahead: once the foundation is laid the last 鼎苔 is fed like the rest (rules/fantong.mjs readAhead).",
     "items": { "dingtai": 1 }
   },
   "around": {
