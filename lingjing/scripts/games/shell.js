@@ -15,6 +15,8 @@
 // mountPure (games/mount.js) stops a pure board's clock and hands while paused; a kit that runs its own loop
 // (Phaser) reads `paused()` or listens with `onPause`. Nothing here knows a game.
 
+import { SPEEDS, paceOf, sentencesOf } from '../lines.js';
+
 const W = {
   zh: { pause: '暂停', resume: '继续', paused: '暂停中', won: '成', lost: '未成', again: '再来', next: '下一关', start: '开始' },
   en: { pause: 'Pause', resume: 'Resume', paused: 'Paused', won: 'Done', lost: 'Not yet', again: 'Again', next: 'Next', start: 'Start' },
@@ -103,9 +105,21 @@ export function say(id, who, text, ms = 3200) {
 /** The result in the frame's foot: { won, stars?, grade?, acts: [{ id: 'again' | 'next', main? }] }. */
 export function showResult(id, result) { entry(id).result = result; paint(id); }
 
+/* How long a lead card stays before it goes on by itself (Hanli 2026-10-21: 「好的」 — one pace for every game,
+   the story's own): read as the story's 自动 reads it, sentence by sentence, never under 3 s nor over 8 s;
+   开始 goes at once. Reduced motion reads at the same pace — it is reading, not motion. */
+export const LEAD_MS = { min: 3000, max: 8000 };
+export function leadMs(text, lang = 'zh') {
+  const parts = sentencesOf(text);
+  const ms = parts.reduce((t, x, i) => t + paceOf(x, { f: SPEEDS.mid, last: i === parts.length - 1, lang }), 0);
+  return Math.min(LEAD_MS.max, Math.max(LEAD_MS.min, ms));
+}
+
 /** The lead card before a game: its line, then a 3-2-1 for a game in time (`count`), else a 开始 tap — which
-    `auto` (ms) also gives on its own once the line has been read. Resolves when the game may start. */
-export function lead(id, text, { count = false, auto = 0, reducedMotion = false } = {}) {
+    `auto` also gives on its own once the line has been read (`'read'`: by leadMs in `lang`; a number: those ms).
+    Resolves when the game may start. */
+export function lead(id, text, { count = false, auto = 0, lang = 'zh', reducedMotion = false } = {}) {
+  if (auto === 'read') auto = leadMs(text, lang);
   const s = entry(id);
   return new Promise((resolve) => {
     if (!text) { resolve(); return; }

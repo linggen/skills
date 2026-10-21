@@ -134,8 +134,6 @@ export function leadSplit(lines, lang = 'zh') {
   const story = at < 0 ? all : all.slice(0, at);
   return { said: story.map((l) => word(l, lang)).filter(Boolean).join(lang === 'en' ? ' ' : ''), rest: at < 0 ? [] : all.slice(at) };
 }
-/** How long the lead card stays before the level starts on its own: long enough to read the line. */
-const leadMs = (said, lang, reducedMotion) => (reducedMotion ? 2400 : Math.min(8000, Math.max(4200, said.length * (lang === 'en' ? 55 : 180))));
 
 export async function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, shell } = {}) {
   lang = lang === 'en' ? 'en' : 'zh';
@@ -238,7 +236,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       // in the shell: the story read on its lead card over the drawn board; the clock waits for it
       held = true; sagaQ.length = 0; sagaT = 0;
       const tok = ++leadTok;
-      shell.lead(said, { auto: leadMs(said, lang, reducedMotion), reducedMotion }).then(() => { if (!done && tok === leadTok) go(); });
+      shell.lead(said, { auto: 'read', lang, reducedMotion }).then(() => { if (!done && tok === leadTok) go(); });
     }
     function pickLevels() {
       const stars = loadStars();

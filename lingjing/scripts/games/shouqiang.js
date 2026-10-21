@@ -99,7 +99,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });
-      if (said) shell.lead(said, { auto: reducedMotion ? 2400 : 4200 }).then(() => game?.go());
+      if (said) shell.lead(said, { auto: 'read', lang }).then(() => game?.go());
       if (level.grid) {
         onResize = () => { const now = shape(true); if (now !== landscape) { landscape = now; game?.layout(now); } };
         win.addEventListener('resize', onResize);

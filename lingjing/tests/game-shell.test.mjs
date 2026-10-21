@@ -107,3 +107,17 @@ test('off the story, 台词预取 only when asked (`prefetch`, a dev page\'s ?pr
   plain();
   assert.match(read('../scripts/beat-host.js'), /prefetch\(id, g\)/, 'the story\'s host asks as it mounts');
 });
+
+test('a lead card reads at the story\'s 自动 pace, one rule for every game: 3 s at least, 8 s at most (Hanli 2026-10-21)', async () => {
+  const { leadMs, LEAD_MS } = await import('../scripts/games/shell.js');
+  const short = leadMs('来了。'), long = leadMs('爪印是从西头的崖根底下来的。又同崖根底下去。东头有灯，有鞭味，那东西今夜只会往没人的西头来——往他怀里来。'.repeat(3));
+  assert.equal(short, LEAD_MS.min);
+  assert.equal(long, LEAD_MS.max);
+  const mid = leadMs('爪印是从西头的崖根底下来的。又同崖根底下去。东头有灯，有鞭味，那东西今夜只会往没人的西头来——往他怀里来。'); // 53 字 ≈ 4.5 s
+  assert.ok(mid > LEAD_MS.min && mid < LEAD_MS.max, String(mid));
+  for (const f of ['sadou', 'shouqiang', 'shoulu']) {
+    const src = fs.readFileSync(new URL(`../scripts/games/${f}.js`, import.meta.url), 'utf8');
+    assert.match(src, /shell\.lead\(said, \{ auto: 'read', lang/, `${f} reads its lead by the one rule`);
+    assert.doesNotMatch(src, /auto: reducedMotion \? 2400 : 4200/, f);
+  }
+});

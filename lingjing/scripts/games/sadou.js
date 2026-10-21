@@ -81,7 +81,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });
-      if (said) shell.lead(said, { auto: reducedMotion ? 2400 : 4200 }).then(() => game?.go());
+      if (said) shell.lead(said, { auto: 'read', lang }).then(() => game?.go());
     }, () => {
       box.textContent = lang === 'en' ? 'The game did not load.' : '游戏没加载出来。';
       finish({ won: false, left: true });
