@@ -106,8 +106,10 @@ test('every exit duel in the world goes the same way: one per scene, with a way 
       if (!ways.length) continue;
       assert.equal(ways.length, 1, `${sc.id}: one fight's exit — wonWayOn takes only a lone one`);
       const e = ways[0];
-      assert.ok(e.next || e.ends, `${sc.id}/${e.id}: a won fight leads somewhere`);
-      assert.ok(!e.stay && !e.needs, `${sc.id}/${e.id}: nothing but the win stands before it`);
+      // A stay (古八's 腊八 final, 09-dabi/dabi) leads on by its mark: the scene's next way waits on it.
+      const onward = e.stay && e.mark && sc.exits.some(x => x !== e && x.next && x.needs?.mark === e.mark);
+      assert.ok(e.next || e.ends || onward, `${sc.id}/${e.id}: a won fight leads somewhere`);
+      assert.ok((!e.stay || onward) && !e.needs, `${sc.id}/${e.id}: nothing but the win stands before it`);
       // What Look hands the page for it, won: the one way on.
       const l = { scene: { exits: sc.exits.map(x => ({ id: x.id, ...(gameOf(x) ? { game: gameOf(x), won: x === e } : {}) })) } };
       assert.equal(wonWayOn(l)?.id, e.id, `${sc.id}`);

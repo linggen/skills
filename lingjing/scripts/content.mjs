@@ -209,10 +209,23 @@ export function withBalance(content) {
   const rewards = { ...content.rewards, ...(b.pay ? { tables: structuredClone(b.pay) } : {}), ...(b.convert ? { xiuwei_to_lingshi: structuredClone(b.convert) } : {}) };
   if (c.rerun_h != null) for (const ch of Object.values(content.chapters ?? {})) for (const beat of ch.beats ?? []) if (beat.sealed?.rerun) beat.sealed.rerun.every_h = c.rerun_h;
   const fantong = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
-  // Shop prices (`prices`): every `buy` and `sell` lives here, folded onto its item.
-  const items = b.prices && content.items ? { ...content.items, items: content.items.items.map(i => (b.prices[i.id] ? { ...i, ...b.prices[i.id] } : i)) } : content.items;
+  // Shop prices (`prices`): every `buy` and `sell` lives here, folded onto its item; a pill's 修为 (`pills`) too.
+  const fold = i => pillFolded(b, b.prices?.[i.id] ? { ...i, ...b.prices[i.id] } : i);
+  const items = content.items && (b.prices || b.pills) ? { ...content.items, items: content.items.items.map(fold) } : content.items;
   return { ...content, ladder, rewards, fantong, items };
 }
+
+/* 丹药 (balance.json `pills`): what a pill of a family pays — its 一转 一阶 `base`, by its 转 and its 阶, tamed
+   (the story's ×9 a 转 and ×10 a 阶 are never the game's numbers). null for a pill of no family. */
+export function pillPay(balance, item) {
+  const P = balance?.pills, base = P?.base?.[item?.of];
+  if (base == null) return null;
+  return Math.round(base * (P.by_zhuan?.[(item.zhuan ?? 1) - 1] ?? 1) * (P.by_tier?.[item.tier] ?? 1));
+}
+const pillFolded = (b, i) => {
+  const pay = i.kind === 'pill' ? pillPay(b, i) : null;
+  return pay == null ? i : { ...i, effect: { ...i.effect, progress: pay } };
+};
 
 /* The chapters as played: each 今 interlude spliced in where it stands
    (spliceInterludes) — one the book holds back (`draft`) is not played at all. */
@@ -1576,6 +1589,15 @@ function lintFrom(content, bad) {
   }
 }
 
+/* 丹药 (design.md § 丹药): every pill says its 阶 (`tier`, a realm of the ladder) and its 转 (一至九); a family
+   (`of`) is one balance.json `pills` prices, and only for a pill that pays 修为. */
+function lintPill(content, item, where, bad) {
+  if (!content.ladder.tiers.some(t => t.id === item.tier)) bad(where, `a pill's 阶 (tier) is a realm of the ladder, not ${item.tier}`);
+  if (!(Number.isInteger(item.zhuan) && item.zhuan >= 1 && item.zhuan <= 9)) bad(where, 'a pill\'s 转 (zhuan) is a whole number, 一 to 九');
+  if (item.of != null && content.balance?.pills?.base?.[item.of] == null) bad(where, `of an unknown pill family ${item.of}`);
+  if (item.of != null && item.effect?.table == null) bad(where, 'a pill of a family pays 修为: it names its table');
+}
+
 function lintItems(content, bad) {
   const seen = new Set();
   // balance.json `prices` is every shop price: each names a thing that exists.
@@ -1599,6 +1621,7 @@ function lintItems(content, bad) {
     } else if (!Number.isInteger(item.buy) || !Number.isInteger(item.sell) || item.buy < 0 || item.sell < 0) bad(where, 'buy and sell must be whole numbers');
     else if (item.buy < item.sell) bad(where, `buys for ${item.buy}, below its sell price ${item.sell}`);
     for (const province of item.sold ?? []) if (!content.dictionary.provinces[province]) bad(where, `sold in unknown province ${province}`);
+    if (item.kind === 'pill') lintPill(content, item, where, bad);
     const e = item.effect;
     if (!e) continue;
     // Arms are the fight's own numbers: 攻 on a weapon (with the root it

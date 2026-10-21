@@ -54,7 +54,7 @@ export const WORDS = {
     secludingTitle: '闭关中 · {what}', secludeGate: '洞府石门紧闭', secludeRestAt: '满 {h} 小时体力回满', secludeIfNow: '此刻出关：', emergeEarly: '出关', secludeTop: '已臻圆满', secludeBarStar: '下一星：{what}', secludeBarTreasure: '下一重', secludeBarXw: '每小时修为 +{n}', secludeAt: '约 {t} 成', hourUnit: '小时', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
     secludeStar: '{name} ★{from} → ★{to} · 灵力 {was}→{cost}', secludeStarLeft: '{name} 离下一星还差 {h} 小时',
     secludeGrowXw: '修为 +{n}', secludeGrowTreasure: '{name} {from}重 → {to}重', secludeTreasureLeft: '{name} 离下一重还差 {h} 小时',
-    secludeHeld: '修为已到本境顶上，余下的留待突破。', secludeRested: '体力回满', secludePillTaken: '服了{name}，时辰 ×{m}',
+    secludeHeld: '修为已到本境顶上，余下的留待突破。', secludeRested: '体力回满', secludeBuzhuan: '补转：丹毒补上{n}转', secludeBuzhuanLeft: '补转：丹毒补上{n}转，还欠{left}转', secludePillTaken: '服了{name}，时辰 ×{m}',
     emergeBtn: '出关 · 领取', emergedTitle: '出关', emergedHours: '闭关 {h} 小时', emergedNone: '这一回没长什么，歇够了。', emergedClose: '收起',
     qi: '体力', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空', qiBackAt: '{t} 回满',
     emptyLine: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。{t} 回满，再出发。', emptySoon: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。随时辰恢复。',
@@ -112,7 +112,7 @@ export const WORDS = {
     secludingTitle: 'In seclusion · {what}', secludeGate: 'The cave gate, shut', secludeRestAt: '{h} h refills stamina', secludeIfNow: 'Out now:', emergeEarly: 'Come out', secludeTop: 'At the top', secludeBarStar: 'Next star: {what}', secludeBarTreasure: 'Next layer', secludeBarXw: 'Cultivation +{n} an hour', secludeAt: 'ready ~{t}', hourUnit: 'h', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
     secludeStar: '{name} ★{from} → ★{to} · Force {was}→{cost}', secludeStarLeft: '{name}: {h} h to the next star',
     secludeGrowXw: 'Cultivation +{n}', secludeGrowTreasure: '{name} layer {from} → {to}', secludeTreasureLeft: '{name}: {h} h to the next layer',
-    secludeHeld: 'Your realm is at its peak; the rest waits for the breakthrough.', secludeRested: 'Stamina full', secludePillTaken: 'Took a {name}: hours ×{m}',
+    secludeHeld: 'Your realm is at its peak; the rest waits for the breakthrough.', secludeRested: 'Stamina full', secludeBuzhuan: 'Turns made up: {n} of the pill poison', secludeBuzhuanLeft: 'Turns made up: {n} of the pill poison, {left} still owed', secludePillTaken: 'Took a {name}: hours ×{m}',
     emergeBtn: 'Come out · Collect', emergedTitle: 'Out of seclusion', emergedHours: '{h} h in seclusion', emergedNone: 'Nothing grew this time; you are rested.', emergedClose: 'Put away',
     qi: 'Stamina', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty', qiBackAt: 'full at {t}',
     emptyLine: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. Ready to go again at {t}.', emptySoon: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. It comes back with the hours.',
@@ -762,7 +762,9 @@ const GROWN_LINE = {
 };
 const round1 = (n) => Math.round(n * 10) / 10;
 export function grownLines(e, w, count = (n) => esc(n)) {
-  const lines = [e.grows ? GROWN_LINE[e.focus]?.(e, w, count) : '', e.rested ? esc(w.secludeRested) : ''].filter(Boolean);
+  // 补转 (rules/dandu.mjs): the turns of 丹毒 the sitting made up, whatever the focus.
+  const bu = e.buzhuan ? esc(say(e.buzhuan.left ? w.secludeBuzhuanLeft : w.secludeBuzhuan, { n: e.buzhuan.made, left: e.buzhuan.left })) : '';
+  const lines = [e.grows ? GROWN_LINE[e.focus]?.(e, w, count) : '', bu, e.rested ? esc(w.secludeRested) : ''].filter(Boolean);
   return lines.map((l) => `<div>${l}</div>`).join('');
 }
 

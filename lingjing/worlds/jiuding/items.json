@@ -40,6 +40,9 @@
     {
       "id": "qi-pill",
       "kind": "pill",
+      "tier": "qi",
+      "zhuan": 1,
+      "of": "qi",
       "name": {
         "zh": "聚气丹",
         "en": "Qi-gathering pill"
@@ -57,7 +60,6 @@
         "徐"
       ],
       "effect": {
-        "progress": 20,
         "table": "puzzle"
       }
     },
@@ -231,13 +233,14 @@
     {
       "id": "foundation-pill",
       "kind": "pill",
+      "tier": "foundation",
+      "zhuan": 1,
       "name": {
         "zh": "筑基丹",
         "en": "Foundation pill"
       },
       "art": "art/items/foundation-pill.webp",
       "_sold": "Never on a shelf (2026-10-03, the book: 全观一年一颗, the 宗门大比 champion's prize — 祁长松's in 古六, the hero's only at the year-five 大比 in 古八's skip, 09-dabi `dabi` — 古七's skip before the 2026-10-07 split): a gift or the sect's, not the market's. 一转下品 — one line, a few dark flecks.",
-      "zhuan": 1,
       "about": {
         "zh": "练气九层圆满者冲关时服之，多几分把握。一转下品，一道纹，几点黑斑——全观一年只这一颗。",
         "en": "Taken at the Consummation of Qi Condensation, it steadies the breakthrough a little. One-turn, low grade: one ring, a few dark flecks — the whole temple gets one a year."
@@ -259,9 +262,10 @@
         "en": "Nine-Turn Foundation Pill"
       },
       "kind": "pill",
+      "tier": "foundation",
+      "zhuan": 9,
       "art": "art/items/foundation-pill.webp",
       "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), never shown again until the eve of his 筑基 (Hanli 2026-10-06: 「等筑基的时候再拿出来」 — the bag gets it on 09-qulao `listen`) and eaten there (古八; 古七 before the 2026-10-07 split). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
-      "zhuan": 9,
       "_fill": "Was `fill: \"full\"` (Hanli 2026-10-14: 筑基小成圆满 in one night) until 2026-10-16 — Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」: no story-given thing fills a step any more (the lint refuses `fill`); the 九转 lands 筑基小成 and he sits it full. Before: how far a breakthrough this pill carries fills the step it lands on — \"full\" lands it 圆满 (ladder.json `full`). The 九转 takes 小满 to 筑基小成圆满 in one night; the rest of its power sinks into the lake bed (古八, Hanli 2026-10-14: 「因为9转筑基丹, 小成得以圆满」). A pill without it lands at the step's start, 修为 0. Read by rules/core.mjs landFill; an exit may declare the same for a world with no breakthrough pills.",
       "about": {
         "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有，一个字也没有。沉鼎观三百年最好的一炉是三转。",
@@ -281,6 +285,8 @@
       "id": "firm-pill",
       "juan": 2,
       "kind": "pill",
+      "tier": "foundation",
+      "zhuan": 1,
       "name": {
         "zh": "固基丹",
         "en": "Foundation-firming pill"
@@ -303,6 +309,8 @@
       "id": "pojing-pill",
       "juan": 2,
       "kind": "pill",
+      "tier": "core",
+      "zhuan": 1,
       "name": {
         "zh": "破境丹",
         "en": "Breach pill"
@@ -325,6 +333,8 @@
     {
       "id": "mend-pill",
       "kind": "pill",
+      "tier": "qi",
+      "zhuan": 1,
       "name": {
         "zh": "回春丹",
         "en": "Mending pill"
@@ -358,6 +368,8 @@
     {
       "id": "huiqi-pill",
       "kind": "pill",
+      "tier": "qi",
+      "zhuan": 1,
       "name": {
         "zh": "回气丹",
         "en": "Qi-return pill"
@@ -391,8 +403,10 @@
     {
       "id": "mend-pill-9",
       "kind": "pill",
-      "_furnace": "Made in 银月's furnace (story/jiuding-lu/DESIGN.md § 丹药等级 — 随主人: the owner's realm, 九转): its own item, never the market's 回春丹. `zhuan` draws its nine gold lines; not sold, and worth nothing at a counter (九转丹不能卖).",
+      "tier": "qi",
       "zhuan": 9,
+      "of": "mend",
+      "_furnace": "Made in 银月's furnace (story/jiuding-lu/DESIGN.md § 丹药等级 — 随主人: the owner's realm, 九转): its own item, never the market's 回春丹. `zhuan` draws its nine gold lines; not sold, and worth nothing at a counter (九转丹不能卖).",
       "name": {
         "zh": "九转回春丹",
         "en": "Nine-turn mending pill"
@@ -408,15 +422,16 @@
       },
       "sold": [],
       "effect": {
-        "progress": 60,
         "table": "scene"
       }
     },
     {
       "id": "qi-pill-9",
       "kind": "pill",
-      "_furnace": "Made in 银月's furnace from the garden's culls (xu-yaoyuan-canzhu): 九转, three times the market 聚气丹's 修为; not sold.",
+      "tier": "qi",
       "zhuan": 9,
+      "of": "qi",
+      "_furnace": "Made in 银月's furnace from the garden's culls (xu-yaoyuan-canzhu): 九转, three times the market 聚气丹's 修为; not sold.",
       "name": {
         "zh": "九转聚气丹",
         "en": "Nine-turn qi-gathering pill"
@@ -432,7 +447,6 @@
       },
       "sold": [],
       "effect": {
-        "progress": 60,
         "table": "scene"
       }
     },
@@ -1617,7 +1631,9 @@
     {
       "id": "qi-pill-3",
       "kind": "pill",
+      "tier": "qi",
       "zhuan": 3,
+      "of": "qi",
       "name": {
         "zh": "三转聚气丹",
         "en": "Three-turn qi-gathering pill"
@@ -1633,7 +1649,6 @@
       },
       "sold": [],
       "effect": {
-        "progress": 30,
         "table": "task"
       },
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七: 隔上好几个月，才蹦出一颗三道四道的 — the rare draw of the 聚气丹 方子. 30 修为 from the task table, between the market one (20) and the nine-turn (60); never sold.",
@@ -1642,7 +1657,9 @@
     {
       "id": "mend-pill-3",
       "kind": "pill",
+      "tier": "qi",
       "zhuan": 3,
+      "of": "mend",
       "name": {
         "zh": "三转回春丹",
         "en": "Three-turn mending pill"
@@ -1658,7 +1675,6 @@
       },
       "sold": [],
       "effect": {
-        "progress": 30,
         "table": "task"
       },
       "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七's 回春丹 方子, its rare draw. 30 修为 from the task table; never sold.",
@@ -2378,6 +2394,26 @@
       },
       "sold": [],
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
+    },
+    {
+      "id": "huangjing-10",
+      "kind": "material",
+      "name": {
+        "zh": "十年黄精",
+        "en": "Ten-year Solomon's seal root"
+      },
+      "art": "art/items/huangjing.webp",
+      "about": {
+        "zh": "一截黄精，黑得发亮，比你见过的都沉。闵丹师给的：「这一截，算你这个月的碾药钱。」九节聚气，君就是它。",
+        "en": "A length of Solomon's seal root, black and glossy, heavier than any you have held. Pill-master Min's: \"Call this length your grinding wage for the month.\" In the nine-node gathering recipe, it is the sovereign."
+      },
+      "hint": {
+        "zh": "君。",
+        "en": "The sovereign."
+      },
+      "sold": [],
+      "_about": "古八 (09-dabi): 闵丹师's 九节聚气方 — 君，十年黄精 (story DESIGN § 九节聚气方). The 看炉 board (`danfang-kanlu`) gives it, won or let go; fed to the 饭桶 alone it is the 方子 `jiujie` (fantong.json recipes): three 三转聚气丹.",
+      "art_source": "The 黄精's picture until its own is painted."
     },
     {
       "id": "heshouwu",

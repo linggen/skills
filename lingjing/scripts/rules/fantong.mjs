@@ -39,9 +39,15 @@ export function realmOf(content, state, t = tableOf(content)) {
 }
 
 /* ── What exists for this save: the 回 reached, the beasts beaten, the 卷 open, a once-thing not had ── */
+/* A 破境丹 row (`breach`) fits the realm one above his: the furnace makes the pill for the door ahead of him. */
+function breachFits(content, state, id) {
+  const tiers = content.ladder?.tiers ?? [], at = tiers.findIndex(x => x.id === state.tier);
+  return tiers.findIndex(x => x.id === itemOf(content, id)?.tier) === at + 1;
+}
 function rowOpen(content, state, t, row) {
   if (!state || !content) return true; // the bare roll (tests, the 游戏厅's sample) sees every row
   if (row.hui && huiOrder(content, row.hui) > huiOrder(content, huiNow(content, state))) return false;
+  if (row.breach && !breachFits(content, state, row.item)) return false;
   if (row.beast && !(state.beasts?.[row.beast]?.won > 0)) return false;
   if (row.wealth) return !isLocked(content, state, 'wealth'); // no 灵石 out while 灵石 are not his yet
   if (!row.item) return true;
@@ -256,7 +262,7 @@ function feed(state, content, ctx, args, t) {
   const briefs = landed.map(l => outBrief(content, s, t, l.got, l.grade));
   const out = briefs[0], extra = roll.outs[0]?.with ? briefs[1] : null, twin = roll.twin ? briefs.at(-1) : null;
   const ev = roll.event ? (t.events ?? []).find(e => e.id === roll.event) : null;
-  const named = o => (o.wealth ? `${o.name} ×${o.n}` : o.name);
+  const named = o => (o.wealth || o.n > 1 ? `${o.name} ×${o.n}` : o.name);
   const line = ev ? pick(ev.say, lang) : fill(w.spit, { name: named(out) });
   const pageLine = P && pages > (f.pages ?? 0) && !paged ? fill(w.page, { n: Math.min(pages, P.need), need: P.need }) : null;
   const say = [line, extra ? fill(w.with, { name: named(extra) }) : null, twin ? fill(w.twin, { name: named(twin) }) : null, pageLine,

@@ -15,6 +15,7 @@ Updated 2026-10-21.
 ## Done lately
 - 10-21 — Hanli's calls on the per-回 pass (「agree」): 古九's 「他把她扔进了漳水里」 stays told (no 砸寨 level — a person thrown is no target game, and the 漳水立起 beats follow); 今线's 卧推 (j04-gym) stays told (no sixth 调息). 古四's 饭桶 first feed (牛骨头) becomes a 割绳子 level (in progress). A tall game's story card may grow past 720 on a Mac, as in the 游戏厅 (in progress).
 
+- 10-21 — **丹药 in the game built; 古八's per-回 pass** (design.md § 丹药 【已建】, § Per-回 › 古八; tasks/h09.json): every pill has its 阶 (`tier`) and 转 (`zhuan`), the 修为 a family pays on one tamed curve in balance.json `pills` (一转 ×1 · 三转 ×1.5 · 九转 ×3; the old numbers kept); 丹毒 (rules/dandu.mjs, balance.json `dandu`) — a 修为 pill owes the turns its furnace left out off the 体力 pool's top, 闭关 makes them up (补转, on the 出关 card), a 九转 clears them, Look and the pouch say it; the 饭桶's 筑基丹 rows are 破境丹 one 阶 above its owner (`breach`). 古八: 守炉 · 丹房看炉 (`danfang-kanlu`, the 后山's 鬿雀 at 闵丹师's lit furnace) gives the 十年黄精, whose 方子 `jiujie` in the 饭桶 gives three 三转聚气丹; the 腊八 final is a card fight (`foe-jiuceng`, 随风 and 火柴 in hand, ~48% bare over ten save seeds); 入秋 waits on the board. Proposals only: 炸炉 for the 旁炉, 仙丹 after the finale. Seeds earn a way on's stage gate before its fight (rules/progress.mjs).
 - 10-21 — **画面效果 done: the Pixi pass** (Hanli 10-20: 「start the Pixi pass after 砸寨」; design.md § 画面效果 【已建】, 哇时刻 【已建】): 画活 — stage paintings on a MeshPlane, what moves declared in backdrops.json `alive` (40 paintings; `alive_creature` for every 出场), a struck picture squashes (fx-alive.js, fx.js `squash`); 银月's memories soak into colour in WebGL (fx-memory.js); snow · rain · fog in WebGL over the CSS layer (fx-weather.js); a new 回 turns the page under its seal (fx-hui.js). Previews: scripts/alive.html, scripts/fx.html?moment=memory|weather|hui. No pixi-filters / revolt-fx vendored — Pixi's own filters did it.
 - 10-21 — **A story game card takes the stage on a Mac** (Hanli: 「按你的建议来」; games/shell.css, one rule): up to 720 wide, not the phone's 540; a tall field (`meta.tall`: 守炉 · 守墙关 · 撒豆成兵, the 游戏厅 reads the same word) has its bar beside it, as in the 游戏厅 — back over it for 守墙关's landscape 药园 and on a narrow stage; a board sized by the window's height is told what the stage keeps over and under it; 守炉 fits its field to the stage's own scroller (and again when the chat opens). Live at 1440×900: 守炉 372×471 → 406×514, unscrolled (was 20 px over); 守墙关 药园 506×467 → 686×633; 砸寨 508×285 → 688×387; 撒豆成兵 (mounted into the story card by hand) 422×750, 115 px over → 392×696 in sight. Phone (390) and the 游戏厅 unchanged.
 - 10-21 — **Per-回 gameplay pass: 古四, 古九, 今线 audit** (Hanli 10-21: 「做了一部分的, 都去把他们做完吧」). **古四**: no new board (药园巡夜 stays its one); 后山崖顶 adds 蒙山's 狼 and 熊 from h05 (places/xu.json; weighed with the 蒙山 rows, 49% · 50% bare) — the 狰 leaves the pool once tamed, so 古四 meets 9 there (was 7), with 32 distinct things to find or loot inside 观内. **古九**: 斗法 · 老井 on the 河滩, the book's one told fight — 01-cauldron's take passage split at 「脚底下的水，不响了。」 into 01-laojing, word for word (his return, then the 试 on the way on `dodge`, then the finger, the mirror's beam, 阿禾's roots and 入隙 read after); `foe-laojing` a 试 outlasted with 阿禾 (52% bare · 77% with two pills, driven down 2%; 镜光 14 at half), his portrait by local FLUX (art/people/laojing.webp). Rhythm 01-deep → end 3,129 → 1,383 · 1,746. No farming added: 古九 has no stage quest and walks all of 卷一's map. **今线**: audit, nothing added (below, design.md § Per-回). Left: 古八 (the 丹药 agent's).
@@ -102,9 +103,9 @@ Updated 2026-10-21.
 
 ## Partly built (【在建】 in design.md)
 
-- Per-回 gameplay pass: 古四, 古六, 古七, 古九 done, 今线 audited (10-21); 古八 left (the 丹药 agent's).
+- Per-回 gameplay pass: 古四, 古六, 古七, 古八, 古九 done, 今线 audited (10-21).
 - 剧情 × 开放世界: key-beat lock and thread colours built 10-21; 银月's fragments on the map and dated world events are a proposal (design.md), waiting on one call.
-- 丹药 in the game.
+- 丹药 in the game: built 10-21; 炸炉 (the 旁炉) and 仙丹 are proposals in design.md § 丹药, waiting on Hanli.
 - Playtest crawler: a human-like bot per board, dead-control detection.
 
 ## Parked (tags, not merged)
@@ -124,6 +125,7 @@ Updated 2026-10-21.
 
 ## Waiting on Hanli
 
+- 丹药 (10-21): do the 丹囊's fight pills (回春丹 · 回气丹) owe 丹毒 too? Now only 修为 pills do — with 体力 on, 丹毒 on fight pills would tax the 灵石 he spends on them.
 - 鼎苔 in the rerun (10-21): the outer ring's most frequent find (weight 3 of 10, ~0.5 a day for the typical player, ~8 over 古五–古八), but it sells for nothing, the 饭桶 refuses it, and its one use is +10 on the 筑基 throw — reached for only when no 筑基丹 is held, one spent on a success (rules/breakthrough.mjs), so a stack has no use. Keep its weight (flavour, a stack for the throw), give it a price / let the 饭桶 take it, or step it down?
 - 剧情 × 开放世界 (10-21): a dated world event missed — does it pass without him (the world moves on, the 恩仇簿 remembers 迟了) or wait for him? (design.md proposal)
 - 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built.

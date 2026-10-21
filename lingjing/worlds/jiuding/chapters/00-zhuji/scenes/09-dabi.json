@@ -50,12 +50,39 @@
   "dabi",
   "ruqiu"
  ],
+ "show": [
+  {
+   "card": "board",
+   "id": "danfang-kanlu"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "danfang-kanlu"
+  ]
+ },
+ "_beats": "古八's per-回 pass (2026-10-21, tasks/h09.json): the scene's one board is 守炉 · 丹房看炉 after the 九节聚气 night (it gives the 十年黄精, the 方子's 君); the way on `dabi` is the 腊八 大比's final, fought (foe-jiuceng) — a fight's exit has nothing but the win before it (tests/won-way-on), so the board is waited on by 入秋 (`ruqiu` needs it with the 大比's mark). The book's words stand as they were.",
  "exits": [
   {
    "id": "dabi",
    "label": {
     "zh": "腊八 · 再上五行台",
     "en": "Laba · Up on the stage again"
+   },
+   "game": {
+    "id": "dabi-final",
+    "kind": "duel",
+    "creature": "foe-jiuceng",
+    "retry": true,
+    "foe": {
+     "hp": 3.5,
+     "party": []
+    },
+    "_foe": "The 腊八 大比's final (古八): a 内门 九层圆满 whose 金刃 come one breath at a time (creatures.json foe-jiuceng — 随风 and 火柴 in his hand from the first turn, the book's two), alone on the stage (`party: []`); weighed at 八层, the gate on this way on (tools/story-fights.mjs `foe-jiuceng@09-dabi/dabi`, 2026-10-21): hp 3.5 → a player who thinks a turn ahead wins about 48% bare on average over ten save seeds (each deals its own ten, 20–75%), the fixture's ten 63%, with two pills 92%; the careless one-ply line 8%. tests/fight-band.test.mjs holds it."
+   },
+   "withdrawn": {
+    "zh": "执事的锣槌在手里转了两转：「歇一口，再上。」",
+    "en": "The steward turns the gong-stick twice in his hand: \"Catch your breath, then up again.\""
    },
    "means": "year six 闵丹师's lesson in the 丹房 (choosing stock by winters, the 君), the 九节聚气 recipe and a ten-year 黄精; the 饭桶 fed by it gives three-line pills; 八层 that winter; year seven 飘风不终朝 (定风 = waiting it out), 进退 (「初六：进退，利武人之贞」; the pine bough), 九层, the 火柴's line of sparks; a furnace of his own, a true 一纹 pill on the fifth batch — 「有火气。」「能吃。」; at the Laba of year seven (the book's 第五年腊八) he goes up again after four years away, Shopkeeper Qian lists him at one-pays-fifty, Ahe's single cash is the only stake; the final against a 九层圆满 won by an instant with 随风, waiting out his gasp between blades, a cut under the ribs; Qian counts out fifty-one cash to her; the sect's one-turn pill resealed with rice water into the storage pouch; 闵丹师's sniff after five years at one furnace; five brides on the Zhang",
    "mark": "y-dabi",
@@ -84,7 +111,8 @@
    },
    "means": "the autumn of year eight: 宁师伯's one 筑基 lecture (the brick and the loose earth; one 筑基 pill a year; 「不是赏，是赌」); the jar brims over, ninth layer perfected; his master calls him up the cliff",
    "needs": {
-    "mark": "y-dabi"
+    "mark": "y-dabi",
+    "task": "danfang-kanlu"
    },
    "refuse": {
     "zh": "一季一季来：先过了前头那一季。",

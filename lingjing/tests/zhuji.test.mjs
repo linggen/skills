@@ -107,9 +107,9 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   assert.doesNotMatch(seven.did, /筑了基|腊八/);
   assert.match(seven.teaser, /除夕[\s\S]*筑了基的/);
   assert.equal(resolve(placed(s), content, ctx, { exit: 'ruqiu' }).result.refused, 'needs');
-  s = go(placed(s), 'dabi').state;
+  s = go({ ...placed(s), wins: { ...placed(s).wins, 'dabi-final': NOW.toISOString() } }, 'dabi').state; // the 腊八 final won (2026-10-21)
   assert.equal(s.step, 9, '腊八 waited on 八层圆满, earned; what he banked past it steps him to 九层 once 腊八 is behind him');
-  s = { ...s, stamina: 0, resting: true };
+  s = { ...s, stamina: 0, resting: true, tasks: { ...s.tasks, 'danfang-kanlu': { status: 'done' } } }; // 守炉 · 丹房看炉 played (入秋 waits on it)
   assert.equal(s.bag['foundation-pill'], 1, 'the year-five 大比: the sect\'s 一转 is his, resealed into 饭桶');
   // 入秋 moves the story on (`next`): a story step's 3, like every scene's step.
   assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'stage', '入秋 waits on 九层圆满, earned');
@@ -246,7 +246,7 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   s = go(s, 'spar').state;
   assert.equal(s.bag['foundation-pill'], undefined, 'not in 古七');
   assert.equal(s.step, 6, '六层: 七层 is ground in 古八, not given by the autumn');
-  s = go(full(s), 'dabi').state;
+  s = go({ ...full(s), wins: { ...s.wins, 'dabi-final': NOW.toISOString() } }, 'dabi').state; // the 腊八 final won (2026-10-21)
   assert.equal(s.bag['foundation-pill'], 1);
   assert.equal(s.step, 9, '九层');
 });

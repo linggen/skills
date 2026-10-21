@@ -17,6 +17,7 @@ import { comingOf } from './hui.mjs';
 import { enter } from './worlds.mjs';
 import { bagFull, pouchBrief, roomFor } from './pouch.mjs';
 import { findFragment } from './memories.mjs';
+import { danduBrief, eatPill } from './dandu.mjs';
 
 /* ── Story, travel, language ── */
 
@@ -260,7 +261,9 @@ export function trade(state, content, ctx, args) {
       s.bag[item.id] = held - 1;
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
       const paid = pay(content, s, ctx, { table: e.table, progress: e.progress });
-      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), paid } };
+      // 丹毒: the turns its furnace left out, owed until 闭关 (rules/dandu.mjs); a 九转 clears them.
+      const dandu = eatPill(content, s, item.id);
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), paid, ...(dandu ? { dandu: { ...dandu, now: danduBrief(content, s) } } : {}) } };
     }
     if (e.wear && e.wear === companionOf(content)?.id && !hasCompanion(s)) {
       return refuse('no-companion', pick({ zh: '还没有人可以佩戴它。', en: 'There is no one to wear it yet.' }, lang));

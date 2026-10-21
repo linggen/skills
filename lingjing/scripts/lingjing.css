@@ -612,6 +612,7 @@ body.fighting .footrow { display: none; }
 .pworn .act { align-self: flex-start; margin-top: 2px; padding: 1px 8px; font-size: 12px; }
 .pback { margin: 12px 0 0; }
 .pover { color: var(--seal); margin: 0 0 8px; }
+.pdandu { color: var(--seal); margin: 0 0 8px; }
 .ptabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
 .ptab { flex: none; font: inherit; font-size: 13.5px; padding: 6px 10px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--dim); cursor: pointer; }
 .ptab span { margin-left: 4px; font-size: 11.5px; color: var(--faint); }

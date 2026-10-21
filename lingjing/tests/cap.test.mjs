@@ -98,7 +98,8 @@ test('古七: 四层 until 定风 is walked — each layer ground behind its gat
   const t = at('00-zhuji', '09-dabi', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 7 });
   grind(t);
   assert.equal(named(t), '练气八层', 'held at 腊八\'s 八层');
-  const laba = resolve(t, content, ctx, { exit: 'dabi' });
+  // The 腊八 final won (古八's per-回 pass, 2026-10-21: a card fight on the way on).
+  const laba = resolve({ ...t, wins: { ...t.wins, 'dabi-final': new Date().toISOString() } }, content, ctx, { exit: 'dabi' });
   assert.equal(laba.result.ok, true, JSON.stringify(laba.result).slice(0, 200));
   assert.equal(laba.result.paid?.progress ?? 0, 0, '腊八 grants no 修为 (what he had banked past 八层 is his own, and steps him once the gate is behind)');
   const u = laba.state;

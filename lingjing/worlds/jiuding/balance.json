@@ -281,6 +281,7 @@
     "geju-zong": {"buy": 60, "sell": 20},
     "qique-zhua": {"buy": 66, "sell": 22},
     "huangjing": {"buy": 24, "sell": 8},
+    "huangjing-10": {"buy": 120, "sell": 40},
     "heshouwu": {"buy": 36, "sell": 12},
     "fuling": {"buy": 27, "sell": 9},
     "cangzhu": {"buy": 15, "sell": 5},
@@ -312,6 +313,37 @@
     "pool_rest_min": 30,
     "rerun_h": 3,
     "fantong_min": 60
+  },
+  "_pills": "丹药 in the game (design.md § 丹药; story DESIGN § 六·五): every pill is `tier` (its 阶 — the realm it is for, a ladder tier id) and `zhuan` (一至九转) on items.json; a pill that pays 修为 names its `of` (the family, its 一转 一阶 pay in `base`), and content.mjs withBalance folds `effect.progress` = base × by_zhuan[转] × by_tier[阶], so no pill carries its own number. Tamed (Hanli: the story's ×9 a 转 and ×10 a 阶 are never the game's): 一转 ×1 · 三转 ×1.5 · 九转 ×3, a quarter more each 转 — the numbers the game already had (聚气丹 20, the 饭桶's 三转 30, the furnace's 九转 60) — and one 阶 adds one 一阶's worth. A pill eaten pays at most its table's cap (rewards tables), so the 九转 at 60 stands on the scene table's 60. Breakthrough pills (ladder.json breakthrough.pill.items) declare no `of`: the throw reads them by 转 (by_zhuan there); fight pills keep `effect.fight` (the 丹囊 bands).",
+  "pills": {
+    "base": {
+      "qi": 20,
+      "mend": 20
+    },
+    "by_zhuan": [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3],
+    "by_tier": {
+      "qi": 1,
+      "foundation": 2,
+      "core": 3,
+      "nascent": 4,
+      "deity": 5,
+      "void": 6,
+      "body": 7,
+      "maha": 8,
+      "tribulation": 9
+    }
+  },
+  "_dandu": "丹毒 and 补转 (story DESIGN § 六·五: 下品吃多了积毒，体力上限一时降低，闭关可排；上品无毒；九转反能化毒). A 修为 pill eaten (服用 from the pouch, the 闭关 pill, a breakthrough's pill) leaves the turns its furnace left out owing: `owed` by 转 (一转 8 — the nine a 九转 has, less the one it got; 中品 四至六转 看体质, none in 卷一; 上品 none). Each turn owed takes `per_turn` off the 体力 pool's top, `cap` at most (state.mjs staminaMax). 闭关 is 补转 — the body makes up `cure_per_hour` turns an hour of any focus (rules/seclusion.mjs). A pill of `clears` 转 or more clears every turn owed. Fight pills (the 丹囊's 回春丹 · 回气丹) owe nothing for now (Hanli's call: 灵石 buys them, and 丹毒 there would tax the 灵石 once 体力 is on). With these numbers a 聚气丹 a day is made up by one hour's sitting; four at once stand at the cap until a night's 闭关.",
+  "dandu": {
+    "owed": {
+      "1": 8,
+      "2": 7,
+      "3": 6
+    },
+    "clears": 9,
+    "per_turn": 1,
+    "cap": 30,
+    "cure_per_hour": 4
   },
   "_model": "The players tools/balance.mjs plays, day by day (design.md § Pacing: ~30 minutes a day, one 回 a week; 古一–古三 fast). `minutes`: what each thing takes (a scene's passages read at `chars_per_min`). `players`: minutes a day (the first day longer), sittings, and what each does daily — `gongke` the share of days the 功课 is handed in, `reruns` 秘境 runs, `fights` pool fights, `fantong` feeds, `tale` 今日传闻s, `gate_fights` more pool fights while a stage quest waits, `seclude` hours of 闭关 a night (focus 修为: rewards.json seclusion's rate, the seclusion table's cap). `fight_win_rate`: a fight won (the 斗法 band, played again when lost). `fantong_progress`: a feed's 修为 on average (a pill now and then). `errands_at`: the 回 each errand that pays 修为 or a pill is done in (null: on no 卷一 map; tests/balance.test.mjs makes a new one name its 回). `fit`: the player and the days --fit aims the stage quests at (the heavy player: the one they hold back); `bands`: what the test holds, for the 回s from `later` on. Guesses to be hand-played on the live page (Hanli). `waking_h`: the waking day the sittings spread over, for 体力 — the model plays it ON (rewards.json stamina), as players will have it; while we test it is off (rules.mjs), and with these players it never binds.",
   "model": {

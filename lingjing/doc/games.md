@@ -437,6 +437,21 @@ the passage whole, the task marked `cut` (a save holding it offered lets it go),
 | 七 · 09-yishui | 芦苇里那一等 `reed` | 「放剑」 | loose when the wing-root shows | one timing tap | **cut** | 4 wasted | no | kept until replaced |
 | 七 · 09-xie | 顺风溜 `wind` | 背后有风 | read the wind, turn, 退一步 | a read and a tap | **keep** → 几何冲刺 one-tap runner, after launch | 3 puffs | yes — 顺风溜 | **→ 气走经脉 · 顺风溜 (10-19, the sweep)** — module in the 游戏厅 |
 
+## 古八 (10-21)
+
+The per-回 pass (design.md § Per-回 › 古八; tasks/h09.json): fewer, better — one board, one fight, both in 09-dabi.
+
+| 回 · scene | game | the book | how it plays | 得牌? |
+|---|---|---|---|---|
+| 八 · 09-dabi | 守炉 · 丹房看炉 `danfang-kanlu` (level `danfang-kanlu`) | 一开炉十天半月，丹师一步离不得 — the 看炉 is his | 守炉's 古八 story level on the 后山 · 丹房 map: 野猪 up the road, the 后山's 鬿雀 diving at the furnace (game-only, like 兽潮); 剑阵 · 火符 · 雷符 (雷 from wave 3); five waves, hpMul 1.4 — a first-timer's plain hand wins losing a little fire, all fire loses to the birds; gives the 十年黄精 (the 九节聚气方's 君) on a win or a skip | no |
+| 八 · 09-dabi/dabi | 腊八 决赛 (card fight `dabi-final`, `foe-jiuceng`) | 金刃一口气一口气发的，发一道，喘一口……等到第十一道 | the 内门 九层圆满, alone on the stage, a 金 burst deck; 随风 and 火柴 dealt into his hand (the book's two, so no curve-dealt ten is a wall); ~48% bare over ten save seeds (20–75%), more with pills (fight-band) | — |
+
+Told, not played: 《金丹》 (a recitation — a quiz), the 挑料 (a pick), 定风's candle and 进退's pine bough (no kit's verb),
+the 回家 night (09-qulao, the 回's heart) and the 筑基 (09-cliff: its 突破 card and 大场面). The 九节聚气 night is
+the player's own 饭桶 feed (fantong.json recipes `jiujie`: the 十年黄精 alone → three 三转聚气丹), never a board.
+Rhythm: 09-futian/spar → 09-cliff/take 4,676 → 1,625 · 3,051 (the second is the 大比's telling, 入秋, 瞿老 and the night home
+— left: the 回's heart).
+
 ## 五子棋 in the 九宫格's place (10-19)
 
 Hanli 10-19: 「五子棋是好游戏, 可以放进去. 可以替代9宫格游戏」, then 「9宫格出现一次就可以了」. The 洛书 square is

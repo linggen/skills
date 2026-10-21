@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "_about": "古八's boards (h09; the per-回 plan 2026-10-15, done 2026-10-21): fewer, better — the 回 reads three scenes (09-dabi, 09-qulao, 09-cliff) and keeps one board and one fight, both in 09-dabi. The board is 守炉's 古八 story level (Hanli 10-20: a new level a 回 from 古四 on): 闵丹师 has lit the furnace and cannot leave it, the 看炉 is 小满's, the 后山's 鬿雀 come for the smell. The fight is the 腊八 大比's final on the way on (09-dabi/dabi, `foe-jiuceng`, the 金刃 that gasps between blades). Told, never played: 《金丹》's recitation and the 挑料 (a quiz and a pick — the weak-board rule), 定风's candle and 进退's pine bough (no kit's verb), the 回家 night (09-qulao — the 回's heart) and the 筑基 (09-cliff — the 突破 card and its 大场面 are the beat).",
+  "_economy": "Pay declared here for the economy model (tools/balance.mjs reads tasks/*.json): 修为 +5 (danfang-kanlu, the board table; its 灵石 the board's rank), and its `gives` — the 十年黄精, whose 方子 in the 饭桶 (fantong.json recipes `jiujie`) gives three 三转聚气丹 (30 修为 each, the task table) the night he feeds it. The final pays the scene table's 灵石 20 (no story 修为). The two stage quests stand as they were (caps.hui.h09.gates: 八层 at 09-dabi/dabi, 九层 at 09-dabi/ruqiu); the 后山's 猲狙 and 鬿雀 (places/xu.json yaoyuan-wai, `from: h09`) and 兽潮 are where he grinds them.",
+  "tasks": [
+    {
+      "id": "danfang-kanlu",
+      "kind": "board",
+      "game": "shoulu",
+      "deal": { "lv": "danfang-kanlu" },
+      "period": "once",
+      "stars": 3,
+      "title": { "zh": "守炉 · 丹房看炉", "en": "Guard the Furnace · Watching the pill furnace" },
+      "how": { "zh": "药气飘上后山，鬿雀直扑炉口。点虚线圈布符——剑阵够得着天上，火符烧山道上的野猪——守到闵丹师开炉。", "en": "The smell of the herbs drifts up the back hill and the qique dive at the furnace. Tap a dashed ring to lay a talisman — swords reach the sky, fire burns the boars on the road — and hold till Min opens the furnace." },
+      "grant": { "table": "task", "progress": 5 },
+      "gives": { "bag": "huangjing-10" },
+      "done_line": { "zh": "天亮的时候，闵丹师从炉口直起腰来，看了一眼那点火：「嗯。」", "en": "At daybreak Pill-master Min straightens from the furnace mouth and looks at the little flame: \"Mm.\"" },
+      "_shoulu": "2026-10-21 (the 古八 pass): 09-dabi's board, after the 九节聚气 night — the level is games.json `shoulu` `danfang-kanlu` (story: 09-dabi): the 后山 · 丹房 map, 野猪 then 鬿雀 (古八's beast, met on the 后山 from h09), 剑阵 · 火符 · 雷符 (雷 from the third wave), five waves, hpMul 1.4 — a first-timer's plain hand wins it losing a little fire, all-fire loses (the birds), nothing laid loses. `gives` the 十年黄精 (the book's 「算你这个月的碾药钱」), handed over on a skip too; pays as the 古四–古七 boards: 修为 5 and the board's 灵石."
+    }
+  ]
+}

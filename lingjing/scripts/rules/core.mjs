@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, layerPayOf, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
+import { addProgress, layerPayOf, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaLimited, staminaRest, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, grantFrom } from './cards.mjs';
@@ -224,7 +224,7 @@ function spendStamina(content, s, ctx, kind, n = 1, fixed = null) {
   // Run to 0, he rests until the pool is back to `rest` — the last point is
   // once a pool, not every refill (his screen, 2026-09-23: 体力都空了, 还能
   // 开始战斗 — one point back in 3 minutes started a 12-point elite fight).
-  const restAt = content.rewards.stamina.rest ?? 0;
+  const restAt = staminaRest(content, s);
   if (s.resting && s.stamina >= restAt) delete s.resting;
   if (!cost || (s.stamina > 0 && !s.resting)) {
     s.stamina = Math.max(0, s.stamina - cost);

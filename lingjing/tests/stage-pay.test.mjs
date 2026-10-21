@@ -28,7 +28,9 @@ const scenesOf = id => Object.keys(content.chapters[id].scenes);
    passed on the older graph (09-yishui, 09-futian never in done_scenes). No stage quest ever paid. */
 const his = (extra = {}) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-dabi', place: 'yaoyuan', ended: ['00-prologue', '00-waimen'],
   done_scenes: [...scenesOf('00-prologue'), ...scenesOf('00-waimen'), '09-snow', '09-furnace', '09-year'], marks: ['y-futian', 'y-dabi'],
-  tier: 'qi', step: 9, progress: 0, wealth: 112, traits: ['metal', 'wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(), ...extra });
+  tier: 'qi', step: 9, progress: 0, wealth: 112, traits: ['metal', 'wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
+  // 守炉 · 丹房看炉 played (2026-10-21: 入秋 waits on 09-dabi's board; a save standing here is offered it on load).
+  tasks: { 'danfang-kanlu': { status: 'done' } }, ...extra });
 const words = { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' };
 
 test('the pay is declared: balance.json pay.stage, 灵石 only (at 圆满 修为 cannot rise)', () => {

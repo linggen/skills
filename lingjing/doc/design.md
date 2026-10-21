@@ -593,16 +593,43 @@ locks the two apart.
   champion's prize): `foundation-pill` (一转, `zhuan: 1`) and
   `foundation-pill-9` are `sold: []` — a gift, the sect's, or the furnace's.
 
-### 丹药 in the game 【在建】
+### 丹药 in the game 【已建】 (炸炉 · 仙丹 【在建 · proposals】)
 
 The grades — 阶 by realm, 转 一至九, 品 by toxin, 仙丹, the furnace's origin and
-its rule (always the owner's-realm 九转; 破境丹 one 阶 above), where herbs come
-from — are story DESIGN § 六·五. **Built:** the furnace's pills are their own
-items with `zhuan: 9` (`mend-pill-9` 第一炉, `qi-pill-9` from 药园残株), three
-times the market pill's 修为, never sold; the pouch draws the 丹纹 (nine gold
-strokes). **Not yet:** `tier`/`zhuan` on every made pill with a tamed effect
-curve (the story's ×10ⁿ is never the game's number), 丹毒 (and its cure: 闭关 = 补转, the turns the furnace left out made up by the body — story DESIGN § 六·五), 炸炉 for mortal
-furnaces, the furnace making 破境丹, 仙丹 after the finale.
+its rule (破境丹 one 阶 above its owner), where herbs come from — are story DESIGN § 六·五.
+The furnace's pills are their own items (`mend-pill-9` 第一炉, `qi-pill-9` from 药园残株, the 饭桶's
+三转s), never sold; the pouch draws the 丹纹 (nine gold strokes).
+
+- **阶 and 转 on every pill** (2026-10-21): items.json `tier` (the realm it is for, a ladder id — 一阶 `qi`,
+  筑基丹 `foundation`, 破境丹 `core`) and `zhuan` (一至九); the lint refuses a pill without them. A pill that pays
+  修为 names its family (`of`), and balance.json `pills` sets the pay — `base` (its 一转 一阶) × `by_zhuan` × `by_tier`,
+  folded onto `effect.progress` by content.mjs withBalance (no pill carries its own number, as with prices). **Tamed**:
+  一转 ×1 · 三转 ×1.5 · 九转 ×3 (a quarter more a 转) and one 一阶's worth more a 阶 — the story's ×9 and ×10 are never
+  the game's. The curve keeps the numbers the game had (聚气丹 20, 三转 30, 九转 60), each within its table's cap.
+  Breakthrough pills declare no family (the throw reads their 转, ladder.json `by_zhuan`); the 丹囊's fight pills keep
+  their `effect.fight` (the bands).
+- **丹毒 and 补转** (rules/dandu.mjs; balance.json `dandu`): a 修为 pill eaten — 服用 from the pouch, the 闭关 pill, a
+  breakthrough's pill — owes the turns its furnace left out (`owed` by 转: 一转 8, 二转 7, 三转 6; 中品 看体质 and 上品
+  none — no 中品 pill in 卷一), `state.dandu`. Each turn owed takes one off the 体力 pool's top (state.mjs `staminaMax`,
+  at most `cap` 30; the refill rate and the rest mark follow it, so he never rests for good). **闭关 = 补转**: the body
+  makes up `cure_per_hour` 4 turns an hour, whatever the focus (the 出关 card says it). A pill of 九转 clears every turn
+  owed (九转反能化毒). Look's `dandu` says it in the world's words; the pouch shows it. The 丹囊's 回春丹 · 回气丹 owe
+  nothing for now (the one question for Hanli, status.md).
+- **The furnace's 破境丹 is one 阶 above its owner** (fantong.json `breach` rows): the 饭桶's 筑基丹 rows open only while
+  he is 练气 — none once he has laid the foundation; 结丹's come with 卷二's rows.
+- **方子 that give more than one** (fantong.json recipes `n`): 古八's 九节聚气 — the 十年黄精 fed alone gives three
+  三转聚气丹, the book's pot (§ Per-回 › 古八).
+- **炸炉 for mortal furnaces — proposal** 【在建】 (no build): the book's 凡人丹炉十炉炸七 belongs to a furnace he
+  tends himself, which 卷一 has only as the 丹房's 旁炉 (古八, 「料你自己碾，火你自己看。炼糊了，碾了做药引」). Proposal:
+  a 旁炉 verb from 古八 on, at the 丹房 (a place `has.furnace`), fed herbs he holds; the rules roll each batch from a
+  table — 炸 · 糊 (the herbs to 药引, a material) · 一转 · 二转 — whose odds move with what he has done there (a count
+  per save, 闵丹师's 「首尾武，中间文」 as the step that lifts 二转), never the 饭桶's lottery; a 炸 costs the herbs and a
+  little 体力, nothing more. The 饭桶 never 炸s (it is 老君's). Asks Hanli first: is the 旁炉 a thing he plays at all, or
+  the book's cover story only (memory 2026-10-09: 「小满 has no furnace of his own」)?
+- **仙丹 after the finale — proposal** 【在建】 (no build): 仙阶, no 纹, its own glow (story § 六·五); never in 卷一.
+  Proposal: items with `tier: "xian"` (a tier outside the ladder's nine, read by the lint as 仙阶), `zhuan` absent,
+  `of` its family at `by_tier.xian`; edible at any realm (仙气自己找路), clears 丹毒 like a 九转; the 饭桶 may give one
+  only after 卷一's last scene (a pool row with `after`). Waits for 卷二's opening re-plan.
 
 **丹囊 — 灵石 buys pills for fights** (Hanli 2026-10-16, 「灵石要有用」): at a fight's door he packs up to
 three pills from the bag (his last pick remembered); in the fight each is a free action, one a turn
@@ -818,6 +845,12 @@ pages, never linked in the game and blank without `?dev=1`: the 游戏厅 `scrip
 Every 回 gets a gameplay pass so play keeps pace with reading: the book's own actions as boards in
 their scenes (`tasks/h<nn>.json`), fights, and enough beasts and finds to farm its stage quest.
 古六 is first (building now: its boards in tasks/h08.json); the rest follow in order.
+- **古八 done** (2026-10-21, tasks/h09.json): one board, one fight, both in 09-dabi — **守炉 · 丹房看炉** (`danfang-kanlu`,
+  守炉's 古八 story level: 闵丹师 cannot leave the lit furnace, the 后山's 鬿雀 dive at it; it gives the 十年黄精, the
+  九节聚气方's 君, fed to the 饭桶 for three 三转聚气丹 — the book's night, played) and the **腊八 final** on the way on
+  (`foe-jiuceng`, a 九层圆满 whose 金刃 gasp between blades; 随风 and 火柴 in hand from the first turn, the book's two; ~48% bare over ten save seeds, more with pills). Told: 《金丹》 and the 挑料
+  (a quiz, a pick), 定风's candle and 进退's pine bough (no kit's verb), the 回家 night (09-qulao) and the 筑基 (09-cliff,
+  its card and 大场面). The 后山's 猲狙 · 鬿雀 (`from: h09`) and 兽潮 farm the two stage quests (八层 · 九层).
 
 | 回 | Boards | Farming | Done |
 |---|---|---|---|

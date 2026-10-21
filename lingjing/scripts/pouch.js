@@ -124,6 +124,8 @@ export function pouchHtml(ctx, ui = {}) {
   const note = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
   const grown = p.grown?.length ? `<p class="small dim">${esc(say(pw.grown, { names: p.grown.join(ctx.lang === 'en' ? ', ' : '、') }))}</p>` : '';
+  // 丹毒 (rules/dandu.mjs): the turns owed and what they take off the 体力 pool, in the rules' words — a fact on the page.
+  const dandu = ctx.look?.dandu ? `<p class="small pdandu">${esc(ctx.look.dandu.say)}</p>` : '';
   const worn = `<section class="psec">${wornHtml(g, ctx)}</section>`;
   if (pane === 'fantong') return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${ctx.fantongPane ?? ''}</div>`;
   if (pane) {
@@ -139,5 +141,5 @@ export function pouchHtml(ctx, ui = {}) {
   const grid = shown.length ? `<div class="pgrid">${shown.map((i) => tileHtml(i, ctx, ui.sel)).join('')}</div>`
     : `<p class="small dim">${esc(g.bag.length ? pw.tabEmpty : pw.empty)}</p>`;
   return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${worn}
-    <section class="psec">${over}${grown}${tabs}<div class="pbody">${grid}${g.bag.length ? detailHtml(sel, g, ctx, pw, ui) : ''}</div></section></div>`;
+    <section class="psec">${over}${grown}${dandu}${tabs}<div class="pbody">${grid}${g.bag.length ? detailHtml(sel, g, ctx, pw, ui) : ''}</div></section></div>`;
 }

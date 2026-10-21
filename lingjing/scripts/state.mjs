@@ -246,21 +246,31 @@ export const staminaLimited = content => content.rewards?.stamina?.limit !== fal
 
 const secsPerPoint = q => (q.refill_hours * 3600) / q.max;
 
+/* The pool's top: `max`, less what 丹毒 takes (balance.json `dandu`: each turn a pill's furnace left out,
+   owed until 闭关 makes it up — rules/dandu.mjs), never more than its `cap`. The refill keeps its rate. */
+export function staminaMax(content, state) {
+  const q = content.rewards.stamina, D = content.balance?.dandu, turns = Math.max(0, Number(state?.dandu) || 0);
+  if (!D || !turns) return q.max;
+  return q.max - Math.min(D.cap ?? 0, Math.round(turns * (D.per_turn ?? 0)));
+}
+/* Where a spent pool wakes (`rest`): never above the pool's top, so 丹毒 never keeps him resting for good. */
+export const staminaRest = (content, state) => Math.min(content.rewards.stamina.rest ?? 0, staminaMax(content, state));
+
 /* Refill by the clock since it was last settled — whole points only, the
    remainder keeps waiting in `qi_at`. A save from before 灵气 wakes full. */
 export function settleStamina(content, state, now) {
-  const q = content.rewards.stamina;
-  if (!staminaLimited(content)) { state.stamina = q.max; state.stamina_at = now.toISOString(); delete state.resting; return; }
-  if (state.stamina == null || !state.stamina_at) { state.stamina = q.max; state.stamina_at = now.toISOString(); return; }
+  const q = content.rewards.stamina, max = staminaMax(content, state);
+  if (!staminaLimited(content)) { state.stamina = max; state.stamina_at = now.toISOString(); delete state.resting; return; }
+  if (state.stamina == null || !state.stamina_at) { state.stamina = max; state.stamina_at = now.toISOString(); return; }
   // A pool or a clock that is not a number (a hand-edited save, a bad write)
   // starts counting again from now, and never becomes NaN (review, 2026-09-24).
-  if (!Number.isFinite(state.stamina)) state.stamina = q.max;
+  if (!Number.isFinite(state.stamina)) state.stamina = max;
   if (Number.isNaN(Date.parse(state.stamina_at))) state.stamina_at = now.toISOString();
-  if (state.stamina >= q.max) { state.stamina = q.max; state.stamina_at = now.toISOString(); return; }
+  if (state.stamina >= max) { state.stamina = max; state.stamina_at = now.toISOString(); return; }
   const gained = Math.floor(Math.max(0, now - new Date(state.stamina_at)) / 1000 / secsPerPoint(q));
   if (gained <= 0) return;
-  state.stamina = Math.min(q.max, state.stamina + gained);
-  state.stamina_at = state.stamina >= q.max
+  state.stamina = Math.min(max, state.stamina + gained);
+  state.stamina_at = state.stamina >= max
     ? now.toISOString()
     : new Date(new Date(state.stamina_at).getTime() + gained * secsPerPoint(q) * 1000).toISOString();
 }
@@ -274,10 +284,10 @@ export function staminaReturnsAt(content, state, cost) {
 
 /* A refill from real life — never over the top. */
 export function addStamina(content, state, n, now) {
-  const q = content.rewards.stamina;
+  const max = staminaMax(content, state);
   const before = state.stamina;
-  state.stamina = Math.min(q.max, state.stamina + Math.max(0, n));
-  if (state.stamina >= q.max) state.stamina_at = now.toISOString();
+  state.stamina = Math.min(max, state.stamina + Math.max(0, n));
+  if (state.stamina >= max) state.stamina_at = now.toISOString();
   return state.stamina - before;
 }
 

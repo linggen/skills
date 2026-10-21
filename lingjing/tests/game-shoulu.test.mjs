@@ -6,7 +6,7 @@
 // no build loses everywhere; the counters (犰狳 vs 剑阵, 鬿雀 vs 火符) still bite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, build, upgrade, upgradeCost, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
   keepSel, posOnPath, sendHero, sim, STRATS, skillState, spawnAt, step, toggleAuto, waves } from '../scripts/games/shoulu/core.js';
 import { ladderOf, leadSplit, levelAsked, levelAt, meta, nextLv } from '../scripts/games/shoulu.js';
@@ -439,7 +439,9 @@ test('the sim plays her skills (a plain autocast bot); none leaves her on 啸月
 
 /* The story levels (Hanli 10-20: 守炉 is the main game; a new level a 回 from 古四 on, at its climax). */
 const ROOT = new URL('..', import.meta.url);
-const tasks = JSON.parse(readFileSync(new URL('worlds/jiuding/tasks/world.json', ROOT), 'utf8')).tasks;
+// tasks/*.json are one list (content.mjs): a 回's own boards live in tasks/h<nn>.json.
+const tasks = readdirSync(new URL('worlds/jiuding/tasks/', ROOT)).filter((f) => f.endsWith('.json'))
+  .flatMap((f) => JSON.parse(readFileSync(new URL(`worlds/jiuding/tasks/${f}`, ROOT), 'utf8')).tasks);
 const book = JSON.parse(readFileSync(new URL('story/jiuding-lu/book.json', ROOT), 'utf8'));
 const HUI = book.volumes.flatMap((v) => v.hui).map((h) => h.id); // the 回 in the order they are read
 const sceneOf = (id) => {
@@ -517,6 +519,30 @@ test('药园巡夜, tuned for a first-time player: a first-timer\'s plain hand a
   assert.ok(allWin(run(xunye, 'thin')), 'two talismans and their upgrades still hold it');
   assert.ok(allLose(run(xunye, 'none')), 'nothing laid: the herbs are lost');
   assert.ok(rs.every((x) => x.time < 240), `about three minutes: ${rs.map((x) => x.time)}`);
+});
+
+// 古八's 丹房看炉 (2026-10-21): a first-timer's plain hand on the 后山 · 丹房 map — fire by the road, swords where the birds
+// dive (the lead says 剑阵够得着), then upgrades; a look every 1.6 s.
+const kanluHand = (lv) => {
+  const PLAN = [['huo', 2], ['jian', 8], ['jian', 5], ['huo', 4], ['jian', 3], ['huo', 7]], UPS = [8, 2, 5, 4, 3, 8, 2];
+  let k = 0, u = 0, next = 0;
+  return (g) => {
+    if (g.t < next) return; next = g.t + 1.6;
+    if (k < PLAN.length && g.money >= TOWERS[PLAN[k][0]].cost[0]) { if (build(g, PLAN[k][1], PLAN[k][0])) k += 1; return; }
+    if ((k >= PLAN.length || (k >= 3 && g.money >= 80 && u < 2)) && u < UPS.length) { const i = UPS[u]; if (g.towers[i] && g.money >= upgradeCost(g.towers[i])) { upgrade(g, i); u += 1; } }
+  };
+};
+test('丹房看炉 (古八), harder than 药园巡夜: a first-timer\'s plain hand wins losing a little fire; fire alone loses to the birds; nothing laid loses', () => {
+  const kanlu = stories.find((l) => l.id === 'danfang-kanlu');
+  assert.deepEqual(beastsOf(kanlu).sort(), ['qique', 'yezhu']);
+  const naive = SEEDS20.map((seed) => sim(kanlu, kanluHand(kanlu), { seed }));
+  const line = (rs) => `win ${Math.round(share(rs, (x) => x.result === 'win') * 100)}%, ★ ${rs.map((x) => x.stars).join('')}, fire ${rs.map((x) => x.hp)}`;
+  assert.equal(share(naive, (x) => x.result === 'win'), 1, `first-timer: ${line(naive)}`);
+  assert.ok(share(naive, (x) => x.hp < 10) >= 0.5, `first-timer, it bites: ${line(naive)}`);
+  assert.ok(allWin(run(kanlu, 'human', SEEDS20)), 'the human hand holds it');
+  assert.ok(allLose(run(kanlu, 'huo')), 'fire can\'t reach the sky: all fire loses to the 鬿雀');
+  assert.ok(allLose(run(kanlu, 'none')), 'nothing laid: the furnace is lost');
+  assert.ok(naive.every((x) => x.time < 240), `about three minutes: ${naive.map((x) => x.time)}`);
 });
 
 /* The 秘境's short 守炉 (2026-10-20; 割藤 deleted with the 饭桶's old play): three levels of three waves, `realm: mijing`,

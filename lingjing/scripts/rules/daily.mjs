@@ -1,6 +1,6 @@
 // rules/daily.mjs — 问候 and 体力: her greeting on the day's first opening, the pool as the stage draws it.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, lockedOf, pick, staminaLimited, staminaReturnsAt, realmName } from '../state.mjs';
+import { dayKey, lockedOf, pick, staminaLimited, staminaMax, staminaRest, staminaReturnsAt, realmName } from '../state.mjs';
 import { herAwake } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { chanceBrief } from './road.mjs';
@@ -51,17 +51,18 @@ export function greet(state, content, ctx) {
      `rest_at` while resting and the first point back otherwise (null unless
      empty). It read as "full" on the page and was not (review, 2026-09-24). */
 function staminaBrief(content, state, now) {
-  const q = content.rewards.stamina;
+  const q = content.rewards.stamina, max = staminaMax(content, state), rest = staminaRest(content, state);
   // Empty is 0, or resting after 0 until the pool is back to `rest`: the last
   // point buys one thing once a pool (his, 2026-09-23).
-  const resting = Boolean(state.resting) && state.stamina < (q.rest ?? 0);
+  const resting = Boolean(state.resting) && state.stamina < rest;
   const empty = state.stamina <= 0 || resting;
   const at = n => staminaReturnsAt(content, state, n).toISOString();
   // `off`: 体力 does not limit play (state.mjs staminaLimited) — the page shows no pool.
-  return { now: state.stamina, max: q.max, step: q.cost.step, empty, ...(resting ? { resting: true } : {}), ...(staminaLimited(content) ? {} : { off: true }),
-    returns_at: empty ? at(resting ? q.rest : 1) : null,
-    rest_at: empty ? at(Math.max(1, q.rest ?? 0)) : null,
-    full_at: state.stamina < q.max ? at(q.max) : null };
+  // `max`: the pool's top, less what 丹毒 takes (state.mjs staminaMax); `top` the pool's own, when they differ.
+  return { now: state.stamina, max, ...(max < q.max ? { top: q.max } : {}), step: q.cost.step, empty, ...(resting ? { resting: true } : {}), ...(staminaLimited(content) ? {} : { off: true }),
+    returns_at: empty ? at(resting ? rest : 1) : null,
+    rest_at: empty ? at(Math.max(1, rest)) : null,
+    full_at: state.stamina < max ? at(max) : null };
 }
 
 export { staminaBrief };

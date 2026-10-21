@@ -19,6 +19,7 @@ import { herAwake, herGifts } from './companion.mjs';
 import { itemOf } from './errands.mjs';
 import { strongRoots } from './roots.mjs';
 import { hashOf } from './travel.mjs';
+import { eatPill } from './dandu.mjs';
 
 const HOUR = 3600_000;
 export const RULE = content => content.ladder.breakthrough ?? null;
@@ -130,7 +131,7 @@ export function throwOn(content, s, odds, to, now) {
   const rule = RULE(content);
   const roll = rollOf(s, to), success = roll < odds.chance;
   const pill = odds.parts.find(p => p.id === 'pill');
-  if (pill?.on && success) { s.bag[pill.item.id] -= 1; if (s.bag[pill.item.id] <= 0) delete s.bag[pill.item.id]; }
+  if (pill?.on && success) { s.bag[pill.item.id] -= 1; if (s.bag[pill.item.id] <= 0) delete s.bag[pill.item.id]; eatPill(content, s, pill.item.id); }
   const tries = { ...s.breakthrough?.tries, [to]: (s.breakthrough?.tries?.[to] ?? 0) + 1 };
   const failed = success ? null : fail(content, s, rule, now);
   s.breakthrough = {

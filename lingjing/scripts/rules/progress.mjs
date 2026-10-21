@@ -245,12 +245,14 @@ function take(content, r, s, exit, policy) {
   if (sc?.at && s.place !== sc.at) s = walkTo(content, r, s, sc.at);
   s = boards(content, r, s, exit, policy);
   for (const at of [exit.needs?.seen ?? []].flat()) s = r.call('look', s, { at }).state ?? s;
-  const game = exit.game ?? null;
-  if (game?.kind === 'duel' && !s.wins?.[game.id]) s = r.fight(s, game);
   // 阶段任务 (rules/gates.mjs): the way on waits on the layer full — the days of the routine that
   // fill it are the economy's (tools/balance.mjs), not played here: the realm stands there, earned.
+  // Earned before the way on's fight: a player grinds the layer the gate asks, then goes up
+  // (古八's 腊八 final is weighed at the 八层 its gate holds — tools/story-fights.mjs h09b).
   const gate = stageGate(content, s, sc?.id, exit.id);
   if (gate) { s = earned(content, s, gate); r.log.push(`earned ${gate.hui} ${gate.tier}:${gate.layer}`); }
+  const game = exit.game ?? null;
+  if (game?.kind === 'duel' && !s.wins?.[game.id]) s = r.fight(s, game);
   let out = r.call('resolve', s, argsFor(content, s, exit, r.now));
   // A day that must pass (the 大比 is tomorrow): the clock moves on, as `shift` does.
   for (let d = 0; d < 3 && out.result.refused === 'needs' && exit.needs?.day_after; d += 1) {

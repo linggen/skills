@@ -1971,6 +1971,82 @@
       "_trial": "古五 (the author, 2026-10-02: 「九死一生，被追着打……最后是银月出手」): a 试 passed by outlasting his twelve cards (battle.js § trial), no yield — he is never driven down; the turn is the story's (the exit: the leap onto the 蛫, 银月's two hairs break the shield, he finishes it). node tools/trial-sim.mjs foe-zou --at."
     },
     {
+      "id": "foe-jiuceng",
+      "gender": "male",
+      "title": {
+        "zh": "比试",
+        "en": "Bout"
+      },
+      "name": {
+        "zh": "九层师兄",
+        "en": "The ninth-layer senior"
+      },
+      "pinyin": "jiǔ céng shī xiōng",
+      "look": {
+        "zh": "内门的练气九层圆满，五年大比的决赛就是他。一上台便是全力，金刃一道接一道——发一道，喘一口，跟当年的卢方一样。",
+        "en": "Inner court, layer nine and full — the final of the fifth year's contest. All his strength from the first moment, metal blades one after another: one blade, one breath, just like Lu Fang years ago."
+      },
+      "says": {
+        "open": {
+          "zh": "请。",
+          "en": "Please."
+        },
+        "won": {
+          "zh": "我认输。",
+          "en": "I yield."
+        },
+        "lost": {
+          "zh": "下去吧。",
+          "en": "Get down."
+        }
+      },
+      "province": "徐",
+      "root": "metal",
+      "art": "art/items/iron-sword.webp",
+      "art_source": "The iron sword's picture (as 卢方's) until his portrait is painted.",
+      "lean": "fierce",
+      "pattern": [
+        "cast",
+        "gather",
+        "cast",
+        "gather",
+        "strike"
+      ],
+      "hp": 2.5,
+      "extra": [
+      "luying",
+      "huochai"
+    ],
+    "_extra": "The book's two for this final, in his hand from the first turn (cards.mjs fightSetup `extra`), whatever ten the curve dealt him: 随风 (「躲不开的随——随风，剑贴着那金刃往旁边一引」) and 火柴 (「小满的火柴进去了」). Without them a deck the curve dealt without 火柴 stood at a few in a hundred (2026-10-21, ten save seeds).",
+    "deck": [
+        "jinren",
+        "jinren",
+        "jinren",
+        "jinren",
+        "jinzhua",
+        "jinzhua",
+        "suijin",
+        "suijin",
+        "jinzhen",
+        "jinsuo",
+        "jinsuo",
+        "huiqi"
+      ],
+      "_deck": "内门九层圆满，金一行 —— 金刃一道接一道（金刃、金爪、碎金、金针雨），发一道，喘一口（`pattern` 的 gather：那一口喘，定风等的就是它）。",
+      "signature": {
+        "id": "shiyidao",
+        "name": {
+          "zh": "第十一道",
+          "en": "The eleventh blade"
+        },
+        "effect": {
+          "damage": 5
+        }
+      },
+      "_signature": "第十一道 —— 一身的灵力全在刃上（古八，09-dabi 的决赛）；小满的火柴进的是那一口喘。",
+      "_person": "Not a people.json row (the book never names him; no portrait yet): `title` 比试 keeps the fight card a bout, never 降妖. The 腊八 大比's final in 古八 (09-dabi/dabi), the first bout and the three between told."
+    },
+    {
       "id": "foe-shuanglong",
       "title": {
         "zh": "冰夷之试",

@@ -80,7 +80,8 @@ export function roll(t, { seed, ids, lingshi = 0, realm = 0, press = false, herH
     const pickU = u(), withU = u(), nU = u();
     if (pityNow && grade === 'junk') grade = 'useful';
     if (press) grade = GRADES[Math.min(GRADES.length - 1, GRADES.indexOf(grade) + 1)];
-    if (recipe && grade !== 'junk') return { out: grade === 'useful' ? recipe.out : recipe.best, grade, recipe: recipe.id };
+    // A 方子 may give more than one (`n`: 古八's 九节聚气, 「滚出三颗丹来」).
+    if (recipe && grade !== 'junk') return { out: grade === 'useful' ? recipe.out : recipe.best, grade, recipe: recipe.id, ...(recipe.n > 1 ? { n: recipe.n } : {}) };
     // Down a grade when nothing of it is open yet for this save (never up: a pot never gives more than it rolled).
     for (let g = GRADES.indexOf(grade); g >= 0; g--) {
       const rows = (t.pools?.[GRADES[g]] ?? []).filter(r => !open || open(r));

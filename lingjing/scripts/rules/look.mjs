@@ -11,6 +11,7 @@ const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x =
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, herGameNow, questBrief, recalledOf } from './companion.mjs';
 import { clone, paysOf, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
+import { danduBrief } from './dandu.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief, prng } from './fortune.mjs';
 import { withoutLocked } from './locks.mjs';
@@ -638,6 +639,7 @@ export function look(state, content, ctx) {
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
+    ...(danduBrief(content, state) ? { dandu: danduBrief(content, state) } : {}),
     // 闭关 running: the hours in and what 出关 would grow now (rules/seclusion.mjs).
     ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : {}),
     // 密室 (rules/mishi.mjs): the door here, or the room open — the mechanisms only, never her pages.
