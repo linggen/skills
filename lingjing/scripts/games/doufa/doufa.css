@@ -1,0 +1,47 @@
+/* doufa.css — 法术试炼 (games/doufa.js): the field (three lanes down to 小满), the 灵力 bar, the moves' sprites, the legend.
+   The hand hint's look is jieyin.css's. */
+.df { display: flex; flex-direction: column; gap: 8px; }
+.df-field { position: relative; aspect-ratio: 4 / 3; max-height: calc(100dvh - 330px); min-height: 280px; overflow: hidden; border-radius: 12px;
+  background: #2a3322 center 60% / cover no-repeat; user-select: none; -webkit-user-select: none; }
+.df-lanes { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); pointer-events: none; }
+.df-lanes i { border-right: 1px dashed rgba(255, 248, 239, .35); }
+.df-lanes i:last-child { border-right: 0; }
+.df-xm { position: absolute; left: 50%; bottom: 0; height: 22%; transform: translateX(-50%); filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); pointer-events: none; }
+.df-beast { position: absolute; width: 13%; padding: 0; border: 0; background: none; transform: translate(-50%, -60%); cursor: pointer; transition: top .1s linear; }
+.df-beast.is-boss { width: 22%; }
+.df-beast img { width: 100%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .4)); }
+.df-beast.is-focus img { filter: drop-shadow(0 0 6px #ffd36a) drop-shadow(0 0 2px #c23b22); }
+.df-beast[data-st~="chilled"] img { filter: saturate(.4) hue-rotate(160deg) brightness(1.1); }
+.df-beast[data-st~="frozen"] img, .df-beast[data-st~="stunned"] img { animation: jy-shake .5s infinite; }
+.df-beast[data-st~="rooted"]::after { content: ''; position: absolute; inset: 40% 5% -5%; border: 3px solid #3f8a5a; border-radius: 50%; opacity: .8; }
+.df-hp { position: absolute; left: 15%; right: 15%; top: -6px; height: 4px; border-radius: 2px; background: rgba(0, 0, 0, .35); }
+.df-hp i { display: block; height: 100%; border-radius: 2px; background: #e8432f; }
+.df-wall { position: absolute; width: 26%; transform: translate(-50%, -50%); pointer-events: none; }
+.df-fx { position: absolute; inset: 0; pointer-events: none; }
+.df-shot { position: absolute; width: 9%; filter: drop-shadow(0 0 8px rgba(255, 220, 140, .8)); }
+.df-shot.is-big { width: 18%; }
+.df-puff { position: absolute; width: 22%; transform: translate(-50%, -50%); animation: df-puff 1.1s ease-out forwards; }
+.df-puff.is-steam { width: 34%; }
+.df-puff.is-stay { width: 12%; animation-duration: 1.1s; }
+.df-num { position: absolute; transform: translate(-50%, -100%); font: 700 15px/1 var(--serif, serif); color: #fff8ef; text-shadow: 0 1px 3px #000; animation: df-up 1s ease-out forwards; }
+.df-num.is-counter { color: #ffd36a; }
+.df-bar { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; align-items: center; gap: 8px; color: #fff8ef; font-size: 12px; text-shadow: 0 1px 3px #000; }
+.df-bar b { position: relative; flex: 1; height: 8px; border-radius: 4px; background: rgba(0, 0, 0, .4); overflow: hidden; box-shadow: 0 0 0 1px rgba(255, 248, 239, .5); }
+.df-bar b i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #6fb6d8, #c9e7f2); transition: width .2s; }
+.df.is-full .df-bar b i { background: linear-gradient(90deg, #c9a24a, #ffe08a); box-shadow: 0 0 8px #ffe08a; }
+.df-bar em { font-style: normal; white-space: nowrap; }
+.df-say { position: absolute; left: 50%; top: 22%; margin: 0; transform: translateX(-50%); padding: 4px 12px; border-radius: 12px; background: rgba(20, 16, 12, .6);
+  color: #fff8ef; font-family: var(--serif, serif); font-size: 15px; letter-spacing: .08em; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
+.df-say.is-on { opacity: 1; }
+.df-dock { position: absolute; right: 8px; bottom: 8px; z-index: 2; }
+.df-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.df-legend section { padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.df-legend h4 { margin: 0 0 4px; font-family: var(--serif, serif); font-size: 13px; letter-spacing: .1em; color: var(--seal); }
+.df-legend ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.df-legend li { display: grid; grid-template-columns: 28px auto 1fr; align-items: center; gap: 6px; font-size: 12px; color: var(--text); }
+.df-legend li img, .df-legend li svg { width: 26px; height: 26px; object-fit: contain; color: #2b2620; }
+.df-legend small { color: var(--dim); font-size: 11px; line-height: 1.3; }
+@media (max-width: 640px) { .df-legend { grid-template-columns: 1fr; } }
+@keyframes df-puff { from { opacity: 1; transform: translate(-50%, -50%) scale(.5); } to { opacity: 0; transform: translate(-50%, -60%) scale(1.15); } }
+@keyframes df-up { to { opacity: 0; transform: translate(-50%, -180%); } }
+@media (prefers-reduced-motion: reduce) { .df-puff, .df-num { animation-duration: .01s; } }

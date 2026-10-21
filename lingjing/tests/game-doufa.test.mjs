@@ -131,3 +131,81 @@ test('五行 combos and the counter element, as rules the game applies', () => {
   assert.deepEqual(strike(cast('muteng'), { status: {} }, kit, 100).status, { rooted: 100 + D.effects.muteng.status.rooted });
   assert.deepEqual(Object.keys(D.counter.beats).sort(), ['huo', 'jin', 'mu', 'shui', 'tu']);
 });
+
+/* ── 法术试炼's field (games/doufa/field.js) ── */
+import { applyCast, fieldStart, fieldTick, targetOf } from '../scripts/games/doufa/field.js';
+const LV = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/levels/doufa.json', import.meta.url), 'utf8')).levels[0];
+const run = (f, ms) => { let out = f, ev = []; for (let t = 0; t < ms; t += 50) { const r = fieldTick(out, 50, LV); out = r.field; ev.push(...r.events); } return { f: out, ev }; };
+const beast = (f, lane, y, more = {}) => { const b = { id: ++f.uid, kind: 'yezhu', lane, y, hp: 3, max: 3, speed: 0.07, element: 'tu', status: {}, ...more }; f.beasts.push(b); return b; };
+const castAt = (move, laneIndex, tier = 'fa') => ({ type: 'cast', tier, move, element: D.elements[move], lane: ['left', 'middle', 'right'][laneIndex], laneIndex });
+
+test('the field: beasts step out in three lanes and walk down; the 大妖 steps out on time; one past the goal got by', () => {
+  const { f, ev } = run(fieldStart(LV, 'x'), (LV.boss.at + 1) * 1000);
+  assert.ok(ev.filter((e) => e.type === 'spawn').length >= 5);
+  assert.ok(new Set(ev.filter((e) => e.type === 'spawn').map((e) => e.beast.lane)).size === 3, 'all three lanes');
+  assert.equal(ev.filter((e) => e.type === 'boss').length, 1);
+  assert.ok(f.beasts.length <= LV.spawn.max + 1);
+  assert.ok(ev.some((e) => e.type === 'escape') && f.escaped > 0, 'unhindered, some get by');
+});
+
+test('the target: the tapped beast, else the nearest in the cast\'s lane, else the nearest anywhere', () => {
+  const f = fieldStart(LV, 'y');
+  const a = beast(f, 0, 0.3), b = beast(f, 0, 0.6), c = beast(f, 2, 0.8);
+  assert.equal(targetOf(f, castAt('huodan', 0)).id, b.id);
+  assert.equal(targetOf(f, castAt('huodan', 0), a.id).id, a.id);
+  assert.equal(targetOf(f, castAt('huodan', 1)).id, c.id, 'an empty lane: the nearest anywhere');
+});
+
+test('casts on the field: 木藤 roots then 金刃 cuts double; 冰锥 then 火弹 bursts steam over the lane; 土墙 holds a lane; 掌风 pushes a lane back; 拳劲 only near 小满', () => {
+  let f = fieldStart(LV, 'z');
+  const a = beast(f, 1, 0.5, { hp: 9, max: 9, element: 'huo' });
+  f = applyCast(f, castAt('muteng', 1), kit).field;
+  let r = applyCast(f, castAt('jinren', 1), kit);
+  assert.equal(r.hits[0].combo, 'chanfa');
+  assert.equal(r.field.beasts[0].hp, 9 - D.effects.jinren.dmg * 2);
+  const moved = run(r.field, 1000).f.beasts.find((b) => b.id === a.id);
+  assert.ok(Math.abs(moved.y - 0.5) < 1e-9, 'rooted: it does not walk');
+
+  f = fieldStart(LV, 'w');
+  beast(f, 0, 0.4, { hp: 9, max: 9 }); beast(f, 0, 0.2, { hp: 9, max: 9 }); beast(f, 1, 0.4, { hp: 9, max: 9 });
+  f = applyCast(f, castAt('bingzhui', 0), kit).field;
+  r = applyCast(f, castAt('huodan', 0), kit);
+  assert.equal(r.show.steam, true);
+  assert.equal(r.hits.length, 2, 'the whole lane, not the next');
+
+  f = fieldStart(LV, 'v');
+  beast(f, 2, 0.3);
+  f = applyCast(f, castAt('tuqiang', 2), kit).field;
+  const held = run(f, 6000 > D.effects.tuqiang.wall ? D.effects.tuqiang.wall - 200 : 3000).f.beasts[0];
+  assert.ok(held.y <= LV.wallY, `held at the wall (${held.y.toFixed(2)})`);
+
+  f = fieldStart(LV, 'u');
+  beast(f, 1, 0.6); beast(f, 1, 0.3); beast(f, 0, 0.6);
+  r = applyCast(f, castAt('zhangfeng', 1, 'xiao'), kit);
+  assert.deepEqual(r.field.beasts.map((b) => +b.y.toFixed(2)), [0.42, 0.12, 0.6], 'the middle lane pushed back, the left not');
+
+  f = fieldStart(LV, 't');
+  beast(f, 1, 0.8); beast(f, 1, 0.3);
+  r = applyCast(f, castAt('quanjin', 1, 'xiao'), kit);
+  assert.equal(r.hits.length, 1, 'only the one near 小满');
+  assert.ok(r.field.beasts.find((b) => b.y === 0.8).status.stunned > 0);
+});
+
+test('the trial is registered, a module on the contract, and draws only one line without a camera', async () => {
+  const reg = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
+  const row = reg.games.find((g) => g.id === 'doufa');
+  assert.equal(row.mechanic, '结印');
+  const mod = await import('../scripts/games/doufa.js');
+  assert.equal(mod.meta.name.zh, '法术试炼');
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (u) => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(new URL(String(u)), 'utf8')) });
+  try {
+    const win = { location: { search: '?dev=1' }, navigator: {}, document: { createElement: () => ({ getContext: () => ({}) }) }, performance: { now: () => 0 } };
+    const doc = { defaultView: win, head: { append() {} }, querySelector: () => null, createElement: () => ({ dataset: {} }) };
+    const container = { ownerDocument: doc, innerHTML: '' };
+    const r = await mod.mount(container, { lang: 'zh', shell: { lead() { throw new Error('no lead without a camera'); } } });
+    assert.deepEqual(r, { won: false, left: true });
+    assert.match(container.innerHTML, /摄像头/);
+    assert.doesNotMatch(container.innerHTML, /<button|df-field/);
+  } finally { globalThis.fetch = realFetch; }
+});

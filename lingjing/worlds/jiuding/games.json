@@ -800,7 +800,14 @@
    "mechanic": "结印",
    "stars": 3,
    "_about": "结印 — hand seals at the camera, a prototype, 游戏厅 only (Hanli 10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」; 「没摄像头时, 就不用用户结印帮打」). MediaPipe Hand Landmarker on the device (scripts/vendor/mediapipe/), seals judged by rules in worlds/jiuding/levels/jieyin.json; four seals cast a 火蛋. No camera → not offered. `lv=1` the 火蛋, `lv=2` the shape of 古六's 讲堂 teaching level. doc/games.md § 结印."
+  },  {
+   "id": "doufa",
+   "group": "main",
+   "mechanic": "结印",
+   "stars": 3,
+   "_about": "法术试炼 — 手势斗法 played whole, test-only (doc/games.md § 手势斗法; Hanli 10-21: 「OK, 你写进文档, 然后可以开始做了」): beasts down three lanes; 小招 (a shape + a jab or push), 法术 (文 → 扣 → push), 大招 (the four seals) by the hand's lane, paid from 灵力; the 五行 combos. Camera only. games/doufa.js, levels/doufa.json, jieyin.json doufa."
   },
+
   {
    "id": "zhidian",
    "group": "main",
