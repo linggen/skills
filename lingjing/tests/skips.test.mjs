@@ -223,3 +223,12 @@ test('the way out comes into sight: a skip slot filled below the stage\'s fold s
   assert.match(fn, /box\.scrollBy\(/);
   assert.doesNotMatch(fn, /scrollIntoView/, 'scrollIntoView would move the hidden .view too');
 });
+
+test('a game won on the story page brings its 所得 into sight: #focus moves up or down to it, never the page (2026-10-21)', () => {
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(src, /else await report\(`\[scene\] won \$\{taskId\}`\);\s*await refresh\(\);\s*bringWonIntoFocus\(\);/);
+  const fn = src.slice(src.indexOf('function bringIntoFocus('), src.indexOf('function bringIntoFocus(') + 500);
+  assert.match(fn, /up = r\.top - 12 - f\.top/, 'above the view, it moves up');
+  const won = src.slice(src.indexOf('function bringWonIntoFocus('), src.indexOf('function bringWonIntoFocus(') + 300);
+  assert.match(won, /#focus \.toasts \.spoils/);
+});

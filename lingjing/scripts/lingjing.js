@@ -1814,6 +1814,7 @@ async function settleWin(taskId, won, grade) {
   if (isTask(taskId)) await payWin(taskId);
   else await report(`[scene] won ${taskId}`);
   await refresh();
+  bringWonIntoFocus();
   // The one hook for what follows a won beat (beat-won.js: the 得牌 reveal listens here).
   if (story) beatWon(taskId, { grade });
   const on = winExit(taskId, grade);
@@ -3116,13 +3117,20 @@ function openStuckSlots() {
 }
 setInterval(openStuckSlots, 1000);
 /* The way out shows where he is looking (live 2026-10-19, 喂饼 at 390: 「算了，往下走」 came under the
-   stage's fold, cut in half): the stage's own scroller (#focus) moves just enough — never the page. */
+   stage's fold, cut in half): the stage's own scroller (#focus) moves just enough — never the page.
+   Above the view, it moves up to it the same way (a won game's 所得 stands over the cards). */
 function bringIntoFocus(el) {
   const box = $('focus');
   if (!el || !box?.contains(el)) return;
   const r = el.getBoundingClientRect(), f = box.getBoundingClientRect();
-  const down = r.bottom + 12 - f.bottom;
-  if (down > 0) box.scrollBy({ top: down, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  const down = r.bottom + 12 - f.bottom, up = r.top - 12 - f.top;
+  const by = up < 0 ? up : down > 0 ? Math.min(down, up) : 0;
+  if (by) box.scrollBy({ top: by, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+}
+/* A game won on the story page: what it paid (所得) or its note is seen, not left over the fold of a tall stage —
+   looked for once the redraw that follows the win has landed. */
+function bringWonIntoFocus() {
+  requestAnimationFrame(() => bringIntoFocus(document.querySelector('#focus .toasts .spoils, #focus .toasts .donote')));
 }
 /* A board left on an earlier day, offered again (Look's replay): 再试一回 lays it as it was; 改日 puts it off. */
 async function replayTap(id, play) {
