@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   The shared small-game kit: one engine, one shell, one asset library, five play kits.
   The list of games and their verdicts is games.md; where games sit in the story is design.md.
-status: 2026-10-20 — approved (Hanli: 「可以, 统一用Phaser, 按这个计划做. 加一个design文档吧」). The shell (layer 2) is built and every small game wears it (「确保所有小游戏一套外壳」); the Phaser kits still draw their own intro, pause and result inside it.
+status: 2026-10-21 — § One engine (Phaser for everything drawn) is a PLAN waiting for Hanli's read; nothing built. 2026-10-20 — approved (Hanli: 「可以, 统一用Phaser, 按这个计划做. 加一个design文档吧」). The shell (layer 2) is built and every small game wears it (「确保所有小游戏一套外壳」); the Phaser kits still draw their own intro, pause and result inside it.
 ---
 
 # Lingjing — the game kit (小游戏统一外壳)
@@ -188,5 +188,184 @@ terms on remote code. linggensite may also host a playable **demo** (a level or 
 - **A port is a rendering rewrite.** That's why it goes one game at a time, never a big bang.
 - **Art volume.** Fix the style guide before painting in bulk, or the set drifts.
 - **Phaser is about 1 MB.** That's fine locally and acceptable on the phone.
-- **PixiJS stays for the story stage only** (MeshPlane to bring the paintings to life); it is not
-  for games.
+- ~~PixiJS stays for the story stage only~~. This was superseded on 10-21 (「按你的建议来, 统一用Phaser」);
+  see § One engine below. Pixi and GSAP leave the vendor folder at the end of that plan.
+
+## One engine — Phaser for everything drawn (10-21)
+
+**PLAN, not built. It waits for Hanli's read.** Hanli 10-21: 「特效, 引擎, 图片都可以共享」 ·
+「大场面的特效, 似乎也可以用新的游戏引擎来做」 → 「按你的建议来, 统一用Phaser」. The 10-20 rule (every small game
+runs on Phaser 3.90) now covers everything drawn: the 大场面 set pieces, 画活, the weather, 银月's colour memory,
+the 回 turn, 鼎归, and the effects of every game and fight.
+
+### Where we stand (counted 10-21)
+
+| What | Engine | Size |
+|---|---|---|
+| 守墙关, 撒豆成兵, 守山门 (sadoushou), 开炉 (kailu) | shared `vendor/phaser.min.mjs` | each has its own `tools/<g>/src/fx.js` (three near-copies, 466 lines) |
+| 砸寨 | Phaser **bundled inside its own build** (a second copy, VENDOR.md) | Kenney UI/VFX atlases |
+| `fx.js` 鼎归 · `fx-alive.js` 画活 · `fx-weather.js` · `fx-memory.js` · `fx-hui.js` | Pixi 8.21 (+ GSAP for 鼎归, memory, 回) | 1,050 lines |
+| `setpiece.js` + `setpieces/*` (漳水立起 zhang, 筑基天象 zhuji, 腾云 tengyun, 青丘之主 yaowang, 沉鼎山 chending, 扔了干净 huochai, 看完烧了 diche, 二十三下 ershisan) | Pixi + GSAP, on `painted.js` | 1,900 lines, ~250 GSAP timeline calls |
+| 守炉 (`shoulu/draw.js`), the rope kit (`ropekit.js`, Verlet), 接雨 (`rain.js`, DOM on `ink.js`) | plain canvas / DOM | — |
+| 3D | no three.js in this repo; `jieyin/judge3d.js` is MediaPipe 3D landmarks (math, not drawing) | — |
+
+Pixi is used in a small way. It's mostly Sprite, Graphics, Container and Texture, plus 4 DisplacementFilter,
+4 ColorMatrixFilter, 4 BlurFilter, 3 TilingSprite, 2 RenderTexture, 1 MeshPlane and 6 `Application` sites. Today a
+stage can hold three WebGL contexts at once (the painting, the beast's 出场, the weather), plus a game's when one
+plays. The browser drops the oldest when it runs out, which `fx.js glOK()` already works around.
+
+### 1 · Shared layers
+
+**(a) One Phaser, for games and the stage.**
+- `vendor/phaser.min.mjs` (3.90) is the only engine. 砸寨 is rebuilt with `phaser` marked external like the others,
+  so its second copy goes.
+- **Loading rule (it keeps the tests running in Node):** no stage module imports Phaser statically, because Phaser
+  touches `window` when the module loads. `fx.js` keeps one loader, `loadPhaser()`, which replaces `loadPixi` and
+  `loadGsap`. Drawing code keeps taking the engine by injection (`build({ Phaser, scene, W, H, art })`, today
+  `build({ PIXI, gsap, app, … })`). Data, beats, motion and stills stay pure exports, as now.
+- **The stage host (`scripts/kit/stage.js`): one persistent `Phaser.Game` per stage.** It is created on first need
+  and destroyed with the stage. The canvas is transparent with `pointer-events: none`, and Phaser's input is off.
+  The canvas sits in the stage box, under the DOM words. Each layer is a Scene: `alive` (the painting and the
+  beast's 出场), `weather`, and `moment` (鼎归, 回, a set piece). A layer starts, sleeps and stops as a scene. Teardown
+  is `scene.stop()` plus freeing its textures; the game itself stays. This replaces the six `Application` sites with
+  one context. A set piece covering the stage sleeps `alive` and `weather` and wakes them after.
+- **The honest limit is z-order.** Everything on the stage sits under the DOM words, so it fits one canvas.
+  `fx-memory` draws over a memory card's picture (`position: fixed`, following the card), which is not the stage
+  box. It stays a short-lived second `Phaser.Game` (~4 s, destroyed after). It only joins the stage game if the
+  card's picture ever moves inside the stage.
+- **Games keep their own `Phaser.Game` per mount,** as now (the shell, `Scale.FIT`, 60 fps, Matter). While a game
+  plays, the stage game sleeps (`game.loop.sleep()`). It isn't destroyed, so coming back costs nothing.
+- **Fallbacks stay exactly as today.** The stage game is `type: Phaser.WEBGL` only. Without WebGL (`glOK()`), or
+  with reduced motion, it isn't created: the CSS stills, the SVG 鼎归 (`inkmap.js`), the SVG set-piece stills
+  (`stillSvg`), the CSS bloom and the CSS weather spans are all there is. Games keep `Phaser.AUTO` (canvas
+  fallback), and every fx in the library is a no-op on the canvas renderer.
+- **DPR:** Phaser has no `autoDensity`. The host sizes the canvas at `w·dpr` and sets `zoom: 1/dpr`, with dpr
+  capped at 2 (1.5 for weather, as now).
+
+**(b) A shared fx library: `scripts/kit/fx/`** (plain ESM, no build, so the stage loads it as-is; game bundles
+import it as external, like Phaser).
+- Its seed is the three `tools/*/src/fx.js` (`makeTextures`, `makeNumberFont`, `makeEmitters`, `jag`, `rng`,
+  `canvasTex`), merged into one.
+- **Modules:**
+  - `wuxing.js`: the 五行 presets (fire, ice, metal, wood, earth). Each is an emitter config, a tint, a hit flash
+    and a sound id.
+  - `hit.js`: hit flash, hit-stop, shake, number pop.
+  - `burst.js`: dust, sparks, splat, poof.
+  - `ink.js`: ink bleed and soak, paper grain and paper fibre. `fibreCanvas` and `grainCanvas` already make their
+    textures with Canvas2D, so they move over unchanged.
+  - `light.js`: rim light and glow (`glowCanvas` from `painted.js`).
+  - `particles.js`: the budgeted emitter wrapper, with caps per device.
+- One signature everywhere: `fx.burst(scene, x, y, { kind, scale })`. It works the same in a game, a fight
+  (`battle-anim.js` when it moves to canvas) and a set piece.
+- Every preset reads `reducedMotion`: no shake, a fade instead of a burst.
+
+**(c) Shared assets: `scripts/kit/assets/` + `manifest.json`.**
+- **Characters and beasts** keep one set of action frames each (idle, walk, hit, poof). Today 守炉's
+  `beasts.webp` re-packs 守墙's frames, and 小满, 银月, 野猪 and 犰狳 sit in several games' `art/`.
+- **Icons:** the 五行 符 and the skill icons.
+- **UI kit:** buttons, panels and stars, today Kenney's inside 砸寨.
+- **Fonts:** four cuts of ZCOOL KuaiLe (kailu, sadou, sadoushou, shouqiang: 68 + 26 + 23 + 44 KB) become one cut
+  of the union of the games' characters, made by one `tools/font.py`.
+- **The manifest:** each row is `id → file, frames, atlas, licence, source, used_by`. A test checks every row's
+  file is on disk and every game's art is either in the manifest or its own (scenery stays per game).
+- Story paintings stay world content (`worlds/jiuding/art/`). The kit holds what code draws with, never what the
+  world is.
+- The layer-3 path in the table above (`scripts/games/kit/assets/`) was never made. It becomes `scripts/kit/`,
+  since the stage now shares it.
+
+**(d) How Phaser does what Pixi and GSAP do now.**
+
+| Today | In Phaser 3.90 | Gap, honestly |
+|---|---|---|
+| `MeshPlane` breathing (画活, a 64×44 grid bent per frame) | `Plane` (a Mesh) with `setOrtho`, writing `vertices[i].x/y` each frame from `motionAt` (already pure) | Phaser's Mesh API is less used than Pixi's. A spike must show that direct writes re-transform and what 2.8k vertices cost at 30 fps on a phone. Fallback: a small `PostFXPipeline` that bends UVs in the shader by the same boxes (still one engine). |
+| `DisplacementFilter`, `ColorMatrixFilter`, `BlurFilter` | `postFX.addDisplacement / addColorMatrix / addBlur` (FX, WebGL only) | ColorMatrix uses the same 20-float layout, so `coldMatrix()` ports unchanged. Containers take postFX only, not preFX. |
+| **The soak** (a disc grown in a RenderTexture, torn by displacement, blurred, used as the painting's mask, with a wet rim) | `RenderTexture` + FX + `BitmapMask` | **The real gap:** whether `rt.draw()` bakes a source's postFX into the texture. If not, the soak becomes one custom `PostFXPipeline` (mask, tear and rim in one shader, about 60 lines of GLSL). The 回 spike settles it first. |
+| `TilingSprite`, `Graphics`, `Sprite`, `Container`, `RenderTexture` | `TileSprite`, `Graphics` (prefer baked textures), `Image`, `Container`, `RenderTexture`/`DynamicTexture` | None. Words were never painted, so there's no text gap. |
+| Pixi weather particles (hand-rolled sprites) | `ParticleEmitter`, three depths, wind as `accelerationX`; rain rings as a second emitter | None. `DENSITY` and `countFor` stay the caps. |
+| **GSAP timelines** (~250 calls: `set` 90, `fromTo` 76, `to` 58, `from` 20, position parameters, `progress(1)` to finish a beat on a tap, `eventCallback`) | Phaser Tweens and `TweenChain` | **Gap:** Phaser has no seekable timeline with GSAP's position parameter, and no `progress(1)` across one. Fix: `kit/timeline.js`, a ~150-line GSAP-shaped subset (`to/fromTo/from/set/call/add`, positions, `progress`, `play/pause/kill`, `onComplete`). It is driven by the scene's clock and is pure, so Node tests can seek it. `setpieces/bag.js` (`tweenBag`) already wraps every piece's tweens, so its backend changes and the pieces' choreography lines stay. Eases map by name (`sine.inOut` → `Sine.easeInOut`, `power1.out` → `Quad.easeOut`, `power2.out` → `Cubic.easeOut`, `back.out(n)` → `Back.easeOut` with overshoot n). All 15 eases in use have a Phaser twin. |
+| Boot: a Pixi `Application` is light | A `Phaser.Game` is heavier (scene manager, sound, input) | This is why the stage game is persistent: it boots once per stage. The `fxTimes` log keeps measuring it (`phaser_ms`). |
+
+### 2 · Port order (lowest risk first)
+
+**Rule: port when touched.** An effect or game being changed anyway moves to Phaser in the same change. Steps 1–4
+are done up front, because they are the foundation and the gate.
+
+The beat lock on 漳水立起 (`tests/setpiece.test.mjs`) guards data and the stepper, not drawing: `BEATS`, `SHOTS`,
+`ART`, `MARKS`, `LUOSHU`, `TITLE`, `coldMatrix`, `stillSvg`, `beatStepper` and `beatRange`. A port changes only
+`build()`, so the lock stays green by construction. Every step still runs it, with the rest of `./scripts/check.sh`.
+
+Sizes are agent time: S ≤ 2 h, M 2–5 h, L 5–10 h.
+
+| # | Step | Size | Gate |
+|---|---|---|---|
+| 1 | Merge the three `tools/*/src/fx.js` into `kit/fx/`; rebuild 守墙关, 撒豆成兵, 守山门 and 开炉 against it. No visual change. | S · 2 h | stale-bundle tests; play each once |
+| 2 | 砸寨 onto the shared `phaser.min.mjs` (external), dropping its bundled copy | M · 3 h | `game-zhazhai.test.mjs`; a full level |
+| 3 | Font union cut + `kit/assets/manifest.json` skeleton + manifest test; move the shared beasts' frames first | M · 3 h | each game's text still renders |
+| 4 | **The spike and gate:** the stage host (`kit/stage.js`) + `kit/timeline.js` + `fx-hui.js` (107 lines, a soak with no beats and no lock) on Phaser | M · 5 h | the soak looks right beside the Pixi one, and the spike measures the mesh cost. **If the soak needs the GLSL pipeline, the plan says so here before step 5.** |
+| 5 | `fx-memory.js` (the same soak; its own short-lived game) | S · 2 h | `fx-memory.test.mjs`; a bloom live |
+| 6 | `fx-weather.js` → `weather` scene, ParticleEmitter | M · 3 h | `fx-weather.test.mjs`; snow, rain, fog live |
+| 7 | `fx-alive.js` → `alive` scene, Plane breathing (the 画活 painting + the beast's 出场 in one scene) | M · 5 h | `fx-alive.test.mjs`; `alive.html` side by side |
+| 8 | `painted.js` (camera, soak, grain) + `tweenBag` backend → Phaser | M · 4 h | opens the way for every painted piece |
+| 9 | The set pieces, small to large: chending (81) → diche (142) → ershisan (130) → tengyun (151) → zhang 漳水立起 (155) → zhuji (200) → yaowang (280) → huochai (351) | L · ~16 h total (S–M each) | each piece's test + `setpiece.html` run whole |
+| 10 | `fx.js` 鼎归 (displacement, mask, bleed ring) | M · 4 h | `inkmap.test.mjs`; the homing live |
+| 11 | Remove `pixi-8.21.0.min.mjs`, `gsap-3.15.0.min.js`, `LICENSE.pixi.txt`, their VENDOR.md rows, `loadPixi/loadGsap`; add a test that no script names PIXI or gsap. The GSAP licence leaves with it. | S · 1 h | `check.sh` green |
+
+**Total ≈ 48 h of agent time.** Steps 1–8 (≈ 27 h) carry all the risk. Step 9 is mechanical once 8 lands. Until
+step 11 a page may load both engines (1.1 MB + 0.9 MB). That's acceptable for a while, but not as the end state.
+Today a session with a living painting and a game already loads both.
+
+Follow-ups when it's built: `scripts/vendor/VENDOR.md` (Phaser rows; Pixi/GSAP gone), `design.md § 画面效果` (one
+engine), and the Layers table above (layer 1 covers the stage; layer 3 becomes `scripts/kit/`).
+
+### 3 · The canvas games
+
+A plain-canvas game can't borrow a Phaser fx library without a Phaser scene. There's no half-step, and an fx canvas
+laid over the game would add a second context during play. So the question for each game is whether its play layer
+moves.
+- **守炉: yes, and it's already decided** (the 塔防 kit, order step 3). `shoulu/core.js` (854 lines) is pure and
+  separate. `draw.js` (534) is one function per figure, written for this swap. It becomes one Phaser scene, and the
+  shots, hits, marks and 银月's skills come from `kit/fx`. **M–L · 8 h.** Its bot and level tests don't change.
+- **The ropes (割绳子, 饭桶, and the rope beats): the drawing moves, the physics doesn't.** `ropekit.js`'s Verlet sim
+  stays pure, in the worker, because the bots and `rope-plan` depend on it. Phaser draws from its state each frame
+  (rope as a textured strip, candy as a sprite, cuts and bounces through `kit/fx`). **M · 5 h for the kit,** then
+  S per rope game.
+- **接雨: last, port when touched.** It's 293 lines on `ink.js`/`mountPure` (DOM, no canvas). Its effects are a
+  splash and a puddle. Moving it buys little until it gets the comic art the 打地鼠 kit wants. **M · 4 h** when its
+  turn comes (order step 4 of the 10-20 plan). Until then its CSS stays.
+- **Fights** (`battle-anim.js`, DOM/CSS) are not in this plan's scope. When a fight gets a canvas, it uses `kit/fx`
+  with no second library.
+
+### 4 · Perf budget
+
+| Budget | Mac | Mid-range phone (the play webview) |
+|---|---|---|
+| Live WebGL contexts | ≤ 1 persistent (the stage) + ≤ 1 short-lived (a game or the memory card). Never three. | ≤ 1 (the game; the phone's story is Flutter) |
+| Frame rate | stage layers 30 fps (set pieces are slow camera moves); games 60 | games ≥ 30, aim 60 |
+| Frame time | stage layers together ≤ 8 ms; games p95 ≤ 16 ms | games p95 ≤ 33 ms |
+| Textures | atlases ≤ 2048²; a set piece holds ≤ 5 paintings (1536×1024) at once | atlases ≤ 2048², ≤ 64 MB of textures live |
+| Particles | weather's `DENSITY` caps (170 snow, 200 rain); a game burst ≤ 300 live | half of the Mac caps (`particles.js` per device) |
+| Load | Phaser once per page (1.1 MB, cached), replacing Pixi + GSAP (0.9 MB) | bundled in the app, no network |
+
+The stage game sleeps when the tab is hidden (Phaser does this itself), under a set piece's cover for the layers it
+covers, and while a game plays.
+
+**What we measure:**
+- The `fxTimes` log gains `phaser_ms` (first load) and `boot_ms` (stage game ready).
+- A `?perf=1` readout on the page shows `game.loop.actualFps` per game, live contexts (a counter in
+  `kit/stage.js`), texture memory and particle count.
+- A `tools/cdp.mjs` run on `?save=test` walks a painting, weather, a set piece and a game and records p95 frame
+  time and peak contexts. Each port step runs it before and after, and a step that makes things worse doesn't land.
+- One check on a real phone webview per kit, on the phone side, when that kit ships there.
+
+### 5 · Questions for Hanli
+
+1. **One stage canvas that stays, or one canvas per moment as today?** Recommended: **one that stays** (the stage
+   game with a scene per layer). It's the only way to get to one context, it ends the dropped-context bug, and Phaser
+   boots once. The cost: the stage host is new code (step 4).
+2. **If the 回 spike shows the soak needs a custom shader, write it (about 60 lines of GLSL inside Phaser), or keep
+   Pixi for the soak alone?** Recommended: **write the shader.** Keeping Pixi for one effect means two engines
+   forever, which is what this plan ends.
+3. **Port all the stage effects now (≈ 27 h, steps 1–8), or only the foundation and gate (steps 1–4, ≈ 13 h) and
+   the rest as each is touched?** Recommended: **steps 1–4 now, then 7 (画活) and 6 (weather) next**, because
+   those two run on every stage and cut the contexts. Set pieces and 鼎归 port when touched, with the end of 卷二's
+   build as the date Pixi leaves.
