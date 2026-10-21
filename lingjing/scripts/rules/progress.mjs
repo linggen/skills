@@ -22,7 +22,9 @@ import { act, begin, foeTurn, offers, tokenOf } from '../battle.js';
 import { lookahead } from '../fightline.js';
 import { bookEntries, idsOf } from '../book-order.js';
 import { VERBS } from './verbs.mjs';
-import { allPlaces, encounterOf, placeOf } from './world.mjs';
+import { allPlaces, encounterOf, foeOf, placeOf } from './world.mjs';
+import { fightPill, fightSetup, pouchBrief, pouchFor, readOf } from './cards.mjs';
+import { shelfOf } from './look.mjs';
 import { riddleOf } from './core.mjs';
 import { tellOf } from './tell.mjs';
 import { earned, stageGate } from './gates.mjs';
@@ -118,6 +120,9 @@ export function winningPicks(setup, catalog, tries = 24) {
    thinks a turn ahead (tests/fight-band.test.mjs): a day's deal may be lost
    by every line, so the seed tries the next day's deal, up to this many. */
 const FIGHT_DAYS = 12;
+/* Pills: two carried into a fight that is not won bare (the bands' player), and two fights' worth
+   kept in the bag where a shelf sells them. */
+const PILLS_IN = 2, PILLS_KEPT = 4;
 
 /* ── one step ── */
 class Stuck extends Error {
@@ -152,10 +157,50 @@ function makeRunner(content, opts) {
     }
     return s;
   };
+  /* 丹囊: the bands are weighed for a player who carries pills in (tests/fight-band.test.mjs: about 45%
+     bare, about 65% with two), so when no line wins today's deal bare, a sensible player takes what pills
+     he holds through the door — a pill is spent only if the line takes it. Bare first, so a fight he wins
+     without them costs none. Null to leave the door as it is; '' to carry none. */
+  r.pouch = (s, game) => {
+    if (s.fight) return null;
+    const brief = pouchBrief(content, s);
+    const carried = pouchFor(content, s).length > 0;
+    if (!brief) return carried ? '' : null;
+    const bare = fightSetup(content, { ...s, pill_pick: [] }, foeOf(content, game), r.now, game.id, game.deal, readOf(s, game));
+    // Won bare: none carried (an old pick at the door is put down, so the pills last the night).
+    if (winningPicks(bare, catalog)) return carried ? '' : null;
+    const left = Object.fromEntries(brief.pills.map((p) => [p.id, p.n])), pick = [];
+    // Two, as the bands weigh (TWO_PILLS: a heal and 灵力 where he holds both) — one of each kind first.
+    const most = Math.min(PILLS_IN, brief.max);
+    while (pick.length < most && brief.pills.some((p) => left[p.id] > 0)) {
+      for (const p of brief.pills) if (left[p.id] > 0 && pick.length < most) { pick.push(p.id); left[p.id] -= 1; }
+    }
+    return pick.join(',');
+  };
+  /* Stocked before the night (balance.json `model.pills_bought`, the pills a player carries into his
+     fights): where a shelf sells them and he holds fewer than two fights' worth (PILLS_KEPT), he buys them, one of each
+     in turn, with what he has. Called as he comes to a scene, so a locked beat (world.mjs fitLock) is
+     entered stocked from the last shelf on the road — inside it no shelf is reachable. */
+  r.stock = (s) => {
+    const want = content.balance?.model?.pills_bought ?? [];
+    const place = placeOf(content, s.place);
+    if (!want.length || !place?.has?.shop || s.fight) return s;
+    const sold = new Set(shelfOf(content, place, s, r.now).map((i) => i.id));
+    const held = () => Object.entries(s.bag ?? {}).reduce((n, [id, k]) => n + (fightPill(content, id) ? k : 0), 0);
+    for (let i = 0; held() < PILLS_KEPT && i < 2 * PILLS_KEPT; i += 1) {
+      const id = want[i % want.length];
+      if (!sold.has(id)) continue;
+      const out = r.call('trade', s, { action: 'buy', id });
+      if (!out.result?.ok) break;
+      s = out.state;
+    }
+    return s;
+  };
   r.fight = (s, game) => {
     s = r.dress(s);
     for (let d = 0; d < FIGHT_DAYS; d += 1) {
-      const started = r.call('duel', s, { id: game.id });
+      const pills = r.pouch(s, game);
+      const started = r.call('duel', s, { id: game.id, ...(pills != null ? { pills } : {}) });
       if (!started.result.ok) {
         if (['withdrawn', 'spent-today', 'subdued-today'].includes(started.result.refused)) { r.nextDay(); continue; }
         throw new Stuck(s, `fight ${game.id} refused ${started.result.refused}`);
@@ -269,6 +314,7 @@ const order = (exits) => [...exits.filter((e) => e.default), ...exits.filter((e)
 
 /* One scene played until the save stands somewhere else. `route` — exit ids to take, in order, where offered. */
 function stepScene(content, r, s, policy, route) {
+  s = r.stock(s);
   const sc = sceneOf(content, s);
   if (!sc) throw new Stuck(s, 'no such scene');
   const stayed = new Set();

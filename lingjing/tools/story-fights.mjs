@@ -26,7 +26,8 @@
 //   h11b 练气六层 · + 震怒 (the 犰狳's) — 秦雁 on the 崖顶, alone.
 //   h09  练气七层 · + 入隙 (09-futian) — 古八's pools with 阿禾.
 //   h09b 练气八层 · the same hand — the 腊八 大比's final (09-dabi/dabi), alone on the stage.
-//   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙 alone, 老井 on the 河滩 and the 冀 pools with 阿禾.
+//   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙 alone, the 冀 pools with 阿禾.
+//   h10b 筑基一层 · + 寒潭指 (双龙's) — 老井 on the 河滩 with 阿禾.
 // Gear worn as soon as it is had (a sensible player puts on what he is given).
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
@@ -34,7 +35,7 @@ import { fightSetup } from '../scripts/rules.mjs';
 import { creatureOf, foeOf as sceneFoe } from '../scripts/rules/world.mjs';
 import { act, begin, foeTurn } from '../scripts/battle.js';
 import { fightOnce, lookahead } from './trial-sim.mjs';
-import { EARLY, H05, H08, H11 } from './road-hand.mjs';
+import { EARLY, H05, H08, H10B, H11 } from './road-hand.mjs';
 
 export const content = loadContent();
 const NOW = new Date('2026-09-29T11:00:00Z');
@@ -57,6 +58,7 @@ const STOPS = {
   h09: { tier: 'qi', step: 7, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['00-zhuji', '09-dabi'] },
   h09b: { tier: 'qi', step: 8, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['00-zhuji', '09-dabi'] },
   h10: { tier: 'foundation', step: 1, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['01-ji', '01-ye'] },
+  h10b: { tier: 'foundation', step: 1, cards: H10B, cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['01-ji', '01-laojing'] },
 };
 
 export function stateAt(stop) {
@@ -84,7 +86,7 @@ export const FIGHTS = [
   { id: 'foe-shijie', name: '秦雁 (崖顶 · 试)', at: 'h11b', scene: '09-futian/spar', trial: true, unforced: true },
   { id: 'foe-jiuceng', name: '九层师兄 (大比决赛)', at: 'h09b', scene: '09-dabi/dabi', band: [0.4, 0.75], pilled: [0.6, 1], note: '2026-10-21: weighed across ten save seeds (the 练气 curve deals each player his own ten) — 49% bare on average, 15–67%; this fixture\'s ten 52%' },
   { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', scene: '01-rise/stand', trial: true, band: [0.35, 0.7], note: 'a 试 outlasted: its 气血 does not weigh it' },
-  { id: 'foe-laojing', name: '老井 (试 · 河滩)', at: 'h10', scene: '01-laojing/dodge', trial: true, unforced: true },
+  { id: 'foe-laojing', name: '老井 (试 · 河滩)', at: 'h10b', scene: '01-laojing/dodge', trial: true, unforced: true },
   { id: 'qiuyu', name: '犰狳 (秘境 凶崖, guards the way)', at: 'h07', pool: 'mijing-ya' },
   { id: 'heyu', name: '合窳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
   { id: 'qiuyu', name: '犰狳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },

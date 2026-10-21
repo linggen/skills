@@ -2175,7 +2175,7 @@
         "gather"
       ],
       "hp": 3,
-      "_hp": "A 试 outlasted (`trial.outlast`, no yield), so his 气血 is not what is won — it sets when 镜光 comes (杀招 at half): at 3 it lands mid-fight. Weighed 2026-10-21 by tools/story-fights.mjs (lookahead, 60 seeds, with 阿禾): won 52% bare (lost 48%, driven down 2%), 77% with two pills — tests/fight-band.test.mjs holds it.",
+      "_hp": "A 试 outlasted (`trial.outlast`, no yield), so his 气血 is not what is won — it sets when 镜光 comes (杀招 at half): at 3 it lands mid-fight. Weighed 2026-10-21 on the hand the road gives here (tools/story-fights.mjs `h10b`: + 寒潭指, 双龙's): won 50% bare, 83% with two pills (tests/fight-band.test.mjs). His ten are a seeded draw (cards.mjs autoDeck), so a save's own hand can sit well under that bare — over 24 saves 30% bare, 67% with two pills; the pills are the lever.",
       "deck": [
         "hantan",
         "hantan",
