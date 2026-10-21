@@ -1,15 +1,161 @@
 {
-  "_about": "施法特写 — the casting close-up, a TEST in the 游戏厅 for Hanli to choose between two looks (Hanli 2026-10-21: 「用yinyue的3D模型试一下. 另C的效果也给我看一下.」): `ink` (version C — 小满 in side profile, one local-FLUX painting, his hands live ink strokes from the player's) or `vrm` (Yinyue's VRM as 小满's stand-in, her finger bones live). `&cutin=ink|vrm` picks, else the games.json row's `data.cutin`. Not in the story (10-14: 「游戏里不需要3D模型」 stands). games/texie.js; doc/games.md § 施法特写.",
-  "_panel": "texie/panel.js: slides in `inMs` after a hand is seen; a cast thrusts for `thrustMs`, the panel fades `afterMs` later over `outMs`, then rests `restMs`; hands gone `goneMs` → it fades.",
-  "panel": { "inMs": 280, "thrustMs": 420, "afterMs": 700, "outMs": 360, "goneMs": 900, "restMs": 500 },
-  "_cast": "A cast: any seal of the device's set (jieyin.json, judge.js sealOf) held `holdMs` — but an open palm (`skip`: 掌 is half of 推掌, § 手势斗法) only shows the hands —, or a push at the camera (zhidian/poke.js on any hand: its size grows `grow` over `windowMs`); then none for `coolMs`. The camera read at `fps` (a push is quick).",
-  "cast": { "skip": ["zhang", "shuangzhang"], "holdMs": 350, "coolMs": 900, "fps": 30, "poke": { "windowMs": 300, "grow": 1.12, "coolMs": 350 } },
-  "eggMs": 600,
-  "levels": [
-    {
-      "id": "shandao", "title": { "zh": "施法特写 · 山道", "en": "Casting close-up · The mountain road" },
-      "foe": "yezhu", "hits": 8,
-      "lead": { "zh": "手举到镜头前：小满的手就是你的手。结一个印，或者往前一推，火蛋出手。", "en": "Raise your hands to the camera: Xiaoman's hands are yours. Make a seal, or push forward, and the fire egg flies." }
-    }
-  ]
+ "_about": "施法特写 — the casting close-up (Hanli 2026-10-21, after trying a live-drawn ink hand and a 3D model: 「那就水墨, 识别到手势, 放一个预制的动画就好了」): 结印's field; a hand seen → a comic panel slides in with 小满 in side profile, ready; a seal the judge reads → that seal's PRE-PAINTED animation (local FLUX frames), never a hand drawn from the landmarks; a cast → its thrust frame with the element's glow. One component (games/texie/cutin.js) for this test and, later, 结印's dock in 守墙关 · 守炉 · 守山门. 游戏厅 only; not in the story. doc/games.md § 施法特写.",
+ "_panel": "texie/panel.js: slides in `inMs` after a hand is seen; a cast thrusts for `thrustMs`, the panel fades `afterMs` later over `outMs`, then rests `restMs`; hands gone `goneMs` → it fades.",
+ "panel": {
+  "inMs": 280,
+  "thrustMs": 420,
+  "afterMs": 700,
+  "outMs": 360,
+  "goneMs": 900,
+  "restMs": 500
+ },
+ "_cast": "A cast: any seal of the device's set (jieyin.json, judge.js sealOf) held `holdMs` — but an open palm (`skip`: 掌 is half of 推掌, § 手势斗法) only shows the hands —, or a push at the camera (zhidian/poke.js on any hand: its size grows `grow` over `windowMs`); then none for `coolMs`. The camera read at `fps` (a push is quick).",
+ "cast": {
+  "skip": [
+   "zhang",
+   "shuangzhang"
+  ],
+  "holdMs": 350,
+  "coolMs": 900,
+  "fps": 30,
+  "poke": {
+   "windowMs": 300,
+   "grow": 1.12,
+   "coolMs": 350
+  }
+ },
+ "eggMs": 600,
+ "_anims": "cutin.js: each row one animation, a sprite sheet art/seal-<key>.webp of `frames` (each frame.w × frame.h). `seals`: the jieyin.json seals that play it (a two-hand seal may borrow a one-hand row); `fist`: played by a fist (jieyin.json spells.kou's rule); `castOnly`: shown only on a cast (an open palm is the hand at rest — it must not flash 推掌 all the time). `glow`: the element's colour round the thrust. A hand seen with no row read shows `ready`. Timings (ms): `rise` the first frame before the held one; `thrust` the cast frame; `fade` each cross-fade. A new seal = a new row + its painted sheet (tools/paint-texie-flux.py).",
+ "frame": {
+  "w": 512,
+  "h": 384
+ },
+ "frames": [
+  "rise",
+  "seal",
+  "thrust"
+ ],
+ "ms": {
+  "rise": 160,
+  "thrust": 520,
+  "fade": 140
+ },
+ "anims": {
+  "jian": {
+   "seals": [
+    "jian",
+    "shuangjian"
+   ],
+   "glow": "#9fb4c8",
+   "name": {
+    "zh": "剑诀",
+    "en": "Sword seal"
+   }
+  },
+  "danjian": {
+   "seals": [
+    "danjian"
+   ],
+   "glow": "#e9eef5",
+   "name": {
+    "zh": "单剑指",
+    "en": "Single sword finger"
+   }
+  },
+  "zhang": {
+   "seals": [
+    "zhang",
+    "shuangzhang"
+   ],
+   "castOnly": true,
+   "glow": "#f3ead2",
+   "name": {
+    "zh": "推掌",
+    "en": "Open palm"
+   }
+  },
+  "quan": {
+   "fist": true,
+   "glow": "#e8a040",
+   "name": {
+    "zh": "拳",
+    "en": "Fist"
+   }
+  },
+  "wu": {
+   "seals": [
+    "wu"
+   ],
+   "glow": "#e8432f",
+   "name": {
+    "zh": "午文",
+    "en": "Wu"
+   }
+  },
+  "shen": {
+   "seals": [
+    "shen"
+   ],
+   "glow": "#e8432f",
+   "name": {
+    "zh": "申文",
+    "en": "Shen"
+   }
+  },
+  "zi": {
+   "seals": [
+    "zi"
+   ],
+   "glow": "#4f86c6",
+   "name": {
+    "zh": "子文",
+    "en": "Zi"
+   }
+  },
+  "you": {
+   "seals": [
+    "you"
+   ],
+   "glow": "#f6f2e6",
+   "name": {
+    "zh": "酉文",
+    "en": "You"
+   }
+  },
+  "mao": {
+   "seals": [
+    "mao"
+   ],
+   "glow": "#3f8a5a",
+   "name": {
+    "zh": "卯文",
+    "en": "Mao"
+   }
+  },
+  "yuqing": {
+   "seals": [
+    "yuqing"
+   ],
+   "glow": "#c9a24a",
+   "name": {
+    "zh": "玉清诀",
+    "en": "Jade Clarity"
+   }
+  }
+ },
+ "levels": [
+  {
+   "id": "shandao",
+   "title": {
+    "zh": "施法特写 · 山道",
+    "en": "Casting close-up · The mountain road"
+   },
+   "foe": "yezhu",
+   "hits": 8,
+   "lead": {
+    "zh": "手举到镜头前：小满的手就是你的手。结一个印，或者往前一推，火蛋出手。",
+    "en": "Raise your hands to the camera: Xiaoman's hands are yours. Make a seal, or push forward, and the fire egg flies."
+   }
+  }
+ ]
 }

@@ -1,27 +1,25 @@
-// texie.js — 施法特写 (the casting close-up), a TEST in the 游戏厅 for Hanli to choose a look (2026-10-21: 「用yinyue的3D模型
-// 试一下. 另C的效果也给我看一下.」). The field is 结印's (守墙关's 山道, 小满 from behind, a boar); when a hand is seen a
-// close-up panel slides in at the top corner, and the player's hands are 小满's in it. A seal held or a push at the
-// camera: the panel's hand thrusts, a 火蛋 flies from 小满 on the field; the panel fades after. Two looks, one module:
-//   `ink` (version C) — 小满 in side profile (one local-FLUX painting), his hands live ink strokes (texie/ink.js)
-//   `vrm`             — Yinyue's VRM as his stand-in, her finger bones live (texie/vrm.js; the model from the engine)
-// `&cutin=ink|vrm` picks, else the games.json row's `data.cutin` (one tile each). Not in the story: 10-14 「游戏里不需要3D模型」 stands.
+// texie.js — 施法特写 (the casting close-up), a test in the 游戏厅 (Hanli 2026-10-21, after trying a live-drawn ink hand
+// and a 3D model: 「那就水墨, 识别到手势, 放一个预制的动画就好了」). 结印's field (守墙关's 山道, 小满 from behind, a boar); a
+// hand seen → a comic panel slides in at the top corner, 小满 in side profile, ready; a seal the judge reads → that
+// seal's pre-painted animation plays (texie/cutin.js — rise, then the seal held); a push at the camera (or a seal held
+// `cast.holdMs`) → its thrust frame with the element's glow, and a 火蛋 flies from 小满; the panel fades after. No hand is
+// ever drawn from the landmarks. Not in the story.
 //
-// The parts: games/jieyin/eye.js (camera + the vendored MediaPipe model, on the device), jieyin/judge.js sealOf (the
-// device's seals, jieyin.json), zhidian/poke.js (a push), texie/panel.js (when the panel shows). Numbers:
+// The parts: games/jieyin/eye.js (camera + the vendored MediaPipe model, on the device), jieyin/judge.js (the device's
+// seals; a fist by jieyin.json spells.kou), zhidian/poke.js (a push), texie/cutin.js (the panel, its frames). Numbers:
 // worlds/jiuding/levels/texie.json. No camera, no permission, no WebGL, or the model fails → one line; nothing else.
 // The camera is asked for only on 开始, stopped (its tracks) on pause, end, leave, or the page hidden; its picture is
 // never shown.
 // Contract (games/mount.js): mount(container, { lang, data, signal, shell }) → Promise<{ won, stars } | { won: false, left: true }>
 // Dev only: `?dev=1&feed=1` runs without a camera — hands from the console (`window.texieFeed(world, image?, handed?)`),
-// or `window.texieFeed.bot()`, made-up hands that open, close and push; `&bench=1` also runs the hand model on a
-// drawn frame at the camera's rate (MediaPipe + the panel together, for the fps); never a player's.
+// or `window.texieFeed.bot()`, made-up hands that make the seals one by one and push; `&bench=1` also runs the hand
+// model on a drawn frame at the camera's rate (for the fps); never a player's.
 import { available, dropModel, loadModel, openEye } from './jieyin/eye.js';
-import { sealOf } from './jieyin/judge.js';
+import { makes, sealOf } from './jieyin/judge.js';
 import { sealsFor, setOf } from './jieyin/sets.js';
-import { buildHand } from './jieyin/pose.js';
+import { buildHand, poseOf } from './jieyin/pose.js';
 import { poke, sizeOf, startPoke } from './zhidian/poke.js';
-import { panelStep, startPanel } from './texie/panel.js';
-import { inkView } from './texie/ink.js';
+import { closeUp, loadCutinKit } from './texie/cutin.js';
 
 export const meta = {
   id: 'texie',
@@ -29,12 +27,11 @@ export const meta = {
   camera: true,
   name: { zh: '施法特写', en: 'Casting close-up' },
   how: {
-    zh: '手举到镜头前，小满的手就跟着动；结一个印或往前一推，火蛋出手。',
-    en: 'Raise your hands to the camera and Xiaoman\'s move with them; make a seal or push forward and the fire egg flies.',
+    zh: '手举到镜头前，结一个印，小满就结同一个印；往前一推，火蛋出手。',
+    en: 'Raise your hand to the camera and make a seal — Xiaoman makes the same one; push forward and the fire egg flies.',
   },
 };
 
-const KIT = new URL('../../worlds/jiuding/levels/texie.json', import.meta.url);
 const SEALS = new URL('../../worlds/jiuding/levels/jieyin.json', import.meta.url);
 const CSS = new URL('./texie/texie.css', import.meta.url);
 const ART = {
@@ -45,17 +42,14 @@ const ART = {
 const foeArt = (id, frame) => new URL(`./shouqiang/art/${id}-${frame}.webp`, import.meta.url).href;
 
 const W = {
-  zh: { nocam: '施法特写要用摄像头，这里用不了。', nogl: '这台设备画不了3D。', asking: '请允许使用摄像头……', loading: '模型加载中', raise: '把手举到镜头前', hit: '中了！', won: '野猪跑了。', who: '小满', ink: '水墨', vrm: '3D' },
-  en: { nocam: 'The casting close-up needs a camera — none here.', nogl: 'No 3D on this device.', asking: 'Allow the camera…', loading: 'Loading the model', raise: 'Raise your hands to the camera', hit: 'Hit!', won: 'The boar runs off.', who: 'Xiaoman', ink: 'Ink', vrm: '3D' },
+  zh: { nocam: '施法特写要用摄像头，这里用不了。', asking: '请允许使用摄像头……', raise: '把手举到镜头前', hit: '中了！', won: '野猪跑了。', who: '小满' },
+  en: { nocam: 'The casting close-up needs a camera — none here.', asking: 'Allow the camera…', raise: 'Raise your hand to the camera', hit: 'Hit!', won: 'The boar runs off.', who: 'Xiaoman' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
 
-/** Which look: the link's `cutin` (`&cutin=ink|vrm`), else the row's `data.cutin`; ink unless it says vrm. */
-export const cutinOf = (data = {}, search = '') => ((new URLSearchParams(search).get('cutin') ?? data?.cutin) === 'vrm' ? 'vrm' : 'ink');
-
 /** The one line when the game cannot be offered; nothing else is drawn. */
-export const unavailableHtml = (lang = 'zh', why = 'nocam') => `<p class="tx-nocam" role="status">${plain(W[lang === 'en' ? 'en' : 'zh'][why] ?? W.zh.nocam)}</p>`;
+export const unavailableHtml = (lang = 'zh') => `<p class="tx-nocam" role="status">${plain(W[lang === 'en' ? 'en' : 'zh'].nocam)}</p>`;
 
 /** A cast from this frame's hands: a seal held `holdMs` (once per seal: it must change or go before it casts again;
     not one in `skip` — an open palm only shows the hands), or a push; none within `coolMs` of the last. Pure: → { state, cast: null | 'seal' | 'push' }. */
@@ -81,11 +75,10 @@ function loadCss(doc) {
   doc.head.append(l);
 }
 
-function stageHtml(level, cutin, lang) {
-  return `<div class="tx" data-cutin="${cutin}"><div class="tx-field" style="background-image:url('${ART.bg}')">`
+function stageHtml(level) {
+  return `<div class="tx"><div class="tx-field" style="background-image:url('${ART.bg}')">`
     + `<div class="tx-foe"><img alt="" src="${foeArt(level.foe, 'walk-1')}"><div class="tx-hp">${'<i></i>'.repeat(level.hits)}</div></div>`
     + `<img class="tx-xm" alt="" src="${ART.xiaoman}">`
-    + `<div class="tx-panel" data-phase="hidden" aria-hidden="true"><span class="tx-tag">${plain(W[lang][cutin])}</span></div>`
     + `<video class="tx-eye" playsinline muted aria-hidden="true"></video><p class="tx-status" role="status"></p></div></div>`;
 }
 
@@ -104,13 +97,15 @@ function fly(box, src, from, to, ms) {
   return anim.finished.catch(() => {}).then(() => img.remove());
 }
 
-/** Made-up hands for the dev feed: an open hand that closes into a fist and opens, now and then a push (it grows). */
-export function botHands(t) {
-  const phase = (t % 4000) / 4000, close = phase < 0.5 ? Math.sin(phase * 2 * Math.PI) : 0;
-  const curl = close > 0.6 ? ['index', 'middle', 'ring', 'pinky'] : close > 0.3 ? ['ring', 'pinky'] : [];
-  const hand = buildHand({ curl, spread: 6 + 8 * (1 - close) });
-  const push = phase > 0.7 && phase < 0.78 ? 1 + (phase - 0.7) * 6 : 1; // ×1.48 over ~300 ms
-  const sway = Math.sin(t / 700) * 0.04;
+/** Made-up hands for the dev feed: the player's right hand makes `BOT` one by one (jieyin.json's rules drawn by pose.js),
+    an open hand between, a push at the end of each. `seals`: jieyin.json `seals` (+ spells.kou for the fist). */
+export const BOT = ['jian', 'wu', 'kou', 'zi', 'mao', 'shen', 'you', 'yuqing', 'danjian', 'zhang'];
+export function botHands(t, kit) {
+  const step = 2600, i = Math.floor(t / step) % BOT.length, ph = (t % step) / step, id = BOT[i];
+  const shape = id === 'kou' ? kit.spells.kou : kit.seals[id];
+  const hand = ph < 0.18 ? buildHand({}) : poseOf(shape);
+  const push = ph > 0.8 && ph < 0.88 ? 1 + (ph - 0.8) * 6 : 1; // ×1.48 over ~200 ms
+  const sway = Math.sin(t / 700) * 0.03;
   // pose.js draws a left hand, palm to the camera, in the camera's axes; the player's right hand is its mirror.
   const world = hand.map((p) => ({ x: -p.x / 100, y: p.y / 100, z: p.z / 100 }));
   const image = hand.map((p) => ({ x: 0.42 + sway - (p.x / 100) * 1.6 * push, y: 0.62 + (p.y / 100) * 2.1 * push, z: p.z / 100 }));
@@ -123,10 +118,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   const w = W[lang];
   const q = new URLSearchParams(win.location?.search ?? '');
   const feedOnly = q.get('dev') === '1' && q.get('feed') === '1', bench = feedOnly && q.get('bench') === '1';
-  const cutin = cutinOf(data, win.location?.search ?? '');
   loadCss(doc);
   return new Promise((resolve) => {
-    let done = false, eye = null, view = null, offPause = null, offHide = null, loop = 0, benchTimer = 0, botOn = false;
+    let done = false, eye = null, up = null, offPause = null, offHide = null, loop = 0, benchTimer = 0, botOn = false;
     const finish = (r) => {
       if (done) return;
       done = true;
@@ -135,49 +129,40 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       offHide?.();
       win.cancelAnimationFrame?.(loop);
       win.clearInterval?.(benchTimer);
-      view?.destroy();
+      up?.destroy();
       if (win.texieFeed) delete win.texieFeed;
       dropModel();
       resolve(r);
     };
     const leave = () => finish({ won: false, left: true });
-    const nocam = (why = 'nocam') => { container.innerHTML = unavailableHtml(lang, why); leave(); };
+    const nocam = () => { container.innerHTML = unavailableHtml(lang); leave(); };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
 
     (async () => {
-      const [kit, seals] = await Promise.all([fetch(KIT).then((r) => r.json()), fetch(SEALS).then((r) => r.json())]);
+      const [kit, seals] = await Promise.all([loadCutinKit(), fetch(SEALS).then((r) => r.json())]);
       const level = kit.levels.find((l) => l.id === (data?.lv ?? q.get('lv'))) ?? kit.levels[0];
       const set = setOf(seals, { matchMedia: win.matchMedia?.bind(win), search: win.location?.search ?? '' });
       const table = sealsFor(seals, set);
       if (!feedOnly && !(await available(win))) return nocam();
       if (done) return;
       loadModel().catch(() => {}); // from disk while the lead card is read; the camera waits for 开始
-      container.innerHTML = stageHtml(level, cutin, lang);
+      container.innerHTML = stageHtml(level);
       const box = container.querySelector('.tx');
       const $ = (s) => box.querySelector(s);
-      const video = $('video'), panel = $('.tx-panel');
+      const video = $('video');
       const status = (t) => { $('.tx-status').textContent = t; };
 
-      // The close-up: the ink view at once; the VRM loaded now (16 MB from the engine) while the lead is read.
-      let ready = null;
-      if (cutin === 'ink') view = inkView(panel, { lang });
-      else {
-        status(`${w.loading}…`);
-        ready = import('./texie/vrm.js').then((m) => m.vrmView(panel, { onProgress: (k) => { if (!done) status(`${w.loading} ${Math.round(k * 100)}%`); } }))
-          .then((v) => { if (done) { v.destroy(); return; } view = v; box.dataset.model3d = 'ready'; status(''); })
-          .catch((e) => { console.warn('[texie]', e); box.dataset.model3d = 'failed'; });
-      }
+      up = closeUp($('.tx-field'), { kit, lang }); // the panel, its frames preloaded (loadCutinKit)
 
       let hands = [], picture = [], handed = [], hp = level.hits, busy = false, last = win.performance.now();
-      let ps = startPanel(), cs = startCaster(), sealNow = null, drawing = true;
+      let cs = startCaster(), sealNow = null;
       const say = (text) => (shell?.say ? shell.say(w.who, text, 1500) : status(text));
 
       const cast = async () => {
         if (busy) return;
         busy = true;
-        view?.thrust?.();
-        await new Promise((r) => setTimeout(r, reducedMotion ? 60 : 160)); // the hand thrusts first, then the egg leaves
+        await new Promise((r) => setTimeout(r, reducedMotion ? 60 : 180)); // the thrust frame first, then the egg leaves
         const foe = $('.tx-foe');
         await fly(box, ART.egg, $('.tx-xm'), foe, reducedMotion ? 200 : kit.eggMs);
         if (done) return;
@@ -198,7 +183,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         if (done) return;
         const now = win.performance.now(), dt = Math.min(100, now - last);
         last = now;
-        if (botOn) { const b = botHands(now); hands = b.world; picture = b.image; handed = b.handed; }
+        if (botOn) { const b = botHands(now, seals); hands = b.world; picture = b.image; handed = b.handed; }
         const paused = shell?.paused?.();
         if (!paused) {
           const seen = picture.some((h) => h?.length >= 21);
@@ -207,18 +192,13 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           const c = castStep(cs, { t: now, dt, seal: sealNow, size }, kit.cast);
           cs = c.state;
           const castNow = Boolean(c.cast) && !busy && hp > 0;
-          const p = panelStep(ps, { now, seen, cast: castNow }, kit.panel);
-          ps = p.state;
-          panel.dataset.phase = ps.phase;
+          const fist = seen && hands.some((h) => h?.length >= 21 && makes(h, seals.spells.kou, seals.judge));
+          const r = up.update({ now, seen, seal: sealNow, fist, cast: castNow ? sealNow ?? true : null });
           box.dataset.cast = c.cast ?? box.dataset.cast ?? '';
+          box.dataset.frame = `${r.key ?? ''}:${r.frame}`;
           if (castNow) cast();
-          const line = !seen && ps.phase === 'hidden' && !busy ? w.raise : busy && !shell?.say ? null : '';
+          const line = !seen && r.phase === 'hidden' && !busy ? w.raise : busy && !shell?.say ? null : '';
           if (line != null && $('.tx-status').textContent !== line) status(line);
-          const glyph = sealNow ? table[sealNow]?.glyph ?? '' : '';
-          const shown = ps.phase !== 'hidden' && ps.phase !== 'rest';
-          if (shown) view?.update?.({ world: hands, image: picture, handed, aspect: 4 / 3, glyph });
-          // The 3D view draws only while the panel is up (no GPU spent on a hidden panel).
-          if (shown !== drawing) { drawing = shown; if (shown) view?.resume?.(); else view?.pause?.(); }
           box.dataset.seal = sealNow ?? '';
         }
         loop = win.requestAnimationFrame(tick);
@@ -228,17 +208,14 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       if (shell?.lead) await shell.lead(tr(level.lead, lang));
       else await new Promise((r) => { const b = doc.createElement('button'); b.className = 'gshell-btn is-main tx-go'; b.textContent = lang === 'en' ? 'Start' : '开始'; b.onclick = () => { b.remove(); r(); }; box.append(b); });
       if (done) return;
-      if (ready) await ready;
-      if (done) return;
-      if (cutin === 'vrm' && !view) return nocam('nogl');
       if (feedOnly) {
         win.texieFeed = (world, image = world, which = []) => { botOn = false; hands = world ?? []; picture = image ?? []; handed = which; };
         win.texieFeed.bot = (on = true) => { botOn = on; };
         if (bench) benchTimer = await benchModel(win, kit.cast.fps, box);
       } else {
         eye = openEye({ video, onHands, env: win, fps: kit.cast.fps, width: 320, height: 240, numHands: 2, handedSwap: seals.orient?.handedSwap ?? true });
-        const off = () => { eye.pause(); hands = []; picture = []; view?.pause?.(); };
-        const on = () => { if (drawing) view?.resume?.(); eye.start().catch(() => nocam()); };
+        const off = () => { eye.pause(); hands = []; picture = []; };
+        const on = () => { eye.start().catch(() => nocam()); };
         // Heard before the camera is asked for: a pause while the prompt is open keeps the camera off (eye.js).
         offPause = shell?.onPause?.((p) => { if (!done) (p ? off() : on()); });
         const seen = () => { if (done) return; if (doc.hidden) off(); else if (!shell?.paused?.()) on(); };

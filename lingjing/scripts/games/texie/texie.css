@@ -28,16 +28,16 @@
 .tx-panel::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
   background: repeating-conic-gradient(from 0deg at 72% 55%, rgba(29, 23, 18, .22) 0deg 2deg, transparent 2deg 9deg); transition: opacity .15s; }
 .tx-panel[data-phase="thrust"]::after { opacity: 1; }
-.tx-tag { position: absolute; left: 6px; top: 4px; z-index: 2; font-size: 11px; color: #1d1712; opacity: .55; }
-.tx-view { position: absolute; inset: 0; z-index: 1; }
-.tx-view svg, .tx-view canvas { width: 100%; height: 100%; display: block; }
-.tx-paper { fill: transparent; }
-.tx-glyph { font-family: var(--serif, serif); font-size: 46px; fill: #c23b22; fill-opacity: .18; }
-.tx-hands, .tx-sleeves { transition: transform .12s ease-out; transform-box: view-box; }
-.tx-panel[data-phase="thrust"] .tx-arms { animation: tx-thrust .42s cubic-bezier(.2, .9, .3, 1); transform-box: view-box; transform-origin: 30% 80%; }
+.tx-frame { position: absolute; inset: 0; z-index: 1; background: no-repeat; opacity: 0; transition: opacity var(--fade, 140ms) ease-out; }
+.tx-frame.is-on { opacity: 1; }
+/* The cast: the element's glow round the panel's art, and the art pushed a little forward with the speed lines. */
+.tx-panel[data-frame="thrust"] .tx-frame.is-on { filter: drop-shadow(0 0 14px var(--glow)) drop-shadow(0 0 4px var(--glow)); animation: tx-thrust .5s cubic-bezier(.2, .9, .3, 1); }
+.tx-panel[data-frame="thrust"] { box-shadow: 4px 6px 0 rgba(29, 23, 18, .55), 0 0 26px var(--glow); }
+.tx-name { position: absolute; right: 8px; bottom: 6px; z-index: 2; font-family: var(--serif, serif); font-size: 15px; color: #1d1712; opacity: .7; }
+.tx-name:empty { display: none; }
 
 @keyframes tx-bob { 50% { transform: translateY(-4%); } }
 @keyframes tx-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 @keyframes tx-jolt { 20% { transform: translateX(-2%) rotate(-3deg) scale(1.03); } 100% { transform: translateX(0) rotate(-2deg); } }
-@keyframes tx-thrust { 30% { transform: translateX(14%) scale(1.18); } 60% { transform: translateX(12%) scale(1.14); } 100% { transform: none; } }
-@media (prefers-reduced-motion: reduce) { .tx-foe img, .tx-foe.is-hit img, .tx-panel[data-phase="thrust"], .tx-panel[data-phase="thrust"] .tx-arms { animation: none; } .tx-panel { transition: opacity .2s; } }
+@keyframes tx-thrust { 30% { transform: translateX(4%) scale(1.05); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tx-foe img, .tx-foe.is-hit img, .tx-panel[data-phase="thrust"], .tx-panel[data-frame="thrust"] .tx-frame.is-on { animation: none; } .tx-panel { transition: opacity .2s; } }
