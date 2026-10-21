@@ -4,7 +4,7 @@ The one list of what is in flight, parked, not started, and waiting on Hanli.
 Every agent reads it before starting and edits its own row when it lands (hash or tag, date).
 Systems themselves live in `design.md` (【已建】 · 【在建】 · 【远景】); this file is only the work.
 
-Updated 2026-10-20.
+Updated 2026-10-21.
 
 ## In flight
 
@@ -13,6 +13,8 @@ Updated 2026-10-20.
 | Small games — doc/games.md for Hanli's design check; mechanic changes wait on it (UI polish and stuck fixes go on) | `doc/games.md` | 10-16 |
 
 ## Done lately
+
+- 10-21 — 秘境 撒豆成兵 deals only the beasts of the 回 he has reached; 鬿雀 from h09 (`d1f59164`, rules/reveal.mjs). A story win brings its 所得 into sight in #focus (`a63824de`). 台词预取: teaching moments (守墙关 open/lane/twist/boss · 撒豆成兵 flip/rock/lane/slam) always show the level's own line, never asked of 银月 (`1a2c5dec`). Header 灵石 「stale」 not reproduced (7 → 12 about 5 s after a 守炉 win: the win pause plus the count-up).
 
 - 10-20 — **Before 入门, round two: the 11,661 read broken, 算账 re-laid, 忍字 agrees with the book** (standing rule + Hanli's 「放宽」; doc/games.md § 读太长 › round two; `03bacba6` `c792a17f` `81e43124`): two 气走经脉 levels — 挑水上坡 at 00-halfyear (on 练功's old task id, the book's 「从四担挑到了六担」 restored to the cut; the man in white and the mirror read whole after it) and 今一's 边跑边念 at j01-track (the dawn run, 「念得出整句，就是速度对了」) — n 3 and 4, 先吐 on moved up two; 00-rent → j01-retest 11,661 → 3,385 · 5,255 · 3,106. 算账: the meat must be swung onto a chute, racing the crow (one swipe, the crow's vine first, or waiting all lose); live 21–55 s (was 5–12). 忍字: the cake back into 马小宝's own mouth, as both exits have it (new FLUX sprite; the dog gone). Live at 390 headed, casual, scratch saves cleaned: 忍字 6/6 9–33 s ★3 · 算账 3/3 · 挑水 3/3 41–52 s · 边跑边念 3/3 47–57 s. Open for Hanli: a third beat at 00-notice's 水桶 (would split the 5,255); the j01-track throws for 砸寨 if 今线 takes them.
 - 10-20 — **The throws are levels of 砸寨** (Hanli: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」; doc/games.md § The throws): level data now sets a place, a target with a behaviour (stag · gourd · 鯥), wood-and-stone props painted as logs, boulders and pines, and the throw 小满 owns there (箭 is a new projectile); 射鹿 `deer-wind`, 暗河 `anhe-dark` (new, the reading cap's hand-off: wm-xirang's swallow passage split into `wm-anhe`), 芦苇里那一等 `yishui-reed`; art by the local FLUX (tools/paint-zhazhai-throws.py); a headless-Chromium bot (tools/zhazhai/bot.mjs) wins each sensibly, never lazily, each tighter than the last; deerarc · throwkit · luwing · smash · juice · deer.js and their art, sounds, bots and tests deleted.
@@ -129,9 +131,7 @@ Updated 2026-10-20.
 
 ## Known red
 
-- `skips.test.mjs` 「one rule for every board」 — ropebeats.js pinePicture throws (scripts/games/ropebeats.js:117, via ropekit playScene) — red on origin before the sweep, not caused by it; the rope agent's.
-- `board-bots.test.mjs` deerarc (deer-wind) not won in 3 tries — red on origin/main 10-20 before the sweep landed.
-- `mishi.test.mjs` "a real 秘境 rerun … 暗室" — red on main since 10-15.
+- None at 10-21 (lingjing suite 1790 pass): skips, board-bots deerarc and mishi went green.
 
 ## Known
 
