@@ -1138,7 +1138,7 @@ drawn on a MeshPlane whose grid bends where the painting has something that move
 their roots (with the stage's wind), cloth from its rail, water shimmers, smoke and flame waver up, mist
 drifts, a beast breathes. Declared per painting in backdrops.json `alive` (kind + box + amp;
 `alive_creature` for every beast), tuned on `scripts/alive.html?art=<path>&boxes=1`. A painting is not a
-moment: its canvas lives while it stands (30 fps, asleep under a set piece or a hidden tab), goes with its
+moment (Hanli 2026-10-21: 「同意」 — living layers stay while the painting or the weather stands; if a phone runs hot, 20 fps or only the big trees and water): its canvas lives while it stands (30 fps, asleep under a set piece or a hidden tab), goes with its
 cross-fade, and lies over the CSS still, which is the fallback (no WebGL, reduced motion). A struck body's
 picture squashes under the blow (fx.js `squash`, Web Animations — a plate is too small for a mesh).
 **Her colour memories in WebGL** (`fx-memory.js`, 2026-10-21): the colour soaks into her picture
