@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
 import { costOf } from '../battle.js';
-import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, threshold, tierOf, seedOf } from '../state.mjs';
+import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, staminaMax, staminaRest, threshold, tierOf, seedOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
@@ -513,9 +513,11 @@ function threadOf(content, state, now) {
   return { chapter: next.id, title: chapterLabel(content, state, next, lang), opens, province: pick(content.dictionary.provinces[next.province], lang), place: at ? placeName(content, state, placeOf(content, at)) : null };
 }
 
+/* The pool as the director reads it: against its top and its wake as 丹毒 leaves them (state.mjs staminaMax,
+   staminaRest) — as daily.mjs draws it, so Ling never calls a pool empty the page shows full. */
 const poolOf = (content, state) => {
-  const q = content.rewards.stamina, r = state.stamina / q.max;
-  if (state.resting && state.stamina < (q.rest ?? 0)) return 'empty';
+  const r = state.stamina / staminaMax(content, state);
+  if (state.resting && state.stamina < staminaRest(content, state)) return 'empty';
   return r >= 0.6 ? 'full' : r >= 0.25 ? 'half' : state.stamina > 0 ? 'low' : 'empty';
 };
 

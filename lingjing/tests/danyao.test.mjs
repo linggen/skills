@@ -109,6 +109,7 @@ test('a spent pool rests to its lowered top, never past it — 丹毒 never keep
   const l = look(s, content, ctx(at(6)));
   assert.ok(l.stamina.max < content.rewards.stamina.rest, 'the top is under the rest mark');
   assert.ok(!l.stamina.resting, 'six hours on, the lowered pool is whole and he plays');
+  assert.equal(l.director.pool, 'full', 'and Ling reads it as the page draws it — full, not empty (review 2026-10-21)');
 });
 
 test('eatPill and cureDandu: a pill of no 转 or a fight pill\'s door are not counted; hours under one turn make nothing up', () => {
