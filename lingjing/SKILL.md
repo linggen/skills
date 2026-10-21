@@ -18,6 +18,7 @@ app:
   entry: scripts/index.html
   width: 1280
   height: 820
+  allow: [camera]
 # The account behind the game (skill-spec § Cloud): the save follows the
 # player across devices. Declaring it means: sign in to play. The pace is
 # the rules' own stamina inside the save, not a token meter.

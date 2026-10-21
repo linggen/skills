@@ -40,6 +40,7 @@ app:
   entry: scripts/index.html
   width: 1100
   height: 820
+  allow: [microphone]
 # The library the engine serves to paired phones. Purely declarative — the
 # engine watches, lists, and serves; it knows nothing about music.
 sync:
