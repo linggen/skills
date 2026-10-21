@@ -1,12 +1,14 @@
 {
  "version": 1,
  "_about": "榜文 — templated 差事 (design.md § 差事 ⑤). A market posts one a day: a template plus a creature or a place of its own province the player may reach, so a province is never empty. The terms and the reward are authored here; only the target changes. {target} is the creature or place, {place} is where it is met.",
+ "_thread": "`thread` (design.md § 剧情 × 开放世界): the colour the 事 book and the map draw it in — `person` (silver, 人物线: an errand of someone's own life — 阿禾, 孙二狗, 周衡's game, 古九's people of 邺城), `chore` (grey, 杂务: a wall tag, a steward's job, a notice), `main` (gold, 主线: an errand the story itself waits on; none yet — the goal line and the 阶段任务 are gold without it).",
  "templates": [
   {
    "id": "bounty",
    "kind": "subdue",
    "n": 1,
    "title": { "zh": "榜文 · 降{target}", "en": "Notice · Subdue the {target}" },
+   "thread": "chore",
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{place}的{target}又出来伤人。降了它的，凭此榜领赏。", "en": "The {target} of {place} is hurting travellers again. Whoever subdues it is paid on this notice." },
    "work": "cultivation",
@@ -17,6 +19,7 @@
    "kind": "visit",
    "n": 1,
    "title": { "zh": "榜文 · 走一趟{target}", "en": "Notice · A walk to {target}" },
+   "thread": "chore",
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{target}多日没有消息。谁去看一眼，凭此榜领赏。", "en": "No word from {target} in days. Whoever goes to look is paid on this notice." },
    "work": "labor",
@@ -27,6 +30,7 @@
    "kind": "board",
    "n": 1,
    "title": { "zh": "榜文 · 去{target}：{game}", "en": "Notice · At {target}: {game}" },
+   "thread": "chore",
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{target}那边摆着一局，等人去解。解得开的，凭此榜领赏。", "en": "There is a game laid out at {target}, waiting for someone to solve it. Whoever does is paid on this notice." },
    "work": "labor",

@@ -859,6 +859,10 @@ function bilingual(node, where, bad) {
    exists, and chaining only to a quest that is there. */
 export const NEED_KINDS = new Set(['subdue', 'tame', 'carry', 'visit', 'board', 'answer', 'chore']);
 
+/* A task's thread (design.md § 剧情 × 开放世界): gold 主线, silver 人物线, grey 杂务. */
+export const THREADS = ['main', 'person', 'chore'];
+const badThread = t => t != null && !THREADS.includes(t);
+
 function lintQuests(content, ids, bad) {
   const quests = content.quests ?? [];
   const byId = new Set(quests.map(q => q.id));
@@ -870,6 +874,7 @@ function lintQuests(content, ids, bad) {
     if (seen.has(q.id)) bad(where, 'duplicate id');
     seen.add(q.id);
     if (!pair(q.title)) bad(where, 'title needs zh and en');
+    if (badThread(q.thread)) bad(where, `thread is one of ${THREADS.join(', ')}`);
     if (!pair(q.say)) bad(where, 'the giver\'s line needs zh and en');
     if (q.seen && !pair(q.seen)) bad(where, 'what is seen there needs zh and en');
     if (!places.has(q.from?.place)) bad(where, `taken at unknown place ${q.from?.place}`);
@@ -913,6 +918,7 @@ function lintNotices(content, bad) {
     seen.add(t.id);
     if (!NOTICE_KINDS.has(t.kind)) bad(where, `unknown kind ${t.kind}`);
     if (!(t.n > 0)) bad(where, 'needs a count');
+    if (badThread(t.thread)) bad(where, `thread is one of ${THREADS.join(', ')}`);
     for (const key of ['title', 'who', 'say']) if (!pair(t[key])) bad(where, `${key} needs zh and en`);
     if (!content.rewards.tables[t.grant?.table]) bad(where, `unknown reward table ${t.grant?.table}`);
   }

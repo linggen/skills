@@ -34,6 +34,24 @@
       "en": "Without a pass there is no going down. You are back in the outer court."
     }
   },
+  "_beats": "剧情 × 开放世界 (design.md, his 2026-09-28): the 筑基 is the key beat (beats.md 5). Its entry is 瞿老 on the cliff, walked to; from 09-cliff to its end the map is shut and the save carries `lock` (world.mjs beatOf, fitLock).",
+  "beats": [
+    {
+      "id": "zhuji",
+      "title": {
+        "zh": "筑基",
+        "en": "The Foundation"
+      },
+      "scenes": [
+        "09-qulao",
+        "09-cliff"
+      ],
+      "say": {
+        "zh": "筑基就在眼前。崖顶这一关过去之前，哪儿也不去。",
+        "en": "The Foundation is at hand. Until the cliff is behind you, you go nowhere."
+      }
+    }
+  ],
   "title": {
     "zh": "筑基",
     "en": "The Foundation"

@@ -195,7 +195,7 @@ function leaveFitted(content, state, now = new Date()) {
   const s = structuredClone(state);
   settlePlace(content, s, now);
   const same = k => JSON.stringify(s[k] ?? null) === JSON.stringify(state[k] ?? null);
-  return same('place') && same('pass') && same('returned') && same('sealed') && same('rerun') && same('reruns') ? state : s;
+  return same('place') && same('pass') && same('returned') && same('sealed') && same('lock') && same('rerun') && same('reruns') ? state : s;
 }
 /* The line said once on the place he was put back at (map `back`). */
 const returnedLine = (content, state, now) => {
@@ -213,6 +213,17 @@ const returnedLine = (content, state, now) => {
 function beatOf(content, state) {
   if (inMade(state) || !state.scene) return null;
   return (content.chapters[state.chapter]?.beats ?? []).find(b => b.scenes.indexOf(state.scene) > 0) ?? null;
+}
+/* The lock as the save carries it — `lock: {beat, since}` (design.md § 剧情 ×
+   开放世界): stamped the first settle inside a key beat, `since` kept while
+   the same beat runs, let go the first settle after its last scene. The
+   scene stays the truth (beatOf); the stamp only remembers when it shut.
+   A sealed beat (the 秘境) is held by its walls and stamps `sealed` instead. */
+const lockOf = (content, state) => { const beat = beatOf(content, state); return beat && !beat.sealed ? beat : null; };
+function fitLock(content, state, now = new Date()) {
+  const beat = lockOf(content, state);
+  if (!beat) { delete state.lock; return; }
+  state.lock = { beat: beat.id, since: state.lock?.beat === beat.id ? state.lock.since : now.toISOString() };
 }
 /* A sealed beat holds him by its walls, not by the scene: its scenes stand in their rooms and he walks to them. */
 const carried = (content, state) => Boolean(content.chapters[state.chapter]?.corridor) || Boolean(beatOf(content, state) && !beatOf(content, state).sealed);
@@ -310,6 +321,7 @@ function settlePlace(content, state, now = new Date()) {
     state.place = content.places[province]?.start ?? null;
   }
   fitLeave(content, state, now);
+  fitLock(content, state, now);
 }
 
 /* A place by its id, its name or its English. */
@@ -635,4 +647,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

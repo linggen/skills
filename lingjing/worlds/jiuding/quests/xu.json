@@ -2,6 +2,7 @@
   "version": 1,
   "province": "徐",
   "_about": "徐州的差事 (design.md § 差事). 接下 at the giver; 交差 wherever the player stands, the moment the count is met — they never walk back.",
+  "_thread": "`thread` (design.md § 剧情 × 开放世界): the colour the 事 book and the map draw it in — `person` (silver, 人物线: an errand of someone's own life — 阿禾, 孙二狗, 周衡's game, 古九's people of 邺城), `chore` (grey, 杂务: a wall tag, a steward's job, a notice), `main` (gold, 主线: an errand the story itself waits on; none yet — the goal line and the 阶段任务 are gold without it).",
   "quests": [
     {
       "id": "xu-dushu-boat",
@@ -9,6 +10,7 @@
         "zh": "收船",
         "en": "Hauling the boat"
       },
+      "thread": "chore",
       "from": {
         "place": "zhishi",
         "who": {
@@ -48,6 +50,7 @@
         "zh": "修屋顶",
         "en": "Mending the roof"
       },
+      "thread": "chore",
       "from": {
         "place": "waimen",
         "who": {
@@ -84,6 +87,7 @@
         "zh": "彭城的药钱",
         "en": "The elder's medicine"
       },
+      "thread": "chore",
       "from": {
         "place": "zhishi",
         "who": {
@@ -119,6 +123,7 @@
         "zh": "林子里的蠪侄",
         "en": "The Longzhi in the wood"
       },
+      "thread": "chore",
       "from": {
         "place": "zhishi",
         "who": {
@@ -160,6 +165,7 @@
         "zh": "吕梁洪的水声",
         "en": "The roar at Lvliang"
       },
+      "thread": "chore",
       "from": {
         "place": "zhishi",
         "who": {
@@ -197,6 +203,7 @@
         "zh": "云龙山的八味",
         "en": "Eight herbs on Yunlong"
       },
+      "thread": "chore",
       "from": {
         "place": "zhishi",
         "who": {
@@ -232,6 +239,7 @@
         "zh": "药园巡夜",
         "en": "The night watch"
       },
+      "thread": "chore",
       "from": {
         "place": "waimen",
         "who": {
@@ -272,6 +280,7 @@
         "zh": "药园残株",
         "en": "The garden's culls"
       },
+      "thread": "chore",
       "from": {
         "place": "waimen",
         "who": {
@@ -311,6 +320,7 @@
         "zh": "孙二狗的护身符",
         "en": "Sun Ergou's charm"
       },
+      "thread": "person",
       "from": {
         "place": "chaifang",
         "who": {
@@ -347,6 +357,7 @@
         "zh": "阿禾的利息",
         "en": "Ahe's interest"
       },
+      "thread": "person",
       "from": {
         "place": "fangshi",
         "who": {

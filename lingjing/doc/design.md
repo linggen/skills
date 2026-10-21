@@ -443,10 +443,51 @@ and checks `runsPay` against the rules' own rolls. 鼎苔 sells for nothing and 
 His rule (2026-09-28): 「通过任务，在开放世界中驱动剧情；关键剧情的时候关闭开放
 世界探索，走剧情；走完之后才开放地图探索。」 Built: chapter `locks` and `map`,
 the goal line with its countdown (`00-waimen` counts to the 大比), errands
-that open beats. **Not yet:** a key beat as a declared lock (`state.lock =
-{beat, since}` — the map shut while it runs), thread colours (gold 主线,
-silver 人物线, grey 杂务), 银月's fragments placed on the map (from 下山 on),
-dated world events.
+that open beats.
+
+**Key beats lock the map** (built 2026-10-21). A chapter declares its key
+beats (chapter.json `beats`: an entry scene, walked to, then the scenes it
+locks, a `title` and its own `say`). From the scene after the entry to the
+last the story carries him; the save carries `lock: {beat, since}` (world.mjs
+fitLock — stamped going in, `since` kept through the beat, let go on the scene
+after; a sealed beat, the 秘境, stamps `sealed` instead); Look's `lock` gives
+`beat`, `title`, `say`, `since`; Move refuses `corridor` in the beat's words;
+the page greys every walk with that reason — the map's dots, the 去往 chip (a
+tap shows the beat and its line, no turn), the 事 book's 去. The picks: the
+prologue is a corridor whole; 外门's five (入门第一课 · 柴房 · 沉鼎秘境 (sealed) ·
+外门大比 — the goal line's · 拜师); 筑基 (09-qulao → 09-cliff, beats.md's
+「the key beat」); 河伯娶妇 (01-altar → 01-cauldron, one night from the 祠 to the
+鼎; 邺城's errands stand on either side of it, `opens.before/done: 01-rise`).
+tests/beat-lock.test.mjs walks every one.
+
+**Threads** (built 2026-10-21): every errand declares `thread` — `person`
+silver 人物线 (someone's own life: 阿禾, 孙二狗, 周衡's game, 古九's people of
+邺城), `chore` grey 杂务 (a wall tag, a steward's job, a 榜文), `main` gold 主线
+(an errand the story itself waits on; none yet). The goal line and the 阶段任务
+are gold without data. The 事 book draws a line down each row's left edge in
+its colour; the map and the 观's painted plate ring the place where a thread
+is met (cards.js threadsAt — the goal's place gold, an errand's next count
+silver or grey; the strongest wins). Linted to the three.
+
+**Proposal, not built — 银月's fragments on the map (from 下山 on).** The
+rules are there (a place's `fragment`, kept once where he stops,
+rules/memories.mjs); none is placed. Place one per province of 卷二, never on
+the story's road nor in a key beat's scenes — off the waypoint's path, so only
+roaming finds it; the map draws nothing until it is found (no marker: the
+find is the reward). Once that province's 鼎 is home, she may feel it — Look
+`fragment_near` within two roads, a fact she words (「这附近……有我的东西」),
+never a page arrow. Found: 录's album counts 残片 n/9 beside the memories.
+卷一 has none (the 观 is walled; 下山 opens the 九州).
+
+**Proposal, not built — dated world events.** world.json `events`: `{id,
+after: scene, days, at: place|province, thread, say, opens: errand|pool|visitor}`
+— once `after` is behind him, the event stands `days` real days (the clock
+the goal line already keeps, `mark_days`), a row in the 事 book in its
+thread's colour with its countdown, its place ringed on the map; while a key
+beat locks the map its clock does not run. Examples from the book: 邺城's
+河伯 wedding day (after 01-arrive, the 十八); a 货郎's fair; a pool's beast
+season. **Open: does a missed event pass without him** (the world moves on,
+the 恩仇簿 remembers 迟了) **or wait for him?**
 
 ### 路上 — no arrival is empty 【已建】
 

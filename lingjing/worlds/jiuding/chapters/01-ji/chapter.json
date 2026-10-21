@@ -54,6 +54,27 @@
       "en": "The abbot's map shows only Xu and Ji. Everywhere else, the paper is blank."
     }
   },
+  "_beats": "剧情 × 开放世界 (design.md, his 2026-09-28): the wedding night is the key beat — from the 河伯祠 (its entry, walked to from 邺城) through the river standing, the tower, the 漳渊 and the 鼎, one night with no road out; 柳湾 and the ferry (01-end) are walked again. The errands of 邺城 (quests/ji.json `opens.before/done: 01-rise`) stand on either side of it (world.mjs beatOf, fitLock).",
+  "beats": [
+    {
+      "id": "hebo",
+      "title": {
+        "zh": "河伯娶妇",
+        "en": "The River Lord's wedding"
+      },
+      "scenes": [
+        "01-altar",
+        "01-rise",
+        "01-tower",
+        "01-deep",
+        "01-cauldron"
+      ],
+      "say": {
+        "zh": "河伯祠这一夜还没完，漳水边走不开。",
+        "en": "The night at the River Lord's shrine is not over; you cannot leave the Zhang."
+      }
+    }
+  ],
   "_title": "The arc's own name, no number: the player is told the 回 (book.json via the scenes' `hui`, rules/hui.mjs); this stands only where a chapter has no 回.",
   "title": {
     "zh": "冀州之鼎",

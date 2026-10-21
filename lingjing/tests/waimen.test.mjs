@@ -175,7 +175,9 @@ test('a key beat shuts the map from the scene after its entry to its last, in it
   assert.equal(look(s, content, ctx()).lock, undefined, 'the entry is a waypoint: nothing is shut yet');
   s = must(resolve, s, { exit: 'owe' });
   const l = look(s, content, ctx());
-  assert.deepEqual(l.lock, { beat: 'rumen', title: '入门第一课' });
+  // the save carries the lock (world.mjs fitLock): the beat and since when; Look gives the beat's own reason
+  assert.deepEqual(s.lock, { beat: 'rumen', since: s.lock.since });
+  assert.deepEqual(l.lock, { beat: 'rumen', title: '入门第一课', say: CH.beats[0].say.zh, since: s.lock.since });
   assert.equal(s.place, 'jiangtang', 'the beat carries the player to its scene');
   assert.equal(l.director.corridor, true, 'the stage keeps the roads off');
   const r = refused(move, s, { place: 'waimen' }, 'corridor');
@@ -183,6 +185,7 @@ test('a key beat shuts the map from the scene after its entry to its last, in it
   assert.equal(r.say, CH.beats[0].say.zh);
   for (const exit of ['can', 'breathe', 'hide']) s = step(s, exit);
   assert.equal(look(s, content, ctx()).lock, undefined, 'the beat over, the map opens');
+  assert.equal(s.lock, undefined, 'and the save lets the lock go');
   assert.equal(must(move, s, { place: 'waimen' }).place, 'waimen');
   // the next beat waits at its place, a waypoint with the goal's countdown before it
   // 小狰 first (十月初十): the story carries him to the 药园; then the next beat waits at its place

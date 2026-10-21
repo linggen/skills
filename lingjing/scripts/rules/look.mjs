@@ -24,7 +24,7 @@ import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
-import { atScene, beatOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
+import { atScene, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
@@ -186,6 +186,17 @@ const INVITE_EVERY = 3;
 const invites = (state, taps) => taps.filter(t => !t.spent).length >= 2 && (state.done_scenes ?? []).length % INVITE_EVERY === 0;
 
 /* The things this player has named, id → the name the page shows. */
+/* 关键剧情锁图 as Look tells it: the beat, its title, why the map waits (the
+   beat's own `say`) and since when (the save's `lock`). The page greys every
+   walk with `say`; Ling has it for 「为什么走不了」. Not in a sealed beat: its
+   rooms are walked (`sealed`). */
+function lockLook(content, state, lang) {
+  const beat = lockOf(content, state);
+  if (!beat) return null;
+  const say = pick(beat.say ?? { zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang);
+  return { beat: beat.id, title: pick(beat.title, lang), say, ...(state.lock?.beat === beat.id ? { since: state.lock.since } : {}) };
+}
+
 function namedOf(content, state, lang) {
   const named = Object.fromEntries((content.items?.items ?? []).filter(i => i.named && state[i.named]).map(i => [i.id, itemName(i, state, lang)]));
   return Object.keys(named).length ? { named } : {};
@@ -577,8 +588,8 @@ export function look(state, content, ctx) {
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     // The chapter (its intro while just begun), the ending once reached (story.mjs).
     ...chapterLook(content, state),
-    // A key beat running: the map is shut until its last scene (world.mjs beatOf).
-    ...(beatOf(content, state) ? { lock: { beat: beatOf(content, state).id, title: pick(beatOf(content, state).title, lang) } } : {}),
+    // A key beat running: the map is shut until its last scene (world.mjs beatOf, the save's `lock`).
+    ...(lockLook(content, state, lang) ? { lock: lockLook(content, state, lang) } : {}),
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
     // The book's passages owed to the stage's dialogue box: the page draws them (`tell`, rules/tell.mjs).
     ...(owesTell(content, state) ? { tell_owed: true } : {}),

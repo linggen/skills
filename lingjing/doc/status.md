@@ -15,6 +15,7 @@ Updated 2026-10-21.
 ## Done lately
 
 - 10-21 — **秘境 reruns in the economy** (design.md § Reruns 【已建】; 饭桶 free play marked superseded by 开炉): tools/balance.mjs plays the rerun's spoils — drops (an elite's own odds), the 拾遗 find, the cache on three stars — at a shop's sell (rules/rerun.mjs `runsPay`, checked against the rules' own rolls), half sold (balance.json `model.rerun`, guesses), and a fight's 修为 past the mark as 灵石 (the rules did; the model had not). Days per 回 and `layers.qi` unchanged (h11 hold 1040). Rerun share over its open days, light · typical · heavy: 修为 48 · 37 · 48% (unchanged); 灵石 58 · 67 · 62% → 65 · 81 · 70%. 灵石 in per day 28 · 51 · 106 → 48 · 84 · 191 (most of it the 圆满 conversion, already paid in play); typical ends 卷一 at ~1,665 (was ~593). `--wealth` prints the shares; tests/balance-rerun.test.mjs holds them. No drop or find row tuned. Open: 鼎苔 (below, Waiting on Hanli).
+- 10-21 — 剧情 × 开放世界: a key beat is a declared lock — the save carries `lock: {beat, since}` (world.mjs fitLock), Look's `lock` gives the beat's `say`, and the page greys every walk with it (map dots, the 去往 chip whose tap shows the reason, the 事 book's 去). Beats added: 筑基 (00-zhuji 09-qulao → 09-cliff), 河伯娶妇 (01-ji 01-altar → 01-cauldron); 外门's five as they were. Threads: every errand declares `thread` (gold 主线 · silver 人物线 · grey 杂务), drawn on the 事 rows and as a ring on the map and the 观's plate (tests/beat-lock.test.mjs). 银月's fragments and dated world events: proposal only (design.md).
 - 10-21 — A beast's card waits for the book (Hanli: 「按你的建议来」): a foe the book marks only in a scene's `story_after` is brought on once that passage is told — 古四's 药园 no longer stands the 狰 card over the 守炉 board before 丑时 (rules/codex.mjs waitsTheBook; tests/meet-waits-book.test.mjs). 台词预取: a level may teach with a reaction's moment by its own `teach` — 药园 · 头一夜's `huge` 「每一畦都得有剑！」 is never asked of 银月 (levels/shouqiang.json, games/prefetch.js).
 - 10-21 — 秘境 撒豆成兵 deals only the beasts of the 回 he has reached; 鬿雀 from h09 (`d1f59164`, rules/reveal.mjs). A story win brings its 所得 into sight in #focus (`a63824de`). 台词预取: teaching moments (守墙关 open/lane/twist/boss · 撒豆成兵 flip/rock/lane/slam) always show the level's own line, never asked of 银月 (`1a2c5dec`). Header 灵石 「stale」 not reproduced (7 → 12 about 5 s after a 守炉 win: the win pause plus the count-up).
 
@@ -98,7 +99,7 @@ Updated 2026-10-21.
 ## Partly built (【在建】 in design.md)
 
 - Per-回 gameplay pass: 古六 and 古七 done; 古四, 古八, 今线, 古九 to do.
-- 剧情 × 开放世界 (tasks drive the story, key beats lock the map).
+- 剧情 × 开放世界: key-beat lock and thread colours built 10-21; 银月's fragments on the map and dated world events are a proposal (design.md), waiting on one call.
 - 丹药 in the game.
 - 哇时刻; 画面效果 (PixiJS + GSAP).
 - Playtest crawler: a human-like bot per board, dead-control detection.
@@ -121,6 +122,7 @@ Updated 2026-10-21.
 ## Waiting on Hanli
 
 - 鼎苔 in the rerun (10-21): the outer ring's most frequent find (weight 3 of 10, ~0.5 a day for the typical player, ~8 over 古五–古八), but it sells for nothing, the 饭桶 refuses it, and its one use is +10 on the 筑基 throw — reached for only when no 筑基丹 is held, one spent on a success (rules/breakthrough.mjs), so a stack has no use. Keep its weight (flavour, a stack for the throw), give it a price / let the 饭桶 take it, or step it down?
+- 剧情 × 开放世界 (10-21): a dated world event missed — does it pass without him (the world moves on, the 恩仇簿 remembers 迟了) or wait for him? (design.md proposal)
 - 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built.
 - Economy feel calls (10-16, `9c42af47`): the stage-quest gates sit at beat entries so he can walk away to earn them — 古四 the 柴房 night (not 第一路), 古五 the 秘境's door (not 息壤), 古六 the 大比's eve (wm-qianye), which makes 古六 ≈7–8 typical days. The rerun kept open in 00-zhuji. Minutes, reading speed (450 字/min) and the three players are guesses — hand-play them. A rising ladder with 古七 holding two layers is why heavy 古五/古六 come in at ≈3–4.5 days. 古九 has no quest (九转 lands full).
 - Play the latest build 古一 → 古四 before the per-回 expansions and 卷二 (launch waits for his full playthrough).

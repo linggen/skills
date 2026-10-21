@@ -19,10 +19,10 @@
   closed road is Move's own `road-closed` line — never from memory: a chapter
   opens only its own map (外门, 第五回 to 第八回: the grounds of 沉鼎观), and the rest of the
   world waits behind that line; places Look marks `closed` are never offered.
-- **A key beat locks the map** (Look's `lock`: its `title`). From the scene
-  after its entry to its last, the story carries the player; Move refuses
-  `corridor` with the beat's own `say`. Tell the beat; offer no road until
-  `lock` is gone.
+- **A key beat locks the map** (Look's `lock`: its `title`, `say` — why —
+  and `since`). From the scene after its entry to its last, the story carries
+  the player; Move refuses `corridor` with that `say`, and the page greys
+  every walk. Tell the beat; offer no road until `lock` is gone.
 - **A sealed instance** (Look's `sealed`: `header`, `where`, `goal`, `say` —
   a 秘境). Inside, its rooms are the whole map: offer only the roads Look
   gives, and a way out is Move's refusal with `say`. The world outside is

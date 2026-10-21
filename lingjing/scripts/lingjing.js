@@ -29,7 +29,7 @@ import { wireDrag } from './battle-drag.js';
 import { banner, ghostsOf, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton } from './cards.js';
+import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt } from './cards.js';
 import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongKailu, kailuPaneHtml } from './fantong-kailu.js';
@@ -1155,8 +1155,18 @@ const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));
 /// on the 事 chip (moreHtml).
 function footRowHtml(slots) {
   if (bout) return '';
+  // A key beat running (Look's `lock`): 去往 stays, greyed; a tap says why — the page's, no turn.
+  if (look?.lock && stands(headLook(), 'roads')) return heldRoadsHtml(look.lock);
   // In 闭关 and inside a corridor (the prologue) the rules keep the roads off (stageSlots).
   return (slots.footer.roads || roadsFree()) && stands(headLook(), 'roads') ? roadsHtml() : '<span></span>';
+}
+
+/// 关键剧情锁图 (design.md § 剧情 × 开放世界): the 去往 chip greyed while the beat runs, its
+/// pop the beat's title and its own reason (chapter.json beats `say`) — never a road to tap.
+function heldRoadsHtml(lock) {
+  const w = words(), open = view.roadsOpen;
+  const pop = open ? `<div class="bookpop roadspop held" role="dialog"><div class="cardtitle">${esc(lock.title ?? '')}</div><div class="small dim">${esc(lock.say ?? '')}</div></div>` : '';
+  return `<span class="bookwrap roadswrap"><button class="bookchip roadschip held" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(lock.say ?? '')}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }
 
 /// 还有 N 件 ›, folded onto the 事 chip (Hanli, 2026-10-15: one chip for what is in hand and what
@@ -1451,7 +1461,7 @@ function roadsHtml() {
   const onPlate = new Set((plate?.spots ?? []).map((s) => s.id));
   const off = near.filter((p) => !onPlate.has(p.id));
   const chips = off.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}</button>`).join('');
-  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: plate.file ? worldPath(look.world.dir, plate.file) : null, here: w.needHere }) : '';
+  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: plate.file ? worldPath(look.world.dir, plate.file) : null, here: w.needHere, threads: threadsAt(look) }) : '';
   const pop = open ? `<div class="bookpop roadspop${painted ? ' plated' : ''}" role="dialog"><div class="cardtitle">${esc(painted ? plate.name : w.roads)}</div>${painted}${chips ? `<div class="roadlist">${chips}</div>` : ''}</div>` : '';
   return `<span class="bookwrap roadswrap"><button class="bookchip roadschip" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(near.map((p) => p.name).join(' · '))}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }

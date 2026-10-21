@@ -14,10 +14,11 @@ const ctx = { now: NOW, quests: [] };
 const cost = content.rewards.stamina.cost.move;
 const trip = n => Math.min(cost.max, cost.base + (n - 1) * cost.per_road);
 
-/* 古十 with 01-cauldron waiting at 漳源 (sibei › zhangnan › hebo › zhangyuan). */
+/* 古十 with 01-end waiting at 漳源 (sibei › zhangnan › hebo › zhangyuan) — a scene walked to:
+   01-cauldron is inside the 河伯 key beat since 2026-10-21, carried, never a waypoint. */
 const atSibei = (extra = {}) => ({
-  ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-cauldron', place: 'sibei',
-  ended: ['00-prologue', '00-waimen', '00-zhuji'], done_scenes: ['01-arrive', '01-ye', '01-altar', '01-rise'],
+  ...newState(content, 'zh', NOW), chapter: '01-ji', scene: '01-end', place: 'sibei',
+  ended: ['00-prologue', '00-waimen', '00-zhuji'], done_scenes: ['01-arrive', '01-ye', '01-altar', '01-rise', '01-tower', '01-deep', '01-cauldron'],
   tier: 'foundation', step: 0, traits: ['wood'], stamina: 100, stamina_at: NOW.toISOString(), ...extra,
 });
 const walk = (s, place) => {

@@ -298,6 +298,18 @@ function map(card, ctx) {
 /// road is not straight (his rule, 2026-09-17) — or all nine provinces at a
 /// tap. Where a point stands is the place's authored `map`; here, a road
 /// away and beyond the tier are Look's.
+/// 主线 · 人物线 · 杂务 on the map (design.md § 剧情 × 开放世界): the thread each place holds, read
+/// from Look alone — the goal line's place gold, an errand in hand where its next count is met
+/// silver or grey. One colour a place, the strongest.
+const THREAD_RANK = { main: 3, person: 2, chore: 1 };
+export function threadsAt(look) {
+  const out = {};
+  const mark = (id, t) => { if (id && t && (THREAD_RANK[t] ?? 0) > (THREAD_RANK[out[id]] ?? 0)) out[id] = t; };
+  for (const q of look?.book ?? []) if (!q.chore && q.id !== 'tale') mark(q.where?.id, q.thread ?? 'chore');
+  mark(look?.waypoint?.place?.id, 'main');
+  return out;
+}
+
 function atlasMap(ctx) {
   const { atlas, dir } = ctx.look.world;
   const place = ctx.look.place;
@@ -340,19 +352,23 @@ function atlasMap(ctx) {
     { width: 560, height: 560 * frame.h / (frame.w * atlas.aspect) });
   const sideOf = new Map(order.map((k, i) => [k, sides[i]]));
   const SIDE_CLS = { r: '', l: ' flip', a: ' lbl-a', b: ' lbl-b' };
+  const heldBy = ctx.look.lock?.say ?? null, threads = threadsAt(ctx.look);
   const dots = (whole ? points.filter((p) => p.here) : shown).map((p, k) => {
     // The whole map marks where the player is with the dot alone: a name
     // there would sit on the province's own.
     if (whole) return `<span class="pt here" style="${pos(p.map)}"><i></i></span>`;
     const kind = other ? '' : p.here ? 'here' : p.road ? 'road' : '';
     const side = sideOf.get(k);
-    const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${side ? SIDE_CLS[side] : ' nolbl'}`;
+    // A key beat running (Look's `lock`): every dot of his own map greyed, its title the beat's reason.
+    const held = Boolean(heldBy) && !other && !p.here;
+    const th = other ? null : threads[p.id];
+    const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${held ? ' held' : ''}${th ? ` th-${th}` : ''}${side ? SIDE_CLS[side] : ' nolbl'}`;
     const label = `<i></i><span>${esc(mapName(p.name, shownNames))}</span>`;
     // 地图展开: the places come out of the mist one after another (--k).
     const at = `${pos(p.map)}${ctx.unfold ? `;--k:${k}` : ''}`;
     // Beyond the map this chapter opens: greyed, and nothing to tap.
-    return (p.here && !other) || p.closed
-      ? `<span class="${cls}" style="${at}" title="${esc(p.name)}">${label}</span>`
+    return (p.here && !other) || p.closed || held
+      ? `<span class="${cls}" style="${at}" title="${esc(held ? `${p.name} · ${heldBy}` : p.name)}"${held ? ' aria-disabled="true"' : ''}>${label}</span>`
       : `<button class="${cls}" ${goAttr(p.id)} style="${at}" title="${esc(p.name)}" aria-label="${esc(p.name)}">${label}</button>`;
   });
   const title = whole ? ctx.words.mapTitle : other ? other.name : place.province.name;
@@ -362,7 +378,7 @@ function atlasMap(ctx) {
   // A key beat running: the map waits, and says why (world.mjs beatOf).
   const lookAt = (id) => (hasPlaces(id) ? `<button class="act quiet" data-mapview="${id === own ? 'province' : esc(id)}">${esc(names[id])} ›</button>` : '');
   const pvLine = whole && ctx.mapPv && ctx.ink ? provinceLineHtml(ctx.ink, ctx.mapPv, { lang: ctx.lang, name: names[ctx.mapPv], more: lookAt(ctx.mapPv) }) : '';
-  const locked = ctx.look.lock ? `<div class="small dim maplock">${esc(say(ctx.words.mapLocked, { title: ctx.look.lock.title }))}</div>` : '';
+  const locked = ctx.look.lock ? `<div class="small dim maplock" title="${esc(ctx.look.lock.say ?? '')}">${esc(say(ctx.words.mapLocked, { title: ctx.look.lock.title }))}</div>` : '';
   // 地图展开 (2026-10-14): the first time this chapter's map can be walked, it unfolds — mist
   // lifting off the paper, the places coming out, the region's name — once (the page's moment).
   const unfold = ctx.unfold ? `<div class="unfoldveil" aria-hidden="true"></div><div class="unfoldtitle"><span class="unfoldplate"><small>${esc(ctx.words.unfoldNew)}</small><b>${esc(ctx.unfold.title)}</b></span></div>` : '';
@@ -377,8 +393,8 @@ function placesHtml(ctx) {
   const place = ctx.look.place;
   if (!place?.places?.length) return '';
   const chips = place.places.map((p) => {
-    const kind = p.here ? 'here' : p.closed ? 'far' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
-    if (p.here || p.closed) return `<span class="pl ${kind}">${esc(p.name)}</span>`;
+    const kind = p.here ? 'here' : p.closed || ctx.look.lock ? 'far' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
+    if (p.here || p.closed || ctx.look.lock) return `<span class="pl ${kind}"${ctx.look.lock && !p.here ? ` title="${esc(ctx.look.lock.say ?? '')}"` : ''}>${esc(p.name)}</span>`;
     return `<button class="pl${kind ? ` ${kind}` : ''}" ${goAttr(p.id)}>${esc(p.name)}</button>`;
   });
   return `<div class="placesTitle">${esc(place.province.name)}</div><div class="places">${chips.join('')}</div>`;
@@ -415,6 +431,7 @@ function roadMap(ctx) {
     const tag = p.here ? `<small>${esc(ctx.words.here)}</small>` : '';
     const style = `style="left:${at[p.id].x * 100}%;top:${at[p.id].y * 100}%;max-width:${Math.floor(92 / widest)}%"`;
     if (p.here) return `<span class="pl here" ${style}>${esc(p.name)}${tag}</span>`;
+    if (ctx.look.lock) return `<span class="pl far" ${style} title="${esc(ctx.look.lock.say ?? '')}">${esc(p.name)}</span>`;
     return `<button class="pl${kind ? ` ${kind}` : ''}" ${goAttr(p.id)} ${style}>${esc(p.name)}</button>`;
   });
   const frame = painted
@@ -1069,7 +1086,7 @@ export function bookPopHtml(ctx) {
   // The province only when it is not the one he stands in (live, 2026-10-15: 「→ 断崖下 · 徐州」 inside the 秘境).
   const away = g?.province && g.province !== ctx.look?.place?.province?.name ? g.province : '';
   const where = g?.place ? `${g.place.name}${away ? ` · ${away}` : ''}` : away;
-  const head = g ? `<div class="bookgoal"><span class="lbl">${esc(w.goalTitle)}</span> <span>${esc(goalText(ctx))}</span>${where ? ` <span class="small dim">→ ${esc(where)}</span>` : ''}
+  const head = g ? `<div class="bookgoal th-main"><span class="lbl">${esc(w.goalTitle)}</span> <span>${esc(goalText(ctx))}</span>${where ? ` <span class="small dim">→ ${esc(where)}</span>` : ''}
     ${g.gate ? `<div class="small dim">${esc(say(w.goalNow, g.gate.now))} · ${esc(w.goalGrow)}</div>` : ''}</div>` : '';
   const group = (key, rows) => (rows.length ? `<div class="tgroup ${key}"><div class="thead small dim">${esc(say(w[key], { n: rows.length }))}</div>${rows.join('')}</div>` : '');
   const body = group('groupReady', groups.ready) + group('groupHeld', groups.held) + group('groupOpen', groups.open) + doneFold(groups.done, w);
@@ -1130,7 +1147,7 @@ function stageRow(look, ctx) {
   const meta = st.met ? w.stageMet : `${say(w.goalNow, st.now)}${work ? ` · ${say(w.stageWork, { name: work.place.name })}` : ''}`;
   // Met, it is handed in like any errand (rules/gates.mjs stageTurn): 交差, and its 灵石 shows.
   const act = st.met ? doBtn(w.turnIn, 'turn', 'stage') : work ? bookGo(say(w.go, { name: work.place.name }), work.place.id, ctx) : '';
-  return taskRow({ id: 'stage', tag: 'stage', title: say(w.stageTitle, { step: st.step }), meta, pays: st.met ? paysLine(st.pays, w) : '', act, ready: st.met, expand: false }, ctx);
+  return taskRow({ id: 'stage', tag: 'stage', title: say(w.stageTitle, { step: st.step }), meta, pays: st.met ? paysLine(st.pays, w) : '', act, ready: st.met, expand: false, thread: 'main' }, ctx);
 }
 
 /// Stage quests crossed before they paid, settled by themselves on a load (Look's `stage_back`, a day long).
@@ -1144,11 +1161,13 @@ function stageBackRow(look, ctx) {
 /// progress / period / place, the pay under it, and ONE action on the right
 /// (under the title on a phone). The row is the tap — it opens to the giver's
 /// words, the pay and 问询; only the action is a button of its own.
-function taskRow({ id, tag, device, title, who, meta, pays, act = "", ready = false, cls = "", expand = true, detail = null, attr = "data-bookrow" }, ctx) {
+/// `thread` — 主线 · 人物线 · 杂务 (design.md § 剧情 × 开放世界): the row's colour, gold · silver · grey,
+/// a line down its left edge; the tag says what kind of task, the thread whose story it is.
+function taskRow({ id, tag, device, title, who, meta, pays, act = "", ready = false, cls = "", expand = true, detail = null, attr = "data-bookrow", thread = null }, ctx) {
   const w = ctx.words, open = expand && (ctx.bookRow === id || ctx.offerRow === id);
   const tap = expand ? ` ${attr}="${esc(id)}" role="button" tabindex="0" aria-expanded="${open}"` : '';
   const line = `${device ? `<span class="device">${esc(deviceMark(device))}</span> ` : ''}<b>${esc(title)}</b>${who ? ` <span class="small dim">· ${esc(who)}</span>` : ''}${meta ? ` <span class="small dim tmeta">${esc(meta)}</span>` : ''}`;
-  return `<div class="bookrow trow${ready ? ' ready' : ''}${open ? ' open' : ''}${cls}"${tap}>
+  return `<div class="bookrow trow${ready ? ' ready' : ''}${open ? ' open' : ''}${thread ? ` th-${esc(thread)}` : ''}${cls}"${tap}>
     <span class="tag t-${esc(tag)}">${esc(w.tags?.[tag] ?? tag)}</span>
     <div class="tmain"><div class="tline">${line}</div>${pays ? `<div class="small tpay">${esc(pays)}</div>` : ''}</div>
     <div class="tact">${act}</div></div>${open && typeof detail === 'function' ? detail() : ''}`;
@@ -1166,7 +1185,7 @@ function errandRow(q, ctx) {
   const act = q.away ? awayAct(q, ctx)
     : q.ready ? doBtn(w.turnIn, 'turn', q.id) : q.where && !q.where.here ? bookGo(say(w.go, { name: q.where.name }), q.where.id, ctx) : '';
   return taskRow({ id: q.id, tag: q.id === 'tale' ? 'tale' : q.tag ?? 'errand', title: q.title, who: q.who, meta: [countsOf(q, w), at].filter(Boolean).join(' · '),
-    pays: paysLine(q.pays, w), act, ready: q.ready && !q.away, detail: () => bookDetail(q, ctx) }, ctx);
+    pays: paysLine(q.pays, w), act, ready: q.ready && !q.away, thread: q.thread ?? null, detail: () => bookDetail(q, ctx) }, ctx);
 }
 
 /* Done, and its giver at another place (live, 2026-10-15: 「交给阿禾」 stood as a button that was
@@ -1179,7 +1198,7 @@ const GIVE_WORDS = {
 function awayAct(q, ctx) {
   const t = GIVE_WORDS[ctx.lang] ?? GIVE_WORDS.zh, at = q.where;
   if (!at || at.here) return '';
-  if (ctx.look?.director?.corridor) return `<span class="chip giveto waits" title="${esc(t.why)}">${esc(say(t.back, { name: at.name }))}</span>`;
+  if (ctx.look?.director?.corridor) return `<span class="chip giveto waits" title="${esc(ctx.look.lock?.say ?? t.why)}">${esc(say(t.back, { name: at.name }))}</span>`;
   return goBtn(say(ctx.words.go, { name: at.name }), at.id);
 }
 /* A walk offered in the 事 book: where he cannot leave yet (a corridor, a key beat) it is a dimmed
@@ -1187,7 +1206,7 @@ function awayAct(q, ctx) {
 function bookGo(label, id, ctx) {
   if (!ctx.look?.director?.corridor) return goBtn(label, id);
   const t = GIVE_WORDS[ctx.lang] ?? GIVE_WORDS.zh;
-  return `<span class="chip go waits" title="${esc(t.why)}">${esc(label)}</span>`;
+  return `<span class="chip go waits" title="${esc(ctx.look.lock?.say ?? t.why)}">${esc(label)}</span>`;
 }
 
 /* A 每日 / 每周 chore of his apps: where it is done, its app's page one tap away, 交差 when done. */
@@ -1213,7 +1232,7 @@ function onceRow(k, count, life, ctx, isOpen) {
 function offerRow(o, ctx) {
   const w = ctx.words;
   const detail = () => `<div class="bookdetail offerdetail"><div class="say">${esc(o.say ?? '')}</div><div class="acts">${askBtn(w.about, say(w.sayQuestAbout, { title: o.title }))}</div></div>`;
-  return taskRow({ id: o.id, tag: o.tag ?? 'errand', title: o.title, who: o.who, meta: o.note ?? '', pays: paysLine(o.pays ?? o.grant, w), act: doBtn(w.take, 'take', o.id, Boolean(o.locked)), detail, attr: 'data-offerrow' }, ctx);
+  return taskRow({ id: o.id, tag: o.tag ?? 'errand', title: o.title, who: o.who, meta: o.note ?? '', pays: paysLine(o.pays ?? o.grant, w), act: doBtn(w.take, 'take', o.id, Boolean(o.locked)), detail, attr: 'data-offerrow', thread: o.thread ?? null }, ctx);
 }
 
 /* A hand-in just tapped: the row stays where it was a moment, saying what came in

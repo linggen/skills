@@ -7,6 +7,7 @@
   --yinyue: #46708C; --yinyue-soft: #E2EBF1;
   --seal: #B03A2B; --seal-soft: #F5DFDA;
   --jade: #2E7A57; --jade-soft: #DCEBE3;
+  --th-main: #C49A2C; --th-person: #98A2AE; --th-chore: #B3AC9F;
   --metal: #B89A3E; --wood: #4C8A4A; --water: #3A6CA3; --fire: #C04A30; --earth: #9C7641;
   --sky-a: #E9E2D2; --sky-b: #D9CFBB;
   --serif: "Noto Serif SC", "Songti SC", "STSong", "Source Han Serif SC", Georgia, serif;
@@ -21,6 +22,7 @@
     --yinyue: #9DBCD3; --yinyue-soft: #1F2C36;
     --seal: #E27461; --seal-soft: #3D211C;
     --jade: #78C4A2; --jade-soft: #1B352A;
+    --th-main: #E2BD5C; --th-person: #BCC5CF; --th-chore: #6F695E;
     --sky-a: #1D1B24; --sky-b: #0E0D12;
   }
 }
@@ -317,6 +319,10 @@ button.pl:hover { background: var(--ling-soft); }
 .tgroup.tdone summary::before { content: '▸ '; }
 .tgroup.tdone[open] summary::before { content: '▾ '; }
 .bookrow.trow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; padding: 5px 6px; margin: 0 -6px; border-radius: 6px; }
+/* 主线 · 人物线 · 杂务 (design.md § 剧情 × 开放世界): gold · silver · grey, a line down the row's left edge. */
+.bookrow.trow.th-main, .bookrow.trow.th-person, .bookrow.trow.th-chore, .bookgoal.th-main { box-shadow: inset 3px 0 0 var(--th); }
+.th-main { --th: var(--th-main); } .th-person { --th: var(--th-person); } .th-chore { --th: var(--th-chore); }
+.bookgoal.th-main { padding-left: 8px; margin-left: -6px; }
 .tgroup.groupReady .bookrow.trow { background: color-mix(in srgb, #d9b25a 16%, transparent); }
 .bookrow.trow .tmain { min-width: 0; }
 .bookrow.trow .tline { overflow-wrap: anywhere; }
@@ -436,6 +442,13 @@ ruby.py rt { ruby-align: center; text-align: center; }
 .atlas .pt.far { opacity: 0.55; }
 /* Beyond the map a chapter opens: greyed and shut; a province all shut stands in mist. */
 .atlas .pt.shut { opacity: 0.3; filter: grayscale(1); }
+/* A key beat running (Look's lock): his own map greyed, nothing to tap. */
+.atlas .pt.held { opacity: 0.45; filter: grayscale(1); cursor: not-allowed; }
+/* A thread's place: the dot ringed gold · silver · grey. */
+.atlas .pt[class*=" th-"] > i { box-shadow: 0 0 0 2px var(--th); }
+.plate .spot[class*=" th-"] { box-shadow: 0 0 0 2.5px var(--th), 0 1px 4px rgb(0 0 0 / 30%); }
+.roadschip.held { opacity: 0.55; }
+.roadspop.held { max-width: min(300px, 86vw); }
 .atlas .pv.mist { color: rgba(40, 34, 24, 0.12); filter: blur(0.6px); }
 .maplock { margin: -2px 0 6px; }
 .atlas button.pt { cursor: pointer; }

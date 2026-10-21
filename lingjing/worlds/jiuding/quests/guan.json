@@ -2,6 +2,7 @@
   "version": 1,
   "province": "徐",
   "_about": "沉鼎观里的差事 (Hanli, 2026-10-15: 外门在观内走动，下山凭执事堂的令). Chores — the 执事堂's east-wall tags (「杂役，外门也揭得」, 07-第七回) and 周衡's ledger — pay 灵石 (`work: labor`); the night watch and the beasts pay 修为 (`work: cultivation`). The numbers in `grant` are placeholders the economy owner sets (rewards.json's `labor` and `quest` tables). The tags for work below the mountain are in xu.json, each with its `pass`.",
+  "_thread": "`thread` (design.md § 剧情 × 开放世界): the colour the 事 book and the map draw it in — `person` (silver, 人物线: an errand of someone's own life — 阿禾, 孙二狗, 周衡's game, 古九's people of 邺城), `chore` (grey, 杂务: a wall tag, a steward's job, a notice), `main` (gold, 主线: an errand the story itself waits on; none yet — the goal line and the 阶段任务 are gold without it).",
   "quests": [
     {
       "id": "guan-chaifang-wood",
@@ -9,6 +10,7 @@
         "zh": "码柴",
         "en": "Stacking the firewood"
       },
+      "thread": "chore",
       "from": {
         "place": "zhishi",
         "who": {
@@ -44,6 +46,7 @@
         "zh": "饭堂的蒸屉",
         "en": "The steamer tray"
       },
+      "thread": "chore",
       "from": {
         "place": "zhishi",
         "who": {
@@ -79,6 +82,7 @@
         "zh": "陪下一盘",
         "en": "A game to rest the eyes"
       },
+      "thread": "person",
       "from": {
         "place": "zhishi",
         "who": {
@@ -114,6 +118,7 @@
         "zh": "晒经",
         "en": "Airing the scriptures"
       },
+      "thread": "chore",
       "from": {
         "place": "zhishi",
         "who": {
@@ -149,6 +154,7 @@
         "zh": "后山的野猪",
         "en": "Boars off the cliff"
       },
+      "thread": "chore",
       "from": {
         "place": "yaoyuan",
         "who": {

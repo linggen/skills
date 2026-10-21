@@ -101,6 +101,9 @@ function bookOf(content, state, lang, ctx) {
   return [...(errands ? errandsOf(content, state, lang, ctx?.now ?? new Date()) : []), ...(tale ? [tale] : []), ...(shut.includes('chores') ? [] : choresOf(state, ctx, lang))];
 }
 
+/* 主线 · 人物线 · 杂务 (design.md § 剧情 × 开放世界): the errand's declared thread, else 杂务. */
+const threadColour = q => q?.thread ?? 'chore';
+
 function errandsOf(content, state, lang, now) {
   return Object.keys(state.quests ?? {})
     .filter(id => !questDoneBefore(state, id))
@@ -114,7 +117,8 @@ function errandsOf(content, state, lang, now) {
       const kept = n => n.kind === 'board' && !n.done && Boolean(state.wins?.[n.task]);
       const ready = need.every(x => x.done), away = ready && !withGiver(state, q);
       // Who gives it and what it pays — the 事 book's row says both under the title (2026-10-15).
-      return { id, title: pick(q.title, lang), who: q.from?.who ? pick(q.from.who, lang) : null, pays: paysOf(content, state, now, q.grant),
+      // Its thread (quests' `thread`): the colour the 事 book and the map draw it in; a wall tag's grey unless declared.
+      return { id, title: pick(q.title, lang), thread: threadColour(q), who: q.from?.who ? pick(q.from.who, lang) : null, pays: paysOf(content, state, now, q.grant),
         need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready,
         // Done, but the person it is for is elsewhere: who, and the way there.
         ...(away ? { away: { who: pick(q.from.who, lang) } } : {}),
@@ -176,7 +180,7 @@ function noticeOf(content, id) {
   if (!name) return null;
   const words = { target: name, place: at.name, game: game ? taskOf(content, game)?.title : null };
   const worded = x => swap(x, { ...words, game: words.game ?? { zh: '', en: '' } });
-  return { id, day, notice: t.id, province: at.province, title: worded(t.title), say: worded(t.say), from: { place: market.id, who: t.who },
+  return { id, day, notice: t.id, province: at.province, title: worded(t.title), thread: t.thread ?? 'chore', say: worded(t.say), from: { place: market.id, who: t.who },
     need: [{ kind: t.kind, n: t.n, ...(t.kind === 'visit' ? { place: target } : t.kind === 'board' ? { task: game, at: target } : { creature: target }) }], grant: t.grant };
 }
 
@@ -240,7 +244,7 @@ function offersOf(content, state, lang, now) {
       && (!q.pass || (!state.pass && !tooHard(content, state, placeOf(content, q.pass.to) ?? { tier: Infinity })))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier))
       && layerMet(content, state, q))
-    .map(q => ({ id: q.id, title: pick(q.title, lang), work: q.work ?? null, who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
+    .map(q => ({ id: q.id, title: pick(q.title, lang), thread: threadColour(q), work: q.work ?? null, who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
 }
 
 const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
