@@ -217,8 +217,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         $('.df-bar b i').style.width = `${(L.now / L.max) * 100}%`;
         $('.df-bar em').textContent = `${w.kills} ${field.kills} · ${w.got} ${field.escaped} · ${Math.max(0, Math.ceil(level.seconds - field.t / 1000))}s`;
         box.classList.toggle('is-full', L.now >= kit.doufa.lingli.cost.da);
-        const next = duel.big[0]?.s.at ? bigSeq[duel.big[0].s.at] : null; // the 大招 under way: its next seal
-        hint.update({ image: picture, aspect, target: next, progress: 0, right: false, now: win.performance.now(), world: hands, handed, held: heldAt(held, handed, hands.length) });
+        // The 大招 under way (two of its seals made — one alone is any 推掌): its next seal. No turn cue while a fist holds a spell.
+        const next = (duel.big[0]?.s.at ?? 0) >= 2 ? bigSeq[duel.big[0].s.at] : null;
+        hint.update({ image: picture, aspect, target: next, progress: 0, right: false, now: win.performance.now(), world: held.length || !next ? null : hands, handed, held: heldAt(held, handed, hands.length) });
       };
 
       const tick = () => {

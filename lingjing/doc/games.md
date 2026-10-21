@@ -694,6 +694,33 @@ His ask: 「不只是剑诀往前戳, 一些手势都可以类似处理, 往前�
 
 **First:** 法术试炼 in the 游戏厅 — every tier, 扣 then 拍, the combos, the 灵力 bar — for his hands; then 守墙关 and the 古六 lesson take what passes.
 
+### Built (10-21): the engine and 法术试炼
+
+- **法术试炼** (`doufa`, 游戏厅 only): `arcade.html?dev=1&game=doufa`. Beasts (守墙关's art) walk down three lanes toward 小满;
+  合窳 steps out at 40 s and fills the 灵力; 90 s, stars at 6 · 12 · 18 down; nothing lost when one gets by (a trial). Tap a
+  beast to aim at it. The legend under the field lists every move by tier with its cost. Camera only; no camera picture —
+  the hand hint (the held fist glows its element). Field numbers: levels/doufa.json; moves: jieyin.json `doufa`.
+- **The engine** — games/jieyin/duel.js (pure), for 守墙关 and the 古六 lesson:
+  - `duelStart(kit, { set })` · `duelStep(state, { world, image, handed, aspect, t }, dtMs, kit)` → `{ state, events, held }` ·
+    `duelFill(state, kit, n | 'boss')` · `strike(cast, beast, kit, now)` · `laneOf(imageHand, kit)`.
+  - **The cast event (stable):** `{ type: 'cast', tier: 'xiao' | 'fa' | 'da', move, element?, hand, lane, laneIndex, cost,
+    heldMs?, left? }` — move: 小招 `feijian` · `dianxue` · `zhangfeng` · `quanjin`; 法术 `huodan` · `bingzhui` · `jinren` ·
+    `muteng` · `tuqiang`; 大招 `huodan4`. `hand` 'Left' | 'Right' (the player's own) or '#i'; `lane` 'left' | 'middle' |
+    'right' — the hand's third of the frame, mirrored; `heldMs` / `left` a 法术's time in the fist and what had not leaked.
+    Others: `wen` · `kou` · `fade` · `drop` (spell, hand), `dry` (tier, move, hand — not enough 灵力, nothing happens; a
+    法术 pays at the 扣), `seal` (the 大招's steps). The target is the game's: the beast tapped, else the nearest in `lane`.
+  - **strike(cast, beast { element, status }, kit, now)** → `{ dmg, mult, counter, combo, status: { name: untilMs }, lane,
+    push, near, wall, show, clear }` — the effect (jieyin.json `doufa.effects`), a combo (`doufa.combos`: 缠而后伐 — 金刃 on
+    a rooted beast ×2; 冰火成雾 — 火弹 on a chilled one, steam over its lane) and the counter element (`counter.beats`,
+    ×1.5). The game applies it (field.js `applyCast` is the trial's).
+  - **The motion:** games/jieyin/motion.js (moved from zhidian/poke.js, which re-exports it): the hand's picture size jumping
+    ≥ ×1.12 over its smallest in 300 ms = a thrust; jab or push by the shape (`doufa.thrust`); drift and tremble stay
+    silent. 法术's release is that push (`spells.knobs.release` push; open — the first cut — a switch).
+  - **hint.js `held`** (spell.js `heldAt`): a fist holding a spell glows in the drawn palm.
+- **Tested:** tests/game-doufa.test.mjs (push vs jab vs drift vs tremble, every 小招, 文 → 扣 → push for the five, fade,
+  lanes, the 大招 with stray seals, 灵力 dry / refill / boss, combos and the counter, the field) — synthetic hands; real
+  camera play is Hanli's.
+
 ## 结印 — hand seals at the camera (10-21)
 
 Hanli 10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」, then 「很好玩啊」「可以作为lingjing的一个亮点」
