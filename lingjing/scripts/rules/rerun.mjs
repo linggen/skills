@@ -124,7 +124,9 @@ function enterRun(state, content, ctx, args = {}) {
   const x = here.rerun;
   if (state.rerun) return refuse('in-run', null);
   if (state.sealed) return refuse('sealed', null);
-  if (beatOf(content, state)) return refuse('corridor', pick(here.beat.say, lang) ?? null);
+  // A key beat running says why in its own words (the 筑基's, the 河伯 night's); inside the 秘境's own story, its.
+  const running = beatOf(content, state);
+  if (running) return refuse('corridor', pick(running.say ?? here.beat.say, lang) ?? null, { beat: running.id });
   const wait = rerunWait(state, here, ctx.now);
   if (wait > 0) return refuse('shut', pick(x.shut, lang) ?? null, { left_min: Math.ceil(wait / MIN) });
   if (state.place !== x.door) return refuse('not-here', null, { door: placeName(content, state, placeOf(content, x.door)) });

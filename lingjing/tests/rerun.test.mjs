@@ -176,7 +176,13 @@ test('a run left standing past its time ends at the next settle; inside a key be
   assert.equal(woke.state.place, CH.map.home);
   // Mid-大比 (a key beat's corridor): the door does not open.
   const dabi = { ...atDoor(t0), scene: 'wm-zhaojing' };
-  assert.equal(rerun(dabi, content, at(t0), { action: 'enter' }).result.ok, false);
+  const shut = rerun(dabi, content, at(t0), { action: 'enter' }).result;
+  assert.equal(shut.ok, false);
+  // …in that beat's own words, never the 秘境 door's 「三天后才开」 (review 2026-10-21).
+  const beat = CH.beats.find(b => b.scenes.indexOf('wm-zhaojing') > 0);
+  assert.equal(shut.refused, 'corridor');
+  assert.equal(shut.beat, beat.id);
+  assert.equal(shut.say, beat.say.zh);
   assert.equal(look(dabi, content, at(t0)).rerun, undefined);
 });
 
