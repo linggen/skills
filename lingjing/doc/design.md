@@ -819,6 +819,14 @@ Every 回 gets a gameplay pass so play keeps pace with reading: the book's own a
 their scenes (`tasks/h<nn>.json`), fights, and enough beasts and finds to farm its stage quest.
 古六 is first (building now: its boards in tasks/h08.json); the rest follow in order.
 
+| 回 | Boards | Farming | Done |
+|---|---|---|---|
+| 古四 (h05) | 小周天 (气走经脉) · 药园巡夜 (守炉) — no more | 后山崖顶: + 狼 · 熊 from h05 → 9 after the 狰 is tamed; 32 things to find or loot in 观内 | 10-21 |
+| 古六 (h08) · 古七 (h11) | tasks/h08.json · h11.json | 后山崖顶's beasts by `from` | 10-15 / 10-20 |
+| 古八 (h09) | — | — | the 丹药 agent's |
+| 古九 (h10) | 斗法 · 老井 (01-laojing, a 试 with 阿禾; the take passage split word for word) | none: no stage quest, all of 卷一's map open | 10-21 |
+| 今线 | audited 10-21: the four kept boards (先吐 · 罚球 · 黑地十一步 · 最后一罚) and 投篮 (砸寨) stay; nothing added — the actions left (j04-gym's 卧推 「绷住，推，吐」, j04-dog's 吸四吐六, j01-anatomy's 三圈经络, j09-dongzhi's 静坐听心) are all breath, a sixth 调息 against 「调息感觉太多了」, or a key emotional moment (j07-guan's hospital, j09-dongzhi's 马小宝) | — | 10-21 |
+
 ### 新小游戏 — proven mechanics, the book's actions (Hanli, 2026-10-16)
 
 Small games stay between passages, or the player only reads; the weak ones go. New ones borrow

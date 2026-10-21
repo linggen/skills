@@ -1641,6 +1641,14 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   assert.equal(r.result.breakthrough, null);
   assert.equal(r.state.tier, tier, 'no realm is crossed here: that is the cliff\'s business');
   assert.deepEqual(r.state.memories, [1]);
+  // 老井 on the 河滩 (古九's per-回 pass, 2026-10-21): a 试 with 阿禾 beside him, won before the way on
+  assert.equal(r.state.scene, '01-laojing');
+  s = r.state;
+  const well = look(s, content, octx()).scene.exits.find(e => e.id === 'dodge');
+  assert.deepEqual(well.game, { id: 'laojing-trial', kind: 'duel', creature: 'foe-laojing', retry: true });
+  refused(resolve, s, { exit: 'dodge' }, 'game-not-won', octx());
+  s = { ...s, wins: { ...s.wins, 'laojing-trial': OCT.toISOString() } };
+  r = answer(resolve, s, { exit: 'dodge' });
   assert.equal(r.state.scene, '01-end');
   r = answer(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji']);

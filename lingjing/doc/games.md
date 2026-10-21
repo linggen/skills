@@ -229,7 +229,7 @@ pieces. 21 stretches of 卷一 ran over (by either count); 20 after — 1,635 go
 | 01-ji: start → j09-final | 2,888 | 2,888 | 今四; 最后一罚 at its end. |
 | j09-final → 01-altar/send | 4,689 | 4,689 | 今四's 冬至, 第九回's arrival. |
 | 01-rise/stand → 01-deep/seal | 2,164 | 2,164 | not filled. |
-| 01-deep/seal → end | 3,129 | 3,129 | 卷一's last pages (the cauldron). |
+| 01-deep/seal → end | 3,129 | 1,383 · 1,746 | 卷一's last pages (the cauldron). **10-21 (古九's per-回 pass):** 斗法 · 老井 — the take passage split at 「脚底下的水，不响了。」 into 01-laojing, the 试 on its way on `dodge` (foe-laojing). |
 
 **砸寨 levels to make (the port agent's; Hanli 10-20: 「其他投掷类都用砸寨的不同关卡代替」):** wm-xirang/swallow, the dry
 暗河 — 「小满搭上一支，左手在地上摸了一块石子，往左边黑里一丢。『嗒』。铜塞子『啵』地一响，葫芦嘴里亮起一团红光…他一箭奔那团红光去

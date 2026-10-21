@@ -2053,6 +2053,89 @@
       "_deck": "冰夷双龙 —— 一扑一扫，水里来，水里去；是来试人的，不是来杀人的（古十）。",
       "_signature": "双龙摆尾 —— 两条尾巴贴着河滩一齐扫过来。"
     },
+    {
+      "id": "foe-laojing",
+      "gender": "male",
+      "title": {
+        "zh": "河滩 · 老井",
+        "en": "The river bank · Old Well"
+      },
+      "name": {
+        "zh": "老井",
+        "en": "Old Well"
+      },
+      "pinyin": "lǎo jǐng",
+      "look": {
+        "zh": "太一宫的白衣执事，筑基大成，在筑基上卡了三十年。一张白得看不出年纪的脸，手里托着一面铜镜，镜面朝上，像托着一碗水。他站过的浅水里，水草直直地立起来，像插在冰里。",
+        "en": "A white-robed steward of the Taiyi Palace, Foundation complete — stuck at the Foundation thirty years. A face too white to show an age, a bronze mirror held face up in one hand like a bowl of water. Where he stands in the shallows the reeds stand straight up, as if set in ice."
+      },
+      "quote": {
+        "zh": "嗓子还是那口老井。",
+        "en": "The voice was still that old well."
+      },
+      "says": {
+        "open": {
+          "zh": "找着了。",
+          "en": "Found you."
+        },
+        "won": {
+          "zh": "这一笔，记下了。",
+          "en": "This entry is written down."
+        },
+        "lost": {
+          "zh": "没有人护着你。",
+          "en": "No one is guarding you."
+        }
+      },
+      "province": "冀",
+      "root": "water",
+      "art": "art/people/laojing.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-21, with tools/paint-flux-codex.py (the house STYLE; the kept seed is in its SUBJECTS): the white robe, the bronze mirror face up like a bowl of water, the reeds stiff at his feet. No outside source.",
+      "lean": "fierce",
+      "pattern": [
+        "cast",
+        "strike",
+        "guard",
+        "cast",
+        "gather"
+      ],
+      "hp": 3,
+      "_hp": "A 试 outlasted (`trial.outlast`, no yield), so his 气血 is not what is won — it sets when 镜光 comes (杀招 at half): at 3 it lands mid-fight. Weighed 2026-10-21 by tools/story-fights.mjs (lookahead, 60 seeds, with 阿禾): won 52% bare (lost 48%, driven down 2%), 77% with two pills — tests/fight-band.test.mjs holds it.",
+      "deck": [
+        "hantan",
+        "hantan",
+        "bingzhuifu",
+        "hantan",
+        "bingzhui",
+        "tingbo",
+        "hantan",
+        "chaoqi",
+        "bingzhuifu",
+        "hantan",
+        "tingbo",
+        "hantan"
+      ],
+      "_deck": "老井 —— 一根指头（寒潭指，六张），点断过他的肋骨，点断过一棵柳树；一整只手掌平平推过来，嘴唇动一动（潮起、停波 ×2、冰锥符 ×2、冰锥）。筑基大成，十二张里没有一张是守的：他不护身，那一层光就是他的护身（古九）。",
+      "signature": {
+        "id": "laojing-jingguang",
+        "name": {
+          "zh": "镜光",
+          "en": "The Mirror's Beam"
+        },
+        "effect": {
+          "damage": 14
+        }
+      },
+      "_signature": "镜光 —— 他把那面铜镜翻过来，一道冷光不打人，直奔胸口，奔木牌去（古九）。",
+      "trial": {
+        "outlast": true,
+        "goal": {
+          "zh": "他是筑基大成，你打不穿他那一层光。躲开那根指头，撑到他出完每一招——阿禾还蹲在岸边。",
+          "en": "He is Foundation complete; you will not get through that layer of light. Dodge the finger and last until he has spent every move — Ahe is still crouched by the water."
+        }
+      },
+      "_trial": "古九 (09-第九回.md, the 河滩 after 赵昂 leaves): a 试 passed by outlasting his twelve cards (battle.js § trial), no yield — he is never driven down; the turn is the story's (阿禾's roots pull his arm aside for one breath, 入隙 takes it off at the shoulder: the way on's passage). Met with 阿禾 in the party (party.json by_hui h10); 银月 sits it out (「这一回，本王不出去。你自己来。」)."
+    },
     {"id": "yezhu", "hui": "h01", "name": {"zh": "野猪", "en": "Wild boar"}, "pinyin": "yě zhū", "source": {"zh": "蒙山猎户的本行", "en": "A Mount Meng hunter's trade"}, "quote": {"zh": "爹说：野猪不怕人，怕的是人先看见它。先看风，后看猪。", "en": "Father says: a boar is not afraid of people — it is afraid of being seen first. Wind first, then the boar."}, "look": {"zh": "黑鬃，獠牙往上翻，一身泥甲，冲起来不拐弯。", "en": "Black bristles, tusks curling up, a hide caked in mud like armour; once it charges, it does not turn."}, "says": {"open": {"zh": "哼——哼——", "en": "Hrnk — hrnk —"}, "won": {"zh": "它掉头钻回了林子。", "en": "It wheels and crashes back into the trees."}, "lost": {"zh": "它拱翻了你，扬长而去。", "en": "It knocks you flat and trots off."}}, "province": "徐", "root": "earth", "art": "art/creatures/yezhu.webp", "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 11, the first of three candidates (a boar head-low through autumn grass, bristled black ridge, tusks curling up, mud on its flanks). No outside source.", "lean": "fierce", "pattern": ["strike", "strike", "gather", "strike", "guard"], "loot": [{"item": "zhu-ya", "w": 3}, {"item": "fuling", "w": 1}], "hp": 1.25, "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by a player who thinks a turn ahead (fightline.js lookahead); tests/fight-band.test.mjs holds it.", "deck": ["xiaoyao", "shanjing", "shanjing", "paoxiao", "tuou", "tuou", "jixiao", "jixiao", "jixiao", "luoshi", "paoxiao", "tunshi"], "signature": {"id": "chong", "name": {"zh": "獠牙一冲", "en": "Tusk Charge"}, "effect": {"damage": 8}}},
     {"id": "lang", "name": {"zh": "狼", "en": "Wolf"}, "pinyin": "láng", "source": {"zh": "蒙山猎户的本行", "en": "A Mount Meng hunter's trade"}, "quote": {"zh": "狼嚎是从胸口里出来的，是热的；风只有一个洞，再响也是空的。", "en": "A wolf's howl comes from the chest, and it is warm; the wind has only a hole, and however loud, it is hollow."}, "look": {"zh": "灰背，眼睛在暗处发绿。一只在前头，几只在你看不见的地方。", "en": "Grey-backed, eyes green in the dark. One in front of you, and a few where you cannot see."}, "says": {"open": {"zh": "嗷——", "en": "Aooo —"}, "won": {"zh": "狼群退进了松林。", "en": "The pack melts back into the pines."}, "lost": {"zh": "它们围着你转了一圈，走了。", "en": "They circle you once and are gone."}}, "province": "徐", "root": "metal", "art": "art/creatures/lang.webp", "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 12, the first of three candidates (a grey wolf standing on a ridge rock at dusk, green eye). No outside source.", "lean": "quick", "pattern": ["strike", "strike", "cast", "gather", "strike"], "loot": [{"item": "lang-pi", "w": 3}, {"item": "cangzhu", "w": 1}], "hp": 1.7, "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by a player who thinks a turn ahead (fightline.js lookahead); tests/fight-band.test.mjs holds it.", "deck": ["jinsuo", "jinsuo", "jinsuo", "jinzhua", "jinzhua", "jinzhua", "jianying", "jianying", "jinzhen", "jinzhen", "suijin", "jingang"], "signature": {"id": "qun", "name": {"zh": "群狼", "en": "The Pack"}, "effect": {"summon": {"id": "jinsuo", "n": 2}, "damage": 3}}},
     {"id": "xiong", "name": {"zh": "熊", "en": "Bear"}, "pinyin": "xióng", "source": {"zh": "蒙山猎户的本行", "en": "A Mount Meng hunter's trade"}, "quote": {"zh": "秦雁的爹前年叫熊把腿咬了，躺到如今。", "en": "Two years ago a bear took Qin Yan's father by the leg; he has been abed ever since."}, "look": {"zh": "人立起来比门框还高，一掌能拍断碗口粗的树。", "en": "Standing up it is taller than a door frame; one swipe snaps a tree as thick as a bowl."}, "says": {"open": {"zh": "吼——", "en": "Rrraugh —"}, "won": {"zh": "它放下前掌，慢吞吞走开了。", "en": "It drops to all fours and lumbers away."}, "lost": {"zh": "它一掌把你拍进了草窠。", "en": "One swipe and you are in the bushes."}}, "province": "徐", "root": "earth", "art": "art/creatures/xiong.webp", "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-15, in 水墨淡彩 (ink wash and faint colour on aged paper); seed 61, the fourth of five candidates (a black bear 人立 beside a pine, claws raised). No outside source.", "lean": "hide", "pattern": ["guard", "strike", "armor", "strike", "gather"], "loot": [{"item": "xiong-dan", "w": 2}, {"item": "huangjing", "w": 1}], "hp": 1.35, "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by a player who thinks a turn ahead (fightline.js lookahead); tests/fight-band.test.mjs holds it.", "deck": ["shishou", "jixiao", "jixiao", "jixiao", "shanjing", "paoxiao", "tuou", "paoxiao", "zhuguang", "luoshi", "luoshi", "tunshi"], "signature": {"id": "renli", "name": {"zh": "人立一掌", "en": "The Standing Blow"}, "effect": {"damage": 10}}},

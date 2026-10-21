@@ -25,7 +25,7 @@
 //   h11  练气五层 · + 火柴 (09-snow) worn — 灵草谷's 犰狳 with 阿禾 and 孙二狗 (party.json by_hui).
 //   h11b 练气六层 · + 震怒 (the 犰狳's) — 秦雁 on the 崖顶, alone.
 //   h09  练气七层 · + 入隙 (09-futian) — 古八's pools with 阿禾.
-//   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙 alone, the 冀 pools with 阿禾.
+//   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙 alone, 老井 on the 河滩 and the 冀 pools with 阿禾.
 // Gear worn as soon as it is had (a sensible player puts on what he is given).
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
@@ -81,6 +81,7 @@ export const FIGHTS = [
   { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight', band: [0.5, 0.72], pilled: [0.55, 1], note: 'Hanli 10-16: 55–65 won, really lost ≥20%' },
   { id: 'foe-shijie', name: '秦雁 (崖顶 · 试)', at: 'h11b', scene: '09-futian/spar', trial: true, unforced: true },
   { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', scene: '01-rise/stand', trial: true, band: [0.35, 0.7], note: 'a 试 outlasted: its 气血 does not weigh it' },
+  { id: 'foe-laojing', name: '老井 (试 · 河滩)', at: 'h10', scene: '01-laojing/dodge', trial: true, unforced: true },
   { id: 'qiuyu', name: '犰狳 (秘境 凶崖, guards the way)', at: 'h07', pool: 'mijing-ya' },
   { id: 'heyu', name: '合窳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
   { id: 'qiuyu', name: '犰狳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
@@ -102,6 +103,9 @@ export const FIGHTS = [
   { id: 'fushe', name: '蝮蛇 (后山崖顶 · 昼)', at: 'h05', pool: 'yaoyuan-wai' },
   { id: 'congcong', name: '从从 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
   { id: 'xiegou', name: '絜钩 (后山崖顶 · 夜)', at: 'h05', pool: 'yaoyuan-wai' },
+  // 古四's pass (2026-10-21): 蒙山's 狼 and 熊 on the 后山 too — the 狰 tamed at the 药园 leaves the pool, so 古四 still meets nine.
+  { id: 'lang', name: '狼 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'xiong', name: '熊 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
   { id: 'lingling', name: '軨軨 (后山崖顶, 古五)', at: 'h07', pool: 'yaoyuan-wai' },
   { id: 'cangying', name: '苍鹰 (后山崖顶 · 昼, 古六)', at: 'h08', pool: 'yaoyuan-wai' },
   { id: 'yuanhu', name: '妴胡 (后山崖顶, 古六)', at: 'h08', pool: 'yaoyuan-wai' },
