@@ -1100,7 +1100,11 @@ drifts, a beast breathes. Declared per painting in backdrops.json `alive` (kind 
 moment: its canvas lives while it stands (30 fps, asleep under a set piece or a hidden tab), goes with its
 cross-fade, and lies over the CSS still, which is the fallback (no WebGL, reduced motion). A struck body's
 picture squashes under the blow (fx.js `squash`, Web Animations — a plate is too small for a mesh).
-**Next, in order:** her colour memories in WebGL, weather particles, the big set pieces, chapter transitions.
+**Her colour memories in WebGL** (`fx-memory.js`, 2026-10-21): the colour soaks into her picture
+the way ink wicks through 宣纸 — torn front, a warm light rim, a glow where it began, a slow push in — on
+the card's own clock (`--mem-age`), one canvas over the picture's box, gone at the bloom's end; the CSS
+bloom is the fallback. Preview: `scripts/fx.html?moment=memory&n=1`.
+**Next, in order:** weather particles, the big set pieces, chapter transitions.
 
 ## Player state 【已建】
 

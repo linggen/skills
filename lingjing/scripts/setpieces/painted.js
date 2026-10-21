@@ -86,8 +86,10 @@ export function paintedStage({ PIXI, app, root, W, H, art }) {
   /// One use of painting `key`: its own camera (`view`, a live object the beats
   /// tween — two uses may share one), its own soak (`soak.v`: 0 unseen … 1 whole)
   /// grown from `from` (0–1 of the frame). `filter`: a filter on the painting,
-  /// `each()`: what else follows the view every frame (the filter's own values).
-  const layer = (key, view, { from = [0.5, 0.5], filter = null, each = null } = {}) => {
+  /// `each()`: what else follows the view every frame (the filter's own values). `rim`: the wet
+  /// rim's {color, blend, alpha} — ink multiplied by default; a reward's is light (her colour
+  /// memories: a reward brightens, never darkens).
+  const layer = (key, view, { from = [0.5, 0.5], filter = null, each = null, rim: rimOf = {} } = {}) => {
     const t = tex[key];
     const whole = new PIXI.Container();
     const pic = new PIXI.Container();
@@ -101,8 +103,9 @@ export function paintedStage({ PIXI, app, root, W, H, art }) {
     // The wet rim: the same torn disc a little ahead, masking a wash of ink over what
     // lies under — where the new painting eats the old, the old goes dark and wet first.
     const rimMask = maskOf(rimRt);
-    const rim = new PIXI.Graphics().rect(0, 0, W, H).fill(INK);
-    rim.blendMode = 'multiply';
+    const rim = new PIXI.Graphics().rect(0, 0, W, H).fill(rimOf.color ?? INK);
+    rim.blendMode = rimOf.blend ?? 'multiply';
+    const rimMax = rimOf.alpha ?? RIM_INK;
     rim.alpha = 0;
     rim.mask = rimMask;
     const mask = maskOf(rt);
@@ -119,7 +122,7 @@ export function paintedStage({ PIXI, app, root, W, H, art }) {
       blob.scale.set(Math.max(0.001, soak.v));
       soften.strength = 1.2;
       app.renderer.render({ container: src, target: rt, clear: true });
-      rim.alpha = soak.v >= 1 ? 0 : RIM_INK * Math.min(1, soak.v * 6) * Math.min(1, (1 - soak.v) * 3);
+      rim.alpha = soak.v >= 1 ? 0 : rimMax * Math.min(1, soak.v * 6) * Math.min(1, (1 - soak.v) * 3);
     };
     const L = {
       view, soak, whole, pic, cam, iw, ih,

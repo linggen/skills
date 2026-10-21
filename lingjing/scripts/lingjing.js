@@ -49,6 +49,7 @@ import { raiseUnease } from './unease.js';
 import { keepTogether, LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
 import { liveBackdrop, liveCreature } from './fx-alive.js';
+import { watchMemories } from './fx-memory.js';
 import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
@@ -4746,3 +4747,4 @@ document.addEventListener('pointerdown', () => voice.input(), { capture: true, p
 document.addEventListener('keydown', () => voice.input(), { capture: true, passive: true });
 setInterval(() => voice.tick({ visible: document.visibilityState === 'visible', busy: streaming || saying || Boolean(view.ask), idleFact: IDLE_FACT }), 5000);
 boot();
+watchMemories(); // her memories soak into colour in WebGL (fx-memory.js); the CSS bloom otherwise
