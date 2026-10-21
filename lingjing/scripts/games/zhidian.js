@@ -44,8 +44,8 @@ const ART = {
 const foeArt = (id, frame) => new URL(`./shouqiang/art/${id}-${frame}.webp`, import.meta.url).href;
 
 const W = {
-  zh: { nocam: '隔空指点要用摄像头，这里用不了。', asking: '请允许使用摄像头……', hit: '中了！', sealed: '剑诀', show: '剑诀对准镜头', none: '看不到手', hits: '中', left: '秒' },
-  en: { nocam: 'Point in the air needs a camera — none here.', asking: 'Allow the camera…', hit: 'Hit!', sealed: 'Sword seal', show: 'Sword seal at the camera', none: 'No hand in view', hits: 'hits', left: 's' },
+  zh: { nocam: '隔空指点要用摄像头，这里用不了。', asking: '请允许使用摄像头……', hit: '中了！', sealed: '剑诀', show: '剑诀对准镜头', none: '看不到手', hits: '中', left: '秒', who: '小满' },
+  en: { nocam: 'Point in the air needs a camera — none here.', asking: 'Allow the camera…', hit: 'Hit!', sealed: 'Sword seal', show: 'Sword seal at the camera', none: 'No hand in view', hits: 'hits', left: 's', who: 'Xiaoman' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
@@ -211,7 +211,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         $('.zd-time').textContent = `${Math.ceil(timeLeft(field) / 1000)}${w.left}`;
         box.dataset.hits = String(field.hits);
       };
-      const say = (text) => (shell?.say ? shell.say('xiaoman', text, 1400) : ($('.zd-status').textContent = text));
+      const say = (text) => (shell?.say ? shell.say(w.who, text, 1400) : ($('.zd-status').textContent = text));
 
       const end = () => {
         ending = true;

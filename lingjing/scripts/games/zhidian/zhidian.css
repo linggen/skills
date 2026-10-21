@@ -20,7 +20,7 @@
 .zd-sight.is-armed i { background: #ffd36a; }
 .zd-sight.is-off { opacity: 0; }
 
-.zd-top { position: absolute; left: 0; right: 0; top: 6px; display: flex; justify-content: center; gap: 18px; color: #fff; font-family: var(--serif);
+.zd-top { position: absolute; left: 12px; top: 8px; display: flex; gap: 14px; color: #fff; font-family: var(--serif);
   font-size: 15px; letter-spacing: .08em; text-shadow: 0 1px 3px #000; pointer-events: none; z-index: 3; }
 .zd-egg { position: absolute; left: 0; top: 0; width: 9%; pointer-events: none; z-index: 5; filter: drop-shadow(0 0 12px #ffb340); }
 .zd-miss { position: absolute; width: 6%; transform: translate(-50%, -50%); pointer-events: none; z-index: 3; animation: zd-fade .7s ease-out forwards; }
