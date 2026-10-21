@@ -2,13 +2,13 @@
   "_about": "施法特写 — the casting close-up, a TEST in the 游戏厅 for Hanli to choose between two looks (Hanli 2026-10-21: 「用yinyue的3D模型试一下. 另C的效果也给我看一下.」): `ink` (version C — 小满 in side profile, one local-FLUX painting, his hands live ink strokes from the player's) or `vrm` (Yinyue's VRM as 小满's stand-in, her finger bones live). `&cutin=ink|vrm` picks, else the games.json row's `data.cutin`. Not in the story (10-14: 「游戏里不需要3D模型」 stands). games/texie.js; doc/games.md § 施法特写.",
   "_panel": "texie/panel.js: slides in `inMs` after a hand is seen; a cast thrusts for `thrustMs`, the panel fades `afterMs` later over `outMs`, then rests `restMs`; hands gone `goneMs` → it fades.",
   "panel": { "inMs": 280, "thrustMs": 420, "afterMs": 700, "outMs": 360, "goneMs": 900, "restMs": 500 },
-  "_cast": "A cast: any seal of the device's set (jieyin.json, judge.js sealOf) held `holdMs`, or a push at the camera (zhidian/poke.js on any hand: its size grows `grow` over `windowMs`); then none for `coolMs`. The camera read at `fps` (a push is quick).",
-  "cast": { "holdMs": 350, "coolMs": 900, "fps": 30, "poke": { "windowMs": 300, "grow": 1.12, "coolMs": 350 } },
+  "_cast": "A cast: any seal of the device's set (jieyin.json, judge.js sealOf) held `holdMs` — but an open palm (`skip`: 掌 is half of 推掌, § 手势斗法) only shows the hands —, or a push at the camera (zhidian/poke.js on any hand: its size grows `grow` over `windowMs`); then none for `coolMs`. The camera read at `fps` (a push is quick).",
+  "cast": { "skip": ["zhang", "shuangzhang"], "holdMs": 350, "coolMs": 900, "fps": 30, "poke": { "windowMs": 300, "grow": 1.12, "coolMs": 350 } },
   "eggMs": 600,
   "levels": [
     {
       "id": "shandao", "title": { "zh": "施法特写 · 山道", "en": "Casting close-up · The mountain road" },
-      "foe": "yezhu", "hits": 3,
+      "foe": "yezhu", "hits": 8,
       "lead": { "zh": "手举到镜头前：小满的手就是你的手。结一个印，或者往前一推，火蛋出手。", "en": "Raise your hands to the camera: Xiaoman's hands are yours. Make a seal, or push forward, and the fire egg flies." }
     }
   ]
