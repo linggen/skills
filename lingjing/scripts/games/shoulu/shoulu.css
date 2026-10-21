@@ -83,3 +83,14 @@
   .g-shoulu .sl-skill { min-height: 48px; }
 }
 .g-shoulu.is-picking .sl-herobar { visibility: hidden; }
+/* A wide stage (the story's card on a Mac; games/shoulu.js fit): the HUD, 银月's bar, the next wave and the controls
+   in a 240 px column beside the field (shoulu.js meta.beside: 240 + the gap), so the field takes the stage's height. */
+.g-shoulu.is-side { display: grid; grid-template-columns: auto 240px; grid-template-rows: auto auto auto 1fr; column-gap: 12px; row-gap: 8px;
+  justify-content: center; align-items: start; }
+.g-shoulu.is-side .sl-stage { grid-column: 1; grid-row: 1 / span 4; }
+.g-shoulu.is-side .sl-hud { grid-column: 2; grid-row: 1; }
+.g-shoulu.is-side .sl-herobar { grid-column: 2; grid-row: 2; flex-direction: column; max-width: none; }
+.g-shoulu.is-side .sl-preview { grid-column: 2; grid-row: 3; }
+.g-shoulu.is-side .sl-controls { grid-column: 2; grid-row: 4; align-self: end; }
+.g-shoulu.is-side .sl-portrait { flex: none; }
+.g-shoulu.is-side .sl-skills { grid-template-columns: repeat(2, 1fr); }

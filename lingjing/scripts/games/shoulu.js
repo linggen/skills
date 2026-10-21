@@ -35,6 +35,8 @@ export const meta = {
   id: 'shoulu',
   pause: true, // the shell's bar pauses the play (its own loop reads `shell.onPause`)
   tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
+  aspect: 600 / 760, // the field's width : height — the story's card is as wide as the field at the stage's height
+  beside: 252, // and its own column beside the field on a wide stage (shoulu.css .is-side: 240 + the gap)
   bot: 'scripts/games/shoulu/core.js', // its human-like hand (`human`, headless): tests/game-shoulu.test.mjs plays every story level with it
   name: { zh: '守炉', en: 'Guard the Furnace' },
   how: {
@@ -222,8 +224,12 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       const used = laid.length ? laid.at(-1).getBoundingClientRect().bottom - laid[0].getBoundingClientRect().top : 0;
       return stage.getBoundingClientRect().height + box.clientHeight - used - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
     };
+    // On a wide stage (the story's card on a Mac, as wide as the field at the stage's height: shell.css) the HUD,
+    // 银月's bar, the next wave and the controls stand in a column beside the field (shoulu.css .is-side; `meta.beside`).
     function fit() {
-      const wrapW = root.clientWidth || 360, box = scroller();
+      const box = scroller(), side = Boolean(box) && root.clientWidth >= 640;
+      root.classList.toggle('is-side', side);
+      const wrapW = (root.clientWidth - (side ? meta.beside : 0)) || 360;
       const top = stage.getBoundingClientRect().top + (win.scrollY || 0);
       const below = Math.max(24, $('.sl-preview').offsetHeight) + $('.sl-controls').offsetHeight + $('.sl-herobar').offsetHeight + 40;
       const availH = Math.max(320, box ? roomIn(box) : (win.innerHeight || 800) - top - below);

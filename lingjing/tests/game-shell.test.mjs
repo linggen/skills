@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { WORDS, cardHtml } from '../scripts/cards.js';
-import { anyPaused, forget, frameHtml, isPaused, playAlone, say, setPaused, shellFor, showResult, tallOf, timedOf } from '../scripts/games/shell.js';
+import { anyPaused, forget, frameHtml, isPaused, playAlone, say, setPaused, shellFor, showResult, tallOf, tallStyle, timedOf } from '../scripts/games/shell.js';
 
 const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
 const REG = JSON.parse(read('../worlds/jiuding/games.json'));
@@ -70,6 +70,10 @@ test('a Mac window: the story\'s game card takes the stage up to 720, a tall fie
   const ctx = (g) => ({ look: { tasks: [task], lang: 'zh' }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' }, boardFor: () => g });
   const mount = () => new Promise(() => {});
   assert.match(cardHtml({ card: 'board', id: 'tk' }, ctx({ mod: { mount, meta: { tall: true } }, state: {} })), /class="gshell is-tall"/);
+  // …its card as wide as the field at the stage's height, plus what the game sets beside it (Hanli 10-21: 「agree」).
+  assert.match(cardHtml({ card: 'board', id: 'tk' }, ctx({ mod: { mount, meta: { tall: true, aspect: 0.75, beside: 252 } }, state: {} })), /<div class="card gamecard" style="--ar:0\.75;--beside:252px">/);
+  assert.equal(tallStyle(await import('../scripts/games/sadou.js')), `--ar:${9 / 16};--beside:0px`);
+  assert.equal(tallStyle(await import('../scripts/games/zhazhai.js')), '');
   assert.match(cardHtml({ card: 'board', id: 'tk' }, ctx({ mod: { mount, meta: {} }, state: {} })), /class="gshell"/);
   assert.match(read('../scripts/arcade.js'), /tall: tallOf\(mod\)/);
   // The width, the height a board sized by the window is told, the bar back over a landscape field or on a narrow
@@ -77,7 +81,8 @@ test('a Mac window: the story\'s game card takes the stage up to 720, a tall fie
   const css = read('../scripts/games/shell.css');
   const mac = css.slice(css.indexOf('@media (min-width: 900px)'));
   assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\) \{ max-width: 720px; --game-reserve: 230px; \}/);
-  assert.match(mac, /\.focus \.card\.gamecard > \.gshell\.is-tall \{ --game-reserve: 204px; \}/);
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall\) \{ --game-reserve: 204px;\s+max-width: calc\(200px \+ 18px \+ 34px \+ \(100dvh - var\(--game-reserve\)\) \* var\(--ar, \.5625\) \+ var\(--beside, 0px\)\); \}/);
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall \[data-landscape="true"\]\) \{ max-width: 720px; \}/);
   assert.match(mac, /\.gshell\.is-tall:has\(\[data-landscape="true"\]\) \{ display: flex;/);
   assert.match(mac, /@container scene \(max-width: 620px\) \{ \.focus \.card\.gamecard > \.gshell\.is-tall \{ display: flex;/);
   assert.equal(css.slice(0, css.indexOf('@media (min-width: 900px)')).includes('.focus'), false, 'nothing of the story\'s outside the Mac rule');
@@ -86,6 +91,9 @@ test('a Mac window: the story\'s game card takes the stage up to 720, a tall fie
   assert.match(lu, /if \(!win\.matchMedia\?\.\('\(min-width: 900px\)'\)\.matches\) return null;/);
   assert.match(lu, /box \? roomIn\(box\) : \(win\.innerHeight \|\| 800\) - top - below/);
   assert.match(lu, /sized\.observe\(box\)/);
+  // …and on a wide stage stands its HUD, bar and controls beside the field, as wide as it declares (`beside`).
+  assert.match(lu, /side = Boolean\(box\) && root\.clientWidth >= 640/);
+  assert.match(read('../scripts/games/shoulu/shoulu.css'), /\.g-shoulu\.is-side \{ display: grid; grid-template-columns: auto 240px;/);
 });
 
 test('every game in the registry can be hosted in the shell, and every place a game plays uses it', async () => {

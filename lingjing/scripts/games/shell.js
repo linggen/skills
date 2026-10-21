@@ -47,6 +47,9 @@ export const timedOf = (mod) => Boolean(mod?.meta?.pause ?? mod?.tick);
 /** A game whose field is taller than wide says so (`meta.tall`): on a Mac its bar stands beside it (shell.css) —
     the same on the story's card and in the 游戏厅. */
 export const tallOf = (mod) => Boolean(mod?.meta?.tall);
+/** …and how wide its card wants to be on the story's stage (shell.css): the field's `aspect` (width : height) at the
+    stage's height, plus what the game sets `beside` its field. Empty for a game that does not play tall. */
+export const tallStyle = (mod) => (tallOf(mod) ? `--ar:${Number(mod.meta.aspect) || 9 / 16};--beside:${Number(mod.meta.beside) || 0}px` : '');
 
 /** The shell around a game's body. `body` is the game's own node as HTML (its [data-game] / [data-mount]
     host or a slot) and stays exactly as given. `timed`: the game runs in time, so it can be paused. */

@@ -145,7 +145,7 @@ import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogu
 import { TURNED_MS, turnedPays } from './turned.js';
 import { AI_WORDS, caseCard, duizi, haggle, twenty } from './aigames-cards.js';
 import { mountHostHtml, mountOnly } from './beat-host.js';
-import { frameHtml, timedOf, tallOf } from './games/shell.js';
+import { frameHtml, timedOf, tallOf, tallStyle } from './games/shell.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -549,7 +549,8 @@ function board(card, ctx) {
   const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
   // A board offered again (Look's replay, rules/skips.mjs) may be left again, by the same gate.
   const skip = (own || task?.replay) && !today && !made && !shut ? skipBoard(g, id, ctx) : '';
-  return `<div class="card gamecard${own ? ' scenegame' : ''}">${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
+  const tall = framed && tallStyle(g.mod) ? ` style="${tallStyle(g.mod)}"` : '';
+  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.
