@@ -9,7 +9,8 @@
 // order, 走火), pose.js (each seal's hand icon). No camera, no permission, no WebGL, or the model fails → 结印 is not
 // offered: here one line says it needs a camera and the game leaves (Hanli 10-21: 「没摄像头时, 就不用用户结印帮打」).
 //
-// The camera is asked for only on 开始, and stopped (its tracks) the moment the game pauses, ends or is left.
+// The camera is asked for only on 开始, and stopped (its tracks) the moment the game pauses, ends or is left, or the
+// page is hidden.
 // Contract (games/mount.js): mount(container, { lang, data, signal, shell }) → Promise<{ won, stars } | { won: false, left: true }>
 // Dev only: `?dev=1&feed=1` runs without a camera, hands fed from the console (`window.jieyinFeed(hands)`) — the
 // live check's way to play it through; never a player's.
@@ -138,12 +139,13 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   const feedOnly = q.get('dev') === '1' && q.get('feed') === '1';
   loadCss(doc);
   return new Promise((resolve) => {
-    let done = false, eye = null, offPause = null, loop = 0;
+    let done = false, eye = null, offPause = null, offHide = null, loop = 0;
     const finish = (r) => {
       if (done) return;
       done = true;
       eye?.close();
       offPause?.();
+      offHide?.();
       win.cancelAnimationFrame?.(loop);
       if (win.jieyinFeed) delete win.jieyinFeed;
       dropModel();
@@ -237,6 +239,14 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           if (done) return;
           if (paused) { eye.pause(); hands = []; } else eye.start().catch(() => nocam());
         });
+        // The page hidden (another tab, the window away): the camera off, its light with it; back in sight, on again
+        // unless the shell holds it paused.
+        const seen = () => {
+          if (done) return;
+          if (doc.hidden) { eye.pause(); hands = []; } else if (!shell?.paused?.()) eye.start().catch(() => nocam());
+        };
+        doc.addEventListener?.('visibilitychange', seen);
+        offHide = () => doc.removeEventListener?.('visibilitychange', seen);
         $('.jy-status').textContent = w.asking;
         try { await eye.start(); } catch (e) { console.warn('[jieyin]', e.reason ?? e); return nocam(); }
         if (done) return;

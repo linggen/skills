@@ -221,3 +221,15 @@ test('the vendored MediaPipe: every file eye.js loads is there, pinned, and phon
   assert.doesNotMatch(bundle, /odml\.pa\.googleapis|\/v1\/log/, 'no usage-metrics logger (1.x has one — 0.10.35 is pinned)');
   assert.match(read('../scripts/vendor/VENDOR.md'), /@mediapipe\/tasks-vision 0\.10\.35/);
 });
+
+test('the camera goes off when the page is hidden, and the probe for WebGL lets its context go', async () => {
+  const src = read('../scripts/games/jieyin.js');
+  assert.match(src, /addEventListener\?\.\('visibilitychange', seen\)/, 'the page hidden is heard');
+  assert.match(src, /if \(doc\.hidden\) \{ eye\.pause\(\)/, 'hidden: the camera off (eye.pause stops its tracks)');
+  assert.match(src, /offHide\?\.\(\)/, 'the listener goes with the game');
+  let lost = 0;
+  const gl = { getExtension: (n) => (n === 'WEBGL_lose_context' ? { loseContext: () => { lost += 1; } } : null) };
+  const doc = { createElement: () => ({ getContext: () => gl }) };
+  assert.equal(await available({ navigator: { mediaDevices: devices([{ kind: 'videoinput' }]) }, document: doc }), true);
+  assert.equal(lost, 1, 'one probe, one context, let go');
+});

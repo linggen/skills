@@ -352,7 +352,8 @@ function atlasMap(ctx) {
     { width: 560, height: 560 * frame.h / (frame.w * atlas.aspect) });
   const sideOf = new Map(order.map((k, i) => [k, sides[i]]));
   const SIDE_CLS = { r: '', l: ' flip', a: ' lbl-a', b: ' lbl-b' };
-  const heldBy = ctx.look.lock?.say ?? null, threads = threadsAt(ctx.look);
+  // Held whenever Look carries a lock (as the places' chips and the road map are), its title the beat's reason.
+  const lock = ctx.look.lock ?? null, heldBy = lock ? lock.say ?? lock.title ?? '' : null, threads = threadsAt(ctx.look);
   const dots = (whole ? points.filter((p) => p.here) : shown).map((p, k) => {
     // The whole map marks where the player is with the dot alone: a name
     // there would sit on the province's own.
@@ -360,7 +361,7 @@ function atlasMap(ctx) {
     const kind = other ? '' : p.here ? 'here' : p.road ? 'road' : '';
     const side = sideOf.get(k);
     // A key beat running (Look's `lock`): every dot of his own map greyed, its title the beat's reason.
-    const held = Boolean(heldBy) && !other && !p.here;
+    const held = Boolean(lock) && !other && !p.here;
     const th = other ? null : threads[p.id];
     const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${held ? ' held' : ''}${th ? ` th-${th}` : ''}${side ? SIDE_CLS[side] : ' nolbl'}`;
     const label = `<i></i><span>${esc(mapName(p.name, shownNames))}</span>`;
@@ -368,7 +369,7 @@ function atlasMap(ctx) {
     const at = `${pos(p.map)}${ctx.unfold ? `;--k:${k}` : ''}`;
     // Beyond the map this chapter opens: greyed, and nothing to tap.
     return (p.here && !other) || p.closed || held
-      ? `<span class="${cls}" style="${at}" title="${esc(held ? `${p.name} · ${heldBy}` : p.name)}"${held ? ' aria-disabled="true"' : ''}>${label}</span>`
+      ? `<span class="${cls}" style="${at}" title="${esc(held && heldBy ? `${p.name} · ${heldBy}` : p.name)}"${held ? ' aria-disabled="true"' : ''}>${label}</span>`
       : `<button class="${cls}" ${goAttr(p.id)} style="${at}" title="${esc(p.name)}" aria-label="${esc(p.name)}">${label}</button>`;
   });
   const title = whole ? ctx.words.mapTitle : other ? other.name : place.province.name;

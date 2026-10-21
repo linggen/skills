@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GRID, KINDS, aliveOf, fitOf, motionAt, touched } from '../scripts/fx-alive.js';
+import { GRID, KINDS, aliveOf, fitOf, motionAt, pictureLook, touched } from '../scripts/fx-alive.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD = path.join(ROOT, 'worlds/jiuding');
@@ -88,4 +88,17 @@ test('alive: the page wires it in one line each — the backdrop, the 出场, th
   assert.match(page, /liveCreature\(el, authored\.backdrops, c\.art\)/);
   const anim = fs.readFileSync(path.join(ROOT, 'scripts/battle-anim.js'), 'utf8');
   assert.match(anim, /squash\(el\);/);
+});
+
+test('alive: a beast\'s breathing canvas wears its picture\'s look — place, ink, fade, feathered edges, push', () => {
+  const css = { opacity: '0.92', filter: 'grayscale(0.25)', transform: 'matrix(1.02, 0, 0, 1.02, 0, 0)',
+    'mask-image': 'linear-gradient(to right, transparent, #000 10%)', 'mask-composite': 'intersect', '-webkit-mask-image': 'linear-gradient(to right, transparent, #000 10%)', '-webkit-mask-composite': 'source-in' };
+  const cs = { ...css, getPropertyValue: (k) => css[k] ?? '' };
+  const look = pictureLook({ left: '10px', top: '20px', width: '300px', height: '200px' }, cs);
+  assert.deepEqual([look.left, look.top, look.width, look.height], ['10px', '20px', '300px', '200px']);
+  assert.equal(look.filter, css.filter);
+  assert.equal(look.transform, css.transform, 'the push in, with the picture');
+  assert.equal(look.maskImage, css['mask-image'], 'the feathered edges: no hard rectangle over the soft plate');
+  assert.equal(look.webkitMaskImage, css['-webkit-mask-image']);
+  assert.equal(look.maskComposite, 'intersect');
 });

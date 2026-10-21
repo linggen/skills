@@ -239,6 +239,20 @@ export function liveBackdrop(bd, src, table, art) {
   }).catch(() => null);
 }
 
+/// What the breathing canvas's frame takes from the 出场's picture (`box` its inline place, `cs` its computed
+/// style), so the canvas reads as the picture itself: its place; its look — the ink filter every picture wears
+/// (memory.css), the colour after the ninth, its fade; its feathered edges (story.css `.appearart.fit`'s mask:
+/// without it a hard-edged rectangle stood over the soft plate); and its slow push in.
+export function pictureLook(box, cs) {
+  const get = (k) => cs?.getPropertyValue?.(k) ?? '';
+  return {
+    left: box.left, top: box.top, width: box.width, height: box.height,
+    opacity: cs.opacity, filter: cs.filter, transform: cs.transform,
+    maskImage: get('mask-image'), maskComposite: get('mask-composite'),
+    webkitMaskImage: get('-webkit-mask-image'), webkitMaskComposite: get('-webkit-mask-composite'),
+  };
+}
+
 /// A beast's 出场 painting (`.appearart`, fitted to its own shape by lingjing.js fitAppear):
 /// it breathes (backdrops.json `alive_creature`, or its own row). The canvas lies over the
 /// picture's box and takes its fade; the picture stays under it.
@@ -249,11 +263,7 @@ export function liveCreature(appear, table, art) {
   const frame = document.createElement('div');
   frame.className = 'fxaliveframe';
   Object.assign(frame.style, { position: 'absolute', pointerEvents: 'none' });
-  const sync = () => {
-    // The picture's own look too: the ink filter every picture wears (memory.css), the colour after the ninth.
-    const cs = getComputedStyle(img);
-    Object.assign(frame.style, { left: img.style.left, top: img.style.top, width: img.style.width, height: img.style.height, opacity: cs.opacity, filter: cs.filter });
-  };
+  const sync = () => Object.assign(frame.style, pictureLook(img.style, getComputedStyle(img)));
   img.after(frame);
   const fitted = () => img.classList.contains('fit');
   const go = async () => {

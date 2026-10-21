@@ -76,6 +76,11 @@ test('the page greys every walk while a beat runs: the map\'s dots, the 事 book
   assert.match(map, /maplock/, 'the map says the story is under way');
   assert.doesNotMatch(map, /data-go=/, 'no dot walks anywhere');
   assert.match(map, new RegExp(`class="pt[^"]* held[^"]*"[^>]*title="[^"]*${lk.lock.say}`), 'a greyed dot says why');
+
+  // Held by the lock itself, as the places' chips and the road map are — a lock with no `say` greys the dots too.
+  const bare = cardHtml({ card: 'map' }, { ...ctx, look: { ...lk, lock: { beat: lk.lock.beat, title: lk.lock.title } } });
+  assert.doesNotMatch(bare, /data-go=/, 'no `say`: still no dot walks anywhere');
+  assert.match(bare, /class="pt[^"]* held/);
 });
 
 test('threads: every errand of the world declares one of three; the lint refuses a fourth', () => {

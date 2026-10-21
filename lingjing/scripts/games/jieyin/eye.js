@@ -34,7 +34,10 @@ export async function available(env = globalThis) {
 function webgl(env) {
   try {
     const c = env.document?.createElement('canvas');
-    return Boolean(c?.getContext?.('webgl2') ?? c?.getContext?.('webgl'));
+    const gl = c?.getContext?.('webgl2') ?? c?.getContext?.('webgl');
+    // Let the probe's context go at once: the browser keeps only a few, and drops the oldest live one (fx.js glOK).
+    gl?.getExtension?.('WEBGL_lose_context')?.loseContext?.();
+    return Boolean(gl);
   } catch {
     return false;
   }
