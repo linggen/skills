@@ -378,3 +378,71 @@ test('a two-hand seal held is judged looser; the old 4-argument call still judge
   assert.equal(sealOf([poseOf(seals.wu)], seals, K, null), 'wu');
   assert.equal(handSeal(poseOf(seals.si), seals, K), 'si');
 });
+
+/* ── Power (Hanli 10-21: 「好，加上」) ── */
+
+test('eye knobs as data: 15 fps, 320×240, one hand on a phone, two on a Mac only when the sequence needs them; a game may ask for more fps', async () => {
+  const { eyeFor } = await import('../scripts/games/jieyin/sets.js');
+  const { EYE, due } = await import('../scripts/games/jieyin/eye.js');
+  assert.deepEqual({ fps: kit.eye.fps, width: kit.eye.width, height: kit.eye.height }, { fps: 15, width: 320, height: 240 });
+  assert.deepEqual(EYE, { fps: 15, width: 320, height: 240, numHands: 2 }, 'the defaults for a caller that passes none');
+  const fireDesk = sequenceFor(kit, 'huodan', 'desk'), firePhone = sequenceFor(kit, 'huodan', 'phone');
+  assert.equal(eyeFor(kit, 'phone', firePhone).numHands, 1);
+  assert.equal(eyeFor(kit, 'phone', fireDesk).numHands, 1, 'never more hands than the set has');
+  assert.equal(eyeFor(kit, 'desk', fireDesk).numHands, 2, 'a two-hand seal in play');
+  assert.equal(eyeFor(kit, 'desk', ['zhang', 'jian', 'wu']).numHands, 1, 'a Mac playing one-hand seals looks for one');
+  assert.deepEqual(eyeFor(kit, 'desk', fireDesk, { fps: 30 }), { fps: 30, width: 320, height: 240, numHands: 2 }, '隔空指点 asks for more fps');
+  // 15 fps off a 30 fps camera: every second frame; off a 60 fps one, every fourth.
+  const run = (cam, fps) => { let last = -Infinity, n = 0; for (let i = 0; i < cam; i++) { const t = (i * 1000) / cam; if (due(t, last, fps)) { last = t; n += 1; } } return n; };
+  assert.equal(run(30, 15), 15);
+  assert.equal(run(60, 15), 15);
+  assert.equal(run(30, 30), 30);
+  const src = read('../scripts/games/jieyin/eye.js');
+  assert.match(src, /width: \{ ideal: width \}, height: \{ ideal: height \}/, 'ideal, never exact: a camera that gives more is used');
+  assert.match(src, /make\('GPU'\)\.catch\(\(\) => make\('CPU'\)\)/, 'GPU first, CPU behind it');
+  assert.match(src, /setOptions\?\.\(\{ numHands \}\)/);
+});
+
+test('at 15 fps the hold still counts at 0.3 s, and one lost read (67 ms) does not break it', () => {
+  const at15 = (s, seal, ms) => feed(s, seal, ms, 1000 / 15);
+  let r = at15(start(fire), 'zhang', K.holdMs + 1000 / 15);
+  assert.deepEqual(r.events, ['seal'], 'counted within one read of 0.3 s');
+  r = at15(start(fire), 'zhang', 200);
+  r = at15(r.s, null, 1000 / 15);
+  r = at15(r.s, 'zhang', 140);
+  assert.deepEqual(r.events, ['seal'], 'a single empty read is inside graceMs');
+  assert.ok(K.graceMs > 2 * (1000 / 15), 'grace covers two lost reads at 15 fps');
+});
+
+/* ── The hand hint (Hanli 10-21: 「最好不显示摄像头…手部动作的提示」) ── */
+
+test('the hand hint: mirrored like a mirror; edge, gone (by the edge it left), far, near, two hands, ok', async () => {
+  const { cueOf, mirrored } = await import('../scripts/games/jieyin/hint.js');
+  const A = 4 / 3, H = kit.hint;
+  // A hand in the picture: the template scaled to `len` frame heights, its wrist at (x, y) of the camera's frame.
+  const at = (x, y, len = 0.18, seal = seals.zhang) => poseOf(seal).map((p) => ({ x: x + (p.x / 9.52) * len / A, y: y + (p.y / 9.52) * len }));
+  const seen = (...hands) => hands.map((h) => mirrored(h, A));
+  assert.ok(mirrored(at(0.2, 0.8), A)[0].x > A / 2, 'a hand on the camera\'s left is drawn on the right, as in a mirror');
+  assert.deepEqual(cueOf({ seen: seen(at(0.5, 0.8)), aspect: A }, H), { kind: 'ok' });
+  assert.deepEqual(cueOf({ seen: [], last: null, aspect: A }, H), { kind: 'none' });
+  assert.deepEqual(cueOf({ seen: seen(at(0.5, 0.8, 0.04)), aspect: A }, H), { kind: 'far' });
+  assert.deepEqual(cueOf({ seen: seen(at(0.5, 1.2, 0.5)), aspect: A }, H), { kind: 'near' });
+  const edgeR = cueOf({ seen: seen(at(0.06, 0.8)), aspect: A }, H);
+  assert.deepEqual(edgeR, { kind: 'edge', side: 'right' }, 'the camera\'s left edge is the mirror\'s right');
+  const box = (h) => { const m = mirrored(h, A); return { x0: Math.min(...m.map((p) => p.x)), x1: Math.max(...m.map((p) => p.x)), y0: Math.min(...m.map((p) => p.y)), y1: Math.max(...m.map((p) => p.y)) }; };
+  const last = { at: 1000, box: box(at(0.92, 0.8)) };
+  assert.deepEqual(cueOf({ seen: [], last, now: 1000 + H.lostMs / 2, aspect: A }, H), { kind: 'ok' }, 'a read or two lost is no news');
+  assert.deepEqual(cueOf({ seen: [], last, now: 1000 + H.lostMs + 50, aspect: A }, H), { kind: 'gone', side: 'left' }, 'left by the (mirrored) left edge');
+  assert.deepEqual(cueOf({ seen: [], last: { at: 0, box: box(at(0.5, 0.75)) }, now: 5000, aspect: A }, H), { kind: 'gone', side: 'middle' });
+  assert.deepEqual(cueOf({ seen: seen(at(0.5, 0.8)), aspect: A, want: 2 }, H), { kind: 'two' }, 'a two-hand seal wants both');
+  assert.deepEqual(cueOf({ seen: seen(at(0.3, 0.8), at(0.7, 0.8)), aspect: A, want: 2 }, H), { kind: 'ok' });
+});
+
+test('the game shows no camera picture: the video only feeds the model; the hint docks in its place, one component for every game', () => {
+  const src = read('../scripts/games/jieyin.js'), css = read('../scripts/games/jieyin/jieyin.css'), hint = read('../scripts/games/jieyin/hint.js');
+  assert.doesNotMatch(src, /<canvas|jy-cam/, 'no preview');
+  assert.match(css, /\.jy-eye \{[^}]*opacity: 0/);
+  assert.match(src, /handHint\(/);
+  assert.match(hint, /export function handHint\(container, \{ lang = 'zh', size = 'compact', seals = \{\}, knobs = \{\} \} = \{\}\)/);
+  assert.doesNotMatch(hint, /<video|srcObject/, 'the hint never touches the camera');
+});

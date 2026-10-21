@@ -100,14 +100,32 @@ const pointOf = (name) => { if (name === 'wrist') return 0; const [f, j] = name.
 const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
 export { BONES };
 
-/** A seal's icon: its pose (both hands for a two-hand seal) as a small SVG drawing (x, y only), in `currentColor`. */
+/* ── Ink: a hand as a brush draws it (水墨) — a wash for the palm, strokes that thin toward the fingertips ── */
+
+const PALM = [0, 1, 5, 9, 13, 17];
+// Each bone's brush width as a share of the hand-length: the palm's bones broad, then thinner joint by joint outward.
+const ROOTS = new Set([1, 5, 9, 13, 17]);
+const widthOf = ([a, b]) => (a === 0 || ROOTS.has(b) ? 0.2 : [0.16, 0.13, 0.1][((b - 1) % 4) - 1]);
+
+/** One hand in ink, its points already in the drawing's units (`unit` = its hand-length there). */
+export function inkHand(h, unit, { tone = 'currentColor' } = {}) {
+  const f = (n) => n.toFixed(1), P = (i) => `${f(h[i].x)},${f(h[i].y)}`;
+  const palm = `<polygon points="${PALM.map(P).join(' ')}" fill="${tone}" fill-opacity=".28" stroke="${tone}" stroke-opacity=".35" stroke-width="${f(unit * 0.12)}" stroke-linejoin="round"/>`;
+  const strokes = BONES.map(([a, b]) => `<line x1="${f(h[a].x)}" y1="${f(h[a].y)}" x2="${f(h[b].x)}" y2="${f(h[b].y)}" stroke-width="${f(unit * widthOf([a, b]))}"/>`).join('');
+  const tips = [4, 8, 12, 16, 20].map((i) => `<circle cx="${f(h[i].x)}" cy="${f(h[i].y)}" r="${f(unit * 0.06)}"/>`).join('');
+  return `<g class="jy-ink">${palm}<g stroke="${tone}" stroke-opacity=".85" stroke-linecap="round" fill="none">${strokes}</g><g fill="${tone}">${tips}</g></g>`;
+}
+
+/** The brush's ragged edge and soft bleed, once per SVG (`id` unique on the page). */
+export const inkFilter = (id) => `<filter id="${id}" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/>`
+  + `<feDisplacementMap in="SourceGraphic" scale="1.6"/><feGaussianBlur stdDeviation=".35"/></filter>`;
+
+/** A seal's icon: its pose (both hands for a two-hand seal) in ink, in `currentColor`. */
 export function iconSvg(seal, size = 40) {
   const hands = posesOf(seal).image, all = hands.flat(), xs = all.map((p) => p.x), ys = all.map((p) => p.y);
-  const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, hh = Math.max(...ys) - y0, s = Math.max(w, hh) + 3;
-  const k = s / 22; // strokes keep one weight whatever the drawing's span
-  const X = (p) => (p.x - x0 + (s - w) / 2).toFixed(2), Y = (p) => (p.y - y0 + (s - hh) / 2).toFixed(2);
-  const lines = hands.map((h) => BONES.map(([a, b]) => `<line x1="${X(h[a])}" y1="${Y(h[a])}" x2="${X(h[b])}" y2="${Y(h[b])}"/>`).join('')).join('');
-  const tips = hands.map((h) => [4, 8, 12, 16, 20].map((i) => `<circle cx="${X(h[i])}" cy="${Y(h[i])}" r="${(0.75 * k).toFixed(2)}"/>`).join('')).join('');
+  const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, hh = Math.max(...ys) - y0, s = Math.max(w, hh) + 4;
+  const moved = hands.map((h) => h.map((p) => ({ x: p.x - x0 + (s - w) / 2, y: p.y - y0 + (s - hh) / 2 })));
+  const unit = HAND_LEN * Math.min(1, 22 / s * 1.15); // a two-hand drawing keeps its brush near a one-hand's
   return `<svg class="jy-hand" viewBox="0 0 ${s.toFixed(2)} ${s.toFixed(2)}" width="${size}" height="${size}" aria-hidden="true">`
-    + `<g stroke="currentColor" stroke-width="${(0.9 * k).toFixed(2)}" stroke-linecap="round" fill="none">${lines}</g><g fill="currentColor">${tips}</g></svg>`;
+    + moved.map((h) => inkHand(h, unit)).join('') + '</svg>';
 }

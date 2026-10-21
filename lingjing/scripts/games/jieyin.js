@@ -17,9 +17,10 @@
 // live check's way to play it through; never a player's.
 import { available, dropModel, loadModel, openEye } from './jieyin/eye.js';
 import { handsOf, sealOf } from './jieyin/judge.js';
-import { sealsFor, sequenceFor, setOf } from './jieyin/sets.js';
+import { eyeFor, sealsFor, sequenceFor, setOf } from './jieyin/sets.js';
 import { expected, progress, start, starsOf, step } from './jieyin/sequence.js';
-import { BONES, iconSvg } from './jieyin/pose.js';
+import { iconSvg } from './jieyin/pose.js';
+import { handHint } from './jieyin/hint.js';
 
 export const meta = {
   id: 'jieyin',
@@ -81,26 +82,10 @@ function stageHtml(kit, level, lang) {
   const foe = level.mode === 'one' ? '' : `<div class="jy-foe"><img alt="" src="${foeArt(level.foe, 'walk-1')}"><div class="jy-hp">${'<i></i>'.repeat(level.hits)}</div></div>`;
   return `<div class="jy" data-mode="${plain(level.mode)}" data-set="${plain(level.set ?? '')}">`
     + `<div class="jy-field" style="background-image:url('${ART.bg}')">${foe}<img class="jy-xm" alt="" src="${ART.xiaoman}">`
-    + `<div class="jy-cam"><video playsinline muted></video><canvas></canvas>`
-    + `<div class="jy-now"><svg viewBox="0 0 36 36"><circle class="jy-ring-bg" cx="18" cy="18" r="15"/><circle class="jy-ring" cx="18" cy="18" r="15" pathLength="100"/></svg><b></b></div>`
-    + `<p class="jy-status"></p></div></div>`
+    // The camera's picture is never shown (Hanli 10-21: 「最好不显示摄像头」): the video only feeds the model; the hand
+    // hint (jieyin/hint.js) docks in the corner instead.
+    + `<video class="jy-eye" playsinline muted aria-hidden="true"></video><div class="jy-dock"></div><p class="jy-status"></p></div>`
     + `<ol class="jy-seq">${seqHtml(kit, level, lang)}</ol><p class="jy-hint"></p></div>`;
-}
-
-/** Draw the hands the model saw on the preview (mirrored with the video by CSS). */
-function drawHands(canvas, video, image) {
-  const w = (canvas.width = video.videoWidth || 320), h = (canvas.height = video.videoHeight || 240);
-  const g = canvas.getContext('2d');
-  g.clearRect(0, 0, w, h);
-  g.lineWidth = Math.max(2, w / 160);
-  g.strokeStyle = '#ffd36a';
-  g.fillStyle = '#e8432f';
-  for (const hand of image) {
-    g.beginPath();
-    for (const [a, b] of BONES) { g.moveTo(hand[a].x * w, hand[a].y * h); g.lineTo(hand[b].x * w, hand[b].y * h); }
-    g.stroke();
-    for (const p of hand) { g.beginPath(); g.arc(p.x * w, p.y * h, g.lineWidth * 1.2, 0, 7); g.fill(); }
-  }
 }
 
 /** A sprite flies from one element to another (the 火蛋). */
@@ -171,7 +156,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       container.innerHTML = stageHtml(kit, level, lang);
       const box = container.querySelector('.jy');
       const $ = (s) => box.querySelector(s);
-      const video = $('video'), canvas = $('canvas');
+      const video = $('video');
+      const hint = handHint($('.jy-dock'), { lang, size: level.mode === 'one' ? 'large' : 'compact', seals, knobs: kit.hint });
       let s = start(level), hands = [], picture = [], aspect = 4 / 3, hp = level.hits ?? 0, busy = false, last = win.performance.now();
 
       const hud = () => {
@@ -180,10 +166,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           el.classList.toggle('is-done', s.done || i < s.at);
           el.classList.toggle('is-next', !s.done && i === s.at);
         });
-        const seal = s.cur ? kit.seals[s.cur] : null;
-        $('.jy-now b').textContent = seal ? tr(seal.name, lang) : '';
-        $('.jy-ring').style.strokeDasharray = `${Math.round(progress(s, kit.judge) * 100)} 100`;
-        $('.jy-now').classList.toggle('is-right', Boolean(s.cur && s.cur === want));
+        hint.update({ image: picture, aspect, target: want, progress: s.cur === want ? progress(s, kit.judge) : 0, right: Boolean(s.cur && s.cur === want), now: win.performance.now() });
         const next = want ? kit.seals[want] : null;
         $('.jy-hint').textContent = next ? (level.mode === 'one' ? `${tr(next.hint, lang)}　${tr(next.how, lang)}` : `${tr(next.name, lang)}：${tr(next.how, lang)}`) : '';
       };
@@ -210,7 +193,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const act = (ev) => {
         if (ev.type === 'seal') { const el = box.querySelector(`.jy-slot[data-i="${ev.at}"]`); el?.classList.remove('is-pop'); void el?.offsetWidth; el?.classList.add('is-pop'); }
         if (ev.type === 'cast') cast();
-        if (ev.type === 'fizzle') { burnt(box, $('.jy-xm'), reducedMotion); say(w.fizzle); }
+        if (ev.type === 'fizzle') { burnt(box, $('.jy-xm'), reducedMotion); hint.fizzle(); say(w.fizzle); }
         if (ev.type === 'miss') { const el = box.querySelector('.jy-slot.is-next'); el?.classList.remove('is-shake'); void el?.offsetWidth; el?.classList.add('is-shake'); }
         if (ev.type === 'done') { say(w.learned); setTimeout(() => finish({ won: true, stars: starsOf(s.misses, level.stars) }), 1200); }
       };
@@ -234,17 +217,16 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         hands = world;
         picture = image;
         aspect = (video.videoWidth / video.videoHeight) || aspect;
-        drawHands(canvas, video, image);
       };
       hud();
       if (shell?.lead) await shell.lead(tr(level.lead, lang));
       else await new Promise((r) => { const b = doc.createElement('button'); b.className = 'gshell-btn is-main jy-go'; b.textContent = lang === 'en' ? 'Start' : '开始'; b.onclick = () => { b.remove(); r(); }; box.append(b); });
       if (done) return;
       if (feedOnly) {
-        win.jieyinFeed = (h, img = h) => { hands = h ?? []; picture = img ?? []; aspect = 1; }; // img: the picture's points (two-hand seals)
+        win.jieyinFeed = (h, img = h, a = 4 / 3) => { hands = h ?? []; picture = img ?? []; aspect = a; }; // img: the picture's points, 0…1 of the frame
         loadModel().then(() => { box.dataset.model = 'ready'; }, () => { box.dataset.model = 'failed'; });
       } else {
-        eye = openEye({ video, onHands, env: win });
+        eye = openEye({ video, onHands, env: win, ...eyeFor(kit, set, level.sequence, level.eye) });
         // Heard before the camera is asked for: a pause while the prompt is open keeps the camera off (eye.js).
         offPause = shell?.onPause?.((paused) => {
           if (done) return;

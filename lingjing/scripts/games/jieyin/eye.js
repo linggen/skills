@@ -6,15 +6,27 @@
 //   available()          → may 结印 be offered at all? (a camera API, a camera, WebGL). No → offer nothing: the host
 //                          plays as it does without it — no button, no tap stand-in (Hanli 10-21: 「没摄像头时, 就不用」).
 //   loadModel()          → the landmarker, loaded once (start it early: it is ~19 MB from disk).
-//   openEye({ video, onHands }) → { start(), pause(), close() }
+//   openEye({ video, onHands, fps?, width?, height?, numHands? }) → { start(), pause(), close() }
 //                          start() asks for the camera (only now — call it on the player's 开始) and runs the model on
 //                          each new video frame: onHands({ world, image }) — world: hands as 21 metric points for the
 //                          judge (judge.js); image: the same hands, 0…1 of the frame, for drawing. pause() stops the
 //                          camera (its tracks, so the light goes off); start() again re-opens it. close() ends it all.
 //                          start() rejects with an Error whose `reason` is 'denied' | 'nocamera' | 'model'.
+//                          Power (Hanli 10-21: 「好，加上」): the model runs at most `fps` times a second (frames skipped by
+//                          their time), the camera is asked for at width × height (ideal — a camera that gives more is
+//                          used as it comes), and looks for `numHands` hands. Defaults: EYE below; a game passes its
+//                          own from levels/jieyin.json `eye` (sets.js eyeFor) — a game that needs quicker reads (隔空指点's
+//                          poke) asks for more fps.
 
 const VENDOR = new URL('../../vendor/mediapipe/', import.meta.url);
 const file = (name) => new URL(name, VENDOR).href;
+/** Is the model due on a frame at `now`, its last run at `last`? A little under the period, so a 30 fps camera still
+    gives every second frame at 15. */
+export const due = (now, last, fps) => now - last >= 1000 / Math.max(1, fps) - 4;
+
+/** The defaults when a game passes none (levels/jieyin.json `eye` holds the game's). */
+export const EYE = { fps: 15, width: 320, height: 240, numHands: 2 };
+
 const fail = (reason, cause) => Object.assign(new Error(`jieyin: ${reason}`), { reason, cause });
 
 /** May hand seals be offered here? Cheap, asks nothing of the player (no permission prompt). */
@@ -66,10 +78,10 @@ export async function dropModel() {
   try { (await m)?.close(); } catch { /* already gone */ }
 }
 
-async function camera(video, env) {
+async function camera(video, env, { width, height }) {
   let stream;
   try {
-    stream = await env.navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+    stream = await env.navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: width }, height: { ideal: height } }, audio: false });
   } catch (e) {
     throw fail(e?.name === 'NotFoundError' || e?.name === 'OverconstrainedError' ? 'nocamera' : 'denied', e);
   }
@@ -85,18 +97,20 @@ const stopTracks = (video) => {
   video.srcObject = null;
 };
 
-export function openEye({ video, onHands, env = globalThis }) {
-  let on = false, frame = 0, lastT = -1, landmarker = null;
+export function openEye({ video, onHands, env = globalThis, fps = EYE.fps, width = EYE.width, height = EYE.height, numHands = EYE.numHands }) {
+  let on = false, frame = 0, lastT = -1, lastRun = -Infinity, landmarker = null;
   const next = () => {
     if (!on) return;
     frame = video.requestVideoFrameCallback ? video.requestVideoFrameCallback(look) : env.requestAnimationFrame(look);
   };
   const look = () => {
     if (!on) return;
-    if (video.readyState >= 2 && video.currentTime !== lastT) {
+    const now = performance.now();
+    if (video.readyState >= 2 && video.currentTime !== lastT && due(now, lastRun, fps)) {
       lastT = video.currentTime;
+      lastRun = now;
       try {
-        const r = landmarker.detectForVideo(video, performance.now());
+        const r = landmarker.detectForVideo(video, now);
         onHands({ world: r.worldLandmarks ?? [], image: r.landmarks ?? [] });
       } catch (e) { console.warn('[jieyin]', e); }
     }
@@ -115,7 +129,7 @@ export function openEye({ video, onHands, env = globalThis }) {
       if (on || closed) return;
       const mine = ++ask;
       // Both at once, both settled before going on: a camera that opens after the model failed is still shut.
-      const [m, cam] = await Promise.allSettled([loadModel(), camera(video, env)]);
+      const [m, cam] = await Promise.allSettled([loadModel().then(async (lm) => { await lm.setOptions?.({ numHands }); return lm; }), camera(video, env, { width, height })]);
       if (m.status === 'rejected' || cam.status === 'rejected' || mine !== ask || closed) {
         const own = cam.value; // only this start's stream: a newer start may own the video by now
         for (const t of own?.getTracks?.() ?? []) t.stop();

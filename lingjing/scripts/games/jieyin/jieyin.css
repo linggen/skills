@@ -13,17 +13,45 @@
 .jy-egg { position: absolute; left: 0; top: 0; width: 13%; pointer-events: none; z-index: 3; filter: drop-shadow(0 0 12px #ffb340); }
 .jy-burnt { position: absolute; width: 9%; pointer-events: none; z-index: 3; transform: translate(-50%, -50%); }
 
-.jy-cam { position: absolute; right: 8px; bottom: 8px; width: 34%; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
-  background: #111; box-shadow: 0 0 0 2px #fff8ef, 0 4px 14px rgba(0, 0, 0, .35); z-index: 2; }
-.jy-cam video, .jy-cam canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-.jy-now { position: absolute; left: 6px; bottom: 6px; display: flex; align-items: center; gap: 6px; color: #fff; text-shadow: 0 1px 3px #000; }
-.jy-now svg { width: 30px; height: 30px; transform: rotate(-90deg); }
-.jy-now circle { fill: none; stroke-width: 4; }
-.jy-ring-bg { stroke: rgba(255, 255, 255, .25); }
-.jy-ring { stroke: #ffd36a; stroke-dasharray: 0 100; stroke-linecap: round; }
-.jy-now.is-right .jy-ring { stroke: #e8432f; }
-.jy-now b { font-family: var(--serif); font-size: 14px; letter-spacing: .1em; }
-.jy-status { position: absolute; inset: auto 0 40%; margin: 0; text-align: center; color: #fff; font-size: 12px; text-shadow: 0 1px 3px #000; }
+/* The camera's picture is never shown: the video feeds the model only (kept in the page, where every browser decodes it). */
+.jy-eye { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.jy-dock { position: absolute; right: 8px; bottom: 8px; z-index: 2; }
+[data-mode="one"] .jy-dock { right: 50%; transform: translateX(50%); bottom: 10px; }
+
+/* The hand hint (hint.js): a paper frame for the camera's view, the hands in ink, the seal to make beside it. */
+.jy-hint-panel { display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; gap: 4px 8px; align-items: center;
+  padding: 6px; border-radius: 10px; background: color-mix(in srgb, #f6eedd 88%, transparent); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); color: #2b2620; }
+.jy-frame { position: relative; width: 132px; aspect-ratio: 4 / 3; border: 1.5px solid #8a7a66; border-radius: 6px;
+  background: radial-gradient(ellipse at 50% 55%, #fffaf0, #efe4cf); overflow: hidden; transition: border-color .2s, box-shadow .2s; }
+.jy-hint-panel.is-large .jy-frame { width: 240px; }
+.jy-view { position: absolute; inset: 0; width: 100%; height: 100%; }
+.jy-hands { color: #2b2620; }
+.jy-hold-bg, .jy-hold { fill: none; stroke-width: 2.4; }
+.jy-hold-bg { stroke: rgba(43, 38, 32, .12); }
+.jy-hold { stroke: #c9a24a; stroke-dasharray: 0 100; stroke-linecap: round; transform-box: fill-box; transform-origin: center; transform: rotate(-90deg); }
+.jy-hold.is-right { stroke: #c23b22; }
+/* An edge the hand is near, or left by: that side glows cinnabar, an arrow points the way back. */
+.jy-frame[data-edge="left"] { box-shadow: inset 4px 0 0 #c23b22; }
+.jy-frame[data-edge="right"] { box-shadow: inset -4px 0 0 #c23b22; }
+.jy-frame[data-edge="top"] { box-shadow: inset 0 4px 0 #c23b22; }
+.jy-frame[data-edge="bottom"] { box-shadow: inset 0 -4px 0 #c23b22; }
+.jy-frame[data-cue="far"], .jy-frame[data-cue="near"], .jy-frame[data-cue="none"] { border-style: dashed; }
+.jy-arrow { position: absolute; display: none; width: 0; height: 0; border: 7px solid transparent; animation: jy-nudge 1s ease-in-out infinite; }
+.jy-frame[data-cue="gone"][data-edge="left"] .jy-arrow { display: block; left: 4px; top: calc(50% - 7px); border-left-color: #c23b22; }
+.jy-frame[data-cue="gone"][data-edge="right"] .jy-arrow { display: block; right: 4px; top: calc(50% - 7px); border-right-color: #c23b22; }
+.jy-frame[data-cue="gone"][data-edge="top"] .jy-arrow { display: block; top: 4px; left: calc(50% - 7px); border-top-color: #c23b22; }
+.jy-frame[data-cue="gone"][data-edge="bottom"] .jy-arrow { display: block; bottom: 4px; left: calc(50% - 7px); border-bottom-color: #c23b22; }
+.jy-target { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 52px; }
+.jy-target-icon { color: #2b2620; line-height: 0; }
+.jy-target-name { font-family: var(--serif); font-size: 12px; letter-spacing: .08em; white-space: nowrap; color: #c23b22; }
+.jy-hint-panel.is-large .jy-target-name { font-size: 15px; }
+.jy-cue { grid-column: 1 / -1; margin: 0; min-height: 1.4em; font-size: 11px; line-height: 1.4; text-align: center; color: #6b5d4d; }
+.jy-cue:empty { min-height: 0; }
+.jy-hint-panel.is-large .jy-cue { font-size: 13px; }
+.jy-hint-panel.is-fizzle .jy-frame { animation: jy-shake .4s; background: radial-gradient(ellipse at 50% 55%, #e9dccb, #cbbba5); }
+@keyframes jy-nudge { 50% { opacity: .35; } }
+@media (max-width: 520px) { .jy-frame { width: 104px; } .jy-hint-panel.is-large .jy-frame { width: 170px; } }
+.jy-status { position: absolute; inset: auto 0 45%; margin: 0; text-align: center; color: #fff; font-size: 12px; text-shadow: 0 1px 3px #000; }
 .jy-status:empty { display: none; }
 
 .jy-seq { display: flex; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }

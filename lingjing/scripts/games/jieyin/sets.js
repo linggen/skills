@@ -6,6 +6,8 @@
 //   setOf(kit, { matchMedia, search }) → set { id, hands }     (`?hands=1|2` on a dev page picks by hand count)
 //   sealsFor(kit, set)                 → the seal table that set may judge (one-hand only on a phone)
 //   sequenceFor(kit, level | move, set) → that set's sequence: `sequences[set]`, else the move's, else `sequence`
+//   eyeFor(kit, set, sequence, over?)   → openEye's power knobs { fps, width, height, numHands } (`eye`, a level's or
+//                                         a game's `over` laid on top)
 
 import { handsOf } from './judge.js';
 
@@ -35,4 +37,15 @@ export function sequenceFor(kit, of, set) {
   const row = typeof of === 'string' ? kit.moves?.[of] : of;
   if (!row) return [];
   return row.sequences?.[id] ?? row[id] ?? (row.move ? sequenceFor(kit, row.move, set) : null) ?? row.sequence ?? [];
+}
+
+/** The camera and model's knobs for a set and the sequence in play: `eye` in the data, `over` (a level's `eye`, or a
+    game's own — 隔空指点 asks for more fps) laid on top. numHands: a number, or 'sequence' → 2 only if a seal in the
+    sequence needs two hands. */
+export function eyeFor(kit, set, sequence = [], over = {}) {
+  const base = { fps: 15, width: 320, height: 240, ...(kit.eye ?? {}), ...(over ?? {}) };
+  const want = typeof base.numHands === 'object' ? base.numHands[setId(set)] : base.numHands;
+  const two = sequence.some((id) => handsOf(kit.seals[id]) === 2);
+  const numHands = want === 'sequence' ? (two ? 2 : 1) : Number(want) || (two ? 2 : 1);
+  return { fps: base.fps, width: base.width, height: base.height, numHands: Math.min(numHands, handsIn(kit, set)) };
 }
