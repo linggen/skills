@@ -55,7 +55,9 @@ const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaoji
   // 暗河's throw (2026-10-20, 砸寨 anhe-dark): the swallow passage split at its stone
   light: ['anhe-dark'],
   // 守炉's first story level (2026-10-20): the 药园's second night, before the 狰 shows and the 萝卜
-  tame: ['yaoyuan-xunye'] };
+  tame: ['yaoyuan-xunye'],
+  // 喂饭桶 · 一根牛骨头 (2026-10-21, the reading cap): the 饭桶's first feed, before 第一路's way on
+  save: ['diyilu-niugu'] };
 function before(s, exit, now = DAY1) {
   // a save set down in a scene by hand (not walked in) has not been offered its boards yet: offer them, as arriving does
   for (const id of BOARD_BEFORE[exit] ?? []) s = must(task, must(win, { ...s, tasks: { [id]: { status: 'offered' }, ...s.tasks } }, { id }, now), { action: 'done', id }, now);
@@ -77,7 +79,7 @@ function playThrough() {
   s = must(quest, s, { action: 'take', id: 'xu-sun-charm' });
   s = must(win, s, { id: 'qiqiao' }); s = must(task, s, { action: 'done', id: 'qiqiao' });
   assert.ok(s.quests['xu-sun-charm'].done_at, 'the charm mended, the errand hands itself in');
-  for (const exit of ['count', 'keep', 'save']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
+  for (const exit of ['count', 'keep', 'save']) s = must(resolve, before(fresh(s), exit), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = throughJin(fresh(s), content, DAY1); // 今 · 二, between 古四 and 古五 (2026-10-05)
   s = must(move, fresh(s), { place: 'waimen' });
   assert.ok(s.quests['xu-yaoyuan-shouye'].done_at, 'the watch hands itself in at 周衡');
@@ -245,7 +247,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   s = must(move, s, { place: 'yaoyuan' });
   s = on(won(s, 'yaoyuan-zheng'), 'tame');
   s = must(move, fresh(s), { place: 'chaifang' });
-  for (const exit of ['count', 'keep', 'save']) s = must(resolve, fresh(s), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
+  for (const exit of ['count', 'keep', 'save']) s = must(resolve, before(fresh(s), exit), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = throughJin(fresh(s), content, DAY1); // 今 · 二, between 古四 and 古五 (2026-10-05)
   s = must(move, fresh(s), { place: 'shimen' });
   s = must(resolve, s, { exit: 'refuse' });

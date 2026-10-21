@@ -5,7 +5,7 @@ blank pieces, 押宝's four doors, 七巧板's lacquer.
 
     PY=~/.linggen/runtime/envs/pictures/bin/python
     FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py paint [--only id,…] [--seeds 1,2]
-    FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py cut          # the KEPT seeds → scripts/games/boards/
+    FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py cut [--only id,…]  # the KEPT seeds → scripts/games/boards/
 
 What is the puzzle stays code or text over the paint: the rope game's vines and items, 禹步's grid lines and dots,
 象棋's grid and piece glyphs, 押宝's door names, 七巧板's shapes (filled with the painted lacquer).
@@ -36,6 +36,13 @@ JOBS = {
     'earth floor along the very bottom edge, and between them a calm soft dark back wall of brown-grey rock in gentle '
     'shadow, plain and uncluttered so things in front of it read clearly, a soft warm light from above. '
     + STYLE + ' ' + fc.SCENE)),
+  # 喂饭桶 · 一根牛骨头 (wm-diyilu, 2026-10-21): the woodshed the book feeds the 饭桶 in, the rope game's ground there.
+  'chaifang': dict(w=768, h=944, prompt=(
+    'The inside of a small cosy wooden WOODSHED at night for a cartoon physics puzzle game, seen straight on from the '
+    'front: one thick dark wooden roof beam running along the very top edge, a packed brown earth floor along the very '
+    'bottom edge, and between them a calm plain back wall of weathered vertical wooden planks in soft shadow, a low '
+    'stack of split firewood logs only in the far bottom corners, plain and uncluttered in the middle so things in '
+    'front of it read clearly, a warm dim lamplight. ' + STYLE + ' ' + fc.SCENE)),
   'yubu-ground': dict(w=1024, h=384, prompt=(
     'A wide view of a flat bluestone clifftop terrace high in the mountains for a cartoon game, seen from the front '
     'and a little above: smooth grey-blue stone paving across the bottom two thirds, a few tufts of grass and a small '
@@ -64,16 +71,18 @@ for k, what in DOORS.items():
   JOBS[f'door-{k}'] = dict(key='magenta', w=512, h=768, prompt=DOOR + what + '. No writing, no plaque. ' + STYLE + ' '
                            + fc.ON_MAGENTA)
 
-KEPT = {'cave': 1, 'yubu-ground': 1, 'yubu-slab': 2, 'xq-board': 2, 'xq-red': 1, 'xq-black': 1, 'qq-lacquer': 1,
+KEPT = {'cave': 1, 'chaifang': 2, 'yubu-ground': 1, 'yubu-slab': 2, 'xq-board': 2, 'xq-red': 1, 'xq-black': 1, 'qq-lacquer': 1,
         'door-long': 1, 'door-hu': 2, 'door-que': 1, 'door-wu': 1}
-SIZE = {'cave': 720, 'yubu-ground': 1024, 'yubu-slab': 256, 'xq-board': 512, 'xq-red': 96, 'xq-black': 96,
+SIZE = {'cave': 720, 'chaifang': 720, 'yubu-ground': 1024, 'yubu-slab': 256, 'xq-board': 512, 'xq-red': 96, 'xq-black': 96,
         'qq-lacquer': 256}
 
 
-def cut():
+def cut(only=()):
   from PIL import Image
   OUT.mkdir(parents=True, exist_ok=True)
   for jid, seed in KEPT.items():
+    if only and jid not in only:
+      continue
     j, src = JOBS[jid], fc.REVIEW / 'boards' / f'{jid}-{seed}.png'
     im = fc.key_green(src, key=j['key']) if 'key' in j else Image.open(src).convert('RGB')
     fc.save_webp(im, OUT / f'{jid}.webp', max_side=SIZE.get(jid, 256), quality=84)
@@ -85,4 +94,4 @@ if __name__ == '__main__':
   if a.cmd == 'paint':
     fc.paint_all('boards', JOBS, a)
   else:
-    cut()
+    cut([k for k in a.only.split(',') if k])

@@ -4,7 +4,7 @@
     PY=~/.linggen/runtime/envs/pictures/bin/python
     FLUX_REVIEW=<scratch> $PY tools/paint-items-comic-flux.py paint [--only id,…] [--seeds 1,2,3]   # → $FLUX_REVIEW/items-comic/
     FLUX_REVIEW=<scratch> $PY tools/paint-items-comic-flux.py sheet [--only id,…]                    # contact sheets to look at
-    FLUX_REVIEW=<scratch> $PY tools/paint-items-comic-flux.py cut                                     # the KEPT seeds → art/items-comic/
+    FLUX_REVIEW=<scratch> $PY tools/paint-items-comic-flux.py cut [--only id,…]                      # the KEPT seeds → art/items-comic/
 
 Every item 喂饭桶 · 割藤 (games/fantongcut.js, deleted 2026-10-20; the set is kept for the games to come) could hang: what the 饭桶 eats (items.json less fantong.json `never`), the
 秘境's finds (鼎苔 · 灵芝 · 人参 · 铜矿石) and the 奇遇's 药篓. art/items/ is 水墨 and stays the story's and the bag's; this
@@ -93,6 +93,7 @@ ITEMS = {
   'wulei-fu': dict(d='a yellow paper talisman strip crackling with blue lightning, red zigzag marks on it, no writing'),
   'yangyang-zhen': dict(d='a little bundle of silver needles tied with a fluffy pink feather tuft'),
   'zipai-jing': dict(d='a round polished bronze hand mirror with a short handle'),
+  'niu-gutou': dict(d='one big beef soup bone: a thick pale leg bone with a round knobbly knuckle at each end, boiled clean and white, not a scrap of meat on it, laid diagonally'),
   'niuzhi-ganlu': dict(d='a small clay jar of red chili beef-tallow, red peppers and Sichuan peppercorns on top'),
   'neimen-map': dict(d='an old parchment map scroll half unrolled, mountains and a winding path drawn on it, no writing'),
   'jade-fish': dict(d='a small carved pale green jade fish pendant on a red cord'),
@@ -216,6 +217,7 @@ KEPT = {
   'wulei-fu': 1,
   'yangyang-zhen': 2,
   'zipai-jing': 1,
+  'niu-gutou': 3,
   'niuzhi-ganlu': 2,
   'neimen-map': 2,
   'jade-fish': 2,
@@ -337,10 +339,12 @@ def sheet(ids, seeds, name):
   print(out)
 
 
-def cut():
+def cut(only=()):
+  """`only`: cut just those (their review seeds alone at hand); the index still lists every icon in art/items-comic/."""
   from PIL import Image
-  ids = []
   for jid, seed in KEPT.items():
+    if only and jid not in only:
+      continue
     im = fc.key_green(REVIEW / f'{jid}-{seed}.png', key=ITEMS[jid].get('key', 'magenta'))
     fc.save_webp(im, OUT / 'src' / f'{jid}.webp', max_side=512, quality=90)
     box = round((SIZE - 2 * PAD) * ITEMS[jid].get('scale', 1))
@@ -349,8 +353,7 @@ def cut():
     c = Image.new('RGBA', (SIZE, SIZE))
     c.alpha_composite(sm, ((SIZE - sm.width) // 2, (SIZE - sm.height) // 2))
     fc.save_webp(c, OUT / f'{jid}.webp', quality=88)
-    ids.append(jid)
-  ids.sort()
+  ids = sorted(p.stem for p in OUT.glob('*.webp'))
   INDEX.write_text(
     '// items-comic.js — written by tools/paint-items-comic-flux.py `cut`; do not edit by hand.\n'
     '// The small games\' comic item icons (Hanli 10-20: 「A, 画一套漫画风的道具」): art/items-comic/<id>.webp, one\n'
@@ -376,4 +379,4 @@ if __name__ == '__main__':
   elif a.cmd == 'sheet':
     sheet([k for k in a.only.split(',') if k] or list(ITEMS), [int(s) for s in a.seeds.split(',')], a.name)
   else:
-    cut()
+    cut([k for k in a.only.split(',') if k])

@@ -143,3 +143,73 @@ test('忍字: the cake goes back into 马小宝\'s own mouth (the book\'s, both 
   assert.doesNotMatch(t.title.zh + mod.meta.how.zh, /狗嘴|喂狗/);
   for (const ex of content.chapters['00-prologue'].scenes['00-masan'].exits) assert.match(ex.story_full?.zh ?? ex.story.zh, /桂花糕一口塞进嘴里/, `${ex.id}: the book has him eat it`);
 });
+
+/* 喂饭桶 · 一根牛骨头 (wm-diyilu, 2026-10-21, Hanli: 「agree」 — 古四's 9,360 字 after 药园巡夜 had no play): the 饭桶's first
+   feed, in the woodshed. Three strings, the 柴墩 (a ledge) and the door's draught: the last string cut over the block lays the
+   bone there, the puff blows it into the 饭桶; any other order drops it on the floor, and without the puff it only rests. */
+test('niugurope: the task diyilu-niugu plays it in wm-diyilu; the 柴墩 and the draught; the wrong orders miss; plain and star ways win', async () => {
+  const mod = await import('../scripts/games/niugurope.js');
+  const { bot, plans, starPlans } = await import('../scripts/games/bots/niugurope.js');
+  const RG = await import('../scripts/games/rope-gen.js');
+  const t = content.tasks.tasks.find((x) => x.id === 'diyilu-niugu');
+  assert.equal(t.game, 'niugurope');
+  assert.equal(t.stars, 3);
+  const row = content.games.games.find((g) => g.id === 'niugurope');
+  assert.deepEqual([row.task, row.scene, row.mechanic], ['diyilu-niugu', 'wm-diyilu', '割绳子']);
+  const level = row.levels[0];
+  assert.ok(level.gust && level.stones?.length === 1 && level.vines.length === 3, 'three strings, the block, the draught');
+  assert.ok(!level.thorns && !level.crows && !level.bubbles, 'forgiving: nothing breaks it, nothing takes it');
+  assert.equal(level.must, 'gust', 'the draught taught with a ring');
+  const fed = (run) => !run.broke && run.path.some(([x, y], k) => k >= (run.path.first ?? 0) && Math.hypot(x - level.mouth[0], y - level.mouth[1]) < RG.MOUTH_R + 19 * 0.4);
+  assert.ok(fed(RG.playPlan(level, plans.one)), 'the answer feeds it');
+  for (const hand of RG.HANDS) assert.ok(fed(RG.playPlan(level, plans.one, { hand })), `at a ${hand} ms reaction`);
+  assert.ok(fed(RG.playPlan(level, plans.one, { late: 1500, hand: 200 })), 'thought over slowly');
+  const cuts = plans.one.filter((m) => m.g === 'cut');
+  assert.equal(RG.playPlan(level, cuts).end, 'rest', 'without the draught it rests on the block');
+  assert.ok(!fed(RG.playPlan(level, cuts)), '…unfed');
+  assert.ok(fed(RG.playPlan(level, [1, 0, 2].map((v) => ({ g: 'cut', v })).concat({ g: 'gust' }))), 'the two side strings in either order');
+  for (const o of [[0, 1, 2], [1, 0, 2], [0, 2, 1], [1, 2, 0], [2, 0, 1], [2, 1, 0]]) assert.ok(!fed(RG.playPlan(level, o.map((v) => ({ g: 'cut', v })))), `cut ${o.join('')} alone: not fed`);
+  const orders = [[0, 2, 1], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+  for (const o of orders) assert.ok(!fed(RG.playPlan(level, [...o.map((v) => ({ g: 'cut', v })), { g: 'gust' }])), `cut ${o.join('')} then the puff: not fed`);
+  const r = playOnce(mod, bot, { seed: 'b1', deal: { levels: row.levels }, limit: 60000 });
+  assert.ok(r.won, 'the plain way wins');
+  assert.ok(['whole', 'fed'].includes(r.grade), r.grade);
+  const { planBot } = await import('../scripts/games/bots/rope-plan.js');
+  let s = null;
+  const keep = { ...mod, tick: (st, ms) => (s = mod.tick(st, ms)), act: (st, d) => { const x = mod.act(st, d); s = x.state ?? st; return x; } };
+  playOnce(keep, planBot({ one: starPlans.one }), { seed: 'star', deal: { levels: row.levels }, limit: 60000 });
+  assert.ok(s.won, 'the star way wins');
+  assert.equal(s.stars, 3, 'three 灵光');
+  assert.equal(s.grade, 'whole');
+  for (const lang of ['zh', 'en']) {
+    const h = mod.html(mod.newGame('x', 1, { levels: row.levels }), lang);
+    assert.match(h, /g-rope-quote/);
+    assert.match(h, /items-comic\/niu-gutou\.webp/, 'the bone, the small games\' comic icon');
+    assert.match(h, /fantong-pot\.webp/, 'into the 饭桶');
+    assert.match(h, /boards\/chaifang\.webp/, 'in the woodshed');
+    assert.equal((h.match(/class="g-rope-anchor"/g) ?? []).length, 3, 'each string tied to a peg in the beam');
+    assert.doesNotMatch(h, /data-g="skip"/);
+  }
+  assert.equal(mod.stuck({ ...mod.newGame('x', 1, { levels: row.levels }), misses: 4 }), true);
+});
+
+test('喂饭桶 · 一根牛骨头 sits where the book feeds the 饭桶: wm-diyilu\'s passage to 「把饭桶抠了出来」, the board, then 「头一样」 on; 留给爹 waits on it', async () => {
+  const { stretchesOf, RHYTHM_CAP } = await import('../scripts/rhythm.mjs');
+  const sc = content.chapters['00-waimen'].scenes['wm-diyilu'];
+  assert.deepEqual(sc.show, [{ card: 'board', id: 'diyilu-niugu' }]);
+  assert.deepEqual(sc.offers.tasks, ['diyilu-niugu']);
+  for (const k of ['story', 'story_full']) assert.match(sc[k].zh, /把饭桶抠了出来。$/, k);
+  assert.match(sc.story_after.zh, /^头一样，扔了根柴火棍。/);
+  assert.match(sc.story_after_full.zh, /^喂它，它吐东西——银月就留下这么一句。[\s\S]*一根伙房熬汤剩下的牛骨头/);
+  const save = sc.exits.find((e) => e.id === 'save');
+  assert.equal(save.needs.task, 'diyilu-niugu');
+  assert.ok(save.refuse.zh && save.refuse.en);
+  // the reading cap: 9,360 字 from 药园巡夜 to 今二's 罚球 is broken at the bone
+  const parts = stretchesOf(content.chapters['00-waimen']);
+  const at = parts.findIndex((p) => p.to === 'wm-diyilu');
+  assert.ok(at > 0, 'the feed is a beat');
+  assert.equal(parts[at].from, 'wm-yaoyuan');
+  assert.equal(parts[at + 1].from, 'wm-diyilu');
+  assert.ok(parts[at].chars + parts[at + 1].chars <= 9360 && parts[at].chars < 3000, `${parts[at].chars} · ${parts[at + 1].chars}`);
+  assert.ok(RHYTHM_CAP > 0);
+});

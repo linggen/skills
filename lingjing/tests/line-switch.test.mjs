@@ -18,6 +18,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { look, move, resolve } from '../scripts/rules.mjs';
+import { fitWorld } from '../scripts/state.mjs';
 import { huiOf, sceneHui } from '../scripts/rules/hui.mjs';
 import { jiudingBrief } from '../scripts/rules/inkmap.mjs';
 import { stageCards, stageSlots, withNext } from '../scripts/stage.mjs';
@@ -132,7 +133,8 @@ test('every interlude hands into its 古 scene\'s place — the turn ahead of Ha
 
 test('古 → 今 keeps him where he stood: a 今 scene stands nowhere on the map', () => {
   const before = atChaifang('wm-diyilu');
-  let s = { ...before, done_scenes: before.done_scenes.filter((x) => x !== 'wm-diyilu') };
+  // set down here by hand: loaded as a save is, the scene offers its board (喂饭桶 · 一根牛骨头, 2026-10-21) as arriving would
+  let s = fitWorld({ ...before, done_scenes: before.done_scenes.filter((x) => x !== 'wm-diyilu') }, content);
   s = walk(s, [...boardsFor(s, content, 'save'), ['resolve', { exit: 'save' }]], content, NOW);
   assert.deepEqual([s.scene, s.place], ['j04-gym', 'chaifang']);
   const l = look(s, content, ctx);

@@ -175,6 +175,14 @@
 .g-ft-cave .g-ft-item image { mix-blend-mode: multiply; }
 /* The comic item icon (art/items-comic/, 2026-10-20): drawn as painted, a little past its ring, which is only a soft disc behind it. */
 .g-ft-cave .g-ft-ring.has-icon { fill: var(--surface); fill-opacity: .55; stroke-opacity: .35; }
+.g-ft-cave .g-ft-item image.g-ft-icon { mix-blend-mode: normal; }
+/* The 饭桶 eating (ropebeats.js potTarget — 喂饭桶 · 一根牛骨头, 2026-10-21): steam off the lid, a 「嗝」 seal pressed beside it. */
+.g-ft-cave .g-ft-steam { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.g-ft-cave .g-ft-burpseal rect { fill: color-mix(in srgb, var(--seal-soft) 70%, transparent); stroke: var(--seal); stroke-width: 2.5; }
+.g-ft-cave .g-ft-burpseal text { fill: var(--seal); font-family: var(--serif); font-size: 21px; font-weight: 700; }
+.g-ft-cave .g-ft-burpseal-in { transform-box: fill-box; transform-origin: center; transform: rotate(-8deg); animation: g-ft-burp .42s cubic-bezier(.2, 1.6, .4, 1) .25s both; }
+@keyframes g-ft-burp { 0% { transform: rotate(-8deg) scale(2.2); opacity: 0; } 100% { transform: rotate(-8deg) scale(1); opacity: .92; } }
+@media (prefers-reduced-motion: reduce) { .g-ft-cave .g-ft-burpseal-in { animation: none; opacity: .92; } }
 .g-ft-cave .g-ft-mouth { fill: none; stroke: var(--seal); stroke-width: 1.3; stroke-dasharray: 3 5; opacity: .55; }
 .g-ft-cave .g-ft-star .g-ft-spark { pointer-events: none; }
 .g-ft-cave .g-ft-bubble { cursor: pointer; }

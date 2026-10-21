@@ -8,9 +8,12 @@
 //   认路 (00-yinyue) the little fox carried in a 灵气泡 to the moss at the valley mouth: 「先带本王出去。」
 //   算账 (00-rent)   the meat swung out onto a stone chute and down into 马三's steelyard before the crow walks
 //                    down to it: 「肉二十斤，抵今年的。」
+//   喂饭桶 (wm-diyilu, 2026-10-21) the 饭桶's first feed in the woodshed, the kitchen's soup bone: down onto the
+//                    柴墩, then the door's draught blows it in — 「喂它，它吐东西——银月就留下这么一句。」
+import { comicArt } from './items-comic.js';
 import { n } from './ink.js';
-import { W } from './rope.js';
-import { makeRopeGame } from './ropekit.js';
+import { W, H, FLOOR } from './rope.js';
+import { makeRopeGame, EAT_MS } from './ropekit.js';
 
 const ART = new URL('../../worlds/jiuding/art/', import.meta.url).href;
 const img = (file, x, y, w, h, cls = '') => `<image${cls ? ` class="${cls}"` : ''} href="${ART}${file}" x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}"/>`;
@@ -105,6 +108,54 @@ export const rent = beat({
   rests: true,
   anchor: 'branch', // the crow walks down off a branch, as crows do
   cls: 'g-rope-rent',
+});
+
+/* ── 喂饭桶 · 一根牛骨头 (wm-diyilu, 2026-10-21) ──
+   The woodshed, the night of 周衡's knock: the 饭桶 dug out from under the little zheng, and the first things fed —
+   「一根伙房熬汤剩下的牛骨头，一样一样往里扔」. The bone hangs on three strings from the beam over the 柴墩 (a stone
+   ledge); the last string cut over it lays it there, and the draught through the door crack (the puff) blows it
+   off into the 饭桶's mouth. The 饭桶 eats as it ate in its old daily puzzle: a gulp, a shake, steam, a 「嗝」 seal. */
+const POT = `${ART}games/fantong-pot.webp`;
+// About a third of the board wide, its rim on the mouth (rope-gen's MOUTH_Y).
+const POT_W = 132, POT_H = POT_W * 490 / 440, RIM = 0.306;
+const CHAIFANG = new URL('./boards/chaifang.webp', import.meta.url).href;
+export function potTarget(s, calm) {
+  const [mx, my] = s.level.mouth, x = mx - POT_W / 2, y = my - RIM * POT_H, eating = s.phase === 'eat' && !calm;
+  const t = s.t ?? 0;
+  const gulp = eating ? (t < 260 ? -Math.sin((t / 260) * Math.PI) * 0.5 : Math.sin(Math.min(1, (t - 260) / 360) * Math.PI)) : 0;
+  const shake = eating && t > 300 ? Math.sin(t / 38) * 6 * Math.max(0, 1 - (t - 300) / 700) : 0;
+  const pot = `<g class="g-ft-pot${s.phase === 'eat' ? ' is-eating' : ''}" transform="translate(${n(x)} ${n(y - gulp * 12)}) rotate(${n(shake)} ${n(POT_W / 2)} ${n(POT_H)}) scale(1 ${n(1 - gulp * 0.07, 3)})">`
+    + `<image href="${POT}" width="${POT_W}" height="${n(POT_H)}"/></g>`;
+  return pot + (s.phase === 'eat' ? potSteam(s, mx, my, eating) + burpSeal(mx, my) : '');
+}
+function potSteam(s, mx, my, moving) {
+  if (!moving || s.t < 380) return '';
+  const k = Math.min(1, (s.t - 380) / (EAT_MS - 500));
+  return [-14, 0, 14].map((dx, i) => {
+    const rise = 18 + k * 46 + i * 4, sway = Math.sin(k * 5 + i) * 6;
+    return `<path class="g-ft-steam" d="M${n(mx + dx)} ${n(my - 14)} q${n(sway)} ${n(-rise / 2)} ${n(-sway / 2)} ${n(-rise)}" opacity="${n(0.55 * (1 - k), 2)}"/>`;
+  }).join('');
+}
+const burpSeal = (mx, my) => {
+  const x = mx + (mx > W / 2 ? -78 : 46), y = my - 74;
+  return `<g class="g-ft-burpseal" transform="translate(${n(x)} ${n(y)})"><g class="g-ft-burpseal-in"><rect x="-17" y="-17" width="34" height="34" rx="5"/><text y="8" text-anchor="middle">嗝</text></g></g>`;
+};
+export const niugu = beat({
+  meta: { id: 'niugurope', name: { zh: '喂饭桶 · 一根牛骨头', en: 'Feeding the Rice Bucket · A soup bone' }, how: { zh: '划断绳，让牛骨头落上柴墩，再点门缝里的风，把它吹进饭桶嘴里。', en: 'Cut the strings so the bone lands on the chopping block, then tap the draught from the door to blow it into the Rice Bucket\'s mouth.' } },
+  quote: { zh: '「喂它，它吐东西——银月就留下这么一句。」', en: '"Feed it, and it spits something out": that was all Yinyue had left him.' },
+  T: words({
+    zh: { name: '牛骨头', say: '把牛骨头送进饭桶嘴里。', eat: ['「咯嘣」——饭桶一口吞了。'], done: '「咯嘣」，手心一凉；「咔哒」，吐出一只小陶罐。' },
+    en: { name: 'soup bone', say: 'Bring the bone down into the Rice Bucket\'s mouth.', eat: ['*Crunch* — the Rice Bucket swallows it whole.'], done: 'Crunch: his palm went cool. Click: out came a small clay jar.' },
+  }),
+  // the bone, the small games' comic icon (art/items-comic/niu-gutou.webp, local FLUX), over its soft ring
+  thing: (s, r) => `<circle class="g-ft-ring has-icon" r="${r}"/>`
+    + `<image class="g-ft-icon" href="${comicArt('niu-gutou')}" x="${n(-r * 1.4)}" y="${n(-r * 1.4)}" width="${n(r * 2.8)}" height="${n(r * 2.8)}"/>`,
+  target: potTarget,
+  // the woodshed (tools/paint-boards-flux.py `chaifang`): plank wall, the beam the strings hang from, the earth floor
+  backdrop: () => `<image class="g-cave-art" href="${CHAIFANG}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
+    + `<path class="g-cave-line" d="M0 ${FLOOR} C90 ${FLOOR - 3} 200 ${FLOOR + 3} ${W} ${FLOOR - 1}"/>`,
+  grade: (s) => (s.best >= 3 ? 'whole' : 'fed'),
+  cls: 'g-rope-niugu',
 });
 
 /* ── 拽 · 爹 over the drop, swung back onto the ledge (00-fall, 2026-10-19) ──
