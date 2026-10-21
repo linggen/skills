@@ -671,6 +671,29 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
   - **画符 (idea, not built):** draw a talisman the book teaches (五雷符 …) stroke by stroke in its order;
     the page checks order and shape from the strokes themselves (no model), Ling only says how it looks.
 
+## 手势斗法 — one grammar for every hand move (Hanli 10-21: 「OK, 你写进文档, 然后可以开始做了」)
+
+His ask: 「不只是剑诀往前戳, 一些手势都可以类似处理, 往前拍或者戳就是攻击. 复杂手印, 结成就自动攻击. 设计一下. 看怎么好玩.」
+**The shape picks the move; the motion throws it.** Camera only — without one nothing is offered and the game plays as before.
+
+**Three tiers**
+| Tier | How | Moves |
+|---|---|---|
+| 小招 | a shape, then a push (掌, 拳) or a jab (指) toward the lens | 剑诀 + 戳 → 飞剑 (one beast, fast) · 单剑指 + 戳 → 点穴 (freezes one a few seconds) · 推掌 + 推 → 掌风 (pushes a row back) · 拳 + 推 → 拳劲 (a ground slam, stuns those near) |
+| 法术 (五法, the book's 第六回) | pinch the 文 → close into a fist (扣, the spell held) → push the palm forward (拍) to release | 火弹 午文 · 冰锥 子文 · 金刃 酉文 · 木藤 卯文 · 土墙 玉清诀; a held spell leaks and fades (the book: 扣得久了，自己就散了) |
+| 大招 | a sequence of seals; it fires itself the moment the last seal forms — no push | the four-seal 火蛋 now; two-hand moves in 卷二 |
+
+**What makes it play**
+1. **No aiming, a direction.** The target is picked (the beast he tapped, else the nearest); the hand's place in the frame picks the lane — push on the left, the left lane. Never a crosshair (tried 10-21: too hard).
+2. **灵力, not only a cooldown.** One 丹田 bar: 小招 cheap, 法术 mid, 大招 dear; it refills slowly, so the hand rests most of the time (his 10-21 rule: 「让用户大部分时间在休息」). A 大妖 stepping out fills it and lights the button (「手印攻击高, 可以引导玩家用于打boss」); small beasts are the cards' and towers' job.
+3. **五行 combos (the book's 第六回).** 木藤 roots, then 金刃 cuts for double (「木藤不伤人，缠人，缠住了，才轮得到别的」); 冰锥 into 火弹 bursts into white steam over an area; the counter element (木得金而伐 …) hits harder.
+4. **Two hands, two held spells (Mac, the book's 10-09 canon — 小满's edge).** Left fist holds 火, right holds 冰, push both: 双法. 卷二.
+5. **Feel.** The move leaves 小满's hand the instant of the push; a held fist glows its element (拳心透红是火，透白是金，透青是木，透一点墨色是水，透黄是土); the ink hand in the hint glows with it.
+
+**Order with the book:** before 古六 the 小招 only, learned from the hint; 古六's 讲堂 teaches the 文, the 扣 and the five 法术 one by one; after it the 五法 and combos; two-hand 双法 in 卷二. Each move is data (`moves`: shape, motion, cost, effect, `from` gate).
+
+**First:** 法术试炼 in the 游戏厅 — every tier, 扣 then 拍, the combos, the 灵力 bar — for his hands; then 守墙关 and the 古六 lesson take what passes.
+
 ## 结印 — hand seals at the camera (10-21)
 
 Hanli 10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」, then 「很好玩啊」「可以作为lingjing的一个亮点」
