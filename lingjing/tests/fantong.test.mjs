@@ -373,4 +373,8 @@ test('鼎苔 past the one the 筑基 reads: the bucket sees and eats only the sp
   const r = VERBS.fantong(s, content, ctx(), { action: 'feed', ids: 'dingtai,dingtai' });
   assert.equal(r.result.ok, true);
   assert.equal(r.state.bag.dingtai ?? 0, 1, 'one left for the 筑基');
+  // Past the 筑基 no throw reaches for it: the one kept is a 凡物 like the rest, never stuck in the bag (review 2026-10-21).
+  const laid = saveWith({ bag: { danlu: 1, dingtai: 1 }, tier: 'foundation', step: 0 });
+  assert.equal(VERBS.fantong(laid, content, ctx(), { action: 'look' }).result.fantong.inputs.find(i => i.id === 'dingtai')?.n, 1);
+  assert.equal(feed(laid, { ids: 'dingtai' }).result.ok, true, 'fed');
 });

@@ -186,7 +186,6 @@ const quietOne = (scene, taps) => (taps.length === 1 && !taps[0].spent
 const INVITE_EVERY = 3;
 const invites = (state, taps) => taps.filter(t => !t.spent).length >= 2 && (state.done_scenes ?? []).length % INVITE_EVERY === 0;
 
-/* The things this player has named, id → the name the page shows. */
 /* 关键剧情锁图 as Look tells it: the beat, its title, why the map waits (the
    beat's own `say`) and since when (the save's `lock`). The page greys every
    walk with `say`; Ling has it for 「为什么走不了」. Not in a sealed beat: its
@@ -198,6 +197,7 @@ function lockLook(content, state, lang) {
   return { beat: beat.id, title: pick(beat.title, lang), say, ...(state.lock?.beat === beat.id ? { since: state.lock.since } : {}) };
 }
 
+/* The things this player has named, id → the name the page shows. */
 function namedOf(content, state, lang) {
   const named = Object.fromEntries((content.items?.items ?? []).filter(i => i.named && state[i.named]).map(i => [i.id, itemName(i, state, lang)]));
   return Object.keys(named).length ? { named } : {};
