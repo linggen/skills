@@ -97,7 +97,8 @@ test('a Mac window: the story\'s game card takes the stage up to 720, a tall fie
 });
 
 test('every game in the registry can be hosted in the shell, and every place a game plays uses it', async () => {
-  const ids = [...new Set(REG.games.filter((g) => !g.replaced).map((g) => g.id))];
+  // A stage row (the rules stand it on the real page) is held by the catalogue test below.
+  const ids = [...new Set(REG.games.filter((g) => !g.replaced && !g.stage).map((g) => g.id))];
   const missing = [];
   for (const id of ids) {
     const path = new URL(`../scripts/games/${id}.js`, import.meta.url);
@@ -121,6 +122,96 @@ test('every game in the registry can be hosted in the shell, and every place a g
   assert.equal(timedOf({ tick() {} }), true);
   assert.equal(timedOf({ meta: { pause: true } }), true);
   assert.equal(timedOf({ mount() {} }), false, 'a kit with its own loop and no pause yet shows no pause button');
+});
+
+/* ── The 游戏厅 is the whole catalogue (Hanli 2026-10-21: 「游戏大厅现在包括了全部的游戏内容对吧」) ── */
+
+const TASKS = fs.readdirSync(new URL('../worlds/jiuding/tasks/', import.meta.url))
+  .flatMap((f) => JSON.parse(read(`../worlds/jiuding/tasks/${f}`)).tasks ?? []);
+/* Every `game` the content names anywhere under `v` (a task's, an alt's, a scene's own). */
+const gamesIn = (v, out = new Set()) => {
+  if (Array.isArray(v)) v.forEach((x) => gamesIn(x, out));
+  else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) { if (k === 'game' && typeof x === 'string') out.add(x); else gamesIn(x, out); }
+  return out;
+};
+const sceneFiles = () => {
+  const dir = new URL('../worlds/jiuding/chapters/', import.meta.url);
+  return fs.readdirSync(dir).flatMap((ch) => {
+    const sd = new URL(`${ch}/scenes/`, dir);
+    return fs.existsSync(sd) ? fs.readdirSync(sd).filter((f) => f.endsWith('.json')).map((f) => JSON.parse(fs.readFileSync(new URL(f, sd), 'utf8'))) : [];
+  });
+};
+
+test('the catalogue: every game any task or scene names has a 游戏厅 row — or a cut row saying why', () => {
+  const rows = new Map();
+  for (const g of REG.games) rows.set(g.id, [...(rows.get(g.id) ?? []), g]);
+  const named = gamesIn([TASKS, sceneFiles()]);
+  // 今日传闻's boards (tale.json): each step's page; its word games (谜, 论道) are Ling's in the chat, not boards.
+  const tale = JSON.parse(read('../worlds/jiuding/tale.json'));
+  for (const g of Object.values(tale.games ?? {})) if (g.page) named.add(g.page);
+  const missing = [...named].filter((id) => !rows.has(id) && !['riddle', 'lundao', 'alchemy'].includes(id));
+  assert.deepEqual(missing, [], 'a game the content names with no 游戏厅 row');
+  // A cut task's game: a row under 旧版 naming that task, with why; a live task's game: a row that plays.
+  for (const t of TASKS.filter((x) => x.game)) {
+    const rs = rows.get(t.game) ?? [];
+    if (t.cut) {
+      const r = rs.find((x) => x.task === t.id && x.replaced === 'cut');
+      if (rs.some((x) => !x.replaced)) continue; // its game lives on in other rows
+      assert.ok(r, `${t.id} (cut): a cut row for ${t.game}`);
+      assert.equal(r.group, 'old', `${t.game}: cut rows are folded under 旧版`);
+      assert.ok(r.why?.zh && r.why?.en && r.cut, `${t.game}: a cut row says when and why`);
+    } else assert.ok(rs.some((x) => !x.replaced), `${t.id}: ${t.game} has a row that plays`);
+  }
+});
+
+test('the catalogue: every story beat with a board — and its camera alt — has its own row, in its 回\'s group', () => {
+  const huiOf = new Map(sceneFiles().map((s) => [s.id, s.hui]));
+  // A 回's group: the book entry's first id (第二回 = h02 h03); every 今 one group.
+  const ENTRY = { h03: 'h02', h06: 'h05' };
+  const groupOf = (scene) => { const h = huiOf.get(scene); return h?.startsWith('j') ? 'jin' : ENTRY[h] ?? h; };
+  for (const s of sceneFiles()) {
+    for (const id of new Set(JSON.stringify(s).match(/"task":\s*"[^"]+"/g)?.map((m) => m.split('"')[3]) ?? [])) {
+      const t = TASKS.find((x) => x.id === id);
+      if (!t?.game || t.cut || t.hosted || t.period !== 'once') continue;
+      const own = REG.games.filter((g) => g.task === id && !g.replaced);
+      assert.ok(own.some((g) => g.id === t.game), `${id} (${s.id}): a row for ${t.game}`);
+      for (const a of t.alt ?? []) assert.ok(own.some((g) => g.id === a.game), `${id}: a row for its alt ${a.game}`);
+    }
+  }
+  const groups = new Set(REG.groups.map((g) => g.id));
+  for (const g of REG.games.filter((r) => r.scene && !r.replaced)) {
+    assert.ok(huiOf.has(g.scene), `${g.id}: scene ${g.scene} exists`);
+    assert.equal(g.group, groupOf(g.scene), `${g.id} ${g.task}: in its 回's group`);
+    assert.ok(groups.has(g.group));
+  }
+  // The slot the card fight (斗法) joins, and 旧版's fold, are groups of their own.
+  for (const id of ['main', 'daily', 'ai', 'doufa', 'old']) assert.ok(groups.has(id), id);
+});
+
+test('the catalogue: a stage row (二十问, 讨价还价, 断案, 对对子, 密室, the 秘境 rerun) stands its card on its own test save', async () => {
+  process.env.LINGJING_STAMINA_LIMIT ??= '0';
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { look } = await import('../scripts/rules.mjs');
+  const { stageSave } = await import('../tools/arcade-saves.mjs');
+  const { arcadeStageUrl } = await import('../scripts/arcade-board.js');
+  const content = loadContent();
+  const stages = REG.games.filter((g) => g.stage);
+  assert.ok(stages.length >= 6);
+  for (const g of stages) {
+    const st = g.stage;
+    assert.match(st.save, /^arcade-[a-z]+$/, `${g.id}: a scratch save of the 游戏厅's own`);
+    const file = new URL(`./fixtures/saves/${st.save}.json`, import.meta.url);
+    assert.ok(fs.existsSync(file), `${g.id}: tests/fixtures/saves/${st.save}.json (node tools/arcade-saves.mjs)`);
+    const saved = JSON.parse(fs.readFileSync(file, 'utf8')).state;
+    assert.deepEqual(saved, JSON.parse(JSON.stringify(stageSave(content, st))), `${g.id}: its fixture is what its row writes now (node tools/arcade-saves.mjs)`);
+    assert.ok(look(saved, content, { now: new Date(), quests: [] })[st.look], `${g.id}: Look's ${st.look} stands on that save`);
+    assert.equal(arcadeStageUrl(st), `index.html?save=${st.save}&seed=${st.save}`, 'no board= — Look brings the card');
+    assert.ok(g.name?.zh && g.name?.en && g.mechanic, `${g.id}: named and typed`);
+  }
+  // The page reads them so: a stage row links to the game page, a cut row opens nothing.
+  const src = read('../scripts/arcade.js');
+  assert.match(src, /g\.stage \? arcadeStageUrl\(g\.stage\)/);
+  assert.match(src, /if \(g\.replaced === 'cut'\) return cutTile\(g\)/);
 });
 
 test('off the story, 台词预取 only when asked (`prefetch`, a dev page\'s ?prefetch=1): once a deal, its lines into the mount', async () => {

@@ -21,6 +21,13 @@ export const isArcadeBoard = (id) => String(id ?? '').startsWith(ARCADE_PREFIX);
 /** 试玩's address for a game: its own test save, begun again from the fixture, the board named. */
 export const arcadePlayUrl = (id) => `index.html?${new URLSearchParams({ save: `arcade-${id}`, seed: ARCADE_SEED, board: id })}`;
 
+/**
+ * 试玩's address for a game the rules stand on the stage themselves (a registry row's `stage`: 二十问, 讨价还价,
+ * 断案, 对对子, 密室, the 秘境 rerun): its own test save begun again from its fixture (tools/arcade-saves.mjs —
+ * where its card stands), and no `board=` — Look brings the card, as in the story.
+ */
+export const arcadeStageUrl = (stage) => `index.html?${new URLSearchParams({ save: stage.save, seed: stage.save })}`;
+
 /** The registry row a 试玩 deals from: the game's own row (no story task), else its first. */
 export function arcadeRow(registry, id) {
   const rows = (registry?.games ?? []).filter((g) => g.id === id);

@@ -1,0 +1,900 @@
+{
+ "_about": "游戏厅 stage save for twenty (tools/arcade-saves.mjs, from its games.json row)",
+ "state": {
+  "version": 11,
+  "world": "jiuding",
+  "lang": "zh",
+  "name": "沈小满",
+  "gender": "male",
+  "traits": [
+   "metal",
+   "wood",
+   "water",
+   "fire",
+   "earth"
+  ],
+  "tier": "qi",
+  "step": 4,
+  "progress": 540,
+  "wealth": 317,
+  "bag": {
+   "fox-token": 1,
+   "tuna-jing": 1,
+   "old-bow": 1,
+   "grey-robe": 1,
+   "danlu": 1,
+   "mend-pill-9": 1,
+   "luobo": 1,
+   "xirang": 1,
+   "pouch-low": 1,
+   "chitong-hulu": 1,
+   "lianxi-fu": 2,
+   "mend-pill": 3,
+   "longxu-cao": 1,
+   "zixu-zhi": 1,
+   "zou-purse": 1,
+   "duan-dao": 1,
+   "qi-pill": 5,
+   "dingtai": 3,
+   "neimen-map": 1,
+   "xizhu": 1,
+   "zipai-jing": 1,
+   "penti-fu": 1,
+   "yangyang-zhen": 3,
+   "niuzhi-ganlu": 1,
+   "huangting": 1,
+   "heluo": 1
+  },
+  "cast": [
+   "zheng"
+  ],
+  "wear": {
+   "weapon": "chitong-hulu",
+   "robe": "grey-robe"
+  },
+  "duels": {
+   "longzhi": {
+    "day": "2026-09-30",
+    "outcome": "won"
+   },
+   "hunt:mijing-xiongya": {
+    "day": "2026-10-01",
+    "outcome": "won",
+    "n": 1,
+    "at": "2026-10-02T01:00:00.000Z",
+    "last": [
+     "qiuyu"
+    ]
+   },
+   "gui": {
+    "day": "2026-10-01",
+    "outcome": "won"
+   },
+   "foe-zou": {
+    "day": "2026-10-01",
+    "outcome": "won"
+   },
+   "foe-lufang": {
+    "day": "2026-10-01",
+    "outcome": "won"
+   },
+   "foe-shijie": {
+    "day": "2026-10-01",
+    "outcome": "won"
+   },
+   "foe-maxiaobao": {
+    "day": "2026-10-01",
+    "outcome": "won"
+   }
+  },
+  "arts": [],
+  "chapter": "00-zhuji",
+  "scene": null,
+  "done_scenes": [
+   "00-shiao",
+   "00-masan",
+   "00-dawn",
+   "00-kitchen",
+   "00-chushan",
+   "00-duanbei",
+   "00-heisong",
+   "00-storm",
+   "00-fall",
+   "00-fox",
+   "00-cave",
+   "00-yinyue",
+   "00-cliff",
+   "00-deer",
+   "00-dusk",
+   "00-rent",
+   "00-xiuxian",
+   "00-sleep",
+   "00-halfyear",
+   "00-uncle",
+   "00-notice",
+   "j01-track",
+   "j01-anatomy",
+   "j01-retest",
+   "00-gate",
+   "00-luoshu",
+   "00-longzhi",
+   "00-hall",
+   "00-waimen",
+   "00-mijing",
+   "wm-ahe",
+   "wm-jiangtang",
+   "wm-zhoutian",
+   "wm-qingshi",
+   "wm-yaoyuan",
+   "wm-chaifang",
+   "wm-danlu",
+   "wm-diyilu",
+   "j04-gym",
+   "j04-line",
+   "j04-dog",
+   "wm-mijing",
+   "wm-wangzuo",
+   "wm-kunzhen",
+   "wm-xirang",
+   "wm-anhe",
+   "wm-kaikai",
+   "wm-chu",
+   "wm-luobo",
+   "wm-qianye",
+   "wm-zhaojing",
+   "wm-laba",
+   "wm-dabi",
+   "wm-lun1",
+   "wm-fushi",
+   "wm-lun2",
+   "wm-juesai",
+   "wm-laoyin",
+   "wm-jiaxin",
+   "wm-baishi",
+   "wm-caowu",
+   "wm-heluo",
+   "j07-ankle",
+   "j07-dark",
+   "j07-guan"
+  ],
+  "ended": [
+   "00-prologue",
+   "00-waimen"
+  ],
+  "place": "chaifang",
+  "tasks": {
+   "rain-basins": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "masan-taunt": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "fall-storm": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "bread-share": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "yinyue-way": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "deer-wind": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "rent-scale": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "notice-shuitong": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-toulan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-qianmi": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "gate-luoshu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "zhoutian-sanguan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "yaoyuan-xunye": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "diyilu-niugu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-faqiu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "mijing-zhenyan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "anhe-dark": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "xirang-wumen": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "qianye-qiajue": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "zhaojing-mirror": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "dabi-sneeze": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "jiaxin-letter": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "jin-dark": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   }
+  },
+  "chores": {},
+  "quests": {},
+  "wins": {
+   "haunt:qiuyu": "2026-10-02T01:00:00.000Z"
+  },
+  "story": "",
+  "seeds_used": [],
+  "made": {
+   "scenes": {},
+   "at": null
+  },
+  "day": {
+   "key": "2026-10-01",
+   "progress": 65,
+   "wealth": 177
+  },
+  "stamina": 100,
+  "stamina_at": "2026-10-02T01:00:00.000Z",
+  "created": "2026-10-01T01:00:00.000Z",
+  "updated": "2026-10-01T01:00:00.000Z",
+  "seed": "2026-10-01T01:00:00.000Z",
+  "grades": {
+   "rain-basins": "dry",
+   "masan-taunt": "word",
+   "bread-share": "most",
+   "yinyue-way": "straight",
+   "rent-scale": "exact",
+   "qianye-qiajue": "tight",
+   "zhaojing-mirror": "still",
+   "dabi-sneeze": "clean",
+   "jiaxin-letter": "all"
+  },
+  "marks": [
+   "rain-caught",
+   "taunt-word",
+   "kept-count",
+   "took-egg",
+   "three-rules",
+   "marks-cut",
+   "turned-back",
+   "fall-checked",
+   "fox-saved",
+   "bread-most",
+   "shared-bread",
+   "way-straight",
+   "found-father",
+   "shot-wind",
+   "wupo-bowed",
+   "rent-exact",
+   "played-dumb",
+   "asked-them",
+   "marrow-washed",
+   "scroll-by-heart",
+   "resolved-to-go",
+   "steps-steady",
+   "paid-gongzhong",
+   "hid-joy",
+   "counted-23",
+   "saved-first-pill",
+   "dabi-eve",
+   "qiajue-tight",
+   "xiangke",
+   "mirror-still",
+   "diche",
+   "sneeze-clean",
+   "jiaxin-drawn",
+   "caowu-stone"
+  ],
+  "tell_owed": [
+   "after/00-shiao",
+   "scene/00-masan",
+   "00-masan/endure",
+   "scene/00-dawn",
+   "00-dawn/egg",
+   "scene/00-kitchen",
+   "scene/00-chushan",
+   "00-chushan/lookout",
+   "scene/00-duanbei",
+   "00-duanbei/rules",
+   "scene/00-heisong",
+   "00-heisong/carve",
+   "scene/00-storm",
+   "00-storm/turn",
+   "scene/00-fall",
+   "00-fall/check",
+   "scene/00-fox",
+   "00-fox/save",
+   "scene/00-cave",
+   "00-cave/share",
+   "scene/00-yinyue",
+   "00-yinyue/follow",
+   "scene/00-cliff",
+   "00-cliff/climb",
+   "scene/00-deer",
+   "00-deer/left",
+   "scene/00-dusk",
+   "00-dusk/visit",
+   "scene/00-rent",
+   "after/00-rent",
+   "00-rent/dumb",
+   "scene/00-xiuxian",
+   "00-xiuxian/on",
+   "scene/00-sleep",
+   "00-sleep/bath",
+   "scene/00-halfyear",
+   "scene/00-uncle",
+   "00-uncle/go",
+   "scene/00-notice",
+   "after/00-notice",
+   "scene/j01-track",
+   "after/j01-track",
+   "scene/j01-anatomy",
+   "scene/j01-retest",
+   "j01-retest/finish",
+   "scene/00-gate",
+   "00-gate/steady",
+   "scene/00-luoshu",
+   "00-luoshu/pass",
+   "scene/00-longzhi",
+   "00-longzhi/subdue",
+   "scene/00-hall",
+   "00-hall/born",
+   "scene/00-waimen",
+   "00-waimen/pay",
+   "scene/00-mijing",
+   "wm-ahe/owe",
+   "scene/wm-jiangtang",
+   "wm-jiangtang/can",
+   "scene/wm-zhoutian",
+   "wm-zhoutian/breathe",
+   "scene/wm-qingshi",
+   "wm-qingshi/hide",
+   "scene/wm-yaoyuan",
+   "after/wm-yaoyuan",
+   "wm-yaoyuan/tame",
+   "scene/wm-chaifang",
+   "wm-chaifang/count",
+   "scene/wm-danlu",
+   "wm-danlu/keep",
+   "scene/wm-diyilu",
+   "after/wm-diyilu",
+   "wm-diyilu/save",
+   "scene/j04-gym",
+   "scene/j04-line",
+   "j04-line/shoot",
+   "scene/j04-dog",
+   "scene/wm-mijing",
+   "wm-mijing/pay",
+   "scene/wm-wangzuo",
+   "wm-wangzuo/open",
+   "scene/wm-kunzhen",
+   "wm-kunzhen/go",
+   "scene/wm-xirang",
+   "wm-xirang/swallow",
+   "scene/wm-anhe",
+   "wm-anhe/light",
+   "scene/wm-kaikai",
+   "after/wm-kaikai",
+   "wm-kaikai/sit",
+   "scene/wm-chu",
+   "wm-chu/rest",
+   "scene/wm-luobo",
+   "wm-luobo/on",
+   "scene/wm-qianye",
+   "after/wm-qianye",
+   "scene/wm-zhaojing",
+   "after/wm-zhaojing",
+   "wm-zhaojing/sleep",
+   "scene/wm-laba",
+   "scene/wm-dabi",
+   "wm-dabi/up",
+   "scene/wm-lun1",
+   "wm-lun1/hold",
+   "scene/wm-fushi",
+   "wm-fushi/flip",
+   "scene/wm-lun2",
+   "wm-lun2/dodge",
+   "scene/wm-juesai",
+   "wm-juesai/face",
+   "scene/wm-laoyin",
+   "wm-laoyin/final",
+   "scene/wm-jiaxin",
+   "wm-jiaxin/rest",
+   "scene/wm-baishi",
+   "wm-baishi/follow",
+   "scene/wm-caowu",
+   "wm-caowu/scrape-again",
+   "wm-caowu/sign",
+   "scene/wm-heluo",
+   "wm-heluo/read",
+   "scene/j07-dark",
+   "j07-dark/walk",
+   "scene/j07-guan",
+   "j07-guan/out",
+   "scene/09-snow"
+  ],
+  "node": {
+   "kind": "scene",
+   "at": "2026-10-02T01:00:00.000Z",
+   "chapter": {
+    "id": "00-zhuji",
+    "title": "卷一 · 沉鼎 · 今 · 三"
+   },
+   "recap": "练太猛，横纹肌溶解，住院三天；「数是你自己报的」——晨脉七十以下，才许摸球。",
+   "mystery": "瞿老四十多年没收过徒弟——他上一个徒弟，后来怎样了？"
+  },
+  "mark_days": {
+   "caowu-stone": "2026-10-01",
+   "diche": "2026-10-01",
+   "xiangke": "2026-10-01",
+   "dabi-eve": "2026-10-01",
+   "saved-first-pill": "2026-09-30",
+   "counted-23": "2026-09-30",
+   "hid-joy": "2026-09-30",
+   "paid-gongzhong": "2026-09-30",
+   "steps-steady": "2026-09-30",
+   "resolved-to-go": "2026-09-30",
+   "scroll-by-heart": "2026-09-30",
+   "marrow-washed": "2026-09-30",
+   "asked-them": "2026-09-30",
+   "played-dumb": "2026-09-30",
+   "wupo-bowed": "2026-09-30",
+   "shot-wind": "2026-09-30",
+   "found-father": "2026-09-30",
+   "shared-bread": "2026-09-30",
+   "fox-saved": "2026-09-30",
+   "fall-checked": "2026-09-30",
+   "turned-back": "2026-09-30",
+   "marks-cut": "2026-09-30",
+   "three-rules": "2026-09-30",
+   "took-egg": "2026-09-30",
+   "kept-count": "2026-09-30"
+  },
+  "ledger": [
+   {
+    "who": "maxiaobao",
+    "kind": "仇",
+    "what": {
+     "zh": "推你撞上灶台，摔碎了家里四只碗里的一只。",
+     "en": "Shoved you into the stove and broke one of your family's four bowls."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-masan"
+   },
+   {
+    "who": "masan",
+    "kind": "仇",
+    "what": {
+     "zh": "要拿走爷爷的弓。",
+     "en": "Means to take grandfather's bow."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-masan"
+   },
+   {
+    "who": "ahe",
+    "kind": "恩",
+    "what": {
+     "zh": "天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」",
+     "en": "Before dawn, pushed a boiled egg through your window: \"Keep count. Pay me back.\""
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-dawn"
+   },
+   {
+    "who": "laozhou",
+    "kind": "恩",
+    "what": {
+     "zh": "天没亮便顺着你刻的那四十一道记号寻进黑松岭，扛着门板来找你。",
+     "en": "Before dawn he followed the forty-one marks you cut into Black Pine Ridge, carrying a door-plank to bring you home."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-cliff"
+   },
+   {
+    "who": "maxiaobao",
+    "kind": "仇",
+    "what": {
+     "zh": "外门的「公中」：收了你一块灵石。",
+     "en": "The outer court's \"common fund\": took one of your spirit stones."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-waimen"
+   },
+   {
+    "who": "ahe",
+    "kind": "恩",
+    "what": {
+     "zh": "外门第一天，阿禾在小本子上记了你一笔：杂灵根。你说：哪天不是了，拿本子来对。",
+     "en": "Your first day in the outer sect: Ahe wrote you into the little notebook — mixed root. You said: the day it isn't so, bring the notebook and check."
+    },
+    "chapter": "00-waimen",
+    "day": "2026-09-30",
+    "at": "wm-ahe"
+   },
+   {
+    "who": "zhouheng",
+    "kind": "恩",
+    "what": {
+     "zh": "十月初八，周衡把药园巡夜令交给了你：「巡夜没好处，没人接。」又把半根蜡烛掰下一截给你。月底盘账，药园要是还在丢，令牌归马师兄。",
+     "en": "The eighth of the tenth month, Zhou Heng handed you the herb garden's night-watch token: \"The night watch pays nothing; nobody takes it.\" He broke a piece off half a candle for you too. If the garden is still losing plants at the month-end reckoning, the token goes to senior brother Ma."
+    },
+    "chapter": "00-waimen",
+    "day": "2026-09-30",
+    "at": "wm-yaoyuan"
+   },
+   {
+    "who": "maxiaobao",
+    "kind": "仇",
+    "what": {
+     "zh": "十月十二，柴房：马小宝等六人，二十三下。利息，另算。",
+     "en": "The twelfth of the tenth month, the woodshed: Ma Xiaobao and five others, twenty-three blows. Interest to be reckoned separately."
+    },
+    "chapter": "00-waimen",
+    "day": "2026-09-30",
+    "at": "wm-chaifang"
+   },
+   {
+    "who": "maxiaobao",
+    "kind": "仇",
+    "what": {
+     "zh": "冬月初一，秘境门口，公中：两块灵石。",
+     "en": "The first of the eleventh month, at the hidden realm's door, the common fund: two spirit stones."
+    },
+    "chapter": "00-waimen",
+    "day": "2026-09-30",
+    "at": "wm-mijing"
+   },
+   {
+    "who": "sunergou",
+    "kind": "恩",
+    "what": {
+     "zh": "宗门大比，孙二狗叫内门的卢方推倒了七回，在石阶上坐下去便起不来了；你伸手把他拉了起来。",
+     "en": "At the sect contest Lu Fang of the inner court knocked Sun Ergou down seven times; he sat on the steps and couldn't get up, and you held out your hand and pulled him up."
+    },
+    "chapter": "00-waimen",
+    "day": "2026-10-01",
+    "at": "wm-lun1"
+   },
+   {
+    "who": "sunergou",
+    "kind": "恩",
+    "what": {
+     "zh": "大比那天夜里，孙二狗托你替他写一封家信：「娘，我倒了七回，起来了七回。」别写是谁把他打倒的。",
+     "en": "The night of the contest Sun Ergou asked you to write a letter home for him: \"Mother, I fell down seven times and got up seven times.\" Not to write who knocked him down."
+    },
+    "chapter": "00-waimen",
+    "day": "2026-10-01",
+    "at": "wm-jiaxin"
+   },
+   {
+    "who": "qulao",
+    "kind": "恩",
+    "what": {
+     "zh": "瞿老四十多年没收徒弟。他收了你。",
+     "en": "Elder Qu had taken no student in more than forty years. He took you."
+    },
+    "chapter": "00-waimen",
+    "day": "2026-10-01",
+    "at": "wm-caowu"
+   }
+  ],
+  "cards": [
+   "niangbing",
+   "yijian",
+   "tuna",
+   "zheng",
+   "mucao",
+   "zhennu",
+   "huoya",
+   "huiqi",
+   "huodan",
+   "jinren",
+   "bingzhui",
+   "tuqiang",
+   "mutang",
+   "yangzhen",
+   "houtu",
+   "luying",
+   "suijin"
+  ],
+  "card_from": {
+   "niangbing": {
+    "how": "story",
+    "day": "2026-09-30",
+    "place": "shiao",
+    "chapter": "00-prologue",
+    "scene": "00-kitchen"
+   },
+   "yijian": {
+    "how": "beat",
+    "day": "2026-09-30",
+    "place": "heisong",
+    "chapter": "00-prologue",
+    "scene": "00-deer"
+   },
+   "tuna": {
+    "how": "story",
+    "day": "2026-09-30",
+    "place": "shiao",
+    "chapter": "00-prologue",
+    "scene": "00-halfyear"
+   },
+   "zheng": {
+    "how": "tame",
+    "creature": "zheng",
+    "day": "2026-09-30",
+    "place": "yaoyuan",
+    "chapter": "00-waimen",
+    "scene": "wm-yaoyuan"
+   },
+   "mucao": {
+    "how": "story",
+    "day": "2026-09-30",
+    "place": "chaifang",
+    "chapter": "00-waimen",
+    "scene": "wm-diyilu"
+   },
+   "zhennu": {
+    "how": "win",
+    "creature": "qiuyu",
+    "day": "2026-10-01",
+    "place": "mijing-xiongya",
+    "chapter": "00-waimen",
+    "scene": "wm-wangzuo"
+   },
+   "huoya": {
+    "how": "win",
+    "creature": "foe-zou",
+    "day": "2026-10-01",
+    "place": "mijing-shishi",
+    "chapter": "00-waimen",
+    "scene": "wm-xirang"
+   },
+   "huiqi": {
+    "how": "story",
+    "day": "2026-10-01",
+    "place": "mijing-shishi",
+    "chapter": "00-waimen",
+    "scene": "wm-xirang"
+   },
+   "huodan": {
+    "how": "story",
+    "day": "2026-10-01",
+    "place": "waimen",
+    "chapter": "00-waimen",
+    "scene": "wm-qianye"
+   },
+   "jinren": {
+    "how": "story",
+    "day": "2026-10-01",
+    "place": "waimen",
+    "chapter": "00-waimen",
+    "scene": "wm-qianye"
+   },
+   "bingzhui": {
+    "how": "story",
+    "day": "2026-10-01",
+    "place": "waimen",
+    "chapter": "00-waimen",
+    "scene": "wm-qianye"
+   },
+   "tuqiang": {
+    "how": "story",
+    "day": "2026-10-01",
+    "place": "waimen",
+    "chapter": "00-waimen",
+    "scene": "wm-qianye"
+   },
+   "mutang": {
+    "how": "story",
+    "day": "2026-10-01",
+    "place": "waimen",
+    "chapter": "00-waimen",
+    "scene": "wm-qianye"
+   },
+   "yangzhen": {
+    "how": "story",
+    "day": "2026-10-01",
+    "place": "waimen",
+    "chapter": "00-waimen",
+    "scene": "wm-zhaojing"
+   },
+   "houtu": {
+    "how": "win",
+    "creature": "foe-lufang",
+    "day": "2026-10-01",
+    "place": "zhengdian",
+    "chapter": "00-waimen",
+    "scene": "wm-fushi"
+   },
+   "luying": {
+    "how": "win",
+    "creature": "foe-shijie",
+    "day": "2026-10-01",
+    "place": "zhengdian",
+    "chapter": "00-waimen",
+    "scene": "wm-lun2"
+   },
+   "suijin": {
+    "how": "win",
+    "creature": "foe-maxiaobao",
+    "day": "2026-10-01",
+    "place": "zhengdian",
+    "chapter": "00-waimen",
+    "scene": "wm-juesai"
+   }
+  },
+  "found": {
+   "fox-token": 1,
+   "deer-hide": 1,
+   "tuna-jing": 1,
+   "old-bow": 1,
+   "grey-robe": 1,
+   "danlu": 1,
+   "mend-pill-9": 1,
+   "luobo": 1,
+   "xirang": 1,
+   "talisman": 2,
+   "tama-fu": 1,
+   "pouch-low": 1,
+   "chitong-hulu": 1,
+   "lianxi-fu": 2,
+   "mend-pill": 3,
+   "longxu-cao": 1,
+   "zixu-zhi": 1,
+   "zou-purse": 1,
+   "duan-dao": 1,
+   "qi-pill": 5,
+   "dingtai": 3,
+   "neimen-map": 1,
+   "xizhu": 1,
+   "zipai-jing": 1,
+   "penti-fu": 1,
+   "yangyang-zhen": 3,
+   "niuzhi-ganlu": 1,
+   "huangting": 1,
+   "heluo": 1
+  },
+  "looked": [
+   "00-heisong/stone"
+  ],
+  "companion": {
+   "joined": "2026-09-30",
+   "awake": true
+  },
+  "beasts": {
+   "longzhi": {
+    "met": 1,
+    "won": 1,
+    "first": "2026-09-30"
+   },
+   "qiuyu": {
+    "met": 2,
+    "won": 1,
+    "first": "2026-09-30"
+   },
+   "gui": {
+    "met": 1,
+    "won": 1,
+    "first": "2026-10-01"
+   },
+   "foe-zou": {
+    "met": 1,
+    "won": 1,
+    "first": "2026-10-01"
+   },
+   "foe-lufang": {
+    "met": 1,
+    "won": 1,
+    "first": "2026-10-01"
+   }
+  },
+  "root_main": "water",
+  "boards_paid": [
+   "zhoutian-sanguan",
+   "yaoyuan-xunye",
+   "diyilu-niugu",
+   "jin-faqiu",
+   "mijing-zhenyan",
+   "anhe-dark",
+   "xirang-wumen",
+   "qianye-qiajue",
+   "zhaojing-mirror",
+   "dabi-sneeze",
+   "jiaxin-letter",
+   "jin-dark"
+  ],
+  "handed": [],
+  "stages": [
+   "wm-chaifang/count",
+   "wm-mijing/pay",
+   "wm-qianye/eve"
+  ],
+  "furnace_name": "饭桶",
+  "hunted": {
+   "mijing-xiongya": 1
+  },
+  "cards_new": [
+   "huiqi",
+   "mutang",
+   "suijin"
+  ],
+  "reruns": {
+   "mijing": {
+    "n": 0,
+    "ended_at": "2026-10-02T01:00:00.000Z"
+   }
+  },
+  "stretch": {
+   "qi:3": 13
+  }
+ }
+}

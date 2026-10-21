@@ -16,6 +16,8 @@ test('every registered game is a module on the contract: a mount of its own, or 
   const groups = new Set(reg.groups.map((g) => g.id));
   for (const g of reg.games) {
     assert.ok(groups.has(g.group), `${g.id}: group ${g.group}`);
+    // A stage row is the rules' on the real page; a cut row's board is gone (tests/game-shell.test.mjs holds both).
+    if (g.stage || g.replaced === 'cut') continue;
     const mod = await import(`../scripts/games/${g.id}.js`);
     assert.ok(mod.meta?.name?.zh, `${g.id}: a name`);
     assert.ok(typeof mod.mount === 'function' || (typeof mod.html === 'function' && typeof mod.act === 'function' && typeof mod.newGame === 'function'), `${g.id}: mount, or html · act · newGame`);
@@ -26,8 +28,8 @@ test('every registered game has a type (`mechanic`) from the 游戏厅\'s small 
   // Hanli 10-19: 「能在游戏大厅标一下游戏类型吗, 是割绳子还是投掷等」. A new row picks one of these; a new type
   // is added to arcade.js's KIND_EN (its English) on purpose, not by a typo.
   const vocab = new Set([...read('../scripts/arcade.js').match(/const KIND_EN = \{([\s\S]*?)\};/)[1].matchAll(/([^\s,:'{}]+):\s*'/g)].map((m) => m[1]));
-  assert.ok(vocab.size >= 8 && vocab.size <= 14, `a small vocabulary (${vocab.size})`);
-  for (const g of reg.games) assert.ok(vocab.has(g.mechanic), `${g.id}: mechanic ${g.mechanic ?? '(none)'} is one of ${[...vocab].join(' ')}`);
+  assert.ok(vocab.size >= 8 && vocab.size <= 18, `a small vocabulary (${vocab.size})`);
+  for (const g of reg.games.filter((r) => r.replaced !== 'cut')) assert.ok(vocab.has(g.mechanic), `${g.id}: mechanic ${g.mechanic ?? '(none)'} is one of ${[...vocab].join(' ')}`);
 });
 
 test('the beats polished on 10-16 export mount() themselves', async () => {

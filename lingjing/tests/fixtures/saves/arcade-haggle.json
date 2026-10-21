@@ -1,0 +1,323 @@
+{
+ "_about": "游戏厅 stage save for haggle (tools/arcade-saves.mjs, from its games.json row)",
+ "state": {
+  "version": 11,
+  "world": "jiuding",
+  "lang": "zh",
+  "name": "沈小满",
+  "gender": "male",
+  "traits": null,
+  "tier": "qi",
+  "step": 0,
+  "progress": 0,
+  "wealth": 300,
+  "bag": {
+   "fox-token": 1,
+   "tuna-jing": 1,
+   "old-bow": 1
+  },
+  "cast": [],
+  "wear": {},
+  "duels": {},
+  "arts": [],
+  "chapter": "00-prologue",
+  "scene": null,
+  "done_scenes": [
+   "00-shiao",
+   "00-masan",
+   "00-dawn",
+   "00-kitchen",
+   "00-chushan",
+   "00-duanbei",
+   "00-heisong",
+   "00-storm",
+   "00-fall",
+   "00-fox",
+   "00-cave",
+   "00-yinyue",
+   "00-cliff",
+   "00-deer",
+   "00-dusk",
+   "00-rent",
+   "00-xiuxian",
+   "00-sleep",
+   "00-halfyear",
+   "00-uncle",
+   "00-notice",
+   "j01-track",
+   "j01-anatomy",
+   "j01-retest"
+  ],
+  "ended": [],
+  "place": "shiao",
+  "tasks": {
+   "rain-basins": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "masan-taunt": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "fall-storm": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "bread-share": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "yinyue-way": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "deer-wind": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "rent-scale": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "notice-shuitong": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-toulan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-qianmi": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   }
+  },
+  "chores": {},
+  "quests": {},
+  "wins": {},
+  "story": "",
+  "seeds_used": [],
+  "made": {
+   "scenes": {},
+   "at": null
+  },
+  "day": {
+   "key": "2026-09-30",
+   "progress": 0,
+   "wealth": 0
+  },
+  "stamina": 100,
+  "stamina_at": "2026-10-01T01:00:00.000Z",
+  "created": "2026-10-01T01:00:00.000Z",
+  "updated": "2026-10-01T01:00:00.000Z",
+  "seed": "2026-10-01T01:00:00.000Z",
+  "grades": {
+   "rain-basins": "dry",
+   "masan-taunt": "word",
+   "bread-share": "most",
+   "yinyue-way": "straight",
+   "rent-scale": "exact"
+  },
+  "marks": [
+   "rain-caught",
+   "taunt-word",
+   "kept-count",
+   "took-egg",
+   "three-rules",
+   "marks-cut",
+   "turned-back",
+   "fall-checked",
+   "fox-saved",
+   "bread-most",
+   "shared-bread",
+   "way-straight",
+   "found-father",
+   "shot-wind",
+   "wupo-bowed",
+   "rent-exact",
+   "played-dumb",
+   "asked-them",
+   "marrow-washed",
+   "scroll-by-heart",
+   "resolved-to-go"
+  ],
+  "tell_owed": [
+   "after/00-shiao",
+   "scene/00-masan",
+   "00-masan/endure",
+   "scene/00-dawn",
+   "00-dawn/egg",
+   "scene/00-kitchen",
+   "scene/00-chushan",
+   "00-chushan/lookout",
+   "scene/00-duanbei",
+   "00-duanbei/rules",
+   "scene/00-heisong",
+   "00-heisong/carve",
+   "scene/00-storm",
+   "00-storm/turn",
+   "scene/00-fall",
+   "00-fall/check",
+   "scene/00-fox",
+   "00-fox/save",
+   "scene/00-cave",
+   "00-cave/share",
+   "scene/00-yinyue",
+   "00-yinyue/follow",
+   "scene/00-cliff",
+   "00-cliff/climb",
+   "scene/00-deer",
+   "00-deer/left",
+   "scene/00-dusk",
+   "00-dusk/visit",
+   "scene/00-rent",
+   "after/00-rent",
+   "00-rent/dumb",
+   "scene/00-xiuxian",
+   "00-xiuxian/on",
+   "scene/00-sleep",
+   "00-sleep/bath",
+   "scene/00-halfyear",
+   "scene/00-uncle",
+   "00-uncle/go",
+   "scene/00-notice",
+   "after/00-notice",
+   "scene/j01-track",
+   "after/j01-track",
+   "scene/j01-anatomy",
+   "scene/j01-retest",
+   "j01-retest/finish",
+   "scene/00-gate"
+  ],
+  "node": {
+   "kind": "scene",
+   "at": "2026-10-01T01:00:00.000Z",
+   "chapter": {
+    "id": "00-prologue",
+    "title": "卷一 · 沉鼎 · 今 · 一"
+   },
+   "recap": "补测四分二十九，七人第三；后半程，他在吐气。",
+   "mystery": "吴婆婆的木牌上，为什么刻着一只九尾的狐狸？"
+  },
+  "mark_days": {
+   "resolved-to-go": "2026-09-30",
+   "scroll-by-heart": "2026-09-30",
+   "marrow-washed": "2026-09-30",
+   "asked-them": "2026-09-30",
+   "played-dumb": "2026-09-30",
+   "wupo-bowed": "2026-09-30",
+   "shot-wind": "2026-09-30",
+   "found-father": "2026-09-30",
+   "shared-bread": "2026-09-30",
+   "fox-saved": "2026-09-30",
+   "fall-checked": "2026-09-30",
+   "turned-back": "2026-09-30",
+   "marks-cut": "2026-09-30",
+   "three-rules": "2026-09-30",
+   "took-egg": "2026-09-30",
+   "kept-count": "2026-09-30"
+  },
+  "ledger": [
+   {
+    "who": "maxiaobao",
+    "kind": "仇",
+    "what": {
+     "zh": "推你撞上灶台，摔碎了家里四只碗里的一只。",
+     "en": "Shoved you into the stove and broke one of your family's four bowls."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-masan"
+   },
+   {
+    "who": "masan",
+    "kind": "仇",
+    "what": {
+     "zh": "要拿走爷爷的弓。",
+     "en": "Means to take grandfather's bow."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-masan"
+   },
+   {
+    "who": "ahe",
+    "kind": "恩",
+    "what": {
+     "zh": "天没亮，隔着窗塞给你一个煮鸡蛋：「记账，以后还我。」",
+     "en": "Before dawn, pushed a boiled egg through your window: \"Keep count. Pay me back.\""
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-dawn"
+   },
+   {
+    "who": "laozhou",
+    "kind": "恩",
+    "what": {
+     "zh": "天没亮便顺着你刻的那四十一道记号寻进黑松岭，扛着门板来找你。",
+     "en": "Before dawn he followed the forty-one marks you cut into Black Pine Ridge, carrying a door-plank to bring you home."
+    },
+    "chapter": "00-prologue",
+    "day": "2026-09-30",
+    "at": "00-cliff"
+   }
+  ],
+  "cards": [
+   "niangbing",
+   "yijian",
+   "tuna"
+  ],
+  "cards_new": [
+   "niangbing",
+   "yijian",
+   "tuna"
+  ],
+  "card_from": {
+   "niangbing": {
+    "how": "story",
+    "day": "2026-09-30",
+    "place": "shiao",
+    "chapter": "00-prologue",
+    "scene": "00-kitchen"
+   },
+   "yijian": {
+    "how": "beat",
+    "day": "2026-09-30",
+    "place": "heisong",
+    "chapter": "00-prologue",
+    "scene": "00-deer"
+   },
+   "tuna": {
+    "how": "story",
+    "day": "2026-09-30",
+    "place": "shiao",
+    "chapter": "00-prologue",
+    "scene": "00-halfyear"
+   }
+  },
+  "found": {
+   "fox-token": 1,
+   "deer-hide": 1,
+   "tuna-jing": 1,
+   "old-bow": 1
+  },
+  "looked": [
+   "00-heisong/stone"
+  ],
+  "companion": {
+   "joined": "2026-09-30",
+   "asleep": true
+  }
+ }
+}

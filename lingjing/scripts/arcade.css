@@ -50,3 +50,5 @@ body { overflow: auto; }
 .arcade-won { font-family: var(--serif); font-size: 20px; color: var(--seal); font-weight: 700; }
 @media (max-width: 480px) { .arcade-grid { grid-template-columns: 1fr 1fr; } .arcade-play { padding: 10px; } }
 .arcade-old{margin:28px 0 8px;opacity:.75}.arcade-old summary{cursor:pointer;font-family:var(--serif);font-size:15px;color:var(--dim);padding:6px 0}
+.arcade-tile.is-cut { opacity: .6; border-style: dashed; cursor: default; }
+.arcade-tile.is-cut:hover { border-color: var(--line); }

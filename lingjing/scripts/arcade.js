@@ -3,11 +3,14 @@
 // game links to it. Each game plays alone through its mount() contract (games/mount.js) — no save,
 // no seeding, no pay; the result is shown, and 再来 deals a fresh one. A game the model plays (画猜,
 // `meta.ai`) is tried on the REAL game page instead (arcade-board.js, Hanli 10-19): its own test save,
-// its board on the stage, the real chat beside it — the same UI and logic as in the story.
+// its board on the stage, the real chat beside it — the same UI and logic as in the story. So is a game the
+// rules stand on the stage themselves (a row's `stage`: 二十问, 讨价还价, 断案, 对对子, 密室, the 秘境 rerun —
+// Hanli 10-21: the 游戏厅 holds every playable thing), on a save seeded where its card stands (tools/arcade-saves.mjs).
+// A board the story cut (`replaced: 'cut'`) is listed under 旧版 with why, and opens nothing.
 import { esc } from './esc.js';
 import { mountPure } from './games/mount.js';
 import { playAlone, timedOf, tallOf } from './games/shell.js';
-import { arcadePlayUrl } from './arcade-board.js';
+import { arcadePlayUrl, arcadeStageUrl } from './arcade-board.js';
 import { devPrefetch } from './games/prefetch-ling.js';
 
 const q = new URLSearchParams(location.search);
@@ -15,8 +18,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已被新游戏替换', levels: '关卡' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · replaced', levels: 'Levels' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page' },
 };
 const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
@@ -24,7 +27,7 @@ const w = () => W[lang()];
 const KIND_EN = {
   割绳子: 'Cut the rope', 投掷: 'Throw', 狩猎瞄准: 'Hunt & aim', 打地鼠: 'Whack-a-mole', 时机: 'Timing', 节奏: 'Rhythm',
   调息: 'Breath', 解谜: 'Puzzle', 棋牌: 'Board & table', 判断: 'Read & pick', 剧情: 'Story', 你画我猜: 'Draw & guess',
-  塔防: 'Tower defense', 结印: 'Hand seals',
+  塔防: 'Tower defense', 结印: 'Hand seals', 配对: 'Match pairs', 对话: 'Talk', 探索: 'Explore',
 };
 const kindOf = (g) => (lang() === 'en' ? KIND_EN[g.mechanic] ?? g.mechanic : g.mechanic) ?? '';
 
@@ -52,30 +55,44 @@ async function registry() {
   return r?.ok ? r.json() : { groups: [], games: [] };
 }
 
+/* A board the story cut: its name and why, nothing to open (its module is gone). */
+function cutTile(g) {
+  const why = g.why?.[lang()] ?? g.why?.zh ?? '';
+  return `<div class="arcade-tile is-cut"><span class="arcade-tile-top"><b>${esc(titleOf(g, null))}</b><em class="arcade-kind">${esc(w().cut)}</em></span>`
+    + `<small>${esc([g.cut, why].filter(Boolean).join(' · '))}</small></div>`;
+}
+
 async function tileHtml(g, i) {
-  const mod = await modOf(g.id);
+  if (g.replaced === 'cut') return cutTile(g);
+  // A stage row has no module to load: the rules stand it on the game page.
+  const mod = g.stage ? null : await modOf(g.id);
   const where = [g.hui, g.scene].filter(Boolean).join(' · ');
   const kind = kindOf(g);
-  const to = mod?.meta?.ai ? arcadePlayUrl(g.id) : href({ game: g.id, n: String(i) });
+  const to = g.stage ? arcadeStageUrl(g.stage) : mod?.meta?.ai ? arcadePlayUrl(g.id) : href({ game: g.id, n: String(i) });
   const top = `<span class="arcade-tile-top"><b>${esc(titleOf(g, mod))}</b>${kind ? `<em class="arcade-kind">${esc(kind)}</em>` : ''}</span>`
-    + `<small>${esc(where || g.task || '')}</small>`;
+    + `<small>${esc(where || g.task || (g.stage ? w().stage : ''))}</small>`;
   const lvs = await levelsOf(g);
-  if (lvs.length < 2) return `<a class="arcade-tile${mod ? '' : ' is-missing'}" data-kind="${esc(g.mechanic ?? '')}" href="${esc(to)}">${top}</a>`;
+  if (lvs.length < 2) return `<a class="arcade-tile${mod || g.stage ? '' : ' is-missing'}" data-kind="${esc(g.mechanic ?? '')}" href="${esc(to)}">${top}</a>`;
   // A game with a level table: each level straight from its tile (Hanli 10-20, of 守墙关's 药园: 「这个放到游戏大厅了吗?」)
-  const chips = lvs.map((l, k) => `<a class="arcade-lv" href="${esc(href({ game: g.id, n: String(i), lv: String(k + 1) }))}" title="${esc(l)}">${k + 1}</a>`).join('');
+  const chips = lvs.map((l, k) => `<a class="arcade-lv" href="${esc(href({ game: g.id, n: String(i), lv: l.lv }))}" title="${esc(l.name)}">${k + 1}</a>`).join('');
   return `<div class="arcade-tile has-lv${mod ? '' : ' is-missing'}" data-kind="${esc(g.mechanic ?? '')}"><a class="arcade-tile-main" href="${esc(to)}">${top}</a>`
     + `<nav class="arcade-lvs" aria-label="${esc(w().levels)}">${chips}</nav></div>`;
 }
 
-/* A game's levels, by name in the reader's language: the registry row's own (`levels`, 守炉), else its level file
-   (worlds/jiuding/levels/<id>.json: 守墙关, 撒豆成兵). None for the rest. */
+/* A game's levels, by name in the reader's language, each with the `lv` its chip opens: the registry row's own
+   (`levels`, 守炉), else its level file (worlds/jiuding/levels/<id>.json: 守墙关, 撒豆成兵) — numbered 1…; or the
+   ids a row's `ladder` names in that file (兽潮's nights), opened by id. None for the rest. */
 async function levelsOf(g) {
   const name = (l) => { const n = l?.title ?? l?.name; return typeof n === 'string' ? n : n?.[lang()] ?? n?.zh ?? l?.id ?? ''; };
+  const kitOf = async () => { const r = await fetch(`../worlds/jiuding/levels/${g.id}.json`).catch(() => null); return r?.ok ? r.json().catch(() => null) : null; };
+  if (Array.isArray(g.ladder)) {
+    const kit = await kitOf();
+    return g.ladder.map((id) => ({ lv: id, name: name((kit?.levels ?? []).find((l) => l.id === id) ?? { id }) }));
+  }
   if (g.group !== 'main') return []; // the main games' ladders; a board's own deals are not levels to pick
-  if (Array.isArray(g.levels)) return g.levels.filter((l) => !l.story && !l.realm).map(name); // a story level (守炉's 药园巡夜) has its own tile, off the ladder
-  const r = await fetch(`../worlds/jiuding/levels/${g.id}.json`).catch(() => null);
-  const kit = r?.ok ? await r.json().catch(() => null) : null;
-  return (kit?.levels ?? []).filter((l) => !l.story).map(name); // 守墙关's story level (药园巡夜 · 开春) is the story's, off the ladder
+  const numbered = (ls) => ls.map((l, k) => ({ lv: String(k + 1), name: name(l) }));
+  if (Array.isArray(g.levels)) return numbered(g.levels.filter((l) => !l.story && !l.realm)); // a story level (守炉's 药园巡夜) has its own tile, off the ladder
+  return numbered(((await kitOf())?.levels ?? []).filter((l) => !l.story)); // 守墙关's story level (药园巡夜 · 开春) is the story's, off the ladder
 }
 
 // The type filter: one chip a type (with its count), 全部 first; a tap hides the other tiles and any
@@ -125,9 +142,13 @@ const playClass = (m, mod) => (WIDE.has(m) ? ' is-wide' : tallOf(mod) ? ' is-tal
 async function playPage(id, n) {
   const reg = await registry();
   const row = reg.games[Number(n)]?.id === id ? reg.games[Number(n)] : reg.games.find((g) => g.id === id) ?? { id };
+  // A game the rules stand on the stage is the real page's, as is one the model plays (an old link to either lands there).
+  if (row.stage) { location.replace(arcadeStageUrl(row.stage)); return; }
+  if (row.replaced === 'cut') { root.textContent = w().missing; return; }
   const mod = await modOf(id), mount = mountOf(mod);
-  // A game the model plays is the real page's (an old link to it lands there).
   if (mod?.meta?.ai) { location.replace(arcadePlayUrl(id)); return; }
+  // A row with a ladder (兽潮's nights) deals its own level unless a chip named one (`lv`): the module reads `data.lv` first.
+  const data = row.ladder && q.get('lv') ? { ...(row.data ?? {}), lv: q.get('lv') } : row.data ?? {};
   // The game plays in the one shell (games/shell.js) the story's card wears too: its title, type and how-to in
   // the bar (beside a tall board on a Mac, so the board gets the height — Hanli 10-20: 「mac上游戏画面可以大一点」),
   // pause for a game in time, the result and 再来 under it. A row's `lead` is its story lead-in, read first.
@@ -139,11 +160,11 @@ async function playPage(id, n) {
   playAlone(card, mount, {
     id: `arcade-${id}`, title: titleOf(row, mod), kind: kindOf(row), how: howOf(mod), timed: timedOf(mod), tall: tallOf(mod), lang: lang(),
     leadLine: row.lead?.[lang()] ?? row.lead?.zh ?? '',
-    opts: { reducedMotion, seed: `arcade|${Date.now()}`, data: row.data ?? {} },
+    opts: { reducedMotion, seed: `arcade|${Date.now()}`, data },
     // 下一关: a game with levels names its next one when won (`r.next`); the page opens it by `lv`
     next: (lv) => { location.href = href({ game: id, n: String(n ?? ''), lv: String(lv) }); },
     // 台词预取 off the story only on `?prefetch=1` (a dev check); else the level's own lines.
-    prefetch: devPrefetch(mod, { data: row.data ?? {}, lang: lang() }),
+    prefetch: devPrefetch(mod, { data, lang: lang() }),
   });
 }
 
