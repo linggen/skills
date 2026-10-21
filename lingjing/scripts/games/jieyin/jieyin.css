@@ -27,6 +27,7 @@
 .jy-hint-panel.is-large .jy-frame { width: 240px; }
 .jy-view { position: absolute; inset: 0; width: 100%; height: 100%; }
 .jy-hands { color: #2b2620; }
+.jy-held { filter: blur(3px); animation: jy-nudge 1.6s ease-in-out infinite; } /* a held spell's glow (hint.js) */
 .jy-hold-bg, .jy-hold { fill: none; stroke-width: 2.4; }
 .jy-hold-bg { stroke: rgba(43, 38, 32, .12); }
 .jy-hold { stroke: #c9a24a; stroke-dasharray: 0 100; stroke-linecap: round; transform-box: fill-box; transform-origin: center; transform: rotate(-90deg); }

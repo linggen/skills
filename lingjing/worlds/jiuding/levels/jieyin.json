@@ -271,6 +271,18 @@
       "up": ["up"]
     }
   },
+  "_spells": "掐 · 扣 · 松 (games/jieyin/spell.js; 古六, story/jiuding-lu/06-第六回.md — Hanli 10-21): a spell's 文 pinched (`wen`, a seal above, held judge.holdMs), the four fingers closed over the thumb into a fist (`kou`: four fingers folded, the thumb anywhere — inside is fine; held `knobs.fistMs`) HOLDS it, the hand opened (`song`: four fingers out, held `openMs`) casts it. A held spell leaks: gone after `fadeMs`. A 文 not closed into a fist within `kouGapMs` of letting go of it is dropped. One hand holds one; the fist glows the spell's colour (`glow`: 拳心透红是火，透白是金，透青是木，透一点墨色是水，透黄是土). `kou: false` (飞剑): the 文 alone casts, once per making. No game effects here: a cast is an event the game turns into its spell.",
+  "spells": {
+    "knobs": { "fistMs": 250, "openMs": 200, "fadeMs": 8000, "kouGapMs": 1500, "graceMs": 200 },
+    "kou": { "curl": ["index", "middle", "ring", "pinky"] },
+    "song": { "ext": ["index", "middle", "ring", "pinky"] },
+    "huodan": { "wen": "wu", "element": "火", "glow": "#e8432f", "name": { "zh": "火弹", "en": "Fire shot" }, "how": { "zh": "掐午文，扣，松", "en": "Press Wu, close the fist, open" } },
+    "bingzhui": { "wen": "zi", "element": "水", "glow": "#2b2d3a", "name": { "zh": "冰锥", "en": "Ice spike" }, "how": { "zh": "掐子文，扣，松", "en": "Press Zi, close the fist, open" } },
+    "jinren": { "wen": "you", "element": "金", "glow": "#f6f2e6", "name": { "zh": "金刃", "en": "Metal blade" }, "how": { "zh": "掐酉文，扣，松", "en": "Press You, close the fist, open" } },
+    "muteng": { "wen": "mao", "element": "木", "glow": "#3f8a5a", "name": { "zh": "木藤", "en": "Wood vine" }, "how": { "zh": "掐卯文，扣，松", "en": "Press Mao, close the fist, open" } },
+    "tuqiang": { "wen": "yuqing", "element": "土", "glow": "#c9a24a", "name": { "zh": "土墙", "en": "Earth wall" }, "how": { "zh": "掐玉清诀，扣，松", "en": "Press Jade Clarity, close the fist, open" } },
+    "feijian": { "wen": "jian", "kou": false, "glow": "#9fb4c8", "name": { "zh": "飞剑", "en": "Flying sword" }, "how": { "zh": "结剑诀", "en": "Make the sword seal" } }
+  },
   "levels": [
     {
       "id": "huodan",
@@ -324,6 +336,8 @@
   "_sets": "Which seals a device may ask for (Hanli 10-21: 「mac上可以用双手, iPhone只有单手」): the first set whose `when` (a CSS media query) matches the page, else the last; `hands` the most a seal may need there. A phone held in one hand → one-hand seals only; a Mac/desktop → both. `?hands=1|2` on a dev page picks a set by hand count. Every move (`moves`) names a sequence for every set, so it can be cast on both.",
   "sets": [{"id": "phone", "when": "(pointer: coarse) and (max-width: 1000px), (pointer: coarse) and (max-height: 500px)", "hands": 1}, {"id": "desk", "hands": 2}],
   "moves": {
+    "wuxing": { "name": { "zh": "五行", "en": "The five" }, "spells": ["huodan", "bingzhui", "jinren", "muteng", "tuqiang"] },
+    "feijian": { "name": { "zh": "飞剑", "en": "Flying sword" }, "spells": ["feijian"] },
     "huodan": {
       "name": { "zh": "火蛋", "en": "Fire egg" },
       "phone": ["zhang", "jian", "shen", "wu"],

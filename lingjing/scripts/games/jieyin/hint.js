@@ -6,7 +6,9 @@
 // One component for every game that uses 结印 — the 游戏厅, 守墙关's helper, 古六's 讲堂:
 //
 //   const hint = handHint(container, { lang, size: 'compact' | 'large', seals, knobs })   // knobs: jieyin.json `hint`
-//   hint.update({ image, aspect, target, progress, right, now? })   // image: the hands, 0…1 of the frame (eye.js)
+//   hint.update({ image, aspect, target, progress, right, now?, world?, handed?, held? })   // image: the hands, 0…1 of the frame (eye.js)
+//     world · handed (eye.js) turn on the turn cue; held: [{ at, glow, left }] (spell.js heldAt) — a fist holding a spell
+//     glows its colour in the drawn palm (拳心透红 …), dimmer as it leaks
 //   hint.fizzle()     a puff on the panel (走火)
 //   hint.destroy()
 //
@@ -103,7 +105,7 @@ export function handHint(container, { lang = 'zh', size = 'compact', seals = {},
   const w = W[lang === 'en' ? 'en' : 'zh'], doc = container.ownerDocument, id = `jyink${++uid}`;
   const el = doc.createElement('div');
   el.className = `jy-hint-panel is-${size === 'large' ? 'large' : 'compact'}`;
-  el.innerHTML = `<div class="jy-frame" data-edge=""><svg class="jy-view" preserveAspectRatio="xMidYMid meet"><defs>${inkFilter(id)}<marker id="${id}a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c23b22"/></marker></defs><g class="jy-hands" filter="url(#${id})"></g>`
+  el.innerHTML = `<div class="jy-frame" data-edge=""><svg class="jy-view" preserveAspectRatio="xMidYMid meet"><defs>${inkFilter(id)}<marker id="${id}a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c23b22"/></marker></defs><g class="jy-glow"></g><g class="jy-hands" filter="url(#${id})"></g>`
     + `<circle class="jy-hold-bg" r="0"/><circle class="jy-hold" r="0" pathLength="100"/><path class="jy-turn" d="" marker-end="url(#${id}a)"/></svg><i class="jy-arrow" aria-hidden="true"></i></div>`
     + `<div class="jy-target"><div class="jy-target-icon"></div><b class="jy-target-name"></b><small class="jy-target-face"></small></div><p class="jy-cue" role="status"></p>`;
   container.append(el);
@@ -121,7 +123,7 @@ export function handHint(container, { lang = 'zh', size = 'compact', seals = {},
   };
 
   return {
-    update({ image = [], aspect = 4 / 3, target: t = null, progress = 0, right = false, now = globalThis.performance?.now() ?? 0, world = null, handed = [] } = {}) {
+    update({ image = [], aspect = 4 / 3, target: t = null, progress = 0, right = false, now = globalThis.performance?.now() ?? 0, world = null, handed = [], held = [] } = {}) {
       drawTarget(t);
       const H = 100, Wd = H * aspect, seen = image.filter((h) => h?.length >= 21).map((h) => mirrored(h, aspect));
       const svg = $('.jy-view');
@@ -129,6 +131,11 @@ export function handHint(container, { lang = 'zh', size = 'compact', seals = {},
       const px = (h) => h.map((p) => ({ x: p.x * H, y: p.y * H }));
       if (image !== drawn) { drawn = image; $('.jy-hands').innerHTML = seen.map((h) => inkHand(px(h), lengthOf(h) * H)).join(''); } // new hands only
       if (seen.length) last = { at: now, box: boxOf(seen) };
+      // A held spell (扣): its colour glowing in the fist's palm, dimmer as it leaks.
+      $('.jy-glow').innerHTML = held.filter((x) => seen[x.at]).map((x) => {
+        const h = seen[x.at], c = [0, 5, 9, 13, 17].reduce((a, i) => ({ x: a.x + h[i].x / 5, y: a.y + h[i].y / 5 }), { x: 0, y: 0 });
+        return `<circle class="jy-held" cx="${(c.x * H).toFixed(1)}" cy="${(c.y * H).toFixed(1)}" r="${(lengthOf(h) * H * 0.75).toFixed(1)}" fill="${plain(x.glow)}" fill-opacity="${(0.25 + 0.55 * Math.max(0, Math.min(1, x.left))).toFixed(2)}"/>`;
+      }).join('');
       let cue = cueOf({ seen, last, now, aspect, want: handsOf(seals[t]) }, knobs);
       // Turned the wrong way for this seal (world points + which hand; a game that passes none gets no turn cue), and
       // not making it: after `orient.turnMs`, ask the hand to turn (Hanli 10-21: 「要旋转一下手」).

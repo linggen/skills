@@ -69,7 +69,7 @@ test('every level and move has a sequence for every device set, made only of tha
   assert.deepEqual(sets.map((s) => s.hands), [1, 2], 'a phone set (one hand), then a desk set (both)');
   for (const set of sets) {
     const ok = sealsFor(kit, set);
-    for (const row of [...kit.levels, ...Object.keys(kit.moves)]) {
+    for (const row of [...kit.levels, ...Object.keys(kit.moves).filter((m) => !kit.moves[m].spells)]) { // spell moves (掐 · 扣 · 松) have no sequence
       const seq = sequenceFor(kit, row, set), name = `${row.id ?? row} @ ${set.id}`;
       assert.ok(seq.length >= 4, name);
       assert.ok(seq.every((id) => ok[id]), `${name}: only seals this set may judge`);
@@ -559,4 +559,129 @@ test('the two-hand bonus is a data switch: off, every cast the same; on, 离火�
   const on = { ...kit, moves: { huodan: { ...kit.moves.huodan, bonus: { ...kit.moves.huodan.bonus, on: true } } } };
   assert.deepEqual(bonusOf(on, 'huodan', desk), { egg: 1.7, hits: 2, split: 2 });
   assert.deepEqual(bonusOf(on, 'huodan', ['zhang', 'jian', 'shen', 'wu']), { egg: 1, hits: 1, split: 1 }, 'one hand: the plain egg');
+});
+
+/* ── 掐 · 扣 · 松 (古六's 第三天, Hanli 10-21): a spell pinched, held in a fist, released by opening the hand ── */
+
+const SP = kit.spells;
+const fist = (thumbIn = false) => {
+  const h = buildHand({ curl: ['index', 'middle', 'ring', 'pinky'] });
+  if (!thumbIn) return h; // the thumb across the folded fingers
+  const c = [0, 5, 9, 13, 17].reduce((a, i) => [a[0] + h[i].x / 5, a[1] + h[i].y / 5, a[2] + h[i].z / 5], [0, 0, 0]);
+  return buildHand({ curl: ['index', 'middle', 'ring', 'pinky'], thumbTo: [c[0], c[1], c[2] - 1.5] }); // 雷局: the thumb in the fist
+};
+const open = () => poseOf(seals.zhang);
+const wenHand = (spell) => poseOf(seals[SP[spell].wen]);
+
+test('the five spells sit on the book\'s 文: 火 午 · 水 子 (ring root) · 金 酉 (the little finger\'s joint below the tip) · 木 卯 (index middle joint) · 土 玉清 (middle finger\'s middle joint)', () => {
+  assert.deepEqual(kit.moves.wuxing.spells, ['huodan', 'bingzhui', 'jinren', 'muteng', 'tuqiang']);
+  const wen = Object.fromEntries(kit.moves.wuxing.spells.map((id) => [id, SP[id].wen]));
+  assert.deepEqual(wen, { huodan: 'wu', bingzhui: 'zi', jinren: 'you', muteng: 'mao', tuqiang: 'yuqing' });
+  const target = (id) => seals[id].nearest[0][1];
+  assert.deepEqual([target('wu'), target('zi'), target('you'), target('mao'), target('yuqing')], ['middle.tip', 'ring.mcp', 'pinky.dip', 'index.pip', 'middle.pip']);
+  assert.deepEqual(kit.moves.feijian.spells, ['feijian']);
+  assert.equal(SP.feijian.wen, 'jian');
+  assert.equal(SP.feijian.kou, false);
+  const glow = Object.fromEntries(kit.moves.wuxing.spells.map((id) => [SP[id].element, SP[id].glow]));
+  assert.deepEqual(Object.keys(glow).sort(), ['土', '木', '水', '火', '金'].sort());
+  for (const id of [...kit.moves.wuxing.spells, 'feijian']) assert.ok(SP[id].name.zh && SP[id].name.en && SP[id].how.zh && SP[id].how.en && /^#[0-9a-f]{6}$/i.test(SP[id].glow), id);
+});
+
+test('the neighbours of each spell\'s 文 are not that 文: 子 vs 丑 · 亥, 酉 vs 申 · 戌, 卯 vs 寅 · 辰, 玉清 vs 午 · its upper joint', async () => {
+  const { shapeOf } = await import('../scripts/games/jieyin/spell.js');
+  const ids = kit.moves.wuxing.spells;
+  const read = (h) => shapeOf(h, kit, ids);
+  assert.equal(read(thumbOn('ring.mcp')), 'zi');
+  assert.notEqual(read(thumbOn('middle.mcp')), 'zi', '丑');
+  assert.notEqual(read(thumbOn('pinky.mcp')), 'zi', '亥');
+  assert.equal(read(thumbOn('pinky.dip')), 'you');
+  assert.notEqual(read(buildHand({ pinch: 'pinky' })), 'you', '申 (the tip)');
+  assert.notEqual(read(thumbOn('pinky.pip')), 'you', '戌');
+  assert.equal(read(thumbOn('index.pip')), 'mao');
+  assert.notEqual(read(thumbOn('index.mcp')), 'mao', '寅');
+  assert.notEqual(read(thumbOn('index.dip')), 'mao', '辰');
+  assert.equal(read(thumbOn('middle.pip')), 'yuqing');
+  assert.notEqual(read(thumbOn('middle.dip')), 'yuqing');
+  assert.equal(read(buildHand({ pinch: 'middle' })), 'wu');
+  assert.equal(read(thumbOn('pinky.dip')), 'you', '酉 with the fingers straight is read as itself, not as an open hand');
+});
+
+test('扣 is any fist — the thumb across it or inside it; a pointing finger, horns or a half fist is no 扣; 松 is the hand open', async () => {
+  const { shapeOf } = await import('../scripts/games/jieyin/spell.js');
+  const ids = kit.moves.wuxing.spells, read = (h) => shapeOf(h, kit, ids);
+  assert.equal(read(fist()), 'kou');
+  assert.equal(read(fist(true)), 'kou', 'thumb hidden in the fist (雷局) is fine');
+  assert.equal(read(turned(mirrored(fist()), 40)), 'kou');
+  assert.notEqual(read(poseOf(seals.danjian)), 'kou', 'the index out');
+  assert.notEqual(read(poseOf(seals.jijiao)), 'kou', 'horns');
+  assert.notEqual(read(buildHand({ curl: ['middle', 'ring', 'pinky'], spread: 6 })), 'kou');
+  assert.notEqual(read(buildHand({ curl: ['ring', 'pinky'] })), 'kou', 'half a fist');
+  assert.equal(read(open()), 'song');
+  assert.equal(read(buildHand({ thumbTo: [-2, -4, -2] })), 'song', 'open with the thumb anywhere');
+});
+
+/* Spells, fed hand by hand: [{ L?: hand, R?: hand }, ms] frames at 15 a second. */
+async function spellRun(steps, ids = kit.moves.wuxing.spells, k = kit) {
+  const { spellStart, spellStep } = await import('../scripts/games/jieyin/spell.js');
+  let s = spellStart(k, ids), events = [], held = [];
+  for (const [hands, ms] of steps) {
+    const handed = Object.keys(hands).map((x) => (x === 'L' ? 'Left' : 'Right')), world = Object.values(hands);
+    for (let t = 0; t < ms; t += 1000 / 15) { const r = spellStep(s, { world, handed }, 1000 / 15, k); s = r.state; events.push(...r.events); held = r.held; }
+  }
+  return { events, held, types: events.map((e) => `${e.type}:${e.spell}`) };
+}
+
+test('掐 → 扣 → 松 casts the spell; the cast says which and how long it was held', async () => {
+  for (const id of kit.moves.wuxing.spells) {
+    const r = await spellRun([[{ R: wenHand(id) }, 400], [{ R: fist() }, 600], [{ R: open() }, 400]]);
+    assert.deepEqual(r.types, [`wen:${id}`, `kou:${id}`, `cast:${id}`], id);
+    const cast = r.events.at(-1);
+    assert.equal(cast.hand, 'Right');
+    assert.ok(cast.heldMs >= 500 && cast.left > 0.8, `${id}: held ${cast.heldMs} ms`);
+  }
+});
+
+test('the held spell glows its colour and leaks; held past fadeMs it is gone (白掐一回), and opening then casts nothing', async () => {
+  const k = SP.knobs;
+  let r = await spellRun([[{ R: wenHand('huodan') }, 400], [{ R: fist() }, k.fadeMs / 2]]);
+  assert.equal(r.held.length, 1);
+  assert.equal(r.held[0].glow, SP.huodan.glow, '拳心透红');
+  assert.ok(r.held[0].left > 0.3 && r.held[0].left < 0.7);
+  r = await spellRun([[{ R: wenHand('huodan') }, 400], [{ R: fist() }, k.fadeMs + 500], [{ R: open() }, 500]]);
+  assert.deepEqual(r.types, ['wen:huodan', 'kou:huodan', 'fade:huodan']);
+  assert.equal(r.held.length, 0);
+});
+
+test('a 文 never closed into a fist is dropped; a fist with no 文 before it holds nothing; a flash of a 文 is nothing', async () => {
+  let r = await spellRun([[{ R: wenHand('jinren') }, 400], [{ R: open() }, SP.knobs.kouGapMs + 300], [{ R: fist() }, 500], [{ R: open() }, 400]]);
+  assert.deepEqual(r.types, ['wen:jinren', 'drop:jinren']);
+  r = await spellRun([[{ R: fist() }, 800], [{ R: open() }, 500]]);
+  assert.deepEqual(r.types, []);
+  r = await spellRun([[{ R: wenHand('muteng') }, 150], [{ R: fist() }, 600], [{ R: open() }, 400]]);
+  assert.deepEqual(r.types, [], 'the 文 held under judge.holdMs');
+});
+
+test('one hand holds one; two hands, at most two — each released on its own', async () => {
+  const r = await spellRun([
+    [{ L: wenHand('huodan'), R: wenHand('bingzhui') }, 400],
+    [{ L: fist(), R: fist() }, 600],
+    [{ L: fist(), R: wenHand('jinren') }, 400], // the right hand opens to pinch another: that is no release of a held spell…
+    [{ L: open(), R: fist() }, 400],
+    [{ L: open(), R: open() }, 400],
+  ]);
+  const casts = r.events.filter((e) => e.type === 'cast').map((e) => `${e.hand}:${e.spell}`);
+  assert.deepEqual(casts, ['Left:huodan', 'Right:bingzhui'], 'each hand lets go of its own');
+  assert.ok(!r.types.includes('wen:jinren'), 'a hand holding a spell takes no other');
+});
+
+test('飞剑: 剑诀 alone casts at once, once per making', async () => {
+  const r = await spellRun([[{ R: poseOf(seals.jian) }, 1500], [{ R: open() }, 300], [{ R: poseOf(seals.jian) }, 600]], ['feijian']);
+  assert.deepEqual(r.types.filter((t) => t.startsWith('cast')), ['cast:feijian', 'cast:feijian']);
+});
+
+test('heldAt lays the held spells onto this frame\'s hands for the hint', async () => {
+  const { heldAt } = await import('../scripts/games/jieyin/spell.js');
+  const held = [{ hand: 'Right', spell: 'huodan', left: 0.5, glow: '#e8432f' }, { hand: '#1', spell: 'jinren', left: 1, glow: '#fff' }];
+  assert.deepEqual(heldAt(held, ['Left', 'Right']).map((x) => x.at), [1, 1]);
+  assert.deepEqual(heldAt(held, ['Right']).map((x) => x.at), [0]);
 });

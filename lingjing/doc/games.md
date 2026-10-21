@@ -739,6 +739,19 @@ tried again).
   straw dummy in the 讲堂 (`art`). One-hand only and the book's, so the same on a phone and a Mac. The hand hint
   large (no camera picture). No camera → 砸寨 · 讲堂试法 as before. Same task id either way: the grade (the alt's
   `deal.grades`, stars → tight · loose), marks, 修为 and the way on are one beat. Stars from misses (★3 none, ★2 ≤3).
+- **After Hanli's camera test (10-21: 「单手的识别准确率高一些. 但要旋转一下手…双手的需要标注左右手」):** every seal (each part of a
+  two-hand one) declares `face` (palm / edge / back to the lens) and `up`; its icon is drawn that way, mirrored as the player sees,
+  with a facing line under it; judge.js `facingOf` reads it live (palm normal + MediaPipe's handedness, swapped back:
+  `orient.handedSwap`) and the hand hint asks a hand turned otherwise to turn (brush arrow, 「手转一下」, after `orient.turnMs`) —
+  only while the shape is not yet made (the judge itself reads any facing). Two-hand seals are labelled 左手 / 右手 (icons,
+  how-lines, hint); `sides.either` true (either way round) for all five, fixed sides a data switch. Every Mac step takes its
+  one-hand stand-in (`judge.also`), so one hand casts every move; the Mac 火蛋 双掌 · 双剑 · 申文 · 离火印 (Hanli: 「双手版离火印挺酷.
+  双剑也不错」; both widened). A stronger two-hand cast (离火印 finish: a bigger 火蛋; 双剑: two swords) is the move's `bonus.on`,
+  off pending his call.
+- **掐 · 扣 · 松 (10-21, 古六's 第三天):** games/jieyin/spell.js — a spell's 文 pinched, the fist closed over it holds it (any fist;
+  `spells.kou`), the hand opened casts it (`cast` event with the spell id); held past `fadeMs` (8 s) it leaks away; one hand holds
+  one. 五行 `moves.wuxing`: 火弹 午 · 冰锥 子 · 金刃 酉 · 木藤 卯 · 土墙 玉清; `moves.feijian`: 剑诀 alone. The fist glows the spell's
+  colour in the hand hint (`held`). Game effects are the host's (守墙关).
 - **Tested:** the judge on synthetic hands (pose.js), not recorded ones; real-camera recognition is Hanli's to try.
 
 ### 结印 in 守墙关 — the 火蛋 helper
