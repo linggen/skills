@@ -470,6 +470,9 @@ function tasksBrief(content, state, ctx) {
         ...(task.game ? { game: task.game, level: gameLevel(content, state) } : {}),
         // The board's own words and deal where the task has them (二试's 洛书 is no 秘境 seal).
         ...(task.how ? { how: pick(task.how, lang) } : {}), ...(task.needs === 'her' ? { her: true } : {}),
+        // Another way to play the same beat where the device can (`alt`: 古六's 讲堂 as 结印 where a camera is) — the
+        // page chooses (caps.js); the rules only hand it on, its words in the reader's tongue.
+        ...(task.alt ? { alt: task.alt.map(a => altOf(a, lang)) } : {}),
         ...(task.game && task.done_line ? { done_line: pick(task.done_line, lang) } : {}),
         ...(hosted[id] ? { hosted: true } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
@@ -526,6 +529,13 @@ function personBrief(content, state, creature) {
   const gender = (creature.person && personOf(content, state, creature.person)?.gender) || creature.gender;
   return { person: true, ...(gender ? { gender } : {}) };
 }
+
+/* A board's other way to be played, as Look hands it to the page (caps.js chooses): its needs, game and deal as
+   written, its title and how in the reader's tongue. */
+const altOf = (a, lang) => ({
+  needs: a.needs, game: a.game, ...(a.deal ? { deal: a.deal } : {}),
+  ...(a.title ? { title: pick(a.title, lang) } : {}), ...(a.how ? { how: pick(a.how, lang) } : {}),
+});
 
 /* What a board is dealt: the task's own `deal`, and a small game's levels from the registry
    (games.json, 2026-10-16 — 喂饼's 割绳子 levels live there once, for the beat and the 游戏厅), its

@@ -10,10 +10,12 @@
 //             back to the first seal — a comic puff, no other cost.
 //   one       teaching: one seal at a time, its hint shown; a wrong seal held is only 'miss' (try again); the last
 //             one done = 'done'.
+// A level with `forgive` (古六's 讲堂, its closing 火蛋) keeps a sequence's order and cast, but a wrong seal is only
+// 'miss' there too: no 走火, the seal wanted stays the same.
 // Events: { type: 'seal' | 'cast' | 'fizzle' | 'miss' | 'done', seal, at }.
 
 export function start(level) {
-  return { mode: level.mode === 'one' ? 'one' : 'sequence', seq: [...level.sequence], at: 0, cur: null, held: 0, gap: 0, latched: false, last: null, casts: 0, fizzles: 0, misses: 0, done: false };
+  return { mode: level.mode === 'one' ? 'one' : 'sequence', seq: [...level.sequence], at: 0, cur: null, held: 0, gap: 0, latched: false, last: null, casts: 0, fizzles: 0, misses: 0, done: false, forgive: Boolean(level.forgive) };
 }
 
 /** The seal the player should make next. */
@@ -43,7 +45,7 @@ function counted(s) {
     return { state: { ...s, at: 0, last: seal, casts: s.casts + 1 }, events: [ev('seal'), ev('cast')] };
   }
   if (seal === s.last) return { state: s, events: [] }; // the one just counted, made again
-  if (s.mode === 'one') return { state: { ...s, misses: s.misses + 1 }, events: [ev('miss')] };
+  if (s.mode === 'one' || s.forgive) return { state: { ...s, misses: s.misses + 1 }, events: [ev('miss')] };
   return { state: { ...s, at: 0, last: null, fizzles: s.fizzles + 1 }, events: [ev('fizzle')] };
 }
 

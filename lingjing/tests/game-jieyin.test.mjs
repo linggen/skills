@@ -79,7 +79,8 @@ test('every level and move has a sequence for every device set, made only of tha
   for (const l of kit.levels) assert.ok(l.title.zh && l.title.en && l.lead.zh && l.lead.en, l.id);
   // What other modules already call stays as it was: the 火蛋 row's own sequence, and 古六's 讲堂 level.
   assert.deepEqual(kit.levels[0].sequence, ['zhang', 'jian', 'shen', 'wu']);
-  assert.deepEqual(kit.levels.find((l) => l.id === 'jiangtang').sequence, ['zhang', 'jian', 'si', 'wu', 'shen']);
+  // 古六's 讲堂 (in the story since 10-21, tests/gu6-jieyin.test.mjs): the passage's order, the same on every device.
+  assert.deepEqual(kit.levels.find((l) => l.id === 'jiangtang').sequence, ['zhang', 'si', 'wu', 'shen', 'jian']);
   const every = kit.levels.find((l) => l.id === 'wanyin');
   assert.deepEqual([...sequenceFor(kit, every, 'phone')].sort(), [...ONE].sort(), '试印: every one-hand seal on a phone');
   assert.deepEqual([...sequenceFor(kit, every, 'desk')].sort(), [...IDS].sort(), '试印: every seal on a Mac');

@@ -11,6 +11,19 @@
         "lv": "jiangtang",
         "grades": { "3": "tight", "2": "tight", "1": "loose" }
       },
+      "_alt": "2026-10-21 (Hanli: 「古6教学结手印那里可以做教学关卡」, 结印 in 卷一 「放进去」): where the device has a camera the same beat is 结印's teaching level `jiangtang` (worlds/jiuding/levels/jieyin.json) — 小满 at the back of the hall makes the first day's seals one by one, 褚先生's own words for each, then the four at once and a 火蛋 into the straw dummy. The page chooses (caps.js); the id, grades, marks, pay and way on are this row's, so a save never forks. No camera: 讲堂试法 as before.",
+      "alt": [
+        {
+          "needs": { "camera": true },
+          "game": "jieyin",
+          "deal": { "lv": "jiangtang", "grades": { "3": "tight", "2": "tight", "1": "loose" } },
+          "title": { "zh": "讲堂 · 一印一印", "en": "The lecture hall · One seal at a time" },
+          "how": {
+            "zh": "对着摄像头，照褚先生说的，一个印一个印地结，每个稳住一下才算；结错了，再来。五个都会了，四个连起来，午文收尾，火蛋打讲堂后头的草人。",
+            "en": "At the camera, make the seals one by one as Master Chu says, each held a moment; a wrong one, try again. All five learned, make four in a row ending on Wu, and the fire egg hits the straw dummy at the back of the hall."
+          }
+        }
+      ],
       "stars": 3,
       "period": "once",
       "title": {

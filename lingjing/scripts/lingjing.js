@@ -69,6 +69,7 @@ import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, li
 import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost, mountOnly } from './beat-host.js';
+import { probeCaps, withCaps } from './caps.js';
 import { anyPaused, forget as forgetShell, wireShell } from './games/shell.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -585,12 +586,14 @@ function refresh() {
 
 async function readOnce() {
   try {
-    const [seen, ,] = await Promise.all([verb('look', PREVIEW.day ? { day: PREVIEW.day } : {}), readCloud()]);
+    // What the device can do is known before the first Look is drawn: a board with an `alt` (古六's 讲堂 as 结印)
+    // is dealt once, as this device plays it (caps.js).
+    const [seen, , caps] = await Promise.all([verb('look', PREVIEW.day ? { day: PREVIEW.day } : {}), readCloud(), probeCaps(window)]);
     // The scene just left, kept for its header while its choice's passage is still told.
     if (look?.scene && seen?.scene?.id !== look.scene.id) leftLook(look);
     stageQuestDone(look, seen);
     gainedCards(look, seen);
-    look = withArcade(seen, ARCADE_GAME, arcadeDeal);
+    look = withArcade(withCaps(seen, caps), ARCADE_GAME, arcadeDeal);
     if (look?.engine && !engineAt) engineAt = look.engine;
     watchRun();
     if (look.divination) keep({ casting: false });
@@ -3427,7 +3430,9 @@ wireLiveGames({ boardFor, lang, paused: () => view.logOpen || anyPaused(), onWon
 /* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
 function beatSettled(g, result) {
   if (!result?.won || g.sent || g.skipped) return;
-  g.state = { ...g.state, won: true, grade: result.grade ?? null, stars: result.stars ?? null };
+  // A game that gives stars but no grade (结印) is graded by its deal's `grades` (stars → grade), as 砸寨 grades itself.
+  const graded = result.grade ?? g.data?.grades?.[String(result.stars)] ?? null;
+  g.state = { ...g.state, won: true, grade: graded, stars: result.stars ?? null };
   g.sent = true;
   forgetShell(g.taskId);
   openStuckSlots();

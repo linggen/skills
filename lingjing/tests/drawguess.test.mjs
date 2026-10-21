@@ -280,5 +280,5 @@ test('the 游戏厅\'s 试玩 of a game the model plays (Hanli 10-19) is the rea
   // The page: a win there pays nothing and deals it again; the hold is the story's (`arcade:<game>`, rules/hergame.mjs).
   const page = read('lingjing.js');
   assert.match(page, /if \(isArcadeBoard\(taskId\)\) return arcadeWon\(taskId, grade\);/);
-  assert.match(page, /look = withArcade\(seen, ARCADE_GAME, arcadeDeal\);/);
+  assert.match(page, /look = withArcade\(withCaps\(seen, caps\), ARCADE_GAME, arcadeDeal\);/); // Look as this device plays it (caps.js), then the 试玩
 });

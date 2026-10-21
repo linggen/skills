@@ -1,8 +1,8 @@
 // jieyin.js — 结印 (hand seals), a prototype in the 游戏厅 (Hanli 2026-10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面,
 // 让用户结印发火弹帮忙打怪」). The player makes seals at the camera; four in order cast a 火蛋 at the boar — on a phone
 // 推掌 · 剑诀 · 申文 · 午文, on a Mac 双掌 · 承剑 · 离火印 · 午文 (two hands; levels/jieyin.json `moves`) — three eggs drive it off. A wrong seal held = 走火: a charred egg and a puff, back to the first seal.
-// The second level is the shape of 古六's 讲堂 teaching level (one seal at a time, 褚先生's line for each). Not in
-// the story.
+// The second level is 古六's 讲堂 teaching level (one seal at a time, 褚先生's line for each, then the four once at a
+// straw dummy): in the story it is wm-qianye's board where a camera is (h08 `qianye-qiajue`'s `alt`, caps.js).
 //
 // The parts any other game can take (守墙关's helper later): games/jieyin/eye.js (camera + the vendored MediaPipe
 // model, all on the device), judge.js (seal rules, data in worlds/jiuding/levels/jieyin.json), sequence.js (holds,
@@ -42,10 +42,18 @@ const ART = {
   burnt: new URL('./jieyin/art/fizzle.webp', import.meta.url).href,
 };
 const foeArt = (id, frame) => new URL(`./shouqiang/art/${id}-${frame}.webp`, import.meta.url).href;
+const HERE = new URL('./jieyin/', import.meta.url);
+/** A level's own stage (`art`: paths from games/jieyin/ — 讲堂's hall and straw dummy are 砸寨's), else 守墙关's. */
+export const artOf = (level) => ({
+  bg: level.art?.bg ? new URL(level.art.bg, HERE).href : ART.bg,
+  foe: (frame) => (level.art?.foe ? new URL(level.art.foe, HERE).href : foeArt(level.foe, frame)),
+});
+/** What the 火蛋 is aimed at: a sequence level's foe, or a teaching level's closing `cast`. */
+export const castOf = (level) => (level.mode === 'one' ? level.cast ?? null : level);
 
 const W = {
-  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', asking: '请允许使用摄像头……', loading: '……', next: '下一个' },
-  en: { nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', asking: 'Allow the camera…', loading: '…', next: 'Next' },
+  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', asking: '请允许使用摄像头……', loading: '……', next: '下一个' },
+  en: { nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', downed: 'The dummy is down.', asking: 'Allow the camera…', loading: '…', next: 'Next' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
@@ -79,9 +87,10 @@ function seqHtml(kit, level, lang) {
 }
 
 function stageHtml(kit, level, lang) {
-  const foe = level.mode === 'one' ? '' : `<div class="jy-foe"><img alt="" src="${foeArt(level.foe, 'walk-1')}"><div class="jy-hp">${'<i></i>'.repeat(level.hits)}</div></div>`;
+  const art = artOf(level), aim = castOf(level);
+  const foe = aim ? `<div class="jy-foe${level.art?.foe ? ' is-still' : ''}"><img alt="" src="${art.foe('walk-1')}"><div class="jy-hp">${'<i></i>'.repeat(aim.hits)}</div></div>` : '';
   return `<div class="jy" data-mode="${plain(level.mode)}" data-set="${plain(level.set ?? '')}">`
-    + `<div class="jy-field" style="background-image:url('${ART.bg}')">${foe}<img class="jy-xm" alt="" src="${ART.xiaoman}">`
+    + `<div class="jy-field" style="background-image:url('${art.bg}')">${foe}<img class="jy-xm" alt="" src="${ART.xiaoman}">`
     // The camera's picture is never shown (Hanli 10-21: 「最好不显示摄像头」): the video only feeds the model; the hand
     // hint (jieyin/hint.js) docks in the corner instead.
     + `<video class="jy-eye" playsinline muted aria-hidden="true"></video><div class="jy-dock"></div><p class="jy-status"></p></div>`
@@ -158,7 +167,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const $ = (s) => box.querySelector(s);
       const video = $('video');
       const hint = handHint($('.jy-dock'), { lang, size: level.mode === 'one' ? 'large' : 'compact', seals, knobs: kit.hint });
-      let s = start(level), hands = [], picture = [], aspect = 4 / 3, hp = level.hits ?? 0, busy = false, last = win.performance.now();
+      const art = artOf(level);
+      let s = start(level), hands = [], picture = [], aspect = 4 / 3, hp = castOf(level)?.hits ?? 0, busy = false, last = win.performance.now(), taught = 0;
 
       const hud = () => {
         const want = expected(s);
@@ -168,7 +178,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         });
         hint.update({ image: picture, aspect, target: want, progress: s.cur === want ? progress(s, kit.judge) : 0, right: Boolean(s.cur && s.cur === want), now: win.performance.now() });
         const next = want ? kit.seals[want] : null;
-        $('.jy-hint').textContent = next ? (level.mode === 'one' ? `${tr(next.hint, lang)}　${tr(next.how, lang)}` : `${tr(next.name, lang)}：${tr(next.how, lang)}`) : '';
+        $('.jy-hint').textContent = next ? (s.mode === 'one' ? `${tr(next.hint, lang)}　${tr(next.how, lang)}` : `${tr(next.name, lang)}：${tr(next.how, lang)}`) : '';
       };
       const say = (text) => (shell?.say ? shell.say('xiaoman', text, 1800) : ($('.jy-status').textContent = text));
 
@@ -179,23 +189,33 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         if (done) return;
         hp -= 1;
         foe.querySelectorAll('.jy-hp i').forEach((el, i) => el.classList.toggle('is-gone', i >= hp));
-        foe.querySelector('img').src = foeArt(level.foe, 'hit');
+        foe.querySelector('img').src = art.foe('hit');
         foe.classList.add('is-hit');
         say(w.hit);
         await new Promise((r) => setTimeout(r, 420));
         foe.classList.remove('is-hit');
-        if (hp > 0) { foe.querySelector('img').src = foeArt(level.foe, 'walk-1'); busy = false; return; }
+        if (hp > 0) { foe.querySelector('img').src = art.foe('walk-1'); busy = false; return; }
         foe.classList.add('is-gone');
-        say(w.won);
-        setTimeout(() => finish({ won: true, stars: starsOf(s.fizzles, level.stars) }), 1200);
+        say(level.mode === 'one' ? w.downed : w.won);
+        setTimeout(() => finish({ won: true, stars: starsOf(taught + s.misses + s.fizzles, level.stars) }), 1200);
       };
 
+      // A teaching level's close (`cast`, 古六's 讲堂): the seals learned, the four at once at the dummy — its misses
+      // and the lesson's counted together.
+      const castNext = () => {
+        taught = s.misses;
+        const close = { ...level.cast, mode: 'sequence', sequence: sequenceFor(kit, level.cast, set) };
+        s = { ...start(close), last: s.last }; // the seal still in hand is no miss
+        $('.jy-seq').innerHTML = seqHtml(kit, close, lang);
+        say(tr(level.cast.say, lang) || w.learned);
+      };
       const act = (ev) => {
         if (ev.type === 'seal') { const el = box.querySelector(`.jy-slot[data-i="${ev.at}"]`); el?.classList.remove('is-pop'); void el?.offsetWidth; el?.classList.add('is-pop'); }
         if (ev.type === 'cast') cast();
         if (ev.type === 'fizzle') { burnt(box, $('.jy-xm'), reducedMotion); hint.fizzle(); say(w.fizzle); }
         if (ev.type === 'miss') { const el = box.querySelector('.jy-slot.is-next'); el?.classList.remove('is-shake'); void el?.offsetWidth; el?.classList.add('is-shake'); }
-        if (ev.type === 'done') { say(w.learned); setTimeout(() => finish({ won: true, stars: starsOf(s.misses, level.stars) }), 1200); }
+        if (ev.type === 'done' && level.cast) castNext();
+        else if (ev.type === 'done') { say(w.learned); setTimeout(() => finish({ won: true, stars: starsOf(s.misses, level.stars) }), 1200); }
       };
 
       // Each frame: the judge on the hands last seen, the sequence on with the time passed (still while paused or a

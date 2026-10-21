@@ -1208,10 +1208,25 @@ function lintTask(task, content, ids, bad) {
   // A board's own words (`how`, in place of its game's) and deal (`deal`, handed to the game's newGame).
   if (task.how != null && !(task.kind === 'board' && task.game && pair(task.how))) bad(where, 'how is a game board\'s line, in zh and en');
   if (task.deal != null && !(task.kind === 'board' && task.game && typeof task.deal === 'object' && !Array.isArray(task.deal))) bad(where, 'deal is a game board\'s options object');
+  // Another way to play the same board where the device can (`alt`, caps.js): what it needs, a game the 游戏厅 knows.
+  for (const alt of task.alt ?? []) lintAlt(where, task, alt, content, bad);
   // A board 银月 plays in (she guesses: `deal.who`) wakes her for its round — and says so (rules/hergame.mjs).
   if (task.needs != null && task.needs !== 'her') bad(where, 'needs is "her" or nothing');
   if (task.deal?.who === 'yinyue' && task.needs !== 'her') bad(where, '银月 plays it (deal.who): it needs: "her"');
   for (const e of task.ledger ?? []) if (!['恩', '仇', '诺'].includes(e.kind) || !pair(e.what) || !(content.people?.people ?? []).some(p => p.id === e.who)) bad(where, 'a ledger line needs a known person, 恩/仇/诺, and its what in zh and en');
+}
+
+/* The capabilities a board's `alt` may need — what caps.js can find out on the page. */
+const BOARD_CAPS = ['camera'];
+function lintAlt(where, task, alt, content, bad) {
+  if (!(task.kind === 'board' && task.game)) return bad(where, 'alt is a game board\'s other way to be played');
+  const needs = Object.entries(alt?.needs ?? {});
+  if (!needs.length || !needs.every(([k, v]) => BOARD_CAPS.includes(k) && typeof v === 'boolean')) bad(where, `alt needs one of ${BOARD_CAPS.join(', ')} (true / false)`);
+  if (!(content.games?.games ?? []).some(g => g.id === alt?.game)) bad(where, `alt plays unknown game ${alt?.game}`);
+  if (alt?.deal != null && (typeof alt.deal !== 'object' || Array.isArray(alt.deal))) bad(where, 'alt deal is an options object');
+  for (const k of ['title', 'how']) if (alt?.[k] != null && !pair(alt[k])) bad(where, `alt ${k} is in zh and en`);
+  // The same beat either way: a grade the alt gives is one the task's marks keep.
+  for (const g of Object.values(alt?.deal?.grades ?? {})) if (!Object.hasOwn(task.marks ?? {}, g)) bad(where, `alt grade ${g} is not one of the task's marks`);
 }
 
 function lintGrant(where, grant, content, ids, bad) {

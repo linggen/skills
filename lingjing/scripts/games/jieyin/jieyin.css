@@ -5,6 +5,7 @@
 .jy-xm { position: absolute; left: 6%; bottom: 2%; height: 46%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); }
 .jy-foe { position: absolute; left: 44%; top: 16%; width: 24%; text-align: center; transition: opacity .9s, transform .9s; }
 .jy-foe img { width: 100%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); animation: jy-bob 1.4s ease-in-out infinite; }
+.jy-foe.is-still img { animation: none; } /* a straw dummy (古六's 讲堂) stands */
 .jy-foe.is-hit img { animation: jy-shake .4s; filter: brightness(1.6) saturate(1.4) drop-shadow(0 0 10px #ff8a2a); }
 .jy-foe.is-gone { opacity: 0; transform: translate(30%, -20%) scale(.7); }
 .jy-hp { display: flex; justify-content: center; gap: 4px; margin-top: 2px; }
