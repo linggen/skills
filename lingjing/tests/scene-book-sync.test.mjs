@@ -129,7 +129,7 @@ test('a condensed passage comes from the book: every sentence in the book\'s own
 
 test('the check holds the standard: Hanli\'s approved sample passes; a new line, a paraphrase and a swap fail', () => {
   const gate = allScenes().find((s) => s.id === '00-gate');
-  const book = gate.story_full.zh;
+  const book = `${gate.story_full.zh}\n\n${gate.story_after_full.zh}`; // split at the road since 10-21 (泗水路)
   const sample = [
     '沉鼎山并不怎么高，只是陡。一道石阶笔直地插进雾里，瞧不见尽头。小满张着嘴，半天合不上。',
     '庙廊下生着一堆火。马家雇的镖师葛六捏碎一颗核桃：「二十年前考过。外门，练气三层，在第三层蹲了六年。」他一根指头点过一圈孩子：「你们这几千个，明天进门的，一百来个。一百来个里头，能筑基的——一个。」',

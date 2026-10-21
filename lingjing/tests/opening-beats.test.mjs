@@ -294,14 +294,14 @@ test('挑水上坡 told again: its row and level gone; a save holding halfyear-c
   assert.equal(content.tasks.tasks.find(t => t.id === 'halfyear-carry'), undefined, 'the row is gone');
   assert.ok(!content.games.games.some(g => g.task === 'halfyear-carry'), 'and its level');
   const s = atScene('00-halfyear');
-  const offered = fitWorld({ ...s, tasks: { ...s.tasks, 'halfyear-carry': { status: 'offered' } }, tell_owed: ['after/00-halfyear'] }, content);
+  const offered = fitWorld({ ...s, tasks: { ...s.tasks, 'halfyear-carry': { status: 'offered' } } }, content);
   assert.equal(offered.tasks['halfyear-carry'], undefined, 'offered: let go');
-  assert.deepEqual(offered.tell_owed ?? [], [], 'nothing owed after it');
-  const on = resolve(tellOf(content, offered)?.keep ?? offered, content, ctx(), { exit: 'on' });
+  assert.equal(offered.tasks['halfyear-chaiduo'].status, 'offered', '雪夜柴垛 is the board now');
+  const on = resolve(won({ ...offered, stamina: 100 }, 'halfyear-chaiduo'), content, ctx(), { exit: 'on' });
   assert.equal(on.state.scene, '00-uncle', JSON.stringify(on.result));
   const done = fitWorld({ ...s, tasks: { ...s.tasks, 'halfyear-carry': { status: 'done', done_at: NOW.toISOString() } } }, content);
   assert.equal(done.tasks['halfyear-carry'].status, 'done', 'done: kept, for the record');
-  assert.equal(resolve(tellOf(content, done)?.keep ?? done, content, ctx(), { exit: 'on' }).state.scene, '00-uncle');
+  assert.equal(resolve(won({ ...done, stamina: 100 }, 'halfyear-chaiduo'), content, ctx(), { exit: 'on' }).state.scene, '00-uncle');
   assert.ok(look(done, content, ctx()).scene, 'it draws');
 });
 
