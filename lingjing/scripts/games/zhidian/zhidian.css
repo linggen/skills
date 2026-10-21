@@ -1,0 +1,46 @@
+/* zhidian.css — 隔空指点 (games/zhidian.js): the 山道 with beasts crossing, 小满 at the left, the 准星, the clock and
+   hits on top, and the small ink frame that stands for the camera's view (never the camera's picture). */
+.zd { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.zd-field { position: relative; aspect-ratio: 4 / 3; max-height: calc(100dvh - 240px); min-height: 260px; overflow: hidden; border-radius: 12px;
+  background: #2a3322 center 62% / cover no-repeat; cursor: none; }
+.zd-beasts { position: absolute; inset: 0; }
+.zd-beast { position: absolute; width: 15%; transform: translate(-50%, -50%); pointer-events: none; }
+.zd-beast img { width: 100%; display: block; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); animation: zd-bob 1.1s ease-in-out infinite; }
+.zd-beast.is-flip img { transform: scaleX(-1); }
+.zd-beast.is-hit img { animation: zd-shake .4s; filter: brightness(1.6) saturate(1.4) drop-shadow(0 0 10px #ff8a2a); }
+.zd-xm { position: absolute; left: 3%; bottom: 1%; height: 34%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); pointer-events: none; }
+
+.zd-sight { position: absolute; width: 9%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; z-index: 4;
+  border: 2px solid rgba(255, 248, 239, .75); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); transition: border-color .15s, opacity .2s; }
+.zd-sight i { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: #fff8ef; }
+.zd-sight::before, .zd-sight::after { content: ''; position: absolute; background: rgba(255, 248, 239, .75); }
+.zd-sight::before { left: 50%; top: -30%; bottom: -30%; width: 2px; margin-left: -1px; }
+.zd-sight::after { top: 50%; left: -30%; right: -30%; height: 2px; margin-top: -1px; }
+.zd-sight.is-armed { border-color: #e8432f; }
+.zd-sight.is-armed i { background: #ffd36a; }
+.zd-sight.is-off { opacity: 0; }
+
+.zd-top { position: absolute; left: 0; right: 0; top: 6px; display: flex; justify-content: center; gap: 18px; color: #fff; font-family: var(--serif);
+  font-size: 15px; letter-spacing: .08em; text-shadow: 0 1px 3px #000; pointer-events: none; z-index: 3; }
+.zd-egg { position: absolute; left: 0; top: 0; width: 9%; pointer-events: none; z-index: 5; filter: drop-shadow(0 0 12px #ffb340); }
+.zd-miss { position: absolute; width: 6%; transform: translate(-50%, -50%); pointer-events: none; z-index: 3; animation: zd-fade .7s ease-out forwards; }
+.zd-status { position: absolute; inset: auto 0 44%; margin: 0; text-align: center; color: #fff; font-size: 12px; text-shadow: 0 1px 3px #000; }
+.zd-status:empty { display: none; }
+/* The camera's frames go to the model only: the element is there for them, never seen (display:none can stall frames). */
+.zd-eye { position: absolute; left: 0; top: 0; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+
+.zd-hint { position: absolute; right: 8px; bottom: 8px; width: 22%; margin: 0; padding: 4px 4px 2px; border-radius: 8px; z-index: 3;
+  background: rgba(255, 248, 239, .9); box-shadow: 0 0 0 1px rgba(60, 40, 20, .25), 0 3px 10px rgba(0, 0, 0, .25); }
+.zd-hint svg { display: block; width: 100%; aspect-ratio: 4 / 3; }
+.zd-hint-ink { stroke: #3a2c20; stroke-width: 1.6; stroke-linecap: round; fill: #3a2c20; }
+.zd-hint.is-ok .zd-hint-ink { stroke: #b0321f; fill: #b0321f; }
+.zd-hint figcaption { font-size: 11px; line-height: 1.4; text-align: center; color: #3a2c20; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zd-hint.is-ok figcaption { color: #b0321f; }
+.zd-hint.is-none figcaption { color: #8a7a68; }
+.zd-go { align-self: center; }
+.zd-nocam { margin: 24px 0; text-align: center; color: var(--dim); }
+
+@keyframes zd-bob { 50% { translate: 0 -4%; } }
+@keyframes zd-shake { 25% { translate: -6px 0; } 75% { translate: 6px 0; } }
+@keyframes zd-fade { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .zd-beast img, .zd-beast.is-hit img, .zd-miss { animation: none; } }

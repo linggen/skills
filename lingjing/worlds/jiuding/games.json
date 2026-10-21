@@ -794,6 +794,13 @@
    "_about": "结印 — hand seals at the camera, a prototype, 游戏厅 only (Hanli 10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」; 「没摄像头时, 就不用用户结印帮打」). MediaPipe Hand Landmarker on the device (scripts/vendor/mediapipe/), seals judged by rules in worlds/jiuding/levels/jieyin.json; four seals cast a 火蛋. No camera → not offered. `lv=1` the 火蛋, `lv=2` the shape of 古六's 讲堂 teaching level. doc/games.md § 结印."
   },
   {
+   "id": "zhidian",
+   "group": "main",
+   "mechanic": "结印",
+   "stars": 3,
+   "_about": "隔空指点 — point the 剑诀 at the screen, a test game, 游戏厅 only (Hanli 10-21: 「剑诀目前是手指朝上, 如果手指指向屏幕, 是否可行. 一个用户隔空双指点屏幕的demo视频, 也许能引起兴趣」; 「好，先做试玩」). A 准星 follows the two fingertips, a jab toward the camera throws a 火蛋 there; beasts cross the 山道, hits in 60 s give the stars. The seal judged by joint angles on the 3D world points (games/jieyin/judge3d.js); numbers in worlds/jiuding/levels/zhidian.json. No camera → one line, nothing else. doc/games.md § 隔空指点."
+  },
+  {
    "id": "shoulu",
    "group": "later",
    "mechanic": "塔防",

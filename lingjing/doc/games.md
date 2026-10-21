@@ -693,3 +693,29 @@ tried again).
   wm-qianye's 讲堂 with `data.lv: 'jiangtang'` (褚先生's lines as the lead and each seal's `hint`), then the 火蛋;
   offered only when `available()`, else the scene keeps 讲堂试法 (砸寨).
 - **Tested:** the judge on synthetic hands (pose.js), not recorded ones; real-camera recognition is Hanli's to try.
+
+## 隔空指点 — point the 剑诀 at the screen (test game, 10-21)
+
+Hanli 10-21: 「剑诀目前是手指朝上, 如果手指指向屏幕, 是否可行. 一个用户隔空双指点屏幕的demo视频, 也许能引起兴趣」;
+「好，先做试玩」. 游戏厅 only (`zhidian`, group 主力, type 结印); not in the story. The player holds **剑诀** with the two
+fingers at the camera: a 准星 follows where they point, a quick jab toward the camera throws a 火蛋 there. Beasts
+(野猪 · 犰狳 · 鬿雀, 守墙关's art) cross the 山道 on three lanes; hits in 60 s give the stars (6 · 10 · 14; the round
+ends early at ★★★). Numbers: worlds/jiuding/levels/zhidian.json; the seal's shape: jieyin.json `seals.jian`.
+
+- **剑诀 at the lens** (games/jieyin/judge3d.js, `judge3d`): judge.js's "straight" (the tip reaching farther from the
+  wrist than the middle joint) sinks toward 1 when a finger lies along the line of sight and the landmarker's depth
+  comes out squashed. judge3d reads each finger's own bend (middle + end joints) on the 3D world points: straight
+  < 50°, folded > 90°, the two tips < 0.7 palm-widths apart. Synthetic hands, up to straight at the lens, depth
+  squashed to 0.3: index/middle 0–12°, ring/little 132–157°, tips 0.51 (a V is 0.95). Same rule format and calls as
+  judge.js (`sealOf3d`), so 结印 can take it with one import.
+- **The 准星** (zhidian/aim.js, `aim`): the fingertips' midpoint in the picture, mirrored, the picture's inner box
+  (20–80 % × 15–75 %) stretched to the field; held still inside 0.012, eased over 90 ms beyond it.
+- **The jab** (zhidian/poke.js, `poke`): the hand's size in the picture (three palm lengths) ≥ ×1.16 its smallest in
+  the last 220 ms, 剑诀 held, the 准星 not swept > 0.14 meanwhile, 380 ms apart; the egg goes where the 准星 stood
+  before the hand grew. Fires on a ×1.2 jab in ≤ 200 ms (30 fps; ≤ 150 ms at 15 fps); never on drift nearer up to
+  70 %/s, a 5 % tremble, rocking ±10 % about once a second, a sweep, or a slow push. Asks the eye for 30 fps.
+- **Seeing**: as 结印 (eye.js, on the device). The camera's picture is never shown — a small ink frame draws the hand
+  the landmarker sees (zhidian/hint.js, a stand-in for the shared handHint). Camera only after 开始; off on pause,
+  hidden page, end, leave. No camera / denied / no WebGL: one line, nothing else.
+- **Tested** on synthetic hands (pose.js turned and depth-squashed, near-misses, a bot through the whole pipe to ★★★);
+  the live page by the dev feed (`?dev=1&feed=1`, `zhidianFeed.bot()`). Real-camera play is Hanli's.

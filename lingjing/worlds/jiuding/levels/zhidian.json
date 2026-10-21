@@ -1,0 +1,23 @@
+{
+  "_about": "隔空指点 — point the 剑诀 at the screen, a test game in the 游戏厅 (Hanli 2026-10-21: 「剑诀目前是手指朝上, 如果手指指向屏幕, 是否可行. 一个用户隔空双指点屏幕的demo视频, 也许能引起兴趣」; 「好，先做试玩」). The player holds 剑诀 (jieyin.json `seals.jian`, the one rule) with the two fingers at the camera: a 准星 follows the fingertips (`aim`), a quick jab toward the camera (`poke`) throws a 火蛋 where the 准星 stood. Beasts drift across the 山道 (`spawn`); hits in `seconds` give the stars. The seal is judged by joint angles on the 3D world points (games/jieyin/judge3d.js, `judge3d`), so it counts pointing up and pointing at the lens. No camera → one line, nothing else. 游戏厅 only; not in the story. doc/games.md § 隔空指点.",
+  "seal": "jian",
+  "_judge3d": "judge3d.js: a finger is straight when it bends (middle + end joints) less than `extDeg` in all, folded when more than `curlDeg`; `near` / `far` in palm-widths (index root → little-finger root). Synthetic 剑诀 (pose.js), up or at the lens, depth squashed to 0.3: index/middle 0–12°, ring/little 132–157°, tips 0.51 palm apart; a V (fingers spread) 0.95. A held 剑诀 is judged `loose` (15%) wider.",
+  "judge3d": { "extDeg": 50, "curlDeg": 90, "near": 0.7, "far": 0.6, "loose": 0.15, "graceMs": 250 },
+  "_aim": "aim.js: the 准星 is the midpoint of `from` in the camera's picture, mirrored (move right, it goes right), the inner `box` of the picture [x0, y0, x1, y1] stretched to the whole field (no reaching for the frame's edge), then held still inside `dead` (field units) and eased over `tauMs` beyond it.",
+  "aim": { "from": ["index.tip", "middle.tip"], "box": [0.2, 0.15, 0.8, 0.75], "dead": 0.012, "tauMs": 90 },
+  "_poke": "poke.js: the hand's size in the picture (wrist → index root + wrist → little-finger root + index root → little-finger root) grows by `grow` over its smallest in the last `windowMs` = a jab at the camera; the shot goes where the 准星 stood at that smallest (the tips move while the hand jabs). Not a jab: the 准星 moved more than `maxShift` across that window (a sweep or a lost track), 剑诀 not held, or within `coolMs` of the last; after a shot the size starts over from where it is. Needs the camera read at ≥ `fps` (a 220 ms jab is 6 frames at 30, 3 at 15).",
+  "poke": { "windowMs": 220, "grow": 1.16, "maxShift": 0.14, "coolMs": 380, "fps": 30 },
+  "levels": [
+    {
+      "id": "shandao", "title": { "zh": "隔空指点 · 山道", "en": "Point in the air · The mountain road" },
+      "seconds": 60,
+      "_spawn": "core.js: a beast every `everyMs` (± `jitter`), from either side on one of `lanes` (field height), at a speed in `speed` (field widths a second), `foes` by weight; `r` its hit radius (field width). Seeded: 再来 deals a fresh one.",
+      "spawn": { "everyMs": 1700, "jitter": 500, "lanes": [0.24, 0.4, 0.56], "speed": [0.09, 0.16], "r": 0.075, "max": 4,
+        "foes": [ { "id": "yezhu", "w": 3 }, { "id": "qiuyu", "w": 2 }, { "id": "qique", "w": 2 } ] },
+      "eggMs": 260,
+      "stars": [6, 10, 14],
+      "lead": { "zh": "野兽一只只从山道上横穿过去。剑诀对准镜头，两指指哪，准星就到哪——往前一点，火蛋出手。", "en": "Beasts cross the mountain road one by one. Point the sword seal at the camera: the crosshair goes where the two fingers point — jab forward and the fire egg flies." },
+      "end": { "zh": "山道上安静了。", "en": "The road falls quiet." }
+    }
+  ]
+}
