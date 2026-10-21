@@ -4,6 +4,7 @@
    390 and a desk match. */
 .jyh-btn, .jyh-dock { position: absolute; left: 1.6%; bottom: 7.5%; z-index: 5; }
 .jyh-btn[hidden], .jyh-dock[hidden] { display: none !important; }
+.jyh-btn.is-aside, .jyh-dock.is-aside { opacity: 0; pointer-events: none; transition: opacity .2s; } /* a card pick is up */
 .shouqiang-stage[data-landscape="true"] .jyh-btn, .shouqiang-stage[data-landscape="true"] .jyh-dock { left: 0.8%; }
 
 .jyh-btn { width: 13%; aspect-ratio: 1; min-width: 44px; border-radius: 50%; border: 2px solid #fff3c4; padding: 0; cursor: pointer;

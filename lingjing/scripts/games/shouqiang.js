@@ -65,6 +65,7 @@ export function offerJieyin(kit, box, { lang, game, shell, feed = false, load = 
     host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis,
     cast: () => game.jieyin(), fizzle: () => game.fizzle(), cool: () => game.jieyinCool(),
     paused: () => Boolean(shell?.paused?.() || game.paused()),
+    aside: () => game.picking(),
   })).catch((e) => { console.warn('[shouqiang] 结印', e); return null; });
 }
 

@@ -3,7 +3,7 @@
 // once the player taps it, the camera and a small hint frame docked there. The seals of one jieyin.json move (`moves`,
 // this device's sequence: sets.js) made in order call the host's `cast()`; a wrong seal held calls its `fizzle()`.
 //
-//   offerSeals({ host, lang, move, cast, fizzle, cool, paused, env, feed }) → Promise<{ close(), camera, wanted } | null>
+//   offerSeals({ host, lang, move, cast, fizzle, cool, paused, aside, env, feed }) → Promise<{ close(), camera, wanted } | null>
 //   (`available` and `eyeOf` stand in for eye.js's in a test.)
 //
 // null — and NOTHING drawn — when 结印 cannot be offered (no camera API, no camera, no WebGL; eye.js `available`):
@@ -16,7 +16,9 @@
 //
 // The camera: on only after the button; off (its tracks) while `paused()` (the shell's pause, the game's own), while
 // the page is hidden, and for good on close() (the level ends, the player leaves). Back on by itself only if the
-// player had it on. While `cool()` > 0 the seals are not counted. All on the device; nothing goes out.
+// player had it on. While `cool()` > 0 the seals are not counted. While `aside()` (the host's own modal, a card pick)
+// the button and the frame step aside — faded, not in the way of a tap — and nothing counts. All on the device;
+// nothing goes out.
 //
 // Dev only: `feed` (the host passes `?dev=1&feed=1`) offers it without a camera; hands come from the console
 // (`window.jieyinFeed(hands)`, world points as judge.js reads them) — the live check's way to cast.
@@ -61,7 +63,7 @@ function dockHtml(kit, sequence, w) {
 }
 
 export async function offerSeals({ host, lang = 'zh', move = 'huodan', cast = () => false, fizzle = () => {}, cool = () => 0,
-  paused = () => false, env = globalThis, feed = false, available = cameraHere, eyeOf = openEye } = {}) {
+  paused = () => false, aside = () => false, env = globalThis, feed = false, available = cameraHere, eyeOf = openEye } = {}) {
   if (!feed && !(await available(env))) return null;
   const kit = await fetch(LEVELS).then((r) => r.json());
   const doc = host.ownerDocument, win = doc.defaultView ?? env;
@@ -124,9 +126,10 @@ export async function offerSeals({ host, lang = 'zh', move = 'huodan', cast = ()
     if (closed) return;
     const now = win.performance.now(), dt = Math.min(100, now - last);
     last = now;
-    const run = wanted && !paused() && !doc.hidden;
+    const run = wanted && !paused() && !doc.hidden, away = aside();
     camera(run);
-    if (run) {
+    for (const el of [btn, dock]) el.classList.toggle('is-aside', away);
+    if (run && !away) {
       if (charged && cast()) charged = false;
       if (!charged && cool() <= 0) {
         const r = step(s, sealOf(hands, seals, kit.judge, s.cur, { image, aspect }), dt, kit.judge);

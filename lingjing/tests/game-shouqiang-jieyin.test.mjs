@@ -163,7 +163,8 @@ test('the camera: off until the button; off while paused or hidden, back only if
   const { doc, host, frame } = page();
   const eye = fakeEye();
   let paused = false;
-  const h = await offerSeals({ host, available: async () => true, eyeOf: eye.make, paused: () => paused });
+  let picking = false;
+  const h = await offerSeals({ host, available: async () => true, eyeOf: eye.make, paused: () => paused, aside: () => picking });
   const [btn, dock] = host.appended;
   assert.equal(dock.hidden, true);
   await frame(5);
@@ -172,6 +173,12 @@ test('the camera: off until the button; off while paused or hidden, back only if
   await frame(2);
   assert.deepEqual(eye.log, ['start']);
   assert.equal(h.camera, 'on');
+  picking = true;
+  await frame(1);
+  assert.ok(btn.classList.contains('is-aside') && dock.classList.contains('is-aside'), 'a card pick: the corner steps aside');
+  picking = false;
+  await frame(1);
+  assert.ok(!dock.classList.contains('is-aside'));
   paused = true;
   await frame(2);
   assert.deepEqual(eye.log.slice(-1), ['pause'], 'the shell\'s pause stops it');
