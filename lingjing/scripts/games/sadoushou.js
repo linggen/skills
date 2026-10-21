@@ -35,17 +35,16 @@ export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (r
 
 /** 结印's button in the field, where it may be offered (games/jieyin/helper.js decides: no camera → null, nothing drawn,
     and the game is exactly the game without it — Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」).
-    A cast strikes up the column of the lane the hand stood in (left · middle · right), else the squad's. */
+    A cast strikes up the column the dock names (its lane: left · middle · right), else the squad's. */
 export function offerJieyin(level, box, { lang, game, shell, marks, feed = false, load = () => import(SEALS.href) }) {
   const c = level.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const t = (o) => o?.[lang] ?? o?.zh ?? '';
   const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
-    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves: moves.map((m) => m.id), idle: c.idle, fastFps: c.armedFps,
-    // 手势斗法's cast event: its move, and the lane the hand stood in (left · middle · right = the three columns)
-    state: () => game.jieyinState(), cast: (e) => game.jieyin(e.move, e.lane), say,
-    call: () => t(c.say), first: moves.some((m) => m.id === 'feijian') ? c.first : null,
+    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, idle: c.idle,
+    state: () => game.jieyinState(), cast: (id, lane) => game.jieyin(id, lane?.lane ?? lane), fizzle: () => game.fizzle(), say,
+    call: () => t(c.say), first: moves.some((m) => m.motion === 'jab' && !m.from) ? c.first : null,
     paused: () => Boolean(shell?.paused?.() || game.paused()), aside: () => game.picking(),
   })).catch((e) => { console.warn('[sadoushou] 结印', e); return null; });
 }

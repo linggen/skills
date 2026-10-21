@@ -1,0 +1,86 @@
+{
+ "version": 1,
+ "id": "00-baicai",
+ "chapter": "00-prologue",
+ "hui": "h01",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 隔壁菜地",
+  "en": "Shi'ao village · the plot next door"
+ },
+ "weather": "cloudy",
+ "_weather": "the same day as 00-shiao: 「那天一直阴着，阴到了傍晚」",
+ "setup": {
+  "zh": "你出门的时候，隔壁的阿禾正蹲在菜地里，守着一颗白菜——她家菜地里最大的一颗，过冬的。一只芦花鸡刚从篱笆缝里探过头来。",
+  "en": "As you go out, Ahe from next door is squatting in her vegetable plot, guarding a cabbage — the biggest in her family's plot, the one for the winter. A speckled hen has just poked its head through a gap in the fence."
+ },
+ "recap": {
+  "zh": "阿禾守着她那颗过冬的白菜，竹竿一点，芦花鸡便缩回篱笆外；她又记起你欠她半个鸡蛋。",
+  "en": "Ahe guarded her winter cabbage — a flick of the bamboo pole and the hens pulled back out of the fence; and she remembered you owe her half an egg."
+ },
+ "cast": [],
+ "people": [
+  "ahe"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "隔壁菜地，一颗白菜。",
+    "八十一天，一百六十二瓢水，三十一条虫。",
+    "篱笆缝里，探进来一只芦花鸡。"
+   ],
+   "en": [
+    "Next door, in the plot: one cabbage.",
+    "Eighty-one days, a hundred and sixty-two ladles, thirty-one grubs.",
+    "Through a gap in the fence, a speckled hen pokes in."
+   ]
+  }
+ },
+ "story": {
+  "zh": "喝过一碗稀得照得见人影的野菜粥，他娘把柴刀递给小满，道：「上东坡砍一担柴。早去早回。」小满出门的时候，隔壁的[阿禾]{注=ahe}正蹲在菜地里，守着一颗白菜。她梳着两根黄毛小辫，一张小脸绷得紧紧的，比那颗白菜裹得还紧。\n\n那颗白菜是她家菜地里最大的一颗，青里透白，裹得紧紧实实，个头比阿禾的脑袋还大上一圈。一只芦花鸡刚从篱笆缝里探过头来，她手里竹竿一点，那鸡便缩了回去，手法之熟练，一看便知是守了一整个秋天的。",
+  "en": "After a bowl of wild-greens gruel so thin you could see your face in it, his mother handed Xiaoman the woodcutter's knife and said, \"Go up East Slope and cut a load of firewood. Go early, come back early.\" As Xiaoman went out, [Ahe]{注=ahe} from next door was squatting in her vegetable plot, guarding a cabbage. She wore two little yellow-haired plaits, and her small face was wrapped tighter than the cabbage.\n\nIt was the biggest cabbage in her family's plot, green shading into white, packed firm and tight, a good size bigger than Ahe's own head. A speckled hen had just poked its head through a gap in the fence; a flick of her bamboo pole and the hen pulled back again, so neatly done you could tell at a glance she'd been guarding it all autumn."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "baicai-hens"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "baicai-hens"
+  ]
+ },
+ "story_after": {
+  "zh": "小满隔着篱笆道：「阿禾，守白菜呢？」阿禾头也不抬，道：「这颗白菜，我种了八十一天。我浇了一百六十二瓢水，捉了三十一条虫，撵了四十回鸡——今天这一回不算，还没撵完。这一颗，是过冬的。」\n\n阿禾在身后叫住了他：「还有。你欠我半个鸡蛋。」小满道：「……你连个本子都没有，这种账你也记得住？」阿禾拿指头点了点自己的脑门，道：「记在这儿。」小满道：「那你要是哪天忘了呢？」阿禾面无表情地道：「我忘了，你也得还。」\n\n隔着一道山谷，半山腰上一片白墙黑瓦，那便是马家了。马家大门口有一团圆滚滚的东西在挪动，也不知是马家的哪位少爷，还是马家的一扇磨盘。\n\n那天一直阴着，阴到了傍晚，西边的云才裂开一道缝，漏出一线夕阳来。屋里头，他爹的左膝盖「咯」地响了一声。",
+  "en": "Xiaoman said across the fence, \"Ahe, guarding the cabbage?\" Ahe didn't look up. \"I've been growing this cabbage for eighty-one days. I've poured a hundred and sixty-two ladles of water on it, picked off thirty-one grubs, and chased off the hen forty times — this time doesn't count, I'm not done chasing. This one is for the winter.\"\n\nAhe called after him: \"One more thing. You owe me half an egg.\" Xiaoman said, \"…You don't even have a book. How do you remember a debt like that?\" Ahe tapped her forehead with one finger. \"It's written here.\" Xiaoman said, \"And if one day you forget?\" Ahe said, without any expression at all, \"If I forget, you still pay.\"\n\nOn the far side of a valley, halfway up the mountain, stood a spread of white walls and black tiles. That was the Ma place. Something round was moving at the Ma gate. Whether it was one of the young Ma masters or one of the Ma millstones, he couldn't tell.\n\nIt stayed grey all day, until towards evening the clouds in the west cracked open and let out a thread of sunset. Indoors, his father's left knee gave a *click*."
+ },
+ "story_after_full": {
+  "zh": "小满隔着篱笆道：「阿禾，守白菜呢？」阿禾头也不抬，道：「这颗白菜，我种了八十一天。我浇了一百六十二瓢水，捉了三十一条虫，撵了四十回鸡——今天这一回不算，还没撵完。我家坡田今年又少收了两成，我爹说，土一年比一年薄了。这一颗，是过冬的。」\n\n小满道：「我上东坡砍柴，你去不去？」阿禾道：「我娘不让我出村口。」小满道：「东坡又不在村外头。」阿禾道：「上东坡要过老槐树，老槐树就是村口。」小满想了一想，竟驳她不倒。\n\n他正要走，阿禾在身后叫住了他：「还有。你欠我半个鸡蛋。」小满一愣：「什么时候的事？」阿禾道：「上个月十五，你帮我家撵鸡，把芦花鸡撵上了房。它那天没下蛋。」小满道：「它也不是天天都下。」阿禾道：「所以只算你半个。」\n\n小满道：「……你连个本子都没有，这种账你也记得住？」阿禾拿指头点了点自己的脑门，道：「记在这儿。」小满道：「那你要是哪天忘了呢？」阿禾面无表情地道：「我忘了，你也得还。」\n\n东坡上的柴，早给村里人砍得稀稀拉拉。小满爬到半坡往对面看，隔着一道山谷，半山腰上一片白墙黑瓦，三进的大院子，那便是马家了。马家的屋顶，隔着一道山谷也瞧得出是不漏的，它用不着知道雨从哪里来，小满心想，它大概是蒙山最没学问的屋顶。\n\n马家大门口有一团圆滚滚的东西在挪动，隔得太远，他瞧不真切，也不知是马家的哪位少爷，还是马家的一扇磨盘。\n\n他砍了一担柴挑回家，坐在院子里劈，劈一根，望一眼天。那天一直阴着，阴到了傍晚，西边的云才裂开一道缝，漏出一线夕阳来。屋里头，他爹的左膝盖「咯」地响了一声。",
+  "en": "Xiaoman said across the fence, \"Ahe, guarding the cabbage?\" Ahe didn't look up. \"I've been growing this cabbage for eighty-one days. I've poured a hundred and sixty-two ladles of water on it, picked off thirty-one grubs, and chased off the hen forty times — this time doesn't count, I'm not done chasing. Our hill field brought in two-tenths less again this year. Pa says the soil's thinner every year. This one is for the winter.\"\n\nXiaoman said, \"I'm going up East Slope for firewood. Coming?\" Ahe said, \"Ma won't let me past the village gate.\" Xiaoman said, \"East Slope isn't outside the village.\" Ahe said, \"To get up East Slope you pass the old locust tree, and the old locust tree is the village gate.\" Xiaoman thought about it and couldn't find a way round that.\n\nHe was just about to go when Ahe called after him: \"One more thing. You owe me half an egg.\" Xiaoman stopped. \"Since when?\" Ahe said, \"The fifteenth of last month. You helped chase our hens and you chased the speckled one up onto the roof. She didn't lay that day.\" Xiaoman said, \"She doesn't lay every day anyway.\" Ahe said, \"That's why it's only half.\"\n\nXiaoman said, \"…You don't even have a book. How do you remember a debt like that?\" Ahe tapped her forehead with one finger. \"It's written here.\" Xiaoman said, \"And if one day you forget?\" Ahe said, without any expression at all, \"If I forget, you still pay.\"\n\nThe firewood on East Slope had long since been cut thin by the villagers. Halfway up, Xiaoman looked across: on the far side of a valley, halfway up the mountain, stood a spread of white walls and black tiles, a big house three courtyards deep. That was the Ma place. Even from across a valley you could see the Ma roof didn't leak. It had no need to know where the rain came from, Xiaoman thought; it was probably the least learned roof on Mount Meng.\n\nSomething round was moving at the Ma gate. It was too far off to make out — whether it was one of the young Ma masters or one of the Ma millstones, he couldn't tell.\n\nHe cut a load of firewood, carried it home on his shoulder pole, and sat in the yard splitting it: split one, look at the sky. It stayed grey all day, until towards evening the clouds in the west cracked open and let out a thread of sunset. Indoors, his father's left knee gave a *click*."
+ },
+ "lines": [],
+ "buttons": [
+  "evening"
+ ],
+ "exits": [
+  {
+   "id": "evening",
+   "label": {
+    "zh": "那天傍晚",
+    "en": "That evening"
+   },
+   "means": "goes on to the evening 马三 comes for the rent, once 阿禾's cabbage is kept from the hens (board baicai-hens)",
+   "beat": [],
+   "next": "00-masan",
+   "needs": {
+    "task": "baicai-hens"
+   },
+   "refuse": {
+    "zh": "芦花鸡还在篱笆缝里探头——先帮阿禾把鸡撵走。",
+    "en": "The hens are still poking through the fence — help Ahe chase them off first."
+   }
+  }
+ ],
+ "_beats": "2026-10-21 (Hanli: 第一回 keeps 接雨 · 忍字 · 拽爹 · 认路 · 喂饼 and adds two 塔防 boards — 「用塔防作为主力」「7个游戏可以防止阅读过长」): 00-shiao's morning passage split word for word after 「……也从不空手走。」 — here 小满 goes out (粥, 柴刀) and finds 阿禾 at her cabbage; the passage stops where the book's 芦花鸡 pokes through the 篱笆 and her 竹竿 flicks it back (「……一看便知是守了一整个秋天的。」). 守白菜 (`baicai-hens`, 守墙关 story level `baicai`) is that hen and her sisters: the player's first 塔防, gentle. Then the book goes on (`story_after`): 「阿禾，守白菜呢？」 and her tally — 「撵了四十回鸡——今天这一回不算，还没撵完」 — the egg she is owed, 马家, the knee; 那天傍晚. The cabbage's end is still the book's: 马三's door smashes it."
+}

@@ -77,6 +77,13 @@ export const opening = (g) => Boolean(g.opening && !g.main);
 
 const lv = (g, id) => g.skills[id] ?? 0;
 const card = (g, id) => g.kit.cards.find((c) => c.id === id);
+/** A card as this level shows it: the kit's card, with the level's own name, line and icon laid over (a story level's
+    `cards` — 守白菜: the 剑阵 line is 阿禾's 竹竿). The numbers are always the kit's. */
+export function cardOf(g, id) {
+  const base = card(g, id) ?? g.kit.unitCards?.find((c) => c.id === id) ?? g.kit.opening?.lines.find((c) => c.id === id);
+  const own = g.level.cards?.find((c) => c.id === id);
+  return base && own ? { ...base, ...own } : base;
+}
 const emit = (g, e) => { g.events.push(e); };
 
 // ---- waves -------------------------------------------------------------------------------------------------------
@@ -297,7 +304,7 @@ export const jieyinMove = (g, id) => spellKit(g)?.moves?.find((m) => m.id === id
 
 /** Is 结印 offered now? A wave on and — `when` boss — a 大妖 on the field; elite — or a beast its kit marks `elite`. */
 export function jieyinOn(g, c = spellKit(g)) {
-  if (!c || g.phase !== 'wave') return false;
+  if (!c || g.level.jieyin === false || g.phase !== 'wave') return false; // a level may take no spell (守白菜: hens, before any 结印)
   const when = g.jieyinWhen ?? c.when ?? 'boss';
   return when === 'always' || g.beasts.some((b) => b.hp > 0 && (b.boss || (when === 'elite' && g.beastKit[b.kind].elite)));
 }
@@ -628,7 +635,9 @@ export function stars(g) {
 /** The cards one could take now: not maxed, and its `needs` held. */
 export function open(g) {
   if (g.grid) return (g.kit.unitCards ?? []).filter((c) => lv(g, c.id) < c.max && (!c.unit || g.level.units.includes(c.unit)));
-  return g.kit.cards.filter((c) => lv(g, c.id) < c.max && (!c.needs || lv(g, c.needs) > 0));
+  // a level that names its `cards` offers only those (守白菜: the 竹竿's three)
+  const only = g.level.cards ? new Set(g.level.cards.map((c) => c.id)) : null;
+  return g.kit.cards.filter((c) => (!only || only.has(c.id)) && lv(g, c.id) < c.max && (!c.needs || lv(g, c.needs) > 0));
 }
 
 /** Three different cards (fewer if fewer are open), drawn by the seed. The first between-wave offers lean to the

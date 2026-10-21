@@ -136,6 +136,8 @@ const atCave = () => {
   let s = newState(content, 'zh', NOW);
   for (const step of TO_VALLEY) { if (s.scene === '00-cave') break; s = walk(s, [step], content, NOW); }
   assert.equal(s.scene, '00-cave');
+  // 守火 (2026-10-21) is the cave's first board: 喂饼 comes after it
+  s = walk(s, [['win', { id: 'cave-fire' }], ['task', { action: 'done', id: 'cave-fire' }]], content, NOW);
   return tellOf(content, s)?.keep ?? s;
 };
 

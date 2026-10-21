@@ -21,7 +21,9 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   // the reading cap before 入门 (2026-10-20): 00-halfyear's 挑水上坡 (on the cut 练功's task id), 今一's 边跑边念
   // the 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」): 挑水上坡, 后山, 随叶 and 顺风溜 told — rows, levels and tasks gone
   // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket
-  'notice-shuitong': 'shuitong' };
+  'notice-shuitong': 'shuitong',
+  // 第一回's lineup (2026-10-21, Hanli: 「按你的建议来」): 00-masan's 忍字 — the breath pressed down under the 桂花糕
+  'masan-taunt': 'renzi' };
 const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/tasks/${f}.json`, import.meta.url), 'utf8')).tasks);
 
 /** Played to the end by `policy(state)` (true = hold), on a `step` ms clock. */

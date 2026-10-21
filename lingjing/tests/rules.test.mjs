@@ -180,7 +180,7 @@ test('the hero is fixed — 沈小满, a boy, from the first Look; 石坳村 goe
   refused(resolve, s, { exit: 'begin' }, 'needs'); // 接雨 first (2026-10-14)
   const on = must(resolve, walk(s, [['win', { id: 'rain-basins', grade: 'wet' }], ['task', { action: 'done', id: 'rain-basins' }], ['played']], content, NOW), { exit: 'begin' });
   assert.equal(on.result.named ?? null, null, 'no name card: nothing is named');
-  assert.equal(on.result.scene.id, '00-masan');
+  assert.equal(on.result.scene.id, '00-baicai');
   assert.equal(on.state.name, '沈小满');
   const cliff = walk(on.state, [...TO_HALL.slice(1, TO_HALL.findIndex(([, a]) => a.exit === 'follow') + 1)], content, NOW);
   assert.equal(cliff.scene, '00-cliff');
@@ -213,7 +213,7 @@ test('the rent is paid with the deer hide the shot brought, and refused without 
 });
 
 test('staying exits tell their passage and keep the scene; a staying choice made is not offered again', () => {
-  const s = walk(start(), TO_VALLEY.slice(0, 7), content, NOW);
+  const s = walk(start(), TO_VALLEY.slice(0, 8), content, NOW);
   assert.equal(s.scene, '00-duanbei');
   const back = must(resolve, s, { exit: 'back' });
   assert.equal(back.state.scene, '00-duanbei');
@@ -925,7 +925,7 @@ test('a later realm pays more for the same task; the day counts base', () => {
 
 test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
   let s = { ...start(), stamina: 0, stamina_at: NOW.toISOString() };
-  s = walk(s, TO_VALLEY.slice(0, 9), content, NOW);
+  s = walk(s, TO_VALLEY.slice(0, 10), content, NOW);
   assert.equal(s.scene, '00-heisong');
   assert.equal(s.stamina, 0, 'looking (看) is free');
   // …but an exit that is toil by itself (the marks, the storm, the steps) spends its own 体力
@@ -1544,7 +1544,7 @@ test('a key the story still needs cannot be sold', () => {
 test('an exit can grant a thing', () => {
   const c = structuredClone(content);
   c.chapters['00-prologue'].scenes['00-chushan'].exits[0].grant = { table: 'scene', item: 'straw-cloak' };
-  const out = resolve(walk(start(), TO_VALLEY.slice(0, 6), c, NOW), c, ctx(), { exit: 'lookout' });
+  const out = resolve(walk(start(), TO_VALLEY.slice(0, 7), c, NOW), c, ctx(), { exit: 'lookout' });
   assert.equal(out.result.ok, true);
   assert.equal(out.result.paid.item, 'straw-cloak');
   assert.deepEqual(out.state.bag, { 'straw-cloak': 1 });
@@ -1757,10 +1757,10 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   assert.ok(seen.tasks.every(t => t.status === 'done'), JSON.stringify(seen.tasks.map(t => [t.id, t.status])));
   const ids = seen.tasks.map(t => t.id);
   // 忍字 · 认路 · 算账 back 2026-10-20 as 割绳子 levels (「可以, 放宽, 把那三关加进去」); the old weak boards stay cut.
-  // 00-halfyear's 挑水上坡 (气走经脉, the reading cap) came and went the same day: told again (the 调息 cut).
-  for (const id of ['rain-basins', 'masan-taunt', 'fall-storm', 'bread-share', 'yinyue-way', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  // 00-halfyear's 挑水上坡 (气走经脉, the reading cap) came and went the same day: told again (the 调息 cut). 认路 cut again 2026-10-21; 守白菜 · 守火 added (第一回's lineup).
+  for (const id of ['rain-basins', 'baicai-hens', 'masan-taunt', 'fall-storm', 'cave-fire', 'bread-share', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu']) assert.ok(ids.includes(id), id);
   for (const id of ['xisui-hold', 'feather-breath', 'kitchen-griddle', 'halfyear-carry']) assert.ok(!ids.includes(id), `${id}: cut before 入门 (10-16)`);
-  const order = ['rain-basins', 'masan-taunt', 'bread-share', 'yinyue-way', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu'];
+  const order = ['rain-basins', 'baicai-hens', 'masan-taunt', 'cave-fire', 'bread-share', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu'];
   assert.deepEqual(ids.filter(id => order.includes(id)), order, 'in the order they were played');
 });
 
@@ -1901,27 +1901,27 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   // 接雨 first (2026-10-14): the board 那天傍晚 waits for, won and handed in as the page does.
   cli('win', '--id=rain-basins', '--grade=dry');
   cli('task', '--action=done', '--id=rain-basins');
-  assert.equal(cli('resolve', '--exit', 'begin', '--answer', '{{answer}}').scene.id, '00-masan');
-  assert.equal(cli('look').scene.id, '00-masan');
+  assert.equal(cli('resolve', '--exit', 'begin', '--answer', '{{answer}}').scene.id, '00-baicai');
+  assert.equal(cli('look').scene.id, '00-baicai');
   assert.equal(cli('resolve', '--exit', 'nowhere').refused, 'unknown-exit');
   assert.equal(cli('undo').undid, 'resolve');
   assert.equal(cli('look').scene.id, '00-shiao');
   // Restart: `init` with nothing begins the world in play again, in its
   // language, and logs the save it replaced so `undo` brings it back.
-  assert.equal(cli('resolve', '--exit', 'begin').scene.id, '00-masan');
+  assert.equal(cli('resolve', '--exit', 'begin').scene.id, '00-baicai');
   assert.equal(cli('look', '--said=我在哪里？').lang, 'zh');
   const again = cli('init');
   assert.equal(again.restarted, true);
   assert.equal(again.scene.id, '00-shiao');
   assert.equal(again.lang, 'zh');
   assert.equal(cli('undo').undid, 'init');
-  assert.equal(cli('look').scene.id, '00-masan');
+  assert.equal(cli('look').scene.id, '00-baicai');
   assert.equal(cli('undo').undid, 'resolve', 'words in another language wrote nothing');
   assert.equal(cli('look').scene.id, '00-shiao');
   assert.equal(cli('look').lang, 'zh', 'no engine: the game\'s first language');
   // What the engine renders for an omitted optional arg: an empty --key=.
   const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='begin' --value= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
-  assert.equal(JSON.parse(sh.stdout).scene.id, '00-masan');
+  assert.equal(JSON.parse(sh.stdout).scene.id, '00-baicai');
   // Words in the other language never switch it: the language is Linggen's (rules/language.mjs).
   const heard = cli('look', '--said=Where am I now, then?');
   assert.equal(heard.lang, 'zh');
@@ -1939,7 +1939,7 @@ test('Look\'s `run` holds through moves and is new whenever the play is replaced
   assert.match(first, /^[0-9a-f]{12}$/);
   cli('win', '--id=rain-basins', '--grade=dry');
   cli('task', '--action=done', '--id=rain-basins');
-  assert.equal(cli('resolve', '--exit=begin').scene.id, '00-masan');
+  assert.equal(cli('resolve', '--exit=begin').scene.id, '00-baicai');
   assert.equal(cli('look').run, first, 'a forward move is the same play');
   const named = cli('save', '--title=醒来').saved;
   const restarted = cli('init');
@@ -1974,10 +1974,10 @@ test('Go jumps to an opened scene; the rules keep each day\'s closing state, the
   cli(d1, 'init');
   cli(d1, 'win', '--id=rain-basins', '--grade=dry');
   cli(d1, 'task', '--action=done', '--id=rain-basins');
-  assert.equal(cli(d1, 'resolve', '--exit=begin').scene.id, '00-masan');
+  assert.equal(cli(d1, 'resolve', '--exit=begin').scene.id, '00-baicai');
   const named = cli(d1, 'save', '--title=At the waking').saved;
   assert.equal(named.kind, 'named');
-  assert.equal(named.where, "Shi'ao village · your home · dusk");
+  assert.equal(named.where, "Shi'ao village · the plot next door");
   assert.equal(cli(d1, 'save').refused, 'no-title');
   // Go: an opened scene, straight; a chapter still to open, refused with when.
   assert.equal(cli(d1, 'go', '--scene=00-longzhi').scene.id, '00-longzhi');
@@ -1992,7 +1992,7 @@ test('Go jumps to an opened scene; the rules keep each day\'s closing state, the
   assert.equal(fs.existsSync(path.join(data, 'saves', '2026-09-12.json')), true);
   // Load, undo, forget.
   const loaded = cli(d2, 'load', `--id=${named.id}`);
-  assert.equal(loaded.scene.id, '00-masan');
+  assert.equal(loaded.scene.id, '00-baicai');
   assert.equal(loaded.loaded.title, 'At the waking');
   assert.equal(cli(d2, 'undo').undid, 'load');
   assert.equal(cli(d2, 'look').scene.id, '00-longzhi');

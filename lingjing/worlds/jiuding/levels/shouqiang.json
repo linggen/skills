@@ -6,7 +6,8 @@
   "zheng": {"hp": 17, "speed": 84, "bite": 5, "size": 76, "r": 26, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
   "qiuyu": {"hp": 43, "speed": 30, "bite": 9, "size": 78, "r": 27, "armor": {"sword": 0.4, "fire": 1.5}, "frames": ["walk-1", "walk-2", "hit"], "gold": 2},
   "qique": {"hp": 19, "speed": 70, "bite": 6, "size": 80, "r": 26, "fly": true, "armor": {"ground": 0}, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
-  "heyu": {"hp": 2400, "speed": 14, "bite": 60, "size": 200, "r": 74, "boss": true, "wail": {"every": 7, "for": 2.2, "takes": 2, "calls": ["yezhu", 3]}, "march": {"speed": 40, "roar": 1.6}, "frames": ["walk-1", "hit"], "gold": 20}
+  "heyu": {"hp": 2400, "speed": 14, "bite": 60, "size": 200, "r": 74, "boss": true, "wail": {"every": 7, "for": 2.2, "takes": 2, "calls": ["yezhu", 3]}, "march": {"speed": 40, "roar": 1.6}, "frames": ["walk-1", "hit"], "gold": 20},
+  "luhuaji": {"hp": 37, "speed": 55, "bite": 5, "size": 66, "r": 22, "shoo": true, "frames": ["walk-1", "walk-2", "hit"], "gold": 0, "_about": "芦花鸡 — 阿禾's speckled hens (00-baicai, 守白菜): not a beast of the world but the book's own (「一只芦花鸡刚从篱笆缝里探过头来」); `shoo`: a hen beaten is chased off, not killed (the play runs it off the field)."}
  },
  "hero": {
   "_about": "小满's flying swords and 银月's spirit bolt: what plays before any card.",
@@ -522,6 +523,58 @@
     [["zheng", 2, 6, 3], ["yezhu", 6, 1.2, 20]],
     [["yezhu", 6, 4, 3], ["zheng", 3, 6, 6]],
     [["yezhu", 7, 3, 3], ["zheng", 3, 4, 8], ["yezhu", 7, 1.2, 24], ["zheng", 2, 3, 28]]
+   ]
+  },
+  {
+   "id": "baicai",
+   "kit": "shouqiang",
+   "story": "00-baicai",
+   "_story": "守白菜 (2026-10-21, Hanli: 第一回 keeps 接雨 · 忍字 · 拽爹 · 认路 · 喂饼 and adds two 塔防 boards — 「用塔防作为主力」「7个游戏可以防止阅读过长」): 00-baicai, the book's 芦花鸡 at the 篱笆 and 阿禾's 竹竿 (「一只芦花鸡刚从篱笆缝里探过头来，她手里竹竿一点，那鸡便缩了回去」). The player's first 塔防, gentle: hens, not beasts; 阿禾 the hero (her 竹竿 pokes, the `sword` line), 小满 beside her (土坷垃, the `fox` bolt); no opening pick, the range line unseen (`rangeLine: false`: the hens are hit once they are through the 篱笆, `rangeY`), no 结印 (`jieyin: false`); one card pick after the first wave (`cards`: the 竹竿's three, named for her). A tap names the hen to chase. Stars by the cabbage left. `art` names the pictures the play draws in place of 小满, 银月 and the swords; `words` the HUD's own (`{n}`: the number).",
+   "place": "shiao",
+   "opening": false,
+   "jieyin": false,
+   "rangeLine": false,
+   "art": {"bg": "baicai-bg", "wall": "baicai-wall", "hero": "ahe-idle", "heroCast": "ahe-cast", "hand": null, "side": "xiaoman-side", "shot": "zhugan", "sideShot": "kela"},
+   "leadSec": 6,
+   "between": 4,
+   "countIn": 3,
+   "wall": 100,
+   "wallY": 760,
+   "rangeY": 175,
+   "difficulty": 1,
+   "hpMul": 1,
+   "growth": 0.15,
+   "stars": [0.75, 0.4],
+   "title": {"zh": "守白菜", "en": "Guarding the cabbage"},
+   "lead": [
+    {"zh": "一只芦花鸡刚从篱笆缝里探过头来。", "en": "A speckled hen has just poked its head through a gap in the fence."},
+    {"zh": "「我撵了四十回鸡——今天这一回不算，还没撵完。」", "en": "\"I've chased off the hen forty times — this time doesn't count, I'm not done chasing.\""},
+    {"zh": "芦花鸡来了！", "en": "Here come the hens!", "big": true}
+   ],
+   "cards": [
+    {"id": "jian-more", "icon": "icon-gan-more", "name": {"zh": "竹竿 · 连点", "en": "Bamboo pole · quick jabs"}, "say": {"zh": "阿禾一回多点一下。", "en": "Ahe jabs once more each time."}},
+    {"id": "jian-pierce", "icon": "icon-gan-sweep", "name": {"zh": "竹竿 · 一扫一串", "en": "Bamboo pole · one sweep"}, "say": {"zh": "一竿子扫过去，撵走好几只。", "en": "One sweep of the pole sends several running."}},
+    {"id": "jian-arc", "icon": "icon-gan-back", "name": {"zh": "竹竿 · 回手", "en": "Bamboo pole · backhand"}, "say": {"zh": "点中一只，回手再撵一只。", "en": "Poke one, then a backhand for the next."}}
+   ],
+   "words": {
+    "won": {"zh": "白菜保住了！", "en": "The cabbage is safe!"},
+    "lost": {"zh": "白菜给啄了", "en": "The hens got the cabbage"},
+    "wallLeft": {"zh": "白菜 {n}%", "en": "Cabbage {n}%"},
+    "kills": {"zh": "撵走 {n} 只", "en": "{n} chased off"},
+    "focus": {"zh": "点一只鸡：先撵它", "en": "Tap a hen: chase that one first"},
+    "cleared": {"zh": "撵完一波！", "en": "Chased off!"},
+    "pick": {"zh": "挑一张", "en": "Pick one"}
+   },
+   "teach": ["wave_cleared", "low", "win"],
+   "_teach": "Every moment is the level's own line, never asked of 银月 — she is not met till 00-fox (games/prefetch.js).",
+   "moments": {
+    "wave_cleared": [{"zh": "撵走了！挑一张，再来。", "en": "Chased off! Pick one, here they come again."}],
+    "low": [{"zh": "鸡啄上白菜了！", "en": "They're pecking the cabbage!"}],
+    "win": [{"zh": "一只也没啄着。", "en": "Not one peck."}]
+   },
+   "waves": [
+    [["luhuaji", 9, 1.2, 0]],
+    [["luhuaji", 14, 0.65, 0], ["luhuaji", 8, 0.45, 7]]
    ]
   }
  ]

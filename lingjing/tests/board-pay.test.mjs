@@ -79,7 +79,9 @@ test('a board left (skipped) pays nothing; won later on its replay day, that is 
 });
 
 test('before 入门 nothing is paid, and nothing is marked paid (喂饼 at the cave)', () => {
-  const { s, now } = at('00-prologue/00-cave');
+  const at0 = at('00-prologue/00-cave'), now = at0.now;
+  const s = clear(at0.s, now, 'cave-fire', undefined, 3).state; // 守火, the cave's first board (2026-10-21): it pays nothing either
+  assert.equal(s.wealth ?? 0, at0.s.wealth ?? 0);
   const done = clear(s, now, 'bread-share', 'half', 3);
   assert.equal(done.state.wealth ?? 0, s.wealth ?? 0);
   assert.equal(done.result.paid?.board, undefined);

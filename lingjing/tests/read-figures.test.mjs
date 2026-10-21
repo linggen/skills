@@ -227,7 +227,7 @@ test('录 holds a 图鉴: met entries by kind, the unmet as empty slots; a tap o
   const content = loadContent();
   const NOW = new Date('2026-09-28T12:00:00');
   const fresh = newState(content, 'zh', NOW);
-  const s = walk(fresh, [['resolve', { exit: 'begin' }], ['resolve', { exit: 'endure' }]], content, NOW);
+  const s = walk(fresh, [['resolve', { exit: 'begin' }], ['resolve', { exit: 'evening' }], ['resolve', { exit: 'endure' }]], content, NOW);
   const met = story(s, content, { now: NOW, quests: [] }).result.codex;
   for (const id of ['baba', 'masan', 'maxiaobao', 'ahe']) assert.ok(met.includes(id), `${id} met`);
   assert.ok(!met.includes('wupo') && !met.includes('longzhi'), 'not yet met');

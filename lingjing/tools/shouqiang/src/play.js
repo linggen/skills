@@ -3,7 +3,7 @@
 import * as Phaser from 'phaser';
 import { newGame, step, pick, setFocus, reachY, castJieyin, HERO, FOX, HAND, W, H } from 'shouqiang-core';
 import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
-import { Hud, WORDS, bar, setBarW } from './hud.js';
+import { Hud, WORDS, bar, setBarW, wordsFor } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
 
 const ICONS = ['jian-more', 'jian-pierce', 'jian-arc', 'huo-blast', 'huo-ground', 'han-slow', 'han-freeze', 'lei-chain', 'lei-strike', 'yy-foxfire', 'yy-howl'];
@@ -28,13 +28,16 @@ export class PlayScene extends Phaser.Scene {
   init(cfg) {
     this.cfg = cfg;
     this.lang = cfg.lang === 'en' ? 'en' : 'zh';
-    this.w = WORDS[this.lang];
+    this.w = wordsFor(WORDS[this.lang], cfg.level?.words, this.lang);
   }
 
   preload() {
     const art = `${this.cfg.base}art/`;
     const img = (k, file = k) => this.load.image(k, `${art}${file}.webp`);
-    for (const k of ['bg', 'wall', 'xiaoman-idle', 'xiaoman-cast', 'fu-huo', 'fu-han', 'fu-lei', 'sword']) img(k);
+    const base = ['bg', 'wall', 'xiaoman-idle', 'xiaoman-cast', 'fu-huo', 'fu-han', 'fu-lei', 'sword'];
+    for (const k of base) img(k);
+    // a level's own pictures (`art`: 守白菜's plot, 阿禾, 小满 beside her, the 竹竿 and the 土坷垃), unless the kit loads them anyway
+    for (const k of new Set(Object.values(this.cfg.level.art ?? {}).filter((v) => typeof v === 'string' && !base.includes(v)))) if (!this.cfg.level.grid) img(k);
     for (const [b, k] of Object.entries(this.cfg.kit.beasts)) for (const f of k.frames ?? []) img(`${b}-${f}`);
     for (const k of ICONS) img(`icon-${k}`);
     if (this.cfg.level.grid) LaneView.preload(this, this.cfg.level, art);
@@ -124,13 +127,16 @@ export class PlayScene extends Phaser.Scene {
       if (!this.calm) this.tweens.add({ targets: this.band, alpha: 0.26, x: W * 0.47, duration: 5200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     }
     this.add.image(W / 2, H / 2, 'vignette').setDisplaySize(W, H).setDepth(D.light + 1);
-    this.rangeLine();
+    if (this.g.level.rangeLine !== false) this.rangeLine();
     const wy = this.g.level.wallY;
     this.wall = this.add.image(W / 2, wy - 22, this.tex(art.wall, 'wall')).setOrigin(0.5, 0).setDepth(D.wall);
     this.wall.setScale((W + 30) / this.wall.width);
     this.wallX = this.wall.x;
     this.add.image(HERO.x, HERO.y + 26, 'shadow').setDepth(D.hero - 1).setScale(1.3, 1.2);
-    this.xm = this.add.image(HERO.x, HERO.y + 30, 'xiaoman-idle').setOrigin(0.5, 1).setDepth(D.hero);
+    // The hero: 小满, or a level's own (`art.hero` · `art.heroCast` — 守白菜: 阿禾 with her 竹竿)
+    this.heroIdle = this.tex(art.hero, 'xiaoman-idle');
+    this.heroCast = this.tex(art.heroCast, art.hero ? this.heroIdle : 'xiaoman-cast');
+    this.xm = this.add.image(HERO.x, HERO.y + 30, this.heroIdle).setOrigin(0.5, 1).setDepth(D.hero);
     this.xmScale = 150 / this.xm.height;
     this.xm.setScale(this.xmScale);
     this.tweens.add({ targets: this.xm, scaleY: this.xmScale * 1.03, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
@@ -140,8 +146,14 @@ export class PlayScene extends Phaser.Scene {
     this.handSword = this.add.image(HAND.x, HAND.y, 'sword').setDisplaySize(58, 58).setRotation(-Math.PI / 4).setDepth(D.hero + 2);
     this.handBack = 0;
     this.xmAura = this.add.image(HERO.x, HERO.y - 20, 'glow').setDepth(D.hero - 1).setBlendMode(Phaser.BlendModes.ADD).setScale(2.4).setTint(0x7fd0ff).setAlpha(0.25);
+    // `art.hand: null` — nothing hovers at the hero's hand (阿禾 holds her pole); no aura (no 灵气 yet)
+    this.noHand = 'hand' in art && !art.hand;
+    if (this.noHand) { this.handSword.setVisible(false); this.handGlow.setVisible(false); this.xmAura.setVisible(false); }
     this.add.image(FOX.x, FOX.y + 24, 'shadow').setDepth(D.hero - 1).setScale(1.2, 1);
-    const yyKey = this.textures.get('yy-sheet').has('idle-1') ? 'yy-sheet' : null;
+    // beside the hero: 银月, or a level's own (`art.side` — 守白菜: 小满, before he ever meets her)
+    this.side = art.side ? this.add.image(FOX.x, FOX.y + 30, this.tex(art.side, 'xiaoman-idle')).setOrigin(0.5, 1).setDepth(D.hero) : null;
+    if (this.side) { this.sideScale = 112 / this.side.height; this.side.setScale(this.sideScale); }
+    const yyKey = !this.side && this.textures.get('yy-sheet').has('idle-1') ? 'yy-sheet' : null;
     this.yy = yyKey ? this.add.image(FOX.x, FOX.y + 26, 'yy-sheet', 'idle-1').setOrigin(0.5, this.yyFoot ?? 0.97).setDepth(D.hero) : null;
     if (this.yy) {
       this.yyScale = 92 / 150;
@@ -295,11 +307,12 @@ export class PlayScene extends Phaser.Scene {
   }
 
   heroes(dt) {
-    if (this.xmCast > 0 && (this.xmCast -= dt) <= 0) this.xm.setTexture('xiaoman-idle');
+    if (this.xmCast > 0 && (this.xmCast -= dt) <= 0) this.xm.setTexture(this.heroIdle);
+    if (this.side) this.side.setScale(this.sideScale, this.sideScale * (1 + Math.sin(this.time.now / 210) * 0.025));
     this.xmAura.setAlpha(0.18 + Math.sin(this.time.now / 300) * 0.06);
     const bob = Math.sin(this.time.now / 380) * 4;
     if (this.handBack > 0) this.handBack = Math.max(0, this.handBack - dt);
-    const back = this.handBack > 0 ? 0 : 1;
+    const back = this.noHand || this.handBack > 0 ? 0 : 1;
     this.handSword.setPosition(HAND.x, HAND.y + bob).setAlpha(back);
     this.handGlow.setPosition(HAND.x, HAND.y + bob).setAlpha(back * (0.42 + Math.sin(this.time.now / 260) * 0.1));
     if (!this.yy) return;
@@ -442,12 +455,17 @@ export class PlayScene extends Phaser.Scene {
     const SHOTS = {
       sword: () => [this.add.image(sh.x, sh.y, 'glow').setTint(0x5fc8ff).setBlendMode(Phaser.BlendModes.ADD).setScale(0.9).setDepth(D.shot - 1), this.add.image(sh.x, sh.y, 'sword').setDisplaySize(66, 66).setDepth(D.shot)],
       fox: () => [this.add.image(sh.x, sh.y, 'glow').setTint(0xd8f0ff).setScale(0.7).setBlendMode(Phaser.BlendModes.ADD).setDepth(D.shot)],
+      // a level's own shots (`art.shot` for the hero's, `art.sideShot` for the one beside: 守白菜's 竹竿 and 土坷垃)
+      own: (key, size) => [this.add.image(sh.x, sh.y, 'glow').setTint(0xfff4d0).setScale(0.6).setBlendMode(Phaser.BlendModes.ADD).setDepth(D.shot - 1), this.add.image(sh.x, sh.y, key).setDisplaySize(size, size).setDepth(D.shot)],
       foxfire: () => [this.add.image(sh.x, sh.y, 'yy-skills', 'foxfire-1').setScale(0.36).setDepth(D.shot)],
       huo: () => [this.add.image(sh.x, sh.y, 'fu-huo').setDisplaySize(26, 54).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.5)],
       han: () => [this.add.image(sh.x, sh.y, 'fu-han').setDisplaySize(26, 54).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.5)],
       spell: () => this.spellParts(sh),
     };
     if (sh.lane != null) return { kind: sh.kind, parts: this.lanes.boltParts(sh), t: 0 };
+    const A = this.g.level.art ?? {};
+    if (sh.kind === 'sword' && A.shot && this.tex(A.shot)) return { kind: 'sword', parts: SHOTS.own(A.shot, 56), t: 0 };
+    if ((sh.kind === 'fox' || sh.kind === 'foxfire') && A.sideShot && this.tex(A.sideShot)) return { kind: 'clod', parts: SHOTS.own(A.sideShot, 26), t: 0 };
     if (sh.kind === 'foxfire' && !this.textures.get('yy-skills').has('foxfire-1')) return { kind: sh.kind, parts: SHOTS.fox() };
     return { kind: sh.kind, parts: SHOTS[sh.kind](), t: 0 };
   }
@@ -462,7 +480,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   poseShot(s, sh, dt) {
-    const [p, shadow] = s.kind === 'sword' || sh.lane != null ? [s.parts[1], s.parts[0]] : s.parts;
+    const [p, shadow] = s.kind === 'sword' || s.kind === 'clod' || sh.lane != null ? [s.parts[1], s.parts[0]] : s.parts;
     s.t += dt;
     if (sh.lane != null) {
       p.setPosition(sh.x, sh.y);
@@ -482,9 +500,10 @@ export class PlayScene extends Phaser.Scene {
       const a = Math.atan2(sh.vy, sh.vx);
       // The sword's art points up-right (−45°): +45° turns its tip along the flight (the engine never flies one down).
       if (s.kind === 'sword') { p.setRotation(a + Math.PI / 4); shadow.setPosition(sh.x, sh.y); }
+      if (s.kind === 'clod') { p.setAngle(s.t * 720); shadow.setPosition(sh.x, sh.y); }
       if (s.kind === 'foxfire') p.setFrame(`foxfire-${1 + (Math.floor(s.t * 14) % 3)}`).setRotation(a + Math.PI / 2);
     }
-    const trail = s.kind === 'spell' ? wuxingOf(sh.wuxing)[0] : TRAILS[s.kind];
+    const trail = s.kind === 'spell' ? wuxingOf(sh.wuxing)[0] : TRAILS[s.kind === 'clod' ? 'fox' : s.kind];
     if (this.em.budget >= 1 || Math.random() < this.em.budget) this.em[trail].emitParticleAt(p.x, p.y, s.kind === 'sword' || s.kind === 'spell' ? 2 : 1);
   }
 
@@ -730,7 +749,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   xmCastPose() {
-    this.xm.setTexture(this.tex('xiaoman-cast', 'xiaoman-idle'));
+    this.xm.setTexture(this.heroCast);
     this.xmCast = 0.16;
     this.em.burst('spark', 3, HAND.x, HAND.y);
   }

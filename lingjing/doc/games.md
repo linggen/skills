@@ -52,6 +52,23 @@ sixth board — then, the same day, approved to go with 射鹿 · 等风: **cut 
 00-cave's passage whole again (word for word), 喂饼 the scene's one board; the task (marked `cut`, so a
 save holding it offered lets it go on load), row, module and bot stay for the 游戏厅.
 
+**第一回 at six, four kits (10-21**, Hanli: 「用塔防作为主力」「7个游戏可以防止阅读过长」, then 「按你的建议来」; the order
+doc/games-plan-juan1.md's): **接雨** `rain-basins` (00-shiao) · **守白菜** `baicai-hens` (守墙关 `baicai`, new scene
+00-baicai — 00-shiao's morning split word for word after 「……也从不空手走。」; the board where the book's 芦花鸡 pokes
+through the 篱笆, 「阿禾，守白菜呢？」 and 「今天这一回不算，还没撵完」 read after it) · **忍字** `masan-taunt` (now 气走经脉 `renzi`,
+the kit's first level: the cake's smell slides down his throat, the breath pressed back down; tauntrope stays in the 游戏厅)
+· **拽爹** `fall-storm` · **守火** `cave-fire` (守炉 `shouhuo`, 00-cave's first board: its passage split at 「……火堆挡在洞口，
+野兽便不敢进来。」, 「然后他从怀里摸出了两样东西……」 read after it) · **喂饼** `bread-share` (the cave's second board). **认路 cut**:
+00-yinyue reads whole to 带她出谷, `yinyue-way` marked `cut`, wayrope stays in the 游戏厅. 守白菜: hens (`luhuaji`, the
+book's own, a `shoo` row — not a creature), 阿禾 pokes with her 竹竿 (the 剑阵 line, renamed by the level's `cards`), 小满
+beside her throws 土坷垃, a hidden range line, no opening pick, no 结印, one card after wave 1; bots: human 30/30 (★3 mostly),
+any card wins, no card loses, ~53 s. 守火: no talismans, no skills; the fire is the 炉 and burns down (`fire`), 枯枝 at the
+cliff's foot fetched and fed, eyes in the dark (`yanjing`, a `shade`: the book names no beast, 「野兽便不敢进来」 — the
+plan's 野猪 left for Hanli) shy from its light; 小满 throws stones; bots: human 20/20 ★3, a first-timer who fetches only
+when it is low 20/20 mostly ★2, nothing done loses at 52 s, ~104 s. Reading (rhythm.mjs, 卷一's 古一 after the cut):
+start 178 · 568 · 756 · **3,686** (00-masan → 黑松岭, unchanged) · 659 · 1,198 · 43 · 815 · 630 · **1,721** (00-yinyue's
+银月 piece → 00-deer, 认路 cut).
+
 ## The throws — levels of 砸寨 (10-20)
 
 Hanli 10-20: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」. Every throw in the story is a level of 砸寨, the one throw
@@ -832,22 +849,16 @@ Hanli 10-21: 「不要只有结印攻击, 把结印放到现有的塔防类游�
 same as 守墙关's) in the field's corner: shoulu.js `offerJieyin`, the host's calls core.js `jieyinState` · `jieyinCast`, the
 numbers jieyin.json `hosts.shoulu`. Camera only — no camera, a refusal or seals never made change nothing.
 - **Moves:** 飞剑 (剑诀 + a jab) from the start; 火弹 (the four seals) after 古六's lesson (`from` its marks; the 游戏厅 has
-  all). The target: the 大妖, then an elite, else the beast nearest the furnace. 火弹 splashes round it.
-- **Every level ends on a 大妖 or an elite** (a wave entry's `{ elite: n, hp? }`: tougher ×4 — ×1.4–2 on story and 秘境
-  levels, so no-camera play feels as before —, ×3 灵石, a gold frame on its bar). The dock opens for either
-  (`when: "boss|elite"`), 6 s rest, ×3 on 合窳, ×2.5 on an elite.
-- **Pace — a level's:** rest (the default) as above; intense (`pace: "intense"`, 后山 · 丹房): always offered, 3.5 s rest.
-- **Stars** (core.js `starsOf(hp, t, par)`): ★★★ = the 炉火 whole AND cleared by the level's `par` s; ★★ from 6 炉火; else ★.
-  `par` only on the 游戏厅's ladder (L1 189 · L2 228 · L3 300 · L4 286 · L5 380), chosen so a no-cast human is ★★ typical and
-  casting makes ★★★ clearly easier; the story and 秘境 levels keep 炉火-only stars (declining the camera costs nothing there).
-- **Balance** (core.js `withSeals` — a player who casts each time a move is ready, 2 s to make it; the human bot, 20 seeds;
-  stars 0/1/2/3, none → 飞剑 → 火弹): L1 0/0/12/8 → 0/0/1/19 → 0/0/0/20 · L2 0/3/13/4 → 0/3/4/13 → same · L3 2/4/12/2 →
-  2/4/2/12 → same · L4 (intense) 1/4/13/2 → 0/1/9/10 → 0/0/3/17 · L5 0/10/10/0 → 0/10/7/3 → same · 药园巡夜 0/0/1/19 →
-  0/0/0/20 · 丹房看炉 0/1/7/12 → 0/1/6/13 → 0/1/4/15 · 秘境一 0/3/6/11 → 0/0/8/12 · 秘境二 0/3/10/7 → 0/1/3/16 · 秘境三
-  1/12/5/2 → 0/0/2/18 → 0/0/0/20. L5 stays a real fight: its 炉火 goes before the elite pack comes. No cast at all: every
-  level is won as before (tests/game-shoulu-jieyin.test.mjs runs each with the human bot).
-- **The hint's words:** a seal may carry its own `faceHow` { zh, en } in jieyin.json — hint.js `facingLine` uses it in every
-  game (the one place for per-seal hand / face words); else they come from its `face` / `up`.
+  all). The target: the 大妖 first, else the beast nearest the furnace. 火弹 splashes round it.
+- **Pace — a level's:** rest (the default): offered only while 合窳 is on the field, 8 s rest between casts, ×3 on it;
+  intense (`pace: "intense"`, one level now: 后山 · 丹房): always offered, 2.5 s rest — the level where the hands work.
+  (法术试炼's duel kit takes the same switch: duel.js `pacedKit` — 灵力 refill and the thrusts' rest; the trial is rest.)
+  The standalone 练拳 / 戳穴 levels were dropped (Hanli: 结印 lives in the TD games, not alone).
+- **Balance** (core.js `withSeals` — a player who casts each time a move is ready, 2 s to make it; the human bot, 20
+  seeds; stars 0/1/2/3): 后山 (intense) none 1/3/6/10 → 飞剑 0/0/1/19 · 火弹 0/0/0/20; 秘境三 (合窳) 1/12/5/2 → 0/0/2/18 ·
+  0/0/0/20; 秘境二 0/3/10/7 → 0/1/3/16. Levels without 合窳 at rest are unchanged (nothing is offered); 黑松林 (L5,
+  0/10/7/3) is unchanged too — its 炉火 is lost before 合窳 steps out, so a boss-only dock comes too late there. No cast
+  at all: every level is won as before (tests/game-shoulu-jieyin.test.mjs runs each with the human bot).
 
 ## 隔空指点 — jab the 剑诀 at the screen (test game, 10-21)
 
@@ -882,8 +893,8 @@ seal's shape: jieyin.json `seals.jian`.
 
 Hanli 10-21: 「用yinyue的3D模型试一下. 另C的效果也给我看一下.」 游戏厅 only (`texie`, two tiles, group 主力, type 结印);
 not in the story — 10-14 「游戏里不需要3D模型」 stands; this is for his choice. 结印's field (守墙关's 山道, 小满 from
-behind, a boar with 8 hits). A hand seen → a comic panel slides in at the top right; a seal held 0.35 s (any of the
-device's seals, judge.js, but an open palm — 掌 is half of 推掌 — only shows the hands) or a push at the camera (zhidian/poke.js) → the panel's hand thrusts (speed lines) and a 火蛋
+behind, a boar with 3 hits). A hand seen → a comic panel slides in at the top right; a seal held 0.35 s (any of the
+device's seals, judge.js) or a push at the camera (zhidian/poke.js) → the panel's hand thrusts (speed lines) and a 火蛋
 flies from 小满; the panel fades 0.7 s after, or 0.9 s after the hands go (texie/panel.js; numbers levels/texie.json).
 
 - **水墨 (C)** — `&cutin=ink`: 小满 in side profile (one local-FLUX painting, an edit pass from 守墙关's 小满,
@@ -922,15 +933,15 @@ is unchanged.
   down with an HP bar over its head and charges the squad's column (lit red 1.6 s ahead, a lightning aura, large as it
   nears): still there, a third of the squad is knocked aside. A wave or the 大妖 at the 山门 hurts it; 0 is the loss.
   Stars: the 山门 left (75% · 40%), ★★★ only inside par.
-- **结印** (Hanli 10-21: 「把结印放到现有的塔防类游戏中」): the shared dock (games/jieyin/helper.js `offerSeals` on
-  手势斗法, duel.js, as in 守墙关) — only where a camera is; no camera, or declined, and the game is exactly the game
-  without it. Offered while the 大妖 is out (`jieyin.when`; `?dev=1&jy=always` to try it any time, `&feed=1` without a
-  camera), a 10 s rest between casts. A cast strikes the first thing up the column of the lane the hand stood in
-  (left · middle · right = the three columns): a 小招 (飞剑 · 点穴 · 掌风 · 拳劲) 3 s of the squad's attack, a 法术
-  (火弹 · 冰锥 · 金刃 · 木藤 · 土墙, after 古六's lesson) 5 s, the 大招 四印火蛋 9 s; ×2 on the 大妖; a card pumped.
-  Never needed (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」): every level is won without a cast; casts
-  finish ~10–15 s sooner, under `par`, so ★★★ comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」 — a sharp
-  player without casts mostly ★★, with casts mostly ★★★ from 第二关).
+- **结印** (Hanli 10-21: 「把结印放到现有的塔防类游戏中」): the shared dock (games/jieyin/helper.js `offerSeals`, as in
+  守墙关) — only where a camera is; no camera, or declined, and the game is exactly the game without it. Offered while
+  the 大妖 is out (`jieyin.when`, `?dev=1&jy=always` to try it any time; `&feed=1` without a camera), a 10 s rest
+  between casts. A cast strikes the first thing up a column — the dock's lane when it names one (left · middle ·
+  right = the three columns), else the squad's: 飞剑 (剑诀 + jab) 4 s of the squad's attack, 火弹 (the 大招, after
+  古六's lesson) 7 s; ×2 on the 大妖; a card pumped. Never needed (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能
+  正常完成」): every level is won without a cast; casts finish ~10–15 s sooner, under `par`, so ★★★ comes easier
+  (「结印可以帮助更快杀敌, 更容易取得3星成就」 — sharp bot without casts mostly ★★, with casts mostly ★★★ from 第二关).
+  The dock's cast callback today passes only the move id, so the squad's column decides; a lane passed later is used.
 - **Levels** (worlds/jiuding/levels/sadoushou.json, data; each sends only the beasts the book has shown by its `hui`):
   守山门 · 野猪下山 (h04, 野猪, 蠪侄; forgiving, no red cards) · 松林狰吼 (h05, 狰 in the tide, red cards) · 药园夜袭
   (h07, 犰狳, the tier wall, 合窳) · 黑松岭鬿雀 (h09, fast 鬿雀, 合窳). 狰 is beyond the brief's 野猪/犰狳/鬿雀: the

@@ -57,8 +57,8 @@ export const cutinOf = (data = {}, search = '') => ((new URLSearchParams(search)
 /** The one line when the game cannot be offered; nothing else is drawn. */
 export const unavailableHtml = (lang = 'zh', why = 'nocam') => `<p class="tx-nocam" role="status">${plain(W[lang === 'en' ? 'en' : 'zh'][why] ?? W.zh.nocam)}</p>`;
 
-/** A cast from this frame's hands: a seal held `holdMs` (once per seal: it must change or go before it casts again;
-    not one in `skip` — an open palm only shows the hands), or a push; none within `coolMs` of the last. Pure: → { state, cast: null | 'seal' | 'push' }. */
+/** A cast from this frame's hands: a seal held `holdMs` (once per seal: it must change or go before it casts again),
+    or a push; none within `coolMs` of the last. Pure: → { state, cast: null | 'seal' | 'push' }. */
 export const startCaster = () => ({ seal: null, held: 0, latched: false, poke: startPoke(), coolTo: -Infinity });
 export function castStep(state, { t, dt, seal = null, size = 0 }, knobs) {
   const s = { ...state };
@@ -67,7 +67,7 @@ export function castStep(state, { t, dt, seal = null, size = 0 }, knobs) {
   s.poke = p.state;
   if (t < s.coolTo) return { state: s, cast: null };
   let cast = null;
-  if (s.seal && !knobs.skip?.includes(s.seal) && !s.latched && s.held >= knobs.holdMs) { cast = 'seal'; s.latched = true; } else if (p.shot) cast = 'push';
+  if (s.seal && !s.latched && s.held >= knobs.holdMs) { cast = 'seal'; s.latched = true; } else if (p.shot) cast = 'push';
   if (cast) s.coolTo = t + knobs.coolMs;
   return { state: s, cast };
 }

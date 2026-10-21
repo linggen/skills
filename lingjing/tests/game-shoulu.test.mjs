@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
-import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, build, upgrade, upgradeCost, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
+import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, fetchStick, humanBot, lightOf, starsFor, stickAt, build, upgrade, upgradeCost, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
   keepSel, posOnPath, sendHero, sim, STRATS, skillState, spawnAt, step, toggleAuto, waves } from '../scripts/games/shoulu/core.js';
 import { ladderOf, leadSplit, levelAsked, levelAt, meta, nextLv } from '../scripts/games/shoulu.js';
 
@@ -62,7 +62,8 @@ test('every level is sound: its road, its spots, its furnace, its words, 卷一 
       assert.ok(Math.hypot(x - r.furnace[0], y - r.furnace[1]) > 60, `${r.id}: spot ${x},${y} clear of the furnace`);
     }
     r.spots.forEach(([x, y], i) => r.spots.slice(i + 1).forEach(([x2, y2]) => assert.ok(Math.hypot(x - x2, y - y2) >= 50, `${r.id}: spots ${x},${y} and ${x2},${y2} apart`)));
-    for (const b of beastsOf(r)) { assert.ok(BEASTS[b], `${r.id}: beast ${b}`); assert.ok(creatures.has(b), `${r.id}: ${b} in creatures.json`); }
+    // a `shade` (守火's eyes in the dark) is no beast of the world, and stands only where a fire shies it off
+    for (const b of beastsOf(r)) { assert.ok(BEASTS[b], `${r.id}: beast ${b}`); assert.ok(BEASTS[b].shade ? Boolean(r.fire) : creatures.has(b), `${r.id}: ${b} in creatures.json`); }
     assert.ok(r.towers.every((k) => TOWERS[k]));
     if (beastsOf(r).some((b) => BEASTS[b].fly)) assert.ok(r.air, `${r.id}: fliers need a start`);
   }
@@ -145,8 +146,7 @@ test('the counters: 犰狳 levels beat 剑阵 alone; 鬿雀 levels beat 火符 a
 const SEEDS20 = Array.from({ length: 20 }, (_, i) => `h${i}`);
 const share = (rs, f) => rs.filter(f).length / rs.length;
 const TARGET = [ // win share at least · and what its stars look like
-  // ★★★ needs the 炉火 whole AND a clear by the level's par (Hanli 10-21: 结印's help) — without casts ★★ is typical
-  { win: 0.95, ok: (rs) => share(rs, (x) => x.stars >= 2) >= 0.9, says: 'nearly always, ★★ or better' },
+  { win: 0.95, ok: (rs) => share(rs, (x) => x.stars === 3) >= 0.5, says: 'nearly always, mostly 3★' },
   { win: 0.85, ok: (rs) => share(rs, (x) => x.stars >= 2) >= 0.6, says: '≥85%, usually 2–3★' },
   { win: 0.85, ok: (rs) => share(rs, (x) => x.stars >= 2) >= 0.6, says: '≥85%, usually 2–3★' },
   { win: 0.75, ok: (rs) => share(rs, (x) => x.stars === 3) <= 0.5, says: '≥75%, 1–2★ typical' },
@@ -486,7 +486,7 @@ test('a story level uses only beasts the book has met by its 回 (野猪 on 蒙�
   const met = (beast, hui) => Object.values(pools).some((p) => (p.beasts ?? []).some((b) => b.creature === beast && b.from && HUI.indexOf(b.from) >= 0 && HUI.indexOf(b.from) <= HUI.indexOf(hui)));
   for (const l of stories) {
     const hui = sceneOf(l.story).hui;
-    for (const b of beastsOf(l)) assert.ok(met(b, hui), `${l.id} (${hui}): ${b} is met on the mountain by then`);
+    for (const b of beastsOf(l)) assert.ok(BEASTS[b].shade || met(b, hui), `${l.id} (${hui}): ${b} is met on the mountain by then`);
     assert.ok(!beastsOf(l).includes('zheng') || HUI.indexOf(hui) > HUI.indexOf('h05'), `${l.id}: no 狰 fought in 古四 — the book tames it with a 萝卜`);
   }
   const xunye = stories.find((l) => l.id === 'yaoyuan-xunye');
@@ -580,4 +580,53 @@ test('the two story levels played at night stand on night grounds (丑时 in the
   const byId = Object.fromEntries(all.map((l) => [l.id, l]));
   assert.equal(byId['yaoyuan-xunye'].ground, 'yaoyuan-night');
   assert.equal(byId['danfang-kanlu'].ground, 'houshan-night');
+});
+
+/* 守火 (00-cave, 2026-10-21, Hanli: 第一回 adds two 塔防 boards — 「用塔防作为主力」): the fire at the cave mouth is the 炉. It
+   burns down; 枯枝 at the cliff's foot keep it up; eyes in the dark shy from its light and creep in as it sinks; 小满 alone (no
+   talismans, no 银月 skills — she is hurt and only a fox), a 柴刀 and stones. The second 塔防 a player meets: gentle. */
+const shouhuo = () => stories.find((l) => l.id === 'shouhuo');
+test('守火: a story level of 00-cave, before 喂饼 — no talismans, no skills, 小满 the hero, eyes in the dark only', () => {
+  const l = shouhuo();
+  assert.equal(l.story, '00-cave');
+  assert.deepEqual([l.towers, l.spots], [[], []]);
+  assert.deepEqual(beastsOf(l), ['yanjing']);
+  assert.ok(BEASTS.yanjing.shade && BEASTS.yanjing.shy);
+  assert.equal(heroOf(l).who, 'xiaoman');
+  const g = newGame(l, { seed: 'f', headless: true });
+  assert.ok(['q', 'w', 'e', 'r'].every((k) => skillState(g, k).locked && !skillState(g, k).ready), 'no skill: 银月 is hurt');
+  assert.equal(g.hp, l.fire.start);
+  assert.equal(lightOf(g), l.fire.light[0] + l.fire.light[1] * l.fire.start);
+});
+test('守火: the fire burns down; a 枯枝 is fetched, carried back and fed; a tap on a stick sends 小满, a tap on eyes throws', () => {
+  const l = shouhuo(), g = newGame(l, { seed: 'f', headless: true });
+  g.nextTimer = 1e9;
+  for (let i = 0; i < 60 * 3; i += 1) step(g, 1 / 60);
+  assert.ok(g.hp < l.fire.start, 'it burns down');
+  const s = g.sticks[0];
+  assert.equal(stickAt(g, s.x, s.y), s);
+  assert.equal(pointer(g, noSel(), { x: s.x, y: s.y, button: 0, touch: true }).did, 'fetch');
+  const before = g.hp;
+  for (let i = 0; i < 60 * 12 && g.fed === 0; i += 1) step(g, 1 / 60);
+  assert.ok(g.fed >= 1 && g.hp > before - 1, `fed ${g.fed}, fire ${before.toFixed(1)} → ${g.hp.toFixed(1)}`);
+  assert.equal(s.up, false, 'snapped; it grows back later');
+  const b = spawnAt(g, 'yanjing', layLevel(l).road.len * 0.6);
+  assert.equal(pointer(g, noSel(), { x: b.x, y: b.y - 5, button: 0, touch: true }).did, 'attack');
+  const g2 = newGame(l, { seed: 'f', headless: true });
+  g2.nextTimer = 1e9;
+  for (let i = 0; i < 60 * 80; i += 1) step(g2, 1 / 60);
+  assert.equal(g2.over, 'lose', 'left alone, the fire goes out');
+});
+test('守火, gentle: the human hand keeps the fire high; a first-timer who fetches only when it is low still wins; nothing done loses', () => {
+  const l = shouhuo();
+  const line = (rs) => `win ${rs.filter((x) => x.result === 'win').length}/${rs.length}, ★ ${rs.map((x) => x.stars).join('')}, fire ${rs.map((x) => x.hp).join(' ')}`;
+  const rs = run(l, 'human', SEEDS20);
+  assert.ok(allWin(rs) && share(rs, (x) => x.stars === 3) >= 0.9, `human: ${line(rs)}`);
+  const naive = SEEDS20.map((seed) => sim(l, humanBot({ look: 1.6, fetchAt: 5, attack: 0 }), { seed }));
+  assert.ok(allWin(naive), `first-timer: ${line(naive)}`);
+  assert.ok(share(naive, (x) => x.stars < 3) >= 0.5, `first-timer, it bites: ${line(naive)}`);
+  assert.ok(allLose(run(l, 'none')), 'nothing done: the fire goes out');
+  assert.ok(rs.every((x) => x.time < 150), `about two minutes: ${rs.map((x) => x.time)}`);
+  assert.equal(starsFor({ L: { fire: l.fire }, hp: l.fire.stars[0] }), 3);
+  assert.ok(fetchStick);
 });

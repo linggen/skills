@@ -3,7 +3,7 @@
 // code-drawn, a stopgap: the small games go comic (Angry-Birds cartoon) — every figure here is one function, so a
 // sprite can replace it alone.
 // Pure canvas: it reads the game (core.js) and never changes it.
-import { BEASTS, HERO, SKILLS, TOWERS, W, H, posOnPath, offRoad, cleared, waves } from './core.js';
+import { BEASTS, HERO, SKILLS, TOWERS, W, H, posOnPath, offRoad, cleared, waves, lightOf } from './core.js';
 
 export const INK = '#2a241d';
 const LVNAME = { zh: ['一重', '二重', '三重'], en: ['I', 'II', 'III'] };
@@ -34,6 +34,7 @@ function rnd(seed) { let s = seed; return () => { s = (s * 16807) % 2147483647; 
 
 /** The board under everything, painted once a level: paper, hills, grass, rocks and pines off the road, the road. */
 export function makePaper(doc, L, label) {
+  if (L.fire) loadFireArt(doc);
   const k = 2, p = doc.createElement('canvas');
   p.width = W * k; p.height = H * k;
   const pics = ['pine', 'rock', 'bush', `ground-${L.ground ?? L.id}`]; // `ground`: another level's painting (the 秘境's rows)
@@ -96,7 +97,8 @@ function paintBoard(c, L, label, art) {
   }
   const pts = L.road.points;
   const road = (w, col) => { c.strokeStyle = col; c.lineWidth = w; c.lineJoin = 'round'; c.lineCap = 'round'; c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (const [x, y] of pts) c.lineTo(x, y); c.stroke(); };
-  if (art) { road(50, '#4a3320'); road(44, '#b98a52'); road(30, 'rgba(226,190,130,0.75)'); } // a comic dirt road, outlined
+  if (L.trail === 'faint') { c.setLineDash([6, 10]); road(14, 'rgba(120,110,90,0.28)'); c.setLineDash([]); } // 守火: only a trodden track out of the dark
+  else if (art) { road(50, '#4a3320'); road(44, '#b98a52'); road(30, 'rgba(226,190,130,0.75)'); } // a comic dirt road, outlined
   else { road(56, 'rgba(60,48,35,0.10)'); road(48, 'rgba(60,48,35,0.16)'); road(42, '#e9dcc0'); road(30, 'rgba(250,244,230,0.55)'); }
   for (let i = 0; i < 400; i += 1) { const pp = posOnPath(L.road, r() * L.road.len, (r() * 2 - 1) * 20); c.fillStyle = `rgba(90,70,50,${0.08 + r() * 0.12})`; c.beginPath(); c.arc(pp.x, pp.y, 0.6 + r() * 1.4, 0, 6.28); c.fill(); }
   for (let i = 0; i < 160; i += 1) { const side = r() < 0.5 ? -1 : 1, pp = posOnPath(L.road, r() * L.road.len, side * 22); c.strokeStyle = `rgba(42,36,29,${0.15 + r() * 0.2})`; c.lineWidth = 0.8 + r(); c.beginPath(); c.moveTo(pp.x, pp.y); c.lineTo(pp.x + (r() * 6 - 3), pp.y + (r() * 6 - 3)); c.stroke(); }
@@ -111,10 +113,28 @@ function paintBoard(c, L, label, art) {
   c.fillStyle = 'rgba(176,65,46,0.75)'; c.font = 'bold 11px serif'; c.fillText('守', W - 33, H - 31); c.fillText('炉', W - 33, H - 19);
 }
 
+/** Two eyes that shine in the dark (守火): yellow-green, a glow round each. */
+function glowEyes(c, x, y, gap, a) {
+  c.save(); c.globalAlpha = a;
+  for (const dx of [-gap, gap]) {
+    const gl = c.createRadialGradient(x + dx, y, 0, x + dx, y, 7); gl.addColorStop(0, 'rgba(255,240,140,0.9)'); gl.addColorStop(1, 'rgba(255,220,90,0)');
+    c.fillStyle = gl; c.beginPath(); c.arc(x + dx, y, 7, 0, 6.28); c.fill();
+    c.fillStyle = '#fff6b0'; c.beginPath(); c.ellipse(x + dx, y, 2.6, 1.9, 0, 0, 6.28); c.fill();
+    c.fillStyle = '#1a1206'; c.fillRect(x + dx - 0.5, y - 1.6, 1, 3.2);
+  }
+  c.restore();
+}
 function eye(c, x, y, r, red) { c.fillStyle = red ? '#e8d4b0' : '#f6efe0'; c.beginPath(); c.arc(x, y, r, 0, 6.28); c.fill(); c.fillStyle = red ? '#b0412e' : '#111'; c.beginPath(); c.arc(x + r * 0.25, y, r * 0.55, 0, 6.28); c.fill(); }
 function blob(c, fill) { c.fillStyle = fill; c.fill(); c.strokeStyle = 'rgba(20,15,10,0.65)'; c.lineWidth = 1.2; c.stroke(); }
 
 const FIGURES = {
+  // 守火's eyes in the dark (the code stand-in for art/yanjing.webp): a shaggy dark shape, two eyes that catch the fire
+  yanjing(c, r, col, t, bob) {
+    c.beginPath(); c.ellipse(0, bob * 0.3, r * 1.25, r * 0.85, 0, 0, 6.28); blob(c, col);
+    c.beginPath(); c.moveTo(r * 0.3, -r * 0.6); c.lineTo(r * 0.55, -r * 1.25); c.lineTo(r * 0.85, -r * 0.6); c.closePath(); blob(c, col);
+    c.beginPath(); c.moveTo(-r * 0.4, -r * 0.6); c.lineTo(-r * 0.15, -r * 1.25); c.lineTo(r * 0.1, -r * 0.6); c.closePath(); blob(c, col);
+    glowEyes(c, r * 0.05, -r * 0.2, r * 0.35, 1);
+  },
   yezhu(c, r, col, t, bob) {
     c.strokeStyle = 'rgba(20,15,10,0.8)'; c.lineWidth = 2.2;
     for (const lx of [-6, -2, 3, 7]) { c.beginPath(); c.moveTo(lx, 4); c.lineTo(lx + Math.sin(t * 12 + lx) * 2, r * 0.85); c.stroke(); }
@@ -192,9 +212,17 @@ export function drawBeast(c, type, x, y, t, face, flash, s = 1, b = null) {
   c.restore();
 }
 /** A beast's painted height on the board (its figure's r is the hit size; the picture reads a little bigger). */
-const BEAST_H = { yezhu: 50, zheng: 43, qiuyu: 52, qique: 44, heyu: 112 };
+const BEAST_H = { yezhu: 50, zheng: 43, qiuyu: 52, qique: 44, heyu: 112, yanjing: 44 };
 /** The painted beast (walk steps, the hit frame while it flashes); false while the sheet loads. The art faces left. */
 function beastArt(c, type, B, t, face, flash, s) {
+  if (B.shade) { // one painted picture (art/<type>.webp), breathing; the code figure while it loads
+    const pic = ART.img[type];
+    if (!okImg(pic)) return false;
+    const hh = BEAST_H[type] * s * (1 + Math.sin(t * 5) * 0.03), ww = pic.naturalWidth * hh / pic.naturalHeight;
+    c.scale(-face, 1); c.globalAlpha = flash > 0 ? 0.7 : 1;
+    c.drawImage(pic, -ww / 2, B.r * 0.85 * s - hh, ww, hh); c.globalAlpha = 1;
+    return true;
+  }
   const cells = ART.cells;
   if (!cells || !okImg(ART.beasts)) return false;
   const step = `${type}-walk-${1 + (Math.floor(t * (B.fly ? 9 : 6)) % 2)}`;
@@ -206,18 +234,79 @@ function beastArt(c, type, B, t, face, flash, s) {
   return true;
 }
 function hpBar(c, b) {
+  if (BEASTS[b.type].shade) return; // eyes in the dark: their nerve is never a bar
   const B = BEASTS[b.type], w = B.boss ? 54 : 22, x = b.x - w / 2, y = b.y - B.r - (B.fly ? 14 : 10) - (B.boss ? 14 : 0), h = B.boss ? 6 : 4;
   c.fillStyle = 'rgba(42,36,29,0.55)'; c.fillRect(x - 1, y - 1, w + 2, h + 2);
   c.fillStyle = '#e9dfcc'; c.fillRect(x, y, w, h);
   const k = Math.max(0, b.hp / b.max);
   c.fillStyle = k > 0.5 ? '#5c7d4e' : k > 0.25 ? '#b9842f' : '#b0412e'; c.fillRect(x, y, w * k, h);
-  if (b.elite) { c.strokeStyle = '#d9a63a'; c.lineWidth = 1.6; c.strokeRect(x - 2, y - 2, w + 4, h + 4); } // an elite: a gold frame
   if (b.slowT > 0) { c.fillStyle = 'rgba(63,135,166,0.9)'; c.fillRect(x, y + h + 1, w, 1.5); }
   if (b.bareT > 0) { c.strokeStyle = 'rgba(200,215,240,0.95)'; c.lineWidth = 1.2; for (let k = 0; k < 3; k += 1) { const sx = x + 3 + k * (w - 6) / 2; c.beginPath(); c.moveTo(sx - 3, y - 6); c.quadraticCurveTo(sx + 2, y - 9, sx + 3, y - 3); c.stroke(); } }
   if (b.burnT > 0) { c.fillStyle = 'rgba(80,150,240,0.9)'; c.beginPath(); c.arc(x + w + 4, y + 1, 2.4, 0, 6.28); c.fill(); }
   if (b.stunT > 0) { c.fillStyle = '#d6b052'; c.font = 'bold 11px serif'; c.textAlign = 'center'; c.fillText('✦ ✦', b.x, y - 3); c.textAlign = 'left'; }
 }
+// ── 守火 (a `fire` level): the campfire is the 炉, the fox by it, the 枯枝 at the cliff's foot, the dark beyond the light ──
+const FIRE_ART = ['campfire', 'kuzhi', 'fox-sleep', 'yanjing', 'xiaoman-idle', 'xiaoman-throw', 'xiaoman-carry'];
+function loadFireArt(doc) { for (const n of FIRE_ART) artImg(doc, n); }
+function drawCampfire(c, g, t) {
+  const F = g.L.fire, x = g.L.furn.x, y = g.L.furn.y, k = Math.max(0, g.hp) / F.max, fl = 0.9 + 0.07 * Math.sin(t * 9) + 0.03 * Math.sin(t * 23);
+  const R = lightOf(g) * fl;
+  const gl = c.createRadialGradient(x, y - 8, 6, x, y - 8, R);
+  gl.addColorStop(0, `rgba(255,170,70,${0.25 + 0.3 * k})`); gl.addColorStop(0.6, `rgba(240,120,50,${0.08 + 0.12 * k})`); gl.addColorStop(1, 'rgba(240,120,50,0)');
+  c.fillStyle = gl; c.beginPath(); c.arc(x, y - 8, R, 0, 6.28); c.fill();
+  const pic = ART.img.campfire;
+  if (okImg(pic)) { const h = 40 + 34 * k, w = pic.naturalWidth * h / pic.naturalHeight; c.drawImage(pic, x - w / 2, y + 18 - h, w, h); }
+  else {
+    c.strokeStyle = '#5a3a20'; c.lineWidth = 5; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x - 20, y + 14); c.lineTo(x + 20, y + 4); c.moveTo(x + 20, y + 14); c.lineTo(x - 20, y + 4); c.stroke();
+    for (let n = 0; n < 3; n += 1) {
+      const fx = x - 9 + n * 9, h = (12 + 22 * k) * (0.8 + 0.2 * Math.sin(t * 12 + n * 2));
+      c.fillStyle = n === 1 ? 'rgba(255,200,80,0.95)' : 'rgba(235,100,40,0.9)';
+      c.beginPath(); c.moveTo(fx - 6, y + 10); c.quadraticCurveTo(fx - 5, y + 10 - h * 0.6, fx, y + 10 - h); c.quadraticCurveTo(fx + 5, y + 10 - h * 0.6, fx + 6, y + 10); c.closePath(); c.fill();
+    }
+  }
+  if (g.furnFlash > 0) { c.fillStyle = `rgba(200,40,30,${g.furnFlash * 0.5})`; c.beginPath(); c.arc(x, y, 36, 0, 6.28); c.fill(); }
+  const [fx, fy] = F.fox ?? [x + 50, y + 26], fox = ART.img['fox-sleep'];
+  if (okImg(fox)) { const h = 34, w = fox.naturalWidth * h / fox.naturalHeight; c.drawImage(fox, fx - w / 2, fy + 8 - h + Math.sin(t * 2) * 0.6, w, h); }
+  else { c.fillStyle = '#e6eaf1'; c.beginPath(); c.ellipse(fx, fy, 18, 9, 0, 0, 6.28); c.fill(); c.strokeStyle = 'rgba(30,30,40,0.6)'; c.stroke(); }
+}
+function drawSticks(c, g, t) {
+  const pic = ART.img.kuzhi;
+  for (const s of g.sticks) {
+    if (!s.up) continue;
+    const pulse = 0.5 + 0.5 * Math.sin(t * 3 + s.i);
+    const gl = c.createRadialGradient(s.x, s.y, 2, s.x, s.y, 26); gl.addColorStop(0, `rgba(255,236,170,${0.22 + 0.18 * pulse})`); gl.addColorStop(1, 'rgba(255,236,170,0)');
+    c.fillStyle = gl; c.beginPath(); c.arc(s.x, s.y, 26, 0, 6.28); c.fill();
+    if (okImg(pic)) { const h = 30, w = pic.naturalWidth * h / pic.naturalHeight; c.drawImage(pic, s.x - w / 2, s.y + 8 - h, w, h); }
+    else { c.strokeStyle = '#7a5532'; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(s.x - 14, s.y + 4); c.lineTo(s.x + 14, s.y - 4); c.moveTo(s.x - 6, s.y - 6); c.lineTo(s.x + 8, s.y + 6); c.stroke(); }
+  }
+}
+/** The night beyond the fire: dark, with a hole where the light reaches and a small one round 小满 (he carries no torch,
+    but the player must see him); the eyes of whatever stands in the dark still shine through. */
+function drawNight(c, g, t) {
+  const F = g.L.fire, x = g.L.furn.x, y = g.L.furn.y - 8, R = lightOf(g) * (0.94 + 0.04 * Math.sin(t * 9)), h = g.hero;
+  c.save();
+  const night = c.createRadialGradient(x, y, R * 0.55, x, y, R * 1.25);
+  night.addColorStop(0, 'rgba(6,8,22,0)'); night.addColorStop(1, `rgba(6,8,22,${F.dark ?? 0.78})`);
+  c.fillStyle = night; c.fillRect(0, 0, W, H);
+  c.restore();
+  if (h.dead <= 0 && Math.hypot(h.x - x, h.y - y) > R * 0.8) { const gl = c.createRadialGradient(h.x, h.y - 20, 4, h.x, h.y - 20, 46); gl.addColorStop(0, 'rgba(255,230,180,0.18)'); gl.addColorStop(1, 'rgba(255,230,180,0)'); c.fillStyle = gl; c.beginPath(); c.arc(h.x, h.y - 20, 46, 0, 6.28); c.fill(); }
+  for (const b of g.beasts) if (!b.dead && BEASTS[b.type].shade && Math.hypot(b.x - x, b.y - y) > R * 0.7) glowEyes(c, b.x + b.face * 3, b.y - BEASTS[b.type].r * 0.6, 4.5, 0.6 + 0.4 * Math.abs(Math.sin(t * 1.3 + b.id)));
+  drawSticks(c, g, t); // the 枯枝 glint through the dark: the player must find them
+}
+/** 小满, a story level's hero (守火): painted standing, throwing, carrying sticks; a code figure while they load. */
+function drawXiaoman(c, h, t, moving) {
+  const pic = ART.img[h.carry > 0 ? 'xiaoman-carry' : h.threw > 0 ? 'xiaoman-throw' : 'xiaoman-idle'] ?? ART.img['xiaoman-idle'];
+  const bob = moving ? Math.abs(Math.sin(t * 12)) * -2 : Math.sin(t * 2.4) * 0.5;
+  if (okImg(pic)) { const hh = 62, ww = pic.naturalWidth * hh / pic.naturalHeight; c.drawImage(pic, -ww / 2, FOOT - hh + bob, ww, hh); return; }
+  c.fillStyle = '#e8dcc0'; c.beginPath(); c.ellipse(0, -16 + bob, 9, 14, 0, 0, 6.28); c.fill(); c.strokeStyle = INK; c.lineWidth = 1.4; c.stroke();
+  c.fillStyle = '#2a241d'; c.beginPath(); c.arc(0, -36 + bob, 8, 0, 6.28); c.fill();
+  if (h.carry > 0) { c.strokeStyle = '#7a5532'; c.lineWidth = 3; c.beginPath(); c.moveTo(-12, -18); c.lineTo(12, -24); c.stroke(); }
+}
+function drawStone(c, p) { c.fillStyle = '#8c8577'; c.strokeStyle = INK; c.lineWidth = 1; c.beginPath(); c.ellipse(p.x, p.y, 4, 3.2, p.ang, 0, 6.28); c.fill(); c.stroke(); }
+
 function drawFurnace(c, g, t) {
+  if (g.L.fire) return drawCampfire(c, g, t);
   const prog = cleared(g) / waves(g), x = g.L.furn.x, y = g.L.furn.y;
   const fl = 0.88 + 0.08 * Math.sin(t * 7) + 0.04 * Math.sin(t * 23), R = (44 + prog * 60) * fl;
   const gr = c.createRadialGradient(x, y - 4, 4, x, y - 4, R);
@@ -378,23 +467,25 @@ function drawOrders(c, h, t) {
   const foe = h.foe && !h.foe.dead ? h.foe : null;
   if (foe) { const r = BEASTS[foe.type].r + 6, a = t * 3; c.strokeStyle = 'rgba(176,65,46,0.85)'; c.lineWidth = 2; for (let k = 0; k < 4; k += 1) { c.beginPath(); c.arc(foe.x, foe.y, r, a + k * 1.57, a + k * 1.57 + 0.9); c.stroke(); } }
 }
-function drawHero(c, h, t, sel, lang, says) {
+function drawHero(c, h, t, sel, lang, says, g = null) {
+  const HS = g?.HS ?? HERO;
   const moving = !h.dead && h.moving, f = heroFrame(h, t, moving);
-  const gone = h.dead > 0 ? Math.min(1, (HERO.respawn - h.dead) / 1.1) : 0; // she fades out over a second, then is away
+  const gone = h.dead > 0 ? Math.min(1, (HS.respawn - h.dead) / 1.1) : 0; // she fades out over a second, then is away
   if (gone >= 1) return;
   if (h.dash) { c.strokeStyle = 'rgba(190,210,245,0.5)'; c.lineWidth = 3; for (let k = 1; k <= 3; k += 1) { c.beginPath(); c.moveTo(h.x - h.face * (10 + k * 12), h.y - 16 + k * 5); c.lineTo(h.x - h.face * (30 + k * 14), h.y - 16 + k * 5); c.stroke(); } }
   c.save(); c.translate(h.x - gone * 14 * h.face, h.y); c.globalAlpha = 1 - gone;
-  const glow = c.createRadialGradient(0, -18, 4, 0, -18, 46); glow.addColorStop(0, 'rgba(200,220,250,0.42)'); glow.addColorStop(1, 'rgba(190,210,240,0)');
-  c.fillStyle = glow; c.beginPath(); c.arc(0, -18, 46, 0, 6.28); c.fill();
+  if (g?.who !== 'xiaoman') { const glow = c.createRadialGradient(0, -18, 4, 0, -18, 46); glow.addColorStop(0, 'rgba(200,220,250,0.42)'); glow.addColorStop(1, 'rgba(190,210,240,0)');
+    c.fillStyle = glow; c.beginPath(); c.arc(0, -18, 46, 0, 6.28); c.fill(); }
   if (sel) { c.setLineDash([5, 4]); c.strokeStyle = '#3c6478'; c.lineWidth = 2; c.beginPath(); c.ellipse(0, FOOT, 30, 10, 0, 0, 6.28); c.stroke(); c.setLineDash([]); }
   c.fillStyle = 'rgba(40,30,20,0.18)'; c.beginPath(); c.ellipse(0, FOOT, 22, 5.5, 0, 0, 6.28); c.fill();
   c.scale(h.face, 1);
-  if (artReady()) drawHeroArt(c, f, t, h.act?.k === 'sit' && !moving); else drawHeroBlob(c, h, t, moving);
+  if (g?.who === 'xiaoman') drawXiaoman(c, h, t, moving);
+  else if (artReady()) drawHeroArt(c, f, t, h.act?.k === 'sit' && !moving); else drawHeroBlob(c, h, t, moving);
   c.restore();
   if (gone > 0) return;
   const w = 34, x = h.x - w / 2, y = h.y - HERO_H - 2;
   c.fillStyle = 'rgba(42,36,29,0.55)'; c.fillRect(x - 1, y - 1, w + 2, 6); c.fillStyle = '#e9dfcc'; c.fillRect(x, y, w, 4);
-  c.fillStyle = '#5a8fc0'; c.fillRect(x, y, w * Math.max(0, h.hp / HERO.hp[h.lvl]), 4);
+  c.fillStyle = '#5a8fc0'; c.fillRect(x, y, w * Math.max(0, h.hp / HS.hp[h.lvl]), 4);
   if (h.lvl > 0) { c.fillStyle = '#c99a2e'; c.font = 'bold 9px serif'; c.fillText(LVNAME[lang][h.lvl], x + w + 3, y + 5); }
   if (h.say) {
     const s = says[h.say.k] ?? '';
@@ -443,13 +534,15 @@ export function draw(ctx, g, v) {
   items.push({ y: g.hero.y, hero: 1 });
   items.sort((a, b) => a.y - b.y);
   for (const it of items) {
-    if (it.hero) drawHero(ctx, g.hero, t, v.heroSel, v.lang, v.says);
+    if (it.hero) drawHero(ctx, g.hero, t, v.heroSel, v.lang, v.says, g);
     else if (it.tw) drawTower(ctx, it.tw, t);
     else drawBeast(ctx, it.b.type, it.b.x, it.b.y, t + it.b.id, it.b.face, it.b.flash, 1, it.b);
   }
+  if (g.L.fire) drawNight(ctx, g, t);
   for (const b of g.beasts) hpBar(ctx, b);
   for (const p of g.proj) {
-    if (p.k === 'sword') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.ang); ctx.strokeStyle = 'rgba(53,86,110,0.25)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-26, 0); ctx.lineTo(-8, 0); ctx.stroke(); drawSword(ctx, 1); ctx.restore(); }
+    if (p.k === 'stone') drawStone(ctx, p);
+    else if (p.k === 'sword') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.ang); ctx.strokeStyle = 'rgba(53,86,110,0.25)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-26, 0); ctx.lineTo(-8, 0); ctx.stroke(); drawSword(ctx, 1); ctx.restore(); }
     else { ctx.fillStyle = 'rgba(240,160,70,0.35)'; ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, 6.28); ctx.fill(); ctx.fillStyle = '#c94a2a'; ctx.beginPath(); ctx.arc(p.x, p.y, 4.5, 0, 6.28); ctx.fill(); }
   }
   for (const f of g.fx) {
@@ -460,6 +553,8 @@ export function draw(ctx, g, v) {
     else if (f.k === 'ping') { const k = 1 - a; ctx.strokeStyle = `rgba(60,100,120,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(f.x, f.y - 20, 20 + 40 * k, 0, 6.28); ctx.stroke(); }
     else if (f.k === 'mark') { ctx.strokeStyle = `rgba(60,100,120,${a})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 6 + 14 * (1 - a), 0, 6.28); ctx.stroke(); }
     else if (f.k === 'boom') { const k = 1 - a; ctx.fillStyle = `rgba(225,100,45,${0.35 * a})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.4 + 0.6 * k), 0, 6.28); ctx.fill(); ctx.strokeStyle = `rgba(176,65,46,${0.7 * a})`; ctx.lineWidth = 2; ctx.stroke(); }
+    else if (f.k === 'blink') { const k = 1 - a; glowEyes(ctx, f.x + k * 12, f.y - k * 10, 4.5, a * (Math.sin(k * 20) > -0.3 ? 1 : 0)); }
+    else if (f.k === 'leaf') { ctx.fillStyle = `rgba(215,225,240,${a})`; ctx.beginPath(); ctx.ellipse(f.x, f.y, 3, 1.6, f.vx * 0.02, 0, 6.28); ctx.fill(); }
     else if (f.k === 'spark') { ctx.fillStyle = `rgba(235,140,50,${a})`; ctx.beginPath(); ctx.arc(f.x, f.y, 2, 0, 6.28); ctx.fill(); }
     else if (f.k === 'drop') { ctx.fillStyle = `rgba(30,25,20,${a * 0.8})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.28); ctx.fill(); }
     else if (f.k === 'bolt') { ctx.strokeStyle = `rgba(150,120,230,${a})`; ctx.lineWidth = 4; ctx.beginPath(); f.pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); ctx.strokeStyle = `rgba(255,250,255,${a})`; ctx.lineWidth = 1.5; ctx.stroke(); }
@@ -500,6 +595,12 @@ function drawAim(c, g, aim) {
 
 /** The page's own marks for what the engine reports (kills, booms): ink, drops, sparks. */
 export function markEvent(g, e) {
+  if (e.kill && BEASTS[e.kill].shade) { // eyes in the dark, beaten: they blink, and slink off — no ink, nothing to pick up
+    g.fx.push({ k: 'blink', x: e.x, y: e.y - BEASTS[e.kill].r * 0.6, life: 0.9, max: 0.9 });
+    return;
+  }
+  if (e.fed) g.fx.push({ k: 'txt', x: g.L.furn.x, y: g.L.furn.y - 46, s: `+${e.fed}`, col: '#d9822b', life: 1.1, max: 1.1, vy: -26, size: 16, bold: true });
+  if (e.snap) for (let k = 0; k < 6; k += 1) { const a = Math.random() * 6.28, s = 30 + Math.random() * 50; g.fx.push({ k: 'leaf', x: e.snap[0], y: e.snap[1] - 10, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 40, life: 0.8, max: 0.8 }); }
   if (e.kill) {
     const r = BEASTS[e.kill].r, blobs = [];
     for (let k = 0; k < 7; k += 1) { const a = Math.random() * 6.28, dd = Math.random() * r * 1.4; blobs.push([Math.cos(a) * dd, Math.sin(a) * dd * 0.6, r * (0.3 + Math.random() * 0.5)]); }

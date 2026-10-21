@@ -179,7 +179,7 @@ test('the command line: the birthday never reaches the log, and page_did tells L
 
 test('the hero is fixed (2026-09-30): {兄姐} is 师兄, {伴} is 阿禾, a girl, {name} is 沈小满 in the text\'s language', () => {
   const at = s => look(s, content, ctx());
-  const s = walk(start(), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'endure' }]], content, NOW);
+  const s = walk(start(), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'evening' }], ['resolve', { exit: 'endure' }]], content, NOW);
   const dawn = at(s).scene;
   assert.equal(dawn.id, '00-dawn');
   assert.equal(dawn.people[0].name, '阿禾');
@@ -199,7 +199,7 @@ test('the hero is fixed (2026-09-30): {兄姐} is 师兄, {伴} is 阿禾, a gir
 /* ── The people ── */
 
 test('people speak as themselves: a line names them, Look carries their voice for Ling and the portrait for the page', () => {
-  const s = walk(start(), [['resolve', { exit: 'begin' }]], content, NOW);
+  const s = walk(start(), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'evening' }]], content, NOW);
   const l = look(s, content, ctx());
   assert.deepEqual(l.scene.people.map(p => p.id), ['masan', 'maxiaobao', 'baba']);
   assert.equal(l.scene.people[0].name, '马三');
@@ -214,10 +214,10 @@ test('people speak as themselves: a line names them, Look carries their voice fo
   const html = cardHtml({ card: 'people' }, { look: l, lang: 'zh', words: WORDS.zh });
   assert.match(html, masanArt ? /<img src="\.\.\/worlds\/jiuding\/art\/people\/masan\.webp" alt="马三">[\s\S]*<b>马三<\/b>/ : /<span class="namecard" aria-hidden="true"><b>马三<\/b><\/span>[\s\S]*<b>马三<\/b>/);
   // 老周's role names {伴}, filled for this player
-  const cliff = look(walk(s, [...TO_VALLEY.slice(1), ['resolve', { exit: 'follow' }]], content, NOW), content, ctx()).scene;
+  const cliff = look(walk(s, [...TO_VALLEY.slice(2), ['resolve', { exit: 'follow' }]], content, NOW), content, ctx()).scene;
   assert.equal(cliff.people.find(p => p.id === 'laozhou').role, '邻居，种地的，阿禾的爹');
   // before she walks with the player she is the story's fox, her face in the people card
-  const fox = look(walk(s, TO_VALLEY.slice(1, -2), content, NOW), content, ctx()).scene;
+  const fox = look(walk(s, TO_VALLEY.slice(2, -2), content, NOW), content, ctx()).scene;
   assert.equal(fox.id, '00-fox');
   assert.deepEqual(fox.people.map(p => [p.id, p.name]), [['yinyue', '小银狐']]);
   for (const p of content.people.people.filter(p => p.art || p.line !== 'jin')) assert.ok(fs.existsSync(path.join(content.dir, p.art)), p.art); // 今线's: name cards
@@ -257,7 +257,7 @@ test('the choices are marked on the save; the storm\'s other branch is the harde
   const s = walk(start(), TO_HALL, content, NOW);
   for (const m of ['kept-count', 'took-egg', 'three-rules', 'turned-back', 'shared-bread', 'played-dumb', 'marrow-washed', 'steps-steady']) assert.ok(s.marks.includes(m), m);
   assert.deepEqual(look(s, content, ctx()).marks, s.marks);
-  const storm = walk(start(), [...TO_VALLEY.slice(0, 10), ['played']], content, NOW);
+  const storm = walk(start(), [...TO_VALLEY.slice(0, 11), ['played']], content, NOW);
   assert.equal(storm.scene, '00-storm');
   const turned = resolve(storm, content, ctx(), { exit: 'turn' }).state, chased = resolve(storm, content, ctx(), { exit: 'chase' }).state;
   assert.equal(storm.stamina - turned.stamina, 4);

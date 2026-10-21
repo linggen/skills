@@ -8,18 +8,22 @@ import { loadContent } from '../scripts/content.mjs';
 import { playOnce } from '../tools/board-bots.mjs';
 
 const content = loadContent();
-const BEATS = { tauntrope: ['masan-taunt', 'spring', ['word', 'fist']], wayrope: ['yinyue-way', 'bubble', ['straight', 'wandered']], rentrope: ['rent-scale', 'crow', ['exact', 'over']] };
+// 忍字 and 认路 left their scenes 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」 — 忍字 a 气走经脉 level, 认路 cut): their
+// rope levels stay in the 游戏厅, no task (`null`); 算账 is still 00-rent's.
+const BEATS = { tauntrope: [null, 'spring', ['word', 'fist']], wayrope: [null, 'bubble', ['straight', 'wandered']], rentrope: ['rent-scale', 'crow', ['exact', 'over']] };
 
 for (const [id, [task, tool, grades]] of Object.entries(BEATS)) {
   test(`${id}: the task ${task} plays it; its level is the registry's, with its tool (${tool}), proved both ways`, async () => {
     const mod = await import(`../scripts/games/${id}.js`);
     const { bot, starPlans } = await import(`../scripts/games/bots/${id}.js`);
-    const t = content.tasks.tasks.find((x) => x.id === task);
-    assert.equal(t.game, id);
-    assert.equal(t.stars, 3);
-    assert.deepEqual(Object.keys(t.marks).sort(), [...grades].sort());
     const row = content.games.games.find((g) => g.id === id);
-    assert.equal(row.task, task);
+    if (task) {
+      const t = content.tasks.tasks.find((x) => x.id === task);
+      assert.equal(t.game, id);
+      assert.equal(t.stars, 3);
+      assert.deepEqual(Object.keys(t.marks).sort(), [...grades].sort());
+      assert.equal(row.task, task);
+    } else assert.ok(row.replaced === 'cut' && !row.scene && row.why?.zh, `${id}: the 游戏厅's only, under 旧版`);
     const level = row.levels[0];
     assert.ok({ spring: level.springs, bubble: level.bubbles, crow: level.crows }[tool]?.length, 'its tool is in the level');
     const r = playOnce(mod, bot, { seed: 'b1', deal: { levels: row.levels }, limit: 60000 });
@@ -132,15 +136,13 @@ test('算账: one swipe across both vines never wins; the crow\'s vine first nev
   assert.ok(wins.filter(Boolean).length >= wins.length - 2, `the race wins almost anywhere from 0.7 s to the crow: ${wins.map(Number).join('')}`);
 });
 
-test('忍字: the cake goes back into 马小宝\'s own mouth (the book\'s, both ways on) — no yard dog', async () => {
+test('忍字 (in the 游戏厅 since 2026-10-21): the cake goes back into 马小宝\'s own mouth (the book\'s, both ways on) — no yard dog', async () => {
   const mod = await import('../scripts/games/tauntrope.js');
   const row = content.games.games.find((g) => g.id === 'tauntrope');
   const h = mod.html(mod.newGame('x', 1, { levels: row.levels }), 'zh');
   assert.match(h, /games\/xiaobao\.webp/);
   assert.doesNotMatch(h, /dog\.webp/);
-  const t = content.tasks.tasks.find((x) => x.id === 'masan-taunt');
-  assert.match(t.done_line.zh, /马小宝/);
-  assert.doesNotMatch(t.title.zh + mod.meta.how.zh, /狗嘴|喂狗/);
+  assert.doesNotMatch(mod.meta.how.zh, /狗嘴|喂狗/);
   for (const ex of content.chapters['00-prologue'].scenes['00-masan'].exits) assert.match(ex.story_full?.zh ?? ex.story.zh, /桂花糕一口塞进嘴里/, `${ex.id}: the book has him eat it`);
 });
 

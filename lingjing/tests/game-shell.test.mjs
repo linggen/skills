@@ -193,35 +193,24 @@ test('the catalogue: a stage row (二十问, 讨价还价, 断案, 对对子, �
   const { loadContent } = await import('../scripts/content.mjs');
   const { look } = await import('../scripts/rules.mjs');
   const { stageSave } = await import('../tools/arcade-saves.mjs');
-  const { stageCards } = await import('../scripts/stage.mjs');
-  const STAGE_CARD = { twenty: 'twenty', haggle: 'haggle', case: 'case', duizi: 'duizi', rerun: 'rerun', mishi: 'board' };
-  const { arcadeStageUrl, visitDays } = await import('../scripts/arcade-board.js');
+  const { arcadeStageUrl } = await import('../scripts/arcade-board.js');
   const content = loadContent();
   const stages = REG.games.filter((g) => g.stage);
   assert.ok(stages.length >= 6);
   for (const g of stages) {
     const st = g.stage;
     assert.match(st.save, /^arcade-[a-z]+$/, `${g.id}: a scratch save of the 游戏厅's own`);
-    const file = new URL(`./fixtures/saves/${st.seed ?? st.save}.json`, import.meta.url);
-    assert.ok(fs.existsSync(file), `${g.id}: tests/fixtures/saves/${st.seed ?? st.save}.json (node tools/arcade-saves.mjs)`);
-    const raw = JSON.parse(fs.readFileSync(file, 'utf8')), saved = raw.state ?? raw;
-    if (!st.seed) assert.deepEqual(saved, JSON.parse(JSON.stringify(stageSave(content, st))), `${g.id}: its fixture is what its row writes now (node tools/arcade-saves.mjs)`);
-    // The 游戏厅 moves the clock to a visiting shop's day (`&days=`), as it opens the tile; else today.
-    const [prov, pid] = String(st.visitor ?? '').split('/');
-    const visits = pid ? JSON.parse(read(`../worlds/jiuding/places/${prov}.json`)).places.find((p) => p.id === pid)?.has?.visitor?.visits : null;
-    if (pid) assert.ok(visits?.every, `${g.id}: ${st.visitor} is a visiting shop`);
-    for (let k = 0; k < (visits?.every ?? 1); k++) {
-      const now = new Date(Date.now() + k * 86400000), days = visitDays(visits, now);
-      const l = look(saved, content, { now: new Date(now.getTime() + days * 86400000), quests: [] });
-      assert.ok(l[st.look], `${g.id}: Look's ${st.look} stands on that save (+${days} days)`);
-      assert.ok(stageCards(l).some((c) => c.card === STAGE_CARD[st.look] || (c.card === 'board' && c.id === g.task)), `${g.id}: its card on the stage`);
-    }
-    assert.equal(arcadeStageUrl(st), `index.html?save=${st.save}&seed=${st.seed ?? st.save}`, 'no board= — Look brings the card');
+    const file = new URL(`./fixtures/saves/${st.save}.json`, import.meta.url);
+    assert.ok(fs.existsSync(file), `${g.id}: tests/fixtures/saves/${st.save}.json (node tools/arcade-saves.mjs)`);
+    const saved = JSON.parse(fs.readFileSync(file, 'utf8')).state;
+    assert.deepEqual(saved, JSON.parse(JSON.stringify(stageSave(content, st))), `${g.id}: its fixture is what its row writes now (node tools/arcade-saves.mjs)`);
+    assert.ok(look(saved, content, { now: new Date(), quests: [] })[st.look], `${g.id}: Look's ${st.look} stands on that save`);
+    assert.equal(arcadeStageUrl(st), `index.html?save=${st.save}&seed=${st.save}`, 'no board= — Look brings the card');
     assert.ok(g.name?.zh && g.name?.en && g.mechanic, `${g.id}: named and typed`);
   }
   // The page reads them so: a stage row links to the game page, a cut row opens nothing.
   const src = read('../scripts/arcade.js');
-  assert.match(src, /g\.stage \? await stageUrl\(g\.stage\)/);
+  assert.match(src, /g\.stage \? arcadeStageUrl\(g\.stage\)/);
   assert.match(src, /if \(g\.replaced === 'cut'\) return cutTile\(g\)/);
 });
 

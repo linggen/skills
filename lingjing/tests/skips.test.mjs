@@ -71,7 +71,9 @@ test('a graded board left writes no grade or mark, owes the rest of the passage,
   assert.ok((first.tell_owed ?? []).includes('after/wm-qianye'), 'the passage after the first board is owed, as after a win');
   assert.ok(!(first.marks ?? []).some((m) => m.startsWith('qiajue-')), 'no mark');
   const { s, now } = at('00-prologue/00-cave');
-  const one = s; // 喂饼 is 00-cave's one board (扔石听声 cut again 2026-10-19)
+  // 守火 is 00-cave's first board since 2026-10-21; 喂饼 its second, after the rest of the passage
+  const one = must(task, s, now, { action: 'skip', id: 'cave-fire' });
+  assert.ok((one.tell_owed ?? []).includes('after/00-cave'), 'left, 守火 owes the bread passage as a win would');
   const two = must(task, one, now, { action: 'skip', id: 'bread-share' });
   assert.equal(two.grades?.['bread-share'], undefined);
   assert.ok(!(two.marks ?? []).some((m) => m.startsWith('bread-')), 'no mark');
@@ -84,8 +86,9 @@ test('a graded board left writes no grade or mark, owes the rest of the passage,
 });
 
 test('a board left comes back by itself on a later day, the stage idle — won then, it pays in full: grant, grade, mark', async () => {
-  // 喂饼, 00-cave's one board (扔石听声 cut again 2026-10-19).
-  const { s, now } = at('00-prologue/00-cave');
+  // 喂饼, 00-cave's second board (守火 first since 2026-10-21): 守火 played, then 喂饼 left.
+  const at0 = at('00-prologue/00-cave'), now = at0.now;
+  const s = must(task, must(win, at0.s, now, { id: 'cave-fire' }), now, { action: 'done', id: 'cave-fire' });
   // Left (the stage idle): it is the one that comes back.
   const left = must(task, s, now, { action: 'skip', id: 'bread-share' });
   const n = { ...left, tell_owed: [], told_scenes: [...(left.told_scenes ?? []), left.scene] };

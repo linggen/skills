@@ -37,6 +37,14 @@
       "done_line": { "zh": "十七个盆，一个不少。", "en": "Seventeen basins, not one missing." }
     },
     {
+      "_td": "2026-10-21 (Hanli: 第一回 keeps 接雨 · 忍字 · 拽爹 · 认路 · 喂饼 and adds two 塔防 boards — 「用塔防作为主力」「7个游戏可以防止阅读过长」): 00-baicai, where the book's 芦花鸡 pokes through the 篱笆 and 阿禾's 竹竿 flicks it back. 守墙关's story level `baicai` (levels/shouqiang.json, `story: \"00-baicai\"` — 兽潮 never serves it, the 游戏厅 keeps it off the ladder): the player's first 塔防, gentle — hens, not beasts; 阿禾 pokes, 小满 beside her; a tap names the hen to chase, one card after the first wave. Stars by the cabbage left. Nothing paid before 入门 (the chapter's locks).",
+      "id": "baicai-hens", "kind": "board", "game": "shouqiang", "deal": { "lv": "baicai" }, "period": "once", "stars": 3,
+      "title": { "zh": "守白菜 · 芦花鸡", "en": "Guarding the cabbage · The speckled hens" },
+      "how": { "zh": "芦花鸡从篱笆缝里钻进来，奔着白菜去。阿禾的竹竿自己会撵；点一只鸡，先撵那一只。撵完一波，挑一张。", "en": "Speckled hens squeeze through the fence and head for the cabbage. Ahe's bamboo pole chases them on its own; tap a hen to chase that one first. After the first wave, pick a card." },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "这一颗，是过冬的。", "en": "This one is for the winter." }
+    },
+    {
       "_restored": "扔石听声, cut 2026-10-16 morning (903a00c0) as a weak board, back the same day on the throwing board (Hanli: 「投掷类都可以换」): two stones into the cave, the echo deep is the clean (games.json caveecho).",
       "_cut": "Off 00-cave again 2026-10-19 (Hanli approved, with 射鹿 · 等风): the passage whole, 喂饼 the scene's one board; the task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",
       "id": "cave-stone", "kind": "board", "game": "caveecho", "period": "once", "cut": "2026-10-19",
@@ -57,6 +65,14 @@
       "done_line": { "zh": "一个小角包好了，留作明天的早饭。", "en": "A corner wrapped for tomorrow's breakfast." }
     },
     {
+      "_td": "2026-10-21 (Hanli: 第一回 adds two 塔防 boards): 00-cave, at 「火堆挡在洞口，野兽便不敢进来」, before 喂饼 (the 卷一 plan's order: 接雨 · 守白菜 · 忍字 · 拽爹 · 守火 · 喂饼 — the two 割绳子 boards not back to back). 守炉's story level `shouhuo` (games.json `shoulu`, `story: \"00-cave\"`): the fire at the cave mouth is the 炉, the hurt fox beside it; eyes in the dark circle in and shy from the light; the fire burns down and 枯枝 at the cliff's foot keep it up (「守火的人不能睡，睡着了，火就灭了」). 小满 alone — a 柴刀 and stones, no talismans, no 银月. The second 塔防, gentle. Stars by the fire left. Nothing paid before 入门.",
+      "id": "cave-fire", "kind": "board", "game": "shoulu", "deal": { "lv": "shouhuo" }, "period": "once", "stars": 3,
+      "title": { "zh": "守火 · 洞口那堆火", "en": "Keeping the fire · At the cave mouth" },
+      "how": { "zh": "火堆挡在洞口，野兽便不敢进来——火一矮，黑里的眼睛就往里凑。点崖根底下的枯枝，小满折来添火；点一双眼睛，他扔石头撵。守到它们散了。", "en": "A fire across the cave mouth keeps beasts out; when it burns low, the eyes in the dark creep in. Tap a dead branch at the cliff's foot and Xiaoman snaps it for the fire; tap a pair of eyes and he throws a stone. Hold till they give up." },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "火堆挡在洞口，野兽便不敢进来。", "en": "With a fire across the mouth of the cave, animals wouldn't dare come in." }
+    },
+    {
       "id": "rent-scale", "kind": "board", "game": "rentrope", "stars": 3, "period": "once",
       "title": { "zh": "算账 · 肉上秤", "en": "Settling up · The meat on the steelyard" },
       "grant": { "table": "task", "progress": 5 },
@@ -73,11 +89,12 @@
     },
     {
       "_beats": "Batch two (2026-10-14, Hanli 「都可以，按你的单子做」): each beat ends won always — a `skip` (算了，往下走) ends it with no grade, so no mark — and never picks the way on unless an exit says `needs.grade`.",
-      "id": "masan-taunt", "kind": "board", "game": "tauntrope", "stars": 3, "period": "once",
-      "title": {"zh": "忍字 · 那块桂花糕", "en": "Holding it in · That osmanthus cake"},
+      "_qimai": "2026-10-21 (Hanli, 第一回's lineup: 「按你的建议来」): 忍字 is a 气走经脉 level (games.json qimai `renzi`, the kit's first) — the cake's smell slides down his throat and the breath is pressed back down; was 割绳子 `tauntrope` (10-20; it stays in the 游戏厅). Id kept so a save holding it goes on; its marks taunt-word · taunt-fist (read by no line) went with the rope level.",
+      "id": "masan-taunt", "kind": "board", "game": "qimai", "stars": 3, "period": "once",
+      "title": {"zh": "忍字 · 那口气", "en": "Holding it in · That breath"},
+      "how": {"zh": "桂花糕举到了鼻子底下。按住是吸，松开是吐——那口气往上冲，就松开，把它压回肚子里。", "en": "The osmanthus cake is under your nose. Hold to breathe in, let go to breathe out: when the breath surges up, let go and press it back down to your belly."},
       "grant": { "table": "task", "progress": 5 },
-      "marks": {"word": "taunt-word", "fist": "taunt-fist"},
-      "done_line": {"zh": "桂花糕进了马小宝自己的嘴。那声狗叫，你没学。", "en": "The cake went into Ma Xiaobao's own mouth. You never did bark."}
+      "done_line": {"zh": "那声狗叫，你没学。", "en": "You never did bark."}
     },
     {
       "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",
@@ -88,6 +105,7 @@
       "done_line": {"zh": "厚的那张饼，包好了，揣在你怀里。", "en": "The thick flatbread, wrapped, is inside your jacket."}
     },
     {
+      "_cut": "Off 00-yinyue 2026-10-21 (Hanli, 第一回's lineup: 「按你的建议来」 — six boards): the passage reads whole; `cut` lets a save holding it offered let it go on load (state.mjs fitWorld). Row and module stay in the 游戏厅.", "cut": "2026-10-21",
       "id": "yinyue-way", "kind": "board", "game": "wayrope", "stars": 3, "period": "once",
       "title": {"zh": "认路 · 灵气泡送它出谷", "en": "Finding the way · Out in a qi bubble"},
       "grant": { "table": "task", "progress": 5 },

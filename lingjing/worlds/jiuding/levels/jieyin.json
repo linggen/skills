@@ -324,8 +324,8 @@
   "_hosts": "结印 inside the tower-defence games (Hanli 10-21: 「不要只有结印攻击, 把结印放到现有的塔防类游戏中」; 「结印可以帮助更快杀敌, 更容易取得3星成就」; 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」). The dock is jieyin/helper.js offerSeals; a host's row says when it offers (`when`: boss — a 大妖 on the field — | always), the rest between casts (`cool` s), the harm on the 大妖 (`bossMul`), and its moves in helper's row shape (`seals` + `motion` jab, or `jieyin` a move id; `from` the marks the save must hold). A level's `pace` lays `paces[pace]` over it: rest (the default) as written; intense — the few levels where casting often is the point: always offered, short rest. Every level is won without a cast (tests/game-shoulu-jieyin.test.mjs).",
   "hosts": {
     "shoulu": {
-      "when": "boss|elite", "aim": "boss", "cool": 6, "bossMul": 3, "eliteMul": 2.5, "idle": 60,
-      "paces": { "intense": { "when": "always", "aim": "near", "cool": 3.5 } },
+      "when": "boss", "aim": "boss", "cool": 8, "bossMul": 3, "idle": 60,
+      "paces": { "intense": { "when": "always", "aim": "near", "cool": 2.5 } },
       "say": { "zh": "合窳出来了——结印！", "en": "The great beast is out — make the seals!" },
       "first": { "zh": "比个剑诀，往镜头一戳，飞剑就出去", "en": "Make the sword seal and jab at the camera: the flying sword flies" },
       "moves": [

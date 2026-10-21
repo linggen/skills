@@ -112,13 +112,10 @@ test('the cast: a seal held holdMs casts once (it must change or go), a push cas
   const k = json('../worlds/jiuding/levels/texie.json').cast;
   let s = startCaster(), casts = [];
   const step = (t, seal, size = 1) => { const r = castStep(s, { t, dt: 33, seal, size }, k); s = r.state; if (r.cast) casts.push([t, r.cast]); };
-  for (let t = 0; t <= 1000; t += 33) step(t, 'zhang');
-  assert.deepEqual(casts, [], 'an open palm held only shows the hands (掌 is half of 推掌)');
-  s = startCaster();
-  for (let t = 0; t <= 2000; t += 33) step(t, 'jian');
+  for (let t = 0; t <= 2000; t += 33) step(t, 'zhang');
   assert.deepEqual(casts.map((c) => c[1]), ['seal'], 'one cast for one held seal');
   assert.ok(casts[0][0] >= k.holdMs && casts[0][0] < k.holdMs + 66);
-  step(2033, null); for (let t = 2066; t <= 2600; t += 33) step(t, 'jian');
+  step(2033, null); for (let t = 2066; t <= 2600; t += 33) step(t, 'zhang');
   assert.equal(casts.length, 2, 'let go and made again: casts again');
   // A push: the hand's size grows fast.
   casts = []; s = startCaster();

@@ -674,7 +674,7 @@ export class PlayScene extends Phaser.Scene {
   /** The spell flies from the squad up its column and bursts on what it hit: fire, a ring, the number. */
   on_spell(e) {
     const z = Math.max(0, e.z ?? 0), x = xOf(colMid(e.col), z), y = yOf(z) - 40 * sOf(z);
-    const orb = this.add.image(this.squadX, Y0 - 30, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(/^huodan/.test(e.move) ? 0xff8a2a : e.move === 'bingzhui' ? 0x9fe0ff : e.move === 'muteng' ? 0x8fe07a : 0xfff0b0).setScale(3).setDepth(D.fx);
+    const orb = this.add.image(this.squadX, Y0 - 30, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(e.move === 'huodan' ? 0xff8a2a : 0x9fe0ff).setScale(3).setDepth(D.fx);
     this.sfx.go();
     this.tweens.add({ targets: orb, x, y, scale: 1.4, duration: 260, ease: 'Quad.easeIn', onComplete: () => {
       orb.destroy();

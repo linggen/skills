@@ -33,7 +33,7 @@ const MENU = [
 const ctx = (quests = MENU) => ({ now: NOW, quests });
 
 /* A new game at 马三's rent (the scene of his screenshot); and one past the gate. */
-const masan = () => walk(newState(content, 'zh', NOW), [...TO_VALLEY.slice(0, 1), ['played']], content, NOW);
+const masan = () => walk(newState(content, 'zh', NOW), [...TO_VALLEY.slice(0, 2), ['played']], content, NOW);
 const waimen = () => walk(newState(content, 'zh', NOW), TO_WAIMEN, content, NOW);
 
 /* His live save as it stood on 2026-09-28, in shape: the v3 restart put him at

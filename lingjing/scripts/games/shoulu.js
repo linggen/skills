@@ -28,7 +28,7 @@
 // the game owns 再来 / 下一关; it settles only when taken down. Stars live in this browser's localStorage
 // (`lingjing.shoulu.stars`), never the save.
 import { BEASTS, EARLY_RATE, H, HERO, SKEYS, SKILLS, TOWERS, TORDER, W, build, callWave, canBuild, cleared, keepSel, levelsFrom, locked, newGame, noSel,
-  pointer, pressKey, pressSkill, refund, sell, skillState, starsOf, step, toggleAuto, upgrade, upgradeCost, waves } from './shoulu/core.js';
+  pointer, pressKey, pressSkill, refund, sell, skillState, starsFor, step, toggleAuto, upgrade, upgradeCost, waves } from './shoulu/core.js';
 import { beastArtReady, beastIcon, draw, loadArt, makePaper, markEvent, portraitStyle, stepFx } from './shoulu/draw.js';
 import { jieyinCast, jieyinState } from './shoulu/core.js';
 
@@ -41,18 +41,15 @@ export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (r
 /** The host's numbers for a level: hosts.shoulu with its pace's laid on. */
 export const jieyinCfg = (host, level) => ({ ...host, ...(host?.paces?.[level?.pace ?? 'rest'] ?? {}), pace: level?.pace ?? 'rest' });
 const OFF = { on: false, ready: false, cool: 0, coolOf: 0, boss: null };
-/** A host row's id in the 手势斗法 kit (jieyin.json `doufa`): its `jieyin`, else its own. */
-export const duelId = (row) => row.jieyin ?? row.id;
 /** Offer the dock for this mount: → Promise<handle | null> (null and nothing drawn without a camera — helper.js). */
 export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside, feed = false, load = () => import(SEALS.href), env } = {}) {
   const moves = (host?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const cfg = () => { const n = now(); return n.g ? jieyinCfg(host, n.level) : null; };
   return load().then(({ offerSeals }) => offerSeals({
-    // the dock knows the 手势斗法 ids (a row's `jieyin`, else its own id) and casts back an event naming one
-    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves: moves.map(duelId), idle: host.idle,
+    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves, idle: host.idle,
     state: () => { const c = cfg(); return c ? jieyinState(now().g, c) : OFF; },
-    cast: (e) => { const c = cfg(), row = moves.find((m) => duelId(m) === (e?.move ?? e)); return c && row ? jieyinCast(now().g, row.id, c) : false; },
+    cast: (id) => { const c = cfg(); return c ? jieyinCast(now().g, id, c) : false; },
     fizzle: () => toast(lang === 'en' ? 'Pfft — it fizzled.' : '噗——走火了。'), say: toast,
     call: () => word(host.say, lang), first: moves.some((m) => m.motion === 'jab' && !m.from) ? host.first : null,
     paused, aside,
@@ -114,10 +111,10 @@ const TD = {
   zh: { jian: '快·单体·可击飞禽', huo: '慢·溅射·不及飞禽', han: '范围减速', lei: '连锁三跳·可击飞禽' },
   en: { jian: 'fast · one · hits fliers', huo: 'slow · splash · ground only', han: 'slows all near', lei: 'chains thrice · hits fliers' },
 };
-const BN = { zh: { yezhu: '野猪', zheng: '狰', qiuyu: '犰狳', qique: '鬿雀', heyu: '合窳' }, en: { yezhu: 'Boar', zheng: 'Zheng', qiuyu: 'Qiuyu', qique: 'Qique', heyu: 'Heyu' } };
+const BN = { zh: { yezhu: '野猪', zheng: '狰', qiuyu: '犰狳', qique: '鬿雀', heyu: '合窳', yanjing: '黑影' }, en: { yezhu: 'Boar', zheng: 'Zheng', qiuyu: 'Qiuyu', qique: 'Qique', heyu: 'Heyu', yanjing: 'Eyes' } };
 const INTRO = {
-  zh: { zheng: '狰：快，银月拦不住，火符难沾身——寒符冻住它', qiuyu: '犰狳：一身硬甲，剑阵只伤四成', qique: '鬿雀：飞越山道，唯剑阵、雷符可击', heyu: '合窳来了！一蹄入炉，损三点炉火' },
-  en: { zheng: 'Zheng: too quick to hold or burn. Frost it.', qiuyu: 'Qiuyu: hard hide; swords do 40%.', qique: 'Qique fly over the road: only swords and thunder reach them.', heyu: 'The heyu! One hoof in the furnace costs 3 fire.' },
+  zh: { yanjing: '黑里的眼睛：怕火。火旺，它们就退；火一矮，就往里凑', zheng: '狰：快，银月拦不住，火符难沾身——寒符冻住它', qiuyu: '犰狳：一身硬甲，剑阵只伤四成', qique: '鬿雀：飞越山道，唯剑阵、雷符可击', heyu: '合窳来了！一蹄入炉，损三点炉火' },
+  en: { yanjing: 'Eyes in the dark: they fear the fire. Keep it high and they back off; let it sink and they creep in.', zheng: 'Zheng: too quick to hold or burn. Frost it.', qiuyu: 'Qiuyu: hard hide; swords do 40%.', qique: 'Qique fly over the road: only swords and thunder reach them.', heyu: 'The heyu! One hoof in the furnace costs 3 fire.' },
 };
 const STARS_KEY = 'lingjing.shoulu.stars';
 const loadStars = () => { try { return JSON.parse(globalThis.localStorage?.getItem(STARS_KEY) ?? '{}') ?? {}; } catch { return {}; } };
@@ -156,6 +153,15 @@ function ensureCss(doc) {
   doc.head.appendChild(l);
 }
 const word = (o, lang) => o?.[lang] ?? o?.zh ?? '';
+/** A level's own words over the page's (`words`, a story level's — 守火: 火, 小满, its won and lost lines); `{n}` takes the number. */
+export function wordsFor(base, words, lang) {
+  const out = { ...base };
+  for (const [k, v] of Object.entries(words ?? {})) {
+    const s = word(v, lang);
+    out[k] = typeof base[k] === 'function' ? (n) => s.replace('{n}', String(n)) : s;
+  }
+  return out;
+}
 
 /** A level's lead split for the shell: its story (the lines before the first `big` banner) read on the lead card,
     and the rest (the banner, the tips) left for the board. */
@@ -168,7 +174,8 @@ export function leadSplit(lines, lang = 'zh') {
 
 export async function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, shell } = {}) {
   lang = lang === 'en' ? 'en' : 'zh';
-  const t = T[lang], doc = container.ownerDocument, win = doc.defaultView;
+  let t = T[lang];
+  const doc = container.ownerDocument, win = doc.defaultView;
   ensureCss(doc);
   loadArt(doc);
   const levels = await levelsOf(data).catch(() => []);
@@ -228,7 +235,9 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       wave: () => { blip(330, 0.25, 'triangle', 0.05); setTimeout(() => blip(440, 0.3, 'triangle', 0.05), 120); },
       howl: () => { blip(420, 0.5, 'sine', 0.05); setTimeout(() => blip(640, 0.6, 'sine', 0.04), 140); },
       pounce: () => blip(300, 0.18, 'triangle', 0.05), foxfire: () => { blip(700, 0.3, 'sine', 0.035); setTimeout(() => blip(520, 0.4, 'sine', 0.03), 90); },
-      hair: () => { blip(980, 0.25, 'sine', 0.03); setTimeout(() => blip(1240, 0.3, 'sine', 0.025), 110); } };
+      hair: () => { blip(980, 0.25, 'sine', 0.03); setTimeout(() => blip(1240, 0.3, 'sine', 0.025), 110); },
+      throw: () => blip(380, 0.08, 'triangle', 0.03), snap: () => { blip(1600, 0.12, 'sine', 0.02); setTimeout(() => blip(1900, 0.15, 'sine', 0.018), 60); },
+      feed: () => { blip(220, 0.3, 'sawtooth', 0.03); setTimeout(() => blip(330, 0.25, 'triangle', 0.03), 80); } };
     const wake = () => { if (!AC) { try { AC = new (win.AudioContext || win.webkitAudioContext)(); } catch { AC = null; } } };
 
     const saga = (lines) => { sagaQ.length = 0; sagaT = 0; sagaQ.push(...lines); };
@@ -293,6 +302,14 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       const row = levels[i];
       root.classList.remove('is-picking');
       g = newGame(row, { seed: `shoulu|${Date.now()}` });
+      // a story level's own words and hero (守火: 小满, no talismans, no skills); the HUD and the hero bar follow
+      t = wordsFor(T[lang], row.words, lang);
+      root.classList.toggle('is-fire', Boolean(g.L.fire));
+      root.classList.toggle('no-skills', Boolean(g.noSkills));
+      root.classList.toggle('no-towers', !g.L.towers.length);
+      $('.sl-fire').firstChild.textContent = `${t.fire} `;
+      $('.sl-hinfo b').textContent = t.yinyue;
+      panel.face = false;
       paper = makePaper(doc, g.L, word(row.name, lang).split(' · ')[0]);
       S = noSel(); aimAt = null; shown = false; acc = 0; previewKey = '';
       if (!shell) { paused = false; $('[data-a="pause"]').textContent = t.pause; }
@@ -328,13 +345,13 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     });
     function showOver() {
       shown = true; closeMenu();
-      const win_ = g.over === 'win', st = win_ ? starsOf(g.hp, g.wonAt ?? g.t, g.L.par) : 0, row = levels[li];
+      const win_ = g.over === 'win', st = win_ ? starsFor(g) : 0, row = levels[li];
       if (win_) keepStars(row.id, st);
       // in the shell: its foot shows the result and 再来, won or lost; the board stays up under it
       if (shell) { const pk = $('[data-a="pick"]'); if (pk) pk.disabled = true; finish(win_ ? { won: true, stars: st, ...(nextLv(levels, li) ? { next: nextLv(levels, li) } : {}) } : { won: false, stars: 0 }); return; }
       const more = nextLv(levels, li) > 0;
       card.innerHTML = win_
-        ? `<h3>${t.won}</h3><div class="sl-stars">${'★'.repeat(st)}<s>${'★'.repeat(3 - st)}</s></div><p>${t.wonLine(g.hp)}</p>`
+        ? `<h3>${t.won}</h3><div class="sl-stars">${'★'.repeat(st)}<s>${'★'.repeat(3 - st)}</s></div><p>${t.wonLine(Math.ceil(g.hp))}</p>`
           + `<div class="sl-row">${more ? `<button type="button" class="sl-main" data-a="nextlv">${t.nextLevel}</button>` : ''}<button type="button" data-a="again">${t.again}</button>${pickBtn}</div>`
         : `<h3>${t.lost}</h3><p>${t.lostLine(g.wave, Math.round(49 * cleared(g) / waves(g)))}</p><div class="sl-row"><button type="button" class="sl-main" data-a="again">${t.again}</button>${pickBtn}</div>`;
       over.hidden = false;
@@ -488,17 +505,18 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       if (e.heroDown) toast(t.heroDown(e.heroDown));
       if (e.heroUp) toast(t.heroUp(e.heroUp));
       if (e.cry) toast(t.cry);
+      if (e.low && t.lowFire) toast(t.lowFire);
       markEvent(g, e);
     }
     function hud() {
-      $('[data-k="hp"]').textContent = String(g.hp);
+      $('[data-k="hp"]').textContent = g.L.fire ? `${Math.ceil(g.hp)} / ${g.L.fire.max}` : String(g.hp);
       $('[data-k="money"]').textContent = String(g.money);
       $('[data-k="wave"]').textContent = String(g.wave);
       const nb = $('[data-a="next"]'), n = waves(g);
       if (g.over) { nb.disabled = true; nb.textContent = g.over === 'win' ? t.won : t.lost; }
       else if (g.wave >= n) { nb.disabled = true; nb.textContent = g.queue.length ? t.last : t.holdLast; }
       else if (g.queue.length) { nb.disabled = true; nb.textContent = t.coming(g.wave); }
-      else { nb.disabled = false; nb.textContent = `${g.wave === 0 ? t.first : t.next} · ${Math.ceil(g.nextTimer)}${t.sec} (${t.early} +${Math.round(g.nextTimer * EARLY_RATE)})`; }
+      else { nb.disabled = false; nb.textContent = `${g.wave === 0 ? t.first : t.next} · ${Math.ceil(g.nextTimer)}${t.sec}${g.L.towers.length ? ` (${t.early} +${Math.round(g.nextTimer * EARLY_RATE)})` : ''}`; }
       const nw = g.wave < n && !g.over ? g.L.waves[g.wave] : null, key = `${li}:${nw ? g.wave : 'x'}`;
       if (key !== previewKey) {
         previewKey = key;
@@ -517,10 +535,12 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       sk: Object.fromEntries(SKEYS.map((k) => [k, bar.querySelector(`[data-skill="${k}"]`)])) };
     function heroPanel() {
       const h = g.hero;
+      if (!panel.face && g.who === 'xiaoman') { Object.assign($('.sl-face').style, { backgroundImage: `url("${new URL('./shoulu/art/xiaoman-idle.webp', import.meta.url).href}")`, backgroundSize: '160% auto', backgroundPosition: '50% 8%' }); panel.face = true; }
       if (!panel.face) { const st = portraitStyle(44); if (st) { Object.assign($('.sl-face').style, st); panel.face = true; } }
-      panel.hp.style.width = `${Math.max(0, h.hp / HERO.hp[h.lvl]) * 100}%`;
+      const HS = g.HS ?? HERO;
+      panel.hp.style.width = `${Math.max(0, h.hp / HS.hp[h.lvl]) * 100}%`;
       panel.lv.textContent = t.lv[h.lvl];
-      panel.st.textContent = h.dead > 0 ? t.away(Math.ceil(h.dead)) : `${Math.ceil(h.hp)} / ${HERO.hp[h.lvl]}`;
+      panel.st.textContent = h.dead > 0 ? t.away(Math.ceil(h.dead)) : `${Math.ceil(h.hp)} / ${HS.hp[h.lvl]}`;
       panel.port.classList.toggle('is-on', S.hero);
       panel.port.classList.toggle('is-away', h.dead > 0);
       for (const k of SKEYS) {

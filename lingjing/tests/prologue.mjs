@@ -13,11 +13,13 @@ export const V1_BIRTH = '1986-07-07';
 /* `look` with `at` is 看 (rules/examine.mjs): a hotspot looked at, free. */
 const FNS = { resolve, task, win, look: VERBS.look };
 
-/* 石坳村 to the valley: the name card, the rent, the egg, the stele's rules,
-   the clue at 黑松岭, the storm, the fall, the fox — and she joins at daybreak (`follow`). */
+/* 石坳村 to the valley: the name card, 阿禾's cabbage, the rent, the egg, the stele's rules,
+   the clue at 黑松岭, the storm, the fall, the fox, the fire kept, the bread — and she joins at daybreak (`follow`). */
 export const TO_VALLEY = [
   ['resolve', { exit: 'begin' }],
-  // 忍字 (割绳子, back 2026-10-20): the cake back into 马小宝's own mouth, then the taunt said back
+  // 守白菜 (守墙关, 2026-10-21): 阿禾's cabbage kept from the hens, then 那天傍晚
+  ['resolve', { exit: 'evening' }],
+  // 忍字 (气走经脉 since 2026-10-21, was 割绳子 10-20): the breath pressed down under the cake, then the taunt said back
   ['win', { id: 'masan-taunt' }],
   ['task', { action: 'done', id: 'masan-taunt' }],
   ['resolve', { exit: 'endure' }],
@@ -34,6 +36,7 @@ export const TO_VALLEY = [
   ['task', { action: 'done', id: 'fall-storm' }],
   ['resolve', { exit: 'check' }],
   ['resolve', { exit: 'save' }],
+  // 守火 (守炉, 2026-10-21) is the cave's first board, 喂饼 its second: both played before the way on
   ['resolve', { exit: 'share' }],
 ];
 /* 今 · 一 (2026-10-05): the interlude spliced in after 古二 (00-notice → 00-gate,
@@ -55,9 +58,7 @@ export const JIN_ONE = [
    down as the page would record it. */
 export const TO_HALL = [
   ...TO_VALLEY,
-  // 认路 (割绳子, back 2026-10-20): the little fox in a 灵气泡 to the moss at the valley mouth
-  ['win', { id: 'yinyue-way' }],
-  ['task', { action: 'done', id: 'yinyue-way' }],
+  // 认路 cut 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」): the dawn passage read whole, then out
   ['resolve', { exit: 'follow' }],
   ['resolve', { exit: 'climb' }],
   ['win', { id: 'deer-wind' }],

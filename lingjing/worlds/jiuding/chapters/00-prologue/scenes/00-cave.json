@@ -35,8 +35,12 @@
   }
  },
  "story": {
-  "zh": "他在崖壁底下找到了一个浅浅的石洞，先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的；待要再捡第三块，想想算了，还是进去了。\n\n他用他爹教的法子，拿那把火镰敲着火石，引着了干苔和松脂，生了一小堆火，火堆挡在洞口，野兽便不敢进来。\n\n然后他从怀里摸出了两样东西：阿禾给的煮鸡蛋，和他娘给的那张厚饼——沈家最后的一点白面。",
-  "en": "At the foot of the cliff he found a shallow cave. First he threw a stone in and listened: empty. He threw another and listened again: still empty. He was about to pick up a third, then thought better of it and went in.\n\nUsing the way his father had taught him, he struck the flint with the fire steel, lit some dry moss and pine resin, and got a little fire going. With a fire across the mouth of the cave, animals wouldn't dare come in.\n\nThen he took two things out of his jacket: the boiled egg Ahe had given him, and the thick flatbread from his mother — the last of the Shens' white flour."
+  "zh": "他在崖壁底下找到了一个浅浅的石洞，先往里扔了一块石头，听了听，是空的；又扔了一块，又听了听，还是空的；待要再捡第三块，想想算了，还是进去了。\n\n他用他爹教的法子，拿那把火镰敲着火石，引着了干苔和松脂，生了一小堆火，火堆挡在洞口，野兽便不敢进来。",
+  "en": "At the foot of the cliff he found a shallow cave. First he threw a stone in and listened: empty. He threw another and listened again: still empty. He was about to pick up a third, then thought better of it and went in.\n\nUsing the way his father had taught him, he struck the flint with the fire steel, lit some dry moss and pine resin, and got a little fire going. With a fire across the mouth of the cave, animals wouldn't dare come in."
+ },
+ "story_after": {
+  "zh": "然后他从怀里摸出了两样东西：阿禾给的煮鸡蛋，和他娘给的那张厚饼——沈家最后的一点白面。",
+  "en": "Then he took two things out of his jacket: the boiled egg Ahe had given him, and the thick flatbread from his mother — the last of the Shens' white flour."
  },
  "lines": [],
  "buttons": [
@@ -101,8 +105,12 @@
    }
   }
  ],
- "_beats": "喂饼 (bread-share): since 2026-10-16 a 割绳子-style puzzle (games/bread.js, levels in games.json) — cut the vines so the 饼 reaches the fox; corners caught are stars. Its win always feeds the fox, so its grade is half (a corner saved) or most (all to it) and takes 分它一半; 自己吃 (none · little, from the 10-14 piece-by-piece board) opens only when the board is left (「算了，往下走」 opens every way). The task's marks keep the grade (bread-half · bread-most) for the 恩仇簿 and 「本王欠你一张饼」. The corner is always kept: the dawn needs it. · 扔石听声 (cave-stone, caveecho on the throwing board) cut again 2026-10-19 (Hanli approved): off this scene the way the 10-16 cuts went — the passage whole again, word for word, and 喂饼 the scene's one board; the task, row, module and bot stay for the 游戏厅, and a save holding it offered lets it go on load (state.mjs).",
+ "_beats": "喂饼 (bread-share): since 2026-10-16 a 割绳子-style puzzle (games/bread.js, levels in games.json) — cut the vines so the 饼 reaches the fox; corners caught are stars. Its win always feeds the fox, so its grade is half (a corner saved) or most (all to it) and takes 分它一半; 自己吃 (none · little, from the 10-14 piece-by-piece board) opens only when the board is left (「算了，往下走」 opens every way). The task's marks keep the grade (bread-half · bread-most) for the 恩仇簿 and 「本王欠你一张饼」. The corner is always kept: the dawn needs it. · 扔石听声 (cave-stone, caveecho on the throwing board) cut again 2026-10-19 (Hanli approved): off this scene the way the 10-16 cuts went — the passage whole again, word for word, and 喂饼 the scene's one board; the task, row, module and bot stay for the 游戏厅, and a save holding it offered lets it go on load (state.mjs). · 2026-10-21 (Hanli: 第一回 adds two 塔防 boards — 「用塔防作为主力」; the 卷一 plan's order, doc/games-plan-juan1.md: 接雨 · 守白菜 · 忍字 · 拽爹 · 守火 · 喂饼, so the two 割绳子 boards are not back to back): the passage is split word for word after 「……火堆挡在洞口，野兽便不敢进来。」 — 守火 (`cave-fire`, 守炉 story level `shouhuo`) is played there, the first of the scene's two boards: the fire at the cave mouth is the 炉, eyes in the dark, 枯枝 at the cliff's foot to keep it up, 小满 alone. Then the rest (`story_after`, 「然后他从怀里摸出了两样东西……」) is told, and 喂饼 comes after it (rules/tasks.mjs: the split belongs to the first board in `show`). Both ways on wait for 喂饼, which waits on the stage for 守火 (stage.mjs boardWaits).",
  "show": [
+  {
+   "card": "board",
+   "id": "cave-fire"
+  },
   {
    "card": "board",
    "id": "bread-share"
@@ -110,6 +118,7 @@
  ],
  "offers": {
   "tasks": [
+   "cave-fire",
    "bread-share"
   ]
  }

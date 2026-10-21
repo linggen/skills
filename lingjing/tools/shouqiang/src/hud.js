@@ -1,7 +1,7 @@
 // hud.js — 守墙关's HUD and its modal moments: the top bar (pause · title · wave), the skill column (round icons with
 // level badges), the wall's HP bar, the lead-in and countdown, banners, 银月's bubbles, the 3-card pick, the result.
 import * as Phaser from 'phaser';
-import { W, H, opening } from 'shouqiang-core';
+import { W, H, opening, cardOf as coreCardOf } from 'shouqiang-core';
 import { FONT } from './fx.js';
 
 export const WORDS = {
@@ -122,8 +122,18 @@ function makeHudTextures(scene) {
   });
 }
 
-const cardOf = (g, id) => g.kit.cards.find((k) => k.id === id) ?? g.kit.unitCards?.find((k) => k.id === id)
-  ?? g.kit.opening?.lines.find((k) => k.id === id);
+// a card as the level shows it (core.js cardOf: a story level's own name, line and icon over the kit's numbers)
+const cardOf = (g, id) => coreCardOf(g, id);
+
+/** The HUD's words with a level's own laid over (`words` — 守白菜: 白菜, 撵走); `{n}` takes a number where the word is a function. */
+export function wordsFor(base, words, lang) {
+  const out = { ...base };
+  for (const [k, v] of Object.entries(words ?? {})) {
+    const s = v?.[lang] ?? v?.zh ?? '';
+    out[k] = typeof base[k] === 'function' ? (n) => s.replace('{n}', String(n)) : s;
+  }
+  return out;
+}
 
 export class Hud {
   constructor(scene, { depth, modal }) {

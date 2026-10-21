@@ -304,7 +304,9 @@ test('the play: bundle current, Phaser the one shared vendored build, every pict
     ...Object.keys(kit.beasts).filter((k) => !k.startsWith('_')).flatMap((b) => [`${b}-walk-1`, `${b}-hit`]),
     ...kit.cards.map((c) => `icon-${c.id}`),
     // the 药园: its field and wall, each talisman's two frames and seed card, the 灵气 orb, every lane card's icon
-    ...kit.levels.flatMap((l) => (l.art ? [l.art.bg, l.art.wall] : [])), 'orb',
+    ...kit.levels.flatMap((l) => (l.art ? Object.values(l.art).filter((v) => typeof v === 'string') : [])), 'orb',
+    // a story level's own cards (守白菜's 竹竿) and its beasts' every frame
+    ...kit.levels.flatMap((l) => (l.cards ?? []).map((c) => c.icon)),
     ...Object.keys(kit.units).filter((k) => !k.startsWith('_')).flatMap((u) => [`unit-${u}`, `unit-${u}-2`, `seed-${u}`]),
     ...kit.unitCards.map((c) => c.icon)];
   for (const k of want) assert.ok(existsSync(art(k)), `art/${k}.webp`);
@@ -601,7 +603,7 @@ test('the story row 药园巡夜 · 开春 (09-furnace): 野猪 and 狰 only, of
   assert.ok(!tideRows(kit).includes(row), '兽潮 skips a story row');
   assert.deepEqual([...new Set(row.waves.flat().map(([b]) => b))].sort(), ['yezhu', 'zheng'], '犰狳 first comes at 09-lingcao, the next scene');
   assert.ok(row.lead.some((l) => l.big && l.zh.includes('兽潮来袭')) && row.lead.every((l) => l.zh && l.en));
-  assert.ok(kit.levels.indexOf(row) === kit.levels.length - 1, 'last: the ladder\'s numbers (lv=1…) stand');
+  assert.ok(kit.levels.slice(kit.levels.indexOf(row)).every((l) => l.story), 'with the story rows, after the ladder: the ladder\'s numbers (lv=1…) stand');
   const t = JSON.parse(readFileSync(at('worlds/jiuding/tasks/h11.json'), 'utf8')).tasks.find((x) => x.id === 'furnace-ding');
   assert.deepEqual([t.game, t.deal.lv], ['shouqiang', 'yaoyuan-spring']);
   const rate = (bot, n) => laneRun(row, bot, n).filter((r) => r.won).length / n;
@@ -609,4 +611,40 @@ test('the story row 药园巡夜 · 开春 (09-furnace): 野猪 and 狰 only, of
   const human = rate('human', 20);
   assert.ok(human >= 0.8, `a first-timer wins most nights (${Math.round(human * 100)}%)`);
   assert.ok(rate('sharp', 12) >= 0.8, 'a sharp player wins');
+});
+
+/* 守白菜 (00-baicai, 2026-10-21, Hanli: 第一回 adds two 塔防 boards — 「用塔防作为主力」): the player's first 塔防. 阿禾's
+   芦花鸡 through the 篱笆 toward her cabbage; 阿禾 pokes (the 剑阵 line, named 竹竿), 小满 beside her throws clods (the bolt
+   beside the hero); no opening pick, no 结印, a hidden range line; one card after the first wave, of the 竹竿's three. */
+test('守白菜: a story row of 00-baicai — hens only, two waves, one pick of the 竹竿\'s three, no opening, no spell', async () => {
+  const row = kit.levels.find((l) => l.id === 'baicai');
+  assert.equal(row.story, '00-baicai');
+  const { tideRows } = await import('../scripts/rules/shouchao.mjs');
+  assert.ok(!tideRows(kit).includes(row), '兽潮 skips a story row');
+  assert.deepEqual([...new Set(row.waves.flat().map(([b]) => b))], ['luhuaji']);
+  assert.ok(kit.beasts.luhuaji.shoo, 'a hen beaten is chased off, not killed');
+  assert.equal(row.waves.length, 2);
+  assert.equal(opening(newGame(kit, row, { seed: 'b' })), false, 'no opening pick: 阿禾 pokes from the first hen');
+  const g = newGame(kit, row, { seed: 'b' });
+  advance(g, row.leadSec + 0.2);
+  while (g.phase !== 'pick' && g.phase !== 'won' && g.phase !== 'lost') step(g, 0.1);
+  assert.equal(g.phase, 'pick', 'one pick, after the first wave');
+  assert.deepEqual([...g.offer].sort(), row.cards.map((c) => c.id).sort(), 'the 竹竿\'s three');
+  for (const c of row.cards) assert.ok(c.name.zh.includes('竹竿') && c.name.en && c.say.zh && c.say.en && c.icon);
+  const t = JSON.parse(readFileSync(at('worlds/jiuding/tasks/world.json'), 'utf8')).tasks.find((x) => x.id === 'baicai-hens');
+  assert.deepEqual([t.game, t.deal.lv], ['shouqiang', 'baicai']);
+  assert.ok(row.lead.some((l) => l.big) && row.lead.every((l) => l.zh && l.en));
+  for (const k of ['won', 'lost', 'wallLeft', 'kills', 'focus']) assert.ok(row.words[k].zh && row.words[k].en, k);
+  assert.ok(row.teach.length && Object.keys(row.moments).every((m) => row.teach.includes(m)), 'every line the level\'s own: 银月 is not met yet');
+});
+test('守白菜, gentle: any card the first-timer takes wins; the sensible hand keeps the cabbage; taking none loses; about a minute', () => {
+  const row = kit.levels.find((l) => l.id === 'baicai');
+  const S30 = Array.from({ length: 30 }, (_, i) => `bc${i}`);
+  const go = (bot) => S30.map((seed) => sim(kit, row, BOTS[bot], { seed }));
+  const human = go('human'), random = go('random'), lazy = go('lazy');
+  assert.ok(human.every((r) => r.won) && human.filter((r) => r.stars === 3).length >= 24, `human ★ ${human.map((r) => r.stars).join('')}`);
+  assert.ok(random.every((r) => r.won), `any card wins: ★ ${random.map((r) => r.stars).join('')}`);
+  assert.ok(random.some((r) => r.stars < 3), 'but the pick matters');
+  assert.ok(lazy.every((r) => !r.won), 'no card at all: the hens get the cabbage');
+  assert.ok(human.every((r) => r.t >= 40 && r.t <= 70), `about a minute: ${human.map((r) => r.t)}`);
 });

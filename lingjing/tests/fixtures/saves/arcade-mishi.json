@@ -15,8 +15,8 @@
   ],
   "tier": "qi",
   "step": 4,
-  "progress": 550,
-  "wealth": 457,
+  "progress": 540,
+  "wealth": 317,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -27,13 +27,14 @@
    "luobo": 1,
    "xirang": 1,
    "pouch-low": 1,
+   "chitong-hulu": 1,
    "lianxi-fu": 2,
    "mend-pill": 3,
    "longxu-cao": 1,
    "zixu-zhi": 1,
    "zou-purse": 1,
    "duan-dao": 1,
-   "qi-pill": 6,
+   "qi-pill": 5,
    "dingtai": 3,
    "neimen-map": 1,
    "xizhu": 1,
@@ -42,13 +43,13 @@
    "yangyang-zhen": 3,
    "niuzhi-ganlu": 1,
    "huangting": 1,
-   "heluo": 1,
-   "huochai-jian": 1
+   "heluo": 1
   },
   "cast": [
    "zheng"
   ],
   "wear": {
+   "weapon": "chitong-hulu",
    "robe": "grey-robe"
   },
   "duels": {
@@ -88,9 +89,10 @@
   },
   "arts": [],
   "chapter": "00-zhuji",
-  "scene": "09-year",
+  "scene": null,
   "done_scenes": [
    "00-shiao",
+   "00-baicai",
    "00-masan",
    "00-dawn",
    "00-kitchen",
@@ -154,10 +156,7 @@
    "wm-heluo",
    "j07-ankle",
    "j07-dark",
-   "j07-guan",
-   "09-snow",
-   "09-jiuge",
-   "09-furnace"
+   "j07-guan"
   ],
   "ended": [
    "00-prologue",
@@ -166,6 +165,11 @@
   "place": "cangjing",
   "tasks": {
    "rain-basins": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "baicai-hens": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -180,12 +184,12 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
-   "bread-share": {
+   "cave-fire": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
-   "yinyue-way": {
+   "bread-share": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -279,16 +283,6 @@
     "status": "done",
     "period": "once",
     "done_at": "2026-10-02T01:00:00.000Z"
-   },
-   "jiuge-yubu": {
-    "status": "done",
-    "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
-   },
-   "furnace-ding": {
-    "status": "done",
-    "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
    }
   },
   "chores": {},
@@ -304,8 +298,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 75,
-   "wealth": 317
+   "progress": 65,
+   "wealth": 177
   },
   "stamina": 100,
   "stamina_at": "2026-10-02T01:00:00.000Z",
@@ -314,19 +308,15 @@
   "seed": "2026-10-01T01:00:00.000Z",
   "grades": {
    "rain-basins": "dry",
-   "masan-taunt": "word",
    "bread-share": "most",
-   "yinyue-way": "straight",
    "rent-scale": "exact",
    "qianye-qiajue": "tight",
    "zhaojing-mirror": "still",
    "dabi-sneeze": "clean",
-   "jiaxin-letter": "all",
-   "jiuge-yubu": "quiet"
+   "jiaxin-letter": "all"
   },
   "marks": [
    "rain-caught",
-   "taunt-word",
    "kept-count",
    "took-egg",
    "three-rules",
@@ -336,7 +326,6 @@
    "fox-saved",
    "bread-most",
    "shared-bread",
-   "way-straight",
    "found-father",
    "shot-wind",
    "wupo-bowed",
@@ -358,20 +347,147 @@
    "diche",
    "sneeze-clean",
    "jiaxin-drawn",
-   "caowu-stone",
-   "yubu"
+   "caowu-stone"
   ],
   "tell_owed": [
-   "scene/09-year"
+   "after/00-shiao",
+   "scene/00-baicai",
+   "after/00-baicai",
+   "scene/00-masan",
+   "00-masan/endure",
+   "scene/00-dawn",
+   "00-dawn/egg",
+   "scene/00-kitchen",
+   "scene/00-chushan",
+   "00-chushan/lookout",
+   "scene/00-duanbei",
+   "00-duanbei/rules",
+   "scene/00-heisong",
+   "00-heisong/carve",
+   "scene/00-storm",
+   "00-storm/turn",
+   "scene/00-fall",
+   "00-fall/check",
+   "scene/00-fox",
+   "00-fox/save",
+   "scene/00-cave",
+   "after/00-cave",
+   "00-cave/share",
+   "scene/00-yinyue",
+   "00-yinyue/follow",
+   "scene/00-cliff",
+   "00-cliff/climb",
+   "scene/00-deer",
+   "00-deer/left",
+   "scene/00-dusk",
+   "00-dusk/visit",
+   "scene/00-rent",
+   "after/00-rent",
+   "00-rent/dumb",
+   "scene/00-xiuxian",
+   "00-xiuxian/on",
+   "scene/00-sleep",
+   "00-sleep/bath",
+   "scene/00-halfyear",
+   "scene/00-uncle",
+   "00-uncle/go",
+   "scene/00-notice",
+   "after/00-notice",
+   "scene/j01-track",
+   "after/j01-track",
+   "scene/j01-anatomy",
+   "scene/j01-retest",
+   "j01-retest/finish",
+   "scene/00-gate",
+   "00-gate/steady",
+   "scene/00-luoshu",
+   "00-luoshu/pass",
+   "scene/00-longzhi",
+   "00-longzhi/subdue",
+   "scene/00-hall",
+   "00-hall/born",
+   "scene/00-waimen",
+   "00-waimen/pay",
+   "scene/00-mijing",
+   "wm-ahe/owe",
+   "scene/wm-jiangtang",
+   "wm-jiangtang/can",
+   "scene/wm-zhoutian",
+   "wm-zhoutian/breathe",
+   "scene/wm-qingshi",
+   "wm-qingshi/hide",
+   "scene/wm-yaoyuan",
+   "after/wm-yaoyuan",
+   "wm-yaoyuan/tame",
+   "scene/wm-chaifang",
+   "wm-chaifang/count",
+   "scene/wm-danlu",
+   "wm-danlu/keep",
+   "scene/wm-diyilu",
+   "after/wm-diyilu",
+   "wm-diyilu/save",
+   "scene/j04-gym",
+   "scene/j04-line",
+   "j04-line/shoot",
+   "scene/j04-dog",
+   "scene/wm-mijing",
+   "wm-mijing/pay",
+   "scene/wm-wangzuo",
+   "wm-wangzuo/open",
+   "scene/wm-kunzhen",
+   "wm-kunzhen/go",
+   "scene/wm-xirang",
+   "wm-xirang/swallow",
+   "scene/wm-anhe",
+   "wm-anhe/light",
+   "scene/wm-kaikai",
+   "after/wm-kaikai",
+   "wm-kaikai/sit",
+   "scene/wm-chu",
+   "wm-chu/rest",
+   "scene/wm-luobo",
+   "wm-luobo/on",
+   "scene/wm-qianye",
+   "after/wm-qianye",
+   "scene/wm-zhaojing",
+   "after/wm-zhaojing",
+   "wm-zhaojing/sleep",
+   "scene/wm-laba",
+   "scene/wm-dabi",
+   "wm-dabi/up",
+   "scene/wm-lun1",
+   "wm-lun1/hold",
+   "scene/wm-fushi",
+   "wm-fushi/flip",
+   "scene/wm-lun2",
+   "wm-lun2/dodge",
+   "scene/wm-juesai",
+   "wm-juesai/face",
+   "scene/wm-laoyin",
+   "wm-laoyin/final",
+   "scene/wm-jiaxin",
+   "wm-jiaxin/rest",
+   "scene/wm-baishi",
+   "wm-baishi/follow",
+   "scene/wm-caowu",
+   "wm-caowu/scrape-again",
+   "wm-caowu/sign",
+   "scene/wm-heluo",
+   "wm-heluo/read",
+   "scene/j07-dark",
+   "j07-dark/walk",
+   "scene/j07-guan",
+   "j07-guan/out",
+   "scene/09-snow"
   ],
   "node": {
    "kind": "scene",
    "at": "2026-10-02T01:00:00.000Z",
    "chapter": {
     "id": "00-zhuji",
-    "title": "卷一 · 沉鼎 · 第七回"
+    "title": "卷一 · 沉鼎 · 今 · 三"
    },
-   "recap": "除夕，周衡的旧账上一行没有数的字：十月十八。漳水。阿姊。正月初一，执事堂两面墙：东墙杂役，西墙差事，打妖的红牌五层以下不许揭。开春的残株喂进饭桶，开出三颗聚气丹——一纹、二纹、九纹各一；分堆一认，认出三张方子。缸是饭桶涨的，层不动；三月里一个早上，你在崖顶上看见了叶子起来的那一下，往旁边挪了半步——定风，过了五层。灵石先见了底。阿禾、孙二狗的书案底下，各多了一个油纸包：二狗的二纹，阿禾的那一颗九纹。",
+   "recap": "练太猛，横纹肌溶解，住院三天；「数是你自己报的」——晨脉七十以下，才许摸球。",
    "mystery": "瞿老四十多年没收过徒弟——他上一个徒弟，后来怎样了？"
   },
   "mark_days": {
@@ -552,8 +668,7 @@
    "yangzhen",
    "houtu",
    "luying",
-   "suijin",
-   "huochai"
+   "suijin"
   ],
   "card_from": {
    "niangbing": {
@@ -680,13 +795,6 @@
     "place": "zhengdian",
     "chapter": "00-waimen",
     "scene": "wm-juesai"
-   },
-   "huochai": {
-    "how": "story",
-    "day": "2026-10-01",
-    "place": "chaifang",
-    "chapter": "00-zhuji",
-    "scene": "09-snow"
    }
   },
   "found": {
@@ -709,7 +817,7 @@
    "zixu-zhi": 1,
    "zou-purse": 1,
    "duan-dao": 1,
-   "qi-pill": 6,
+   "qi-pill": 5,
    "dingtai": 3,
    "neimen-map": 1,
    "xizhu": 1,
@@ -718,8 +826,7 @@
    "yangyang-zhen": 3,
    "niuzhi-ganlu": 1,
    "huangting": 1,
-   "heluo": 1,
-   "huochai-jian": 1
+   "heluo": 1
   },
   "looked": [
    "00-heisong/stone"
@@ -768,17 +875,13 @@
    "zhaojing-mirror",
    "dabi-sneeze",
    "jiaxin-letter",
-   "jin-dark",
-   "jiuge-yubu",
-   "furnace-ding"
+   "jin-dark"
   ],
   "handed": [],
   "stages": [
    "wm-chaifang/count",
    "wm-mijing/pay",
-   "wm-qianye/eve",
-   "09-furnace/fire",
-   "09-year/futian"
+   "wm-qianye/eve"
   ],
   "furnace_name": "饭桶",
   "hunted": {
@@ -787,8 +890,7 @@
   "cards_new": [
    "huiqi",
    "mutang",
-   "suijin",
-   "huochai"
+   "suijin"
   ],
   "reruns": {
    "mijing": {
@@ -798,73 +900,6 @@
   },
   "stretch": {
    "qi:3": 13
-  },
-  "told_scenes": [
-   "00-masan",
-   "00-dawn",
-   "00-kitchen",
-   "00-chushan",
-   "00-duanbei",
-   "00-heisong",
-   "00-storm",
-   "00-fall",
-   "00-fox",
-   "00-cave",
-   "00-yinyue",
-   "00-cliff",
-   "00-deer",
-   "00-dusk",
-   "00-rent",
-   "00-xiuxian",
-   "00-sleep",
-   "00-halfyear",
-   "00-uncle",
-   "00-notice",
-   "j01-track",
-   "j01-anatomy",
-   "j01-retest",
-   "00-gate",
-   "00-luoshu",
-   "00-longzhi",
-   "00-hall",
-   "00-waimen",
-   "00-mijing",
-   "wm-jiangtang",
-   "wm-zhoutian",
-   "wm-qingshi",
-   "wm-yaoyuan",
-   "wm-chaifang",
-   "wm-danlu",
-   "wm-diyilu",
-   "j04-gym",
-   "j04-line",
-   "j04-dog",
-   "wm-mijing",
-   "wm-wangzuo",
-   "wm-kunzhen",
-   "wm-xirang",
-   "wm-anhe",
-   "wm-kaikai",
-   "wm-chu",
-   "wm-luobo",
-   "wm-qianye",
-   "wm-zhaojing",
-   "wm-laba",
-   "wm-dabi",
-   "wm-lun1",
-   "wm-fushi",
-   "wm-lun2",
-   "wm-juesai",
-   "wm-laoyin",
-   "wm-jiaxin",
-   "wm-baishi",
-   "wm-caowu",
-   "wm-heluo",
-   "j07-dark",
-   "j07-guan",
-   "09-snow",
-   "09-jiuge",
-   "09-furnace"
-  ]
+  }
  }
 }

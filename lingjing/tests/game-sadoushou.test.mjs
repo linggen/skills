@@ -235,25 +235,22 @@ test('结印 is never needed (every level is won without a cast) but makes ★�
   }
 });
 
-test('结印\'s dock is offered only where it can be: no move → null; else the dock hears the game (state, a cast with its lane)', async () => {
+test('结印\'s dock is offered only where it can be: no move → null; else the dock hears the game (state, a cast with its lane, a 走火)', async () => {
   const none = await offerJieyin({ jieyin: null }, {}, { lang: 'zh', game: {} });
   assert.equal(none, null);
   let got = null;
   const calls = [];
-  const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: (id, lane) => { calls.push([id, lane]); return true; }, paused: () => false, picking: () => false, say: () => {} };
+  const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: (id, lane) => { calls.push([id, lane]); return true; }, fizzle: () => calls.push('fizzle'), paused: () => false, picking: () => false, say: () => {} };
   const box = { ownerDocument: { defaultView: {} } };
   const h = await offerJieyin(level, box, { lang: 'zh', game, marks: [], load: async () => ({ offerSeals: async (o) => { got = o; return { close() {} }; } }) });
   assert.ok(h && got);
-  assert.deepEqual(got.moves, ['feijian', 'dianxue', 'zhangfeng', 'quanjin'], 'before 古六\'s lesson only the 小招 (the save\'s marks gate the rest)');
-  assert.ok(got.cast({ type: 'cast', move: 'feijian', lane: 'right' }), '手势斗法\'s cast event: its move and its lane');
-  assert.deepEqual(calls, [['feijian', 'right']]);
+  assert.deepEqual(got.moves.map((m) => m.id), ['feijian'], 'before 古六\'s lesson only 剑诀\'s 飞剑 (the save\'s marks gate the rest)');
+  assert.ok(got.cast('feijian', 'right'));
+  got.fizzle();
+  assert.deepEqual(calls, [['feijian', 'right'], 'fizzle']);
   assert.equal(got.state().ready, true);
   await offerJieyin(level, box, { lang: 'zh', game, load: async () => ({ offerSeals: async (o) => { got = o; return null; } }) });
-  assert.ok(got.moves.includes('huodan') && got.moves.includes('huodan4'), 'the 游戏厅 (no marks): every move');
-  const ids = { xiao: ['feijian', 'dianxue', 'zhangfeng', 'quanjin'], fa: ['huodan', 'bingzhui', 'jinren', 'muteng', 'tuqiang'], da: ['huodan4'] };
-  const doufa = JSON.parse(readFileSync(at('worlds/jiuding/levels/jieyin.json'), 'utf8')).doufa;
-  const has = (tier, id) => (Array.isArray(doufa[tier]) ? doufa[tier].includes(id) : Boolean(doufa[tier]?.[id]));
-  for (const [tier, list] of Object.entries(ids)) for (const id of list) assert.ok(has(tier, id) && level.jieyin.moves.some((m) => m.id === id), `${tier} ${id}: 手势斗法's, and offered here`);
+  assert.deepEqual(got.moves.map((m) => m.id), ['feijian', 'huodan'], 'the 游戏厅 (no marks): every move');
 });
 
 test('the bundle is current, loads the one shared Phaser, and every picture and word it needs is there', () => {

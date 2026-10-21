@@ -63,17 +63,17 @@ test('the rest is told right after the game is counted, before the choices — a
   const { tell } = tellOf(content, s);
   assert.deepEqual(tell.map((t) => [t.of, t.id]), [['after', '00-shiao/after']]);
   assert.match(tell[0].text, /他娘已经在挨个儿倒盆了/);
-  // then 那天傍晚 (the village map after the morning was cut, 2026-10-16)
+  // then 出门 — 阿禾's cabbage (00-baicai, 守白菜, 2026-10-21); 那天傍晚 is that scene's
   const on = resolve(tellOf(content, s).keep, content, ctx(), { exit: 'begin' });
-  assert.equal(on.state.scene, '00-masan');
+  assert.equal(on.state.scene, '00-baicai');
   assert.match(page, /if \(on && !look\?\.tell_owed\) await panelTap\(on\.id/);
 });
 
-test('the choices are proper buttons with the box put away — never the bare 「那天傍晚 ›」 link', () => {
+test('the choices are proper buttons with the box put away — never the bare 「出门 ›」 link', () => {
   let s = newState(content, 'zh', NOW);
   s = task(win(s, content, ctx(), { id: 'rain-basins', grade: 'wet' }).state, content, ctx(), { action: 'done', id: 'rain-basins' }).state;
   const html = cardHtml({ card: 'panel' }, { look: look(s, content, ctx()), words: WORDS.zh, lang: 'zh' });
-  assert.match(html, /class="act paneltap"[^>]*data-panel-exit="begin"[^>]*>那天傍晚 ›</);
+  assert.match(html, /class="act paneltap"[^>]*data-panel-exit="begin"[^>]*>出门 ›</);
   assert.doesNotMatch(html, /quietnext/);
 });
 
@@ -109,7 +109,10 @@ test('the header changes only when the story gets there: the last scene\'s holds
   s = task(win(s, content, ctx(), { id: 'rain-basins', grade: 'dry' }).state, content, ctx(), { action: 'done', id: 'rain-basins' }).state;
   s = resolve(tellOf(content, s).keep, content, ctx(), { exit: 'begin' }).state;
   s = tellOf(content, s).keep;
-  s = task(win(s, content, ctx(), { id: 'masan-taunt', grade: 'word' }).state, content, ctx(), { action: 'done', id: 'masan-taunt' }).state; // 忍字 (back 10-20)
+  s = task(win(s, content, ctx(), { id: 'baicai-hens' }).state, content, ctx(), { action: 'done', id: 'baicai-hens' }).state; // 守白菜 (10-21)
+  s = resolve(tellOf(content, s).keep, content, ctx(), { exit: 'evening' }).state;
+  s = tellOf(content, s).keep;
+  s = task(win(s, content, ctx(), { id: 'masan-taunt' }).state, content, ctx(), { action: 'done', id: 'masan-taunt' }).state; // 忍字 (气走经脉 since 10-21)
   const out = resolve(s, content, ctx(), { exit: 'endure' });
   const { tell } = tellOf(content, out.state);
   assert.equal(tell[0].of, 'choice');

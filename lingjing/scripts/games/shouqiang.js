@@ -140,7 +140,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });
-      seals = offerJieyin(kit, box, { lang, game, shell, marks: data?.marks, feed: dev && q.get('feed') === '1' });
+      seals = level.jieyin === false ? null : offerJieyin(kit, box, { lang, game, shell, marks: data?.marks, feed: dev && q.get('feed') === '1' }); // a level may take no spell (守白菜)
       if (said) shell.lead(said, { auto: 'read', lang }).then(() => game?.go());
       if (level.grid) {
         onResize = () => { const now = shape(true); if (now !== landscape) { landscape = now; game?.layout(now); } };
