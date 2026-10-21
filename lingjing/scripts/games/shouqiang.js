@@ -17,6 +17,7 @@
 export const meta = {
   id: 'shouqiang',
   pause: true, // the shell's bar pauses the play (tools/shouqiang/src/play.js setPaused)
+  tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   bot: 'scripts/games/shouqiang/core.js', // its human-like hand (BOTS.human, headless): tests/game-shouqiang.test.mjs plays the story level (药园巡夜 · 开春) with it
   name: { zh: '守墙关', en: 'Hold the Wall' },
   how: {

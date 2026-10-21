@@ -44,6 +44,10 @@ export function forget(id) { store.delete(id); }
 /** A game the shell can pause: one that runs in time (`tick`), or that says its own loop reads the pause (`meta.pause`). */
 export const timedOf = (mod) => Boolean(mod?.meta?.pause ?? mod?.tick);
 
+/** A game whose field is taller than wide says so (`meta.tall`): on a Mac its bar stands beside it (shell.css) —
+    the same on the story's card and in the 游戏厅. */
+export const tallOf = (mod) => Boolean(mod?.meta?.tall);
+
 /** The shell around a game's body. `body` is the game's own node as HTML (its [data-game] / [data-mount]
     host or a slot) and stays exactly as given. `timed`: the game runs in time, so it can be paused. */
 export function frameHtml({ id, title = '', kind = '', how = '', body = '', timed = false, lang = 'zh', tall = false } = {}) {

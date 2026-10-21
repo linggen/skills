@@ -14,6 +14,7 @@
 export const meta = {
   id: 'sadou',
   pause: true, // the shell's bar pauses the play (tools/sadou/src/play.js setPaused)
+  tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   lines: 'one', // 台词预取: the play reads one line a moment (play.js say: a string), not a pool
   name: { zh: '撒豆成兵', en: 'Beans into Soldiers' }, // the game's name; the level's own (山道) is the canvas's top bar
   how: {

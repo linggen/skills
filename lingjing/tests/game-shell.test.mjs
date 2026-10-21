@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { WORDS, cardHtml } from '../scripts/cards.js';
-import { anyPaused, forget, frameHtml, isPaused, playAlone, say, setPaused, shellFor, showResult, timedOf } from '../scripts/games/shell.js';
+import { anyPaused, forget, frameHtml, isPaused, playAlone, say, setPaused, shellFor, showResult, tallOf, timedOf } from '../scripts/games/shell.js';
 
 const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
 const REG = JSON.parse(read('../worlds/jiuding/games.json'));
@@ -60,6 +60,32 @@ test('the story\'s board card wears the shell round a pure board and round a mou
   const b = cardHtml({ card: 'board', id: 'tk' }, ctx(mounted));
   assert.match(b, /class="gshell"[^>]*data-shell="tk"/);
   assert.match(b, /data-mount="tk"/);
+});
+
+test('a Mac window: the story\'s game card takes the stage up to 720, a tall field its bar beside it — one rule, the shell\'s (Hanli 10-21)', async () => {
+  // The kits that say they play tall, and only those: the story's card and the 游戏厅 read the same word.
+  for (const id of ['shoulu', 'shouqiang', 'sadou']) assert.equal(tallOf(await import(`../scripts/games/${id}.js`)), true, id);
+  for (const id of ['zhazhai', 'qimai', 'bread']) assert.equal(tallOf(await import(`../scripts/games/${id}.js`)), false, id);
+  const task = { id: 'tk', title: '守炉', kind: 'board', game: 'shoulu', status: 'offered' };
+  const ctx = (g) => ({ look: { tasks: [task], lang: 'zh' }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' }, boardFor: () => g });
+  const mount = () => new Promise(() => {});
+  assert.match(cardHtml({ card: 'board', id: 'tk' }, ctx({ mod: { mount, meta: { tall: true } }, state: {} })), /class="gshell is-tall"/);
+  assert.match(cardHtml({ card: 'board', id: 'tk' }, ctx({ mod: { mount, meta: {} }, state: {} })), /class="gshell"/);
+  assert.match(read('../scripts/arcade.js'), /tall: tallOf\(mod\)/);
+  // The width, the height a board sized by the window is told, the bar back over a landscape field or on a narrow
+  // stage — on a Mac only, so the phone's card is the one it was.
+  const css = read('../scripts/games/shell.css');
+  const mac = css.slice(css.indexOf('@media (min-width: 900px)'));
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\) \{ max-width: 720px; --game-reserve: 230px; \}/);
+  assert.match(mac, /\.focus \.card\.gamecard > \.gshell\.is-tall \{ --game-reserve: 204px; \}/);
+  assert.match(mac, /\.gshell\.is-tall:has\(\[data-landscape="true"\]\) \{ display: flex;/);
+  assert.match(mac, /@container scene \(max-width: 620px\) \{ \.focus \.card\.gamecard > \.gshell\.is-tall \{ display: flex;/);
+  assert.equal(css.slice(0, css.indexOf('@media (min-width: 900px)')).includes('.focus'), false, 'nothing of the story\'s outside the Mac rule');
+  // 守炉 fits its field to the box that scrolls it (the story's stage), on a Mac only, and again when that box changes.
+  const lu = read('../scripts/games/shoulu.js');
+  assert.match(lu, /if \(!win\.matchMedia\?\.\('\(min-width: 900px\)'\)\.matches\) return null;/);
+  assert.match(lu, /box \? roomIn\(box\) : \(win\.innerHeight \|\| 800\) - top - below/);
+  assert.match(lu, /sized\.observe\(box\)/);
 });
 
 test('every game in the registry can be hosted in the shell, and every place a game plays uses it', async () => {

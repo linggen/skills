@@ -45,6 +45,21 @@
 
 @media (prefers-reduced-motion: reduce) { .gshell-count, .gshell-bubble { animation: none; } }
 
+/* The story's card in a Mac window (Hanli 10-21: 守炉 played 330 px wide in a 1400 window, the stage empty both sides):
+   the game takes the stage's width up to 720, not the phone-wide 540 of the cards around it; a board sized by the
+   window's height (守墙关, 撒豆成兵, 开炉: 100dvh less the reserve) is told what the page keeps over and under it —
+   the top bar, the foot, the card's edge, the 回看 line — so field and controls stand in sight unscrolled (守炉 fits
+   its own: games/shoulu.js). A board with its own cap keeps it. The phone is untouched.
+   A tall field (`meta.tall`) has its bar beside it, as in the 游戏厅 (below), and so the height the bar gave back —
+   not on a narrow stage (the chat open in a small window), nor for 守墙关's landscape 药园 (1040 : 960): beside the
+   bar, either would have only the narrow column. */
+@media (min-width: 900px) {
+  .focus .card.gamecard:has(> .gshell) { max-width: 720px; --game-reserve: 230px; }
+  .focus .card.gamecard > .gshell.is-tall { --game-reserve: 204px; }
+  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) { display: flex; --game-reserve: 230px; }
+  @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall { display: flex; --game-reserve: 230px; } }
+}
+
 /* A Mac window: a tall board takes the window's height, the bar and the result in a column beside it. */
 @media (min-width: 900px) {
   .gshell.is-tall { display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 18px; }

@@ -145,7 +145,7 @@ import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogu
 import { TURNED_MS, turnedPays } from './turned.js';
 import { AI_WORDS, caseCard, duizi, haggle, twenty } from './aigames-cards.js';
 import { mountHostHtml, mountOnly } from './beat-host.js';
-import { frameHtml, timedOf } from './games/shell.js';
+import { frameHtml, timedOf, tallOf } from './games/shell.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -541,7 +541,7 @@ function board(card, ctx) {
   const title = task?.game ? task.title : ctx.words.play;
   // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
   // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever.
-  const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod),
+  const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod),
     how: task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? '',
     body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` }) : null;
   const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;

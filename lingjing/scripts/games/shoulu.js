@@ -34,6 +34,7 @@ import { beastArtReady, beastIcon, draw, loadArt, makePaper, markEvent, portrait
 export const meta = {
   id: 'shoulu',
   pause: true, // the shell's bar pauses the play (its own loop reads `shell.onPause`)
+  tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   bot: 'scripts/games/shoulu/core.js', // its human-like hand (`human`, headless): tests/game-shoulu.test.mjs plays every story level with it
   name: { zh: '守炉', en: 'Guard the Furnace' },
   how: {
@@ -205,11 +206,27 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       if (toastT <= 0) { if (toastQ.length) { toastEl.textContent = toastQ.shift(); toastEl.classList.add('is-on'); toastT = 2.6; } else toastEl.classList.remove('is-on'); }
     };
 
+    // The field takes the height its page gives it: the window's, or — in a Mac window, inside a box that scrolls
+    // itself (the story's stage, #focus) — that box's, so the controls under it are in sight with no scroll (Hanli
+    // 10-21). The phone keeps the window's (the breakpoint is shell.css's).
+    const scroller = () => {
+      if (!win.matchMedia?.('(min-width: 900px)').matches) return null;
+      for (let a = root.parentElement; a && a !== doc.body; a = a.parentElement) if (/auto|scroll/.test(win.getComputedStyle(a).overflowY)) return a;
+      return null;
+    };
+    // In that box the field is as tall as it is now plus the room the box has left over — all else in it (the cards
+    // over it, the bar, the hero row and controls under it, the card's own edge) stays, whatever its height; the
+    // room a centred card is given above it is not counted.
+    const roomIn = (box) => {
+      const cs = win.getComputedStyle(box), laid = [...box.children].filter((e) => e.getClientRects().length);
+      const used = laid.length ? laid.at(-1).getBoundingClientRect().bottom - laid[0].getBoundingClientRect().top : 0;
+      return stage.getBoundingClientRect().height + box.clientHeight - used - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+    };
     function fit() {
-      const wrapW = root.clientWidth || 360;
+      const wrapW = root.clientWidth || 360, box = scroller();
       const top = stage.getBoundingClientRect().top + (win.scrollY || 0);
       const below = Math.max(24, $('.sl-preview').offsetHeight) + $('.sl-controls').offsetHeight + $('.sl-herobar').offsetHeight + 40;
-      const availH = Math.max(320, (win.innerHeight || 800) - top - below);
+      const availH = Math.max(320, box ? roomIn(box) : (win.innerHeight || 800) - top - below);
       const w = Math.floor(Math.max(260, Math.min(wrapW, availH * W / H))), h = Math.floor(w * H / W);
       dpr = Math.min(2, win.devicePixelRatio || 1);
       cv.style.width = `${w}px`; cv.style.height = `${h}px`; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
@@ -217,6 +234,17 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       if (sel >= 0) openMenu(sel);
     }
     on(win, 'resize', fit);
+    // …and again when the box itself changes (the chat opened beside the stage) or what shares it grows or goes (a
+    // card laid over it after the field was fitted).
+    const box = scroller(), Watch = win.ResizeObserver;
+    if (box && Watch) {
+      let queued = 0;
+      const refit = () => { if (!queued) queued = win.requestAnimationFrame(() => { queued = 0; if (root.isConnected) fit(); }); };
+      const sized = new Watch(refit), laid = new win.MutationObserver(() => { watch(); refit(); });
+      const watch = () => { sized.disconnect(); sized.observe(box); for (const e of box.children) if (!e.contains(root)) sized.observe(e); };
+      watch(); laid.observe(box, { childList: true });
+      off.push(() => { sized.disconnect(); laid.disconnect(); win.cancelAnimationFrame(queued); });
+    }
 
     function start(i) {
       li = i;

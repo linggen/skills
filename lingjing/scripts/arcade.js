@@ -6,7 +6,7 @@
 // its board on the stage, the real chat beside it — the same UI and logic as in the story.
 import { esc } from './esc.js';
 import { mountPure } from './games/mount.js';
-import { playAlone, timedOf } from './games/shell.js';
+import { playAlone, timedOf, tallOf } from './games/shell.js';
 import { arcadePlayUrl } from './arcade-board.js';
 import { devPrefetch } from './games/prefetch-ling.js';
 
@@ -120,9 +120,8 @@ async function listPage() {
 // A wide scene (the throws: 480×300) plays as large as the window lets it, not in the phone-wide card
 // (Hanli 10-19: 「射鹿…把画面调大一些, 就很像愤怒小鸟了」).
 const WIDE = new Set(['投掷']);
-// A tall board (守炉's 600×760) plays as tall as the window lets it.
-const TALL = new Set(['塔防']);
-const playClass = (m) => (WIDE.has(m) ? ' is-wide' : TALL.has(m) ? ' is-tall' : '');
+// A tall board (守炉's 600×760) plays as tall as the window lets it — the module says so (`meta.tall`, games/shell.js).
+const playClass = (m, mod) => (WIDE.has(m) ? ' is-wide' : tallOf(mod) ? ' is-tall' : '');
 async function playPage(id, n) {
   const reg = await registry();
   const row = reg.games[Number(n)]?.id === id ? reg.games[Number(n)] : reg.games.find((g) => g.id === id) ?? { id };
@@ -133,12 +132,12 @@ async function playPage(id, n) {
   // the bar (beside a tall board on a Mac, so the board gets the height — Hanli 10-20: 「mac上游戏画面可以大一点」),
   // pause for a game in time, the result and 再来 under it. A row's `lead` is its story lead-in, read first.
   root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${home()}</header>`
-    + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${playClass(row.mechanic)}"${row.aspect ? ` style="--ar:${Number(row.aspect)}"` : ''}></article></div>`;
+    + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${playClass(row.mechanic, mod)}"${row.aspect ? ` style="--ar:${Number(row.aspect)}"` : ''}></article></div>`;
   const card = root.querySelector('.arcade-play');
   if (!mount) { card.textContent = w().missing; return; }
   const reducedMotion = Boolean(matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   playAlone(card, mount, {
-    id: `arcade-${id}`, title: titleOf(row, mod), kind: kindOf(row), how: howOf(mod), timed: timedOf(mod), tall: TALL.has(row.mechanic), lang: lang(),
+    id: `arcade-${id}`, title: titleOf(row, mod), kind: kindOf(row), how: howOf(mod), timed: timedOf(mod), tall: tallOf(mod), lang: lang(),
     leadLine: row.lead?.[lang()] ?? row.lead?.zh ?? '',
     opts: { reducedMotion, seed: `arcade|${Date.now()}`, data: row.data ?? {} },
     // 下一关: a game with levels names its next one when won (`r.next`); the page opens it by `lv`
