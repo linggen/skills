@@ -16,9 +16,9 @@
 // portrait field centred with side panels; turning the window flips it live. Nothing touches the save.
 //
 // 结印 (Hanli 10-21: 「让用户结印发火弹帮忙打怪」「放进去」, doc/games.md § 手势斗法): where a camera is, a 结印 button in
-// the field's corner, lit only while a 大妖 is on the field; the moves (games/jieyin/helper.js — the recognizers stay in
-// the jieyin and zhidian modules) cast the kit's `jieyin.moves` (core.js castJieyin). The story hands in its marks
-// (`data.marks`) and a move's `from` gate reads them: before 古六's lesson only 剑诀's 飞剑; the 游戏厅 (no marks) has
+// the field's corner, lit only while a 大妖 is on the field; 手势斗法's casts (games/jieyin/helper.js on duel.js — the
+// recognizers are the jieyin module's) do what the kit's `jieyin.moves` say (core.js castJieyin). The story hands in its marks
+// (`data.marks`) and a move's `from` gate reads them: before 古六's lesson only the 小招; the 游戏厅 (no marks) has
 // every move. No camera → no button, and the game is exactly the game without it. Dev: `?dev=1&feed=1` offers it
 // without a camera (hands from the console), `&jy=always` offers spells on every wave.
 export const meta = {
@@ -77,10 +77,10 @@ export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, 
   if (!moves.length) return Promise.resolve(null);
   const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
-    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, idle: c.idle,
-    state: () => game.jieyinState(), cast: (id) => game.jieyin(id), fizzle: () => game.fizzle(), say,
+    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves: moves.map((m) => m.id), idle: c.idle, fastFps: c.armedFps,
+    state: () => game.jieyinState(), cast: (e) => game.jieyin(e.move), say,
     call: () => callLine(c, game.jieyinState().boss, moves, lang),
-    first: moves.some((m) => m.motion === 'jab' && !m.from) ? c.first : null,
+    first: moves.some((m) => m.id === 'feijian') ? c.first : null,
     paused: () => Boolean(shell?.paused?.() || game.paused()),
     aside: () => game.picking(),
   })).catch((e) => { console.warn('[shouqiang] 结印', e); return null; });

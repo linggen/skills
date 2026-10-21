@@ -8,10 +8,8 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { BOTS, castJieyin, jieyinCool, jieyinOn, jieyinState, jieyinTarget, newGame, pick, reachY, setFocus, sim, spellMul, step, withRoots } from '../scripts/games/shouqiang/core.js';
 import { callLine, gateOpen, offerJieyin } from '../scripts/games/shouqiang.js';
-import { WORDS, movesFor, offerSeals, stepAll } from '../scripts/games/jieyin/helper.js';
-import { start } from '../scripts/games/jieyin/sequence.js';
-import { posesOf } from '../scripts/games/jieyin/pose.js';
-import { bot } from '../scripts/games/zhidian/fake.js';
+import { WORDS, offerSeals, shortOf, tiersOf } from '../scripts/games/jieyin/helper.js';
+import { poseOf } from '../scripts/games/jieyin/pose.js';
 
 const at = (p) => new URL(`../${p}`, import.meta.url);
 const json = (p) => JSON.parse(readFileSync(at(p), 'utf8'));
@@ -40,13 +38,14 @@ test('the numbers are data: when, aim, cool, bossMul, 相克, words, and every m
   for (const k of ['cool', 'bossMul', 'counter', 'idle', 'fly']) assert.ok(Number.isFinite(J[k]) && J[k] > 0, k);
   assert.ok(J.say.zh && J.say.en && J.first.zh && J.first.en && J.counterSay.zh && J.counterSay.en);
   assert.deepEqual(Object.keys(J.beats).sort(), ['earth', 'fire', 'metal', 'water', 'wood']);
+  const D = seals.doufa, known = [...Object.keys(D.xiao), ...D.fa, ...Object.keys(D.da)];
   for (const m of J.moves) {
     assert.ok(m.name.zh && m.name.en && ['one', 'spear', 'row', 'ring'].includes(m.shape), m.id);
-    assert.ok(m.seals || m.jieyin, `${m.id}: its seals`);
+    assert.ok(known.includes(m.id), `${m.id}: a move 手势斗法 casts`);
     assert.ok(m.from === null || m.from.marks?.length, `${m.id}: a gate or none`);
   }
-  assert.equal(J.moves.filter((m) => !m.from).map((m) => m.id).join(), 'feijian', 'before 古六 only 剑诀\'s 飞剑');
-  assert.equal(J.moves.find((m) => m.id === 'feijian').motion, 'jab', '隔空指点: shape + jab');
+  assert.deepEqual(J.moves.filter((m) => !m.from).map((m) => m.id), Object.keys(D.xiao), 'before 古六 the 小招, all of them');
+  assert.deepEqual(known.filter((id) => !J.moves.some((m) => m.id === id)), [], 'every move has its effect here');
   for (const w of Object.values(WORDS)) assert.ok(w.btn && w.label && w.off && w.asking && w.rest && w.ready);
   for (const b of ['yezhu', 'zheng', 'qiuyu', 'qique', 'heyu']) assert.ok(kit.beasts[b].root, `${b}: its element from creatures.json`);
 });
@@ -127,9 +126,9 @@ test('the five temperaments: 矛 down its line, 镰 a row (and a slow), 绳 hold
   if (t) assert.ok(t.y < wall.before.get(t.id).y, '土 pushes it back up the road');
 });
 
-test('gates: before 古六 (no 讲堂 mark in the save) only 飞剑; after it every move; the 游戏厅 (no marks given) every move', () => {
+test('gates: before 古六 (no 讲堂 mark in the save) only the 小招; after it every move; the 游戏厅 (no marks given) every move', () => {
   const ids = (marks) => J.moves.filter((m) => gateOpen(m, marks)).map((m) => m.id);
-  assert.deepEqual(ids([]), ['feijian']);
+  assert.deepEqual(ids([]), ['feijian', 'dianxue', 'zhangfeng', 'quanjin']);
   assert.deepEqual(ids(['qiajue-loose']), J.moves.map((m) => m.id));
   assert.deepEqual(ids(['qiajue-tight', 'x']), J.moves.map((m) => m.id));
   assert.deepEqual(ids(undefined), J.moves.map((m) => m.id));
@@ -210,45 +209,56 @@ const withFetch = async (fn) => {
   try { return await fn(); } finally { globalThis.fetch = real; }
 };
 
+// Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成, 不会影响剧情推进.」 Every level — the story's and
+// 兽潮's above all — is won by a first-timer with no 结印 at all; nothing in the hp assumes a cast.
+test('no 结印 at all: a first-timer still wins every level, story and 兽潮 rows first, in the normal band', () => {
+  const NIGHTS = Array.from({ length: 10 }, (_, i) => `nc${i}`);
+  for (const lvl of kit.levels) {
+    const won = NIGHTS.filter((seed) => sim(kit, lvl, BOTS.human, { seed, limit: 1500 }).won).length;
+    assert.ok(won >= 6, `${lvl.id}${lvl.story ? ` (story ${lvl.story})` : ''}: ${won}/10 without a camera`);
+  }
+  const hp = json('worlds/jiuding/levels/shouqiang.json').beasts.heyu.hp;
+  assert.equal(kit.beasts.heyu.hp, hp, 'the 大妖\'s hp is the table\'s, never raised for spells');
+});
+
+test('the camera refused mid-level: the corner just goes, nothing else changes', async () => withFetch(async () => {
+  const { host, frame } = page();
+  const eyeOf = () => ({ start: async () => { throw Object.assign(new Error('denied'), { reason: 'denied' }); }, pause() {}, close() {}, setFps() {} });
+  let casts = 0;
+  const h = await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf, state: () => ({ on: true, ready: true, cool: 0, coolOf: 10 }), cast: () => { casts += 1; return true; } });
+  const [btn, dock] = host.appended;
+  btn.fire('click');
+  await frame(3);
+  assert.ok(btn.removed && dock.removed, 'button and frame gone');
+  assert.equal(h.camera, 'asking', 'never on');
+  assert.equal(casts, 0, 'no cast, no cost');
+}));
+
 test('no camera (none, refused API, no WebGL), or no move this device can make: no button, no frame', async () => withFetch(async () => {
   const { host } = page();
-  assert.equal(await offerSeals({ host, moves: J.moves, available: async () => false }), null);
+  assert.equal(await offerSeals({ host, moves: ['feijian'], available: async () => false }), null);
   assert.equal(host.appended.length, 0, 'nothing drawn: no button, no stand-in to tap');
   assert.equal(await offerSeals({ host, moves: [], available: async () => true }), null, 'no move offered');
-  assert.equal(await offerSeals({ host, moves: [{ id: 'x', jieyin: 'nothing-here' }], available: async () => true }), null, 'no seals for it here');
+  assert.equal(await offerSeals({ host, moves: ['nothing-here'], available: async () => true }), null, 'a move 手势斗法 does not know');
   const { host: h2 } = page();
   assert.equal(await offerJieyin(kit, h2, { lang: 'zh', game: {}, load: async () => ({ offerSeals: (o) => offerSeals({ ...o, available: async () => false }) }) }), null);
   assert.equal(await offerJieyin({ ...kit, jieyin: undefined }, h2, { lang: 'zh', game: {} }), null, 'a kit without the block offers nothing');
 }));
 
-test('movesFor: 飞剑 a jab of its seal; 火弹 this device\'s sequence and, on a Mac, the one-hand one too', () => {
-  const desk = { matchMedia: () => ({ matches: false }), location: { search: '' } }, phone = { matchMedia: () => ({ matches: true }), location: { search: '' } };
-  const d = movesFor(seals, J.moves, desk).moves, p = movesFor(seals, J.moves, phone).moves;
-  const fj = d.find((m) => m.id === 'feijian');
-  assert.deepEqual([fj.kind, fj.seal, Object.keys(fj.only)], ['jab', 'jian', ['jian']], 'a jab, reading its one shape');
-  assert.deepEqual(d.find((m) => m.id === 'huodan').sequences, [seals.moves.huodan.desk, seals.moves.huodan.phone]);
-  assert.deepEqual(p.find((m) => m.id === 'huodan').sequences, [seals.moves.huodan.phone]);
-});
-
-test('big moves in step: the one that completes casts and all start over; a 走火 only when the broken one was the only one under way', () => {
-  const K = seals.judge, cand = (id, seq) => ({ id, seq, s: start({ mode: 'sequence', sequence: seq }) });
-  let st = [cand('a', ['zhang', 'jian']), cand('b', ['si', 'wu'])];
-  const hold = (seal, ms = 400) => { let r; for (let t = 0; t < ms; t += 50) { r = stepAll(st, seal, 50, K); st = r.states; if (r.cast || r.fizzle) return r; } return r; };
-  hold('zhang'); hold(null, 300);
-  const r = hold('jian');
-  assert.equal(r.cast, 'a');
-  assert.ok(st.every((c) => c.s.at === 0), 'all start over');
-  hold('zhang'); hold(null, 300);
-  assert.equal(hold('wu', 900).fizzle, true, 'a wrong seal mid-way, nothing else under way: 走火');
-  st = [cand('a', ['zhang', 'jian']), cand('b', ['si', 'wu'])];
-  assert.equal(hold('wu', 900).fizzle, false, 'nothing under way: no 走火');
+test('tiers and 灵力: the offered ids by tier; the rest while 灵力 is short of the cheapest', () => {
+  const t = tiersOf(seals, ['feijian', 'huodan', 'huodan4', 'nope']);
+  assert.deepEqual(t, { xiao: ['feijian'], fa: ['huodan'], da: ['huodan4'] });
+  const cost = seals.doufa.lingli.cost;
+  assert.equal(shortOf({ now: cost.xiao }, cost, t), 0);
+  assert.equal(shortOf({ now: 0 }, cost, t), 1);
+  assert.equal(shortOf({ now: cost.xiao / 2 }, cost, { xiao: ['feijian'], fa: [], da: [] }), 0.5);
 });
 
 test('the button: dark while no 大妖; it calls when one steps out; the camera only after the tap; rests, comes back, goes dark when the 大妖 falls', async () => withFetch(async () => {
   const { doc, host, frame } = page();
   const eye = fakeEye(), said = [];
   let st = { on: false, ready: false, cool: 0, coolOf: 10 }, paused = false;
-  const h = await offerSeals({ host, moves: J.moves, available: async () => true, eyeOf: eye.make, state: () => st, paused: () => paused, say: (t) => said.push(t), call: () => '大妖来了', first: J.first });
+  const h = await offerSeals({ host, moves: J.moves.map((m) => m.id), available: async () => true, eyeOf: eye.make, state: () => st, paused: () => paused, say: (t) => said.push(t), call: () => '大妖来了', first: J.first, fastFps: J.armedFps });
   const [btn, dock] = host.appended;
   await frame(3);
   assert.ok(btn.hidden && dock.hidden, 'no 大妖: nothing shows');
@@ -261,7 +271,7 @@ test('the button: dark while no 大妖; it calls when one steps out; the camera 
   await frame(2);
   assert.equal(h.camera, 'on');
   assert.ok(!dock.hidden && btn.hidden, 'ready: the hint asks for the hand');
-  assert.ok(eye.log.includes(`fps ${json('worlds/jiuding/levels/zhidian.json').poke.fps}`), 'the jab armed: the quick rate');
+  assert.ok(eye.log.includes(`fps ${J.armedFps}`), 'a 小招 armed: the quick rate');
   assert.ok(said.includes(J.first.zh) || said.length === 1, 'the first-time line (once a device)');
   st = { on: true, ready: false, cool: 8, coolOf: 10 };
   await frame(1);
@@ -296,7 +306,7 @@ test('the button: dark while no 大妖; it calls when one steps out; the camera 
 test('idle: ready with no seal tried for `idle` s → the camera closes itself; a card pick puts the corner aside', async () => withFetch(async () => {
   const { host, frame } = page();
   let picking = false;
-  const h = await offerSeals({ host, moves: J.moves, available: async () => true, eyeOf: fakeEye().make, idle: 1, state: () => ({ on: true, ready: true, cool: 0, coolOf: 10 }), aside: () => picking });
+  const h = await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf: fakeEye().make, idle: 1, state: () => ({ on: true, ready: true, cool: 0, coolOf: 10 }), aside: () => picking });
   const [btn, dock] = host.appended;
   btn.fire('click');
   await frame(2);
@@ -311,28 +321,28 @@ test('idle: ready with no seal tried for `idle` s → the camera closes itself; 
   h.close();
 }));
 
-test('the 小招: 剑诀 at the lens and a jab → 飞剑 (隔空指点\'s judge and jab); the 大招: the seals in order → 火弹; a wrong one → 走火', async () => withFetch(async () => {
-  const { host, frame, win, now } = page();
-  const casts = [];
-  let fizzles = 0;
-  const h = await offerSeals({ host, moves: J.moves, feed: true, available: async () => true, state: () => ({ on: true, ready: true, cool: 0, coolOf: 10 }), cast: (id) => { casts.push(id); return true; }, fizzle: () => { fizzles += 1; } });
-  host.appended[0].fire('click');
-  await frame(2);
-  let b = null;
-  for (let i = 0; i < 40 && !casts.length; i += 1) { const r = bot(b, now(), seals.seals.jian); b = r.bot; win.jieyinFeed(r.hands.world, r.hands.image, now()); await frame(2); }
-  assert.deepEqual(casts, ['feijian'], 'a jab with 剑诀 held: 飞剑');
-  const hold = async (id, ms) => { const p = posesOf(seals.seals[id]); win.jieyinFeed(p.world, p.image); await frame(Math.ceil(ms / 16)); };
-  for (const id of seals.moves.huodan.phone) { await hold(id, 420); win.jieyinFeed([]); await frame(15); }
-  assert.equal(casts.at(-1), 'huodan', 'the four seals: 火弹');
-  await hold('zhang', 420); win.jieyinFeed([]); await frame(15);
-  await hold('wu', 900);
-  assert.equal(fizzles, 1, '走火');
-  h.close();
-  assert.equal(win.jieyinFeed, undefined);
+// The hand in the picture as 手势斗法's own tests draw it (tests/game-doufa.test.mjs): wrist at (x, y), `len` a hand-length.
+const placed = (h, x, y, len) => h.map((p) => ({ x: x + (p.x / 9.52) * len * 0.75, y: y + (p.y / 9.52) * len, z: p.z }));
+test('the casts are 手势斗法\'s: 剑诀 + a jab → 飞剑 to the host; a move not offered here is dropped', async () => withFetch(async () => {
+  const run = async (moves) => {
+    const { host, frame, win } = page();
+    const casts = [];
+    const h = await offerSeals({ host, moves, feed: true, available: async () => true, state: () => ({ on: true, ready: true, cool: 0, coolOf: 10 }), cast: (e) => { casts.push(`${e.tier}:${e.move}`); return true; } });
+    host.appended[0].fire('click');
+    await frame(2);
+    const show = async (len) => { const w = poseOf(seals.seals.jian); win.jieyinFeed([w], [placed(w, 0.5, 0.8, len)], ['Right']); await frame(1); };
+    for (let i = 0; i < 40; i += 1) await show(0.2);
+    for (let i = 0; i < 12; i += 1) await show(0.2 + 0.07 * ((i + 1) / 12));
+    for (let i = 0; i < 20; i += 1) await show(0.27);
+    h.close();
+    return casts;
+  };
+  assert.deepEqual(await run(['feijian', 'huodan']), ['xiao:feijian']);
+  assert.deepEqual(await run(['huodan']), [], 'not offered (before 古六 the 小招 only; here the reverse): dropped');
 }));
 
 test('the play: the spells\' art, the bundle carries the calls, the camera off the moment the level ends', () => {
-  for (const k of ['huodan', 'fizzle']) assert.ok(existsSync(at(`scripts/games/jieyin/art/${k}.webp`)), k);
+  assert.ok(existsSync(at('scripts/games/jieyin/art/huodan.webp')));
   const bundle = readFileSync(at('scripts/games/shouqiang/shouqiang.min.mjs'), 'utf8');
   assert.match(bundle, /jieyin\/art\//);
   assert.match(bundle, /jieyinState/);
@@ -341,4 +351,6 @@ test('the play: the spells\' art, the bundle carries the calls, the camera off t
   assert.match(sq, /marks: data\?\.marks/, 'the story\'s marks reach the gate');
   const helper = readFileSync(at('scripts/games/jieyin/helper.js'), 'utf8');
   assert.doesNotMatch(helper, /drawImage|getUserMedia|https?:\/\//, 'no picture, no camera of its own (eye.js), nothing from the network');
+  assert.match(helper, /from '\.\/duel\.js'/, 'the hands are read by 手势斗法, not here');
+  assert.doesNotMatch(helper, /poke\.js|judge3d|sequence\.js/, 'no recognizer of its own');
 });

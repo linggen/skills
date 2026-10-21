@@ -38,8 +38,8 @@ export class PlayScene extends Phaser.Scene {
     for (const [b, k] of Object.entries(this.cfg.kit.beasts)) for (const f of k.frames ?? []) img(`${b}-${f}`);
     for (const k of ICONS) img(`icon-${k}`);
     if (this.cfg.level.grid) LaneView.preload(this, this.cfg.level, art);
-    // 结印's 火蛋 and its 走火 (games/jieyin/art, local FLUX): only a page that offers 结印 casts them.
-    if (this.cfg.kit.jieyin) for (const k of ['huodan', 'fizzle']) this.load.image(`jy-${k}`, `${this.cfg.base}../jieyin/art/${k}.webp`);
+    // 结印's 火蛋 (games/jieyin/art, local FLUX): only a page that offers 结印 casts it.
+    if (this.cfg.kit.jieyin) this.load.image('jy-huodan', `${this.cfg.base}../jieyin/art/huodan.webp`);
     const yy = `${this.cfg.base}../shoulu/art/`;
     this.load.image('yy-sheet', `${yy}yinyue.webp`);
     this.load.image('yy-skills', `${yy}yinyue-skills.webp`);
@@ -243,17 +243,6 @@ export class PlayScene extends Phaser.Scene {
   jieyin(id) {
     if (this.paused || this.held || this.done) return false;
     return castJieyin(this.g, id);
-  }
-
-  /** 走火: a charred egg pops from 小满's hand and drops — no other cost. */
-  fizzle() {
-    if (this.done) return;
-    this.say('xiaoman', this.w.fizzle);
-    if (!this.textures.exists('jy-fizzle')) return;
-    const o = this.add.image(HAND.x, HAND.y, 'jy-fizzle').setDepth(D.fx).setDisplaySize(48, 48).setAlpha(1);
-    this.em.burst('smoke', 6, HAND.x, HAND.y);
-    this.tweens.add({ targets: o, y: HAND.y - 40, duration: 260, ease: 'Quad.out',
-      onComplete: () => this.tweens.add({ targets: o, y: HAND.y + 70, angle: 25, alpha: 0, duration: 700, ease: 'Quad.in', onComplete: () => o.destroy() }) });
   }
 
   // ---- the frame -----------------------------------------------------------------------------------------------
@@ -468,7 +457,7 @@ export class PlayScene extends Phaser.Scene {
     const [, tint] = wuxingOf(sh.wuxing);
     const glow = this.add.image(sh.x, sh.y, 'glow').setTint(tint).setBlendMode(Phaser.BlendModes.ADD).setScale(1.1).setDepth(D.shot - 1);
     const body = sh.move === 'feijian' ? this.add.image(sh.x, sh.y, 'sword').setDisplaySize(72, 72)
-      : sh.move === 'huodan' ? this.add.image(sh.x, sh.y, this.tex('jy-huodan', 'glow')).setDisplaySize(52, 52) : null;
+      : sh.move === 'huodan' || sh.move === 'huodan4' ? this.add.image(sh.x, sh.y, this.tex('jy-huodan', 'glow')).setDisplaySize(52, 52) : null;
     return body ? [body.setDepth(D.shot), glow] : [glow];
   }
 

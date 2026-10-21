@@ -8,11 +8,11 @@ export const WORDS = {
   zh: { wave: '波次', waveN: (n) => `第 ${n} 波`, cleared: '守住了！', pick: '选一张符', open: '先选一门本事', fresh: '新', lv: (n) => `Lv.${n}`,
     boss: '合窳 来袭', bossName: '合窳', wail: '哇——哇——', roar: '吼——！', won: '山门守住了！', lost: '山门破了', kills: (n) => `击退 ${n}`,
     wallLeft: (p) => `城墙 ${p}%`, paused: '暂停', resume: '点一下继续', next: '下一波', focus: '点兽群里一只：集火它',
-    place: '点一张符，再点畦里一格', wonLanes: '药园守住了！', lostLanes: '药园失守了', fizzle: '噗——走火了。' },
+    place: '点一张符，再点畦里一格', wonLanes: '药园守住了！', lostLanes: '药园失守了' },
   en: { wave: 'Wave', waveN: (n) => `Wave ${n}`, cleared: 'Held!', pick: 'Pick a talisman', open: 'Pick your attack', fresh: 'NEW', lv: (n) => `Lv.${n}`,
     boss: 'The Heyu comes', bossName: 'Heyu', wail: 'Waaah—', roar: 'ROAAAR!', won: 'The gate holds!', lost: 'The gate fell', kills: (n) => `${n} driven off`,
     wallLeft: (p) => `Wall ${p}%`, paused: 'Paused', resume: 'Tap to go on', next: 'Next wave', focus: 'Tap a beast: everyone hits it',
-    place: 'Tap a talisman, then a bed cell', wonLanes: 'The garden holds!', lostLanes: 'The garden fell', fizzle: 'Pfft — it fizzled.' },
+    place: 'Tap a talisman, then a bed cell', wonLanes: 'The garden holds!', lostLanes: 'The garden fell' },
 };
 
 const FAMILY = {
