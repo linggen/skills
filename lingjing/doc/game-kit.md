@@ -85,6 +85,7 @@ story's board card (`cards.js`), the 游戏厅 (`arcade.js`) and the try page. T
 | 绳索 rope | 割绳子, 饭桶 | cut, bounce | Verlet |
 | 一键飞行 flight | 御剑 (tap), 气走经脉 (hold) | one button | none |
 | 打地鼠 whack | 接雨 | tap | none |
+| 卡牌 card fight | 斗法 (`games/kapai.js`: the story's room, mounted; 10-21) | tap, or drag on a Mac | none |
 
 A new kit needs Hanli's play-through on a prototype first, the way 守炉 got in (10-20).
 
@@ -182,6 +183,42 @@ The source of truth is this repo, and the games ship inside the skill (Mac) and 
 falls back to the built-in one. That needs versioned level data and a check of Apple's current
 terms on remote code. linggensite may also host a playable **demo** (a level or two of 砸寨 or
 守炉) as launch material, once the games are polished.
+
+## The card fight in the shell (10-21)
+
+Hanli 10-21: 「看是否游戏系统可以统一外壳, 现在我们把卡牌战斗也放进来了」.
+
+**Done: the 游戏厅.** `games/kapai.js` is a DOM adapter on the mount contract. It uses the story's
+own pieces: `battle.js` rules, `battleHtml` room, `playLog` strokes and `wireDrag` (now scoped to a
+room and unwirable). It plays in the shell like any game:
+- the bar shows the title, the type and the how-to line;
+- pause (`meta.pause`) hides the hand and holds the beast's turn and the idle end-turn;
+- the foe's lines appear through `shell.say`;
+- the result shows ★ by the 气血 kept, with 再来 and 下一关 (the next foe in the book's order).
+
+The fights come from `levels/kapai.json`, which `tools/arcade-fights.mjs` writes from
+`story-fights.mjs` (`setupOf` and `rules/look.mjs duelBrief`). A test fails when the file is stale.
+
+**Not yet: the story's fight room.** The change is not contained, so it waits for its own round.
+The room lives in `lingjing.js`, in about seven places that would all move together:
+1. `render()` draws `battleHtml` into the focus column on every Look. A mounted room would need to
+   survive a redraw the way `beat-host.js mountOnly` hosts do.
+2. `body.fighting`, `holdBlank`, `inTransit` and the idle timer all read the global `bout`.
+3. The page-wide `[data-spot]` click route.
+4. The page-wide `wireDrag`.
+5. 银月 in the fight (`fightsay.js`): the 问银月 button, the cues and `herSays` repainting her
+   bubble during a stroke.
+6. The settle: `write('duel', {picks})` replays the moves in the rules, then come 所得, the 符
+   spent, the tale's end, a reload when the engine moved, and the closing card held until the rules
+   answer.
+7. The test probe (`bout`, `move`) that play-human and the crawler drive.
+
+**Plan:** add hooks to the adapter. `onMove(token)` builds the picks list; `onCue` and `herLine`
+carry 银月; `settle(st) → Promise<r>` lets the story's `write('duel')` hold the closing card until
+the rules answer. Then `lingjing.js` mounts it once per fight inside a shell frame, the way a
+mounted board is hosted, and keeps steps 5–6 as the hooks' bodies. The skip-after-3-losses lock
+and the door's 丹囊 pick stay where they are (the door card and the rules). Gate: the fight-band
+tests, `battle-input.test.mjs`, and one story fight played live at 1440 and 390.
 
 ## Risks
 

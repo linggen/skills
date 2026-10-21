@@ -25,8 +25,9 @@ function drawLine(line, from, x, y) {
 
 /// Listen once, for the life of the page. `onDrop(from, to)` gets two places
 /// (`{ kind, index }`; `to` null when let go on nothing); `active()` says a
-/// fight is open and may be played.
-export function wireDrag({ onDrop, active }) {
+/// fight is open and may be played. `room` (optional) keeps it to one room's
+/// fight (a mounted one, games/kapai.js); answers the function that stops listening.
+export function wireDrag({ onDrop, active, room: within = null }) {
   let g = null;
   const end = () => {
     g?.line?.remove();
@@ -34,14 +35,14 @@ export function wireDrag({ onDrop, active }) {
     g?.over?.classList.remove('dropover');
     g = null;
   };
-  document.addEventListener('pointerdown', (e) => {
+  const down = (e) => {
     if (e.pointerType !== 'mouse' || e.button !== 0 || !active()) return;
     const el = e.target.closest?.(LIFTS);
     const room = el?.closest('.battle');
-    if (!el || !room) return;
+    if (!el || !room || (within && !within.contains(room))) return;
     g = { el, room, x: e.clientX, y: e.clientY, moved: false };
-  });
-  document.addEventListener('pointermove', (e) => {
+  };
+  const move = (e) => {
     if (!g) return;
     if (!g.moved) {
       if (Math.hypot(e.clientX - g.x, e.clientY - g.y) < START_PX) return;
@@ -55,8 +56,8 @@ export function wireDrag({ onDrop, active }) {
     drawLine(g.line, g.from, e.clientX - h.left, e.clientY - h.top);
     const over = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-spot]:not([data-spot="stage"])');
     if (over !== g.over) { g.over?.classList.remove('dropover'); over?.classList.add('dropover'); g.over = over; }
-  });
-  document.addEventListener('pointerup', (e) => {
+  };
+  const up = (e) => {
     if (!g) return;
     const { moved, el } = g;
     const to = moved ? document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-spot]') : null;
@@ -65,6 +66,8 @@ export function wireDrag({ onDrop, active }) {
     // The click that follows a real drag is the drag's, not a tap.
     document.addEventListener('click', (c) => { c.stopPropagation(); c.preventDefault(); }, { capture: true, once: true });
     onDrop(spotOf(el), to && to.dataset.spot !== 'stage' ? spotOf(to) : { kind: 'stage', index: -1 });
-  });
-  document.addEventListener('pointercancel', end);
+  };
+  const on = [['pointerdown', down], ['pointermove', move], ['pointerup', up], ['pointercancel', end]];
+  for (const [type, fn] of on) document.addEventListener(type, fn);
+  return () => { end(); for (const [type, fn] of on) document.removeEventListener(type, fn); };
 }

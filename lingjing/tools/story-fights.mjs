@@ -38,7 +38,7 @@ import { fightOnce, lookahead } from './trial-sim.mjs';
 import { EARLY, H05, H08, H10B, H11 } from './road-hand.mjs';
 
 export const content = loadContent();
-const NOW = new Date('2026-09-29T11:00:00Z');
+export const NOW = new Date('2026-09-29T11:00:00Z');
 const base = JSON.parse(fs.readFileSync(new URL('../tests/fixtures/saves/waimen.json', import.meta.url), 'utf8'));
 const ALL = ['metal', 'wood', 'water', 'fire', 'earth'];
 
@@ -123,13 +123,17 @@ export const FIGHTS = [
 ];
 export const keyOf = f => (f.pool ? `${f.id}@${f.pool}` : f.scene ? `${f.id}@${f.scene}` : f.id);
 
-function foeOf(f) {
-  // A scene's fight as its exit weighs it (`scene: 'scene/exit'` — the game's `foe`, rules/world.mjs foeOf).
-  if (f.scene) {
-    const [sid, eid] = f.scene.split('/');
-    const game = Object.values(content.chapters).map(ch => ch.scenes?.[sid]).find(Boolean)?.exits.find(e => e.id === eid)?.game;
-    return sceneFoe(content, game);
-  }
+/* The story's own `game` for a fight: a scene's exit game (`scene: 'scene/exit'`), else a pool's
+   haunt door as world.mjs deals it (`haunt:<creature>`). The 游戏厅's fight table reads it too (tools/arcade-fights.mjs). */
+export function gameOf(f) {
+  if (!f.scene) return { id: `haunt:${f.id}`, kind: 'duel', creature: f.id };
+  const [sid, eid] = f.scene.split('/');
+  return Object.values(content.chapters).map(ch => ch.scenes?.[sid]).find(Boolean)?.exits.find(e => e.id === eid)?.game;
+}
+
+export function foeOf(f) {
+  // A scene's fight as its exit weighs it (the game's `foe`, rules/world.mjs foeOf).
+  if (f.scene) return sceneFoe(content, gameOf(f));
   const c = creatureOf(content, f.id);
   if (!f.pool) return c;
   const entry = Object.values(content.places).map(p => p.pools?.[f.pool]).find(Boolean)?.beasts.find(b => b.creature === f.id);
@@ -154,12 +158,22 @@ function thoughtOut(setup) {
 /* `pills`: the 丹囊 carried in (battle.js § pills) — the pills-allowed player, who uses them as the
    lookahead line finds them worth it. Without, none (Hanli 2026-10-16: never a money wall). */
 export const TWO_PILLS = ['mend-pill', 'huiqi-pill'];
-export function rateOf(f, seeds = 200, from = 0, line = 'careful', { pills = null, party = null } = {}) {
-  // `party`: who stands with him, over the 回's (party.json by_hui) — a pool met alone, or with two.
-  const st = stateAt(f.at), foe = party ? { ...foeOf(f), party } : foeOf(f);
+/* The save as the road leaves it at this fight, the pills carried in (`pills`) and who stands with him
+   (`party`, over party.json by_hui). */
+export function roadState(f, { pills = null } = {}) {
+  const st = stateAt(f.at);
   if (pills) { st.bag = { ...st.bag }; for (const id of pills) st.bag[id] = (st.bag[id] ?? 0) + 1; st.pill_pick = [...pills]; } else delete st.pill_pick;
+  return st;
+}
+/* Everything the fight is given at the door, as the story deals it at this point of the road. */
+export function setupOf(f, { pills = null, party = null } = {}) {
+  // `party`: who stands with him, over the 回's (party.json by_hui) — a pool met alone, or with two.
+  const st = roadState(f, { pills }), foe = party ? { ...foeOf(f), party } : foeOf(f);
   // A pool's beast is met roaming: its door is a haunt's, and it grows with the party (party.json roaming).
-  const setup = fightSetup(content, st, foe, NOW, f.pool ? `haunt:${f.id}` : null);
+  return fightSetup(content, st, foe, NOW, f.pool ? `haunt:${f.id}` : null);
+}
+export function rateOf(f, seeds = 200, from = 0, line = 'careful', { pills = null, party = null } = {}) {
+  const setup = setupOf(f, { pills, party });
   let won = 0, lost = 0, turns = 0, left = 0, forced = 0;
   for (let k = from; k < from + seeds; k += 1) {
     const end = (line === 'lookahead' ? thoughtOut : fightOnce)({ ...setup, seed: `band|${k}` });

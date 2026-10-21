@@ -829,6 +829,12 @@
    ]
   },
   {
+   "id": "kapai",
+   "group": "doufa",
+   "mechanic": "斗法",
+   "_about": "斗法, the card fight (battle.js; design.md § 斗法 v3) — the story's own room mounted as a small game (games/kapai.js), in the shell. Its tile opens a foe picker: every fight of 卷一 at its first meeting, with the hand, gear, party and 丹囊 the road gives there (worlds/jiuding/levels/kapai.json, made by tools/arcade-fights.mjs from tools/story-fights.mjs). Test-only: nothing written, nothing paid (Hanli 10-21: 「把模仿炉石传说的战斗系统也放到大厅里吧」)."
+  },
+  {
    "id": "sadou",
    "aspect": 0.5625,
    "group": "main",

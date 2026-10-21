@@ -52,3 +52,28 @@ body { overflow: auto; }
 .arcade-old{margin:28px 0 8px;opacity:.75}.arcade-old summary{cursor:pointer;font-family:var(--serif);font-size:15px;color:var(--dim);padding:6px 0}
 .arcade-tile.is-cut { opacity: .6; border-style: dashed; cursor: default; }
 .arcade-tile.is-cut:hover { border-color: var(--line); }
+/* 斗法 (games/kapai.js, `meta.pick`): the story's room takes the window's height whole, as the story's stage gives it;
+   the shell's bar over it, the result under it. */
+.arcade:has(.arcade-play.is-fill) { max-width: 1280px; padding-bottom: 8px; }
+.arcade:has(.arcade-play.is-fill) .arcade-head { margin-bottom: 6px; }
+.arcade-play.is-fill { max-width: none; padding: 8px; }
+.arcade-play.is-fill .gshell { gap: 6px; }
+.arcade-play.is-fill .gshell-slot { height: calc(100dvh - var(--fill-reserve, 128px)); min-height: 560px; }
+/* the room's own narrow rules (battle.css) read the story's `scene` container: the room is one here too */
+.arcade-play.is-fill .g-kapai { height: 100%; border-radius: 8px; overflow: hidden; container: scene / inline-size; }
+/* a phone: the room the story's width — the page's gutters and the card's edge go, the bar keeps a small inset */
+@media (max-width: 600px) {
+  .arcade:has(.arcade-play.is-fill) { padding: 8px 0 4px; }
+  .arcade:has(.arcade-play.is-fill) .arcade-head { padding: 0 12px; }
+  .arcade-play.is-fill { --fill-reserve: 104px; padding: 0; border: 0; border-radius: 0; background: none; }
+  .arcade-play.is-fill .gshell-bar, .arcade-play.is-fill .gshell-foot { padding: 0 10px; }
+  .arcade-play.is-fill .gshell-how { display: none; }
+  .arcade-play.is-fill .g-kapai { border-radius: 0; }
+}
+/* The foe picker: a portrait, the name, one line, where it roams and who stands with him. */
+.arcade-foe { flex-direction: row; align-items: center; gap: 10px; }
+.arcade-foe-art { width: 56px; height: 56px; flex: none; border-radius: 8px; object-fit: cover; background: var(--line); }
+.arcade-foe-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.arcade-foe-tag { font-style: normal; font-size: 11px; color: var(--seal); }
+.arcade-foe-hui { font-family: var(--serif); font-size: 13px; font-weight: 500; color: var(--faint); margin: 12px 0 6px; }
+@media (max-width: 480px) { .arcade-grid:has(.arcade-foe) { grid-template-columns: 1fr; } }

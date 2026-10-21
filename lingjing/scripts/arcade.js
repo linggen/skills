@@ -18,8 +18,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there' },
 };
 const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
@@ -27,7 +27,7 @@ const w = () => W[lang()];
 const KIND_EN = {
   割绳子: 'Cut the rope', 投掷: 'Throw', 狩猎瞄准: 'Hunt & aim', 打地鼠: 'Whack-a-mole', 时机: 'Timing', 节奏: 'Rhythm',
   调息: 'Breath', 解谜: 'Puzzle', 棋牌: 'Board & table', 判断: 'Read & pick', 剧情: 'Story', 你画我猜: 'Draw & guess',
-  塔防: 'Tower defense', 结印: 'Hand seals', 配对: 'Match pairs', 对话: 'Talk', 探索: 'Explore',
+  塔防: 'Tower defense', 结印: 'Hand seals', 配对: 'Match pairs', 对话: 'Talk', 探索: 'Explore', 斗法: 'Card duel',
 };
 const kindOf = (g) => (lang() === 'en' ? KIND_EN[g.mechanic] ?? g.mechanic : g.mechanic) ?? '';
 
@@ -137,8 +137,10 @@ async function listPage() {
 // A wide scene (the throws: 480×300; 结印's 4:3 field with the camera in its corner) plays as large as the window lets it, not in the phone-wide card
 // (Hanli 10-19: 「射鹿…把画面调大一些, 就很像愤怒小鸟了」).
 const WIDE = new Set(['投掷', '结印']);
+// A game that takes the window's height whole (斗法's room: `meta.pick`, one foe a deal) plays in a full-height card.
+const FILL = (mod) => Boolean(mod?.meta?.pick);
 // A tall board (守炉's 600×760) plays as tall as the window lets it — the module says so (`meta.tall`, games/shell.js).
-const playClass = (m, mod) => (WIDE.has(m) ? ' is-wide' : tallOf(mod) ? ' is-tall' : '');
+const playClass = (m, mod) => (FILL(mod) ? ' is-fill' : WIDE.has(m) ? ' is-wide' : tallOf(mod) ? ' is-tall' : '');
 async function playPage(id, n) {
   const reg = await registry();
   const row = reg.games[Number(n)]?.id === id ? reg.games[Number(n)] : reg.games.find((g) => g.id === id) ?? { id };
@@ -149,23 +151,41 @@ async function playPage(id, n) {
   if (mod?.meta?.ai) { location.replace(arcadePlayUrl(id)); return; }
   // A row with a ladder (兽潮's nights) deals its own level unless a chip named one (`lv`): the module reads `data.lv` first.
   const data = row.ladder && q.get('lv') ? { ...(row.data ?? {}), lv: q.get('lv') } : row.data ?? {};
+  // A game played against one of many (斗法: every foe of the book, `meta.pick`) opens on its picker; `foe` plays it.
+  const foe = mod?.meta?.pick ? q.get('foe') : null;
+  if (mod?.meta?.pick && !/^[\w@/-]+$/.test(foe ?? '')) { pickPage(id, n, row, mod); return; }
   // The game plays in the one shell (games/shell.js) the story's card wears too: its title, type and how-to in
   // the bar (beside a tall board on a Mac, so the board gets the height — Hanli 10-20: 「mac上游戏画面可以大一点」),
   // pause for a game in time, the result and 再来 under it. A row's `lead` is its story lead-in, read first.
-  root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${home()}</header>`
+  root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a>${foe ? `<a href="${href({ game: id, n: String(n ?? '') })}">${esc(w().pick)}</a>` : ''}${home()}</header>`
     + `<div class="arcade-solo"><article class="card gamecard scenegame arcade-play${playClass(row.mechanic, mod)}"${row.aspect ? ` style="--ar:${Number(row.aspect)}"` : ''}></article></div>`;
   const card = root.querySelector('.arcade-play');
   if (!mount) { card.textContent = w().missing; return; }
   const reducedMotion = Boolean(matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   playAlone(card, mount, {
-    id: `arcade-${id}`, title: titleOf(row, mod), kind: kindOf(row), how: howOf(mod), timed: timedOf(mod), tall: tallOf(mod), lang: lang(),
+    id: `arcade-${id}`, title: [titleOf(row, mod), foe ? await mod.pickName(foe, lang()) : null].filter(Boolean).join(' · '), kind: kindOf(row), how: howOf(mod), timed: timedOf(mod), tall: tallOf(mod), lang: lang(),
     leadLine: row.lead?.[lang()] ?? row.lead?.zh ?? '',
-    opts: { reducedMotion, seed: `arcade|${Date.now()}`, data },
-    // 下一关: a game with levels names its next one when won (`r.next`); the page opens it by `lv`
-    next: (lv) => { location.href = href({ game: id, n: String(n ?? ''), lv: String(lv) }); },
+    opts: { reducedMotion, seed: `arcade|${Date.now()}`, data: { ...data, ...(foe ? { foe } : {}) } },
+    // 下一关: a game with levels names its next one when won (`r.next`); the page opens it by `lv` (斗法: the next foe, by `foe`)
+    next: (lv) => { location.href = href({ game: id, n: String(n ?? ''), ...(foe ? { foe: String(lv) } : { lv: String(lv) }) }); },
     // 台词预取 off the story only on `?prefetch=1` (a dev check); else the level's own lines.
     prefetch: devPrefetch(mod, { data, lang: lang() }),
   });
+}
+
+/* The foe picker (斗法): the module's rows (`pickRows`), each a tile with its portrait and one line, in sections by
+   回 — the story's fights, then the beasts that roam. A tile plays that fight. */
+async function pickPage(id, n, row, mod) {
+  const rows = await mod.pickRows(lang());
+  const tile = (r) => `<a class="arcade-tile arcade-foe" href="${esc(href({ game: id, n: String(n ?? ''), foe: r.key }))}" data-foe="${esc(r.key)}">`
+    + (r.art ? `<img class="arcade-foe-art" src="${esc(r.art)}" alt="" loading="lazy">` : '<i class="arcade-foe-art"></i>')
+    + `<span class="arcade-foe-text"><b>${esc(r.name)}</b><small>${esc(r.hint)}</small>`
+    + `${r.where || r.party ? `<em class="arcade-foe-tag">${esc([r.where, r.party].filter(Boolean).join(' · '))}</em>` : ''}</span></a>`;
+  const by = (list, key) => [...new Map(list.map((r) => [r[key], list.filter((x) => x[key] === r[key])]))];
+  const sections = by(rows, 'section').map(([title, list]) => `<section><h2>${esc(title)}</h2>`
+    + by(list, 'group').map(([g, items]) => `<h3 class="arcade-foe-hui">${esc(g)}</h3><div class="arcade-grid">${items.map(tile).join('')}</div>`).join('') + '</section>');
+  root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a><h1>${esc(titleOf(row, mod))}</h1>`
+    + `<span class="dim small">${esc(w().pickNote)}</span>${home()}</header>${sections.join('')}`;
 }
 
 if (devOnly(q)) {

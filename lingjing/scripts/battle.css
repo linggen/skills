@@ -557,3 +557,6 @@
   .bfx, .bflash, .bstroke > b { display: none; }
   .bminion.bleaving.going { opacity: 0; }
 }
+
+/* Mounted in a game's shell (games/kapai.js): paused, the hand is put away — the room stands still under the veil. */
+.gshell.is-paused .battle .bdock { visibility: hidden; }
