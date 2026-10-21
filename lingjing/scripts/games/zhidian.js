@@ -1,11 +1,13 @@
 // zhidian.js — 隔空指点 (point in the air), a test game in the 游戏厅 (Hanli 2026-10-21: 「剑诀目前是手指朝上, 如果手指指向
 // 屏幕, 是否可行. 一个用户隔空双指点屏幕的demo视频, 也许能引起兴趣」; 「好，先做试玩」). The player holds 剑诀 with the two
-// fingers at the camera; a 准星 follows where they point, a quick jab toward the camera throws a 火蛋 there. Beasts
-// cross the 山道; hits in a minute give the stars. Not in the story.
+// fingers at the camera (or up); a quick jab toward the camera throws a 火蛋, which aims itself — at the beast the
+// player tapped, else the one nearest the bottom, as 守墙关's 结印 egg does (Hanli 10-21, after a real-camera try:
+// 「剑诀往前戳, 不好操作」「往前戳触发攻击, 但自动瞄准也可以」 — the 准星 that followed the fingers is gone). Beasts cross
+// the 山道; hits in a minute give the stars. Not in the story.
 //
 // The parts: games/jieyin/eye.js (camera + the vendored MediaPipe model, all on the device), jieyin/judge3d.js (剑诀
-// by joint angles, so it counts pointing at the lens), zhidian/aim.js (the 准星), zhidian/poke.js (the jab),
-// zhidian/core.js (beasts, clock, hits), and 结印's hand hint (jieyin/hint.js handHint: the hand the camera sees, in
+// by joint angles, so it counts pointing at the lens), zhidian/poke.js (the jab),
+// zhidian/core.js (beasts, clock, the egg's target, hits), and 结印's hand hint (jieyin/hint.js handHint: the hand the camera sees, in
 // ink, in a small frame — the camera's picture is never shown). Numbers: worlds/jiuding/levels/zhidian.json; the seal's shape: jieyin.json `seals.jian`.
 // No camera, no permission, no WebGL, or the model fails → one line that it needs a camera; nothing else.
 //
@@ -13,12 +15,11 @@
 // page is hidden.
 // Contract (games/mount.js): mount(container, { lang, data, signal, shell }) → Promise<{ won, stars } | { won: false, left: true }>
 // Dev only: `?dev=1&feed=1` runs without a camera — hands from the console (`window.zhidianFeed({ world, image })`),
-// or `window.zhidianFeed.bot()`, a made-up player who aims and jabs (zhidian/fake.js); never a player's.
+// or `window.zhidianFeed.bot()`, a made-up player who jabs (zhidian/fake.js); never a player's.
 import { available, dropModel, loadModel, openEye } from './jieyin/eye.js';
 import { sealOf3d } from './jieyin/judge3d.js';
-import { aimPoint, follow, toField } from './zhidian/aim.js';
 import { poke, sizeOf, startPoke } from './zhidian/poke.js';
-import { land, newField, over, starsOf, throwAt, tick as fieldTick, timeLeft } from './zhidian/core.js';
+import { focus, land, newField, over, starsOf, targetOf, throwEgg, tick as fieldTick, timeLeft } from './zhidian/core.js';
 import { handHint } from './jieyin/hint.js';
 
 export const meta = {
@@ -27,8 +28,8 @@ export const meta = {
   camera: true,
   name: { zh: '隔空指点', en: 'Point in the air' },
   how: {
-    zh: '剑诀对准摄像头：两指指哪，准星到哪；往前一戳，火蛋出手。',
-    en: 'Point the sword seal at the camera: the crosshair follows the two fingers; jab forward to throw the fire egg.',
+    zh: '剑诀对着摄像头，往前一戳，火蛋自己找野兽；点一只野兽，就先打它。',
+    en: 'Hold the sword seal to the camera and jab forward: the fire egg finds a beast itself. Tap a beast to aim at it first.',
   },
 };
 
@@ -77,7 +78,6 @@ function stageHtml(lang) {
   const w = W[lang];
   return `<div class="zd"><div class="zd-field" style="background-image:url('${ART.bg}')">`
     + `<div class="zd-beasts"></div><img class="zd-xm" alt="" src="${ART.xiaoman}">`
-    + '<div class="zd-sight is-off"><i></i></div>'
     + `<div class="zd-top"><b class="zd-hits">0 ${plain(w.hits)}</b><b class="zd-time"></b></div>`
     + '<div class="jy-dock zd-dock"></div>'
     + '<p class="zd-status" role="status"></p>'
@@ -86,8 +86,8 @@ function stageHtml(lang) {
     + '</div></div>';
 }
 
-/** Lay the beasts on the field (one node each, kept by id). */
-function drawBeasts(layer, beasts) {
+/** Lay the beasts on the field (one node each, kept by id); the egg's next target ringed. */
+function drawBeasts(layer, beasts, target) {
   const doc = layer.ownerDocument, have = new Map([...layer.children].map((el) => [el.dataset.id, el]));
   for (const b of beasts) {
     let el = have.get(String(b.id));
@@ -102,6 +102,7 @@ function drawBeasts(layer, beasts) {
     el.style.left = pct(b.x);
     el.style.top = pct(b.y);
     el.classList.toggle('is-flip', b.dir < 0);
+    el.classList.toggle('is-target', b.id === target);
   }
   for (const el of have.values()) if (!el.classList.contains('is-hit')) el.remove();
 }
@@ -115,7 +116,7 @@ function struckFx(layer, beast) {
   setTimeout(() => el.remove(), 450);
 }
 
-/** A 火蛋 from 小满's hand to the 准星 (field 0…1), `ms` long; a miss leaves a charred egg there a moment. */
+/** A 火蛋 from 小满's hand to where its beast will be (field 0…1), `ms` long; a miss leaves a charred egg there a moment. */
 function eggFx(field, from, aim, ms) {
   const doc = field.ownerDocument, r = field.getBoundingClientRect(), a = from.getBoundingClientRect();
   const img = doc.createElement('img');
@@ -178,41 +179,41 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       container.innerHTML = stageHtml(lang);
       const box = container.querySelector('.zd');
       const $ = (s) => box.querySelector(s);
-      const fieldEl = $('.zd-field'), beastsEl = $('.zd-beasts'), sight = $('.zd-sight'), video = $('video');
+      const fieldEl = $('.zd-field'), beastsEl = $('.zd-beasts'), video = $('video');
       const hint = handHint($('.zd-dock'), { lang, size: 'compact', seals, knobs: { ...sealKit.hint, ...kit.hint } });
       hintOff = () => hint.destroy();
       const aspect = () => (video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 4 / 3);
       let field = newField(level, seed ?? `zhidian|${Date.now()}`), last = win.performance.now(), ending = false;
-      // What the camera last said: the 准星 shown, when the seal was last seen, the jab watcher.
-      let shown = null, sealT = -Infinity, pk = startPoke(), seenT = 0;
+      // What the camera last said: when the seal was last seen, the jab watcher.
+      let sealT = -Infinity, pk = startPoke();
+      // A tap on a beast: the eggs go for it first while it is in view (守墙关's focus).
+      beastsEl.addEventListener('click', (e) => {
+        const el = e.target.closest?.('.zd-beast');
+        if (el) field = focus(field, Number(el.dataset.id));
+      });
 
       const sealedAt = (t) => t - sealT <= kit.judge3d.graceMs;
       const paused = () => Boolean(shell?.paused?.());
 
-      // One camera frame: the seal, the 准星, the jab.
+      // One camera frame: the seal, the jab.
       const see = ({ world, image }, t = win.performance.now()) => {
         if (done || paused()) return;
-        const dt = seenT ? t - seenT : 0;
-        seenT = t;
         const k = (world ?? []).findIndex((h) => sealOf3d([h], seals, kit.judge3d, sealedAt(t) ? kit.seal : null));
         if (k >= 0) sealT = t;
         const hand = image?.[k >= 0 ? k : 0];
         hint.update({ image: image ?? [], aspect: aspect(), target: kit.seal, progress: k >= 0 ? 1 : 0, right: k >= 0, now: t });
         if (!hand) { pk = poke(pk, { t }, kit.poke).state; return; }
-        shown = follow(shown, toField(aimPoint(hand, kit.aim), kit.aim), dt, kit.aim);
-        const r = poke(pk, { t, size: sizeOf(hand), aim: shown, sealed: sealedAt(t) }, kit.poke);
+        const r = poke(pk, { t, size: sizeOf(hand), sealed: sealedAt(t) }, kit.poke);
         pk = r.state;
-        if (r.shot && !ending) {
-          field = throwAt(field, r.shot.aim);
-          eggFx(fieldEl, $('.zd-xm'), r.shot.aim, reducedMotion ? 120 : level.eggMs);
-        }
+        if (!r.shot || ending) return;
+        const thrown = throwEgg(field);
+        field = thrown.state;
+        if (thrown.egg) eggFx(fieldEl, $('.zd-xm'), thrown.egg.to, reducedMotion ? 120 : level.eggMs);
       };
 
       const hud = () => {
-        drawBeasts(beastsEl, field.beasts);
-        sight.classList.toggle('is-off', !shown);
-        sight.classList.toggle('is-armed', sealedAt(win.performance.now()));
-        if (shown) { sight.style.left = pct(shown.x); sight.style.top = pct(shown.y); }
+        drawBeasts(beastsEl, field.beasts, targetOf(field)?.id);
+        box.classList.toggle('is-armed', sealedAt(win.performance.now()));
         $('.zd-hits').textContent = `${field.hits} ${w.hits}`;
         $('.zd-time').textContent = `${Math.ceil(timeLeft(field) / 1000)}${w.left}`;
         box.dataset.hits = String(field.hits);
@@ -236,7 +237,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           const r = land(field);
           field = r.state;
           for (const ev of r.events) {
-            if (ev.type === 'hit') { struckFx(beastsEl, ev.beast); say(w.hit); } else missFx(fieldEl, ev.aim);
+            if (ev.type === 'hit') { struckFx(beastsEl, ev.beast); say(w.hit); } else missFx(fieldEl, ev.at);
           }
           if (over(field) && !field.eggs.length) end();
         }
@@ -255,7 +256,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           let b = null;
           const drive = () => {
             if (done) return;
-            const t = win.performance.now(), r = bot(field, b, t, level, kit.aim, seals[kit.seal]);
+            const t = win.performance.now(), r = bot(b, t, seals[kit.seal]);
             b = r.bot;
             see(r.hands, t);
             botLoop = win.requestAnimationFrame(drive);

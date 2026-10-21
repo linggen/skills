@@ -798,7 +798,7 @@
    "group": "main",
    "mechanic": "结印",
    "stars": 3,
-   "_about": "隔空指点 — point the 剑诀 at the screen, a test game, 游戏厅 only (Hanli 10-21: 「剑诀目前是手指朝上, 如果手指指向屏幕, 是否可行. 一个用户隔空双指点屏幕的demo视频, 也许能引起兴趣」; 「好，先做试玩」). A 准星 follows the two fingertips, a jab toward the camera throws a 火蛋 there; beasts cross the 山道, hits in 60 s give the stars. The seal judged by joint angles on the 3D world points (games/jieyin/judge3d.js); numbers in worlds/jiuding/levels/zhidian.json. No camera → one line, nothing else. doc/games.md § 隔空指点."
+   "_about": "隔空指点 — point the 剑诀 at the screen, a test game, 游戏厅 only (Hanli 10-21: 「剑诀目前是手指朝上, 如果手指指向屏幕, 是否可行. 一个用户隔空双指点屏幕的demo视频, 也许能引起兴趣」; 「好，先做试玩」). A jab toward the camera with 剑诀 throws a 火蛋 that aims itself — the tapped beast, else the one nearest the bottom (after his real-camera try: 「剑诀往前戳, 不好操作」「往前戳触发攻击, 但自动瞄准也可以」); beasts cross the 山道, hits in 60 s give the stars. The seal judged by joint angles on the 3D world points (games/jieyin/judge3d.js); numbers in worlds/jiuding/levels/zhidian.json. No camera → one line, nothing else. doc/games.md § 隔空指点."
   },
   {
    "id": "shoulu",

@@ -748,29 +748,31 @@ tried again).
 - **Tested:** tests/game-shouqiang-jieyin.test.mjs — target (focus vs nearest the wall, above-the-line focus), cooldown,
   no camera → nothing drawn and the same game, the camera lifecycle on a fake page, the seals → cast / 走火 path, balance.
 
-## 隔空指点 — point the 剑诀 at the screen (test game, 10-21)
+## 隔空指点 — jab the 剑诀 at the screen (test game, 10-21)
 
 Hanli 10-21: 「剑诀目前是手指朝上, 如果手指指向屏幕, 是否可行. 一个用户隔空双指点屏幕的demo视频, 也许能引起兴趣」;
-「好，先做试玩」. 游戏厅 only (`zhidian`, group 主力, type 结印); not in the story. The player holds **剑诀** with the two
-fingers at the camera: a 准星 follows where they point, a quick jab toward the camera throws a 火蛋 there. Beasts
-(野猪 · 犰狳 · 鬿雀, 守墙关's art) cross the 山道 on three lanes; hits in 60 s give the stars (6 · 10 · 14; the round
-ends early at ★★★). Numbers: worlds/jiuding/levels/zhidian.json; the seal's shape: jieyin.json `seals.jian`.
+「好，先做试玩」; after his real-camera try: 「测试了剑诀往前戳, 不好操作」「或者往前戳触发攻击, 但自动瞄准也可以」. 游戏厅
+only (`zhidian`, group 主力, type 结印); not in the story. The player holds **剑诀** to the camera (fingers at the lens or
+up) and **jabs toward it**: a 火蛋 flies and **aims itself** — at the beast the player tapped while it is in view, else
+the one nearest the bottom (小满's side), of those the one nearest getting away (守墙关's 结印 rule); a ring marks the
+next one. 野猪 · 犰狳 · 鬿雀 (守墙关's art) cross the 山道 on three lanes; 60 s, stars at 6 · 10 · 14 hits (ends early at
+★★★). The 准星 that followed the fingers (the first cut) is gone. Numbers: worlds/jiuding/levels/zhidian.json; the
+seal's shape: jieyin.json `seals.jian`.
 
-- **剑诀 at the lens** (games/jieyin/judge3d.js, `judge3d`): judge.js's "straight" (the tip reaching farther from the
-  wrist than the middle joint) sinks toward 1 when a finger lies along the line of sight and the landmarker's depth
-  comes out squashed. judge3d reads each finger's own bend (middle + end joints) on the 3D world points: straight
-  < 50°, folded > 90°, the two tips < 0.7 palm-widths apart. Synthetic hands, up to straight at the lens, depth
-  squashed to 0.3: index/middle 0–12°, ring/little 132–157°, tips 0.51 (a V is 0.95). Same rule format and calls as
-  judge.js (`sealOf3d`), so 结印 can take it with one import.
-- **The 准星** (zhidian/aim.js, `aim`): the fingertips' midpoint in the picture, mirrored, the picture's inner box
-  (20–80 % × 15–75 %) stretched to the field; held still inside 0.012, eased over 90 ms beyond it.
-- **The jab** (zhidian/poke.js, `poke`): the hand's size in the picture (three palm lengths) ≥ ×1.16 its smallest in
-  the last 220 ms, 剑诀 held, the 准星 not swept > 0.14 meanwhile, 380 ms apart; the egg goes where the 准星 stood
-  before the hand grew. Fires on a ×1.2 jab in ≤ 200 ms (30 fps; ≤ 150 ms at 15 fps); never on drift nearer up to
-  70 %/s, a 5 % tremble, rocking ±10 % about once a second, a sweep, or a slow push.
+- **剑诀 at the lens** (games/jieyin/judge3d.js, `judge3d`): judge.js loses a pointed 剑诀 once the landmarker squashes
+  depth — palm up and fingers bent forward its reach ratio sinks to 1.03–1.09 (< 1.2); the whole hand turned, its
+  hand-length shrinks and the tips read apart. judge3d reads each finger's own bend (middle + end joints) on the 3D
+  world points, the tips' gap in palm-widths. Loose on purpose: straight < 65°, folded > 70°, tips < 0.8 palm-widths,
+  held for 0.4 s after last seen. Synthetic hands, up to straight at the lens, depth ×0.3: index/middle 0–12°,
+  ring/little 132–157°, tips 0.51. Refused: the index alone, the ring finger up, an open palm, a fist, a fresh V.
+- **The jab** (zhidian/poke.js, `poke`): the hand's size in the picture (three palm lengths) ≥ ×1.12 its smallest in
+  the last 300 ms, 剑诀 held, 350 ms apart; sideways movement does not matter. Fires on ×1.15 over 0.3 s, ×1.2 over
+  0.4 s, ×1.3 over 0.5 s (at 15 fps too); silent on drift nearer ≤ 30 %/s, a 5 % tremble, rocking ±8 % about once a
+  second, a 1.2 s push, no 剑诀.
 - **Seeing**: as 结印 (eye.js, on the device), asked for 30 fps and one hand (eye.js's default is 15). The camera's
-  picture is never shown — 结印's hand hint (jieyin/hint.js handHint) draws the hand in ink in the corner, 剑诀 as its
-  target, the ring full while it is held. Camera only after 开始; off on pause, hidden page, end, leave. No camera /
-  denied / no WebGL: one line, nothing else.
+  picture is never shown — 结印's hand hint (jieyin/hint.js handHint) in the corner, 剑诀 its target, the ring full
+  while held; its "closer" cue comes at a quarter of 结印's (a pointed hand looks short). Camera only after 开始; off
+  on pause, hidden page, end, leave. No camera / denied / no WebGL: one line, nothing else.
 - **Tested** on synthetic hands (pose.js turned and depth-squashed, near-misses, a bot through the whole pipe to ★★★);
-  the live page by the dev feed (`?dev=1&feed=1`, `zhidianFeed.bot()`). Real-camera play is Hanli's.
+  the live page by the dev feed (`?dev=1&feed=1`, `zhidianFeed.bot()` — synthetic hands, no camera). Real-camera play
+  is Hanli's: `arcade.html?dev=1&game=zhidian`.

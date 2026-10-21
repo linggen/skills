@@ -1,17 +1,16 @@
-// 隔空指点 (games/zhidian.js, Hanli 10-21: 「如果手指指向屏幕, 是否可行」): 剑诀 judged by joint angles on 3D world points
-// (judge3d.js) pointing up AND at the lens, the near-misses it refuses, the 准星's mapping and smoothing, the jab
-// (poke.js) against drift, tremble and sweeps, a made-up player through the whole pipe to a win, and the camera-less
-// path that offers one line. Hands are synthetic (pose.js, turned and depth-squashed): real-camera play is Hanli's.
+// 隔空指点 (games/zhidian.js, Hanli 10-21: 「如果手指指向屏幕, 是否可行」; after his real-camera try 「往前戳触发攻击, 但
+// 自动瞄准也可以」): 剑诀 judged by joint angles on 3D world points (judge3d.js) pointing up AND at the lens, the near-misses
+// it refuses, the jab (poke.js) against drift and tremble, the egg's own aim (the tapped beast, else the one nearest the
+// bottom), a made-up player through the whole pipe to a win, and the camera-less path that offers one line. Hands are synthetic (pose.js, turned and depth-squashed): real-camera play is Hanli's.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { makes } from '../scripts/games/jieyin/judge.js';
 import { bendOf, gap3d, makes3d, sealOf3d } from '../scripts/games/jieyin/judge3d.js';
 import { poseOf } from '../scripts/games/jieyin/pose.js';
-import { aimPoint, follow, fromField, toField } from '../scripts/games/zhidian/aim.js';
 import { poke, sizeOf, startPoke } from '../scripts/games/zhidian/poke.js';
-import { land, newField, over, starsOf, struck, throwAt, tick } from '../scripts/games/zhidian/core.js';
-import { bot, handsAt, jianHand, pointing, shapes } from '../scripts/games/zhidian/fake.js';
+import { focus, land, newField, over, starsOf, targetOf, throwEgg, tick } from '../scripts/games/zhidian/core.js';
+import { bot, jianHand, pointing, shapes } from '../scripts/games/zhidian/fake.js';
 import { meta, mount, unavailableHtml, levelAsked } from '../scripts/games/zhidian.js';
 
 const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
@@ -38,8 +37,9 @@ test('the level: every knob the game reads is data, and the seal is jieyin.json\
   assert.equal(kit.seal, 'jian');
   assert.deepEqual(JIAN.ext, ['index', 'middle']);
   for (const k of ['extDeg', 'curlDeg', 'near', 'far', 'loose', 'graceMs']) assert.equal(typeof K[k], 'number', k);
-  for (const k of ['windowMs', 'grow', 'maxShift', 'coolMs', 'fps']) assert.equal(typeof kit.poke[k], 'number', k);
-  assert.equal(kit.aim.box.length, 4);
+  for (const k of ['windowMs', 'grow', 'coolMs', 'fps']) assert.equal(typeof kit.poke[k], 'number', k);
+  assert.equal(kit.aim, undefined, 'no 准星 to aim (Hanli 10-21: 「剑诀往前戳, 不好操作」)');
+  assert.equal(kit.poke.fps, 30, 'the jab needs the eye at 30 fps');
   assert.ok(kit.hint.far < sealKit.hint.far, 'a pointed hand looks short: the hint\'s too-far comes later');
   assert.ok(level.seconds <= 90 && level.stars.length === 3 && level.lead.zh && level.lead.en && level.end.zh && level.end.en);
   assert.ok(level.spawn.foes.every((f) => fs.existsSync(new URL(`../scripts/games/shouqiang/art/${f.id}-walk-1.webp`, import.meta.url))));
@@ -85,46 +85,19 @@ test('near-misses are not 剑诀, up or pointed: a V, the index alone, the ring 
       assert.equal(makes3d(h, JIAN, K), false, `${name} ${deg}° ×${squash}`);
     }
   }
-  // …and a held 剑诀's slack does not let a V or the index alone in.
-  for (const name of ['v', 'one']) assert.equal(sealOf3d([pointing(shapes[name](), 75, 0.4)], seals, K, 'jian'), null, name);
+  // …and a held 剑诀's slack does not let the index alone or an open palm in (a V that opens out of a held 剑诀 may
+  // stay — loose on purpose, Hanli 10-21: easier).
+  for (const name of ['one', 'open', 'fist']) assert.equal(sealOf3d([pointing(shapes[name](), 75, 0.4)], seals, K, 'jian'), null, name);
   assert.equal(sealOf3d([], seals, K), null);
   assert.equal(sealOf3d([[]], seals, K), null, 'a broken hand is no seal');
 });
 
-test('the 准星: the fingertips\' midpoint, mirrored, the inner box stretched to the field, clamped; fromField its inverse', () => {
-  const A = kit.aim, [x0, y0, x1, y1] = A.box;
-  const h = handsAt({ at: { x: 0.5, y: 0.45 }, size: 0.3, world: jianHand(JIAN) }).image[0];
-  const p = aimPoint(h, A);
-  assert.ok(Math.abs(p.x - 0.5) < 1e-9 && Math.abs(p.y - 0.45) < 1e-9);
-  const near = (a, b) => assert.ok(Math.abs(a.x - b.x) < 1e-9 && Math.abs(a.y - b.y) < 1e-9, `${JSON.stringify(a)} ≈ ${JSON.stringify(b)}`);
-  near(toField({ x: 0.5, y: (y0 + y1) / 2 }, A), { x: 0.5, y: 0.5 });
-  assert.ok(toField({ x: 0.3, y: 0.45 }, A).x > 0.5, 'the hand at the picture\'s left is the player\'s right: as in a mirror');
-  assert.deepEqual(toField({ x: 1 - x0, y: y0 }, A), { x: 0, y: 0 });
-  assert.deepEqual(toField({ x: 1 - x1, y: y1 }, A), { x: 1, y: 1 });
-  assert.deepEqual(toField({ x: 0, y: 1 }, A), { x: 1, y: 1 }, 'clamped');
-  for (const f of [{ x: 0.1, y: 0.9 }, { x: 0.73, y: 0.2 }]) {
-    const back = toField(fromField(f, A), A);
-    assert.ok(Math.abs(back.x - f.x) < 1e-9 && Math.abs(back.y - f.y) < 1e-9);
-  }
-});
-
-test('the 准星 holds still through a tremble inside the dead zone and settles on a real move within ~4 τ', () => {
-  const A = kit.aim;
-  let s = { x: 0.5, y: 0.5 };
-  for (let i = 0; i < 60; i += 1) s = follow(s, { x: 0.5 + (i % 2 ? 1 : -1) * A.dead * 0.8, y: 0.5 }, 33, A);
-  assert.deepEqual(s, { x: 0.5, y: 0.5 }, 'tremble: not a hair');
-  let t = 0;
-  while (Math.hypot(s.x - 0.8, s.y - 0.3) >= A.dead && t < 2000) { s = follow(s, { x: 0.8, y: 0.3 }, 33, A); t += 33; }
-  assert.ok(t <= 4 * A.tauMs + 66, `settled in ${t} ms`);
-  assert.deepEqual(follow(null, { x: 0.2, y: 0.2 }, 33, A), { x: 0.2, y: 0.2 }, 'the first sight is taken as is');
-});
-
-/* A camera's stream of samples: `size(t)` and `aim(t)` over `ms` at `fps`, the seal held unless said. */
-function run({ ms, fps = 30, size, aim = () => ({ x: 0.5, y: 0.5 }), sealed = () => true, knobs = kit.poke }) {
+/* A camera's stream of samples: `size(t)` over `ms` at `fps`, the seal held unless said. */
+function run({ ms, fps = 30, size, sealed = () => true, knobs = kit.poke }) {
   let s = startPoke();
   const shots = [];
   for (let t = 0; t <= ms; t += 1000 / fps) {
-    const r = poke(s, { t, size: size(t), aim: aim(t), sealed: sealed(t) }, knobs);
+    const r = poke(s, { t, size: size(t), sealed: sealed(t) }, knobs);
     s = r.state;
     if (r.shot) shots.push(r.shot);
   }
@@ -133,67 +106,71 @@ function run({ ms, fps = 30, size, aim = () => ({ x: 0.5, y: 0.5 }), sealed = ()
 const jab = (at, dur = 160, k = 1.3, base = 0.3) => (t) => (t < at ? base : t < at + dur ? base * (1 + (k - 1) * ((t - at) / dur)) : base * k);
 const wobble = (t, amp = 0.03) => 1 + amp * Math.sin(t / 37) * Math.cos(t / 53);
 
-test('a jab fires once, at 30 and at 15 fps; the shot goes where the 准星 stood before the hand grew', () => {
+test('a jab fires once — easy ones too (×1.15 over 0.3 s, ×1.2 over 0.4 s), at 30 and at 15 fps, sideways or not', () => {
   for (const fps of [30, 15]) {
-    const shots = run({ ms: 1500, fps, size: (t) => jab(500)(t) * wobble(t, 0.02), aim: (t) => ({ x: 0.4 + (t > 500 ? 0.04 : 0), y: 0.5 }) });
-    assert.equal(shots.length, 1, `${fps} fps`);
-    assert.equal(shots[0].aim.x, 0.4, 'aimed before the jab moved the tips');
-    assert.ok(shots[0].at >= 500 && shots[0].at <= 700, `fired ${shots[0].at.toFixed(0)} ms (jab from 500)`);
+    for (const [k, dur] of [[1.3, 160], [1.15, 300], [1.2, 400]]) {
+      const shots = run({ ms: 1500, fps, size: (t) => jab(500, dur, k)(t) * wobble(t, 0.02) });
+      assert.equal(shots.length, 1, `×${k} over ${dur} ms at ${fps} fps`);
+      assert.ok(shots[0].at >= 500 && shots[0].at <= 500 + dur + 40, `fired ${shots[0].at.toFixed(0)} ms (jab from 500)`);
+    }
   }
   // Held forward after the jab: no second shot; a second jab after a draw-back: a second shot.
   const twice = (t) => (t < 1100 ? jab(400)(t) : jab(1400, 160, 1.3, 0.3)(t));
   assert.equal(run({ ms: 2400, size: twice }).length, 2);
 });
 
-test('not a jab: a hand drifting nearer, a tremble, a sweep across, a lost track, the seal not held, a slow push', () => {
+test('not a jab: a hand drifting nearer (≤30 %/s), a 5 % tremble, rocking ±8 % about once a second, no 剑诀, a slow push', () => {
   const none = (o, why) => assert.equal(run({ ms: 4000, ...o }).length, 0, why);
-  none({ size: (t) => 0.25 * (1 + 0.3 * (t / 1000)) * wobble(t) }, 'drifting nearer 30 %/s with a 3 % tremble');
+  none({ size: (t) => 0.2 * (1 + 0.3 * (t / 1000)) * wobble(t) }, 'drifting nearer 30 %/s with a 3 % tremble');
   none({ size: (t) => 0.3 * wobble(t, 0.05) }, 'a 5 % tremble');
-  none({ size: (t) => 0.3 * (1 + 0.1 * Math.sin(t / 300)) }, 'rocking ±10 % nearer and back, once in ~2 s');
-  none({ size: jab(500), aim: (t) => ({ x: 0.2 + 0.6 * Math.min(1, Math.max(0, (t - 450) / 300)), y: 0.5 }) }, 'the hand sweeping across while it grows');
+  none({ size: (t) => 0.3 * (1 + 0.08 * Math.sin(t / 200)) }, 'rocking ±8 % nearer and back, about once a second');
   none({ size: jab(500), sealed: () => false }, 'no 剑诀');
-  none({ size: jab(500, 900) }, 'pushed forward slowly (0.9 s)');
+  none({ size: jab(500, 1200) }, 'pushed forward slowly (1.2 s)');
   assert.equal(poke(startPoke(), { t: 0 }, kit.poke).shot, null, 'no hand');
 });
 
-test('core: beasts come seeded from both sides on the lanes; an egg strikes the nearest within reach, else misses', () => {
+test('core: beasts come seeded from both sides on the lanes; the egg aims itself — the tapped beast, else the one nearest the bottom', () => {
   let f = newField(level, 'a');
   for (let i = 0; i < 200; i += 1) f = tick(f, 50);
   assert.ok(f.n >= 4 && f.beasts.length <= level.spawn.max);
   assert.ok(f.beasts.every((b) => level.spawn.lanes.includes(b.y)));
-  const g = newField(level, 'a');
-  let g2 = g; for (let i = 0; i < 200; i += 1) g2 = tick(g2, 50);
-  assert.deepEqual(g2.beasts, f.beasts, 'the same seed, the same beasts');
-  const b = f.beasts[0];
-  assert.equal(struck(f.beasts, { x: b.x + 0.02, y: b.y }, level.spawn.r), b);
-  assert.equal(struck([b], { x: b.x + 0.3, y: b.y }, level.spawn.r), null);
-  let s = throwAt({ ...f, beasts: [b] }, { x: b.x, y: b.y });
+  let g = newField(level, 'a');
+  for (let i = 0; i < 200; i += 1) g = tick(g, 50);
+  assert.deepEqual(g.beasts, f.beasts, 'the same seed, the same beasts');
+  const B = (id, x, y, dir = 1) => ({ id, foe: 'yezhu', x, y, dir, speed: 0.1 });
+  const s0 = { ...newField(level, 'c'), beasts: [B(1, 0.5, 0.24), B(2, 0.3, 0.56), B(3, 0.8, 0.56), B(4, 0.99, 0.56)] };
+  assert.equal(targetOf(s0).id, 3, 'the bottom lane, and of it the one nearest getting away (4 is out of view)');
+  assert.equal(targetOf(focus(s0, 1)).id, 1, 'a tapped beast first');
+  assert.equal(targetOf(focus(s0, 4)).id, 3, '…while it is in view');
+  assert.equal(focus(s0, 99).focus, null, 'a tap on nothing');
+  assert.equal(throwEgg({ ...s0, beasts: [] }).egg, null, 'no beast in view: no egg');
+  let { state: s, egg } = throwEgg(focus(s0, 1));
+  assert.equal(egg.home, 1);
+  assert.ok(Math.abs(egg.to.x - (0.5 + 0.1 * level.eggMs / 1000)) < 1e-9, 'it flies to where the beast will be');
   assert.equal(land(s).events.length, 0, 'still in the air');
-  s = { ...s, t: s.t + level.eggMs, beasts: [b] };
-  const r = land(s);
-  assert.equal(r.events[0].type, 'hit');
-  assert.equal(r.state.hits, f.hits + 1);
+  const r = land({ ...s, t: s.t + level.eggMs });
+  assert.deepEqual(r.events.map((e) => e.type), ['hit']);
+  assert.equal(r.state.hits, 1);
+  assert.equal(r.state.focus, null, 'the tapped beast struck: the focus goes');
+  const gone = land({ ...s, t: s.t + level.eggMs, beasts: s.beasts.filter((b) => b.id !== 1) });
+  assert.equal(gone.events[0].type, 'miss', 'it walked off first');
   assert.deepEqual([starsOf(5, level.stars), starsOf(6, level.stars), starsOf(10, level.stars), starsOf(14, level.stars)], [0, 1, 2, 3]);
   assert.equal(over({ ...newField(level, 'b'), t: level.seconds * 1000 }), true);
 });
 
-test('the whole pipe: a made-up player who aims and jabs (fake.js bot → judge3d → 准星 → jab → field) wins ★★★ inside the minute', () => {
+test('the whole pipe: a made-up player who holds 剑诀 at the lens and jabs (fake.js bot → judge3d → jab → field) wins ★★★ inside the minute', () => {
   for (const seed of ['s1', 's2', 's3']) {
-    let f = newField(level, seed), b = null, shown = null, pk = startPoke(), sealT = -Infinity, last = 0;
-    for (let t = 0; !over(f) || f.eggs.length; t += 33) {
-      const r = bot(f, b, t, level, kit.aim, JIAN);
+    let f = newField(level, seed), b = null, pk = startPoke(), sealT = -Infinity;
+    for (let t = 0; (!over(f) || f.eggs.length) && t < 120000; t += 33) {
+      const r = bot(b, t, JIAN);
       b = r.bot;
       if (sealOf3d(r.hands.world, seals, K, t - sealT <= K.graceMs ? 'jian' : null)) sealT = t;
-      const hand = r.hands.image[0];
-      shown = follow(shown, toField(aimPoint(hand, kit.aim), kit.aim), t - last, kit.aim);
-      last = t;
-      const p = poke(pk, { t, size: sizeOf(hand), aim: shown, sealed: t - sealT <= K.graceMs }, kit.poke);
+      const p = poke(pk, { t, size: sizeOf(r.hands.image[0]), sealed: t - sealT <= K.graceMs }, kit.poke);
       pk = p.state;
-      if (p.shot) f = throwAt(f, p.shot.aim);
+      if (p.shot) f = throwEgg(f).state;
       f = land(tick(f, 33)).state;
-      if (t > 120000) break;
     }
-    assert.equal(starsOf(f.hits, level.stars), 3, `${seed}: ${f.hits} hits of ${f.shots} shots in ${(f.t / 1000).toFixed(0)} s`);
+    assert.equal(starsOf(f.hits, level.stars), 3, `${seed}: ${f.hits} hits of ${f.shots} eggs in ${(f.t / 1000).toFixed(0)} s`);
     assert.ok(f.t < level.seconds * 1000, `${seed}: before time`);
   }
 });
@@ -222,7 +199,7 @@ test('the module: meta, pausable; the camera asked only by eye.js after 开始, 
   assert.ok(meta.name.en && meta.how.zh && meta.how.en);
   assert.equal(meta.pause, true);
   const src = read('../scripts/games/zhidian.js');
-  const parts = ['aim', 'poke', 'core', 'fake'].map((f) => read(`../scripts/games/zhidian/${f}.js`)).join('') + read('../scripts/games/jieyin/judge3d.js');
+  const parts = ['poke', 'core', 'fake'].map((f) => read(`../scripts/games/zhidian/${f}.js`)).join('') + read('../scripts/games/jieyin/judge3d.js');
   assert.doesNotMatch(src, /getUserMedia/, 'the game never opens the camera itself');
   assert.doesNotMatch(src + parts, /https?:\/\//, 'nothing from the network');
   assert.ok(src.indexOf('shell.lead(') < src.indexOf('eye.start()'), 'the lead card (开始) before the camera');
@@ -234,6 +211,8 @@ test('the module: meta, pausable; the camera asked only by eye.js after 开始, 
   assert.match(src, /fps: kit\.poke\.fps, numHands: 1/, 'the eye asked for the jab\'s rate, one hand');
   assert.match(read('../scripts/games/zhidian/zhidian.css'), /\.zd-eye \{[^}]*opacity: 0;/, 'the video element is there for frames, never seen');
   assert.match(src, /q\.get\('dev'\) === '1' && q\.get\('feed'\) === '1'/, 'the feed only on a dev link');
+  assert.doesNotMatch(src, /zd-sight|准星 follows/, 'no crosshair');
+  assert.match(src, /field = focus\(field, Number\(el\.dataset\.id\)\)/, 'a tap on a beast aims the eggs at it');
   const reg = JSON.parse(read('../worlds/jiuding/games.json'));
   assert.ok(reg.games.some((g) => g.id === 'zhidian' && g.group === 'main' && g.mechanic === '结印'));
 });

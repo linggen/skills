@@ -1,9 +1,13 @@
 // core.js — 隔空指点's field (games/zhidian.js), pure: beasts crossing the 山道, the clock, the 火蛋s and the hits.
 // Units: the field is 0…1 each way; time in ms. Every number is the level's (worlds/jiuding/levels/zhidian.json).
+// The egg aims itself (Hanli 10-21: 「往前戳触发攻击, 但自动瞄准也可以」), by 守墙关's 结印 rule (shouqiang/core.js
+// jieyinTarget): the beast the player tapped while it is in view, else the one nearest the bottom — 小满's side —
+// and of those the one nearest getting away.
 //
 //   newField(level, seed) → state      tick(state, dt) → state (beasts walk, new ones come, the clock runs)
-//   throwAt(state, aim) → state (a 火蛋 in the air for `eggMs`)
-//   land(state) → { state, events: [{ type: 'hit', beast, aim } | { type: 'miss', aim }] } (eggs that arrived)
+//   focus(state, id) → state (a tap on a beast)      targetOf(state) → beast | null
+//   throwEgg(state) → { state, egg } (a 火蛋 at targetOf, in the air `eggMs`; egg null when no beast is in view)
+//   land(state) → { state, events: [{ type: 'hit', beast } | { type: 'miss', at: { x, y } }] } (eggs that arrived)
 //   over(state) → is the round done (time up, or the top star reached)      starsOf(hits, stars) → 0…3
 
 function rng(seed) {
@@ -22,7 +26,7 @@ const pickBy = (rows, r) => {
 };
 
 export function newField(level, seed) {
-  return { level, rand: rng(seed), t: 0, next: 400, n: 0, beasts: [], eggs: [], hits: 0, shots: 0 };
+  return { level, rand: rng(seed), t: 0, next: 400, n: 0, beasts: [], eggs: [], hits: 0, shots: 0, focus: null };
 }
 
 function spawn(s) {
@@ -43,21 +47,35 @@ export function tick(state, dt) {
   return s;
 }
 
-export const throwAt = (s, aim) => ({ ...s, shots: s.shots + 1, eggs: [...s.eggs, { aim, lands: s.t + s.level.eggMs }] });
+/** In view: far enough in from either side to be seen and struck. */
+export const inView = (b) => b.x > 0.03 && b.x < 0.97;
+const awayIn = (b) => (b.dir > 0 ? 1 - b.x : b.x); // how far it has left to cross
 
-/** The beast a 火蛋 at `aim` strikes: the nearest within its radius (the field is 4:3 — x counts a third wider). */
-export function struck(beasts, aim, r) {
-  const d = (b) => Math.hypot((b.x - aim.x) * (4 / 3), b.y - aim.y);
-  return beasts.filter((b) => d(b) < r * (4 / 3)).sort((a, b) => d(a) - d(b))[0] ?? null;
+export const focus = (s, id) => ({ ...s, focus: s.beasts.some((b) => b.id === id) ? id : null });
+
+export function targetOf(s) {
+  const f = s.beasts.find((b) => b.id === s.focus && inView(b));
+  if (f) return f;
+  return s.beasts.filter(inView).sort((a, b) => b.y - a.y || awayIn(a) - awayIn(b))[0] ?? null;
+}
+
+/** Where a beast will be in `ms` (the egg flies there). */
+export const ahead = (b, ms) => ({ x: b.x + b.dir * b.speed * (ms / 1000), y: b.y });
+
+export function throwEgg(state) {
+  const b = targetOf(state);
+  if (!b) return { state, egg: null };
+  const egg = { home: b.id, lands: state.t + state.level.eggMs, to: ahead(b, state.level.eggMs) };
+  return { state: { ...state, shots: state.shots + 1, eggs: [...state.eggs, egg] }, egg };
 }
 
 export function land(state) {
   let s = state;
   const events = [];
   for (const egg of state.eggs.filter((e) => e.lands <= state.t)) {
-    const b = struck(s.beasts, egg.aim, s.level.spawn.r);
-    if (b) s = { ...s, hits: s.hits + 1, beasts: s.beasts.filter((x) => x !== b) };
-    events.push(b ? { type: 'hit', beast: b, aim: egg.aim } : { type: 'miss', aim: egg.aim });
+    const b = s.beasts.find((x) => x.id === egg.home);
+    if (b) s = { ...s, hits: s.hits + 1, beasts: s.beasts.filter((x) => x !== b), focus: s.focus === b.id ? null : s.focus };
+    events.push(b ? { type: 'hit', beast: b } : { type: 'miss', at: egg.to });
   }
   return { state: { ...s, eggs: s.eggs.filter((e) => e.lands > state.t) }, events };
 }

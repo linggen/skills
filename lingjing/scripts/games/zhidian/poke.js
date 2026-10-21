@@ -2,14 +2,14 @@
 // a shot (or none) out. Every number is the level's `poke` (worlds/jiuding/levels/zhidian.json).
 //
 // The landmarker's world points are centred on the hand and its picture depth is the wrist's own, so neither says how
-// near the hand is; its size in the picture does. A jab grows it fast (×1.2–1.4 in ~200 ms); a hand drifting nearer
-// grows it slowly (a few % in the same window), a hand trembling by a few % either way. So: the size now over the
-// smallest in the last `windowMs`, past `grow` → a shot.
+// near the hand is; its size in the picture does. A jab grows it fast (×1.15–1.4 in ~200 ms); a hand drifting nearer
+// grows it slowly, a hand trembling by a few % either way. So: the size now over the smallest in the last `windowMs`,
+// past `grow` → a shot. Where the hand points does not matter (the egg aims itself, core.js targetOf), so a jab that
+// also moves sideways counts (Hanli 10-21, on the real camera: 「剑诀往前戳, 不好操作」「往前戳触发攻击, 但自动瞄准也可以」).
 //
-//   sizeOf(hand)                          → the hand's size in the picture (three palm lengths, summed)
-//   poke(state, { t, size, aim, sealed }, knobs) → { state, shot: { aim, at } | null }
-//       t ms · size sizeOf · aim the 准星 on the field now · sealed: 剑诀 held. A shot goes where the 准星 stood at
-//       the window's smallest (the fingertips move in the picture while the hand jabs).
+//   sizeOf(hand)                                → the hand's size in the picture (three palm lengths, summed)
+//   poke(state, { t, size, sealed }, knobs)     → { state, shot: { at } | null }   t ms · sealed: 剑诀 held
+
 import { pointIndex } from '../jieyin/judge.js';
 
 const PAIRS = [['wrist', 'index.mcp'], ['wrist', 'pinky.mcp'], ['index.mcp', 'pinky.mcp']].map((p) => p.map(pointIndex));
@@ -20,17 +20,14 @@ export function sizeOf(hand) {
 
 export const startPoke = () => ({ seen: [], coolTo: -Infinity });
 
-const smallest = (seen) => seen.reduce((m, s) => (s.size < m.size ? s : m), seen[0]);
-const moved = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const smallest = (seen) => seen.reduce((m, s) => Math.min(m, s.size), Infinity);
 
 export function poke(state, sample, knobs) {
   const { t } = sample;
-  if (!sample.size || !sample.aim) return { state: startPoke(), shot: null }; // no hand: start over
-  const seen = [...state.seen.filter((s) => t - s.t <= knobs.windowMs), sample];
+  if (!sample.size) return { state: startPoke(), shot: null }; // no hand: start over
+  const seen = [...state.seen.filter((s) => t - s.t <= knobs.windowMs), { t, size: sample.size }];
   const keep = { ...state, seen };
   if (!sample.sealed || t < state.coolTo || seen.length < 2) return { state: keep, shot: null };
-  const low = smallest(seen);
-  if (sample.size < low.size * knobs.grow) return { state: keep, shot: null };
-  if (moved(low.aim, sample.aim) > knobs.maxShift) return { state: keep, shot: null }; // a sweep or a lost track
-  return { state: { seen: [sample], coolTo: t + knobs.coolMs }, shot: { aim: low.aim, at: t } };
+  if (sample.size < smallest(seen) * knobs.grow) return { state: keep, shot: null };
+  return { state: { seen: [{ t, size: sample.size }], coolTo: t + knobs.coolMs }, shot: { at: t } };
 }
