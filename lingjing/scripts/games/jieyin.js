@@ -232,13 +232,15 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         loadModel().then(() => { box.dataset.model = 'ready'; }, () => { box.dataset.model = 'failed'; });
       } else {
         eye = openEye({ video, onHands, env: win });
-        $('.jy-status').textContent = w.asking;
-        try { await eye.start(); } catch (e) { console.warn('[jieyin]', e.reason ?? e); return nocam(); }
-        $('.jy-status').textContent = '';
+        // Heard before the camera is asked for: a pause while the prompt is open keeps the camera off (eye.js).
         offPause = shell?.onPause?.((paused) => {
           if (done) return;
           if (paused) { eye.pause(); hands = []; } else eye.start().catch(() => nocam());
         });
+        $('.jy-status').textContent = w.asking;
+        try { await eye.start(); } catch (e) { console.warn('[jieyin]', e.reason ?? e); return nocam(); }
+        if (done) return;
+        $('.jy-status').textContent = '';
       }
       last = win.performance.now();
       tick();

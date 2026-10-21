@@ -114,7 +114,9 @@ export function openEye({ video, onHands, env = globalThis }) {
       // Both at once, both settled before going on: a camera that opens after the model failed is still shut.
       const [m, cam] = await Promise.allSettled([loadModel(), camera(video, env)]);
       if (m.status === 'rejected' || cam.status === 'rejected' || mine !== ask || closed) {
-        stopTracks(video);
+        const own = cam.value; // only this start's stream: a newer start may own the video by now
+        for (const t of own?.getTracks?.() ?? []) t.stop();
+        if (own && video.srcObject === own) video.srcObject = null;
         if (cam.status === 'rejected') throw cam.reason;
         if (m.status === 'rejected') throw m.reason?.reason ? m.reason : fail('model', m.reason);
         return;

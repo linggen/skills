@@ -7,7 +7,7 @@
       "glyph": "掌", "name": { "zh": "推掌", "en": "Open palm" },
       "how": { "zh": "五指张开，掌心朝镜头", "en": "All five fingers open, palm to the camera" },
       "hint": { "zh": "他竖起一只手，五指张开。", "en": "He raises one hand, all five fingers open." },
-      "ext": ["index", "middle", "ring", "pinky"], "far": [["thumb.tip", "index.mcp"]]
+      "ext": ["index", "middle", "ring", "pinky"], "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]]
     },
     "jian": {
       "glyph": "剑", "name": { "zh": "剑诀", "en": "Sword seal" },
