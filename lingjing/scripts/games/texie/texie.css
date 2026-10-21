@@ -1,0 +1,43 @@
+/* 施法特写 (games/texie.js): 结印's field, and the close-up panel that slides in at the top corner. */
+.tx { position: relative; }
+.tx-field { position: relative; aspect-ratio: 4 / 3; max-height: calc(100dvh - 220px); min-height: 260px; overflow: hidden; border-radius: 12px; background: #2a3322 center 62% / cover no-repeat; }
+.tx-xm { position: absolute; left: 6%; bottom: 2%; height: 46%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); }
+.tx-foe { position: absolute; left: 24%; top: 14%; width: 21%; text-align: center; transition: opacity .9s, transform .9s; }
+.tx-foe img { width: 100%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); animation: tx-bob 1.4s ease-in-out infinite; }
+.tx-foe.is-hit img { animation: tx-shake .4s; filter: brightness(1.6) saturate(1.4) drop-shadow(0 0 10px #ff8a2a); }
+.tx-foe.is-gone { opacity: 0; transform: translate(30%, -20%) scale(.7); }
+.tx-hp { display: flex; justify-content: center; gap: 4px; margin-top: 2px; }
+.tx-hp i { width: 10px; height: 10px; border-radius: 50%; background: #e8432f; box-shadow: 0 0 0 2px #fff8ef; }
+.tx-hp i.is-gone { background: #6b5d4d; }
+.tx-egg { position: absolute; left: 0; top: 0; width: 13%; pointer-events: none; z-index: 4; filter: drop-shadow(0 0 12px #ffb340); }
+.tx-eye { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.tx-status { position: absolute; inset: auto 0 6%; margin: 0; text-align: center; color: #fff; font-size: 13px; text-shadow: 0 1px 3px #000; z-index: 5; }
+.tx-status:empty { display: none; }
+.tx-go { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 6; }
+.tx-nocam { margin: 24px 0; text-align: center; color: var(--dim); }
+
+/* The close-up: a comic panel — a paper card with a heavy ink border, tilted a little, in from the right. */
+.tx-panel { position: absolute; right: 3%; top: 4%; width: 48%; aspect-ratio: 4 / 3; z-index: 3; overflow: hidden;
+  border: 3px solid #1d1712; border-radius: 6px; background: radial-gradient(ellipse at 70% 55%, #fff8ea 0%, #f2e4c8 62%, #dcc59c 100%);
+  box-shadow: 4px 6px 0 rgba(29, 23, 18, .55); transform: translateX(120%) rotate(-2deg); opacity: 0;
+  transition: transform .28s cubic-bezier(.2, .9, .3, 1.2), opacity .28s; }
+.tx-panel[data-phase="in"], .tx-panel[data-phase="shown"], .tx-panel[data-phase="thrust"] { transform: translateX(0) rotate(-2deg); opacity: 1; }
+.tx-panel[data-phase="out"] { transform: translateX(0) rotate(-2deg) scale(.96); opacity: 0; transition-duration: .36s; }
+.tx-panel[data-phase="thrust"] { animation: tx-jolt .42s ease-out; }
+/* Speed lines behind the hands on a thrust. */
+.tx-panel::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
+  background: repeating-conic-gradient(from 0deg at 72% 55%, rgba(29, 23, 18, .22) 0deg 2deg, transparent 2deg 9deg); transition: opacity .15s; }
+.tx-panel[data-phase="thrust"]::after { opacity: 1; }
+.tx-tag { position: absolute; left: 6px; top: 4px; z-index: 2; font-size: 11px; color: #1d1712; opacity: .55; }
+.tx-view { position: absolute; inset: 0; z-index: 1; }
+.tx-view svg, .tx-view canvas { width: 100%; height: 100%; display: block; }
+.tx-paper { fill: transparent; }
+.tx-glyph { font-family: var(--serif, serif); font-size: 46px; fill: #c23b22; fill-opacity: .18; }
+.tx-hands, .tx-sleeves { transition: transform .12s ease-out; transform-box: view-box; }
+.tx-panel[data-phase="thrust"] .tx-arms { animation: tx-thrust .42s cubic-bezier(.2, .9, .3, 1); transform-box: view-box; transform-origin: 30% 80%; }
+
+@keyframes tx-bob { 50% { transform: translateY(-4%); } }
+@keyframes tx-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes tx-jolt { 20% { transform: translateX(-2%) rotate(-3deg) scale(1.03); } 100% { transform: translateX(0) rotate(-2deg); } }
+@keyframes tx-thrust { 30% { transform: translateX(14%) scale(1.18); } 60% { transform: translateX(12%) scale(1.14); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tx-foe img, .tx-foe.is-hit img, .tx-panel[data-phase="thrust"], .tx-panel[data-phase="thrust"] .tx-arms { animation: none; } .tx-panel { transition: opacity .2s; } }

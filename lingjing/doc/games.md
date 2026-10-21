@@ -849,6 +849,28 @@ seal's shape: jieyin.json `seals.jian`.
   the live page by the dev feed (`?dev=1&feed=1`, `zhidianFeed.bot()` — synthetic hands, no camera). Real-camera play
   is Hanli's: `arcade.html?dev=1&game=zhidian`.
 
+## 施法特写 — the casting close-up, two looks to choose from (test, 10-21)
+
+Hanli 10-21: 「用yinyue的3D模型试一下. 另C的效果也给我看一下.」 游戏厅 only (`texie`, two tiles, group 主力, type 结印);
+not in the story — 10-14 「游戏里不需要3D模型」 stands; this is for his choice. 结印's field (守墙关's 山道, 小满 from
+behind, a boar with 3 hits). A hand seen → a comic panel slides in at the top right; a seal held 0.35 s (any of the
+device's seals, judge.js) or a push at the camera (zhidian/poke.js) → the panel's hand thrusts (speed lines) and a 火蛋
+flies from 小满; the panel fades 0.7 s after, or 0.9 s after the hands go (texie/panel.js; numbers levels/texie.json).
+
+- **水墨 (C)** — `&cutin=ink`: 小满 in side profile (one local-FLUX painting, an edit pass from 守墙关's 小满,
+  tools/paint-texie-flux.py), his hands the player's live, in pose.js's ink brush (a wash under a bolder core), mirrored,
+  scaled big and pinned before his chest, ink sleeves to the shoulder; the seal formed shows faint behind them.
+- **3D** — `&cutin=vrm`: Yinyue's VRM as 小满's stand-in, from her right, three-quarter, upper body, MToon (the model's
+  own toon outlines). Her 15 finger bones per hand bend live (texie/fingers.js: each joint's bend from the landmarks,
+  about Z for the fingers, Y for the thumb, on three-vrm's normalized rig); the hand bone takes the palm's turn, the
+  forearm leans with it and takes half its roll; a push swings the arm forward. The player's right hand is her right.
+  The model is the engine's `/yinyue.vrm`, loaded at run time from 9527, never copied (VRM licence: no redistribution,
+  no modification). three 0.176.0 + three-vrm 3.5.4 vendored as one bundle (vendor/VENDOR.md).
+- **Cost** (M2 Max, Chrome): 60 fps with the hand model at 30 runs/s (8.5 ms each) beside the 3D panel; the 3D view
+  draws only while the panel is up.
+- Camera only after 开始; off on pause, hidden page, end, leave; its picture never shown. No camera / WebGL: one line.
+  Dev: `?dev=1&feed=1` + `texieFeed.bot()` (made-up hands that open, fist and push).
+
 ## 撒豆成兵 · 守山门 — the defence crowd game (prototype, test-only, 10-21)
 
 Hanli 10-21, of a crowd-gate ad (a lane walled with 「+1」 gates, a small blue squad at the bottom, a red horde of

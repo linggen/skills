@@ -80,3 +80,20 @@ your app to Google"). 0.10.35 has no such code (tests/game-jieyin.test.mjs check
 kept (every current browser has WASM SIMD; without it 结印 is simply not offered); the `nosimd` and `module` builds,
 the `.cjs`/`.js` bundles and the source maps are left out. To update: pack the new version, check it for a logger
 first, copy the same four files, update this table.
+
+## 施法特写's 3D close-up (games/texie/vrm.js)
+
+One ESM bundle, `three-vrm-0.176.0-3.5.4.min.mjs` — three.js and three-vrm, only what `tools/texie/entry.js` names
+(WebGLRenderer, GLTFLoader, OutlineEffect, VRMLoaderPlugin …), built by `tools/texie/build.mjs` (esbuild); never edited
+by hand. The same pair the engine's pet stage uses (linggen ui/package.json). Loaded only by the 3D look of 施法特写, a
+游戏厅 test. Rebuild: `cd tools/texie && npm ci && npm run build`.
+
+| Package | Licence | Source tarball sha256 |
+|---|---|---|
+| three 0.176.0 | MIT — `LICENSE.three.txt` | 15dd83ec1efd1fa23554b560e670cc1fe260452a31924b56f15cb398f35d1c53 |
+| @pixiv/three-vrm 3.5.4 | MIT — `LICENSE.three-vrm.txt` | aedcef7d0cba0091296a68c78e61d24e50982e7207dfee91125b44f4680e6d28 |
+| esbuild (build tool only, not shipped) | MIT | 0.28.1, as 守墙关's |
+
+Bundle sha256 90ecd95a7e160345d7af1baf32938ba73ce60114b0a72f607923e2798719b9ff. Fetched with `npm pack` on 2026-10-21.
+The VRM model itself is NOT here: the page loads the engine's `/yinyue.vrm` at run time (its VRM licence: no
+redistribution, no modification).
