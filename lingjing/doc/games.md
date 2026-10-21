@@ -916,15 +916,15 @@ is unchanged.
   down with an HP bar over its head and charges the squad's column (lit red 1.6 s ahead, a lightning aura, large as it
   nears): still there, a third of the squad is knocked aside. A wave or the 大妖 at the 山门 hurts it; 0 is the loss.
   Stars: the 山门 left (75% · 40%), ★★★ only inside par.
-- **结印** (Hanli 10-21: 「把结印放到现有的塔防类游戏中」): the shared dock (games/jieyin/helper.js `offerSeals`, as in
-  守墙关) — only where a camera is; no camera, or declined, and the game is exactly the game without it. Offered while
-  the 大妖 is out (`jieyin.when`, `?dev=1&jy=always` to try it any time; `&feed=1` without a camera), a 10 s rest
-  between casts. A cast strikes the first thing up a column — the dock's lane when it names one (left · middle ·
-  right = the three columns), else the squad's: 飞剑 (剑诀 + jab) 4 s of the squad's attack, 火弹 (the 大招, after
-  古六's lesson) 7 s; ×2 on the 大妖; a card pumped. Never needed (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能
-  正常完成」): every level is won without a cast; casts finish ~10–15 s sooner, under `par`, so ★★★ comes easier
-  (「结印可以帮助更快杀敌, 更容易取得3星成就」 — sharp bot without casts mostly ★★, with casts mostly ★★★ from 第二关).
-  The dock's cast callback today passes only the move id, so the squad's column decides; a lane passed later is used.
+- **结印** (Hanli 10-21: 「把结印放到现有的塔防类游戏中」): the shared dock (games/jieyin/helper.js `offerSeals` on
+  手势斗法, duel.js, as in 守墙关) — only where a camera is; no camera, or declined, and the game is exactly the game
+  without it. Offered while the 大妖 is out (`jieyin.when`; `?dev=1&jy=always` to try it any time, `&feed=1` without a
+  camera), a 10 s rest between casts. A cast strikes the first thing up the column of the lane the hand stood in
+  (left · middle · right = the three columns): a 小招 (飞剑 · 点穴 · 掌风 · 拳劲) 3 s of the squad's attack, a 法术
+  (火弹 · 冰锥 · 金刃 · 木藤 · 土墙, after 古六's lesson) 5 s, the 大招 四印火蛋 9 s; ×2 on the 大妖; a card pumped.
+  Never needed (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」): every level is won without a cast; casts
+  finish ~10–15 s sooner, under `par`, so ★★★ comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」 — a sharp
+  player without casts mostly ★★, with casts mostly ★★★ from 第二关).
 - **Levels** (worlds/jiuding/levels/sadoushou.json, data; each sends only the beasts the book has shown by its `hui`):
   守山门 · 野猪下山 (h04, 野猪, 蠪侄; forgiving, no red cards) · 松林狰吼 (h05, 狰 in the tide, red cards) · 药园夜袭
   (h07, 犰狳, the tier wall, 合窳) · 黑松岭鬿雀 (h09, fast 鬿雀, 合窳). 狰 is beyond the brief's 野猪/犰狳/鬿雀: the
