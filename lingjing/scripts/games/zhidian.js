@@ -5,8 +5,8 @@
 //
 // The parts: games/jieyin/eye.js (camera + the vendored MediaPipe model, all on the device), jieyin/judge3d.js (剑诀
 // by joint angles, so it counts pointing at the lens), zhidian/aim.js (the 准星), zhidian/poke.js (the jab),
-// zhidian/core.js (beasts, clock, hits), zhidian/hint.js (the small ink frame for the camera's view — the camera's
-// picture is never shown). Numbers: worlds/jiuding/levels/zhidian.json; the seal's shape: jieyin.json `seals.jian`.
+// zhidian/core.js (beasts, clock, hits), and 结印's hand hint (jieyin/hint.js handHint: the hand the camera sees, in
+// ink, in a small frame — the camera's picture is never shown). Numbers: worlds/jiuding/levels/zhidian.json; the seal's shape: jieyin.json `seals.jian`.
 // No camera, no permission, no WebGL, or the model fails → one line that it needs a camera; nothing else.
 //
 // The camera is asked for only on 开始, and stopped (its tracks) the moment the game pauses, ends or is left, or the
@@ -19,7 +19,7 @@ import { sealOf3d } from './jieyin/judge3d.js';
 import { aimPoint, follow, toField } from './zhidian/aim.js';
 import { poke, sizeOf, startPoke } from './zhidian/poke.js';
 import { land, newField, over, starsOf, throwAt, tick as fieldTick, timeLeft } from './zhidian/core.js';
-import { drawHint, hintHtml } from './zhidian/hint.js';
+import { handHint } from './jieyin/hint.js';
 
 export const meta = {
   id: 'zhidian',
@@ -35,6 +35,7 @@ export const meta = {
 const LEVELS = new URL('../../worlds/jiuding/levels/zhidian.json', import.meta.url);
 const SEALS = new URL('../../worlds/jiuding/levels/jieyin.json', import.meta.url);
 const CSS = new URL('./zhidian/zhidian.css', import.meta.url);
+const HINT_CSS = new URL('./jieyin/jieyin.css', import.meta.url); // the hand hint's own look
 const ART = {
   bg: new URL('./shouqiang/art/bg.webp', import.meta.url).href, // 守墙关's 山道 and people (game-kit.md § Shared assets)
   xiaoman: new URL('./shouqiang/art/xiaoman-cast.webp', import.meta.url).href,
@@ -44,8 +45,8 @@ const ART = {
 const foeArt = (id, frame) => new URL(`./shouqiang/art/${id}-${frame}.webp`, import.meta.url).href;
 
 const W = {
-  zh: { nocam: '隔空指点要用摄像头，这里用不了。', asking: '请允许使用摄像头……', hit: '中了！', sealed: '剑诀', show: '剑诀对准镜头', none: '看不到手', hits: '中', left: '秒', who: '小满' },
-  en: { nocam: 'Point in the air needs a camera — none here.', asking: 'Allow the camera…', hit: 'Hit!', sealed: 'Sword seal', show: 'Sword seal at the camera', none: 'No hand in view', hits: 'hits', left: 's', who: 'Xiaoman' },
+  zh: { nocam: '隔空指点要用摄像头，这里用不了。', asking: '请允许使用摄像头……', hit: '中了！', hits: '中', left: '秒', who: '小满' },
+  en: { nocam: 'Point in the air needs a camera — none here.', asking: 'Allow the camera…', hit: 'Hit!', hits: 'hits', left: 's', who: 'Xiaoman' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
@@ -63,12 +64,12 @@ export function unavailableHtml(lang = 'zh') {
   return `<p class="zd-nocam" role="status">${plain(W[lang === 'en' ? 'en' : 'zh'].nocam)}</p>`;
 }
 
-function loadCss(doc) {
-  if (doc.querySelector('link[data-zhidian-css]')) return;
+function loadCss(doc, url, key) {
+  if (doc.querySelector(`link[data-${key}-css]`)) return;
   const l = doc.createElement('link');
   l.rel = 'stylesheet';
-  l.href = CSS.href;
-  l.dataset.zhidianCss = '';
+  l.href = url.href;
+  l.dataset[`${key}Css`] = '';
   doc.head.append(l);
 }
 
@@ -78,7 +79,7 @@ function stageHtml(lang) {
     + `<div class="zd-beasts"></div><img class="zd-xm" alt="" src="${ART.xiaoman}">`
     + '<div class="zd-sight is-off"><i></i></div>'
     + `<div class="zd-top"><b class="zd-hits">0 ${plain(w.hits)}</b><b class="zd-time"></b></div>`
-    + hintHtml(plain(w.show))
+    + '<div class="jy-dock zd-dock"></div>'
     + '<p class="zd-status" role="status"></p>'
     // The camera's frames feed the model; the picture itself is never shown (Hanli 10-21).
     + '<video class="zd-eye" playsinline muted aria-hidden="true"></video>'
@@ -145,9 +146,10 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   const w = W[lang];
   const q = new URLSearchParams(win.location?.search ?? '');
   const feedOnly = q.get('dev') === '1' && q.get('feed') === '1';
-  loadCss(doc);
+  loadCss(doc, CSS, 'zhidian');
+  loadCss(doc, HINT_CSS, 'jieyin');
   return new Promise((resolve) => {
-    let done = false, eye = null, offPause = null, offHide = null, loop = 0, botLoop = 0;
+    let done = false, eye = null, offPause = null, offHide = null, loop = 0, botLoop = 0, hintOff = null;
     const finish = (r) => {
       if (done) return;
       done = true;
@@ -158,6 +160,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       win.cancelAnimationFrame?.(botLoop);
       if (win.zhidianFeed) delete win.zhidianFeed;
       dropModel();
+      hintOff?.();
       resolve(r);
     };
     const leave = () => finish({ won: false, left: true });
@@ -175,7 +178,10 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       container.innerHTML = stageHtml(lang);
       const box = container.querySelector('.zd');
       const $ = (s) => box.querySelector(s);
-      const fieldEl = $('.zd-field'), beastsEl = $('.zd-beasts'), sight = $('.zd-sight'), hint = $('.zd-hint');
+      const fieldEl = $('.zd-field'), beastsEl = $('.zd-beasts'), sight = $('.zd-sight'), video = $('video');
+      const hint = handHint($('.zd-dock'), { lang, size: 'compact', seals, knobs: sealKit.hint });
+      hintOff = () => hint.destroy();
+      const aspect = () => (video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 4 / 3);
       let field = newField(level, seed ?? `zhidian|${Date.now()}`), last = win.performance.now(), ending = false;
       // What the camera last said: the 准星 shown, when the seal was last seen, the jab watcher.
       let shown = null, sealT = -Infinity, pk = startPoke(), seenT = 0;
@@ -191,7 +197,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         const k = (world ?? []).findIndex((h) => sealOf3d([h], seals, kit.judge3d, sealedAt(t) ? kit.seal : null));
         if (k >= 0) sealT = t;
         const hand = image?.[k >= 0 ? k : 0];
-        drawHint(hint, hand ?? null, k >= 0, hand ? (k >= 0 ? w.sealed : w.show) : w.none);
+        hint.update({ image: image ?? [], aspect: aspect(), target: kit.seal, progress: k >= 0 ? 1 : 0, right: k >= 0, now: t });
         if (!hand) { pk = poke(pk, { t }, kit.poke).state; return; }
         shown = follow(shown, toField(aimPoint(hand, kit.aim), kit.aim), dt, kit.aim);
         const r = poke(pk, { t, size: sizeOf(hand), aim: shown, sealed: sealedAt(t) }, kit.poke);
@@ -258,9 +264,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         };
         loadModel().then(() => { box.dataset.model = 'ready'; }, () => { box.dataset.model = 'failed'; });
       } else {
-        const video = $('video');
-        // `fps`: a jab lasts ~200 ms, so this game asks the eye to read faster than its default while it plays.
-        eye = openEye({ video, onHands: (h) => see(h), env: win, fps: kit.poke.fps });
+        // `fps`: a jab lasts ~200 ms, so this game asks the eye for poke.fps (eye.js's default is 15); one hand is enough.
+        eye = openEye({ video, onHands: (h) => see(h), env: win, fps: kit.poke.fps, numHands: 1 });
         // Heard before the camera is asked for: a pause while the prompt is open keeps the camera off (eye.js).
         offPause = shell?.onPause?.((p) => {
           if (done) return;

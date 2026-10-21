@@ -219,7 +219,7 @@ test('the module: meta, pausable; the camera asked only by eye.js after 开始, 
   assert.ok(meta.name.en && meta.how.zh && meta.how.en);
   assert.equal(meta.pause, true);
   const src = read('../scripts/games/zhidian.js');
-  const parts = ['aim', 'poke', 'core', 'hint', 'fake'].map((f) => read(`../scripts/games/zhidian/${f}.js`)).join('') + read('../scripts/games/jieyin/judge3d.js');
+  const parts = ['aim', 'poke', 'core', 'fake'].map((f) => read(`../scripts/games/zhidian/${f}.js`)).join('') + read('../scripts/games/jieyin/judge3d.js');
   assert.doesNotMatch(src, /getUserMedia/, 'the game never opens the camera itself');
   assert.doesNotMatch(src + parts, /https?:\/\//, 'nothing from the network');
   assert.ok(src.indexOf('shell.lead(') < src.indexOf('eye.start()'), 'the lead card (开始) before the camera');
@@ -227,6 +227,8 @@ test('the module: meta, pausable; the camera asked only by eye.js after 开始, 
   assert.match(src, /if \(doc\.hidden\) \{ eye\.pause\(\)/, 'hidden: the camera off');
   assert.match(src, /eye\?\.close\(\)/, 'ended or left: closed');
   assert.doesNotMatch(src, /<canvas|drawImage|srcObject/, 'the camera\'s picture is never drawn');
+  assert.match(src, /import \{ handHint \} from '\.\/jieyin\/hint\.js';/, 'the shared hand hint stands for the camera\'s view');
+  assert.match(src, /fps: kit\.poke\.fps, numHands: 1/, 'the eye asked for the jab\'s rate, one hand');
   assert.match(read('../scripts/games/zhidian/zhidian.css'), /\.zd-eye \{[^}]*opacity: 0;/, 'the video element is there for frames, never seen');
   assert.match(src, /q\.get\('dev'\) === '1' && q\.get\('feed'\) === '1'/, 'the feed only on a dev link');
   const reg = JSON.parse(read('../worlds/jiuding/games.json'));

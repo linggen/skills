@@ -1,5 +1,5 @@
 /* zhidian.css — 隔空指点 (games/zhidian.js): the 山道 with beasts crossing, 小满 at the left, the 准星, the clock and
-   hits on top, and the small ink frame that stands for the camera's view (never the camera's picture). */
+   hits top-left; the hand hint (jieyin/hint.js, its look in jieyin.css) docks bottom-right. */
 .zd { position: relative; display: flex; flex-direction: column; gap: 8px; }
 .zd-field { position: relative; aspect-ratio: 4 / 3; max-height: calc(100dvh - 240px); min-height: 260px; overflow: hidden; border-radius: 12px;
   background: #2a3322 center 62% / cover no-repeat; cursor: none; }
@@ -29,14 +29,7 @@
 /* The camera's frames go to the model only: the element is there for them, never seen (display:none can stall frames). */
 .zd-eye { position: absolute; left: 0; top: 0; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
 
-.zd-hint { position: absolute; right: 8px; bottom: 8px; width: 22%; margin: 0; padding: 4px 4px 2px; border-radius: 8px; z-index: 3;
-  background: rgba(255, 248, 239, .9); box-shadow: 0 0 0 1px rgba(60, 40, 20, .25), 0 3px 10px rgba(0, 0, 0, .25); }
-.zd-hint svg { display: block; width: 100%; aspect-ratio: 4 / 3; }
-.zd-hint-ink { stroke: #3a2c20; stroke-width: 1.6; stroke-linecap: round; fill: #3a2c20; }
-.zd-hint.is-ok .zd-hint-ink { stroke: #b0321f; fill: #b0321f; }
-.zd-hint figcaption { font-size: 11px; line-height: 1.4; text-align: center; color: #3a2c20; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.zd-hint.is-ok figcaption { color: #b0321f; }
-.zd-hint.is-none figcaption { color: #8a7a68; }
+.zd-dock { z-index: 3; }
 .zd-go { align-self: center; }
 .zd-nocam { margin: 24px 0; text-align: center; color: var(--dim); }
 

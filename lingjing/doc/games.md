@@ -763,9 +763,10 @@ ends early at ★★★). Numbers: worlds/jiuding/levels/zhidian.json; the seal'
 - **The jab** (zhidian/poke.js, `poke`): the hand's size in the picture (three palm lengths) ≥ ×1.16 its smallest in
   the last 220 ms, 剑诀 held, the 准星 not swept > 0.14 meanwhile, 380 ms apart; the egg goes where the 准星 stood
   before the hand grew. Fires on a ×1.2 jab in ≤ 200 ms (30 fps; ≤ 150 ms at 15 fps); never on drift nearer up to
-  70 %/s, a 5 % tremble, rocking ±10 % about once a second, a sweep, or a slow push. Asks the eye for 30 fps.
-- **Seeing**: as 结印 (eye.js, on the device). The camera's picture is never shown — a small ink frame draws the hand
-  the landmarker sees (zhidian/hint.js, a stand-in for the shared handHint). Camera only after 开始; off on pause,
-  hidden page, end, leave. No camera / denied / no WebGL: one line, nothing else.
+  70 %/s, a 5 % tremble, rocking ±10 % about once a second, a sweep, or a slow push.
+- **Seeing**: as 结印 (eye.js, on the device), asked for 30 fps and one hand (eye.js's default is 15). The camera's
+  picture is never shown — 结印's hand hint (jieyin/hint.js handHint) draws the hand in ink in the corner, 剑诀 as its
+  target, the ring full while it is held. Camera only after 开始; off on pause, hidden page, end, leave. No camera /
+  denied / no WebGL: one line, nothing else.
 - **Tested** on synthetic hands (pose.js turned and depth-squashed, near-misses, a bot through the whole pipe to ★★★);
   the live page by the dev feed (`?dev=1&feed=1`, `zhidianFeed.bot()`). Real-camera play is Hanli's.
