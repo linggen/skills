@@ -20,6 +20,7 @@ import { writeLedger } from './ledger.mjs';
 import { comingOf, sideLine } from './hui.mjs';
 import { capLook, pastCapSay, storyAllows, underCap } from './cap.mjs';
 import { stageBrief, stageGate, stageSay } from './gates.mjs';
+import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -421,7 +422,7 @@ export function resolve(state, content, ctx, args) {
   // it — the page's tap, or the player's own typed; anything else is refused
   // in the exit's `refuse` line.
   if (exit.names && !heardName(exit.names, args.said)) return refuse('not-named', pick(exit.refuse, lang));
-  let breakthrough = null, odds = null, passedRiddle = false;
+  let breakthrough = null, odds = null, passedRiddle = false, leftFight = null;
   if (exit.breakthrough) {
     const tier = tierOf(content, s.tier), tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
     const peak = s.step === tier.thresholds.length - 1 && s.progress >= threshold(content, s);
@@ -468,11 +469,18 @@ export function resolve(state, content, ctx, args) {
     else keepRiddle(s, scene, exit, key, ctx.now, tried);
   }
   const game = gameOf(exit);
-  if (game && !s.wins?.[game.id]) {
+  // A story fight inside a key beat's lock, stuck (rules/skips.mjs fightStuck): 「算了，往下走」 (`pass`) takes
+  // the way on a win would take, paying nothing — kept as left (`fights_left`), never as won.
+  if (game && !s.wins?.[game.id] && args.pass && game.kind === 'duel') {
+    if (!fightStuck(content, s, game)) return refuse('not-stuck', null, { exit: exit.id, game: game.id, lost: s.fight_losses?.[game.id] ?? 0 });
+    s.fights_left = { ...s.fights_left, [game.id]: ctx.now.toISOString() };
+    leftFight = game.id;
+  }
+  else if (game && !s.wins?.[game.id]) {
     // A trial fight (`retry`) may be fought again at once: a loss withdraws nothing.
     const today = game.kind === 'duel' && !game.retry ? s.duels?.[game.creature] : null;
     if (today?.day === dayKey(ctx.now) && today.outcome === 'lost') return refuse('withdrawn', pick(exit.withdrawn, lang), { game: game.id });
-    return refuse('game-not-won', null, { game: game.id });
+    return refuse('game-not-won', null, { game: game.id, ...(fightStuck(content, s, game) ? { stuck: true } : {}) });
   }
   // 阶段任务 — after the scene's own board or fight, which may be played before the bar is full (rules/gates.mjs): the next stage waits on 圆满 of the layer he holds — earned, never paid by the story.
   const staged = stageGate(content, s, scene.id, exit.id);
@@ -543,7 +551,7 @@ export function resolve(state, content, ctx, args) {
   // The story lifts the realm (小周天, 息壤): to that layer of the first tier, never down.
   const rose = exit.rise ? riseTo(content, s, exit.rise, replaying(content, s, scene)) : null;
   // A riddle left (`pass`) pays nothing (his: 「跳过没有奖励」); the story goes on as after an answer.
-  const grant = passedRiddle ? null : grantOf(s, scene, exit);
+  const grant = passedRiddle || leftFight ? null : grantOf(s, scene, exit);
   const landing = exit.ends ? { ...s, scene: null } : exit.next && !inMade(s) ? { ...s, scene: exit.next } : s;
   const paid = grant ? pay(content, s, ctx, grant, landing) : null;
   const beat = spoken(content, s, exit.beat);
@@ -589,7 +597,7 @@ export function resolve(state, content, ctx, args) {
       ok: true, took: exit.id, ...(exit.label ? { chose: fill(pick(exit.label, lang), s, content) } : {}), ...(named ? { named } : {}),
       ...(wrote.length ? { ledger: wrote } : {}), ...(joined ? { joined } : {}), ...(rested ? { her: rested } : {}), ...(born ? { born } : {}), beat, paid, breakthrough, ...(rose ? { rose } : {}), show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
-      ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}), ...(passedRiddle ? { passed: true } : {}),
+      ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}), ...(passedRiddle ? { passed: true } : {}), ...(leftFight ? { passed: true, left_fight: leftFight } : {}),
       // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).
       ...(node?.unease ? { unease: node.unease } : {}),
       ...(her ? { her_beat: her } : {}),

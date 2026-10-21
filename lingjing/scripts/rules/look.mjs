@@ -9,6 +9,7 @@ import { fightSetup, heldMark, pouchBrief, readOf } from './cards.mjs';
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, herGameNow, questBrief, recalledOf } from './companion.mjs';
+import { fightStuck } from './skips.mjs';
 import { clone, paysOf, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { danduBrief } from './dandu.mjs';
@@ -399,6 +400,8 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
       const today = state.duels?.[game.creature];
       brief.withdrawn = !game.retry && today?.day === dayKey(ctxNow) && today.outcome === 'lost';
       brief.duel = duelBrief(content, state, game, ctxNow);
+      // Inside a key beat's lock, lost often enough: it may be left (rules/skips.mjs fightStuck).
+      if (fightStuck(content, state, game)) brief.stuck = true;
     }
   }
   if (exit.value) brief.value = { field: exit.value.field, max_chars: exit.value.max_chars, label: fill(pick(exit.label, state.lang), state), ...(exit.value.gender ? { gender: true } : {}), offers: drawnOffers(state, exit).map(o => ({ label: pick(o, state.lang), value: o.zh })) };

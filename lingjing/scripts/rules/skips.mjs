@@ -20,7 +20,18 @@ import { taskOf } from './errands.mjs';
 import { sideLine } from './hui.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { owesTell } from './tell.mjs';
-import { sceneOf } from './world.mjs';
+import { lockOf, sceneOf } from './world.mjs';
+
+/* A story fight inside a key beat's lock may be left once stuck (Hanli 2026-10-21: 「OK, a」): inside a lock
+   no shelf is reachable, so a weak hand with an empty 丹囊 had no way past a 试. From balance.json
+   `lock_fight.losses` fights of it not won (lost or run dry — tasks.mjs keeps `fight_losses`), 「算了，往下走」
+   walks the way on a win would take, paying nothing (core.mjs resolve `pass`). Never outside a lock. */
+export const lockLosses = content => content.balance?.lock_fight?.losses ?? null;
+export function fightStuck(content, state, game) {
+  if (game?.kind !== 'duel' || state.wins?.[game.id] || !lockOf(content, state)) return false;
+  const n = lockLosses(content);
+  return n != null && (state.fight_losses?.[game.id] ?? 0) >= n;
+}
 
 /* A scene's boards, in the order they are played (its `show`). */
 export const sceneBoards = scene => (scene?.show ?? []).filter(c => c.card === 'board').map(c => c.id);

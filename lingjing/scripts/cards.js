@@ -655,7 +655,10 @@ function duel(card, ctx) {
   // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
   // creature's own card offers 收服 (creature, below).
   const html = challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, badge: exit === e ? huntBadge(e, ctx.lang) : '' });
-  return exit === e ? withWayBack(html, ctx) : html;
+  // Inside a key beat's lock, lost often enough (Look's `stuck`, rules/skips.mjs fightStuck): 「算了，往下走」
+  // under the card — the way on, no reward, as a riddle passed (core.mjs resolve `pass`).
+  const leave = exit !== e && exit.stuck ? `<button class="quietnext riddlepass fightpass" data-panel-exit="${esc(exit.id)}" data-panel-pass="1">${esc(SKIP[ctx.lang] ?? SKIP.zh)}</button>` : '';
+  return exit === e ? withWayBack(html, ctx) : html + leave;
 }
 
 /* A place's own beast is never the only way on (古五, 2026-10-15: lost at the 暗河, the next beast stood

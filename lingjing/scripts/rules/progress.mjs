@@ -25,6 +25,7 @@ import { VERBS } from './verbs.mjs';
 import { allPlaces, encounterOf, foeOf, placeOf } from './world.mjs';
 import { fightPill, fightSetup, pouchBrief, pouchFor, readOf } from './cards.mjs';
 import { shelfOf } from './look.mjs';
+import { fightStuck } from './skips.mjs';
 import { riddleOf } from './core.mjs';
 import { tellOf } from './tell.mjs';
 import { earned, stageGate } from './gates.mjs';
@@ -218,6 +219,9 @@ function makeRunner(content, opts) {
       if (!settled.result.ok || !settled.state?.wins?.[game.id]) throw new Stuck(s, `fight ${game.id} settle ${settled.result.refused ?? 'not won'}`);
       return settled.state;
     }
+    // The last resort: inside a key beat's lock, a fight lost often enough may be left (rules/skips.mjs
+    // fightStuck, Hanli 2026-10-21) — the way on is taken with `pass`, paying nothing.
+    if (fightStuck(content, s, game)) { r.leave = game.id; return s; }
     throw new Stuck(s, `fight ${game.id}: no winning line in ${FIGHT_DAYS} days`);
   };
   return r;
@@ -298,11 +302,12 @@ function take(content, r, s, exit, policy) {
   if (gate) { s = earned(content, s, gate); r.log.push(`earned ${gate.hui} ${gate.tier}:${gate.layer}`); }
   const game = exit.game ?? null;
   if (game?.kind === 'duel' && !s.wins?.[game.id]) s = r.fight(s, game);
-  let out = r.call('resolve', s, argsFor(content, s, exit, r.now));
+  const pass = game && r.leave === game.id ? { pass: 1 } : {};
+  let out = r.call('resolve', s, { ...argsFor(content, s, exit, r.now), ...pass });
   // A day that must pass (the 大比 is tomorrow): the clock moves on, as `shift` does.
   for (let d = 0; d < 3 && out.result.refused === 'needs' && exit.needs?.day_after; d += 1) {
     r.nextDay();
-    out = r.call('resolve', s, argsFor(content, s, exit, r.now));
+    out = r.call('resolve', s, { ...argsFor(content, s, exit, r.now), ...pass });
   }
   if (!out.result.ok) throw new Stuck(s, `${exit.id} refused ${out.result.refused}${out.result.say ? ` — ${out.result.say}` : ''}`);
   return out.state ?? s;

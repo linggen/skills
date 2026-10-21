@@ -477,5 +477,9 @@
         1.25
       ]
     }
+  },
+  "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed.",
+  "lock_fight": {
+    "losses": 3
   }
 }

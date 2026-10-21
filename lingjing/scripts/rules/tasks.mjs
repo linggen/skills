@@ -349,6 +349,10 @@ export function duel(state, content, ctx, args) {
   const pays = won && !(exit && replaying(content, s, sceneOf(content, s)));
   const handed = pays ? advance(content, s, { kind: 'subdue', creature: creature.id }, ctx) : [];
   if (won) s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
+  // A scene's fight not won (lost, or run dry) is counted: inside a key beat's lock, enough of them and it
+  // may be left (rules/skips.mjs fightStuck). A win clears the count.
+  if (exit && !won) s.fight_losses = { ...s.fight_losses, [id]: (s.fight_losses?.[id] ?? 0) + 1 };
+  if (exit && won && s.fight_losses?.[id] != null) { const { [id]: _, ...rest } = s.fight_losses; if (Object.keys(rest).length) s.fight_losses = rest; else delete s.fight_losses; }
   // A pool's fights won, by the place (a guarded room counts them, world.mjs guardOf).
   if (won && hunt) s.hunted = { ...s.hunted, [game.hunt]: (s.hunted?.[game.hunt] ?? 0) + 1 };
   // A beast met on the road, beaten, has been met: it leaves the road.
