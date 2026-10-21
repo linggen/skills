@@ -13,6 +13,7 @@ Updated 2026-10-21.
 | Small games — doc/games.md for Hanli's design check; mechanic changes wait on it (UI polish and stuck fixes go on) | `doc/games.md` | 10-16 |
 
 ## Done lately
+- 10-21 — Hanli: the 丹囊's fight pills (回春丹 · 回气丹) owe no 丹毒 (「按你的建议来」) — 丹毒 is the body paying back 修为 forced by a pill; a fight pill forces none, and 灵石 spent on them stays worth it.
 - 10-21 — **A tall game's story card goes past 720** (Hanli: 「agree」; games/shell.css): as wide as the field at the stage's height, as the 游戏厅's is — the bar's column, the field (`meta.aspect`) and what the game sets beside it (`meta.beside`; shell.js tallStyle); 守炉 on a wide stage puts its HUD, 银月's bar and controls in a column beside the field (shoulu.css .is-side). Live at 1440×900: 守炉 406×514 → 545×690, unscrolled (the 游戏厅's is 511×647); chat open 450×570; 撒豆成兵 (by hand in the card) 392×696 in a snug 644 card. Landscape 守墙关 stays 720 (686×633); phone 390 and the 游戏厅 unchanged.
 - 10-21 — Hanli's calls on the per-回 pass (「agree」): 古九's 「他把她扔进了漳水里」 stays told (no 砸寨 level — a person thrown is no target game, and the 漳水立起 beats follow); 今线's 卧推 (j04-gym) stays told (no sixth 调息). 古四's 饭桶 first feed (牛骨头) becomes a 割绳子 level (in progress). A tall game's story card may grow past 720 on a Mac, as in the 游戏厅 (in progress).
 
@@ -126,7 +127,6 @@ Updated 2026-10-21.
 
 ## Waiting on Hanli
 
-- 丹药 (10-21): do the 丹囊's fight pills (回春丹 · 回气丹) owe 丹毒 too? Now only 修为 pills do — with 体力 on, 丹毒 on fight pills would tax the 灵石 he spends on them.
 - 鼎苔 in the rerun (10-21): the outer ring's most frequent find (weight 3 of 10, ~0.5 a day for the typical player, ~8 over 古五–古八), but it sells for nothing, the 饭桶 refuses it, and its one use is +10 on the 筑基 throw — reached for only when no 筑基丹 is held, one spent on a success (rules/breakthrough.mjs), so a stack has no use. Keep its weight (flavour, a stack for the throw), give it a price / let the 饭桶 take it, or step it down?
 - 剧情 × 开放世界 (10-21): a dated world event missed — does it pass without him (the world moves on, the 恩仇簿 remembers 迟了) or wait for him? (design.md proposal)
 - 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built.
