@@ -2,7 +2,7 @@
 // A game the rules stand on the real page (二十问 · 讨价还价 · 断案 · 对对子 · 密室 · 秘境 rerun: no board module,
 // or one Look drives) is tried there on a test save of its own. Its games.json row says where (`stage`):
 //   save   the scratch save's name, and the fixture it seeds from (tests/fixtures/saves/<save>.json)
-//   from   how far the story is played first (rules/progress.mjs playTo: 古三, 古七 …)
+//   from   how far the story is played first (rules/progress.mjs playTo: a scene, a 回) — mid-回, so no 回's close stands
 //   place  where he stands then (the story's scene stays, a walk away: the game's card stands where he is)
 //   her    银月 awake (a game she hosts or reads for); wealth  灵石 in hand; rerun  that rerun's cracks open
 //   visitor  a visiting shop's place (province/place) whose day the 游戏厅 shifts the save's clock to (`&days=`)

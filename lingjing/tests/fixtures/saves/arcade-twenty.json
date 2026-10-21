@@ -15,8 +15,8 @@
   ],
   "tier": "qi",
   "step": 4,
-  "progress": 540,
-  "wealth": 317,
+  "progress": 550,
+  "wealth": 457,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -27,14 +27,13 @@
    "luobo": 1,
    "xirang": 1,
    "pouch-low": 1,
-   "chitong-hulu": 1,
    "lianxi-fu": 2,
    "mend-pill": 3,
    "longxu-cao": 1,
    "zixu-zhi": 1,
    "zou-purse": 1,
    "duan-dao": 1,
-   "qi-pill": 5,
+   "qi-pill": 6,
    "dingtai": 3,
    "neimen-map": 1,
    "xizhu": 1,
@@ -43,13 +42,13 @@
    "yangyang-zhen": 3,
    "niuzhi-ganlu": 1,
    "huangting": 1,
-   "heluo": 1
+   "heluo": 1,
+   "huochai-jian": 1
   },
   "cast": [
    "zheng"
   ],
   "wear": {
-   "weapon": "chitong-hulu",
    "robe": "grey-robe"
   },
   "duels": {
@@ -89,7 +88,7 @@
   },
   "arts": [],
   "chapter": "00-zhuji",
-  "scene": "09-snow",
+  "scene": "09-year",
   "done_scenes": [
    "00-shiao",
    "00-masan",
@@ -155,7 +154,10 @@
    "wm-heluo",
    "j07-ankle",
    "j07-dark",
-   "j07-guan"
+   "j07-guan",
+   "09-snow",
+   "09-jiuge",
+   "09-furnace"
   ],
   "ended": [
    "00-prologue",
@@ -277,6 +279,16 @@
     "status": "done",
     "period": "once",
     "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "jiuge-yubu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
+   },
+   "furnace-ding": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-02T01:00:00.000Z"
    }
   },
   "chores": {},
@@ -292,8 +304,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 65,
-   "wealth": 177
+   "progress": 75,
+   "wealth": 317
   },
   "stamina": 100,
   "stamina_at": "2026-10-02T01:00:00.000Z",
@@ -309,7 +321,8 @@
    "qianye-qiajue": "tight",
    "zhaojing-mirror": "still",
    "dabi-sneeze": "clean",
-   "jiaxin-letter": "all"
+   "jiaxin-letter": "all",
+   "jiuge-yubu": "quiet"
   },
   "marks": [
    "rain-caught",
@@ -345,19 +358,20 @@
    "diche",
    "sneeze-clean",
    "jiaxin-drawn",
-   "caowu-stone"
+   "caowu-stone",
+   "yubu"
   ],
   "tell_owed": [
-   "scene/09-snow"
+   "scene/09-year"
   ],
   "node": {
    "kind": "scene",
    "at": "2026-10-02T01:00:00.000Z",
    "chapter": {
     "id": "00-zhuji",
-    "title": "卷一 · 沉鼎 · 今 · 三"
+    "title": "卷一 · 沉鼎 · 第七回"
    },
-   "recap": "练太猛，横纹肌溶解，住院三天；「数是你自己报的」——晨脉七十以下，才许摸球。",
+   "recap": "除夕，周衡的旧账上一行没有数的字：十月十八。漳水。阿姊。正月初一，执事堂两面墙：东墙杂役，西墙差事，打妖的红牌五层以下不许揭。开春的残株喂进饭桶，开出三颗聚气丹——一纹、二纹、九纹各一；分堆一认，认出三张方子。缸是饭桶涨的，层不动；三月里一个早上，你在崖顶上看见了叶子起来的那一下，往旁边挪了半步——定风，过了五层。灵石先见了底。阿禾、孙二狗的书案底下，各多了一个油纸包：二狗的二纹，阿禾的那一颗九纹。",
    "mystery": "瞿老四十多年没收过徒弟——他上一个徒弟，后来怎样了？"
   },
   "mark_days": {
@@ -538,7 +552,8 @@
    "yangzhen",
    "houtu",
    "luying",
-   "suijin"
+   "suijin",
+   "huochai"
   ],
   "card_from": {
    "niangbing": {
@@ -665,6 +680,13 @@
     "place": "zhengdian",
     "chapter": "00-waimen",
     "scene": "wm-juesai"
+   },
+   "huochai": {
+    "how": "story",
+    "day": "2026-10-01",
+    "place": "chaifang",
+    "chapter": "00-zhuji",
+    "scene": "09-snow"
    }
   },
   "found": {
@@ -687,7 +709,7 @@
    "zixu-zhi": 1,
    "zou-purse": 1,
    "duan-dao": 1,
-   "qi-pill": 5,
+   "qi-pill": 6,
    "dingtai": 3,
    "neimen-map": 1,
    "xizhu": 1,
@@ -696,7 +718,8 @@
    "yangyang-zhen": 3,
    "niuzhi-ganlu": 1,
    "huangting": 1,
-   "heluo": 1
+   "heluo": 1,
+   "huochai-jian": 1
   },
   "looked": [
    "00-heisong/stone"
@@ -745,13 +768,17 @@
    "zhaojing-mirror",
    "dabi-sneeze",
    "jiaxin-letter",
-   "jin-dark"
+   "jin-dark",
+   "jiuge-yubu",
+   "furnace-ding"
   ],
   "handed": [],
   "stages": [
    "wm-chaifang/count",
    "wm-mijing/pay",
-   "wm-qianye/eve"
+   "wm-qianye/eve",
+   "09-furnace/fire",
+   "09-year/futian"
   ],
   "furnace_name": "饭桶",
   "hunted": {
@@ -760,7 +787,8 @@
   "cards_new": [
    "huiqi",
    "mutang",
-   "suijin"
+   "suijin",
+   "huochai"
   ],
   "reruns": {
    "mijing": {
@@ -833,7 +861,10 @@
    "wm-caowu",
    "wm-heluo",
    "j07-dark",
-   "j07-guan"
+   "j07-guan",
+   "09-snow",
+   "09-jiuge",
+   "09-furnace"
   ]
  }
 }
