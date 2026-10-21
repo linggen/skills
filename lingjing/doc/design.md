@@ -1050,8 +1050,16 @@ The page stays web UI; **PixiJS** paints what must be drawn (ink wicking,
 grain, particles, ink to colour); **GSAP** times one moment. Vendored, pinned
 (`scripts/vendor/`); loaded only for a moment; one canvas per moment,
 destroyed after; words never painted; no WebGL → the SVG/CSS version; one
-module, `fx.js`. **Built:** the 鼎归 pilot; 卷一's 大场面 (`setpiece.js`, § 哇时刻 ②). **Next, in order:** her colour
-memories in WebGL, weather particles, the big set pieces, chapter transitions.
+module, `fx.js` (and its `fx-*.js` parts). **Built:** the 鼎归 pilot; 卷一's 大场面 (`setpiece.js`, § 哇时刻 ②);
+**画活** (`fx-alive.js`, 2026-10-21): a still painting on the stage — the place's, the sky's, a beast's 出场 —
+drawn on a MeshPlane whose grid bends where the painting has something that moves: trees and grass sway from
+their roots (with the stage's wind), cloth from its rail, water shimmers, smoke and flame waver up, mist
+drifts, a beast breathes. Declared per painting in backdrops.json `alive` (kind + box + amp;
+`alive_creature` for every beast), tuned on `scripts/alive.html?art=<path>&boxes=1`. A painting is not a
+moment: its canvas lives while it stands (30 fps, asleep under a set piece or a hidden tab), goes with its
+cross-fade, and lies over the CSS still, which is the fallback (no WebGL, reduced motion). A struck body's
+picture squashes under the blow (fx.js `squash`, Web Animations — a plate is too small for a mesh).
+**Next, in order:** her colour memories in WebGL, weather particles, the big set pieces, chapter transitions.
 
 ## Player state 【已建】
 

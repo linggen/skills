@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>灵境 · 画活</title>
+  <link rel="stylesheet" href="lingjing.css" />
+  <style>
+    body { overflow: auto; padding: 16px; background: #efe8d8; }
+    .alv { max-width: 1100px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+    .alv h1 { font-family: var(--serif, serif); font-size: 18px; margin: 0 0 8px; }
+    .alv .stagebox { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 8px; background: #1a1d20; }
+    .alv .bd { position: absolute; inset: 0; background: var(--art) center 40% / cover no-repeat; }
+    .alv .boxes { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+    .alv .boxes i { position: absolute; border: 1px dashed rgba(179, 55, 42, .85); font: 11px/1.2 monospace; color: #b3372a; background: rgba(255, 255, 255, .08); }
+    .alv .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; font-size: 13px; }
+    .alv .bar select, .alv .bar button { padding: 6px 10px; border-radius: 6px; border: 1px solid #8f8a80; background: #f5efe1; color: #231f1a; font: inherit; }
+    .alv .bar .dim { margin-left: auto; color: #6f6a60; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <!-- A painting brought to life alone (fx-alive.js), to tune its row in backdrops.json `alive`:
+       ?art=art/places/heisong-creek.webp · &boxes=1 draws each row's box · &wind=0.8 a stronger wind ·
+       &creature=1 a beast's painting (fitted whole, `alive_creature` unless it has its own row).
+       Nothing is saved. -->
+  <div class="alv">
+    <h1 id="title">画活</h1>
+    <div class="stagebox view" id="view"><div class="bd" id="bd"></div><div class="boxes" id="boxes"></div></div>
+    <div class="bar"><select id="pick"></select><button id="boxBtn">框</button><span class="dim" id="stats"></span></div>
+  </div>
+  <script type="module">
+    import { aliveOf, liveBackdrop, livePainting } from './fx-alive.js';
+    const q = new URLSearchParams(location.search);
+    const $ = (id) => document.getElementById(id);
+    const WORLD = new URL('../worlds/jiuding/', import.meta.url).href;
+    const table = await fetch(new URL('backdrops.json', WORLD)).then((r) => r.json());
+    const creature = q.get('creature') === '1';
+    const arts = Object.keys(table.alive ?? {});
+    const art = q.get('art') || arts[0];
+    $('view').style.setProperty('--wf', String(Number(q.get('wind') ?? 0.3)));
+    $('view').style.setProperty('--wsign', '-1');
+    $('pick').innerHTML = arts.map((a) => `<option${a === art ? ' selected' : ''}>${a}</option>`).join('');
+    $('pick').onchange = (e) => { q.set('art', e.target.value); location.search = q.toString(); };
+    $('title').textContent = `画活 · ${art}`;
+    const src = new URL(art, WORLD).href;
+    const bd = $('bd');
+    bd.style.setProperty('--art', `url("${src}")`);
+    // The rows' boxes over the painting, placed as the cover fit places it (center 40%).
+    const drawBoxes = (img) => {
+      const W = bd.clientWidth, H = bd.clientHeight, s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+      const x0 = (W - img.naturalWidth * s) * 0.5, y0 = (H - img.naturalHeight * s) * 0.4;
+      $('boxes').innerHTML = aliveOf(table, art, { creature }).map((r) => {
+        const [a, b, c, d] = r.box;
+        return `<i style="left:${x0 + a * img.naturalWidth * s}px;top:${y0 + b * img.naturalHeight * s}px;width:${(c - a) * img.naturalWidth * s}px;height:${(d - b) * img.naturalHeight * s}px">${r.kind} ${r.amp}</i>`;
+      }).join('');
+    };
+    const img = new Image();
+    img.src = src;
+    await img.decode();
+    // A beast's painting stands whole, in its own shape (as fitAppear lays the 出场's).
+    if (creature) {
+      const W = $('view').clientWidth, H = $('view').clientHeight, k = Math.min(W / img.naturalWidth, H / img.naturalHeight);
+      Object.assign(bd.style, { inset: 'auto', left: `${(W - img.naturalWidth * k) / 2}px`, top: `${(H - img.naturalHeight * k) / 2}px`, width: `${img.naturalWidth * k}px`, height: `${img.naturalHeight * k}px`, backgroundSize: '100% 100%' });
+    }
+    let boxes = q.get('boxes') === '1';
+    const showBoxes = () => { $('boxes').hidden = !boxes || creature; if (boxes) drawBoxes(img); };
+    $('boxBtn').onclick = () => { boxes = !boxes; showBoxes(); };
+    showBoxes();
+    const live = creature
+      ? await livePainting(bd, src, aliveOf(table, art, { creature: true }), { fit: 'fill' })
+      : await liveBackdrop(bd, src, table, art);
+    const tick = () => { $('stats').textContent = live ? Object.entries(live.stats()).map(([k, v]) => `${k} ${v}`).join(' · ') : '静（无 WebGL / 减少动态 / 无条目）'; };
+    setInterval(tick, 1000);
+    tick();
+    window.__alive = live;
+  </script>
+</body>
+</html>

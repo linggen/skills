@@ -48,6 +48,7 @@ import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js'
 import { raiseUnease } from './unease.js';
 import { keepTogether, LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
+import { liveBackdrop, liveCreature } from './fx-alive.js';
 import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
@@ -1260,6 +1261,7 @@ function paintBackdrop() {
   bd.className = dim ? 'bd dim' : 'bd';
   bd.style.setProperty('--art', `url("${src.replace(/"/g, '%22')}")`);
   el.appendChild(bd);
+  liveBackdrop(bd, src, authored?.backdrops, art); // 画活 (fx-alive.js): what the painting's row says moves, moves
 }
 /* Day or night by the clock here (the sense's own `is_day` wins where Look carries one). */
 const isDayNow = (d = new Date()) => d.getHours() >= 6 && d.getHours() < 18;
@@ -2676,6 +2678,7 @@ function watchAppear(cards) {
   const lines = (c.appear[lang()] ?? c.appear.zh).length;
   const el = $('view').querySelector('.appear');
   fitAppear(el);
+  if (!stillMotion()) liveCreature(el, authored.backdrops, c.art); // the beast breathes (fx-alive.js)
   // The last line strikes: the whole frame shakes with it.
   if (!stillMotion()) setTimeout(() => el?.classList.add('shaking'), 1200 + (lines - 1) * 2200);
   setTimeout(() => endAppear(c.id), stillMotion() ? 60000 : 1600 + lines * 2200 + 4200);

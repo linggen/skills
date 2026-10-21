@@ -252,3 +252,18 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
     },
   };
 }
+
+/* ── 斗法: a body struck gives under the blow ── */
+
+/* The picture a blow lands on: the beast's plate, a body's card picture, a member's face. */
+const PICTURE = '.bface:not(.none), .bpic:not(.none), .cface, .ballyface img';
+/// Squash on hit (design.md § 画面效果): the struck picture gives under the blow — pressed flat
+/// from its feet, a spring up, settled — in a third of a second; ink, not rubber. The Web
+/// Animations API, no library and no canvas (a plate is a thumb's width: a mesh would read the
+/// same and cost a second WebGL on the phone). Reduced motion: nothing.
+export function squash(el) {
+  const pic = el?.matches?.(PICTURE) ? el : el?.querySelector?.(PICTURE);
+  if (!pic?.animate || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) return null;
+  const at = (sx, sy, offset) => ({ transform: `scale(${sx}, ${sy})`, transformOrigin: '50% 88%', offset });
+  return pic.animate([at(1, 1, 0), at(1.1, 0.88, 0.18), at(0.95, 1.06, 0.45), at(1.015, 0.99, 0.72), at(1, 1, 1)], { duration: 380, easing: 'ease-out' });
+}

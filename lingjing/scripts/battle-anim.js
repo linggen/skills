@@ -9,6 +9,8 @@
 // hatch: `skip()` is a real setting, not a nicety, for a phone on a bad day
 // and for anyone who finds motion unpleasant.
 
+import { squash } from './fx.js';
+
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 /* How long each beat takes. Tuned so a whole exchange lands in about a second:
@@ -225,6 +227,7 @@ function struckAt(root, el, t) {
   flash(root, el, t.element);
   burst(root, el, t.element);
   pulse(el, 'shaken', BEATS.hit);
+  squash(el);
 }
 
 /* ── A card played has weight (《炉石传说》's, in ink) ──
