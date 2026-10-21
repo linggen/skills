@@ -30,6 +30,31 @@
 import { BEASTS, EARLY_RATE, H, HERO, SKEYS, SKILLS, TOWERS, TORDER, W, build, callWave, canBuild, cleared, keepSel, levelsFrom, locked, newGame, noSel,
   pointer, pressKey, pressSkill, refund, sell, skillState, starsOf, step, toggleAuto, upgrade, upgradeCost, waves } from './shoulu/core.js';
 import { beastArtReady, beastIcon, draw, loadArt, makePaper, markEvent, portraitStyle, stepFx } from './shoulu/draw.js';
+import { jieyinCast, jieyinState } from './shoulu/core.js';
+
+// 结印 in 守炉 (Hanli 10-21: 「把结印放到现有的塔防类游戏中」): the shared dock (jieyin/helper.js offerSeals) in the field's corner —
+// only where a camera is; no camera, a refusal or failed seals change nothing (every level is won without a cast). The
+// host's numbers: jieyin.json `hosts.shoulu`, a level's `pace` laid on (rest: the 大妖 only, a long rest; intense: always).
+const JIEYIN = new URL('../../worlds/jiuding/levels/jieyin.json', import.meta.url);
+const SEALS = new URL('./jieyin/helper.js', import.meta.url);
+export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
+/** The host's numbers for a level: hosts.shoulu with its pace's laid on. */
+export const jieyinCfg = (host, level) => ({ ...host, ...(host?.paces?.[level?.pace ?? 'rest'] ?? {}), pace: level?.pace ?? 'rest' });
+const OFF = { on: false, ready: false, cool: 0, coolOf: 0, boss: null };
+/** Offer the dock for this mount: → Promise<handle | null> (null and nothing drawn without a camera — helper.js). */
+export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside, feed = false, load = () => import(SEALS.href), env } = {}) {
+  const moves = (host?.moves ?? []).filter((m) => gateOpen(m, marks));
+  if (!moves.length) return Promise.resolve(null);
+  const cfg = () => { const n = now(); return n.g ? jieyinCfg(host, n.level) : null; };
+  return load().then(({ offerSeals }) => offerSeals({
+    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves, idle: host.idle,
+    state: () => { const c = cfg(); return c ? jieyinState(now().g, c) : OFF; },
+    cast: (id) => { const c = cfg(); return c ? jieyinCast(now().g, id, c) : false; },
+    fizzle: () => toast(lang === 'en' ? 'Pfft — it fizzled.' : '噗——走火了。'), say: toast,
+    call: () => word(host.say, lang), first: moves.some((m) => m.motion === 'jab' && !m.from) ? host.first : null,
+    paused, aside,
+  })).catch((e) => { console.warn('[shoulu] 结印', e); return null; });
+}
 
 export const meta = {
   id: 'shoulu',
@@ -183,6 +208,14 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     if (signal?.aborted) { leave(); return; }
     signal?.addEventListener('abort', leave, { once: true });
     if (!levels.length) { stage.textContent = lang === 'en' ? 'No levels.' : '没有关卡。'; return; }
+    // 结印's dock (helper.js): offered once a mount, it follows whichever level is up; closed when the game goes.
+    const q = new URLSearchParams(win?.location?.search ?? '');
+    const seals = fetch(JIEYIN).then((r) => r.json()).then((kit) => offerJieyin(kit.hosts?.shoulu, stage, {
+      lang, now: () => ({ g: g && !held ? g : null, level: levels[li] }), marks: data.marks, toast: (x) => toast(x),
+      paused: () => frozen() || !g || Boolean(g.over), aside: () => !menu.hidden || root.classList.contains('is-picking'),
+      feed: q.get('dev') === '1' && q.get('feed') === '1',
+    })).catch(() => null);
+    off.push(() => seals.then((h) => h?.close()));
 
     const blip = (f, d, type = 'sine', vol = 0.04) => {
       try { if (!AC) return; const o = AC.createOscillator(), gn = AC.createGain(); o.type = type; o.frequency.value = f; gn.gain.value = vol; gn.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d); o.connect(gn).connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch { /* no audio */ }

@@ -7,6 +7,7 @@
 //   const { state, events, held } = duelStep(d, { world, image, handed, aspect, t }, dtMs, kit)
 //   duelFill(state, kit, n | 'boss')                     灵力 up (a 大妖 steps out: `lingli.boss`)
 //   strike(cast, beast, kit, now)                        what the cast does to that beast (combos, counter element)
+//   pacedKit(kit, pace)                                  the numbers for a level's pace: 'rest' (default) | 'intense'
 //   laneOf(imageHand, kit)                               'left' | 'middle' | 'right' (mirrored, as the player sees)
 //
 // THE CAST EVENT (stable — 守墙关 and others take it):
@@ -25,6 +26,12 @@ import { start, step } from './sequence.js';
 import { sealsFor, sequenceFor } from './sets.js';
 
 const D = (kit) => kit.doufa;
+
+/** The kit with a level's `pace` laid over `doufa` (its 灵力 and motion numbers): 'rest' (the default) or 'intense'. */
+export function pacedKit(kit, pace = 'rest') {
+  const p = kit.doufa?.paces?.[pace] ?? kit.doufa?.paces?.rest ?? {}, d = kit.doufa;
+  return { ...kit, doufa: { ...d, pace, lingli: { ...d.lingli, ...(p.lingli ?? {}), cost: { ...d.lingli.cost, ...(p.lingli?.cost ?? {}) } }, motion: { ...d.motion, ...(p.motion ?? {}) } } };
+}
 
 /** A fresh duel: the 法术 the data offers, the 大招's sequence for this set, 灵力 at its start. */
 export function duelStart(kit, { set = 'desk' } = {}) {

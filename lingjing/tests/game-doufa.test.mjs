@@ -209,3 +209,14 @@ test('the trial is registered, a module on the contract, and draws only one line
     assert.doesNotMatch(container.innerHTML, /<button|df-field/);
   } finally { globalThis.fetch = realFetch; }
 });
+
+test('a level\'s pace (Hanli 10-21: 「大部分关都不要这么累」): rest by default — 法术试炼 is one; intense refills fast, costs little, thrusts come quick', async () => {
+  const { pacedKit } = await import('../scripts/games/jieyin/duel.js');
+  const rest = pacedKit(kit), hot = pacedKit(kit, 'intense');
+  assert.equal(rest.doufa.pace, 'rest');
+  assert.ok(hot.doufa.lingli.refill > rest.doufa.lingli.refill * 5);
+  assert.ok(hot.doufa.lingli.cost.xiao < rest.doufa.lingli.cost.xiao);
+  assert.ok(hot.doufa.motion.coolMs < rest.doufa.motion.coolMs);
+  assert.equal(kit.doufa.lingli.cost.fa, rest.doufa.lingli.cost.fa, 'what a pace leaves alone stays');
+  assert.equal(LV.pace, 'rest', '法术试炼 is a trial: rest, free, no hearts');
+});

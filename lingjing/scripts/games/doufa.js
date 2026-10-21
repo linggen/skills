@@ -12,7 +12,7 @@
 // Dev only: `?dev=1&feed=1` runs without a camera, hands from the console (`window.doufaFeed(world, image, aspect,
 // handed)`) — the live check's way; never a player's.
 import { available, dropModel, loadModel, openEye } from './jieyin/eye.js';
-import { duelFill, duelStart, duelStep } from './jieyin/duel.js';
+import { duelFill, duelStart, duelStep, pacedKit } from './jieyin/duel.js';
 import { handHint } from './jieyin/hint.js';
 import { heldAt } from './jieyin/spell.js';
 import { iconSvg } from './jieyin/pose.js';
@@ -109,8 +109,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     signal?.addEventListener('abort', leave, { once: true });
 
     (async () => {
-      const [kit, lv] = await Promise.all([fetch(JIEYIN).then((r) => r.json()), fetch(LEVELS).then((r) => r.json())]);
+      const [raw, lv] = await Promise.all([fetch(JIEYIN).then((r) => r.json()), fetch(LEVELS).then((r) => r.json())]);
       const level = lv.levels.find((l) => l.id === data.lv) ?? lv.levels[0];
+      const kit = pacedKit(raw, level.pace); // rest (the trial) unless the level says intense
       const set = setOf(kit, { matchMedia: win.matchMedia?.bind(win), search: win.location?.search ?? '' });
       if (!feedOnly && !(await available(win))) return nocam();
       if (done) return;

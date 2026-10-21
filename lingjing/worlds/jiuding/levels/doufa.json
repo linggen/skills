@@ -4,6 +4,7 @@
   "levels": [
     {
       "id": "shilian", "title": { "zh": "法术试炼", "en": "Spell trial" },
+      "pace": "rest",
       "seconds": 90,
       "spawn": { "everyMs": 2600, "jitter": 700, "max": 5, "first": 1200 },
       "foes": [

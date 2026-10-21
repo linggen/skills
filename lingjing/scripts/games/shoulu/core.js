@@ -852,3 +852,57 @@ export function sim(row, strategy = 'mixed', { seed = 'sim', dt = 1 / 30 } = {})
     hp: g.hp, stars: g.over === 'win' ? starsOf(g.hp) : 0, time: Math.round(g.t), money: g.money, kills: g.stats.kills, leaks: g.stats.leaks,
     towers: g.towers.map((t) => (t ? `${t.type}${t.lvl + 1}` : '·')).join(' ') };
 }
+
+// ── 结印: 小满's hand moves at the camera (doc/games.md § 手势斗法 › in 守炉) ─────────────────────────────────────
+// The dock is the shared one (games/jieyin/helper.js offerSeals); these are the host's two calls, pure. Hanli 10-21:
+// 「把结印放到现有的塔防类游戏中」, 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成, 不会影响剧情推进」 — nothing here
+// runs unless a move is cast; every level is won without one (tests/game-shoulu-jieyin.test.mjs). `cfg`: jieyin.json
+// `hosts.shoulu` with the level's `pace` laid on (shoulu.js jieyinCfg): `when` 'boss' (a 大妖 on the field) | 'always',
+// `cool` s between casts, `bossMul` on the 大妖, the `moves` rows (one · splash · ring: dmg, root, push, slow).
+
+/** The beast a cast goes to: the 大妖 first (`aim` boss), else the one nearest the furnace. */
+export function jieyinTarget(g, cfg = {}) {
+  const live = g.beasts.filter((b) => !b.dead && b.d > 0);
+  if (cfg.aim === 'boss') { const boss = live.find((b) => BEASTS[b.type].boss); if (boss) return boss; }
+  return live.reduce((m, b) => (!m || b.d / b.len > m.d / m.len ? b : m), null);
+}
+
+/** For the dock: { on, ready, cool, coolOf, boss } — on: moves offered now; ready: one may fly now. */
+export function jieyinState(g, cfg = {}) {
+  const boss = g.beasts.find((b) => !b.dead && BEASTS[b.type].boss) ?? null;
+  const on = Boolean(g && !g.over && (cfg.when === 'always' || (cfg.when === 'boss' && boss)));
+  const cool = Math.max(0, (g.jy?.until ?? 0) - g.t);
+  return { on, ready: on && cool <= 0 && Boolean(jieyinTarget(g, cfg)), cool, coolOf: cfg.cool ?? 0, boss: boss?.type ?? null };
+}
+
+/** A move cast: its harm and hold on the target (and those round it), then the rest. → true when it flew. */
+export function jieyinCast(g, id, cfg = {}) {
+  const m = (cfg.moves ?? []).find((x) => x.id === id);
+  if (!m || !jieyinState(g, cfg).ready) return false;
+  const t = jieyinTarget(g, cfg), R = m.radius ?? m.splash ?? 0;
+  const hit = R ? g.beasts.filter((b) => !b.dead && (b === t || (!b.fly && dist(b, t) <= R))) : [t];
+  for (const b of hit) {
+    const mul = BEASTS[b.type].boss ? cfg.bossMul ?? 1 : 1;
+    if (m.root) b.stunT = Math.max(b.stunT, BEASTS[b.type].boss ? m.root * 0.4 : m.root);
+    if (m.slow) { b.slowT = Math.max(b.slowT, m.for ?? 2); b.slowF = Math.max(b.slowF, m.slow); }
+    if (m.push && !BEASTS[b.type].boss) { b.d = Math.max(0, b.d - m.push); place(g, b); }
+    if (m.dmg) hurt(g, b, m.dmg * mul * (b === t ? 1 : m.around ?? 1), 'jy');
+  }
+  g.jy = { until: g.t + (cfg.cool ?? 0), last: id, casts: (g.jy?.casts ?? 0) + 1 };
+  addFx(g, { k: 'txt', x: t.x, y: t.y - 30, s: m.name?.zh ?? id, col: '#b0412e', life: 0.9, max: 0.9, vy: -24, size: 15 });
+  emit(g, { sound: 'pounce' });
+  return true;
+}
+
+/** The sim's 小满 at the camera: casts `move` each time one is ready and has stayed ready `delay` s (the hand made
+    its seals) — on top of any strategy. For the balance with and without 结印. */
+export function withSeals(pol, cfg, { move = cfg.moves?.[0]?.id, delay = 2 } = {}) {
+  let since = null;
+  return (g) => {
+    pol(g);
+    const st = jieyinState(g, cfg);
+    if (!st.ready) { since = null; return; }
+    since ??= g.t;
+    if (g.t - since >= delay) { jieyinCast(g, move, cfg); since = null; }
+  };
+}

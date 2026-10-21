@@ -285,6 +285,11 @@
   },
   "_doufa": "手势斗法 (doc/games.md § 手势斗法; games/jieyin/duel.js) — the shape picks the move, the motion throws it. 小招 (`xiao`): a shape, then a jab (fingers) or a push (palm, fist) toward the lens (motion.js; `thrust` which shapes jab / push, `motion` its numbers). 法术 (`fa`): a spell (`spells`) pinched, held in a fist, pushed out. 大招 (`da`): a seal sequence (`moves`) that fires itself on its last seal. Every cast carries its lane — the hand's place in the frame, mirrored: thirds left · middle · right. 灵力 (`lingli`): one bar, `cost` by tier (a 法术 pays as it is held — 扣; a held spell that leaks away was paid for: 白掐一回), `refill` a second, `boss` when a 大妖 steps out (duel.js duelFill). What a cast does to a beast is `effects` (dmg, status ms, lane, push, near, wall), laid on by duel.js strike(): `combos` (木藤's root then 金刃 ×2; 冰 then 火 → steam over the lane) and the counter element (`counter.beats`: 金克木 木克土 土克水 水克火 火克金) ×`counter.mult`. The game applies them.",
   "doufa": {
+    "_paces": "A level's `pace` (Hanli 10-21: 「可以做几关让用户频繁戳, 拳击的一关. 大部分关都不要这么累」) laid over these numbers (duel.js pacedKit): rest — the default: 灵力 refills slowly and a move needs a long breath before the next; intense — the few practice levels where moving IS the point: 灵力 refills fast and costs little, the thrusts come quick.",
+    "paces": {
+      "rest": { "lingli": { "refill": 4 }, "motion": { "coolMs": 900 } },
+      "intense": { "lingli": { "start": 100, "refill": 60, "cost": { "xiao": 2, "fa": 10, "da": 30 } }, "motion": { "coolMs": 220 } }
+    },
     "thrust": { "jab": ["jian", "danjian"], "push": ["zhang", "song", "kou"] },
     "motion": { "windowMs": 300, "grow": 1.12, "coolMs": 450 },
     "lanes": ["left", "middle", "right"],
@@ -315,6 +320,19 @@
       { "id": "chanfa", "move": "jinren", "on": "rooted", "mult": 2, "name": { "zh": "缠而后伐", "en": "Bound, then cut" } },
       { "id": "zhengqi", "move": "huodan", "on": "chilled", "lane": true, "dmg": 2, "show": "steam", "clear": "chilled", "name": { "zh": "冰火成雾", "en": "Ice and fire: steam" } }
     ]
+  },
+  "_hosts": "结印 inside the tower-defence games (Hanli 10-21: 「不要只有结印攻击, 把结印放到现有的塔防类游戏中」; 「结印可以帮助更快杀敌, 更容易取得3星成就」; 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」). The dock is jieyin/helper.js offerSeals; a host's row says when it offers (`when`: boss — a 大妖 on the field — | always), the rest between casts (`cool` s), the harm on the 大妖 (`bossMul`), and its moves in helper's row shape (`seals` + `motion` jab, or `jieyin` a move id; `from` the marks the save must hold). A level's `pace` lays `paces[pace]` over it: rest (the default) as written; intense — the few levels where casting often is the point: always offered, short rest. Every level is won without a cast (tests/game-shoulu-jieyin.test.mjs).",
+  "hosts": {
+    "shoulu": {
+      "when": "boss", "aim": "boss", "cool": 8, "bossMul": 3, "idle": 60,
+      "paces": { "intense": { "when": "always", "aim": "near", "cool": 2.5 } },
+      "say": { "zh": "合窳出来了——结印！", "en": "The great beast is out — make the seals!" },
+      "first": { "zh": "比个剑诀，往镜头一戳，飞剑就出去", "en": "Make the sword seal and jab at the camera: the flying sword flies" },
+      "moves": [
+        { "id": "feijian", "name": { "zh": "飞剑", "en": "Flying sword" }, "seals": ["jian"], "motion": "jab", "from": null, "dmg": 120 },
+        { "id": "huodan", "name": { "zh": "火弹", "en": "Fire shot" }, "jieyin": "huodan", "from": { "marks": ["qiajue-tight", "qiajue-loose"] }, "dmg": 160, "splash": 60, "around": 0.6 }
+      ]
+    }
   },
   "levels": [
     {
