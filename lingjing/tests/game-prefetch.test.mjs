@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { register } from 'node:module';
 import { PREFETCH_TITLE, WITHHELD, sweep } from '../scripts/games/prefetch-ling.js';
-import { MAX, beastsIn, factsFor, factsOf, linesOf, linesView, momentsOf, prefetchLines, promptOf } from '../scripts/games/prefetch.js';
+import { MAX, askedOf, beastsIn, factsFor, factsOf, linesOf, linesView, momentsOf, prefetchLines, promptOf, teaches } from '../scripts/games/prefetch.js';
 
 const read = (p) => JSON.parse(fs.readFileSync(new URL(p, import.meta.url), 'utf8'));
 const SQ = read('../worlds/jiuding/levels/shouqiang.json');
@@ -16,6 +16,7 @@ const NAMES = Object.fromEntries(read('../worlds/jiuding/creatures.json').creatu
 const shanmen = SQ.levels[0], yaoyuan1 = SQ.levels[1], road = SD.levels[0];
 const factsZh = factsOf({ kit: SQ, level: shanmen, game: 'shouqiang', names: NAMES, lang: 'zh' });
 const MOMENTS = ['open', 'wave_cleared', 'low', 'boss', 'win'];
+const ASKED = ['wave_cleared', 'low', 'win']; // open and boss teach: the level's own lines, never hers
 const GOOD = 'LINES {"open":["先挑一门本事！"],"wave_cleared":["山道暂清，挑道符。","野猪退了，墙还在。"],"low":["墙要被啃穿了！"],"boss":["合窳一哭，就打它！"],"win":["山门守住了。"]}\nSILENT';
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
@@ -35,8 +36,7 @@ test('the facts: the level\'s title, scene and beasts by name, and each moment w
   assert.match(wc.means, /三张符/);
   assert.deepEqual(wc.sample, ['挑一张！', '这波稳了。', '再来多少都一样。']);
   assert.equal(factsZh.moments.find((m) => m.name === 'win').n, 1);
-  const tw = factsOf({ kit: SQ, level: yaoyuan1, game: 'shouqiang', names: NAMES, lang: 'zh' }).moments.find((m) => m.name === 'twist');
-  assert.match(tw.means, /「野猪」/, 'the new beast named in its moment');
+  assert.deepEqual(factsZh.moments.map((m) => m.name), ASKED, 'only the reactions are hers');
   for (const [kit, game] of [[SQ, 'shouqiang'], [SD, 'sadou']]) {
     for (const level of kit.levels) {
       for (const lang of ['zh', 'en']) {
@@ -51,7 +51,7 @@ test('the facts: the level\'s title, scene and beasts by name, and each moment w
 
 test('the request: every moment and its count, her own voice, the cap, the reply\'s form — LINES {json}, then SILENT', () => {
   const p = promptOf(factsZh);
-  for (const m of MOMENTS) assert.ok(p.includes(`- ${m}（`), m);
+  for (const m of ASKED) assert.ok(p.includes(`- ${m}（`), m);
   assert.match(p, /wave_cleared（2句）/);
   assert.match(p, /用你自己的口气/);
   assert.match(p, new RegExp(`不超过${MAX.zh}个字`));
@@ -121,10 +121,10 @@ test('one ask a level: her lines land in `lines`; failed, late or invalid → th
   let answer;
   const late = prefetchLines({ facts: factsZh, ask: () => new Promise((r) => { answer = r; }), timeoutMs: 20 });
   assert.equal((await late.done).why, 'late');
-  assert.equal(late.lines.boss, undefined);
+  assert.equal(late.lines.low, undefined);
   answer(GOOD);
   await tick(); await tick();
-  assert.deepEqual(late.lines.boss, ['合窳一哭，就打它！'], 'a late answer still serves the moments left');
+  assert.deepEqual(late.lines.low, ['墙要被啃穿了！'], 'a late answer still serves the moments left');
 
   const stop = new AbortController();
   const left = prefetchLines({ facts: factsZh, ask: () => new Promise(() => {}), signal: stop.signal });
@@ -142,7 +142,45 @@ test('no moments, no call: a level without moments asks nothing; a game without 
   assert.equal(factsFor({ meta: { id: 'rain' }, html: () => '' }), null, 'a pure board has no levelOf');
   const mod = { meta: { id: 'shouqiang' }, levelOf: async () => ({ kit: SQ, level: shanmen }) };
   const f = await factsFor(mod, { lang: 'zh', names: async () => NAMES });
-  assert.deepEqual(f.moments.map((m) => m.name), MOMENTS);
+  assert.deepEqual(f.moments.map((m) => m.name), ASKED);
+});
+
+test('teaching moments are the level\'s own: never in the request, never in `lines`, even when her reply holds them', async () => {
+  const TEACH = { shouqiang: ['open', 'lane', 'twist', 'boss'], sadou: ['flip', 'rock', 'lane', 'slam'] };
+  for (const [game, ms] of Object.entries(TEACH)) for (const m of ms) assert.ok(teaches(game, m), `${game}.${m} teaches`);
+  for (const [game, m] of [['shouqiang', 'wave_cleared'], ['shouqiang', 'low'], ['shouqiang', 'huge'], ['shouqiang', 'win'],
+    ['sadou', 'start'], ['sadou', 'good'], ['sadou', 'bad'], ['sadou', 'clash'], ['sadou', 'low'], ['sadou', 'boss'], ['sadou', 'won'], ['sadou', 'lost']]) {
+    assert.ok(!teaches(game, m), `${game}.${m} is a reaction: hers`);
+  }
+  assert.ok(!teaches('', 'boss') && !teaches('sadou', 'twist'), 'by kit: a moment teaches only where its kit says so');
+  for (const [kit, game] of [[SQ, 'shouqiang'], [SD, 'sadou']]) {
+    for (const level of kit.levels) {
+      const asked = askedOf(level, game);
+      for (const m of TEACH[game]) assert.ok(!asked.includes(m), `${level.id}: ${m} not asked`);
+      for (const lang of ['zh', 'en']) {
+        const p = promptOf(factsOf({ kit, level, game, names: NAMES, lang }));
+        for (const m of TEACH[game]) assert.ok(!p.includes(`- ${m} (`) && !p.includes(`- ${m}（`) && !p.includes(`"${m}"`), `${level.id} ${lang}: ${m} not in the request`);
+      }
+    }
+  }
+  const sent = [];
+  const every = 'LINES {"open":["先挑！"],"boss":["打！"],"lane":["守中间！"],"twist":["小心！"],"low":["墙要塌！"],"win":["守住了。"]}\nSILENT';
+  const y1 = factsOf({ kit: SQ, level: yaoyuan1, game: 'shouqiang', names: NAMES, lang: 'zh' });
+  const her = prefetchLines({ facts: y1, ask: async (t) => { sent.push(t); return every; } });
+  await her.done;
+  assert.doesNotMatch(sent[0], /- (lane|twist)（/);
+  for (const m of ['open', 'boss', 'lane', 'twist']) {
+    assert.equal(her.lines[m], undefined, `${m}: the game falls to its data line`);
+    assert.ok(!(m in her.lines));
+  }
+  assert.deepEqual([her.lines.low, her.lines.win], [['墙要塌！'], ['守住了。']], 'the reactions are still hers');
+
+  let asked = 0;
+  const onlyTeach = { moments: { open: [{ zh: '先挑一门本事！' }], lane: [{ zh: '守住中间。' }] } };
+  const f = factsOf({ kit: SQ, level: onlyTeach, game: 'shouqiang', names: NAMES });
+  assert.deepEqual(f.moments, []);
+  assert.equal(prefetchLines({ facts: f, ask: async () => { asked += 1; return every; } }), null, 'only teaching moments: no call');
+  assert.equal(asked, 0);
 });
 
 test('the two games read her lines at their moments: 守墙关 from her pool, 撒豆成兵 her one line — else their own', async () => {
@@ -158,11 +196,13 @@ test('the two games read her lines at their moments: 守墙关 from her pool, �
   const her = prefetchLines({ facts: factsZh, ask: async () => GOOD });
   const said = [];
   const scene = { cfg: { lines: her.lines }, g: { level: shanmen }, lang: 'zh', say: (who, text) => said.push([who, text]) };
-  sq.moment.call(scene, 'boss');
-  assert.deepEqual(said.pop(), ['yinyue', '合窳来了——它一哭，就打它！'], 'not yet answered: the level\'s own line, at once');
+  sq.moment.call(scene, 'low');
+  assert.ok(shanmen.moments.low.some((l) => l.zh === said.pop()[1]), 'not yet answered: the level\'s own line, at once');
   await her.done;
+  sq.moment.call(scene, 'low');
+  assert.deepEqual(said.pop(), ['yinyue', '墙要被啃穿了！'], 'answered: hers');
   sq.moment.call(scene, 'boss');
-  assert.deepEqual(said.pop(), ['yinyue', '合窳一哭，就打它！'], 'answered: hers');
+  assert.deepEqual(said.pop(), ['yinyue', '合窳来了——它一哭，就打它！'], 'a teaching moment: the level\'s own, even after she answered');
 
   const facts = factsOf({ kit: SD, level: road, game: 'sadou', names: NAMES, lang: 'zh' });
   const mine = prefetchLines({ facts, ask: async () => 'LINES {"boss":["合窳！扑上去！"]}\nSILENT', shape: 'one' });

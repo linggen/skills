@@ -1,33 +1,36 @@
 // prefetch.js — 台词预取 (line prefetch; Hanli 10-20: 「台词预取, 好主意! 就这么做」, doc/game-kit.md § Game and chat).
 // Every word a player reads in a small game is 银月's, but a model reply takes seconds — too slow mid-fight. So when a
-// level is mounted, the host asks her ONCE for a short line at each of the level's moments (wave_cleared, low, boss,
-// win …); the game keeps them and shows each the instant its moment comes. Late, failed or invalid: the level's own
-// data lines (`level.moments`) stand for that moment. The game never waits.
+// level is mounted, the host asks her ONCE for a short line at each of the level's reaction moments (wave_cleared,
+// low, win …); the game keeps them and shows each the instant its moment comes. Late, failed or invalid: the level's
+// own data lines (`level.moments`) stand for that moment. The game never waits. A moment that teaches how to play
+// (`teach` in MEANS) is never asked: it always shows the level's own line, word for word.
 //
 // Pure of the DOM and of the engine: the host hands in `ask(text) → Promise<reply text>` (prefetch-ling.js on the
 // story page). Here: the facts of a level, the request she reads, her reply checked line by line, and the `lines`
 // the game reads lazily at each moment (`cfg.lines?.[moment]`).
 
-/* What each moment means, for her: one plain line a moment, by kit (`kit.moment`) or by name. Facts, not lines. */
+/* What each moment means, for her: one plain line a moment, by kit (`kit.moment`) or by name. Facts, not lines.
+   `teach`: a moment that teaches how to play (Hanli 10-21: 「按你的建议来」) — its words must be exact, so it is never
+   asked of her and always shows the level's own data line; she writes only the reactions (cleared, low, win …). */
 const MEANS = {
-  'shouqiang.open': { zh: '开打前，玩家先从三门本事（飞剑、火符、雷符）里挑小满的看家一门。', en: 'Before the fight the player picks Xiaoman\'s main attack: flying swords, fire or thunder talismans.' },
-  'shouqiang.lane': { zh: '头一波兽全走同一畦，提醒玩家守住那一畦。', en: 'The first wave all comes down one bed: tell the player to hold that bed.' },
+  'shouqiang.open': { teach: true, zh: '开打前，玩家先从三门本事（飞剑、火符、雷符）里挑小满的看家一门。', en: 'Before the fight the player picks Xiaoman\'s main attack: flying swords, fire or thunder talismans.' },
+  'shouqiang.lane': { teach: true, zh: '头一波兽全走同一畦，提醒玩家守住那一畦。', en: 'The first wave all comes down one bed: tell the player to hold that bed.' },
   'shouqiang.wave_cleared': { zh: '一波兽打退了，玩家接着从三张符里挑一张。', en: 'A wave is beaten; the player now picks 1 of 3 talismans.' },
   'shouqiang.low': { zh: '墙快被兽啃塌了。', en: 'The wall is close to falling.' },
-  'shouqiang.boss': { zh: '巨兽合窳来了；它一哭嚎，就是打它的时候。', en: 'The giant heyu arrives; when it wails, that is the time to hit it.' },
+  'shouqiang.boss': { teach: true, zh: '巨兽合窳来了；它一哭嚎，就是打它的时候。', en: 'The giant heyu arrives; when it wails, that is the time to hit it.' },
   'shouqiang.huge': { zh: '一大波兽潮压上来。', en: 'A huge wave comes on.' },
-  'shouqiang.twist': { zh: '这一关的新兽「{twist}」头一回露面，教玩家怎么对付它。', en: 'This level\'s new beast, {twist}, shows up for the first time: tell the player how to deal with it.' },
+  'shouqiang.twist': { teach: true, zh: '这一关的新兽「{twist}」头一回露面，教玩家怎么对付它。', en: 'This level\'s new beast, {twist}, shows up for the first time: tell the player how to deal with it.' },
   'shouqiang.win': { zh: '守住了，这一关赢了。', en: 'Held: the level is won.' },
   'sadou.start': { zh: '豆子撒下去变成豆兵，开跑。', en: 'The beans land and stand up as soldiers; the run begins.' },
   'sadou.good': { zh: '豆兵穿过一道加人的符门，人变多了。', en: 'The soldiers pass a gate that adds; there are more of them.' },
   'sadou.bad': { zh: '豆兵穿过一道减人的坏门。', en: 'The soldiers pass a gate that takes some away.' },
   'sadou.clash': { zh: '豆兵撞上兽群。', en: 'The soldiers crash into a herd of beasts.' },
   'sadou.low': { zh: '豆兵剩得不多了。', en: 'Few soldiers are left.' },
-  'sadou.flip': { zh: '前面的符门好坏两面会来回换边，看准了再钻。', en: 'The gates ahead swap their good and bad faces side to side: look before going through.' },
-  'sadou.rock': { zh: '崖上落石，地上有影子的地方要砸下来，别站在影子里。', en: 'Rocks fall from the cliff where shadows darken the road: stay out of the shadows.' },
-  'sadou.lane': { zh: '兽群只堵了路的一边，另一边空着：绕过去，或者撞过去拿后面的门。', en: 'The beasts block one side of the road, the other is open: go round, or crash through for the gate behind.' },
+  'sadou.flip': { teach: true, zh: '前面的符门好坏两面会来回换边，看准了再钻。', en: 'The gates ahead swap their good and bad faces side to side: look before going through.' },
+  'sadou.rock': { teach: true, zh: '崖上落石，地上有影子的地方要砸下来，别站在影子里。', en: 'Rocks fall from the cliff where shadows darken the road: stay out of the shadows.' },
+  'sadou.lane': { teach: true, zh: '兽群只堵了路的一边，另一边空着：绕过去，或者撞过去拿后面的门。', en: 'The beasts block one side of the road, the other is open: go round, or crash through for the gate behind.' },
   'sadou.boss': { zh: '路尽头，大妖（合窳或蠪侄）挡着。', en: 'At the road\'s end, the great beast (the heyu or the longzhi) blocks the way.' },
-  'sadou.slam': { zh: '大妖要砸下来了，看清砸哪里，躲开。', en: 'The great beast is about to strike: see where, and dodge.' },
+  'sadou.slam': { teach: true, zh: '大妖要砸下来了，看清砸哪里，躲开。', en: 'The great beast is about to strike: see where, and dodge.' },
   'sadou.won': { zh: '大妖倒了，这一关赢了。', en: 'The great beast falls: the level is won.' },
   'sadou.lost': { zh: '豆兵打光了，这一关输了。', en: 'The soldiers are all gone: the level is lost.' },
   win: { zh: '这一关赢了。', en: 'The level is won.' },
@@ -50,6 +53,13 @@ export function momentsOf(level) {
   return Object.keys(level?.moments ?? {}).filter((k) => !k.startsWith('_') && Array.isArray(level.moments[k]) && level.moments[k].length);
 }
 
+/** What a moment means, by kit first, then by name. */
+const meaningOf = (game, m) => MEANS[`${game}.${m}`] ?? MEANS[m];
+/** A teaching moment: the level's own line, always — never hers. */
+export const teaches = (game, m) => Boolean(meaningOf(game, m)?.teach);
+/** The moments she is asked for: the level's, less the teaching ones — none: no call at all. */
+export const askedOf = (level, game = '') => momentsOf(level).filter((m) => !teaches(game, m));
+
 /** The beasts a level names, by the kit's beast ids, in the order the kit lists them. */
 export function beastsIn(level, kit) {
   const said = JSON.stringify(level ?? {});
@@ -57,7 +67,7 @@ export function beastsIn(level, kit) {
 }
 
 /** The facts she gets: the level's title, its scene (the lead's story lines), its beasts by name, and each moment
-    with what it means, how many lines, and the level's own lines as a tone sample. `names`: beast id → {zh, en}. */
+    she writes (no teaching one) with what it means, how many lines, and the level's own lines as a tone sample. `names`: beast id → {zh, en}. */
 export function factsOf({ kit, level, game = '', names = {}, lang = 'zh' }) {
   const L = lang === 'en' ? 'en' : 'zh';
   const name = (id) => pick(names[id], L) || id;
@@ -67,9 +77,9 @@ export function factsOf({ kit, level, game = '', names = {}, lang = 'zh' }) {
     title: pick(level?.title, L),
     scene: (level?.lead ?? []).filter((l) => !l.big).map((l) => pick(l, L)).join(L === 'en' ? ' ' : ''),
     beasts: beastsIn(level, kit).map(name),
-    moments: momentsOf(level).map((m) => ({
+    moments: askedOf(level, game).map((m) => ({
       name: m,
-      means: pick(MEANS[`${game}.${m}`] ?? MEANS[m], L).replace('{twist}', twist) || m,
+      means: pick(meaningOf(game, m), L).replace('{twist}', twist) || m,
       n: REPEATS.has(m) || level.moments[m].length > 1 ? 2 : 1,
       sample: level.moments[m].map((l) => pick(l, L)).filter(Boolean),
     })),

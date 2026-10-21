@@ -165,6 +165,12 @@ channel on the phone. The message shapes are identical, so a kit is written once
   is awake. The game reads `lines[moment]` lazily, so a late reply still serves the moments that
   are left. The 游戏厅 and the try page keep the data lines unless `?prefetch=1` is set. A test
   save takes `&her=stub` or `&her=slow`.
+  **Teaching moments stay data (10-21, Hanli: 「按你的建议来」).** A moment that teaches how to
+  play must use exact words, so it always shows the level's own line. These are 守墙关 `open`,
+  `lane`, `twist` and `boss`, and 撒豆成兵 `flip`, `rock`, `lane` and `slam` (`teach` in
+  `prefetch.js` MEANS). She is never asked for them, so they're never in `lines`. She writes
+  only the reactions: cleared, low, good or bad gate, clash, win and lost. A level with only
+  teaching moments makes no call.
 - **Layout:** while playing, the chat is folded (10-14). Her lines appear on the field. After
   the play the chat opens and she comments, then the story goes on.
 
