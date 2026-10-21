@@ -5,7 +5,7 @@
 // next (its ink icon and name), and a ring round the drawn hand that fills while the shape held is the one wanted.
 // One component for every game that uses 结印 — the 游戏厅, 守墙关's helper, 古六's 讲堂:
 //
-//   const hint = handHint(container, { lang, size: 'compact' | 'large', seals, knobs })   // knobs: jieyin.json `hint`
+//   const hint = handHint(container, { lang, size: 'compact' | 'large' | 'dock', seals, knobs })   dock: the helper's gesture frame   // knobs: jieyin.json `hint`
 //   hint.update({ image, aspect, target, progress, right, now?, world?, handed?, held? })   // image: the hands, 0…1 of the frame (eye.js)
 //     world · handed (eye.js) turn on the turn cue; held: [{ at, glow, left }] (spell.js heldAt) — a fist holding a spell
 //     glows its colour in the drawn palm (拳心透红 …), dimmer as it leaks
@@ -112,7 +112,7 @@ let uid = 0;
 export function handHint(container, { lang = 'zh', size = 'compact', seals = {}, knobs = {} } = {}) {
   const w = W[lang === 'en' ? 'en' : 'zh'], doc = container.ownerDocument, id = `jyink${++uid}`;
   const el = doc.createElement('div');
-  el.className = `jy-hint-panel is-${size === 'large' ? 'large' : 'compact'}`;
+  el.className = `jy-hint-panel is-${['large', 'dock'].includes(size) ? size : 'compact'}`;
   el.innerHTML = `<div class="jy-frame" data-edge=""><svg class="jy-view" preserveAspectRatio="xMidYMid meet"><defs>${inkFilter(id)}<marker id="${id}a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c23b22"/></marker></defs><g class="jy-glow"></g><g class="jy-hands" filter="url(#${id})"></g>`
     + `<circle class="jy-hold-bg" r="0"/><circle class="jy-hold" r="0" pathLength="100"/><path class="jy-turn" d="" marker-end="url(#${id}a)"/></svg><i class="jy-arrow" aria-hidden="true"></i></div>`
     + `<div class="jy-target"><div class="jy-target-icon"></div><b class="jy-target-name"></b><small class="jy-target-face"></small></div><p class="jy-cue" role="status"></p>`;
@@ -124,7 +124,7 @@ export function handHint(container, { lang = 'zh', size = 'compact', seals = {},
     if (t === target) return;
     target = t;
     const s = seals[t];
-    $('.jy-target-icon').innerHTML = s ? iconSvg(s, size === 'large' ? 76 : 44, { lang, hand: s.hand }) : '';
+    $('.jy-target-icon').innerHTML = s ? iconSvg(s, size === 'large' ? 76 : size === 'dock' ? 64 : 44, { lang, hand: s.hand ?? 'right' }) : ''; // the gesture to make: its own hand, else the right
     $('.jy-target-face').textContent = facingLine(s, lang);
     $('.jy-target-name').textContent = s ? `${w.next} ${s.name[lang] ?? s.name.zh}` : '';
     el.classList.toggle('is-two', handsOf(s) === 2);

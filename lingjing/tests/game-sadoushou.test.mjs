@@ -36,7 +36,7 @@ test('registered beside 撒豆成兵 (main, 塔防, tall), test-only: no story s
   assert.equal(levelAsked(kit, {}, '?lv=99'), level);
   const src = readFileSync(at('scripts/games/sadoushou.js'), 'utf8');
   assert.match(src, /next: nx\.id/, '下一关');
-  assert.match(src, /shell\.lead\(said, \{ auto: 'read', lang/, 'the lead card at the story\'s pace');
+  assert.match(src, /shell\.lead\((?:said|told), \{ auto: 'read', lang/, 'the lead card at the story\'s pace');
 });
 
 test('a ladder of four, each a 回 later, each beast one the book has shown by its 回 (creatures.json `hui`)', () => {

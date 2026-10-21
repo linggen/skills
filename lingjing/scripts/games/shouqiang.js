@@ -36,6 +36,7 @@ export const meta = {
 
 const LEVELS = new URL('../../worlds/jiuding/levels/shouqiang.json', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
+import { leadWith } from './jieyin/lead.js';
 const CREATURES = new URL('../../worlds/jiuding/creatures.json', import.meta.url); // each beast's element (五行相克)
 const FONT = new URL('./shouqiang/font/zcool-kuaile.woff2', import.meta.url);
 
@@ -141,7 +142,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         },
       });
       seals = level.jieyin === false ? null : offerJieyin(kit, box, { lang, game, shell, marks: data?.marks, feed: dev && q.get('feed') === '1' }); // a level may take no spell (守白菜)
-      if (said) shell.lead(said, { auto: 'read', lang }).then(() => game?.go());
+      // the lead card says 结印 is here where it is (jieyin/lead.js)
+      if (said) leadWith(said, seals, level.jieyinWhen ?? kit.jieyin?.when, lang).then((told) => !done && shell.lead(told, { auto: 'read', lang })).then(() => game?.go());
       if (level.grid) {
         onResize = () => { const now = shape(true); if (now !== landscape) { landscape = now; game?.layout(now); } };
         win.addEventListener('resize', onResize);

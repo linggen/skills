@@ -4,7 +4,12 @@
 // shared hand hint docked there. The hands are read by 手势斗法 (duel.js: 小招 shape + thrust, 法术 文 → 扣 → 推, the
 // 大招's seals, 灵力 — doc/games.md § 手势斗法); its cast events go to the host, which decides what they do.
 //
-//   offerSeals({ host, lang, moves, state, cast, say, call, first, idle, fastFps, paused, aside, env, feed }) → Promise<{ close(), camera, wanted } | null>
+//   offerSeals({ host, lang, moves, state, cast, say, call, first, idle, fastFps, paused, aside, env, feed, level }) → Promise<{ close(), camera, wanted } | null>
+//     level() → a key for the level up now: the first time the button shows for a key, a bubble points at it (「点这里结印」)
+//   leadLine(kit, pace, lang) → the lead card's line that 结印 is here; the handle's lead(pace) says it (a handle is only
+//     where a camera is and a move is offered) — a host joins it to its lead card with jieyin/lead.js leadWith
+//   The button wears the next move's gesture; tapped, the dock's frame shows the gesture to make (as the right hand,
+//   its facing words) beside the player's own ink hand (Hanli 10-21: 「有结印要告诉玩家啊」「结印要有个框提示手势的」).
 //     moves   the move ids the host offers here (already past their `from` gate); a cast of any other is dropped
 //     state() → { on, ready, cool, coolOf }   on: spells offered now · ready: one may fly now · cool: s of rest left
 //     cast(event) → true when it flew        say(text): one short line in the host (the cues)
@@ -31,6 +36,7 @@ import { available as cameraHere, dropModel, openEye } from './eye.js';
 import { duelFill, duelStart, duelStep } from './duel.js';
 import { heldAt } from './spell.js';
 import { handHint } from './hint.js';
+import { iconSvg } from './pose.js';
 import { eyeFor, sequenceFor, setOf } from './sets.js';
 
 const LEVELS = new URL('../../../worlds/jiuding/levels/jieyin.json', import.meta.url);
@@ -38,9 +44,17 @@ const CSS = { jieyinCss: new URL('./jieyin.css', import.meta.url), jieyinHelper:
 const SEEN = 'lingjing.jieyin.first'; // this device has had the first-time line (never the save)
 
 export const WORDS = {
-  zh: { btn: '结印', label: '对着摄像头结印', off: '收印', asking: '请允许摄像头……', rest: '歇一歇', ready: '好了，结印！' },
-  en: { btn: 'Seals', label: 'Make hand seals at the camera', off: 'Stop', asking: 'Allow the camera…', rest: 'Rest', ready: 'Ready — make the seals!' },
+  zh: { btn: '结印', label: '对着摄像头结印', off: '收印', asking: '请允许摄像头……', rest: '歇一歇', ready: '好了，结印！', tapHere: '点这里结印', who: '小满', make: '照这个手势' },
+  en: { btn: 'Seals', label: 'Make hand seals at the camera', off: 'Stop', asking: 'Allow the camera…', rest: 'Rest', ready: 'Ready — make the seals!', tapHere: 'Tap here for hand seals', who: 'Xiaoman', make: 'Make this' },
 };
+
+/** The lead card's line that 结印 is here (Hanli 10-21: 「有结印要告诉玩家啊」): jieyin.json `helper.lead` by the level's
+    pace — a 守炉 pace (rest · intense) or a host's `when` (boss · waves · always, `helper.paceOf`). */
+export function leadLine(kit, pace = 'rest', lang = 'zh') {
+  const lead = kit?.helper?.lead ?? {}, l = lead[pace] ?? lead[kit?.helper?.paceOf?.[pace]] ?? lead.rest;
+  return l ? l[lang === 'en' ? 'en' : 'zh'] ?? l.zh : '';
+}
+export { cameraHere as available };
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -69,15 +83,25 @@ function loadCss(doc) {
   }
 }
 
-function buttonEl(doc, w) {
+/** The button: the next move's gesture drawn on it (Hanli 10-21: 「结印要有个框提示手势的」), the word under it. */
+function buttonEl(doc, w, icon = '') {
   const b = doc.createElement('button');
   b.type = 'button';
   b.className = 'jyh-btn';
   b.hidden = true;
   b.title = w.label;
   b.setAttribute('aria-label', w.label);
-  b.innerHTML = `<b class="jyh-word">${plain(w.btn)}</b>`;
+  b.innerHTML = `${icon ? `<span class="jyh-icon">${icon}</span>` : ''}<b class="jyh-word">${plain(w.btn)}</b>`;
   return b;
+}
+
+/** The first time the button shows in a level: a bubble pointing at it, in 小满's voice. */
+function calloutEl(doc, w) {
+  const c = doc.createElement('div');
+  c.className = 'jyh-callout';
+  c.hidden = true;
+  c.innerHTML = `<b>${plain(w.who)}</b>${plain(w.tapHere)}`;
+  return c;
 }
 
 function dockEl(doc, w) {
@@ -93,7 +117,7 @@ const firstTime = (win) => { try { if (win.localStorage?.getItem(SEEN)) return f
 
 export async function offerSeals({ host, lang = 'zh', moves = [], state = () => ({ on: true, ready: true, cool: 0, coolOf: 0 }),
   cast = () => false, say = () => {}, call = () => null, first = null, idle = 60, fastFps = 30, paused = () => false, aside = () => false,
-  env = globalThis, feed = false, available = cameraHere, eyeOf = openEye } = {}) {
+  env = globalThis, feed = false, available = cameraHere, eyeOf = openEye, level = null } = {}) {
   if (!moves.length || (!feed && !(await available(env)))) return null;
   const kit = await fetch(LEVELS).then((r) => r.json());
   const tiers = tiersOf(kit, moves);
@@ -103,11 +127,15 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   const w = WORDS[lang], set = setOf(kit, { matchMedia: win.matchMedia?.bind(win), search: win.location?.search ?? '' });
   loadCss(doc);
 
-  const btn = buttonEl(doc, w), dock = dockEl(doc, w);
+  // The gesture the button wears: the 小招's shape, else the 法术's 文, else the 大招's first seal — as the right hand.
+  const D0 = kit.doufa, lead = tiers.xiao.map((id) => D0.xiao[id].shape)[0] ?? tiers.fa.map((id) => kit.spells?.[id]?.wen)[0]
+    ?? (tiers.da[0] ? sequenceFor(kit, D0.da[tiers.da[0]].move, set)[0] : null);
+  const btn = buttonEl(doc, w, kit.seals[lead] ? iconSvg(kit.seals[lead], 30, { lang }) : ''), dock = dockEl(doc, w), callout = calloutEl(doc, w);
+  btn.append(callout); // on the button, wherever a host puts it
   host.append(btn, dock);
   const $ = (s) => dock.querySelector(s);
   for (const el of [btn, dock]) for (const t of ['pointerdown', 'pointerup', 'click']) el.addEventListener(t, (e) => e.stopPropagation());
-  const hint = handHint($('.jyh-hint'), { lang, size: 'compact', seals: kit.seals, knobs: kit.hint });
+  const hint = handHint($('.jyh-hint'), { lang, size: 'dock', seals: kit.seals, knobs: kit.hint }); // the gesture frame: big enough to read
 
   const offered = new Set(moves), D = kit.doufa;
   const bigId = tiers.da[0] ?? null, bigSeq = bigId ? sequenceFor(kit, D.da[bigId].move, set) : [];
@@ -138,8 +166,13 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     ol.querySelectorAll('li').forEach((el, i) => { el.classList.toggle('is-done', i < at); el.classList.toggle('is-next', i === at); });
   };
 
-  const hud = (st, ready, rest) => {
+  let shownFor = null, calloutT = 0;
+  const hud = (st, ready, rest, away = false) => {
     btn.hidden = !st.on || (wanted && ready);
+    // The first time the button shows for this level (`level()`, the host's key): the bubble points at it, until tapped.
+    const key = level?.() ?? 'one';
+    if (!btn.hidden && !away && key !== shownFor) { shownFor = key; callout.hidden = false; calloutT = setTimeout(() => { callout.hidden = true; }, 6000); }
+    if (btn.hidden || away) callout.hidden = true;
     dock.hidden = !(wanted && st.on && ready);
     btn.classList.toggle('is-ready', ready);
     btn.classList.toggle('is-rest', rest > 0);
@@ -187,12 +220,12 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     }
     if (!live) tried = now;
     else if (now - tried > idle * 1000) wanted = false;
-    hud(st, ready, rest);
+    hud(st, ready, rest, away || paused()); // the bubble waits out a pause (the lead card, the shell's bar)
     loop = win.requestAnimationFrame(tick);
   };
   const seen = () => { if (doc.hidden) camera(false); }; // a hidden page runs no frames: off now, back via tick
 
-  btn.addEventListener('click', () => { if (!state().on) return; wanted = !wanted; tried = win.performance.now(); btn.classList.remove('is-call'); });
+  btn.addEventListener('click', () => { if (!state().on) return; wanted = !wanted; tried = win.performance.now(); btn.classList.remove('is-call'); callout.hidden = true; });
   $('.jyh-off').addEventListener('click', () => { wanted = false; });
   doc.addEventListener('visibilitychange', seen);
   if (feed) win.jieyinFeed = (h, img = h, which = []) => { see({ world: h, image: img, handed: which }); aspect = 4 / 3; };
@@ -211,7 +244,8 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     if (feed && win.jieyinFeed) delete win.jieyinFeed;
     btn.remove();
     dock.remove();
+    clearTimeout(calloutT);
     if (eye) dropModel();
   }
-  return { close, get camera() { return cam; }, get wanted() { return wanted; } };
+  return { close, lead: (pace) => leadLine(kit, pace, lang), get camera() { return cam; }, get wanted() { return wanted; } };
 }

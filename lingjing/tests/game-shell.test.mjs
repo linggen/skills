@@ -242,7 +242,7 @@ test('a lead card reads at the story\'s 自动 pace, one rule for every game: 3 
   assert.ok(mid > LEAD_MS.min && mid < LEAD_MS.max, String(mid));
   for (const f of ['sadou', 'shouqiang', 'shoulu']) {
     const src = fs.readFileSync(new URL(`../scripts/games/${f}.js`, import.meta.url), 'utf8');
-    assert.match(src, /shell\.lead\(said, \{ auto: 'read', lang/, `${f} reads its lead by the one rule`);
+    assert.match(src, /shell\.lead\((?:said|told), \{ auto: 'read', lang/, `${f} reads its lead by the one rule`);
     assert.doesNotMatch(src, /auto: reducedMotion \? 2400 : 4200/, f);
   }
 });

@@ -334,6 +334,11 @@
       { "id": "zhengqi", "move": "huodan", "on": "chilled", "lane": true, "dmg": 2, "show": "steam", "clear": "chilled", "name": { "zh": "冰火成雾", "en": "Ice and fire: steam" } }
     ]
   },
+  "_helper": "The helper's words (jieyin/helper.js; Hanli 10-21: 「有结印要告诉玩家啊」): `lead` — the line every host adds to a level's lead card, only where a camera is and a move is offered (helper.js leadLine, jieyin/lead.js leadWith), by the level's pace; `paceOf` — a host's `when` (守墙关 · 守山门: boss · elite · waves · always) read as a pace.",
+  "helper": { "lead": {
+    "rest": { "zh": "有摄像头：大妖出场时，可以对着摄像头结印助战。", "en": "You have a camera: when a great beast steps out, make hand seals at it to help." },
+    "intense": { "zh": "有摄像头：这一关随时可以对着摄像头结印。", "en": "You have a camera: in this level, make hand seals at it any time." }
+  }, "paceOf": { "boss": "rest", "elite": "rest", "waves": "intense", "always": "intense" } },
   "_hosts": "结印 inside the tower-defence games (Hanli 10-21: 「不要只有结印攻击, 把结印放到现有的塔防类游戏中」; 「结印可以帮助更快杀敌, 更容易取得3星成就」; 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」). The dock is jieyin/helper.js offerSeals; a host's row says when it offers (`when`: boss — a 大妖 on the field — | always), the rest between casts (`cool` s), the harm on the 大妖 (`bossMul`), and its moves in helper's row shape (`seals` + `motion` jab, or `jieyin` a move id; `from` the marks the save must hold). A level's `pace` lays `paces[pace]` over it: rest (the default) as written; intense — the few levels where casting often is the point: always offered, short rest. Every level is won without a cast (tests/game-shoulu-jieyin.test.mjs).",
   "hosts": {
     "shoulu": {
@@ -343,7 +348,7 @@
       "first": { "zh": "比个剑诀，往摄像头一戳，飞剑就出去", "en": "Make the sword seal and jab at the camera: the flying sword flies" },
       "moves": [
         { "id": "feijian", "name": { "zh": "飞剑", "en": "Flying sword" }, "seals": ["jian"], "motion": "jab", "from": null, "dmg": 120 },
-        { "id": "huodan", "name": { "zh": "火弹", "en": "Fire shot" }, "jieyin": "huodan", "from": { "marks": ["qiajue-tight", "qiajue-loose"] }, "dmg": 160, "splash": 60, "around": 0.6 }
+        { "id": "huodan", "name": { "zh": "火弹", "en": "Fire shot" }, "_tier": "法术: 午文 → 扣 → 拍 (doufa.fa huodan — not the four-seal 大招 huodan4)", "jieyin": "huodan", "from": { "marks": ["qiajue-tight", "qiajue-loose"] }, "dmg": 160, "splash": 60, "around": 0.6 }
       ]
     }
   },

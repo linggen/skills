@@ -37,22 +37,26 @@ import { jieyinCast, jieyinState } from './shoulu/core.js';
 // host's numbers: jieyin.json `hosts.shoulu`, a level's `pace` laid on (rest: the 大妖 only, a long rest; intense: always).
 const JIEYIN = new URL('../../worlds/jiuding/levels/jieyin.json', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
+import { leadWith } from './jieyin/lead.js';
 export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
 /** The host's numbers for a level: hosts.shoulu with its pace's laid on. */
 export const jieyinCfg = (host, level) => ({ ...host, ...(host?.paces?.[level?.pace ?? 'rest'] ?? {}), pace: level?.pace ?? 'rest' });
 const OFF = { on: false, ready: false, cool: 0, coolOf: 0, boss: null };
+/** A host row's id in the 手势斗法 kit (jieyin.json `doufa`): its `jieyin`, else its own. */
+export const duelId = (row) => row.jieyin ?? row.id;
 /** Offer the dock for this mount: → Promise<handle | null> (null and nothing drawn without a camera — helper.js). */
-export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside, feed = false, load = () => import(SEALS.href), env } = {}) {
+export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside, level = null, feed = false, load = () => import(SEALS.href), env } = {}) {
   const moves = (host?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const cfg = () => { const n = now(); return n.g ? jieyinCfg(host, n.level) : null; };
   return load().then(({ offerSeals }) => offerSeals({
-    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves, idle: host.idle,
+    // the dock knows the 手势斗法 ids (a row's `jieyin`, else its own id) and casts back an event naming one
+    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves: moves.map(duelId), idle: host.idle,
     state: () => { const c = cfg(); return c ? jieyinState(now().g, c) : OFF; },
-    cast: (id) => { const c = cfg(); return c ? jieyinCast(now().g, id, c) : false; },
+    cast: (e) => { const c = cfg(), row = moves.find((m) => duelId(m) === (e?.move ?? e)); return c && row ? jieyinCast(now().g, row.id, c) : false; },
     fizzle: () => toast(lang === 'en' ? 'Pfft — it fizzled.' : '噗——走火了。'), say: toast,
     call: () => word(host.say, lang), first: moves.some((m) => m.motion === 'jab' && !m.from) ? host.first : null,
-    paused, aside,
+    paused, aside, level,
   })).catch((e) => { console.warn('[shoulu] 结印', e); return null; });
 }
 
@@ -223,7 +227,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     const seals = fetch(JIEYIN).then((r) => r.json()).then((kit) => offerJieyin(kit.hosts?.shoulu, stage, {
       lang, now: () => ({ g: g && !held ? g : null, level: levels[li] }), marks: data.marks, toast: (x) => toast(x),
       paused: () => frozen() || !g || Boolean(g.over), aside: () => !menu.hidden || root.classList.contains('is-picking'),
-      feed: q.get('dev') === '1' && q.get('feed') === '1',
+      feed: q.get('dev') === '1' && q.get('feed') === '1', level: () => li,
     })).catch(() => null);
     off.push(() => seals.then((h) => h?.close()));
 
@@ -323,7 +327,9 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       // in the shell: the story read on its lead card over the drawn board; the clock waits for it
       held = true; sagaQ.length = 0; sagaT = 0;
       const tok = ++leadTok;
-      shell.lead(said, { auto: 'read', lang, reducedMotion }).then(() => { if (!done && tok === leadTok) go(); });
+      // the lead card says 结印 is here where it is (jieyin/lead.js)
+      leadWith(said, seals, row.pace ?? 'rest', lang).then((told) => !done && tok === leadTok && shell.lead(told, { auto: 'read', lang, reducedMotion }))
+        .then(() => { if (!done && tok === leadTok) go(); });
     }
     function pickLevels() {
       const stars = loadStars();

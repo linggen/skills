@@ -29,6 +29,7 @@ export const meta = {
 const LEVELS = new URL('../../worlds/jiuding/levels/sadoushou.json', import.meta.url);
 const FONT = new URL('./sadoushou/font/zcool-kuaile.woff2', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
+import { leadWith } from './jieyin/lead.js';
 
 /** A move's `from` gate: open from the start, or once the save holds any of its marks; no marks given (the 游戏厅) → open. */
 export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
@@ -105,8 +106,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });
-      if (said) shell.lead(said, { auto: 'read', lang }).then(() => game?.go());
       seals = offerJieyin(level, box, { lang, game, shell, marks: data?.marks, feed: dev && /(?:^|[?&])feed=1/.test(search) });
+      // the lead card says 结印 is here where it is (jieyin/lead.js)
+      if (said) leadWith(said, seals, level.jieyin?.when, lang).then((told) => !done && shell.lead(told, { auto: 'read', lang })).then(() => game?.go());
     }, () => {
       box.textContent = lang === 'en' ? 'The game did not load.' : '游戏没加载出来。';
       finish({ won: false, left: true });

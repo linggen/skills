@@ -844,6 +844,13 @@ Hanli 10-21, in order: 「放进去」 · 「最好不显示摄像头」 · 「�
 - **Unchanged:** no camera / refused / no WebGL / no SIMD / model fails → no button; the same game (tested: the block's
   presence changes no sim). Camera off on pause, hidden page, × , level end, leave. Dev: `?dev=1&feed=1` (hands from the
   console: `jieyinFeed(world, image, handed)`), `&jy=always` (spells every wave), `&hands=1|2`.
+- **Telling the player** (shared, helper.js — 守墙关 · 守炉 · 守山门; Hanli 10-21: 「有结印要告诉玩家啊」「结印要有个框提示手势的」):
+  the lead card ends on a line that 结印 is here — only where a camera is and a move is offered (the handle's `lead(pace)`,
+  jieyin.json `helper.lead` by pace, a host's `when` read as one by `helper.paceOf`; joined by jieyin/lead.js `leadWith`,
+  which never holds the card more than 1.5 s); the button wears the next move's gesture and glows bright when ready; the
+  first time it shows in a level (`level()`, the host's key) a bubble rides on it — 「小满 点这里结印」 — gone on the tap,
+  waiting out a pause; tapped, the dock's frame is a framed paper panel (hint.js size `dock`): the gesture to make, as the
+  right hand, with its facing words, beside the live ink hand. Tested: tests/game-jieyin-helper-ux.test.mjs.
 - **Tested:** tests/game-shouqiang-jieyin.test.mjs — offered only with a 大妖, target order, rest, bossMul and 相克, the
   five shapes, gates, the cue, the same game without casts, balance, no camera → nothing, movesFor, big moves in step,
   the button's life (call, tap, rest, ready, dark), idle close, 手势斗法's jab → 飞剑 reaching the host (an unoffered
@@ -855,7 +862,7 @@ Hanli 10-21: 「不要只有结印攻击, 把结印放到现有的塔防类游�
 剧情推进」; 「结印可以帮助更快杀敌, 更容易取得3星成就」. 守炉 wears the shared dock (games/jieyin/helper.js `offerSeals`, the
 same as 守墙关's) in the field's corner: shoulu.js `offerJieyin`, the host's calls core.js `jieyinState` · `jieyinCast`, the
 numbers jieyin.json `hosts.shoulu`. Camera only — no camera, a refusal or seals never made change nothing.
-- **Moves:** 飞剑 (剑诀 + a jab) from the start; 火弹 (the four seals) after 古六's lesson (`from` its marks; the 游戏厅 has
+- **Moves:** 飞剑 (小招: 剑诀 + a jab) from the start; 火弹 (法术: 午文 → 扣 → 拍 — `doufa.fa` huodan, not the four-seal 大招 huodan4) after 古六's lesson (`from` its marks; the 游戏厅 has
   all). The target: the 大妖 first, else the beast nearest the furnace. 火弹 splashes round it.
 - **Pace — a level's:** rest (the default): offered only while 合窳 is on the field, 8 s rest between casts, ×3 on it;
   intense (`pace: "intense"`, one level now: 后山 · 丹房): always offered, 2.5 s rest — the level where the hands work.

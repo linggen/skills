@@ -25,6 +25,7 @@
 .jy-frame { position: relative; width: 132px; aspect-ratio: 4 / 3; border: 1.5px solid #8a7a66; border-radius: 6px;
   background: radial-gradient(ellipse at 50% 55%, #fffaf0, #efe4cf); overflow: hidden; transition: border-color .2s, box-shadow .2s; }
 .jy-hint-panel.is-large .jy-frame { width: 240px; }
+.jy-hint-panel.is-dock .jy-frame { width: 100%; min-width: 120px; }
 .jy-view { position: absolute; inset: 0; width: 100%; height: 100%; }
 .jy-hands { color: #2b2620; }
 .jy-held { filter: blur(3px); animation: jy-nudge 1.6s ease-in-out infinite; } /* a held spell's glow (hint.js) */
