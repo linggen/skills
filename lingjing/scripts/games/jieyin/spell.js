@@ -1,13 +1,14 @@
 // spell.js — 掐 · 扣 · 松: a spell made the way 褚先生 teaches it in 古六 (story/jiuding-lu/06-第六回.md, 第三天 the 扣):
-// pinch the spell's 文, close the four fingers over the thumb into a fist to HOLD it (扣), open the hand to LET IT GO (松)
-// — the cast. Pure, per hand, as time passes (the judge's shapes each frame go in, what happened comes out).
+// pinch the spell's 文, close the four fingers over the thumb into a fist to HOLD it (扣), then let it go — the cast: by a
+// PUSH of the hand toward the lens (拍, 手势斗法: `knobs.release` 'push', the motion is motion.js's, passed in as `pushes`),
+// or by opening the hand (松, `release` 'open', the first cut). Pure, per hand, as time passes (the judge's shapes each frame go in, what happened comes out).
 //
 //   const s = spellStart(kit, ids)                       ids: spells this game offers (kit.moves.wuxing.spells …)
-//   const { state, events, held } = spellStep(s, { world, handed }, dtMs, kit)
+//   const { state, events, held } = spellStep(s, { world, handed, pushes? }, dtMs, kit)   pushes: keys of hands that thrust now
 //     events: { type: 'wen' | 'kou' | 'cast' | 'fade' | 'drop', spell, hand, heldMs?, left? }
 //       wen   the spell's 文 held (`judge.holdMs`): ready to 扣
 //       kou   the fist closed over it (`spells.knobs.fistMs`): the spell is held; its leak starts
-//       cast  the hand opened (`openMs`) while it held one — release; `heldMs` how long it was held, `left` 1…0 of it
+//       cast  released while it held one — a push (or the hand opened, `release` 'open'); `heldMs` how long, `left` 1…0 of it
 //       fade  held past `fadeMs`: leaked away, 白掐一回
 //       drop  a 文 never closed into a fist (`kouGapMs` with the 文 gone)
 //     held: [{ hand, spell, left, glow }] — the hands holding a spell now (for the hint's 拳心 glow: hint.js `held`)
@@ -19,7 +20,7 @@
 
 import { handSeal, makes } from './judge.js';
 
-const KNOBS = { fistMs: 250, openMs: 200, fadeMs: 8000, kouGapMs: 1500, graceMs: 200 };
+const KNOBS = { fistMs: 250, openMs: 200, fadeMs: 8000, kouGapMs: 1500, graceMs: 200, release: 'push' };
 
 /** A fresh state for these spells (ids in kit.spells). */
 export function spellStart(kit, ids) {
@@ -52,7 +53,7 @@ function steady(h, shape, dt, k) {
 }
 
 /** One hand's step: its phase on with the shape it shows. */
-function handStep(h, kit, ids, dt, k, key) {
+function handStep(h, kit, ids, dt, k, key, pushed = false) {
   const ev = [], say = (type, more = {}) => ev.push({ type, spell: h.spell, hand: key, ...more });
   const sp = kit.spells, hold = kit.judge.holdMs;
   const wenSpell = h.cur && h.cur !== 'kou' && h.cur !== 'song' ? spellOfWen(kit, ids, h.cur) : null;
@@ -63,7 +64,7 @@ function handStep(h, kit, ids, dt, k, key) {
   if (h.phase === 'kou') {
     h = { ...h, t: h.t + dt };
     if (h.t >= k.fadeMs) { say('fade', { heldMs: h.t }); return { h: { ...h, phase: 'idle', spell: null, t: 0 }, ev }; }
-    if (h.cur === 'song' && h.curMs >= k.openMs) { say('cast', { heldMs: h.t, left: Math.max(0, 1 - h.t / k.fadeMs) }); return { h: { ...h, phase: 'idle', spell: null, t: 0 }, ev }; }
+    if (k.release === 'open' ? h.cur === 'song' && h.curMs >= k.openMs : pushed) { say('cast', { heldMs: h.t, left: Math.max(0, 1 - h.t / k.fadeMs) }); return { h: { ...h, phase: 'idle', spell: null, t: 0 }, ev }; }
     return { h, ev };
   }
   if (wenSpell && h.curMs >= hold && !(h.phase === 'wen' && h.spell === wenSpell)) { // a 文 made (or another one over it)
@@ -82,13 +83,13 @@ function handStep(h, kit, ids, dt, k, key) {
 }
 
 /** A frame: each hand in view by its key ('Left' | 'Right', else its order), each hand out of view on its clock. */
-export function spellStep(state, { world = [], handed = [] } = {}, dt, kit) {
+export function spellStep(state, { world = [], handed = [], pushes = [] } = {}, dt, kit) {
   const k = knobsOf(kit), hands = { ...state.hands }, events = [];
   const seen = new Map(world.map((w, i) => [handed[i] ?? `#${i}`, w]));
   for (const key of new Set([...Object.keys(hands), ...seen.keys()])) {
     const h0 = hands[key] ?? { phase: 'idle', spell: null, t: 0, cur: null, curMs: 0, gap: 0 };
     const shape = seen.has(key) ? shapeOf(seen.get(key), kit, state.ids, h0.cur) : null;
-    const { h, ev } = handStep(steady(h0, shape, dt, k), kit, state.ids, dt, k, key);
+    const { h, ev } = handStep(steady(h0, shape, dt, k), kit, state.ids, dt, k, key, pushes.includes(key));
     hands[key] = h;
     events.push(...ev);
   }

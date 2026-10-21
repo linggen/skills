@@ -271,9 +271,9 @@
       "up": ["up"]
     }
   },
-  "_spells": "掐 · 扣 · 松 (games/jieyin/spell.js; 古六, story/jiuding-lu/06-第六回.md — Hanli 10-21): a spell's 文 pinched (`wen`, a seal above, held judge.holdMs), the four fingers closed over the thumb into a fist (`kou`: four fingers folded, the thumb anywhere — inside is fine; held `knobs.fistMs`) HOLDS it, the hand opened (`song`: four fingers out, held `openMs`) casts it. A held spell leaks: gone after `fadeMs`. A 文 not closed into a fist within `kouGapMs` of letting go of it is dropped. One hand holds one; the fist glows the spell's colour (`glow`: 拳心透红是火，透白是金，透青是木，透一点墨色是水，透黄是土). `kou: false` (飞剑): the 文 alone casts, once per making. No game effects here: a cast is an event the game turns into its spell.",
+  "_spells": "掐 · 扣 · 松 (games/jieyin/spell.js; 古六, story/jiuding-lu/06-第六回.md — Hanli 10-21): a spell's 文 pinched (`wen`, a seal above, held judge.holdMs), the four fingers closed over the thumb into a fist (`kou`: four fingers folded, the thumb anywhere — inside is fine; held `knobs.fistMs`) HOLDS it, a push of the hand toward the lens casts it (`release` push, 手势斗法 — Hanli 10-21; open: the hand opened, `song` held `openMs`, the first cut). A held spell leaks: gone after `fadeMs`. A 文 not closed into a fist within `kouGapMs` of letting go of it is dropped. One hand holds one; the fist glows the spell's colour (`glow`: 拳心透红是火，透白是金，透青是木，透一点墨色是水，透黄是土). `kou: false` (飞剑): the 文 alone casts, once per making. No game effects here: a cast is an event the game turns into its spell.",
   "spells": {
-    "knobs": { "fistMs": 250, "openMs": 200, "fadeMs": 8000, "kouGapMs": 1500, "graceMs": 200 },
+    "knobs": { "fistMs": 250, "openMs": 200, "fadeMs": 8000, "kouGapMs": 1500, "graceMs": 200, "release": "push" },
     "kou": { "curl": ["index", "middle", "ring", "pinky"] },
     "song": { "ext": ["index", "middle", "ring", "pinky"] },
     "huodan": { "wen": "wu", "element": "火", "glow": "#e8432f", "name": { "zh": "火弹", "en": "Fire shot" }, "how": { "zh": "掐午文，扣，松", "en": "Press Wu, close the fist, open" } },
@@ -282,6 +282,39 @@
     "muteng": { "wen": "mao", "element": "木", "glow": "#3f8a5a", "name": { "zh": "木藤", "en": "Wood vine" }, "how": { "zh": "掐卯文，扣，松", "en": "Press Mao, close the fist, open" } },
     "tuqiang": { "wen": "yuqing", "element": "土", "glow": "#c9a24a", "name": { "zh": "土墙", "en": "Earth wall" }, "how": { "zh": "掐玉清诀，扣，松", "en": "Press Jade Clarity, close the fist, open" } },
     "feijian": { "wen": "jian", "kou": false, "glow": "#9fb4c8", "name": { "zh": "飞剑", "en": "Flying sword" }, "how": { "zh": "结剑诀", "en": "Make the sword seal" } }
+  },
+  "_doufa": "手势斗法 (doc/games.md § 手势斗法; games/jieyin/duel.js) — the shape picks the move, the motion throws it. 小招 (`xiao`): a shape, then a jab (fingers) or a push (palm, fist) toward the lens (motion.js; `thrust` which shapes jab / push, `motion` its numbers). 法术 (`fa`): a spell (`spells`) pinched, held in a fist, pushed out. 大招 (`da`): a seal sequence (`moves`) that fires itself on its last seal. Every cast carries its lane — the hand's place in the frame, mirrored: thirds left · middle · right. 灵力 (`lingli`): one bar, `cost` by tier (a 法术 pays as it is held — 扣; a held spell that leaks away was paid for: 白掐一回), `refill` a second, `boss` when a 大妖 steps out (duel.js duelFill). What a cast does to a beast is `effects` (dmg, status ms, lane, push, near, wall), laid on by duel.js strike(): `combos` (木藤's root then 金刃 ×2; 冰 then 火 → steam over the lane) and the counter element (`counter.beats`: 金克木 木克土 土克水 水克火 火克金) ×`counter.mult`. The game applies them.",
+  "doufa": {
+    "thrust": { "jab": ["jian", "danjian"], "push": ["zhang", "song", "kou"] },
+    "motion": { "windowMs": 300, "grow": 1.12, "coolMs": 450 },
+    "lanes": ["left", "middle", "right"],
+    "lingli": { "max": 100, "start": 60, "refill": 6, "cost": { "xiao": 10, "fa": 25, "da": 60 }, "boss": 100 },
+    "xiao": {
+      "feijian": { "shape": "jian", "motion": "jab", "name": { "zh": "飞剑", "en": "Flying sword" }, "how": { "zh": "剑诀，往镜头一戳", "en": "Sword seal, jab at the camera" } },
+      "dianxue": { "shape": "danjian", "motion": "jab", "name": { "zh": "点穴", "en": "Pressure point" }, "how": { "zh": "单剑指，往镜头一戳", "en": "Single sword finger, jab at the camera" } },
+      "zhangfeng": { "shape": "zhang", "motion": "push", "name": { "zh": "掌风", "en": "Palm wind" }, "how": { "zh": "推掌，往镜头一推", "en": "Open palm, push at the camera" } },
+      "quanjin": { "shape": "kou", "motion": "push", "name": { "zh": "拳劲", "en": "Fist force" }, "how": { "zh": "握拳（手里没扣着法术），往前一推", "en": "A fist (no spell held in it), push forward" } }
+    },
+    "fa": ["huodan", "bingzhui", "jinren", "muteng", "tuqiang"],
+    "da": { "huodan4": { "move": "huodan", "name": { "zh": "四印火蛋", "en": "Four-seal fire egg" } } },
+    "effects": {
+      "feijian": { "dmg": 1 },
+      "dianxue": { "dmg": 0, "status": { "frozen": 3000 } },
+      "zhangfeng": { "dmg": 0, "lane": true, "push": 0.18 },
+      "quanjin": { "dmg": 1, "lane": true, "near": 0.35, "status": { "stunned": 1500 } },
+      "huodan": { "dmg": 2 },
+      "bingzhui": { "dmg": 1, "status": { "chilled": 4000 } },
+      "jinren": { "dmg": 2 },
+      "muteng": { "dmg": 0, "status": { "rooted": 3500 } },
+      "tuqiang": { "dmg": 0, "wall": 4000 },
+      "huodan4": { "dmg": 4, "lane": true }
+    },
+    "elements": { "huodan": "huo", "bingzhui": "shui", "jinren": "jin", "muteng": "mu", "tuqiang": "tu" },
+    "counter": { "mult": 1.5, "beats": { "jin": "mu", "mu": "tu", "tu": "shui", "shui": "huo", "huo": "jin" } },
+    "combos": [
+      { "id": "chanfa", "move": "jinren", "on": "rooted", "mult": 2, "name": { "zh": "缠而后伐", "en": "Bound, then cut" } },
+      { "id": "zhengqi", "move": "huodan", "on": "chilled", "lane": true, "dmg": 2, "show": "steam", "clear": "chilled", "name": { "zh": "冰火成雾", "en": "Ice and fire: steam" } }
+    ]
   },
   "levels": [
     {

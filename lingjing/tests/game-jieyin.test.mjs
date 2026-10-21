@@ -621,6 +621,7 @@ test('扣 is any fist — the thumb across it or inside it; a pointing finger, h
 });
 
 /* Spells, fed hand by hand: [{ L?: hand, R?: hand }, ms] frames at 15 a second. */
+const OPEN = { ...kit, spells: { ...kit.spells, knobs: { ...kit.spells.knobs, release: 'open' } } }; // the first cut's release: open the hand
 async function spellRun(steps, ids = kit.moves.wuxing.spells, k = kit) {
   const { spellStart, spellStep } = await import('../scripts/games/jieyin/spell.js');
   let s = spellStart(k, ids), events = [], held = [];
@@ -631,9 +632,9 @@ async function spellRun(steps, ids = kit.moves.wuxing.spells, k = kit) {
   return { events, held, types: events.map((e) => `${e.type}:${e.spell}`) };
 }
 
-test('掐 → 扣 → 松 casts the spell; the cast says which and how long it was held', async () => {
+test('掐 → 扣 → 松 (release: open) casts the spell; the cast says which and how long it was held', async () => {
   for (const id of kit.moves.wuxing.spells) {
-    const r = await spellRun([[{ R: wenHand(id) }, 400], [{ R: fist() }, 600], [{ R: open() }, 400]]);
+    const r = await spellRun([[{ R: wenHand(id) }, 400], [{ R: fist() }, 600], [{ R: open() }, 400]], undefined, OPEN);
     assert.deepEqual(r.types, [`wen:${id}`, `kou:${id}`, `cast:${id}`], id);
     const cast = r.events.at(-1);
     assert.equal(cast.hand, 'Right');
@@ -668,7 +669,7 @@ test('one hand holds one; two hands, at most two — each released on its own', 
     [{ L: fist(), R: wenHand('jinren') }, 400], // the right hand opens to pinch another: that is no release of a held spell…
     [{ L: open(), R: fist() }, 400],
     [{ L: open(), R: open() }, 400],
-  ]);
+  ], undefined, OPEN);
   const casts = r.events.filter((e) => e.type === 'cast').map((e) => `${e.hand}:${e.spell}`);
   assert.deepEqual(casts, ['Left:huodan', 'Right:bingzhui'], 'each hand lets go of its own');
   assert.ok(!r.types.includes('wen:jinren'), 'a hand holding a spell takes no other');
@@ -684,4 +685,17 @@ test('heldAt lays the held spells onto this frame\'s hands for the hint', async 
   const held = [{ hand: 'Right', spell: 'huodan', left: 0.5, glow: '#e8432f' }, { hand: '#1', spell: 'jinren', left: 1, glow: '#fff' }];
   assert.deepEqual(heldAt(held, ['Left', 'Right']).map((x) => x.at), [1, 1]);
   assert.deepEqual(heldAt(held, ['Right']).map((x) => x.at), [0]);
+});
+
+test('the release is a push now (手势斗法, spells.knobs.release): opening alone casts nothing; the hand that thrust lets go', async () => {
+  const { spellStart, spellStep } = await import('../scripts/games/jieyin/spell.js');
+  assert.equal(kit.spells.knobs.release, 'push');
+  let s = spellStart(kit, kit.moves.wuxing.spells), ev = [];
+  const go = (hand, ms, pushes = []) => { for (let t = 0; t < ms; t += 66) { const r = spellStep(s, { world: [hand], handed: ['Right'], pushes }, 66, kit); s = r.state; ev.push(...r.events.map((e) => e.type)); } };
+  go(wenHand('huodan'), 400); go(fist(), 500); go(open(), 600);
+  assert.deepEqual(ev, ['wen', 'kou'], 'opened, not pushed: still held');
+  go(open(), 66, ['Left']);
+  assert.deepEqual(ev, ['wen', 'kou'], 'the other hand\'s push is not this one\'s');
+  go(open(), 66, ['Right']);
+  assert.deepEqual(ev, ['wen', 'kou', 'cast']);
 });
