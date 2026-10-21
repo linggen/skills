@@ -12,10 +12,13 @@
 //             one done = 'done'.
 // A level with `forgive` (古六's 讲堂, its closing 火蛋) keeps a sequence's order and cast, but a wrong seal is only
 // 'miss' there too: no 走火, the seal wanted stays the same.
-// Events: { type: 'seal' | 'cast' | 'fizzle' | 'miss' | 'done', seal, at }.
+// A two-hand seal's one-hand stand-in (`knobs.also`, jieyin.json judge.also — Hanli 10-21: one-hand seals read better):
+// in a sequence, the step that wants 双掌 also takes 推掌; empty `also` and only the seal itself counts. A cast says
+// which seals made it (`used`), so a move may make a two-hand finish stronger (jieyin.json moves' `bonus`).
+// Events: { type: 'seal' | 'cast' | 'fizzle' | 'miss' | 'done', seal, at, used? }.
 
 export function start(level) {
-  return { mode: level.mode === 'one' ? 'one' : 'sequence', seq: [...level.sequence], at: 0, cur: null, held: 0, gap: 0, latched: false, last: null, casts: 0, fizzles: 0, misses: 0, done: false, forgive: Boolean(level.forgive) };
+  return { mode: level.mode === 'one' ? 'one' : 'sequence', seq: [...level.sequence], at: 0, cur: null, held: 0, gap: 0, latched: false, last: null, casts: 0, fizzles: 0, misses: 0, done: false, forgive: Boolean(level.forgive), used: [] };
 }
 
 /** The seal the player should make next. */
@@ -25,7 +28,14 @@ export const expected = (s) => (s.done ? null : s.seq[s.at] ?? null);
 export const progress = (s, knobs) => (s.cur == null ? 0 : s.latched ? 1 : Math.min(1, s.held / needs(s, knobs)));
 
 /** How long the seal in hand must be held to count: the one wanted (or just made) `holdMs`, any other `wrongMs`. */
-const needs = (s, knobs) => (s.cur === expected(s) || s.cur === s.last ? knobs.holdMs : knobs.wrongMs ?? knobs.holdMs);
+const needs = (s, knobs) => (fits(s, s.cur, knobs) || s.cur === s.last ? knobs.holdMs : knobs.wrongMs ?? knobs.holdMs);
+
+/** Does `seal` do for the step wanted now: the seal itself, or (in a sequence) one of its `also` stand-ins? */
+export function fits(s, seal, knobs = {}) {
+  const want = expected(s);
+  if (seal == null || want == null) return false;
+  return seal === want || (s.mode === 'sequence' && Boolean(knobs.also?.[want]?.includes(seal)));
+}
 
 function hold(s, seal, dt, knobs) {
   if (seal == null) {
@@ -36,24 +46,24 @@ function hold(s, seal, dt, knobs) {
   return { ...s, held: s.held + dt, gap: 0 };
 }
 
-function counted(s) {
-  const seal = s.cur, ev = (type) => ({ type, seal, at: s.at });
-  if (seal === expected(s)) {
-    const at = s.at + 1;
-    if (at < s.seq.length) return { state: { ...s, at, last: seal }, events: [ev('seal')] };
-    if (s.mode === 'one') return { state: { ...s, at, last: seal, done: true }, events: [ev('seal'), ev('done')] };
-    return { state: { ...s, at: 0, last: seal, casts: s.casts + 1 }, events: [ev('seal'), ev('cast')] };
+function counted(s, knobs) {
+  const seal = s.cur, ev = (type, more) => ({ type, seal, at: s.at, ...more });
+  if (fits(s, seal, knobs)) {
+    const at = s.at + 1, used = [...(s.used ?? []), seal];
+    if (at < s.seq.length) return { state: { ...s, at, last: seal, used }, events: [ev('seal')] };
+    if (s.mode === 'one') return { state: { ...s, at, last: seal, done: true, used }, events: [ev('seal'), ev('done')] };
+    return { state: { ...s, at: 0, last: seal, casts: s.casts + 1, used: [] }, events: [ev('seal'), ev('cast', { used })] };
   }
   if (seal === s.last) return { state: s, events: [] }; // the one just counted, made again
   if (s.mode === 'one' || s.forgive) return { state: { ...s, misses: s.misses + 1 }, events: [ev('miss')] };
-  return { state: { ...s, at: 0, last: null, fizzles: s.fizzles + 1 }, events: [ev('fizzle')] };
+  return { state: { ...s, at: 0, last: null, fizzles: s.fizzles + 1, used: [] }, events: [ev('fizzle')] };
 }
 
 export function step(state, seal, dt, knobs) {
   if (state.done) return { state, events: [] };
   const s = hold(state, seal, dt, knobs);
   if (s.cur == null || s.latched || s.held < needs(s, knobs)) return { state: s, events: [] };
-  return counted({ ...s, latched: true });
+  return counted({ ...s, latched: true }, knobs);
 }
 
 /** Stars from mistakes (走火, or a teaching level's misses): the level's `stars` [most for ★★★, most for ★★]. */

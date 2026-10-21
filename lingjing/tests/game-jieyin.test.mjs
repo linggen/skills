@@ -33,8 +33,11 @@ test('points are named as MediaPipe numbers them', () => {
 
 /* A shape's rules name only points the judge knows. */
 function knownShape(s, id) {
-  assert.deepEqual(Object.keys(s).filter((k) => !['ext', 'curl', 'near', 'far', 'nearest'].includes(k)), [], id);
-  for (const [a, b] of [...(s.near ?? []), ...(s.far ?? [])]) { pointIndex(a); pointIndex(b); }
+  assert.deepEqual(Object.keys(s).filter((k) => !['ext', 'curl', 'near', 'far', 'nearest', 'face', 'up'].includes(k)), [], id);
+  for (const [a, b, t] of [...(s.near ?? []), ...(s.far ?? [])]) { pointIndex(a); pointIndex(b); assert.ok(t == null || (t > 0 && t < 2), `${id}: a pair's own threshold`); }
+  // How the hand should face the camera (Hanli 10-21: 「要旋转一下手」): every shape says, in words the hint knows.
+  assert.ok(s.face?.length && s.face.every((f) => ['palm', 'side', 'back'].includes(f)), `${id}: face`);
+  assert.ok(s.up?.length && s.up.every((u) => ['up', 'side', 'down'].includes(u)), `${id}: up`);
   for (const [p, to, others] of s.nearest ?? []) [p, to, ...others].forEach(pointIndex);
 }
 
@@ -50,12 +53,13 @@ test('the library: one-hand and two-hand seals, each with a glyph, `hands`, zh +
     glyphs.add(s.glyph);
     const head = ['glyph', 'hands', 'name', 'how', 'hint'];
     if (s.hands === 1) { knownShape(Object.fromEntries(Object.entries(s).filter(([k]) => !head.includes(k))), id); continue; }
-    assert.deepEqual(Object.keys(s).filter((k) => ![...head, 'each', 'a', 'b', 'between', 'layout'].includes(k)), [], id);
+    assert.deepEqual(Object.keys(s).filter((k) => ![...head, 'each', 'a', 'b', 'between', 'layout', 'sides'].includes(k)), [], id);
+    assert.ok(s.sides && typeof s.sides.either === 'boolean', `${id}: says which hand is which, or that either will do`);
     assert.ok(s.each || (s.a && s.b), `${id}: each, or a and b`);
     [s.each, s.a, s.b].filter(Boolean).forEach((x) => knownShape(x, id));
     for (const [kind, pairs] of Object.entries(s.between)) {
       assert.ok(['near', 'far', 'above', 'level', 'column'].includes(kind), `${id}: ${kind}`);
-      for (const pq of pairs) for (const n of pq) { assert.match(n, /^[ab]\./, `${id}: ${n}`); pointIndex(n.slice(2)); }
+      for (const [p, q, t] of pairs) for (const n of [p, q]) { assert.match(n, /^[ab]\./, `${id}: ${n}`); pointIndex(n.slice(2)); assert.ok(t == null || t > 0); }
     }
   }
 });
@@ -73,7 +77,7 @@ test('every level and move has a sequence for every device set, made only of tha
     }
     const fire = sequenceFor(kit, 'huodan', set);
     assert.equal(fire.length, 4, 'four seals cast the 火蛋');
-    assert.equal(fire.at(-1), 'wu', 'the last is 午文 — 「火弹，掐午文」 (古六)');
+    assert.ok(fire.at(-1) === 'wu' || K.also[fire.at(-1)]?.includes('wu'), 'the last is 午文 — 「火弹，掐午文」 (古六) — or a seal 午文 stands in for');
   }
   assert.ok(sequenceFor(kit, 'huodan', 'desk').some((id) => handsOf(seals[id]) === 2), 'a Mac casts it with both hands');
   for (const l of kit.levels) assert.ok(l.title.zh && l.title.en && l.lead.zh && l.lead.en, l.id);
@@ -446,4 +450,113 @@ test('the game shows no camera picture: the video only feeds the model; the hint
   assert.match(src, /handHint\(/);
   assert.match(hint, /export function handHint\(container, \{ lang = 'zh', size = 'compact', seals = \{\}, knobs = \{\} \} = \{\}\)/);
   assert.doesNotMatch(hint, /<video|srcObject/, 'the hint never touches the camera');
+});
+
+/* ── After Hanli's camera test (10-21: 「单手的识别准确率高一些. 但要旋转一下手…双手的需要标注左右手」) ── */
+
+const spinY = (hand, deg) => { const r = (deg * Math.PI) / 180, c = Math.cos(r), s = Math.sin(r); return hand.map(({ x, y, z }) => ({ x: x * c + z * s, y, z: -x * s + z * c })); };
+const spinZ = (hand, deg) => turned(hand, deg);
+
+test('facing: palm, edge or back to the lens, fingers up or sideways — for the left hand and the right', async () => {
+  const { facingOf } = await import('../scripts/games/jieyin/judge.js');
+  const L = poseOf(seals.zhang), R = mirrored(L), O = kit.orient; // the template is a left hand, palm to the camera
+  assert.equal(facingOf(L, 'Left', O).face, 'palm');
+  assert.equal(facingOf(R, 'Right', O).face, 'palm');
+  assert.equal(facingOf(spinY(L, 180), 'Left', O).face, 'back');
+  assert.equal(facingOf(spinY(R, 180), 'Right', O).face, 'back');
+  assert.equal(facingOf(spinY(L, 75), 'Left', O).face, 'side');
+  assert.equal(facingOf(L, null, O).face, 'unknown', 'no handedness: no guess');
+  assert.equal(facingOf(L, 'Left', O).up, 'up');
+  assert.equal(facingOf(spinZ(L, 90), 'Left', O).up, 'side');
+  assert.equal(facingOf(spinZ(L, 180), 'Left', O).up, 'down');
+  assert.equal(facingOf(spinZ(L, 30), 'Left', O).up, 'up', 'a lean inside upDeg is still up');
+});
+
+test('eye.js names the player\'s own hand: MediaPipe\'s names are for a mirrored picture, swapped back (a knob)', async () => {
+  const { handedOf } = await import('../scripts/games/jieyin/eye.js');
+  const r = { handedness: [[{ categoryName: 'Left' }], [{ categoryName: 'Right' }], []] };
+  assert.deepEqual(handedOf(r, true), ['Right', 'Left', null]);
+  assert.deepEqual(handedOf(r, false), ['Left', 'Right', null]);
+  assert.deepEqual(handedOf({ handednesses: [[{ categoryName: 'Right' }]] }), ['Left']);
+  assert.equal(kit.orient.handedSwap, true);
+});
+
+test('every seal is drawn the way it reads best, and the hint asks a hand turned otherwise to turn', async () => {
+  const { facingOf } = await import('../scripts/games/jieyin/judge.js');
+  const { turnOf } = await import('../scripts/games/jieyin/hint.js');
+  for (const id of IDS) {
+    const { world } = posesOf(seals[id]), shapes = handsOf(seals[id]) === 2 ? [seals[id].a ?? seals[id].each, seals[id].b ?? seals[id].each] : [seals[id]];
+    const handed = world.length === 2 ? ['Left', 'Right'] : ['Left']; // the drawings: a left hand, and its mirror
+    world.forEach((h, i) => {
+      const f = facingOf(h, handed[i], kit.orient);
+      assert.ok(shapes[i].face.includes(f.face), `${id}: hand ${i} drawn ${f.face}`);
+      assert.ok(shapes[i].up.includes(f.up), `${id}: hand ${i} fingers ${f.up}`);
+    });
+    assert.equal(turnOf({ world, handed, seal: seals[id], orient: kit.orient }), null, `${id}: its own drawing needs no turn`);
+  }
+  const back = [spinY(poseOf(seals.zhang), 180)];
+  assert.deepEqual(turnOf({ world: back, handed: ['Left'], seal: seals.zhang, orient: kit.orient }), { to: 'palm' });
+  assert.equal(turnOf({ world: [spinY(poseOf(seals.wu), 70)], handed: ['Left'], seal: seals.wu, orient: kit.orient }), null, '午文 reads palm-on or edge-on: widened, no nag');
+  assert.deepEqual(turnOf({ world: [spinZ(poseOf(seals.zhang), 90)], handed: ['Left'], seal: seals.zhang, orient: kit.orient }), { to: 'up' });
+  assert.equal(turnOf({ world: back, handed: [null], seal: seals.zhang, orient: kit.orient }), null, 'unknown hand: no turn cue');
+  assert.equal(turnOf({ world: back, handed: ['Left'], seal: null, orient: kit.orient }), null);
+});
+
+test('two-hand seals name 左手 / 右手 as the player sees them, and say when either hand may take either side', async () => {
+  const { facingLine } = await import('../scripts/games/jieyin/hint.js');
+  for (const id of TWO) {
+    assert.match(seals[id].how.zh, /左手|左右|哪只/, `${id}: the how-line names the hands`);
+    if (seals[id].sides.left) assert.match(iconSvg(seals[id]), /<text[^>]*>左<\/text><text[^>]*>右<\/text>/, `${id}: the icon labels 左 then 右`);
+    assert.match(facingLine(seals[id], 'zh'), /左右手都可以/, `${id}: either hand either side`);
+  }
+  assert.match(facingLine(seals.chengjian, 'zh'), /^左手手侧着.*；右手掌心朝镜头/, '承剑: the left hand flat and edge-on, the right a sword palm-on');
+  assert.match(facingLine(seals.zhang, 'zh'), /掌心朝镜头，手指朝上/);
+  assert.match(facingLine(seals.lihuo, 'en'), /either hand either side/);
+  // 承剑 drawn mirrored: the flat palm (a) on the left, the sword (b) on the right and above.
+  const im = posesOf(seals.chengjian).image.map((h) => h.map((p) => ({ x: -p.x, y: p.y })));
+  assert.ok(im[0][0].x < im[1][0].x && im[1][0].y < im[0][9].y);
+});
+
+test('a two-hand seal whose sides are fixed takes the hands only the declared way round (by where they stand)', () => {
+  const fixed = { ...seals.chengjian, sides: { left: 'a', right: 'b', either: false } };
+  const { world, image } = posesOf(seals.chengjian);
+  const t = { ...seals, fixed };
+  assert.equal(makesTwo(world, image, fixed, K), true, 'left hand flat, right hand the sword');
+  const flip = { world, image: image.map((h) => h.map((p) => ({ ...p, x: -p.x }))) }; // the scene mirrored: the sword on the player's left
+  assert.equal(makesTwo(flip.world, flip.image, seals.chengjian, K), true, 'either way round when either is allowed');
+  assert.equal(makesTwo(flip.world, flip.image, fixed, K), false, 'not when the sides are fixed');
+  assert.ok(t);
+});
+
+test('one hand casts every move on a Mac too: each two-hand step takes its one-hand stand-in (judge.also); the cast says which', () => {
+  const desk = sequenceFor(kit, 'huodan', 'desk'), phone = sequenceFor(kit, 'huodan', 'phone');
+  assert.deepEqual(desk, ['shuangzhang', 'shuangjian', 'shen', 'lihuo'], '离火印 and 双剑 up front on a Mac (Hanli: 「双手版离火印挺酷. 双剑也不错」)');
+  const run = (ids, knobs = K) => {
+    let s = start({ mode: 'sequence', sequence: desk }), events = [];
+    for (const id of ids) {
+      for (let t = 0; t < knobs.holdMs + 66; t += 33) { const r = step(s, id, 33, knobs); s = r.state; events.push(...r.events); }
+      for (let t = 0; t < knobs.graceMs + 66; t += 33) s = step(s, null, 33, knobs).state;
+    }
+    return events;
+  };
+  const oneHand = run(phone);
+  assert.deepEqual(oneHand.map((e) => e.type), ['seal', 'seal', 'seal', 'seal', 'cast'], 'the phone\'s four do the Mac\'s 火蛋');
+  assert.deepEqual(oneHand.at(-1).used, phone);
+  assert.deepEqual(run(desk).at(-1).used, desk);
+  assert.deepEqual(run(['zhang', 'shuangjian', 'shen', 'lihuo']).at(-1).used, ['zhang', 'shuangjian', 'shen', 'lihuo'], 'mixed');
+  assert.deepEqual(run(phone, { ...K, also: {} }).map((e) => e.type), [], 'the switch: empty `also` and the Mac wants both hands — one hand counts nothing');
+  // teaching (`one`) never takes a stand-in: the seal shown is the seal to make
+  let s = start({ mode: 'one', sequence: ['shuangzhang'] }), ev = [];
+  for (let t = 0; t < K.wrongMs + 66; t += 33) { const r = step(s, 'zhang', 33, K); s = r.state; ev.push(...r.events.map((e) => e.type)); }
+  assert.deepEqual(ev, ['miss']);
+});
+
+test('the two-hand bonus is a data switch: off, every cast the same; on, 离火印 as the finisher a bigger 火蛋, 双剑 two swords', async () => {
+  const { bonusOf } = await import('../scripts/games/jieyin/sets.js');
+  const desk = sequenceFor(kit, 'huodan', 'desk');
+  assert.equal(kit.moves.huodan.bonus.on, false, 'pending Hanli\'s call');
+  assert.deepEqual(bonusOf(kit, 'huodan', desk), { egg: 1, hits: 1, split: 1 });
+  const on = { ...kit, moves: { huodan: { ...kit.moves.huodan, bonus: { ...kit.moves.huodan.bonus, on: true } } } };
+  assert.deepEqual(bonusOf(on, 'huodan', desk), { egg: 1.7, hits: 2, split: 2 });
+  assert.deepEqual(bonusOf(on, 'huodan', ['zhang', 'jian', 'shen', 'wu']), { egg: 1, hits: 1, split: 1 }, 'one hand: the plain egg');
 });

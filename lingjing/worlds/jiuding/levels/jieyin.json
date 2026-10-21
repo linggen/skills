@@ -14,7 +14,14 @@
     "holdMs": 300,
     "wrongMs": 600,
     "graceMs": 160,
-    "pair": { "near": 0.4, "far": 1.2, "above": 0.3, "level": 0.6, "column": 1.0 }
+    "pair": { "near": 0.4, "far": 1.2, "above": 0.3, "level": 0.6, "column": 1.0 },
+    "also": {
+      "shuangzhang": ["zhang"],
+      "shuangjian": ["jian"],
+      "lihuo": ["wu"],
+      "chengjian": ["jian"],
+      "tiandi": ["zhang"]
+    }
   },
   "seals": {
     "lihuo": {
@@ -22,75 +29,112 @@
       "hands": 2,
       "name": { "zh": "离火印", "en": "The Li-fire seal" },
       "how": {
-        "zh": "双手拇指尖相碰、食指尖相碰，围成一个三角，两掌分开",
-        "en": "Thumb tips together and index tips together, a triangle between them, palms apart"
+        "zh": "左手、右手都伸出食指和拇指，掌心朝镜头：两食指尖相碰、两拇指尖相碰，围成一个三角，两掌分开（左右手都可以）",
+        "en": "Left and right hands each with index and thumb out, palms to the camera: index tips touching, thumb tips touching — a triangle, palms apart (either hand either side)"
       },
       "hint": { "zh": "火形尖，离为火。", "en": "Fire is pointed; Li is fire." },
-      "each": { "ext": ["index"], "far": [["thumb.tip", "index.mcp"]] },
-      "between": { "near": [["a.index.tip", "b.index.tip"], ["a.thumb.tip", "b.thumb.tip"]], "far": [["a.wrist", "b.wrist"]] },
-      "layout": { "touch": ["index.tip", "thumb.tip"] }
+      "each": { "ext": ["index"], "far": [["thumb.tip", "index.mcp", 0.5]], "face": ["palm"], "up": ["up", "side"] },
+      "between": {
+        "near": [["a.index.tip", "b.index.tip", 0.6], ["a.thumb.tip", "b.thumb.tip", 0.6]],
+        "far": [["a.wrist", "b.wrist"]]
+      },
+      "layout": { "touch": ["index.tip", "thumb.tip"] },
+      "sides": { "left": "a", "right": "b", "either": true }
     },
     "shuangzhang": {
       "glyph": "排",
       "hands": 2,
       "name": { "zh": "双掌", "en": "Twin palms" },
-      "how": { "zh": "双手推掌，并排、齐平，分开一拳多", "en": "Both palms out side by side, level, a fist or more apart" },
+      "how": {
+        "zh": "左手、右手都推掌，掌心朝镜头，并排齐平，分开一拳多（左右手都可以）",
+        "en": "Left and right palms out to the camera, side by side, level, a fist or more apart (either hand either side)"
+      },
       "hint": { "zh": "两掌齐出，排山。", "en": "Two palms at once: push the mountain." },
       "each": {
         "ext": ["index", "middle", "ring", "pinky"],
-        "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]]
+        "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]],
+        "face": ["palm"],
+        "up": ["up"]
       },
       "between": { "level": [["a.wrist", "b.wrist"]], "far": [["a.wrist", "b.wrist"], ["a.index.tip", "b.index.tip"]] },
-      "layout": { "dx": 2.4, "mirror": true }
+      "layout": { "dx": -2.4, "mirror": true },
+      "sides": { "left": "a", "right": "b", "either": true }
     },
     "shuangjian": {
       "glyph": "双",
       "hands": 2,
       "name": { "zh": "双剑", "en": "Twin swords" },
-      "how": { "zh": "双手都结剑诀，并排、齐平，分开", "en": "Both hands in the sword seal, side by side, level, apart" },
+      "how": {
+        "zh": "左手、右手都结剑诀，掌心朝镜头，并排齐平，分开一拳多（左右手都可以）",
+        "en": "Left and right hands both in the sword seal, palms to the camera, side by side, level, a fist or more apart (either hand either side)"
+      },
       "hint": { "zh": "左右两剑，一齐引气。", "en": "A sword on each side, drawing the qi together." },
-      "each": { "ext": ["index", "middle"], "curl": ["ring", "pinky"], "near": [["index.tip", "middle.tip"]] },
-      "between": { "level": [["a.wrist", "b.wrist"]], "far": [["a.wrist", "b.wrist"], ["a.index.tip", "b.index.tip"]] },
-      "layout": { "dx": 2.4, "mirror": true }
+      "each": {
+        "ext": ["index", "middle"],
+        "curl": ["ring", "pinky"],
+        "near": [["index.tip", "middle.tip", 0.45]],
+        "face": ["palm", "side"],
+        "up": ["up"]
+      },
+      "between": { "level": [["a.wrist", "b.wrist", 0.9]], "far": [["a.wrist", "b.wrist"], ["a.index.tip", "b.index.tip"]] },
+      "layout": { "dx": -2.4, "mirror": true },
+      "sides": { "left": "a", "right": "b", "either": true }
     },
     "chengjian": {
       "glyph": "承",
       "hands": 2,
       "name": { "zh": "承剑", "en": "Sword on the palm" },
       "how": {
-        "zh": "一只手掌平放（指尖朝旁边），另一只手结剑诀，竖在它上方，别碰着",
-        "en": "One hand flat, fingers pointing sideways; the other in the sword seal, upright above it, not touching"
+        "zh": "左手平掌（手侧过来，指尖朝旁边），右手剑诀竖在它上方，别碰着（左右手换过来也行）",
+        "en": "Left hand flat (edge to the camera, fingers sideways), right hand in the sword seal upright above it, not touching (swapped is fine too)"
       },
       "hint": { "zh": "一手作台，一手立剑。", "en": "One hand the stand, one hand the sword." },
       "a": {
         "ext": ["index", "middle", "ring", "pinky"],
-        "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]]
+        "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]],
+        "face": ["side", "palm"],
+        "up": ["side"]
       },
-      "b": { "ext": ["index", "middle"], "curl": ["ring", "pinky"], "near": [["index.tip", "middle.tip"]] },
+      "b": {
+        "ext": ["index", "middle"],
+        "curl": ["ring", "pinky"],
+        "near": [["index.tip", "middle.tip"]],
+        "face": ["palm", "side"],
+        "up": ["up"]
+      },
       "between": { "above": [["b.wrist", "a.middle.mcp"]], "column": [["b.wrist", "a.middle.mcp"]] },
-      "layout": { "turn": [-90, 0], "dx": -1.0, "dy": -1.0 }
+      "layout": { "turn": [-90, 0], "dx": -1.0, "dy": -1.0, "mirror": true },
+      "sides": { "left": "a", "right": "b", "either": true }
     },
     "tiandi": {
       "glyph": "乾",
       "hands": 2,
       "name": { "zh": "天地印", "en": "Heaven and earth" },
-      "how": { "zh": "双手推掌，一上一下竖着叠，中间留空", "en": "Both palms out, one straight above the other, a gap between" },
+      "how": {
+        "zh": "两手推掌，掌心朝镜头，一只在上一只在下，竖着叠，中间留空（哪只在上都可以）",
+        "en": "Both palms out to the camera, one straight above the other, a gap between (either hand on top)"
+      },
       "hint": { "zh": "一掌在天，一掌在地。", "en": "One palm for heaven, one for earth." },
       "each": {
         "ext": ["index", "middle", "ring", "pinky"],
-        "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]]
+        "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]],
+        "face": ["palm"],
+        "up": ["up"]
       },
       "between": { "above": [["a.wrist", "b.middle.tip"]], "column": [["a.wrist", "b.wrist"]] },
-      "layout": { "dy": 2.6, "mirror": true }
+      "layout": { "dy": 2.6, "mirror": true },
+      "sides": { "top": "a", "bottom": "b", "either": true }
     },
     "zhang": {
       "glyph": "掌",
       "name": { "zh": "推掌", "en": "Open palm" },
-      "how": { "zh": "五指张开，掌心朝镜头", "en": "All five fingers open, palm to the camera" },
+      "how": { "zh": "五指张开，掌心朝镜头，手指朝上", "en": "All five fingers open, palm to the camera, fingers up" },
       "hint": { "zh": "他竖起一只手，五指张开。", "en": "He raises one hand, all five fingers open." },
       "ext": ["index", "middle", "ring", "pinky"],
       "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]],
-      "hands": 1
+      "hands": 1,
+      "face": ["palm"],
+      "up": ["up"]
     },
     "jian": {
       "glyph": "剑",
@@ -106,7 +150,9 @@
       "ext": ["index", "middle"],
       "curl": ["ring", "pinky"],
       "near": [["index.tip", "middle.tip"]],
-      "hands": 1
+      "hands": 1,
+      "face": ["palm", "side"],
+      "up": ["up"]
     },
     "si": {
       "glyph": "巳",
@@ -115,7 +161,9 @@
       "hint": { "zh": "顺着食指一节一节爬上去，到指尖是巳文。", "en": "Up the index finger joint by joint — at its tip, the Si mark." },
       "ext": ["middle", "ring", "pinky"],
       "nearest": [["thumb.tip", "index.tip", ["index.dip", "middle.tip"]]],
-      "hands": 1
+      "hands": 1,
+      "face": ["palm", "side"],
+      "up": ["up"]
     },
     "wu": {
       "glyph": "午",
@@ -124,7 +172,9 @@
       "hint": { "zh": "火在南，南是午。火弹，掐午文。", "en": "Fire is south, and south is Wu. For a fire shot, press the Wu mark." },
       "ext": ["index", "ring", "pinky"],
       "nearest": [["thumb.tip", "middle.tip", ["middle.dip", "index.tip", "ring.tip"]]],
-      "hands": 1
+      "hands": 1,
+      "face": ["palm", "side"],
+      "up": ["up"]
     },
     "shen": {
       "glyph": "申",
@@ -133,7 +183,9 @@
       "hint": { "zh": "小指尖，申。", "en": "The little fingertip: Shen." },
       "ext": ["index", "middle", "ring"],
       "hands": 1,
-      "nearest": [["thumb.tip", "pinky.tip", ["pinky.dip", "ring.tip"]]]
+      "nearest": [["thumb.tip", "pinky.tip", ["pinky.dip", "ring.tip"]]],
+      "face": ["palm", "side"],
+      "up": ["up"]
     },
     "wei": {
       "glyph": "未",
@@ -142,7 +194,9 @@
       "how": { "zh": "拇指尖掐无名指尖，另外三指伸直", "en": "Thumb tip on the ring-finger tip; the other three straight" },
       "hint": { "zh": "中指尖，午；无名指尖，未。", "en": "The middle tip is Wu; the ring tip, Wei." },
       "ext": ["index", "middle", "pinky"],
-      "nearest": [["thumb.tip", "ring.tip", ["ring.dip", "middle.tip", "pinky.tip"]]]
+      "nearest": [["thumb.tip", "ring.tip", ["ring.dip", "middle.tip", "pinky.tip"]]],
+      "face": ["palm", "side"],
+      "up": ["up"]
     },
     "mao": {
       "glyph": "卯",
@@ -151,7 +205,9 @@
       "how": { "zh": "拇指按在食指中间那个关节上，另外三指伸直", "en": "Thumb on the index finger's middle joint; the other three straight" },
       "hint": { "zh": "木在东，木藤掐卯文。", "en": "Wood is east: for the vine, press the Mao mark." },
       "ext": ["middle", "ring", "pinky"],
-      "nearest": [["thumb.tip", "index.pip", ["index.dip", "index.mcp", "middle.pip"]]]
+      "nearest": [["thumb.tip", "index.pip", ["index.dip", "index.mcp", "middle.pip"]]],
+      "face": ["palm"],
+      "up": ["up"]
     },
     "yuqing": {
       "glyph": "玉",
@@ -160,7 +216,9 @@
       "how": { "zh": "拇指按在中指中间那个关节上，另外三指伸直", "en": "Thumb on the middle finger's middle joint; the other three straight" },
       "hint": { "zh": "土在当中。这一节，书上叫玉清诀。", "en": "Earth is the centre. This joint the book calls Jade Clarity." },
       "ext": ["index", "ring", "pinky"],
-      "nearest": [["thumb.tip", "middle.pip", ["middle.dip", "middle.mcp", "index.pip", "ring.pip"]]]
+      "nearest": [["thumb.tip", "middle.pip", ["middle.dip", "middle.mcp", "index.pip", "ring.pip"]]],
+      "face": ["palm"],
+      "up": ["up"]
     },
     "you": {
       "glyph": "酉",
@@ -172,7 +230,9 @@
       },
       "hint": { "zh": "金在西，金刃掐酉文。", "en": "Metal is west: for the blade, press the You mark." },
       "ext": ["index", "middle", "ring"],
-      "nearest": [["thumb.tip", "pinky.dip", ["pinky.tip", "pinky.pip", "ring.dip"]]]
+      "nearest": [["thumb.tip", "pinky.dip", ["pinky.tip", "pinky.pip", "ring.dip"]]],
+      "face": ["palm"],
+      "up": ["up"]
     },
     "zi": {
       "glyph": "子",
@@ -181,7 +241,9 @@
       "how": { "zh": "掌心朝镜头，拇指横过掌心，按在无名指根上", "en": "Palm to the camera, thumb across it onto the root of the ring finger" },
       "hint": { "zh": "水在北，冰锥掐子文。", "en": "Water is north: for the ice spike, press the Zi mark." },
       "ext": ["index", "middle", "pinky"],
-      "nearest": [["thumb.tip", "ring.mcp", ["middle.mcp", "pinky.mcp", "ring.pip"]]]
+      "nearest": [["thumb.tip", "ring.mcp", ["middle.mcp", "pinky.mcp", "ring.pip"]]],
+      "face": ["palm"],
+      "up": ["up"]
     },
     "danjian": {
       "glyph": "指",
@@ -190,7 +252,9 @@
       "how": { "zh": "只伸直食指，其余三指弯下，拇指压住它们", "en": "Only the index straight; the other three folded under the thumb" },
       "hint": { "zh": "剑诀减一指，气走一线。", "en": "The sword seal less one finger: the qi runs one line." },
       "ext": ["index"],
-      "curl": ["middle", "ring", "pinky"]
+      "curl": ["middle", "ring", "pinky"],
+      "face": ["palm", "side"],
+      "up": ["up"]
     },
     "jijiao": {
       "glyph": "角",
@@ -202,7 +266,9 @@
       },
       "hint": { "zh": "两角一立，像头小牛。", "en": "Two horns up, like a young ox." },
       "ext": ["index", "pinky"],
-      "curl": ["middle", "ring"]
+      "curl": ["middle", "ring"],
+      "face": ["palm", "side"],
+      "up": ["up"]
     }
   },
   "levels": [
@@ -261,7 +327,12 @@
     "huodan": {
       "name": { "zh": "火蛋", "en": "Fire egg" },
       "phone": ["zhang", "jian", "shen", "wu"],
-      "desk": ["shuangzhang", "chengjian", "lihuo", "wu"]
+      "desk": ["shuangzhang", "shuangjian", "shen", "lihuo"],
+      "_bonus": "Pending Hanli (10-21: is a two-hand seal stronger?): `on` false — every cast the same. On: a cast whose `used` holds a seal named here takes its strength — 离火印 as the finisher a bigger 火蛋 (`egg` its size, `hits` its damage); 双剑 two swords at two beasts (`split`, for 守墙关).",
+      "bonus": { "on": false, "lihuo": { "egg": 1.7, "hits": 2 }, "shuangjian": { "split": 2 } }
     }
-  }
+  },
+  "_also": "judge.also: a two-hand seal's one-hand stand-in in a sequence (Hanli 10-21: 「单手的识别准确率高一些」): on a Mac the step that wants 双掌 takes 推掌 too, so every move casts with one hand. The data switch: empty a seal's list (or `also`) and that step wants both hands.",
+  "orient": { "palm": 0.45, "upDeg": 50, "turnMs": 700, "handedSwap": true },
+  "_orient": "How a hand faces the camera (judge.js facingOf; Hanli 10-21: 「要旋转一下手, 这个需要在游戏里提示用户」): the palm's turn to the lens over `palm` (cos) is 'palm', under −`palm` 'back', else 'side'; the fingers within `upDeg` of straight up are 'up', else 'side' / 'down'. A seal's (or a two-hand part's) `face` / `up` list the ways its points read well (none = any); the hand hint asks the hand to turn after `turnMs` the other way. `handedSwap`: MediaPipe names hands as on a mirrored picture; ours is not mirrored, so its 'Left' is the player's right."
 }

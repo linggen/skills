@@ -1,6 +1,6 @@
 // jieyin.js — 结印 (hand seals), a prototype in the 游戏厅 (Hanli 2026-10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面,
 // 让用户结印发火弹帮忙打怪」). The player makes seals at the camera; four in order cast a 火蛋 at the boar — on a phone
-// 推掌 · 剑诀 · 申文 · 午文, on a Mac 双掌 · 承剑 · 离火印 · 午文 (two hands; levels/jieyin.json `moves`) — three eggs drive it off. A wrong seal held = 走火: a charred egg and a puff, back to the first seal.
+// 推掌 · 剑诀 · 申文 · 午文, on a Mac 双掌 · 双剑 · 申文 · 离火印 (two hands, each step also taken by its one-hand seal — judge.also; levels/jieyin.json `moves`) — three eggs drive it off. A wrong seal held = 走火: a charred egg and a puff, back to the first seal.
 // The second level is 古六's 讲堂 teaching level (one seal at a time, 褚先生's line for each, then the four once at a
 // straw dummy): in the story it is wm-qianye's board where a camera is (h08 `qianye-qiajue`'s `alt`, caps.js).
 //
@@ -17,8 +17,8 @@
 // live check's way to play it through; never a player's.
 import { available, dropModel, loadModel, openEye } from './jieyin/eye.js';
 import { handsOf, sealOf } from './jieyin/judge.js';
-import { eyeFor, sealsFor, sequenceFor, setOf } from './jieyin/sets.js';
-import { expected, progress, start, starsOf, step } from './jieyin/sequence.js';
+import { bonusOf, eyeFor, sealsFor, sequenceFor, setOf } from './jieyin/sets.js';
+import { expected, fits, progress, start, starsOf, step } from './jieyin/sequence.js';
 import { iconSvg } from './jieyin/pose.js';
 import { handHint } from './jieyin/hint.js';
 
@@ -82,7 +82,10 @@ export function unavailableHtml(lang = 'zh') {
 function seqHtml(kit, level, lang) {
   return level.sequence.map((id, i) => {
     const s = kit.seals[id];
-    return `<li class="jy-slot${handsOf(s) === 2 ? ' is-two' : ''}" data-i="${i}" title="${plain(tr(s.how, lang))}"><span class="jy-glyph">${plain(s.glyph)}</span>${iconSvg(s, 34)}<small>${plain(tr(s.name, lang))}</small></li>`;
+    // A two-hand step a one-hand seal also does (judge.also, Hanli 10-21: 「单手的识别准确率高一些」) says so under it.
+    const alt = level.mode !== 'one' ? (kit.judge.also?.[id] ?? []).map((a) => tr(kit.seals[a]?.name, lang)).filter(Boolean) : [];
+    const or = alt.length ? `<em class="jy-or">${plain(lang === 'en' ? `or ${alt.join(' / ')}` : `或 ${alt.join('、')}`)}</em>` : '';
+    return `<li class="jy-slot${handsOf(s) === 2 ? ' is-two' : ''}" data-i="${i}" title="${plain(tr(s.how, lang))}"><span class="jy-glyph">${plain(s.glyph)}</span>${iconSvg(s, 34, { lang })}<small>${plain(tr(s.name, lang))}</small>${or}</li>`;
   }).join('');
 }
 
@@ -98,10 +101,11 @@ function stageHtml(kit, level, lang) {
 }
 
 /** A sprite flies from one element to another (the 火蛋). */
-function fly(box, src, from, to, ms) {
+function fly(box, src, from, to, ms, scale = 1) {
   const r = box.getBoundingClientRect(), a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
   const img = box.ownerDocument.createElement('img');
   img.className = 'jy-egg';
+  if (scale !== 1) img.style.width = `${13 * scale}%`;
   img.src = src;
   img.alt = '';
   box.append(img);
@@ -168,7 +172,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const video = $('video');
       const hint = handHint($('.jy-dock'), { lang, size: level.mode === 'one' ? 'large' : 'compact', seals, knobs: kit.hint });
       const art = artOf(level);
-      let s = start(level), hands = [], picture = [], aspect = 4 / 3, hp = castOf(level)?.hits ?? 0, busy = false, last = win.performance.now(), taught = 0;
+      let s = start(level), hands = [], picture = [], handed = [], aspect = 4 / 3, hp = castOf(level)?.hits ?? 0, busy = false, last = win.performance.now(), taught = 0;
 
       const hud = () => {
         const want = expected(s);
@@ -176,18 +180,19 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           el.classList.toggle('is-done', s.done || i < s.at);
           el.classList.toggle('is-next', !s.done && i === s.at);
         });
-        hint.update({ image: picture, aspect, target: want, progress: s.cur === want ? progress(s, kit.judge) : 0, right: Boolean(s.cur && s.cur === want), now: win.performance.now() });
+        const right = fits(s, s.cur, kit.judge);
+        hint.update({ image: picture, aspect, target: want, progress: right ? progress(s, kit.judge) : 0, right, now: win.performance.now(), world: hands, handed });
         const next = want ? kit.seals[want] : null;
         $('.jy-hint').textContent = next ? (s.mode === 'one' ? `${tr(next.hint, lang)}　${tr(next.how, lang)}` : `${tr(next.name, lang)}：${tr(next.how, lang)}`) : '';
       };
       const say = (text) => (shell?.say ? shell.say(w.who, text, 1800) : ($('.jy-status').textContent = text));
 
-      const cast = async () => {
+      const cast = async (used) => {
         busy = true;
-        const foe = $('.jy-foe');
-        await fly(box, ART.egg, $('.jy-xm'), foe, reducedMotion ? 200 : 650);
+        const foe = $('.jy-foe'), power = bonusOf(kit, level.move, used); // a two-hand finish stronger only when the move's bonus is on
+        await fly(box, ART.egg, $('.jy-xm'), foe, reducedMotion ? 200 : 650, power.egg);
         if (done) return;
-        hp -= 1;
+        hp = Math.max(0, hp - power.hits);
         foe.querySelectorAll('.jy-hp i').forEach((el, i) => el.classList.toggle('is-gone', i >= hp));
         foe.querySelector('img').src = art.foe('hit');
         foe.classList.add('is-hit');
@@ -211,7 +216,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       };
       const act = (ev) => {
         if (ev.type === 'seal') { const el = box.querySelector(`.jy-slot[data-i="${ev.at}"]`); el?.classList.remove('is-pop'); void el?.offsetWidth; el?.classList.add('is-pop'); }
-        if (ev.type === 'cast') cast();
+        if (ev.type === 'cast') cast(ev.used);
         if (ev.type === 'fizzle') { burnt(box, $('.jy-xm'), reducedMotion); hint.fizzle(); say(w.fizzle); }
         if (ev.type === 'miss') { const el = box.querySelector('.jy-slot.is-next'); el?.classList.remove('is-shake'); void el?.offsetWidth; el?.classList.add('is-shake'); }
         if (ev.type === 'done' && level.cast) castNext();
@@ -233,8 +238,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         loop = win.requestAnimationFrame(tick);
       };
 
-      const onHands = ({ world, image }) => {
+      const onHands = ({ world, image, handed: which }) => {
         hands = world;
+        handed = which ?? [];
         picture = image;
         aspect = (video.videoWidth / video.videoHeight) || aspect;
       };
@@ -243,10 +249,10 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       else await new Promise((r) => { const b = doc.createElement('button'); b.className = 'gshell-btn is-main jy-go'; b.textContent = lang === 'en' ? 'Start' : '开始'; b.onclick = () => { b.remove(); r(); }; box.append(b); });
       if (done) return;
       if (feedOnly) {
-        win.jieyinFeed = (h, img = h, a = 4 / 3) => { hands = h ?? []; picture = img ?? []; aspect = a; }; // img: the picture's points, 0…1 of the frame
+        win.jieyinFeed = (h, img = h, a = 4 / 3, which = []) => { hands = h ?? []; picture = img ?? []; aspect = a; handed = which; }; // img: the picture's points, 0…1 of the frame; which: 'Left' | 'Right' each
         loadModel().then(() => { box.dataset.model = 'ready'; }, () => { box.dataset.model = 'failed'; });
       } else {
-        eye = openEye({ video, onHands, env: win, ...eyeFor(kit, set, level.sequence, level.eye) });
+        eye = openEye({ video, onHands, env: win, ...eyeFor(kit, set, level.sequence, level.eye), handedSwap: kit.orient?.handedSwap ?? true });
         // Heard before the camera is asked for: a pause while the prompt is open keeps the camera off (eye.js).
         offPause = shell?.onPause?.((paused) => {
           if (done) return;

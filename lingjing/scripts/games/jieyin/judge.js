@@ -48,10 +48,11 @@ export const handsOf = (seal) => (seal?.hands === 2 ? 2 : 1);
 export function makes(hand, seal, knobs, slack = 0) {
   if (!Array.isArray(hand) || hand.length < 21) return false;
   const k = { ext: knobs.ext / (1 + slack), curl: knobs.curl * (1 + slack), near: knobs.near * (1 + slack), far: knobs.far / (1 + slack) };
+  const s = 1 + slack; // a pair's own threshold (its third item) widens with the rest
   return (seal.ext ?? []).every((f) => reach(hand, f) > k.ext)
     && (seal.curl ?? []).every((f) => reach(hand, f) < k.curl)
-    && (seal.near ?? []).every(([a, b]) => gap(hand, a, b) < k.near)
-    && (seal.far ?? []).every(([a, b]) => gap(hand, a, b) > k.far)
+    && (seal.near ?? []).every(([a, b, t]) => gap(hand, a, b) < (t ? t * s : k.near))
+    && (seal.far ?? []).every(([a, b, t]) => gap(hand, a, b) > (t ? t / s : k.far))
     && (seal.nearest ?? []).every(([p, to, others]) => gap(hand, p, to) < k.near && others.every((o) => gap(hand, p, o) > gap(hand, p, to)));
 }
 
@@ -67,20 +68,26 @@ export function stands(pair, between = {}, k, slack = 0) {
   const d = (p, q) => dist(pt(pair, p), pt(pair, q)) / unit;
   const dy = (p, q) => (pt(pair, q).y - pt(pair, p).y) / unit; // > 0: p stands above q
   const dx = (p, q) => Math.abs(pt(pair, q).x - pt(pair, p).x) / unit;
-  const s = 1 + slack;
-  return (between.near ?? []).every(([p, q]) => d(p, q) < k.near * s)
-    && (between.far ?? []).every(([p, q]) => d(p, q) > k.far / s)
-    && (between.above ?? []).every(([p, q]) => dy(p, q) > k.above / s)
-    && (between.level ?? []).every(([p, q]) => Math.abs(dy(p, q)) < k.level * s)
-    && (between.column ?? []).every(([p, q]) => dx(p, q) < k.column * s);
+  const s = 1 + slack, t = (x, knob) => x ?? k[knob]; // a pair's own threshold (its third item), else the knob
+  return (between.near ?? []).every(([p, q, x]) => d(p, q) < t(x, 'near') * s)
+    && (between.far ?? []).every(([p, q, x]) => d(p, q) > t(x, 'far') / s)
+    && (between.above ?? []).every(([p, q, x]) => dy(p, q) > t(x, 'above') / s)
+    && (between.level ?? []).every(([p, q, x]) => Math.abs(dy(p, q)) < t(x, 'level') * s)
+    && (between.column ?? []).every(([p, q, x]) => dx(p, q) < t(x, 'column') * s);
 }
 
-/** Do these two hands make a two-hand seal — either hand as `a`? */
+/** Which of two hands is the player's LEFT (as a mirror shows them: the hand on the picture's right, larger x). */
+export const leftOf = (image) => (image[0][0].x >= image[1][0].x ? 0 : 1);
+
+/** Do these two hands make a two-hand seal — either hand as `a`, unless the seal's `sides` fix which hand is which
+    (`sides: { left: 'a' | 'b', either: false }`: the player's left hand, by where it stands, plays that part)? */
 export function makesTwo(world, image, seal, knobs, slack = 0, aspect = 1) {
   if (world?.length < 2 || image?.length < 2) return false;
   const shapeA = seal.a ?? seal.each ?? {}, shapeB = seal.b ?? seal.each ?? {};
   const pic = [flat(image[0], aspect), flat(image[1], aspect)];
-  return [[0, 1], [1, 0]].some(([i, j]) => makes(world[i], shapeA, knobs, slack) && makes(world[j], shapeB, knobs, slack)
+  const fixed = seal.sides && seal.sides.either === false, L = leftOf(image);
+  const ways = fixed ? [seal.sides.left === 'a' ? [L, 1 - L] : [1 - L, L]] : [[0, 1], [1, 0]];
+  return ways.some(([i, j]) => makes(world[i], shapeA, knobs, slack) && makes(world[j], shapeB, knobs, slack)
     && stands({ a: pic[i], b: pic[j] }, seal.between, knobs.pair ?? {}, slack));
 }
 
@@ -107,3 +114,28 @@ export function sealOf(hands, seals, knobs, held = null, { image = null, aspect 
   if (held && each.includes(held)) return held;
   return each.find(Boolean) ?? null;
 }
+
+/* ── How a hand faces the camera (Hanli 10-21: 「要旋转一下手, 这个需要在游戏里提示用户」) ── */
+
+const sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y, z: (a.z ?? 0) - (b.z ?? 0) });
+const cross = (a, b) => ({ x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x });
+
+/** How one hand faces the camera, from its world points and which hand it is ('Left' | 'Right', the player's own):
+    `face` — 'palm' (the palm to the lens), 'back', or 'side' (the edge); `up` — the fingers 'up', 'side' or 'down' (from
+    wrist → middle root); `cos` the palm's turn to the lens (1 straight at it), `deg` the fingers' lean from straight up.
+    The palm's normal is wrist → index root × wrist → little root, outward for a right hand (the left hand mirrors it);
+    world z grows away from the camera. No `handed` → face 'unknown'. `k`: jieyin.json `orient`. */
+export function facingOf(hand, handed, k = {}) {
+  if (!Array.isArray(hand) || hand.length < 21) return null;
+  const n = cross(sub(hand[5], hand[0]), sub(hand[17], hand[0])), len = Math.hypot(n.x, n.y, n.z) || 1;
+  const sign = handed === 'Right' ? 1 : handed === 'Left' ? -1 : 0;
+  const cos = sign ? (-n.z * sign) / len : 0;
+  const d = sub(hand[9], hand[0]), deg = (Math.atan2(d.x, -d.y) * 180) / Math.PI;
+  const palm = k.palm ?? 0.45, upDeg = k.upDeg ?? 50;
+  const face = !sign ? 'unknown' : cos > palm ? 'palm' : cos < -palm ? 'back' : 'side';
+  const up = Math.abs(deg) < upDeg ? 'up' : Math.abs(deg) > 180 - upDeg ? 'down' : 'side';
+  return { face, up, cos, deg };
+}
+
+/** Is a facing one the shape reads well in? A shape's `face` / `up` (lists; none = any). 'unknown' always passes. */
+export const facesRight = (shape, f) => !f || ((f.face === 'unknown' || !shape?.face || shape.face.includes(f.face)) && (!shape?.up || shape.up.includes(f.up)));

@@ -31,6 +31,11 @@
 .jy-hold-bg { stroke: rgba(43, 38, 32, .12); }
 .jy-hold { stroke: #c9a24a; stroke-dasharray: 0 100; stroke-linecap: round; transform-box: fill-box; transform-origin: center; transform: rotate(-90deg); }
 .jy-hold.is-right { stroke: #c23b22; }
+/* The turn cue (hint.js): a cinnabar brush arc round the hand, its arrow pointing on. */
+.jy-turn { fill: none; stroke: #c23b22; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 3 2.5; animation: jy-nudge 1.2s ease-in-out infinite; }
+.jy-target-face { max-width: 9.5em; font-size: 10px; line-height: 1.35; text-align: center; color: #6b5d4d; }
+.jy-hint-panel.is-large .jy-target-face { max-width: 13em; font-size: 12px; }
+.jy-frame[data-cue="turn"] { border-color: #c23b22; }
 /* An edge the hand is near, or left by: that side glows cinnabar, an arrow points the way back. */
 .jy-frame[data-edge="left"] { box-shadow: inset 4px 0 0 #c23b22; }
 .jy-frame[data-edge="right"] { box-shadow: inset -4px 0 0 #c23b22; }
@@ -63,6 +68,7 @@
 .jy-slot small { font-size: 11px; white-space: nowrap; }
 /* A two-hand seal (a Mac's): a wider tile, its glyph ringed — two hands. */
 .jy-slot.is-two { width: 78px; }
+.jy-or { font-style: normal; font-size: 10px; line-height: 1.2; color: var(--dim); white-space: nowrap; }
 .jy-slot.is-two .jy-glyph { box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 2.5px currentColor; }
 .jy-slot.is-next { border-color: var(--seal); color: var(--text); box-shadow: 0 0 0 2px color-mix(in srgb, var(--seal) 25%, transparent); }
 .jy-slot.is-done { color: var(--seal); background: color-mix(in srgb, var(--seal) 10%, var(--surface)); }

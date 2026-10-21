@@ -6,6 +6,7 @@
 //   setOf(kit, { matchMedia, search }) → set { id, hands }     (`?hands=1|2` on a dev page picks by hand count)
 //   sealsFor(kit, set)                 → the seal table that set may judge (one-hand only on a phone)
 //   sequenceFor(kit, level | move, set) → that set's sequence: `sequences[set]`, else the move's, else `sequence`
+//   bonusOf(kit, move, used)            → what a cast is worth: { egg, hits, split } (a move's `bonus`, when `on`)
 //   eyeFor(kit, set, sequence, over?)   → openEye's power knobs { fps, width, height, numHands } (`eye`, a level's or
 //                                         a game's `over` laid on top)
 
@@ -48,4 +49,14 @@ export function eyeFor(kit, set, sequence = [], over = {}) {
   const two = sequence.some((id) => handsOf(kit.seals[id]) === 2);
   const numHands = want === 'sequence' ? (two ? 2 : 1) : Number(want) || (two ? 2 : 1);
   return { fps: base.fps, width: base.width, height: base.height, numHands: Math.min(numHands, handsIn(kit, set)) };
+}
+
+/** What a cast is worth: 1 everywhere unless the move's `bonus` is `on` and the cast `used` a seal it names — then that
+    seal's strength (离火印 as the finisher: a bigger 火蛋, more hits; 双剑: two swords, for a field with two beasts).
+    Pending Hanli's call (10-21): the switch is the data's `on`. */
+export function bonusOf(kit, move, used = []) {
+  const b = (typeof move === 'string' ? kit.moves?.[move] : move)?.bonus;
+  const base = { egg: 1, hits: 1, split: 1 };
+  if (!b?.on) return base;
+  return used.reduce((acc, id) => ({ ...acc, ...(b[id] ?? {}) }), base);
 }

@@ -6,9 +6,9 @@
 //   available()          → may 结印 be offered at all? (a camera API, a camera, WebGL). No → offer nothing: the host
 //                          plays as it does without it — no button, no tap stand-in (Hanli 10-21: 「没摄像头时, 就不用」).
 //   loadModel()          → the landmarker, loaded once (start it early: it is ~19 MB from disk).
-//   openEye({ video, onHands, fps?, width?, height?, numHands? }) → { start(), pause(), close() }
+//   openEye({ video, onHands, fps?, width?, height?, numHands?, handedSwap? }) → { start(), pause(), close() }
 //                          start() asks for the camera (only now — call it on the player's 开始) and runs the model on
-//                          each new video frame: onHands({ world, image }) — world: hands as 21 metric points for the
+//                          each new video frame: onHands({ world, image, handed }) — world: hands as 21 metric points for the
 //                          judge (judge.js); image: the same hands, 0…1 of the frame, for drawing. pause() stops the
 //                          camera (its tracks, so the light goes off); start() again re-opens it. close() ends it all.
 //                          start() rejects with an Error whose `reason` is 'denied' | 'nocamera' | 'model'.
@@ -23,6 +23,16 @@ const file = (name) => new URL(name, VENDOR).href;
 /** Is the model due on a frame at `now`, its last run at `last`? A little under the period, so a 30 fps camera still
     gives every second frame at 15. */
 export const due = (now, last, fps) => now - last >= 1000 / Math.max(1, fps) - 4;
+
+/** Which hand each is, the player's own ('Left' | 'Right'; null unknown). MediaPipe names them as on a mirrored
+    picture; ours is not mirrored, so its names are swapped back (`handedSwap`, jieyin.json orient.handedSwap). */
+export function handedOf(r, swap = true) {
+  return (r?.handedness ?? r?.handednesses ?? []).map((c) => {
+    const n = c?.[0]?.categoryName;
+    if (n !== 'Left' && n !== 'Right') return null;
+    return swap ? (n === 'Left' ? 'Right' : 'Left') : n;
+  });
+}
 
 /** The defaults when a game passes none (levels/jieyin.json `eye` holds the game's). */
 export const EYE = { fps: 15, width: 320, height: 240, numHands: 2 };
@@ -97,7 +107,7 @@ const stopTracks = (video) => {
   video.srcObject = null;
 };
 
-export function openEye({ video, onHands, env = globalThis, fps = EYE.fps, width = EYE.width, height = EYE.height, numHands = EYE.numHands }) {
+export function openEye({ video, onHands, env = globalThis, fps = EYE.fps, width = EYE.width, height = EYE.height, numHands = EYE.numHands, handedSwap = true }) {
   let on = false, frame = 0, lastT = -1, lastRun = -Infinity, landmarker = null;
   const next = () => {
     if (!on) return;
@@ -111,7 +121,7 @@ export function openEye({ video, onHands, env = globalThis, fps = EYE.fps, width
       lastRun = now;
       try {
         const r = landmarker.detectForVideo(video, now);
-        onHands({ world: r.worldLandmarks ?? [], image: r.landmarks ?? [] });
+        onHands({ world: r.worldLandmarks ?? [], image: r.landmarks ?? [], handed: handedOf(r, handedSwap) });
       } catch (e) { console.warn('[jieyin]', e); }
     }
     next();

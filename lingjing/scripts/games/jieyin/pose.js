@@ -62,7 +62,7 @@ export function poseOf(seal) {
   const target = pair ? (pair[0] === 'thumb.tip' ? pair[1] : pair[0]) : null;
   const [finger, joint] = target ? target.split('.') : [];
   const tog = (seal.near ?? []).find(([a, b]) => a !== 'thumb.tip' && b !== 'thumb.tip');
-  const base = { curl: seal.curl ?? [], together: tog ? tog.map((p) => p.split('.')[0]) : null };
+  const base = { curl: seal.curl ?? [], together: tog ? tog.slice(0, 2).map((p) => p.split('.')[0]) : null };
   if (!target || joint === 'tip') return buildHand({ ...base, pinch: finger ?? null });
   const open = buildHand(base), j = open[1 + FINGERS.indexOf(finger) * 4 + 4 + JOINT[joint]];
   return buildHand({ ...base, thumbTo: [j.x - 0.3, j.y, j.z - 0.6] });
@@ -80,20 +80,29 @@ const HAND_LEN = 9.52; // the template's hand-length (wrist → middle root), cm
     p and q meet on the middle line (三角: index tips and thumb tips). Answers { world: [a, b], image: [a, b] } — the
     image in centimetres on an even frame (aspect 1); a one-hand seal answers its one hand in both. */
 export function posesOf(seal) {
-  if (seal.hands !== 2) { const h = poseOf(seal); return { world: [h], image: [h] }; }
+  if (seal.hands !== 2) { const h = facing(poseOf(seal), seal); return { world: [h], image: [h] }; }
   const L = seal.layout ?? {};
-  let a = poseOf(seal.a ?? seal.each ?? {}), b = poseOf(seal.b ?? seal.each ?? {});
-  if (L.mirror || L.touch) b = mirror(b);
-  const world = [a, b];
+  const [ta = 0, tb = 0] = L.turn ?? [];
+  let a = spin(facing(poseOf(seal.a ?? seal.each ?? {}), seal.a ?? seal.each), ta);
+  let b = spin(facing(poseOf(seal.b ?? seal.each ?? {}), seal.b ?? seal.each), tb);
+  if (L.mirror || L.touch) b = mirror(b); // b the other hand (the template is a left hand)
   if (L.touch) {
     const [p, q] = L.touch.map((n) => a[pointOf(n)]);
     const deg = (Math.atan2(p.x - q.x, -(p.y - q.y)) * 180) / Math.PI; // turn a so q → p points straight up
     let ia = spin(a, -deg);
     ia = shift(ia, -(ia[pointOf(L.touch[0])].x), 0);
-    return { world, image: [ia, mirror(ia)] };
+    return { world: [ia, mirror(ia)], image: [ia, mirror(ia)] };
   }
-  const [ta = 0, tb = 0] = L.turn ?? [];
-  return { world, image: [spin(a, ta), shift(spin(b, tb), (L.dx ?? 0) * HAND_LEN, (L.dy ?? 0) * HAND_LEN)] };
+  return { world: [a, b], image: [a, shift(b, (L.dx ?? 0) * HAND_LEN, (L.dy ?? 0) * HAND_LEN)] };
+}
+
+/** A palm-on template turned the way the shape reads best (its first `face`): 'side' — the edge to the lens, the
+    little finger's side nearest; 'back' — the back of the hand. (The template is a left hand, palm to the camera.) */
+function facing(hand, shape) {
+  const deg = { side: 70, back: 180 }[shape?.face?.[0]] ?? 0;
+  if (!deg) return hand;
+  const r = (deg * Math.PI) / 180, c = Math.cos(r), s = Math.sin(r);
+  return hand.map(({ x, y, z }) => ({ x: x * c + z * s, y, z: -x * s + z * c }));
 }
 const pointOf = (name) => { if (name === 'wrist') return 0; const [f, j] = name.split('.'); return f === 'thumb' ? 1 + ['cmc', 'mcp', 'ip', 'tip'].indexOf(j) : 1 + FINGERS.indexOf(f) * 4 + 4 + ['mcp', 'pip', 'dip', 'tip'].indexOf(j); };
 
@@ -121,11 +130,21 @@ export const inkFilter = (id) => `<filter id="${id}" x="-10%" y="-10%" width="12
   + `<feDisplacementMap in="SourceGraphic" scale="1.6"/><feGaussianBlur stdDeviation=".35"/></filter>`;
 
 /** A seal's icon: its pose (both hands for a two-hand seal) in ink, in `currentColor`. */
-export function iconSvg(seal, size = 40) {
-  const hands = posesOf(seal).image, all = hands.flat(), xs = all.map((p) => p.x), ys = all.map((p) => p.y);
-  const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, hh = Math.max(...ys) - y0, s = Math.max(w, hh) + 4;
-  const moved = hands.map((h) => h.map((p) => ({ x: p.x - x0 + (s - w) / 2, y: p.y - y0 + (s - hh) / 2 })));
-  const unit = HAND_LEN * Math.min(1, 22 / s * 1.15); // a two-hand drawing keeps its brush near a one-hand's
+export function iconSvg(seal, size = 40, { lang = 'zh' } = {}) {
+  // As the player sees it — mirrored, like the hand hint: a two-hand seal's left hand on the left, labelled 左 / 右.
+  const hands = posesOf(seal).image.map((h) => h.map((p) => ({ x: -p.x, y: p.y }))), all = hands.flat();
+  const xs = all.map((p) => p.x), ys = all.map((p) => p.y), two = hands.length > 1;
+  const pad = two ? 8 : 4, x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, hh = Math.max(...ys) - y0, s = Math.max(w, hh) + pad;
+  const moved = hands.map((h) => h.map((p) => ({ x: p.x - x0 + (s - w) / 2, y: p.y - y0 + (s - hh - (two ? 4 : 0)) / 2 })));
+  const unit = HAND_LEN * (two ? 1.25 : 1); // a two-hand drawing is wider: its brush a little bolder to read at the same size
+  const labels = two && seal.sides?.left ? sideLabels(moved, s, lang) : '';
   return `<svg class="jy-hand" viewBox="0 0 ${s.toFixed(2)} ${s.toFixed(2)}" width="${size}" height="${size}" aria-hidden="true">`
-    + moved.map((h) => inkHand(h, unit)).join('') + '</svg>';
+    + moved.map((h) => inkHand(h, unit)).join('') + labels + '</svg>';
+}
+
+/** 左 / 右 under each hand of a two-hand drawing (already mirrored: the hand more to the left is the left hand). */
+function sideLabels(hands, s, lang) {
+  const word = lang === 'en' ? ['L', 'R'] : ['左', '右'];
+  const order = hands.map((h, i) => [h[0].x, i]).sort((a, b) => a[0] - b[0]).map(([, i]) => i);
+  return order.map((i, k) => `<text x="${hands[i][0].x.toFixed(1)}" y="${(s - 1.2).toFixed(1)}" font-size="${(s * 0.12).toFixed(1)}" text-anchor="middle" fill="#c23b22">${word[k]}</text>`).join('');
 }
