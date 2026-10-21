@@ -197,7 +197,7 @@ test('闻焦 has left 09-year: the passage whole (story_after merged, word for w
   assert.match(sc.story.zh, /头一回有人问到我答不上的。」\n\n就在闵丹师出神的当口，炉里的药气变了，多出了一丝焦。/);
   assert.match(sc.story_full.zh, /头一回有人问到我答不上的。」\n\n就在闵丹师出神的当口/);
   assert.equal(content.tasks.tasks.find((t) => t.id === 'year-smell').cut, '2026-10-19');
-  assert.equal(content.games.games.find((g) => g.id === 'huohousmell'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
+  assert.equal(content.games.games.find((g) => g.id === 'huohousmell' && g.replaced !== 'cut'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
   const old = fitWorld(at('09-year', { marks: ['y-qingming'], tasks: { 'year-smell': { status: 'offered' } }, tell_owed: ['after/09-year'] }), content);
   assert.equal(old.tasks['year-smell'], undefined, 'never winnable here now: let go');
   assert.deepEqual(old.tell_owed ?? [], [], 'the merged passage is owed nowhere');

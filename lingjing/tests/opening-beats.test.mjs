@@ -210,7 +210,7 @@ test('扔石听声 has left 00-cave: the passage whole (the book\'s, word for wo
   assert.ok(!sc.exits.some(e => e.needs?.task === 'cave-stone'));
   assert.equal(sc.story_after, undefined, 'no passage split for it');
   assert.match(sc.story.zh, /先往里扔了一块石头[\s\S]*还是进去了。\n\n他用他爹教的法子[\s\S]*最后的一点白面。$/);
-  assert.equal(content.games.games.find(g => g.id === 'caveecho'), undefined, 'its game deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); the task id stays, cut');
+  assert.equal(content.games.games.find(g => g.id === 'caveecho' && g.replaced !== 'cut'), undefined, 'its game deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); the task id stays, cut (the 游戏厅 lists it under 旧版)');
   const s = atScene('00-cave');
   const old = { ...s, tasks: { ...s.tasks, 'cave-stone': { status: 'offered' } }, tell_owed: ['after/00-cave'] };
   const fit = fitWorld(old, content);

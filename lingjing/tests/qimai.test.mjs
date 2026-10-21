@@ -53,7 +53,7 @@ test('the rows: one level each, 调息, placed beside the breath games, every le
     assert.ok(secs >= 18 && secs <= 45, `${L.id}: ${secs.toFixed(0)} s a run`);
   }
   // the old breath and timing boards these levels replaced were deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」)
-  for (const old of ['feather', 'xisui', 'zhoutian', 'mirrortongpu', 'qianmi', 'faqiu', 'dark', 'lastshot', 'leafsui', 'leafding', 'qiajue', 'wind']) assert.ok(!reg.games.some((g) => g.id === old), `${old}: deleted`);
+  for (const old of ['feather', 'xisui', 'zhoutian', 'mirrortongpu', 'qianmi', 'faqiu', 'dark', 'lastshot', 'leafsui', 'leafding', 'qiajue', 'wind']) assert.ok(!reg.games.some((g) => g.id === old && g.replaced !== 'cut'), `${old}: deleted`);
   assert.ok(reg.groups.some((g) => g.id === 'qimai'), 'the arcade-only levels have their group');
   assert.equal(ladder.length, rows.length);
 });

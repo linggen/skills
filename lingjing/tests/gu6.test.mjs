@@ -222,7 +222,7 @@ test('猪蜻蜓 has left wm-laoyin: no board before 摸出那个油纸包; an ol
   assert.ok(!sc.exits.some((e) => e.needs?.task === 'laoyin-zhuqingting'));
   assert.match(sc.story.zh, /香，烧过一半了。$/);
   assert.equal(content.tasks.tasks.find((t) => t.id === 'laoyin-zhuqingting').cut, '2026-10-19');
-  assert.equal(content.games.games.find((g) => g.id === 'zhuqingting'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
+  assert.equal(content.games.games.find((g) => g.id === 'zhuqingting' && g.replaced !== 'cut'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
   const old = fitWorld(at('wm-laoyin', 'zhengdian', { tasks: { 'laoyin-zhuqingting': { status: 'offered' } } }), content);
   assert.equal(old.tasks['laoyin-zhuqingting'], undefined, 'never winnable here now: let go');
   assert.equal(must(resolve, old, { exit: 'final' }).scene, 'wm-jiaxin');

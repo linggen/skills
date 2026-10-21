@@ -47,7 +47,7 @@ test('registered in the 游戏厅 as a throw (plays wide); the story’s throw b
   assert.ok(row, 'games.json row');
   assert.equal(row.mechanic, '投掷');
   assert.ok(reg.groups.some((g) => g.id === row.group), 'its group exists');
-  for (const gone of ['deerarc', 'luwing', 'throwkit', 'caveecho', 'deerhunt', 'deer']) assert.ok(!reg.games.some((g) => g.id === gone), `${gone}: retired, 砸寨 plays it`);
+  for (const gone of ['deerarc', 'luwing', 'throwkit', 'caveecho', 'deerhunt', 'deer']) assert.ok(!reg.games.some((g) => g.id === gone && g.replaced !== 'cut'), `${gone}: retired, 砸寨 plays it`);
   assert.equal(reg.projectiles, undefined, 'the old board’s projectile table went with it');
   const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(readFileSync(join(root, `worlds/jiuding/tasks/${f}.json`), 'utf8')).tasks);
   const keys = new Set(forts.levels.filter((l) => l.key).map((l) => l.key));
