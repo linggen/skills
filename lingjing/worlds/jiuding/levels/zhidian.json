@@ -7,6 +7,8 @@
   "aim": { "from": ["index.tip", "middle.tip"], "box": [0.2, 0.15, 0.8, 0.75], "dead": 0.012, "tauMs": 90 },
   "_poke": "poke.js: the hand's size in the picture (wrist → index root + wrist → little-finger root + index root → little-finger root) grows by `grow` over its smallest in the last `windowMs` = a jab at the camera; the shot goes where the 准星 stood at that smallest (the tips move while the hand jabs). Not a jab: the 准星 moved more than `maxShift` across that window (a sweep or a lost track), 剑诀 not held, or within `coolMs` of the last; after a shot the size starts over from where it is. Needs the camera read at ≥ `fps` (a 220 ms jab is 6 frames at 30, 3 at 15).",
   "poke": { "windowMs": 220, "grow": 1.16, "maxShift": 0.14, "coolMs": 380, "fps": 30 },
+  "_hint": "Over jieyin.json's `hint` for this game only: a hand pointed at the lens is foreshortened in the picture (wrist → middle root ~¼ of the same hand held up), so the hand hint's 'too far' comes at a quarter of 结印's.",
+  "hint": { "far": 0.018 },
   "levels": [
     {
       "id": "shandao", "title": { "zh": "隔空指点 · 山道", "en": "Point in the air · The mountain road" },

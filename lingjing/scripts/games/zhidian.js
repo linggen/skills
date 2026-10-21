@@ -179,7 +179,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const box = container.querySelector('.zd');
       const $ = (s) => box.querySelector(s);
       const fieldEl = $('.zd-field'), beastsEl = $('.zd-beasts'), sight = $('.zd-sight'), video = $('video');
-      const hint = handHint($('.zd-dock'), { lang, size: 'compact', seals, knobs: sealKit.hint });
+      const hint = handHint($('.zd-dock'), { lang, size: 'compact', seals, knobs: { ...sealKit.hint, ...kit.hint } });
       hintOff = () => hint.destroy();
       const aspect = () => (video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 4 / 3);
       let field = newField(level, seed ?? `zhidian|${Date.now()}`), last = win.performance.now(), ending = false;

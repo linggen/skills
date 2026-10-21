@@ -40,6 +40,7 @@ test('the level: every knob the game reads is data, and the seal is jieyin.json\
   for (const k of ['extDeg', 'curlDeg', 'near', 'far', 'loose', 'graceMs']) assert.equal(typeof K[k], 'number', k);
   for (const k of ['windowMs', 'grow', 'maxShift', 'coolMs', 'fps']) assert.equal(typeof kit.poke[k], 'number', k);
   assert.equal(kit.aim.box.length, 4);
+  assert.ok(kit.hint.far < sealKit.hint.far, 'a pointed hand looks short: the hint\'s too-far comes later');
   assert.ok(level.seconds <= 90 && level.stars.length === 3 && level.lead.zh && level.lead.en && level.end.zh && level.end.en);
   assert.ok(level.spawn.foes.every((f) => fs.existsSync(new URL(`../scripts/games/shouqiang/art/${f.id}-walk-1.webp`, import.meta.url))));
   assert.equal(levelAsked(kit, {}, '?lv=1').id, 'shandao');
