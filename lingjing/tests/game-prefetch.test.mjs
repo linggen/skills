@@ -250,3 +250,9 @@ test('the side session: her save tools withheld; one left by a page closed mid-a
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /title !== PREFETCH_TITLE/, 'the page never resumes it');
 });
+
+test('a level whose `teach` is a how-to line (割绳子\'s {zh, en}) teaches no moment and never throws (2026-10-21 review)', async () => {
+  const { teaches } = await import('../scripts/games/prefetch.js');
+  assert.equal(teaches('rope', 'low', { teach: { zh: '剪绳子', en: 'Cut the rope' } }), false);
+  assert.equal(teaches('shouqiang', 'huge', { teach: ['huge'] }), true);
+});

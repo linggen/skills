@@ -57,7 +57,9 @@ export function momentsOf(level) {
 const meaningOf = (game, m) => MEANS[`${game}.${m}`] ?? MEANS[m];
 /** A teaching moment: the level's own line, always — never hers. By kit (MEANS `teach`), or by the level (its
     `teach`: a reaction its own line turns into a how-to there — 药园 · 头一夜's `huge`, 「每一畦都得有剑！」). */
-export const teaches = (game, m, level = null) => Boolean(meaningOf(game, m)?.teach) || (level?.teach ?? []).includes(m);
+// A level's `teach` is a list of moments here; a 割绳子 level's `teach` is its how-to line ({zh, en}), never a list.
+const teachList = (level) => (Array.isArray(level?.teach) ? level.teach : []);
+export const teaches = (game, m, level = null) => Boolean(meaningOf(game, m)?.teach) || teachList(level).includes(m);
 /** The moments she is asked for: the level's, less the teaching ones — none: no call at all. */
 export const askedOf = (level, game = '') => momentsOf(level).filter((m) => !teaches(game, m, level));
 
