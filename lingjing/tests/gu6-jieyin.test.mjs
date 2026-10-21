@@ -7,9 +7,12 @@ import fs from 'node:fs';
 import { loadContent, lint } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
-import { chooseBoard, meets, withCaps } from '../scripts/caps.js';
+import { chooseBoard, fallBack, meets, withCaps } from '../scripts/caps.js';
+import { stampShown, stuckNow, STUCK_MS } from '../scripts/stuck.js';
+import { skipBoard } from '../scripts/cards.js';
+import * as jieyinMod from '../scripts/games/jieyin.js';
 import { start, step, starsOf } from '../scripts/games/jieyin/sequence.js';
-import { artOf, castOf, levelAsked } from '../scripts/games/jieyin.js';
+import { artOf, castOf, levelAsked, swapLabel } from '../scripts/games/jieyin.js';
 import { TO_OPEN, walk } from './prologue.mjs';
 import { earnedFor } from './earn.mjs';
 
@@ -169,4 +172,65 @@ test('the page chooses: lingjing.js reads Look through caps (probed once, before
   assert.match(src, /g\.data\?\.grades\?\.\[String\(result\.stars\)\]/);
   const rules = fs.readdirSync(new URL('../scripts/rules/', import.meta.url)).map((f) => fs.readFileSync(new URL(`../scripts/rules/${f}`, import.meta.url), 'utf8')).join('\n');
   assert.ok(!/jieyin|camera/.test(rules.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')), 'the rules name no game and see no camera');
+});
+
+/* Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成, 不会影响剧情推进.」 */
+test('never a dead end: a camera refused or failing, or 「改用讲堂试法」 after misses → the 讲堂试法 board, same task', () => {
+  const t = boardRow('zh');
+  const cam = chooseBoard(t, { camera: true });
+  assert.equal(cam.deal.instead, '讲堂试法', 'the alt\'s deal names the board behind it');
+  assert.equal(swapLabel(cam.deal.instead, 'zh'), '改用「讲堂试法」');
+  assert.match(swapLabel('Trying the spells', 'en'), /instead/);
+  // the camera refused / failing: that need is gone for the page, the row's own board is dealt
+  const a = fallBack({ camera: true }, t.id, { won: false, left: true, unable: 'camera' }, cam.deal);
+  assert.equal(a.camera, false);
+  assert.equal(chooseBoard(t, a), t, '讲堂试法, the very row');
+  assert.equal(a.turned.length, 1);
+  // he chose the other board after missing: the camera stays for other boards, this task turns back
+  const b = fallBack({ camera: true }, t.id, { won: false, left: true, instead: true }, cam.deal);
+  assert.equal(b.camera, true);
+  assert.equal(chooseBoard(t, b), t);
+  assert.equal(withCaps({ tasks: [t] }, b).tasks[0].game, 'zhazhai');
+  // a plain leave (the shell's 离开, an abort) is no fallback; nor anything from a board without `instead`
+  assert.equal(fallBack({ camera: true }, t.id, { won: false, left: true }, cam.deal), null);
+  assert.equal(fallBack({ camera: true }, t.id, { won: false, left: true, unable: 'camera' }, { lv: 'huodan' }), null);
+  // either board wins the same task: the pay is the row's (tested above, both win paths)
+});
+
+test('the game leaves at once, with `unable`, when the camera is missing and a board stands behind it; the 游戏厅 keeps its line', async () => {
+  const fakeDoc = () => {
+    const el = { innerHTML: '', querySelector: () => null, append() {} };
+    const doc = { head: { append() {} }, querySelector: () => true, createElement: () => ({ getContext: () => null }), defaultView: null };
+    el.ownerDocument = doc;
+    return el;
+  };
+  const prevFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({ json: async () => kit });
+  try {
+    const story = await jieyinMod.mount(fakeDoc(), { lang: 'zh', data: { lv: 'jiangtang', instead: '讲堂试法' } });
+    assert.deepEqual(story, { won: false, left: true, unable: 'camera' });
+    const box = fakeDoc();
+    const arcade = await jieyinMod.mount(box, { lang: 'zh', data: { lv: 'jiangtang' } });
+    assert.deepEqual(arcade, { won: false, left: true });
+    assert.match(box.innerHTML, /摄像头/);
+  } finally { globalThis.fetch = prevFetch; }
+});
+
+test('the source: 「改用…」 after `swapAfter` misses (3), only on a story board; the page deals the row\'s own board on a fallback', () => {
+  const src = fs.readFileSync(new URL('../scripts/games/jieyin.js', import.meta.url), 'utf8');
+  assert.match(src, /if \(misses < \(data\.swapAfter \?\? 3\)/);
+  assert.match(src, /&& data\.instead\) offerSwap/);
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /if \(!result\?\.won && !g\.sent && !g\.skipped\) fallBackFrom\(g, result\);/);
+  assert.match(page, /async function fallBackFrom\(g, result\) \{\n  if \(!\(await fellBack\(g\.taskId, result, g\.data, window\)\)\) return;\n  boards\.delete\(g\.taskId\);/);
+});
+
+test('the stuck rule holds on the 结印 board: 「算了，往下走」 after the stuck time, as on every scene board', () => {
+  const g = { mod: jieyinMod, state: { won: false }, taskId: 'qianye-qiajue' };
+  const ctx = { lang: 'zh' };
+  assert.doesNotMatch(skipBoard(g, g.taskId, ctx), /data-game-skip/, 'not at once');
+  g.shownAt -= STUCK_MS + 1;
+  assert.ok(stuckNow(g, Date.now()));
+  assert.match(skipBoard(g, g.taskId, ctx), /data-game-skip="qianye-qiajue"/);
+  assert.ok(stampShown);
 });

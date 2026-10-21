@@ -778,7 +778,9 @@ it (known needs — `camera` today —, a known game, its `grades` among the tas
 (`scripts/caps.js`: probed once before the first Look, never a permission prompt; the first alt whose needs it meets is
 laid over the row, else the row untouched). The task id never changes, so the win, grade, marks, pay and way on are one
 beat on every device — a save never forks. A starred mount game with no grade of its own is graded by its deal's
-`grades` (lingjing.js beatSettled). Dev seams: `?dev=1&feed=1` counts as a camera, `?dev=1&caps=none` as none.
+`grades` (lingjing.js beatSettled). Never a dead end: the alt's deal carries `instead` (the row's title); a game that can't go on (`unable`: the camera
+refused or failing) or is left for it (`instead`: 「改用…」 after a few misses) hands the row's own board back
+(caps.js `fallBack`, lingjing.js fallBackFrom) — same task, same pay; the stuck rule holds on both. Dev seams: `?dev=1&feed=1` counts as a camera, `?dev=1&caps=none` as none.
 
 **The opening's beats** (Hanli, 2026-10-14: 「每看一会儿剧情就要有游戏可以玩」 — the game is played, not
 read-and-tap): six more boards in the prologue, each the book's own action where its scene stands —

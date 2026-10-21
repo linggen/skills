@@ -12,6 +12,11 @@
 // The camera is asked for only on 开始, and stopped (its tracks) the moment the game pauses, ends or is left, or the
 // page is hidden.
 // Contract (games/mount.js): mount(container, { lang, data, signal, shell }) → Promise<{ won, stars } | { won: false, left: true }>
+// A story board played this way where another stands behind it (`data.instead`: that board's title — caps.js, 古六's
+// 讲堂; Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头…也能正常完成, 不会影响剧情推进」) never dead-ends: no camera,
+// a camera refused or failing → `{ won: false, left: true, unable: 'camera' }` at once (no 'needs a camera' line); a
+// few seals missed (`swapAfter`, default 3) → a 「改用…」 button → `{ won: false, left: true, instead: true }`. The page
+// then deals the other board, same task and pay.
 // Which seals: games/jieyin/sets.js — a phone (coarse pointer, small) only one-hand seals, a Mac both; `?dev=1&hands=1|2` picks.
 // Dev only: `?dev=1&feed=1` runs without a camera, hands fed from the console (`window.jieyinFeed(hands, picture?)`) — the
 // live check's way to play it through; never a player's.
@@ -73,6 +78,9 @@ function loadCss(doc) {
   l.dataset.jieyinCss = '';
   doc.head.append(l);
 }
+
+/** The button that leaves 结印 for the board behind it (its title). */
+export const swapLabel = (title, lang = 'zh') => (lang === 'en' ? `Play “${title}” instead` : `改用「${title}」`);
 
 /** The one line when 结印 cannot be offered; nothing else is drawn. */
 export function unavailableHtml(lang = 'zh') {
@@ -152,7 +160,12 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       resolve(r);
     };
     const leave = () => finish({ won: false, left: true });
-    const nocam = () => { container.innerHTML = unavailableHtml(lang); leave(); };
+    const nocam = () => {
+      if (data.instead) return finish({ won: false, left: true, unable: 'camera' });
+      container.innerHTML = unavailableHtml(lang);
+      leave();
+    };
+    const swap = () => finish({ won: false, left: true, instead: true });
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
 
@@ -207,6 +220,15 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
 
       // A teaching level's close (`cast`, 古六's 讲堂): the seals learned, the four at once at the dummy — its misses
       // and the lesson's counted together.
+      // 「改用…」 once the seals keep missing (a story board with another behind it, `data.instead`).
+      const offerSwap = (misses) => {
+        if (misses < (data.swapAfter ?? 3) || box.querySelector('.jy-swap')) return;
+        const b = doc.createElement('button');
+        b.className = 'gshell-btn jy-swap';
+        b.textContent = swapLabel(data.instead, lang);
+        b.onclick = swap;
+        box.append(b);
+      };
       const castNext = () => {
         taught = s.misses;
         const close = { ...level.cast, mode: 'sequence', sequence: sequenceFor(kit, level.cast, set) };
@@ -218,6 +240,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         if (ev.type === 'seal') { const el = box.querySelector(`.jy-slot[data-i="${ev.at}"]`); el?.classList.remove('is-pop'); void el?.offsetWidth; el?.classList.add('is-pop'); }
         if (ev.type === 'cast') cast(ev.used);
         if (ev.type === 'fizzle') { burnt(box, $('.jy-xm'), reducedMotion); hint.fizzle(); say(w.fizzle); }
+        if ((ev.type === 'miss' || ev.type === 'fizzle') && data.instead) offerSwap(taught + s.misses + s.fizzles);
         if (ev.type === 'miss') { const el = box.querySelector('.jy-slot.is-next'); el?.classList.remove('is-shake'); void el?.offsetWidth; el?.classList.add('is-shake'); }
         if (ev.type === 'done' && level.cast) castNext();
         else if (ev.type === 'done') { say(w.learned); setTimeout(() => finish({ won: true, stars: starsOf(s.misses, level.stars) }), 1200); }

@@ -69,7 +69,7 @@ import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, li
 import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost, mountOnly } from './beat-host.js';
-import { probeCaps, withCaps } from './caps.js';
+import { fellBack, probeCaps, withCaps } from './caps.js';
 import { anyPaused, forget as forgetShell, wireShell } from './games/shell.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -3431,6 +3431,7 @@ wireShell(document);
 wireLiveGames({ boardFor, lang, paused: () => view.logOpen || anyPaused(), onWon: (g) => { g.sent = true; forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 /* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
 function beatSettled(g, result) {
+  if (!result?.won && !g.sent && !g.skipped) fallBackFrom(g, result);
   if (!result?.won || g.sent || g.skipped) return;
   // A game that gives stars but no grade (结印) is graded by its deal's `grades` (stars → grade), as 砸寨 grades itself.
   const graded = result.grade ?? g.data?.grades?.[String(result.stars)] ?? null;
@@ -3439,6 +3440,15 @@ function beatSettled(g, result) {
   forgetShell(g.taskId);
   openStuckSlots();
   run(`win:${g.taskId}`, () => onWin(g.taskId));
+}
+/* A board's game left for the board behind it (caps.js fallBack: the camera refused or failing, or 「改用…」 after
+   missing): the row's own board is dealt in its place — same task, same pay, the story never waits on a camera. */
+async function fallBackFrom(g, result) {
+  if (!(await fellBack(g.taskId, result, g.data, window))) return;
+  boards.delete(g.taskId);
+  forgetShell(g.taskId);
+  await refresh();
+  render();
 }
 document.addEventListener('click', (e) => {
   // The 回's title card goes on a tap anywhere, and the tap does nothing else (2026-10-14).

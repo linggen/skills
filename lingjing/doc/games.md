@@ -766,6 +766,10 @@ tried again).
   straw dummy in the 讲堂 (`art`). One-hand only and the book's, so the same on a phone and a Mac. The hand hint
   large (no camera picture). No camera → 砸寨 · 讲堂试法 as before. Same task id either way: the grade (the alt's
   `deal.grades`, stars → tight · loose), marks, 修为 and the way on are one beat. Stars from misses (★3 none, ★2 ≤3).
+  Never a dead end (Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头…也能正常完成, 不会影响剧情推进」): the camera
+  refused or failing after the board was chosen → the game leaves (`unable`) and the page deals 讲堂试法 in its place;
+  three misses → a 「改用「讲堂试法」」 button does the same (`instead`); and 「算了，往下走」 after the stuck time, as on
+  every scene board (a skip pays nothing). caps.js `fallBack`.
 - **After Hanli's camera test (10-21: 「单手的识别准确率高一些. 但要旋转一下手…双手的需要标注左右手」):** every seal (each part of a
   two-hand one) declares `face` (palm / edge / back to the lens) and `up`; its icon is drawn that way, mirrored as the player sees,
   with a facing line under it; judge.js `facingOf` reads it live (palm normal + MediaPipe's handedness, swapped back:

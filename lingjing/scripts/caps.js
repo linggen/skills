@@ -9,6 +9,11 @@
 //
 //   probeCaps(win) → Promise<{ camera: bool, … }>   asked once a page, never a permission prompt
 //   chooseBoard(task, caps) → the task as played here    withCaps(look, caps) → Look with every task chosen
+//
+// Never a dead end (Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头…也能正常完成, 不会影响剧情推进」): the alt's deal
+// carries `instead` (the row's own title); the game leaves with `unable` (the camera refused or failing — that need is
+// then dropped for the page) or `instead` (he chose the other board after missing). `fallBack` records it and the row's
+// own board is dealt in its place — the same task, so the same pay; the stuck rule (「算了，往下走」) holds on both.
 import { available as handsSeen } from './games/jieyin/eye.js';
 
 /* Each capability a row may need, and how the page finds it out. `camera`: a camera, and the WebGL the on-device
@@ -45,15 +50,31 @@ const BOARD_KEYS = ['game', 'deal', 'title', 'how'];
 
 /** The task as this device plays it: the first alt it meets laid over the row (game, deal, and words if it has them). */
 export function chooseBoard(task, caps) {
-  if (!task?.alt?.length) return task;
+  if (!task?.alt?.length || caps?.turned?.includes(task.id)) return task;
   const alt = task.alt.find((a) => meets(a.needs, caps));
   if (!alt) return task;
   const over = Object.fromEntries(BOARD_KEYS.filter((k) => alt[k] != null).map((k) => [k, alt[k]]));
-  return { ...task, ...over, ...(alt.deal ? {} : { deal: undefined }), played_as: alt.game };
+  // `instead`: the board behind this one, by its title — the game may offer it (games/jieyin.js 「改用…」).
+  return { ...task, ...over, deal: { ...(alt.deal ?? {}), instead: task.title }, played_as: alt.game };
 }
 
 /** Look with every task as this device plays it. */
 export function withCaps(look, caps) {
   if (!look?.tasks?.some((t) => t.alt?.length)) return look;
   return { ...look, tasks: look.tasks.map((t) => chooseBoard(t, caps)) };
+}
+
+/** A board's game left for the board behind it (`instead` in its deal): what caps become — the need it lacked dropped
+    (`unable`: 'camera'), the task turned back to its own board. Null when the game simply left (no fallback). */
+export function fallBack(caps, taskId, result, deal) {
+  if (!deal?.instead || !result?.left || !(result.unable || result.instead)) return null;
+  const lost = result.unable ? { [result.unable]: false } : {};
+  return { ...caps, ...lost, turned: [...new Set([...(caps?.turned ?? []), taskId])] };
+}
+
+/** Lay a fallback over the page's caps (probed once; this is the only later change). */
+export async function fellBack(taskId, result, deal, win = globalThis) {
+  const next = fallBack(await probeCaps(win), taskId, result, deal);
+  if (next) probed = Promise.resolve(next);
+  return Boolean(next);
 }
