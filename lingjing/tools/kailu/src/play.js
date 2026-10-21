@@ -484,7 +484,7 @@ export class KailuScene extends Phaser.Scene {
       const g = o.grade ?? grade, css = GRADE_CSS[g];
       const tag = this.add.graphics().fillStyle(GRADE_COL[g], 1).fillRoundedRect(x - 70, y0 - 24, 140, 46, 23);
       const tagT = this.text(x, y0 - 2, names[g] ?? g, 28, { color: '#2a1406', stroke: '#ffffff' });
-      const name = this.text(x, y0 + 52, `${o.name}${o.wealth ? ` ×${o.n}` : ''}`, wide ? 44 : 34, { color: css, wrap: wide ? W - 80 : 300 });
+      const name = this.text(x, y0 + 52, `${o.name}${o.wealth || o.n > 1 ? ` ×${o.n}` : ''}`, wide ? 44 : 34, { color: css, wrap: wide ? W - 80 : 300 });
       const hint = o.hint ? this.text(x, y0 + 104, `「${o.hint}」`, 24, { color: '#e9d8b4', wrap: wide ? W - 100 : 300 }) : null;
       const fresh = r.first?.includes(o.id) ? this.text(x + 96, y0 - 40, this.w.fresh, 26, { color: '#ff6a3c' }).setAngle(12) : null;
       this.ui.add([tag, tagT, name, ...(hint ? [hint] : []), ...(fresh ? [fresh] : [])]);
