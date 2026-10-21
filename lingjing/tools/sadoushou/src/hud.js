@@ -64,6 +64,7 @@ export class Hud {
     const s = scene;
     s.add.image(W / 2, 0, 'topbar').setOrigin(0.5, 0).setDepth(depth);
     this.title = text(s, W / 2, 26, scene.cfg.level.title[scene.lang], 24).setDepth(depth + 1);
+    if (this.title.width > W - 40) this.title.setScale((W - 40) / this.title.width); // a long English title fits
     // the whole tide still to beat: big and red, from the start
     this.hordeLabel = text(s, W / 2 - 150, 74, this.w.horde, 24, { color: '#ffd0c0' }).setDepth(depth + 1);
     this.hordePill = s.add.image(W / 2 + 34, 74, 'pill-red').setDepth(depth + 1).setScale(1.05, 0.95);

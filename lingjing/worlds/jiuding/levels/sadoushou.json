@@ -97,7 +97,7 @@
    "par": 75,
    "title": {
     "zh": "守山门 · 野猪下山",
-    "en": "Hold the Gate · the Boars Come Down"
+    "en": "The Gate · Boars Come Down"
    },
    "lead": [
     {
@@ -364,7 +364,7 @@
    "par": 85,
    "title": {
     "zh": "守山门 · 松林狰吼",
-    "en": "Hold the Gate · Zheng in the Pines"
+    "en": "The Gate · Zheng in the Pines"
    },
    "lead": [
     {
@@ -644,7 +644,7 @@
    "par": 95,
    "title": {
     "zh": "守山门 · 药园夜袭",
-    "en": "Hold the Gate · Night Raid on the Herb Garden"
+    "en": "The Gate · Herb Garden Raid"
    },
    "tone": {
     "color": "#1a2440",
@@ -942,7 +942,7 @@
    "par": 105,
    "title": {
     "zh": "守山门 · 黑松岭鬿雀",
-    "en": "Hold the Gate · Qique over Black Pine Ridge"
+    "en": "The Gate · Qique on Black Pine"
    },
    "tone": {
     "color": "#101a33",

@@ -261,7 +261,7 @@ export class PlayScene extends Phaser.Scene {
       if (gt.ring) {
         gt.ring.clear();
         if (cool) {
-          const f = 1 - gt.cell.coolT / gt.cell.cool, r = 18 + 14 * gt.s;
+          const f = 1 - gt.cell.coolT / gt.cell.cool, r = gt.label.height * 0.5 + 10;
           gt.ring.lineStyle(5, 0xffe36b, 0.9).beginPath().arc(gt.x, gt.label.y, r, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2).strokePath();
         }
       }
