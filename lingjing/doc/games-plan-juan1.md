@@ -4,7 +4,7 @@ Hanli 10-21: 「7个游戏可以防止阅读过长. 现在把每回的小游戏�
 A plan, not a build: nothing changes until he approves. Kits only (Hanli 10-16), in his order: 塔防 (守炉 · 守墙关) →
 砸寨 → 割绳子 → 气走经脉 (held at the 8 of the 调息 cut) · 接雨 · 洛书 (the one 九宫格) · 结印 (camera alt only).
 Every board stands on a line of the frozen book (`jiuding-lu-juan1-zh-v1`). Lengths are rhythm.mjs's (cap 1,500 字),
-measured on origin/main `c62eac8f`.
+measured on origin/main `d025bf58`.
 
 **Where things stand today:** 28 boards on 卷一's main line — 古一 5 · 古二 3 · 今一 2 · 古三 1 · 古四 3 · 今二 1 · 古五 3 ·
 古六 4 · 今三 1 · 古七 3 · 古八 1 · 今四 1 · 古九 **0**. By kit: 气走经脉 8 · 割绳子 6 · 砸寨 5 · **塔防 3** · one each of
@@ -170,7 +170,7 @@ riddle, not a board — 洛书门 stays the one 九宫格. 「他把她扔进了
 | **卷一** | **7** (3 → 7) | **6** (5 → 6) | **8** (6 → 8) | **8** | 6 | **35** (28 → 35) | |
 
 New 5 (守白菜 · 守火 · 断肋巡夜 · 决赛 砸寨 · 紫玉参断须) + 2 swaps (蛫 · 双龙). If Q3 is no: 塔防 6, 割绳子 7, 33 boards.
-Not placed: 撒豆成兵 (its defence v2 waits on his comparison — if he prefers it, it could take 守白菜 or 断肋巡夜); 接雨 stays
+**Building cost:** 守白菜 · 守火 · 断肋巡夜 each need a scene split the wm-anhe way (a board hangs on a scene; their lines sit mid-`story_after` or in an exit passage); 决赛 and 紫玉参断须 sit on scene passages. Not placed: 撒豆成兵 (its defence v2 waits on his comparison — if he prefers it, it could take 守白菜 or 断肋巡夜); 接雨 stays
 古一's only; 结印 stays the 古六 讲堂 alt.
 
 **The 塔防 ladder, each a new harder level:** 守白菜 (墙, teach) → 守火 (炉) → 药园巡夜 (炉) → 断肋巡夜 (墙, no 银月) →
@@ -208,7 +208,7 @@ moment or has no kit's verb; none is forced.
 2. **古四 gets a second 塔防 (断肋巡夜)**, though the 10-21 pass said 「no more」 for 古四. It is the book's own half-month of
    nights with a broken rib, and its win is the 二层. — *Recommend: yes.*
 3. **Two fights the book plays as a kit:** 古五's 蛫 (「打不过的，不打。给它下坠子」 → 割绳子) and 古九's dragons (「直扑他身后的
-   河岸」 → 塔防, 古九's only board). The 蛫's and the dragons' cards come with the win. — *Recommend: swap both.*
+   河岸」 → 塔防, 古九's only board). The exits' own grants stay on the way on (踏马符 at the 蛫, 20 灵石 at the dragons); whatever the fight itself pays moves to the board's win. — *Recommend: swap both.*
 4. **古六's 决赛 as a 砸寨 level** (make 祁不退 退一步), on the 3,414 字 that has had no play since 猪蜻蜓 was cut. —
    *Recommend: yes.*
 5. **古二's 6,080 字:** no kit fits (breath is capped). A 大场面 of the mirror night (the 火把, the cold light crawling the snow
