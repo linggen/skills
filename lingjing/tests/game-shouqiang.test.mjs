@@ -178,7 +178,7 @@ test('balance: never picking loses on every opening line; random picks lose some
   const rw = random.filter((r) => r.won).length, r3 = random.filter((r) => r.stars === 3).length;
   assert.ok(rw <= 39 && r3 <= 32, `random won ${rw}/40, ${r3} with 3 stars: the cards must matter`);
   assert.ok(greedy.every((r) => r.won), `greedy lost on ${greedy.filter((r) => !r.won).length} seeds`);
-  assert.ok(greedy.filter((r) => r.stars === 3).length >= SEEDS.length * 0.75, 'a sharp build keeps most of the wall: 3 stars');
+  assert.ok(greedy.filter((r) => r.wallLeft >= level.stars[0]).length >= SEEDS.length * 0.75, 'a sharp build keeps most of the wall (★★★\'s wall; its par is the climax\'s, tests/game-shouqiang-jieyin)');
   assert.ok(greedy.some((r) => r.wallLeft < 0.95), 'and still feels the pressure');
 });
 
@@ -277,13 +277,48 @@ test('swords never point at 小满 (they launch from his raised hand); 回旋 ar
   assert.ok(swords > 1000 && arcing > 100 && fades > 10 && arcHits > 0, JSON.stringify({ swords, arcing, fades }));
 });
 
-test('stars come from the wall left', () => {
+// The climax rule (Hanli 10-21: 「按你的建议来」): every level — story levels and 兽潮 nights included, and any added later —
+// ends on one 结印 moment: its last wave holds a 大妖 (`climax.boss`, a boss row there), or it names an ELITE — a stronger
+// one of a beast the level already shows (no new species) — spawned in the last wave whenever no 大妖 is dealt there
+// (兽潮 may swap a 大妖 out); and a `par` (s) for ★★★'s quick climax.
+test('lint: every level declares its last-wave climax (大妖 or elite of a beast it shows) and a par', () => {
+  for (const l of kit.levels) {
+    const c = l.climax, kinds = new Set(l.waves.flat().map((r) => r[0])), last = l.waves.at(-1);
+    assert.ok(c && (c.boss || c.elite), `${l.id}: a climax`);
+    assert.ok(Number.isFinite(l.par) && l.par > 0, `${l.id}: a par`);
+    if (c.boss) {
+      assert.ok(kit.beasts[c.boss]?.boss, `${l.id}: ${c.boss} is a 大妖`);
+      assert.ok(last.some((r) => r[0] === c.boss), `${l.id}: the 大妖 comes in the last wave`);
+    }
+    assert.ok(c.elite, `${l.id}: an elite (the climax when no 大妖 is dealt)`);
+    assert.ok(!kit.beasts[c.elite]?.boss && kinds.has(c.elite), `${l.id}: the elite is a beast the level already shows (${c.elite})`);
+    if (!c.boss) assert.ok(!last.some((r) => kit.beasts[r[0]]?.boss), `${l.id}: a 大妖 in the last wave is declared`);
+  }
+  for (const k of ['hpMul', 'size', 'bite', 'speed']) assert.ok(kit.elite[k] > 0, `elite ${k}`);
+});
+
+test('the climax spawns: an elite in the last wave where no 大妖 is dealt; none where one is', () => {
+  const play = (lvl) => { const g = newGame(kit, lvl, { seed: 'cl' }); g.wave = g.waves - 1; g.phase = 'count'; g.timer = 0; step(g, 0.1); return g; };
+  const noBoss = kit.levels.find((l) => !l.climax.boss);
+  const g = play(noBoss);
+  assert.equal(g.spawns.filter((s) => s.elite).length, 1);
+  assert.equal(g.spawns.find((s) => s.elite).kind, noBoss.climax.elite);
+  const withBoss = kit.levels.find((l) => l.climax.boss);
+  assert.equal(play(withBoss).spawns.filter((s) => s.elite).length, 0, 'the 大妖 is the climax');
+  const swapped = play({ ...withBoss, waves: [...withBoss.waves.slice(0, -1), withBoss.waves.at(-1).filter((r) => !kit.beasts[r[0]].boss)] });
+  assert.equal(swapped.spawns.filter((s) => s.elite).length, 1, 'a 大妖 swapped out (兽潮): the elite comes instead');
+});
+
+test('stars come from the wall left (★★★ also wants the climax down within par)', () => {
   const g = newGame(kit, level, { seed: 'stars' });
+  g.climax = { id: 1, at: 0, took: level.par };
   const s = (left) => { g.wall = g.wallMax * left; g.phase = 'won'; return stars(g); };
   assert.equal(s(1), 3);
   assert.equal(s(level.stars[0]), 3);
   assert.equal(s(level.stars[0] - 0.01), 2);
   assert.equal(s(level.stars[1] - 0.01), 1);
+  g.climax.took = level.par + 1;
+  assert.equal(s(1), 2, 'a slow climax: ★★ at most');
   g.wall = 0;
   assert.equal(stars(g), 0);
 });
@@ -546,7 +581,7 @@ test('balance in the 药园: never setting a talisman loses; a first-timer wins 
     assert.ok(human.every((r) => r.won || r.wave >= 3), `${l.id}: no first-timer loses in the first two waves`);
   }
   assert.ok(got[0] >= got[3] + 0.1, `L2 is easier than L5: ${got.map((x) => Math.round(x * 100))}`);
-  assert.ok(laneRun(lanes[0], 'human').filter((r) => r.stars === 3).length >= 14, 'L2: mostly three stars');
+  assert.ok(laneRun(lanes[0], 'human').filter((r) => r.wallLeft >= lanes[0].stars[0]).length >= 14, 'L2: mostly ★★★\'s wall');
 });
 
 test('difficulty is one knob in the data on a 药园 level too: more beasts and more hp, and it bites', () => {

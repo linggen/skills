@@ -13,24 +13,28 @@
   "sword": {"every": 0.7, "dmg": 16, "speed": 820, "r": 14},
   "fox": {"every": 1.1, "dmg": 11, "speed": 560, "r": 12}
  },
+ "elite": {
+  "_about": "An elite (Hanli 10-21: 「按你的建议来」 — every level's last wave ends on a 大妖 or an elite, its one 结印 moment): a stronger one of a beast the level already shows (no new species), from the level's `climax` — hp ×, size ×, bite ×, speed ×. Drawn bigger with a gold aura.",
+  "hpMul": 4, "size": 1.35, "bite": 1.5, "speed": 0.85
+ },
  "jieyin": {
-  "_about": "结印 — the player's spells at the camera, only where a camera is (Hanli 10-21: 「让用户结印发火弹帮忙打怪」, 「没摄像头时, 就不用用户结印帮打」), and a big move, rarely: offered only while a 大妖 is on the field (`when`: boss | elite | always — 「不然打小怪, 结手印太频繁很累」), a long cooldown between casts (`cool` s of game time: the hand is down, the seals are not counted — 「加一个手势的冷却, 让用户大部分时间在休息」), and hard on the 大妖 (`bossMul` — 「手印攻击高, 可以引导玩家用于打boss」). `aim`: with no beast tapped, the 大妖 in reach first. 五行相克 (素问: 木得金而伐，火得水而灭，土得木而达，金得火而缺，水得土而绝): `beats` [spell element → the root it overcomes], × `counter` (a beast's root: creatures.json). `idle`: s ready with no hand raised before the camera closes itself. `armedFps`: the eye's rate while a 小招 is armed (a jab is ~200 ms); `cool`: 守墙关's own rest between casts, over 手势斗法's 灵力 (its refill alone would allow a 小招 every ~2 s). `say`: the cue when the 大妖 steps out. Tests: tests/game-shouqiang-jieyin.test.mjs.",
-  "when": "boss", "aim": "boss", "cool": 10, "armedFps": 30, "fly": 0.5, "bossMul": 4, "counter": 1.5, "idle": 60,
-  "beats": {"wood": "earth", "earth": "water", "water": "fire", "fire": "metal", "metal": "wood"},
+  "_about": "结印 — the player's spells at the camera, only where a camera is (Hanli 10-21: 「让用户结印发火弹帮忙打怪」, 「没摄像头时, 就不用用户结印帮打」), and a big move, rarely: offered only while the level's climax is on the field — its 大妖 or its elite (`when`: boss | elite | always; levels' `climax`; 「不然打小怪, 结手印太频繁很累」「按你的建议来」), a rest between casts (`cool` s of game time, over 手势斗法's 灵力: the hand is down — 「让用户大部分时间在休息」), hard on the 大妖 (`bossMul`) and the elite (`eliteMul`) — 「手印攻击高, 可以引导玩家用于打boss」. `aim`: with no beast tapped, the 大妖 / elite in reach first. Combos and 五行相克 are 手势斗法's (jieyin.json doufa: the ONE 相克 table, against the beast's creatures.json root). `idle`: s ready with no hand raised before the camera closes itself. `armedFps`: the eye's rate while a 小招 is armed (a jab is ~200 ms). `say` / `sayElite`: the cue when the climax steps out; `counterSay` + `roots` name the counter move. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」): tests/game-shouqiang-jieyin.test.mjs.",
+  "when": "elite", "aim": "boss", "cool": 10, "armedFps": 30, "fly": 0.5, "bossMul": 4, "eliteMul": 3, "idle": 60,
   "say": {"zh": "大妖来了——结印！", "en": "The great beast is here — make the seals!"},
+  "sayElite": {"zh": "来了个厉害的——结印！", "en": "A strong one — make the seals!"},
   "first": {"zh": "比个剑诀，飞剑就出去", "en": "Make the sword seal and the flying sword goes"},
   "counterSay": {"zh": "它属{root}，{move}克它。", "en": " It is {root}: {move} overcomes it."},
   "roots": {"wood": {"zh": "木", "en": "wood"}, "fire": {"zh": "火", "en": "fire"}, "earth": {"zh": "土", "en": "earth"}, "metal": {"zh": "金", "en": "metal"}, "water": {"zh": "水", "en": "water"}},
-  "_moves": "What each 手势斗法 move does here (doc/games.md § 手势斗法; the hands are read by games/jieyin/duel.js — its cast event's `move` is the id). 小招 (a shape + a jab or push: 飞剑 剑诀 · 点穴 单剑指 · 掌风 推掌 · 拳劲 拳) from the start — before 古六 they are all there is (Hanli 10-21: 「古6是系统学习, 前面可以出现简单的, 比如剑诀」, 隔空指点 「很不错, 加进去」); 法术 (the book's five, 文 → 扣 → 推) and the 大招 (the four-seal 火蛋) after 古六's 讲堂 (`from`: any of those marks in the save; the story hands its marks in, `data.marks`; the 游戏厅 gives none → all). shape: one | spear (the line from 小满's hand on through the beast, `width`, `splash`) | row (ground beasts within `width` of its height) | ring (`radius`, `splash`); dmg; root: s held; slow × for s; push: px back up the road (never the 大妖). The element (`wuxing`) is the beast-side 相克 key (creatures.json `root` spelling).",
+  "_moves": "What each 手势斗法 move does here (doc/games.md § 手势斗法; the hands are read by games/jieyin/duel.js — its cast event's `move` is the id). 小招 (a shape + a jab or push: 飞剑 剑诀 · 点穴 单剑指 · 掌风 推掌 · 拳劲 拳) from the start — before 古六 they are all there is (Hanli 10-21: 「古6是系统学习, 前面可以出现简单的, 比如剑诀」, 隔空指点 「很不错, 加进去」); 法术 (the book's five, 文 → 扣 → 推) and the 大招 (the four-seal 火蛋) after 古六's 讲堂 (`from`: any of those marks in the save; the story hands its marks in, `data.marks`; the 游戏厅 gives none → all). shape: one | spear (the line from 小满's hand on through the beast, `width`, `splash`) | row (ground beasts within `width` of its height) | ring (`radius`, `splash`); dmg; root: s held; slow × for s; push: px back up the road (never the 大妖); cool: this move's own rest (木藤 and 冰锥 set up 手势斗法's combos — 缠而后伐, 冰火成雾 — so the next spell may follow while the hold lasts). The element (`wuxing`) is the beast-side 相克 key (creatures.json `root` spelling).",
   "moves": [
    {"id": "feijian", "tier": "xiao", "name": {"zh": "飞剑", "en": "Flying sword"}, "from": null, "wuxing": null, "shape": "one", "dmg": 320, "fly": 0.35},
    {"id": "dianxue", "tier": "xiao", "name": {"zh": "点穴", "en": "Pressure point"}, "from": null, "wuxing": null, "shape": "one", "root": 3, "dmg": 60, "fly": 0.3},
    {"id": "zhangfeng", "tier": "xiao", "name": {"zh": "掌风", "en": "Palm wind"}, "from": null, "wuxing": null, "shape": "row", "width": 70, "push": 110, "fly": 0.3},
    {"id": "quanjin", "tier": "xiao", "name": {"zh": "拳劲", "en": "Fist force"}, "from": null, "wuxing": null, "shape": "ring", "radius": 90, "dmg": 140, "root": 1.5, "splash": 1, "fly": 0.3},
    {"id": "huodan", "tier": "fa", "name": {"zh": "火弹", "en": "Fire shot"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "fire", "shape": "spear", "dmg": 420, "splash": 0.5, "width": 34, "fly": 0.45},
-   {"id": "bingzhui", "tier": "fa", "name": {"zh": "冰锥", "en": "Ice needle"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "water", "shape": "one", "dmg": 380, "slow": 0.4, "for": 3, "fly": 0.2},
+   {"id": "bingzhui", "tier": "fa", "name": {"zh": "冰锥", "en": "Ice needle"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "water", "shape": "one", "dmg": 380, "cool": 1, "slow": 0.4, "for": 3, "fly": 0.2},
    {"id": "jinren", "tier": "fa", "name": {"zh": "金刃", "en": "Metal blade"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "metal", "shape": "row", "dmg": 200, "width": 60, "slow": 0.5, "for": 3, "fly": 0.4},
-   {"id": "muteng", "tier": "fa", "name": {"zh": "木藤", "en": "Wood vine"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "wood", "shape": "ring", "radius": 110, "root": 3, "fly": 0.5},
+   {"id": "muteng", "tier": "fa", "name": {"zh": "木藤", "en": "Wood vine"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "wood", "shape": "ring", "radius": 110, "root": 3, "cool": 1, "fly": 0.5},
    {"id": "tuqiang", "tier": "fa", "name": {"zh": "土墙", "en": "Earth wall"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "earth", "shape": "ring", "radius": 100, "push": 120, "dmg": 80, "fly": 0.5},
    {"id": "huodan4", "tier": "da", "name": {"zh": "四印火蛋", "en": "Four-seal fire egg"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "fire", "shape": "ring", "radius": 130, "dmg": 700, "splash": 0.6, "fly": 0.55}
   ]
@@ -85,7 +89,7 @@
  },
  "levels": [
   {
-   "id": "shanmen",
+   "id": "shanmen", "par": 32, "climax": {"boss": "heyu", "elite": "qiuyu", "at": 8},
    "kit": "shouqiang",
    "story": null,
    "place": "shanmen",
@@ -128,7 +132,7 @@
    ]
   },
   {
-   "id": "yaoyuan-1",
+   "id": "yaoyuan-1", "par": 9, "climax": {"elite": "yezhu", "at": 26, "lane": 2, "stats": {"hpMul": 2, "bite": 1}},
    "kit": "shouqiang",
    "story": null,
    "place": "yaoyuan",
@@ -180,7 +184,7 @@
    ]
   },
   {
-   "id": "yaoyuan-2",
+   "id": "yaoyuan-2", "par": 10, "climax": {"elite": "yezhu", "at": 30, "lane": 2, "stats": {"hpMul": 2, "bite": 1}},
    "kit": "shouqiang",
    "story": null,
    "place": "yaoyuan",
@@ -229,7 +233,7 @@
    ]
   },
   {
-   "id": "yaoyuan-3",
+   "id": "yaoyuan-3", "par": 16, "climax": {"elite": "qiuyu", "at": 34, "lane": 2, "stats": {"hpMul": 1.5, "bite": 1}},
    "kit": "shouqiang",
    "story": null,
    "place": "yaoyuan",
@@ -278,7 +282,7 @@
    ]
   },
   {
-   "id": "yaoyuan-4",
+   "id": "yaoyuan-4", "par": 36, "climax": {"boss": "heyu", "elite": "qiuyu", "at": 16, "lane": 2, "stats": {"hpMul": 2, "bite": 1}},
    "kit": "shouqiang",
    "story": null,
    "place": "yaoyuan",
@@ -330,7 +334,7 @@
    ]
   },
   {
-   "id": "shouchao-1",
+   "id": "shouchao-1", "par": 13, "climax": {"elite": "zheng", "at": 8},
    "kit": "shouqiang",
    "story": null,
    "place": "shanmen",
@@ -365,7 +369,7 @@
    ]
   },
   {
-   "id": "shouchao-2",
+   "id": "shouchao-2", "par": 13, "climax": {"elite": "zheng", "at": 8},
    "kit": "shouqiang",
    "story": null,
    "place": "shanmen",
@@ -401,7 +405,7 @@
    ]
   },
   {
-   "id": "shouchao-3",
+   "id": "shouchao-3", "par": 11, "climax": {"elite": "zheng", "at": 8},
    "kit": "shouqiang",
    "story": null,
    "place": "shanmen",
@@ -438,7 +442,7 @@
    ]
   },
   {
-   "id": "shouchao-4",
+   "id": "shouchao-4", "par": 30, "climax": {"elite": "qiuyu", "at": 8},
    "kit": "shouqiang",
    "story": null,
    "place": "shanmen",
@@ -475,7 +479,7 @@
    ]
   },
   {
-   "id": "yaoyuan-spring",
+   "id": "yaoyuan-spring", "par": 8, "climax": {"elite": "yezhu", "at": 32, "lane": 2, "stats": {"hpMul": 2, "bite": 1}},
    "kit": "shouqiang",
    "story": "09-furnace",
    "_story": "The 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」 → 「可以」): 09-furnace's board (was 气走经脉 · 定风), task furnace-ding. A story level: `story` names its scene, so 兽潮 (rules/shouchao.mjs tideRows) never serves it, the 游戏厅 lists it off the ladder and it names no 下一关. 野猪 and 狰 only (犰狳 first comes at 09-lingcao, the next scene). Human-like bot 37/40, sharp 22/24, lazy 0/6.",

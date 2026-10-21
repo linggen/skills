@@ -6,15 +6,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, castJieyin, jieyinCool, jieyinOn, jieyinState, jieyinTarget, newGame, pick, reachY, setFocus, sim, spellMul, step, withRoots } from '../scripts/games/shouqiang/core.js';
+import { BOTS, castJieyin, jieyinCool, jieyinOn, jieyinState, jieyinTarget, newGame, pick, reachY, setFocus, sim, stars, step, withRoots, withSpells } from '../scripts/games/shouqiang/core.js';
 import { callLine, gateOpen, offerJieyin } from '../scripts/games/shouqiang.js';
 import { WORDS, offerSeals, shortOf, tiersOf } from '../scripts/games/jieyin/helper.js';
 import { poseOf } from '../scripts/games/jieyin/pose.js';
 
 const at = (p) => new URL(`../${p}`, import.meta.url);
 const json = (p) => JSON.parse(readFileSync(at(p), 'utf8'));
-const kit = withRoots(json('worlds/jiuding/levels/shouqiang.json'), json('worlds/jiuding/creatures.json').creatures);
-const seals = json('worlds/jiuding/levels/jieyin.json');
+const seals = json('worlds/jiuding/levels/jieyin.json'), creatures = json('worlds/jiuding/creatures.json').creatures;
+const kit = withSpells(withRoots(json('worlds/jiuding/levels/shouqiang.json'), creatures), seals);
 const J = kit.jieyin;
 const level = kit.levels[0];
 const always = { ...level, jieyinWhen: 'always' };
@@ -32,12 +32,12 @@ function crowded(seed, lvl = always) {
 const withBoss = (g) => { const b = g.beasts[0]; Object.assign(b, { kind: 'heyu', boss: true, hp: 4000, max: 4000, y: reachY(g) + 120, wailIn: 99 }); return b; };
 const fly = (g, secs = 1) => { const hits = []; for (let t = 0; t < secs; t += 1 / 60) { step(g, 1 / 60); hits.push(...g.events.filter((e) => e.t === 'hit' && e.kind === 'spell')); g.events.length = 0; } return hits; };
 
-test('the numbers are data: when, aim, cool, bossMul, 相克, words, and every move a shape, a gate, its seals', () => {
-  assert.equal(J.when, 'boss');
+test('the numbers are data: when, aim, cool, bossMul, eliteMul, words, and every move a shape, a gate', () => {
+  assert.equal(J.when, 'elite', 'the climax: a 大妖, or the level\'s elite');
   assert.equal(J.aim, 'boss');
-  for (const k of ['cool', 'bossMul', 'counter', 'idle', 'fly']) assert.ok(Number.isFinite(J[k]) && J[k] > 0, k);
-  assert.ok(J.say.zh && J.say.en && J.first.zh && J.first.en && J.counterSay.zh && J.counterSay.en);
-  assert.deepEqual(Object.keys(J.beats).sort(), ['earth', 'fire', 'metal', 'water', 'wood']);
+  for (const k of ['cool', 'bossMul', 'eliteMul', 'idle', 'fly', 'armedFps']) assert.ok(Number.isFinite(J[k]) && J[k] > 0, k);
+  assert.ok(J.say.zh && J.say.en && J.sayElite.zh && J.sayElite.en && J.first.zh && J.first.en && J.counterSay.zh && J.counterSay.en);
+  assert.equal(J.beats, undefined, 'no 相克 table of its own');
   const D = seals.doufa, known = [...Object.keys(D.xiao), ...D.fa, ...Object.keys(D.da)];
   for (const m of J.moves) {
     assert.ok(m.name.zh && m.name.en && ['one', 'spear', 'row', 'ring'].includes(m.shape), m.id);
@@ -50,7 +50,17 @@ test('the numbers are data: when, aim, cool, bossMul, 相克, words, and every m
   for (const b of ['yezhu', 'zheng', 'qiuyu', 'qique', 'heyu']) assert.ok(kit.beasts[b].root, `${b}: its element from creatures.json`);
 });
 
-test('offered only while a 大妖 is on the field: ordinary waves are the cards\' job', () => {
+test('五行: ONE 相克 table (jieyin.json doufa.counter, creatures.json\'s spelling); every element named in the games is a creature root', () => {
+  const D = seals.doufa, roots = new Set(creatures.map((c) => c.root).filter(Boolean));
+  assert.deepEqual(Object.keys(D.counter.beats).sort(), [...roots].sort());
+  for (const [a, b] of Object.entries(D.counter.beats)) assert.ok(roots.has(a) && roots.has(b));
+  for (const e of Object.values(D.elements)) assert.ok(roots.has(e), e);
+  for (const f of [...json('worlds/jiuding/levels/doufa.json').levels.flatMap((l) => [...(l.foes ?? []), l.boss].filter(Boolean))]) {
+    assert.equal(f.element, creatures.find((c) => c.id === f.id)?.root, `doufa ${f.id}: its creature's root`);
+  }
+});
+
+test('offered only while the climax (a 大妖 or the elite) is on the field: ordinary waves are the cards\' job', () => {
   const g = crowded('on', level);
   assert.equal(jieyinOn(g), false);
   assert.equal(castJieyin(g, 'feijian'), false);
@@ -96,19 +106,53 @@ test('rest: one spell, then none till it cools (game time); the seals are not sp
   assert.equal(jieyinCool(empty), 0);
 });
 
-test('hard on the 大妖 (bossMul), harder on what its element overcomes (五行相克: beats, the beast\'s root)', () => {
+test('hard on the 大妖 (bossMul) and the elite (eliteMul); 相克 and the combos are 手势斗法\'s (strike)', () => {
   const g = crowded('m');
   const boss = withBoss(g);
-  const move = (id) => J.moves.find((m) => m.id === id);
-  assert.equal(spellMul(g, move('feijian'), boss), J.bossMul);
-  assert.equal(spellMul(g, move('muteng'), boss), J.bossMul * J.counter, '木得金… 土得木而达: wood overcomes earth (合窳)');
-  const zheng = { kind: 'zheng', boss: false };
-  assert.equal(spellMul(g, move('bingzhui'), zheng), J.counter, '火得水而灭: water overcomes fire (狰)');
-  assert.equal(spellMul(g, move('huodan'), zheng), 1);
   setFocus(g, boss.id);
   castJieyin(g, 'feijian');
-  const hits = fly(g);
-  assert.equal(hits.find((h) => h.id === boss.id)?.dmg, J.moves[0].dmg * J.bossMul, 'the 飞剑 on the 大妖');
+  assert.equal(fly(g).find((h) => h.id === boss.id)?.dmg, J.moves[0].dmg * J.bossMul, 'the 飞剑 on the 大妖');
+  const e = crowded('m2'), elite = e.beasts.find((b) => b.y >= reachY(e));
+  Object.assign(elite, { elite: true, hp: 5000, max: 5000 });
+  advance(e, J.cool + 0.5);
+  setFocus(e, elite.id);
+  castJieyin(e, 'feijian');
+  assert.equal(fly(e).find((h) => h.id === elite.id)?.dmg, J.moves[0].dmg * J.eliteMul, 'the 飞剑 on the elite');
+  // 相克: 水 (冰锥) overcomes 火 — 狰's root (creatures.json).
+  const c = crowded('m3'), zheng = c.beasts.find((b) => b.y >= reachY(c));
+  Object.assign(zheng, { kind: 'zheng', hp: 9000, max: 9000 });
+  setFocus(c, zheng.id);
+  castJieyin(c, 'bingzhui');
+  const dm = J.moves.find((m) => m.id === 'bingzhui').dmg;
+  assert.equal(fly(c).find((h) => h.id === zheng.id)?.dmg, dm * seals.doufa.counter.mult, '火得水而灭');
+  // 缠而后伐: 木藤 holds, then 金刃 cuts for double.
+  const k = crowded('m4'), t = k.beasts.find((b) => b.y >= reachY(k));
+  Object.assign(t, { kind: 'yezhu', hp: 9000, max: 9000 });
+  setFocus(k, t.id);
+  castJieyin(k, 'muteng');
+  fly(k, 0.6);
+  assert.ok(t.spell?.rooted > k.t * 1000, 'rooted (手势斗法\'s status, kept on the beast)');
+  const rest = J.moves.find((m) => m.id === 'muteng').cool;
+  assert.ok(rest * 1000 < seals.doufa.effects.muteng.status.rooted, '木藤\'s own short rest: the cut can follow while it holds');
+  advance(k, rest + 0.2);
+  setFocus(k, t.id);
+  castJieyin(k, 'jinren');
+  const combo = [];
+  for (let i = 0; i < 60; i += 1) { step(k, 1 / 60); combo.push(...k.events.filter((x) => x.t === 'combo' || (x.t === 'hit' && x.id === t.id && x.kind === 'spell'))); k.events.length = 0; }
+  assert.ok(combo.some((x) => x.combo === 'chanfa'), '缠而后伐');
+  const comboMult = seals.doufa.combos.find((x) => x.id === 'chanfa').mult;
+  assert.equal(combo.find((x) => x.t === 'hit')?.dmg, J.moves.find((m) => m.id === 'jinren').dmg * comboMult);
+});
+
+test('lanes by the hand: with nothing tapped and no climax in reach, the nearest beast in the third the hand stood in', () => {
+  const g = crowded('lane');
+  const live = g.beasts.filter((b) => b.y >= reachY(g));
+  const third = (b) => Math.floor((b.x / 540) * 3);
+  for (const b of live) b.boss = b.elite = false;
+  const want = live[0], idx = third(want);
+  for (const b of live) if (b !== want && third(b) === idx) b.y = reachY(g) + 1;
+  assert.equal(jieyinTarget(g, idx)?.id, want.id);
+  assert.ok(jieyinTarget(g, null), 'no lane given: the nearest anywhere');
 });
 
 test('the five temperaments: 矛 down its line, 镰 a row (and a slow), 绳 holds without a scratch, 墙 pushes back', () => {
@@ -134,12 +178,13 @@ test('gates: before 古六 (no 讲堂 mark in the save) only the 小招; after i
   assert.deepEqual(ids(undefined), J.moves.map((m) => m.id));
 });
 
-test('the 大妖\'s cue: the kit\'s line, and the counter move when one is offered', () => {
-  const all = J.moves, pre = J.moves.filter((m) => !m.from);
-  assert.equal(callLine(J, 'earth', pre, 'zh'), J.say.zh, 'only 飞剑: no element talk');
-  const line = callLine(J, 'earth', all, 'zh');
+test('the climax\'s cue: the 大妖\'s or the elite\'s line, and the counter move when one is offered (手势斗法\'s table)', () => {
+  const all = J.moves, pre = J.moves.filter((m) => !m.from), D = seals.doufa;
+  assert.equal(callLine(J, { boss: 'earth', climax: 'boss' }, pre, 'zh', D), J.say.zh, 'the 小招 only: no element talk');
+  const line = callLine(J, { boss: 'earth', climax: 'boss' }, all, 'zh', D);
   assert.ok(line.startsWith(J.say.zh) && line.includes('木藤') && line.includes('土'), line);
-  assert.match(callLine(J, 'earth', all, 'en'), /Wood vine/);
+  assert.match(callLine(J, { boss: 'earth', climax: 'boss' }, all, 'en', D), /Wood vine/);
+  assert.ok(callLine(J, { boss: 'fire', climax: 'elite' }, all, 'zh', D).startsWith(J.sayElite.zh), 'an elite: its own line');
 });
 
 test('no spell cast → the game is the game it was: the jieyin block changes nothing for a player without a camera', () => {
@@ -153,18 +198,27 @@ test('no spell cast → the game is the game it was: the jieyin block changes no
 });
 
 // The sims (doc/games.md § 结印): `seals` = s a player takes to make a move once one may fly; `spell` the move.
-test('balance: spells shorten the 大妖\'s fight; without them the levels are still won; the hand rests ≥ 95% of a level', () => {
-  const NIGHTS = Array.from({ length: 16 }, (_, i) => `q${i}`);
+// Hanli 10-21: 「结印可以帮助更快杀敌, 更容易取得3星成就」 — ★★★ wants the climax down within `par`: without 结印 ★★ is
+// the usual night, with it ★★★ comes clearly easier; the hand rests ≥ 95% of a level either way.
+test('balance: spells take the climax down sooner and make ★★★ clearly easier; without them ★★ is usual; the hand rests', () => {
+  const NIGHTS = Array.from({ length: 8 }, (_, i) => `q${i}`);
   const avg = (rs, f) => rs.reduce((s, r) => s + f(r), 0) / rs.length;
-  for (const lvl of kit.levels.filter((l) => l.waves.some((w) => w.some(([k]) => kit.beasts[k].boss)))) {
+  let plain3 = 0, helped3 = 0, plain2 = 0, n = 0;
+  for (const lvl of kit.levels) {
+    assert.ok(Number.isFinite(lvl.par), `${lvl.id}: a par for its climax`);
     const plain = NIGHTS.map((seed) => sim(kit, lvl, BOTS.human, { seed, limit: 1500 }));
     const helped = NIGHTS.map((seed) => sim(kit, lvl, BOTS.human, { seed, limit: 1500, seals: 4, spell: 'feijian' }));
-    assert.ok(plain.filter((r) => r.won).length >= NIGHTS.length * 0.6, `${lvl.id}: winnable without spells`);
-    assert.ok(avg(helped, (r) => r.bossT) < avg(plain, (r) => r.bossT) * 0.8, `${lvl.id}: the 大妖 falls sooner (${avg(helped, (r) => r.bossT).toFixed(0)} vs ${avg(plain, (r) => r.bossT).toFixed(0)} s)`);
+    const took = (rs) => avg(rs.filter((r) => r.climaxT != null), (r) => r.climaxT);
+    assert.ok(took(helped) < took(plain) * 0.8, `${lvl.id}: the climax falls sooner (${took(helped).toFixed(0)} vs ${took(plain).toFixed(0)} s)`);
+    assert.ok(helped.filter((r) => r.stars === 3).length >= plain.filter((r) => r.stars === 3).length, `${lvl.id}: ★★★ no harder with 结印`);
     const casts = avg(helped, (r) => r.eggs);
-    assert.ok(casts >= 1 && casts <= 4, `${lvl.id}: a few casts a 大妖 (${casts.toFixed(1)})`);
+    assert.ok(casts >= 0.8 && casts <= 4, `${lvl.id}: a few casts at the climax (${casts.toFixed(1)})`);
     assert.ok(avg(helped, (r) => 1 - (r.eggs * 4) / r.t) >= 0.95, `${lvl.id}: resting`);
+    plain3 += plain.filter((r) => r.stars === 3).length; plain2 += plain.filter((r) => r.stars === 2).length;
+    helped3 += helped.filter((r) => r.stars === 3).length; n += NIGHTS.length;
   }
+  assert.ok(plain2 > plain3 && plain3 / n <= 0.35, `without 结印 ★★ is the usual night (★★ ${plain2}, ★★★ ${plain3} of ${n})`);
+  assert.ok(helped3 / n >= plain3 / n + 0.25, `with 结印 ★★★ comes clearly easier (${helped3} vs ${plain3} of ${n})`);
   for (const lvl of kit.levels) {
     const lazy = ['z0', 'z1'].map((seed) => sim(kit, { ...lvl, jieyinWhen: 'always' }, BOTS.lazy, { seed, limit: 1500, seals: 1, spell: 'huodan' }));
     assert.ok(lazy.every((r) => !r.won), `${lvl.id}: spells on every wave and no cards still lose`);

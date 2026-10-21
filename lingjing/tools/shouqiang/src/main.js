@@ -7,7 +7,7 @@ import { SIDE } from './lanes.js';
 
 /**
  * start({ parent, base, lang, kit, level, seed, reducedMotion, dev, showFps, lines, onEvent, onEnd, landscape, shell })
- *   → { destroy(), say(who, text), layout(landscape), go(), paused(), picking(), jieyin(id), jieyinState() }
+ *   → { destroy(), say(who, text), layout(landscape), go(), paused(), picking(), jieyin(cast), jieyinState() }
  * `held`: draw the field but stand still until `go()` (the shell's lead card is up over it).
  * `landscape` (a 药园 level only): option A — the same portrait field centred, side panels either side.
  * `base`: the URL of games/shouqiang/ (art beside it). `lines`: 银月's prefetched lines by moment (台词预取), else the
@@ -50,7 +50,7 @@ export function start(opts) {
     // 结印 (games/jieyin/helper.js, only where a camera is): the play's pause, a spell, what the button shows.
     paused: () => Boolean(scene()?.paused),
     picking: () => Boolean(scene()?.hud?.modalOpen), // a card pick is up: 结印's corner steps aside
-    jieyin: (id) => Boolean(scene()?.jieyin?.(id)),
+    jieyin: (cast) => Boolean(scene()?.jieyin?.(cast)), // 手势斗法's cast event, or a move id
     jieyinState: () => (scene()?.g ? jieyinState(scene().g) : { on: false, ready: false, cool: 0, coolOf: 0, boss: null }),
   };
 }

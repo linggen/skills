@@ -240,9 +240,9 @@ export class PlayScene extends Phaser.Scene {
   // ---- 结印 (games/jieyin/helper.js makes the seals at the camera; the page calls these) ---------------------------
 
   /** A move made at the camera: its spell flies (true), or not now (no 大妖 out, resting, nothing in reach). */
-  jieyin(id) {
+  jieyin(cast) {
     if (this.paused || this.held || this.done) return false;
-    return castJieyin(this.g, id);
+    return castJieyin(this.g, cast);
   }
 
   // ---- the frame -----------------------------------------------------------------------------------------------
@@ -336,7 +336,7 @@ export class PlayScene extends Phaser.Scene {
     const k = this.kit(b);
     const walk1 = `${b.kind}-walk-1`;
     const spr = this.add.image(b.x, b.y, walk1).setOrigin(0.5, 0.86);
-    const scale = k.size / spr.height;
+    const scale = (k.size / spr.height) * (b.elite ? this.g.kit.elite?.size ?? 1.4 : 1);
     spr.setScale(scale);
     const shadow = this.add.image(b.x, b.y, 'shadow').setDepth(D.shadow).setScale(k.size / 64 * (b.fly ? 0.7 : 1.05), k.size / 64);
     const s = { spr, shadow, scale, kind: b.kind, hitT: 0, flashT: 0, phase: Math.random() * 6, frames: [walk1, this.tex(`${b.kind}-walk-2`, walk1)],
@@ -347,6 +347,11 @@ export class PlayScene extends Phaser.Scene {
     }
     spr.setAlpha(0);
     this.tweens.add({ targets: spr, alpha: 1, duration: 260 });
+    // An elite (the level's climax): a gold aura under it, breathing.
+    if (b.elite) {
+      s.aura = this.add.image(b.x, b.y, 'glow').setTint(0xffc040).setBlendMode(Phaser.BlendModes.ADD).setDepth(D.shadow + 0.5).setScale(k.size / 40);
+      if (!this.calm) this.tweens.add({ targets: s.aura, alpha: 0.45, duration: 700, yoyo: true, repeat: -1 });
+    }
     this.beasts.set(b.id, s);
     return s;
   }
@@ -364,6 +369,7 @@ export class PlayScene extends Phaser.Scene {
     const lunge = b.atWall && !held ? Math.max(0, Math.sin(s.phase * 0.7)) * 10 : 0;
     s.spr.setPosition(b.x, b.y - lift + lunge - (b.z ?? 0)).setDepth(D.beast + b.y / 1000 + (b.z ? 0.2 : 0));
     s.shadow.setPosition(b.x, b.y + 2).setAlpha(b.fly ? 0.45 : 0.8);
+    s.aura?.setPosition(b.x, b.y - k.size * 0.3);
     const key = s.hitT > 0 ? s.hit : s.frames[(Math.floor(s.phase / Math.PI) & 1)];
     if (s.spr.texture.key !== key) s.spr.setTexture(key);
     const squash = s.hitT > 0 ? 1 + s.hitT * 1.2 : 1;
@@ -412,6 +418,7 @@ export class PlayScene extends Phaser.Scene {
     this.beasts.delete(id);
     s.stars?.forEach((x) => x.destroy());
     s.shadow.destroy();
+    s.aura?.destroy();
     s.hpBg?.destroy();
     s.hpFill?.destroy();
     if (!dead) return void s.spr.destroy();
@@ -674,6 +681,22 @@ export class PlayScene extends Phaser.Scene {
       if (this.g.grid && e.kind === this.g.level.twist && !this.twistSaid) { this.twistSaid = true; this.time.delayedCall(1200, () => this.moment('twist')); }
     },
     huge() { this.moment('huge'); this.fact({ t: 'huge' }); },
+    elite(e) {
+      const b = this.g.beasts.find((o) => o.id === e.id);
+      if (b) this.time.delayedCall(300, () => this.ring(b.x, b.y - 40, 260, 0xffc040, 700));
+      this.shake(250, 0.006);
+      this.fact({ t: 'elite' });
+    },
+    combo(e) {
+      const name = this.g.kit.doufa?.combos?.find((c) => c.id === e.combo)?.name;
+      if (name) this.hud.bubbleAt(e.x, e.y - 120, name[this.lang] ?? name.zh, 1400);
+    },
+    show(e) {
+      // 冰火成雾: white steam rolls over the third of the field the cast came from.
+      const x = ((e.third ?? 1) + 0.5) * (W / 3);
+      this.em.burst('smoke', 40, x, e.y);
+      this.flare(x, e.y, 420, 0xffffff);
+    },
     picked(e) {
       this.hud.picked(e.gives ?? e.id, this.g);
       if (e.opening) this.opened(e);

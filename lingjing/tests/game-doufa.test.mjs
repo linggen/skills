@@ -129,7 +129,8 @@ test('五行 combos and the counter element, as rules the game applies', () => {
   assert.equal(counter.counter, true, '火克金');
   assert.equal(counter.dmg, D.effects.huodan.dmg * D.counter.mult);
   assert.deepEqual(strike(cast('muteng'), { status: {} }, kit, 100).status, { rooted: 100 + D.effects.muteng.status.rooted });
-  assert.deepEqual(Object.keys(D.counter.beats).sort(), ['huo', 'jin', 'mu', 'shui', 'tu']);
+  assert.deepEqual(Object.keys(D.counter.beats).sort(), ['earth', 'fire', 'metal', 'water', 'wood'], 'the one table, creatures.json\'s spelling');
+  assert.equal(strike(cast('huodan'), { element: 'metal', status: {} }, kit, 0).counter, true, '火克金, the one spelling');
 });
 
 /* ── 法术试炼's field (games/doufa/field.js) ── */

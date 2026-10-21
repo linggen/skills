@@ -132,14 +132,18 @@ export function duelStep(state, { world = [], image = [], handed = [], aspect = 
 
 /* ── What a cast does to a beast: the effect, the combo, the counter element ── */
 
+/** An element in the one spelling (creatures.json `root`: fire · water · metal · wood · earth); an older one (huo …)
+    through `counter.names`. */
+export const elementName = (e, kit) => (e == null ? null : D(kit).counter?.names?.[e] ?? e);
+
 /** The cast laid on one beast `{ element?, status: { name: untilMs } }` at `now`: { dmg, mult, counter, combo, status:
     { name: untilMs }, lane, push, near, wall, show, clear } — the game applies it (to the beast, or its whole lane). */
 export function strike(cast, beast, kit, now = 0) {
   const d = D(kit), fx = d.effects?.[cast.move] ?? {};
   const has = (s) => (beast?.status?.[s] ?? 0) > now;
   const combo = (d.combos ?? []).find((c) => c.move === cast.move && has(c.on)) ?? null;
-  const el = cast.element ?? d.elements?.[cast.move];
-  const counter = Boolean(el && beast?.element && d.counter?.beats?.[el] === beast.element);
+  const el = elementName(cast.element ?? d.elements?.[cast.move], kit), foe = elementName(beast?.element, kit);
+  const counter = Boolean(el && foe && d.counter?.beats?.[el] === foe);
   const mult = (combo?.mult ?? 1) * (counter ? d.counter.mult : 1);
   const status = Object.fromEntries(Object.entries(fx.status ?? {}).map(([k, ms]) => [k, now + ms]));
   return {

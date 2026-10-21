@@ -1,18 +1,18 @@
 {
   "_about": "法术试炼 — 手势斗法 played whole, a test field in the 游戏厅 (doc/games.md § 手势斗法, Hanli 10-21: 「OK, 你写进文档, 然后可以开始做了」): beasts walk down three lanes toward 小满; the player's hands throw every tier — 小招 (a shape + a jab or a push), 法术 (文 → 扣 → push), 大招 (the four seals) — paid from the 灵力 bar; the 五行 combos show. The moves' numbers are jieyin.json `doufa`; this file is the field. Camera only (no camera → one line). 游戏厅 only; not in the story.",
-  "_field": "games/doufa/field.js: a beast every `spawn.everyMs` (± `jitter`, at most `max` on the field) in a random lane, a kind from `foes` by weight (`hp`, `speed` in field heights a second, `element`); the 大妖 (`boss`) steps out at `boss.at` s and fills the 灵力 (jieyin.json doufa.lingli.boss). A 土墙 holds its lane at `wallY`; a beast past `goalY` got by (counted, nothing lost — a trial). Stars: beasts down by `seconds` at `stars`.",
+  "_field": "games/doufa/field.js: a beast every `spawn.everyMs` (± `jitter`, at most `max` on the field) in a random lane, a kind from `foes` by weight (`hp`, `speed` in field heights a second, `element`: its creature's root, creatures.json — the one spelling); the 大妖 (`boss`) steps out at `boss.at` s and fills the 灵力 (jieyin.json doufa.lingli.boss). A 土墙 holds its lane at `wallY`; a beast past `goalY` got by (counted, nothing lost — a trial). Stars: beasts down by `seconds` at `stars`.",
   "levels": [
     {
       "id": "shilian", "title": { "zh": "法术试炼", "en": "Spell trial" },
       "seconds": 90,
       "spawn": { "everyMs": 2600, "jitter": 700, "max": 5, "first": 1200 },
       "foes": [
-        { "id": "yezhu", "w": 3, "hp": 3, "speed": 0.07, "element": "tu" },
-        { "id": "qiuyu", "w": 2, "hp": 3, "speed": 0.06, "element": "jin" },
-        { "id": "qique", "w": 2, "hp": 2, "speed": 0.1, "element": "mu" },
-        { "id": "zheng", "w": 2, "hp": 3, "speed": 0.08, "element": "huo" }
+        { "id": "yezhu", "w": 3, "hp": 3, "speed": 0.07, "element": "earth" },
+        { "id": "qiuyu", "w": 2, "hp": 3, "speed": 0.06, "element": "wood" },
+        { "id": "qique", "w": 2, "hp": 2, "speed": 0.1, "element": "fire" },
+        { "id": "zheng", "w": 2, "hp": 3, "speed": 0.08, "element": "fire" }
       ],
-      "boss": { "id": "heyu", "hp": 14, "speed": 0.035, "element": "jin", "at": 40 },
+      "boss": { "id": "heyu", "hp": 14, "speed": 0.035, "element": "earth", "at": 40 },
       "wallY": 0.66, "goalY": 0.9,
       "stars": [6, 12, 18],
       "eye": { "fps": 24 },

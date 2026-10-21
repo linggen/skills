@@ -309,8 +309,8 @@
       "tuqiang": { "dmg": 0, "wall": 4000 },
       "huodan4": { "dmg": 4, "lane": true }
     },
-    "elements": { "huodan": "huo", "bingzhui": "shui", "jinren": "jin", "muteng": "mu", "tuqiang": "tu" },
-    "counter": { "mult": 1.5, "beats": { "jin": "mu", "mu": "tu", "tu": "shui", "shui": "huo", "huo": "jin" } },
+    "elements": { "huodan": "fire", "bingzhui": "water", "jinren": "metal", "muteng": "wood", "tuqiang": "earth" },
+    "counter": { "_about": "五行相克 — the ONE table (素问: 木得金而伐，火得水而灭，土得木而达，金得火而缺，水得土而绝), in creatures.json's `root` spelling (a beast's element is its creature's root); `names`: the older spelling (huo · shui · jin · mu · tu) still read, mapped here.", "mult": 1.5, "beats": { "metal": "wood", "wood": "earth", "earth": "water", "water": "fire", "fire": "metal" }, "names": { "huo": "fire", "shui": "water", "jin": "metal", "mu": "wood", "tu": "earth" } },
     "combos": [
       { "id": "chanfa", "move": "jinren", "on": "rooted", "mult": 2, "name": { "zh": "缠而后伐", "en": "Bound, then cut" } },
       { "id": "zhengqi", "move": "huodan", "on": "chilled", "lane": true, "dmg": 2, "show": "steam", "clear": "chilled", "name": { "zh": "冰火成雾", "en": "Ice and fire: steam" } }

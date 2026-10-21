@@ -791,11 +791,16 @@ Hanli 10-21, in order: 「放进去」 · 「最好不显示摄像头」 · 「�
 「不然打小怪, 结手印太频繁很累」 · 「手印攻击高, 可以引导玩家用于打boss」 · 「古6是系统学习, 前面可以出现简单的, 比如剑诀」 ·
 隔空指点 「很不错, 加进去」.
 
-- **Only for the 大妖** (shouqiang.json `jieyin.when`: boss | elite | always; boss). Ordinary waves are the cards' and
-  talismans' job: the 结印 button is hidden. A 大妖 steps out → the button appears, calls (big, pulsing) and 小满 says
-  `say` (「大妖来了——结印！」, plus 「它属土，木藤克它。」 when a move here overcomes its element). The 大妖 falls → dark,
-  camera off; the next one asks for a tap again. Levels with a 大妖 today: 山门 (L1, wave 10) and 药园 L4 (wave 7) —
-  the 兽潮 nights and the story's 药园巡夜 have none, so no 结印 there until a boss or an `elite` is marked in data.
+- **The climax** (Hanli 10-21: 「按你的建议来」): every level's last wave ends on a 大妖 (`climax.boss`) or an **elite** —
+  a stronger one of a beast the level already shows (`climax.elite`; kit `elite`: hp ×4, size ×1.35, bite ×1.5, speed
+  ×0.85; the 药园 rows soften it, `climax.stats`), spawned whenever no 大妖 is dealt (兽潮 may swap one out). Lint:
+  tests/game-shouqiang.test.mjs (every level, story and 兽潮 included, and any added later).
+- **Only for the climax** (`jieyin.when`: elite = a 大妖 or the elite; boss | always). Ordinary waves are the cards' and
+  talismans' job: the 结印 button is hidden. The climax steps out → the button appears, calls, and 小满 says `say`
+  (「大妖来了——结印！」) or `sayElite` (「来了个厉害的——结印！」), plus the counter move when one is offered. It falls →
+  dark, camera off.
+- **Stars:** ★★★ needs the wall (`stars`) AND the climax down within `par` s of stepping out (「结印可以帮助更快杀敌, 更容易
+  取得3星成就」): without 结印 ★★ is the usual night, with it ★★★ comes clearly easier (status 10-21 table).
 - **Rest most of the time:** `cool` 10 s of game time between spells (and 灵力, below). While resting the hint steps away (nothing asks
   for the hand), the button wears an ash ring burning down and reads 「歇一歇」, the camera idles at 15 fps; ready → the
   hint is back, the button glows, 小满 says 「好了，结印！」. Ready with no hand raised for `idle` 60 s → the camera closes.
@@ -813,9 +818,12 @@ Hanli 10-21, in order: 「放进去」 · 「最好不显示摄像头」 · 「�
 - **Gate:** `from: { marks: [qiajue-tight, qiajue-loose] }` — 古六's 讲堂三日 (qianye-qiajue) written into the save. The
   story hands its marks in (`data.marks`, lingjing.js mountData); the 游戏厅 gives none → every move. Story levels and
   兽潮 before 古六: the four 小招 only.
-- **Hard on the 大妖:** × `bossMul` 4; × `counter` 1.5 on a beast whose element (creatures.json `root`) the spell's
-  overcomes (`beats`, 素问: 木得金而伐，火得水而灭，土得木而达，金得火而缺，水得土而绝; 合窳 is 土 → 木藤).
-- **Target:** the beast he tapped; else the 大妖 in reach (`aim: boss`); else the one nearest the wall — below the range line.
+- **Hard on the climax:** × `bossMul` 4 on a 大妖, × `eliteMul` 3 on an elite; × strike()'s: 手势斗法's combos (缠而后伐,
+  冰火成雾 — 木藤 and 冰锥 rest only 1 s so the follow-up lands while the hold lasts) and 五行相克 — ONE table, jieyin.json
+  `doufa.counter`, in creatures.json's `root` spelling (the old huo/shui/… still read through `counter.names`); a lane-wide
+  effect takes the third of the field the hand stood in.
+- **Target:** the beast he tapped; else the 大妖 / elite in reach (`aim: boss`); else the nearest the wall in the third of
+  the field the hand stood in (the cast's `laneIndex`), else anywhere — below the range line.
 - **Sims** (30 nights, BOTS.human, a move made in 4 s once ready; `sim(…, { seals, spell })`): see status 10-21.
 - **Unchanged:** no camera / refused / no WebGL / no SIMD / model fails → no button; the same game (tested: the block's
   presence changes no sim). Camera off on pause, hidden page, × , level end, leave. Dev: `?dev=1&feed=1` (hands from the

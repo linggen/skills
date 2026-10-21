@@ -37,6 +37,7 @@ export const meta = {
 const LEVELS = new URL('../../worlds/jiuding/levels/shouqiang.json', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
 const CREATURES = new URL('../../worlds/jiuding/creatures.json', import.meta.url); // each beast's element (五行相克)
+const SPELLS = new URL('../../worlds/jiuding/levels/jieyin.json', import.meta.url); // 手势斗法's rules (strike: combos, 相克)
 const FONT = new URL('./shouqiang/font/zcool-kuaile.woff2', import.meta.url);
 
 /** The level a story or link asks for: an id, or 1… ; anything else → the first. */
@@ -64,11 +65,13 @@ async function loadFont(doc) {
 /** A move's `from` gate: open from the start, or once the save holds any of its marks; no marks given (the 游戏厅) → open. */
 export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
 
-/** The 大妖's cue: the kit's line, and — when a move here overcomes its element — which (五行相克). */
-export function callLine(c, root, moves, lang) {
+/** The climax's cue: the kit's line (the 大妖's, or an elite's), and — when a move here overcomes its element — which
+    (五行相克: 手势斗法's one table, `doufa`). */
+export function callLine(c, { boss: root, climax } = {}, moves, lang, doufa = null) {
   const t = (o) => o?.[lang] ?? o?.zh ?? '';
-  const counter = root && moves.find((m) => c.beats?.[m.wuxing] === root);
-  return counter && c.counterSay ? `${t(c.say)}${t(c.counterSay).replace('{root}', t(c.roots?.[root])).replace('{move}', t(counter.name))}` : t(c.say);
+  const say = t(climax === 'elite' ? c.sayElite ?? c.say : c.say);
+  const counter = root && moves.find((m) => doufa?.counter?.beats?.[doufa.elements?.[m.id]] === root);
+  return counter && c.counterSay ? `${say}${t(c.counterSay).replace('{root}', t(c.roots?.[root])).replace('{move}', t(counter.name))}` : say;
 }
 
 /** 结印's button in the field, where it may be offered (games/jieyin/helper.js decides; none → null, nothing drawn). */
@@ -78,8 +81,8 @@ export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, 
   const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
     host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves: moves.map((m) => m.id), idle: c.idle, fastFps: c.armedFps,
-    state: () => game.jieyinState(), cast: (e) => game.jieyin(e.move), say,
-    call: () => callLine(c, game.jieyinState().boss, moves, lang),
+    state: () => game.jieyinState(), cast: (e) => game.jieyin(e), say,
+    call: () => callLine(c, game.jieyinState(), moves, lang, kit.doufa),
     first: moves.some((m) => m.id === 'feijian') ? c.first : null,
     paused: () => Boolean(shell?.paused?.() || game.paused()),
     aside: () => game.picking(),
@@ -116,9 +119,10 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
     const roots = fetch(CREATURES).then((r) => r.json()).then((j) => j.creatures ?? []).catch(() => []);
-    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), import('./shouqiang/core.js'), loadFont(doc), roots]).then(async ([table, { start }, { openingOf, withRoots }, , creatures]) => {
+    const spells = fetch(SPELLS).then((r) => r.json()).catch(() => null);
+    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), import('./shouqiang/core.js'), loadFont(doc), roots, spells]).then(async ([table, { start }, { openingOf, withRoots, withSpells }, , creatures, jieyin]) => {
       if (done) return;
-      const kit = withRoots(table, creatures);
+      const kit = withSpells(withRoots(table, creatures), jieyin);
       let level = levelDealt(kit, data, search);
       if (dev && q.get('jy')) level = { ...level, jieyinWhen: q.get('jy') }; // the 游戏厅's dev: spells on every wave
       // In the shell: the story lines read on its lead card, over the field standing still; the canvas keeps the big
