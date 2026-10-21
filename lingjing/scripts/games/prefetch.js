@@ -3,7 +3,7 @@
 // level is mounted, the host asks her ONCE for a short line at each of the level's reaction moments (wave_cleared,
 // low, win …); the game keeps them and shows each the instant its moment comes. Late, failed or invalid: the level's
 // own data lines (`level.moments`) stand for that moment. The game never waits. A moment that teaches how to play
-// (`teach` in MEANS) is never asked: it always shows the level's own line, word for word.
+// (`teach` in MEANS, or in the level's own `teach`) is never asked: it always shows the level's own line, word for word.
 //
 // Pure of the DOM and of the engine: the host hands in `ask(text) → Promise<reply text>` (prefetch-ling.js on the
 // story page). Here: the facts of a level, the request she reads, her reply checked line by line, and the `lines`
@@ -55,10 +55,11 @@ export function momentsOf(level) {
 
 /** What a moment means, by kit first, then by name. */
 const meaningOf = (game, m) => MEANS[`${game}.${m}`] ?? MEANS[m];
-/** A teaching moment: the level's own line, always — never hers. */
-export const teaches = (game, m) => Boolean(meaningOf(game, m)?.teach);
+/** A teaching moment: the level's own line, always — never hers. By kit (MEANS `teach`), or by the level (its
+    `teach`: a reaction its own line turns into a how-to there — 药园 · 头一夜's `huge`, 「每一畦都得有剑！」). */
+export const teaches = (game, m, level = null) => Boolean(meaningOf(game, m)?.teach) || (level?.teach ?? []).includes(m);
 /** The moments she is asked for: the level's, less the teaching ones — none: no call at all. */
-export const askedOf = (level, game = '') => momentsOf(level).filter((m) => !teaches(game, m));
+export const askedOf = (level, game = '') => momentsOf(level).filter((m) => !teaches(game, m, level));
 
 /** The beasts a level names, by the kit's beast ids, in the order the kit lists them. */
 export function beastsIn(level, kit) {

@@ -183,6 +183,25 @@ test('teaching moments are the level\'s own: never in the request, never in `lin
   assert.equal(asked, 0);
 });
 
+test('a level teaches with a reaction\'s moment by its own `teach` (Hanli 10-21): 药园 · 头一夜\'s `huge` is never asked, never hers', async () => {
+  assert.deepEqual(yaoyuan1.teach, ['huge'], 'the level says so, in its data');
+  assert.ok(teaches('shouqiang', 'huge', yaoyuan1) && !teaches('shouqiang', 'huge'), 'by the level, not the kit');
+  assert.ok(!askedOf(yaoyuan1, 'shouqiang').includes('huge'));
+  for (const lang of ['zh', 'en']) {
+    const p = promptOf(factsOf({ kit: SQ, level: yaoyuan1, game: 'shouqiang', names: NAMES, lang }));
+    assert.ok(!p.includes('- huge (') && !p.includes('- huge（') && !p.includes('"huge"'), `${lang}: huge not in the request`);
+  }
+  const reply = 'LINES {"huge":["一大波！"],"low":["墙要塌！"],"win":["守住了。"]}\nSILENT';
+  const her = prefetchLines({ facts: factsOf({ kit: SQ, level: yaoyuan1, game: 'shouqiang', names: NAMES, lang: 'zh' }), ask: async () => reply });
+  await her.done;
+  assert.equal(her.lines.huge, undefined, 'huge: the level\'s own line, even when her reply holds one');
+  assert.deepEqual(her.lines.low, ['墙要塌！'], 'the reactions are still hers');
+  // Everywhere else `huge` is a reaction: hers.
+  const others = SQ.levels.filter((l) => l.id !== 'yaoyuan-1' && l.moments?.huge);
+  assert.ok(others.length >= 3);
+  for (const l of others) assert.ok(askedOf(l, 'shouqiang').includes('huge'), `${l.id}: huge is asked`);
+});
+
 test('the two games read her lines at their moments: 守墙关 from her pool, 撒豆成兵 her one line — else their own', async () => {
   // The plays' own moment code (tools/*/src/play.js), with Phaser stubbed: it is the code the bundles are built from.
   const L = new URL('../', import.meta.url).href;

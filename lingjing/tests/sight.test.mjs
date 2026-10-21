@@ -39,7 +39,9 @@ test('his 亮相 beat: the paragraph the book marks {注=id} — never a mention
 test('who comes on: the scene\'s people, its cast, its fights\' foes (a foe that is a person is that person) — never her', () => {
   const s = newState(content, 'zh', NOW);
   assert.ok(meetsOf(content, s, scene('wm-wangzuo')).includes('gui'), 'the 秘境\'s 蛫');
-  assert.ok(meetsOf(content, s, scene('wm-yaoyuan')).includes('zheng'));
+  // 狰 is the book's to bring on, in the rest of the passage after the board (tests/meet-waits-book.test.mjs).
+  assert.ok(!meetsOf(content, s, scene('wm-yaoyuan')).includes('zheng'), 'not before the book reveals it');
+  assert.ok(meetsOf(content, { ...s, done_scenes: ['wm-yaoyuan'] }, scene('wm-yaoyuan')).includes('zheng'));
   const dabi = meetsOf(content, s, scene('wm-juesai'));
   assert.ok(dabi.includes('maxiaobao') && !dabi.includes('foe-maxiaobao'), 'the 大比\'s 马小宝 is the 马小宝 already met');
   assert.ok(meetsOf(content, s, scene('00-longzhi')).includes('longzhi'));

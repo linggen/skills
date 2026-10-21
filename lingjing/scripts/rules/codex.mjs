@@ -28,11 +28,30 @@ export function meetsOf(content, state, scene) {
   if (scene.her) ids.push(herEntry(content, raw, scene.her));
   // The foes it stands up: its cast and its fights' creatures — a foe that is a
   // person (`person`: 马小宝 in the 大比) is that person's entry. Never her.
-  const foes = [...(scene.cast ?? []), ...(scene.exits ?? []).filter(e => e.game?.kind === 'duel').map(e => e.game.creature)];
+  // …but one the book brings on only in the rest of the passage waits for it (waitsTheBook).
+  const waits = waitsTheBook(state, scene);
+  const foes = [...(scene.cast ?? []), ...(scene.exits ?? []).filter(e => e.game?.kind === 'duel').map(e => e.game.creature)].filter(id => !waits.has(id));
   for (const id of foes) if (id && id !== content.world.companion?.id) ids.push((content.creatures?.creatures ?? []).find(c => c.id === id)?.person ?? id);
   for (const [id, r] of raw) if (r.over.first?.scene === scene.id) ids.push(id);
   // A `book_only` entry (今线's people) is the book's card alone: never brought on, met or listed in play.
   return [...new Set(ids)].filter(id => raw.has(id) && !raw.get(id).over.book_only);
+}
+
+/* The book's 亮相 marks in passages (zh, en, and the book's own words): `[名]{注=id}` → id. */
+const NOTE = /\{注=([^{}\n]+)\}/g;
+const notesIn = (...pairs) => new Set(pairs.flatMap(p => Object.values(p ?? {})).flatMap(t => [...String(t).matchAll(NOTE)].map(m => m[1])));
+/* The rest of a scene's passage (`story_after`) is told: the scene done, or its first board counted and the
+   passage no longer owed (`after/<scene>`, tasks.mjs taskDone). */
+const firstBoard = scene => (scene.show ?? []).find(c => c.card === 'board')?.id;
+const afterTold = (state, scene) => (state.done_scenes ?? []).includes(scene.id)
+  || (state.tasks?.[firstBoard(scene)]?.status === 'done' && !(state.tell_owed ?? []).includes(`after/${scene.id}`));
+/* The foes the book brings on only in the rest of the passage — marked in `story_after`, not before it: none
+   stands until that passage is told (Hanli 2026-10-21, 「按你的建议来」: no beast before the book introduces it,
+   reveal.mjs's rule for the 秘境; 狰 stood over the 药园's board before 丑时 had come). */
+function waitsTheBook(state, scene) {
+  if (!scene.story_after || afterTold(state, scene)) return new Set();
+  const before = notesIn(scene.story, scene.story_full);
+  return new Set([...notesIn(scene.story_after, scene.story_after_full)].filter(id => !before.has(id)));
 }
 
 const herEntry = (content, raw, form) => {
