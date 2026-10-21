@@ -375,3 +375,19 @@ test('every item kind has a word in both languages: a shelf never says robe · �
     assert.ok(words[kind]?.zh && words[kind]?.en, `dictionary word for ${kind}`);
   }
 });
+
+test('a level\'s `teach` names only moments it has its own line for — a teaching moment is never asked of her, so with no line it would say nothing (review 2026-10-21)', async () => {
+  const fs = await import('node:fs'), path = await import('node:path');
+  const world = loadContent().dir, dir = path.join(world, 'levels');
+  const tables = [
+    ...fs.readdirSync(dir).filter(f => f.endsWith('.json')).map(f => [f, JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')).levels ?? []]),
+    ...JSON.parse(fs.readFileSync(path.join(world, 'games.json'), 'utf8')).games.map(g => [`games.json ${g.id}`, Array.isArray(g.levels) ? g.levels : []]),
+  ];
+  let seen = 0;
+  // (A rope level's `teach` is its own how-to line, {zh, en} — not a list of moments.)
+  for (const [where, levels] of tables) for (const l of levels) for (const m of Array.isArray(l?.teach) ? l.teach : []) {
+    seen += 1;
+    assert.ok(l.moments?.[m]?.length, `${where} ${l.id}: teaches ${m} with no line of its own`);
+  }
+  assert.ok(seen > 0, '药园 · 头一夜\'s huge is read');
+});
