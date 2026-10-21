@@ -29,5 +29,5 @@ test('hui fx: the painting sits where the CSS still sits it (cover, center 40%),
 
 test('hui fx: 「新的一回」 turns the page, once, with its seal', () => {
   assert.equal(page.match(/huiTurn\(/g)?.length, 1);
-  assert.match(page, /if \(kind === 'chapter'\) huiTurn\(\$\('view'\), [^\n]*, el\);/);
+  assert.match(page, /if \(kind === 'chapter'\) huiTurn\(\$\('view'\), [^\n]*, el\)\.catch\(\(\) => null\);/, 'a page turn that cannot load falls back quietly to the seal alone');
 });
