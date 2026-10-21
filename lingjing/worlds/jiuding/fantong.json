@@ -7,9 +7,13 @@
     "_about": "`cooldown_min`: after a feed, the bucket is full that long (Hanli, 2026-10-15: one feed, then an hour). `per_day`: at most that many feeds a local day. Either, both, or neither; the refusal says when the next feed is possible. The cooldown is balance.json's (`cooldowns.fantong_min`)."
   },
   "never": {
-    "_about": "What never goes IN, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot). What the story still reads from the bag goes here too (2026-10-15): 鼎苔, the 筑基丹's 主药 (古五 → 古八); every realm's breakthrough pill (ladder.json breakthrough.pill.items — the breakthrough reaches for it in the bag); the five 天材地宝 a 本命法宝 is refined with (items.json effect.core). This list is inputs only: realm pills may still come OUT (Hanli 10-20: 「破镜, 筑基丹都可以出, 不用限制」). Ordinary gear (灰袍) stays feedable.",
+    "_about": "What never goes IN, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot). What the story still reads from the bag goes here too (2026-10-15): the 筑基丹's 主药 (古五 → 古八; 鼎苔 is held back by count instead, `keep`); every realm's breakthrough pill (ladder.json breakthrough.pill.items — the breakthrough reaches for it in the bag); the five 天材地宝 a 本命法宝 is refined with (items.json effect.core). This list is inputs only: realm pills may still come OUT (Hanli 10-20: 「破镜, 筑基丹都可以出, 不用限制」). Ordinary gear (灰袍) stays feedable.",
     "kinds": ["key", "scroll", "artifact"],
-    "items": ["old-bow", "dingtai", "foundation-pill", "foundation-pill-9", "firm-pill", "pojing-pill", "jingjin", "leijimu", "hanyu", "huojing", "xirang"]
+    "items": ["old-bow", "foundation-pill", "foundation-pill-9", "firm-pill", "pojing-pill", "jingjin", "leijimu", "hanyu", "huojing", "xirang"]
+  },
+  "keep": {
+    "_about": "Fed only past what the story still reads from the bag (Hanli 2026-10-21: 鼎苔 from the 秘境 stacked with no use — one steadies the 筑基 throw, ladder.json pill.bonus_of). The bucket sees, and may eat, only the rest; it eats it as a 凡物 (no tier row).",
+    "items": { "dingtai": 1 }
   },
   "around": {
     "_about": "凡物 always at hand by the woodpile (古四: 柴火棍, 石子, 枯叶): fed without leaving the bag, so the bucket is never without a meal. `after`: at hand once that errand is done (药园残株 — 周衡's monthly culls, 古七's 黄精烂根 · 黄芪虫叶).",

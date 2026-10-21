@@ -169,9 +169,10 @@ test('never in: the bucket itself, a key, a scroll, her artifacts, 爹\'s bow, a
   for (const id of ['danlu', 'fox-token', 'tuna-jing', 'old-bow', 'zixu-zhi', 'moon-bell', 'ginseng', 'nope']) assert.equal(feed(s, { id }).result.refused, 'not-feedable', id);
   const lad = content.ladder.breakthrough.pill.items;
   const needed = new Set(['dingtai', ...Object.values(lad).flat(), ...content.items.items.filter(i => i.effect?.core).map(i => i.id)]);
-  for (const id of needed) assert.ok(T.never.items.includes(id), `${id} is in never.items (the story reads it from the bag)`);
+  const kept = T.keep?.items ?? {};
+  for (const id of needed) assert.ok(T.never.items.includes(id) || kept[id] > 0, `${id} is in never.items or keep (the story reads it from the bag)`);
   const bag = { danlu: 1, 'grey-robe': 1 };
-  for (const id of needed) bag[id] = 2;
+  for (const id of needed) bag[id] = kept[id] ?? 2; // a kept stack holds only what it keeps
   const s2 = saveWith({ bag });
   for (const id of needed) assert.equal(feed(s2, { id }).result.refused, 'not-feedable', id);
   assert.ok(!VERBS.fantong(s2, content, ctx(), { action: 'look' }).result.fantong.inputs.some(i => needed.has(i.id)));
@@ -360,4 +361,16 @@ test('the pouch shows the 饭桶 chip once he holds it, and its board in the gri
   assert.equal(brief.max_in, 3);
   assert.ok(brief.tints.herb && brief.grades.best === '逆天');
   assert.ok(brief.inputs.find(i => i.id === 'yaodan-1').tier === 1);
+});
+
+test('鼎苔 past the one the 筑基 reads: the bucket sees and eats only the spare (Hanli 2026-10-21)', () => {
+  assert.equal(T.keep.items.dingtai, 1);
+  assert.equal(feed(saveWith({ bag: { danlu: 1, dingtai: 1 } }), { id: 'dingtai' }).result.refused, 'not-feedable', 'the last one stays');
+  const s = saveWith({ bag: { danlu: 1, dingtai: 3 } });
+  const seen = VERBS.fantong(s, content, ctx(), { action: 'look' }).result.fantong.inputs.find(i => i.id === 'dingtai');
+  assert.equal(seen?.n, 2, 'the board shows the spare');
+  assert.equal(VERBS.fantong(s, content, ctx(), { action: 'feed', ids: 'dingtai,dingtai,dingtai' }).result.refused, 'not-feedable', 'never the kept one');
+  const r = VERBS.fantong(s, content, ctx(), { action: 'feed', ids: 'dingtai,dingtai' });
+  assert.equal(r.result.ok, true);
+  assert.equal(r.state.bag.dingtai ?? 0, 1, 'one left for the 筑基');
 });

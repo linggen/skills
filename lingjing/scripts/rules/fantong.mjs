@@ -73,10 +73,12 @@ export const chances = (t, { content = null, state = null, ...o }) => odds(t, { 
 
 /* ── What may go in ── */
 const aroundOf = (t, state) => (t.around?.items ?? []).filter(a => !a.after || questDoneBefore(state, a.after)).map(a => a.id);
+/* What the bucket may have of a stack: all but the `keep` the story still reads from the bag (鼎苔: one for the 筑基). */
+const spareOf = (t, state, id) => Math.max(0, (state.bag?.[id] ?? 0) - (t.keep?.items?.[id] ?? 0));
 function feedable(content, state, t, id) {
   if (!id || !itemOf(content, id)) return null;
   if (aroundOf(t, state).includes(id)) return { around: true };
-  if (!((state.bag?.[id] ?? 0) > 0) || id === t.needs?.item) return null;
+  if (!(spareOf(t, state, id) > 0) || id === t.needs?.item) return null;
   if (freeSlot(content, state, id) || Object.values(state.wear ?? {}).includes(id)) return null;
   if ((t.never?.kinds ?? []).includes(itemOf(content, id).kind) || (t.never?.items ?? []).includes(id)) return null;
   // The book's own pot: its inputs wait for the scene that feeds them (recipes.story `after`).
@@ -158,7 +160,7 @@ export function fantongBrief(content, state, now) {
   const bagIds = Object.keys(state.bag ?? {}).filter(id => !around.includes(id) && feedable(content, state, t, id));
   const inputs = [...around, ...bagIds].map(id => {
     const item = itemOf(content, id);
-    return { id, name: itemName(item, state, lang) ?? id, art: item?.art ?? null, kind: kindOf(t, id), tier: tierOfItem(t, id), ...(around.includes(id) ? { around: true } : { n: state.bag[id] }) };
+    return { id, name: itemName(item, state, lang) ?? id, art: item?.art ?? null, kind: kindOf(t, id), tier: tierOfItem(t, id), ...(around.includes(id) ? { around: true } : { n: spareOf(t, state, id) }) };
   });
   const locked = isLocked(content, state, 'wealth');
   const tints = Object.fromEntries(Object.entries(t.kinds ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, v.tint ?? null]));
@@ -199,7 +201,7 @@ function feed(state, content, ctx, args, t) {
   const how = {};
   for (const [id, n] of Object.entries(need)) {
     how[id] = feedable(content, state, t, id);
-    if (!how[id] || (!how[id].around && (state.bag[id] ?? 0) < n)) return refuse('not-feedable', w.not_feedable ?? null, { id });
+    if (!how[id] || (!how[id].around && spareOf(t, state, id) < n)) return refuse('not-feedable', w.not_feedable ?? null, { id });
   }
   if (!Number.isInteger(lingshi) || lingshi < 0 || lingshi > (t.lingshi?.max ?? 0)) return refuse('bad-lingshi', null);
   if (lingshi && (isLocked(content, state, 'wealth') || (state.wealth ?? 0) < lingshi)) return refuse('no-lingshi', w.no_lingshi ?? null);
