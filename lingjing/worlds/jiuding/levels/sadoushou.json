@@ -114,6 +114,53 @@
     }
    ],
    "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes the first thing up a column for `secs` of the squad's attack at once (× `bossMul` on the 大妖; a card pumped `pump` steps), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "moves": [
+     {
+      "id": "feijian",
+      "name": {
+       "zh": "飞剑",
+       "en": "Flying sword"
+      },
+      "seals": [
+       "jian"
+      ],
+      "motion": "jab",
+      "from": null,
+      "secs": 4,
+      "pump": 8
+     },
+     {
+      "id": "huodan",
+      "name": {
+       "zh": "火弹",
+       "en": "Fire shot"
+      },
+      "jieyin": "huodan",
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 7,
+      "pump": 14
+     }
+    ]
+   },
    "breach": 8,
    "rank": 1.5,
    "perRank": 13,
@@ -121,7 +168,7 @@
    "countdown": 3,
    "id": "shanmen",
    "hui": "h04",
-   "par": 80,
+   "par": 66,
    "title": {
     "zh": "守山门 · 野猪下山",
     "en": "The Gate · Boars Come Down"
@@ -366,6 +413,53 @@
     }
    ],
    "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes the first thing up a column for `secs` of the squad's attack at once (× `bossMul` on the 大妖; a card pumped `pump` steps), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "moves": [
+     {
+      "id": "feijian",
+      "name": {
+       "zh": "飞剑",
+       "en": "Flying sword"
+      },
+      "seals": [
+       "jian"
+      ],
+      "motion": "jab",
+      "from": null,
+      "secs": 4,
+      "pump": 8
+     },
+     {
+      "id": "huodan",
+      "name": {
+       "zh": "火弹",
+       "en": "Fire shot"
+      },
+      "jieyin": "huodan",
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 7,
+      "pump": 14
+     }
+    ]
+   },
    "breach": 8,
    "rank": 1.5,
    "perRank": 13,
@@ -373,7 +467,7 @@
    "countdown": 3,
    "id": "songlin",
    "hui": "h05",
-   "par": 90,
+   "par": 65,
    "title": {
     "zh": "守山门 · 松林狰吼",
     "en": "The Gate · Zheng in the Pines"
@@ -634,6 +728,53 @@
     }
    ],
    "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes the first thing up a column for `secs` of the squad's attack at once (× `bossMul` on the 大妖; a card pumped `pump` steps), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "moves": [
+     {
+      "id": "feijian",
+      "name": {
+       "zh": "飞剑",
+       "en": "Flying sword"
+      },
+      "seals": [
+       "jian"
+      ],
+      "motion": "jab",
+      "from": null,
+      "secs": 4,
+      "pump": 8
+     },
+     {
+      "id": "huodan",
+      "name": {
+       "zh": "火弹",
+       "en": "Fire shot"
+      },
+      "jieyin": "huodan",
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 7,
+      "pump": 14
+     }
+    ]
+   },
    "breach": 8,
    "rank": 1.5,
    "perRank": 13,
@@ -641,7 +782,7 @@
    "countdown": 3,
    "id": "yaoyuan",
    "hui": "h07",
-   "par": 100,
+   "par": 68,
    "title": {
     "zh": "守山门 · 药园夜袭",
     "en": "The Gate · Herb Garden Raid"
@@ -925,6 +1066,53 @@
     }
    ],
    "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes the first thing up a column for `secs` of the squad's attack at once (× `bossMul` on the 大妖; a card pumped `pump` steps), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "moves": [
+     {
+      "id": "feijian",
+      "name": {
+       "zh": "飞剑",
+       "en": "Flying sword"
+      },
+      "seals": [
+       "jian"
+      ],
+      "motion": "jab",
+      "from": null,
+      "secs": 4,
+      "pump": 8
+     },
+     {
+      "id": "huodan",
+      "name": {
+       "zh": "火弹",
+       "en": "Fire shot"
+      },
+      "jieyin": "huodan",
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 7,
+      "pump": 14
+     }
+    ]
+   },
    "breach": 8,
    "rank": 1.5,
    "perRank": 13,
@@ -932,7 +1120,7 @@
    "countdown": 3,
    "id": "heisong",
    "hui": "h09",
-   "par": 110,
+   "par": 64,
    "title": {
     "zh": "守山门 · 黑松岭鬿雀",
     "en": "The Gate · Qique on Black Pine"

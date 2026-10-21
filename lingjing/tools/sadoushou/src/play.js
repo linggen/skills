@@ -7,7 +7,7 @@
 // beasts: 守墙关's frames), laid out every frame by the engine's numbers and scaled by depth — no physics, no tween per
 // unit, no per-frame depth changes (layers keep a fixed order; a wave's beasts are handed out far to near).
 import * as Phaser from 'phaser';
-import { newGame, step, aim, waveLeft, waveCount, perRank, hordeAll, tierOf, colMid, COLS, TOP } from 'sadoushou-core';
+import { newGame, step, aim, waveLeft, waveCount, perRank, hordeAll, tierOf, colMid, castJieyin, COLS, TOP } from 'sadoushou-core';
 import { W, H, CX, Y0, HY, HALF, sOf, yOf, xOf, zOfY, uOfX } from './view.js';
 import { makeTextures, makeNumberFont, makeEmitters, rng, canvasTex, rounded } from './fx.js';
 import { Hud, WORDS, text } from './hud.js';
@@ -650,6 +650,44 @@ export class PlayScene extends Phaser.Scene {
       if (it.kind === 'block') this.sayOnce('wall');
       else if (it.n < 0) this.sayOnce('red');
     }
+  }
+
+  // ---------------------------------------------------------------- 结印 (games/jieyin/helper.js makes the seals; the page calls these)
+
+  /** A move made at the camera: it flies up a column (the dock's lane, else the squad's) — true — or not now. */
+  jieyin(id, lane) {
+    if (!this.running || this.ended || this.sys.isPaused()) return false;
+    const ok = castJieyin(this.g, id, lane);
+    for (const e of this.g.events) this.handle(e);
+    this.g.events.length = 0;
+    return ok;
+  }
+
+  /** 走火: a puff from 小满's hand, a word — no other cost. */
+  fizzle() {
+    if (this.ended) return;
+    this.em.burst('poof', 8, this.man.x + 20, this.man.y - 90);
+    const t = text(this, this.man.x, this.man.y - 130, this.lang === 'en' ? 'Misfire' : '走火', 26, { color: '#ffb0a0' }).setDepth(D.num);
+    this.tweens.add({ targets: t, y: t.y - 40, alpha: 0, duration: 800, onComplete: () => t.destroy() });
+  }
+
+  /** The spell flies from the squad up its column and bursts on what it hit: fire, a ring, the number. */
+  on_spell(e) {
+    const z = Math.max(0, e.z ?? 0), x = xOf(colMid(e.col), z), y = yOf(z) - 40 * sOf(z);
+    const orb = this.add.image(this.squadX, Y0 - 30, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(e.move === 'huodan' ? 0xff8a2a : 0x9fe0ff).setScale(3).setDepth(D.fx);
+    this.sfx.go();
+    this.tweens.add({ targets: orb, x, y, scale: 1.4, duration: 260, ease: 'Quad.easeIn', onComplete: () => {
+      orb.destroy();
+      this.shake(260, 0.016);
+      this.flash(110, 255, 210, 150);
+      this.em.burst('fire', 40, x, y);
+      this.em.burst('stars', 10, x, y);
+      const ring = this.add.image(x, y, 'ring').setDepth(D.fx).setTint(0xffc070).setScale(0.3);
+      this.tweens.add({ targets: ring, scale: 3.4, alpha: 0, duration: 420, onComplete: () => ring.destroy() });
+      this.num(x, y - 40, `-${e.dmg}`, 'numGold', 80, { rise: 90, life: 1 });
+      this.sfx.slam();
+    } });
+    this.fact({ t: 'spell', move: e.move, on: e.on });
   }
 
   // ---------------------------------------------------------------- the loop

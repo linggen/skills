@@ -8,8 +8,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, humanBot, waveLeft, waveCount, newGame, aim, step, sim, stars, beltOf, dpsOf, rateOf, colOf, colMid, COLS, TOP } from '../scripts/games/sadoushou/core.js';
-import { levelAsked, meta } from '../scripts/games/sadoushou.js';
+import { BOTS, humanBot, waveLeft, waveCount, newGame, aim, step, sim, stars, beltOf, dpsOf, rateOf, colOf, colMid, castJieyin, jieyinState, COLS, TOP } from '../scripts/games/sadoushou/core.js';
+import { levelAsked, meta, offerJieyin } from '../scripts/games/sadoushou.js';
 import { sourceHash } from '../tools/sadoushou/hash.mjs';
 
 const at = (p) => new URL(`../${p}`, import.meta.url);
@@ -204,6 +204,53 @@ test('the ladder climbs: a first-time human wins no more on a later level than t
   const w = kit.levels.map((l) => wins[l.id] ?? seeds.filter((s) => sim(kit, l, humanBot(s), { seed: s }).won).length);
   for (let i = 1; i < w.length; i += 1) assert.ok(w[i] <= w[i - 1] + 2, `${w}`);
   assert.ok(w.at(-1) < w[0], `${w}`);
+});
+
+test('结印: offered only once the 大妖 is out, it strikes up the dock\'s lane (else the squad\'s column), then rests', () => {
+  const g = newGame(kit, level, { seed: 'jy' });
+  assert.equal(jieyinState(g).on, false, 'boss-only: not during the waves');
+  assert.equal(castJieyin(g, 'feijian', 'middle'), false);
+  const b = newGame(kit, { ...level, waves: [], belt: { ...level.belt, lines: [] } }, { seed: 'jy' });
+  step(b, 1 / 30);
+  for (let i = 0; i < 90; i += 1) { aim(b, colMid('L')); step(b, 1 / 30); }
+  assert.ok(jieyinState(b).ready);
+  assert.equal(castJieyin(b, 'feijian', 'left'), false, 'nothing up the left column: not spent');
+  const hp = b.boss.hp;
+  assert.equal(castJieyin(b, 'huodan', 'middle'), true, 'the hand in the middle: the 大妖');
+  assert.ok(b.boss.hp < hp && b.events.some((e) => e.t === 'spell' && e.on === 'boss'));
+  assert.ok(!jieyinState(b).ready && jieyinState(b).cool === level.jieyin.cool, 'then the hand rests');
+  aim(b, colMid('M'));
+  assert.equal(castJieyin(b, 'huodan'), false, 'resting');
+});
+
+test('结印 is never needed (every level is won without a cast) but makes ★★★ easier: faster, under par', () => {
+  for (const lv of kit.levels) {
+    const seeds = ['a', 'b', 'c', 'd', 'e', 'f'];
+    const bare = seeds.map((s) => sim(kit, lv, BOTS.good, { seed: s })), cast = seeds.map((s) => sim(kit, lv, BOTS.good, { seed: s, casts: true }));
+    assert.ok(bare.every((r) => r.won && r.casts === 0), `${lv.id}: won without a cast`);
+    const mean = (rs, f) => rs.reduce((a, r) => a + f(r), 0) / rs.length;
+    assert.ok(mean(cast, (r) => r.sec) < mean(bare, (r) => r.sec) - 5, `${lv.id}: faster with casts`);
+    assert.ok(mean(cast, (r) => r.stars) >= mean(bare, (r) => r.stars), `${lv.id}: no fewer stars`);
+    assert.ok(cast.filter((r) => r.stars === 3).length > bare.filter((r) => r.stars === 3).length || lv === level, `${lv.id}: ★★★ easier`);
+  }
+});
+
+test('结印\'s dock is offered only where it can be: no move → null; else the dock hears the game (state, a cast with its lane, a 走火)', async () => {
+  const none = await offerJieyin({ jieyin: null }, {}, { lang: 'zh', game: {} });
+  assert.equal(none, null);
+  let got = null;
+  const calls = [];
+  const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: (id, lane) => { calls.push([id, lane]); return true; }, fizzle: () => calls.push('fizzle'), paused: () => false, picking: () => false, say: () => {} };
+  const box = { ownerDocument: { defaultView: {} } };
+  const h = await offerJieyin(level, box, { lang: 'zh', game, marks: [], load: async () => ({ offerSeals: async (o) => { got = o; return { close() {} }; } }) });
+  assert.ok(h && got);
+  assert.deepEqual(got.moves.map((m) => m.id), ['feijian'], 'before 古六\'s lesson only 剑诀\'s 飞剑 (the save\'s marks gate the rest)');
+  assert.ok(got.cast('feijian', 'right'));
+  got.fizzle();
+  assert.deepEqual(calls, [['feijian', 'right'], 'fizzle']);
+  assert.equal(got.state().ready, true);
+  await offerJieyin(level, box, { lang: 'zh', game, load: async () => ({ offerSeals: async (o) => { got = o; return null; } }) });
+  assert.deepEqual(got.moves.map((m) => m.id), ['feijian', 'huodan'], 'the 游戏厅 (no marks): every move');
 });
 
 test('the bundle is current, loads the one shared Phaser, and every picture and word it needs is there', () => {

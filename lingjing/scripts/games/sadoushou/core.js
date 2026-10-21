@@ -17,8 +17,14 @@
 // 大妖 steps out, walks down the middle, and CHARGES down the column the squad stands in — a line shown `warn` s ahead —
 // knocking aside `kill` of the squad unless it moved off. A wave or the 大妖 at the wall hurts the wall; 0 is the loss.
 //
+// 结印 (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the camera dock is games/jieyin/helper.js, the page's): a move made
+// at the camera strikes the first thing up a column — the squad's, or the one the hand stood in when the dock names it —
+// for `secs` of the squad's attack at once (× `bossMul` on the 大妖; a card pumped `pump` steps), then rests `cool` s.
+// Offered only `when` the level says (boss · waves · always). Never needed: every level is won without it (Hanli:
+// 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」), it only makes the kill faster — ★★★ easier.
+//
 // Events out on g.events: wave · card_hit · card · block_hit · block · strike · cleared · breach · boss · charge_warn ·
-// charge · charge_end · knock · bosshit · low · end.
+// charge · charge_end · knock · bosshit · spell · low · end.
 
 export const TOP = 100;                                     // the road's far end (z)
 export const COLS = { L: [-1, -0.34], M: [-0.34, 0.34], R: [0.34, 1] };
@@ -79,7 +85,7 @@ export function newGame(kit, level, { seed = 'sadoushou' } = {}) {
   const g = {
     kit, level, seed, rand: seeded(`core|${seed}`),
     t: 0, phase: 'waves',                          // waves · boss · won · lost
-    aimX: 0, hold: true, emitAcc: 0, tier: 0,
+    aimX: 0, hold: true, emitAcc: 0, tier: 0, spellCool: 0, casts: 0,
     squad: level.squad, peak: level.squad,         // the 豆兵 at the wall: the blue number
     shots: [],                                     // 豆兵 thrown up the road: { x, z, dmg }
     belt: beltOf(level),
@@ -309,6 +315,47 @@ function bossStep(g, dt) {
   }
 }
 
+/* ── 结印 ── */
+
+const spellKit = (g) => g.level.jieyin ?? null;
+const spellOn = (g, c = spellKit(g)) => Boolean(c) && (g.phase === 'waves' || g.phase === 'boss')
+  && (c.when === 'always' || (c.when === 'waves' ? g.live.length > 0 || g.boss?.on : Boolean(g.boss?.on)));
+
+/** What the dock shows: offered now (`on`), one may fly (`ready`), the rest left (`cool` of `coolOf` s). */
+export function jieyinState(g, c = spellKit(g)) {
+  const on = spellOn(g, c);
+  return { on, ready: on && g.spellCool <= 0, cool: g.spellCool, coolOf: c?.cool ?? 0, boss: null };
+}
+
+/** The first thing up a column from the wall (a wave's front, the 大妖, a card or a wall), or null. */
+export function firstIn(g, col) {
+  let best = null, bz = Infinity;
+  for (const it of g.belt) if (!it.gone && it.col === col && it.z > 0 && it.z < TOP && it.z < bz) { best = it; bz = it.z; }
+  for (const w of g.live) if (colOf((w.span[0] + w.span[1]) / 2) === col && w.front < bz) { best = w; bz = w.front; }
+  if (g.boss?.on && g.boss.hp > 0 && colOf(g.boss.x) === col && g.boss.z < bz) best = g.boss;
+  return best;
+}
+
+const LANE = { left: 'L', middle: 'M', right: 'R' };
+
+/** A move made at the camera: it strikes up `lane`'s column (the dock's left · middle · right), else the squad's;
+    true when it flew — false when not offered now, resting, or nothing is up that column (the seals are not spent). */
+export function castJieyin(g, id, lane = null) {
+  const c = spellKit(g), m = c?.moves?.find((x) => x.id === id) ?? c?.moves?.[0];
+  if (!m || !jieyinState(g, c).ready) return false;
+  const col = LANE[lane] ?? colOf(g.aimX), hit = firstIn(g, col);
+  if (!hit) return false;
+  const dmg = dpsOf(g) * m.secs * (hit === g.boss ? c.bossMul ?? 1 : 1) + (m.flat ?? 0);
+  g.spellCool = c.cool;
+  g.casts += 1;
+  if (hit === g.boss) { hit.hp = Math.max(0, hit.hp - dmg); g.stats.bossDmg += dmg; }
+  else if (hit.units) { const before = waveCount(hit); hit.hp -= dmg; g.stats.killed += before - waveCount(hit); }
+  else if (hit.kind === 'card') { hit.n = Math.min(hit.cap, hit.n + (m.pump ?? 10) * hit.step); if (hit.n >= hit.cap) pay(g, hit, 'cap'); }
+  else { hit.hp -= dmg; if (hit.hp <= 0) { hit.hp = 0; strike(g, { dmg: 0, x: colMid(col) }, hit); } }
+  g.events.push({ t: 'spell', move: m.id, col, z: hit.z ?? hit.front, dmg: Math.round(dmg), on: hit === g.boss ? 'boss' : hit.units ? 'wave' : hit.kind });
+  return true;
+}
+
 /* ── the run ── */
 
 /** Stars by the share of the wall left, [★★★, ★★]; ★★★ also wants the level done inside `par` s. Any win is ★. */
@@ -326,6 +373,7 @@ function end(g, won) {
 export function step(g, dt) {
   if (g.phase === 'won' || g.phase === 'lost') return g;
   g.t += dt;
+  g.spellCool = Math.max(0, g.spellCool - dt);
   emit(g, dt);
   startWaves(g);
   moveBelt(g, dt);
@@ -442,16 +490,17 @@ export function humanBot(seed, { react = 0.45, look = 1.6, judge = 0.6, wrong = 
 }
 
 /** Plays a whole level with a bot, headless (the bot always holds the stream). */
-export function sim(kit, level, bot, { seed = 'sim', dt = 1 / 30, maxSec = 400 } = {}) {
+export function sim(kit, level, bot, { seed = 'sim', dt = 1 / 30, maxSec = 400, casts = false } = {}) {
   const g = newGame(kit, level, { seed });
   let ended = null, maxShots = 0, maxHorde = 0;
   while (g.t < maxSec && !ended) {
     aim(g, bot(g), true);
+    if (casts && jieyinState(g).ready) castJieyin(g, null, g.boss?.on ? 'middle' : null); // a player casting each time it is ready
     step(g, dt);
     maxShots = Math.max(maxShots, g.shots.length);
     maxHorde = Math.max(maxHorde, hordeNow(g));
     for (const e of g.events) if (e.t === 'end') ended = e;
     g.events.length = 0;
   }
-  return { won: Boolean(ended?.won), stars: ended?.stars ?? 0, wall: g.wall.hp, sec: g.t, peak: g.peak, squad: g.squad, tier: g.tier, maxShots, maxHorde, bossHp: g.boss?.hp ?? null, stats: g.stats, phase: g.phase };
+  return { won: Boolean(ended?.won), stars: ended?.stars ?? 0, wall: g.wall.hp, sec: g.t, peak: g.peak, squad: g.squad, tier: g.tier, casts: g.casts, maxShots, maxHorde, bossHp: g.boss?.hp ?? null, stats: g.stats, phase: g.phase };
 }

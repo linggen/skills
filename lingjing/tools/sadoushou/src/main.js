@@ -1,12 +1,13 @@
 // main.js — 守山门's play: one Phaser game on the given parent. The engine (core.js) and Phaser come in as externals
 // (build.mjs), so the browser loads the one shared Phaser beside every game.
 import * as Phaser from 'phaser';
+import { jieyinState } from 'sadoushou-core';
 import { W, H } from './view.js';
 import { PlayScene } from './play.js';
 
 /**
  * start({ parent, base, lang, kit, level, seed, reducedMotion, showFps, dev, onEvent, onEnd, shell, held })
- *   → { destroy(), say(who, text), go() }
+ *   → { destroy(), say(who, text), go(), paused(), picking(), jieyin(id, lane), jieyinState(), fizzle() }
  * `held`: draw the road but stand still until `go()` (the shell's lead card is up over it).
  * `base`: the URL of games/sadoushou/ (the shared art beside it, ../sadou/ and ../shouqiang/). `onEvent`: the facts
  * out (start · go · wave · boss · charge · low · end). `onEnd({ won, stars, stats })`. `shell` (games/shell.js): its
@@ -32,10 +33,17 @@ export function start(opts) {
   });
   const hold = { on: Boolean(opts.held) };
   game.scene.add('play', PlayScene, true, { ...opts, zoom, hold });
+  const scene = () => game.scene?.getScene('play');
   if (opts.dev) globalThis.__sadoushou = game; // the 游戏厅 (dev=1) only: a live check reads fps and the engine here
   return {
     destroy: () => game.destroy(true),
     say: (who, text) => game.scene.getScene('play')?.sayLine?.(who, text),
     go: () => { hold.on = false; game.scene.getScene('play')?.release?.(); },
+    // 结印 (games/jieyin/helper.js, only where a camera is): the play's pause, a spell, what the button shows, a 走火
+    paused: () => Boolean(scene()?.sys?.isPaused?.()),
+    picking: () => false,
+    jieyin: (id, lane) => Boolean(scene()?.jieyin?.(id, lane)),
+    jieyinState: () => (scene()?.g ? jieyinState(scene().g) : { on: false, ready: false, cool: 0, coolOf: 0, boss: null }),
+    fizzle: () => scene()?.fizzle?.(),
   };
 }

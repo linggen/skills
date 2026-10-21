@@ -28,6 +28,26 @@ export const meta = {
 
 const LEVELS = new URL('../../worlds/jiuding/levels/sadoushou.json', import.meta.url);
 const FONT = new URL('./sadoushou/font/zcool-kuaile.woff2', import.meta.url);
+const SEALS = new URL('./jieyin/helper.js', import.meta.url);
+
+/** A move's `from` gate: open from the start, or once the save holds any of its marks; no marks given (the 游戏厅) → open. */
+export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
+
+/** 结印's button in the field, where it may be offered (games/jieyin/helper.js decides: no camera → null, nothing drawn,
+    and the game is exactly the game without it — Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」).
+    A cast strikes up the column the dock names (its lane: left · middle · right), else the squad's. */
+export function offerJieyin(level, box, { lang, game, shell, marks, feed = false, load = () => import(SEALS.href) }) {
+  const c = level.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
+  if (!moves.length) return Promise.resolve(null);
+  const t = (o) => o?.[lang] ?? o?.zh ?? '';
+  const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
+  return load().then(({ offerSeals }) => offerSeals({
+    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, idle: c.idle,
+    state: () => game.jieyinState(), cast: (id, lane) => game.jieyin(id, lane?.lane ?? lane), fizzle: () => game.fizzle(), say,
+    call: () => t(c.say), first: moves.some((m) => m.motion === 'jab' && !m.from) ? c.first : null,
+    paused: () => Boolean(shell?.paused?.() || game.paused()), aside: () => game.picking(),
+  })).catch((e) => { console.warn('[sadoushou] 结印', e); return null; });
+}
 
 /** The level a link asks for: an id, or 1… ; anything else → the first. */
 export function levelAsked(kit, data, search) {
@@ -56,8 +76,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   const dev = /(?:^|[?&])dev=1/.test(search);
   const showFps = dev && /(?:^|[?&])fps=1/.test(search);
   return new Promise((resolve) => {
-    let game = null, done = false;
-    const finish = (r) => { if (!done) { done = true; resolve(r); } };
+    let game = null, done = false, seals = null;
+    const finish = (r) => { if (!done) { done = true; seals?.then((h) => h?.close()); resolve(r); } };
     const leave = () => { game?.destroy(); game = null; finish({ won: false, left: true }); };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
@@ -65,12 +85,14 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       if (done) return;
       const asked = levelAsked(kit, data, search);
       let level = asked;
+      if (dev && /(?:^|[?&])jy=(always|waves|boss)/.test(search)) level = { ...level, jieyin: level.jieyin && { ...level.jieyin, when: search.match(/jy=(\w+)/)[1] } }; // the 游戏厅's dev
       // In the shell: the story lines read on its lead card, over the road standing still; the canvas keeps the big line and its 3-2-1.
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join(lang === 'en' ? ' ' : '') : '';
       if (said) level = { ...level, lead: (level.lead ?? []).filter((l) => l.big), leadSec: 1.6 };
       game = start({
         parent: box, base: new URL('./sadoushou/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
-        kit, level, seed: seed ?? `sadoushou|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, shell,
+        kit, level, seed: seed ?? `sadoushou|${Date.now()}`, reducedMotion, dev, showFps, lines, shell,
+        onEvent: (f) => { if (f.t === 'end') seals?.then((h) => h?.close()); onEvent?.(f); }, // the level over: the camera off at once
         held: Boolean(said),
         onEnd: (r) => {
           const nx = kit.levels[kit.levels.indexOf(asked) + 1]; // 下一关 (the shell's)
@@ -78,6 +100,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         },
       });
       if (said) shell.lead(said, { auto: 'read', lang }).then(() => game?.go());
+      seals = offerJieyin(level, box, { lang, game, shell, marks: data?.marks, feed: dev && /(?:^|[?&])feed=1/.test(search) });
     }, () => {
       box.textContent = lang === 'en' ? 'The game did not load.' : '游戏没加载出来。';
       finish({ won: false, left: true });
