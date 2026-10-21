@@ -211,6 +211,7 @@ function hpBar(c, b) {
   c.fillStyle = '#e9dfcc'; c.fillRect(x, y, w, h);
   const k = Math.max(0, b.hp / b.max);
   c.fillStyle = k > 0.5 ? '#5c7d4e' : k > 0.25 ? '#b9842f' : '#b0412e'; c.fillRect(x, y, w * k, h);
+  if (b.elite) { c.strokeStyle = '#d9a63a'; c.lineWidth = 1.6; c.strokeRect(x - 2, y - 2, w + 4, h + 4); } // an elite: a gold frame
   if (b.slowT > 0) { c.fillStyle = 'rgba(63,135,166,0.9)'; c.fillRect(x, y + h + 1, w, 1.5); }
   if (b.bareT > 0) { c.strokeStyle = 'rgba(200,215,240,0.95)'; c.lineWidth = 1.2; for (let k = 0; k < 3; k += 1) { const sx = x + 3 + k * (w - 6) / 2; c.beginPath(); c.moveTo(sx - 3, y - 6); c.quadraticCurveTo(sx + 2, y - 9, sx + 3, y - 3); c.stroke(); } }
   if (b.burnT > 0) { c.fillStyle = 'rgba(80,150,240,0.9)'; c.beginPath(); c.arc(x + w + 4, y + 1, 2.4, 0, 6.28); c.fill(); }

@@ -328,7 +328,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     });
     function showOver() {
       shown = true; closeMenu();
-      const win_ = g.over === 'win', st = win_ ? starsOf(g.hp) : 0, row = levels[li];
+      const win_ = g.over === 'win', st = win_ ? starsOf(g.hp, g.wonAt ?? g.t, g.L.par) : 0, row = levels[li];
       if (win_) keepStars(row.id, st);
       // in the shell: its foot shows the result and 再来, won or lost; the board stays up under it
       if (shell) { const pk = $('[data-a="pick"]'); if (pk) pk.disabled = true; finish(win_ ? { won: true, stars: st, ...(nextLv(levels, li) ? { next: nextLv(levels, li) } : {}) } : { won: false, stars: 0 }); return; }

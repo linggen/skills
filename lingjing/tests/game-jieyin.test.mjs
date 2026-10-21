@@ -699,3 +699,11 @@ test('the release is a push now (手势斗法, spells.knobs.release): opening al
   go(open(), 66, ['Right']);
   assert.deepEqual(ev, ['wen', 'kou', 'cast']);
 });
+
+test('a seal may carry its own facing words (`faceHow`) — the hint uses them in every game', async () => {
+  const { facingLine } = await import('../scripts/games/jieyin/hint.js');
+  const s = { ...seals.wu, faceHow: { zh: '手心朝自己也行', en: 'Palm to yourself is fine' } };
+  assert.equal(facingLine(s, 'zh'), '手心朝自己也行');
+  assert.equal(facingLine(s, 'en'), 'Palm to yourself is fine');
+  assert.notEqual(facingLine(seals.wu, 'zh'), '手心朝自己也行');
+});

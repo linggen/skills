@@ -79,10 +79,12 @@ export function turnOf({ world = [], handed = [], seal, orient = {} }) {
   return null;
 }
 
-/** How the target seal wants the hands to face, in words: one line (two-hand: 左手… · 右手…, and whether they may swap). */
+/** How the target seal wants the hands to face, in words: the seal's own `faceHow` { zh, en } if the data gives one (the one
+    place for per-seal hand / face words — no per-game copies), else from its `face` / `up` (two-hand: 左手… · 右手…). */
 export function facingLine(seal, lang = 'zh') {
   const w = W[lang === 'en' ? 'en' : 'zh'], one = (sh) => [w.face[sh?.face?.[0]], w.up[sh?.up?.[0]]].filter(Boolean).join(lang === 'en' ? ', ' : '，');
   if (!seal) return '';
+  if (seal.faceHow) return seal.faceHow[lang === 'en' ? 'en' : 'zh'] ?? seal.faceHow.zh ?? ''; // a seal's own words (jieyin.json), for every game alike
   if (handsOf(seal) !== 2) return one(seal);
   const sides = seal.sides ?? {}, a = seal.a ?? seal.each, b = seal.b ?? seal.each;
   const same = one(a) === one(b);
