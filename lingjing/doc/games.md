@@ -690,9 +690,6 @@ tried again).
   (Hanli 10-21: 「没摄像头时, 就不用用户结印帮打, 游戏像现在这样打就OK」). No tap stand-in.
 - **Reusable:** games/jieyin/eye.js (`available` · `loadModel` · `openEye`), judge.js, sequence.js (`sequence` | `one`),
   pose.js (each seal's icon from its rule). 守墙关 later: `available()` false → no 结印 button at all.
-- **If he likes it — 古六's teaching level** (Hanli 10-21: 「古6教学结手印那里可以做教学关卡」): a games.json row at
-  wm-qianye's 讲堂 with `data.lv: 'jiangtang'` (褚先生's lines as the lead and each seal's `hint`), then the 火蛋;
-  offered only when `available()`, else the scene keeps 讲堂试法 (砸寨).
 - **The library (10-21 later, Hanli: 「可以多设计一些"印", mac上可以用双手, iPhone只有单手」):** 17 seals, each `hands: 1 | 2`.
   One-hand (12): 推掌 · 剑诀 · 巳 · 午 · 申 · 未 (fingertips) · 卯 (index middle joint, 木) · 玉清诀 (middle finger's middle joint,
   土) · 酉 (little finger's top joint, 金) · 子 (ring root, 水) — the 古六 掐诀 canon, a joint judged by `nearest` (the thumb on
@@ -712,6 +709,13 @@ tried again).
   poke). Measured on 9527 (M2 Max, a synthetic canvas the detector finds no hand on, so the palm detector runs every frame):
   ≈8.3 ms a frame on GPU and ≈22 ms on CPU, the same at 640×480 / 2 hands and 320×240 / 1 hand — the model scales every frame to
   its own input size. The saving is the rate (≈30 → 15 runs a second: about half the model's time) and the smaller capture.
+- **In the story — 古六's 讲堂** (Hanli 10-21: 「古6教学结手印那里可以做教学关卡」, 结印 in 卷一 「放进去」): wm-qianye's
+  board `qianye-qiajue` declares an `alt` (tasks/h08.json; design.md § A board's other way): where the device has a
+  camera it plays level `jiangtang` — the first day's seals in the passage's order (推掌 · 巳 · 午 · 申 · 剑诀, each
+  hint 褚先生's line; a miss only tried again), then the four once (`cast`, `forgive`: no 走火) and a 火蛋 into 砸寨's
+  straw dummy in the 讲堂 (`art`). One-hand only and the book's, so the same on a phone and a Mac. The hand hint
+  large (no camera picture). No camera → 砸寨 · 讲堂试法 as before. Same task id either way: the grade (the alt's
+  `deal.grades`, stars → tight · loose), marks, 修为 and the way on are one beat. Stars from misses (★3 none, ★2 ≤3).
 - **Tested:** the judge on synthetic hands (pose.js), not recorded ones; real-camera recognition is Hanli's to try.
 
 ### 结印 in 守墙关 — the 火蛋 helper

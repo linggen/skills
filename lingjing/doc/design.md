@@ -772,6 +772,14 @@ seeded (the board's seed is the day's, the save's `seed`, the task id).
 | `xisui` | `xisui-hold` | 00-sleep (h02) | hold to grit — three sticks of incense burn only while held; holding spends breath, a trough gives it back; letting go (or running out) on a wave restarts the stick; then 「蹦一下」 into the beam | 「疼，别喊」 |
 | `zhoutian` | `zhoutian-sanguan` | wm-zhoutian (h05) | on the 三关 figure: in · out · still; push the qi only in the stillness; 尾闾 and 夹脊 open at one push (银月 dug them), 玉枕 wants three, a push out of time sets it back one | 「最后那半道，得你自己撞」 |
 
+**A board's other way — `alt`, chosen by the device** 【已建】 (2026-10-21, 古六's 讲堂): a task row may declare
+`alt: [{ needs: { camera: true }, game, deal, title?, how? }]`. The rules only hand it on in Look (words picked) and lint
+it (known needs — `camera` today —, a known game, its `grades` among the task's `marks`); the PAGE chooses
+(`scripts/caps.js`: probed once before the first Look, never a permission prompt; the first alt whose needs it meets is
+laid over the row, else the row untouched). The task id never changes, so the win, grade, marks, pay and way on are one
+beat on every device — a save never forks. A starred mount game with no grade of its own is graded by its deal's
+`grades` (lingjing.js beatSettled). Dev seams: `?dev=1&feed=1` counts as a camera, `?dev=1&caps=none` as none.
+
 **The opening's beats** (Hanli, 2026-10-14: 「每看一会儿剧情就要有游戏可以玩」 — the game is played, not
 read-and-tap): six more boards in the prologue, each the book's own action where its scene stands —
 
