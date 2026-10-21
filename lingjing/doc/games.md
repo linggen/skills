@@ -692,6 +692,25 @@ tried again).
 - **If he likes it — 古六's teaching level** (Hanli 10-21: 「古6教学结手印那里可以做教学关卡」): a games.json row at
   wm-qianye's 讲堂 with `data.lv: 'jiangtang'` (褚先生's lines as the lead and each seal's `hint`), then the 火蛋;
   offered only when `available()`, else the scene keeps 讲堂试法 (砸寨).
+- **The library (10-21 later, Hanli: 「可以多设计一些"印", mac上可以用双手, iPhone只有单手」):** 17 seals, each `hands: 1 | 2`.
+  One-hand (12): 推掌 · 剑诀 · 巳 · 午 · 申 · 未 (fingertips) · 卯 (index middle joint, 木) · 玉清诀 (middle finger's middle joint,
+  土) · 酉 (little finger's top joint, 金) · 子 (ring root, 水) — the 古六 掐诀 canon, a joint judged by `nearest` (the thumb on
+  THIS joint, not its neighbour 2 cm away) · 单剑指 · 犄角诀. Two-hand, a Mac's (5): 离火印 (thumbs and index tips touching, a
+  triangle, palms apart) · 双掌 · 双剑 (side by side, level, apart) · 承剑 (a flat palm, a 剑诀 upright above it) · 天地印 (palms
+  stacked, a gap) — none interlocked; each hand's shape on its own points, how they stand on the picture (`between`).
+  Device sets (data `sets`): coarse pointer + small screen → one-hand seals only, else both; every move a sequence per set
+  (the 火蛋: phone 推掌 · 剑诀 · 申文 · 午文, Mac 双掌 · 承剑 · 离火印 · 午文). `lv=3` 试印 tries every seal the device may make.
+  Left out: a fist / 雷局 (the thumb's depth reads poorly), 合十 and interlocked fingers (hands hide each other).
+- **No camera picture (10-21, Hanli: 「最好不显示摄像头…手部动作的提示」):** the video only feeds the model. The hand hint
+  (games/jieyin/hint.js `handHint(container, { lang, size, seals, knobs })` · `update({ image, aspect, target, progress, right })` ·
+  `fizzle()` · `destroy()`) draws the tracked hands in ink where the camera sees them (mirrored), lights an edge a hand nears,
+  says which edge a lost hand left by, too far / too near, both hands for a two-hand seal; the seal to make beside it, the hold
+  ring round the drawn hand. Compact in a corner (守墙关), large for teaching. Knobs: jieyin.json `hint`.
+- **Power (10-21, Hanli: 「好，加上」):** the model at most 15 fps, the camera asked for 320×240 (ideal), 1 hand on a phone, 2 on a
+  Mac only when the sequence has a two-hand seal (jieyin.json `eye`, sets.js `eyeFor`; a game may ask for more fps — 隔空指点's
+  poke). Measured on 9527 (M2 Max, a synthetic canvas the detector finds no hand on, so the palm detector runs every frame):
+  ≈8.3 ms a frame on GPU and ≈22 ms on CPU, the same at 640×480 / 2 hands and 320×240 / 1 hand — the model scales every frame to
+  its own input size. The saving is the rate (≈30 → 15 runs a second: about half the model's time) and the smaller capture.
 - **Tested:** the judge on synthetic hands (pose.js), not recorded ones; real-camera recognition is Hanli's to try.
 
 ## 隔空指点 — point the 剑诀 at the screen (test game, 10-21)
