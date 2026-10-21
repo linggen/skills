@@ -89,7 +89,7 @@
   },
   "arts": [],
   "chapter": "00-zhuji",
-  "scene": null,
+  "scene": "09-snow",
   "done_scenes": [
    "00-shiao",
    "00-masan",
@@ -161,7 +161,7 @@
    "00-prologue",
    "00-waimen"
   ],
-  "place": "chaifang",
+  "place": "fantang",
   "tasks": {
    "rain-basins": {
     "status": "done",
@@ -347,7 +347,9 @@
    "jiaxin-drawn",
    "caowu-stone"
   ],
-  "tell_owed": [],
+  "tell_owed": [
+   "scene/09-snow"
+  ],
   "node": {
    "kind": "scene",
    "at": "2026-10-02T01:00:00.000Z",
@@ -831,8 +833,7 @@
    "wm-caowu",
    "wm-heluo",
    "j07-dark",
-   "j07-guan",
-   "09-snow"
+   "j07-guan"
   ]
  }
 }
