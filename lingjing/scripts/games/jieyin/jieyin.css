@@ -32,6 +32,9 @@
 .jy-glyph { position: absolute; top: 3px; right: 4px; font-family: var(--serif); font-size: 11px; line-height: 16px; width: 16px; text-align: center;
   border-radius: 3px; color: #fff; background: #b9a58c; }
 .jy-slot small { font-size: 11px; white-space: nowrap; }
+/* A two-hand seal (a Mac's): a wider tile, its glyph ringed — two hands. */
+.jy-slot.is-two { width: 78px; }
+.jy-slot.is-two .jy-glyph { box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 2.5px currentColor; }
 .jy-slot.is-next { border-color: var(--seal); color: var(--text); box-shadow: 0 0 0 2px color-mix(in srgb, var(--seal) 25%, transparent); }
 .jy-slot.is-done { color: var(--seal); background: color-mix(in srgb, var(--seal) 10%, var(--surface)); }
 .jy-slot.is-done .jy-glyph, .jy-slot.is-next .jy-glyph { background: var(--seal); }

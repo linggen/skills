@@ -1,6 +1,6 @@
 // jieyin.js — 结印 (hand seals), a prototype in the 游戏厅 (Hanli 2026-10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面,
-// 让用户结印发火弹帮忙打怪」). The player makes seals at the camera; four in order — 推掌 · 剑诀 · 申文 · 午文 — cast a
-// 火蛋 at the boar; three eggs drive it off. A wrong seal held = 走火: a charred egg and a puff, back to the first seal.
+// 让用户结印发火弹帮忙打怪」). The player makes seals at the camera; four in order cast a 火蛋 at the boar — on a phone
+// 推掌 · 剑诀 · 申文 · 午文, on a Mac 双掌 · 承剑 · 离火印 · 午文 (two hands; levels/jieyin.json `moves`) — three eggs drive it off. A wrong seal held = 走火: a charred egg and a puff, back to the first seal.
 // The second level is the shape of 古六's 讲堂 teaching level (one seal at a time, 褚先生's line for each). Not in
 // the story.
 //
@@ -12,10 +12,12 @@
 // The camera is asked for only on 开始, and stopped (its tracks) the moment the game pauses, ends or is left, or the
 // page is hidden.
 // Contract (games/mount.js): mount(container, { lang, data, signal, shell }) → Promise<{ won, stars } | { won: false, left: true }>
-// Dev only: `?dev=1&feed=1` runs without a camera, hands fed from the console (`window.jieyinFeed(hands)`) — the
+// Which seals: games/jieyin/sets.js — a phone (coarse pointer, small) only one-hand seals, a Mac both; `?dev=1&hands=1|2` picks.
+// Dev only: `?dev=1&feed=1` runs without a camera, hands fed from the console (`window.jieyinFeed(hands, picture?)`) — the
 // live check's way to play it through; never a player's.
 import { available, dropModel, loadModel, openEye } from './jieyin/eye.js';
-import { sealOf } from './jieyin/judge.js';
+import { handsOf, sealOf } from './jieyin/judge.js';
+import { sealsFor, sequenceFor, setOf } from './jieyin/sets.js';
 import { expected, progress, start, starsOf, step } from './jieyin/sequence.js';
 import { BONES, iconSvg } from './jieyin/pose.js';
 
@@ -71,13 +73,13 @@ export function unavailableHtml(lang = 'zh') {
 function seqHtml(kit, level, lang) {
   return level.sequence.map((id, i) => {
     const s = kit.seals[id];
-    return `<li class="jy-slot" data-i="${i}" title="${plain(tr(s.how, lang))}"><span class="jy-glyph">${plain(s.glyph)}</span>${iconSvg(s, 34)}<small>${plain(tr(s.name, lang))}</small></li>`;
+    return `<li class="jy-slot${handsOf(s) === 2 ? ' is-two' : ''}" data-i="${i}" title="${plain(tr(s.how, lang))}"><span class="jy-glyph">${plain(s.glyph)}</span>${iconSvg(s, 34)}<small>${plain(tr(s.name, lang))}</small></li>`;
   }).join('');
 }
 
 function stageHtml(kit, level, lang) {
   const foe = level.mode === 'one' ? '' : `<div class="jy-foe"><img alt="" src="${foeArt(level.foe, 'walk-1')}"><div class="jy-hp">${'<i></i>'.repeat(level.hits)}</div></div>`;
-  return `<div class="jy" data-mode="${plain(level.mode)}">`
+  return `<div class="jy" data-mode="${plain(level.mode)}" data-set="${plain(level.set ?? '')}">`
     + `<div class="jy-field" style="background-image:url('${ART.bg}')">${foe}<img class="jy-xm" alt="" src="${ART.xiaoman}">`
     + `<div class="jy-cam"><video playsinline muted></video><canvas></canvas>`
     + `<div class="jy-now"><svg viewBox="0 0 36 36"><circle class="jy-ring-bg" cx="18" cy="18" r="15"/><circle class="jy-ring" cx="18" cy="18" r="15" pathLength="100"/></svg><b></b></div>`
@@ -158,7 +160,11 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
 
     (async () => {
       const kit = await fetch(LEVELS).then((r) => r.json());
-      const level = levelAsked(kit, data, win.location?.search ?? '');
+      // The device's set (sets.js): a phone only the one-hand seals, a Mac both; the level's sequence for that set.
+      const set = setOf(kit, { matchMedia: win.matchMedia?.bind(win), search: win.location?.search ?? '' });
+      const asked = levelAsked(kit, data, win.location?.search ?? '');
+      const level = { ...asked, set: set.id, sequence: sequenceFor(kit, asked, set) };
+      const seals = sealsFor(kit, set);
       if (!feedOnly && !(await available(win))) return nocam();
       if (done) return;
       loadModel().catch(() => {}); // from disk while the lead card is read; the camera waits for 开始
@@ -166,7 +172,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const box = container.querySelector('.jy');
       const $ = (s) => box.querySelector(s);
       const video = $('video'), canvas = $('canvas');
-      let s = start(level), hands = [], hp = level.hits ?? 0, busy = false, last = win.performance.now();
+      let s = start(level), hands = [], picture = [], aspect = 4 / 3, hp = level.hits ?? 0, busy = false, last = win.performance.now();
 
       const hud = () => {
         const want = expected(s);
@@ -216,7 +222,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         const now = win.performance.now(), dt = Math.min(100, now - last);
         last = now;
         if (!shell?.paused?.() && !busy) {
-          const r = step(s, sealOf(hands, kit.seals, kit.judge, s.cur), dt, kit.judge);
+          const r = step(s, sealOf(hands, seals, kit.judge, s.cur, { image: picture, aspect }), dt, kit.judge);
           s = r.state;
           r.events.forEach(act);
         }
@@ -224,26 +230,31 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         loop = win.requestAnimationFrame(tick);
       };
 
-      const onHands = ({ world, image }) => { hands = world; drawHands(canvas, video, image); };
+      const onHands = ({ world, image }) => {
+        hands = world;
+        picture = image;
+        aspect = (video.videoWidth / video.videoHeight) || aspect;
+        drawHands(canvas, video, image);
+      };
       hud();
       if (shell?.lead) await shell.lead(tr(level.lead, lang));
       else await new Promise((r) => { const b = doc.createElement('button'); b.className = 'gshell-btn is-main jy-go'; b.textContent = lang === 'en' ? 'Start' : '开始'; b.onclick = () => { b.remove(); r(); }; box.append(b); });
       if (done) return;
       if (feedOnly) {
-        win.jieyinFeed = (h) => { hands = h ?? []; };
+        win.jieyinFeed = (h, img = h) => { hands = h ?? []; picture = img ?? []; aspect = 1; }; // img: the picture's points (two-hand seals)
         loadModel().then(() => { box.dataset.model = 'ready'; }, () => { box.dataset.model = 'failed'; });
       } else {
         eye = openEye({ video, onHands, env: win });
         // Heard before the camera is asked for: a pause while the prompt is open keeps the camera off (eye.js).
         offPause = shell?.onPause?.((paused) => {
           if (done) return;
-          if (paused) { eye.pause(); hands = []; } else eye.start().catch(() => nocam());
+          if (paused) { eye.pause(); hands = []; picture = []; } else eye.start().catch(() => nocam());
         });
         // The page hidden (another tab, the window away): the camera off, its light with it; back in sight, on again
         // unless the shell holds it paused.
         const seen = () => {
           if (done) return;
-          if (doc.hidden) { eye.pause(); hands = []; } else if (!shell?.paused?.()) eye.start().catch(() => nocam());
+          if (doc.hidden) { eye.pause(); hands = []; picture = []; } else if (!shell?.paused?.()) eye.start().catch(() => nocam());
         };
         doc.addEventListener?.('visibilitychange', seen);
         offHide = () => doc.removeEventListener?.('visibilitychange', seen);

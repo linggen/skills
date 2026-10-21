@@ -51,24 +51,63 @@ export function buildHand({ curl = [], pinch = null, together = null, spread = 6
   return all.map(([x, y, z]) => ({ x, y, z }));
 }
 
-/** The hand a seal's rule asks for (worlds/jiuding/levels/jieyin.json `seals`). */
+const JOINT = { cmc: 0, mcp: 0, ip: 2, pip: 1, dip: 2, tip: 3 };
+
+/** The hand a one-hand rule asks for (worlds/jiuding/levels/jieyin.json `seals`, or a two-hand seal's `each` · `a` ·
+    `b`): the thumb onto the fingertip a `near` names (that finger bent to meet it), or onto the joint a `nearest`
+    names (the finger straight, the thumb laid on it), else tucked over folded fingers, else spread. */
 export function poseOf(seal) {
-  const pair = (seal.near ?? []).find(([a, b]) => a === 'thumb.tip' || b === 'thumb.tip');
-  const pinch = pair ? (pair[0] === 'thumb.tip' ? pair[1] : pair[0]).split('.')[0] : null;
+  const onThumb = (pairs) => (pairs ?? []).find(([a, b]) => a === 'thumb.tip' || b === 'thumb.tip');
+  const pair = onThumb(seal.near) ?? onThumb((seal.nearest ?? []).map(([a, b]) => [a, b]));
+  const target = pair ? (pair[0] === 'thumb.tip' ? pair[1] : pair[0]) : null;
+  const [finger, joint] = target ? target.split('.') : [];
   const tog = (seal.near ?? []).find(([a, b]) => a !== 'thumb.tip' && b !== 'thumb.tip');
-  return buildHand({ curl: seal.curl ?? [], pinch, together: tog ? tog.map((p) => p.split('.')[0]) : null });
+  const base = { curl: seal.curl ?? [], together: tog ? tog.map((p) => p.split('.')[0]) : null };
+  if (!target || joint === 'tip') return buildHand({ ...base, pinch: finger ?? null });
+  const open = buildHand(base), j = open[1 + FINGERS.indexOf(finger) * 4 + 4 + JOINT[joint]];
+  return buildHand({ ...base, thumbTo: [j.x - 0.3, j.y, j.z - 0.6] });
 }
+
+/* ── Two hands, as the picture shows them ── */
+
+const mirror = (hand) => hand.map(({ x, y, z }) => ({ x: -x, y, z }));
+const spin = (hand, deg) => { const r = (deg * Math.PI) / 180, c = Math.cos(r), s = Math.sin(r); return hand.map(({ x, y, z }) => ({ x: x * c - y * s, y: x * s + y * c, z })); };
+const shift = (hand, dx, dy) => hand.map(({ x, y, z }) => ({ x: x + dx, y: y + dy, z }));
+const HAND_LEN = 9.52; // the template's hand-length (wrist → middle root), cm
+
+/** Both hands of a two-hand seal, by its `layout` (hand-lengths, the picture's y down): `{ dx, dy }` where b's wrist
+    stands from a's, `turn: [a°, b°]`, `mirror` (b is the other hand), or `touch: [p, q]` — two mirrored hands whose
+    p and q meet on the middle line (三角: index tips and thumb tips). Answers { world: [a, b], image: [a, b] } — the
+    image in centimetres on an even frame (aspect 1); a one-hand seal answers its one hand in both. */
+export function posesOf(seal) {
+  if (seal.hands !== 2) { const h = poseOf(seal); return { world: [h], image: [h] }; }
+  const L = seal.layout ?? {};
+  let a = poseOf(seal.a ?? seal.each ?? {}), b = poseOf(seal.b ?? seal.each ?? {});
+  if (L.mirror || L.touch) b = mirror(b);
+  const world = [a, b];
+  if (L.touch) {
+    const [p, q] = L.touch.map((n) => a[pointOf(n)]);
+    const deg = (Math.atan2(p.x - q.x, -(p.y - q.y)) * 180) / Math.PI; // turn a so q → p points straight up
+    let ia = spin(a, -deg);
+    ia = shift(ia, -(ia[pointOf(L.touch[0])].x), 0);
+    return { world, image: [ia, mirror(ia)] };
+  }
+  const [ta = 0, tb = 0] = L.turn ?? [];
+  return { world, image: [spin(a, ta), shift(spin(b, tb), (L.dx ?? 0) * HAND_LEN, (L.dy ?? 0) * HAND_LEN)] };
+}
+const pointOf = (name) => { if (name === 'wrist') return 0; const [f, j] = name.split('.'); return f === 'thumb' ? 1 + ['cmc', 'mcp', 'ip', 'tip'].indexOf(j) : 1 + FINGERS.indexOf(f) * 4 + 4 + ['mcp', 'pip', 'dip', 'tip'].indexOf(j); };
 
 const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
 export { BONES };
 
-/** A seal's icon: its pose as a small SVG hand (x, y only), in `currentColor`. */
+/** A seal's icon: its pose (both hands for a two-hand seal) as a small SVG drawing (x, y only), in `currentColor`. */
 export function iconSvg(seal, size = 40) {
-  const h = poseOf(seal), xs = h.map((p) => p.x), ys = h.map((p) => p.y);
+  const hands = posesOf(seal).image, all = hands.flat(), xs = all.map((p) => p.x), ys = all.map((p) => p.y);
   const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, hh = Math.max(...ys) - y0, s = Math.max(w, hh) + 3;
+  const k = s / 22; // strokes keep one weight whatever the drawing's span
   const X = (p) => (p.x - x0 + (s - w) / 2).toFixed(2), Y = (p) => (p.y - y0 + (s - hh) / 2).toFixed(2);
-  const lines = BONES.map(([a, b]) => `<line x1="${X(h[a])}" y1="${Y(h[a])}" x2="${X(h[b])}" y2="${Y(h[b])}"/>`).join('');
-  const tips = [4, 8, 12, 16, 20].map((i) => `<circle cx="${X(h[i])}" cy="${Y(h[i])}" r="0.75"/>`).join('');
+  const lines = hands.map((h) => BONES.map(([a, b]) => `<line x1="${X(h[a])}" y1="${Y(h[a])}" x2="${X(h[b])}" y2="${Y(h[b])}"/>`).join('')).join('');
+  const tips = hands.map((h) => [4, 8, 12, 16, 20].map((i) => `<circle cx="${X(h[i])}" cy="${Y(h[i])}" r="${(0.75 * k).toFixed(2)}"/>`).join('')).join('');
   return `<svg class="jy-hand" viewBox="0 0 ${s.toFixed(2)} ${s.toFixed(2)}" width="${size}" height="${size}" aria-hidden="true">`
-    + `<g stroke="currentColor" stroke-width="0.9" stroke-linecap="round" fill="none">${lines}</g><g fill="currentColor">${tips}</g></svg>`;
+    + `<g stroke="currentColor" stroke-width="${(0.9 * k).toFixed(2)}" stroke-linecap="round" fill="none">${lines}</g><g fill="currentColor">${tips}</g></svg>`;
 }
