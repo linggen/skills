@@ -52,8 +52,8 @@ export const artOf = (level) => ({
 export const castOf = (level) => (level.mode === 'one' ? level.cast ?? null : level);
 
 const W = {
-  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', asking: '请允许使用摄像头……', loading: '……', next: '下一个' },
-  en: { nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', downed: 'The dummy is down.', asking: 'Allow the camera…', loading: '…', next: 'Next' },
+  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', asking: '请允许使用摄像头……', loading: '……', next: '下一个', who: '小满' },
+  en: { nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', downed: 'The dummy is down.', asking: 'Allow the camera…', loading: '…', next: 'Next', who: 'Xiaoman' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
@@ -180,7 +180,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         const next = want ? kit.seals[want] : null;
         $('.jy-hint').textContent = next ? (s.mode === 'one' ? `${tr(next.hint, lang)}　${tr(next.how, lang)}` : `${tr(next.name, lang)}：${tr(next.how, lang)}`) : '';
       };
-      const say = (text) => (shell?.say ? shell.say('xiaoman', text, 1800) : ($('.jy-status').textContent = text));
+      const say = (text) => (shell?.say ? shell.say(w.who, text, 1800) : ($('.jy-status').textContent = text));
 
       const cast = async () => {
         busy = true;
