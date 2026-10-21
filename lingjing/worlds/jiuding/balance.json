@@ -423,6 +423,27 @@
       "mend-pill",
       "huiqi-pill"
     ],
-    "_fit_days": "2026-10-16 (no story rise): 古四 (h05) 2 heavy days, 古五 (h07) 3, 古六 3, the rest 4.5 — 古四/古五 a little longer than before so the typical player is not through them in three days."
+    "_fit_days": "2026-10-16 (no story rise): 古四 (h05) 2 heavy days, 古五 (h07) 3, 古六 3, the rest 4.5 — 古四/古五 a little longer than before so the typical player is not through them in three days.",
+    "_rerun": "2026-10-21 (design.md § Reruns): a 秘境 rerun's spoils in the model — its beasts' drops (rewards.json drop_tables, an elite's own odds), the 拾遗 find, the cache under it (chapter.json sealed.rerun), read by rules/rerun.mjs runsPay at a shop's `sell`. `found`: the share of runs whose 拾遗 (the short 守炉) is won; `three_stars`: of those, the share with the fire kept whole (the cache's grade); `sold`: the share of the spoils' worth turned into 灵石 — the rest worn, or fed to the 饭桶 (three things a feed). 鼎苔 sells for nothing: counted apart. 修为 is the beasts' alone, as before — the spoils never move a 回's days. Guesses, to be hand-played.",
+    "rerun": {
+      "found": 0.9,
+      "three_stars": 0.4,
+      "sold": 0.5,
+      "_share": "What tests/balance-rerun.test.mjs holds, for every player over the days a rerun stands open (`node tools/balance.mjs --wealth`). `xw`: the rerun's share of the day's 修为 — at most about half, so 功课, 闭关 and the story stay the clock (the story is the reward; Hanli 10-15, 30 min a day, one 回 a week), at least a quarter, so the 3 h slot is worth its 12 minutes (2026-10-21: light 48%, typical 37%, heavy 48%). `ls`: its share of the day's 灵石 — the typical player's one fight slot, and fights are where the model's 灵石 come from (杂役 and 开府 are not played), so most of it, never all (2026-10-21: 65%, 81%, 70%). `spoils`: a run's spoils at sell over its fights' own 灵石 — the drops and finds about as much as the fights, never far past (0.94).",
+      "share": {
+        "xw": [
+          0.25,
+          0.55
+        ],
+        "ls": [
+          0.5,
+          0.9
+        ]
+      },
+      "spoils": [
+        0.5,
+        1.25
+      ]
+    }
   }
 }

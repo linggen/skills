@@ -309,14 +309,53 @@ export function rerunBrief(content, state, now) {
 }
 
 /* What one run is worth on average, read from the data,
-   for the economy (tools/balance.mjs): beasts per run, the 修为 they pay below 圆满 (haunt table), the finds. */
+   for the economy (tools/balance.mjs): beasts per run, the 修为 they pay below 圆满 (haunt table), the finds —
+   and what the spoils would fetch at a shop's `sell` (`goods`: per beast won, per run's 拾遗, the cache on
+   three stars), and apart the finds that fetch nothing at a shop (`unsold`: how many, 鼎苔 today). */
+const mean = ([lo, hi] = [0, 0]) => (lo + hi) / 2;
+const sellOf = (content, id) => content.items.items.find(i => i.id === id)?.sell ?? 0;
+/* A weighted pick's mean: `worth(row)` over the rows by `weight`. */
+const meanBy = (rows, worth) => { const all = rows.reduce((t, x) => t + (x.weight ?? 1), 0); return all ? rows.reduce((t, x) => t + (x.weight ?? 1) * worth(x), 0) / all : 0; };
+/* An arm of a rarity table's mix, at sell: the rarity's arms on the drop table, evenly. */
+const gearWorth = (content, table, weights) => meanBy(Object.entries(weights ?? {}).map(([rarity, weight]) => ({ rarity, weight })), ({ rarity }) => {
+  const arms = (table?.gear ?? []).filter(id => content.items.items.find(i => i.id === id)?.rarity === rarity);
+  return arms.length ? arms.reduce((t, id) => t + sellOf(content, id), 0) / arms.length : 0;
+});
+const pickWorth = (content, p, id = 'item') => (p[id] ? mean(p.n) * sellOf(content, p[id]) : 0);
+const unsoldOf = (content, rows) => meanBy(rows, p => (p.item && !sellOf(content, p.item) ? mean(p.n) : 0));
+/* The beasts a run rolls, and the share of them an elite (`one_in` of those whose kind has an elite deck). */
+function spawnsOf(content, r) {
+  let beasts = 0, elites = 0;
+  for (const [room, sp] of Object.entries(r.rerun.spawns ?? {})) {
+    const pool = content.places[placeOf(content, room)?.province]?.pools?.[sp.pool];
+    const kinds = (pool?.beasts ?? []).filter(b => (b.weight ?? 1) > 0);
+    const eliteShare = meanBy(kinds, b => (r.rerun.elite?.decks?.[b.creature] ? 1 : 0)) / (r.rerun.elite?.one_in ?? Infinity);
+    beasts += mean(sp.n); elites += mean(sp.n) * eliteShare;
+  }
+  return { beasts, elite: beasts ? elites / beasts : 0 };
+}
+/* A beast won: each roll of the drop table, at its chance (an elite's own), its pick or its arm at sell. */
+function dropWorth(content, table, elite) {
+  const one = isElite => (table?.rolls ?? []).reduce((t, roll) => {
+    const chance = isElite ? roll.elite_chance ?? roll.chance : roll.chance;
+    const worth = roll.gear ? gearWorth(content, table, isElite ? table.elite_rarity ?? table.rarity : table.rarity) : meanBy(roll.items ?? [], p => pickWorth(content, p));
+    return t + chance * worth;
+  }, 0);
+  return (1 - elite) * one(false) + elite * one(true);
+}
 export function runsPay(content) {
   const haunt = content.rewards.tables.haunt;
   return rerunsOf(content).map(r => {
-    const mean = ([lo, hi] = [0, 0]) => (lo + hi) / 2;
-    const beasts = Object.values(r.rerun.spawns ?? {}).reduce((t, sp) => t + mean(sp.n), 0);
-    const finds = Object.keys(r.rerun.finds ?? {}).length;
-    return { beat: r.beat.id, chapter: r.chapter, also: r.rerun.also ?? [], last: r.beat.scenes.at(-1), every_h: r.rerun.every_h, beasts, progress: beasts * haunt.progress, wealth: beasts * haunt.wealth, finds };
+    const x = r.rerun, table = content.rewards.drop_tables?.[x.drops], { beasts, elite } = spawnsOf(content, r);
+    const rooms = Object.values(x.finds ?? {}), finds = rooms.length;
+    const cachePick = p => (p.gear ? gearWorth(content, table, { [p.gear]: 1 }) : pickWorth(content, p));
+    const goods = {
+      drop: dropWorth(content, table, elite),
+      find: rooms.reduce((t, rows) => t + meanBy(rows, p => pickWorth(content, p)), 0),
+      cache: x.cache ? meanBy(x.cache.picks, cachePick) / x.cache.one_in : 0,
+    };
+    const unsold = { find: rooms.reduce((t, rows) => t + unsoldOf(content, rows), 0), cache: x.cache ? unsoldOf(content, x.cache.picks) / x.cache.one_in : 0 };
+    return { beat: r.beat.id, chapter: r.chapter, also: x.also ?? [], last: r.beat.scenes.at(-1), every_h: x.every_h, beasts, elite, progress: beasts * haunt.progress, wealth: beasts * haunt.wealth, finds, goods, unsold };
   });
 }
 

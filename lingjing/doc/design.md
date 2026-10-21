@@ -425,11 +425,18 @@ holds something between the beats, in the book's places and never against it —
 trial); 暗河 合窳 and 犰狳 (pool `mijing-anhe`) and 拾遗 (games/gather.js — herbs and ore in the
 cracks, 灵芝 and 灵石). Fights pay the haunt table (修为), boards their grants, gleaning stones and a
 herb; their sums are balance.json's. A natural player: about 20 minutes inside.
-**Reruns** (Hanli, 2026-10-15) 【在建】: after the story run the **outer rooms** (岔口 · 凶崖 · 暗河)
+**Reruns** (Hanli, 2026-10-15) 【已建】: after the story run the **outer rooms** (岔口 · 凶崖 · 暗河)
 reopen **3 h after the last run ends** — one slot of the daily routine, through 古七/古八 too (the
 rerun's `also`: the same 观). Each run rolls its spawns
 (now and then an elite), its finds (鼎苔, 灵草, ore, a rare cache) and drops, gear among them. The
 inner story rooms (断崖下 · 崖壁 · 石室) never repeat. A rerun is sealed the same way.
+**In the economy** (2026-10-21): tools/balance.mjs plays the run as the routine slot it is — its beasts' 修为 on
+the haunt table (layer-scaled; past the mark he may not leave, 灵石 at `convert.rate`), its spoils (drops by the
+drop table, an elite's own odds; the 拾遗 find; the cache on three stars) valued by rules/rerun.mjs `runsPay` at a
+shop's `sell`, a share sold (balance.json `model.rerun`); the spoils are never 修为, so no 回's days move. Over the
+days it stands open the rerun is 修为 37–48% of a player's day and 灵石 65–81% (the typical player's one fight slot);
+a run's spoils ≈ its fights' own 灵石 (0.94×). tests/balance-rerun.test.mjs holds the bands (`model.rerun._share`)
+and checks `runsPay` against the rules' own rolls. 鼎苔 sells for nothing and the 饭桶 refuses it: counted apart.
 
 ### 剧情 × 开放世界 — tasks drive the story, key beats lock the map 【在建】
 
@@ -567,13 +574,10 @@ onto the items; items.json carries none). The fights are weighed so the lookahea
 `tools/balance.mjs --wealth` prints the 灵石 flow per player (pills a fight: light ½, typical 1, heavy 1½).
 **伤势 does not carry:** every fight begins at full 气血 (cut 2026-09-24), so a 回春丹 matters only inside one.
 
-### 饭桶 — free play 【在建】 (Hanli, 2026-10-15)
+### 饭桶 — free play 【已建】 → superseded by 开炉 (2026-10-20)
 
-Once he holds it, the 饭桶 opens from 物品: drag or tap items in; it spits **one** item, its name
-and one vague hint line (the book's rule). What goes in biases the pool — junk → junk, herbs →
-pills (the book's recipes among them), beast parts → 符, 灵石 raises the odds; roughly 70/25/5.
-A 逆天 result is utility only in 卷一. A recipe found goes to 录. 银月's 踏马的符 gag stays. One
-feed, then a **1 h cooldown** (a daily-routine slot).
+Built as 喂饭桶 · 开炉: up to three things and 0–3 灵石 in, the lid pressed, one thing out, 1 h cooldown — games/kailu.js,
+rules/fantong-roll.mjs, fantong.json; doc/games.md § 喂饭桶 · 开炉.
 
 ## 斗法 v3 — one card game, 《炉石传说》's shape 【已建】 (PvE; PvP and the raid 【远景】)
 

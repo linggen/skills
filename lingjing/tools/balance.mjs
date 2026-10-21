@@ -8,7 +8,8 @@
 //             meets `model.fit.days`, and writes them into balance.json `layers.qi`
 //             (the 层 a rise jumps over sit between their neighbours); a 回 named in `model.fit.hold`
 //             is not searched — its first layer stays at the held number (a decision, `_hold` says why);
-//   --json    the rows as JSON.
+//   --json    the rows as JSON;
+//   --wealth  the 灵石 flow per player, and the 秘境 rerun's share of the day (修为, 灵石, its spoils).
 // tests/balance.test.mjs holds the bands (`model.bands`).
 //
 // A day, as the model plays it (every number from balance.json `model` or the world's data):
@@ -20,7 +21,7 @@
 //     feed, one an hour); 今日传闻 where the map is not walled (a heavy player's: the `tale` cap);
 //     闭关 overnight (`seclude` hours, focus 修为, the rules' rate and its table's cap);
 //   - every fight win pays the haunt table's 修为 — at the full mark of a layer he may not grind
-//     past (the 回's cap, a stage quest ahead), 灵石 instead; the day's limit is 体力 alone;
+//     past (the 回's cap, a stage quest ahead), 灵石 instead (at `convert.rate`); the day's limit is 体力 alone;
 //   - then the story, minute by minute: a scene's passages at `chars_per_min`, its boards, its
 //     fight; its boards' and its way on's grants, its pills, its rises (no story floor), the
 //     sealed rooms' play, the 回's errands (`errands_at`); a way on behind a stage quest
@@ -30,7 +31,9 @@
 //     (`waking_h` spread over the sittings), a fight, a story step and a board its rewards.json
 //     price — out of it, the sitting stops. (While we test the switch is off: rules.mjs.)
 // Days per 回: from the day its first scene is reached to the day its last is done (fractional,
-// by the minutes used). The routine's 灵石, items and finds are not modelled — 修为 is the clock.
+// by the minutes used). 修为 is the clock; 灵石 runs beside it (a fight's 修为 past the mark at the convert
+// rate; a rerun's spoils — drops, the 拾遗 find, the cache — at a shop's sell, the share `model.rerun.sold`;
+// 2026-10-21). The 杂役 errands' and 开府's 灵石 are not played.
 // Grinding stops where the 回's cap says — and, while a stage quest is ahead, at its layer.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -148,16 +151,20 @@ export function play(content, player, { model = content.balance.model, ladder = 
   /* `table`: a routine table balance.json `layer_pay` scales by the layer he stands on. */
   const lp = content.balance.layer_pay;
   const layerPay = table => (lp && (lp.tables ?? []).includes(table) ? lp[s.tier]?.[s.step] ?? 1 : 1);
-  const gain = (n, fight = false, table = null) => {
-    if (n <= 0 || zero()) return;
-    s.progress += n * (tierAt(s.tier).pay ?? 1) * layerPay(table);
+  /* `src`: where it came from, for the day's ledger (the rerun's share). Returns a fight's 修为 past the mark (圆满 → 灵石). */
+  const gain = (n, fight = false, table = null, src = 'story') => {
+    if (n <= 0 || zero()) return 0;
+    const add = n * (tierAt(s.tier).pay ?? 1) * layerPay(table);
+    s.progress += add;
     for (;;) {
-      if (s.progress < need()) return;
+      if (s.progress < need()) break;
       const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt();
       if (!top && (!cap || rank(s.tier, s.step + 1) <= cap.grind)) { up(s.tier, s.step + 1, s.progress - need()); continue; }
-      if (fight) s.progress = need();
-      return;
+      if (fight) { const over = Math.min(add, s.progress - need()); s.progress = need(); book(D.xw, src, add - over); return over; }
+      break;
     }
+    book(D.xw, src, add);
+    return 0;
   };
   const gateMet = g => { const a = rank(s.tier, s.step), b = rank(g.tier, g.step); return a > b || (a === b && s.progress >= need()); };
   let wins = 0;
@@ -167,12 +174,23 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const W = { now: 0, earned: 0, spent: 0, low: 0, pills: 0 };
   const priceOf = id => content.items.items.find(x => x.id === id)?.buy ?? 0;
   const pillPrice = ((model.pills_bought ?? []).reduce((n, id) => n + priceOf(id), 0) / Math.max(1, (model.pills_bought ?? []).length)) || 0;
-  const earn = n => { if (n > 0) { W.now += n; W.earned += n; } };
+  const earn = (n, src = 'story') => { if (n > 0) { W.now += n; W.earned += n; book(D.ls, src, n); } };
   const takePills = fights => {
     const want = (player.pills ?? 0) * fights, can = pillPrice ? Math.min(want, W.now / pillPrice) : 0;
     W.now -= can * pillPrice; W.spent += can * pillPrice; W.pills += can; W.low = Math.min(W.low, W.now);
   };
-  const win = n => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); gain(pay.haunt.progress * whole, true, 'haunt'); wins += whole; } earn((pay.haunt.wealth ?? 0) * n); takePills(n / model.fight_win_rate); };
+  // A fight's 修为 past the mark he may not leave is 灵石 at the convert rate (rules/core.mjs pay).
+  const rate = (content.rewards.xiuwei_to_lingshi?.tables ?? []).includes('haunt') ? content.rewards.xiuwei_to_lingshi.rate : 0;
+  const win = (n, src = 'pool') => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); earn(rate * gain(pay.haunt.progress * whole, true, 'haunt', src), src); wins += whole; } earn((pay.haunt.wealth ?? 0) * n, src); takePills(n / model.fight_win_rate); };
+  /* A run's spoils (rules/rerun.mjs runsPay): drops per beast won, the 拾遗 find, the cache on three stars —
+     the share `sold` at a shop's sell price (the rest worn, or fed to the 饭桶), and apart what fetches nothing (鼎苔). */
+  const R = model.rerun ?? {};
+  const spoils = (run, won, runs) => {
+    const g = run.goods, found = (R.found ?? 1) * runs, rich = found * (R.three_stars ?? 0);
+    const worth = g.drop * won + g.find * found + g.cache * rich;
+    book(D.goods, 'rerun', worth); book(D.goods, 'unsold', run.unsold.find * found + run.unsold.cache * rich);
+    earn(worth * (R.sold ?? 0), 'rerun');
+  };
   const chapterOf = () => walk[Math.min(i, walk.length - 1)].chapter;
   const walled = () => Boolean(content.chapters[chapterOf()]?.map?.home);
   const pools = () => {
@@ -186,6 +204,10 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const T = model.minutes, Q = content.rewards.stamina;
   let qi = Q.max;
   const spend = c => (qi >= c ? ((qi -= c), true) : false);
+  /* The day's ledger: 修为 (`xw`) and 灵石 (`ls`) by where they came from, the spoils' worth (`goods`), the runs;
+     `open` while a rerun stands open that day. One row a day, in `ledger`. */
+  const ledger = [], book = (m, k, n) => { if (n) m[k] = (m[k] ?? 0) + n; };
+  let D = { xw: {}, ls: {}, goods: {}, runs: 0 };
   let day = 0;
   /* The day's routine split over its sittings (`k` of `n`): 功课 at the first, a rerun a sitting,
      the fights and feeds spread; the rest of the sitting is the story's. */
@@ -194,6 +216,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const total = day === 0 ? player.first_minutes : player.minutes, n = player.sittings, sit = total / n;
     const poolCap = pools() * (1 + Math.floor(sit / content.balance.cooldowns.pool_rest_min));
     wins = 0;
+    D = { open: Boolean(rerunOpen()), xw: {}, ls: {}, goods: {}, runs: 0 };
+    ledger.push(D);
     for (let k = 0; k < n && i < walk.length; k++) {
       let left = sit, fought = 0;
       // 体力 ON, as players will have it (rewards.json stamina; the switch stays off while testing):
@@ -201,17 +225,17 @@ export function play(content, player, { model = content.balance.model, ladder = 
       qi = k === 0 ? Q.max : Math.min(Q.max, qi + Q.max * (model.waking_h / n) / Q.refill_hours);
       const at = () => day + (k * sit + (sit - left)) / total;
       if (!zero()) {
-        if (k === 0) gain(pay.gongke.progress * player.gongke, false, 'gongke');
-        if (k === 0) earn((pay.gongke.wealth ?? 0) * player.gongke);
+        if (k === 0) gain(pay.gongke.progress * player.gongke, false, 'gongke', 'gongke');
+        if (k === 0) earn((pay.gongke.wealth ?? 0) * player.gongke, 'gongke');
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
-        if (k === 0 && day > 0 && player.seclude) gain(Math.min(content.rewards.seclusion.progress_per_hour * Math.min(player.seclude, content.rewards.seclusion.cap_hours), pay.seclusion.progress), false, 'seclusion');
+        if (k === 0 && day > 0 && player.seclude) gain(Math.min(content.rewards.seclusion.progress_per_hour * Math.min(player.seclude, content.rewards.seclusion.cap_hours), pay.seclusion.progress), false, 'seclusion', 'seclusion');
         const run = rerunOpen();
         // A share under one (`reruns` 0.5: every other day) is its expected worth.
         const runs = run ? Math.min(1, player.reruns - k) : 0;
-        if (runs > 0 && left >= T.rerun * runs && spend(run.beasts * runs * Q.cost.duel)) { left -= T.rerun * runs; win(run.beasts * model.fight_win_rate * runs); }
+        if (runs > 0 && left >= T.rerun * runs && spend(run.beasts * runs * Q.cost.duel)) { left -= T.rerun * runs; win(run.beasts * model.fight_win_rate * runs, 'rerun'); spoils(run, run.beasts * model.fight_win_rate * runs, runs); D.runs += runs; }
         for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && left >= T.fight && spend(Q.cost.duel); f++) { left -= T.fight; fought += 1; win(model.fight_win_rate); }
-        if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(model.fantong_progress); }
-        if (k === 0 && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale); }
+        if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(model.fantong_progress, false, null, 'fantong'); }
+        if (k === 0 && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale, false, null, 'tale'); }
       }
       let extra = 0;
       for (;;) {
@@ -230,9 +254,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
           left -= w.minutes * (1 - (w.read ?? 0));
           // The sealed rooms, entered here: what holds the way, the boards, the fights.
           const room = rooms[w.hui]?.first === w.id ? rooms[w.hui] : null;
-          if (room) { gain(room.story + room.boards); win(room.fights * model.fight_win_rate); }
+          if (room) { gain(room.story + room.boards); win(room.fights * model.fight_win_rate, 'story'); }
           // The 回's errands, once past 零层: handed in where the 回 is under way.
-          for (const [id, h] of Object.entries(model.errands_at)) if (h === w.hui && !errandsPaid.has(id) && quests.has(id) && !zero()) { errandsPaid.add(id); gain(errandPays(content, quests.get(id))); earn(wealthCap(content, quests.get(id).grant)); }
+          for (const [id, h] of Object.entries(model.errands_at)) if (h === w.hui && !errandsPaid.has(id) && quests.has(id) && !zero()) { errandsPaid.add(id); gain(errandPays(content, quests.get(id)), false, null, 'errand'); earn(wealthCap(content, quests.get(id).grant), 'errand'); }
           gain(w.boards);
           if (w.pill9) s.pill9 = true;
           if (w.breakthrough) {
@@ -271,7 +295,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   }
   // A 回's days run from the last one's end to its own (time spent waiting on it counts).
   out.forEach((r, k) => { const prev = k ? out[k - 1].end : 0; r.days = r.end == null ? null : r.end - prev; });
-  return { rows: out, end: { tier: s.tier, step: s.step, progress: Math.round(s.progress) }, days: day, wealth: { ...W, perDay: day ? W.earned / day : 0, spentPerDay: day ? W.spent / day : 0 } };
+  return { rows: out, end: { tier: s.tier, step: s.step, progress: Math.round(s.progress) }, days: day, wealth: { ...W, perDay: day ? W.earned / day : 0, spentPerDay: day ? W.spent / day : 0 }, ledger };
 }
 
 /* The three players' days per 回. */
@@ -337,6 +361,16 @@ export function wealthTable(content) {
   });
 }
 
+/* The rerun's share of the day (design.md § Reruns: one slot of the routine), per player, over the days a rerun
+   stands open: 修为 and 灵石 a day from all sources and from the rerun, the spoils' worth, and the finds no shop buys. */
+export function rerunShare(content, player) {
+  const days = play(content, player).ledger.filter(d => d.open), n = days.length || 1;
+  const sum = (m, k) => days.reduce((t, d) => t + (k ? d[m][k] ?? 0 : Object.values(d[m]).reduce((a, x) => a + x, 0)), 0) / n;
+  const xw = sum('xw'), ls = sum('ls'), rxw = sum('xw', 'rerun'), rls = sum('ls', 'rerun');
+  return { days: days.length, runs: days.reduce((t, d) => t + d.runs, 0) / n, xw, rerun_xw: rxw, xw_share: xw ? rxw / xw : 0, ls, rerun_ls: rls, ls_share: ls ? rls / ls : 0, goods: sum('goods', 'rerun'), unsold: sum('goods', 'unsold') };
+}
+export const rerunTable = content => Object.entries(content.balance.model.players).map(([who, p]) => ({ who, ...rerunShare(content, p) }));
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const content = loadContent();
   if (process.argv.includes('--fit')) {
@@ -355,5 +389,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     for (const r of rows) console.log(`${r.hui.padEnd(5)} ${[r.light, r.typical, r.heavy].map(x => String(x ?? '—').padStart(4)).join(' ')}`);
     for (const r of runsPay(content)) console.log(`刷副本 ${r.beat} (${[r.chapter, ...r.also].join(' · ')}, every ${r.every_h} h): ${r.beasts} beasts a run`);
     if (process.argv.includes('--wealth')) for (const w of wealthTable(content)) console.log(`灵石 ${w.who.padEnd(8)} ${w.days} days: in ${w.in}/day · pills out ${w.out}/day (${w.pills} pills) · end ${w.end} · lowest ${w.low}`);
+    const pct = x => `${Math.round(x * 100)}%`, r0 = x => Math.round(x);
+    if (process.argv.includes('--wealth')) for (const r of rerunTable(content)) console.log(`刷副本 ${r.who.padEnd(8)} ${r.days} open days, ${r.runs.toFixed(2)} runs/day: 修为 ${r0(r.rerun_xw)}/${r0(r.xw)} (${pct(r.xw_share)}) · 灵石 ${r0(r.rerun_ls)}/${r0(r.ls)} (${pct(r.ls_share)}) · spoils worth ${r0(r.goods)}/day · unsold (鼎苔) ${r.unsold.toFixed(2)}/day`);
   }
 }
