@@ -774,6 +774,13 @@
    "_about": "守墙关 — wall defense, the 塔防 kit's second level type, a prototype (Hanli 10-20: 「可否加一个类似这个的关卡, 让塔防多样性」, 「做原型吧」; the bar: 《向僵尸开炮》, 「做的漂亮, 好看, 好玩」). Portrait: beasts pour down the 山道 at 沉鼎观's 山门 in waves; 小满 casts from the wall, 银月 beside him; after each wave the player picks 1 of 3 cards (剑阵 · 火符 · 寒符 · 雷符 · 银月, the 守炉 kit as skills); a tap on a beast focuses it. The first wave comes on a countdown with the lead-in, never a tap. Stars from the wall left. Phaser on the shared scripts/vendor/phaser.min.mjs (tools/shouqiang/ → games/shouqiang/shouqiang.min.mjs); the engine games/shouqiang/core.js; the level, waves and cards: worlds/jiuding/levels/shouqiang.json; the bots: tests/game-shouqiang.test.mjs. Not placed in the story yet: after Hanli plays it."
   },
   {
+   "id": "jieyin",
+   "group": "main",
+   "mechanic": "结印",
+   "stars": 3,
+   "_about": "结印 — hand seals at the camera, a prototype, 游戏厅 only (Hanli 10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」; 「没摄像头时, 就不用用户结印帮打」). MediaPipe Hand Landmarker on the device (scripts/vendor/mediapipe/), seals judged by rules in worlds/jiuding/levels/jieyin.json; four seals cast a 火蛋. No camera → not offered. `lv=1` the 火蛋, `lv=2` the shape of 古六's 讲堂 teaching level. doc/games.md § 结印."
+  },
+  {
    "id": "shoulu",
    "group": "later",
    "mechanic": "塔防",

@@ -1,0 +1,47 @@
+/* jieyin.css — 结印 (games/jieyin.js): the 山道 with the boar and 小满, the camera's mirrored preview in its corner
+   with the hands drawn on it and the seal in hand under a ring, the seals to make as a row of cinnabar seals. */
+.jy { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.jy-field { position: relative; aspect-ratio: 4 / 3; max-height: calc(100dvh - 290px); min-height: 260px; overflow: hidden; border-radius: 12px; background: #2a3322 center 62% / cover no-repeat; }
+.jy-xm { position: absolute; left: 6%; bottom: 2%; height: 46%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); }
+.jy-foe { position: absolute; left: 44%; top: 16%; width: 24%; text-align: center; transition: opacity .9s, transform .9s; }
+.jy-foe img { width: 100%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); animation: jy-bob 1.4s ease-in-out infinite; }
+.jy-foe.is-hit img { animation: jy-shake .4s; filter: brightness(1.6) saturate(1.4) drop-shadow(0 0 10px #ff8a2a); }
+.jy-foe.is-gone { opacity: 0; transform: translate(30%, -20%) scale(.7); }
+.jy-hp { display: flex; justify-content: center; gap: 4px; margin-top: 2px; }
+.jy-hp i { width: 10px; height: 10px; border-radius: 50%; background: #e8432f; box-shadow: 0 0 0 2px #fff8ef; }
+.jy-hp i.is-gone { background: #6b5d4d; }
+.jy-egg { position: absolute; left: 0; top: 0; width: 13%; pointer-events: none; z-index: 3; filter: drop-shadow(0 0 12px #ffb340); }
+.jy-burnt { position: absolute; width: 9%; pointer-events: none; z-index: 3; transform: translate(-50%, -50%); }
+
+.jy-cam { position: absolute; right: 8px; bottom: 8px; width: 34%; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
+  background: #111; box-shadow: 0 0 0 2px #fff8ef, 0 4px 14px rgba(0, 0, 0, .35); z-index: 2; }
+.jy-cam video, .jy-cam canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.jy-now { position: absolute; left: 6px; bottom: 6px; display: flex; align-items: center; gap: 6px; color: #fff; text-shadow: 0 1px 3px #000; }
+.jy-now svg { width: 30px; height: 30px; transform: rotate(-90deg); }
+.jy-now circle { fill: none; stroke-width: 4; }
+.jy-ring-bg { stroke: rgba(255, 255, 255, .25); }
+.jy-ring { stroke: #ffd36a; stroke-dasharray: 0 100; stroke-linecap: round; }
+.jy-now.is-right .jy-ring { stroke: #e8432f; }
+.jy-now b { font-family: var(--serif); font-size: 14px; letter-spacing: .1em; }
+.jy-status { position: absolute; inset: auto 0 40%; margin: 0; text-align: center; color: #fff; font-size: 12px; text-shadow: 0 1px 3px #000; }
+.jy-status:empty { display: none; }
+
+.jy-seq { display: flex; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
+.jy-slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 6px 2px 4px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--dim); transition: color .2s, border-color .2s, background .2s; }
+.jy-glyph { position: absolute; top: 3px; right: 4px; font-family: var(--serif); font-size: 11px; line-height: 16px; width: 16px; text-align: center;
+  border-radius: 3px; color: #fff; background: #b9a58c; }
+.jy-slot small { font-size: 11px; white-space: nowrap; }
+.jy-slot.is-next { border-color: var(--seal); color: var(--text); box-shadow: 0 0 0 2px color-mix(in srgb, var(--seal) 25%, transparent); }
+.jy-slot.is-done { color: var(--seal); background: color-mix(in srgb, var(--seal) 10%, var(--surface)); }
+.jy-slot.is-done .jy-glyph, .jy-slot.is-next .jy-glyph { background: var(--seal); }
+.jy-slot.is-pop { animation: jy-pop .35s ease-out; }
+.jy-slot.is-shake { animation: jy-shake .4s; }
+.jy-hint { margin: 0; min-height: 1.6em; text-align: center; font-size: 13px; line-height: 1.6; color: var(--dim); }
+.jy-go { align-self: center; }
+.jy-nocam { margin: 24px 0; text-align: center; color: var(--dim); }
+
+@keyframes jy-bob { 50% { transform: translateY(-4%); } }
+@keyframes jy-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes jy-pop { 40% { transform: scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .jy-foe img, .jy-slot.is-pop, .jy-slot.is-shake, .jy-foe.is-hit img { animation: none; } }

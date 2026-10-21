@@ -1,0 +1,52 @@
+{
+  "_about": "结印 — hand seals at the camera, a prototype (Hanli 2026-10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」; 「没摄像头时, 就不用用户结印帮打」). The player makes seals at the Mac's or phone's camera; MediaPipe's Hand Landmarker (vendored, scripts/vendor/mediapipe/) gives 21 points a hand, all on the device; the seals are judged by the RULES below (games/jieyin/judge.js), never by a model. No camera → 结印 is not offered at all. 游戏厅 only; not in the story. doc/games.md § 结印.",
+  "_rules": "A seal is held by ONE hand (either hand; the judge reads shape, not left/right). `ext`: fingers straight out (tip farther from the wrist than its middle joint by `judge.ext`); `curl`: fingers folded (tip nearer the wrist than its middle joint × `judge.curl`); `near`: two points touching (closer than `judge.near` hand-lengths — a hand-length is wrist → middle-finger root); `far`: two points apart (farther than `judge.far`). Points: wrist, thumb|index|middle|ring|pinky . mcp|pip|dip|tip (the thumb's are cmc · mcp · ip · tip). The 掐诀 canon is 古六's (褚先生): the thumb is the 门闩, where it presses the 文 opens — 巳 the index tip, 午 the middle tip (火), 申 the little-finger tip. Seals that put the thumb behind the fingers (子文 at the ring root, 雷局's thumb in the fist) and two-hand seals (合十) are left out of this round: the points break when fingers hide each other.",
+  "judge": { "ext": 1.2, "curl": 1.0, "near": 0.35, "far": 0.6, "loose": 0.12, "holdMs": 300, "wrongMs": 600, "graceMs": 160 },
+  "seals": {
+    "zhang": {
+      "glyph": "掌", "name": { "zh": "推掌", "en": "Open palm" },
+      "how": { "zh": "五指张开，掌心朝镜头", "en": "All five fingers open, palm to the camera" },
+      "hint": { "zh": "他竖起一只手，五指张开。", "en": "He raises one hand, all five fingers open." },
+      "ext": ["index", "middle", "ring", "pinky"], "far": [["thumb.tip", "index.mcp"]]
+    },
+    "jian": {
+      "glyph": "剑", "name": { "zh": "剑诀", "en": "Sword seal" },
+      "how": { "zh": "食指中指并拢伸直，无名指小指弯下，拇指压住它们", "en": "Index and middle straight and together; ring and little finger folded under the thumb" },
+      "hint": { "zh": "食指中指并着伸直，拇指压住无名指、小指的指甲——剑诀。", "en": "Index and middle straight together, the thumb pressing the ring and little fingernails — the sword seal." },
+      "ext": ["index", "middle"], "curl": ["ring", "pinky"], "near": [["index.tip", "middle.tip"]]
+    },
+    "si": {
+      "glyph": "巳", "name": { "zh": "巳文", "en": "The Si mark" },
+      "how": { "zh": "拇指尖掐食指尖，另外三指伸直", "en": "Thumb tip on the index tip; the other three straight" },
+      "hint": { "zh": "顺着食指一节一节爬上去，到指尖是巳文。", "en": "Up the index finger joint by joint — at its tip, the Si mark." },
+      "ext": ["middle", "ring", "pinky"], "near": [["thumb.tip", "index.tip"]]
+    },
+    "wu": {
+      "glyph": "午", "name": { "zh": "午文", "en": "The Wu mark" },
+      "how": { "zh": "拇指尖掐中指尖，另外三指伸直", "en": "Thumb tip on the middle-finger tip; the other three straight" },
+      "hint": { "zh": "火在南，南是午。火弹，掐午文。", "en": "Fire is south, and south is Wu. For a fire shot, press the Wu mark." },
+      "ext": ["index", "ring", "pinky"], "near": [["thumb.tip", "middle.tip"]]
+    },
+    "shen": {
+      "glyph": "申", "name": { "zh": "申文", "en": "The Shen mark" },
+      "how": { "zh": "拇指尖掐小指尖，另外三指伸直", "en": "Thumb tip on the little-finger tip; the other three straight" },
+      "hint": { "zh": "小指尖，申。", "en": "The little fingertip: Shen." },
+      "ext": ["index", "middle", "ring"], "near": [["thumb.tip", "pinky.tip"]]
+    }
+  },
+  "levels": [
+    {
+      "id": "huodan", "mode": "sequence", "title": { "zh": "结印 · 火蛋", "en": "Hand seals · The fire egg" },
+      "sequence": ["zhang", "jian", "shen", "wu"], "hits": 3, "foe": "yezhu",
+      "lead": { "zh": "野猪拱到了山门下。四个印，一个一个结：推掌、剑诀、申文、午文——午文一掐，火蛋就出手。结错一个，走火。", "en": "A boar is at the gate. Four seals, one by one: open palm, sword, Shen, Wu — press Wu and the fire egg flies. One wrong seal and it fizzles." },
+      "stars": [0, 2]
+    },
+    {
+      "id": "jiangtang", "mode": "one", "title": { "zh": "讲堂 · 一印一印", "en": "The lecture hall · One seal at a time" },
+      "_teach": "The shape of 古六's teaching level (Hanli 10-21: 「古6教学结手印那里可以做教学关卡」; not in the story this round): one seal at a time, each with 褚先生's own line (`hint`), a wrong seal only tried again; then a `sequence` level casts the 火蛋.",
+      "sequence": ["zhang", "jian", "si", "wu", "shen"],
+      "lead": { "zh": "「手怎么走，气便怎么走。这个，叫掐诀。」褚先生把左手摊开，掌心冲着底下的人。", "en": "“Where the hand goes, the qi goes. This is called pressing the marks.” Master Chu opens his left hand, palm to the room." },
+      "stars": [0, 3]
+    }
+  ]
+}

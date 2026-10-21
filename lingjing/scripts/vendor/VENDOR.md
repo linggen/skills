@@ -57,3 +57,26 @@ Fetched from github.com/google/fonts (main) on 2026-10-20.
 
 The same ZCOOL KuaiLe 站酷快乐体 (SIL OFL 1.1, `OFL.txt` beside it), cut from 守墙关's whole copy in `tools/shouqiang/font/`
 to this game's characters by `tools/sadou/font.py` — no second copy of the source font.
+
+## 结印's hand landmarks (vendor/mediapipe/)
+
+Loaded only when 结印 (games/jieyin/eye.js) starts, from these files — never a CDN, never Google's storage at run
+time. The camera's frames stay in the page.
+
+| File | Package | Licence | Size | File sha256 |
+|---|---|---|---|---|
+| `mediapipe/vision_bundle.mjs` | @mediapipe/tasks-vision 0.10.35 (`vision_bundle.mjs`, ESM) | Apache-2.0 — `mediapipe/LICENSE.txt` | 137 KB | 55d7ab624fbb70dcc5adc4ae6d7ea9cfcb569139d3dbfbf2b1deafcb966bc0fe |
+| `mediapipe/vision_wasm_internal.js` | the same package, `wasm/` (the SIMD build's loader) | Apache-2.0 | 322 KB | e7fd9858e8e8f221d9b96eddc11f8e077f263e0b7bbd79d3cbe882b134274f8c |
+| `mediapipe/vision_wasm_internal.wasm` | the same package, `wasm/` (the SIMD build) | Apache-2.0 | 11.2 MB | 6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc |
+| `mediapipe/hand_landmarker.task` | MediaPipe Hand Landmarker model, float16 v1 (`storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`, the URL in the MediaPipe docs; last-modified 2023-04-26) | Apache-2.0 (MediaPipe's model card; not re-checked) | 7.8 MB | fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1 |
+
+Fetched 2026-10-21 with `npm pack @mediapipe/tasks-vision@0.10.35` (tarball sha256
+84597a25e13d123b5f4cbe768bb72e97a2c28c7a465f0ace287d8cbe5246bff0, published 2026-04-27) and `curl` for the model;
+`LICENSE.txt` is apache.org's Apache-2.0 text (the npm package names the licence but ships no file).
+
+**Why 0.10.35, not 1.x:** 1.0.0 onward carries a usage-metrics logger that POSTs to `odml.pa.googleapis.com/v1/log`
+(its README's privacy notice: "MediaPipe Tasks APIs send metrics about the performance and utilization of the APIs in
+your app to Google"). 0.10.35 has no such code (tests/game-jieyin.test.mjs checks the bundle). Only the SIMD WASM is
+kept (every current browser has WASM SIMD; without it 结印 is simply not offered); the `nosimd` and `module` builds,
+the `.cjs`/`.js` bundles and the source maps are left out. To update: pack the new version, check it for a logger
+first, copy the same four files, update this table.

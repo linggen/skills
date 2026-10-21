@@ -668,3 +668,26 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
       draws for him would need the model to draw. Not built.
   - **画符 (idea, not built):** draw a talisman the book teaches (五雷符 …) stroke by stroke in its order;
     the page checks order and shape from the strokes themselves (no model), Ling only says how it looks.
+
+## 结印 — hand seals at the camera (prototype, test-only, 10-21)
+
+Hanli 10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」. 游戏厅 only (`jieyin`, group 主力,
+type 结印); not in the story. The player makes 掐诀 seals at the camera; **推掌 · 剑诀 · 申文 · 午文** in order cast a
+火蛋 at the boar (three drive it off); a wrong seal held = 走火 (a charred egg pops, back to the first seal; stars count
+走火). Level 2 is the shape of 古六's 讲堂 teaching level (one seal at a time, 褚先生's line for each, a wrong one only
+tried again).
+
+- **Seeing:** MediaPipe Hand Landmarker on the device (vendor/mediapipe/, VENDOR.md; 0.10.35 — 1.x phones metrics home).
+  The camera opens only on 开始 and is stopped (its tracks) on pause, end and leave.
+- **Judging:** rules, not a model — worlds/jiuding/levels/jieyin.json `seals` (straight / folded fingers, thumb tip on a
+  fingertip, two points apart) and `judge` (thresholds; a seal counts held 0.3 s, a wrong one is 走火 only held 0.6 s).
+  The seals are the 古六 canon that the points can see: 午 (middle tip, 火), 巳 (index tip), 申 (little tip), 剑诀, 推掌.
+  Left out: 子文 / 雷局 (the thumb hidden behind the fingers) and 合十 (two hands occluding).
+- **No camera** (none, denied, no WebGL, the model fails): 结印 is not offered — one line, and the game leaves
+  (Hanli 10-21: 「没摄像头时, 就不用用户结印帮打, 游戏像现在这样打就OK」). No tap stand-in.
+- **Reusable:** games/jieyin/eye.js (`available` · `loadModel` · `openEye`), judge.js, sequence.js (`sequence` | `one`),
+  pose.js (each seal's icon from its rule). 守墙关 later: `available()` false → no 结印 button at all.
+- **If he likes it — 古六's teaching level** (Hanli 10-21: 「古6教学结手印那里可以做教学关卡」): a games.json row at
+  wm-qianye's 讲堂 with `data.lv: 'jiangtang'` (褚先生's lines as the lead and each seal's `hint`), then the 火蛋;
+  offered only when `available()`, else the scene keeps 讲堂试法 (砸寨).
+- **Tested:** the judge on synthetic hands (pose.js), not recorded ones; real-camera recognition is Hanli's to try.
