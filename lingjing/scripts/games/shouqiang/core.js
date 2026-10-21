@@ -54,6 +54,7 @@ export function newGame(kit, level, { seed = 'x' } = {}) {
     skills: {}, cool: { sword: 0.4, fox: 0.8, jieyin: 0 }, focus: null, offer: null,
     opening: openingOf(kit, level), main: null,
     kills: 0, low: false, events: [],
+    casts: {}, jieyinWhen: level.jieyinWhen ?? null, // 结印's spells cast, by move id (castJieyin); a dev's `when`
     beastKit: beastsOf(kit, level),
     ...(level.grid ? laneState(kit, level) : {}),
   };
@@ -279,39 +280,108 @@ const CASTS = {
     return at(c.every, L);
   },
 };
-// ---- 结印 · 火蛋 (the player's hand seals at the camera; games/jieyin/panel.js) -------------------------------------
+// ---- 结印 (the player's hand seals at the camera; games/jieyin/helper.js judges them) ---------------------------------
 //
-// Not a hero's cast: the player's. Four seals made at the camera (games/jieyin/helper.js judges them) → `castJieyin(g)`: a 火蛋 lobbed
-// at the beast the player tapped (the focus), else the one nearest the wall — anywhere below the range line, lane
-// levels too (the heroes' wall-foot guard is theirs, not the egg's). Its numbers are the kit's `jieyin` block. With
-// no camera nothing ever calls this, and the game is the game it always was.
+// Not a hero's cast: the player's, and a big one, rarely (Hanli 10-21: 「别让用户太累」「加一个手势的冷却, 让用户大部分时间
+// 在休息」「不然打小怪, 结手印太频繁很累」「手印攻击高, 可以引导玩家用于打boss」). Offered only while a 大妖 is on the field
+// (`when`: boss | elite | always), with a long cooldown between casts; each spell hits hard, harder on the boss
+// (`bossMul`) and harder again on a beast its element overcomes (五行相克: `beats`, the beast's `root` from
+// creatures.json, `counter`). The spells are the kit's `jieyin.moves` — the book's five temperaments (06-第六回: 火 矛,
+// 冰 针, 金 镰, 木 绳, 土 墙) and 剑诀's 飞剑 — each a `shape` and its numbers. The target: the beast the player tapped,
+// else the 大妖 in reach (`aim: boss`), else the one nearest the wall; anywhere below the range line, lane levels too.
+// With no camera nothing ever calls this, and the game is the game it always was.
 
-/** The egg's beast: the focus while it lives below the range line, else the one nearest the wall below it. */
-export function jieyinTarget(g) {
-  const f = g.beasts.find((b) => b.id === g.focus && inReach(g, b));
-  if (f) return f;
-  let best = null;
-  for (const b of g.beasts) if (inReach(g, b) && (!best || b.y > best.y)) best = b;
-  return best;
+const spellKit = (g) => g.kit.jieyin ?? null;
+/** A spell's row by id (the kit's `jieyin.moves`). */
+export const jieyinMove = (g, id) => spellKit(g)?.moves?.find((m) => m.id === id) ?? null;
+
+/** Is 结印 offered now? A wave on and — `when` boss — a 大妖 on the field; elite — or a beast its kit marks `elite`. */
+export function jieyinOn(g, c = spellKit(g)) {
+  if (!c || g.phase !== 'wave') return false;
+  const when = g.jieyinWhen ?? c.when ?? 'boss';
+  return when === 'always' || g.beasts.some((b) => b.hp > 0 && (b.boss || (when === 'elite' && g.beastKit[b.kind].elite)));
 }
 
-/** Seconds until the next egg may fly (0 = ready). */
+/** The spell's beast: the tapped one below the range line, else the 大妖 there (`aim: boss`), else the one nearest the wall. */
+export function jieyinTarget(g) {
+  const live = g.beasts.filter((b) => inReach(g, b));
+  const f = live.find((b) => b.id === g.focus);
+  if (f) return f;
+  const boss = (spellKit(g)?.aim ?? 'boss') === 'boss' && live.find((b) => b.boss);
+  return boss || live.reduce((m, b) => (!m || b.y > m.y ? b : m), null);
+}
+
+/** The kit with each beast's element (`root`, creatures.json — data, one place) for 五行相克. */
+export function withRoots(kit, creatures = []) {
+  const rootOf = (id) => creatures.find((c) => c.id === id)?.root;
+  const stamp = (beasts) => Object.fromEntries(Object.entries(beasts ?? {}).map(([id, b]) => [id, { ...b, root: b.root ?? rootOf(id) ?? null }]));
+  return { ...kit, beasts: stamp(kit.beasts) };
+}
+
+/** Seconds until the next spell may fly (0 = ready). */
 export const jieyinCool = (g) => Math.max(0, g.cool.jieyin ?? 0);
 
-/** The seals made: a 火蛋 flies, or `false` (cooling, no fight on, or no beast in reach — the seals are not spent). */
-export function castJieyin(g, c = g.kit.jieyin) {
-  if (!c || g.phase !== 'wave' || jieyinCool(g) > 0) return false;
+/** What 结印's button shows: offered now, cooldown left of how long, ready, and the 大妖's element (pick its counter). */
+export function jieyinState(g, c = spellKit(g)) {
+  const on = jieyinOn(g, c), cool = jieyinCool(g), boss = g.beasts.find((b) => b.boss && b.hp > 0);
+  return { on, cool, coolOf: c?.cool ?? 0, ready: on && cool <= 0 && Boolean(jieyinTarget(g)), boss: boss ? g.beastKit[boss.kind].root ?? null : null };
+}
+
+/** × on this beast: the 大妖's, and 相克 (the spell's element overcomes the beast's root). */
+export function spellMul(g, m, b, c = spellKit(g)) {
+  const counter = m.wuxing && c.beats?.[m.wuxing] === g.beastKit[b.kind].root ? c.counter ?? 1 : 1;
+  return (b.boss ? c.bossMul ?? 1 : 1) * counter;
+}
+
+/** A spell made: it flies (true), or `false` (not offered now, cooling, nothing in reach — the seals are not spent). */
+export function castJieyin(g, id = spellKit(g)?.moves?.[0]?.id) {
+  const c = spellKit(g), m = jieyinMove(g, id);
+  if (!m || !jieyinOn(g, c) || jieyinCool(g) > 0) return false;
   const t = jieyinTarget(g);
   if (!t) return false;
-  lob(g, 'huodan', t, { dmg: c.dmg, radius: c.radius, splash: c.splash, fly: c.fly, home: t.id });
-  g.cool.jieyin = c.cool;
+  lob(g, 'spell', t, { move: m.id, shape: m.shape, wuxing: m.wuxing ?? null, fly: m.fly ?? c.fly ?? 0.5, home: t.id });
+  g.cool.jieyin = m.cool ?? c.cool;
+  g.casts[m.id] = (g.casts[m.id] ?? 0) + 1;
   g.eggs = (g.eggs ?? 0) + 1;
   return true;
+}
+
+// Who a spell takes, by its shape: [beast, share of dmg].
+const SHAPES = {
+  one: (g, s, m, t) => (t ? [[t, 1]] : []),
+  // 火 · 矛: long and straight — the beast, and every one on the line from 小满's hand through it and on.
+  spear: (g, s, m, t) => alive(g).filter((b) => b === t || nearLine(s, b) < (m.width ?? 30) + b.r * 0.5).map((b) => [b, b === t ? 1 : m.splash ?? 0.5]),
+  // 金 · 镰: skims the ground — a whole row across the road at the beast's height (fliers above it).
+  row: (g, s, m, t) => alive(g).filter((b) => !b.fly && Math.abs(b.y - s.y) <= (m.width ?? 50)).map((b) => [b, 1]),
+  // 木 · 绳 / 土 · 墙: round where it lands.
+  ring: (g, s, m, t) => inRadius(g, s.x, s.y, m.radius ?? 90).map((b) => [b, b === t ? 1 : m.splash ?? 1]),
+};
+
+/** How far a beast stands off the spear's line (from the hand, through where it landed, on up the road). */
+function nearLine(s, b) {
+  const dx = s.x - s.fromX, dy = s.y - s.fromY, n = Math.hypot(dx, dy) || 1;
+  const along = ((b.x - s.fromX) * dx + (b.y - s.fromY) * dy) / n;
+  return along < 0 ? Infinity : Math.abs((b.x - s.fromX) * dy - (b.y - s.fromY) * dx) / n;
+}
+
+// What a spell does to each beast it takes: damage, a slow, roots (held, no damage), a push back up the road.
+function spellLands(g, s) {
+  const c = spellKit(g), m = jieyinMove(g, s.move);
+  const t = g.beasts.find((b) => b.id === s.home && b.hp > 0) ?? null;
+  emit(g, { t: 'boom', kind: 'spell', move: m.id, shape: m.shape, wuxing: m.wuxing ?? null, x: s.x, y: s.y, r: m.radius ?? m.width ?? 40, fromX: s.fromX, fromY: s.fromY });
+  for (const [b, share] of (SHAPES[m.shape] ?? SHAPES.one)(g, s, m, t)) {
+    const k = spellMul(g, m, b, c);
+    if (m.root) b.stunT = Math.max(b.stunT, m.root * k / (b.boss ? c.bossMul ?? 1 : 1));
+    if (m.slow) { b.slow = m.slow; b.slowT = Math.max(b.slowT, m.for ?? 2); }
+    if (m.push && !b.boss) { b.y = Math.max(reachY(g) + 10, b.y - m.push); b.atWall = false; b.stunT = Math.max(b.stunT, 0.6); }
+    if (m.dmg) hurt(g, b, m.dmg * share * k, 'spell', { big: b === t || k > 1 });
+  }
 }
 
 const CAST_NEEDS = { huo: 'huo-blast', han: 'han-slow', lei: 'lei-chain', strike: 'lei-strike', howl: 'yy-howl' };
 
 function burst(g, s) {
+  if (s.kind === 'spell') return spellLands(g, s);
   const air = s.kind !== 'huo' || true;
   const hits = inRadius(g, s.x, s.y, s.radius, { air });
   emit(g, { t: 'boom', kind: s.kind, x: s.x, y: s.y, r: s.radius });
@@ -325,7 +395,6 @@ function burst(g, s) {
       hurt(g, b, s.dmg, 'frost');
     },
     foxfire: (b) => hurt(g, b, s.dmg, 'fox'),
-    huodan: (b) => hurt(g, b, b.id === s.home ? s.dmg : s.dmg * (s.splash ?? 0), 'fire', { big: b.id === s.home }),
   };
   for (const b of hits) BURSTS[s.kind](b);
   const G = lv(g, 'huo-ground');
@@ -1052,12 +1121,20 @@ export const BOTS = {
   humanLane: { make: humanLane },
 };
 
+/** The spell a player who reads the hint picks: one whose element overcomes the 大妖's, else the first. */
+function counterTo(g, c = spellKit(g)) {
+  const boss = g.beasts.find((b) => b.boss && b.hp > 0), root = boss && g.beastKit[boss.kind].root;
+  return c?.moves?.find((m) => root && c.beats?.[m.wuxing] === root)?.id ?? c?.moves?.[0]?.id;
+}
+
 /** Play a whole level with a bot (a chooser `(g) → card id`, or `{ make(seed) → { pick, act } }`); `open` forces the
  *  opening line (jian | huo | lei), else the bot picks it; `seals` (s) adds a 结印 player casting the 火蛋. Returns { won, stars, wave, wallLeft, walls (the wall after
  *  each wave), kills, skills, main (the opening line), bossY (where the boss fell) }. */
-export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line, seals } = {}) {
+export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line, seals, spell } = {}) {
   const g = newGame(kit, level, { seed });
-  let sealT = seals ?? Infinity; // `seals`: a 结印 player who takes that many s to make the four seals, then casts (and again once it cools)
+  // `seals`: a 结印 player who takes that many s to make a spell's seals once it is offered and ready, then casts
+  // `spell` (a move id, else the counter to the 大妖's element, else the first).
+  let sealT = seals ?? Infinity, bossT = 0;
   const made = chooser.make ? chooser.make(seed) : { pick: chooser };
   const bot = line ? { ...made, pick: (gg) => (opening(gg) ? `open-${line}` : made.pick(gg)) } : made;
   const walls = [], placed = {};
@@ -1066,7 +1143,8 @@ export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line
     if (g.phase === 'pick') pick(g, bot.pick(g));
     else {
       if (g.phase === 'wave' || (g.grid && g.phase !== 'pick')) bot.act?.(g, 0.1);
-      if (g.phase === 'wave' && jieyinCool(g) <= 0 && (sealT -= 0.1) <= 0 && castJieyin(g)) sealT = seals;
+      if (jieyinState(g).ready && (sealT -= 0.1) <= 0 && castJieyin(g, spell ?? counterTo(g))) sealT = seals;
+      if (g.phase === 'wave' && g.beasts.some((b) => b.boss && b.hp > 0)) bossT += 0.1;
       step(g, 0.1);
     }
     for (const e of g.events) {
@@ -1077,5 +1155,5 @@ export function sim(kit, level, chooser, { seed = 'sim', limit = 900, open: line
     g.events.length = 0;
   }
   return { won: g.phase === 'won', stars: stars(g), wave: g.wave, wallLeft: g.wall / g.wallMax, walls, kills: g.kills, skills: g.skills, main: g.main, bossY,
-    units: g.grid ? placed : undefined, t: Math.round(g.t), eggs: g.eggs ?? 0 };
+    units: g.grid ? placed : undefined, t: Math.round(g.t), eggs: g.eggs ?? 0, casts: g.casts, bossT: Math.round(bossT) };
 }

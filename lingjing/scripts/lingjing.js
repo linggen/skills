@@ -201,6 +201,8 @@ function mountData(task) {
   const deal = { ...(task?.deal ?? {}) };
   if (HER_SEAM === 'stub' || CHATLESS) deal.seam = HER_SEAM === 'stub' ? 'stub' : 'off';
   deal.session = () => chat?.getSessionId?.() ?? null;
+  // What the save has learned, for a game whose moves are gated by it (守墙关's 结印: shouqiang.json `jieyin.moves` `from`).
+  deal.marks ??= [...(look?.marks ?? [])];
   // A board that needs her (Look's `her`: the task or 传闻 game declares `needs: "her"`) wakes her out
   // of the 木牌 as its round begins, and puts her back as it ends (rules/hergame.mjs).
   if (task?.her && task.id) { deal.wake = () => herOut(task.id, true); deal.rest = () => herOut(task.id, false); }

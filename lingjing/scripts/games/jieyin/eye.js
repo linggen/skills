@@ -6,7 +6,7 @@
 //   available()          → may 结印 be offered at all? (a camera API, a camera, WebGL). No → offer nothing: the host
 //                          plays as it does without it — no button, no tap stand-in (Hanli 10-21: 「没摄像头时, 就不用」).
 //   loadModel()          → the landmarker, loaded once (start it early: it is ~19 MB from disk).
-//   openEye({ video, onHands, fps?, width?, height?, numHands?, handedSwap? }) → { start(), pause(), close() }
+//   openEye({ video, onHands, fps?, width?, height?, numHands?, handedSwap? }) → { start(), pause(), close(), setFps(n) }
 //                          start() asks for the camera (only now — call it on the player's 开始) and runs the model on
 //                          each new video frame: onHands({ world, image, handed }) — world: hands as 21 metric points for the
 //                          judge (judge.js); image: the same hands, 0…1 of the frame, for drawing. pause() stops the
@@ -154,5 +154,7 @@ export function openEye({ video, onHands, env = globalThis, fps = EYE.fps, width
     },
     pause() { ask++; halt(); },
     close() { closed = true; ask++; halt(); onHands = () => {}; },
+    /** The model's rate from now on (a game asks for more only while a quick move is armed: 守墙关's 小招). */
+    setFps(n) { if (n > 0) fps = n; },
   };
 }

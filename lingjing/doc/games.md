@@ -754,35 +754,44 @@ tried again).
   colour in the hand hint (`held`). Game effects are the host's (守墙关).
 - **Tested:** the judge on synthetic hands (pose.js), not recorded ones; real-camera recognition is Hanli's to try.
 
-### 结印 in 守墙关 — the 火蛋 helper
+### 结印 in 守墙关 — spells for the 大妖 (§ 手势斗法)
 
-- **Offered** only where `available()` is true: a round 结印 button in the field's bottom-left corner (under the wall's
-  face, left of 银月, above the wall bar; the left side panel in landscape). Never auto-starts: the tap starts the
-  camera. No camera / refused / no WebGL / no SIMD / the model fails → no button, no frame, the game exactly as before
-  (no tap stand-in). A refusal after the tap takes the button away for that level.
-- **The frame** (games/jieyin/helper.js + helper.css): NO camera picture (Hanli 10-21: 「最好不显示摄像头」) — the
-  shared hand hint (hint.js `handHint`, compact: the hands in ink where the camera sees them, edge / near / far cues,
-  the seal to make, the hold ring), fitted to the corner (36% of the field's width; 19% in landscape), the move's
-  seals as chips under it, the egg's cooldown over it, a × to stop. The camera at sets.js `eyeFor` (15 fps, 320×240).
-- **The move** is levels/jieyin.json's `moves.huodan` (same data, not a copy), this device's set (sets.js): a phone 推掌 →
-  剑诀 → 申文 → 午文 (one hand), a Mac 双掌 → 承剑 → 离火印 → 午文. Made → a 火蛋 lobbed at
-  the **tapped beast (the focus); none → the beast nearest the wall**, anywhere below the range line (lane levels too:
-  the heroes' wall-foot guard is theirs, not the egg's). Nothing in reach / between waves → the egg waits in hand and
-  flies the moment there is one. While it cools the seals are not counted. 走火 = the prototype's charred egg popping
-  from 小满's hand and his 「噗——走火了。」, nothing else.
-- **Numbers** (shouqiang.json `jieyin`): dmg 90 on its beast, splash 0.35 × in 64 px, cool 6 s, 0.55 s in the air.
-  Sims (core.js `sim(…, { seals })`, the four seals taking `seals` s after each cooldown; 40 nights, BOTS.human):
-  山门 37→38/40 won, wall 61→70%; 兽潮 night 2 36→40/40, 57→69%; 药园 L4 30→37/40, 57→86% (the egg is the only reach
-  past the wall's foot there — strongest in the 药园). No cards / no talismans + an egg every 2 s still loses every
-  level (3 nights each, tested).
-- **Camera lifecycle:** on after the button; off (tracks stopped) on the shell's pause or the canvas's own, while the
-  page is hidden, on × , at the level's end (the `end` fact, before the result) and on leave; back on by itself only if
-  the player had it on and nothing holds it paused. Local only.
-- **Where:** the story card, the 游戏厅 and 兽潮 (every 守墙关 mount); desktop and 390 (a phone page over plain http has
-  no camera API → not offered). Dev: `?dev=1&feed=1` offers it with no camera, hands from the console
-  (`window.jieyinFeed(hands)`).
-- **Tested:** tests/game-shouqiang-jieyin.test.mjs — target (focus vs nearest the wall, above-the-line focus), cooldown,
-  no camera → nothing drawn and the same game, the camera lifecycle on a fake page, the seals → cast / 走火 path, balance.
+Hanli 10-21, in order: 「放进去」 · 「最好不显示摄像头」 · 「别让用户太累」 · 「加一个手势的冷却, 让用户大部分时间在休息」 ·
+「不然打小怪, 结手印太频繁很累」 · 「手印攻击高, 可以引导玩家用于打boss」 · 「古6是系统学习, 前面可以出现简单的, 比如剑诀」 ·
+隔空指点 「很不错, 加进去」.
+
+- **Only for the 大妖** (shouqiang.json `jieyin.when`: boss | elite | always; boss). Ordinary waves are the cards' and
+  talismans' job: the 结印 button is hidden. A 大妖 steps out → the button appears, calls (big, pulsing) and 小满 says
+  `say` (「大妖来了——结印！」, plus 「它属土，木藤克它。」 when a move here overcomes its element). The 大妖 falls → dark,
+  camera off; the next one asks for a tap again. Levels with a 大妖 today: 山门 (L1, wave 10) and 药园 L4 (wave 7) —
+  the 兽潮 nights and the story's 药园巡夜 have none, so no 结印 there until a boss or an `elite` is marked in data.
+- **Rest most of the time:** `cool` 10 s of game time between spells. While resting the hint steps away (nothing asks
+  for the hand), the button wears an ash ring burning down and reads 「歇一歇」, the camera idles at 15 fps; ready → the
+  hint is back, the button glows, 小满 says 「好了，结印！」. Ready with no seal tried for `idle` 60 s → the camera closes.
+  (The 灵力 bar of § 手势斗法 replaces the plain cooldown when the jieyin module lands it.)
+- **The moves** (`jieyin.moves`, each a `shape` and its numbers; gated by `from`):
+  - **飞剑** (小招, `from` none): 剑诀 held at the lens + a jab toward it — 隔空指点's `judge3d` (counts the fingers
+    pointed at the camera) and `poke` (zhidian.json knobs, the same data); the eye runs at poke.fps 30 only while it is
+    armed. One beast, 320. First time on a device: 「比个剑诀，飞剑就出去」 (localStorage, never the save).
+  - **火弹** (大招, after 古六): jieyin.json `moves.huodan`, this device's set (phone 推掌 · 剑诀 · 申文 · 午文; Mac
+    双掌 · 承剑 · 离火印 · 午文, and the phone's one-hand sequence too); fires on the last seal; a wrong one = 走火 (the
+    charred egg). 火 · 矛: its beast 420 and ½ to every beast on the line through it.
+  - **冰锥 · 金刃 · 木藤 · 土墙** (the book's five, after 古六): effects ready (冰 针 one beast 380, fast; 金 镰 a row
+    across the road 200 + slow; 木 绳 holds 3 s, no damage; 土 墙 pushes back 120 px, never the 大妖); offered once the
+    jieyin module's 五法 (文 → 扣 → 拍) lands — a move with no seals on the device is not offered.
+- **Gate:** `from: { marks: [qiajue-tight, qiajue-loose] }` — 古六's 讲堂三日 (qianye-qiajue) written into the save. The
+  story hands its marks in (`data.marks`, lingjing.js mountData); the 游戏厅 gives none → every move. Story levels and
+  兽潮 before 古六: 飞剑 only.
+- **Hard on the 大妖:** × `bossMul` 4; × `counter` 1.5 on a beast whose element (creatures.json `root`) the spell's
+  overcomes (`beats`, 素问: 木得金而伐，火得水而灭，土得木而达，金得火而缺，水得土而绝; 合窳 is 土 → 木藤).
+- **Target:** the beast he tapped; else the 大妖 in reach (`aim: boss`); else the one nearest the wall — below the range line.
+- **Sims** (30 nights, BOTS.human, a move made in 4 s once ready; `sim(…, { seals, spell })`): see status 10-21.
+- **Unchanged:** no camera / refused / no WebGL / no SIMD / model fails → no button; the same game (tested: the block's
+  presence changes no sim). Camera off on pause, hidden page, × , level end, leave. Dev: `?dev=1&feed=1` (hands from the
+  console: `jieyinFeed(world, image)`), `&jy=always` (spells every wave), `&hands=1|2`.
+- **Tested:** tests/game-shouqiang-jieyin.test.mjs — offered only with a 大妖, target order, rest, bossMul and 相克, the
+  five shapes, gates, the cue, the same game without casts, balance, no camera → nothing, movesFor, big moves in step,
+  the button's life (call, tap, rest, ready, dark), idle close, the jab → 飞剑 and the seals → 火弹 / 走火.
 
 ## 隔空指点 — jab the 剑诀 at the screen (test game, 10-21)
 

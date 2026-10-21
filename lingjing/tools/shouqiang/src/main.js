@@ -1,13 +1,13 @@
 // main.js — 守墙关's play: one Phaser game on the given parent. The engine (core.js) and Phaser come in as externals
 // (build.mjs), so the browser loads the one shared Phaser beside every game.
 import * as Phaser from 'phaser';
-import { W, H, jieyinCool } from 'shouqiang-core';
+import { W, H, jieyinState } from 'shouqiang-core';
 import { PlayScene, ZOOM_MAX } from './play.js';
 import { SIDE } from './lanes.js';
 
 /**
  * start({ parent, base, lang, kit, level, seed, reducedMotion, dev, showFps, lines, onEvent, onEnd, landscape, shell })
- *   → { destroy(), say(who, text), layout(landscape), go(), paused(), picking(), jieyin(), jieyinCool(), fizzle() }
+ *   → { destroy(), say(who, text), layout(landscape), go(), paused(), picking(), jieyin(id), jieyinState(), fizzle() }
  * `held`: draw the field but stand still until `go()` (the shell's lead card is up over it).
  * `landscape` (a 药园 level only): option A — the same portrait field centred, side panels either side.
  * `base`: the URL of games/shouqiang/ (art beside it). `lines`: 银月's prefetched lines by moment (台词预取), else the
@@ -47,11 +47,11 @@ export function start(opts) {
     // `held` was given: the lead-in and the clock start now (the field already stands drawn behind the shell's lead card)
     go: () => { hold.on = false; game.scene.getScene('play')?.go?.(); },
     layout: (l) => game.scene.getScene('play')?.layout?.(Boolean(l && opts.level.grid)),
-    // 结印 (games/jieyin/helper.js, only where a camera is): the play's pause, the 火蛋, its cooldown, a 走火.
+    // 结印 (games/jieyin/helper.js, only where a camera is): the play's pause, a spell, what the button shows, a 走火.
     paused: () => Boolean(scene()?.paused),
     picking: () => Boolean(scene()?.hud?.modalOpen), // a card pick is up: 结印's corner steps aside
-    jieyin: () => Boolean(scene()?.jieyin?.()),
-    jieyinCool: () => (scene()?.g ? jieyinCool(scene().g) : 0),
+    jieyin: (id) => Boolean(scene()?.jieyin?.(id)),
+    jieyinState: () => (scene()?.g ? jieyinState(scene().g) : { on: false, ready: false, cool: 0, coolOf: 0, boss: null }),
     fizzle: () => scene()?.fizzle?.(),
   };
 }

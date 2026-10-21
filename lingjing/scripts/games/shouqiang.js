@@ -15,10 +15,12 @@
 // lanes). A 药园 level in a landscape window gets option A (Hanli 10-20 「竖屏, 横屏可以切换?」「按A可以」): the same
 // portrait field centred with side panels; turning the window flips it live. Nothing touches the save.
 //
-// 结印 (Hanli 10-21: 「让用户结印发火弹帮忙打怪」「放进去」): where a camera is, a 结印 button in the field's corner; the
-// seals (games/jieyin/helper.js — the recognizer stays in the jieyin module) lob a 火蛋 (core.js castJieyin, numbers in
-// the kit's `jieyin`). No camera → no button, and the game is exactly the game without it. `?dev=1&feed=1` offers it
-// without a camera, hands fed from the console (the live check).
+// 结印 (Hanli 10-21: 「让用户结印发火弹帮忙打怪」「放进去」, doc/games.md § 手势斗法): where a camera is, a 结印 button in
+// the field's corner, lit only while a 大妖 is on the field; the moves (games/jieyin/helper.js — the recognizers stay in
+// the jieyin and zhidian modules) cast the kit's `jieyin.moves` (core.js castJieyin). The story hands in its marks
+// (`data.marks`) and a move's `from` gate reads them: before 古六's lesson only 剑诀's 飞剑; the 游戏厅 (no marks) has
+// every move. No camera → no button, and the game is exactly the game without it. Dev: `?dev=1&feed=1` offers it
+// without a camera (hands from the console), `&jy=always` offers spells on every wave.
 export const meta = {
   id: 'shouqiang',
   pause: true, // the shell's bar pauses the play (tools/shouqiang/src/play.js setPaused)
@@ -34,6 +36,7 @@ export const meta = {
 
 const LEVELS = new URL('../../worlds/jiuding/levels/shouqiang.json', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
+const CREATURES = new URL('../../worlds/jiuding/creatures.json', import.meta.url); // each beast's element (五行相克)
 const FONT = new URL('./shouqiang/font/zcool-kuaile.woff2', import.meta.url);
 
 /** The level a story or link asks for: an id, or 1… ; anything else → the first. */
@@ -58,12 +61,26 @@ async function loadFont(doc) {
   doc.fonts.add(await face.load().catch(() => face));
 }
 
+/** A move's `from` gate: open from the start, or once the save holds any of its marks; no marks given (the 游戏厅) → open. */
+export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
+
+/** The 大妖's cue: the kit's line, and — when a move here overcomes its element — which (五行相克). */
+export function callLine(c, root, moves, lang) {
+  const t = (o) => o?.[lang] ?? o?.zh ?? '';
+  const counter = root && moves.find((m) => c.beats?.[m.wuxing] === root);
+  return counter && c.counterSay ? `${t(c.say)}${t(c.counterSay).replace('{root}', t(c.roots?.[root])).replace('{move}', t(counter.name))}` : t(c.say);
+}
+
 /** 结印's button in the field, where it may be offered (games/jieyin/helper.js decides; none → null, nothing drawn). */
-export function offerJieyin(kit, box, { lang, game, shell, feed = false, load = () => import(SEALS.href) }) {
-  if (!kit.jieyin) return Promise.resolve(null);
+export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, load = () => import(SEALS.href) }) {
+  const c = kit.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
+  if (!moves.length) return Promise.resolve(null);
+  const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
-    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis,
-    cast: () => game.jieyin(), fizzle: () => game.fizzle(), cool: () => game.jieyinCool(),
+    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, idle: c.idle,
+    state: () => game.jieyinState(), cast: (id) => game.jieyin(id), fizzle: () => game.fizzle(), say,
+    call: () => callLine(c, game.jieyinState().boss, moves, lang),
+    first: moves.some((m) => m.motion === 'jab' && !m.from) ? c.first : null,
     paused: () => Boolean(shell?.paused?.() || game.paused()),
     aside: () => game.picking(),
   })).catch((e) => { console.warn('[shouqiang] 结印', e); return null; });
@@ -98,9 +115,12 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     const leave = () => { if (onResize) win.removeEventListener('resize', onResize); game?.destroy(); game = null; finish({ won: false, left: true }); };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
-    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), import('./shouqiang/core.js'), loadFont(doc)]).then(async ([kit, { start }, { openingOf }]) => {
+    const roots = fetch(CREATURES).then((r) => r.json()).then((j) => j.creatures ?? []).catch(() => []);
+    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), import('./shouqiang/core.js'), loadFont(doc), roots]).then(async ([table, { start }, { openingOf, withRoots }, , creatures]) => {
       if (done) return;
+      const kit = withRoots(table, creatures);
       let level = levelDealt(kit, data, search);
+      if (dev && q.get('jy')) level = { ...level, jieyinWhen: q.get('jy') }; // the 游戏厅's dev: spells on every wave
       // In the shell: the story lines read on its lead card, over the field standing still; the canvas keeps the big
       // banners and its 3-2-1 (with an opening pick, the pick comes straight after the card and they follow it).
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join('') : '';
@@ -120,7 +140,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });
-      seals = offerJieyin(kit, box, { lang, game, shell, feed: dev && q.get('feed') === '1' });
+      seals = offerJieyin(kit, box, { lang, game, shell, marks: data?.marks, feed: dev && q.get('feed') === '1' });
       if (said) shell.lead(said, { auto: 'read', lang }).then(() => game?.go());
       if (level.grid) {
         onResize = () => { const now = shape(true); if (now !== landscape) { landscape = now; game?.layout(now); } };

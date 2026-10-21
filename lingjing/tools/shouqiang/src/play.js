@@ -7,8 +7,12 @@ import { Hud, WORDS, bar, setBarW } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
 
 const ICONS = ['jian-more', 'jian-pierce', 'jian-arc', 'huo-blast', 'huo-ground', 'han-slow', 'han-freeze', 'lei-chain', 'lei-strike', 'yy-foxfire', 'yy-howl'];
-const HIT_TINT = { sword: 0xffffff, fire: 0xffb347, frost: 0x9fe8ff, thunder: 0xfff27a, fox: 0xcfe0ff, howl: 0xd9c2ff, ground: 0xff9a52 };
-const TRAILS = { sword: 'trailSword', fox: 'trailFox', foxfire: 'trailFoxfire', huo: 'trailHuo', han: 'trailHan', huodan: 'trailHuo' };
+const HIT_TINT = { spell: 0xffd27a, sword: 0xffffff, fire: 0xffb347, frost: 0x9fe8ff, thunder: 0xfff27a, fox: 0xcfe0ff, howl: 0xd9c2ff, ground: 0xff9a52 };
+const TRAILS = { sword: 'trailSword', fox: 'trailFox', foxfire: 'trailFoxfire', huo: 'trailHuo', han: 'trailHan' };
+// 结印's spells by element (五行): the trail, the tint of the light, the burst. No element (剑诀's 飞剑): the sword's.
+const WUXING = { fire: ['trailHuo', 0xffa040, 'fire'], water: ['trailHan', 0x9fe8ff, 'frost'], metal: ['trailSword', 0xfff2c0, 'hitStreak'],
+  wood: ['trailFoxfire', 0x8fe07a, 'spark'], earth: ['trailHuo', 0xd9a35a, 'debris'], none: ['trailSword', 0x7fd0ff, 'hitStreak'] };
+const wuxingOf = (w) => WUXING[w] ?? WUXING.none;
 const SPARK = { sword: ['hitStreak', 5], fox: ['spark', 4], thunder: ['bolt', 4], fire: ['spark', 2], frost: ['snow', 3], howl: ['spark', 2], ground: [null] };
 const SPARK_ELSE = ['spark', 3];
 // Quality steps, taken one at a time (never back up) when frames keep missing the budget: the look stays; a slow device
@@ -235,10 +239,10 @@ export class PlayScene extends Phaser.Scene {
 
   // ---- 结印 (games/jieyin/helper.js makes the seals at the camera; the page calls these) ---------------------------
 
-  /** The four seals made: the 火蛋 flies (true), or not yet (cooling, between waves, nothing in reach). */
-  jieyin() {
+  /** A move made at the camera: its spell flies (true), or not now (no 大妖 out, resting, nothing in reach). */
+  jieyin(id) {
     if (this.paused || this.held || this.done) return false;
-    return castJieyin(this.g);
+    return castJieyin(this.g, id);
   }
 
   /** 走火: a charred egg pops from 小满's hand and drops — no other cost. */
@@ -452,11 +456,20 @@ export class PlayScene extends Phaser.Scene {
       foxfire: () => [this.add.image(sh.x, sh.y, 'yy-skills', 'foxfire-1').setScale(0.36).setDepth(D.shot)],
       huo: () => [this.add.image(sh.x, sh.y, 'fu-huo').setDisplaySize(26, 54).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.5)],
       han: () => [this.add.image(sh.x, sh.y, 'fu-han').setDisplaySize(26, 54).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.5)],
-      huodan: () => [this.add.image(sh.x, sh.y, this.tex('jy-huodan', 'glow')).setDisplaySize(52, 52).setDepth(D.shot), this.add.image(sh.x, sh.y, 'shadow').setDepth(D.shadow).setScale(0.6)],
+      spell: () => this.spellParts(sh),
     };
     if (sh.lane != null) return { kind: sh.kind, parts: this.lanes.boltParts(sh), t: 0 };
     if (sh.kind === 'foxfire' && !this.textures.get('yy-skills').has('foxfire-1')) return { kind: sh.kind, parts: SHOTS.fox() };
     return { kind: sh.kind, parts: SHOTS[sh.kind](), t: 0 };
+  }
+
+  // A spell in flight: 飞剑 the sword, 火弹 the 火蛋, the others a glow in their element's colour.
+  spellParts(sh) {
+    const [, tint] = wuxingOf(sh.wuxing);
+    const glow = this.add.image(sh.x, sh.y, 'glow').setTint(tint).setBlendMode(Phaser.BlendModes.ADD).setScale(1.1).setDepth(D.shot - 1);
+    const body = sh.move === 'feijian' ? this.add.image(sh.x, sh.y, 'sword').setDisplaySize(72, 72)
+      : sh.move === 'huodan' ? this.add.image(sh.x, sh.y, this.tex('jy-huodan', 'glow')).setDisplaySize(52, 52) : null;
+    return body ? [body.setDepth(D.shot), glow] : [glow];
   }
 
   poseShot(s, sh, dt) {
@@ -467,7 +480,12 @@ export class PlayScene extends Phaser.Scene {
       shadow.setPosition(sh.x, sh.y);
       return;
     }
-    if (sh.lob) {
+    if (sh.lob && s.kind === 'spell') {
+      const y = sh.y - (sh.z ?? 0) * (sh.move === 'feijian' ? 0.3 : 1);
+      p.setPosition(sh.x, y);
+      shadow?.setPosition(sh.x, y);
+      if (sh.move === 'feijian') p.setRotation(Math.atan2(sh.toY - sh.fromY, sh.toX - sh.fromX) + Math.PI / 4); else p.setAngle(s.t * 600);
+    } else if (sh.lob) {
       p.setPosition(sh.x, sh.y - (sh.z ?? 0)).setAngle(s.t * 900);
       shadow?.setPosition(sh.x, sh.y);
     } else {
@@ -477,7 +495,8 @@ export class PlayScene extends Phaser.Scene {
       if (s.kind === 'sword') { p.setRotation(a + Math.PI / 4); shadow.setPosition(sh.x, sh.y); }
       if (s.kind === 'foxfire') p.setFrame(`foxfire-${1 + (Math.floor(s.t * 14) % 3)}`).setRotation(a + Math.PI / 2);
     }
-    if (this.em.budget >= 1 || Math.random() < this.em.budget) this.em[TRAILS[s.kind]].emitParticleAt(p.x, p.y, s.kind === 'sword' ? 2 : 1);
+    const trail = s.kind === 'spell' ? wuxingOf(sh.wuxing)[0] : TRAILS[s.kind];
+    if (this.em.budget >= 1 || Math.random() < this.em.budget) this.em[trail].emitParticleAt(p.x, p.y, s.kind === 'sword' || s.kind === 'spell' ? 2 : 1);
   }
 
   syncGrounds() {
@@ -599,13 +618,7 @@ export class PlayScene extends Phaser.Scene {
           this.em.burst('snow', 26, e.x, e.y);
           this.flare(e.x, e.y, e.r * 1.8, 0xbff4ff);
         },
-        huodan: () => {
-          this.ring(e.x, e.y, e.r * 1.3, 0xff7a2a);
-          this.em.burst('fire', 40, e.x, e.y);
-          this.em.burst('smoke', 8, e.x, e.y);
-          this.flare(e.x, e.y, e.r * 3, 0xffc070);
-          this.shake(160, 0.007);
-        },
+        spell: () => this.spellBoom(e),
         foxfire: () => {
           this.ring(e.x, e.y, e.r, 0x7fc8ff);
           this.em.burst('foxfire', 22, e.x, e.y);
@@ -704,6 +717,28 @@ export class PlayScene extends Phaser.Scene {
     won(e) { this.finish(true, e.stars); },
     lost() { this.finish(false, 0); },
   };
+
+  // A spell lands, drawn by its shape: 矛 a streak along its line, 镰 a band across the road, 绳 / 墙 a ring, one a flash.
+  spellBoom(e) {
+    const [, tint, burst] = wuxingOf(e.wuxing);
+    const SHAPES = {
+      spear: () => {
+        const dx = e.x - e.fromX, dy = e.y - e.fromY, n = Math.hypot(dx, dy) || 1, far = 520;
+        jag(this.zap.clear(), [{ x: e.fromX, y: e.fromY }, { x: e.x, y: e.y }, { x: e.x + (dx / n) * far, y: e.y + (dy / n) * far }], { color: tint, width: 12 });
+        this.zapT = 0.22;
+      },
+      row: () => {
+        const band = this.add.image(W / 2, e.y, 'band').setDisplaySize(W * 1.2, 90).setTint(tint).setBlendMode(Phaser.BlendModes.ADD).setDepth(D.fx).setAlpha(0.9);
+        this.tweens.add({ targets: band, alpha: 0, duration: 520, onComplete: () => band.destroy() });
+      },
+      ring: () => this.ring(e.x, e.y, e.r, tint, 600),
+      one: () => {},
+    };
+    (SHAPES[e.shape] ?? SHAPES.one)();
+    this.em.burst(burst, 30, e.x, e.y);
+    this.flare(e.x, e.y, (e.r ?? 60) * 2.6, tint);
+    this.shake(160, 0.007);
+  }
 
   xmCastPose() {
     this.xm.setTexture(this.tex('xiaoman-cast', 'xiaoman-idle'));

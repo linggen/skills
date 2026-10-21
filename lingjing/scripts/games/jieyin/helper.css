@@ -1,16 +1,26 @@
 /* helper.css — 结印 as a helper inside another game (games/jieyin/helper.js): a small 结印 seal-button in the field's
-   bottom-left corner (under the wall's face, above the wall bar) and, once tapped, the shared hand hint there (hint.js —
-   no camera picture, Hanli 10-21: 「最好不显示摄像头」) with the move's seals as chips. Sizes are shares of the field, so
-   390 and a desk match. */
+   bottom-left corner (under the wall's face, above the wall bar), shown only while spells are offered (a 大妖 out): it
+   calls when the 大妖 steps out, wears the rest burning down while a spell cools (「歇一歇」), glows when one is ready;
+   tapped, the shared hand hint docks there while a spell may fly (hint.js — no camera picture, Hanli 10-21:
+   「最好不显示摄像头」), a big move's seals as chips. Sizes are shares of the field, so 390 and a desk match. */
 .jyh-btn, .jyh-dock { position: absolute; left: 1.6%; bottom: 7.5%; z-index: 5; }
 .jyh-btn[hidden], .jyh-dock[hidden] { display: none !important; }
 .jyh-btn.is-aside, .jyh-dock.is-aside { opacity: 0; pointer-events: none; transition: opacity .2s; } /* a card pick is up */
 .shouqiang-stage[data-landscape="true"] .jyh-btn, .shouqiang-stage[data-landscape="true"] .jyh-dock { left: 0.8%; }
 
-.jyh-btn { width: 13%; aspect-ratio: 1; min-width: 44px; border-radius: 50%; border: 2px solid #fff3c4; padding: 0; cursor: pointer;
-  font: 700 15px / 1 var(--serif, serif); letter-spacing: .08em; color: #fff;
-  background: radial-gradient(circle at 35% 30%, #f0643f, #a3221a 70%); box-shadow: 0 0 0 3px rgba(42, 18, 6, .55), 0 0 18px rgba(255, 140, 50, .55);
-  text-shadow: 0 1px 2px #3a0a04; animation: jyh-breathe 2.4s ease-in-out infinite; }
+.jyh-btn { position: absolute; width: 13%; aspect-ratio: 1; min-width: 46px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+  color: #fff; background: radial-gradient(circle at 35% 30%, #f0643f, #a3221a 70%); box-shadow: 0 0 0 3px rgba(42, 18, 6, .55);
+  text-shadow: 0 1px 2px #3a0a04; transition: transform .2s, filter .2s; }
+/* The rest burning down: a ring of incense-ash round the button, from full to nothing as the cooldown runs out. */
+.jyh-btn::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(rgba(42, 18, 6, .75) calc(var(--k, 0) * 360deg), transparent 0);
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); }
+.jyh-word { position: relative; font: 700 14px / 1 var(--serif, serif); letter-spacing: .06em; white-space: nowrap; }
+.jyh-btn.is-rest { filter: saturate(.45) brightness(.8); cursor: default; }
+.jyh-btn.is-rest .jyh-word { font-size: 12px; }
+.jyh-btn.is-ready { box-shadow: 0 0 0 3px rgba(42, 18, 6, .55), 0 0 18px rgba(255, 140, 50, .7); animation: jyh-breathe 2.4s ease-in-out infinite; }
+/* The 大妖 is out: the button calls, big, until it is tapped. */
+.jyh-btn.is-call { transform: scale(1.25); transform-origin: left bottom; animation: jyh-call 1s ease-in-out infinite; }
 .shouqiang-stage[data-landscape="true"] .jyh-btn { width: 7%; }
 
 .jyh-dock { width: 36%; display: flex; flex-direction: column; gap: 3px; }
@@ -26,8 +36,6 @@
 .jyh-state { position: absolute; left: 4px; right: 4px; top: 30%; text-align: center; pointer-events: none;
   font: 700 13px / 1.2 var(--serif, serif); color: #fff3c4; text-shadow: 0 1px 3px #2a1206; }
 .jyh-state:empty { display: none; }
-.jyh-dock.is-cool .jy-hint-panel { filter: grayscale(.7) brightness(.7); }
-.jyh-dock.is-ready .jy-hint-panel { box-shadow: 0 0 0 2px #e8432f, 0 0 16px #ff8a2a; }
 .jyh-chips { display: flex; gap: 3px; margin: 0; padding: 0; list-style: none; }
 .jyh-chips li { flex: 1; text-align: center; border-radius: 4px; font: 11px / 18px var(--serif, serif); color: #fff; background: rgba(42, 18, 6, .6); }
 .jyh-chips li.is-done { background: #b23a1e; }
@@ -37,4 +45,5 @@
 .jyh-video { position: absolute; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
 
 @keyframes jyh-breathe { 50% { box-shadow: 0 0 0 3px rgba(42, 18, 6, .55), 0 0 28px rgba(255, 140, 50, .85); } }
-@media (prefers-reduced-motion: reduce) { .jyh-btn { animation: none; } }
+@keyframes jyh-call { 50% { box-shadow: 0 0 0 4px #fff3c4, 0 0 40px rgba(255, 120, 40, 1); } }
+@media (prefers-reduced-motion: reduce) { .jyh-btn, .jyh-btn.is-call, .jyh-btn.is-ready { animation: none; } }
