@@ -565,3 +565,10 @@ test('the 秘境\'s short 守炉: three levels off the ladder, three waves each,
   const tasks = JSON.parse(readFileSync(new URL('../worlds/jiuding/tasks/world.json', import.meta.url), 'utf8')).tasks;
   assert.deepEqual(tasks.find((t) => t.id === 'mijing-rerun-gather').climb, realm.map((l) => l.id), 'the run\'s board climbs them');
 });
+
+test('every level paints a ground that exists (draw.js `ground-${L.ground ?? L.id}`) — a story level has none of its own', () => {
+  // Found live 10-21: 药园巡夜 and 丹房看炉 asked for ground-<their id>.webp, a 404, and the whole board fell back to
+  // code-drawn paper (draw.js paints the art only when every picture loaded).
+  const art = new Set(readdirSync(new URL('../scripts/games/shoulu/art/', import.meta.url)));
+  for (const l of all) assert.ok(art.has(`ground-${l.ground ?? l.id}.webp`), `${l.id}: no ground-${l.ground ?? l.id}.webp`);
+});
