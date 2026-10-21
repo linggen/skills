@@ -207,7 +207,7 @@ the 回 turn, 鼎归, and the effects of every game and fight.
 | `fx.js` 鼎归 · `fx-alive.js` 画活 · `fx-weather.js` · `fx-memory.js` · `fx-hui.js` | Pixi 8.21 (+ GSAP for 鼎归, memory, 回) | 1,050 lines |
 | `setpiece.js` + `setpieces/*` (漳水立起 zhang, 筑基天象 zhuji, 腾云 tengyun, 青丘之主 yaowang, 沉鼎山 chending, 扔了干净 huochai, 看完烧了 diche, 二十三下 ershisan) | Pixi + GSAP, on `painted.js` | 1,900 lines, ~250 GSAP timeline calls |
 | 守炉 (`shoulu/draw.js`), the rope kit (`ropekit.js`, Verlet), 接雨 (`rain.js`, DOM on `ink.js`) | plain canvas / DOM | — |
-| 3D | no three.js in this repo; `jieyin/judge3d.js` is MediaPipe 3D landmarks (math, not drawing) | — |
+| 3D | nothing under `lingjing/` imports three.js (`jieyin/judge3d.js` is MediaPipe 3D landmark math, not drawing). A three.js close-up test kept elsewhere stays an experiment outside this rule. | — |
 
 Pixi is used in a small way. It's mostly Sprite, Graphics, Container and Texture, plus 4 DisplacementFilter,
 4 ColorMatrixFilter, 4 BlurFilter, 3 TilingSprite, 2 RenderTexture, 1 MeshPlane and 6 `Application` sites. Today a
@@ -282,7 +282,7 @@ import it as external, like Phaser).
 | **The soak** (a disc grown in a RenderTexture, torn by displacement, blurred, used as the painting's mask, with a wet rim) | `RenderTexture` + FX + `BitmapMask` | **The real gap:** whether `rt.draw()` bakes a source's postFX into the texture. If not, the soak becomes one custom `PostFXPipeline` (mask, tear and rim in one shader, about 60 lines of GLSL). The 回 spike settles it first. |
 | `TilingSprite`, `Graphics`, `Sprite`, `Container`, `RenderTexture` | `TileSprite`, `Graphics` (prefer baked textures), `Image`, `Container`, `RenderTexture`/`DynamicTexture` | None. Words were never painted, so there's no text gap. |
 | Pixi weather particles (hand-rolled sprites) | `ParticleEmitter`, three depths, wind as `accelerationX`; rain rings as a second emitter | None. `DENSITY` and `countFor` stay the caps. |
-| **GSAP timelines** (~250 calls: `set` 90, `fromTo` 76, `to` 58, `from` 20, position parameters, `progress(1)` to finish a beat on a tap, `eventCallback`) | Phaser Tweens and `TweenChain` | **Gap:** Phaser has no seekable timeline with GSAP's position parameter, and no `progress(1)` across one. Fix: `kit/timeline.js`, a ~150-line GSAP-shaped subset (`to/fromTo/from/set/call/add`, positions, `progress`, `play/pause/kill`, `onComplete`). It is driven by the scene's clock and is pure, so Node tests can seek it. `setpieces/bag.js` (`tweenBag`) already wraps every piece's tweens, so its backend changes and the pieces' choreography lines stay. Eases map by name (`sine.inOut` → `Sine.easeInOut`, `power1.out` → `Quad.easeOut`, `power2.out` → `Cubic.easeOut`, `back.out(n)` → `Back.easeOut` with overshoot n). All 15 eases in use have a Phaser twin. |
+| **GSAP timelines** (~250 calls: `set` 90, `fromTo` 76, `to` 58, `from` 20, position parameters, `progress(1)` to finish a beat on a tap, `eventCallback`) | Phaser Tweens and `TweenChain` | **Gap:** Phaser has no seekable timeline with GSAP's position parameter, and no `progress(1)` across one. Fix: `kit/timeline.js`, a ~150-line GSAP-shaped subset (`to/fromTo/from/set/call/add`, positions, `progress`, `play/pause/kill`, `onComplete`). It is driven by the scene's clock and is pure, so Node tests can seek it. `setpieces/bag.js` (`tweenBag`) already wraps every piece's tweens, so its backend changes and the pieces' choreography lines stay. Eases map by name (`sine.inOut` → `Sine.easeInOut`, `power1.out` → `Quad.easeOut`, `power2.out` → `Cubic.easeOut`, `back.out(n)` → `Back.easeOut` with overshoot n). Every ease in use has a Phaser twin. |
 | Boot: a Pixi `Application` is light | A `Phaser.Game` is heavier (scene manager, sound, input) | This is why the stage game is persistent: it boots once per stage. The `fxTimes` log keeps measuring it (`phaser_ms`). |
 
 ### 2 · Port order (lowest risk first)
@@ -346,7 +346,7 @@ moves.
 | Particles | weather's `DENSITY` caps (170 snow, 200 rain); a game burst ≤ 300 live | half of the Mac caps (`particles.js` per device) |
 | Load | Phaser once per page (1.1 MB, cached), replacing Pixi + GSAP (0.9 MB) | bundled in the app, no network |
 
-The stage game sleeps when the tab is hidden (Phaser does this itself), under a set piece's cover for the layers it
+The engine's pet view rides in an iframe as voice only (`petStageUrl`: `stage=1&body=0`, no 3D body), so it should hold no context; the `?perf=1` counter confirms that on the first run. The stage game sleeps when the tab is hidden (Phaser does this itself), under a set piece's cover for the layers it
 covers, and while a game plays.
 
 **What we measure:**
