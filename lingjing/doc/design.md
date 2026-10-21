@@ -1112,7 +1112,13 @@ picture squashes under the blow (fx.js `squash`, Web Animations — a plate is t
 the way ink wicks through 宣纸 — torn front, a warm light rim, a glow where it began, a slow push in — on
 the card's own clock (`--mem-age`), one canvas over the picture's box, gone at the bloom's end; the CSS
 bloom is the fallback. Preview: `scripts/fx.html?moment=memory&n=1`.
-**Next, in order:** weather particles, the big set pieces, chapter transitions.
+**Weather particles in WebGL** (`fx-weather.js`, 2026-10-21): the sky's three — snow in three depths
+with a cool rim (it reads on white paper), rain as fine leaning streaks with rings on the lower stage, fog as
+two sheets of paper-cloud drifting — carried by the stage's wind, laid right after atmos.js's CSS layer
+(whose spans of those kinds step aside), 30 fps, asleep in a fight or under a set piece, gone when the layer
+is laid again. Petals, leaves, fireflies and a festival's own stay CSS. Preview:
+`scripts/fx.html?moment=weather&kind=snow|rain|fog&wind=0.6`.
+**Next, in order:** the big set pieces, chapter transitions.
 
 ## Player state 【已建】
 

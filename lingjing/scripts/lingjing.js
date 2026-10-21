@@ -50,6 +50,7 @@ import { keepTogether, LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
 import { liveBackdrop, liveCreature } from './fx-alive.js';
 import { watchMemories } from './fx-memory.js';
+import { liveWeather } from './fx-weather.js';
 import { doorsHtml } from './doors.js';
 import { HOMING_MS, freshHome, homingCardHtml, inkMapSvg, shapesOf, unrollHtml } from './inkmap.js';
 import { frameOf } from './atlas.js';
@@ -1312,6 +1313,7 @@ function paintAtmos() {
   if (a.key === atmosKey) return;
   atmosKey = a.key;
   $('atmosPts').innerHTML = particlesHtml(a.particles, look?.today?.date ?? '');
+  liveWeather($('atmosPts'), a.particles, look?.today?.date ?? ''); // snow, rain, fog in WebGL where it can (fx-weather.js)
 }
 
 /* 天气 — the engine's weather sense (skill-spec § Senses): the city is the

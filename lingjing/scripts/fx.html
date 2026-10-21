@@ -11,38 +11,67 @@
     .fxv { max-width: 760px; width: 100%; margin: 0 auto; box-sizing: border-box; }
     .fxv h1 { font-family: var(--serif, serif); font-size: 18px; margin: 0 0 8px; }
     .fxv .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 10px 0; font-size: 13px; }
+    .fxv .stagebox { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 8px; background: #1a1d20 var(--art) center 40% / cover no-repeat; }
+    .fxv .bar .dim { margin-left: auto; color: #6f6a60; font-family: monospace; }
     .fxv .bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid #8f8a80; background: #f5efe1; color: #231f1a; font: inherit; cursor: pointer; }
   </style>
 </head>
 <body>
   <!-- One 画面效果 moment alone (fx-*.js), to watch before the story brings it:
        ?moment=memory&n=1 — 银月's memory soaking into colour (fx-memory.js).
+       ?moment=weather&kind=snow|rain|fog&wind=0.3&art=art/backdrop/snow-day.webp — the weather over a stage (fx-weather.js; &css=1 the CSS layer).
        &still=1 shows what reduced motion shows. Nothing is saved. -->
   <div class="fxv">
     <h1 id="title">画面效果</h1>
-    <div class="bar"><button id="again">重播</button></div>
+    <div class="bar"><button id="again">重播</button><span class="dim" id="stats"></span></div>
     <div id="slot"></div>
   </div>
   <script type="module">
     import { memoryCardHtml } from './memory.js';
     import { watchMemories } from './fx-memory.js';
+    import { liveWeather } from './fx-weather.js';
+    import { particlesHtml, windVars } from './atmos.js';
     const q = new URLSearchParams(location.search);
     const $ = (id) => document.getElementById(id);
     const WORLD = new URL('../worlds/jiuding/', import.meta.url).href;
     const lang = q.get('lang') === 'en' ? 'en' : 'zh';
     const still = q.get('still') === '1';
-    const mems = (await fetch(new URL('memories.json', WORLD)).then((r) => r.json())).memories;
-    const m = mems.find((x) => String(x.n) === (q.get('n') || '1')) ?? mems[0];
-    const play = { n: m.n, tail: m.tail, title: m.title[lang], art: m.art, lines: m.lines[lang] };
-    $('title').textContent = `银月的记忆 · ${play.title}`;
-    let at = 0;
-    // As the page does: the card redrawn with its age, every half second (a redraw must never restart the moment).
-    const draw = () => { $('slot').innerHTML = memoryCardHtml(play, { age: performance.now() - at, still, artBase: WORLD, lang }); };
-    const start = () => { $('slot').innerHTML = ''; at = performance.now(); requestAnimationFrame(draw); };
-    setInterval(draw, 500);
-    $('again').onclick = start;
-    if (!still) watchMemories(document.body);
-    start();
+    const moment = q.get('moment') || 'memory';
+
+    // 银月's memory, redrawn every half second with its age, as the page does (a redraw must never restart it).
+    async function memory() {
+      const mems = (await fetch(new URL('memories.json', WORLD)).then((r) => r.json())).memories;
+      const m = mems.find((x) => String(x.n) === (q.get('n') || '1')) ?? mems[0];
+      const play = { n: m.n, tail: m.tail, title: m.title[lang], art: m.art, lines: m.lines[lang] };
+      $('title').textContent = `银月的记忆 · ${play.title}`;
+      let at = 0;
+      const draw = () => { $('slot').innerHTML = memoryCardHtml(play, { age: performance.now() - at, still, artBase: WORLD, lang }); };
+      const start = () => { $('slot').innerHTML = ''; at = performance.now(); requestAnimationFrame(draw); };
+      setInterval(draw, 500);
+      $('again').onclick = start;
+      if (!still) watchMemories(document.body);
+      start();
+    }
+
+    // The weather over a stage: the layer atmos.js lays, then fx-weather.js over it.
+    async function weather() {
+      const kind = ['snow', 'rain', 'fog'].includes(q.get('kind')) ? q.get('kind') : 'snow';
+      const art = q.get('art') || `art/backdrop/${kind}-day.webp`;
+      $('title').textContent = `天气 · ${kind}`;
+      $('slot').innerHTML = `<div class="stagebox view" id="view" style="--art:url('${new URL(art, WORLD).href}')"><div class="atmos"><div id="atmosPts"></div></div></div>`;
+      for (const [k, v] of Object.entries(windVars({ force: Number(q.get('wind') ?? 0.3), dir: 90 }))) $('view').style.setProperty(k, v);
+      let live = null;
+      const lay = async () => {
+        $('atmosPts').innerHTML = particlesHtml([kind], 'preview');
+        live = q.get('css') === '1' ? null : await liveWeather($('atmosPts'), [kind], 'preview');
+      };
+      $('again').onclick = lay;
+      await lay();
+      setInterval(() => { $('stats').textContent = live ? Object.entries(live.stats()).map(([k, v]) => `${k} ${v}`).join(' · ') : 'CSS'; }, 1000);
+      window.__weather = () => live;
+    }
+
+    await ({ memory, weather }[moment] ?? memory)();
   </script>
 </body>
 </html>
