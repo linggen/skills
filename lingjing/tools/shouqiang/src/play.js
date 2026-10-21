@@ -38,6 +38,8 @@ export class PlayScene extends Phaser.Scene {
     for (const k of base) img(k);
     // a level's own pictures (`art`: 守白菜's plot, 阿禾, 小满 beside her, the 竹竿 and the 土坷垃), unless the kit loads them anyway
     for (const k of new Set(Object.values(this.cfg.level.art ?? {}).filter((v) => typeof v === 'string' && !base.includes(v)))) if (!this.cfg.level.grid) img(k);
+    // …and its own cards' icons (守白菜's 竹竿: icon-gan-*)
+    for (const c of this.cfg.level.cards ?? []) if (c.icon && !ICONS.includes(c.icon.replace(/^icon-/, ''))) img(c.icon);
     for (const [b, k] of Object.entries(this.cfg.kit.beasts)) for (const f of k.frames ?? []) img(`${b}-${f}`);
     for (const k of ICONS) img(`icon-${k}`);
     if (this.cfg.level.grid) LaneView.preload(this, this.cfg.level, art);
