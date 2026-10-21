@@ -59,6 +59,8 @@ body { overflow: auto; }
 .arcade-play.is-fill { max-width: none; padding: 8px; }
 .arcade-play.is-fill .gshell { gap: 6px; }
 .arcade-play.is-fill .gshell-slot { height: calc(100dvh - var(--fill-reserve, 128px)); min-height: 560px; }
+/* the result under it (再来 · 下一关): the room gives up the foot's height, so both stay in the window */
+.arcade-play.is-fill .gshell:has(> .gshell-foot:not(:empty)) .gshell-slot { height: calc(100dvh - var(--fill-reserve, 128px) - 56px); }
 /* the room's own narrow rules (battle.css) read the story's `scene` container: the room is one here too */
 .arcade-play.is-fill .g-kapai { height: 100%; border-radius: 8px; overflow: hidden; container: scene / inline-size; }
 /* a phone: the room the story's width — the page's gutters and the card's edge go, the bar keeps a small inset */
