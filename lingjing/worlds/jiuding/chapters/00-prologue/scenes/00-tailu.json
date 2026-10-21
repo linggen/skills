@@ -1,0 +1,86 @@
+{
+ "version": 1,
+ "id": "00-tailu",
+ "chapter": "00-prologue",
+ "hui": "h02",
+ "at": "heisong",
+ "place": {
+  "zh": "黑松岭 · 顺溪下山",
+  "en": "Black Pine Ridge · down along the stream"
+ },
+ "weather": "clear",
+ "_weather": "「到得村口，已是傍晚」 — the way down runs into dusk",
+ "_board": "2026-10-21 (the 卷一 small-game plan, doc/games-plan-juan1.md; Hanli: 「start building」): 00-deer's way on split at 「那副门板，到底没有白扛，抬了一头鹿。」, the wm-anhe way — the shot and the stag are `left`'s, this scene is the carry down: the rest of that paragraph (爹 on the back end, 小满 last with the bow, his hand on his chest), the board **塔防 · 抬鹿下山** (`deer-carry`, 守墙关 level `tailu`: the 溪边 path at dusk, the 门板 behind the line, 野猪 drawn by the blood; 爹 and 老周 carry, 小满 holds with 爷爷's bow — 银月 has fainted in his shirt, so no fox), then `on` from 「到得村口，已是傍晚。」 to the cake under the fence, word for word. No pay before 入门.",
+ "setup": {
+  "zh": "那副门板，到底没有白扛，抬了一头鹿。爹非要抬后头；你走在最后，背着弓，一只手捂着胸口——银月在里头，凉得像一块冰。",
+  "en": "The door hadn't been lugged up for nothing after all: it carried a deer. Father insists on the back end; you walk last, the bow on your back, one hand on your chest. Yinyue is in there, cold as ice."
+ },
+ "recap": {
+  "zh": "你们顺着溪把那头鹿抬下了山，到村口已是傍晚。娘在老槐树底下等了一天一夜，给你重新缠了手腕，从爹肩上拈掉了一根松针。",
+  "en": "You carried the stag down along the stream and reached the village gate at evening. Mother had waited under the old locust tree a day and a night; she wrapped your wrist again and picked a pine needle off Father's shoulder."
+ },
+ "cast": [],
+ "people": [
+  "baba"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "那副门板，抬了一头鹿。",
+    "爹抬后头，谁劝也不听。",
+    "你走在最后，捂着胸口。"
+   ],
+   "en": [
+    "The door carries a deer.",
+    "Father takes the back end, and won't be talked out of it.",
+    "You walk last, a hand on your chest."
+   ]
+  }
+ },
+ "story": {
+  "zh": "他爹非要抬后头，谁劝也不听。小满走在最后，背着弓，捂着胸口。胸口那团东西，一路上一回也没动过。",
+  "en": "His father insisted on taking the back end, and wouldn't listen to anyone. Xiaoman walked last, bow on his back, hand on his chest. The thing against his chest didn't move once the whole way."
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "deer-carry"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "deer-carry"
+  ]
+ },
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "到村口",
+    "en": "To the village gate"
+   },
+   "means": "the stag carried down at dusk: Ahe and his mother waiting under the old locust tree, Beansprout Liu running to the Mas, the clean strip round his wrist and the pine needle off his father's shoulder; that night Ahe's 'little doe with a lame leg', and the cake Old Zhou throws over the fence",
+   "beat": [],
+   "next": "00-dusk",
+   "needs": {
+    "task": "deer-carry"
+   },
+   "refuse": {
+    "zh": "天快黑了，溪边还有野猪——先把鹿抬下山。",
+    "en": "Dusk is coming and there are boars by the stream. Get the deer down the mountain first."
+   },
+   "story": {
+    "zh": "到得村口，已是傍晚。围上来看鹿的人堆后头，刘豆芽看了那头鹿一眼，一转身，往马家那边跑了。他娘走到儿子跟前，从自己衣襟底下撕下一条干净的布，一圈一圈，重新给他缠上。然后她转过身去，看小满他爹。她伸手，从他肩膀上拈掉了一根松针。\n\n那天夜里，马小宝在井台边上拦住阿禾，拿一块桂花糕换话：「刘豆芽说，沈家抬回来一头大鹿。真有那么大？」阿禾道：「他看岔了。一头小母鹿，瘸了一条腿。要不然，沈小满射得着？」老周一把夺过那块糕，往篱笆外一扔：「明儿马三一看是头大公鹿，你这张嘴，就是沈家的祸！」那块桂花糕落在篱笆根底下，小满隔着篱笆瞧了半天，到底没捡。",
+    "en": "By the time they reached the village gate it was evening. At the back of the crowd that gathered round to look at the deer, Beansprout Liu took one look at it, turned, and ran off towards the Ma place. His mother came up to her son. She tore a clean strip from under the hem of her own jacket, and wrapped it on again, round and round. Then she turned and looked at Xiaoman's father. She reached out and picked a pine needle off his shoulder.\n\nThat night Ma Xiaobao stopped Ahe by the well platform and traded her a piece of osmanthus cake for talk. \"Beansprout Liu says the Shens brought back a great big deer. Was it really that big?\" Ahe said, \"He saw wrong. A little doe with a lame leg. Otherwise how could Shen Xiaoman have hit it?\" Old Zhou snatched the cake from her and threw it over the fence. \"Tomorrow when Ma San sees it's a big stag, that mouth of yours will be the ruin of the Shens!\" The osmanthus cake landed at the foot of the fence. Xiaoman looked at it through the fence for a long time, and in the end he didn't pick it up."
+   },
+   "story_full": {
+    "zh": "到得村口，已是傍晚。\n\n老槐树底下，站着两个人。一个是阿禾，两只脚尖齐齐地抵在老槐树的树根上，身子却往前探着，脖子伸得像一只等食的鹅——她娘不让她出村口，老槐树就是村口。她一只脚也没出去，脖子却已经出去了。\n\n另一个站在老槐树底下的，是小满他娘。她从前一日天黑一直站到这一日傍晚，中间只回过一趟家，给灶里添了一把火——万一人回来了，灶是凉的，那可不行。\n\n围上来看鹿的人堆后头，刘豆芽看了那头鹿一眼，一转身，往马家那边跑了。\n\n他娘走到儿子跟前，先看他的脸，又看他那只肿着的左手腕，腕上缠着半片衣摆，早给泥水泡成了一条烂布。她一句话也没说，把那条烂布解了下来，从自己衣襟底下撕下一条干净的布，一圈一圈，重新给他缠上，打了一个结，方方正正，跟她补衣裳打的结一模一样。\n\n然后她转过身去，看小满他爹。他爹抬着门板的后头，脸上的泥还没洗，一双眼睛红得像兔子。两个人对看了一眼，谁也没说话。她伸手，从他肩膀上拈掉了一根松针。\n\n就这么一下。\n\n那天夜里，马小宝在井台边上拦住阿禾，拿一块桂花糕换话：「刘豆芽说，沈家抬回来一头大鹿。真有那么大？」阿禾道：「他看岔了。一头小母鹿，瘸了一条腿。要不然，沈小满射得着？」马小宝觉得十分有理，把糕往她手里一塞，走了。老周从门里抢出来，一把夺过那块糕，往篱笆外一扔：「马家的东西，也敢吃？明儿马三一看是头大公鹿，你这张嘴，就是沈家的祸！」那块桂花糕落在篱笆根底下，小满隔着篱笆瞧了半天，到底没捡。",
+    "en": "By the time they reached the village gate it was evening.\n\nUnder the old locust tree stood two people. One was Ahe, both toes planted side by side against the roots of the old locust tree, her body leaning out in front, her neck stretched like a goose waiting to be fed. Her mother wouldn't let her past the village gate, and the old locust tree was the village gate. Not one of her feet had gone past it. Her neck already had.\n\nThe other person standing under the old locust tree was Xiaoman's mother. She had stood there from nightfall the day before right through to this evening, and had gone home only once in between, to put a handful of wood on the stove — in case they came back and found the stove cold. That would never do.\n\nAt the back of the crowd that gathered round to look at the deer, Beansprout Liu took one look at it, turned, and ran off towards the Ma place.\n\nHis mother came up to her son. First she looked at his face, then at his swollen left wrist. It was wrapped in half a strip of shirt hem, long since soaked by mud and water into a rotten rag. She didn't say a word. She undid the rag, tore a clean strip from under the hem of her own jacket, and wrapped it on again, round and round, and tied it off in a knot, neat and square, exactly like the knots she tied when she mended clothes.\n\nThen she turned and looked at Xiaoman's father. He was carrying the back end of the door; the mud on his face wasn't washed off yet, and his eyes were as red as a rabbit's. The two of them looked at each other, and neither said anything. She reached out and picked a pine needle off his shoulder.\n\nJust that, once.\n\nThat night Ma Xiaobao stopped Ahe by the well platform and traded her a piece of osmanthus cake for talk. \"Beansprout Liu says the Shens brought back a great big deer. Was it really that big?\" Ahe said, \"He saw wrong. A little doe with a lame leg. Otherwise how could Shen Xiaoman have hit it?\" Ma Xiaobao thought this made a great deal of sense, pushed the cake into her hand and left. Old Zhou came rushing out of the door, snatched the cake from her and threw it over the fence. \"You'd eat something from the Mas? Tomorrow when Ma San sees it's a big stag, that mouth of yours will be the ruin of the Shens!\" The osmanthus cake landed at the foot of the fence. Xiaoman looked at it through the fence for a long time, and in the end he didn't pick it up."
+   }
+  }
+ ]
+}

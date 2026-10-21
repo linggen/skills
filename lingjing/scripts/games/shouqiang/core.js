@@ -104,7 +104,10 @@ const waveMul = (g, i) => (g.level.hpMul ?? 1) * (1 + (g.level.growth ?? 0) * i)
 
 function spawn(g, { kind, mul, lane }, near) {
   const b = g.beastKit[kind];
-  let x = near ? Math.max(60, Math.min(W - 60, near.x + (g.rnd() - 0.5) * 140)) : 70 + g.rnd() * (W - 140);
+  // `paths` (a story level's tracks, 抬鹿下山's two down to the 门板): a beast comes down one of them, a little either side
+  const P = g.level.paths;
+  let x = near ? Math.max(60, Math.min(W - 60, near.x + (g.rnd() - 0.5) * 140))
+    : P?.length ? Math.max(60, Math.min(W - 60, P[Math.floor(g.rnd() * P.length)] + (g.rnd() - 0.5) * 50)) : 70 + g.rnd() * (W - 140);
   let y = near ? near.y + 20 : -40 - g.rnd() * 30;
   let col = null;
   if (g.grid) {

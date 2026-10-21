@@ -29,6 +29,14 @@
       "done_line": { "zh": "溪边那头鹿，倒下了。", "en": "The stag by the stream is down." }
     },
     {
+      "_td": "2026-10-21 (the 卷一 small-game plan, doc/games-plan-juan1.md; Hanli: 「start building」): 00-tailu, 00-deer's way on split at 「那副门板，到底没有白扛，抬了一头鹿。」 — the carry down the 溪边 path at dusk. 守墙关's story level `tailu` (levels/shouqiang.json, `story: \"00-tailu\"` — 兽潮 never serves it, the 游戏厅 keeps it off the ladder): two lanes down to the 门板, 野猪 drawn by the blood; 爹 and 老周 carry, 小满 holds with 爷爷's bow (银月 has fainted in his shirt). The third 塔防 on the ladder. Nothing paid before 入门.",
+      "id": "deer-carry", "kind": "board", "game": "shouqiang", "deal": { "lv": "tailu" }, "period": "once", "stars": 3,
+      "title": { "zh": "抬鹿下山 · 那副门板", "en": "Carrying the stag down · The door" },
+      "how": { "zh": "爹和老周抬着门板往下走，野猪闻着血腥从两条道上拱下来。小满的箭自己会射；点一头野猪，先射那一头。撵完一波，挑一张。", "en": "Father and Old Zhou carry the door down; boars smell the blood and come down two paths. Xiaoman shoots on his own; tap a boar to shoot that one first. After a wave, pick a card." },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "到得村口，已是傍晚。", "en": "By the time they reached the village gate it was evening." }
+    },
+    {
       "_beats": "The opening's playable beats (Hanli 2026-10-14: 「每看一会儿剧情就要有游戏可以玩」): each plays the book's own action where its scene stands. A board ends in a win always; its `grade` (the game's) picks the mark from `marks` (tasks.mjs win) and, where the scene's exits say `needs.grade`, which of them the win takes.",
       "id": "rain-basins", "kind": "board", "game": "rain", "period": "once",
       "title": { "zh": "接雨 · 十七个盆", "en": "Catching the rain · Seventeen basins" },
@@ -113,6 +121,14 @@
       "done_line": {"zh": "出谷的路，认出来了。", "en": "The way out of the valley, found."}
     },
     {
+      "_td": "2026-10-21 (the 卷一 small-game plan; Hanli: 「start building」): 00-halfyear, the passage split after 「夜里坐在柴垛上，手脚也不冷了……自己穿一件单褂。」 — a winter night on the 柴垛 behind the house (the 竹简 hidden at its bottom), 野猪 down from 蒙山 in the snow. 守炉's story level `chaiduo` (games.json `shoulu`, `story: \"00-halfyear\"`): the 柴垛 is the 炉; 小满 alone, no talismans; the snow slows him and the night is longer. The fourth 塔防 on the ladder. Nothing paid before 入门.",
+      "id": "halfyear-chaiduo", "kind": "board", "game": "shoulu", "deal": { "lv": "chaiduo" }, "period": "once", "stars": 3,
+      "title": { "zh": "雪夜柴垛 · 冬月的夜", "en": "The woodpile on a snowy night · Winter" },
+      "how": { "zh": "冬月夜里，野猪踩着雪从蒙山下来，奔着屋后的柴垛。点一头野猪，小满扔石头撵；点雪地，他走过去守着。守到天亮。", "en": "Winter nights, boars come down from Mount Meng through the snow, making for the woodpile behind the house. Tap a boar and Xiaoman throws a stone; tap the snow and he goes to stand guard there. Hold till dawn." },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "夜里坐在柴垛上，手脚也不冷了。", "en": "Sitting on the woodpile at night, his hands and feet weren't cold any more." }
+    },
+    {
       "_beats": "00-notice, the third beat of the reading cap before 入门 (Hanli 10-20: 「可以, 把水桶那关也加上」): 气走经脉 · 水桶落井. Nothing paid before 入门.",
       "id": "notice-shuitong", "kind": "board", "game": "qimai", "period": "once",
       "title": {"zh": "练功 · 水桶落井", "en": "Practice · The bucket goes down"},
@@ -174,6 +190,14 @@
       "title": { "zh": "最后一罚 · 带着怕投", "en": "The last free throw · Shoot with the fear" },
       "grant": { "table": "task" },
       "done_line": { "zh": "成了！", "en": "Done it!" }
+    },
+    {
+      "_td": "2026-10-21 (the 卷一 small-game plan; Hanli: 「start building」): 00-gate, the passage split after the road — 「越往南……几千户人家，赶的是同一个日子。」 — a night camp on the three days' road to 泗水. 守炉's story level `sishui` (games.json `shoulu`, `story: \"00-gate\"`): the camp fire is the 炉, 舅舅 asleep beside it the one to keep, 野猪 out of the dark; 小满 alone with stones, no talismans. The fifth 塔防 on the ladder, the first with a party. Nothing paid before 入门.",
+      "id": "gate-sishui", "kind": "board", "game": "shoulu", "deal": { "lv": "sishui" }, "period": "once", "stars": 3,
+      "title": { "zh": "泗水路 · 路上那一夜", "en": "The road to the Si · A night on the way" },
+      "how": { "zh": "往泗水去的路上，夜里歇在路边，舅舅睡着了。野猪从黑里出来——点一头，小满扔石头撵；点地上，他走过去守着。火堆和舅舅，都别叫它们碰着。", "en": "A night by the road to the Si River; Uncle is asleep. Boars come out of the dark: tap one and Xiaoman throws a stone; tap the ground and he goes to stand guard. Don't let them reach the fire or Uncle." },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "九月初八傍晚，到了泗水边上。", "en": "At dusk on the eighth day they reached the Si River." }
     },
     {
       "id": "gate-luoshu", "kind": "board", "game": "luoshu", "period": "once",

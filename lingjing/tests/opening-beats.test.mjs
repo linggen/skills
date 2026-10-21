@@ -107,13 +107,15 @@ const BEATS = [
    built 割绳子 levels 忍字 · 认路 · 算账 are back in their scenes; the old weak boards stay cut — these scenes read
    whole and go on with no board. 00-halfyear's 吹鹅毛 stays cut; the scene has a board again since 2026-10-20 (the
    reading cap): 气走经脉 · 挑水上坡 on the cut 练功's task id — told again 2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」),
-   the passage whole: the scene has no board. */
+   the passage whole: the scene has no board — until 2026-10-21 (the 卷一 small-game plan): 雪夜柴垛, a 塔防, at the same split.
+   The plan's three 塔防 before 入门 in 古二 and 古三 (Hanli 10-21: thirteen boards before 入门, 「start building」): 抬鹿下山 on
+   00-deer's way on (its own scene, 00-tailu), 雪夜柴垛 in 00-halfyear, 泗水路 in 00-gate after the road. */
 // 认路 cut again 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」): 00-yinyue reads whole to 带她出谷.
-const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-sleep', 'xisui-hold', 'bath'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-yinyue', 'yinyue-way', 'follow']];
-const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-fall': ['fall-storm'], '00-cave': ['cave-fire', 'bread-share'], '00-deer': ['deer-wind'], '00-rent': ['rent-scale'], '00-notice': ['notice-shuitong'], '00-luoshu': ['gate-luoshu'] };
+const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-sleep', 'xisui-hold', 'bath'], ['00-yinyue', 'yinyue-way', 'follow']];
+const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-fall': ['fall-storm'], '00-cave': ['cave-fire', 'bread-share'], '00-deer': ['deer-wind'], '00-tailu': ['deer-carry'], '00-rent': ['rent-scale'], '00-halfyear': ['halfyear-chaiduo'], '00-notice': ['notice-shuitong'], '00-gate': ['gate-sishui'], '00-luoshu': ['gate-luoshu'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
 
-test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 守白菜 · 忍字 · 拽 · 喂饼 · 守火 · 射鹿 · 算账 · 水桶 · 洛书门', () => {
+test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 守白菜 · 忍字 · 拽 · 喂饼 · 守火 · 射鹿 · 抬鹿下山 · 算账 · 雪夜柴垛 · 水桶 · 泗水路 · 洛书门', () => {
   const ch = content.chapters['00-prologue'];
   const boards = {};
   // The 古 line's scenes (the 今 interlude spliced in is its own line, not counted here).
@@ -140,13 +142,15 @@ test('a cut board has left its scene — not shown, not offered, no way on waits
     assert.notEqual(on.state.scene, sid, `${sid}: the story moved on`);
     for (const m of on.state.marks ?? []) assert.doesNotMatch(m, /^(taunt|way|griddle|rent|feather|carry)-/, `${sid}: no cut board's mark`);
   }
-  // 吹鹅毛 stays cut in 00-halfyear; 挑水上坡 came and went 2026-10-20 (the 调息 cut)
+  // 吹鹅毛 stays cut in 00-halfyear; 挑水上坡 came and went 2026-10-20 (the 调息 cut); 雪夜柴垛 there since 10-21
   const hy = scenes['00-halfyear'];
+  assert.ok(!(hy.show ?? []).some(c => c.id === 'halfyear-carry') && !hy.exits.some(e => e.needs?.task === 'halfyear-carry'), '00-halfyear: 挑水上坡 still cut');
   assert.ok(!(hy.show ?? []).some(c => c.id === 'feather-breath') && !(hy.offers?.tasks ?? []).includes('feather-breath'), '00-halfyear: 吹鹅毛 still cut');
 });
 
 test('each scene stands its board on the stage, offers it, and its way on waits for it', () => {
-  for (const [sid, tid, exit] of [...BEATS, ['00-cave', 'bread-share', 'share'], ['00-fall', 'fall-storm', 'check'], ['00-notice', 'notice-shuitong', 'go']]) {
+  for (const [sid, tid, exit] of [...BEATS, ['00-cave', 'bread-share', 'share'], ['00-fall', 'fall-storm', 'check'], ['00-notice', 'notice-shuitong', 'go'],
+    ['00-tailu', 'deer-carry', 'on'], ['00-halfyear', 'halfyear-chaiduo', 'on'], ['00-gate', 'gate-sishui', 'steady'], ['00-gate', 'gate-sishui', 'rush']]) {
     const sc = scenes[sid];
     assert.ok(sc.show.some(c => c.card === 'board' && c.id === tid), sid);
     assert.ok(sc.offers.tasks.includes(tid), sid);
@@ -234,7 +238,34 @@ test('射鹿 keeps its two ways: the board won takes 往左偏半寸; 照直射 
   assert.equal(resolve(s, content, ctx(), { exit: 'left' }).result.refused, 'needs');
   assert.equal(resolve(s, content, ctx(), { exit: 'straight' }).state.scene, '00-deer');
   const on = resolve(won(s, 'deer-wind', 'rough'), content, ctx(), { exit: 'left' });
-  assert.equal(on.state.scene, '00-dusk');
+  assert.equal(on.state.scene, '00-tailu', 'the carry down: 抬鹿下山 (the 卷一 plan, 10-21)');
+  assert.match(scenes['00-deer'].exits.find(e => e.id === 'left').story_full.zh, /那副门板，到底没有白扛，抬了一头鹿。$/, 'the shot\'s passage ends at the door');
+});
+
+/* The 卷一 small-game plan (doc/games-plan-juan1.md, 2026-10-21; Hanli: 「start building」): three 塔防 before 入门 in 古二 and
+   古三, each where the book's passage is split word for word; nothing paid (the chapter's locks), the story goes on after. */
+test('抬鹿下山 · 雪夜柴垛 · 泗水路: each at its book line, the passage split word for word, nothing paid, the story goes on', () => {
+  const tailu = scenes['00-tailu'];
+  assert.equal(tailu.hui, 'h02');
+  assert.match(tailu.story.zh, /^他爹非要抬后头/);
+  assert.match(tailu.exits[0].story_full.zh, /^到得村口，已是傍晚。[\s\S]*到底没捡。$/);
+  assert.equal(tailu.exits[0].next, '00-dusk');
+  const hy = scenes['00-halfyear'];
+  assert.match(hy.story_full.zh, /夜里坐在柴垛上，手脚也不冷了，便把自己那件旧袄硬披在了起五更淘米的娘身上，自己穿一件单褂。$/);
+  assert.match(hy.story_after_full.zh, /^冬月廿二，马三来收山风钱/);
+  const gate = scenes['00-gate'];
+  assert.match(gate.story_full.zh, /^九月初七晌午[\s\S]*几千户人家，赶的是同一个日子。$/);
+  assert.match(gate.story_after_full.zh, /^九月初八傍晚，到了泗水边上。/);
+  for (const [sid, tid, exit, next, kit, lv] of [['00-tailu', 'deer-carry', 'on', '00-dusk', 'shouqiang', 'tailu'], ['00-halfyear', 'halfyear-chaiduo', 'on', '00-uncle', 'shoulu', 'chaiduo'], ['00-gate', 'gate-sishui', 'steady', '00-luoshu', 'shoulu', 'sishui']]) {
+    const t = content.tasks.tasks.find(x => x.id === tid);
+    assert.deepEqual([t.game, t.deal.lv, t.period], [kit, lv, 'once'], tid);
+    const s = { ...atScene(sid), stamina: 100 };
+    const after = won(s, tid);
+    for (const k of ['progress', 'wealth', 'tier', 'step']) assert.deepEqual(after[k], s[k], `${tid}: ${k} unchanged`);
+    const on = resolve(tellOf(content, after)?.keep ?? after, content, ctx(), { exit });
+    assert.equal(on.result.ok, true, `${sid}: ${JSON.stringify(on.result)}`);
+    assert.equal(on.state.scene, next, sid);
+  }
 });
 
 test('a save already standing in a scene that has since been given a board is offered it on load — never shut out', () => {
@@ -259,10 +290,7 @@ test('a save from before the cut (10-16): a cut board offered is let go, one don
 
 // The 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」 → 「可以」): 挑水上坡 (on the old 练功 id `halfyear-carry`) told again —
 // its row, its level and its board gone. A returning save that met it loads: offered → let go, done → kept.
-test('挑水上坡 told again: 00-halfyear reads whole to 开春; a save holding halfyear-carry offered or done loads and goes on', () => {
-  const sc = scenes['00-halfyear'];
-  assert.equal(sc.story_after, undefined, 'the passage whole');
-  assert.match(sc.story.zh, /上坡不喘，只好装喘[\s\S]*冬月廿二，马三来收山风钱/, 'the winter\'s carrying, then the man in white, read straight on');
+test('挑水上坡 told again: its row and level gone; a save holding halfyear-carry offered or done loads and goes on (雪夜柴垛 the board since 10-21)', () => {
   assert.equal(content.tasks.tasks.find(t => t.id === 'halfyear-carry'), undefined, 'the row is gone');
   assert.ok(!content.games.games.some(g => g.task === 'halfyear-carry'), 'and its level');
   const s = atScene('00-halfyear');
@@ -336,7 +364,7 @@ test('the rhythm: the main line read between two beats, a board resetting it whe
   assert.ok(parts[1].chars >= storyChars(ch.scenes['00-shiao'].story_after), 'the rest of a split passage is read after its board');
   // 忍字 · 认路 · 算账 back 10-20; 今一's beat the same day (the reading cap: 00-rent → j01-retest read 11,661);
   // 00-halfyear's 挑水上坡 told again 2026-10-20 (the 调息 cut).
-  for (const at of ['00-baicai', '00-masan', '00-heisong/carve', '00-cave', '00-deer', '00-rent', '00-notice', 'j01-track']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
+  for (const at of ['00-baicai', '00-masan', '00-heisong/carve', '00-cave', '00-deer', '00-tailu', '00-rent', '00-halfyear', '00-notice', 'j01-track', '00-gate']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
   const warn = warnings(content, { chapters: ['00-prologue'] });
   assert.ok(warn.every(w => w.startsWith('00-prologue: ') && w.includes('(cap 1500)')));
   console.log(`rhythm warnings (00-prologue, cap ${RHYTHM_CAP}):\n${warn.join('\n')}`);
