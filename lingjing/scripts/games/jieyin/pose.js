@@ -130,9 +130,12 @@ export const inkFilter = (id) => `<filter id="${id}" x="-10%" y="-10%" width="12
   + `<feDisplacementMap in="SourceGraphic" scale="1.6"/><feGaussianBlur stdDeviation=".35"/></filter>`;
 
 /** A seal's icon: its pose (both hands for a two-hand seal) in ink, in `currentColor`. */
-export function iconSvg(seal, size = 40, { lang = 'zh' } = {}) {
+export function iconSvg(seal, size = 40, { lang = 'zh', hand = seal?.hand } = {}) {
   // As the player sees it — mirrored, like the hand hint: a two-hand seal's left hand on the left, labelled 左 / 右.
-  const hands = posesOf(seal).image.map((h) => h.map((p) => ({ x: -p.x, y: p.y }))), all = hands.flat();
+  // The template is a left hand; a one-hand seal made with the right (`hand: 'right'`) is drawn as the right, its thumb
+  // on the player's left.
+  const k = hand === 'right' && !(seal?.a || seal?.b || seal?.each) ? 1 : -1;
+  const hands = posesOf(seal).image.map((h) => h.map((p) => ({ x: k * p.x, y: p.y }))), all = hands.flat();
   const xs = all.map((p) => p.x), ys = all.map((p) => p.y), two = hands.length > 1;
   const pad = two ? 8 : 4, x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, hh = Math.max(...ys) - y0, s = Math.max(w, hh) + pad;
   const moved = hands.map((h) => h.map((p) => ({ x: p.x - x0 + (s - w) / 2, y: p.y - y0 + (s - hh - (two ? 4 : 0)) / 2 })));

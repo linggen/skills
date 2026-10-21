@@ -787,6 +787,13 @@ tried again).
   refused or failing after the board was chosen → the game leaves (`unable`) and the page deals 讲堂试法 in its place;
   three misses → a 「改用「讲堂试法」」 button does the same (`instead`); and 「算了，往下走」 after the stuck time, as on
   every scene board (a skip pays nothing). caps.js `fallBack`.
+- **Which hand, which way (10-21, Hanli on his camera: 「需要转动一下手才能识别. 需要提示用户一下」; 「告诉玩家, 用左手还是
+  右手, 手掌朝自己还是摄像头」):** every one-hand seal names its hand (`hand: "right"`, the left accepted unless `handOnly`);
+  hint.js `facingLine` says it in plain words — 「用右手（左手也行），掌心朝摄像头，手指朝上」 (掌心朝自己（手背朝摄像头） ·
+  手侧过来，小指朝摄像头) — under the icon in every hint (守墙关, 守炉, 游戏厅, 讲堂), and the icon is that hand seen from the
+  player's side. The turn cue says exactly what to do (掌心转向摄像头 · 换右手 for a `handOnly` seal). The 讲堂 shows the line
+  before each seal (`.jy-face`), turns him at 0.4 s (`turnMs`), and after 3 s without the seal a turning icon 「转一转手」
+  (`demoMs`). The judge widened a little (`ext` 1.2 → 1.15, `near` 0.35 → 0.4); every seal still only itself.
 - **After Hanli's camera test (10-21: 「单手的识别准确率高一些. 但要旋转一下手…双手的需要标注左右手」):** every seal (each part of a
   two-hand one) declares `face` (palm / edge / back to the lens) and `up`; its icon is drawn that way, mirrored as the player sees,
   with a facing line under it; judge.js `facingOf` reads it live (palm normal + MediaPipe's handedness, swapped back:

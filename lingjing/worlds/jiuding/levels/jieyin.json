@@ -1,14 +1,15 @@
 {
   "_about": "结印 — hand seals at the camera, a prototype (Hanli 2026-10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面, 让用户结印发火弹帮忙打怪」; 「没摄像头时, 就不用用户结印帮打」). The player makes seals at the Mac's or phone's camera; MediaPipe's Hand Landmarker (vendored, scripts/vendor/mediapipe/) gives 21 points a hand, all on the device; the seals are judged by the RULES below (games/jieyin/judge.js), never by a model. No camera → 结印 is not offered at all. 游戏厅 only; not in the story. doc/games.md § 结印.",
+  "_hand": "Every one-hand seal names the hand to make it with (`hand`, Hanli 10-21: 「告诉玩家, 用左手还是右手, 手掌朝自己还是摄像头. 需要提示清楚」): the right by default, the left accepted too (the judge reads shape, either hand) unless `handOnly`; the hint and icon show that hand, seen from the player's side, and its facing in plain words (hint.js facingLine).",
   "_rules": "A seal is held by ONE hand (either hand; the judge reads shape, not left/right). `ext`: fingers straight out (tip farther from the wrist than its middle joint by `judge.ext`); `curl`: fingers folded (tip nearer the wrist than its middle joint × `judge.curl`); `near`: two points touching (closer than `judge.near` hand-lengths — a hand-length is wrist → middle-finger root); `far`: two points apart (farther than `judge.far`). Points: wrist, thumb|index|middle|ring|pinky . mcp|pip|dip|tip (the thumb's are cmc · mcp · ip · tip). The 掐诀 canon is 古六's (褚先生): the thumb is the 门闩, where it presses the 文 opens — 巳 the index tip, 午 the middle tip (火), 申 the little-finger tip. `nearest`: [point, joint, [neighbours]] — the point within `judge.near` of the joint AND nearer it than every neighbour (掐诀 on a joint: joints sit 2 cm apart). `hands: 2` seals (the Mac's): `each` (or `a` and `b`, either hand either role) for each hand's shape, `between` for how the hands stand on the picture, in the larger hand's lengths (`judge.pair`): `near` · `far` · `above` [p, q] (p higher than q by more than `above`) · `level` (heights within `level`) · `column` (sideways within `column`); points `a.<point>` / `b.<point>`. `layout` only draws the icon and the tests' hands. Left out: 雷局 and a fist (the thumb inside or across the fist is a depth the points read poorly), 合十 and interlocked fingers (hands hide each other).",
   "_eye": "Power (Hanli 10-21: 「好，加上」): the landmarker runs at most `fps` a second (the camera's other frames skipped), the camera is asked for at `width` × `height` (ideal: a camera that gives more is used as given), and looks for `numHands` hands — on a set by id: a number, or \"sequence\": 2 only when the sequence in play has a two-hand seal, else 1. A level (or a game calling sets.js eyeFor) may lay its own over these: a poke read from a quick size jump (隔空指点) asks for more fps.",
   "eye": { "fps": 15, "width": 320, "height": 240, "numHands": { "phone": 1, "desk": "sequence" } },
   "_hint": "The hand hint (games/jieyin/hint.js; Hanli 10-21: 「最好不显示摄像头」): the hands drawn in ink where the camera sees them. In frame heights (a hand-length is wrist → middle root): a hand within `edge` of a side lights that side; gone longer than `lostMs`, the side it left by (within `leave` of it), else 'put it back'; a hand-length under `far` → come closer, over `near` → move back.",
   "hint": { "edge": 0.04, "far": 0.07, "near": 0.38, "lostMs": 450, "leave": 0.18 },
   "judge": {
-    "ext": 1.2,
+    "ext": 1.15,
     "curl": 1.0,
-    "near": 0.35,
+    "near": 0.4,
     "far": 0.6,
     "loose": 0.12,
     "holdMs": 300,
@@ -126,6 +127,7 @@
       "sides": { "top": "a", "bottom": "b", "either": true }
     },
     "zhang": {
+      "hand": "right",
       "glyph": "掌",
       "name": { "zh": "推掌", "en": "Open palm" },
       "how": { "zh": "五指张开，掌心朝镜头，手指朝上", "en": "All five fingers open, palm to the camera, fingers up" },
@@ -137,6 +139,7 @@
       "up": ["up"]
     },
     "jian": {
+      "hand": "right",
       "glyph": "剑",
       "name": { "zh": "剑诀", "en": "Sword seal" },
       "how": {
@@ -155,6 +158,7 @@
       "up": ["up"]
     },
     "si": {
+      "hand": "right",
       "glyph": "巳",
       "name": { "zh": "巳文", "en": "The Si mark" },
       "how": { "zh": "拇指尖掐食指尖，另外三指伸直", "en": "Thumb tip on the index tip; the other three straight" },
@@ -166,6 +170,7 @@
       "up": ["up"]
     },
     "wu": {
+      "hand": "right",
       "glyph": "午",
       "name": { "zh": "午文", "en": "The Wu mark" },
       "how": { "zh": "拇指尖掐中指尖，另外三指伸直", "en": "Thumb tip on the middle-finger tip; the other three straight" },
@@ -177,6 +182,7 @@
       "up": ["up"]
     },
     "shen": {
+      "hand": "right",
       "glyph": "申",
       "name": { "zh": "申文", "en": "The Shen mark" },
       "how": { "zh": "拇指尖掐小指尖，另外三指伸直", "en": "Thumb tip on the little-finger tip; the other three straight" },
@@ -188,6 +194,7 @@
       "up": ["up"]
     },
     "wei": {
+      "hand": "right",
       "glyph": "未",
       "hands": 1,
       "name": { "zh": "未文", "en": "The Wei mark" },
@@ -199,6 +206,7 @@
       "up": ["up"]
     },
     "mao": {
+      "hand": "right",
       "glyph": "卯",
       "hands": 1,
       "name": { "zh": "卯文", "en": "The Mao mark" },
@@ -210,6 +218,7 @@
       "up": ["up"]
     },
     "yuqing": {
+      "hand": "right",
       "glyph": "玉",
       "hands": 1,
       "name": { "zh": "玉清诀", "en": "The Jade-Clarity seal" },
@@ -221,6 +230,7 @@
       "up": ["up"]
     },
     "you": {
+      "hand": "right",
       "glyph": "酉",
       "hands": 1,
       "name": { "zh": "酉文", "en": "The You mark" },
@@ -235,6 +245,7 @@
       "up": ["up"]
     },
     "zi": {
+      "hand": "right",
       "glyph": "子",
       "hands": 1,
       "name": { "zh": "子文", "en": "The Zi mark" },
@@ -246,6 +257,7 @@
       "up": ["up"]
     },
     "danjian": {
+      "hand": "right",
       "glyph": "指",
       "hands": 1,
       "name": { "zh": "单剑指", "en": "Single sword finger" },
@@ -257,6 +269,7 @@
       "up": ["up"]
     },
     "jijiao": {
+      "hand": "right",
       "glyph": "角",
       "hands": 1,
       "name": { "zh": "犄角诀", "en": "Horn seal" },
@@ -352,6 +365,9 @@
     {
       "id": "jiangtang",
       "mode": "one",
+      "turnMs": 400,
+      "demoMs": 3000,
+      "_cues": "Hanli 10-21 on his camera: 「手印识别的时候, 需要转动一下手才能识别. 需要提示用户一下」 — the turn cue after 0.4 s here (`turnMs`; 0.7 s elsewhere), each seal's hand and facing shown before he tries (hint.js facingLine), and after 3 s without the seal a 「转一转」 (`demoMs`).",
       "title": { "zh": "讲堂 · 一印一印", "en": "The lecture hall · One seal at a time" },
       "_teach": "古六's teaching level, the board of wm-qianye's 讲堂 when a camera is there (h08 `qianye-qiajue`'s `alt`, 2026-10-21; Hanli: 「古6教学结手印那里可以做教学关卡」); without one the scene keeps 砸寨 · 讲堂试法. The seals in the passage's own order — 五指张开, then up the fingers to 巳 · 午 · 申, then 剑诀 — each with 褚先生's line (`hint`); a wrong seal is only tried again. Then `cast`: the four seals once (`forgive`: a wrong one is tried again, no 走火) and the 火蛋 goes into the straw dummy at the back of the hall. Stars from misses, both parts together. All one-hand and the book's, so the same on a phone and a Mac (no `sequences`; the cast is the lesson's four, not the Mac's 火蛋 move). No camera picture: the hand hint, large (teaching). 子文 and 雷局 (the thumb hidden) are left out.",
       "sequence": ["zhang", "si", "wu", "shen", "jian"],

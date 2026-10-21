@@ -85,3 +85,14 @@
 @keyframes jy-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 @keyframes jy-pop { 40% { transform: scale(1.15); } }
 @media (prefers-reduced-motion: reduce) { .jy-foe img, .jy-slot.is-pop, .jy-slot.is-shake, .jy-foe.is-hit img { animation: none; } }
+
+/* Which hand and its facing, before he tries (古六's 讲堂 and every level): one plain line under the lesson's. */
+.jy-face { margin: -4px 0 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--seal, #c23b22); }
+.jy-face:empty { display: none; }
+/* 「转一转」: the seal wanted not made for a while (`demoMs`) — its icon turning, a line under it. */
+.jy-demo { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, #f6eedd 90%, transparent); color: #2b2620; z-index: 3; box-shadow: 0 4px 12px rgba(0, 0, 0, .2); }
+.jy-demo small { font-size: 12px; color: #6b5d4d; }
+.jy-demo-hand { display: inline-block; line-height: 0; animation: jy-turnhand 1.6s ease-in-out infinite; transform-origin: 50% 80%; }
+@keyframes jy-turnhand { 0%, 100% { transform: perspective(200px) rotateY(-35deg) rotateZ(-12deg); } 50% { transform: perspective(200px) rotateY(35deg) rotateZ(12deg); } }
+@media (prefers-reduced-motion: reduce) { .jy-demo-hand { animation: none; } }

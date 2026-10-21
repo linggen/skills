@@ -51,7 +51,7 @@ test('the library: one-hand and two-hand seals, each with a glyph, `hands`, zh +
     assert.ok(s.hands === 1 || s.hands === 2, `${id}: hands`);
     assert.ok(!glyphs.has(s.glyph), `${id}: its own glyph`);
     glyphs.add(s.glyph);
-    const head = ['glyph', 'hands', 'name', 'how', 'hint'];
+    const head = ['glyph', 'hands', 'name', 'how', 'hint', 'hand', 'handOnly']; // hand: the one to make it with (Hanli 10-21)
     if (s.hands === 1) { knownShape(Object.fromEntries(Object.entries(s).filter(([k]) => !head.includes(k))), id); continue; }
     assert.deepEqual(Object.keys(s).filter((k) => ![...head, 'each', 'a', 'b', 'between', 'layout', 'sides'].includes(k)), [], id);
     assert.ok(s.sides && typeof s.sides.either === 'boolean', `${id}: says which hand is which, or that either will do`);
@@ -509,8 +509,12 @@ test('two-hand seals name 左手 / 右手 as the player sees them, and say when 
     if (seals[id].sides.left) assert.match(iconSvg(seals[id]), /<text[^>]*>左<\/text><text[^>]*>右<\/text>/, `${id}: the icon labels 左 then 右`);
     assert.match(facingLine(seals[id], 'zh'), /左右手都可以/, `${id}: either hand either side`);
   }
-  assert.match(facingLine(seals.chengjian, 'zh'), /^左手手侧着.*；右手掌心朝镜头/, '承剑: the left hand flat and edge-on, the right a sword palm-on');
-  assert.match(facingLine(seals.zhang, 'zh'), /掌心朝镜头，手指朝上/);
+  assert.match(facingLine(seals.chengjian, 'zh'), /^左手手侧过来.*；右手掌心朝摄像头/, '承剑: the left hand flat and edge-on, the right a sword palm-on');
+  // which hand, and the facing in plain words (Hanli 10-21: 「告诉玩家, 用左手还是右手, 手掌朝自己还是摄像头」)
+  assert.equal(facingLine(seals.zhang, 'zh'), '用右手（左手也行），掌心朝摄像头，手指朝上');
+  assert.match(facingLine(seals.zhang, 'en'), /^Right hand \(the left works too\), palm to the camera, fingers up$/);
+  for (const id of IDS.filter((x) => seals[x].hands !== 2)) assert.match(facingLine(seals[id], 'zh'), /^用右手（左手也行），/, id);
+  assert.match(facingLine({ ...seals.zhang, face: ['back'] }, 'zh'), /掌心朝自己（手背朝摄像头）/);
   assert.match(facingLine(seals.lihuo, 'en'), /either hand either side/);
   // 承剑 drawn mirrored: the flat palm (a) on the left, the sword (b) on the right and above.
   const im = posesOf(seals.chengjian).image.map((h) => h.map((p) => ({ x: -p.x, y: p.y })));

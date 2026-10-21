@@ -19,11 +19,13 @@ import { facesRight, facingOf, handsOf } from './judge.js';
 
 const W = {
   zh: { none: '把手举到镜头前', edge: { left: '靠左边了', right: '靠右边了', top: '靠上边了', bottom: '靠下边了' }, gone: { left: '手从左边出去了，往右挪回来', right: '手从右边出去了，往左挪回来', top: '手从上边出去了，往下放一点', bottom: '手从下边出去了，往上抬一点', middle: '手不见了，放回框里' }, far: '手离镜头近一点', near: '手离镜头远一点', two: '两只手都放进来', next: '结', ok: '',
-    turn: { palm: '手转一下：掌心朝镜头', side: '手侧过来，小指一侧朝镜头', back: '手转过去，手背朝镜头', up: '手转一下：手指朝上', flat: '手放平：指尖朝旁边' },
-    face: { palm: '掌心朝镜头', side: '手侧着，小指一侧朝镜头', back: '手背朝镜头' }, up: { up: '手指朝上', side: '指尖朝旁边' }, left: '左手', right: '右手', either: '左右手都可以' },
+    turn: { palm: '掌心转向摄像头', side: '手侧过来，小指朝摄像头', back: '掌心转向自己（手背朝摄像头）', up: '手指转向上', flat: '手放平：指尖朝旁边' },
+    face: { palm: '掌心朝摄像头', side: '手侧过来，小指朝摄像头', back: '掌心朝自己（手背朝摄像头）' }, up: { up: '手指朝上', side: '指尖朝旁边' }, left: '左手', right: '右手', either: '左右手都可以',
+    use: { right: '用右手', left: '用左手' }, other: { right: '（左手也行）', left: '（右手也行）' }, swap: { right: '换右手', left: '换左手' } },
   en: { none: 'Raise your hand to the camera', edge: { left: 'Near the left edge', right: 'Near the right edge', top: 'Near the top', bottom: 'Near the bottom' }, gone: { left: 'Your hand left on the left — move it back right', right: 'Your hand left on the right — move it back left', top: 'Your hand left at the top — lower it a little', bottom: 'Your hand left at the bottom — raise it a little', middle: 'Hand lost — bring it back into the frame' }, far: 'Bring your hand closer', near: 'Move your hand back a little', two: 'Bring both hands in', next: 'Make', ok: '',
-    turn: { palm: 'Turn your hand: palm to the camera', side: 'Turn your hand edge-on, little finger toward the camera', back: 'Turn your hand: back to the camera', up: 'Turn your hand: fingers up', flat: 'Lay your hand flat: fingers sideways' },
-    face: { palm: 'palm to the camera', side: 'edge-on, little finger toward the camera', back: 'back of the hand to the camera' }, up: { up: 'fingers up', side: 'fingers sideways' }, left: 'Left hand', right: 'Right hand', either: 'either hand either side' },
+    turn: { palm: 'Turn your palm to the camera', side: 'Turn your hand edge-on, little finger to the camera', back: 'Turn your palm to yourself (back of the hand to the camera)', up: 'Point your fingers up', flat: 'Lay your hand flat: fingers sideways' },
+    face: { palm: 'palm to the camera', side: 'edge-on, little finger to the camera', back: 'palm to yourself (back of the hand to the camera)' }, up: { up: 'fingers up', side: 'fingers sideways' }, left: 'Left hand', right: 'Right hand', either: 'either hand either side',
+    use: { right: 'Right hand', left: 'Left hand' }, other: { right: ' (the left works too)', left: ' (the right works too)' }, swap: { right: 'Switch to your right hand', left: 'Switch to your left hand' } },
 };
 const KNOBS = { edge: 0.04, far: 0.07, near: 0.38, lostMs: 450, leave: 0.18 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -70,6 +72,8 @@ const shapesOf = (seal) => (!seal ? [] : handsOf(seal) === 2 ? [seal.a ?? seal.e
 export function turnOf({ world = [], handed = [], seal, orient = {} }) {
   const shapes = shapesOf(seal);
   if (!shapes.length) return null;
+  // A one-hand seal that takes only its own hand (`hand` + `handOnly`): the other hand is told to switch.
+  if (handsOf(seal) !== 2 && seal.hand && seal.handOnly && handed[0] && handed[0].toLowerCase() !== seal.hand) return { to: 'hand', hand: seal.hand };
   for (let i = 0; i < world.length; i++) {
     const f = facingOf(world[i], handed[i], orient);
     if (!f || shapes.some((sh) => facesRight(sh, f))) continue;
@@ -83,14 +87,18 @@ export function turnOf({ world = [], handed = [], seal, orient = {} }) {
 export function facingLine(seal, lang = 'zh') {
   const w = W[lang === 'en' ? 'en' : 'zh'], one = (sh) => [w.face[sh?.face?.[0]], w.up[sh?.up?.[0]]].filter(Boolean).join(lang === 'en' ? ', ' : '，');
   if (!seal) return '';
-  if (handsOf(seal) !== 2) return one(seal);
+  if (handsOf(seal) !== 2) {
+    // Which hand, fixed (Hanli 10-21: 「告诉玩家, 用左手还是右手, 手掌朝自己还是摄像头」): `hand`, and the other too unless `handOnly`.
+    const hand = seal.hand ? `${w.use[seal.hand]}${seal.handOnly ? '' : w.other[seal.hand]}` : '';
+    return [hand, one(seal)].filter(Boolean).join(lang === 'en' ? ', ' : '，');
+  }
   const sides = seal.sides ?? {}, a = seal.a ?? seal.each, b = seal.b ?? seal.each;
   const same = one(a) === one(b);
   const parts = sides.left ? (same ? [one(a)] : [`${w.left}${lang === 'en' ? ': ' : ''}${one(sides.left === 'a' ? a : b)}`, `${w.right}${lang === 'en' ? ': ' : ''}${one(sides.left === 'a' ? b : a)}`]) : [one(a)];
   return [...parts, sides.either === false ? '' : w.either].filter(Boolean).join(lang === 'en' ? ' · ' : '；');
 }
 
-const sayOf = (cue, w) => (cue.kind === 'edge' ? w.edge[cue.side] : cue.kind === 'gone' ? w.gone[cue.side] : cue.kind === 'turn' ? w.turn[cue.to] : w[cue.kind] ?? '');
+const sayOf = (cue, w) => (cue.kind === 'edge' ? w.edge[cue.side] : cue.kind === 'gone' ? w.gone[cue.side] : cue.kind === 'turn' ? (cue.to === 'hand' ? w.swap[cue.hand] : w.turn[cue.to]) : w[cue.kind] ?? '');
 
 /** A three-quarter arc round the drawn hand, from upper left over the top to lower right — 'turn it' (its arrowhead
     is the path's marker). */
@@ -116,7 +124,7 @@ export function handHint(container, { lang = 'zh', size = 'compact', seals = {},
     if (t === target) return;
     target = t;
     const s = seals[t];
-    $('.jy-target-icon').innerHTML = s ? iconSvg(s, size === 'large' ? 76 : 44, { lang }) : '';
+    $('.jy-target-icon').innerHTML = s ? iconSvg(s, size === 'large' ? 76 : 44, { lang, hand: s.hand }) : '';
     $('.jy-target-face').textContent = facingLine(s, lang);
     $('.jy-target-name').textContent = s ? `${w.next} ${s.name[lang] ?? s.name.zh}` : '';
     el.classList.toggle('is-two', handsOf(s) === 2);
@@ -141,7 +149,7 @@ export function handHint(container, { lang = 'zh', size = 'compact', seals = {},
       // not making it: after `orient.turnMs`, ask the hand to turn (Hanli 10-21: 「要旋转一下手」).
       const turn = world && !right && (cue.kind === 'ok' || cue.kind === 'two') ? turnOf({ world, handed, seal: seals[t], orient: knobs.orient }) : null;
       turnSince = turn ? turnSince ?? now : null;
-      if (turn && now - turnSince >= (knobs.orient?.turnMs ?? 700)) cue = { kind: 'turn', to: turn.to };
+      if (turn && now - turnSince >= (knobs.orient?.turnMs ?? 700)) cue = { kind: 'turn', to: turn.to, hand: turn.hand };
       $('.jy-frame').dataset.edge = cue.kind === 'edge' || cue.kind === 'gone' ? cue.side : '';
       $('.jy-frame').dataset.cue = cue.kind;
       $('.jy-cue').textContent = sayOf(cue, w);

@@ -234,3 +234,40 @@ test('the stuck rule holds on the 结印 board: 「算了，往下走」 after t
   assert.match(skipBoard(g, g.taskId, ctx), /data-game-skip="qianye-qiajue"/);
   assert.ok(stampShown);
 });
+
+/* Hanli 10-21 on his camera: 「手印识别的时候, 需要转动一下手才能识别. 需要提示用户一下」; 「告诉玩家, 用左手还是右手,
+   手掌朝自己还是摄像头. 需要提示清楚」. */
+test('the 讲堂 tells which hand and which way before he tries, turns him sooner, and shows 「转一转」 when a seal will not come', async () => {
+  const { facingLine, turnOf } = await import('../scripts/games/jieyin/hint.js');
+  const { iconSvg } = await import('../scripts/games/jieyin/pose.js');
+  const lv = levelAsked(kit, { lv: 'jiangtang' });
+  assert.equal(lv.turnMs, 400, 'the turn cue at 0.4 s in teaching');
+  assert.ok(lv.turnMs < kit.orient.turnMs);
+  assert.equal(lv.demoMs, 3000);
+  for (const id of [...lv.sequence, ...lv.cast.sequence]) {
+    const s = kit.seals[id];
+    assert.equal(s.hand, 'right', `${id}: one hand named`);
+    assert.match(facingLine(s, 'zh'), /^用右手（左手也行），(掌心朝摄像头|手侧过来，小指朝摄像头)，手指朝上$/, id);
+    assert.match(facingLine(s, 'en'), /^Right hand \(the left works too\), /, id);
+    assert.notEqual(iconSvg(s, 40), iconSvg(s, 40, { hand: 'left' }), `${id}: drawn as the right hand, seen from his side`);
+  }
+  // a seal that takes only its hand says exactly which to switch to; the cue words are exact, never 「手转一下」
+  const only = { ...kit.seals.zhang, handOnly: true };
+  assert.match(facingLine(only, 'zh'), /^用右手，/);
+  const { poseOf } = await import('../scripts/games/jieyin/pose.js');
+  assert.deepEqual(turnOf({ world: [poseOf(only)], handed: ['Left'], seal: only, orient: kit.orient }), { to: 'hand', hand: 'right' });
+  assert.equal(turnOf({ world: [poseOf(kit.seals.zhang)], handed: ['Left'], seal: kit.seals.zhang, orient: kit.orient }), null, 'either hand: no switch asked');
+  const src = fs.readFileSync(new URL('../scripts/games/jieyin/hint.js', import.meta.url), 'utf8');
+  assert.match(src, /换右手/);
+  assert.match(src, /掌心转向摄像头/);
+  assert.doesNotMatch(src, /手转一下/);
+  const page = fs.readFileSync(new URL('../scripts/games/jieyin.js', import.meta.url), 'utf8');
+  assert.match(page, /knobs: \{ \.\.\.kit\.hint, orient \}/, 'the level\'s turnMs reaches the hint');
+  assert.match(page, /world: hands, handed, held: \[\]/, 'world and handed reach the hint: the turn cue can show');
+  assert.match(page, /\$\('\.jy-face'\)\.textContent = next \? facingLine\(next, lang\)/);
+});
+
+test('the judge is a little wider (Hanli had to turn his hand): straight past ×1.15, a pinch within 0.4 — still each seal only itself (game-jieyin)', () => {
+  assert.equal(kit.judge.ext, 1.15);
+  assert.equal(kit.judge.near, 0.4);
+});

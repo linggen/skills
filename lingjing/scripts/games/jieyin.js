@@ -25,7 +25,7 @@ import { handsOf, sealOf } from './jieyin/judge.js';
 import { bonusOf, eyeFor, sealsFor, sequenceFor, setOf } from './jieyin/sets.js';
 import { expected, fits, progress, start, starsOf, step } from './jieyin/sequence.js';
 import { iconSvg } from './jieyin/pose.js';
-import { handHint } from './jieyin/hint.js';
+import { facingLine, handHint } from './jieyin/hint.js';
 
 export const meta = {
   id: 'jieyin',
@@ -57,8 +57,8 @@ export const artOf = (level) => ({
 export const castOf = (level) => (level.mode === 'one' ? level.cast ?? null : level);
 
 const W = {
-  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', asking: '请允许使用摄像头……', loading: '……', next: '下一个', who: '小满' },
-  en: { nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', downed: 'The dummy is down.', asking: 'Allow the camera…', loading: '…', next: 'Next', who: 'Xiaoman' },
+  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', demo: '转一转手——换个角度，让镜头认出来', asking: '请允许使用摄像头……', loading: '……', next: '下一个', who: '小满' },
+  en: { nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', downed: 'The dummy is down.', demo: 'Turn your hand a little — find the angle the camera reads', asking: 'Allow the camera…', loading: '…', next: 'Next', who: 'Xiaoman' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
@@ -105,7 +105,7 @@ function stageHtml(kit, level, lang) {
     // The camera's picture is never shown (Hanli 10-21: 「最好不显示摄像头」): the video only feeds the model; the hand
     // hint (jieyin/hint.js) docks in the corner instead.
     + `<video class="jy-eye" playsinline muted aria-hidden="true"></video><div class="jy-dock"></div><p class="jy-status"></p></div>`
-    + `<ol class="jy-seq">${seqHtml(kit, level, lang)}</ol><p class="jy-hint"></p></div>`;
+    + `<ol class="jy-seq">${seqHtml(kit, level, lang)}</ol><p class="jy-hint"></p><p class="jy-face"></p></div>`;
 }
 
 /** A sprite flies from one element to another (the 火蛋). */
@@ -183,7 +183,9 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const box = container.querySelector('.jy');
       const $ = (s) => box.querySelector(s);
       const video = $('video');
-      const hint = handHint($('.jy-dock'), { lang, size: level.mode === 'one' ? 'large' : 'compact', seals, knobs: kit.hint });
+      // The turn cue sooner where a level asks (`turnMs`: 古六's 讲堂 0.4 s; Hanli 10-21: 「需要转动一下手才能识别. 需要提示用户一下」).
+      const orient = { ...kit.orient, ...(level.turnMs ? { turnMs: level.turnMs } : {}) };
+      const hint = handHint($('.jy-dock'), { lang, size: level.mode === 'one' ? 'large' : 'compact', seals, knobs: { ...kit.hint, orient } });
       const art = artOf(level);
       let s = start(level), hands = [], picture = [], handed = [], aspect = 4 / 3, hp = castOf(level)?.hits ?? 0, busy = false, last = win.performance.now(), taught = 0;
 
@@ -194,9 +196,28 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           el.classList.toggle('is-next', !s.done && i === s.at);
         });
         const right = fits(s, s.cur, kit.judge);
-        hint.update({ image: picture, aspect, target: want, progress: right ? progress(s, kit.judge) : 0, right, now: win.performance.now(), world: hands, handed });
+        const now = win.performance.now();
+        hint.update({ image: picture, aspect, target: want, progress: right ? progress(s, kit.judge) : 0, right, now, world: hands, handed, held: [] });
         const next = want ? kit.seals[want] : null;
         $('.jy-hint').textContent = next ? (s.mode === 'one' ? `${tr(next.hint, lang)}　${tr(next.how, lang)}` : `${tr(next.name, lang)}：${tr(next.how, lang)}`) : '';
+        // Which hand and which way it faces, before he tries (Hanli 10-21: 「告诉玩家, 用左手还是右手, 手掌朝自己还是摄像头」).
+        $('.jy-face').textContent = next ? facingLine(next, lang) : '';
+        demo(want, right, now);
+      };
+      // Teaching (`demoMs`): the seal wanted not made for a while → a small 「转一转」 — its icon turning, a line under it.
+      let wantAt = null, wantOf = null;
+      const demo = (want, right, now) => {
+        if (want !== wantOf || right || !level.demoMs) { wantOf = want; wantAt = now; }
+        const on = Boolean(level.demoMs && want && hands.length && now - wantAt >= level.demoMs);
+        let el = box.querySelector('.jy-demo');
+        if (!on) { el?.remove(); return; }
+        if (el?.dataset.seal === want) return;
+        el?.remove();
+        el = doc.createElement('div');
+        el.className = 'jy-demo';
+        el.dataset.seal = want;
+        el.innerHTML = `<span class="jy-demo-hand">${iconSvg(kit.seals[want], 54)}</span><small>${plain(w.demo)}</small>`;
+        $('.jy-field').append(el);
       };
       const say = (text) => (shell?.say ? shell.say(w.who, text, 1800) : ($('.jy-status').textContent = text));
 
