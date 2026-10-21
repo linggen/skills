@@ -17,7 +17,7 @@
 // Targets: a scene id (wm-mijing); a 回 (h07, j04, an absorbed h03; 古五, 今二,
 // 第五回 — its first scene as played); a sealed instance's name or beat (秘境 —
 // its entry scene).
-import { pick, realmName } from '../state.mjs';
+import { pick, realmName, threshold } from '../state.mjs';
 import { act, begin, foeTurn, offers, tokenOf } from '../battle.js';
 import { lookahead } from '../fightline.js';
 import { bookEntries, idsOf } from '../book-order.js';
@@ -288,6 +288,15 @@ function walkTo(content, r, s, place) {
   return s;
 }
 
+/* 交差 on the 回's stage quest once it stands met, as a player does (rules/gates.mjs stageTurn): paid
+   now and kept on the save — a seed never leaves it behind for the first load to pay back
+   (2026-10-21: a save seeded at 01-altar got 540 灵石 of 补发 on its first load). */
+function handIn(r, s) {
+  const out = r.call('quest', s, { id: 'stage', action: 'turn' });
+  if (out.result?.ok) r.log.push(`handed in ${out.result.key}`);
+  return out.state ?? s;
+}
+
 /* Try one way on from `s`: everything it waits on done by play, then taken. Returns the state or throws Stuck. */
 function take(content, r, s, exit, policy) {
   const sc = sceneOf(content, s);
@@ -300,6 +309,7 @@ function take(content, r, s, exit, policy) {
   // (古八's 腊八 final is weighed at the 八层 its gate holds — tools/story-fights.mjs h09b).
   const gate = stageGate(content, s, sc?.id, exit.id);
   if (gate) { s = earned(content, s, gate); r.log.push(`earned ${gate.hui} ${gate.tier}:${gate.layer}`); }
+  s = handIn(r, s); // the 回's stage quest met (earned here, or already by the realm he holds): 交差
   const game = exit.game ?? null;
   if (game?.kind === 'duel' && !s.wins?.[game.id]) s = r.fight(s, game);
   const pass = game && r.leave === game.id ? { pass: 1 } : {};
@@ -309,9 +319,21 @@ function take(content, r, s, exit, policy) {
     r.nextDay();
     out = r.call('resolve', s, { ...argsFor(content, s, exit, r.now), ...pass });
   }
+  // 渡劫's throw missed (a 95% throw misses one save in twenty — 2026-10-21, a seed at 01-altar stuck at 09-cliff with
+  // 「every way taken」): a player waits out the cauldron's cooldown, sits the 修为 it took back, and throws again.
+  for (let k = 0; k < THROWS && out.result.ok && out.result.breakthrough?.success === false; k += 1) {
+    s = refilled(content, out.state ?? s);
+    while (r.now < new Date(out.result.breakthrough.again_at)) r.nextDay();
+    out = r.call('resolve', s, { ...argsFor(content, s, exit, r.now), ...pass });
+  }
   if (!out.result.ok) throw new Stuck(s, `${exit.id} refused ${out.result.refused}${out.result.say ? ` — ${out.result.say}` : ''}`);
   return out.state ?? s;
 }
+
+/* Throws a forward run makes at one breakthrough before it calls the way stuck. */
+const THROWS = 5;
+/* The realm's step full again after a missed throw (闭关 brings the 修为 back, ladder.json `_breakthrough`). */
+const refilled = (content, s) => ({ ...s, progress: Math.max(s.progress ?? 0, threshold(content, s)) });
 
 /* The ways on in the order a forward run tries them: a declared default first,
    then those that name a next scene, then the rest (a stay, a chapter's end). */

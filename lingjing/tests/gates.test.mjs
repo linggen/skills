@@ -100,7 +100,9 @@ const reached = new Map();
 playTo(content, newState(content, 'zh', NOW), null, { now: NOW, policy: 'win', targets: GATED.map(id => [id, targetOf(content, id)]), onAt: (label, st, r) => reached.set(label, { s: st, now: r.now }) });
 const below = (id) => {
   const { s: st, now } = reached.get(id), g = gatesOf(content).find(x => x.scene === id);
-  return { s: { ...st, place: content.chapters[st.chapter].scenes[id].at, tier: g.tier, step: g.step, progress: 0, stretch: undefined, stamina: 100, stamina_at: now.toISOString() }, now, g };
+  // Below the gate, it is not handed in yet (the forward run hands a met one in as it walks, rules/progress.mjs handIn).
+  const stages = (st.stages ?? []).filter(k => !k.startsWith(`${id}/`));
+  return { s: { ...st, place: content.chapters[st.chapter].scenes[id].at, tier: g.tier, step: g.step, progress: 0, stretch: undefined, stamina: 100, stamina_at: now.toISOString(), stages }, now, g };
 };
 
 test('every gate stands where he can walk away to earn it, and come back: refused `stage`, healthy, the walk to the pool open, 下一步 on the stage quest', () => {

@@ -143,6 +143,7 @@ import { esc } from './esc.js';
 import { codexCompactHtml, codexHtml } from './codex.js';
 import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogue.js';
 import { TURNED_MS, turnedPays } from './turned.js';
+import { choicesStand } from './queue.js';
 import { AI_WORDS, caseCard, duizi, haggle, twenty } from './aigames-cards.js';
 import { mountHostHtml, mountOnly } from './beat-host.js';
 import { frameHtml, timedOf, tallOf, tallStyle } from './games/shell.js';
@@ -1420,6 +1421,9 @@ function building(card, ctx) {
 /// keeps the confirm button shut — nothing is ever preselected.
 export const valueChoice = (picked, text, max) => fitValue(text, max) ?? (picked ? fitValue(picked, max) : null);
 
+/// The scene's choices stand now: its passage told, nothing owed, no moment up over the stage (queue.js).
+const choicesNow = (ctx) => choicesStand({ told: choicesUp(ctx.reading, ctx.lang), owed: Boolean(ctx.tellPending), up: Boolean(ctx.momentUp) });
+
 /// A name given — a scene exit with `value` (the 名字 until the hero was fixed, 2026-09-30;
 /// no 男 · 女 since), named here and never by Ling (his,
 /// 2026-09-28: 给用户一个card with some options, 用户可以选择或者输入一个自定义
@@ -1428,7 +1432,7 @@ export const valueChoice = (picked, text, max) => fitValue(text, max) ?? (picked
 function value(card, ctx) {
   const e = (ctx.look?.scene?.exits ?? []).find((x) => x.id === card.id), v = e?.value;
   // It asks with the scene's last beat, as the scene card's choices do (dialogue.js).
-  if (!v || !choicesUp(ctx.reading, ctx.lang)) return '';
+  if (!v || !choicesNow(ctx)) return '';
   const w = ctx.words, max = v.max_chars, text = ctx.valueText ?? '';
   const picked = text.trim() ? null : ctx.valuePick ?? null;
   const chosen = valueChoice(picked, text, max);
@@ -1453,7 +1457,7 @@ function value(card, ctx) {
 /// in the chat. Or left to the stone: a day drawn by the save's start.
 function born(card, ctx) {
   const e = (ctx.look?.scene?.exits ?? []).find((x) => x.id === card.id);
-  if (!e?.born || e.born.kept || !choicesUp(ctx.reading, ctx.lang)) return '';
+  if (!e?.born || e.born.kept || !choicesNow(ctx)) return '';
   const w = ctx.words, today = (ctx.now ?? new Date()).toISOString().slice(0, 10);
   return `<div class="card borncard"><div class="cardtitle">${esc(e.born.label ?? w.rootTitle)}</div>
     <div class="small dim">${esc(w.bornHint)}</div>
@@ -1496,7 +1500,7 @@ function panel(card, ctx) {
   const p = ctx.look?.scene?.panel;
   if (!p) return '';
   // The box goes first: while the scene's passage is still to be drawn, its choices wait (a fast tap skipped the book).
-  const up = !ctx.tellPending && choicesUp(ctx.reading, ctx.lang);
+  const up = choicesNow(ctx);
   // The choices are proper buttons wherever they stand (his, 2026-10-14: never the bare 「那天傍晚 ›」 link):
   // with the box put away, the scene card shows them as the box does.
   const acts = up ? panelActsHtml(ctx, { inBox: true }) : saidHtml(ctx) + (ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '');

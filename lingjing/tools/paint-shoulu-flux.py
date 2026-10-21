@@ -55,6 +55,15 @@ JOBS['furnace'] = dict(w=640, h=640, prompt=(
   'and a little from above. No writing anywhere. ' + fc.STYLE + ' ' + fc.ON_MAGENTA))
 for m, what in MAPS.items():
   JOBS[f'ground-{m}'] = dict(w=768, h=976, prompt=GROUND.format(what=what) + fc.STYLE + ' ' + fc.SCENE)
+# Night grounds (2026-10-21, the review: 药园巡夜 at 丑时 and 丹房看炉 played on bright day grass): edit passes from the
+# day ground, so every tuft, flower and leaf keeps its place and the road (drawn from the level's data) lies as it did.
+NIGHT = ('The attached image is this map\'s ground by DAY: paint the SAME picture, the same composition, every tuft, '
+         'flower, leaf and pebble in exactly the same place and size, seen from straight above, but at NIGHT: cool '
+         'moonlight from the upper left, deep ink-blue and dark green shadows, the colours dim and cold, a few pale '
+         'silver highlights on the leaves, still clearly readable. Nothing added, nothing standing up. ' + fc.SCENE)
+NIGHTS = {'yaoyuan': None, 'houshan': 'danfang-kanlu'}  # map → the level whose 丹炉 a lantern lights (cut: `glow`)
+for m, lit in NIGHTS.items():
+  JOBS[f'ground-{m}-night'] = dict(w=768, h=976, refs=[OUT / f'ground-{m}.webp'], prompt=NIGHT, glow=lit)
 JOBS['pine'] = dict(w=512, h=640, prompt=('ONE round cartoon pine tree seen from the front and a little from above, '
   'a short brown trunk, three stacked fluffy dark-green tiers. ' + fc.STYLE + ' ' + fc.ON_MAGENTA))
 JOBS['rock'] = dict(w=512, h=384, prompt=('ONE low chunky grey boulder with a tuft of grass at its foot, seen from the '
@@ -72,24 +81,44 @@ JOBS['yezhu-walk-2'] = dict(w=640, h=640, refs=[QIANG / 'yezhu-walk-1.green.webp
 KEPT = {'tower-jian-1': 2, 'tower-jian-2': 2, 'tower-jian-3': 1, 'tower-huo-1': 2, 'tower-huo-2': 2, 'tower-huo-3': 1,
         'tower-han-1': 1, 'tower-han-2': 2, 'tower-han-3': 1, 'tower-lei-1': 1, 'tower-lei-2': 2, 'tower-lei-3': 1,
         'furnace': 1, 'ground-shiao': 1, 'ground-shanlu': 2, 'ground-yaoyuan': 1, 'ground-houshan': 1, 'ground-heisong': 1,
-        'pine': 1, 'rock': 2, 'bush': 2, 'yezhu-walk-2': 1}
+        'pine': 1, 'rock': 2, 'bush': 2, 'yezhu-walk-2': 1,
+        # 2026-10-21 (3 seeds each): seed 1 keeps every leaf and flower of the day's and stays readable; 2 and 3 go near black.
+        'ground-yaoyuan-night': 1, 'ground-houshan-night': 1}
 
 
-def cut():
+def glow(im, level):
+  """A lantern's warm light round the level's 丹炉 (games.json `furnace`, on the 600×760 board), screened on."""
+  from PIL import Image, ImageChops, ImageDraw, ImageFilter
+  games = json.loads((HERE.parent / 'worlds' / 'jiuding' / 'games.json').read_text())
+  L = next(l for g in games['games'] if isinstance(g, dict) for l in g.get('levels', []) if isinstance(l, dict) and l.get('id') == level)
+  x, y = L['furnace']
+  light = Image.new('RGB', im.size, (0, 0, 0))
+  d = ImageDraw.Draw(light)
+  for r, c in ((150, (70, 38, 8)), (95, (120, 70, 18)), (50, (170, 110, 40))):
+    d.ellipse((x - r, y - r * 0.8, x + r, y + r * 0.8), fill=c)
+  return ImageChops.screen(im, light.filter(ImageFilter.GaussianBlur(40)))
+
+
+def cut(only=()):
   OUT.mkdir(parents=True, exist_ok=True)
   from PIL import Image
   for jid, seed in KEPT.items():
+    if only and jid not in only:
+      continue
     j = JOBS[jid]
     src = fc.REVIEW / 'shoulu' / f'{jid}-{seed}.png'
     if jid.startswith('ground-'):
       im = Image.open(src).convert('RGB').resize((600, 760), Image.LANCZOS)
+      if j.get('glow'):
+        im = glow(im, j['glow'])
       im.save(OUT / f'{jid}.webp', 'WEBP', quality=82, method=6)
     else:
       im = fc.key_green(src, key=j.get('key', 'magenta'))
       dst = (ART / 'shoulu' / f'{jid}.webp') if jid.endswith('walk-2') else OUT / f'{jid}.webp'
       fc.save_webp(im, dst, max_side=256 if jid.startswith(('tower', 'pine', 'rock', 'bush')) else 320)
     print(jid, '→ done')
-  beasts()
+  if not only:
+    beasts()
 
 
 BEASTS = {'yezhu': ['walk-1', 'walk-2', 'hit'], 'zheng': ['walk-1', 'walk-2', 'hit'], 'qiuyu': ['walk-1', 'walk-2', 'hit'],
@@ -129,4 +158,4 @@ if __name__ == '__main__':
   if a.cmd == 'paint':
     fc.paint_all('shoulu', JOBS, a)
   else:
-    cut()
+    cut([k for k in a.only.split(',') if k])

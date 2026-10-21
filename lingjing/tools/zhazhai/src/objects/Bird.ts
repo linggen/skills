@@ -120,7 +120,7 @@ export class Bird implements IBird {
     });
 
     const texture = this.matterImage.texture;
-    const frame = texture.get(assetKey);
+    const frame = texFrame ? texture.get(texFrame) : null; // its own painting has no frame: its whole picture
     const frameWidth = frame ? frame.cutWidth : texture.source[0].width;
     const frameHeight = frame ? frame.cutHeight : texture.source[0].height;
 

@@ -239,3 +239,19 @@ test('a 回\'s turn: the 「完」 first, then the map unfolds — watchUnfold w
   assert.ok(AFTER_CLOSE.has('unfold'));
   assert.equal(momentsHold({ pending: ['unfold'] }), false, 'so its waiting never holds the 「完」 off (no deadlock)');
 });
+
+// Live 2026-10-21 at 01-rise: 「站着，不跪」 stood while 漳水立起 still covered the stage; the tap meant for
+// it put the set piece away. The scene's choices — on the card as in the box — wait for a moment that is up.
+test('the scene\'s choices wait under a moment that is up (a set piece, a seal), on the scene card as in the box', async () => {
+  const { choicesStand } = await import('../scripts/queue.js');
+  assert.equal(choicesStand({ told: true }), true, 'told to its last beat, nothing up: they stand');
+  assert.equal(choicesStand({ told: true, up: true }), false, 'a set piece over the stage: they wait');
+  assert.equal(choicesStand({ told: true, owed: true }), false, 'passages owed: they wait');
+  assert.equal(choicesStand({ told: false }), false, 'mid-passage: they wait');
+  const cardsJs = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(cardsJs, /!choicesUp\(ctx\.reading/, 'no card asks the book alone');
+  assert.equal((cardsJs.match(/choicesNow\(ctx\)/g) ?? []).length, 3, 'the scene card, the name and the 生辰 ask the one rule');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /momentUp: momentUp\(\)/, 'the page hands the stage\'s moments to the cards');
+  assert.match(page, /!boxYields\(true\)/, 'the box\'s own choices already wait (choicesInBox)');
+});

@@ -572,3 +572,11 @@ test('every level paints a ground that exists (draw.js `ground-${L.ground ?? L.i
   const art = new Set(readdirSync(new URL('../scripts/games/shoulu/art/', import.meta.url)));
   for (const l of all) assert.ok(art.has(`ground-${l.ground ?? l.id}.webp`), `${l.id}: no ground-${l.ground ?? l.id}.webp`);
 });
+
+test('the two story levels played at night stand on night grounds (丑时 in the 药园, the 丹房 furnace watched after dark)', () => {
+  // Live 10-21: both played on the bright day grass. Their night grounds are edit passes of the day's
+  // (tools/paint-shoulu-flux.py NIGHTS): the same composition, so the road lies on them as it did.
+  const byId = Object.fromEntries(all.map((l) => [l.id, l]));
+  assert.equal(byId['yaoyuan-xunye'].ground, 'yaoyuan-night');
+  assert.equal(byId['danfang-kanlu'].ground, 'houshan-night');
+});

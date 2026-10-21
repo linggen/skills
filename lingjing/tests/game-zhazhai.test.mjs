@@ -158,3 +158,11 @@ test('each story throw is won by a sensible hand and not by a lazy one, and each
     srv.close();
   }
 });
+
+// Live 2026-10-21: `Texture "zz-proj-fire" has no frame` — Bird.ts asked a thing's own painting (texOf: no frame)
+// for a frame by its skin key. What is its own picture is measured whole, as skin.ts sizeOf does.
+test('a thing that is its own painting is never asked for a frame by its skin key', () => {
+  const bird = readFileSync(join(root, 'tools/zhazhai/src/objects/Bird.ts'), 'utf8');
+  assert.doesNotMatch(bird, /texture\.get\(assetKey\)/);
+  assert.match(bird, /texFrame \? texture\.get\(texFrame\) : null/);
+});

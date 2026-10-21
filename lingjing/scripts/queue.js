@@ -45,6 +45,13 @@ export const bookAhead = ({ owed = false, drawing = false, playing = false, huiT
    is done; then it comes back with the rest of the passage, or the choices. */
 export const boxGivesWay = ({ bout = false, appearing = false, slots = true, up = false, huiTurn = false, game = false }) => Boolean(bout || appearing || !slots || up || huiTurn || game);
 
+/* May the scene's choices stand (the scene card, a name, the 生辰)? The book told to its last beat
+   (`told`, dialogue.js choicesUp), nothing owed behind it, and no moment UP over the stage — a set
+   piece, the doors, a seal, her memory, 鼎归, the map: the choices wait until it is put away, as the
+   box does (boxGivesWay `up`). Live 2026-10-21 at 01-rise: 「站着，不跪」 stood while 漳水立起 still
+   covered the stage, and the tap meant for it put the set piece away. */
+export const choicesStand = ({ told = true, owed = false, up = false }) => Boolean(told && !owed && !up);
+
 /* What stands on the stage, the box and the cards: never a game and the box at once. */
 export function onStage({ cards = [], ahead = false, game = (c) => c.card === 'board', ...box }) {
   const shown = afterBook(cards, ahead);

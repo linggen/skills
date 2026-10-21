@@ -48,3 +48,12 @@ test('the pouch pane names the game as its module does (the pane imports it only
   }
   assert.doesNotMatch(readFileSync(at('scripts/fantong-kailu.js'), 'utf8'), /^import[^\n]*games\/kailu\.js/m, 'never a static import');
 });
+
+// Live 10-21: at 1440×900 the table ran 70 px past the pouch (50 at 390) and 开炉 was below the fold — its size came
+// from the window's height less a guessed reserve. In a box that scrolls itself it takes the room that box has left.
+test('in the pouch the table is fitted to the room its scrolling box has left, so 开炉 stands in sight', async () => {
+  const src = (await import('node:fs')).readFileSync(new URL('../scripts/games/kailu.js', import.meta.url), 'utf8');
+  assert.match(src, /function scrollerOf\(el\)/);
+  assert.match(src, /box\.style\.maxWidth = `\$\{Math\.max\(200, Math\.floor\(\(sc\.clientHeight - top - GAP\) \* 2 \/ 3\)\)\}px`/);
+  assert.match(src, /game\.refresh = \(\) => \{ fit\(\); canvas\?\.\(\); \}/, 'laid into a new host: fitted again');
+});

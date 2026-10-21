@@ -69,6 +69,37 @@ async function sample(lang, seed, force) {
   return { brief, roll: rollOne };
 }
 
+/* Inside a box that scrolls itself (the pouch's 饭桶 pane in #pouchbook), the table is as tall as the room left
+   from its top to the box's bottom edge, so the tray and 开炉 under the pot are in sight with no scroll (live 10-21:
+   at 1440×900 it ran 70 px past the pouch, 50 at 390 — the window's height less a guessed reserve). Elsewhere (the
+   游戏厅, the try page) the window's rule stands. Again on a resize of the window or of that box. */
+const GAP = 12;
+function scrollerOf(el) {
+  const win = el.ownerDocument.defaultView;
+  for (let a = el.parentElement; a && a !== el.ownerDocument.body; a = a.parentElement) if (/auto|scroll/.test(win.getComputedStyle(a).overflowY)) return a;
+  return null;
+}
+function fitter(box) {
+  const win = box.ownerDocument.defaultView;
+  let watched = null, sized = null;
+  const fit = () => {
+    const sc = box.isConnected ? scrollerOf(box) : null;
+    if (sc !== watched) { sized?.disconnect(); sized = null; watched = sc; if (sc && win.ResizeObserver) { sized = new win.ResizeObserver(() => fit()); sized.observe(sc); } }
+    const was = box.style.maxWidth;
+    if (!sc) box.style.removeProperty('max-width');
+    else {
+      // From the table's top (as laid, the box scrolled to its start) to the box's visible bottom.
+      const top = box.getBoundingClientRect().top - sc.getBoundingClientRect().top - sc.clientTop + sc.scrollTop;
+      box.style.maxWidth = `${Math.max(200, Math.floor((sc.clientHeight - top - GAP) * 2 / 3))}px`;
+    }
+    if (box.style.maxWidth !== was) fit.canvas?.();
+  };
+  const onResize = () => fit();
+  win.addEventListener('resize', onResize);
+  fit.stop = () => { sized?.disconnect(); win.removeEventListener('resize', onResize); };
+  return fit;
+}
+
 export function mount(container, { lang = 'zh', data = null, signal, reducedMotion = false, seed, shell, onEvent, onGame } = {}) {
   const doc = container.ownerDocument;
   const box = doc.createElement('div');
@@ -77,13 +108,15 @@ export function mount(container, { lang = 'zh', data = null, signal, reducedMoti
   box.style.cssText = 'position:relative;overflow:hidden;border-radius:12px;background:#2a1a12;touch-action:none;margin:0 auto;'
     + 'user-select:none;-webkit-user-select:none;aspect-ratio:2/3;width:min(100%, calc((100dvh - var(--game-reserve, 170px)) * 2 / 3))';
   container.replaceChildren(box);
+  const fit = fitter(box);
+  fit();
   const q = new URLSearchParams(globalThis.location?.search ?? '');
   const dev = q.get('dev') === '1', showFps = dev && q.get('fps') === '1';
   const force = ['useful', 'rare', 'best'].includes(q.get('force')) ? q.get('force') : null;
   return new Promise((resolve) => {
     let game = null, done = false;
     const finish = (r) => { if (!done) { done = true; resolve(r); } };
-    const leave = () => { game?.destroy(); game = null; finish({ won: false, left: true }); };
+    const leave = () => { fit.stop(); game?.destroy(); game = null; finish({ won: false, left: true }); };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
     const L = lang === 'en' ? 'en' : 'zh';
@@ -93,8 +126,13 @@ export function mount(container, { lang = 'zh', data = null, signal, reducedMoti
       game = start({
         parent: box, base: new URL('./kailu/', import.meta.url).href, lang: L, reducedMotion, dev, showFps, shell, onEvent,
         data: { brief: d.brief, roll: d.roll, icon },
-        onEnd: (r) => finish(r),
+        onEnd: (r) => { fit.stop(); finish(r); },
       });
+      // Laid into a new host (the pouch pane redraws round it): fitted to its room again, then the canvas.
+      const canvas = game.refresh;
+      fit.canvas = canvas;
+      game.refresh = () => { fit(); canvas?.(); };
+      fit();
       onGame?.(game);
     }, (e) => {
       console.warn('[kailu]', e);
