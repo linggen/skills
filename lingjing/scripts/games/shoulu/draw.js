@@ -35,6 +35,7 @@ function rnd(seed) { let s = seed; return () => { s = (s * 16807) % 2147483647; 
 /** The board under everything, painted once a level: paper, hills, grass, rocks and pines off the road, the road. */
 export function makePaper(doc, L, label) {
   if (L.fire) loadFireArt(doc);
+  if (L.keep) artImg(doc, L.keep); // a story level's kept one, drawn where the furnace stands (坑底: 孙二狗)
   const k = 2, p = doc.createElement('canvas');
   p.width = W * k; p.height = H * k;
   const pics = ['pine', 'rock', 'bush', `ground-${L.ground ?? L.id}`]; // `ground`: another level's painting (the 秘境's rows)
@@ -305,8 +306,20 @@ function drawXiaoman(c, h, t, moving) {
 }
 function drawStone(c, p) { c.fillStyle = '#8c8577'; c.strokeStyle = INK; c.lineWidth = 1; c.beginPath(); c.ellipse(p.x, p.y, 4, 3.2, p.ang, 0, 6.28); c.fill(); c.stroke(); }
 
+/** A person kept where the furnace stands (`keep`: 坑底's 孙二狗, huddled in the pit's corner — he cannot move): his
+    picture, a dim light from above on him, the flash when a beast reaches him. */
+function drawKept(c, g, t) {
+  const x = g.L.furn.x, y = g.L.furn.y, pic = ART.img[g.L.keep];
+  const gl = c.createRadialGradient(x, y - 20, 6, x, y - 20, 70);
+  gl.addColorStop(0, 'rgba(220,230,255,0.28)'); gl.addColorStop(1, 'rgba(220,230,255,0)');
+  c.fillStyle = gl; c.beginPath(); c.arc(x, y - 20, 70, 0, 6.28); c.fill();
+  if (okImg(pic)) { const h = 70, w = pic.naturalWidth * h / pic.naturalHeight, shiver = Math.sin(t * 21) * (g.furnFlash > 0 ? 2 : 0.4); c.drawImage(pic, x - w / 2 + shiver, y + 26 - h, w, h); }
+  else { c.fillStyle = '#9a948a'; c.beginPath(); c.ellipse(x, y + 6, 16, 20, 0, 0, 6.28); c.fill(); c.strokeStyle = INK; c.lineWidth = 1.4; c.stroke(); }
+  if (g.furnFlash > 0) { c.fillStyle = `rgba(200,40,30,${g.furnFlash * 0.6})`; c.beginPath(); c.arc(x, y, 38, 0, 6.28); c.fill(); }
+}
 function drawFurnace(c, g, t) {
   if (g.L.fire) return drawCampfire(c, g, t);
+  if (g.L.keep) return drawKept(c, g, t);
   const prog = cleared(g) / waves(g), x = g.L.furn.x, y = g.L.furn.y;
   const fl = 0.88 + 0.08 * Math.sin(t * 7) + 0.04 * Math.sin(t * 23), R = (44 + prog * 60) * fl;
   const gr = c.createRadialGradient(x, y - 4, 4, x, y - 4, R);

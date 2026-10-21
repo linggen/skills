@@ -77,7 +77,7 @@ export function stateAt(stop) {
    book that is not yet a game fight. `band` is what it is tuned to. */
 export const FIGHTS = [
   { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', scene: '00-longzhi/subdue', band: [0.6, 0.92], nopills: true, note: 'tutorial; before the 灵根 test he holds no 灵石 and no pill' },
-  { id: 'gui', name: '蛫 (秘境)', at: 'h07', scene: 'wm-wangzuo/open' },
+  // 蛫 (秘境, wm-wangzuo/open) is no fight since 2026-10-21: 「打不过的，不打。给它下坠子。」 — the board wangzuo-zhui (割绳子).
   { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', scene: 'wm-xirang/swallow', trial: true, unforced: true },
   { id: 'foe-lufang', name: '卢方 (大比)', at: 'h08', scene: 'wm-fushi/flip' },
   { id: 'foe-shijie', name: '秦雁 (试 · 三十招)', at: 'h08b', scene: 'wm-lun2/dodge', trial: true, unforced: true },

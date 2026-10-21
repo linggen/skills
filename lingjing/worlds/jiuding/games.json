@@ -582,7 +582,7 @@
   },
   {
    "id": "guirope",
-   "group": "later",
+   "group": "h07",
    "scene": "wm-wangzuo",
    "hui": "第五回",
    "task": "wangzuo-zhui",
@@ -884,6 +884,30 @@
    "_about": "守墙关's 第一回 story level (2026-10-21, Hanli: 第一回 adds two 塔防 boards): 00-baicai — 阿禾's cabbage, the 芦花鸡 through the 篱笆, her 竹竿, 小满 beside her. The level is levels/shouqiang.json's `baicai`. This row only opens it in the 游戏厅."
   },
   {
+   "id": "shouqiang",
+   "group": "h05",
+   "mechanic": "塔防",
+   "scene": "wm-duanlei",
+   "hui": "第四回",
+   "task": "duanlei-xunye",
+   "stars": 3,
+   "name": {"zh": "断肋巡夜", "en": "The watch on a broken rib"},
+   "data": {"lv": "duanlei"},
+   "_about": "守墙关's 古四 story level (2026-10-21, the 卷一 small-game plan): wm-duanlei — the half month of night watches on a broken rib in 阿禾's 一尺地, 野猪 only, no 银月 (`fox: false`). The level is levels/shouqiang.json's `duanlei`. This row only opens it in the 游戏厅."
+  },
+  {
+   "id": "shouqiang",
+   "group": "h07",
+   "mechanic": "塔防",
+   "scene": "wm-xiongya",
+   "hui": "第五回",
+   "task": "xiongya-shoutai",
+   "stars": 3,
+   "name": {"zh": "凶崖 · 半道石台", "en": "The Cliff of Danger · The ledge halfway"},
+   "data": {"lv": "xiongya"},
+   "_about": "守墙关's 古五 story level (2026-10-21, the 卷一 small-game plan): wm-xiongya — the 秘境 ledge on the way down the 凶崖, 犰狳 the first armour, 合窳 the first 大妖 (结印's dock). The level is levels/shouqiang.json's `xiongya`. This row only opens it in the 游戏厅."
+  },
+  {
    "id": "jieyin",
    "group": "main",
    "mechanic": "结印",
@@ -948,6 +972,18 @@
   },
   {
    "id": "shoulu",
+   "group": "h07",
+   "mechanic": "塔防",
+   "scene": "wm-chu",
+   "hui": "第五回",
+   "task": "chu-kengdi",
+   "stars": 3,
+   "name": {"zh": "守炉 · 坑底", "en": "Guard the Furnace · The pit"},
+   "data": {"lv": "kengdi"},
+   "_about": "守炉's 古五 story level (2026-10-21, the 卷一 small-game plan): wm-chu — the pit under the 第三石板, 孙二狗 kept where the furnace stands (`keep`: he cannot move), 犰狳 · 合窳 at the rim until the door's last hours run out and 秦雁's 剑鞘 comes down. This row only opens it in the 游戏厅."
+  },
+  {
+   "id": "shoulu",
    "group": "h09",
    "mechanic": "塔防",
    "scene": "09-dabi",
@@ -975,6 +1011,7 @@
     {"id":"shouhuo","story":"00-cave","place":"yingu","ground":"yingu-night","name":{"zh":"守火 · 洞口那堆火","en":"Keeping the fire · At the cave mouth"},"_story":"守火 (2026-10-21, Hanli: 第一回 adds two 塔防 boards — 「用塔防作为主力」): 00-cave, 「火堆挡在洞口，野兽便不敢进来」, before 喂饼 (the 卷一 plan's order). The fire at the cave mouth is the 炉 (`fire`: its fuel is the 炉火, burning down one every `burn` s; `sticks` are the 枯枝 at the cliff's foot, back `regrow` s after one is taken; 小满 carries `carry` at most and each feeds `feed`; the light reaches `light[0]` + `light[1]` × the fire, and what shies from it (`shy`) loses `fear` × fire/max of its nerve a second inside it, slowed; `fox`: where she lies; `stars`: fire left for ★★★ · ★★). No talismans (`towers: []`, no spots); the hero is 小满 (`hero.who`), no 银月 skills (`skills: false` — she is hurt and only a fox), a 柴刀 and stones (`throw`). The beasts are eyes in the dark (`yanjing`, game-only: the book names none — 「野兽便不敢进来」). Gentle: the second 塔防 a player meets.","towers":[],"money":0,"hpMul":1,"difficulty":1,"first":8,"gap":10,"trail":"faint","decor":{"pines":0},"lead":[{"zh":"他生了一小堆火，火堆挡在洞口，野兽便不敢进来。","en":"He got a little fire going. With a fire across the mouth of the cave, animals wouldn't dare come in."},{"zh":"它躺在火边，一动不动。","en":"The fox lies by the fire, not moving."},{"zh":"黑里，有眼睛！","en":"Eyes, in the dark!","big":true},{"zh":"火一矮，它们就往里凑。点崖根底下的枯枝，去折来添火。","en":"When the fire burns low they creep in. Tap a dead branch at the cliff's foot to fetch it."},{"zh":"点一双眼睛，扔石头撵。","en":"Tap a pair of eyes to throw a stone."}],"road":[[640,120],[430,120],[430,300],[160,300],[160,470],[300,470],[300,575]],"furnace":[300,604],"spots":[],"hero":{"at":[258,626],"who":"xiaoman","skills":false,"hair":0,"stats":{"hp":[110,110,110],"dmg":[7,7,7],"rate":0.9,"speed":125,"reach":28,"block":1,"regen":10,"respawn":8,"xp":[1000000000.0,1000000000.0],"acquire":150,"leash":260},"throw":{"range":170,"dmg":9,"rate":0.85,"speed":420}},"fire":{"start":8,"max":10,"burn":6.5,"sticks":[[66,664],[534,664],[72,560],[540,470],[60,250]],"regrow":12,"carry":2,"feed":1.5,"reach":62,"light":[60,15],"fear":9,"slow":0.45,"fox":[352,632],"stars":[6,3]},"waves":[[["yanjing",3,2.6,0]],[["yanjing",4,2.2,0]],[["yanjing",5,1.8,0]],[["yanjing",4,1.6,0],["yanjing",4,1.6,5]]],"words":{"fire":{"zh":"火","en":"Fire"},"yinyue":{"zh":"小满","en":"Xiaoman"},"won":{"zh":"它们散了","en":"They gave up"},"lost":{"zh":"火灭了","en":"The fire went out"},"wonLine":{"zh":"火还剩 {n} / 10","en":"Fire left: {n} / 10"},"hint":{"zh":"点枯枝去添火，点眼睛扔石头","en":"Tap a branch to fetch it, a pair of eyes to throw a stone"},"lowFire":{"zh":"火要灭了！快去折枯枝。","en":"The fire is dying! Fetch a branch."},"lostLine":{"zh":"火灭在第 {n} 波。","en":"The fire went out on wave {n}."}}},
     {"id":"yaoyuan-xunye","story":"wm-yaoyuan","place":"yaoyuan","ground":"yaoyuan-night","name":{"zh":"药园 · 巡夜","en":"The herb garden · the night watch"},"towers":["jian","huo"],"money":240,"hpMul":2.6,"difficulty":1,"lead":[{"zh":"爪印是从西头的崖根底下来的，又回崖根底下去。","en":"The pawprints came from the foot of the cliff at the west end and went back to the foot of the cliff."},{"zh":"东头有灯、有糕味，那东西今夜只会往没人的西头来——往他怀里来。","en":"The east end had a light and the smell of cake; tonight the thing would only come to the empty west end: come right into his arms."},{"zh":"崖根底下，有动静！","en":"Something stirs at the foot of the cliff!","big":true},{"zh":"先拱进来的，是山上的野猪。","en":"The first ones in are boars off the mountain."},{"zh":"成群的，火符一烧一片。","en":"A herd? One fire talisman burns the lot."},{"zh":"木牌里，一个很困的声音：……野猪而已。灵草交给你，本王再睡会儿。","en":"A sleepy voice in the token: …Only boars. The herbs are yours. I'm going back to sleep."}],"road":[[-30,100],[540,100],[540,640],[80,640],[80,250],[380,250],[380,460]],"furnace":[380,492],"spots":[[160,175],[300,175],[460,175],[230,330],[470,370],[200,570],[300,560],[470,560]],"hero":{"at":[200,640],"hair":0},"waves":[[["yezhu",5,1.6,0]],[["yezhu",7,0.9,0]],[["yezhu",6,1.0,0],["yezhu",6,0.4,8]],[["yezhu",8,0.5,0],["yezhu",10,0.35,9]]]},
     {"id":"danfang-kanlu","story":"09-dabi","place":"houshan","ground":"houshan-night","name":{"zh":"丹房 · 看炉","en":"The pill house · watching the furnace"},"towers":["jian","huo","lei"],"unlock":{"lei":3},"money":300,"hpMul":1.4,"difficulty":1,"lead":[{"zh":"闵丹师开炉，一开十天半月，一步离不得炉口。","en":"Pill-master Min has lit the furnace: ten days, half a month, and he cannot step from its mouth."},{"zh":"看炉的是你。药气顺着后山，飘上了崖顶——","en":"The watching is yours. The smell of the herbs drifts up the back hill to the cliff—"},{"zh":"后山有动静！","en":"Something stirs on the back hill!","big":true},{"zh":"先拱下来的，是闻着药香的野猪。","en":"The first down are boars, after the smell."},{"zh":"鬿雀：白头，鼠足虎爪，不走山道，直扑炉口。火符够不着天上，剑阵够得着。","en":"Qique: white heads, rat's feet, tiger's claws. They skip the road and dive at the furnace. Fire can't reach the sky; swords can."},{"zh":"第三波起，雷符也够得着。","en":"From the third wave, thunder reaches them too."}],"road":[[-30,160],[260,160],[260,420],[520,420],[520,620],[300,620],[300,680]],"furnace":[300,712],"air":[640,-60],"spots":[[180,230],[90,240],[330,340],[450,340],[190,480],[440,520],[576,520],[220,650],[400,700]],"hero":{"at":[400,620],"hair":0},"waves":[[["yezhu",6,1.2,0]],[["yezhu",6,0.8,0],["qique",4,1.6,4]],[["qique",6,1.0,0],["yezhu",8,0.5,3]],[["yezhu",10,0.4,0],["qique",6,1.0,5]],[["qique",8,0.8,0],["yezhu",10,0.35,6]]]},
+    {"id":"kengdi","story":"wm-chu","place":"mijing-yabi","ground":"kengdi","_story":"坑底 (2026-10-21, Hanli: the 卷一 small-game plan, 「start building」 — 古五 #6 and the 塔防 ladder's 9th): wm-chu, the pit under the 第三石板 (「他掉头往回走……一脚踩了上去，掉进了坑里」). 孙二狗 is the one kept: drawn where the furnace stands (`keep`: the picture), he cannot move — three days down, ten nails split; the 炉火 is his. 犰狳 come down to the rim, 合窳 in the last wave; the waves are the door's last hours (`words`), the win is 秦雁's 剑鞘. 剑阵 · 火符 · 寒符: swords glance off the armour (all swords loses most nights), fire bites. 银月 is in his coat (古五), her 狐毛 spent on 邹青松 (`hair` 0). Bots (seeds s0…s19): human-like 20/20 with 孙二狗 bitten on most nights, thin 20/20 low, swords only 6/20, none 0/20.","name":{"zh":"坑底 · 孙二狗","en":"The pit · Sun Ergou"},"keep":"sunergou","towers":["jian","huo","han"],"money":260,"hpMul":1.75,"difficulty":1,"lead":[{"zh":"他掉头往回走，走到那块第三石板跟前，一脚踩了上去，掉进了坑里。","en":"He turned round and went back, up to the third flagstone, stepped right on it, and dropped into the pit."},{"zh":"「……沈师兄？外门背弓的，只有你。」是孙二狗。三天前他便掉在这里，坑壁滑，爬不上去。","en":"\"...Senior Brother Shen? You're the only one in the outer sect who carries a bow.\" It was Sun Ergou. He'd fallen in three days ago; the walls were slippery and he couldn't climb up."},{"zh":"坑口，有东西往下爬！","en":"Something is climbing down from the rim!","big":true},{"zh":"犰狳一身硬甲，剑阵只伤四成——火符烧得透。","en":"The qiuyu's hide is hard: swords do 40%. Fire gets through."},{"zh":"守住孙二狗，守到石门合上之前，坑口有人来。","en":"Keep Sun Ergou safe until someone comes to the rim before the stone door shuts."}],"road":[[-30,160],[260,160],[260,420],[520,420],[520,620],[300,620],[300,680]],"furnace":[300,712],"spots":[[180,230],[90,240],[330,340],[450,340],[190,480],[440,520],[576,520],[220,650],[400,700]],"hero":{"at":[400,620],"hair":0},"waves":[[["qiuyu",4,2.2,0]],[["qiuyu",6,1.8,0]],[["qiuyu",7,1.5,0]],[["qiuyu",6,1.5,0],["heyu",1,1,10]]],"words":{"fire":{"zh":"孙二狗","en":"Ergou"},"won":{"zh":"剑鞘伸下来了","en":"A scabbard reaches down"},"lost":{"zh":"没护住孙二狗","en":"Ergou is hurt"},"wonLine":{"zh":"孙二狗还剩 {n} / 10 口气","en":"Ergou has {n} / 10 breath left"},"lostLine":{"zh":"第 {n} 波，孙二狗倒下了。","en":"On wave {n}, Ergou went down."},"lastWave":{"zh":"最后一波 · 守到剑鞘伸下来","en":"The last wave: hold till the scabbard comes"}}},
     {"id":"mijing-1","story":null,"realm":"mijing","place":"mijing-anhe","ground":"heisong","road":[[-30,160],[260,160],[260,420],[520,420],[520,620],[300,620],[300,680]],"furnace":[300,712],"air":[640,-60],"spots":[[180,230],[90,240],[330,340],[450,340],[190,480],[440,520],[576,520],[220,650],[400,700]],"hero":{"at":[400,620],"hair":0},"name":{"zh":"秘境 · 暗河 · 一","en":"The realm · the dry river · I"},"new":{"beast":"qiuyu"},"towers":["jian","huo","han"],"money":260,"hpMul":2,"difficulty":1,"lead":[{"zh":"暗河干了，河床里一堆火，是前人留下的。","en":"The river has run dry. In its bed burns a fire someone left long ago."},{"zh":"火一灭，黑里的东西就上来了。","en":"Let it go out and what lives in the dark comes up."},{"zh":"兽潮来袭！","en":"Here they come!","big":true},{"zh":"犰狳皮厚，剑阵砍不动——火符、寒符。","en":"The armadillo's hide is thick; swords barely bite. Fire, frost."}],"waves":[[["qiuyu",4,2.4,0]],[["qiuyu",6,2,0]],[["qiuyu",8,1.6,0]]]},
     {"id":"mijing-2","story":null,"realm":"mijing","place":"mijing-anhe","ground":"heisong","road":[[-30,160],[260,160],[260,420],[520,420],[520,620],[300,620],[300,680]],"furnace":[300,712],"air":[640,-60],"spots":[[180,230],[90,240],[330,340],[450,340],[190,480],[440,520],[576,520],[220,650],[400,700]],"hero":{"at":[400,620],"hair":0},"name":{"zh":"秘境 · 暗河 · 二","en":"The realm · the dry river · II"},"new":{"beast":"heyu"},"towers":["jian","huo","han","lei"],"money":300,"hpMul":1.9,"difficulty":1,"lead":[{"zh":"又是那堆火。河床那头，有个人脸的东西在哭，像个娃娃。","en":"The same fire. Far down the riverbed, something with a man's face is crying like a baby."},{"zh":"合窳，人面猪身，见则天下大水。","en":"The heyu: a man's face on a pig's body. Where it is seen, the floods come."},{"zh":"兽潮来袭！","en":"Here they come!","big":true}],"waves":[[["qiuyu",6,2,0]],[["qiuyu",8,1.6,0]],[["qiuyu",6,1.5,0],["heyu",1,1,10]]]},
     {"id":"mijing-3","story":null,"realm":"mijing","place":"mijing-anhe","ground":"heisong","road":[[-30,160],[260,160],[260,420],[520,420],[520,620],[300,620],[300,680]],"furnace":[300,712],"air":[640,-60],"spots":[[180,230],[90,240],[330,340],[450,340],[190,480],[440,520],[576,520],[220,650],[400,700]],"hero":{"at":[400,620],"hair":0},"name":{"zh":"秘境 · 暗河 · 三","en":"The realm · the dry river · III"},"towers":["jian","huo","han","lei"],"money":340,"hpMul":1.42,"difficulty":1,"lead":[{"zh":"火还在。这回，河床里的哭声有两处。","en":"The fire still burns. This time the crying comes from two places in the riverbed."},{"zh":"火小了一圈。守住它，缝里的东西才拾得着。","en":"The fire has shrunk a ring. Hold it, and what lies in the crack is yours."},{"zh":"兽潮来袭！","en":"Here they come!","big":true}],"waves":[[["qiuyu",8,1.6,0]],[["qiuyu",8,1.3,0],["heyu",1,1,8]],[["qiuyu",10,1.2,0],["heyu",1,1,10]]]}

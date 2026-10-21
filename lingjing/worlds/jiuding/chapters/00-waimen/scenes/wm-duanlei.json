@@ -60,11 +60,11 @@
  "_beats": "2026-10-21 (Hanli: the 卷一 small-game plan, 「start building」 — doc/games-plan-juan1.md 古四 #4, approved): wm-diyilu's way on read 6,808 字 to 今二 without play. The way on is split word for word: wm-diyilu/save keeps the pill and the 紫玉参 (to 「送回来的。账上不记。」); this scene's passage is the book's own (「小满等人走远了……月底，还有六天。」), then 断肋巡夜 (守墙关 story level `duanlei`, task duanlei-xunye) — the half month of nights on a broken rib, 阿禾's 一尺地 in its 红线, 野猪 only, no 银月 (she has gone dark in the token); the win is the 二层: 「到了十月廿五那一夜……练气二层。」 opens the rest (`story_after`, the cut, the book's beside it as `story_after_full`). No rise: the 层 is his to earn (the 阶段任务).",
  "lines": [],
  "buttons": [
-  "on"
+  "watch"
  ],
  "exits": [
   {
-   "id": "on",
+   "id": "watch",
    "label": {
     "zh": "冬月初一，秘境",
     "en": "The first of the eleventh month: the realm"
