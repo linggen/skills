@@ -15,13 +15,27 @@
 // (borders, rivers, seal, moon) is the SVG overlay above the canvas; the words
 // are the card's own DOM.
 import { camOf, HOMING_MS, inkMapSvg } from './inkmap.js';
+import { fibreCanvas, grainCanvas } from './kit/fx/ink.js';
 
 const PIXI_URL = new URL('./vendor/pixi-8.21.0.min.mjs', import.meta.url).href;
 const GSAP_URL = new URL('./vendor/gsap-3.15.0.min.js', import.meta.url).href;
+const PHASER_URL = new URL('./vendor/phaser.min.mjs', import.meta.url).href;
 
-let pixiP = null, gsapP = null;
-/// How long the libraries took on first open (ms), for the log and the report.
-export const fxTimes = { pixi: null, gsap: null };
+let pixiP = null, gsapP = null, phaserP = null;
+/// How long the libraries took on first open (ms), for the log and the report; `boot` the stage
+/// game's own boot (kit/stage.js).
+export const fxTimes = { pixi: null, gsap: null, phaser: null, boot: null };
+
+/// The one Phaser (vendor/phaser.min.mjs, the games' own), by dynamic import() only: Phaser touches
+/// `window` as its module loads, so nothing the tests import may import it statically (game-kit.md
+/// § One engine). Drawing code takes it by injection.
+export function loadPhaser() {
+  if (!phaserP) {
+    const t = performance.now();
+    phaserP = import(PHASER_URL).then((m) => { fxTimes.phaser = Math.round(performance.now() - t); return m; }, (e) => { phaserP = null; throw e; });
+  }
+  return phaserP;
+}
 
 export function loadPixi() {
   if (!pixiP) {
@@ -61,50 +75,8 @@ export function glOK() {
   return glKnown;
 }
 
-/* ── Textures made on the spot: no image files ── */
-
-/// Paper fibres: short soft strokes in every direction over blotches — the
-/// displacement that tears the ink's edge like 宣纸 wicking it.
-export function fibreCanvas(size = 256) {
-  const c = document.createElement('canvas');
-  c.width = c.height = size;
-  const g = c.getContext('2d');
-  g.fillStyle = 'rgb(128,128,128)';
-  g.fillRect(0, 0, size, size);
-  g.filter = 'blur(6px)';
-  for (let i = 0; i < 90; i += 1) {
-    g.fillStyle = `rgb(${Math.random() * 255 | 0},${Math.random() * 255 | 0},128)`;
-    g.beginPath();
-    g.arc(Math.random() * size, Math.random() * size, 6 + Math.random() * 26, 0, Math.PI * 2);
-    g.fill();
-  }
-  g.filter = 'blur(1px)';
-  g.lineCap = 'round';
-  for (let i = 0; i < 260; i += 1) {
-    const x = Math.random() * size, y = Math.random() * size, a = Math.random() * Math.PI, l = 6 + Math.random() * 22;
-    g.strokeStyle = `rgba(${Math.random() * 255 | 0},${Math.random() * 255 | 0},128,0.6)`;
-    g.lineWidth = 0.6 + Math.random() * 1.4;
-    g.beginPath();
-    g.moveTo(x, y);
-    g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l);
-    g.stroke();
-  }
-  return c;
-}
-
-/// Rice-paper grain: fine speckle, laid over everything very faintly.
-export function grainCanvas(size = 256) {
-  const c = document.createElement('canvas');
-  c.width = c.height = size;
-  const g = c.getContext('2d');
-  const img = g.createImageData(size, size);
-  for (let i = 0; i < img.data.length; i += 4) {
-    const v = 150 + Math.random() * 105 | 0;
-    img.data[i] = v; img.data[i + 1] = v - 6; img.data[i + 2] = v - 18; img.data[i + 3] = 255;
-  }
-  g.putImageData(img, 0, 0);
-  return c;
-}
+/* ── Textures made on the spot: no image files (kit/fx/ink.js, shared with Phaser) ── */
+export { fibreCanvas, grainCanvas };
 
 const provinceSvg = (d) => `<svg xmlns="http://www.w3.org/2000/svg"><path d="${d}" fill="#ffffff"/></svg>`;
 

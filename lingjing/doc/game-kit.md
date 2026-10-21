@@ -193,7 +193,7 @@ terms on remote code. linggensite may also host a playable **demo** (a level or 
 
 ## One engine — Phaser for everything drawn (10-21)
 
-**PLAN, not built. It waits for Hanli's read.** Hanli 10-21: 「特效, 引擎, 图片都可以共享」 ·
+**Approved 10-21 (「go」), being built — the port table below marks what landed.** Hanli 10-21: 「特效, 引擎, 图片都可以共享」 ·
 「大场面的特效, 似乎也可以用新的游戏引擎来做」 → 「按你的建议来, 统一用Phaser」. The 10-20 rule (every small game
 runs on Phaser 3.90) now covers everything drawn: the 大场面 set pieces, 画活, the weather, 银月's colour memory,
 the 回 turn, 鼎归, and the effects of every game and fight.
@@ -229,7 +229,13 @@ plays. The browser drops the oldest when it runs out, which `fx.js glOK()` alrea
   beast's 出场), `weather`, and `moment` (鼎归, 回, a set piece). A layer starts, sleeps and stops as a scene. Teardown
   is `scene.stop()` plus freeing its textures; the game itself stays. This replaces the six `Application` sites with
   one context. A set piece covering the stage sleeps `alive` and `weather` and wakes them after.
-- **The honest limit is z-order.** Everything on the stage sits under the DOM words, so it fits one canvas.
+- **The honest limit is z-order.** The stage's DOM is not one slab under the words (story.css, lingjing.css):
+  painting `.bd` → `.shade` z1 → `.slots` (the cards) z2 → `.atmos` z3 → the words `.dlgwrap` z4 → `.appear`/`.spstage` 30
+  → the 回 page z31 → the seal `.feat` z32. One canvas has one z, so `kit/stage.js` moves it to the topmost running
+  layer's (`LAYERS`): z31 while the 回 turns. Two things this doesn't solve, for steps 6–7 (§ 5 q4): 画活 today sits
+  inside the `.bd` and takes its Ken Burns move, its fade, its night `dim` filter, the fight's grey and the season's
+  soft-light tint from the DOM; and the weather today falls over the shade and over the cards. A canvas at the
+  painting's level puts the weather under both (dimmed at the foot while the book reads, behind a card).
   `fx-memory` draws over a memory card's picture (`position: fixed`, following the card), which is not the stage
   box. It stays a short-lived second `Phaser.Game` (~4 s, destroyed after). It only joins the stage game if the
   card's picture ever moves inside the stage.
@@ -301,7 +307,7 @@ Sizes are agent time: S ≤ 2 h, M 2–5 h, L 5–10 h.
 | 1 | Merge the three `tools/*/src/fx.js` into `kit/fx/`; rebuild 守墙关, 撒豆成兵, 守山门 and 开炉 against it. No visual change. | S · 2 h | stale-bundle tests; play each once |
 | 2 | 砸寨 onto the shared `phaser.min.mjs` (external), dropping its bundled copy | M · 3 h | `game-zhazhai.test.mjs`; a full level |
 | 3 | Font union cut + `kit/assets/manifest.json` skeleton + manifest test; move the shared beasts' frames first | M · 3 h | each game's text still renders |
-| 4 | **The spike and gate:** the stage host (`kit/stage.js`) + `kit/timeline.js` + `fx-hui.js` (107 lines, a soak with no beats and no lock) on Phaser | M · 5 h | the soak looks right beside the Pixi one, and the spike measures the mesh cost. **If the soak needs the GLSL pipeline, the plan says so here before step 5.** |
+| 4 | ✅ 10-21 **The spike and gate:** the stage host (`kit/stage.js`) + `kit/timeline.js` + `fx-hui.js` (107 lines, a soak with no beats and no lock) on Phaser | M · 5 h | the soak looks right beside the Pixi one, and the spike measures the mesh cost. **The soak took the shader:** `kit/fx/ink.js` `InkSoak`, one PostFXPipeline on the painting (mask, tear by the fibre texture, rim; ~30 lines of GLSL), no RenderTexture per layer — Phaser's Displacement FX stretches its map over the object (no repeat) and a baked `rt.draw` round-trip per layer was never needed. One context (the stage's) during the turn; 57–60 fps. |
 | 5 | `fx-memory.js` (the same soak; its own short-lived game) | S · 2 h | `fx-memory.test.mjs`; a bloom live |
 | 6 | `fx-weather.js` → `weather` scene, ParticleEmitter | M · 3 h | `fx-weather.test.mjs`; snow, rain, fog live |
 | 7 | `fx-alive.js` → `alive` scene, Plane breathing (the 画活 painting + the beast's 出场 in one scene) | M · 5 h | `fx-alive.test.mjs`; `alive.html` side by side |
@@ -369,3 +375,9 @@ covers, and while a game plays.
    the rest as each is touched?** Recommended: **steps 1–4 now, then 7 (画活) and 6 (weather) next**, because
    those two run on every stage and cut the contexts. Set pieces and 鼎归 port when touched, with the end of 卷二's
    build as the date Pixi leaves.
+4. **(10-21, from step 4) Where does the weather fall once it's on the one canvas?** Today it falls over the shade
+   and over the cards (z3); 画活 sits under the shade (inside the painting). One canvas can't be both. Options:
+   (a) the canvas at the painting's level, the weather under the shade and the cards (dimmer at the foot while the
+   book reads, behind a card); (b) 画活 draws the shade and season tint itself and the canvas sits over the shade,
+   the weather still under the cards; (c) two canvases on the stage (two contexts, which this plan ends).
+   Recommended: **(a)** — the weather is 「faint, and never in the way」 already; to look at live before step 6.
