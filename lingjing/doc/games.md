@@ -873,33 +873,38 @@ flies from 小满; the panel fades 0.7 s after, or 0.9 s after the hands go (tex
 
 ## 撒豆成兵 · 守山门 — the defence crowd game (prototype, test-only, 10-21)
 
-Hanli 10-21, of a crowd-gate ad (a lane walled with 「+1」 gates, a small blue squad at the bottom, a red horde of
-hundreds coming down, a boss with an HP bar; then three lanes — blue +1 safe, the horde in the middle, yellow +99 on the
-right — and the boss charging down into the squad): 「好像比我们的撒豆成兵好玩一点」, 「好, 做一版. 这个是在防守, 现在的
-撒豆成兵是在进攻.」. 游戏厅 only (`sadoushou`, group 主力, type 塔防, tiled right after 撒豆成兵 to compare); not in the
-story, not in the 秘境 pool. 撒豆成兵 (`sadou`, the attack run) is unchanged.
+Hanli 10-21, of a crowd-gate ad: 「好像比我们的撒豆成兵好玩一点」, 「好, 做一版. 这个是在防守, 现在的撒豆成兵是在进攻.」;
+after his first play: 「那些+1 等卡也是从两边一起移动过来的. 还有个墙挡一下, 需要线打墙.」, 「一共3列, 要么打野猪,
+要么打两边的+攻击的卡」, and 「这个塔防类游戏最近很流行, 你可能要去research一下游戏规则和玩法」. 游戏厅 only (`sadoushou`,
+group 主力, type 塔防, tiled right after 撒豆成兵 to compare); not in the story, not in the 秘境 pool. 撒豆成兵 (`sadou`)
+is unchanged.
 
-- **Play:** 小满 on the 山门 at the foot of a pseudo-3D road. Aim left/right (the mouse's x, a drag on touch, A/D ·
-  ←/→) and HOLD to scatter (press, Space): each bean is a 豆兵 that runs UP the road. **The lane is the decision:** left a
-  wall of small +1 / +2 gates (safe, steady), the middle a ×2 — from 第二关 a 符门 that flips ×3 / ÷2 —, the right +5 then
-  a gold **+99** that lights again only after its cool (rich, and the tide runs past it — from 第三关 waves come down the
-  right lane alone and shut its gates; traps (−1) join the left). Near a foe a 豆兵 turns to it, so any lane meets the
-  horde. A 豆兵 at a wave's front strikes once (its weight) and is spent: both big numbers grind down. Then the 大妖
-  walks out with an HP bar over its head; every few seconds it shows a red line where the stream runs, steps over, and
-  **charges** down it (lightning aura, large as it nears the wall), knocking the 豆兵 on it aside — move the stream off
-  the line. A wave or the 大妖 at the wall hurts it; the wall at 0 is the loss. Stars: the wall left (75% · 40%) and ★★★
-  only inside the level's par time.
+- **The genre's rules, as applied** (the lane/gate-shooter ads; Last War's 「Frontline Breakthrough」 mode is the in-game
+  form; the coordinator's research, sources thin): the player only moves, the squad fires on its own; cards are SHOT
+  and every hit raises their number (a red −5 can be shot past zero); HP walls guard the big rewards; the army's size
+  is its firepower; a boss at the end; tuned so a first-timer falls just short.
+- **Play:** three columns. The 兽潮 comes down the MIDDLE. The two SIDE columns are belts of cards riding down: blue
+  +1 / +2 / +3, red −3 … −6, and grey stone walls with an HP number, a gold +10 card (grows +2 a hit, pays at +60)
+  behind each wall on the right; on the left a wall now and then lifts the squad a tier (豆兵 → 纸甲兵 → 铜人, ×1.5,
+  ×2.2). 小满's squad (10 豆兵 from the start, all of them drawn at the wall) stands under the column he drags to and
+  fires up it: a stream as dense as the squad is big, its attack the squad's size. A card pays its number when it
+  pops at its cap, or when it reaches the line with the squad under it (a red one there costs). So the choice is
+  moment to moment: pump the cards on a side, or kill in the middle while the tide comes closer. Then the 大妖 walks
+  down with an HP bar over its head and charges the squad's column (lit red 1.6 s ahead, a lightning aura, large as it
+  nears): still there, a third of the squad is knocked aside. A wave or the 大妖 at the 山门 hurts it; 0 is the loss.
+  Stars: the 山门 left (75% · 40%), ★★★ only inside par.
 - **Levels** (worlds/jiuding/levels/sadoushou.json, data; each sends only the beasts the book has shown by its `hui`):
-  守山门 · 野猪下山 (h04, 1,650 野猪, 蠪侄) · 松林狰吼 (h05, 狰 in the tide, the 符门, 蠪侄) · 药园夜袭 (h07, 犰狳,
-  a trap, waves down the rich lane, 合窳) · 黑松岭鬿雀 (h09, fast 鬿雀, 合窳). 狰 is beyond the brief's 野猪/犰狳/鬿雀:
-  it is the book's (h05) and 守墙关 has its art.
-- **Balance** (tests/game-sadoushou.test.mjs; 40 seeded first-time humans — 0.45 s late, a worse lane one time in four,
-  out of the charge three times in five): wins 40 · 32 · 32 · 22 of 40 (sloppy: 28 · 18 · 5 · 4); aiming where the
-  stream multiplies wins every seed, aiming into the traps or never moving loses every level.
-- **Engine** games/sadoushou/core.js (headless; the 豆兵 typed arrays bounded by `cap`, past it they run as weight so
-  the count stays true); **play** tools/sadoushou/ → games/sadoushou/sadoushou.min.mjs (Phaser, the shared vendor
-  build): the road and the ink mountains painted once into one texture, pooled sprites (≤ 520 豆兵, ≤ 380 beasts), no
-  per-frame depth sort. **Art** all shared: 撒豆成兵's 豆兵 and road, 守墙关's wall, beasts and 小满, 守炉's 银月, the
-  story's backdrop `cloudy-day`; the gates drawn in code. No new painting.
-- **Speed** (Playwright, GPU headless Chromium on the Mac, ?fps=1): 1440×900 avg 59.7 fps (min 56) and 390×844 at 3×
-  avg 59.7 (min 57), with 380 beasts + ~105 豆兵 drawn at the peak. Not measured on a real phone.
+  守山门 · 野猪下山 (h04, 野猪, 蠪侄; forgiving, no red cards) · 松林狰吼 (h05, 狰 in the tide, red cards) · 药园夜袭
+  (h07, 犰狳, the tier wall, 合窳) · 黑松岭鬿雀 (h09, fast 鬿雀, 合窳). 狰 is beyond the brief's 野猪/犰狳/鬿雀: the
+  book's (h05), and 守墙关 has its art.
+- **Balance** (tests/game-sadoushou.test.mjs; 40 seeded first-time humans — 0.45 s late, looking every ~1.6 s, turning
+  on the tide early or late by up to 60%, the poorer side one time in four, out of the charge three times in five):
+  wins 38 · 30 · 22 · 23 of 40 (sloppy 35 · 27 · 11 · 9); a sharp player wins every seed; never buffing, only
+  buffing and never moving all lose every level.
+- **Engine** games/sadoushou/core.js (headless; the belt laid out from lines, a wall kept clear of cards); **play**
+  tools/sadoushou/ → games/sadoushou/sadoushou.min.mjs (Phaser, the shared vendor build): road, columns and ink
+  mountains painted once; pooled sprites (≤ 160 squad, ≤ 60 in flight, ≤ 380 beasts in a loose, jostling crowd with
+  their count over their back); cards' depth set once (nearer over farther). **Art** all shared; cards and walls drawn
+  in code. No new painting.
+- **Speed** (Playwright, GPU headless Chromium on the Mac, `?fps=1`): 1440×900 avg 60 fps (min 56), 390×844 at 3× avg
+  59 (min 50), with ~380 beasts + ~260 豆兵 drawn at the peak. Not measured on a real phone.

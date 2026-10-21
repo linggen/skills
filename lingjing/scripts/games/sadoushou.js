@@ -2,12 +2,11 @@
 // test-only in the 游戏厅 for comparing (Hanli 10-21, of a crowd-gate ad: 「好像比我们的撒豆成兵好玩一点」, 「好, 做一版.
 // 这个是在防守, 现在的撒豆成兵是在进攻.」). Not in the story, not in the 秘境 pool.
 //
-// 小满 stands on the 山门 at the foot of the road; the 兽潮 marches DOWN it, its count big from the start, the 大妖
-// behind. He aims left and right and HOLDS to scatter beans: each runs up the road as a 豆兵, and the lanes are walled
-// with gates — a safe lane of small +1s, a 符门 in the middle, a rich lane of +99 that the tide runs past — so where
-// he aims is what he gets. The stream grinds the waves down unit by unit; then the 大妖 steps out, walks down, and
-// charges down a line it shows first. The play is Phaser (games/sadoushou/sadoushou.min.mjs, built from
-// tools/sadoushou/, loading the one shared scripts/vendor/phaser.min.mjs); the engine is games/sadoushou/core.js; the
+// The road has three columns (Hanli 10-21: 「一共3列, 要么打野猪, 要么打两边的+攻击的卡」): the 兽潮 comes down the
+// middle, the sides are belts of + cards and stone walls coming down. 小满's squad fires on its own up the column he
+// picks; a card's number grows with every hit and pays the squad, a wall breaks open, the beasts fall; then the 大妖
+// walks down and charges the squad's column (a line shown first). The play is Phaser (games/sadoushou/sadoushou.min.mjs,
+// built from tools/sadoushou/, loading the one shared scripts/vendor/phaser.min.mjs); the engine is games/sadoushou/core.js; the
 // levels are data (worlds/jiuding/levels/sadoushou.json). The small-game contract:
 //
 //   mount(container, { lang, data, signal, reducedMotion, seed, lines, onEvent, shell }) → Promise<{ won, stars, stats } | { left }>
@@ -21,9 +20,10 @@ export const meta = {
   aspect: 9 / 16,
   name: { zh: '撒豆成兵 · 守山门', en: 'Beans into Soldiers · Hold the Gate' },
   how: {
-    zh: '左右瞄准，按住撒豆：豆兵往上冲，穿过门就变多。挡住兽潮，别让它们撞上山门；大妖冲下来前，躲开那条线。',
-    en: 'Aim left and right and hold to scatter beans: the soldiers charge up the road and every gate they pass makes more. Stop the tide before it hits the gate; when the great beast charges, get off its line.',
+    zh: '左右拖动选一列，豆兵自己会打：打两边的卡，卡上的数越打越大，接住它队伍就壮；打中间的兽，别让它们撞上山门；石墙打碎了有好东西。大妖冲哪一列，就躲开哪一列。',
+    en: 'Drag left and right to pick a column; the soldiers fire on their own. Shoot the side cards — their numbers grow with every hit — and take them to grow the squad; shoot the beasts in the middle before they reach the gate; break the stone walls for what they hide. When the great beast charges a column, get off it.',
   },
+
 };
 
 const LEVELS = new URL('../../worlds/jiuding/levels/sadoushou.json', import.meta.url);

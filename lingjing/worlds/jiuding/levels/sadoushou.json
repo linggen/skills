@@ -1,5 +1,5 @@
 {
- "_about": "撒豆成兵 · 守山门 (the DEFENCE crowd game, test-only beside 撒豆成兵; Hanli 10-21). One row a level. The road runs from the wall (z 0) to the far end (z 100); x is −1 (left) … 1 (right). `gates`: rows at `z`, each cell on [a, b] with op + − x / and n — `cool` s: a big gate lights again only after that long; `alt` + `flip` s: a 符门 swapping faces on the clock. `waves`: the 兽潮, each at `t` s on `span`, [[beast, n]…] (the last kind the front rank), marching at `speed` z/s; `hold`: the beast-power a second that stops a wave cold. `beans`: the stream (`rate` a second, `speed` z/s); `seek`: how near a foe a 豆兵 turns to it. `boss`: walks down from `stand` at `speed`; its `charge` every `every` s, the line shown `warn` s ahead, `half` its half-width, `kill` the share of the 豆兵 on it lost; at the wall it crushes `crush` wall a second. `wall`: the wall's hp; `stars`: [★★★, ★★] by the share of the wall left. `difficulty` scales every wave and the boss's hp (1 = as tuned). `hui`: the 回 the level belongs to — it sends only beasts met by then.",
+ "_about": "撒豆成兵 · 守山门 (the DEFENCE crowd game, test-only beside 撒豆成兵; Hanli 10-21: 「一共3列, 要么打野猪, 要么打两边的+攻击的卡」). One row a level. The road runs from the wall (z 0) to the far end (z 100) in three columns (core.js COLS: L · M · R). The squad (`squad` 豆兵 at the start) fires on its own up the column it stands in: `shot.rate` + `perSoldier` a 豆兵 thrown a second (to `max`), at `shot.speed` z/s, the whole attack `dps` a 豆兵 a second × the tier's `power` (`tiers`: 豆兵 → 纸甲兵 → 铜人). `belt`: the side columns' things riding down at `speed` z/s, laid by `lines` (`col`, `from` + k·`every` to `until`): `cards` cycled one a row — a card's `n` (red below 0) goes up `step` a hit and pays at its `cap`, or at the line if the squad stands in its column — and `wall`s with `hp` that shield what is behind (`gives: tier` lifts the squad a tier). `waves`: the 兽潮 down the middle, each at `t` s, [[beast, n]…] (the last kind the front rank), at `speed` z/s; at the wall `breach` beasts a second break on it. `boss`: walks down from `stand` at `speed`; its `charge` every `every` s down the squad's column, shown `warn` s ahead, knocks `kill` of the squad aside unless it moved off; at the wall it crushes `crush` a second. `wall`: the 山门's hp; `stars`: [★★★, ★★] by the share of it left, ★★★ inside `par` s. `press`: the bots' turn to the middle. `hui`: the 回 the level belongs to — it sends only beasts met by then.",
  "beasts": {
   "_about": "power: how many 豆兵 one beast takes. size: its drawn height (px) at the wall; it shrinks up the road. frames: 守墙关's painted frames, shared (scripts/games/shouqiang/art/<id>-<frame>.webp); `art: \"sadou\"` = 撒豆成兵's own (the 蠪侄). A boss has a `name` (the HP bar) and `face`. `fly`: it bobs. The beasts a level may send are the book's by its `hui` (creatures.json `hui` ≤ the level's; tests/game-sadoushou.test.mjs).",
   "yezhu": {
@@ -79,22 +79,49 @@
     0.75,
     0.4
    ],
-   "cap": 700,
-   "beans": {
-    "rate": 4,
-    "speed": 26
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
    },
-   "seek": 30,
-   "turn": 0.9,
-   "hold": 400,
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
    "breach": 8,
-   "rank": 2.2,
-   "perRank": 7,
+   "rank": 1.5,
+   "perRank": 13,
    "leadSec": 4.5,
    "countdown": 3,
    "id": "shanmen",
    "hui": "h04",
-   "par": 75,
+   "par": 80,
    "title": {
     "zh": "守山门 · 野猪下山",
     "en": "The Gate · Boars Come Down"
@@ -105,8 +132,8 @@
      "en": "At dusk the mountain road goes dark with them — the boars are coming down, and something big behind."
     },
     {
-     "zh": "小满跳上山门，抓出一把黄豆。",
-     "en": "Xiaoman jumps onto the gate wall and grabs a fistful of beans."
+     "zh": "小满跳上山门：豆兵自己会打，你只管左右挪——打两边的卡壮大队伍，打中间的野猪。",
+     "en": "Xiaoman jumps onto the gate. The bean soldiers fire on their own — you only move: hit the side cards to grow the squad, hit the boars in the middle."
     },
     {
      "zh": "撒豆成兵！",
@@ -114,190 +141,148 @@
      "big": true
     }
    ],
-   "gates": [
-    {
-     "z": 14,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
+   "belt": {
+    "speed": 7,
+    "until": 700,
+    "lines": [
+     {
+      "col": "L",
+      "from": 18,
+      "every": 16,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 30,
+      "every": 16,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 60,
+      "every": 90,
+      "wall": {
+       "hp": 40
       }
-     ]
-    },
-    {
-     "z": 26,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 38,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 20,
-     "cells": [
-      {
-       "x": [
-        -0.3,
-        0.3
-       ],
-       "op": "x",
-       "n": 2
-      }
-     ]
-    },
-    {
-     "z": 18,
-     "cells": [
-      {
-       "x": [
-        0.38,
-        0.98
-       ],
-       "op": "+",
-       "n": 5
-      }
-     ]
-    },
-    {
-     "z": 52,
-     "cells": [
-      {
-       "x": [
-        0.38,
-        0.98
-       ],
-       "op": "+",
-       "n": 99,
-       "cool": 3
-      }
-     ]
-    }
-   ],
+     },
+     {
+      "col": "R",
+      "from": 66,
+      "every": 90,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
    "waves": [
     {
-     "t": 0,
+     "t": 4,
      "beasts": [
       [
        "yezhu",
-       390
+       550
       ]
      ],
-     "span": [
-      -0.7,
-      0.7
+     "speed": 4
+    },
+    {
+     "t": 22,
+     "beasts": [
+      [
+       "yezhu",
+       760
+      ]
      ],
      "speed": 4.5
     },
     {
-     "t": 14,
+     "t": 40,
      "beasts": [
       [
        "yezhu",
-       540
+       1010
       ]
      ],
-     "span": [
-      -0.8,
-      0.6
-     ],
-     "speed": 5
-    },
-    {
-     "t": 28,
-     "beasts": [
-      [
-       "yezhu",
-       720
-      ]
-     ],
-     "span": [
-      -0.5,
-      1
-     ],
-     "speed": 5
+     "speed": 4.5
     }
    ],
    "boss": {
     "beast": "longzhi",
-    "hp": 540,
-    "speed": 1.6,
+    "hp": 1440,
+    "speed": 3,
     "stand": 72,
-    "half": 0.26,
-    "dmg": 1,
+    "half": 0.3,
     "crush": 12,
     "charge": {
      "every": 7,
      "warn": 1.6,
-     "half": 0.2,
      "speed": 90,
-     "to": 6,
-     "kill": 0.8
+     "to": 4,
+     "kill": 0.35
     }
    },
    "moments": {
     "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
     "start": [
      {
-      "zh": "按住撒豆，豆兵往上冲！穿过门就变多。",
-      "en": "Hold to scatter beans — they charge up the road. Gates make more of them."
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
      }
     ],
-    "rich": [
+    "card": [
      {
-      "zh": "右边那道门值钱，可兽潮挨着它。",
-      "en": "The right-hand gate is rich — but the tide runs right past it."
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
      }
     ],
-    "flip": [
+    "red": [
      {
-      "zh": "中间是符门，会翻，看准了再撒。",
-      "en": "The middle is a charm gate. It flips — time your beans."
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
      }
     ],
     "wave": [
@@ -314,14 +299,14 @@
     ],
     "boss": [
      {
-      "zh": "大妖出来了！全都扑上去！",
+      "zh": "大妖出来了！全都打它！",
       "en": "The great beast is out! Everyone, at it!"
      }
     ],
     "charge": [
      {
-      "zh": "它要冲了！看那条线，挪开！",
-      "en": "It's going to charge! See the line — move!"
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
      }
     ],
     "won": [
@@ -332,8 +317,8 @@
     ],
     "lost": [
      {
-      "zh": "山门破了……再来一把豆子。",
-      "en": "The gate broke… another handful of beans."
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
      }
     ]
    }
@@ -346,22 +331,49 @@
     0.75,
     0.4
    ],
-   "cap": 700,
-   "beans": {
-    "rate": 4,
-    "speed": 26
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
    },
-   "seek": 30,
-   "turn": 0.9,
-   "hold": 400,
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
    "breach": 8,
-   "rank": 2.2,
-   "perRank": 7,
+   "rank": 1.5,
+   "perRank": 13,
    "leadSec": 4.5,
    "countdown": 3,
    "id": "songlin",
    "hui": "h05",
-   "par": 85,
+   "par": 90,
    "title": {
     "zh": "守山门 · 松林狰吼",
     "en": "The Gate · Zheng in the Pines"
@@ -372,8 +384,8 @@
      "en": "A zheng roars in the pines, driving the boars down at the gate."
     },
     {
-     "zh": "中间那道是符门，一会儿乘，一会儿除。",
-     "en": "The middle gate is a charm: now it multiplies, now it divides."
+     "zh": "红的是坏卡，别让它落到队伍里——多打几下，它也能翻成好的。",
+     "en": "The red cards are bad — don't let one reach your squad. Shoot it enough and it turns good."
     },
     {
      "zh": "撒豆成兵！",
@@ -381,203 +393,164 @@
      "big": true
     }
    ],
-   "gates": [
-    {
-     "z": 14,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 26,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 2
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 38,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 22,
-     "cells": [
-      {
-       "x": [
-        -0.3,
-        0.3
-       ],
-       "op": "x",
-       "n": 3,
-       "alt": {
-        "op": "/",
-        "n": 2
+   "belt": {
+    "speed": 7.5,
+    "until": 750,
+    "lines": [
+     {
+      "col": "L",
+      "from": 18,
+      "every": 15,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 10
        },
-       "flip": 3
+       {
+        "n": -5,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": -3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 30,
+      "every": 16,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": -4,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 60,
+      "every": 85,
+      "wall": {
+       "hp": 60
       }
-     ]
-    },
-    {
-     "z": 18,
-     "cells": [
-      {
-       "x": [
-        0.38,
-        0.98
-       ],
-       "op": "+",
-       "n": 5
-      }
-     ]
-    },
-    {
-     "z": 54,
-     "cells": [
-      {
-       "x": [
-        0.38,
-        0.98
-       ],
-       "op": "+",
-       "n": 99,
-       "cool": 3
-      }
-     ]
-    }
-   ],
+     },
+     {
+      "col": "R",
+      "from": 66,
+      "every": 85,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
    "waves": [
     {
-     "t": 0,
+     "t": 3,
      "beasts": [
       [
        "yezhu",
-       380
+       300
       ]
      ],
-     "span": [
-      -0.7,
-      0.7
-     ],
-     "speed": 5
+     "speed": 4.5
     },
     {
-     "t": 13,
+     "t": 20,
      "beasts": [
       [
        "zheng",
-       80
+       60
       ],
       [
        "yezhu",
-       320
+       260
       ]
      ],
-     "span": [
-      -0.8,
-      0.6
-     ],
-     "speed": 5
+     "speed": 4.5
     },
     {
-     "t": 26,
+     "t": 38,
      "beasts": [
       [
        "zheng",
-       120
+       90
       ],
       [
        "yezhu",
-       380
+       360
       ]
      ],
-     "span": [
-      -0.4,
-      1
-     ],
-     "speed": 5.5
+     "speed": 5
     }
    ],
    "boss": {
     "beast": "longzhi",
-    "hp": 580,
-    "speed": 1.8,
+    "hp": 1120,
+    "speed": 3.2,
     "stand": 72,
-    "half": 0.26,
-    "dmg": 1,
+    "half": 0.3,
     "crush": 12,
     "charge": {
      "every": 6,
      "warn": 1.6,
-     "half": 0.2,
      "speed": 90,
-     "to": 6,
-     "kill": 0.8
+     "to": 4,
+     "kill": 0.35
     }
    },
    "moments": {
     "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
     "start": [
      {
-      "zh": "按住撒豆，豆兵往上冲！穿过门就变多。",
-      "en": "Hold to scatter beans — they charge up the road. Gates make more of them."
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
      }
     ],
-    "rich": [
+    "card": [
      {
-      "zh": "右边那道门值钱，可兽潮挨着它。",
-      "en": "The right-hand gate is rich — but the tide runs right past it."
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
      }
     ],
-    "flip": [
+    "red": [
      {
-      "zh": "中间是符门，会翻，看准了再撒。",
-      "en": "The middle is a charm gate. It flips — time your beans."
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
      }
     ],
     "wave": [
@@ -594,14 +567,14 @@
     ],
     "boss": [
      {
-      "zh": "大妖出来了！全都扑上去！",
+      "zh": "大妖出来了！全都打它！",
       "en": "The great beast is out! Everyone, at it!"
      }
     ],
     "charge": [
      {
-      "zh": "它要冲了！看那条线，挪开！",
-      "en": "It's going to charge! See the line — move!"
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
      }
     ],
     "won": [
@@ -612,8 +585,8 @@
     ],
     "lost": [
      {
-      "zh": "山门破了……再来一把豆子。",
-      "en": "The gate broke… another handful of beans."
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
      }
     ]
    }
@@ -626,22 +599,49 @@
     0.75,
     0.4
    ],
-   "cap": 700,
-   "beans": {
-    "rate": 4,
-    "speed": 26
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
    },
-   "seek": 30,
-   "turn": 0.9,
-   "hold": 400,
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
    "breach": 8,
-   "rank": 2.2,
-   "perRank": 7,
+   "rank": 1.5,
+   "perRank": 13,
    "leadSec": 4.5,
    "countdown": 3,
    "id": "yaoyuan",
    "hui": "h07",
-   "par": 95,
+   "par": 100,
    "title": {
     "zh": "守山门 · 药园夜袭",
     "en": "The Gate · Herb Garden Raid"
@@ -652,12 +652,12 @@
    },
    "lead": [
     {
-     "zh": "犰狳拱开了药园的篱笆，兽潮顺着右边那道沟下来——那边的符门最值钱。",
-     "en": "The qiuyu broke the herb-garden fence; the tide comes down the right-hand ditch — where the richest gate stands."
+     "zh": "犰狳拱开了药园的篱笆，兽潮压下来了。",
+     "en": "The qiuyu broke the herb-garden fence; the tide is coming down."
     },
     {
-     "zh": "合窳在后头等着。",
-     "en": "The Heyu waits behind them."
+     "zh": "石墙打碎了，豆兵就披上纸甲——更能打。",
+     "en": "Break a stone wall and the bean soldiers put on paper armour — they hit harder."
     },
     {
      "zh": "撒豆成兵！",
@@ -665,217 +665,183 @@
      "big": true
     }
    ],
-   "gates": [
-    {
-     "z": 14,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 26,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "-",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 2
-      }
-     ]
-    },
-    {
-     "z": 38,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 22,
-     "cells": [
-      {
-       "x": [
-        -0.3,
-        0.3
-       ],
-       "op": "x",
-       "n": 3,
-       "alt": {
-        "op": "/",
-        "n": 2
+   "belt": {
+    "speed": 8,
+    "until": 800,
+    "lines": [
+     {
+      "col": "L",
+      "from": 18,
+      "every": 15,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 10
        },
-       "flip": 2.6
+       {
+        "n": -5,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": -3,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 80,
+      "every": 160,
+      "wall": {
+       "hp": 70,
+       "gives": "tier"
       }
-     ]
-    },
-    {
-     "z": 18,
-     "cells": [
-      {
-       "x": [
-        0.38,
-        0.98
-       ],
-       "op": "+",
-       "n": 5
+     },
+     {
+      "col": "R",
+      "from": 30,
+      "every": 17,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": -6,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 60,
+      "every": 80,
+      "wall": {
+       "hp": 80
       }
-     ]
-    },
-    {
-     "z": 50,
-     "cells": [
-      {
-       "x": [
-        0.38,
-        0.98
-       ],
-       "op": "+",
-       "n": 99,
-       "cool": 2.5
-      }
-     ]
-    }
-   ],
+     },
+     {
+      "col": "R",
+      "from": 66,
+      "every": 80,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
    "waves": [
     {
-     "t": 0,
+     "t": 3,
      "beasts": [
       [
        "qiuyu",
-       150
+       70
       ],
       [
        "yezhu",
-       250
+       100
       ]
      ],
-     "span": [
-      -0.6,
-      0.6
+     "speed": 4.5
+    },
+    {
+     "t": 18,
+     "beasts": [
+      [
+       "qiuyu",
+       110
+      ]
      ],
      "speed": 5
     },
     {
-     "t": 12,
-     "beasts": [
-      [
-       "qiuyu",
-       190
-      ]
-     ],
-     "span": [
-      0.2,
-      1
-     ],
-     "speed": 5.5
-    },
-    {
-     "t": 24,
+     "t": 33,
      "beasts": [
       [
        "zheng",
-       100
+       40
       ],
       [
        "qiuyu",
-       210
+       100
       ]
      ],
-     "span": [
-      -0.9,
-      0.5
-     ],
-     "speed": 5.5
+     "speed": 5
     },
     {
-     "t": 38,
+     "t": 48,
      "beasts": [
       [
        "qiuyu",
-       250
+       130
       ]
      ],
-     "span": [
-      0.1,
-      1
-     ],
-     "speed": 6
+     "speed": 5.5
     }
    ],
    "boss": {
     "beast": "heyu",
-    "hp": 950,
-    "speed": 1.9,
+    "hp": 1440,
+    "speed": 3.4,
     "stand": 72,
-    "half": 0.26,
-    "dmg": 1,
+    "half": 0.3,
     "crush": 12,
     "charge": {
      "every": 6,
      "warn": 1.6,
-     "half": 0.24,
      "speed": 90,
-     "to": 6,
-     "kill": 0.8
+     "to": 4,
+     "kill": 0.35
     }
    },
    "moments": {
     "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
     "start": [
      {
-      "zh": "按住撒豆，豆兵往上冲！穿过门就变多。",
-      "en": "Hold to scatter beans — they charge up the road. Gates make more of them."
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
      }
     ],
-    "rich": [
+    "card": [
      {
-      "zh": "右边那道门值钱，可兽潮挨着它。",
-      "en": "The right-hand gate is rich — but the tide runs right past it."
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
      }
     ],
-    "flip": [
+    "red": [
      {
-      "zh": "中间是符门，会翻，看准了再撒。",
-      "en": "The middle is a charm gate. It flips — time your beans."
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
      }
     ],
     "wave": [
@@ -892,14 +858,14 @@
     ],
     "boss": [
      {
-      "zh": "大妖出来了！全都扑上去！",
+      "zh": "大妖出来了！全都打它！",
       "en": "The great beast is out! Everyone, at it!"
      }
     ],
     "charge": [
      {
-      "zh": "它要冲了！看那条线，挪开！",
-      "en": "It's going to charge! See the line — move!"
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
      }
     ],
     "won": [
@@ -910,8 +876,8 @@
     ],
     "lost": [
      {
-      "zh": "山门破了……再来一把豆子。",
-      "en": "The gate broke… another handful of beans."
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
      }
     ]
    }
@@ -924,22 +890,49 @@
     0.75,
     0.4
    ],
-   "cap": 700,
-   "beans": {
-    "rate": 4,
-    "speed": 26
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
    },
-   "seek": 30,
-   "turn": 0.9,
-   "hold": 400,
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
    "breach": 8,
-   "rank": 2.2,
-   "perRank": 7,
+   "rank": 1.5,
+   "perRank": 13,
    "leadSec": 4.5,
    "countdown": 3,
    "id": "heisong",
    "hui": "h09",
-   "par": 105,
+   "par": 110,
    "title": {
     "zh": "守山门 · 黑松岭鬿雀",
     "en": "The Gate · Qique on Black Pine"
@@ -963,217 +956,187 @@
      "big": true
     }
    ],
-   "gates": [
-    {
-     "z": 14,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 26,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 2
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "-",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 38,
-     "cells": [
-      {
-       "x": [
-        -0.98,
-        -0.68
-       ],
-       "op": "+",
-       "n": 1
-      },
-      {
-       "x": [
-        -0.66,
-        -0.36
-       ],
-       "op": "+",
-       "n": 1
-      }
-     ]
-    },
-    {
-     "z": 22,
-     "cells": [
-      {
-       "x": [
-        -0.3,
-        0.3
-       ],
-       "op": "x",
-       "n": 3,
-       "alt": {
-        "op": "/",
-        "n": 3
+   "belt": {
+    "speed": 8.5,
+    "until": 850,
+    "lines": [
+     {
+      "col": "L",
+      "from": 18,
+      "every": 14,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 10
        },
-       "flip": 2.2
+       {
+        "n": -6,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": -4,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 70,
+      "every": 150,
+      "wall": {
+       "hp": 90,
+       "gives": "tier"
       }
-     ]
-    },
-    {
-     "z": 18,
-     "cells": [
-      {
-       "x": [
-        0.38,
-        0.98
-       ],
-       "op": "+",
-       "n": 5
+     },
+     {
+      "col": "R",
+      "from": 30,
+      "every": 16,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": -6,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": -3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 60,
+      "every": 75,
+      "wall": {
+       "hp": 100
       }
-     ]
-    },
-    {
-     "z": 48,
-     "cells": [
-      {
-       "x": [
-        0.38,
-        0.98
-       ],
-       "op": "+",
-       "n": 99,
-       "cool": 2.5
-      }
-     ]
-    }
-   ],
+     },
+     {
+      "col": "R",
+      "from": 66,
+      "every": 75,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
    "waves": [
     {
-     "t": 0,
+     "t": 3,
      "beasts": [
       [
        "qique",
-       360
+       130
       ]
      ],
-     "span": [
-      -0.8,
-      0.8
+     "speed": 6.5
+    },
+    {
+     "t": 16,
+     "beasts": [
+      [
+       "qiuyu",
+       70
+      ],
+      [
+       "qique",
+       70
+      ]
+     ],
+     "speed": 5.5
+    },
+    {
+     "t": 29,
+     "beasts": [
+      [
+       "qique",
+       160
+      ]
      ],
      "speed": 7
     },
     {
-     "t": 11,
+     "t": 42,
      "beasts": [
       [
        "qiuyu",
-       190
+       80
       ],
       [
        "qique",
-       170
+       90
       ]
-     ],
-     "span": [
-      -0.5,
-      1
      ],
      "speed": 6
-    },
-    {
-     "t": 22,
-     "beasts": [
-      [
-       "qique",
-       390
-      ]
-     ],
-     "span": [
-      -1,
-      0.4
-     ],
-     "speed": 7.5
-    },
-    {
-     "t": 34,
-     "beasts": [
-      [
-       "qiuyu",
-       220
-      ],
-      [
-       "qique",
-       220
-      ]
-     ],
-     "span": [
-      -0.3,
-      1
-     ],
-     "speed": 6.5
     }
    ],
    "boss": {
     "beast": "heyu",
-    "hp": 1040,
-    "speed": 2,
+    "hp": 970,
+    "speed": 3.6,
     "stand": 72,
-    "half": 0.26,
-    "dmg": 1,
+    "half": 0.3,
     "crush": 12,
     "charge": {
      "every": 5.5,
      "warn": 1.6,
-     "half": 0.26,
      "speed": 90,
-     "to": 6,
-     "kill": 0.8
+     "to": 4,
+     "kill": 0.35
     }
    },
    "moments": {
     "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
     "start": [
      {
-      "zh": "按住撒豆，豆兵往上冲！穿过门就变多。",
-      "en": "Hold to scatter beans — they charge up the road. Gates make more of them."
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
      }
     ],
-    "rich": [
+    "card": [
      {
-      "zh": "右边那道门值钱，可兽潮挨着它。",
-      "en": "The right-hand gate is rich — but the tide runs right past it."
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
      }
     ],
-    "flip": [
+    "red": [
      {
-      "zh": "中间是符门，会翻，看准了再撒。",
-      "en": "The middle is a charm gate. It flips — time your beans."
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
      }
     ],
     "wave": [
@@ -1190,14 +1153,14 @@
     ],
     "boss": [
      {
-      "zh": "大妖出来了！全都扑上去！",
+      "zh": "大妖出来了！全都打它！",
       "en": "The great beast is out! Everyone, at it!"
      }
     ],
     "charge": [
      {
-      "zh": "它要冲了！看那条线，挪开！",
-      "en": "It's going to charge! See the line — move!"
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
      }
     ],
     "won": [
@@ -1208,8 +1171,8 @@
     ],
     "lost": [
      {
-      "zh": "山门破了……再来一把豆子。",
-      "en": "The gate broke… another handful of beans."
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
      }
     ]
    }

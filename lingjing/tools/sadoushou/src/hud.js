@@ -6,10 +6,10 @@ import { W } from './view.js';
 import { FONT, canvasTex, rounded } from './fx.js';
 
 export const WORDS = {
-  zh: { go: '撒！', won: '守住了！', lost: '山门破了', horde: '兽潮', wall: '山门', hint: '按住撒豆 · 左右瞄准', keys: 'A / D 或 ← / → 瞄准，空格撒豆',
-    wave: '又来一拨！', boss: (n) => `${n} 出来了！`, charge: '它要冲了！闪开那条线！', rich: '+99 门值钱，可兽潮挨着它', yinyue: '银月' },
-  en: { go: 'Scatter!', won: 'Held!', lost: 'The gate broke', horde: 'Tide', wall: 'Gate', hint: 'Hold to scatter · move to aim', keys: 'A / D or ← / → aim, Space scatters',
-    wave: 'Another wave!', boss: (n) => `The ${n} steps out!`, charge: 'It\'s charging! Off that line!', rich: 'The +99 gate is rich — and near the tide', yinyue: 'Yinyue' },
+  zh: { go: '打！', won: '守住了！', lost: '山门破了', horde: '兽潮', wall: '山门', hint: '左右拖动 · 选一列打', keys: 'A / D 或 ← / → 也行',
+    wave: '又来一拨！', boss: (n) => `${n} 出来了！`, charge: '它要冲这一列！快换列！', broke: '墙破了！', yinyue: '银月' },
+  en: { go: 'Fire!', won: 'Held!', lost: 'The gate broke', horde: 'Tide', wall: 'Gate', hint: 'Drag left · right to pick a column', keys: 'A / D or ← / → work too',
+    wave: 'Another wave!', boss: (n) => `The ${n} steps out!`, charge: 'It\'s charging this column! Move!', broke: 'Wall down!', yinyue: 'Yinyue' },
 };
 
 export const text = (scene, x, y, s, size, o = {}) => scene.add.text(x, y, s, {
@@ -77,6 +77,7 @@ export class Hud {
     this.countPill = s.add.image(W - 120, 920, 'pill-blue').setDepth(depth + 1);
     this.countNum = s.add.bitmapText(W - 120, 917, 'numGood', '0', 52).setOrigin(0.5).setDepth(depth + 2);
     this.countPunch = 0;
+    this.tierName = text(s, W - 40, 878, '', 18, { color: '#d6f6ff', ox: 1 }).setDepth(depth + 2);
     this.fps = scene.cfg.showFps ? text(s, 10, 112, '', 16, { ox: 0, color: '#9dff9d' }).setDepth(depth + 1) : null;
   }
 
@@ -94,6 +95,9 @@ export class Hud {
   }
 
   punch() { this.countPunch = 1; }
+
+  /** The squad's tier over its number (豆兵 · 纸甲兵 · 铜人). */
+  setTier(name) { this.tierName.setText(name); }
 
   /** The lead-in: the level's lines one after another, then the countdown, then `go()` — never a tap to start. */
   lead(lines, sec, countdown, { onBig, onTick, go }) {

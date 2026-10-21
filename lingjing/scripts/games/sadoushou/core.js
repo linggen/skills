@@ -1,24 +1,29 @@
 // core.js — 撒豆成兵 · 守山门's engine: the DEFENCE crowd game, a second 撒豆成兵 beside the attack run (games/sadou)
-// (Hanli 10-21: 「好像比我们的撒豆成兵好玩一点」, 「好, 做一版. 这个是在防守, 现在的撒豆成兵是在进攻.」).
+// (Hanli 10-21: 「好, 做一版. 这个是在防守, 现在的撒豆成兵是在进攻.」; after his first play: 「一共3列, 要么打野猪,
+// 要么打两边的+攻击的卡」 — the cards ride down with the tide, 「还有个墙挡一下, 需要线打墙」).
 // Pure and headless: no Phaser, no DOM. The scene (tools/sadoushou/src) draws what this holds; tests and bots run it as is.
 //
 //   newGame(kit, level, { seed }) → g      aim(g, x, hold)      step(g, dt)      sim(kit, level, bot) → result
 //
-// Space: the road runs from the wall (z = 0, 小满 behind it) up to the far end (z = TOP); lateral u is −1 (left
-// edge) … 1 (right). 小满 holds to scatter beans at his aim; each bean is a 豆兵 that runs UP the road. Crossing a
-// gate's row inside its span changes it (+n: n more beside it, ×n: n − 1 more, ÷n / −n: a trap that kills it, by
-// turn), so a lane walled with gates multiplies the stream. A 兽潮 wave marches DOWN on its span; a 豆兵 that
-// reaches its front strikes one blow (its weight) and is spent: both counts grind down. Near a foe a 豆兵 turns
-// toward it (`seek`), so a stream up a safe side lane still meets the horde in the middle. After the waves the
-// 大妖 steps out, walks down, and CHARGES: a line on the road `warn` s ahead, then it rushes down that line and
-// knocks aside the 豆兵 in its path. A wave or the 大妖 at the wall hurts the wall; the wall at 0 is the loss.
+// The road has THREE columns (COLS): the 兽潮 comes down the MIDDLE; the two SIDE columns are belts of cards coming
+// down — + cards, red − cards, and stone walls with an HP number in front of what they hide. 小満's squad stands at the
+// wall (z = 0) under his aim and FIRES ON ITS OWN (the genre's rule: the player only moves): a stream of 豆兵 straight up
+// its column, denser the bigger the squad (`shot.rate` + `perSoldier` a 豆兵, to `max`), carrying the squad's whole
+// attack (`dps` per 豆兵, a second, × the tier's `power`). A 豆兵 strikes the first thing it meets: a card's number goes
+// UP a `step` a hit (a −5 shot past zero turns +), and the card pays its number to the squad when it pops at its `cap`
+// or when it reaches the line with the squad standing in its column (a red one there costs); a wall loses hp and,
+// broken, opens what is behind it (or lifts the squad a tier: 豆兵 → 纸甲兵 → 铜人); a wave loses beasts by power. So
+// the choice is moment to moment: pump a card on a side, or kill in the middle while the tide comes closer. After the waves the
+// 大妖 steps out, walks down the middle, and CHARGES down the column the squad stands in — a line shown `warn` s ahead —
+// knocking aside `kill` of the squad unless it moved off. A wave or the 大妖 at the wall hurts the wall; 0 is the loss.
 //
-// The soldiers are entities in typed arrays (bounded by `cap`): past the cap a new soldier joins one already
-// running as its `weight`, so the count stays true and the work per step stays bounded. Events go out on
-// g.events: wave · gate · strike · kill · breach · boss · charge_warn · charge · bosshit · low · end.
+// Events out on g.events: wave · card_hit · card · block_hit · block · strike · cleared · breach · boss · charge_warn ·
+// charge · charge_end · knock · bosshit · low · end.
 
-export const TOP = 100;                  // the road's far end (z)
-export const LANES = [[-1, -0.34], [-0.34, 0.34], [0.34, 1]]; // left · middle · right, for the bots and the hints
+export const TOP = 100;                                     // the road's far end (z)
+export const COLS = { L: [-1, -0.34], M: [-0.34, 0.34], R: [0.34, 1] };
+export const colOf = (x) => (x < COLS.M[0] ? 'L' : x > COLS.M[1] ? 'R' : 'M');
+export const colMid = (c) => (COLS[c][0] + COLS[c][1]) / 2;
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -35,14 +40,6 @@ export function seeded(seed) {
   };
 }
 
-/** A gate's face right now: a 符门 (`alt` + `flip` s) swaps faces on the clock. */
-export function faceOf(cell, t) {
-  if (!cell.alt || !cell.flip) return cell;
-  return Math.floor(t / cell.flip) % 2 ? { ...cell.alt, x: cell.x } : cell;
-}
-export const isGood = (f) => f.op === '+' || f.op === 'x';
-export const opLabel = ({ op, n }) => `${{ '+': '+', '-': '−', x: '×', '/': '÷' }[op]}${n}`;
-
 /** Beasts still standing in a wave, by kind; the last kind listed is the front rank and falls first. */
 export function waveLeft(w) {
   let hp = w.hp;
@@ -53,157 +50,157 @@ export function waveLeft(w) {
   });
 }
 export const waveCount = (w) => waveLeft(w).reduce((s, u) => s + u.n, 0);
-/** How deep a wave's block is (z): its ranks across its span, `rank` apart. */
-export const waveDepth = (w, level) => Math.ceil(w.n0 / perRank(w.span, level)) * (level.rank ?? 2.2);
 export const perRank = (span, level) => Math.max(4, Math.round((span[1] - span[0]) * (level.perRank ?? 9)));
+export const waveDepth = (w, level) => Math.ceil(w.n0 / perRank(w.span, level)) * (level.rank ?? 2.2);
 
-export function newGame(kit, level, { seed = 'sadoushou' } = {}) {
-  const cap = level.cap ?? 700;
-  const k = level.difficulty ?? 1;
-  return {
-    kit, level, seed, rand: seeded(`core|${seed}`),
-    t: 0, phase: 'waves',                         // waves · boss · won · lost
-    aimX: 0, hold: false, emitAcc: 0,
-    // the soldiers: SoA, `n` live; weight > 1 past the cap; `row` = the next gate row to cross; `ph` drawing phase
-    s: { n: 0, cap, x: new Float32Array(cap), z: new Float32Array(cap), w: new Int32Array(cap), row: new Int16Array(cap), id: new Int32Array(cap) },
-    nextId: 1,
-    count: 0, peak: 0,
-    rows: [...level.gates].sort((a, b) => a.z - b.z).map((r, i) => ({ ...r, i, cells: r.cells.map((c, k) => ({ ...c, k, coolT: 0, turn: 0 })) })),
-    waves: level.waves.map((w, i) => ({ ...w, i, on: false, done: false })),
-    live: [],                                      // the waves on the road
-    wall: { hp: level.wall, max: level.wall },
-    boss: null,
-    low: false,
-    events: [],
-    stats: { beans: 0, made: 0, trapped: 0, killed: 0, struck: 0, charged: 0, breach: 0, bossDmg: 0 },
-    k,
-  };
+/** The belt's things, laid out from the level's lines: cards and walls on a side column, `from` + k·`every` up the
+    road (to `until`), riding down at the belt's speed. A line's `cards` cycle, one a row. */
+export function beltOf(level) {
+  const out = [];
+  for (const [li, ln] of (level.belt.lines ?? []).entries()) {
+    const until = ln.until ?? level.belt.until ?? 600;
+    for (let k = 0, z = ln.from; z <= until; k += 1, z += ln.every) {
+      const card = ln.cards ? ln.cards[k % ln.cards.length] : null;
+      const kind = ln.wall ? 'block' : 'card';
+      const hp = ln.wall ? ln.wall.hp : card.hp;
+      out.push({ id: out.length, line: li, kind, col: ln.col, z, hp, hpMax: hp, n: card?.n ?? 0, step: card?.step ?? 1, cap: card?.cap ?? 30,
+        gold: Boolean(card?.gold), gives: ln.wall?.gives ?? null, gone: false });
+    }
+  }
+  // a wall stands alone: no card within `clear` of it in its column but the ones its own line lays just behind it
+  const clear = level.belt.clear ?? 7;
+  const walls = out.filter((it) => it.kind === 'block');
+  const kept = out.filter((it) => it.kind === 'block' || !walls.some((w) => w.col === it.col && Math.abs(w.z - it.z) < clear && !(it.gold && it.z > w.z)));
+  return kept.sort((a, b) => a.z - b.z).map((it, i) => ({ ...it, id: i }));
 }
 
-/** The player's input this step: where the stream goes (−1…1) and whether he holds. */
+export function newGame(kit, level, { seed = 'sadoushou' } = {}) {
+  const k = level.difficulty ?? 1;
+  const g = {
+    kit, level, seed, rand: seeded(`core|${seed}`),
+    t: 0, phase: 'waves',                          // waves · boss · won · lost
+    aimX: 0, hold: true, emitAcc: 0, tier: 0,
+    squad: level.squad, peak: level.squad,         // the 豆兵 at the wall: the blue number
+    shots: [],                                     // 豆兵 thrown up the road: { x, z, dmg }
+    belt: beltOf(level),
+    waves: level.waves.map((w, i) => ({ ...w, i, on: false, done: false })),
+    live: [],
+    wall: { hp: level.wall, max: level.wall },
+    boss: null, low: false, events: [], k,
+    stats: { thrown: 0, cards: 0, gained: 0, blocks: 0, killed: 0, struck: 0, knocked: 0, breach: 0, bossDmg: 0, onSides: 0, onMiddle: 0 },
+  };
+  return g;
+}
+
+/** The player's input this step: where the squad stands (−1…1). It fires on its own; `hold` false only for tests. */
 export function aim(g, x, hold = true) {
-  g.aimX = clamp(x, -0.96, 0.96);
+  g.aimX = clamp(x, -0.92, 0.92);
   g.hold = Boolean(hold);
 }
 
-/* ── soldiers ── */
+/** The squad's tier (豆兵 → 纸甲兵 → 铜人): its `power` multiplies the attack. */
+export const tierOf = (g) => g.level.tiers[Math.min(g.tier, g.level.tiers.length - 1)];
+/** The squad's whole attack a second, and its stream's density (豆兵 thrown a second). */
+export const dpsOf = (g) => g.squad * (g.level.dps ?? 1) * tierOf(g).power;
+export const rateOf = (g) => Math.min(g.level.shot.max, g.level.shot.rate + g.squad * g.level.shot.perSoldier);
 
-function addSoldier(g, x, z, w, row) {
-  const s = g.s;
-  g.count += w;
-  g.peak = Math.max(g.peak, g.count);
-  if (s.n >= s.cap) {           // full: the new ones run with one already on the road, as its weight
-    const j = Math.floor(g.rand() * s.n);
-    s.w[j] += w;
-    return;
-  }
-  const i = s.n++;
-  s.x[i] = clamp(x, -0.99, 0.99); s.z[i] = z; s.w[i] = w; s.row[i] = row; s.id[i] = g.nextId++;
-}
-
-function removeSoldier(g, i) {
-  const s = g.s, j = --s.n;
-  g.count -= s.w[i];
-  if (i !== j) { s.x[i] = s.x[j]; s.z[i] = s.z[j]; s.w[i] = s.w[j]; s.row[i] = s.row[j]; s.id[i] = s.id[j]; }
-}
+/* ── the stream ── */
 
 function emit(g, dt) {
-  if (!g.hold) { g.emitAcc = 0; return; }
-  g.emitAcc += g.level.beans.rate * dt;
+  if (!g.hold || g.squad <= 0) { g.emitAcc = 0; return; }
+  const rate = rateOf(g);
+  g.emitAcc += rate * dt;
+  g.stats[colOf(g.aimX) === 'M' ? 'onMiddle' : 'onSides'] += dt;
   while (g.emitAcc >= 1) {
     g.emitAcc -= 1;
-    addSoldier(g, g.aimX + (g.rand() - 0.5) * 0.08, 0.5, 1, 0);
-    g.stats.beans += 1;
+    g.shots.push({ x: clamp(g.aimX + (g.rand() - 0.5) * 0.12, -0.99, 0.99), z: 0.5, dmg: dpsOf(g) / rate });
+    g.stats.thrown += 1;
   }
 }
 
-/** A soldier crossing a gate: what it becomes. */
-function crossGate(g, i, row, cell) {
-  const f = faceOf(cell, g.t), s = g.s, w = s.w[i];
-  if (cell.coolT > 0) return true;          // a big gate spent: it lights again after `cool` s
-  let add = 0, dies = false;
-  if (f.op === '+') add = f.n * w;
-  else if (f.op === 'x') add = (f.n - 1) * w;
-  else if (f.op === '-') dies = true; // a trap: every one through it is lost
-  else if (f.op === '/') dies = ((cell.turn = (cell.turn ?? 0) + 1) % f.n) !== 0; // ÷n: one in n gets through
-  if (cell.cool) cell.coolT = cell.cool;
-  g.events.push({ t: 'gate', row: row.i, cell: cell.k, op: f.op, n: f.n, x: s.x[i], z: row.z, add, dies });
-  if (dies) { g.stats.trapped += w; return false; }
-  if (add) {
-    const pieces = Math.min(add, 6);           // a big gate adds in a few runners (their weights carry the rest)
-    for (let p = 0; p < pieces; p += 1) {
-      const share = Math.floor(add / pieces) + (p < add % pieces ? 1 : 0);
-      addSoldier(g, s.x[i] + (g.rand() - 0.5) * Math.min(0.3, (cell.x[1] - cell.x[0]) * 0.9), row.z + 0.6 + g.rand() * 1.4, share, s.row[i]);
-    }
-    g.stats.made += add;
+/** The first thing a 豆兵 at x meets between z0 and z1 (its step), as the belt and the waves come down to meet it. */
+function hitOf(g, x, z0, z1, dz) {
+  const col = colOf(x);
+  let best = null, bz = Infinity;
+  for (const it of g.belt) {
+    if (it.gone || it.col !== col || it.z > z1 + dz + 1 || it.z < z0 - 2) continue;
+    if (it.z < bz && it.z <= z1 + 0.5) { best = it; bz = it.z; }
   }
-  return true;
-}
-
-/** The foe a soldier at (x, z) turns toward: the nearest wave front above it within `seek`, else the 大妖. */
-function seekX(g, x, z) {
-  const seek = g.level.seek ?? 30;
-  let best = null, bd = Infinity;
   for (const w of g.live) {
-    const d = w.front - z;
-    if (d < -1 || d > seek) continue;
-    const [a, b] = w.span;
-    const tx = x < a + 0.05 ? a + 0.05 : x > b - 0.05 ? b - 0.05 : x;
-    if (d < bd) { bd = d; best = tx; }
+    if (x < w.span[0] - 0.02 || x > w.span[1] + 0.02) continue;
+    if (w.front <= z1 + 0.5 && z1 <= w.front + w.depth + 3 && w.front < bz) { best = w; bz = w.front; }
   }
-  if (best != null) return best;
   const bs = g.boss;
-  if (bs?.on && bs.z - z < seek * 1.6 && bs.mode !== 'rush' && bs.mode !== 'warn') return bs.x; // a charge coming: they run straight
-  return null;
+  if (bs?.on && bs.hp > 0 && Math.abs(x - bs.x) < bs.half && bs.z <= z1 + 1 && bs.z < bz) best = bs;
+  return best;
 }
 
-function moveSoldiers(g, dt) {
-  const s = g.s, sp = g.level.beans.speed, turn = g.level.turn ?? 0.9;
-  for (let i = s.n - 1; i >= 0; i -= 1) {
-    const z0 = s.z[i];
-    let z = z0 + sp * dt;
-    const tx = seekX(g, s.x[i], z);
-    if (tx != null) s.x[i] += clamp(tx - s.x[i], -turn * dt, turn * dt);
-    // gate rows crossed this step
-    let alive = true;
-    while (alive && s.row[i] < g.rows.length && g.rows[s.row[i]].z <= z) {
-      const row = g.rows[s.row[i]];
-      s.row[i] += 1;
-      if (row.z < z0) continue;
-      const cell = row.cells.find((c) => s.x[i] >= c.x[0] && s.x[i] <= c.x[1]);
-      if (cell) alive = crossGate(g, i, row, cell);
-    }
-    s.z[i] = z;
-    if (!alive) { removeSoldier(g, i); continue; }
-    if (strike(g, i)) { removeSoldier(g, i); continue; }
-    if (z > TOP + 4) removeSoldier(g, i); // ran off the far end (nothing left to fight up there)
+function moveShots(g, dt) {
+  const sp = g.level.shot.speed, dz = (g.level.belt.speed ?? 0) * dt;
+  for (let i = g.shots.length - 1; i >= 0; i -= 1) {
+    const s = g.shots[i], z0 = s.z;
+    s.z += sp * dt;
+    const hit = hitOf(g, s.x, z0, s.z, dz);
+    if (hit) { strike(g, s, hit); g.shots.splice(i, 1); continue; }
+    if (s.z > TOP + 6) g.shots.splice(i, 1);
   }
 }
 
-/** A soldier at a foe strikes once (its weight) and is spent. */
-function strike(g, i) {
-  const s = g.s, x = s.x[i], z = s.z[i], w = s.w[i];
-  for (const wv of g.live) {
-    if (z < wv.front || z > wv.front + wv.depth + 2) continue;
-    if (x < wv.span[0] - 0.02 || x > wv.span[1] + 0.02) continue;
-    const before = waveCount(wv);
-    wv.hp -= w;
-    wv.dmgRate += w;
-    const after = waveCount(wv);
-    g.stats.struck += w;
-    if (before > after) g.stats.killed += before - after;
-    g.events.push({ t: 'strike', wave: wv.i, x, z: wv.front, w, killed: before - after, left: after });
-    return true;
-  }
-  const bs = g.boss;
-  if (bs?.on && bs.hp > 0 && Math.abs(x - bs.x) < bs.half && z >= bs.z - 1.5 && z <= bs.z + 6) {
-    const d = w * (bs.dmg ?? 1);
-    bs.hp = Math.max(0, bs.hp - d);
+function strike(g, s, hit) {
+  if (hit === g.boss) {
+    const d = s.dmg;
+    hit.hp = Math.max(0, hit.hp - d);
     g.stats.bossDmg += d;
-    g.events.push({ t: 'bosshit', x, z: bs.z, d, hp: bs.hp });
-    return true;
+    g.events.push({ t: 'bosshit', x: s.x, z: hit.z, d, hp: hit.hp });
+    return;
   }
-  return false;
+  if (hit.units) return strikeWave(g, s, hit);
+  if (hit.kind === 'card') {           // a hit pumps the card's number up a step; at its cap it pops and pays
+    hit.n = Math.min(hit.cap, hit.n + hit.step);
+    g.events.push({ t: 'card_hit', id: hit.id, x: s.x, z: hit.z, n: hit.n });
+    if (hit.n >= hit.cap) pay(g, hit, 'cap');
+    return;
+  }
+  hit.hp -= s.dmg;
+  g.events.push({ t: 'block_hit', id: hit.id, x: s.x, z: hit.z, hp: Math.max(0, hit.hp) });
+  if (hit.hp > 0) return;
+  hit.gone = true;
+  g.stats.blocks += 1;
+  if (hit.gives === 'tier' && g.tier < g.level.tiers.length - 1) g.tier += 1;
+  g.events.push({ t: 'block', id: hit.id, col: hit.col, z: hit.z, gives: hit.gives, tier: g.tier });
+}
+
+/** A card pays its number to the squad (a red one takes; the squad never falls under one). */
+function pay(g, it, how) {
+  it.gone = true;
+  const n = Math.floor(it.n);
+  const from = g.squad;
+  g.squad = Math.max(1, g.squad + n);
+  g.peak = Math.max(g.peak, g.squad);
+  g.stats.cards += 1;
+  g.stats.gained += g.squad - from;
+  g.events.push({ t: 'card', id: it.id, n, how, col: it.col, z: it.z, squad: g.squad });
+}
+
+function strikeWave(g, s, w) {
+  const before = waveCount(w);
+  w.hp -= s.dmg;
+  const after = waveCount(w);
+  g.stats.struck += s.dmg;
+  g.stats.killed += before - after;
+  g.events.push({ t: 'strike', wave: w.i, x: s.x, z: w.front, killed: before - after, left: after });
+}
+
+/* ── the belt ── */
+
+function moveBelt(g, dt) {
+  const sp = g.level.belt.speed;
+  for (const it of g.belt) {
+    if (it.gone) continue;
+    it.z -= sp * dt;
+    // at the line: a card pays the squad if it stands in its column; otherwise (and a wall) it is gone
+    if (it.z <= 0) { if (it.kind === 'card' && colOf(g.aimX) === it.col) pay(g, it, 'line'); else it.gone = true; }
+  }
 }
 
 /* ── the 兽潮 ── */
@@ -213,22 +210,17 @@ function startWaves(g) {
     if (w.on || g.t < w.t) continue;
     w.on = true;
     const units = w.beasts.map(([b, n]) => ({ b, n: Math.max(1, Math.round(n * g.k)), p: g.kit.beasts[b].power }));
-    const live = { i: w.i, span: w.span ?? [-1, 1], units, hp: units.reduce((s, u) => s + u.n * u.p, 0), front: TOP + 2, speed: w.speed, dmgRate: 0, held: 0 };
+    const live = { i: w.i, span: w.span ?? COLS.M, units, hp: units.reduce((s, u) => s + u.n * u.p, 0), front: TOP + 2, speed: w.speed };
     live.n0 = units.reduce((s, u) => s + u.n, 0);
     live.depth = waveDepth(live, g.level);
     g.live.push(live);
-    g.events.push({ t: 'wave', i: w.i, beasts: live.n0, span: live.span });
+    g.events.push({ t: 'wave', i: w.i, beasts: live.n0 });
   }
 }
 
 function marchWaves(g, dt) {
-  const hold = g.level.hold ?? 40;
   for (const w of g.live) {
-    // a wave meeting a stream as strong as `hold` beast-power a second stands; a weaker one only slows it
-    w.held += (w.dmgRate - w.held) * Math.min(1, dt * 4);
-    w.dmgRate = 0;
-    const slow = clamp(w.held / dt / hold, 0, 1);
-    w.front = Math.max(0, w.front - w.speed * (1 - slow * 0.85) * dt);
+    w.front = Math.max(0, w.front - w.speed * dt);
     if (w.front <= 0 && w.hp > 0) breach(g, w, dt);
   }
   for (const w of [...g.live]) {
@@ -244,7 +236,8 @@ function breach(g, w, dt) {
   w.acc = (w.acc ?? 0) + (g.level.breach ?? 8) * dt;
   while (w.acc >= 1 && w.hp > 0) {
     w.acc -= 1;
-    const left = waveLeft(w), front = [...left].reverse().find((u) => u.n > 0);
+    const front = [...waveLeft(w)].reverse().find((u) => u.n > 0);
+    if (!front) { w.hp = 0; break; }      // a sliver of hp, no beast left standing
     const p = w.units.find((u) => u.b === front.b).p;
     w.hp -= p;
     hurtWall(g, p, 'breach', front.b);
@@ -264,7 +257,7 @@ function hurtWall(g, d, why, who) {
 function bossIn(g) {
   const b = g.level.boss;
   const hp = Math.round(b.hp * g.k);
-  g.boss = { ...b, on: true, hp, hpMax: hp, x: 0, z: TOP + 6, mode: 'enter', modeT: 0, charges: 0, chargeT: b.charge.every * 0.6, line: null, half: b.half ?? 0.22 };
+  g.boss = { ...b, on: true, hp, hpMax: hp, x: 0, z: TOP + 6, mode: 'enter', modeT: 0, charges: 0, chargeT: b.charge.every * 0.6, line: null, half: b.half ?? 0.3 };
   g.phase = 'boss';
   g.events.push({ t: 'boss', hp });
 }
@@ -273,57 +266,47 @@ function bossStep(g, dt) {
   const bs = g.boss, c = bs.charge;
   if (bs.hp <= 0) return end(g, true);
   if (bs.mode === 'enter') {
-    bs.z -= (bs.speed * 4) * dt;
+    bs.z -= bs.speed * 4 * dt;
     if (bs.z <= bs.stand) { bs.z = bs.stand; bs.mode = 'walk'; }
     return;
   }
   if (bs.mode === 'walk') {
     bs.z = Math.max(0, bs.z - bs.speed * dt);
-    bs.x += clamp(0 - bs.x, -0.3 * dt, 0.3 * dt);
+    bs.x += clamp(0 - bs.x, -0.6 * dt, 0.6 * dt);
     if (bs.z <= 0) { bs.wallAcc = (bs.wallAcc ?? 0) + (bs.crush ?? 10) * dt; const d = Math.floor(bs.wallAcc); if (d) { bs.wallAcc -= d; hurtWall(g, d, 'boss', bs.beast); } return; }
     bs.chargeT -= dt;
     if (bs.chargeT <= c.warn) {
-      // it marks the line it will rush down: where the stream runs now
+      // it marks the column the squad stands in, and steps over to its head
       bs.mode = 'warn';
       bs.charges += 1;
-      bs.line = clamp(g.aimX, -0.8, 0.8);
+      bs.col = colOf(g.aimX);
+      bs.line = colMid(bs.col);
       bs.modeT = c.warn;
-      g.events.push({ t: 'charge_warn', x: bs.line, half: c.half, sec: c.warn, from: bs.z });
+      g.events.push({ t: 'charge_warn', col: bs.col, x: bs.line, sec: c.warn, from: bs.z });
     }
     return;
   }
   if (bs.mode === 'warn') {
     bs.modeT -= dt;
-    bs.x += clamp(bs.line - bs.x, -1.2 * dt, 1.2 * dt); // it steps over to the head of its line
-    if (bs.modeT <= 0) { bs.mode = 'rush'; bs.from = bs.z; bs.x = bs.line; g.events.push({ t: 'charge', x: bs.line, from: bs.z }); }
+    bs.x += clamp(bs.line - bs.x, -1.4 * dt, 1.4 * dt);
+    if (bs.modeT <= 0) { bs.mode = 'rush'; bs.from = bs.z; bs.x = bs.line; g.events.push({ t: 'charge', col: bs.col, x: bs.line }); }
     return;
   }
   if (bs.mode === 'rush') {
-    const z1 = Math.max(c.to ?? 6, bs.z - c.speed * dt);
-    knockAside(g, bs.line, c.half, z1, bs.z + 3);
-    bs.z = z1;
-    if (bs.z <= (c.to ?? 6)) { bs.mode = 'back'; g.events.push({ t: 'charge_end', x: bs.line }); }
+    bs.z = Math.max(c.to ?? 4, bs.z - c.speed * dt);
+    if (bs.z <= (c.to ?? 4)) {
+      bs.mode = 'back';
+      const hit = colOf(g.aimX) === bs.col;
+      const lost = hit ? Math.min(g.squad - 1, Math.ceil(g.squad * c.kill)) : 0;
+      if (lost > 0) { g.squad -= lost; g.stats.knocked += lost; g.events.push({ t: 'knock', n: lost, col: bs.col }); }
+      g.events.push({ t: 'charge_end', col: bs.col, x: bs.line, lost });
+    }
     return;
   }
   if (bs.mode === 'back') {
     bs.z = Math.min(bs.from, bs.z + c.speed * 0.35 * dt);
     if (bs.z >= bs.from) { bs.mode = 'walk'; bs.chargeT = c.every; }
   }
-}
-
-/** The 大妖's rush: the 豆兵 on its line between z0 and z1 are knocked aside (`kill` of them lost). */
-function knockAside(g, x, half, z0, z1) {
-  const s = g.s, kill = g.boss.charge.kill ?? 0.8;
-  let lost = 0;
-  for (let i = s.n - 1; i >= 0; i -= 1) {
-    if (s.z[i] < z0 || s.z[i] > z1 || Math.abs(s.x[i] - x) > half) continue;
-    const k = Math.round(s.w[i] * kill) || (g.rand() < kill ? s.w[i] : 0);
-    if (!k) { s.x[i] += Math.sign(s.x[i] - x || 1) * half; continue; }
-    g.events.push({ t: 'knock', x: s.x[i], z: s.z[i], w: k });
-    lost += k;
-    if (k >= s.w[i]) removeSoldier(g, i); else { s.w[i] -= k; g.count -= k; }
-  }
-  g.stats.charged += lost;
 }
 
 /* ── the run ── */
@@ -340,91 +323,118 @@ function end(g, won) {
   g.events.push({ t: 'end', won, stars: won ? stars(g.level, g.wall.hp, g.t) : 0, wall: g.wall.hp, sec: g.t });
 }
 
-const coolGates = (g, dt) => { for (const r of g.rows) for (const c of r.cells) if (c.coolT > 0) c.coolT = Math.max(0, c.coolT - dt); };
-
 export function step(g, dt) {
   if (g.phase === 'won' || g.phase === 'lost') return g;
   g.t += dt;
-  coolGates(g, dt);
   emit(g, dt);
   startWaves(g);
-  moveSoldiers(g, dt);
+  moveBelt(g, dt);
+  moveShots(g, dt);
   marchWaves(g, dt);
   if (g.phase === 'waves' && g.waves.every((w) => w.done)) bossIn(g);
   if (g.phase === 'boss') bossStep(g, dt);
   return g;
 }
 
-/** Beasts on the road now. */
+/** Beasts on the road now, and the whole 兽潮 still to beat (the big red number, from the start). */
 export const hordeNow = (g) => g.live.reduce((s, w) => s + waveCount(w), 0);
-/** …and still to come (the big red number counts these too: the whole 兽潮 from the start). */
 export const hordeAll = (g) => hordeNow(g) + g.waves.filter((w) => !w.on).reduce((s, w) => s + w.beasts.reduce((a, [, n]) => a + Math.max(1, Math.round(n * g.k)), 0), 0);
 
 // ---------------------------------------------------------------- bots (the levels' balance tests play these)
 
-/** What a stream at x gains on its way up, as it stands now: the product of the gates it would cross below the
-    first foe on its line (a spent big gate counts for its share over its cool). */
-export function laneValue(g, x) {
-  const foe = g.live.filter((w) => x >= w.span[0] - 0.02 && x <= w.span[1] + 0.02).reduce((m, w) => Math.min(m, w.front), TOP);
-  let v = 1;
-  for (const r of g.rows) {
-    if (r.z >= foe) break;
-    const c = r.cells.find((cc) => x >= cc.x[0] && x <= cc.x[1]);
-    if (!c) continue;
-    const f = faceOf(c, g.t + r.z / g.level.beans.speed);
-    let m = f.op === '+' ? 1 + f.n : f.op === 'x' ? f.n : f.op === '/' ? 1 / f.n : 0;
-    if (c.cool && f.op === '+') m = 1 + Math.min(f.n, f.n / (c.cool * g.level.beans.rate * v));
-    v *= m;
+/** What a side column is worth a second right now: a card there to pump grows `step` a hit at the stream's density
+    (a red one first pays back its debt); a wall in front costs its hp first and is worth what it hides. */
+export function sideValue(g, col) {
+  const dps = Math.max(1e-6, dpsOf(g)), rate = rateOf(g);
+  const first = g.belt.find((it) => !it.gone && it.col === col && it.z > 3 && it.z < TOP);
+  if (!first) return 0;
+  if (first.kind === 'block') {
+    const behind = g.belt.find((it) => !it.gone && it.col === col && it.z > first.z && it.kind === 'card');
+    const worth = first.gives === 'tier' ? g.squad * 0.5 : behind ? behind.cap : 0;
+    return worth / (first.hp / dps + 0.5);
   }
-  return v;
+  const time = first.z / (g.level.belt.speed + g.level.shot.speed * 0.3);
+  const up = Math.min(first.cap - first.n, rate * first.step * time);
+  return Math.max(0, first.n + up) / Math.max(0.5, time);
 }
 
-/** The aims a bot weighs: the middle of every gate cell, and each lane's middle. */
-function aims(g) {
-  const xs = new Set(LANES.map(([a, b]) => (a + b) / 2));
-  for (const r of g.rows) for (const c of r.cells) xs.add(Math.round(((c.x[0] + c.x[1]) / 2) * 100) / 100);
-  return [...xs];
+/** A pumped card about to reach the line in another column: where to stand to take it (or null). */
+function cardAt(g, near = 5) {
+  const c = g.belt.find((it) => !it.gone && it.kind === 'card' && it.z <= near && Math.floor(it.n) >= 2);
+  return c ? c.col : null;
 }
 
-const inCharge = (g, x, margin = 0.08) => {
-  const bs = g.boss;
-  return bs && (bs.mode === 'warn' || bs.mode === 'rush') && Math.abs(x - bs.line) < bs.charge.half + margin;
-};
+/** Whether to turn on the tide now: when another second of buffing no longer brings the kill sooner (the squad's
+    attack grows by what the best side pays), or the nearest wave is `close` s from the wall. `bias` > 1 turns late. */
+export function shouldShoot(g, { bias = 1, close = 2.5 } = {}) {
+  if (!g.live.length) return false;
+  const hp = g.live.reduce((s, w) => s + w.hp, 0);
+  const near = Math.min(...g.live.map((w) => w.front / w.speed));
+  if (near < close) return true;
+  const dps = Math.max(1e-6, dpsOf(g));
+  const gain = Math.max(sideValue(g, 'L'), sideValue(g, 'R')) * (g.level.dps ?? 1) * tierOf(g).power * bias;
+  const now = hp / dps, later = 1 + hp / (dps + gain);
+  return later >= now - (g.level.press ?? 0);  // `press`: the seconds a buff must win back to be worth it
+}
+
+/** How hard the middle presses: the seconds the squad needs for the waves on the road over the seconds before the
+    nearest reaches the wall (> 1: it gets there first). */
+export function pressure(g) {
+  if (!g.live.length) return 0;
+  const hp = g.live.reduce((s, w) => s + w.hp, 0);
+  const near = Math.min(...g.live.map((w) => w.front / w.speed));
+  return (hp / Math.max(1e-6, dpsOf(g)) + 1.5) / Math.max(0.1, near);
+}
+
+const sideBest = (g) => (sideValue(g, 'L') >= sideValue(g, 'R') ? 'L' : 'R');
+const chargeOn = (g, col) => g.boss && (g.boss.mode === 'warn' || g.boss.mode === 'rush') && g.boss.col === col;
+
+/** Off the charge's column, to the side worth the most (or the other side). */
+function dodgeTo(g) {
+  const sides = ['L', 'R'].filter((c) => c !== g.boss.col);
+  return colMid(sides.sort((a, b) => sideValue(g, b) - sideValue(g, a))[0]);
+}
+
+const sharp = new WeakMap(); // game → its sharp player (a player holds a little memory: when it last looked)
 
 export const BOTS = {
-  /** Aims where the stream multiplies most, and steps out of the 大妖's line. */
+  /** A sharp player: looks often, turns on the tide neither too early nor too late, never takes the poorer side,
+      always gets off the charge's column. */
   good(g) {
-    const xs = aims(g).filter((x) => !inCharge(g, x));
-    return xs.sort((a, b) => laneValue(g, b) - laneValue(g, a) || Math.abs(a - g.aimX) - Math.abs(b - g.aimX))[0] ?? g.aimX;
+    if (!sharp.has(g)) sharp.set(g, humanBot(`sharp|${g.seed}`, { react: 0.1, look: 0.3, judge: 0, wrong: 0, dodge: 1, lean: 0.5 }));
+    return sharp.get(g)(g);
   },
-  /** Aims where it multiplies least (into the traps), and stands in the charge. */
-  bad(g) {
-    if (g.boss?.line != null && (g.boss.mode === 'warn' || g.boss.mode === 'rush')) return g.boss.line;
-    return aims(g).sort((a, b) => laneValue(g, a) - laneValue(g, b))[0];
-  },
-  /** Holds the middle and never moves. */
+  /** Never buffs: the middle only, and stands in the charge. */
+  bad() { return colMid('M'); },
+  /** Buffs forever and never shoots the tide. */
+  greedy(g) { return colMid(sideBest(g)); },
+  /** Never moves from where he stood. */
   idle() { return 0; },
 };
 
 /**
- * A first-time human (the lesson from 守墙关 10-20: a level tuned by perfect bots was too hard for Hanli): sees
- * late and acts ~`react` s after, reconsiders the lane only every `look` s, takes a worse lane `wrong` of the
- * time, gets out of the charge's line only `dodge` of the time, and never aims exactly where meant.
+ * A first-time human (the lesson from 守墙关 10-20: a level tuned by perfect bots was too hard for Hanli): sees late,
+ * reconsiders only every `look` s, misjudges when to turn on the tide (`judge`: a random spread on the pressure he
+ * turns at), goes to the poorer side `wrong` of the time, gets out of the charge's column only `dodge` of the time.
  */
-export function humanBot(seed, { react = 0.45, look = 2.5, wrong = 0.25, dodge = 0.6, aimErr = 0.06 } = {}) {
+export function humanBot(seed, { react = 0.45, look = 1.6, judge = 0.6, wrong = 0.25, dodge = 0.6, lean = 1 } = {}) {
   const r = seeded(`human|${seed}`);
   let want = 0, nextLook = 0, seen = 0, at = -1;
-  const decided = new Map(); // charge n → whether this player gets out of its line
+  const decided = new Map();
   return (g) => {
-    if (g.t >= nextLook) {
-      nextLook = g.t + look * (0.7 + r() * 0.6);
-      const xs = aims(g).sort((a, b) => laneValue(g, b) - laneValue(g, a));
-      want = (r() < wrong ? xs[1 + Math.floor(r() * Math.max(1, xs.length - 1))] ?? xs[0] : xs[0]) + (r() - 0.5) * 2 * aimErr;
-    }
     const bs = g.boss;
-    if (bs && bs.mode === 'warn') {
+    if (bs?.mode === 'warn') {
       if (!decided.has(bs.charges)) decided.set(bs.charges, r() < dodge);
-      if (decided.get(bs.charges) && Math.abs(want - bs.line) < bs.charge.half + 0.1) want = bs.line > 0 ? bs.line - bs.charge.half - 0.25 : bs.line + bs.charge.half + 0.25;
+      if (decided.get(bs.charges) && colOf(want) === bs.col) want = dodgeTo(g);
+    } else if (g.t >= nextLook) {
+      nextLook = g.t + look * (0.6 + r() * 0.8);
+      if (bs?.on) want = colMid('M');
+      else {
+        const bias = lean * (1 + (r() - 0.5) * 2 * judge);   // how early or late this player turns on the tide
+        const side = r() < wrong ? (sideBest(g) === 'L' ? 'R' : 'L') : sideBest(g);
+        const take = cardAt(g, 8);
+        want = take && r() > wrong ? colMid(take) : shouldShoot(g, { bias, close: 2.5 * bias }) ? colMid('M') : colMid(side);
+      }
     }
     if (at < 0 || g.t - at >= react) { seen = want; at = g.t; }
     return seen;
@@ -434,14 +444,14 @@ export function humanBot(seed, { react = 0.45, look = 2.5, wrong = 0.25, dodge =
 /** Plays a whole level with a bot, headless (the bot always holds the stream). */
 export function sim(kit, level, bot, { seed = 'sim', dt = 1 / 30, maxSec = 400 } = {}) {
   const g = newGame(kit, level, { seed });
-  let ended = null, maxN = 0, maxHorde = 0;
+  let ended = null, maxShots = 0, maxHorde = 0;
   while (g.t < maxSec && !ended) {
     aim(g, bot(g), true);
     step(g, dt);
-    maxN = Math.max(maxN, g.s.n);
+    maxShots = Math.max(maxShots, g.shots.length);
     maxHorde = Math.max(maxHorde, hordeNow(g));
     for (const e of g.events) if (e.t === 'end') ended = e;
     g.events.length = 0;
   }
-  return { won: Boolean(ended?.won), stars: ended?.stars ?? 0, wall: g.wall.hp, sec: g.t, peak: g.peak, maxN, maxHorde, bossHp: g.boss?.hp ?? null, stats: g.stats, phase: g.phase };
+  return { won: Boolean(ended?.won), stars: ended?.stars ?? 0, wall: g.wall.hp, sec: g.t, peak: g.peak, squad: g.squad, tier: g.tier, maxShots, maxHorde, bossHp: g.boss?.hp ?? null, stats: g.stats, phase: g.phase };
 }
