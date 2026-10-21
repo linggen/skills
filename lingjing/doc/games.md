@@ -825,6 +825,24 @@ Hanli 10-21, in order: 「放进去」 · 「最好不显示摄像头」 · 「�
   the button's life (call, tap, rest, ready, dark), idle close, 手势斗法's jab → 飞剑 reaching the host (an unoffered
   move dropped).
 
+### 结印 in 守炉 — the dock beside the talismans (10-21)
+
+Hanli 10-21: 「不要只有结印攻击, 把结印放到现有的塔防类游戏中」; 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成, 不会影响
+剧情推进」; 「结印可以帮助更快杀敌, 更容易取得3星成就」. 守炉 wears the shared dock (games/jieyin/helper.js `offerSeals`, the
+same as 守墙关's) in the field's corner: shoulu.js `offerJieyin`, the host's calls core.js `jieyinState` · `jieyinCast`, the
+numbers jieyin.json `hosts.shoulu`. Camera only — no camera, a refusal or seals never made change nothing.
+- **Moves:** 飞剑 (剑诀 + a jab) from the start; 火弹 (the four seals) after 古六's lesson (`from` its marks; the 游戏厅 has
+  all). The target: the 大妖 first, else the beast nearest the furnace. 火弹 splashes round it.
+- **Pace — a level's:** rest (the default): offered only while 合窳 is on the field, 8 s rest between casts, ×3 on it;
+  intense (`pace: "intense"`, one level now: 后山 · 丹房): always offered, 2.5 s rest — the level where the hands work.
+  (法术试炼's duel kit takes the same switch: duel.js `pacedKit` — 灵力 refill and the thrusts' rest; the trial is rest.)
+  The standalone 练拳 / 戳穴 levels were dropped (Hanli: 结印 lives in the TD games, not alone).
+- **Balance** (core.js `withSeals` — a player who casts each time a move is ready, 2 s to make it; the human bot, 20
+  seeds; stars 0/1/2/3): 后山 (intense) none 1/3/6/10 → 飞剑 0/0/1/19 · 火弹 0/0/0/20; 秘境三 (合窳) 1/12/5/2 → 0/0/2/18 ·
+  0/0/0/20; 秘境二 0/3/10/7 → 0/1/3/16. Levels without 合窳 at rest are unchanged (nothing is offered); 黑松林 (L5,
+  0/10/7/3) is unchanged too — its 炉火 is lost before 合窳 steps out, so a boss-only dock comes too late there. No cast
+  at all: every level is won as before (tests/game-shoulu-jieyin.test.mjs runs each with the human bot).
+
 ## 隔空指点 — jab the 剑诀 at the screen (test game, 10-21)
 
 Hanli 10-21: 「剑诀目前是手指朝上, 如果手指指向屏幕, 是否可行. 一个用户隔空双指点屏幕的demo视频, 也许能引起兴趣」;
