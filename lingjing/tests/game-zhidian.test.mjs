@@ -67,6 +67,8 @@ test('…bent forward at the knuckles too (the palm up, the two fingers at the l
     return { x: p.x, y: m.y + d.y * Math.cos(r) - d.z * Math.sin(r), z: m.z + d.y * Math.sin(r) + d.z * Math.cos(r) };
   });
   for (const squash of [1, 0.5, 0.3]) assert.equal(sealOf3d([knuckle.map((p) => ({ ...p, z: p.z * squash }))], seals, K), 'jian', `squash ${squash}`);
+  // judge.js's reach ratio sinks under its 1.2 here (1.03–1.09 squashed): the straight fingers read bent.
+  assert.equal(makes(knuckle.map((p) => ({ ...p, z: p.z * 0.5 })), JIAN, sealKit.judge), false);
 });
 
 test('the reach-ratio judge (judge.js) loses 剑诀 once a pointed hand\'s depth is squashed — why judge3d exists', () => {
