@@ -657,7 +657,8 @@ function duel(card, ctx) {
   const html = challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, badge: exit === e ? huntBadge(e, ctx.lang) : '' });
   // Inside a key beat's lock, lost often enough (Look's `stuck`, rules/skips.mjs fightStuck): 「算了，往下走」
   // under the card — the way on, no reward, as a riddle passed (core.mjs resolve `pass`).
-  const leave = exit !== e && exit.stuck ? `<button class="quietnext riddlepass fightpass" data-panel-exit="${esc(exit.id)}" data-panel-pass="1">${esc(SKIP[ctx.lang] ?? SKIP.zh)}</button>` : '';
+  // Laid as a board's own skip is (skipButton, the .gskip row), so the two read alike.
+  const leave = exit !== e && exit.stuck ? `<div class="acts gskip"><button class="act quiet" data-panel-exit="${esc(exit.id)}" data-panel-pass="1">${esc(SKIP[ctx.lang] ?? SKIP.zh)}</button></div>` : '';
   return exit === e ? withWayBack(html, ctx) : html + leave;
 }
 
