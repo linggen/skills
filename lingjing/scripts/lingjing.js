@@ -2577,7 +2577,9 @@ document.addEventListener('visibilitychange', () => { if (!holding) lines.hold(d
 document.addEventListener('pointercancel', letGo);
 
 /* Ling's and 银月's lines in the passage (proto k): played in place, her 木牌 in the footer warm
-   while her words are up; each copied once, quietly, into the chat — no turn, no badge. */
+   while her words are up; 银月's each copied once, quietly, into the chat — no turn, no badge. Ling's 前情
+   stays in the box and 回看: copied, a catch-up came into the chat line by line, twenty messages under
+   the 前情提要 she had already written there (the 10-15 bug list). */
 const copied = new Set();
 function companionBeat(shown) {
   const r = readingHere(), herId = look?.companion?.id ?? null;
@@ -2586,11 +2588,11 @@ function companionBeat(shown) {
   const who = (b) => voiceOf(b, herId);
   document.querySelector('.yytoken')?.classList.toggle('warm', beats.length > 0 && who(beats.at(-1)) === 'yy');
   for (const b of beats) {
-    if (who(b) !== 'yy' && who(b) !== 'ling') continue;
+    if (who(b) !== 'yy') continue;
     const key = `${r.run ?? ''}|${r.scene ?? ''}|${b.i}|${b.j}|${lang()}`;
     if (copied.has(key)) continue;
     copied.add(key);
-    quietCopy(who(b) === 'yy' ? `${b.name ?? words().yinyue}：${b.text}` : `${b.text}`);
+    quietCopy(`${b.name ?? words().yinyue}：${b.text}`);
   }
 }
 function quietCopy(line) {

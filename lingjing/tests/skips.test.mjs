@@ -232,3 +232,10 @@ test('a game won on the story page brings its 所得 into sight: #focus moves up
   const won = src.slice(src.indexOf('function bringWonIntoFocus('), src.indexOf('function bringWonIntoFocus(') + 300);
   assert.match(won, /#focus \.toasts \.spoils/);
 });
+
+test('a 前情 stays in the box: only 银月\'s lines are copied into the chat, never Ling\'s recap line by line (2026-10-21)', () => {
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const fn = src.slice(src.indexOf('function companionBeat('), src.indexOf('function quietCopy('));
+  assert.match(fn, /if \(who\(b\) !== 'yy'\) continue;/);
+  assert.doesNotMatch(fn, /'ling'/);
+});
