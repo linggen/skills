@@ -181,11 +181,16 @@ const BUILD = {
 /// particlesHtml), `particles` its kinds, `seed` its seed (the day). Hides the CSS spans of the kinds
 /// it draws once it draws. Resolves to {stats(), destroy()} or null (nothing of ours falls, no WebGL,
 /// reduced motion, or the layer was laid again before it loaded).
+let latest = 0, current = null;
 export async function liveWeather(pts, particles, seed = 'lingjing') {
+  // The newest layer wins: one laid while an older one was still loading takes its place.
+  const mine = ++latest;
+  current?.destroy();
+  current = null;
   const kinds = glKinds(particles);
   if (!pts || !kinds.length || stillMotion() || !glOK()) return null;
   const PIXI = await loadPixi();
-  if (!pts.isConnected) return null;
+  if (mine !== latest || !pts.isConnected) return null;
   const wrap = document.createElement('div');
   wrap.className = 'pts p-fx';
   pts.appendChild(wrap);
@@ -195,7 +200,7 @@ export async function liveWeather(pts, particles, seed = 'lingjing') {
   let { w, h } = size();
   const app = new PIXI.Application();
   await app.init({ width: w, height: h, backgroundAlpha: 0, antialias: false, resolution: Math.min(globalThis.devicePixelRatio || 1, 1.5), autoDensity: true, preference: 'webgl' });
-  if (!wrap.isConnected) { app.destroy(true, { children: true }); return null; }
+  if (mine !== latest || !wrap.isConnected) { app.destroy(true, { children: true }); wrap.remove(); return null; }
   Object.assign(app.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%' });
   wrap.appendChild(app.canvas);
   const made = [];
@@ -239,5 +244,6 @@ export async function liveWeather(pts, particles, seed = 'lingjing') {
     const now = size();
     if (now.w !== w || now.h !== h) { ({ w, h } = now); app.renderer.resize(w, h); build(); }
   }, 1000);
-  return { stats: () => ({ stepMs: frames ? +(cost / frames).toFixed(3) : 0, frames, kinds }), destroy };
+  current = { stats: () => ({ stepMs: frames ? +(cost / frames).toFixed(3) : 0, frames, kinds }), destroy };
+  return current;
 }

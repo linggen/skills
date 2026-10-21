@@ -250,7 +250,9 @@ export function liveCreature(appear, table, art) {
   frame.className = 'fxaliveframe';
   Object.assign(frame.style, { position: 'absolute', pointerEvents: 'none' });
   const sync = () => {
-    Object.assign(frame.style, { left: img.style.left, top: img.style.top, width: img.style.width, height: img.style.height, opacity: getComputedStyle(img).opacity });
+    // The picture's own look too: the ink filter every picture wears (memory.css), the colour after the ninth.
+    const cs = getComputedStyle(img);
+    Object.assign(frame.style, { left: img.style.left, top: img.style.top, width: img.style.width, height: img.style.height, opacity: cs.opacity, filter: cs.filter });
   };
   img.after(frame);
   const fitted = () => img.classList.contains('fit');

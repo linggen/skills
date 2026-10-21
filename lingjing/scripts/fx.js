@@ -44,14 +44,21 @@ export function loadGsap() {
   return gsapP;
 }
 
-/// Whether this browser can draw WebGL at all (the fallback is the SVG moment).
+/// Whether this browser can draw WebGL at all (the fallback is the SVG moment). Asked once: the
+/// living paintings and the weather ask on every change, and each probe's context counts against the
+/// browser's few (the oldest live one is dropped — a painting's).
+let glKnown = null;
 export function glOK() {
+  if (glKnown !== null) return glKnown;
   try {
     const c = globalThis.document?.createElement('canvas');
-    return Boolean(c && (c.getContext('webgl2') || c.getContext('webgl')));
+    const gl = c && (c.getContext('webgl2') || c.getContext('webgl'));
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    glKnown = Boolean(gl);
   } catch {
-    return false;
+    glKnown = false;
   }
+  return glKnown;
 }
 
 /* ── Textures made on the spot: no image files ── */
