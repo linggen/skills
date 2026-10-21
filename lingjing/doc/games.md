@@ -444,7 +444,7 @@ The per-回 pass (design.md § Per-回 › 古八; tasks/h09.json): fewer, bette
 | 回 · scene | game | the book | how it plays | 得牌? |
 |---|---|---|---|---|
 | 八 · 09-dabi | 守炉 · 丹房看炉 `danfang-kanlu` (level `danfang-kanlu`) | 一开炉十天半月，丹师一步离不得 — the 看炉 is his | 守炉's 古八 story level on the 后山 · 丹房 map: 野猪 up the road, the 后山's 鬿雀 diving at the furnace (game-only, like 兽潮); 剑阵 · 火符 · 雷符 (雷 from wave 3); five waves, hpMul 1.4 — a first-timer's plain hand wins losing a little fire, all fire loses to the birds; gives the 十年黄精 (the 九节聚气方's 君) on a win or a skip | no |
-| 八 · 09-dabi/dabi | 腊八 决赛 (card fight `dabi-final`, `foe-jiuceng`) | 金刃一口气一口气发的，发一道，喘一口……等到第十一道 | the 内门 九层圆满, alone on the stage, a 金 burst deck; 随风 and 火柴 dealt into his hand (the book's two, so no curve-dealt ten is a wall); ~48% bare over ten save seeds (20–75%), more with pills (fight-band) | — |
+| 八 · 09-dabi/dabi | 腊八 决赛 (card fight `dabi-final`, `foe-jiuceng`) | 金刃一口气一口气发的，发一道，喘一口……等到第十一道 | the 内门 九层圆满, alone on the stage, a 金 burst deck; 火柴 dealt into his hand (「小满的火柴进去了」, so no curve-dealt ten is a wall); ~49% bare over ten save seeds (15–67%), more with pills (fight-band) | — |
 
 Told, not played: 《金丹》 (a recitation — a quiz), the 挑料 (a pick), 定风's candle and 进退's pine bough (no kit's verb),
 the 回家 night (09-qulao, the 回's heart) and the 筑基 (09-cliff: its 突破 card and 大场面). The 九节聚气 night is

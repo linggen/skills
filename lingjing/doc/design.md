@@ -848,7 +848,7 @@ their scenes (`tasks/h<nn>.json`), fights, and enough beasts and finds to farm i
 - **古八 done** (2026-10-21, tasks/h09.json): one board, one fight, both in 09-dabi — **守炉 · 丹房看炉** (`danfang-kanlu`,
   守炉's 古八 story level: 闵丹师 cannot leave the lit furnace, the 后山's 鬿雀 dive at it; it gives the 十年黄精, the
   九节聚气方's 君, fed to the 饭桶 for three 三转聚气丹 — the book's night, played) and the **腊八 final** on the way on
-  (`foe-jiuceng`, a 九层圆满 whose 金刃 gasp between blades; 随风 and 火柴 in hand from the first turn, the book's two; ~48% bare over ten save seeds, more with pills). Told: 《金丹》 and the 挑料
+  (`foe-jiuceng`, a 九层圆满 whose 金刃 gasp between blades; 火柴 in hand from the first turn, the book's sword; ~49% bare over ten save seeds, more with pills). Told: 《金丹》 and the 挑料
   (a quiz, a pick), 定风's candle and 进退's pine bough (no kit's verb), the 回家 night (09-qulao) and the 筑基 (09-cliff,
   its card and 大场面). The 后山's 猲狙 · 鬿雀 (`from: h09`) and 兽潮 farm the two stage quests (八层 · 九层).
 

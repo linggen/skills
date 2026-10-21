@@ -75,10 +75,10 @@
     "creature": "foe-jiuceng",
     "retry": true,
     "foe": {
-     "hp": 3.5,
+     "hp": 3.2,
      "party": []
     },
-    "_foe": "The 腊八 大比's final (古八): a 内门 九层圆满 whose 金刃 come one breath at a time (creatures.json foe-jiuceng — 随风 and 火柴 in his hand from the first turn, the book's two), alone on the stage (`party: []`); weighed at 八层, the gate on this way on (tools/story-fights.mjs `foe-jiuceng@09-dabi/dabi`, 2026-10-21): hp 3.5 → a player who thinks a turn ahead wins about 48% bare on average over ten save seeds (each deals its own ten, 20–75%), the fixture's ten 63%, with two pills 92%; the careless one-ply line 8%. tests/fight-band.test.mjs holds it."
+    "_foe": "The 腊八 大比's final (古八): a 内门 九层圆满 whose 金刃 come one breath at a time (creatures.json foe-jiuceng — 火柴 in his hand from the first turn, the book's sword), alone on the stage (`party: []`); weighed at 八层, the gate on this way on (tools/story-fights.mjs `foe-jiuceng@09-dabi/dabi`, 2026-10-21): hp 3.2 → a player who thinks a turn ahead wins about 49% bare on average over ten save seeds (each deals its own ten, 15–67%), the fixture's ten 52%, with two pills 97%; the careless one-ply line 8%. tests/fight-band.test.mjs holds it."
    },
    "withdrawn": {
     "zh": "执事的锣槌在手里转了两转：「歇一口，再上。」",
