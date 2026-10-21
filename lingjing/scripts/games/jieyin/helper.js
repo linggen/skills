@@ -10,8 +10,9 @@
 // the host plays exactly as it does without it (Hanli 10-21: 「没摄像头时, 就不用用户结印帮打, 游戏像现在这样打就OK」). No tap
 // stand-in. If the camera is refused or the model fails after the tap, the button and the frame go too.
 //
-// No camera picture is shown (Hanli 10-21: 「最好不显示摄像头」): the video stays off-screen for the model; the frame
-// shows the next seal, the hold ring and where the hand stands in the camera's view.
+// No camera picture is shown (Hanli 10-21: 「最好不显示摄像头」): the video stays off-screen for the model; the frame is
+// the shared hand hint (hint.js handHint: the hands in ink where the camera sees them, edge / near / far cues, the seal
+// to make, the hold ring), with the move's seals as chips under it.
 //
 // The camera: on only after the button; off (its tracks) while `paused()` (the shell's pause, the game's own), while
 // the page is hidden, and for good on close() (the level ends, the player leaves). Back on by itself only if the
@@ -22,11 +23,11 @@
 import { available as cameraHere, dropModel, openEye } from './eye.js';
 import { sealOf } from './judge.js';
 import { expected, progress, start, step } from './sequence.js';
-import { iconSvg } from './pose.js';
-import { sealsFor, sequenceFor, setOf } from './sets.js';
+import { handHint } from './hint.js';
+import { eyeFor, sealsFor, sequenceFor, setOf } from './sets.js';
 
 const LEVELS = new URL('../../../worlds/jiuding/levels/jieyin.json', import.meta.url);
-const CSS = new URL('./helper.css', import.meta.url);
+const CSS = { jieyinCss: new URL('./jieyin.css', import.meta.url), jieyinHelper: new URL('./helper.css', import.meta.url) }; // the hint's look, then the dock's
 
 export const WORDS = {
   zh: { btn: '结印', label: '对着摄像头结印，放火蛋', off: '收印', asking: '请允许摄像头……', cool: (n) => `火蛋 ${n}`, ready: '火蛋在手' },
@@ -38,31 +39,25 @@ const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;',
 /** The move's seals for this device (sets.js: one hand on a phone, both on a Mac) and the table they are judged from. */
 export function sealsOf(kit, move, env = globalThis) {
   const set = setOf(kit, { matchMedia: env.matchMedia?.bind(env), search: env.location?.search ?? '' });
-  return { sequence: sequenceFor(kit, move, set), seals: sealsFor(kit, set) };
+  return { set, sequence: sequenceFor(kit, move, set), seals: sealsFor(kit, set) };
 }
 
 function loadCss(doc) {
-  if (doc.querySelector('link[data-jieyin-helper]')) return;
-  const l = doc.createElement('link');
-  l.rel = 'stylesheet';
-  l.href = CSS.href;
-  l.dataset.jieyinHelper = '';
-  doc.head.append(l);
+  for (const [key, url] of Object.entries(CSS)) {
+    if (doc.querySelector(`link[data-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}]`)) continue;
+    const l = doc.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = url.href;
+    l.dataset[key] = '';
+    doc.head.append(l);
+  }
 }
 
 function dockHtml(kit, sequence, w) {
   const chips = sequence.map((id, i) => `<li data-i="${i}">${plain(kit.seals[id]?.glyph ?? '')}</li>`).join('');
-  return `<div class="jyh-frame" data-slot="handHint"><span class="jyh-dot"></span><span class="jyh-icon"></span>`
-    + `<svg class="jyh-ring" viewBox="0 0 36 36"><circle class="jyh-ring-bg" cx="18" cy="18" r="16"/><circle class="jyh-ring-on" cx="18" cy="18" r="16" pathLength="100"/></svg>`
-    + `<b class="jyh-state"></b></div><ol class="jyh-chips">${chips}</ol>`
+  return `<div class="jyh-hint"></div><b class="jyh-state"></b><ol class="jyh-chips">${chips}</ol>`
     + `<button type="button" class="jyh-off" aria-label="${plain(w.off)}">×</button>`
     + `<video class="jyh-video" playsinline muted></video>`;
-}
-
-/** Where the hand stands in the camera's view (its palm, mirrored like a mirror), 0…1; null with no hand. */
-export function handAt(image) {
-  const p = image?.[0]?.[9];
-  return p ? { x: 1 - p.x, y: p.y } : null;
 }
 
 export async function offerSeals({ host, lang = 'zh', move = 'huodan', cast = () => false, fizzle = () => {}, cool = () => 0,
@@ -71,7 +66,7 @@ export async function offerSeals({ host, lang = 'zh', move = 'huodan', cast = ()
   const kit = await fetch(LEVELS).then((r) => r.json());
   const doc = host.ownerDocument, win = doc.defaultView ?? env;
   lang = lang === 'en' ? 'en' : 'zh';
-  const w = WORDS[lang], { sequence, seals } = sealsOf(kit, move, win);
+  const w = WORDS[lang], { set, sequence, seals } = sealsOf(kit, move, win);
   if (!sequence.length) return null;
   loadCss(doc);
 
@@ -87,14 +82,15 @@ export async function offerSeals({ host, lang = 'zh', move = 'huodan', cast = ()
   dock.innerHTML = dockHtml(kit, sequence, w);
   host.append(btn, dock);
   const $ = (s) => dock.querySelector(s);
+  const hint = handHint($('.jyh-hint'), { lang, size: 'compact', seals, knobs: kit.hint });
   // Taps on the button and the frame stay theirs (the field under them never takes them as a focus tap).
   for (const el of [btn, dock]) for (const t of ['pointerdown', 'pointerup', 'click']) el.addEventListener(t, (e) => e.stopPropagation());
 
   let s = start({ mode: 'sequence', sequence }), hands = [], image = [], aspect = 4 / 3, wanted = false, cam = 'off', gen = 0, closed = false;
-  let charged = false, loop = 0, last = 0, shownIcon = null;
+  let charged = false, loop = 0, last = 0;
   const video = $('video');
   const seeHands = (r) => { hands = r.world; image = r.image; aspect = (video.videoWidth / video.videoHeight) || aspect; };
-  const eye = feed ? null : eyeOf({ video, onHands: seeHands, env: win });
+  const eye = feed ? null : eyeOf({ video, onHands: seeHands, env: win, ...eyeFor(kit, set, sequence) });
 
   // The camera: 'off' → 'asking' (the prompt, the model loading) → 'on'. A pause while asking wins (eye.js); a refusal
   // or a model that fails takes 结印 away for this level.
@@ -112,18 +108,14 @@ export async function offerSeals({ host, lang = 'zh', move = 'huodan', cast = ()
     dock.classList.toggle('is-cool', c > 0);
     dock.classList.toggle('is-ready', charged);
     dock.querySelectorAll('.jyh-chips li').forEach((el, i) => { el.classList.toggle('is-done', i < s.at); el.classList.toggle('is-next', i === s.at); });
-    if (want !== shownIcon) { shownIcon = want; $('.jyh-icon').innerHTML = want ? iconSvg(seals[want], 44) : ''; }
-    $('.jyh-ring-on').style.strokeDasharray = `${Math.round(progress(s, kit.judge) * 100)} 100`;
-    $('.jyh-ring').classList.toggle('is-right', Boolean(s.cur && s.cur === want));
-    const at = handAt(image), dot = $('.jyh-dot');
-    dot.hidden = !at;
-    if (at) { dot.style.left = `${at.x * 100}%`; dot.style.top = `${at.y * 100}%`; }
+    const right = Boolean(s.cur && s.cur === want);
+    hint.update({ image, aspect, target: want, progress: right ? progress(s, kit.judge) : 0, right, now: win.performance.now() });
     $('.jyh-state').textContent = cam === 'asking' ? w.asking : charged ? w.ready : c > 0 ? w.cool(Math.ceil(c)) : '';
   };
 
   const act = (ev) => {
     if (ev.type === 'cast') charged = true;
-    if (ev.type === 'fizzle') { fizzle(); dock.classList.remove('is-shake'); void dock.offsetWidth; dock.classList.add('is-shake'); }
+    if (ev.type === 'fizzle') { fizzle(); hint.fizzle(); }
   };
 
   // Each frame: the camera follows `wanted` / paused / hidden; a charged egg flies the moment the host takes it; the
@@ -168,6 +160,7 @@ export async function offerSeals({ host, lang = 'zh', move = 'huodan', cast = ()
     win.cancelAnimationFrame(loop);
     doc.removeEventListener('visibilitychange', seen);
     eye?.close();
+    hint.destroy();
     if (feed && win.jieyinFeed) delete win.jieyinFeed;
     btn.remove();
     dock.remove();

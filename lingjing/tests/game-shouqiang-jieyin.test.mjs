@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { BOTS, castJieyin, jieyinCool, jieyinTarget, newGame, pick, reachY, setFocus, sim, step } from '../scripts/games/shouqiang/core.js';
 import { offerJieyin } from '../scripts/games/shouqiang.js';
-import { WORDS, handAt, offerSeals, sealsOf } from '../scripts/games/jieyin/helper.js';
+import { WORDS, offerSeals, sealsOf } from '../scripts/games/jieyin/helper.js';
 import { posesOf } from '../scripts/games/jieyin/pose.js';
 
 const at = (p) => new URL(`../${p}`, import.meta.url);
@@ -112,28 +112,27 @@ test('balance: the egg helps a player, never replaces the cards — no cards + e
 
 /* ── the page side: a fake DOM just deep enough for helper.js ── */
 
-function el(tag = 'div') {
+function el(tag = 'div', ownerDocument = null) {
   const kids = new Map();
   const o = {
-    tag, hidden: false, dataset: {}, style: {}, textContent: '', innerHTML: '', offsetWidth: 0, listeners: {},
+    tag, ownerDocument, hidden: false, dataset: {}, style: {}, textContent: '', innerHTML: '', offsetWidth: 0, listeners: {},
     classList: { set: new Set(), toggle(c, on) { on ? this.set.add(c) : this.set.delete(c); }, add(c) { this.set.add(c); }, remove(c) { this.set.delete(c); }, contains(c) { return this.set.has(c); } },
-    setAttribute() {}, remove() { o.removed = true; },
+    setAttribute() {}, remove() { o.removed = true; }, append(...xs) { (o.kids ??= []).push(...xs); },
     addEventListener(t, f) { (o.listeners[t] ??= []).push(f); },
     fire(t) { for (const f of o.listeners[t] ?? []) f({ stopPropagation() {} }); },
-    querySelector(s) { if (!kids.has(s)) kids.set(s, el()); return kids.get(s); },
+    querySelector(s) { if (!kids.has(s)) kids.set(s, el('div', o.ownerDocument)); return kids.get(s); },
     querySelectorAll: () => [],
   };
   return o;
 }
 function page({ hidden = false } = {}) {
   const frames = [];
-  const doc = { hidden, head: { append() {} }, querySelector: () => null, createElement: el, listeners: {},
+  const doc = { hidden, head: { append() {} }, querySelector: () => null, createElement: (t) => el(t, doc), listeners: {},
     addEventListener(t, f) { (doc.listeners[t] ??= []).push(f); }, removeEventListener(t, f) { doc.listeners[t] = (doc.listeners[t] ?? []).filter((x) => x !== f); } };
   let now = 0;
   const win = { performance: { now: () => now }, requestAnimationFrame: (f) => frames.push(f), cancelAnimationFrame() { frames.length = 0; } };
   doc.defaultView = win;
-  const host = el('div');
-  host.ownerDocument = doc;
+  const host = el('div', doc);
   host.appended = [];
   host.append = (...xs) => host.appended.push(...xs);
   const frame = async (n = 1) => { for (let i = 0; i < n; i += 1) { now += 16; const f = frames.splice(0); f.forEach((x) => x()); await Promise.resolve(); await Promise.resolve(); } };
@@ -219,14 +218,17 @@ test('the seals in order cast through the host; a wrong one held is a 走火; no
   assert.equal(feedWin.jieyinFeed, undefined);
 }));
 
-test('the hand\'s place in the frame is mirrored like a mirror; no camera picture is drawn', () => {
-  const hand = Array.from({ length: 21 }, () => ({ x: 0.2, y: 0.7 }));
-  assert.deepEqual(handAt([hand]), { x: 0.8, y: 0.7 });
-  assert.equal(handAt([]), null);
+test('no camera picture: the shared hand hint (hint.js) in the dock, the video only for the model', async () => withFetch(async () => {
+  const { host } = page();
+  const h = await offerSeals({ host, available: async () => true, eyeOf: fakeEye().make });
+  const dock = host.appended[1];
+  const hint = dock.querySelector('.jyh-hint').kids?.[0];
+  assert.match(hint?.className ?? '', /jy-hint-panel is-compact/, 'handHint, compact, in the corner');
+  h.close();
   const src = readFileSync(at('scripts/games/jieyin/helper.js'), 'utf8'), css = readFileSync(at('scripts/games/jieyin/helper.css'), 'utf8');
   assert.match(css, /\.jyh-video \{[^}]*opacity: 0/, 'the video is only for the model');
   assert.doesNotMatch(src, /drawImage|getUserMedia|https?:\/\//, 'no picture, no camera of its own (eye.js), nothing from the network');
-});
+}));
 
 test('the play: the egg and the 走火 are the prototype\'s art, and the bundle carries the calls', () => {
   for (const k of ['huodan', 'fizzle']) assert.ok(existsSync(at(`scripts/games/jieyin/art/${k}.webp`)), k);

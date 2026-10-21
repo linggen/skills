@@ -720,9 +720,10 @@ tried again).
   face, left of 银月, above the wall bar; the left side panel in landscape). Never auto-starts: the tap starts the
   camera. No camera / refused / no WebGL / no SIMD / the model fails → no button, no frame, the game exactly as before
   (no tap stand-in). A refusal after the tap takes the button away for that level.
-- **The frame** (games/jieyin/helper.js + helper.css, `data-slot="handHint"`): NO camera picture (Hanli 10-21:
-  「最好不显示摄像头」) — the next seal's hand, the hold ring, a dot where the hand stands in the camera's view, the four
-  seals as chips, a × to stop. The shared `handHint` component goes into that slot when it lands.
+- **The frame** (games/jieyin/helper.js + helper.css): NO camera picture (Hanli 10-21: 「最好不显示摄像头」) — the
+  shared hand hint (hint.js `handHint`, compact: the hands in ink where the camera sees them, edge / near / far cues,
+  the seal to make, the hold ring), fitted to the corner (36% of the field's width; 19% in landscape), the move's
+  seals as chips under it, the egg's cooldown over it, a × to stop. The camera at sets.js `eyeFor` (15 fps, 320×240).
 - **The move** is levels/jieyin.json's `moves.huodan` (same data, not a copy), this device's set (sets.js): a phone 推掌 →
   剑诀 → 申文 → 午文 (one hand), a Mac 双掌 → 承剑 → 离火印 → 午文. Made → a 火蛋 lobbed at
   the **tapped beast (the focus); none → the beast nearest the wall**, anywhere below the range line (lane levels too:
