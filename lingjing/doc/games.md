@@ -812,3 +812,36 @@ seal's shape: jieyin.json `seals.jian`.
 - **Tested** on synthetic hands (pose.js turned and depth-squashed, near-misses, a bot through the whole pipe to ★★★);
   the live page by the dev feed (`?dev=1&feed=1`, `zhidianFeed.bot()` — synthetic hands, no camera). Real-camera play
   is Hanli's: `arcade.html?dev=1&game=zhidian`.
+
+## 撒豆成兵 · 守山门 — the defence crowd game (prototype, test-only, 10-21)
+
+Hanli 10-21, of a crowd-gate ad (a lane walled with 「+1」 gates, a small blue squad at the bottom, a red horde of
+hundreds coming down, a boss with an HP bar; then three lanes — blue +1 safe, the horde in the middle, yellow +99 on the
+right — and the boss charging down into the squad): 「好像比我们的撒豆成兵好玩一点」, 「好, 做一版. 这个是在防守, 现在的
+撒豆成兵是在进攻.」. 游戏厅 only (`sadoushou`, group 主力, type 塔防, tiled right after 撒豆成兵 to compare); not in the
+story, not in the 秘境 pool. 撒豆成兵 (`sadou`, the attack run) is unchanged.
+
+- **Play:** 小满 on the 山门 at the foot of a pseudo-3D road. Aim left/right (the mouse's x, a drag on touch, A/D ·
+  ←/→) and HOLD to scatter (press, Space): each bean is a 豆兵 that runs UP the road. **The lane is the decision:** left a
+  wall of small +1 / +2 gates (safe, steady), the middle a ×2 — from 第二关 a 符门 that flips ×3 / ÷2 —, the right +5 then
+  a gold **+99** that lights again only after its cool (rich, and the tide runs past it — from 第三关 waves come down the
+  right lane alone and shut its gates; traps (−1) join the left). Near a foe a 豆兵 turns to it, so any lane meets the
+  horde. A 豆兵 at a wave's front strikes once (its weight) and is spent: both big numbers grind down. Then the 大妖
+  walks out with an HP bar over its head; every few seconds it shows a red line where the stream runs, steps over, and
+  **charges** down it (lightning aura, large as it nears the wall), knocking the 豆兵 on it aside — move the stream off
+  the line. A wave or the 大妖 at the wall hurts it; the wall at 0 is the loss. Stars: the wall left (75% · 40%) and ★★★
+  only inside the level's par time.
+- **Levels** (worlds/jiuding/levels/sadoushou.json, data; each sends only the beasts the book has shown by its `hui`):
+  守山门 · 野猪下山 (h04, 1,650 野猪, 蠪侄) · 松林狰吼 (h05, 狰 in the tide, the 符门, 蠪侄) · 药园夜袭 (h07, 犰狳,
+  a trap, waves down the rich lane, 合窳) · 黑松岭鬿雀 (h09, fast 鬿雀, 合窳). 狰 is beyond the brief's 野猪/犰狳/鬿雀:
+  it is the book's (h05) and 守墙关 has its art.
+- **Balance** (tests/game-sadoushou.test.mjs; 40 seeded first-time humans — 0.45 s late, a worse lane one time in four,
+  out of the charge three times in five): wins 40 · 32 · 32 · 22 of 40 (sloppy: 28 · 18 · 5 · 4); aiming where the
+  stream multiplies wins every seed, aiming into the traps or never moving loses every level.
+- **Engine** games/sadoushou/core.js (headless; the 豆兵 typed arrays bounded by `cap`, past it they run as weight so
+  the count stays true); **play** tools/sadoushou/ → games/sadoushou/sadoushou.min.mjs (Phaser, the shared vendor
+  build): the road and the ink mountains painted once into one texture, pooled sprites (≤ 520 豆兵, ≤ 380 beasts), no
+  per-frame depth sort. **Art** all shared: 撒豆成兵's 豆兵 and road, 守墙关's wall, beasts and 小满, 守炉's 银月, the
+  story's backdrop `cloudy-day`; the gates drawn in code. No new painting.
+- **Speed** (Playwright, GPU headless Chromium on the Mac, ?fps=1): 1440×900 avg 59.7 fps (min 56) and 390×844 at 3×
+  avg 59.7 (min 57), with 380 beasts + ~105 豆兵 drawn at the peak. Not measured on a real phone.

@@ -779,6 +779,14 @@
    "_about": "撒豆成兵 — the crowd run, a 塔防-family level type, a prototype (Hanli 10-20: 「对, 做一个撒豆成兵的关卡」; the genre: crowd + math gates, Count Masters / Mob Control; the bar: 《向僵尸开炮》). Portrait, one hand: drag left/right (A/D, ←/→) steers 小满's bean soldiers up the 山道 through 符门 gates (+ × good, − ÷ traps), past hazards and bean pickups, through the 兽潮 hordes (crowds cancel out) to 合窳; stars by soldiers left. The lead-in and countdown start it by themselves. The engine: games/sadou/core.js; the play: games/sadou/sadou.min.mjs (Phaser, tools/sadou/); the level: worlds/jiuding/levels/sadou.json. Dealt in the 秘境 it sends only the beasts of the 回 he has reached (rules/reveal.mjs, Hanli 10-21: 鬿雀 from 古八): one not yet met stands aside for the latest met, worth the same; the 游戏厅 plays the ladder as made."
   },
   {
+   "id": "sadoushou",
+   "aspect": 0.5625,
+   "group": "main",
+   "mechanic": "塔防",
+   "stars": 3,
+   "_about": "撒豆成兵 · 守山门 — the DEFENCE crowd game, a second 撒豆成兵 beside the attack run (`sadou`), TEST-ONLY here for comparing (Hanli 10-21, of a crowd-gate ad: 「好像比我们的撒豆成兵好玩一点」, 「好, 做一版. 这个是在防守, 现在的撒豆成兵是在进攻.」); not in the story, not in the 秘境 pool. Portrait, one hand: aim left/right and HOLD to scatter beans; each runs UP a pseudo-3D road as a 豆兵 through walls of gates (a safe lane of +1s, a 符门 in the middle, a rich +99 lane the tide runs past) and grinds the 兽潮 coming down, then the 大妖 walks down and charges down a line it shows first; the horde at the wall is the loss, stars by the wall left and the time. The engine: games/sadoushou/core.js; the play: games/sadoushou/sadoushou.min.mjs (Phaser, tools/sadoushou/); the levels: worlds/jiuding/levels/sadoushou.json (four, each a 回's beasts)."
+  },
+  {
    "id": "shouqiang",
    "aspect": 0.5625,
    "group": "main",
