@@ -576,6 +576,61 @@
     [["luhuaji", 9, 1.2, 0]],
     [["luhuaji", 14, 0.65, 0], ["luhuaji", 8, 0.45, 7]]
    ]
+  },
+  {
+   "id": "tailu",
+   "kit": "shouqiang",
+   "story": "00-tailu",
+   "_story": "抬鹿下山 (2026-10-21, the 卷一 small-game plan, doc/games-plan-juan1.md; Hanli: 「start building」): 00-tailu, 00-deer's way on split at 「那副门板，到底没有白扛，抬了一头鹿。」 — the carry down the 溪 at dusk, the third 塔防 on the ladder (after 守白菜 and 守火). 野猪 drawn by the blood come down the two trails either side of the stream (`paths`: the x each comes down at) to the 门板 with the stag on it (the wall); 小满 holds with 爷爷's bow (the `sword` line, arrows — 银月 has fainted in his shirt, so no fox), 老周 beside him throws stones (the `fox` bolt); 爹 is on the back end of the door. No opening pick, no 结印, the range line unseen. A card after each wave, of the bow's three. Stars by the door left.",
+   "place": "heisong",
+   "opening": false,
+   "jieyin": false,
+   "rangeLine": false,
+   "art": {"bg": "tailu-bg", "wall": "tailu-wall", "hero": "xiaoman-bow", "heroCast": "xiaoman-bow-cast", "hand": null, "side": "laozhou-side", "shot": "arrow", "sideShot": "stone"},
+   "paths": [175, 370],
+   "leadSec": 7,
+   "between": 4,
+   "countIn": 3,
+   "wall": 240,
+   "wallY": 760,
+   "rangeY": 175,
+   "difficulty": 1,
+   "hpMul": 2.2,
+   "growth": 0.3,
+   "stars": [0.75, 0.4],
+   "title": {"zh": "抬鹿下山", "en": "Carrying the stag down"},
+   "lead": [
+    {"zh": "那副门板，到底没有白扛，抬了一头鹿。", "en": "The door hadn't been lugged up for nothing after all: it carried a deer."},
+    {"zh": "他爹非要抬后头，谁劝也不听。", "en": "His father insisted on taking the back end, and wouldn't listen to anyone."},
+    {"zh": "小满走在最后，背着弓，捂着胸口。", "en": "Xiaoman walked last, bow on his back, hand on his chest."},
+    {"zh": "野猪闻着血腥下来了！", "en": "Boars, after the blood!", "big": true}
+   ],
+   "cards": [
+    {"id": "jian-more", "icon": "icon-gong-more", "name": {"zh": "爷爷的弓 · 连珠", "en": "Grandfather's bow · two at once"}, "say": {"zh": "一回多搭一支箭。", "en": "One more arrow on the string each time."}},
+    {"id": "jian-pierce", "icon": "icon-gong-pierce", "name": {"zh": "爷爷的弓 · 一箭两头", "en": "Grandfather's bow · through two"}, "say": {"zh": "箭穿过去，再中后头那一头。", "en": "The arrow goes through and hits the one behind."}},
+    {"id": "jian-arc", "icon": "icon-gong-arc", "name": {"zh": "爷爷的弓 · 先看风", "en": "Grandfather's bow · wind first"}, "say": {"zh": "射中一头，箭顺着风再拐向下一头。", "en": "An arrow that hits rides the wind on to the next."}}
+   ],
+   "words": {
+    "won": {"zh": "鹿抬下山了！", "en": "The stag is down the mountain!"},
+    "lost": {"zh": "门板给拱翻了", "en": "The boars overturned the door"},
+    "wallLeft": {"zh": "门板 {n}%", "en": "Door {n}%"},
+    "kills": {"zh": "撵走 {n} 头", "en": "{n} driven off"},
+    "focus": {"zh": "点一头野猪：先射它", "en": "Tap a boar: shoot that one first"},
+    "cleared": {"zh": "撵走一群！", "en": "Driven off!"},
+    "pick": {"zh": "挑一张", "en": "Pick one"}
+   },
+   "teach": ["wave_cleared", "low", "win"],
+   "_teach": "Every moment is the level's own line, never asked of 银月 — she has fainted in his shirt (00-deer's `sleeps`).",
+   "moments": {
+    "wave_cleared": [{"zh": "撵走了！挑一张，天快黑了。", "en": "Driven off! Pick one; it's getting dark."}],
+    "low": [{"zh": "门板要翻了！", "en": "The door's going over!"}],
+    "win": [{"zh": "到得村口，已是傍晚。", "en": "By the time they reached the village gate it was evening."}]
+   },
+   "waves": [
+    [["yezhu", 7, 1.2, 0]],
+    [["yezhu", 9, 0.8, 0], ["yezhu", 5, 0.6, 5]],
+    [["yezhu", 12, 0.55, 0], ["yezhu", 8, 0.45, 6]]
+   ]
   }
  ]
 }

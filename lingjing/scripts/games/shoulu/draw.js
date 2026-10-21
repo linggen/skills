@@ -34,7 +34,8 @@ function rnd(seed) { let s = seed; return () => { s = (s * 16807) % 2147483647; 
 
 /** The board under everything, painted once a level: paper, hills, grass, rocks and pines off the road, the road. */
 export function makePaper(doc, L, label) {
-  if (L.fire) loadFireArt(doc);
+  if (L.fire || L.hero?.who) loadFireArt(doc); // 小满's frames for any level he holds alone (雪夜柴垛 has no fire)
+  for (const n of [L.furnaceArt, L.keep?.art]) if (n) artImg(doc, n); // a story level's own 炉 (the 柴垛) and the one it keeps (舅舅)
   const k = 2, p = doc.createElement('canvas');
   p.width = W * k; p.height = H * k;
   const pics = ['pine', 'rock', 'bush', `ground-${L.ground ?? L.id}`]; // `ground`: another level's painting (the 秘境's rows)
@@ -266,6 +267,7 @@ function drawCampfire(c, g, t) {
     }
   }
   if (g.furnFlash > 0) { c.fillStyle = `rgba(200,40,30,${g.furnFlash * 0.5})`; c.beginPath(); c.arc(x, y, 36, 0, 6.28); c.fill(); }
+  if (F.fox === false) return; // no fox by this fire (泗水路: 银月 sleeps in the 木牌)
   const [fx, fy] = F.fox ?? [x + 50, y + 26], fox = ART.img['fox-sleep'];
   if (okImg(fox)) { const h = 34, w = fox.naturalWidth * h / fox.naturalHeight; c.drawImage(fox, fx - w / 2, fy + 8 - h + Math.sin(t * 2) * 0.6, w, h); }
   else { c.fillStyle = '#e6eaf1'; c.beginPath(); c.ellipse(fx, fy, 18, 9, 0, 0, 6.28); c.fill(); c.strokeStyle = 'rgba(30,30,40,0.6)'; c.stroke(); }
@@ -305,8 +307,35 @@ function drawXiaoman(c, h, t, moving) {
 }
 function drawStone(c, p) { c.fillStyle = '#8c8577'; c.strokeStyle = INK; c.lineWidth = 1; c.beginPath(); c.ellipse(p.x, p.y, 4, 3.2, p.ang, 0, 6.28); c.fill(); c.stroke(); }
 
+/** A story level's own 炉 (`furnaceArt`: 雪夜柴垛's woodpile with the 鸡窝 at its foot) — the picture alone, no 丹炉 fire. */
+function drawOwnFurnace(c, g) {
+  const pic = ART.img[g.L.furnaceArt], x = g.L.furn.x, y = g.L.furn.y;
+  if (okImg(pic)) { const h = 96, w = pic.naturalWidth * h / pic.naturalHeight; c.drawImage(pic, x - w / 2, y + 30 - h, w, h); }
+  else { c.fillStyle = '#7a5532'; c.fillRect(x - 26, y - 40, 52, 66); c.strokeStyle = INK; c.strokeRect(x - 26, y - 40, 52, 66); }
+  if (g.furnFlash > 0) { c.fillStyle = `rgba(200,40,30,${g.furnFlash * 0.5})`; c.beginPath(); c.arc(x, y, 40, 0, 6.28); c.fill(); }
+}
+/** The one a level keeps (`keep`: 泗水路's 舅舅, asleep by the fire): his picture, a red flash when bitten, his bar. */
+function drawKeep(c, g, t) {
+  const K = g.keep, pic = ART.img[g.L.keep.art];
+  if (!K) return;
+  if (okImg(pic)) { const h = 40, w = pic.naturalWidth * h / pic.naturalHeight; c.drawImage(pic, K.x - w / 2, K.y + 10 - h + Math.sin(t * 1.6) * 0.5, w, h); }
+  else { c.fillStyle = '#8a8f99'; c.beginPath(); c.ellipse(K.x, K.y, 22, 10, 0, 0, 6.28); c.fill(); c.strokeStyle = INK; c.stroke(); }
+  if (K.flash > 0) { K.flash -= 1 / 60; c.fillStyle = `rgba(200,40,30,${K.flash})`; c.beginPath(); c.arc(K.x, K.y - 6, 24, 0, 6.28); c.fill(); }
+  const k = K.hp / K.max, bw = 44;
+  c.fillStyle = 'rgba(20,16,12,0.55)'; c.fillRect(K.x - bw / 2, K.y - 40, bw, 5);
+  c.fillStyle = k > 0.5 ? '#6fae5a' : k > 0.25 ? '#d9a441' : '#c0452f'; c.fillRect(K.x - bw / 2, K.y - 40, bw * k, 5);
+}
+/** Snow falling over the board (a level's `snow`: 雪夜柴垛), drawn from the clock alone. */
+function drawSnow(c, t) {
+  c.fillStyle = 'rgba(245,248,255,0.85)';
+  for (let n = 0; n < 70; n += 1) {
+    const sp = 22 + (n * 37) % 30, x = ((n * 97.3) % W + Math.sin(t * 0.7 + n) * 14 + W) % W, y = ((n * 53.1) % H + t * sp) % H;
+    c.beginPath(); c.arc(x, y, 1.2 + (n % 3) * 0.6, 0, 6.28); c.fill();
+  }
+}
 function drawFurnace(c, g, t) {
   if (g.L.fire) return drawCampfire(c, g, t);
+  if (g.L.furnaceArt) return drawOwnFurnace(c, g);
   const prog = cleared(g) / waves(g), x = g.L.furn.x, y = g.L.furn.y;
   const fl = 0.88 + 0.08 * Math.sin(t * 7) + 0.04 * Math.sin(t * 23), R = (44 + prog * 60) * fl;
   const gr = c.createRadialGradient(x, y - 4, 4, x, y - 4, R);
@@ -528,6 +557,7 @@ export function draw(ctx, g, v) {
   if (v.heroSel) drawOrders(ctx, g.hero, t);
   if (v.aim) drawAim(ctx, g, v.aim);
   drawFurnace(ctx, g, t);
+  if (g.keep) drawKeep(ctx, g, t);
   const items = [];
   for (const b of g.beasts) items.push({ y: b.y + (b.fly ? 60 : 0), b });
   g.towers.forEach((tw) => { if (tw) items.push({ y: tw.y + 4, tw }); });
@@ -539,6 +569,7 @@ export function draw(ctx, g, v) {
     else drawBeast(ctx, it.b.type, it.b.x, it.b.y, t + it.b.id, it.b.face, it.b.flash, 1, it.b);
   }
   if (g.L.fire) drawNight(ctx, g, t);
+  if (g.L.snow) drawSnow(ctx, t);
   for (const b of g.beasts) hpBar(ctx, b);
   for (const p of g.proj) {
     if (p.k === 'stone') drawStone(ctx, p);

@@ -129,6 +129,7 @@ export function newGame(row, { seed = 'shoulu', headless = false } = {}) {
       post: { x: hx, y: hy }, orders: [], foe: null, homing: false, dash: null, cast: null, act: null, wanderT: 4, moving: false,
       cds: { q: SKILLS.q.first, w: 0, e: 0, r: 0 }, auto: { q: skills }, hair, carry: 0, rnd: rng(`${seed}|yinyue`) },
     home: { x: hx, y: hy }, shake: 0, furnFlash: 0, over: null, headless, uid: 0, seen: {}, events: [], rnd: rng(seed),
+    keep: row.keep ? { x: row.keep.at[0], y: row.keep.at[1], hp: row.keep.hp, max: row.keep.hp, flash: 0 } : null,
     stats: { kills: 0, leaks: {}, built: {} } };
 }
 const emit = (g, e) => { if (!g.headless) g.events.push(e); };
@@ -322,6 +323,7 @@ function beastsStep(g, dt) {
       else { b.cry -= dt; if (b.cry <= 0) { b.cry = C.every; b.crying = C.for; emit(g, { cry: b.type }); } }
     }
     if (b.spooked > 0) b.spooked -= dt;
+    if (keepStep(g, b, dt)) continue;
     if (!b.held && !(b.stunT > 0) && !(b.crying > 0) && !(b.spooked > 0)) b.d += b.speed * (1 - b.slowF) * (b.lit ? 1 - g.L.fire.slow : 1) * dt;
     b.flash -= dt;
     if (b.d < b.len) { place(g, b); continue; }
@@ -332,6 +334,28 @@ function beastsStep(g, dt) {
     emit(g, { leak: b.dmg, sound: 'hit' });
     if (g.hp <= 0) { g.hp = 0; g.over = 'lose'; }
   }
+}
+/** One kept by the road (a level's `keep`, 泗水路's 舅舅 asleep by the fire, 2026-10-21): a ground beast passing within `lure`
+    of him turns off the road for him one time in `chance` (rolled once, seeded), walks straight at him and, within `r`,
+    stops and gnaws (its `bite` a second) until it falls; his hp gone, the level is lost. True while it is his. */
+export const keepNear = (g, b) => Boolean(g.keep && g.keep.hp > 0 && !b.fly && !BEASTS[b.type].shade && dist(b, g.keep) <= g.L.keep.r);
+function keepStep(g, b, dt) {
+  const K = g.L.keep;
+  if (!K || !g.keep || g.keep.hp <= 0 || b.fly || BEASTS[b.type].shade) return false;
+  if (b.toKeep == null && dist(b, g.keep) <= (K.lure ?? K.r)) { b.toKeep = g.rnd() < (K.chance ?? 1); if (b.toKeep) emit(g, { keep: 'lured' }); }
+  if (!b.toKeep) return false;
+  b.flash -= dt;
+  if (b.stunT > 0 || b.held) return true;
+  if (!keepNear(g, b)) { // off the road, straight at him
+    const dx = g.keep.x - b.x, dy = g.keep.y - b.y, d = Math.hypot(dx, dy) || 1, v = b.speed * (1 - b.slowF) * dt;
+    b.x += dx / d * v; b.y += dy / d * v; b.face = dx >= 0 ? 1 : -1;
+    return true;
+  }
+  if (!b.gnaw) { b.gnaw = true; emit(g, { keep: 'bitten', sound: 'hit' }); }
+  g.keep.hp = Math.max(0, g.keep.hp - (BEASTS[b.type].bite || 0) * dt);
+  g.keep.flash = 0.3;
+  if (g.keep.hp <= 0) { g.over = 'lose'; g.lostBy = 'keep'; emit(g, { keep: 'fell' }); }
+  return true;
 }
 function towersStep(g, dt) {
   for (const tw of g.towers) {
@@ -710,7 +734,7 @@ export function pressKey(g, sel, key, t = 0) {
     did 'select' · 'deselect' · 'move' · 'attack' · 'cast' · 'spot' (open its menu) · 'cancel' · null. */
 export function pointer(g, sel, p) {
   const h = g.hero, alive = h.dead <= 0;
-  if (g.L.fire) return firePointer(g, sel, p);
+  if (direct(g)) return firePointer(g, sel, p);
   if (sel.aim) { // aiming: a left click casts there, a right click cancels
     if (p.button === 2) return { sel: { ...sel, aim: null }, did: 'cancel' };
     const b = SKILLS[sel.aim].aim === 'any' ? beastAt(g, p.x, p.y, p.touch ? 22 : 14) : null;
@@ -735,6 +759,9 @@ export function pointer(g, sel, p) {
   return { sel: noSel(), did: sel.hero || sel.spot >= 0 ? 'deselect' : null };
 }
 
+/** 小满 alone on the board — a `fire` level, or any level whose hero is not 银月 and that lays no talismans (雪夜柴垛): every
+    tap is an order to him. */
+export const direct = (g) => Boolean(g.L.fire) || (g.who !== 'yinyue' && !g.L.towers.length);
 /** 守火's board (a `fire` level): no talismans, no skills — every tap is an order to 小满, selected or not: a beast, he
     throws at it; a 枯枝, he fetches it; anywhere else, he goes there (the fire: back to it). */
 function firePointer(g, sel, p) {
@@ -924,18 +951,23 @@ function humanFire(g, hb, o) {
   if (g.t < (hb.lookAt ?? 0)) return;
   hb.lookAt = g.t + (o.look ?? 1.2) * (0.8 + hb.rnd() * 0.4);
   if (h.dead > 0 || h.orders.length || h.carry > 0) return;
-  const room = F.max - g.hp, want = o.fetchAt != null ? g.hp <= o.fetchAt : room >= F.feed * F.carry * 0.6;
-  const sticks = g.sticks.filter((s) => s.up).sort((a, b) => dist(a, g.home) - dist(b, g.home));
-  if (want && sticks.length) { fetchStick(g, sticks[o.best ? 0 : Math.min(sticks.length - 1, Math.floor(hb.rnd() * 2))]); return; }
+  if (F) { // a fire to keep: fetch when there is room for what he carries
+    const room = F.max - g.hp, want = o.fetchAt != null ? g.hp <= o.fetchAt : room >= F.feed * F.carry * 0.6;
+    const sticks = g.sticks.filter((s) => s.up).sort((a, b) => dist(a, g.home) - dist(b, g.home));
+    if (want && sticks.length) { fetchStick(g, sticks[o.best ? 0 : Math.min(sticks.length - 1, Math.floor(hb.rnd() * 2))]); return; }
+  }
+  // one gnawing at the kept first (泗水路's 舅舅), when he looks that way
+  const gnaw = g.keep && g.beasts.find((b) => !b.dead && b.toKeep);
+  if (gnaw && hb.rnd() < (o.attack ?? 0.5) + 0.3) { orderAttack(g, gnaw); return; }
   if (hb.rnd() < (o.attack ?? 0.5)) {
     const near = g.beasts.filter((b) => !b.dead && !b.fly).sort((a, b) => (a.len - a.d) - (b.len - b.d))[0];
-    if (near && dist(near, g.L.furn) < lightOf(g) + 80) orderAttack(g, near);
+    if (near && (!F || dist(near, g.L.furn) < lightOf(g) + 80)) orderAttack(g, near);
   }
 }
 /** The human-like player, called four times a second like every strategy. */
 export const humanBot = (opts = {}) => {
   const o = { move: true, delay: true, best: false, late: true, ...opts };
-  return (g) => { const hb = humanOf(g); if (g.L.fire) { humanFire(g, hb, o); return; } humanBuild(g, hb, o); humanHero(g, hb, o); };
+  return (g) => { const hb = humanOf(g); if (direct(g)) { humanFire(g, hb, o); return; } humanBuild(g, hb, o); humanHero(g, hb, o); };
 };
 export const human = humanBot();
 
