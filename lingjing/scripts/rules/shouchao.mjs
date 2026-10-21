@@ -16,28 +16,18 @@
 // rows run out, the tide keeps rising on the last of them that fits: more beasts, closer together,
 // tougher each wave, a boss of his 回 (the level's own `difficulty` / `hpMul` / `growth` knobs, handed to
 // the game as `deal.over`). A row added later with a higher `tide` is played first, before the rise goes on.
-import fs from 'node:fs';
-import path from 'node:path';
 import { dayKey, lockedOf, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
-import { huiNow, huiOrder, sceneHui, sideLine } from './hui.mjs';
+import { sideLine } from './hui.mjs';
+import { beastOpen, kitOf } from './reveal.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { hashOf } from './travel.mjs';
-import { beatOf, creatureOf, passed, sceneOf } from './world.mjs';
+import { beatOf, passed, sceneOf } from './world.mjs';
 
 const tideTask = content => (content.tasks?.tasks ?? []).find(t => t.shouchao) ?? null;
 
-/* 守墙关's level table, read once per world (as qiyu.json is). */
-const cache = new Map();
-export function wallKit(content) {
-  const dir = content?.dir;
-  if (!dir) return null;
-  if (!cache.has(dir)) {
-    const file = path.join(dir, 'levels', 'shouqiang.json');
-    cache.set(dir, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null);
-  }
-  return cache.get(dir);
-}
+/* 守墙关's level table (levels/shouqiang.json), read once per world. */
+export const wallKit = content => kitOf(content, 'shouqiang');
 
 /* ── The clock ── */
 const minuteOf = now => now.getHours() * 60 + now.getMinutes();
@@ -79,16 +69,8 @@ export function shouchaoHere(content, state, id, now) {
 }
 
 /* ── The nights ── */
-/* The furthest 回 he has reached, as a place in the book (world.mjs reachedAt's reading). */
-function reached(content, state) {
-  const all = [huiNow(content, state), ...(state.done_scenes ?? []).map(id => sceneHui(content, id))].filter(Boolean);
-  return all.length ? Math.max(...all.map(h => huiOrder(content, h))) : -Infinity;
-}
-/* A beast of his 回 or before (creatures.json `hui`); one with no 回 is never sent. */
-export function beastOpen(content, state, kind) {
-  const h = creatureOf(content, kind)?.hui;
-  return Boolean(h) && huiOrder(content, h) <= reached(content, state);
-}
+/* A beast of his 回 or before: rules/reveal.mjs, which 撒豆成兵's 秘境 deals share. */
+export { beastOpen };
 const kindsOf = level => [...new Set(level.waves.flat().map(g => g[0]))];
 const fits = (content, state, level) => kindsOf(level).every(k => beastOpen(content, state, k));
 /* The hand-made nights, in `tide` order. */

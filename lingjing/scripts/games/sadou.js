@@ -33,8 +33,12 @@ export function levelAsked(kit, data, search) {
   return byId ?? (Number.isInteger(n) && n >= 1 && n <= kit.levels.length ? kit.levels[n - 1] : kit.levels[0]);
 }
 
+/** …and as the story deals it: `data.over` laid on the row — the 秘境's run with only the beasts the book has shown
+    him (rules/reveal.mjs: its `track` and `boss`, a beast not yet met stood aside). The 游戏厅 deals none. */
+export const levelDealt = (kit, data, search) => (data?.over ? { ...levelAsked(kit, data, search), ...data.over } : levelAsked(kit, data, search));
+
 /** The level a mount will play, before it mounts: the host's 台词预取 (games/prefetch.js) reads its moments. */
-export const levelOf = (data, search = globalThis.location?.search ?? '') => fetch(LEVELS).then((r) => r.json()).then((kit) => ({ kit, level: levelAsked(kit, data, search) }));
+export const levelOf = (data, search = globalThis.location?.search ?? '') => fetch(LEVELS).then((r) => r.json()).then((kit) => ({ kit, level: levelDealt(kit, data, search) }));
 
 async function loadFont(doc) {
   if (!globalThis.FontFace || !doc.fonts) return;
@@ -63,7 +67,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     signal?.addEventListener('abort', leave, { once: true });
     Promise.all([fetch(LEVELS).then((r) => r.json()), import('./sadou/sadou.min.mjs'), loadFont(doc)]).then(([kit, { start }]) => {
       if (done) return;
-      let level = levelAsked(kit, data, search);
+      let level = levelDealt(kit, data, search);
       // In the shell: the story lines read on its lead card, over the road standing still; the canvas keeps the big line
       // (the beans fly) and its 3-2-1.
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join(lang === 'en' ? ' ' : '') : '';

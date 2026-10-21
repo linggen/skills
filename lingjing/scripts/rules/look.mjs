@@ -523,7 +523,7 @@ function dealOf(content, task, state) {
   // …and a game whose table holds story or realm levels (守炉) deals only those: the 游戏厅's ladder is never a board's.
   const off = l => l.story || l.realm;
   const levels = row?.levels?.some(off) ? row.levels.filter(off) : row?.levels;
-  const own = dealtOf(state, task);
+  const own = dealtOf(content, state, task);
   if (!task.deal && !task.climb && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   // A thing a 割藤 deal hangs on the vines, named in both languages (拾遗's 灵芝): the reader's.

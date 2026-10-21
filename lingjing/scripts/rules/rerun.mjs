@@ -255,7 +255,7 @@ export function runRow(content, state, id) {
   if (!runBoardHere(content, state, id) || !room?.find?.item) return {};
   const name = pick(content.items?.items?.find?.(i => i.id === room.find.item)?.name ?? null, state.lang);
   const t = (content.tasks?.tasks ?? []).find(x => x.id === id);
-  return name ? { deal: { ...dealtOf(state, t), item: { id: room.find.item, name } } } : {};
+  return name ? { deal: { ...dealtOf(content, state, t), item: { id: room.find.item, name } } } : {};
 }
 /* The run's 拾遗 stands in a room that holds a find not yet taken. */
 export function runBoardHere(content, state, id) {

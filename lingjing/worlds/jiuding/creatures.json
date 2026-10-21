@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_juan": "The 卷 a creature belongs to (Hanli, 2026-10-05: 游戏只到卷一 — 不要有后面各卷的怪): `juan`, 1 unsaid. One of a 卷 not open (world.mjs juanOpen — the 卷 below the lowest chapter that waits) is never met: no haunt, no road beast, no pool, no 传闻 finale, no 榜文. Those of 卷一's book: 狰, 蠪侄, 蛫, 冰夷双龙 and the five people of the 外门大比 and 秘境; the rest wait for the 卷 of their province (OUTLINE § 二: 兖 2, 青 3, 徐 4, 扬 5, 荆 6, 梁 7, 雍 8, 豫 9; 冀's own beyond the book, 2).",
-  "_hui": "The 回 a beast is first met in the game (2026-10-20, for 兽潮 — rules/shouchao.mjs sends only beasts of his 回 or before, read in book order: h11 is 古七, h09 古八): 野猪 h01 (古一, 蒙山's boars), 狰 h05 (古四, wm-yaoyuan), 犰狳 and 合窳 h07 (古五, the 秘境's pools mijing-ya · mijing-anhe — the book meets them in 古七 · 古八), 鬿雀 h09 (古八, the yaoyuan-wai pool's `from`). Only 守墙关's beasts carry it so far.",
+  "_hui": "The 回 a beast is first met in the game (2026-10-20, for 兽潮 — rules/shouchao.mjs sends only beasts of his 回 or before, read in book order: h11 is 古七, h09 古八): 野猪 h01 (古一, 蒙山's boars), 狰 h05 (古四, wm-yaoyuan), 犰狳 and 合窳 h07 (古五, the 秘境's pools mijing-ya · mijing-anhe — the book meets them in 古七 · 古八), 鬿雀 h09 (古八, the yaoyuan-wai pool's `from`). 蠪侄 h04 (古三, 00-longzhi: the 三试's beast tied to the pine; 2026-10-21, for 撒豆成兵's 黑松岭 boss). The beasts of the small games carry it: 兽潮 (rules/shouchao.mjs) and every board the story deals (rules/reveal.mjs — 撒豆成兵 in the 秘境) send only those of his 回.",
   "creatures": [
     {
       "id": "fuzhu",
@@ -1248,6 +1248,7 @@
     },
     {
       "id": "longzhi",
+      "hui": "h04",
       "name": {
         "zh": "蠪侄",
         "en": "Longzhi"

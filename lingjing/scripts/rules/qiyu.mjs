@@ -83,7 +83,7 @@ export function qiyuRow(content, state, id) {
   const lang = state.lang, frame = e.frames[q.frame] ?? e.frames[0], t = taskOf(content, id);
   const word = q.word ? wordsOf(content, e).find(w => w.zh === q.word) : null;
   const deal = {
-    ...dealtOf(state, t),
+    ...dealtOf(content, state, t),
     ...(word ? { word, context: `秘境外圈，${pick(frame, 'zh')}` } : {}),
     ...(frame.item ? { item: { ...(frame.item.id ? { id: frame.item.id } : {}), name: pick(frame.item, lang) } } : {}),
   };
