@@ -546,6 +546,9 @@ body.fighting .scene { overflow: hidden; }
 .bookdetail { margin: 2px 0 6px; padding: 8px 10px; border-left: 2px solid var(--line); display: grid; gap: 5px; }
 .bookdetail .say { font-family: var(--serif); }
 .act.quiet { background: transparent; border-color: var(--line); color: var(--dim); }
+/* A locked fight left once stuck (cards.js duel): centred under its card, on paper so it reads over a painted stage. */
+.duelpass { display: flex; justify-content: center; margin-top: 10px; }
+.duelpass .act.quiet { background: rgba(250, 246, 238, .94); color: var(--text); box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
 /* The ask bar: one field for every 问询, outside the stage's repaint. */
 .askbar { position: absolute; inset: 6px 12px; z-index: 40; display: flex; align-items: center; gap: 8px;
           padding: 8px 10px; background: var(--surface); border: 1px solid var(--ling); border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / 16%); }

@@ -658,7 +658,7 @@ function duel(card, ctx) {
   // Inside a key beat's lock, lost often enough (Look's `stuck`, rules/skips.mjs fightStuck): 「算了，往下走」
   // under the card — the way on, no reward, as a riddle passed (core.mjs resolve `pass`).
   // Laid as a board's own skip is (skipButton, the .gskip row), so the two read alike.
-  const leave = exit !== e && exit.stuck ? `<div class="acts gskip"><button class="act quiet" data-panel-exit="${esc(exit.id)}" data-panel-pass="1">${esc(SKIP[ctx.lang] ?? SKIP.zh)}</button></div>` : '';
+  const leave = exit !== e && exit.stuck ? `<div class="acts gskip duelpass"><button class="act quiet" data-panel-exit="${esc(exit.id)}" data-panel-pass="1">${esc(SKIP[ctx.lang] ?? SKIP.zh)}</button></div>` : '';
   return exit === e ? withWayBack(html, ctx) : html + leave;
 }
 
