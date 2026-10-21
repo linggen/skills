@@ -581,6 +581,19 @@
    ]
   },
   {
+   "id": "guirope",
+   "group": "later",
+   "scene": "wm-wangzuo",
+   "hui": "第五回",
+   "task": "wangzuo-zhui",
+   "mechanic": "割绳子",
+   "stars": 3,
+   "_levels": "2026-10-21 (Hanli: the 卷一 small-game plan, 「start building」 — 古五's 蛫, the fight swapped for a rope level): 「打不过的，不打。给它下坠子。」 The stone with the sword tied under it hangs on three cords on the 凶崖's ledge; the middle cord and the far one (either order) leave it over the 石檐 (the eave on the cliff side, a stone ledge), the last sets it there, and the 竹筒 at the eave's end — the 背绳 the 蛫 tugs reaching for the water (the puff) — tips it off onto the crack at the rim of its shell. No order of cuts alone reaches it; the other four orders with the tug miss. The eave on the right and the shell to the left. Found by a scratch search on rope.js under rope-gen.js `prove` (every hand's reaction, late and slow), proved by games/bots/guirope.js; the three 灵光 lie on the way down.",
+   "levels": [
+    {"id": "one", "bread": [256, 144], "vines": [{"at": [326, 34]}, {"at": [69, 34]}, {"at": [262, 34]}], "stones": [{"x": 267, "y": 264, "w": 99, "h": 14, "a": 0}], "gust": {"at": [336, 234], "to": [-1, 0]}, "mouth": [121, 330], "stars": [[258, 234], [186, 254], [259, 192]], "must": "gust", "teach": {"zh": "三根绳，先断哪两根，石头才落得上石檐？落上了，点一下竹筒——蛫一扯，它就翻下来。", "en": "Three cords: which two go first, so the stone lands on the eave? Once it's there, tap the bamboo flask: the gui tugs, and over it goes."}}
+   ]
+  },
+  {
    "id": "wuziqi",
    "group": "h07",
    "mechanic": "棋牌",

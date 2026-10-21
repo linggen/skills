@@ -565,7 +565,7 @@ const swordsOn = (g) => !g.opening || g.main === 'jian' || g.kit.cards.some((c) 
 function heroes(g, dt) {
   for (const k of Object.keys(g.cool)) g.cool[k] -= dt;
   if (g.cool.sword <= 0 && swordsOn(g) && target(g)) { fireSwords(g); g.cool.sword = g.kit.hero.sword.every; }
-  if (g.cool.fox <= 0 && target(g)) { fireFox(g); g.cool.fox = g.kit.hero.fox.every; }
+  if (g.level.fox !== false && g.cool.fox <= 0 && target(g)) { fireFox(g); g.cool.fox = g.kit.hero.fox.every; } // `fox: false` — no 银月 (断肋巡夜: she has gone dark)
   for (const [cast, need] of Object.entries(CAST_NEEDS)) {
     if (!lv(g, need)) continue;
     if ((g.cool[cast] ?? 0) > 0) continue;
@@ -637,7 +637,7 @@ export function open(g) {
   if (g.grid) return (g.kit.unitCards ?? []).filter((c) => lv(g, c.id) < c.max && (!c.unit || g.level.units.includes(c.unit)));
   // a level that names its `cards` offers only those (守白菜: the 竹竿's three)
   const only = g.level.cards ? new Set(g.level.cards.map((c) => c.id)) : null;
-  return g.kit.cards.filter((c) => (!only || only.has(c.id)) && lv(g, c.id) < c.max && (!c.needs || lv(g, c.needs) > 0));
+  return g.kit.cards.filter((c) => (!only || only.has(c.id)) && lv(g, c.id) < c.max && (!c.needs || lv(g, c.needs) > 0) && (g.level.fox !== false || !c.id.startsWith('yy-'))); // `fox: false`: no 银月 card
 }
 
 /** Three different cards (fewer if fewer are open), drawn by the seed. The first between-wave offers lean to the

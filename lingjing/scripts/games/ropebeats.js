@@ -10,6 +10,8 @@
 //                    down to it: 「肉二十斤，抵今年的。」
 //   喂饭桶 (wm-diyilu, 2026-10-21) the 饭桶's first feed in the woodshed, the kitchen's soup bone: down onto the
 //                    柴墩, then the door's draught blows it in — 「喂它，它吐东西——银月就留下这么一句。」
+//   下坠子 (wm-wangzuo, 2026-10-21) the stone with the sword tied under it, set on the 石檐 and tipped off by the 蛫's tug on
+//                    the 背绳 (the 竹筒), onto the crack in its shell — 「打不过的，不打。给它下坠子。」
 import { comicArt } from './items-comic.js';
 import { n } from './ink.js';
 import { W, H, FLOOR } from './rope.js';
@@ -156,6 +158,37 @@ export const niugu = beat({
     + `<path class="g-cave-line" d="M0 ${FLOOR} C90 ${FLOOR - 3} 200 ${FLOOR + 3} ${W} ${FLOOR - 1}"/>`,
   grade: (s) => (s.best >= 3 ? 'whole' : 'fed'),
   cls: 'g-rope-niugu',
+});
+
+/* ── 下坠子 · 打不过的，不打 (wm-wangzuo, 2026-10-21) ──
+   The 凶崖's ledge under the 石檐: the 蛫 was a card fight; the book never fights it — 「他爹说过：『打不过的，不打。给它下
+   坠子。』」. The stone with the dead man's sword tied under it, point down, hangs on three cords; the cords cut in the right
+   order set it on the 石檐 (a stone ledge), and the 竹筒 at the eave's end — the 背绳 the 蛫 tugs when it reaches for the
+   water (the puff) — tips it off, down onto the crack at the rim of its shell. Eaten: the shell heaves. */
+const ZHUTONG = `${ART}games/rope/zhutong.webp`;
+const GUI_W = 196, GUI_H = GUI_W * 512 / 768, CRACK = [0.4, 0.3];
+const CLIFF = `${ART}places/mijing-cliff.webp`;
+export const gui = beat({
+  meta: { id: 'guirope', name: { zh: '下坠子 · 打不过的，不打', en: 'The drop-weight · What you can\'t beat, you don\'t fight' }, how: { zh: '划断绳，让石头落上石檐，再点竹筒——蛫一扯背绳，石头翻下来，剑尖扎进它壳沿的裂纹。', en: 'Cut the cords so the stone lands on the eave, then tap the bamboo flask: the gui tugs the rope, the stone tips over, and the sword point goes into the crack at its shell\'s rim.' } },
+  quote: { zh: '「打不过的，不打。给它下坠子。」', en: '"What you can\'t beat, you don\'t fight. Hang a weight over it."' },
+  T: words({
+    zh: { name: '石头', say: '把石头送到蛫壳沿那道裂纹上。', miss: ['落空了。再来。', '没砸着裂纹。再来。', '差一点。再来。'], eat: ['剑尖朝下，正扎进那道裂纹里。'], done: '绳子一紧，檐上的石头翻了下来，剑尖朝下，正扎进那道裂纹里。' },
+    en: { name: 'the stone', say: 'Bring the stone down onto the crack at the rim of the gui\'s shell.', miss: ['It fell wide. Again.', 'It missed the crack. Again.', 'So close. Again.'], eat: ['Sword point down, straight into the crack.'], done: 'The rope went taut; the stone on the eave tipped over, sword point down, straight into the crack.' },
+  }),
+  // the stone weight (the small games' comic 石坠) with the sword lashed under it, point down
+  thing: (s, r) => `<image class="g-ft-icon" href="${comicArt('iron-sword')}" x="${n(-r * 1.1)}" y="${n(-r * 0.2)}" width="${n(r * 2.2)}" height="${n(r * 2.2)}" transform="rotate(-45)"/>`
+    + `<image class="g-ft-icon" href="${comicArt('shi-zhui')}" x="${n(-r * 1.45)}" y="${n(-r * 1.6)}" width="${n(r * 2.9)}" height="${n(r * 2.9)}"/>`,
+  target(s, calm) {
+    const [mx, my] = s.level.mouth, x = mx - CRACK[0] * GUI_W, y = my - CRACK[1] * GUI_H;
+    const heave = s.phase === 'eat' && !calm ? -Math.abs(Math.sin(s.t / 90)) * 10 * Math.max(0, 1 - s.t / 900) : 0;
+    return `<g class="g-rope-target" transform="translate(0 ${n(heave)})">${img('games/rope/gui.webp', x, y, GUI_W, GUI_H)}</g>`;
+  },
+  puff: (dir) => `<image class="g-puff-art" href="${ZHUTONG}" x="-20" y="-24" width="40" height="40" transform="scale(${dir} 1)"/>`,
+  // the 凶崖 below the drop (the place's own ink painting), its dark mouth behind the ledge
+  backdrop: () => `<image class="g-cave-art" href="${CLIFF}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
+    + `<path class="g-cave-line" d="M0 ${FLOOR} C90 ${FLOOR - 3} 200 ${FLOOR + 3} ${W} ${FLOOR - 1}"/>`,
+  grade: (s) => (s.best >= 3 ? 'clean' : 'dropped'),
+  cls: 'g-rope-gui',
 });
 
 /* ── 拽 · 爹 over the drop, swung back onto the ledge (00-fall, 2026-10-19) ──

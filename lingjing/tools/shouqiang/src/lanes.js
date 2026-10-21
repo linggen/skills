@@ -191,7 +191,7 @@ export class LaneView {
     const s = this.s;
     this.sideL = s.add.nineslice(-SIDE / 2, H / 2, 'side', undefined, (SIDE - 20) * 2, (H - 40) * 2, 40, 40, 40, 40).setScale(0.5).setDepth(this.D.hud - 2);
     this.sideR = s.add.nineslice(W + SIDE / 2, H / 2, 'side', undefined, (SIDE - 20) * 2, (H - 40) * 2, 40, 40, 40, 40).setScale(0.5).setDepth(this.D.hud - 2);
-    const yy = s.textures.get('yy-sheet').has('idle-1');
+    const yy = this.g.level.fox !== false && s.textures.get('yy-sheet').has('idle-1'); // `fox: false`: no 银月 beside the field
     this.portrait = yy ? s.add.image(W + SIDE / 2, 330, 'yy-sheet', 'idle-1').setScale(1.25).setDepth(this.D.hud - 1) : null;
     this.title = s.add.text(-SIDE / 2, 70, this.g.level.title?.[this.lang] ?? '', { fontFamily: FONT, fontSize: '22px', color: '#fff6d8', stroke: '#2a1206',
       strokeThickness: 4, align: 'center', wordWrap: { width: SIDE - 50, useAdvancedWrap: true } }).setOrigin(0.5).setDepth(this.D.hud).setResolution(s.cfg.zoom ?? 1);

@@ -215,3 +215,63 @@ test('喂饭桶 · 一根牛骨头 sits where the book feeds the 饭桶: wm-diyi
   assert.ok(parts[at].chars + parts[at + 1].chars <= 9360 && parts[at].chars < 3000, `${parts[at].chars} · ${parts[at + 1].chars}`);
   assert.ok(RHYTHM_CAP > 0);
 });
+
+/* 下坠子 · 打不过的，不打 (wm-wangzuo, 2026-10-21, the 卷一 small-game plan — the 蛫's fight swapped for a rope level): 「他爹说过：
+   『打不过的，不打。给它下坠子。』」 The stone with the sword tied under it on three cords, the 石檐 (a ledge) and the 竹筒 (the
+   蛫's tug, the puff): the side cords first, the last over the eave sets it there, the tug tips it onto the shell's crack. */
+test('guirope: the task wangzuo-zhui plays it in wm-wangzuo; the 石檐 and the 蛫\'s tug; the wrong orders miss; plain and star ways win', async () => {
+  const mod = await import('../scripts/games/guirope.js');
+  const { bot, plans, starPlans } = await import('../scripts/games/bots/guirope.js');
+  const RG = await import('../scripts/games/rope-gen.js');
+  const t = content.tasks.tasks.find((x) => x.id === 'wangzuo-zhui');
+  assert.equal(t.game, 'guirope');
+  assert.equal(t.stars, 3);
+  assert.deepEqual(t.grant, { table: 'task', item: 'xirang' }, 'what the 蛫 fight paid (its drop, 息壤) is the board\'s win; no 修为');
+  const row = content.games.games.find((g) => g.id === 'guirope');
+  assert.deepEqual([row.task, row.scene, row.mechanic], ['wangzuo-zhui', 'wm-wangzuo', '割绳子']);
+  const level = row.levels[0];
+  assert.ok(level.gust && level.stones?.length === 1 && level.vines.length === 3, 'three cords, the eave, the tug');
+  assert.ok(!level.thorns && !level.crows && !level.bubbles, 'forgiving: nothing breaks it, nothing takes it');
+  const fed = (run) => !run.broke && run.path.some(([x, y], k) => k >= (run.path.first ?? 0) && Math.hypot(x - level.mouth[0], y - level.mouth[1]) < RG.MOUTH_R + 19 * 0.4);
+  assert.ok(fed(RG.playPlan(level, plans.one)), 'the answer reaches the crack');
+  for (const hand of RG.HANDS) assert.ok(fed(RG.playPlan(level, plans.one, { hand })), `at a ${hand} ms reaction`);
+  assert.ok(fed(RG.playPlan(level, plans.one, { late: 1500, hand: 200 })), 'thought over slowly');
+  const perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+  for (const o of perms) assert.ok(!fed(RG.playPlan(level, o.map((v) => ({ g: 'cut', v })))), `cut ${o.join('')} alone: it never gets there`);
+  const wins = perms.filter((o) => fed(RG.playPlan(level, [...o.map((v) => ({ g: 'cut', v })), { g: 'gust' }]))).map((o) => o.join(''));
+  assert.deepEqual(wins, ['012', '102'], 'the side cords in either order, the eave\'s last, then the tug');
+  const r = playOnce(mod, bot, { seed: 'b1', deal: { levels: row.levels }, limit: 60000 });
+  assert.ok(r.won, 'the plain way wins');
+  assert.ok(['clean', 'dropped'].includes(r.grade), r.grade);
+  const { planBot } = await import('../scripts/games/bots/rope-plan.js');
+  let s = null;
+  const keep = { ...mod, tick: (st, ms) => (s = mod.tick(st, ms)), act: (st, d) => { const x = mod.act(st, d); s = x.state ?? st; return x; } };
+  playOnce(keep, planBot({ one: starPlans.one }), { seed: 'star', deal: { levels: row.levels }, limit: 60000 });
+  assert.ok(s.won, 'the star way wins');
+  assert.equal(s.stars, 3, 'three 灵光');
+  for (const lang of ['zh', 'en']) {
+    const h = mod.html(mod.newGame('x', 1, { levels: row.levels }), lang);
+    assert.match(h, /g-rope-quote/);
+    assert.match(h, lang === 'zh' ? /打不过的，不打。给它下坠子。/ : /Hang a weight over it/);
+    assert.match(h, /items-comic\/shi-zhui\.webp/, 'the stone weight');
+    assert.match(h, /items-comic\/iron-sword\.webp/, 'the sword tied under it');
+    assert.match(h, /games\/rope\/gui\.webp/, 'the 蛫 in its hollow');
+    assert.match(h, /games\/rope\/zhutong\.webp/, 'the 竹筒 for the tug, not the draught\'s puff');
+    assert.match(h, /places\/mijing-cliff\.webp/, 'under the 凶崖');
+    assert.doesNotMatch(h, /data-g="skip"/);
+  }
+  assert.equal(mod.stuck({ ...mod.newGame('x', 1, { levels: row.levels }), misses: 4 }), true);
+});
+
+test('下坠子 sits where the book hangs the weight: wm-wangzuo\'s passage from 「爬到一半」 (the cut: 「底下是一道窄窄的石台」) to 「给它下坠子。」, the board, then 把水倒进浅窝 waits on it; the duel is gone', () => {
+  const sc = content.chapters['00-waimen'].scenes['wm-wangzuo'];
+  assert.deepEqual(sc.show, [{ card: 'board', id: 'wangzuo-zhui' }]);
+  assert.match(sc.story.zh, /^底下是一道窄窄的石台/);
+  assert.match(sc.story_full.zh, /^爬到一半，底下有了火光。/);
+  for (const k of ['story', 'story_full']) assert.match(sc[k].zh, /给它下坠子。」$/, k);
+  const open = sc.exits.find((e) => e.id === 'open');
+  assert.equal(open.game, undefined, 'no card fight: the 蛫 is never fought');
+  assert.equal(open.needs.task, 'wangzuo-zhui');
+  assert.ok(open.refuse.zh && open.refuse.en);
+  assert.deepEqual(open.grant, { table: 'scene', item: 'tama-fu' }, 'the way on keeps its own grant');
+});

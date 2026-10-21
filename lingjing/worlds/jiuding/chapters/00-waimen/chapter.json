@@ -54,7 +54,8 @@
       "scenes": [
         "wm-chaifang",
         "wm-danlu",
-        "wm-diyilu"
+        "wm-diyilu",
+        "wm-duanlei"
       ],
       "say": {
         "zh": "你一身是伤，哪儿也去不了。",
@@ -69,6 +70,7 @@
       },
       "scenes": [
         "wm-mijing",
+        "wm-xiongya",
         "wm-wangzuo",
         "wm-kunzhen",
         "wm-xirang",
@@ -87,6 +89,7 @@
         "opens": { "mijing-shishi": "wm-wangzuo", "mijing-anhe": "wm-kunzhen" },
         "say": { "zh": "秘境未开，出不去。", "en": "The realm is sealed. There is no way out." },
         "days": {
+          "wm-xiongya": { "n": 1, "unit": "day" },
           "wm-wangzuo": { "n": 1, "unit": "day" },
           "wm-kunzhen": { "n": 1, "unit": "day" },
           "wm-xirang": { "n": 1, "unit": "night" },
@@ -94,6 +97,7 @@
           "wm-chu": { "n": 3, "unit": "day" }
         },
         "goals": {
+          "wm-xiongya": { "zh": "顺着凶崖往下爬，守住半道那截石台", "en": "Climb down the Cliff of Danger and hold the ledge halfway" },
           "wm-wangzuo": { "zh": "打开那面有风的墙", "en": "Open the wall the wind comes through" },
           "wm-kunzhen": { "zh": "活着从崖口边脱身", "en": "Get away from the drop alive" },
           "wm-xirang": { "zh": "护住那撮息壤", "en": "Keep the pinch of living soil" },

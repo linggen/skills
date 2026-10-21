@@ -149,11 +149,12 @@ export class PlayScene extends Phaser.Scene {
     // `art.hand: null` — nothing hovers at the hero's hand (阿禾 holds her pole); no aura (no 灵气 yet)
     this.noHand = 'hand' in art && !art.hand;
     if (this.noHand) { this.handSword.setVisible(false); this.handGlow.setVisible(false); this.xmAura.setVisible(false); }
-    this.add.image(FOX.x, FOX.y + 24, 'shadow').setDepth(D.hero - 1).setScale(1.2, 1);
+    if (this.g.level.fox !== false) this.add.image(FOX.x, FOX.y + 24, 'shadow').setDepth(D.hero - 1).setScale(1.2, 1);
     // beside the hero: 银月, or a level's own (`art.side` — 守白菜: 小满, before he ever meets her)
     this.side = art.side ? this.add.image(FOX.x, FOX.y + 30, this.tex(art.side, 'xiaoman-idle')).setOrigin(0.5, 1).setDepth(D.hero) : null;
     if (this.side) { this.sideScale = 112 / this.side.height; this.side.setScale(this.sideScale); }
-    const yyKey = !this.side && this.textures.get('yy-sheet').has('idle-1') ? 'yy-sheet' : null;
+    // `fox: false` — no 银月 on the wall (断肋巡夜: she has gone dark in the token)
+    const yyKey = !this.side && this.g.level.fox !== false && this.textures.get('yy-sheet').has('idle-1') ? 'yy-sheet' : null;
     this.yy = yyKey ? this.add.image(FOX.x, FOX.y + 26, 'yy-sheet', 'idle-1').setOrigin(0.5, this.yyFoot ?? 0.97).setDepth(D.hero) : null;
     if (this.yy) {
       this.yyScale = 92 / 150;

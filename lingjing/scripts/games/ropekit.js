@@ -136,7 +136,7 @@ function strapHit(s, live) {
   const [a, b] = strapPoints(s.swing);
   return `<line class="g-vine-hit" x1="${n(a.x)}" y1="${n(a.y)}" x2="${n(b.x)}" y2="${n(b.y)}" data-g="cut" data-g-swipe="" data-v="pack" data-k="0"/>`;
 }
-function gustPicture(s) {
+function gustPicture(s, spec = {}) {
   const g = s.level.gust;
   if (!g) return '';
   const [x, y] = g.at, dir = (g.to ?? [1, 0])[0] >= 0 ? 1 : -1, on = s.swing.gust > 0, band = g.band ?? GUST_BAND;
@@ -145,7 +145,8 @@ function gustPicture(s) {
   return `<rect class="g-gust-band" x="0" y="${y - band}" width="${W}" height="${band * 2}"/>${streaks}`
     + `<g class="g-puff${on ? ' is-on' : ''}${s.must === 'gust' ? ' g-teach' : ''}" transform="translate(${x} ${y})" data-g="gust"><circle class="g-puff-hit" r="30"/>`
     // the painted puff (喂饼's, local FLUX) — no code-drawn cloud (Hanli 10-19, on 忍字's frame)
-    + `<image class="g-puff-art" href="${PUFF}" x="-26" y="-16" width="52" height="32" transform="scale(${dir} 1)"/></g>`;
+    // a beat may draw its own puff (`spec.puff(dir)`: 下坠子's 竹筒 — the 蛫's tug on the rope)
+    + (spec.puff?.(dir) ?? `<image class="g-puff-art" href="${PUFF}" x="-26" y="-16" width="52" height="32" transform="scale(${dir} 1)"/>`) + '</g>';
 }
 // 灵光: the painted mote (local FLUX, 2026-10-19 — they were code-drawn red dots)
 const sparkImg = () => `<image class="g-ft-spark" href="${SPARK}" x="${-STAR_R * 1.6}" y="${-STAR_R * 1.6}" width="${STAR_R * 3.2}" height="${STAR_R * 3.2}"/>`;
@@ -325,7 +326,7 @@ export function makeRopeGame(spec) {
     // a person's pack hangs on his back: drawn behind him
     const pack = packPicture(s, spec, live), [front, back] = w.hang ? ['', pack] : [pack, ''];
     const fx = s.phase === 'miss' && !calmOf(s) ? splash(b.position.x, Math.min(b.position.y, FLOOR - 4), s.t, { r: 11 }) : '';
-    return scene(W, H, (spec.backdrop?.(s) ?? ground()) + gustPicture(s) + (L.stones ?? []).map((st) => spec.stone?.(st) ?? stonePicture(st)).join('') + (L.springs ?? []).map((sp) => springPicture(sp)).join('')
+    return scene(W, H, (spec.backdrop?.(s) ?? ground()) + gustPicture(s, spec) + (L.stones ?? []).map((st) => spec.stone?.(st) ?? stonePicture(st)).join('') + (L.springs ?? []).map((sp) => springPicture(sp)).join('')
       + (L.thorns ?? []).map(thornPicture).join('') + sealsPicture(w, L)
       + anchors + spec.target(s, calmOf(s)) + starsPicture(s) + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase)).join('') + crowsPicture(w)
       + w.bubbles.map((_, i) => bubblePicture(w, i)).join('') + back + thing + front + flecks(s) + fx + (s.must && s.must !== 'gust' ? teachMark(s) : '')
