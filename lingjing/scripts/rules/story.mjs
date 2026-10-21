@@ -15,7 +15,7 @@ import { cauldronsFound, companionOf, giftAt, hasCompanion, herAwake, recalledOf
 import { threadOf } from './errands.mjs';
 import { cardBook } from './cards.mjs';
 import { albumOf } from './memories.mjs';
-import { seenOf } from './codex.mjs';
+import { castShown, seenOf } from './codex.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
 import { chapterHuis, chapterLabel, endLabel, huiEnded, huiLabel, huiNow, huiOf, huiOrder, juanEndOf } from './hui.mjs';
 
@@ -117,7 +117,7 @@ function peopleOf(content, state) {
   for (const sid of met) {
     const at = index.get(sid);
     const when = at && (huiLabel(content, at.scene.hui, lang, 'short') ?? pick(at.chapter.title, lang));
-    for (const id of at?.scene.cast ?? []) if (id !== her && id !== 'ling') add(id, nameOf(content, id, lang), 'story', when);
+    for (const id of castShown(state, at?.scene)) if (id !== her && id !== 'ling') add(id, nameOf(content, id, lang), 'story', when);
   }
   for (const [id, d] of Object.entries(state.duels ?? {})) if (d?.outcome && d.outcome !== 'open') add(id, nameOf(content, id, lang), 'fought');
   for (const k of state.known ?? []) add(`known:${k.id}`, k.name, 'known', k.from);

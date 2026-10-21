@@ -38,7 +38,7 @@ import { mainRoot, rootName } from './roots.mjs';
 import { memoriesLook } from './memories.mjs';
 import { todayBrief } from './festival.mjs';
 import { seasonBrief, storySky, weatherBrief, windBrief } from './weather.mjs';
-import { newHere, portraitOf } from './codex.mjs';
+import { castShown, newHere, portraitOf } from './codex.mjs';
 import { withoutSealed } from './sealed.mjs';
 import { rerunBoardId, rerunBrief, runBoardHere, runRow } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
@@ -271,7 +271,7 @@ function sceneBrief(content, state, now = new Date()) {
     // passage in the box): Ling never narrates its setup (rules/ask.mjs).
     ...(scene.story ? { stage_tells: true } : {}),
     setup: say(scene.setup),
-    cast: (scene.cast ?? []).filter(id => id !== companionOf(content)?.id || hasCompanion(state)).map(id => ({ id, name: nameOf(content, id, lang) })),
+    cast: castShown(state, scene).filter(id => id !== companionOf(content)?.id || hasCompanion(state)).map(id => ({ id, name: nameOf(content, id, lang) })),
     show: withMap(content, scene.show ?? []),
     lines: spoken(content, state, scene.lines),
     ...(people.length ? { people } : {}),

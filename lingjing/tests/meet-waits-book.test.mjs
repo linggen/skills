@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
-import { look, task, win } from '../scripts/rules.mjs';
+import { look, story, task, win } from '../scripts/rules.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { meetsOf, seenOf } from '../scripts/rules/codex.mjs';
 import { stageCards } from '../scripts/stage.mjs';
@@ -49,4 +49,14 @@ test('only a foe the book marks after the board waits; every other scene\'s meet
   // People are not foes: 00-shiao's family, marked in its rest, still stand when the scene opens.
   const shiao = scenes.find(sc => sc.id === '00-shiao');
   assert.ok(['mama', 'baba'].every(id => meetsOf(content, blank, shiao).includes(id)));
+});
+
+test('nor is it named before the book: not in Look\'s cast, not on the place, not in 人物谱 — after the passage, all three (review 2026-10-21)', () => {
+  const named = s => {
+    const lk = look(s, content, ctx()), people = story(s, content, ctx()).result.people ?? [];
+    return { cast: lk.scene.cast.some(c => c.id === 'zheng'), place: lk.place.has.creature?.id === 'zheng', people: people.some(p => p.id === 'zheng') };
+  };
+  assert.deepEqual(named(at()), { cast: false, place: false, people: false });
+  const won = task(win(at(), content, ctx(), { id: 'yaoyuan-xunye' }).state, content, ctx(), { action: 'done', id: 'yaoyuan-xunye' }).state;
+  assert.deepEqual(named(tellOf(content, won).keep), { cast: true, place: true, people: true });
 });

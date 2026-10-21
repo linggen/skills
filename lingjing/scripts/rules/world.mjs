@@ -7,6 +7,7 @@ import { duelBrief, shelfOf, shopOf, shopOpen, withMap } from './look.mjs';
 import { hashOf, provinceOf } from './travel.mjs';
 import { buyBack, visitorHere } from './visiting.mjs';
 import { huiNow, huiOrder, sceneHui } from './hui.mjs';
+import { waitsTheBook } from './codex.mjs';
 import { rerunBack, rerunOpen, runEncounter, runRoads, runSealed, staleRun, stampStoryEnd } from './rerun.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
@@ -510,6 +511,9 @@ function encounterOf(content, state, now) {
   };
 }
 
+/* The beasts the scene he stands in brings on only in the rest of its passage (codex.mjs waitsTheBook): the place
+   names none of them until the book has (狰 at the 药园, before 丑时). */
+const waitingHere = (content, state) => (atScene(content, state) ? waitsTheBook(state, sceneOf(content, state)) : new Set());
 function placeBrief(content, state, now = new Date()) {
   const place = placeOf(content, state.place);
   if (!place) return null;
@@ -535,7 +539,7 @@ function placeBrief(content, state, now = new Date()) {
     // A 令 in his belt: where it lets him go.
     ...(state.pass ? { pass: { to: placeName(content, state, placeOf(content, state.pass.to)), quest: state.pass.quest } } : {}),
     has: {
-      creature: has.creature && metNow(content, has.creature, now) ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
+      creature: has.creature && metNow(content, has.creature, now) && !waitingHere(content, state).has(has.creature) ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
       seeds: Boolean(has.seeds), shop: Boolean(has.shop || visitor), scene: has.scene ?? null,
     },
     ...(shop ? { shop: { name: pick(shop.name, lang) ?? null, keeper: pick(shop.keeper, lang) ?? null, open: shopOpen(shop, state, content), ...(!shopOpen(shop, state, content) && shop.shut ? { shut: pick(shop.shut, lang) } : {}) } } : {}),
