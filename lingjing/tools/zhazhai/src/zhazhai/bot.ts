@@ -31,9 +31,11 @@ export function botHandle(game: Phaser.Game) {
     const a = Phaser.Math.DegToRad(angle);
     return { x: r.x - raw * Math.cos(a), y: r.y + raw * Math.sin(a) };
   };
+  /** The pull's strength on this field: the slingshot's own (a level may throw softer, `slingshot.power`), else the kit's. */
+  const velocityOf = () => sling()?.config?.VELOCITY_MULTIPLIER ?? SLINGSHOT_CONFIG.velocityMultiplier;
   const launchOf = (angle: number, power: number) => {
     const a = Phaser.Math.DegToRad(angle);
-    const v = Math.max(0.12, Math.min(1, power)) * SLINGSHOT_CONFIG.maxPull * SLINGSHOT_CONFIG.velocityMultiplier;
+    const v = Math.max(0.12, Math.min(1, power)) * SLINGSHOT_CONFIG.maxPull * velocityOf();
     return { vx: v * Math.cos(a), vy: -v * Math.sin(a) };
   };
 
@@ -62,7 +64,7 @@ export function botHandle(game: Phaser.Game) {
           gravity: { ...s.matter.world.engine.gravity },
           next: (BIRD_PHYSICS as Any)[loaded ?? "red"] ?? null,
           maxPull: SLINGSHOT_CONFIG.maxPull,
-          velocity: SLINGSHOT_CONFIG.velocityMultiplier,
+          velocity: velocityOf(),
         },
         rest: rest(),
         flying: s.birdLaunchOrchestrator.hasActiveFlyingBird(),

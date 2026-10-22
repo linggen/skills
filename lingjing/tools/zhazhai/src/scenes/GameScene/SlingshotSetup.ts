@@ -12,6 +12,7 @@ import type { GameHapticsManager } from "../../systems/mobile/GameHapticsManager
 import {
   type PullData,
   type SlingshotCallbacks,
+  type SlingshotConfig,
   SlingshotState,
 } from "../../objects/slingshot-modules/SlingshotConfig";
 import { Slingshot } from "../../objects/Slingshot";
@@ -19,8 +20,16 @@ import { BirdQueue } from "../../systems/BirdQueue";
 import { BirdLaunchOrchestrator } from "./BirdLaunchOrchestrator";
 import { GameConfig } from "../../config/GameConfig";
 import { BirdType } from "../../types/BirdType";
-import { DESTRUCTION_JUICE_CONFIG } from "../../config/PhysicsConfig";
+import { DESTRUCTION_JUICE_CONFIG, SLINGSHOT_CONFIG } from "../../config/PhysicsConfig";
 import type { EntityManager } from "./EntityManager";
+
+/** A level's own aim reach and throw strength, over the kit's defaults (unset: the kit's). */
+function slingshotTuning(sl?: { aim?: number; power?: number }): Partial<SlingshotConfig> {
+  return {
+    ...(sl?.aim ? { AIM_STEPS: sl.aim } : {}),
+    ...(sl?.power ? { VELOCITY_MULTIPLIER: SLINGSHOT_CONFIG.velocityMultiplier * sl.power } : {}),
+  };
+}
 
 export interface SlingshotSetupResult {
   slingshot: Slingshot;
@@ -92,7 +101,7 @@ export class SlingshotSetup {
       onBirdStateChanged: onSlingshotStateChange,
     };
 
-    const slingshot = new Slingshot(scene, slingshotX, slingshotY, { AIM_STEPS: levelData?.slingshot?.aim }, slingshotCallbacks);
+    const slingshot = new Slingshot(scene, slingshotX, slingshotY, slingshotTuning(levelData?.slingshot), slingshotCallbacks);
 
     const pouchRestPos = slingshot.getBirdRestPosition();
     const birdQueueSystem = new BirdQueue(scene, pouchRestPos, groundY);

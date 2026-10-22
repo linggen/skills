@@ -127,6 +127,9 @@ export interface LevelSlingshotConfig {
   y: number;
   /** How far the aim dots reach (trajectory steps; the kit's default when unset): a long arc helps a shot that must drop in. */
   aim?: number;
+  /** The launch's strength against the kit's (1 = as everywhere; under 1, a full pull throws softer and the same pull range
+      spans a shorter, finer reach). */
+  power?: number;
 }
 
 export interface LevelData {

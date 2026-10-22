@@ -188,7 +188,7 @@ export const THROW_LEVELS: LevelData[] = [
     pigs: [{ x: RIM, y: GROUND_Y - RIM_UP + 24, size: PigSize.SMALL }],
     target: { kind: "hoop", w: 84, h: 20 },
     decor: [{ art: "prop-hoop", x: FT, y: GROUND_Y + 6, h: HH * U }],
-    slingshot: { ...SLINGSHOT, aim: 30 }, // easier (Hanli 10-22: 「游戏本身不用改, 可以想办法降低一下难度」): six balls, the aim dots reach the rim
+    slingshot: { ...SLINGSHOT, aim: 60, power: 0.8 }, // easier (Hanli 10-22: 「游戏本身不用改, 可以想办法降低一下难度」, then 「还是很难透进, 让瞄准白线长一点, 投篮力度小一点」): six balls, the aim dots past the rim, a softer throw
     starThresholds: STARS,
     bot: {},
   },
