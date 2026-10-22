@@ -94,6 +94,15 @@ looks every 1.6 s): 抬鹿下山 human 30/30 (★3 mostly), any card wins, none 
 6,080 between 算账 and 水桶 is now 3,385 · 2,695 (the plan's 大场面 镜光 would cut the second). Open for Hanli: 老周's stones
 and the lead cards' second lines are the game's, not the book's; 雪夜柴垛 is a touch harder than 泗水路 by stars.
 
+**Two more for 守灶台 · 坠谷 (10-22**, Hanli: 「1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): the daydream is the game's
+**first 结印** — one simple seal where a camera is, 剑诀 → 飞剑 (`from: null`; before 古六 only the one-seal move), through
+the shared dock (its lead line, the first-time bubble 「对着摄像头，比个剑诀——飞剑就出去！」), the call 「做梦嘛——当一回仙人！
+结印！」, its first cast played big (`jieyin.firstCast`: the world slows a beat, 「飞剑！」 on a ribbon); no camera, the same
+level. And 00-fall's empty slot is a ~10 s 大场面, **暴雨坠谷** (setpieces/zhuigu.js, three 水墨 paintings: the slope in the
+storm · down the cliff · the vine and the moss), laid under the fall's paragraph (`{景=zhuigu}`, zh and en) — the
+1,857-character read from 00-fall to 守火 is now 828 · 坠谷 · 1,029 (tools/arcade-rhythm.mjs). The read before it,
+00-zaotai → 黑松岭's 刻记号 (3,409), is still over the cap — the next to break.
+
 ## The throws — levels of 砸寨 (10-20)
 
 Hanli 10-20: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」. Every throw in the story is a level of 砸寨, the one throw
@@ -1070,5 +1079,6 @@ is unchanged.
   and never moving lose; casting never needed (with casts 40/40). ~64 s; both 大妖 on the road together in every run.
   Game lines (not the book, for Hanli): the lead 「小满躺在地下，望着屋顶那个窟窿：要是我会撒豆成兵……」 ·
   「灶台上还剩三只碗——这回，一只也不给他们碰！」; banners 碗还在！ · 碗没守住…… · 门开了！ · 马小宝要滚过来了！快换列！ ·
-  马三要跺棍子了！快换列！ · 马小宝停下来吃桂花糕！; the task's 「三只碗，还在灶台上。——想想而已。」; 00-zaotai's setup,
+  马三要跺棍子了！快换列！ · 马小宝停下来吃桂花糕！ · 飞剑！; the 结印 call 「做梦嘛——当一回仙人！结印！」 and bubble
+  「对着摄像头，比个剑诀——飞剑就出去！」; the task's 「三只碗，还在灶台上。——想想而已。」 and its how; 00-zaotai's setup,
   recap and panel.

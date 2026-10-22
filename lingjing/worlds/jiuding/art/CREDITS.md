@@ -328,3 +328,13 @@ roll 1, hit 1, masan-walk-1 6 (of 1–6), slam 1, hit 2, zaotai-wall 5 (of 1–6
 tex-floor 4, tex-floor-side 4 (of 1–6), home-far 1 (a faint red seal it stamped anyway painted out), wall-door 2, icons
 guihuagao 2 · yecaizhou 1 · lizi 1 · wan 2 · zu 2 · fuzhai 2. Every seed looked at for fake writing; every cut checked on
 dark and light grounds. Sources kept in `art/games/sadoushou/`. No outside source.
+
+For 第一回's 暴雨坠谷 (00-fall, the story stage; 2026-10-22): `setpiece/zhuigu-ya.webp` (1536×1024: the narrow muddy slope on
+黑松岭's cliff in the black rainstorm, 爹 pressed against the rock at the left, 小满 flung out over the misty void at the
+right), `setpiece/zhuigu-gun.webp` (1536×1024: looking down the rain-lashed cliff face — mud ribbons, tumbling stones and
+branches, a hanging vine, the boy falling at the middle) and `setpiece/zhuigu-tai.webp` (1536×1024: the cliff's foot in grey
+mist, the deep moss bed, the vine hanging from above, silver-leaved trees, the boy sunk into the moss). Painted by the local
+picture model (FLUX.2 klein 4B, mflux) with `tools/paint-zhuigu.py` (paint-yaowang.py's painting and cutting), the house's
+`places/heisong-cliff.webp` (ya, gun) and `places/yingu.webp` (tai) as the style references: ya seed 1 of 1–3, gun seed 5 of
+1–7, tai seed 3 of 1–3 (`KEPT`, with what was wrong with the rest). Every picture looked at; no seal, no writing. No outside
+source.

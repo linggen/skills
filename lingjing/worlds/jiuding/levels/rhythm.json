@@ -111,9 +111,24 @@
       },
       {
        "kind": "read",
-       "chars": 1857,
-       "run": 1857,
-       "over": true
+       "chars": 828,
+       "run": 828,
+       "over": false
+      },
+      {
+       "kind": "piece",
+       "id": "zhuigu",
+       "scene": "00-fall",
+       "title": {
+        "zh": "暴雨坠谷",
+        "en": "Over the Edge in the Storm"
+       }
+      },
+      {
+       "kind": "read",
+       "chars": 1029,
+       "run": 1029,
+       "over": false
       },
       {
        "kind": "board",
@@ -190,7 +205,7 @@
       "riddle": 0,
       "seen": 1,
       "breakthrough": 0,
-      "piece": 2
+      "piece": 3
      },
      "longest": 3409,
      "roaming": 0,
