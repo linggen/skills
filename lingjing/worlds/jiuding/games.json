@@ -396,10 +396,8 @@
   },
   {
    "id": "qimai",
-   "group": "h02",
+   "group": "qimai",
    "mechanic": "调息",
-   "scene": "00-halfyear",
-   "hui": "第二回",
    "stars": 3,
    "name": {"zh":"气走经脉 · 吹鹅毛","en":"Qi path · The goose feather"},
    "data": {"level":"feather"},
@@ -534,10 +532,8 @@
   },
   {
    "id": "qimai",
-   "group": "h02",
+   "group": "qimai",
    "mechanic": "调息",
-   "scene": "00-sleep",
-   "hui": "第二回",
    "stars": 3,
    "name": {"zh":"气走经脉 · 洗髓","en":"Qi path · Marrow washing"},
    "data": {"level":"xisui"},
