@@ -21,6 +21,7 @@ import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
+import { gongkeBoard, meaningOf } from './gongke.mjs';
 import { catchHere, errandAsking, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
 import { duiziBrief } from './duizi.mjs';
@@ -502,13 +503,17 @@ function tasksBrief(content, state, ctx) {
     period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null,
     // What lands (2026-10-15: the workout 修为, the pick and 开府 灵石), so Ling tells the practice right.
     pays: paysOf(content, state, ctx.now, choreGrant(content, q, state)),
+    // What it means in the book (rules/gongke.mjs): its kind's in-world name, and the facts for her.
+    ...(meaningOf(content, q) ? { kind: q.kind, means: pick(meaningOf(content, q).name, lang), means_about: pick(meaningOf(content, q).about, lang) } : {}),
   }));
+  // The 人间功课 board (the 洞府's): today's chores as facts, from 入门 on — never before the gate.
+  const gongke = shut.includes('chores') ? null : gongkeBoard(content, state, chores, ctx.now, lang, questDone);
   const kaifu = shut.includes('kaifu') ? null : kaifuBrief(state, menu, ctx.now, lang, content);
   // The open 一次 step's pay, so the book's row says it before it is done.
   const open = kaifu?.next && menu.find(q => q.id === kaifu.next.id);
   if (open) kaifu.next.pays = paysOf(content, state, ctx.now, choreGrant(content, open, state));
   if (shut.includes('cultivation')) for (const t of tasks) t.pays = null;
-  return { tasks, quests, ...(kaifu ? { kaifu } : {}) };
+  return { tasks, quests, ...(kaifu ? { kaifu } : {}), ...(gongke ? { gongke } : {}) };
 }
 
 /* The world's words for the harness's ids, in the player's language — the

@@ -3,7 +3,9 @@
 # reads ~/.linggen/quests/*.json). The file is Shifu's MENU — every chore a
 # player can do here — and each entry's `done_at` is Shifu's own record of the
 # last time it saw that chore done. `pool: true` offers an entry to the game's
-# one-chore-a-day pick.
+# one-chore-a-day pick; `kind` is what sort of practice it is (a plain word a
+# game reads; Shifu names no game): a scan or a clear is `sweep`, a security
+# check or a backup is `ward`.
 #
 #   quest.sh <id>          stamp <id> done now (no id: shifu-scan, the old caller)
 #   quest.sh <id> <when>   done at <when> (UTC, 2026-09-24T15:00:00Z) — a record
@@ -49,13 +51,13 @@ use strict; use warnings; use utf8; use JSON::PP;
 my ($file, $id, $at) = @ARGV;
 my $open = "/apps/apple-shifu/scripts/index.html?tab=";
 my @menu = (
-  { id => "shifu-scan", period => "week", reward => 30, stamina => 20, device => "mac", pool => JSON::PP::true,
+  { id => "shifu-scan", kind => "sweep", period => "week", reward => 30, stamina => 20, device => "mac", pool => JSON::PP::true,
     open => "${open}system", title => { zh => "清扫洞府 · 用 Shifu 扫描一次磁盘", en => "Tidy your cave abode · scan your disk in Shifu" } },
-  { id => "shifu-security", period => "week", reward => 25, stamina => 15, device => "mac", pool => JSON::PP::true,
+  { id => "shifu-security", kind => "ward", period => "week", reward => 25, stamina => 15, device => "mac", pool => JSON::PP::true,
     open => "${open}system", title => { zh => "护阵 · 做一次安全检查", en => "Ward the gate · run a security scan" } },
-  { id => "shifu-clear", period => "week", reward => 25, stamina => 15, device => "both", pool => JSON::PP::true,
+  { id => "shifu-clear", kind => "sweep", period => "week", reward => 25, stamina => 15, device => "both", pool => JSON::PP::true,
     open => "${open}files", title => { zh => "扫尘 · 清理一项可清理的东西", en => "Sweep the dust · clear one clearable" } },
-  { id => "shifu-backup", period => "week", reward => 30, stamina => 20, device => "both", pool => JSON::PP::true,
+  { id => "shifu-backup", kind => "ward", period => "week", reward => 30, stamina => 20, device => "both", pool => JSON::PP::true,
     open => "${open}media", title => { zh => "藏珍 · 备份一次照片视频", en => "Keep the treasures · back up photos & videos" } },
 );
 exit 1 unless grep { $_->{id} eq $id } @menu;

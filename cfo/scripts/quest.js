@@ -2,7 +2,9 @@
 // (Lingjing reads ~/.linggen/quests/*.json). The file is CFO's MENU — every
 // chore a player can do here — and each entry's `done_at` is CFO's own record
 // of the last time it saw that chore done. `pool: true` offers an entry to the
-// game's one-chore-a-day pick; `device` is where the player does it.
+// game's one-chore-a-day pick; `device` is where the player does it; `kind`
+// is what sort of practice it is (a plain word — a game reads it, CFO names
+// no game): every CFO chore is `ledger`.
 //
 // Only the fact crosses — due, done, when — never an amount, a merchant, a
 // category or a file name. Read-merge-write under the same lock and atomic
@@ -21,24 +23,24 @@ const OPEN = '/apps/cfo/scripts/index.html';
 
 export const MENU = [
   {
-    id: 'cfo-import', period: 'week', reward: 30, stamina: 20, device: 'both', pool: true, open: `${OPEN}?tab=report`,
+    id: 'cfo-import', kind: 'ledger', period: 'week', reward: 30, stamina: 20, device: 'both', pool: true, open: `${OPEN}?tab=report`,
     title: { zh: '清点府库 · 在 CFO 导入一份账单', en: 'Balance the treasury · import a statement in CFO' },
   },
   {
-    id: 'cfo-review', period: 'day', reward: 20, stamina: 10, device: 'both', pool: true, open: `${OPEN}?tab=report`,
+    id: 'cfo-review', kind: 'ledger', period: 'day', reward: 20, stamina: 10, device: 'both', pool: true, open: `${OPEN}?tab=report`,
     title: { zh: '核账 · 看一遍本月的报告', en: "Check the accounts · read this month's report" },
   },
   {
-    id: 'cfo-sort', period: 'week', reward: 25, stamina: 15, device: 'mac', pool: true, open: `${OPEN}?tab=txn`,
+    id: 'cfo-sort', kind: 'ledger', period: 'week', reward: 25, stamina: 15, device: 'mac', pool: true, open: `${OPEN}?tab=txn`,
     title: { zh: '分账 · 给未分类的交易归类', en: 'Sort the ledger · categorize uncategorized transactions' },
   },
   {
-    id: 'cfo-invest', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: `${OPEN}?tab=invest`,
+    id: 'cfo-invest', kind: 'ledger', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: `${OPEN}?tab=invest`,
     title: { zh: '观宝库 · 在手机上看一遍投资', en: 'Survey the vault · look over your investments on the phone' },
   },
   // 开府 — one time: Investments lists a stock (the linggen.json `once` shape).
   {
-    id: 'cfo-first-stock', period: 'once', reward: 50, stamina: 20, device: 'both', open: `${OPEN}?tab=invest`,
+    id: 'cfo-first-stock', kind: 'ledger', period: 'once', reward: 50, stamina: 20, device: 'both', open: `${OPEN}?tab=invest`,
     title: { zh: '开仓 · 在 CFO 的投资里添一支股票', en: 'Open a position · add a stock to Investments in CFO' },
   },
 ];

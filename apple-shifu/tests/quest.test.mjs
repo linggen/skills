@@ -130,3 +130,11 @@ test('the engine door: stamp <id> <when> exits 0 once held, 1 when it could not'
   assert.equal(run(home, ['stamp', 'shifu-clear', '2026-09-25T00:00:00Z'], { SHIFU_QUESTS: '/dev/null/nope' }).status, 1);
   fs.rmSync(home, { recursive: true, force: true });
 });
+
+test('every chore names its kind: a scan or a clear sweeps, a security check or a backup wards', () => {
+  const home = scratch();
+  assert.equal(run(home, ['shifu-backup']).status, 0);
+  const kinds = Object.fromEntries(read(home).quests.map((q) => [q.id, q.kind]));
+  assert.deepEqual(kinds, { 'shifu-scan': 'sweep', 'shifu-security': 'ward', 'shifu-clear': 'sweep', 'shifu-backup': 'ward' });
+  fs.rmSync(home, { recursive: true, force: true });
+});

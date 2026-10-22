@@ -654,6 +654,22 @@ body.fighting .footrow { display: none; }
 .pheld { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px dashed var(--line); }
 .pheld img, .pheld .noart { width: 48px; height: 36px; flex: none; object-fit: cover; border-radius: 6px; background: var(--raised); }
 .pheld .act { margin-left: auto; }
+/* 人间功课 (gongke.js): the 洞府's board — one row a chore, a seal stamped when done, its one tap. */
+.gongke .gkmarks { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 6px; }
+.gkward, .gkweek { font-size: 12px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--dim); }
+.gkward.up { color: var(--jade); border-color: var(--jade); }
+.gkweek.paid { color: var(--seal); border-color: var(--seal); }
+.gkrow { padding: 8px 0; border-top: 1px dashed var(--line); }
+.gkhead { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.gkname { font-family: var(--serif); color: var(--ling); flex: none; }
+.gktitle { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.gkdev { flex: none; font-size: 12px; }
+.gkfoot { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 4px; font-size: 13px; }
+.gkfoot .act { margin-left: auto; }
+.gkstamp { color: var(--faint); }
+.gkstamp.done, .gkstamp.paid { color: var(--seal); border: 1.5px solid var(--seal); border-radius: 4px; padding: 0 6px; font-family: var(--serif); transform: rotate(-4deg); background: var(--seal-soft); }
+.gkrow.paid .gktitle { color: var(--dim); }
+.gkadds { color: var(--dim); }
 /* 喂饭桶 · 开炉 (fantong-kailu.js): the game in the shell, in the pouch's grid place. */
 .pchip[data-pouch-pane="fantong"] { border-color: var(--gold, var(--seal)); }
 .ftong.kailu { display: block; max-width: 520px; margin-left: auto; margin-right: auto; }

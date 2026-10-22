@@ -202,6 +202,10 @@ export function fantong(state, content, ctx, args = {}) {
   return ACTIONS[action](state, content, ctx, args, t);
 }
 
+/* The thing that clears the furnace for this pot: held, and not itself going in. */
+const liftOf = (content, state, ids) => Object.keys(state.bag ?? {}).find(id => state.bag[id] > 0 && !ids.includes(id)
+  && itemOf(content, id)?.effect?.kailu === 'lift') ?? null;
+
 const idsOf = args => (Array.isArray(args.ids) ? args.ids : String(args.ids ?? args.id ?? '').split(',')).map(x => String(x).trim()).filter(Boolean);
 
 function feed(state, content, ctx, args, t) {
@@ -228,8 +232,10 @@ function feed(state, content, ctx, args, t) {
   const f = state.fantong ?? {};
   const n = f.n ?? 0, today = dayKey(now);
   const herHere = Boolean(state.companion?.joined && !state.companion?.away);
+  // A thing in the bag that clears the furnace (effect `kailu: 'lift'`) lifts this pot a notch and is spent with it.
+  const lift = liftOf(content, state, ids);
   const roll = rollFeed(t, {
-    seed: `${state.world}|${state.name ?? ''}|${today}|${n}|${[...ids].sort().join('+')}|${lingshi}${f.spat ? `|${f.spat}` : ''}`, ids, lingshi, press, herHere,
+    seed: `${state.world}|${state.name ?? ''}|${today}|${n}|${[...ids].sort().join('+')}|${lingshi}${f.spat ? `|${f.spat}` : ''}`, ids, lingshi, press, lift: Boolean(lift), herHere,
     realm: realmOf(content, state, t), pity: f.dry ?? 0, found: f.recipes ?? [], content, state,
   });
   // It chews and spits the pot back whole: nothing spent, no wait — the gag, not a loss.
@@ -243,6 +249,8 @@ function feed(state, content, ctx, args, t) {
   const s = clone(state);
   for (const [id, k] of Object.entries(need)) if (!how[id].around) { s.bag[id] -= k; if (s.bag[id] <= 0) delete s.bag[id]; }
   if (lingshi) s.wealth = (s.wealth ?? 0) - lingshi;
+  const lifted = lift && !roll.story && !roll.event ? lift : null;
+  if (lifted) { s.bag[lifted] -= 1; if (s.bag[lifted] <= 0) delete s.bag[lifted]; }
   // Into the pouch: every output (the twin too), and a thing's companion (含笑半步颠 · 止笑丸).
   const landed = [];
   const land = (id, grade, k = 1, wealth = 0) => {
@@ -281,6 +289,7 @@ function feed(state, content, ctx, args, t) {
     ok: true, fed: { ids, id: ids[0], names: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id), name: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id).join('、'), lingshi, press },
     out, ...(extra ? { with: extra } : {}), ...(twin ? { twin } : {}), outs: briefs,
     grade: roll.grade, grade_name: wordsOf(t, lang).grades?.[roll.grade] ?? roll.grade,
+    ...(lifted ? { lifted: { id: lifted, name: itemName(itemOf(content, lifted), s, lang) } } : {}),
     ...(ev ? { her: true } : {}), ...(roll.story ? { story: roll.story } : {}), ...(fresh.length ? { first: fresh } : {}), say,
     ...(newRecipe ? { discovered: fantongRecipes(content, s).find(r => r.id === newRecipe) } : {}),
     ...(nextNow ? { next_at: nextNow.toISOString() } : {}),

@@ -62,9 +62,9 @@ export function rowWeight(t, row, power, counts) {
 }
 
 /* The roll: what one pot gives. `ids` what went in, `lingshi`, `realm` (his, as a number), `press` (the lid pressed on
-   a gold puff), `herHere`, `pity` (the 凡 in a row before this), `recipe` (the 方子 row this pot is, or null),
+   a gold puff), `lift` (a thing that clears the furnace, spent on this pot), `herHere`, `pity` (the 凡 in a row before this), `recipe` (the 方子 row this pot is, or null),
    `story` (the book's fixed pot this is, or null), `open(row)` (a pool row this save may draw; all, if not given). */
-export function roll(t, { seed, ids, lingshi = 0, realm = 0, press = false, herHere = false, pity = 0, recipe = null, story = null, open = null }) {
+export function roll(t, { seed, ids, lingshi = 0, realm = 0, press = false, lift = false, herHere = false, pity = 0, recipe = null, story = null, open = null }) {
   const u = stream(hash(seed));
   if (story) return { out: story.out, grade: 'best', story: story.id, outs: [{ out: story.out, grade: 'best' }] };
   const q = t.quirks ?? {}, quirk = u() * 100, ev = (t.events ?? []).find(e => e.id === 'yinyue');
@@ -80,6 +80,8 @@ export function roll(t, { seed, ids, lingshi = 0, realm = 0, press = false, herH
     const pickU = u(), withU = u(), nU = u();
     if (pityNow && grade === 'junk') grade = 'useful';
     if (press) grade = GRADES[Math.min(GRADES.length - 1, GRADES.indexOf(grade) + 1)];
+    // A furnace swept clean (items.json effect `kailu: 'lift'`, a 人间功课's 净炉符): one notch more, as a press is.
+    if (lift) grade = GRADES[Math.min(GRADES.length - 1, GRADES.indexOf(grade) + 1)];
     // A 方子 may give more than one (`n`: 古八's 九节聚气, 「滚出三颗丹来」).
     if (recipe && grade !== 'junk') return { out: grade === 'useful' ? recipe.out : recipe.best, grade, recipe: recipe.id, ...(recipe.n > 1 ? { n: recipe.n } : {}) };
     // Down a grade when nothing of it is open yet for this save (never up: a pot never gives more than it rolled).

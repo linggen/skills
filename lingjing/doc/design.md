@@ -191,7 +191,13 @@ and no breakthrough, 柳湾); both rebuilt from the book 2026-09-30 (his: 照这
   true`, refused `not-at-peak`), shown as the tribulation card.
 - **Story gates** (rules/locks.mjs): a chapter's `locks` shut a system; its
   verb refuses `not-yet` with the chapter's line and Look carries nothing of
-  it — no cultivation, errands or 开府 before the sect (story DESIGN).
+  it — no cultivation, errands or chores before the sect (story DESIGN).
+  `locks` is a list of gates `{until, systems, say}` (one object still reads
+  as one); what is shut is the union of the gates not yet reached, and a shut
+  verb says its own gate's line. 卷一's prologue (Hanli, 2026-10-22 「ok」):
+  **开府 opens on meeting 银月** (`00-yinyue`), the rest on 入门 (`00-waimen`);
+  between them the 事 chip holds the one open 一次 step alone, and the 灵石 a
+  step pays are owed (`state.owed`) and land on the move the second gate opens.
 
 ### A scene 【已建】
 
@@ -956,6 +962,29 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   paid once ever. The 事 book is one list, every row tagged (差事 · 一次 ·
   每日 · 每周 · 令), grouped 可交 → 已接 → 可接, 已交 folded.
   Apps: CFO, DJ, Shifu, Health (writers named in each app).
+- **人间功课 as cultivation 【已建】** (Hanli, 2026-10-22: 「游戏里还要有和其他app如cfo,
+  shifu, health等互动」 → 「可以」): each menu entry names its `kind`, a plain
+  word of the app's (body · heal · rest · ledger · sweep · ward · song); the
+  world's `gongke.json`, keyed by kind, is what it means in the book —
+  练功 · 调息 · 养神 · 算账 · 洒扫 · 护山 · 琴心 — with facts for 银月 (`about`,
+  never shown) and a little on top of the chore's own pay (`chore_kind`
+  table: ≤10 灵石, ≤6 修为) and a chore-only thing: 晨练符 (body: used, 修为
+  +8), 安神香 (heal/rest: 闭关 hours ×1.25), 净炉符 (sweep: the next 开炉 a
+  grade up, spent), 护山阵旗 (ward: worn at the 洞府, the 护山大阵 stands on
+  the board). 算账's `week`: handed in on 2 days of an ISO week → 宗门月俸,
+  30 灵石 once (`chore_week`). `per_day` caps what meanings add (15 灵石, 10
+  修为, 2 things). Paid with the chore's own hand-in, so once per occurrence;
+  never 体力-gated, never needed by the main line; 开府 takes none; no kind →
+  as before. Rules: rules/gongke.mjs (names no app). **The board** — 储物袋 ›
+  「人间功课」 (the 洞府's pane, gongke.js), from 入门 on: each of today's
+  chores with its meaning, the app's title, 💻/📱, a seal 已做 hh:mm (the app's
+  time) or 已领, what it adds, one tap (交差, or the app's page); the ward, the
+  week rows, the day against its cap. Labels only; on a hand-in the facts go
+  to 银月 (lingjing.js tellGongke) and she says it. A scratch save may hold its
+  own menus (`data/saves/<name>/quests/`) for a live check. **Not yet:** steps
+  (小满's climb) and a night's sleep need a daily total the phone sends — the
+  Mac mirror has raw samples only (sleep last 2026-06), so Health offers no
+  `rest` chore yet; the row waits in the table.
 
 ## 体力 and 闭关 【已建】
 

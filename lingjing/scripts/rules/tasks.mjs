@@ -10,6 +10,7 @@ import { cardCatalog, fightPill, fightSetup, grantFrom, readOf, winCard } from '
 import { POUCH_MAX } from '../battle.js';
 import { clone, pay, refuse, replaying, spendStamina } from './core.mjs';
 import { choreCounts, choreGrant, isOnce, kaifuAfter, questDone } from './chores.mjs';
+import { payMeaning } from './gongke.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
@@ -183,9 +184,21 @@ function questCheck(state, content, ctx, id) {
   if (isOnce(q)) s.kaifu = kaifuAfter(state, content, quests, ctx.now, id);
   const grant = choreGrant(content, q, state);
   const paid = pay(content, s, ctx, grant);
+  // 开府 may open before the 灵石 are his (chapter `locks`, Hanli 2026-10-22: 开府 on meeting 银月):
+  // what it would have paid is owed, and lands the move the gate opens (core.mjs landOwed).
+  const owed = isOnce(q) && lockedOf(content, s).includes('wealth') ? owe(content, s, grant) : 0;
+  // What the chore means in the book (rules/gongke.mjs): a little more, by its kind, capped by the day.
+  const meaning = payMeaning(content, s, ctx, q, pay);
   settleStamina(content, s, ctx.now);
   const stamina = addStamina(content, s, grant.stamina, ctx.now);
-  return { state: s, result: { ok: true, quest: id, app: q.app, paid, stamina } };
+  return { state: s, result: { ok: true, quest: id, app: q.app, paid, stamina, ...(meaning ? { meaning } : {}), ...(owed ? { owed: { wealth: owed } } : {}) } };
+}
+
+/* 灵石 a grant would have paid, kept in `owed` while the gate keeps them shut. */
+function owe(content, s, grant) {
+  const n = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, content.rewards.tables[grant.table]?.wealth ?? 0)));
+  if (n) s.owed = { ...s.owed, wealth: (s.owed?.wealth ?? 0) + n };
+  return n;
 }
 
 /* A small game's 灵石 (Hanli 2026-10-16; balance.json `boards`): its first clear only, by how it went.

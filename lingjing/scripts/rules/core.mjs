@@ -123,6 +123,17 @@ function pay(content, state, ctx, grant, landing = state) {
   return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
+/* What was owed while a gate kept it shut (tasks.mjs owe: 开府 handed in before the 灵石 were his)
+   lands the moment the gate opens: returns what landed, or null. */
+function landOwed(content, s, now) {
+  const n = s.owed?.wealth ?? 0;
+  if (!n || lockedOf(content, s).includes('wealth')) return null;
+  rollDay(s, now);
+  s.wealth += n; s.day.wealth += n;
+  delete s.owed;
+  return { wealth: n };
+}
+
 /* A road riddle is answered wrong at most this many times a day. A scene's riddle — the story's only way
    on (01-deep's 读封) — never shuts: after this many misses it may be left instead (`pass`, no reward). */
 const RIDDLE_TRIES = 2;
@@ -582,6 +593,7 @@ export function resolve(state, content, ctx, args) {
     if (node && rose) node.rose = rose;
   }
   const walked = exit.next ? walkOn(content, s, ctx.now) : null;
+  const landed = landOwed(content, s, ctx.now);
   // Her lines in this move — the exit's beat, and the scene it walks into —
   // are hers to say: facts for her, never a line for Ling (story.mjs herBeat).
   // The book's own lines for her are not among them: Ling tells those (tell.mjs).
@@ -597,7 +609,7 @@ export function resolve(state, content, ctx, args) {
       ok: true, took: exit.id, ...(exit.label ? { chose: fill(pick(exit.label, lang), s, content) } : {}), ...(named ? { named } : {}),
       ...(wrote.length ? { ledger: wrote } : {}), ...(joined ? { joined } : {}), ...(rested ? { her: rested } : {}), ...(born ? { born } : {}), beat, paid, breakthrough, ...(rose ? { rose } : {}), show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
-      ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}), ...(passedRiddle ? { passed: true } : {}), ...(leftFight ? { passed: true, left_fight: leftFight } : {}),
+      ...(walked ? { walked } : {}), ...(landed ? { owed_landed: landed } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}), ...(passedRiddle ? { passed: true } : {}), ...(leftFight ? { passed: true, left_fight: leftFight } : {}),
       // Her price showing as the chapter ends: Ling opens with what she does (story.mjs uneaseAt).
       ...(node?.unease ? { unease: node.unease } : {}),
       ...(her ? { her_beat: her } : {}),

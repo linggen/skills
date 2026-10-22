@@ -6,7 +6,7 @@
 // shut system's verb is refused with `not-yet` and the chapter's own line, and
 // Look carries nothing of it — no field, no card, no chip — so neither Ling
 // nor the page can offer what the story has not reached.
-import { lockedOf, pick } from '../state.mjs';
+import { lockedOf, lockSay, pick } from '../state.mjs';
 import { isOnce } from './chores.mjs';
 import { sealedVerb } from './sealed.mjs';
 
@@ -36,7 +36,7 @@ export function lockedVerb(content, state, verb, args = {}, ctx = {}) {
   if (!shut.length) return null;
   const system = VERB_SYSTEM[verb]?.(args, ctx) ?? null;
   if (!system || !shut.includes(system)) return null;
-  const say = pick(content.chapters[state.chapter].locks.say, state.lang) ?? null;
+  const say = pick(lockSay(content, state, system), state.lang) ?? null;
   return { state: null, result: { ok: false, refused: 'not-yet', system, say } };
 }
 

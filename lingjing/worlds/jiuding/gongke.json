@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "_about": "人间功课 as cultivation (Hanli, 2026-10-22: 「游戏里还要有和其他app如cfo, shifu, health等互动」 → 「可以」). Each app's quest file names a chore's `kind` — a plain word of its own, never a game word; this table, keyed by that kind, is what the chore means in the book: its in-world name (`name`, the 人间功课 board's label), the facts handed to 银月 when it is handed in (`about`: never shown, she words it), and what it adds on top of the chore's own pay (rules/chores.mjs choreGrant): `wealth` 灵石 and `progress` 修为 off the `chore_kind` table (balance.json pay), and an `item` (items.json — chore-only things, small effects declared there). A `week` row pays once a week when chores of the kind were handed in on `days` different days of it (the `chore_week` table) — 宗门月俸. `per_day` caps what the meanings add in one local day, all kinds together (`items`: how many things). The rules name no app and no chore id (rules/gongke.mjs); a chore with no kind, or a kind not here, pays as before and means nothing more. 开府's one-time milestones never take a meaning. Never needed for the main line; paid once per chore occurrence (the chore's own period).",
+  "per_day": { "wealth": 15, "progress": 10, "items": 2 },
+  "kinds": {
+    "body": {
+      "name": { "zh": "练功", "en": "Practice" },
+      "about": { "zh": "小满在山道上挑着担子练脚力，一趟一趟往上爬——功夫是腿上磨出来的。", "en": "Xiaoman climbs the mountain path under the yoke, trip after trip — the practice is worn into the legs." },
+      "wealth": 3, "progress": 6, "item": "chenlian-fu"
+    },
+    "rest": {
+      "name": { "zh": "养神", "en": "Rest" },
+      "about": { "zh": "一夜好睡，神养足了，闭关时心定得快。", "en": "A good night's sleep; the spirit is full, and in seclusion the mind settles sooner." },
+      "wealth": 2, "progress": 4, "item": "anshen-xiang"
+    },
+    "heal": {
+      "name": { "zh": "调息", "en": "Tending" },
+      "about": { "zh": "问过医、看过脉案，身上哪里不顺，心里有了数。", "en": "The healer's word read, the pulse notes looked over: what is off in the body is known now." },
+      "wealth": 3, "progress": 3, "item": "anshen-xiang"
+    },
+    "ledger": {
+      "name": { "zh": "算账", "en": "Accounts" },
+      "about": { "zh": "小满娘的话：「遇事先算账。」账算清了，灵石才攒得住。", "en": "Xiaoman's mother's word: \"Before anything, do the accounts.\" Kept straight, the spirit stones stay." },
+      "wealth": 8, "progress": 2,
+      "week": { "days": 2, "name": { "zh": "宗门月俸", "en": "The sect's stipend" } }
+    },
+    "sweep": {
+      "name": { "zh": "洒扫", "en": "Sweeping" },
+      "about": { "zh": "洞府洒扫一遍，丹炉清了灰——下一炉成色高一等。", "en": "The abode swept, the furnace cleared of ash — the next pot comes out a grade better." },
+      "wealth": 4, "progress": 2, "item": "jinglu-fu"
+    },
+    "ward": {
+      "name": { "zh": "护山", "en": "Warding" },
+      "about": { "zh": "护山大阵查过一遍、补了一角——藏珍有了着落，山门稳了。", "en": "The mountain's great ward walked and one corner mended — the treasures are kept, the gate holds." },
+      "wealth": 4, "progress": 2, "item": "hushan-qi"
+    },
+    "song": {
+      "name": { "zh": "琴心", "en": "Music" },
+      "about": { "zh": "听了一曲、唱了一段，心里松快。", "en": "A song heard, a verse sung; the heart eases." },
+      "wealth": 2, "progress": 2
+    }
+  }
+}

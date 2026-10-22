@@ -6,6 +6,7 @@
 // Every tap is the page's own verb (trade, bag, deck); nothing asks Ling.
 import { esc } from './esc.js';
 import { deckHtml, gearFightHtml, herCardHtml, itemDoes, liftSaid, tamesLine } from './cards.js';
+import { GONGKE_WORDS, gongkeHtml } from './gongke.js';
 
 export const POUCH_WORDS = {
   zh: {
@@ -107,7 +108,7 @@ function heldHtml(p, ctx, pw) {
 }
 
 /// The panel. `ui` is the page's own view of it: `tab`, `sel` (the item
-/// tapped), `toss` (the item asking 丢?), `pane` ('held' | 'deck' | null).
+/// tapped), `toss` (the item asking 丢?), `pane` ('held' | 'deck' | 'fantong' | 'gongke' | null).
 export function pouchHtml(ctx, ui = {}) {
   const pw = POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh, g = ctx.gear;
   const close = `<button class="act quiet" data-pouch-close>${esc(pw.close)}</button>`;
@@ -115,12 +116,16 @@ export function pouchHtml(ctx, ui = {}) {
   const p = g.pouch ?? { used: g.bag.length, cap: null, held: [] };
   const heldN = p.held.reduce((n, h) => n + h.n, 0);
   // 饭桶 (fantong-kailu.js): the 开炉 game in the grid's place, its pane drawn by the page and handed in as `ctx.fantongPane`.
-  const pane = ui.pane === 'held' && heldN ? 'held' : ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong' : null;
+  // 人间功课 (gongke.js): the 洞府's board of today's real-life chores — Look's `gongke`, from 入门 on.
+  const board = ctx.look?.gongke ?? null;
+  const pane = ui.pane === 'held' && heldN ? 'held' : ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong'
+    : ui.pane === 'gongke' && board ? 'gongke' : null;
   const head = `<header class="luhead phead"><b>${esc(pw.title)}</b>
     ${p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : ''}
     ${heldN ? `<button class="pchip${pane === 'held' ? ' on' : ''}" data-pouch-pane="held">${esc(say(pw.held, { n: heldN }))}</button>` : ''}
     ${g.cards?.length ? `<button class="pchip${pane === 'deck' ? ' on' : ''}" data-pouch-pane="deck">${esc(pw.deck)}</button>` : ''}
-    ${g.fantong ? `<button class="pchip${pane === 'fantong' ? ' on' : ''}" data-pouch-pane="fantong">${esc(pw.fantong)}</button>` : ''}${close}</header>`;
+    ${g.fantong ? `<button class="pchip${pane === 'fantong' ? ' on' : ''}" data-pouch-pane="fantong">${esc(pw.fantong)}</button>` : ''}
+    ${board ? `<button class="pchip${pane === 'gongke' ? ' on' : ''}" data-pouch-pane="gongke">${esc((GONGKE_WORDS[ctx.lang] ?? GONGKE_WORDS.zh).chip)}</button>` : ''}${close}</header>`;
   const note = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
   const grown = p.grown?.length ? `<p class="small dim">${esc(say(pw.grown, { names: p.grown.join(ctx.lang === 'en' ? ', ' : '、') }))}</p>` : '';
@@ -129,7 +134,7 @@ export function pouchHtml(ctx, ui = {}) {
   const worn = `<section class="psec">${wornHtml(g, ctx)}</section>`;
   if (pane === 'fantong') return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${ctx.fantongPane ?? ''}</div>`;
   if (pane) {
-    const body = pane === 'held' ? heldHtml(p, ctx, pw) : `<section class="psec">${deckHtml(g, ctx)}</section>`;
+    const body = pane === 'held' ? heldHtml(p, ctx, pw) : pane === 'gongke' ? gongkeHtml(board, ctx.lang) : `<section class="psec">${deckHtml(g, ctx)}</section>`;
     return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${worn}
       <button class="act quiet pback" data-pouch-pane="">${esc(pw.back)}</button>${body}</div>`;
   }

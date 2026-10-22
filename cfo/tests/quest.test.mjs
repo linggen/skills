@@ -144,3 +144,9 @@ test('a stock already listed when CFO loads counts — and the first time stands
   assert.equal(byId['cfo-review'].done_at, '2026-09-23T10:00:00.000Z');
   fs.rmSync(s.home, { recursive: true, force: true });
 });
+
+test('every chore names its kind — a plain word of practice, never a game word', () => {
+  for (const m of MENU) assert.equal(m.kind, 'ledger', m.id);
+  const doc = merged(null, { 'cfo-review': NOW.toISOString() });
+  for (const q of doc.quests) assert.equal(q.kind, 'ledger', `${q.id} keeps its kind through a stamp`);
+});

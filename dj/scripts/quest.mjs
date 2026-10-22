@@ -2,7 +2,9 @@
 // (Lingjing reads ~/.linggen/quests/*.json). The file is DJ's MENU — every
 // chore a player can do here — and each entry's `done_at` is DJ's own record
 // of the last time it saw that chore done. `pool: true` offers an entry to the
-// game's one-chore-a-day pick; `device` is where the player does it.
+// game's one-chore-a-day pick; `device` is where the player does it; `kind`
+// is what sort of practice it is (a plain word — a game reads it, DJ names no
+// game): every DJ chore is `song`.
 //
 //   quest.mjs <id>     stamp <id> done now; prints one JSON line
 //   quest.mjs dj-sync  look at what the phones hold (witnessSync) and stamp
@@ -25,27 +27,27 @@ const OPEN = '/apps/dj/scripts/index.html';
 
 export const MENU = [
   {
-    id: 'dj-fetch', period: 'day', reward: 20, stamina: 10, device: 'mac', pool: true, open: OPEN,
+    id: 'dj-fetch', kind: 'song', period: 'day', reward: 20, stamina: 10, device: 'mac', pool: true, open: OPEN,
     title: { zh: '采风 · 在 DJ 收一首新曲', en: 'Gather a song · download a new track in DJ' },
   },
   {
-    id: 'dj-sing', period: 'day', reward: 25, stamina: 15, device: 'mac', pool: true, open: OPEN,
+    id: 'dj-sing', kind: 'song', period: 'day', reward: 25, stamina: 15, device: 'mac', pool: true, open: OPEN,
     title: { zh: '对歌 · 唱一首卡拉OK', en: 'Sing one · a karaoke song' },
   },
   {
-    id: 'dj-playlist', period: 'week', reward: 25, stamina: 15, device: 'mac', pool: true, open: OPEN,
+    id: 'dj-playlist', kind: 'song', period: 'week', reward: 25, stamina: 15, device: 'mac', pool: true, open: OPEN,
     title: { zh: '编曲 · 建一个新歌单', en: 'Make a set · create a playlist' },
   },
   {
-    id: 'dj-sync', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: OPEN,
+    id: 'dj-sync', kind: 'song', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: OPEN,
     title: { zh: '携曲 · 把新歌同步到手机', en: 'Carry the songs · sync new tracks to your phone' },
   },
   {
-    id: 'dj-listen', period: 'day', reward: 20, stamina: 10, device: 'phone', pool: true, open: OPEN,
+    id: 'dj-listen', kind: 'song', period: 'day', reward: 20, stamina: 10, device: 'phone', pool: true, open: OPEN,
     title: { zh: '听曲 · 在手机上听完一个歌单', en: 'Hear the set · play a playlist through on your phone' },
   },
   {
-    id: 'dj-karaoke', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: OPEN,
+    id: 'dj-karaoke', kind: 'song', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: OPEN,
     title: { zh: '随口唱 · 在手机上唱一首卡拉OK', en: 'Sing on the road · a karaoke song on your phone' },
   },
 ];

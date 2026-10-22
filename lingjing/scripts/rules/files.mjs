@@ -63,7 +63,12 @@ function freshState(content, lang, now, was = null, by = 'init') {
   }
   return s;
 }
-const questsDir = () => process.env.LINGJING_QUESTS || path.join(os.homedir(), '.linggen', 'quests');
+/* The apps' menus. A scratch save may hold its own (`data/saves/<name>/quests/`, a live check's
+   fixture, as its clock.json is): read instead of the real ones, for its reads only — so a check
+   never writes, nor needs, the real ~/.linggen/quests. The player's own save never has one. */
+const scratchQuests = () => (scratchName() ? path.join(scratchDir(scratchName()), 'quests') : null);
+const questsDir = () => process.env.LINGJING_QUESTS
+  || (scratchQuests() && fs.existsSync(scratchQuests()) ? scratchQuests() : path.join(os.homedir(), '.linggen', 'quests'));
 /* A scratch save may live some days ahead (`shift --days=N`, the page's
    `&days=N`): its clock.json moves the clock for its own reads and writes
    only — the 大比's real day, 体力's return — so a live check need not wait a

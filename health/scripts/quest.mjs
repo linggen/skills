@@ -53,6 +53,7 @@ export function questOf(rows, now = new Date(), letters = [], held = null) {
   const menu = [
     {
       id: 'health-workout',
+      kind: 'body', // what sort of practice (a plain word a game reads; Health names no game)
       period: 'day',
       due: true,
       reward: 20,
@@ -64,6 +65,7 @@ export function questOf(rows, now = new Date(), letters = [], held = null) {
     },
     {
       id: 'health-report',
+      kind: 'heal',
       period: 'week',
       due: true,
       reward: 20,
@@ -87,6 +89,7 @@ export function questOf(rows, now = new Date(), letters = [], held = null) {
 const STAMPED = [
   {
     id: 'health-doctor',
+    kind: 'heal',
     period: 'week',
     reward: 20,
     stamina: 10,

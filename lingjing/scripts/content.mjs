@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ART_EFFECTS, ELEMENTS, INTENTS, LEAN_IDS } from './duel.js';
-import { LOCKABLE, normalizeAnswer, stepOfLayer } from './state.mjs';
+import { LOCKABLE, gatesOf, normalizeAnswer, stepOfLayer } from './state.mjs';
 import { EFFECTS } from './battle.js';
 import { FRAMES, PARTICLES } from './atmos.js';
 import { lintCodex } from './codex.js';
@@ -166,6 +166,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
     // The small games' registry (games.json, 2026-10-16): each standalone module and its levels.
     games: fs.existsSync(path.join(dir, 'games.json')) ? readJson(path.join(dir, 'games.json')) : null,
+    // 人间功课 as cultivation (rules/gongke.mjs): a chore's `kind` → its meaning in the book.
+    gongke: fs.existsSync(path.join(dir, 'gongke.json')) ? readJson(path.join(dir, 'gongke.json')) : null,
     // AI mini-games (rules/aigames.mjs): 二十问's animals, 讨价还价's band and rubric, 断案's cases.
     aigames: fs.existsSync(path.join(dir, 'aigames.json')) ? readJson(path.join(dir, 'aigames.json')) : null,
     // 对对子's 平仄 (新韵, tools/tone-table.py): P · Z · B as strings of characters (scripts/couplet.js).
@@ -548,6 +550,7 @@ export function lint(content) {
   };
   lintWorld(content.world, bad);
   lintItems(content, bad);
+  lintGongke(content, bad);
   lintFrom(content, bad);
   lintArts(content, bad);
   bilingual(content, 'content', bad);
@@ -1254,11 +1257,13 @@ function lintChapter(chapter, content, ids, bad) {
   if (!endsSomewhere(chapter)) bad(where, 'no exit ends the chapter');
   lintChapterShape(chapter, content, bad);
   // A story gate (state.mjs lockedOf): a scene of its own that opens it, systems the engine knows, a refusal in both languages.
-  const lock = chapter.locks;
-  if (lock) {
+  const gates = gatesOf(chapter), seen = new Set();
+  if (chapter.locks && !gates.length) bad(where, 'locks holds no gate');
+  for (const lock of gates) {
     if (!chapter.scenes[lock.until]) bad(where, `locks until ${lock.until}, which is not a scene of it`);
     if (lock.until === chapter.first_scene) bad(where, 'locks open on the first scene: nothing is shut');
     for (const sys of lock.systems ?? []) if (!(sys in LOCKABLE)) bad(where, `locks an unknown system ${sys}`);
+    for (const sys of lock.systems ?? []) if (seen.has(sys)) bad(where, `locks ${sys} at two gates`); else seen.add(sys);
     if (!lock.systems?.length) bad(where, 'locks no system');
     if (!lock.say?.zh || !lock.say?.en) bad(where, 'locks with no refusal line in zh and en');
   }
@@ -1613,6 +1618,25 @@ function lintPill(content, item, where, bad) {
   if (item.of != null && item.effect?.table == null) bad(where, 'a pill of a family pays 修为: it names its table');
 }
 
+/* 人间功课's meanings (gongke.json, rules/gongke.mjs): each kind named in both languages, its facts for her,
+   its numbers within the chore tables, its thing a real item; the day's cap whole numbers. */
+function lintGongke(content, bad) {
+  const g = content.gongke;
+  if (!g) return;
+  const tables = content.rewards.tables, items = new Set(content.items.items.map(i => i.id));
+  for (const [k, n] of Object.entries(g.per_day ?? {})) if (!Number.isInteger(n) || n < 0) bad('gongke per_day', `${k} must be a whole number`);
+  for (const [kind, m] of Object.entries(g.kinds ?? {})) {
+    const where = `gongke ${kind}`;
+    if (!/^[a-z][a-z-]*$/.test(kind)) bad(where, 'a kind is a plain lowercase word');
+    if (!m.name?.zh || !m.name?.en) bad(where, 'needs a name in zh and en');
+    if (!m.about?.zh || !m.about?.en) bad(where, 'needs her facts (`about`) in zh and en');
+    if ((m.wealth ?? 0) > (tables.chore_kind?.wealth ?? 0) || (m.progress ?? 0) > (tables.chore_kind?.progress ?? 0)) bad(where, 'pays over the chore_kind table');
+    if (m.item && !items.has(m.item)) bad(where, `leaves unknown item ${m.item}`);
+    if (m.week && (!Number.isInteger(m.week.days) || m.week.days < 1 || m.week.days > 7 || !m.week.name?.zh || !m.week.name?.en)) bad(where, 'a week is 1–7 days, named in zh and en');
+    if (m.week && !tables.chore_week) bad(where, 'a week pays off the chore_week table, which is missing');
+  }
+}
+
 function lintItems(content, bad) {
   const seen = new Set();
   // balance.json `prices` is every shop price: each names a thing that exists.
@@ -1643,8 +1667,10 @@ function lintItems(content, bad) {
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
     // 伤势 and 强化 were cut (redesign-v2 § 四): no `mend`, no `temper`.
-    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card', 'fight', 'waive'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, fight, waive, or arms (atk, def, ward)');
+    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card', 'fight', 'waive', 'kailu'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, fight, waive, kailu, or arms (atk, def, ward)');
+    // `kailu`: the next 开炉 a grade up, the thing spent with it (净炉符, rules/fantong.mjs liftOf).
+    if (e.kailu != null && e.kailu !== 'lift') bad(where, 'kailu is lift');
     // `waive`: one cost of that kind not paid, the thing spent instead (饱嗝令, rules/core.mjs spendStamina) — a kind with a cost.
     if (e.waive != null && !(content.rewards?.stamina?.cost?.[e.waive] > 0)) bad(where, `waives ${e.waive}, which costs nothing`);
     // A pill for the 丹囊 (battle.js § pills): one whole number, 气血 (`heal`) or 灵力 (`mana`), on a pill.

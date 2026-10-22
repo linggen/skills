@@ -2795,6 +2795,96 @@
       "effect": {
         "card": "canwu"
       }
+    },
+    {
+      "id": "chenlian-fu",
+      "kind": "treasure",
+      "name": {
+        "zh": "晨练符",
+        "en": "Dawn-practice charm"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "天没亮就起来练过一趟的人，才拿得到这一道。黄纸上一个「勤」字，捏在手里，周身的气顺一顺。",
+        "en": "Only someone up before dawn and through a round of practice gets one. One word on yellow paper — diligence — and held in the hand, the breath settles."
+      },
+      "hint": {
+        "zh": "捏碎了，长一点修为。",
+        "en": "Crush it for a little cultivation."
+      },
+      "sold": [],
+      "effect": {
+        "progress": 8,
+        "table": "puzzle"
+      },
+      "_about": "人间功课 (gongke.json `body`): a chore of the body kept (a workout) leaves one; used, a little 修为 off the puzzle table. Never sold, never needed by the story.",
+      "art_source": "The talisman picture until its own ink is painted."
+    },
+    {
+      "id": "anshen-xiang",
+      "kind": "treasure",
+      "name": {
+        "zh": "安神香",
+        "en": "Calming incense"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "一小截灰褐的线香，点着了一股柏子味。闭关前点上，心静得快，时辰也走得实。",
+        "en": "A short grey-brown stick that smells of cypress seed when lit. Lit before seclusion, the mind settles sooner and the hours count for more."
+      },
+      "hint": {
+        "zh": "闭关时点一支。",
+        "en": "Light one going into seclusion."
+      },
+      "sold": [],
+      "_about": "人间功课 (gongke.json `heal`, `rest`): a chore of care or rest kept leaves one; taken going into 闭关 it multiplies the hours counted (rewards.json seclusion.pills) — no other effect.",
+      "art_source": "The talisman picture until its own ink is painted."
+    },
+    {
+      "id": "jinglu-fu",
+      "kind": "treasure",
+      "name": {
+        "zh": "净炉符",
+        "en": "Furnace-sweeping charm"
+      },
+      "art": "art/items/danlu.webp",
+      "about": {
+        "zh": "炉膛里的灰扫干净了，丹才出得好。贴一张在炉门上，下一炉成色高一等，烧完符也就化了。",
+        "en": "A swept furnace makes a better pill. Paste one on the furnace door and the next pot comes out a grade better; the charm burns away with it."
+      },
+      "hint": {
+        "zh": "下一炉高一等。",
+        "en": "The next pot, a grade up."
+      },
+      "sold": [],
+      "effect": {
+        "kailu": "lift"
+      },
+      "_about": "人间功课 (gongke.json `sweep`): a cleanup kept leaves one; held, the next 开炉 rolls one grade up (as a press does, and on top of it) and it is spent (rules/fantong.mjs liftOf). Not spent on the book's fixed pot or her gag.",
+      "art_source": "The 丹炉 picture until its own ink is painted."
+    },
+    {
+      "id": "hushan-qi",
+      "kind": "artifact",
+      "name": {
+        "zh": "护山阵旗",
+        "en": "Mountain-ward banner"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "一面巴掌大的杏黄小旗，旗面绣着半个阵图。插在洞府门口，护山大阵便算立住了一角。",
+        "en": "A palm-sized apricot-yellow banner, half a ward-diagram stitched on it. Planted at the abode's door, one corner of the mountain's great ward stands."
+      },
+      "hint": {
+        "zh": "插在洞府门口。",
+        "en": "Plant it at the abode's door."
+      },
+      "sold": [],
+      "effect": {
+        "wear": "abode"
+      },
+      "_about": "人间功课 (gongke.json `ward`): a backup or a security check kept leaves one; worn at the abode it stands as the 护山大阵 on the 人间功课 board — a sight, no number.",
+      "art_source": "The talisman picture until its own ink is painted."
     }
   ]
 }

@@ -78,7 +78,7 @@
       3.6
     ]
   },
-  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth).",
+  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth). 2026-10-22 (人间功课 as cultivation, worlds/jiuding/gongke.json): `chore_kind` caps what a chore's meaning adds on top of its own pay, `chore_week` the 宗门月俸.",
   "pay": {
     "scene": {
       "progress": 60,
@@ -103,6 +103,14 @@
     "once": {
       "progress": 0,
       "wealth": 20
+    },
+    "chore_kind": {
+      "progress": 6,
+      "wealth": 10
+    },
+    "chore_week": {
+      "progress": 0,
+      "wealth": 30
     },
     "tale_end": {
       "progress": 30,
@@ -300,7 +308,11 @@
     "chaiya-zhui": {"buy": 90, "sell": 30},
     "wulei-fu": {"buy": 60},
     "feijian-duan": {"buy": 60, "sell": 0},
-    "canwu-jian": {"buy": 80, "sell": 0}
+    "canwu-jian": {"buy": 80, "sell": 0},
+    "chenlian-fu": {"buy": 0, "sell": 0},
+    "anshen-xiang": {"buy": 0, "sell": 0},
+    "jinglu-fu": {"buy": 0, "sell": 0},
+    "hushan-qi": {"buy": 0, "sell": 0}
   },
   "_boards": "Hanli 2026-10-16: a small game after 入门 pays 灵石 on its first clear only — plain 5, good 10, best (or all three 灵光) 15; a replay pays nothing. Before 入门 nothing is paid (state.mjs lockedOf shuts wealth). The rank: a task's `ranks` names it outright; else three stars is best, and of the listed marks the first (the clean clear) is best, the last plain, one between good; a board with no marks (洛书门, 小周天, the 今 boards) pays plain — a reading, not Hanli's word, to change here. On top of the task's own grant (rules/tasks.mjs boardPay).",
   "boards": {

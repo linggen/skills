@@ -50,7 +50,10 @@ export function newState(content, lang, now) {
    任务, 增长修为等. 先走剧情.」 A chapter declares it (chapter.json `locks`):
    the systems it keeps shut, and the scene that opens them (`until`) — shut on
    every scene before it, open on it and on every scene it leads to, and once
-   the chapter is ended or left. The engine names no scene: the content does. */
+   the chapter is ended or left. The engine names no scene: the content does.
+   Several gates (Hanli, 2026-10-22: 开府 opens on meeting 银月, the rest on
+   入门): `locks` is a list of {until, systems, say}; what is shut is the union
+   of the gates not yet opened. One object (the old shape) reads as a list of one. */
 export const LOCKABLE = {
   cultivation: '境界 and 修为: the realm, the bar, any 修为 gained, the scroll\'s daily 功课',
   wealth: '灵石: shown, gained, bought and sold with',
@@ -65,7 +68,9 @@ const NONE = Object.freeze([]);
 const openFrom = new WeakMap();
 /* The scenes a gate scene leads to, itself included (its exits' `next`, followed). */
 function opened(chapter, until) {
-  if (openFrom.has(chapter)) return openFrom.get(chapter);
+  if (!openFrom.has(chapter)) openFrom.set(chapter, new Map());
+  const memo = openFrom.get(chapter);
+  if (memo.has(until)) return memo.get(until);
   const seen = new Set(), todo = [until];
   while (todo.length) {
     const id = todo.pop();
@@ -73,15 +78,28 @@ function opened(chapter, until) {
     seen.add(id);
     for (const e of chapter.scenes[id].exits ?? []) if (e.next) todo.push(e.next);
   }
-  openFrom.set(chapter, seen);
+  memo.set(until, seen);
   return seen;
 }
-/* The systems shut for this save right now — [] for every save past its chapter's gate. */
-export function lockedOf(content, state) {
-  const chapter = content?.chapters?.[state?.chapter], lock = chapter?.locks;
-  if (!lock || !state.scene || (state.ended ?? []).includes(chapter.id)) return NONE;
-  return opened(chapter, lock.until).has(state.scene) ? NONE : lock.systems;
+/* A chapter's gates as a list — `locks` an object (one gate) or an array. */
+export const gatesOf = chapter => {
+  const lock = chapter?.locks;
+  return !lock ? [] : (Array.isArray(lock) ? lock : [lock]).filter(g => g && typeof g === 'object');
+};
+/* The gates still shut for this save — none past its chapter's last gate. */
+export function shutGates(content, state) {
+  const chapter = content?.chapters?.[state?.chapter], gates = gatesOf(chapter);
+  if (!gates.length || !state.scene || (state.ended ?? []).includes(chapter.id)) return NONE;
+  return gates.filter(g => !opened(chapter, g.until).has(state.scene));
 }
+/* The systems shut for this save right now — [] for every save past its chapter's gates. */
+export function lockedOf(content, state) {
+  const shut = shutGates(content, state);
+  if (!shut.length) return NONE;
+  return shut.length === 1 ? shut[0].systems ?? NONE : [...new Set(shut.flatMap(g => g.systems ?? []))];
+}
+/* The refusal line of the gate that keeps `system` shut here. */
+export const lockSay = (content, state, system) => shutGates(content, state).find(g => (g.systems ?? []).includes(system))?.say ?? null;
 /* A save before the gate holds none of what the gate keeps: an old save that
    began the rewritten prologue again carried 修为 and 灵石 from before (his
    live save, 2026-09-28: 练气一层 40/50, 灵石 20 at 石坳村). They go, and

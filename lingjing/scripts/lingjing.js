@@ -2815,11 +2815,21 @@ async function doTap(action, id) {
   await refresh();
   if (r.ok && (action === 'turn' || action === 'skip') && view.bookOpen) await loadKaifu();
   if (r.ok && action === 'turn') showTurned(id, r);
+  // A real-life chore that means something in the book (rules/gongke.mjs): she hears the facts and says it her way.
+  if (r.ok && action === 'turn' && r.meaning) tellGongke(r);
   // An errand handed in: the book is put away and its payoff stands on the stage, with the way back to the story.
   if (r.ok && action === 'turn' && r.turned) show({ bookOpen: false, handin: { place: look?.place?.id ?? null, title: r.title ?? '', seen: r.seen ?? null, paid: r.paid ?? null } });
   // 交差 on 传闻's line counts a kept win: the next step is the story's.
   if (r.ok && id === 'tale' && r.ended) taleEnded(r.handed?.[0]?.title ?? r.title);
   if (r.ok && id === 'tale' && (r.ended || r.step)) await report(`[scene] tale ${r.ended ? 'end' : 'step'}`);
+}
+/* 人间功课 handed in: the facts to her — the chore, its meaning in the book, what landed — never a line of ours. */
+function tellGongke(r) {
+  const m = r.meaning, p = m.paid ?? {};
+  const got = (zh) => [p.wealth ? (zh ? `灵石 +${p.wealth}` : `+${p.wealth} spirit stones`) : '', p.progress ? (zh ? `修为 +${p.progress}` : `+${p.progress} cultivation`) : '',
+    p.item_name ?? '', m.week?.paid ? (zh ? `${m.week.name}（灵石 +${m.week.paid.wealth}）` : `${m.week.name} (+${m.week.paid.wealth} stones)`) : ''].filter(Boolean).join(zh ? '，' : ', ');
+  tellYinyue('gongke', `玩家在人间做完了一件功课「${r.title ?? ''}」，在书里算${m.name}：${m.about}${got(true) ? ` 得了：${got(true)}。` : ''}`,
+    `The player finished a real-life chore, "${r.title ?? ''}" — in the book it counts as ${m.name}: ${m.about}${got(false) ? ` Gained: ${got(false)}.` : ''}`, { mood: 'happy' });
 }
 let handedTimer = null;
 /* A 交差 seen where it was tapped: its pay (and a 修为 the cap held) tops the 事 book a moment. */

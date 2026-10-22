@@ -20,7 +20,9 @@ import { TO_HALL, TO_VALLEY, TO_WAIMEN, walk } from './prologue.mjs';
 const content = loadContent();
 const NOW = new Date('2026-09-28T12:00:00');
 const ROOT = path.resolve(import.meta.dirname, '..');
-const SHUT = ['cultivation', 'wealth', 'chores', 'kaifu', 'divine', 'errands', 'road', 'seclusion'];
+// Two gates (Hanli, 2026-10-22): 开府 opens on meeting 银月 (00-yinyue), the rest on 入门 (00-waimen).
+const REST = ['cultivation', 'wealth', 'chores', 'divine', 'errands', 'road', 'seclusion'];
+const SHUT = ['kaifu', ...REST];
 
 /* The apps' menus: a pool chore, the fixed workout (done today), and 开府's milestones, one done. */
 const T = id => ({ zh: `做${id}`, en: `Do ${id}` });
@@ -50,8 +52,8 @@ const hisSave = () => ({
 
 test('the prologue declares its gate: the outer court opens it, and every lint passes', () => {
   const ch = content.chapters['00-prologue'];
-  assert.equal(ch.locks.until, '00-waimen');
-  assert.deepEqual(ch.locks.systems, SHUT);
+  assert.deepEqual(ch.locks.map(g => g.until), ['00-yinyue', '00-waimen']);
+  assert.deepEqual(ch.locks.map(g => g.systems), [['kaifu'], REST]);
   assert.deepEqual(lint(content), []);
   // A gate on no scene of its own, or a system the engine does not know, is caught.
   const bad = structuredClone(content);
@@ -62,10 +64,17 @@ test('the prologue declares its gate: the outer court opens it, and every lint p
   assert.match(problems, /no refusal line/);
 });
 
+/* The scenes before she is met: those 00-yinyue does not lead to (its exits' `next`, followed). */
+const fromHer = (() => { const ch = content.chapters['00-prologue'], seen = new Set(), todo = ['00-yinyue'];
+  while (todo.length) { const id = todo.pop(); if (seen.has(id) || !ch.scenes[id]) continue; seen.add(id); for (const e of ch.scenes[id].exits ?? []) if (e.next) todo.push(e.next); }
+  return seen; })();
+const BEFORE_HER = new Set(Object.keys(content.chapters['00-prologue'].scenes).filter(id => !fromHer.has(id)));
+
 test('shut on every scene before 00-waimen, open on it and after, and once the chapter is left', () => {
   for (const id of Object.keys(content.chapters['00-prologue'].scenes)) {
     const open = id === '00-waimen' || id === '00-mijing';
-    assert.deepEqual(lockedOf(content, { chapter: '00-prologue', scene: id, ended: [] }), open ? [] : SHUT, id);
+    const met = open || BEFORE_HER.has(id) === false;
+    assert.deepEqual(lockedOf(content, { chapter: '00-prologue', scene: id, ended: [] }), open ? [] : met ? REST : SHUT, id);
   }
   assert.deepEqual(lockedOf(content, { chapter: '00-prologue', scene: null, ended: ['00-prologue'] }), []);
   assert.deepEqual(lockedOf(content, { chapter: '03-qing', scene: null, ended: ['00-prologue'] }), []);
@@ -121,9 +130,10 @@ test('a prologue save refuses every shut verb `not-yet`, in the world\'s words; 
     const out = VERBS[verb](s, content, ctx(), args);
     assert.equal(out.state, null, verb);
     assert.deepEqual([out.result.ok, out.result.refused, out.result.system], [false, 'not-yet', system], `${verb} ${JSON.stringify(args)}`);
-    assert.match(out.result.say, /凡人/);
+    // Each refusal is its own gate's line: 开府's (the first gate) says none of 凡人.
+    assert.match(out.result.say, system === 'kaifu' ? /往后再说/ : /凡人/);
   }
-  assert.equal(VERBS.divine({ ...s, lang: 'en' }, content, ctx(), {}).result.say, content.chapters['00-prologue'].locks.say.en);
+  assert.equal(VERBS.divine({ ...s, lang: 'en' }, content, ctx(), {}).result.say, content.chapters['00-prologue'].locks[1].say.en);
   // The story walks on, and the page's reads still answer.
   assert.equal(VERBS.resolve(s, content, ctx(), { exit: 'endure' }).result.ok, true);
   assert.equal(VERBS.look(s, content, ctx(), {}).result.ok, true);

@@ -141,3 +141,13 @@ test('health-doctor: a stamp sets its time, never moves it back, and survives a 
   assert.equal(doctor().done_at, '2026-09-11T08:00:00.000Z');
   fs.rmSync(root, { recursive: true, force: true });
 });
+
+test('every chore names its kind — the workout is body, the letters heal — and a stamp keeps it', () => {
+  const kinds = Object.fromEntries(questOf([], NOW).quests.map((q) => [q.id, q.kind]));
+  assert.deepEqual(kinds, { 'health-workout': 'body', 'health-report': 'heal', 'health-doctor': 'heal' });
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'health-kind-'));
+  assert.equal(stamp('health-doctor', '2026-09-11T17:00:00Z', dir), 0);
+  const doc = JSON.parse(fs.readFileSync(path.join(dir, 'health.json'), 'utf8'));
+  assert.equal(doc.quests.find((q) => q.id === 'health-doctor').kind, 'heal');
+  fs.rmSync(dir, { recursive: true, force: true });
+});

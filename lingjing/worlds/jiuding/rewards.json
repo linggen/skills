@@ -159,7 +159,8 @@
     "star_top": 3,
     "treasure_hours": 8,
     "pills": {
-      "qi-pill": 1.5
+      "qi-pill": 1.5,
+      "anshen-xiang": 1.25
     },
     "art": "art/dongfu-gate.webp",
     "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, seed 52, 768×512: a closed 洞府 stone gate in a cliff, pine and mist above, steps below, light at the seam."

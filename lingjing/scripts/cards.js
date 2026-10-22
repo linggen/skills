@@ -1071,8 +1071,9 @@ function chanceRow(ctx) {
 }
 
 export function bookChipHtml(ctx, open, fresh) {
-  // Before the prologue's gate (Look's `locked`) there is no 事 at all — not a greyed chip (his, 2026-09-28).
-  if (shut(ctx.look, 'errands')) return '';
+  // Before the prologue's gate (Look's `locked`) there is no 事 at all — not a greyed chip (his, 2026-09-28) —
+  // unless 开府 opened at an earlier gate (Hanli, 2026-10-22: on meeting 银月): then the chip holds 一次 alone.
+  if (shut(ctx.look, 'errands') && !ctx.look?.kaifu) return '';
   const book = ctx.look?.book ?? [], w = ctx.words, lucky = chanceLeft(ctx.look?.chance) ? 1 : 0;
   if (!book.length && !lucky && !ctx.look?.waypoint && !ctx.look?.kaifu && !ctx.look?.stage_quest) return '';
   // A 开府 milestone done and unpaid is one more to hand in — the chip says so.

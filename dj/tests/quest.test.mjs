@@ -127,3 +127,11 @@ test('the engine door: stamp <id> <at> exits 0 once held, 1 for a bad call', () 
   assert.equal(doneOf(read(dir), 'dj-listen'), '2026-09-24T10:00:00.000Z');
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('every chore names its kind — a plain word of practice, never a game word', () => {
+  for (const m of MENU) assert.equal(m.kind, 'song', m.id);
+  const dir = tmp();
+  stamp('dj-fetch', { dir, now: NOW });
+  for (const q of read(dir).quests) assert.equal(q.kind, 'song', `${q.id} keeps its kind through a stamp`);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
