@@ -88,7 +88,7 @@ test('the hidden line: facts and the goal first, short after; never shown (HIDDE
   assert.match(first, /第1条（共6条）。他发来：「小宝哥，先别吸，跟着我吐」$/);
   assert.ok(!first.includes('名字加冒号'), 'one person: no names asked for');
   const later = turnLine(c, { k: 3, text: '吐——', cast, lang: 'zh' });
-  assert.equal(later, '[HIDDEN] [jinchat] 黑地里·第3条（共6条）。他发来：「吐——」（他做到了：另起一行【成】。）', 'the tag\'s rule on every line');
+  assert.equal(later, '[HIDDEN] [jinchat] 黑地里·第3条（共6条）。他发来：「吐——」（照目标，他这一条之后确实已经做到了，才另起一行写【成】；还差一点就不写。）', 'the tag\'s rule on every line');
   assert.match(turnLine(c, { k: 6, text: 'x', cast, lang: 'zh' }), /最后一条/, 'the last line asks for an ending');
   const group = turnLine(CHATS['617'], { k: 1, text: 'x', cast: castOf(CHATS['617'], PEOPLE, 'zh'), lang: 'zh' });
   assert.match(group, /每行以说话人的名字加冒号开头/);

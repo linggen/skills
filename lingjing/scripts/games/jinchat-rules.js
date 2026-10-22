@@ -83,7 +83,7 @@ const W = {
     last: '这是他最后一条：顺着话收个尾，自然地结束这段聊天。',
     said: '他发来：「{text}」',
     again: '[HIDDEN] [jinchat] {title}·',
-    tag: '（他做到了：另起一行【成】。）',
+    tag: '（照目标，他这一条之后确实已经做到了，才另起一行写【成】；还差一点就不写。）',
   },
   en: {
     head: '[HIDDEN] [jinchat] A phone chat on the stage (the present line): {title}, {when}. Not words to you: no Look, no tool at all.',
@@ -98,7 +98,7 @@ const W = {
     last: 'This is his last line: answer it and let the chat end naturally.',
     said: 'He sends: "{text}"',
     again: '[HIDDEN] [jinchat] {title} · ',
-    tag: ' (Done it: a last line 【成】.)',
+    tag: ' (Only if, by the goal, he has truly done it now: a last line 【成】; not yet, none.)',
   },
 };
 const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');

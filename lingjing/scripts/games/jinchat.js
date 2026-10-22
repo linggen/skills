@@ -124,7 +124,8 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     const input = $('.g-jc-in');
     input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
     $('.g-jc-bar').addEventListener('submit', (e) => { e.preventDefault(); say(input.value); });
-    for (const b of root.querySelectorAll('.g-jc-chip')) b.addEventListener('click', () => say(pick(c.chips[Number(b.dataset.chip)], lang)));
+    // A book line sent is spent: its chip goes (live 10-22: 阿禾's 「要是真到那一步…」 stood on under its own bubble).
+    for (const b of root.querySelectorAll('.g-jc-chip')) b.addEventListener('click', () => { if (g.busy || g.over) return; b.remove(); say(pick(c.chips[Number(b.dataset.chip)], lang)); });
     $('.g-jc-end').addEventListener('click', () => end({ won: true, grade: 'talked', stars: 1 }));
   };
 
