@@ -61,6 +61,8 @@ export const MOMENTS = {
   // grew at 出关 — both the player's own taps, so always told.
   seclude: { who: 'yinyue', priority: 'asked' },
   emerge: { who: 'yinyue', priority: 'asked' },
+  // 人间功课 handed in (rules/gongke.mjs): his own tap on a real-life chore — what it means in the book, always told.
+  gongke: { who: 'yinyue', priority: 'asked' },
   lost: { who: 'yinyue', priority: 'high', cooldown: 0 },
   chance: { who: 'yinyue', priority: 'high', cooldown: 0 },
   won: { who: 'yinyue', priority: 'low', cooldown: 10 * 60_000 },

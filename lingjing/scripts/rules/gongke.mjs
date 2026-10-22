@@ -11,7 +11,8 @@
 //
 // Nothing here names an app or a chore id: a kind the table lacks, or none, means nothing more.
 // 开府's one-time milestones never take a meaning.
-import { dayKey, periodKey, pick, weekKey } from '../state.mjs';
+import { dayKey, periodKey, pick, weekKey, zeroAt } from '../state.mjs';
+import { paysOf } from './core.mjs';
 import { choreOpen, isOnce } from './chores.mjs';
 
 const kindOf = q => (typeof q?.kind === 'string' ? q.kind : null);
@@ -77,6 +78,12 @@ export function payMeaning(content, s, ctx, q, payFn) {
 
 const itemName = (content, id, lang) => pick(content.items.items.find(i => i.id === id)?.name, lang);
 
+/* What a meaning would land now (paysOf: the table, the roots, the tier, the gates) — 零层 takes no 修为. */
+function landsOf(content, state, now, g) {
+  const p = paysOf(content, state, now, { table: 'chore_kind', progress: g.progress, wealth: g.wealth }) ?? { progress: 0, wealth: 0 };
+  return { wealth: p.wealth, progress: zeroAt(content, state.tier, state.step) ? 0 : p.progress };
+}
+
 /* The 人间功课 board (Look's `gongke`): today's chores as facts — the meaning's name, the app's own
    title, where it is done, done (and when, by the app's record), paid (and when), what the meaning
    adds now, the thing it leaves; the day's meanings against the cap; each week row; the ward
@@ -90,7 +97,7 @@ export function gongkeBoard(content, state, chores, now, lang, questDone) {
     return {
       id: q.id, kind: kindOf(q), name: m ? pick(m.name, lang) : null, title: pick(q.title, lang), device: q.device ?? null, period: q.period, open: choreOpen(q),
       done, done_at: done ? q.done_at : null, paid, paid_at: paid ? state.chores[q.id].paid_at ?? null : null,
-      ...(m && !paid ? { adds: { wealth: g.wealth, progress: g.progress, ...(g.item ? { item: itemName(content, g.item, lang) } : {}) } } : {}),
+      ...(m && !paid ? { adds: { ...landsOf(content, state, now, g), ...(g.item ? { item: itemName(content, g.item, lang) } : {}) } } : {}),
       ...(m?.item ? { leaves: itemName(content, m.item, lang) } : {}),
     };
   });

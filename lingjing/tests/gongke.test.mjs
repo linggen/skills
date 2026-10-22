@@ -21,6 +21,7 @@ import { gongkeHtml } from '../scripts/gongke.js';
 import { pouchHtml } from '../scripts/pouch.js';
 import { bookChipHtml, WORDS } from '../scripts/cards.js';
 import { TO_WAIMEN, walk } from './prologue.mjs';
+import { MOMENTS } from '../scripts/voice.js';
 
 const content = loadContent();
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -197,6 +198,7 @@ test('the board shows facts only: the meaning, the app\'s title, a stamp with th
   const board = gongkeBoard(content, s, quests, NOW, 'zh', questDone);
   const by = Object.fromEntries(board.rows.map(r => [r.id, r]));
   assert.deepEqual([by['x-workout'].done, by['x-workout'].paid, by['x-workout'].adds.item], [true, false, '晨练符']);
+  assert.deepEqual([by['x-workout'].adds.wealth, by['x-workout'].adds.progress], [3, 0], 'what lands: 零层 takes no 修为');
   assert.deepEqual([by['x-sweep'].done, by['x-sweep'].done_at], [false, null]);
   assert.equal(by['x-paid'].paid, true);
   assert.ok(by['x-paid'].paid_at);
@@ -239,4 +241,11 @@ test('no app named in the code that reads them: the rules, the board, the table'
     const text = fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/Hanli, 2026-10-22[^)]*\)/g, '');
     assert.doesNotMatch(text, /\b(cfo|shifu|apple-shifu|health|dj|linggen)\b|\b(cfo|shifu|health|dj)-[a-z]+/i, f);
   }
+});
+
+test('a hand-in is a moment of hers: the page tells her the facts, and the voice knows the moment', () => {
+  assert.deepEqual(MOMENTS.gongke, { who: 'yinyue', priority: 'asked' });
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
+  assert.match(src, /if \(r\.ok && action === 'turn' && r\.meaning\) tellGongke\(r\)/);
+  assert.match(src, /tellYinyue\('gongke'/);
 });
