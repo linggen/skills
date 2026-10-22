@@ -197,6 +197,9 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     if (!g.chat) { root.textContent = `jinchat: no chat ${data.chat ?? '(none)'}`; return; }
     g.cast = castOf(g.chat, people, lang);
     draw();
+    // The card is redrawn around the chat (the stuck gate's 「算了，往下走」 slot, live 10-22): the node is laid into a
+    // new host and its list comes back scrolled to the top — keep the last bubble in view whenever it is laid out again.
+    try { new ResizeObserver(scroll).observe(list()); } catch { /* no observer: the chat still scrolls as it grows */ }
     inputOn(false);
     lefts();
     await typeOut((g.chat.open ?? []).map((l) => ({ who: l.who, card: l.card, text: pick(l.text, lang) })));

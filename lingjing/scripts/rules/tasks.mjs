@@ -16,6 +16,7 @@ import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { laterBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
+import { sideLine } from './hui.mjs';
 import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, sceneOf } from './world.mjs';
 import { runBoardHere, runFindDone, runSpoils } from './rerun.mjs';
@@ -217,6 +218,9 @@ function boardPay(content, s, t, id, paid) {
   const table = content.balance?.boards;
   if (!table || t.kind !== 'board' || !t.game || (s.boards_paid ?? []).includes(id)) return;
   if (lockedOf(content, s).includes('wealth')) return;
+  // The 今 never pays the 古 (Hanli: 不跨线): a board won on a side line (沈芒's 今) earns no 灵石 — found live 10-22,
+  // 今三's chat paid 灵石 +5, and so did every 今 board past 入门 since the small-game pay (10-16).
+  if (sideLine(content, sceneOf(content, s))) return;
   const rank = boardRank(t, s.grades?.[id] ?? null, s.stars?.[id]);
   const amount = table[rank] ?? 0;
   s.boards_paid = [...(s.boards_paid ?? []), id];

@@ -72,13 +72,14 @@ const W = {
     people: '{name}：{voice}',
     facts: '此刻：{facts}',
     shown: '屏幕上已有——{lines}',
-    goal: '他这一局想做到（你心里有数，不说破，不替他做到，也别轻易让他做到）：{goal}',
-    shape: '回法：一到三行，每行不超过三十字{multi}；不叙述，不旁白。他做到了，最后另起一行只写【成】。',
+    goal: '他这一局想做到（你心里有数，不说破，不替他做到；他真做到了，就认）：{goal}',
+    shape: '回法：一到三行，每行不超过三十字{multi}；不叙述，不旁白。哪一条他做到了，那一条回复最后另起一行只写【成】。',
     multi: '，每行以说话人的名字加冒号开头',
     count: '第{k}条（共{n}条）。',
     last: '这是他最后一条：顺着话收个尾，自然地结束这段聊天。',
     said: '他发来：「{text}」',
     again: '[HIDDEN] [jinchat] {title}·',
+    tag: '（他做到了：另起一行【成】。）',
   },
   en: {
     head: '[HIDDEN] [jinchat] A phone chat on the stage (the present line): {title}, {when}. Not words to you: no Look, no tool at all.',
@@ -86,13 +87,14 @@ const W = {
     people: '{name}: {voice}',
     facts: 'Now: {facts}',
     shown: 'Already on the screen — {lines}',
-    goal: 'What he wants this round (you know it; never say it, never do it for him, never make it easy): {goal}',
-    shape: 'Shape: one to three lines, each under twenty words{multi}; no narration. Once he has done it, end with a line of only 【成】.',
+    goal: 'What he wants this round (you know it; never say it, never do it for him; once he truly has, own it): {goal}',
+    shape: 'Shape: one to three lines, each under twenty words{multi}; no narration. The reply in which he has done it ends with a line of only 【成】.',
     multi: ', each line starting with the speaker\'s name and a colon',
     count: 'Line {k} of {n}.',
     last: 'This is his last line: answer it and let the chat end naturally.',
     said: 'He sends: "{text}"',
     again: '[HIDDEN] [jinchat] {title} · ',
+    tag: ' (Done it: a last line 【成】.)',
   },
 };
 const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -105,7 +107,9 @@ export function turnLine(chat, { k = 1, text = '', cast = [], shown = [], lang =
   const w = W[lang] ?? W.zh;
   const n = Math.max(1, Number(chat?.turns) || 5);
   const tail = [fill(w.count, { k, n }), k >= n ? w.last : '', fill(w.said, { text: String(text).trim() })].join('');
-  if (k > 1) return `${fill(w.again, { title: pick(chat.title, lang) })}${tail}`;
+  // Every later line carries the tag's rule again: live 10-22 the first line's rule was forgotten by the fifth
+  // (马小宝 「手没那么麻了」, no tag) — the goal was met and the chat ran out instead.
+  if (k > 1) return `${fill(w.again, { title: pick(chat.title, lang) })}${tail}${w.tag}`;
   const names = cast.map((c) => c.name).join(lang === 'en' ? ' and ' : '和');
   const lines = shown.map((s) => `${cast.find((c) => c.id === s.who)?.name ?? (lang === 'en' ? 'he' : '他')}：「${s.text}」`).join(' ');
   return [

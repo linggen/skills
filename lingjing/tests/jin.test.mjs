@@ -129,8 +129,12 @@ test('old saves: before the point they meet the interlude; past it they go on as
 test('今 · 三 opens 筑基\'s chapter (古七, the old 古九) without spending its intro; 今 · 四 never closes the 卷', () => {
   let s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: 'j07-ankle', place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['wm-heluo'] };
   assert.equal(look(s, content, ctx).chapter.fresh, undefined, 'the snow\'s intro waits for the snow');
+  const wealth = s.wealth;
   s = throughJin(s, content, NOW);
   assert.equal(s.scene, '09-snow');
+  // 不跨线: past 入门 a 今 board (the dark's chat) pays no 灵石 — found live 10-22 (灵石 +5 on 今三)
+  assert.equal(s.wealth, wealth, 'the 今 pays nothing, past 入门 too');
+  assert.equal(s.tasks['jin-chat-dark']?.status, 'done');
   const snow = look(s, content, ctx);
   assert.equal(snow.chapter.fresh, true, 'and comes up there');
   assert.equal(snow.chapter.hui, 'h11', '古七 — its first half since the 2026-10-07 split');
