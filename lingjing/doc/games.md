@@ -116,7 +116,7 @@ evidence (the bite on his 虎口 through the patched coat, the crumbs, the fire 
 never on a lazy first 「你欠我饼」. **The win is her reply**, checked page-side: a sentence of hers that owns the debt
 (`admits`: 欠你…饼 · 本王欠你…饼/债 · 这张饼…记下了 · 饼债…认 · I owe you one / owes you a flatbread …, a data list with
 negation, echo and scoff guards — 「本王才不欠你」, 「你说本王欠你一张饼？做梦」, "owes you nothing" don't count); her facts ask
-her to say 「本王欠你一张饼」 when she truly gives in. ≤ 10 lines, the way out after 4 (`stuck`, no 75 s clock); ★ by how soon
+her to say 「本王欠你一张饼」 when she truly gives in. Her first two lines from the board also carry the page's 「这一句你还不认」 (`hold`, `hold_lines: 2` — found live 10-22: one dare on the first line and she owned it; the facts alone don't hold her). ≤ 10 lines, the way out after 4 (`stuck`, no 75 s clock); ★ by how soon
 (≤ 3 · ≤ 6 · more); unowned at 10 the round ends and the story goes on — 「小满道：「……你是那只狐狸？」」 on is read after, and the
 book's own 「一言为定。本王，欠你一张饼。」 there owns it either way (the done line too; no new book sentence). Owned sets the mark
 `bing-debt` (read by no line yet). Unmet here (`joins` is 带她出谷's), she is
