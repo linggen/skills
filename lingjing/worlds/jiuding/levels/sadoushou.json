@@ -68,6 +68,64 @@
     "zh": "合窳",
     "en": "Heyu"
    }
+  },
+  "_people": "第一回's 收租 daydream (levels `zaotai`, 2026-10-22): people, not beasts — the 马家 men down the middle of 小满's daydream on the floor. `art: \"sadoushou\"` = this kit's own (scripts/games/sadoushou/art/); `pose` names the frame a 大妖 shows while it gathers itself (`warn`) and charges (`rush`). They are the book's own (第一回: 马三 · 马小宝 · 马家的家丁) — never a creatures.json row.",
+  "jiading": {
+   "power": 1,
+   "size": 96,
+   "frames": [
+    "walk-1",
+    "walk-2"
+   ],
+   "hit": "hit",
+   "art": "sadoushou",
+   "person": true
+  },
+  "genban": {
+   "power": 1,
+   "size": 78,
+   "frames": [
+    "walk-1",
+    "walk-2"
+   ],
+   "hit": "hit",
+   "art": "sadoushou",
+   "person": true
+  },
+  "maxiaobao": {
+   "power": 1,
+   "size": 250,
+   "frames": [
+    "walk-1"
+   ],
+   "hit": "hit",
+   "art": "sadoushou",
+   "person": true,
+   "pose": {
+    "rush": "roll"
+   },
+   "name": {
+    "zh": "马小宝",
+    "en": "Ma Xiaobao"
+   }
+  },
+  "masan": {
+   "power": 1,
+   "size": 300,
+   "frames": [
+    "walk-1"
+   ],
+   "hit": "hit",
+   "art": "sadoushou",
+   "person": true,
+   "pose": {
+    "warn": "slam",
+    "rush": "slam"
+   },
+   "name": {
+    "zh": "马三",
+    "en": "Ma San"
+   }
   }
  },
  "levels": [
@@ -1359,6 +1417,397 @@
       "en": "The gate broke… so close. Another handful of beans."
      }
     ]
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "00-zaotai",
+   "hui": "h01",
+   "id": "zaotai",
+   "_about": "第一回's 收租 (2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的. 塔防好几种呢, 可以用没出现过的」 · 「可以马小宝, 马三两个boss从中路冲下来, 带一堆家丁等」; the cards Hanli's sketch 「左路是桂花糕+1, 右路是家里的碗 +10」): 小满 on the floor after the bowl breaks, a daydream — the 灶台 with the three bowls left is the wall (`pieces`: stars by the bowls kept, no par), his beans for an army, the 马家家丁 and 小宝's 跟班 in at the door and down the middle, then 马小宝 (a 糯米团子 roll) and 马三 (the 短棍 stamped) together, each with a crowd. The left lane feeds the squad (桂花糕 · 野菜粥 · 栗子, and 「戴九履一」 — 娘's 洛书 on nine chestnuts — lifts it a tier); the right hides the family bowl (+10 → +60) behind 沈家的门; two red cards, 租 and 父债子偿. A 桂花糕 taken while 马小宝 walks stops him to eat it. Gentle: 第一回. Imagination, not a win over the 马家 — the book says 「现在打不过」.",
+   "title": {
+    "zh": "守灶台 · 三只碗",
+    "en": "Guarding the stove · Three bowls"
+   },
+   "wall": 90,
+   "pieces": {
+    "n": 3,
+    "icon": "icon-wan",
+    "name": {
+     "zh": "碗",
+     "en": "bowls"
+    }
+   },
+   "stars": [
+    0.667,
+    0.334
+   ],
+   "par": null,
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    }
+   ],
+   "press": 0,
+   "breach": 6,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "art": {
+    "wall": "zaotai-wall",
+    "road": "tex-floor",
+    "side": "tex-floor-side",
+    "sky": "home-far",
+    "tone": null
+   },
+   "face": false,
+   "words": {
+    "zh": {
+     "horde": "马家",
+     "wall": "灶台",
+     "won": "碗还在！",
+     "lost": "碗没守住……",
+     "broke": "门开了！"
+    },
+    "en": {
+     "horde": "Ma men",
+     "wall": "Stove",
+     "won": "The bowls are safe!",
+     "lost": "The bowls…",
+     "broke": "The door's open!"
+    }
+   },
+   "lead": [
+    {
+     "zh": "小满躺在地下，望着屋顶那个窟窿：要是我会撒豆成兵……",
+     "en": "Lying on the floor, staring at the hole in the roof, Xiaoman thinks: if only I could turn beans into soldiers…"
+    },
+    {
+     "zh": "灶台上还剩三只碗——这回，一只也不给他们碰！",
+     "en": "Three bowls left on the stove — this time they don't touch a single one!"
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "马家的人来了——结印！",
+     "en": "Here come the Ma men — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "moves": [
+     {
+      "id": "feijian",
+      "name": {
+       "zh": "飞剑",
+       "en": "Flying sword"
+      },
+      "seals": [
+       "jian"
+      ],
+      "motion": "jab",
+      "from": null,
+      "secs": 4
+     },
+     {
+      "id": "huodan",
+      "name": {
+       "zh": "火弹",
+       "en": "Fire shot"
+      },
+      "jieyin": "huodan",
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 7
+     }
+    ]
+   },
+   "belt": {
+    "speed": 7,
+    "until": 560,
+    "lines": [
+     {
+      "col": "L",
+      "from": 14,
+      "every": 14,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 10,
+        "icon": "icon-guihuagao",
+        "name": {
+         "zh": "桂花糕",
+         "en": "Osmanthus cake"
+        },
+        "feeds": "maxiaobao",
+        "stall": 2
+       },
+       {
+        "n": 2,
+        "cap": 10,
+        "icon": "icon-yecaizhou",
+        "name": {
+         "zh": "野菜粥",
+         "en": "Wild-greens gruel"
+        }
+       },
+       {
+        "n": 1,
+        "cap": 10,
+        "icon": "icon-guihuagao",
+        "name": {
+         "zh": "桂花糕",
+         "en": "Osmanthus cake"
+        },
+        "feeds": "maxiaobao",
+        "stall": 2
+       },
+       {
+        "n": 3,
+        "cap": 10,
+        "icon": "icon-lizi",
+        "name": {
+         "zh": "栗子",
+         "en": "Chestnuts"
+        }
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 120,
+      "every": 999,
+      "wall": {
+       "hp": 35,
+       "gives": "tier",
+       "icon": "wall-luoshu",
+       "name": {
+        "zh": "戴九履一",
+        "en": "Nine on the head, one at the feet"
+       }
+      }
+     },
+     {
+      "col": "R",
+      "from": 24,
+      "every": 14,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10,
+        "icon": "icon-yecaizhou",
+        "name": {
+         "zh": "野菜粥",
+         "en": "Wild-greens gruel"
+        }
+       },
+       {
+        "n": -3,
+        "cap": 10,
+        "icon": "icon-zu",
+        "name": {
+         "zh": "租",
+         "en": "Rent"
+        }
+       },
+       {
+        "n": 1,
+        "cap": 10,
+        "icon": "icon-lizi",
+        "name": {
+         "zh": "栗子",
+         "en": "Chestnuts"
+        }
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 56,
+      "every": 84,
+      "wall": {
+       "hp": 36,
+       "icon": "wall-door",
+       "name": {
+        "zh": "沈家的门",
+        "en": "The Shens' door"
+       }
+      }
+     },
+     {
+      "col": "R",
+      "from": 62,
+      "every": 84,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true,
+        "icon": "icon-wan",
+        "name": {
+         "zh": "家里的碗",
+         "en": "The family bowl"
+        }
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 200,
+      "every": 999,
+      "cards": [
+       {
+        "n": -5,
+        "cap": 10,
+        "icon": "icon-fuzhai",
+        "name": {
+         "zh": "父债子偿",
+         "en": "The father's debt, the son's to pay"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 4,
+     "beasts": [
+      [
+       "genban",
+       120
+      ],
+      [
+       "jiading",
+       200
+      ]
+     ],
+     "speed": 4
+    },
+    {
+     "t": 24,
+     "beasts": [
+      [
+       "genban",
+       160
+      ],
+      [
+       "jiading",
+       340
+      ]
+     ],
+     "speed": 4.5
+    }
+   ],
+   "boss": [
+    {
+     "beast": "maxiaobao",
+     "hp": 650,
+     "speed": 3,
+     "stand": 74,
+     "half": 0.22,
+     "at": -0.17,
+     "crush": 10,
+     "crowd": {
+      "beasts": [
+       [
+        "jiading",
+        160
+       ]
+      ],
+      "speed": 4
+     },
+     "charge": {
+      "kind": "roll",
+      "first": 5,
+      "every": 9,
+      "warn": 1.8,
+      "speed": 80,
+      "to": 4,
+      "kill": 0.33
+     },
+     "warnSay": {
+      "zh": "马小宝要滚过来了！快换列！",
+      "en": "Ma Xiaobao's going to roll! Move!"
+     },
+     "eatSay": {
+      "zh": "马小宝停下来吃桂花糕！",
+      "en": "Ma Xiaobao stops for the cake!"
+     }
+    },
+    {
+     "beast": "masan",
+     "hp": 800,
+     "speed": 2.6,
+     "stand": 80,
+     "half": 0.22,
+     "at": 0.17,
+     "crush": 12,
+     "crowd": {
+      "beasts": [
+       [
+        "jiading",
+        180
+       ]
+      ],
+      "speed": 4
+     },
+     "charge": {
+      "kind": "slam",
+      "first": 9.5,
+      "every": 9,
+      "warn": 1.8,
+      "speed": 80,
+      "to": 4,
+      "kill": 0.3
+     },
+     "warnSay": {
+      "zh": "马三要跺棍子了！快换列！",
+      "en": "Ma San's going to stamp his club! Move!"
+     }
+    }
+   ],
+   "moments": {
+    "_about": "No 银月 yet (第一回: she is met in the valley): no bubble — the board's lines are its lead and its banners."
    }
   }
  ]

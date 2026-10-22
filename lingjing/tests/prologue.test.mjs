@@ -179,7 +179,7 @@ test('the command line: the birthday never reaches the log, and page_did tells L
 
 test('the hero is fixed (2026-09-30): {兄姐} is 师兄, {伴} is 阿禾, a girl, {name} is 沈小满 in the text\'s language', () => {
   const at = s => look(s, content, ctx());
-  const s = walk(start(), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'evening' }], ['resolve', { exit: 'endure' }]], content, NOW);
+  const s = walk(start(), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'evening' }], ['resolve', { exit: 'endure' }], ['resolve', { exit: 'endure' }]], content, NOW);
   const dawn = at(s).scene;
   assert.equal(dawn.id, '00-dawn');
   assert.equal(dawn.people[0].name, '阿禾');
@@ -257,7 +257,7 @@ test('the choices are marked on the save; the storm\'s other branch is the harde
   const s = walk(start(), TO_HALL, content, NOW);
   for (const m of ['kept-count', 'took-egg', 'three-rules', 'turned-back', 'shared-bread', 'played-dumb', 'marrow-washed', 'steps-steady']) assert.ok(s.marks.includes(m), m);
   assert.deepEqual(look(s, content, ctx()).marks, s.marks);
-  const storm = walk(start(), [...TO_VALLEY.slice(0, 11), ['played']], content, NOW);
+  const storm = walk(start(), [...TO_VALLEY.slice(0, TO_VALLEY.findIndex(([, a]) => a?.exit === 'carve') + 1), ['played']], content, NOW);
   assert.equal(storm.scene, '00-storm');
   const turned = resolve(storm, content, ctx(), { exit: 'turn' }).state, chased = resolve(storm, content, ctx(), { exit: 'chase' }).state;
   assert.equal(storm.stamina - turned.stamina, 4);

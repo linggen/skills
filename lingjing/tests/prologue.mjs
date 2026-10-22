@@ -23,6 +23,8 @@ export const TO_VALLEY = [
   ['win', { id: 'masan-taunt' }],
   ['task', { action: 'done', id: 'masan-taunt' }],
   ['resolve', { exit: 'endure' }],
+  // 守灶台 (守山门, 2026-10-22): on the floor after the bowl breaks, the daydream; the raindrop wakes him (the way he took)
+  ['resolve', { exit: 'endure' }],
   ['resolve', { exit: 'egg' }],
   ['resolve', { exit: 'go' }],
   ['resolve', { exit: 'lookout' }],
@@ -31,9 +33,7 @@ export const TO_VALLEY = [
   ['look', { at: 'stone' }],
   ['resolve', { exit: 'carve' }],
   ['resolve', { exit: 'turn' }],
-  // the storm is played (lane MG's board): haul 爹 back in the lulls, then the fall
-  ['win', { id: 'fall-storm' }],
-  ['task', { action: 'done', id: 'fall-storm' }],
+  // the storm: 拽爹上崖 cut 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」) — the haul and the fall read whole
   ['resolve', { exit: 'check' }],
   ['resolve', { exit: 'save' }],
   // 守火 (守炉, 2026-10-21) is the cave's first board, 喂饼 its second: both played before the way on

@@ -494,7 +494,7 @@ export class PlayScene extends Phaser.Scene {
       }
     }
     const show = !v.falling;
-    const bw = Math.max(120, 220 * sc), top = y - kb.size * sc - 16;
+    const bw = Math.max(120, 220 * sc), top = y - kb.size * sc - 16 - bs.i * 30; // two side by side: their bars a row apart
     v.lag = Math.max(bs.hp, v.lag - Math.max(1, (v.lag - bs.hp) * 0.08));
     v.bar.clear();
     if (show) v.bar.fillStyle(0x0a0814, 0.85).fillRoundedRect(x - bw / 2 - 3, top - 3, bw + 6, 22, 9)
@@ -597,7 +597,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   on_wave(e) {
-    if (e.i > 0) { this.hud.banner(this.w.wave, { color: '#ffb0a0', y: 300 }); this.say('wave'); }
+    if (e.i > 0 && e.crowd == null) { this.hud.banner(this.w.wave, { color: '#ffb0a0', y: 300 }); this.say('wave'); } // a 大妖's crowd comes with its banner
     this.sfx.thud();
     this.fact({ t: 'wave', beasts: e.beasts });
   }

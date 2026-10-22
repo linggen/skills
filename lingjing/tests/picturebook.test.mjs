@@ -56,7 +56,7 @@ test('a beat stands as a scene card in words: the choices under the box (its cap
 });
 
 test('a face is new once: the next scene brings on only who it has not met; a replay brings no one', () => {
-  const s = walk(start('zh'), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'evening' }], ['resolve', { exit: 'endure' }]], content, NOW);
+  const s = walk(start('zh'), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'evening' }], ['resolve', { exit: 'endure' }], ['resolve', { exit: 'endure' }]], content, NOW);
   const l = look(s, content, ctx());
   assert.equal(l.scene.id, '00-dawn');
   assert.ok(!(l.scene.meet ?? []).includes('masan'), '马三 was met');
@@ -101,8 +101,14 @@ test('the command line: Ling is never handed the prose — only what the stage p
     cli('task', '--action=done', '--id=masan-taunt');
     cli('resolve', '--exit=strike', '--said=攥紧拳头');
     const told = cli('look', '--for=ling');
-    assert.deepEqual(told.staged, [{ chose: '攥紧拳头' }, { scene: '00-dawn', recap: '天亮前，阿禾隔着窗塞来一个煮鸡蛋。' }]);
+    assert.deepEqual(told.staged, [{ chose: '攥紧拳头' }, { scene: '00-zaotai', recap: '你躺在地下，想了一场：马家的人一拨一拨冲进门来，你守着灶台上剩下的三只碗。——想想而已，现在打不过。' }]);
     assert.deepEqual(told.page_did.map(d => d.what).filter(w => /chose/.test(w)), ['chose 「出门」 under the picture', 'chose 「那天傍晚」 under the picture', 'chose 「攥紧拳头」 under the picture — 恩仇簿: 仇 maxiaobao, 仇 masan']);
+    cli('tell');
+    // 守灶台 (2026-10-22): the daydream on the floor, then the raindrop wakes him — the way he took
+    cli('win', '--id=masan-zaotai');
+    cli('task', '--action=done', '--id=masan-zaotai');
+    cli('resolve', '--exit=strike');
+    assert.deepEqual(cli('look', '--for=ling').staged.at(-1), { scene: '00-dawn', recap: '天亮前，阿禾隔着窗塞来一个煮鸡蛋。' });
     cli('tell');
     // Ling's own Resolve (the player typed it): the stage plays it too
     const egg = cli('resolve', '--exit=egg', '--said=收下鸡蛋', '--for=ling');
@@ -134,10 +140,17 @@ test('the page draws the passages owed with their beats (Tell) and marks them to
     cli('win', '--id=masan-taunt');
     cli('task', '--action=done', '--id=masan-taunt');
     cli('resolve', '--exit=strike', '--said=攥紧拳头');
+    const floor = cli('tell');
+    assert.deepEqual(floor.tell.map(i => i.id), ['00-masan/strike', '00-zaotai'], 'then the floor, after the bowl breaks (守灶台, 2026-10-22)');
+    assert.equal(floor.report, undefined, 'no report for Ling');
+    assert.match(floor.tell[0].beats.zh.map(b => b.text).join('\n'), /小满攥紧了拳头/);
+    assert.match(floor.tell[1].beats.zh.map(b => b.text).join('\n'), /一时竟忘了起身/);
+    cli('win', '--id=masan-zaotai');
+    cli('task', '--action=done', '--id=masan-zaotai');
+    cli('resolve', '--exit=strike');
     const t = cli('tell');
-    assert.deepEqual(t.tell.map(i => i.id), ['00-masan/strike', '00-dawn']);
-    assert.equal(t.report, undefined, 'no report for Ling');
-    assert.match(t.tell[0].beats.zh.map(b => b.text).join('\n'), /小满攥紧了拳头/);
+    assert.deepEqual(t.tell.map(i => i.id), ['00-zaotai/strike', '00-dawn']);
+    assert.match(t.tell[0].beats.zh.map(b => b.text).join('\n'), /一滴隔夜雨/, 'the raindrop wakes him');
     assert.ok(t.tell[1].beats.zh.some(b => /阿禾道：「你别死在里头啊。」/.test(b.text)), '阿禾 at the window, in the book\'s words');
     assert.ok(t.tell[1].beats.en.some(b => /Ahe said/.test(b.text)), 'and in English, for a switch mid-passage');
     assert.deepEqual(cli('tell').tell, [], 'drawn once');
@@ -158,19 +171,19 @@ test('nothing lost: a scene is owed the moment it is entered; past two owed, the
   // tapped through, never told: each exit's passage and each scene entered
   let s = walk(start(), [['resolve', { exit: 'begin' }], ['resolve', { exit: 'evening' }], ['played']], content, NOW);
   s = { ...s, tell_owed: [], told_scenes: ['00-shiao', '00-baicai', '00-masan'] };
-  for (const exit of ['endure', 'egg']) s = resolve(s, content, ctx(), { exit }).state;
-  assert.deepEqual(s.tell_owed, ['00-masan/endure', 'scene/00-dawn', '00-dawn/egg', 'scene/00-kitchen']);
+  s = walk(s, [['resolve', { exit: 'endure' }], ['resolve', { exit: 'endure' }], ['resolve', { exit: 'egg' }]], content, NOW); // through 00-zaotai (守灶台, 2026-10-22)
+  assert.deepEqual(s.tell_owed, ['00-masan/endure', 'scene/00-zaotai', '00-zaotai/endure', 'scene/00-dawn', '00-dawn/egg', 'scene/00-kitchen']);
   const out = tellOf(content, s);
   assert.deepEqual(out.tell.map(i => i.id), ['catchup', '00-dawn/egg', '00-kitchen']);
-  assert.deepEqual(out.tell[0].ids, ['00-masan/endure', '00-dawn']);
+  assert.deepEqual(out.tell[0].ids, ['00-masan/endure', '00-zaotai', '00-zaotai/endure', '00-dawn']);
   assert.equal(out.tell[0].of, 'catchup');
-  assert.equal(out.tell[0].text, '马三来收租：还差一张鹿皮、二十斤肉，不然拿走爷爷的弓；马小宝推了你一把，碗碎了。', 'the scene the whole passages stand in is not caught up twice');
+  assert.equal(out.tell[0].text, '马三来收租：还差一张鹿皮、二十斤肉，不然拿走爷爷的弓；马小宝推了你一把，碗碎了。\n你躺在地下，想了一场：马家的人一拨一拨冲进门来，你守着灶台上剩下的三只碗。——想想而已，现在打不过。', 'the scene the whole passages stand in is not caught up twice');
   assert.deepEqual(out.keep.tell_owed, []);
   assert.ok(['00-dawn', '00-kitchen'].every(id => out.keep.told_scenes.includes(id)));
   assert.equal(tellOf(content, out.keep), null, 'told once');
   // an old save's owed exit keys owe the scenes they walked into
   const old = { ...s, tell_owed: ['00-masan/endure', '00-dawn/egg'] };
-  assert.deepEqual(tellOf(content, old).tell[0].ids, ['00-masan/endure', '00-dawn']);
+  assert.deepEqual(tellOf(content, old).tell[0].ids, ['00-masan/endure', '00-zaotai']);
   // two owed are told whole
   const two = { ...s, tell_owed: ['00-dawn/egg', 'scene/00-kitchen'], told_scenes: [...s.told_scenes, '00-dawn'] };
   assert.deepEqual(tellOf(content, two).tell.map(i => i.of), ['choice', 'scene']);

@@ -75,9 +75,10 @@ test('a move plays its two passages in order — the choice\'s outcome, then the
   const s = walk(tellOf(content, named()).keep, [['resolve', { exit: 'strike' }]], content, NOW);
   const { tell } = tellOf(content, s);
   const played = playOf(content, s, tell);
-  assert.deepEqual(played.map(t => t.id), ['00-masan/strike', '00-dawn']);
+  // 守灶台 (2026-10-22): the way on from 00-masan is the floor after the bowl breaks, 00-zaotai
+  assert.deepEqual(played.map(t => t.id), ['00-masan/strike', '00-zaotai']);
   assert.ok(played.every(t => t.beats.zh.length && t.beats.en.length), 'both languages, for a switch mid-passage');
-  let r = withTold(null, played, '00-dawn');
+  let r = withTold(null, played, '00-zaotai');
   const total = played.reduce((n, t) => n + t.beats.zh.length, 0);
   assert.equal(current(r).n, total);
   assert.ok(playing(r) && !choicesUp(r), 'the choices wait');
@@ -85,7 +86,7 @@ test('a move plays its two passages in order — the choice\'s outcome, then the
   for (let k = 0; k < total; k++) { const c = current(r); seen.push([c.beat.of, c.beat.text]); r = advance(r); }
   assert.equal(seen[0][0], 'choice');
   assert.equal(seen.at(-1)[0], 'scene');
-  assert.match(seen.map(x => x[1]).join(''), /小满攥紧了拳头[\s\S]*阿禾/, 'the outcome, then the dawn');
+  assert.match(seen.map(x => x[1]).join(''), /小满攥紧了拳头[\s\S]*一时竟忘了起身/, 'the outcome, then the floor');
   assert.ok(!playing(r), 'the last tap puts the box away');
   assert.ok(choicesUp(r));
   assert.equal(toldSoFar(r).length, total, 'the log holds them all');
@@ -294,7 +295,7 @@ test('a reading belongs to its play (Look\'s `run`): a forward move carries the 
 
 test('catch-up: past two passages owed, the older ones play as recap lines, marked 前情, then the last two whole', () => {
   let s = { ...named(), tell_owed: [], told_scenes: ['00-shiao', '00-masan'] };
-  for (const exit of ['endure', 'egg']) s = resolve(s, content, ctx, { exit }).state;
+  s = walk(s, [['resolve', { exit: 'endure' }], ['resolve', { exit: 'endure' }], ['resolve', { exit: 'egg' }]], content, NOW); // 00-masan → 00-zaotai (守灶台, 2026-10-22) → 00-dawn
   const played = playOf(content, s, tellOf(content, s).tell);
   assert.deepEqual(played.map(t => t.of), ['catchup', 'choice', 'scene']);
   assert.ok(played[0].beats.zh.every(b => b.recap && !b.name), 'a recap is narration');

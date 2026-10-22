@@ -213,7 +213,7 @@ test('the rent is paid with the deer hide the shot brought, and refused without 
 });
 
 test('staying exits tell their passage and keep the scene; a staying choice made is not offered again', () => {
-  const s = walk(start(), TO_VALLEY.slice(0, 8), content, NOW);
+  const s = walk(start(), TO_VALLEY.slice(0, 9), content, NOW); // 00-zaotai's step since 2026-10-22
   assert.equal(s.scene, '00-duanbei');
   const back = must(resolve, s, { exit: 'back' });
   assert.equal(back.state.scene, '00-duanbei');
@@ -925,7 +925,7 @@ test('a later realm pays more for the same task; the day counts base', () => {
 
 test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
   let s = { ...start(), stamina: 0, stamina_at: NOW.toISOString() };
-  s = walk(s, TO_VALLEY.slice(0, 10), content, NOW);
+  s = walk(s, TO_VALLEY.slice(0, 11), content, NOW);
   assert.equal(s.scene, '00-heisong');
   assert.equal(s.stamina, 0, 'looking (看) is free');
   // …but an exit that is toil by itself (the marks, the storm, the steps) spends its own 体力
@@ -1544,7 +1544,7 @@ test('a key the story still needs cannot be sold', () => {
 test('an exit can grant a thing', () => {
   const c = structuredClone(content);
   c.chapters['00-prologue'].scenes['00-chushan'].exits[0].grant = { table: 'scene', item: 'straw-cloak' };
-  const out = resolve(walk(start(), TO_VALLEY.slice(0, 7), c, NOW), c, ctx(), { exit: 'lookout' });
+  const out = resolve(walk(start(), TO_VALLEY.slice(0, 8), c, NOW), c, ctx(), { exit: 'lookout' });
   assert.equal(out.result.ok, true);
   assert.equal(out.result.paid.item, 'straw-cloak');
   assert.deepEqual(out.state.bag, { 'straw-cloak': 1 });
@@ -1758,9 +1758,10 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   const ids = seen.tasks.map(t => t.id);
   // 忍字 · 认路 · 算账 back 2026-10-20 as 割绳子 levels (「可以, 放宽, 把那三关加进去」); the old weak boards stay cut.
   // 00-halfyear's 挑水上坡 (气走经脉, the reading cap) came and went the same day: told again (the 调息 cut). 认路 cut again 2026-10-21; 守白菜 · 守火 added (第一回's lineup).
-  for (const id of ['rain-basins', 'baicai-hens', 'masan-taunt', 'fall-storm', 'cave-fire', 'bread-share', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu']) assert.ok(ids.includes(id), id);
-  for (const id of ['xisui-hold', 'feather-breath', 'kitchen-griddle', 'halfyear-carry']) assert.ok(!ids.includes(id), `${id}: cut before 入门 (10-16)`);
-  const order = ['rain-basins', 'baicai-hens', 'masan-taunt', 'cave-fire', 'bread-share', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu'];
+  // 拽爹 cut 2026-10-22, 守灶台 in its place (Hanli: 「拽爹上崖 有点奇怪」 · 「就是在第一次收租那里…加一个塔防类的」).
+  for (const id of ['rain-basins', 'baicai-hens', 'masan-taunt', 'masan-zaotai', 'cave-fire', 'bread-share', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  for (const id of ['xisui-hold', 'feather-breath', 'kitchen-griddle', 'halfyear-carry', 'fall-storm']) assert.ok(!ids.includes(id), `${id}: cut before 入门`);
+  const order = ['rain-basins', 'baicai-hens', 'masan-taunt', 'masan-zaotai', 'cave-fire', 'bread-share', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu'];
   assert.deepEqual(ids.filter(id => order.includes(id)), order, 'in the order they were played');
 });
 

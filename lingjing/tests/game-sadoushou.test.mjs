@@ -8,53 +8,63 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, humanBot, waveLeft, waveCount, newGame, aim, step, sim, stars, beltOf, dpsOf, rateOf, colOf, colMid, castJieyin, jieyinState, COLS, TOP } from '../scripts/games/sadoushou/core.js';
-import { levelAsked, meta, offerJieyin } from '../scripts/games/sadoushou.js';
+import { BOTS, humanBot, waveLeft, waveCount, newGame, aim, step, sim, stars, beltOf, dpsOf, rateOf, colOf, colMid, castJieyin, jieyinState, beastFor, bossesUp, charging, COLS, TOP } from '../scripts/games/sadoushou/core.js';
+import { levelAsked, ladderOf, nextOf, meta, offerJieyin } from '../scripts/games/sadoushou.js';
 import { sourceHash } from '../tools/sadoushou/hash.mjs';
 
 const at = (p) => new URL(`../${p}`, import.meta.url);
 const kit = JSON.parse(readFileSync(at('worlds/jiuding/levels/sadoushou.json'), 'utf8'));
-const level = kit.levels[0];
+const ladder = ladderOf(kit);            // the 游戏厅's four; the story's own level (守灶台, 2026-10-22) apart
+const level = ladder[0];
+const story = kit.levels.find((l) => l.id === 'zaotai');
 const reg = JSON.parse(readFileSync(at('worlds/jiuding/games.json'), 'utf8'));
 const creatures = JSON.parse(readFileSync(at('worlds/jiuding/creatures.json'), 'utf8')).creatures;
 const both = (o) => Boolean(o?.zh && o?.en);
 const run = (g, sec, x = 0) => { for (let t = 0; t < sec; t += 1 / 30) { aim(g, x); step(g, 1 / 30); } return g; };
 const quiet = (lv, belt) => ({ ...lv, waves: [{ t: 999, beasts: [['yezhu', 1]], speed: 1 }], belt: { ...lv.belt, lines: belt } });
 
-test('registered beside 撒豆成兵 (main, 塔防, tall), test-only: no story scene, no task, not dealt in the 秘境', () => {
+test('registered beside 撒豆成兵 (main, 塔防, tall); its ladder off the story, not dealt in the 秘境; one story row (守灶台, h01)', () => {
   assert.equal(meta.id, 'sadoushou');
   assert.ok(both(meta.name) && both(meta.how) && meta.tall && meta.pause);
   const row = reg.games.find((g) => g.id === 'sadoushou');
   assert.ok(row && row.group === 'main' && row.mechanic === '塔防');
   assert.ok(!row.scene && !row.task && !row.hui, 'not in the story');
   assert.equal(reg.games.indexOf(row), reg.games.findIndex((g) => g.id === 'sadou') + 1, 'tiled right after 撒豆成兵, to compare');
-  for (const f of ['worlds/jiuding/qiyu.json', 'worlds/jiuding/tasks/world.json']) assert.doesNotMatch(readFileSync(at(f), 'utf8'), /sadoushou/, f);
-  kit.levels.forEach((l, i) => {
+  assert.doesNotMatch(readFileSync(at('worlds/jiuding/qiyu.json'), 'utf8'), /sadoushou/, 'not in the 秘境 pool');
+  const tasks = JSON.parse(readFileSync(at('worlds/jiuding/tasks/world.json'), 'utf8')).tasks.filter((t) => t.game === 'sadoushou');
+  assert.deepEqual(tasks.map((t) => [t.id, t.deal.lv]), [['masan-zaotai', 'zaotai']], 'the one story task: 守灶台');
+  const h01 = reg.games.find((g) => g.id === 'sadoushou' && g.group === 'h01');
+  assert.ok(h01 && h01.task === 'masan-zaotai' && h01.scene === story.story && h01.data.lv === 'zaotai', 'its 游戏厅 row in 第一回');
+  ladder.forEach((l, i) => {
     assert.equal(levelAsked(kit, { lv: l.id }, ''), l);
-    assert.equal(levelAsked(kit, {}, `?lv=${i + 1}`), l);
+    assert.equal(levelAsked(kit, {}, `?lv=${i + 1}`), l, 'a number climbs the ladder');
   });
   assert.equal(levelAsked(kit, {}, '?lv=99'), level);
+  assert.equal(levelAsked(kit, { lv: 'zaotai' }, ''), story, 'the story asks for its level by id');
+  assert.equal(nextOf(kit, story), null, 'a story level names no 下一关');
+  assert.equal(nextOf(kit, ladder.at(-1)), null, 'the ladder\'s last never points into the story level');
+  assert.equal(nextOf(kit, ladder[0]), ladder[1]);
   const src = readFileSync(at('scripts/games/sadoushou.js'), 'utf8');
   assert.match(src, /next: nx\.id/, '下一关');
   assert.match(src, /shell\.lead\((?:said|told), \{ auto: 'read', lang/, 'the lead card at the story\'s pace');
 });
 
 test('a ladder of four, each a 回 later, each beast one the book has shown by its 回 (creatures.json `hui`)', () => {
-  assert.equal(kit.levels.length, 4);
-  assert.equal(new Set(kit.levels.map((l) => l.id)).size, 4);
+  assert.equal(ladder.length, 4);
+  assert.equal(new Set(ladder.map((l) => l.id)).size, 4);
   const order = (h) => ({ h01: 1, h02: 2, h03: 3, h04: 4, h05: 5, h06: 6, h11: 7, h07: 7, h09: 8 })[h];
   const hui = Object.fromEntries(creatures.map((c) => [c.id, c.hui]));
-  for (let i = 1; i < kit.levels.length; i += 1) assert.ok(order(kit.levels[i].hui) >= order(kit.levels[i - 1].hui));
-  for (const l of kit.levels) {
+  for (let i = 1; i < ladder.length; i += 1) assert.ok(order(ladder[i].hui) >= order(ladder[i - 1].hui));
+  for (const l of ladder) {
     for (const b of new Set([...l.waves.flatMap((w) => w.beasts.map(([x]) => x)), l.boss.beast])) {
       assert.ok(kit.beasts[b] && hui[b], `${l.id}: ${b}`);
       assert.ok(order(hui[b]) <= order(l.hui), `${l.id} (${l.hui}) sends ${b}, met in ${hui[b]}`);
     }
   }
-  assert.deepEqual(kit.levels.map((l) => l.boss.beast), ['longzhi', 'longzhi', 'heyu', 'heyu']);
+  assert.deepEqual(ladder.map((l) => l.boss.beast), ['longzhi', 'longzhi', 'heyu', 'heyu']);
 });
 
-for (const lv of kit.levels) test(`${lv.id}: the level is data — words in both languages, three columns, a tide in the hundreds, a charging 大妖`, () => {
+for (const lv of ladder) test(`${lv.id}: the level is data — words in both languages, three columns, a tide in the hundreds, a charging 大妖`, () => {
   assert.ok(lv.kit === 'sadoushou' && lv.story === null && both(lv.title));
   assert.ok(lv.lead.length >= 2 && lv.lead.every(both) && lv.lead.at(-1).big && lv.lead.slice(0, -1).every((l) => !l.big));
   assert.ok(lv.leadSec >= 3 && lv.countdown >= 1, 'it starts by itself after the lead-in');
@@ -78,9 +88,9 @@ for (const lv of kit.levels) test(`${lv.id}: the level is data — words in both
 test('the ladder brings one new thing a level: red cards, then a wall that lifts the squad a tier, then the fast flyers', () => {
   const red = (l) => beltOf(l).some((it) => it.n < 0);
   const tier = (l) => beltOf(l).some((it) => it.gives === 'tier');
-  assert.deepEqual(kit.levels.map(red), [false, true, true, true]);
-  assert.deepEqual(kit.levels.map(tier), [false, false, true, true]);
-  assert.ok(kit.levels.at(-1).waves.some((w) => w.beasts.some(([b]) => kit.beasts[b].fly)));
+  assert.deepEqual(ladder.map(red), [false, true, true, true]);
+  assert.deepEqual(ladder.map(tier), [false, false, true, true]);
+  assert.ok(ladder.at(-1).waves.some((w) => w.beasts.some(([b]) => kit.beasts[b].fly)));
 });
 
 test('the squad fires on its own up its column, denser and harder the bigger it is', () => {
@@ -125,7 +135,7 @@ test('a card\'s number grows a step a hit, a red one shot past zero turns good; 
 });
 
 test('a stone wall shields what is behind it until shot down; one lifts the squad a tier', () => {
-  const lv = kit.levels.find((l) => beltOf(l).some((it) => it.gives === 'tier'));
+  const lv = ladder.find((l) => beltOf(l).some((it) => it.gives === 'tier'));
   const lines = [{ col: 'R', from: 40, every: 999, wall: { hp: 30, gives: 'tier' } }, { col: 'R', from: 46, every: 999, cards: [{ n: 10, cap: 60, step: 2, gold: true }] }];
   const g = newGame(kit, quiet(lv, lines), { seed: 't' });
   const [wall, gold] = g.belt;
@@ -177,7 +187,7 @@ const SLOPPY = { react: 0.7, judge: 1, wrong: 0.5, dodge: 0.3, look: 2.6 };
 const seeds = Array.from({ length: 40 }, (_, i) => `h${i}`);
 const wins = {};
 
-for (const lv of kit.levels) {
+for (const lv of ladder) {
   test(`${lv.id}: a sharp player wins every seed; never buffing, never shooting the tide, never moving all lose`, () => {
     for (const s of ['sim', 'a', 'b']) {
       const good = sim(kit, lv, BOTS.good, { seed: s });
@@ -201,7 +211,7 @@ for (const lv of kit.levels) {
 }
 
 test('the ladder climbs: a first-time human wins no more on a later level than the one before (two runs of slack), and fewer at the top', () => {
-  const w = kit.levels.map((l) => wins[l.id] ?? seeds.filter((s) => sim(kit, l, humanBot(s), { seed: s }).won).length);
+  const w = ladder.map((l) => wins[l.id] ?? seeds.filter((s) => sim(kit, l, humanBot(s), { seed: s }).won).length);
   for (let i = 1; i < w.length; i += 1) assert.ok(w[i] <= w[i - 1] + 2, `${w}`);
   assert.ok(w.at(-1) < w[0], `${w}`);
 });
@@ -285,7 +295,7 @@ test('结印 always strikes a beast, never a card or a wall (Hanli 10-21: 「接
 });
 
 test('结印 is never needed (every level is won without a cast) but makes ★★★ easier: faster, under par', () => {
-  for (const lv of kit.levels) {
+  for (const lv of ladder) {
     const seeds = ['a', 'b', 'c', 'd', 'e', 'f'];
     const bare = seeds.map((s) => sim(kit, lv, BOTS.good, { seed: s })), cast = seeds.map((s) => sim(kit, lv, BOTS.good, { seed: s, casts: true }));
     assert.ok(bare.every((r) => r.won && r.casts === 0), `${lv.id}: won without a cast`);
@@ -314,6 +324,93 @@ test('结印\'s dock is offered only where it can be: no move → null; else the
   assert.deepEqual(got.moves.map((m) => m.id), ['feijian', 'huodan'], 'the 游戏厅 (no marks): every move');
 });
 
+/* ── 守灶台 (2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」 · 「可以马小宝, 马三两个boss从中路冲下来,
+   带一堆家丁等」): 第一回's 收租, 小满's daydream on the floor — the 灶台 and its three bowls for the wall, two 大妖 at once. ── */
+
+const bosses = [story.boss].flat();
+
+test('守灶台 is data: 第一回\'s story level — the 灶台 for the wall (stars = the bowls kept), people not beasts, both words', () => {
+  assert.deepEqual([story.story, story.hui, story.kit], ['00-zaotai', 'h01', 'sadoushou']);
+  assert.ok(both(story.title) && story.lead.every(both) && story.lead.at(-1).big);
+  assert.ok(story.pieces?.n === 3 && both(story.pieces.name), 'three bowls');
+  assert.equal(story.par, null, 'no clock on the stars: the bowls kept are the stars');
+  for (const [hp, n] of [[90, 3], [61, 3], [60, 2], [31, 2], [30, 1], [1, 1]]) assert.equal(stars(story, hp, 999), n, `${hp} of 90: ${n} bowls`);
+  for (const L of ['zh', 'en']) for (const k of ['horde', 'wall', 'won', 'lost']) assert.ok(story.words[L][k], `${L} ${k}`);
+  assert.equal(story.face, false, 'no 银月 yet (第一回): no face in a bubble');
+  for (const [b, k] of Object.entries(kit.beasts)) if (k.person) assert.ok(!creatures.some((c) => c.id === b) && k.art === 'sadoushou', `${b}: the book's people, the kit's own art`);
+  for (const w of story.waves) for (const [b] of w.beasts) assert.ok(kit.beasts[b].person, b);
+  const belt = beltOf(story);
+  assert.ok(belt.filter((it) => it.kind === 'card').every((it) => it.icon), 'every card a picture');
+  for (const ln of story.belt.lines) for (const c of [ln.wall, ...(ln.cards ?? [])].filter(Boolean)) assert.ok(both(c.name) && c.icon, JSON.stringify(c));
+  const red = story.belt.lines.flatMap((ln) => ln.cards ?? []).filter((c) => c.n < 0);
+  assert.deepEqual(red.map((c) => c.name.zh), ['租', '父债子偿'], 'two red cards, few');
+  assert.ok(story.belt.lines.some((ln) => ln.col === 'L' && ln.wall?.gives === 'tier'), '戴九履一 lifts the squad a tier, on the left');
+  assert.ok(belt.some((it) => it.col === 'R' && it.gold && it.cap === 60), '家里的碗 behind 沈家的门, on the right');
+});
+
+test('守灶台: 马小宝 and 马三 come down the MIDDLE together, each with a crowd of 家丁, each charging its own way (a roll · a slam)', () => {
+  assert.deepEqual(bosses.map((b) => b.beast), ['maxiaobao', 'masan']);
+  assert.deepEqual(bosses.map((b) => b.charge.kind), ['roll', 'slam']);
+  for (const b of bosses) {
+    assert.ok(Math.abs(b.at) + b.half <= COLS.M[1] + 0.05, `${b.beast} walks down the middle`);
+    assert.ok(b.crowd.beasts.every(([x, n]) => kit.beasts[x].person && n >= 100), `${b.beast} brings a crowd`);
+    assert.ok(both(b.warnSay) && b.charge.warn >= 1.5, `${b.beast}: its warning shown long enough`);
+  }
+  const g = newGame(kit, { ...story, waves: [], belt: { ...story.belt, lines: [] } }, { seed: 'zt' });
+  g.squad = 260; // a squad grown as a player's would by then (the belt is off here)
+  let together = false, warns = [], won = null;
+  for (let t = 0; t < 200 && !won; t += 1 / 30) {
+    const c = charging(g);
+    aim(g, c ? colMid(c.col === 'L' ? 'R' : 'L') : colMid('M')); // off each charge's column, else at them
+    step(g, 1 / 30);
+    if (bossesUp(g).filter((b) => b.z < TOP).length === 2) together = true;
+    assert.ok(g.bosses.filter((b) => b.mode === 'warn' || b.mode === 'rush').length <= 1, 'one charge at a time');
+    for (const e of g.events) { if (e.t === 'charge_warn') warns.push(e.boss); if (e.t === 'end') won = e; }
+    g.events.length = 0;
+  }
+  assert.ok(together, 'both on the road at once');
+  assert.ok(warns.includes(0) && warns.includes(1), 'each charges');
+  assert.ok(won?.won && g.bosses.every((b) => b.hp <= 0), 'won only with both down');
+  // one down, the other still up: not won
+  const h = newGame(kit, { ...story, waves: [], belt: { ...story.belt, lines: [] } }, { seed: 'zt' });
+  for (let i = 0; i < 120; i += 1) { aim(h, colMid('L')); step(h, 1 / 30); }
+  h.bosses[0].hp = 0; step(h, 1 / 30);
+  assert.equal(h.phase, 'boss', 'one down is not the win');
+  assert.ok(h.events.some((e) => e.t === 'bossdown' && e.boss === 0));
+});
+
+test('守灶台: a 桂花糕 taken while 马小宝 walks stops him to eat it; 结印 strikes the nearer 大妖', () => {
+  const g = newGame(kit, { ...story, waves: [], belt: { ...story.belt, lines: [] } }, { seed: 'zt' });
+  for (let i = 0; i < 150; i += 1) { aim(g, colMid('L')); step(g, 1 / 30); }
+  const xb = g.bosses[0];
+  assert.equal(xb.mode, 'walk');
+  g.belt.push({ id: 999, kind: 'card', col: 'L', z: 0.05, n: 1, step: 1, cap: 10, gone: false, icon: 'icon-guihuagao', feeds: 'maxiaobao', stall: 2 });
+  g.events.length = 0;
+  step(g, 1 / 30);
+  assert.ok(g.events.some((e) => e.t === 'eat' && e.boss === 0) && xb.mode === 'eat', 'he stops to eat');
+  const z = xb.z;
+  for (let i = 0; i < 30; i += 1) step(g, 1 / 30);
+  assert.equal(xb.z, z, 'standing while he eats');
+  for (let i = 0; i < 45; i += 1) step(g, 1 / 30);
+  assert.notEqual(xb.mode, 'eat', 'then on again');
+  const near = g.bosses.reduce((a, b) => (b.z < a.z ? b : a));
+  assert.equal(beastFor(g, 'L'), near, '结印: the nearer of the two');
+});
+
+test('守灶台 is gentle (第一回): a first-time human wins ≥ 34/40, stars spread; a sloppy one no more; never needs a cast; the lazy lose', () => {
+  const human = seeds.map((s) => sim(kit, story, humanBot(s), { seed: s }));
+  const w = human.filter((r) => r.won).length;
+  assert.ok(w >= 34, `a first-timer wins ${w}/40`);
+  assert.ok(human.some((r) => r.won && r.stars < 3), 'stars spread');
+  assert.ok(human.every((r) => r.casts === 0));
+  const sloppy = seeds.map((s) => sim(kit, story, humanBot(s, SLOPPY), { seed: s })).filter((r) => r.won).length;
+  assert.ok(sloppy <= w, `sloppy ${sloppy} vs ${w}`);
+  for (const s of ['sim', 'a', 'b']) assert.ok(sim(kit, story, BOTS.good, { seed: s }).won, s);
+  for (const b of ['bad', 'greedy', 'idle']) assert.ok(!sim(kit, story, BOTS[b]).won, b);
+  const cast = seeds.slice(0, 10).map((s) => sim(kit, story, humanBot(s), { seed: s, casts: true }));
+  assert.ok(cast.filter((r) => r.won).length >= human.slice(0, 10).filter((r) => r.won).length, '结印 helps, never hurts');
+});
+
 test('the bundle is current, loads the one shared Phaser, and every picture and word it needs is there', () => {
   const src = JSON.parse(readFileSync(at('scripts/games/sadoushou/source.json'), 'utf8')).source;
   assert.equal(src, sourceHash(new URL('../tools/sadoushou/', import.meta.url).pathname), 'rebuild: cd tools/sadoushou && npm ci && npm run build');
@@ -324,15 +421,22 @@ test('the bundle is current, loads the one shared Phaser, and every picture and 
   for (const f of ['units.webp', 'units.json', 'tex-road.webp', 'tex-side.webp']) assert.ok(existsSync(at(`scripts/games/sadou/art/${f}`)), f);
   for (const f of ['wall.webp', 'xiaoman-cast.webp']) assert.ok(existsSync(at(`scripts/games/shouqiang/art/${f}`)), f);
   for (const f of ['yinyue.webp', 'yinyue.json']) assert.ok(existsSync(at(`scripts/games/shoulu/art/${f}`)), f);
-  for (const l of kit.levels) assert.ok(existsSync(at(`worlds/jiuding/art/backdrop/${l.sky ?? 'cloudy-day'}.webp`)), l.id);
+  for (const l of ladder) assert.ok(existsSync(at(`worlds/jiuding/art/backdrop/${l.sky ?? 'cloudy-day'}.webp`)), l.id);
+  // a level's own ground and pictures (守灶台: its 灶台, the hut floor and far wall, the cards' and walls' icons, the bowl breaking)
+  const own = (f) => existsSync(at(`scripts/games/sadoushou/art/${f}.webp`));
+  for (const l of kit.levels) {
+    for (const f of Object.values(l.art ?? {}).filter(Boolean)) assert.ok(own(f), `${l.id}: ${f}`);
+    for (const ln of l.belt.lines) for (const f of [ln.wall?.icon, ...(ln.cards ?? []).map((c) => c.icon)].filter(Boolean)) assert.ok(own(f), `${l.id}: ${f}`);
+    if (l.pieces) assert.ok(own(l.pieces.icon) && own('bowl-break'), `${l.id}: its pieces`);
+  }
   for (const [b, k] of Object.entries(kit.beasts)) {
     if (b.startsWith('_')) continue;
-    const dir = k.art === 'sadou' ? 'sadou' : 'shouqiang';
-    for (const f of [...k.frames, k.hit]) assert.ok(existsSync(at(`scripts/games/${dir}/art/${b}-${f}.webp`)), `${b}-${f}`);
+    const dir = { sadou: 'sadou', sadoushou: 'sadoushou' }[k.art] ?? 'shouqiang';
+    for (const f of new Set([...k.frames, k.hit, ...Object.values(k.pose ?? {})])) assert.ok(existsSync(at(`scripts/games/${dir}/art/${b}-${f}.webp`)), `${b}-${f}`);
   }
   const chars = readFileSync(at('scripts/games/sadoushou/font/chars.txt'), 'utf8');
   const play = ['play.js', 'hud.js'].map((f) => readFileSync(at(`tools/sadoushou/src/${f}`), 'utf8')).join('');
-  const words = JSON.stringify([kit.levels.map((l) => [l.title, l.lead, l.moments, l.tiers]), kit.beasts, meta]) + play;
+  const words = JSON.stringify([kit.levels.map((l) => [l.title, l.lead, l.moments, l.tiers, l.words, l.belt, l.boss, l.pieces]), kit.beasts, meta]) + play;
   for (const ch of words.match(/[　-鿿＀-￯]/g)) assert.ok(chars.includes(ch), `font lacks ${ch}`);
   assert.ok(TOP === 100 && COLS.M[0] < 0 && COLS.M[1] > 0);
 });

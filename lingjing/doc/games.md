@@ -69,6 +69,18 @@ when it is low 20/20 mostly ★2, nothing done loses at 52 s, ~104 s. Reading (r
 start 178 · 568 · 756 · **3,686** (00-masan → 黑松岭, unchanged) · 659 · 1,198 · 43 · 815 · 630 · **1,721** (00-yinyue's
 银月 piece → 00-deer, 认路 cut).
 
+**守灶台 in, 拽爹 cut (10-22**, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的. 塔防好几种呢, 可以用没出现过的」 ·
+「可以马小宝, 马三两个boss从中路冲下来, 带一堆家丁等」; earlier 「拽爹上崖 有点奇怪」). 第一回 stays at six: 接雨 · 守白菜 · 忍字 ·
+**守灶台** `masan-zaotai` · 守火 · 喂饼 — the 回's third 塔防, on the kit not yet in the story (守山门, its first story level
+`zaotai`). 00-masan's two ways on (照他的话说回去 · 攥紧拳头) end at 「「啪嚓」一声，碗在地上碎成了七八片。」; the passage goes
+on, word for word, in a new scene **00-zaotai**: 「小满仰面躺在地下，望着屋顶那个窟窿，一时竟忘了起身。」, the board (his
+daydream on the floor), then the book's next line wakes him — the overnight raindrop on his 眉心 — and the rest of the
+night by the way he took (its two exits fork on the other way's mark, `needs.no_mark`: one shows, the win takes it; the
+condensed cut takes the raindrop sentence from the book). Imagination, not a win over the 马家: the book says
+「现在打不过」, the bowl is still broken after it, the lead card says it is a daydream. **拽爹 cut**: 00-fall reads whole to
+把爹拽回山壁 (it was never split: the board stood after its last line), `fall-storm` marked `cut`, fallrope in the 游戏厅
+under 旧版 (`replaced: "cut"`, `why`). The level: § 撒豆成兵 · 守山门 › 守灶台.
+
 ## The throws — levels of 砸寨 (10-20)
 
 Hanli 10-20: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」. Every throw in the story is a level of 砸寨, the one throw
@@ -971,3 +983,38 @@ is unchanged.
   in code. No new painting.
 - **Speed** (Playwright, GPU headless Chromium on the Mac, `?fps=1`): 1440×900 avg 60 fps (min 56), 390×844 at 3× avg
   59 (min 50), with ~380 beasts + ~260 豆兵 drawn at the peak. Not measured on a real phone.
+- **结印's share of a 大妖 (10-22)**: a cast takes at most `bossCap` (0.45) of a 大妖's full hp — one 火弹 used to take
+  the 1,440 大妖 outright with a ~500 squad — and a 大妖 is a target only once it is on the road (z < TOP). Casts still
+  finish 7–17 s sooner; ★★★ still easier.
+- **Several 大妖 (10-22)**: a level's `boss` may be a list — each at its own place across the middle (`at`), on its own
+  clock (`charge.first`, `every`), its own way (`charge.kind`: `roll` down the column, `slam` stamped where it stands,
+  the shock down the squad's column), one charge at a time, each with a crowd (`crowd`); won with every one down and
+  the road clear; 结印 strikes the nearer. A card that `feeds` one stops it `stall` s. A one-boss level reads as before
+  (the ladder's sims identical).
+- **守灶台 · 三只碗 — the story level (10-22**, 第一回's 收租, 00-zaotai, task `masan-zaotai`; the cards Hanli's sketch
+  「左路是桂花糕+1, 右路是家里的碗 +10, 比如, 你帮忙设计」 — provisional, all in level data): 小满 on the floor after the bowl
+  breaks, a daydream. The 灶台 with the three bowls left is the wall (`pieces`: ★ = bowls kept, no par; a bowl shatters
+  as each third goes); the 沈家 hut floor for the road, its far end — the doorway, the door gone — for the sky; his
+  beans for the squad (no 银月 yet: no bubble). Middle: 马家家丁 and 小宝's 跟班 (two waves), then **马小宝** (a 糯米团子
+  roll down the squad's column, a third of it knocked aside) and **马三** (the 短棍 stamped: the squad's column, warned
+  red) together, each with a crowd of 家丁. Cards:
+
+  | lane | card | zh · en | n |
+  |---|---|---|---|
+  | left | 桂花糕 | 桂花糕 · Osmanthus cake | +1 (taken while 马小宝 walks, he stops 2 s to eat it) |
+  | left | 野菜粥 | 野菜粥 · Wild-greens gruel | +2 |
+  | left | 栗子 | 栗子 · Chestnuts | +3 |
+  | left | tier wall | 戴九履一 · Nine on the head, one at the feet | hp 35 → 豆兵 to 纸甲兵 |
+  | left | red | 父债子偿 · The father's debt, the son's to pay | −5 (once) |
+  | right | 野菜粥 · 栗子 | as left | +2 · +1 |
+  | right | red | 租 · Rent | −3 |
+  | right | wall | 沈家的门 · The Shens' door | hp 36 |
+  | right | gold, behind the door | 家里的碗 · The family bowl | +10, +2 a hit, pays at +60 |
+
+  The two 大妖: 马小宝 hp 650 at −0.17, 马三 hp 800 at +0.17, one charge at a time. Bots (40 seeded first-time humans,
+  the ladder's model): wins 37/40 (★3 31 · ★2 3 · ★1 3), sloppy 23, a sharp hand 5/5 ★★★; never buffing, only buffing
+  and never moving lose; casting never needed (with casts 40/40). ~64 s; both 大妖 on the road together in every run.
+  Game lines (not the book, for Hanli): the lead 「小满躺在地下，望着屋顶那个窟窿：要是我会撒豆成兵……」 ·
+  「灶台上还剩三只碗——这回，一只也不给他们碰！」; banners 碗还在！ · 碗没守住…… · 门开了！ · 马小宝要滚过来了！快换列！ ·
+  马三要跺棍子了！快换列！ · 马小宝停下来吃桂花糕！; the task's 「三只碗，还在灶台上。——想想而已。」; 00-zaotai's setup,
+  recap and panel.

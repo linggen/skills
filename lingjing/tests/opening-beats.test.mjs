@@ -98,6 +98,8 @@ const BEATS = [
   // The three 割绳子 levels, back 2026-10-20 (Hanli: 「可以, 放宽, 把那三关加进去」): both ways on wait for each, the grade only a mark.
   ['00-masan', 'masan-taunt', 'endure', [undefined], {}],
   ['00-masan', 'masan-taunt', 'strike', [undefined], {}],
+  // 守灶台 (守山门, 2026-10-22): the daydream on the floor after the bowl breaks; the way 00-masan took is the one shown
+  ['00-zaotai', 'masan-zaotai', 'endure', [undefined], {}],
   ['00-rent', 'rent-scale', 'dumb', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
   ['00-rent', 'rent-scale', 'truth', ['exact', 'over'], { exact: 'rent-exact', over: 'rent-over' }],
 ];
@@ -109,11 +111,12 @@ const BEATS = [
    reading cap): 气走经脉 · 挑水上坡 on the cut 练功's task id — told again 2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」),
    the passage whole: the scene has no board. */
 // 认路 cut again 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」): 00-yinyue reads whole to 带她出谷.
-const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-sleep', 'xisui-hold', 'bath'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-yinyue', 'yinyue-way', 'follow']];
-const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-fall': ['fall-storm'], '00-cave': ['cave-fire', 'bread-share'], '00-deer': ['deer-wind'], '00-rent': ['rent-scale'], '00-notice': ['notice-shuitong'], '00-luoshu': ['gate-luoshu'] };
+// 拽爹上崖 cut 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」): 00-fall reads whole to 把爹拽回山壁; 守灶台 in 00-zaotai keeps 第一回 at six.
+const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-sleep', 'xisui-hold', 'bath'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-yinyue', 'yinyue-way', 'follow'], ['00-fall', 'fall-storm', 'check']];
+const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-zaotai': ['masan-zaotai'], '00-cave': ['cave-fire', 'bread-share'], '00-deer': ['deer-wind'], '00-rent': ['rent-scale'], '00-notice': ['notice-shuitong'], '00-luoshu': ['gate-luoshu'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
 
-test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 守白菜 · 忍字 · 拽 · 喂饼 · 守火 · 射鹿 · 算账 · 水桶 · 洛书门', () => {
+test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 守白菜 · 忍字 · 守灶台 · 喂饼 · 守火 · 射鹿 · 算账 · 水桶 · 洛书门', () => {
   const ch = content.chapters['00-prologue'];
   const boards = {};
   // The 古 line's scenes (the 今 interlude spliced in is its own line, not counted here).
@@ -146,7 +149,7 @@ test('a cut board has left its scene — not shown, not offered, no way on waits
 });
 
 test('each scene stands its board on the stage, offers it, and its way on waits for it', () => {
-  for (const [sid, tid, exit] of [...BEATS, ['00-cave', 'bread-share', 'share'], ['00-fall', 'fall-storm', 'check'], ['00-notice', 'notice-shuitong', 'go']]) {
+  for (const [sid, tid, exit] of [...BEATS, ['00-cave', 'bread-share', 'share'], ['00-notice', 'notice-shuitong', 'go']]) {
     const sc = scenes[sid];
     assert.ok(sc.show.some(c => c.card === 'board' && c.id === tid), sid);
     assert.ok(sc.offers.tasks.includes(tid), sid);
@@ -182,7 +185,7 @@ test('well or badly, each scene goes on — the grade only writes its mark', () 
 /* The three 割绳子 levels back before 入门 (2026-10-20): no pay — no 修为, no 灵石, nothing held back for later — and
    算账 plays where 马三 calls 「称肉！」, the rest of the passage (「秤称完了…」) read after it. */
 test('守白菜 · 忍字 · 守火 · 算账 pay nothing before 入门: the grade writes its mark, nothing else moves', () => {
-  for (const [sid, tid, grade] of [['00-baicai', 'baicai-hens'], ['00-masan', 'masan-taunt'], ['00-cave', 'cave-fire'], ['00-rent', 'rent-scale', 'exact']]) {
+  for (const [sid, tid, grade] of [['00-baicai', 'baicai-hens'], ['00-masan', 'masan-taunt'], ['00-zaotai', 'masan-zaotai'], ['00-cave', 'cave-fire'], ['00-rent', 'rent-scale', 'exact']]) {
     const s = { ...atScene(sid), stamina: 100 };
     const after = won(s, tid, grade);
     for (const k of ['progress', 'wealth', 'tier', 'step']) assert.deepEqual(after[k], s[k], `${tid}: ${k} unchanged`);
@@ -238,7 +241,7 @@ test('射鹿 keeps its two ways: the board won takes 往左偏半寸; 照直射 
 });
 
 test('a save already standing in a scene that has since been given a board is offered it on load — never shut out', () => {
-  for (const [sid, tid] of [['00-cave', 'bread-share'], ['00-masan', 'masan-taunt'], ['00-cave', 'cave-fire'], ['00-baicai', 'baicai-hens'], ['00-rent', 'rent-scale']]) {
+  for (const [sid, tid] of [['00-cave', 'bread-share'], ['00-masan', 'masan-taunt'], ['00-zaotai', 'masan-zaotai'], ['00-cave', 'cave-fire'], ['00-baicai', 'baicai-hens'], ['00-rent', 'rent-scale']]) {
     const s = atScene(sid);
     const old = { ...s, tasks: Object.fromEntries(Object.entries(s.tasks).filter(([id]) => id !== tid)) };
     assert.equal(fitWorld(old, content).tasks[tid].status, 'offered', sid);
@@ -283,12 +286,13 @@ test('挑水上坡 told again: 00-halfyear reads whole to 开春; a save holding
 test('第一回 plays six boards on four kits, two of them 塔防: 守白菜 at the cabbage, 守火 at the fire before 喂饼 — each passage split word for word', () => {
   const h01 = Object.values(scenes).filter(sc => sc.hui === 'h01');
   const boards = h01.flatMap(sc => (sc.show ?? []).filter(c => c.card === 'board').map(c => c.id)).sort();
-  assert.deepEqual(boards, ['baicai-hens', 'bread-share', 'cave-fire', 'fall-storm', 'masan-taunt', 'rain-basins']);
+  assert.deepEqual(boards, ['baicai-hens', 'bread-share', 'cave-fire', 'masan-taunt', 'masan-zaotai', 'rain-basins']);
   const kit = (id) => content.tasks.tasks.find(x => x.id === id).game;
-  assert.deepEqual(boards.map(kit), ['shouqiang', 'bread', 'shoulu', 'fallrope', 'qimai', 'rain']);
+  assert.deepEqual(boards.map(kit), ['shouqiang', 'bread', 'shoulu', 'qimai', 'sadoushou', 'rain']);
+  assert.ok(content.tasks.tasks.find(x => x.id === 'fall-storm').cut, '拽爹 cut (10-22): a save holding it lets it go');
   assert.equal(content.games.games.find(g => g.id === 'qimai' && g.task === 'masan-taunt')?.data.level, 'renzi', '忍字: the breath held down');
   assert.ok(content.tasks.tasks.find(x => x.id === 'yinyue-way').cut, '认路 cut: a save holding it lets it go');
-  const td = { 'baicai-hens': ['shouqiang', 'baicai'], 'cave-fire': ['shoulu', 'shouhuo'] };
+  const td = { 'baicai-hens': ['shouqiang', 'baicai'], 'masan-zaotai': ['sadoushou', 'zaotai'], 'cave-fire': ['shoulu', 'shouhuo'] };
   for (const [id, [game, lv]] of Object.entries(td)) {
     const t = content.tasks.tasks.find(x => x.id === id);
     assert.deepEqual([t.game, t.deal.lv, t.kind], [game, lv, 'board'], id);
@@ -311,6 +315,39 @@ test('第一回 plays six boards on four kits, two of them 塔防: 守白菜 at 
   assert.ok((s.tell_owed ?? []).includes('after/00-cave'), 'the bread passage told right after 守火');
   s = won(s, 'bread-share', 'half');
   assert.equal(resolve(s, content, ctx(), { exit: 'share' }).state.scene, '00-yinyue');
+});
+
+/* 守灶台 (2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」): 00-masan's ways on end at the bowl
+   broken; 00-zaotai reads 「……一时竟忘了起身。」, plays the board (his daydream on the floor), and the raindrop wakes him —
+   the rest of the night by the way he took (its mark), one way shown. 拽爹 cut the same day: 00-fall whole. */
+test('守灶台: the passage split word for word after the bowl breaks, the daydream, then the raindrop — either way taken at 00-masan', () => {
+  const ma = scenes['00-masan'], zt = scenes['00-zaotai'], fall = scenes['00-fall'];
+  for (const e of ma.exits) {
+    assert.equal(e.next, '00-zaotai', e.id);
+    for (const k of ['story', 'story_full']) if (e[k]) assert.match(e[k].zh, /「啪嚓」一声，碗在地上碎成了七八片。$/, `${e.id} ${k}`);
+  }
+  assert.equal(zt.story.zh, '小满仰面躺在地下，望着屋顶那个窟窿，一时竟忘了起身。');
+  for (const e of zt.exits) {
+    assert.match(e.story.zh, /^恰好草顶里存着的一滴隔夜雨从窟窿里漏将下来，不偏不倚，正落在他眉心，凉飕飕的。/, e.id);
+    assert.equal(e.next, '00-dawn');
+  }
+  assert.ok(!fall.show && !fall.offers && !fall.exits.some(e => e.needs?.task), '00-fall reads whole');
+  for (const [exit, mark, other] of [['endure', 'kept-count', 'strike'], ['strike', 'clenched', 'endure']]) {
+    let s = atScene('00-masan');
+    s = won(s, 'masan-taunt');
+    s = resolve(s, content, ctx(), { exit }).state;
+    assert.equal(s.scene, '00-zaotai');
+    assert.ok(s.marks.includes(mark));
+    assert.equal(s.tasks['masan-zaotai']?.status, 'offered');
+    const l = look(s, content, ctx());
+    assert.deepEqual(l.scene.buttons.map(b => b.id), [exit], 'one way shown: the one he took');
+    assert.deepEqual(l.scene.panel.taps.map(t => [t.id, t.quiet]), [[exit, 'label']], 'a quiet link, its own words (一滴隔夜雨)');
+    assert.equal(resolve(s, content, ctx(), { exit }).result.refused, 'needs', 'not before the board');
+    s = won(s, 'masan-zaotai');
+    assert.equal(resolve(s, content, ctx(), { exit: other }).result.ok, false, `not ${other}`);
+    const on = resolve(s, content, ctx(), { exit });
+    assert.equal(on.state.scene, '00-dawn', JSON.stringify(on.result));
+  }
 });
 
 /* ── the lint, the rhythm, the map ── */
@@ -336,7 +373,7 @@ test('the rhythm: the main line read between two beats, a board resetting it whe
   assert.ok(parts[1].chars >= storyChars(ch.scenes['00-shiao'].story_after), 'the rest of a split passage is read after its board');
   // 忍字 · 认路 · 算账 back 10-20; 今一's beat the same day (the reading cap: 00-rent → j01-retest read 11,661);
   // 00-halfyear's 挑水上坡 told again 2026-10-20 (the 调息 cut).
-  for (const at of ['00-baicai', '00-masan', '00-heisong/carve', '00-cave', '00-deer', '00-rent', '00-notice', 'j01-track']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
+  for (const at of ['00-baicai', '00-masan', '00-zaotai', '00-heisong/carve', '00-cave', '00-deer', '00-rent', '00-notice', 'j01-track']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
   const warn = warnings(content, { chapters: ['00-prologue'] });
   assert.ok(warn.every(w => w.startsWith('00-prologue: ') && w.includes('(cap 1500)')));
   console.log(`rhythm warnings (00-prologue, cap ${RHYTHM_CAP}):\n${warn.join('\n')}`);

@@ -13,6 +13,7 @@
     },
     {
       "_rope": "2026-10-19 (Hanli: 「拽爹的也不好玩」): plays fallrope, a 割绳子 level on the kit (games.json), was the ink pull-in-the-lulls board `storm` (kept in the 游戏厅). The grades stay clean · steady · rough, now from the 灵光 (3 · 1–2 · 0).",
+      "_cut": "Off 00-fall 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」; the 收租 塔防 takes its place, 第一回 stays at six): the passage reads whole; `cut` lets a save holding it offered let it go on load (state.mjs fitWorld). Row and module stay in the 游戏厅.", "cut": "2026-10-22",
       "id": "fall-storm", "kind": "board", "game": "fallrope", "stars": 3, "period": "once",
       "title": { "zh": "暴雨 · 拽爹上崖", "en": "The storm · Haul Father back" },
       "how": { "zh": "划断绳，让爹荡回崖边的石台。背上的包太沉——那根背带也划得断。", "en": "Cut the ropes so Father swings back onto the ledge. His pack drags him — its strap can be cut too." },
@@ -95,6 +96,14 @@
       "how": {"zh": "桂花糕举到了鼻子底下。按住是吸，松开是吐——那口气往上冲，就松开，把它压回肚子里。", "en": "The osmanthus cake is under your nose. Hold to breathe in, let go to breathe out: when the breath surges up, let go and press it back down to your belly."},
       "grant": { "table": "task", "progress": 5 },
       "done_line": {"zh": "那声狗叫，你没学。", "en": "You never did bark."}
+    },
+    {
+      "_td": "2026-10-22 (Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的. 塔防好几种呢, 可以用没出现过的」 · 「可以马小宝, 马三两个boss从中路冲下来, 带一堆家丁等」; 拽爹 cut the same day, 第一回 stays at six): 00-zaotai, 小满 on the floor after the bowl breaks — 「一时竟忘了起身」 — and the board his daydream there. 守山门's first story level (levels/sadoushou.json `zaotai`, `story: \"00-zaotai\"`, off the 游戏厅's ladder): the 灶台 with the three bowls left is the wall, stars by the bowls kept; 马家家丁 and 小宝's 跟班 down the middle, then 马小宝 and 马三 together, each with a crowd. Imagination, not a win over the 马家 (the book: 「现在打不过」); the bowl is still broken after it. Nothing paid before 入门.",
+      "id": "masan-zaotai", "kind": "board", "game": "sadoushou", "deal": { "lv": "zaotai" }, "period": "once", "stars": 3,
+      "title": { "zh": "守灶台 · 三只碗", "en": "Guarding the stove · Three bowls" },
+      "how": { "zh": "左右挪，豆子自己会撒：打左边的吃的，人越撒越多；打碎右边那扇门，后面是家里的碗。中间的家丁别让他们碰着灶台；马小宝滚过来、马三跺棍子，红的那一列，躲开。", "en": "Move left and right; the beans fly on their own. Shoot the food on the left and the beans multiply; break the door on the right for the family bowl behind it. Keep the servants in the middle off the stove; when Ma Xiaobao rolls or Ma San stamps his club, get off the column that lights red." },
+      "grant": { "table": "task", "progress": 5 },
+      "done_line": { "zh": "三只碗，还在灶台上。——想想而已。", "en": "Three bowls, still on the stove. Only in his head." }
     },
     {
       "_cut": "Off its scene since 2026-10-16 (before 入门: five boards); its game deleted 2026-10-19 (Hanli: 「没用在游戏中的, 都删了吧」). The id stays, `cut`, so a save holding it offered lets it go on load (state.mjs fitWorld).", "cut": "2026-10-19",

@@ -143,7 +143,7 @@ test('忍字 (in the 游戏厅 since 2026-10-21): the cake goes back into 马小
   assert.match(h, /games\/xiaobao\.webp/);
   assert.doesNotMatch(h, /dog\.webp/);
   assert.doesNotMatch(mod.meta.how.zh, /狗嘴|喂狗/);
-  for (const ex of content.chapters['00-prologue'].scenes['00-masan'].exits) assert.match(ex.story_full?.zh ?? ex.story.zh, /桂花糕一口塞进嘴里/, `${ex.id}: the book has him eat it`);
+  for (const ex of content.chapters['00-prologue'].scenes['00-zaotai'].exits) assert.match(ex.story_full?.zh ?? ex.story.zh, /桂花糕一口塞进嘴里/, `${ex.id}: the book has him eat it`);
 });
 
 /* 喂饭桶 · 一根牛骨头 (wm-diyilu, 2026-10-21, Hanli: 「agree」 — 古四's 9,360 字 after 药园巡夜 had no play): the 饭桶's first

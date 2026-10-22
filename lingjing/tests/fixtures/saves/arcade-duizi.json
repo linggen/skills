@@ -94,6 +94,7 @@
    "00-shiao",
    "00-baicai",
    "00-masan",
+   "00-zaotai",
    "00-dawn",
    "00-kitchen",
    "00-chushan",
@@ -179,7 +180,7 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
-   "fall-storm": {
+   "masan-zaotai": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -355,6 +356,8 @@
    "after/00-baicai",
    "scene/00-masan",
    "00-masan/endure",
+   "scene/00-zaotai",
+   "00-zaotai/endure",
    "scene/00-dawn",
    "00-dawn/egg",
    "scene/00-kitchen",

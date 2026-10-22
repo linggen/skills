@@ -35,13 +35,15 @@ const windowOf = (head, tail, to = 3000, step = 50) => {
   return won;
 };
 
-test('fall-storm plays fallrope: the task keeps its id, title and line; grades clean · steady · rough; the old board deleted', () => {
+test('fall-storm plays fallrope: the task keeps its id, title and line, cut from the story (10-22) to the 游戏厅\'s 旧版; the old board deleted', () => {
   const t = content.tasks.tasks.find((x) => x.id === 'fall-storm');
   assert.equal(t.game, 'fallrope');
   assert.equal(t.stars, 3);
   assert.equal(t.done_line.zh, '爹扒住了崖壁。');
   assert.equal(row.task, 'fall-storm');
-  assert.equal(row.scene, '00-fall');
+  // cut from 00-fall 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」): the level stays in the 游戏厅, under 旧版
+  assert.deepEqual([row.scene, row.group, row.replaced, t.cut], [undefined, 'old', 'cut', '2026-10-22']);
+  assert.ok(row.why.zh && row.why.en);
   assert.equal(row.mechanic, '割绳子');
   const old = content.games.games.find((g) => g.id === 'storm');
   assert.equal(old, undefined, 'the old 拽 board deleted 2026-10-19 (「没用在游戏中的, 都删了吧」)');

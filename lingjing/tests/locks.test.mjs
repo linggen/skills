@@ -199,7 +199,7 @@ test('the command line on a copy of his save: Look shows none of it, Divine refu
   assert.equal(cli('quest', '--action=kaifu').refused, 'not-yet');
   assert.equal(cli('resolve', '--exit=endure').ok, true);
   const saved = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
-  assert.deepEqual([saved.scene, saved.progress, saved.wealth], ['00-dawn', 0, 0]);
+  assert.deepEqual([saved.scene, saved.progress, saved.wealth], ['00-zaotai', 0, 0], 'on the floor after the bowl breaks (守灶台, 2026-10-22)');
   assert.deepEqual(saved.bag, { 'moon-bell': 1 });
   fs.rmSync(data, { recursive: true, force: true });
 });

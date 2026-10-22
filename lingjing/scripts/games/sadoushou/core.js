@@ -240,7 +240,7 @@ function startWaves(g) {
     live.n0 = units.reduce((s, u) => s + u.n, 0);
     live.depth = waveDepth(live, g.level);
     g.live.push(live);
-    g.events.push({ t: 'wave', i: w.i, beasts: live.n0 });
+    g.events.push({ t: 'wave', i: w.i, beasts: live.n0, ...(w.crowd != null ? { crowd: w.crowd } : {}) });
   }
 }
 

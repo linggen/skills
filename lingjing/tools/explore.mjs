@@ -43,6 +43,7 @@ export function readsOf(content, chapters = JUAN_ONE) {
   for (const ch of chapters) for (const sc of Object.values(content.chapters[ch]?.scenes ?? {})) for (const e of sc.exits ?? []) {
     const n = e.needs ?? {};
     if (n.mark) marks.add(n.mark);
+    if (n.no_mark) marks.add(n.no_mark); // a fork's other side (守灶台's raindrop by the way 00-masan went): a save with it is another save
     if (e.once && e.mark) marks.add(e.mark);
     if (e.snub && e.mark) marks.add(e.mark);
     if (n.grade) grades.add(n.task);

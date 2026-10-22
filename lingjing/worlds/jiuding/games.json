@@ -96,10 +96,11 @@
   },
   {
    "id": "fallrope",
-   "group": "h01",
-   "scene": "00-fall",
-   "hui": "第一回",
+   "group": "old",
    "task": "fall-storm",
+   "replaced": "cut", "cut": "2026-10-22",
+   "why": {"zh": "第一回换上收租那一关：拽爹撤下，书里整段讲完", "en": "Chapter 1 takes the rent-night board instead: the passage tells the haul whole"},
+   "_cut": "Off 00-fall 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」, and the 收租 塔防 in its place — 第一回 stays at six); this level stays in the 游戏厅, under 旧版.",
    "mechanic": "割绳子",
    "stars": 3,
    "_levels": "拽爹上崖 on the kit (2026-10-19, Hanli: 「拽爹的也不好玩」; games.md § 割绳子 slots: 爹's rope, cut his pack free so he swings to the ledge). Written by hand and proved by games/bots/fallrope.js (plans, starPlans, the timing windows in tests/fallrope.test.mjs): 爹 hangs over the drop on two ropes (0 the pine root out over the drop, 1 the root above the slope), his pack (坠) on its strap under him. With the pack on, the swing in snags on the rock spur; strap first, then rope 0, and cut rope 1 as he comes to the end of his swing toward the cliff — he lands on the ledge (`reach` from `mouth`). The storm's gust swings him higher: the third 灵光 is only up there. `air` lets the swing carry (and keeps it from being quickened). Stone `kind`s are for the picture: ledge · wall (the cliff face) · spur.",
@@ -865,6 +866,18 @@
    "name": {"zh": "守白菜", "en": "Guarding the cabbage"},
    "data": {"lv": "baicai"},
    "_about": "守墙关's 第一回 story level (2026-10-21, Hanli: 第一回 adds two 塔防 boards): 00-baicai — 阿禾's cabbage, the 芦花鸡 through the 篱笆, her 竹竿, 小满 beside her. The level is levels/shouqiang.json's `baicai`. This row only opens it in the 游戏厅."
+  },
+  {
+   "id": "sadoushou",
+   "group": "h01",
+   "mechanic": "塔防",
+   "scene": "00-zaotai",
+   "hui": "第一回",
+   "task": "masan-zaotai",
+   "stars": 3,
+   "name": {"zh": "守灶台 · 三只碗", "en": "Guarding the stove · Three bowls"},
+   "data": {"lv": "zaotai"},
+   "_about": "守山门's 第一回 story level (2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」 · 「可以马小宝, 马三两个boss从中路冲下来, 带一堆家丁等」): 00-zaotai — 小满 on the floor after the bowl breaks, his daydream: the 灶台 with the three bowls left, the 马家家丁 and 小宝's 跟班, then 马小宝 and 马三 together down the middle. The level is levels/sadoushou.json's `zaotai`. This row only opens it in the 游戏厅."
   },
   {
    "id": "jieyin",

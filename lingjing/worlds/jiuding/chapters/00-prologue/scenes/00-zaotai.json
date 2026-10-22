@@ -1,0 +1,111 @@
+{
+ "version": 1,
+ "id": "00-zaotai",
+ "chapter": "00-prologue",
+ "hui": "h01",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 你家 · 傍晚",
+  "en": "Shi'ao village · your home · dusk"
+ },
+ "weather": "cloudy",
+ "_weather": "the same dusk as 00-masan: dark cloud and wind, no rain falls (the drop on his 眉心 is last night's, kept in the thatch)",
+ "setup": {
+  "zh": "碗碎了。你仰面躺在地下，望着屋顶那个窟窿，一时忘了起身；灶台上，还剩三只碗。",
+  "en": "The bowl is broken. You lie on your back on the floor, looking up at the hole in the roof, forgetting to get up; on the stove, three bowls are left."
+ },
+ "recap": {
+  "zh": "你躺在地下，想了一场：马家的人一拨一拨冲进门来，你守着灶台上剩下的三只碗。——想想而已，现在打不过。",
+  "en": "Lying on the floor you dreamed it through: the Ma men pouring in at the door, wave on wave, and you guarding the three bowls left on the stove. Only a dream — you can't beat them now."
+ },
+ "cast": [],
+ "people": [
+  "maxiaobao",
+  "masan"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "碗碎了，七八片。",
+    "屋顶那个窟窿。",
+    "灶台上，还剩三只碗。"
+   ],
+   "en": [
+    "The bowl in seven or eight pieces.",
+    "The hole in the roof.",
+    "On the stove, three bowls left."
+   ]
+  }
+ },
+ "story": {
+  "zh": "小满仰面躺在地下，望着屋顶那个窟窿，一时竟忘了起身。",
+  "en": "Xiaoman lay on his back on the floor, looking up at the hole in the roof, and for a while he forgot to get up."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "masan-zaotai"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "masan-zaotai"
+  ]
+ },
+ "lines": [],
+ "buttons": [
+  "endure",
+  "strike"
+ ],
+ "exits": [
+  {
+   "id": "endure",
+   "label": {
+    "zh": "一滴隔夜雨",
+    "en": "A drop of last night's rain"
+   },
+   "means": "wakes from the daydream when last night's raindrop lands on his brow; the rest of the night, having said the taunt back (00-masan endure)",
+   "beat": [],
+   "next": "00-dawn",
+   "needs": {
+    "task": "masan-zaotai",
+    "no_mark": "clenched"
+   },
+   "refuse": {
+    "zh": "三只碗还在灶台上——先把门口那伙人挡回去。",
+    "en": "Three bowls are still on the stove — hold off that crowd at the door first."
+   },
+   "story": {
+    "zh": "恰好草顶里存着的一滴隔夜雨从窟窿里漏将下来，不偏不倚，正落在他眉心，凉飕飕的。他对着屋顶叹了口气，说道：「那是我家四只碗里，唯一一只没缺口的。」\n\n他爹在旁搓着手，道：「他娘……碗碎了，可以再买……」他娘道：「拿什么买？」他爹道：「……拿……拿我的膝盖？」他娘道：「你的膝盖，值几个钱？」他爹认认真真地想了一想，道：「阴天的时候，挺准的。」他娘没有笑。\n\n那七八片，他娘拿一块旧布包了，没有扔，收进了炕头的木箱里。那天夜里，小满对着屋顶的窟窿，很小很小声地说了一句：「有一天，我要让我娘，一辈子不用蹲在地上捡东西。」\n\n隔着一道布帘，爹娘在低声说话。他爹道：「……立冬是哪天？」他娘道：「大后天。」停了一停，又道：「还剩三天。」他爹道：「前山空了。只剩黑松岭。」他娘道：「你爹，就是在黑松岭没的。」他爹道：「我知道。」\n\n小满躺在炕上，一笔一笔地算账——这是他娘教的。他一面算，一面在嘴里默念娘教的那几句口诀：「戴九履一，左三右七……」所以今天他没还手，只回了一句嘴。回嘴不算还手，这是他给自己定的规矩。\n\n马三，马小宝，马家老爷，还有马家老爷那个做书吏的远房表侄，他在心里挨个儿又骂了一遍：**你爷爷的。**骂完了，又对自己说了五个字：**现在打不过。**说完一遍，又单把末了两个字念了一遍：**现在。**\n\n到了半夜，他爹摸黑出去了。跟着便是「嚓、嚓、嚓」，一声一声，又慢又匀，是铁在石头上磨。前山已经空了，三天里要打着一头鹿，他爹磨的，是进深山的箭。",
+    "en": "Just then a drop of last night's rain, saved up in the thatch, leaked through the hole and landed right in the middle of his forehead, cold. He sighed at the roof and said, \"That was the only one of our four bowls without a chip in it.\"\n\nHis father stood by, rubbing his hands. \"Wife… a broken bowl, we can buy another…\" His mother said, \"Buy it with what?\" His father said, \"…With… with my knee?\" His mother said, \"And what's your knee worth?\" His father thought it over very seriously and said, \"On cloudy days it's pretty accurate.\" His mother didn't laugh.\n\nHis mother wrapped the seven or eight pieces in an old cloth, didn't throw it away, and put it in the wooden chest at the head of the bed. That night Xiaoman, facing the hole in the roof, said very, very quietly, \"One day I'm going to make it so my mother never has to crouch on the floor picking things up again.\"\n\nThrough a cloth curtain, his father and mother were talking in low voices. His father said, \"…When's the first day of winter?\" His mother said, \"Three days from now.\" A pause, then: \"Three days left.\" His father said, \"The near hills are empty. There's only Black Pine Ridge.\" His mother said, \"Your father died on Black Pine Ridge.\" His father said, \"I know.\"\n\nXiaoman lay on the bed doing his sums, item by item. His mother had taught him that. While he did them he murmured the verse she'd taught him: \"Nine on the head, one at the feet, three on the left, seven on the right…\" So today he hadn't hit back. He'd only talked back. Talking back isn't hitting back — that was a rule he'd made for himself.\n\nMa San, Ma Xiaobao, old Master Ma, and old Master Ma's distant nephew the clerk — he swore at each of them once more in his heart: **Your grandpa's—** When he'd finished swearing, he said four more words to himself: **Can't beat them now.** And when he'd said it once, he said the last word again on its own: **Now.**\n\nIn the middle of the night his father went out in the dark. Then came a *shk, shk, shk*, one stroke after another, slow and even: iron on stone. The near hills were empty, and there were three days to bring down a deer. His father was sharpening arrows for the deep mountains."
+   },
+   "story_full": {
+    "zh": "恰好草顶里存着的一滴隔夜雨从窟窿里漏将下来，不偏不倚，正落在他眉心，凉飕飕的。他对着屋顶叹了口气，说道：「那是我家四只碗里，唯一一只没缺口的。」\n\n马三一挥手，带着马小宝走了。临出门时，马小宝回过头来，冲小满挤了挤眼睛，当着他的面，把那块桂花糕一口塞进嘴里，腮帮子鼓得像两个包子。沈家的门，还躺在阿禾家的菜地里。\n\n小满他娘蹲下身来，一片一片地捡碗的碎片。他爹在旁搓着手，道：「他娘……碗碎了，可以再买……」他娘道：「拿什么买？」他爹道：「……拿……拿我的膝盖？」他娘道：「你的膝盖，值几个钱？」\n\n他爹认认真真地想了一想，道：「阴天的时候，挺准的。谁家要晒被子，都该先来问问它。」\n\n他娘没有笑。她就那么蹲着，手里捏着一片碗，许久没有动。他爹也不说话了，慢慢地蹲下去，挨着她，和她一起捡。两个人一片一片，捡得极慢极慢，倒像是捡得快了，那只碗便当真没了。\n\n那七八片，他娘拿一块旧布包了，四个角系好，没有扔，收进了炕头的木箱里。一只碎了的碗，留着能做什么，那天谁也没有问。\n\n那天夜里，小满对着屋顶的窟窿，很小很小声地说了一句：「有一天，我要让我娘，一辈子不用蹲在地上捡东西。」屋顶自然没有回答，只有草顶里存的一滴雨漏将下来，落进墙角的第十七个盆里，「叮」的一声。\n\n隔着一道布帘，爹娘在低声说话。\n\n他爹道：「……立冬是哪天？」他娘道：「大后天。」停了一停，又道：「还剩三天。」他爹道：「前山空了。只剩黑松岭。」布帘那边静了好一会儿，他娘道：「你爹，就是在黑松岭没的。」他爹道：「我知道。」他娘便不说了。\n\n过了一会儿，她哭了一小会儿，又不哭了。\n\n小满躺在炕上，一笔一笔地算账——这是他娘教的，他娘说，遇事先算账。他一面算，一面在嘴里默念娘教的那几句口诀：「戴九履一，左三右七……」那是外公私塾里传下来的洛书口诀，九个数排成一方。他小时候，娘在油灯底下拿九颗刻了记号的栗子摆成三排给他看过：「你外公教我算账，头一样教的，不是加减，是这个。念着它，心不乱。」\n\n马小宝比他高一个头，重他一倍，打起来，是他输；就算他打赢了，门口还站着马三，打起来，是他爹挨揍；就算他连马三也打赢了……小满想了一想这副光景：十二岁的沈小满，一拳把一扇门打倒在地。\n\n他觉得这个「就算」，未免有点太远了。所以今天他没还手，只回了一句嘴。回嘴不算还手，这是他给自己定的规矩。\n\n他在黑暗里睁着眼睛，把马小宝推他那一下，马三瞧那张弓的眼神，那只飞出去的碗，还有他娘停在半空的手，一样一样都记了下来。马三，马小宝，马家老爷，还有马家老爷那个做书吏的远房表侄，他在心里挨个儿又骂了一遍：**你爷爷的。**\n\n骂完了，又对自己说了五个字：**现在打不过。**说完一遍，又单把末了两个字念了一遍：**现在。**\n\n到了半夜，布帘那边窸窸窣窣一阵响，他爹摸黑出去了，回来时手里多了一样沉甸甸的东西，搁在门槛上，「咚」的一声。跟着便是「嚓、嚓、嚓」，一声一声，又慢又匀，是铁在石头上磨。\n\n沈家的磨刀石前年便裂成了两半，这一块，不知是打哪家借来的。小满数着那「嚓嚓」声，数到三百多下，数乱了，便不数了。他知道他爹在磨什么。前山已经空了，三天里要打着一头鹿，他爹磨的，是进深山的箭。",
+    "en": "Just then a drop of last night's rain, saved up in the thatch, leaked through the hole and landed right in the middle of his forehead, cold. He sighed at the roof and said, \"That was the only one of our four bowls without a chip in it.\"\n\nMa San waved a hand and left, taking Ma Xiaobao with him. On his way out Ma Xiaobao looked back, winked at Xiaoman, and, right in front of him, stuffed the whole osmanthus cake into his mouth, his cheeks puffed out like two steamed buns. The Shens' door was still lying in Ahe's vegetable plot.\n\nXiaoman's mother crouched down and picked up the pieces of the bowl one by one. His father stood by, rubbing his hands. \"Wife… a broken bowl, we can buy another…\" His mother said, \"Buy it with what?\" His father said, \"…With… with my knee?\" His mother said, \"And what's your knee worth?\"\n\nHis father thought it over very seriously and said, \"On cloudy days it's pretty accurate. Anyone who wants to air their quilts ought to come and ask it first.\"\n\nHis mother didn't laugh. She just crouched there with a piece of bowl in her fingers and didn't move for a long time. His father stopped talking too. He slowly crouched down beside her and picked up pieces with her. The two of them picked them up one by one, very, very slowly, as if, picked up too quickly, the bowl would really be gone.\n\nHis mother wrapped the seven or eight pieces in an old cloth, tied the four corners, didn't throw it away, and put it in the wooden chest at the head of the bed. What a broken bowl could be kept for, nobody asked that day.\n\nThat night Xiaoman, facing the hole in the roof, said very, very quietly, \"One day I'm going to make it so my mother never has to crouch on the floor picking things up again.\" The roof of course didn't answer. A single drop of the rain saved up in the thatch leaked down and fell into the seventeenth basin in the corner. *Ting.*\n\nThrough a cloth curtain, his father and mother were talking in low voices.\n\nHis father said, \"…When's the first day of winter?\" His mother said, \"Three days from now.\" A pause, then: \"Three days left.\" His father said, \"The near hills are empty. There's only Black Pine Ridge.\" On the other side of the curtain it was quiet for a good while. His mother said, \"Your father died on Black Pine Ridge.\" His father said, \"I know.\" His mother said no more.\n\nAfter a while she cried for a little, and then she didn't.\n\nXiaoman lay on the bed doing his sums, item by item. His mother had taught him that; she said when something happens, do the sums first. While he did them he murmured the verse she'd taught him: \"Nine on the head, one at the feet, three on the left, seven on the right…\" It was the Luo Writing verse, handed down from his grandfather's school: nine numbers set out in a square. When he was little, his mother had laid out nine chestnuts, each marked, in three rows under the oil lamp to show him: \"When your grandfather taught me sums, the first thing he taught wasn't adding and taking away. It was this. Say it, and your heart won't get muddled.\"\n\nMa Xiaobao was a head taller than him and twice his weight; in a fight, he'd lose. Even if he won, Ma San was standing in the doorway; in that fight, his father would get the beating. Even if he beat Ma San as well… Xiaoman pictured it: twelve-year-old Shen Xiaoman, knocking a door flat with one punch.\n\nThat \"even if\", he felt, was a bit of a stretch. So today he hadn't hit back. He'd only talked back. Talking back isn't hitting back — that was a rule he'd made for himself.\n\nHe lay with his eyes open in the dark and set it all down in his memory, one thing at a time: the shove Ma Xiaobao gave him, the look in Ma San's eyes when he looked at the bow, the bowl flying through the air, and his mother's hand stopped in mid-air. Ma San, Ma Xiaobao, old Master Ma, and old Master Ma's distant nephew the clerk — he swore at each of them once more in his heart: **Your grandpa's—**\n\nWhen he'd finished swearing, he said four more words to himself: **Can't beat them now.** And when he'd said it once, he said the last word again on its own: **Now.**\n\nIn the middle of the night there was a rustling on the other side of the curtain. His father went out in the dark and came back with something heavy, which he set down on the threshold with a *thunk*. Then came a *shk, shk, shk*, one stroke after another, slow and even: iron on stone.\n\nThe Shens' whetstone had split in two the year before last; this one must have been borrowed from somewhere. Xiaoman counted the strokes, got to three hundred and something, lost count, and stopped counting. He knew what his father was sharpening. The near hills were empty, and there were three days to bring down a deer. His father was sharpening arrows for the deep mountains."
+   }
+  },
+  {
+   "id": "strike",
+   "label": {
+    "zh": "一滴隔夜雨",
+    "en": "A drop of last night's rain"
+   },
+   "means": "wakes from the daydream when last night's raindrop lands on his brow; the rest of the night, having clenched his fists (00-masan strike)",
+   "beat": [],
+   "next": "00-dawn",
+   "needs": {
+    "task": "masan-zaotai",
+    "no_mark": "kept-count"
+   },
+   "refuse": {
+    "zh": "三只碗还在灶台上——先把门口那伙人挡回去。",
+    "en": "Three bowls are still on the stove — hold off that crowd at the door first."
+   },
+   "story": {
+    "zh": "恰好草顶里存着的一滴隔夜雨从窟窿里漏将下来，不偏不倚，正落在他眉心，凉飕飕的。他对着屋顶叹了口气，说道：「那是我家四只碗里，唯一一只没缺口的。」\n\n马三一挥手，带着马小宝走了。临出门时，马小宝回过头来，冲小满挤了挤眼睛，当着他的面，把那块桂花糕一口塞进嘴里，腮帮子鼓得像两个包子。沈家的门，还躺在阿禾家的菜地里。\n\n他娘没有笑。她就那么蹲着，手里捏着一片碗，许久没有动。他爹也不说话了，慢慢地蹲下去，挨着她，和她一起捡。两个人一片一片，捡得极慢极慢，倒像是捡得快了，那只碗便当真没了。\n\n那只碗的七八片，他娘拿一块旧布包了，四个角系好，没有扔，收进了炕头的木箱里。一只碎了的碗，留着能做什么，那天谁也没有问，她自己大约也说不上来。\n\n隔着一道布帘，爹娘在低声说话。\n\n他爹道：「……立冬是哪天？」他娘道：「大后天。」停了一停，又道：「还剩三天。」他爹道：「前山空了。只剩黑松岭。」布帘那边静了好一会儿，他娘道：「你爹，就是在黑松岭没的。」他爹道：「我知道。」他娘便不说了。\n\n过了一会儿，她哭了一小会儿，又不哭了。\n\n那一夜他没怎么睡。他在心里把账算了一遍：马小宝比他高一个头，重他一倍；门口站着马三，马三手里有棍子。他松开了拳头，是对的——他爹肩膀上那一棍，比他那一拳贵。\n\n他在黑暗里睁着眼睛，把马小宝推他那一下，马三瞧那张弓的眼神，那只飞出去的碗，还有他娘停在半空的手，一样一样都记了下来。马三，马小宝，马家老爷，他在心里又挨个儿骂了一遍：**你爷爷的。**\n\n骂完了，又对自己说了五个字：**现在打不过。**说完一遍，又单把末了两个字念了一遍：**现在。**\n\n到了半夜，布帘那边窸窸窣窣一阵响，他爹摸黑出去了，回来时手里多了一样沉甸甸的东西，搁在门槛上，「咚」的一声。跟着便是「嚓、嚓、嚓」，一声一声，又慢又匀，是铁在石头上磨。\n\n沈家的磨刀石前年便裂成了两半，这一块，不知是打哪家借来的。小满数着那「嚓嚓」声，数到三百多下，数乱了，便不数了。他知道他爹在磨什么。前山已经空了，三天里要打着一头鹿，他爹磨的，是进深山的箭。",
+    "en": "Just then a drop of last night's rain, saved up in the thatch, leaked through the hole and landed right in the middle of his forehead, cold. He sighed at the roof and said, \"That was the only one of our four bowls without a chip in it.\"\n\nMa San waved a hand and left, taking Ma Xiaobao with him. On his way out Ma Xiaobao looked back, winked at Xiaoman, and, right in front of him, stuffed the whole osmanthus cake into his mouth, his cheeks puffed out like two steamed buns. The Shens' door was still lying in Ahe's vegetable plot.\n\nHis mother didn't laugh. She just crouched there with a piece of bowl in her fingers and didn't move for a long time. His father stopped talking too. He slowly crouched down beside her and picked up pieces with her. The two of them picked them up one by one, very, very slowly, as if, picked up too quickly, the bowl would really be gone.\n\nThe seven or eight pieces of that bowl his mother wrapped in an old cloth, tied the four corners, did not throw away, and put in the wooden chest at the head of the kang. What a broken bowl was good for, nobody asked that day; she probably couldn't have said herself.\n\nThrough a cloth curtain, his father and mother were talking in low voices.\n\nHis father said, \"…When's the first day of winter?\" His mother said, \"Three days from now.\" A pause, then: \"Three days left.\" His father said, \"The near hills are empty. There's only Black Pine Ridge.\" On the other side of the curtain it was quiet for a good while. His mother said, \"Your father died on Black Pine Ridge.\" His father said, \"I know.\" His mother said no more.\n\nAfter a while she cried for a little, and then she didn't.\n\nHe barely slept that night. He went over the account in his head: Ma Xiaobao a head taller and twice his weight; Ma San in the doorway with his club. Loosening his fists had been right — the blow on his father's shoulder cost more than his punch was worth.\n\nHe lay with his eyes open in the dark and set it all down, item by item: the shove Ma Xiaobao gave him, the way Ma San looked at the bow, the bowl that went flying, and his mother's hand stopped in mid-air. Ma San, Ma Xiaobao, and Master Ma — in his head he cursed them all once more, one by one: **Your grandpa's.**\n\nWhen he'd finished swearing, he said four more words to himself: **Can't beat them now.** And when he'd said it once, he said the last word again on its own: **Now.**\n\nIn the middle of the night there was a rustling on the other side of the curtain. His father went out in the dark and came back with something heavy, which he set down on the threshold with a *thunk*. Then came a *shk, shk, shk*, one stroke after another, slow and even: iron on stone.\n\nThe Shens' whetstone had split in two the year before last; this one must have been borrowed from somewhere. Xiaoman counted the strokes, got to three hundred and something, lost count, and stopped counting. He knew what his father was sharpening. The near hills were empty, and there were three days to bring down a deer. His father was sharpening arrows for the deep mountains."
+   }
+  }
+ ],
+ "_beats": "2026-10-22 (Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的. 塔防好几种呢, 可以用没出现过的」 · 「可以马小宝, 马三两个boss从中路冲下来, 带一堆家丁等」): 00-masan's ways on split word for word after the bowl breaks. Here 小满 lies on the floor — 「一时竟忘了起身」 — and the board is his daydream there: 守山门 (撒豆成兵 · 守山门's first story level, levels/sadoushou.json `zaotai`), the 灶台 with the three bowls left for the wall, waves of 马家家丁 and 小宝's 跟班 down the middle, then 马小宝 and 马三 together. Imagination, not a fight: the book says 「现在打不过」 that night, and the bowl is still broken after it. The book's next line wakes him — the overnight raindrop on his 眉心 — and the rest of the night reads by the way he took in 00-masan (the fork's other mark, `no_mark`: kept-count · clenched — one way shows, the win takes it). No grade, no pay before 入门."
+}
