@@ -757,6 +757,13 @@ export class PlayScene extends Phaser.Scene {
       fire, a ring, the number. */
   on_spell(e) {
     const z = Math.max(0, e.z ?? 0), x = xOf(e.x ?? colMid(e.col), z), y = yOf(z) - 40 * sOf(z);
+    const big = this.cfg.level.jieyin?.firstCast && !this.castBefore; // a level's first cast, played big (守灶台: the game's first 结印)
+    this.castBefore = true;
+    if (big) {
+      this.slowT = 0.9; // the world slows a beat (update), the line over it
+      this.hud.banner(this.cfg.level.jieyin.firstCast[this.lang] ?? this.cfg.level.jieyin.firstCast.zh, { color: '#bfe8ff', ribbon: true, y: 420 });
+      this.flash(220, 200, 236, 255);
+    }
     const orb = this.add.image(this.squadX, Y0 - 30, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(/^huodan/.test(e.move) ? 0xff8a2a : e.move === 'bingzhui' ? 0x9fe0ff : e.move === 'muteng' ? 0x8fe07a : 0xfff0b0).setScale(3).setDepth(D.fx);
     this.sfx.go();
     this.tweens.add({ targets: orb, x, y, scale: 1.4, duration: 260, ease: 'Quad.easeIn', onComplete: () => {
@@ -767,7 +774,8 @@ export class PlayScene extends Phaser.Scene {
       this.em.burst('stars', 10, x, y);
       const ring = this.add.image(x, y, 'ring').setDepth(D.fx).setTint(0xffc070).setScale(0.3);
       this.tweens.add({ targets: ring, scale: 3.4, alpha: 0, duration: 420, onComplete: () => ring.destroy() });
-      this.num(x, y - 40, `-${e.dmg}`, 'numGold', 80, { rise: 90, life: 1 });
+      this.num(x, y - 40, `-${e.dmg}`, 'numGold', big ? 110 : 80, { rise: 90, life: big ? 1.4 : 1 });
+      if (big) { this.em.burst('stars', 30, x, y - 30); this.em.burst('spark', 40, x, y); this.shake(420, 0.024); }
       this.sfx.slam();
     } });
     this.fact({ t: 'spell', move: e.move, on: e.on });
@@ -776,7 +784,9 @@ export class PlayScene extends Phaser.Scene {
   // ---------------------------------------------------------------- the loop
 
   update(_, delta) {
-    const dt = Math.min(0.05, delta / 1000);
+    const real = Math.min(0.05, delta / 1000);
+    this.slowT = Math.max(0, (this.slowT ?? 0) - real);
+    const dt = this.slowT > 0 ? real * 0.3 : real; // a first cast's slow beat (on_spell)
     const g = this.g;
     const k = this.keys;
     if (k) {

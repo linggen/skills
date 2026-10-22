@@ -403,6 +403,29 @@ test('守灶台: a 桂花糕 taken while 马小宝 walks stops him to eat it; �
   assert.equal(beastFor(g, 'L'), near, '结印: the nearer of the two');
 });
 
+test('守灶台 is the game\'s first 结印 (Hanli 10-22: 「1-6 都是好主意…关键是能留住玩家」): one simple seal, 剑诀 → 飞剑, open before 古六; its first cast played big', async () => {
+  const c = story.jieyin;
+  assert.deepEqual(c.moves.map((m) => [m.id, m.from]), [['feijian', null]], 'only the one-seal move');
+  assert.ok(both(c.first) && both(c.firstCast) && both(c.say));
+  assert.equal(c.when, 'boss', 'offered when 马小宝 and 马三 are out');
+  const box = { ownerDocument: { defaultView: {} } };
+  const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: () => true, fizzle() {}, paused: () => false, picking: () => false, say() {} };
+  for (const marks of [[], ['qiajue-tight']]) {
+    let got = null;
+    await offerJieyin(story, box, { lang: 'zh', game, marks, load: async () => ({ offerSeals: async (o) => { got = o; return { close() {} }; } }) });
+    assert.deepEqual(got.moves.map((m) => m.id), ['feijian'], `marks ${marks}: 剑诀's 飞剑 alone`);
+    assert.equal(got.first, c.first, 'the first-time bubble: 比个剑诀');
+  }
+  // the ladder keeps its own: four 小招 open, the 法术 after 古六
+  assert.ok(ladder.every((l) => l.jieyin.moves.length > 1));
+  // a cast strikes a 大妖 on the road
+  const g = newGame(kit, { ...story, waves: [], belt: { ...story.belt, lines: [] } }, { seed: 'zt-cast' });
+  for (let i = 0; i < 150; i += 1) { aim(g, colMid('L')); step(g, 1 / 30); }
+  g.spellCool = 0; g.events.length = 0;
+  assert.equal(castJieyin(g, 'feijian', 'middle'), true);
+  assert.equal(g.events.find((e) => e.t === 'spell')?.on, 'boss');
+});
+
 test('守灶台 is gentle (第一回): a first-time human wins ≥ 34/40, stars spread; a sloppy one no more; never needs a cast; the lazy lose', () => {
   const human = seeds.map((s) => sim(kit, story, humanBot(s), { seed: s }));
   const w = human.filter((r) => r.won).length;

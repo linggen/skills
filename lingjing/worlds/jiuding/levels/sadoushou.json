@@ -1894,12 +1894,12 @@
     "bossCap": 0.45,
     "idle": 60,
     "say": {
-     "zh": "马家的人来了——结印！",
-     "en": "Here come the Ma men — make the seals!"
+     "zh": "做梦嘛——当一回仙人！结印！",
+     "en": "It's a dream — be the immortal for once! Make the seals!"
     },
     "first": {
-     "zh": "比个剑诀，飞剑就出去",
-     "en": "Make the sword seal and the flying sword goes"
+     "zh": "对着摄像头，比个剑诀——飞剑就出去！",
+     "en": "Make the sword seal at the camera — and the flying sword goes!"
     },
     "armedFps": 30,
     "moves": [
@@ -1910,120 +1910,14 @@
        "en": "Flying sword"
       },
       "from": null,
-      "secs": 3
-     },
-     {
-      "id": "dianxue",
-      "name": {
-       "zh": "点穴",
-       "en": "Pressure point"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "zhangfeng",
-      "name": {
-       "zh": "掌风",
-       "en": "Palm wind"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "quanjin",
-      "name": {
-       "zh": "拳劲",
-       "en": "Fist force"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "huodan",
-      "name": {
-       "zh": "火弹",
-       "en": "Fire shot"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "bingzhui",
-      "name": {
-       "zh": "冰锥",
-       "en": "Ice needle"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "jinren",
-      "name": {
-       "zh": "金刃",
-       "en": "Metal blade"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "muteng",
-      "name": {
-       "zh": "木藤",
-       "en": "Wood vine"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "tuqiang",
-      "name": {
-       "zh": "土墙",
-       "en": "Earth wall"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "huodan4",
-      "name": {
-       "zh": "四印火蛋",
-       "en": "Four-seal fire egg"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 9
+      "secs": 4
      }
-    ]
+    ],
+    "firstCast": {
+     "zh": "飞剑！",
+     "en": "Flying sword!"
+    },
+    "_first": "第一回's daydream is the game's FIRST 结印 (Hanli 10-22: 「1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): one simple seal, 剑诀 → 飞剑 (open from the start, `from: null` — before 古六 only the one-seal move, learned from the hint alone), offered when the two 大妖 are out; its first cast in a run is played big (`firstCast`: a slow beat, a banner, a bigger burst). No camera, or declined: the level plays and wins the same."
    },
    "belt": {
     "speed": 7,
