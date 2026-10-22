@@ -847,7 +847,7 @@ Hanli 10-21, in order: 「放进去」 · 「最好不显示摄像头」 · 「�
 - **Telling the player** (shared, helper.js — 守墙关 · 守炉 · 守山门; Hanli 10-21: 「有结印要告诉玩家啊」「结印要有个框提示手势的」):
   the lead card ends on a line that 结印 is here — only where a camera is and a move is offered (the handle's `lead(pace)`,
   jieyin.json `helper.lead` by pace, a host's `when` read as one by `helper.paceOf`; joined by jieyin/lead.js `leadWith`,
-  which never holds the card more than 1.5 s); the button wears the next move's gesture and glows bright when ready; the
+  which never holds the card more than 3 s); the button wears the next move's gesture and glows bright when ready; the
   first time it shows in a level (`level()`, the host's key) a bubble rides on it — 「小满 点这里结印」 — gone on the tap,
   waiting out a pause; tapped, the dock's frame is a framed paper panel (hint.js size `dock`): the gesture to make, as the
   right hand, with its facing words, beside the live ink hand. Tested: tests/game-jieyin-helper-ux.test.mjs.
