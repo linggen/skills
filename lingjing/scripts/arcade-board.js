@@ -24,9 +24,9 @@ export const arcadePlayUrl = (id) => `index.html?${new URLSearchParams({ save: `
 /**
  * 试玩's address for a game the rules stand on the stage themselves (a registry row's `stage`: 二十问, 讨价还价,
  * 断案, 对对子, 密室, the 秘境 rerun): its own test save begun again from its fixture (tools/arcade-saves.mjs —
- * where its card stands), and no `board=` — Look brings the card, as in the story.
+ * where its card stands; or a fixture it names, `seed`), and no `board=` — Look brings the card, as in the story.
  */
-export const arcadeStageUrl = (stage, days = 0) => `index.html?${new URLSearchParams({ save: stage.save, seed: stage.save, ...(days > 0 ? { days: String(days) } : {}) })}`;
+export const arcadeStageUrl = (stage, days = 0) => `index.html?${new URLSearchParams({ save: stage.save, seed: stage.seed ?? stage.save, ...(days > 0 ? { days: String(days) } : {}) })}`;
 
 /**
  * Days until a visiting shop stands (`visits: { every, offset }` against the local calendar day — rules/visiting.mjs's

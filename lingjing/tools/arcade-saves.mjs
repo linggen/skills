@@ -1,7 +1,7 @@
 // tools/arcade-saves.mjs — the 游戏厅's stage saves (Hanli 2026-10-21: the 游戏厅 holds every playable thing).
 // A game the rules stand on the real page (二十问 · 讨价还价 · 断案 · 对对子 · 密室 · 秘境 rerun: no board module,
 // or one Look drives) is tried there on a test save of its own. Its games.json row says where (`stage`):
-//   save   the scratch save's name, and the fixture it seeds from (tests/fixtures/saves/<save>.json)
+//   save   the scratch save's name, and the fixture it seeds from (tests/fixtures/saves/<save>.json) — or `seed`, a fixture there already
 //   from   how far the story is played first (rules/progress.mjs playTo: a scene, a 回) — mid-回, so no 回's close stands
 //   place  where he stands then (the story's scene stays, a walk away: the game's card stands where he is)
 //   her    银月 awake (a game she hosts or reads for); wealth  灵石 in hand; rerun  that rerun's cracks open
@@ -34,7 +34,8 @@ export function stageSave(content, stage) {
   return out;
 }
 
-export const stageRows = (reg) => (reg.games ?? []).filter((g) => g.stage);
+// A row that names a fixture of its own (`seed`: 二十问 on ji-home) has nothing written here.
+export const stageRows = (reg) => (reg.games ?? []).filter((g) => g.stage && !g.stage.seed);
 export const fixtureOf = (stage) => path.join(ROOT, 'tests', 'fixtures', 'saves', `${stage.save}.json`);
 
 if (import.meta.url === `file://${process.argv[1]}`) {
