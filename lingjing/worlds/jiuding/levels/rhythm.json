@@ -76,8 +76,27 @@
       },
       {
        "kind": "read",
-       "chars": 3686,
-       "run": 3686,
+       "chars": 324,
+       "run": 324,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "masan-zaotai",
+       "scene": "00-zaotai",
+       "title": {
+        "zh": "守灶台 · 三只碗",
+        "en": "Guarding the stove · Three bowls"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 40
+      },
+      {
+       "kind": "read",
+       "chars": 3409,
+       "run": 3409,
        "over": true
       },
       {
@@ -92,28 +111,9 @@
       },
       {
        "kind": "read",
-       "chars": 659,
-       "run": 659,
-       "over": false
-      },
-      {
-       "kind": "board",
-       "id": "fall-storm",
-       "scene": "00-fall",
-       "title": {
-        "zh": "暴雨 · 拽爹上崖",
-        "en": "The storm · Haul Father back"
-       },
-       "mechanic": "割绳子",
-       "variety": "割绳子",
-       "game": "fallrope",
-       "n": 1
-      },
-      {
-       "kind": "read",
-       "chars": 1198,
-       "run": 1198,
-       "over": false
+       "chars": 1857,
+       "run": 1857,
+       "over": true
       },
       {
        "kind": "board",
@@ -126,7 +126,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 45
+       "n": 46
       },
       {
        "kind": "read",
@@ -192,7 +192,7 @@
       "breakthrough": 0,
       "piece": 2
      },
-     "longest": 3686,
+     "longest": 3409,
      "roaming": 0,
      "side": []
     },
@@ -220,7 +220,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 49
+       "n": 50
       },
       {
        "kind": "read",
@@ -303,7 +303,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 55
+       "n": 56
       },
       {
        "kind": "read",
@@ -476,7 +476,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 46
+       "n": 47
       },
       {
        "kind": "read",
@@ -644,7 +644,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 50
+       "n": 51
       },
       {
        "kind": "read",
@@ -723,7 +723,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 51
+       "n": 52
       },
       {
        "kind": "read",
@@ -991,7 +991,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 54
+       "n": 55
       },
       {
        "kind": "read",
@@ -1030,7 +1030,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 53
+       "n": 54
       },
       {
        "kind": "read",
@@ -1095,7 +1095,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 47
+       "n": 48
       },
       {
        "kind": "read",
