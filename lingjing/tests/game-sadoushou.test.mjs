@@ -206,7 +206,7 @@ test('the ladder climbs: a first-time human wins no more on a later level than t
   assert.ok(w.at(-1) < w[0], `${w}`);
 });
 
-test('结印: offered only once the 大妖 is out, it strikes up the dock\'s lane (else the squad\'s column), then rests', () => {
+test('结印: offered only once the 大妖 is out, it strikes the 大妖 whatever lane the hand stood in, then rests', () => {
   const g = newGame(kit, level, { seed: 'jy' });
   assert.equal(jieyinState(g).on, false, 'boss-only: not during the waves');
   assert.equal(castJieyin(g, 'feijian', 'middle'), false);
@@ -214,13 +214,60 @@ test('结印: offered only once the 大妖 is out, it strikes up the dock\'s lan
   step(b, 1 / 30);
   for (let i = 0; i < 90; i += 1) { aim(b, colMid('L')); step(b, 1 / 30); }
   assert.ok(jieyinState(b).ready);
-  assert.equal(castJieyin(b, 'feijian', 'left'), false, 'nothing up the left column: not spent');
   const hp = b.boss.hp;
-  assert.equal(castJieyin(b, 'huodan', 'middle'), true, 'the hand in the middle: the 大妖');
-  assert.ok(b.boss.hp < hp && b.events.some((e) => e.t === 'spell' && e.on === 'boss'));
+  b.events.length = 0;
+  assert.equal(castJieyin(b, 'huodan', 'left'), true, 'the hand on the left: still the 大妖 (it is out)');
+  const e = b.events.find((x) => x.t === 'spell');
+  assert.ok(b.boss.hp < hp && e?.on === 'boss');
+  assert.equal(e.x, b.boss.x, 'the 火弹 flies to where the 大妖 stands');
+  assert.equal(e.z, b.boss.z);
   assert.ok(!jieyinState(b).ready && jieyinState(b).cool === level.jieyin.cool, 'then the hand rests');
   aim(b, colMid('M'));
   assert.equal(castJieyin(b, 'huodan'), false, 'resting');
+});
+
+test('结印 always strikes a beast, never a card or a wall (Hanli 10-21: 「接了印后, 火弹没有打怪, 打了一个近处的卡」)', () => {
+  const lv = { ...level, jieyin: { ...level.jieyin, when: 'always' } };
+  const fresh = () => {
+    const g = newGame(kit, { ...lv, belt: { ...lv.belt, lines: [] } }, { seed: 'jy-beast' });
+    g.phase = 'waves'; g.spellCool = 0; g.belt.length = 0; g.live.length = 0; g.events.length = 0;
+    return g;
+  };
+  const wave = (g, col, front) => {
+    const w = { i: g.live.length, span: COLS[col], units: [{ b: 'yezhu', n: 40, p: 1 }], hp: 40, front, speed: 1 };
+    g.live.push(w);
+    return w;
+  };
+  // a card and a stone wall nearer than the wave, in the same column: the wave takes the hit
+  const g = fresh();
+  const card = { kind: 'card', col: 'M', z: 6, n: 2, step: 1, cap: 99 }, wall = { kind: 'block', col: 'M', z: 9, hp: 50 };
+  g.belt.push(card, wall);
+  const w = wave(g, 'M', 30);
+  assert.ok(jieyinState(g).ready);
+  assert.equal(castJieyin(g, 'huodan', 'middle'), true);
+  assert.equal(card.n, 2, 'the card untouched');
+  assert.equal(wall.hp, 50, 'the wall untouched');
+  assert.ok(w.hp < 40, 'the wave hit');
+  const e = g.events.find((x) => x.t === 'spell');
+  assert.deepEqual([e.on, e.col, e.z, e.x], ['wave', 'M', 30, colMid('M')], 'the 火弹 flies to the wave');
+  // the hand's lane holds no beast: the nearest wave anywhere (auto-aim)
+  const a = fresh();
+  a.belt.push({ kind: 'card', col: 'L', z: 4, n: 2, step: 1, cap: 99 });
+  wave(a, 'R', 50); const near = wave(a, 'M', 20);
+  assert.equal(castJieyin(a, 'huodan', 'left'), true);
+  assert.ok(near.hp < 40 && a.events.find((x) => x.t === 'spell').col === 'M', 'auto-aimed at the nearest wave');
+  // the lane's own wave beats a nearer one elsewhere
+  const l = fresh();
+  wave(l, 'M', 10); const right = wave(l, 'R', 40);
+  assert.equal(castJieyin(l, 'huodan', 'right'), true);
+  assert.ok(right.hp < 40, 'the lane the dock named');
+  // only cards and walls on the road, or a wave not yet on it: nothing flies, the seals not spent
+  const n = fresh();
+  n.belt.push({ kind: 'card', col: 'M', z: 6, n: 2, step: 1, cap: 99 }, { kind: 'block', col: 'L', z: 8, hp: 20 });
+  wave(n, 'M', TOP + 2);
+  assert.equal(castJieyin(n, 'huodan', 'middle'), false);
+  assert.equal(n.spellCool, 0);
+  assert.equal(n.casts, 0);
 });
 
 test('结印 is never needed (every level is won without a cast) but makes ★★★ easier: faster, under par', () => {

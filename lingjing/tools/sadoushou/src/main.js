@@ -2,18 +2,20 @@
 // (build.mjs), so the browser loads the one shared Phaser beside every game.
 import * as Phaser from 'phaser';
 import { jieyinState } from 'sadoushou-core';
-import { W, H } from './view.js';
+import { setBoard } from './view.js';
 import { PlayScene } from './play.js';
 
 /**
- * start({ parent, base, lang, kit, level, seed, reducedMotion, showFps, dev, onEvent, onEnd, shell, held })
+ * start({ parent, base, lang, kit, level, seed, reducedMotion, showFps, dev, onEvent, onEnd, shell, held, wide })
  *   → { destroy(), say(who, text), go(), paused(), picking(), jieyin(id, lane), jieyinState(), fizzle() }
- * `held`: draw the road but stand still until `go()` (the shell's lead card is up over it).
+ * `held`: draw the road but stand still until `go()` (the shell's lead card is up over it). `wide`: the 760×960 board
+ * (view.js), else the phone's 540×960.
  * `base`: the URL of games/sadoushou/ (the shared art beside it, ../sadou/ and ../shouqiang/). `onEvent`: the facts
  * out (start · go · wave · boss · charge · low · end). `onEnd({ won, stars, stats })`. `shell` (games/shell.js): its
  * pause freezes the scene, and the canvas shows no result screen of its own.
  */
 export function start(opts) {
+  const { W, H } = setBoard(Boolean(opts.wide)); // the board, once: the wide one in a landscape window (view.js)
   const box = opts.parent.getBoundingClientRect();
   const dpr = globalThis.devicePixelRatio || 1;
   // the canvas at (about) the screen's own pixels, capped at 1.6× the board: crisp, and the fill-rate stays in budget

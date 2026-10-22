@@ -18,8 +18,10 @@
 // knocking aside `kill` of the squad unless it moved off. A wave or the 大妖 at the wall hurts the wall; 0 is the loss.
 //
 // 结印 (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the camera dock is games/jieyin/helper.js, the page's): a move made
-// at the camera strikes the first thing up a column — the squad's, or the one the hand stood in when the dock names it —
-// for `secs` of the squad's attack at once (× `bossMul` on the 大妖; a card pumped `pump` steps), then rests `cool` s.
+// at the camera always strikes a BEAST (Hanli 10-21: 「接了印后, 火弹没有打怪, 打了一个近处的卡」): the 大妖 when it is
+// out, else the nearest wave down the column the dock names (the hand's lane) or the squad's, else the nearest wave in
+// any column (auto-aim) — never a card or a stone wall — for `secs` of the squad's attack at once (× `bossMul` on the
+// 大妖), then rests `cool` s. No beast on the road: nothing flies and the seals are not spent.
 // Offered only `when` the level says (boss · waves · always). Never needed: every level is won without it (Hanli:
 // 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」), it only makes the kill faster — ★★★ easier.
 //
@@ -327,32 +329,34 @@ export function jieyinState(g, c = spellKit(g)) {
   return { on, ready: on && g.spellCool <= 0, cool: g.spellCool, coolOf: c?.cool ?? 0, boss: null };
 }
 
-/** The first thing up a column from the wall (a wave's front, the 大妖, a card or a wall), or null. */
-export function firstIn(g, col) {
-  let best = null, bz = Infinity;
-  for (const it of g.belt) if (!it.gone && it.col === col && it.z > 0 && it.z < TOP && it.z < bz) { best = it; bz = it.z; }
-  for (const w of g.live) if (colOf((w.span[0] + w.span[1]) / 2) === col && w.front < bz) { best = w; bz = w.front; }
-  if (g.boss?.on && g.boss.hp > 0 && colOf(g.boss.x) === col && g.boss.z < bz) best = g.boss;
-  return best;
+const LANE = { left: 'L', middle: 'M', right: 'R' };
+const waveU = (w) => (w.span[0] + w.span[1]) / 2;
+
+/** What a 结印 strikes: the 大妖 when it is out; else the nearest wave on the road down `col`; else the nearest wave
+    in any column; else null. Cards and stone walls are never a target. */
+export function beastFor(g, col) {
+  if (g.boss?.on && g.boss.hp > 0) return g.boss;
+  const on = g.live.filter((w) => w.hp > 0 && w.front < TOP);
+  const nearest = (ws) => ws.reduce((a, w) => (!a || w.front < a.front ? w : a), null);
+  return nearest(on.filter((w) => colOf(waveU(w)) === col)) ?? nearest(on);
 }
 
-const LANE = { left: 'L', middle: 'M', right: 'R' };
-
-/** A move made at the camera: it strikes up `lane`'s column (the dock's left · middle · right), else the squad's;
-    true when it flew — false when not offered now, resting, or nothing is up that column (the seals are not spent). */
+/** A move made at the camera: it strikes a beast (beastFor) — the dock's lane (left · middle · right) first, else
+    the squad's column; true when it flew — false when not offered now, resting, or no beast is on the road (the seals
+    are not spent). The event carries where it struck (`x` across, `z` up the road) for the 火弹's flight. */
 export function castJieyin(g, id, lane = null) {
   const c = spellKit(g), m = c?.moves?.find((x) => x.id === id) ?? c?.moves?.[0];
   if (!m || !jieyinState(g, c).ready) return false;
-  const col = LANE[lane] ?? colOf(g.aimX), hit = firstIn(g, col);
+  const hit = beastFor(g, LANE[lane] ?? colOf(g.aimX));
   if (!hit) return false;
-  const dmg = dpsOf(g) * m.secs * (hit === g.boss ? c.bossMul ?? 1 : 1) + (m.flat ?? 0);
+  const boss = hit === g.boss;
+  const dmg = dpsOf(g) * m.secs * (boss ? c.bossMul ?? 1 : 1) + (m.flat ?? 0);
   g.spellCool = c.cool;
   g.casts += 1;
-  if (hit === g.boss) { hit.hp = Math.max(0, hit.hp - dmg); g.stats.bossDmg += dmg; }
-  else if (hit.units) { const before = waveCount(hit); hit.hp -= dmg; g.stats.killed += before - waveCount(hit); }
-  else if (hit.kind === 'card') { hit.n = Math.min(hit.cap, hit.n + (m.pump ?? 10) * hit.step); if (hit.n >= hit.cap) pay(g, hit, 'cap'); }
-  else { hit.hp -= dmg; if (hit.hp <= 0) { hit.hp = 0; strike(g, { dmg: 0, x: colMid(col) }, hit); } }
-  g.events.push({ t: 'spell', move: m.id, col, z: hit.z ?? hit.front, dmg: Math.round(dmg), on: hit === g.boss ? 'boss' : hit.units ? 'wave' : hit.kind });
+  if (boss) { hit.hp = Math.max(0, hit.hp - dmg); g.stats.bossDmg += dmg; }
+  else { const before = waveCount(hit); hit.hp -= dmg; g.stats.killed += before - waveCount(hit); }
+  const x = boss ? hit.x : waveU(hit);
+  g.events.push({ t: 'spell', move: m.id, col: colOf(x), x, z: boss ? hit.z : hit.front, dmg: Math.round(dmg), on: boss ? 'boss' : 'wave' });
   return true;
 }
 

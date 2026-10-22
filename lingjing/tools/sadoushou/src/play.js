@@ -8,7 +8,7 @@
 // unit, no per-frame depth changes (layers keep a fixed order; a wave's beasts are handed out far to near).
 import * as Phaser from 'phaser';
 import { newGame, step, aim, waveLeft, waveCount, perRank, hordeAll, tierOf, colMid, castJieyin, COLS, TOP } from 'sadoushou-core';
-import { W, H, CX, Y0, HY, HALF, sOf, yOf, xOf, zOfY, uOfX } from './view.js';
+import { W, H, CX, Y0, HY, HALF, CARD, sOf, yOf, xOf, zOfY, uOfX } from './view.js';
 import { makeTextures, makeNumberFont, makeEmitters, rng, canvasTex, rounded } from './fx.js';
 import { Hud, WORDS, text } from './hud.js';
 import { Sfx } from './sfx.js';
@@ -256,7 +256,7 @@ export class PlayScene extends Phaser.Scene {
       const on = !it.gone && it.z < TOP + 12;
       if (!on) { if (this.cards.has(it.id)) this.dropCard(it.id); continue; }
       const v = this.cardOf(it), s = sOf(it.z), [a, b] = COLS[it.col];
-      const x = xOf((a + b) / 2, it.z), y = yOf(it.z), wpx = (b - a) * HALF * s * 0.86;
+      const x = xOf((a + b) / 2, it.z), y = yOf(it.z), wpx = (b - a) * HALF * s * CARD;
       v.punch = Math.max(0, v.punch - dt * 6);
       const k = 1 + v.punch * 0.18;
       if (it.kind === 'block') {
@@ -671,9 +671,10 @@ export class PlayScene extends Phaser.Scene {
     this.tweens.add({ targets: t, y: t.y - 40, alpha: 0, duration: 800, onComplete: () => t.destroy() });
   }
 
-  /** The spell flies from the squad up its column and bursts on what it hit: fire, a ring, the number. */
+  /** The spell flies from the squad to the beast it hit (the engine's `x` across, `z` up the road) and bursts there:
+      fire, a ring, the number. */
   on_spell(e) {
-    const z = Math.max(0, e.z ?? 0), x = xOf(colMid(e.col), z), y = yOf(z) - 40 * sOf(z);
+    const z = Math.max(0, e.z ?? 0), x = xOf(e.x ?? colMid(e.col), z), y = yOf(z) - 40 * sOf(z);
     const orb = this.add.image(this.squadX, Y0 - 30, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(e.move === 'huodan' ? 0xff8a2a : 0x9fe0ff).setScale(3).setDepth(D.fx);
     this.sfx.go();
     this.tweens.add({ targets: orb, x, y, scale: 1.4, duration: 260, ease: 'Quad.easeIn', onComplete: () => {

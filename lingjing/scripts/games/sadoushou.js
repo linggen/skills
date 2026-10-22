@@ -17,7 +17,7 @@ export const meta = {
   id: 'sadoushou',
   pause: true, // the shell's bar pauses the play (tools/sadoushou/src/play.js setPaused)
   tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
-  aspect: 9 / 16,
+  aspect: 760 / 960, // the field's width : height on a Mac (the wide board, tools/sadoushou/src/view.js); a phone plays 9 : 16
   name: { zh: '撒豆成兵 · 守山门', en: 'Beans into Soldiers · Hold the Gate' },
   how: {
     zh: '左右拖动选一列，豆兵自己会打：打两边的卡，卡上的数越打越大，接住它队伍就壮；打中间的兽，别让它们撞上山门；石墙打碎了有好东西。大妖冲哪一列，就躲开哪一列。',
@@ -35,7 +35,8 @@ export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (r
 
 /** 结印's button in the field, where it may be offered (games/jieyin/helper.js decides: no camera → null, nothing drawn,
     and the game is exactly the game without it — Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」).
-    A cast strikes up the column the dock names (its lane: left · middle · right), else the squad's. */
+    A cast strikes a beast (core.js beastFor): the 大妖 when out, else the nearest wave down the column the dock names
+    (its lane: left · middle · right) or the squad's, else the nearest anywhere — never a card or a wall. */
 export function offerJieyin(level, box, { lang, game, shell, marks, feed = false, load = () => import(SEALS.href) }) {
   const c = level.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
@@ -68,9 +69,14 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   const doc = container.ownerDocument;
   const box = doc.createElement('div');
   box.className = 'sadoushou-stage';
-  // portrait 9:16, as tall as the window lets it (a phone fills its width; a desk gets a tall column)
+  // As tall as the window lets it. A phone (a portrait window) plays 9:16 and fills its width; a landscape window gets
+  // the wider 760:960 board (Hanli 10-21: 「目前画面有点拥挤, 可以宽一些吗」): the road spans more, the columns breathe.
+  // Picked once here: the board is drawn at its size for the whole level.
+  const win = doc.defaultView ?? globalThis;
+  const wide = (win.innerWidth ?? 0) > (win.innerHeight ?? 1) * 1.05;
+  const [a, b] = wide ? [760, 960] : [9, 16];
   box.style.cssText = 'position:relative;overflow:hidden;border-radius:12px;background:#cfd3c6;touch-action:none;'
-    + 'aspect-ratio:9/16;width:min(100%, calc((100dvh - var(--game-reserve, 150px)) * 9 / 16));margin:0 auto;user-select:none;-webkit-user-select:none';
+    + `aspect-ratio:${a}/${b};width:min(100%, calc((100dvh - var(--game-reserve, 150px)) * ${a} / ${b}));margin:0 auto;user-select:none;-webkit-user-select:none`;
   container.replaceChildren(box);
   const search = globalThis.location?.search ?? '';
   const dev = /(?:^|[?&])dev=1/.test(search);
@@ -91,7 +97,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       if (said) level = { ...level, lead: (level.lead ?? []).filter((l) => l.big), leadSec: 1.6 };
       game = start({
         parent: box, base: new URL('./sadoushou/', import.meta.url).href, lang: lang === 'en' ? 'en' : 'zh',
-        kit, level, seed: seed ?? `sadoushou|${Date.now()}`, reducedMotion, dev, showFps, lines, shell,
+        kit, level, seed: seed ?? `sadoushou|${Date.now()}`, reducedMotion, dev, showFps, lines, shell, wide,
         onEvent: (f) => { if (f.t === 'end') seals?.then((h) => h?.close()); onEvent?.(f); }, // the level over: the camera off at once
         held: Boolean(said),
         onEnd: (r) => {

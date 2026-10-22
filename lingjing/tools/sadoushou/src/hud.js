@@ -30,7 +30,7 @@ function pill(scene, key, top, bottom, line) {
 }
 
 function makeHudTextures(scene) {
-  canvasTex(scene, 'topbar', 540, 150, (c, w, h) => {
+  canvasTex(scene, 'topbar', W, 150, (c, w, h) => {
     const g = c.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, 'rgba(14,10,24,0.8)'); g.addColorStop(0.55, 'rgba(14,10,24,0.35)'); g.addColorStop(1, 'rgba(14,10,24,0)');
     c.fillStyle = g; c.fillRect(0, 0, w, h);
