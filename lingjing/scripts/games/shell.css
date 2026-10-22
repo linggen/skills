@@ -14,6 +14,7 @@
 .gshell-btn:hover { border-color: var(--ling); }
 .gshell-btn.is-main { border-color: var(--seal); background: var(--seal); color: #fff; }
 .gshell-pause { padding: 4px 0; width: 32px; font-size: 12px; }
+.gshell-mute { padding: 4px 0; width: 32px; font-size: 15px; line-height: 1; }
 
 .gshell-stage { position: relative; }
 .gshell-layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
@@ -22,6 +23,13 @@
   padding: 24px; text-align: center; border-radius: 12px; background: color-mix(in srgb, var(--ground) 82%, transparent);
   backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
 .gshell-veil b { font-family: var(--serif); font-size: 20px; letter-spacing: .2em; color: var(--text); }
+/* 音效 · 音乐 under the pause (games/kit/sound.js): one setting for every game. */
+.gshell-sound { display: grid; gap: 8px; min-width: min(240px, 80%); }
+.gshell-snd { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); }
+.gshell-snd label { display: flex; align-items: center; gap: 6px; flex: none; min-width: 5em; cursor: pointer; }
+.gshell-snd input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--seal); }
+.gshell-snd input[type="range"] { flex: 1; min-width: 0; accent-color: var(--seal); }
+.gshell-snd input[type="range"]:disabled { opacity: .4; }
 /* The lead card lets the game's picture show through (it is drawn and standing still behind it). */
 .gshell-veil.gshell-lead { background: linear-gradient(transparent, rgba(10, 8, 6, .55) 30%, rgba(10, 8, 6, .55) 70%, transparent);
   backdrop-filter: none; -webkit-backdrop-filter: none; }

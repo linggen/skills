@@ -1,0 +1,1176 @@
+{
+ "_about": "The small games' sounds (scripts/games/kit/sound.js; doc/game-kit.md § Sound). `sounds`: id → a slice of the sprite (bank.json, CC0 — CREDITS.md) or a ZzFX recipe (zzfx params, optional notes in semitones `step` s apart). `base` → `kits[kit]` → `games[id]`: event → a sound id, a list to pick from, or { sound, min (ms between), vol }; null is silence on purpose. One `music` bed per kit.",
+ "sounds": {
+  "ui.click": {
+   "sprite": [
+    "click_001",
+    "click_002"
+   ],
+   "vol": 0.6
+  },
+  "ui.select": {
+   "sprite": [
+    "select_001"
+   ],
+   "vol": 0.7
+  },
+  "ui.back": {
+   "sprite": [
+    "back_001"
+   ],
+   "vol": 0.7
+  },
+  "ui.toggle": {
+   "sprite": [
+    "toggle_001"
+   ],
+   "vol": 0.7
+  },
+  "ui.open": {
+   "sprite": [
+    "open_001"
+   ],
+   "vol": 0.6
+  },
+  "ui.close": {
+   "sprite": [
+    "close_001"
+   ],
+   "vol": 0.6
+  },
+  "ui.drop": {
+   "sprite": [
+    "drop_001",
+    "drop_002"
+   ],
+   "vol": 0.7
+  },
+  "ui.pluck": {
+   "sprite": [
+    "pluck_001",
+    "pluck_002"
+   ],
+   "vol": 0.7
+  },
+  "ui.confirm": {
+   "sprite": [
+    "confirmation_001"
+   ],
+   "vol": 0.6
+  },
+  "ui.error": {
+   "sprite": [
+    "error_004"
+   ],
+   "vol": 0.6
+  },
+  "ui.glass": {
+   "sprite": [
+    "glass_001"
+   ],
+   "vol": 0.6
+  },
+  "ui.scratch": {
+   "sprite": [
+    "scratch_001"
+   ],
+   "vol": 0.6
+  },
+  "ui.tick": {
+   "sprite": [
+    "tick_001"
+   ],
+   "vol": 0.6
+  },
+  "hit.wood.light": {
+   "sprite": [
+    "impactWood_light_000",
+    "impactWood_light_001",
+    "impactWood_light_002"
+   ],
+   "vol": 0.8
+  },
+  "hit.wood.medium": {
+   "sprite": [
+    "impactWood_medium_000",
+    "impactWood_medium_001",
+    "impactWood_medium_002"
+   ],
+   "vol": 0.8
+  },
+  "hit.wood.heavy": {
+   "sprite": [
+    "impactWood_heavy_000",
+    "impactWood_heavy_001",
+    "impactWood_heavy_002"
+   ],
+   "vol": 0.8
+  },
+  "hit.glass.light": {
+   "sprite": [
+    "impactGlass_light_000",
+    "impactGlass_light_001",
+    "impactGlass_light_002"
+   ],
+   "vol": 0.8
+  },
+  "hit.glass.medium": {
+   "sprite": [
+    "impactGlass_medium_000",
+    "impactGlass_medium_001"
+   ],
+   "vol": 0.8
+  },
+  "hit.glass.heavy": {
+   "sprite": [
+    "impactGlass_heavy_000",
+    "impactGlass_heavy_001"
+   ],
+   "vol": 0.8
+  },
+  "hit.metal.light": {
+   "sprite": [
+    "impactMetal_light_000",
+    "impactMetal_light_001"
+   ],
+   "vol": 0.8
+  },
+  "hit.metal.medium": {
+   "sprite": [
+    "impactMetal_medium_000",
+    "impactMetal_medium_001"
+   ],
+   "vol": 0.8
+  },
+  "hit.metal.heavy": {
+   "sprite": [
+    "impactMetal_heavy_000",
+    "impactMetal_heavy_001"
+   ],
+   "vol": 0.8
+  },
+  "hit.stone": {
+   "sprite": [
+    "impactMining_000",
+    "impactMining_001",
+    "impactMining_002",
+    "impactMining_003",
+    "impactMining_004"
+   ],
+   "vol": 0.8
+  },
+  "hit.punch": {
+   "sprite": [
+    "impactPunch_medium_000",
+    "impactPunch_medium_001",
+    "impactPunch_medium_002"
+   ],
+   "vol": 0.7
+  },
+  "hit.punch.heavy": {
+   "sprite": [
+    "impactPunch_heavy_000",
+    "impactPunch_heavy_001",
+    "impactPunch_heavy_002"
+   ],
+   "vol": 0.8
+  },
+  "hit.soft": {
+   "sprite": [
+    "impactSoft_medium_000",
+    "impactSoft_medium_001",
+    "impactSoft_medium_002"
+   ],
+   "vol": 0.8
+  },
+  "hit.soft.heavy": {
+   "sprite": [
+    "impactSoft_heavy_000",
+    "impactSoft_heavy_001",
+    "impactSoft_heavy_002"
+   ],
+   "vol": 0.9
+  },
+  "hit.bell": {
+   "sprite": [
+    "impactBell_heavy_000"
+   ],
+   "vol": 0.7
+  },
+  "hit.plate": {
+   "sprite": [
+    "impactPlate_heavy_000",
+    "impactPlate_heavy_001"
+   ],
+   "vol": 0.8
+  },
+  "hit.plank": {
+   "sprite": [
+    "impactPlank_medium_000",
+    "impactPlank_medium_001"
+   ],
+   "vol": 0.8
+  },
+  "hit.light": {
+   "sprite": [
+    "impactGeneric_light_000",
+    "impactGeneric_light_001",
+    "impactGeneric_light_002"
+   ],
+   "vol": 0.7
+  },
+  "step.grass": {
+   "sprite": [
+    "footstep_grass_000",
+    "footstep_grass_001",
+    "footstep_grass_002"
+   ],
+   "vol": 0.6
+  },
+  "blade.slice": {
+   "sprite": [
+    "knifeSlice",
+    "knifeSlice2"
+   ],
+   "vol": 0.6
+  },
+  "blade.draw": {
+   "sprite": [
+    "drawKnife1",
+    "drawKnife2"
+   ],
+   "vol": 0.6
+  },
+  "blade.chop": {
+   "sprite": [
+    "chop"
+   ],
+   "vol": 0.7
+  },
+  "coins": {
+   "sprite": [
+    "handleCoins",
+    "handleCoins2"
+   ],
+   "vol": 0.7
+  },
+  "card.flip": {
+   "sprite": [
+    "bookFlip1",
+    "bookFlip2"
+   ],
+   "vol": 0.6
+  },
+  "card.place": {
+   "sprite": [
+    "bookPlace1",
+    "bookPlace2"
+   ],
+   "vol": 0.7
+  },
+  "cloth": {
+   "sprite": [
+    "cloth1",
+    "cloth2"
+   ],
+   "vol": 0.6
+  },
+  "door": {
+   "sprite": [
+    "doorClose_1"
+   ],
+   "vol": 0.6
+  },
+  "creak": {
+   "sprite": [
+    "creak1"
+   ],
+   "vol": 0.6
+  },
+  "latch": {
+   "sprite": [
+    "metalLatch"
+   ],
+   "vol": 0.6
+  },
+  "tone.pop": {
+   "zzfx": [
+    0.5,
+    0,
+    700,
+    0,
+    0,
+    0.07,
+    1,
+    1,
+    20
+   ]
+  },
+  "tone.good": {
+   "zzfx": [
+    0.5,
+    0,
+    523.25,
+    0,
+    0.06,
+    0.12,
+    1
+   ],
+   "notes": [
+    0,
+    4,
+    7,
+    12
+   ],
+   "step": 0.05
+  },
+  "tone.bad": {
+   "zzfx": [
+    0.45,
+    0,
+    220,
+    0,
+    0.15,
+    0.2,
+    2,
+    1,
+    -0.74
+   ],
+   "vol": 0.7
+  },
+  "tone.thud": {
+   "zzfx": [
+    0.9,
+    0,
+    120,
+    0,
+    0,
+    0.12,
+    0,
+    1,
+    -1.2,
+    0,
+    0,
+    0,
+    0,
+    0.3
+   ]
+  },
+  "tone.slam": {
+   "zzfx": [
+    1,
+    0,
+    70,
+    0,
+    0.1,
+    0.4,
+    0,
+    1,
+    -0.1,
+    0,
+    0,
+    0,
+    0,
+    0.5
+   ]
+  },
+  "tone.tick": {
+   "zzfx": [
+    0.25,
+    0,
+    880,
+    0,
+    0.04,
+    0.08,
+    5,
+    1
+   ]
+  },
+  "tone.go": {
+   "zzfx": [
+    0.3,
+    0,
+    660,
+    0,
+    0.08,
+    0.12,
+    5,
+    1
+   ],
+   "notes": [
+    0,
+    7
+   ],
+   "step": 0.08
+  },
+  "tone.win": {
+   "zzfx": [
+    0.5,
+    0,
+    523.25,
+    0,
+    0.12,
+    0.2,
+    1
+   ],
+   "notes": [
+    0,
+    4,
+    7,
+    12,
+    16
+   ],
+   "step": 0.09
+  },
+  "tone.lose": {
+   "zzfx": [
+    0.45,
+    0,
+    392,
+    0,
+    0.15,
+    0.22,
+    1
+   ],
+   "notes": [
+    0,
+    -3,
+    -7,
+    -12
+   ],
+   "step": 0.14
+  },
+  "tone.star": {
+   "zzfx": [
+    0.4,
+    0,
+    1318.5,
+    0,
+    0.04,
+    0.3,
+    0
+   ],
+   "notes": [
+    0,
+    7
+   ],
+   "step": 0.07
+  },
+  "tone.chime": {
+   "zzfx": [
+    0.35,
+    0,
+    1046.5,
+    0,
+    0.03,
+    0.25,
+    0
+   ],
+   "notes": [
+    0,
+    5,
+    9
+   ],
+   "step": 0.05
+  },
+  "tone.zap": {
+   "zzfx": [
+    0.35,
+    0,
+    900,
+    0,
+    0.02,
+    0.15,
+    3,
+    1,
+    -20,
+    0,
+    0,
+    0,
+    0,
+    2
+   ],
+   "vol": 0.7
+  },
+  "tone.whoosh": {
+   "zzfx": [
+    0.4,
+    0,
+    300,
+    0.03,
+    0.05,
+    0.15,
+    4,
+    1,
+    10,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    -1200
+   ],
+   "vol": 0.8
+  },
+  "tone.boom": {
+   "zzfx": [
+    0.9,
+    0,
+    60,
+    0,
+    0.1,
+    0.5,
+    4,
+    1,
+    -0.5,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    -900
+   ]
+  },
+  "tone.fire": {
+   "zzfx": [
+    0.6,
+    0,
+    200,
+    0.02,
+    0.1,
+    0.3,
+    4,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    -1600
+   ],
+   "vol": 0.8
+  },
+  "tone.ice": {
+   "zzfx": [
+    0.35,
+    0,
+    1760,
+    0,
+    0.05,
+    0.3,
+    0,
+    1,
+    -5
+   ],
+   "notes": [
+    0,
+    5
+   ],
+   "step": 0.04,
+   "vol": 0.7
+  },
+  "tone.cast": {
+   "zzfx": [
+    0.4,
+    0,
+    587.33,
+    0,
+    0.06,
+    0.25,
+    1
+   ],
+   "notes": [
+    0,
+    2,
+    4,
+    7,
+    9,
+    12
+   ],
+   "step": 0.05
+  },
+  "tone.warn": {
+   "zzfx": [
+    0.4,
+    0,
+    110,
+    0,
+    0.1,
+    0.08,
+    2
+   ],
+   "notes": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "step": 0.15,
+   "vol": 0.8
+  },
+  "tone.howl": {
+   "zzfx": [
+    0.4,
+    0,
+    420,
+    0.05,
+    0.2,
+    0.4,
+    0,
+    1,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    5
+   ],
+   "vol": 0.8
+  },
+  "tone.bite": {
+   "zzfx": [
+    0.3,
+    0,
+    260,
+    0,
+    0.02,
+    0.05,
+    5,
+    1,
+    -5
+   ],
+   "vol": 0.7
+  }
+ },
+ "base": {
+  "button": "ui.click",
+  "toggle": "ui.toggle",
+  "pause": "ui.open",
+  "resume": "ui.close",
+  "tick": "tone.tick",
+  "go": "tone.go",
+  "win": "tone.win",
+  "lose": "tone.lose",
+  "star": {
+   "sound": "tone.star",
+   "min": 120
+  }
+ },
+ "kits": {
+  "td": {
+   "music": "td",
+   "events": {
+    "spawn": {
+     "sound": "step.grass",
+     "min": 160,
+     "vol": 0.4
+    },
+    "hit": {
+     "sound": "hit.punch",
+     "min": 45,
+     "vol": 0.45
+    },
+    "kill": {
+     "sound": "hit.soft.heavy",
+     "min": 70,
+     "vol": 0.6
+    },
+    "wall": {
+     "sound": "hit.wood.medium",
+     "min": 140,
+     "vol": 0.7
+    },
+    "wallBreak": "hit.plate",
+    "boss": "hit.bell",
+    "charge": "tone.warn",
+    "cast": "tone.cast",
+    "wave": "ui.confirm",
+    "low": {
+     "sound": "ui.error",
+     "min": 2000
+    },
+    "cardPump": {
+     "sound": "card.flip",
+     "min": 120
+    },
+    "cardPay": "coins"
+   }
+  },
+  "throw": {
+   "music": "throw",
+   "events": {
+    "launch": "tone.whoosh",
+    "hit": {
+     "sound": "hit.wood.medium",
+     "min": 50
+    }
+   }
+  },
+  "rope": {
+   "music": "rope",
+   "events": {
+    "cut": "blade.slice",
+    "bounce": {
+     "sound": "ui.pluck",
+     "min": 80
+    },
+    "eat": "tone.good"
+   }
+  },
+  "flight": {
+   "music": "flight",
+   "events": {
+    "tap": {
+     "sound": "tone.pop",
+     "min": 60
+    },
+    "crash": "hit.soft.heavy"
+   }
+  },
+  "whack": {
+   "music": "whack",
+   "events": {
+    "hit": {
+     "sound": "hit.light",
+     "min": 50
+    },
+    "catch": {
+     "sound": "ui.drop",
+     "min": 50
+    },
+    "miss": "ui.error"
+   }
+  },
+  "card": {
+   "music": "card",
+   "events": {
+    "draw": {
+     "sound": "card.flip",
+     "min": 90
+    },
+    "play": "card.place",
+    "pay": "coins",
+    "hurt": {
+     "sound": "hit.punch",
+     "min": 60
+    },
+    "heal": "tone.chime"
+   }
+  },
+  "seal": {
+   "music": null,
+   "events": {
+    "cast": "tone.cast",
+    "fail": "tone.bad"
+   }
+  },
+  "board": {
+   "music": null,
+   "events": {}
+  }
+ },
+ "games": {
+  "shouqiang": {
+   "kit": "td",
+   "events": {
+    "hit": {
+     "sound": "hit.punch",
+     "min": 45,
+     "vol": 0.4
+    },
+    "kill": {
+     "sound": "hit.soft.heavy",
+     "min": 70,
+     "vol": 0.55
+    },
+    "boom.huo": {
+     "sound": "tone.fire",
+     "min": 90
+    },
+    "boom.han": {
+     "sound": "tone.ice",
+     "min": 90
+    },
+    "boom.spell": {
+     "sound": "tone.boom",
+     "min": 120
+    },
+    "boom.foxfire": {
+     "sound": "tone.ice",
+     "min": 90
+    },
+    "chain": {
+     "sound": "tone.zap",
+     "min": 90
+    },
+    "strike": {
+     "sound": "tone.boom",
+     "min": 150
+    },
+    "howl": "tone.howl",
+    "roar": "tone.warn",
+    "wail": "tone.bad",
+    "cast": {
+     "sound": "blade.draw",
+     "min": 110,
+     "vol": 0.5
+    },
+    "wall": {
+     "sound": "hit.wood.medium",
+     "min": 160,
+     "vol": 0.6
+    },
+    "spawn": {
+     "sound": "step.grass",
+     "min": 200,
+     "vol": 0.35
+    },
+    "huge": "tone.warn",
+    "picked": "card.place",
+    "offer": "card.flip",
+    "wave": "ui.confirm",
+    "clear": "tone.good",
+    "boss": "hit.bell",
+    "low": {
+     "sound": "ui.error",
+     "min": 3000
+    },
+    "won": null,
+    "lost": null
+   }
+  },
+  "sadou": {
+   "kit": "td",
+   "events": {
+    "pop": {
+     "sound": "tone.pop",
+     "min": 35,
+     "vol": 0.45
+    },
+    "good": {
+     "sound": "tone.good",
+     "min": 120
+    },
+    "bad": {
+     "sound": "tone.bad",
+     "min": 120
+    },
+    "thud": {
+     "sound": "hit.soft.heavy",
+     "min": 60,
+     "vol": 0.6
+    },
+    "hit": {
+     "sound": "hit.punch",
+     "min": 50,
+     "vol": 0.4
+    },
+    "slam": {
+     "sound": "hit.punch.heavy",
+     "min": 300
+    },
+    "tick": {
+     "sound": "tone.tick",
+     "min": 200
+    },
+    "go": {
+     "sound": "tone.go",
+     "min": 200
+    },
+    "win": null,
+    "lose": null
+   }
+  },
+  "sadoushou": {
+   "kit": "td",
+   "events": {
+    "pop": {
+     "sound": "tone.pop",
+     "min": 35,
+     "vol": 0.45
+    },
+    "good": {
+     "sound": "tone.good",
+     "min": 120
+    },
+    "bad": {
+     "sound": "tone.bad",
+     "min": 120
+    },
+    "thud": {
+     "sound": "hit.soft.heavy",
+     "min": 60,
+     "vol": 0.6
+    },
+    "hit": {
+     "sound": "hit.punch",
+     "min": 50,
+     "vol": 0.4
+    },
+    "slam": {
+     "sound": "hit.punch.heavy",
+     "min": 300
+    },
+    "tick": {
+     "sound": "tone.tick",
+     "min": 200
+    },
+    "go": {
+     "sound": "tone.go",
+     "min": 200
+    },
+    "win": null,
+    "lose": null
+   }
+  },
+  "shoulu": {
+   "kit": "td",
+   "events": {
+    "build": "hit.wood.light",
+    "hit": {
+     "sound": "hit.soft.heavy",
+     "min": 120
+    },
+    "bite": {
+     "sound": "hit.punch",
+     "min": 60,
+     "vol": 0.45
+    },
+    "wave": "ui.confirm",
+    "howl": "tone.howl",
+    "pounce": "cloth",
+    "foxfire": "tone.ice",
+    "hair": "tone.chime",
+    "throw": {
+     "sound": "cloth",
+     "min": 90,
+     "vol": 0.5
+    },
+    "snap": "latch",
+    "feed": "tone.fire",
+    "kill": {
+     "sound": "hit.soft",
+     "min": 70,
+     "vol": 0.6
+    },
+    "zap": {
+     "sound": "tone.zap",
+     "min": 90
+    },
+    "boom": {
+     "sound": "tone.boom",
+     "min": 120
+    },
+    "heroDown": "tone.bad",
+    "heroUp": "tone.good",
+    "cry": "tone.warn",
+    "low": {
+     "sound": "ui.error",
+     "min": 3000
+    },
+    "early": "coins"
+   }
+  },
+  "zhazhai": {
+   "kit": "throw",
+   "events": {
+    "impactWoodLight": {
+     "sound": "hit.wood.light",
+     "min": 40
+    },
+    "impactWoodMedium": {
+     "sound": "hit.wood.medium",
+     "min": 40
+    },
+    "impactWoodHeavy": {
+     "sound": "hit.wood.heavy",
+     "min": 40
+    },
+    "impactGlassLight": {
+     "sound": "hit.glass.light",
+     "min": 40
+    },
+    "impactGlassMedium": {
+     "sound": "hit.glass.medium",
+     "min": 40
+    },
+    "impactGlassHeavy": {
+     "sound": "hit.glass.heavy",
+     "min": 40
+    },
+    "impactMetalLight": {
+     "sound": "hit.metal.light",
+     "min": 40
+    },
+    "impactMetalMedium": {
+     "sound": "hit.metal.medium",
+     "min": 40
+    },
+    "impactMetalHeavy": {
+     "sound": "hit.metal.heavy",
+     "min": 40
+    },
+    "impactStoneLight": {
+     "sound": "hit.stone",
+     "min": 40
+    },
+    "impactStoneMedium": {
+     "sound": "hit.stone",
+     "min": 40
+    },
+    "impactStoneHeavy": {
+     "sound": "hit.stone",
+     "min": 40
+    },
+    "pigDestroy01": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy02": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy03": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy04": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy05": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy06": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy07": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy08": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy09": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "pigDestroy10": {
+     "sound": "hit.soft.heavy",
+     "min": 60
+    },
+    "click": "ui.click",
+    "select": "ui.select",
+    "back": "ui.back",
+    "drop": "ui.drop",
+    "pluck": "ui.pluck",
+    "birdLaunch": "tone.whoosh",
+    "birdImpact": {
+     "sound": "hit.soft",
+     "min": 50
+    },
+    "explosion": "tone.boom",
+    "birdSplit": "tone.pop",
+    "jingleWin": null,
+    "jingleLose": "tone.lose"
+   }
+  },
+  "kailu": {
+   "kit": "board",
+   "events": {
+    "chew": {
+     "sound": "creak",
+     "min": 250
+    },
+    "reveal": "tone.good",
+    "reveal.best": "tone.win"
+   }
+  },
+  "fallrope": {
+   "kit": "rope"
+  },
+  "bread": {
+   "kit": "rope"
+  },
+  "rentrope": {
+   "kit": "rope"
+  },
+  "niugurope": {
+   "kit": "rope"
+  },
+  "qimai": {
+   "kit": "flight"
+  },
+  "rain": {
+   "kit": "whack"
+  },
+  "kapai": {
+   "kit": "card"
+  },
+  "jieyin": {
+   "kit": "seal"
+  },
+  "doufa": {
+   "kit": "seal"
+  },
+  "zhidian": {
+   "kit": "seal"
+  },
+  "texie": {
+   "kit": "seal"
+  },
+  "luoshu": {
+   "kit": "board"
+  },
+  "wuziqi": {
+   "kit": "board"
+  },
+  "yabao": {
+   "kit": "board"
+  },
+  "huarong": {
+   "kit": "board"
+  },
+  "qiqiao": {
+   "kit": "board"
+  },
+  "xiangqi": {
+   "kit": "board"
+  },
+  "drawguess": {
+   "kit": "board"
+  },
+  "lianliankan": {
+   "kit": "board"
+  },
+  "sneeze": {
+   "kit": "board"
+  },
+  "yubujiuge": {
+   "kit": "board"
+  }
+ }
+}

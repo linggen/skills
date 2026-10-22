@@ -16,7 +16,7 @@ import type { Position } from "../types/Vector2";
 import { LevelBuilder } from "../systems/level/LevelBuilder";
 import {
   ConsoleLogger,
-  PhaserSoundAdapter,
+  ShellSoundAdapter,
   SettingsStore,
   PhaserTweenProvider,
   AudioContext,
@@ -182,12 +182,12 @@ export function getServiceContainer(): ServiceContainer {
   return globalContainer;
 }
 
-export function bootstrapAudio(game: Phaser.Game, scene: Phaser.Scene): IAudioSystem {
+export function bootstrapAudio(_game: Phaser.Game, scene: Phaser.Scene): IAudioSystem {
   const container = getServiceContainer();
 
   const logger = new ConsoleLogger("[AudioSystem]");
 
-  const adapter = new PhaserSoundAdapter(game, logger);
+  const adapter = new ShellSoundAdapter(); // every sound by name to the shell (scripts/games/kit/sound.js)
 
   const settings = new SettingsStore();
 

@@ -1,5 +1,5 @@
 export { ConsoleLogger } from "./adapters/ConsoleLogger";
-export { PhaserSoundAdapter } from "./adapters/PhaserSoundAdapter";
+export { ShellSoundAdapter } from "./adapters/ShellSoundAdapter";
 export { SettingsStore } from "./stores/SettingsStore";
 export { PhaserTweenProvider } from "./tween/PhaserTweenProvider";
 export { AudioContext } from "./players/AudioContext";

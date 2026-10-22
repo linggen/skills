@@ -1,0 +1,497 @@
+{
+ "_about": "The shared sound bank's sources (doc/game-kit.md § Sound). `node tools/sound/build.mjs` fetches each pack or track (sha256-checked, cached in tools/sound/.cache, never committed), cuts the sprite and the music beds into scripts/games/kit/audio/ and writes bank.json. Every row CC0; CREDITS.md beside the output lists them.",
+ "packs": {
+  "kenney-interface": {
+   "title": "Interface Sounds",
+   "author": "Kenney (kenney.nl)",
+   "page": "https://kenney.nl/assets/interface-sounds",
+   "url": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+   "sha256": "f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232",
+   "licence": "CC0 1.0 (License.txt in the zip)"
+  },
+  "kenney-impact": {
+   "title": "Impact Sounds",
+   "author": "Kenney (kenney.nl)",
+   "page": "https://kenney.nl/assets/impact-sounds",
+   "url": "https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip",
+   "sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+   "licence": "CC0 1.0 (License.txt in the zip)"
+  },
+  "kenney-rpg": {
+   "title": "RPG Audio",
+   "author": "Kenney (kenney.nl)",
+   "page": "https://kenney.nl/assets/rpg-audio",
+   "url": "https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip",
+   "sha256": "6dbeaf8544da958d8f2adcb4a4a4b76c1ade34a05f8ab9edccd327da7375f38b",
+   "licence": "CC0 1.0 (License.txt in the zip)"
+  }
+ },
+ "sprite": [
+  {
+   "id": "click_001",
+   "pack": "kenney-interface",
+   "path": "Audio/click_001.ogg"
+  },
+  {
+   "id": "click_002",
+   "pack": "kenney-interface",
+   "path": "Audio/click_002.ogg"
+  },
+  {
+   "id": "select_001",
+   "pack": "kenney-interface",
+   "path": "Audio/select_001.ogg"
+  },
+  {
+   "id": "back_001",
+   "pack": "kenney-interface",
+   "path": "Audio/back_001.ogg"
+  },
+  {
+   "id": "toggle_001",
+   "pack": "kenney-interface",
+   "path": "Audio/toggle_001.ogg"
+  },
+  {
+   "id": "open_001",
+   "pack": "kenney-interface",
+   "path": "Audio/open_001.ogg"
+  },
+  {
+   "id": "close_001",
+   "pack": "kenney-interface",
+   "path": "Audio/close_001.ogg"
+  },
+  {
+   "id": "drop_001",
+   "pack": "kenney-interface",
+   "path": "Audio/drop_001.ogg"
+  },
+  {
+   "id": "drop_002",
+   "pack": "kenney-interface",
+   "path": "Audio/drop_002.ogg"
+  },
+  {
+   "id": "pluck_001",
+   "pack": "kenney-interface",
+   "path": "Audio/pluck_001.ogg"
+  },
+  {
+   "id": "pluck_002",
+   "pack": "kenney-interface",
+   "path": "Audio/pluck_002.ogg"
+  },
+  {
+   "id": "confirmation_001",
+   "pack": "kenney-interface",
+   "path": "Audio/confirmation_001.ogg"
+  },
+  {
+   "id": "error_004",
+   "pack": "kenney-interface",
+   "path": "Audio/error_004.ogg"
+  },
+  {
+   "id": "glass_001",
+   "pack": "kenney-interface",
+   "path": "Audio/glass_001.ogg"
+  },
+  {
+   "id": "scratch_001",
+   "pack": "kenney-interface",
+   "path": "Audio/scratch_001.ogg"
+  },
+  {
+   "id": "tick_001",
+   "pack": "kenney-interface",
+   "path": "Audio/tick_001.ogg"
+  },
+  {
+   "id": "impactWood_light_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_light_000.ogg"
+  },
+  {
+   "id": "impactWood_light_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_light_001.ogg"
+  },
+  {
+   "id": "impactWood_light_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_light_002.ogg"
+  },
+  {
+   "id": "impactWood_medium_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_medium_000.ogg"
+  },
+  {
+   "id": "impactWood_medium_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_medium_001.ogg"
+  },
+  {
+   "id": "impactWood_medium_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_medium_002.ogg"
+  },
+  {
+   "id": "impactWood_heavy_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_heavy_000.ogg"
+  },
+  {
+   "id": "impactWood_heavy_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_heavy_001.ogg"
+  },
+  {
+   "id": "impactWood_heavy_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactWood_heavy_002.ogg"
+  },
+  {
+   "id": "impactGlass_light_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGlass_light_000.ogg"
+  },
+  {
+   "id": "impactGlass_light_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGlass_light_001.ogg"
+  },
+  {
+   "id": "impactGlass_light_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGlass_light_002.ogg"
+  },
+  {
+   "id": "impactGlass_medium_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGlass_medium_000.ogg"
+  },
+  {
+   "id": "impactGlass_medium_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGlass_medium_001.ogg"
+  },
+  {
+   "id": "impactGlass_heavy_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGlass_heavy_000.ogg"
+  },
+  {
+   "id": "impactGlass_heavy_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGlass_heavy_001.ogg"
+  },
+  {
+   "id": "impactMining_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMining_000.ogg"
+  },
+  {
+   "id": "impactMining_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMining_001.ogg"
+  },
+  {
+   "id": "impactMining_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMining_002.ogg"
+  },
+  {
+   "id": "impactMining_003",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMining_003.ogg"
+  },
+  {
+   "id": "impactMining_004",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMining_004.ogg"
+  },
+  {
+   "id": "impactMetal_light_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMetal_light_000.ogg"
+  },
+  {
+   "id": "impactMetal_light_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMetal_light_001.ogg"
+  },
+  {
+   "id": "impactMetal_medium_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMetal_medium_000.ogg"
+  },
+  {
+   "id": "impactMetal_medium_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMetal_medium_001.ogg"
+  },
+  {
+   "id": "impactMetal_heavy_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMetal_heavy_000.ogg"
+  },
+  {
+   "id": "impactMetal_heavy_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactMetal_heavy_001.ogg"
+  },
+  {
+   "id": "impactPunch_medium_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPunch_medium_000.ogg"
+  },
+  {
+   "id": "impactPunch_medium_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPunch_medium_001.ogg"
+  },
+  {
+   "id": "impactPunch_medium_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPunch_medium_002.ogg"
+  },
+  {
+   "id": "impactPunch_heavy_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPunch_heavy_000.ogg"
+  },
+  {
+   "id": "impactPunch_heavy_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPunch_heavy_001.ogg"
+  },
+  {
+   "id": "impactPunch_heavy_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPunch_heavy_002.ogg"
+  },
+  {
+   "id": "impactSoft_medium_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactSoft_medium_000.ogg"
+  },
+  {
+   "id": "impactSoft_medium_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactSoft_medium_001.ogg"
+  },
+  {
+   "id": "impactSoft_medium_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactSoft_medium_002.ogg"
+  },
+  {
+   "id": "impactSoft_heavy_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactSoft_heavy_000.ogg"
+  },
+  {
+   "id": "impactSoft_heavy_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactSoft_heavy_001.ogg"
+  },
+  {
+   "id": "impactSoft_heavy_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactSoft_heavy_002.ogg"
+  },
+  {
+   "id": "impactBell_heavy_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactBell_heavy_000.ogg"
+  },
+  {
+   "id": "impactPlate_heavy_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPlate_heavy_000.ogg"
+  },
+  {
+   "id": "impactPlate_heavy_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPlate_heavy_001.ogg"
+  },
+  {
+   "id": "impactPlank_medium_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPlank_medium_000.ogg"
+  },
+  {
+   "id": "impactPlank_medium_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactPlank_medium_001.ogg"
+  },
+  {
+   "id": "impactGeneric_light_000",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGeneric_light_000.ogg"
+  },
+  {
+   "id": "impactGeneric_light_001",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGeneric_light_001.ogg"
+  },
+  {
+   "id": "impactGeneric_light_002",
+   "pack": "kenney-impact",
+   "path": "Audio/impactGeneric_light_002.ogg"
+  },
+  {
+   "id": "footstep_grass_000",
+   "pack": "kenney-impact",
+   "path": "Audio/footstep_grass_000.ogg"
+  },
+  {
+   "id": "footstep_grass_001",
+   "pack": "kenney-impact",
+   "path": "Audio/footstep_grass_001.ogg"
+  },
+  {
+   "id": "footstep_grass_002",
+   "pack": "kenney-impact",
+   "path": "Audio/footstep_grass_002.ogg"
+  },
+  {
+   "id": "knifeSlice",
+   "pack": "kenney-rpg",
+   "path": "Audio/knifeSlice.ogg"
+  },
+  {
+   "id": "knifeSlice2",
+   "pack": "kenney-rpg",
+   "path": "Audio/knifeSlice2.ogg"
+  },
+  {
+   "id": "drawKnife1",
+   "pack": "kenney-rpg",
+   "path": "Audio/drawKnife1.ogg"
+  },
+  {
+   "id": "drawKnife2",
+   "pack": "kenney-rpg",
+   "path": "Audio/drawKnife2.ogg"
+  },
+  {
+   "id": "chop",
+   "pack": "kenney-rpg",
+   "path": "Audio/chop.ogg"
+  },
+  {
+   "id": "handleCoins",
+   "pack": "kenney-rpg",
+   "path": "Audio/handleCoins.ogg"
+  },
+  {
+   "id": "handleCoins2",
+   "pack": "kenney-rpg",
+   "path": "Audio/handleCoins2.ogg"
+  },
+  {
+   "id": "bookFlip1",
+   "pack": "kenney-rpg",
+   "path": "Audio/bookFlip1.ogg"
+  },
+  {
+   "id": "bookFlip2",
+   "pack": "kenney-rpg",
+   "path": "Audio/bookFlip2.ogg"
+  },
+  {
+   "id": "bookPlace1",
+   "pack": "kenney-rpg",
+   "path": "Audio/bookPlace1.ogg"
+  },
+  {
+   "id": "bookPlace2",
+   "pack": "kenney-rpg",
+   "path": "Audio/bookPlace2.ogg"
+  },
+  {
+   "id": "cloth1",
+   "pack": "kenney-rpg",
+   "path": "Audio/cloth1.ogg"
+  },
+  {
+   "id": "cloth2",
+   "pack": "kenney-rpg",
+   "path": "Audio/cloth2.ogg"
+  },
+  {
+   "id": "doorClose_1",
+   "pack": "kenney-rpg",
+   "path": "Audio/doorClose_1.ogg"
+  },
+  {
+   "id": "creak1",
+   "pack": "kenney-rpg",
+   "path": "Audio/creak1.ogg"
+  },
+  {
+   "id": "metalLatch",
+   "pack": "kenney-rpg",
+   "path": "Audio/metalLatch.ogg"
+  }
+ ],
+ "music": {
+  "td": {
+   "title": "Menu Music",
+   "author": "wipics",
+   "page": "https://opengameart.org/content/menu-music-2",
+   "url": "https://opengameart.org/sites/default/files/menu_0.mp3",
+   "sha256": "e4aac64b15a2d2ed8c8e224a5f4a1acb20ad99a5edff9157871b7afff1843aaf",
+   "licence": "CC0 1.0",
+   "why": "erhu, drums, a dojo loop (22 s, made to loop)"
+  },
+  "throw": {
+   "title": "Shangri River",
+   "author": "tozan",
+   "page": "https://opengameart.org/content/shangri-river",
+   "url": "https://opengameart.org/sites/default/files/Shangririver_0.ogg",
+   "sha256": "4dfe3b45720bd4b47f7851a69d03c03f51abecf919d63a1c7352208419a4017a",
+   "licence": "CC0 1.0",
+   "why": "oriental adventure (tags: china, oriental, asia)"
+  },
+  "rope": {
+   "title": "Orien2",
+   "author": "tozan",
+   "page": "https://opengameart.org/content/orien2",
+   "url": "https://opengameart.org/sites/default/files/orien2.ogg",
+   "sha256": "ac5e18040189d0990c92c76f6fa12c67a2d3818c3e595b65cd899ca33736a065",
+   "licence": "CC0 1.0",
+   "why": "koto and pan flute, light"
+  },
+  "flight": {
+   "title": "1 minute.",
+   "author": "thisismyusername",
+   "page": "https://opengameart.org/content/1-minute",
+   "url": "https://opengameart.org/sites/default/files/1%20minute.mp3",
+   "sha256": "0ae9d1ef70270398250f91b064bb3f71101d3cb52306a555d72ac807f68b81db",
+   "licence": "CC0 1.0",
+   "why": "a slow pentatonic improvisation, loopable — breath for 气走经脉"
+  },
+  "whack": {
+   "title": "Oriental",
+   "author": "shadowfire452",
+   "page": "https://opengameart.org/content/oriental",
+   "url": "https://opengameart.org/sites/default/files/Oriental.mp3",
+   "sha256": "3bea858d6e5771168e21d4307129dbddf7a2868bdff0160bafbb91358b259720",
+   "licence": "CC0 1.0",
+   "why": "a quick peaceful oriental theme (22 s)"
+  },
+  "card": {
+   "title": "Kingdom of a Million Elephants under a White Parasol",
+   "author": "spring-spring",
+   "page": "https://opengameart.org/content/kingdom-of-a-million-elephants-under-a-white-parasol",
+   "url": "https://opengameart.org/sites/default/files/kingdom%20of%20a%20million%20elephants%20under%20a%20white%20parasol_4.ogg",
+   "sha256": "2c138c24ecd6f3af12393e71f0a29ff2c38df0913cba222c62636d70bd445e5c",
+   "licence": "CC0 1.0",
+   "why": "flute, strings, marimba, brass — a vaguely Asian theme with weight for a duel"
+  }
+ }
+}

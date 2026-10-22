@@ -199,7 +199,6 @@ export class BootScene extends Phaser.Scene {
     this.loadUI();
     this.loadLevel();
     this.loadVFX();
-    this.loadAudio();
     this.loadShaders();
   }
 
@@ -230,10 +229,6 @@ export class BootScene extends Phaser.Scene {
 
   private loadVFX(): void {
     this.load.atlas("vfx", "atlases/vfx.png", "atlases/vfx.json");
-  }
-
-  private loadAudio(): void {
-    this.load.audioSprite("sfx-master", "audio/sprites/sfx-master.json");
   }
 
   create(): void {

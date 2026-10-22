@@ -73,8 +73,35 @@ story's board card (`cards.js`), the 游戏厅 (`arcade.js`) and the try page. T
   The shell's pause drives their play, and their own pause button and result screen stand down; the big banners
   and the in-play 3-2-1 stay on the canvas as play. A won level names its next one (`r.next`), and the 游戏厅
   shows 下一关. 砸寨 restarts a lost level in place under the lead card, because a story board never settles a loss.
-- **Next:** the prefetch call itself (银月's lines into `say`). Sound and music settings: 砸寨's were only in its
-  own pause menu, so they are unreachable in the shell for now.
+- **Next:** the prefetch call itself (银月's lines into `say`).
+
+## Sound, as built (10-22)
+
+Hanli 10-22: 「还没加声效吗」 → 「开吧. 统一做进外壳」. One layer, the shell's: `scripts/games/kit/sound.js` (layer 3's
+first resident; `scripts/games/kit/` is where the shared assets live).
+- **A game only names what happened.** `shell.sound(event, { kind })`; data says what it sounds like:
+  `kit/audio/sounds.json` looks an event up in the game's row, then its kit's (塔防 `td`, 投掷 `throw`, 绳索 `rope`, 飞行
+  `flight`, 打地鼠 `whack`, 卡牌 `card`, 结印 `seal`, a plain `board`), then the shell's base row. `event.kind` comes
+  first (守墙关's `boom.huo` / `boom.han`); `null` is silence on purpose. Every registry game has a row (a test).
+- **The shell sounds its own moments:** a button, the 3-2-1 and 开始, pause and resume, the result (won with a chime
+  per star, or not yet). The story's mounted games settle through it too (`beat-host.js settle`). A kit's own
+  win/lose names are `null`, so the end never sounds twice.
+- **One bed per kit,** looped from the board's mount, quiet under the pause veil, gone at the result, on 再来 and
+  when the board is forgotten. A plain board has none.
+- **The bank:** a sprite of Kenney's CC0 packs (Interface, Impact, RPG Audio) and ZzFX recipes (MIT,
+  `vendor/zzfx-1.4.0.mjs`) for the tones: pops, chimes, the 3-2-1, win and lose, fire, ice, the 结印 cast, the warn.
+  Six beds from OpenGameArt, each checked CC0 on its page. `tools/sound/build.mjs` fetches every source
+  (sha256-pinned in `sources.json`), cuts Ogg and AAC (the page picks what the browser decodes) and writes
+  `bank.json` and `CREDITS.md`.
+- **One AudioContext,** made on the page's first touch, click or key (iOS), suspended while the tab is hidden. A
+  storm stays a texture: a least gap per event (`min` ms), at most 14 voices, a compressor before the speakers.
+  The Phaser kits run with `noAudio`.
+- **Settings:** 音效 and 音乐 under the pause veil, on/off and a volume each, one for every game
+  (`localStorage lingjing.sound`), music quiet by default. 砸寨's own audio settings are inert now: its players send
+  every name to the shell (`ShellSoundAdapter.ts`), and its old sprite and its music are gone.
+- **Wired so far:** 守墙关 (its scene's core events), 守山门 and 撒豆成兵 (their `sfx.js` forwards each name),
+  守炉 (its core's events), 砸寨 (its sprite keys), 开炉. The rope kit, 气走经脉, 接雨 and 斗法 have their bed and
+  the shell's moments; their own events come next.
 
 ## Play kits
 
@@ -94,7 +121,8 @@ A new kit needs Hanli's play-through on a prototype first, the way 守炉 got in
 - **Characters are shared across kits.** One 野猪 with one set of action frames
   (idle, walk, hit, poof) serves 塔防, 投掷 and 秘境. The same goes for 小满 and 银月.
 - **Fx presets:** dust, sparks, ink splat, the poof, screen shake, hit-stop, slow-mo.
-- **Sound:** a CC0 bank (Kenney UI and impacts) plus ZzFX for generated effects, one music bed per kit.
+- **Sound:** a CC0 bank (Kenney UI and impacts) plus ZzFX for generated effects, one music bed per kit (built 10-22:
+  § Sound, as built).
 - **Art:** painted by the image model (Codex / FLUX) from `art-style.md`. No code-drawn
   characters in a finished game. Packed into atlases.
 

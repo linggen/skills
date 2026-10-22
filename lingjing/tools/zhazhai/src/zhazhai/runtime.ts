@@ -17,6 +17,8 @@ export interface ShellHands {
   paused(): boolean;
   onPause(fn: (on: boolean) => void): () => void;
   lead(text: string, o?: { count?: boolean; auto?: number; reducedMotion?: boolean }): Promise<void>;
+  /** A sound, by name: the shell's one sound layer plays it (systems/audio/adapters/ShellSoundAdapter.ts). */
+  sound?(event: string): void;
 }
 
 export const Runtime = {

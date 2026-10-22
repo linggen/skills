@@ -70,7 +70,7 @@ export class PlayScene extends Phaser.Scene {
     makeNumberFont(this, 'numBad', { fill: ['#ffffff', '#ffd0c8', '#ff6a5a'], stroke: '#4a0610', size: 60, line: 12 });
     makeNumberFont(this, 'numSmall', { fill: ['#ffffff', '#ffffff'], stroke: '#1b0d05', size: 36, line: 8 });
     this.em = makeEmitters(this, D.fx, this.calm ? 0.45 : 1);
-    this.sfx = new Sfx();
+    this.sfx = new Sfx(this.cfg.shell); // its sounds go to the shell's one sound layer
     this.ground();
     this.hud = new Hud(this, { depth: D.hud });
     this.hud.setTier(tierOf(this.g).name[this.lang]);

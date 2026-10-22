@@ -280,7 +280,8 @@ or magenta key that is keyed out. Two seeds a piece; the kept seed is in the scr
 ## Sounds
 
 `worlds/jiuding/sound/deer/` — the old 射鹿 board's sound effects (CC0: Kenney, artisticdude, ezwa / qubodup, Jan Schupke)
-— deleted 2026-10-20 with the board; 砸寨 plays its own (Angry Aliens' CC0 sprite, `scripts/games/zhazhai/audio/`).
+— deleted 2026-10-20 with the board. Since 2026-10-22 every small game's sounds and music are the shell's one bank:
+`scripts/games/kit/audio/CREDITS.md` (each file, its source URL, CC0), built by `tools/sound/build.mjs`. 砸寨's old sprite is gone.
 
 For 古六's 底册 · 看完烧了 (setpieces/diche.js, wm-laba; the weak-board sweep, 2026-10-19 — the standing rule Hanli approved): `setpiece/diche-zao.webp` (1536×1024: the kitchen before dawn, the stove's fire mouth, the oil lamp on the ledge; the house's `places/shiao-zaojian.webp` as the style reference), and the cut-outs `diche-page.webp` (阿禾's page unfolded, ant-sized ink rows — FLUX can't write, the box says the book's words) and `diche-burn.webp` (the same page, black eating up from the bottom, a small flame), painted on a flat dark ground and cut off it. Painted by the local picture model (FLUX.2 klein 4B, mflux) with `tools/paint-diche.py` (paint-yaowang.py's painting and cutting): zao seed 1 of 1–3, page seed 1 of 1–2, burn seed 1 of 1–2 (`KEPT`, with what was wrong with the rest). Code only places, moves and lights them; nothing pictorial is drawn. Every picture looked at. No outside source.
 

@@ -584,6 +584,7 @@ export class PlayScene extends Phaser.Scene {
   on(e) {
     this.ON[e.t]?.call(this, e);
     this.lanes?.on(e);
+    this.cfg.shell?.sound?.(e.t, { kind: e.kind }); // its sound: the shell's, by data (games/kit/audio/sounds.json)
   }
 
   ON = {

@@ -7,7 +7,7 @@
 // win and its grade, then onWin → the rules' `win`, the pay, beat-won.js). A pure board module
 // (html · act) never comes here: the page draws those itself, as ever.
 
-import { shellFor } from './games/shell.js';
+import { settle, shellFor } from './games/shell.js';
 
 /** A board whose module keeps only the contract (a `mount`, no `html` of its own), or one that asks for
     its own mount in the story (`meta.beat: 'mount'` — 气走经脉 paints every animation frame itself). */
@@ -28,8 +28,8 @@ export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc
     const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
     let her = null;
     try { her = prefetch(id, g); } catch (e) { console.warn('[lingjing] prefetch', id, e); }
-    Promise.resolve(g.mod.mount(node, { lang: lang(), reducedMotion, seed: `${g.day ?? ''}|${id}`, data: g.data ?? {}, winHold: 0, shell: shellFor(id), ...(her ?? {}) }))
-      .then((result) => onSettled(g, result ?? { won: false }))
+    Promise.resolve(g.mod.mount(node, { lang: lang(), reducedMotion, seed: `${g.day ?? ''}|${id}`, data: g.data ?? {}, winHold: 0, shell: shellFor(id, g.mod.meta?.id), ...(her ?? {}) }))
+      .then((result) => { settle(id, result); onSettled(g, result ?? { won: false }); }) // its sound, its bed stopped
       .catch((e) => console.warn('[lingjing] beat', id, e));
     return entry;
   };

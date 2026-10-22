@@ -113,7 +113,7 @@ test('every game in the registry can be hosted in the shell, and every place a g
   assert.match(read('../scripts/cards.js'), /frameHtml\(\{ id, title/);
   assert.match(read('../scripts/arcade.js'), /playAlone\(card, mount/);
   assert.match(read('../scripts/try-game.html'), /playAlone\(document\.getElementById\('play'\), mount/);
-  assert.match(read('../scripts/beat-host.js'), /shell: shellFor\(id\)/);
+  assert.match(read('../scripts/beat-host.js'), /shell: shellFor\(id, g\.mod\.meta\?\.id\)/);
   assert.match(read('../scripts/lingjing.js'), /paused: \(\) => view\.logOpen \|\| anyPaused\(\)/);
   // The story's card fight is the 游戏厅's mounted room in the shell (Hanli 10-22: 「故事里的对战迁移可以开」): mounted once a
   // fight into a shell frame, its taps and drag the room's own — the page draws no room and wires no drag of its own.
@@ -252,4 +252,68 @@ test('a lead card reads at the story\'s 自动 pace, one rule for every game: 3 
     assert.match(src, /shell\.lead\((?:said|told), \{ auto: 'read', lang/, `${f} reads its lead by the one rule`);
     assert.doesNotMatch(src, /auto: reducedMotion \? 2400 : 4200/, f);
   }
+});
+
+/* ── Sound: one layer, the shell's (games/kit/sound.js; Hanli 10-22: 「还没加声效吗」 → 「开吧. 统一做进外壳」) ── */
+
+const SOUNDS = JSON.parse(read('../scripts/games/kit/audio/sounds.json'));
+const BANK = JSON.parse(read('../scripts/games/kit/audio/bank.json'));
+
+test('sound: every registry game has a sound map, every map names only sounds in the bank, every sprite slice is in the sprite', async () => {
+  const { namedSounds, kitOf, musicOf } = await import('../scripts/games/kit/sound.js');
+  const ids = [...new Set(REG.games.filter((g) => !g.replaced && !g.stage).map((g) => g.id))];
+  for (const id of ids) {
+    assert.ok(SOUNDS.games[id], `${id}: a row in games/kit/audio/sounds.json`);
+    assert.ok(SOUNDS.kits[kitOf(SOUNDS, id)], `${id}: its kit ${kitOf(SOUNDS, id)} is a kit`);
+  }
+  assert.deepEqual(Object.keys(SOUNDS.games).filter((id) => !ids.includes(id)), [], 'a sound row for a game the registry no longer has');
+  for (const s of namedSounds(SOUNDS)) assert.ok(SOUNDS.sounds[s], `the maps name ${s}, which is not a sound`);
+  for (const [id, def] of Object.entries(SOUNDS.sounds)) {
+    assert.ok(def.zzfx || def.sprite?.length, `${id}: a slice or a recipe`);
+    for (const k of def.sprite ?? []) assert.ok(BANK.sprite.map[k], `${id}: ${k} is not in the sprite`);
+  }
+  // One bed per kit that has one, on disk in both encodings; the six kits Hanli named have theirs.
+  for (const kit of ['td', 'throw', 'rope', 'flight', 'whack', 'card']) assert.equal(SOUNDS.kits[kit].music, kit, kit);
+  for (const [kit, k] of Object.entries(SOUNDS.kits)) {
+    if (!k.music) continue;
+    for (const ext of ['ogg', 'm4a']) assert.ok(fs.existsSync(new URL(`../scripts/games/kit/audio/${BANK.music[k.music][ext]}`, import.meta.url)), `${kit}: ${ext}`);
+  }
+  for (const ext of ['ogg', 'm4a']) assert.ok(fs.existsSync(new URL(`../scripts/games/kit/audio/${BANK.sprite[ext]}`, import.meta.url)));
+  assert.equal(musicOf(SOUNDS, 'shouqiang'), 'td');
+  assert.equal(musicOf(SOUNDS, 'wuziqi'), null, 'a plain board plays no bed');
+  // Every file is credited, and 砸寨 keeps no copy of its own.
+  const credits = read('../scripts/games/kit/audio/CREDITS.md');
+  for (const k of Object.keys(BANK.sprite.map)) assert.ok(credits.includes(k), `CREDITS: ${k}`);
+  for (const kit of Object.keys(BANK.music)) assert.match(credits, new RegExp(`\\| ${kit} \\|`), `CREDITS: the ${kit} bed`);
+  assert.doesNotMatch(credits, /CC-BY|GPL/, 'CC0 only');
+});
+
+test('sound: the shell sounds its own moments and owns the bed; games only name what happened', async () => {
+  const src = read('../scripts/games/shell.js');
+  assert.match(src, /import \{ sound, unlockOn \} from '\.\/kit\/sound\.js'/);
+  assert.match(src, /unlockOn\(doc\)/, 'the first touch wakes the one context');
+  assert.match(src, /sound: \(event, o\) => sound\.play\(gameOf\(id\), event, o\)/, 'a game names an event through its shell');
+  assert.match(src, /export function forget\(id\) \{ store\.delete\(id\); sound\.stop\(id\); \}/, 'a board gone: its bed stops');
+  assert.match(src, /sound\.duck\(id, s\.paused\)/, 'the bed goes quiet under the pause');
+  assert.match(read('../scripts/beat-host.js'), /settle\(id, result\)/, 'the story\'s settle sounds the end');
+  // The pause veil holds 音效 · 音乐.
+  forget('snd1');
+  setPaused('snd1', true);
+  const f = frameHtml({ id: 'snd1', title: 'x', timed: true });
+  assert.match(f, /data-shell-snd="sfx" checked/);
+  assert.match(f, /data-shell-vol="music"/);
+  assert.match(f, /<span>音效<\/span>/);
+  assert.match(f, /<span>音乐<\/span>/);
+  forget('snd1');
+  // The bar's one mute: on every game, in time or not, beside the pause.
+  assert.match(frameHtml({ id: 'snd2', title: 'x', timed: true }), /gshell-tools"><button type="button" class="gshell-btn gshell-mute" data-shell-mute aria-pressed="false" aria-label="静音"[^>]*>🔊<\/button><button[^>]*data-shell-pause/);
+  assert.match(frameHtml({ id: 'snd3', title: 'x', timed: false, lang: 'en' }), /data-shell-mute[^>]*aria-label="Mute"/, 'a board not in time has the mute too');
+  assert.match(src, /if \(!on\) \{ sound\.mute\(false\);/);
+  // No game opens an AudioContext of its own any more: the TD three and 撒豆成兵 send names to the shell.
+  for (const f2 of ['../scripts/games/shoulu.js', '../tools/sadou/src/sfx.js', '../tools/sadoushou/src/sfx.js', '../tools/shouqiang/src/play.js']) {
+    assert.doesNotMatch(read(f2), /new \(?(win\.|globalThis\.)?(webkit)?AudioContext|createOscillator/, f2);
+  }
+  assert.match(read('../tools/shouqiang/src/play.js'), /this\.cfg\.shell\?\.sound\?\.\(e\.t, \{ kind: e\.kind \}\)/);
+  assert.match(read('../scripts/games/shoulu.js'), /shell\?\.sound\?\.\(e\.sound \?\? Object\.keys\(e\)\[0\]\)/);
+  for (const g of ['sadou', 'sadoushou']) assert.match(read(`../tools/${g}/src/play.js`), /new Sfx\(this\.cfg\.shell\)/, g);
 });

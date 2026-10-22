@@ -13,6 +13,17 @@ dist file under a new versioned name, update this table, and remove the old file
 
 matter-js 0.20.0 fetched with `npm pack matter-js@0.20.0` on 2026-10-16.
 
+## ZzFX (the small games' generated sounds, games/kit/sound.js)
+
+| File | Package | Licence | Source tarball sha256 | Upstream file sha256 |
+|---|---|---|---|---|
+| `zzfx-1.4.0.mjs` | zzfx 1.4.0 (`ZzFX.js`, ESM; Frank Force, github.com/KilledByAPixel/ZzFX) | MIT — the licence block kept in the file | 2321f2de873696c04163aa7262324920deefc0c5790eca9bc3f1bf1a45c54e78 | 43f321101a935892c112a291e2e943b4da33159b43fcd4a21f3eae710f4a27ff |
+
+Fetched with `npm pack zzfx@1.4.0` on 2026-10-22. **Patched, one line:** `audioContext: new AudioContext` → `audioContext: null`
+(upstream opens a context at import, which breaks the Node tests and would be a second context on the page; the sound layer
+only calls `ZZFX.buildSamples` and plays through its own one), plus CRLF → LF and a three-line header saying so.
+The recorded sounds and music beds are not vendored code: `games/kit/audio/CREDITS.md`, built from `tools/sound/sources.json`.
+
 ## 砸寨 (games/zhazhai/)
 
 One ESM bundle, `games/zhazhai/zhazhai.min.mjs` (+ `fragment-worker.min.mjs`, its atlases, sounds and `LICENSE.txt`), built by
@@ -28,10 +39,11 @@ One ESM bundle, `games/zhazhai/zhazhai.min.mjs` (+ `fragment-worker.min.mjs`, it
 
 Upstream's art is Kenney's (kenney.nl, credited in its README; Kenney's packs are CC0 — not re-checked on kenney.nl).
 Still Kenney's in our build: the UI atlas (panels, buttons, icons), the VFX atlas (particles, splats), the fonts
-(Kenney Bold / Future Narrow — Latin digits only; Chinese falls back to the system's), the sounds, the ground tiles,
+(Kenney Bold / Future Narrow — Latin digits only; Chinese falls back to the system's), the ground tiles,
 the star and coin icons, and the cloud layers. Repainted (`tools/zhazhai/atlas.py`): every block (瓦/木/石/铁/火药桶),
 the weasels and the four throws (Codex, `tools/paint-zhazhai.py`), the slingshot and its foot, the karst/pine layers.
-Fetched 2026-10-20.
+Fetched 2026-10-20. Its sounds left on 2026-10-22: upstream's sprite (`sfx-master.ogg`, 1.5 MB, its music of unchecked
+origin) is gone; every sound goes by name to the shell's shared CC0 bank (`ShellSoundAdapter.ts`, `games/kit/audio/`).
 
 ## The shared game engine (doc/game-kit.md § Layers, 1 Engine)
 

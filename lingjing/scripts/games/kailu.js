@@ -124,7 +124,8 @@ export function mount(container, { lang = 'zh', data = null, signal, reducedMoti
       if (done) return;
       const icon = (id, art) => iconOf(id, art ?? d.brief.inputs?.find((i) => i.id === id)?.art ?? null);
       game = start({
-        parent: box, base: new URL('./kailu/', import.meta.url).href, lang: L, reducedMotion, dev, showFps, shell, onEvent,
+        parent: box, base: new URL('./kailu/', import.meta.url).href, lang: L, reducedMotion, dev, showFps, shell,
+        onEvent: (f) => { shell?.sound?.(f.t, { kind: f.grade }); onEvent?.(f); }, // its facts sound too (games/kit/audio/sounds.json kailu)
         data: { brief: d.brief, roll: d.roll, icon },
         onEnd: (r) => { fit.stop(); finish(r); },
       });

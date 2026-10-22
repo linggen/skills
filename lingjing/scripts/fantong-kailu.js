@@ -51,7 +51,7 @@ export function fantongKailu({ feed, onFed = () => {}, doc = globalThis.document
       onFed(r);
       return r;
     };
-    kailu().then(({ mount }) => (cur === me ? mount(node, { lang: o.lang, data: { brief, roll }, signal: ctrl.signal, reducedMotion: o.reducedMotion, shell: shellFor(KAILU_SHELL), onGame: (g) => { me.game = g; } }) : { left: true }))
+    kailu().then(({ mount }) => (cur === me ? mount(node, { lang: o.lang, data: { brief, roll }, signal: ctrl.signal, reducedMotion: o.reducedMotion, shell: shellFor(KAILU_SHELL, 'kailu'), onGame: (g) => { me.game = g; } }) : { left: true }))
       .then((r) => { if (cur === me && !r?.left) start(latest ?? brief, o); }) // 收下: up again, on the brief the feed left
       .catch((e) => console.warn('[kailu]', e));
   }

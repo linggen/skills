@@ -1,0 +1,369 @@
+{
+ "_about": "Built by tools/sound/build.mjs from tools/sound/sources.json — do not edit. sprite.map: id → [start s, length s] in sfx.ogg / sfx.m4a.",
+ "sprite": {
+  "ogg": "sfx.ogg",
+  "m4a": "sfx.m4a",
+  "map": {
+   "click_001": [
+    0.05,
+    0.0971
+   ],
+   "click_002": [
+    0.2671,
+    0.0116
+   ],
+   "select_001": [
+    0.3987,
+    0.0404
+   ],
+   "back_001": [
+    0.5591,
+    0.061
+   ],
+   "toggle_001": [
+    0.7401,
+    0.1364
+   ],
+   "open_001": [
+    0.9965,
+    0.1478
+   ],
+   "close_001": [
+    1.2643,
+    0.1478
+   ],
+   "drop_001": [
+    1.5321,
+    0.1321
+   ],
+   "drop_002": [
+    1.7841,
+    0.1882
+   ],
+   "pluck_001": [
+    2.0923,
+    0.0995
+   ],
+   "pluck_002": [
+    2.3118,
+    0.1617
+   ],
+   "confirmation_001": [
+    2.5935,
+    0.2898
+   ],
+   "error_004": [
+    3.0033,
+    0.1045
+   ],
+   "glass_001": [
+    3.2278,
+    0.2755
+   ],
+   "scratch_001": [
+    3.6234,
+    0.1393
+   ],
+   "tick_001": [
+    3.8827,
+    0.045
+   ],
+   "impactWood_light_000": [
+    4.0477,
+    0.2627
+   ],
+   "impactWood_light_001": [
+    4.4304,
+    0.2627
+   ],
+   "impactWood_light_002": [
+    4.8131,
+    0.2627
+   ],
+   "impactWood_medium_000": [
+    5.1958,
+    0.3298
+   ],
+   "impactWood_medium_001": [
+    5.6455,
+    0.3298
+   ],
+   "impactWood_medium_002": [
+    6.0953,
+    0.3298
+   ],
+   "impactWood_heavy_000": [
+    6.5451,
+    0.3101
+   ],
+   "impactWood_heavy_001": [
+    6.9752,
+    0.3101
+   ],
+   "impactWood_heavy_002": [
+    7.4054,
+    0.3101
+   ],
+   "impactGlass_light_000": [
+    7.8355,
+    0.2307
+   ],
+   "impactGlass_light_001": [
+    8.1862,
+    0.2067
+   ],
+   "impactGlass_light_002": [
+    8.5129,
+    0.2067
+   ],
+   "impactGlass_medium_000": [
+    8.8396,
+    0.5405
+   ],
+   "impactGlass_medium_001": [
+    9.5001,
+    0.5405
+   ],
+   "impactGlass_heavy_000": [
+    10.1605,
+    0.2383
+   ],
+   "impactGlass_heavy_001": [
+    10.5188,
+    0.429
+   ],
+   "impactMining_000": [
+    11.0678,
+    0.9374
+   ],
+   "impactMining_001": [
+    12.1253,
+    0.8694
+   ],
+   "impactMining_002": [
+    13.1147,
+    0.8047
+   ],
+   "impactMining_003": [
+    14.0394,
+    0.9917
+   ],
+   "impactMining_004": [
+    15.1511,
+    0.8303
+   ],
+   "impactMetal_light_000": [
+    16.1014,
+    0.373
+   ],
+   "impactMetal_light_001": [
+    16.5944,
+    0.2489
+   ],
+   "impactMetal_medium_000": [
+    16.9633,
+    0.2689
+   ],
+   "impactMetal_medium_001": [
+    17.3522,
+    0.1405
+   ],
+   "impactMetal_heavy_000": [
+    17.6127,
+    0.1648
+   ],
+   "impactMetal_heavy_001": [
+    17.8975,
+    0.3564
+   ],
+   "impactPunch_medium_000": [
+    18.3738,
+    0.4305
+   ],
+   "impactPunch_medium_001": [
+    18.9244,
+    0.4017
+   ],
+   "impactPunch_medium_002": [
+    19.4461,
+    0.5414
+   ],
+   "impactPunch_heavy_000": [
+    20.1075,
+    0.649
+   ],
+   "impactPunch_heavy_001": [
+    20.8765,
+    0.5359
+   ],
+   "impactPunch_heavy_002": [
+    21.5324,
+    0.4575
+   ],
+   "impactSoft_medium_000": [
+    22.1099,
+    0.1151
+   ],
+   "impactSoft_medium_001": [
+    22.345,
+    0.1804
+   ],
+   "impactSoft_medium_002": [
+    22.6454,
+    0.1323
+   ],
+   "impactSoft_heavy_000": [
+    22.8977,
+    0.5268
+   ],
+   "impactSoft_heavy_001": [
+    23.5445,
+    0.5691
+   ],
+   "impactSoft_heavy_002": [
+    24.2337,
+    0.5694
+   ],
+   "impactBell_heavy_000": [
+    24.9231,
+    1.4802
+   ],
+   "impactPlate_heavy_000": [
+    26.5232,
+    0.4887
+   ],
+   "impactPlate_heavy_001": [
+    27.1319,
+    0.3494
+   ],
+   "impactPlank_medium_000": [
+    27.6013,
+    0.779
+   ],
+   "impactPlank_medium_001": [
+    28.5003,
+    0.779
+   ],
+   "impactGeneric_light_000": [
+    29.3993,
+    0.1611
+   ],
+   "impactGeneric_light_001": [
+    29.6804,
+    0.1146
+   ],
+   "impactGeneric_light_002": [
+    29.915,
+    0.1611
+   ],
+   "footstep_grass_000": [
+    30.1961,
+    0.7747
+   ],
+   "footstep_grass_001": [
+    31.0908,
+    0.6707
+   ],
+   "footstep_grass_002": [
+    31.8815,
+    0.6895
+   ],
+   "knifeSlice": [
+    32.691,
+    0.5995
+   ],
+   "knifeSlice2": [
+    33.4106,
+    0.5688
+   ],
+   "drawKnife1": [
+    34.0994,
+    0.3997
+   ],
+   "drawKnife2": [
+    34.6191,
+    0.4459
+   ],
+   "chop": [
+    35.185,
+    0.2403
+   ],
+   "handleCoins": [
+    35.5452,
+    0.8455
+   ],
+   "handleCoins2": [
+    36.5108,
+    0.3382
+   ],
+   "bookFlip1": [
+    36.969,
+    0.7687
+   ],
+   "bookFlip2": [
+    37.8576,
+    0.4305
+   ],
+   "bookPlace1": [
+    38.4081,
+    0.2767
+   ],
+   "bookPlace2": [
+    38.8048,
+    0.3536
+   ],
+   "cloth1": [
+    39.2784,
+    0.661
+   ],
+   "cloth2": [
+    40.0595,
+    0.4151
+   ],
+   "doorClose_1": [
+    40.5945,
+    0.6751
+   ],
+   "creak1": [
+    41.3896,
+    0.661
+   ],
+   "metalLatch": [
+    42.1706,
+    0.2613
+   ]
+  }
+ },
+ "music": {
+  "td": {
+   "ogg": "music/td.ogg",
+   "m4a": "music/td.m4a",
+   "seconds": 22.4479
+  },
+  "throw": {
+   "ogg": "music/throw.ogg",
+   "m4a": "music/throw.m4a",
+   "seconds": 54.4299
+  },
+  "rope": {
+   "ogg": "music/rope.ogg",
+   "m4a": "music/rope.m4a",
+   "seconds": 69.9241
+  },
+  "flight": {
+   "ogg": "music/flight.ogg",
+   "m4a": "music/flight.m4a",
+   "seconds": 60
+  },
+  "whack": {
+   "ogg": "music/whack.ogg",
+   "m4a": "music/whack.m4a",
+   "seconds": 22.5001
+  },
+  "card": {
+   "ogg": "music/card.ogg",
+   "m4a": "music/card.m4a",
+   "seconds": 92.5714
+  }
+ }
+}

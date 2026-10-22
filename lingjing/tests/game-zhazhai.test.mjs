@@ -123,8 +123,10 @@ test('every asset the bundle loads is shipped beside it', () => {
   assert.ok(paths.size >= 8, `found ${paths.size} asset paths`);
   for (const p of paths) assert.ok(existsSync(join(out, p)), p);
   for (const k of ['weasel-s', 'weasel-m', 'weasel-l', 'proj-stone', 'slingshot', 'proj-arrow', 'deer-graze', 'lu-shut', 'place-creek', 'place-shoal']) assert.ok(existsSync(join(out, 'art', `${k}.webp`)), k);
-  const audio = JSON.parse(readFileSync(join(out, 'audio/sprites/sfx-master.json'), 'utf8'));
-  for (const r of audio.resources) assert.ok(existsSync(join(out, 'audio/sprites', r.replace(/^.*\//, ''))), r);
+  // Its sounds are the shell's shared bank (games/kit/audio, Hanli 10-22): no sprite of its own, no Phaser audio.
+  assert.equal(existsSync(join(out, 'audio')), false, 'no audio copy of its own');
+  assert.doesNotMatch(bundle, /audio\/sprites\/sfx-master/);
+  assert.match(bundle, /noAudio:\s*!0/);
 });
 
 test('the bundle was rebuilt after its source last changed (cd tools/zhazhai && npm run build)', () => {

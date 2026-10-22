@@ -205,7 +205,6 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
   // held: a level drawn but not started (the shell's lead card is up over it); frozen(): no clock, no orders
   let held = false, leadTok = 0;
   let g = null, li = -1, paper = null, speed = 1, paused = false, S = noSel(), aimAt = null, touchy = false, sel = -1, raf = 0, last = 0, acc = 0, shown = false, sc = 1, dpr = 1, previewKey = '';
-  let AC = null;
   const sagaQ = [], toastQ = [];
   let sagaT = 0, toastT = 0;
 
@@ -231,18 +230,6 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     })).catch(() => null);
     off.push(() => seals.then((h) => h?.close()));
 
-    const blip = (f, d, type = 'sine', vol = 0.04) => {
-      try { if (!AC) return; const o = AC.createOscillator(), gn = AC.createGain(); o.type = type; o.frequency.value = f; gn.gain.value = vol; gn.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d); o.connect(gn).connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch { /* no audio */ }
-    };
-    let lastKill = 0;
-    const SOUNDS = { build: () => blip(520, 0.12, 'triangle', 0.05), hit: () => blip(110, 0.35, 'sawtooth', 0.07), bite: () => blip(260, 0.05, 'square', 0.018),
-      wave: () => { blip(330, 0.25, 'triangle', 0.05); setTimeout(() => blip(440, 0.3, 'triangle', 0.05), 120); },
-      howl: () => { blip(420, 0.5, 'sine', 0.05); setTimeout(() => blip(640, 0.6, 'sine', 0.04), 140); },
-      pounce: () => blip(300, 0.18, 'triangle', 0.05), foxfire: () => { blip(700, 0.3, 'sine', 0.035); setTimeout(() => blip(520, 0.4, 'sine', 0.03), 90); },
-      hair: () => { blip(980, 0.25, 'sine', 0.03); setTimeout(() => blip(1240, 0.3, 'sine', 0.025), 110); },
-      throw: () => blip(380, 0.08, 'triangle', 0.03), snap: () => { blip(1600, 0.12, 'sine', 0.02); setTimeout(() => blip(1900, 0.15, 'sine', 0.018), 60); },
-      feed: () => { blip(220, 0.3, 'sawtooth', 0.03); setTimeout(() => blip(330, 0.25, 'triangle', 0.03), 80); } };
-    const wake = () => { if (!AC) { try { AC = new (win.AudioContext || win.webkitAudioContext)(); } catch { AC = null; } } };
 
     const saga = (lines) => { sagaQ.length = 0; sagaT = 0; sagaQ.push(...lines); };
     const toast = (s) => toastQ.push(s);
@@ -343,7 +330,6 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     on(card, 'click', (e) => {
       const b = e.target.closest('button');
       if (!b) return;
-      wake();
       if (b.dataset.lv) start(Number(b.dataset.lv));
       else if (b.dataset.a === 'again') start(li);
       else if (b.dataset.a === 'nextlv' && nextLv(levels, li)) start(levelAt(levels, nextLv(levels, li)));
@@ -390,7 +376,6 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     on(stage, 'contextmenu', (e) => e.preventDefault());
     on(cv, 'pointermove', (e) => { aimAt = toWorld(e); });
     on(cv, 'pointerdown', (e) => {
-      wake();
       if (!g || g.over || frozen()) return;
       const right = e.button === 2 || (e.button === 0 && e.ctrlKey); // a Mac's ctrl-click is a right-click
       if (e.button !== 0 && e.button !== 2) return;
@@ -435,7 +420,6 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     on(bar, 'pointercancel', unpress);
     on(bar, 'pointerleave', unpress);
     on(bar, 'click', (e) => {
-      wake();
       if (pressed) { pressed = false; return; } // the long press's own click
       if (!g || g.over || frozen()) return;
       if (e.target.closest('[data-hero]')) { apply(pressKey(g, { ...S, spot: sel }, '1', performance.now() / 1000)); return; }
@@ -494,7 +478,6 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     });
     on($('.sl-controls'), 'click', (e) => {
       const a = e.target.closest('button')?.dataset.a;
-      wake();
       if (a === 'next' && g && !frozen()) { sagaQ.length = 0; sagaT = 0; callWave(g, true); }
       else if (a === 'speed') { speed = speed === 1 ? 2 : 1; e.target.closest('button').textContent = `×${speed}`; }
       else if (a === 'pause' && g) { paused = !paused; e.target.closest('button').textContent = paused ? t.resume : t.pause; }
@@ -502,8 +485,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     });
 
     function onEvent(e) {
-      if (e.sound === 'kill' || e.kill) { const n = performance.now(); if (n - lastKill > 70) { lastKill = n; blip(760 + Math.random() * 120, 0.06, 'sine', 0.025); } }
-      if (e.sound && SOUNDS[e.sound]) SOUNDS[e.sound]();
+      shell?.sound?.(e.sound ?? Object.keys(e)[0]); // its sound, by name: the shell's (games/kit/audio/sounds.json shoulu)
       if (e.banner) saga([{ zh: t.banner(e.banner, e.banner === waves(g)), en: t.banner(e.banner, e.banner === waves(g)), big: true, d: 1.6 }]);
       if (e.intro && INTRO[lang][e.intro]) toast(INTRO[lang][e.intro]);
       if (e.unlocked) toast(t.unlocked(e.unlocked));

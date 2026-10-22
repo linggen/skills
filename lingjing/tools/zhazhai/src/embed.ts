@@ -64,6 +64,7 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave,
     backgroundColor: "#87CEEB",
     loader: { baseURL: base },
     fps: { target: 60, forceSetTimeOut: false },
+    audio: { noAudio: true }, // the shell plays its sounds (ShellSoundAdapter)
     input: { activePointers: 3 },
     render: {
       antialias: true,
