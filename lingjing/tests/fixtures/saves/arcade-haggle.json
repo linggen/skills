@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 550,
-  "wealth": 462,
+  "wealth": 447,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -333,7 +333,7 @@
   "day": {
    "key": "2026-10-01",
    "progress": 75,
-   "wealth": 317
+   "wealth": 312
   },
   "stamina": 100,
   "stamina_at": "2026-10-02T01:00:00.000Z",
@@ -784,8 +784,6 @@
    "zhoutian-sanguan",
    "yaoyuan-xunye",
    "diyilu-niugu",
-   "jin-chat-ma",
-   "jin-faqiu",
    "mijing-zhenyan",
    "anhe-dark",
    "xirang-wumen",
@@ -793,7 +791,6 @@
    "zhaojing-mirror",
    "dabi-sneeze",
    "jiaxin-letter",
-   "jin-chat-dark",
    "jiuge-yubu",
    "furnace-ding"
   ],
