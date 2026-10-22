@@ -48,9 +48,10 @@ export const JIN_ONE = [
   ['win', { id: 'jin-toulan' }, 'jin'],
   ['task', { action: 'done', id: 'jin-toulan' }, 'jin'],
   ['resolve', { exit: 'on' }, 'jin'],
+  // 六一七 · 别拍 (今's 聊天, 2026-10-22: the 调息 sweep — 先吐 told by the retest's way on): the 617 group that night
+  ['win', { id: 'jin-chat-617' }, 'jin'],
+  ['task', { action: 'done', id: 'jin-chat-617' }, 'jin'],
   ['resolve', { exit: 'on' }, 'jin'],
-  ['win', { id: 'jin-qianmi' }, 'jin'],
-  ['task', { action: 'done', id: 'jin-qianmi' }, 'jin'],
   ['resolve', { exit: 'finish' }, 'jin'],
 ];
 /* Up to 00-hall: out of the valley, the deer, the rent, her sleep in the

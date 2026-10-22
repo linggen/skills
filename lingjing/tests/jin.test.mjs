@@ -81,15 +81,19 @@ test('a save walks 古二 → 今 · 一 → 古三: the close of 第二回, the
   s = win(s, content, ctx, { id: 'jin-toulan' }).state;
   s = task(s, content, ctx, { action: 'done', id: 'jin-toulan' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
-  s = resolve(s, content, ctx, { exit: 'on' }).state;
-  assert.equal(s.scene, 'j01-retest');
-  assert.equal(resolve(s, content, ctx, { exit: 'finish' }).result.refused, 'needs', 'the retest is run first');
+  assert.equal(s.scene, 'j01-anatomy');
+  // 六一七 · 别拍 (今's 聊天, 2026-10-22): the 617 group the night before the retest — the way on waits for it
+  assert.equal(resolve(s, content, ctx, { exit: 'on' }).result.refused, 'needs', 'the chat is had first');
   const before = { progress: s.progress, wealth: s.wealth, tier: s.tier, step: s.step };
-  s = win(s, content, ctx, { id: 'jin-qianmi' }).state;
-  const done = task(s, content, ctx, { action: 'done', id: 'jin-qianmi' });
+  s = win(s, content, ctx, { id: 'jin-chat-617' }).state;
+  const done = task(s, content, ctx, { action: 'done', id: 'jin-chat-617' });
   assert.equal(done.result.ok, true);
   s = done.state;
   assert.deepEqual({ progress: s.progress, wealth: s.wealth, tier: s.tier, step: s.step }, before, 'the 今 lifts nothing of the 古');
+  s = resolve(s, content, ctx, { exit: 'on' }).state;
+  assert.equal(s.scene, 'j01-retest');
+  // 先吐 is told by the way on now (the 调息 sweep): nothing to play at the retest
+  assert.equal(content.chapters['00-prologue'].scenes['j01-retest'].exits.find((e) => e.id === 'finish').needs, undefined);
   s = resolve(s, content, ctx, { exit: 'finish' }).state;
   assert.equal(s.scene, '00-gate');
   const g = look(s, content, ctx);
@@ -130,7 +134,8 @@ test('今 · 三 opens 筑基\'s chapter (古七, the old 古九) without spendi
   const snow = look(s, content, ctx);
   assert.equal(snow.chapter.fresh, true, 'and comes up there');
   assert.equal(snow.chapter.hui, 'h11', '古七 — its first half since the 2026-10-07 split');
-  let t = { ...newState(content, 'zh', NOW), chapter: '01-ji', scene: 'j09-noise', place: 'houshan', ended: ['00-prologue', '00-waimen', '00-zhuji'], done_scenes: ['09-cliff'] };
+  // fitWorld: as a save loads — j09-noise's 聊天 (2026-10-22) offered where it stands
+  let t = fitWorld({ ...newState(content, 'zh', NOW), chapter: '01-ji', scene: 'j09-noise', place: 'houshan', ended: ['00-prologue', '00-waimen', '00-zhuji'], done_scenes: ['09-cliff'] }, content);
   t = throughJin(t, content, NOW);
   assert.equal(t.scene, '01-arrive');
   const arrive = look(t, content, ctx).chapter;
@@ -151,18 +156,23 @@ test('an interlude the book holds back (`draft`) is not played', async () => {
 
 /* ── the games: each completable, each failure the book's, never stuck ── */
 
-// 今线's four boards play 气走经脉 levels since 10-19 (tests/qimai.test.mjs); the old breath boards were deleted the
-// same day (Hanli: 「没用在游戏中的, 都删了吧」), and 晨脉 is cut.
-test('every 今线 board is a 气走经脉 level: its task pays nothing, and its scene waits on it', () => {
-  const ids = ['jin-qianmi', 'jin-faqiu', 'jin-dark', 'jin-lastshot'];
-  for (const id of ids) {
+// 今线's boards (the 调息 sweep, Hanli 10-22: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): a chat in each
+// interlude (games/jinchat.js), and 罚球 · 吸四吐六 the one 气走经脉 left — its beat is the breath itself. 先吐, 黑地十一步
+// and 最后一罚 are cut (their ways on tell them); 晨脉 was cut 10-19.
+test('every 今线 board is a chat or 罚球: its task pays nothing, and its scene waits on it; the cut ones are offered nowhere', () => {
+  const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-faqiu': 'qimai' };
+  for (const [id, game] of Object.entries(games)) {
     const t = content.tasks.tasks.find(x => x.id === id);
-    assert.equal(t.game, 'qimai', id);
+    assert.equal(t.game, game, id);
     assert.equal(t.grant.progress ?? 0, 0);
     assert.equal(t.grant.wealth ?? 0, 0);
     const at = scenes().find(({ sc }) => sc.offers?.tasks?.includes(id));
     assert.ok(at && /^j\d\d$/.test(at.sc.hui), `${id} is an interlude's`);
     assert.ok(at.sc.exits.some(e => e.needs?.task === id && e.refuse?.zh && e.refuse?.en));
+  }
+  for (const id of ['jin-qianmi', 'jin-dark', 'jin-lastshot']) {
+    assert.ok(content.tasks.tasks.find(x => x.id === id)?.cut, `${id} cut`);
+    assert.ok(!scenes().some(({ sc }) => sc.offers?.tasks?.includes(id) || sc.exits.some((e) => e.needs?.task === id)), `${id}: offered nowhere`);
   }
   assert.ok(!scenes().some(({ sc }) => sc.offers?.tasks?.includes('jin-pulse')), '晨脉: cut, offered nowhere');
 });

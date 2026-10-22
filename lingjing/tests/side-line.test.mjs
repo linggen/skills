@@ -43,10 +43,10 @@ test('the 今 stage keeps none of the 古\'s furniture; the 古 stage keeps all 
   const kinds = stageCards({ ...l, waypoint: { goal: '外门大比' }, offers: [{ id: 'x' }], place: { ...l.place, encounter: { game: { id: 'haunt:x' }, creature: { id: 'x' } } } }).map(c => c.card);
   assert.ok(kinds.every(k => ['meet', 'panel', 'people', 'value', 'born', 'closed', 'board'].includes(k)), kinds.join());
   // Its game is the only board: the 古's practice open at the place stays off.
-  const retest = look({ ...s, scene: 'j01-retest', tasks: { ...s.tasks, 'jin-qianmi': { status: 'offered' } } }, content, ctx);
-  assert.deepEqual(retest.scene.games, ['jin-qianmi']);
-  const boards = stageCards({ ...retest, tasks: [...retest.tasks, { id: 'gu-board', kind: 'board', status: 'offered' }] }).filter(c => c.card === 'board').map(c => c.id);
-  assert.deepEqual(boards, ['jin-qianmi']);
+  const night = look({ ...s, scene: 'j01-anatomy', tasks: { ...s.tasks, 'jin-chat-617': { status: 'offered' } } }, content, ctx);
+  assert.deepEqual(night.scene.games, ['jin-chat-617']);
+  const boards = stageCards({ ...night, tasks: [...night.tasks, { id: 'gu-board', kind: 'board', status: 'offered' }] }).filter(c => c.card === 'board').map(c => c.id);
+  assert.deepEqual(boards, ['jin-chat-617']);
   // Back on the 古 (古三's gate): every part stands again.
   const gate = look({ ...s, scene: '00-gate', place: 'shanmen' }, content, ctx);
   assert.equal(sideLineOf(gate), null);
@@ -132,11 +132,11 @@ test('目前任务 in a scene is the scene\'s own written words — its game, el
   assert.equal(taskLine(content, { ...s, lang: 'en' }, ctx), `Now: ${firstSentence(track.setup.en)}`);
   assert.equal(taskLine(content, { ...s, lang: 'en' }, ctx), 'Now: Twelfth day of term, the 1000-metre fitness test.');
   // A scene that offers a game: the game, by its title — until it is played.
-  const retest = { ...s, scene: 'j01-retest' };
-  assert.equal(taskLine(content, retest, ctx), `目前任务：${gameTitle('jin-qianmi', 'zh')}`);
-  assert.equal(taskLine(content, { ...retest, lang: 'en' }, ctx), `Now: ${gameTitle('jin-qianmi', 'en')}`);
-  const played = { ...retest, tasks: { ...retest.tasks, 'jin-qianmi': { status: 'done' } } };
-  assert.equal(taskLine(content, played, ctx), `目前任务：${firstSentence(scene('j01-retest').setup.zh)}`);
+  const night = { ...s, scene: 'j01-anatomy' };
+  assert.equal(taskLine(content, night, ctx), `目前任务：${gameTitle('jin-chat-617', 'zh')}`);
+  assert.equal(taskLine(content, { ...night, lang: 'en' }, ctx), `Now: ${gameTitle('jin-chat-617', 'en')}`);
+  const played = { ...night, tasks: { ...night.tasks, 'jin-chat-617': { status: 'done' } } };
+  assert.equal(taskLine(content, played, ctx), `目前任务：${firstSentence(scene('j01-anatomy').setup.zh)}`);
   // A 古 scene with nothing in hand is told the same way; a quote is never cut.
   assert.equal(firstSentence('出村时，吴婆婆把一块木牌塞给你：「到了碑那儿，看看碑背面。」前山满地狗爪印。后半句。'), '出村时，吴婆婆把一块木牌塞给你：「到了碑那儿，看看碑背面。」前山满地狗爪印。');
   assert.equal(firstSentence('Eggs at 1.20 yuan each. Then more.'), 'Eggs at 1.20 yuan each.');

@@ -10,13 +10,14 @@ import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud,
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
-import { arcadeGameOf, arcadeRow, isArcadeBoard, withArcade } from './arcade-board.js';
+import { arcadeGameOf, arcadeRow, arcadeRowOf, isArcadeBoard, withArcade } from './arcade-board.js';
 /// A test save with no chat at all (`&chat=off`): the crawlers' opt-out (tools/playtest.mjs,
 /// page-crawl.mjs, play-human.mjs) — no Ling, no 银月, a word from the stage only shown. Without it a
 /// test save plays like the real game, its chat bound to that save (SKILL.md session-params).
 const CHATLESS = Boolean(SCRATCH) && new URLSearchParams(location.search).get('chat') === 'off';
 /// The 游戏厅's 试玩 (arcade-board.js): a test save's `&board=<game>` stands that game on the stage.
 const ARCADE_GAME = arcadeGameOf(location.search, SCRATCH);
+const ARCADE_ROW = arcadeRowOf(location.search, SCRATCH); // a story row's own deal (今's 聊天: one chat a row)
 let arcadeDeal = { row: null, title: null };
 import { plateHtml } from './plate.js';
 import { holdPlaceholder } from './invite.js';
@@ -4661,7 +4662,7 @@ async function arcadeBoot() {
     import(`./games/${ARCADE_GAME}.js`).catch(() => null),
   ]);
   const name = mod?.meta?.name;
-  arcadeDeal = { row: arcadeRow(reg, ARCADE_GAME), title: name ? `${name.zh}${name.en ? ` · ${name.en}` : ''}` : ARCADE_GAME };
+  arcadeDeal = { row: arcadeRow(reg, ARCADE_GAME, ARCADE_ROW), title: name ? `${name.zh}${name.en ? ` · ${name.en}` : ''}` : ARCADE_GAME };
 }
 
 async function boot() {

@@ -40,9 +40,10 @@ function atGate(lang) {
   s = win(s, content, ctx, { id: 'jin-toulan' }).state;
   s = task(s, content, ctx, { action: 'done', id: 'jin-toulan' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
+  // 六一七 · 别拍 (今's 聊天, 2026-10-22) at the anatomy scene's end; the retest is told
+  s = win(s, content, ctx, { id: 'jin-chat-617' }).state;
+  s = task(s, content, ctx, { action: 'done', id: 'jin-chat-617' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
-  s = win(s, content, ctx, { id: 'jin-qianmi' }).state;
-  s = task(s, content, ctx, { action: 'done', id: 'jin-qianmi' }).state;
   return resolve(s, content, ctx, { exit: 'finish' }).state;
 }
 

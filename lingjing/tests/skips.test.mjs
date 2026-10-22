@@ -124,33 +124,33 @@ test('a board left comes back by itself on a later day, the stage idle — won t
 
 test('改日 puts it off to another day; left again, it keeps where it was first left', () => {
   const { s, now } = at('00-zhuji/j07-dark');
-  const left = must(task, s, now, { action: 'skip', id: 'jin-dark' });
+  const left = must(task, s, now, { action: 'skip', id: 'jin-chat-dark' });
   assert.equal(left.skipped[0].line, 'jin', 'kept on the line it was left on');
   const idle = { ...left, tell_owed: [], told_scenes: [...(left.told_scenes ?? []), left.scene] };
   const d1 = later(now);
   const offered = look(idle, content, ctxAt(d1)).replay;
-  assert.equal(offered?.task, 'jin-dark');
-  assert.equal(offered.line, '那夜没走完的十一步……再试一回？', 'the task\'s own line, in the world\'s words');
-  const put = must(task, idle, d1, { action: 'later', id: 'jin-dark' });
+  assert.equal(offered?.task, 'jin-chat-dark');
+  assert.equal(offered.line, '那夜黑地里，马小宝喘不上来……再陪他一回？', 'the task\'s own line, in the world\'s words');
+  const put = must(task, idle, d1, { action: 'later', id: 'jin-chat-dark' });
   assert.equal(look(put, content, ctxAt(d1)).replay, undefined, 'not again today');
-  assert.equal(look(put, content, ctxAt(later(now, 2))).replay?.task, 'jin-dark', 'back another day');
+  assert.equal(look(put, content, ctxAt(later(now, 2))).replay?.task, 'jin-chat-dark', 'back another day');
   const d2 = later(now, 2);
-  const chosen = must(task, put, d2, { action: 'replay', id: 'jin-dark' });
+  const chosen = must(task, put, d2, { action: 'replay', id: 'jin-chat-dark' });
   // On the 今 line too, the board chosen again stands on the stage (live, j07-guan: the side line's filter dropped it).
   const g = at('00-zhuji/j07-guan');
-  const guan = must(task, { ...g.s, tell_owed: [], told_scenes: [...(g.s.told_scenes ?? []), 'j07-guan'], tasks: { ...g.s.tasks, 'jin-dark': { status: 'done', skipped: true }, 'jin-pulse': { status: 'done', done_at: d2.toISOString() } }, skipped: [put.skipped[0]], replay_day: null }, d2, { action: 'replay', id: 'jin-dark' });
+  const guan = must(task, { ...g.s, tell_owed: [], told_scenes: [...(g.s.told_scenes ?? []), 'j07-guan'], tasks: { ...g.s.tasks, 'jin-chat-dark': { status: 'done', skipped: true }, 'jin-pulse': { status: 'done', done_at: d2.toISOString() } }, skipped: [put.skipped[0]], replay_day: null }, d2, { action: 'replay', id: 'jin-chat-dark' });
   const lc = look(guan, content, ctxAt(d2));
-  assert.ok(stageSlots(lc, stageCards(lc)).main.some((c) => c.card === 'board' && c.id === 'jin-dark'), 'at the next 今 scene the board chosen again stands');
-  const again = must(task, chosen, d2, { action: 'skip', id: 'jin-dark' });
-  assert.deepEqual(again.skipped.map((e) => [e.task, e.scene, e.line, e.day]), [['jin-dark', 'j07-dark', 'jin', dayKey(d2)]]);
-  assert.equal(again.tasks['jin-dark'].skipped, true);
+  assert.ok(stageSlots(lc, stageCards(lc)).main.some((c) => c.card === 'board' && c.id === 'jin-chat-dark'), 'at the next 今 scene the board chosen again stands');
+  const again = must(task, chosen, d2, { action: 'skip', id: 'jin-chat-dark' });
+  assert.deepEqual(again.skipped.map((e) => [e.task, e.scene, e.line, e.day]), [['jin-chat-dark', 'j07-dark', 'jin', dayKey(d2)]]);
+  assert.equal(again.tasks['jin-chat-dark'].skipped, true);
   // Not offered while the stage is not idle: a passage owed, a fight open, on another line.
   assert.equal(look({ ...idle, tell_owed: ['after/x'] }, content, ctxAt(d1)).replay, undefined, 'a passage owed');
   assert.equal(look({ ...idle, fight: { game: 'x', creature: 'zheng', at: d1.toISOString() } }, content, ctxAt(d1)).replay, undefined, 'a fight open');
   assert.equal(look({ ...idle, skipped: [{ ...idle.skipped[0], line: null }] }, content, ctxAt(d1)).replay, undefined, 'a 古 board is not offered on the 今 line');
   // Only the page offers or leaves a board; refused when nothing is due.
-  assert.equal(task(idle, content, ctxAt(now), { action: 'replay', id: 'jin-dark' }).result.refused, 'not-due');
-  assert.equal(task(idle, content, ctxAt(now), { action: 'later', id: 'jin-dark' }).result.refused, 'not-due');
+  assert.equal(task(idle, content, ctxAt(now), { action: 'replay', id: 'jin-chat-dark' }).result.refused, 'not-due');
+  assert.equal(task(idle, content, ctxAt(now), { action: 'later', id: 'jin-chat-dark' }).result.refused, 'not-due');
 });
 
 test('a board not on the stage cannot be left; Ling never leaves or offers one (page-only)', () => {

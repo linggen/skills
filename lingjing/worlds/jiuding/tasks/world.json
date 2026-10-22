@@ -169,6 +169,7 @@
     },
     {
       "_jin": "今线's games (the interludes, 2026-10-05): the science lesson of each 今 played; they pay nothing — the 今 never lifts the 古 (Hanli: 不跨线).",
+      "_cut": "Off j01-retest 2026-10-22 (Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 — item 3, the 调息 sweep): the 今 interlude plays a chat now (jin-chat-617, at the end of j01-anatomy); the way on tells the breath as the book does; `cut` lets a save holding it offered let it go on load (state.mjs fitWorld). Row and level stay in the 游戏厅, under 旧版.", "cut": "2026-10-22",
       "id": "jin-qianmi", "kind": "board", "game": "qimai", "period": "once",
       "title": { "zh": "一千米补测 · 先吐", "en": "The 1000-metre retest · Out first" },
       "grant": { "table": "task" },
@@ -181,6 +182,7 @@
       "done_line": { "zh": "进了。又进了。", "en": "In. In again." }
     },
     {
+      "_cut": "Off j07-dark 2026-10-22 (Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 — item 3, the 调息 sweep): the 今 interlude plays a chat now (jin-chat-dark, in its place); the way on tells the breath as the book does; `cut` lets a save holding it offered let it go on load (state.mjs fitWorld). Row and level stay in the 游戏厅, under 旧版.", "cut": "2026-10-22",
       "id": "jin-dark", "kind": "board", "game": "qimai", "period": "once",
       "title": { "zh": "黑地十一步 · 领着喘", "en": "Eleven steps in the dark · Breathe with him" },
       "grant": { "table": "task" },
@@ -195,6 +197,7 @@
       "done_line": { "zh": "出关了。", "en": "Out of seclusion." }
     },
     {
+      "_cut": "Off j09-final 2026-10-22 (Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 — item 3, the 调息 sweep): the 今 interlude plays a chat now (jin-chat-ahe, the night before, in j09-noise); the way on tells the breath as the book does; `cut` lets a save holding it offered let it go on load (state.mjs fitWorld). Row and level stay in the 游戏厅, under 旧版.", "cut": "2026-10-22",
       "id": "jin-lastshot", "kind": "board", "game": "qimai", "period": "once",
       "title": { "zh": "最后一罚 · 带着怕投", "en": "The last free throw · Shoot with the fear" },
       "grant": { "table": "task" },
@@ -207,6 +210,126 @@
       "how": { "zh": "往泗水去的路上，夜里歇在路边，舅舅睡着了。野猪从黑里出来——点一头，小满扔石头撵；火一矮，点路边的枯枝去捡来添。火堆和舅舅，都别叫它们碰着。", "en": "A night by the road to the Si River; Uncle is asleep. Boars come out of the dark: tap one and Xiaoman throws a stone; when the fire sinks, tap a dead branch by the road to fetch it. Don't let them reach the fire or Uncle." },
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "九月初八傍晚，到了泗水边上。", "en": "At dusk on the eighth day they reached the Si River." }
+    },
+    {
+      "_jin": "今's 聊天 (games/jinchat.js, games.json jinchat `data.chats`; Hanli 10-22: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 — item 3, the 调息 sweep): each 今 interlude's game is a phone chat from the book's own moment, Ling writing every bubble of theirs; they pay nothing — the 今 never lifts the 古 (不跨线). 今·一: j01-anatomy ends 「明天要是又吐了，年级群里的视频就有下集了」 — the 617 group that night (老蔡's 年级群 video, 眼镜's 「学生手册上写着」).",
+      "id": "jin-chat-617",
+      "kind": "board",
+      "game": "jinchat",
+      "period": "once",
+      "deal": {
+        "chat": "617"
+      },
+      "stars": 3,
+      "title": {
+        "zh": "六一七 · 别拍",
+        "en": "Room 617 · No filming"
+      },
+      "how": {
+        "zh": "熄了灯，宿舍群还亮着。让老蔡和眼镜都答应：明天补测，谁也不许举手机。",
+        "en": "Lights out, the dorm group still lit. Get Old Cai and Specs both to promise: at tomorrow's retest, no one holds up a phone."
+      },
+      "grant": {
+        "table": "task"
+      },
+      "done_line": {
+        "zh": "群里安静了。",
+        "en": "The group goes quiet."
+      },
+      "replay": {
+        "zh": "补测前那一夜，宿舍群还亮着……再说两句？",
+        "en": "The night before the retest, the dorm group still lit… say a few more?"
+      }
+    },
+    {
+      "_jin": "今·二: j04-gym's 国庆, 「第四天晚上他妈打来视频」 — 「集训累不累？」…「钱够不够？」 「一个谎，要拿多少个谎去盖？」 (the passage split there: the call is played, then the book's account is read).",
+      "id": "jin-chat-ma",
+      "kind": "board",
+      "game": "jinchat",
+      "period": "once",
+      "deal": {
+        "chat": "ma"
+      },
+      "stars": 3,
+      "title": {
+        "zh": "视频 · 碗里是什么",
+        "en": "The video call · What's in the bowl"
+      },
+      "how": {
+        "zh": "妈打来视频。别让她看出来：没有集训，车票钱办了卡，碗里是泡面。",
+        "en": "Mum is video-calling. Don't let her see it: no training camp, the fare spent on a gym card, noodles in the bowl."
+      },
+      "grant": {
+        "table": "task"
+      },
+      "done_line": {
+        "zh": "挂了视频。",
+        "en": "The call ends."
+      },
+      "replay": {
+        "zh": "国庆那一夜的视频……再接一回？",
+        "en": "That National Day video call… take it again?"
+      }
+    },
+    {
+      "_jin": "今·三: j07-dark's 「我手麻了……嘴也麻了……我是不是要死了……」 → 「小宝哥。跟着我喘。吐得比吸的长。」 — the leading is talk in the dark, so it is played as talk (was 气走经脉 · 黑地十一步, jin-dark).",
+      "id": "jin-chat-dark",
+      "kind": "board",
+      "game": "jinchat",
+      "period": "once",
+      "deal": {
+        "chat": "dark"
+      },
+      "stars": 3,
+      "title": {
+        "zh": "黑地里 · 跟着我喘",
+        "en": "In the dark · Breathe with me"
+      },
+      "how": {
+        "zh": "黑地里只听得见他喘。隔着门，领他把气喘慢。",
+        "en": "In the dark there is only his panting. Through the door, lead his breathing down."
+      },
+      "grant": {
+        "table": "task"
+      },
+      "done_line": {
+        "zh": "……手不麻了。",
+        "en": "…His hands aren't numb any more."
+      },
+      "replay": {
+        "zh": "那夜黑地里，马小宝喘不上来……再陪他一回？",
+        "en": "That night in the dark, Ma Xiaobao couldn't get his breath… stay with him again?"
+      }
+    },
+    {
+      "_jin": "今·四: j09-noise's 「快十二点，他给阿禾发：「要是真到那一步，我投不进，怎么办？」 那头「正在输入」了很久，停了，又输入」 (the passage split there: the chat is played, then her two lines are read as the book has them).",
+      "id": "jin-chat-ahe",
+      "kind": "board",
+      "game": "jinchat",
+      "period": "once",
+      "deal": {
+        "chat": "ahe"
+      },
+      "stars": 3,
+      "title": {
+        "zh": "决赛前夜 · 正在输入",
+        "en": "The night before · Typing…"
+      },
+      "how": {
+        "zh": "快十二点了。把你怕的，跟她说。",
+        "en": "Near midnight. Tell her what you're afraid of."
+      },
+      "grant": {
+        "table": "task"
+      },
+      "done_line": {
+        "zh": "记下来的，丢不了。",
+        "en": "What's written down doesn't get lost."
+      },
+      "replay": {
+        "zh": "决赛前那一夜，那句话还没发出去……再跟她说一回？",
+        "en": "The night before the final, that message still unsent… tell her again?"
+      }
     },
     {
       "id": "gate-luoshu", "kind": "board", "game": "luoshu", "period": "once",

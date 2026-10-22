@@ -46,17 +46,6 @@
   "en": "The twenty-fourth of September, four in the afternoon. Seven people at the retest. In the third row of the stands, at Ma Xiaobao's feet, there really was a box of protein powder, and on the box, in marker pen, one big word: \"SEVENTH\". He raised his shaker at Shen Mang.\n\nAt the foot of the two-hundred-metre marker was Ahe in her blue vest, the notebook open on her knee. Shen Mang stood on the start line, his palms full of sweat, his legs a bit weak, as if yesterday's needle under his ribs were still in there waiting for him. He took his eyes off the stands and looked only at the track.\n\nThe whistle went, and the other six charged off. That surge came up in him again: his heart quickened first, his legs went warm first, and he felt he could do anything. He set his teeth and forced his legs to slow down, and he dropped to the back on his own. Someone in the stands laughed out loud, and someone yelled, \"Run, Forrest!\" He felt that phone camera pointed right at his back, felt that box marked \"SEVENTH\" laughing behind him. He shoved both to the back of his mind and listened only to his own feet: two steps out, two steps in, with the stomach, not the shoulders.\n\nWhen he reached the two-hundred-metre marker, Ahe called out: \"Forty-six seconds!\" One second slower than the table said. He relaxed inside: one second slow beat ten seconds fast.\n\nBy four hundred, two of the runners ahead had dropped back, with that fast, shallow gasping in their throats, the same as him last time. He went past them. By six hundred he was suffering too: the sourness in his legs climbing up from his calves, his chest going tight, and the less he could get in, the more he panicked, and the more he panicked, the more he wanted to breathe in fast, fast—"
  },
  "lines": [],
- "show": [
-  {
-   "card": "board",
-   "id": "jin-qianmi"
-  }
- ],
- "offers": {
-  "tasks": [
-   "jin-qianmi"
-  ]
- },
  "buttons": [
   "finish"
  ],
@@ -70,13 +59,6 @@
    "means": "breathes out first and finishes the retest",
    "beat": [],
    "next": "00-gate",
-   "needs": {
-    "task": "jin-qianmi"
-   },
-   "refuse": {
-    "zh": "还在跑。先吐，再吸。",
-    "en": "Still running. Out first, then in."
-   },
    "story": {
     "zh": "先吐。「呵——」长长地，吐到肚子都瘪了。吐干净了，那一口新气自己灌了进来，一直灌到肚子底下。胸口那块石头，松了一点。\n\n最后三百米，他又超了一个人，又一个。「沈芒，四分二十九秒。」雷老师又看了一眼表，「……你过了。」\n\n他等着胃里那阵翻江倒海，这回它没有来。「成了！」\n\n阿禾把本子转过来，只给他看一行：「9/24　补测　4′29″　七人第三　奖：免账」。「后半程你一直在吐气，是谁教你的？」他想说是一个唐朝的人，又想起来不是唐朝：「……一个记错朝代的老太太。」\n\n看台上，马小宝冲着跑道喊了一嗓子：「七个人里跑第三，算你运气好。」阿禾没抬头，道：「后四百米，他是七个人里的第一。」沈芒看着两百米标杆底下低着头的阿禾，看了足足两秒，才低下头去系鞋带。其实鞋带根本没开。\n\n十点，他妈打来视频：「补测怎么样？」「过了，四分二十九。」隔了一会儿，「国庆回来不？车票买了没？」沈芒张了张嘴：「……还没买。」\n\n夜里，上铺的老蔡从床底下拖出一只泡脚桶：「借你。我奶奶说，腿酸了，热水一泡，比什么都强。」他坐在床沿上，看着那一桶浮着几粒花椒的水，心里头有一块地方，暖暖的，不是水烫的。\n\n那夜他睡不着，摸过眼镜桌上那本《抱朴子》：拿一根鸿毛搁在鼻口上头，吐气，毛不许动。他从老蔡枕头的拉链缝里捏出一根细绒毛，搁在鼻子底下，慢慢地，往外吐——那根毛还是飞了。\n\n先吐，他是学会了；吐得那么轻、那么长，还差得远——手札里那个老头，鹅毛也飞了一冬天。那根绒毛从没关严的窗缝里飘了出去——那扇窗朝着西北——飘进了九月的夜里，不见了。",
     "en": "Breathe out first. \"Haaa—\" Long, out till his stomach was hollow. Once it was all out, a new breath poured in by itself, poured right down to the bottom of his stomach. The stone on his chest loosened a little.\n\nIn the last three hundred metres he passed another runner, and another. \"Shen Mang, four twenty-nine.\" Coach Lei looked at the watch again. \"…You've passed.\"\n\nHe waited for the heaving in his stomach, and this time it didn't come. \"I did it!\"\n\nAhe turned her notebook round and showed him just one line: \"9/24 Retest 4′29″ 3rd of 7 Prize: account cleared\". \"In the second half you were breathing out the whole time. Who taught you that?\" He wanted to say someone from the Tang dynasty, then remembered it wasn't the Tang. \"…An old lady who gets her dynasties wrong.\"\n\nIn the stands, Ma Xiaobao shouted towards the track: \"Third out of seven. Lucky you.\" Ahe didn't look up. She said, \"Over the last four hundred, he was first of the seven.\" Shen Mang looked at Ahe, head down at the foot of the two-hundred-metre marker, looked for a full two seconds, and then bent down to tie his shoelace. In fact his shoelace wasn't undone at all.\n\nAt ten his mum video-called. \"How did the retest go?\" \"Passed. Four twenty-nine.\" After a bit: \"Coming home for National Day? Have you bought your train ticket?\" Shen Mang opened his mouth. \"…Not yet.\"\n\nIn the night Old Cai, in the top bunk, dragged a foot bath out from under his bed. \"Borrow it. My grandma says when your legs ache, a soak in hot water beats anything.\" He sat on the edge of the bed looking at the bath of water with a few peppercorns floating in it, and there was a place in his heart that was warm, and it wasn't the water that had made it warm.\n\nThat night he couldn't sleep. He reached over for the *Baopuzi* on Specs's desk: hold a wild goose's down feather over the nose and mouth, breathe out, and the feather must not move. He pinched a fine wisp of down out of the zip of Old Cai's pillow, held it under his nose, and slowly, breathed out— The wisp flew off anyway.\n\nBreathing out first, he'd learned; breathing out that softly and that long, he still had a long way to go — the old man in the notebooks had had his goose feather fly off all winter too. The wisp of down floated out through the gap of the window that hadn't been shut properly — the window faced north-west — and into the September night, and was gone."

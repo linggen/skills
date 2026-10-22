@@ -6,6 +6,8 @@
 // engine sends a picture to the model once, with the turn that carries it; later turns read it as a
 // numbered note. Sessions and models come from the engine's /shared/api.js.
 // The model only ever guesses: what counts as right is drawguess-rules.js's.
+// The same one way serves 今's 聊天 (games/jinchat.js, 2026-10-22): a turn to Ling with no picture, a
+// longer wait (`timeoutMs`) — the transport is one, never a second copy.
 
 import { refusalOf } from './drawguess-rules.js';
 
@@ -55,9 +57,10 @@ async function replyAfter(sid, agent, seen, deadline, signal) {
   throw new Error('timeout');
 }
 
-/** The turn a look sends: the player's line to the guesser and the picture, in the game's chat. */
-export const lookTurn = ({ sid, agent, png, text, model = null }) => ({
-  project_root: '', agent_id: agent, message: text, session_id: sid, skill_name: SKILL, images: [png], ...(model ? { model_id: model } : {}),
+/** The turn a look sends: the player's line to the guesser and the picture, in the game's chat. A turn
+    with no picture (今's 聊天, games/jinchat.js: a line to Ling only) carries no `images`. */
+export const lookTurn = ({ sid, agent, png = null, text, model = null }) => ({
+  project_root: '', agent_id: agent, message: text, session_id: sid, skill_name: SKILL, ...(png ? { images: [png] } : {}), ...(model ? { model_id: model } : {}),
 });
 
 /**

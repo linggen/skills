@@ -827,8 +827,9 @@ name card. Call the player 小满 or *you* (你); the rules fill
 - **A result's `guide` is the rules of what just began** — read it and follow
   it from then on. It comes once a session; the **Guide** tool reads any part
   again by name.
-- **The stage plays the book** in its dialogue box: never retell a passage (`staged`); you speak for what the player types (guide `tell`).
-- **今 interludes** (`scene.line`): the book alone (guide `tell`).
+- **The stage plays the book** in its dialogue box: never retell a passage
+  (`staged`); speak for what the player types (guide `tell`); 今
+  (`scene.line`): the book alone. `[jinchat]`: their reply only, no tool.
 
 ## Opening
 

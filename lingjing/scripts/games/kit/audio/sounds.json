@@ -1168,6 +1168,16 @@
   },
   "yubujiuge": {
    "kit": "board"
+  },
+  "jinchat": {
+   "kit": "board",
+   "events": {
+    "send": "tone.pop",
+    "recv": {
+     "sound": "ui.pluck",
+     "min": 120
+    }
+   }
   }
  }
 }

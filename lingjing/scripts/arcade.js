@@ -80,7 +80,7 @@ async function tileHtml(g, i) {
   const mod = g.stage ? null : await modOf(g.id);
   const where = [g.hui, g.scene].filter(Boolean).join(' · ');
   const kind = kindOf(g);
-  const to = g.stage ? await stageUrl(g.stage) : mod?.meta?.ai ? arcadePlayUrl(g.id) : href({ game: g.id, n: String(i) });
+  const to = g.stage ? await stageUrl(g.stage) : mod?.meta?.ai ? arcadePlayUrl(g.id, mod.meta.rows ? g.task : null) : href({ game: g.id, n: String(i) });
   const top = `<span class="arcade-tile-top"><b>${esc(titleOf(g, mod))}</b>${kind ? `<em class="arcade-kind">${esc(kind)}</em>` : ''}</span>`
     + `<small>${esc(where || g.task || (g.stage ? w().stage : ''))}</small>`;
   const lvs = await levelsOf(g);

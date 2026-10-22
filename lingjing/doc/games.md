@@ -557,6 +557,36 @@ No cards — 今线 is not 小满's world. They already have a stake (the heart 
 
 Since 10-19 the 今线's four boards are played as 气走经脉 levels (below); the modules above stay in the 游戏厅.
 
+**10-22 — the 调息 sweep (Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」, item 3):** every 今 interlude
+was a 调息, the most monotonous stretch of 卷一. Now each 今 plays a **chat** from the book's own moment (§ 今's 聊天,
+below); 罚球 · 吸四吐六 stays a 气走经脉 level (its beat is the breath itself); 先吐, 黑地十一步 and 最后一罚 are cut — their
+ways on tell them, their rows under 旧版. 卷一's 调息 9 → 6, none back to back (节奏 view).
+
+## 今's 聊天 — a phone chat in each 今 (games/jinchat.js, 2026-10-22)
+
+One module, every chat a row of games.json `jinchat` · `data.chats`; the task's `deal.chat` names it, its `how` says the goal
+in the shell's bar. A phone screen (comic: ink outlines, hard shadows, WeChat greens; `call` a video call's bar; `dark` a
+black room where only the voices show), 「对方正在输入…」 between bubbles (阿禾 `typing: slow` — types, stops, types).
+**The book's lines open it, verbatim** (`open`; `chips` — his own book lines, a tap sends one); **every other bubble of
+theirs is Ling's**, as that person: each line he sends goes to her in the game's chat as a hidden `[jinchat]` line with the
+chat's facts and goal (jinchat-rules.js turnLine; SKILL.md § 今 chat: no Look, no tool, their message only), through
+drawguess-ling.js (the one way to a model turn — no picture). **The rules decide** (jinchat-rules.js outcome): Ling
+judges only whether the goal has happened, by one tag 【成】; met after he spoke → ★★★ `met`, his `turns` used up → ★
+`talked`. Either way the story goes on; the 今 pays nothing (不跨线). Never stuck on a model: `&her=stub` answers on the
+page, `&chat=off` / no engine / two failed turns play the book's own exchange (`book`) and 「就到这儿」; the stuck gate's
+「算了，往下走」 after 75 s as on every board. 游戏厅: AI · 聊天 · 今线 (617), and each story row plays its own chat
+(`&row=<task>`, arcade-board.js).
+
+| 今 · scene | chat · task | the book | goal (`how`) | turns |
+|---|---|---|---|---|
+| 今一 · j01-anatomy (end; 先吐 cut at j01-retest) | 六一七 · 别拍 `jin-chat-617` — 老蔡, 眼镜 | 「明天要是又吐了，年级群里的视频就有下集了。」 opens on 老蔡's 「论一个人可以把一千米跑得多么有层次」 and 眼镜's 「学生手册上写着……」 | both promise: at the retest no one films | 5 |
+| 今二 · j04-gym (split at 「第四天晚上他妈打来视频」; 罚球 stays at j04-line) | 视频 · 碗里是什么 `jin-chat-ma` — 妈, 爸 | 「集训累不累？」…「钱够不够？」 「一个谎，要拿多少个谎去盖？」 | she hangs up without seeing it: no camp, the fare on a gym card, noodles | 5 |
+| 今三 · j07-dark (was 黑地十一步) | 黑地里 · 跟着我喘 `jin-chat-dark` — 马小宝 | 「我手麻了……嘴也麻了……我是不是要死了……」 → 「小宝哥。跟着我喘。吐得比吸的长。」 | lead his breath down through the door | 6 |
+| 今四 · j09-noise (split at 「快十二点」; 最后一罚 cut at j09-final) | 决赛前夜 · 正在输入 `jin-chat-ahe` — 阿禾 | 「要是真到那一步，我投不进，怎么办？」 → 「那我就记：投不进。」「记下来的，丢不了。」 | he says what he really fears (being watched) | 5 |
+
+The passage after a split (`story_after`) is the book's account, read after the chat. Cost: Ling's whole Lingjing
+prompt per line (~9k tokens in, a line or three out); a chat is 3–6 lines ≈ 30–55k tokens; 7–30 s a reply on gpt-6-luna (live 10-22).
+
 ## 气走经脉 — the breath kit (built 10-19; in the story 10-19)
 
 Hanli 10-19 approved: the seven 调息 games (吹鹅毛 · 洗髓 · 藏息 · 一千米补测 · 黑地十一步 · 罚球 · 最后一罚) all make one

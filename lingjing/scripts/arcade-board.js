@@ -18,8 +18,16 @@ export function arcadeGameOf(search, scratch) {
 
 export const isArcadeBoard = (id) => String(id ?? '').startsWith(ARCADE_PREFIX);
 
-/** 试玩's address for a game: its own test save, begun again from the fixture, the board named. */
-export const arcadePlayUrl = (id) => `index.html?${new URLSearchParams({ save: `arcade-${id}`, seed: ARCADE_SEED, board: id })}`;
+/** 试玩's address for a game: its own test save, begun again from the fixture, the board named — and, for a story
+    row of a game that plays several (今's 聊天: one chat a row), that row's task (`row=`), so its own deal is played. */
+export const arcadePlayUrl = (id, task = null) => `index.html?${new URLSearchParams({ save: `arcade-${id}`, seed: ARCADE_SEED, board: id, ...(task ? { row: task } : {}) })}`;
+
+/** The story row a 试玩 asks for (`&row=<task id>`), on a test save only. */
+export function arcadeRowOf(search, scratch) {
+  if (!scratch) return null;
+  const id = new URLSearchParams(search ?? '').get('row') ?? '';
+  return /^[a-z0-9-]+$/.test(id) ? id : null;
+}
 
 /**
  * 试玩's address for a game the rules stand on the stage themselves (a registry row's `stage`: 二十问, 讨价还价,
@@ -38,10 +46,12 @@ export function visitDays(visits, now = new Date()) {
   return (((visits.offset ?? 0) - day) % visits.every + visits.every) % visits.every;
 }
 
-/** The registry row a 试玩 deals from: the game's own row (no story task), else its first. */
-export function arcadeRow(registry, id) {
-  const rows = (registry?.games ?? []).filter((g) => g.id === id);
-  return rows.find((g) => !g.task) ?? rows[0] ?? null;
+/** The registry row a 试玩 deals from: the story row asked for (`task`, one that carries its own deal), else the game's
+    own row (no story task), else its first. */
+export function arcadeRow(registry, id, task = null) {
+  const rows = (registry?.games ?? []).filter((g) => g.id === id && !g.replaced);
+  const asked = task ? rows.find((g) => g.task === task && g.data) : null;
+  return asked ?? rows.find((g) => !g.task) ?? rows[0] ?? null;
 }
 
 /**

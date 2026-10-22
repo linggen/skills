@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 550,
-  "wealth": 457,
+  "wealth": 462,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -228,7 +228,7 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
-   "jin-qianmi": {
+   "jin-chat-617": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -254,6 +254,11 @@
     "done_at": "2026-10-01T01:00:00.000Z"
    },
    "diyilu-niugu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-chat-ma": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -298,7 +303,7 @@
     "period": "once",
     "done_at": "2026-10-02T01:00:00.000Z"
    },
-   "jin-dark": {
+   "jin-chat-dark": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-02T01:00:00.000Z"
@@ -779,6 +784,7 @@
    "zhoutian-sanguan",
    "yaoyuan-xunye",
    "diyilu-niugu",
+   "jin-chat-ma",
    "jin-faqiu",
    "mijing-zhenyan",
    "anhe-dark",
@@ -787,7 +793,7 @@
    "zhaojing-mirror",
    "dabi-sneeze",
    "jiaxin-letter",
-   "jin-dark",
+   "jin-chat-dark",
    "jiuge-yubu",
    "furnace-ding"
   ],

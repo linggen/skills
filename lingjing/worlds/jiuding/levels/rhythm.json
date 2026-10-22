@@ -345,27 +345,27 @@
       },
       {
        "kind": "read",
-       "chars": 3694,
-       "run": 3694,
+       "chars": 3456,
+       "run": 3456,
        "over": true
       },
       {
        "kind": "board",
-       "id": "jin-qianmi",
-       "scene": "j01-retest",
+       "id": "jin-chat-617",
+       "scene": "j01-anatomy",
        "title": {
-        "zh": "一千米补测 · 先吐",
-        "en": "The 1000-metre retest · Out first"
+        "zh": "六一七 · 别拍",
+        "en": "Room 617 · No filming"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 19
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 60
       },
       {
        "kind": "read",
-       "chars": 637,
-       "run": 808,
+       "chars": 875,
+       "run": 1046,
        "over": false
       }
      ],
@@ -377,7 +377,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 3694,
+     "longest": 3456,
      "roaming": 0,
      "side": []
     },
@@ -391,7 +391,7 @@
       {
        "kind": "read",
        "chars": 171,
-       "run": 808,
+       "run": 1046,
        "over": false
       },
       {
@@ -557,7 +557,7 @@
       {
        "kind": "read",
        "chars": 3056,
-       "run": 6808,
+       "run": 3821,
        "over": true
       }
      ],
@@ -569,7 +569,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 6808,
+     "longest": 3821,
      "roaming": 15,
      "side": []
     },
@@ -582,8 +582,27 @@
      "items": [
       {
        "kind": "read",
-       "chars": 3752,
-       "run": 6808,
+       "chars": 765,
+       "run": 3821,
+       "over": true
+      },
+      {
+       "kind": "board",
+       "id": "jin-chat-ma",
+       "scene": "j04-gym",
+       "title": {
+        "zh": "视频 · 碗里是什么",
+        "en": "The video call · What's in the bowl"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 61
+      },
+      {
+       "kind": "read",
+       "chars": 2987,
+       "run": 2987,
        "over": true
       },
       {
@@ -607,14 +626,14 @@
       }
      ],
      "counts": {
-      "board": 1,
+      "board": 2,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 6808,
+     "longest": 4668,
      "roaming": 0,
      "side": []
     },
@@ -960,16 +979,16 @@
       },
       {
        "kind": "board",
-       "id": "jin-dark",
+       "id": "jin-chat-dark",
        "scene": "j07-dark",
        "title": {
-        "zh": "黑地十一步 · 领着喘",
-        "en": "Eleven steps in the dark · Breathe with him"
+        "zh": "黑地里 · 跟着我喘",
+        "en": "In the dark · Breathe with me"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 21
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 62
       },
       {
        "kind": "read",
@@ -1231,27 +1250,27 @@
      "items": [
       {
        "kind": "read",
-       "chars": 2888,
-       "run": 2888,
+       "chars": 1807,
+       "run": 1807,
        "over": true
       },
       {
        "kind": "board",
-       "id": "jin-lastshot",
-       "scene": "j09-final",
+       "id": "jin-chat-ahe",
+       "scene": "j09-noise",
        "title": {
-        "zh": "最后一罚 · 带着怕投",
-        "en": "The last free throw · Shoot with the fear"
+        "zh": "决赛前夜 · 正在输入",
+        "en": "The night before · Typing…"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 22
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 63
       },
       {
        "kind": "read",
-       "chars": 2030,
-       "run": 4689,
+       "chars": 3111,
+       "run": 5770,
        "over": true
       }
      ],
@@ -1263,7 +1282,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 4689,
+     "longest": 5770,
      "roaming": 0,
      "side": []
     },
@@ -1277,7 +1296,7 @@
       {
        "kind": "read",
        "chars": 2659,
-       "run": 4689,
+       "run": 5770,
        "over": true
       },
       {
@@ -1390,7 +1409,7 @@
       "breakthrough": 0,
       "piece": 3
      },
-     "longest": 4689,
+     "longest": 5770,
      "roaming": 4,
      "side": []
     }

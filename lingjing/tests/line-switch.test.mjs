@@ -39,9 +39,10 @@ const fresh = (s) => ({ ...s, stamina: 100, stamina_at: NOW.toISOString() });
 const WAIMEN = ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-yaoyuan', 'wm-chaifang', 'wm-danlu', 'wm-diyilu'];
 function atChaifang(scene, passed = []) {
   const s = fixture('waimen');
-  return fresh({ ...s, tell_owed: [], scene, place: 'chaifang', node: null,
+  // fitWorld: as a save loads — the scene it stands in has its boards offered (j04-gym's 聊天, 2026-10-22)
+  return fitWorld(fresh({ ...s, tell_owed: [], scene, place: 'chaifang', node: null,
     done_scenes: [...s.done_scenes.filter((x) => !WAIMEN.includes(x)), ...WAIMEN, ...passed],
-    quests: { ...(s.quests ?? {}), 'xu-sun-charm': { took: '2026-10-15', have: {} } } });
+    quests: { ...(s.quests ?? {}), 'xu-sun-charm': { took: '2026-10-15', have: {} } } }), content);
 }
 const kinds = (cards) => cards.map((c) => `${c.card}${c.id ? `:${c.id}` : ''}`);
 const hosted = (cards) => cards.filter((c) => c.card === 'board' && c.id === 'qiqiao' || ['next', 'offer', 'duel', 'creature', 'hexagram', 'goal', 'handed', 'road'].includes(c.card));

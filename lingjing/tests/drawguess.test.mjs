@@ -274,7 +274,7 @@ test('the 游戏厅\'s 试玩 of a game the model plays (Hanli 10-19) is the rea
   assert.ok(stageCards({ tasks: look.tasks }).some((c) => c.card === 'board' && c.id === 'arcade:drawguess'), 'on the stage');
   // The arcade links an AI game there (an old ?game= link too), and never plays it beside a panel of its own.
   const arcade = read('arcade.js');
-  assert.match(arcade, /mod\?\.meta\?\.ai \? arcadePlayUrl\(g\.id\)/);
+  assert.match(arcade, /mod\?\.meta\?\.ai \? arcadePlayUrl\(g\.id, mod\.meta\.rows \? g\.task : null\)/);
   assert.match(arcade, /if \(mod\?\.meta\?\.ai\) \{ location\.replace\(arcadePlayUrl\(id\)\); return; \}/);
   assert.doesNotMatch(arcade, /arcade-trace|onTrace|hergame|seam|stub/);
   // The page: a win there pays nothing and deals it again; the hold is the story's (`arcade:<game>`, rules/hergame.mjs).
