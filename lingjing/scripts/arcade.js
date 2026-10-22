@@ -41,7 +41,8 @@ const mountOf = (mod) => mod?.mount ?? (mod?.html ? mountPure(mod) : null);
 const nameOf = (mod, id) => mod?.meta?.name?.[lang()] ?? mod?.meta?.name?.zh ?? id;
 // A kit's rows (气走经脉, one level a row) carry their own `name`; else the module's.
 const titleOf = (g, mod) => g?.name?.[lang()] ?? g?.name?.zh ?? nameOf(mod, g?.id);
-const howOf = (mod) => mod?.meta?.how?.[lang()] ?? mod?.meta?.how?.zh ?? '';
+// a row's own how-to first (a story level that plays its kit another way: 雪夜柴垛 has no talismans and no 银月), else the module's
+const howOf = (mod, row) => row?.how?.[lang()] ?? row?.how?.zh ?? mod?.meta?.how?.[lang()] ?? mod?.meta?.how?.zh ?? '';
 // Opened from the game (dev-arcade.js, the builder's chip): every page keeps `from=game` and shows the way back.
 // A scratch save (`save=`) rides along so the way back lands on that save, not the player's own.
 const fromGame = q.get('from') === 'game';
@@ -176,7 +177,7 @@ async function playPage(id, n) {
   if (!mount) { card.textContent = w().missing; return; }
   const reducedMotion = Boolean(matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   playAlone(card, mount, {
-    id: `arcade-${id}`, game: id, title: [titleOf(row, mod), foe ? await mod.pickName(foe, lang()) : null].filter(Boolean).join(' · '), kind: kindOf(row), how: howOf(mod), timed: timedOf(mod), tall: tallOf(mod), lang: lang(),
+    id: `arcade-${id}`, game: id, title: [titleOf(row, mod), foe ? await mod.pickName(foe, lang()) : null].filter(Boolean).join(' · '), kind: kindOf(row), how: howOf(mod, row), timed: timedOf(mod), tall: tallOf(mod), lang: lang(),
     leadLine: row.lead?.[lang()] ?? row.lead?.zh ?? '',
     opts: { reducedMotion, seed: `arcade|${Date.now()}`, data: { ...data, ...(foe ? { foe } : {}) } },
     // 下一关: a game with levels names its next one when won (`r.next`); the page opens it by `lv` (斗法: the next foe, by `foe`)

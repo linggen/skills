@@ -877,6 +877,7 @@
    "stars": 3,
    "name": {"zh": "守白菜", "en": "Guarding the cabbage"},
    "data": {"lv": "baicai"},
+   "how": {"zh": "芦花鸡从篱笆缝里钻进来，奔着白菜去。阿禾的竹竿自己会撵；点一只鸡，先撵那一只。撵完一波，挑一张。", "en": "Speckled hens squeeze through the fence and head for the cabbage. Ahe's bamboo pole chases them on its own; tap a hen to chase that one first. After the first wave, pick a card."},
    "_about": "守墙关's 第一回 story level (2026-10-21, Hanli: 第一回 adds two 塔防 boards): 00-baicai — 阿禾's cabbage, the 芦花鸡 through the 篱笆, her 竹竿, 小满 beside her. The level is levels/shouqiang.json's `baicai`. This row only opens it in the 游戏厅."
   },
   {
@@ -901,6 +902,7 @@
    "stars": 3,
    "name": {"zh": "抬鹿下山 · 那副门板", "en": "Carrying the stag down · The door"},
    "data": {"lv": "tailu"},
+   "how": {"zh": "爹和老周抬着门板往下走，野猪闻着血腥从两条道上拱下来。小满的箭自己会射；点一头野猪，先射那一头。撵完一波，挑一张。", "en": "Father and Old Zhou carry the door down; boars smell the blood and come down two paths. Xiaoman shoots on his own; tap a boar to shoot that one first. After a wave, pick a card."},
    "_about": "守墙关's 第二回 story level (2026-10-22, the 卷一 plan, doc/games-plan-juan1.md; Hanli 10-22: 「按你说的改一遍. 关键是能留住玩家」): 00-tailu — the 溪边 path at dusk, 野猪 down two tracks (`paths`) at the 门板, 爹 and 老周 carrying, 小满 with 爷爷's bow. The level is levels/shouqiang.json's `tailu`. This row only opens it in the 游戏厅."
   },
   {
@@ -952,6 +954,7 @@
    "stars": 3,
    "name": {"zh": "守火 · 洞口那堆火", "en": "Keeping the fire · At the cave mouth"},
    "data": {"lv": "shouhuo"},
+   "how": {"zh": "火堆挡在洞口，野兽便不敢进来——火一矮，黑里的眼睛就往里凑。点崖根底下的枯枝，小满折来添火；点一双眼睛，他扔石头撵。守到它们散了。", "en": "A fire across the cave mouth keeps beasts out; when it burns low, the eyes in the dark creep in. Tap a dead branch at the cliff's foot and Xiaoman snaps it for the fire; tap a pair of eyes and he throws a stone. Hold till they give up."},
    "_about": "守炉's 第一回 story level (2026-10-21, Hanli: 第一回 adds two 塔防 boards): 00-cave, 「火堆挡在洞口，野兽便不敢进来」, before 喂饼 — the fire at the cave mouth is the 炉, eyes in the dark, 枯枝 at the cliff's foot to keep it up, 小满 alone. The level is the `shoulu` row's `shouhuo`. This row only opens it in the 游戏厅."
   },
   {
@@ -964,6 +967,7 @@
    "stars": 3,
    "name": {"zh": "雪夜柴垛 · 冬月的夜", "en": "The woodpile on a snowy night · Winter"},
    "data": {"lv": "chaiduo"},
+   "how": {"zh": "冬月夜里，野猪踩着雪从蒙山下来，奔着屋后的柴垛。点一头野猪，小满扔石头撵；点雪地，他走过去守着。守到天亮。", "en": "Winter nights, boars come down from Mount Meng through the snow, making for the woodpile behind the house. Tap a boar and Xiaoman throws a stone; tap the snow and he goes to stand guard there. Hold till dawn."},
    "_about": "守炉's 第二回 story level (2026-10-22, the 卷一 plan; Hanli 10-22: 「按你说的改一遍」): 00-halfyear, split after 「自己穿一件单褂。」 — the 柴垛 behind the house is the 炉, 野猪 in the snow, 小满 alone. The level is the `shoulu` row's `chaiduo`. This row only opens it in the 游戏厅."
   },
   {
@@ -976,6 +980,7 @@
    "stars": 3,
    "name": {"zh": "泗水路 · 路上那一夜", "en": "The road to the Si · A night on the way"},
    "data": {"lv": "sishui"},
+   "how": {"zh": "往泗水去的路上，夜里歇在路边，舅舅睡着了。野猪从黑里出来——点一头，小满扔石头撵；火一矮，点路边的枯枝去捡来添。火堆和舅舅，都别叫它们碰着。", "en": "A night by the road to the Si River; Uncle is asleep. Boars come out of the dark: tap one and Xiaoman throws a stone; when the fire sinks, tap a dead branch by the road to fetch it. Don't let them reach the fire or Uncle."},
    "_about": "守炉's 第三回 story level (2026-10-22, the 卷一 plan; Hanli 10-22: 「按你说的改一遍」): 00-gate, split after the road — a night camp on the way to 泗水, the fire to feed and 舅舅 asleep by it to keep. The level is the `shoulu` row's `sishui`. This row only opens it in the 游戏厅."
   },
   {
