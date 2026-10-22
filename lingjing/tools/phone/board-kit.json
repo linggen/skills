@@ -1,0 +1,29 @@
+{
+  "_about": "What a board needs to play in the phone app's local webview (tools/phone-board.mjs ships exactly this, mirrored under the skill's own paths — a game's `new URL('../../worlds/…', import.meta.url)` keeps working untouched). `entry` pages: the host page (scripts/games/phone/). `games.<id>`: the game's module, its own folder (bundle, engine, art, font), the shared files it names by URL, and the JS it loads through its static imports (found by walking them — never listed). `exclude`: build leftovers inside a game folder. `dynamic`: modules a game loads on demand that the phone does not ship yet (the camera 结印).",
+  "entry": ["scripts/games/phone/index.html", "scripts/games/phone/host.js"],
+  "shared": [
+    "scripts/games/kit/audio/sounds.json",
+    "scripts/games/kit/audio/bank.json",
+    "scripts/games/kit/audio/sfx.m4a",
+    "scripts/games/kit/audio/sfx.ogg"
+  ],
+  "games": {
+    "shouqiang": {
+      "module": "scripts/games/shouqiang.js",
+      "dirs": ["scripts/games/shouqiang"],
+      "exclude": ["scripts/games/shouqiang/source.json", "scripts/games/shouqiang/font/chars.txt"],
+      "files": [
+        "scripts/vendor/phaser.min.mjs",
+        "worlds/jiuding/levels/shouqiang.json",
+        "worlds/jiuding/creatures.json",
+        "scripts/games/shoulu/art/yinyue.webp",
+        "scripts/games/shoulu/art/yinyue-skills.webp",
+        "scripts/games/shoulu/art/yinyue.json",
+        "scripts/games/jieyin/art/huodan.webp",
+        "scripts/games/kit/audio/music/td.m4a",
+        "scripts/games/kit/audio/music/td.ogg"
+      ],
+      "dynamic": ["scripts/games/jieyin/helper.js"]
+    }
+  }
+}
