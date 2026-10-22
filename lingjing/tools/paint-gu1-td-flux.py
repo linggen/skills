@@ -3,7 +3,7 @@
 
     PY=~/.linggen/runtime/envs/pictures/bin/python
     $PY tools/paint-gu1-td-flux.py paint [--only id,…] [--seeds 1,2]   # every seed → $FLUX_REVIEW/gu1td/, looked at
-    $PY tools/paint-gu1-td-flux.py cut                                  # the KEPT seeds → the two kits' art folders
+    $PY tools/paint-gu1-td-flux.py cut [--only id,…]                    # the KEPT seeds → the two kits' art folders
 
 守白菜 (守墙关, levels/shouqiang.json `baicai`): 阿禾's vegetable plot by day — the 篱笆 with its gaps at the top, the cabbage
 bed for the wall, 阿禾 from behind with her 竹竿 (idle, poking), 小满 beside her shooing, the 芦花鸡 (two steps and a
@@ -32,8 +32,11 @@ STYLE_OF = ('The attached picture shows this game\'s art style: draw a NEW subje
 NO_WRITING = 'No writing, no letters, no glyphs anywhere. '
 BACK = 'Seen from BEHIND and a little from above, the back of the figure towards us, the whole body in view. '
 FRONT = 'Seen from the front and a little from above, standing on the ground, the whole body in view. '
-AHE = ('a skinny little peasant girl of about eleven with two thin straw-yellow braided pigtails, a patched grey-brown '
-       'cotton jacket and baggy patched trousers, black cloth shoes')
+# Her hair is BLACK: the book's 「两根黄毛小辫」 is 黄毛丫头 — a poor kid's thin dry dull hair, never blonde (Hanli 10-22:
+# 「收白菜里阿禾是黄毛吗?」 — the first paint said straw-yellow and came out golden). The canon portrait people/ahe-girl.
+# No hair-colour word but black/dark reaches the model.
+AHE = ('a skinny little peasant girl of about eleven with dull BLACK hair, thin and a little messy, in two thin small '
+       'BLACK braided pigtails, a patched grey-brown cotton jacket and baggy patched trousers, black cloth shoes')
 XM = ('a skinny twelve-year-old peasant boy, black hair in a small topknot tied with a red band, a patched off-white '
       'cotton jacket with a dark sash, grey trousers, straw sandals')
 HEN = ('a plump speckled barred black-and-white farm hen (a cuckoo-patterned hen), a bright red comb and wattles, yellow '
@@ -117,7 +120,9 @@ for k, what in ICONS.items():
     f'rendering and size; only change the background gradient to fresh spring green to pale straw yellow and the emblem '
     f'inside to: {what}. No text, no numbers. ' + fc.ON_MAGENTA))
 
-# Looked at 2026-10-21 (no fake writing kept).
+# Looked at 2026-10-21 (no fake writing kept). ahe-idle · ahe-cast repainted 2026-10-22 with her hair black (seeds 1–4
+# each): idle 2 (pole on the left like the first, thin braids; 1 pole on the right, 3 a cut white pole tip, 4 a cast
+# shadow), cast 1 (the diagonal poke; 2 grew a second pole, 3 a bent pole, 4 a stiff stride).
 KEPT = {'baicai-bg': 1, 'baicai-wall': 2, 'ahe-idle': 2, 'xiaoman-side': 2, 'luhuaji-walk-1': 1, 'zhugan': 1, 'kela': 2,
         'ground-yingu-night': 1, 'campfire': 1, 'xiaoman-idle': 1, 'kuzhi': 1, 'fox-sleep': 2, 'yanjing': 1,
         'icon-gan-more': 2, 'icon-gan-sweep': 1, 'icon-gan-back': 2,
@@ -137,10 +142,12 @@ def second_jobs():
   return out
 
 
-def cut():
+def cut(only=()):
   from PIL import Image
   jobs = {**JOBS, **second_jobs()}
   for jid, seed in KEPT.items():
+    if only and jid not in only:
+      continue
     j = jobs[jid]
     src = REV / f'{jid}-{seed}.png'
     out = (QOUT if j['kit'] == 'q' else LOUT) / f'{jid}.webp'
@@ -161,4 +168,4 @@ if __name__ == '__main__':
   if a.cmd == 'paint':
     fc.paint_all('gu1td', {**JOBS, **second_jobs()}, a)
   else:
-    cut()
+    cut([k for k in a.only.split(',') if k])

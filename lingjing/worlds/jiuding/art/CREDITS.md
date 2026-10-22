@@ -294,4 +294,6 @@ behind with her 竹竿), `xiaoman-side` (小满 shooing), `luhuaji-walk-1` · `-
 `yanjing` (eyes in the dark), `xiaoman-idle` · `xiaoman-throw` · `xiaoman-carry`. The local FLUX.2 klein 4B (mflux),
 `tools/paint-gu1-td-flux.py`: edit passes from 守墙关's own art (小满, 野猪, 狰, the 剑阵 medallion, the 山门 wall) so the set
 keeps the kit's comic style; every seed looked at for fake writing; the sources kept beside 守墙关's and 守炉's in
-`art/games/shouqiang/` and `art/games/shoulu/`.
+`art/games/shouqiang/` and `art/games/shoulu/`. 阿禾's two repainted 2026-10-22 (Hanli: 「收白菜里阿禾是黄毛吗?」 — the first prompt said
+straw-yellow and painted her golden blonde; the book's 黄毛小辫 is 黄毛丫头, a poor kid's thin dull hair): now dull black
+hair in two thin small braids, as `people/ahe-girl`; idle seed 2, cast seed 1 of 1–4, every seed looked at.
