@@ -11,7 +11,7 @@
 // the round (rules/hergame.mjs `stage`: deal.wake/rest). In the 游戏厅 (no deal on the row) the task's deal is fetched.
 //
 // mount(container, { data, lang, signal }) → { won: true, grade: 'admitted' | 'dodged', stars }
-//   data: { exchanges, skip_after, context: {zh, en}, hold: {zh, en}, hold_lines, session(), seam ('stub' | 'off'), wake(), rest() }
+//   data: { exchanges, skip_after, context: {zh, en}, hold: {zh, en}, hold_lines, press: {zh, en}, session(), seam ('stub' | 'off'), wake(), rest() }
 // 「算了，往下走」 is the page's (stuck.js): `stuck()` says so once `skip_after` lines are sent, or she cannot be asked.
 import { refusalOf } from './drawguess-rules.js';
 import { admits, starsFor } from './bingzhai-rules.js';
@@ -45,11 +45,13 @@ const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
 const AT = { zh: '@银月 ', en: '@Yinyue ' };
 
 /** The line sent for the player: the round's facts in brackets on the first line, and — while his lines are fewer than
-    `hold_lines` (found live 10-22: one dare on the first line and she owned it) — the page's `hold`: not yet. Every other
+    `hold_lines` (found live 10-22: one dare on the first line and she owned it) — the page's `hold`: not yet; after them,
+    `press` on every line (found live the same day: four bare 「认不认？」 and she owned it) — a nag is no case. Every other
     word is his own. `n` is the line's number, from 1. */
 export function lineFor(deal, q, { n = 1, lang = 'zh' } = {}) {
   const en = lang === 'en';
-  const notes = [n === 1 ? deal?.context : null, n <= (Number(deal?.hold_lines) || 0) ? deal?.hold : null].filter(Boolean);
+  const held = n <= (Number(deal?.hold_lines) || 0);
+  const notes = [n === 1 ? deal?.context : null, held ? deal?.hold : deal?.press].filter(Boolean);
   const note = notes.map((f) => (en ? `(${f.en ?? f.zh}) ` : `（${f.zh}）`)).join('');
   return `${AT[en ? 'en' : 'zh']}${note}${q}`;
 }
