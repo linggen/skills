@@ -81,7 +81,7 @@ test('显示全文 never runs past a 回\'s turn: the old 回\'s last passage sh
   // 古一's `follow` (00-yinyue → 古二's 00-cliff): a 回's last choice that tells a passage of its own. (古二 → 今 · 一
   // was the case till 2026-10-20; 00-notice's rest is its scene's own now, after 水桶落井.)
   const FOLLOW = TO_HALL.findIndex(([v, a]) => v === 'resolve' && a.exit === 'follow');
-  // 二十问 · 银月 played first (10-22), its rest of the dawn read: then 带她出谷.
+  // 讨饼债 played first (10-22, was 二十问 · 银月), its rest of the dawn read: then 带她出谷.
   const played = walk(newState(content, 'zh', ctx.now), [...TO_HALL.slice(0, FOLLOW), ['played']], content, ctx.now);
   const before = tellOf(content, played).keep ?? played;
   const s = resolve(before, content, ctx, { exit: 'follow' }).state;

@@ -33,7 +33,7 @@ export function herGameNow(state, now = new Date()) {
 }
 export const herAwake = (state, now = new Date()) => Boolean(state.companion?.joined && (!state.companion?.asleep || herGameNow(state, now)));
 /* Not found yet, but standing on the stage in a form that talks (the scene's `her: "human"`: 00-yinyue,
-   the girl at the cave mouth before 带她出谷) — a board there that needs her (二十问 · 银月, Hanli 10-22:
+   the girl at the cave mouth before 带她出谷) — a board there that needs her (讨饼债, was 二十问 · 银月; Hanli 10-22:
    「关键是能留住玩家」) holds her for its round as on any other: the hold says so (`stage`), and only on
    that scene. She is still not joined: no card, no moments, no gifts — her turn in the board's chat only. */
 export function herOnStage(content, state, now = new Date()) {

@@ -31,7 +31,7 @@ const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url),
    before the way on, so that way on tells nothing.) */
 const FOLLOW = TO_HALL.findIndex(([v, a]) => v === 'resolve' && a.exit === 'follow');
 function turned({ catchup = true } = {}) {
-  // 二十问 · 银月 played first (10-22), its rest of the dawn read: then 带她出谷.
+  // 讨饼债 played first (10-22, was 二十问 · 银月), its rest of the dawn read: then 带她出谷.
   const played = walk(newState(content, 'zh', NOW), [...TO_HALL.slice(0, FOLLOW), ['played']], content, NOW);
   const at = tellOf(content, played).keep ?? played;
   const s = resolve(at, content, ctx, { exit: 'follow' }).state;

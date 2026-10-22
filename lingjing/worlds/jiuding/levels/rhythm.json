@@ -208,12 +208,12 @@
        "id": "yinyue-what",
        "scene": "00-yinyue",
        "title": {
-        "zh": "二十问 · 银月",
-        "en": "Twenty questions · Yinyue"
+        "zh": "讨饼债",
+        "en": "The flatbread debt"
        },
        "mechanic": "对话",
        "variety": "对话",
-       "game": "twenty",
+       "game": "bingzhai",
        "n": 68
       },
       {

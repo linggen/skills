@@ -45,7 +45,7 @@ export function pageHerGame(content, state, args = {}, now = new Date()) {
     return { keep, result: { ok: true, hold: false } };
   }
   // Unmet, she can be held only where she stands on the stage in her talking form (the scene's
-  // `her: "human"`, a board of that scene: 00-yinyue's 二十问) — the hold names the scene (`stage`).
+  // `her: "human"`, a board of that scene: 00-yinyue's 讨饼债) — the hold names the scene (`stage`).
   const sc = sceneOf(content, state);
   const onStage = !state?.companion?.joined && sc?.her === 'human' && (sc.offers?.tasks ?? []).includes(task);
   if ((!state?.companion?.joined && !onStage) || herAway(content, state)) return { keep: null, result: { ok: false, refused: 'no-host', say: null } };

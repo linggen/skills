@@ -105,23 +105,31 @@ storm · down the cliff · the vine and the moss), laid under the fall's paragra
 1,857-character read from 00-fall to 守火 is now 828 · 坠谷 · 1,029 (tools/arcade-rhythm.mjs). The read before it,
 00-zaotai → 黑松岭's 刻记号 (3,409), is still over the cap — the next to break.
 
-**第一回 at seven with 二十问, plus a teaching 斗法 (10-22**, Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 — meet
-Linggen's two signatures, the AI that answers anything and the card fight, in the first hour): **二十问 · 银月** `yinyue-what`
-(00-yinyue, games/twenty.js, the AI kit's first story board): the passage split word for word after 「……烂成这样。」 — she has
-named herself 妖王 and won't say what she is; he asks her anything (typed on the board, or said to @银月 in the chat — those
-count too), she answers as herself in the game's chat, and a line naming what she is (the deal's `names`: 狐 · 那只狐狸 · 狐狸精 …;
-妖王 is no guess — she said it) ends it; 「小满道：「……你是那只狐狸？」」 on is read after it. ≤ 10 questions, the way out after 4
-(`stuck`, no 75 s clock); ★ by how soon (≤ 3 · ≤ 6 · more). Unmet here (`joins` is 带她出谷's), she is
+**第一回 at seven with 讨饼债 (first 二十问), plus a teaching 斗法 (10-22**, Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 — meet
+Linggen's two signatures, the AI that answers anything and the card fight, in the first hour): **讨饼债** `yinyue-what`
+(00-yinyue, games/bingzhai.js + bingzhai-rules.js, the AI kit's first story board; it was 二十问 · 银月 till Hanli played it 10-22:
+「这个设计不太好. 太简单, 反倒不知道是答案.....怎么改一下呢?」 → 「可以, 试一下」 — guessing "fox" was too easy, and the answer
+didn't feel like one): the passage split word for word after 「……烂成这样。」 — she has named herself 妖王 and is eating his
+breakfast corner; the card says the goal plainly, **让她认下这笔饼债**. He talks to her (typed on the board, or said to @银月 in the
+chat — those count too); she answers as herself in the game's chat, dodging in character, and gives in only to a good case —
+evidence (the bite on his 虎口 through the patched coat, the crumbs, the fire and the fever all night), wit, a dare, a bargain;
+never on a lazy first 「你欠我饼」. **The win is her reply**, checked page-side: a sentence of hers that owns the debt
+(`admits`: 欠你…饼 · 本王欠你…饼/债 · 这张饼…记下了 · 饼债…认 · I owe you one / owes you a flatbread …, a data list with
+negation, echo and scoff guards — 「本王才不欠你」, 「你说本王欠你一张饼？做梦」, "owes you nothing" don't count); her facts ask
+her to say 「本王欠你一张饼」 when she truly gives in. ≤ 10 lines, the way out after 4 (`stuck`, no 75 s clock); ★ by how soon
+(≤ 3 · ≤ 6 · more); unowned at 10 the round ends and the story goes on — 「小满道：「……你是那只狐狸？」」 on is read after, and the
+book's own 「一言为定。本王，欠你一张饼。」 there owns it either way (the done line too; no new book sentence). Owned sets the mark
+`bing-debt` (read by no line yet). Unmet here (`joins` is 带她出谷's), she is
 held on the stage for the round (rules/hergame.mjs `stage`: the scene's `her: "human"`, its own board) — the engine's
-`companion.awake`, never `joined`: no moments, no card. The round's facts go to her in brackets on the first line and on the guess
-(`deal.context` · `deal.guessed`), as 画猜 sends its scene; every word she says is hers. Live 10-22 (gpt-6-luna, cc-gu1-*): ~2.3k tokens and 3–4 s a
-question (her guest turn), ≤ 10; a line said to @银月 in the chat counts as a question too; skipped, the hold goes with the board. **The teaching 斗法** `fox-bite` (00-fox's 「脱下外衣，裹起它」): no 第一回/第二回 scene has 小满 fight a beast
+`companion.awake`, never `joined`: no moments, no card. The round's facts go to her in brackets on the first line
+(`deal.context`: he is 沈小满, she calls him 凡人, her own name escapes her), as 画猜 sends its scene; every word she says is hers.
+Live 10-22 (二十问, gpt-6-luna): ~2.3k tokens and 3–4 s a line (her guest turn), ≤ 10; skipped, the hold goes with the board. **The teaching 斗法** `fox-bite` (00-fox's 「脱下外衣，裹起它」): no 第一回/第二回 scene has 小满 fight a beast
 (野猪 is the 蒙山 pool's, h05; the cave's beasts are kept out by the fire, which 守火 already plays) — the one face-off the book
 writes is the hurt fox: 「他爹说过，受伤的野兽最凶，碰都别去碰」, then the coat, the bite, 「它不咬了」 (the exit's passage,
 unchanged). So a 试 of nerve like the 三试: stand three of its turns (`foe-yinhu`, `foe-` so not in the 山海录; each bite lands 2, he
 stands 20 — ending every turn still passes it); three 白给 cards, the book's: 枯枝 (「他捡起一根枯枝扔到坑边」 — a card that
 strikes, 1), 补丁外衣 (the coat: a body that takes the bite), 不怕 (「不怕。我也掉下来了」, heal 2) — all in hand, so no 反噬 on the dry deck (the exit game's `foe.fatigue: false`, a fight's own word in data, 10-22); pays nothing — no card, no loot,
-no 修为. Rhythm after (with 守灶台 in, 拽爹 cut): 接雨 · 守白菜 · 忍字 · 守灶台 · 暴雨坠谷 (大场面) · **斗法** · 守火 · 喂饼 · **二十问** — no kit twice running (守灶台 and 守火 are different 塔防). **Hanli's call:** the foe is 银月 in fox form, and
+no 修为. Rhythm after (with 守灶台 in, 拽爹 cut): 接雨 · 守白菜 · 忍字 · 守灶台 · 暴雨坠谷 (大场面) · **斗法** · 守火 · 喂饼 · **讨饼债** — no kit twice running (守灶台 and 守火 are different 塔防). **Hanli's call:** the foe is 银月 in fox form, and
 「attack」 is taught as the book's probe, not a blow; the three cards borrow plates (石子 · 土偶 · 娘的饼) until painted.
 
 ## The throws — levels of 砸寨 (10-20)
@@ -706,7 +714,7 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
 ## AI games (the model talks; the rules hold the secret and the score; no card)
 
 - **二十问** — 银月 thinks of an ordinary animal; yes/no in the chat; guess within twenty.
-  In the story (10-22): 第一回's 00-yinyue, `yinyue-what` — what she is, asked anything (above, § Before 入门).
+  In the story it was 第一回's 00-yinyue till 10-22's play; that board is now 讨饼债 (`bingzhai`, above, § Before 入门).
 - **讨价还价** — haggle with a keeper in the chat; the rules hold the floor and the mood.
 - **断案** — ask the people, find the proof, name who did it.
 - **对对子** — being built 10-16 by another agent.

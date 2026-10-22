@@ -1,25 +1,27 @@
-// 二十问 · 银月, the story's round (Hanli 10-22: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」):
-// 00-yinyue, the girl at the cave mouth who will not say what she is. The player asks her anything —
-// typed here, or said to @银月 in the chat (the mic is the chat's) — and she answers in her own voice,
-// as hers, in the game's own chat; guessing what she is ends it. The player's first real AI moment.
+// 讨饼债, the story's round at 00-yinyue (Hanli 10-22, of the 二十问 it replaces: 「这个设计不太好. 太简单, 反倒不知道是答案.....
+// 怎么改一下呢?」 → 「可以, 试一下」): she ate the Shens' last white flour last night and is eating his breakfast corner now,
+// and the proud 妖王 will not own it. The player's goal, plainly on the card: make her ADMIT the debt. Typed here, or
+// said to @银月 in the chat (the mic is the chat's) — she answers in her own voice, as hers, in the game's own chat; she
+// dodges (pride, deflection) and gives in only to a good case: evidence, wit, a dare, a bargain.
 //
-// The model only talks. What she is, what counts as the guess, how many questions, when the way out
-// shows: the task's deal (tasks/world.json `yinyue-what`), checked HERE against the player's own words —
-// never her say. Her lines come from her (SKILL.md `place.yinyue`); the only words sent for her are the
-// round's facts in brackets (`deal.context`, then `deal.guessed` on the guess), as 画猜 sends its scene.
-// Unmet at 00-yinyue, she is held on the stage for the round (rules/hergame.mjs `stage`: deal.wake/rest).
+// The model only talks. Whether she owned it is checked HERE on her own reply (bingzhai-rules.js `admits`, a data list
+// with negation guards) — never a tag of hers; how many exchanges, when the way out shows: the task's deal (tasks/world.json
+// `yinyue-what`). Her lines come from her (SKILL.md `place.yinyue`); the only words sent for her are the round's facts in
+// brackets on the first line (`deal.context`), as 画猜 sends its scene. Unmet at 00-yinyue, she is held on the stage for
+// the round (rules/hergame.mjs `stage`: deal.wake/rest). In the 游戏厅 (no deal on the row) the task's deal is fetched.
 //
-// mount(container, { data, lang, signal }) → { won: true, grade: 'guessed' | 'missed', stars }
-//   data: { names: {zh: [...], en: [...]}, questions, skip_after, context: {zh, en}, guessed: {zh, en},
-//           session(), seam ('stub' | 'off'), wake(), rest() }
-// 「算了，往下走」 is the page's (stuck.js): `stuck()` says so once `skip_after` questions are asked, or she
-// cannot be asked at all.
+// mount(container, { data, lang, signal }) → { won: true, grade: 'admitted' | 'dodged', stars }
+//   data: { exchanges, skip_after, context: {zh, en}, session(), seam ('stub' | 'off'), wake(), rest() }
+// 「算了，往下走」 is the page's (stuck.js): `stuck()` says so once `skip_after` lines are sent, or she cannot be asked.
 import { refusalOf } from './drawguess-rules.js';
+import { admits, starsFor } from './bingzhai-rules.js';
+
+export { admits, starsFor };
 
 export const meta = {
-  id: 'twenty',
-  name: { zh: '二十问 · 银月', en: 'Twenty questions · Yinyue' },
-  how: { zh: '问她什么都行。猜中她是什么。', en: 'Ask her anything. Guess what she is.' },
+  id: 'bingzhai',
+  name: { zh: '讨饼债', en: 'The flatbread debt' },
+  how: { zh: '让她认下这笔饼债。', en: 'Make her own the flatbread debt.' },
   ai: true, // the other half is a model's (no bot plays it: tests/board-bots.test.mjs)
   stuckClock: false, // the way out is the questions' (stuck below), not 75 s: her answers take a while
 };
@@ -29,38 +31,32 @@ const POLL_MS = 600, TIMEOUT_MS = 40000;
 
 const T = {
   zh: {
-    lead: '她不肯说自己是什么。', lead2: '问她什么都行——在这儿打字，或在对话里 @银月 说出来。',
-    ask: '问她……', go: '问', count: '已问 {n}/{max}', wait: '银月在想……',
-    won: '猜中了。', missed: '她到底没认。', far: '这里叫不应银月。', off: '这个测试存档不叫银月（chat=off）。', absent: '银月不在。', err: '她没答上来，再问一句。',
+    lead: '让她认下这笔饼债。', lead2: '凭据、嘴皮、激将、讲条件，都行——在这儿打字，或在对话里 @银月 说。',
+    ask: '跟她说……', go: '说', count: '已说 {n}/{max}', wait: '银月在想……',
+    won: '她认了。', missed: '她到底没认。', far: '这里叫不应银月。', off: '这个测试存档不叫银月（chat=off）。', absent: '银月不在。', err: '她没答上来，再问一句。',
   },
   en: {
-    lead: 'She won\'t say what she is.', lead2: 'Ask her anything — type it here, or say it to @Yinyue in the chat.',
-    ask: 'Ask her…', go: 'Ask', count: 'Asked {n}/{max}', wait: 'Yinyue is thinking…',
-    won: 'You guessed it.', missed: 'She never owned up.', far: 'Yinyue can\'t be reached here.', off: 'This test save calls no one (chat=off).', absent: 'Yinyue isn\'t here.', err: 'No answer from her. Ask again.',
+    lead: 'Make her own the flatbread debt.', lead2: 'Evidence, wit, a dare, a bargain — type it here, or say it to @Yinyue in the chat.',
+    ask: 'Tell her…', go: 'Say', count: 'Said {n}/{max}', wait: 'Yinyue is thinking…',
+    won: 'She owned it.', missed: 'She never owned up.', far: 'Yinyue can\'t be reached here.', off: 'This test save calls no one (chat=off).', absent: 'Yinyue isn\'t here.', err: 'No answer from her. Ask again.',
   },
 };
 const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
 const AT = { zh: '@银月 ', en: '@Yinyue ' };
 
-/** Does the player's line name what she is? A name or alias of the deal's, anywhere in it (zh), or as a word (en). */
-export function names(deal, line) {
-  const said = String(line ?? '').toLowerCase();
-  if (!said.trim()) return false;
-  const zh = deal?.names?.zh ?? [], en = deal?.names?.en ?? [];
-  return zh.some((n) => n && said.includes(n.toLowerCase()))
-    || en.some((n) => n && new RegExp(`(^|[^a-z])${n.toLowerCase()}(s|es)?($|[^a-z])`).test(said));
-}
-
-/** Stars by how soon: ≤ 3 questions ★★★, ≤ 6 ★★, else ★. */
-export const starsFor = (n) => (n <= 3 ? 3 : n <= 6 ? 2 : 1);
-
-/** The line sent for the player: the round's facts in brackets on the first question and on the guess. */
-export function lineFor(deal, q, { first = false, guess = false, lang = 'zh' } = {}) {
+/** The line sent for the player: the round's facts in brackets on the first line; every other line is his own words. */
+export function lineFor(deal, q, { first = false, lang = 'zh' } = {}) {
   const en = lang === 'en';
-  const fact = guess ? deal?.guessed : first ? deal?.context : null;
+  const fact = first ? deal?.context : null;
   const note = fact ? (en ? `(${fact.en ?? fact.zh}) ` : `（${fact.zh}）`) : '';
   return `${AT[en ? 'en' : 'zh']}${note}${q}`;
 }
+
+/* The 游戏厅's 试玩 stands the board with no deal (its row carries none): the story task's own, fetched once. */
+const WORLD = new URL('../../worlds/jiuding/', import.meta.url);
+let dealP = null;
+const storyDeal = () => (dealP ??= fetch(new URL('tasks/world.json', WORLD)).then((r) => r.json())
+  .then((w) => (w.tasks ?? []).find((t) => t.game === 'bingzhai')?.deal ?? {}).catch(() => ({})));
 
 // The round now on the stage (one at a time): `stuck` reads it.
 let current = null;
@@ -96,7 +92,7 @@ async function rowsOf(sid) {
 export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const doc = container.ownerDocument, w = T[lang] ?? T.zh;
   styleOnce(doc);
-  const max = Math.max(1, Number(data.questions) || 10), skipAfter = Math.max(1, Number(data.skip_after) || 4);
+  const max = Math.max(1, Number(data.exchanges) || 10), skipAfter = Math.max(1, Number(data.skip_after) || 4);
   const sessionOf = () => (typeof data.session === 'function' ? data.session() : data.session ?? null);
   const root = doc.createElement('div');
   root.className = 'g-ink g-tq';
@@ -113,6 +109,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const lock = (on) => { r.busy = on; btn.disabled = on || r.done || r.unasked; input.disabled = r.done || r.unasked; };
   const cannot = (why) => { r.unasked = true; foot(why); lock(false); };
   count();
+  const dealt = data.context || data.seam ? Promise.resolve(data) : storyDeal().then((d) => ({ ...d, ...data }));
   const woke = typeof data.wake === 'function' ? Promise.resolve(data.wake()).catch(() => null) : Promise.resolve(null);
   if (data.seam === 'off') cannot(w.off);
   else if (data.seam !== 'stub' && (!globalThis.LinggenChannel?.fetch || !sessionOf())) cannot(w.far);
@@ -128,20 +125,20 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       if (current === r) current = null;
       resolve(res);
     };
-    const end = (guessed) => {
-      root.classList.add(guessed ? 'is-won' : 'is-over');
-      foot(guessed ? w.won : w.missed);
-      setTimeout(() => finish({ won: true, grade: guessed ? 'guessed' : 'missed', stars: guessed ? starsFor(r.asked) : 0 }), 2600);
+    const end = (owned) => {
+      root.classList.add(owned ? 'is-won' : 'is-over');
+      foot(owned ? w.won : w.missed);
+      setTimeout(() => finish({ won: true, grade: owned ? 'admitted' : 'dodged', stars: owned ? starsFor(r.asked) : 0 }), 2600);
     };
-    // A question counted once, whoever sent it (this box, or the chat's own @银月 line).
+    // A line counted once, whoever sent it (this box, or the chat's own @银月 line).
     const counted = (q) => {
       r.asked += 1;
       count();
       $('.g-tq-q').textContent = q;
-      if (names(data, q)) { r.won = true; return true; }
       if (r.asked >= max) r.over = true;
-      return false;
     };
+    // Her reply, wherever it came: shown, and checked here — has she owned the debt?
+    const heard = (line) => { say(line); if (admits(line)) r.won = true; };
     const awaitReply = async (sid, seenHers) => {
       const until = performance.now() + TIMEOUT_MS;
       while (performance.now() < until && !signal?.aborted) {
@@ -154,24 +151,24 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     const ask = async (q) => {
       if (r.busy || r.done || r.unasked) return;
       lock(true);
-      const guess = names(data, q), first = r.asked === 0;
+      const first = r.asked === 0;
       counted(q);
       say(w.wait, true);
       try {
         if (data.seam === 'stub') {
           await new Promise((ok) => setTimeout(ok, 700));
-          say(guess ? '[stub] 放、放肆！本王……本王是妖王！' : '[stub] 哼，本王的事，凡人少打听。');
+          heard(r.asked >= 3 ? '[stub] ……罢了。本王欠你一张饼。' : '[stub] 哼，本王只是见它孤零零的，顺手收留了。');
         } else {
           await woke;
           const sid = sessionOf();
           const seenHers = (await rowsOf(sid)).filter(([f]) => f === 'yinyue').length;
-          const text = lineFor(data, q, { first, guess, lang });
+          const text = lineFor(await dealt, q, { first, lang });
           r.mine.add(text);
           const res = await channel('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_root: '', agent_id: 'yinyue', message: text, session_id: sid, skill_name: SKILL }) });
           const refused = refusalOf(await res.json().catch(() => null));
           if (!res.ok || refused) { say(''); cannot(refused === 'absent' || refused === 'unavailable' ? w.absent : w.far); return; }
           const line = await awaitReply(sid, seenHers);
-          if (line) say(line); else { say(''); foot(w.err); }
+          if (line) heard(line); else { say(''); foot(w.err); }
           r.seen = (await rowsOf(sid)).length;
         }
       } catch { say(''); foot(w.err); }
@@ -198,7 +195,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
         r.seen = rows.length;
         for (const [from, text] of fresh) {
           if (from === 'user' && !r.mine.has(text) && ![...r.mine].some((m) => m.endsWith(text))) counted(text.replace(/^@\S+\s*/, ''));
-          if (from === 'yinyue') say(text);
+          if (from === 'yinyue') heard(text);
         }
         if (r.won) end(true); else if (r.over) end(false);
       }, 1500);

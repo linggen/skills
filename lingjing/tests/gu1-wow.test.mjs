@@ -1,5 +1,6 @@
 // 第一回's two retention beats (Hanli 10-22: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」):
-// 二十问 · 银月 at 00-yinyue — the player's first real AI moment, a story board — and the teaching 斗法
+// 讨饼债 at 00-yinyue (was 二十问 · 银月 till Hanli's 10-22 play: 「这个设计不太好. 太简单, 反倒不知道是答案.....怎么改一下呢?」 →
+// 「可以, 试一下」) — the player's first real AI moment, a story board — and the teaching 斗法
 // at 00-fox — the card fight met before 第三回's 蠪侄, the book's own face-off with the hurt fox.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,7 +11,8 @@ import { fitPresence, herAwake, hasCompanion, HER_GAME_TTL_MS } from '../scripts
 import { pageHerGame } from '../scripts/rules/hergame.mjs';
 import { foeOf } from '../scripts/rules/world.mjs';
 import { act, begin, foeTurn } from '../scripts/battle.js';
-import * as twenty from '../scripts/games/twenty.js';
+import * as bingzhai from '../scripts/games/bingzhai.js';
+import { ADMIT } from '../scripts/games/bingzhai-rules.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
@@ -20,9 +22,9 @@ const scenes = content.chapters['00-prologue'].scenes;
 const at = (id) => playTo(content, newState(content, 'zh', NOW), id, { now: NOW }).state;
 const task = content.tasks.tasks.find((t) => t.id === 'yinyue-what');
 
-/* ── 二十问 · 银月 ── */
+/* ── 讨饼债 ── */
 
-test('二十问 · 银月 stands at 00-yinyue: the passage split word for word after 「烂成这样。」, the way on waits for it', () => {
+test('讨饼债 stands at 00-yinyue: the passage split word for word after 「烂成这样。」, the way on waits for it', () => {
   const sc = scenes['00-yinyue'];
   assert.deepEqual(sc.show, [{ card: 'board', id: 'yinyue-what' }]);
   assert.deepEqual(sc.offers.tasks, ['yinyue-what']);
@@ -33,26 +35,51 @@ test('二十问 · 银月 stands at 00-yinyue: the passage split word for word a
     assert.match(sc.story_full[lang], lang === 'zh' ? /烂成这样。」$/ : /Rotten through\."$/);
     assert.match(sc.story_after_full[lang], lang === 'zh' ? /^小满道：「……你是那只狐狸？」/ : /^Xiaoman said/);
   }
-  assert.equal(task.game, 'twenty');
+  assert.equal(task.game, 'bingzhai');
   assert.equal(task.needs, 'her');
-  assert.ok(content.games.games.some((g) => g.id === 'twenty' && g.task === 'yinyue-what' && g.scene === '00-yinyue'), 'its games.json story row');
+  assert.deepEqual(task.title, { zh: '讨饼债', en: 'The flatbread debt' });
+  assert.ok(content.games.games.some((g) => g.id === 'bingzhai' && g.task === 'yinyue-what' && g.scene === '00-yinyue'), 'its games.json story row');
+  assert.ok(!content.games.games.some((g) => g.id === 'twenty' && g.task), 'the 游戏厅\'s 二十问 (group ai) is another game; no story row of it is left');
+  // The book owns the debt after the board either way (no new book sentence): the done line is its own.
+  for (const lang of ['zh', 'en']) assert.ok(sc.story_after[lang].includes(task.done_line[lang].replace(/^「|」$/g, '').replace(/^"|"$/g, '')), lang);
   assert.deepEqual(lint(content), []);
 });
 
-test('二十问: what counts as the guess is the deal\'s, checked on the player\'s own words — 妖王 is not a guess (she said it)', () => {
+test('讨饼债: the win is HER line owning the debt, page-checked — a negation, an echo or a scoff does not count (zh and en)', () => {
+  const yes = [
+    '哼……好吧，本王欠你一张饼。', '一言为定。本王，欠你一张饼。', '这张饼，本王记下了。', '算本王欠你的。', '饼债本王认了，别再念了。',
+    '不欠！……罢了，欠你一张饼。', '欠你一张饼，行了吧？', '你说得对，本王欠你一张饼。',
+    'Agreed. This queen owes you one flatbread.', 'Fine. I owe you a flatbread, mortal.', 'All right — I owe you one.', 'The bread debt is mine, happy?',
+  ];
+  const no = [
+    '本王才不欠你什么饼。', '本王不欠你饼。', '谁说本王欠你饼了！', '你说本王欠你一张饼？做梦。', '本王欠你一张饼？', '欠你一张饼？才怪。',
+    '本王欠你一张饼——才怪。', '就算本王欠你一张饼，又如何？', '本王欠你一个人情，饼就别提了。', '你欠我饼！', '本王只是见它孤零零的，顺手收留了。',
+    'This queen owes you nothing.', "I don't owe you a flatbread.", 'Who says I owe you a flatbread?', 'Do I owe you a cake?', 'I owe you a favour, perhaps.', '',
+  ];
+  for (const line of yes) assert.equal(bingzhai.admits(line), true, line);
+  for (const line of no) assert.equal(bingzhai.admits(line), false, line);
+  assert.ok(ADMIT.zh.length && ADMIT.en.length, 'a data list, both languages');
+  assert.equal(bingzhai.starsFor(3), 3);
+  assert.equal(bingzhai.starsFor(5), 2);
+  assert.equal(bingzhai.starsFor(9), 1);
+});
+
+test('讨饼债: the deal — her facts in brackets on the first line only, he is 沈小满 and she gives no name; the way out after 4, over at 10', () => {
   const d = task.deal;
-  assert.ok(d.questions >= d.skip_after && d.skip_after >= 1);
-  for (const yes of ['你是那只狐狸吗', '你是狐狸精！', '你其实是只狐吧', 'Are you the fox?', 'you are a silver fox']) assert.equal(twenty.names(d, yes), true, yes);
-  for (const no of ['你是妖王吗', '你多大了', '你吃饼吗', 'Are you a demon queen?', 'foxglove? no']) assert.equal(twenty.names(d, no), false, no);
-  assert.equal(twenty.starsFor(2), 3);
-  assert.equal(twenty.starsFor(5), 2);
-  assert.equal(twenty.starsFor(9), 1);
-  // The round's facts go in brackets on the first line and on the guess; every other line is his own words.
-  assert.match(twenty.lineFor(d, '你是谁？', { first: true }), /^@银月 （天亮[\s\S]*）你是谁？$/);
-  assert.equal(twenty.lineFor(d, '你几岁？'), '@银月 你几岁？');
-  assert.match(twenty.lineFor(d, '你是狐狸！', { guess: true }), /^@银月 （他说中了[\s\S]*）你是狐狸！$/);
-  assert.match(twenty.lineFor(d, 'Who are you?', { first: true, lang: 'en' }), /^@Yinyue \(Daybreak[\s\S]*\) Who are you\?$/);
-  assert.equal(twenty.meta.stuckClock, false, 'the way out is the questions\', not 75 s');
+  assert.equal(d.exchanges, 10);
+  assert.equal(d.skip_after, 4);
+  assert.match(d.context.zh, /沈小满/);
+  assert.match(d.context.zh, /别报名字/);
+  assert.match(d.context.zh, /本王欠你一张饼/, 'she is asked to own it in the words the page reads');
+  assert.ok(bingzhai.admits(d.context.zh.match(/「(本王欠你一张饼)」/)[1]));
+  assert.match(d.context.en, /Shen Xiaoman/);
+  assert.match(bingzhai.lineFor(d, '你欠我一张饼。', { first: true }), /^@银月 （天亮[\s\S]*）你欠我一张饼。$/);
+  assert.equal(bingzhai.lineFor(d, '你嘴边有饼渣。'), '@银月 你嘴边有饼渣。');
+  assert.match(bingzhai.lineFor(d, 'You owe me.', { first: true, lang: 'en' }), /^@Yinyue \(Daybreak[\s\S]*\) You owe me\.$/);
+  assert.deepEqual(task.marks, { admitted: 'bing-debt', dodged: null });
+  assert.equal(bingzhai.meta.id, 'bingzhai');
+  assert.equal(bingzhai.meta.ai, true);
+  assert.equal(bingzhai.meta.stuckClock, false, 'the way out is the exchanges\', not 75 s');
 });
 
 test('unmet at 00-yinyue, she is held on the stage for the round — only there, only for its board; she never joins by it', () => {
