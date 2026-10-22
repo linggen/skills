@@ -13,7 +13,19 @@
 //
 // Settles { won, outcome, stars?, next? } — outcome as the rules name it (won · lost · withdrew); a 试 passed is won.
 // Nothing here writes: no verb, no save; the 游戏厅's wins pay nothing.
-import { act, begin, foeStep, foeTurn, idle, offers, view } from '../battle.js';
+//
+// The story mounts the same room (lingjing.js, once per fight, in a shell frame; Hanli 10-22: 「故事里的对战迁移可以开」)
+// and hears it through `story` hooks — the room still plays and draws, the story keeps what a fight means:
+//   data.st, data.catalog   the state the story began (its door's seed: the rules replay the picks on it) and its cards
+//   ctx(room)               what the story adds to the room's drawing (his name, 银月's card, the 丹囊, 问银月)
+//   onMove(token)           every move the rules will replay (battle.js tokenOf; 'end' for a turn ended)
+//   onStep()                after each step drawn (the beast's 杀招 let go, for her)
+//   onPlayed({ before, mark, mine })   a move of his, or the beast's whole turn, played out (her cues)
+//   onAsk()                 问银月 tapped (words only: nothing in the fight moves)
+//   settle(st) → Promise<r> the rules' answer; the closing card waits for it, and a refusal (r.ok false) has none
+//   holdMs(end)             how long the closing card stands (`end`: the foe's last word is in it)
+// A story mount settles { …, r } — what the rules answered; the story's own pay and 所得 follow it.
+import { act, begin, foeStep, foeTurn, idle, offers, tokenOf, view } from '../battle.js';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, endOf, pickOf } from '../battle-card.js';
 import { banner, ghostsOf, playLog, since } from '../battle-anim.js';
 import { wireDrag } from '../battle-drag.js';
@@ -93,28 +105,31 @@ function ctxOf(room) {
 
 /** The fight the mount was handed: given whole, or a key of the table. */
 async function fightFrom(data, lang) {
-  const [catalog, table] = await Promise.all([catalogOf(), data.setup ? null : fightTable()]);
+  const [catalog, table] = await Promise.all([data.catalog ?? catalogOf(), data.setup ? null : fightTable()]);
   const row = data.setup ? data : fightOf(table, data.foe);
   if (!row) throw new Error(`no fight ${data.foe}`);
   const brief = row.brief?.[lang] ?? row.brief?.zh ?? row.brief;
   return { catalog, table, setup: row.setup, brief, next: row.next ?? data.next ?? null };
 }
 
-export async function mount(container, { data = {}, lang = 'zh', seed = String(Date.now()), signal, shell } = {}) {
+export async function mount(container, { data = {}, lang = 'zh', seed = String(Date.now()), signal, shell, story = {} } = {}) {
   const doc = container.ownerDocument;
   const host = doc.createElement('div');
   host.className = 'g-kapai';
   container.replaceChildren(host);
   const fight = await fightFrom(data, lang);
-  const setup = { ...fight.setup, seed: `kapai|${seed}` };
-  const room = { ...fight, setup, lang, st: begin(setup, fight.catalog), picked: null, openLog: false, help: false, note: null, busy: false, ended: false };
+  // A fight the story's door dealt keeps its seed: the rules replay the picks on it (the 游戏厅's rows carry none).
+  const setup = { ...fight.setup, seed: fight.setup.seed ?? `kapai|${seed}` };
+  const room = { ...fight, setup, lang, st: data.st ?? begin(setup, fight.catalog), picked: null, openLog: false, help: false, note: null, busy: false, ended: false, settling: false, yielded: false };
+  const hook = (name, ...a) => { try { return story[name]?.(...a); } catch (e) { console.warn('[kapai]', name, e); return undefined; } };
+  const ctx = () => { const base = ctxOf(room), more = hook('ctx', room) ?? {}; return { ...base, ...more, says: { ...base.says, ...(more.says ?? {}) } }; };
   const paused = () => Boolean(shell?.paused?.());
   const battle = () => host.querySelector('.battle');
   const name = (v) => (v && typeof v === 'object' ? v[lang] ?? v.zh : v);
 
   return new Promise((resolve) => {
     let done = false, idleTimer = null, release = null;
-    const draw = () => { host.innerHTML = battleHtml(view(room.st), offers(room.st), ctxOf(room), room.picked, room.openLog, room.note, room.help); idleSoon(); };
+    const draw = () => { if (done) return; host.innerHTML = battleHtml(view(room.st), offers(room.st), ctx(), room.picked, room.openLog, room.note, room.help); idleSoon(); };
     const finish = (r) => {
       if (done) return;
       done = true;
@@ -124,13 +139,14 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       host.removeEventListener('click', onClick);
       resolve(r);
     };
-    const gone = () => done;
+    // 认输 closes the room at any moment: a move or a beast's turn still being drawn stops where it is.
+    const gone = () => done || room.yielded;
     // The beast's turn waits while the shell is paused; so does a turn that would end itself.
     const unpaused = () => new Promise((go) => { const t = () => (gone() || !paused() ? go() : setTimeout(t, 120)); t(); });
     function idleSoon() {
       clearTimeout(idleTimer);
       const st = room.st;
-      if (room.busy || room.picked || room.help || paused() || st.outcome !== 'open' || st.whose !== 'you' || !idle(st)) return;
+      if (done || room.busy || room.picked || room.help || paused() || st.outcome !== 'open' || st.whose !== 'you' || !idle(st)) return;
       idleTimer = setTimeout(() => { if (!room.busy && !gone()) endTurn(); }, IDLE_MS);
     }
 
@@ -139,7 +155,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       try {
         const ghosts = ghostsOf(battle(), since(room.st.log, mark), by);
         draw();
-        const cx = ctxOf(room), sig = room.st.foe.signature?.name;
+        const cx = ctx(), sig = room.st.foe.signature?.name;
         await playLog(battle(), since(room.st.log, mark), { words: cx.words, ghosts, faceOf: (id) => cardFaceHtml(id, cx), sigName: name(sig) });
       } finally {
         room.busy = false;
@@ -147,13 +163,21 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
     }
 
     async function settle() {
-      if (room.ended || gone()) return;
+      if (room.settling || done) return;
+      room.settling = true;
+      clearTimeout(idleTimer);
+      // The story's rules answer first; the closing card waits for their word, not for the last blow.
+      const r = story.settle ? await Promise.resolve().then(() => story.settle(room.st)).catch((e) => ({ ok: false, error: String(e?.message ?? e) })) : null;
+      const out = { ...resultOf(room.st), ...(fight.next ? { next: fight.next } : {}), ...(r ? { r } : {}) };
+      if (done) return;
+      if (r && r.ok === false) return finish(out);
       room.ended = true;
       draw();
       const end = boutSays(fight.brief.says, room.st.outcome)?.end;
-      if (end) shell?.say?.(fight.brief.creature.name, end, SEAL_MS);
-      await new Promise((go) => { release = go; setTimeout(go, SEAL_MS); });
-      finish({ ...resultOf(room.st), ...(fight.next ? { next: fight.next } : {}) });
+      const hold = hook('holdMs', end) ?? SEAL_MS;
+      if (end) shell?.say?.(fight.brief.creature.name, end, hold);
+      await new Promise((go) => { release = go; setTimeout(go, hold); });
+      finish(out);
     }
 
     async function doMove(out) {
@@ -162,11 +186,14 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       if (out.clear) { room.picked = null; return draw(); }
       if (out.pick) { room.picked = out.pick; return draw(); }
       if (out.action.kind === 'end') { room.picked = null; return endTurn(); }
-      const mark = room.st.log.length, res = act(room.st, out.action, 'you');
+      const mark = room.st.log.length, before = view(room.st), res = act(room.st, out.action, 'you');
       room.picked = null;
       if (!res.ok) { room.note = res.why; return draw(); }
+      hook('onMove', tokenOf(out.action));
       await playOut(mark, { who: 'you', action: out.action });
       if (gone()) return;
+      hook('onStep');
+      hook('onPlayed', { before, mark, mine: true });
       if (room.st.outcome !== 'open') return settle();
       draw();
     }
@@ -174,10 +201,12 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
     async function endTurn() {
       const st = room.st;
       if (room.busy || st.outcome !== 'open' || st.whose !== 'you') return;
-      const mark = st.log.length;
+      const mark = st.log.length, before = view(st);
       if (!act(st, { kind: 'end' }, 'you').ok) return;
+      hook('onMove', 'end');
       await playOut(mark);
       if (gone()) return;
+      hook('onStep');
       if (st.whose === 'foe' && st.outcome === 'open') {
         room.busy = true;
         try { if (battle()) await banner(battle(), `${fight.brief.creature.name}${lang === 'en' ? "'s turn" : '的回合'}`, 'foe'); } finally { room.busy = false; }
@@ -186,10 +215,13 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
           if (gone()) return;
           const step = st.log.length, did = foeStep(st);
           await playOut(step, did ? { who: 'foe', action: did } : null);
+          if (gone()) return;
+          hook('onStep');
           if (!did || did.kind === 'end') break;
         }
       }
       if (gone()) return;
+      hook('onPlayed', { before, mark, mine: false });
       if (st.outcome !== 'open') return settle();
       draw();
     }
@@ -197,9 +229,13 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
     // 认输: he passes every turn and the beast takes its own, to the end (the story's yieldBout).
     function yieldFight() {
       const st = room.st;
+      if (room.settling || room.yielded || done) return;
+      room.yielded = true;
+      room.picked = null;
       for (let guard = 0; guard < 600 && st.outcome === 'open'; guard += 1) {
         if (st.whose === 'foe') { foeTurn(st); continue; }
         if (!act(st, { kind: 'end' }, 'you').ok) break;
+        hook('onMove', 'end');
       }
       return settle();
     }
@@ -209,6 +245,8 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       if (room.ended) return;
       if (spot.kind === 'help' || spot.kind === 'help-bg') { room.help = !room.help; return draw(); }
       if (spot.kind === 'more') { room.openLog = !room.openLog; return draw(); }
+      // 问银月: words only — nothing in the fight moves (fightsay.js); the story's.
+      if (spot.kind === 'ask') { if (!room.yielded) hook('onAsk'); return; }
       if (paused()) return;
       if (spot.kind === 'quit') return yieldFight();
       if (room.busy || room.st.outcome !== 'open') return;
@@ -233,7 +271,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       signal.addEventListener('abort', () => finish({ won: false, left: true }), { once: true });
     }
     // The bot's door (tests, the live check): the room's state and its move, as the story's probe gives them.
-    host.kapai = { state: () => room.st, busy: () => room.busy, tap: onTap, move: (action) => (room.busy || gone() ? null : doMove({ action })) };
+    host.kapai = { state: () => room.st, room: () => room, busy: () => room.busy, picked: () => room.picked, draw, tap: onTap, move: (action) => (room.busy || gone() ? null : doMove({ action })) };
     draw();
     const open = fight.brief.says?.foe;
     if (open) shell?.say?.(fight.brief.creature.name, open);

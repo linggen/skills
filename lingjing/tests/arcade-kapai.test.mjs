@@ -121,3 +121,60 @@ test('a story bout with the party, in English, to its end', async () => {
   assert.equal(typeof r.won, 'boolean');
   assert.ok(said.length >= 1, 'its lines over the stage, through the shell');
 });
+
+/* ── The story's room on the same mount (Hanli 10-22: 「故事里的对战迁移可以开」): lingjing.js mounts it once per fight
+   in a shell frame and keeps what a fight means as the hooks' bodies — the picks the rules replay, 银月, the settle. ── */
+async function storyPlays(key, { answer = { ok: true, outcome: 'x' }, quit = false } = {}) {
+  stubFetch();
+  const { mount } = await import('../scripts/games/kapai.js');
+  const { battle, begin } = await import('../scripts/battle.js');
+  const catalog = Object.fromEntries(JSON.parse(read('../worlds/jiuding/cards.json')).cards.map((c) => [c.id, c]));
+  const row = TABLE.fights.find((f) => f.key === key);
+  const setup = { ...row.setup, seed: 'door|7' }; // the door's seed: the rules replay the picks on it
+  const st = begin(setup, catalog);
+  const container = fakeRoom(), tokens = [], played = [], asks = [], settles = [], closeSeen = [];
+  let host = null;
+  const story = {
+    ctx: () => ({ youName: '小满', says: { her: null } }),
+    onMove: (t) => tokens.push(t),
+    onPlayed: (p) => played.push(p.mine),
+    onAsk: () => asks.push(true),
+    settle: (s) => { settles.push(s); closeSeen.push(/class="bover/.test(host.innerHTML)); return new Promise((go) => setTimeout(() => go(answer), 30)); },
+    holdMs: () => 10,
+  };
+  const done = mount(container, { data: { setup, brief: row.brief.zh, st, catalog }, lang: 'zh', seed: 'ignored', shell: { paused: () => false, say() {}, onPause: () => () => {} }, story });
+  for (let i = 0; i < 50 && !host?.kapai; i++) { await new Promise((r) => setTimeout(r, 10)); host = container.kids[0]; }
+  assert.ok(host?.kapai, 'the room is up');
+  assert.equal(host.kapai.state(), st, 'the story\'s own state, not a second one');
+  assert.match(host.innerHTML, /小满/, 'the story\'s ctx is drawn');
+  host.kapai.tap({ kind: 'ask', index: -1 });
+  let r = null;
+  done.then((x) => { r = x; });
+  if (quit) host.kapai.tap({ kind: 'quit', index: -1 });
+  for (let guard = 0; guard < 600 && !r; guard++) {
+    if (st.outcome === 'open' && st.whose === 'you' && !host.kapai.busy()) await host.kapai.move(bestMove(st) ?? { kind: 'end' });
+    else await new Promise((res) => setTimeout(res, 20));
+  }
+  return { r: await done, tokens, played, asks, settles, closeSeen, st, setup, catalog, battle, host };
+}
+
+test('the story\'s fight through the mount: its seed kept, every move handed on, the rules replay them to the same end', async () => {
+  const { r, tokens, played, asks, settles, closeSeen, st, setup, catalog, battle, host } = await storyPlays('longzhi@00-longzhi/subdue');
+  assert.equal(st.seed ?? setup.seed, 'door|7');
+  assert.equal(asks.length, 1, '问银月 goes to the story; nothing in the fight moves');
+  assert.ok(played.includes(true) && played.includes(false), 'her cues: after his move, and after the beast\'s whole turn');
+  const replay = battle(tokens, setup, catalog);
+  assert.equal(replay.outcome, st.outcome, `the picks ${tokens.join(',')} replay to the room's end`);
+  assert.equal(settles.length, 1, 'settled once');
+  assert.deepEqual(closeSeen, [false], 'the closing card waits for the rules\' answer');
+  assert.match(host.innerHTML, /class="bover/, '…and stands once it is in');
+  assert.deepEqual(r.r, { ok: true, outcome: 'x' }, 'the story hears what the rules answered');
+});
+
+test('the story\'s fight: 认输 is played to its end and replayed; a refusal closes the room with no closing card', async () => {
+  const { r, tokens, setup, catalog, battle, st, host } = await storyPlays('longzhi@00-longzhi/subdue', { quit: true, answer: { ok: false, say: 'no' } });
+  assert.notEqual(st.outcome, 'open');
+  assert.equal(battle(tokens, setup, catalog).outcome, st.outcome, 'the passes replay too');
+  assert.doesNotMatch(host.innerHTML, /class="bover/);
+  assert.equal(r.r.ok, false);
+});
