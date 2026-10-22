@@ -14,6 +14,7 @@ import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules.mjs';
+import { toldUpTo } from '../scripts/rules/progress.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 // A fixed past morning: every date the save carries is behind the real clock it is played on.
@@ -23,7 +24,8 @@ const EPOCH = '2026-01-01T00:00:00.000Z';
 /** The save a stage row plays on: the story played to `from`, then the row's own few facts. */
 export function stageSave(content, stage) {
   const s = playTo(content, newState(content, 'zh', T0), stage.from, { now: T0 }).state;
-  const out = { ...s, place: stage.place, scene: null };
+  // Every passage the run walked through told (as `seed --at` hands a save over), and the scene put down: nothing owed the stage.
+  const out = { ...toldUpTo(content, { ...s, scene: null }), place: stage.place };
   if (stage.her) { const { asleep, ...c } = s.companion ?? {}; out.companion = { ...c, awake: true }; }
   if (stage.wealth) out.wealth = Math.max(s.wealth ?? 0, stage.wealth);
   if (stage.rerun) out.reruns = { ...(s.reruns ?? {}), [stage.rerun]: { ...(s.reruns?.[stage.rerun] ?? {}), ended_at: EPOCH } };
