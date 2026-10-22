@@ -85,7 +85,7 @@ story's board card (`cards.js`), the 游戏厅 (`arcade.js`) and the try page. T
 | 绳索 rope | 割绳子, 饭桶 | cut, bounce | Verlet |
 | 一键飞行 flight | 御剑 (tap), 气走经脉 (hold) | one button | none |
 | 打地鼠 whack | 接雨 | tap | none |
-| 卡牌 card fight | 斗法 (`games/kapai.js`: the story's room, mounted; 10-21) | tap, or drag on a Mac | none |
+| 卡牌 card fight | 斗法 (`games/kapai.js`: the story's room, mounted in the 游戏厅 10-21 and in the story 10-22) | tap, or drag on a Mac | none |
 
 A new kit needs Hanli's play-through on a prototype first, the way 守炉 got in (10-20).
 
@@ -199,26 +199,27 @@ room and unwirable). It plays in the shell like any game:
 The fights come from `levels/kapai.json`, which `tools/arcade-fights.mjs` writes from
 `story-fights.mjs` (`setupOf` and `rules/look.mjs duelBrief`). A test fails when the file is stale.
 
-**Not yet: the story's fight room.** The change is not contained, so it waits for its own round.
-The room lives in `lingjing.js`, in about seven places that would all move together:
-1. `render()` draws `battleHtml` into the focus column on every Look. A mounted room would need to
-   survive a redraw the way `beat-host.js mountOnly` hosts do.
-2. `body.fighting`, `holdBlank`, `inTransit` and the idle timer all read the global `bout`.
-3. The page-wide `[data-spot]` click route.
-4. The page-wide `wireDrag`.
-5. 银月 in the fight (`fightsay.js`): the 问银月 button, the cues and `herSays` repainting her
-   bubble during a stroke.
-6. The settle: `write('duel', {picks})` replays the moves in the rules, then come 所得, the 符
-   spent, the tale's end, a reload when the engine moved, and the closing card held until the rules
-   answer.
-7. The test probe (`bout`, `move`) that play-human and the crawler drive.
+**Done 10-22: the story's fight room** (Hanli: 「故事里的对战迁移可以开」). `lingjing.js` mounts `games/kapai.js`
+once per fight into a node of its own and lays it into a shell frame in the focus (`paintFight`, loaded by `import()`
+as every game is). A redraw leaves the frame standing; the room and the shell's layer paint themselves in place.
+The story keeps what a fight means as the adapter's `story` hooks:
+- `data.st` and `data.catalog`: the state the door began, with its seed, because the rules replay the picks on it.
+- `ctx(room)`: his name, 银月's card, the 丹囊 and 问银月. `onAsk` routes the 问银月 tap.
+- `onMove(token)` builds the picks. `onStep` tells her when the beast lets its 杀招 go. `onPlayed({ before, mark, mine })`
+  gives her cues after his move and after the beast's whole turn.
+- `settle(st) → r` is `writeBout`, the rules' `write('duel', { picks })`. The closing card waits for the answer, and a
+  refusal closes the room without one. `holdMs` keeps the card up 3 s, or 4.2 s with the foe's last word.
+- When the mount settles, `settleBout` runs: 所得, the 符 spent, the tale's end, the engine reload.
 
-**Plan:** add hooks to the adapter. `onMove(token)` builds the picks list; `onCue` and `herLine`
-carry 银月; `settle(st) → Promise<r>` lets the story's `write('duel')` hold the closing card until
-the rules answer. Then `lingjing.js` mounts it once per fight inside a shell frame, the way a
-mounted board is hosted, and keeps steps 5–6 as the hooks' bodies. The skip-after-3-losses lock
-and the door's 丹囊 pick stay where they are (the door card and the rules). Gate: the fight-band
-tests, `battle-input.test.mjs`, and one story fight played live at 1440 and 390.
+The page's own room drawing, its `[data-spot]` route, its drag and its idle timer are gone. The room's own drag and idle
+end-turn serve both places. 认输 stops a move still being drawn (`room.yielded`). The foe's first word and 银月's lines
+show in the shell's bubble; it holds one line at a time, so her line replaces the foe's. Pause hides the hand and holds
+the beast's turn, as in the 游戏厅. There is no 再来 or 下一关 in the story: a win goes on to the pay. The skip after
+3 losses and the door's 丹囊 pick did not move (the door card and the rules). The probe (`bout`, `move`) reads the
+mounted room. Found live: a card dragged by its painting started the browser's own image drag, so the room's pictures
+are never dragged now (`battle-drag.js`). Tests: `arcade-kapai.test.mjs` (the story hooks: seed, picks replayed,
+closing card after the rules, 认输, a refusal), `game-shell.test.mjs` (the page mounts it in the frame; no second
+room, drag or tap route).
 
 ## Risks
 
