@@ -96,3 +96,9 @@
 .jy-demo-hand { display: inline-block; line-height: 0; animation: jy-turnhand 1.6s ease-in-out infinite; transform-origin: 50% 80%; }
 @keyframes jy-turnhand { 0%, 100% { transform: perspective(200px) rotateY(-35deg) rotateZ(-12deg); } 50% { transform: perspective(200px) rotateY(35deg) rotateZ(12deg); } }
 @media (prefers-reduced-motion: reduce) { .jy-demo-hand { animation: none; } }
+/* Teaching (古六's 讲堂): the hand-and-facing line in sight without scrolling (1280×900) — a shorter field, the line
+   first under the seals, then 褚先生's. */
+.jy[data-mode="one"] { gap: 6px; }
+.jy[data-mode="one"] .jy-field { max-height: calc(100dvh - 450px); }
+.jy[data-mode="one"] .jy-face { order: 1; margin: 0; }
+.jy[data-mode="one"] .jy-hint { order: 2; min-height: 0; }

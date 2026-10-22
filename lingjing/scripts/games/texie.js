@@ -29,7 +29,7 @@ export const meta = {
   camera: true,
   name: { zh: '施法特写', en: 'Casting close-up' },
   how: {
-    zh: '手举到镜头前，小满的手就跟着动；结一个印或往前一推，火蛋出手。',
+    zh: '手举到摄像头前，小满的手就跟着动；结一个印或往前一推，火蛋出手。',
     en: 'Raise your hands to the camera and Xiaoman\'s move with them; make a seal or push forward and the fire egg flies.',
   },
 };
@@ -45,7 +45,7 @@ const ART = {
 const foeArt = (id, frame) => new URL(`./shouqiang/art/${id}-${frame}.webp`, import.meta.url).href;
 
 const W = {
-  zh: { nocam: '施法特写要用摄像头，这里用不了。', nogl: '这台设备画不了3D。', asking: '请允许使用摄像头……', loading: '模型加载中', raise: '把手举到镜头前', hit: '中了！', won: '野猪跑了。', who: '小满', ink: '水墨', vrm: '3D' },
+  zh: { nocam: '施法特写要用摄像头，这里用不了。', nogl: '这台设备画不了3D。', asking: '请允许使用摄像头……', loading: '模型加载中', raise: '把手举到摄像头前', hit: '中了！', won: '野猪跑了。', who: '小满', ink: '水墨', vrm: '3D' },
   en: { nocam: 'The casting close-up needs a camera — none here.', nogl: 'No 3D on this device.', asking: 'Allow the camera…', loading: 'Loading the model', raise: 'Raise your hands to the camera', hit: 'Hit!', won: 'The boar runs off.', who: 'Xiaoman', ink: 'Ink', vrm: '3D' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

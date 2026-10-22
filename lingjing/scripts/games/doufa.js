@@ -25,7 +25,7 @@ export const meta = {
   camera: true,
   name: { zh: '法术试炼', en: 'Spell trial' },
   how: {
-    zh: '手在镜头左、中、右，招就打哪一路。剑诀戳是飞剑，单剑指戳是点穴，推掌推是掌风，握拳推是拳劲；掐文、握拳扣住、往前一拍放法术；四印连成火蛋自己飞。灵力不够就歇一歇。',
+    zh: '手在摄像头左、中、右，招就打哪一路。剑诀戳是飞剑，单剑指戳是点穴，推掌推是掌风，握拳推是拳劲；掐文、握拳扣住、往前一拍放法术；四印连成火蛋自己飞。灵力不够就歇一歇。',
     en: 'Your hand\'s place — left, middle, right — is the lane. Jab a sword seal: flying sword; a single finger: pressure point; push a palm: palm wind; push a fist: fist force. Press a mark, close the fist, push: a spell. Four seals in a row: the fire egg. Out of spirit? Rest.',
   },
 };

@@ -30,7 +30,7 @@
       "hands": 2,
       "name": { "zh": "离火印", "en": "The Li-fire seal" },
       "how": {
-        "zh": "左手、右手都伸出食指和拇指，掌心朝镜头：两食指尖相碰、两拇指尖相碰，围成一个三角，两掌分开（左右手都可以）",
+        "zh": "左手、右手都伸出食指和拇指，掌心朝摄像头：两食指尖相碰、两拇指尖相碰，围成一个三角，两掌分开（左右手都可以）",
         "en": "Left and right hands each with index and thumb out, palms to the camera: index tips touching, thumb tips touching — a triangle, palms apart (either hand either side)"
       },
       "hint": { "zh": "火形尖，离为火。", "en": "Fire is pointed; Li is fire." },
@@ -47,7 +47,7 @@
       "hands": 2,
       "name": { "zh": "双掌", "en": "Twin palms" },
       "how": {
-        "zh": "左手、右手都推掌，掌心朝镜头，并排齐平，分开一拳多（左右手都可以）",
+        "zh": "左手、右手都推掌，掌心朝摄像头，并排齐平，分开一拳多（左右手都可以）",
         "en": "Left and right palms out to the camera, side by side, level, a fist or more apart (either hand either side)"
       },
       "hint": { "zh": "两掌齐出，排山。", "en": "Two palms at once: push the mountain." },
@@ -66,7 +66,7 @@
       "hands": 2,
       "name": { "zh": "双剑", "en": "Twin swords" },
       "how": {
-        "zh": "左手、右手都结剑诀，掌心朝镜头，并排齐平，分开一拳多（左右手都可以）",
+        "zh": "左手、右手都结剑诀，掌心朝摄像头，并排齐平，分开一拳多（左右手都可以）",
         "en": "Left and right hands both in the sword seal, palms to the camera, side by side, level, a fist or more apart (either hand either side)"
       },
       "hint": { "zh": "左右两剑，一齐引气。", "en": "A sword on each side, drawing the qi together." },
@@ -112,7 +112,7 @@
       "hands": 2,
       "name": { "zh": "天地印", "en": "Heaven and earth" },
       "how": {
-        "zh": "两手推掌，掌心朝镜头，一只在上一只在下，竖着叠，中间留空（哪只在上都可以）",
+        "zh": "两手推掌，掌心朝摄像头，一只在上一只在下，竖着叠，中间留空（哪只在上都可以）",
         "en": "Both palms out to the camera, one straight above the other, a gap between (either hand on top)"
       },
       "hint": { "zh": "一掌在天，一掌在地。", "en": "One palm for heaven, one for earth." },
@@ -130,7 +130,7 @@
       "hand": "right",
       "glyph": "掌",
       "name": { "zh": "推掌", "en": "Open palm" },
-      "how": { "zh": "五指张开，掌心朝镜头，手指朝上", "en": "All five fingers open, palm to the camera, fingers up" },
+      "how": { "zh": "五指张开，掌心朝摄像头，手指朝上", "en": "All five fingers open, palm to the camera, fingers up" },
       "hint": { "zh": "他竖起一只手，五指张开。", "en": "He raises one hand, all five fingers open." },
       "ext": ["index", "middle", "ring", "pinky"],
       "far": [["thumb.tip", "index.mcp"], ["thumb.tip", "index.tip"], ["thumb.tip", "middle.tip"], ["thumb.tip", "pinky.tip"]],
@@ -249,7 +249,7 @@
       "glyph": "子",
       "hands": 1,
       "name": { "zh": "子文", "en": "The Zi mark" },
-      "how": { "zh": "掌心朝镜头，拇指横过掌心，按在无名指根上", "en": "Palm to the camera, thumb across it onto the root of the ring finger" },
+      "how": { "zh": "掌心朝摄像头，拇指横过掌心，按在无名指根上", "en": "Palm to the camera, thumb across it onto the root of the ring finger" },
       "hint": { "zh": "水在北，冰锥掐子文。", "en": "Water is north: for the ice spike, press the Zi mark." },
       "ext": ["index", "middle", "pinky"],
       "nearest": [["thumb.tip", "ring.mcp", ["middle.mcp", "pinky.mcp", "ring.pip"]]],
@@ -308,9 +308,9 @@
     "lanes": ["left", "middle", "right"],
     "lingli": { "max": 100, "start": 60, "refill": 6, "cost": { "xiao": 10, "fa": 25, "da": 60 }, "boss": 100 },
     "xiao": {
-      "feijian": { "shape": "jian", "motion": "jab", "name": { "zh": "飞剑", "en": "Flying sword" }, "how": { "zh": "剑诀，往镜头一戳", "en": "Sword seal, jab at the camera" } },
-      "dianxue": { "shape": "danjian", "motion": "jab", "name": { "zh": "点穴", "en": "Pressure point" }, "how": { "zh": "单剑指，往镜头一戳", "en": "Single sword finger, jab at the camera" } },
-      "zhangfeng": { "shape": "zhang", "motion": "push", "name": { "zh": "掌风", "en": "Palm wind" }, "how": { "zh": "推掌，往镜头一推", "en": "Open palm, push at the camera" } },
+      "feijian": { "shape": "jian", "motion": "jab", "name": { "zh": "飞剑", "en": "Flying sword" }, "how": { "zh": "剑诀，往摄像头一戳", "en": "Sword seal, jab at the camera" } },
+      "dianxue": { "shape": "danjian", "motion": "jab", "name": { "zh": "点穴", "en": "Pressure point" }, "how": { "zh": "单剑指，往摄像头一戳", "en": "Single sword finger, jab at the camera" } },
+      "zhangfeng": { "shape": "zhang", "motion": "push", "name": { "zh": "掌风", "en": "Palm wind" }, "how": { "zh": "推掌，往摄像头一推", "en": "Open palm, push at the camera" } },
       "quanjin": { "shape": "kou", "motion": "push", "name": { "zh": "拳劲", "en": "Fist force" }, "how": { "zh": "握拳（手里没扣着法术），往前一推", "en": "A fist (no spell held in it), push forward" } }
     },
     "fa": ["huodan", "bingzhui", "jinren", "muteng", "tuqiang"],
@@ -340,7 +340,7 @@
       "when": "boss", "aim": "boss", "cool": 8, "bossMul": 3, "idle": 60,
       "paces": { "intense": { "when": "always", "aim": "near", "cool": 2.5 } },
       "say": { "zh": "合窳出来了——结印！", "en": "The great beast is out — make the seals!" },
-      "first": { "zh": "比个剑诀，往镜头一戳，飞剑就出去", "en": "Make the sword seal and jab at the camera: the flying sword flies" },
+      "first": { "zh": "比个剑诀，往摄像头一戳，飞剑就出去", "en": "Make the sword seal and jab at the camera: the flying sword flies" },
       "moves": [
         { "id": "feijian", "name": { "zh": "飞剑", "en": "Flying sword" }, "seals": ["jian"], "motion": "jab", "from": null, "dmg": 120 },
         { "id": "huodan", "name": { "zh": "火弹", "en": "Fire shot" }, "jieyin": "huodan", "from": { "marks": ["qiajue-tight", "qiajue-loose"] }, "dmg": 160, "splash": 60, "around": 0.6 }

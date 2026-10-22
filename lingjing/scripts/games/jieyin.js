@@ -57,7 +57,7 @@ export const artOf = (level) => ({
 export const castOf = (level) => (level.mode === 'one' ? level.cast ?? null : level);
 
 const W = {
-  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', demo: '转一转手——换个角度，让镜头认出来', asking: '请允许使用摄像头……', loading: '……', next: '下一个', who: '小满' },
+  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', demo: '转一转手——换个角度，让摄像头认出来', asking: '请允许使用摄像头……', loading: '……', next: '下一个', who: '小满' },
   en: { nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', downed: 'The dummy is down.', demo: 'Turn your hand a little — find the angle the camera reads', asking: 'Allow the camera…', loading: '…', next: 'Next', who: 'Xiaoman' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

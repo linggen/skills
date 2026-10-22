@@ -16,7 +16,7 @@
         "foes": [ { "id": "yezhu", "w": 3 }, { "id": "qiuyu", "w": 2 }, { "id": "qique", "w": 2 } ] },
       "eggMs": 260,
       "stars": [6, 10, 14],
-      "lead": { "zh": "野兽一只只从山道上横穿过去。剑诀对准镜头，两指指哪，准星就到哪——往前一点，火蛋出手。", "en": "Beasts cross the mountain road one by one. Point the sword seal at the camera: the crosshair goes where the two fingers point — jab forward and the fire egg flies." },
+      "lead": { "zh": "野兽一只只从山道上横穿过去。剑诀对准摄像头，两指指哪，准星就到哪——往前一点，火蛋出手。", "en": "Beasts cross the mountain road one by one. Point the sword seal at the camera: the crosshair goes where the two fingers point — jab forward and the fire egg flies." },
       "end": { "zh": "山道上安静了。", "en": "The road falls quiet." }
     }
   ]

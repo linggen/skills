@@ -271,3 +271,13 @@ test('the judge is a little wider (Hanli had to turn his hand): straight past ×
   assert.equal(kit.judge.ext, 1.15);
   assert.equal(kit.judge.near, 0.4);
 });
+
+test('结印 copy says 摄像头, never 镜头 (Hanli 10-21), and the 讲堂 keeps the hand-and-facing line in sight', () => {
+  const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+  const code = (src) => src.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+  for (const p of ['scripts/games/jieyin.js', 'scripts/games/jieyin/hint.js', 'scripts/games/doufa.js', 'scripts/games/texie.js']) assert.doesNotMatch(code(read(p)), /镜头/, p);
+  for (const p of ['worlds/jiuding/levels/jieyin.json', 'worlds/jiuding/levels/zhidian.json', 'worlds/jiuding/levels/texie.json']) assert.doesNotMatch(read(p), /镜头/, p);
+  const css = read('scripts/games/jieyin/jieyin.css');
+  assert.match(css, /\.jy\[data-mode="one"\] \.jy-field \{ max-height: calc\(100dvh - 450px\); \}/);
+  assert.match(css, /\.jy\[data-mode="one"\] \.jy-face \{ order: 1;/);
+});

@@ -18,7 +18,7 @@ import { iconSvg, inkFilter, inkHand } from './pose.js';
 import { facesRight, facingOf, handsOf } from './judge.js';
 
 const W = {
-  zh: { none: '把手举到镜头前', edge: { left: '靠左边了', right: '靠右边了', top: '靠上边了', bottom: '靠下边了' }, gone: { left: '手从左边出去了，往右挪回来', right: '手从右边出去了，往左挪回来', top: '手从上边出去了，往下放一点', bottom: '手从下边出去了，往上抬一点', middle: '手不见了，放回框里' }, far: '手离镜头近一点', near: '手离镜头远一点', two: '两只手都放进来', next: '结', ok: '',
+  zh: { none: '把手举到摄像头前', edge: { left: '靠左边了', right: '靠右边了', top: '靠上边了', bottom: '靠下边了' }, gone: { left: '手从左边出去了，往右挪回来', right: '手从右边出去了，往左挪回来', top: '手从上边出去了，往下放一点', bottom: '手从下边出去了，往上抬一点', middle: '手不见了，放回框里' }, far: '手离摄像头近一点', near: '手离摄像头远一点', two: '两只手都放进来', next: '结', ok: '',
     turn: { palm: '掌心转向摄像头', side: '手侧过来，小指朝摄像头', back: '掌心转向自己（手背朝摄像头）', up: '手指转向上', flat: '手放平：指尖朝旁边' },
     face: { palm: '掌心朝摄像头', side: '手侧过来，小指朝摄像头', back: '掌心朝自己（手背朝摄像头）' }, up: { up: '手指朝上', side: '指尖朝旁边' }, left: '左手', right: '右手', either: '左右手都可以',
     use: { right: '用右手', left: '用左手' }, other: { right: '（左手也行）', left: '（右手也行）' }, swap: { right: '换右手', left: '换左手' } },
