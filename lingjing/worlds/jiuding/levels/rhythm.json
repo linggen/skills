@@ -32,6 +32,7 @@
         "en": "Catching the rain · Seventeen basins"
        },
        "mechanic": "打地鼠",
+       "variety": "打地鼠",
        "game": "rain",
        "n": 2
       },
@@ -50,6 +51,7 @@
         "en": "Guarding the cabbage · The speckled hens"
        },
        "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
        "game": "shouqiang",
        "n": 39
       },
@@ -68,6 +70,7 @@
         "en": "Holding it in · That breath"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 5
       },
@@ -102,6 +105,7 @@
         "en": "The storm · Haul Father back"
        },
        "mechanic": "割绳子",
+       "variety": "割绳子",
        "game": "fallrope",
        "n": 1
       },
@@ -120,6 +124,7 @@
         "en": "Keeping the fire · At the cave mouth"
        },
        "mechanic": "塔防",
+       "variety": "塔防·shoulu",
        "game": "shoulu",
        "n": 45
       },
@@ -138,6 +143,7 @@
         "en": "The flatbread · Down to the fox"
        },
        "mechanic": "割绳子",
+       "variety": "割绳子",
        "game": "bread",
        "n": 3
       },
@@ -212,6 +218,7 @@
         "en": "The stag · Wind first, then the deer"
        },
        "mechanic": "投掷",
+       "variety": "投掷",
        "game": "zhazhai",
        "n": 49
       },
@@ -230,6 +237,7 @@
         "en": "Settling up · The meat on the steelyard"
        },
        "mechanic": "割绳子",
+       "variety": "割绳子",
        "game": "rentrope",
        "n": 4
       },
@@ -248,6 +256,7 @@
         "en": "Practice · The bucket goes down"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 7
       },
@@ -292,6 +301,7 @@
         "en": "Shoot one for me"
        },
        "mechanic": "投掷",
+       "variety": "投掷",
        "game": "zhazhai",
        "n": 55
       },
@@ -310,6 +320,7 @@
         "en": "The 1000-metre retest · Out first"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 19
       },
@@ -369,6 +380,7 @@
         "en": "Second trial · The Luo Shu square"
        },
        "mechanic": "解谜",
+       "variety": "解谜",
        "game": "luoshu",
        "n": 11
       },
@@ -388,6 +400,7 @@
         "en": "Longzhi"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/creatures/longzhi.webp",
        "key": "longzhi@00-longzhi/subdue"
       },
@@ -442,6 +455,7 @@
         "en": "The small circuit · Three passes"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 12
       },
@@ -460,6 +474,7 @@
         "en": "Guard the Furnace · The herb garden at night"
        },
        "mechanic": "塔防",
+       "variety": "塔防·shoulu",
        "game": "shoulu",
        "n": 46
       },
@@ -478,6 +493,7 @@
         "en": "Feeding the Rice Bucket · A soup bone"
        },
        "mechanic": "割绳子",
+       "variety": "割绳子",
        "game": "niugurope",
        "n": 13
       },
@@ -522,6 +538,7 @@
         "en": "Free throws · In for four, out for six"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 20
       },
@@ -567,6 +584,7 @@
         "en": "Gui"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/creatures/gui.webp",
        "key": "gui@wm-wangzuo/open"
       },
@@ -585,6 +603,7 @@
         "en": "The binding · A game the ones before left"
        },
        "mechanic": "棋牌",
+       "variety": "棋牌",
        "game": "wuziqi",
        "n": 14
       },
@@ -604,6 +623,7 @@
         "en": "Zou Qingsong"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/items/huojing.webp",
        "key": "foe-zou@wm-xirang/swallow"
       },
@@ -622,6 +642,7 @@
         "en": "The dry river · Open the gourd and there's light"
        },
        "mechanic": "投掷",
+       "variety": "投掷",
        "game": "zhazhai",
        "n": 50
       },
@@ -640,6 +661,7 @@
         "en": "The swelling earth · Push them round once"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 15
       },
@@ -699,6 +721,7 @@
         "en": "Trying the spells"
        },
        "mechanic": "投掷",
+       "variety": "投掷",
        "game": "zhazhai",
        "n": 51
       },
@@ -717,6 +740,7 @@
         "en": "Hide the breath · The mirror's light"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 16
       },
@@ -750,6 +774,7 @@
         "en": "The sneezing charm · Let the punch go by"
        },
        "mechanic": "时机",
+       "variety": "时机",
        "game": "sneeze",
        "n": 17
       },
@@ -769,6 +794,7 @@
         "en": "Lu Fang"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/items/iron-sword.webp",
        "key": "foe-lufang@wm-fushi/flip"
       },
@@ -788,6 +814,7 @@
         "en": "Qin Yan"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/people/neimen-shijie.webp",
        "key": "foe-shijie@wm-lun2/dodge",
        "same": true
@@ -808,6 +835,7 @@
         "en": "Ma Xiaobao"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/people/maxiaobao.webp",
        "key": "foe-maxiaobao@wm-juesai/face",
        "same": true
@@ -827,6 +855,7 @@
         "en": "The letter home · Drawn for Ma"
        },
        "mechanic": "你画我猜",
+       "variety": "你画我猜",
        "game": "drawguess",
        "n": 31
       },
@@ -881,6 +910,7 @@
         "en": "Eleven steps in the dark · Breathe with him"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 21
       },
@@ -940,6 +970,7 @@
         "en": "The Step of Yu · Nine squares"
        },
        "mechanic": "节奏",
+       "variety": "节奏",
        "game": "yubujiuge",
        "n": 18
       },
@@ -958,6 +989,7 @@
         "en": "Herb garden watch · Spring"
        },
        "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
        "game": "shouqiang",
        "n": 54
       },
@@ -977,6 +1009,7 @@
         "en": "Qiuyu"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/creatures/qiuyu.webp",
        "key": "qiuyu@09-lingcao/fight"
       },
@@ -995,6 +1028,7 @@
         "en": "The wait in the reeds"
        },
        "mechanic": "投掷",
+       "variety": "投掷",
        "game": "zhazhai",
        "n": 53
       },
@@ -1014,6 +1048,7 @@
         "en": "Qin Yan"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/people/neimen-shijie.webp",
        "key": "foe-shijie@09-futian/spar"
       },
@@ -1058,6 +1093,7 @@
         "en": "Guard the Furnace · Watching the pill furnace"
        },
        "mechanic": "塔防",
+       "variety": "塔防·shoulu",
        "game": "shoulu",
        "n": 47
       },
@@ -1151,6 +1187,7 @@
         "en": "The last free throw · Shoot with the fear"
        },
        "mechanic": "调息",
+       "variety": "调息",
        "game": "qimai",
        "n": 22
       },
@@ -1212,6 +1249,7 @@
         "en": "Bingyi's twin dragons"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/people/bingyi.webp",
        "key": "foe-shuanglong@01-rise/stand"
       },
@@ -1275,6 +1313,7 @@
         "en": "Old Well"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/people/laojing.webp",
        "key": "foe-laojing@01-laojing/dodge",
        "same": true
@@ -1325,6 +1364,7 @@
         "en": "The Thunder God"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/leishen.webp",
        "same": true
       },
@@ -1380,6 +1420,7 @@
         "en": "Kui"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/kui.webp",
        "same": true
       },
@@ -1435,6 +1476,7 @@
         "en": "Wuzhiqi"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/creatures/wuzhiqi.webp",
        "same": true
       },
@@ -1490,6 +1532,7 @@
         "en": "Fangfeng"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/creatures/fangfeng.webp",
        "same": true
       },
@@ -1545,6 +1588,7 @@
         "en": "The Ba Snake"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/creatures/bashe.webp",
        "same": true
       },
@@ -1600,6 +1644,7 @@
         "en": "The Kui Ox"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/creatures/kuiniu.webp",
        "same": true
       },
@@ -1655,6 +1700,7 @@
         "en": "Feiyi"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/feiyi.webp",
        "same": true
       },
@@ -1710,6 +1756,7 @@
         "en": "Taifeng"
        },
        "mechanic": "斗法",
+       "variety": "斗法",
        "art": "art/creatures/taifeng.webp",
        "same": true
       },

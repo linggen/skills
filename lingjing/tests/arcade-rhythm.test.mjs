@@ -44,12 +44,13 @@ test('timelineOf names each beat by what plays: boards in show order, the exit\'
 
 const plays = () => TABLE.chapters.flatMap((c) => c.huis.flatMap((h) => h.items)).filter((x) => x.kind === 'board' || x.kind === 'fight');
 
-test('`same` flags a board or fight of the kind the last one was (every fight 斗法), over the book in order', () => {
+test('`same` flags a board or fight of the variety the last one was (every fight 斗法; a 塔防 by its game — Hanli 10-22: 「塔防有多种子类型, 换着来就好了」), over the book in order', () => {
   let last = null;
   for (const it of plays()) {
-    assert.equal(Boolean(it.same), it.mechanic === last, `${it.kind} ${it.id} ${it.mechanic} after ${last}`);
-    if (it.kind === 'fight') assert.equal(it.mechanic, FIGHT_KIND);
-    last = it.mechanic;
+    assert.equal(Boolean(it.same), it.variety === last, `${it.kind} ${it.id} ${it.variety} after ${last}`);
+    if (it.kind === 'fight') assert.equal(it.variety, FIGHT_KIND);
+    if (it.mechanic === '塔防') assert.equal(it.variety, `塔防·${it.game}`);
+    last = it.variety;
   }
 });
 
