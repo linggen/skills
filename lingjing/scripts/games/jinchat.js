@@ -82,7 +82,16 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const $ = (sel) => root.querySelector(sel);
   const list = () => $('.g-jc-list');
   const scroll = () => { const l = list(); if (l) l.scrollTop = l.scrollHeight; };
+  // The page lays the chat's node into a fresh host on a redraw (Ling's turn ending, the stuck slot — live 10-22) and the
+  // list comes back at the top. Unless his own hand scrolled up, the last bubble is put back in view.
+  const atBottom = (l) => l.scrollTop + l.clientHeight >= l.scrollHeight - 6;
+  const keepDown = () => {
+    const l = list();
+    if (!l || !root.isConnected || !g.stick || atBottom(l)) return;
+    l.scrollTo({ top: l.scrollHeight, behavior: 'instant' });
+  };
   const add = (line) => {
+    g.stick = true;
     g.shown.push(line);
     try { shell?.sound?.(line.who === 'me' ? 'send' : 'recv'); } catch { /* no sound: the chat goes on */ }
     list()?.insertAdjacentHTML('beforeend', bubbleHtml(line));
@@ -200,7 +209,11 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     draw();
     // The card is redrawn around the chat (the stuck gate's 「算了，往下走」 slot, live 10-22): the node is laid into a
     // new host and its list comes back scrolled to the top — keep the last bubble in view whenever it is laid out again.
-    try { new ResizeObserver(scroll).observe(list()); } catch { /* no observer: the chat still scrolls as it grows */ }
+    g.stick = true;
+    const l = list(), hand = () => { g.handAt = Date.now(); };
+    for (const ev of ['wheel', 'touchmove', 'pointerdown']) l.addEventListener(ev, hand, { passive: true });
+    l.addEventListener('scroll', () => { if (Date.now() - (g.handAt ?? 0) < 800) g.stick = atBottom(l); }, { passive: true });
+    g.keep = setInterval(keepDown, 300);
     inputOn(false);
     lefts();
     await typeOut((g.chat.open ?? []).map((l) => ({ who: l.who, card: l.card, text: pick(l.text, lang) })));
@@ -211,7 +224,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
 
   return new Promise((resolve) => {
     let settled = false;
-    finish = (result) => { if (settled) return; settled = true; resolve(result); };
+    finish = (result) => { if (settled) return; settled = true; clearInterval(g.keep); resolve(result); };
     signal?.addEventListener('abort', () => finish({ won: false, left: true }), { once: true });
     start().catch((e) => { console.warn('[jinchat]', e); cannot(w.far); });
   });
