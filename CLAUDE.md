@@ -26,3 +26,9 @@ Never `rsync --delete` (or rm-and-copy) into `~/.linggen/skills/<name>/` — the
 - Don't trust the model for mechanical invariants (ids, schema fields, timestamps) — derive them page-side at ingest.
 - Tool `cmd:` template args keep their position: an omitted (or null) arg becomes its declared `default:`, else an empty quoted word `''` — so a script reads empty as "not given" and defaults it itself. Only a placeholder whose name isn't declared under `args:` survives literally (`{{max}}`); declare every placeholder.
 - Never `sq()` a path containing `$HOME` — single quotes kill expansion, and the command then writes to a literal `'$HOME'` dir under the bash cwd instead of failing. Resolve the home dir once via `home()` (bash.js) and build absolute paths (this silently ate every DJ thumbnail until 2026-08-04).
+
+## Parallel work
+
+- One worktree per session or agent (`git worktree add ../skills-wt-<topic> origin/main`); nobody edits in the shared checkout.
+- Before pushing: `git fetch` + `git rebase origin/main`, then `./scripts/check.sh`; a rejected push means rebase again — never `--force`, never copy files from an old worktree onto a new base (that silently reverted accepted work on 2026-10-21). Regenerate generated files (bundles, tables) after a rebase instead of merging them.
+- Install (`scripts/install-skill.sh`) only what is pushed to origin/main — the live install is shared.
