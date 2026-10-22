@@ -53,18 +53,18 @@
   },
   "duels": {
    "foe-yinhu": {
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "outcome": "won"
    },
    "longzhi": {
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "outcome": "won"
    },
    "hunt:mijing-xiongya": {
     "day": "2026-10-01",
     "outcome": "won",
     "n": 1,
-    "at": "2026-10-02T01:00:00.000Z",
+    "at": "2026-10-01T01:00:00.000Z",
     "last": [
      "qiuyu"
     ]
@@ -280,58 +280,58 @@
    "mijing-zhenyan": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "anhe-dark": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "xirang-wumen": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "qianye-qiajue": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "zhaojing-mirror": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "dabi-sneeze": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "jiaxin-letter": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "jin-chat-dark": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "jiuge-yubu": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    },
    "furnace-ding": {
     "status": "done",
     "period": "once",
-    "done_at": "2026-10-02T01:00:00.000Z"
+    "done_at": "2026-10-01T01:00:00.000Z"
    }
   },
   "chores": {},
   "quests": {},
   "wins": {
-   "haunt:qiuyu": "2026-10-02T01:00:00.000Z"
+   "haunt:qiuyu": "2026-10-01T01:00:00.000Z"
   },
   "story": "",
   "seeds_used": [],
@@ -341,11 +341,11 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 75,
-   "wealth": 312
+   "progress": 95,
+   "wealth": 450
   },
   "stamina": 100,
-  "stamina_at": "2026-10-02T01:00:00.000Z",
+  "stamina_at": "2026-10-01T01:00:00.000Z",
   "created": "2026-10-01T01:00:00.000Z",
   "updated": "2026-10-01T01:00:00.000Z",
   "seed": "2026-10-01T01:00:00.000Z",
@@ -399,7 +399,7 @@
   ],
   "node": {
    "kind": "scene",
-   "at": "2026-10-02T01:00:00.000Z",
+   "at": "2026-10-01T01:00:00.000Z",
    "chapter": {
     "id": "00-zhuji",
     "title": "卷一 · 沉鼎 · 第七回"
@@ -412,27 +412,27 @@
    "diche": "2026-10-01",
    "xiangke": "2026-10-01",
    "dabi-eve": "2026-10-01",
-   "saved-first-pill": "2026-09-30",
-   "counted-23": "2026-09-30",
-   "hid-joy": "2026-09-30",
-   "paid-gongzhong": "2026-09-30",
-   "steps-steady": "2026-09-30",
-   "resolved-to-go": "2026-09-30",
-   "scroll-by-heart": "2026-09-30",
-   "marrow-washed": "2026-09-30",
-   "asked-them": "2026-09-30",
-   "played-dumb": "2026-09-30",
-   "wupo-bowed": "2026-09-30",
-   "shot-wind": "2026-09-30",
-   "found-father": "2026-09-30",
-   "shared-bread": "2026-09-30",
-   "fox-saved": "2026-09-30",
-   "fall-checked": "2026-09-30",
-   "turned-back": "2026-09-30",
-   "marks-cut": "2026-09-30",
-   "three-rules": "2026-09-30",
-   "took-egg": "2026-09-30",
-   "kept-count": "2026-09-30"
+   "saved-first-pill": "2026-10-01",
+   "counted-23": "2026-10-01",
+   "hid-joy": "2026-10-01",
+   "paid-gongzhong": "2026-10-01",
+   "steps-steady": "2026-10-01",
+   "resolved-to-go": "2026-10-01",
+   "scroll-by-heart": "2026-10-01",
+   "marrow-washed": "2026-10-01",
+   "asked-them": "2026-10-01",
+   "played-dumb": "2026-10-01",
+   "wupo-bowed": "2026-10-01",
+   "shot-wind": "2026-10-01",
+   "found-father": "2026-10-01",
+   "shared-bread": "2026-10-01",
+   "fox-saved": "2026-10-01",
+   "fall-checked": "2026-10-01",
+   "turned-back": "2026-10-01",
+   "marks-cut": "2026-10-01",
+   "three-rules": "2026-10-01",
+   "took-egg": "2026-10-01",
+   "kept-count": "2026-10-01"
   },
   "ledger": [
    {
@@ -443,7 +443,7 @@
      "en": "Shoved you into the stove and broke one of your family's four bowls."
     },
     "chapter": "00-prologue",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "00-masan"
    },
    {
@@ -454,7 +454,7 @@
      "en": "Means to take grandfather's bow."
     },
     "chapter": "00-prologue",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "00-masan"
    },
    {
@@ -465,7 +465,7 @@
      "en": "Before dawn, pushed a boiled egg through your window: \"Keep count. Pay me back.\""
     },
     "chapter": "00-prologue",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "00-dawn"
    },
    {
@@ -476,7 +476,7 @@
      "en": "Before dawn he followed the forty-one marks you cut into Black Pine Ridge, carrying a door-plank to bring you home."
     },
     "chapter": "00-prologue",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "00-cliff"
    },
    {
@@ -487,7 +487,7 @@
      "en": "The outer court's \"common fund\": took one of your spirit stones."
     },
     "chapter": "00-prologue",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "00-waimen"
    },
    {
@@ -498,7 +498,7 @@
      "en": "Your first day in the outer sect: Ahe wrote you into the little notebook — mixed root. You said: the day it isn't so, bring the notebook and check."
     },
     "chapter": "00-waimen",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "wm-ahe"
    },
    {
@@ -509,7 +509,7 @@
      "en": "The eighth of the tenth month, Zhou Heng handed you the herb garden's night-watch token: \"The night watch pays nothing; nobody takes it.\" He broke a piece off half a candle for you too. If the garden is still losing plants at the month-end reckoning, the token goes to senior brother Ma."
     },
     "chapter": "00-waimen",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "wm-yaoyuan"
    },
    {
@@ -520,7 +520,7 @@
      "en": "The twelfth of the tenth month, the woodshed: Ma Xiaobao and five others, twenty-three blows. Interest to be reckoned separately."
     },
     "chapter": "00-waimen",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "wm-chaifang"
    },
    {
@@ -531,7 +531,7 @@
      "en": "The first of the eleventh month, at the hidden realm's door, the common fund: two spirit stones."
     },
     "chapter": "00-waimen",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "at": "wm-mijing"
    },
    {
@@ -591,21 +591,21 @@
   "card_from": {
    "niangbing": {
     "how": "story",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "place": "shiao",
     "chapter": "00-prologue",
     "scene": "00-kitchen"
    },
    "yijian": {
     "how": "beat",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "place": "heisong",
     "chapter": "00-prologue",
     "scene": "00-deer"
    },
    "tuna": {
     "how": "story",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "place": "shiao",
     "chapter": "00-prologue",
     "scene": "00-halfyear"
@@ -613,14 +613,14 @@
    "zheng": {
     "how": "tame",
     "creature": "zheng",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "place": "yaoyuan",
     "chapter": "00-waimen",
     "scene": "wm-yaoyuan"
    },
    "mucao": {
     "how": "story",
-    "day": "2026-09-30",
+    "day": "2026-10-01",
     "place": "chaifang",
     "chapter": "00-waimen",
     "scene": "wm-diyilu"
@@ -761,17 +761,17 @@
    "foe-yinhu": {
     "met": 1,
     "won": 1,
-    "first": "2026-09-30"
+    "first": "2026-10-01"
    },
    "longzhi": {
     "met": 1,
     "won": 1,
-    "first": "2026-09-30"
+    "first": "2026-10-01"
    },
    "qiuyu": {
-    "met": 2,
+    "met": 1,
     "won": 1,
-    "first": "2026-09-30"
+    "first": "2026-10-01"
    },
    "gui": {
     "met": 1,
@@ -790,7 +790,7 @@
    }
   },
   "companion": {
-   "joined": "2026-09-30",
+   "joined": "2026-10-01",
    "asleep": true
   },
   "root_main": "water",

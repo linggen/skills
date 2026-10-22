@@ -17,7 +17,9 @@ import { THEN_ABOUT, THEN_ABOUT_NONE, THEN_BOUT, THEN_BOUT_BARE } from '../scrip
 import { TO_OPEN, walk } from './prologue.mjs';
 
 const content = loadContent();
-const NOW = new Date('2026-10-05T10:00:00');
+// An instant, not a wall clock: the save's `seed` is its start instant (state.mjs newState), so a local time dealt another hand on
+// another machine's zone (CI on UTC). 10:00 at -03:00 is the same local day from UTC-10 to UTC+10.
+const NOW = new Date('2026-10-05T10:00:00-03:00');
 const ROOT = path.resolve(import.meta.dirname, '..');
 const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
 

@@ -74,7 +74,8 @@ test('outside a lock the same three losses offer nothing', () => {
 });
 
 test('a forward run that cannot win 马小宝 leaves him and goes on (the clock that stuck at wm-juesai)', () => {
-  const now = new Date('2026-10-27T07:00:00');
+  // An instant (the seed is one): as a local wall clock, CI's UTC dealt 马小宝 a hand the bot beats, and nothing was left.
+  const now = new Date('2026-10-27T07:00:00-03:00');
   const out = playTo(content, newState(content, 'zh', now), 'wm-laoyin', { now });
   assert.equal(out.state.scene, 'wm-laoyin');
   assert.ok(out.state.wins?.['dabi-ma'] || out.state.fights_left?.['dabi-ma']);

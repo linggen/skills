@@ -20,11 +20,22 @@ import { toldUpTo } from '../scripts/rules/progress.mjs';
 const ROOT = path.resolve(import.meta.dirname, '..');
 // A fixed past morning: every date the save carries is behind the real clock it is played on.
 const T0 = new Date('2026-10-01T09:00:00+08:00');
+// …in a fixed zone. The rules read local days and hours (state.mjs dayKey) while the save's seed is the instant, so
+// the same run played on another machine's zone made another save (CI on UTC: 秘境's `first` a day early, a beast
+// met twice). The run is played in T0's own zone, wherever it runs.
+export const STAGE_TZ = 'Asia/Shanghai';
+
+/** `fn` run with the process clock in `tz`, the zone given back after (Node reads TZ at each change). */
+function inZone(tz, fn) {
+  const was = process.env.TZ;
+  process.env.TZ = tz;
+  try { return fn(); } finally { if (was === undefined) delete process.env.TZ; else process.env.TZ = was; }
+}
 const EPOCH = '2026-01-01T00:00:00.000Z';
 
 /** The save a stage row plays on: the story played to `from`, then the row's own few facts. */
 export function stageSave(content, stage) {
-  const s = playTo(content, newState(content, 'zh', T0), stage.from, { now: T0 }).state;
+  const s = inZone(STAGE_TZ, () => playTo(content, newState(content, 'zh', T0), stage.from, { now: T0 }).state);
   // Every passage the run walked through told, as `seed --at` hands a save over. The scene stays (put down, the rules
   // would read the chapter as not begun); he stands at the game's place, its scene's card a walk away.
   const out = { ...toldUpTo(content, s), place: stage.place };

@@ -48,6 +48,10 @@ content.chapters['06-jing'].opens = '2027-03-01';
 content.chapters['07-liang'].opens = '2027-04-01';
 content.chapters['08-yong'].opens = '2027-05-01';
 content.chapters['09-yu'].opens = '2027-06-01';
+// The rules read the local clock (days; hours — 本王考 by noon, hunts at night) while a save's `seed` is its start instant
+// (state.mjs newState): a test holding both fixed holds the zone too, or a deal dealt here differs on another machine (CI on
+// UTC: the 狍鸮 on the road dealt a hand the bot loses). The zone these tests were written in; no daylight saving.
+process.env.TZ = 'America/Sao_Paulo';
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 // Today's 机缘 already dealt: for tests that mean "a Look that changes nothing else".
