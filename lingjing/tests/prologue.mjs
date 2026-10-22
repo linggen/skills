@@ -35,6 +35,8 @@ export const TO_VALLEY = [
   ['resolve', { exit: 'turn' }],
   // the storm: 拽爹上崖 cut 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」) — the haul and the fall read whole
   ['resolve', { exit: 'check' }],
+  // 第一回's teaching fight (2026-10-22): the hurt fox's bites stood three turns, then the coat over it
+  ['won', { id: 'fox-bite' }],
   ['resolve', { exit: 'save' }],
   // 守火 (守炉, 2026-10-21) is the cave's first board, 喂饼 its second: both played before the way on
   ['resolve', { exit: 'share' }],
@@ -59,7 +61,7 @@ export const JIN_ONE = [
    down as the page would record it. */
 export const TO_HALL = [
   ...TO_VALLEY,
-  // 认路 cut 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」): the dawn passage read whole, then out
+  // 认路 cut 2026-10-21; 二十问 · 银月 there since 10-22 (yinyue-what, played by boardsFor), then out
   ['resolve', { exit: 'follow' }],
   ['resolve', { exit: 'climb' }],
   ['win', { id: 'deer-wind' }],

@@ -244,7 +244,7 @@ test('the lint holds people.json: a home, a portrait, a voice, a slot that names
 /* ── The trials: toil, a mark, a fight fought again ── */
 
 test('the 三试\'s fight may be fought again the same day: a loss withdraws nothing', () => {
-  let s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+  let s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'won' && a.id === 'gate-longzhi')), content, NOW);
   assert.equal(s.scene, '00-longzhi');
   s = { ...s, duels: { longzhi: { day: '2026-09-28', outcome: 'lost' } } };
   assert.equal(resolve(s, content, ctx(), { exit: 'subdue' }).result.refused, 'game-not-won', 'not withdrawn: just not yet won');
@@ -278,7 +278,7 @@ test('蠪侄\'s first sight: played on the stage in full, the classic line last,
   assert.match(html, /data-appear-done="longzhi"/);
   assert.match(fs.readFileSync(path.join(ROOT, 'scripts/lingjing.css'), 'utf8'), /prefers-reduced-motion: reduce\) \{\s*\.appear,/);
   // the page keeps it seen: once, then never again; a beast without one is refused
-  const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+  const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'won' && a.id === 'gate-longzhi')), content, NOW);
   assert.equal(s.scene, '00-longzhi');
   const first = VERBS.appear(s, content, ctx(), { id: 'longzhi' });
   assert.deepEqual(first.state.appeared, ['longzhi']);

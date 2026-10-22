@@ -80,6 +80,40 @@
    },
    "means": "saves the fox, picks it up, wraps it in the jacket, helps it",
    "mark": "fox-saved",
+   "game": {
+    "id": "fox-bite",
+    "kind": "duel",
+    "creature": "foe-yinhu",
+    "retry": true,
+    "foe": {
+     "trial": {
+      "survive": 3,
+      "goal": {
+       "zh": "受伤的野兽最凶。别打它——挡住它咬，站住三个回合。",
+       "en": "A hurt animal is the fiercest. Don't strike it — take its bites, and stand three of its turns."
+      }
+     },
+     "extra": [
+      "kuzhi",
+      "waiyi",
+      "bupa"
+     ],
+     "party": [],
+     "deck": [
+      "ziya",
+      "ziya",
+      "ziya",
+      "ziya",
+      "ziya",
+      "ziya"
+     ]
+    },
+    "_foe": "第一回's teaching fight (2026-10-22, Hanli: 「关键是能留住玩家」 — the card fight met before 第三回's 蠪侄): the book's own face-off, 「受伤的野兽最凶，碰都别去碰」, then the coat, the bite, 「它不咬了」 (this exit's passage, unchanged). A 试 of nerve like the 三试: stand three of its turns. Three cards the book gives him here — 枯枝 (「他捡起一根枯枝扔到坑边」: play a card that strikes), 补丁外衣 (the coat over it: a body that takes the bite), 不怕 (「不怕。我也掉下来了」) — and 结束回合. It cannot be lost (it bites for 1–2; he stands 20); 认输 or a loss is 「再来」 (retry). No loot, no card, nothing paid."
+   },
+   "withdrawn": {
+    "zh": "它缩在坑底，喉咙里还在呜咽。",
+    "en": "It curls at the bottom of the pit, still whimpering."
+   },
    "story": {
     "zh": "小满看了它很久，心想：它要是死在这儿，就什么都不是了；它要是活下来——不知道它会是什么。可他知道，一只尾巴给人一刀一刀斩掉的东西，和一个给人一把推到灶台边上的孩子，差不太多。\n\n他脱下了外衣。那是他娘去年冬天拿他爹的旧袄改的，袖口打着补丁，补丁上还打着补丁。他用枯枝挑着，轻轻盖在它身上，再隔着衣裳把它抱了起来。它还是咬了他一口，隔着两层布，咬在他虎口上，不深，可是很疼。\n\n他「嘶」了一声，却没有松手，说道：「不怕。我也掉下来了。咱俩，做个伴。」\n\n它不咬了。它在他的衣裳里抖了一下，然后把脸埋进了那块补丁里。",
     "en": "Xiaoman looked at it for a long time and thought: if it dies here, it won't be anything at all. If it lives — who knows what it'll be. But he did know that something whose tails had been cut off one stroke at a time, and a child who'd been shoved against a stove, weren't so very different.\n\nHe took off his jacket. His mother had made it last winter out of his father's old padded coat; there were patches on the cuffs, and patches on the patches. He lifted it on a dead branch, laid it gently over the fox, and then picked it up, wrapped in the jacket. It bit him anyway, through two layers of cloth, in the web of his thumb. Not deep, but it hurt.\n\nHe hissed, but he didn't let go. \"Don't be scared. I fell down here too. We'll keep each other company.\"\n\nIt stopped biting. It shivered once inside his jacket, and then it buried its face in a patch."

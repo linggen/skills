@@ -32,6 +32,15 @@ export function herGameNow(state, now = new Date()) {
   return Number.isFinite(since) && now.getTime() - since < HER_GAME_TTL_MS;
 }
 export const herAwake = (state, now = new Date()) => Boolean(state.companion?.joined && (!state.companion?.asleep || herGameNow(state, now)));
+/* Not found yet, but standing on the stage in a form that talks (the scene's `her: "human"`: 00-yinyue,
+   the girl at the cave mouth before 带她出谷) — a board there that needs her (二十问 · 银月, Hanli 10-22:
+   「关键是能留住玩家」) holds her for its round as on any other: the hold says so (`stage`), and only on
+   that scene. She is still not joined: no card, no moments, no gifts — her turn in the board's chat only. */
+export function herOnStage(content, state, now = new Date()) {
+  if (state?.companion?.joined || !state?.her_game?.stage || !herGameNow(state, now)) return false;
+  const sc = sceneOf(content, state);
+  return Boolean(sc && sc.id === state.her_game.stage && sc.her === 'human');
+}
 /* Met and on her own line, awake or in the 木牌: a game that needs her may be offered from the token
    (本王考考你, the 秘境 and 传闻 drawings) — starting it wakes her. */
 export const herNear = (content, state) => Boolean(state.companion?.joined && !herAway(content, state));
@@ -77,7 +86,13 @@ export function herAway(content, state) {
    back to the 木牌 as it is read. */
 export function fitPresence(content, state, now = new Date()) {
   const c0 = state?.companion;
-  if (!c0?.joined) return state;
+  if (!c0?.joined) {
+    // Unmet: awake only for an on-stage hold (herOnStage); else no flag of hers stands.
+    const on = herOnStage(content, state, now);
+    if (on === Boolean(c0?.awake)) return state;
+    const { awake, ...rest } = c0 ?? {};
+    return { ...state, companion: on ? { ...rest, awake: true } : rest };
+  }
   const back = !c0.asleep && bookAsleep(content, state) === true;
   const s = back ? { ...state, companion: { ...c0, asleep: true } } : state;
   const c = s.companion;

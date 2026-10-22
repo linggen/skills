@@ -52,6 +52,10 @@
    "robe": "grey-robe"
   },
   "duels": {
+   "foe-yinhu": {
+    "day": "2026-09-30",
+    "outcome": "won"
+   },
    "longzhi": {
     "day": "2026-09-30",
     "outcome": "won"
@@ -194,6 +198,11 @@
     "done_at": "2026-10-01T01:00:00.000Z"
    },
    "bread-share": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "yinyue-what": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -748,11 +757,12 @@
   "looked": [
    "00-heisong/stone"
   ],
-  "companion": {
-   "joined": "2026-09-30",
-   "asleep": true
-  },
   "beasts": {
+   "foe-yinhu": {
+    "met": 1,
+    "won": 1,
+    "first": "2026-09-30"
+   },
    "longzhi": {
     "met": 1,
     "won": 1,
@@ -778,6 +788,10 @@
     "won": 1,
     "first": "2026-10-01"
    }
+  },
+  "companion": {
+   "joined": "2026-09-30",
+   "asleep": true
   },
   "root_main": "water",
   "boards_paid": [

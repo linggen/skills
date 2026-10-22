@@ -2392,6 +2392,10 @@
       "art_source": "Painted for Lingjing by Codex (gpt-6.1-sol) with a house card as the style, 2026-10-16.",
       "mortal": true
     },
+    {"id": "kuzhi", "kind": "spell", "name": {"zh": "枯枝", "en": "A Dry Stick"}, "cost": 1, "element": null, "_token": true, "effect": {"damage": 1}, "_about": "第一回 · 浅坑（2026-10-22 教学斗法）：「他捡起一根枯枝扔到坑边」——先试一试它。试里白给的一张，不入牌库、不作赏。", "art": "art/cards/shizi.webp", "art_source": "The 三试's 石子 plate, borrowed (a thrown thing); its own picture is not painted yet.", "mortal": true},
+    {"id": "waiyi", "kind": "minion", "name": {"zh": "补丁外衣", "en": "The Patched Coat"}, "cost": 1, "element": null, "_token": true, "atk": 0, "hp": 3, "keywords": ["taunt"], "_about": "第一回 · 浅坑：「他脱下了外衣……轻轻盖在它身上」——袖口打着补丁，补丁上还打着补丁。挡在前头，咬它不咬你。试里白给的一张，不入牌库、不作赏。", "art": "art/cards/tuou.webp", "art_source": "The 土偶 plate, borrowed (a thing that stands in front); its own picture is not painted yet.", "mortal": true},
+    {"id": "bupa", "kind": "spell", "name": {"zh": "不怕", "en": "Don't Be Scared"}, "cost": 0, "element": null, "_token": true, "effect": {"heal": 2}, "_about": "第一回 · 浅坑：「不怕。我也掉下来了。咱俩，做个伴。」试里白给的一张，不入牌库、不作赏。", "art": "art/cards/niangbing.webp", "art_source": "The 娘的饼 plate, borrowed (a comfort); its own picture is not painted yet.", "mortal": true},
+    {"id": "ziya", "kind": "spell", "name": {"zh": "龇牙", "en": "Bared Teeth"}, "cost": 1, "element": "metal", "_token": true, "effect": {"damage": 1}, "_about": "坑底那只小银狐：「龇了一下牙……可它连头都抬不起来」。兽的牌，永不入牌库、不作赏。", "art": "art/people/yinyue-fox.webp", "art_source": "Her own fox plate (world.json companion.forms.fox)."},
     {
       "id": "wulei-fu",
       "kind": "spell",

@@ -111,7 +111,8 @@ test('a bot finishes a fight through the mount, and the arcade\'s fight reads on
   assert.notEqual(st.outcome, 'open');
   assert.equal(r.won, st.outcome === 'won');
   if (r.won) assert.ok(r.stars >= 1 && r.stars <= 3);
-  assert.equal(r.next, TABLE.fights[1].key, '下一关: the next foe in the book\'s order');
+  const at = TABLE.fights.findIndex((f) => f.key === 'longzhi@00-longzhi/subdue');
+  assert.equal(r.next, TABLE.fights[at + 1].key, '下一关: the next foe in the book\'s order');
   assert.ok(asked.length && asked.every((a) => a.method === 'GET' && a.url.startsWith(WORLD)), JSON.stringify(asked));
 });
 

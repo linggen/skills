@@ -1160,6 +1160,9 @@
   "drawguess": {
    "kit": "board"
   },
+  "twenty": {
+   "kit": "board"
+  },
   "lianliankan": {
    "kit": "board"
   },

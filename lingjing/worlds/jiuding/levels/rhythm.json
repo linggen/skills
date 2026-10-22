@@ -126,8 +126,28 @@
       },
       {
        "kind": "read",
-       "chars": 1029,
-       "run": 1029,
+       "chars": 659,
+       "run": 659,
+       "over": false
+      },
+      {
+       "kind": "fight",
+       "id": "foe-yinhu",
+       "scene": "00-fox",
+       "exit": "save",
+       "title": {
+        "zh": "坑底的小银狐",
+        "en": "The silver fox in the pit"
+       },
+       "mechanic": "斗法",
+       "variety": "斗法",
+       "art": "art/people/yinyue-fox.webp",
+       "key": "foe-yinhu@00-fox/save"
+      },
+      {
+       "kind": "read",
+       "chars": 370,
+       "run": 370,
        "over": false
       },
       {
@@ -179,8 +199,27 @@
       },
       {
        "kind": "read",
-       "chars": 630,
-       "run": 630,
+       "chars": 76,
+       "run": 76,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "yinyue-what",
+       "scene": "00-yinyue",
+       "title": {
+        "zh": "二十问 · 银月",
+        "en": "Twenty questions · Yinyue"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "twenty",
+       "n": 67
+      },
+      {
+       "kind": "read",
+       "chars": 554,
+       "run": 554,
        "over": false
       },
       {
@@ -200,8 +239,8 @@
       }
      ],
      "counts": {
-      "board": 6,
-      "fight": 0,
+      "board": 7,
+      "fight": 1,
       "riddle": 0,
       "seen": 1,
       "breakthrough": 0,

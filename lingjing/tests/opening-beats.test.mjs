@@ -112,10 +112,11 @@ const BEATS = [
    the passage whole: the scene has no board — until 2026-10-21 (the 卷一 small-game plan): 雪夜柴垛, a 塔防, at the same split.
    The plan's three 塔防 before 入门 in 古二 and 古三 (Hanli 10-21: thirteen boards before 入门, 「start building」): 抬鹿下山 on
    00-deer's way on (its own scene, 00-tailu), 雪夜柴垛 in 00-halfyear, 泗水路 in 00-gate after the road. */
-// 认路 cut again 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」): 00-yinyue reads whole to 带她出谷.
+// 认路 cut again 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」); 00-yinyue has a board again since 10-22 (二十问 · 银月),
+// so it is no longer a scene that reads whole — 认路's own cut is held in the 第一回 lineup test.
 // 拽爹上崖 cut 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」): 00-fall reads whole to 把爹拽回山壁; 守灶台 in 00-zaotai keeps 第一回 at six.
-const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-sleep', 'xisui-hold', 'bath'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-yinyue', 'yinyue-way', 'follow'], ['00-fall', 'fall-storm', 'check']];
-const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-zaotai': ['masan-zaotai'], '00-cave': ['cave-fire', 'bread-share'], '00-deer': ['deer-wind'], '00-tailu': ['deer-carry'], '00-rent': ['rent-scale'], '00-halfyear': ['halfyear-chaiduo'], '00-notice': ['notice-shuitong'], '00-gate': ['gate-sishui'], '00-luoshu': ['gate-luoshu'] };
+const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-sleep', 'xisui-hold', 'bath'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-fall', 'fall-storm', 'check']];
+const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-zaotai': ['masan-zaotai'], '00-cave': ['cave-fire', 'bread-share'], '00-yinyue': ['yinyue-what'], '00-deer': ['deer-wind'], '00-tailu': ['deer-carry'], '00-rent': ['rent-scale'], '00-halfyear': ['halfyear-chaiduo'], '00-notice': ['notice-shuitong'], '00-gate': ['gate-sishui'], '00-luoshu': ['gate-luoshu'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
 
 test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 守白菜 · 忍字 · 守灶台 · 喂饼 · 守火 · 射鹿 · 抬鹿下山 · 算账 · 雪夜柴垛 · 水桶 · 泗水路 · 洛书门', () => {
@@ -154,7 +155,7 @@ test('a cut board has left its scene — not shown, not offered, no way on waits
 
 test('each scene stands its board on the stage, offers it, and its way on waits for it', () => {
   for (const [sid, tid, exit] of [...BEATS, ['00-cave', 'bread-share', 'share'], ['00-notice', 'notice-shuitong', 'go'],
-    ['00-tailu', 'deer-carry', 'on'], ['00-halfyear', 'halfyear-chaiduo', 'on'], ['00-gate', 'gate-sishui', 'steady'], ['00-gate', 'gate-sishui', 'rush']]) {
+    ['00-tailu', 'deer-carry', 'on'], ['00-halfyear', 'halfyear-chaiduo', 'on'], ['00-gate', 'gate-sishui', 'steady'], ['00-gate', 'gate-sishui', 'rush'], ['00-yinyue', 'yinyue-what', 'follow']]) {
     const sc = scenes[sid];
     assert.ok(sc.show.some(c => c.card === 'board' && c.id === tid), sid);
     assert.ok(sc.offers.tasks.includes(tid), sid);
@@ -312,13 +313,14 @@ test('挑水上坡 told again: its row and level gone; a save holding halfyear-c
 /* 第一回's lineup (Hanli 2026-10-21): 接雨 · 忍字 · 拽爹 · 认路 · 喂饼 kept, two 塔防 boards added — 「用塔防作为主力」,
    「7个游戏可以防止阅读过长」, then 「按你的建议来」: six boards, four kits — 接雨 · 守白菜 · 忍字 (气走经脉) · 拽爹 · 喂饼 · 守火,
    认路 cut. 守白菜 plays where the book's 芦花鸡 pokes through the 篱笆; 守火 at 「火堆挡在洞口，野兽便不敢进来」, before 喂饼 (the 卷一 plan's order: 接雨 · 守白菜 · 忍字 · 拽爹 · 守火 · 喂饼). */
-test('第一回 plays six boards on four kits, two of them 塔防: 守白菜 at the cabbage, 守火 at the fire before 喂饼 — each passage split word for word', () => {
+test('第一回 plays seven boards on five kits (二十问 · 银月 the AI one, 10-22), two of them 塔防: 守白菜 at the cabbage, 守火 at the fire before 喂饼 — each passage split word for word', () => {
   const h01 = Object.values(scenes).filter(sc => sc.hui === 'h01');
   const boards = h01.flatMap(sc => (sc.show ?? []).filter(c => c.card === 'board').map(c => c.id)).sort();
-  assert.deepEqual(boards, ['baicai-hens', 'bread-share', 'cave-fire', 'masan-taunt', 'masan-zaotai', 'rain-basins']);
+  assert.deepEqual(boards, ['baicai-hens', 'bread-share', 'cave-fire', 'masan-taunt', 'masan-zaotai', 'rain-basins', 'yinyue-what']);
   const kit = (id) => content.tasks.tasks.find(x => x.id === id).game;
-  assert.deepEqual(boards.map(kit), ['shouqiang', 'bread', 'shoulu', 'qimai', 'sadoushou', 'rain']);
+  assert.deepEqual(boards.map(kit), ['shouqiang', 'bread', 'shoulu', 'qimai', 'sadoushou', 'rain', 'twenty']);
   assert.ok(content.tasks.tasks.find(x => x.id === 'fall-storm').cut, '拽爹 cut (10-22): a save holding it lets it go');
+  assert.ok(!(scenes['00-yinyue'].show ?? []).some(c => c.id === 'yinyue-way') && !(scenes['00-yinyue'].offers?.tasks ?? []).includes('yinyue-way'), '认路 stays off 00-yinyue');
   assert.equal(content.games.games.find(g => g.id === 'qimai' && g.task === 'masan-taunt')?.data.level, 'renzi', '忍字: the breath held down');
   assert.ok(content.tasks.tasks.find(x => x.id === 'yinyue-way').cut, '认路 cut: a save holding it lets it go');
   const td = { 'baicai-hens': ['shouqiang', 'baicai'], 'masan-zaotai': ['sadoushou', 'zaotai'], 'cave-fire': ['shoulu', 'shouhuo'] };

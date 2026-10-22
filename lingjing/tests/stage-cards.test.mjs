@@ -61,7 +61,7 @@ const SITUATIONS = {
   'the valley at daybreak: her human form on the people card': [walk(newState(content, 'en', NOW), TO_VALLEY, content, NOW), ctx()],
   '生辰: the root test at the 入门仪式': [walk(newState(content, 'zh', NOW), TO_HALL, content, NOW), ctx()],
   'the root test, in English': [walk(newState(content, 'en', NOW), TO_HALL, content, NOW), ctx()],
-  '蠪侄 met again: one line of its first sight': [{ ...walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW), appeared: ['longzhi'] }, ctx()],
+  '蠪侄 met again: one line of its first sight': [{ ...walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'won' && a.id === 'gate-longzhi')), content, NOW), appeared: ['longzhi'] }, ctx()],
   '公中 at the outer court: stones to hand over': [walk(newState(content, 'zh', NOW), TO_WAIMEN, content, NOW), ctx()],
   'the same, in English': [{ ...open, place: 'pengcheng', lang: 'en' }, ctx({ quests: chores })],
   // 2026-10-14: a 图鉴 card beside a fight card of the same beast is dropped (stage.mjs duplicate); Shown with no fight, it stands.

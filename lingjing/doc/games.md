@@ -103,6 +103,25 @@ storm · down the cliff · the vine and the moss), laid under the fall's paragra
 1,857-character read from 00-fall to 守火 is now 828 · 坠谷 · 1,029 (tools/arcade-rhythm.mjs). The read before it,
 00-zaotai → 黑松岭's 刻记号 (3,409), is still over the cap — the next to break.
 
+**第一回 at seven with 二十问, plus a teaching 斗法 (10-22**, Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 — meet
+Linggen's two signatures, the AI that answers anything and the card fight, in the first hour): **二十问 · 银月** `yinyue-what`
+(00-yinyue, games/twenty.js, the AI kit's first story board): the passage split word for word after 「……烂成这样。」 — she has
+named herself 妖王 and won't say what she is; he asks her anything (typed on the board, or said to @银月 in the chat — those
+count too), she answers as herself in the game's chat, and a line naming what she is (the deal's `names`: 狐 · 那只狐狸 · 狐狸精 …;
+妖王 is no guess — she said it) ends it; 「小满道：「……你是那只狐狸？」」 on is read after it. ≤ 10 questions, the way out after 4
+(`stuck`, no 75 s clock: her answers take 10–25 s); ★ by how soon (≤ 3 · ≤ 6 · more). Unmet here (`joins` is 带她出谷's), she is
+held on the stage for the round (rules/hergame.mjs `stage`: the scene's `her: "human"`, its own board) — the engine's
+`companion.awake`, never `joined`: no moments, no card. The round's facts go to her in brackets on the first line and on the guess
+(`deal.context` · `deal.guessed`), as 画猜 sends its scene; every word she says is hers. ~8–9k prompt tokens a question (her
+guest turn), ≤ 10. **The teaching 斗法** `fox-bite` (00-fox's 「脱下外衣，裹起它」): no 第一回/第二回 scene has 小满 fight a beast
+(野猪 is the 蒙山 pool's, h05; the cave's beasts are kept out by the fire, which 守火 already plays) — the one face-off the book
+writes is the hurt fox: 「他爹说过，受伤的野兽最凶，碰都别去碰」, then the coat, the bite, 「它不咬了」 (the exit's passage,
+unchanged). So a 试 of nerve like the 三试: stand three of its turns (`foe-yinhu`, `foe-` so not in the 山海录; each bite lands 2, he
+stands 20 — ending every turn still passes it); three 白给 cards, the book's: 枯枝 (「他捡起一根枯枝扔到坑边」 — a card that
+strikes, 1), 补丁外衣 (the coat: a body that takes the bite), 不怕 (「不怕。我也掉下来了」, heal 2); pays nothing — no card, no loot,
+no 修为. Rhythm after (with 守灶台 in, 拽爹 cut): 接雨 · 守白菜 · 忍字 · 守灶台 · 暴雨坠谷 (大场面) · **斗法** · 守火 · 喂饼 · **二十问** — no kit twice running (守灶台 and 守火 are different 塔防). **Hanli's call:** the foe is 银月 in fox form, and
+「attack」 is taught as the book's probe, not a blow; the three cards borrow plates (石子 · 土偶 · 娘的饼) until painted.
+
 ## The throws — levels of 砸寨 (10-20)
 
 Hanli 10-20: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」. Every throw in the story is a level of 砸寨, the one throw
@@ -676,6 +695,7 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
 ## AI games (the model talks; the rules hold the secret and the score; no card)
 
 - **二十问** — 银月 thinks of an ordinary animal; yes/no in the chat; guess within twenty.
+  In the story (10-22): 第一回's 00-yinyue, `yinyue-what` — what she is, asked anything (above, § Before 入门).
 - **讨价还价** — haggle with a keeper in the chat; the rules hold the floor and the mood.
 - **断案** — ask the people, find the proof, name who did it.
 - **对对子** — being built 10-16 by another agent.

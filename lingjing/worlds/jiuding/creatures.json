@@ -1602,6 +1602,7 @@
       },
       "_signature": "五尾一角 —— 其音如击石：一声，嘴里又多了两株。"
     },
+    {"id": "foe-yinhu", "hui": "h01", "name": {"zh": "坑底的小银狐", "en": "The silver fox in the pit"}, "pinyin": "kēng dǐ de xiǎo yín hú", "look": {"zh": "一身银毛，一条尾巴，尾根上八处断口；金色的眼睛，瞳仁竖着。", "en": "Silver fur, one tail, eight clean stumps at its root; gold eyes, slit pupils."}, "says": {"open": {"zh": "（它龇着牙，又小又凶地呜咽。）", "en": "(It bares its teeth; a small, fierce whimper in its throat.)"}, "won": {"zh": "（它不咬了，把脸埋进补丁里。）", "en": "(It stops biting. It buries its face in the patch.)"}, "lost": {"zh": "（它抬不起头，只是看着你。）", "en": "(It can't even lift its head; it only watches you.)"}}, "province": "徐", "root": "metal", "_root": "银毛 — 银属金.", "art": "art/people/yinyue-fox.webp", "art_source": "Her own fox plate (world.json companion.forms.fox).", "lean": "ward", "pattern": ["guard", "strike", "guard", "strike"], "deck": ["ziya", "ziya", "ziya", "ziya", "ziya", "ziya"], "hp": 0.5, "signature": {"id": "suohui", "name": {"zh": "缩回坑底", "en": "Back into the Pit"}, "effect": {"heal": 2}}, "_signature": "它连头都抬不起来——缩回泥水里，舔一舔伤。不伤人：这一场不能输。", "_about": "第一回's teaching fight (2026-10-22, Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): 00-fox, 「他爹说过，受伤的野兽最凶，碰都别去碰」 — he goes to it anyway, and it bites. Not a beast to beat: a 试 of nerve (survive 3), as the 三试 is; won, the exit's own passage tells it (「它不咬了」). `foe-` keeps her out of the 山海录 (she is the companion, not a beast). No loot, no card, nothing paid."},
     {
       "id": "foe-sunergou",
       "name": {

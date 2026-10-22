@@ -49,7 +49,10 @@ test('a game inside its scene\'s passage: the rest is the scene\'s own (`story_a
     // A real fork after the rest (00-rent's 装傻 · 说实话, 00-storm's 掉头 · 再追, 2026-10-15): each branch carries
     // its own passage, and the book's branch picks up where the run stops by right.
     const fork = sc.exits.filter((e) => e.story && !e.stay).length > 1;
-    if (!second && !fork) for (const e of sc.exits) if (e.story) assert.notEqual(book.indexOf(firstPara(e.story)), end(lastPara(sc.story_after)), `${sc.id}/${e.id} starts mid-way through the scene's run`);
+    // A 回's last choice that tells a passage of its own (00-yinyue's 带她出谷 into 古二, 2026-10-22: the dawn has a board since,
+    // 二十问): its way on picks up where the run stops by right — the 回 turns there.
+    const turn = sc.exits.some((e) => e.story && e.next && scenes[e.next]?.hui && scenes[e.next].hui !== sc.hui);
+    if (!second && !fork && !turn) for (const e of sc.exits) if (e.story) assert.notEqual(book.indexOf(firstPara(e.story)), end(lastPara(sc.story_after)), `${sc.id}/${e.id} starts mid-way through the scene's run`);
     assert.equal(book.indexOf(firstPara(sc.story_after)), end(lastPara(sc.story)), `${sc.id}: the rest follows the lead`);
   }
 });

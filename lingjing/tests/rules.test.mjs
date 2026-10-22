@@ -228,7 +228,7 @@ test('staying exits tell their passage and keep the scene; a staying choice made
 });
 
 test('an unknown exit and an unfought duel are refused', () => {
-  const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+  const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'won' && a.id === 'gate-longzhi')), content, NOW);
   refused(resolve, s, { exit: 'fly' }, 'unknown-exit');
   refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
 });

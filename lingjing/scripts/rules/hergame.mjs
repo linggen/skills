@@ -11,6 +11,7 @@
 // never ended (a tab shut mid-round) lapses after HER_GAME_TTL_MS. The 游戏厅's 画猜 with her as the
 // guesser holds as `arcade:<game>` — a game some her-task plays.
 import { herAway, herGameNow } from './companion.mjs';
+import { sceneOf } from './world.mjs';
 import { boardId, liveTale } from './tale.mjs';
 
 const tasksOf = content => content.tasks?.tasks ?? [];
@@ -43,9 +44,13 @@ export function pageHerGame(content, state, args = {}, now = new Date()) {
     delete keep.her_game;
     return { keep, result: { ok: true, hold: false } };
   }
-  if (!state?.companion?.joined || herAway(content, state)) return { keep: null, result: { ok: false, refused: 'no-host', say: null } };
+  // Unmet, she can be held only where she stands on the stage in her talking form (the scene's
+  // `her: "human"`, a board of that scene: 00-yinyue's 二十问) — the hold names the scene (`stage`).
+  const sc = sceneOf(content, state);
+  const onStage = !state?.companion?.joined && sc?.her === 'human' && (sc.offers?.tasks ?? []).includes(task);
+  if ((!state?.companion?.joined && !onStage) || herAway(content, state)) return { keep: null, result: { ok: false, refused: 'no-host', say: null } };
   if (!needsHer(content, state, task)) return { keep: null, result: { ok: false, refused: 'not-hers', say: null } };
-  return { keep: { ...state, her_game: { task, since: now.toISOString() } }, result: { ok: true, hold: true, task } };
+  return { keep: { ...state, her_game: { task, since: now.toISOString(), ...(onStage ? { stage: sc.id } : {}) } }, result: { ok: true, hold: true, task } };
 }
 
 export { herGameNow };

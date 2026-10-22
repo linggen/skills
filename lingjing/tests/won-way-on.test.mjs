@@ -21,7 +21,7 @@ const content = loadContent();
 // A day whose 蠪侄 deal a thinking line wins (the fight is ~80%, tests/fight-band.test.mjs).
 const NOW = new Date('2026-09-29T12:00:00');
 const ctx = () => ({ now: NOW, quests: [] });
-const atLongzhi = () => walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+const atLongzhi = () => walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'won' && a.id === 'gate-longzhi')), content, NOW);
 const page = (l, extra = {}) => ({ look: l, lang: l.lang, words: WORDS[l.lang], content: {}, ...extra });
 
 /* The fight played out the way the page plays it: the door, then the picks

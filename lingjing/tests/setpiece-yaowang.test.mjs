@@ -34,6 +34,8 @@ function atDawn(lang) {
   let s = newState(content, lang, NOW);
   s = walk(s, TO_VALLEY, content, NOW);
   assert.equal(s.scene, '00-yinyue');
+  // 二十问 · 银月 (2026-10-22) stands between the boast and the cloud: played, the rest of the dawn is owed with it.
+  s = walk(s, [['win', { id: 'yinyue-what' }], ['task', { action: 'done', id: 'yinyue-what' }]], content, NOW);
   return { s, tell: playOf(content, s, tellOf(content, s).tell) };
 }
 /* The reading at the dawn's passage, walked to the beat carrying `id`. */
@@ -67,14 +69,17 @@ test('the lines are the book\'s, verbatim, in its order (zh 01-第一回.md, en 
 test('the scene marks the boast and the cloud, zh and en, in the game\'s cut and the book\'s passage', () => {
   for (const lang of ['zh', 'en']) {
     for (const field of ['story', 'story_full']) {
-      const marked = scene[field][lang].split(/\n\n+/).map((p, k) => [k, [...p.matchAll(PIECE)].map((m) => m[1])]).filter(([, ids]) => ids.length);
+      // The dawn's passage runs across 二十问's board (10-22): the boast before it, the cloud after (`story_after`).
+      const whole = `${scene[field][lang]}\n\n${scene[field === 'story' ? 'story_after' : 'story_after_full'][lang]}`;
+      const marked = whole.split(/\n\n+/).map((p, k) => [k, [...p.matchAll(PIECE)].map((m) => m[1])]).filter(([, ids]) => ids.length);
       assert.deepEqual(marked.map(([, ids]) => ids.join()), ['yaowang', 'tengyun'], `${field} ${lang}: the boast first, then the cloud`);
     }
-    const paras = scene.story[lang].split(/\n\n+/);
+    const paras = `${scene.story[lang]}\n\n${scene.story_after[lang]}`.split(/\n\n+/);
     const boast = paras.find((p) => p.includes('{景=yaowang}')), cloud = paras.find((p) => p.includes('{景=tengyun}'));
     assert.match(boast, lang === 'zh' ? /本王乃青丘之主[\s\S]*——饿了。」\{景=yaowang\}$/ : /Lady of Qingqiu[\s\S]*I was hungry\."\{景=yaowang\}$/);
     assert.match(cloud, lang === 'zh' ? /腾起一团白蒙蒙的云气[\s\S]*「噗」的一声，散了/ : /a puff of milky cloud[\s\S]*\*pff\*/);
     assert.ok(checkJieben(scene.story[lang], scene.story_full[lang], lang).ok, `${lang}: the 节本 still keeps the book's words`);
+    assert.ok(checkJieben(scene.story_after[lang], scene.story_after_full[lang], lang).ok, `${lang}: and after the board`);
   }
 });
 
@@ -84,8 +89,10 @@ test('each plays at its own paragraph of the dawn\'s passage, once, and nowhere 
     for (const t of tell) for (const b of t.beats[lang]) assert.doesNotMatch(b.text, /景=/, `${t.id}: the words only`);
     const dawn = tell.findIndex((t) => t.of === 'scene' && t.id === '00-yinyue');
     assert.ok(dawn >= 0);
-    const paras = scene.story[lang].split(/\n\n+/);
-    const want = ['yaowang', 'tengyun'].map((id) => [dawn, paras.findIndex((p) => p.includes(`{景=${id}}`)), id]);
+    const after = tell.findIndex((t) => t.of === 'after' && t.id === '00-yinyue/after');
+    assert.ok(after > dawn, 'the rest of the dawn after 二十问');
+    const where = { yaowang: [dawn, scene.story[lang]], tengyun: [after, scene.story_after[lang]] };
+    const want = ['yaowang', 'tengyun'].map((id) => [where[id][0], where[id][1].split(/\n\n+/).findIndex((p) => p.includes(`{景=${id}}`)), id]);
     const got = tell.flatMap((t, i) => t.beats[lang].map((b, j) => [i, j, b.piece])).filter(([, , p]) => p);
     assert.deepEqual(got, want, lang);
     // Walking the reading: the boast's beat comes before the cloud's, each once.

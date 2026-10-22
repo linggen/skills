@@ -14,6 +14,7 @@
 //
 // Where the road stands at each 回 (ladder.json caps.hui; cards.json `from` — 2026-10-16, cards.md:
 // every card is gained in the story or bought, none at the root test):
+//   h01  练气零层 · rootless, 娘的饼 only (00-kitchen) — 00-fox's teaching fight, the 试's own 枯枝 · 补丁外衣 · 不怕.
 //   h04r 练气零层 · the 三试 (a 试 of nerve, survive 4): 娘的饼 (00-kitchen), 一箭 (射鹿), 吐纳 (吹鹅毛),
 //        each twice (under ten, two copies), and the 试's own 一滚 · 石子.
 //   h04  the same, rooted (00-hall), the 灰袍 (grey-robe) — the 蒙山 and 林子 pools.
@@ -45,6 +46,7 @@ const ALL = ['metal', 'wood', 'water', 'fire', 'earth'];
 /* The road, step by step: each stop names its realm, what has been won before
    it (each win deals one card, rules/cards.mjs winCard), and what is worn or held. */
 const STOPS = {
+  h01: { tier: 'qi', step: 0, rootless: true, cards: ['niangbing'], at: ['00-prologue', '00-fox'] },
   h04r: { tier: 'qi', step: 0, rootless: true, cards: EARLY, at: ['00-prologue', '00-longzhi'] },
   h04: { tier: 'qi', step: 0, cards: EARLY, wear: { robe: 'grey-robe' }, at: ['00-prologue', '00-waimen'] },
   h05: { tier: 'qi', step: 1, cards: H05, cast: ['zheng'], wear: { robe: 'grey-robe' }, at: ['00-waimen', 'wm-diyilu'] },
@@ -76,6 +78,7 @@ export function stateAt(stop) {
    entry deck stands over the creature's own; `reach: false` is a beast of the
    book that is not yet a game fight. `band` is what it is tuned to. */
 export const FIGHTS = [
+  { id: 'foe-yinhu', name: '坑底的小银狐 (教学 · 试)', at: 'h01', scene: '00-fox/save', trial: true, teach: true, band: [0.95, 1], nopills: true, note: 'teaching fight (Hanli 10-22): stand three turns; it bites for 1–2, he stands 20 — never lost' },
   { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', scene: '00-longzhi/subdue', band: [0.6, 0.92], nopills: true, note: 'tutorial; before the 灵根 test he holds no 灵石 and no pill' },
   { id: 'gui', name: '蛫 (秘境)', at: 'h07', scene: 'wm-wangzuo/open' },
   { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', scene: 'wm-xirang/swallow', trial: true, unforced: true },

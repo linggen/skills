@@ -216,7 +216,8 @@ test('her lines in the book are the book\'s: played in place, awake or asleep (h
   const valley = walk(start(), [...TO_VALLEY, ['played']], content, NOW);
   assert.equal(valley.scene, '00-yinyue');
   // at dawn she is not yet with the player: Ling tells her words
-  assert.match(tellOf(content, valley).tell.at(-1).text, /她一面嚼，一面道：「难吃。」/);
+  // (二十问 · 银月 played since 10-22: the dawn's passage and its rest after the board are both owed)
+  assert.match(tellOf(content, valley).tell.map((t) => t.text).join('\n'), /她一面嚼，一面道：「难吃。」/);
   const out = resolve(valley, content, ctx(), { exit: 'follow' });
   assert.deepEqual(out.result.joined, { id: 'yinyue' });
   assert.deepEqual(out.state.companion, { joined: '2026-09-28', awake: true });

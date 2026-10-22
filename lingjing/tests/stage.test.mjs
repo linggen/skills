@@ -290,7 +290,7 @@ test('三试 · 蠪侄: main is the fight under the scene card, no 「还有」,
   const { stageSlots, duelCreature } = await import('../scripts/stage.mjs');
   const { TO_HALL, walk } = await import('./prologue.mjs');
   const content = loadContent(), NOW = new Date('2026-10-14T18:00:00'), ctx = { now: NOW, quests: [] };
-  const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+  const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'won' && a.id === 'gate-longzhi')), content, NOW);
   assert.equal(s.scene, '00-longzhi');
   const l = look(s, content, ctx);
   assert.ok((l.scene.show ?? []).some(c => c.card === 'creature' && c.id === 'longzhi'), 'the scene still declares its creature card');
@@ -386,7 +386,7 @@ test('三试 · 蠪侄 mid-passage: no fight card on the stage — the box first
   const { afterBook } = await import('../scripts/queue.js');
   const { TO_HALL, walk } = await import('./prologue.mjs');
   const content = loadContent(), NOW = new Date('2026-10-14T18:00:00'), ctx = { now: NOW, quests: [] };
-  const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v]) => v === 'won')), content, NOW);
+  const s = walk(newState(content, 'zh', NOW), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'won' && a.id === 'gate-longzhi')), content, NOW);
   const l = look(s, content, ctx);
   assert.ok(l.stage.some(c => c.card === 'duel'), 'the rules stand the fight');
   assert.ok(!afterBook(l.stage, true).some(c => c.card === 'duel'), 'mid-passage it waits — even past the caption');

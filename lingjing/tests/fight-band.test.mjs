@@ -23,7 +23,8 @@ for (const f of FIGHTS.filter(f => !f.pool)) {
     // Never a money wall: without a single pill it is still won often enough to be played through.
     assert.ok(bare.win >= NEVER_WALL, `${keyOf(f)} won only ${(bare.win * 100).toFixed(1)}% without pills`);
     // A fight not won must sometimes be LOST, not only waited out (Hanli 2026-10-16, 灵草谷's 犰狳: 让他能真的输).
-    assert.ok(bare.lost >= 0.08, `${keyOf(f)} is lost only ${(bare.lost * 100).toFixed(1)}% — it never threatens`);
+    // …but a teaching fight (`teach`: 00-fox, 2026-10-22) is meant never to be lost.
+    if (!f.teach) assert.ok(bare.lost >= 0.08, `${keyOf(f)} is lost only ${(bare.lost * 100).toFixed(1)}% — it never threatens`);
     // A 试 passed by outlasting it is not driven down by force (邹青松's shield, 秦雁's footwork).
     if (f.unforced) assert.ok(bare.forced <= 0.15, `${keyOf(f)} driven to 0 in ${(bare.forced * 100).toFixed(1)}% — a 试 is outlasted, not beaten`);
     if (f.nopills) return; // the 三试: a mortal with no 灵石 and no pill
