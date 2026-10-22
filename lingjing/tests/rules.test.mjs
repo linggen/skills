@@ -1759,9 +1759,10 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   // 忍字 · 认路 · 算账 back 2026-10-20 as 割绳子 levels (「可以, 放宽, 把那三关加进去」); the old weak boards stay cut.
   // 00-halfyear's 挑水上坡 (气走经脉, the reading cap) came and went the same day: told again (the 调息 cut). 认路 cut again 2026-10-21; 守白菜 · 守火 added (第一回's lineup).
   // 拽爹 cut 2026-10-22, 守灶台 in its place (Hanli: 「拽爹上崖 有点奇怪」 · 「就是在第一次收租那里…加一个塔防类的」).
-  for (const id of ['rain-basins', 'baicai-hens', 'masan-taunt', 'masan-zaotai', 'cave-fire', 'bread-share', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu']) assert.ok(ids.includes(id), id);
+  // 抬鹿下山 · 雪夜柴垛 · 泗水路 (塔防, the 卷一 small-game plan 2026-10-21).
+  for (const id of ['rain-basins', 'baicai-hens', 'masan-taunt', 'masan-zaotai', 'cave-fire', 'bread-share', 'deer-wind', 'deer-carry', 'rent-scale', 'halfyear-chaiduo', 'notice-shuitong', 'gate-sishui', 'gate-luoshu']) assert.ok(ids.includes(id), id);
   for (const id of ['xisui-hold', 'feather-breath', 'kitchen-griddle', 'halfyear-carry', 'fall-storm']) assert.ok(!ids.includes(id), `${id}: cut before 入门`);
-  const order = ['rain-basins', 'baicai-hens', 'masan-taunt', 'masan-zaotai', 'cave-fire', 'bread-share', 'deer-wind', 'rent-scale', 'notice-shuitong', 'gate-luoshu'];
+  const order = ['rain-basins', 'baicai-hens', 'masan-taunt', 'masan-zaotai', 'cave-fire', 'bread-share', 'deer-wind', 'deer-carry', 'rent-scale', 'halfyear-chaiduo', 'notice-shuitong', 'gate-sishui', 'gate-luoshu'];
   assert.deepEqual(ids.filter(id => order.includes(id)), order, 'in the order they were played');
 });
 

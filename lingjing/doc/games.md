@@ -81,6 +81,19 @@ condensed cut takes the raindrop sentence from the book). Imagination, not a win
 把爹拽回山壁 (it was never split: the board stood after its last line), `fall-storm` marked `cut`, fallrope in the 游戏厅
 under 旧版 (`replaced: "cut"`, `why`). The level: § 撒豆成兵 · 守山门 › 守灶台.
 
+**古二 · 古三: three 塔防 more (10-22**, the 卷一 plan's rows; Hanli 10-22: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 ·
+「塔防有多种子类型, 换着来就好了」). 第二回 is now 射鹿 (投掷) · **抬鹿下山** `deer-carry` (守墙关 `tailu`: new scene 00-tailu, 00-deer's
+way on split word for word at 「那副门板，到底没有白扛，抬了一头鹿。」; 野猪 down the two trails of the 溪 (`paths`) at the 门板,
+小满 with 爷爷's bow, 老周 throwing stones; no opening, no 结印) · 算账 (割绳子) · **雪夜柴垛** `halfyear-chaiduo` (守炉 `chaiduo`:
+00-halfyear split after 「自己穿一件单褂。」, the rest in `story_after`; the 柴垛 is the 炉 (`furnaceArt`), snow, night — he sees
+and throws less far — 小满 alone, every tap an order (core.js `direct`)) · 水桶落井 (调息): no two of a kind side by side.
+第三回 opens on **泗水路** `gate-sishui` (守炉 `sishui`: 00-gate split after the road; the camp fire to feed, 舅舅 asleep by it
+to `keep` — a boar near him may turn for him and gnaw; then 沉鼎山's piece opens the rest). Bots (20 seeds; a first-timer
+looks every 1.6 s): 抬鹿下山 human 30/30 (★3 mostly), any card wins, none loses, ~88 s; 雪夜柴垛 first-timer 20/20, slow
+18/20, nothing done 4/20, ~93 s; 泗水路 first-timer 20/20, slow 19/20, nothing done 0/20, ~110 s. Reading: 第二回's
+6,080 between 算账 and 水桶 is now 3,385 · 2,695 (the plan's 大场面 镜光 would cut the second). Open for Hanli: 老周's stones
+and the lead cards' second lines are the game's, not the book's; 雪夜柴垛 is a touch harder than 泗水路 by stars.
+
 ## The throws — levels of 砸寨 (10-20)
 
 Hanli 10-20: 「射鹿可以用砸寨代替. 其他投掷类都用砸寨的不同关卡代替」. Every throw in the story is a level of 砸寨, the one throw

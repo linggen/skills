@@ -126,7 +126,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 46
+       "n": 47
       },
       {
        "kind": "read",
@@ -220,12 +220,31 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 50
+       "n": 53
       },
       {
        "kind": "read",
-       "chars": 1206,
-       "run": 1206,
+       "chars": 369,
+       "run": 369,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "deer-carry",
+       "scene": "00-tailu",
+       "title": {
+        "zh": "抬鹿下山 · 那副门板",
+        "en": "Carrying the stag down · The door"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 41
+      },
+      {
+       "kind": "read",
+       "chars": 861,
+       "run": 861,
        "over": false
       },
       {
@@ -243,8 +262,27 @@
       },
       {
        "kind": "read",
-       "chars": 6080,
-       "run": 6080,
+       "chars": 3385,
+       "run": 3385,
+       "over": true
+      },
+      {
+       "kind": "board",
+       "id": "halfyear-chaiduo",
+       "scene": "00-halfyear",
+       "title": {
+        "zh": "雪夜柴垛 · 冬月的夜",
+        "en": "The woodpile on a snowy night · Winter"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 48
+      },
+      {
+       "kind": "read",
+       "chars": 2695,
+       "run": 2695,
        "over": true
       },
       {
@@ -268,14 +306,14 @@
       }
      ],
      "counts": {
-      "board": 3,
+      "board": 5,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 6080,
+     "longest": 3385,
      "roaming": 0,
      "side": []
     },
@@ -303,7 +341,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 56
+       "n": 59
       },
       {
        "kind": "read",
@@ -327,7 +365,7 @@
       {
        "kind": "read",
        "chars": 637,
-       "run": 811,
+       "run": 808,
        "over": false
       }
      ],
@@ -352,8 +390,27 @@
      "items": [
       {
        "kind": "read",
-       "chars": 174,
-       "run": 811,
+       "chars": 171,
+       "run": 808,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "gate-sishui",
+       "scene": "00-gate",
+       "title": {
+        "zh": "泗水路 · 路上那一夜",
+        "en": "The road to the Si · A night on the way"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 49
+      },
+      {
+       "kind": "read",
+       "chars": 43,
+       "run": 43,
        "over": false
       },
       {
@@ -412,7 +469,7 @@
       }
      ],
      "counts": {
-      "board": 1,
+      "board": 2,
       "fight": 1,
       "riddle": 0,
       "seen": 0,
@@ -476,7 +533,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 47
+       "n": 50
       },
       {
        "kind": "read",
@@ -644,7 +701,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 51
+       "n": 54
       },
       {
        "kind": "read",
@@ -723,7 +780,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 52
+       "n": 55
       },
       {
        "kind": "read",
@@ -991,7 +1048,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 55
+       "n": 58
       },
       {
        "kind": "read",
@@ -1030,7 +1087,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 54
+       "n": 57
       },
       {
        "kind": "read",
@@ -1095,7 +1152,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 48
+       "n": 51
       },
       {
        "kind": "read",

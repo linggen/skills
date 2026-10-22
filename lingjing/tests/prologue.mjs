@@ -64,6 +64,10 @@ export const TO_HALL = [
   ['win', { id: 'deer-wind' }],
   ['task', { action: 'done', id: 'deer-wind' }],
   ['resolve', { exit: 'left' }],
+  // 抬鹿下山 (塔防 · 守墙关, the 卷一 plan 2026-10-21): the carry down the 溪 at dusk, 00-tailu
+  ['win', { id: 'deer-carry' }],
+  ['task', { action: 'done', id: 'deer-carry' }],
+  ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'visit' }],
   // 算账 (割绳子, back 2026-10-20): the venison onto 马三's steelyard
   ['win', { id: 'rent-scale' }],
@@ -71,7 +75,9 @@ export const TO_HALL = [
   ['resolve', { exit: 'dumb' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'bath' }],
-  // half a year, told whole (挑水上坡 cut 2026-10-20, the 调息 cut)
+  // half a year: 雪夜柴垛 (塔防 · 守炉, the 卷一 plan 2026-10-21) after the winter's practice, then 冬月廿二 and the mirror
+  ['win', { id: 'halfyear-chaiduo' }],
+  ['task', { action: 'done', id: 'halfyear-chaiduo' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'go' }],
   // 水桶落井 (气走经脉, the reading cap's third beat 2026-10-20): the breath sinks past the heart
@@ -79,6 +85,9 @@ export const TO_HALL = [
   ['task', { action: 'done', id: 'notice-shuitong' }],
   ['resolve', { exit: 'go' }],
   ...JIN_ONE,
+  // 泗水路 (塔防 · 守炉, the 卷一 plan 2026-10-21): the night camp on the road, the fire and 舅舅 kept
+  ['win', { id: 'gate-sishui' }],
+  ['task', { action: 'done', id: 'gate-sishui' }],
   ['resolve', { exit: 'steady' }],
   ['win', { id: 'gate-luoshu' }],
   ['task', { action: 'done', id: 'gate-luoshu' }],

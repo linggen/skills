@@ -106,6 +106,7 @@
    "00-yinyue",
    "00-cliff",
    "00-deer",
+   "00-tailu",
    "00-dusk",
    "00-rent",
    "00-xiuxian",
@@ -202,7 +203,17 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "deer-carry": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "rent-scale": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "halfyear-chaiduo": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -218,6 +229,11 @@
     "done_at": "2026-10-01T01:00:00.000Z"
    },
    "jin-qianmi": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "gate-sishui": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -818,6 +834,7 @@
    "00-yinyue",
    "00-cliff",
    "00-deer",
+   "00-tailu",
    "00-dusk",
    "00-rent",
    "00-xiuxian",

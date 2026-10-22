@@ -73,12 +73,27 @@ test('the cut is what the box plays: 00-gate opens on 第三回\'s words, the bo
   const gate = scenes.find((sc) => sc.id === '00-gate');
   assert.equal(item.beats.zh.length, gate.story.zh.split('\n\n').length);
   assert.equal(item.beats.zh.length, item.beats.en.length, 'the same boxes in both languages');
-  assert.equal(item.beats.zh[1].at, headOf(gate.story_full.zh.split('\n\n')[5], 'zh'), '沉鼎山\'s box opens the book at 沉鼎山');
+  assert.equal(item.beats.zh[0].at, headOf(gate.story_full.zh.split('\n\n')[0], 'zh'), 'the road\'s box opens the book at the road');
+  // The rest, after 泗水路 (split at the road 2026-10-22): its own cut, the book's paragraphs as anchors.
+  const rest = afterGate(s);
+  assert.ok(!('full' in rest) && !('marked' in rest));
+  assert.equal(rest.beats.zh.length, gate.story_after.zh.split('\n\n').length);
+  assert.equal(rest.beats.zh.length, rest.beats.en.length, 'the same boxes in both languages');
+  const shan = gate.story_after_full.zh.split('\n\n').findIndex((p) => p.startsWith('沉鼎山并不怎么高'));
+  assert.equal(rest.beats.zh[0].at, headOf(gate.story_after_full.zh.split('\n\n')[shan], 'zh'), '沉鼎山\'s box opens the book at 沉鼎山');
 });
+
+/** 00-gate's rest (`story_after`), told once 泗水路 is won — the box's item. */
+function afterGate(s) {
+  const owed = { ...s, told_scenes: [...(s.told_scenes ?? []), '00-gate'], tell_owed: ['after/00-gate'] };
+  const told = tellOf(content, owed).tell.filter((t) => t.id === '00-gate/after');
+  assert.equal(told.length, 1, 'the rest of 00-gate is owed and told');
+  return playOf(content, owed, told)[0];
+}
 
 test('读原著 opens the book at the box on show: its 回 and its paragraph', () => {
   const s = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-gate', place: 'shanmen' };
-  let r = withTold(null, playOf(content, s, tellOf(content, s).tell.filter((t) => t.id === '00-gate')), '00-gate');
+  let r = withTold(null, [afterGate(s)], '00-gate');
   r = advance(advance(r, 'zh'), 'zh');
   const place = bookPlace(r, 'zh');
   assert.equal(place.hui, 'h04');

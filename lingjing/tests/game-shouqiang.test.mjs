@@ -648,3 +648,45 @@ test('守白菜, gentle: any card the first-timer takes wins; the sensible hand 
   assert.ok(lazy.every((r) => !r.won), 'no card at all: the hens get the cabbage');
   assert.ok(human.every((r) => r.t >= 40 && r.t <= 70), `about a minute: ${human.map((r) => r.t)}`);
 });
+
+/* 抬鹿下山 (00-tailu, the 卷一 plan, 2026-10-22; Hanli 10-22: 「按你说的改一遍. 关键是能留住玩家」): the third 塔防 a player
+   meets, 第二回's. 00-deer's way on, split at 「那副门板，到底没有白扛，抬了一头鹿。」: 野猪 drawn by the blood down the two trails
+   either side of the 溪 (`paths`) at the 门板 with the stag on it; 小满 with 爷爷's bow, 老周 throwing stones beside him; 银月 has
+   fainted in his shirt, so every line is the level's own. */
+test('抬鹿下山: a story row of 00-tailu — 野猪 down the two trails at the 门板, the bow\'s three cards, no opening, no 结印', async () => {
+  const row = kit.levels.find((l) => l.id === 'tailu');
+  assert.equal(row.story, '00-tailu');
+  const { tideRows } = await import('../scripts/rules/shouchao.mjs');
+  assert.ok(!tideRows(kit).includes(row), '兽潮 skips a story row');
+  assert.deepEqual([...new Set(row.waves.flat().map(([b]) => b))], ['yezhu']);
+  assert.equal(row.paths.length, 2, 'two trails, either side of the stream');
+  assert.equal(opening(newGame(kit, row, { seed: 't' })), false, 'no opening pick');
+  assert.equal(row.jieyin, false, 'no 结印 before 入门');
+  const g = newGame(kit, row, { seed: 't' });
+  const xs = new Map();
+  for (let t = 0; t < 120 && g.phase !== 'won' && g.phase !== 'lost'; t += 0.1) {
+    step(g, 0.1);
+    if (g.phase === 'pick') pick(g, g.offer[0]);
+    for (const b of g.beasts) if (!xs.has(b.id)) xs.set(b.id, b.x);
+  }
+  assert.ok(xs.size >= 10, `beasts came: ${xs.size}`);
+  for (const [id, x] of xs) assert.ok(row.paths.some((p) => Math.abs(x - p) <= 26), `beast ${id} down a trail (x ${Math.round(x)})`);
+  for (const c of row.cards) assert.ok(c.name.zh.includes('爷爷的弓') && c.name.en && c.say.zh && c.say.en && c.icon);
+  const t = JSON.parse(readFileSync(at('worlds/jiuding/tasks/world.json'), 'utf8')).tasks.find((x) => x.id === 'deer-carry');
+  assert.deepEqual([t.game, t.deal.lv], ['shouqiang', 'tailu']);
+  const hall = reg.games.find((x) => x.id === 'shouqiang' && x.task === 'deer-carry');
+  assert.ok(hall && hall.scene === '00-tailu' && hall.group === 'h02' && hall.data.lv === 'tailu', 'the 游戏厅 row opens it by id');
+  assert.ok(row.lead.some((l) => l.big) && row.lead.every((l) => l.zh && l.en));
+  for (const k of ['won', 'lost', 'wallLeft', 'kills', 'focus']) assert.ok(row.words[k].zh && row.words[k].en, k);
+  assert.ok(row.teach.length && Object.keys(row.moments).every((m) => row.teach.includes(m)), 'every line the level\'s own: 银月 has fainted');
+});
+test('抬鹿下山, gentle (第二回): the first-timer\'s hand and any card win; taking none loses; a minute and a half', () => {
+  const row = kit.levels.find((l) => l.id === 'tailu');
+  const S30 = Array.from({ length: 30 }, (_, i) => `bc${i}`);
+  const go = (bot) => S30.map((seed) => sim(kit, row, BOTS[bot], { seed }));
+  const human = go('human'), random = go('random'), lazy = go('lazy');
+  assert.ok(human.every((r) => r.won) && human.filter((r) => r.stars === 3).length >= 24, `human ★ ${human.map((r) => r.stars).join('')}`);
+  assert.ok(random.every((r) => r.won), `any card wins: ★ ${random.map((r) => r.stars).join('')}`);
+  assert.ok(lazy.every((r) => !r.won), 'no card at all: the boars overturn the door');
+  assert.ok(human.every((r) => r.t >= 60 && r.t <= 120), `a minute and a half: ${human.map((r) => r.t)}`);
+});

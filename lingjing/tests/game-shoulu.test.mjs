@@ -484,7 +484,12 @@ test('each story level is a board its scene shows, its task names it, its 游戏
 
 test('a story level uses only beasts the book has met by its 回 (野猪 on 蒙山 from 古四; the 狰 is never fought, it is tamed)', () => {
   const pools = JSON.parse(readFileSync(new URL('worlds/jiuding/places/xu.json', ROOT), 'utf8')).pools ?? {};
-  const met = (beast, hui) => Object.values(pools).some((p) => (p.beasts ?? []).some((b) => b.creature === beast && b.from && HUI.indexOf(b.from) >= 0 && HUI.indexOf(b.from) <= HUI.indexOf(hui)));
+  // met: on the mountain by then (a pool's `from`), or the bestiary's own 回 (creatures.json `hui`: 野猪 is 第一回's,
+  // 爹's knee 「年轻时给野猪顶过一回」 — the plan's 抬鹿下山 · 雪夜柴垛 · 泗水路 field it in 古二 and 古三, 2026-10-22)
+  const creatures = JSON.parse(readFileSync(new URL('worlds/jiuding/creatures.json', ROOT), 'utf8')).creatures ?? [];
+  const before = (h, hui) => Boolean(h) && HUI.indexOf(h) >= 0 && HUI.indexOf(h) <= HUI.indexOf(hui);
+  const met = (beast, hui) => before(creatures.find((c) => c.id === beast)?.hui, hui)
+    || Object.values(pools).some((p) => (p.beasts ?? []).some((b) => b.creature === beast && before(b.from, hui)));
   for (const l of stories) {
     const hui = sceneOf(l.story).hui;
     for (const b of beastsOf(l)) assert.ok(BEASTS[b].shade || met(b, hui), `${l.id} (${hui}): ${b} is met on the mountain by then`);
@@ -630,4 +635,73 @@ test('守火, gentle: the human hand keeps the fire high; a first-timer who fetc
   assert.ok(rs.every((x) => x.time < 150), `about two minutes: ${rs.map((x) => x.time)}`);
   assert.equal(starsFor({ L: { fire: l.fire }, hp: l.fire.stars[0] }), 3);
   assert.ok(fetchStick);
+});
+
+/* 雪夜柴垛 (00-halfyear) and 泗水路 (00-gate), the 卷一 plan's 塔防 4 and 5 (2026-10-22; Hanli 10-22: 「按你说的改一遍. 关键是能留住
+   玩家」): 小满 alone with stones, no talismans, no 银月 (she sleeps in the 木牌). 雪夜柴垛: the 柴垛 is the 炉 (`furnaceArt`),
+   snow, night — he sees and throws less far, so the player points him. 泗水路: 守火's fire to feed, and 舅舅 asleep by it
+   (`keep`) — a boar passing near him may turn for him; his hp gone, the night is lost. Gentle: 第二回 and 第三回. */
+const story = (id) => stories.find((l) => l.id === id);
+const fiveLine = (rs) => `win ${rs.filter((x) => x.result === 'win').length}/${rs.length}, ★ ${rs.map((x) => x.stars).join('')}`;
+const FIRST = humanBot({ look: 1.6, fetchAt: 5, attack: 0.3 }), SLOW = humanBot({ look: 2.4, fetchAt: 4, attack: 0.25 });
+test('雪夜柴垛: 00-halfyear\'s — the 柴垛 the 炉, 野猪 in the snow, 小满 alone; every tap an order to him', () => {
+  const l = story('chaiduo');
+  assert.equal(l.story, '00-halfyear');
+  assert.deepEqual([l.towers, l.spots, l.fire], [[], [], undefined]);
+  assert.deepEqual(beastsOf(l), ['yezhu']);
+  assert.ok(l.snow && l.furnaceArt === 'chaiduo');
+  assert.equal(heroOf(l).who, 'xiaoman');
+  const g = newGame(l, { seed: 'c', headless: true });
+  assert.ok(['q', 'w', 'e', 'r'].every((k) => skillState(g, k).locked), 'no skill: 银月 sleeps in the 木牌');
+  assert.equal(g.hp, 10);
+  const b = spawnAt(g, 'yezhu', layLevel(l).road.len * 0.5);
+  assert.equal(pointer(g, noSel(), { x: b.x, y: b.y - 5, button: 0, touch: true }).did, 'attack', 'a tap on a boar: he throws at it, selected or not');
+});
+test('雪夜柴垛, gentle: a first-timer wins every night, a slow hand most; the keen one keeps every log; nothing done loses most', () => {
+  const l = story('chaiduo');
+  const go = (bot) => SEEDS20.map((seed) => sim(l, bot, { seed }));
+  const keen = go(humanBot({ look: 0.8, attack: 0.8, best: true }));
+  assert.ok(allWin(keen) && share(keen, (x) => x.stars === 3) >= 0.9, `keen: ${fiveLine(keen)}`);
+  assert.ok(allWin(go('human')), `human: ${fiveLine(go('human'))}`);
+  const first = go(FIRST), slow = go(SLOW), none = go('none');
+  assert.ok(allWin(first), `first-timer: ${fiveLine(first)}`);
+  assert.ok(share(slow, (x) => x.result === 'win') >= 0.8, `slow: ${fiveLine(slow)}`);
+  assert.ok(share(none, (x) => x.result === 'lose') >= 0.7, `nothing done: ${fiveLine(none)}`);
+  assert.ok(keen.every((x) => x.time < 150), `about a minute and a half: ${keen.map((x) => x.time)}`);
+});
+test('泗水路: 00-gate\'s — the road camp\'s fire to feed, 舅舅 asleep by it to keep; a boar that turns for him gnaws till it falls', () => {
+  const l = story('sishui');
+  assert.equal(l.story, '00-gate');
+  assert.deepEqual([l.towers, l.spots], [[], []]);
+  assert.deepEqual(beastsOf(l), ['yezhu']);
+  assert.equal(l.fire.fox, false, 'no fox by this fire: 银月 sleeps in the 木牌');
+  assert.ok(l.keep && l.keep.hp > 0 && l.keep.art);
+  const g = newGame(l, { seed: 'k', headless: true });
+  g.nextTimer = 1e9;
+  assert.equal(g.keep.hp, l.keep.hp);
+  const b = spawnAt(g, 'yezhu', 0);
+  b.x = g.keep.x + 40; b.y = g.keep.y; b.toKeep = true; b.hp = b.max = 1e6; // one that has turned off the road for him
+  assert.equal(pointer(g, noSel(), { x: b.x, y: b.y - 5, button: 0, touch: true }).did, 'attack', 'a tap on it: 小满 throws at it');
+  g.hero.dead = 1e9; g.hero.orders = [];
+  for (let i = 0; i < 60 * 6; i += 1) step(g, 1 / 60);
+  assert.ok(g.keep.hp < l.keep.hp, `bitten: ${g.keep.hp.toFixed(0)} / ${l.keep.hp}`);
+  const lone = newGame(l, { seed: 'k', headless: true });
+  lone.nextTimer = 1e9;
+  const c = spawnAt(lone, 'yezhu', 0);
+  c.x = lone.keep.x + 10; c.y = lone.keep.y; c.toKeep = true; c.hp = c.max = 1e6;
+  lone.hero.dead = 1e9; // nobody to drive it off
+  for (let i = 0; i < 60 * 200 && !lone.over; i += 1) { lone.hp = l.fire.max; step(lone, 1 / 60); } // the fire kept up
+  assert.deepEqual([lone.over, lone.lostBy], ['lose', 'keep'], '舅舅 gnawed down: the night is lost');
+});
+test('泗水路, gentle: harder than 守火 by the kept one, still won by a first-timer every night; nothing done loses', () => {
+  const l = story('sishui');
+  const go = (bot) => SEEDS20.map((seed) => sim(l, bot, { seed }));
+  const keen = go(humanBot({ look: 0.8, attack: 0.8, best: true })), human = go('human');
+  assert.ok(allWin(keen) && share(keen, (x) => x.stars === 3) >= 0.9, `keen: ${fiveLine(keen)}`);
+  assert.ok(allWin(human) && share(human, (x) => x.stars >= 2) >= 0.9, `human: ${fiveLine(human)}`);
+  const first = go(FIRST), slow = go(SLOW);
+  assert.ok(allWin(first), `first-timer: ${fiveLine(first)}`);
+  assert.ok(share(slow, (x) => x.result === 'win') >= 0.85, `slow: ${fiveLine(slow)}`);
+  assert.ok(allLose(go('none')), 'nothing done: the fire goes out');
+  assert.ok(keen.every((x) => x.time < 150), `about two minutes: ${keen.map((x) => x.time)}`);
 });

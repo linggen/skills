@@ -110,7 +110,7 @@ test('the dock is handed ids the 手势斗法 kit knows: every 守炉 move is a 
 test('every level ends on a 大妖 or an elite, and the dock opens for either; an elite is tougher, ringed, and aimed at first', async () => {
   const { ELITE } = await import('../scripts/games/shoulu/core.js');
   for (const l of levels) {
-    if (l.fire) continue; // 守火 (a `fire` level, 第一回): 小满 alone by a campfire, no dock, the fire's own stars
+    if (l.fire || l.hero?.who) continue; // 小满 alone before 入门 (守火 · 雪夜柴垛 · 泗水路): no 银月, no 大妖, the dock never on
     const last = l.waves.at(-1);
     assert.ok(last.some(([t, , , , o]) => BEASTS[t].boss || o?.elite), `${l.id}: its last wave`);
   }

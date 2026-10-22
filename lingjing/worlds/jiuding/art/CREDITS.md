@@ -299,6 +299,19 @@ keeps the kit's comic style; every seed looked at for fake writing; the sources 
 straw-yellow and painted her golden blonde; the book's 黄毛小辫 is 黄毛丫头, a poor kid's thin dull hair): now dull black
 hair in two thin small braids, as `people/ahe-girl`; idle seed 2, cast seed 1 of 1–4, every seed looked at.
 
+For 古二 and 古三's three 塔防 boards (2026-10-22, the 卷一 plan, doc/games-plan-juan1.md; Hanli 10-22: 「按你说的改一遍. 关键是能留住玩家」):
+抬鹿下山 (守墙关 `tailu`, 00-tailu) — `scripts/games/shouqiang/art/` `tailu-bg` (the 溪边 path at dusk, two tracks down),
+`tailu-wall` (the 门板 with the stag on it), `xiaoman-bow` · `xiaoman-bow-cast` (小满 from behind with 爷爷's bow),
+`laozhou-side` (老周, barefoot, throwing stones), `icon-gong-more` · `icon-gong-pierce` · `icon-gong-arc` (the bow's three
+cards); `arrow` and `stone` are 砸寨's own `proj-arrow` · `proj-stone`, turned, not painted. 雪夜柴垛 (守炉 `chaiduo`,
+00-halfyear) — `scripts/games/shoulu/art/` `ground-shiao-snow` (an edit pass from the 石坳 ground, snow) and `chaiduo` (the
+柴垛 with the 鸡窝 at its foot); 泗水路 (守炉 `sishui`, 00-gate) — `ground-shanlu-night` (an edit pass from the 山路 ground) and
+`jiujiu-sleep` (舅舅 asleep); the fire, the 枯枝 and 小满 are 守火's. The local FLUX.2 klein 4B (mflux),
+`tools/paint-gu23-td-flux.py`: edit passes from the kits' own art so the set keeps the comic style; the seeds kept are its
+`KEPT` (tailu-bg 3 · tailu-wall 1 · xiaoman-bow 2 · xiaoman-bow-cast 3 · laozhou-side 1 · ground-shiao-snow 2 ·
+ground-shanlu-night 2 · chaiduo 1 · jiujiu-sleep 1 · icons 1 · 2 · 1), every seed looked at for fake writing; the sources
+beside the kits' in `art/games/shouqiang/` and `art/games/shoulu/`. No outside source.
+
 For 第一回's 收租 塔防 (守山门 kit, sadoushou; 2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」) —
 `scripts/games/sadoushou/art/`: the 马家家丁 `jiading-walk-1` · `-walk-2` · `-hit`, 小宝's 跟班 `genban-walk-1` · `-walk-2` ·
 `-hit`, `maxiaobao-walk-1` (munching the 桂花糕, a wink) · `-roll` (the 糯米团子 ball) · `-hit`, `masan-walk-1` · `-slam` ·

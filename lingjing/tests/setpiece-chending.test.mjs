@@ -83,11 +83,13 @@ test('the scene marks the paragraph, zh and en, and every 景 mark names a piece
   const gate = scenes.find((sc) => sc.id === '00-gate');
   // 00-gate plays the game's cut (节本, jieben.mjs) with the book's passage beside it: the book's
   // paragraph is the piece's line, word for word; the box's is its cut, and both carry the mark.
+  // Since 泗水路 (2026-10-22) the passage is split after the road: 沉鼎山 is in the rest (`story_after`), after the board.
   for (const lang of ['zh', 'en']) {
-    const book = gate.story_full[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
+    assert.doesNotMatch(`${gate.story[lang]}${gate.story_full[lang]}`, /\{景=/, `${lang}: the road, before the board, marks nothing`);
+    const book = gate.story_after_full[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
     assert.equal(book.length, 1, `${lang}: one paragraph of the book's passage`);
     assert.equal(book[0].replace(PIECE, ''), BEATS[0].line[lang], `${lang}: the book's paragraph is the piece's line`);
-    const marked = gate.story[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
+    const marked = gate.story_after[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
     assert.equal(marked.length, 1, `${lang}: one paragraph`);
     assert.ok(checkJieben(marked[0], BEATS[0].line[lang], lang).ok, `${lang}: the box's paragraph is cut from the piece's line`);
     assert.ok(marked[0].startsWith(lang === 'zh' ? '沉鼎山并不怎么高，只是陡。' : "Sunken Cauldron Mountain wasn't very tall, only steep."), lang);
@@ -106,34 +108,39 @@ test('the scene marks the paragraph, zh and en, and every 景 mark names a piece
   }
 });
 
-test('the box never says the mark; the beat carries the piece, at its own paragraph, after the 回\'s turn', () => {
+test('the box never says the mark; the beat carries the piece, at its own paragraph, after the 回\'s turn and 泗水路', () => {
   for (const lang of ['zh', 'en']) {
     const s = atGate(lang);
     assert.equal(s.scene, '00-gate');
     const told = tellOf(content, s).tell;
     const tell = playOf(content, s, told);
     for (const t of told) assert.doesNotMatch(t.text, /\{景=|景=/, `${t.id}: the words only`);
-    assert.doesNotMatch(passageFor(content, s, scenes.find((sc) => sc.id === '00-gate').story), /\{景=/);
+    const gate = scenes.find((sc) => sc.id === '00-gate');
+    assert.doesNotMatch(passageFor(content, s, gate.story), /\{景=/);
     const at = tell.findIndex((t) => t.of === 'scene' && t.id === '00-gate');
     assert.ok(at > 0, 'the gate\'s passage, after what leads into it');
-    const before = tell[at - 1];
-    assert.equal(before.hui, 'j01', '今 · 一\'s last words first');
+    assert.equal(tell[at - 1].hui, 'j01', '今 · 一\'s last words first');
     assert.equal(tell[at].hui, 'h04', 'then 第三回\'s');
-    // Only that one beat of everything told carries a piece — and it is the paragraph.
-    const gate = scenes.find((sc) => sc.id === '00-gate'), paras = gate.story[lang].split(/\n\n+/);
+    assert.ok(tell.every((t) => t.beats[lang].every((b) => !b.piece)), 'the road, before 泗水路, carries no piece');
+    // 泗水路 won: the rest of the passage is told, and only that one beat of it carries the piece — the paragraph.
+    const won = task(win(tellOf(content, s).keep, content, ctx, { id: 'gate-sishui' }).state, content, ctx, { action: 'done', id: 'gate-sishui' }).state;
+    const rest = playOf(content, won, tellOf(content, won).tell);
+    const after = rest.findIndex((t) => t.of === 'after' && t.id === '00-gate/after');
+    assert.ok(after >= 0, 'the rest of 00-gate, after its board');
+    assert.equal(rest[after].hui, 'h04');
+    for (const t of rest) assert.doesNotMatch(t.text ?? '', /\{景=|景=/, `${t.id}: the words only`);
+    const paras = gate.story_after[lang].split(/\n\n+/);
     const k = paras.findIndex((p) => /\{景=/.test(p));
-    const pieces = tell.flatMap((t, i) => t.beats[lang].map((b, j) => [i, j, b])).filter(([, , b]) => b.piece);
-    assert.deepEqual(pieces.map(([i, j, b]) => [i, j, b.piece]), [[at, k, 'chending']], lang);
-    assert.ok(k > 0, 'a beat of the passage leads to it');
+    const pieces = rest.flatMap((t, i) => t.beats[lang].map((b, j) => [i, j, b])).filter(([, , b]) => b.piece);
+    assert.deepEqual(pieces.map(([i, j, b]) => [i, j, b.piece]), [[after, k, 'chending']], lang);
     assert.equal(pieces[0][2].text, paras[k].replace(PIECE, ''), 'the beat says the paragraph, the mark gone');
-    for (const t of tell) for (const b of t.beats[lang === 'zh' ? 'en' : 'zh']) if (t.id === '00-gate' && b.piece) assert.equal(b.piece, 'chending', 'the other language marks the same beat');
-    // Walking the box: the piece's beat is reached only past the turn and the five beats before it.
-    let r = withTold(emptyReading('j01-retest'), tell, s.scene);
+    for (const b of rest[after].beats[lang === 'zh' ? 'en' : 'zh']) if (b.piece) assert.equal(b.piece, 'chending', 'the other language marks the same beat');
+    // Walking the box: the piece's beat is reached once, at its paragraph.
+    let r = withTold(emptyReading('00-gate'), rest, won.scene);
     const seen = [];
-    for (let k = 0; k < 400 && !r.closed; k += 1) { const c = current(r, lang); seen.push([r.i, r.j, c.beat.piece ?? null]); r = advance(r, lang); }
+    for (let n = 0; n < 400 && !r.closed; n += 1) { const c = current(r, lang); seen.push([r.i, r.j, c.beat.piece ?? null]); r = advance(r, lang); }
     const first = seen.findIndex(([, , p]) => p);
-    assert.deepEqual(seen[first].slice(0, 2), [at, k]);
-    assert.ok(seen.slice(0, first).some(([i]) => i === at - 1), 'the 回 before it told first');
+    assert.deepEqual(seen[first].slice(0, 2), [after, k]);
     assert.equal(seen.filter(([, , p]) => p).length, 1, 'once');
   }
 });
