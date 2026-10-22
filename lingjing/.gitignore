@@ -12,3 +12,6 @@ tools/zhazhai/node_modules/
 # 守墙关 build deps (tools/shouqiang/package.json) — never committed
 tools/shouqiang/node_modules/
 tools/kailu/node_modules
+
+# the phone bundle's build dep (tools/phone/package.json) — never committed
+tools/phone/node_modules/

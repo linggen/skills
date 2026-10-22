@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "type": "module",
+  "_about": "The phone bundle (tools/phone-bundle.mjs): the rules engine and the world's content as ONE self-contained script for a JS engine with no Node (JavaScriptCore in the Flutter app). Dev build only: `npm ci`; node_modules is never committed.",
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}
