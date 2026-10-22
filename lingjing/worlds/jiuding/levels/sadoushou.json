@@ -1467,7 +1467,7 @@
    "story": "00-zaotai",
    "hui": "h01",
    "id": "zaotai",
-   "_about": "第一回's 收租 (2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的. 塔防好几种呢, 可以用没出现过的」 · 「可以马小宝, 马三两个boss从中路冲下来, 带一堆家丁等」; the cards Hanli's sketch 「左路是桂花糕+1, 右路是家里的碗 +10」): 小满 on the floor after the bowl breaks, a daydream — the 灶台 with the three bowls left is the wall (`pieces`: stars by the bowls kept, no par), his beans for an army, the 马家家丁 and 小宝's 跟班 in at the door and down the middle, then 马小宝 (a 糯米团子 roll) and 马三 (the 短棍 stamped) together, each with a crowd. The left lane feeds the squad (桂花糕 · 野菜粥 · 栗子, and 「戴九履一」 — 娘's 洛书 on nine chestnuts — lifts it a tier); the right hides the family bowl (+10 → +60) behind 沈家的门; two red cards, 租 and 父债子偿. A 桂花糕 taken while 马小宝 walks stops him to eat it. Gentle: 第一回. Imagination, not a win over the 马家 — the book says 「现在打不过」.",
+   "_about": "第一回's 收租 (2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的. 塔防好几种呢, 可以用没出现过的」 · 「可以马小宝, 马三两个boss从中路冲下来, 带一堆家丁等」; the cards Hanli's sketch 「左路是桂花糕+1, 右路是家里的碗 +10」): 小满 on the floor after the bowl breaks, a daydream — the 灶台 with the three bowls left is the wall (`pieces`: stars by the bowls kept, no par), his beans for an army, the 马家家丁 and 小宝's 跟班 in at the door and down the middle, then 马小宝 (a 糯米团子 roll) and 马三 (the 短棍 stamped) together, each with a crowd. The left lane feeds the squad (桂花糕 · 野菜粥 · 栗子, and 「戴九履一」 — 娘's 洛书 on nine chestnuts — lifts it a tier); the right hides the family bowl (+10 → +60) behind 沈家的门; two red cards, 租 and 父债子偿. A 桂花糕 taken while 马小宝 walks stops him to eat it. Gentle: 第一回. Imagination, not a win over the 马家 — the book says 「现在打不过」. Harder 10-22 (Hanli: 「难度可以稍微提高一点」): the 大妖 ×1.2 hp, the 家丁 and 跟班 ×1.15 — a first-timer wins ~31/40 (was 37).",
    "title": {
     "zh": "守灶台 · 三只碗",
     "en": "Guarding the stove · Three bowls"
@@ -1737,11 +1737,11 @@
      "beasts": [
       [
        "genban",
-       120
+       138
       ],
       [
        "jiading",
-       200
+       230
       ]
      ],
      "speed": 4
@@ -1751,11 +1751,11 @@
      "beasts": [
       [
        "genban",
-       160
+       184
       ],
       [
        "jiading",
-       340
+       391
       ]
      ],
      "speed": 4.5
@@ -1764,7 +1764,7 @@
    "boss": [
     {
      "beast": "maxiaobao",
-     "hp": 650,
+     "hp": 780,
      "speed": 3,
      "stand": 74,
      "half": 0.22,
@@ -1774,7 +1774,7 @@
       "beasts": [
        [
         "jiading",
-        160
+        184
        ]
       ],
       "speed": 4
@@ -1799,7 +1799,7 @@
     },
     {
      "beast": "masan",
-     "hp": 800,
+     "hp": 960,
      "speed": 2.6,
      "stand": 80,
      "half": 0.22,
@@ -1809,7 +1809,7 @@
       "beasts": [
        [
         "jiading",
-        180
+        207
        ]
       ],
       "speed": 4

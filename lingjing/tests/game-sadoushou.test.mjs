@@ -438,10 +438,10 @@ test('守灶台 is the game\'s first 结印 (Hanli 10-22: 「1-6 都是好主意
   assert.equal(g.events.find((e) => e.t === 'spell')?.on, 'boss');
 });
 
-test('守灶台 is gentle (第一回): a first-time human wins ≥ 34/40, stars spread; a sloppy one no more; never needs a cast; the lazy lose', () => {
+test('守灶台 is gentle but not free (第一回; Hanli 10-22: 「难度可以稍微提高一点」): a first-time human wins 28–35 of 40, stars spread; a sloppy one no more; never needs a cast; the lazy lose', () => {
   const human = seeds.map((s) => sim(kit, story, humanBot(s), { seed: s }));
   const w = human.filter((r) => r.won).length;
-  assert.ok(w >= 34, `a first-timer wins ${w}/40`);
+  assert.ok(w >= 28 && w <= 35, `a first-timer wins ${w}/40`);
   assert.ok(human.some((r) => r.won && r.stars < 3), 'stars spread');
   assert.ok(human.every((r) => r.casts === 0));
   const sloppy = seeds.map((s) => sim(kit, story, humanBot(s, SLOPPY), { seed: s })).filter((r) => r.won).length;
