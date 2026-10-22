@@ -919,8 +919,8 @@ seal's shape: jieyin.json `seals.jian`.
 
 Hanli 10-21: 「用yinyue的3D模型试一下. 另C的效果也给我看一下.」 游戏厅 only (`texie`, two tiles, group 主力, type 结印);
 not in the story — 10-14 「游戏里不需要3D模型」 stands; this is for his choice. 结印's field (守墙关's 山道, 小满 from
-behind, a boar with 3 hits). A hand seen → a comic panel slides in at the top right; a seal held 0.35 s (any of the
-device's seals, judge.js) or a push at the camera (zhidian/poke.js) → the panel's hand thrusts (speed lines) and a 火蛋
+behind, a boar with 8 hits). A hand seen → a comic panel slides in at the top right; a seal held 0.35 s (any of the
+device's seals, judge.js, but an open palm — 掌 is half of 推掌 — only shows the hands) or a push at the camera (zhidian/poke.js) → the panel's hand thrusts (speed lines) and a 火蛋
 flies from 小满; the panel fades 0.7 s after, or 0.9 s after the hands go (texie/panel.js; numbers levels/texie.json).
 
 - **水墨 (C)** — `&cutin=ink`: 小满 in side profile (one local-FLUX painting, an edit pass from 守墙关's 小满,
