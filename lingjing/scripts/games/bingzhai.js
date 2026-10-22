@@ -53,8 +53,11 @@ export function lineFor(deal, q, { n = 1, lang = 'zh' } = {}) {
   const held = n <= (Number(deal?.hold_lines) || 0);
   const notes = [n === 1 ? deal?.context : null, held ? deal?.hold : deal?.press].filter(Boolean);
   const note = notes.map((f) => (en ? `(${f.en ?? f.zh}) ` : `（${f.zh}）`)).join('');
-  return `${AT[en ? 'en' : 'zh']}${note}${q}`;
+  // The page's notes are hers, never the player's to read (found live 10-22: 「这一句你还不认」 stood on his bubble in the chat):
+  // a line that carries one goes as a hidden turn (the chat panel drops a `[HIDDEN]` row); the board shows his words.
+  return `${note ? HIDDEN : ''}${AT[en ? 'en' : 'zh']}${note}${q}`;
 }
+const HIDDEN = '[HIDDEN] ';
 
 /* The 游戏厅's 试玩 stands the board with no deal (its row carries none): the story task's own, fetched once. */
 const WORLD = new URL('../../worlds/jiuding/', import.meta.url);

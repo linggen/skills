@@ -75,12 +75,13 @@ test('讨饼债: the deal — her facts in brackets on the first line only, he i
   assert.match(d.context.en, /Shen Xiaoman/);
   // Found live 10-22: one dare on the first line and she owned it — the first `hold_lines` lines carry the page's 「not yet」.
   assert.equal(d.hold_lines, 2);
-  assert.match(bingzhai.lineFor(d, '你欠我一张饼。', { n: 1 }), /^@银月 （天亮[\s\S]*）（这一句你还不认，躲开它。）你欠我一张饼。$/);
-  assert.equal(bingzhai.lineFor(d, '你嘴边有饼渣。', { n: 2 }), '@银月 （这一句你还不认，躲开它。）你嘴边有饼渣。');
+  assert.match(bingzhai.lineFor(d, '你欠我一张饼。', { n: 1 }), /^\[HIDDEN\] @银月 （天亮[\s\S]*）（这一句你还不认，躲开它。）你欠我一张饼。$/);
+  assert.equal(bingzhai.lineFor(d, '你嘴边有饼渣。', { n: 2 }), '[HIDDEN] @银月 （这一句你还不认，躲开它。）你嘴边有饼渣。');
   // …and after them, a nag is no case (found live: four bare 「认不认？」 and she owned it): `press` on every line.
-  assert.equal(bingzhai.lineFor(d, '认不认？', { n: 3 }), `@银月 （${d.press.zh}）认不认？`);
+  assert.equal(bingzhai.lineFor(d, '认不认？', { n: 3 }), `[HIDDEN] @银月 （${d.press.zh}）认不认？`);
   assert.equal(bingzhai.admits(d.press.zh), false);
-  assert.match(bingzhai.lineFor(d, 'You owe me.', { n: 1, lang: 'en' }), /^@Yinyue \(Daybreak[\s\S]*\) \(Don't own it on this line — slip it\.\) You owe me\.$/);
+  assert.equal(bingzhai.lineFor({}, '你好'), '@银月 你好', 'no note, nothing hidden');
+  assert.match(bingzhai.lineFor(d, 'You owe me.', { n: 1, lang: 'en' }), /^\[HIDDEN\] @Yinyue \(Daybreak[\s\S]*\) \(Don't own it on this line — slip it\.\) You owe me\.$/);
   assert.equal(bingzhai.admits(d.hold.zh), false, 'the hold itself never reads as owning it');
   assert.deepEqual(task.marks, { admitted: 'bing-debt', dodged: null });
   assert.equal(bingzhai.meta.id, 'bingzhai');
