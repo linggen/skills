@@ -8,7 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, humanBot, waveLeft, waveCount, newGame, aim, step, sim, stars, beltOf, dpsOf, rateOf, colOf, colMid, castJieyin, jieyinState, beastFor, bossesUp, charging, COLS, TOP } from '../scripts/games/sadoushou/core.js';
+import { BOTS, humanBot, waveLeft, waveCount, newGame, aim, step, sim, stars, beltOf, dpsOf, rateOf, colOf, colMid, castJieyin, jieyinState, beastFor, bossesUp, charging, movesOf, jieyinOf, COLS, TOP } from '../scripts/games/sadoushou/core.js';
 import { levelAsked, ladderOf, nextOf, meta, offerJieyin } from '../scripts/games/sadoushou.js';
 import { sourceHash } from '../tools/sadoushou/hash.mjs';
 
@@ -17,6 +17,7 @@ const kit = JSON.parse(readFileSync(at('worlds/jiuding/levels/sadoushou.json'), 
 const ladder = ladderOf(kit);            // the 游戏厅's four; the story's own level (守灶台, 2026-10-22) apart
 const level = ladder[0];
 const story = kit.levels.find((l) => l.id === 'zaotai');
+const withMoves = (l) => ({ ...l, jieyin: jieyinOf(kit, l) }); // as the page mounts it (sadoushou.js)
 const reg = JSON.parse(readFileSync(at('worlds/jiuding/games.json'), 'utf8'));
 const creatures = JSON.parse(readFileSync(at('worlds/jiuding/creatures.json'), 'utf8')).creatures;
 const both = (o) => Boolean(o?.zh && o?.en);
@@ -314,7 +315,7 @@ test('结印\'s dock is offered only where it can be: no move → null; else the
   const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: (id, lane) => { calls.push([id, lane]); return true; }, fizzle: () => calls.push('fizzle'), paused: () => false, picking: () => false, say: () => {} };
   const box = { ownerDocument: { defaultView: {} } };
   const ids = (list) => list.map((m) => m?.id ?? m); // rows or ids: the dock reads either (helper.js duelId)
-  const h = await offerJieyin(level, box, { lang: 'zh', game, marks: [], load: async () => ({ offerSeals: async (o) => { got = o; return { close() {} }; } }) });
+  const h = await offerJieyin(withMoves(level), box, { lang: 'zh', game, marks: [], load: async () => ({ offerSeals: async (o) => { got = o; return { close() {} }; } }) });
   assert.ok(h && got);
   assert.deepEqual(ids(got.moves), ['feijian', 'dianxue', 'zhangfeng', 'quanjin'], 'before 古六\'s lesson only the 小招 (the save\'s marks gate the rest)');
   assert.equal(got.fastFps, level.jieyin.armedFps, 'the eye\'s armed rate from data');
@@ -322,12 +323,12 @@ test('结印\'s dock is offered only where it can be: no move → null; else the
   got.fizzle();
   assert.deepEqual(calls, [['feijian', 'right'], 'fizzle']);
   assert.equal(got.state().ready, true);
-  await offerJieyin(level, box, { lang: 'zh', game, load: async () => ({ offerSeals: async (o) => { got = o; return null; } }) });
+  await offerJieyin(withMoves(level), box, { lang: 'zh', game, load: async () => ({ offerSeals: async (o) => { got = o; return null; } }) });
   assert.ok(ids(got.moves).includes('huodan') && ids(got.moves).includes('huodan4'), 'the 游戏厅 (no marks): every move');
   const tiers = { xiao: ['feijian', 'dianxue', 'zhangfeng', 'quanjin'], fa: ['huodan', 'bingzhui', 'jinren', 'muteng', 'tuqiang'], da: ['huodan4'] };
   const doufa = JSON.parse(readFileSync(at('worlds/jiuding/levels/jieyin.json'), 'utf8')).doufa;
   const has = (tier, id) => (Array.isArray(doufa[tier]) ? doufa[tier].includes(id) : Boolean(doufa[tier]?.[id]));
-  for (const [tier, list] of Object.entries(tiers)) for (const id of list) assert.ok(has(tier, id) && level.jieyin.moves.some((m) => m.id === id), `${tier} ${id}: 手势斗法's, and offered here`);
+  for (const [tier, list] of Object.entries(tiers)) for (const id of list) assert.ok(has(tier, id) && movesOf(kit, level).some((m) => m.id === id), `${tier} ${id}: 手势斗法's, and offered here`);
 });
 
 /* ── 守灶台 (2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」 · 「可以马小宝, 马三两个boss从中路冲下来,
@@ -403,21 +404,32 @@ test('守灶台: a 桂花糕 taken while 马小宝 walks stops him to eat it; �
   assert.equal(beastFor(g, 'L'), near, '结印: the nearer of the two');
 });
 
+test('结印\'s move sets are data (Hanli 10-22, 「可以」): the ladder the full ten, a story level the simple set (飞剑 4 s · 火弹 7 s), 守灶台 only 飞剑', () => {
+  assert.deepEqual(kit.jieyinSets.simple.map((m) => [m.id, m.secs, Boolean(m.from)]), [['feijian', 4, false], ['huodan', 7, true]]);
+  assert.equal(kit.jieyinSets.full.length, 10);
+  for (const l of ladder) assert.deepEqual(movesOf(kit, l).map((m) => m.id), kit.jieyinSets.full.map((m) => m.id), l.id);
+  for (const l of kit.levels.filter((x) => x.story)) assert.ok(movesOf(kit, l).every((m) => kit.jieyinSets.simple.includes(m)), `${l.id}: the simple set`);
+  assert.deepEqual(movesOf(kit, { story: 'x', jieyin: {} }).map((m) => m.id), ['feijian', 'huodan'], 'a story level unnamed: simple');
+  assert.deepEqual(movesOf(kit, { jieyin: {} }).length, 10, 'a ladder level unnamed: full');
+  assert.deepEqual(movesOf(kit, story).map((m) => m.id), ['feijian']);
+  for (const l of kit.levels) assert.equal(l.jieyin.moves, undefined, `${l.id}: no inline moves — the set names them`);
+});
+
 test('守灶台 is the game\'s first 结印 (Hanli 10-22: 「1-6 都是好主意…关键是能留住玩家」): one simple seal, 剑诀 → 飞剑, open before 古六; its first cast played big', async () => {
   const c = story.jieyin;
-  assert.deepEqual(c.moves.map((m) => [m.id, m.from]), [['feijian', null]], 'only the one-seal move');
+  assert.deepEqual(movesOf(kit, story).map((m) => [m.id, m.from, m.secs]), [['feijian', null, 4]], 'only the one-seal move, the simple set\'s 飞剑');
   assert.ok(both(c.first) && both(c.firstCast) && both(c.say));
   assert.equal(c.when, 'boss', 'offered when 马小宝 and 马三 are out');
   const box = { ownerDocument: { defaultView: {} } };
   const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: () => true, fizzle() {}, paused: () => false, picking: () => false, say() {} };
   for (const marks of [[], ['qiajue-tight']]) {
     let got = null;
-    await offerJieyin(story, box, { lang: 'zh', game, marks, load: async () => ({ offerSeals: async (o) => { got = o; return { close() {} }; } }) });
+    await offerJieyin(withMoves(story), box, { lang: 'zh', game, marks, load: async () => ({ offerSeals: async (o) => { got = o; return { close() {} }; } }) });
     assert.deepEqual(got.moves.map((m) => m.id), ['feijian'], `marks ${marks}: 剑诀's 飞剑 alone`);
     assert.equal(got.first, c.first, 'the first-time bubble: 比个剑诀');
   }
   // the ladder keeps its own: four 小招 open, the 法术 after 古六
-  assert.ok(ladder.every((l) => l.jieyin.moves.length > 1));
+  assert.ok(ladder.every((l) => movesOf(kit, l).length === 10), 'the ladder: the ten 手势斗法 moves');
   // a cast strikes a 大妖 on the road
   const g = newGame(kit, { ...story, waves: [], belt: { ...story.belt, lines: [] } }, { seed: 'zt-cast' });
   for (let i = 0; i < 150; i += 1) { aim(g, colMid('L')); step(g, 1 / 30); }

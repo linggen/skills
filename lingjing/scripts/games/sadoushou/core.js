@@ -103,7 +103,7 @@ export function newGame(kit, level, { seed = 'sadoushou' } = {}) {
     waves: level.waves.map((w, i) => ({ ...w, i, on: false, done: false })),
     live: [],
     wall: { hp: level.wall, max: level.wall },
-    boss: null, bosses: [], low: false, events: [], k,
+    boss: null, bosses: [], low: false, events: [], k, jieyin: jieyinOf(kit, level),
     stats: { thrown: 0, cards: 0, gained: 0, blocks: 0, killed: 0, struck: 0, knocked: 0, breach: 0, bossDmg: 0, onSides: 0, onMiddle: 0 },
   };
   return g;
@@ -377,7 +377,18 @@ const bossesDone = (g) => g.bosses.every((b) => b.hp <= 0) && !g.live.length;
 
 /* ── 结印 ── */
 
-const spellKit = (g) => g.level.jieyin ?? null;
+/** A level's 结印 moves, from the kit's named sets (`jieyinSets`): its `jieyin.set` (a story level `simple`, else `full`),
+    kept to its `only` ids where it names some. Data says it; no level is named here. */
+export function movesOf(kit, level) {
+  const c = level.jieyin;
+  if (!c) return [];
+  const set = c.moves ?? kit.jieyinSets?.[c.set ?? (level.story ? 'simple' : 'full')] ?? [];
+  return c.only ? set.filter((m) => c.only.includes(m.id)) : set;
+}
+/** A level's 结印 with its moves laid in (what the dock and the engine read). */
+export const jieyinOf = (kit, level) => (level.jieyin ? { ...level.jieyin, moves: movesOf(kit, level) } : null);
+
+const spellKit = (g) => g.jieyin;
 const spellOn = (g, c = spellKit(g)) => Boolean(c) && (g.phase === 'waves' || g.phase === 'boss')
   && (c.when === 'always' || (c.when === 'waves' ? g.live.length > 0 || bossesUp(g).length > 0 : bossesUp(g).length > 0));
 

@@ -128,6 +128,161 @@
    }
   }
  },
+ "jieyinSets": {
+  "_about": "结印's move sets (Hanli 10-22, 「可以」): a level's `jieyin.set` names one — the STORY levels play `simple` (飞剑 4 s · 火弹 7 s after 古六's lesson, as he played and accepted 10-22), the 游戏厅's ladder `full` (the ten 手势斗法 moves: four 小招 from the start, five 法术 and the 大招 after 古六). Unnamed: a story level `simple`, else `full`. `only` keeps just those ids of the set (守灶台, the game's first 结印: 飞剑 alone). `from`: the save's marks first; `secs`: what it does here.",
+  "simple": [
+   {
+    "id": "feijian",
+    "name": {
+     "zh": "飞剑",
+     "en": "Flying sword"
+    },
+    "seals": [
+     "jian"
+    ],
+    "motion": "jab",
+    "from": null,
+    "secs": 4
+   },
+   {
+    "id": "huodan",
+    "name": {
+     "zh": "火弹",
+     "en": "Fire shot"
+    },
+    "jieyin": "huodan",
+    "from": {
+     "marks": [
+      "qiajue-tight",
+      "qiajue-loose"
+     ]
+    },
+    "secs": 7
+   }
+  ],
+  "full": [
+   {
+    "id": "feijian",
+    "name": {
+     "zh": "飞剑",
+     "en": "Flying sword"
+    },
+    "from": null,
+    "secs": 3
+   },
+   {
+    "id": "dianxue",
+    "name": {
+     "zh": "点穴",
+     "en": "Pressure point"
+    },
+    "from": null,
+    "secs": 3
+   },
+   {
+    "id": "zhangfeng",
+    "name": {
+     "zh": "掌风",
+     "en": "Palm wind"
+    },
+    "from": null,
+    "secs": 3
+   },
+   {
+    "id": "quanjin",
+    "name": {
+     "zh": "拳劲",
+     "en": "Fist force"
+    },
+    "from": null,
+    "secs": 3
+   },
+   {
+    "id": "huodan",
+    "name": {
+     "zh": "火弹",
+     "en": "Fire shot"
+    },
+    "from": {
+     "marks": [
+      "qiajue-tight",
+      "qiajue-loose"
+     ]
+    },
+    "secs": 5
+   },
+   {
+    "id": "bingzhui",
+    "name": {
+     "zh": "冰锥",
+     "en": "Ice needle"
+    },
+    "from": {
+     "marks": [
+      "qiajue-tight",
+      "qiajue-loose"
+     ]
+    },
+    "secs": 5
+   },
+   {
+    "id": "jinren",
+    "name": {
+     "zh": "金刃",
+     "en": "Metal blade"
+    },
+    "from": {
+     "marks": [
+      "qiajue-tight",
+      "qiajue-loose"
+     ]
+    },
+    "secs": 5
+   },
+   {
+    "id": "muteng",
+    "name": {
+     "zh": "木藤",
+     "en": "Wood vine"
+    },
+    "from": {
+     "marks": [
+      "qiajue-tight",
+      "qiajue-loose"
+     ]
+    },
+    "secs": 5
+   },
+   {
+    "id": "tuqiang",
+    "name": {
+     "zh": "土墙",
+     "en": "Earth wall"
+    },
+    "from": {
+     "marks": [
+      "qiajue-tight",
+      "qiajue-loose"
+     ]
+    },
+    "secs": 5
+   },
+   {
+    "id": "huodan4",
+    "name": {
+     "zh": "四印火蛋",
+     "en": "Four-seal fire egg"
+    },
+    "from": {
+     "marks": [
+      "qiajue-tight",
+      "qiajue-loose"
+     ]
+    },
+    "secs": 9
+   }
+  ]
+ },
  "levels": [
   {
    "kit": "sadoushou",
@@ -188,128 +343,7 @@
      "en": "Make the sword seal and the flying sword goes"
     },
     "armedFps": 30,
-    "moves": [
-     {
-      "id": "feijian",
-      "name": {
-       "zh": "飞剑",
-       "en": "Flying sword"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "dianxue",
-      "name": {
-       "zh": "点穴",
-       "en": "Pressure point"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "zhangfeng",
-      "name": {
-       "zh": "掌风",
-       "en": "Palm wind"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "quanjin",
-      "name": {
-       "zh": "拳劲",
-       "en": "Fist force"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "huodan",
-      "name": {
-       "zh": "火弹",
-       "en": "Fire shot"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "bingzhui",
-      "name": {
-       "zh": "冰锥",
-       "en": "Ice needle"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "jinren",
-      "name": {
-       "zh": "金刃",
-       "en": "Metal blade"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "muteng",
-      "name": {
-       "zh": "木藤",
-       "en": "Wood vine"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "tuqiang",
-      "name": {
-       "zh": "土墙",
-       "en": "Earth wall"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "huodan4",
-      "name": {
-       "zh": "四印火蛋",
-       "en": "Four-seal fire egg"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 9
-     }
-    ]
+    "set": "full"
    },
    "breach": 8,
    "rank": 1.5,
@@ -579,128 +613,7 @@
      "en": "Make the sword seal and the flying sword goes"
     },
     "armedFps": 30,
-    "moves": [
-     {
-      "id": "feijian",
-      "name": {
-       "zh": "飞剑",
-       "en": "Flying sword"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "dianxue",
-      "name": {
-       "zh": "点穴",
-       "en": "Pressure point"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "zhangfeng",
-      "name": {
-       "zh": "掌风",
-       "en": "Palm wind"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "quanjin",
-      "name": {
-       "zh": "拳劲",
-       "en": "Fist force"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "huodan",
-      "name": {
-       "zh": "火弹",
-       "en": "Fire shot"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "bingzhui",
-      "name": {
-       "zh": "冰锥",
-       "en": "Ice needle"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "jinren",
-      "name": {
-       "zh": "金刃",
-       "en": "Metal blade"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "muteng",
-      "name": {
-       "zh": "木藤",
-       "en": "Wood vine"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "tuqiang",
-      "name": {
-       "zh": "土墙",
-       "en": "Earth wall"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "huodan4",
-      "name": {
-       "zh": "四印火蛋",
-       "en": "Four-seal fire egg"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 9
-     }
-    ]
+    "set": "full"
    },
    "breach": 8,
    "rank": 1.5,
@@ -986,128 +899,7 @@
      "en": "Make the sword seal and the flying sword goes"
     },
     "armedFps": 30,
-    "moves": [
-     {
-      "id": "feijian",
-      "name": {
-       "zh": "飞剑",
-       "en": "Flying sword"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "dianxue",
-      "name": {
-       "zh": "点穴",
-       "en": "Pressure point"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "zhangfeng",
-      "name": {
-       "zh": "掌风",
-       "en": "Palm wind"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "quanjin",
-      "name": {
-       "zh": "拳劲",
-       "en": "Fist force"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "huodan",
-      "name": {
-       "zh": "火弹",
-       "en": "Fire shot"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "bingzhui",
-      "name": {
-       "zh": "冰锥",
-       "en": "Ice needle"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "jinren",
-      "name": {
-       "zh": "金刃",
-       "en": "Metal blade"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "muteng",
-      "name": {
-       "zh": "木藤",
-       "en": "Wood vine"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "tuqiang",
-      "name": {
-       "zh": "土墙",
-       "en": "Earth wall"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "huodan4",
-      "name": {
-       "zh": "四印火蛋",
-       "en": "Four-seal fire egg"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 9
-     }
-    ]
+    "set": "full"
    },
    "breach": 8,
    "rank": 1.5,
@@ -1416,128 +1208,7 @@
      "en": "Make the sword seal and the flying sword goes"
     },
     "armedFps": 30,
-    "moves": [
-     {
-      "id": "feijian",
-      "name": {
-       "zh": "飞剑",
-       "en": "Flying sword"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "dianxue",
-      "name": {
-       "zh": "点穴",
-       "en": "Pressure point"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "zhangfeng",
-      "name": {
-       "zh": "掌风",
-       "en": "Palm wind"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "quanjin",
-      "name": {
-       "zh": "拳劲",
-       "en": "Fist force"
-      },
-      "from": null,
-      "secs": 3
-     },
-     {
-      "id": "huodan",
-      "name": {
-       "zh": "火弹",
-       "en": "Fire shot"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "bingzhui",
-      "name": {
-       "zh": "冰锥",
-       "en": "Ice needle"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "jinren",
-      "name": {
-       "zh": "金刃",
-       "en": "Metal blade"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "muteng",
-      "name": {
-       "zh": "木藤",
-       "en": "Wood vine"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "tuqiang",
-      "name": {
-       "zh": "土墙",
-       "en": "Earth wall"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 5
-     },
-     {
-      "id": "huodan4",
-      "name": {
-       "zh": "四印火蛋",
-       "en": "Four-seal fire egg"
-      },
-      "from": {
-       "marks": [
-        "qiajue-tight",
-        "qiajue-loose"
-       ]
-      },
-      "secs": 9
-     }
-    ]
+    "set": "full"
    },
    "breach": 8,
    "rank": 1.5,
@@ -1902,22 +1573,15 @@
      "en": "Make the sword seal at the camera — and the flying sword goes!"
     },
     "armedFps": 30,
-    "moves": [
-     {
-      "id": "feijian",
-      "name": {
-       "zh": "飞剑",
-       "en": "Flying sword"
-      },
-      "from": null,
-      "secs": 4
-     }
-    ],
     "firstCast": {
      "zh": "飞剑！",
      "en": "Flying sword!"
     },
-    "_first": "第一回's daydream is the game's FIRST 结印 (Hanli 10-22: 「1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): one simple seal, 剑诀 → 飞剑 (open from the start, `from: null` — before 古六 only the one-seal move, learned from the hint alone), offered when the two 大妖 are out; its first cast in a run is played big (`firstCast`: a slow beat, a banner, a bigger burst). No camera, or declined: the level plays and wins the same."
+    "_first": "第一回's daydream is the game's FIRST 结印 (Hanli 10-22: 「1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): one simple seal, 剑诀 → 飞剑 (open from the start, `from: null` — before 古六 only the one-seal move, learned from the hint alone), offered when the two 大妖 are out; its first cast in a run is played big (`firstCast`: a slow beat, a banner, a bigger burst). No camera, or declined: the level plays and wins the same.",
+    "set": "simple",
+    "only": [
+     "feijian"
+    ]
    },
    "belt": {
     "speed": 7,

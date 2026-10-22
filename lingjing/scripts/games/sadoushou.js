@@ -32,6 +32,7 @@ const LEVELS = new URL('../../worlds/jiuding/levels/sadoushou.json', import.meta
 const FONT = new URL('./sadoushou/font/zcool-kuaile.woff2', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
 import { leadWith } from './jieyin/lead.js';
+import { jieyinOf } from './sadoushou/core.js';
 
 /** A move's `from` gate: open from the start, or once the save holds any of its marks; no marks given (the 游戏厅) → open. */
 export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
@@ -104,7 +105,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     Promise.all([fetch(LEVELS).then((r) => r.json()), import('./sadoushou/sadoushou.min.mjs'), loadFont(doc)]).then(([kit, { start }]) => {
       if (done) return;
       const asked = levelAsked(kit, data, search);
-      let level = asked;
+      let level = { ...asked, jieyin: jieyinOf(kit, asked) }; // its moves from the kit's named set (story: simple; ladder: full)
       if (dev && /(?:^|[?&])jy=(always|waves|boss)/.test(search)) level = { ...level, jieyin: level.jieyin && { ...level.jieyin, when: search.match(/jy=(\w+)/)[1] } }; // the 游戏厅's dev
       // In the shell: the story lines read on its lead card, over the road standing still; the canvas keeps the big line and its 3-2-1.
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join(lang === 'en' ? ' ' : '') : '';
