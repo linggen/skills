@@ -286,6 +286,7 @@ body.fighting .sight { display: none; }
 /* 景 at its beat (beatPiece): the piece's painting is the stage, its words come up over it. */
 .view .spback { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: var(--ink-night); }
 .view .spback .sphost, .view .spback .sphost.fit { width: 100%; height: 100%; border-radius: 0; background: none; }
+.view .spback:has(.sphost.ongl) { background: none; } /* a Phaser piece draws on the stage's canvas just under this box (kit/stage.js LAYERS.piece) */
 .view .spback canvas { width: 100% !important; height: 100% !important; object-fit: cover; }
 .view .spback .spstill { width: 100%; height: 100%; object-fit: cover; }
 .view .sptitle { position: absolute; top: 34px; left: 40px; z-index: 2; display: flex; gap: 10px; align-items: flex-start; color: #2a241b; pointer-events: none; animation: spTitle 2.4s ease-out 1.6s both; }

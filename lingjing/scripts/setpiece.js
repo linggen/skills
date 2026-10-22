@@ -10,7 +10,12 @@
 // are never painted: `onBeat(i, beat)` names the beat and the book line it
 // goes with, and the caller says it. Pixi and GSAP come from fx.js's loaders
 // (vendored, loaded only now); one Application per piece, destroyed after.
+// A piece ported to Phaser (`ENGINE = 'phaser'`, doc/game-kit.md § One engine — 腾云 first, 10-22) is a
+// scene on the stage's one game instead (kit/stage.js, layer `piece`): under a beat's words (`.spback`
+// in the stage) it rides the stage's own game, so it makes no context of its own; anywhere else (the
+// preview page, a box of its own) the box gets a stage game of its own, gone with the box.
 import { glOK, loadGsap, loadPixi } from './fx.js';
+import { stageOf } from './kit/stage.js';
 
 const ART_BASE = new URL('../worlds/jiuding/', import.meta.url).href;
 
@@ -102,9 +107,20 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
   const arts = Object.fromEntries(Object.entries(art).filter(([, v]) => v).map(([k, v]) => [k, v.src]));
   const still_ = (id) => def.stillSvg(id, { W, H, art: art.bingyi?.src, arts });
 
-  let app = null, scene = null, tl = null, timer = null, gone = false;
+  let app = null, scene = null, tl = null, timer = null, gone = false, stage = null, layer = null;
   const gl = glOK();
-  if (gl) {
+  if (gl && def.ENGINE === 'phaser') {
+    const view = host.closest?.('.spback') ? host.closest('.view') : null;
+    stage = await stageOf(view ?? box);
+    if (stage && !gone) {
+      box.classList.add('ongl');
+      let drawn = null;
+      layer = await stage.run('piece', { update(t, ms) { drawn?.step(ms); } });
+      scene = def.build({ Phaser: stage.Phaser, host: stage, scene: layer, W, H, art, lang });
+      drawn = scene;
+      for (const b of before) scene.beat(b.id).progress(1);
+    }
+  } else if (gl) {
     const [PIXI, gsap] = await Promise.all([loadPixi(), loadGsap()]);
     app = new PIXI.Application();
     await app.init({ width: Wpx, height: Math.round(Wpx * H / W), backgroundAlpha: 0, antialias: true, resolution: Math.min(globalThis.devicePixelRatio || 1, 2), autoDensity: true, preference: 'webgl' });
@@ -174,7 +190,7 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
       tl = scene.beat(def.BEATS[k].id);
       tl.progress(p);
       for (let f = 0; f < 90; f += 1) scene.step(16);
-      app.renderer.render(app.stage);
+      app?.renderer.render(app.stage);
     },
     skip: () => react(steps.skip()),
     destroy() {
@@ -184,6 +200,9 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
       tl?.kill();
       scene?.destroy();
       app?.destroy(true, { children: true });
+      // The stage's layer ends (its textures freed), never the game — unless the game was the box's own.
+      if (stage?.owns('piece', layer)) stage.stop('piece');
+      if (stage && box.contains(stage.el)) stage.destroy();
       box.remove();
     },
   };

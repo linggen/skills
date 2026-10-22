@@ -15,8 +15,12 @@
 import { fxTimes, glOK, loadPhaser } from '../fx.js';
 
 /// Each layer's place on the stage: its z among the page's own (story.css: .appear/.spstage 30,
-/// the 「新的一回」 seal 32) and the frame rate it wants.
-export const LAYERS = { moment: { z: 31, fps: 60 } };
+/// the 「新的一回」 seal 32) and the frame rate it wants. `under`: the canvas stands just before that
+/// box of the stage (same z, so under it) — a set piece under its beat's words (`piece`, 10-22): the
+/// picture where the piece's own box `.spback` stands (z 0), its painted name (`.sptitle`) over the
+/// picture, the shade (z 1) and the words (z 4) over both. The box goes see-through while it does
+/// (story.css `.spback:has(.ongl)`). The fall in 腾云 is a quick move: 60 fps.
+export const LAYERS = { moment: { z: 31, fps: 60 }, piece: { z: 0, fps: 60, under: '.spback' } };
 /// The device pixels drawn per CSS pixel, at most (Phaser has no autoDensity: the canvas is drawn
 /// at w·dpr and shown at 1/dpr).
 export const DPR_CAP = 2;
@@ -27,7 +31,8 @@ export const dprOf = (dpr = 1, cap = DPR_CAP) => Math.max(1, Math.min(cap, Numbe
 export function hostFor(running = [], table = LAYERS) {
   const rows = running.map((k) => table[k]).filter(Boolean);
   if (!rows.length) return null;
-  return { z: Math.max(...rows.map((r) => r.z)), fps: Math.max(...rows.map((r) => r.fps)) };
+  const top = rows.reduce((a, r) => (r.z > a.z ? r : a));
+  return { z: top.z, fps: Math.max(...rows.map((r) => r.fps)), under: top.under ?? null };
 }
 
 /* ── ?perf=1: every WebGL context the page makes, counted as it is made ── */
@@ -102,6 +107,9 @@ async function makeHost(view) {
     const at = hostFor([...running.keys()]);
     el.style.visibility = at ? 'visible' : 'hidden';
     if (at) { el.style.zIndex = String(at.z); game.loop._limitRate = 1000 / at.fps; }
+    // Moving the canvas among its siblings keeps its context (only taking it out of the page loses it).
+    const box = at?.under ? view.querySelector(`:scope > ${at.under}`) : null;
+    if (box && el.nextElementSibling !== box) view.insertBefore(el, box);
     const sleep = !at || !awake();
     if (sleep && game.loop.running) game.loop.sleep();
     else if (!sleep && !game.loop.running) game.loop.wake();
