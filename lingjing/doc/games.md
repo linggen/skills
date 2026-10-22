@@ -954,6 +954,17 @@ Hanli 10-21, in order: 「放进去」 · 「最好不显示摄像头」 · 「�
   first time it shows in a level (`level()`, the host's key) a bubble rides on it — 「小满 点这里结印」 — gone on the tap,
   waiting out a pause; tapped, the dock's frame is a framed paper panel (hint.js size `dock`): the gesture to make, as the
   right hand, with its facing words, beside the live ink hand. Tested: tests/game-jieyin-helper-ux.test.mjs.
+- **Where the dock stands; 小满 shows the seal** (Hanli 10-22, of 守灶台: 「结印的框会挡住画面, 可以上面一点吗?」 ·
+  「结印的过程中, 可否让小满手指发光. 或者有个什么特效」): a host's data places it (offerSeals `dock`: `at` bottom | top,
+  `w` a narrow frame — the live hand beside the gesture, the words under both). 守山门 (sadoushou.json `jieyinDock`):
+  top-left, under the top bar, over the backdrop beyond the road's far end — off the squad, the cards, the 灶台 and the
+  middle column (11–31% down, ≤ 44% across at 390 and 1440). 守墙关 (shouqiang.json `jieyin.dock`) · 守炉 (jieyin.json
+  `hosts.shoulu.dock`): the bottom corner, narrow (36%) — the wide frame reached 小满. The hand's progress goes to the
+  host (`onProgress({ move, step, of, k, cast })`, pure rule helper.js `progressOf`: a hand up a little · the 小招's
+  shape held 1/2 · its thrust 2/2; a 法术 文 1/3 · 扣 2/3 · push; a 大招 each seal; null when no hand works); the frame's
+  ring fills with it. 守山门 and 守墙关 draw it at 小满's raised hand (hud.js `SealGlow`, light and particles over the
+  painted sprite, no drawn art): a gold glow that grows with each step, a charge ring closing in, a pulse each step, a
+  burst as the seal flies. 守炉 (a canvas, no sprite fx) only the frame's ring. Tested: tests/game-shouqiang-jieyin.test.mjs.
 - **Tested:** tests/game-shouqiang-jieyin.test.mjs — offered only with a 大妖, target order, rest, bossMul and 相克, the
   five shapes, gates, the cue, the same game without casts, balance, no camera → nothing, movesFor, big moves in step,
   the button's life (call, tap, rest, ready, dark), idle close, 手势斗法's jab → 飞剑 reaching the host (an unoffered
@@ -1061,8 +1072,8 @@ is unchanged.
   Stars: the 山门 left (75% · 40%), ★★★ only inside par.
 - **结印** (Hanli 10-21: 「把结印放到现有的塔防类游戏中」): the shared dock (games/jieyin/helper.js `offerSeals` on
   手势斗法, duel.js, as in 守墙关) — only where a camera is; no camera, or declined, and the game is exactly the game
-  without it. Offered while the 大妖 is out (`jieyin.when`; `?dev=1&jy=always` to try it any time, `&feed=1` without a
-  camera), a 10 s rest between casts. A cast strikes a beast (core.js beastFor): the 大妖 when it is out, else the
+  without it. Offered while the 大妖 is out (`jieyin.when`; 守灶台 from the waves; `?dev=1&jy=always` to try it any time,
+  `&feed=1` without a camera), a 10 s rest between casts; the dock top-left (`jieyinDock`, § 结印 above). A cast strikes a beast (core.js beastFor): the 大妖 when it is out, else the
   nearest wave up the column of the lane the hand stood in (left · middle · right = the three columns) or the squad's,
   else the nearest anywhere — never a card or a wall (Hanli 10-21: 「接了印后, 火弹没有打怪, 打了一个近处的卡」): a
   小招 (飞剑 · 点穴 · 掌风 · 拳劲) 3 s of the squad's attack, a 法术 (火弹 · 冰锥 · 金刃 · 木藤 · 土墙, after 古六's
@@ -1116,6 +1127,10 @@ is unchanged.
   The two 大妖: 马小宝 hp 650 at −0.17, 马三 hp 800 at +0.17, one charge at a time. Bots (40 seeded first-time humans,
   the ladder's model): wins 37/40 (★3 31 · ★2 3 · ★1 3), sloppy 23, a sharp hand 5/5 ★★★; never buffing, only buffing
   and never moving lose; casting never needed (with casts 40/40). ~64 s; both 大妖 on the road together in every run.
+  结印 from the first wave (`when: waves`, Hanli 10-22: 「结印出现到结束游戏有点块, 还没结成功就完成了」): boss-only gave
+  ~20 s of dock (10 s at the least) — a first-timer's tap, camera, reading and seal took longer; from the waves it is
+  offered at 4 s and up ~55 s (never under 45), and a player whose seal takes 6–10 s after each rest lands one every
+  seed (tests/game-sadoushou.test.mjs).
   Game lines (not the book, for Hanli): the lead 「小满躺在地下，望着屋顶那个窟窿：要是我会撒豆成兵……」 ·
   「灶台上还剩三只碗——这回，一只也不给他们碰！」; banners 碗还在！ · 碗没守住…… · 门开了！ · 马小宝要滚过来了！快换列！ ·
   马三要跺棍子了！快换列！ · 马小宝停下来吃桂花糕！ · 飞剑！; the 结印 call 「做梦嘛——当一回仙人！结印！」 and bubble

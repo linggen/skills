@@ -4,7 +4,7 @@
 // (worlds/jiuding/levels/jieyin.json `doufa`, `spells`, `moves`).
 //
 //   const d = duelStart(kit, { set })                    set: sets.js setOf (the 大招's sequence is that set's)
-//   const { state, events, held } = duelStep(d, { world, image, handed, aspect, t }, dtMs, kit)
+//   const { state, events, held, shapes } = duelStep(d, { world, image, handed, aspect, t }, dtMs, kit)   shapes: each hand's shape now
 //   duelFill(state, kit, n | 'boss')                     灵力 up (a 大妖 steps out: `lingli.boss`)
 //   strike(cast, beast, kit, now)                        what the cast does to that beast (combos, counter element)
 //   pacedKit(kit, pace)                                  the numbers for a level's pace: 'rest' (default) | 'intense'
@@ -134,7 +134,7 @@ export function duelStep(state, { world = [], image = [], handed = [], aspect = 
   });
 
   const held = sp.held.filter((x) => spells.hands[x.hand]?.phase === 'kou');
-  return { state: { ...state, spells, big, motion, lingli }, events, held };
+  return { state: { ...state, spells, big, motion, lingli }, events, held, shapes };
 }
 
 /* ── What a cast does to a beast: the effect, the combo, the counter element ── */

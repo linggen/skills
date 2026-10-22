@@ -3,7 +3,7 @@
 import * as Phaser from 'phaser';
 import { newGame, step, pick, setFocus, reachY, castJieyin, W, H } from 'shouqiang-core';
 import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
-import { Hud, WORDS, bar, setBarW, wordsFor } from './hud.js';
+import { Hud, SealGlow, WORDS, bar, setBarW, wordsFor } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
 
 const ICONS = ['jian-more', 'jian-pierce', 'jian-arc', 'huo-blast', 'huo-ground', 'han-slow', 'han-freeze', 'lei-chain', 'lei-strike', 'yy-foxfire', 'yy-howl'];
@@ -147,6 +147,7 @@ export class PlayScene extends Phaser.Scene {
     this.handGlow = this.add.image(this.g.at.hand.x, this.g.at.hand.y, 'glow').setDepth(D.hero + 1).setBlendMode(Phaser.BlendModes.ADD).setTint(0x7fd0ff).setScale(1.1).setAlpha(0.5);
     this.handSword = this.add.image(this.g.at.hand.x, this.g.at.hand.y, 'sword').setDisplaySize(58, 58).setRotation(-Math.PI / 4).setDepth(D.hero + 2);
     this.handBack = 0;
+    this.sealGlow = new SealGlow(this, { depth: D.hero + 3, at: () => this.g.at.hand, em: this.em, calm: this.calm }); // 结印's progress at his hand
     this.xmAura = this.add.image(this.g.at.hero.x, this.g.at.hero.y - 20, 'glow').setDepth(D.hero - 1).setBlendMode(Phaser.BlendModes.ADD).setScale(2.4).setTint(0x7fd0ff).setAlpha(0.25);
     // `art.hand: null` — nothing hovers at the hero's hand (阿禾 holds her pole); no aura (no 灵气 yet)
     this.noHand = 'hand' in art && !art.hand;
@@ -273,6 +274,7 @@ export class PlayScene extends Phaser.Scene {
     for (const e of this.g.events) this.on(e);
     this.g.events.length = 0;
     if (this.paused) return;
+    this.sealGlow?.update(dt);
     this.syncBeasts(time, dt);
     this.syncShots(dt);
     this.syncGrounds();

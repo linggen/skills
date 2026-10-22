@@ -283,6 +283,11 @@
    }
   ]
  },
+ "jieyinDock": {
+  "_about": "Where 结印's button and gesture frame stand on this board (games/jieyin/helper.js offerSeals `dock`), every level alike — top-left, under the top bar, over the backdrop beyond the road's far end (Hanli 10-22, of 守灶台: 「结印的框会挡住画面, 可以上面一点吗?」): the bottom-left corner covered the squad, the 灶台 and the left column's cards. `w`: the frame's width, a share of the field — narrow enough to stay off the middle column, where the 大妖 step out.",
+  "at": "top",
+  "w": 0.42
+ },
  "levels": [
   {
    "kit": "sadoushou",
@@ -1558,8 +1563,8 @@
     }
    ],
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
-    "when": "boss",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」; here `waves`, below), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "waves",
     "cool": 10,
     "bossMul": 2,
     "bossCap": 0.45,
@@ -1577,7 +1582,7 @@
      "zh": "飞剑！",
      "en": "Flying sword!"
     },
-    "_first": "第一回's daydream is the game's FIRST 结印 (Hanli 10-22: 「1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): one simple seal, 剑诀 → 飞剑 (open from the start, `from: null` — before 古六 only the one-seal move, learned from the hint alone), offered when the two 大妖 are out; its first cast in a run is played big (`firstCast`: a slow beat, a banner, a bigger burst). No camera, or declined: the level plays and wins the same.",
+    "_first": "第一回's daydream is the game's FIRST 结印 (Hanli 10-22: 「1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): one simple seal, 剑诀 → 飞剑 (open from the start, `from: null` — before 古六 only the one-seal move, learned from the hint alone), offered from the first wave (`when: waves`, Hanli 10-22: 「结印出现到结束游戏有点块, 还没结成功就完成了」 — offered only with the two 大妖 out, the fight ended before a first-timer made the seal: ~20 s of dock, 10 s at the least; from the waves ~55 s, never under 45, and the bosses still fall to the squad); its first cast in a run is played big (`firstCast`: a slow beat, a banner, a bigger burst). No camera, or declined: the level plays and wins the same.",
     "set": "simple",
     "only": [
      "feijian"

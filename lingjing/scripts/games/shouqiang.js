@@ -84,6 +84,7 @@ export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, 
     first: moves.some((m) => m.id === 'feijian') ? c.first : null,
     paused: () => Boolean(shell?.paused?.() || game.paused()),
     aside: () => game.picking(),
+    dock: c.dock, onProgress: (p) => game.jieyinProgress?.(p), // where the frame stands (data); the hand's progress: his hand glows (hud.js SealGlow)
   })).catch((e) => { console.warn('[shouqiang] 结印', e); return null; });
 }
 

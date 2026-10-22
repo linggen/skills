@@ -341,6 +341,48 @@ test('the casts are 手势斗法\'s: 剑诀 + a jab → 飞剑 to the host; a mo
   assert.deepEqual(await run(['huodan']), [], 'not offered (before 古六 the 小招 only; here the reverse): dropped');
 }));
 
+test('the hand\'s progress to the host (Hanli 10-22: 「结印的过程中, 可否让小满手指发光」): a hand up a little, 剑诀 held 1/2, the jab flies 2/2 (cast), then nothing; the gesture frame\'s ring fills with it', async () => withFetch(async () => {
+  const { host, frame, win } = page();
+  const seen = [];
+  const h = await offerSeals({ host, moves: ['feijian'], feed: true, available: async () => true, state: () => ({ on: true, ready: true, cool: 0, coolOf: 10 }), cast: () => true, onProgress: (p) => seen.push(p && { ...p }) });
+  host.appended[0].fire('click');
+  await frame(2);
+  const show = async (len) => { const w = poseOf(seals.seals.jian); win.jieyinFeed([w], [placed(w, 0.5, 0.8, len)], ['Right']); await frame(1); };
+  for (let i = 0; i < 40; i += 1) await show(0.2);
+  const held = seen.filter(Boolean);
+  assert.ok(held.length, 'progress told');
+  assert.ok(held.every((p) => p.move === 'feijian' && p.of === 2), '飞剑: two steps (the shape, the thrust)');
+  assert.ok(held.some((p) => p.step === 0) && held.some((p) => p.step === 1), 'the hand up, then 剑诀 held');
+  for (let i = 1; i < held.length; i += 1) assert.ok(held[i].k >= held[i - 1].k, 'it only grows while the shape is held');
+  for (let i = 0; i < 12; i += 1) await show(0.2 + 0.07 * ((i + 1) / 12));
+  const cast = seen.find((p) => p?.cast);
+  assert.deepEqual(cast && [cast.step, cast.of, cast.k], [2, 2, 1], 'the jab: the seal flies');
+  h.close();
+  assert.equal(seen.at(-1), null, 'closed: no hand works');
+}));
+
+test('where the dock stands is the host\'s data (offerSeals `dock`): 守山门 top-left, narrow; 守墙关 · 守炉 the bottom corner, narrow', async () => withFetch(async () => {
+  const sad = JSON.parse(readFileSync(at('worlds/jiuding/levels/sadoushou.json'), 'utf8'));
+  const { jieyinOf } = await import('../scripts/games/sadoushou/core.js');
+  for (const l of sad.levels) assert.deepEqual(jieyinOf(sad, l).dock, sad.jieyinDock, `${l.id}: the kit's placement`);
+  assert.equal(sad.jieyinDock.at, 'top');
+  assert.ok(sad.jieyinDock.w > 0 && sad.jieyinDock.w <= 0.45, 'the frame stays off the middle column');
+  const top = page(), low = page();
+  const a = await offerSeals({ host: top.host, moves: ['feijian'], feed: true, available: async () => true, dock: sad.jieyinDock });
+  const b = await offerSeals({ host: low.host, moves: ['feijian'], feed: true, available: async () => true });
+  assert.deepEqual(top.host.appended.map((x) => x.dataset.at), ['top', 'top']);
+  assert.equal(top.host.appended[1].style['--jyh-w'], '42%');
+  assert.deepEqual(low.host.appended.map((x) => x.dataset.at), ['bottom', 'bottom'], 'no placement: the bottom corner');
+  assert.equal(low.host.appended[1].dataset.narrow, undefined, 'no placement: the frame as it was');
+  assert.equal(top.host.appended[1].dataset.narrow, '', 'a width: the narrow frame');
+  // 守墙关 · 守炉: the bottom corner, their frames narrow — off 小满 (the wide one reached him, checked 10-22)
+  const sq = JSON.parse(readFileSync(at('worlds/jiuding/levels/shouqiang.json'), 'utf8'));
+  for (const d of [sq.jieyin.dock, seals.hosts.shoulu.dock]) assert.ok(d.at === 'bottom' && d.w <= 0.4, JSON.stringify(d));
+  a.close(); b.close();
+  const css = readFileSync(at('scripts/games/jieyin/helper.css'), 'utf8');
+  assert.match(css, /\.jyh-dock\[data-at="top"\][^{]*\{[^}]*top:/, 'the top placement in the dock\'s css');
+}));
+
 test('the play: the spells\' art, the bundle carries the calls, the camera off the moment the level ends', () => {
   assert.ok(existsSync(at('scripts/games/jieyin/art/huodan.webp')));
   const bundle = readFileSync(at('scripts/games/shouqiang/shouqiang.min.mjs'), 'utf8');

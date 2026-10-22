@@ -10,7 +10,7 @@ import * as Phaser from 'phaser';
 import { newGame, step, aim, waveLeft, waveCount, perRank, hordeAll, tierOf, colMid, castJieyin, bossRows, COLS, TOP } from 'sadoushou-core';
 import { W, H, CX, Y0, HY, HALF, CARD, sOf, yOf, xOf, zOfY, uOfX } from './view.js';
 import { makeTextures, makeNumberFont, makeEmitters, rng, canvasTex, rounded } from './fx.js';
-import { Hud, WORDS, text } from './hud.js';
+import { Hud, SealGlow, WORDS, text } from './hud.js';
 import { Sfx } from './sfx.js';
 
 const MAXQ = 160;                 // the squad's sprites at the wall at most (the blue number tells the rest)
@@ -19,6 +19,7 @@ const MAXB = 380;                 // beast sprites at most (the red number tells
 const SOLDIER_H = 40;             // a 豆兵's height at the wall (px); smaller up the road
 const GOLD = Math.PI * (3 - Math.sqrt(5));
 const SLOTS = Array.from({ length: MAXQ }, (_, i) => { const r = 5.6 * Math.sqrt(i + 0.5), a = i * GOLD; return [r * Math.cos(a) * 1.3, r * Math.sin(a) * 0.4]; });
+const HAND = { u: 0.72, v: 0.3 }; // xiaoman-cast.webp's raised hand (its glowing charm), 0…1 of the picture
 const D = { ground: 0, beast: 20, boss: 25, belt: 27, shot: 30, squad: 32, rush: 35, wall: 40, man: 41, fx: 3000, num: 3100, hud: 4000 };
 const TIER_TINT = [0xffffff, 0xfff0c8, 0xe0a060];
 const backOut = (t) => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2;
@@ -242,6 +243,9 @@ export class PlayScene extends Phaser.Scene {
     this.man = this.add.image(CX, Y0 + 92, 'xiaoman').setOrigin(0.5, 0.9).setDepth(D.man);
     this.man.setScale(104 / this.man.height);
     this.manBase = this.man.scaleX;
+    // 结印's progress at his hand (hud.js SealGlow): the raised fist of xiaoman-cast.webp, as a share of the picture
+    const hand = () => ({ x: this.man.x + (HAND.u - 0.5) * this.man.displayWidth, y: this.man.y + (HAND.v - 0.9) * this.man.displayHeight });
+    this.sealGlow = new SealGlow(this, { depth: D.man + 1, at: hand, em: this.em, calm: this.calm });
   }
 
   // ---------------------------------------------------------------- the belt: cards and walls coming down the sides
@@ -745,6 +749,9 @@ export class PlayScene extends Phaser.Scene {
     return ok;
   }
 
+  /** The 结印 dock's progress (games/jieyin/helper.js onProgress): 小满's hand glows with it, a burst as it flies. */
+  sealProgress(p) { if (!this.ended) this.sealGlow?.set(p); else this.sealGlow?.set(null); }
+
   /** 走火: a puff from 小满's hand, a word — no other cost. */
   fizzle() {
     if (this.ended) return;
@@ -787,6 +794,7 @@ export class PlayScene extends Phaser.Scene {
     const real = Math.min(0.05, delta / 1000);
     this.slowT = Math.max(0, (this.slowT ?? 0) - real);
     const dt = this.slowT > 0 ? real * 0.3 : real; // a first cast's slow beat (on_spell)
+    this.sealGlow?.update(real);
     const g = this.g;
     const k = this.keys;
     if (k) {

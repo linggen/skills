@@ -385,8 +385,9 @@ export function movesOf(kit, level) {
   const set = c.moves ?? kit.jieyinSets?.[c.set ?? (level.story ? 'simple' : 'full')] ?? [];
   return c.only ? set.filter((m) => c.only.includes(m.id)) : set;
 }
-/** A level's 结印 with its moves laid in (what the dock and the engine read). */
-export const jieyinOf = (kit, level) => (level.jieyin ? { ...level.jieyin, moves: movesOf(kit, level) } : null);
+/** A level's 结印 with its moves laid in (what the dock and the engine read), and where the dock stands on the board
+    (the kit's `jieyinDock`, a level's own `dock` over it). */
+export const jieyinOf = (kit, level) => (level.jieyin ? { ...level.jieyin, moves: movesOf(kit, level), dock: level.jieyin.dock ?? kit.jieyinDock ?? null } : null);
 
 const spellKit = (g) => g.jieyin;
 const spellOn = (g, c = spellKit(g)) => Boolean(c) && (g.phase === 'waves' || g.phase === 'boss')

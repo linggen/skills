@@ -52,5 +52,6 @@ export function start(opts) {
     picking: () => Boolean(scene()?.hud?.modalOpen), // a card pick is up: 结印's corner steps aside
     jieyin: (id) => Boolean(scene()?.jieyin?.(id)),
     jieyinState: () => (scene()?.g ? jieyinState(scene().g) : { on: false, ready: false, cool: 0, coolOf: 0, boss: null }),
+    jieyinProgress: (p) => scene()?.sealGlow?.set(p), // the hand on a seal (helper.js onProgress): his hand glows
   };
 }

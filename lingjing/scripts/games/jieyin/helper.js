@@ -4,7 +4,7 @@
 // shared hand hint docked there. The hands are read by 手势斗法 (duel.js: 小招 shape + thrust, 法术 文 → 扣 → 推, the
 // 大招's seals, 灵力 — doc/games.md § 手势斗法); its cast events go to the host, which decides what they do.
 //
-//   offerSeals({ host, lang, moves, state, cast, say, call, first, idle, fastFps, paused, aside, env, feed, level }) → Promise<{ close(), camera, wanted } | null>
+//   offerSeals({ host, lang, moves, state, cast, say, call, first, idle, fastFps, paused, aside, env, feed, level, dock, onProgress }) → Promise<{ close(), camera, wanted } | null>
 //     level() → a key for the level up now: the first time the button shows for a key, a bubble points at it (「点这里结印」)
 //   leadLine(kit, pace, lang) → the lead card's line that 结印 is here; the handle's lead(pace) says it (a handle is only
 //     where a camera is and a move is offered) — a host joins it to its lead card with jieyin/lead.js leadWith
@@ -15,6 +15,15 @@
 //     cast(event) → true when it flew        say(text): one short line in the host (the cues)
 //     call() → the line when spells are first offered (a 大妖 out; 灵力 filled then)   first: the 小招's first-time line
 //     idle    s ready with no hand raised before the camera closes itself · fastFps: the eye's rate while a 小招 is armed
+//     dock    where the button and the frame stand in the host's field — its data says (Hanli 10-22, of 守灶台: 「结印的框会
+//             挡住画面, 可以上面一点吗?」): { at: 'bottom' (the default: the bottom-left corner) | 'top' (the top-left, under
+//             the host's top bar, over its backdrop — the far end of a road), w: a narrow frame, its width a share of the
+//             field (the live hand beside the gesture, the words under both) }
+//     onProgress(p) → the hand working on a seal (Hanli 10-22: 「结印的过程中, 可否让小满手指发光」), on each change:
+//             p = { move, step, of, k, cast } — `step` of `of` done (a 小招: the shape held 1/2, the thrust 2/2; a 法术:
+//             文 1/3 · 扣 2/3 · the push 3/3; a 大招: each seal), `k` 0…1 (a hand up and no shape yet is a little),
+//             `cast: true` as one flies; null when no hand works (none in view, resting, the frame away). The host's 小满
+//             shows it (his hand glows, a ring charges, a burst on the cast) — progressOf is the pure rule.
 //   (`available` and `eyeOf` stand in for eye.js's in a test.)
 //
 // null — and NOTHING drawn — when 结印 cannot be offered (no camera API, no camera, no WebGL; eye.js `available`) or no
@@ -85,6 +94,27 @@ function loadCss(doc) {
   }
 }
 
+/** How far the hands are on a seal this frame (offerSeals' onProgress): the furthest of the offered moves, or null (no
+    hand). `shapes` each hand's shape (duel.js), `spells` the duel's 法术 hands, `bigAt` the 大招's seals made of `bigOf`;
+    `mem` keeps the 小招's shape steady across frames: held `hold` ms counts, a gap under `gap` ms keeps it. */
+export function progressOf({ kit, tiers, hands = 0, shapes = [], spells = {}, bigId = null, bigAt = 0, bigOf = 0, now = 0, mem = {}, hold = 120, gap = 300 }) {
+  if (!hands) { mem.since = null; return null; }
+  const D = kit.doufa, cands = [];
+  const xiao = tiers.xiao.find((id) => shapes.includes(D.xiao[id].shape)) ?? null;
+  if (xiao) { if (mem.since == null || mem.move !== xiao || now - mem.seen > gap) mem.since = now; mem.move = xiao; mem.seen = now; }
+  const on = mem.since != null && now - mem.seen <= gap ? mem.move : null;
+  if (on) { const t = Math.min(1, (now - mem.since) / hold); cands.push({ move: on, step: t >= 1 ? 1 : 0, of: 2, k: 0.15 + 0.35 * t }); }
+  else if (tiers.xiao.length) cands.push({ move: tiers.xiao[0], step: 0, of: 2, k: 0.12 });
+  for (const h of Object.values(spells)) {
+    if (!tiers.fa.includes(h.spell)) continue;
+    if (h.phase === 'wen') cands.push({ move: h.spell, step: 1, of: 3, k: 1 / 3 });
+    if (h.phase === 'kou') cands.push({ move: h.spell, step: 2, of: 3, k: 2 / 3 });
+  }
+  if (bigId && bigAt > 0) cands.push({ move: bigId, step: bigAt, of: bigOf, k: bigAt / bigOf });
+  if (!cands.length && (tiers.fa.length || bigId)) cands.push({ move: tiers.fa[0] ?? bigId, step: 0, of: tiers.fa.length ? 3 : bigOf, k: 0.12 });
+  return cands.reduce((a, c) => (!a || c.k > a.k ? c : a), null);
+}
+
 /** The button: the next move's gesture drawn on it (Hanli 10-21: 「结印要有个框提示手势的」), the word under it. */
 function buttonEl(doc, w, icon = '') {
   const b = doc.createElement('button');
@@ -119,7 +149,7 @@ const firstTime = (win) => { try { if (win.localStorage?.getItem(SEEN)) return f
 
 export async function offerSeals({ host, lang = 'zh', moves = [], state = () => ({ on: true, ready: true, cool: 0, coolOf: 0 }),
   cast = () => false, say = () => {}, call = () => null, first = null, idle = 60, fastFps = 30, paused = () => false, aside = () => false,
-  env = globalThis, feed = false, available = cameraHere, eyeOf = openEye, level = null } = {}) {
+  env = globalThis, feed = false, available = cameraHere, eyeOf = openEye, level = null, dock: place = null, onProgress = null } = {}) {
   moves = moves.map(duelId); // a host may hand its rows: each is its 手势斗法 id
   if (!moves.length || (!feed && !(await available(env)))) return null;
   const kit = await fetch(LEVELS).then((r) => r.json());
@@ -135,6 +165,8 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     ?? (tiers.da[0] ? sequenceFor(kit, D0.da[tiers.da[0]].move, set)[0] : null);
   const btn = buttonEl(doc, w, kit.seals[lead] ? iconSvg(kit.seals[lead], 30, { lang }) : ''), dock = dockEl(doc, w), callout = calloutEl(doc, w);
   btn.append(callout); // on the button, wherever a host puts it
+  for (const el of [btn, dock]) el.dataset.at = place?.at === 'top' ? 'top' : 'bottom'; // the host's data: where they stand
+  if (place?.w) { dock.dataset.narrow = ''; dock.style.setProperty('--jyh-w', `${Math.round(place.w * 1000) / 10}%`); } // a narrow frame
   host.append(btn, dock);
   const $ = (s) => dock.querySelector(s);
   for (const el of [btn, dock]) for (const t of ['pointerdown', 'pointerup', 'click']) el.addEventListener(t, (e) => e.stopPropagation());
@@ -169,6 +201,17 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     ol.querySelectorAll('li').forEach((el, i) => { el.classList.toggle('is-done', i < at); el.classList.toggle('is-next', i === at); });
   };
 
+  // The hand's progress on a seal, to the host (onProgress): only on a change, null once no hand works.
+  let prog = null, progKey = 'null';
+  const mem = {};
+  const tell = (p) => {
+    const key = p ? `${p.move}|${p.step}|${p.of}|${Math.round(p.k * 20)}|${p.cast ? 1 : 0}` : 'null';
+    prog = p;
+    if (key === progKey) return;
+    progKey = key;
+    try { onProgress?.(p); } catch (e) { console.warn('[jieyin] progress', e); }
+  };
+
   let shownFor = null, calloutT = 0;
   const hud = (st, ready, rest, away = false, still = false) => {
     btn.hidden = still || !st.on || (wanted && ready); // still: the host is paused (its lead card, the shell's bar) — nothing shows
@@ -185,7 +228,7 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     if (dock.hidden) return;
     const at = bigAt(), next = at >= 2 ? bigSeq[at] : shape;
     chips(at);
-    hint.update({ image, aspect, target: next, progress: 0, right: false, now: win.performance.now(), world: held.length || !next ? null : hands, handed, held: heldAt(held, handed, hands.length) });
+    hint.update({ image, aspect, target: next, progress: prog?.k ?? 0, right: false, now: win.performance.now(), world: held.length || !next ? null : hands, handed, held: heldAt(held, handed, hands.length) });
   };
 
   // The cues: the host's line when spells are first offered (a 大妖 out: 灵力 filled), a short one when the rest is over,
@@ -219,10 +262,14 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
       const r = duelStep(duel, live ? { world: hands, image, handed, aspect, t: now } : { t: now }, dt, kit);
       duel = r.state;
       held = r.held;
-      for (const e of r.events) if (e.type === 'cast' && offered.has(e.move)) cast(e);
+      const p = live ? progressOf({ kit, tiers, hands: hands.length, shapes: r.shapes, spells: duel.spells?.hands, bigId, bigAt: bigAt(), bigOf: bigSeq.length, now, mem }) : null;
+      let flew = null;
+      for (const e of r.events) if (e.type === 'cast' && offered.has(e.move) && cast(e)) flew = e.move;
+      if (flew) { const of = p?.move === flew ? p.of : tiers.xiao.includes(flew) ? 2 : tiers.fa.includes(flew) ? 3 : bigSeq.length || 1; tell({ move: flew, step: of, of, k: 1, cast: true }); mem.since = null; }
+      else tell(p);
       if (live && hands.length) tried = now;
     }
-    if (!live) tried = now;
+    if (!live) { tried = now; if (!(st.on && !paused())) tell(null); }
     else if (now - tried > idle * 1000) wanted = false;
     hud(st, ready, rest, away, still);
     loop = win.requestAnimationFrame(tick);
@@ -242,6 +289,7 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     closed = true;
     wanted = false;
     win.cancelAnimationFrame(loop);
+    tell(null);
     doc.removeEventListener('visibilitychange', seen);
     eye?.close();
     hint.destroy();

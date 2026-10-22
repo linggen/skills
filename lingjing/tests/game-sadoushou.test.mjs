@@ -419,7 +419,7 @@ test('守灶台 is the game\'s first 结印 (Hanli 10-22: 「1-6 都是好主意
   const c = story.jieyin;
   assert.deepEqual(movesOf(kit, story).map((m) => [m.id, m.from, m.secs]), [['feijian', null, 4]], 'only the one-seal move, the simple set\'s 飞剑');
   assert.ok(both(c.first) && both(c.firstCast) && both(c.say));
-  assert.equal(c.when, 'boss', 'offered when 马小宝 and 马三 are out');
+  assert.equal(c.when, 'waves', 'offered from the waves: time to learn the seal before the end (Hanli 10-22: 「还没结成功就完成了」)');
   const box = { ownerDocument: { defaultView: {} } };
   const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: () => true, fizzle() {}, paused: () => false, picking: () => false, say() {} };
   for (const marks of [[], ['qiajue-tight']]) {
@@ -450,6 +450,34 @@ test('守灶台 is gentle but not free (第一回; Hanli 10-22: 「难度可以�
   for (const b of ['bad', 'greedy', 'idle']) assert.ok(!sim(kit, story, BOTS[b]).won, b);
   const cast = seeds.slice(0, 10).map((s) => sim(kit, story, humanBot(s), { seed: s, casts: true }));
   assert.ok(cast.filter((r) => r.won).length >= human.slice(0, 10).filter((r) => r.won).length, '结印 helps, never hurts');
+});
+
+// 结印 needs time to be learned (Hanli 10-22: 「结印出现到结束游戏有点块, 还没结成功就完成了」): a first-timer taps, allows
+// the camera, reads the frame and makes 剑诀 — seconds of it. Offered from the waves, the dock is up early and long; a
+// player whose seal takes 6–10 s after each rest still lands one, every seed.
+test('守灶台 gives the seal its time: offered within 10 s, ≥ 15 s of dock before the level can end; a slow sealer (6–10 s) lands a cast every seed', () => {
+  const dock = (seed, sealSec) => {
+    const lv = withMoves(story), g = newGame(kit, lv, { seed }), bot = humanBot(seed);
+    let first = null, on = 0, since = null, ended = null;
+    while (g.t < 400 && !ended) {
+      aim(g, bot(g), true);
+      const st = jieyinState(g);
+      if (st.on) { on += 1 / 30; first ??= g.t; }
+      if (st.ready) { since ??= g.t; if (g.t - since >= sealSec) { castJieyin(g, null, bossesUp(g).length ? 'middle' : null); since = null; } } else since = null;
+      step(g, 1 / 30);
+      for (const e of g.events) if (e.t === 'end') ended = e;
+      g.events.length = 0;
+    }
+    return { first, on, casts: g.casts, won: Boolean(ended?.won) };
+  };
+  for (const sealSec of [6, 10]) {
+    const runs = seeds.map((s) => dock(s, sealSec));
+    for (const [i, r] of runs.entries()) {
+      assert.ok(r.first != null && r.first <= 10, `${seeds[i]}: offered at ${r.first?.toFixed(1)} s`);
+      assert.ok(r.on >= 15, `${seeds[i]}: ${r.on.toFixed(1)} s of dock`);
+      assert.ok(r.casts >= 1, `${seeds[i]}: a ${sealSec} s seal lands`);
+    }
+  }
 });
 
 test('the bundle is current, loads the one shared Phaser, and every picture and word it needs is there', () => {

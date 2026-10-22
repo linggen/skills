@@ -176,3 +176,54 @@ export class Hud {
   }
 }
 
+
+/** 小满 working a seal (Hanli 10-22: 「结印的过程中, 可否让小满手指发光. 或者有个什么特效」): the 结印 dock's progress
+    (games/jieyin/helper.js onProgress — { move, step, of, k, cast } or null) shown at his hand — a gold glow that grows
+    with each step done, a charge-up ring closing in on the hand, a pulse at each step, a burst as the seal flies. Light
+    and particles only (no drawn art). Any level, any host: it reads only the events.
+      new SealGlow(scene, { depth, at, em, calm })   at() → { x, y } the hand point now · em: the scene's emitters
+      glow.set(p) · glow.update(dt) */
+export class SealGlow {
+  constructor(scene, { depth, at, em, calm = false }) {
+    this.s = scene; this.at = at; this.em = em; this.calm = calm;
+    this.k = 0; this.want = 0; this.step = -1; this.t = 0; this.puff = 0;
+    const add = (tex, tint) => scene.add.image(0, 0, tex).setBlendMode(Phaser.BlendModes.ADD).setTint(tint).setDepth(depth).setAlpha(0);
+    this.halo = add('glow', 0xffb02e); // the warm light round the hand
+    this.core = add('glow', 0xfff6c2); // the white-gold heart at the fingers
+    this.ring = add('ring', 0xffd23f); // the charge, closing in as the seal comes together
+  }
+
+  set(p) {
+    if (!p) { this.want = 0; this.step = -1; return; }
+    const { x, y } = this.at();
+    if (p.cast) { // the seal flies: the light bursts out from the hand
+      this.want = 0; this.k = 1.25; this.step = -1;
+      this.em.burst('gold', 34, x, y); this.em.burst('stars', 10, x, y);
+      this.pulse(x, y, 3.6, 0xfff1a8, 460);
+      return;
+    }
+    this.want = Math.max(0.1, Math.min(1, p.k));
+    if (p.step > this.step && p.step > 0) { // a step done: a pulse and a few sparks
+      this.em.burst('spark', 8 + 6 * p.step, x, y);
+      this.pulse(x, y, 1.4 + 0.5 * p.step, 0xffd23f, 320);
+    }
+    this.step = p.step;
+  }
+
+  pulse(x, y, to, tint, ms) {
+    const r = this.s.add.image(x, y, 'ring').setBlendMode(Phaser.BlendModes.ADD).setTint(tint).setDepth(this.core.depth).setScale(0.25).setAlpha(0.95);
+    this.s.tweens.add({ targets: r, scale: to, alpha: 0, duration: ms, ease: 'Cubic.easeOut', onComplete: () => r.destroy() });
+  }
+
+  update(dt) {
+    this.t += dt;
+    this.k += (this.want - this.k) * Math.min(1, dt * (this.want > this.k ? 6 : 3)); // grows quick, fades slower
+    const k = Math.max(0, this.k), { x, y } = this.at();
+    const beat = this.calm ? 1 : 1 + 0.12 * Math.sin(this.t * (6 + 8 * k)); // quicker as it charges
+    this.halo.setPosition(x, y).setScale((0.8 + 3.2 * k) * beat).setAlpha(Math.min(0.85, 0.15 + 0.7 * k));
+    this.core.setPosition(x, y).setScale((0.35 + 1.1 * k) * beat).setAlpha(Math.min(1, 0.2 + 0.9 * k));
+    const charge = Math.min(1, k) > 0.3 && this.want > 0; // a step done: the ring closes in, turning
+    this.ring.setPosition(x, y).setScale(1.5 - 0.85 * Math.min(1, k)).setRotation(this.t * 3).setAlpha(charge ? 0.35 + 0.5 * k : Math.max(0, this.ring.alpha - dt * 3));
+    if (k > 0.3 && this.want > 0 && !this.calm && (this.puff -= dt) <= 0) { this.puff = 0.16 - 0.08 * k; this.em.burst('spark', 1, x + (Math.random() - 0.5) * 40, y + (Math.random() - 0.5) * 40); }
+  }
+}

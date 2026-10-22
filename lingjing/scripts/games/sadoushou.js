@@ -52,6 +52,7 @@ export function offerJieyin(level, box, { lang, game, shell, marks, feed = false
     state: () => game.jieyinState(), cast: (e, lane) => game.jieyin(e?.move ?? e, e?.lane ?? lane?.lane ?? lane), fizzle: () => game.fizzle(), say,
     call: () => t(c.say), first: moves.some((m) => m.id === 'feijian' && !m.from) ? c.first : null,
     paused: () => Boolean(reading() || shell?.paused?.() || game.paused()), aside: () => game.picking(), // reading: the lead card is up
+    dock: c.dock, onProgress: (p) => game.jieyinProgress?.(p), // where the frame stands (the kit's data); the hand's progress → 小满 glows
   })).catch((e) => { console.warn('[sadoushou] 结印', e); return null; });
 }
 

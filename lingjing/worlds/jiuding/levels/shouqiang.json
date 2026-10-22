@@ -17,6 +17,8 @@
  "jieyin": {
   "_about": "结印 — the player's spells at the camera, only where a camera is (Hanli 10-21: 「让用户结印发火弹帮忙打怪」, 「没摄像头时, 就不用用户结印帮打」), and a big move, rarely: offered only while a 大妖 is on the field (`when`: boss | elite | always — 「不然打小怪, 结手印太频繁很累」), a long cooldown between casts (`cool` s of game time: the hand is down, the seals are not counted — 「加一个手势的冷却, 让用户大部分时间在休息」), and hard on the 大妖 (`bossMul` — 「手印攻击高, 可以引导玩家用于打boss」). `aim`: with no beast tapped, the 大妖 in reach first. 五行相克 (素问: 木得金而伐，火得水而灭，土得木而达，金得火而缺，水得土而绝): `beats` [spell element → the root it overcomes], × `counter` (a beast's root: creatures.json). `idle`: s ready with no hand raised before the camera closes itself. `armedFps`: the eye's rate while a 小招 is armed (a jab is ~200 ms); `cool`: 守墙关's own rest between casts, over 手势斗法's 灵力 (its refill alone would allow a 小招 every ~2 s). `say`: the cue when the 大妖 steps out. Tests: tests/game-shouqiang-jieyin.test.mjs.",
   "when": "boss", "aim": "boss", "cool": 10, "armedFps": 30, "fly": 0.5, "bossMul": 4, "counter": 1.5, "idle": 60,
+  "_dock": "Where the dock stands (helper.js offerSeals `dock`): the bottom-left corner as before, its frame narrow — the wide one covered 小满 at his wall (Hanli 10-22, of 守灶台: 「结印的框会挡住画面」; checked here the same day), and his hand glows while he makes the seal.",
+  "dock": { "at": "bottom", "w": 0.36 },
   "beats": {"wood": "earth", "earth": "water", "water": "fire", "fire": "metal", "metal": "wood"},
   "say": {"zh": "大妖来了——结印！", "en": "The great beast is here — make the seals!"},
   "first": {"zh": "比个剑诀，飞剑就出去", "en": "Make the sword seal and the flying sword goes"},

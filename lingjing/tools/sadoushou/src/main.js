@@ -7,7 +7,7 @@ import { PlayScene } from './play.js';
 
 /**
  * start({ parent, base, lang, kit, level, seed, reducedMotion, showFps, dev, onEvent, onEnd, shell, held, wide })
- *   → { destroy(), say(who, text), go(), paused(), picking(), jieyin(id, lane), jieyinState(), fizzle() }
+ *   → { destroy(), say(who, text), go(), paused(), picking(), jieyin(id, lane), jieyinState(), fizzle(), jieyinProgress(p) }
  * `held`: draw the road but stand still until `go()` (the shell's lead card is up over it). `wide`: the 760×960 board
  * (view.js), else the phone's 540×960.
  * `base`: the URL of games/sadoushou/ (the shared art beside it, ../sadou/ and ../shouqiang/). `onEvent`: the facts
@@ -47,5 +47,6 @@ export function start(opts) {
     jieyin: (id, lane) => Boolean(scene()?.jieyin?.(id, lane)),
     jieyinState: () => (scene()?.g ? jieyinState(scene().g) : { on: false, ready: false, cool: 0, coolOf: 0, boss: null }),
     fizzle: () => scene()?.fizzle?.(),
+    jieyinProgress: (p) => scene()?.sealProgress?.(p), // the hand on a seal (helper.js onProgress): 小满's hand glows
   };
 }

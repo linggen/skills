@@ -56,7 +56,7 @@ export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside,
     cast: (e) => { const c = cfg(), row = moves.find((m) => duelId(m) === (e?.move ?? e)); return c && row ? jieyinCast(now().g, row.id, c) : false; },
     fizzle: () => toast(lang === 'en' ? 'Pfft — it fizzled.' : '噗——走火了。'), say: toast,
     call: () => word(host.say, lang), first: moves.some((m) => m.motion === 'jab' && !m.from) ? host.first : null,
-    paused, aside, level,
+    paused, aside, level, dock: host.dock, // where the frame stands (jieyin.json hosts.shoulu.dock)
   })).catch((e) => { console.warn('[shoulu] 结印', e); return null; });
 }
 

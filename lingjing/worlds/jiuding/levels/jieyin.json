@@ -343,6 +343,8 @@
   "hosts": {
     "shoulu": {
       "when": "boss|elite", "aim": "boss", "cool": 6, "bossMul": 3, "eliteMul": 2.5, "idle": 60,
+      "_dock": "Where the dock stands (helper.js offerSeals `dock`): the bottom-left corner as before, its frame narrow — the wide one reached 小满 and his fire in the middle of the cave (Hanli 10-22, of 守灶台: 「结印的框会挡住画面」; checked here the same day).",
+      "dock": { "at": "bottom", "w": 0.36 },
       "paces": { "intense": { "when": "always", "aim": "near", "cool": 3.5 } },
       "say": { "zh": "合窳出来了——结印！", "en": "The great beast is out — make the seals!" },
       "first": { "zh": "比个剑诀，往摄像头一戳，飞剑就出去", "en": "Make the sword seal and jab at the camera: the flying sword flies" },

@@ -35,7 +35,7 @@
 .jyh-btn.is-call { transform: scale(1.25); transform-origin: left bottom; animation: jyh-call 1s ease-in-out infinite; }
 .shouqiang-stage[data-landscape="true"] .jyh-btn { width: 7%; }
 
-.jyh-dock { width: 54%; max-width: 300px; min-width: 200px; display: flex; flex-direction: column; gap: 3px; }
+.jyh-dock { width: var(--jyh-w, 54%); max-width: 300px; min-width: 200px; display: flex; flex-direction: column; gap: 3px; }
 .shouqiang-stage[data-landscape="true"] .jyh-dock { width: 28%; }
 /* The shared hand hint (hint.js, its look in jieyin.css), fitted to the corner: the frame takes the dock's width.
    The gesture frame (Hanli 10-21: 「结印要有个框提示手势的」): a clear paper panel, the gesture to make beside the live hand. */
@@ -63,3 +63,28 @@
 @keyframes jyh-bob { 50% { transform: translateY(-4px); } }
 @keyframes jyh-call { 50% { box-shadow: 0 0 0 4px #fff3c4, 0 0 40px rgba(255, 120, 40, 1); } }
 @media (prefers-reduced-motion: reduce) { .jyh-btn, .jyh-btn.is-call, .jyh-btn.is-ready { animation: none; } }
+
+/* Where a host's data puts them (offerSeals `dock`; Hanli 10-22, of 守灶台: 「结印的框会挡住画面, 可以上面一点吗?」):
+   `at: 'top'` — top-left, under the host's top bar, over the backdrop beyond the road's far end (守山门); `w` — a narrow
+   frame (a share of the field), off the middle where the 大妖 step out (守山门) or 小满 stands (守墙关 · 守炉). */
+.jyh-btn[data-at="top"], .jyh-dock[data-at="top"] { top: 11%; bottom: auto; }
+.jyh-btn[data-at="top"] { width: 11%; }
+.jyh-btn[data-at="top"].is-call { transform-origin: left top; }
+.jyh-btn[data-at="top"] .jyh-callout { top: calc(100% + 14px); bottom: auto; }
+.jyh-btn[data-at="top"] .jyh-callout::after { top: -8px; bottom: auto; border-top: 0; border-bottom: 8px solid #fff8ef; border-top-color: transparent; }
+/* Narrow, and short enough to end above a road's far end on a phone too: the live hand beside the gesture and its
+   name, the facing words in one line under both, the cue under that. */
+.jyh-dock[data-narrow] { width: var(--jyh-w); min-width: 125px; max-width: 230px; }
+.jyh-dock[data-narrow] .jy-hint-panel { grid-template-columns: 1fr auto; align-items: center; }
+.jyh-dock[data-narrow] .jy-hint-panel .jy-frame { min-width: 0; grid-row: 1 / span 2; }
+.jyh-dock[data-narrow] .jy-target { display: contents; }
+.jyh-dock[data-narrow] .jy-target-icon { grid-column: 2; grid-row: 1; justify-self: center; }
+.jyh-dock[data-narrow] .jy-target-icon svg { width: 40px; height: 40px; }
+.jyh-dock[data-narrow] .jy-target-name { grid-column: 2; grid-row: 2; font-size: 12px; text-align: center; color: #c23b22; }
+.jyh-dock[data-narrow] .jy-target-face { grid-column: 1 / -1; max-width: none; font-size: 9px; line-height: 1.25; }
+.jyh-dock[data-narrow] .jy-cue { white-space: normal; font-size: 9px; line-height: 1.2; min-width: 0; }
+@media (min-width: 700px) { /* a desk: room for the gesture to read big beside the live hand */
+  .jyh-dock[data-narrow] .jy-target-icon svg { width: 60px; height: 60px; }
+  .jyh-dock[data-narrow] .jy-target-name { font-size: 14px; }
+  .jyh-dock[data-narrow] .jy-target-face, .jyh-dock[data-narrow] .jy-cue { font-size: 10px; }
+}
