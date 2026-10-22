@@ -26,7 +26,17 @@ export const arcadePlayUrl = (id) => `index.html?${new URLSearchParams({ save: `
  * 断案, 对对子, 密室, the 秘境 rerun): its own test save begun again from its fixture (tools/arcade-saves.mjs —
  * where its card stands), and no `board=` — Look brings the card, as in the story.
  */
-export const arcadeStageUrl = (stage) => `index.html?${new URLSearchParams({ save: stage.save, seed: stage.save })}`;
+export const arcadeStageUrl = (stage, days = 0) => `index.html?${new URLSearchParams({ save: stage.save, seed: stage.save, ...(days > 0 ? { days: String(days) } : {}) })}`;
+
+/**
+ * Days until a visiting shop stands (`visits: { every, offset }` against the local calendar day — rules/visiting.mjs's
+ * count): a stage row with a `visitor` (讨价还价 with the pedlar up the mountain) shifts its save's clock that far.
+ */
+export function visitDays(visits, now = new Date()) {
+  if (!visits?.every) return 0;
+  const day = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+  return (((visits.offset ?? 0) - day) % visits.every + visits.every) % visits.every;
+}
 
 /** The registry row a 试玩 deals from: the game's own row (no story task), else its first. */
 export function arcadeRow(registry, id) {

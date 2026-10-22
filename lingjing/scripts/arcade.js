@@ -10,7 +10,7 @@
 import { esc } from './esc.js';
 import { mountPure } from './games/mount.js';
 import { playAlone, timedOf, tallOf } from './games/shell.js';
-import { arcadePlayUrl, arcadeStageUrl } from './arcade-board.js';
+import { arcadePlayUrl, arcadeStageUrl, visitDays } from './arcade-board.js';
 import { devPrefetch } from './games/prefetch-ling.js';
 
 const q = new URLSearchParams(location.search);
@@ -58,6 +58,15 @@ async function registry() {
   return r?.ok ? r.json() : { groups: [], games: [] };
 }
 
+/* A stage row's address: its save, and — a game a visiting shop holds — the clock moved on to the shop's day. */
+async function stageUrl(stage) {
+  const [prov, id] = String(stage.visitor ?? '').split('/');
+  if (!id || !/^[a-z]+$/.test(prov)) return arcadeStageUrl(stage);
+  const r = await fetch(`../worlds/jiuding/places/${prov}.json`).catch(() => null);
+  const place = (r?.ok ? (await r.json()).places ?? [] : []).find((p) => p.id === id);
+  return arcadeStageUrl(stage, visitDays(place?.has?.visitor?.visits));
+}
+
 /* A board the story cut: its name and why, nothing to open (its module is gone). */
 function cutTile(g) {
   const why = g.why?.[lang()] ?? g.why?.zh ?? '';
@@ -71,7 +80,7 @@ async function tileHtml(g, i) {
   const mod = g.stage ? null : await modOf(g.id);
   const where = [g.hui, g.scene].filter(Boolean).join(' · ');
   const kind = kindOf(g);
-  const to = g.stage ? arcadeStageUrl(g.stage) : mod?.meta?.ai ? arcadePlayUrl(g.id) : href({ game: g.id, n: String(i) });
+  const to = g.stage ? await stageUrl(g.stage) : mod?.meta?.ai ? arcadePlayUrl(g.id) : href({ game: g.id, n: String(i) });
   const top = `<span class="arcade-tile-top"><b>${esc(titleOf(g, mod))}</b>${kind ? `<em class="arcade-kind">${esc(kind)}</em>` : ''}</span>`
     + `<small>${esc(where || g.task || (g.stage ? w().stage : ''))}</small>`;
   const lvs = await levelsOf(g);
@@ -149,7 +158,7 @@ async function playPage(id, n) {
   const reg = await registry();
   const row = reg.games[Number(n)]?.id === id ? reg.games[Number(n)] : reg.games.find((g) => g.id === id) ?? { id };
   // A game the rules stand on the stage is the real page's, as is one the model plays (an old link to either lands there).
-  if (row.stage) { location.replace(arcadeStageUrl(row.stage)); return; }
+  if (row.stage) { location.replace(await stageUrl(row.stage)); return; }
   if (row.replaced === 'cut') { root.textContent = w().missing; return; }
   const mod = await modOf(id), mount = mountOf(mod);
   if (mod?.meta?.ai) { location.replace(arcadePlayUrl(id)); return; }
