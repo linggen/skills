@@ -67,7 +67,10 @@ export function wireDrag({ onDrop, active, room: within = null }) {
     document.addEventListener('click', (c) => { c.stopPropagation(); c.preventDefault(); }, { capture: true, once: true });
     onDrop(spotOf(el), to && to.dataset.spot !== 'stage' ? spotOf(to) : { kind: 'stage', index: -1 });
   };
-  const on = [['pointerdown', down], ['pointermove', move], ['pointerup', up], ['pointercancel', end]];
+  // A card's painting is an <img>: the browser's own image drag would take the gesture (no pointermove, no
+  // pointerup — found live 10-22, a 灵兽 dragged by its picture never played). The room's pictures are never dragged.
+  const nodrag = (e) => { if (e.target.closest?.('.battle')) e.preventDefault(); };
+  const on = [['pointerdown', down], ['pointermove', move], ['pointerup', up], ['pointercancel', end], ['dragstart', nodrag]];
   for (const [type, fn] of on) document.addEventListener(type, fn);
   return () => { end(); for (const [type, fn] of on) document.removeEventListener(type, fn); };
 }
