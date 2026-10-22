@@ -45,7 +45,8 @@ export function offerJieyin(level, box, { lang, game, shell, marks, feed = false
   const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
     host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, idle: c.idle,
-    state: () => game.jieyinState(), cast: (id, lane) => game.jieyin(id, lane?.lane ?? lane), fizzle: () => game.fizzle(), say,
+    // the dock casts back an event (its move, the hand's lane): the row ids here are the 手势斗法 ids
+    state: () => game.jieyinState(), cast: (e, lane) => game.jieyin(e?.move ?? e, e?.lane ?? lane?.lane ?? lane), fizzle: () => game.fizzle(), say,
     call: () => t(c.say), first: moves.some((m) => m.motion === 'jab' && !m.from) ? c.first : null,
     paused: () => Boolean(shell?.paused?.() || game.paused()), aside: () => game.picking(),
   })).catch((e) => { console.warn('[sadoushou] 结印', e); return null; });

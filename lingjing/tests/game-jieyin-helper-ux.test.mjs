@@ -90,3 +90,19 @@ test('the gesture frame draws a one-hand seal as the right hand (the mirror show
   assert.equal(iconSvg(kit.seals.lihuo, 40, { hand: 'right' }), iconSvg(kit.seals.lihuo, 40), 'two hands: left on the left, right on the right, as before');
   assert.ok(posesOf(kit.seals.jian).image.length === 1);
 });
+
+test('a host may hand its rows (守山门 · 守炉): the dock reads each as its 手势斗法 id and draws the button; 守山门 hears the cast event (live 10-22: rows went in whole, no button)', async () => withFetch(async () => {
+  const sad = JSON.parse(readFileSync(new URL('../worlds/jiuding/levels/sadoushou.json', import.meta.url), 'utf8'));
+  const { host } = page();
+  const h = await offerSeals({ host, moves: sad.levels[0].jieyin.moves, available: async () => true, eyeOf });
+  assert.ok(h, 'a handle');
+  assert.equal(host.appended[0].className, 'jyh-btn');
+  h.close();
+  const { offerJieyin } = await import('../scripts/games/sadoushou.js');
+  const calls = [];
+  let got = null;
+  const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: (id, lane) => { calls.push([id, lane]); return true; }, fizzle() {}, paused: () => false, picking: () => false, say() {} };
+  await offerJieyin(sad.levels[0], { ownerDocument: { defaultView: globalThis } }, { lang: 'zh', game, load: async () => ({ offerSeals: async (o) => { got = o; return null; } }) });
+  got.cast({ type: 'cast', move: 'huodan', lane: 'left' });
+  assert.deepEqual(calls, [['huodan', 'left']]);
+}));

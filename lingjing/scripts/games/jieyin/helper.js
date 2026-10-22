@@ -55,6 +55,8 @@ export function leadLine(kit, pace = 'rest', lang = 'zh') {
   return l ? l[lang === 'en' ? 'en' : 'zh'] ?? l.zh : '';
 }
 export { cameraHere as available };
+/** A move a host offers, as the 手势斗法 kit names it: an id, or a host row's `jieyin`, else its `id`. */
+export const duelId = (m) => m?.jieyin ?? m?.id ?? m;
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -118,6 +120,7 @@ const firstTime = (win) => { try { if (win.localStorage?.getItem(SEEN)) return f
 export async function offerSeals({ host, lang = 'zh', moves = [], state = () => ({ on: true, ready: true, cool: 0, coolOf: 0 }),
   cast = () => false, say = () => {}, call = () => null, first = null, idle = 60, fastFps = 30, paused = () => false, aside = () => false,
   env = globalThis, feed = false, available = cameraHere, eyeOf = openEye, level = null } = {}) {
+  moves = moves.map(duelId); // a host may hand its rows: each is its 手势斗法 id
   if (!moves.length || (!feed && !(await available(env)))) return null;
   const kit = await fetch(LEVELS).then((r) => r.json());
   const tiers = tiersOf(kit, moves);
