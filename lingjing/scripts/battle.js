@@ -920,6 +920,9 @@ export function foeTurn(st) {
 function aimFor(st, side, c) {
   const them = other(st, side);
   if (c.effect?.buff) return { kind: 'minion', index: 0 };
+  // A bite (`effect.bite`) is a beast's own teeth, not a spell: it goes where a strike must — the 护主 first
+  // (Hanli 10-22: 「护主牌没发挥作用」 — 00-fox's 「挡住它咬」).
+  if (c.effect?.bite) return guardOf(them);
   // 锁 / 吞: the hardest hitter it may take — for 锁 one not already chained.
   if (c.effect?.chain != null || c.effect?.swallow != null) {
     const e = effectOf(side, c);

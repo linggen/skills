@@ -181,3 +181,33 @@ test('`fatigue: false` is a fight\'s own word, in data: the setup carries it, a 
   const others = Object.values(content.chapters).flatMap((ch) => Object.values(ch.scenes ?? {})).flatMap((sc) => sc.exits ?? []).filter((e) => e.game?.foe && e.game.id !== 'fox-bite');
   assert.ok(others.length && others.every((e) => e.game.foe.fatigue === undefined));
 });
+
+test('a bite goes at the 护主 first (Hanli 10-22: 「护主牌没发挥作用」): with the 补丁外衣 standing, the fox\'s 龇牙 lands on it, not on him', () => {
+  const s = at('00-fox');
+  const g = foxGame();
+  const catalog = Object.fromEntries(content.cards.cards.map((c) => [c.id, c]));
+  assert.equal(catalog.ziya.effect.bite, true, '龇牙 is a bite');
+  let checked = 0;
+  for (let d = 0; d < 10; d += 1) {
+    const st = begin(fightSetup(content, s, foeOf(content, g), NOW, g.id, `fox|bite|${d}`), catalog);
+    for (let n = 0; n < 40 && st.outcome === 'open'; n += 1) {
+      if (st.whose === 'foe') {
+        const guarded = st.you.board.some((m) => m.taunt), k = st.log.length;
+        foeTurn(st);
+        // while the jacket stands every bite is its; only once it is gone may one reach him
+        const hurts = st.log.slice(k).filter((x) => x.act === 'hurt' || x.act === 'hurt-minion' || x.act === 'withdrew');
+        const firstOnHim = hurts.findIndex((x) => x.act === 'hurt');
+        if (guarded && hurts.length) {
+          assert.equal(hurts[0].act, 'hurt-minion', `day ${d}: the first bite is the jacket's`);
+          if (firstOnHim >= 0) assert.ok(hurts.slice(0, firstOnHim).some((x) => x.act === 'withdrew'), `day ${d}: none reaches him before the jacket goes`);
+          checked += 1;
+        }
+        continue;
+      }
+      const jacket = st.you.hand.findIndex((id) => catalog[id]?.kind === 'minion' && catalog[id]?.keywords?.includes('taunt'));
+      if (jacket >= 0 && !st.you.board.some((m) => m.taunt)) act(st, { kind: 'play', index: jacket }, 'you');
+      act(st, { kind: 'end' }, 'you');
+    }
+  }
+  assert.ok(checked > 0, 'a bite met the jacket at least once');
+});
