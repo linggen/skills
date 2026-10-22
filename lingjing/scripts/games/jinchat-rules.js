@@ -42,7 +42,11 @@ export function parseChat(text, cast) {
   const names = cast.map((c) => c.name);
   let who = cast[0]?.id ?? null;
   const lines = [];
-  for (let l of raw.replace(TAG_RE, '').split(/\n+/)) {
+  // Two speakers on one line (live 10-22: 「老蔡：……。 眼镜：我查了。……」) are two bubbles.
+  const esc = (n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const split = names.length > 1 ? new RegExp(`\\s*(?=(?:\\*\\*)?(?:${names.map(esc).join('|')})(?:\\*\\*)?\\s*[：:])`, 'g') : null;
+  const body = raw.replace(TAG_RE, '');
+  for (let l of (split ? body.replace(split, '\n') : body).split(/\n+/)) {
     l = strip(l);
     if (!l || /^[（(][^）)]*[）)]$/.test(l)) continue;
     const m = l.match(/^([^：:「」"]{1,8})\s*[：:]\s*(.+)$/);

@@ -58,6 +58,9 @@ test('parseChat: a name and colon say who; a one-person chat strips it; narratio
   const p = parseChat('老蔡：明天？我盼你一口气跑完。\n**眼镜**：我查了，补测不许外人进场。\n（他扶了扶眼镜）\n【成】', two);
   assert.equal(p.met, true);
   assert.deepEqual(p.lines, [{ who: 'jin-laocai', text: '明天？我盼你一口气跑完。' }, { who: 'jin-yanjing', text: '我查了，补测不许外人进场。' }]);
+  const inline = parseChat('老蔡：一周早饭？这赌注听着比蛋白粉靠谱。 眼镜：我查了。成交，明天不拍。 【成】', two);
+  assert.deepEqual(inline.lines.map((l) => l.who), ['jin-laocai', 'jin-yanjing'], 'two speakers on one line: two bubbles (live 10-22)');
+  assert.equal(inline.met, true);
   const one = castOf(CHATS.ahe, PEOPLE, 'zh');
   const q = parseChat('阿禾：「记一笔。」\n怕什么？', one);
   assert.equal(q.met, false);

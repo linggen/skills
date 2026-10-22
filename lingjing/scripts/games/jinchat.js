@@ -228,7 +228,7 @@ function styleOnce(doc) {
 // and a hard offset shadow on every bubble; the dark is a black room where only the voices show.
 const STYLE = `
 .g-jc { --jc-bg: #ecebe6; --jc-ink: #22201c; --jc-me: #9de07a; --jc-them: #fff; --jc-dim: #7a756b;
-  position: relative; display: flex; flex-direction: column; height: min(560px, 68vh); min-height: 380px; max-width: 520px; margin: 0 auto;
+  position: relative; display: flex; flex-direction: column; height: min(540px, 60vh); min-height: 360px; max-width: 520px; margin: 0 auto;
   border: 3px solid var(--jc-ink); border-radius: 22px; background: var(--jc-bg); color: var(--jc-ink); overflow: hidden;
   box-shadow: 5px 6px 0 rgba(34, 32, 28, .85); font-size: 15px; line-height: 1.45; }
 .g-jc-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 2.5px solid var(--jc-ink); background: #f7f6f2; }
