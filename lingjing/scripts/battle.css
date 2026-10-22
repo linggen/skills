@@ -560,3 +560,15 @@
 
 /* Mounted in a game's shell (games/kapai.js): paused, the hand is put away — the room stands still under the veil. */
 .gshell.is-paused .battle .bdock { visibility: hidden; }
+
+/* The story's room in the shell (lingjing.js paintFight; Hanli 10-22: 「故事里的对战迁移可以开」): the frame takes the
+   focus column whole, as the room did — the bar over it, the room under it to the foot; on a phone the how-to line
+   goes (the room's own ? says it), as in the 游戏厅. */
+body.fighting .focus > .gshell { flex: 1; min-height: 0; margin: 0; gap: 4px; }
+body.fighting .focus > .gshell > .gshell-bar { padding: 6px 14px 0; }
+body.fighting .focus > .gshell > .gshell-stage { flex: 1; min-height: 0; }
+.g-fighthost, .g-fightnode, .g-fightnode > .g-kapai { height: 100%; }
+@media (max-width: 600px) {
+  body.fighting .focus > .gshell > .gshell-bar { padding: 4px 10px 0; }
+  body.fighting .focus > .gshell .gshell-how { display: none; }
+}

@@ -22,11 +22,10 @@ import { plateHtml } from './plate.js';
 import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
-import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
+import { REALMS, begin, missingCards, view as boutView } from './battle.js';
 import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
-import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, fightKind, pickOf, spoilsHtml } from './battle-card.js';
-import { wireDrag } from './battle-drag.js';
-import { banner, ghostsOf, playLog, since } from './battle-anim.js';
+import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
+import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
 import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt } from './cards.js';
@@ -70,7 +69,8 @@ import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost, mountOnly } from './beat-host.js';
 import { fellBack, probeCaps, withCaps } from './caps.js';
-import { anyPaused, forget as forgetShell, wireShell } from './games/shell.js';
+import { anyPaused, forget as forgetShell, frameHtml, say as shellSay, shellFor, timedOf, wireShell } from './games/shell.js';
+import * as kapai from './games/kapai.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
@@ -101,7 +101,6 @@ const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summa
    sends the actions back and the RULES settle it — the page never decides a
    fight, it only plays one out (design.md § 斗法 v3). */
 let bout = null;
-let idleTimer = null;
 let look = null; //       the rules' view of the game — the only source of numbers
 let prevLook = null; //   the scene before this one (leftLook): its header holds while what leads in from it plays
 let authored = null; //   the world's content files, for the world Look names
@@ -1129,7 +1128,8 @@ function stageNow() {
 function focusHtml(slots) {
   // A fight takes the stage: while one is open, nothing else is on it, and the
   // chat beside it keeps talking (design.md § 斗法在主界面里).
-  if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
+  // The room itself is the mounted game's, in the shell's frame (paintFight); the focus is not drawn over it.
+  if (bout) return '';
   // A seal owed or up (a realm risen, a new 回) is the one moment: the next card waits for it to go — never
   // stands first with the gold coming late over it (live, 2026-10-15, 突破).
   if (riseWaits || featOn) return '';
@@ -1512,14 +1512,6 @@ function render() {
   frame = requestAnimationFrame(() => { frame = null; draw(); beats.attach(); });
 }
 
-/* Drawn this instant. The fight hands the freshly drawn room to the animator
-   (`playLog` reaches into `.battle` right after), so there the next frame is
-   already too late — it would animate the node that is about to be replaced. */
-function drawNow() {
-  if (frame) { cancelAnimationFrame(frame); frame = null; }
-  draw();
-  beats.attach();
-}
 
 /* What had the keyboard's focus is found again after a repaint by what it IS
    — its data attributes — never by where it stood: a redraw replaces every
@@ -1612,7 +1604,7 @@ function draw() {
   { const realLook = look; look = headLook(); try { paintIf('headCards', headHtml(slots && look !== realLook ? { ...slots, header: headOf(look) } : slots)); } finally { look = realLook; } }
   paintIf('footRow', footRowHtml(slots));
   paintIf('footChips', footChipsHtml(slots));
-  $('focus').innerHTML = focusHtml(slots);
+  if (bout) paintFight(bout); else $('focus').innerHTML = focusHtml(slots);
   // The story on the full stage (lines.js): the beat's words over the picture, a sentence at a time.
   // 景: a beat marked with its set piece lays the piece's picture under its words (beatPiece).
   matchPace();
@@ -1643,15 +1635,6 @@ function draw() {
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
   $('tray').innerHTML = stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
-  // A turn with nothing left in it ends itself after a beat long enough to
-  // read the board — pressing the button is always faster (his, 2026-09-18).
-  // Never while a move is being played out: the timer and a tap would both
-  // end the turn.
-  clearTimeout(idleTimer);
-  if (bout && !bout.busy && bout.st.whose === 'you' && bout.st.outcome === 'open' && idle(bout.st) && !bout.picked && !bout.help) {
-    const b = bout;
-    idleTimer = setTimeout(() => { if (bout === b && !b.busy) endBoutTurn(); }, 1400);
-  }
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.
   if (view.tapped) document.querySelectorAll('[data-say]').forEach((el) => { if (el.dataset.say === view.tapped) el.classList.add('busy'); });
@@ -1704,10 +1687,11 @@ function boutCtx() {
     party: bout.brief.setup?.you?.party ?? [], fresh: bout.brief.setup?.you?.fresh ?? [],
     // 丹囊 (danang.js): each pill's name and painting, from the world's items.
     ...pillWords(),
-    // The closing card waits for the rules' word, not for the last blow (settleBout).
-    ended: Boolean(bout.ended),
-    // Why this fight, and who speaks in it (the brief carries them when the story gives them).
-    stake: bout.brief.stake ?? null, says: { ...(boutSays(bout.brief.says, bout.st.outcome) ?? {}), her: herSays(bout) },
+    // The closing card waits for the rules' word, not for the last blow (the room's, games/kapai.js).
+    ended: Boolean(boutRoom(bout)?.room().ended),
+    // Why this fight, and who speaks in it (the brief carries them when the story gives them). The foe's first
+    // word and 银月's lines stand in the shell's bubble over the room (paintHer), not in it.
+    stake: bout.brief.stake ?? null, says: { ...(boutSays(bout.brief.says, bout.st.outcome) ?? {}), foe: null, her: null },
     // 问银月 (fightsay.js): only while she walks with him here, and its count left.
     herAsk: herFights(bout) && bout.say ? { can: bout.say.canAsk(boutView(bout.st)), left: bout.say.asksLeft(), name: look.companion?.name ?? words().yinyue } : null,
   };
@@ -3371,11 +3355,6 @@ const CLICKS = [
   ['[data-seclude-go]', () => run('seclude', () => goSeclude())],
   ['[data-emerge]', () => run('emerge', () => emerge())],
   ['[data-emerged-close]', () => show({ emerged: null })],
-  // Inside a fight the stage belongs to the fight: a click is a place on it.
-  ['[data-spot]', (el) => {
-    if (!bout) return false;
-    onBoutTap({ kind: el.dataset.spot, index: Number(el.dataset.index ?? -1) });
-  }],
   ['[data-duel-start]', (el) => run(`duel:${el.dataset.duelStart}`, () => { keep({ walkedOut: null }); return onDuelStart(el.dataset.duelStart); })],
   // 丹囊 at the door (danang.js): one more pill packed, or the pouch emptied — the page's own until 出手.
   ['[data-pill-add]', (el) => { const [id, pill] = el.dataset.pillAdd.split('|'); const b = doorBrief(id); if (b) show({ pillPick: { ...view.pillPick, [id]: pickAfter(b, ctx(), pill) } }); }],
@@ -3560,21 +3539,19 @@ function herSays(b) {
   if (!b?.her || !herFights(b)) return null;
   return b.her.from === 'wait' ? '…' : b.her.text;
 }
-/* Her bubble repainted where it stands, so a blow being drawn is never redrawn
-   under it; the closing card is drawn whole. */
+/* Her line in the shell's bubble over the room (games/shell.js say) — painted in place, so a blow being
+   drawn is never redrawn under it; the room is drawn again only between moves (问银月's count, its dim). */
+const HER_FIGHT_MS = 6500;
 function paintHer(b) {
   if (bout !== b) return;
-  if (b.ended || !b.busy) return drawNow();
-  const who = document.querySelector('.battle .bside.you .bwho');
-  if (!who) return;
-  who.querySelector('.bsay.her')?.remove();
   const t = herSays(b);
-  const name = look?.companion?.name ?? '';
-  if (t) who.insertAdjacentHTML('beforeend', `<div class="bsay her">${name ? `<b>${esc(name)}</b>` : ''}${esc(t)}</div>`);
+  if (t) shellSay(fightShell(b), look?.companion?.name ?? words().yinyue, t, b.her?.from === 'wait' ? HER_FIGHT_MS * 2 : HER_FIGHT_MS);
+  const k = boutRoom(b);
+  if (k && !k.busy()) k.draw();
 }
 /// 问银月 — true when it was asked (the ask bar falls back to the chat otherwise).
 function askHerInFight(b, said = '') {
-  if (!b?.say || !herFights(b) || b.yielded) return false;
+  if (!b?.say || !herFights(b) || boutYielded(b)) return false;
   const v = boutView(b.st);
   if (!b.say.canAsk(v)) return false;
   b.say.ask(v, fightFacts(v, herFactsCtx(b), 'ask', { words: said }));
@@ -3583,7 +3560,7 @@ function askHerInFight(b, said = '') {
 /* Her word at a key moment of the move just played out (fightsay.js cuesOf,
    bigPlay); the limits are fightsay's. `mine`: the move was his. */
 function herCues(b, before, mark, mine) {
-  if (!b?.say || !herFights(b) || b.yielded) return;
+  if (!b?.say || !herFights(b) || boutYielded(b)) return;
   const after = boutView(b.st), log = since(b.st.log, mark);
   const kinds = cuesOf(before, after, log, { strong: strongFoe(b.brief) });
   const big = mine ? bigPlay(log, after, lang()) : null;
@@ -3733,7 +3710,8 @@ async function onDuelStart(id) {
       return;
     }
     keep({ duelSay: { id: null, text: null }, walkedOut: null });
-    bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], picked: null, openLog: false, help: false, note: null, busy: false, her: null };
+    // The story's record of the fight; the room itself is mounted on the next draw (paintFight).
+    bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], her: null };
     bout.say = fightSayFor(bout);
     render();
   } catch (e) {
@@ -3744,142 +3722,69 @@ async function onDuelStart(id) {
   }
 }
 
-/* A move being played out holds the fight: `busy` keeps the idle timer and a
-   second tap from ending the same turn twice, and every await checks the room
-   is still the same one — 认输 may have closed it meanwhile. */
-const gone = (b) => bout !== b || b.yielded;
-
-/* One tap inside the fight. The page plays it out and draws it; only when the
-   fight is over does it hand the whole list of actions to the rules, which
-   replay them and settle — win, loss, or the beast walking away. */
-async function onBoutTap(spot) {
-  const b = bout;
-  if (!b) return;
-  if (spot.kind === 'help' || spot.kind === 'help-bg') { b.help = !b.help; return drawNow(); }
-  if (spot.kind === 'more') { b.openLog = !b.openLog; return drawNow(); }
-  // 收起 on the closing card: the seal has been read.
-  if (spot.kind === 'close') return b.release?.();
-  // 认输 answers at any moment, the beast's turn included.
-  if (spot.kind === 'quit') return yieldBout();
-  // 问银月: words only — nothing in the fight moves (fightsay.js).
-  if (spot.kind === 'ask') return askHerInFight(b);
-  if (b.busy || b.st.outcome !== 'open') return;
-  // A tap on the bare stage with nothing lifted is no move at all — not even a repaint.
-  if (spot.kind === 'stage' && !b.picked) return;
-  // With the rules' offers, a lift with one legal place acts on the first tap.
-  return boutDo(b, pickOf(b.picked, spot, boutView(b.st), cardCatalog(), boutOffers(b.st)));
+/* ── The room: 斗法 mounted in the shell (games/kapai.js; Hanli 10-22: 「故事里的对战迁移可以开」) ──
+   The fight plays inside the one shell every small game wears, the 游戏厅's own adapter: it plays the
+   rules, draws the room, takes the taps and the Mac's drag, ends a turn left with nothing in it, holds the
+   beast's turn while paused, and stands the closing card. It is mounted ONCE per fight into a node of its
+   own and laid into the frame the focus draws (paintFight), so a redraw never restarts it. The story keeps
+   what the fight means, as the hooks' bodies (boutHooks): the picks the rules replay, 银月's words, and
+   the settle — the closing card waits for the rules' answer (writeBout), then settleBout. */
+const fightShell = (b) => `duel:${b.id}`;
+/// The mounted room's door (games/kapai.js `host.kapai`): its state, busy, held, draw.
+const boutRoom = (b) => b?.node?.querySelector('.g-kapai')?.kapai ?? null;
+const boutYielded = (b) => Boolean(boutRoom(b)?.room().yielded);
+function boutHooks(b) {
+  return {
+    ctx: () => (bout === b ? boutCtx() : {}),
+    onMove: (token) => b.actions.push(token),
+    onStep: () => { if (bout === b) fightMoments(); },
+    onPlayed: ({ before, mark, mine }) => herCues(b, before, mark, mine),
+    onAsk: () => askHerInFight(b),
+    settle: () => writeBout(b),
+    // The closing card (won · lost · withdrew, battle-card.js endHtml) stands long enough to be read —
+    // longer with the beast's last word in it — or until 收起. Never a gate: the report goes by itself.
+    holdMs: (end) => (end ? SEAL_SAID_MS : SEAL_HOLD_MS),
+  };
 }
-
-/* A drag on the Mac (battle-drag.js): the same two taps in one gesture. */
-function onBoutDrop(from, to) {
-  const b = bout;
-  if (!b || b.busy || b.st.outcome !== 'open') return;
-  b.picked = null;
-  return boutDo(b, dropOf(from, to, boutView(b.st), cardCatalog()));
+function mountBout(b) {
+  const node = document.createElement('div');
+  node.className = 'g-mountnode g-fightnode';
+  b.node = node;
+  forgetShell(fightShell(b));
+  const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+  Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog() }, lang: lang(), reducedMotion, shell: shellFor(fightShell(b)), story: boutHooks(b) }))
+    .then((out) => settleBout(b, out))
+    .catch((e) => { console.warn('[lingjing] the fight room', e); return settleBout(b, { r: failed(e) }); });
 }
-wireDrag({ onDrop: onBoutDrop, active: () => Boolean(bout && !bout.busy && bout.st.outcome === 'open' && bout.st.whose === 'you') });
-
-/* What a tap or a drop came to: hold it, put it back, or play it out and draw it. */
-async function boutDo(b, out) {
-  b.note = null;
-  if (out.quit) return yieldBout();
-  if (out.clear) { b.picked = null; return drawNow(); }
-  if (out.pick) { b.picked = out.pick; return drawNow(); }
-  if (out.action.kind === 'end') { b.picked = null; return endBoutTurn(); }
-  const mark = b.st.log.length, before = boutView(b.st);
-  const res = act(b.st, out.action, 'you');
-  b.picked = null;
-  if (!res.ok) { b.note = res.why; return drawNow(); }
-  b.actions.push(tokenOf(out.action));
-  await playOut(b, mark, { who: 'you', action: out.action });
-  if (gone(b)) return;
-  fightMoments();
-  herCues(b, before, mark, true);
-  if (b.st.outcome !== 'open') return settleBout(b);
-  drawNow();
-}
-
-/* One move drawn and played out: the bodies about to go are kept as ink ghosts
-   (ghostsOf, read off the room as it stood), the room is drawn as it is now,
-   and the log since `mark` plays over it — the stroke from `by` first. */
-async function playOut(b, mark, by = null) {
-  b.busy = true;
-  try {
-    const ghosts = ghostsOf(document.querySelector('.battle'), since(b.st.log, mark), by);
-    drawNow();
-    const sig = b.st.foe.signature?.name;
-    const cx = boutCtx();
-    await playLog(document.querySelector('.battle'), since(b.st.log, mark), { words: cx.words, ghosts, faceOf: (id) => cardFaceHtml(id, cx), sigName: typeof sig === 'string' ? sig : sig?.[lang()] ?? sig?.zh });
-  } finally {
-    b.busy = false;
-  }
-}
-
-/* The creature answers a move at a time, drawn as each lands. */
-async function endBoutTurn() {
-  const b = bout;
-  if (!b || b.busy || b.st.outcome !== 'open' || b.st.whose !== 'you') return;
-  const mark = b.st.log.length, before = boutView(b.st);
-  if (!act(b.st, { kind: 'end' }, 'you').ok) return;
-  b.actions.push('end');
-  await playOut(b, mark);
-  if (gone(b)) return;
-  fightMoments();
-  if (b.st.whose === 'foe' && b.st.outcome === 'open') {
-    b.busy = true;
-    try { await banner(document.querySelector('.battle'), `${b.brief.creature.name}${lang() === 'en' ? "'s turn" : '的回合'}`, 'foe'); } finally { b.busy = false; }
-    for (let guard = 0; guard < 40 && !gone(b) && b.st.whose === 'foe' && b.st.outcome === 'open'; guard += 1) {
-      const step = b.st.log.length;
-      const did = foeStep(b.st);
-      await playOut(b, step, did ? { who: 'foe', action: did } : null);
-      if (gone(b)) return;
-      fightMoments();
-      if (!did || did.kind === 'end') break;
-    }
-  }
-  if (gone(b)) return;
-  herCues(b, before, mark, false);
-  if (b.st.outcome !== 'open') return settleBout(b);
-  drawNow();
-}
-
-/* 认输 — the rules settle only a fight played to its end, so yielding is played
-   to its end: he passes every turn and the beast takes its own, exactly as the
-   rules will replay it. Nothing is invented; the rules still decide. */
-function yieldBout() {
-  const b = bout;
-  if (!b || b.settling || b.yielded) return;
-  b.yielded = true;
-  const st = b.st;
-  for (let guard = 0; guard < 600 && st.outcome === 'open'; guard += 1) {
-    if (st.whose === 'foe') { foeTurn(st); continue; }
-    if (!act(st, { kind: 'end' }, 'you').ok) break;
-    b.actions.push('end');
-  }
-  return settleBout(b);
+/// The shell's frame round the room: drawn once a fight, then left standing — the room and the shell's own
+/// layer (pause, 银月's bubble) paint themselves in place.
+function paintFight(b) {
+  const focus = $('focus'), id = fightShell(b);
+  if (!b.node) mountBout(b);
+  const frame = [...focus.children].find((el) => el.matches('.gshell') && el.dataset.shell === id);
+  if (frame?.contains(b.node)) return;
+  focus.innerHTML = frameHtml({ id, title: duelTitle(b.brief.creature, words(), lang()), kind: kapai.meta.name[lang()] ?? kapai.meta.name.zh, how: kapai.meta.how[lang()] ?? kapai.meta.how.zh, timed: timedOf(kapai), lang: lang(), body: '<div class="g-mounthost g-fighthost"></div>' });
+  focus.querySelector('.g-fighthost')?.replaceChildren(b.node);
 }
 
 /* The rules settle it, and the scene reports it — the scene is still the only
-   witness to a fight (design.md § 降妖). The room closes whatever the answer:
-   a refusal is said on the stage, and Ling hears only what the rules decided. */
+   witness to a fight (design.md § 降妖). The whole list of moves goes to the rules, which replay them and
+   settle — win, loss, or the beast walking away; the room's closing card waits for this answer. */
 const SEAL_HOLD_MS = 3000, SEAL_SAID_MS = 4200;
-async function settleBout(b = bout) {
-  if (!b || b.settling) return;
-  b.settling = true;
-  clearTimeout(idleTimer);
-  const { id, actions, brief } = b;
-  const r = await write('duel', { id, picks: actions.join(',') }).catch(failed);
-  // The closing card (won · lost · withdrew, battle-card.js endHtml) stands long enough to be
-  // read — longer with the beast's last word in it — or until 收起. Never a gate: the report
-  // below goes by itself.
-  if (r.ok && bout === b) {
-    b.ended = true;
-    drawNow();
-    const hold = boutSays(brief.says, b.st.outcome)?.end ? SEAL_SAID_MS : SEAL_HOLD_MS;
-    await new Promise((done) => { b.release = done; setTimeout(done, hold); });
-  }
+async function writeBout(b) {
+  const r = await write('duel', { id: b.id, picks: b.actions.join(',') }).catch(failed);
+  return r ?? failed('no answer');
+}
+/* The room has closed (its closing card read, or the rules refused): what the fight left. The room closes
+   whatever the answer: a refusal is said on the stage, and Ling hears only what the rules decided. */
+async function settleBout(b, out = {}) {
+  if (!b || b.settled) return;
+  b.settled = true;
+  const { id, brief } = b, r = out.r ?? failed('no answer');
   if (bout === b) bout = null;
+  forgetShell(fightShell(b));
   b.say?.close();
+  render();
   queueMicrotask(playReveals); // a card won waits for the room to close, then lands in the bag
   if (!r.ok && engineMoved(r)) return reloadForEngine(r);
   if (!r.ok) {
@@ -4734,9 +4639,9 @@ if (SCRATCH) {
     her: () => ({ line: bout?.her ?? null, asks: bout?.say?.st.asks ?? null, cues: bout?.say?.st.cues ?? null, told: [...(bout?.say?.st.told ?? [])], facts: herFactsSent }),
     // 银月 as companion (hersay.js): her mode, her last line and bubble, the day's counts.
     companion: () => ({ mode: herNow(), line: herSay.st.line, bubble: herBub?.text ?? null, shown: document.querySelector('.slotfoot > .yysay')?.textContent ?? null, mem: herSay.mem, facts: herFactsSent }),
-    bout: () => (bout ? { outcome: bout.st.outcome, whose: bout.st.whose, you: bout.st.you.hp, foe: bout.st.foe.hp, busy: Boolean(bout.busy), picked: bout.picked ?? null } : null),
+    bout: () => (bout ? { outcome: bout.st.outcome, whose: bout.st.whose, you: bout.st.you.hp, foe: bout.st.foe.hp, busy: Boolean(boutRoom(bout)?.busy()), picked: boutRoom(bout)?.picked() ?? null } : null),
     // The attentive move now (fightline.js), for the crawler to make with real taps.
-    move: () => (bout && !bout.busy ? bestMove(bout.st) : null),
+    move: () => (bout && boutRoom(bout) && !boutRoom(bout).busy() ? bestMove(bout.st) : null),
     // Why the stage holds what it holds — the crawler writes it beside a blank-stage finding.
     why: () => ({ storyAhead: storyAhead(), cardsAhead: cardsAhead(), choicesInBox: choicesInBox(), huiTurn: atHuiTurn(), closeUp: closeUp(),
       stageBusy: stageBusy(), endingWaits: endingWaits(), pending: [...momentPending], memoryWaits, homingPending, riseWaits, sealOwed,
