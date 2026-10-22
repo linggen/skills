@@ -357,12 +357,12 @@
       "period": "once",
       "stars": 3,
       "title": {
-        "zh": "白线上 · 吸四吐六",
-        "en": "On the white line · In four, out six"
+        "zh": "投篮 · 白线上",
+        "en": "Free throws · On the white line"
       },
       "how": {
-        "zh": "空球馆里只剩他一个。往后拉，松手，把球从篮筐上面投进去。",
-        "en": "The gym is empty but for him. Pull back and let go: drop the ball in through the rim."
+        "zh": "空球馆里只剩他一个，站在罚球线上。往后拉，看着那串点瞄准，松手把球投出去——球要从篮筐上面落进网里才算进。六个球，进一个就过关，进得越多星越多。",
+        "en": "The gym is empty but for him, on the free-throw line. Pull back, aim by the dotted arc, let go — the ball must drop in through the rim from above. Six balls: one in passes; more in, more stars."
       },
       "grant": {
         "table": "task"

@@ -19,6 +19,8 @@ export interface SlingshotConfig {
   POST_WIDTH: number;
   POST_HEIGHT: number;
   VELOCITY_MULTIPLIER: number;
+  /** The aim dots' reach in trajectory steps; unset, the simulator's default. */
+  AIM_STEPS?: number;
 }
 
 export interface SlingshotCallbacks {

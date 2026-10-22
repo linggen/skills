@@ -92,7 +92,7 @@ export class SlingshotSetup {
       onBirdStateChanged: onSlingshotStateChange,
     };
 
-    const slingshot = new Slingshot(scene, slingshotX, slingshotY, {}, slingshotCallbacks);
+    const slingshot = new Slingshot(scene, slingshotX, slingshotY, { AIM_STEPS: levelData?.slingshot?.aim }, slingshotCallbacks);
 
     const pouchRestPos = slingshot.getBirdRestPosition();
     const birdQueueSystem = new BirdQueue(scene, pouchRestPos, groundY);

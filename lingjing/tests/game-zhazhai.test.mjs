@@ -137,6 +137,8 @@ test('the bundle was rebuilt after its source last changed (cd tools/zhazhai && 
 // playwright (CI installs none); run it before a push that touches tools/zhazhai.
 const pw = playwrightOrNull();
 const STORY = ['deer-wind', 'toulan', 'faqiu', 'anhe-dark', 'jiangtang', 'yishui-reed']; // story order: 第二回, 今一, 今二 (Hanli 10-22: 「改成玩」), 第五回, 第六回, 古七
+// Off the tightening line: 今二's 投篮 is the easy one, six balls and a long aim arc (Hanli 10-22: 「游戏本身不用改, 可以想办法降低一下难度」).
+const EASY = new Set(['faqiu']);
 test('each story throw is won by a sensible hand and not by a lazy one, and each is tighter than the one before', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 900000 }, async () => {
   const srv = await serve();
   const browser = await pw.chromium.launch();
@@ -146,8 +148,8 @@ test('each story throw is won by a sensible hand and not by a lazy one, and each
       const field = await fieldOf(browser, srv.url, lv);
       assert.ok(field, `${lv}: the level starts`);
       const w = windowOf(field);
-      assert.ok(w > 0 && w < room, `${lv}: room for a first throw ${(w * 100).toFixed(2)}% (the one before: ${(room * 100).toFixed(2)}%)`);
-      room = w;
+      assert.ok(w > 0 && (EASY.has(lv) || w < room), `${lv}: room for a first throw ${(w * 100).toFixed(2)}% (the one before: ${(room * 100).toFixed(2)}%)`);
+      if (!EASY.has(lv)) room = w;
       const sensible = [], lazy = [];
       for (const seed of [1, 2, 3]) sensible.push(await playLevel(browser, srv.url, lv, 'sensible', seed));
       for (const seed of [1, 2]) lazy.push(await playLevel(browser, srv.url, lv, 'lazy', seed));

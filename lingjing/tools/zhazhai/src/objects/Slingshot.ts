@@ -460,7 +460,7 @@ export class Slingshot {
       x: engine.gravity.x,
       y: engine.gravity.y,
       scale: engine.gravity.scale,
-    });
+    }, this.config.AIM_STEPS ? { totalSteps: this.config.AIM_STEPS } : {});
   }
 
   drawTrajectory(pullData: PullData | null): void {

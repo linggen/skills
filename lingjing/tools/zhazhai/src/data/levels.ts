@@ -125,6 +125,8 @@ export interface LevelPigConfig {
 export interface LevelSlingshotConfig {
   x: number;
   y: number;
+  /** How far the aim dots reach (trajectory steps; the kit's default when unset): a long arc helps a shot that must drop in. */
+  aim?: number;
 }
 
 export interface LevelData {
