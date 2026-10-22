@@ -53,7 +53,7 @@ test('registered in the 游戏厅 as a throw (plays wide); the story’s throw b
   const keys = new Set(forts.levels.filter((l) => l.key).map((l) => l.key));
   const beats = Object.fromEntries(tasks.filter((t) => t.game === 'zhazhai').map((t) => [t.id, t.deal?.lv]));
   // + the 调息 cut (2026-10-20): 讲堂试法 on 第六回's 讲堂 board, 投一个给我看看 on 今一's.
-  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'anhe-dark': 'anhe-dark', 'qianye-qiajue': 'jiangtang', 'yishui-reed': 'yishui-reed', 'jin-toulan': 'toulan' });
+  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'anhe-dark': 'anhe-dark', 'qianye-qiajue': 'jiangtang', 'yishui-reed': 'yishui-reed', 'jin-toulan': 'toulan', 'jin-whiteline': 'faqiu' });
   for (const lv of Object.values(beats)) assert.ok(keys.has(lv), `${lv}: a level of the build`);
   // The marks a beat reads come from its grades.
   const reed = tasks.find((t) => t.id === 'yishui-reed');
@@ -136,7 +136,7 @@ test('the bundle was rebuilt after its source last changed (cd tools/zhazhai && 
 // The levels played: headless Chromium on the built bundle, under a fake clock (tools/zhazhai/bot.mjs). Skipped without
 // playwright (CI installs none); run it before a push that touches tools/zhazhai.
 const pw = playwrightOrNull();
-const STORY = ['deer-wind', 'toulan', 'anhe-dark', 'jiangtang', 'yishui-reed']; // story order: 第二回, 今一, 第五回, 第六回, 古七
+const STORY = ['deer-wind', 'toulan', 'faqiu', 'anhe-dark', 'jiangtang', 'yishui-reed']; // story order: 第二回, 今一, 今二 (Hanli 10-22: 「改成玩」), 第五回, 第六回, 古七
 test('each story throw is won by a sensible hand and not by a lazy one, and each is tighter than the one before', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 900000 }, async () => {
   const srv = await serve();
   const browser = await pw.chromium.launch();

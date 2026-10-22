@@ -101,7 +101,9 @@ export function choose(info, aim, body = null) {
   const inBox = (p, b) => p.x > b.x0 && p.x < b.x1 && p.y > b.y0 && p.y < b.y1;
   const box = aim.box;
   const inner = box && { x0: box.x0 + (box.x1 - box.x0) / 3, x1: box.x1 - (box.x1 - box.x0) / 3, y0: box.y0 + (box.y1 - box.y0) / 4, y1: box.y1 - (box.y1 - box.y0) / 4 };
-  const hits = (p) => (inner ? inBox(p, inner) : Math.hypot(p.x - aim.x, p.y - aim.y) < aim.r * 0.5);
+  // `down`: the spot counts only for a throw coming down onto it at least that steeply (dy/dx) — 今二's hoop: through the
+  // rim, never sideways into the net.
+  const hits = (p, q) => (!aim.down || !q || p.y - q.y > aim.down * Math.abs(p.x - q.x)) && (inner ? inBox(p, inner) : Math.hypot(p.x - aim.x, p.y - aim.y) < aim.r * 0.5);
   const A = [], P = [];
   for (let angle = 1; angle <= 75; angle += 0.5) A.push(angle);
   for (let power = 0.25; power <= 1.0001; power += 0.005) P.push(power);
@@ -109,7 +111,7 @@ export function choose(info, aim, body = null) {
     const pts = arcOf(info, angle, power);
     let at = -1, miss = Infinity, near = -1;
     for (let i = 0; i < pts.length; i++) {
-      if (hits(pts[i])) { at = i; break; }
+      if (hits(pts[i], pts[i - 1])) { at = i; break; }
       const d = Math.hypot(pts[i].x - aim.x, pts[i].y - aim.y);
       if (d < miss) { miss = d; near = i; }
       if (pts[i].y > 1960) break;
@@ -148,14 +150,14 @@ export function windowOf(info) {
   const solid = [...info.blocks, ...(target.body && !aim.box ? [target.body] : [])];
   const boxes = solid.map((b) => ({ x0: b.x0 - radius, y0: b.y0 - radius, x1: b.x1 + radius, y1: b.y1 + radius }));
   const inBox = (p, b) => p.x > b.x0 && p.x < b.x1 && p.y > b.y0 && p.y < b.y1;
-  const hits = (p) => (aim.box ? inBox(p, aim.box) : Math.hypot(p.x - aim.x, p.y - aim.y) < aim.r);
+  const hits = (p, q) => (!aim.down || !q || p.y - q.y > aim.down * Math.abs(p.x - q.x)) && (aim.box ? inBox(p, aim.box) : Math.hypot(p.x - aim.x, p.y - aim.y) < aim.r);
   let n = 0, good = 0;
   for (let angle = 1; angle <= 75; angle += 1) {
     for (let power = 0.25; power <= 1.0001; power += 0.01) {
       n++;
       const pts = arcOf(info, angle, power);
       for (let i = 0; i < pts.length; i++) {
-        if (hits(pts[i])) { good++; break; }
+        if (hits(pts[i], pts[i - 1])) { good++; break; }
         const nearSpot = !aim.box && Math.hypot(pts[i].x - aim.x, pts[i].y - aim.y) < aim.r + radius;
         if (boxes.some((b, k) => inBox(pts[i], b) && !(k >= info.blocks.length && nearSpot)) || pts[i].y > 1960) break;
       }

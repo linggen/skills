@@ -190,6 +190,7 @@
       "done_line": { "zh": "四分二十九。过了。", "en": "Four twenty-nine. Passed." }
     },
     {
+      "_cut": "Off j04-line 2026-10-22 (Hanli: 「改成玩」 — 最后一罚 back as 今四’s board, so 罚球 · 吸四吐六 leaves 今二): the free throws are a throw now (jin-whiteline, 砸寨 `faqiu`); `cut` lets a save holding it offered let it go on load (state.mjs fitWorld). Row and level stay in the 游戏厅, under 旧版.", "cut": "2026-10-22",
       "id": "jin-faqiu", "kind": "board", "game": "qimai", "period": "once",
       "title": { "zh": "罚球 · 吸四吐六", "en": "Free throws · In for four, out for six" },
       "grant": { "table": "task" },
@@ -211,7 +212,7 @@
       "done_line": { "zh": "出关了。", "en": "Out of seclusion." }
     },
     {
-      "_cut": "Off j09-final 2026-10-22 (Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」 — item 3, the 调息 sweep): the 今 interlude plays a chat now (jin-chat-ahe, the night before, in j09-noise); the way on tells the breath as the book does; `cut` lets a save holding it offered let it go on load (state.mjs fitWorld). Row and level stay in the 游戏厅, under 旧版.", "cut": "2026-10-22",
+      "_back": "Cut 2026-10-22 for the chat, back the same day (Hanli: 「改成玩」 — the 今线 climax is played): 今四 plays 阿禾’s chat the night before (j09-noise) and this the night of the final.",
       "id": "jin-lastshot", "kind": "board", "game": "qimai", "period": "once",
       "title": { "zh": "最后一罚 · 带着怕投", "en": "The last free throw · Shoot with the fear" },
       "grant": { "table": "task" },
@@ -343,6 +344,36 @@
       "replay": {
         "zh": "决赛前那一夜，那句话还没发出去……再跟她说一回？",
         "en": "The night before the final, that message still unsent… tell her again?"
+      }
+    },
+    {
+      "_jin": "今二's free throws (Hanli 10-22: 「改成玩」 — 罚球 off the 调息 kit; 今二 read ~4,900 characters with only the 妈 chat): j04-line's 「他扫完了地，走到那条白线上……吸四拍，吐六拍。头一个进了，第二个又进了」 as a level of 砸寨 (tools/zhazhai/src/data/throws.ts `faqiu`): the hoop's net takes only a ball coming down through the rim. Pays nothing, like every 今 board.",
+      "id": "jin-whiteline",
+      "kind": "board",
+      "game": "zhazhai",
+      "deal": {
+        "lv": "faqiu"
+      },
+      "period": "once",
+      "stars": 3,
+      "title": {
+        "zh": "白线上 · 吸四吐六",
+        "en": "On the white line · In four, out six"
+      },
+      "how": {
+        "zh": "空球馆里只剩他一个。往后拉，松手，把球从篮筐上面投进去。",
+        "en": "The gym is empty but for him. Pull back and let go: drop the ball in through the rim."
+      },
+      "grant": {
+        "table": "task"
+      },
+      "done_line": {
+        "zh": "头一个进了。",
+        "en": "The first one goes in."
+      },
+      "replay": {
+        "zh": "那天傍晚空球馆里的那条白线……再投几个？",
+        "en": "That evening, the white line in the empty gym… shoot a few more?"
       }
     },
     {

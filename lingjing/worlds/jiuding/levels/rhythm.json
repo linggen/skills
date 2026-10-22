@@ -214,7 +214,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "twenty",
-       "n": 67
+       "n": 68
       },
       {
        "kind": "read",
@@ -414,7 +414,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 60
+       "n": 61
       },
       {
        "kind": "read",
@@ -651,7 +651,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 61
+       "n": 62
       },
       {
        "kind": "read",
@@ -661,16 +661,16 @@
       },
       {
        "kind": "board",
-       "id": "jin-faqiu",
+       "id": "jin-whiteline",
        "scene": "j04-line",
        "title": {
-        "zh": "罚球 · 吸四吐六",
-        "en": "Free throws · In for four, out for six"
+        "zh": "白线上 · 吸四吐六",
+        "en": "On the white line · In four, out six"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 20
+       "mechanic": "投掷",
+       "variety": "投掷",
+       "game": "zhazhai",
+       "n": 60
       },
       {
        "kind": "read",
@@ -1042,7 +1042,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 62
+       "n": 63
       },
       {
        "kind": "read",
@@ -1319,24 +1319,43 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 63
+       "n": 64
       },
       {
        "kind": "read",
-       "chars": 3111,
-       "run": 5770,
+       "chars": 1081,
+       "run": 1081,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-lastshot",
+       "scene": "j09-final",
+       "title": {
+        "zh": "最后一罚 · 带着怕投",
+        "en": "The last free throw · Shoot with the fear"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 22
+      },
+      {
+       "kind": "read",
+       "chars": 2030,
+       "run": 4689,
        "over": true
       }
      ],
      "counts": {
-      "board": 1,
+      "board": 2,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 5770,
+     "longest": 4689,
      "roaming": 0,
      "side": []
     },
@@ -1350,7 +1369,7 @@
       {
        "kind": "read",
        "chars": 2659,
-       "run": 5770,
+       "run": 4689,
        "over": true
       },
       {
@@ -1463,7 +1482,7 @@
       "breakthrough": 0,
       "piece": 3
      },
-     "longest": 5770,
+     "longest": 4689,
      "roaming": 4,
      "side": []
     }

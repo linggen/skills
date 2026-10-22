@@ -1,5 +1,5 @@
 {
- "source": "36e6dd9439855bea9a2ad59e223bed804e63153d5662eefbbe88d86fc2846d1a",
+ "source": "cb0982457f6e2e529e8cc058c9b15d6a37dbe99677549abadf46ca6a25cdb085",
  "levels": [
   {
    "id": 1,
@@ -360,6 +360,48 @@
     "shaker",
     "proj-ball",
     "prop-table",
+    "prop-hoop"
+   ]
+  },
+  {
+   "id": 11,
+   "theme": "forest",
+   "shots": [
+    "ball",
+    "ball",
+    "ball",
+    "ball"
+   ],
+   "weasels": [
+    "SMALL"
+   ],
+   "blocks": 2,
+   "materials": [
+    "wood"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 15000,
+    "threeStars": 25000
+   },
+   "words": {
+    "zh": {
+     "name": "白线上",
+     "description": "傍晚，空荡荡的球馆。「他扫完了地，走到那条白线上。」",
+     "teachingFocus": "吸四拍，吐六拍，再出手——球要从篮筐上面落进去。"
+    },
+    "en": {
+     "name": "On the White Line",
+     "description": "Evening, the empty gym. \"When he'd finished sweeping, he walked to the white line.\"",
+     "teachingFocus": "In for four, out for six, then shoot: the ball has to drop in through the rim."
+    }
+   },
+   "key": "faqiu",
+   "place": "campus",
+   "target": "hoop",
+   "art": [
+    "place-campus",
+    "proj-ball",
     "prop-hoop"
    ]
   },

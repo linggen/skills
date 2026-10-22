@@ -75,6 +75,14 @@ export type TargetSpec =
       health: number;
     }
   | {
+      /** The hoop (今二 j04-line, 「吸四拍，吐六拍。头一个进了」): a net under the rim of the painted hoop (decor prop-hoop) —
+          a ball that comes down onto it from above, through the rim, goes in; one that strikes it from the side or below
+          is turned. Body (units, `w` × `h`), pinned, unpainted (the hoop's painting is the decor's). */
+      kind: "hoop";
+      w: number;
+      h: number;
+    }
+  | {
       kind: "gourd";
       /** A stone landing in the dark: after `delay` ms the gourd is unstoppered, its light showing until an arrow strikes, or `open` ms. */
       delay: number;

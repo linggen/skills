@@ -161,10 +161,11 @@ test('an interlude the book holds back (`draft`) is not played', async () => {
 /* ── the games: each completable, each failure the book's, never stuck ── */
 
 // 今线's boards (the 调息 sweep, Hanli 10-22: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): a chat in each
-// interlude (games/jinchat.js), and 罚球 · 吸四吐六 the one 气走经脉 left — its beat is the breath itself. 先吐, 黑地十一步
-// and 最后一罚 are cut (their ways on tell them); 晨脉 was cut 10-19.
-test('every 今线 board is a chat or 罚球: its task pays nothing, and its scene waits on it; the cut ones are offered nowhere', () => {
-  const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-faqiu': 'qimai' };
+// interlude (games/jinchat.js); 最后一罚 the one 气走经脉 left, the climax played (Hanli 10-22: 「改成玩」); 今二's free throws
+// a 砸寨 throw. 先吐, 黑地十一步 and 罚球 are cut (their ways on tell them); 晨脉 was cut 10-19.
+test('every 今线 board is a chat, 最后一罚 or 白线上: its task pays nothing, and its scene waits on it; the cut ones are offered nowhere', () => {
+  // 10-22 (Hanli: 「改成玩」): 最后一罚 back as 今四's board, 今二's free throws a 砸寨 throw (白线上)
+  const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-lastshot': 'qimai', 'jin-whiteline': 'zhazhai' };
   for (const [id, game] of Object.entries(games)) {
     const t = content.tasks.tasks.find(x => x.id === id);
     assert.equal(t.game, game, id);
@@ -174,7 +175,7 @@ test('every 今线 board is a chat or 罚球: its task pays nothing, and its sce
     assert.ok(at && /^j\d\d$/.test(at.sc.hui), `${id} is an interlude's`);
     assert.ok(at.sc.exits.some(e => e.needs?.task === id && e.refuse?.zh && e.refuse?.en));
   }
-  for (const id of ['jin-qianmi', 'jin-dark', 'jin-lastshot']) {
+  for (const id of ['jin-qianmi', 'jin-dark', 'jin-faqiu']) {
     assert.ok(content.tasks.tasks.find(x => x.id === id)?.cut, `${id} cut`);
     assert.ok(!scenes().some(({ sc }) => sc.offers?.tasks?.includes(id) || sc.exits.some((e) => e.needs?.task === id)), `${id}: offered nowhere`);
   }

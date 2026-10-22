@@ -37,7 +37,7 @@ export interface TargetView {
   openFor?: number;
   every?: number;
   /** Where a blow must land (world): a spot (the 鯥's wing root), or the body's box (the stag). */
-  aim?: { x: number; y: number; r: number; box?: { x0: number; y0: number; x1: number; y1: number } };
+  aim?: { x: number; y: number; r: number; box?: { x0: number; y0: number; x1: number; y1: number }; down?: number };
   away?: boolean;
   /** Its body (world). */
   body?: { x0: number; y0: number; x1: number; y1: number };
@@ -54,6 +54,7 @@ const ZOU = { w: 220, h: 250, draw: 250, health: 20 };
 export function lookOf(spec: TargetSpec): PigLook {
   if (spec.kind === "still") return { texture: `zz:${spec.art}`, width: spec.w, height: spec.h, shape: "rect", health: spec.health, density: 0.002, label: `pig-${spec.art}` };
   if (spec.kind === "deer") return { texture: "zz:deer-graze", width: DEER.w, height: DEER.h, shape: "rect", health: DEER.health, density: 0.003, label: "pig-deer" };
+  if (spec.kind === "hoop") return { texture: "zz:proj-ball", width: spec.w, height: spec.h, shape: "rect", health: 1, pinned: true, label: "pig-hoop" };
   if (spec.kind === "gourd") return { texture: "zz:zou", width: ZOU.w, height: ZOU.h, shape: "rect", health: ZOU.health, pinned: true, label: "pig-zou" };
   return { texture: "zz:lu-shut", width: LU.w, height: LU.h, shape: "rect", health: LU.health, pinned: true, label: "pig-lu" };
 }
@@ -88,6 +89,7 @@ export function attachTarget(scene: Phaser.Scene, pig: Pig, spec: TargetSpec): v
   if (spec.kind === "still") still(pig, spec);
   else if (spec.kind === "deer") deer(scene, pig, spec);
   else if (spec.kind === "gourd") gourd(scene, pig, spec);
+  else if (spec.kind === "hoop") hoop(scene, pig, spec);
   else lu(scene, pig, spec);
 }
 
@@ -115,6 +117,27 @@ function still(pig: Pig, spec: Extract<TargetSpec, { kind: "still" }>): void {
   dresser(img, spec.art, spec.draw, spec.h).pose(spec.art); // drawn `draw` wide, its foot on the body's
   const box = () => ({ x0: img.x - spec.w / 2, y0: img.y - spec.h / 2, x1: img.x + spec.w / 2, y1: img.y + spec.h / 2 });
   views.set(pig, () => ({ kind: "still", x: img.x, y: img.y, state: "standing", aim: { x: img.x, y: img.y, r: Math.min(spec.w, spec.h) / 2, box: box() }, body: box() }));
+}
+
+/** The net under the rim: no painting of its own (the hoop is the decor's). A ball whose middle is above the net and
+    inside the rim when it strikes goes in — the net swishes; anything else is the rim's or the net's side, and turned. */
+function hoop(scene: Phaser.Scene, pig: Pig, spec: Extract<TargetSpec, { kind: "hoop" }>): void {
+  const img = pig.getMatterImage();
+  if (!img) return;
+  img.setAlpha(0);
+  let blow: TargetView["blow"];
+  pig.guard = (at) => {
+    if (!at) return false; // a blast is no basket
+    const went = at.y < img.y - spec.h / 2 && Math.abs(at.x - img.x) <= spec.w / 2 + 6;
+    blow = { x: Math.round(at.x), y: Math.round(at.y), open: true, went };
+    if (went) {
+      const swish = scene.add.circle(img.x, img.y + 20, 30, 0xffffff, 0.55).setDepth(img.depth + 2);
+      scene.tweens.add({ targets: swish, scale: 1.8, alpha: 0, duration: 320, onComplete: () => swish.destroy() });
+    }
+    return went;
+  };
+  const box = () => ({ x0: img.x - spec.w / 2, y0: img.y - spec.h / 2, x1: img.x + spec.w / 2, y1: img.y + spec.h / 2 });
+  views.set(pig, () => ({ kind: "hoop", x: img.x, y: img.y, state: "open", aim: { x: img.x, y: img.y - spec.h / 2 - 12, r: spec.w / 2, down: 0.24 }, blow, body: box() }));
 }
 
 function deer(scene: Phaser.Scene, pig: Pig, spec: Extract<TargetSpec, { kind: "deer" }>): void {

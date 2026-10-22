@@ -49,12 +49,12 @@
  "show": [
   {
    "card": "board",
-   "id": "jin-faqiu"
+   "id": "jin-whiteline"
   }
  ],
  "offers": {
   "tasks": [
-   "jin-faqiu"
+   "jin-whiteline"
   ]
  },
  "buttons": [
@@ -71,7 +71,7 @@
    "beat": [],
    "next": "j04-dog",
    "needs": {
-    "task": "jin-faqiu"
+    "task": "jin-whiteline"
    },
    "refuse": {
     "zh": "心还在楼上跺地板。吸四拍，吐六拍。",

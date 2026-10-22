@@ -42,6 +42,9 @@ const SLINGSHOT = { x: SLINGSHOT_X, y: GROUND_Y - U };
 const STARS = { oneStar: 0, twoStars: 15000, threeStars: 25000 };
 const HOOP = 1350;
 const PILLAR = 2140, DUMMY1 = 2680, TABLE = 2550;
+/** 今二's hoop in the empty gym, drawn `HH` units high: its foot, and the rim's middle (in the painting the rim is 0.233 of
+    its height left of its middle and 0.695 of it up; the net hangs to 0.523). */
+const FT = 1750, HH = 8, RIM = FT - 0.233 * HH * U, RIM_UP = 0.695 * HH * U;
 const on = (x: number) => ({ x, y: GROUND_Y - U / 2, size: PigSize.SMALL });
 
 export const THROW_LEVELS: LevelData[] = [
@@ -164,6 +167,31 @@ export const THROW_LEVELS: LevelData[] = [
     starThresholds: STARS,
     bot: {},
   },
+  // 今二 j04-line 吸四吐六 (Hanli 10-22: 「改成玩」 — 罚球 off the 调息 kit, the free throws a throw): the empty gym at dusk,
+  // 「他扫完了地，走到那条白线上……吸四拍，吐六拍。头一个进了」 — four balls from the line, one through the rim is the
+  // board (the book's 「头一个进了，第二个又进了，第三个砸了筐，第四个又进了」). The board and the pole are bodies under
+  // the painting; the net under the rim takes only a ball coming down through it.
+  {
+    levelId: 11,
+    key: "faqiu",
+    name: "Four Free Throws",
+    description: "The empty gym at dusk: the white line, the rim.",
+    theme: "forest",
+    place: "campus",
+    teachingFocus: "In for four, out for six: then the arc.",
+    birds: [{ type: BirdType.BALL }, { type: BirdType.BALL }, { type: BirdType.BALL }, { type: BirdType.BALL }],
+    structures: [
+      // The backboard (the painting's 0.32 → 0.99 of its height, just right of the rim) and the pole.
+      block(BlockMaterial.WOOD, "rectangle", 1, 4, FT - 0.04 * HH * U, GROUND_Y - 0.64 * HH * U, { fixed: true, hidden: true }),
+      block(BlockMaterial.WOOD, "rectangle", 1, 4, FT + 0.14 * HH * U, GROUND_Y, { fixed: true, hidden: true }),
+    ],
+    pigs: [{ x: RIM, y: GROUND_Y - RIM_UP + 24, size: PigSize.SMALL }],
+    target: { kind: "hoop", w: 84, h: 20 },
+    decor: [{ art: "prop-hoop", x: FT, y: GROUND_Y + 6, h: HH * U }],
+    slingshot: SLINGSHOT,
+    starThresholds: STARS,
+    bot: {},
+  },
   // 第六回 wm-qianye 讲堂试法 (the 调息 cut, 2026-10-20): after 褚先生's 掐 and 咒, 小满 tries the spells at the back of the
   // hall — 「扔一回，丹田便空一截」: he is 四层, four throws. Straw dummies, one behind a bench, one on a lecture desk, one
   // behind a lacquered pillar; 火弹 bursts where it strikes, 冰锥 splits in three on a tap, 金刃 dashes on a tap and cuts
@@ -204,6 +232,10 @@ export const THROW_WORDS: Record<number, Record<"zh" | "en", { name: string; des
   9: {
     zh: { name: "你投一个给我看看", description: "百团大战，校篮球队的摊子。「你投一个给我看看。」", teachingFocus: "越过篮筐，越过篮板——马小宝的摇杯在后头那张桌上。" },
     en: { name: "Throw One for Me", description: "The club fair, the basketball team's stall. \"Throw one for me.\"", teachingFocus: "Over the rim, over the backboard: Ma Xiaobao's shaker is on the table behind." },
+  },
+  11: {
+    zh: { name: "白线上", description: "傍晚，空荡荡的球馆。「他扫完了地，走到那条白线上。」", teachingFocus: "吸四拍，吐六拍，再出手——球要从篮筐上面落进去。" },
+    en: { name: "On the White Line", description: "Evening, the empty gym. \"When he'd finished sweeping, he walked to the white line.\"", teachingFocus: "In for four, out for six, then shoot: the ball has to drop in through the rim." },
   },
   10: {
     zh: { name: "讲堂试法", description: "「手是沟，咒是赶水的人。」讲堂后头立着一排草人。", teachingFocus: "扔一回，丹田便空一截——四层，四回。火弹落地就炸；冰锥、金刃飞行中点一下。" },
