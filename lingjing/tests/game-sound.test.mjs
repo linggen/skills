@@ -108,7 +108,7 @@ test('muted is silent: no source starts at all; the setting is kept and every ga
   await s.wake();
   s.set('sfx', { on: false });
   const n0 = made.started.length;
-  for (const ev of ['hit', 'boss', 'kill', 'win', 'button']) assert.equal(s.play('shouqiang', ev), false);
+  for (const ev of ['hit', 'boss', 'kill', 'result.win', 'button']) assert.equal(s.play('shouqiang', ev), false);
   assert.equal(s.play('zhazhai', 'impactWoodHeavy'), false);
   assert.equal(made.started.length, n0, 'not one start()');
   const again = engine({ storage }).s; // another game, another page: the same setting

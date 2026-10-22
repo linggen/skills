@@ -280,6 +280,12 @@ test('sound: every registry game has a sound map, every map names only sounds in
   }
   for (const ext of ['ogg', 'm4a']) assert.ok(fs.existsSync(new URL(`../scripts/games/kit/audio/${BANK.sprite[ext]}`, import.meta.url)));
   assert.equal(musicOf(SOUNDS, 'shouqiang'), 'td');
+  // The shell's own moments sound in every game: no game's or kit's row silences them (found live 10-22: 守山门
+  // silenced its scene's `lose`, and the shell's result went quiet with it — hence the shell's own `result.*` names).
+  const { resolve } = await import('../scripts/games/kit/sound.js');
+  for (const id of ids) for (const ev of ['button', 'tick', 'go', 'pause', 'resume', 'toggle', 'result.win', 'result.lose', 'result.star']) {
+    assert.ok(resolve(SOUNDS, id, ev)?.sounds.length, `${id}: the shell's ${ev} sounds`);
+  }
   assert.equal(musicOf(SOUNDS, 'wuziqi'), null, 'a plain board plays no bed');
   // Every file is credited, and 砸寨 keeps no copy of its own.
   const credits = read('../scripts/games/kit/audio/CREDITS.md');

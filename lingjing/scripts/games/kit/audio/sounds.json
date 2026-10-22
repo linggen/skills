@@ -669,9 +669,9 @@
   "resume": "ui.close",
   "tick": "tone.tick",
   "go": "tone.go",
-  "win": "tone.win",
-  "lose": "tone.lose",
-  "star": {
+  "result.win": "tone.win",
+  "result.lose": "tone.lose",
+  "result.star": {
    "sound": "tone.star",
    "min": 120
   }

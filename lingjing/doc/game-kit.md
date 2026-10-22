@@ -83,9 +83,12 @@ first resident; `scripts/games/kit/` is where the shared assets live).
   `kit/audio/sounds.json` looks an event up in the game's row, then its kit's (塔防 `td`, 投掷 `throw`, 绳索 `rope`, 飞行
   `flight`, 打地鼠 `whack`, 卡牌 `card`, 结印 `seal`, a plain `board`), then the shell's base row. `event.kind` comes
   first (守墙关's `boom.huo` / `boom.han`); `null` is silence on purpose. Every registry game has a row (a test).
-- **The shell sounds its own moments:** a button, the 3-2-1 and 开始, pause and resume, the result (won with a chime
-  per star, or not yet). The story's mounted games settle through it too (`beat-host.js settle`). A kit's own
-  win/lose names are `null`, so the end never sounds twice.
+- **The shell sounds its own moments:** a button, the 3-2-1 and 开始, pause and resume, the result (`result.win` with a
+  chime per star, or `result.lose`). The story's mounted games settle through it too (`beat-host.js settle`). A
+  scene's own win/lose names are `null`, so the end never sounds twice; the shell's `result.*` names are its own, so
+  that silence never reaches them (a test).
+- **The bar's mute** (Hanli 10-22: 「加了声效和音乐, 添加一个静音按钮吧」): 🔊/🔇 beside pause on every game, both parts
+  at once, the same shared setting; unmute brings back what the veil had.
 - **One bed per kit,** looped from the board's mount, quiet under the pause veil, gone at the result, on 再来 and
   when the board is forgotten. A plain board has none.
 - **The bank:** a sprite of Kenney's CC0 packs (Interface, Impact, RPG Audio) and ZzFX recipes (MIT,

@@ -152,8 +152,9 @@ export function settle(id, r) {
   if (!r || r.left || s.settled) return;
   s.settled = true;
   const game = gameOf(id);
-  sound.play(game, r.won ? 'win' : 'lose');
-  for (let i = 0; r.won && i < (Number(r.stars) || 0); i += 1) setTimeout(() => sound.play(game, 'star'), 520 + i * 180);
+  // Its own names (`result.*`), so a kit that silences its scene's own win / lose (sounds.json) never silences these.
+  sound.play(game, r.won ? 'result.win' : 'result.lose');
+  for (let i = 0; r.won && i < (Number(r.stars) || 0); i += 1) setTimeout(() => sound.play(game, 'result.star'), 520 + i * 180);
 }
 
 /* How long a lead card stays before it goes on by itself (Hanli 2026-10-21: 「好的」 — one pace for every game,
