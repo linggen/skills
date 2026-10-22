@@ -606,7 +606,7 @@
     {"zh": "那副门板，到底没有白扛，抬了一头鹿。", "en": "The door hadn't been lugged up for nothing after all: it carried a deer."},
     {"zh": "他爹非要抬后头，谁劝也不听。", "en": "His father insisted on taking the back end, and wouldn't listen to anyone."},
     {"zh": "小满走在最后，背着弓，捂着胸口。", "en": "Xiaoman walked last, bow on his back, hand on his chest."},
-    {"zh": "野猪闻着血腥下来了！", "en": "Boars, after the blood!", "big": true}
+    {"zh": "野猪挡道了！", "en": "Boars on the path!", "big": true}
    ],
    "cards": [
     {"id": "jian-more", "icon": "icon-gong-more", "name": {"zh": "爷爷的弓 · 连珠", "en": "Grandfather's bow · two at once"}, "say": {"zh": "一回多搭一支箭。", "en": "One more arrow on the string each time."}},

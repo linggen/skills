@@ -903,7 +903,7 @@
    "stars": 3,
    "name": {"zh": "抬鹿下山 · 那副门板", "en": "Carrying the stag down · The door"},
    "data": {"lv": "tailu"},
-   "how": {"zh": "爹和老周抬着门板往下走，野猪闻着血腥从两条道上拱下来。小满的箭自己会射；点一头野猪，先射那一头。撵完一波，挑一张。", "en": "Father and Old Zhou carry the door down; boars smell the blood and come down two paths. Xiaoman shoots on his own; tap a boar to shoot that one first. After a wave, pick a card."},
+   "how": {"zh": "爹和老周抬着门板往下走。天快黑了，溪边两条道上野猪一拨一拨拱出来，横在路上挡道。小满的箭自己会射；点一头野猪，先射那一头。撵完一波，挑一张。", "en": "Father and Old Zhou carry the door down. Dusk is falling, and boars come rooting out onto both paths by the stream, one bunch after another, blocking the way. Xiaoman shoots on his own; tap a boar to shoot that one first. After a wave, pick a card."},
    "_about": "守墙关's 第二回 story level (2026-10-22, the 卷一 plan, doc/games-plan-juan1.md; Hanli 10-22: 「按你说的改一遍. 关键是能留住玩家」): 00-tailu — the 溪边 path at dusk, 野猪 down two tracks (`paths`) at the 门板, 爹 and 老周 carrying, 小满 with 爷爷's bow. The level is levels/shouqiang.json's `tailu`. This row only opens it in the 游戏厅."
   },
   {

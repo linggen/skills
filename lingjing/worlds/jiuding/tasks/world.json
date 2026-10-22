@@ -33,7 +33,7 @@
       "_td": "2026-10-21 (the 卷一 small-game plan, doc/games-plan-juan1.md; Hanli: 「start building」): 00-tailu, 00-deer's way on split at 「那副门板，到底没有白扛，抬了一头鹿。」 — the carry down the 溪边 path at dusk. 守墙关's story level `tailu` (levels/shouqiang.json, `story: \"00-tailu\"` — 兽潮 never serves it, the 游戏厅 keeps it off the ladder): two lanes down to the 门板, 野猪 drawn by the blood; 爹 and 老周 carry, 小满 holds with 爷爷's bow (银月 has fainted in his shirt). The third 塔防 on the ladder. Nothing paid before 入门.",
       "id": "deer-carry", "kind": "board", "game": "shouqiang", "deal": { "lv": "tailu" }, "period": "once", "stars": 3,
       "title": { "zh": "抬鹿下山 · 那副门板", "en": "Carrying the stag down · The door" },
-      "how": { "zh": "爹和老周抬着门板往下走，野猪闻着血腥从两条道上拱下来。小满的箭自己会射；点一头野猪，先射那一头。撵完一波，挑一张。", "en": "Father and Old Zhou carry the door down; boars smell the blood and come down two paths. Xiaoman shoots on his own; tap a boar to shoot that one first. After a wave, pick a card." },
+      "how": { "zh": "爹和老周抬着门板往下走。天快黑了，溪边两条道上野猪一拨一拨拱出来，横在路上挡道。小满的箭自己会射；点一头野猪，先射那一头。撵完一波，挑一张。", "en": "Father and Old Zhou carry the door down. Dusk is falling, and boars come rooting out onto both paths by the stream, one bunch after another, blocking the way. Xiaoman shoots on his own; tap a boar to shoot that one first. After a wave, pick a card." },
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "到得村口，已是傍晚。", "en": "By the time they reached the village gate it was evening." }
     },
