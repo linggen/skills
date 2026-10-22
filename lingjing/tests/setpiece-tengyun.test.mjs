@@ -101,4 +101,7 @@ test('tengyun: a scene on the stage\'s one game, under the beat\'s words; the ru
   const src = read('scripts/setpieces/tengyun.js');
   assert.match(src, /from '\.\.\/games\/physics\.js'/, 'the games\' own matter.js');
   assert.doesNotMatch(src, /PIXI|gsap|paintedStage/, 'no Pixi, no GSAP');
+  // Found live 10-22: Phaser makes the first frame added to a texture its default — the rings drew a 68 px bit of themselves.
+  assert.match(src, /img\(T\.ring, '__BASE'\)/, 'the rings are the whole ring painting');
+  assert.match(src, /for \(const im of \[\.\.\.rings, \.\.\.lights\]\) im\.setAlpha\(0\);/, 'a beat built again starts unlit');
 });

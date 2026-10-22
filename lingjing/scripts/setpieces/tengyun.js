@@ -243,7 +243,8 @@ export function build({ Phaser, host, scene, W, H, art, lang = 'zh' }) {
   const sized = (im, w) => im.setScale(w / im.width);
   const standW = lay.h * (SIZES.stand[0] / SIZES.stand[1]);
   const ringBase = lay.ringW / SIZES.ring[0];
-  const rings = [1, 1.75, 2.6].map(() => img(T.ring).setBlendMode(Phaser.BlendModes.SCREEN).setAlpha(0)); // lit, not laid on
+  // '__BASE': the whole painting (adding the bits above made the first bit the texture's default frame).
+  const rings = [1, 1.75, 2.6].map(() => img(T.ring, '__BASE').setBlendMode(Phaser.BlendModes.SCREEN).setAlpha(0)); // lit, not laid on
   // The light each ring carries out over the grass (screen alone hardly shows on the pale painting).
   const lightKey = host.texture('piece', glowCanvas(256, [222, 255, 176]));
   const lights = rings.map(() => img(lightKey).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0));
@@ -320,6 +321,8 @@ export function build({ Phaser, host, scene, W, H, art, lang = 'zh' }) {
   const beats = {
     yun: () => {
       cur?.kill();
+      // From the start, whatever a run before left (a seek, a replay): the timeline reads its from-values off them.
+      for (const im of [...rings, ...lights]) im.setAlpha(0);
       const tl = bag.timeline({ paused: true });
       const ringTo = (i) => ringBase * [1, 1.75, 2.6][i];
       tl.set(fx, { dip: 1, gather: 0, cloudS: 0.4, burst: 1, cloudA: 1 }, 0)
