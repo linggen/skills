@@ -1,15 +1,19 @@
 // fx-hui.js — a new 回 turns the page (design.md § 画面效果 「chapter transitions」). When 「新的一回」's
 // seal rises (lingjing.js featNow), the stage's painting goes under fresh 宣纸 — the paper soaks over
 // it from the middle, the way ink wicks, a light rim at its edge — so the seal stands on a blank title
-// page; then the painting soaks back in from where the seal stood, and the canvas is gone. A book's
+// page; then the painting soaks back in from where the seal stood, and the layer is gone. A book's
 // page, not a curtain: nothing darkens, nothing is drawn but the paper and the painting already up.
 //
-// One canvas over the stage, under the seal (the seal and its words are the page's DOM, never
-// painted), ~3.6 s — the seal's own time — then destroyed. No painting on the stage (今线's pale stage),
-// no WebGL, reduced motion: nothing; the seal alone, as before. Built on setpieces/painted.js (the
-// soak, the camera, the grain) and fx.js's loaders.
-import { glOK, loadGsap, loadPixi } from './fx.js';
-import { PAPER, paintedStage } from './setpieces/painted.js';
+// The `moment` layer of the stage's one Phaser game (kit/stage.js), over the stage, under the seal
+// (the seal and its words are the page's DOM, never painted), ~3.6 s — the seal's own time — then
+// the layer ends and the game stays. The soak is kit/fx/ink.js's (one shader pass a painting), the
+// clock kit/timeline.js. No painting on the stage (今线's pale stage), no WebGL, reduced motion:
+// nothing; the seal alone, as before.
+import { glOK } from './fx.js';
+import { grainCanvas, soakLayer } from './kit/fx/ink.js';
+import { stageOf } from './kit/stage.js';
+import { timeline } from './kit/timeline.js';
+import { PAPER, frameOf } from './setpieces/painted.js';
 
 /// The turn's clock (s): the paper soaks over the painting, holds under the seal, the painting soaks back.
 export const HUI_FX = { cover: 1.1, hold: 1.2, back: 1.3 };
@@ -48,6 +52,57 @@ function paintingOf(view) {
 }
 const loadImage = (src) => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
 
+const LIGHT = { color: 0xfff6dc, blend: 'add', alpha: 0.3 };
+const FROM = [0.5, 0.42]; // where the seal stands: the paper soaks from there, and the painting back
+
+/* The turn as a scene on the stage game: `this` the Phaser scene; `d` {host, im, delay, done()}. */
+const huiScene = {
+  create(d) {
+    const { host, im } = d;
+    const W = 1000, H = Math.round(W * host.size.h / host.size.w), k = this.scale.width / W;
+    const rect = this.add.rectangle(0, 0, W * k, H * k, PAPER).setOrigin(0);
+    const nowKey = host.texture('moment', im), paperKey = host.texture('moment', paperCanvas()), grainKey = host.texture('moment', grainCanvas());
+    const view0 = { s: 1, fx: 0.5, fy: fyOf(im.naturalWidth, im.naturalHeight, W, H) };
+    const backView = { ...view0, s: 1.04 }; // the painting comes back a breath closer, settling to where it stands
+    const at = { W, H, k, from: FROM, rim: LIGHT };
+    const layers = [
+      [soakLayer(host.Phaser, this, nowKey, at), view0],
+      [soakLayer(host.Phaser, this, paperKey, at), { s: 1, fx: 0.5, fy: 0.5 }],
+      [soakLayer(host.Phaser, this, nowKey, at), backView],
+    ];
+    const [now, paper, back] = layers.map(([L]) => L);
+    now.soak.v = 1;
+    const grain = this.add.tileSprite(0, 0, W * k, H * k, grainKey).setOrigin(0).setTileScale(k).setAlpha(0.07).setBlendMode(host.Phaser.BlendModes.MULTIPLY);
+    const fade = { a: 1 };
+    const F = HUI_FX;
+    const tl = timeline({ delay: d.delay / 1000, onComplete: () => d.done() })
+      .fromTo(paper.soak, { v: 0 }, { v: 1, duration: F.cover, ease: 'power1.inOut' }, 0)
+      .fromTo(back.soak, { v: 0 }, { v: 1, duration: F.back, ease: 'power1.inOut' }, F.cover + F.hold)
+      .to(backView, { s: 1, duration: F.back + 0.4, ease: 'sine.out' }, F.cover + F.hold)
+      .to(fade, { a: 0, duration: 0.3 }, F.cover + F.hold + F.back);
+    // Each frame: every painting where its camera and soak say; one wholly soaked hides those under it.
+    this.apply = () => {
+      let covered = false;
+      for (let i = layers.length - 1; i >= 0; i -= 1) {
+        const [L, v] = layers[i];
+        L.place(frameOf(v, L.iw, L.ih, W, H));
+        L.image.setAlpha(fade.a);
+        L.apply();
+        if (covered) L.image.setVisible(false);
+        if (L.soak.v >= 1) covered = true;
+      }
+      rect.setAlpha(fade.a).setVisible(!covered);
+      grain.setAlpha(0.07 * fade.a);
+    };
+    this.tl = tl;
+    this.apply();
+  },
+  update(time, delta) {
+    this.tl.tick(Math.min(0.1, delta / 1000));
+    this.apply();
+  },
+};
+
 /// Turn the page on `view` (the stage, #view), starting after `delay` ms (the seal's own delay).
 /// `seal` the seal's element: tapped away early, the painting comes back at once.
 /// Resolves to {destroy()} or null (no painting, no WebGL, reduced motion).
@@ -55,53 +110,23 @@ export async function huiTurn(view, delay = 0, seal = null) {
   const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const src = view && paintingOf(view);
   if (!src || still || !glOK()) return null;
-  const [PIXI, gsap, im] = await Promise.all([loadPixi(), loadGsap(), loadImage(src)]);
-  const host = document.createElement('div');
-  host.className = 'fxhui';
-  Object.assign(host.style, { position: 'absolute', inset: '0', zIndex: '31', pointerEvents: 'none' });
-  view.appendChild(host);
-  const Wpx = Math.max(1, view.clientWidth), Hpx = Math.max(1, view.clientHeight);
-  const app = new PIXI.Application();
-  await app.init({ width: Wpx, height: Hpx, backgroundAlpha: 0, antialias: true, resolution: Math.min(globalThis.devicePixelRatio || 1, 1.5), autoDensity: true, preference: 'webgl' });
-  host.appendChild(app.canvas);
-  const W = 1000, H = Math.round(W * Hpx / Wpx);
-  const root = new PIXI.Container();
-  root.scale.set(Wpx / W);
-  app.stage.addChild(root);
-  const stage = paintedStage({ PIXI, app, root, W, H, art: { now: im, paper: paperCanvas(), back: im } });
-  const view0 = { s: 1, fx: 0.5, fy: fyOf(im.naturalWidth, im.naturalHeight, W, H) };
-  const light = { color: 0xfff6dc, blend: 'add', alpha: 0.3 };
-  const now = stage.layer('now', view0);
-  now.soak.v = 1;
-  const paper = stage.layer('paper', { s: 1, fx: 0.5, fy: 0.5 }, { from: [0.5, 0.42], rim: light });
-  // The painting comes back a breath closer, settling to where it stands.
-  const backView = { ...view0, s: 1.04 };
-  const back = stage.layer('back', backView, { from: [0.5, 0.42], rim: light });
-  stage.grain();
-  const F = HUI_FX;
-  const tl = gsap.timeline({ paused: true, delay: delay / 1000 });
-  tl.fromTo(paper.soak, { v: 0 }, { v: 1, duration: F.cover, ease: 'power1.inOut' }, 0)
-    .fromTo(back.soak, { v: 0 }, { v: 1, duration: F.back, ease: 'power1.inOut' }, F.cover + F.hold)
-    .to(backView, { s: 1, duration: F.back + 0.4, ease: 'sine.out' }, F.cover + F.hold)
-    .to(host, { opacity: 0, duration: 0.3 }, F.cover + F.hold + F.back);
-  let dead = false;
+  const [host, im] = await Promise.all([stageOf(view), loadImage(src)]);
+  if (!host) return null;
+  let scene = null, dead = false;
   const destroy = () => {
     if (dead) return;
     dead = true;
-    tl.kill();
-    stage.destroy();
-    app.destroy(true, { children: true });
-    host.remove();
+    clearInterval(watch);
+    if (host.owns('moment', scene)) host.stop('moment');
   };
-  tl.eventCallback('onComplete', destroy);
-  stage.apply();
-  tl.play();
-  // A page that went away mid-turn (a reload of the stage, a fight) takes the turn with it; a seal
-  // tapped away before the paper's hold is over sends the painting back now.
-  const backAt = F.cover + F.hold;
+  // A seal tapped away before the paper's hold is over sends the painting back now; a turn whose
+  // layer was taken (the stage put away, another moment) is over.
+  const backAt = HUI_FX.cover + HUI_FX.hold;
   const watch = setInterval(() => {
-    if (dead || !host.isConnected) { clearInterval(watch); destroy(); return; }
-    if (seal && !seal.isConnected && tl.time() < backAt) tl.time(backAt);
+    if (!scene) return;
+    if (!host.owns('moment', scene)) { destroy(); return; }
+    if (seal && !seal.isConnected && scene.tl.time() < backAt) scene.tl.time(backAt);
   }, 200);
+  scene = await host.run('moment', huiScene, { host, im, delay, done: () => destroy() });
   return { destroy };
 }
