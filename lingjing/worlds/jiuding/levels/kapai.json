@@ -142,7 +142,8 @@
       "kuzhi",
       "waiyi",
       "bupa"
-     ]
+     ],
+     "fatigue": false
     },
     "foe": {
      "tier": "qi",

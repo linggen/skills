@@ -106,9 +106,10 @@
       "ziya",
       "ziya",
       "ziya"
-     ]
+     ],
+     "fatigue": false
     },
-    "_foe": "第一回's teaching fight (2026-10-22, Hanli: 「关键是能留住玩家」 — the card fight met before 第三回's 蠪侄): the book's own face-off, 「受伤的野兽最凶，碰都别去碰」, then the coat, the bite, 「它不咬了」 (this exit's passage, unchanged). A 试 of nerve like the 三试: stand three of its turns. Three cards the book gives him here — 枯枝 (「他捡起一根枯枝扔到坑边」: play a card that strikes), 补丁外衣 (the coat over it: a body that takes the bite), 不怕 (「不怕。我也掉下来了」) — and 结束回合. It cannot be lost (it bites for 1–2; he stands 20); 认输 or a loss is 「再来」 (retry). No loot, no card, nothing paid."
+    "_foe": "第一回's teaching fight (2026-10-22, Hanli: 「关键是能留住玩家」 — the card fight met before 第三回's 蠪侄): the book's own face-off, 「受伤的野兽最凶，碰都别去碰」, then the coat, the bite, 「它不咬了」 (this exit's passage, unchanged). A 试 of nerve like the 三试: stand three of its turns. Three cards the book gives him here — 枯枝 (「他捡起一根枯枝扔到坑边」: play a card that strikes), 补丁外衣 (the coat over it: a body that takes the bite), 不怕 (「不怕。我也掉下来了」) — and 结束回合. No 反噬 (`foe.fatigue: false`, 2026-10-22: a tutorial teaches no penalty) — his five cards are all in hand, so his deck is dry from the first draw. It cannot be lost (it bites for 1–2; he stands 20); 认输 or a loss is 「再来」 (retry). No loot, no card, nothing paid."
    },
    "withdrawn": {
     "zh": "它缩在坑底，喉咙里还在呜咽。",

@@ -195,6 +195,8 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {
       tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
+      // The fight's own word (an exit game's `foe.fatigue: false`, world.mjs weighed): no 反噬 on a dry deck.
+      ...(creature.fatigue === false ? { fatigue: false } : {}),
       ...(party.length ? { party } : {}),
       ...(fresh.length ? { fresh } : {}),
       ...(pouch.length ? { pouch } : {}),

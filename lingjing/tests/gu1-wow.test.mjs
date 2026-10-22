@@ -113,6 +113,7 @@ test('the teaching fight cannot be lost: ending every turn at once still stands 
     }
     assert.equal(st.outcome, 'won', `day ${d}`);
     assert.equal(st.log.find((x) => x.act === 'trial-passed')?.how, 'survive');
+    assert.ok(!st.log.some((x) => x.kind === 'fatigue'), `day ${d}: no 反噬 in a teaching fight (foe.fatigue: false)`);
     assert.ok(st.you.hp > 0, `day ${d}: ${st.you.hp}/${st.you.hpMax} — not a card played, still standing`);
   }
 });
@@ -128,4 +129,22 @@ test('won, it pays nothing — no card, no loot, no 修为 — and the story goe
   assert.deepEqual(on.state.cards, s.cards, 'no card');
   assert.equal(on.state.progress ?? 0, s.progress ?? 0);
   assert.ok(!content.creatures.creatures.find((c) => c.id === 'foe-yinhu').loot, 'no loot');
+});
+
+test('`fatigue: false` is a fight\'s own word, in data: the setup carries it, a dry deck then costs nothing — every other fight still tires', () => {
+  const g = foxGame();
+  assert.equal(g.foe.fatigue, false);
+  const s = at('00-fox');
+  assert.equal(fightSetup(content, s, foeOf(content, g), NOW, g.id, 'fox').you.fatigue, false);
+  const catalog = Object.fromEntries(content.cards.cards.map((c) => [c.id, c]));
+  const plain = (fatigue) => {
+    const st = begin({ mode: 'pve', seed: 'f', you: { tier: 'qi', deck: [], extra: [], ...(fatigue === false ? { fatigue } : {}) }, foe: { tier: 'qi', deck: ['ziya', 'ziya', 'ziya', 'ziya', 'ziya', 'ziya', 'ziya', 'ziya'] } }, catalog);
+    for (let n = 0; n < 12 && st.outcome === 'open'; n += 1) { if (st.whose === 'foe') foeTurn(st); else act(st, { kind: 'end' }, 'you'); }
+    return st.log.filter((x) => x.kind === 'fatigue').length;
+  };
+  assert.equal(plain(false), 0, 'no 反噬');
+  assert.ok(plain(undefined) > 0, 'without the word, a dry deck tires as ever');
+  // The 三试 and every other scene fight carry no such word.
+  const others = Object.values(content.chapters).flatMap((ch) => Object.values(ch.scenes ?? {})).flatMap((sc) => sc.exits ?? []).filter((e) => e.game?.foe && e.game.id !== 'fox-bite');
+  assert.ok(others.length && others.every((e) => e.game.foe.fatigue === undefined));
 });

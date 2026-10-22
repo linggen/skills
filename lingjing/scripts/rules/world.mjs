@@ -454,7 +454,9 @@ function foeOf(content, game) {
    on, 秦雁 on the 崖顶 where there is no 台边). The creature's row, and every other door to it, stand. */
 const weighed = (c, o) => ({ ...c, ...(o.hp ? { hp: o.hp } : {}), ...(o.deck ? { deck: o.deck } : {}), ...(o.trial ? { trial: { ...(c.trial ?? {}), ...o.trial } } : {}), ...(o.feint ? { feint: { ...(c.feint ?? {}), ...o.feint } } : {}),
   // Who stands beside him here (party.json; `[]` alone), and what the scene puts in his hand (三试's 一滚 · 石子).
-  ...(o.party ? { party: o.party } : {}), ...(o.extra ? { extra: o.extra } : {}) });
+  ...(o.party ? { party: o.party } : {}), ...(o.extra ? { extra: o.extra } : {}),
+  // `fatigue: false`: in this fight his deck run dry costs nothing (no 反噬) — a teaching fight's (00-fox, 2026-10-22).
+  ...(o.fatigue === false ? { fatigue: false } : {}) });
 /* The places a beast is met at: its haunt, and every place whose pool holds it. */
 const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature === id || (poolOf(content, p)?.beasts ?? []).some(b => b.creature === id));
 

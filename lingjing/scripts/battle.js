@@ -173,7 +173,7 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra, power?, armor?, ward?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature?, feint? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, armor?, ward?, boost?, wounds?, lifts?, insight?, fatigue? (false: a dry deck costs nothing) }, foe: { tier, root, deck, hp?, signature?, feint? } }
    `lifts` is { cardId: { atk, hp, heal, damage, taunt } } — a card that stands
    taller for this side (银月 by the realm and the cauldrons found,
    rules/companion.mjs herLifts): its body (`bodyOf`), a number added to what
@@ -227,7 +227,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     who, tier: cfg.tier, root: cfg.root ?? null,
     hp: now, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
     armor: Math.max(0, cfg.armor ?? 0), ward: cfg.ward ?? null,
-    deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
+    deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, ...(cfg.fatigue === false ? { tireless: true } : {}), powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
     stars: cfg.stars ?? null, drain: 0,
     // A 试 (a story trial, creatures.json `trial`): the beast is not driven
@@ -383,6 +383,8 @@ function draw(st, side) {
   for (let k = 0; k < row.length; k += 1) {
     if (drawFrom(st, side, row[(side.next + k) % row.length])) { side.next = (side.next + k + 1) % row.length; return; }
   }
+  // A fight whose setup says `fatigue: false` (a teaching fight): a dry deck draws nothing and costs nothing.
+  if (side.tireless) return;
   side.fatigue += 1;
   // A trial outlasted is a trial passed: he stood through every move it had.
   if (side.who === 'foe' && side.trial?.outlast) {
