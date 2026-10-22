@@ -13,10 +13,10 @@ const levels = levelsFrom(reg.games.find((g) => g.id === 'shoulu' && g.levels));
 const host = kit.hosts.shoulu;
 const lv = (id) => levels.find((l) => l.id === id);
 
-test('the pace is a level\'s: rest (the 大妖 only, a long rest) by default; intense on a few — always, a short rest', () => {
+test('the pace is a level\'s: rest (the 大妖 or an elite only, a long rest) by default; intense on a few — always, a short rest', () => {
   const rest = jieyinCfg(host, lv('heisong')), hot = jieyinCfg(host, lv('houshan'));
   assert.equal(rest.pace, 'rest');
-  assert.equal(rest.when, 'boss');
+  assert.equal(rest.when, 'boss|elite');
   assert.equal(hot.pace, 'intense');
   assert.equal(hot.when, 'always');
   assert.ok(hot.cool < rest.cool);
@@ -105,4 +105,33 @@ test('the dock is handed ids the 手势斗法 kit knows: every 守炉 move is a 
   const box = { ownerDocument: { defaultView: globalThis } };
   await offerJieyin(kit.hosts.shoulu, box, { lang: 'zh', now: () => ({ g: null }), toast() {}, load: async () => ({ offerSeals: async (o) => { handed = o.moves; return null; } }) });
   assert.ok(handed.every((m) => typeof m === 'string'), 'ids, not rows');
+});
+
+test('every level ends on a 大妖 or an elite, and the dock opens for either; an elite is tougher, ringed, and aimed at first', async () => {
+  const { ELITE } = await import('../scripts/games/shoulu/core.js');
+  for (const l of levels) {
+    if (l.fire) continue; // 守火 (a `fire` level, 第一回): 小满 alone by a campfire, no dock, the fire's own stars
+    const last = l.waves.at(-1);
+    assert.ok(last.some(([t, , , , o]) => BEASTS[t].boss || o?.elite), `${l.id}: its last wave`);
+  }
+  const g = newGame(lv('shiao'), { seed: 'e', headless: true }), cfg = jieyinCfg(host, lv('shiao'));
+  const plain = spawnAt(g, 'yezhu', 300);
+  assert.equal(jieyinState(g, cfg).on, false, 'no elite yet: rest');
+  g.queue.push({ at: 0, type: 'yezhu', elite: ELITE.hp });
+  step(g, 1 / 30);
+  const elite = g.beasts.find((b) => b.elite);
+  assert.ok(elite && elite.max > plain.max * 3, 'tougher');
+  assert.equal(jieyinState(g, cfg).on, true);
+  assert.equal(jieyinState(g, cfg).elite, 'yezhu');
+  assert.equal(jieyinTarget(g, cfg).id, elite.id, 'the elite before the nearest');
+});
+
+test('stars: ★★★ the 炉火 whole and cleared by par; ★★ from 6; the story and 秘境 levels keep 炉火-only stars (no par: declining the camera costs nothing there)', async () => {
+  const { starsOf } = await import('../scripts/games/shoulu/core.js');
+  assert.equal(starsOf(10, 180, 189), 3);
+  assert.equal(starsOf(10, 200, 189), 2, 'whole but slow');
+  assert.equal(starsOf(7, 100, 189), 2);
+  assert.equal(starsOf(5, 100, 189), 1);
+  assert.equal(starsOf(10, 999), 3, 'no par');
+  for (const l of levels) assert.equal(l.par != null, !l.story && !l.realm, `${l.id}: par only on the 游戏厅's ladder`);
 });

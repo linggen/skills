@@ -28,6 +28,10 @@ export const TORDER = ['jian', 'huo', 'han', 'lei'];
     blast (×`dodge`) unless 寒符 has it slowed. `boss`: one, with a bar. `cry`: 合窳 wails like a baby every `every` s and stands for `for` s; its
     护体灵光 takes `guard` of all harm, and while it wails, `mult`. */
 export const ARMOR = 0.4;
+/** An elite (a wave entry's 5th item `{ elite: n, hp? }`: the first n of that group, `hp` × its life, else ELITE.hp):
+    tougher, richer, ringed in gold — a story or 秘境 level keeps its elite mild (hp 2), so no-camera play feels the same —
+    every level's last wave has one or a 大妖 (Hanli 10-21), and 结印's dock opens for it (`when` boss|elite). */
+export const ELITE = { hp: 4, reward: 3 };
 export const BEASTS = {
   yezhu: { hp: 55, speed: 42, reward: 5, r: 11, color: '#5b4635', bite: 6 },
   zheng: { hp: 30, speed: 80, reward: 4, r: 9, color: '#8b3a2a', bite: 4, leap: true, dodge: 0.35 },
@@ -149,12 +153,13 @@ function place(g, b) {
     if (p.dx > 0) b.face = 1; else if (p.dx < 0) b.face = -1;
   }
 }
-function spawn(g, type) {
+function spawn(g, type, elite = 0) {
   const B = BEASTS[type], L = g.L;
-  const hp = Math.round(B.hp * L.hpMul * L.diff * (B.boss ? 1 : 1 + L.hpScale * (g.wave - 1)));
+  const hp = Math.round(B.hp * L.hpMul * L.diff * (B.boss ? 1 : 1 + L.hpScale * (g.wave - 1)) * (elite || 1));
   const b = { id: ++g.uid, type, hp, max: hp, speed: B.speed * (0.95 + g.rnd() * 0.1), d: 0, off: B.boss ? 0 : g.rnd() * 16 - 8, fly: Boolean(B.fly),
     armor: Boolean(B.armor), reward: B.reward, dmg: B.dmg || 1, len: B.fly ? L.airLen : L.road.len, slowT: 0, slowF: 0, stunT: 0, held: false,
-    flash: 0, face: 1, x: 0, y: 0, dead: false, cry: B.cry ? B.cry.every : 0, crying: 0 };
+    flash: 0, face: 1, x: 0, y: 0, dead: false, cry: B.cry ? B.cry.every : 0, crying: 0, elite: Boolean(elite) };
+  if (elite) b.reward *= ELITE.reward;
   place(g, b);
   g.beasts.push(b);
   if (!g.seen[type]) { g.seen[type] = 1; emit(g, { intro: type }); }
@@ -174,7 +179,7 @@ export function callWave(g, early = false) {
   g.wave += 1;
   emit(g, { banner: g.wave });
   const q = [];
-  for (const [type, n, gap, st] of g.L.waves[g.wave - 1]) for (let i = 0; i < countAt(type, n, g.L.diff); i += 1) q.push({ at: g.t + st + i * gap, type });
+  for (const [type, n, gap, st, o] of g.L.waves[g.wave - 1]) for (let i = 0; i < countAt(type, n, g.L.diff); i += 1) q.push({ at: g.t + st + i * gap, type, elite: i < (o?.elite ?? 0) ? o.hp ?? ELITE.hp : 0 });
   q.sort((a, b) => a.at - b.at);
   g.queue = q;
   g.nextTimer = g.L.gap;
@@ -657,7 +662,7 @@ function fireStep(g, dt) {
 export function step(g, dt) {
   if (g.over) return g;
   g.t += dt;
-  while (g.queue.length && g.queue[0].at <= g.t) spawn(g, g.queue.shift().type);
+  while (g.queue.length && g.queue[0].at <= g.t) { const e = g.queue.shift(); spawn(g, e.type, e.elite); }
   if (g.wave < waves(g) && !g.queue.length) { g.nextTimer -= dt; if (g.nextTimer <= 0) callWave(g, false); }
   fireStep(g, dt);
   if (g.over) return g;
@@ -667,12 +672,14 @@ export function step(g, dt) {
   towersStep(g, dt);
   projStep(g, dt);
   g.beasts = g.beasts.filter((b) => !b.dead);
-  if (!g.over && g.wave === waves(g) && !g.queue.length && !g.beasts.length) g.over = 'win';
+  if (!g.over && g.wave === waves(g) && !g.queue.length && !g.beasts.length) { g.over = 'win'; g.wonAt = g.t; }
   return g;
 }
-export const starsOf = (hp) => (hp >= HP ? 3 : hp >= 6 ? 2 : 1);
-/** A won game's stars: 炉火 left; on a `fire` level, the fire left against its `stars` [★★★, ★★]. */
-export const starsFor = (g) => (g.L.fire ? (g.hp >= g.L.fire.stars[0] ? 3 : g.hp >= g.L.fire.stars[1] ? 2 : 1) : starsOf(g.hp));
+/** Stars: ★★★ the 炉火 whole AND the level cleared by its `par` s (Hanli 10-21: fast clears are 结印's help); ★★ 炉火
+    from 6; else ★. A level with no par: 炉火 alone. */
+export const starsOf = (hp, t = 0, par = null) => (hp >= HP && (par == null || t <= par) ? 3 : hp >= 6 ? 2 : 1);
+/** A won game's stars: on a `fire` level, the fire left against its `stars` [★★★, ★★]; else starsOf (炉火 and `par`). */
+export const starsFor = (g) => (g.L.fire ? (g.hp >= g.L.fire.stars[0] ? 3 : g.hp >= g.L.fire.stars[1] ? 2 : 1) : starsOf(g.hp, g.wonAt ?? g.t, g.L.par));
 /** Waves held: all on a win; else the ones fully past. */
 export const cleared = (g) => (g.over === 'win' ? waves(g) : (g.queue.length || g.beasts.length) ? Math.max(0, g.wave - 1) : g.wave);
 
@@ -969,19 +976,20 @@ export function sim(row, strategy = 'mixed', { seed = 'sim', dt = 1 / 30 } = {})
 // `hosts.shoulu` with the level's `pace` laid on (shoulu.js jieyinCfg): `when` 'boss' (a 大妖 on the field) | 'always',
 // `cool` s between casts, `bossMul` on the 大妖, the `moves` rows (one · splash · ring: dmg, root, push, slow).
 
-/** The beast a cast goes to: the 大妖 first (`aim` boss), else the one nearest the furnace. */
+/** The beast a cast goes to: the 大妖 first, then an elite (`aim` boss), else the one nearest the furnace. */
 export function jieyinTarget(g, cfg = {}) {
   const live = g.beasts.filter((b) => !b.dead && b.d > 0);
-  if (cfg.aim === 'boss') { const boss = live.find((b) => BEASTS[b.type].boss); if (boss) return boss; }
+  if (cfg.aim === 'boss') { const big = live.find((b) => BEASTS[b.type].boss) ?? live.find((b) => b.elite); if (big) return big; }
   return live.reduce((m, b) => (!m || b.d / b.len > m.d / m.len ? b : m), null);
 }
 
 /** For the dock: { on, ready, cool, coolOf, boss } — on: moves offered now; ready: one may fly now. */
 export function jieyinState(g, cfg = {}) {
-  const boss = g.beasts.find((b) => !b.dead && BEASTS[b.type].boss) ?? null;
-  const on = Boolean(g && !g.over && (cfg.when === 'always' || (cfg.when === 'boss' && boss)));
+  const boss = g.beasts.find((b) => !b.dead && BEASTS[b.type].boss) ?? null, elite = g.beasts.find((b) => !b.dead && b.elite) ?? null;
+  const when = String(cfg.when ?? 'boss').split('|'); // 'always' · 'boss' · 'elite', joined by |
+  const on = Boolean(g && !g.over && (when.includes('always') || (when.includes('boss') && boss) || (when.includes('elite') && elite)));
   const cool = Math.max(0, (g.jy?.until ?? 0) - g.t);
-  return { on, ready: on && cool <= 0 && Boolean(jieyinTarget(g, cfg)), cool, coolOf: cfg.cool ?? 0, boss: boss?.type ?? null };
+  return { on, ready: on && cool <= 0 && Boolean(jieyinTarget(g, cfg)), cool, coolOf: cfg.cool ?? 0, boss: boss?.type ?? null, elite: elite?.type ?? null };
 }
 
 /** A move cast: its harm and hold on the target (and those round it), then the rest. → true when it flew. */
@@ -991,7 +999,7 @@ export function jieyinCast(g, id, cfg = {}) {
   const t = jieyinTarget(g, cfg), R = m.radius ?? m.splash ?? 0;
   const hit = R ? g.beasts.filter((b) => !b.dead && (b === t || (!b.fly && dist(b, t) <= R))) : [t];
   for (const b of hit) {
-    const mul = BEASTS[b.type].boss ? cfg.bossMul ?? 1 : 1;
+    const mul = BEASTS[b.type].boss ? cfg.bossMul ?? 1 : b.elite ? cfg.eliteMul ?? 1 : 1;
     if (m.root) b.stunT = Math.max(b.stunT, BEASTS[b.type].boss ? m.root * 0.4 : m.root);
     if (m.slow) { b.slowT = Math.max(b.slowT, m.for ?? 2); b.slowF = Math.max(b.slowF, m.slow); }
     if (m.push && !BEASTS[b.type].boss) { b.d = Math.max(0, b.d - m.push); place(g, b); }

@@ -146,7 +146,8 @@ test('the counters: 犰狳 levels beat 剑阵 alone; 鬿雀 levels beat 火符 a
 const SEEDS20 = Array.from({ length: 20 }, (_, i) => `h${i}`);
 const share = (rs, f) => rs.filter(f).length / rs.length;
 const TARGET = [ // win share at least · and what its stars look like
-  { win: 0.95, ok: (rs) => share(rs, (x) => x.stars === 3) >= 0.5, says: 'nearly always, mostly 3★' },
+  // ★★★ needs the 炉火 whole AND a clear by the level's par (Hanli 10-21: 结印's help) — without casts ★★ is typical
+  { win: 0.95, ok: (rs) => share(rs, (x) => x.stars >= 2) >= 0.9, says: 'nearly always, ★★ or better' },
   { win: 0.85, ok: (rs) => share(rs, (x) => x.stars >= 2) >= 0.6, says: '≥85%, usually 2–3★' },
   { win: 0.85, ok: (rs) => share(rs, (x) => x.stars >= 2) >= 0.6, says: '≥85%, usually 2–3★' },
   { win: 0.75, ok: (rs) => share(rs, (x) => x.stars === 3) <= 0.5, says: '≥75%, 1–2★ typical' },
