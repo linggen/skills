@@ -73,7 +73,7 @@ export function callLine(c, root, moves, lang) {
 }
 
 /** 结印's button in the field, where it may be offered (games/jieyin/helper.js decides; none → null, nothing drawn). */
-export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, load = () => import(SEALS.href) }) {
+export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, reading = () => false, load = () => import(SEALS.href) }) {
   const c = kit.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
@@ -82,7 +82,7 @@ export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, 
     state: () => game.jieyinState(), cast: (e) => game.jieyin(e.move), say,
     call: () => callLine(c, game.jieyinState().boss, moves, lang),
     first: moves.some((m) => m.id === 'feijian') ? c.first : null,
-    paused: () => Boolean(shell?.paused?.() || game.paused()),
+    paused: () => Boolean(reading() || shell?.paused?.() || game.paused()), // reading: the lead card is up (the dock opens by itself after it)
     aside: () => game.picking(),
     dock: c.dock, onProgress: (p) => game.jieyinProgress?.(p), // where the frame stands (data); the hand's progress: his hand glows (hud.js SealGlow)
   })).catch((e) => { console.warn('[shouqiang] 结印', e); return null; });
@@ -142,9 +142,10 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });
-      seals = level.jieyin === false ? null : offerJieyin(kit, box, { lang, game, shell, marks: data?.marks, feed: dev && q.get('feed') === '1' }); // a level may take no spell (守白菜)
+      let reading = Boolean(said);
+      seals = level.jieyin === false ? null : offerJieyin(kit, box, { lang, game, shell, marks: data?.marks, feed: dev && q.get('feed') === '1', reading: () => reading }); // a level may take no spell (守白菜)
       // the lead card says 结印 is here where it is (jieyin/lead.js)
-      if (said) leadWith(said, seals, level.jieyinWhen ?? kit.jieyin?.when, lang).then((told) => !done && shell.lead(told, { auto: 'read', lang })).then(() => game?.go());
+      if (said) leadWith(said, seals, level.jieyinWhen ?? kit.jieyin?.when, lang).then((told) => !done && shell.lead(told, { auto: 'read', lang })).then(() => { reading = false; game?.go(); });
       if (level.grid) {
         onResize = () => { const now = shape(true); if (now !== landscape) { landscape = now; game?.layout(now); } };
         win.addEventListener('resize', onResize);

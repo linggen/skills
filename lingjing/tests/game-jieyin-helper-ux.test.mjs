@@ -39,6 +39,11 @@ const withFetch = async (fn) => {
   try { return await fn(); } finally { globalThis.fetch = real; }
 };
 const eyeOf = () => ({ start: async () => {}, pause() {}, close() {}, setFps() {} });
+const memStore = (v = null) => { const s = { v, get: () => s.v, set: (x) => { s.v = x; } }; return s; };
+function camLog() {
+  const log = [];
+  return { log, make: () => ({ start: async () => { log.push('start'); }, pause: () => log.push('pause'), close: () => log.push('close'), setFps: (n) => log.push(`fps ${n}`) }) };
+}
 
 test('the lead card\'s line: rest — a 大妖 out; intense — any time; both languages', () => {
   assert.match(leadLine(kit, 'rest', 'zh'), /大妖出场时.*结印/);
@@ -59,24 +64,27 @@ test('every host joins it the same way (jieyin/lead.js): after the story\'s line
   assert.equal(await leadWith('故事。', Promise.reject(new Error('x')), 'boss'), '故事。');
 });
 
-test('the button wears the next move\'s gesture; the first time per level a bubble points at it, gone on the tap; a new level shows it again', async () => withFetch(async () => {
+test('the button wears the next move\'s gesture; where the tap is still wanted (prompt, no lead line) a bubble points at it, gone on the tap; the next level the dock opens by itself, its own bubble says so', async () => withFetch(async () => {
   const { host, frame } = page();
   let lv = 'a';
-  await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf, level: () => lv, state: () => ({ on: true, ready: true, cool: 0, coolOf: 6 }) });
-  const [btn] = host.appended, [callout] = btn.kids;
+  const h = await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf, permission: async () => 'prompt', store: memStore(), level: () => lv, state: () => ({ on: true, ready: true, cool: 0, coolOf: 6 }) });
+  const [btn, dock] = host.appended, [callout] = btn.kids, live = dock.kids.find((k) => k.className === 'jyh-callout');
   assert.equal(callout.className, 'jyh-callout', 'the bubble rides on the button (every host, any width)');
   assert.match(btn.innerHTML, /jyh-icon.*<svg class="jy-hand"/s, 'a hand drawn on the button');
   await frame(2);
   assert.equal(callout.hidden, false, 'the bubble points at the button');
   assert.match(callout.innerHTML, /小满.*点这里结印/);
+  assert.equal(h.camera, 'off', 'no camera before he knows');
   btn.fire('click');
+  await frame(3);
   assert.equal(callout.hidden, true, 'tapped: gone');
-  btn.fire('click'); // off again: the button shows again for this level — no second bubble
-  await frame(2);
-  assert.equal(callout.hidden, true);
+  assert.equal(h.camera, 'on');
+  assert.equal(live.hidden, false, 'the dock\'s bubble: sealing is live');
+  assert.match(live.innerHTML, /小满.*摄像头开着.*剑诀.*×/);
   lv = 'b';
   await frame(2);
-  assert.equal(callout.hidden, false, 'the next level: once more');
+  assert.equal(callout.hidden, true, 'the next level: no tap asked');
+  assert.equal(h.camera, 'on');
 }));
 
 test('the gesture frame draws a one-hand seal as the right hand (the mirror shows a raised right hand so), a two-hand seal as both', () => {
@@ -112,7 +120,7 @@ test('while the host is paused (its lead card, the shell\'s bar) nothing shows a
   const { host, frame } = page();
   let still = true;
   const said = [];
-  await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf, paused: () => still, call: () => '大妖来了', say: (x) => said.push(x), state: () => ({ on: true, ready: true, cool: 0, coolOf: 6 }) });
+  await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf, permission: async () => 'prompt', store: memStore(), paused: () => still, call: () => '大妖来了', say: (x) => said.push(x), state: () => ({ on: true, ready: true, cool: 0, coolOf: 6 }) });
   const [btn] = host.appended, [callout] = btn.kids;
   await frame(3);
   assert.equal(btn.hidden, true, 'paused: no button');
@@ -124,3 +132,133 @@ test('while the host is paused (its lead card, the shell\'s bar) nothing shows a
   assert.equal(callout.hidden, false);
   assert.deepEqual(said, ['大妖来了']);
 }));
+
+// Hanli 10-22 (第一回): 「小游戏里结印那里, 可以省掉用户点击动作. 默认开摄像头开始结印」 — the dock opens by itself at the
+// offer where the camera may be used; the browser's own ask only after the lead line said so; a refusal or his off stays.
+const BOSS = { on: true, ready: true, cool: 0, coolOf: 6 }, NONE = { on: false, ready: false, cool: 0, coolOf: 6 };
+const auto = async ({ permission, store = memStore(), paused = () => false, st = () => BOSS, lead = false } = {}) => {
+  const { host, frame } = page(), eye = camLog();
+  const h = await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf: eye.make, permission, store, paused, state: st });
+  if (h && lead) h.lead('boss'); // the host's lead card took the line
+  return { h, host, frame, eye, store, btn: host.appended[0], dock: host.appended[1] };
+};
+
+test('granted: the dock opens by itself at the offer, the camera on, no tap; its light on', async () => withFetch(async () => {
+  let st = NONE;
+  const { h, frame, eye, btn, dock } = await auto({ permission: async () => 'granted', st: () => st });
+  await frame(3);
+  assert.equal(h.camera, 'off', 'nothing offered: off');
+  st = BOSS;
+  await frame(3);
+  assert.equal(h.camera, 'on');
+  assert.deepEqual(eye.log.filter((x) => x === 'start'), ['start']);
+  assert.ok(!dock.hidden && btn.hidden, 'the frame up, no button to press');
+  assert.ok(dock.classList.contains('is-cam'), 'the camera light');
+  assert.ok(!btn.classList.contains('is-call'));
+  h.close();
+}));
+
+test('prompt: only once the lead line said 结印 is on (the browser then asks, no surprise); without it the tap', async () => withFetch(async () => {
+  const told = await auto({ permission: async () => 'prompt', lead: true });
+  await told.frame(3);
+  assert.equal(told.h.camera, 'on', 'the lead card said it: opened by itself');
+  told.h.close();
+  const cold = await auto({ permission: async () => 'prompt' });
+  await cold.frame(3);
+  assert.equal(cold.h.camera, 'off', 'no lead line: never by itself');
+  assert.ok(!cold.btn.hidden && cold.btn.kids[0].hidden === false, 'the button and its bubble');
+  cold.h.close();
+  const chose = await auto({ permission: async () => 'prompt', store: memStore('on') });
+  await chose.frame(3);
+  assert.equal(chose.h.camera, 'on', 'he switched it on before: his choice stands');
+  chose.h.close();
+}));
+
+test('denied by the browser: no 结印 at all, nothing drawn; refused at the ask: gone, and remembered as off', async () => withFetch(async () => {
+  const { h, host } = await auto({ permission: async () => 'denied' });
+  assert.equal(h, null);
+  assert.equal(host.appended.length, 0, 'the game as without a camera');
+  const { host: h2, frame } = page(), store = memStore();
+  await offerSeals({ host: h2, moves: ['feijian'], available: async () => true, permission: async () => 'granted', store, state: () => BOSS,
+    eyeOf: () => ({ start: async () => { throw Object.assign(new Error('denied'), { reason: 'denied' }); }, pause() {}, close() {}, setFps() {} }) });
+  await frame(3);
+  assert.ok(h2.appended[0].removed && h2.appended[1].removed, 'the corner goes');
+  assert.equal(store.v, 'off', 'never asked by itself again');
+  const { host: h3, frame: f3 } = page(), s3 = memStore();
+  await offerSeals({ host: h3, moves: ['feijian'], available: async () => true, permission: async () => 'granted', store: s3, state: () => BOSS,
+    eyeOf: () => ({ start: async () => { throw Object.assign(new Error('model'), { reason: 'model' }); }, pause() {}, close() {}, setFps() {} }) });
+  await f3(3);
+  assert.equal(s3.v, null, 'a failed model is not his choice');
+}));
+
+test('switched off (the ×, kept): never by itself, the button the way back on — which is kept too; the lead card says it is off', async () => withFetch(async () => {
+  const store = memStore();
+  const a = await auto({ permission: async () => 'granted', store });
+  await a.frame(3);
+  assert.equal(a.h.camera, 'on');
+  a.dock.querySelector('.jyh-off').fire('click');
+  await a.frame(2);
+  assert.equal(a.h.camera, 'off');
+  assert.equal(store.v, 'off');
+  assert.ok(!a.btn.hidden && a.btn.classList.contains('is-off'), 'the button stands, dim: the switch back on');
+  a.h.close();
+  const b = await auto({ permission: async () => 'granted', store });
+  await b.frame(3);
+  assert.equal(b.h.camera, 'off', 'the next level: still off');
+  assert.equal(b.h.lead('boss'), leadLine(kit, 'off', 'zh'), 'the lead card: off, and how to switch it on');
+  assert.match(b.h.lead('boss'), /结印按钮/);
+  b.btn.fire('click');
+  await b.frame(2);
+  assert.equal(b.h.camera, 'on');
+  assert.equal(store.v, 'on', 'back on, kept');
+  assert.ok(b.h.auto);
+  b.h.close();
+}));
+
+test('never under the host\'s pause (its lead card): the dock waits, then opens; off on pause, a hidden page and close; resting reads slow', async () => withFetch(async () => {
+  let still = true, st = BOSS;
+  const { h, frame, eye, btn, dock, host } = await auto({ permission: async () => 'granted', paused: () => still, st: () => st });
+  const doc = host.ownerDocument;
+  await frame(4);
+  assert.equal(h.camera, 'off', 'under the card: no camera');
+  assert.ok(btn.hidden && dock.hidden);
+  still = false;
+  await frame(2);
+  assert.equal(h.camera, 'on', 'the card gone: open');
+  st = { on: true, ready: false, cool: 4, coolOf: 6 };
+  await frame(1);
+  assert.equal(eye.log.at(-1), `fps ${kit.eye.restFps}`, 'resting: the model at a crawl');
+  assert.ok(btn.classList.contains('is-cam') && !btn.hidden, 'the light on the button while the frame rests');
+  st = BOSS;
+  await frame(1);
+  still = true;
+  await frame(1);
+  assert.ok(eye.log.slice(-2).includes('pause') && h.camera === 'off', 'paused: the camera off');
+  still = false;
+  await frame(2);
+  assert.equal(h.camera, 'on', 'back');
+  doc.hidden = true;
+  await frame(1);
+  assert.equal(h.camera, 'off', 'a hidden page: off');
+  doc.hidden = false;
+  await frame(2);
+  assert.equal(h.camera, 'on', 'seen again: on');
+  h.close();
+  assert.equal(eye.log.at(-1), 'close', 'the level over: the camera closed');
+}));
+
+test('the switch on this device: localStorage, a store that throws changes nothing', async () => {
+  const { choiceStore, permissionOf } = await import('../scripts/games/jieyin/helper.js');
+  const mem = {};
+  const ok = choiceStore({ localStorage: { getItem: (k) => mem[k] ?? null, setItem: (k, v) => { mem[k] = v; } } });
+  assert.equal(ok.get(), null);
+  ok.set('off');
+  assert.equal(ok.get(), 'off');
+  const bad = choiceStore({ get localStorage() { throw new Error('blocked'); } });
+  assert.equal(bad.get(), null);
+  assert.doesNotThrow(() => bad.set('on'));
+  assert.equal(await permissionOf({ navigator: {} }), 'prompt', 'no Permissions API');
+  assert.equal(await permissionOf({ navigator: { permissions: { query: async () => { throw new TypeError('camera'); } } } }), 'prompt', 'WebKit cannot query the camera');
+  assert.equal(await permissionOf({ navigator: { permissions: { query: async () => ({ state: 'granted' }) } } }), 'granted');
+  assert.equal(await permissionOf({ navigator: { permissions: { query: async () => ({ state: 'denied' }) } } }), 'denied');
+});

@@ -254,7 +254,7 @@ test('tiers and 灵力: the offered ids by tier; the rest while 灵力 is short 
   assert.equal(shortOf({ now: cost.xiao / 2 }, cost, { xiao: ['feijian'], fa: [], da: [] }), 0.5);
 });
 
-test('the button: dark while no 大妖; it calls when one steps out; the camera only after the tap; rests, comes back, goes dark when the 大妖 falls', async () => withFetch(async () => {
+test('the button (a camera the browser has not answered for, no lead line read): dark while no 大妖; it calls when one steps out; the camera only after the tap; rests, comes back, goes dark when the 大妖 falls; then opens by itself', async () => withFetch(async () => {
   const { doc, host, frame } = page();
   const eye = fakeEye(), said = [];
   let st = { on: false, ready: false, cool: 0, coolOf: 10 }, paused = false;
@@ -297,7 +297,7 @@ test('the button: dark while no 大妖; it calls when one steps out; the camera 
   assert.ok(btn.hidden && dock.hidden && h.camera === 'off' && !h.wanted, 'the 大妖 fell: dark, camera off');
   st = { on: true, ready: true, cool: 0, coolOf: 10 };
   await frame(2);
-  assert.equal(h.camera, 'off', 'the next 大妖 asks for a tap again');
+  assert.equal(h.camera, 'on', 'the next 大妖: it opens by itself — he switched it on (Hanli 10-22: 「默认开摄像头开始结印」)');
   h.close();
   assert.ok(eye.log.includes('close') && btn.removed && dock.removed);
   assert.equal(doc.listeners.visibilitychange.length, 0);
