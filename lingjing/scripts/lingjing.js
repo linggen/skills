@@ -1782,8 +1782,9 @@ const WIN_LINE_MS = 2800;
 // A board left has no grade: every way on that waits on one is his to choose (rules core.mjs meets).
 const gradeFits = (e, grade, left = false) => left || e.needs?.grade == null || [e.needs.grade].flat().includes(grade);
 // A way on that also waits on a step of the story not yet taken (`needs.mark`: 古八's 入秋 waits on the 大比 too) is not
-// the board's deed: the win takes it only once that mark is his.
-const markMet = (e) => !e.needs?.mark || (look?.marks ?? []).includes(e.needs.mark);
+// the board's deed: the win takes it only once that mark is his — and not the other side of a fork he did not take
+// (`needs.no_mark`: 守灶台's raindrop by the way 00-masan went, 2026-10-22).
+const markMet = (e) => (!e.needs?.mark || (look?.marks ?? []).includes(e.needs.mark)) && !(look?.marks ?? []).includes(e.needs?.no_mark);
 const winExit = (taskId, grade = null, left = false) => {
   const ways = (look?.scene?.exits ?? []).filter((e) => e.needs?.task === taskId && !e.stay && gradeFits(e, grade, left) && markMet(e));
   return ways.length === 1 ? ways[0] : null;

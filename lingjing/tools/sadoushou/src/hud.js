@@ -78,6 +78,9 @@ export class Hud {
     this.countNum = s.add.bitmapText(W - 120, 917, 'numGood', '0', 52).setOrigin(0.5).setDepth(depth + 2);
     this.countPunch = 0;
     this.tierName = text(s, W - 40, 878, '', 18, { color: '#d6f6ff', ox: 1 }).setDepth(depth + 2);
+    // a wall told in pieces (守灶台's three bowls: `pieces`), their pictures over its bar — stars are the pieces kept
+    const pc = scene.cfg.level.pieces;
+    this.pieces = pc ? Array.from({ length: pc.n }, (_, i) => s.add.image(60 + i * 46, 884, pc.icon).setDepth(depth + 2).setDisplaySize(42, 42)) : [];
     this.fps = scene.cfg.showFps ? text(s, 10, 112, '', 16, { ox: 0, color: '#9dff9d' }).setDepth(depth + 1) : null;
   }
 
@@ -95,6 +98,11 @@ export class Hud {
   }
 
   punch() { this.countPunch = 1; }
+
+  /** The pieces kept (守灶台's bowls): the lost ones go grey and small. */
+  setPieces(left) {
+    this.pieces.forEach((p, i) => { if (i >= left) p.setTint(0x555555).setAlpha(0.45); });
+  }
 
   /** The squad's tier over its number (豆兵 · 纸甲兵 · 铜人). */
   setTier(name) { this.tierName.setText(name); }
@@ -151,7 +159,7 @@ export class Hud {
     const y = 160;
     const b = s.add.image(300, y, 'bubble').setDepth(this.d + 3);
     const t = text(s, 136, y - 6, line, 21, { ox: 0, color: '#1d2a50', stroke: '#ffffff', thick: 2, wrap: 320 }).setDepth(this.d + 4);
-    const face = s.textures.exists('yy') && s.textures.get('yy').has('idle-1') ? s.add.image(70, y + 2, 'yy', 'idle-1').setDepth(this.d + 4).setDisplaySize(110, 79) : null;
+    const face = s.cfg.level.face !== false && s.textures.exists('yy') && s.textures.get('yy').has('idle-1') ? s.add.image(70, y + 2, 'yy', 'idle-1').setDepth(this.d + 4).setDisplaySize(110, 79) : null;
     this.bubble = [b, t, face].filter(Boolean);
     for (const o of this.bubble) {
       const sx = o.scaleX, sy = o.scaleY;

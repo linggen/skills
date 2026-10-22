@@ -1,6 +1,7 @@
 // sadoushou.js — 撒豆成兵 · 守山门: the DEFENCE crowd game, a second 撒豆成兵 beside the attack run (games/sadou.js),
-// test-only in the 游戏厅 for comparing (Hanli 10-21, of a crowd-gate ad: 「好像比我们的撒豆成兵好玩一点」, 「好, 做一版.
-// 这个是在防守, 现在的撒豆成兵是在进攻.」). Not in the story, not in the 秘境 pool.
+// in the 游戏厅 (Hanli 10-21, of a crowd-gate ad: 「好像比我们的撒豆成兵好玩一点」, 「好, 做一版. 这个是在防守, 现在的撒豆成兵
+// 是在进攻.」); not in the 秘境 pool. One story level (2026-10-22): 第一回's 收租, 守灶台 (`zaotai`, `story: "00-zaotai"`,
+// task masan-zaotai) — a story level plays alone: off the ladder, no 下一关, and the ladder's last never points into it.
 //
 // The road has three columns (Hanli 10-21: 「一共3列, 要么打野猪, 要么打两边的+攻击的卡」): the 兽潮 comes down the
 // middle, the sides are belts of + cards and stone walls coming down. 小满's squad fires on its own up the column he
@@ -18,6 +19,7 @@ export const meta = {
   pause: true, // the shell's bar pauses the play (tools/sadoushou/src/play.js setPaused)
   tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   aspect: 760 / 960, // the field's width : height on a Mac (the wide board, tools/sadoushou/src/view.js); a phone plays 9 : 16
+  bot: 'scripts/games/sadoushou/core.js', // its human-like hand (humanBot, headless): tests/game-sadoushou.test.mjs plays every level with it, the story's too
   name: { zh: '撒豆成兵 · 守山门', en: 'Beans into Soldiers · Hold the Gate' },
   how: {
     zh: '左右拖动选一列，豆兵自己会打：打两边的卡，卡上的数越打越大，接住它队伍就壮；打中间的兽，别让它们撞上山门；石墙打碎了有好东西。大妖冲哪一列，就躲开哪一列。',
@@ -52,12 +54,22 @@ export function offerJieyin(level, box, { lang, game, shell, marks, feed = false
   })).catch((e) => { console.warn('[sadoushou] 结印', e); return null; });
 }
 
-/** The level a link asks for: an id, or 1… ; anything else → the first. */
+/** The 游戏厅's ladder: the levels with no `story`, in the order they climb. */
+export const ladderOf = (kit) => kit.levels.filter((l) => !l.story);
+
+/** The level a link or the story asks for: an id (a story level's too), or 1… on the ladder; anything else → the first. */
 export function levelAsked(kit, data, search) {
   const lv = data?.lv ?? new URLSearchParams(search ?? '').get('lv');
-  const byId = kit.levels.find((l) => l.id === lv);
+  const byId = kit.levels.find((l) => l.id === lv), ladder = ladderOf(kit);
   const n = Number(lv);
-  return byId ?? (Number.isInteger(n) && n >= 1 && n <= kit.levels.length ? kit.levels[n - 1] : kit.levels[0]);
+  return byId ?? (Number.isInteger(n) && n >= 1 && n <= ladder.length ? ladder[n - 1] : ladder[0]);
+}
+
+/** 下一关 after a won level: the next of the ladder — a story level names none and is none. */
+export function nextOf(kit, level) {
+  if (level.story) return null;
+  const ladder = ladderOf(kit);
+  return ladder[ladder.indexOf(level) + 1] ?? null;
 }
 
 async function loadFont(doc) {
@@ -103,7 +115,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         onEvent: (f) => { if (f.t === 'end') seals?.then((h) => h?.close()); onEvent?.(f); }, // the level over: the camera off at once
         held: Boolean(said),
         onEnd: (r) => {
-          const nx = kit.levels[kit.levels.indexOf(asked) + 1]; // 下一关 (the shell's)
+          const nx = nextOf(kit, asked); // 下一关 (the shell's): the ladder's, never a story level
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });

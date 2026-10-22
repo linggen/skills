@@ -7,7 +7,7 @@
 // beasts: 守墙关's frames), laid out every frame by the engine's numbers and scaled by depth — no physics, no tween per
 // unit, no per-frame depth changes (layers keep a fixed order; a wave's beasts are handed out far to near).
 import * as Phaser from 'phaser';
-import { newGame, step, aim, waveLeft, waveCount, perRank, hordeAll, tierOf, colMid, castJieyin, COLS, TOP } from 'sadoushou-core';
+import { newGame, step, aim, waveLeft, waveCount, perRank, hordeAll, tierOf, colMid, castJieyin, bossRows, COLS, TOP } from 'sadoushou-core';
 import { W, H, CX, Y0, HY, HALF, CARD, sOf, yOf, xOf, zOfY, uOfX } from './view.js';
 import { makeTextures, makeNumberFont, makeEmitters, rng, canvasTex, rounded } from './fx.js';
 import { Hud, WORDS, text } from './hud.js';
@@ -24,6 +24,12 @@ const TIER_TINT = [0xffffff, 0xfff0c8, 0xe0a060];
 const backOut = (t) => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2;
 const quadOut = (t) => t * (2 - t);
 const hash = (j, k = 1) => (((j * 2654435761 + k * 40503) >>> 0) % 10007) / 10007; // a stable 0…1 per beast
+/** Where a beast's frames live (its row's `art`): 守墙关's by default, 撒豆成兵's, or this kit's own (第一回's 马家 people). */
+const artDir = (b, art) => ({ sadou: `${b}../sadou/art/`, sadoushou: `${b}art/` })[art] ?? `${b}../shouqiang/art/`;
+/** A beast row's frames, its hit and its poses (a 大妖's `warn` · `rush` frames). */
+const framesOf = (k) => [...new Set([...k.frames, k.hit, ...Object.values(k.pose ?? {})])];
+/** The belt's pictures a level names (a card's or a wall's `icon`), each once. */
+const beltIcons = (level) => [...new Set((level.belt?.lines ?? []).flatMap((ln) => [ln.wall?.icon, ...(ln.cards ?? []).map((c) => c.icon)]).filter(Boolean))];
 
 export class PlayScene extends Phaser.Scene {
   constructor() { super('play'); }
@@ -31,7 +37,8 @@ export class PlayScene extends Phaser.Scene {
   init(cfg) {
     this.cfg = cfg;
     this.lang = cfg.lang === 'en' ? 'en' : 'zh';
-    this.w = WORDS[this.lang];
+    // a level's own words over the kit's (守灶台: 灶台 for 山门, 马家 for 兽潮, its won and lost banners)
+    this.w = { ...WORDS[this.lang], ...(cfg.level.words?.[this.lang] ?? {}) };
   }
 
   preload() {
@@ -39,14 +46,19 @@ export class PlayScene extends Phaser.Scene {
     this.missing = new Set();
     this.load.on('loaderror', (f) => this.missing.add(f.key));
     this.load.atlas('units', `${sd}units.webp`, `${sd}units.json`);
-    for (const k of ['tex-road', 'tex-side']) this.load.image(k, `${sd}${k}.webp`);
-    this.load.image('wall', `${sq}wall.webp`);
+    // a level's own ground (`art`: 守灶台's hut floor, its 灶台 for the wall, the hut's far end for the sky), else the kit's
+    const own = `${b}art/`, la = this.cfg.level.art ?? {};
+    this.load.image('tex-road', la.road ? `${own}${la.road}.webp` : `${sd}tex-road.webp`);
+    this.load.image('tex-side', la.side ? `${own}${la.side}.webp` : `${sd}tex-side.webp`);
+    this.load.image('wall', la.wall ? `${own}${la.wall}.webp` : `${sq}wall.webp`);
     this.load.image('xiaoman', `${sq}xiaoman-cast.webp`);
-    this.load.image('sky', `${b}../../../worlds/jiuding/art/backdrop/${this.cfg.level.sky ?? 'cloudy-day'}.webp`);
+    this.load.image('sky', la.sky ? `${own}${la.sky}.webp` : `${b}../../../worlds/jiuding/art/backdrop/${this.cfg.level.sky ?? 'cloudy-day'}.webp`);
     for (const [id, k] of Object.entries(this.cfg.kit.beasts)) {
       if (id.startsWith('_')) continue;
-      for (const f of [...k.frames, k.hit]) this.load.image(`${id}-${f}`, `${k.art === 'sadou' ? sd : sq}${id}-${f}.webp`);
+      for (const f of framesOf(k)) this.load.image(`${id}-${f}`, `${artDir(b, k.art)}${id}-${f}.webp`);
     }
+    for (const ic of beltIcons(this.cfg.level)) this.load.image(ic, `${own}${ic}.webp`);
+    if (this.cfg.level.pieces) this.load.image('piece-break', `${own}bowl-break.webp`);
     this.load.image('yy', `${sl}yinyue.webp`);
     this.load.json('yy-meta', `${sl}yinyue.json`);
     const bar = this.add.graphics();
@@ -160,7 +172,9 @@ export class PlayScene extends Phaser.Scene {
       if (this.textures.exists(key)) this.textures.remove(key);
       canvasTex(this, key, w, h, (c) => { c.fillStyle = col; c.beginPath(); c.ellipse(w / 2, h / 2, w / 2 - 3, h / 2 - 3, 0, 0, 7); c.fill(); });
     };
-    for (const [id, k] of Object.entries(this.cfg.kit.beasts)) if (!id.startsWith('_')) for (const f of [...k.frames, k.hit]) fill(`${id}-${f}`, 120, 120, '#7a4a2a');
+    for (const [id, k] of Object.entries(this.cfg.kit.beasts)) if (!id.startsWith('_')) for (const f of framesOf(k)) fill(`${id}-${f}`, 120, 120, '#7a4a2a');
+    for (const ic of beltIcons(this.cfg.level)) fill(ic, 96, 96, '#d9b46a');
+    if (this.cfg.level.pieces) fill('piece-break', 96, 96, '#d9c8a0');
     for (const [k, col] of [['tex-road', '#9c8a70'], ['tex-side', '#5d7a4c'], ['sky', '#c9cdbf'], ['wall', '#8a8478'], ['xiaoman', '#eeeeee']]) fill(k, 64, 64, col);
     if (this.missing.has('units') || !this.textures.exists('units')) {
       if (this.textures.exists('units')) this.textures.remove('units');
@@ -237,9 +251,12 @@ export class PlayScene extends Phaser.Scene {
     if (v) return v;
     // the belt keeps its order as it rides, so a card's depth is set once: the nearer over the farther
     const d = D.belt + (1000 - it.z) / 2000;
-    const img = this.add.image(0, 0, it.kind === 'block' ? 'block' : 'card-blue').setOrigin(0.5, 1).setDepth(d);
+    // a wall with a picture of its own (沈家的门, 戴九履一's chestnuts) stands as that picture; a card's picture rides on its face
+    const wallPic = it.kind === 'block' && it.icon;
+    const img = this.add.image(0, 0, wallPic ? it.icon : it.kind === 'block' ? 'block' : 'card-blue').setOrigin(0.5, 1).setDepth(d);
+    const icon = it.kind === 'card' && it.icon ? this.add.image(0, 0, it.icon).setOrigin(0.5, 1).setDepth(d + 0.00005) : null;
     const label = this.add.bitmapText(0, 0, 'numGood', '', 60).setOrigin(0.5).setDepth(d + 0.0001);
-    v = { img, label, punch: 0, face: null };
+    v = { img, icon, label, punch: 0, face: null, pic: Boolean(wallPic) };
     this.cards.set(it.id, v);
     return v;
   }
@@ -247,7 +264,7 @@ export class PlayScene extends Phaser.Scene {
   dropCard(id) {
     const v = this.cards.get(id);
     if (!v) return;
-    v.img.destroy(); v.label.destroy();
+    v.img.destroy(); v.label.destroy(); v.icon?.destroy();
     this.cards.delete(id);
   }
 
@@ -260,14 +277,17 @@ export class PlayScene extends Phaser.Scene {
       v.punch = Math.max(0, v.punch - dt * 6);
       const k = 1 + v.punch * 0.18;
       if (it.kind === 'block') {
-        v.img.setPosition(x, y + 6 * s).setDisplaySize(wpx * 1.05 * k, wpx * 0.76 * k);
+        const tall = v.pic ? v.img.height / v.img.width : 0.76;
+        v.img.setPosition(x, y + 6 * s).setDisplaySize(wpx * (v.pic ? 0.9 : 1.05) * k, wpx * (v.pic ? 0.9 : 1) * tall * k);
         v.label.setFont('numSmall').setText(String(Math.ceil(it.hp))).setPosition(x, y - wpx * 0.36).setFontSize(Math.round(18 + 30 * s)).setScale(k);
         continue;
       }
       const n = Math.floor(it.n), face = it.gold ? 'card-gold' : n < 0 ? 'card-red' : 'card-blue';
       if (v.face !== face) { v.face = face; v.img.setTexture(face); v.label.setFont(it.gold ? 'numGold' : n < 0 ? 'numBad' : 'numGood'); }
       v.img.setPosition(x, y + 4 * s).setDisplaySize(wpx * k, wpx * 0.72 * k);
-      v.label.setText(n < 0 ? `-${-n}` : `+${n}`).setPosition(x, y - wpx * 0.36).setFontSize(Math.round(20 + 36 * s)).setScale(k);
+      // a card with a picture (桂花糕, 家里的碗, 租): the picture over its upper half, the number under it
+      if (v.icon) v.icon.setPosition(x - wpx * 0.2 * k, y - wpx * 0.1).setDisplaySize(wpx * 0.46 * k, wpx * 0.46 * k * (v.icon.height / v.icon.width));
+      v.label.setText(n < 0 ? `-${-n}` : `+${n}`).setPosition(v.icon ? x + wpx * 0.2 * k : x, y - wpx * 0.36).setFontSize(Math.round(20 + 36 * s)).setScale(k);
     }
   }
 
@@ -415,58 +435,84 @@ export class PlayScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- the 大妖
 
+  /** One drawing a 大妖 (a level may send several: 马小宝 · 马三): its sprite, shadow, aura, HP bar, name. */
   makeBoss() {
-    const b = this.cfg.level.boss, kb = this.cfg.kit.beasts[b.beast];
-    this.bossKey = `${b.beast}-${kb.frames[0]}`;
-    this.bossHitKey = `${b.beast}-${kb.hit}`;
-    this.bossName = kb.name?.[this.lang] ?? kb.name?.zh ?? b.beast;
-    this.aura = this.add.image(0, 0, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(0x9fd8ff).setVisible(false).setDepth(D.boss - 0.5);
-    this.boss = this.add.image(0, 0, this.bossKey).setOrigin(0.5, 0.92).setDepth(D.boss).setVisible(false);
-    this.bossShadow = this.add.image(0, 0, 'shadow').setAlpha(0.6).setDepth(D.beast - 1).setVisible(false);
-    this.bossBar = this.add.graphics().setDepth(D.num);
-    this.bossNum = this.add.bitmapText(0, 0, 'numSmall', '', 26).setOrigin(0.5).setDepth(D.num + 1).setVisible(false);
-    this.bossLabel = text(this, 0, 0, this.bossName, 20, { color: '#ffd0c0' }).setDepth(D.num + 1).setVisible(false);
+    this.bossViews = bossRows(this.cfg.level).map((b) => {
+      const kb = this.cfg.kit.beasts[b.beast], key = `${b.beast}-${kb.frames[0]}`;
+      return {
+        kb, key, hitKey: `${b.beast}-${kb.hit}`, name: kb.name?.[this.lang] ?? kb.name?.zh ?? b.beast,
+        aura: this.add.image(0, 0, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(0x9fd8ff).setVisible(false).setDepth(D.boss - 0.5),
+        img: this.add.image(0, 0, key).setOrigin(0.5, 0.92).setDepth(D.boss).setVisible(false),
+        shadow: this.add.image(0, 0, 'shadow').setAlpha(0.6).setDepth(D.beast - 1).setVisible(false),
+        bar: this.add.graphics().setDepth(D.num),
+        num: this.add.bitmapText(0, 0, 'numSmall', '', 26).setOrigin(0.5).setDepth(D.num + 1).setVisible(false),
+        label: text(this, 0, 0, kb.name?.[this.lang] ?? kb.name?.zh ?? b.beast, 20, { color: '#ffd0c0' }).setDepth(D.num + 1).setVisible(false),
+        lag: 0, hitT: 0, jolt: 0, gone: false,
+      };
+    });
     this.strip = this.add.graphics().setDepth(D.beast - 0.5).setBlendMode(Phaser.BlendModes.ADD);
-    this.bossLag = 0;
+  }
+
+  /** The frame a 大妖 shows now: hit, else its pose for the mode (马小宝 rolls, 马三 raises the club), else its walk. */
+  bossFrame(bs, v) {
+    if (v.hitT > 0 || this.ended) return v.hitKey;
+    const pose = v.kb.pose?.[bs.mode];
+    return pose ? `${bs.beast}-${pose}` : v.key;
   }
 
   drawBoss(dt) {
-    const bs = this.g.boss;
     this.strip.clear();
-    if (!bs?.on) return;
+    for (const bs of this.g.bosses) this.drawOneBoss(bs, this.bossViews[bs.i], dt);
+  }
+
+  drawOneBoss(bs, v, dt) {
+    if (!v || v.gone || !bs.on && !v.falling) return;
     const t = this.time.now / 1000, sc = sOf(bs.z), x = xOf(bs.x, bs.z), y = yOf(bs.z);
-    const kb = this.cfg.kit.beasts[bs.beast], rush = bs.mode === 'rush';
-    this.bossHitT = Math.max(0, (this.bossHitT ?? 0) - dt);
-    const key = this.bossHitT > 0 || this.ended ? this.bossHitKey : this.bossKey;
-    if (this.boss.texture.key !== key) this.boss.setTexture(key);
-    const breathe = Math.sin(t * 3) * 0.02, squash = bs.mode === 'warn' ? 0.06 * (1 - bs.modeT / bs.charge.warn) : 0;
+    const kb = v.kb, rush = bs.mode === 'rush';
+    v.hitT = Math.max(0, v.hitT - dt);
+    const key = this.bossFrame(bs, v);
+    if (v.img.texture.key !== key) v.img.setTexture(key);
+    const breathe = Math.sin(t * 3 + bs.i) * 0.02, squash = bs.mode === 'warn' ? 0.06 * (1 - bs.modeT / bs.charge.warn) : 0;
+    const spin = rush && bs.kind === 'roll' ? t * 14 : 0; // 马小宝's 糯米团子 roll
     const h = (kb.size * sc) / this.texH(key);
-    this.boss.setVisible(!this.won).setPosition(x + (this.jolt ?? 0), y).setScale(h * (1 + breathe + squash), h * (1 - breathe - squash * 1.5));
-    this.boss.setDepth(rush || bs.z < 14 ? D.rush : D.boss);
-    this.jolt = (this.jolt ?? 0) * 0.8;
-    this.bossShadow.setVisible(!this.won).setPosition(x, y).setDisplaySize(kb.size * sc * 0.9, kb.size * sc * 0.22);
-    this.aura.setVisible(rush && !this.calm).setPosition(x, y - kb.size * sc * 0.45).setDepth(this.boss.depth - 0.1)
+    if (!v.falling) v.img.setVisible(true).setPosition(x + v.jolt, y).setScale(h * (1 + breathe + squash), h * (1 - breathe - squash * 1.5)).setRotation(spin);
+    v.img.setDepth(rush || bs.z < 14 ? D.rush : D.boss);
+    v.jolt *= 0.8;
+    v.shadow.setVisible(!v.falling).setPosition(x, y).setDisplaySize(kb.size * sc * 0.9, kb.size * sc * 0.22);
+    v.aura.setVisible(rush && !this.calm && !v.falling).setPosition(x, y - kb.size * sc * 0.45).setDepth(v.img.depth - 0.1)
       .setScale(kb.size * sc / 18 * (1 + Math.sin(t * 40) * 0.08)).setAlpha(0.55 + Math.sin(t * 33) * 0.2);
     if (rush && !this.calm && this.rand() < 0.6) this.em.burst('spark', 3, x + (this.rand() - 0.5) * kb.size * sc * 0.8, y - this.rand() * kb.size * sc * 0.8);
-    // the column it will charge down, lit while it gathers itself
+    // the column it will charge (a roll) or stamp down (a slam), lit while it gathers itself
     if (bs.mode === 'warn' || rush) {
       const [a, b] = COLS[bs.col], z0 = bs.charge.to ?? 4, z1 = bs.z;
-      const pulse = 0.25 + Math.abs(Math.sin(t * (rush ? 6 : 14))) * 0.3;
+      const pulse = 0.25 + Math.abs(Math.sin(t * (rush ? 6 : 14))) * 0.3, mid = colMid(bs.col);
       this.strip.fillStyle(0xff3a2a, pulse).fillPoints([
         { x: xOf(a, z0), y: yOf(z0) }, { x: xOf(b, z0), y: yOf(z0) }, { x: xOf(b, z1), y: yOf(z1) }, { x: xOf(a, z1), y: yOf(z1) }], true);
       for (let z = z0 + 4; z < z1; z += 9) {
-        const cz = z - ((t * 30) % 9), s2 = sOf(cz), cx = xOf(bs.line, cz), cy = yOf(cz);
+        const cz = z - ((t * 30) % 9), s2 = sOf(cz), cx = xOf(mid, cz), cy = yOf(cz);
         this.strip.lineStyle(Math.max(2, 6 * s2), 0xffd0a0, 0.8).beginPath().moveTo(cx - 28 * s2, cy - 14 * s2).lineTo(cx, cy).lineTo(cx + 28 * s2, cy - 14 * s2).strokePath();
       }
     }
-    const bw = Math.max(150, 260 * sc), top = y - kb.size * sc - 16;
-    this.bossLag = Math.max(bs.hp, this.bossLag - Math.max(1, (this.bossLag - bs.hp) * 0.08));
-    this.bossBar.clear().fillStyle(0x0a0814, 0.85).fillRoundedRect(x - bw / 2 - 3, top - 3, bw + 6, 22, 9)
-      .fillStyle(0xffffff, 0.85).fillRoundedRect(x - bw / 2, top, bw * (this.bossLag / bs.hpMax), 16, 7)
+    const show = !v.falling;
+    const bw = Math.max(120, 220 * sc), top = y - kb.size * sc - 16;
+    v.lag = Math.max(bs.hp, v.lag - Math.max(1, (v.lag - bs.hp) * 0.08));
+    v.bar.clear();
+    if (show) v.bar.fillStyle(0x0a0814, 0.85).fillRoundedRect(x - bw / 2 - 3, top - 3, bw + 6, 22, 9)
+      .fillStyle(0xffffff, 0.85).fillRoundedRect(x - bw / 2, top, bw * (v.lag / bs.hpMax), 16, 7)
       .fillStyle(0xe8262c, 1).fillRoundedRect(x - bw / 2, top, Math.max(0, bw * (bs.hp / bs.hpMax)), 16, 7);
-    this.bossBar.setVisible(!this.won);
-    this.bossNum.setVisible(!this.won).setPosition(x, top + 8).setText(String(Math.ceil(bs.hp)));
-    this.bossLabel.setVisible(!this.won).setPosition(x, top - 18);
+    v.num.setVisible(show).setPosition(x, top + 8).setText(String(Math.ceil(bs.hp)));
+    v.label.setVisible(show).setPosition(x, top - 18);
+  }
+
+  /** A 大妖 down (one of several): it topples off the road; the last one is the win's (on_end). */
+  topple(bs, v, last) {
+    if (v.falling) return;
+    v.falling = true;
+    v.bar.clear(); v.num.setVisible(false); v.label.setVisible(false); v.aura.setVisible(false); v.shadow.setVisible(false);
+    const sc = sOf(bs.z), x = xOf(bs.x, bs.z), y = yOf(bs.z);
+    v.img.setTexture(v.hitKey);
+    for (let i = 0; i < (last ? 6 : 3); i += 1) this.time.delayedCall(i * 110, () => { this.em.burst('fire', 18, x + (this.rand() - 0.5) * 220 * sc, y - this.rand() * 260 * sc); this.em.burst('stars', 8, x, y - 120 * sc); });
+    this.tweens.add({ targets: v.img, angle: 12, alpha: 0, y: v.img.y + 20, delay: 500, duration: 700, ease: 'Quad.easeIn', onComplete: () => { v.gone = true; v.img.setVisible(false); } });
   }
 
   // ---------------------------------------------------------------- events → juice
@@ -560,6 +606,7 @@ export class PlayScene extends Phaser.Scene {
     this.shake(120, 0.006);
     this.em.burst('dust', 6, xOf(colMid('M'), 0) + (this.rand() - 0.5) * 120, Y0);
     this.em.burst('debris', 3, xOf(colMid('M'), 0) + (this.rand() - 0.5) * 120, Y0);
+    this.piecesLost(e.hp);
     this.breachSum = (this.breachSum ?? 0) + e.d;
     if (this.time.now - (this.breachAt ?? 0) > 200) {
       this.breachAt = this.time.now;
@@ -569,19 +616,54 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  /** A piece of the wall gone (守灶台: a bowl off the 灶台): it shatters over the wall, the HUD loses one. */
+  piecesLost(wall) {
+    const p = this.cfg.level.pieces;
+    if (!p) return;
+    const left = Math.ceil((wall / this.g.wall.max) * p.n - 1e-9);
+    if (this.piecesLeft == null) this.piecesLeft = p.n;
+    for (; this.piecesLeft > left; this.piecesLeft -= 1) {
+      const x = CX + (this.piecesLeft - (p.n + 1) / 2) * 120, y = Y0 + 40;
+      const b = this.add.image(x, y, 'piece-break').setDepth(D.fx).setScale(0.3);
+      this.tweens.add({ targets: b, scale: 0.9, y: y - 60, alpha: 0, duration: 700, ease: 'Quad.easeOut', onComplete: () => b.destroy() });
+      this.em.burst('debris', 16, x, y);
+      this.shake(200, 0.012);
+      this.sfx.bad();
+      this.hud.setPieces(left);
+    }
+  }
+
   on_low() { this.say('low', true); this.fact({ t: 'low', wall: this.g.wall.hp }); }
 
   on_boss(e) {
-    this.hud.banner(this.w.boss(this.bossName), { ribbon: true, y: 330 });
+    const v = this.bossViews[e.boss ?? 0];
+    if ((e.boss ?? 0) > 0) { this.time.delayedCall(700 * e.boss, () => this.hud.banner(this.w.boss(v.name), { ribbon: true, y: 330 })); v.lag = e.hp; return; } // the second one, a beat later
+    this.hud.banner(this.w.boss(v.name), { ribbon: true, y: 330 });
     this.shake(300, 0.012);
     this.sfx.slam();
     this.say('boss', true);
-    this.bossLag = e.hp;
+    v.lag = e.hp;
     this.fact({ t: 'boss', hp: e.hp });
   }
 
-  on_charge_warn() {
-    this.hud.banner(this.w.charge, { color: '#ff8a7a', y: 560 });
+  /** One of several down: it topples, a banner; the last one's is the win (on_end). */
+  on_bossdown(e) {
+    if (this.g.bosses.every((b) => b.hp <= 0)) return;
+    const bs = this.g.bosses[e.boss];
+    this.topple(bs, this.bossViews[e.boss], false);
+    this.shake(300, 0.014);
+    this.sfx.slam();
+  }
+
+  /** 马小宝 stops to eat the 桂花糕 the squad took (a card that `feeds` him). */
+  on_eat(e) {
+    const say = [this.cfg.level.boss].flat()[e.boss]?.eatSay;
+    if (say) this.hud.banner(say[this.lang] ?? say.zh, { color: '#ffe36b', y: 600 });
+  }
+
+  on_charge_warn(e) {
+    const row = [this.cfg.level.boss].flat()[e.boss ?? 0];
+    this.hud.banner(row?.warnSay?.[this.lang] ?? this.w.charge, { color: '#ff8a7a', y: 560 });
     this.say('charge', true);
     this.sfx.tick();
   }
@@ -589,7 +671,7 @@ export class PlayScene extends Phaser.Scene {
   on_charge(e) { this.shake(260, 0.014); this.sfx.slam(); this.fact({ t: 'charge', col: e.col }); }
 
   on_charge_end(e) {
-    const z = this.g.boss.charge.to ?? 4, x = xOf(e.x, z);
+    const z = e.z ?? this.g.bosses[e.boss ?? 0].charge.to ?? 4, x = xOf(e.kind === 'slam' ? colMid(e.col) : e.x, Math.min(z, 4));
     this.shake(360, 0.02);
     this.flash(120, 190, 225, 255);
     this.em.burst('dust', 30, x, yOf(z));
@@ -597,7 +679,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   on_knock(e) {
-    const dir = this.squadX < xOf(this.g.boss.line, 0) ? -1 : 1;
+    const dir = this.squadX < xOf(e.x ?? 0, 0) ? -1 : 1;
     for (let i = 0; i < Math.min(30, e.n); i += 1) {
       const [ox, oy] = SLOTS[i];
       this.ghost('units', 'soldier-1', this.squadX + ox, Y0 - oy * 1.6, this.manScale, { vx: dir * (200 + this.rand() * 300), vy: -340 - this.rand() * 300, spin: dir * 12, life: 0.8 });
@@ -607,10 +689,11 @@ export class PlayScene extends Phaser.Scene {
   }
 
   on_bosshit(e) {
-    this.bossHitT = 0.08;
-    this.jolt = (this.rand() - 0.5) * 8;
+    const bs = this.g.bosses[e.boss ?? 0], v = this.bossViews[e.boss ?? 0];
+    v.hitT = 0.08;
+    v.jolt = (this.rand() - 0.5) * 8;
     this.dmgSum = (this.dmgSum ?? 0) + e.d;
-    const bs = this.g.boss, sc = sOf(bs.z), x = xOf(bs.x, bs.z), y = yOf(bs.z);
+    const sc = sOf(bs.z), x = xOf(bs.x, bs.z), y = yOf(bs.z);
     if (this.rand() < 0.4) this.em.burst('spark', 4, x + (this.rand() - 0.5) * 200 * sc, y - this.rand() * 200 * sc);
     if (this.time.now - (this.dmgAt ?? 0) > 150) {
       this.dmgAt = this.time.now;
@@ -625,12 +708,11 @@ export class PlayScene extends Phaser.Scene {
     this.ended = true;
     this.fact({ t: 'end', won: e.won, stars: e.stars });
     if (e.won) {
-      const bs = this.g.boss, sc = sOf(bs.z), x = xOf(bs.x, bs.z), y = yOf(bs.z);
       this.sfx.win();
       this.shake(500, 0.02);
       this.flash(200, 255, 240, 200);
-      for (let i = 0; i < 6; i += 1) this.time.delayedCall(i * 110, () => { this.em.burst('fire', 18, x + (this.rand() - 0.5) * 220 * sc, y - this.rand() * 260 * sc); this.em.burst('stars', 8, x, y - 120 * sc); });
-      this.tweens.add({ targets: this.boss, angle: 12, alpha: 0, y: this.boss.y + 20, delay: 500, duration: 700, ease: 'Quad.easeIn', onComplete: () => { this.won = true; } });
+      for (const bs of this.g.bosses) this.topple(bs, this.bossViews[bs.i], true);
+      this.time.delayedCall(1200, () => { this.won = true; });
       this.hud.banner(this.w.won, { color: '#ffe36b', ribbon: true, y: 330 });
       this.say('won', true);
     } else {
