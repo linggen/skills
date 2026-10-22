@@ -19,6 +19,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          # tools/check-clobber.mjs blames the pushed commits against recent history.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -26,4 +29,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Run checks
+        env:
+          # A push is checked as pushed (before..after); a PR against origin/main.
+          CLOBBER_RANGE: ${{ github.event_name == 'push' && format('{0}..{1}', github.event.before, github.sha) || '' }}
         run: ./scripts/check.sh

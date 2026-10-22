@@ -2,6 +2,8 @@
 # Every check CI runs, runnable before a push: ./scripts/check.sh
 # Repo-wide tests, each skill's node tests, run-*.mjs and run-*.pl runners, dj's Python tests.
 # Only *.test.mjs, run-*.{mjs,pl} and test_*.py run — helpers like health/tests/preview-server.mjs never do.
+# First: tools/check-clobber.mjs — the commits not yet on origin/main (CI: the pushed range) must not
+# silently revert recent work (a commit from a stale base or an old worktree's files; 10-21 d36ee70a).
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -14,6 +16,7 @@ step() {
   fi
 }
 
+step node tools/check-clobber.mjs
 step node --test tests/*.test.mjs
 for dir in */tests; do
   skill=${dir%/tests}
