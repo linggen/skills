@@ -12,8 +12,11 @@
 //     only after he has sent a line (never on her own initiative before he speaks).
 // The 今 never pays the 古 (「不跨线」): its task's grant is the task table with nothing in it, like every 今 board.
 
-export const TAG = '【成】';
-const TAG_RE = /[【\[]\s*(?:成|done)\s*[】\]]/gi;
+// The tag is an HTML comment (10-22: the tag must never show to the player — 「【成】」 stood in the chat panel): the engine's chat panel drops
+// every `<!-- … -->` before it renders a reply (linggen ui MarkdownContent.tsx), and the bubbles never carry it. The
+// older bracket spellings are still read as the tag (and stripped), should she write one.
+export const TAG = '<!--成-->';
+const TAG_RE = /<!--\s*(?:成|done)\s*-->|[【\[]\s*(?:成|done)\s*[】\]]/gi;
 const MAX_LINES = 4;
 const MAX_CHARS = 80;
 
@@ -77,13 +80,13 @@ const W = {
     facts: '此刻：{facts}',
     shown: '屏幕上已有——{lines}',
     goal: '他这一局想做到（你心里有数，不说破，不替他做到；他真做到了，就认）：{goal}',
-    shape: '回法：一到三行，每行不超过三十字{multi}；不叙述，不旁白。哪一条他做到了，那一条回复最后另起一行只写【成】。',
+    shape: '回法：一到三行，每行不超过三十字{multi}；不叙述，不旁白。哪一条他做到了，那一条回复最后另起一行只写 <!--成-->（原样，别加别的）。',
     multi: '，每行以说话人的名字加冒号开头',
     count: '第{k}条（共{n}条）。',
     last: '这是他最后一条：顺着话收个尾，自然地结束这段聊天。',
     said: '他发来：「{text}」',
     again: '[HIDDEN] [jinchat] {title}·',
-    tag: '（照目标，他这一条之后确实已经做到了，才另起一行写【成】；还差一点就不写。）',
+    tag: '（照目标，他这一条之后确实已经做到了，才另起一行写 <!--成-->；还差一点就不写。）',
   },
   en: {
     head: '[HIDDEN] [jinchat] A phone chat on the stage (the present line): {title}, {when}. Not words to you: no Look, no tool at all.',
@@ -92,13 +95,13 @@ const W = {
     facts: 'Now: {facts}',
     shown: 'Already on the screen — {lines}',
     goal: 'What he wants this round (you know it; never say it, never do it for him; once he truly has, own it): {goal}',
-    shape: 'Shape: one to three lines, each under twenty words{multi}; no narration. The reply in which he has done it ends with a line of only 【成】.',
+    shape: 'Shape: one to three lines, each under twenty words{multi}; no narration. The reply in which he has done it ends with a line of only <!--成--> (exactly that).',
     multi: ', each line starting with the speaker\'s name and a colon',
     count: 'Line {k} of {n}.',
     last: 'This is his last line: answer it and let the chat end naturally.',
     said: 'He sends: "{text}"',
     again: '[HIDDEN] [jinchat] {title} · ',
-    tag: ' (Only if, by the goal, he has truly done it now: a last line 【成】; not yet, none.)',
+    tag: ' (Only if, by the goal, he has truly done it now: a last line <!--成-->; not yet, none.)',
   },
 };
 const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');

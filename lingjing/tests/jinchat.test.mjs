@@ -88,13 +88,38 @@ test('the hidden line: facts and the goal first, short after; never shown (HIDDE
   assert.match(first, /第1条（共6条）。他发来：「小宝哥，先别吸，跟着我吐」$/);
   assert.ok(!first.includes('名字加冒号'), 'one person: no names asked for');
   const later = turnLine(c, { k: 3, text: '吐——', cast, lang: 'zh' });
-  assert.equal(later, '[HIDDEN] [jinchat] 黑地里·第3条（共6条）。他发来：「吐——」（照目标，他这一条之后确实已经做到了，才另起一行写【成】；还差一点就不写。）', 'the tag\'s rule on every line');
+  assert.equal(later, '[HIDDEN] [jinchat] 黑地里·第3条（共6条）。他发来：「吐——」（照目标，他这一条之后确实已经做到了，才另起一行写 <!--成-->；还差一点就不写。）', 'the tag\'s rule on every line');
   assert.match(turnLine(c, { k: 6, text: 'x', cast, lang: 'zh' }), /最后一条/, 'the last line asks for an ending');
   const group = turnLine(CHATS['617'], { k: 1, text: 'x', cast: castOf(CHATS['617'], PEOPLE, 'zh'), lang: 'zh' });
   assert.match(group, /每行以说话人的名字加冒号开头/);
   const en = turnLine(CHATS.ahe, { k: 1, text: 'hi', cast: castOf(CHATS.ahe, PEOPLE, 'en'), lang: 'en' });
   assert.ok(en.includes(CHATS.ahe.goal.en) && /no tool at all/.test(en));
   assert.match(stubReply(cast, 2), new RegExp(TAG), 'the stub meets the goal on his second line');
+});
+
+test('the tag never reaches the player: an HTML comment the chat panel drops, never in a bubble, never asked for in brackets', () => {
+  // The engine's chat panel renders a reply through MarkdownContent.tsx, which drops every HTML comment first:
+  // text.replace(/<!--[\s\S]*?-->/g, '') — mirrored here (linggen ui/src/components/chat/MarkdownContent.tsx).
+  const panel = (t) => t.replace(/<!--[\s\S]*?-->/g, '');
+  assert.match(TAG, /^<!--[\s\S]*-->$/, 'the tag is a comment');
+  const cast = castOf(CHATS['617'], PEOPLE, 'zh');
+  for (const reply of [`老蔡：成交。\n眼镜：我查了，不拍。\n${TAG}`, `老蔡：成交。 ${TAG}`, '老蔡：行。\n<!-- 成 -->', '老蔡：行。\n【成】', stubReply(cast, 2)]) {
+    const p = parseChat(reply, cast);
+    assert.equal(p.met, true, reply);
+    for (const l of p.lines) assert.doesNotMatch(l.text, /成】|<!--|-->|【成|\[done\]/, `a bubble carries no tag: ${l.text}`);
+    if (!/【成】/.test(reply)) assert.doesNotMatch(panel(reply), /<!--|-->|【成】/, 'the panel shows no tag');
+  }
+  // Every line Ling is handed asks for the comment, never the old brackets the panel would show.
+  for (const [id, c] of Object.entries(CHATS)) {
+    for (const lang of ['zh', 'en']) {
+      const cs = castOf(c, PEOPLE, lang);
+      for (const k of [1, 2, c.turns]) {
+        const line = turnLine(c, { k, text: 'x', cast: cs, lang });
+        assert.ok(!line.includes('【成】'), `${id} ${lang} ${k}: no bracket tag asked`);
+        assert.ok(line.includes(TAG), `${id} ${lang} ${k}: the comment tag asked`);
+      }
+    }
+  }
 });
 
 test('the module: mount() on the contract, ai (no bot), one way to the model (drawguess-ling.js), the book when no one answers', () => {

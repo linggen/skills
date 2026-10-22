@@ -599,7 +599,7 @@ black room where only the voices show), 「对方正在输入…」 between bubb
 theirs is Ling's**, as that person: each line he sends goes to her in the game's chat as a hidden `[jinchat]` line with the
 chat's facts and goal (jinchat-rules.js turnLine; SKILL.md § 今 chat: no Look, no tool, their message only), through
 drawguess-ling.js (the one way to a model turn — no picture). **The rules decide** (jinchat-rules.js outcome): Ling
-judges only whether the goal has happened, by one tag 【成】; met after he spoke → ★★★ `met`, his `turns` used up → ★
+judges only whether the goal has happened, by one tag, an HTML comment `<!--成-->` (the chat panel drops every `<!-- -->` before it renders, linggen ui MarkdownContent.tsx; the bubbles strip it — the player never sees it); met after he spoke → ★★★ `met`, his `turns` used up → ★
 `talked`. Either way the story goes on; the 今 pays nothing (不跨线). Never stuck on a model: `&her=stub` answers on the
 page, `&chat=off` / no engine / two failed turns play the book's own exchange (`book`) and 「就到这儿」; the stuck gate's
 「算了，往下走」 after 75 s as on every board. 游戏厅: AI · 聊天 · 今线 (617), and each story row plays its own chat
