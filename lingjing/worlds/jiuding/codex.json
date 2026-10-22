@@ -598,7 +598,8 @@
     ]
    },
    "first": {
-    "scene": "00-gate"
+    "scene": "00-gate",
+    "after": true
    },
    "_first": "No book card (Hanli 2026-10-05: 「这个可以删了」) — the game stage keeps its first-appearance card at 00-gate."
   },

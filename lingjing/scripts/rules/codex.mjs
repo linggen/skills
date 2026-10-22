@@ -32,7 +32,8 @@ export function meetsOf(content, state, scene) {
   const waits = waitsTheBook(state, scene);
   const foes = [...(scene.cast ?? []), ...(scene.exits ?? []).filter(e => e.game?.kind === 'duel').map(e => e.game.creature)].filter(id => !waits.has(id));
   for (const id of foes) if (id && id !== content.world.companion?.id) ids.push((content.creatures?.creatures ?? []).find(c => c.id === id)?.person ?? id);
-  for (const [id, r] of raw) if (r.over.first?.scene === scene.id) ids.push(id);
+  // `first.after`: met in the rest of the passage (`story_after`, 00-gate's 鼋 after 泗水路) — not before it is told
+  for (const [id, r] of raw) if (r.over.first?.scene === scene.id && !(r.over.first.after && scene.story_after && !afterTold(state, scene))) ids.push(id);
   // A `book_only` entry (今线's people) is the book's card alone: never brought on, met or listed in play.
   return [...new Set(ids)].filter(id => raw.has(id) && !raw.get(id).over.book_only);
 }

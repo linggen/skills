@@ -60,3 +60,16 @@ test('nor is it named before the book: not in Look\'s cast, not on the place, no
   const won = task(win(at(), content, ctx(), { id: 'yaoyuan-xunye' }).state, content, ctx(), { action: 'done', id: 'yaoyuan-xunye' }).state;
   assert.deepEqual(named(tellOf(content, won).keep), { cast: true, place: true, people: true });
 });
+
+// 泗水路 (2026-10-22): 00-gate is split after the road; the 鼋 comes on in the rest (`first.after`, codex.json), so its
+// card waits out the board (瞿老 is one of the scene's people: people stand when it opens, as at 00-shiao) — found live at 1440: the 鼋's card stood over 泗水路.
+test('00-gate: the 鼋 waits for the rest of the passage — not over 泗水路, met once it is told', () => {
+  const GATE = content.chapters['00-prologue'].scenes['00-gate'];
+  const s = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-gate', place: GATE.at, stamina: 100, tasks: { 'gate-sishui': { status: 'offered' } } };
+  assert.ok(!meetsOf(content, s, GATE).includes('yuan'), 'not before 泗水路');
+  const won = task(win(s, content, ctx(), { id: 'gate-sishui' }).state, content, ctx(), { action: 'done', id: 'gate-sishui' }).state;
+  assert.ok(!meetsOf(content, won, GATE).includes('yuan'), 'owed, not yet told');
+  const told = tellOf(content, won).keep;
+  assert.ok(meetsOf(content, told, GATE).includes('yuan'), 'met with the rest');
+  assert.ok(meetsOf(content, { ...s, done_scenes: ['00-gate'] }, GATE).includes('yuan'), 'a scene done brought it on');
+});
