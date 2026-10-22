@@ -572,3 +572,6 @@ body.fighting .focus > .gshell > .gshell-stage { flex: 1; min-height: 0; }
   body.fighting .focus > .gshell > .gshell-bar { padding: 4px 10px 0; }
   body.fighting .focus > .gshell .gshell-how { display: none; }
 }
+/* …its bar on the room's paper, not over the painted backdrop (read live 10-22: the how-to line was lost on it). */
+body.fighting .focus > .gshell { gap: 0; }
+body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: rgba(243, 238, 226, 0.9); border-bottom: 1px solid var(--ink-line, rgba(0, 0, 0, .12)); }
