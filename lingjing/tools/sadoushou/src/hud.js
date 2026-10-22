@@ -80,7 +80,8 @@ export class Hud {
     this.tierName = text(s, W - 40, 878, '', 18, { color: '#d6f6ff', ox: 1 }).setDepth(depth + 2);
     // a wall told in pieces (守灶台's three bowls: `pieces`), their pictures over its bar — stars are the pieces kept
     const pc = scene.cfg.level.pieces;
-    this.pieces = pc ? Array.from({ length: pc.n }, (_, i) => s.add.image(60 + i * 46, 884, pc.icon).setDepth(depth + 2).setDisplaySize(42, 42)) : [];
+    // beside the bar, not over it: 结印's button stands over the corner above it (games/jieyin/helper.js)
+    this.pieces = pc ? Array.from({ length: pc.n }, (_, i) => s.add.image(232 + i * 42, 928, pc.icon).setDepth(depth + 2).setDisplaySize(38, 38)) : [];
     this.fps = scene.cfg.showFps ? text(s, 10, 112, '', 16, { ox: 0, color: '#9dff9d' }).setDepth(depth + 1) : null;
   }
 

@@ -109,7 +109,7 @@
       "_td": "2026-10-22 (Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的. 塔防好几种呢, 可以用没出现过的」 · 「可以马小宝, 马三两个boss从中路冲下来, 带一堆家丁等」; 拽爹 cut the same day, 第一回 stays at six): 00-zaotai, 小满 on the floor after the bowl breaks — 「一时竟忘了起身」 — and the board his daydream there. 守山门's first story level (levels/sadoushou.json `zaotai`, `story: \"00-zaotai\"`, off the 游戏厅's ladder): the 灶台 with the three bowls left is the wall, stars by the bowls kept; 马家家丁 and 小宝's 跟班 down the middle, then 马小宝 and 马三 together, each with a crowd. Imagination, not a win over the 马家 (the book: 「现在打不过」); the bowl is still broken after it. Nothing paid before 入门.",
       "id": "masan-zaotai", "kind": "board", "game": "sadoushou", "deal": { "lv": "zaotai" }, "period": "once", "stars": 3,
       "title": { "zh": "守灶台 · 三只碗", "en": "Guarding the stove · Three bowls" },
-      "how": { "zh": "左右挪，豆子自己会撒：打左边的吃的，人越撒越多；打碎右边那扇门，后面是家里的碗。中间的家丁别让他们碰着灶台；马小宝滚过来、马三跺棍子，红的那一列，躲开。", "en": "Move left and right; the beans fly on their own. Shoot the food on the left and the beans multiply; break the door on the right for the family bowl behind it. Keep the servants in the middle off the stove; when Ma Xiaobao rolls or Ma San stamps his club, get off the column that lights red." },
+      "how": { "zh": "左右挪，豆子自己撒。打左边的吃的，打碎右边的门拿碗；哪一列红了，躲开。", "en": "Move; the beans fly. Shoot the food on the left, break the door on the right for the bowl; a column lights red — get off it." },
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "三只碗，还在灶台上。——想想而已。", "en": "Three bowls, still on the stove. Only in his head." }
     },
