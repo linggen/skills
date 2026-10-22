@@ -18,8 +18,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时', rhythm: '节奏', rhythmNote: '沿主线：读了多少字、玩了什么 · 条越长读得越久，红的超过 {cap} 字', same: (k) => `连着两个${k}`, longest: '最长', roaming: '游荡斗法', side: '支线斗法', chars: '字' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there', rhythm: 'Rhythm', rhythmNote: 'Along the main line: what is read, what is played · a longer bar is a longer read; red is over {cap} characters', same: (k) => `Two ${k} in a row`, longest: 'longest', roaming: 'roaming fights', side: 'side fights', chars: 'chars' },
 };
 const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
@@ -46,7 +46,10 @@ const howOf = (mod) => mod?.meta?.how?.[lang()] ?? mod?.meta?.how?.zh ?? '';
 // A scratch save (`save=`) rides along so the way back lands on that save, not the player's own.
 const fromGame = q.get('from') === 'game';
 const save = /^[\w-]+$/.test(q.get('save') ?? '') ? q.get('save') : null;
+// The 节奏 view keeps its place across the language switch; nothing else carries `view` (a game opened from it is a game).
+const view = q.get('view') === 'rhythm' ? 'rhythm' : null;
 const kept = (en = lang() === 'en') => ({ dev: '1', ...(en ? { lang: 'en' } : {}), ...(fromGame ? { from: 'game' } : {}), ...(save ? { save } : {}) });
+const langHref = () => `?${new URLSearchParams({ ...kept(lang() !== 'en'), ...(view ? { view } : {}) })}`;
 const href = (extra = {}) => `?${new URLSearchParams({ ...kept(), ...extra })}`;
 const home = () => (fromGame ? `<a class="arcade-home" href="index.html${save ? `?save=${save}` : ''}">${esc(w().home)}</a>` : '');
 
@@ -129,7 +132,8 @@ async function listPage() {
     return `<section><h2>${esc(gr[lang()] ?? gr.zh)}</h2><div class="arcade-grid">${tiles.join('')}</div></section>`;
   }));
   root.innerHTML = `<header class="arcade-head"><h1>${esc(w().title)}</h1><span class="dim small">${esc(w().note)}</span>`
-    + `<a class="arcade-lang" href="?${new URLSearchParams(kept(lang() !== 'en'))}">${esc(w().lang)}</a>${home()}</header>`
+    + `<a class="arcade-view" href="${href({ view: 'rhythm' })}">${esc(w().rhythm)}</a>`
+    + `<a class="arcade-lang" href="${langHref()}">${esc(w().lang)}</a>${home()}</header>`
     + `${kindsHtml(reg.games.filter((g) => !g.replaced))}${groups.join('')}${await oldHtml(reg)}`;
   for (const b of root.querySelectorAll('.arcade-kindchip')) b.onclick = () => filterBy(b.dataset.kind);
 }
@@ -188,7 +192,53 @@ async function pickPage(id, n, row, mod) {
     + `<span class="dim small">${esc(w().pickNote)}</span>${home()}</header>${sections.join('')}`;
 }
 
+/* 节奏 (Hanli 10-22: 「让我在游戏大厅里可以看到玩家游戏的节奏」): each chapter's main line, 回 by 回, as a strip —
+   a read a thin bar as long as its characters (red past the cap), a game a chip in its type's colour, a fight 斗法's,
+   a set piece · riddle · look · 突破 muted; a game of the type just played says so. worlds/jiuding/levels/rhythm.json
+   (tools/arcade-rhythm.mjs) holds every word and number; the page only draws it. */
+const BEAT = {
+  zh: { piece: '大场面', riddle: '谜', seen: '察看', breakthrough: '突破' },
+  en: { piece: 'Set piece', riddle: 'Riddle', seen: 'Look', breakthrough: 'Breakthrough' },
+};
+const COUNTED = { zh: { board: '小游戏', fight: '斗法', piece: '大场面', riddle: '谜' }, en: { board: 'games', fight: 'fights', piece: 'set pieces', riddle: 'riddles' } };
+const pickL = (v) => v?.[lang()] ?? v?.zh ?? '';
+const LINK = {
+  board: (it) => (it.game ? href({ game: it.game, n: String(it.n) }) : null),
+  fight: (it) => (it.key ? href({ game: 'kapai', foe: it.key }) : null),
+};
+const barPx = (chars) => Math.max(4, Math.min(220, Math.round(chars / 25)));
+function readHtml(it, cap) {
+  const n = it.run > it.chars ? `${it.chars} / ${it.run}` : String(it.chars);
+  return `<li class="rh-read${it.over ? ' is-over' : ''}" title="${esc(`${it.run} ${w().chars}${it.over ? ` > ${cap}` : ''}`)}">`
+    + `<i style="height:${barPx(it.chars)}px"></i><span>${esc(n)}</span></li>`;
+}
+function beatHtml(it) {
+  const kind = it.mechanic ? kindOf(it) : BEAT[lang()][it.kind];
+  const name = pickL(it.title) || (it.kind === 'riddle' ? it.id : '');
+  const to = LINK[it.kind]?.(it);
+  const tag = to ? 'a' : 'span';
+  const chip = `<${tag} class="rh-chip${LINK[it.kind] ? '' : ' is-muted'}" data-kind="${esc(it.mechanic ?? '')}"${to ? ` href="${esc(to)}"` : ''}>`
+    + `${it.art ? `<img src="../worlds/jiuding/${esc(it.art)}" alt="" loading="lazy">` : ''}<b>${esc(name || kind)}</b>${name && kind ? `<em>${esc(kind)}</em>` : ''}</${tag}>`;
+  return `<li class="rh-beat">${chip}${it.same ? `<span class="rh-same">⚠ ${esc(w().same(kind))}</span>` : ''}</li>`;
+}
+function huiHead(h) {
+  const counts = Object.entries(COUNTED[lang()]).filter(([k]) => h.counts[k]).map(([k, label]) => `${label} ${h.counts[k]}`);
+  const extra = [h.roaming ? `${w().roaming} ${h.roaming}` : '', h.side.length ? `${w().side} ${h.side.length}` : '', h.longest ? `${w().longest} ${h.longest}` : ''];
+  return `<h3 class="rh-hui-head">${esc(pickL(h.label))}<span>${esc([...counts, ...extra].filter(Boolean).join(' · '))}</span></h3>`;
+}
+const huiHtml = (h, cap) => `<div class="rh-hui">${huiHead(h)}<ol class="rh-strip">${h.items.map((it) => (it.kind === 'read' ? readHtml(it, cap) : beatHtml(it))).join('')}</ol></div>`;
+async function rhythmPage() {
+  const r = await fetch('../worlds/jiuding/levels/rhythm.json').catch(() => null);
+  const t = r?.ok ? await r.json() : { cap: 1500, chapters: [] };
+  const chapters = t.chapters.filter((c) => c.huis.some((h) => h.items.length)).map((c) => `<section class="rh-chapter"><h2>${esc(pickL(c.title))}</h2>`
+    + `<div class="rh-huis">${c.huis.map((h) => huiHtml(h, t.cap)).join('')}</div></section>`);
+  root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a><h1>${esc(w().rhythm)}</h1>`
+    + `<a class="arcade-lang" href="${langHref()}">${esc(w().lang)}</a>${home()}</header>`
+    + `<p class="dim small rh-note">${esc(w().rhythmNote.replace('{cap}', t.cap))}</p>${chapters.join('')}`;
+}
+
+const PAGES = { rhythm: rhythmPage };
 if (devOnly(q)) {
   document.title = `灵境 · ${w().title}`;
-  if (q.get('game')) playPage(q.get('game'), q.get('n')); else listPage();
+  if (q.get('game')) playPage(q.get('game'), q.get('n')); else (PAGES[view] ?? listPage)();
 } else root.textContent = '—';

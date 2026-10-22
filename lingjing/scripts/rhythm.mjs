@@ -57,31 +57,66 @@ export const pieceBeat = exit => Boolean(exit.setpiece);
 /* The exit the main line takes out of a scene. */
 export const mainExit = scene => (scene.exits ?? []).find(e => !e.stay && (e.next || e.ends)) ?? null;
 
-/* A chapter's main line as stretches: each the characters read between two beats. */
-export function stretchesOf(chapter) {
+/* The exit taken, as one play beat before its passage: the first of these it carries (one beat, however many). */
+const EXIT_KINDS = [
+  ['fight', e => e.game?.kind === 'duel', e => e.game.creature ?? e.game.id],
+  ['board', e => e.game, e => e.game.id],
+  ['riddle', e => e.key, e => [e.key].flat()[0]],
+  ['seen', e => e.needs?.seen, e => [e.needs.seen].flat()[0]],
+  ['breakthrough', e => e.breakthrough, () => 'breakthrough'],
+];
+const exitKind = exit => EXIT_KINDS.find(([, has]) => has(exit));
+const pieceId = sp => (typeof sp === 'string' ? sp : sp?.id ?? null);
+const duelId = scene => { const d = (scene.show ?? []).find(c => c?.card === 'duel'); return d?.creature ?? d?.id ?? null; };
+
+/* A chapter's main line as the player meets it, in order (Hanli 10-22: 「让我在游戏大厅里可以看到玩家游戏的节奏」):
+   `{read, scene}` — the zh characters of one passage (or of one part of it, cut at a `{景=id}` paragraph) — and the
+   beats between, `{kind, id, scene, exit?, at}`: kind board · fight · riddle · seen · breakthrough · piece; `at`
+   names the beat as the rhythm lint does. stretchesOf folds it; the 游戏厅's 节奏 view (tools/arcade-rhythm.mjs) draws it. */
+export function timelineOf(chapter) {
   const scenes = chapter.scenes ?? {}, out = [], seen = new Set();
-  let from = 'start', chars = 0;
-  const beat = (at) => { out.push({ from, to: at, chars }); from = at; chars = 0; };
-  const read = (pair, at) => { for (const p of storyParts(pair)) { chars += p.chars; if (p.piece) beat(`${at}{景=${p.piece}}`); } };
+  const beat = (kind, id, scene, at, exit) => out.push({ kind, id, scene, ...(exit ? { exit } : {}), at });
+  const read = (pair, scene, at) => {
+    for (const p of storyParts(pair)) {
+      if (p.chars) out.push({ read: p.chars, scene });
+      if (p.piece) beat('piece', p.piece, scene, `${at}{景=${p.piece}}`);
+    }
+  };
   let id = chapter.first_scene;
   while (id && scenes[id] && !seen.has(id)) {
     seen.add(id);
     const scene = scenes[id], boards = boardsOf(scene);
-    if (duelAt(scene) && !boards.length) beat(id);
-    read(scene.story, id);
-    if (boards.length) beat(id);
-    read(scene.story_after, id);
-    for (const b of boards.slice(1)) beat(`${id}:${b}`);
+    if (duelAt(scene) && !boards.length) beat('fight', duelId(scene), id, id);
+    read(scene.story, id, id);
+    if (boards.length) beat('board', boards[0], id, id);
+    read(scene.story_after, id, id);
+    for (const b of boards.slice(1)) beat('board', b, id, `${id}:${b}`);
     const exit = mainExit(scene);
     if (!exit) break;
-    if (exitBeat(exit)) beat(`${id}/${exit.id}`);
-    read(exit.story, `${id}/${exit.id}`);
-    if (pieceBeat(exit)) beat(`${id}/${exit.id}`);
+    const at = `${id}/${exit.id}`, kind = exitKind(exit);
+    if (kind) beat(kind[0], kind[2](exit), id, at, exit.id);
+    read(exit.story, id, at);
+    if (pieceBeat(exit)) beat('piece', pieceId(exit.setpiece), id, at, exit.id);
     id = exit.next;
+  }
+  return out;
+}
+
+/* A timeline folded into stretches: the characters read between two beats, each beat named by its `at`. */
+export function foldStretches(timeline) {
+  const out = [];
+  let from = 'start', chars = 0;
+  for (const it of timeline) {
+    if (it.read) { chars += it.read; continue; }
+    out.push({ from, to: it.at, chars });
+    from = it.at; chars = 0;
   }
   out.push({ from, to: 'end', chars });
   return out;
 }
+
+/* A chapter's main line as stretches: each the characters read between two beats. */
+export const stretchesOf = chapter => foldStretches(timelineOf(chapter));
 
 /* Every stretch over the cap, as warning lines, chapter by chapter. */
 export function rhythm(content, { cap = RHYTHM_CAP, chapters = null } = {}) {

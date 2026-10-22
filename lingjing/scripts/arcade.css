@@ -79,3 +79,39 @@ body { overflow: auto; }
 .arcade-foe-tag { font-style: normal; font-size: 11px; color: var(--seal); }
 .arcade-foe-hui { font-family: var(--serif); font-size: 13px; font-weight: 500; color: var(--faint); margin: 12px 0 6px; }
 @media (max-width: 480px) { .arcade-grid:has(.arcade-foe) { grid-template-columns: 1fr; } }
+/* 节奏 (?view=rhythm): each chapter's main line, 回 by 回, as a vertical strip — a read a thin bar as long as its
+   characters (red past the cap), a game a chip in its type's colour (`data-kind`, the tiles' games.json `mechanic`),
+   斗法 its own; a set piece, riddle, look or 突破 muted; a game of the type just played carries a seal-red warning. */
+.arcade [data-kind="调息"] { --kc: var(--water); }
+.arcade [data-kind="塔防"] { --kc: var(--jade); }
+.arcade [data-kind="割绳子"] { --kc: var(--earth); }
+.arcade [data-kind="投掷"] { --kc: var(--ling); }
+.arcade [data-kind="打地鼠"], .arcade [data-kind="时机"] { --kc: var(--metal); }
+.arcade [data-kind="解谜"], .arcade [data-kind="你画我猜"] { --kc: var(--yinyue); }
+.arcade [data-kind="棋牌"], .arcade [data-kind="节奏"] { --kc: var(--wood); }
+.arcade [data-kind="斗法"] { --kc: var(--fire); }
+.arcade-view { border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; margin-left: auto; }
+.arcade-view + .arcade-lang { margin-left: 0; }
+.rh-note { margin: 0 0 8px; }
+.rh-chapter h2 { margin-top: 22px; }
+.rh-huis { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px 18px; align-items: start; }
+.rh-hui { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 10px 12px; }
+.rh-hui-head { font-family: var(--serif); font-size: 15px; font-weight: 600; margin: 0 0 8px; display: flex; flex-direction: column; gap: 2px; }
+.rh-hui-head span { font-family: var(--ui); font-size: 11px; font-weight: 400; color: var(--faint); }
+.rh-strip { list-style: none; margin: 0; padding: 0 0 0 10px; border-left: 1px dashed var(--line); display: flex; flex-direction: column; gap: 3px; }
+.rh-read { display: flex; align-items: center; gap: 8px; min-height: 8px; }
+.rh-read i { width: 3px; border-radius: 2px; background: var(--faint); opacity: .55; flex: none; margin-left: -12px; }
+.rh-read span { font-size: 11px; color: var(--faint); }
+.rh-read.is-over i { background: var(--seal); opacity: 1; width: 4px; }
+.rh-read.is-over span { color: var(--seal); font-weight: 600; }
+.rh-beat { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.rh-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 9px 3px 6px; border: 1px solid var(--line);
+  border-left: 4px solid var(--kc, var(--line)); border-radius: 6px; background: color-mix(in srgb, var(--kc, var(--line)) 12%, var(--surface));
+  color: var(--text); text-decoration: none; font-size: 13px; }
+.rh-chip b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rh-chip em { font-style: normal; font-size: 11px; color: var(--kc, var(--faint)); white-space: nowrap; }
+.rh-chip img { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; }
+a.rh-chip:hover { border-color: var(--kc); }
+.rh-chip.is-muted { background: none; border-style: dashed; border-left-style: solid; border-left-color: var(--faint); color: var(--dim); }
+.rh-same { font-size: 11px; font-weight: 600; color: var(--seal); background: var(--seal-soft); border-radius: 4px; padding: 1px 6px; }
+@media (max-width: 480px) { .rh-huis { grid-template-columns: 1fr; } }
