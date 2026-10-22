@@ -70,7 +70,6 @@ import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost, mountOnly } from './beat-host.js';
 import { fellBack, probeCaps, withCaps } from './caps.js';
 import { anyPaused, forget as forgetShell, frameHtml, say as shellSay, shellFor, timedOf, wireShell } from './games/shell.js';
-import * as kapai from './games/kapai.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
@@ -3730,6 +3729,10 @@ async function onDuelStart(id) {
    what the fight means, as the hooks' bodies (boutHooks): the picks the rules replay, 银月's words, and
    the settle — the closing card waits for the rules' answer (writeBout), then settleBout. */
 const fightShell = (b) => `duel:${b.id}`;
+/* The room's module, loaded once and early — by import(), as every game is: imported statically it would be
+   inlined into the page's one script by the relay, where its `mount` clashes with the engine's helpers. */
+let kapai = null;
+const kapaiReady = import('./games/kapai.js').then((m) => { kapai = m; return m; });
 /// The mounted room's door (games/kapai.js `host.kapai`): its state, busy, held, draw.
 const boutRoom = (b) => b?.node?.querySelector('.g-kapai')?.kapai ?? null;
 const boutYielded = (b) => Boolean(boutRoom(b)?.room().yielded);
@@ -3760,6 +3763,7 @@ function mountBout(b) {
 /// layer (pause, 银月's bubble) paint themselves in place.
 function paintFight(b) {
   const focus = $('focus'), id = fightShell(b);
+  if (!kapai) { kapaiReady.then(() => render()); return; }
   if (!b.node) mountBout(b);
   const frame = [...focus.children].find((el) => el.matches('.gshell') && el.dataset.shell === id);
   if (frame?.contains(b.node)) return;
