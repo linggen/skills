@@ -657,16 +657,20 @@ test('雪夜柴垛: 00-halfyear\'s — the 柴垛 the 炉, 野猪 in the snow, �
   const b = spawnAt(g, 'yezhu', layLevel(l).road.len * 0.5);
   assert.equal(pointer(g, noSel(), { x: b.x, y: b.y - 5, button: 0, touch: true }).did, 'attack', 'a tap on a boar: he throws at it, selected or not');
 });
-test('雪夜柴垛, gentle: a first-timer wins every night, a slow hand most; the keen one keeps every log; nothing done loses most', () => {
+// Hanli 10-22: 「难度可以稍微提高一点」 (守灶台, 706276b8) → 「好的」 for these too: 第二回 a touch harder than 守火 (a first-timer
+// 19/20), 泗水路 (第三回) at least as hard as 雪夜柴垛. Both were 20/20 for a first-timer, ★ all alike.
+const wins = (rs) => rs.filter((x) => x.result === 'win').length;
+test('雪夜柴垛, a touch harder (第二回): a first-timer wins most nights, not all; a slow hand far fewer; the keen one keeps every log; nothing done loses', () => {
   const l = story('chaiduo');
   const go = (bot) => SEEDS20.map((seed) => sim(l, bot, { seed }));
   const keen = go(humanBot({ look: 0.8, attack: 0.8, best: true }));
   assert.ok(allWin(keen) && share(keen, (x) => x.stars === 3) >= 0.9, `keen: ${fiveLine(keen)}`);
   assert.ok(allWin(go('human')), `human: ${fiveLine(go('human'))}`);
   const first = go(FIRST), slow = go(SLOW), none = go('none');
-  assert.ok(allWin(first), `first-timer: ${fiveLine(first)}`);
-  assert.ok(share(slow, (x) => x.result === 'win') >= 0.8, `slow: ${fiveLine(slow)}`);
-  assert.ok(share(none, (x) => x.result === 'lose') >= 0.7, `nothing done: ${fiveLine(none)}`);
+  assert.ok(wins(first) >= 15 && wins(first) <= 18, `first-timer (was 20/20; now 17): ${fiveLine(first)}`);
+  assert.ok(first.some((x) => x.stars === 1) && first.some((x) => x.stars === 2), `first-timer, stars spread: ${fiveLine(first)}`);
+  assert.ok(wins(slow) <= wins(first) - 5, `slow, clearly fewer (8): ${fiveLine(slow)}`);
+  assert.ok(wins(none) <= 3, `nothing done (2): ${fiveLine(none)}`);
   assert.ok(keen.every((x) => x.time < 150), `about a minute and a half: ${keen.map((x) => x.time)}`);
 });
 test('泗水路: 00-gate\'s — the road camp\'s fire to feed, 舅舅 asleep by it to keep; a boar that turns for him gnaws till it falls', () => {
@@ -693,15 +697,18 @@ test('泗水路: 00-gate\'s — the road camp\'s fire to feed, 舅舅 asleep by 
   for (let i = 0; i < 60 * 200 && !lone.over; i += 1) { lone.hp = l.fire.max; step(lone, 1 / 60); } // the fire kept up
   assert.deepEqual([lone.over, lone.lostBy], ['lose', 'keep'], '舅舅 gnawed down: the night is lost');
 });
-test('泗水路, gentle: harder than 守火 by the kept one, still won by a first-timer every night; nothing done loses', () => {
+test('泗水路, at least as hard (第三回): a first-timer wins most nights, no more than 雪夜柴垛\'s; a slow hand far fewer; nothing done loses', () => {
   const l = story('sishui');
   const go = (bot) => SEEDS20.map((seed) => sim(l, bot, { seed }));
   const keen = go(humanBot({ look: 0.8, attack: 0.8, best: true })), human = go('human');
-  assert.ok(allWin(keen) && share(keen, (x) => x.stars === 3) >= 0.9, `keen: ${fiveLine(keen)}`);
+  assert.ok(allWin(keen) && share(keen, (x) => x.stars === 3) >= 0.8, `keen: ${fiveLine(keen)}`);
   assert.ok(allWin(human) && share(human, (x) => x.stars >= 2) >= 0.9, `human: ${fiveLine(human)}`);
   const first = go(FIRST), slow = go(SLOW);
-  assert.ok(allWin(first), `first-timer: ${fiveLine(first)}`);
-  assert.ok(share(slow, (x) => x.result === 'win') >= 0.85, `slow: ${fiveLine(slow)}`);
+  assert.ok(wins(first) >= 14 && wins(first) <= 17, `first-timer (was 20/20; now 16): ${fiveLine(first)}`);
+  assert.ok(first.some((x) => x.stars === 1) && first.some((x) => x.stars === 2), `first-timer, stars spread: ${fiveLine(first)}`);
+  const snow = SEEDS20.map((seed) => sim(story('chaiduo'), FIRST, { seed }));
+  assert.ok(wins(first) <= wins(snow), `no easier than 雪夜柴垛: ${wins(first)} vs ${wins(snow)}`);
+  assert.ok(wins(slow) <= wins(first) - 3, `slow, fewer (11): ${fiveLine(slow)}`);
   assert.ok(allLose(go('none')), 'nothing done: the fire goes out');
   assert.ok(keen.every((x) => x.time < 150), `about two minutes: ${keen.map((x) => x.time)}`);
 });

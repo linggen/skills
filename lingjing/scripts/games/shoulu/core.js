@@ -702,8 +702,9 @@ export function step(g, dt) {
 /** Stars: ★★★ the 炉火 whole AND the level cleared by its `par` s (Hanli 10-21: fast clears are 结印's help); ★★ 炉火
     from 6; else ★. A level with no par: 炉火 alone. */
 export const starsOf = (hp, t = 0, par = null) => (hp >= HP && (par == null || t <= par) ? 3 : hp >= 6 ? 2 : 1);
-/** A won game's stars: on a `fire` level, the fire left against its `stars` [★★★, ★★]; else starsOf (炉火 and `par`). */
-export const starsFor = (g) => (g.L.fire ? (g.hp >= g.L.fire.stars[0] ? 3 : g.hp >= g.L.fire.stars[1] ? 2 : 1) : starsOf(g.hp, g.wonAt ?? g.t, g.L.par));
+/** A won game's stars: the 炉 left against the level's `stars` [★★★, ★★] (a `fire` level's in `fire`, 守火; any other's on the
+    row, 雪夜柴垛's 柴垛, 2026-10-22); else starsOf (炉火 and `par`). */
+export const starsFor = (g) => { const s = g.L.fire?.stars ?? g.L.stars; return s ? (g.hp >= s[0] ? 3 : g.hp >= s[1] ? 2 : 1) : starsOf(g.hp, g.wonAt ?? g.t, g.L.par); };
 /** Waves held: all on a win; else the ones fully past. */
 export const cleared = (g) => (g.over === 'win' ? waves(g) : (g.queue.length || g.beasts.length) ? Math.max(0, g.wave - 1) : g.wave);
 

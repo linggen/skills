@@ -89,10 +89,12 @@ way on split word for word at 「那副门板，到底没有白扛，抬了一�
 and throws less far — 小满 alone, every tap an order (core.js `direct`)) · 水桶落井 (调息): no two of a kind side by side.
 第三回 opens on **泗水路** `gate-sishui` (守炉 `sishui`: 00-gate split after the road; the camp fire to feed, 舅舅 asleep by it
 to `keep` — a boar near him may turn for him and gnaw; then 沉鼎山's piece opens the rest). Bots (20 seeds; a first-timer
-looks every 1.6 s): 抬鹿下山 human 30/30 (★3 mostly), any card wins, none loses, ~88 s; 雪夜柴垛 first-timer 20/20, slow
-18/20, nothing done 4/20, ~93 s; 泗水路 first-timer 20/20, slow 19/20, nothing done 0/20, ~110 s. Reading: 第二回's
-6,080 between 算账 and 水桶 is now 3,385 · 2,695 (the plan's 大场面 镜光 would cut the second). Open for Hanli: 老周's stones
-and the lead cards' second lines are the game's, not the book's; 雪夜柴垛 is a touch harder than 泗水路 by stars.
+looks every 1.6 s), made a little harder the same day (Hanli 10-22, after 守灶台: 「难度可以稍微提高一点」 → 「好的」 — 第二回 a
+touch harder than 第一回, 泗水路 at least as hard as 雪夜柴垛): 抬鹿下山 human 27/30 (81% over 120 more seeds; ★ spread; was
+30/30 ★★★), any card 24/30, none loses, ~95 s; 雪夜柴垛 first-timer 17/20 (77%; was 20/20), slow 8/20 (was 18), nothing
+done 2/20, ~90 s; 泗水路 first-timer 16/20 (74%; was 20/20), slow 11/20 (was 19), nothing done 0/20, ~115 s. Reading:
+第二回's 6,080 between 算账 and 水桶 is now 3,385 · 2,695 (the plan's 大场面 镜光 would cut the second). Open for Hanli: 老周's
+stones and the lead cards' second lines are the game's, not the book's.
 
 **Two more for 守灶台 · 坠谷 (10-22**, Hanli: 「1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): the daydream is the game's
 **first 结印** — one simple seal where a camera is, 剑诀 → 飞剑 (`from: null`; before 古六 only the one-seal move), through

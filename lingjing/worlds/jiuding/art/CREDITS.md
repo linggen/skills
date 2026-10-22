@@ -304,11 +304,11 @@ For 古二 and 古三's three 塔防 boards (2026-10-22, the 卷一 plan, doc/ga
 `tailu-wall` (the 门板 with the stag on it), `xiaoman-bow` · `xiaoman-bow-cast` (小满 from behind with 爷爷's bow),
 `laozhou-side` (老周, barefoot, throwing stones), `icon-gong-more` · `icon-gong-pierce` · `icon-gong-arc` (the bow's three
 cards); `arrow` and `stone` are 砸寨's own `proj-arrow` · `proj-stone`, turned, not painted. 雪夜柴垛 (守炉 `chaiduo`,
-00-halfyear) — `scripts/games/shoulu/art/` `ground-shiao-snow` (an edit pass from the 石坳 ground, snow) and `chaiduo` (the
+00-halfyear) — `scripts/games/shoulu/art/` `ground-shiao-snow` (a snowy yard at night from words alone, `SNOW_YARD` — repainted 10-22: the first, an edit pass from the 石坳 ground, came out saturated blue with its flowers) and `chaiduo` (the
 柴垛 with the 鸡窝 at its foot); 泗水路 (守炉 `sishui`, 00-gate) — `ground-shanlu-night` (an edit pass from the 山路 ground) and
 `jiujiu-sleep` (舅舅 asleep); the fire, the 枯枝 and 小满 are 守火's. The local FLUX.2 klein 4B (mflux),
 `tools/paint-gu23-td-flux.py`: edit passes from the kits' own art so the set keeps the comic style; the seeds kept are its
-`KEPT` (tailu-bg 3 · tailu-wall 1 · xiaoman-bow 2 · xiaoman-bow-cast 3 · laozhou-side 1 · ground-shiao-snow 2 ·
+`KEPT` (tailu-bg 3 · tailu-wall 1 · xiaoman-bow 2 · xiaoman-bow-cast 3 · laozhou-side 1 · ground-shiao-snow 1 ·
 ground-shanlu-night 2 · chaiduo 1 · jiujiu-sleep 1 · icons 1 · 2 · 1), every seed looked at for fake writing; the sources
 beside the kits' in `art/games/shouqiang/` and `art/games/shoulu/`. No outside source.
 

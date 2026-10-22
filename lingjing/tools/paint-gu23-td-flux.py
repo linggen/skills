@@ -11,8 +11,10 @@ the stag on it for the wall; 小满 from behind with 爷爷's bow (standing, dra
 off on the stalk), throwing stones; the bow's three card icons. The arrow and the stone are 砸寨's (proj-arrow, proj-stone),
 turned to the kit's shot by `cut`, not painted.
 
-雪夜柴垛 (守炉, games.json `shoulu` · `chaiduo`, 00-halfyear): the yard behind the house on a snowy night (an edit pass from
-the 石坳 ground, every tuft in its place), the 柴垛 with the 鸡窝 at its foot (「落进了柴垛底下的鸡窝」) for the 炉.
+雪夜柴垛 (守炉, games.json `shoulu` · `chaiduo`, 00-halfyear): the yard behind the house on a snowy night, the 柴垛 with the
+鸡窝 at its foot (「落进了柴垛底下的鸡窝」) for the 炉. The ground was first an edit pass from the 石坳 ground and came out
+saturated blue with its flowers kept (the build's own note, 10-22); repainted the same day from words alone, `SNOW_YARD`, in
+the kit's style: white snow, grey-blue moon shadow, nothing green.
 
 泗水路 (守炉, `sishui`, 00-gate): the road at night (an edit pass from the 山路 ground), 舅舅 asleep by the fire. The fire, the
 枯枝 and 小满 are 守火's (tools/paint-gu1-td-flux.py).
@@ -44,10 +46,16 @@ NIGHT = ('The attached image is this map\'s ground by DAY: paint the SAME pictur
          'flower, leaf and pebble in exactly the same place and size, seen from straight above, but at NIGHT: cool '
          'moonlight from the upper left, deep ink-blue and dark green shadows, the colours dim and cold, a few pale '
          'silver highlights, still clearly readable. Nothing added, nothing standing up. ' + fc.SCENE)
-SNOW = ('The attached image is this map\'s ground by DAY in autumn: paint the SAME picture, the same composition, every '
-        'pebble and tuft in the same place, seen from straight above, but on a WINTER NIGHT after snow: a thin even layer '
-        'of white snow over everything, a few dark tufts and pebbles poking through, cold blue moonlight, deep blue '
-        'shadows, still clearly readable. Nothing added, nothing standing up. ' + fc.SCENE)
+
+SNOW_YARD = ('A flat game-map GROUND seen from straight above, filling the whole picture: the snowy back yard of a farmhouse '
+             'in old rural China on a WINTER NIGHT, in the style of a bold-outlined flat cel-shaded cartoon mobile game. '
+             'It is DARK, late at night: an even blanket of snow over everything, lit only by a dim moon, so the snow '
+             'reads a soft dusky slate grey-blue, a little lighter in the middle and deep shadowy grey-blue at the '
+             'edges like a vignette, a few faint silver highlights on the drifts; the middle of the picture wide, open '
+             'and plain. Only along the edges: a few dark pebbles and dry brown grass stalks poking through the snow, a '
+             'few scattered twigs and split firewood chips, a small trail of bird footprints. Muted, calm and cold, NOT '
+             'bright white, NOT saturated blue. No flowers, no green plants, no leaves, nothing standing up, no icons, '
+             'no buttons. ' + fc.SCENE)
 
 JOBS = {
   # ── 抬鹿下山 (守墙关) ──
@@ -72,7 +80,7 @@ JOBS = {
     STYLE_OF + 'ONE ' + LAOZHOU + ', a stone in his raised right hand, about to throw it. ' + BACK + NO_WRITING + fc.STYLE
     + ' ' + fc.ON_MAGENTA)),
   # ── 雪夜柴垛 · 泗水路 (守炉) ──
-  'ground-shiao-snow': dict(kit='l', scene=True, ground=True, w=768, h=976, refs=[LOUT / 'ground-shiao.webp'], prompt=SNOW),
+  'ground-shiao-snow': dict(kit='l', scene=True, ground=True, w=768, h=976, prompt=SNOW_YARD),
   'ground-shanlu-night': dict(kit='l', scene=True, ground=True, w=768, h=976, refs=[LOUT / 'ground-shanlu.webp'], prompt=NIGHT),
   'chaiduo': dict(kit='l', w=640, h=640, refs=[QSRC / 'xiaoman-idle.green.webp'], key='magenta', size=200, prompt=(
     STYLE_OF + 'ONE tall rounded WOODPILE of stacked split firewood logs behind a farmhouse, a thick cap of white snow on '
@@ -100,8 +108,9 @@ for k, what in ICONS.items():
     f'rendering and size; only change the background gradient to warm dusk orange to deep violet and the emblem inside '
     f'to: {what}. No text, no numbers. ' + fc.ON_MAGENTA))
 
-# Looked at 2026-10-21 (no fake writing kept): job → seed.
-KEPT = {'tailu-bg': 3, 'xiaoman-bow-cast': 3, 'tailu-wall': 1, 'xiaoman-bow': 2, 'laozhou-side': 1, 'ground-shiao-snow': 2, 'ground-shanlu-night': 2, 'chaiduo': 1,
+# Looked at 2026-10-21 (no fake writing kept): job → seed. ground-shiao-snow repainted 10-22 (SNOW_YARD; seeds 2 and 6 drew
+# button-like icons in a corner, 1 kept).
+KEPT = {'tailu-bg': 3, 'xiaoman-bow-cast': 3, 'tailu-wall': 1, 'xiaoman-bow': 2, 'laozhou-side': 1, 'ground-shiao-snow': 1, 'ground-shanlu-night': 2, 'chaiduo': 1,
         'jiujiu-sleep': 1, 'icon-gong-more': 1, 'icon-gong-pierce': 2, 'icon-gong-arc': 1}
 
 
@@ -134,10 +143,12 @@ def shots():
   print('arrow, stone → done')
 
 
-def cut():
+def cut(only=()):
   from PIL import Image
   jobs = {**JOBS, **second_jobs()}
   for jid, seed in KEPT.items():
+    if only and jid not in only:
+      continue
     j = jobs[jid]
     src = REV / f'{jid}-{seed}.png'
     out = (QOUT if j['kit'] == 'q' else LOUT) / f'{jid}.webp'
@@ -151,7 +162,8 @@ def cut():
       Image.open(src).convert('RGB').save(keep / f'{jid}.green.webp', 'WEBP', quality=90)
       fc.save_webp(fc.key_green(src, key=j.get('key', 'magenta')), out, max_side=j.get('size') or 256)
     print(jid, '→', out)
-  shots()
+  if not only:
+    shots()
 
 
 if __name__ == '__main__':
@@ -159,4 +171,4 @@ if __name__ == '__main__':
   if a.cmd == 'paint':
     fc.paint_all('gu23td', {**JOBS, **second_jobs()}, a)
   else:
-    cut()
+    cut([k for k in a.only.split(',') if k])

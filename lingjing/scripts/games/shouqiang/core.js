@@ -27,6 +27,21 @@ export const FOX = { x: 188, y: 868 };
 /** 小满's raised hand: his hovering sword waits there, tip up-field, and the volleys launch from it (Hanli 10-20:
  *  「小满手上的剑, 不要剑锋对着自己」 — no blade, painted or flying, ever points at him). */
 export const HAND = { x: HERO.x + 40, y: HERO.y - 104 };
+/** Where the two stand on a level: HERO · FOX · HAND, or a level's own (`stand: { hero: [x, y], side: [x, y] }` — 抬鹿下山's
+ *  小满 and 老周 either side of the 门板, so the stag on it is seen, 2026-10-22). The shots leave from here. */
+export function standOf(level) {
+  const [hx, hy] = level.stand?.hero ?? [HERO.x, HERO.y], [fx, fy] = level.stand?.side ?? [FOX.x, FOX.y];
+  return { hero: { x: hx, y: hy }, fox: { x: fx, y: fy }, hand: { x: hx + HAND.x - HERO.x, y: hy + HAND.y - HERO.y } };
+}
+/** A `paths` track's x at height `y`: a number is a straight track; `[[x, y], …]` a painted one the beast follows down
+ *  (抬鹿下山's two trails either side of the 溪, 2026-10-22). */
+export function pathX(p, y) {
+  if (typeof p === 'number') return p;
+  let i = 0;
+  while (i < p.length - 2 && y > p[i + 1][1]) i += 1;
+  const [x0, y0] = p[i], [x1, y1] = p[i + 1], k = Math.max(0, Math.min(1, (y - y0) / (y1 - y0 || 1)));
+  return x0 + (x1 - x0) * k;
+}
 const STEP = 1 / 60;
 
 /** A string seed → a small fast generator (games/seeded.js's, kept here so the bundle needs nothing else). */
@@ -55,7 +70,7 @@ export function newGame(kit, level, { seed = 'x' } = {}) {
     opening: openingOf(kit, level), main: null,
     kills: 0, low: false, events: [],
     casts: {}, jieyinWhen: level.jieyinWhen ?? null, // 结印's spells cast, by move id (castJieyin); a dev's `when`
-    beastKit: beastsOf(kit, level),
+    beastKit: beastsOf(kit, level), at: standOf(level),
     ...(level.grid ? laneState(kit, level) : {}),
   };
 }
@@ -105,10 +120,11 @@ const waveMul = (g, i) => (g.level.hpMul ?? 1) * (1 + (g.level.growth ?? 0) * i)
 function spawn(g, { kind, mul, lane }, near) {
   const b = g.beastKit[kind];
   // `paths` (a story level's tracks, 抬鹿下山's two down to the 门板): a beast comes down one of them, a little either side
-  const P = g.level.paths;
-  let x = near ? Math.max(60, Math.min(W - 60, near.x + (g.rnd() - 0.5) * 140))
-    : P?.length ? Math.max(60, Math.min(W - 60, P[Math.floor(g.rnd() * P.length)] + (g.rnd() - 0.5) * 50)) : 70 + g.rnd() * (W - 140);
+  const P = g.level.paths, path = near ? near.path : P?.length ? P[Math.floor(g.rnd() * P.length)] : null;
+  let off = !near && path != null ? (g.rnd() - 0.5) * 50 : 0;
+  let x = near ? Math.max(60, Math.min(W - 60, near.x + (g.rnd() - 0.5) * 140)) : path != null ? 0 : 70 + g.rnd() * (W - 140);
   let y = near ? near.y + 20 : -40 - g.rnd() * 30;
+  if (path != null) { if (near) off = x - pathX(path, y); else x = Math.max(60, Math.min(W - 60, pathX(path, y) + off)); }
   let col = null;
   if (g.grid) {
     // A lane: the wave's own, else drawn; a wail's calls go to the lanes either side of the caller.
@@ -117,7 +133,7 @@ function spawn(g, { kind, mul, lane }, near) {
     y = near ? near.y : (g.level.spawnY ?? -40) - g.rnd() * 20;
   }
   const hp = Math.round(b.hp * (b.boss ? (g.level.hpMul ?? 1) * (g.level.difficulty ?? 1) : mul));
-  const beast = { id: g.nextId++, kind, x, y, col, hp, max: hp, shell: b.shell ? Math.round(hp * (1 - b.shell)) : 0, leapt: false, leap: null,
+  const beast = { id: g.nextId++, kind, x, y, col, path, off, hp, max: hp, shell: b.shell ? Math.round(hp * (1 - b.shell)) : 0, leapt: false, leap: null,
     speed: b.speed * (0.9 + g.rnd() * 0.2), r: b.r,
     fly: Boolean(b.fly), boss: Boolean(b.boss), slow: 0, slowT: 0, freezeT: 0, stunT: 0, burnT: 0, burn: 0,
     wailT: 0, wailIn: b.wail?.every ?? 0, atWall: false, sway: g.rnd() * 6.28, hitBy: new Set() };
@@ -192,7 +208,7 @@ function crowd(g, r) {
 
 function shoot(g, s) {
   const shot = { id: g.nextId++, age: 0, hit: new Set(), ...s };
-  notAtHim(shot);
+  notAtHim(g, shot);
   g.shots.push(shot);
 }
 
@@ -208,7 +224,7 @@ function fireSwords(g) {
   const dmg = h.dmg + (at(card(g, 'jian-pierce').dmg, lv(g, 'jian-pierce')) ?? 0);
   for (let i = 0; i < n; i += 1) {
     const spread = (i - (n - 1) / 2) * 0.13;
-    shoot(g, { kind: 'sword', x: HAND.x + (i - (n - 1) / 2) * 14, y: HAND.y, ...aim(HAND, t, h.speed, spread),
+    shoot(g, { kind: 'sword', x: g.at.hand.x + (i - (n - 1) / 2) * 14, y: g.at.hand.y, ...aim(g.at.hand, t, h.speed, spread),
       dmg, r: h.r, pierce: 1 + pierce, home: t.id });
   }
   emit(g, { t: 'cast', who: 'xm', kind: 'sword' });
@@ -221,7 +237,7 @@ function fireFox(g) {
   const n = f ? at(c.shots, f) : 1;
   const foes = alive(g).filter((b) => b.y > -10).sort((a, b) => b.y - a.y).slice(0, n);
   for (const b of foes.length ? foes : [t]) {
-    shoot(g, { kind: f ? 'foxfire' : 'fox', x: FOX.x, y: FOX.y - 20, ...aim(FOX, b, h.speed), dmg: f ? at(c.dmg, f) : h.dmg,
+    shoot(g, { kind: f ? 'foxfire' : 'fox', x: g.at.fox.x, y: g.at.fox.y - 20, ...aim(g.at.fox, b, h.speed), dmg: f ? at(c.dmg, f) : h.dmg,
       r: h.r, pierce: 1, splash: f ? at(c.radius, f) : 0, home: b.id });
   }
   emit(g, { t: 'cast', who: 'yy', kind: f ? 'foxfire' : 'fox' });
@@ -229,7 +245,7 @@ function fireFox(g) {
 
 // A talisman lobbed at a spot: lands after `fly` seconds and bursts.
 function lob(g, kind, to, extra) {
-  shoot(g, { kind, x: HAND.x, y: HAND.y, fromX: HAND.x, fromY: HAND.y, toX: to.x, toY: to.y + 18, lob: true, ...extra, fly: extra?.fly ?? 0.45 });
+  shoot(g, { kind, x: g.at.hand.x, y: g.at.hand.y, fromX: g.at.hand.x, fromY: g.at.hand.y, toX: to.x, toY: to.y + 18, lob: true, ...extra, fly: extra?.fly ?? 0.45 });
   emit(g, { t: 'cast', who: 'xm', kind });
 }
 
@@ -252,7 +268,7 @@ const CASTS = {
     const L = lv(g, 'lei-chain'), c = card(g, 'lei-chain');
     const first = target(g);
     if (!first) return false;
-    const pts = [{ x: HAND.x, y: HAND.y }];
+    const pts = [{ x: g.at.hand.x, y: g.at.hand.y }];
     let cur = first, dmg = at(c.dmg, L);
     const done = new Set();
     for (let j = 0; cur && j <= at(c.jumps, L); j += 1) {
@@ -282,7 +298,7 @@ const CASTS = {
     const L = lv(g, 'yy-howl'), c = card(g, 'yy-howl');
     const foes = alive(g).filter((b) => b.y > -10);
     if (!foes.length) return false;
-    emit(g, { t: 'howl', x: FOX.x, y: FOX.y });
+    emit(g, { t: 'howl', x: g.at.fox.x, y: g.at.fox.y });
     for (const b of foes) {
       if (!b.boss) b.stunT = Math.max(b.stunT, at(c.stun, L));
       hurt(g, b, at(c.dmg, L), 'howl');
@@ -416,16 +432,16 @@ function burst(g, s) {
   }
 }
 
-function notAtHim(s) {
-  if (s.kind !== 'sword' || !towardHim(s)) return;
+function notAtHim(g, s) {
+  if (s.kind !== 'sword' || !towardHim(s, g.at.hero)) return;
   const sp = Math.hypot(s.vx, s.vy);
   s.vy = 0; s.vx = Math.sign(s.vx || 1) * sp;
-  if (towardHim(s)) s.vx = -s.vx;
+  if (towardHim(s, g.at.hero)) s.vx = -s.vx;
 }
 
 /** True when a flying sword's line of flight runs through 小满 (within his body's ~36 px of his chest, ahead of it). */
-export function towardHim(s) {
-  const dx = HERO.x - s.x, dy = HERO.y - 50 - s.y, sp = Math.hypot(s.vx, s.vy);
+export function towardHim(s, hero = HERO) {
+  const dx = hero.x - s.x, dy = hero.y - 50 - s.y, sp = Math.hypot(s.vx, s.vy);
   if (!sp) return false;
   const along = (dx * s.vx + dy * s.vy) / sp;
   return along > 0 && Math.abs(dx * s.vy - dy * s.vx) / sp < 36;
@@ -459,7 +475,7 @@ function moveShot(g, s, dt) {
   // A sword never points at 小满 (Hanli 10-20: 「别对着自己」「不要剑锋对着自己」): one whose line of flight would run
   // through him runs level across the road instead. It may dip toward a beast biting the wall beside him (launched from his raised
   // hand, those are a little below it), never at him.
-  notAtHim(s);
+  notAtHim(g, s);
   if (s.arcing) {
     s.arcAge += dt;
     if (s.arcAge > 1.1) return fade(g, s);
@@ -488,7 +504,7 @@ function arcOrEnd(g, s) {
   s.arcing = true; s.arcAge = 0; s.home = next.id;
   s.pierce = at(card(g, 'jian-arc').hits, L);
   s.vx = side * sp * 0.92; s.vy = -sp * 0.4;
-  notAtHim(s);
+  notAtHim(g, s);
 }
 
 function fade(g, s) {
@@ -521,6 +537,12 @@ function moveBeast(g, b, dt) {
   if (k.march && march(g, b, k.march, dt)) return;
   const sp = (k.march && !b.roared ? k.march.speed : b.speed) * (b.slowT > 0 ? 1 - b.slow : 1) * (b.wailT > 0 ? 0 : 1);
   b.sway += dt * 3;
+  if (b.path != null) { // down its track: the track's x where it is, its own step aside, the sway
+    b.off += Math.sin(b.sway) * (b.fly ? 22 : 8) * dt;
+    b.y = Math.min(wallY, b.y + sp * dt);
+    b.x = Math.max(40, Math.min(W - 40, pathX(b.path, b.y) + b.off));
+    return;
+  }
   b.x = Math.max(40, Math.min(W - 40, b.x + Math.sin(b.sway) * (b.fly ? 22 : 8) * dt));
   b.y = Math.min(wallY, b.y + sp * dt);
 }

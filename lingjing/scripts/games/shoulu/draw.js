@@ -76,7 +76,7 @@ function paintBoard(c, L, label, art) {
   }
   const sprite = (im, x, y, h) => { const w = im.naturalWidth * h / im.naturalHeight; c.drawImage(im, x - w / 2, y - h, w, h); };
   const rock = (x, y, s) => {
-    if (art) return sprite(r() < 0.5 ? art.rock : art.bush, x, y + s * 0.4, s * 2.6);
+    if (art) return sprite(r() < 0.5 || L.decor?.bush === false ? art.rock : art.bush, x, y + s * 0.4, s * 2.6);
     c.fillStyle = 'rgba(80,75,70,0.16)'; c.beginPath(); c.moveTo(x - s, y);
     c.quadraticCurveTo(x - s * 0.6, y - s * 1.1, x, y - s * 0.9); c.quadraticCurveTo(x + s * 0.8, y - s * 0.8, x + s, y); c.closePath(); c.fill();
     c.strokeStyle = 'rgba(42,36,29,0.45)'; c.lineWidth = 1; c.stroke();
@@ -89,8 +89,10 @@ function paintBoard(c, L, label, art) {
       c.fillStyle = `rgba(45,70,60,${0.35 + j * 0.1})`; c.beginPath(); c.ellipse(x + (j % 2 ? 3 : -3), yy, w, s * 0.25, 0, 0, 6.28); c.fill();
     }
   };
-  const pines = L.decor?.pines ?? 6;
-  for (let i = 0, n = 0; i < 400 && n < pines + 5; i += 1) {
+  // `decor`: what the board strews off the road over its ground — `pines`, `rocks` (half of them bushes unless `bush: false`);
+  // a painted ground that already holds its own (雪夜柴垛's snow, 2026-10-22) sets them to none
+  const pines = L.decor?.pines ?? 6, rocks = L.decor?.rocks ?? 5;
+  for (let i = 0, n = 0; i < 400 && n < pines + rocks; i += 1) {
     const x = 20 + r() * (W - 40), y = 110 + r() * (H - 130);
     if (!free(x, y, 46)) continue;
     if (n < pines) pine(x, y, 16 + r() * 10); else rock(x, y, 9 + r() * 7);

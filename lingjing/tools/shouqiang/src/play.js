@@ -1,7 +1,7 @@
 // play.js — 守墙关's scene: draws what the engine (scripts/games/shouqiang/core.js) holds, turns its events into
 // juice, and takes the two inputs the game has: a card pick, and (optional) a tap on a beast to focus it.
 import * as Phaser from 'phaser';
-import { newGame, step, pick, setFocus, reachY, castJieyin, HERO, FOX, HAND, W, H } from 'shouqiang-core';
+import { newGame, step, pick, setFocus, reachY, castJieyin, W, H } from 'shouqiang-core';
 import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
 import { Hud, WORDS, bar, setBarW, wordsFor } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
@@ -134,29 +134,29 @@ export class PlayScene extends Phaser.Scene {
     this.wall = this.add.image(W / 2, wy - 22, this.tex(art.wall, 'wall')).setOrigin(0.5, 0).setDepth(D.wall);
     this.wall.setScale((W + 30) / this.wall.width);
     this.wallX = this.wall.x;
-    this.add.image(HERO.x, HERO.y + 26, 'shadow').setDepth(D.hero - 1).setScale(1.3, 1.2);
+    this.add.image(this.g.at.hero.x, this.g.at.hero.y + 26, 'shadow').setDepth(D.hero - 1).setScale(1.3, 1.2);
     // The hero: 小满, or a level's own (`art.hero` · `art.heroCast` — 守白菜: 阿禾 with her 竹竿)
     this.heroIdle = this.tex(art.hero, 'xiaoman-idle');
     this.heroCast = this.tex(art.heroCast, art.hero ? this.heroIdle : 'xiaoman-cast');
-    this.xm = this.add.image(HERO.x, HERO.y + 30, this.heroIdle).setOrigin(0.5, 1).setDepth(D.hero);
+    this.xm = this.add.image(this.g.at.hero.x, this.g.at.hero.y + 30, this.heroIdle).setOrigin(0.5, 1).setDepth(D.hero);
     this.xmScale = 150 / this.xm.height;
     this.xm.setScale(this.xmScale);
     this.tweens.add({ targets: this.xm, scaleY: this.xmScale * 1.03, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     // His sword hovers at his raised hand as its own sprite, tip UP the road toward the beasts (the painted frames
     // hold no blade: Hanli 10-20 「不要剑锋对着自己」); it bobs, glows, and is gone for a beat while a volley launches.
-    this.handGlow = this.add.image(HAND.x, HAND.y, 'glow').setDepth(D.hero + 1).setBlendMode(Phaser.BlendModes.ADD).setTint(0x7fd0ff).setScale(1.1).setAlpha(0.5);
-    this.handSword = this.add.image(HAND.x, HAND.y, 'sword').setDisplaySize(58, 58).setRotation(-Math.PI / 4).setDepth(D.hero + 2);
+    this.handGlow = this.add.image(this.g.at.hand.x, this.g.at.hand.y, 'glow').setDepth(D.hero + 1).setBlendMode(Phaser.BlendModes.ADD).setTint(0x7fd0ff).setScale(1.1).setAlpha(0.5);
+    this.handSword = this.add.image(this.g.at.hand.x, this.g.at.hand.y, 'sword').setDisplaySize(58, 58).setRotation(-Math.PI / 4).setDepth(D.hero + 2);
     this.handBack = 0;
-    this.xmAura = this.add.image(HERO.x, HERO.y - 20, 'glow').setDepth(D.hero - 1).setBlendMode(Phaser.BlendModes.ADD).setScale(2.4).setTint(0x7fd0ff).setAlpha(0.25);
+    this.xmAura = this.add.image(this.g.at.hero.x, this.g.at.hero.y - 20, 'glow').setDepth(D.hero - 1).setBlendMode(Phaser.BlendModes.ADD).setScale(2.4).setTint(0x7fd0ff).setAlpha(0.25);
     // `art.hand: null` — nothing hovers at the hero's hand (阿禾 holds her pole); no aura (no 灵气 yet)
     this.noHand = 'hand' in art && !art.hand;
     if (this.noHand) { this.handSword.setVisible(false); this.handGlow.setVisible(false); this.xmAura.setVisible(false); }
-    this.add.image(FOX.x, FOX.y + 24, 'shadow').setDepth(D.hero - 1).setScale(1.2, 1);
+    this.add.image(this.g.at.fox.x, this.g.at.fox.y + 24, 'shadow').setDepth(D.hero - 1).setScale(1.2, 1);
     // beside the hero: 银月, or a level's own (`art.side` — 守白菜: 小满, before he ever meets her)
-    this.side = art.side ? this.add.image(FOX.x, FOX.y + 30, this.tex(art.side, 'xiaoman-idle')).setOrigin(0.5, 1).setDepth(D.hero) : null;
+    this.side = art.side ? this.add.image(this.g.at.fox.x, this.g.at.fox.y + 30, this.tex(art.side, 'xiaoman-idle')).setOrigin(0.5, 1).setDepth(D.hero) : null;
     if (this.side) { this.sideScale = 112 / this.side.height; this.side.setScale(this.sideScale); }
     const yyKey = !this.side && this.textures.get('yy-sheet').has('idle-1') ? 'yy-sheet' : null;
-    this.yy = yyKey ? this.add.image(FOX.x, FOX.y + 26, 'yy-sheet', 'idle-1').setOrigin(0.5, this.yyFoot ?? 0.97).setDepth(D.hero) : null;
+    this.yy = yyKey ? this.add.image(this.g.at.fox.x, this.g.at.fox.y + 26, 'yy-sheet', 'idle-1').setOrigin(0.5, this.yyFoot ?? 0.97).setDepth(D.hero) : null;
     if (this.yy) {
       this.yyScale = 92 / 150;
       this.yy.setScale(this.yyScale);
@@ -315,8 +315,8 @@ export class PlayScene extends Phaser.Scene {
     const bob = Math.sin(this.time.now / 380) * 4;
     if (this.handBack > 0) this.handBack = Math.max(0, this.handBack - dt);
     const back = this.noHand || this.handBack > 0 ? 0 : 1;
-    this.handSword.setPosition(HAND.x, HAND.y + bob).setAlpha(back);
-    this.handGlow.setPosition(HAND.x, HAND.y + bob).setAlpha(back * (0.42 + Math.sin(this.time.now / 260) * 0.1));
+    this.handSword.setPosition(this.g.at.hand.x, this.g.at.hand.y + bob).setAlpha(back);
+    this.handGlow.setPosition(this.g.at.hand.x, this.g.at.hand.y + bob).setAlpha(back * (0.42 + Math.sin(this.time.now / 260) * 0.1));
     if (!this.yy) return;
     if (this.yyAct > 0) { this.yyAct -= dt; return; }
     this.yyIdle += dt;
@@ -754,7 +754,7 @@ export class PlayScene extends Phaser.Scene {
   xmCastPose() {
     this.xm.setTexture(this.heroCast);
     this.xmCast = 0.16;
-    this.em.burst('spark', 3, HAND.x, HAND.y);
+    this.em.burst('spark', 3, this.g.at.hand.x, this.g.at.hand.y);
   }
 
   ring(x, y, r, color, ms = 380) {
@@ -779,7 +779,7 @@ export class PlayScene extends Phaser.Scene {
 
   say(who, text) {
     const yy = this.lanes?.yyAt();
-    const at = who === 'xiaoman' ? [HERO.x + 30, HERO.y - 130] : yy ? [yy.x, yy.y] : [FOX.x - 10, FOX.y - 90];
+    const at = who === 'xiaoman' ? [this.g.at.hero.x + 30, this.g.at.hero.y - 130] : yy ? [yy.x, yy.y] : [this.g.at.fox.x - 10, this.g.at.fox.y - 90];
     this.hud.bubbleAt(at[0], at[1], text, 2200);
   }
 

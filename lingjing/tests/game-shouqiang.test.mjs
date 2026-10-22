@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, HAND, W, canPlace, firstLane, towardHim, cellAt, collect, hurt, newGame, offerCards, open, opening, pick, place, reachY, setFocus, sim, step, stars } from '../scripts/games/shouqiang/core.js';
+import { BOTS, FOX, HAND, HERO, W, canPlace, pathX, standOf, firstLane, towardHim, cellAt, collect, hurt, newGame, offerCards, open, opening, pick, place, reachY, setFocus, sim, step, stars } from '../scripts/games/shouqiang/core.js';
 import { levelAsked, meta } from '../scripts/games/shouqiang.js';
 import { sourceHash } from '../tools/shouqiang/hash.mjs';
 
@@ -660,17 +660,28 @@ test('抬鹿下山: a story row of 00-tailu — 野猪 down the two trails at th
   assert.ok(!tideRows(kit).includes(row), '兽潮 skips a story row');
   assert.deepEqual([...new Set(row.waves.flat().map(([b]) => b))], ['yezhu']);
   assert.equal(row.paths.length, 2, 'two trails, either side of the stream');
+  // the trails as painted (tailu-bg: each bends out from the 溪 as it comes down) — a beast follows its own (2026-10-22)
+  for (const p of row.paths) assert.ok(p.length >= 3 && p.every(([, y], i) => i === 0 || y > p[i - 1][1]), 'a painted track, top to bottom');
+  assert.ok(row.paths[0].at(-1)[0] < row.paths[0][2][0] && row.paths[1].at(-1)[0] > row.paths[1][2][0], 'the two bend apart toward the door');
+  // 小满 and 老周 either side of the 门板, so the stag at its middle is seen (tailu-wall: the door and the stag ~x 230–340)
+  const stand = standOf(row);
+  assert.ok(stand.hero.x - 50 > 340 && stand.fox.x + 40 < 230, `clear of the door: 小满 ${stand.hero.x}, 老周 ${stand.fox.x}`);
+  assert.deepEqual(standOf({}), { hero: HERO, fox: FOX, hand: HAND }, 'a level with no `stand`: the old places');
   assert.equal(opening(newGame(kit, row, { seed: 't' })), false, 'no opening pick');
   assert.equal(row.jieyin, false, 'no 结印 before 入门');
   const g = newGame(kit, row, { seed: 't' });
-  const xs = new Map();
+  const seen = new Set(), off = [];
   for (let t = 0; t < 120 && g.phase !== 'won' && g.phase !== 'lost'; t += 0.1) {
     step(g, 0.1);
     if (g.phase === 'pick') pick(g, g.offer[0]);
-    for (const b of g.beasts) if (!xs.has(b.id)) xs.set(b.id, b.x);
+    for (const b of g.beasts) { // every step, wherever it is: on its trail, a little either side
+      seen.add(b.id);
+      if (!row.paths.some((p) => Math.abs(b.x - pathX(p, b.y)) <= 34)) off.push(`${b.id} at ${Math.round(b.x)},${Math.round(b.y)}`);
+    }
   }
-  assert.ok(xs.size >= 10, `beasts came: ${xs.size}`);
-  for (const [id, x] of xs) assert.ok(row.paths.some((p) => Math.abs(x - p) <= 26), `beast ${id} down a trail (x ${Math.round(x)})`);
+  assert.ok(seen.size >= 10, `beasts came: ${seen.size}`);
+  assert.deepEqual(off, [], 'each beast down a trail as it bends');
+  assert.equal(pathX(170, 500), 170, 'a number is a straight track');
   for (const c of row.cards) assert.ok(c.name.zh.includes('爷爷的弓') && c.name.en && c.say.zh && c.say.en && c.icon);
   const t = JSON.parse(readFileSync(at('worlds/jiuding/tasks/world.json'), 'utf8')).tasks.find((x) => x.id === 'deer-carry');
   assert.deepEqual([t.game, t.deal.lv], ['shouqiang', 'tailu']);
@@ -680,13 +691,18 @@ test('抬鹿下山: a story row of 00-tailu — 野猪 down the two trails at th
   for (const k of ['won', 'lost', 'wallLeft', 'kills', 'focus']) assert.ok(row.words[k].zh && row.words[k].en, k);
   assert.ok(row.teach.length && Object.keys(row.moments).every((m) => row.teach.includes(m)), 'every line the level\'s own: 银月 has fainted');
 });
-test('抬鹿下山, gentle (第二回): the first-timer\'s hand and any card win; taking none loses; a minute and a half', () => {
+// Hanli 10-22: 「难度可以稍微提高一点」 (守灶台, 706276b8) → 「好的」 for these too: 第二回 a touch harder than 守白菜 (30/30).
+// hpMul 2.2→2.6, the door 240→205 — the human hand 27/30 here (81% over 120 other seeds), ★ spread; it was 30/30 ★★★.
+test('抬鹿下山, a touch harder (第二回): the human hand wins most, not all, its stars spread; any card about as often; none loses', () => {
   const row = kit.levels.find((l) => l.id === 'tailu');
   const S30 = Array.from({ length: 30 }, (_, i) => `bc${i}`);
   const go = (bot) => S30.map((seed) => sim(kit, row, BOTS[bot], { seed }));
   const human = go('human'), random = go('random'), lazy = go('lazy');
-  assert.ok(human.every((r) => r.won) && human.filter((r) => r.stars === 3).length >= 24, `human ★ ${human.map((r) => r.stars).join('')}`);
-  assert.ok(random.every((r) => r.won), `any card wins: ★ ${random.map((r) => r.stars).join('')}`);
+  const line = (rs) => `${rs.filter((r) => r.won).length}/30 ★ ${rs.map((r) => r.stars).join('')}`;
+  const won = human.filter((r) => r.won).length;
+  assert.ok(won >= 24 && won <= 28, `human: ${line(human)}`);
+  assert.ok([1, 2, 3].every((n) => human.some((r) => r.stars === n)), `human, stars spread: ${line(human)}`);
+  assert.ok(random.filter((r) => r.won).length <= won && random.filter((r) => r.won).length >= 18, `any card: ${line(random)}`);
   assert.ok(lazy.every((r) => !r.won), 'no card at all: the boars overturn the door');
   assert.ok(human.every((r) => r.t >= 60 && r.t <= 120), `a minute and a half: ${human.map((r) => r.t)}`);
 });
