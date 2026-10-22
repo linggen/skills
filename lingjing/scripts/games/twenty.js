@@ -29,12 +29,12 @@ const POLL_MS = 600, TIMEOUT_MS = 40000;
 
 const T = {
   zh: {
-    lead: '她不肯说自己是什么。', lead2: '问她什么都行——在这儿打字，或在对话里 @银月 说出来。猜中她是什么。',
+    lead: '她不肯说自己是什么。', lead2: '问她什么都行——在这儿打字，或在对话里 @银月 说出来。',
     ask: '问她……', go: '问', count: '已问 {n}/{max}', wait: '银月在想……',
     won: '猜中了。', missed: '她到底没认。', far: '这里叫不应银月。', off: '这个测试存档不叫银月（chat=off）。', absent: '银月不在。', err: '她没答上来，再问一句。',
   },
   en: {
-    lead: 'She won\'t say what she is.', lead2: 'Ask her anything — type it here, or say it to @Yinyue in the chat. Guess what she is.',
+    lead: 'She won\'t say what she is.', lead2: 'Ask her anything — type it here, or say it to @Yinyue in the chat.',
     ask: 'Ask her…', go: 'Ask', count: 'Asked {n}/{max}', wait: 'Yinyue is thinking…',
     won: 'You guessed it.', missed: 'She never owned up.', far: 'Yinyue can\'t be reached here.', off: 'This test save calls no one (chat=off).', absent: 'Yinyue isn\'t here.', err: 'No answer from her. Ask again.',
   },

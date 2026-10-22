@@ -141,11 +141,11 @@
       "_twenty": "2026-10-22 (Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」): 00-yinyue, the player's first real AI moment — 二十问 · 银月 as a story board (games/twenty.js). The passage is cut after 「烂成这样。」: she has named herself 妖王 and sized him up, and will not say what she is; he asks her anything (typed on the board, or said to @银月 in the chat), she answers in her own voice, and a line that names what she is (`deal.names`, checked page-side — never her say) ends it; then the book's 「……你是那只狐狸？」 (`story_after`). 妖王 is not a guess: she said it herself. Unmet here (`joins` is 带她出谷's), she is held on the stage for the round (`needs: her`, rules/hergame.mjs `stage`). The way out after `skip_after` questions (stuck.js); at `questions` the round ends unguessed and the story goes on. Nothing paid before 入门.",
       "id": "yinyue-what", "kind": "board", "game": "twenty", "needs": "her", "period": "once", "stars": 3,
       "title": { "zh": "二十问 · 银月", "en": "Twenty questions · Yinyue" },
-      "how": { "zh": "她不肯说自己是什么。问她什么都行，猜中她是什么。", "en": "She won't say what she is. Ask her anything, and guess what she is." },
+      "how": { "zh": "她到底是什么？猜中了，才算。", "en": "What is she, really? Guess it — that is the game." },
       "deal": {
         "questions": 10, "skip_after": 4,
         "names": { "zh": ["狐", "那只狐狸", "银狐", "狐狸精", "狐妖", "狐仙", "九尾"], "en": ["fox", "vixen", "silver fox", "fox spirit", "fox demon", "fox fairy", "nine-tail"] },
-        "context": { "zh": "天亮，银叶谷洞口。你刚报了名号——青丘之主、仙界妖王——却死不肯认自己就是昨夜他救的那只狐狸。他问什么都照你的性子答，一两句；不许说出、也不许拐弯点破你是狐狸。他说中了，才算。", "en": "Daybreak at the cave mouth in the Silver-leaf Vale. You have just named yourself — Lady of Qingqiu, Demon Queen — and you will not own that you are the fox he saved last night. Answer whatever he asks in your own way, a line or two; never say, or hint round to, that you are the fox. Only his saying it counts." },
+        "context": { "zh": "天亮，银叶谷洞口。他是沈小满，十二岁的猎户孩子，你叫他凡人。你刚报了名号——青丘之主、仙界妖王——自己叫什么却一时想不起来，别报名字；也死不肯认自己就是昨夜他救的那只狐狸。他问什么都照你的性子答，一两句；不许说出、也不许拐弯点破你是狐狸。他说中了，才算。", "en": "Daybreak at the cave mouth in the Silver-leaf Vale. He is Shen Xiaoman, a hunter's boy of twelve; you call him mortal. You have just named yourself — Lady of Qingqiu, Demon Queen — but your own name escapes you for now, so give none; and you will not own that you are the fox he saved last night. Answer whatever he asks in your own way, a line or two; never say, or hint round to, that you are the fox. Only his saying it counts." },
         "guessed": { "zh": "他说中了：你就是昨夜那只狐狸。你嘴硬不认，又藏不住，一两句。", "en": "He has guessed it: you are last night's fox. You won't own it and can't hide it — a line or two." }
       },
       "grant": { "table": "task", "progress": 5 },
