@@ -313,15 +313,21 @@ test('结印\'s dock is offered only where it can be: no move → null; else the
   const calls = [];
   const game = { jieyinState: () => ({ on: true, ready: true }), jieyin: (id, lane) => { calls.push([id, lane]); return true; }, fizzle: () => calls.push('fizzle'), paused: () => false, picking: () => false, say: () => {} };
   const box = { ownerDocument: { defaultView: {} } };
+  const ids = (list) => list.map((m) => m?.id ?? m); // rows or ids: the dock reads either (helper.js duelId)
   const h = await offerJieyin(level, box, { lang: 'zh', game, marks: [], load: async () => ({ offerSeals: async (o) => { got = o; return { close() {} }; } }) });
   assert.ok(h && got);
-  assert.deepEqual(got.moves.map((m) => m.id), ['feijian'], 'before 古六\'s lesson only 剑诀\'s 飞剑 (the save\'s marks gate the rest)');
-  assert.ok(got.cast('feijian', 'right'));
+  assert.deepEqual(ids(got.moves), ['feijian', 'dianxue', 'zhangfeng', 'quanjin'], 'before 古六\'s lesson only the 小招 (the save\'s marks gate the rest)');
+  assert.equal(got.fastFps, level.jieyin.armedFps, 'the eye\'s armed rate from data');
+  assert.ok(got.cast({ type: 'cast', move: 'feijian', lane: 'right' }), '手势斗法\'s cast event: its move and its lane');
   got.fizzle();
   assert.deepEqual(calls, [['feijian', 'right'], 'fizzle']);
   assert.equal(got.state().ready, true);
   await offerJieyin(level, box, { lang: 'zh', game, load: async () => ({ offerSeals: async (o) => { got = o; return null; } }) });
-  assert.deepEqual(got.moves.map((m) => m.id), ['feijian', 'huodan'], 'the 游戏厅 (no marks): every move');
+  assert.ok(ids(got.moves).includes('huodan') && ids(got.moves).includes('huodan4'), 'the 游戏厅 (no marks): every move');
+  const tiers = { xiao: ['feijian', 'dianxue', 'zhangfeng', 'quanjin'], fa: ['huodan', 'bingzhui', 'jinren', 'muteng', 'tuqiang'], da: ['huodan4'] };
+  const doufa = JSON.parse(readFileSync(at('worlds/jiuding/levels/jieyin.json'), 'utf8')).doufa;
+  const has = (tier, id) => (Array.isArray(doufa[tier]) ? doufa[tier].includes(id) : Boolean(doufa[tier]?.[id]));
+  for (const [tier, list] of Object.entries(tiers)) for (const id of list) assert.ok(has(tier, id) && level.jieyin.moves.some((m) => m.id === id), `${tier} ${id}: 手势斗法's, and offered here`);
 });
 
 /* ── 守灶台 (2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」 · 「可以马小宝, 马三两个boss从中路冲下来,

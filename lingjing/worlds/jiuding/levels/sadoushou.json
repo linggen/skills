@@ -173,7 +173,7 @@
    ],
    "press": 0,
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
@@ -187,6 +187,7 @@
      "zh": "比个剑诀，飞剑就出去",
      "en": "Make the sword seal and the flying sword goes"
     },
+    "armedFps": 30,
     "moves": [
      {
       "id": "feijian",
@@ -194,12 +195,35 @@
        "zh": "飞剑",
        "en": "Flying sword"
       },
-      "seals": [
-       "jian"
-      ],
-      "motion": "jab",
       "from": null,
-      "secs": 4
+      "secs": 3
+     },
+     {
+      "id": "dianxue",
+      "name": {
+       "zh": "点穴",
+       "en": "Pressure point"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "zhangfeng",
+      "name": {
+       "zh": "掌风",
+       "en": "Palm wind"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "quanjin",
+      "name": {
+       "zh": "拳劲",
+       "en": "Fist force"
+      },
+      "from": null,
+      "secs": 3
      },
      {
       "id": "huodan",
@@ -207,14 +231,83 @@
        "zh": "火弹",
        "en": "Fire shot"
       },
-      "jieyin": "huodan",
       "from": {
        "marks": [
         "qiajue-tight",
         "qiajue-loose"
        ]
       },
-      "secs": 7
+      "secs": 5
+     },
+     {
+      "id": "bingzhui",
+      "name": {
+       "zh": "冰锥",
+       "en": "Ice needle"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "jinren",
+      "name": {
+       "zh": "金刃",
+       "en": "Metal blade"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "muteng",
+      "name": {
+       "zh": "木藤",
+       "en": "Wood vine"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "tuqiang",
+      "name": {
+       "zh": "土墙",
+       "en": "Earth wall"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "huodan4",
+      "name": {
+       "zh": "四印火蛋",
+       "en": "Four-seal fire egg"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 9
      }
     ]
    },
@@ -471,7 +564,7 @@
    ],
    "press": 0,
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
@@ -485,6 +578,7 @@
      "zh": "比个剑诀，飞剑就出去",
      "en": "Make the sword seal and the flying sword goes"
     },
+    "armedFps": 30,
     "moves": [
      {
       "id": "feijian",
@@ -492,12 +586,35 @@
        "zh": "飞剑",
        "en": "Flying sword"
       },
-      "seals": [
-       "jian"
-      ],
-      "motion": "jab",
       "from": null,
-      "secs": 4
+      "secs": 3
+     },
+     {
+      "id": "dianxue",
+      "name": {
+       "zh": "点穴",
+       "en": "Pressure point"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "zhangfeng",
+      "name": {
+       "zh": "掌风",
+       "en": "Palm wind"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "quanjin",
+      "name": {
+       "zh": "拳劲",
+       "en": "Fist force"
+      },
+      "from": null,
+      "secs": 3
      },
      {
       "id": "huodan",
@@ -505,14 +622,83 @@
        "zh": "火弹",
        "en": "Fire shot"
       },
-      "jieyin": "huodan",
       "from": {
        "marks": [
         "qiajue-tight",
         "qiajue-loose"
        ]
       },
-      "secs": 7
+      "secs": 5
+     },
+     {
+      "id": "bingzhui",
+      "name": {
+       "zh": "冰锥",
+       "en": "Ice needle"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "jinren",
+      "name": {
+       "zh": "金刃",
+       "en": "Metal blade"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "muteng",
+      "name": {
+       "zh": "木藤",
+       "en": "Wood vine"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "tuqiang",
+      "name": {
+       "zh": "土墙",
+       "en": "Earth wall"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "huodan4",
+      "name": {
+       "zh": "四印火蛋",
+       "en": "Four-seal fire egg"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 9
      }
     ]
    },
@@ -785,7 +971,7 @@
    ],
    "press": 0,
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
@@ -799,6 +985,7 @@
      "zh": "比个剑诀，飞剑就出去",
      "en": "Make the sword seal and the flying sword goes"
     },
+    "armedFps": 30,
     "moves": [
      {
       "id": "feijian",
@@ -806,12 +993,35 @@
        "zh": "飞剑",
        "en": "Flying sword"
       },
-      "seals": [
-       "jian"
-      ],
-      "motion": "jab",
       "from": null,
-      "secs": 4
+      "secs": 3
+     },
+     {
+      "id": "dianxue",
+      "name": {
+       "zh": "点穴",
+       "en": "Pressure point"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "zhangfeng",
+      "name": {
+       "zh": "掌风",
+       "en": "Palm wind"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "quanjin",
+      "name": {
+       "zh": "拳劲",
+       "en": "Fist force"
+      },
+      "from": null,
+      "secs": 3
      },
      {
       "id": "huodan",
@@ -819,14 +1029,83 @@
        "zh": "火弹",
        "en": "Fire shot"
       },
-      "jieyin": "huodan",
       "from": {
        "marks": [
         "qiajue-tight",
         "qiajue-loose"
        ]
       },
-      "secs": 7
+      "secs": 5
+     },
+     {
+      "id": "bingzhui",
+      "name": {
+       "zh": "冰锥",
+       "en": "Ice needle"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "jinren",
+      "name": {
+       "zh": "金刃",
+       "en": "Metal blade"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "muteng",
+      "name": {
+       "zh": "木藤",
+       "en": "Wood vine"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "tuqiang",
+      "name": {
+       "zh": "土墙",
+       "en": "Earth wall"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "huodan4",
+      "name": {
+       "zh": "四印火蛋",
+       "en": "Four-seal fire egg"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 9
      }
     ]
    },
@@ -1122,7 +1401,7 @@
    ],
    "press": 0,
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
@@ -1136,6 +1415,7 @@
      "zh": "比个剑诀，飞剑就出去",
      "en": "Make the sword seal and the flying sword goes"
     },
+    "armedFps": 30,
     "moves": [
      {
       "id": "feijian",
@@ -1143,12 +1423,35 @@
        "zh": "飞剑",
        "en": "Flying sword"
       },
-      "seals": [
-       "jian"
-      ],
-      "motion": "jab",
       "from": null,
-      "secs": 4
+      "secs": 3
+     },
+     {
+      "id": "dianxue",
+      "name": {
+       "zh": "点穴",
+       "en": "Pressure point"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "zhangfeng",
+      "name": {
+       "zh": "掌风",
+       "en": "Palm wind"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "quanjin",
+      "name": {
+       "zh": "拳劲",
+       "en": "Fist force"
+      },
+      "from": null,
+      "secs": 3
      },
      {
       "id": "huodan",
@@ -1156,14 +1459,83 @@
        "zh": "火弹",
        "en": "Fire shot"
       },
-      "jieyin": "huodan",
       "from": {
        "marks": [
         "qiajue-tight",
         "qiajue-loose"
        ]
       },
-      "secs": 7
+      "secs": 5
+     },
+     {
+      "id": "bingzhui",
+      "name": {
+       "zh": "冰锥",
+       "en": "Ice needle"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "jinren",
+      "name": {
+       "zh": "金刃",
+       "en": "Metal blade"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "muteng",
+      "name": {
+       "zh": "木藤",
+       "en": "Wood vine"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "tuqiang",
+      "name": {
+       "zh": "土墙",
+       "en": "Earth wall"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "huodan4",
+      "name": {
+       "zh": "四印火蛋",
+       "en": "Four-seal fire egg"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 9
      }
     ]
    },
@@ -1515,7 +1887,7 @@
     }
    ],
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
@@ -1529,6 +1901,7 @@
      "zh": "比个剑诀，飞剑就出去",
      "en": "Make the sword seal and the flying sword goes"
     },
+    "armedFps": 30,
     "moves": [
      {
       "id": "feijian",
@@ -1536,12 +1909,35 @@
        "zh": "飞剑",
        "en": "Flying sword"
       },
-      "seals": [
-       "jian"
-      ],
-      "motion": "jab",
       "from": null,
-      "secs": 4
+      "secs": 3
+     },
+     {
+      "id": "dianxue",
+      "name": {
+       "zh": "点穴",
+       "en": "Pressure point"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "zhangfeng",
+      "name": {
+       "zh": "掌风",
+       "en": "Palm wind"
+      },
+      "from": null,
+      "secs": 3
+     },
+     {
+      "id": "quanjin",
+      "name": {
+       "zh": "拳劲",
+       "en": "Fist force"
+      },
+      "from": null,
+      "secs": 3
      },
      {
       "id": "huodan",
@@ -1549,14 +1945,83 @@
        "zh": "火弹",
        "en": "Fire shot"
       },
-      "jieyin": "huodan",
       "from": {
        "marks": [
         "qiajue-tight",
         "qiajue-loose"
        ]
       },
-      "secs": 7
+      "secs": 5
+     },
+     {
+      "id": "bingzhui",
+      "name": {
+       "zh": "冰锥",
+       "en": "Ice needle"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "jinren",
+      "name": {
+       "zh": "金刃",
+       "en": "Metal blade"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "muteng",
+      "name": {
+       "zh": "木藤",
+       "en": "Wood vine"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "tuqiang",
+      "name": {
+       "zh": "土墙",
+       "en": "Earth wall"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 5
+     },
+     {
+      "id": "huodan4",
+      "name": {
+       "zh": "四印火蛋",
+       "en": "Four-seal fire egg"
+      },
+      "from": {
+       "marks": [
+        "qiajue-tight",
+        "qiajue-loose"
+       ]
+      },
+      "secs": 9
      }
     ]
    },
