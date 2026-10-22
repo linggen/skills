@@ -106,3 +106,20 @@ test('a host may hand its rows (守山门 · 守炉): the dock reads each as its
   got.cast({ type: 'cast', move: 'huodan', lane: 'left' });
   assert.deepEqual(calls, [['huodan', 'left']]);
 }));
+
+test('while the host is paused (its lead card, the shell\'s bar) nothing shows and the 大妖\'s call waits; then the button, the call and the bubble', async () => withFetch(async () => {
+  const { host, frame } = page();
+  let still = true;
+  const said = [];
+  await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf, paused: () => still, call: () => '大妖来了', say: (x) => said.push(x), state: () => ({ on: true, ready: true, cool: 0, coolOf: 6 }) });
+  const [btn] = host.appended, [callout] = btn.kids;
+  await frame(3);
+  assert.equal(btn.hidden, true, 'paused: no button');
+  assert.equal(callout.hidden, true, 'no bubble spent under the card');
+  assert.deepEqual(said, [], 'no call yet');
+  still = false;
+  await frame(2);
+  assert.equal(btn.hidden, false);
+  assert.equal(callout.hidden, false);
+  assert.deepEqual(said, ['大妖来了']);
+}));

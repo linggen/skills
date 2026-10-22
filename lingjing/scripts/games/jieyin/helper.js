@@ -170,13 +170,13 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   };
 
   let shownFor = null, calloutT = 0;
-  const hud = (st, ready, rest, away = false) => {
-    btn.hidden = !st.on || (wanted && ready);
+  const hud = (st, ready, rest, away = false, still = false) => {
+    btn.hidden = still || !st.on || (wanted && ready); // still: the host is paused (its lead card, the shell's bar) — nothing shows
     // The first time the button shows for this level (`level()`, the host's key): the bubble points at it, until tapped.
     const key = level?.() ?? 'one';
     if (!btn.hidden && !away && key !== shownFor) { shownFor = key; callout.hidden = false; calloutT = setTimeout(() => { callout.hidden = true; }, 6000); }
     if (btn.hidden || away) callout.hidden = true;
-    dock.hidden = !(wanted && st.on && ready);
+    dock.hidden = still || !(wanted && st.on && ready);
     btn.classList.toggle('is-ready', ready);
     btn.classList.toggle('is-rest', rest > 0);
     btn.style.setProperty('--k', String(Math.min(1, rest)));
@@ -208,7 +208,8 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     last = now;
     const st = state(), away = aside(), rest = st.cool > 0 ? st.cool / (st.coolOf || st.cool) : shortOf(duel.lingli, D.lingli.cost, tiers);
     const ready = st.ready && rest <= 0;
-    cues(st, ready);
+    const still = paused();
+    if (!still) cues(st, ready); // the 大妖's call waits for the play to run
     const run = wanted && st.on && !paused() && !doc.hidden;
     camera(run);
     for (const el of [btn, dock]) el.classList.toggle('is-aside', away);
@@ -223,7 +224,7 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     }
     if (!live) tried = now;
     else if (now - tried > idle * 1000) wanted = false;
-    hud(st, ready, rest, away || paused()); // the bubble waits out a pause (the lead card, the shell's bar)
+    hud(st, ready, rest, away, still);
     loop = win.requestAnimationFrame(tick);
   };
   const seen = () => { if (doc.hidden) camera(false); }; // a hidden page runs no frames: off now, back via tick

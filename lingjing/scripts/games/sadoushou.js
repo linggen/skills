@@ -38,7 +38,7 @@ export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (r
     and the game is exactly the game without it — Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」).
     A cast strikes a beast (core.js beastFor): the 大妖 when out, else the nearest wave down the column the dock names
     (its lane: left · middle · right) or the squad's, else the nearest anywhere — never a card or a wall. */
-export function offerJieyin(level, box, { lang, game, shell, marks, feed = false, load = () => import(SEALS.href) }) {
+export function offerJieyin(level, box, { lang, game, shell, marks, feed = false, reading = () => false, load = () => import(SEALS.href) }) {
   const c = level.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const t = (o) => o?.[lang] ?? o?.zh ?? '';
@@ -48,7 +48,7 @@ export function offerJieyin(level, box, { lang, game, shell, marks, feed = false
     // the dock casts back an event (its move, the hand's lane): the row ids here are the 手势斗法 ids
     state: () => game.jieyinState(), cast: (e, lane) => game.jieyin(e?.move ?? e, e?.lane ?? lane?.lane ?? lane), fizzle: () => game.fizzle(), say,
     call: () => t(c.say), first: moves.some((m) => m.motion === 'jab' && !m.from) ? c.first : null,
-    paused: () => Boolean(shell?.paused?.() || game.paused()), aside: () => game.picking(),
+    paused: () => Boolean(reading() || shell?.paused?.() || game.paused()), aside: () => game.picking(), // reading: the lead card is up
   })).catch((e) => { console.warn('[sadoushou] 结印', e); return null; });
 }
 
@@ -107,9 +107,10 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });
-      seals = offerJieyin(level, box, { lang, game, shell, marks: data?.marks, feed: dev && /(?:^|[?&])feed=1/.test(search) });
+      let reading = Boolean(said);
+      seals = offerJieyin(level, box, { lang, game, shell, marks: data?.marks, feed: dev && /(?:^|[?&])feed=1/.test(search), reading: () => reading });
       // the lead card says 结印 is here where it is (jieyin/lead.js)
-      if (said) leadWith(said, seals, level.jieyin?.when, lang).then((told) => !done && shell.lead(told, { auto: 'read', lang })).then(() => game?.go());
+      if (said) leadWith(said, seals, level.jieyin?.when, lang).then((told) => !done && shell.lead(told, { auto: 'read', lang })).then(() => { reading = false; game?.go(); });
     }, () => {
       box.textContent = lang === 'en' ? 'The game did not load.' : '游戏没加载出来。';
       finish({ won: false, left: true });
