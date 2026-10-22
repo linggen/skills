@@ -298,3 +298,20 @@ keeps the kit's comic style; every seed looked at for fake writing; the sources 
 `art/games/shouqiang/` and `art/games/shoulu/`. 阿禾's two repainted 2026-10-22 (Hanli: 「收白菜里阿禾是黄毛吗?」 — the first prompt said
 straw-yellow and painted her golden blonde; the book's 黄毛小辫 is 黄毛丫头, a poor kid's thin dull hair): now dull black
 hair in two thin small braids, as `people/ahe-girl`; idle seed 2, cast seed 1 of 1–4, every seed looked at.
+
+For 第一回's 收租 塔防 (守山门 kit, sadoushou; 2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」) —
+`scripts/games/sadoushou/art/`: the 马家家丁 `jiading-walk-1` · `-walk-2` · `-hit`, 小宝's 跟班 `genban-walk-1` · `-walk-2` ·
+`-hit`, `maxiaobao-walk-1` (munching the 桂花糕, a wink) · `-roll` (the 糯米团子 ball) · `-hit`, `masan-walk-1` · `-slam` ·
+`-hit` (the iron-banded short club), the 灶台 `zaotai-wall` with its three bowls (chipped, cracked, plain), `bowl-break`, the
+hut floor `tex-floor` · `tex-floor-side` (made to tile by a half-roll crossfade), `home-far` (the far end of the 沈家 hut at
+dusk, the door kicked off, the hole in the thatch, the old bow), the card icons `icon-guihuagao` · `icon-yecaizhou` ·
+`icon-lizi` · `icon-wan` · `icon-zu` (a rope-tied rent sack with copper cash) · `icon-fuzhai` (the club on a chained,
+padlocked strongbox) — pictures, no characters — and the lane blocks `wall-door` (the 柴门) · `wall-luoshu` (nine chestnuts in
+three rows of three). The local FLUX.2 klein 4B (mflux), `tools/paint-masan-td-flux.py`: the units are edit passes from
+守墙关's 野猪 (`yezhu-walk-1`), the 灶台 one from its 山门 wall and `home-far` one from `places/shiao-home`, so they keep the kit's comic
+style and the book's painted hut; the second frames are edit passes from the kept first, and the walks' other step is the
+first mirrored. Seeds kept (`KEPT`): jiading-walk-1 1, jiading-hit 2, genban-walk-1 1, genban-hit 3, maxiaobao-walk-1 2,
+roll 1, hit 1, masan-walk-1 6 (of 1–6), slam 1, hit 2, zaotai-wall 5 (of 1–6), bowl-break 5, wall-luoshu 4 (of 1–6),
+tex-floor 4, tex-floor-side 4 (of 1–6), home-far 1 (a faint red seal it stamped anyway painted out), wall-door 2, icons
+guihuagao 2 · yecaizhou 1 · lizi 1 · wan 2 · zu 2 · fuzhai 2. Every seed looked at for fake writing; every cut checked on
+dark and light grounds. Sources kept in `art/games/sadoushou/`. No outside source.
