@@ -109,11 +109,11 @@ Linggen's two signatures, the AI that answers anything and the card fight, in th
 named herself 妖王 and won't say what she is; he asks her anything (typed on the board, or said to @银月 in the chat — those
 count too), she answers as herself in the game's chat, and a line naming what she is (the deal's `names`: 狐 · 那只狐狸 · 狐狸精 …;
 妖王 is no guess — she said it) ends it; 「小满道：「……你是那只狐狸？」」 on is read after it. ≤ 10 questions, the way out after 4
-(`stuck`, no 75 s clock: her answers take 10–25 s); ★ by how soon (≤ 3 · ≤ 6 · more). Unmet here (`joins` is 带她出谷's), she is
+(`stuck`, no 75 s clock); ★ by how soon (≤ 3 · ≤ 6 · more). Unmet here (`joins` is 带她出谷's), she is
 held on the stage for the round (rules/hergame.mjs `stage`: the scene's `her: "human"`, its own board) — the engine's
 `companion.awake`, never `joined`: no moments, no card. The round's facts go to her in brackets on the first line and on the guess
-(`deal.context` · `deal.guessed`), as 画猜 sends its scene; every word she says is hers. ~8–9k prompt tokens a question (her
-guest turn), ≤ 10. **The teaching 斗法** `fox-bite` (00-fox's 「脱下外衣，裹起它」): no 第一回/第二回 scene has 小满 fight a beast
+(`deal.context` · `deal.guessed`), as 画猜 sends its scene; every word she says is hers. Live 10-22 (gpt-6-luna, cc-gu1-*): ~2.3k tokens and 3–4 s a
+question (her guest turn), ≤ 10; a line said to @银月 in the chat counts as a question too; skipped, the hold goes with the board. **The teaching 斗法** `fox-bite` (00-fox's 「脱下外衣，裹起它」): no 第一回/第二回 scene has 小满 fight a beast
 (野猪 is the 蒙山 pool's, h05; the cave's beasts are kept out by the fire, which 守火 already plays) — the one face-off the book
 writes is the hurt fox: 「他爹说过，受伤的野兽最凶，碰都别去碰」, then the coat, the bite, 「它不咬了」 (the exit's passage,
 unchanged). So a 试 of nerve like the 三试: stand three of its turns (`foe-yinhu`, `foe-` so not in the 山海录; each bite lands 2, he

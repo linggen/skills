@@ -38,6 +38,8 @@ export const herAwake = (state, now = new Date()) => Boolean(state.companion?.jo
    that scene. She is still not joined: no card, no moments, no gifts — her turn in the board's chat only. */
 export function herOnStage(content, state, now = new Date()) {
   if (state?.companion?.joined || !state?.her_game?.stage || !herGameNow(state, now)) return false;
+  // A board done — won, or left by 「算了，往下走」 (the page never ends the round then) — holds her no longer.
+  if (state.tasks?.[state.her_game.task]?.status === 'done') return false;
   const sc = sceneOf(content, state);
   return Boolean(sc && sc.id === state.her_game.stage && sc.her === 'human');
 }

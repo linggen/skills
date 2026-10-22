@@ -71,6 +71,9 @@ test('unmet at 00-yinyue, she is held on the stage for the round — only there,
   assert.equal(fitPresence(content, fitted, later).companion.awake, undefined);
   const off = pageHerGame(content, fitted, { hold: 0, task: 'yinyue-what' }, NOW);
   assert.equal(fitPresence(content, off.keep, NOW).companion.awake, undefined);
+  // Left by 「算了，往下走」 (the page ends no round then): the board done, the flag goes on the next read.
+  const left = { ...fitted, tasks: { ...fitted.tasks, 'yinyue-what': { status: 'done', skipped: true } } };
+  assert.equal(fitPresence(content, left, NOW).companion.awake, undefined);
   // Another board, or another scene: no hold.
   assert.equal(pageHerGame(content, s, { hold: 1, task: 'jiaxin-letter' }, NOW).result.ok, false);
   const cave = at('00-cave');
