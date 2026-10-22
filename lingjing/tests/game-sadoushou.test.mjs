@@ -224,6 +224,20 @@ test('结印: offered only once the 大妖 is out, it strikes the 大妖 whateve
   assert.ok(!jieyinState(b).ready && jieyinState(b).cool === level.jieyin.cool, 'then the hand rests');
   aim(b, colMid('M'));
   assert.equal(castJieyin(b, 'huodan'), false, 'resting');
+
+  // a big chunk, never the whole fight (found live 10-21: one 火弹 took the 大妖 outright with a ~500 squad)
+  const big = newGame(kit, { ...level, waves: [], belt: { ...level.belt, lines: [] } }, { seed: 'jy' });
+  for (let i = 0; i < 90; i += 1) { aim(big, colMid('L')); step(big, 1 / 30); }
+  big.squad = 600; big.events.length = 0;
+  assert.equal(castJieyin(big, 'huodan', 'middle'), true);
+  assert.ok(big.boss.hp >= big.boss.hpMax * (1 - level.jieyin.bossCap) - 1e-6 && big.boss.hp > 0, `capped at bossCap: ${big.boss.hp} of ${big.boss.hpMax}`);
+  // a 大妖 still beyond the far end is not a target yet (found live 10-21: a cast as it appeared hit it at z≈104)
+  const far = newGame(kit, { ...level, waves: [], belt: { ...level.belt, lines: [] } }, { seed: 'jy' });
+  step(far, 1 / 30);
+  assert.ok(far.boss.on && far.boss.z >= TOP);
+  far.spellCool = 0;
+  assert.equal(castJieyin(far, 'huodan', 'middle'), false, 'not on the road yet: nothing flies');
+  assert.equal(far.casts, 0);
 });
 
 test('结印 always strikes a beast, never a card or a wall (Hanli 10-21: 「接了印后, 火弹没有打怪, 打了一个近处的卡」)', () => {

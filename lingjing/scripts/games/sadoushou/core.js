@@ -21,7 +21,8 @@
 // at the camera always strikes a BEAST (Hanli 10-21: 「接了印后, 火弹没有打怪, 打了一个近处的卡」): the 大妖 when it is
 // out, else the nearest wave down the column the dock names (the hand's lane) or the squad's, else the nearest wave in
 // any column (auto-aim) — never a card or a stone wall — for `secs` of the squad's attack at once (× `bossMul` on the
-// 大妖), then rests `cool` s. No beast on the road: nothing flies and the seals are not spent.
+// 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight), then rests `cool` s. No beast on the road
+// (a 大妖 still beyond the far end, z ≥ TOP, is not on it yet): nothing flies and the seals are not spent.
 // Offered only `when` the level says (boss · waves · always). Never needed: every level is won without it (Hanli:
 // 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」), it only makes the kill faster — ★★★ easier.
 //
@@ -332,10 +333,10 @@ export function jieyinState(g, c = spellKit(g)) {
 const LANE = { left: 'L', middle: 'M', right: 'R' };
 const waveU = (w) => (w.span[0] + w.span[1]) / 2;
 
-/** What a 结印 strikes: the 大妖 when it is out; else the nearest wave on the road down `col`; else the nearest wave
+/** What a 结印 strikes: the 大妖 when it is out on the road; else the nearest wave on the road down `col`; else the nearest wave
     in any column; else null. Cards and stone walls are never a target. */
 export function beastFor(g, col) {
-  if (g.boss?.on && g.boss.hp > 0) return g.boss;
+  if (g.boss?.on && g.boss.hp > 0 && g.boss.z < TOP) return g.boss;
   const on = g.live.filter((w) => w.hp > 0 && w.front < TOP);
   const nearest = (ws) => ws.reduce((a, w) => (!a || w.front < a.front ? w : a), null);
   return nearest(on.filter((w) => colOf(waveU(w)) === col)) ?? nearest(on);
@@ -350,7 +351,8 @@ export function castJieyin(g, id, lane = null) {
   const hit = beastFor(g, LANE[lane] ?? colOf(g.aimX));
   if (!hit) return false;
   const boss = hit === g.boss;
-  const dmg = dpsOf(g) * m.secs * (boss ? c.bossMul ?? 1 : 1) + (m.flat ?? 0);
+  const raw = dpsOf(g) * m.secs * (boss ? c.bossMul ?? 1 : 1) + (m.flat ?? 0);
+  const dmg = boss ? Math.min(raw, hit.hpMax * (c.bossCap ?? 1)) : raw; // a big chunk of a 大妖, never the whole fight
   g.spellCool = c.cool;
   g.casts += 1;
   if (boss) { hit.hp = Math.max(0, hit.hp - dmg); g.stats.bossDmg += dmg; }

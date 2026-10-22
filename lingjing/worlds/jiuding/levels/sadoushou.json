@@ -115,10 +115,11 @@
    ],
    "press": 0,
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
+    "bossCap": 0.45,
     "idle": 60,
     "say": {
      "zh": "大妖来了——结印！",
@@ -412,10 +413,11 @@
    ],
    "press": 0,
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
+    "bossCap": 0.45,
     "idle": 60,
     "say": {
      "zh": "大妖来了——结印！",
@@ -725,10 +727,11 @@
    ],
    "press": 0,
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
+    "bossCap": 0.45,
     "idle": 60,
     "say": {
      "zh": "大妖来了——结印！",
@@ -1061,10 +1064,11 @@
    ],
    "press": 0,
    "jieyin": {
-    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move rows are 守墙关's shape (`seals` + `motion: jab` a 小招; `jieyin` a 大招 from jieyin.json; `from` the save's marks first).",
     "when": "boss",
     "cool": 10,
     "bossMul": 2,
+    "bossCap": 0.45,
     "idle": 60,
     "say": {
      "zh": "大妖来了——结印！",
