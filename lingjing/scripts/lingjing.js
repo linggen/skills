@@ -2828,8 +2828,11 @@ function tellGongke(r) {
   const m = r.meaning, p = m.paid ?? {};
   const got = (zh) => [p.wealth ? (zh ? `灵石 +${p.wealth}` : `+${p.wealth} spirit stones`) : '', p.progress ? (zh ? `修为 +${p.progress}` : `+${p.progress} cultivation`) : '',
     p.item_name ?? '', m.week?.paid ? (zh ? `${m.week.name}（灵石 +${m.week.paid.wealth}）` : `${m.week.name} (+${m.week.paid.wealth} stones)`) : ''].filter(Boolean).join(zh ? '，' : ', ');
-  tellYinyue('gongke', `玩家在人间做完了一件功课「${r.title ?? ''}」，在书里算${m.name}：${m.about}${got(true) ? ` 得了：${got(true)}。` : ''}`,
-    `The player finished a real-life chore, "${r.title ?? ''}" — in the book it counts as ${m.name}: ${m.about}${got(false) ? ` Gained: ${got(false)}.` : ''}`, { mood: 'happy' });
+  const zh = `玩家在人间做完了一件功课「${r.title ?? ''}」，在书里算${m.name}：${m.about}${got(true) ? ` 得了：${got(true)}。` : ''}`;
+  const en = `The player finished a real-life chore, "${r.title ?? ''}" — in the book it counts as ${m.name}: ${m.about}${got(false) ? ` Gained: ${got(false)}.` : ''}`;
+  // Walking with him, she hears the facts and says it her way; asleep in the 木牌, its drowsy word (hersay.js), once a chore a day.
+  if (herHere()) tellYinyue('gongke', zh, en, { mood: 'happy' });
+  else herSay.say('gongke', lang() === 'en' ? en : zh, { key: `${r.quest ?? ''}|${new Date().toDateString()}` });
 }
 let handedTimer = null;
 /* A 交差 seen where it was tapped: its pay (and a 修为 the cap held) tops the 事 book a moment. */

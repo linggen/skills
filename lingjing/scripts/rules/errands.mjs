@@ -660,7 +660,8 @@ function gearBrief(content, state, now = new Date()) {
     const item = itemOf(content, id);
     if (!item) return { id, name: id, n };
     const e = item.effect ?? {};
-    const slot = e.wear ? (e.wear === her?.id ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
+    // A `wear` goes on her (once she walks with him) or at the abode (人间功课's 护山阵旗, rules/gongke.mjs).
+    const slot = e.wear ? (e.wear === her?.id || e.wear === 'abode' ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
     // `free`: a thing the story still needs, which takes no slot of the 储物袋.
     return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch ? { usable: true } : {}),
       ...(freeSlot(content, state, id) ? { free: true } : {}) };

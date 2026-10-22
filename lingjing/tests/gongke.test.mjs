@@ -22,6 +22,7 @@ import { pouchHtml } from '../scripts/pouch.js';
 import { bookChipHtml, WORDS } from '../scripts/cards.js';
 import { TO_WAIMEN, walk } from './prologue.mjs';
 import { MOMENTS } from '../scripts/voice.js';
+import { MOMENTS as HER_MOMENTS, POOLS } from '../scripts/hersay.js';
 
 const content = loadContent();
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -248,4 +249,19 @@ test('a hand-in is a moment of hers: the page tells her the facts, and the voice
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /if \(r\.ok && action === 'turn' && r\.meaning\) tellGongke\(r\)/);
   assert.match(src, /tellYinyue\('gongke'/);
+  // Asleep in the 木牌 (most of 卷一), the 木牌's word: a moment of hersay.js, pooled both ways.
+  assert.match(src, /herSay\.say\('gongke'/);
+  for (const mode of ['awake', 'asleep']) for (const lang of ['zh', 'en']) assert.ok(POOLS[mode][lang].gongke.length >= 2, `${mode} ${lang}`);
+  assert.equal(HER_MOMENTS.gongke.group, 'cheer');
+});
+
+test('the 护山阵旗 is planted at the abode from the pouch: its tap names the abode, and the board then shows the ward', () => {
+  const s0 = { ...waimen(), bag: { ...waimen().bag, 'hushan-qi': 1 } };
+  const gear = VERBS.gear(s0, content, ctxOf([]), {}).result.gear;
+  const html = pouchHtml({ lang: 'zh', look: look(s0, content, ctxOf([])), gear, words: WORDS.zh }, { sel: 'hushan-qi' });
+  assert.match(html, /data-wear="hushan-qi">戴上 · 洞府</);
+  const worn = VERBS.trade(s0, content, ctxOf([]), { action: 'use', id: 'hushan-qi' });
+  assert.equal(worn.result.ok, true, JSON.stringify(worn.result));
+  assert.equal(worn.state.wear.abode, 'hushan-qi');
+  assert.equal(look(worn.state, content, ctxOf([chore('x', 'ward')])).gongke.ward.name, '护山阵旗');
 });

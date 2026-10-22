@@ -980,7 +980,9 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   chores with its meaning, the app's title, 💻/📱, a seal 已做 hh:mm (the app's
   time) or 已领, what it adds, one tap (交差, or the app's page); the ward, the
   week rows, the day against its cap. Labels only; on a hand-in the facts go
-  to 银月 (lingjing.js tellGongke) and she says it. A scratch save may hold its
+  to 银月 (lingjing.js tellGongke) and she says it — asleep in the 木牌, its
+  drowsy word from hersay.js's pool, once a chore a day. The apps' files carry
+  `kind` from each app's next write; until then a chore shows with no meaning. A scratch save may hold its
   own menus (`data/saves/<name>/quests/`) for a live check. **Not yet:** steps
   (小满's climb) and a night's sleep need a daily total the phone sends — the
   Mac mirror has raw samples only (sleep last 2026-06), so Health offers no
