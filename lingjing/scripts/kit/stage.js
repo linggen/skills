@@ -24,6 +24,10 @@ export const LAYERS = { moment: { z: 31, fps: 60 }, piece: { z: 0, fps: 60, unde
 /// The device pixels drawn per CSS pixel, at most (Phaser has no autoDensity: the canvas is drawn
 /// at w·dpr and shown at 1/dpr).
 export const DPR_CAP = 2;
+/// With no layer running this long (ms), the game goes and frees its context (made again on the next
+/// need, ~90 ms): until 画活 and the weather move onto it, an idle stage game is one context more than
+/// the page had before it (10-22, 腾云: two live after the piece, the painting's and the idle stage's).
+export const IDLE_MS = 15000;
 export const dprOf = (dpr = 1, cap = DPR_CAP) => Math.max(1, Math.min(cap, Number(dpr) || 1));
 
 /// Where the canvas stands for the running layers: the topmost one's z, the fastest one's fps — or
@@ -98,7 +102,7 @@ async function makeHost(view) {
   Object.assign(game.canvas.style, { display: 'block', pointerEvents: 'none' });
   game.canvas.setAttribute('aria-hidden', 'true');
   const running = new Map(); // layer → {key, textures}
-  let serial = 0, dead = false;
+  let serial = 0, dead = false, idle = null;
 
   const awake = () => !document.hidden && !gamePlays();
   /* The canvas where the running layers want it; the loop asleep when nothing runs or a game plays. */
@@ -110,6 +114,7 @@ async function makeHost(view) {
     // Moving the canvas among its siblings keeps its context (only taking it out of the page loses it).
     const box = at?.under ? view.querySelector(`:scope > ${at.under}`) : null;
     if (box && el.nextElementSibling !== box) view.insertBefore(el, box);
+    if (at) { clearTimeout(idle); idle = null; } else if (!idle) idle = setTimeout(() => host.destroy(), IDLE_MS);
     const sleep = !at || !awake();
     if (sleep && game.loop.running) game.loop.sleep();
     else if (!sleep && !game.loop.running) game.loop.wake();
@@ -172,6 +177,7 @@ async function makeHost(view) {
       if (dead) return;
       dead = true;
       clearInterval(watch);
+      clearTimeout(idle);
       ro?.disconnect();
       document.removeEventListener('visibilitychange', refresh);
       running.clear();

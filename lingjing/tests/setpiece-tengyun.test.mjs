@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Matter } from '../scripts/games/physics.js';
 import * as T from '../scripts/setpieces/tengyun.js';
-import { LAYERS, hostFor } from '../scripts/kit/stage.js';
+import { IDLE_MS, LAYERS, hostFor } from '../scripts/kit/stage.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -90,6 +90,8 @@ test('tengyun: a scene on the stage\'s one game, under the beat\'s words; the ru
   assert.deepEqual(LAYERS.piece, { z: 0, fps: 60, under: '.spback' });
   assert.deepEqual(hostFor(['piece']), { z: 0, fps: 60, under: '.spback' });
   assert.equal(hostFor(['piece', 'moment']).z, LAYERS.moment.z, 'the 回 turn over it');
+  assert.ok(IDLE_MS >= 5000 && IDLE_MS <= 60000, 'an idle stage game lets its context go (画活 and the weather still Pixi)');
+  assert.match(read('scripts/kit/stage.js'), /else if \(!idle\) idle = setTimeout\(\(\) => host\.destroy\(\), IDLE_MS\);/);
   const runner = read('scripts/setpiece.js');
   assert.match(runner, /def\.ENGINE === 'phaser'/);
   assert.match(runner, /host\.closest\?\.\('\.spback'\) \? host\.closest\('\.view'\) : null/, 'under a beat it rides the stage\'s game');
