@@ -11,7 +11,7 @@ import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, mapName, placeLabels, within } from './atlas.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
 import { boardDoneToday, boardWaits, herAwake, onRoad, sideLineOf, sideStep, winnable, wonWayOn } from './stage.mjs';
-import { fitValue } from './state.mjs';
+import { dayKey, fitValue } from './state.mjs';
 
 export const WORDS = {
   zh: {
@@ -281,7 +281,7 @@ function fateHtml(ctx) {
     return `<div class="fate"><span class="chip">${esc(w.fateTitle)}</span> ${esc(say(w.fateLine, { zodiac: f.zodiac.name, stem: f.stem.name, element: f.element.name }))}</div>`;
   }
   if (f?.declined && !ctx.fateOpen) return `<div class="fate"><button class="act" data-fate-open>${esc(w.fateSet)}</button></div>`;
-  const today = (ctx.now ?? new Date()).toISOString().slice(0, 10);
+  const today = dayKey(ctx.now ?? new Date()); // the local day, as the rules count it (a UTC day is a day off for hours on either side of midnight)
   return `<div class="fate form"><div class="cardtitle arts">${esc(w.fateTitle)}</div><div class="small dim">${esc(w.fateHint)}</div>
     <div class="fateform"><input type="date" id="fate-birth" min="1900-01-31" max="${today}" value="${esc(ctx.fateDraft ?? '')}">
     <button class="act" data-fate="birth">${esc(w.fateSet)}</button><button class="act" data-fate="random">${esc(w.fateRandom)}</button><button class="act" data-fate="decline">${esc(w.fateSkip)}</button></div>
@@ -1459,7 +1459,7 @@ function value(card, ctx) {
 function born(card, ctx) {
   const e = (ctx.look?.scene?.exits ?? []).find((x) => x.id === card.id);
   if (!e?.born || e.born.kept || !choicesNow(ctx)) return '';
-  const w = ctx.words, today = (ctx.now ?? new Date()).toISOString().slice(0, 10);
+  const w = ctx.words, today = dayKey(ctx.now ?? new Date());
   return `<div class="card borncard"><div class="cardtitle">${esc(e.born.label ?? w.rootTitle)}</div>
     <div class="small dim">${esc(w.bornHint)}</div>
     <div class="fateform"><input type="date" id="born-date" min="1900-01-31" max="${today}" value="${esc(ctx.bornDraft ?? '')}">
