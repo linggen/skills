@@ -76,7 +76,7 @@ export function callLine(c, root, moves, lang) {
 export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, reading = () => false, load = () => import(SEALS.href) }) {
   const c = kit.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
-  const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
+  const say = (text) => (shell?.say ? shell.say(lang === 'en' ? 'Xiaoman' : '小满', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
     host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves: moves.map((m) => m.id), idle: c.idle, fastFps: c.armedFps,
     state: () => game.jieyinState(), cast: (e) => game.jieyin(e.move), say,

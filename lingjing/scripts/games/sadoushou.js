@@ -45,7 +45,7 @@ export function offerJieyin(level, box, { lang, game, shell, marks, feed = false
   const c = level.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const t = (o) => o?.[lang] ?? o?.zh ?? '';
-  const say = (text) => (shell?.say ? shell.say('xiaoman', text, 2200) : game.say('xiaoman', text));
+  const say = (text) => (shell?.say ? shell.say(lang === 'en' ? 'Xiaoman' : '小满', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
     host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, idle: c.idle, fastFps: c.armedFps,
     // the dock casts back an event (its move, the hand's lane): the row ids here are the 手势斗法 ids
