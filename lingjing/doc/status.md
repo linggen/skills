@@ -147,14 +147,14 @@ Updated 2026-10-26.
 ## Partly built (【在建】 in design.md)
 
 - Per-回 gameplay pass: 古四, 古六, 古七, 古八, 古九 done, 今线 audited (10-21).
-- 剧情 × 开放世界: key-beat lock and thread colours built 10-21; 银月's fragments on the map and dated world events are a proposal (design.md), waiting on one call.
+- 剧情 × 开放世界: key-beat lock and thread colours built 10-21; 银月's fragments on the map approved 10-23, built with 卷二; dated world events a proposal (design.md) — a missed one waits for him, capped (Hanli 10-23; the agent's pick: 1 hour, pending his confirmation).
 - 丹药 in the game: built 10-21; 炸炉 (the 旁炉) and 仙丹 are proposals in design.md § 丹药, waiting on Hanli.
 - Playtest crawler: a human-like bot per board, dead-control detection.
 
 ## Parked (tags, not merged)
 
 - `wip/2026-10-15-aigames` — AI games follow-ups (二十问 while 银月 sleeps, 事 row, token tap, scratch chat binding); 5 tests red.
-- `wip/2026-10-15-soul` (linggen) — Yinyue as the story's proud 妖王 银月; waits for Hanli's read.
+- `wip/2026-10-15-soul` (linggen, 1 commit `157a6464`, merges clean onto main, 95 behind) — Yinyue as the story's proud 妖王 银月 everywhere (本王 / "this queen"). Checked 10-23: main's agents/yinyue.md is still the "friend, part pet" persona, so his 10-15 rule (memory: 银月's soul = the story's 妖王 everywhere) lives only here — NOT obsolete, not deleted; waits for his read to merge.
 - `wip/2026-10-15-footer` — 10-15 morning 去往/footer stash; likely superseded by later footer commits; check before dropping.
 - `wip/2026-10-15-language-draft` — an older `rules/language.mjs`; main has the newer one.
 
@@ -169,12 +169,12 @@ Updated 2026-10-26.
 ## Waiting on Hanli
 
 - 三试 · 蠪侄 (`gate-longzhi`, stand 4 turns) on a save that skipped every board: lost 4 of 4 (the crawler's win policy ×3, one hand: 20 → 13 by turn 3, then two of its 九首 and a spell take the rest on turn 4). The lock's 「算了，往下走」 after 3 losses is the way on. Balance with nothing earned — his call (games.md waits on his design check).
-- 剧情 × 开放世界 (10-21): a dated world event missed — does it pass without him (the world moves on, the 恩仇簿 remembers 迟了) or wait for him? (design.md proposal)
-- 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built.
-- Economy feel calls (10-16, `9c42af47`): the stage-quest gates sit at beat entries so he can walk away to earn them — 古四 the 柴房 night (not 第一路), 古五 the 秘境's door (not 息壤), 古六 the 大比's eve (wm-qianye), which makes 古六 ≈7–8 typical days. The rerun kept open in 00-zhuji. Minutes, reading speed (450 字/min) and the three players are guesses — hand-play them. A rising ladder with 古七 holding two layers is why heavy 古五/古六 come in at ≈3–4.5 days. 古九 has no quest (九转 lands full).
+- ~~剧情 × 开放世界 (10-21): a missed dated world event~~ — answered 10-23: it waits for him, capped (1 hour, the agent's pick; his confirmation pending).
+- 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built. — **10-23 his rule: make an English version if English has couplets, else replace it with something else.**
+- Economy feel calls (10-16, `9c42af47`): the stage-quest gates sit at beat entries so he can walk away to earn them — 古四 the 柴房 night (not 第一路), 古五 the 秘境's door (not 息壤), 古六 the 大比's eve (wm-qianye), which makes 古六 ≈7–8 typical days. The rerun kept open in 00-zhuji. Minutes, reading speed (450 字/min) and the three players are guesses — hand-play them. A rising ladder with 古七 holding two layers is why heavy 古五/古六 come in at ≈3–4.5 days. 古九 has no quest (九转 lands full). — **10-23: waits for his own play** (「等我玩一下再说」).
 - His playthrough of the latest build is the launch gate (the per-回 expansions went ahead on his 10-21 go).
-- 10-14 asks: 拽/忍 redraws; village-map lines; skip on the first six beats; 闵丹师 mark 07:179; 古三 box merge.
-- Weather density, by his eye.
+- ~~10-14 asks~~ — checked 10-23: village-map lines moot (石坳村's map cut 10-16, `2270be75`); skip done (跳过 10-16, `bad5e46a`/`06d108f9`); 闵丹师 mark done (07:179 `{注=min-danshi}`, people.json + codex.json); 拽 moot (拽爹 cut 10-22); 忍 now a painted 割绳子 beat (10-16/10-19). Left: 「古三 box merge」 — what it meant is not on record; ask him if it still matters.
+- ~~Weather density~~ — OK as is (Hanli 10-23).
 
 ## Slow / stuck (for the bug hunt after the batch lands)
 

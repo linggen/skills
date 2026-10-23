@@ -490,14 +490,14 @@ its colour; the map and the 观's painted plate ring the place where a thread
 is met (cards.js threadsAt — the goal's place gold, an errand's next count
 silver or grey; the strongest wins). Linted to the three.
 
-**Proposal, not built — 银月's fragments on the map (from 下山 on).** The
+**Approved, not built (Hanli 2026-10-23: 「先批准设计」; built with 卷二, not before the 卷一 launch) — 银月's fragments on the map (from 下山 on).** The
 rules are there (a place's `fragment`, kept once where he stops,
 rules/memories.mjs); none is placed. Place one per province of 卷二, never on
 the story's road nor in a key beat's scenes — off the waypoint's path, so only
 roaming finds it; the map draws nothing until it is found (no marker: the
 find is the reward). Once that province's 鼎 is home, she may feel it — Look
 `fragment_near` within two roads, a fact she words (「这附近……有我的东西」),
-never a page arrow. Found: 录's album counts 残片 n/9 beside the memories.
+never a page arrow. Found: 录's album counts 残片 n/9 beside the memories — the only reward (no 灵石 or 修为; the find is the reward).
 卷一 has none (the 观 is walled; 下山 opens the 九州).
 
 **Proposal, not built — dated world events.** world.json `events`: `{id,
