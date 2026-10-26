@@ -41,6 +41,9 @@ test('no game stands over the passage: a fight, a 传闻, a 论道 wait for the 
   // a scene's fight waits for the box to be put away, unless its words were chosen in the box — which puts it away
   assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => \(c\.card !== 'board' \|\| c\.id === view\.opened\?\.id\) && !\(c\.card === 'duel' && sceneGame\(look, c\) && !called\.has\(c\.id\)\)\);/);
   assert.match(page, /function callDuel\(id\) \{[\s\S]{0,300}if \(playing\(r\) && atLast\(r, lang\(\)\)\) setReading\(advance\(r, lang\(\)\), \{ called \}\);/);
+  // another way taken (a `stay` one: 00-fox's 「别碰」) puts the chosen, unbegun fight's choice back among the ways (10-26)
+  const tap = page.slice(page.indexOf('async function panelTap('), page.indexOf('function inertNow('));
+  assert.match(tap, /if \(r\?\.ok\) \{ const here = `\$\{look\?\.scene\?\.id\}\|`;[^\n]*keep\(\{ called: view\.called\.filter\(\(k\) => !k\.startsWith\(here\)\) \}\)/);
   const items = [{ of: 'scene', id: 's1', beats: { zh: [{ text: '题。', cap: true }, { text: '一。' }] } }];
   assert.equal(sceneUnder({ scene: 's1', items, i: 0, j: 1, closed: false }, 's1'), true, 'the reading still knows where it is; the stage no longer asks');
 });

@@ -2181,6 +2181,10 @@ async function panelTap(exitId, label, answer, pass = false) {
   // A tap on a choice the story already moved past (a second tap in flight) is no refusal to show.
   // A riddle missed: its hint stands under the card (it never shuts; stuck, it may be left).
   keep({ panelNote: r.ok || r.refused === 'unknown-exit' ? null : r.hint && r.refused !== 'wrong-answer' ? `${refusal(r)} · ${r.hint}` : refusal(r) });
+  // Another way taken puts back a fight he had chosen and not begun: its choice stands among the ways again (found
+  // live 10-26 at 00-fox: 「脱下外衣」 → its 出手 card, then 「别碰」 — a `stay` way — read to its end in the box
+  // with 「别碰」 alone under it, the fight's choice gone with its card; tapped again and again, 「别碰」 only came back).
+  if (r?.ok) { const here = `${look?.scene?.id}|`; if ((view.called ?? []).some((k) => k.startsWith(here))) keep({ called: view.called.filter((k) => !k.startsWith(here)) }); }
   // A choice that stays in the scene (`stay`: 下水看看, 先逛坊市): its beat stands under the scene card.
   if (r?.ok && !r.summarize && r.beat?.length) keep({ panelSaid: { scene: look?.scene?.id ?? null, run: look?.run ?? null, lines: r.beat.filter((b) => b.text).map((b) => ({ name: b.name ?? null, text: b.text })) } });
   // The choices stay inert (dimmed, cards.js panelTapHtml `busy`) until the page has read what the tap
