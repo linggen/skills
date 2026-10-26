@@ -53,6 +53,7 @@ export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc
           }, againMs);
           return;
         }
+        entry.settled = true;
         onSettled(g, result ?? { won: false });
       })
       .catch((e) => console.warn('[lingjing] beat', id, e));
@@ -60,12 +61,18 @@ export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc
   };
   return {
     attach() {
+      const up = new Set();
       for (const host of doc.querySelectorAll('[data-mount]')) {
         const id = host.dataset.mount, g = boardFor(id);
         if (!mountOnly(g?.mod)) continue;
+        up.add(id);
         const entry = hosted.get(id)?.board === g ? hosted.get(id) : start(id, g);
         if (host.firstChild !== entry.node) host.replaceChildren(entry.node);
       }
+      // A board played out and gone off the stage is taken down: a Phaser kit's loop and WebGL context ran on in the
+      // detached node for the rest of the session (measured live 10-26: 守白菜 won, its card gone, 120 frames a second
+      // on). The entry stays, so the same board never mounts again; one still in play is never touched.
+      for (const [id, entry] of hosted) if (entry.settled && !up.has(id) && !entry.stop.signal.aborted) entry.stop.abort();
     },
   };
 }

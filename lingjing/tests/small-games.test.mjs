@@ -170,3 +170,23 @@ test('beat-host: a story board never settles a loss — lost, it is dealt again 
   await new Promise((r) => setTimeout(r, 5));
   assert.deepEqual(got.at(-1), { won: false, left: true, unable: 'camera' });
 });
+
+test('beat-host: a board played out and gone off the stage is taken down; one still in play never is', async () => {
+  const doc = fakeDoc();
+  const mounts = [];
+  const mod = { meta: { id: 'shouqiang' }, mount: (node, o) => new Promise((r) => { mounts.push({ o, settle: r }); }) };
+  const a = { taskId: 'a', day: 'd', mod, state: { won: false } }, b = { taskId: 'b', day: 'd', mod, state: { won: false } };
+  const host = beatHost({ boardFor: (id) => ({ a, b })[id], lang: () => 'zh', onSettled: () => {}, doc, againMs: 0 });
+  doc.addHost('a');
+  doc.addHost('b');
+  host.attach();
+  mounts[0].settle({ won: true, stars: 3 });
+  await new Promise((r) => setTimeout(r, 5));
+  doc.hosts.length = 0; // the story moved on: neither card is drawn
+  host.attach();
+  assert.equal(mounts[0].o.signal.aborted, true, 'the won board, off the stage, is taken down');
+  assert.equal(mounts[1].o.signal.aborted, false, 'a board still in play is never taken down for being out of sight');
+  doc.addHost('a');
+  host.attach();
+  assert.equal(mounts.length, 2, 'never mounted again');
+});
