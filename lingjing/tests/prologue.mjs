@@ -111,12 +111,26 @@ export const TO_HALL = [
   // 泗水路 (塔防 · 守炉, the 卷一 plan 2026-10-21): the night camp on the road, the fire and 舅舅 kept
   ['win', { id: 'gate-sishui' }],
   ['task', { action: 'done', id: 'gate-sishui' }],
+  // 人堆 (华容道, 2026-10-26): the 码头, behind the porters; then the steps (00-steps: 三百级, 气走经脉)
+  ['win', { id: 'gate-crowd' }],
+  ['task', { action: 'done', id: 'gate-crowd' }],
+  ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'steady' }],
+  ['win', { id: 'steps-sanbai' }],
+  ['task', { action: 'done', id: 'steps-sanbai' }],
+  ['resolve', { exit: 'on' }],
   ['win', { id: 'gate-luoshu' }],
   ['task', { action: 'done', id: 'gate-luoshu' }],
   ['resolve', { exit: 'pass' }],
+  // 石蛋 (对话, 2026-10-26) beside him in the queue, before the wood
+  ['win', { id: 'longzhi-shidan' }],
+  ['task', { action: 'done', id: 'longzhi-shidan' }],
+  ['resolve', { exit: 'on' }],
   ['won', { id: 'gate-longzhi' }],
   ['resolve', { exit: 'subdue' }],
+  // 测灵石 (气走经脉, 2026-10-26): his hand on the stone, before it lights (the 生辰 card's way on waits for it)
+  ['win', { id: 'hall-celing' }],
+  ['task', { action: 'done', id: 'hall-celing' }],
 ];
 /* The roots read: the outer court's first night (公中). */
 export const TO_WAIMEN = [...TO_HALL, ['resolve', { exit: 'born', birth: V1_BIRTH }]];

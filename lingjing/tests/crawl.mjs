@@ -37,7 +37,7 @@ function skipsFor(content, s, exit) {
 
 /* Make what the exit waits on true, the page's way first; what only forcing can do is named.
    `boards`: 'play' wins each board (with the grade the exit wants), 'skip' leaves each. */
-function prepare(content, s, exit, now, forced, boards = 'play') {
+function prepare(content, s, exit, now, forced, boards = 'play', marked = new Set()) {
   const sc = sceneOf(content, s);
   if (sc?.at && s.place !== sc.at) {
     let r = move(s, content, { now, quests: [] }, { place: sc.at });
@@ -52,7 +52,7 @@ function prepare(content, s, exit, now, forced, boards = 'play') {
   if (exit.needs?.task) s = walk(s, boards === 'skip' ? skipsFor(content, s, exit) : boardsFor(s, content, exit.id), content, now);
   const n = exit.needs ?? {};
   if (n.seen) for (const at of [n.seen].flat()) s = VERBS.look(s, content, { now, quests: [] }, { at }).state ?? s;
-  if (n.mark && !(s.marks ?? []).includes(n.mark)) { forced.push(`mark ${n.mark}`); s = { ...s, marks: [...(s.marks ?? []), n.mark] }; }
+  if (n.mark && !(s.marks ?? []).includes(n.mark)) { if (!marked.has(n.mark)) forced.push(`mark ${n.mark}`); s = { ...s, marks: [...(s.marks ?? []), n.mark] }; }
   // The other side of a fork (`no_mark`, 古六's 刮鞋底 reading 古三's steps): the walk took one side earlier; the other
   // side is a road an earlier step opens just as well (00-gate's rush), so the mark is set aside, not forced.
   if (n.no_mark && (s.marks ?? []).includes(n.no_mark)) s = { ...s, marks: s.marks.filter((m) => m !== n.no_mark) };
@@ -96,6 +96,8 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
   const scenes = new Map(), exits = new Map(), findings = [], forcedAll = [], states = new Map();
   // The boards left on the way (`boards: 'skip'`): as each exit is prepared — a branch's state may not be the one kept.
   const left = new Set();
+  // Marks the walk has set on some branch: the other branch's step that reads one is a road an earlier step opened.
+  const marked = new Set();
   const key = (s) => `${s.chapter}/${s.scene}`;
   const queue = [{ s: newState(content, lang, start), now: start, path: [] }];
   let n = 0;
@@ -113,15 +115,16 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
       let now = t0;
       const forced = [];
       // A 回's stage quest (rules/gates.mjs): the routine's days are the economy's — earned here.
-      let s = earnedFor(content, prepare(content, fresh(s0, now), exit, now, forced, boards), exit.id);
+      let s = earnedFor(content, prepare(content, fresh(s0, now), exit, now, forced, boards, marked), exit.id);
       for (const e of s.skipped ?? []) left.add(e.task);
       let r = resolve(s, content, { now, quests: [] }, argsFor(content, s, exit));
       // A day that must pass (the 大比 is tomorrow): the page's clock moves on.
       for (let d = 0; d < 3 && r.result.refused === 'needs' && exit.needs?.day_after; d++) {
         now = new Date(now.getTime() + DAY);
-        s = prepare(content, fresh(s, now), exit, now, forced, boards);
+        s = prepare(content, fresh(s, now), exit, now, forced, boards, marked);
         r = resolve(s, content, { now, quests: [] }, argsFor(content, s, exit));
       }
+      if (r.result.ok && exit.mark) marked.add(exit.mark);
       const id = `${sc.id}:${exit.id}`;
       if (forced.length) forcedAll.push({ exit: id, forced });
       const snub = r.result.refused === 'snubbed';

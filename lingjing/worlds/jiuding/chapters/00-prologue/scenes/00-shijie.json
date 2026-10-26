@@ -1,0 +1,80 @@
+{
+ "version": 1,
+ "id": "00-shijie",
+ "chapter": "00-prologue",
+ "hui": "h04",
+ "at": "shanmen",
+ "place": {
+  "zh": "沉鼎山 · 石阶底下",
+  "en": "Sunken Cauldron Mountain · the foot of the steps"
+ },
+ "weather": "fog",
+ "_weather": "「雾贴着水面走」 — the morning of the ninth, mist on the river and the steps",
+ "_split": "2026-10-26 (全文后的小游戏): 00-gate's morning after the 码头's hiding — the river stopping, 瞿老, 「开始」 — its own scene, so the two ways up (steady · rush) both start from it (人堆 is 00-gate's second board before it).",
+ "setup": {
+  "zh": "九月初九，重阳。泗水忽然静了，几千个孩子跪了一地；石阶顶上，一个扫地的老头。一炷香点着了。",
+  "en": "The ninth of the ninth month. The Sishui suddenly went still and thousands of children knelt; at the top of the steps, an old man with a broom. The incense is lit."
+ },
+ "recap": {
+  "zh": "泗水停了，几千口人跪了一地；钟声一响，一炷香点着了：一试考腿，三百级石阶。",
+  "en": "The river stopped and thousands knelt; the bell rang and the incense was lit: the first trial, legs — three hundred steps."
+ },
+ "cast": [],
+ "people": [
+  "qulao",
+  "maxiaobao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "泗水忽然静了。",
+    "石阶顶上，一个扫地的老头。",
+    "「开始！」"
+   ],
+   "en": [
+    "The Sishui went suddenly still.",
+    "At the top of the steps, an old man with a broom.",
+    "\"Begin!\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "这一身白，小满背上的汗毛先立了起来。他往人堆后头缩了半步，缩到一个挑担子的汉子身后，再看时，那人的脸隔着雾，瞧不真；嗓子，他一声也没出。穿白的，天底下不止一个。他还是想起爹在柴垛顶上说的那一句：它听见的不是你喘，是你心慌。他便把一口气吐得又细又长，吐到底，再慢慢吸回来。那白衣人从头到尾，没往这边看一眼。\n\n那汉子捧着银子，跪下去，给白衣人磕了一个头；又转过身，给他那个小儿子磕了一个头。小孩子不懂，看着他爹的后脑勺，咯咯地笑。白衣人把他抱起来，往河岸上走，岸上停着一辆青篷马车。走到半路，那孩子才觉出不对来，在白衣人怀里扭着身子，伸着两只手，哇地哭了：「哥——」\n\n那个大的追了两步，给他爹一把揪住了领子。马车走了。岸边站着一个五十上下的人，灰袍，生着一张没睡醒的脸，白衣人上车之前，冲他点了一点头，他也点了一点头，转身往石阶那边去了。\n\n人堆里有人小声道：「太华山上的太一宫来的。隔几年来一回，专挑一种颜色的娃娃。」又有人道：「他不上山。山门底下是沉鼎观的地，码头不是。赶在开山门前头，先挑一遍。」又有人道：「一锭银子，足足十两。」\n\n石匠把那锭银子揣进怀里，揣得很深，回头对大儿子道：「你也上去。考上了，一年五两；考不上，别回来。家里还有三张嘴。」说完，他往北走了，一次也没有回头。\n\n那大孩子站在码头上，没有哭。他转过脸来，看见小满正看着他，便道：「那石头……亮了，就是仙人要的？」小满道：「……嗯，是这样。」那孩子道：「他们把小豆带哪儿去了？」小满答不上来。那孩子低头看了看自己的手，那一双手刚才按在石头上，石头没亮。他道：「我要是也亮了，他们就把我也带去了。」\n\n小满问他叫什么。他道：「石蛋。」\n\n石阶底下，拿绳子圈了一片空地，十几个穿灰袍的执事站在里头，查验年纪（十二起）、籍贯，一人发一块竹牌，叫作考牌，拿烧红的铁签子当场烙上名字。唱名的那个执事，五十上下，生着一张没睡醒的脸，一面唱名，一面打呵欠——小满认得这张脸：天不亮的时候，码头上，白衣人上马车之前冲他点过一点头的，就是他。他拿竹牌敲着手心道：「三试，一试画一道。三道画满，进正殿测灵；牌子丢了，便算你没来过。有荐书的，哪一试没过，许补——怎么补，执事说了算。」刀剑弓棍一律解下来，挂在一面木架上，拿竹签子记了名字，说是傍晚抬上山门，入了门的自己去领。小满把爷爷那张弓挂了上去，缠满牛筋的弓背夹在一排亮闪闪的刀剑中间，活像一条打了补丁的裤子混在一群新衣裳里。小满记住了那弓挂在第三排左数第七个，把考牌揣进怀里，贴着那块木牌。\n\n便在这时，人群后头一阵骚动：「让一让！马家少爷来了！」马家的滑竿到了，一个家丁给马小宝打伞，一个给他扇扇子——这一天既没下雨，也没出太阳。马三跟在滑竿边上，时不时隔着衣裳按一按怀里那封信，像按着一只会飞的鸟。滑竿后头，走着葛六。马小宝一眼瞧见了小满，下巴一扬，拿两个鼻孔对着他：「哟，沈小满，你们家那扇门，扛回来没有？」小满道：「扛回来了，小宝哥。装得有点歪。」\n\n辰时差一刻，泗水忽然静了。\n\n不是风停，是水停。宽宽的一条河，正往东淌着，忽然像给谁按住了，一个浪头也不起，平得像一面磨过的铜镜。河边几千口人，说话的不说了，哭的也不哭了，谁也没叫谁，一齐往河里望。河心里，水往两边分开，分出一道沟来，沟底慢慢浮起一样东西——起先当是一块礁石，青黑色，长满了水苔，浮出来，才看出是一面背壳，比河边泊着的渡船还大，壳上的纹路一格一格，像一块田。那是一只鼋。它把一颗比磨盘还大的脑袋探出水面，眯着两只老眼，慢慢地往岸边游，游过的地方，水在它身后合拢，不起一个浪花。鼋背上站着一个人，一身灰袍，两只手拢在袖子里。鼋游过码头，那人的眼睛往码头上那块空地一落——青篷马车的车辙还新着——脸色登时沉了下来，两道眉毛竖了起来，低声道：「大胆狂徒，胆敢在我沉鼎观门口抢人。日后，定要登门讨个说法。」\n\n小满只觉得胸口一沉，像有人在他背上压了一扇门板，压得他膝盖一软——他身前身后的人，已经一个接一个跪了下去，没有一个人叫他们跪。小满也跪下了，跪下了才知道，那不是他自己要跪的，是那一股看不见的分量，从河上压过来，压得满河边的人都直不起腰。鼋到了岸边，那人从鼋背上一步跨到石阶底下，又一步，已到了半山腰，再一步，便没进了云里。那只鼋把脑袋缩回去，沉进了泗水，水面上一个漩儿也没留下。河又淌起来了，压在背上的那扇门板，跟着没了。人们一个一个爬起来，拍膝盖上的泥，谁也不说话。半天，才有个老汉小声道：「……观主。沉鼎观的[观主]{注=xuanchenzi}。」\n\n辰时正，山门上「当」的一声钟，几千个孩子霎时间静了下来。石阶顶上，不知什么时候站了一个扫地的老头，一身灰布短褂，拄着一把竹扫帚，佝偻着背，看都不看底下一眼，只顾一下一下地扫他脚底下那一级台阶——第三百级，最上头那一级。这三百级石阶，连上头山门前那片石坪，天没亮他便从底下扫起，一级一级扫上来，扫到这一级，便站住了，扫得最久。观里的老弟子说，这老头扫这三百级扫了五十年。扫了好一会儿，他才开口，声音不高，一个字一个字清清楚楚地落到山脚下来：「沉鼎观收人。不看出身，不看荐书——」人群里「嗡」的一声。马三的那只手，僵在了胸口上。那老头接着道：「——只看三样。腿。脑子。胆子。」说完，他又低头扫地。\n\n石阶顶上，一个执事点着了一炷香，插在一只铜炉里，喊了一声：「开始！」\n\n一试考腿：三百级石阶，一级齐膝高，一炷香。「开始」两个字还没落地，几千个孩子便一窝蜂地往上冲，你推我搡，喊爹的、喊娘的、踩了别人鞋的、给别人踩了鞋的，草鞋布鞋掉了一路，有一个一跟头栽在台阶上，爬起来光着一只脚接着冲，乱成一锅粥，活像一群给人打开了笼门的鸭子。绳子外头，爹娘们喊名字的声音一浪高过一浪：「二牛——慢点——」「宝儿，别回头——」「三步一口气——」这最后一句，是舅舅喊的。",
+  "en": "At that white robe, the hairs on Xiaoman's back stood up before anything else did. He shrank half a step back into the crowd, behind a man with a carrying pole, and when he looked again the man's face was blurred by the mist; his voice, he hadn't used once. There was more than one man in white under heaven. All the same, he thought of what his father had said on top of the woodpile: what it hears isn't your breathing, it's your fright. So he let a breath out thin and long, let it out to the bottom, and slowly drew it back in. From start to finish, the man in white never looked his way.\n\nThe stonemason, holding the silver in both hands, knelt down and knocked his head once on the ground before the man in white. Then he turned round and knocked his head once on the ground before his little son. The child didn't understand. He looked at the back of his father's head and giggled. The man in white picked him up and walked up the bank, where a carriage with a green canvas hood stood waiting. Halfway there the child finally felt something was wrong. He twisted in the man's arms, stretched out both hands, and burst out crying: \"Brother!\"\n\nThe elder boy ran two steps after him before his father grabbed him by the collar. The carriage left. On the bank stood a man of about fifty in a grey robe, with a face that had never quite woken up. Before he got into the carriage, the man in white gave him a small nod. He gave a small nod back and turned away towards the steps.\n\nSomeone in the crowd said softly, \"From the Taiyi Palace on Mount Taihua. Comes every few years. Only picks children of one colour.\" Someone else said, \"He doesn't go up the mountain. Below the gate is Sunken Cauldron ground, but the landing isn't. Gets in ahead of the gate opening and picks first.\" Someone else said, \"One ingot. A full ten taels.\"\n\nThe stonemason tucked the ingot into his coat, tucked it deep, and turned to his elder son. \"You go up too. If you pass, it's five taels a year. If you don't, don't come back. There are still three mouths at home.\" Then he walked off north and didn't look back once.\n\nThe elder boy stood on the landing and didn't cry. He turned his head and saw Xiaoman watching him, and said, \"That stone... if it lights up, that's who the immortals want?\" Xiaoman said, \"...Yes. That's how it is.\" The boy said, \"Where've they taken Xiaodou?\" Xiaoman had no answer. The boy looked down at his own hands. Those hands had just been pressed to the stone, and the stone hadn't lit. He said, \"If I'd lit up too, they'd have taken me as well.\"\n\nXiaoman asked him his name. He said, \"Shidan.\"\n\nAt the foot of the steps a patch of ground had been roped off, and a dozen or so stewards in grey robes stood inside it checking ages (twelve and up) and home districts. Each child was given a bamboo slip called an entry tag, with their name branded on it then and there with a red-hot iron spike. The steward calling the names was about fifty, with a face that had never quite woken up, and he yawned as he called. Xiaoman knew that face: before dawn, on the landing, this was the man the one in white had nodded to before getting into the carriage. He tapped the bamboo tag against his palm and said, \"Three trials, one stroke for each. Three strokes and you go into the main hall to be tested. Lose your tag and you were never here. Those with a letter of recommendation who fail a trial may make it up. How they make it up is for the steward to say.\" Knives, swords, bows and staves were all to be taken off and hung on a wooden rack, each marked with a bamboo slip bearing the owner's name; they would be carried up to the gate at dusk, and whoever got in could collect his own. Xiaoman hung up his grandfather's bow. Its back, wound all over with ox sinew, hung in a row of gleaming knives and swords like a pair of patched trousers in among new clothes. Xiaoman made a note that the bow hung third row, seventh from the left, and tucked the entry tag inside his coat, against the wooden tablet.\n\nJust then there was a stir at the back of the crowd. \"Make way! Young Master Ma is here!\" The Ma litter had arrived. One servant held an umbrella over Ma Xiaobao and another fanned him, though that day it was neither raining nor sunny. Ma San walked beside the litter, every so often pressing a hand through his clothes against the letter in his coat, as if he were holding down a bird that might fly off. Behind the litter walked Ge Liu. Ma Xiaobao spotted Xiaoman at once, lifted his chin and aimed both nostrils at him. \"Well, Shen Xiaoman. That door of yours, did you carry it back home?\" Xiaoman said, \"Carried it back, Brother Xiaobao. It hangs a bit crooked.\"\n\nA quarter before the hour of the Dragon, the Si River suddenly went still.\n\nIt wasn't the wind dropping. It was the water stopping. A broad river, flowing east, suddenly stood as if someone had pressed a hand on it: not a single wave, flat as a polished bronze mirror. Thousands of people on the bank, and those who were talking stopped talking and those who were crying stopped crying; nobody told anybody, and they all looked at the river together. In the middle of it the water parted to either side, opening a trench, and up from the bottom of the trench something slowly rose. At first it looked like a reef, blue-black and thick with water moss; as it came up you could see it was the back of a shell, bigger than the ferry boats moored along the bank, its pattern laid out square by square like a field. It was a great turtle. It pushed a head bigger than a millstone out of the water, narrowed its two old eyes, and swam slowly towards the bank, and wherever it passed the water closed behind it without a ripple. On its back stood a man in a grey robe, with both hands tucked into his sleeves. As the turtle swam past the landing, his eyes fell on the cleared space there (the wheel ruts of the green-hooded carriage were still fresh) and his face darkened at once. His brows rose, and he said in a low voice, \"Insolent wretches, to dare snatch people at the very door of the Sunken Cauldron Abbey. One day I'll come to their gate and have an answer for this.\"\n\nXiaoman felt his chest go heavy, as if someone had laid a door across his back, heavy enough to buckle his knees. The people in front of him and behind him were already going down on their knees one after another, and nobody had told them to kneel. Xiaoman knelt too, and only once he was down did he understand it wasn't his own doing: it was that unseen weight, pressing in from the river, so that nobody along the whole bank could straighten up. The turtle reached the bank, and the man took one step from its back to the foot of the steps, another step and he was halfway up the mountain, one more and he had gone into the cloud. The turtle drew its head back in and sank into the Si River without leaving so much as a whirl on the surface. The river flowed again, and the door laid across their backs went with it. People got up one by one and brushed the mud off their knees, and nobody spoke. After a long while an old man said softly, \"...The Abbot. The [Abbot]{注=xuanchenzi} of the Sunken Cauldron Abbey.\"\n\nOn the hour of the Dragon a bell rang out from the gate, dang, and thousands of children went quiet in an instant. At the top of the steps, though no one had seen when, stood an old man with a broom: a short grey cotton jacket, a bamboo broom to lean on, a bent back. He didn't so much as glance down. He just went on sweeping the step under his feet, stroke after stroke: the three-hundredth step, the very top one. These three hundred steps, and the stone terrace in front of the gate above them, he had swept since before dawn, starting from the bottom and coming up step by step; at this one he stopped, and swept it longest of all. The old disciples of the abbey said the old man had been sweeping these three hundred steps for fifty years. Only after quite a while did he speak. His voice wasn't loud, but each word dropped clear to the foot of the mountain. \"The Sunken Cauldron Abbey takes people. It doesn't look at birth, it doesn't look at letters of recommendation...\" A hum went through the crowd. Ma San's hand froze on his chest. The old man went on: \"...it looks at three things. Legs. Head. Nerve.\" Having said that, he lowered his head and went back to sweeping.\n\nAt the top of the steps a steward lit a stick of incense, stood it in a bronze burner and shouted, \"Begin!\"\n\nThe first trial tested the legs: three hundred stone steps, each as high as a knee, one stick of incense. Before the word \"Begin\" had even landed, thousands of children rushed up in a swarm, pushing and shoving, crying for their fathers and mothers, treading on other people's shoes and having their own shoes trodden on. Straw sandals and cloth shoes fell all the way up. One boy went head over heels onto a step, got up and kept charging with one bare foot. It was a pot of porridge, a flock of ducks with somebody's cage door flung open. Outside the rope, the parents' shouted names rose wave on wave: \"Erniu! Slow down!\" \"Bao'er, don't look back!\" \"Three steps, one breath!\" That last one was his uncle."
+ },
+ "lines": [],
+ "buttons": [
+  "steady",
+  "rush"
+ ],
+ "exits": [
+  {
+   "id": "steady",
+   "label": {
+    "zh": "走在最后，三步一吸，三步一呼",
+    "en": "At the back: three steps in, three steps out"
+   },
+   "means": "climbs steadily at an even pace, counting breaths, like a hunter on a long trail",
+   "stamina": 6,
+   "mark": "steps-steady",
+   "beat": [],
+   "next": "00-steps"
+  },
+  {
+   "id": "rush",
+   "label": {
+    "zh": "跟着冲上去",
+    "en": "Rush up with the rest"
+   },
+   "means": "rushes up the steps as fast as possible",
+   "stamina": 12,
+   "mark": "steps-rushed",
+   "story": {
+    "zh": "小满也冲了。几千只鸭子里，多他一只不多。\n\n冲到一百五十级上下，他的腿忽然沉了——不是累，是像有人往他两条腿上，一边挂了一块磨盘，越急，磨盘越重。身边的孩子一个接一个地坐下去，有的喘，有的哭。\n\n走到一百五十级的时候，他从一个扎两根小辫子的姑娘身边走过去——不对，是那姑娘从他身边冲过去。她没坐下，也没哭，冲过他身边的时候，他只看见一个鼻头冻得通红的侧脸，像一根萝卜，咬着牙，一口气往上冲，冲得小辫子一甩一甩的。那个背影，瞧着有点眼熟。小满想多看两眼，她已经冲上去了，只剩一截小辫子在雾里一晃，就没了。\n\n一百六十级。他停下来，扶着膝盖，大口大口地喘气。崖壁上刻满了字，都是在这一级上坐下过的人刻的。二十年前，舅舅在这儿坐了一炷香，看着别人一个一个从他身边走过去。\n\n他想起他爹说的：追一头鹿，越急，鹿跑得越远。他站直了，三步一吸，三步一呼，不快，也不停。\n\n香只剩一指的时候，他站在了第三百级石阶上，两条腿抖得像两根面条。扫地的老头抬起眼皮，看了他一眼，那一眼的意思大约是：鸭子里头，也有会自己停下来的。",
+    "en": "Xiaoman charged too. Among several thousand ducks, one more made no difference.\n\nAround step one hundred and fifty his legs suddenly went heavy — not tired: as if someone had hung a millstone on each; the more he hurried, the heavier they got. Around him children sat down one after another, some panting, some crying.\n\nAt step one hundred and fifty he passed a girl with two little braids — no, it was she who passed him, charging. She didn't sit, didn't cry; charging past him, all he saw was a profile with a nose frozen red, like a radish, teeth gritted, charging up in one breath, braids flicking. That back looked a bit familiar. Xiaoman wanted a second look, but she'd already gone up; only the end of a braid flicked once in the mist, and was gone.\n\nStep one hundred and sixty. He stopped, hands on his knees, gasping. The cliff wall was crowded with carvings — all by people who had sat down on this step. Twenty years ago his uncle had sat here the length of a stick of incense, watching others walk past him one by one.\n\nHe remembered his father's saying: chasing a deer, the more you hurry, the farther it runs. He straightened up — three steps in, three steps out; not fast, and not stopping.\n\nWith only a finger's width of incense left, he stood on the three hundredth step, legs shaking like two noodles. The old sweeper raised his eyelids and looked at him once; the look meant, roughly: even among ducks there's one that knows how to stop."
+   },
+   "beat": [],
+   "next": "00-luoshu"
+  }
+ ]
+}

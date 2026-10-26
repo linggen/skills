@@ -118,6 +118,12 @@ Stretches after: 1,760 · 2,107 · 2,149 · 2,244 ≈ · 1,637 · 1,616 · 1,035
 
 ### 第三回 (h04): 5 boards + 1 大场面 (today: 2 boards, 洛书, 1 fight)
 
+**Built 2026-10-26:** ① 人堆 (00-gate's second board, 华容道 level `crowd`: the 码头's porters, painted by
+tools/paint-huarong-crowd-flux.py; the morning after it is a new scene, 00-shijie, both ways up start there) · ② 三百级
+(new scene 00-steps on the steady way, qimai `sanbai`) · ④ 石蛋 (new scene 00-linzi before the wood — a fight's way on
+waits on its win alone — jinchat `shidan`) · ⑤ 测灵石 (00-hall, qimai `celing`). ③ 腿缝里 waits on its 时机 paintings.
+The 大场面 满殿青 is later. Over the cap, as planned: 蠪侄 → 测灵石 and 测灵石 → the 回's end (no action in the book).
+
 | # | scene · ¶ | the book | kit · level | len | why it fits | pays |
 |---|---|---|---|---|---|---|
 | 1 | 00-gate a18 「这一身白，小满背上的汗毛先立了起来…」 (split) | the white robe on the 码头 testing children with his grey stone; 小满 slips behind a porter | 华容道 · 人堆 | 50 s | keep a body between you and his eye: slide the crowd. 藏, the 回's first move | 0 |

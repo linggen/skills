@@ -53,7 +53,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 39
+       "n": 43
       },
       {
        "kind": "read",
@@ -91,7 +91,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 40
+       "n": 44
       },
       {
        "kind": "read",
@@ -161,7 +161,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 47
+       "n": 51
       },
       {
        "kind": "read",
@@ -214,7 +214,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "bingzhai",
-       "n": 71
+       "n": 75
       },
       {
        "kind": "read",
@@ -274,7 +274,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 53
+       "n": 57
       },
       {
        "kind": "read",
@@ -293,7 +293,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 41
+       "n": 45
       },
       {
        "kind": "read",
@@ -331,7 +331,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 79
+       "n": 83
       },
       {
        "kind": "read",
@@ -369,7 +369,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 48
+       "n": 52
       },
       {
        "kind": "read",
@@ -427,7 +427,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 80
+       "n": 84
       },
       {
        "kind": "read",
@@ -472,7 +472,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 62
+       "n": 66
       },
       {
        "kind": "read",
@@ -491,7 +491,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 59
+       "n": 63
       },
       {
        "kind": "read",
@@ -510,7 +510,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 63
+       "n": 67
       },
       {
        "kind": "read",
@@ -529,7 +529,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 64
+       "n": 68
       },
       {
        "kind": "read",
@@ -548,7 +548,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 61,
+       "n": 65,
        "same": true
       },
       {
@@ -594,7 +594,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 49
+       "n": 53
       },
       {
        "kind": "read",
@@ -613,8 +613,46 @@
       },
       {
        "kind": "read",
-       "chars": 7348,
-       "run": 7348,
+       "chars": 1436,
+       "run": 1436,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "gate-crowd",
+       "scene": "00-gate",
+       "title": {
+        "zh": "人堆 · 缩到后头",
+        "en": "The crowd · Slip to the back"
+       },
+       "mechanic": "解谜",
+       "variety": "解谜",
+       "game": "huarong",
+       "n": 15
+      },
+      {
+       "kind": "read",
+       "chars": 2470,
+       "run": 2470,
+       "over": true
+      },
+      {
+       "kind": "board",
+       "id": "steps-sanbai",
+       "scene": "00-steps",
+       "title": {
+        "zh": "三百级 · 一炷香",
+        "en": "Three hundred steps · One stick of incense"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 12
+      },
+      {
+       "kind": "read",
+       "chars": 3442,
+       "run": 3442,
        "over": true
       },
       {
@@ -632,9 +670,28 @@
       },
       {
        "kind": "read",
-       "chars": 2762,
-       "run": 2762,
-       "over": true
+       "chars": 2064,
+       "run": 2064,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "longzhi-shidan",
+       "scene": "00-linzi",
+       "title": {
+        "zh": "石蛋 · 你算得出来",
+        "en": "Shidan · You can work it out"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 14
+      },
+      {
+       "kind": "read",
+       "chars": 698,
+       "run": 698,
+       "over": false
       },
       {
        "kind": "fight",
@@ -652,20 +709,39 @@
       },
       {
        "kind": "read",
-       "chars": 7796,
-       "run": 7796,
+       "chars": 5146,
+       "run": 5146,
+       "over": true
+      },
+      {
+       "kind": "board",
+       "id": "hall-celing",
+       "scene": "00-hall",
+       "title": {
+        "zh": "测灵石 · 藏",
+        "en": "The testing stone · Hide"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 13
+      },
+      {
+       "kind": "read",
+       "chars": 2650,
+       "run": 2650,
        "over": true
       }
      ],
      "counts": {
-      "board": 2,
+      "board": 6,
       "fight": 1,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 1
      },
-     "longest": 7796,
+     "longest": 5146,
      "roaming": 0,
      "side": []
     }
@@ -703,7 +779,8 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 12
+       "n": 16,
+       "same": true
       },
       {
        "kind": "read",
@@ -722,7 +799,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 50
+       "n": 54
       },
       {
        "kind": "read",
@@ -741,7 +818,7 @@
        "mechanic": "割绳子",
        "variety": "割绳子",
        "game": "niugurope",
-       "n": 13
+       "n": 17
       },
       {
        "kind": "read",
@@ -786,7 +863,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 65
+       "n": 69
       },
       {
        "kind": "read",
@@ -805,7 +882,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 60
+       "n": 64
       },
       {
        "kind": "read",
@@ -870,7 +947,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "wuziqi",
-       "n": 14
+       "n": 18
       },
       {
        "kind": "read",
@@ -909,7 +986,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 54
+       "n": 58
       },
       {
        "kind": "read",
@@ -928,7 +1005,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 15
+       "n": 19
       },
       {
        "kind": "read",
@@ -988,7 +1065,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 55
+       "n": 59
       },
       {
        "kind": "read",
@@ -1007,7 +1084,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 16
+       "n": 20
       },
       {
        "kind": "read",
@@ -1041,7 +1118,7 @@
        "mechanic": "时机",
        "variety": "时机",
        "game": "sneeze",
-       "n": 17
+       "n": 21
       },
       {
        "kind": "read",
@@ -1122,7 +1199,7 @@
        "mechanic": "你画我猜",
        "variety": "你画我猜",
        "game": "drawguess",
-       "n": 31
+       "n": 35
       },
       {
        "kind": "read",
@@ -1177,7 +1254,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 66
+       "n": 70
       },
       {
        "kind": "read",
@@ -1237,7 +1314,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "yubujiuge",
-       "n": 18
+       "n": 22
       },
       {
        "kind": "read",
@@ -1256,7 +1333,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 58
+       "n": 62
       },
       {
        "kind": "read",
@@ -1295,7 +1372,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 57
+       "n": 61
       },
       {
        "kind": "read",
@@ -1360,7 +1437,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 51
+       "n": 55
       },
       {
        "kind": "read",
@@ -1454,7 +1531,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 67
+       "n": 71
       },
       {
        "kind": "read",
@@ -1473,7 +1550,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 22
+       "n": 26
       },
       {
        "kind": "read",

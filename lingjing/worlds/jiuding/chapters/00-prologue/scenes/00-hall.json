@@ -105,7 +105,26 @@
     "en": "The testing stone lit, very dimly.\n\nMetal-white, green, black, red, yellow: five colours, not one missing, a little of each, none of them much, none of them bright, crowding each other, leaning on each other, stirred together into a dull grey, like a rag his mother had pieced together out of five kinds of leftover scraps from around the house. {主亮}\n\nThe hall went quiet for a moment.\n\nThen someone laughed out loud. The loudest was Ma Xiaobao. He rocked back and forth laughing, laughed till the crumbs of osmanthus cake in his hand dropped all over the floor, and pointed at the testing stone as if pointing at the biggest joke in the world. When he laughed, all the children in the hall laughed, one setting off the next, the laughter spreading patch by patch until it struck the faded great beam and fell back down again.\n\nThe name-calling steward smiled too, and drawled out, \"Metal, wood, water, fire, earth: all five elements. All five kinds, a mixed spirit root.\" He picked up his brush. \"The places are full. Not taken.\"\n\nThe tip of the brush went down towards the \"Not taken\" column of the register. Xiaoman stood in front of the testing stone with his hand still on it, not taking it off. The three hundred steps he had walked up himself, the Luo Writing he had worked out himself, the longzhi's true head he had heard out himself, and at the end of it, a stone and a brush. He thought of the stick of incense his uncle had sat out on the hundred-and-sixtieth step, and the torn jacket laid over the grass at the edge of the wood. All over the hall, people were laughing or staring; only two weren't laughing. One was the Abbot on his cushion. The other was Ahe. She stood by the Abbot's cushion with her head down and made a mark in her notebook with the charcoal, pressed so hard the charcoal broke.\n\nIn his head Xiaoman quickly did the sums. Say nothing and he was out. Speak, and at worst he was out. He took his hand off the testing stone, took the entry tag out of his coat, held it up and said, \"Steward.\" The laughter in the hall died down a little. He said, \"This morning, at the top of the steps, the old gentleman said the Sunken Cauldron Abbey takes people without looking at birth, without looking at letters of recommendation; it looks at only three things: legs, head, nerve.\" He turned the tag over so the steward could see the three strokes. \"Three things. My tag's got all of them.\" He paused, didn't look at Ma Xiaobao, and only said, \"That last place: the tag has a circle on it, and one stroke the steward added himself.\"\n\nThe hall went silent at once. After a while, near the front of the line, Sun Ergou, without a word, raised his tag too. Then the barefoot boy in the corner of the hall raised his. He hadn't been taken, and he held it higher than anyone; the three strokes on it he had climbed out of himself, trial by trial. Only those two raised their tags. Everyone else kept their heads down.\n\nThe steward's face swelled the colour of pig's liver. He swung the tip of his brush round at Xiaoman and barked, \"Insolence! The places are no business of a mixed spirit root. Somebody...\"\n\nThe brush was an inch from the register when the Abbot spoke. \"Wait.\" He looked at the testing stone, then at Xiaoman. He looked at Xiaoman much longer than he had looked at the stone, so long that Xiaoman's skin began to crawl. Then he turned his head and asked the one leaning by the hall door, \"The three trials. What does Elder Qu think?\"\n\nOnly then did the children in the hall learn that the old sweeper had a name. [Elder Qu]{注=qulao}, leaning on his broom, said just four words: \"Steady legs. Careful heart.\" The few old stewards by the hall's pillars looked at one another. Elder Qu hadn't taken a single disciple in more than forty years; in those forty-odd years he had passed judgement on a child no more than three times all told, and never more than two words at a time.\n\nXuanchenzi nodded. \"Take him. Outer sect.\" The steward's brush stopped in mid-air. He said, \"Abbot, the places...\" Xuanchenzi said, \"Add one.\"\n\nThe steward opened his mouth and in the end said nothing. He lowered his head and added a line at the end of the register, and after that line he added two small characters: answered back. Then he went round collecting the new disciples' entry tags. When he got to Xiaoman, Elder Qu at the door said, \"That one, let him keep it.\" The steward's hand drew back. When Ma Xiaobao walked past Xiaoman, Elder Qu swept the threshold with his broom, swept it loudly. Ma Xiaobao lowered his voice and drew out his words. \"Shen... Xiao... man. A mixed spirit root, through the gate too?\" He took a bite of osmanthus cake. \"Life up the mountain is lo... ng.\" Xiaoman drew his words out too, every one the same: \"Brother Xiaobao, it's lo... ng.\"\n\nThat night an old disciple, up to relieve himself, passed the main hall and saw the Abbot sitting alone on the prayer cushion beside the empty stone stand, not meditating, not chanting, looking at the stone stand. He sat there until the third watch."
    },
    "beat": [],
-   "next": "00-waimen"
+   "next": "00-waimen",
+   "needs": {
+    "task": "hall-celing"
+   },
+   "refuse": {
+    "zh": "手还按在测灵石上。",
+    "en": "Your hand is still on the stone."
+   }
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "hall-celing"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "hall-celing"
+  ]
+ },
+ "_celing": "2026-10-26 (全文后的小游戏): at 「他把手放在测灵石上。」 — 气走经脉 `celing`: 藏 at the stone, the mirror's lesson (「藏。」) kept: what does it see of the one asleep in his 木牌? Then the five dim colours."
 }

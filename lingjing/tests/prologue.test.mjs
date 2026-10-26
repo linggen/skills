@@ -356,7 +356,7 @@ test('the catchphrase rides the book\'s beats: the bowl night first, the bow, th
 
 test('the companion\'s cameos: 阿禾, a girl — braids, the red nose and notebook, known to him and dodging him; an old save named a girl reads the same', () => {
   const scenes = content.chapters['00-prologue'].scenes;
-  const texts = () => [scenes['00-gate'].exits.find(e => e.id === 'steady').story, scenes['00-gate'].exits.find(e => e.id === 'rush').story, scenes['00-luoshu'].exits[0].story, scenes['00-hall'].story];
+  const texts = () => [scenes['00-steps'].story_after /* the steady climb, 00-steps since 2026-10-26 */, scenes['00-shijie'].exits.find(e => e.id === 'rush').story, scenes['00-luoshu'].exits[0].story, scenes['00-hall'].story];
   for (const gender of ['male', 'none', 'female']) {
     const s = { ...start(), name: '墨白', gender };
     for (const t of texts()) {

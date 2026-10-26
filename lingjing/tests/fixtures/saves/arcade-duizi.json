@@ -124,7 +124,10 @@
    "j01-anatomy",
    "j01-retest",
    "00-gate",
+   "00-shijie",
+   "00-steps",
    "00-luoshu",
+   "00-linzi",
    "00-longzhi",
    "00-hall",
    "00-waimen",
@@ -284,7 +287,27 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "gate-crowd": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "steps-sanbai": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "gate-luoshu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "longzhi-shidan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "hall-celing": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -904,7 +927,10 @@
    "j01-anatomy",
    "j01-retest",
    "00-gate",
+   "00-shijie",
+   "00-steps",
    "00-luoshu",
+   "00-linzi",
    "00-longzhi",
    "00-hall",
    "00-waimen",

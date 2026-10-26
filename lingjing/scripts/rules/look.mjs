@@ -551,8 +551,9 @@ const altOf = (a, lang) => ({
    those; the 游戏厅 keeps all. (A throw is a level of 砸寨 named by the task's `deal.lv`, 2026-10-20: its
    throws are the book's there, the card law kept in the level itself — no tray of cards dealt.) */
 function dealOf(content, task, state) {
-  // A game with a row a level (气走经脉, 10-19: every `qimai` row is one level) deals the row that names this task.
-  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game && g.task === task.id) ?? games.find(g => g.id === task.game && g.levels) ?? games.find(g => g.id === task.game) : null;
+  // A game with a row a level (气走经脉, 10-19: every `qimai` row is one level) deals the row that names this task —
+  // never another task's own level (华容道's 人堆, 2026-10-26, is 00-gate's alone): else a ladder row's.
+  const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game && g.task === task.id) ?? games.find(g => g.id === task.game && g.levels && !g.task) ?? games.find(g => g.id === task.game) : null;
   // …and a game whose table holds story or realm levels (守炉) deals only those: the 游戏厅's ladder is never a board's.
   const off = l => l.story || l.realm;
   const levels = row?.levels?.some(off) ? row.levels.filter(off) : row?.levels;
