@@ -2,7 +2,7 @@
 // crawler (tools/playtest.mjs). No dependencies: Node's own fetch and
 // WebSocket drive a headless Chrome started on its own throwaway profile, so
 // a crawl never touches the browser the player plays in.
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -17,16 +17,37 @@ const CHROME = [
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* Every test Chrome this process started dies with it — a crawl killed or crashed mid-run left three spinning
+   at full CPU for 7 h on 2026-10-26 (a normal finish was the only path that closed them). A process killed
+   outright (SIGKILL) runs no handler, so each launch also ends the orphans an earlier run left: test Chromes on
+   an `lj-playtest-` profile whose parent is gone (re-parented to launchd, ppid 1). */
+const live = new Set();
+const killAll = () => { for (const p of live) try { p.kill('SIGKILL'); } catch {} live.clear(); };
+process.once('exit', killAll);
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.once(sig, () => { killAll(); process.exit(128); });
+function endOrphans() {
+  try {
+    const rows = execFileSync('ps', ['-axo', 'pid=,ppid=,command='], { encoding: 'utf8' }).split('\n');
+    for (const row of rows) {
+      const m = row.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/);
+      if (m && m[2] === '1' && m[3].includes('--user-data-dir=') && m[3].includes('lj-playtest-')) try { process.kill(Number(m[1]), 'SIGKILL'); } catch {}
+    }
+  } catch { /* no ps: nothing to sweep */ }
+}
+
 /// Start a headless Chrome on a fresh profile; answers { page, close }. `touch`: a phone — DPR `scale`
 /// (default 3), touch input emulated, and the page's taps made as touches.
 export async function launch({ width = 1280, height = 820, headless = true, touch = false, scale = touch ? 3 : 1 } = {}) {
   if (!CHROME) throw new Error('no Chrome found (set CHROME=/path/to/chrome)');
+  endOrphans();
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-playtest-'));
   const port = 9300 + Math.floor(Math.random() * 500);
   const args = [`--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, `--window-size=${width},${height}`,
     '--no-first-run', '--no-default-browser-check', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
     '--disable-backgrounding-occluded-windows', '--mute-audio', '--autoplay-policy=no-user-gesture-required', ...(headless ? ['--headless=new'] : []), 'about:blank'];
   const proc = spawn(CHROME, args, { stdio: 'ignore' });
+  live.add(proc);
+  proc.once('exit', () => live.delete(proc));
   let targets = null;
   for (let i = 0; i < 60 && !targets; i++) {
     await sleep(150);

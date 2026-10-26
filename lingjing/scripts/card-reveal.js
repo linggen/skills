@@ -59,7 +59,7 @@ export function revealHtml(card, { lang = 'zh', line = '', artBase = '' } = {}) 
 /* The flight's transform: from the card's centre to the chip's, shrunk to the chip. */
 function flyTo(cardEl, target) {
   const a = cardEl.getBoundingClientRect(), b = target?.getBoundingClientRect?.();
-  if (!b || !a.width) return 'translateY(40vh) scale(.1)';
+  if (!b || !b.width || !a.width) return 'translateY(40vh) scale(.1)'; // a chip not on the page measures 0 at 0,0
   const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
   const k = Math.max(0.06, Math.min(b.width / a.width, b.height / a.height));
   return `translate(${dx}px, ${dy}px) scale(${k}) rotate(-6deg)`;
@@ -79,9 +79,13 @@ function playOne(host, card, opts) {
   host.appendChild(veil);
   return new Promise(resolve => {
     let flown = false;
+    // The chip is found as the card flies, not when it rose: the page may redraw its footer while the card
+    // waits for his tap, and the chip it held then is off the page (10-26: 狰's card flew to the top-left).
+    const chip = () => (typeof opts.target === 'function' ? opts.target() : opts.target);
     const land = () => {
-      opts.target?.classList.add('rv-landed');
-      setTimeout(() => opts.target?.classList.remove('rv-landed'), 500);
+      const t = chip();
+      t?.classList.add('rv-landed');
+      setTimeout(() => t?.classList.remove('rv-landed'), 500);
       veil.remove();
       resolve();
     };
@@ -90,7 +94,7 @@ function playOne(host, card, opts) {
       flown = true;
       if (still) { veil.classList.add('out'); setTimeout(land, REVEAL_MS.fade); return; }
       const cardEl = veil.querySelector('.rv-card');
-      cardEl.style.setProperty('--fly', flyTo(cardEl, opts.target));
+      cardEl.style.setProperty('--fly', flyTo(cardEl, chip()));
       veil.classList.add('fly');
       setTimeout(land, REVEAL_MS.fly);
     };
@@ -103,7 +107,7 @@ function playOne(host, card, opts) {
 }
 
 /// Play each card gained, one after another, over `host` (the stage), landing
-/// on `target` (the bag chip). `cards`: [{...card, line}]. Resolves when done.
+/// on `target` (the bag chip, or a function that finds it as the card flies). `cards`: [{...card, line}]. Resolves when done.
 export async function revealCards(cards, { host, target = null, lang = 'zh', artBase = '', still = null } = {}) {
   if (!host || !cards?.length) return;
   const reduced = still ?? (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);

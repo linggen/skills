@@ -568,7 +568,7 @@ async function playReveals() {
     const catalog = cardCatalog(), l = lang();
     const cards = revealQueue.splice(0).map(id => catalog[id]).filter(Boolean)
       .map(c => ({ ...c, line: c.from?.[0]?.line?.[l] ?? c.from?.[0]?.line?.zh ?? '' }));
-    await revealCards(cards, { host: $('view') ?? document.body, target: document.querySelector('.gearchip'), lang: l, artBase: artBase() });
+    await revealCards(cards, { host: $('view') ?? document.body, target: () => document.querySelector('.gearchip'), lang: l, artBase: artBase() });
   } finally { revealing = false; }
   if (revealQueue.length) playReveals();
 }
