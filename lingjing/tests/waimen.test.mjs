@@ -613,22 +613,20 @@ const atYaoyuan = () => { let s = opened(); for (const exit of ['owe', 'can', 'b
 test('药园巡夜: the second night\'s passage stops on the book\'s 「天地再大，他只认得脸上的风。」; the 守炉 board; then 丑时 and the 狰 (the scene\'s own `story_after`); then the 萝卜', () => {
   const sc = CH.scenes['wm-yaoyuan'];
   const paras = bookParas('04-第四回.md'), last = (p) => normBook(p.zh.split('\n\n').at(-1)), first = (p) => normBook(p.zh.split('\n\n')[0]);
-  for (const pair of [sc.story, sc.story_full]) assert.match(pair.zh, /天地再大，他只认得脸上的风。$/, 'the cut ends on the book\'s own sentence');
-  const at = paras.indexOf(last(sc.story_full));
+  assert.match(sc.story.zh, /天地再大，他只认得脸上的风。$/, 'the passage ends on the book\'s own sentence');
+  const at = paras.indexOf(last(sc.story));
   assert.ok(at > 0, 'the book\'s paragraph, word for word');
-  assert.equal(paras[at + 1], first(sc.story_after_full), 'the rest starts on the book\'s next paragraph');
-  assert.equal(paras[at + 2], first(sc.exits.find((e) => e.id === 'tame').story_full), 'and the 萝卜 right after it');
+  assert.equal(paras[at + 1], first(sc.story_after), 'the rest starts on the book\'s next paragraph');
+  assert.equal(paras[at + 2], first(sc.exits.find((e) => e.id === 'tame').story), 'and the 萝卜 right after it');
   assert.match(sc.story_after.zh, /^丑时过了一半/);
   assert.deepEqual(sc.show, [{ card: 'board', id: 'yaoyuan-xunye' }]);
   assert.deepEqual(sc.offers, { tasks: ['yaoyuan-xunye'] });
-  // the lead card: the board's lines from the book that the box's cut leaves out — never a line the box just read
+  // the lead card: never a line the box just read. Its two book lines (the pawprints, the dark west end) were the
+  // ones the 节本 cut left out; the box reads the book's full text now (2026-10-26), so the card sets the night and cries.
   const row = content.games.games.find((g) => g.id === 'shoulu' && g.levels).levels.find((l) => l.id === 'yaoyuan-xunye');
-  const lead = row.lead.slice(0, row.lead.findIndex((l) => l.big));
-  assert.ok(lead.length >= 2);
-  for (const l of lead) {
-    assert.ok(sc.story_full.zh.includes(l.zh) && sc.story_full.en.includes(l.en), `the book's: ${l.zh}`);
-    assert.ok(!sc.story.zh.includes(l.zh), `not read twice: ${l.zh}`);
-  }
+  assert.ok(row.lead[1].big && !row.lead[0].big, 'the night set in one line, then 「崖根底下，有动静！」');
+  for (const l of row.lead) assert.ok(!sc.story.zh.includes(l.zh) && !sc.story.en.includes(l.en), `not read twice: ${l.zh}`);
+  assert.match(sc.story.zh, /爪印是从西头的崖根底下来的，又回崖根底下去。/, 'the pawprints are the box\'s');
 });
 
 test('药园巡夜 is offered at the scene and the 萝卜 waits on it; won, the rest is told, then the way on', () => {

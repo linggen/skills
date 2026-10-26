@@ -333,7 +333,17 @@
       "qi": 20,
       "mend": 20
     },
-    "by_zhuan": [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3],
+    "by_zhuan": [
+      1,
+      1.25,
+      1.5,
+      1.75,
+      2,
+      2.25,
+      2.5,
+      2.75,
+      3
+    ],
     "by_tier": {
       "qi": 1,
       "foundation": 2,
@@ -437,12 +447,24 @@
         8,
         21
       ],
-      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days.",
+      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days. 2026-10-26: with the book's full text, 古四 (h05) reads 7.7 typical days and 古六 (h08) 10.1 — allowed to 8 and 10.5 until the new small games land and the 层 are re-fit (fit._hold).",
       "except": {
         "h07": {
           "typical": [
             4,
             7.5
+          ]
+        },
+        "h05": {
+          "typical": [
+            5,
+            8
+          ]
+        },
+        "h08": {
+          "typical": [
+            5,
+            10.5
           ]
         }
       }
@@ -450,9 +472,12 @@
     "fit": {
       "player": "heavy",
       "hold": {
+        "h05": 470,
+        "h07": 490,
+        "h08": 510,
         "h11": 1040
       },
-      "_hold": "2026-10-20 (Hanli 「可以, 按你说的做」): 古七 (h11) holds 练气五–九层 at 1040…1120. After the 10-19 weak-board sweep the heavy player's 古七 is flat at 3.2 days from 960 to 1310, so its 3.7 target lands on the next step, 1390 — which puts the typical 古八 (h09) at 7.7 days, outside its 5–7.5 band. 1040 keeps every band and the old pace.",
+      "_hold": "2026-10-20 (Hanli 「可以, 按你说的做」): 古七 (h11) holds 练气五–九层 at 1040…1120. After the 10-19 weak-board sweep the heavy player's 古七 is flat at 3.2 days from 960 to 1310, so its 3.7 target lands on the next step, 1390 — which puts the typical 古八 (h09) at 7.7 days, outside its 5–7.5 band. 1040 keeps every band and the old pace. 2026-10-26 (the book's full text played, Hanli 「你的建议我同意」): 古四–古六 (h05 · h07 · h08) hold 练气一–四层 at 470…530, the numbers before the change. Played whole, the book reads about twice as long; --fit would drop 一层 to 290 and still leave 古六 at 9.4 typical days. The re-fit waits for the new small games (doc/games.md § 全文后的小游戏) — Hanli's call.",
       "days": {
         "default": 4.5,
         "h05": 3.4,

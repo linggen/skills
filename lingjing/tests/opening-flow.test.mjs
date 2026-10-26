@@ -35,11 +35,8 @@ test('a game inside its scene\'s passage: the rest is the scene\'s own (`story_a
   }
   // No exit begins mid-way through its scene's own run: where the scene's told text ends in the book
   // (its `story_after`), no way on of it starts; and the rest begins exactly where the lead stops.
-  // A condensed passage (jieben.mjs) is read by the book's passage beside it (`…_full`).
-  for (const raw of Object.values(scenes)) {
-    if (!raw.story_after) continue;
-    const sc = { ...raw, story: raw.story_full ?? raw.story, story_after: raw.story_after_full ?? raw.story_after,
-      exits: raw.exits.map((e) => ({ ...e, story: e.story_full ?? e.story })) };
+  for (const sc of Object.values(scenes)) {
+    if (!sc.story_after) continue;
     const book = paras[sc.hui].join('');
     const end = (t) => { const at = book.indexOf(t); return at < 0 ? -1 : at + t.length; };
     assert.ok(end(lastPara(sc.story_after)) > 0, `${sc.id}: its passage is the book's`);

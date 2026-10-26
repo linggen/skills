@@ -5,7 +5,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, lint } from '../scripts/content.mjs';
 import { fitWorld, newState } from '../scripts/state.mjs';
-import { checkJieben } from '../scripts/jieben.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { fightSetup, readOf } from '../scripts/rules/cards.mjs';
 import { foeOf } from '../scripts/rules/world.mjs';
@@ -120,11 +119,11 @@ test('the 10-19 sweep and the 10-20 调息 cut: 讲堂 plays 砸寨 (讲堂试�
   assert.equal(t('laba-diche').cut, '2026-10-19');
   const q = CH.scenes['wm-qianye'], l = CH.scenes['wm-laba'];
   assert.match(q.story.zh, /头一天他不教法术，先教手[\s\S]*第二天他教咒。$/, 'day one told before the board');
-  assert.match(q.story_after.zh, /^第三天，褚先生教的是扣。[\s\S]*木得金而伐/, 'day three and the 五句 after it');
+  assert.match(q.story_after.zh, /第三天，褚先生教的是扣。[\s\S]*木得金而伐/, 'day three and the 五句 after it');
   assert.equal(q.exits[0].mark, 'xiangke');
   assert.equal(l.show, undefined); assert.equal(l.exits[0].needs, undefined);
   assert.equal(l.exits[0].mark, 'diche');
-  for (const k of ['story', 'story_full']) {
+  for (const k of ['story']) {
     assert.match(l[k].zh, /小满把那张纸凑到灶口，看着它卷起来，黑了。纸上的字，他已经一个一个记进了肚子里。\{景=diche\}$/);
     assert.match(l[k].en, /\{景=diche\}$/);
   }
@@ -196,7 +195,6 @@ test('no 古六 board draws its own skip (the page lays it, 2026-10-15), and eac
 
 test('开炉夜 told (2026-10-20): the lid on the fourth press and the five feeds read in the book\'s words, after the mirror\'s board', () => {
   const sc = CH.scenes['wm-zhaojing'];
-  for (const lang of ['zh', 'en']) assert.ok(checkJieben(sc.story_after[lang], sc.story_after_full[lang], lang).ok, lang);
   assert.match(sc.story_after.zh, /按到第四回，「咔哒」[\s\S]*喷嚏符[\s\S]*痒痒针[\s\S]*自拍镜[\s\S]*「嗝」[\s\S]*猪蜻蜓；乘风而起，见木而栖[\s\S]*收破烂的/);
   const old = fitWorld({ ...at('wm-zhaojing', 'waimen'), tasks: { 'zhaojing-fantong': { status: 'offered' } } }, content);
   assert.equal(old.tasks['zhaojing-fantong'], undefined, 'a save holding the old board offered lets it go');

@@ -14,7 +14,6 @@ import { resolve } from '../scripts/rules.mjs';
 import { playOf, tellOf } from '../scripts/rules/tell.mjs';
 import { advance, current, emptyReading, fitMode, modeAt, wholeBeats, withTold } from '../scripts/dialogue.js';
 import { paceOf, screensOf, SPEEDS } from '../scripts/lines.js';
-import { checkJieben } from '../scripts/jieben.mjs';
 import { beatStepper } from '../scripts/setpiece.js';
 import * as P from '../scripts/setpieces/huochai.js';
 import { earnedFor } from './earn.mjs';
@@ -74,18 +73,17 @@ test('the lines are the book\'s, verbatim, in its order (zh 07-第七回.md, en 
   assert.equal(P.TITLE.zh, '扔了干净');
 });
 
-test('the way on tells the book\'s two paragraphs, the chewing one marked `{景=huochai}` (story + story_full, zh and en); the scene offers no board', () => {
+test('the way on tells the book\'s two paragraphs, the chewing one marked `{景=huochai}` (zh and en); the scene offers no board', () => {
   for (const lang of ['zh', 'en']) {
-    for (const field of ['story', 'story_full']) {
+    for (const field of ['story']) {
       const paras = feed[field][lang].split(/\n\n+/);
       const marked = paras.map((p, k) => [k, [...p.matchAll(PIECE)].map((m) => m[1])]).filter(([, ids]) => ids.length);
       assert.deepEqual(marked, [[1, ['huochai']]], `${field} ${lang}: the chewing paragraph, once`);
       assert.equal(paras[0], BOOK_PARAS[lang][0], `${field} ${lang}: 「他摸进柴房…」 word for word`);
       assert.equal(paras[1], `${BOOK_PARAS[lang][1]}{景=huochai}`, `${field} ${lang}: 「饭桶嚼了很久…」 word for word, the tag at its end`);
     }
-    assert.ok(checkJieben(feed.story[lang], feed.story_full[lang], lang).ok, `${lang}: the 节本 still keeps the book's words`);
     // The sword's paragraph is still the way on's, after the piece.
-    assert.match(feed.story[lang], lang === 'zh' ? /\{景=huochai\}\n\n一口剑，三尺来长/ : /\{景=huochai\}\n\nA sword, about three feet long/);
+    assert.match(feed.story[lang], lang === 'zh' ? /\{景=huochai\}\n\n他拔出剑来，[^\n]*一口剑，三尺来长/ : /\{景=huochai\}\n\nHe pulled the sword out\.[^\n]*A sword, about three feet long/);
   }
   assert.ok(!(scene.show ?? []).some((c) => c.card === 'board'), 'no board on the stage');
   assert.deepEqual(scene.offers?.tasks ?? [], []);

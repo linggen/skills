@@ -11,7 +11,7 @@ import { playMarks, wireMarks } from './marks.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { content, verb, worldPath } from './rules.js';
 import { createListener, listenHtml, loadManifest } from './pingshu.js';
-import { unitsOf } from './jieben.mjs';
+import { unitsOf } from './book-words.mjs';
 
 const WORDS = {
   zh: { back: '← 回到灵境', toc: '目录', prev: '←', next: '→', none: '书还没有写。', failed: '这一回没能打开。', only: '这一回只有中文。',
@@ -126,8 +126,7 @@ async function main() {
 }
 
 /// 读原著 from the game (lingjing.js readAt) opens the 回 at the box on show: `?at=` is the
-/// opening words of the book's paragraph it comes from (a condensed beat, jieben.mjs headOf), or
-/// the box's own words (a beat that is the book's paragraph). The first paragraph holding them is
+/// box's opening words (book-words.mjs headOf) — each beat is a paragraph of the book. The first paragraph holding them is
 /// brought to the middle and lit a moment; none, and the 回 opens at its head as before.
 function openAt(at) {
   const join = (u) => u.join(lang === 'en' ? ' ' : '');

@@ -1,4 +1,4 @@
-// 今 · 四's 节本 keeps what its sentences lean on (playtest 2026-10-15): a cut that drops the
+// 今 · 四 read whole (the 节本 cut retired 2026-10-26; these were its playtest 2026-10-15): a cut that drops the
 // clause a sentence answers leaves it dangling on the stage — 「耳朵还没烧完」 with the line in her
 // notebook that burned his ears cut away; 「收到最末那一只」 with no cups being cleared; 「她合上本子」
 // two paragraphs from the last 阿禾. Each cut (`story`) either keeps the antecedent or loses the
@@ -25,6 +25,6 @@ test('j09-dongzhi: the last cup comes while she clears the bench', () => {
 
 test('j09-noise: the notebook that closes on 「替补席上，你最准」 is named as hers', () => {
   const { zh, en } = scene('j09-noise').story;
-  assert.match(zh, /阿禾合上本子：「替补席上，你最准。」/);
-  assert.match(en, /Ahe shut the notebook/);
+  assert.match(zh, /阿禾的本子上只有一行：「沈芒　罚球 十投七。」\n\n她合上本子：「替补席上，你最准。」/);
+  assert.match(en, /In Ahe's notebook there was only one line: [^\n]*\n\nShe shut the notebook/);
 });

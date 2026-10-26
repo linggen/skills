@@ -109,8 +109,8 @@ function sceneWords(content, sc, lang, own = false) {
   const key = `${sc.id}|${lang}|${own ? 'own' : 'all'}`;
   if (!byKey.has(key)) {
     const said = (v) => (v == null ? '' : typeof v === 'string' ? v : pick(v, lang) ?? '');
-    const opening = [sc.story, sc.story_full, ...(sc.lines ?? []).map(l => l.text)];
-    const later = [sc.story_after, sc.story_after_full, ...(sc.exits ?? []).flatMap(e => [e.story, e.story_full, ...(e.beat ?? []).map(l => l.text)])];
+    const opening = [sc.story, ...(sc.lines ?? []).map(l => l.text)];
+    const later = [sc.story_after, ...(sc.exits ?? []).flatMap(e => [e.story, ...(e.beat ?? []).map(l => l.text)])];
     byKey.set(key, (own ? opening : [...opening, ...later]).map(said).join('\n'));
   }
   return byKey.get(key);

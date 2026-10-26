@@ -32,8 +32,8 @@ test('讨饼债 stands at 00-yinyue: the passage split word for word after 「�
   for (const lang of ['zh', 'en']) {
     assert.match(sc.story[lang], lang === 'zh' ? /烂成这样。」$/ : /Rotten through\."$/);
     assert.match(sc.story_after[lang], lang === 'zh' ? /^小满道：「……你是那只狐狸？」/ : /^Xiaoman said, "…Are you that fox\?"/);
-    assert.match(sc.story_full[lang], lang === 'zh' ? /烂成这样。」$/ : /Rotten through\."$/);
-    assert.match(sc.story_after_full[lang], lang === 'zh' ? /^小满道：「……你是那只狐狸？」/ : /^Xiaoman said/);
+    assert.match(sc.story[lang], lang === 'zh' ? /烂成这样。」$/ : /Rotten through\."$/);
+    assert.match(sc.story_after[lang], lang === 'zh' ? /^小满道：「……你是那只狐狸？」/ : /^Xiaoman said/);
   }
   assert.equal(task.game, 'bingzhai');
   assert.equal(task.needs, 'her');

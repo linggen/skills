@@ -248,6 +248,10 @@ overflow pays more.
 | A 回 | typical ≈4–7 days (古六 ≈7.4: thirteen scenes behind its quest), heavy ≈3–5, light ≈10–16 (体力 on) |
 | 古一–古三 | fast — no quest; a first sitting or two |
 
+- **The book's full text (2026-10-26).** The box plays every passage whole (the 节本 cut is retired), so
+  reading takes about twice as long. The 层 are held at their numbers (`model.fit.hold` h05 · h07 · h08)
+  and the bands of 古四 (≤ 8) and 古六 (≤ 10.5), and 古一–古三's ≤ 5 days, widened until the new small
+  games land — then re-fit, Hanli's call.
 - **One model for every number.** `worlds/jiuding/balance.json` holds the 层 thresholds, the pay
   tables, the fight-to-灵石 rate and the cooldowns; content.mjs
   (`withBalance`) lands them where the rules read them. `node tools/balance.mjs` plays a light, a
@@ -826,9 +830,11 @@ A game ends `won` always, with its `grade`; the page sends it with the win (`win
 task's **`marks`** (grade → mark) write it, and an exit's **`needs.grade`** takes only that grade —
 the page taps a way on for him only when exactly one waits on the board. **A game and the story are never on the stage at once** (Hanli, 2026-10-14: 「小游戏，和剧情不要同时显示」): a board waits for its passage to the beat it belongs at (its last; a game mid-passage has the passage split — 接雨, 吹鹅毛 — the rest on the way on), the box steps wholly aside while it is played (queue.js `onStage`, boxGivesWay `game`), and the played board closes for the box to come back. A save standing in a scene
 since given a board is offered it on load (state.mjs fitWorld). **Rhythm** (rhythm.mjs, content.mjs
-`warnings`): along a chapter's main line, no more than **1,500** zh characters of passage between two
-play beats (a board or fight on the stage, a riddle, a look-gate, the 突破 card, a set piece) — a
-warning list for now. **地图展开**: a chapter's map unfolds once per save on its map card — at its first
+`warnings`): along a chapter's main line, no more than **2,200** zh characters of passage between two
+play beats (a board or fight on the stage, a riddle, a look-gate, the 突破 card, a set piece) — about
+five minutes at 450 字/min; a warning list for now. (1,500 until 2026-10-26, when the box began
+playing the book's full text — Hanli: the 节本 cut kept the setups and dropped the payoffs and his
+voice; players can skip. The stretches over it are doc/games.md § 全文后的小游戏.) **地图展开**: a chapter's map unfolds once per save on its map card — at its first
 map card in a corridor (00-chushan's tree), the moment it can be walked outside one (Look's
 `jiuding.unfold`, verb `unfolded`; the page's `unfold` moment, after 鼎归).
 

@@ -199,8 +199,7 @@ test('守白菜 · 忍字 · 守火 · 算账 pay nothing before 入门: the gra
   }
   const sc = scenes['00-rent'];
   assert.match(sc.story.zh, /……称肉！」$/);
-  assert.match(sc.story_after.zh, /^秤称完了，马三却没有走。/);
-  assert.match(sc.story_after_full.zh, /^少的那一条腿，他懒得追/);
+  assert.match(sc.story_after.zh, /^少的那一条腿，他懒得追/);
 });
 
 test('喂饼: the grade takes 分它一半 or 自己吃 — the amount a mark for the 恩仇簿 and the story', () => {
@@ -244,7 +243,7 @@ test('射鹿 keeps its two ways: the board won takes 往左偏半寸; 照直射 
   assert.equal(resolve(s, content, ctx(), { exit: 'straight' }).state.scene, '00-deer');
   const on = resolve(won(s, 'deer-wind', 'rough'), content, ctx(), { exit: 'left' });
   assert.equal(on.state.scene, '00-tailu', 'the carry down: 抬鹿下山 (the 卷一 plan, 10-21)');
-  assert.match(scenes['00-deer'].exits.find(e => e.id === 'left').story_full.zh, /那副门板，到底没有白扛，抬了一头鹿。$/, 'the shot\'s passage ends at the door');
+  assert.match(scenes['00-deer'].exits.find(e => e.id === 'left').story.zh, /那副门板，到底没有白扛，抬了一头鹿。$/, 'the shot\'s passage ends at the door');
 });
 
 /* The 卷一 small-game plan (doc/games-plan-juan1.md, 2026-10-21; Hanli: 「start building」): three 塔防 before 入门 in 古二 and
@@ -253,14 +252,14 @@ test('抬鹿下山 · 雪夜柴垛 · 泗水路: each at its book line, the pass
   const tailu = scenes['00-tailu'];
   assert.equal(tailu.hui, 'h02');
   assert.match(tailu.story.zh, /^他爹非要抬后头/);
-  assert.match(tailu.exits[0].story_full.zh, /^到得村口，已是傍晚。[\s\S]*到底没捡。$/);
+  assert.match(tailu.exits[0].story.zh, /^到得村口，已是傍晚。[\s\S]*到底没捡。$/);
   assert.equal(tailu.exits[0].next, '00-dusk');
   const hy = scenes['00-halfyear'];
-  assert.match(hy.story_full.zh, /夜里坐在柴垛上，手脚也不冷了，便把自己那件旧袄硬披在了起五更淘米的娘身上，自己穿一件单褂。$/);
-  assert.match(hy.story_after_full.zh, /^冬月廿二，马三来收山风钱/);
+  assert.match(hy.story.zh, /夜里坐在柴垛上，手脚也不冷了，便把自己那件旧袄硬披在了起五更淘米的娘身上，自己穿一件单褂。$/);
+  assert.match(hy.story_after.zh, /^冬月廿二，马三来收山风钱/);
   const gate = scenes['00-gate'];
-  assert.match(gate.story_full.zh, /^九月初七晌午[\s\S]*几千户人家，赶的是同一个日子。$/);
-  assert.match(gate.story_after_full.zh, /^九月初八傍晚，到了泗水边上。/);
+  assert.match(gate.story.zh, /^九月初七晌午[\s\S]*几千户人家，赶的是同一个日子。$/);
+  assert.match(gate.story_after.zh, /^九月初八傍晚，到了泗水边上。/);
   for (const [sid, tid, exit, next, kit, lv] of [['00-tailu', 'deer-carry', 'on', '00-dusk', 'shouqiang', 'tailu'], ['00-halfyear', 'halfyear-chaiduo', 'on', '00-uncle', 'shoulu', 'chaiduo'], ['00-gate', 'gate-sishui', 'steady', '00-luoshu', 'shoulu', 'sishui']]) {
     const t = content.tasks.tasks.find(x => x.id === tid);
     assert.deepEqual([t.game, t.deal.lv, t.period], [kit, lv, 'once'], tid);
@@ -330,7 +329,7 @@ test('第一回 plays seven boards on five kits (二十问 · 银月 the AI one,
   }
   const sh = scenes['00-shiao'], bc = scenes['00-baicai'], cave = scenes['00-cave'];
   assert.equal(sh.exits.find(e => e.id === 'begin').next, '00-baicai');
-  assert.match(sh.story_after_full.zh, /也从不空手走。$/);
+  assert.match(sh.story_after.zh, /也从不空手走。$/);
   assert.match(bc.story.zh, /^喝过一碗[\s\S]*一看便知是守了一整个秋天的。$/);
   assert.match(bc.story_after.zh, /^小满隔着篱笆道：「阿禾，守白菜呢？」[\s\S]*今天这一回不算，还没撵完。/);
   assert.equal(bc.exits[0].next, '00-masan');
@@ -355,7 +354,7 @@ test('守灶台: the passage split word for word after the bowl breaks, the dayd
   const ma = scenes['00-masan'], zt = scenes['00-zaotai'], fall = scenes['00-fall'];
   for (const e of ma.exits) {
     assert.equal(e.next, '00-zaotai', e.id);
-    for (const k of ['story', 'story_full']) if (e[k]) assert.match(e[k].zh, /「啪嚓」一声，碗在地上碎成了七八片。$/, `${e.id} ${k}`);
+    for (const k of ['story']) if (e[k]) assert.match(e[k].zh, /「啪嚓」一声，碗在地上碎成了七八片。$/, `${e.id} ${k}`);
   }
   assert.equal(zt.story.zh, '小满仰面躺在地下，望着屋顶那个窟窿，一时竟忘了起身。');
   for (const e of zt.exits) {
@@ -394,7 +393,7 @@ test('the lint accepts the beats, and catches a grade no task names or marks tha
 });
 
 test('the rhythm: the main line read between two beats, a board resetting it where it stands; warnings, not errors', () => {
-  assert.equal(RHYTHM_CAP, 1500);
+  assert.equal(RHYTHM_CAP, 2200); // 1500 until 2026-10-26: the book's full text played, about five minutes between play
   const ch = content.chapters['00-prologue'];
   const parts = stretchesOf(ch);
   assert.equal(parts[0].from, 'start');
@@ -406,7 +405,7 @@ test('the rhythm: the main line read between two beats, a board resetting it whe
   // 00-halfyear's 挑水上坡 told again 2026-10-20 (the 调息 cut).
   for (const at of ['00-baicai', '00-masan', '00-zaotai', '00-heisong/carve', '00-cave', '00-deer', '00-tailu', '00-rent', '00-halfyear', '00-notice', 'j01-track', '00-gate']) assert.ok(parts.some(p => p.to === at), `a beat at ${at}`);
   const warn = warnings(content, { chapters: ['00-prologue'] });
-  assert.ok(warn.every(w => w.startsWith('00-prologue: ') && w.includes('(cap 1500)')));
+  assert.ok(warn.every(w => w.startsWith('00-prologue: ') && w.includes('(cap 2200)')));
   console.log(`rhythm warnings (00-prologue, cap ${RHYTHM_CAP}):\n${warn.join('\n')}`);
 });
 

@@ -56,16 +56,16 @@ test('painted, not drawn: three paintings on disk, the camera inside each, no sh
   assert.ok(svg.startsWith('<svg class="spstill"') && svg.includes(ART.tai) && !svg.includes('<text'));
 });
 
-test('00-fall marks the fall\'s paragraph, zh and en, the book\'s passage and its cut alike; no board stands there', () => {
+test('00-fall marks the fall\'s paragraph, zh and en, the book\'s two paragraphs of the fall as one box; no board stands there', () => {
   const way = fall.exits.find((e) => e.id === 'check');
   for (const lang of ['zh', 'en']) {
-    for (const k of ['story', 'story_full']) {
+    for (const k of ['story']) {
       const marked = way[k][lang].split(/\n+/).filter((p) => PIECE.test(p));
       PIECE.lastIndex = 0;
       assert.equal(marked.length, 1, `${k} ${lang}: one paragraph`);
       assert.match(marked[0], /\{景=zhuigu\}$/);
     }
-    const full = way.story_full[lang].split(/\n+/).find((p) => /\{景=zhuigu\}/.test(p)).replace(PIECE, '');
+    const full = way.story[lang].split(/\n+/).find((p) => /\{景=zhuigu\}/.test(p)).replace(PIECE, '');
     assert.ok(full.endsWith(BEATS.at(-1).line[lang]), `${lang}: the book's paragraph ends on the snap`);
     const cut = way.story[lang].split(/\n+/).find((p) => /\{景=zhuigu\}/.test(p)).replace(PIECE, '');
     assert.ok(cut.startsWith(lang === 'zh' ? '小满滚了下去。' : 'Xiaoman fell.'), lang);

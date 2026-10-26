@@ -19,7 +19,6 @@ import { resolve, task, win } from '../scripts/rules.mjs';
 import { passageFor, playOf, tellOf } from '../scripts/rules/tell.mjs';
 import { advance, current, emptyReading, withTold } from '../scripts/dialogue.js';
 import { atTurn, boxGivesWay } from '../scripts/queue.js';
-import { checkJieben } from '../scripts/jieben.mjs';
 import { ART, ASPECT, BEATS, MARKS, SHOTS, TITLE, camSeconds, stillSvg } from '../scripts/setpieces/chending.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -86,13 +85,12 @@ test('the scene marks the paragraph, zh and en, and every 景 mark names a piece
   // paragraph is the piece's line, word for word; the box's is its cut, and both carry the mark.
   // Since 泗水路 (2026-10-22) the passage is split after the road: 沉鼎山 is in the rest (`story_after`), after the board.
   for (const lang of ['zh', 'en']) {
-    assert.doesNotMatch(`${gate.story[lang]}${gate.story_full[lang]}`, /\{景=/, `${lang}: the road, before the board, marks nothing`);
-    const book = gate.story_after_full[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
+    assert.doesNotMatch(`${gate.story[lang]}${gate.story[lang]}`, /\{景=/, `${lang}: the road, before the board, marks nothing`);
+    const book = gate.story_after[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
     assert.equal(book.length, 1, `${lang}: one paragraph of the book's passage`);
     assert.equal(book[0].replace(PIECE, ''), BEATS[0].line[lang], `${lang}: the book's paragraph is the piece's line`);
     const marked = gate.story_after[lang].split(/\n+/).filter((p) => /\{景=/.test(p));
     assert.equal(marked.length, 1, `${lang}: one paragraph`);
-    assert.ok(checkJieben(marked[0], BEATS[0].line[lang], lang).ok, `${lang}: the box's paragraph is cut from the piece's line`);
     assert.ok(marked[0].startsWith(lang === 'zh' ? '沉鼎山并不怎么高，只是陡。' : "Sunken Cauldron Mountain wasn't very tall, only steep."), lang);
   }
   for (const sc of scenes) {

@@ -15,7 +15,7 @@
 // Pure: the reading is a plain object, kept per save in localStorage so a
 // reload finds its place (lingjing.js holds it; tests read these directly).
 import { esc } from './esc.js';
-import { headOf } from './jieben.mjs';
+import { headOf } from './book-words.mjs';
 import { joinSentences, linesHtml, paraHtml, screensOf } from './lines.js';
 
 // 跳过 (Hanli, 2026-10-14: 「2改跳过」): the skip reads 跳过 / Skip — never 继续, which is the way on.
@@ -280,14 +280,13 @@ export function current(r, lang = 'zh') {
   return { beat: all[at] ?? {}, at, k, n: group.length, before };
 }
 /* 读原著 at the box (Hanli, 2026-10-14): the 回 of the passage on show (book.json's id, its
-   `hui`) and the words the reader finds its paragraph by (read.js openAt) — a condensed beat's
-   `at`, the opening of the book's paragraph it is cut from (rules/tell.mjs, jieben.mjs), else the
-   beat's own words, which are the book's. Null with nothing told; a catch-up names its 回 only. */
+   `hui`) and the words the reader finds its paragraph by (read.js openAt) — the beat's own
+   opening words, which are the book's. Null with nothing told; a catch-up names its 回 only. */
 export function bookPlace(r, lang = 'zh') {
   if (!r?.items?.length) return null;
   const { beat } = current(r, lang), hui = r.items[Math.min(r.i, r.items.length - 1)]?.hui;
   if (!hui) return null;
-  const at = beat.recap ? null : beat.at ?? (beat.text ? headOf(beat.text, lang) : null);
+  const at = beat.recap || !beat.text ? null : headOf(beat.text, lang);
   return { hui, ...(at ? { at } : {}) };
 }
 

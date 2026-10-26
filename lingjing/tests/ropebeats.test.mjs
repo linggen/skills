@@ -143,7 +143,7 @@ test('忍字 (in the 游戏厅 since 2026-10-21): the cake goes back into 马小
   assert.match(h, /games\/xiaobao\.webp/);
   assert.doesNotMatch(h, /dog\.webp/);
   assert.doesNotMatch(mod.meta.how.zh, /狗嘴|喂狗/);
-  for (const ex of content.chapters['00-prologue'].scenes['00-zaotai'].exits) assert.match(ex.story_full?.zh ?? ex.story.zh, /桂花糕一口塞进嘴里/, `${ex.id}: the book has him eat it`);
+  for (const ex of content.chapters['00-prologue'].scenes['00-zaotai'].exits) assert.match(ex.story.zh, /桂花糕一口塞进嘴里/, `${ex.id}: the book has him eat it`);
 });
 
 /* 喂饭桶 · 一根牛骨头 (wm-diyilu, 2026-10-21, Hanli: 「agree」 — 古四's 9,360 字 after 药园巡夜 had no play): the 饭桶's first
@@ -200,18 +200,18 @@ test('喂饭桶 · 一根牛骨头 sits where the book feeds the 饭桶: wm-diyi
   const sc = content.chapters['00-waimen'].scenes['wm-diyilu'];
   assert.deepEqual(sc.show, [{ card: 'board', id: 'diyilu-niugu' }]);
   assert.deepEqual(sc.offers.tasks, ['diyilu-niugu']);
-  for (const k of ['story', 'story_full']) assert.match(sc[k].zh, /把饭桶抠了出来。$/, k);
-  assert.match(sc.story_after.zh, /^头一样，扔了根柴火棍。/);
-  assert.match(sc.story_after_full.zh, /^喂它，它吐东西——银月就留下这么一句。[\s\S]*一根伙房熬汤剩下的牛骨头/);
+  assert.match(sc.story.zh, /把饭桶抠了出来。$/);
+  assert.match(sc.story_after.zh, /^喂它，它吐东西——银月就留下这么一句。[\s\S]*一根伙房熬汤剩下的牛骨头/);
   const save = sc.exits.find((e) => e.id === 'save');
   assert.equal(save.needs.task, 'diyilu-niugu');
   assert.ok(save.refuse.zh && save.refuse.en);
-  // the reading cap: 9,360 字 from 药园巡夜 to 今二's 罚球 is broken at the bone
+  // the reading cap: 9,360 字 from 药园巡夜 to 今二's 罚球 (the 节本's count) is broken at the bone — with the book's
+  // full text (2026-10-26) both sides are over the cap (doc/games.md § 全文后的小游戏)
   const parts = stretchesOf(content.chapters['00-waimen']);
   const at = parts.findIndex((p) => p.to === 'wm-diyilu');
   assert.ok(at > 0, 'the feed is a beat');
   assert.equal(parts[at].from, 'wm-yaoyuan');
   assert.equal(parts[at + 1].from, 'wm-diyilu');
-  assert.ok(parts[at].chars + parts[at + 1].chars <= 9360 && parts[at].chars < 3000, `${parts[at].chars} · ${parts[at + 1].chars}`);
+  assert.ok(parts[at].chars > 0 && parts[at + 1].chars > 0, `${parts[at].chars} · ${parts[at + 1].chars}`);
   assert.ok(RHYTHM_CAP > 0);
 });

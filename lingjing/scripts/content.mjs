@@ -1406,8 +1406,7 @@ function lintScene(scene, chapter, content, ids, bad) {
   if (scene.hui) for (const exit of scene.exits) lintEarned(`${where} exit ${exit.id}`, exit, content, bad);
   // A 连环画 beat (rules/tell.mjs): the passage told in the chat, the panel on the stage.
   lintStory(where, scene.story, bad);
-  lintFull(where, scene.story, scene.story_full, bad);
-  lintFull(`${where}.story_after`, scene.story_after, scene.story_after_full, bad);
+  for (const k of RETIRED) if (scene[k] != null) bad(where, `${k} is retired: the box plays the book's full text in \`story\``);
   // The rest of a passage a game stands inside: played after it, the scene's own (tasks.mjs, tell.mjs).
   if (scene.story_after != null) {
     lintStory(`${where}.story_after`, scene.story_after, bad);
@@ -1449,19 +1448,15 @@ function lintStory(where, story, bad) {
   const [zo, zc] = marks(story.zh), [eo, ec] = marks(story.en);
   if (zo !== zc || eo !== ec) bad(where, 'a story\'s ⟪ ⟫ do not pair');
   else if (zo !== eo) bad(where, `a story marks her words ${zo} times in zh, ${eo} in en`);
+  // The same boxes in each language: a switch of language mid-passage goes on at the same beat (playOf).
+  const boxes = (t) => t.split(/\n\s*\n/).filter((p) => p.trim()).length;
+  if (boxes(story.zh) !== boxes(story.en)) bad(where, `a story plays ${boxes(story.zh)} boxes in zh, ${boxes(story.en)} in en`);
 }
 
-/* 节本 (jieben.mjs): a condensed passage keeps the book's beside it, `…_full`. The cut is
-   shorter in both languages and plays the same boxes in each (a switch of language mid-passage
-   goes on at the same beat); that every sentence comes from the book is scene-book-sync's. */
-function lintFull(where, story, full, bad) {
-  if (full == null) return;
-  lintStory(`${where} (full)`, full, bad);
-  if (!pair(story) || !pair(full)) { bad(where, 'a condensed passage needs its own text and the book\'s, zh and en'); return; }
-  const boxes = (t) => t.split(/\n\s*\n/).filter((p) => p.trim()).length;
-  if (boxes(story.zh) !== boxes(story.en)) bad(where, `a condensed passage plays ${boxes(story.zh)} boxes in zh, ${boxes(story.en)} in en`);
-  for (const lang of ['zh', 'en']) if (story[lang].length >= full[lang].length) bad(where, `a condensed passage no shorter than the book's (${lang})`);
-}
+/* The game played a 节本 — a cut of the book's passage, the book's beside it as `…_full` — from
+   2026-10-14 until 2026-10-26 (Hanli: the cut kept the setups and dropped the payoffs); the box
+   plays the book's full text in `story` now, and the fields are gone. */
+const RETIRED = ['story_full', 'story_after_full'];
 
 function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (!exit.means || typeof exit.means !== 'string') bad(where, 'needs plain-words means');
@@ -1498,7 +1493,7 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (exit.take?.wealth != null && !(Number.isInteger(exit.take.wealth) && exit.take.wealth > 0 && exit.needs?.wealth >= exit.take.wealth)) bad(where, 'takes stones it never checks for');
   if (exit.needs?.wealth != null && !(Number.isInteger(exit.needs.wealth) && exit.needs.wealth > 0)) bad(where, 'needs a whole number of stones');
   lintStory(where, exit.story, bad);
-  lintFull(where, exit.story, exit.story_full, bad);
+  for (const k of RETIRED) if (exit[k] != null) bad(where, `${k} is retired: the box plays the book's full text in \`story\``);
   // A choice turned down (core.mjs `snub`): its line, a mark to grey it by, and it stays.
   if (exit.snub != null && !(pair(exit.snub) && exit.mark && exit.stay)) bad(where, 'a snub needs its line in zh and en, a mark, and stay');
   // A name the story gives (core.mjs `names`): the save field, the name, and a refusal for any other.

@@ -66,7 +66,7 @@ function followScenes(entry, before, after, plan) {
   const writes = [], en = [], stuck = [];
   for (const { file, text, scene } of scenesOf(entry)) {
     let changed = false;
-    const fix = (where, story, cut = false) => {
+    const fix = (where, story) => {
       if (!story?.zh) return;
       const paras = story.zh.split('\n\n');
       const kept = [];
@@ -83,16 +83,13 @@ function followScenes(entry, before, after, plan) {
       }
       const zh = kept.join('\n\n');
       if (zh === story.zh) return;
-      en.push({ file: rel(file), where, hui: scene.hui, zh_was: story.zh, zh_now: zh, en: story.en ?? null, ...(cut ? { jieben: true } : {}) });
+      en.push({ file: rel(file), where, hui: scene.hui, zh_was: story.zh, zh_now: zh, en: story.en ?? null });
       story.zh = zh;
       changed = true;
     };
-    // A condensed passage (jieben.mjs) quotes the book in its `story_full`: that follows the book,
-    // and the game's cut beside it is listed (`jieben`) to be looked at again, never rewritten here.
-    const follow = (where, story, full) => fix(where, full ?? story, Boolean(full));
-    follow(scene.id, scene.story, scene.story_full);
-    follow(`${scene.id}/after`, scene.story_after, scene.story_after_full);
-    for (const x of scene.exits ?? []) follow(`${scene.id}/${x.id}`, x.story, x.story_full);
+    fix(scene.id, scene.story);
+    fix(`${scene.id}/after`, scene.story_after);
+    for (const x of scene.exits ?? []) fix(`${scene.id}/${x.id}`, x.story);
     if (!changed) continue;
     const indent = [1, 2].find((k) => `${JSON.stringify(JSON.parse(text), null, k)}\n` === text);
     if (indent == null) { stuck.push(`${rel(file)}: not in the plain JSON form`); continue; }

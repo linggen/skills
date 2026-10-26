@@ -59,9 +59,11 @@ test('days per 回 (tools/balance.mjs): typical about a week, heavy a little les
   }
   // The order holds everywhere: light is never faster than typical, typical never than heavy.
   for (const r of rows) assert.ok(r.light >= r.typical && r.typical >= r.heavy, `${r.hui}: ${r.light} ≥ ${r.typical} ≥ ${r.heavy}`);
-  // 古一–古三 fast: before the first stage quest, a typical first sitting or two.
+  // 古一–古三 fast: before the first stage quest, all reading and boards. 2.5 typical days until
+  // 2026-10-26; the book's full text played (Hanli 「你的建议我同意」) reads 4.8 — held at 5 until the
+  // new small games land (doc/games.md § 全文后的小游戏), Hanli's call.
   const first = rows.filter(r => ['h01', 'h02', 'h04'].includes(r.hui)).reduce((n, r) => n + r.typical, 0);
-  assert.ok(first <= 2.5, `古一–古三: ${first} days`);
+  assert.ok(first <= 5, `古一–古三: ${first} days`);
   // 古九 has no stage quest — the 九转 lands 筑基小成圆满 (ladder.json caps._stage): its story's days only.
   assert.ok(rows.find(r => r.hui === 'h10').typical <= 3);
 });

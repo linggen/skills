@@ -8,6 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
@@ -28,10 +29,15 @@ const manifest = JSON.parse(fs.readFileSync(path.join(BOOK, 'audio.json'), 'utf8
 function pyKeys(texts) {
   const code = `import importlib.util,json,sys
 spec=importlib.util.spec_from_file_location('pub',sys.argv[1]); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-print(json.dumps([m.para_key(t) for t in json.loads(sys.argv[2])]))`;
-  // The texts go as an argument, not stdin: under a loaded machine the stdin pipe once left
-  // python waiting on read for 30 minutes and stalled the whole suite (review, 2026-10-15).
-  return JSON.parse(execFileSync('python3', ['-c', code, path.join(ROOT, 'tools/pingshu-publish.py'), JSON.stringify(texts)], { encoding: 'utf8', timeout: 120_000 }));
+print(json.dumps([m.para_key(t) for t in json.load(open(sys.argv[2], encoding='utf-8'))]))`;
+  // The texts go in a file, not stdin: under a loaded machine the stdin pipe once left python
+  // waiting on read for 30 minutes and stalled the whole suite (review, 2026-10-15) — and not as an
+  // argument either: the book's full text played (2026-10-26) is past the argument limit (E2BIG).
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pingshu-keys-')), file = path.join(dir, 'texts.json');
+  try {
+    fs.writeFileSync(file, JSON.stringify(texts));
+    return JSON.parse(execFileSync('python3', ['-c', code, path.join(ROOT, 'tools/pingshu-publish.py'), file], { encoding: 'utf8', timeout: 120_000 }));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 
 test('the page and the publisher make the same key from the same text — every paragraph of the book, every beat of the scenes', () => {

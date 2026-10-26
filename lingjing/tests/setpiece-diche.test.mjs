@@ -13,7 +13,6 @@ import { resolve, task, win } from '../scripts/rules.mjs';
 import { playOf, tellOf } from '../scripts/rules/tell.mjs';
 import { advance, current, emptyReading, fitMode, modeAt, withTold } from '../scripts/dialogue.js';
 import { screensOf } from '../scripts/lines.js';
-import { checkJieben } from '../scripts/jieben.mjs';
 import { beatStepper } from '../scripts/setpiece.js';
 import * as D from '../scripts/setpieces/diche.js';
 import { TO_OPEN, walk } from './prologue.mjs';
@@ -55,16 +54,15 @@ test('the line is the book\'s, verbatim (zh 06-第六回.md, en h08.md); the tit
   assert.equal(D.TITLE.zh, '看完烧了');
 });
 
-test('the scene marks the book\'s own sentence, zh and en, in the game\'s cut and the book\'s passage; the 节本 still keeps the book\'s words', () => {
+test('the scene marks the book\'s own sentence, zh and en, in the book\'s passage the box plays', () => {
   for (const lang of ['zh', 'en']) {
-    for (const field of ['story', 'story_full']) {
+    for (const field of ['story']) {
       const paras = scene[field][lang].split(/\n\n+/);
       const marked = paras.filter((p) => [...p.matchAll(PIECE)].length);
       assert.equal(marked.length, 1, `${field} ${lang}: one piece`);
       assert.ok(marked[0] === paras.at(-1) && marked[0].endsWith('{景=diche}'), `${field} ${lang}: the last paragraph, its end`);
       assert.ok(marked[0].startsWith(D.BEATS[0].line[lang]), `${field} ${lang}: on the burning sentence`);
     }
-    assert.ok(checkJieben(scene.story[lang], scene.story_full[lang], lang).ok, lang);
   }
   assert.equal(scene.show, undefined, 'no board: the piece is the moment');
 });

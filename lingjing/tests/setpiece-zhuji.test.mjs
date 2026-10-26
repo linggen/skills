@@ -109,7 +109,7 @@ test('冲关\'s passage carries the 筑基天象 at its paragraph; the choice\'s
   const cliff = JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/chapters/00-zhuji/scenes/09-cliff.json'), 'utf8'));
   const take = cliff.exits.find((x) => x.id === 'take');
   assert.equal(take.setpiece, 'zhuji');
-  for (const k of ['story', 'story_full']) for (const lang of ['zh', 'en']) assert.equal((take[k][lang].match(/\{景=zhuji\}/g) ?? []).length, 1, `${k} ${lang}`);
+  for (const k of ['story']) for (const lang of ['zh', 'en']) assert.equal((take[k][lang].match(/\{景=zhuji\}/g) ?? []).length, 1, `${k} ${lang}`);
   for (const lang of ['zh', 'en']) {
     const s = newState(content, lang, new Date('2026-09-28T12:00:00'));
     const item = { of: 'exit', id: '09-cliff/take', marked: passageFor(content, s, take.story, { notes: true }) };

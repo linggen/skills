@@ -4199,10 +4199,7 @@ const stageBusy = () => momentsHold({ up: momentUp(), pending: [...momentPending
 const closeUp = () => Boolean(look?.chapter?.close && !closeSeen(look.chapter.close.id));
 /* The 回's 「完」 is due but held back a moment — a seal, a set piece or the ending's passages first. */
 const closeHeld = () => closeUp() && (stageBusy() || endingWaits());
-/* `said` — the words of the paragraph a piece is tied to, as the box plays them (a 节本's cut,
-   jieben.mjs): a one-beat piece speaks them in place of its own line, so the picture never
-   brings back the book's longer paragraph the game has cut. */
-async function playPiece(id, beats = null, said = null) {
+async function playPiece(id, beats = null) {
   if (pieceOn) return;
   const en = lang() === 'en';
   const box = document.createElement('div');
@@ -4230,7 +4227,7 @@ async function playPiece(id, beats = null, said = null) {
       lang: lang(), still: stillMotion(), beats, auto,
       hold: (b) => paceOf(line.textContent || b.text || '', { f: SPEEDS.mid, last: true, lang: lang() }),
       onHold: () => box.classList.add('held'),
-      onBeat: (i, b, all) => { box.classList.remove('held'); line.textContent = (said && (all ?? 1) === 1 ? said : null) ?? b.text ?? b.line?.[lang()] ?? ''; },
+      onBeat: (i, b) => { box.classList.remove('held'); line.textContent = b.text ?? b.line?.[lang()] ?? ''; },
       onDone: () => { mine.over = true; box.classList.add('over'); setTimeout(close, 9000); },
     });
     if (pieceOn !== mine) mine.ctl?.destroy?.();

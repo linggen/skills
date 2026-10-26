@@ -13,7 +13,6 @@ import { newState } from '../scripts/state.mjs';
 import { playOf, tellOf } from '../scripts/rules/tell.mjs';
 import { advance, atLast, current, emptyReading, fitMode, modeAt, wholeBeats, withTold } from '../scripts/dialogue.js';
 import { paceOf, screensOf, SPEEDS } from '../scripts/lines.js';
-import { checkJieben } from '../scripts/jieben.mjs';
 import { beatStepper } from '../scripts/setpiece.js';
 import * as Y from '../scripts/setpieces/yaowang.js';
 import * as T from '../scripts/setpieces/tengyun.js';
@@ -66,20 +65,19 @@ test('the lines are the book\'s, verbatim, in its order (zh 01-第一回.md, en 
   assert.equal(T.TITLE.zh, '腾云');
 });
 
-test('the scene marks the boast and the cloud, zh and en, in the game\'s cut and the book\'s passage', () => {
+test('the scene marks the boast and the cloud, zh and en, in the book\'s passage the box plays', () => {
   for (const lang of ['zh', 'en']) {
-    for (const field of ['story', 'story_full']) {
-      // The dawn's passage runs across 二十问's board (10-22): the boast before it, the cloud after (`story_after`).
-      const whole = `${scene[field][lang]}\n\n${scene[field === 'story' ? 'story_after' : 'story_after_full'][lang]}`;
+    for (const field of ['story']) {
+      // The dawn's passage runs across 二十问's board (10-22): the boast before it, the cloud after (`story_after`) —
+      // on the fall's paragraph since the full text (2026-10-26): the book's rise is the paragraph before it, its cues are in the fall.
+      const whole = `${scene[field][lang]}\n\n${scene.story_after[lang]}`;
       const marked = whole.split(/\n\n+/).map((p, k) => [k, [...p.matchAll(PIECE)].map((m) => m[1])]).filter(([, ids]) => ids.length);
       assert.deepEqual(marked.map(([, ids]) => ids.join()), ['yaowang', 'tengyun'], `${field} ${lang}: the boast first, then the cloud`);
     }
     const paras = `${scene.story[lang]}\n\n${scene.story_after[lang]}`.split(/\n\n+/);
     const boast = paras.find((p) => p.includes('{景=yaowang}')), cloud = paras.find((p) => p.includes('{景=tengyun}'));
     assert.match(boast, lang === 'zh' ? /本王乃青丘之主[\s\S]*——饿了。」\{景=yaowang\}$/ : /Lady of Qingqiu[\s\S]*I was hungry\."\{景=yaowang\}$/);
-    assert.match(cloud, lang === 'zh' ? /腾起一团白蒙蒙的云气[\s\S]*「噗」的一声，散了/ : /a puff of milky cloud[\s\S]*\*pff\*/);
-    assert.ok(checkJieben(scene.story[lang], scene.story_full[lang], lang).ok, `${lang}: the 节本 still keeps the book's words`);
-    assert.ok(checkJieben(scene.story_after[lang], scene.story_after_full[lang], lang).ok, `${lang}: and after the board`);
+    assert.match(cloud, lang === 'zh' ? /^升到半丈来高，那团云忽然晃了一晃[\s\S]*「噗」的一声，散了[\s\S]*「扑通」/ : /^At about five feet up the cloud suddenly wobbled[\s\S]*\*pff\*[\s\S]*\*thump\*/);
   }
 });
 

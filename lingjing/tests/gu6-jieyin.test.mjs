@@ -98,7 +98,7 @@ test('both win paths reach the same way on and the same pay', () => {
 test('the teaching level: the book\'s seals in the passage\'s order, 褚先生\'s words, then the four at the straw dummy', () => {
   const lv = levelAsked(kit, { lv: 'jiangtang' });
   assert.equal(lv.mode, 'one');
-  const book = CH.scenes['wm-qianye'].story_full.zh;
+  const book = CH.scenes['wm-qianye'].story.zh;
   // where the lesson names each: 五指张开 · 巳 (index tip) · 午 (middle tip) · 申 (little tip) · 剑诀
   const where = { zhang: '五指张开', si: '到指尖是巳文', wu: '中指尖，午', shen: '小指尖，申', jian: '剑诀' };
   const at2 = lv.sequence.map((id) => book.indexOf(where[id]));

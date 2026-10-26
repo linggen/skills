@@ -1,5 +1,5 @@
-// 古九 (h10, 01-ji) read on the live page, 2026-10-15 play-test: what the 节本 cut left the
-// player unable to follow, and the plans that replayed when tapped again.
+// 古九 (h10, 01-ji) read on the live page, 2026-10-15 play-test: what the cut of the time (节本, retired
+// 2026-10-26) left the player unable to follow — the book's full text now — and the plans that replayed when tapped again.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -34,6 +34,6 @@ test('the four eyes are lanterns before 「灯笼沉下去」', () => {
 
 test('城楼: 「凡人的嘴」 after 小满\'s line is said by the River Lord, by name', () => {
   const t = scene('01-tower').story;
-  assert.ok(t.zh.includes('河伯低头看着他，又看了看阿禾。他道：「……凡人的嘴。」'));
+  assert.ok(t.zh.includes('河伯低头瞧着小满，瞧了很久') && t.zh.includes('却听他淡淡地道：「凡人的嘴。'));
   assert.ok(!t.zh.includes('」河伯道：「二十五年'), 'two lines of his are not glued together');
 });

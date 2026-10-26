@@ -7,8 +7,7 @@
 // goes on (`next` or `ends` — the book's own; a `stay` or a branch listed after
 // it is not the line). The characters counted are the zh passages the dialogue
 // box plays there — a scene's `story`, the exit's `story` — with the book's
-// marks and every space taken out. A condensed passage (jieben.mjs) counts as the box plays it:
-// its `story`, the game's cut — never the book's `story_full` beside it.
+// marks and every space taken out — the book's full text (2026-10-26: no cut).
 //
 // A play beat: a game on the stage at a scene. A fight (`show`n duel) stands
 // over the box as the scene's passage begins (queue.js EARLY), so it comes
@@ -22,7 +21,7 @@
 // under a paragraph of a passage (`{景=id}`, rules/tell.mjs) is a beat too: the
 // box stops on that paragraph while it plays, so the count resets after it.
 
-export const RHYTHM_CAP = 1500; // zh characters between two play beats
+export const RHYTHM_CAP = 2200; // zh characters between two play beats — about five minutes at 450 字/min (2026-10-26, was 1500)
 
 const strip = t => String(t ?? '')
   .replace(/\[([^\]]*)\]\{[^}]*\}/g, '$1')

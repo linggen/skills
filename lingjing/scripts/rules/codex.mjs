@@ -51,8 +51,8 @@ const afterTold = (state, scene) => (state.done_scenes ?? []).includes(scene.id)
    reveal.mjs's rule for the 秘境; 狰 stood over the 药园's board before 丑时 had come). */
 export function waitsTheBook(state, scene) {
   if (!scene?.story_after || afterTold(state, scene)) return new Set();
-  const before = notesIn(scene.story, scene.story_full);
-  return new Set([...notesIn(scene.story_after, scene.story_after_full)].filter(id => !before.has(id)));
+  const before = notesIn(scene.story);
+  return new Set([...notesIn(scene.story_after)].filter(id => !before.has(id)));
 }
 /* A scene's cast as it may be named yet: the ones still waiting for the book stand aside — from its card, and as
    much from Look's cast, 人物谱 and the place's beast (review 2026-10-21: 狰 was named by all three at wm-yaoyuan). */
