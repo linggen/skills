@@ -139,3 +139,34 @@ test('beat-host: a mount-only game is mounted once and laid into each new host a
   pure.attach();
   assert.equal(h3.firstChild, null);
 });
+
+test('beat-host: a story board never settles a loss — lost, it is dealt again in place with a fresh seed, the old play aborted', async () => {
+  const doc = fakeDoc();
+  const mounts = [];
+  const mod = { meta: { id: 'sadoushou' }, mount: (node, o) => new Promise((r) => { mounts.push({ node, o, settle: r }); }) };
+  const g = { taskId: 'masan-zaotai', day: 'd', mod, state: { won: false } };
+  const got = [];
+  const host = beatHost({ boardFor: () => g, lang: () => 'zh', onSettled: (b, r) => got.push(r), doc, againMs: 0 });
+  const h = doc.addHost('masan-zaotai');
+  host.attach();
+  assert.equal(mounts.length, 1);
+  assert.equal(mounts[0].o.seed, 'd|masan-zaotai', 'the first deal keeps its seed');
+  mounts[0].settle({ won: false, stars: 0 });
+  await new Promise((r) => setTimeout(r, 5));
+  assert.equal(mounts.length, 2, 'dealt again');
+  assert.equal(mounts[0].o.signal.aborted, true, 'the lost play taken down');
+  assert.equal(mounts[1].o.seed, 'd|masan-zaotai|1', 'a fresh deal');
+  assert.equal(h.firstChild, mounts[1].node, 'laid into the same host');
+  assert.deepEqual(got, [], 'a loss is not the story\'s');
+  mounts[1].settle({ won: true, stars: 2 });
+  await new Promise((r) => setTimeout(r, 5));
+  assert.deepEqual(got, [{ won: true, stars: 2 }]);
+  // Left (the camera refused): the story's to decide (caps.js fallBack), never dealt again here.
+  const g2 = { taskId: 'x', day: 'd', mod, state: { won: false } };
+  const doc2 = fakeDoc();
+  doc2.addHost('x');
+  beatHost({ boardFor: () => g2, lang: () => 'zh', onSettled: (b, r) => got.push(r), doc: doc2, againMs: 0 }).attach();
+  mounts.at(-1).settle({ won: false, left: true, unable: 'camera' });
+  await new Promise((r) => setTimeout(r, 5));
+  assert.deepEqual(got.at(-1), { won: false, left: true, unable: 'camera' });
+});

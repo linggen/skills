@@ -4,10 +4,14 @@
 // draw the page calls `attach()`, and the game — mounted ONCE per board into a node of its own —
 // is laid into whatever host the redraw made, so a repaint never restarts it. When it settles,
 // `onSettled(board, result)` maps the result to the story (the page: the board's state takes the
-// win and its grade, then onWin → the rules' `win`, the pay, beat-won.js). A pure board module
+// win and its grade, then onWin → the rules' `win`, the pay, beat-won.js). A lost one is dealt again in
+// place (a fresh seed), the old play aborted through its `signal`. A pure board module
 // (html · act) never comes here: the page draws those itself, as ever.
 
-import { settle, shellFor } from './games/shell.js';
+import { forget, settle, shellFor } from './games/shell.js';
+
+/** How long a lost board stands, its banner up and its sound out, before it is dealt again in place. */
+export const AGAIN_MS = 1200;
 
 /** A board whose module keeps only the contract (a `mount`, no `html` of its own), or one that asks for
     its own mount in the story (`meta.beat: 'mount'` — 气走经脉 paints every animation frame itself). */
@@ -18,18 +22,39 @@ export const mountHostHtml = (id, esc) => `<div class="game g-mounthost" data-mo
 
 /* `prefetch(id, board)`: the page's 台词预取 for a game with moments (games/prefetch.js) — `{ lines, onEvent }` for
    the mount, asked once as the game is mounted; null when there is nothing to ask. */
-export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc = globalThis.document }) {
-  const hosted = new Map(); // task id → { node, board }
-  const start = (id, g) => {
+export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc = globalThis.document, againMs = AGAIN_MS }) {
+  const hosted = new Map(); // task id → { node, board, stop, round }
+  const lay = (id, entry) => {
+    for (const host of doc.querySelectorAll('[data-mount]')) if (host.dataset.mount === id && host.firstChild !== entry.node) host.replaceChildren(entry.node);
+  };
+  const start = (id, g, round = 0) => {
+    hosted.get(id)?.stop.abort(); // a board dealt anew: the old play is taken down (its canvas, its camera, its WebGL context)
     const node = doc.createElement('div');
     node.className = 'g-mountnode';
-    const entry = { node, board: g };
+    const stop = new AbortController();
+    const entry = { node, board: g, stop, round };
     hosted.set(id, entry);
     const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
     let her = null;
     try { her = prefetch(id, g); } catch (e) { console.warn('[lingjing] prefetch', id, e); }
-    Promise.resolve(g.mod.mount(node, { lang: lang(), reducedMotion, seed: `${g.day ?? ''}|${id}`, data: g.data ?? {}, winHold: 0, shell: shellFor(id, g.mod.meta?.id), ...(her ?? {}) }))
-      .then((result) => { settle(id, result); onSettled(g, result ?? { won: false }); }) // its sound, its bed stopped
+    const seed = `${g.day ?? ''}|${id}${round ? `|${round}` : ''}`; // 再来 deals a fresh one
+    Promise.resolve(g.mod.mount(node, { lang: lang(), reducedMotion, seed, signal: stop.signal, data: g.data ?? {}, winHold: 0, shell: shellFor(id, g.mod.meta?.id), ...(her ?? {}) }))
+      .then((result) => {
+        if (hosted.get(id) !== entry) return; // dealt again meanwhile: its sound and bed are the new deal's now
+        settle(id, result); // its sound, its bed stopped
+        // A story board never settles a loss (doc/game-kit.md § the shell): lost, it is dealt again in place under its
+        // lead card, as 砸寨 does itself; the stuck rule's 「算了，往下走」 stays the way out. (Found live 10-26: 守灶台
+        // lost stood frozen on its last frame, nothing to tap but the skip.)
+        if (result && !result.won && !result.left) {
+          setTimeout(() => {
+            if (hosted.get(id) !== entry || boardFor(id) !== g) return;
+            forget(id);
+            lay(id, start(id, g, round + 1));
+          }, againMs);
+          return;
+        }
+        onSettled(g, result ?? { won: false });
+      })
       .catch((e) => console.warn('[lingjing] beat', id, e));
     return entry;
   };
