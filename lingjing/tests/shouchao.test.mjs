@@ -8,9 +8,10 @@ import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, playTo, task, win } from '../scripts/rules.mjs';
-import { beastOpen, riseOf, shouchaoHosted, tideRows, tonightLevel, wallKit } from '../scripts/rules/shouchao.mjs';
+import { beastOpen, riseOf, shouchaoHosted, shouchaoWaiting, tideRows, tonightLevel, wallKit } from '../scripts/rules/shouchao.mjs';
 import { levelDealt } from '../scripts/games/shouqiang.js';
 import { sceneGame, stageCards } from '../scripts/stage.mjs';
+import { WORDS, trayHtml } from '../scripts/cards.js';
 
 const content = loadContent();
 const kit = wallKit(content);
@@ -122,7 +123,7 @@ test('once a cooldown; a night missed costs nothing — the next one is the same
   const one = night(s, day(20, 17, 30));
   assert.equal(one.result.night, 1);
   assert.equal(offered(one.state, day(20, 18, 0))?.status ?? 'done', 'done', 'counted: done for tonight');
-  assert.match(offered(one.state, day(20, 18, 0)).title, /第1夜/, 'named by the night just held');
+  assert.match(offered(one.state, day(20, 18, 0)).title, /第1潮/, 'named by the night just held');
   assert.equal(win(one.state, content, ctx(day(20, 18, 0)), { id: T.id, stars: 3 }).result.refused, 'shut', 'not twice a cooldown');
   assert.ok(offered(one.state, day(20, 18, 0)).wait_min > 0 && offered(one.state, day(20, 18, 0)).shut, 'the row says when it comes again');
   // Three nights missed: nothing taken, nothing lost; the tide is back, on night 2.
@@ -160,7 +161,7 @@ test('each night is the next tide row, harder; past them the tide keeps rising o
   // The game lays the night over the row (games/shouqiang.js levelDealt): the rise's knobs, the night's title.
   const dealt = levelDealt(kit, { lv: seen[5].lv, over: seen[5].over }, '');
   assert.equal(dealt.difficulty, seen[5].over.difficulty);
-  assert.match(dealt.title.zh, /第6夜/);
+  assert.match(dealt.title.zh, /第6潮/);
   // 银月 tells it once: the first night's lead, never after a night is won.
   assert.equal(seen[0].over.lead[0].zh, T.shouchao.tell[0].zh);
   assert.ok(seen.slice(1).every((x) => !x.over.lead.some((l) => l.zh === T.shouchao.tell[0].zh)));
@@ -208,7 +209,7 @@ test('on the stage: the night\'s board stands at 沉鼎观, titled by the night'
   const s = at('wm-yaoyuan');
   const l = look(s, content, ctx(day(20, 17, 30)));
   const o = l.tasks.find((t) => t.id === T.id);
-  assert.match(o.title, /兽潮 · 第1夜/);
+  assert.match(o.title, /兽潮 · 第1潮/);
   assert.ok(stageCards(l).some((c) => c.card === 'board' && c.id === T.id), 'a board card');
   // …standing with the scene card, never queued behind it for the whole window (古五's 柴房: its choices stand).
   const p = look(at('wm-luobo'), content, ctx(day(20, 17, 30)));
@@ -216,4 +217,35 @@ test('on the stage: the night\'s board stands at 沉鼎观, titled by the night'
   assert.ok(sceneGame(p, { card: 'board', id: T.id }), 'the tide with the scene card');
   // …but never beside the scene's own game still to play (药园巡夜's 守炉 at wm-yaoyuan): one game on the stage at a time.
   assert.equal(sceneGame(l, { card: 'board', id: T.id }), false, 'the tide waits behind the scene\'s game');
+});
+
+test('waiting out the cooldown: the row stands past midnight with the time left, and the page draws it in the world\'s words', () => {
+  const s = at('wm-yaoyuan'), H = T.shouchao.every_h;
+  const one = night(s, day(20, 23, 0));
+  const next = { ...structuredClone(one.state), stamina: 100 };
+  // The next morning (past midnight): still on Look, done, with the wait and the line.
+  const row = offered(next, day(21, 9, 0));
+  assert.ok(row, 'the row stands past midnight');
+  assert.equal(row.status, 'done');
+  assert.equal(row.wait_min, (H - 10) * 60);
+  assert.equal(row.shut, T.shouchao.shut.zh);
+  assert.match(row.title, /第1潮/, 'named by the tide just held — no night');
+  assert.equal(row.deal, undefined, 'nothing dealt');
+  // Away from 沉鼎观 it does not wait there (offered only there either; asked of the rule, as Look walks him back inside).
+  assert.equal(shouchaoWaiting(content, next, T.id, day(21, 9, 0)), true);
+  assert.equal(shouchaoWaiting(content, { ...next, place: 'fangshi' }, T.id, day(21, 9, 0)), false);
+  // Once it passes: offered again, no wait.
+  const back = offered(next, new Date(day(20, 23, 0).getTime() + H * 3600_000));
+  assert.equal(back.status, 'offered');
+  assert.equal(back.wait_min, undefined);
+  // The page's tray (cards.js): the waiting row, its line and about how long — 时辰 in zh, hours in en; no 开局.
+  for (const [lang, n] of [['zh', Math.ceil(row.wait_min / 120)], ['en', Math.ceil(row.wait_min / 60)]]) {
+    const html = trayHtml({ look: { tasks: [{ ...row, shut: T.shouchao.shut[lang] }] }, lang, words: WORDS[lang], qi: { st: 'full' } });
+    assert.ok(html.includes('waiting'), lang);
+    assert.ok(html.includes(T.shouchao.shut[lang].replace(/'/g, '&#39;')) || html.includes(T.shouchao.shut[lang]), `${lang}: the world's line`);
+    assert.ok(html.includes(WORDS[lang].tideWait.replace('{n}', n)), `${lang}: ${html}`);
+    assert.doesNotMatch(html, /data-play/, 'nothing to start');
+  }
+  // A done board of another kind still leaves the tray.
+  assert.equal(trayHtml({ look: { tasks: [{ ...row, tide: false }] }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' } }), '');
 });

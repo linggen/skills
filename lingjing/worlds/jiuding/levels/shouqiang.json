@@ -338,9 +338,9 @@
    "story": null,
    "place": "shanmen",
    "tide": 1,
-   "title": {"zh": "兽潮 · 头一夜", "en": "The beast tide · the first night"},
+   "title": {"zh": "兽潮 · 头一潮", "en": "The beast tide · the first tide"},
    "lead": [
-    {"zh": "天快黑了，山道上黑压压一片。", "en": "Dusk is coming on; the mountain road is black with beasts."},
+    {"zh": "山道上黑压压一片，兽都下来了。", "en": "The mountain road is black with beasts coming down."},
     {"zh": "兽潮来袭！", "en": "Here they come!", "big": true},
     {"zh": "守住山门！", "en": "Hold the gate!", "big": true}
    ],
@@ -375,7 +375,7 @@
    "tide": 2,
    "title": {"zh": "兽潮 · 狰群", "en": "The beast tide · the zheng pack"},
    "lead": [
-    {"zh": "天黑下来，红毛团子一群一群下山来。", "en": "Dark falls, and balls of red fur come tumbling downhill in packs."},
+    {"zh": "红毛团子一群一群下山来。", "en": "Balls of red fur come tumbling downhill in packs."},
     {"zh": "兽潮来袭！", "en": "Here they come!", "big": true},
     {"zh": "守住山门！", "en": "Hold the gate!", "big": true}
    ],

@@ -65,6 +65,11 @@ export function shouchaoHere(content, state, id, now) {
   const t = tideTask(content);
   return Boolean(t) && t.id === id && tideUp(content, state, t) && !cooling(state, t, now);
 }
+/* Its row waits (Look keeps it past midnight): where he may join, inside the cooldown. */
+export function shouchaoWaiting(content, state, id, now) {
+  const t = tideTask(content);
+  return Boolean(t) && t.id === id && tideUp(content, state, t) && cooling(state, t, now);
+}
 /* The tide's task (tasks.mjs taskOpen asks it alone, never the generic period). */
 export const isTide = (content, id) => tideTask(content)?.id === id;
 /* Inside the cooldown where he may join: refused in the world's words, with the minutes left — else null. */
@@ -125,7 +130,7 @@ export function shouchaoRow(content, state, now) {
   const t = tideTask(content), kit = wallKit(content), night = tonightLevel(content, state);
   if (!t || !night) return {};
   const lang = state.lang, c = t.shouchao, row = night.row;
-  const nameOf = n => ({ zh: `${pick(c.title, 'zh')} · 第${n}夜`, en: `${pick(c.title, 'en')} · night ${n}` });
+  const nameOf = n => ({ zh: `${pick(c.title, 'zh')} · 第${n}潮`, en: `${pick(c.title, 'en')} · tide ${n}` });
   // Inside the cooldown: the row names the night just held, says when the next comes, and deals nothing more.
   const wait = tideWait(state, t, now);
   if (wait > 0) return { tide: true, night: night.n - 1, title: pick(nameOf(night.n - 1), lang), wait_min: Math.ceil(wait / 60_000), shut: pick(c.shut, lang) ?? null };

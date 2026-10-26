@@ -46,7 +46,7 @@ import { rerunBoardId, rerunBrief, runBoardHere, runRow } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 import { mishiHosted, mishiLook } from './mishi.mjs';
 import { kaoBrief, kaoHosted } from './kao.mjs';
-import { shouchaoHosted, shouchaoRow } from './shouchao.mjs';
+import { shouchaoHosted, shouchaoRow, shouchaoWaiting } from './shouchao.mjs';
 import { qiyuHosted, qiyuRow } from './qiyu.mjs';
 import { dealtOf } from './climb.mjs';
 
@@ -449,7 +449,7 @@ function tasksBrief(content, state, ctx) {
   const tasks = Object.entries({ ...state.tasks, ...held, ...hosted })
     // …and a board the scene he stands in shows, done (won or left) on an earlier day: still the
     // scene's, so the stage knows it is over and never deals it fresh (a skip, then a night at the scene).
-    .filter(([id, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false) || hereShows.has(id))
+    .filter(([id, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false) || hereShows.has(id) || shouchaoWaiting(content, state, id, ctx.now))
     // A board whose row is gone (told again: the 调息 cut, 2026-10-20) stays in the save, done, for the record — never drawn.
     .filter(([id]) => taskOf(content, id))
     .map(([id, t]) => {

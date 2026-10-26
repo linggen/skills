@@ -297,13 +297,15 @@ often the 九鼎 veins swell and draw the beasts down; the outer disciples man t
 the knobs: tasks/world.json `shouchao`, its cooldown balance.json `cooldowns.shouchao_h`.
 - **When**: at any hour, once a cooldown — offered again 20 h after the last night counted (a little under a day, so
   the same time tomorrow is open; inside it `win`/`task done` are refused `shut` in the world's words with
-  `left_min`; Look's row carries `wait_min` and `shut` on the day the night was counted — after midnight the done row
-  is dropped, and the page draws neither yet), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at
+  `left_min`; Look keeps the row through the whole cooldown, past midnight, with `wait_min` and `shut`, and the
+  page's tray draws it waiting: the line and 「灵脉未涨 · 约 N 时辰后」 / "back in about N h"), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at
   沉鼎观, never inside a beat's lock, the 秘境, a rerun or a fight.
 - **Cost and pay**: 8 灵气 (a fight's), taken as the night is counted — a lost night costs nothing, an empty pool
   shuts the board. By stars: 1★ 修为 10 + 灵石 5 · 2★ 20 + 10 + an herb · 3★ 30 + 15 + an herb (修为 on the
   `haunt` table, layer-scaled, past the 回's mark as 灵石; 灵石 the small-game ranks). A night missed is never
   punished: the seniors hold, only its pay is gone.
+- **Words**: no time of day (2026-10-26, the coordinator for Hanli): titled 「兽潮 · 第N潮」 / "tide N", done line
+  「兽潮退回了山里，墙下只剩爪印。」, the rows' leads time-free.
 - **Levels**: each night the next row of 守墙关's table (levels/shouqiang.json) with a `tide` number and no `story`,
   whose beasts are all of his 回 (creatures.json `hui`, book order); a won night moves on, a lost one comes again.
   Past the rows: the rise on the last that fits (+1.5% `difficulty`, +0.002 `growth`, gaps −1% a night; a boss of his

@@ -45,7 +45,7 @@ export const WORDS = {
     // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
     tamesFor: '收服{names}所需',
     replayPlay: '再试一回', replayLater: '改日', boardLeft: '没走完，往下走了。',
-    keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽',
+    keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽', tideWait: '灵脉未涨 · 约 {n} 时辰后',
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；满{rest}小时体力回满。',
     secludeSpells: '法术 · 每 {h} 小时一星，至多三星', secludeProgress: '修为 · 每小时 +{n}', secludeTreasure: '本命法宝 · 每 {h} 小时长一重',
@@ -103,7 +103,7 @@ export const WORDS = {
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
     replayPlay: 'Try again', replayLater: 'Another day', boardLeft: 'Left unfinished — on you go.',
-    keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent',
+    keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', tideWait: 'The veins have ebbed · back in about {n} h',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. {rest} hours or more refills stamina.',
     secludeSpells: 'Spells · a star every {h} h, up to three', secludeProgress: 'Cultivation · +{n} an hour', secludeTreasure: 'Treasure · a layer every {h} h',
@@ -1740,13 +1740,22 @@ export function cardHtml(card, ctx) {
    shut while the pool is empty (his 五子 at 桑间, 2026-09-24). */
 const boardShut = (t, ctx) => Boolean(t && (t.hosted || t.for_errand) && ctx.qi?.st === 'empty');
 
+/// 兽潮 waiting out its cooldown: the night just held, the world's line, and about how long (时辰 on the zh page).
+function tideWaitHtml(t, ctx) {
+  const n = ctx.lang === 'en' ? Math.max(1, Math.ceil(t.wait_min / 60)) : Math.max(1, Math.ceil(t.wait_min / 120));
+  return `<div class="card task waiting"><div class="tasktitle">${esc(t.title)}</div>${t.shut ? `<div class="small dim">${esc(t.shut)}</div>` : ''}
+      <div class="taskfoot"><span class="chip">${esc(say(ctx.words.tideWait, { n }))}</span></div></div>`;
+}
+
 /// The boards at hand: a scene's, or a game an errand asks for here — never a daily chore.
 export function trayHtml(ctx) {
   // A board finished is not at hand: it leaves the tray (2026-10-01: 射鹿, 洗髓 stood there 已完成).
   // …nor a board the stage already shows (ctx.onStage: the ids of the cards in main) — one place for one thing.
   const shown = new Set(ctx.onStage ?? []);
   // …nor a scene's later board while one before it is still to play (stage.mjs boardWaits).
-  const tasks = (ctx.look.tasks || []).filter((t) => t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id)).map((t) => {
+  // …save 兽潮 inside its cooldown (Look's `wait_min`, rules/shouchao.mjs): it stands waiting, in the world's words.
+  const tasks = (ctx.look.tasks || []).filter((t) => (t.status !== 'done' || (t.tide && t.wait_min > 0)) && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id)).map((t) => {
+    if (t.status === 'done') return tideWaitHtml(t, ctx);
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const shut = state === 'offered' && boardShut(t, ctx);
     // 开局 tapped while the passage still plays: the board waits for it (lingjing.js trayAhead) — and says so on
