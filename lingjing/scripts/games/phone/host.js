@@ -51,6 +51,28 @@ async function sheets(files) {
   }));
 }
 
+/* A tap's trail, for the app's trace file (spec.trace; 2026-10-26, 接雨's second basin): every touch, pointer and
+   click on the board as it lands, and the spot's classes a beat later — so a refused tap says why. Once per page. */
+let traced = false;
+/* What the board's own state says of a tap (接雨: its note, the hand's busy-until, the clock), when it hands a look. */
+const stateBrief = () => { const g = state(); return g ? { note: g.note ?? null, busy: g.busy ?? null, t: g.t ?? null } : {}; };
+function traceTaps() {
+  if (traced) return;
+  traced = true;
+  const t0 = performance.now();
+  const at = () => Math.round(performance.now() - t0);
+  const spot = (e) => e.target?.closest?.('[data-g]');
+  for (const type of ['touchstart', 'pointerdown', 'click']) {
+    document.addEventListener(type, (e) => {
+      const el = spot(e);
+      const touches = type === 'touchstart' ? e.touches?.length : undefined;
+      const line = { at: at(), type, g: el?.dataset?.g ?? null, i: el?.dataset?.i ?? null, primary: e.isPrimary, touches };
+      post({ t: 'trace', line });
+      if (type === 'pointerdown' && el) setTimeout(() => post({ t: 'trace', line: { at: at(), type: 'after', i: el.dataset?.i ?? null, cls: el.className?.baseVal ?? el.className, ...stateBrief() } }), 60);
+    }, { capture: true, passive: true });
+  }
+}
+
 /* 银月's turns (讨饼债): each line goes to the app, which answers with her reply. */
 const talks = new Map();
 let talkN = 0;
@@ -65,6 +87,7 @@ let state = () => undefined; // the board's state, when its mount hands a look a
 
 async function mountBoard(spec) {
   const { game, data = {}, lang = 'zh', seed, reducedMotion = false, lines } = spec;
+  if (spec.trace) traceTaps();
   const row = (await table).games?.[game];
   if (!row) { post({ t: 'error', error: `no board ${game}` }); return; }
   abort?.abort();
