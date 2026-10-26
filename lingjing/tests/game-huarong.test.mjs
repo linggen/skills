@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { meta, newGame, html, act, layouts, parseLayout, canMove } from '../scripts/games/huarong.js';
+import { meta, newGame, html, act, layouts, parseLayout, canMove, MIJING, pickLevel, levelFrom, ladderOf } from '../scripts/games/huarong.js';
 
 const SIZE = { k: [2, 2], v: [1, 2], h: [2, 1], s: [1, 1] };
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
@@ -208,4 +208,90 @@ test('keys: WASD and arrows name moves; with nothing picked a move slides 你', 
   assert.deepEqual([r.blocks[0].x, r.blocks[0].y], [1, 1]);
   assert.equal(act(s, { g: 'move', dir: 'up' }).state.moves, 0, 'a blocked key does nothing');
   assert.equal(r.moves, 1);
+});
+
+// A second level from data: a crowd to slip through — other texts, labels, art; its own easy layouts.
+const CROWD = {
+  id: 'crowd',
+  name: { zh: '挤出人群', en: 'Through the crowd' },
+  how: { zh: { desk: '挪开人，钻到人群后头。', touch: '挪开人，钻到人群后头。' }, en: { desk: 'Shift people; slip to the back.', touch: 'Shift people; slip to the back.' } },
+  layouts: { 1: ['ABCDEYYFGYYHIJKL.MN.', 'ABBCDYYEDYYEF..GHIJK'] },
+  start: { zh: '人太多了，先让一让。', en: 'Too many people — make some room.' },
+  win: { zh: '钻出人群 · {n} 步', en: 'Out of the crowd · {n} moves' },
+  you: { zh: '阿禾', en: 'Alex' },
+  labels: { s: [{ zh: '货郎', en: 'Peddler' }, { zh: '挑夫', en: 'Porter' }], v: { zh: '高个', en: 'Tall one' }, h: { zh: '轿子', en: 'Sedan' } },
+  exit: { zh: '人群后头', en: 'The back of the crowd' },
+  art: { k: 'k.webp', s: 'worlds/jiuding/art/games/xiaobao.webp', v: 'worlds/jiuding/art/games/crow.webp', h: '../../etc/passwd', floor: 'worlds/jiuding/art/games/moss.webp' },
+};
+const CROWD_OPTIMAL = { 1: [16, 13] };
+
+test('a data level: well-formed easy layouts with asserted optimal counts', () => {
+  for (const [lv, list] of Object.entries(CROWD.layouts))
+    list.forEach((grid, i) => {
+      assert.equal([...grid].filter((c) => c === '.').length, 2);
+      const blocks = parseLayout(grid);
+      assert.equal(blocks.filter((b) => b.t === 'k').length, 1);
+      assert.equal(blocks.reduce((n, b) => n + SIZE[b.t][0] * SIZE[b.t][1], 0), 18);
+      const path = solve(blocks);
+      assert.equal(path?.length, CROWD_OPTIMAL[lv][i], `crowd ${lv} #${i} optimal`);
+      const [lo, hi] = RANGE[lv];
+      assert.ok(path.length >= lo && path.length <= hi);
+    });
+});
+
+test('a data level plays through to a win with its own texts, labels and art', () => {
+  const deal = { levels: [CROWD] };
+  for (const seed of ['a', 'b', 'c', 'd']) {
+    let state = newGame(seed, 2, deal); // no difficulty 2 on this level: its lowest
+    assert.equal(state.level, 1);
+    assert.deepEqual(state.blocks, parseLayout(CROWD.layouts[1][state.layout]));
+    assert.equal(state.lv.id, 'crowd');
+    assert.equal(state.lv.layouts, undefined, 'the state carries no layouts');
+    assert.deepEqual(JSON.parse(JSON.stringify(state)), state);
+    const zh0 = html(state, 'zh'), en0 = html(state, 'en');
+    assert.match(zh0, /人太多了，先让一让。/);
+    assert.match(en0, /Too many people — make some room\./);
+    assert.match(zh0, /aria-label="阿禾"/);
+    assert.match(en0, /aria-label="Alex"/);
+    assert.match(zh0, /aria-label="货郎"/);
+    assert.match(zh0, /aria-label="挑夫"/);
+    assert.match(zh0, /人群后头/);
+    assert.match(en0, /The back of the crowd/);
+    assert.match(zh0, /g-huarong-board" style="background-image:[^"]*worlds\/jiuding\/art\/games\/moss\.webp/);
+    assert.match(zh0, /g-huarong-k[^"]*"[^>]*background-image:url\(&quot;[^&]*\/games\/huarong\/k\.webp&quot;\)/);
+    assert.match(zh0, /g-huarong-s[^"]*"[^>]*worlds\/jiuding\/art\/games\/xiaobao\.webp/);
+    assert.doesNotMatch(zh0, /passwd/, 'a path out of the art dirs is dropped');
+    assert.doesNotMatch(zh0, /岩|藤|"石"|出口/);
+    const path = solve(state.blocks);
+    let won = false;
+    for (const step of path) {
+      ({ state } = act(state, { g: 'block', b: String(step.id) }));
+      if (state.sel !== step.id) ({ state } = act(state, { g: 'block', b: String(step.id) }));
+      ({ state, won } = act(state, { g: 'move', dir: step.dir }));
+    }
+    assert.equal(won, true);
+    assert.equal(state.moves, CROWD_OPTIMAL[1][state.layout]);
+    assert.match(html(state, 'zh'), new RegExp(`钻出人群 · ${state.moves} 步`));
+    assert.match(html(state, 'en'), new RegExp(`Out of the crowd · ${state.moves} moves`));
+    assert.doesNotMatch(html(state, 'zh'), /挤出来了|人太多了/);
+  }
+});
+
+test('where a level comes from: data.levels, the registry by data.level, else mijing', () => {
+  const registry = { games: [{ id: 'huarong', group: 'daily' }, { id: 'huarong', name: CROWD.name, levels: [CROWD] }, { id: 'qimai', levels: [{ id: 'crowd' }] }] };
+  assert.deepEqual(ladderOf(registry).map((l) => l.id), ['crowd']);
+  assert.equal(levelFrom({ level: 'crowd' }, registry).win, CROWD.win);
+  assert.equal(levelFrom({ level: 'nowhere' }, registry), MIJING);
+  assert.equal(levelFrom({}, registry), MIJING);
+  assert.equal(levelFrom({ levels: [CROWD], level: 'nowhere' }), CROWD);
+  assert.equal(pickLevel({ levels: [{ id: 'x' }, CROWD], level: 'crowd' }), CROWD);
+  assert.equal(pickLevel({}), MIJING);
+  // The built-in plays as ever: the same state whether dealt or not, and no level rides in it.
+  assert.deepEqual(newGame('m', 2, { levels: [MIJING] }), newGame('m', 2));
+  assert.equal(newGame('m', 2).lv, undefined);
+  assert.equal(MIJING.layouts, layouts);
+  assert.equal(meta.name, MIJING.name);
+  // A level whose grids are all ill-formed plays mijing's layouts.
+  const bad = newGame('m', 1, { levels: [{ id: 'bad', layouts: { 1: ['nope'] } }] });
+  assert.deepEqual(bad.blocks, parseLayout(layouts[1][bad.layout]));
 });

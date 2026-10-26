@@ -1,14 +1,57 @@
-// 华容道 — escape the 秘境. 4 wide × 5 tall sliding-block puzzle; tap-only.
-// The 2×2 block (你) must reach the exit at the bottom middle (x 1–2, y 3–4).
-// Pure module: newGame/html/act never touch document or window.
+// 华容道 — a 4 wide × 5 tall sliding-block puzzle; tap-only (or WASD / arrows).
+// The 2×2 block must reach the exit at the bottom middle (x 1–2, y 3–4) — the exit's place is the kit's rule.
+// Pure module: newGame/html/act never touch document or window; `mount` (games/mount.js's contract) resolves
+// the level first, then plays the pure board.
+//
+// Levels are data. A level (all keys optional but `id`; a missing one falls back to the built-in `mijing`'s):
+//   id        string
+//   name      {zh, en}                    the level's title (a host's bar reads it; meta.name is mijing's)
+//   how       {zh: {desk, touch}, en: …}   the how-to (likewise; meta.how is mijing's)
+//   layouts   {1: [grid, …], 2: […], 3: […]}  by difficulty (newGame's `level`); a grid is 20 chars, rows
+//                                         top→bottom, same letter = one block, Y = the 2×2, '.' = empty
+//   start     {zh, en}                    a line under the board until the first move (mijing: none)
+//   win       {zh, en}                    the line on a win; `{n}` = the moves taken
+//   you       {zh, en}                    the 2×2 block's label
+//   labels    {v|h|s: {zh, en} | [{zh, en}, …]}  what the small blocks are, by kind (v 1×2, h 2×1, s 1×1);
+//                                         a list is handed out in reading order (top→bottom, left→right
+//                                         of the dealt grid) — one person each in a crowd
+//   exit      {zh, en}                    the exit's name ("the back of the crowd")
+//   art       {k, v, h, s, floor}         image paths: relative to this module's art dir (games/huarong/), or
+//                                         from the skill root when they start `worlds/jiuding/art/games/`
+// Where a level comes from (levelFor / pickLevel): `data.levels[0]` (a deal, as Look hands it), else the
+// games.json rows with id `huarong`, by `data.level` (a level id), else `mijing`. The `level` number stays
+// the difficulty. Optimal move counts of every layout are asserted in tests/game-huarong.test.mjs.
+import { mountPure } from './mount.js';
 
-export const meta = {
-  id: 'huarong',
+// Rows top→bottom, 20 chars; same letter = one block, Y = the 2×2, '.' = empty.
+const LAYOUTS = {
+  1: ['GDHIBDEEB.YYACYYACF.', 'IFC.EECBYYGBYYADH.AD', 'A.EEA.FBYYCBYYCDIGHD'], // 12 · 15 · 19
+  2: ['FEEHAYYBAYYBDC.GDC.I', 'IGEEBYYCBYYCH.DA.FDA', 'EEGDFYYDHYYIB.CAB.CA'], // 29 · 32 · 40
+  3: ['YYDDYYG.IB.AHBCAEECF', 'YYFAYYHA.DDB.CCBGIEE', 'CYYDCYYDAEE.A.IBGFHB'], // 63 · 88 · 115
+};
+
+export const layouts = LAYOUTS;
+
+/** The built-in level: escape the 秘境 (Painted by FLUX, tools/paint-huarong-flux.py, 2026-10-20). */
+export const MIJING = {
+  id: 'mijing',
   name: { zh: '华容道', en: 'Huarong Pass' },
   how: {
     zh: { desk: '点一块再点箭头或旁边空格，一次滑一格；键盘 WASD 或方向键也行（没选时动小满）。把小满挪到下方出口。', touch: '点一块再点箭头或旁边空格，一次滑一格。把小满挪到下方出口。' },
     en: { desk: 'Tap a block, then an arrow or an empty cell beside it; or WASD / arrow keys (they move Xiaoman when none is picked). Get Xiaoman out through the bottom exit.', touch: 'Tap a block, then an arrow or an empty cell beside it. Get Xiaoman out through the bottom exit.' },
   },
+  layouts: LAYOUTS,
+  win: { zh: '挤出来了 · {n} 步', en: 'Squeezed out · {n} moves' },
+  you: { zh: '你', en: 'You' },
+  labels: { v: { zh: '岩', en: '' }, h: { zh: '藤', en: '' }, s: { zh: '石', en: '' } },
+  exit: { zh: '出口', en: 'Exit' },
+  art: { k: 'k.webp', v: 'v.webp', h: 'h.webp', s: 's.webp', floor: 'floor.webp' },
+};
+
+export const meta = {
+  id: 'huarong',
+  name: MIJING.name,
+  how: MIJING.how,
   // WASD and the arrow keys slide the picked block (Hanli 2026-10-20: 「可以用wsad触发移动吗」).
   keys: {
     w: { g: 'move', dir: 'up' }, a: { g: 'move', dir: 'left' }, s: { g: 'move', dir: 'down' }, d: { g: 'move', dir: 'right' },
@@ -21,16 +64,6 @@ const EXIT = { x: 1, y: 3 };
 const SIZE = { k: [2, 2], v: [1, 2], h: [2, 1], s: [1, 1] };
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const ARROW = { up: '↑', left: '←', down: '↓', right: '→' };
-
-// Rows top→bottom, 20 chars; same letter = one block, Y = the 2×2, '.' = empty.
-// Optimal single-step move counts are asserted in tests/game-huarong.test.mjs.
-const LAYOUTS = {
-  1: ['GDHIBDEEB.YYACYYACF.', 'IFC.EECBYYGBYYADH.AD', 'A.EEA.FBYYCBYYCDIGHD'], // 12 · 15 · 19
-  2: ['FEEHAYYBAYYBDC.GDC.I', 'IGEEBYYCBYYCH.DA.FDA', 'EEGDFYYDHYYIB.CAB.CA'], // 29 · 32 · 40
-  3: ['YYDDYYG.IB.AHBCAEECF', 'YYFAYYHA.DDB.CCBGIEE', 'CYYDCYYDAEE.A.IBGFHB'], // 63 · 88 · 115
-};
-
-export const layouts = LAYOUTS;
 
 function hash(str) {
   let h = 2166136261;
@@ -53,11 +86,51 @@ export function parseLayout(grid) {
   return blocks.map((b, id) => ({ id, ...b }));
 }
 
-export function newGame(seed, level = 1) {
-  const lv = LAYOUTS[level] ? Number(level) : 1;
-  const list = LAYOUTS[lv];
+const okGrid = (g) => typeof g === 'string' && /^[A-Z.]{20}$/.test(g) && parseLayout(g).filter((b) => b.t === 'k').length === 1;
+
+/** A level's layouts by difficulty, the ill-formed grids dropped; none left → mijing's. */
+function layoutsOf(lvl) {
+  const out = {};
+  for (const [k, list] of Object.entries(lvl?.layouts ?? {})) {
+    const ok = Array.isArray(list) ? list.filter(okGrid) : [];
+    if (ok.length && Number.isInteger(Number(k))) out[Number(k)] = ok;
+  }
+  return Object.keys(out).length ? out : LAYOUTS;
+}
+
+/** The level a deal plays: `deal.levels` (the one `deal.level` names, else the first), else mijing. */
+export function pickLevel(deal = {}) {
+  const levels = Array.isArray(deal?.levels) ? deal.levels.filter((l) => l && typeof l === 'object') : [];
+  return levels.find((l) => l.id === deal.level) ?? levels[0] ?? MIJING;
+}
+
+/** Every level of the registry's `huarong` rows (worlds/jiuding/games.json), each carrying its row's name. */
+export function ladderOf(registry) {
+  return (registry?.games ?? []).filter((g) => g.id === meta.id).flatMap((g) => (g.levels ?? []).map((l) => ({ ...(g.name ? { name: g.name } : {}), ...l })));
+}
+
+/** The level a mount plays: `data.levels[0]`, else the registry's level named `data.level`, else mijing. */
+export function levelFrom(data = {}, registry = null) {
+  if (Array.isArray(data?.levels) && data.levels.length) return pickLevel(data);
+  if (!data?.level || data.level === MIJING.id) return MIJING;
+  return ladderOf(registry).find((l) => l.id === data.level) ?? MIJING;
+}
+
+export async function levelFor(opts = {}) {
+  const data = opts.data ?? {};
+  if ((Array.isArray(data.levels) && data.levels.length) || !data.level || data.level === MIJING.id) return levelFrom(data);
+  const res = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url)).catch(() => null);
+  return levelFrom(data, res?.ok ? await res.json().catch(() => null) : null);
+}
+
+export function newGame(seed, level = 1, deal = {}) {
+  const lvl = pickLevel(deal);
+  const lays = lvl === MIJING ? LAYOUTS : layoutsOf(lvl);
+  const lv = lays[level] ? Number(level) : lays[1] ? 1 : Math.min(...Object.keys(lays).map(Number));
+  const list = lays[lv];
   const pick = hash(`${seed}`) % list.length;
-  return { level: lv, layout: pick, blocks: parseLayout(list[pick]), sel: null, moves: 0, won: false };
+  const own = lvl === MIJING ? {} : { lv: Object.fromEntries(['id', 'name', 'start', 'win', 'you', 'labels', 'exit', 'art'].filter((k) => lvl[k] != null).map((k) => [k, lvl[k]])) };
+  return { level: lv, layout: pick, blocks: parseLayout(list[pick]), sel: null, moves: 0, won: false, ...own };
 }
 
 const covers = (b, x, y) => {
@@ -138,12 +211,34 @@ export function act(state, data = {}) {
 }
 
 const T = {
-  zh: { you: '你', v: '岩', h: '藤', s: '石', moves: '步数', exit: '出口', won: (n) => `挤出来了 · ${n} 步`, pick: '先点一块' },
-  en: { you: 'You', v: '', h: '', s: '', moves: 'Moves', exit: 'Exit', won: (n) => `Squeezed out · ${n} moves`, pick: 'Tap a block first' },
+  zh: { moves: '步数', pick: '先点一块' },
+  en: { moves: 'Moves', pick: 'Tap a block first' },
 };
+
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const say = (o, lang) => (o && typeof o === 'object' ? o[lang] ?? o.zh ?? '' : typeof o === 'string' ? o : '');
+const ART_ROOT = 'worlds/jiuding/art/games/';
+const okPath = (p) => typeof p === 'string' && /^[\w./-]+$/.test(p) && !p.split('/').includes('..');
+/** An art path as a URL: from the skill root under worlds/jiuding/art/games/, else in games/huarong/. */
+export const artUrl = (p) => (!okPath(p) ? null : p.startsWith(ART_ROOT) ? new URL(`../../${p}`, import.meta.url).href : new URL(`./huarong/${p}`, import.meta.url).href);
+
+/** A block's label: the level's `labels[kind]` (a list in reading order), the 2×2 the level's `you`. */
+function labelOf(lvl, state, b, lang) {
+  if (b.t === 'k') return say(lvl.you ?? MIJING.you, lang);
+  const l = (lvl.labels ?? MIJING.labels)[b.t];
+  if (!Array.isArray(l)) return say(l, lang);
+  const nth = state.blocks.filter((o) => o.t === b.t && o.id < b.id).length;
+  return say(l[nth % l.length], lang);
+}
 
 export function html(state, lang = 'zh') {
   const t = T[lang] || T.zh;
+  const lvl = state.lv ?? MIJING;
+  // A data level's art goes inline (huarong.css holds mijing's): the floor under the board's two exit walls, a picture per block kind.
+  const art = state.lv?.art ?? {};
+  const bg = (k) => { const u = artUrl(art[k]); return u ? `url(&quot;${esc(u)}&quot;)` : ''; };
+  const wall = 'linear-gradient(var(--line), var(--line))';
+  const boardStyle = bg('floor') ? ` style="background-image:${wall},${wall},${bg('floor')}"` : '';
   const cells = [];
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++)
@@ -152,19 +247,26 @@ export function html(state, lang = 'zh') {
   const blocks = state.blocks.map((b) => {
     const [w, h] = SIZE[b.t];
     const cls = `g-huarong-block g-huarong-${b.t}${state.sel === b.id ? ' is-sel' : ''}`;
-    const label = b.t === 'k' ? t.you : t[b.t];
-    return `<button type="button" class="${cls}" data-g="block" data-b="${b.id}" aria-label="${label || b.t}" style="grid-column:${b.x + 1} / span ${w};grid-row:${b.y + 1} / span ${h}"${state.won ? ' disabled' : ''}></button>`;
+    const label = labelOf(lvl, state, b, lang);
+    return `<button type="button" class="${cls}" data-g="block" data-b="${b.id}" aria-label="${esc(label || b.t)}" style="grid-column:${b.x + 1} / span ${w};grid-row:${b.y + 1} / span ${h}${bg(b.t) ? `;background-image:${bg(b.t)}` : ''}"${state.won ? ' disabled' : ''}></button>`;
   });
   const arrows = Object.keys(ARROW).map((dir) => {
     const ok = !state.won && state.sel != null && canMove(state.blocks, state.sel, dir);
     return `<button type="button" class="g-huarong-arrow g-huarong-${dir}" data-g="move" data-dir="${dir}"${ok ? '' : ' disabled'}>${ARROW[dir]}</button>`;
   });
+  const start = state.moves === 0 && !state.won ? say(lvl.start, lang) : '';
   const status = state.won
-    ? `<div class="g-huarong-won">${t.won(state.moves)}</div>`
-    : `<div class="g-huarong-moves">${t.moves} ${state.moves}${state.sel == null ? ` · ${t.pick}` : ''}</div>`;
+    ? `<div class="g-huarong-won">${esc(say(lvl.win ?? MIJING.win, lang).replace('{n}', String(state.moves)))}</div>`
+    : `${start ? `<div class="g-huarong-start">${esc(start)}</div>` : ''}<div class="g-huarong-moves">${t.moves} ${state.moves}${state.sel == null ? ` · ${t.pick}` : ''}</div>`;
   return `<div class="g-huarong${state.won ? ' is-won' : ''}">
-<div class="g-huarong-board">${cells.join('')}${blocks.join('')}<div class="g-huarong-exit" aria-hidden="true">${t.exit}</div></div>
+<div class="g-huarong-board"${boardStyle}>${cells.join('')}${blocks.join('')}<div class="g-huarong-exit" aria-hidden="true">${esc(say(lvl.exit ?? MIJING.exit, lang))}</div></div>
 ${status}
 ${state.won ? '' : `<div class="g-huarong-pad">${arrows.join('')}</div>`}
 </div>`;
+}
+
+/* ── Standalone: the mount contract (games/mount.js) — the level resolved, then the pure board. ── */
+export async function mount(container, opts = {}) {
+  const level = await levelFor(opts);
+  return mountPure({ meta, newGame, act, html })(container, { ...opts, data: { ...(opts.data ?? {}), levels: [level] } });
 }
