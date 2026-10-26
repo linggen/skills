@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
-import { buildPhoneBundle, esbuildOf, placesOf, worldFiles } from '../tools/phone-bundle.mjs';
+import { bookFiles, buildPhoneBundle, esbuildOf, placesOf, worldFiles } from '../tools/phone-bundle.mjs';
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NOW = '2026-10-23T08:00:00Z';
@@ -136,4 +136,12 @@ test('the world file carries the world as JSON text, no art', () => {
 test("银月's place in the game, as SKILL.md gives it, travels for the phone's own Yinyue (讨饼债)", () => {
   const { yinyue } = placesOf();
   assert.ok(yinyue && yinyue.includes('Lingjing') && yinyue.includes('本王') && !yinyue.includes('\n'), yinyue);
+});
+
+test("the novel travels for the phone's 读原著: every 回 book.json names, its text whole", () => {
+  const { book, files } = bookFiles();
+  const hui = book.volumes.flatMap((v) => v.hui);
+  assert.ok(hui.length >= 10);
+  for (const h of hui) assert.ok(files[h.file]?.length > 1000, `${h.id}: ${h.file}`);
+  assert.ok(Object.keys(files).every((f) => !f.includes('..') && f.endsWith('.md')));
 });
