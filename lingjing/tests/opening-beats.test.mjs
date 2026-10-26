@@ -117,7 +117,7 @@ const BEATS = [
 // 拽爹上崖 cut 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」): 00-fall reads whole to 把爹拽回山壁; 守灶台 in 00-zaotai keeps 第一回 at six.
 // 洗髓 back on 00-sleep 2026-10-26 (全文后的小游戏) on a new task (`sleep-xisui`): the old `xisui-hold` stays cut.
 const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-fall', 'fall-storm', 'check']];
-const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-zaotai': ['masan-zaotai'], '00-cave': ['cave-fire', 'bread-share'], '00-yinyue': ['yinyue-what'], '00-cliff': ['cliff-shangya'], '00-deer': ['deer-wind'], '00-tailu': ['deer-carry'], '00-rent': ['rent-scale'], '00-bluff': ['rent-bluff'], '00-sleep': ['sleep-xisui'], '00-halfyear': ['halfyear-chaiduo', 'halfyear-mirror'], '00-uncle': ['uncle-jiujiu'], '00-notice': ['notice-shuitong', 'notice-wupo'], '00-gate': ['gate-sishui', 'gate-crowd'], '00-steps': ['steps-sanbai', 'steps-tuifeng'], '00-luoshu': ['gate-luoshu'], '00-linzi': ['longzhi-shidan'], '00-hall': ['hall-celing'] };
+const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-zaotai': ['masan-zaotai'], '00-cave': ['cave-fire', 'bread-share'], '00-yinyue': ['yinyue-what'], '00-cliff': ['cliff-shangya'], '00-deer': ['deer-wind'], '00-tailu': ['deer-carry'], '00-rent': ['rent-scale'], '00-bluff': ['rent-bluff'], '00-xiuxian': ['xiuxian-xue'], '00-sleep': ['sleep-xisui'], '00-halfyear': ['halfyear-chaiduo', 'halfyear-mirror'], '00-uncle': ['uncle-jiujiu'], '00-notice': ['notice-shuitong', 'notice-wupo'], '00-gate': ['gate-sishui', 'gate-crowd'], '00-steps': ['steps-sanbai', 'steps-tuifeng'], '00-luoshu': ['gate-luoshu'], '00-linzi': ['longzhi-shidan'], '00-hall': ['hall-celing'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
 
 test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 守白菜 · 忍字 · 守灶台 · 喂饼 · 守火 · 射鹿 · 抬鹿下山 · 算账 · 雪夜柴垛 · 水桶 · 泗水路 · 洛书门', () => {
@@ -156,7 +156,7 @@ test('a cut board has left its scene — not shown, not offered, no way on waits
 
 test('each scene stands its board on the stage, offers it, and its way on waits for it', () => {
   for (const [sid, tid, exit] of [...BEATS, ['00-cave', 'bread-share', 'share'], ['00-notice', 'notice-wupo', 'go'],
-    ['00-tailu', 'deer-carry', 'on'], ['00-halfyear', 'halfyear-mirror', 'on'], ['00-bluff', 'rent-bluff', 'on'], ['00-sleep', 'sleep-xisui', 'bath'], ['00-gate', 'gate-crowd', 'on'], ['00-steps', 'steps-tuifeng', 'on'], ['00-yinyue', 'yinyue-what', 'follow']]) {
+    ['00-tailu', 'deer-carry', 'on'], ['00-halfyear', 'halfyear-mirror', 'on'], ['00-bluff', 'rent-bluff', 'on'], ['00-xiuxian', 'xiuxian-xue', 'on'], ['00-sleep', 'sleep-xisui', 'bath'], ['00-gate', 'gate-crowd', 'on'], ['00-steps', 'steps-tuifeng', 'on'], ['00-yinyue', 'yinyue-what', 'follow']]) {
     const sc = scenes[sid];
     assert.ok(sc.show.some(c => c.card === 'board' && c.id === tid), sid);
     assert.ok(sc.offers.tasks.includes(tid), sid);

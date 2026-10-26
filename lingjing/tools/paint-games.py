@@ -81,13 +81,13 @@ SUBJECTS = {
   'rain/xue-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of a small silver-white fox\'s tail fur seen close, soft silvery fur running across the whole width, '
     'several stumps of broken tails along it, faint silver beads of liquid hanging from them, moonlight. Silver-grey ink wash.'),
-  'rain/xue-palm': ('sprite', (360, 200), (1024, 576), 1,
+  'rain/xue-palm': ('sprite', (360, 200), (1024, 576), 2,
     'A boy\'s two cupped hands held together palm up with a scrap of patched grey cloth in them, seen from the front and a little '
     'above. Muted ink and soft wash.'),
   'rain/qiu-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of the edge of an indoor basketball court seen from the side: the bench, a row of plastic water '
     'bottles and a few basketballs along it. Grey ink wash and dark ink, modern setting drawn in old Chinese album style.'),
-  'rain/qiu-ball': ('sprite', (360, 200), (1024, 576), 1,
+  'rain/qiu-ball': ('sprite', (360, 200), (1024, 576), 2,
     'A plastic sports water bottle lying beside a basketball on the floor, seen from the front and a little above. '
     'Muted ink and soft wash, modern objects drawn in old Chinese album style.'),
   'rain/beam': ('sprite', (960, 200), (1536, 320), 1,

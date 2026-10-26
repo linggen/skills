@@ -235,7 +235,7 @@ test('her lines in the book are the book\'s: played in place, awake or asleep (h
   s = walk(s, [['resolve', { exit: 'visit' }], ['resolve', { exit: 'dumb' }]], content, NOW);
   assert.equal(s.companion.awake, true);
   // 吓马三 at 00-bluff and 洗髓 at 00-sleep since 2026-10-26 (全文后的小游戏)
-  s = walk(s, [['win', { id: 'rent-bluff' }], ['task', { action: 'done', id: 'rent-bluff' }], ['resolve', { exit: 'on' }], ['resolve', { exit: 'on' }],
+  s = walk(s, [['win', { id: 'rent-bluff' }], ['task', { action: 'done', id: 'rent-bluff' }], ['resolve', { exit: 'on' }], ['win', { id: 'xiuxian-xue' }], ['task', { action: 'done', id: 'xiuxian-xue' }], ['resolve', { exit: 'on' }],
     ['win', { id: 'sleep-xisui' }], ['task', { action: 'done', id: 'sleep-xisui' }], ['resolve', { exit: 'bath' }]], content, NOW);
   assert.deepEqual(s.companion, { joined: '2026-09-28', asleep: true });
   // asleep: the token's one word at the 蠪侄 is the story's, told by Ling; no beat for her; no card of hers in the fight

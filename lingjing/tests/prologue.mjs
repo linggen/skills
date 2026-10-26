@@ -96,6 +96,9 @@ export const TO_HALL = [
   ['win', { id: 'rent-bluff' }],
   ['task', { action: 'done', id: 'rent-bluff' }],
   ['resolve', { exit: 'on' }],
+  // 银色的血 (打地鼠, 2026-10-26): the eight stumps on the woodpile, 00-xiuxian
+  ['win', { id: 'xiuxian-xue' }],
+  ['task', { action: 'done', id: 'xiuxian-xue' }],
   ['resolve', { exit: 'on' }],
   // 洗髓 (气走经脉, back on its night 2026-10-26)
   ['win', { id: 'sleep-xisui' }],

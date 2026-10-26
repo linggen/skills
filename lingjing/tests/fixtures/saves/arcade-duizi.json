@@ -238,6 +238,11 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "xiuxian-xue": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "sleep-xisui": {
     "status": "done",
     "period": "once",
