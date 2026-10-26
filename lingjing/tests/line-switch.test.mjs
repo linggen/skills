@@ -106,7 +106,8 @@ test('今 → 古: the interlude\'s last tap puts him at the 古 scene\'s place,
   // The seal played, the passage told: no game stands over it (queue.js afterBook), and only then the scene's own.
   const withGame = [...l.stage.filter((c) => c.card !== 'closed'), { card: 'board', id: 'qiqiao' }];
   assert.ok(!afterBook(withGame, true).some((c) => c.card === 'board'), 'a board waits for the passage');
-  assert.deepEqual(stageSlots(l, afterBook(l.stage.filter((c) => c.card !== 'closed'), false)).main.map((c) => c.card), ['panel'], 'then the scene card, its 交 / 不交');
+  // then the scene card and the scene's own board (老蔫, 全文后的小游戏 第二批 2026-10-26; 交 / 不交 wait on it)
+  assert.deepEqual(stageSlots(l, afterBook(l.stage.filter((c) => c.card !== 'closed'), false)).main.map((c) => c.card), ['panel', 'board'], 'then the scene card and its board');
   // Only the place moved: the scene is the waypoint it always was, and he may walk off it.
   const off = move(s, content, ctx, { place: 'waimen' });
   assert.equal(off.result.ok, true, JSON.stringify(off.result).slice(0, 200));

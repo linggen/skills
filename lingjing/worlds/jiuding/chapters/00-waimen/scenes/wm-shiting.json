@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "wm-shiting",
+ "chapter": "00-waimen",
+ "hui": "h07",
+ "at": "shimen",
+ "place": {
+  "zh": "泗水 · 秘境石门 · 门里的石厅",
+  "en": "The Si River · the stone door · the hall inside"
+ },
+ "_board": "wm-shiting (全文后的小游戏 第二批 2026-10-26): wm-wangzuo's passage split at the hall — 打地鼠 `fanban` after 「…进秘境捡灵草，用不着那么长的绳子。」 (阿禾 in the long gallery: the third flagstone tips), the passage of it told after. Outside the sealed beat, at the door, as wm-kouzi: the 秘境's rerun rooms hold no story scene (tests/rerun.test.mjs), and the way in is wm-xiongya's.",
+ "setup": {
+  "zh": "门里是一座石厅，四壁开着七八个口子，人一窝一窝散进去。剩下一个口子没人进：一道窄窄的石缝，石头上刻着一个「凶」字。",
+  "en": "Inside the door is a stone hall, seven or eight mouths in its walls, and people scatter into them by the knot. One mouth nobody takes: a narrow cleft, a rock by it carved with the word DEADLY."
+ },
+ "recap": {
+  "zh": "石门开了，九层的一拂袖子把人扔进泥里；你等最后一个人挤进去，才进门，那个踹断你肋骨的抄着手跟了进来。银月在石厅里道：「……这地方。本王来过。」阿禾跟着人多的走，在第二间石室门口喊「别踩第三块」；孙二狗掉进了翻板坑。",
+  "en": "The stone door opened, and a ninth-layer's sweep of the sleeve flung a man into the mud; you waited for the last to squeeze in before you went, and the one who broke your ribs came in after you, arms folded. In the hall Yinyue said: \"...This place. This queen has been here.\" Ahe went with the crowd and called \"don't step on the third one\" at the second chamber's door; Sun Ergou fell into the tipping pit."
+ },
+ "cast": [],
+ "people": [
+  "ahe",
+  "sunergou",
+  "xuanchenzi"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "石门「嘎嘎」地响着，开了一道缝。",
+    "「……这地方。本王来过。」",
+    "「别踩第三块。」"
+   ],
+   "en": [
+    "The stone door grinds open a crack.",
+    "\"...This place. This queen has been here.\"",
+    "\"Don't step on the third one.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "执事敲了三下锣。玄沉子从袖子里摸出一块名牌，比众人的大一圈，铜色也旧，按进石门正中一个凹槽里。马小宝领着他那几个人，抢着往门口挤，挤过小满身边的时候，最末一个落后了半步。是老蔫。他一只手提着马小宝的描金食盒，肩上斜挎着一大盘麻绳，眼睛不看小满，只看着自己的脚尖，嘴唇几乎没动：「……宝哥叫人盯着你。绳子，是带给你的。」说完，快走两步，跟上去了。\n\n石门「嘎嘎」地响着，开了一道缝，缝里绷着一层亮汪汪的东西，像一张拉紧了的水皮子，皮子上流着一层淡淡的光，凉气隔着三步扑在脸上，近前的人脸都映青了。头一拨是内门的练气弟子，二十几个，不排队，从木板道上一个跟一个走过去，手里卷着内门自己的图；空场上那几张桌子，他们一眼也没看过。走在最前头的五个，是九层。一个锦袍公子想跟着他们的尾巴挤进去，头里那个九层没回头，袖子往后一拂，那人便飞出去两三丈，栽进黑泥里，泥没到胸口。岸上的家丁拿竹竿把他拽了上来，没人多看一眼。内门的人一个接一个，没进了那层水皮子里。四百来人这才一窝蜂地往里挤，水皮子一晃一晃，人一个个没了。小满没有挤。九层的，他想，往后见一回，躲一回。人群里却也有一个人没挤——卖地图的那两个里头，踹他左边肋骨的那一个，抄着手站在人堆边上，眼睛不看石门，只盯着他。他站在一块石头上等着。等最后一个人挤进了门，才跳下来，慢吞吞地走了进去。走到门里，他回头望了一眼：那个抄着手的人，也不紧不慢地跟了进来。\n\n走进石门的那一刻，他胸口的木牌「腾」地一烫。那一烫跟往常不同：烫了一下，没有停，第二下，第三下，一下紧似一下，倒像是一颗心在他胸口底下跳。银月钻了出来，蹲在他肩膀上，身子比从前实了些。她没有打哈欠，一双金色的眼睛睁得大大的，看石壁，看石壁上的花纹，鼻子一抽一抽的，像在闻着什么很远、很远的东西。\n\n她开口了，声音却变了，倒像一个人站在自己小时候住过的院子里：「……这地方。本王来过。」小满问：「什么时候？」银月道：「不知道。」小满问：「来做什么？」银月道：「不知道。」小满道：「那你知道什么？」银月的鼻子又抽了两抽，才道：「……底下。」\n\n门里是一座石厅，四壁开着七八个口子。人手一张图，图上画的路各不相同：照图走的，跟着同门走的，闭着眼睛猜的，一窝一窝散进了各个口子。内门那二十几个照着自己的图，头也不回地进了一个；那条画得最密的长廊，挤进去的人最多。一个口子一个口子地，石厅里的人稀了下去。剩下一个口子没人进：一道窄窄的石缝，缝口给一块塌下来的大石头堵了一半，石头上刻着一个歪歪扭扭的「凶」字，字底下画了个骷髅头。\n\n阿禾跟着人多的走。进门以前，她看见了两样东西：卖地图那两个里头抄着手的那一个，人人往门里挤，他不挤，眼睛钉在沈小满身上；老蔫肩上，斜挎着一大盘麻绳。进秘境捡灵草，用不着那么长的绳子。",
+  "en": "The steward struck the gong three times. Xuanchenzi took a name tag from his sleeve, a size bigger than everyone else's, its copper older too, and pressed it into a hollow in the middle of the stone door. Ma Xiaobao led his people in a rush to push to the front, and as they pushed past Xiaoman, the last of them fell half a step behind. It was Old Wilt. In one hand he carried Ma Xiaobao's gilded food box, and over his shoulder was slung a big coil of hemp rope. His eyes weren't on Xiaoman, only on his own toes, and his lips barely moved: \"...Brother Bao's got someone watching you. The rope's for you.\" Having said it, he took two quick steps and caught up.\n\nThe stone door groaned and opened a crack, and across the crack was stretched something shining and wet, like a skin of water pulled tight, a faint light running over it. The chill hit your face from three paces off, and the faces of the people nearest it turned blue in its light. The first lot in were the inner sect's Qi Condensation disciples, twenty-odd of them, who didn't queue: they walked across the planks one behind another, each holding a rolled-up map of the inner sect's own. Those tables on the open ground they had never so much as glanced at. The five at the front were ninth layer. A young gentleman in brocade tried to squeeze in on their tail; the ninth-layer man in front didn't turn round, just swept his sleeve backwards, and the young gentleman flew twenty or thirty feet and planted himself in the black mud, sunk to the chest. Servants on the bank hauled him out with bamboo poles, and nobody looked twice. One after another the inner sect sank through the water skin. Only then did the four hundred-odd others crush in after them, the skin wobbling, people vanishing one by one. Xiaoman didn't crush in. Ninth layer, he thought: from now on, every time I see one, I keep out of the way. But there was one other person in the crowd who didn't crush in either: of the two map sellers, the one who'd kicked his left ribs stood at the edge of the crowd with his arms folded, eyes not on the stone door but fixed on him. Xiaoman stood on a rock and waited. When the last person had squeezed through the door, he jumped down and walked in, unhurried. Inside the door he looked back: the man with folded arms was following him in, no hurry either.\n\nThe moment he stepped through the stone door, the wooden tablet on his chest flared hot. It wasn't like the usual: it burned once and didn't stop, a second time, a third, each one closer on the last, like a heart beating under his own. Yinyue came out and crouched on his shoulder, her body a little more solid than before. She didn't yawn. Her golden eyes were wide open, looking at the stone walls, at the patterns on the stone walls, her nose twitching and twitching, as if she were smelling something very, very far away.\n\nShe spoke, and her voice had changed: it was like someone standing in the courtyard she'd lived in as a child. \"...This place. This queen has been here.\" Xiaoman asked: \"When?\" Yinyue said: \"I don't know.\" Xiaoman asked: \"To do what?\" Yinyue said: \"I don't know.\" Xiaoman said: \"Then what do you know?\" Yinyue's nose twitched twice more before she said: \"...Down.\"\n\nInside the door was a stone hall, with seven or eight openings in its four walls. Everyone had a map, and the routes on the maps were all different: those going by the map, those following their own people, those guessing with their eyes shut, one cluster after another scattered into the openings. The inner sect's twenty-odd went by their own map into one without looking back. The long corridor that was drawn thickest had the most people crammed into it. Opening by opening, the hall thinned out. One opening was left that nobody took: a narrow cleft in the rock, half blocked by a great fallen boulder, and on the boulder was carved a crooked character, *Deadly*, with a skull drawn under it.\n\nAhe followed the crowd. Before she went through the door she had seen two things: of the two map sellers, the one with folded arms, who, while everyone pushed for the door, didn't push but kept his eyes nailed on Shen Xiaoman; and on Old Wilt's shoulder, a big coil of hemp rope. You don't need that much rope to pick herbs in a secret realm."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "shiting-fanban"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "shiting-fanban"
+  ]
+ },
+ "story_after": {
+  "zh": "她照着肚子里那张图走。第二间石室门口，地上第三块石板踩上去会翻——她站在旁边，喊了一声「别踩第三块」。一个听了；一个没来得及听，给后头一个锦袍公子一肘子拐开，掉了下去，坑里「哎哟」一声，是孙二狗的嗓子。她给人群推着往前走，回头喊了第二声，没有人应。",
+  "en": "She went by the map in her head. At the door of the second stone chamber, the third flagstone on the floor would tip when stepped on. She stood to one side and called, \"Don't step on the third one.\" One person heard; another didn't have time to, was elbowed aside by a young gentleman in brocade behind him, and fell in. From the pit came an \"Ow!\" in Sun Ergou's voice. The crowd pushed her forward; she looked back and called a second time, and nobody answered."
+ },
+ "lines": [],
+ "buttons": [
+  "cleft"
+ ],
+ "exits": [
+  {
+   "id": "cleft",
+   "label": {
+    "zh": "钻进刻着「凶」字的石缝",
+    "en": "Into the cleft marked DEADLY"
+   },
+   "means": "takes the mouth nobody wants: the cleft to the Deadly Cliff",
+   "beat": [],
+   "next": "wm-xiongya",
+   "needs": {
+    "task": "shiting-fanban"
+   },
+   "refuse": {
+    "zh": "长廊里还有人要踩第三块。",
+    "en": "Someone in the gallery is still about to tread on the third stone."
+   }
+  }
+ ]
+}

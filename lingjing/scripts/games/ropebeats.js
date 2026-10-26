@@ -158,6 +158,26 @@ export const niugu = beat({
   cls: 'g-rope-niugu',
 });
 
+/* ── 喂饭桶 · 一根萝卜 (wm-luobo, 全文后的小游戏 第二批 2026-10-26) ──
+   Everything the 秘境 cost him went into the 饭桶 and it only belched; the radish from his bundle, thrown in in a temper
+   (「吃！你吃！」), is what it wanted. Three strings from the beam and the slanted shelf: one order drops the 萝卜 off the
+   shelf into the pot; the 灵光 lie on another way down (rope-gen.js seed `luobo-8`, tier 2, its `better` way). */
+export const luobo = beat({
+  meta: { id: 'luoborope', name: { zh: '喂饭桶 · 一根萝卜', en: 'Feeding the Rice Bucket · A radish' }, how: { zh: '划断绳，让萝卜落进饭桶嘴里——先断哪根，它才不掉在地上？', en: 'Cut the strings so the radish drops into the Rice Bucket\'s mouth: which goes first, so it doesn\'t end on the floor?' } },
+  quote: { zh: '「吃！你吃！」', en: '"Eat! Go on, eat!"' },
+  T: words({
+    zh: { name: '萝卜', say: '把萝卜送进饭桶嘴里。', eat: ['「咔哒」。'], done: '「咔哒」。盖子一开，一股清凉的香气扑出来。' },
+    en: { name: 'radish', say: 'Get the radish into the Rice Bucket\'s mouth.', eat: ['*Click.*'], done: '*Click.* The lid opens, and a cool fragrance rushes out.' },
+  }),
+  thing: (s, r) => `<circle class="g-ft-ring has-icon" r="${r}"/>`
+    + `<image class="g-ft-icon" href="${comicArt('luobo')}" x="${n(-r * 1.4)}" y="${n(-r * 1.4)}" width="${n(r * 2.8)}" height="${n(r * 2.8)}"/>`,
+  target: potTarget,
+  backdrop: () => `<image class="g-cave-art" href="${CHAIFANG}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
+    + `<path class="g-cave-line" d="M0 ${FLOOR} C90 ${FLOOR - 3} 200 ${FLOOR + 3} ${W} ${FLOOR - 1}"/>`,
+  grade: (s) => (s.best >= 3 ? 'whole' : 'fed'),
+  cls: 'g-rope-niugu',
+});
+
 /* ── 拽 · 爹 over the drop, swung back onto the ledge (00-fall, 2026-10-19) ──
    The storm on 黑松岭: 爹 has gone over the edge and hangs on two ropes, his pack dragging under him.
    With the pack on, his swing snags on the rock spur below; cut its strap first. Cut the rope that

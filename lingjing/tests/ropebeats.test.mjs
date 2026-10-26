@@ -215,3 +215,34 @@ test('喂饭桶 · 一根牛骨头 sits where the book feeds the 饭桶: wm-diyi
   assert.ok(parts[at].chars > 0 && parts[at + 1].chars > 0, `${parts[at].chars} · ${parts[at + 1].chars}`);
   assert.ok(RHYTHM_CAP > 0);
 });
+
+test('luoborope: the task luobo-rope plays it in wm-luobo after 「吃！你吃！」; its plan and its better way win; the 萝卜 into the 饭桶 (全文后的小游戏 第二批 2026-10-26)', async () => {
+  const mod = await import('../scripts/games/luoborope.js');
+  const { bot, plans, starPlans } = await import('../scripts/games/bots/luoborope.js');
+  const RG = await import('../scripts/games/rope-gen.js');
+  const t = content.tasks.tasks.find((x) => x.id === 'luobo-rope');
+  assert.equal(t.game, 'luoborope');
+  assert.deepEqual(t.grant, { table: 'task', progress: 5 });
+  const row = content.games.games.find((g) => g.id === 'luoborope');
+  assert.deepEqual([row.task, row.scene, row.mechanic], ['luobo-rope', 'wm-luobo', '割绳子']);
+  const level = row.levels[0];
+  const fed = (run) => !run.broke && run.path.some(([x, y], k) => k >= (run.path.first ?? 0) && Math.hypot(x - level.mouth[0], y - level.mouth[1]) < RG.MOUTH_R + 19 * 0.4);
+  for (const hand of RG.HANDS) assert.ok(fed(RG.playPlan(level, plans.one, { hand })), `the answer feeds it at a ${hand} ms reaction`);
+  const r = playOnce(mod, bot, { seed: 'b1', deal: { levels: row.levels }, limit: 60000 });
+  assert.ok(r.won, 'the plain way wins');
+  const { planBot } = await import('../scripts/games/bots/rope-plan.js');
+  let s = null;
+  const keep = { ...mod, tick: (st, ms) => (s = mod.tick(st, ms)), act: (st, d) => { const x = mod.act(st, d); s = x.state ?? st; return x; } };
+  playOnce(keep, planBot({ one: starPlans.one }), { seed: 'star', deal: { levels: row.levels }, limit: 60000 });
+  assert.ok(s.won, 'the star way wins');
+  assert.equal(s.stars, 3, 'three 灵光');
+  for (const lang of ['zh', 'en']) {
+    const h = mod.html(mod.newGame('x', 1, { levels: row.levels }), lang);
+    assert.match(h, /items-comic\/luobo\.webp/, 'the radish, the small games\' comic icon');
+    assert.match(h, /fantong-pot\.webp/, 'into the 饭桶');
+  }
+  const sc = content.chapters['00-waimen'].scenes['wm-luobo'];
+  assert.match(sc.story.zh, /「吃！你吃！」$/);
+  assert.match(sc.story_after.zh, /^「咔哒」。/);
+  assert.equal(sc.exits[0].needs.task, 'luobo-rope');
+});

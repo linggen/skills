@@ -83,13 +83,18 @@
         "zh": "沉鼎秘境",
         "en": "The hidden realm"
       },
+      "_scenes": "2026-10-26 (全文后的小游戏 第二批): wm-xiongya (the cleft and the climb, 时机 `xiongya`) is the first scene inside, walked down to from `home` past the 凶崖's 犰狳 (world.mjs fitSealed); wm-kouzi and wm-shiting play at the door before it, outside the beat, as the rerun rooms hold no story scene. wm-shishi plays in the chamber before wm-xirang's fight. wm-tama (the ledge, after the dry river) is inside, in the 崖壁 room. wm-hetan (阿禾 on the mudflat, the riverbed outside the door) is its last scene, told in the 崖壁 room as wm-chu is; its way home lets the seal go.",
       "scenes": [
         "wm-mijing",
+        "wm-xiongya",
         "wm-wangzuo",
         "wm-kunzhen",
+        "wm-shishi",
         "wm-xirang",
+        "wm-tama",
         "wm-kaikai",
-        "wm-chu"
+        "wm-chu",
+        "wm-hetan"
       ],
       "say": {
         "zh": "秘境的石门在身后合上了。三天后才开。",
@@ -119,6 +124,10 @@
           "en": "The realm is sealed. There is no way out."
         },
         "days": {
+          "wm-xiongya": {
+            "n": 1,
+            "unit": "day"
+          },
           "wm-wangzuo": {
             "n": 1,
             "unit": "day"
@@ -127,7 +136,15 @@
             "n": 1,
             "unit": "day"
           },
+          "wm-shishi": {
+            "n": 1,
+            "unit": "day"
+          },
           "wm-xirang": {
+            "n": 1,
+            "unit": "night"
+          },
+          "wm-tama": {
             "n": 1,
             "unit": "night"
           },
@@ -138,9 +155,17 @@
           "wm-chu": {
             "n": 3,
             "unit": "day"
+          },
+          "wm-hetan": {
+            "n": 3,
+            "unit": "day"
           }
         },
         "goals": {
+          "wm-xiongya": {
+            "zh": "下凶崖",
+            "en": "Get down the Deadly Cliff"
+          },
           "wm-wangzuo": {
             "zh": "打开那面有风的墙",
             "en": "Open the wall the wind comes through"
@@ -149,9 +174,17 @@
             "zh": "活着从崖口边脱身",
             "en": "Get away from the drop alive"
           },
+          "wm-shishi": {
+            "zh": "看那撮会自己长的土",
+            "en": "See to the earth that grows by itself"
+          },
           "wm-xirang": {
             "zh": "护住那撮息壤",
             "en": "Keep the pinch of living soil"
+          },
+          "wm-tama": {
+            "zh": "背贴着崖根，活过那四条火蛇",
+            "en": "Back to the cliff, outlive the four fire snakes"
           },
           "wm-kaikai": {
             "zh": "守在土里，等息壤长成",
@@ -160,6 +193,10 @@
           "wm-chu": {
             "zh": "等石门再开，走出秘境",
             "en": "Wait for the stone door and walk out"
+          },
+          "wm-hetan": {
+            "zh": "等潮水回来，走出秘境",
+            "en": "Wait for the tide, and walk out"
           }
         },
         "_rerun": "刷副本 (Hanli, 2026-10-15: the 秘境 again, its outer rooms only): once the beat is behind him, and while his chapter is still this one (or one `also` names), `rooms` (never the story's inner rooms) open again `every_h` hours after the last run ended (the story's run starts the clock; a save with no record finds them open). Entered from `door` (rules/rerun.mjs, the verb `rerun enter`) — the road to it opens while they do; inside it is this same sealed mode (errands, 令, 机缘 frozen; refused with `say`), `roads` the ways between the rooms, `goal` the 事 book's line. Each run is rolled from its own seed: `spawns` per room (`n` beasts from `pool`, one in `elite.one_in` an elite with `elite.decks`' harder deck), `finds` (the 拾遗 board `board` played in that room pays one find drawn by weight; one run in `cache.one_in` hides a cache there, found on a `cache.grade` play), and every beast won drops from `drops` (rewards.json drop_tables). Fights pay the haunt table (under the 回's cap; at 圆满 as 灵石, rewards.json xiuwei_to_lingshi). Leaving (`rerun leave`), or `lasts_min` gone by with no fight open, ends the run: he is set back at the chapter map's home with `back`. Nothing in rules names the 秘境; a later 秘境 or the 大比 declares the same.",

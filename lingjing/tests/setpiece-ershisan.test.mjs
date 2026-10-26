@@ -125,5 +125,7 @@ test('the reading cap: wm-kaikai → 讲堂 breaks at the blows; past them it ru
   assert.ok(at > 0, 'the blows are a beat');
   assert.equal(parts[at].from, 'wm-kaikai');
   assert.ok(parts[at].chars > 0 && RHYTHM_CAP === 2200, `${parts[at].from} → ${parts[at].to}: ${parts[at].chars}`);
-  assert.equal(parts[at + 1].to, 'wm-qianye');
+  // past them: 阿禾 on the mudflat (wm-hetan, 全文后的小游戏 第二批 2026-10-26), then the 萝卜 (wm-luobo)
+  assert.equal(parts[at + 1].to, 'wm-hetan');
+  assert.equal(parts[at + 2].to, 'wm-luobo');
 });

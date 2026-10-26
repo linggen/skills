@@ -44,9 +44,24 @@ function atDoor() {
     quests: { ...s.quests, 'xu-ahe-lixi': { took: '2026-09-29', have: { 1: 1 } } },
     pass: { quest: 'xu-ahe-lixi', to: 'fangshi', places: ['fangshi', 'shanlu', 'dukou'] },
     chance: { day: '2026-09-29', place: 'shanlu', until },
+    // 古五's boards before the door (全文后的小游戏 第二批 2026-10-26): 老蔫 at wm-mijing, 阿禾's 口子 and 孙二狗 at wm-kouzi
+    tasks: { ...s.tasks, 'mijing-laonian': { status: 'done' }, 'kouzi-crowd': { status: 'done' }, 'kouzi-ergou': { status: 'done' } },
   };
 }
-const inside = () => must(resolve, atDoor(), { exit: 'pay' });
+// Through the door: 交 at wm-mijing, wm-kouzi (the gate) and wm-shiting (the hall) at the door, then inside: wm-xiongya,
+// the cliff, walked down to from home (2026-10-26, 全文后的小游戏 第二批).
+const inside = () => {
+  let s = must(resolve, must(resolve, atDoor(), { exit: 'pay' }), { exit: 'gate' });
+  s = must(win, s, { id: 'shiting-fanban' });
+  s = must(task, s, { action: 'done', id: 'shiting-fanban' });
+  return must(resolve, s, { exit: 'cleft' });
+};
+/* The cliff's board played at the ledge, and on to the 蛫's scene (wm-wangzuo) in the same room. */
+function pastCliff(s) {
+  s = must(win, s, { id: 'wangzuo-xiongya' });
+  s = must(task, s, { action: 'done', id: 'wangzuo-xiongya' });
+  return must(resolve, s, { exit: 'down' });
+}
 const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
 /* A fight started and played out as the page would, then settled (tests/hunt.test.mjs fightOut). */
 function fightOut(state, id, now = DAY1) {
@@ -81,7 +96,7 @@ test('the instance is declared in data: rooms, a home, a way-out line, the book\
 
 test('entry: through the door he stands in the forking hall, sealed, the 令 and the 机缘 kept', () => {
   const s = inside();
-  assert.equal(s.scene, 'wm-wangzuo');
+  assert.equal(s.scene, 'wm-xiongya', 'the cliff (its board, 2026-10-26), then the 蛫\'s ledge');
   assert.equal(s.place, SEALED.home);
   assert.equal(s.sealed.id, 'mijing');
   assert.deepEqual(s.pass, atDoor().pass, 'the 令 is frozen, not lost');
@@ -122,7 +137,9 @@ test('the gate: only the rooms open to him; a way out is refused in the instance
   assert.equal(s.hunted['mijing-xiongya'], 1);
   s = must(move, fresh(s), { place: 'mijing-duanya' });
   assert.match(look(s, content, ctx()).place.line ?? '', /顺着崖壁往下爬[\s\S]*塞了一根针[\s\S]*窄窄的石台/, 'the climb told as the room\'s line, then the room');
-  assert.equal(look(s, content, ctx()).scene?.id, 'wm-wangzuo', 'the scene runs in its room');
+  assert.equal(look(s, content, ctx()).scene?.id, 'wm-xiongya', 'the scene runs in its room');
+  s = pastCliff(s);
+  assert.equal(look(s, content, ctx()).scene?.id, 'wm-wangzuo', 'and the 蛫\'s after it, in the same room');
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   assert.equal(s.place, 'mijing-yabi', 'the story carries him to its next room');
   assert.ok(look(s, content, ctx()).place.plate.spots.some(p => p.id === 'mijing-shishi'), 'the wall open, the chamber is on the map');
@@ -149,11 +166,11 @@ test('frozen: Look carries nothing of the world outside, and its verbs are refus
 test('objectives and header: the scene\'s own goal on the goal line, 「沉鼎秘境 · 第一日 · 岔口」', () => {
   let s = inside();
   let l = look(s, content, ctx());
-  assert.equal(l.waypoint.text, '打开那面有风的墙');
+  assert.equal(l.waypoint.text, '下凶崖');
   assert.equal(l.waypoint.place?.id, 'mijing-duanya', '下一步 points to the room inside');
   assert.equal(l.sealed.header, '沉鼎秘境 · 第一日');
   assert.equal(l.sealed.where, '岔口');
-  s = { ...s, scene: 'wm-kaikai', place: 'mijing-shishi', done_scenes: [...s.done_scenes, 'wm-wangzuo', 'wm-kunzhen', 'wm-xirang'] };
+  s = { ...s, scene: 'wm-kaikai', place: 'mijing-shishi', done_scenes: [...s.done_scenes, 'wm-wangzuo', 'wm-kunzhen', 'wm-shishi', 'wm-xirang'] };
   l = look(s, content, ctx());
   assert.equal(l.sealed.header, '沉鼎秘境 · 第二夜');
   assert.equal(l.sealed.day.unit, 'night');
@@ -177,9 +194,13 @@ test('backdrop: the room\'s own painting outranks the festival and the 节气; n
 test('exit: the last scene done, he walks back with the others — errands, the 令 and the 机缘 back, its time kept', () => {
   let s = inside();
   const later = new Date(DAY1.getTime() + 30 * 3600000); // a day and more inside
-  s = { ...s, scene: 'wm-chu', place: 'mijing-yabi', done_scenes: [...s.done_scenes, 'wm-wangzuo', 'wm-kunzhen', 'wm-xirang', 'wm-kaikai'] };
+  s = { ...s, scene: 'wm-chu', place: 'mijing-yabi', done_scenes: [...s.done_scenes, 'wm-xiongya', 'wm-wangzuo', 'wm-kunzhen', 'wm-shishi', 'wm-xirang', 'wm-kaikai'] };
   assert.equal(look(s, content, ctx(later)).sealed.header, '沉鼎秘境 · 第三日');
-  const out = must(resolve, fresh(s, later), { exit: 'rest' }, later);
+  // Out through the door onto the riverbed (wm-hetan, 阿禾's chat since 2026-10-26), then home: the seal lets go.
+  const met = must(resolve, fresh(s, later), { exit: 'out' }, later);
+  assert.equal(met.scene, 'wm-hetan');
+  assert.ok(met.sealed, 'still inside while 阿禾 talks at the door');
+  const out = must(resolve, must(task, must(win, met, { id: 'chu-ahe' }, later), { action: 'done', id: 'chu-ahe' }, later), { exit: 'rest' }, later);
   assert.equal(out.sealed, undefined, 'the seal let go');
   assert.equal(out.place, CH.map.home, 'back inside the 观');
   assert.deepEqual(out.pass, atDoor().pass, 'the 令 is back');
@@ -223,7 +244,7 @@ test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'
   const pools = content.places['徐'].pools;
   assert.deepEqual(pools['mijing-anhe'].beasts.map(b => b.creature), ['heyu', 'qiuyu']);
   // 「左手边那块石头。按下去。」: 「三天。」 waits on the binding — a 五子棋 since 10-19 (was 洛书).
-  let s = { ...inside(), scene: 'wm-kunzhen', place: 'mijing-yabi', done_scenes: [...inside().done_scenes, 'wm-wangzuo'] };
+  let s = { ...inside(), scene: 'wm-kunzhen', place: 'mijing-yabi', done_scenes: [...inside().done_scenes, 'wm-xiongya', 'wm-wangzuo'] };
   // Reached as an old save reaches it: the first Look writes what it is offered there.
   s = VERBS.look(s, content, ctx(), {}).state ?? s;
   const l = look(s, content, ctx());
@@ -235,7 +256,7 @@ test('the rooms hold play between the beats: the hall\'s 华容道, the 凶崖\'
   s = must(win, s, { id: 'mijing-zhenyan' });
   s = must(task, s, { action: 'done', id: 'mijing-zhenyan' });
   s = must(resolve, s, { exit: 'go' });
-  assert.equal(s.scene, 'wm-xirang');
+  assert.equal(s.scene, 'wm-shishi', 'the chamber first: 阿禾\'s 隐身符 (2026-10-26), then wm-xirang\'s fight');
   // The dry river opens once the binding is behind him: its beasts and its gleaning.
   s = must(move, fresh(s), { place: 'mijing-anhe' });
   const r = look(s, content, ctx());

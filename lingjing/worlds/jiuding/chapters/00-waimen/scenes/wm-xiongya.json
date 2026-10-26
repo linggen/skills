@@ -1,0 +1,76 @@
+{
+ "version": 1,
+ "id": "wm-xiongya",
+ "chapter": "00-waimen",
+ "hui": "h07",
+ "at": "mijing-duanya",
+ "place": {
+  "zh": "沉鼎秘境 · 凶崖",
+  "en": "The Sunken Cauldron realm · the Deadly Cliff"
+ },
+ "_board": "wm-xiongya (全文后的小游戏 第二批 2026-10-26): wm-wangzuo's passage split before the ledge — 时机 `xiongya` (down the 凶崖 on a half-mended rib) after 「…便像有人往里头塞了一根针。」; the 蛫's ledge (wm-wangzuo) after it, as 00-linzi stands before 蠪侄 (a fight's way on waits on its win alone). The sealed beat's first scene: he walks down to it from `home`, past the 凶崖's 犰狳, as he once walked to wm-wangzuo.",
+ "setup": {
+  "zh": "阿禾过了石桥，没去抢灵草，绕到暗河没人的那一头；你等那支小曲儿听不见了，侧着身子，挤进了刻着「凶」字的石缝。崖下黑洞洞的，只听得见水滴的声音。",
+  "en": "Ahe crossed the stone bridge, didn't fight for herbs, and went round to the empty end of the underground river; you waited till the little tune was out of hearing, then edged sideways into the cleft carved DEADLY. Black below, nothing to hear but dripping water."
+ },
+ "recap": {
+  "zh": "阿禾在黑地里抠出三粒很老的谷子。赤松观的黄袍在石厅拐角扶起一个崴了脚的胖公子，问他荷包里是什么——一条火蛇，那人只叫了半声。你贴着石壁等他走远，挤进凶崖的石缝，顺着一根草也不长的崖壁往下爬，左肋像有人往里塞了一根针；爬到一半，底下有了火光，你贴进石缝里。",
+  "en": "Ahe dug three very old grains out of the black ground. In a corner of the stone hall the Red Pine Abbey's yellow robe helped up a plump young gentleman with a twisted ankle and asked what was in his purse: one fire snake, and the man got out half a scream. You stayed flat to the wall till he was gone, squeezed into the Deadly Cliff's cleft and climbed down a rock face without a blade of grass, your left ribs like a needle pushed in; halfway down there was firelight below, and you pressed into a crack."
+ },
+ "cast": [],
+ "people": [
+  "ahe"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "石桥窄，只容一个人。",
+    "「……脚崴了？我扶你。」",
+    "这道崖从上到下一根草也不长。"
+   ],
+   "en": [
+    "The stone bridge, room for one.",
+    "\"...Twisted your ankle? Let me help you.\"",
+    "Not a blade of grass on this cliff from top to bottom."
+   ]
+  }
+ },
+ "story": {
+  "zh": "石桥窄，只容一个人。桥当中两个人黑地里撞上，谁也不让，青袍的剑先出了鞘；倒下的那个手里攥着的，是一只火折子。阿禾在桥头蹲了一炷香，才敢过去。\n\n桥那头的灵草园子，最后一株给人连根拔了。两个本观的老弟子把一个锦袍公子按进泥里，按到他不动了，才松手，蹲在泥里分那株草，一人一半；又翻他的荷包，灵石五块，一人两块，多出来那一块，两个人猜拳。园子底下那道暗河，在山腹里穿过去，地图上画的是水；今年泗水退得低，暗河干了，露了底，石缝里一丛一丛全是灵草，上中下三品都有，壁上一道铜矿。人都往下涌。往下只有一道石坎，一人宽。坎口站着内门的祁长松，八层，袍子下摆一层土黄的灰，两只脚钉在那里；人涌到他跟前，推他，挤他，像水撞上一根桩，撞不动，只好从两边分开，又流回来。坎底下，那四个九层一丛一丛地拔，拔一丛，往袖里一揣，看都不看是几品。拔够了上来，祁长松才挪开一步。\n\n阿禾没有去抢。她四层，功法是养草木的，打架是她最不会的一样；坎底下那四个九层，坎口那一个八层，哪一个都是一袖子拂她两三丈的人。她绕着暗河边上，往没人的那一头走，走到尽头，有一片地，是黑的，黑得发亮，一根草也不长，跟石坳村她家那面坡田，一个样子。黑地的边上，偏偏冒着一株草，三片叶子，紫里透金，叶背上一层细绒，在黑地里自己透着一点暗金的光，像三盏熬到了底的小油灯：「紫须芝，一株抵三块灵石。」三块灵石，是外门一个月的份例。她蹲下去，指头底下的黑土一松，露出半粒东西来，黑的，硬得像石子：是谷，烧焦了一样的谷。她拿指甲再往下抠——那片黑地底下，一垄一垄，排得整整齐齐。很久以前，这里有人种过地。那株紫须芝的根，正缠在那一垄谷里：拔草，便连根带谷翻成一团烂泥。她没有拔。她从那一垄的这一头，离草根远远的，一粒一粒，抠出三粒来，草根一根也没伤着。\n\n石厅里往凶崖去的也有。一个本观的老弟子走到缝口，探头往下看了一眼，缩回头骂了一句，追人堆去了；一个青萍的青袍站了一会儿，也走了。小满不比他们胆大，也不比他们聪明。九层进的口子，他不进；马小宝进的口子，他也不进；剩下这一个，没人要。何况是崖——崖，他是爬惯了的。\n\n小满还没走到缝口，石厅拐角那头先有人说话，声音很和气：「……脚崴了？我扶你。」他一把将肩上的银月按进衣襟，贴着石壁站住了。拐角后头，那个胖胖的锦袍公子坐在地上抱着脚脖子，人都散进口子里去了，没有一个人等他。蹲在他跟前的，是那个掌心焦黑的黄袍。胖公子道：「多谢……多谢师兄。」邹青松道：「荷包里是什么？」胖公子一把捂住了腰：「我爹给的……保命的符……」邹青松笑了一笑，拔开了葫芦塞子。\n\n一条火蛇从葫芦嘴里窜了出来，一尺来长，赤红赤红，在胖公子脖子上绕了一圈。胖公子只叫了半声。那股焦糊味儿飘过来，一半是绸子，一半是肉。邹青松把火蛇收回葫芦，解下那只荷包倒出来看：一道保命符，裂成了两半；灵石七块。他把灵石揣进怀里，拿胖公子的锦袍擦了擦葫芦嘴，又扯下他腰上的名牌，看也没看，往黑处一扔。然后他站起身来，哼着一支小曲儿，进了人多的那个口子。\n\n小满贴着石壁，一直等到那小曲儿听不见了，才挪动脚。他从那胖公子身边过去，那人的眼睛还睁着，望着石厅顶上。他侧着身子，挤进了那道石缝。\n\n石缝后头是一段往下走的石阶，窄，陡，湿，长满了青苔。走了约莫一顿饭的工夫，前面是一道断崖，崖下黑洞洞的，只听得见底下有水滴的声音，一滴，隔很久，又一滴。银月从他衣襟里钻出来，道：「往下。这里的灵气是从下面上来的……很厚。外头的，薄得像一碗刷锅水；这里的，像一口封了几百年的井，刚揭开盖子。」\n\n他把袖子挽起来，顺着崖壁往下爬。他是猎户家的孩子，爬崖是本行，可这道崖从上到下一根草也不长，石头凉得透骨。他左边的肋骨，十月十二那夜断的，到这时候还没长牢，一使劲，便像有人往里头塞了一根针。",
+  "en": "The stone bridge was narrow, room for one person. Two people ran into each other in the dark in the middle of it and neither would give way, and a green robe's sword came out of its scabbard first; the one who fell was holding a fire-stick in his hand. Ahe crouched at the head of the bridge for as long as an incense stick takes to burn before she dared to cross.\n\nIn the herb garden beyond the bridge, the last plant had been pulled up root and all. Two of the abbey's own older disciples held a young gentleman in brocade face down in the mud, held him until he stopped moving, and only then let go. They squatted in the mud and split the plant, half each; then they went through his purse. Five spirit stones: two each, and for the one left over, the two of them played finger-guessing. The underground river below the garden ran through the belly of the mountain, and the map showed it as water. This year the Si had gone down so low that the river had dried and showed its bed, and the cracks in the rock were full of spirit herbs, clump after clump, high grade, middle and low, with a seam of copper in the wall. Everyone surged downwards. There was only one way down, a stone step, one person wide. At the top of the step stood Qi Changsong of the inner sect, eighth layer, the hem of his robe grey with yellow dust, both feet nailed to the spot. People surged up to him, pushed him, shoved him, like water against a post: they couldn't shift him, and could only split round him on either side and flow back. Below the step, the four ninth-layers pulled clump after clump, pulled one and stuffed it in a sleeve, without looking at the grade. Only when they'd had enough and came up did Qi Changsong move one step aside.\n\nAhe didn't go and fight for any. She was fourth layer, and her method was for nursing plants; fighting was the thing she was worst at. The four ninth-layers below the step and the eighth-layer at the top, any one of them could sweep her twenty or thirty feet with a sleeve. She went along the edge of the underground river towards the end where there was nobody, and at the very end was a patch of ground that was black, black and shining, without a blade of grass, exactly like her family's hillside field in Shi'ao Village. At the edge of the black ground, of all places, one plant had come up: three leaves, purple shot through with gold, a fine down on their backs, and in the black ground it glowed by itself with a dark gold light, like three little oil lamps burned down to the last of the oil. \"Purple-whisker lingzhi: one plant is worth three spirit stones.\" Three spirit stones were an outer disciple's monthly allowance. She crouched, and under her fingertips the black earth loosened and showed half of something, black and hard as a pebble: grain. Grain that looked burned. She dug down further with a fingernail. Under that patch of black ground, ridge after ridge, in tidy rows: a long time ago, somebody had farmed here. The roots of the purple-whisker lingzhi were twined right into one ridge of that grain; pull the herb, and you'd turn roots and grain over together into a mess of mud. She didn't pull it. From this end of the ridge, far from the herb's roots, she dug out three grains, one at a time, and didn't hurt a single root.\n\nThere were some in the stone hall who went towards the Deadly Cliff too. An older disciple of the abbey went up to the cleft, stuck his head in and looked down, pulled his head back with a curse, and went after the crowd. A Green Duckweed green robe stood there a while and then left as well. Xiaoman was no braver than them, and no cleverer. The opening the ninth-layers went into, he wouldn't take; the opening Ma Xiaobao went into, he wouldn't take either; this one was left, and nobody wanted it. Besides, it was a cliff, and cliffs he was used to climbing.\n\nBefore Xiaoman reached the cleft, someone spoke beyond the corner of the hall, in a very friendly voice: \"...Twisted your ankle? Let me help you.\" He pushed Yinyue off his shoulder and into the front of his robe and stood flat against the stone wall. Beyond the corner, the plump young gentleman in brocade sat on the ground clutching his ankle. Everyone had scattered into the openings and not one had waited for him. Crouched in front of him was the yellow robe with the scorched palm. The plump young gentleman said: \"Thank you... thank you, senior brother.\" Zou Qingsong said: \"What's in the purse?\" The plump young gentleman clapped a hand over his waist: \"My father gave me... a charm to save my life...\" Zou Qingsong smiled a little and pulled the plug from his gourd.\n\nA fire snake shot out of the gourd's mouth, a foot or so long, red as red, and wrapped itself once round the plump young gentleman's neck. He got out half a scream. The burnt smell drifted over, half silk, half flesh. Zou Qingsong called the fire snake back into the gourd, untied the purse and tipped it out to look: one life-saving charm, split in two; seven spirit stones. He tucked the stones into his robe, wiped the gourd's mouth on the young gentleman's brocade, and pulled the name tag off his belt and, without a glance at it, threw it off into the dark. Then he stood up and, humming a little tune, went into the crowded opening.\n\nXiaoman stayed flat against the wall until the tune could no longer be heard, and only then moved. He went past the plump young gentleman; the man's eyes were still open, looking up at the roof of the hall. He turned sideways and squeezed into the cleft.\n\nBehind the cleft a flight of stone steps led down, narrow, steep, wet, thick with moss. After about as long as it takes to eat a meal, there was a sheer drop ahead, black below, and all he could hear from down there was dripping water: one drop, a long gap, another drop. Yinyue came out of his robe and said: \"Down. The spirit qi here comes up from below... it's thick. Outside, it's as thin as a bowl of pot-scrubbing water; here, it's like a well sealed for a few hundred years with the lid just lifted.\"\n\nHe rolled up his sleeves and climbed down the cliff face. He was a hunter's child, and climbing cliffs was his trade, but this cliff grew not a blade of grass from top to bottom, and the rock was cold to the bone. His left ribs, broken that night of the twelfth of the tenth month, still hadn't knitted, and every time he strained, it felt as if someone were pushing a needle in."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "wangzuo-xiongya"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "wangzuo-xiongya"
+  ]
+ },
+ "lines": [],
+ "buttons": [
+  "down"
+ ],
+ "exits": [
+  {
+   "id": "down",
+   "label": {
+    "zh": "往下爬",
+    "en": "Climb down"
+   },
+   "means": "climbs on down to the ledge under the cliff",
+   "beat": [],
+   "next": "wm-wangzuo",
+   "needs": {
+    "task": "wangzuo-xiongya"
+   },
+   "refuse": {
+    "zh": "崖壁上还挂着半截身子。",
+    "en": "He is still hanging halfway down the rock."
+   }
+  }
+ ]
+}

@@ -1,0 +1,87 @@
+{
+ "version": 1,
+ "id": "wm-kouzi",
+ "chapter": "00-waimen",
+ "hui": "h07",
+ "at": "shimen",
+ "place": {
+  "zh": "泗水 · 秘境石门前",
+  "en": "The Si River · before the stone door"
+ },
+ "_board": "wm-kouzi (全文后的小游戏 第二批 2026-10-26): wm-mijing's ways on split at 「凶崖。」 — 华容道 `kouzi` (阿禾's reckoning: four hundred tags, the mouth nobody wants), then the walk to the door and 孙二狗 (jinchat `ergou`) after 「…把萝卜揣进怀里，跟那个护身符揣在一处。」 Outside the sealed beat, as wm-mijing (its entry) is.",
+ "setup": {
+  "zh": "阿禾掰着指头算：四百一十七块名牌，七八个口子，人多的挤长廊，余下的跟着同门走——到最后，没人要的口子只剩一个。",
+  "en": "Ahe counts on her fingers: four hundred and seventeen tags, seven or eight mouths; the crowd packs the long gallery, the rest follow their own; in the end only one mouth is left that nobody wants."
+ },
+ "recap": {
+  "zh": "凶崖底下有一面墙，墙缝往里吸风；暗河崖腰上有个洞，往外吹风——「真到了走投无路，往风里钻。」小狰寄在执事房，抱着周衡的萝卜啃；瞿老在台阶上说「腿稳」。河滩上，赤松观的黄袍拿鞋跟碾死了一条鱼；孙二狗要跟着你，你塞给他一根萝卜：「跟着人多的走，走中间。」",
+  "en": "Under the Deadly Cliff a wall draws the wind in through a crack; halfway up the underground river a hole blows it out. \"If it comes to the end of the road, crawl into the wind.\" The little zheng is left at the office, gnawing Zhou Heng's radish; on the steps Old Qu says \"steady legs\". On the riverbed the yellow robe of the Red Pine Abbey ground a fish under his heel; Sun Ergou wanted to follow you, and you pushed a radish into his hand: \"Follow the crowd. Walk in the middle.\""
+ },
+ "cast": [],
+ "people": [
+  "ahe",
+  "sunergou",
+  "qulao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "四百一十七块名牌，七八个口子。",
+    "「腿稳。」",
+    "「跟着人多的走，走中间。」"
+   ],
+   "en": [
+    "Four hundred and seventeen tags, seven or eight mouths.",
+    "\"Steady legs.\"",
+    "\"Follow the crowd. Walk in the middle.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "小满张着嘴，半天合不上。",
+  "en": "Xiaoman's mouth fell open, and it was a while before it closed."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "kouzi-crowd"
+  },
+  {
+   "card": "board",
+   "id": "kouzi-ergou"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "kouzi-crowd",
+   "kouzi-ergou"
+  ]
+ },
+ "story_after": {
+  "zh": "「观主亲传进得了藏经阁，」阿禾道，「秘境的旧志，三百年，我翻了一夜。凶崖，图上只有一行字，旧志上多几句：十年前上来的那一个说，崖底下有一面墙，墙缝往里吸风。园子底下那道暗河，三十年前有人记过：河道崖腰上有个洞，往外吹暖风，一吹三天，跟秘境开门一样长。」她看着他，「秘境里只有这两处有风。一处吸，一处吹，是一口气——中间是通的。真到了走投无路，往风里钻。风的那头，有路。」\n\n小满道：「……你不拦我？」阿禾道：「拦得住么？」她转身便走，走了两步，又回过头来：「我走长廊。长廊通园子，园子底下那道暗河，旧志上记着长过紫须芝。我要一株。」\n\n小狰是不能带进秘境的——秘境的门认名牌，名册上没有畜生。小满只得把它寄在执事房。它死死扒着他的袖子不撒手，五条尾巴一齐竖着；周衡从抽屉里摸出一根萝卜，放在桌角上，道：「它吃一根，我记一根。」小狰盯着萝卜，那眼神分明是说「你拿一根萝卜就把我卖了」，然后松开袖子，跳上桌角，抱着萝卜「咔嚓咔嚓」地啃，啃一口，回过头拿湿汪汪的眼睛瞅他一眼，再啃一口，又瞅一眼，啃完了，打了个嗝。\n\n名牌是祖师传下来的，一块进一个人。外门三百多人用不完，剩下的一百来块，周衡的账簿上另有一页：卖给下邳的青萍剑派、彭城的赤松观和城里几户人家的子弟，一块二十块灵石，入公中。周衡见他看，把账簿一拢：「观里穷。卖的是一块牌子；进去捡着什么，各凭本事。」\n\n山门前那三百级石阶上，瞿老照旧在扫他的台阶。三百多人从他身边涌下去，他头也不抬，只把扫帚往旁边让一让。小满走到他跟前，放慢了脚。瞿老忽然开口了，声音不高，像对着台阶说的：「水，退得比上回低。」小满一怔。瞿老还在扫，又道：「上回比上上回低。」小满道：「……那是好，还是不好？」瞿老没有答，把扫帚一让，让出一条路来：「腿稳。」\n\n辰时，外门三百多个弟子挤在河滩上。泥是黑的，泥上结着一层白霜，霜上歪歪扭扭躺着几条来不及跟着水走的鱼，嘴一张一合。观里的杂役连夜往泥上铺了木板，从岸边一直铺到石门跟前，窄窄一条道。那道石门露在泥滩上，门缝里往外冒着一丝一丝的白气，冬天的早晨，那白气是暖的。\n\n灰袍中间，还夹着百来个别样颜色的。青袍长剑、一开口是下邳腔的，是青萍剑派；赭黄袍子、腰里挂着葫芦的，是赤松观；还有七八个锦袍公子，一人一块名牌，家丁进不去，只好在岸上替主子提着食盒。唱名的执事——马小宝的表伯——捧着一本薄名册站在道口，念一个外人的名字，递一块名牌。念到一个胖胖的锦袍公子，他身后那个黄袍笑着让了半步，让他先领。那黄袍二十五六，白净脸，腰里的葫芦跟同门的不一样：赤铜的，拳头大，葫芦嘴拿一个铜塞子塞着，他脚边的白霜，围着那只葫芦化开了一圈；托着葫芦的那只右手，掌心焦黑一块，像给火烙过；左臂上挎着一面盘子大的赤铜小盾，刻着火纹，纹路里像有一点红，慢慢地走。同门里有人跟旁人夸：「我们邹师兄，练气九层；那面盾，祖师所赠，结丹以下，无人能破。」他不看沉鼎观的人，只看那胖公子腰里鼓鼓的荷包。脚边一条鱼还在张嘴，他拿鞋跟踩住它的头，碾了一碾，脸上照旧冲着执事笑。执事念道：「彭城赤松观，邹青松。」他上前接了牌子。\n\n石门前头站着一个人，一身灰袍，面目温和，两只手拢在袖子里，正是观主玄沉子。他从山上下来的时候，一个筑基的师叔踩着剑先到，河滩上的人便自己往两边让出一条道来；他走过去，泥滩上几百号人，连咳嗽都咽了回去，河心那一道亮线，在他身后静得像一根拉直的弦。老弟子们说，每回开门，观主都这般站着，从头一个进，站到最后一个出；问他站着做什么，他说数人——可他从来不拿本子。\n\n孙二狗挤到小满身边，鼻涕冻成了两道冰溜子，小声道：「沈师兄，我跟着你，行么？我灵根差，一个人进去，怕……」他自己先红了脸，「……怕回不来。」孙二狗腰上系着一个蓝布包，露出一截红绳——他娘缝的护身符。小满背上背着爷爷那张弓——猎户进一座没进过的山，弓不离身；箭壶里三支竹箭，是他在柴房里自己削的，箭头是伙房讨来的旧铁钉。他从包袱里摸出一根萝卜，塞进孙二狗手里：「跟着人多的走，走中间。刀先落在两头。」孙二狗捧着萝卜，道：「……那师兄你呢？」小满道：「我走没人的地方。没人，就没刀。」孙二狗没听懂，可他很郑重地点了点头，把萝卜揣进怀里，跟那个护身符揣在一处。",
+  "en": "\"The Abbot's personal disciple can get into the Scripture Library,\" said Ahe. \"The old records of the secret realm, three hundred years of them. I went through them all night. On the map the Deadly Cliff gets one line; the old records have a few more. The one who came up ten years ago said there's a wall at the bottom of the cliff, and the cracks in it draw air inwards. And the underground river beneath the garden: thirty years ago someone wrote that there's a cave halfway up the cliff of the river channel that blows warm air outwards, for three days at a stretch, as long as the realm stays open.\" She looked at him. \"Those are the only two places in the secret realm with wind. One draws in, one blows out. It's one breath. They're connected in the middle. If you're really at the end of your road, go into the wind. At the other end of the wind there's a way out.\"\n\nXiaoman said: \"...You're not going to stop me?\" Ahe said: \"Could I?\" She turned to go, took two steps and looked back: \"I'm taking the corridor. The corridor goes to the garden, and the old records say the underground river under the garden once grew purple-whisker lingzhi. I want one.\"\n\nThe little zheng could not be taken into the secret realm: the realm's door knew name tags, and there were no beasts in the register. Xiaoman had to leave it at the stewards' office. It clung to his sleeve and wouldn't let go, all five tails standing straight up. Zhou Heng took a radish from his drawer, set it on the corner of the table and said: \"It eats one, I write down one.\" The little zheng stared at the radish with a look that plainly said *you're selling me for one radish*, then let go of the sleeve, jumped onto the table and hugged the radish, gnawing it, *crunch, crunch*. One bite, and it turned to give him a look with wet, swimming eyes; another bite, another look. When it had finished, it hiccupped.\n\nThe name tags had come down from the founder: one tag, one person in. The outer sect's three hundred and more couldn't use them all, and for the hundred or so left over there was a separate page in Zhou Heng's ledger: sold to the young people of the Green Duckweed Sword School of Xiapi, the Red Pine Abbey of Pengcheng, and a few households in town, twenty spirit stones a tag, into the Common Fund. Seeing him look, Zhou Heng drew the ledger closed. \"The abbey is poor. What we sell is a tag. Whatever you pick up inside is your own wits.\"\n\nOn the three hundred stone steps before the mountain gate, Elder Qu was sweeping as usual. Three hundred and more people poured down past him, and he didn't lift his head, only moved his broom aside a little. When Xiaoman reached him he slowed. Elder Qu spoke suddenly, not loudly, as if to the steps: \"The water's gone lower than last time.\" Xiaoman started. Elder Qu kept sweeping. \"Last time was lower than the time before.\" Xiaoman said: \"...Is that good or bad?\" Elder Qu didn't answer. He moved the broom aside and left a way clear: \"Steady legs.\"\n\nAt the hour of the dragon the three hundred and more outer disciples were crowded onto the riverbed. The mud was black with a skin of white frost on it, and on the frost lay a few fish that hadn't followed the water in time, mouths opening and closing. Overnight the abbey's servants had laid planks over the mud, from the bank right up to the stone door, one narrow path. The stone door stood exposed on the mudflat, and white wisps were seeping out through the crack. On a winter morning, that white air was warm.\n\nMixed in among the grey robes were a hundred or so of other colours. Green robes with long swords, speaking with Xiapi accents: the Green Duckweed Sword School. Ochre-yellow robes with gourds at the belt: the Red Pine Abbey. And seven or eight young gentlemen in brocade, one tag each; their servants couldn't get in, so they stood on the bank holding their masters' food boxes. The steward calling the names (Ma Xiaobao's uncle, his father's cousin) stood at the head of the path with a thin register, read out an outsider's name, handed over a tag. When he read out a plump young gentleman in brocade, the yellow robe behind him smiled and stepped half a pace aside to let him go first. That yellow robe was twenty-five or twenty-six, fair-faced, and the gourd at his belt was not like his fellows': red copper, the size of a fist, its mouth stopped with a copper plug, and the white frost round his feet had melted in a ring around the gourd. The right hand that held the gourd had a scorched black patch in the palm, as if branded. On his left arm hung a small red-copper shield the size of a plate, engraved with flames, and in the grooves something red seemed to move, slowly. One of his fellows was boasting to someone: \"Our Senior Brother Zou, ninth layer of Qi Condensation. That shield was the founder's gift. Nothing below Core Formation can break it.\" He didn't look at the Sunken Cauldron people. He looked only at the bulging purse at the plump young gentleman's waist. A fish at his feet was still gasping; he set his heel on its head and ground it, and his face went on smiling at the steward. The steward read: \"Red Pine Abbey of Pengcheng, Zou Qingsong.\" He stepped up and took his tag.\n\nBefore the stone door stood a man in a grey robe, mild of face, hands tucked into his sleeves: the Abbot, Xuanchenzi. When he came down from the mountain, a martial uncle of Foundation Establishment arrived ahead of him on a flying sword, and the people on the riverbed parted of their own accord to make a path; as he walked through it, hundreds of people on the mudflat swallowed even their coughs, and the bright thread of water in the river's middle lay behind him still as a drawn string. The older disciples said that every time the door opened, the Abbot stood like this, from the first one in to the last one out. Asked what he was standing there for, he said he was counting people. But he never used a book.\n\nSun Ergou squeezed up beside Xiaoman, his snot frozen into two little icicles, and said quietly: \"Senior Brother Shen, can I follow you? My spirit root's poor, and if I go in alone I'm scared...\" He went red first. \"...scared I won't come back.\" At Sun Ergou's waist was tied a blue cloth bundle with a bit of red string showing: the charm his mother had sewn. On Xiaoman's back was his grandfather's bow. A hunter going into a mountain he'd never been in doesn't put his bow down. In his quiver were three bamboo arrows he'd whittled himself in the woodshed, the heads made from old iron nails begged off the kitchen. He took a radish out of his bundle and pushed it into Sun Ergou's hand: \"Follow the crowd. Walk in the middle. The blades fall on the edges first.\" Sun Ergou held the radish and said: \"...And you, Senior Brother?\" Xiaoman said: \"I'll go where there's nobody. No people, no blades.\" Sun Ergou didn't understand, but he nodded very solemnly and tucked the radish into his robe, alongside the charm."
+ },
+ "lines": [],
+ "buttons": [
+  "gate"
+ ],
+ "exits": [
+  {
+   "id": "gate",
+   "label": {
+    "zh": "进石门",
+    "en": "Through the door"
+   },
+   "means": "goes in at the stone door, last of all",
+   "beat": [],
+   "next": "wm-shiting",
+   "needs": {
+    "task": "kouzi-ergou"
+   },
+   "refuse": {
+    "zh": "孙二狗还攥着你的袖子。",
+    "en": "Sun Ergou is still clutching your sleeve."
+   }
+  }
+ ]
+}

@@ -62,6 +62,121 @@ sounds.json. Locks: tests/game-sound.test.mjs (every registry game names real so
 runner sounds), tests/board-leave.test.mjs (no board the story needs without a scene; every kind draws its way out).
 Left: the story's 炼丹 herb board has no shell frame, so no 🔊 of its own (it follows the one shared mute set on any other board).
 
+## 全文后的小游戏 — the second batch, 古五 → 古九 (plan 2026-10-26; Hanli 「都开吧」)
+
+The first batch's rules, unchanged (below): a board only where the book has action, no kit twice in a row, nothing
+across a key moment, a split where a passage must break, a level of a built kit only. Pay: 古五 on, the first clear
+5 · 10 · 15 灵石 and progress 5 (as 古四's); a 今 board nothing. Counting: 450 字/min, a board or fight 3 min, a set
+piece about 1 min (the first batch's). 调息 at most two a 回 (Hanli cut it as too many, 10-20).
+
+**Re-measured before (rhythm.json, the full text):**
+
+| 回 | read | play | share | boards to 60% |
+|---|---|---|---|---|
+| 第五回 h07 | 28,807 字 · 64 min | 4 boards/fights + 1 piece · 16 | 80% | +9 |
+| 第六回 h08 | 28,684 · 64 | 7 + 1 · 22 | 74% | +7 |
+| 今三 j07 | 12,351 · 27 | 1 · 3 | 90% | +5 |
+| 第七回 h11 | 22,410 · 50 | 5 + 1 · 16 | 76% | +6 |
+| 第八回 h09 | 9,539 · 21 | 1 + 突破 + 2 · 6 | 78% | +3 |
+| 今四 j09 | 10,452 · 23 | 2 · 6 | 79% | +3 |
+| 第九回 h10 | 19,268 · 43 | 2 + 谜 + 3 · 9 | 83% | +7 |
+
+**Kept out (no board):** 老蔫's fall (wm-kaikai a3 → e5); the kill and 银月's words after it (wm-anhe e46–e51);
+石蛋-like landings: 子安's story and the night home (09-qulao e1–e22), the doors in the fog (09-cliff s9–s18), 老胡's
+death (01-tower e1–e8), 周衡 and his 阿姊 (01-end e3–e13), the 白衣人 at the ferry (09-yishui a4–a25).
+
+### 第五回 (h07): +9 → built 10 (+ the 萝卜)
+**Built 2026-10-26:** as planned, with the splits the sealed 秘境 needs. ① 老蔫 at wm-mijing (both ways on wait on it, and
+end at 「凶崖。」) · ② 七八个口子 (new wm-kouzi at the door: 华容道 `kouzi`, painted) and ③ 孙二狗 (its second board) · ④ 别踩第三块
+(new wm-shiting at the door: 打地鼠 `fanban`) · ⑤ 凶崖 (new wm-xiongya, 时机 `xiongya`: the sealed beat's first scene now,
+walked down to past the 犰狳 as wm-wangzuo was — a fight's way on waits on its win alone, so no board shares the 蛫's
+scene) · ⑥ 隐身符 (new wm-shishi before wm-xirang's fight, 气走经脉 `yinshen`) · ⑦ 踏马符 and ⑧ 谷粒 (new wm-tama, the
+ledge, inside the beat) · ⑨ 阿禾 (new wm-hetan, the beat's last scene: 「风，用上了？」) · and the 萝卜 (wm-luobo, 割绳子
+`luoborope`, niugu's twin: rope-gen `luobo-8`). The rerun rooms (岔口 · 凶崖 · 暗河) hold no story scene, so the hall and the
+gate play at the door. Reading 第五回: 64 min, 15 boards and fights, 59%.
+| # | scene · ¶ | the book | kit · level |
+|---|---|---|---|
+| 1 | wm-mijing s6 「…从那以后，马小宝便叫他睡窗户底下。」 | the night the river vanished: 老蔫 folds 马小宝's oil paper | jinchat `laonian` (face) |
+| 2 | wm-mijing e5 「…凶崖。」 (split) | 阿禾 at the wall: 417 tags, seven or eight mouths, the one nobody wants | 华容道 `kouzi` |
+| 3 | wm-wangzuo s7 (split) | 孙二狗 at the gate: 「我跟着你，行么？」 — the radish, 「跟着人多的走」 | jinchat `ergou` (face) |
+| 4 | wm-wangzuo s14 (split) | 阿禾 in the long hall: 「别踩第三块」 | 打地鼠 `fanban` |
+| 5 | wm-wangzuo s24 (split) | down the 凶崖 on a half-mended rib; firelight below, flat in a crack | 时机 `xiongya` |
+| 6 | wm-xirang s8 | 阿禾's 隐身符 in the crack, 「一口气喘得比草叶还轻」, his 神识 sweeping | 气走经脉 `yinshen` |
+| 7 | wm-anhe e9 (split) | four fire snakes; the 踏马符 slapped on, stamp — three feet up | 时机 `tama` |
+| 8 | wm-anhe e26 (split) | a fistful of grain into the wet cracks: vines at his heels | 打地鼠 `guli` |
+| 9 | wm-chu s17 | 阿禾 on the mudflat: 「你在里头捡到什么了？」 | jinchat `chumen` (face) |
+
+Over the cap after, as the book has it: 今二's tail into 古五 2,313 + 662; wm-anhe e27 → 息壤 (the end of the fight,
+the kill, 银月's words) ≈ 4,400; 息壤 → 二十三下 2,472 (老蔫's fall).
+
+### 第六回 (h08): +7 (and 第五回's tail)
+| # | scene · ¶ | the book | kit · level |
+|---|---|---|---|
+| 0 | wm-luobo s3 「…「吃！你吃！」」 (split) | the 萝卜 into the 饭桶 that ate everything: 「咔哒」 | 割绳子 `luobo` (niugu's twin) |
+| 1 | wm-qianye s5 | 钱掌柜 weighs grandfather's bow: 「这木头——我叫不出名字」 | jinchat `qian-gong` (face) |
+| 2 | wm-qianye s11 (split) | 褚先生's two dry fingers probing, 「像两根竹签」 | 气走经脉 `maizhen` |
+| 3 | wm-qianye a5 (split) | 扣: thumb on the 午文, 「四层，一炷香」 | 时机 `kou` |
+| 4 | wm-lun2 s4 | 秦雁 at the water jar hands him the ladle | jinchat `qinyan` (face) |
+| 5 | wm-juesai (split of the 秦雁 bout's telling) e8 | the sword at his throat: step INTO it | 时机 `yingjian` |
+| 6 | wm-laoyin s8 | 阿禾's slip: 「没法打，认输」 | jinchat `renshu` (face) |
+| 7 | wm-laoyin e2 (split) | 半炷香, the flag droops, the pig talisman on 祁长松's back | 时机 `fengtou` |
+
+Over after: wm-lufang → 秦雁 2,336 ≈; 镜子 → 决赛 the told bout; wm-jiaxin's tail into the 后山 2,628 ≈ (no action).
+
+### 今三 (j07): +5
+| # | scene · ¶ | the book | kit · level |
+|---|---|---|---|
+| 1 | j07-ankle s24 | the paper pad: 「一捻一捻往里送…要快、要直」 | 时机 `zhidian` (needle) |
+| 2 | j07-ankle s52 (split) | eyes shut, one foot, three seconds | 气走经脉 `danjiao` |
+| 3 | j07-guan s8 (split) | 闭关三日 day one: squats, ten a set | 时机 `shendun` |
+| 4 | j07-guan s47 | 阿禾 draws the curve on the drip sheet | jinchat `quxian` (face) |
+| 5 | j07-guan e1 (split) | the morning pulse: 六十九 | 时机 `chenmai` (count) |
+
+Over after: j07-ankle's tail → 黑地里 ≈ 2,489 (the locked-in afternoon has no action).
+
+### 第七回 (h11): +6
+| # | scene · ¶ | the book | kit · level |
+|---|---|---|---|
+| 1 | 09-jiuge s12 | 瞿老's broom follows the leaf down: 「你得随它」 | 气走经脉 `suifeng` |
+| 2 | 09-furnace s19 (split) | 邓执事 on the threshold: 「看懂了？」 — the black lines | jinchat `deng` (face) |
+| 3 | 09-year s8 (split) | 闵丹师: 「听说你手里有丹。拿一颗我看看。」 | jinchat `min` (face) |
+| 4 | 09-year s26 (split) | 「这个……是不是就是丹焦的味儿？」 — half a breath | 时机 `wenyao` |
+| 5 | 09-yishui s1 | 钱掌柜's back room: a year's jar of 回春丹 | jinchat `qian-dan` (face) |
+| 6 | 09-yishui s10 (split) | 秦雁's 流云剑 on the cliff: her point stops at his heart | 时机 `liuyun` |
+
+Over after: the 犰狳's telling into 钱掌柜 ≈ 2,809; 鯥 → 顺风溜 ≈ 2,700 (the ferry, no board); 秦雁 → 丹房 ≈ 2,350.
+
+### 第八回 (h09): +2
+| # | scene · ¶ | the book | kit · level |
+|---|---|---|---|
+| 1 | 09-dabi s5 | 闵丹师's test: 「夫金丹之为物」，下一句 | jinchat `kaoshu` (face) |
+| 2 | 09-cliff s4 (split) | the 160th step: 恬惔虚无, three times lost at fifty | 气走经脉 `tiandan` |
+
+Over after: 瞿老 → the 160th step (子安, the night home) ≈ 3,400 — the 回's heart, read whole.
+
+### 今四 (j09): +4
+| # | scene · ¶ | the book | kit · level |
+|---|---|---|---|
+| 1 | j09-noise s4 | 红薯 under the hoop, heading the misses back | 打地鼠 `hongshu` |
+| 2 | j09-noise s33 (split) | 「再来一回。这回我吐气。」 — 老蔡's yell, the band at 112 | 时机 `shouhuan` (hold) |
+| 3 | j09-dongzhi s8 (split) | 马小宝 down on the new floor: legs up, 「先别吸气，往外吐」 | 时机 `jijiu` |
+| 4 | j09-dongzhi s33 (split) | 冬至夜 in the dark: the down on his lip that doesn't stir | 气走经脉 `changxi` |
+
+### 第九回 (h10): +8
+| # | scene · ¶ | the book | kit · level |
+|---|---|---|---|
+| 1 | 01-ye e6 (split) | the boat on the slip: seven holes bored in its bottom | 打地鼠 `chuan` |
+| 2 | 01-ye e19 (split) | 阿禾 in the borrowed red: 「先对着我，练一遍」 | jinchat `jiayi` (face) |
+| 3 | 01-altar e9 (split) | 「数到三十，就下去捞」 — five, seven, and she jumps | 时机 `sanshi` (count) |
+| 4 | 01-tower s7 (split) | 冰夷 over the city: 「河伯大人明鉴！」 | jinchat `bingyi` (face) |
+| 5 | 01-tower s31 (split) | brick by brick off 老胡, the beam | 华容道 `wali` |
+| 6 | 01-deep s16 (split) | down the pit in one breath, the cold ring | 气走经脉 `qianshui` |
+| 7 | 01-cauldron e9 (split) | 赵昂 under the willow: the ingot, 小豆 | jinchat `zhaoang` (face) |
+| 8 | 01-end s7 | 阿禾's thread of qi into the girl's throat | 气走经脉 `sangzi` |
+
+**大场面, later:** 鯥 up the bank (09-yishui), 漳水立起 is built, 筑基天象 is built. Each 回's "Built" note below
+says what landed, what moved and why.
+
 ## 全文后的小游戏 — the first batch (plan 2026-10-26; built 2026-10-26)
 
 **Built** (the go, the coordinator for Hanli): 25 boards across 第二回 · 今一 · 第三回 · 第四回 · 今二, each 回's

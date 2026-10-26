@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 550,
-  "wealth": 482,
+  "wealth": 532,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -151,12 +151,18 @@
    "j04-line",
    "j04-dog",
    "wm-mijing",
+   "wm-kouzi",
+   "wm-shiting",
+   "wm-xiongya",
    "wm-wangzuo",
    "wm-kunzhen",
+   "wm-shishi",
    "wm-xirang",
    "wm-anhe",
+   "wm-tama",
    "wm-kaikai",
    "wm-chu",
+   "wm-hetan",
    "wm-luobo",
    "wm-qianye",
    "wm-zhaojing",
@@ -424,7 +430,37 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "mijing-laonian": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "kouzi-crowd": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "kouzi-ergou": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "shiting-fanban": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "wangzuo-xiongya": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "mijing-zhenyan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "xirang-yinshen": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -434,7 +470,27 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "anhe-tama": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "anhe-guli": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "xirang-wumen": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "chu-ahe": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "luobo-rope": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -488,8 +544,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 115,
-   "wealth": 485
+   "progress": 150,
+   "wealth": 535
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -780,7 +836,7 @@
     "day": "2026-10-01",
     "place": "mijing-xiongya",
     "chapter": "00-waimen",
-    "scene": "wm-wangzuo"
+    "scene": "wm-xiongya"
    },
    "huoya": {
     "how": "win",
@@ -954,9 +1010,19 @@
    "duizhang-ahe",
    "yan-tieshua",
    "baoming-yinyue",
+   "mijing-laonian",
+   "kouzi-crowd",
+   "kouzi-ergou",
+   "shiting-fanban",
+   "wangzuo-xiongya",
    "mijing-zhenyan",
+   "xirang-yinshen",
    "anhe-dark",
+   "anhe-tama",
+   "anhe-guli",
    "xirang-wumen",
+   "chu-ahe",
+   "luobo-rope",
    "qianye-qiajue",
    "zhaojing-mirror",
    "dabi-sneeze",
@@ -973,6 +1039,10 @@
    "09-year/futian"
   ],
   "furnace_name": "饭桶",
+  "stretch": {
+   "qi:2": 8,
+   "qi:3": 30
+  },
   "hunted": {
    "mijing-xiongya": 1
   },
@@ -987,9 +1057,6 @@
     "n": 0,
     "ended_at": "2026-01-01T00:00:00.000Z"
    }
-  },
-  "stretch": {
-   "qi:3": 13
   },
   "told_scenes": [
    "00-baicai",
@@ -1047,12 +1114,18 @@
    "j04-line",
    "j04-dog",
    "wm-mijing",
+   "wm-kouzi",
+   "wm-shiting",
+   "wm-xiongya",
    "wm-wangzuo",
    "wm-kunzhen",
+   "wm-shishi",
    "wm-xirang",
    "wm-anhe",
+   "wm-tama",
    "wm-kaikai",
    "wm-chu",
+   "wm-hetan",
    "wm-luobo",
    "wm-qianye",
    "wm-zhaojing",

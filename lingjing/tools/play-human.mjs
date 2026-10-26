@@ -162,7 +162,7 @@ export const CHOOSERS = {
     return c.kind === 'hold' || c.kind === 'drag' ? { kind: 'hold', c, ms: 300 + r() * 2200 } : c.kind === 'swipe' ? { kind: 'swipe', c } : { kind: 'tap', c };
   },
 };
-export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'fallrope' ? 'swing' : game === 'rain' ? 'rain' : ['bread', 'niugurope', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : 'any');
+export const chooserOf = (game) => (game === 'qimai' ? 'breath' : game === 'fallrope' ? 'swing' : game === 'rain' ? 'rain' : ['bread', 'niugurope', 'luoborope', 'rentrope', 'tauntrope', 'wayrope'].includes(game) ? 'cut' : 'any');
 export const LOSS = { rain: /成河/ };
 /* A story board's task id (its [data-game] host) → its game kind (the chooser's key): games.json. */
 export const GAME_OF_TASK = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'worlds/jiuding/games.json'), 'utf8')).games.filter((g) => g.task).map((g) => [g.task, g.id]));

@@ -366,6 +366,35 @@
         "worlds/jiuding/art/games/xiaobao.webp"
       ]
     },
+    "luoborope": {
+      "_about": "割绳子 · 萝卜 (games/luoborope.js, the rope kit), as niugurope.",
+      "module": "scripts/games/luoborope.js",
+      "dirs": [
+        "scripts/games/boards",
+        "worlds/jiuding/art/games/anchor",
+        "worlds/jiuding/art/games/fall",
+        "worlds/jiuding/art/items-comic"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css"
+      ],
+      "files": [
+        "scripts/vendor/matter-0.20.0.min.js",
+        "worlds/jiuding/games.json",
+        "worlds/jiuding/art/games/bubble.webp",
+        "worlds/jiuding/art/games/cake.webp",
+        "worlds/jiuding/art/games/crow.webp",
+        "worlds/jiuding/art/games/fantong-pot.webp",
+        "worlds/jiuding/art/games/meat.webp",
+        "worlds/jiuding/art/games/moss.webp",
+        "worlds/jiuding/art/games/seal.webp",
+        "worlds/jiuding/art/games/spark.webp",
+        "worlds/jiuding/art/games/steelyard.webp",
+        "worlds/jiuding/art/games/thorns.webp",
+        "worlds/jiuding/art/games/xiaobao.webp"
+      ]
+    },
     "huarong": {
       "_about": "华容道 (games/huarong.js): 人堆, the 秘境's and the 奇遇's.",
       "module": "scripts/games/huarong.js",

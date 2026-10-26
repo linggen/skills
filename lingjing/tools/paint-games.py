@@ -211,6 +211,48 @@ SUBJECTS = {
   'shiji/didi-me': ('sprite', (360, 560), (768, 1152), 2,
     'A lanky Chinese young man of eighteen in a T-shirt and shorts, whole body seen from the side facing RIGHT, running '
     'hard mid-stride. Modern figure drawn in ink lines and soft grey wash.'),
+  # ── the second batch (全文后的小游戏 古五 → 古九, 2026-10-26): 时机 and 打地鼠 story levels, as the first batch's.
+  #    第五回 · the 秘境: 凶崖 (the climb down, the torch below) · 踏马符 (邹青松's four snakes) · 翻板 (阿禾's warning) · 谷粒.
+  'shiji/xiongya-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'A long horizontal strip of a sheer black rock cliff face seen from the side in deep darkness, bare and wet, one narrow '
+    'crack running across it, not a single plant. Dark ink and grey wash.'),
+  'shiji/xiongya-idle': ('sprite', (300, 560), (768, 1152), 1,
+    'A bare dark rock wall far below in the gloom, one tiny dim point of a torch flame at the bottom, almost nothing lit. '
+    'Dark ink and grey wash.'),
+  'shiji/xiongya-tell': ('sprite', (300, 560), (768, 1152), 2,
+    'A raised torch flaring up bright, its flame tall and flickering, a hand holding it up from below, warm light spilling '
+    'up a dark rock wall. Ink lines and soft grey wash with a faint warm tint on the flame.'),
+  'shiji/xiongya-me': ('sprite', (360, 560), (768, 1152), 2,
+    'A thin Chinese boy of thirteen climbing DOWN a sheer cliff, seen from the side facing RIGHT, pressed flat against the '
+    'rock, right hand gripping a crack above, left arm held stiff against his ribs, a bow on his back. A grey disciple\'s '
+    'robe with the sleeves rolled up, hair in a small topknot. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/tama-stage': ('sprite', (960, 160), (1536, 256), 2,
+    'A long horizontal strip of a narrow rock ledge at the foot of a cliff seen from the side, a little pool of water and '
+    'some fallen rocks on it. Grey ink wash and dark ink.'),
+  'shiji/tama-idle': ('sprite', (400, 600), (768, 1152), 1,
+    'A fair-faced smiling Chinese Taoist cultivator of about twenty-five, whole body seen from the side facing LEFT, in an '
+    'ochre-yellow robe, a small round red-copper shield strapped to his left forearm, his right hand holding a fist-sized '
+    'red-copper gourd stoppered, calm. Old Chinese storybook figure. Ink lines and soft grey wash with a faint ochre tint.'),
+  'shiji/tama-tell': ('sprite', (520, 600), (1024, 1152), 1,
+    'A fair-faced Chinese Taoist cultivator in an ochre-yellow robe, whole body seen from the side facing LEFT, thrusting a '
+    'red-copper gourd forward, four long fiery snakes of flame bursting out of its mouth toward the LEFT, a copper shield on '
+    'his left arm. Old Chinese storybook figure. Ink lines and soft grey wash, the flames in a faint red.'),
+  'shiji/tama-me': ('sprite', (360, 560), (768, 1152), 1,
+    'A thin Chinese boy of thirteen seen from the side facing RIGHT, stamping down hard with his left foot, a small yellow '
+    'paper talisman slapped under his sole, his robe torn and scorched, one arm bound with a bloody strip of cloth. Old '
+    'Chinese storybook figure. Ink lines and soft grey wash.'),
+  'rain/fanban-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of a dim stone corridor floor seen from the side and a little above: a row of square old '
+    'flagstones running across the whole width, one of them tilted open over a black pit. Grey ink wash and dark ink.'),
+  'rain/fanban-basin': ('sprite', (360, 200), (1024, 576), 2,
+    'A small raised open hand of a young girl held out palm forward in warning, a grey sleeve at the wrist. Only the hand '
+    'and forearm, no face, no body. Muted ink and soft wash on plain paper.'),
+  'rain/guli-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of a wet cracked rock floor at the foot of a cliff seen from the side and a little above, '
+    'water shining in the cracks. Grey ink wash and dark ink.'),
+  'rain/guli-basin': ('sprite', (360, 200), (1024, 576), 2,
+    'A young green vine bursting up out of a single blackened grain of rice, curling tendrils and three small leaves, '
+    'seen from the front. Muted green-grey ink wash with dark ink veins.'),
 }
 
 

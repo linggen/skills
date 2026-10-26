@@ -1,0 +1,90 @@
+{
+ "version": 1,
+ "id": "wm-hetan",
+ "chapter": "00-waimen",
+ "hui": "h07",
+ "at": "mijing-yabi",
+ "place": {
+  "zh": "泗水 · 秘境石门外",
+  "en": "The Si River · outside the stone door"
+ },
+ "_board": "wm-hetan (全文后的小游戏 第二批 2026-10-26): wm-chu's passage split at the door — 阿禾 on the mudflat (jinchat `chumen`, face to face) after 「…周衡伸着的手，便停在了半空里。」; wm-chu's way home (`rest`) goes on from here. The sealed beat's last scene (told outside the door, in the 崖壁 room, as wm-chu is): its way home lets the seal go.",
+ "setup": {
+  "zh": "三天后，潮水要回来了。人从石门里出来，起先一个一个，后来三个五个，再后来，隔好一阵才出来一个。周衡伸着的手，便停在了半空里。",
+  "en": "Three days on, the tide is coming back. People come out of the stone door, one by one at first, then three or five, then one after a long while. Zhou Heng's outstretched hand stops in mid-air."
+ },
+ "recap": {
+  "zh": "秘境关门前一个时辰，困阵松了，你在石台上还了马小宝二十三下；他贴着石头说：「老蔫的事——你不说，我不说。」你回头从翻板坑里找着了孙二狗，内门的秦师姐拿剑鞘把你们拉了上来。名牌进去四百一十七块，收回一百八十三块；马小宝他们出来五个，少了孟有田——周衡拿收回的名牌一块一块对名册，对到天黑。邹青松是你杀的；孟有田那一条命，该算在谁头上，你不知道。腊月初八，宗门大比：内门外门一起比，冠军赏一颗筑基丹，全观一年就这一颗。",
+  "en": "An hour before the secret realm shut, the binding let go, and on the stone ledge you paid Ma Xiaobao back his twenty-three; pressed against the rock he said, \"Old Wilt — you don't tell, I don't tell.\" You went back for Sun Ergou in the trapdoor pit, and senior sister Qin of the inner sect pulled you both up with her scabbard. Four hundred and seventeen name tablets went in, a hundred and eighty-three came back; of Ma Xiaobao's lot five came out, Meng Youtian missing — Zhou Heng checked the returned tablets against the register one by one until dark. Zou Qingsong you killed; whose account Meng Youtian's life goes on, you don't know. The eighth of the twelfth month, the sect contest: inner and outer sect together, and the champion gets a Foundation pill — the only one the abbey has all year."
+ },
+ "cast": [],
+ "people": [
+  "ahe",
+  "zhouheng",
+  "xuanchenzi"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「你在里头捡到什么了？」",
+    "「风，用上了？」",
+    "进去四百一十七块，收回一百八十三块。"
+   ],
+   "en": [
+    "\"What did you find in there?\"",
+    "\"The wind. Did you use it?\"",
+    "Four hundred and seventeen went in; a hundred and eighty-three came back."
+   ]
+  }
+ },
+ "story": {
+  "zh": "起先是一个一个地出来，后来是三个五个，再后来，隔好一阵才出来一个。周衡伸着的手，便停在了半空里。",
+  "en": "At first they came out one by one, then three or five at a time, then one only every long while. Zhou Heng's outstretched hand stopped in mid-air."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "chu-ahe"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "chu-ahe"
+  ]
+ },
+ "story_after": {
+  "zh": "阿禾蹲在河滩上一块石头旁边，看见他，站起身来：「你在里头捡到什么了？」小满道：「我只捡到一撮土。」阿禾道：「……就一撮土？」小满道：「就一撮土，别的什么也没有。你呢，你捡到什么了？」阿禾拿左手摊开一小块布，布里是三粒黑东西：「我捡到三粒谷子，是很老很老的谷子。有人在秘境里头种过地。」她的右手一直拢在袖子里，袖口底下露出一点掌心，一片燎泡，亮晶晶的。小满看着那只袖口，看了一会儿，什么也没问。阿禾也在看他：看他烧穿了的袄子，看他小腿上一块焦黑的裤脚，看了一会儿，只问了一句：「风，用上了？」小满道：「……用上了。」小满心里一动：石室南墙上那个背着筐、往水里撒土的人，撒过的地方，长出了地。\n\n阿禾走了两步，又回过头来，上上下下打量了他一回，道：「你是不是……长高了？」小满后背一紧，把自己往矮里缩了一寸，道：「秘境里冷，缩了三天，一出来，伸开了。」阿禾把他从头看到脚，道：「冷的人，缩着才对。」说完转身走了，没有掏本子。\n\n石门快要合上的时候，马小宝他们才出来。四个跟班一个架着一个，饿得两眼发青，嘴唇上全是舔石头舔出来的血口子；马小宝一身簇新的法衣糊满了泥，脸肿得像一只发面馒头，走在最前头，谁多看一眼，他便瞪谁。出来的是五个。\n\n周衡收到第五块名牌，抬起头来，往石门里望了一眼：「孟有田呢？」\n\n小满这才知道，老蔫叫孟有田。认得这个人一个多月，头一回听见他的名字。\n\n马小宝的嘴唇动了两动，道：「他自己爬的。」一个跟班抢着道：「走错了，走到那道凶崖上，碰着了前人的阵，粘了三天。孟有田自己要往上爬，没扒住。」没有一个人提沈小满——提了沈小满，便得先说自己带着一盘麻绳爬下那道崖，是去做什么的；那张脸是谁打的，他也一个字不提。周衡看着马小宝，看了很久。马小宝把脸扭开了。\n\n潮水漫上来了，漫过淤泥滩，漫过石门的门楣。周衡把木箱里的名牌倒在桌上，数了一遍：进去四百一十七块，收回一百八十三块。死在里头的，比活着出来的多。他把名册摊开，拿收回的名牌一块一块地对，对不上的，便是没出来的。小满站在人堆里，看着他对，对到天黑，还没有对完。\n\n石门前那个拢着手的人，听到「凶崖」两个字的时候，眼皮动了一动。玄沉子在河滩上一百八十几个一身泥的人里，一个一个看过去。看到小满的时候，停了一停。他朝小满招了招手，温和地问：「往哪边走的？」小满道：「人多的那边。」玄沉子低头看了看他的草鞋。草鞋帮子上，沾着几点青苔，湿的，绿得发黑——凶崖那道石阶上长的青苔；别的路，都是干的。玄沉子看了一会儿，笑了一笑，道：「人多的那边。」说完这一句，便不再看他了。小满站回人群里，低着头，数自己草鞋上的泥点子，数到第十七个，后背上的汗才下去。",
+  "en": "Ahe was crouched by a rock on the riverbed. When she saw him she stood up: \"What did you find in there?\" Xiaoman said: \"I only found a pinch of earth.\" Ahe said: \"...Just a pinch of earth?\" Xiaoman said: \"Just a pinch of earth, nothing else. And you, what did you find?\" Ahe opened a little piece of cloth with her left hand; in it were three black things. \"I found three grains. Very, very old grains. Somebody farmed in the secret realm.\" Her right hand stayed drawn up into her sleeve all the while, and under the cuff a bit of palm showed, all blisters, glistening. Xiaoman looked at that cuff for a while and asked nothing. Ahe was looking at him too: at his burned-through jacket, at the scorched black trouser leg at his calf. She looked a while and asked just one thing: \"The wind. Did you use it?\" Xiaoman said: \"...I used it.\" Something stirred in Xiaoman's mind: on the south wall of the stone chamber, the man with the basket scattering earth on the water, and wherever it was scattered, land grew.\n\nAhe went two steps, then turned back and looked him up and down and said: \"Have you... got taller?\" Xiaoman's back tightened, and he shrank himself an inch: \"It was cold in the secret realm. I was hunched up for three days, and when I came out I stretched.\" Ahe looked him over from head to foot and said: \"People who are cold stay hunched.\" Having said it she turned and left, and didn't take out her notebook.\n\nIt was only as the stone door was about to close that Ma Xiaobao's lot came out. The four hangers-on were holding each other up, their eyes hollow with hunger, their lips all split and bloody from licking rock; Ma Xiaobao's brand-new cultivator's robe was plastered with mud, his face swollen like a risen steamed bun, and he walked at the front and glared at anyone who looked at him twice. Five came out.\n\nZhou Heng took the fifth name tag, raised his head, and looked into the stone door. \"Where's Meng Youtian?\"\n\nOnly then did Xiaoman learn that Old Wilt's name was Meng Youtian. He had known the man more than a month, and this was the first time he'd heard his name.\n\nMa Xiaobao's lips moved twice. He said: \"He climbed by himself.\" One of the hangers-on put in quickly: \"We took a wrong turn, ended up on that Deadly Cliff, set off an array the people before left, and got stuck three days. Meng Youtian wanted to climb up by himself and lost his grip.\" Not one of them mentioned Shen Xiaoman. Mention Shen Xiaoman, and they'd first have to say what they'd been doing climbing down that cliff with a coil of hemp rope. Who had beaten that face, they didn't say a word about either. Zhou Heng looked at Ma Xiaobao for a long time. Ma Xiaobao turned his face away.\n\nThe tide came in, over the mudflats, over the lintel of the stone door. Zhou Heng tipped the name tags out of the wooden box onto the table and counted them: four hundred and seventeen went in, one hundred and eighty-three came back. More had died in there than had come out alive. He spread the register open and checked the returned tags against it one by one; the ones that didn't match were the ones who hadn't come out. Xiaoman stood in the crowd and watched him check, and by dark he still hadn't finished.\n\nThe man with his hands tucked in, standing before the stone door, had flickered an eyelid when he heard the words \"Deadly Cliff.\" Xuanchenzi went along the hundred and eighty-odd mud-covered people on the riverbed, looking at each one. When he came to Xiaoman, he paused. He beckoned Xiaoman over and asked mildly: \"Which way did you go?\" Xiaoman said: \"The way with the most people.\" Xuanchenzi looked down at his straw sandals. On the sides of the sandals were a few flecks of moss, wet, green almost to black: the moss that grew on the stone steps of the Deadly Cliff. Every other route was dry. Xuanchenzi looked a while, smiled a little, and said: \"The way with the most people.\" Having said that, he didn't look at him again. Xiaoman went back into the crowd, head down, and counted the mud spots on his sandals; by the seventeenth, the sweat on his back had gone."
+ },
+ "lines": [],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "回去歇下",
+    "en": "Turn in"
+   },
+   "means": "takes back the little zheng from Zhou Heng, sees the empty bunk, the Abbot measuring the empty stone seat, and hears Yinyue's story of the living soil; turns in (the feeding is wm-luobo's)",
+   "story": {
+    "zh": "小满去执事房领小狰。小狰趴在账簿上，睡得四脚朝天，肚子鼓得像一只小西瓜。周衡翻开巡夜簿，指着十月那一页道：「上旬丢十株。收狰至今，一株未失。」把簿子一合：「另议。」小满问：「另议什么？」周衡道：「腊八结账。」\n\n小满抱起小狰，走到门口，又站住了，回过头来：「周师兄。孟……孟师兄家里，谁去说？」周衡没有抬头，算盘珠子也停了。隔了一会儿，他道：「我去说。」\n\n第二天一早，伙房的大锅少熬了一半粥，饭堂里空出一大片位子。头一天，还有人往那片空位子上看；第三天，便没人看了。周衡把名册上剩下的一百三十一个名字一个一个点过，预备腊月初一的灵石。窗户底下那张铺空着，铺上叠着一床薄被，被头上压着一团叠得方方正正的油纸，一直没人去动。\n\n那天夜里，小满把小狰揣进怀里，往柴房去。路过正殿后头，他站住了：殿里点着一盏灯笼。观主玄沉子跪在那口空石座跟前，张着一只手，拇指抵着石面正中那块颜色深些的四方印子，一拃一拃地量过去。量完了，他跪在那里，半天没动，轻轻道了一句：「……不在那里了。」起身的时候，他往小满站的这边看了一眼，什么也没说，提着灯笼从前门走了。小满进殿蹲到石座跟前，张开手掌，一拃，两拃……七拃。另一边，也是七拃。跟石室里那四个空坑，一般大。祖师给它留了一口石座，留了三百年，它一天也没有在这石座上站过。\n\n他从怀里摸出那一块灵石——冬月初一剩下的那一块——握在手心，吸了一口。只一口，那块灵石便一凉，暗下去一层，像蒙了灰。他赶紧撒了手。从前是漏勺，一块灵石，他要吸上小半个月；如今是水缸，再吸一口，它就是一把粉了。他把它揣回怀里，摸了摸腰上那只储物袋。那一袋子灵石，照这个吸法，也就吸个二三十天。离腊月初八，还有三十四天。\n\n他小声道：「银月。」木牌没有回答。他等了很久，木牌里那个声音开口了：「石室里那个故事，你还要不要听？」他说要。她便讲，讲得又快又硬，像怕一停下来就讲不下去：「当年发大水，淹了九州。有个人叫鲧，从天帝那里把那土偷了出来，往洪水里撒——水涨一尺，土长一丈。天帝叫火神把他杀在羽山。他儿子叫禹，禹不堵，他疏，把那土一把一把铺平了，定下九州，铸了九口鼎，一州一口。《山海经》{典=shanhai-xirang}上，这件事只有几行字。」她顿了一顿，「……本王记得的，比书上多。」小满道：「那九口鼎，后来呢？」又隔了很久，一个很轻很轻的声音：「……后来，沉了。」柴房外头，远远的，泗水涨满了，一下一下地拍着岸，很慢，很匀，像是有人在河底下，慢慢地呼吸。",
+    "en": "Xiaoman went to the stewards' office to fetch the little zheng. It was lying on the ledger, asleep with all four feet in the air, its belly round as a small watermelon. Zhou Heng opened the night-watch book and pointed at the page for the tenth month: \"Ten plants lost in the first ten days. Since the zheng was taken in, not one lost.\" He closed the book. \"To be settled separately.\" Xiaoman asked: \"Settled how?\" Zhou Heng said: \"Accounts close at Laba.\"\n\nXiaoman picked up the little zheng and went to the door, then stopped and turned round: \"Senior Brother Zhou. Meng... Senior Brother Meng's family. Who's going to tell them?\" Zhou Heng didn't look up, and the beads of the abacus stopped too. After a while he said: \"I'll go and tell them.\"\n\nThe next morning the kitchen's big pot boiled half as much porridge, and a whole stretch of places stood empty in the dining hall. On the first day people still looked at those empty places; by the third, nobody looked. Zhou Heng went down the hundred and thirty-one names left in the register one by one, getting ready the spirit stones for the first of the twelfth month. The bunk under the window was empty. On it was folded a thin quilt, and on the quilt lay a ball of oiled paper folded neat and square. Nobody ever touched it.\n\nThat night Xiaoman tucked the little zheng into his robe and went to the woodshed. Passing behind the main hall, he stopped: a lantern was lit in the hall. The Abbot, Xuanchenzi, was kneeling before the empty stone pedestal with one hand spread, his thumb against the darker square mark in the middle of the stone, measuring it span by span. When he had finished he knelt there a long time without moving, and said softly: \"...It isn't there any more.\" As he got up he glanced towards where Xiaoman was standing, said nothing, and went out by the front door with the lantern. Xiaoman went into the hall, crouched by the pedestal, and spread his hand: one span, two spans... seven. The other side, seven too. The same size as the four empty pits in the stone chamber. The founder had kept a stone pedestal for it, kept it three hundred years, and it had never stood on that pedestal for a single day.\n\nHe took from his robe that one spirit stone, the one left from the first of the eleventh month, held it in his palm and drew one breath. Just one, and the stone went cold and dimmed by a layer, as if dust had settled on it. He let go quickly. When he was a leaky ladle, a spirit stone took him the best part of half a month to draw; now he was a water vat, and one more breath would make it a handful of powder. He put it back in his robe and felt the storage pouch at his waist. That pouchful of spirit stones, at this rate, would last twenty or thirty days. There were thirty-four days to the eighth of the twelfth month.\n\nHe said quietly: \"Yinyue.\" The tablet didn't answer. He waited a long time, and then the voice in the tablet spoke: \"That story in the stone chamber. Do you still want to hear it?\" He said he did. So she told it, fast and hard, as if afraid that if she stopped she couldn't go on: \"Long ago there was a great flood that drowned the nine provinces. There was a man called Gun who stole that earth from the Emperor of Heaven and scattered it into the flood. The water rose a foot, the earth grew ten. The Emperor of Heaven had the fire god kill him on Mount Yu. His son was called Yu. Yu didn't dam the water, he let it out, and he spread that earth flat a handful at a time, settled the nine provinces, and cast nine cauldrons, one for each province. In the *Classic of Mountains and Seas*{典=shanhai-xirang} the whole thing is a few lines.\" She paused. \"...This queen remembers more than the book does.\" Xiaoman said: \"And the nine cauldrons, what happened to them?\" After another long time, a very, very soft voice: \"...After that, they sank.\" Outside the woodshed, far off, the Si had risen full again and was lapping the bank, again and again, slow and even, as if someone under the river were slowly breathing."
+   },
+   "beat": [],
+   "next": "wm-luobo",
+   "grant": {
+    "table": "scene"
+   },
+   "_grant": "古五: the 鼎苔 moved to the 石室 (wm-xirang swallow, 2026-10-03: scraped clean, not a pinch); the stranger's dropped knife on the way back has no item of its own.",
+   "needs": {
+    "task": "chu-ahe"
+   },
+   "refuse": {
+    "zh": "阿禾还蹲在河滩上那块石头旁边。",
+    "en": "Ahe is still crouched by that rock on the riverbed."
+   }
+  }
+ ]
+}

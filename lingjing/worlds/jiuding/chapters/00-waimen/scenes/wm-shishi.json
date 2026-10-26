@@ -1,0 +1,76 @@
+{
+ "version": 1,
+ "id": "wm-shishi",
+ "chapter": "00-waimen",
+ "hui": "h07",
+ "at": "mijing-shishi",
+ "place": {
+  "zh": "沉鼎秘境 · 石室",
+  "en": "The Sunken Cauldron realm · the stone chamber"
+ },
+ "_board": "wm-shishi (全文后的小游戏 第二批 2026-10-26): wm-xirang's passage split before 邹青松 — 气走经脉 `yinshen` (阿禾 under her 隐身符, his 神识 sweeping) after 「…一口气喘得比草叶还轻。」; the chamber's fight (wm-xirang) after it. Inside the sealed beat.",
+ "setup": {
+  "zh": "墙后面是一间石室，四个空坑，一边七拃；石台上一只玉匣，匣子里一撮土。银月嫌这屋里的气冲得像陈年老酒，丢下一句「本王睡一觉」，钻回了木牌。墙缝里站着一个黄袍，笑眯眯的：「会自己长的土？」",
+  "en": "Behind the wall, a stone chamber: four empty pits, seven hand-spans a side; on the altar a jade box, and in the box a pinch of earth. Yinyue declares the air in here as strong as old wine, says \"This queen is taking a nap,\" and slips back into the token. In the crack of the wall stands a yellow robe, smiling: \"Earth that grows by itself?\""
+ },
+ "recap": {
+  "zh": "墙后面是一间石室：四个空坑，一边七拃；四壁刻着洪水、撒土的人、九样四四方方的东西，北墙最底下一只蜷着的狐狸。玉匣里一撮土——银月说，息壤，会自己长的土；她丢下一句「本王睡一觉」，钻回了木牌。暗河尽头，阿禾贴上师父给的隐身符，缩进一道石缝。",
+  "en": "Behind the wall, a stone chamber: four empty pits, seven spans a side; carved on the walls a flood, a man scattering earth, nine square things, and at the foot of the north wall a curled fox. In the jade box a pinch of earth: living soil, Yinyue said, earth that grows by itself; then \"this queen will sleep\" and she was back in the tablet. At the end of the underground river, Ahe put on her Master's concealing talisman and slipped into a crack."
+ },
+ "cast": [],
+ "people": [
+  "ahe"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "四个空坑，一边七拃。",
+    "「息壤。」",
+    "一口气喘得比草叶还轻。"
+   ],
+   "en": [
+    "Four empty pits, seven spans a side.",
+    "\"Living soil.\"",
+    "Breathing lighter than a blade of grass."
+   ]
+  }
+ },
+ "story": {
+  "zh": "墙后面，是一间石室，方方正正，四壁青石打磨得光溜溜的，照得出人影。没有灵草，没有法器，也没有前人的骸骨，干干净净，像是昨天才有人扫过。西北角贴着地，有一个半人高的黑洞，墙外那股风，便是一阵一阵往那洞里吸的。正中一张石台，台上一只玉匣。可小满一进门，最先看见的，却不是那只玉匣。石室的地上，离石台三步远的地方，有四个坑。\n\n四个方方的坑，一边一个，排成一个四方，每个有碗口大，一尺来深，坑底磨得溜光，坑沿磨得发亮，一圈青苔，青得发黑，青苔底下透着一点幽幽的绿光，凑近了，一股凉凉的铜腥气。他爹教过他看蹄印：印子深，是那东西沉；印子磨得发亮，是那东西在这里站了很久很久。一样极沉极沉的东西，四条腿，把石头都站出了坑。然后，它走了。\n\n小满蹲下来，张开手掌，拇指抵着一个坑的外沿，一拃一拃地量到另一个坑的外沿——猎户量蹄印，向来是这么量的。一拃，两拃，三拃……七拃。另外三边，边边都是七拃。他想起二试那个老执事讲的：一千个人下泗水捞鼎，没捞着。这间石室里的灵气厚得化不开，外头的却薄得像刷锅水；他站在四个空坑中间，头一回隐隐约约地觉得，这两件事，也许是一件事。\n\n石室的四壁，走近了才看得出有刻痕，极浅，极细。东墙是水，浪头卷着浪头，水里漂着房子，漂着伸着手的人。南墙是一个人，背着一只筐，从筐里抓出什么往水里撒，撒过的地方，水底下冒出一块一块的地来；那人的腰是弯的，像背着一样极重极重的东西。西墙是九样东西，三排，一排三个，每一样都四四方方，底下四只脚，两只耳朵。北墙是空的，刻满了浅浅的格子，格子里什么都没有；最底下，贴着地，有一个很小的刻痕，刻得比别的都深，都新：一只狐狸，蜷着身子，尾巴绕着身子，跟他胸口那块木牌上的，一模一样。银月跳下他的肩膀，走到那只刻出来的狐狸跟前，低下头，拿鼻子碰了碰它，尾巴垂着，又跳回他肩上，一句话也没有说。\n\n他走到石台前，打开了玉匣。匣盖一掀，满屋子的灵气往匣口轻轻一沉，像一屋子的水找着了低处。匣子里，只有**一撮土**。黄褐色的，松松的，刚好铺满匣底，跟他家后院那块种不出东西的地里的土没什么两样。小满盯着看了半天，道：「……就这？」肩上的银月却一字一字地道：「[息壤]{注=xirang}。」她的声音在抖，尾巴尖上的毛一根一根全竖了起来，「会自己长的土。你给它一粒，它长出一撮；给它一撮，它长出一座山。」小满问：「那面墙后头有风——你早知道，里头是它？」她隔了一会儿，才回过头来，一双金色的眼睛亮得有些发潮：「……本王只闻得出墙后头有一样会长的东西。是什么，本王想不起来。本王只知道，你是漏勺。」她把头转回去，声音低得像自言自语：「一个漏勺，夜夜在柴垛上坐到后半夜，漏一夜，接着坐。坐了一年。……本王看着烦。」小满想说句什么，想起的又是那个「谢」字——在蒙山的柴垛上欠下的，欠到今天，还没还上。\n\n她的鼻子又抽了两抽，打了个喷嚏。她一张嘴，屋里的气便往她嘴里灌。「这屋里的气，冲得像一坛子陈年老酒。」她道，「本王睡一觉。谁也别吵。」话音一落，她化作一缕银光，钻回了木牌。\n\n他合上玉匣，盘腿坐在石台跟前等她醒，等了一顿饭的工夫，又一顿饭的工夫。她没说这土拿来做什么，他便不动它。石室里静得听得见西北角那个黑洞里的风，一吸，一停。\n\n话分两头。暗河尽头的黑地里，阿禾抠出第三粒谷，眼角里一亮——不是火光，是灵力。师父教她的头一样，就是看灵力：园子那头，有一团灵力正顺着暗河边上过来，人身上的灵力厚厚一层，沉得压人；手里还托着一团火，红得发紫。河滩上那个托赤铜葫芦的黄袍。九层，远在她之上，正面撞上，是一个死。她把三粒谷攥进手心，从袖子里摸出师父压给她的三张符里的头一张——隐身符——往心口一贴，人连影子也没了，侧身滑进黑地边上一道一尺宽的石缝，一口气喘得比草叶还轻。",
+  "en": "Behind the wall was a stone chamber, square and even, its four walls of bluestone polished smooth enough to show your reflection. No spirit herbs, no magic tools, no bones of the people before, clean as clean, as if someone had swept it yesterday. In the north-west corner, at floor level, was a black hole half a man high, and the air outside the wall was drawn in through it, gust by gust. In the middle stood a stone table, and on it a jade box. But when Xiaoman came in, the first thing he saw was not the jade box. On the floor of the chamber, three paces from the table, were four pits.\n\nFour square pits, one on each side, set in a square, each the width of a bowl's mouth and a foot or so deep, their bottoms worn smooth and their rims worn shining, with a ring of moss green almost to black, and under the moss a faint glimmer of green light. Up close there was a cool smell of copper. His father had taught him to read hoofprints: a deep print means the thing is heavy; a print worn shiny means the thing stood there a long, long time. Something very, very heavy, on four legs, had stood until it made pits in the stone. And then it had gone.\n\nXiaoman crouched, spread his hand, put his thumb to the outer edge of one pit, and measured span by span to the outer edge of the next, the way hunters always measure hoofprints. One span, two spans, three... seven spans. The other three sides, each one, seven spans. He remembered what the old steward at the second trial had said: a thousand men went down into the Si to dredge for the cauldron and didn't find it. In this chamber the spirit qi was so thick it wouldn't dissolve, while outside it was as thin as pot-scrubbing water. Standing among the four empty pits, for the first time he had a faint sense that those two things might be one thing.\n\nOn the four walls of the chamber there were carvings you could only see up close, very shallow, very fine. The east wall was water, wave curling over wave, with houses floating in it, and people floating with their arms reaching up. The south wall was a man carrying a basket on his back, taking something out of the basket and scattering it on the water, and wherever it was scattered, patches of land rose up from under the water. The man's back was bent, as if he were carrying something very, very heavy. The west wall was nine things in three rows, three to a row, every one square, with four legs below and two ears. The north wall was empty, carved all over with shallow squares with nothing in them; and right at the bottom, against the floor, was one very small carving, cut deeper and newer than all the rest: a fox, curled up, its tail wrapped round its body, exactly like the one on the wooden tablet on his chest. Yinyue jumped down from his shoulder and went up to the carved fox, lowered her head and touched it with her nose, her tail hanging, then jumped back onto his shoulder, and didn't say a word.\n\nHe went to the stone table and opened the jade box. When the lid came up, all the spirit qi in the room sank gently towards the box's mouth, like a roomful of water finding the low place. In the box there was only **a pinch of earth**. Yellow-brown, loose, just enough to cover the bottom, no different from the earth in that patch behind his family's house where nothing would grow. Xiaoman stared at it a long time and said: \"...That's it?\" On his shoulder Yinyue said, one word at a time: \"[Living soil]{注=xirang}.\" Her voice was shaking, and the fur at the tip of her tail stood up hair by hair. \"Earth that grows by itself. Give it a grain and it grows a pinch; give it a pinch and it grows a mountain.\" Xiaoman asked: \"Air behind that wall: you knew all along it was in here?\" It was a while before she turned her head back to him, her golden eyes bright and a little wet: \"...This queen could only smell that there was something behind the wall that grows. What it was, this queen couldn't remember. This queen only knew that you're a leaky ladle.\" She turned her head away again, and her voice was low, as if talking to herself: \"A leaky ladle, sitting on the woodpile every night till past midnight, leaking all night, then sitting again. A whole year of it... This queen got sick of watching.\" Xiaoman wanted to say something, and what came to mind was, again, that word \"thanks,\" owed on the woodpile on Mount Meng and owed to this day, not yet repaid.\n\nHer nose twitched twice more and she sneezed. When she opened her mouth, the air in the room went pouring into it. \"The air in this room is as strong as a jar of old wine,\" she said. \"This queen is going to sleep. Nobody disturb me.\" The words were barely out when she turned into a wisp of silver light and went back into the tablet.\n\nHe closed the jade box and sat cross-legged in front of the stone table to wait for her to wake. He waited as long as a meal takes, and as long again. She hadn't said what the earth was for, so he didn't touch it. The chamber was so quiet he could hear the air in the black hole in the north-west corner: a draw, a pause.\n\nMeanwhile, in two places. In the black ground at the end of the underground river, Ahe dug out the third grain, and at the corner of her eye something lit up. Not firelight: spiritual power. The first thing her Master had taught her was to see spiritual power. From the garden end, a mass of spiritual power was coming along the edge of the underground river, a thick layer of it on a person, heavy enough to press you down; and in one hand it held a ball of fire, red going on purple. The yellow robe from the riverbed with the red-copper gourd. Ninth layer, far above her. Meet him head on and she was dead. She closed her hand on the three grains, took from her sleeve the first of the three talismans her Master had pressed on her (the concealing talisman), stuck it over her heart, and she was gone, shadow and all. She slid sideways into a crack a foot wide at the edge of the black ground, breathing lighter than a blade of grass."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "xirang-yinshen"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "xirang-yinshen"
+  ]
+ },
+ "lines": [],
+ "buttons": [
+  "wait"
+ ],
+ "exits": [
+  {
+   "id": "wait",
+   "label": {
+    "zh": "等她醒",
+    "en": "Wait for her to wake"
+   },
+   "means": "sits by the stone table waiting for Yinyue to wake",
+   "beat": [],
+   "next": "wm-xirang",
+   "needs": {
+    "task": "xirang-yinshen"
+   },
+   "refuse": {
+    "zh": "暗河尽头那道石缝里，还有一口气没喘匀。",
+    "en": "In the crack at the end of the underground river, a breath is not yet even."
+   }
+  }
+ ]
+}
