@@ -8,10 +8,10 @@
 //
 // Skips gracefully (exit 0 with a notice) when Chrome or the server is absent.
 
-import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { reportFromLedger, viewFromLedger } from '../scripts/ledger.js';
 import { loadLive } from './lib/live-data.mjs';
+import { renderPage } from './lib/render-page.mjs';
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 // 9527 since the 2026-07 port migration. This default was left on 9898, where a
@@ -19,7 +19,9 @@ const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 // socket that never replied and --dump-dom never fired. That reads as "the test
 // hangs"; it was a dead port. Hence the reachability probe below: an
 // unreachable daemon has to SKIP in a second, not block for three minutes.
-const URL = process.env.CFO_URL || 'http://localhost:9527/apps/cfo/scripts/cfo.html';
+// ?lang=en: the cards below are read by their English labels, and the page
+// speaks the person's set language (zh-Hans here since 2026-10-15) otherwise.
+const URL = process.env.CFO_URL || 'http://localhost:9527/apps/cfo/scripts/cfo.html?lang=en';
 
 if (!existsSync(CHROME)) { console.log('SKIP — Chrome not found at', CHROME); process.exit(0); }
 // Accounts, rules and reverts come from the edit register, as the page reads
@@ -37,19 +39,13 @@ try {
   process.exit(0);
 }
 
-// The page opens a WebRTC channel, so headless rendering can take a while —
-// generous timeout, and keep whatever DOM Chrome managed to dump even when it
-// exits non-zero (it often does after --virtual-time-budget).
-let dom;
-try {
-  dom = execFileSync(CHROME,
-    ['--headless=new', '--disable-gpu', '--no-first-run', `--user-data-dir=/tmp/cfo-page-test-${process.pid}`,
-     '--virtual-time-budget=20000', '--dump-dom', URL],
-    // SIGKILL, not the default SIGTERM: a wedged Chrome ignores TERM, and then
-    // the timeout that exists to bound this call never ends it.
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 120000, killSignal: 'SIGKILL' });
-} catch (e) { dom = e.stdout || ''; }
-if (!dom || !dom.includes('id="report"')) { console.log('SKIP — could not render', URL, '(is the daemon running?)'); process.exit(0); }
+// Rendered in REAL time over the DevTools protocol, waiting for the head cards.
+// Not `--dump-dom --virtual-time-budget`: the page's data comes over WebRTC, and
+// on a virtual clock the ICE-gather cap fires before any real candidate, so the
+// channel never opened and every card read "undefined" (red in check.sh all of
+// 2026-10-26). The daemon answered, so a page that never renders is a FAILURE.
+const dom = await renderPage(CHROME, URL, { ready: "document.querySelector('#cards .k') && !document.getElementById('report').hidden" });
+if (!dom) { console.log(`❌ ${URL} answered but the report never rendered (30 s) — open it and read the console`); process.exit(1); }
 
 const cards = Object.fromEntries(
   [...dom.matchAll(/<div class="k">([^<]+)<\/div><div class="v">([^<]+?)(?:<span[^>]*>([^<]*)<\/span>)?<\/div>/g)]
