@@ -9,7 +9,7 @@
 // while the layer is hidden (a fight, a set piece, a hidden tab), gone when atmos.js lays the next
 // layer. Its spans for the kinds drawn here are hidden, not removed: no WebGL, reduced motion, a
 // failure — the CSS particles are all there is (and with reduced motion they stand still).
-import { glOK, loadPixi } from './fx.js';
+import { dropApp, glOK, loadPixi } from './fx.js';
 
 /// What this draws, of atmos.js PARTICLES.
 export const GL_KINDS = ['snow', 'rain', 'fog'];
@@ -200,7 +200,7 @@ export async function liveWeather(pts, particles, seed = 'lingjing') {
   let { w, h } = size();
   const app = new PIXI.Application();
   await app.init({ width: w, height: h, backgroundAlpha: 0, antialias: false, resolution: Math.min(globalThis.devicePixelRatio || 1, 1.5), autoDensity: true, preference: 'webgl' });
-  if (mine !== latest || !wrap.isConnected) { app.destroy(true, { children: true }); wrap.remove(); return null; }
+  if (mine !== latest || !wrap.isConnected) { dropApp(app); wrap.remove(); return null; }
   Object.assign(app.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%' });
   wrap.appendChild(app.canvas);
   const made = [];
@@ -230,7 +230,7 @@ export async function liveWeather(pts, particles, seed = 'lingjing') {
     if (dead) return;
     dead = true;
     clearInterval(watch);
-    app.destroy(true, { children: true });
+    dropApp(app);
     for (const t of made) t.destroy(true);
     wrap.remove();
   };

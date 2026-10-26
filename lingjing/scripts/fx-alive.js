@@ -13,7 +13,7 @@
 // covered (a set piece over the stage) or the tab is hidden, and is gone with the painting.
 // The CSS still stays under the canvas: no WebGL, reduced motion, nothing declared — the
 // still is all there is, and a frame the canvas misses shows the same painting.
-import { glOK, loadPixi } from './fx.js';
+import { dropApp, glOK, loadPixi } from './fx.js';
 
 /// What may move, and how far at full strength (a share of the painting's width).
 export const KINDS = { sway: 0.007, cloth: 0.004, water: 0.0018, rise: 0.006, drift: 0.012, breathe: 0.008 };
@@ -201,7 +201,7 @@ export async function livePainting(host, src, regions, { fit = 'cover', px = 0.5
     dead = true;
     clearInterval(watch);
     ro?.disconnect();
-    app.destroy(true, { children: true });
+    dropApp(app);
     tex.destroy(true);
   };
   // Once a second: gone → destroyed; covered → asleep; the wind as the stage has it now.

@@ -11,7 +11,7 @@
 // where the bloom stands. Words are never painted — her lines stay the card's. No WebGL, reduced
 // motion: the CSS bloom (or the colour at once) is all there is. Built on setpieces/painted.js
 // (the soak, the camera, the grain) and fx.js's loaders: one Application per moment.
-import { glOK, loadGsap, loadPixi } from './fx.js';
+import { dropApp, glOK, loadGsap, loadPixi } from './fx.js';
 import { BLOOM_MS } from './memory.js';
 import { paintedStage } from './setpieces/painted.js';
 
@@ -88,7 +88,7 @@ export async function playMemoryBloom(find, src) {
     app.ticker.remove(tick);
     tl.kill();
     stage.destroy();
-    app.destroy(true, { children: true });
+    dropApp(app);
     host.remove();
   };
   // Each frame: the card's clock, the card's box (a redraw is a new card in the same place).

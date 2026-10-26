@@ -14,7 +14,7 @@
 // scene on the stage's one game instead (kit/stage.js, layer `piece`): under a beat's words (`.spback`
 // in the stage) it rides the stage's own game, so it makes no context of its own; anywhere else (the
 // preview page, a box of its own) the box gets a stage game of its own, gone with the box.
-import { glOK, loadGsap, loadPixi } from './fx.js';
+import { dropApp, glOK, loadGsap, loadPixi } from './fx.js';
 import { stageOf } from './kit/stage.js';
 
 const ART_BASE = new URL('../worlds/jiuding/', import.meta.url).href;
@@ -199,7 +199,7 @@ export async function playSetPiece(host, id, { lang = 'zh', still = false, auto 
       clearTimeout(timer);
       tl?.kill();
       scene?.destroy();
-      app?.destroy(true, { children: true });
+      dropApp(app);
       // The stage's layer ends (its textures freed), never the game — unless the game was the box's own.
       if (stage?.owns('piece', layer)) stage.stop('piece');
       if (stage && box.contains(stage.el)) stage.destroy();

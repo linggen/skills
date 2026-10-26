@@ -102,3 +102,12 @@ test('alive: a beast\'s breathing canvas wears its picture\'s look — place, in
   assert.equal(look.webkitMaskImage, css['-webkit-mask-image']);
   assert.equal(look.maskComposite, 'intersect');
 });
+
+test('no Pixi Application is destroyed with the renderer\'s global release (dropApp): it broke every other app alive on the page', () => {
+  const dir = new URL('../scripts/', import.meta.url);
+  for (const f of ['fx.js', 'fx-alive.js', 'fx-weather.js', 'fx-memory.js', 'setpiece.js']) {
+    const src = fs.readFileSync(new URL(f, dir), 'utf8');
+    assert.doesNotMatch(src, /app\??\.destroy\(true/, `${f}: app.destroy(true, …) releases Pixi's global pools`);
+  }
+  assert.match(fs.readFileSync(new URL('fx.js', dir), 'utf8'), /destroy\(\{ removeView: true \}, \{ children: true \}\)/);
+});

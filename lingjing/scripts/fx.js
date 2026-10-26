@@ -37,6 +37,12 @@ export function loadPhaser() {
   return phaserP;
 }
 
+/** Take a Pixi Application down without the renderer's `releaseGlobalResources`: `destroy(true, …)` clears Pixi's
+    global pools under every OTHER Application still alive on the page (画活, the weather, a set piece), whose next
+    frame then throws (「Cannot read properties of null (reading 'geometry')」) and whose ticker stops for good — found
+    live 10-26 at 暴雨坠谷 → 00-fox: the old painting's 画活 went while the piece and the new 画活 ran. */
+export const dropApp = (app) => app?.destroy({ removeView: true }, { children: true });
+
 export function loadPixi() {
   if (!pixiP) {
     const t = performance.now();
@@ -225,7 +231,7 @@ export async function playHoming(slot, { geo, ink, province, frame, paint, names
       tl.kill();
       app.ticker.remove(drawSoak);
       rt.destroy(true);
-      app.destroy(true, { children: true });
+      dropApp(app);
       for (const t of [tex, fibreTex, grainTex]) t.destroy(true);
       host.remove();
     },
