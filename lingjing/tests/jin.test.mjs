@@ -31,7 +31,8 @@ test('four interludes, each two or three scenes and one game or two, in the book
   const book = bookEntries(content.book).filter(h => h.volume).map(h => h.id);
   for (const [id, [chapter, before, prev, next]] of Object.entries(PLACES)) {
     const own = jinScenes(id);
-    assert.ok(own.length >= 2 && own.length <= 3, `${id}: ${own.length} scenes`);
+    // 今 · 一 has four since 2026-10-26 (the twelve channels its own scene, j01-loop)
+    assert.ok(own.length >= 2 && own.length <= 4, `${id}: ${own.length} scenes`);
     assert.ok(own.every(({ ch }) => ch.id === chapter), `${id} stands in ${chapter}`);
     assert.ok(own.every(({ sc }) => !sc.at), `${id}: on no place of the map`);
     const head = own.find(({ sc }) => sc.before);
@@ -73,15 +74,22 @@ test('a save walks 古二 → 今 · 一 → 古三: the close of 第二回, the
   assert.ok(l.scene.people.some(p => p.name === '沈芒' && p.art === 'art/people/jin-shenmang.webp'), 'his 人物志 portrait (2026-10-05)');
   // the ball first (投一个给我看看, 砸寨; the 调息 cut 2026-10-20, was 边跑边念): the track's way on waits for it
   assert.equal(resolve(s, content, ctx, { exit: 'on' }).result.refused, 'needs', 'the ball is thrown first');
-  assert.match(content.chapters['00-prologue'].scenes['j01-track'].story.zh, /「你投一个给我看看。」$/, 'the passage stops on her line; the throw is told after the game');
+  // 那一圈 (2026-10-26) the track's first board: the passage up to her line is its rest
+  assert.match(content.chapters['00-prologue'].scenes['j01-track'].story_after.zh, /「你投一个给我看看。」$/, 'the passage stops on her line; the throw is told after the game');
   // a save from before the cut, holding 边跑边念 offered here, loads with the ball offered instead
   const old = fitWorld({ ...s, tasks: { ...s.tasks, 'jin-paobu': { status: 'offered' } } }, content);
   assert.equal(old.tasks['jin-paobu'], undefined, 'the old board let go');
   assert.equal(old.tasks['jin-toulan']?.status, 'offered');
-  s = win(s, content, ctx, { id: 'jin-toulan' }).state;
-  s = task(s, content, ctx, { action: 'done', id: 'jin-toulan' }).state;
+  // 那一圈 first, the ball second (2026-10-26); the twelve channels (j01-loop), then 葛奶奶 at the anatomy's door
+  for (const id of ['jin-yiquan', 'jin-toulan']) { s = win(s, content, ctx, { id }).state; s = task(s, content, ctx, { action: 'done', id }).state; }
+  s = resolve(s, content, ctx, { exit: 'on' }).state;
+  assert.equal(s.scene, 'j01-loop');
+  s = win(s, content, ctx, { id: 'jin-jingluo' }).state;
+  s = task(s, content, ctx, { action: 'done', id: 'jin-jingluo' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   assert.equal(s.scene, 'j01-anatomy');
+  s = win(s, content, ctx, { id: 'jin-chat-ge' }).state;
+  s = task(s, content, ctx, { action: 'done', id: 'jin-chat-ge' }).state;
   // 六一七 · 别拍 (今's 聊天, 2026-10-22): the 617 group the night before the retest — the way on waits for it
   assert.equal(resolve(s, content, ctx, { exit: 'on' }).result.refused, 'needs', 'the chat is had first');
   const before = { progress: s.progress, wealth: s.wealth, tier: s.tier, step: s.step };

@@ -120,6 +120,7 @@
    "00-uncle",
    "00-notice",
    "j01-track",
+   "j01-loop",
    "j01-anatomy",
    "j01-retest",
    "00-gate",
@@ -253,7 +254,22 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "jin-yiquan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "jin-toulan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-jingluo": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-chat-ge": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -884,6 +900,7 @@
    "00-uncle",
    "00-notice",
    "j01-track",
+   "j01-loop",
    "j01-anatomy",
    "j01-retest",
    "00-gate",

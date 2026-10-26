@@ -1,0 +1,87 @@
+{
+ "version": 1,
+ "id": "j01-loop",
+ "chapter": "00-prologue",
+ "hui": "j01",
+ "scape": "stacks",
+ "place": {
+  "zh": "沂中医 · 六一七宿舍",
+  "en": "Yizhong · Room 617"
+ },
+ "weather": "clear",
+ "_weather": "「此后三夜，六一七熄灯以后，下铺一直在念经」: the nights in the dorm",
+ "_board": "2026-10-26 (全文后的小游戏): j01-anatomy's first week split off — 气走经脉 `jingluo` after 「两只胳膊举过头顶」: the twelve channels as one line round the body, three laps, the bead his arms tracing it. Pays nothing (不跨线).",
+ "setup": {
+  "zh": "开课头一天，默写十二正经，交了白卷；当着半个球馆，背不出第二条。那夜他没背书，站到宿舍正中，两只胳膊举过头顶。",
+  "en": "The first day of term, a blank sheet for the twelve channels; in front of half the gym he couldn't say the second one. That night he learned nothing by heart: he stood in the middle of the room and raised both arms."
+ },
+ "recap": {
+  "zh": "白卷，然后举着胳膊比了三圈：十二条经脉，原来是一条，绕着人跑三圈。重默，过了。",
+  "en": "A blank sheet; then three circuits traced with his arms raised: the twelve channels are one line running three times round the body. The resit: passed."
+ },
+ "cast": [],
+ "people": [
+  "jin-shenmang",
+  "jin-yan",
+  "jin-ahe",
+  "jin-maxiaobao",
+  "jin-yanjing",
+  "jin-laocai"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "白卷上只剩两个字：沈芒。",
+    "他把两只胳膊举过头顶。",
+    "绕了一圈，又回到出发的地方。"
+   ],
+   "en": [
+    "Only two characters left on the blank sheet: his name.",
+    "He raises both arms above his head.",
+    "All the way round, and back to where it started."
+   ]
+  }
+ },
+ "story": {
+  "zh": "开课头一天，一食堂二楼，马小宝的餐盘「咣」地落在他对面：两份红烧肉、一只鸡腿、四个鸡蛋。他一口吃掉一个鸡蛋：「你吃土豆丝？土豆丝长不出肉。」吃完把盘子一推，摸了摸肚子，「还饿。」起身的时候裤兜里滚出一只小白瓶，满瓶身的洋文，他弯腰捡起来，拧开，倒两粒在手心，干咽了：「鱼油，深海鱼的，我妈非让我吃。」又拿筷子敲了敲沈芒的盘沿：「你来球队图什么，我看出来了，她没看出来——她看什么都是数。十月十七试训，你要是过不了，」他笑得很和气，「我替你跟她说。说得好听点，就说有个人，为了她，一千米跑吐了。放心，我嘴严。」\n\n沈芒对着那盘土豆丝坐了很久。这话里没有一个字是吓人的，可他浑身的汗，比早上跑完二十分钟还多。\n\n下午解剖课绪论，老师在黑板上画了一个人，从外往里一层一层地标：皮肤，浅筋膜，深筋膜，肌肉，血管神经，骨头。沈芒举起手：「老师，那经络在第几层？」后排有人「噗」地笑出了声。那位说话很轻的女老师没有笑，想了想：「解剖学到今天，没有找到经络这样一种单独的结构。」她把手里的骨盆模型放下，又道：「两千多年前没有解剖刀，古人只有手。按这儿，酸麻往那儿走；扎这儿，那儿的疼轻了；摸脉，一跳一跳的，处处都连着。一处一处记下来，连成线——长沙马王堆出土的帛书上，还只有十一条，后来才凑成十二条，配一年十二个月。」她顿了顿，「顺着线切开看，是血管、神经、筋膜，各走各的。」她拿粉笔在黑板上画了一个省的轮廓：「经络像地图上这条省界。地上挖不出这条线，可你过了界，口音就变了。」\n\n沈芒坐下了，脑子里嗡嗡的。周四要默的那十二样东西，原来是十二样谁也没见过的东西。\n\n此后三夜，六一七熄灯以后，下铺一直在念经。念到第五条，前四条就开始往外漏，像一只底下有洞的口袋。眼镜递过来一张学长传下的口诀：「肺大胃脾心小肠，膀肾包焦胆肝续。」沈芒念了十遍，口诀记住了，一到默的时候脑子里只剩四个字：包子焦了。老蔡在上铺听不下去了：「你这么背不行。十二正经就是十二条河，奇经八脉是水库。河里的水满了往水库里流，水库满了，人就飞了。」「你怎么又讲到飞了。」「不飞你修它干嘛？」\n\n周二晚上他去图书馆找带图的书，开架书库里真有一本《经络腧穴图谱》，一个光头小人身上画满了红线绿线，像一张公交线路图，线路倒是画全了，可哪一路先发、哪一路后发，书上不写。下楼时他走错了楼梯，一直走到负一层。楼道尽头一道灰色的防火门，门上贴着一张纸：「古籍部（善本阅览室）　凭证入内　只许抄阅，不许外借」。门缝底下渗出一股凉气。他从小看的修仙小说里都有一句老话：真功法，都藏在没人翻的古书里。他伸手去推，门禁「嘀」地一声，亮了红灯，门没开。那道门，他记住了。\n\n找不着，默写照样要默。礼拜四上午，针灸推拿学导论，[严老师]{注=jin-yan}在黑板上写了一行，粉笔敲得笃笃响：\n\n「[经脉者，所以能决死生，处百病，调虚实，不可不通。]{典=lingshu-jingmai}」\n\n「收书，默写十二正经。」他背着手一排一排地走，「去年有人抄在胳膊上。」\n\n沈芒左胳膊里侧，细笔抄着十二行。他把手揣进桌肚，拿唾沫使劲搓，搓完一看，十二行糊成了一片蓝。他拿起笔，写下「手太阴肺经」，然后发现，他只记得这一条。黑板上那一行字的末了四个字正对着他的座位：不可不通。\n\n严老师翻到一张，停住，举起来：「沈芒，交了个白卷。」后排有人笑。「十二条都背不下来的，可以早点想想，是不是走错了门。」\n\n卷子发回来，只剩右上角两个字：沈芒。他叠了两叠，塞进兜里最深处，像是怕谁看见。心里有个声音在说：沈芒啊沈芒，一个找不着的东西，你也记不住。\n\n下午五点，球馆。训练刚散，马小宝摇着大摇杯晃过来，冲场边嚷了一嗓子：「领队，听说咱们新人今天交了白卷？」阿禾正低着头写字，没抬头。马小宝拍拍沈芒的肩：「来，背一个给领队听听。就背第二条。」\n\n半个球馆的人都停了手。沈芒张开嘴：「手太阴肺经……手……」后头没有了。那一溜蓝字糊在他袖子里，口诀在他脑子里，「肺大」后头该接哪一条，怎么也接不上。他站在那里，嘴张着，像礼拜一坐进红圈的那一下，又坐了一回。脸从耳根烧到脖子，他能听见自己的心跳，一下一下撞着嗓子眼。马小宝也不笑，弯下腰凑到他耳朵边，声音压得很低：「十二条都背不下来，十月十七，还过得去？我那句话，可还算数。」说罢直起身，晃着摇杯走了。\n\n阿禾这才抬起头，看了他一眼，在本子上写了一笔。写的什么，他不敢看。\n\n那夜他没背书。他把书摊在桌上，翻到那张小人图，站到宿舍正中，两只胳膊举过头顶——图上那个小人，就是这么举着的。",
+  "en": "On the first day of classes, on the second floor of Canteen One, Ma Xiaobao's tray landed with a clang opposite him: two helpings of red-braised pork, a chicken leg, four eggs. He ate an egg in one mouthful. \"You're eating shredded potato? Shredded potato doesn't build muscle.\" When he'd finished he pushed the tray away and rubbed his stomach. \"Still hungry.\" As he got up, a little white bottle rolled out of his trouser pocket, covered in foreign writing. He bent to pick it up, unscrewed it, tipped two capsules into his palm and swallowed them dry. \"Fish oil. Deep-sea fish. My mum insists.\" Then he tapped the rim of Shen Mang's tray with his chopsticks. \"What you're on the team for — I can see it. She can't — everything she looks at is numbers. October the seventeenth, the trials. If you don't pass,\" he smiled very pleasantly, \"I'll tell her for you. I'll put it nicely. I'll say there was this guy who ran the thousand metres till he threw up, for her. Don't worry. My lips are sealed.\"\n\nShen Mang sat in front of that plate of shredded potato a long time. There wasn't a single frightening word in any of it, and yet he'd broken into more of a sweat than after twenty minutes of running that morning.\n\nThat afternoon was the introductory anatomy lecture. The teacher drew a person on the blackboard and labelled it layer by layer from the outside in: skin, superficial fascia, deep fascia, muscle, blood vessels and nerves, bone. Shen Mang put up his hand. \"Teacher, which layer are the meridians in?\" Someone in the back row snorted with laughter. The soft-spoken teacher didn't laugh. She thought about it. \"To this day, anatomy hasn't found any separate structure like the meridians.\" She put down the pelvis model in her hand and went on. \"Two thousand-odd years ago there were no scalpels. All the ancients had were their hands. Press here, and an aching numbness travels over there; put a needle in here, and the pain over there eases; take the pulse, and it beats, beat after beat, joined up everywhere. They wrote it down one point at a time and joined the points into lines — on the silk manuscripts dug up at Mawangdui in Changsha, there are still only eleven; only later did they make it up to twelve, one for each month of the year.\" She paused. \"Cut along the lines and look, and you find blood vessels, nerves and fascia, each going its own way.\" She drew the outline of a province on the blackboard in chalk. \"The meridians are like this provincial border on a map. You can't dig this line out of the ground, but cross it, and the accent changes.\"\n\nShen Mang sat down, his head humming. The twelve things he had to write out on Thursday turned out to be twelve things nobody had ever seen.\n\nFor the next three nights, after lights out in 617, the bottom bunk recited scripture non-stop. By the fifth meridian, the first four started leaking out, like a sack with a hole in the bottom. Specs passed him a mnemonic handed down by the seniors: \"Lung, Large, Stomach, Spleen, Heart, Small; Bladder, Kidney, Pericardium, Burner, Gall, Liver.\" Shen Mang recited it ten times. He remembered the mnemonic, but the moment he came to write the meridians out, all that was left in his head was two words: pie burner. Old Cai couldn't stand listening any more from the top bunk. \"You can't learn it like that. The twelve regular meridians are twelve rivers, and the eight extraordinary channels are reservoirs. When the rivers are full they flow into the reservoirs, and when the reservoirs are full, you fly.\" \"Why do you always end up at flying?\" \"If you don't fly, what are you cultivating it for?\"\n\nOn Tuesday evening he went to the library looking for a book with pictures. In the open stacks there really was an *Atlas of Meridians and Acupoints*: a little bald man covered all over in red and green lines, like a bus route map. The routes were all drawn in, but which route left first and which left after, the book didn't say. On the way down he took the wrong stairs and went right down to the basement. At the end of the corridor was a grey fire door with a notice on it: \"Rare Books Department (Special Collections Reading Room). Entry by pass only. Copying permitted, no loans.\" A cool draught seeped from under the door. In the cultivation novels he'd read since he was a kid there was always the same old saying: real techniques are hidden in old books nobody reads. He reached out and pushed. The door lock went *beep* and lit up red, and the door didn't open. That door, he remembered.\n\nCouldn't find it; still had to write it out. Thursday morning, Introduction to Acupuncture and Tuina. [Teacher Yan]{注=jin-yan} wrote a line on the blackboard, the chalk going tock-tock:\n\n\"[The meridians are that by which one can decide life and death, treat the hundred illnesses, and regulate depletion and repletion; they must not fail to flow.]{典=lingshu-jingmai}\"\n\n\"Books away. Write out the twelve regular meridians.\" He walked up and down the rows with his hands behind his back. \"Last year somebody copied them on their arm.\"\n\nOn the inside of Shen Mang's left arm, twelve lines were copied in fine pen. He put his hand under the desk and rubbed hard with spit, and when he'd finished and looked, the twelve lines had smeared into one blur of blue. He picked up his pen, wrote \"Hand Taiyin Lung Meridian\", and then discovered it was the only one he remembered. The last words of the line on the blackboard were right in front of his seat: must not fail to flow.\n\nTeacher Yan turned over one paper, stopped, and held it up. \"Shen Mang. Handed in a blank paper.\" Someone in the back row laughed. \"Anyone who can't learn all twelve might think about whether they've come in the wrong door, sooner rather than later.\"\n\nWhen the papers came back, his had only two words, in the top right corner: Shen Mang. He folded it twice and pushed it deep into the bottom of his pocket, as if afraid someone would see it. A voice in his head said: Shen Mang, oh Shen Mang — a thing nobody can find, and you can't even remember it.\n\nFive in the afternoon, the gym. Training had just finished. Ma Xiaobao wandered over shaking his big shaker and called out towards the sideline: \"Manager, I hear our new guy handed in a blank paper today?\" Ahe was writing with her head down and didn't look up. Ma Xiaobao patted Shen Mang on the shoulder. \"Go on, recite one for the manager. Just the second one.\"\n\nHalf the gym stopped what they were doing. Shen Mang opened his mouth: \"Hand Taiyin Lung Meridian… hand…\" Nothing came after it. The line of blue writing was smeared up his sleeve, the mnemonic was in his head, but which came after \"Lung, Large\", he couldn't connect, however he tried. He stood there with his mouth open, like that moment on Monday when he'd sat down in the red circle, sitting in it all over again. His face burned from the roots of his ears down to his neck, and he could hear his heart thudding, beat by beat, against his throat. Ma Xiaobao didn't laugh either. He bent down to his ear and said, his voice very low: \"Can't even learn twelve — you think you'll get through October the seventeenth? What I said still stands.\" Then he straightened up and wandered off, swinging his shaker.\n\nOnly then did Ahe look up. She glanced at him and wrote something in her notebook. What she wrote, he didn't dare look.\n\nThat night he didn't learn anything by heart. He laid the book open on the desk at the picture of the little man, stood in the middle of the room, and raised both arms over his head — that was how the little man in the picture was holding them."
+ },
+ "story_after": {
+  "zh": "他从胸口找起：锁骨底下一寸，手太阴肺经从这儿出来，顺着胳膊里侧往上走，走到大拇指尖。大拇指挨着食指，手阳明大肠经接住了，顺着胳膊外侧往下，翻过肩膀，落到鼻子旁边。鼻子旁边，足阳明胃经接过去，从脸上往下，过胸，过肚子，过膝盖前头，落到第二个脚趾。第二个脚趾挨着大脚趾，足太阴脾经接住，又顺着腿里侧往上，回到了胸口。\n\n他的手停在胸口，愣住了：绕了一圈，又回到出发的地方了。\n\n他接着比第二圈：胸口出来，到小指；小指翻到手背，下来到耳朵前头；眼角里头起，翻过头顶，顺着后背一路往下，到小脚趾；脚底板再往上，又回到胸口——这一圈，全走在背后。第三圈：胸口到中指；无名指下来，到眉梢；眼角外头起，顺着身子两侧往下，到第四个脚趾；大脚趾再往上，回到胸口，又接上了肺经。\n\n他站在那儿，两只胳膊还举着，忽然全明白了。举着手，阴经全往上走，阳经全往下走；手指尖上、脚趾尖上，阴阳换手；脸上，阳经跟阳经换手；胸口里，阴经跟阴经换手。哪里是十二条各管各的线——是一条，绕着人跑三圈：头一圈走前面，第二圈走后面，第三圈走两边。像一班接力的人，跑一圈又回来，把棒子交到下一个人手里。\n\n眼镜在对面床上，把眼镜往上一推：「……你再比一遍，我录下来。」老蔡也跟着举起胳膊，在上铺比划到第四条，胳膊撞上了天花板，「哎哟」一声：「我这个上铺，阳经走不下去。」\n\n他闭上眼睛，又比了一遍，一条没错。第二天上午他去重默，过了。严老师在那张纸上批了个「过」，看了他一眼，没说别的。他把九月十七那张白卷从兜里掏出来，展平了，白的一面朝外，贴在节气挂图旁边。眼镜道：「你贴反了。」沈芒道：「没贴反。白的这一面，是给我自己看的。」",
+  "en": "He started from his chest: one inch under the collarbone, the Hand Taiyin Lung Meridian comes out here and goes up the inside of the arm, all the way to the tip of the thumb. The thumb is next to the index finger: the Hand Yangming Large Intestine Meridian takes over, comes down the outside of the arm, over the shoulder, and lands beside the nose. Beside the nose, the Foot Yangming Stomach Meridian takes over, comes down over the face, past the chest, past the belly, past the front of the knee, and lands at the second toe. The second toe is next to the big toe: the Foot Taiyin Spleen Meridian takes over and goes back up the inside of the leg and comes back to the chest.\n\nHis hand stopped on his chest, and he froze: it had gone all the way round and come back to where it started.\n\nHe went on and traced the second circuit: out from the chest, to the little finger; from the little finger over to the back of the hand, down to the front of the ear; starting inside the corner of the eye, over the top of the head, all the way down the back, to the little toe; up from the sole of the foot, back to the chest again — this whole circuit ran down the back. Third circuit: chest to middle finger; down from the ring finger, to the tip of the eyebrow; starting outside the corner of the eye, down the sides of the body, to the fourth toe; up again from the big toe, back to the chest, and joined on to the Lung Meridian again.\n\nHe stood there, both arms still raised, and suddenly understood it all. With your arms up, the yin meridians all run upward and the yang meridians all run downward. At the fingertips and toe tips, yin and yang hand over; on the face, yang hands over to yang; in the chest, yin hands over to yin. These weren't twelve lines each minding its own business — it was one line, running round a person three times: the first circuit down the front, the second down the back, the third down the sides. Like a relay team, running a lap and coming back to put the baton in the next runner's hand.\n\nSpecs, on the bed opposite, pushed his glasses up. \"…Do that again. I'm recording it.\" Old Cai raised his arms too and traced along in the top bunk; at the fourth meridian his arm hit the ceiling. \"Ow. On this top bunk, the yang meridians can't get down.\"\n\nHe shut his eyes and traced it all again, without one mistake. Next morning he went to resit the test, and passed. Teacher Yan wrote \"Pass\" on the paper, glanced at him, and said nothing else. He took the blank paper from the seventeenth of September out of his pocket, smoothed it flat, and stuck it up next to the solar-terms chart, blank side out. Specs said, \"You've stuck it on backwards.\" Shen Mang said, \"No I haven't. The blank side is for me to look at.\""
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "jin-jingluo"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jin-jingluo"
+  ]
+ },
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "九月二十一日，解剖课",
+    "en": "The twenty-first: anatomy"
+   },
+   "means": "goes on to the first dissection class",
+   "beat": [],
+   "next": "j01-anatomy",
+   "needs": {
+    "task": "jin-jingluo"
+   },
+   "refuse": {
+    "zh": "胳膊还举着——把那一圈比完。",
+    "en": "Your arms are still up — trace the circuit through."
+   }
+  }
+ ]
+}

@@ -214,7 +214,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "bingzhai",
-       "n": 68
+       "n": 71
       },
       {
        "kind": "read",
@@ -331,7 +331,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 75
+       "n": 79
       },
       {
        "kind": "read",
@@ -427,13 +427,13 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 76
+       "n": 80
       },
       {
        "kind": "read",
        "chars": 902,
-       "run": 4103,
-       "over": true
+       "run": 1916,
+       "over": false
       }
      ],
      "counts": {
@@ -444,7 +444,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 4103,
+     "longest": 4047,
      "roaming": 0,
      "side": []
     },
@@ -457,9 +457,28 @@
      "items": [
       {
        "kind": "read",
-       "chars": 3201,
-       "run": 4103,
-       "over": true
+       "chars": 1014,
+       "run": 1916,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-yiquan",
+       "scene": "j01-track",
+       "title": {
+        "zh": "那一圈 · 别蹲",
+        "en": "That lap · Don't squat"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 62
+      },
+      {
+       "kind": "read",
+       "chars": 2187,
+       "run": 2187,
+       "over": false
       },
       {
        "kind": "board",
@@ -476,9 +495,47 @@
       },
       {
        "kind": "read",
-       "chars": 8681,
-       "run": 8681,
+       "chars": 4210,
+       "run": 4210,
        "over": true
+      },
+      {
+       "kind": "board",
+       "id": "jin-jingluo",
+       "scene": "j01-loop",
+       "title": {
+        "zh": "十二正经 · 绕一圈",
+        "en": "The twelve channels · All the way round"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 63
+      },
+      {
+       "kind": "read",
+       "chars": 2312,
+       "run": 2312,
+       "over": true
+      },
+      {
+       "kind": "board",
+       "id": "jin-chat-ge",
+       "scene": "j01-anatomy",
+       "title": {
+        "zh": "古籍部 · 讲喘气的书",
+        "en": "The rare-books room · A book about breathing"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 64
+      },
+      {
+       "kind": "read",
+       "chars": 2159,
+       "run": 2159,
+       "over": false
       },
       {
        "kind": "board",
@@ -491,7 +548,8 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 61
+       "n": 61,
+       "same": true
       },
       {
        "kind": "read",
@@ -501,14 +559,14 @@
       }
      ],
      "counts": {
-      "board": 2,
+      "board": 5,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 8681,
+     "longest": 4210,
      "roaming": 0,
      "side": []
     },
@@ -728,7 +786,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 62
+       "n": 65
       },
       {
        "kind": "read",
@@ -1119,7 +1177,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 63
+       "n": 66
       },
       {
        "kind": "read",
@@ -1396,7 +1454,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 64
+       "n": 67
       },
       {
        "kind": "read",

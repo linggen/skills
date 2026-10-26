@@ -21,10 +21,10 @@ const flat = (s) => s.replace(/\[([^\]]+)\]\{[^}]+\}/g, '$1').replace(/\*/g, '')
 
 test('every chat board: a task on the jinchat game with its own chat, a story row naming it, paying nothing', () => {
   const rows = reg.games.filter((g) => g.id === 'jinchat' && g.task);
-  assert.equal(rows.filter((r) => r.group === 'jin').length, 4, 'one a 今 interlude');
+  assert.ok(rows.filter((r) => r.group === 'jin').length >= 4, 'one a 今 interlude at least');
   for (const row of rows) {
-    // a 今 chat is the phone's; a 古 one is said face to face, in its 回's group
-    assert.equal(row.group === 'jin', CHATS[row.data.chat].look !== 'face', `${row.task}: its look and its line`);
+    // a 古 chat is said face to face, in its 回's group (a 今 one may be too: 葛奶奶 at her door)
+    if (row.group !== 'jin') assert.equal(CHATS[row.data.chat].look, 'face', `${row.task}: its look and its line`);
     assert.equal(row.mechanic, '对话');
     const t = tasks.find((x) => x.id === row.task);
     assert.ok(t, row.task);

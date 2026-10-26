@@ -25,7 +25,9 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   // 第一回's lineup (2026-10-21, Hanli: 「按你的建议来」): 00-masan's 忍字 — the breath pressed down under the 桂花糕
   'masan-taunt': 'renzi',
   // 全文后的小游戏 (2026-10-26): 洗髓 back on its night (00-sleep), 吹鹅毛's level as the mirror's light (00-halfyear)
-  'sleep-xisui': 'xisui', 'halfyear-mirror': 'feather' };
+  'sleep-xisui': 'xisui', 'halfyear-mirror': 'feather',
+  // 今 · 一 (2026-10-26): the lap walked out after the 1,000 m, the twelve channels traced with his arms up
+  'jin-yiquan': 'yiquan', 'jin-jingluo': 'jingluo' };
 const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/tasks/${f}.json`, import.meta.url), 'utf8')).tasks);
 
 /** Played to the end by `policy(state)` (true = hold), on a `step` ms clock. */

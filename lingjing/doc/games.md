@@ -100,6 +100,11 @@ Stretches after: 1,741 (from 古一) · 2,129 · 736 · 1,785 · 1,135 · 2,083 
 
 ### 今·一 (j01): 5 boards (today: 2)
 
+**Built 2026-10-26:** ① 那一圈 (j01-track's first board, qimai `yiquan`, after 「今年体测，你是头一个吐的。」) · ③ 十二正经 (new
+scene j01-loop, qimai `jingluo`: the bead his arms tracing one line three times round) · a chat for ⑤: 葛奶奶 at the
+rare-books door (j01-anatomy's first board, jinchat `ge`, face to face) in place of 禹步 · 爬六楼 (no kit work for 禹步; the
+book's talk there). ④ 膈肌 dropped (it would sit next to ③'s qimai). ② 别抖 waits on the 时机 kit's levels.
+
 | # | scene · ¶ | the book | kit · level | len | why it fits | pays |
 |---|---|---|---|---|---|---|
 | 1 | j01-track s10 「他最怕的，就是这一笔。他提着一袋自己的午饭…」 | the 1,000 m: dead at 400, sick, and he does not sit, walking the lap out | 气走经脉 · 一千米 | 45 s | the 今 line is breath. The lap walked out is why 阿禾 takes him | 0 |

@@ -47,10 +47,19 @@ export const TO_VALLEY = [
    the interludes (withoutInterludes) walks past them. */
 export const JIN_ONE = [
   // 投一个给我看看 (砸寨, the 调息 cut 2026-10-20): the ball over the board onto 马小宝's 摇杯
+  // 那一圈 (气走经脉, 2026-10-26) before it: the lap walked out
+  ['win', { id: 'jin-yiquan' }, 'jin'],
+  ['task', { action: 'done', id: 'jin-yiquan' }, 'jin'],
   ['win', { id: 'jin-toulan' }, 'jin'],
   ['task', { action: 'done', id: 'jin-toulan' }, 'jin'],
   ['resolve', { exit: 'on' }, 'jin'],
-  // 六一七 · 别拍 (今's 聊天, 2026-10-22: the 调息 sweep — 先吐 told by the retest's way on): the 617 group that night
+  // 十二正经 (气走经脉, j01-loop, 2026-10-26): the channels traced with his arms up
+  ['win', { id: 'jin-jingluo' }, 'jin'],
+  ['task', { action: 'done', id: 'jin-jingluo' }, 'jin'],
+  ['resolve', { exit: 'on' }, 'jin'],
+  // 古籍部 (对话, 2026-10-26): 葛奶奶 at the door, then 六一七 · 别拍 (今's 聊天, 2026-10-22) the night before the retest
+  ['win', { id: 'jin-chat-ge' }, 'jin'],
+  ['task', { action: 'done', id: 'jin-chat-ge' }, 'jin'],
   ['win', { id: 'jin-chat-617' }, 'jin'],
   ['task', { action: 'done', id: 'jin-chat-617' }, 'jin'],
   ['resolve', { exit: 'on' }, 'jin'],

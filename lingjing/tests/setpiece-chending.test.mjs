@@ -35,14 +35,11 @@ function atGate(lang) {
   let s = { ...newState(content, lang, NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
   s = { ...s, tasks: { ...s.tasks, 'notice-shuitong': { status: 'done' }, 'notice-wupo': { status: 'done' } } }; // 水桶落井 played (2026-10-20)
   s = resolve(s, content, ctx, { exit: 'go' }).state;
-  // 今一's dawn run (边跑边念, 2026-10-20) is played before the track's way on
-  s = win(s, content, ctx, { id: 'jin-toulan' }).state;
-  s = task(s, content, ctx, { action: 'done', id: 'jin-toulan' }).state;
-  s = resolve(s, content, ctx, { exit: 'on' }).state;
-  // 六一七 · 别拍 (今's 聊天, 2026-10-22) at the anatomy scene's end; the retest is told
-  s = win(s, content, ctx, { id: 'jin-chat-617' }).state;
-  s = task(s, content, ctx, { action: 'done', id: 'jin-chat-617' }).state;
-  s = resolve(s, content, ctx, { exit: 'on' }).state;
+  // 今 · 一 played through, its boards in order (2026-10-26: 那一圈 · 投一个 · 十二正经 · 葛奶奶 · 六一七); the retest is told
+  const play = (id) => { s = win(s, content, ctx, { id }).state; s = task(s, content, ctx, { action: 'done', id }).state; };
+  play('jin-yiquan'); play('jin-toulan'); s = resolve(s, content, ctx, { exit: 'on' }).state;
+  play('jin-jingluo'); s = resolve(s, content, ctx, { exit: 'on' }).state;
+  play('jin-chat-ge'); play('jin-chat-617'); s = resolve(s, content, ctx, { exit: 'on' }).state;
   return resolve(s, content, ctx, { exit: 'finish' }).state;
 }
 
