@@ -77,6 +77,8 @@ const OBSERVE = `(() => {
   const focus = document.getElementById('focus');
   return {
     taps, status, story: box?.getAttribute('data-story') ?? null, boxOn: vis(box),
+    // a mount-only board (the Phaser kits, 气走经脉) draws on its own canvas: no [data-g] to see, only its host
+    mounts: [...document.querySelectorAll('[data-mount]')].filter(vis).map((e) => e.dataset.mount),
     title: document.querySelector('[data-titlecard]') ? (document.querySelector('[data-titlecard]').innerText || '').trim().slice(0, 40) : null,
     place: document.getElementById('place')?.textContent ?? '', hui: document.getElementById('huiLine')?.textContent ?? '',
     focusSig: (focus?.innerHTML ?? '').replace(/\\s+/g, ' ').replace(/style="[^"]*"/g, '').length + ':' + (focus?.innerText ?? '').slice(0, 120),
@@ -130,8 +132,8 @@ export function choose(snap, ctx) {
   // stands only once the player is stuck (scripts/stuck.js, 2026-10-15) — the crawler opens that gate
   // through the scratch seam (`game-stuck`), then taps the real button.
   const gameTaps = live.filter((t) => t.game && Object.keys(t.data).some((k) => k === 'g' || k.startsWith('g-') || k === 'tile'));
-  if (gameTaps.length) {
-    const id = gameTaps[0].game, skipGame = live.find((t) => t.data['game-skip'] === id);
+  if (gameTaps.length || snap.mounts?.length) {
+    const id = gameTaps[0]?.game ?? snap.mounts[0], skipGame = live.find((t) => t.data['game-skip'] === id);
     if (ctx.gameMode(id) === 'skip') return skipGame ? { kind: 'game-skip', tap: skipGame, game: id, why: '算了，往下走' } : { kind: 'game-stuck', game: id, why: `stuck at ${id}` };
     return { kind: 'game', game: id, why: `the game ${id}` };
   }
