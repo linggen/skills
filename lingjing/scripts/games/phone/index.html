@@ -9,7 +9,9 @@
   #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; --game-reserve: 0px; }
   /* A board drawn in the page (rain, bread, qimai, shoulu, kapai, bingzhai): the paper ground, from the top, scrolling. */
   html.is-dom, html.is-dom body { background: var(--ground); }
-  html.is-dom #stage { display: block; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px 10px calc(16px + env(safe-area-inset-bottom)); }
+  html.is-dom #stage { display: flex; flex-direction: column; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px 10px calc(16px + env(safe-area-inset-bottom)); }
+  /* …standing at the bottom, where the thumb reaches (Hanli on the phone 2026-10-26: 接雨 「太靠上了, 不方便手指点击」); a board taller than the screen still scrolls from its top. */
+  html.is-dom #stage > * { margin-top: auto; flex-shrink: 0; }
   /* 斗法 (kapai): the room fills the page as in the 游戏厅 (arcade.css .is-fill): its own phone rules answer the
      `scene` container (battle.css @container scene), which the Mac's story page gives it. */
   html[data-board=kapai] #stage { padding: 0 0 env(safe-area-inset-bottom); overflow: hidden; }

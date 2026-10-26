@@ -185,3 +185,15 @@ test('no dead tap: every tap on a spot changes what the board shows — a refuse
   // the shake passes
   assert.doesNotMatch(rain.html(rain.tick(r.after, rain.NOPE_MS), 'zh'), /is-nope/);
 });
+
+test('a tap just before a stain shows sets the basin: a pair\'s second leak may open JIT after the first', async () => {
+  const rain = await import('../scripts/games/rain.js');
+  let s = rain.act(rain.newGame('grace'), { g: 'start' }).state ?? rain.act(rain.newGame('grace'), { g: 'start' });
+  const leak = s.sched.leaks[0];
+  s = rain.tick(s, leak.from - s.t - 200);
+  const r = rain.act(s, { g: 'spot', i: String(leak.spot) });
+  assert.equal((r.state ?? r).basins[leak.spot], 0, 'placed 0.2 s early');
+  const far = rain.tick(rain.act(rain.newGame('grace'), { g: 'start' }).state ?? rain.act(rain.newGame('grace'), { g: 'start' }), 0);
+  const r2 = rain.act(far, { g: 'spot', i: String(leak.spot) });
+  assert.equal((r2.state ?? r2).note, 'wasted', 'a tap long before its leak is still a wasted trip');
+});

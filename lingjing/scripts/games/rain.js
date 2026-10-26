@@ -35,6 +35,7 @@ export const DRY = 10; //         puddles at most for a dry floor
 export const LEAD = 900; //       the stain shows this long before a leak's first drop
 export const MISS_MS = 500; //    a tap on a dry spot: the hand is busy this long
 export const NOPE_MS = 350; //    a refused tap shakes its spot this long
+export const GRACE = 300; //      a tap this soon before a stain shows counts: a pair's second leak opens up to JIT after the first (seen on the phone 2026-10-26: the second basin, tapped at once, was a wasted trip)
 /* Puddles that lose the night — re-picked by play 2026-10-19, when the rain went to pairs (Hanli:
    「提高一点难度, 同时放两个盆, 或者快一点」). 60 seeds, one night's puddles, the flood off; a hand lands
    its tap its pace after the stain shows, and ~0.35 s after its last tap (two stains seen together
@@ -165,7 +166,7 @@ function tapSpot(s, i) {
   const nope = { i, at: s.t };
   if (s.busy != null && s.t < s.busy) return { ...s, nope }; // still on the wasted trip
   if (s.basins[i] != null) return { ...s, nope }; // a basin stands there already
-  if (!leakingAt(s.sched, i, s.t)) return { ...s, busy: s.t + MISS_MS, note: 'wasted', nope };
+  if (!leakingAt(s.sched, i, s.t) && !leakingAt(s.sched, i, s.t + GRACE)) return { ...s, busy: s.t + MISS_MS, note: 'wasted', nope };
   const basins = [...s.basins];
   basins[i] = 0;
   return { ...s, basins, note: 'placed' };
