@@ -152,9 +152,9 @@
 .g-scene.g-painted { --text: var(--g-ink); --dim: #5b4c38; --faint: #7d6c54; border: 0; border-radius: 6px; color: var(--g-ink);
   background: radial-gradient(130% 100% at 40% 30%, #e3cdab, var(--g-paper) 60%, #d2b792); box-shadow: 0 6px 22px rgba(0, 0, 0, .18); }
 .g-scene .g-fig, .g-scene .g-stage { pointer-events: none; }
-.g-scene .g-heqi { transition: opacity .6s; }
+.g-scene .g-foe { transition: opacity .6s; }
 .g-scene .g-feather-art { filter: contrast(1.35) brightness(.9); }
-.g-scene .g-heqi.is-off { opacity: .55; }
+.g-scene .g-foe.is-off { opacity: .55; }
 /* 喂饼 painted (2026-10-16, tools/paint-games.py): the cave is a painting on paper, so the board is paper in
    either theme — ink-dark strokes on it, the fox laid on with multiply, no frame line around it. */
 .g-bread .g-scene.g-bread-cave.is-painted { border: 0; border-radius: 6px; background: var(--g-paper); color: var(--g-ink);

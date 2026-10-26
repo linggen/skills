@@ -39,8 +39,8 @@ const gauss = r => Math.sqrt(-2 * Math.log(r() || 1e-9)) * Math.cos(2 * Math.PI 
 /* What an action sends to the module's act, as live-games.js would. */
 const dataOf = a => (a.hold ? { ...a.hold, g: 'hold' } : a.release ? { g: 'release' } : a.move != null ? { g: 'move', d: a.move } : a);
 
-/* One try: the module played by the bot until won or LIMIT_MS of game time. */
-export function playOnce(mod, bot, { seed = 'bot-1', level = 1, deal, reaction = REACTION, jitter = JITTER, limit = LIMIT_MS } = {}) {
+/* One try: the module played by the bot until won or LIMIT_MS of game time, the clock in `step`s (the page's is 50 ms). */
+export function playOnce(mod, bot, { seed = 'bot-1', level = 1, deal, reaction = REACTION, jitter = JITTER, limit = LIMIT_MS, step = STEP } = {}) {
   const r = rng(seed);
   let state = mod.newGame(seed, level, deal), t = 0, pending = null, nextLook = 0, acts = 0;
   const tick = ms => { if (mod.tick && state.live && !state.won) state = mod.tick(state, ms); };
@@ -52,10 +52,10 @@ export function playOnce(mod, bot, { seed = 'bot-1', level = 1, deal, reaction =
       const a = bot(state, { lead: reaction, t });
       if (a && a.move != null) apply(a); // a stroke flows on
       else if (a) pending = { a, at: t + Math.max(120, reaction + gauss(r) * jitter) };
-      nextLook = Math.max(nextLook, t + STEP);
+      nextLook = Math.max(nextLook, t + step);
     }
-    tick(STEP);
-    t += STEP;
+    tick(step);
+    t += step;
   }
   return { won: Boolean(state.won), ms: t, grade: state.grade ?? null, acts, stuck: Boolean(mod.stuck?.(state)) };
 }

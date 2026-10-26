@@ -1,0 +1,351 @@
+{
+ "runs": {
+  "r1": {
+   "hash": "dfd3cb20e9a36d056fdbd00d548054222fe0de64caae1b04894a2db31f9f60e4",
+   "last": {
+    "seed": "trace-1",
+    "phase": "sneeze",
+    "live": false,
+    "t": 13422,
+    "at": 12985,
+    "swings": 1,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 1,
+    "over": 2,
+    "early": 2,
+    "fx": {
+     "at": 13422,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r2": {
+   "hash": "cc5de24bff7155437acb513e9714079f3f832ac3399f3185b9f7b4ba8bd0fa68",
+   "last": {
+    "seed": "trace-2",
+    "phase": "sneeze",
+    "live": false,
+    "t": 46014,
+    "at": 45583,
+    "swings": 5,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 5,
+    "over": 4,
+    "early": 7,
+    "fx": {
+     "at": 46014,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r3": {
+   "hash": "56c7dd8a4c81ec3f4ca3594894a243058b6246ac0ea82468c428cb1f30287bd2",
+   "last": {
+    "seed": "trace-3",
+    "phase": "sneeze",
+    "live": false,
+    "t": 5326,
+    "at": 5326,
+    "swings": 0,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 0,
+    "over": 0,
+    "early": 24,
+    "fx": {
+     "at": 5326,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r4": {
+   "hash": "2e16d33f93d3105dd3280882e086028835007960e669ac1c1aadd5c7480184cb",
+   "last": {
+    "seed": "trace-4",
+    "phase": "sneeze",
+    "live": false,
+    "t": 8451,
+    "at": 8451,
+    "swings": 0,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 0,
+    "over": 0,
+    "early": 4,
+    "fx": {
+     "at": 8451,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r5": {
+   "hash": "0b8765941a77f045bafbc97bfdfdc9f293ef0a7167dc615f6efffe11a1505842",
+   "last": {
+    "seed": "trace-5",
+    "phase": "sneeze",
+    "live": false,
+    "t": 42092,
+    "at": 41592,
+    "swings": 1,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 1,
+    "over": 2,
+    "early": 1,
+    "fx": {
+     "at": 42092,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r6": {
+   "hash": "9051977165ccc59989bb0878c019e719c4720debb8a725b242809a1cc20d72b6",
+   "last": {
+    "seed": "trace-6",
+    "phase": "sneeze",
+    "live": false,
+    "t": 5661,
+    "at": 5624,
+    "swings": 0,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 0,
+    "over": 0,
+    "early": 24,
+    "fx": {
+     "at": 5661,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r7": {
+   "hash": "f22d2838153ca9d64268152a0cf5c16928a749b52aa9a24c1cc7c341cf04aea8",
+   "last": {
+    "seed": "trace-7",
+    "phase": "sneeze",
+    "live": false,
+    "t": 16073,
+    "at": 16073,
+    "swings": 5,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 5,
+    "over": 0,
+    "early": 15,
+    "fx": {
+     "at": 16073,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r8": {
+   "hash": "b87d8642de4bf553054eff902ce540746124748fd9433584ddaf8a4f4b23fd9c",
+   "last": {
+    "seed": "trace-8",
+    "phase": "sneeze",
+    "live": false,
+    "t": 28543,
+    "at": 27696,
+    "swings": 0,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 0,
+    "over": 2,
+    "early": 1,
+    "fx": {
+     "at": 28543,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r9": {
+   "hash": "d11fcc0b37d3491679511d1aa375235332fc411b6a36c8a09d42b6fe089c8e32",
+   "last": {
+    "seed": "trace-9",
+    "phase": "sneeze",
+    "live": false,
+    "t": 5661,
+    "at": 5611,
+    "swings": 0,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 0,
+    "over": 0,
+    "early": 11,
+    "fx": {
+     "at": 5661,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r10": {
+   "hash": "b8426b6c9313109796fa094fa41b52283befddd4dd954587f21b7073c553368b",
+   "last": {
+    "seed": "trace-10",
+    "phase": "sneeze",
+    "live": false,
+    "t": 8216,
+    "at": 8216,
+    "swings": 0,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 0,
+    "over": 1,
+    "early": 7,
+    "fx": {
+     "at": 8216,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r11": {
+   "hash": "f770dd048b7d48e9849b2745dbff53991fe131b004105587287af38040647a99",
+   "last": {
+    "seed": "trace-11",
+    "phase": "sneeze",
+    "live": false,
+    "t": 31902,
+    "at": 31702,
+    "swings": 12,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 12,
+    "over": 0,
+    "early": 13,
+    "fx": {
+     "at": 31902,
+     "ok": true
+    },
+    "note": "clumsy",
+    "won": true,
+    "grade": "clumsy"
+   }
+  },
+  "r12": {
+   "hash": "e0ff553539f7a09b361b69a2774dd5632a8d4a03613602190462ba091707418c",
+   "last": {
+    "seed": "trace-12",
+    "phase": "face",
+    "live": false,
+    "t": 1401,
+    "at": 0,
+    "swings": 0,
+    "held": null,
+    "k": 0,
+    "part": "ah",
+    "hits": 0,
+    "over": 0,
+    "early": 18,
+    "fx": null,
+    "note": "skipped",
+    "won": true,
+    "grade": null
+   }
+  },
+  "bot": {
+   "hash": "584397f06b92e905f738635bb63c0f44aa6d8dc7734e6e7a4f45bd79ebd9a055",
+   "last": {
+    "seed": "bot",
+    "phase": "sneeze",
+    "live": false,
+    "t": 4860,
+    "at": 4860,
+    "swings": 0,
+    "held": null,
+    "k": 2,
+    "part": "ah",
+    "hits": 0,
+    "over": 0,
+    "early": 0,
+    "fx": {
+     "at": 4860,
+     "ok": true
+    },
+    "note": "clean",
+    "won": true,
+    "grade": "clean"
+   }
+  }
+ },
+ "bots": {
+  "10|bot-1": {
+   "won": true,
+   "ms": 5810,
+   "grade": "clean",
+   "acts": 5
+  },
+  "10|bot-2": {
+   "won": true,
+   "ms": 5890,
+   "grade": "clean",
+   "acts": 5
+  },
+  "10|bot-3": {
+   "won": true,
+   "ms": 5910,
+   "grade": "clean",
+   "acts": 5
+  },
+  "50|bot-1": {
+   "won": true,
+   "ms": 5950,
+   "grade": "clean",
+   "acts": 5
+  },
+  "50|bot-2": {
+   "won": true,
+   "ms": 6000,
+   "grade": "clean",
+   "acts": 5
+  },
+  "50|bot-3": {
+   "won": true,
+   "ms": 6050,
+   "grade": "clean",
+   "acts": 5
+  }
+ }
+}
