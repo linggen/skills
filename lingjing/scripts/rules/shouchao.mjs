@@ -157,9 +157,9 @@ export function shouchaoDone(state, content, ctx, id) {
     const amount = content.balance?.boards?.[row.rank] ?? 0;
     if (amount) { s.wealth += amount; s.day.wealth += amount; paid.wealth = (paid.wealth ?? 0) + amount; paid.board = { rank: row.rank, wealth: amount }; }
   }
-  // An herb the beasts were after, picked by the night.
+  // An herb the beasts were after, picked by the night (its day and number: two nights may share a day).
   const herbs = c.herbs ?? [];
-  const herb = row.herb && herbs.length ? herbs[hashOf(`${dayKey(ctx.now)}|${seedOf(s)}|shouchao`) % herbs.length] : null;
+  const herb = row.herb && herbs.length ? herbs[hashOf(`${dayKey(ctx.now)}|${night.n}|${seedOf(s)}|shouchao`) % herbs.length] : null;
   const full = herb ? storedLine(s, [stow(content, s, herb, row.herb)]) : null;
   if (herb) paid.item = herb;
   const held = s.shouchao ?? {};

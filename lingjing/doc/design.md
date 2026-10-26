@@ -293,7 +293,8 @@ often the 九鼎 veins swell and draw the beasts down; the outer disciples man t
 the knobs: tasks/world.json `shouchao`, its cooldown balance.json `cooldowns.shouchao_h`.
 - **When**: at any hour, once a cooldown — offered again 20 h after the last night counted (a little under a day, so
   the same time tomorrow is open; inside it `win`/`task done` are refused `shut` in the world's words with
-  `left_min`, and Look's row carries `wait_min`), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at
+  `left_min`; Look's row carries `wait_min` and `shut` on the day the night was counted — after midnight the done row
+  is dropped, and the page draws neither yet), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at
   沉鼎观, never inside a beat's lock, the 秘境, a rerun or a fight.
 - **Cost and pay**: 8 灵气 (a fight's), taken as the night is counted — a lost night costs nothing, an empty pool
   shuts the board. By stars: 1★ 修为 10 + 灵石 5 · 2★ 20 + 10 + an herb · 3★ 30 + 15 + an herb (修为 on the
