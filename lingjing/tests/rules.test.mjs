@@ -1758,8 +1758,10 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   const seen = look(s, content, ctx());
   assert.equal(seen.divination, null);
   // The opening's play beats grow (batch two, 2026-10-14): every board on the way here done, the first six among them.
-  assert.ok(seen.tasks.every(t => t.status === 'done'), JSON.stringify(seen.tasks.map(t => [t.id, t.status])));
-  const ids = seen.tasks.map(t => t.id);
+  // (本王考考你, a light offer at any hour since 2026-10-26, stands beside them: not the story's.)
+  const story = seen.tasks.filter(t => !t.light);
+  assert.ok(story.every(t => t.status === 'done'), JSON.stringify(story.map(t => [t.id, t.status])));
+  const ids = story.map(t => t.id);
   // 忍字 · 认路 · 算账 back 2026-10-20 as 割绳子 levels (「可以, 放宽, 把那三关加进去」); the old weak boards stay cut.
   // 00-halfyear's 挑水上坡 (气走经脉, the reading cap) came and went the same day: told again (the 调息 cut). 认路 cut again 2026-10-21; 守白菜 · 守火 added (第一回's lineup).
   // 拽爹 cut 2026-10-22, 守灶台 in its place (Hanli: 「拽爹上崖 有点奇怪」 · 「就是在第一次收租那里…加一个塔防类的」).

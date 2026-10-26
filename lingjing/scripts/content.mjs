@@ -200,7 +200,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
 /* One model for every number (Hanli, 2026-10-15): balance.json declares the 层 thresholds, the pay
    tables, the fight-to-灵石 rate and the routine's cooldowns, and they land where the rules read
    them — each tier's `thresholds`, rewards `tables` and `xiuwei_to_lingshi`, the ladder's
-   `overflow_stretch`, every rerun's `every_h`, the 饭桶's `limit.cooldown_min`. A world with no
+   `overflow_stretch`, every rerun's `every_h`, the 饭桶's `limit.cooldown_min`, 兽潮's `every_h`. A world with no
    balance.json keeps its own files' numbers. tools/balance.mjs simulates the players on it. */
 export function withBalance(content) {
   const b = content.balance;
@@ -211,10 +211,13 @@ export function withBalance(content) {
   const rewards = { ...content.rewards, ...(b.pay ? { tables: structuredClone(b.pay) } : {}), ...(b.convert ? { xiuwei_to_lingshi: structuredClone(b.convert) } : {}) };
   if (c.rerun_h != null) for (const ch of Object.values(content.chapters ?? {})) for (const beat of ch.beats ?? []) if (beat.sealed?.rerun) beat.sealed.rerun.every_h = c.rerun_h;
   const fantong = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
+  // 兽潮's cooldown (rules/shouchao.mjs): onto its task row's `shouchao.every_h`.
+  const tasks = content.tasks?.tasks && c.shouchao_h != null
+    ? { ...content.tasks, tasks: content.tasks.tasks.map(t => (t.shouchao ? { ...t, shouchao: { ...t.shouchao, every_h: c.shouchao_h } } : t)) } : content.tasks;
   // Shop prices (`prices`): every `buy` and `sell` lives here, folded onto its item; a pill's 修为 (`pills`) too.
   const fold = i => pillFolded(b, b.prices?.[i.id] ? { ...i, ...b.prices[i.id] } : i);
   const items = content.items && (b.prices || b.pills) ? { ...content.items, items: content.items.items.map(fold) } : content.items;
-  return { ...content, ladder, rewards, fantong, items };
+  return { ...content, ladder, rewards, fantong, items, tasks };
 }
 
 /* 丹药 (balance.json `pills`): what a pill of a family pays — its 一转 一阶 `base`, by its 转 and its 阶, tamed

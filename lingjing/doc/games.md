@@ -767,13 +767,13 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
       (`hergame --hold=1 --task=<id>`, rules/hergame.mjs: `companion.awake` written, 5 min TTL, each round renews),
       its end lets her go. The 游戏厅's 画猜 with her as the guesser holds as `arcade:drawguess` (presence only).
       二十问 and 问卦's coins are no her-game: they wait for the book to wake her.
-    - **本王考考你** (rules/kao.mjs, task `benwang-kao`): on a night (19:00–06:00) she is beside him (the 木牌 too), after
+    - **本王考考你** (rules/kao.mjs, task `benwang-kao`): at any hour she is beside him (the 木牌 too; no night window since 2026-10-26), after
       入门, out of any run or fight — a light offer: its board stands only on an empty stage, beside the coins
-      (as 二十问), or while a round is under way. Each round counted as it begins (`kao open`), 3 a night; the word
+      (as 二十问), or while a round is under way. Each round counted as it begins (`kao open`), `per_day` 3 a calendar day; the word
       is the rules', one of games.json drawguess `met` the save has met (饼 · 木牌 · 鹿 · 饭桶 · 牙签 · 火锅 · 镜子 ·
-      狰 · 犰狳 · 鯥, each open after its scene or with its beast), never twice a night, a word never cleared
+      狰 · 犰狳 · 鯥, each open after its scene or with its beast), never twice a day, a word never cleared
       first. A word's first clear pays the small-game 灵石 by its looks (1 → 15, 2 → 10, 3 → 5); a miss is
-      another round. ≤ 3 looks a round: ≤ 9 looks ≈ 78k tokens a night.
+      another round. ≤ 3 looks a round: ≤ 9 looks ≈ 78k tokens a day.
     - **秘境 · 奇遇** (rules/qiyu.mjs, worlds/jiuding/qiyu.json; a pool, not one spot): as a rerun of the 外圈 is
       entered, each room (岔口 · 凶崖 · 暗河) rolls 0.3 — about one room a run; a hit draws by weight 你画我猜 3
       (once 银月 is met, the 木牌 too; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 撒豆成兵 3 (割藤 until 10-20; the next level each

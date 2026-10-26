@@ -1,7 +1,7 @@
 // 画猜 in the story (Hanli 10-19: 「ai游戏放到游戏中吧, 还挺好玩的. 但要结合剧情」, 「秘境里也放一个.
 // AI猜都是Yinyue猜」, 「秘境里可以有随机游戏」, 「AI猜画可以多放几个地方」). The guesser is always 银月,
-// and only where she is: 第六回's 家信 (娘 cannot read: a picture beside each line), 本王考考你 on a
-// night she is awake (after 入门, a capped few), a 秘境 rerun's 奇遇 (a room may roll one small game
+// and only where she is: 第六回's 家信 (娘 cannot read: a picture beside each line), 本王考考你 at any
+// hour she is awake (after 入门, a capped few a day), a 秘境 rerun's 奇遇 (a room may roll one small game
 // from a pool), and a 今日传闻 step (never while she sleeps — the rules', not a prompt's).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,7 +10,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { dayKey, newState } from '../scripts/state.mjs';
 import { look, playTo, rerun, tale, task, win, VERBS } from '../scripts/rules.mjs';
 import { letterGrade, matches, normalize, roundsOf, stubReply } from '../scripts/games/drawguess-rules.js';
-import { kaoWords, nightKey } from '../scripts/rules/kao.mjs';
+import { kaoWords } from '../scripts/rules/kao.mjs';
 import { rollQiyu } from '../scripts/rules/qiyu.mjs';
 import { draw } from '../scripts/rules/rerun.mjs';
 import { stageCards } from '../scripts/stage.mjs';
@@ -121,22 +121,23 @@ const noon = () => { const d = night(); d.setHours(13); return d; };
 const kaoRow = (s, now) => look(s, content, at(now)).tasks?.find((t) => t.id === 'benwang-kao') ?? null;
 const ok = (out) => { assert.equal(out.result.ok, true, JSON.stringify(out.result)); return out.state ?? null; };
 
-test('本王考考你: offered on a night she is beside him, after 入门 — from the 木牌 too (its round wakes her) — not by day', () => {
+test('本王考考你: offered at any hour she is beside him, after 入门 — from the 木牌 too (its round wakes her)', () => {
   const s = past();
   assert.ok(kaoRow(s, night()), 'a night, awake');
-  assert.equal(kaoRow(s, noon()), null, 'by day: no');
+  assert.ok(kaoRow(s, noon()), 'by day too (2026-10-26: no night window)');
+  const dawn = night(); dawn.setHours(7);
+  assert.ok(kaoRow(s, dawn), 'the morning too');
   assert.ok(kaoRow(asleep(s), night())?.her, 'asleep in the 木牌: offered, a game that needs her');
   const row = kaoRow(s, night());
   assert.equal(row.light, true, 'a light offer');
   assert.equal(row.deal.who, 'yinyue');
   assert.deepEqual(row.deal.begin, { verb: 'kao', action: 'open' });
-  assert.equal(nightKey(new Date(2026, 9, 17, 2)), nightKey(new Date(2026, 9, 16, 22)), 'after midnight is the same night');
   const words = kaoWords(content, s).map((w) => w.zh);
   assert.ok(words.includes('饼') && words.includes('饭桶'), words.join(' '));
   assert.ok(!words.includes('鯥'), 'not met yet: not a word');
 });
 
-test('本王考考你: each round counted as it begins, three a night; a word\'s first clear pays by its looks, once', () => {
+test('本王考考你: each round counted as it begins, three a calendar day (`per_day`); a word\'s first clear pays by its looks, once', () => {
   const now = night(), K = 'benwang-kao';
   let s = past();
   const w0 = s.wealth;
@@ -149,15 +150,23 @@ test('本王考考你: each round counted as it begins, three a night; a word\'s
   s = ok(paid);
   assert.equal(paid.result.first, true);
   assert.equal(s.wealth - w0, content.balance.boards.best, 'one look: best');
-  // Two more rounds (one lost, never won) and the night is spent.
+  // Two more rounds (one lost, never won) and the day is spent.
   s = ok(VERBS.kao(s, content, at(now), { action: 'open' }));
   assert.ok(kaoRow(s, now)?.open, 'a round under way stands');
   s = ok(VERBS.kao(s, content, at(now), { action: 'open' }));
   assert.ok(kaoRow(s, now), 'the third, open, still stands');
   const capped = VERBS.kao(s, content, at(now), { action: 'open' }).result;
   assert.equal(capped.refused, 'cap');
-  assert.notEqual(s.kao.drawn[1], first, 'never the same word twice a night');
-  // The next night: the first word cleared pays nothing again.
+  assert.notEqual(s.kao.drawn[1], first, 'never the same word twice a day');
+  assert.equal(content.tasks.tasks.find((t) => t.kao).per_day, 3, 'the allowance is `per_day`');
+  assert.equal(s.kao.day, dayKey(now), 'keyed by the calendar day');
+  // Still capped later the same day; past midnight a fresh day's rounds (no night spans two days).
+  const late = new Date(now); late.setHours(23, 50);
+  assert.equal(VERBS.kao(s, content, at(late), { action: 'open' }).result.refused, 'cap');
+  assert.equal(kaoRow({ ...s, kao: { ...s.kao, open: null } }, late), null, 'spent: not offered');
+  const after = new Date(now); after.setDate(after.getDate() + 1); after.setHours(0, 10);
+  assert.equal(kaoRow({ ...s, kao: { ...s.kao, open: null } }, after)?.left, 3, 'a new day: three again');
+  // The next day: the first word cleared pays nothing again.
   const next = new Date(now.getTime() + 864e5);
   let t = { ...s, kao_cleared: [first] };
   t = ok(VERBS.kao(t, content, at(next), { action: 'open' }));

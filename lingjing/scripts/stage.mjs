@@ -449,8 +449,8 @@ export function sceneGame(look, c) {
   // …and a board left on an earlier day that he chose to try again (再试一回, rules/skips.mjs): it stands
   // with the scene card, so the box steps aside for it — the scene's ways on stay his to take.
   if (c.card === 'board' && replayBoard(look, c.id)) return true;
-  // …and 兽潮's night (rules/shouchao.mjs, Look's `tide`): its 酉时 window is short, so it stands with the scene card
-  // as a board offered again does, never queued behind a scene that may stand all evening.
+  // …and 兽潮's night (rules/shouchao.mjs, Look's `tide`): once a cooldown, so it stands with the scene card
+  // as a board offered again does, never queued behind a scene that may stand all day.
   // Not while the scene has a game of its own still to play (药园巡夜's 守炉): one game on the stage at a time.
   if (c.card === 'board' && (look.tasks ?? []).some(t => t.id === c.id && t.tide && t.status !== 'done') && !ownGameOpen(look, c.id)) return true;
   return (look.scene.exits ?? []).some(e => (c.card === 'duel' ? e.game?.kind === 'duel' && e.game.id === c.id : e.needs?.task === c.id));

@@ -1,12 +1,13 @@
-// rules/kao.mjs — 本王考考你: on a night 银月 is awake, she has him draw a thing they have met together
-// and names it (Hanli 10-19: 「ai游戏放到游戏中吧……但要结合剧情」, 「AI猜都是Yinyue猜」).
+// rules/kao.mjs — 本王考考你: whenever 银月 is awake, she has him draw a thing they have met together
+// and names it (Hanli 10-19: 「ai游戏放到游戏中吧……但要结合剧情」, 「AI猜都是Yinyue猜」). At any hour since
+// 2026-10-26 (「好, 按这样改」: a clock window players miss): a daily allowance, no night window.
 // Part of the rules engine; rules.mjs is its one door.
 //
 // A light offer (its board stands only on an empty stage, as 二十问 does — stage.mjs), after 入门 only
-// (the 灵石 are the story's then), at most the task's `per_night` rounds a night, each counted as it
+// (the 灵石 are the story's then), at most the task's `per_day` rounds a calendar day, each counted as it
 // begins (`kao open`: the page's tap, a look's tokens are spent from there), whatever its end. The word
 // is the rules': one of games.json drawguess `met`, open once the save has passed its `after` scene or
-// walks with its `cast` beast, one not yet drawn tonight, a word never cleared first. The page is the
+// walks with its `cast` beast, one not yet drawn today, a word never cleared first. The page is the
 // only witness to the picture named (as for every board): its win counted (`task done`) pays a word's
 // FIRST clear only, by the looks it took (balance.json `boards`: 1 look best, 2 good, more plain).
 import { dayKey, pick, seedOf } from '../state.mjs';
@@ -14,21 +15,19 @@ import { clone, refuse, spendStamina } from './core.mjs';
 import { herNear } from './companion.mjs';
 import { isLocked } from './locks.mjs';
 import { hashOf } from './travel.mjs';
-import { nightNow, passed } from './world.mjs';
+import { passed } from './world.mjs';
 
 const kaoTask = content => (content.tasks?.tasks ?? []).find(t => t.kao) ?? null;
 const metWords = content => (content.games?.games ?? []).find(g => g.id === 'drawguess' && g.data?.met)?.data.met ?? [];
 
-/* The night a moment belongs to: before dawn it is still the evening's. */
-export function nightKey(now) {
-  return now.getHours() < 12 ? dayKey(new Date(now.getTime() - 864e5)) : dayKey(now);
-}
-const tonight = (state, now) => (state.kao?.night === nightKey(now) ? state.kao : null);
+/* Today's rounds (a calendar day, `dayKey`); a save from before 2026-10-26 kept them by `night`. */
+const today = (state, now) => ((state.kao?.day ?? state.kao?.night) === dayKey(now) ? state.kao : null);
+const capOf = t => t.per_day ?? 3;
 
-/* Whether she may set him one now: night, she beside him on her own line — from the 木牌 too: the
+/* Whether she may set him one now: any hour, she beside him on her own line — from the 木牌 too: the
    round wakes her (rules/hergame.mjs) — after 入门, out of any instance, run or fight. */
 function kaoUp(content, state, now) {
-  return Boolean(kaoTask(content)) && herNear(content, state) && nightNow(content, now)
+  return Boolean(kaoTask(content)) && herNear(content, state)
     && !isLocked(content, state, 'wealth') && !state.sealed && !state.rerun && !state.fight;
 }
 
@@ -37,46 +36,46 @@ export function kaoWords(content, state) {
   return metWords(content).filter(w => (!w.after || passed(content, state, w.after)) && (!w.cast || (state.cast ?? []).includes(w.cast)));
 }
 
-/* The night's next word: not drawn tonight, a word never cleared first; seeded by night, save and round. */
-function nextWord(content, state, night, n) {
-  const all = kaoWords(content, state), drawn = new Set(state.kao?.night === night ? state.kao.drawn ?? [] : []);
+/* The day's next word: not drawn today, a word never cleared first; seeded by day, save and round. */
+function nextWord(content, state, day, n) {
+  const all = kaoWords(content, state), drawn = new Set((state.kao?.day ?? state.kao?.night) === day ? state.kao.drawn ?? [] : []);
   const cleared = new Set(state.kao_cleared ?? []);
   const left = all.filter(w => !drawn.has(w.zh));
   const fresh = left.filter(w => !cleared.has(w.zh));
   const pool = fresh.length ? fresh : left.length ? left : all;
-  return pool.length ? pool[hashOf(`${night}|${seedOf(state)}|kao|${n}`) % pool.length] : null;
+  return pool.length ? pool[hashOf(`${day}|${seedOf(state)}|kao|${n}`) % pool.length] : null;
 }
 
-/* Look's task list: the board offered while she may set one and the night has rounds left — or one
+/* Look's task list: the board offered while she may set one and the day has rounds left — or one
    is under way (it stands until it ends, whatever the cap). */
 export function kaoHosted(content, state, now) {
   const t = kaoTask(content);
   if (!t || !kaoUp(content, state, now)) return {};
-  const k = tonight(state, now), cap = t.per_night ?? 3;
+  const k = today(state, now), cap = capOf(t);
   if (!k?.open && (k?.n ?? 0) >= cap) return {};
   if (!kaoWords(content, state).length) return {};
   return { [t.id]: { status: 'offered' } };
 }
-/* A round under way tonight: its win may be counted. */
-export const kaoHere = (content, state, id, now) => kaoTask(content)?.id === id && Boolean(tonight(state, now)?.open);
-/* For the Look row: rounds left tonight, and whether one is open. */
+/* A round under way today: its win may be counted. */
+export const kaoHere = (content, state, id, now) => kaoTask(content)?.id === id && Boolean(today(state, now)?.open);
+/* For the Look row: rounds left today, and whether one is open. */
 export function kaoBrief(content, state, now) {
-  const t = kaoTask(content), k = tonight(state, now);
-  return t ? { left: Math.max(0, (t.per_night ?? 3) - (k?.n ?? 0)), open: Boolean(k?.open) } : null;
+  const t = kaoTask(content), k = today(state, now);
+  return t ? { left: Math.max(0, capOf(t) - (k?.n ?? 0)), open: Boolean(k?.open) } : null;
 }
 
 /* `kao open` — the page's tap as a round begins: counted, a game's 体力 spent, the word handed back. */
 function open(state, content, ctx) {
   const t = kaoTask(content), lang = state.lang;
   if (!t || !kaoUp(content, state, ctx.now)) return refuse('not-here', null);
-  const night = nightKey(ctx.now), k = tonight(state, ctx.now), cap = t.per_night ?? 3;
-  if ((k?.n ?? 0) >= cap) return refuse('cap', pick({ zh: `今晚考够了（${cap} 回）。`, en: `Enough for tonight (${cap} rounds).` }, lang));
-  const n = (k?.n ?? 0) + 1, word = nextWord(content, state, night, n);
+  const day = dayKey(ctx.now), k = today(state, ctx.now), cap = capOf(t);
+  if ((k?.n ?? 0) >= cap) return refuse('cap', pick({ zh: `今天考够了（${cap} 回）。`, en: `Enough for today (${cap} rounds).` }, lang));
+  const n = (k?.n ?? 0) + 1, word = nextWord(content, state, day, n);
   if (!word) return refuse('no-words', null);
   const s = clone(state);
   const empty = spendStamina(content, s, ctx, 'game');
   if (empty) return empty;
-  s.kao = { night, n, drawn: [...(k?.drawn ?? []), word.zh], open: { word: word.zh, at: ctx.now.toISOString() } };
+  s.kao = { day, n, drawn: [...(k?.drawn ?? []), word.zh], open: { word: word.zh, at: ctx.now.toISOString() } };
   return { state: s, result: { ok: true, opened: n, left: cap - n, word } };
 }
 

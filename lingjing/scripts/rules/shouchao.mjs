@@ -1,14 +1,16 @@
 // rules/shouchao.mjs — 兽潮: the daily beast tide at 沉鼎观, a plot the game alone has (Hanli 2026-10-20:
 // 「兽潮塔防可以作为游戏里才有的一个情节. 比如每天固定时间有兽潮攻击沉鼎观. 在游戏里交代一下就好了」; it plays
-// 守墙关, 「可以」; 「这几个主力游戏都有多个关卡, 以后要持续加关卡. 然后游戏里每次出现一个关卡」).
+// 守墙关, 「可以」; 「这几个主力游戏都有多个关卡, 以后要持续加关卡. 然后游戏里每次出现一个关卡」). No clock window since
+// 2026-10-26 (「好, 按这样改」: players missed 酉时): once a cooldown, at any hour, as the 秘境 rerun is.
 // Part of the rules engine; rules.mjs is its one door.
 //
-// Everything it knows is the task row's (tasks/world.json `shouchao`): the window (酉时, local hours), the
-// scene that opens it (古四's 小周天, the first night he has 灵力), the places of 沉鼎观 where it is joined,
-// the 灵气 it costs, the pay by stars, 银月's one telling. Its board is offered in the window while he
-// stands at 沉鼎观, out of any instance, run or fight; the win is counted (`task done`) until the window's
-// grace runs out, a night at most once. A night missed costs nothing: the senior disciples hold the wall,
-// and only that night's pay is missed.
+// Everything it knows is the task row's (tasks/world.json `shouchao`): the cooldown (`every_h`, from
+// balance.json `cooldowns.shouchao_h`), the scene that opens it (古四's 小周天, the first night he has 灵力),
+// the places of 沉鼎观 where it is joined, the 灵气 it costs, the pay by stars, 银月's one telling, the
+// words of a tide not yet back (`shut`). Its board is offered at any hour while he stands at 沉鼎观, out of
+// any instance, run or fight, unless a night was counted (`task done`) less than `every_h` hours ago — one
+// night a cooldown. A night missed costs nothing: the senior disciples hold the wall, and only that night's
+// pay is missed.
 //
 // THE NIGHTS: each one the next row of 守墙关's level table (levels/shouqiang.json) that carries a `tide`
 // number, in that order, whose beasts are all of his 回 or before (creatures.json `hui`, read in book
@@ -29,18 +31,16 @@ const tideTask = content => (content.tasks?.tasks ?? []).find(t => t.shouchao) ?
 /* 守墙关's level table (levels/shouqiang.json), read once per world. */
 export const wallKit = content => kitOf(content, 'shouqiang');
 
-/* ── The clock ── */
-const minuteOf = now => now.getHours() * 60 + now.getMinutes();
-/* Inside the window (酉时 by default: local [from, to) hours). */
-export function tideNow(t, now) {
-  const [from, to] = t.shouchao.hours ?? [17, 19], m = minuteOf(now);
-  return m >= from * 60 && m < to * 60;
+/* ── The cooldown ── */
+const HOUR = 3600_000;
+/* When the last night was counted: the save's own mark, or (a save counted before 2026-10-26) the task's done_at. */
+const lastAt = (state, t) => state.shouchao?.at ?? (state.tasks?.[t.id]?.status === 'done' ? state.tasks[t.id].done_at : null) ?? null;
+/* Milliseconds until the tide comes again (0: it is up now). */
+export function tideWait(state, t, now) {
+  const last = lastAt(state, t);
+  return last ? Math.max(0, Date.parse(last) + (t.shouchao.every_h ?? 20) * HOUR - now.getTime()) : 0;
 }
-/* …or within its grace after it shuts: a night begun at 18:55 is still counted at 19:10. */
-const tideCounts = (t, now) => {
-  const [from, to] = t.shouchao.hours ?? [17, 19], m = minuteOf(now);
-  return m >= from * 60 && m < to * 60 + (t.shouchao.grace_min ?? 30);
-};
+const cooling = (state, t, now) => tideWait(state, t, now) > 0;
 
 /* ── Who may join ── */
 /* Past the scene that opens it (古四's 小周天), standing at 沉鼎观, on the 古 line, out of any instance,
@@ -54,18 +54,25 @@ function tideUp(content, state, t) {
   if (lockedOf(content, state).includes('wealth')) return false;
   return !c.places || c.places.includes(state.place);
 }
-const doneTonight = (state, t, now) => state.tasks?.[t.id]?.status === 'done' && state.tasks[t.id].period === dayKey(now);
-
-/* Look's task list: the board offered in the window. */
+/* Look's task list: the board offered, at any hour, out of the cooldown. */
 export function shouchaoHosted(content, state, now) {
   const t = tideTask(content);
-  if (!t || !tideNow(t, now) || !tideUp(content, state, t) || doneTonight(state, t, now)) return {};
+  if (!t || !tideUp(content, state, t) || cooling(state, t, now)) return {};
   return { [t.id]: { status: 'offered' } };
 }
-/* Its win may be counted: the window (or its grace), and not yet tonight. */
+/* Its win may be played and counted: out of the cooldown. */
 export function shouchaoHere(content, state, id, now) {
   const t = tideTask(content);
-  return Boolean(t) && t.id === id && tideCounts(t, now) && tideUp(content, state, t) && !doneTonight(state, t, now);
+  return Boolean(t) && t.id === id && tideUp(content, state, t) && !cooling(state, t, now);
+}
+/* The tide's task (tasks.mjs taskOpen asks it alone, never the generic period). */
+export const isTide = (content, id) => tideTask(content)?.id === id;
+/* Inside the cooldown where he may join: refused in the world's words, with the minutes left — else null. */
+export function shouchaoShut(content, state, id, now) {
+  const t = tideTask(content);
+  if (!t || t.id !== id || !tideUp(content, state, t)) return null;
+  const wait = tideWait(state, t, now);
+  return wait > 0 ? refuse('shut', pick(t.shouchao.shut, state.lang) ?? null, { left_min: Math.ceil(wait / 60_000) }) : null;
 }
 
 /* ── The nights ── */
@@ -119,8 +126,9 @@ export function shouchaoRow(content, state, now) {
   if (!t || !night) return {};
   const lang = state.lang, c = t.shouchao, row = night.row;
   const nameOf = n => ({ zh: `${pick(c.title, 'zh')} · 第${n}夜`, en: `${pick(c.title, 'en')} · night ${n}` });
-  // Counted tonight: the row names the night just held, and deals nothing more.
-  if (doneTonight(state, t, now)) return { tide: true, night: night.n - 1, title: pick(nameOf(night.n - 1), lang) };
+  // Inside the cooldown: the row names the night just held, says when the next comes, and deals nothing more.
+  const wait = tideWait(state, t, now);
+  if (wait > 0) return { tide: true, night: night.n - 1, title: pick(nameOf(night.n - 1), lang), wait_min: Math.ceil(wait / 60_000), shut: pick(c.shut, lang) ?? null };
   const title = nameOf(night.n);
   // 银月's telling, the first night only (until a night is won): the shell's lead card reads it.
   const told = Boolean(state.shouchao?.told);
@@ -156,8 +164,8 @@ export function shouchaoDone(state, content, ctx, id) {
   if (herb) paid.item = herb;
   const held = s.shouchao ?? {};
   s.shouchao = night.rise
-    ? { ...held, risen: night.rise, told: true, last: dayKey(ctx.now) }
-    : { ...held, won: [...(held.won ?? []), night.row.id], told: true, last: dayKey(ctx.now) };
+    ? { ...held, risen: night.rise, told: true, at: ctx.now.toISOString() }
+    : { ...held, won: [...(held.won ?? []), night.row.id], told: true, at: ctx.now.toISOString() };
   s.tasks[id] = { status: 'done', period: dayKey(ctx.now), done_at: ctx.now.toISOString() };
   return { state: s, result: { ok: true, done: id, night: night.n, level: night.row.id, ...(night.rise ? { rise: night.rise } : {}), stars, paid, gives: null, line: pick(t.done_line, s.lang), ...(full ? { pouch_full: full } : {}) } };
 }

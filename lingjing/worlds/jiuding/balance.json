@@ -320,11 +320,12 @@
     "good": 10,
     "best": 15
   },
-  "_cooldowns": "`pool_rest_min`: a pool beast beaten rests that long before the next stands (world.mjs poolResting; a pool may say its own `rest`). `rerun_h`: a 秘境's outer rooms open again that many hours after the last run ended (rules/rerun.mjs). `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs).",
+  "_cooldowns": "`pool_rest_min`: a pool beast beaten rests that long before the next stands (world.mjs poolResting; a pool may say its own `rest`). `rerun_h`: a 秘境's outer rooms open again that many hours after the last run ended (rules/rerun.mjs). `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs). `shouchao_h`: 兽潮 comes again that many hours after the last night counted, at any hour (rules/shouchao.mjs; 2026-10-26, replacing the 酉时 window: about once a day, a little slack so the same time tomorrow is open).",
   "cooldowns": {
     "pool_rest_min": 30,
     "rerun_h": 3,
-    "fantong_min": 60
+    "fantong_min": 60,
+    "shouchao_h": 20
   },
   "_pills": "丹药 in the game (design.md § 丹药; story DESIGN § 六·五): every pill is `tier` (its 阶 — the realm it is for, a ladder tier id) and `zhuan` (一至九转) on items.json; a pill that pays 修为 names its `of` (the family, its 一转 一阶 pay in `base`), and content.mjs withBalance folds `effect.progress` = base × by_zhuan[转] × by_tier[阶], so no pill carries its own number. Tamed (Hanli: the story's ×9 a 转 and ×10 a 阶 are never the game's): 一转 ×1 · 三转 ×1.5 · 九转 ×3, a quarter more each 转 — the numbers the game already had (聚气丹 20, the 饭桶's 三转 30, the furnace's 九转 60) — and one 阶 adds one 一阶's worth. A pill eaten pays at most its table's cap (rewards tables), so the 九转 at 60 stands on the scene table's 60. Breakthrough pills (ladder.json breakthrough.pill.items) declare no `of`: the throw reads them by 转 (by_zhuan there); fight pills keep `effect.fight` (the 丹囊 bands).",
   "pills": {

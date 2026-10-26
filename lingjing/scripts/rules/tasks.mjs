@@ -22,7 +22,7 @@ import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, po
 import { runBoardHere, runFindDone, runSpoils } from './rerun.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
 import { qiyuDone, qiyuHere } from './qiyu.mjs';
-import { shouchaoDone, shouchaoHere } from './shouchao.mjs';
+import { isTide, shouchaoDone, shouchaoHere, shouchaoShut } from './shouchao.mjs';
 
 /* ── Tasks and quests ── */
 
@@ -110,6 +110,8 @@ function catchHere(content, state, id) {
 function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   if (!t) return false;
+  // 兽潮 is open by its cooldown alone (rules/shouchao.mjs), never by the generic period: a night counted at 23:00 stays shut the next morning.
+  if (isTide(content, id)) return shouchaoHere(content, state, id, now);
   if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id) || stallHere(content, state, id, now) || runBoardHere(content, state, id) || kaoHere(content, state, id, now) || qiyuHere(content, state, id) || shouchaoHere(content, state, id, now)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
@@ -124,6 +126,9 @@ function taskDone(state, content, ctx, id) {
   if (kaoHere(content, state, id, ctx.now)) return kaoDone(state, content, ctx, id);
   // 兽潮 (rules/shouchao.mjs): the night counted — its 灵气, the pay by stars, the next night.
   if (shouchaoHere(content, state, id, ctx.now)) return shouchaoDone(state, content, ctx, id);
+  // …and inside its cooldown: refused in the world's words, the minutes left.
+  const tideShut = shouchaoShut(content, state, id, ctx.now);
+  if (tideShut) return tideShut;
   // A 秘境 rerun's 奇遇 (rules/qiyu.mjs): paid by a find of the run's, and its first clear's 灵石.
   if (qiyuHere(content, state, id)) return qiyuDone(state, content, ctx, id, (s, t, paid) => boardPay(content, s, t, id, paid));
   const again = reopened(content, state, id, ctx.now);
@@ -236,7 +241,7 @@ function boardPay(content, s, t, id, paid) {
 export function win(state, content, ctx, args) {
   const id = String(args.id ?? '');
   const inScene = sceneOf(content, state)?.exits.some(e => gameOf(e)?.id === id && gameOf(e).kind !== 'duel');
-  if (!inScene && !taskOpen(content, state, id, ctx.now)) return refuse('not-here', null);
+  if (!inScene && !taskOpen(content, state, id, ctx.now)) return shouchaoShut(content, state, id, ctx.now) ?? refuse('not-here', null);
   // A scene's boards are played in `show` order: a later one waits for those before it.
   const scene = sceneOf(content, state), order = sceneBoards(scene);
   if (order.slice(0, Math.max(0, order.indexOf(id))).some(b => state.tasks?.[b]?.status !== 'done')) return refuse('board-waits', null);

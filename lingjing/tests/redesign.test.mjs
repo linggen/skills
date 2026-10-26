@@ -140,7 +140,8 @@ test('the cut verbs are gone from the rules and from Ling\'s tools', () => {
 test('the day resets three things: 今日传闻, the day\'s 人间功课 pick, 问卦 — a place\'s game is not one of them', () => {
   const s = { ...migrate(oldSave(), content), chapter: '04-xu', scene: null, place: 'yunlong', tier: 'core', ended: ['00-prologue', '01-ji', '02-yan', '03-qing'], tasks: {} };
   const l = look(s, content, ctx());
-  assert.deepEqual(l.tasks, [], 'no board stands for the day by itself');
+  // (本王考考你 is a light offer while she is awake, at any hour since 2026-10-26 — no daily chore.)
+  assert.deepEqual(l.tasks.filter(t => !t.light), [], 'no board stands for the day by itself');
   assert.equal(l.divination, null, 'the day\'s reading, still to cast');
   assert.equal(VERBS.lundao({ ...s, place: 'jixia' }, content, ctx(), { action: 'open' }).result.refused, 'not-here', '论道 is not a daily chore either');
   // What a market posts is an errand like any other: the board is its giver.

@@ -1,7 +1,8 @@
 // 兽潮 — the daily beast tide at 沉鼎观 (Hanli 2026-10-20: 「兽潮塔防可以作为游戏里才有的一个情节. 比如每天固定时间有
 // 兽潮攻击沉鼎观. 在游戏里交代一下就好了」; 守墙关 「可以」; 「这几个主力游戏都有多个关卡, 以后要持续加关卡. 然后游戏里每次
-// 出现一个关卡」). The window, the gate, the cost and pay, a night missed, the nights in order and the rise past
-// them, the beasts by the 回 — the rules', with a fixed clock (rules/shouchao.mjs).
+// 出现一个关卡」; 2026-10-26 「好, 按这样改」: a cooldown, no clock window). The cooldown, the gate, the cost and pay, a
+// night missed, the nights in order and the rise past them, the beasts by the 回 — the rules', with a fixed clock
+// (rules/shouchao.mjs).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -36,9 +37,10 @@ function night(s, now, stars = 3) {
   return task(w.state, content, ctx(now), { action: 'done', id: T.id });
 }
 
-test('the row: a board of 守墙关, 酉时, opened by 古四\'s 小周天, every tide row of beasts that have a 回', () => {
+test('the row: a board of 守墙关, on a cooldown from balance.json, opened by 古四\'s 小周天, every tide row of beasts that have a 回', () => {
   assert.equal(T.game, 'shouqiang');
-  assert.deepEqual(T.shouchao.hours, [17, 19]);
+  assert.equal(T.shouchao.every_h, content.balance.cooldowns.shouchao_h, 'the cooldown is balance.json\'s');
+  assert.ok(!('hours' in T.shouchao) && !('grace_min' in T.shouchao), 'no clock window');
   assert.equal(T.shouchao.after, 'wm-zhoutian');
   assert.equal(content.chapters['00-waimen'].scenes['wm-zhoutian'].hui, 'h05', '小周天 is 古四\'s');
   assert.ok(content.rewards.stamina.cost[T.shouchao.cost] > 0, 'it costs 灵气');
@@ -48,22 +50,42 @@ test('the row: a board of 守墙关, 酉时, opened by 古四\'s 小周天, ever
   assert.equal(T.shouchao.tell.length, 2, '银月\'s one telling');
 });
 
-test('the window opens and shuts on the clock (酉时), counted through its grace', () => {
+test('offered at any hour — no clock window; only at 沉鼎观', () => {
   const s = at('wm-yaoyuan');
-  assert.equal(offered(s, day(20, 16, 59)), null, '16:59 — not yet');
-  const o = offered(s, day(20, 17, 0));
-  assert.ok(o, '17:00 — the tide');
-  assert.equal(o.hosted, true, 'a hosted board: shut on an empty pool (cards.js boardShut)');
-  assert.ok(offered(s, day(20, 18, 59)), '18:59');
-  assert.equal(offered(s, day(20, 19, 0)), null, '19:00 — gone');
-  // A night begun at 18:55 still counts at 19:20; at 19:31 it does not.
-  const w = win(s, content, ctx(day(20, 18, 55)), { id: T.id, stars: 2 });
-  assert.ok(w.result.ok);
-  assert.ok(task(w.state, content, ctx(day(20, 19, 20)), { action: 'done', id: T.id }).result.ok);
-  assert.equal(task(w.state, content, ctx(day(20, 19, 31)), { action: 'done', id: T.id }).result.ok, false);
+  for (const h of [3, 9, 13, 16, 17, 21, 23]) {
+    const o = offered(s, day(20, h, 10));
+    assert.ok(o, `${h}:10 — the tide`);
+    assert.equal(o.hosted, true, 'a hosted board: shut on an empty pool (cards.js boardShut)');
+  }
   // Only at 沉鼎观 (Look walks a 外门 disciple back inside, so asked of the rule itself).
-  assert.deepEqual(Object.keys(shouchaoHosted(content, s, day(20, 17, 30))), [T.id]);
-  assert.deepEqual(shouchaoHosted(content, { ...s, place: 'fangshi' }, day(20, 17, 30)), {});
+  assert.deepEqual(Object.keys(shouchaoHosted(content, s, day(20, 10, 30))), [T.id]);
+  assert.deepEqual(shouchaoHosted(content, { ...s, place: 'fangshi' }, day(20, 10, 30)), {});
+});
+
+test('one night a cooldown: refused inside it in the world\'s words, offered again once it has passed', () => {
+  const s = at('wm-yaoyuan'), H = T.shouchao.every_h;
+  assert.ok(H >= 18 && H <= 24, `about a day: ${H} h`);
+  // Counted at 23:00: the next morning is still inside the cooldown (the task's day period never reopens it).
+  const one = night(s, day(20, 23, 0));
+  assert.ok(one.result.ok, JSON.stringify(one.result));
+  const next = { ...structuredClone(one.state), stamina: 100 };
+  const morning = day(21, 9, 0);
+  assert.equal(shouchaoHosted(content, next, morning)[T.id], undefined, 'not offered the next morning');
+  const shut = win(next, content, ctx(morning), { id: T.id, stars: 3 }).result;
+  assert.equal(shut.ok, false);
+  assert.equal(shut.refused, 'shut');
+  assert.equal(shut.say, T.shouchao.shut.zh, JSON.stringify(shut));
+  assert.equal(shut.left_min, (H - 10) * 60, 'the minutes left');
+  // A win kept from before cannot be counted inside it either.
+  const kept = { ...next, wins: { ...next.wins, [T.id]: morning.toISOString() } };
+  assert.equal(task(kept, content, ctx(morning), { action: 'done', id: T.id }).result.refused, 'shut');
+  // Just before it passes: still shut; at it: offered, the next night.
+  const at23 = new Date(day(20, 23, 0).getTime() + H * 3600_000);
+  assert.equal(shouchaoHosted(content, next, new Date(at23.getTime() - 60_000))[T.id], undefined);
+  const o = offered(next, at23);
+  assert.ok(o && o.status === 'offered', 'offered again');
+  assert.equal(o.night, 2);
+  assert.ok(night(next, at23).result.ok, 'and counted');
 });
 
 test('gated on 古四\'s 小周天: never before it, offered from the first night he has 灵力', () => {
@@ -95,13 +117,14 @@ test('it costs 灵气 and pays by stars: 修为, 灵石 by the small-game ranks,
   assert.equal(empty.result.refused, 'no-stamina');
 });
 
-test('once a night; a night missed costs nothing — the next one is the same night, the pay intact', () => {
+test('once a cooldown; a night missed costs nothing — the next one is the same night, the pay intact', () => {
   const s = at('wm-yaoyuan');
   const one = night(s, day(20, 17, 30));
   assert.equal(one.result.night, 1);
   assert.equal(offered(one.state, day(20, 18, 0))?.status ?? 'done', 'done', 'counted: done for tonight');
   assert.match(offered(one.state, day(20, 18, 0)).title, /第1夜/, 'named by the night just held');
-  assert.equal(win(one.state, content, ctx(day(20, 18, 0)), { id: T.id, stars: 3 }).result.ok, false, 'not twice a night');
+  assert.equal(win(one.state, content, ctx(day(20, 18, 0)), { id: T.id, stars: 3 }).result.refused, 'shut', 'not twice a cooldown');
+  assert.ok(offered(one.state, day(20, 18, 0)).wait_min > 0 && offered(one.state, day(20, 18, 0)).shut, 'the row says when it comes again');
   // Three nights missed: nothing taken, nothing lost; the tide is back, on night 2.
   const back = { ...structuredClone(one.state), stamina: 100 };
   const o = offered(back, day(24, 17, 10));
@@ -181,7 +204,7 @@ test('beasts only of his 回 or before — read in book order (h11 is 古七, h0
   assert.ok(kinds(past).has('heyu'), 'the boss, of his 回');
 });
 
-test('on the stage: the night\'s board stands at 沉鼎观 in the window, titled by the night', () => {
+test('on the stage: the night\'s board stands at 沉鼎观, titled by the night', () => {
   const s = at('wm-yaoyuan');
   const l = look(s, content, ctx(day(20, 17, 30)));
   const o = l.tasks.find((t) => t.id === T.id);

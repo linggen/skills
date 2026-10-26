@@ -439,9 +439,9 @@ function tasksBrief(content, state, ctx) {
   if (katch && catchHere(content, state, katch)) hosted[katch] = { status: 'offered' };
   // 密室's door where he stands (rules/mishi.mjs): its board offered as a hosted game is.
   Object.assign(hosted, mishiHosted(content, state, ctx.now));
-  // 本王考考你 (rules/kao.mjs) on a night she is awake, and a 秘境 rerun's 奇遇 in its room (rules/qiyu.mjs).
+  // 本王考考你 (rules/kao.mjs) while she is awake, its rounds a day, and a 秘境 rerun's 奇遇 in its room (rules/qiyu.mjs).
   Object.assign(hosted, kaoHosted(content, state, ctx.now), qiyuHosted(content, state));
-  // 兽潮 (rules/shouchao.mjs): 守墙关's next night at 沉鼎观, in 酉时.
+  // 兽潮 (rules/shouchao.mjs): 守墙关's next night at 沉鼎观, out of its cooldown.
   Object.assign(hosted, shouchaoHosted(content, state, ctx.now));
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
