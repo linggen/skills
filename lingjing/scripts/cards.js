@@ -1543,9 +1543,10 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   const note = saidHtml(ctx) + (ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '');
   if (!taps && !looks && !note) return '';
   const row = taps ? `<div class="acts paneltaps${quiet ? ' quiet' : ''}">${taps}</div>` : '';
-  // A board left on an earlier day, offered again (Look's replay): while the box holds the scene's
-  // choices the stage under it is hidden, so the box carries the beat too — after the way on, never before it.
-  const again = inBox && ctx.look.replay ? replayHtml(ctx.look.replay, w) : '';
+  // A board left on an earlier day, offered again (Look's replay): one of the scene's choices, after the way on,
+  // wherever they stand — the box at its last beat or the scene card (stage.mjs replayOnCard: then no card of its own).
+  // Not while a game of the scene's is still to play (the choices wait under it).
+  const again = ctx.look.replay && !playing ? replayHtml(ctx.look.replay, w) : '';
   // In the box the choices come first — the way on is never the part a short stage scrolls away — but a
   // refusal stands right over them, where the tap was (2026-10-16: under them it fell below the fold).
   return inBox ? `${note}${row}${again}${looks}${invite}` : `${looks}${note}${row}${invite}`;

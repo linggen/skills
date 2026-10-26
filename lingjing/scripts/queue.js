@@ -52,11 +52,22 @@ export const boxGivesWay = ({ bout = false, appearing = false, slots = true, up 
    covered the stage, and the tap meant for it put the set piece away. */
 export const choicesStand = ({ told = true, owed = false, up = false }) => Boolean(told && !owed && !up);
 
-/* What stands on the stage, the box and the cards: never a game and the box at once. */
+/* A game up takes the stage alone (Hanli, 2026-10-26, a 兽潮 board pushed under the footer by the scene's
+   choices and two 再试一回 cards over it: 「Mac上游戏界面需要独占UI, 不能被其他UI给挤出去」). While a board is up
+   — one in play on the stage, or the one he opened from the tray (`chosen`) — it is the whole of main: no
+   scene card or its choices, no offer to replay, no 图鉴 card, no header; the page puts the tray away with
+   it (lingjing.js `solo`). They come back when it ends. What waits for the book still waits first (afterBook,
+   the page's storyAhead / trayAhead): the passage leading into a board is told before the board is up. */
+export function gameAlone(cards = [], { up = () => false, chosen = null } = {}) {
+  const game = (chosen && cards.find((c) => c.card === 'board' && c.id === chosen && up(c))) ?? cards.find(up);
+  return game ? [game] : null;
+}
+
+/* What stands on the stage, the box and the cards: never a game and the box at once, and a game up alone. */
 export function onStage({ cards = [], ahead = false, game = (c) => c.card === 'board', ...box }) {
   const shown = afterBook(cards, ahead);
-  const gameUp = shown.some(game);
-  return { cards: shown, box: Boolean(box.playing) && !boxGivesWay({ ...box, game: gameUp }) };
+  const alone = gameAlone(shown, { up: game });
+  return { cards: alone ?? shown, box: Boolean(box.playing) && !boxGivesWay({ ...box, game: Boolean(alone) }) };
 }
 
 /* Do the moments hold the 回's 「完」 (and the new 回's title) off? One up, or on its way — but

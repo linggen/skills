@@ -211,12 +211,12 @@ test('on the stage: the night\'s board stands at 沉鼎观, titled by the night'
   const o = l.tasks.find((t) => t.id === T.id);
   assert.match(o.title, /兽潮 · 第1潮/);
   assert.ok(stageCards(l).some((c) => c.card === 'board' && c.id === T.id), 'a board card');
-  // …standing with the scene card, never queued behind it for the whole window (古五's 柴房: its choices stand).
+  // …never beside the scene card (Hanli, 2026-10-26: 「Mac上游戏界面需要独占UI」 — a board up takes the stage alone,
+  // so a tide up by itself would hold the story): it waits in the tray's 开局, and opened it stands alone.
   const p = look(at('wm-luobo'), content, ctx(day(20, 17, 30)));
   assert.ok(p.scene?.panel, 'a scene card stands');
-  assert.ok(sceneGame(p, { card: 'board', id: T.id }), 'the tide with the scene card');
-  // …but never beside the scene's own game still to play (药园巡夜's 守炉 at wm-yaoyuan): one game on the stage at a time.
-  assert.equal(sceneGame(l, { card: 'board', id: T.id }), false, 'the tide waits behind the scene\'s game');
+  assert.equal(sceneGame(p, { card: 'board', id: T.id }), false, 'the tide is not the scene\'s game');
+  assert.equal(sceneGame(l, { card: 'board', id: T.id }), false, 'nor beside the scene\'s own game');
 });
 
 test('waiting out the cooldown: the row stands past midnight with the time left, and the page draws it in the world\'s words', () => {

@@ -24,7 +24,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tap } from './board.js';
 import { REALMS, begin, missingCards, view as boutView } from './battle.js';
-import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
+import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -74,7 +74,7 @@ import { fellBack, probeCaps, withCaps } from './caps.js';
 import { anyPaused, forget as forgetShell, frameHtml, say as shellSay, shellFor, timedOf, wireShell } from './games/shell.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
-import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
+import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, gameAlone, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
 // 喂饭桶 · 开炉 (fantong-kailu.js): the game is made once here, so every draw may lay it into its host.
 const ftKailu = fantongKailu({ feed: (ids, lingshi, press) => feedFantong(ids, lingshi, press), onFed: (r) => fedFantong(r) });
 
@@ -1122,7 +1122,19 @@ function stageNow() {
   // played) can leave main empty — then, with no passage to tell, the 下一步 card stands (withNext).
   // A 回's 「完」 only held back while a seal or a set piece plays is not put away: 下一步 waits
   // with it, or it would flash in under the stamp and give way to the 「完」 (queue.js atTurnCards).
-  return stageSlots(look, storyAhead() || choicesInBox() ? queued : closeHeld() ? queued.filter((c) => c.card !== 'next') : withNext(look, queued.filter((c) => c.card !== 'next')), { skip: view.qSkip });
+  const slots = stageSlots(look, storyAhead() || choicesInBox() ? queued : closeHeld() ? queued.filter((c) => c.card !== 'next') : withNext(look, queued.filter((c) => c.card !== 'next')), { skip: view.qSkip });
+  return soloSlots(slots, queued);
+}
+
+/* A game up takes the stage alone (queue.js gameAlone; Hanli, 2026-10-26: 「Mac上游戏界面需要独占UI」): the board
+   in play in main, or the one he opened from the tray (queued behind the scene card's rank otherwise) — main is
+   that board only, no header, nothing counted in the footer; the box steps aside (boxYields), the tray goes
+   (draw: `solo`). The rest stands again once it ends. */
+function soloSlots(slots, cards) {
+  const inMain = new Set(slots.main);
+  const alone = gameAlone(cards, { up: (c) => c.card === 'board' && boardOpenNow(c.id) && (inMain.has(c) || c.id === view.opened?.id), chosen: view.opened?.id ?? null });
+  if (!alone) return slots;
+  return { ...slots, header: [], main: alone, key: slotKey(alone[0]), solo: true, footer: { ...slots.footer, step: true, waiting: 0, next: null } };
 }
 
 /// 此刻 — the one thing, and over it the short notes of what just happened
@@ -1604,6 +1616,10 @@ function draw() {
   // footer are redrawn only when they changed (a stream token must not
   // restart a portrait's fade or reset a chip's pop).
   const slots = bout ? null : stageNow();
+  // A game up, or one of the page's moments (a set piece, a seal, her memory…): it stands alone, the tray put
+  // away with the rest (queue.js gameAlone) — and the stage takes the tray's height, so no board is cut off.
+  const solo = Boolean(slots?.solo) || momentUp();
+  document.body.classList.toggle('solo', solo);
   { const realLook = look; look = headLook(); try { paintIf('headCards', headHtml(slots && look !== realLook ? { ...slots, header: headOf(look) } : slots)); } finally { look = realLook; } }
   paintIf('footRow', footRowHtml(slots));
   paintIf('footChips', footChipsHtml(slots));
@@ -1636,7 +1652,7 @@ function draw() {
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
   // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
-  $('tray').innerHTML = stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
+  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.

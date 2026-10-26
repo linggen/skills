@@ -96,9 +96,11 @@ test('a board left comes back by itself on a later day, the stage idle — won t
   const tomorrow = later(now);
   const lk = look(n, content, ctxAt(tomorrow));
   assert.equal(lk.replay?.task, 'bread-share');
-  // On the stage: under the scene card, never alone without 下一步's way on.
+  // On the stage: among the scene card's choices, after its ways on — never a card of its own beside it too
+  // (2026-10-26: 再试一回 twice; tests/solo-stage.test.mjs). With no scene card, its own card.
   const cards = stageCards(lk);
-  assert.ok(cards.some((c) => c.card === 'replay'));
+  assert.ok(lk.scene?.panel && !cards.some((c) => c.card === 'replay'));
+  assert.ok(stageCards({ ...lk, scene: { ...lk.scene, panel: null } }).some((c) => c.card === 'replay'));
   assert.ok(lk.tasks.some((t) => t.id === 'bread-share' && t.status === 'done' && t.skipped), 'Look still knows it is over (the stage never deals it fresh)');
   assert.equal(CARD_KINDS.replay.holds, false);
   assert.ok(stageSlots(lk, cards), 'it has a slot');

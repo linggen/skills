@@ -180,6 +180,9 @@ export const winnable = e => Boolean(e && e.beaten && !e.tamed && e.likes);
    holds it, so a reload puts the same cards back); `fight` is a 斗法 the page
    is playing out. The page draws `building`, `empty` and `quest` itself; every
    other kind is cards.js's. */
+/* Where the offer to replay a board stands: its own card only where no scene card carries it among its choices. */
+export const replayOnCard = look => Boolean(look?.replay && !look.scene?.panel);
+
 export function stageCards(look, { focus = [], fight = false } = {}) {
   if (!look) return [];
   // A fight takes the whole column: she is in it as a card, and the cards need
@@ -296,8 +299,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // The chapter's ending card, while the next chapter waits: first on the stage until he puts it away (合上, the page's).
   const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
   // A board left on an earlier day, offered again — the rules say when (Look's `replay`: the stage
-  // idle, its line, one a day); it stands under the scene card, after the story's own choices.
-  const again = look.replay && !line ? [{ card: 'replay', id: look.replay.task }] : [];
+  // idle, its line, one a day). ONE place draws it (replayOnCard): with a scene card it is one of the
+  // scene's choices, after its ways on (cards.js panelActsHtml — in the box or on the card); with none, its
+  // own card. Both drew it once (live 2026-10-26: 再试一回 twice over the 兽潮 board).
+  const again = replayOnCard(look) && !line ? [{ card: 'replay', id: look.replay.task }] : [];
   const all = [...meet, ...panel, ...people, ...head, ...cards, ...again, ...closed].filter(c => !(c.card === 'board' && boardWaits(look, c.id)));
   const staged = sideLineOf(look) ? all.filter(onSide(look)) : all;
   return withNext(look, staged.filter(c => !duplicate(look, c, staged)));
@@ -435,13 +440,6 @@ export const slotKey = c => `${c.card}:${c.id ?? ''}`;
    the scene card, in the same thing, never behind 还有 1 件 › with the scene
    card left without a choice (live, 2026-09-29: 马小宝's round showed its
    caption and no way to fight). */
-/** The scene still has a game of its own to play (a board it shows, or a way on that needs one), other than `except`. */
-function ownGameOpen(look, except) {
-  const open = (id) => id !== except && !(look.tasks ?? []).some(t => t.id === id && (t.status === 'done' || t.won));
-  return (look.scene?.show ?? []).some(s => s.card === 'board' && open(s.id))
-    || (look.scene?.exits ?? []).some(e => (e.needs?.task && open(e.needs.task)) || (e.game?.kind === 'duel'));
-}
-
 export function sceneGame(look, c) {
   if (!look?.scene?.panel || (c.card !== 'duel' && c.card !== 'board')) return false;
   // …and a board the scene stands itself (`show`), though no way on waits on it: the first of two (吹鹅毛, batch two).
@@ -449,10 +447,9 @@ export function sceneGame(look, c) {
   // …and a board left on an earlier day that he chose to try again (再试一回, rules/skips.mjs): it stands
   // with the scene card, so the box steps aside for it — the scene's ways on stay his to take.
   if (c.card === 'board' && replayBoard(look, c.id)) return true;
-  // …and 兽潮's night (rules/shouchao.mjs, Look's `tide`): once a cooldown, so it stands with the scene card
-  // as a board offered again does, never queued behind a scene that may stand all day.
-  // Not while the scene has a game of its own still to play (药园巡夜's 守炉): one game on the stage at a time.
-  if (c.card === 'board' && (look.tasks ?? []).some(t => t.id === c.id && t.tide && t.status !== 'done') && !ownGameOpen(look, c.id)) return true;
+  // 兽潮's night is not the scene's (Hanli, 2026-10-26: 「Mac上游戏界面需要独占UI」): a board up takes the stage alone
+  // (queue.js gameAlone), so a tide standing up by itself beside the scene card would hold the story until it is
+  // played. It waits in the tray (开局) and, opened, stands alone; the scene's choices come back after it.
   return (look.scene.exits ?? []).some(e => (c.card === 'duel' ? e.game?.kind === 'duel' && e.game.id === c.id : e.needs?.task === c.id));
 }
 
