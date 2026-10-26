@@ -75,7 +75,10 @@ for (const [name, steps] of Object.entries(SCENES)) {
    (2026-10-15, live: 「事 3 · 可交 10」 tapped, the book opened unseen). Anchored to the footer. */
 test('the footer chips\' popovers are anchored to the footer, not clipped by the chips\' scrolling row', () => {
   const css = fs.readFileSync(new URL('../scripts/story.css', import.meta.url), 'utf8');
-  assert.match(css, /\.slotfoot \.footchips \{[^}]*overflow-x: auto/, 'the row scrolls (why the anchor moved)');
+  // The row wraps now (10-26, 后山: a scrolling row pushed chips out of sight) — never a chip cut off; the popovers stay
+  // anchored to the footer all the same.
+  assert.match(css, /\.slotfoot \.footchips \{[^}]*flex-wrap: wrap[^}]*overflow: visible/, 'the chips wrap, never scroll out of sight');
+  assert.match(css, /\.slotfoot \{ height: auto; min-height: 46px; display: flex; flex-wrap: wrap;/, 'the footer grows to hold a second line');
   assert.match(css, /\.slotfoot \.bookwrap \{ position: static; \}/, 'every footer chip, the 去往 list too (2026-10-15)');
   assert.match(css, /\.slotfoot \.bookpop \{[^}]*bottom: calc\(100% \+ 10px\)/);
 });

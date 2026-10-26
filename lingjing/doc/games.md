@@ -32,6 +32,36 @@ has it as his; **?** = the book is not clear, his call; **no**.
 Length: the bot's time at 390 (a person takes about twice). Skip: 「算了，往下走」 shows only when
 stuck — 75 s unwon, or the game's own `stuck` rule where noted; a skip pays nothing.
 
+## 声音与退出 — audit 10-26
+
+Hanli 10-26: 「查一下, 有很多小游戏没有声音和退出」. Played live on 9527: each game alone on the try page, and one
+board of each kind on the story page on a scratch save (`pc-audit-*`), with the page's sound log
+(`__lingjingSound`). Sound = the game's own events while played (not only the shell's buttons). 🔊 = the bar's mute
+silences all of it. Way out = 「算了，往下走」 once stuck (story) / 收手 (opened by choice) / ✕ (phone).
+
+| game (kind) | sound before (try · story) | sound after (story, live) | 🔊 | way out |
+|---|---|---|---|---|
+| 接雨 rain (whack) | bed only · **silent** | basin, drip, catch, spill, miss · bed · chime | ✓ | 往下走 ✓ |
+| 喷嚏符 sneeze | **silent** · **silent** | tell, good, hold, early, short | ✓ | 往下走 ✓ |
+| 割绳子 rentrope/niugurope, 喂饼 bread (rope) | bed only · **silent** | cut, star, gust, eat, miss · bed · chime | ✓ | 往下走 ✓ |
+| 气走经脉 qimai (flight) | bed only · bed only | breath, crash, 岔气, 穴 | ✓ | 往下走 ✓ |
+| 华容道 · 洛书 · 五子棋 · 七巧 · 象棋 · 押宝 · 禹步 | **silent** · **silent** | pick, move/place, reply, nope … · chime | ✓ | 往下走 / 收手 ✓ |
+| 聊天 jinchat · 讨饼债 · 画猜 | jinchat send/recv; the others **silent** | send, recv, right | ✓ | 往下走 ✓ |
+| 斗法 kapai (card) | bed only (story: **none**) | drew, played, hurt, heal … per log entry | ✓ | 认输 |
+| 结印 · 斗法试炼 · 指点 · 特写 (seal) | buttons only | seal, cast, fizzle, hit, miss | ✓ | 往下走 ✓ |
+| 炼丹 lianliankan (story's herb board) | **silent** | pick, match, nope · chime | — (no frame) | 收手 ✓ |
+| 守墙关 · 撒豆 · 守山门 · 守炉 · 砸寨 · 开炉 | already wired | unchanged | ✓ | 往下走 / 收手 ✓ |
+| 密室 mishi | **silent** | turn, pick, open, right/wrong | ✓ | its own 离开 |
+| every story board's end | **no chime** for a pure board | win chime + ★ | | |
+| phone (every board) | sound ✓ (mount.js) | + the step sounds above | **none → 🔊 in the bar** | ✕ · 算了 ✓ |
+
+Ways out were already whole on the Mac (no board without one; the stuck slot and 收手 drew and were hit-testable for
+every kind, chats and qimai included); the phone lacked a mute. Fixed at the root (game-kit.md § Sound): a pure board
+names its moments with `sounds(before, after)` and every runner sounds them; each game declares `meta.sounds`, all in
+sounds.json. Locks: tests/game-sound.test.mjs (every registry game names real sounds; bots' play names its own; each
+runner sounds), tests/board-leave.test.mjs (no board the story needs without a scene; every kind draws its way out).
+Left: the story's 炼丹 herb board has no shell frame, so no 🔊 of its own (it follows the one shared mute set on any other board).
+
 ## 全文后的小游戏 — the first batch (plan 2026-10-26; built 2026-10-26)
 
 **Built** (the go, the coordinator for Hanli): 25 boards across 第二回 · 今一 · 第三回 · 第四回 · 今二, each 回's

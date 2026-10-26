@@ -41,7 +41,9 @@
 .topbar .peoplecard figcaption b { display: block; overflow: hidden; text-overflow: ellipsis; }
 .topbar .goalline { max-width: 26em; margin: 0; font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .topbar .goalline .goalnext { display: inline; margin: 0 0 0 8px; }
-.slotfoot { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 16px; grid-template-rows: none; }
+/* Never a chip cut off or pushed out (后山, 10-26: too many chips for the row): the row wraps — the chips onto a
+   second line, right-aligned, the footer growing to hold them — at any width and height. */
+.slotfoot { height: auto; min-height: 46px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 16px; grid-template-rows: none; }
 /* The footer (Hanli, 2026-10-15: 「too much widgets」): 去往 ▾ and what waits on the left; 木牌 · the sky ·
    书 · 事 · 物品 on the right. No chip's words ever break onto a second line. */
 .slotfoot .footrow { flex: 0 1 auto; min-width: 0; gap: 8px; }
@@ -53,8 +55,7 @@
 .slotfoot .errands .bookwrap:has(+ .more) .bookchip { border-radius: 99px 0 0 99px; border-right-style: dashed; }
 .slotfoot .errands .bookwrap + .more { border-left: 0; }
 body.reading .slotfoot .errands .more { visibility: hidden; }
-.slotfoot .footchips { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; }
-.slotfoot .footchips > :first-child { margin-left: auto; }
+.slotfoot .footchips { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px 8px; overflow: visible; }
 .slotfoot .bookchip, .slotfoot .luchip, .slotfoot .act, .slotfoot .yytoken { flex: none; white-space: nowrap; }
 .slotfoot .bookchip { display: inline-flex; align-items: center; gap: 5px; }
 .slotfoot .bookchip.wxchip { font-variant-numeric: tabular-nums; }
@@ -84,7 +85,7 @@ body.reading .slotfoot .errands .more { visibility: hidden; }
    可交 10」 tapped, the book opened invisibly). Anchored to the footer itself instead, they stand clear. */
 .slotfoot .bookwrap { position: static; }
 .slotfoot .bookpop { left: 50%; transform: translateX(-50%); bottom: calc(100% + 10px); max-height: min(70vh, 640px); overflow-y: auto; }
-body.fighting .slotfoot { height: 46px; }
+body.fighting .slotfoot { height: auto; min-height: 46px; }
 
 /* 银月's 木牌 (proto k): grey while she sleeps, warm while her words are up. */
 .yytoken { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 2px 10px 2px 3px; border-radius: 99px; font: inherit; font-size: 12.5px; cursor: pointer;
