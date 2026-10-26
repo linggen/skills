@@ -17,6 +17,7 @@ import { fantongBrief } from './fantong.mjs';
 import { sideLine } from './hui.mjs';
 import { rerunOpen } from './rerun.mjs';
 import { isTide, shouchaoHere } from './shouchao.mjs';
+import { kaoHere } from './kao.mjs';
 import { aside as asideItem } from './tell.mjs';
 import { encounterOf, lockOf, placeOf, sceneOf } from './world.mjs';
 
@@ -44,7 +45,8 @@ export const ASIDE_KINDS = [
       || (['win', 'task'].includes(verb) && ['done', undefined].includes(args.action) && Boolean(state.tasks?.[String(args.id ?? '')]?.replay)) },
   { kind: 'rerun', // 秘境 again, at its door, out of its cooldown (rules/rerun.mjs)
     open: (content, state, view, now) => { const r = rerunOpen(content, state, now); return r && state.place === r.rerun.door ? [{ id: r.beat.id }] : []; },
-    takes: (verb, args, content, state) => verb === 'rerun' || (Boolean(state.rerun) && ['duel', 'win', 'task', 'tame', 'mishi'].includes(verb)) },
+    // Inside a run its rooms are walked (`move`, `go`: sealed.mjs keeps him to the run's places) and fought.
+    takes: (verb, args, content, state) => verb === 'rerun' || (Boolean(state.rerun) && ['duel', 'win', 'task', 'tame', 'mishi', 'move', 'go'].includes(verb)) },
   { kind: 'gongke', // 人间功课 (rules/gongke.mjs)
     open: (content, state, view) => (view?.gongke ? [{ id: 'gongke' }] : []),
     takes: (verb, args) => verb === 'task' && args.action === 'check' },
@@ -67,18 +69,21 @@ export const ASIDE_KINDS = [
       ...(view?.tale && !view.tale.dropped ? [{ id: 'tale', title: view.tale.title ?? null }] : []),
       ...(view && !view.divination && !(view.locked ?? []).includes('divine') ? [{ id: 'divine' }] : []),
     ],
-    takes: verb => ['twenty', 'haggle', 'case', 'duizi', 'kao', 'tale', 'lundao', 'divine', 'fate'].includes(verb) },
+    // 本王考考你's word is counted as its task's (tasks.mjs taskDone → kao.mjs kaoDone).
+    takes: (verb, args, content, state, now) => ['twenty', 'haggle', 'case', 'duizi', 'kao', 'tale', 'lundao', 'divine', 'fate'].includes(verb)
+      || (['win', 'task'].includes(verb) && kaoHere(content, state, String(args.id ?? ''), now)) },
 ];
 
 /* Verbs that never move the story: reads, the page's own marks, the save's keeping, the shelf, the
    pouch, an errand held — and these two. */
 export const ASIDE_ALWAYS = new Set(['look', 'show', 'progress', 'story', 'bag', 'gear', 'deck', 'atlas', 'saves', 'save', 'load', 'forget',
   'lang', 'summarize', 'greet', 'remember', 'appear', 'unrolled', 'unfolded', 'unstick', 'quest', 'trade', 'refine', 'aside', 'resume']);
-/* Verbs that move the story, or take him elsewhere: refused while the book is set aside. */
-export const ASIDE_REFUSED = new Set(['resolve', 'judge', 'move', 'go', 'travel', 'fly', 'meet', 'ring', 'make', 'enter', 'leave', 'build',
+/* Verbs that move the story, or take him elsewhere: refused while the book is set aside (Move and Go are a run's
+   only, below). */
+export const ASIDE_REFUSED = new Set(['resolve', 'judge', 'travel', 'fly', 'meet', 'ring', 'make', 'enter', 'leave', 'build',
   'worlds', 'amend', 'art']);
 /* Verbs some kind may take (a call each kind's `takes` answers); else refused. */
-export const ASIDE_KIND_VERBS = new Set(['task', 'win', 'duel', 'tame', 'rerun', 'fantong', 'seclude', 'twenty', 'haggle', 'case', 'duizi', 'kao', 'tale',
+export const ASIDE_KIND_VERBS = new Set(['move', 'go', 'task', 'win', 'duel', 'tame', 'rerun', 'fantong', 'seclude', 'twenty', 'haggle', 'case', 'duizi', 'kao', 'tale',
   'lundao', 'divine', 'fate', 'mishi']);
 
 /* What may be played now, while set aside (or, before, whether the control has anything to offer). */
@@ -87,9 +92,9 @@ export function asideOffers(content, state, view, now = new Date()) {
 }
 
 /* The refusal for a verb while the book is set aside, or null. */
-export function asideVerb(content, state, verb, args = {}) {
+export function asideVerb(content, state, verb, args = {}, ctx = {}) {
   if (!state?.aside || ASIDE_ALWAYS.has(verb)) return null;
-  if (ASIDE_KIND_VERBS.has(verb) && ASIDE_KINDS.some(k => k.takes(verb, args, content, state))) return null;
+  if (ASIDE_KIND_VERBS.has(verb) && ASIDE_KINDS.some(k => k.takes(verb, args, content, state, ctx.now ?? new Date()))) return null;
   return held(state, verb);
 }
 

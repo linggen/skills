@@ -29,7 +29,7 @@ import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } fro
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt } from './cards.js';
+import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt, asideOpens } from './cards.js';
 import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongKailu, kailuPaneHtml } from './fantong-kailu.js';
@@ -2250,7 +2250,9 @@ function readingNow() {
    a play since replaced (a Restart, an Undo, a Load — even into the same
    scene), is not played over this one. */
 function readingHere() {
-  return readingFor(readingNow(), look?.scene?.id ?? null, look?.run ?? null);
+  const r = readingFor(readingNow(), look?.scene?.id ?? null, look?.run ?? null);
+  // The book set aside (Look's `aside`, on the save): a reading this browser still holds of it does not play.
+  return r && asideOn() && !r.closed ? { ...r, closed: true } : r;
 }
 /* This play's reading, at whatever scene it stands (a replaced play's holds nothing back). */
 function readingOfPlay() { return ofPlay(readingNow(), look?.run ?? null); }
@@ -2278,7 +2280,7 @@ const storyAhead = () => Boolean(look?.tell_owed || drawingTold || playing(readi
 const asideOn = () => Boolean(look?.aside?.on);
 /* May the box offer it now? Something to play meanwhile, a passage the rules can key, and the box mid-way —
    not its last beat (the choices are up), not at a 回's turn, not under a moment or a fight. */
-const asideMay = (r) => Boolean(look?.aside && !look.aside.on && look.aside.offers?.length && asidePlace(r) && !atLast(r, lang())
+const asideMay = (r) => Boolean(look?.aside && !look.aside.on && look.aside.offers?.some(asideOpens) && asidePlace(r) && !atLast(r, lang())
   && !atHuiTurn() && !momentUp() && !piecePlays() && !bout && !look.fight);
 async function asideTap() {
   const r = readingHere(), at = asidePlace(r);

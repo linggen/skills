@@ -143,3 +143,63 @@ test('the passage on show among the scene\'s, kept: set aside in the rest after 
   const back = must('resume', s1, now).result;
   assert.deepEqual([back.i, back.j, back.items.map(x => x.id)], [1, 3, ['00-baicai', '00-baicai/after']]);
 });
+
+/* After 入门: a save at 古六's 讲堂 (wm-qianye, outside every key beat; crawled, boards skipped), its book set aside at the scene's first beat. */
+function asideAt(key, patch = {}) {
+  const { s, now } = at(key);
+  const s1 = must('aside', { ...s, ...patch }, now, { items: [{ of: 'scene', id: s.scene }], j: 0 }).state;
+  return { s: s1, now, offers: (st = s1) => lookOf(st, now).aside.offers };
+}
+const has = (offers, kind, id = null) => offers.some(o => o.kind === kind && (id == null || o.id === id));
+const notHeld = (verb, s, now, args) => assert.notEqual(call(verb, s, now, args).result.refused, 'aside', `${verb} ${JSON.stringify(args)}`);
+
+test('each kind offered only when open by its own rule, and its verbs pass while the book is set aside', () => {
+  const { s, now, offers } = asideAt('00-waimen/wm-qianye');
+  // 饭桶: ready now, not when its cooldown runs.
+  assert.ok(has(offers(), 'fantong'));
+  notHeld('fantong', s, now, { action: 'look' });
+  assert.ok(!has(offers({ ...s, bag: {} }), 'fantong'), 'not without the 饭桶 in hand');
+  // 闭关: offered while not in it; not while it runs.
+  assert.ok(has(offers(), 'seclusion'));
+  notHeld('seclude', s, now, { action: 'start' });
+  assert.ok(!has(offers({ ...s, seclusion: { since: now.toISOString() } }), 'seclusion'));
+  // 问卦: while not cast today.
+  assert.ok(has(offers(), 'her', 'divine'));
+  const cast = call('divine', s, now).result;
+  assert.notEqual(cast.refused, 'aside');
+  if (cast.ok) assert.ok(!has(offers(call('divine', s, now).state), 'her', 'divine'), 'cast: not offered again');
+  // 人间功课: its check is the kind's.
+  assert.ok(has(offers(), 'gongke'));
+  notHeld('task', s, now, { action: 'check', id: 'x' });
+  // 秘境 again: only at its door, out of its cooldown.
+  assert.ok(!has(offers(), 'rerun'), 'not at the door');
+  // (a day on, past the cooldown the story's own run started)
+  const day = new Date(now.getTime() + 864e5), door = { ...s, place: 'shimen' };
+  assert.ok(has(lookOf(door, day).aside.offers, 'rerun'), 'at the door');
+  assert.ok(!has(lookOf({ ...door, reruns: { ...door.reruns, mijing: { ...door.reruns?.mijing, ended_at: day.toISOString() } } }, day).aside.offers, 'rerun'), 'inside its cooldown');
+  // …and its whole flow while set aside: in, a room walked, out, then 接着读.
+  const inRun = must('rerun', door, day, { action: 'enter' }).state;
+  const walked = call('move', inRun, day, { place: 'mijing-xiongya' });
+  assert.equal(walked.result.ok, true, JSON.stringify(walked.result));
+  const out = must('rerun', walked.state ?? inRun, day, { action: 'leave' }).state;
+  assert.equal(call('resume', walked.state ?? inRun, day).result.refused, 'in-run', 'never resumed inside a run');
+  const back = must('resume', out, day);
+  assert.equal(back.state.place, content.chapters['00-waimen'].scenes[s.scene].at, 'back at the scene\'s place');
+  // Outside a run, a walk is the story's: refused.
+  assert.equal(call('move', s, now, { place: 'shimen' }).result.refused, 'aside');
+  // 兽潮, on its cooldown (rules/shouchao.mjs): open at 古七's 09-snow.
+  const tide = asideAt('00-zhuji/09-snow');
+  assert.ok(has(tide.offers(), 'tide', 'shouchao'));
+  notHeld('win', tide.s, tide.now, { id: 'shouchao' });
+  // A pool's fight is never open while he stands in a scene (world.mjs encounterOf): not offered.
+  assert.ok(!has(offers(), 'pool'));
+});
+
+test('a later story board, another scene\'s fight, a daily board: refused while the book is set aside', () => {
+  const { s, now } = asideAt('00-waimen/wm-qianye');
+  const later = (content.chapters['00-zhuji'].scenes['09-furnace'].show ?? []).find(c => c.card === 'board').id;
+  assert.equal(call('win', s, now, { id: later }).result.refused, 'aside');
+  assert.equal(call('task', s, now, { action: 'done', id: later }).result.refused, 'aside');
+  assert.equal(call('duel', s, now, { id: 'gate-longzhi' }).result.refused, 'aside');
+  assert.equal(call('win', s, now, { id: 'alchemy-daily' }).result.refused, 'aside');
+});

@@ -1760,6 +1760,8 @@ const ASIDE_OPEN = {
   replay: (o) => `data-replay-play="${esc(o.id)}"`, rerun: () => 'data-rerun="enter"', fantong: () => 'data-gear', pool: (o) => `data-duel-start="${esc(o.id)}"`,
   tide: (o) => `data-play="${esc(o.id)}"`, seclusion: () => 'data-seclude-open', twenty: () => 'data-twenty-open', duizi: () => 'data-duizi-open', divine: () => 'data-divine',
 };
+/* An offer the page can open where the book was set aside (the others stand where they always do). */
+export const asideOpens = (o) => Boolean(ASIDE_OPEN[o.kind === 'her' ? o.id : o.kind]);
 export function asideHtml(ctx) {
   const a = ctx.look?.aside, w = ctx.words;
   if (!a?.on) return '';
