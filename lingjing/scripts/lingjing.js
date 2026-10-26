@@ -1168,7 +1168,8 @@ function focusHtml(slots) {
   // stands first with the gold coming late over it (live, 2026-10-15, 突破).
   if (riseWaits || featOn) return '';
   // One thing at a time: a 回's 「完」 stands alone — 所得 and the other notes wait under it.
-  const toasts = slots.main.some((c) => c.card === 'closed') ? '' : toastsHtml();
+  // …and a game up stands alone (queue.js gameAlone): the notes wait under it too (live 10-26: 交差's note over 兽潮 cut its foot off).
+  const toasts = slots.main.some((c) => c.card === 'closed') || slots.solo ? '' : toastsHtml();
   // 所得 stands before the way on (live, 2026-10-15: 下一步 stood under it and hid its 收起): the 下一步
   // card waits until it is put away.
   if (spoilsUp()) slots = { ...slots, main: slots.main.filter((c) => c.card !== 'next') };

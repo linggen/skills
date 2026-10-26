@@ -184,7 +184,7 @@ const goAttr = (id) => `data-go="${esc(id)}"`;
    (「说说夫诸」) to the chat as it is (his, 2026-10-15 — 问询不必用户输入了;
    the ask bar of 2026-09-21 is kept only for 问问银月). */
 const askAttr = (line) => `data-ask="${esc(line)}"`;
-const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) => (a.do ? doBtn(a.label, a.do, a.id) :
+const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) => (a.do ? doBtn(a.label, a.do, a.id) : a.leave ? `<button class="act quiet" data-board-leave="${esc(a.leave)}">${esc(a.label)}</button>` :
   `<button class="act ${a.ask ? 'ask' : 'say'}" ${a.ask ? askAttr(a.say) : sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`)).join('')}</div>`;
 
 /// A tap that only changes the save — 接下 · 交差 · 买 · 卖 · 服用 · 佩戴. The page
@@ -554,9 +554,10 @@ function board(card, ctx) {
   const skip = (own || task?.replay) && !today && !made && !shut ? skipBoard(g, id, ctx) : '';
   // 收手: a board he opened by choice is put down at any moment (Look's task `leave`, rules/skips.mjs leaveOf) — one
   // quiet word under the board, outside its play; the story's own keep 「算了，往下走」 once stuck (skip, above).
-  const leave = task?.leave && !made && !g?.state?.won && !g?.sent ? `<div class="acts gleave"><button class="act quiet" data-board-leave="${esc(id)}">${esc(ctx.words.boardLeave)}</button></div>` : '';
+  // On the 问询 row, never a row of its own: a tall board is sized to the stage, and one more row cut its foot off.
+  const leaveBtn = task?.leave && !made && !g?.state?.won && !g?.sent ? { label: ctx.words.boardLeave, leave: id } : null;
   const tall = framed && tallStyle(g.mod) ? ` style="${tallStyle(g.mod)}"` : '';
-  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${leave}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
+  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${own && !leaveBtn ? '' : acts([leaveBtn, own ? null : { label: ctx.words.about, ask: true, say: ask }])}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.

@@ -84,3 +84,18 @@ test('the offer to replay is drawn once: among the scene\'s choices when a scene
   assert.equal(replayOnCard(bare), true);
   assert.equal(replays(stageCards(bare).map((c) => cardHtml(c, page(bare))).join('')), 1);
 });
+
+test('a game alone never greys the page: the passage\'s lock reads the box, which steps aside for the game; its own controls are never locked', async () => {
+  const { storyHolds } = await import('../scripts/dialogue.js');
+  const r = { items: [{ of: 'scene', id: 'x', beats: { zh: [{ text: '一' }, { text: '二' }] } }], i: 0, j: 0 };
+  // The 10-16 rule (「读剧情…把其他都lock」): mid-passage with the box on show, the page's other ways are dimmed…
+  assert.equal(storyHolds(r, { shown: true }), true);
+  // …but the box put away (a board up alone, queue.js boxGivesWay `game`) holds nothing.
+  assert.equal(storyHolds(r, { shown: false }), false);
+  assert.match(PAGE, /const on = storyHolds\(readingHere\(\), \{ shown: Boolean\(\$\('dlg'\)\?\.querySelector\('\.story'\)\),/);
+  assert.match(PAGE, /if \(boxYields\(slots\)\) return log;/);
+  // What the lock dims: the footer, the header, the tray — never the box (回看, 自动 · 全文 · 跳过, its choices).
+  assert.match(PAGE, /const STORY_LOCKED = '#footRow, #footChips, #headCards, \.tray';/);
+  // A game alone keeps the notes off the stage too (live 10-26: 交差's note over 兽潮 cut its foot off).
+  assert.match(PAGE, /const toasts = slots\.main\.some\(\(c\) => c\.card === 'closed'\) \|\| slots\.solo \? '' : toastsHtml\(\);/);
+});

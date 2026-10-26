@@ -81,7 +81,7 @@ test('the page asks queue.js: the games are held, every moment waits its turn, a
   for (const m of MOMENTS) assert.match(page, new RegExp(`momentTurn\\('${m}'`), `${m} waits its turn`);
   assert.match(page, /playing: playing\(r\) && r\.items\[r\.i\]\?\.of !== 'scene'/, 'a set piece plays after its choice\'s passage, before the next scene\'s (01-deep: the seal, then 01-cauldron)');
   assert.match(page, /async function gainBurst[\s\S]{0,200}boxAhead\(\) \|\| momentUp\(\) \|\| momentPending\.size/, '修为 +n never floats over her memory');
-  assert.match(page, /slots\.main\.some\(\(c\) => c\.card === 'closed'\) \? '' : toastsHtml\(\)/, '「完」 stands alone (所得 waits)');
+  assert.match(page, /slots\.main\.some\(\(c\) => c\.card === 'closed'\) \|\| slots\.solo \? '' : toastsHtml\(\)/, '「完」 stands alone (所得 waits), and so does a game (queue.js gameAlone)');
 });
 
 test('a board won: its last line is read first, then the scene\'s way on that waited on it is taken; the tray lets it go', async () => {
