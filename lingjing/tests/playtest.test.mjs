@@ -66,3 +66,29 @@ test('--hands: one policy for every board, or one per board by its task (playtes
   assert.equal(handsPolicy('idle,cave-stone:casual')('fall-storm'), 'idle');
   assert.throws(() => handsPolicy('rain-basins:lose'), /unknown policy/);
 });
+
+test('the crawler walks the story first: side play last, 还有 N 件 once, a held way never (playtest choose)', async () => {
+  const { choose } = await import('../tools/playtest.mjs');
+  const tap = (where, data, text = '') => ({ where, data, text, cls: '', disabled: false, game: null, x: 1, y: 1 });
+  const ctx = (o = {}) => ({ looked: new Set(), pick: (w) => w[0], allTaken: () => false, gameMode: () => 'skip', pickBorn: () => null, ...o });
+  const snap = (taps, o = {}) => ({ taps, sceneId: '@yaoyuan', mounts: [], ...o });
+  const go = tap('focus', { go: 'chaifang' }, '去柴房');
+  // 兽潮 on the stage, the waypoint ahead: walk on (10-26)
+  const tide = snap([go], { mounts: ['shouchao'] });
+  assert.equal(choose(tide, ctx({ tide: new Set(['shouchao']), target: 'chaifang' })).kind, 'go');
+  assert.equal(choose(tide, ctx({ tide: new Set(['shouchao']), target: 'chaifang', sideOn: true })).kind, 'game-stuck', '--side=on: as before');
+  // a haunt's fight: after the walk, and still the last resort when nothing else is on
+  const haunt = tap('focus', { 'duel-start': 'haunt:yezhu' }, '出手');
+  assert.equal(choose(snap([haunt, go]), ctx({ target: 'chaifang' })).kind, 'go');
+  assert.equal(choose(snap([haunt]), ctx()).side, true);
+  // 还有 N 件: each page once per scene
+  const c = ctx(), q = snap([tap('foot', { qnext: 'next:' }, '还有：狰')]);
+  assert.equal(choose(q, c).kind, 'qnext');
+  assert.equal(choose(q, c), null);
+  // the stage quest's held way (wm-chaifang 「护住木牌，数着」): never tapped while it holds
+  const ways = [tap('box', { 'panel-exit': 'count' }, '护住木牌，数着'), tap('box', { 'dlg-speed': 'skip' }, '跳过')];
+  const held = ctx({ held: new Set(['count', 'fist']), gated: true });
+  assert.notEqual(choose(snap(ways, { boxOn: true, sceneId: 'wm-chaifang' }), held)?.kind, 'way');
+  assert.notEqual(choose(snap(ways, { boxOn: true, sceneId: 'wm-chaifang' }), held)?.kind, 'skip', 'the box at its end: no 跳过 round and round');
+  assert.equal(choose(snap(ways, { boxOn: true, sceneId: 'wm-chaifang' }), ctx()).kind, 'way');
+});

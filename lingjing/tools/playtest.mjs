@@ -3,8 +3,10 @@
 //
 //   node tools/playtest.mjs [--save=pt-a] [--from=fresh|<scratch save>|<fixture>] [--route=exit,exit,…]
 //                           [--until=<scene id>] [--steps=400] [--games=skip|win|hands] [--hands=casual,<task>:idle|skip]
-//                           [--fight=win|lose] [--phone] [--width=1280] [--headed] [--base=http://localhost:9527] [--out=<dir>]
+//                           [--fight=win|lose] [--side=on] [--phone] [--width=1280] [--headed] [--base=http://localhost:9527] [--out=<dir>]
 //
+// `--side=on`: side play (兽潮, a haunt's or a pool's fight) in its old place; by default the story walk goes first
+// and side play is only the last resort, when nothing else is on.
 // `--games=hands`: each story board is played by tools/play-human.mjs's hands (real pointer, or touch on
 // --phone), by `--hands` policy per board: casual (tries to win), idle (sits until the board's loss, e.g.
 // 接雨's flood, then tries), skip (a few tries, then waits for the stuck clock's 「算了，往下走」 and taps it).
@@ -28,8 +30,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { launch } from './cdp.mjs';
-import { SEE, CHOOSERS, chooserOf, GAME_OF_TASK, POLICIES, LOSS, START, handsFor, tapAt, motion, judgeTap } from './play-human.mjs';
+import { SEE, CHOOSERS, chooserOf, GAME_OF_TASK, POLICIES, LOSS, START, handsFor, tapAt, motion, judgeTap, breathe, swing } from './play-human.mjs';
 import { rng } from './board-bots.mjs';
+import { loadContent } from '../scripts/content.mjs';
+import { gatesOf } from '../scripts/rules/gates.mjs';
 
 const SAVE_NAME = /^[a-z0-9][a-z0-9_-]{0,31}$/i;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -102,7 +106,13 @@ const OBSERVE = `(() => {
    story box (its ways, else 跳过, else the next sentence), then the stage's
    one thing (MAIN), then the footer. `plan` picks among a scene's exits. ── */
 const isA = (t, key) => Object.prototype.hasOwnProperty.call(t.data, key);
+/* Side play — a beast's haunt or a pool (`haunt:` fights) and 兽潮 (Look's `tide` task) — comes after the story
+   walk, unless `--side=on` (Hanli 10-26: the crawl played 兽潮 and lost haunt fights instead of walking to the
+   waypoint). Off, it is still the last thing tried, so a walk never stalls on it. */
+const sideOf = (ctx) => (id) => !ctx.sideOn && !ctx.gated && id != null && (String(id).startsWith('haunt:') || Boolean(ctx.tide?.has(id)));
+const tapId = (t) => t.data['panel-duel'] ?? t.data['duel-start'] ?? t.data.play ?? t.data['panel-exit'];
 export function choose(snap, ctx) {
+  const side = sideOf(ctx), story = (t) => !side(tapId(t));
   const live = snap.taps.filter((t) => !t.disabled);
   const first = (pred) => live.find(pred) ?? null;
   // A seal on the stage (新的一回, a realm risen, 收服): it clears itself; a tap clears it sooner.
@@ -112,12 +122,17 @@ export function choose(snap, ctx) {
   if (snap.title) return { kind: 'title', at: { x: Math.round(snap.taps[0]?.x ?? 400), y: 300 }, why: 'the 回 title card' };
   // The story box's own choices at its last beat, then the stage's scene card: the scene's ways.
   const ways = live.filter((t) => isA(t, 'panel-exit') || isA(t, 'panel-duel') || isA(t, 'look-at'));
-  const exits = ways.filter((t) => !isA(t, 'look-at'));
+  // A way on held by the 回's stage quest (rules/gates.mjs: 先坐到练气一层圆满) is refused until the layer is full:
+  // never tapped while it holds (10-26: wm-chaifang's 「护住木牌，数着」 was tapped round and round).
+  const held = (t) => Boolean(ctx.held?.has(t.data['panel-exit'] ?? t.data['panel-duel']));
+  const allExits = ways.filter((t) => !isA(t, 'look-at') && !held(t)), exits = allExits.filter((t) => isA(t, 'panel-exit') || story(t));
   // A way's own fight up (00-fox: 「脱下外衣」 → its 试) beside a way that only comes back (`stay`, 「别碰」): once
   // every way there has been taken, 出手 — the way on (10-26: the crawl tapped 「别碰」 164 times over).
-  const duel = first((t) => isA(t, 'duel-start'));
+  const duel = first((t) => isA(t, 'duel-start') && story(t)), sideDuel = first((t) => isA(t, 'duel-start'));
   const duelFirst = (ways) => duel && ways.length && ctx.allTaken?.(ways, snap);
-  if (snap.boxOn) {
+  // The box at its end with only held ways in it: nothing more to read there — on to the rest of the stage.
+  const boxHeld = ways.some((t) => t.where === 'box' && held(t));
+  if (snap.boxOn && !boxHeld) {
     const inBox = exits.filter((t) => t.where === 'box');
     if (duelFirst(inBox)) return { kind: 'duel-start', tap: duel, why: '出手' };
     if (inBox.length) return { kind: 'way', tap: ctx.pick(inBox, snap), why: 'a way inside the box' };
@@ -130,6 +145,7 @@ export function choose(snap, ctx) {
     const next = first((t) => isA(t, 'dlg-next'));
     if (next) return { kind: 'next', tap: next, why: 'the next sentence' };
   }
+  if (boxHeld) { const open = allExits.find((t) => t.where === 'box'); if (open) return { kind: 'way', tap: open, why: 'a way in the box the stage quest does not hold' }; }
   // Moments the page plays: a tap puts them on.
   for (const key of ['reveal', 'spoils-close', 'emerged-close', 'mem-next', 'mem-close', 'doors', 'homing', 'unfold', 'unroll', 'close-chapter', 'appear-done', 'appear'])
     { const t = first((x) => isA(x, key)); if (t) return { kind: key, tap: t, why: key }; }
@@ -139,6 +155,8 @@ export function choose(snap, ctx) {
   const gameTaps = live.filter((t) => t.game && Object.keys(t.data).some((k) => k === 'g' || k.startsWith('g-') || k === 'tile'));
   if (gameTaps.length || snap.mounts?.length) {
     const id = gameTaps[0]?.game ?? snap.mounts[0], skipGame = live.find((t) => t.data['game-skip'] === id);
+    // A side board with the waypoint ahead: walk on, past it (the board is the last resort, below).
+    if (side(id) && walkOf(first, ctx)) return walkOf(first, ctx);
     if (ctx.gameMode(id) === 'skip') return skipGame ? { kind: 'game-skip', tap: skipGame, game: id, why: '算了，往下走' } : { kind: 'game-stuck', game: id, why: `stuck at ${id}` };
     return { kind: 'game', game: id, why: `the game ${id}` };
   }
@@ -153,32 +171,53 @@ export function choose(snap, ctx) {
   if (duelFirst(exits)) return { kind: 'duel-start', tap: duel, why: '出手' };
   if (exits.length) return { kind: 'way', tap: ctx.pick(exits, snap), why: 'the scene card' };
   if (duel) return { kind: 'duel-start', tap: duel, why: '出手' };
-  const play = first((t) => isA(t, 'play') && t.where === 'focus');
+  const play = first((t) => isA(t, 'play') && t.where === 'focus' && story(t));
   if (play) return { kind: 'play', tap: play, why: '开局' };
-  const meet = first((t) => isA(t, 'meet'));
-  if (meet) return { kind: 'meet', tap: meet, why: 'what the road met' };
+  // An errand on the stage may be the story's own step: before the walk.
   const take = first((t) => isA(t, 'do') && t.where === 'focus');
   if (take) return { kind: 'do', tap: take, why: 'an errand' };
+  // The story walk: 下一步's own button, else the roads toward the waypoint — before any errand, 看, 还有 N 件
+  // or side play (10-26: 「还有：狰 · 图鉴 ›」 was tapped round and round with 去柴房 standing in focus).
+  { const w = walkOf(first, ctx); if (w) return w; }
+  const meet = first((t) => isA(t, 'meet'));
+  if (meet) return { kind: 'meet', tap: meet, why: 'what the road met' };
   const look = ways.find((t) => isA(t, 'look-at') && !ctx.looked.has(t.data['look-at']));
   if (look) return { kind: 'look', tap: look, why: '看' };
-  const qnext = first((t) => isA(t, 'qnext'));
-  if (qnext) return { kind: 'qnext', tap: qnext, why: '还有 N 件' };
+  // 还有 N 件 pages the footer's other things: each page once per scene, never round and round.
+  const qnext = first((t) => isA(t, 'qnext') && !ctx.qnextSeen?.has(`${snap.sceneId}|${t.text}`));
+  if (qnext) { (ctx.qnextSeen ??= new Set()).add(`${snap.sceneId}|${qnext.text}`); return { kind: 'qnext', tap: qnext, why: '还有 N 件' }; }
   // Something to hand in: the 事 chip says so (its seal-red count); open the book, tap 交差.
   const turnIn = first((t) => t.data.do === 'turn');
   if (turnIn) return { kind: 'do', tap: turnIn, why: '交差' };
   const book = first((t) => isA(t, 'book') && /\bready\b/.test(t.cls) && !snap.popSig && !ctx.bookTried?.has(snap.sceneId));
   if (book) { (ctx.bookTried ??= new Set()).add(snap.sceneId); return { kind: 'book', tap: book, why: '事 · 可交' }; }
-  // 下一步's own button: where the story goes, one tap.
+  // Last resort, so a walk never stalls on a side thing: the side way, fight or board.
+  const sidePlay = allExits.find((t) => !exits.includes(t)) ?? sideDuel ?? first((t) => isA(t, 'play') && t.where === 'focus');
+  if (sidePlay) return { kind: isA(sidePlay, 'duel-start') ? 'duel-start' : isA(sidePlay, 'play') ? 'play' : 'way', tap: sidePlay, side: true, why: `side play «${sidePlay.text}» (nothing else on)` };
+  return null;
+}
+
+/* The ways the 回's stage quest holds (Look's `stage_quest`, unmet): its scene's gate exits as the ladder declares
+   them (rules/gates.mjs). Empty when nothing holds. */
+let GATES = null;
+export function heldWays(lk) {
+  const q = lk?.stage_quest;
+  if (!q || q.met || !q.scene) return new Set();
+  GATES ??= gatesOf(loadContent());
+  return new Set(GATES.filter((g) => g.scene === q.scene).flatMap((g) => g.exits));
+}
+
+/* The story walk: 下一步's own button (where the story goes, one tap), else toward the waypoint by the
+   roads (「去往 ▾」 opens them). Null when there is nowhere to walk. */
+function walkOf(first, ctx) {
   const nextGo = first((t) => isA(t, 'go') && t.where === 'focus');
   if (nextGo) return { kind: 'go', tap: nextGo, why: `下一步 «${nextGo.text}»` };
-  // Nothing on the stage: walk toward the goal, by the roads (「去往 ▾」 opens them).
-  if (ctx.target) {
-    const go = first((t) => t.data.go === ctx.target);
-    if (go) return { kind: 'go', tap: go, why: `去 ${go.text}` };
-    const anyGo = first((t) => isA(t, 'go') && t.where !== 'book');
-    const chip = first((t) => isA(t, 'roads'));
-    if (chip && !anyGo) return { kind: 'roads', tap: chip, why: '去往 ▾' };
-  }
+  if (!ctx.target) return null;
+  const go = first((t) => t.data.go === ctx.target);
+  if (go) return { kind: 'go', tap: go, why: `去 ${go.text}` };
+  const anyGo = first((t) => isA(t, 'go') && t.where !== 'book');
+  const chip = first((t) => isA(t, 'roads'));
+  if (chip && !anyGo) return { kind: 'roads', tap: chip, why: '去往 ▾' };
   return null;
 }
 
@@ -232,6 +271,7 @@ export async function crawl(opts) {
   const hands = opts.games === 'hands' ? { policy: handsPolicy(opts.hands), hand: handsFor(page, page, page.touch), seed: `${save}-${width}` } : null;
   const shot = (name) => page.screenshot(path.join(out, 'shots', `${save}-${String(name).replace(/[^\w.-]+/g, '_')}.png`)).catch(() => null);
   const ctx = {
+    sideOn: opts.side === 'on' || opts.side === true,
     looked: new Set(), valuePicked: false, fights: {}, chipsDone: new Set(), blankSeen: new Set(), overSeen: new Set(),
     // A game is skipped (the page's 「算了，往下走」, once stuck — it pays nothing) or won (the page's own onWin, through the seam):
     // `--games=skip|win`, else whichever this game has had less of.
@@ -295,7 +335,19 @@ export async function crawl(opts) {
         await sleep(4000);
       }
       const snap = { ...(await page.evaluate(OBSERVE)), sceneId };
+      ctx.tide = new Set((lk?.tasks ?? []).filter((t) => t.tide).map((t) => t.id));
       ctx.target = lk?.waypoint?.toward?.id ?? lk?.waypoint?.place?.id ?? (lk?.scene?.at && lk.scene.at !== lk?.place?.id ? lk.scene.at : null);
+      // The stage quest holds this scene's way on: the game itself says to grow 修为 first (功课、秘境、斗法), so side
+      // play is on, its work's place is the walk, and the held ways are never tapped. Said once per scene.
+      // Once met at its scene, the gate stands wherever he goes until it is met (else the walk ping-pongs between
+      // the gate's scene and its work's place).
+      ctx.held = heldWays(lk);
+      ctx.gated = ctx.held.size > 0 && (lk.stage_quest.scene === sceneId || Boolean(ctx.gateSeen?.has(lk.stage_quest.scene)));
+      if (ctx.gated) {
+        const q = lk.stage_quest;
+        ctx.target = q.work?.place?.id && !q.work.here ? q.work.place.id : null;
+        if (!ctx.gateSeen?.has(q.scene)) { (ctx.gateSeen ??= new Set()).add(q.scene); rec.find({ kind: 'stage-gate', soft: true, scene: sceneId, what: `the way on waits on ${q.step} (${q.now?.progress}/${q.now?.of}): side play on${q.work?.titles?.length ? `, the work: ${q.work.titles.join(' · ')}` : ''}` }); }
+      }
       // 3. console clean
       if (page.errors.length > lastErr) {
         for (const e of page.errors.slice(lastErr)) rec.find({ kind: 'console', scene: sceneId, what: e.text?.slice(0, 300), shot: await shot(`err-${n}`) });
@@ -330,6 +382,9 @@ export async function crawl(opts) {
         stuck++;
         if (stuck === 2) blankAt = await shot(`blank-${n}`);
         if (stuck < 12) { await sleep(1700); continue; }
+        // Held by the stage quest with its work all done for now (a cooldown, a day): where a player waits or
+        // grinds — the run ends here, said softly, not as a stall.
+        if (ctx.gated) { rec.find({ kind: 'stage-gate', soft: true, scene: sceneId, what: `the stage quest still holds (${lk.stage_quest.now?.progress}/${lk.stage_quest.now?.of}) and nothing more is on: the run ends here (seed past it: Verb seed --at=<scene>)`, shot: await shot(`gate-${n}`) }); break; }
         const why = await page.evaluate('globalThis.__lingjingPlay?.why?.() ?? null').catch(() => null);
         rec.find({ kind: 'stall', scene: sceneId, why, what: 'nothing to tap for 20 s', pending: page.inFlight(), firstSeen: blankAt, taps: snap.taps.map((t) => `${t.where}:${Object.keys(t.data).join('+')}:${t.text}`).slice(0, 30), shot: await shot(`stall-${n}`) });
         break;
@@ -492,8 +547,13 @@ async function playFight(page, snap, { rec, sceneId, shot, outcome, reload = nul
    board's chooser, real pointer / touch at the casual policy's pace; every act judged (a control that
    changes nothing is a soft board-dead-tap). Answers 'won' | 'gone' | 'skipped' | 'timeout'. ── */
 async function playBoardHands(page, { rec, sceneId, shot, task, policy, hand, r, seconds = 240 }) {
-  const host = `[data-game="${task}"], [data-mount="${task}"]`, game = GAME_OF_TASK[task] ?? task, choose = CHOOSERS[chooserOf(game)], P = POLICIES.casual;
+  // 气走经脉 (breath) and the timed 割绳子 (swing) have no CHOOSERS entry: each is a steering hand for a stint
+  // (play-human's breathe / swing), as play-human plays them (10-26: qimai boards crashed «choose is not a function»).
+  const host = `[data-game="${task}"], [data-mount="${task}"]`, game = GAME_OF_TASK[task] ?? task, kind = chooserOf(game), P = POLICIES.casual;
   const evaluate = (e) => page.evaluate(e);
+  const steer = { breath: () => breathe(page, hand, 'casual', r, host, () => null), swing: () => swing(page, hand, 'casual', r, host, page.touch, (key, run) => judgeTap(evaluate, host, run)) }[kind];
+  const choose = CHOOSERS[kind];
+  if (!steer && !choose) throw new Error(`no hand for ${task} (${game}): chooser ${kind}`);
   console.log(`    ✋ ${task} (${game}) by hand, ${policy}`);
   await page.evaluate(`document.querySelector(${JSON.stringify(host)})?.scrollIntoView({ block: 'center' })`);
   await sleep(600);
@@ -524,6 +584,7 @@ async function playBoardHands(page, { rec, sceneId, shot, task, policy, hand, r,
     }
     const go = seen.controls.find((c) => START.test(c.g ?? '') && c.g !== 'again');
     if (mode === 'idle') { if (go) { await sleep(500); await tapAt(hand, go.x, go.y); } await sleep(200); continue; }
+    if (steer) { await steer(); continue; }
     const a = choose(seen, r, mem) ?? (go ? { kind: 'tap', c: go } : null);
     if (!a) { await sleep(80); continue; }
     await sleep(P.react[0] + r() * (P.react[1] - P.react[0]) - 270);

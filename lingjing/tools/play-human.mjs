@@ -235,7 +235,7 @@ export const SIGHT = (host) => `(() => {
     box: [s.left, s.top, s.width, s.height] };
 })()`;
 
-async function breathe(page, hand, policy, r, host, judgeOnce, stintMs = 4000) {
+export async function breathe(page, hand, policy, r, host, judgeOnce, stintMs = 4000) {
   const H = BREATH_HANDS[policy] ?? BREATH_HANDS.casual;
   const out = { presses: 0, chas: 0, dead: false };
   const hist = [];
@@ -438,7 +438,7 @@ export const SWING_SIGHT = (host) => `(() => {
     retry: retry ? [retry.left + retry.width / 2, retry.top + retry.height / 2] : null };
 })()`;
 
-async function swing(page, hand, policy, r, host, touch, judged, stintMs = 4000) {
+export async function swing(page, hand, policy, r, host, touch, judged, stintMs = 4000) {
   const H = SWING_HANDS[policy] ?? SWING_HANDS.casual, P = POLICIES[policy] ?? POLICIES.casual;
   const out = { moves: 0 };
   const t0 = Date.now(), mem = swing.mem.get(host + policy) ?? {};
