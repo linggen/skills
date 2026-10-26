@@ -13,11 +13,20 @@ test('a pointerdown tap acts once: the click after it is swallowed, once', () =>
   assert.equal(gate.click('j07-dark', 1100), false, 'a second click goes the page route');
   gate.down('j07-dark', 2000);
   assert.equal(gate.click('other', 2050), false, 'a click on another board is not swallowed');
-  assert.equal(gate.click('j07-dark', 2060), false, 'and it clears the note');
+  assert.equal(gate.click('j07-dark', 2060), true, 'the tap\'s own lift still is');
   gate.down('j07-dark', 3000);
   assert.equal(gate.click('j07-dark', 5000), false, 'a stale note does not eat a later click');
   gate.down(null);
   assert.equal(gate.click('j07-dark'), false, 'an untaken pointerdown leaves nothing to swallow');
+});
+
+test('two fingers down at once: each tap acts, each lift is swallowed once', () => {
+  const gate = tapGate(1500);
+  gate.down('rain', 1000);
+  gate.down('rain', 1040);
+  assert.equal(gate.click('rain', 1100), true);
+  assert.equal(gate.click('rain', 1120), true);
+  assert.equal(gate.click('rain', 1140), false, 'no third lift to swallow');
 });
 
 test('only a game running in time takes taps on pointerdown', () => {
@@ -44,6 +53,9 @@ test('wired: pointerdown on a live board acts once, the click is stopped; a keyb
     const ev = (extra) => ({ target: btn, button: 0, isPrimary: true, stopped: false, preventDefault() {}, stopImmediatePropagation() { this.stopped = true; }, ...extra });
     for (const fn of on.pointerdown) fn(ev());
     assert.equal(acts, 1, 'acted at pointerdown');
+    for (const fn of on.pointerdown) fn(ev({ isPrimary: false }));
+    assert.equal(acts, 2, 'a second finger down while the first rests acts too');
+    for (const fn of on.click) fn(ev({ detail: 1 }));
     const click = ev({ detail: 1 });
     for (const fn of on.click) fn(click);
     assert.equal(click.stopped, true, 'the finger-lift click never reaches the page route');
@@ -55,7 +67,7 @@ test('wired: pointerdown on a live board acts once, the click is stopped; a keyb
     for (const fn of on.pointerdown) fn(ev());
     const click2 = ev({ detail: 1 });
     for (const fn of on.click) fn(click2);
-    assert.equal(acts, 1);
+    assert.equal(acts, 2);
     assert.equal(click2.stopped, false);
   } finally { Object.assign(globalThis, saved); }
 });

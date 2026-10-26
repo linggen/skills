@@ -30,17 +30,20 @@ import { crosses, stroke } from './games/swipe.js';
 export const runsLive = (g) => Boolean(g?.mod?.tick && g.state?.live && !g.state.won && !g.state.wait);
 
 /** The swallow, pure: `down(id)` notes a tap acted on at pointerdown on the board `id`;
-    `click(id, now)` answers true for the one click that follows it on that board (the finger's
-    lift), once. Keyed by the board's id, not its node: the page may redraw the host between. */
+    `click(id, now)` answers true for one click that follows such a tap on that board (a finger's
+    lift), once per tap. Several fingers may be down at once (two thumbs on 接雨, seen on the
+    phone 2026-10-26), so each tap is its own note. Keyed by the board's id, not its node: the
+    page may redraw the host between. */
 export function tapGate(windowMs = 1500) {
-  let pending = null;
+  let pending = [];
   return {
-    down(id, now = Date.now()) { pending = id ? { id, at: now } : null; },
+    down(id, now = Date.now()) { if (id) pending.push({ id, at: now }); },
     click(id, now = Date.now()) {
-      if (!pending) return false;
-      const hit = pending.id === id && now - pending.at <= windowMs;
-      pending = null;
-      return hit;
+      pending = pending.filter((p) => now - p.at <= windowMs);
+      const i = pending.findIndex((p) => p.id === id);
+      if (i < 0) return false;
+      pending.splice(i, 1);
+      return true;
     },
   };
 }
@@ -185,8 +188,8 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
   // A tap on a game running in time: acted on as the finger goes down.
   const gate = tapGate();
   document.addEventListener('pointerdown', (e) => {
-    gate.down(null);
-    if (paused() || e.button !== 0 || e.isPrimary === false) return;
+    // Every finger counts: a second finger down while the first still rests is a tap of its own.
+    if (paused() || e.button !== 0) return;
     const el = e.target.closest?.('[data-g]');
     const host = el?.closest('[data-game]');
     if (!host || el.disabled) return;
