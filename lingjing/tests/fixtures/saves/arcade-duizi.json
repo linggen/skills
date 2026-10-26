@@ -247,6 +247,11 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "uncle-jiujiu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "notice-shuitong": {
     "status": "done",
     "period": "once",

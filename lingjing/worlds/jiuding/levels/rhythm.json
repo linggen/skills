@@ -331,7 +331,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 83
+       "n": 84
       },
       {
        "kind": "read",
@@ -392,9 +392,28 @@
       },
       {
        "kind": "read",
-       "chars": 3523,
-       "run": 3523,
-       "over": true
+       "chars": 1871,
+       "run": 1871,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "uncle-jiujiu",
+       "scene": "00-uncle",
+       "title": {
+        "zh": "舅舅 · 那张告示",
+        "en": "Uncle · The notice"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 82
+      },
+      {
+       "kind": "read",
+       "chars": 1652,
+       "run": 1652,
+       "over": false
       },
       {
        "kind": "board",
@@ -407,8 +426,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 7,
-       "same": true
+       "n": 7
       },
       {
        "kind": "read",
@@ -427,7 +445,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 84
+       "n": 85
       },
       {
        "kind": "read",
@@ -437,7 +455,7 @@
       }
      ],
      "counts": {
-      "board": 9,
+      "board": 10,
       "fight": 0,
       "riddle": 0,
       "seen": 0,

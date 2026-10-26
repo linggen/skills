@@ -100,6 +100,9 @@ export const TO_HALL = [
   ['win', { id: 'halfyear-mirror' }],
   ['task', { action: 'done', id: 'halfyear-mirror' }],
   ['resolve', { exit: 'on' }],
+  // 舅舅 (对话, 2026-10-26) at the table, the notice
+  ['win', { id: 'uncle-jiujiu' }],
+  ['task', { action: 'done', id: 'uncle-jiujiu' }],
   ['resolve', { exit: 'go' }],
   // 水桶落井 (气走经脉, the reading cap's third beat 2026-10-20): the breath sinks past the heart; 吴婆婆 the night before (2026-10-26)
   ['win', { id: 'notice-shuitong' }],

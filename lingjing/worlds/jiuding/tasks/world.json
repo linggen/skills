@@ -152,6 +152,7 @@
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "「一言为定。本王，欠你一张饼。」", "en": "\"Agreed. This queen owes you one flatbread.\"" }
     },
+    {"_board": "00-uncle (全文后的小游戏 2026-10-26): 舅舅 (jinchat `jiujiu`, face to face). Nothing paid before 入门.", "id": "uncle-jiujiu", "kind": "board", "game": "jinchat", "period": "once", "deal": {"chat": "jiujiu"}, "stars": 3, "title": {"zh": "舅舅 · 那张告示", "en": "Uncle · The notice"}, "how": {"zh": "舅舅抄来一张沉鼎观的告示。问问他：这仙门，二十年前他怎么没进去？", "en": "Uncle has copied out the Sunken Cauldron's notice. Ask him: why didn't he get in, twenty years ago?"}, "grant": {"table": "task"}, "done_line": {"zh": "「去试试。进不去，也不亏什么。」", "en": "\"Go and try. If you don't get in, you've lost nothing.\""}, "replay": {"zh": "上巳那天，舅舅抄来的那张告示……再听他说一回？", "en": "The notice Uncle copied out on the spring festival… hear him out again?"}},
     {
       "_beats": "00-notice, the third beat of the reading cap before 入门 (Hanli 10-20: 「可以, 把水桶那关也加上」): 气走经脉 · 水桶落井. Nothing paid before 入门.",
       "id": "notice-shuitong", "kind": "board", "game": "qimai", "period": "once",
