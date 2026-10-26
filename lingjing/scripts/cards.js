@@ -140,6 +140,7 @@ Object.assign(WORDS.en.queueKinds, { twenty: 'Twenty questions', haggle: 'Haggli
 
 export { esc } from './esc.js';
 import { esc } from './esc.js';
+import { forInput } from './games/kit/device.js';
 import { codexCompactHtml, codexHtml } from './codex.js';
 import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogue.js';
 import { TURNED_MS, turnedPays } from './turned.js';
@@ -544,7 +545,7 @@ function board(card, ctx) {
   // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
   // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever.
   const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod),
-    how: task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? '',
+    how: forInput(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
     body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` }) : null;
   const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;
   // A scene's own game (the opening's beats, 射鹿 …) is played, not asked about: no 问询 in its corner.
@@ -906,7 +907,7 @@ function taleBody(st, ctx) {
   if (TALE_BODY[st.game]) return TALE_BODY[st.game](st, ctx);
   if (st.won) return `<div class="small dim">${esc(ctx.words.taleKept)}</div>`;
   const g = st.board ? ctx.boardFor?.(st.board.id) : null;
-  return g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div>${mountOnly(g.mod) ? mountHostHtml(st.board.id, esc) : `<div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>`}${skipBoard(g, st.board.id, ctx)}`
+  return g?.mod ? `<div class="small dim">${esc(forInput(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? ''))}</div>${mountOnly(g.mod) ? mountHostHtml(st.board.id, esc) : `<div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>`}${skipBoard(g, st.board.id, ctx)}`
     : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
 }
 

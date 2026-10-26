@@ -39,6 +39,7 @@
 // Pure model: newGame / act / tick (the bots and tests drive these); the page is `mount` (its own
 // frame loop, pointer and Space; games/mount.js's contract).
 import { rng } from './seeded.js';
+import { forInput } from './kit/device.js';
 
 /* ── The painted inner landscape ──────────────────────────────────────────────────────────── */
 
@@ -84,12 +85,12 @@ export const ELEMENTS = {
 export const T = {
   zh: {
     qi: '气', gold: '金线', start: '起', touch: ['碰壁，气散了一分。', '蹭着脉壁了。稳住。', '又碰了一下。'],
-    cha: '岔气了。从{at}再来。', origin: '起点', end: '气走通了。', hint: '按住 吸 · 松开 吐（空格亦可）', restart: '从头',
+    cha: '岔气了。从{at}再来。', origin: '起点', end: '气走通了。', hint: { desk: '按住 吸 · 松开 吐（空格亦可）', touch: '按住 吸 · 松开 吐' }, restart: '从头',
     won: ['气走通了，可是碰了壁。', '一口不乱，脉壁没碰。', '一口不乱，金线也贴住了。'],
   },
   en: {
     qi: 'Qi', gold: 'Gold', start: 'Go', touch: ['A wall — some qi is lost.', 'Grazed the wall. Steady.', 'Touched again.'],
-    cha: 'The breath breaks. From {at} again.', origin: 'the start', end: 'Through.', hint: 'Hold: in · Let go: out (or Space)', restart: 'Restart',
+    cha: 'The breath breaks. From {at} again.', origin: 'the start', end: 'Through.', hint: { desk: 'Hold: in · Let go: out (or Space)', touch: 'Hold: in · Let go: out' }, restart: 'Restart',
     won: ['Through, though the walls were touched.', 'Not a wall touched.', 'Not a wall touched, and the gold thread kept.'],
   },
 };
@@ -489,7 +490,7 @@ export function html(s, lang = 'zh', id = 'qm') {
     + `<image class="g-qm-bead-pearl" href="${art('pearl')}" x="${-R - 1}" y="${-R - 1}" width="${2 * R + 2}" height="${2 * R + 2}"/><circle class="g-qm-bead-core" r="${R}"/></g>`
     + `</svg>${titleCard(s, lang)}</div>`
     + `<p class="g-line-say">${esc(sayOf(s, t, lang))}</p>`
-    + `<div class="g-qm-row"><span class="g-qm-hint">${t.hint}</span><button type="button" class="g-btn g-btn-quiet" data-g="restart">${t.restart}</button></div>`
+    + `<div class="g-qm-row"><span class="g-qm-hint">${forInput(t.hint)}</span><button type="button" class="g-btn g-btn-quiet" data-g="restart">${t.restart}</button></div>`
     + `</div>`;
 }
 

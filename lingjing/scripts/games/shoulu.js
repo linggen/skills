@@ -38,6 +38,7 @@ import { jieyinCast, jieyinState } from './shoulu/core.js';
 const JIEYIN = new URL('../../worlds/jiuding/levels/jieyin.json', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
 import { leadWith } from './jieyin/lead.js';
+import { forInput } from './kit/device.js';
 export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
 /** The host's numbers for a level: hosts.shoulu with its pace's laid on. */
 export const jieyinCfg = (host, level) => ({ ...host, ...(host?.paces?.[level?.pace ?? 'rest'] ?? {}), pace: level?.pace ?? 'rest' });
@@ -69,8 +70,8 @@ export const meta = {
   bot: 'scripts/games/shoulu/core.js', // its human-like hand (`human`, headless): tests/game-shoulu.test.mjs plays every story level with it
   name: { zh: '守炉', en: 'Guard the Furnace' },
   how: {
-    zh: '点虚线圈布符，点符升级或拆。选中银月（点她或按 1），右键地面移动、右键野兽攻击；手机上点她再点。QWER 放技能。兽潮按时自来，守到最后一波。',
-    en: 'Tap a dashed ring to lay a talisman; tap one to upgrade or remove it. Select Yinyue (click her or press 1), right-click ground to move, a beast to attack; on a phone, tap her, then tap. QWER: her skills. Hold to the last wave.',
+    zh: { desk: '点虚线圈布符，点符升级或拆。选中银月（点她或按 1），右键地面移动、右键野兽攻击。QWER 放技能。兽潮按时自来，守到最后一波。', touch: '点虚线圈布符，点符升级或拆。点银月选中她，再点地面移动、点野兽攻击；点她的技能放技能。兽潮按时自来，守到最后一波。' },
+    en: { desk: 'Tap a dashed ring to lay a talisman; tap one to upgrade or remove it. Select Yinyue (click her or press 1), right-click ground to move, a beast to attack. QWER: her skills. Hold to the last wave.', touch: 'Tap a dashed ring to lay a talisman; tap one to upgrade or remove it. Tap Yinyue to select her, then tap ground to move or a beast to attack; tap her skills to cast. Hold to the last wave.' },
   },
 };
 
@@ -81,13 +82,13 @@ const T = {
     banner: (n, last) => (last ? '最后一波' : `第${CN[n - 1] ?? n}波`), speed: '×', pause: '暂停', resume: '继续', again: '再来', pick: '选关',
     nextLevel: '下一关', build: '布符', tap: '点选', full: '已满', upg: '升级', sellFor: '拆', lv: ['一重', '二重', '三重'], nextLv: '下一重', maxed: '已至三重',
     dmg: '伤', range: '距', slow: '减速', unlockAt: (w) => `第${CN[w - 1]}波解锁`, poor: '灵石不足', lockedMsg: (w) => `第${CN[w - 1]}波方解锁`,
-    hint: '选中银月，右键（手机：再点）一处或一兽', earlyPaid: (n) => `提前召唤 +${n} 灵石`, unlocked: (t) => `${TN.zh[t]}已解锁`,
+    hint: { desk: '选中银月，右键一处或一兽', touch: '选中银月，再点一处或一兽' }, earlyPaid: (n) => `提前召唤 +${n} 灵石`, unlocked: (t) => `${TN.zh[t]}已解锁`,
     heroDown: (s) => `银月负伤退下，${s}息后归来`, heroUp: (l) => `银月 · ${['', '二重', '三重'][l]}`, cry: '合窳啼哭——护体灵光薄了，快打！',
     wonLine: (hp) => `炉火余 ${hp} / 10`, lostLine: (w, x) => `炉火熄灭于第 ${w} 波。已守 ${x} 息。`, select: '守炉 · 选关', newThing: '新',
     lastWave: '已是最后一波 · 守住即成', waveN: (n) => `第${n}波：`, xi: '息', paused: '暂 停',
     says: { back: '回来了。', grow: '月华更盛了。', howl: '嗷呜——！', cry: '啼哭中', paused: '暂 停' },
     yinyue: '银月', away: (s) => `${s}息后归来`, autoOn: '自动施放：开', autoOff: '自动施放：关', cooling: '还在冷却', noHair: '没有狐毛了',
-    skillAt: (l) => `${['', '二重', '三重'][l]}解锁`, aimAt: (n, touch) => `${n}：点选目标 · ${touch ? '再点按钮取消' : '右键或 Esc 取消'}`,
+    skillAt: (l) => `${['', '二重', '三重'][l]}解锁`, aimAt: (n, touch) => `${n}：点选目标 · ${forInput({ desk: '右键或 Esc 取消', touch: '再点按钮取消' }, touch ? 'touch' : 'desk')}`,
   },
   en: {
     fire: 'Fire', stone: 'Stones', wave: 'wave', first: 'Wave 1', next: 'Next wave', sec: 's', early: 'early',
@@ -95,13 +96,13 @@ const T = {
     banner: (n, last) => (last ? 'Last wave' : `Wave ${n}`), speed: '×', pause: 'Pause', resume: 'Go on', again: 'Again', pick: 'Levels',
     nextLevel: 'Next level', build: 'Talisman', tap: 'pick one', full: 'Max', upg: 'Upgrade', sellFor: 'Remove', lv: ['I', 'II', 'III'], nextLv: 'Next', maxed: 'At III',
     dmg: 'dmg', range: 'range', slow: 'slow', unlockAt: (w) => `opens wave ${w}`, poor: 'Not enough stones', lockedMsg: (w) => `Opens on wave ${w}`,
-    hint: 'Select Yinyue, then right-click (phone: tap) a place or a beast', earlyPaid: (n) => `Called early: +${n} stones`, unlocked: (t) => `${TN.en[t]} unlocked`,
+    hint: { desk: 'Select Yinyue, then right-click a place or a beast', touch: 'Select Yinyue, then tap a place or a beast' }, earlyPaid: (n) => `Called early: +${n} stones`, unlocked: (t) => `${TN.en[t]} unlocked`,
     heroDown: (s) => `Yinyue is hurt; back in ${s}s`, heroUp: (l) => `Yinyue · ${['', 'II', 'III'][l]}`, cry: 'The heyu wails: its shield thins. Strike now!',
     wonLine: (hp) => `Fire left: ${hp} / 10`, lostLine: (w, x) => `The fire went out on wave ${w}, ${x} breaths held.`, select: 'Guard the Furnace · levels', newThing: 'new',
     lastWave: 'The last wave: hold it', waveN: (n) => `Wave ${n}:`, xi: 'breaths', paused: 'Paused',
     says: { back: 'Back.', grow: 'The moon grows in me.', howl: 'Awooo—!', cry: 'wailing', paused: 'Paused' },
     yinyue: 'Yinyue', away: (s) => `back in ${s}s`, autoOn: 'Autocast on', autoOff: 'Autocast off', cooling: 'Still cooling', noHair: 'No fox hair left',
-    skillAt: (l) => `Opens at ${['', 'II', 'III'][l]}`, aimAt: (n, touch) => `${n}: pick a target · ${touch ? 'tap the button again to cancel' : 'right-click or Esc cancels'}`,
+    skillAt: (l) => `Opens at ${['', 'II', 'III'][l]}`, aimAt: (n, touch) => `${n}: pick a target · ${forInput({ desk: 'right-click or Esc cancels', touch: 'tap the button again to cancel' }, touch ? 'touch' : 'desk')}`,
   },
 };
 /** Her skills' names and lines. */
@@ -310,7 +311,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       $('[data-k="waves"]').textContent = String(waves(g));
       fit();
       const { said, rest } = shell?.lead ? leadSplit(row.lead, lang) : { said: '', rest: row.lead ?? [] };
-      const go = () => { held = false; saga(rest); toast(t.hint); };
+      const go = () => { held = false; saga(rest); toast(forInput(t.hint)); };
       if (!said) { go(); return; }
       // in the shell: the story read on its lead card over the drawn board; the clock waits for it
       held = true; sagaQ.length = 0; sagaT = 0;

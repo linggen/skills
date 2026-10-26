@@ -239,3 +239,16 @@ test('painted, not drawn: every picture on disk at its size; the fan fits the fr
     assert.ok(C.y <= H * 0.72, `${w}: her feet above the words (${(C.y / H).toFixed(2)})`);
   }
 });
+
+test('a tall frame (a phone) gets a range between the far and the near, so no paper shows between them; a wide one none', () => {
+  assert.equal(Y.layout(1000, 625).mid, null);
+  for (const H of [1500, 1895, 2164]) {
+    const L = Y.layout(1000, H), m = L.mid;
+    assert.ok(m, `H ${H}`);
+    const farFoot = L.far.y - L.far.h * L.far.ay + L.far.h * 0.88; // the far range's misty foot
+    const midPeaks = m.y - m.h * m.ay + m.h * 0.4, midFoot = m.y - m.h * m.ay + m.h * 0.88;
+    const nearValley = L.near.y - L.near.h * L.near.ay + L.near.h * 0.55;
+    assert.ok(midPeaks <= farFoot, `H ${H}: the mid range's peaks reach up past the far one's foot`);
+    assert.ok(midFoot >= nearValley - 1, `H ${H}: the mid range's foot reaches the near one's valleys`);
+  }
+});

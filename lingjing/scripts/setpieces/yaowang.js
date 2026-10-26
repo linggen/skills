@@ -83,6 +83,15 @@ export function layout(W, H) {
     moon: (() => { const d = reach * (tall ? 0.6 : 0.56); return { x: W * (tall ? 0.8 : 0.86), y: Math.max(d * 0.62, yh - reach * 1.2), d }; })(),
     tails: TAILS.map((t) => ({ ...base, rot: (t.deg * Math.PI) / 180, len: reach * t.len, flip: t.deg < 0 })),
     far: { x: W / 2, y: yh, w: ridgeW, h: ridgeH, ay: 0.3 },
+    // A tall frame (a phone, 10-26): the far range's misty foot ends above where the near range's peaks begin, and
+    // the paper showed between them as a pale band; one more range between the two fills it. A wide frame has none.
+    // Its misty foot (0.88 of the painting) reaches the near range's valleys (≈ 0.55 of its painting) at any height.
+    // and its peaks (≈ 0.4) rise past the far range's foot: as tall as that gap asks, never thinner than the far range.
+    mid: tall ? (() => {
+      const valley = nearY + ridgeH * nearScale * 0.25, farFoot = yh + ridgeH * 0.58;
+      const h = Math.max(ridgeH * 1.12, ((valley - farFoot) / 0.48) * 1.05);
+      return { x: W / 2, y: valley - h * 0.58, w: h * (SIZES.ridge[0] / SIZES.ridge[1]), h, ay: 0.3 };
+    })() : null,
     yao: { x: W / 2, y: nearY + (H - nearY) * 0.1, w: yaoW, h: yaoH },
     near: { x: W / 2, y: nearY, w: ridgeW * nearScale, h: ridgeH * nearScale, ay: 0.3 },
     peak: { x: W * (tall ? 0.74 : 0.77), y: yh + ridgeH * 0.35, w: peakW, h: peakH },
@@ -140,6 +149,8 @@ export function build({ PIXI, gsap, app, root, W, H, art, lang = 'zh' }) {
   const moon = place('moon', { x: lay.moon.x, y: lay.moon.y, w: lay.moon.d, ay: 0.5 });
   const tails = lay.tails.map((t) => place('tail', { x: t.x, y: t.y, w: t.len * (SIZES.tail[0] / SIZES.tail[1]), ay: 0.97, flip: t.flip }));
   const far = place('ridge', { ...lay.far, ay: lay.far.ay });
+  const mid = lay.mid ? place('ridge', { ...lay.mid, ay: lay.mid.ay, flip: true }) : null;
+  if (mid?.tint !== undefined) mid.tint = 0xb4aca2; // between the far range and the near
   const yao = [place('yao', { ...lay.yao }), place('yao', { ...lay.yao, x: lay.yao.x + lay.yao.w * 0.18, y: lay.yao.y + lay.yao.h * 0.18, flip: true })];
   const near = place('ridge', { ...lay.near, ay: lay.near.ay, flip: true });
   if (near.tint !== undefined) near.tint = 0x8a8178; // nearer, darker
@@ -161,7 +172,7 @@ export function build({ PIXI, gsap, app, root, W, H, art, lang = 'zh' }) {
   const dust = [0, 1, 2].map((k) => place('dust', { x: P.x + (k - 1) * P.w * 0.45, y: P.y - P.h * 0.05, w: P.w * (1.1 + k * 0.15), ay: 0.7, flip: k === 1 }));
   for (const d of dust) if (d.tint !== undefined) d.tint = 0xb3aa9e; // pale ink-wash, not a brown slab over the slopes
   const flowers = lay.flowers.map((f) => place('flower', { ...f, ay: 0.8 }));
-  V.addChild(moon, ...tails, far, ...halves, ...yao, near, ...dust, ...flowers);
+  V.addChild(moon, ...tails, far, ...(mid ? [mid] : []), ...halves, ...yao, near, ...dust, ...flowers);
 
   // The running ink (the cut): the vision pulled through paper fibres and blurred as the cave comes back.
   const fibreTex = PIXI.Texture.from(fibreCanvas());

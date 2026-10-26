@@ -8,6 +8,7 @@
 // Hanli 10-21: the 游戏厅 holds every playable thing), on a save seeded where its card stands (tools/arcade-saves.mjs).
 // A board the story cut (`replaced: 'cut'`) is listed under 旧版 with why, and opens nothing.
 import { esc } from './esc.js';
+import { forInput } from './games/kit/device.js';
 import { mountPure } from './games/mount.js';
 import { playAlone, timedOf, tallOf } from './games/shell.js';
 import { arcadePlayUrl, arcadeStageUrl, visitDays } from './arcade-board.js';
@@ -42,7 +43,7 @@ const nameOf = (mod, id) => mod?.meta?.name?.[lang()] ?? mod?.meta?.name?.zh ?? 
 // A kit's rows (气走经脉, one level a row) carry their own `name`; else the module's.
 const titleOf = (g, mod) => g?.name?.[lang()] ?? g?.name?.zh ?? nameOf(mod, g?.id);
 // a row's own how-to first (a story level that plays its kit another way: 雪夜柴垛 has no talismans and no 银月), else the module's
-const howOf = (mod, row) => row?.how?.[lang()] ?? row?.how?.zh ?? mod?.meta?.how?.[lang()] ?? mod?.meta?.how?.zh ?? '';
+const howOf = (mod, row) => forInput(row?.how?.[lang()] ?? row?.how?.zh ?? mod?.meta?.how?.[lang()] ?? mod?.meta?.how?.zh ?? '');
 // Opened from the game (dev-arcade.js, the builder's chip): every page keeps `from=game` and shows the way back.
 // A scratch save (`save=`) rides along so the way back lands on that save, not the player's own.
 const fromGame = q.get('from') === 'game';

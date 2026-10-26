@@ -35,6 +35,7 @@ import { pouchHtml } from './pouch.js';
 import { fantongKailu, kailuPaneHtml } from './fantong-kailu.js';
 import { spentBoard } from './board-deal.js';
 import { esc } from './esc.js';
+import { forInput } from './games/kit/device.js';
 import { revealCards } from './card-reveal.js';
 import { pickAfter, pickNow } from './danang.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
@@ -3786,7 +3787,7 @@ function paintFight(b) {
   if (!b.node) mountBout(b);
   const frame = [...focus.children].find((el) => el.matches('.gshell') && el.dataset.shell === id);
   if (frame?.contains(b.node)) return;
-  focus.innerHTML = frameHtml({ id, title: duelTitle(b.brief.creature, words(), lang()), kind: kapai.meta.name[lang()] ?? kapai.meta.name.zh, how: kapai.meta.how[lang()] ?? kapai.meta.how.zh, timed: timedOf(kapai), lang: lang(), body: '<div class="g-mounthost g-fighthost"></div>' });
+  focus.innerHTML = frameHtml({ id, title: duelTitle(b.brief.creature, words(), lang()), kind: kapai.meta.name[lang()] ?? kapai.meta.name.zh, how: forInput(kapai.meta.how[lang()] ?? kapai.meta.how.zh), timed: timedOf(kapai), lang: lang(), body: '<div class="g-mounthost g-fighthost"></div>' });
   focus.querySelector('.g-fighthost')?.replaceChildren(b.node);
 }
 

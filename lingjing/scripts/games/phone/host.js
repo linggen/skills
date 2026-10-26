@@ -152,5 +152,7 @@ globalThis.LingjingHost = {
   },
 };
 unlockOn(document);
+// A phone: a game line with a desk face and a touch face (games/kit/device.js) reads its touch face here.
+document.documentElement.dataset.input = 'touch';
 window.addEventListener('error', (e) => post({ t: 'error', error: String(e.message ?? e) }));
 post({ t: 'ready' });
