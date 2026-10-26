@@ -56,8 +56,8 @@ test('the lead card\'s line: rest — a 大妖 out; intense — any time; both l
 
 test('every host joins it the same way (jieyin/lead.js): after the story\'s lines; none without a handle; never waits long', async () => {
   const h = { lead: (p) => leadLine(kit, p, 'zh') };
-  assert.equal(await leadWith('故事。', Promise.resolve(h), 'boss', 'zh'), `故事。　${leadLine(kit, 'rest', 'zh')}`);
-  assert.equal(await leadWith('Story.', Promise.resolve({ lead: (p) => leadLine(kit, p, 'en') }), 'waves', 'en'), `Story. ${leadLine(kit, 'intense', 'en')}`);
+  assert.equal(await leadWith('故事。', Promise.resolve(h), 'boss', 'zh'), `故事。\n\n${leadLine(kit, 'rest', 'zh')}`);
+  assert.equal(await leadWith('Story.', Promise.resolve({ lead: (p) => leadLine(kit, p, 'en') }), 'waves', 'en'), `Story.\n\n${leadLine(kit, 'intense', 'en')}`);
   assert.equal(await leadWith('故事。', Promise.resolve(null), 'boss'), '故事。', 'no camera: the story alone');
   assert.equal(await leadWith('故事。', null, 'boss'), '故事。', 'a level with no spell');
   assert.equal(await leadWith('故事。', new Promise(() => {}), 'boss', 'zh', 20), '故事。', 'a slow dock never holds the card');

@@ -74,7 +74,7 @@ function layerHtml(id, lang) {
   const s = store.get(id), w = words(lang);
   const bubble = s?.bubble ? `<div class="gshell-bubble" data-who="${plain(s.bubble.who)}">${plain(s.bubble.text)}</div>` : '';
   const pause = s?.paused ? `<div class="gshell-veil"><b>${plain(w.paused)}</b><button type="button" class="gshell-btn is-main" data-shell-pause="${plain(id)}">${plain(w.resume)}</button>${soundHtml(lang)}</div>` : '';
-  const lead = s?.lead ? `<div class="gshell-veil gshell-lead"><p>${plain(s.lead.text)}</p>${s.lead.count != null ? `<b class="gshell-count">${s.lead.count || plain(w.start)}</b>` : `<button type="button" class="gshell-btn is-main" data-shell-go="${plain(id)}">${plain(w.start)}</button>`}</div>` : '';
+  const lead = s?.lead ? `<div class="gshell-veil gshell-lead">${leadParas(s.lead.text)}${s.lead.count != null ? `<b class="gshell-count">${s.lead.count || plain(w.start)}</b>` : `<button type="button" class="gshell-btn is-main" data-shell-go="${plain(id)}">${plain(w.start)}</button>`}</div>` : '';
   return lead + pause + bubble;
 }
 
@@ -170,6 +170,9 @@ export function leadMs(text, lang = 'zh') {
 /** The lead card before a game: its line, then a 3-2-1 for a game in time (`count`), else a 开始 tap — which
     `auto` also gives on its own once the line has been read (`'read'`: by leadMs in `lang`; a number: those ms).
     Resolves when the game may start. */
+/* A lead card's words: the story's first, then any hint after a blank line (结印's camera line), smaller. */
+const leadParas = (text) => String(text).split(/\n\n+/).map((p, i) => `<p${i ? ' class="gshell-hint"' : ''}>${plain(p)}</p>`).join('');
+
 export function lead(id, text, { count = false, auto = 0, lang = 'zh', reducedMotion = false } = {}) {
   if (auto === 'read') auto = leadMs(text, lang);
   const s = entry(id);

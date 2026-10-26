@@ -6,5 +6,6 @@
 export function leadWith(said, seals, pace, lang = 'zh', ms = 3000) {
   const line = Promise.resolve(seals).then((h) => h?.lead?.(pace) ?? '', () => '');
   const late = new Promise((done) => { setTimeout(() => done(''), ms); });
-  return Promise.race([line, late]).then((l) => [said, l].filter(Boolean).join(lang === 'en' ? ' ' : '　'));
+  // The camera's line is a hint, not the story's words: its own paragraph under them (Hanli 10-26: it read as 银月's).
+  return Promise.race([line, late]).then((l) => [said, l].filter(Boolean).join('\n\n'));
 }
