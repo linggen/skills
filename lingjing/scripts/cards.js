@@ -540,13 +540,15 @@ function board(card, ctx) {
     : shut ? `<div class="small dim">${esc(ctx.words.emptyNoPlay)}</div>${isShut(ctx.look, 'seclusion') ? '' : `<div class="acts"><button class="act" data-seclude-open>${esc(ctx.words.secludeOpen)}</button></div>`}`
     : made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
     : g?.mod ? null
-      : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
+      : g ? '' : `<div class="dim small">…</div>`;
   const title = task?.game ? task.title : ctx.words.play;
   // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
   // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever.
   const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod),
     how: forInput(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
-    body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` }) : null;
+    body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` })
+    // 炼丹's herbs (board.js) wear the same shell, its 🔊 with it (Hanli 10-26: every board has both); its tiles as ever.
+    : body === '' ? frameHtml({ id, title, lang: ctx.lang, body: boardHtml(g, ctx.words) }) : null;
   const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;
   // A scene's own game (the opening's beats, 射鹿 …) is played, not asked about: no 问询 in its corner.
   const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);

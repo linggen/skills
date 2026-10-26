@@ -6,6 +6,7 @@
   ],
   "shared": [
     "scripts/lingjing.css",
+    "scripts/think-worker.js",
     "scripts/games/kit/audio/sounds.json",
     "scripts/games/kit/audio/bank.json",
     "scripts/games/kit/audio/sfx.m4a",

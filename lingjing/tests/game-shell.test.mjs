@@ -334,3 +334,51 @@ test('sound: the shell sounds its own moments and owns the bed; games only name 
   assert.match(read('../scripts/games/shoulu.js'), /shell\?\.sound\?\.\(e\.sound \?\? Object\.keys\(e\)\[0\]\)/);
   for (const g of ['sadou', 'sadoushou']) assert.match(read(`../tools/${g}/src/play.js`), /new Sfx\(this\.cfg\.shell\)/, g);
 });
+
+/* ── The rival's turn off the story (10-26): mountPure runs a board's `think`/`answer` as the story's page does, so 象棋
+   answers in the 游戏厅, on the try page and on the phone. A stand-in page: the host takes innerHTML (live-games.js
+   morph), the click listener is called by hand, no Worker (thought inline). ── */
+test('mountPure plays the rival\'s turn: 象棋 answers a move off the story, as on the story\'s page', async () => {
+  const { mountPure } = await import('../scripts/games/mount.js');
+  const xq = await import('../scripts/games/xiangqi.js');
+  const heard = new Map();
+  const listen = (el) => Object.assign(el, { addEventListener: (t, fn) => heard.set(`${el.name}:${t}`, fn), removeEventListener() {} });
+  const doc = listen({ name: 'doc', visibilityState: 'visible' });
+  doc.createElement = () => listen({ name: 'host', className: '', innerHTML: '', contains: () => true, ownerDocument: doc });
+  const container = { ownerDocument: doc, replaceChildren() {} };
+  let look = null;
+  const stop = new AbortController();
+  const played = mountPure(xq)(container, { seed: 'rival', level: 3, signal: stop.signal, peek: (f) => { look = f; } }); // more than one move to mate
+  const tap = (data) => heard.get('host:click')({ detail: 1, target: { closest: () => ({ dataset: data, disabled: false }) } });
+  try {
+  const s0 = look();
+  assert.ok(s0.left > 1, 'a puzzle with a reply to come');
+  const [from, to] = xq.legalMoves(s0.board, 'r').find(([f, t]) => xq.legalMoves(xq.move(s0.board, f, t), 'b').length); // not a mate at once
+  const at = (i) => `${i % 9},${Math.floor(i / 9)}`;
+  tap({ g: 'pick', at: at(from) });
+  tap({ g: 'go', at: at(to) });
+  assert.equal(look().wait, true, 'red moved: black to think');
+  for (let i = 0; i < 100 && look().wait; i++) await new Promise((r) => setTimeout(r, 20));
+  assert.equal(look().wait, false, 'black answered');
+  assert.equal(look().last.side, 'b', 'its move laid on the board');
+  } finally { stop.abort(); }
+  await played;
+  // The only module that thinks today; 五子棋's rival answers inside act, the same on every page.
+  const thinkers = fs.readdirSync(new URL('../scripts/games/', import.meta.url)).filter((n) => n.endsWith('.js'))
+    .filter((f) => /^export (const|function) think\b/m.test(fs.readFileSync(new URL(`../scripts/games/${f}`, import.meta.url), 'utf8')));
+  assert.deepEqual(thinkers, ['xiangqi.js']);
+  assert.equal(typeof xq.answer, 'function');
+});
+
+test('the story\'s 炼丹 herb board wears the shell: its frame and 🔊, the tiles inside', async () => {
+  const { cardHtml, WORDS } = await import('../scripts/cards.js');
+  const { newBoard } = await import('../scripts/board.js');
+  const g = newBoard([{ id: 'a', tile: '参', label: '参' }, { id: 'b', tile: '芝', label: '芝' }], 'alchemy-daily');
+  const page = { lang: 'zh', words: WORDS.zh, content: {}, reading: null, boardFor: () => g,
+    look: { tasks: [{ id: 'alchemy-daily', kind: 'board', game: 'lianliankan', title: '炼丹', leave: true }], scene: { show: [] } } };
+  const html = cardHtml({ card: 'board', id: 'alchemy-daily' }, page);
+  assert.match(html, /class="gshell[^"]*" data-shell="alchemy-daily"/);
+  assert.match(html, /data-shell-mute/);
+  assert.match(html, /data-board="alchemy-daily"[\s\S]*data-tile="0"/);
+  assert.match(html, /data-board-leave="alchemy-daily"/, '收手 under it still');
+});

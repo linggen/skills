@@ -22,6 +22,14 @@
 import { answered, morph, sceneAt, tapGate, tapInk, tapNope } from '../live-games.js';
 import { crosses, stroke } from './swipe.js';
 import { sounded } from './kit/heard.js';
+import { thinker } from '../think.js';
+
+/* The rival's turn (a module that `think`s and `answer`s, as 象棋 does): thought off the page in the story's one
+   Worker (think.js; inline where there is none), laid in by `answer` only if the board still waits on that ask — the
+   same turn the story's page plays (lingjing.js rivalTurn), so a board answers alike in the 游戏厅, the try page and
+   the phone. A board whose rival answers inside `act` (五子棋) needs nothing here. */
+let rivalThink = null;
+const thinkOf = () => (rivalThink ??= thinker(() => new Worker(new URL('../think-worker.js', import.meta.url), { type: 'module' })));
 
 const STEP = 50;
 const WIN_HOLD = 1600; // the won frame (its seal) stands this long before the game settles
@@ -72,6 +80,18 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       sounded(shell, mod, was, g.state, press);
       paint();
       check();
+      if (g.state?.wait && mod.think && mod.answer && g.state !== was) rival(g.state);
+    };
+    const rival = (asked) => {
+      thinkOf()(mod, asked)
+        .then((m) => {
+          if (done || g.state !== asked) return; // left, or dealt again, while it thought
+          g.state = mod.answer(asked, m);
+          sounded(shell, mod, asked, g.state);
+          paint();
+          check();
+        })
+        .catch((e) => console.warn('[mount] rival', mod.meta?.id, e));
     };
     const clock = setInterval(() => {
       const now = performance.now(), dt = Math.min(250, now - last);

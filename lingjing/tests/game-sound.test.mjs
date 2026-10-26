@@ -238,7 +238,7 @@ test('a pure board\'s bot play names its moments, and only the ones it declares'
 test('every runner sounds each step: off the story (mount.js), the story\'s clock and taps (live-games.js, lingjing.js), the fight\'s log', () => {
   const src = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
   const mount = src('../scripts/games/mount.js'), live = src('../scripts/live-games.js'), page = src('../scripts/lingjing.js');
-  assert.equal((mount.match(/sounded\(shell, mod,/g) ?? []).length, 2, 'mount.js: an act and a tick');
+  assert.equal((mount.match(/sounded\(shell, mod,/g) ?? []).length, 3, 'mount.js: an act, a tick and the rival\'s answer');
   assert.equal((live.match(/sounded\(shellFor\(/g) ?? []).length, 3, 'live-games.js: a press, the catch-up and the clock');
   assert.match(page, /shellOf: \(id, g\) => shellFor\(id, g\.mod\?\.meta\?\.id\)/, 'the story\'s live boards get their shell (sounds, bed)');
   assert.match(page, /onWon: \(g\) => \{ g\.sent = true; settleShell\(g\.taskId/, 'a story board\'s win chimes');
