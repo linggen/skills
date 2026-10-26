@@ -30,6 +30,7 @@ import { JUAN_ONE, sweep } from './explore.mjs';
 import { playTo, targetOf } from '../scripts/rules/progress.mjs';
 import { newState } from '../scripts/state.mjs';
 import { REACTION, JITTER, rng } from './board-bots.mjs';
+import { mountOnly } from '../scripts/beat-host.js';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const HOME = path.join(os.homedir(), '.linggen', 'skills', 'lingjing', 'data', 'saves');
@@ -99,6 +100,18 @@ const TARGET = (id, a) => `(() => {
   const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 })()`;
 
+/* The board's state as plain data for the bot: a physics board (喂饼's Matter world) holds bodies that point at
+   themselves and each other, past what CDP hands back by value ("Object reference chain is too long", 10-26) —
+   cycles cut, functions dropped, 8 levels deep is more than any bot reads. */
+const PLAIN = `function plain(v, depth = 0, up = new Set()) {
+  if (v === null || typeof v !== 'object') return typeof v === 'function' ? undefined : v;
+  if (up.has(v) || depth > 8) return undefined;
+  up.add(v);
+  const out = Array.isArray(v) ? v.map((x) => plain(x, depth + 1, up)) : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x, depth + 1, up)]));
+  up.delete(v);
+  return out;
+}`;
+
 export async function playBoardLive(page, { id, game, tries = 3, seconds = 150, seedSave, base }) {
   const { bot } = await import(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../scripts/games/bots', `${game}.js`));
   const runs = [];
@@ -115,7 +128,7 @@ export async function playBoardLive(page, { id, game, tries = 3, seconds = 150, 
     const t0 = Date.now();
     let held = null, presses = 0, won = false, last = null;
     while (Date.now() - t0 < seconds * 1000) {
-      const seen = await page.evaluate(`globalThis.__lingjingPlay?.state(${JSON.stringify(id)}) ?? null`);
+      const seen = await page.evaluate(`(${PLAIN})(globalThis.__lingjingPlay?.state(${JSON.stringify(id)}) ?? null)`);
       const b = await page.evaluate(`globalThis.__lingjingPlay?.board(${JSON.stringify(id)}) ?? null`);
       if (b?.won || b?.sent || seen?.state?.won) { won = true; break; }
       if (!seen?.state) { await sleep(100); continue; }
@@ -220,6 +233,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
           if (only && !only.includes(id)) continue;
           const game = content.tasks.tasks.find((t) => t.id === id)?.game;
           if (!game || !fs.existsSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../scripts/games/bots', `${game}.js`))) { findings.push({ kind: 'no-bot', board: id, game }); console.log(`${id.padEnd(18)} NO BOT (${game})`); continue; }
+          // A board that keeps only mount() (气走经脉, the Phaser kits) plays inside its own node: the seam sees no state
+          // for the bot to read — play-human.mjs plays it with real hands instead (10-26: qimai read 0 presses here).
+          if (mountOnly(await import(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../scripts/games', `${game}.js`)).catch(() => null))) { console.log(`${id.padEnd(18)} MOUNT (${game}) — play-human.mjs plays it`); continue; }
           // Boards before it in the scene's order are left first (the page lays one at a time).
           const seedSave = boardSeeder(at, sc, id, `pc-b-${id}`.slice(0, 31).toLowerCase().replace(/[^a-z0-9-]/g, '-'), scene);
           made.add(seedSave.save);
