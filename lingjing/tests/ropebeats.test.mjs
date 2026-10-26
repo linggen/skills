@@ -210,7 +210,7 @@ test('喂饭桶 · 一根牛骨头 sits where the book feeds the 饭桶: wm-diyi
   const parts = stretchesOf(content.chapters['00-waimen']);
   const at = parts.findIndex((p) => p.to === 'wm-diyilu');
   assert.ok(at > 0, 'the feed is a beat');
-  assert.equal(parts[at].from, 'wm-yaoyuan');
+  assert.equal(parts[at].from, 'wm-yaoyuan:yaoyuan-luobo'); // the 萝卜, the scene's second board since 2026-10-26
   assert.equal(parts[at + 1].from, 'wm-diyilu');
   assert.ok(parts[at].chars > 0 && parts[at + 1].chars > 0, `${parts[at].chars} · ${parts[at + 1].chars}`);
   assert.ok(RHYTHM_CAP > 0);

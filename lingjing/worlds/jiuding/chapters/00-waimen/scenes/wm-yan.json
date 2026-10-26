@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "wm-yan",
+ "chapter": "00-waimen",
+ "hui": "h05",
+ "at": "waimen",
+ "place": {
+  "zh": "沉鼎观 · 外门 · 执事房",
+  "en": "Chending Temple · The outer court · the stewards' office"
+ },
+ "_board": "wm-yan (全文后的小游戏 2026-10-26): 气走经脉 `tieshua` — 褚先生's probe, an iron brush through the channels (chaifang lock). Pays as 古四's boards: progress 5, and the board's 灵石 on its first clear.",
+ "setup": {
+  "zh": "十月廿八，周衡盘月底的账。药园那一页：零。马小宝说你偷吃了，请褚先生来验。",
+  "en": "The twenty-eighth of the tenth month: Zhou Heng's month-end reckoning. The herb garden's page: none lost. Ma Xiaobao says you ate them; Master Chu is fetched to test you."
+ },
+ "recap": {
+  "zh": "十月廿五夜里，你自己坐上了二层。月底盘账，药园一株没丢；褚先生一盏茶的铁刷子，探出那根骨头还断着：「药园的灵草，治伤最灵。」巡夜令归你，月一篮残株。马小宝夜里吞了三颗聚气丹；告示栏上贴出来：沉鼎秘境，十年一开。",
+  "en": "On the night of the twenty-fifth you sat your way into the second layer. At the month's reckoning not one herb was lost; Master Chu's iron brush found the bone still broken: \"The herb garden's herbs are best for healing.\" The token is yours, a basket of broken stems a month. That night Ma Xiaobao swallowed three Qi-Gathering Pills; on the notice board: the Sunken Cauldron's secret realm, open once in ten years."
+ },
+ "cast": [],
+ "people": [
+  "zhouheng",
+  "chuxiansheng",
+  "maxiaobao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "十月廿八，月底盘账。",
+    "「请褚先生来验。」",
+    "一盏茶的铁刷子。"
+   ],
+   "en": [
+    "The twenty-eighth: the month's reckoning.",
+    "\"Ask Master Chu to test me.\"",
+    "An iron brush, a cup of tea long."
+   ]
+  }
+ },
+ "story": {
+  "zh": "到了十月廿五那一夜，他坐在灵草中间，一口气落下去，肚子底下「咚」的一声，那一团暖猛地往下一沉，沉得更深，像一块干了一冬的地，一镢头刨下去，又刨出一层来；刨开了，能盛的，一下子多了一倍。练气二层。\n\n是他一夜一夜，断着一根肋骨，自己坐出来的。\n\n十月廿八，周衡盘月底的账，盘到药园那一页，天已擦黑。小满在执事房门口候着；马小宝也在，身后跟着鞋头补黑布的那个，还有老蔫，站在门槛外头。周衡拿指头点着账簿念：「初十，入账灵兽一只。初十至今日，药园丢——」他抬眼看了看门框上那一位，又低下头，「一样也没有丢。」\n\n小满把巡夜簿里夹着的那张油纸抽出来，放在账簿上：「十五夜里，墙头上来过一个人，看了一眼，回去了。墙根底下，掉了这个。」纸角一个红戳。门槛外头，老蔫的脸一下子白了。小满没有看他。\n\n马小宝道：「一张油纸，谁知道是哪儿捡的？」他一步跨进门来，指着小满，「零？那是他自己吃了！周师兄，一个漏勺，进门一个月，夜夜坐在灵草堆里，草叶子都往他身上歪——偷了灵草吃，吃出一层来！」\n\n小满道：「师兄怎么知道，草叶子往我身上歪？」\n\n执事房里静了下来。马小宝张着嘴，看看周衡，看看房梁，半天才缓过一口气来，声音反倒高了：「……你请人验！请褚先生来，看他是一层，还是二层！」\n\n这一句，是真刀子。一个漏勺，一个半月二层——这话要是传开了，不用马小宝再说一个字，全外门都会替他往下想。\n\n小满没去看马小宝。他对周衡道：「师兄，请褚先生来验。」\n\n褚先生是给人从讲堂里请过来的，山羊胡子一翘一翘，很不耐烦。他也不多话，一把扣住小满的手腕。一股凉丝丝的灵力，从他腕子上钻了进来，顺着经脉，一路往里探。小满闭上眼睛，不躲，也不压，由它探。褚先生那股灵力探进来，碰到哪里，哪里便像给铁刷子刷了一下；碰着肋骨，疼得他眼前发白。",
+  "en": "On the night of the twenty-fifth of the tenth month, sitting among the spirit herbs, a breath settled and there was a thud down in his belly. The ball of warmth suddenly sank, sank deeper, like ground dry all winter where one swing of the mattock turns up another layer beneath; once it was broken open, what it could hold had suddenly doubled. Second layer of Qi Condensation.\n\nHe had sat it out himself, night after night, with a broken rib.\n\nOn the twenty-eighth of the tenth month, Zhou Heng did the month's-end accounts, and by the time he reached the herb-garden page it was already dusk. Xiaoman waited at the door of the stewards' office; Ma Xiaobao was there too, followed by the one with black cloth on his shoe, and Old Wilt, who stood outside the threshold. Zhou Heng read out, his finger on the ledger: \"Tenth, entered one spirit beast. From the tenth to today, lost from the herb garden...\" He looked up at the one in the doorway, then down again. \"Not one thing lost.\"\n\nXiaoman drew out the oiled paper tucked in the night-watch book and laid it on the ledger. \"On the night of the fifteenth, someone came up on the wall, took a look, and went back. At the foot of the wall, this was dropped.\" A red stamp on its corner. Outside the threshold, Old Wilt's face went white at once. Xiaoman didn't look at him.\n\nMa Xiaobao said, \"A bit of oiled paper, who knows where it was picked up?\" He stepped inside and pointed at Xiaoman. \"Zero? That's because he ate them himself! Senior Brother Zhou, a leaky ladle, a month through the gate, sitting every night in a pile of spirit herbs with the leaves all leaning towards him: he's been stealing spirit herbs to eat, and he's eaten himself up a layer!\"\n\nXiaoman said, \"How does senior brother know the leaves lean towards me?\"\n\nThe stewards' office went quiet. Ma Xiaobao stood with his mouth open, looked at Zhou Heng, looked at the roof beams, and it took a long while before he got his breath back. His voice went higher, if anything. \"...Get him checked! Get Master Chu to come and see whether he's on the first layer or the second!\"\n\nThat line was a real knife. A leaky ladle on the second layer in a month and a half: let that get around, and without Ma Xiaobao saying another word, the whole outer sect would fill in the rest for him.\n\nXiaoman didn't look at Ma Xiaobao. He said to Zhou Heng, \"Senior brother, ask Master Chu to come and check.\"\n\nMaster Chu was fetched over from the lecture hall, his goatee twitching, very impatient. He didn't waste words. He clamped a hand round Xiaoman's wrist. A thread of cool spiritual power slipped in at his wrist and went probing inward along his meridians. Xiaoman shut his eyes. He didn't dodge it and he didn't press it down; he let it probe. Wherever Master Chu's spiritual power touched, it was as if an iron brush had been dragged across it; when it touched his ribs, the pain whited out everything in front of his eyes."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "yan-tieshua"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "yan-tieshua"
+  ]
+ },
+ "story_after": {
+  "zh": "褚先生探了足有一盏茶的工夫，才松了手，眉头一皱：「二层。」马小宝一拍巴掌：「我说什么来着！」褚先生不理他，又按了按小满的肋骨，按到左边那一根，手停住了。小满没出声，额头上的汗一颗一颗往下掉。\n\n「这根骨头，还断着。」褚先生道，「半个月了。」他转过身，冲马小宝道，「药园的灵草，治伤最灵。他要是偷吃了一株，这根骨头早长上了。」周衡把巡夜簿翻开，推到他跟前，一夜一个手印，从初十起，一夜也不缺。褚先生翻了两页，道：「灵草堆里，灵气厚。漏勺坐在那里头，漏一半，也存下一半。坐了半个月，坐出一层来——」他哼了一声，「漏勺还是漏勺。」\n\n马小宝一口桂花糕正咽到一半，呛在了喉咙里，咳得弯下腰去，也没咳出一句话来。\n\n褚先生走到门口，又停住，回过头来，多看了小满一眼，看他捂着肋骨的那只手，到底什么也没问，走了。\n\n周衡把巡夜簿合上，压在账簿底下，道：「只认账，不认脸。药园巡夜，沈小满。工钱，残株，月一篮。」从桌子底下拎出一只竹篮来，篮里是这个月拔下来的残株：虫咬的，长歪的，灵气散了一半的，堆了小半篮。\n\n小满拎着篮子走出执事房，扶着墙站了一会儿——褚先生那一盏茶的铁刷子，刷得他肋下一阵一阵地疼。怀里那只辣椒油瓶，隔着衣裳，硌着那根没长好的骨头。\n\n那天夜里，外门后院的井台边上，马小宝一个人蹲着，拿井水洗下巴。他是三灵根、色浊，他爹等不得，一个月里硬喂了他三瓶聚气丹，喂出了一个练气一层，也喂出了下巴上三个小黑点。他拿皂角搓，拿井台上的粗砂磨，磨得下巴通红，那三个黑点还在。他从怀里摸出装聚气丹的瓷瓶，倒过来，往手心里磕。磕出来三颗，是这个月剩下的最后三颗，一道纹，纹边上一圈黑点，跟他下巴上的一模一样。\n\n他想起去年秋天在沈家门口，叫沈小满学狗叫，沈小满说「正在学」，他笑了好几天；如今想起来，一点也不好笑了。他想起沈小满那根断着的骨头，想起周衡账簿上那张油纸，想起腊月那一颗筑基丹。讲堂里说起沈小满，说的是「那个收狰的」，不是「那个漏勺」。他想：他凭什么？他又想：他吃一口，我吃三口。\n\n他把那三颗丹，一口吞了下去，连水都没喝，干咽，咽得脖子一伸一伸的。那股暖升上来了，热烘烘的，烧得他满脸通红，烧得下巴上那三个黑点一跳一跳地疼。他咬着牙，指甲抠进井台的石缝里，等它过去。他站起身来，擦了擦嘴，从袖子里又摸出一块桂花糕，咬了一口。还是饿。\n\n第二天一早，外门的告示栏上，贴出了一张新的告示，墨迹还没干：\n\n**沉鼎秘境，十年一开。冬月初一，练气弟子，内外门皆可入。**",
+  "en": "Master Chu probed for a good cup of tea's time before he let go, and frowned. \"Second layer.\" Ma Xiaobao clapped his hands. \"What did I say!\" Master Chu ignored him and pressed on Xiaoman's ribs, and when he reached the one on the left, his hand stopped. Xiaoman made no sound; sweat dripped from his forehead bead by bead.\n\n\"This bone is still broken,\" Master Chu said. \"Half a month.\" He turned to Ma Xiaobao. \"The spirit herbs in that garden are the best thing there is for healing. If he'd eaten even one, this bone would have knitted long ago.\" Zhou Heng opened the night-watch book and pushed it in front of him: one handprint a night, from the tenth on, not a night missing. Master Chu turned two pages and said, \"In a pile of spirit herbs the spirit qi is thick. A leaky ladle sitting in there leaks half and still keeps half. Sit there half a month, and you sit out a layer...\" He snorted. \"A leaky ladle is still a leaky ladle.\"\n\nMa Xiaobao was halfway through swallowing a mouthful of osmanthus cake, and it caught in his throat. He doubled over coughing and didn't cough out a single word.\n\nMaster Chu went to the door, then stopped, turned back, and took one more look at Xiaoman, at the hand he held to his ribs. In the end he asked nothing and left.\n\nZhou Heng shut the night-watch book, slid it under the ledger and said, \"By the accounts, not by faces. Herb-garden night watch: Shen Xiaoman. Pay: dead stalks, one basket a month.\" From under the table he lifted a bamboo basket, and in it were this month's pulled-up dead stalks: insect-bitten, grown crooked, their spirit qi half gone, a small half basket of them.\n\nXiaoman carried the basket out of the stewards' office and stood holding on to the wall for a while: Master Chu's cup of tea with the iron brush had left his side aching in waves. The chilli-oil bottle in his coat dug through his clothes into that bone that hadn't healed.\n\nThat night, by the well in the outer sect's back courtyard, Ma Xiaobao squatted alone, washing his chin with well water. He had three roots, colour murky, and his father couldn't wait: in one month he had force-fed him three bottles of Qi-Gathering Pills, and fed out of him a first layer of Qi Condensation, and also fed three little black spots onto his chin. He scrubbed with soapberry, he rubbed with the coarse sand off the well's edge, rubbed his chin bright red, and the three black spots were still there. He took the porcelain bottle of Qi-Gathering Pills from his coat, turned it upside down and knocked it into his palm. Out came three: the last three left this month, one line each, a ring of black specks along the line, exactly like the ones on his chin.\n\nHe thought of last autumn at the Shens' door, making Shen Xiaoman bark like a dog, and Shen Xiaoman saying \"I'm learning,\" and how he'd laughed about it for days. Thinking of it now, it wasn't funny at all. He thought of that broken bone of Shen Xiaoman's, of the oiled paper on Zhou Heng's ledger, of that one Foundation Pill in the twelfth month. When people in the lecture hall talked about Shen Xiaoman, they said \"the one who took in the zheng\", not \"the leaky ladle\". He thought: what makes him so special? Then he thought: he eats one mouthful, I eat three.\n\nHe swallowed the three pills in one go, without even water, dry, his neck jerking as they went down. The warmth rose, hot and heavy, burning his whole face red, burning the three black spots on his chin till they throbbed. He gritted his teeth and dug his nails into a crack in the stones of the well's edge and waited for it to pass. He stood up, wiped his mouth, took another piece of osmanthus cake from his sleeve and bit into it. Still hungry.\n\nEarly next morning, a new notice was pasted up on the outer sect's notice board, the ink not yet dry:\n\n**The Sunken Cauldron Secret Realm opens once in ten years. First day of the eleventh month. Disciples of Qi Condensation, inner and outer sect alike, may enter.**"
+ },
+ "lines": [],
+ "buttons": [
+  "realm"
+ ],
+ "exits": [
+  {
+   "id": "realm",
+   "label": {
+    "zh": "进秘境的前一夜",
+    "en": "The night before the realm"
+   },
+   "means": "the realm's notice is up; the night before it, back in the woodshed with the Rice Bucket",
+   "beat": [],
+   "next": "wm-baoming",
+   "needs": {
+    "task": "yan-tieshua"
+   },
+   "refuse": {
+    "zh": "褚先生的手还扣着你的腕子。",
+    "en": "Master Chu still has your wrist."
+   }
+  }
+ ]
+}

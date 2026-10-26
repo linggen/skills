@@ -166,7 +166,7 @@ test('an interlude the book holds back (`draft`) is not played', async () => {
   const chs = playedChapters(loadChapters(new URL('../worlds/jiuding/chapters', import.meta.url).pathname), book);
   const ch = chs['00-waimen'];
   assert.ok(!Object.values(ch.scenes).some(sc => sc.hui === 'j04'), 'its scenes are not played');
-  assert.equal(ch.scenes['wm-diyilu'].exits.find(e => e.id === 'save').next, 'wm-mijing', '古四 runs straight into 古五');
+  assert.equal(ch.scenes['wm-baoming'].exits.find(e => e.id === 'enter').next, 'wm-mijing', '古四 runs straight into 古五'); // 第一路's way on split 2026-10-26: its last scene is wm-baoming
   assert.equal(chs['00-prologue'].scenes['00-notice'].exits[0].next, 'j01-track', 'the others still are');
 });
 

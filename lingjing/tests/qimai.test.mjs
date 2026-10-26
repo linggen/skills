@@ -18,6 +18,8 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   // the weak-board sweep (2026-10-19, the standing rule Hanli approved): 讲堂三日's chant up the arm, 顺风溜's glide
   // the reading cap (2026-10-20, Hanli: 「剧情连续阅读太长的地方, 你处理一下」): 息壤's circle, 后山's narrowing path
   'xirang-wumen': 'xirang',
+  // 第四回's breath (全文后的小游戏 2026-10-26): the night watch on a broken rib, 褚先生's iron brush
+  'xunye-duanlei': 'duanlei', 'yan-tieshua': 'tieshua',
   // the reading cap before 入门 (2026-10-20): 00-halfyear's 挑水上坡 (on the cut 练功's task id), 今一's 边跑边念
   // the 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」): 挑水上坡, 后山, 随叶 and 顺风溜 told — rows, levels and tasks gone
   // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket

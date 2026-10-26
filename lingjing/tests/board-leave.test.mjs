@@ -29,7 +29,7 @@ function yaoyuan({ ownDone = true } = {}) {
   s = toldUpTo(content, s);
   s.tell_owed = [];
   s.told_scenes = [...new Set([...(s.told_scenes ?? []), s.scene])];
-  if (ownDone) s.tasks = { ...s.tasks, 'yaoyuan-xunye': { status: 'done' } };
+  if (ownDone) s.tasks = { ...s.tasks, 'yaoyuan-xunye': { status: 'done' }, 'yaoyuan-luobo': { status: 'done' } }; // and the 萝卜 (2026-10-26)
   s.skipped = [{ task: 'deer-wind', scene: null, line: null, day: '2026-10-24' }];
   s.stamina = 100;
   s.stamina_at = NOW.toISOString();

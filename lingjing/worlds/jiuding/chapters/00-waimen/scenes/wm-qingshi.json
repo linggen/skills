@@ -36,6 +36,17 @@
   "zh": "小满从柴堆上跳下来。说是跳，其实是飘。他两只脚落在地上，竟没有一点声音，连墙根底下那只蛐蛐都没惊着。那道一丈来高的院墙，他退后两步，往前一蹿，两只手在墙头上一搭，人已经翻了出去。墙外是后山，他一口气冲了上去，一道白天要绕半里地的山涧，脚尖一点便纵了过去，落了地才回头看，那山涧足有一丈来宽。\n\n崖顶有一块大青石，比他还高出一头，石面上长满了青苔。他攥紧拳头，把身子里那股转圈的暖一点一点往胳膊上引，引了三回，它才慢吞吞地顺着胳膊爬上来，爬到拳头上，热烘烘的。他一拳打了出去。只听得「咔」的一声，青石上崩下一块皮，连着青苔落在他脚边，拳头没破。",
   "en": "Xiaoman jumped down from the woodpile. Jumped, they'd say; in fact he floated. His feet touched the ground without a sound, not even startling the cricket at the foot of the wall. The courtyard wall was more than ten feet high; he stepped back two paces, sprang forward, set his hands on the top of the wall, and was over. Outside the wall was the back mountain, and he charged up it without stopping for breath. A ravine that took half a li to go round in the daytime he cleared with one push of his toes, and only when he had landed did he look back: the ravine was a good ten feet across.\n\nAt the top of the cliff stood a big bluestone, a head taller than he was, its face covered in moss. He clenched his fist and coaxed the warmth that circled inside him out along his arm, bit by bit. It took three tries before it crept lazily up his arm, crept into his fist, hot. He threw a punch. There was a crack; a slab of skin broke off the bluestone and fell at his feet, moss and all. His fist wasn't even scraped."
  },
+ "show": [
+  {
+   "card": "board",
+   "id": "qingshi-yiquan"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "qingshi-yiquan"
+  ]
+ },
  "lines": [],
  "buttons": [
   "hide",
@@ -55,7 +66,14 @@
     "en": "He wanted to laugh. He opened his mouth to let out a shout at the whole of Sunken Cauldron Mountain, and as it reached his throat he bit down hard on his own fist. Biting his fist, squatting behind the bluestone with its broken skin, he laughed until he shook all over, laughed till the tears came, and didn't make a single sound. And as he laughed he recited, in his head, the word of the one in the tablet: \"Hide. Hide, hide, hide...\"\n\nGoing down the mountain he didn't dare run. He walked, step by step, and went the long way round the ravine on purpose, half a li, crossing on the stones, and when he stepped on a slippery one he made a point of stumbling. There wasn't a soul around. Halfway down, as the first fish-belly pale showed at the edge of the sky, under the old pine beside the stone steps at the gate, a bamboo broom stood leaning against the roots, and Elder Qu was holding up a long thin bamboo pole with a dab of birdlime on its tip. He touched it into the pine branches and brought down a cold-season cicada, touched again, and brought down another. Xiaoman kept his head down and tried to slip past behind him. Elder Qu didn't lift his eyelids. \"That stone across the ravine is very slippery.\"\n\nThe sweat on Xiaoman's back all went cold at once."
    },
    "beat": [],
-   "next": "wm-yaoyuan"
+   "next": "wm-zhishi",
+   "needs": {
+    "task": "qingshi-yiquan"
+   },
+   "refuse": {
+    "zh": "拳头还攥着。",
+    "en": "Your fist is still clenched."
+   }
   },
   {
    "id": "shout",
@@ -70,7 +88,15 @@
     "en": "He wanted to laugh. He opened his mouth and, across the whole of Chending Mountain, let out one great \"Aoooo—!\" The shout banged back and forth in the valley seven or eight times and startled a whole tree of crows into the air.\n\nOnly when it was done did he remember that word. He ducked, crouched behind the chipped boulder, and clapped a hand over his mouth. Down in the outer court someone pushed open a window, swore \"Where's that wolf from?\", and shut it again.\n\nHe crouched behind the stone, laughing till he shook, and as he laughed he recited in his heart: \"Hide. Hide, hide, hide… next time — hide.\""
    },
    "beat": [],
-   "next": "wm-yaoyuan"
+   "next": "wm-zhishi",
+   "needs": {
+    "task": "qingshi-yiquan"
+   },
+   "refuse": {
+    "zh": "拳头还攥着。",
+    "en": "Your fist is still clenched."
+   }
   }
- ]
+ ],
+ "_board": "wm-qingshi (全文后的小游戏 2026-10-26): 时机 `qingshi` — the warmth drawn into the arm three times, then the punch (rumen lock: a story board at its scene). Pays as 古四's boards: progress 5, and the board's 灵石 on its first clear."
 }

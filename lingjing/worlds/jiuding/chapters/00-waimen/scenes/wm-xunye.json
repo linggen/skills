@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "id": "wm-xunye",
+ "chapter": "00-waimen",
+ "hui": "h05",
+ "at": "yaoyuan",
+ "place": {
+  "zh": "沉鼎观 · 药园 · 夜",
+  "en": "Chending Temple · The herb garden · night"
+ },
+ "_board": "wm-xunye (全文后的小游戏 2026-10-26): 气走经脉 `duanlei` — the half month's watch on a broken rib (chaifang lock). Pays as 古四's boards: progress 5, and the board's 灵石 on its first clear. wm-diyilu's way on split here: the 十三夜 handprint, then the half month told.",
+ "setup": {
+  "zh": "十月十三，子时。你断着一根肋骨，从豁口里爬出去，爬到药园，在巡夜簿上按了一个手印。",
+  "en": "The thirteenth of the tenth month, the hour of the Rat. A rib broken, you crawl out through the gap to the herb garden and press a handprint into the night-watch book."
+ },
+ "recap": {
+  "zh": "半个月，你断着一根肋骨巡夜：一口气吸不到底，就不吸到底。白天药园归阿禾，酉时交班，两个人的数没差过一株。十五夜里，老蔫骑在墙头上看了你很久，又回去了。",
+  "en": "For half a month you kept the night watch on a broken rib: when a breath wouldn't go all the way down, you didn't take it all the way. By day the garden was Ahe's; at the handover your counts never differed by a plant. On the fifteenth night Laonian sat on the wall a long while, looking at you, and went back."
+ },
+ "cast": [],
+ "people": [
+  "ahe",
+  "maxiaobao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "十三夜，一个手印。",
+    "一口气吸不到底，就不吸到底。",
+    "灵草的叶子，都朝他这边歪过来。"
+   ],
+   "en": [
+    "The thirteenth night, one handprint.",
+    "If the breath won't go down, don't take it down.",
+    "The herb leaves all lean his way."
+   ]
+  }
+ },
+ "story": {
+  "zh": "那天夜里，子时，他翻不过墙，照旧从豁口里爬出去，爬到药园，在巡夜簿上十三夜那一格，按了一个手印。",
+  "en": "That night, at the hour of the Rat, unable to get over the wall, he crawled out through the gap as before, crawled to the herb garden and pressed a handprint into the square for the thirteenth night in the night-watch book."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "xunye-duanlei"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "xunye-duanlei"
+  ]
+ },
+ "story_after": {
+  "zh": "那以后的半个月，沈小满是断着一根肋骨巡的夜。\n\n白天，他照旧去讲堂，照旧挑水，挑一担，歇三回，肩膀不敢换。饭堂里，马小宝天天端着空碗从他桌边经过，天天停一停，拿指头戳那一个地方：「师弟，好些了没有？」戳一下，他眼前白一下，嘴上道：「好些了，师兄。」\n\n每天酉时交班。阿禾扛着锄头从园子里出来，把一天的数报给他：哪一畦抽了新叶，哪一株打了蔫，紫玉参四十一。他夜里再数一遍，卯时把数报还给她。两个人的数，半个月没差过一株。她报数的时候不看他的脸，只看他捂肋骨的那只手；报完了，从袖子里摸出一个煮鸡蛋，搁在园门的石阶上，扛着锄头走了。\n\n夜里，他坐在药园东角阿禾那一圈红线旁边，灵草中间。肋骨疼，一口气吸不到底，他就不吸到底，学那个萝卜筐里的孩子，肚子一鼓，一落，浅浅的，落得长长的。灵草夜里吐出来的那点灵气，稠得像娘过年熬的那一锅粥，一口一口落下去，肚子底下那一团暖，一夜往下坠一丝；坐得久了，近旁几株灵草的叶子，都朝他这边歪过来，像葵花朝着日头。小狰蹲在他脚边，冲着黑地里，一声不吭。\n\n十五夜里，墙头上「沙」的一响，冒出一个脑袋来。小满没动。那人骑在墙头上，四下里张望，张望到他这里，停住了。\n\n是老蔫。\n\n月亮底下，两个人隔着半个园子，看了很久。一个坐在灵草中间，脸上还青着；一个骑在墙头上，手里攥着一只空布袋。老蔫的嘴动了动，什么也没说出来。他慢慢地，从墙头上退了回去，脚下一滑，墙外「咕咚」一声，接着是一瘸一拐、走远了的脚步。\n\n天亮以后，小满在墙根草里捡到一张油纸，叠成方块，还带着一点甜香，纸角上印着一个红戳——县城那家点心铺子的戳。整个沉鼎观，吃得起这家桂花糕的，只有一个人。他把油纸夹进了巡夜簿里。",
+  "en": "For the half month after that, Shen Xiaoman kept the night watch with a broken rib.\n\nBy day he went to the lecture hall as usual and carried water as usual, one load, three rests, not daring to change shoulders. In the dining hall Ma Xiaobao passed his table every day with an empty bowl, stopped every day, and poked that one spot with his finger. \"Junior brother, any better?\" At every poke everything went white in front of Xiaoman's eyes, and his mouth said, \"Better, senior brother.\"\n\nThe handover was every day at the hour of the Rooster. Ahe came out of the garden with her hoe on her shoulder and gave him the day's numbers: which bed had put out new leaves, which plant had wilted, purple jade ginseng forty-one. At night he counted again, and at the hour of the Rabbit he gave the numbers back to her. For half a month the two of them never differed by a single plant. When she gave the numbers she didn't look at his face, only at the hand he held to his ribs; when she'd finished she took a boiled egg from her sleeve, set it on the stone step at the garden gate, shouldered her hoe and left.\n\nAt night he sat in the east corner of the herb garden beside Ahe's ring of red thread, in among the spirit herbs. His ribs hurt and he couldn't draw a breath all the way down, so he didn't draw it all the way down; he copied the child in the radish basket, belly rising, falling, shallow, the fall drawn long. The spirit qi the herbs breathed out at night was thick as the pot of porridge his mother boiled at New Year, and it settled breath by breath, and the ball of warmth down in his belly sank a hair's breadth lower each night. When he'd sat a long while, the leaves of the herbs nearest him all leaned his way, like sunflowers towards the sun. The little zheng crouched at his feet, facing the dark, not making a sound.\n\nOn the night of the fifteenth, there was a rustle on top of the wall, and a head appeared. Xiaoman didn't move. The person sat astride the wall, looking all round, and when he looked Xiaoman's way, he stopped.\n\nIt was Old Wilt.\n\nUnder the moon, the two of them looked at each other across half the garden for a long time. One sitting among the spirit herbs, his face still bruised; one astride the wall, holding an empty cloth sack. Old Wilt's lips moved, and nothing came out. Slowly he backed down off the wall; his foot slipped, there was a thud outside the wall, and then footsteps going away with a limp.\n\nAfter it got light, Xiaoman found a piece of oiled paper in the grass at the foot of the wall, folded into a square, still smelling a little sweet, and on its corner was a red stamp: the stamp of that pastry shop in the county town. In the whole of the Sunken Cauldron Abbey, only one person could afford that shop's osmanthus cake. He tucked the oiled paper into the night-watch book."
+ },
+ "lines": [],
+ "buttons": [
+  "morning"
+ ],
+ "exits": [
+  {
+   "id": "morning",
+   "label": {
+    "zh": "十月廿二",
+    "en": "The twenty-second"
+   },
+   "means": "the half month's watch over; the morning the woodshed door is kicked in",
+   "beat": [],
+   "next": "wm-duizhang",
+   "needs": {
+    "task": "xunye-duanlei"
+   },
+   "refuse": {
+    "zh": "这一夜还没坐完。",
+    "en": "This night isn't sat out yet."
+   }
+  }
+ ]
+}

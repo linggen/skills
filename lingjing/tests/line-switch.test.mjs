@@ -136,7 +136,8 @@ test('古 → 今 keeps him where he stood: a 今 scene stands nowhere on the ma
   const before = atChaifang('wm-diyilu');
   // set down here by hand: loaded as a save is, the scene offers its board (喂饭桶 · 一根牛骨头, 2026-10-21) as arriving would
   let s = fitWorld({ ...before, done_scenes: before.done_scenes.filter((x) => x !== 'wm-diyilu') }, content);
-  s = walk(s, [...boardsFor(s, content, 'save'), ['resolve', { exit: 'save' }]], content, NOW);
+  // 第一路's way on, split 2026-10-26 (全文后的小游戏): the patrol, the hearing, the reckoning, the 饭桶's 保命 — each by its board
+  for (const exit of ['save', 'morning', 'reckoning', 'realm', 'enter']) s = walk(s, [...boardsFor(s, content, exit), ['resolve', { exit }]], content, NOW);
   assert.deepEqual([s.scene, s.place], ['j04-gym', 'chaifang']);
   const l = look(s, content, ctx);
   assert.equal(l.chapter.close?.id, 'h05', '第四回 · 完 first');

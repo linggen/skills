@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 550,
-  "wealth": 447,
+  "wealth": 482,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -137,10 +137,15 @@
    "wm-jiangtang",
    "wm-zhoutian",
    "wm-qingshi",
+   "wm-zhishi",
    "wm-yaoyuan",
    "wm-chaifang",
    "wm-danlu",
    "wm-diyilu",
+   "wm-xunye",
+   "wm-duizhang",
+   "wm-yan",
+   "wm-baoming",
    "j04-gym",
    "j04-line",
    "j04-dog",
@@ -343,12 +348,47 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "qingshi-yiquan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "zhishi-zhouheng": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "yaoyuan-xunye": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "yaoyuan-luobo": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "diyilu-niugu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "xunye-duanlei": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "duizhang-ahe": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "yan-tieshua": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "baoming-yinyue": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -427,8 +467,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 95,
-   "wealth": 450
+   "progress": 115,
+   "wealth": 485
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -884,8 +924,15 @@
   "root_main": "water",
   "boards_paid": [
    "zhoutian-sanguan",
+   "qingshi-yiquan",
+   "zhishi-zhouheng",
    "yaoyuan-xunye",
+   "yaoyuan-luobo",
    "diyilu-niugu",
+   "xunye-duanlei",
+   "duizhang-ahe",
+   "yan-tieshua",
+   "baoming-yinyue",
    "mijing-zhenyan",
    "anhe-dark",
    "xirang-wumen",
@@ -965,10 +1012,15 @@
    "wm-jiangtang",
    "wm-zhoutian",
    "wm-qingshi",
+   "wm-zhishi",
    "wm-yaoyuan",
    "wm-chaifang",
    "wm-danlu",
    "wm-diyilu",
+   "wm-xunye",
+   "wm-duizhang",
+   "wm-yan",
+   "wm-baoming",
    "j04-gym",
    "j04-line",
    "j04-dog",

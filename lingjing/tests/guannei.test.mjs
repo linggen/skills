@@ -7,7 +7,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, move, quest, task, win } from '../scripts/rules.mjs';
 import { resolve } from '../scripts/rules.mjs';
-import { TO_OPEN, walk } from './prologue.mjs';
+import { boardsFor, TO_OPEN, walk } from './prologue.mjs';
 
 const content = loadContent();
 const CH = content.chapters['00-waimen'];
@@ -26,12 +26,15 @@ const refused = (fn, s, args, code) => {
 const fresh = (s) => ({ ...s, stamina: 100, stamina_at: DAY1.toISOString() });
 function step(s, exit) {
   if (exit === 'breathe') { s = must(win, s, { id: 'zhoutian-sanguan' }); s = must(task, s, { action: 'done', id: 'zhoutian-sanguan' }); }
+  // whatever else the way on waits on (全文后的小游戏 2026-10-26: 一拳, 周衡), in the scene's `show` order
+  for (const [verb, args] of boardsFor(s, content, exit)) s = must(verb === 'win' ? win : task, s, args);
   return must(resolve, s, { exit });
 }
-/* Past 入门第一课: the 观 is his to walk (the next scene waits at the 药园). */
+/* Past 入门第一课 and 周衡's office (at 外门, 2026-10-26): the 观 is his to walk (the next scene waits at the 药园). */
 const roaming = () => {
   let s = fresh(walk(newState(content, 'zh', DAY1), TO_OPEN, content, DAY1));
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
+  s = step(must(move, s, { place: 'waimen' }), 'patrol');
   return fresh(s);
 };
 const GUAN = ['waimen', 'fantang', 'jiangtang', 'chaifang', 'yanwu', 'zhengdian', 'zhishi', 'cangjing', 'yaoyuan', 'houshan', 'shanmen'];

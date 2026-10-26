@@ -82,8 +82,8 @@ SUBJECTS = {
     'A long horizontal strip of a small silver-white fox\'s tail fur seen close, soft silvery fur running across the whole width, '
     'several stumps of broken tails along it, faint silver beads of liquid hanging from them, moonlight. Silver-grey ink wash.'),
   'rain/xue-palm': ('sprite', (360, 200), (1024, 576), 2,
-    'A boy\'s two cupped hands held together palm up with a scrap of patched grey cloth in them, seen from the front and a little '
-    'above. Muted ink and soft wash.'),
+    'A close-up of two small cupped hands only, palms up and pressed together at the wrists, a few silver drops shining in '
+    'them, seen from above. Only the hands and wrists, no face, no body. Muted ink and soft wash on plain paper.'),
   'rain/qiu-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of the edge of an indoor basketball court seen from the side: the bench, a row of plastic water '
     'bottles and a few basketballs along it. Grey ink wash and dark ink, modern setting drawn in old Chinese album style.'),
@@ -171,6 +171,19 @@ SUBJECTS = {
   'shiji/tuifeng-me': ('sprite', (360, 400), (768, 768), 1,
     'A thin Chinese boy of twelve crouching very low on all fours facing RIGHT, ready to crawl forward, a patched hemp '
     'jacket, straw sandals, hair in a small topknot. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/qingshi-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'A long horizontal strip of a bare rocky mountain clifftop seen from the side at night, flat stone ground with tufts of '
+    'grass, moonlight. Grey ink wash and dark ink.'),
+  'shiji/qingshi-idle': ('sprite', (560, 480), (1152, 1024), 1,
+    'ONE big rounded bluish-green boulder, taller than a man, its face covered in thick moss, standing alone, seen from the '
+    'side. Old Chinese landscape painting, ink lines and soft blue-green wash.'),
+  'shiji/qingshi-tell': ('sprite', (560, 480), (1152, 1024), 1,
+    'ONE big rounded bluish-green boulder, taller than a man, its face covered in thick moss, a faint warm glow of moonlight '
+    'on its near face, seen from the side. Old Chinese landscape painting, ink lines and soft blue-green wash.'),
+  'shiji/qingshi-me': ('sprite', (360, 560), (768, 1152), 2,
+    'A thin Chinese boy of thirteen standing facing RIGHT, feet planted, his right fist clenched and drawn back at his '
+    'waist ready to punch, a faint warm glow along his arm. A grey disciple\'s robe, hair in a small topknot. Old Chinese '
+    'storybook figure. Ink lines and soft grey wash.'),
   'shiji/luobo-stage': ('sprite', (960, 160), (1536, 256), 1,
     'A long horizontal strip of a mountain herb garden bed seen from the side at night, dark earth and low herb plants. '
     'Grey ink wash and dark ink.'),

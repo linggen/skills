@@ -27,7 +27,7 @@ function yaoyuan() {
   s = toldUpTo(content, s);
   s.tell_owed = [];
   s.told_scenes = [...new Set([...(s.told_scenes ?? []), s.scene])];
-  s.tasks = { ...s.tasks, 'yaoyuan-xunye': { status: 'done' } };
+  s.tasks = { ...s.tasks, 'yaoyuan-xunye': { status: 'done' }, 'yaoyuan-luobo': { status: 'done' } }; // and the 萝卜 (2026-10-26)
   s.skipped = [{ task: 'deer-wind', scene: null, line: null, day: '2026-10-24' }];
   s.stamina = 100;
   return look(s, content, { now: NOW, quests: [] });
