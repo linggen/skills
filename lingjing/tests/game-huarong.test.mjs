@@ -295,3 +295,33 @@ test('where a level comes from: data.levels, the registry by data.level, else mi
   const bad = newGame('m', 1, { levels: [{ id: 'bad', layouts: { 1: ['nope'] } }] });
   assert.deepEqual(bad.blocks, parseLayout(layouts[1][bad.layout]));
 });
+
+// The bot (games/bots/huarong.js) board-bots.mjs plays: the shortest way out of whatever board it is handed.
+test('the bot wins every mijing layout and a data level in the optimal count', async () => {
+  const { bot } = await import('../scripts/games/bots/huarong.js');
+  const { playOnce } = await import('../tools/board-bots.mjs');
+  const drive = (state) => {
+    for (let n = 0; n < 1000 && !state.won; n++) {
+      const a = bot(state);
+      assert.ok(a, 'the bot always has a next press');
+      state = act(state, a).state;
+    }
+    return state;
+  };
+  for (const [lv, list] of Object.entries(layouts))
+    list.forEach((grid, i) => {
+      const end = drive({ ...newGame('bot', Number(lv)), layout: i, blocks: parseLayout(grid) });
+      assert.equal(end.won, true, `mijing ${lv} #${i}`);
+      assert.equal(end.moves, OPTIMAL[lv][i], `mijing ${lv} #${i} in its optimal count`);
+    });
+  CROWD.layouts[1].forEach((grid, i) => {
+    const s = newGame('bot', 1, { levels: [CROWD] });
+    const end = drive({ ...s, layout: i, blocks: parseLayout(grid) });
+    assert.equal(end.won, true);
+    assert.equal(end.moves, CROWD_OPTIMAL[1][i]);
+  });
+  // …and through the human-like harness, the level dealt from data.
+  const mod = await import('../scripts/games/huarong.js');
+  const r = playOnce(mod, bot, { seed: 'bot-crowd', deal: { levels: [CROWD] } });
+  assert.equal(r.won, true);
+});
