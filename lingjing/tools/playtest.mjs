@@ -275,7 +275,9 @@ export async function crawl(opts) {
   }
   const report = { save, steps: 0, scenes: [], findings: rec.findings };
   try {
-    const q = new URLSearchParams({ save, ...(opts.from ? { seed: opts.from } : {}), ...(opts.days ? { days: opts.days } : {}) });
+    // `chat: 'off'` here too (10-26: the first load had none, so every crawl ran a real chat bound to its scratch
+    // save — Ling and 银月 answering each step on the model, and the engine slower for it)
+    const q = new URLSearchParams({ save, ...(opts.from ? { seed: opts.from } : {}), ...(opts.days ? { days: opts.days } : {}), chat: 'off' });
     await page.goto(`${base}/apps/lingjing/scripts/index.html?${q}`);
     await sleep(4000);
     for (; n < steps; n++) {
