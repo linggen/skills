@@ -100,3 +100,51 @@ test('the page: 收手 under a board he may leave, never under the story\'s own;
   assert.match(PAGE, /if \(view\.left\.length\) cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && view\.left\.some\(\(l\) => l\.id === c\.id\)\)\);/, 'never back up by itself');
   assert.match(PAGE, /left: view\.left\.filter\(\(l\) => l\.id !== id\)/, 'opened from the tray again, it stands');
 });
+
+/* ── Every board has a way out (Hanli 10-26: 「查一下, 有很多小游戏没有声音和退出」) ──
+   The story's own board: 「算了，往下走」 once stuck (its gate must be able to open: the clock, or its own `stuck`); any
+   other: 收手 at any moment. Never a board the story needs but no scene shows (it would get neither). The card draws
+   the way out for every kind of board — a chat (jinchat), the breath kit (qimai, its own mount), a Phaser kit. */
+import { stuckNow } from '../scripts/stuck.js';
+
+const boardTasks = content.tasks.tasks.filter((t) => t.kind === 'board');
+const allScenes = Object.values(content.chapters).flatMap((ch) => Object.values(ch.scenes ?? {}));
+const shownIds = new Set(allScenes.flatMap((sc) => (sc.show ?? []).filter((c) => c.card === 'board').map((c) => c.id)));
+const gameFile = (g) => new URL(`../scripts/games/${g}.js`, import.meta.url);
+
+test('no board the story needs is left with neither way out: every `needs.task` board is shown by a scene', () => {
+  const needed = allScenes.flatMap((sc) => (sc.exits ?? []).map((e) => e.needs?.task).filter(Boolean));
+  const hole = [...new Set(needed)].filter((id) => boardTasks.some((t) => t.id === id) && !shownIds.has(id));
+  assert.deepEqual(hole, [], 'needed by a way on, shown by no scene: no 「算了，往下走」 and no 收手');
+});
+
+test('every story board\'s game can open the stuck gate (the clock, or its own stuck)', async () => {
+  const shut = [];
+  for (const t of boardTasks.filter((x) => shownIds.has(x.id) && x.game && fs.existsSync(gameFile(x.game)))) {
+    const mod = await import(gameFile(t.game));
+    // The clock opens it after STUCK_MS; a board that opts out of the clock (讨饼债: her answers take a while) has its own
+    // `stuck` (no answer to be had, or the questions run out), which only a live play can show.
+    const g = { mod, state: null, shownAt: 0 };
+    if (!stuckNow(g, 10 * 60 * 1000) && typeof mod.stuck !== 'function') shut.push(`${t.id} (${t.game})`);
+  }
+  assert.deepEqual(shut, []);
+});
+
+test('the card draws the way out for every kind of board: the stuck slot under the story\'s own, 收手 under his', async () => {
+  const kinds = [...new Set(boardTasks.map((t) => t.game).filter((g) => g && fs.existsSync(gameFile(g))))].sort();
+  assert.ok(kinds.includes('jinchat') && kinds.includes('qimai') && kinds.includes('shouqiang'));
+  for (const game of kinds) {
+    const mod = await import(gameFile(game));
+    let state = null;
+    try { state = mod.html ? mod.newGame('t', 1, {}) : null; } catch { state = null; }
+    const g = { mod: { ...mod, stuck: () => true }, state, shownAt: 0 }; // stuck now: the drawing is what is held here
+    const id = `t-${game}`;
+    const page = (own) => ({ lang: 'zh', words: WORDS.zh, content: {}, reading: null, boardFor: () => g,
+      look: { tasks: [{ id, kind: 'board', game, title: game, ...(own ? {} : { leave: true }) }], scene: own ? { show: [{ card: 'board', id }] } : { show: [] } } });
+    const own = cardHtml({ card: 'board', id }, page(true));
+    assert.match(own, new RegExp(`class="gshell[^"]*" data-shell="${id}"`), `${game}: the shell's frame (its 🔊)`);
+    assert.match(own, new RegExp(`data-skip-slot="${id}"`), `${game}: the story's own board keeps the stuck slot`);
+    assert.match(own, new RegExp(`data-game-skip="${id}"`), `${game}: stuck, 「算了，往下走」 is drawn`);
+    assert.match(cardHtml({ card: 'board', id }, page(false)), new RegExp(`data-board-leave="${id}"[^>]*>收手<`), `${game}: his board offers 收手`);
+  }
+});

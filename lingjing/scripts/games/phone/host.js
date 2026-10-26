@@ -7,9 +7,10 @@
 //                    LingjingHost.go()          the lead card's 开始 was tapped
 //                    LingjingHost.pause(true)   the native pause button
 //                    LingjingHost.leave()       the player walked away (settles { left: true })
+//                    LingjingHost.mute(true)    the native 🔊 (the shell's one mute, kept in this webview: games/kit/sound.js)
 //                    LingjingHost.heard(id, '{"reply":"…"}' | '{"error":"…"}')   the answer to a `talk`
 //   page → Flutter   Linggen.postMessage(JSON) with { t: 'ready' | 'mounted' | 'lead' | 'say' | 'event' | 'talk' | 'stuck' | 'end' | 'error', … }
-//                    mounted { game }          the board's module is up (a lead card, if it has one, is asked for next)
+//                    mounted { game, muted }   the board's module is up (a lead card, if it has one, is asked for next); muted: the 🔊's state
 //                    lead  { text }            the story lines the lead card reads; the game starts when go() answers it
 //                    say   { who, text, ms }   a bubble over the field (台词预取's lines)
 //                    event { f }               the game's facts (start · wave · wave_cleared · boss · low · end …)
@@ -29,7 +30,7 @@
 // The shell's sound controller IS used (games/kit/sound.js through shellFor): a game names what happened, data says
 // what it sounds like, and the result chimes at the end. iOS wakes the AudioContext on the first touch in the page.
 import { forget, setPaused, settle, shellFor } from '../shell.js';
-import { unlockOn } from '../kit/sound.js';
+import { sound, unlockOn } from '../kit/sound.js';
 import { stuckNow } from '../../stuck.js';
 import { mountPure } from '../mount.js';
 
@@ -154,7 +155,7 @@ async function mountBoard(spec) {
   const picks = [];
   const story = game === 'kapai' ? { onMove: (token) => picks.push(token) } : undefined;
   const dealt = dealOf(game, data, task);
-  post({ t: 'mounted', game });
+  post({ t: 'mounted', game, muted: sound.settings().muted });
   // 「算了，往下走」 by the page's one rule (stuck.js): the board stood unwon long enough, or the game says so
   // (its `stuck(state)`; a pure board's state through mount.js `peek`).
   state = () => undefined;
@@ -208,6 +209,8 @@ globalThis.LingjingHost = {
   go: () => { go?.(); go = null; },
   pause: (on) => setPaused(ID, Boolean(on)),
   leave: () => abort?.abort(),
+  /// The bar's 🔊 (Hanli 10-26: every board, Mac and phone): both parts at once, as the Mac's shell button.
+  mute: (on) => { sound.mute(Boolean(on)); return sound.settings().muted; },
   /// The board's state as its mount shows it (the builder's drive and the stuck rule; undefined for a board that does not).
   state: () => state(),
   heard: (id, json) => {

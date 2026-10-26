@@ -23,6 +23,7 @@ export { admits, starsFor };
 
 export const meta = {
   id: 'bingzhai',
+  sounds: ['send', 'recv', 'good'], // what it names (games/kit/audio/sounds.json)
   name: { zh: '讨饼债', en: 'The flatbread debt' },
   how: { zh: '让她认下这笔饼债。', en: 'Make her own the flatbread debt.' },
   ai: true, // the other half is a model's (no bot plays it: tests/board-bots.test.mjs)
@@ -101,7 +102,7 @@ async function rowsOf(sid) {
   return rows.filter(([m]) => (m?.from === 'yinyue' && m.to === 'user') || (m?.from === 'user' && m.to === 'yinyue')).map(([m, t]) => [m.from, String(t ?? '')]);
 }
 
-export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
+export function mount(container, { data = {}, lang = 'zh', signal, shell } = {}) {
   const doc = container.ownerDocument, w = T[lang] ?? T.zh;
   styleOnce(doc);
   const max = Math.max(1, Number(data.exchanges) || 10), skipAfter = Math.max(1, Number(data.skip_after) || 4);
@@ -147,12 +148,13 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     // A line counted once, whoever sent it (this box, or the chat's own @银月 line).
     const counted = (q) => {
       r.asked += 1;
+      shell?.sound?.('send'); // a line asked, her answer: the chat's sounds (games/kit/audio/sounds.json)
       count();
       $('.g-tq-q').textContent = q;
       if (r.asked >= max) r.over = true;
     };
     // Her reply, wherever it came: shown, and checked here — has she owned the debt?
-    const heard = (line) => { say(line); if (admits(line)) r.won = true; };
+    const heard = (line) => { shell?.sound?.('recv'); say(line); if (admits(line)) { r.won = true; shell?.sound?.('good'); } };
     const awaitReply = async (sid, seenHers) => {
       const until = performance.now() + TIMEOUT_MS;
       while (performance.now() < until && !signal?.aborted) {

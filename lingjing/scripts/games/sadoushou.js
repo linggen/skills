@@ -16,6 +16,8 @@
 // offers 下一关. Nothing touches the save.
 export const meta = {
   id: 'sadoushou',
+  // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `sadoushou`; tests/game-sound.test.mjs).
+  sounds: ['pop', 'good', 'bad', 'thud', 'hit', 'slam', 'tick', 'go', 'win', 'lose'],
   pause: true, // the shell's bar pauses the play (tools/sadoushou/src/play.js setPaused)
   tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   aspect: 760 / 960, // the field's width : height on a Mac (the wide board, tools/sadoushou/src/view.js); a phone plays 9 : 16

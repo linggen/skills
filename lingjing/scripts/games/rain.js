@@ -43,6 +43,7 @@ import * as self from './rain.js';
 
 export const meta = {
   id: 'rain',
+  sounds: ['start', 'hit', 'miss', 'drip', 'spill', 'catch', 'flood', 'thick'], // the whack kit's (games/kit/audio/sounds.json)
   name: { zh: '接雨 · 十七个盆', en: 'Catching the rain · Seventeen basins' },
   how: {
     zh: '哪儿洇湿了、滴答了，就点哪儿摆盆；不漏的地方摆不了。那处不漏了，盆自己回到手边。',
@@ -252,6 +253,23 @@ export function act(state, data = {}) {
   const next = VERBS[data.g]?.(fit(state), data);
   if (!next) return { state, won: false };
   return { state: next, won: next.won === true };
+}
+
+/** What a step sounded (games/kit/heard.js): a basin set down (hit), a wasted trip (miss), a drop in a basin (drip) or on
+    the floor (spill), a basin carried to the 水缸 (catch), the floor a river (flood), the rain coming on harder (thick). */
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  const out = [];
+  if (!b.live && a.live) out.push('start');
+  if (a.note !== b.note && a.note === 'placed') out.push('hit');
+  if ((a.busy ?? 0) > (b.busy ?? 0)) out.push('miss');
+  if ((a.floods ?? 0) > (b.floods ?? 0)) return [...out, 'flood'];
+  const filled = (s) => (s.basins ?? []).reduce((t, x) => t + (x ?? 0), 0);
+  if ((a.caught ?? 0) > (b.caught ?? 0)) out.push('catch');
+  else if (filled(a) > filled(b)) out.push('drip');
+  if ((a.puddles ?? 0) > (b.puddles ?? 0)) out.push('spill');
+  if (a.note !== b.note && /^thick/.test(a.note ?? '')) out.push('thick');
+  return out;
 }
 
 /* The night lost: the floor a river, every basin back, the same rain again after a breath. */

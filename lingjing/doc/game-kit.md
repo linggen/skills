@@ -102,9 +102,14 @@ first resident; `scripts/games/kit/` is where the shared assets live).
 - **Settings:** 音效 and 音乐 under the pause veil, on/off and a volume each, one for every game
   (`localStorage lingjing.sound`), music quiet by default. 砸寨's own audio settings are inert now: its players send
   every name to the shell (`ShellSoundAdapter.ts`), and its old sprite and its music are gone.
-- **Wired so far:** 守墙关 (its scene's core events), 守山门 and 撒豆成兵 (their `sfx.js` forwards each name),
-  守炉 (its core's events), 砸寨 (its sprite keys), 开炉. The rope kit, 气走经脉, 接雨 and 斗法 have their bed and
-  the shell's moments; their own events come next.
+- **Every game names its sounds (10-26, 「有很多小游戏没有声音和退出」).** `meta.sounds` lists what a game names; a
+  pure board names it with `sounds(before, after)` — two states in, names out — and every runner of a pure board
+  (`games/mount.js` off the story, `live-games.js` and the page's taps on it) sounds each act and tick through
+  `games/kit/heard.js`; a press it names nothing for is the shell's `tap` or `nope`. A game with its own loop calls
+  `shell.sound` itself (气走经脉 from a snapshot of its counts, 斗法 each log entry as `playLog` draws it, the chats, the
+  结印 games). The story's pure boards get their shell (sounds, bed) and chime on a win as the 游戏厅's do; the story's
+  card fight and herb board too. Locked by tests/game-sound.test.mjs: every registry game declares names, each a real
+  sound, its `meta.id` its file's, and a pure board's bot play names its own.
 
 ## Play kits
 

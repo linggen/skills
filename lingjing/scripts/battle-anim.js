@@ -380,8 +380,9 @@ function exchanged(entries) {
 
 /* Replay one stretch of the log. `root` is the battle element as it stands
    NOW — the state has already moved; this only draws what got it there. */
+/* `ctx.onEntry(t)`: each entry as it is drawn (the fight's sound, games/kapai.js) — every one, drawn or skipped. */
 export async function playLog(root, entries, ctx = {}) {
-  if (ctx.skip || !root) return;
+  if (ctx.skip || !root) { for (const t of entries ?? []) ctx.onEntry?.(t); return; }
   raiseGhosts(root, ctx.ghosts);
   const held = holdPools(root, ctx.ghosts?.hp);
   try { await replay(root, entries, { ...ctx, held }); } finally { held.release(); }
@@ -400,6 +401,7 @@ async function replay(root, entries, ctx) {
       struck = true;
       await stroke(root, ctx.ghosts.from, spotOf(root, t), t.element);
     }
+    try { ctx.onEntry?.(t); } catch { /* a sound never stops the fight */ }
     switch (t.act) {
       case 'drew': {
         await flyCard(root, t.who === 'foe' ? 'theirs' : 'mine');

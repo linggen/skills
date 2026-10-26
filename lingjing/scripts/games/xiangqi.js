@@ -9,6 +9,7 @@
 
 export const meta = {
   id: 'xiangqi',
+  sounds: ['pick', 'move', 'capture', 'reply', 'bad'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)
   name: { zh: '象棋残局', en: 'Xiangqi endgame' },
   how: {
     zh: '执红先行，点棋子再点落点，在限定步数内将死黑将。',
@@ -265,4 +266,16 @@ export function html(state, lang = 'zh') {
     + `<div class="g-xiangqi-board">${boardSvg()}<div class="g-xiangqi-grid">${cells.join('')}</div></div>`
     + `<div class="g-xiangqi-foot"><span class="g-xiangqi-status">${status}</span>${again}</div>`
     + `</div>`;
+}
+
+/** What a step sounded (games/kit/heard.js): a red piece picked (pick), moved (move) or taking one (capture), black's
+    answer (reply), the puzzle lost (bad). */
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  const out = [];
+  const pieces = (s) => [...String(s.board ?? '')].filter((c) => c !== '.').length;
+  if (a.last && a.last !== b.last) out.push(pieces(a) < pieces(b) ? 'capture' : a.last.side === 'b' ? 'reply' : 'move');
+  else if (a.sel !== b.sel) out.push('pick');
+  if (a.outcome === 'lost' && b.outcome !== 'lost') out.push('bad');
+  return out;
 }

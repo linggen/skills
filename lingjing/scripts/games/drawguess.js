@@ -17,6 +17,7 @@ import { askInChat, declaredBlind, reachable } from './drawguess-ling.js';
 
 export const meta = {
   id: 'drawguess',
+  sounds: ['stroke', 'recv', 'good'], // what it names (games/kit/audio/sounds.json)
   name: { zh: '画猜 · 你画我猜', en: 'Draw · they guess' },
   how: { zh: '照字画。手一停，猜的人就看一眼。', en: 'Draw the word. Rest your hand and they look.' },
   ai: true, // the other half is a model's (no bot plays it: tests/board-bots.test.mjs)
@@ -230,7 +231,7 @@ function log(row) {
 
 // ── the game ───────────────────────────────────────────────────────────────────────────────
 
-export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
+export function mount(container, { data = {}, lang = 'zh', signal, shell } = {}) {
   const doc = container.ownerDocument;
   const w = T[lang] ?? T.zh;
   styleOnce(doc);
@@ -366,6 +367,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     if (g.phase === 'ready' && !goBtn.disabled) { e.preventDefault(); await begin(); }
     if (g.phase !== 'draw') return;
     e.preventDefault();
+    shell?.sound?.('stroke'); // a stroke begun, her guess, right: what it names (games/kit/audio/sounds.json)
     try { canvas.setPointerCapture(e.pointerId); } catch { /* the canvas still hears it */ }
     g.cur = [at(e)];
     if (g.tool === 'eraser') g.cur.erase = true;
@@ -429,6 +431,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     log({ kind: 'guess', who: g.who, word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, zh: p.zh, en: p.en });
     g.note = '';
     if (p.guess) g.guesses.push(p.guess);
+    shell?.sound?.(ok ? 'good' : 'recv');
     sayParsed(p.zh || p.en ? p : { zh: p.guess, en: null });
     if (ok) end(true);
   };

@@ -39,6 +39,13 @@ export function tap(board, i) {
   return false;
 }
 
+/** A tap, and what it sounded (games/kit/sound.js, the board kit's names): a pair made (`match`), a herb picked or put
+    back (`pick`), or nothing to take (`nope`). The story's herb board and the 游戏厅's lianliankan sound alike. */
+export function tapHeard(board, i) {
+  const gone = board.gone.size, sel = board.sel, won = tap(board, i);
+  return { won, event: board.gone.size > gone ? 'match' : board.sel !== sel ? 'pick' : 'nope' };
+}
+
 export function boardHtml(board, words) {
   if (board.won) return `<div class="dim small">${esc(words.boardDone)}</div>`;
   const tiles = board.tiles.map((h, i) => {

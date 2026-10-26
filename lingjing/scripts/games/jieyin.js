@@ -29,6 +29,7 @@ import { facingLine, handHint } from './jieyin/hint.js';
 
 export const meta = {
   id: 'jieyin',
+  sounds: ['seal', 'cast', 'fizzle', 'miss', 'done', 'hit'], // the seal kit's (games/kit/audio/sounds.json)
   pause: true, // the shell's pause stops the camera
   camera: true,
   name: { zh: '结印', en: 'Hand seals' },
@@ -230,6 +231,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         foe.querySelectorAll('.jy-hp i').forEach((el, i) => el.classList.toggle('is-gone', i >= hp));
         foe.querySelector('img').src = art.foe('hit');
         foe.classList.add('is-hit');
+        shell?.sound?.('hit');
         say(w.hit);
         await new Promise((r) => setTimeout(r, 420));
         foe.classList.remove('is-hit');
@@ -258,6 +260,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         say(tr(level.cast.say, lang) || w.learned);
       };
       const act = (ev) => {
+        shell?.sound?.(ev.type); // a seal, the cast, a fizzle, a miss, done: the seal kit's (games/kit/audio/sounds.json)
         if (ev.type === 'seal') { const el = box.querySelector(`.jy-slot[data-i="${ev.at}"]`); el?.classList.remove('is-pop'); void el?.offsetWidth; el?.classList.add('is-pop'); }
         if (ev.type === 'cast') cast(ev.used);
         if (ev.type === 'fizzle') { burnt(box, $('.jy-xm'), reducedMotion); hint.fizzle(); say(w.fizzle); }

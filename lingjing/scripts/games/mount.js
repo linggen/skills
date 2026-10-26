@@ -16,10 +16,12 @@
 // act · html, and `tick` when it runs in time): it runs the module's clock, its taps (on pointerdown
 // while it runs in time, as live-games.js does), its holds and its strokes — all scoped to the
 // container, so a game on the 游戏厅 page and the same game on the story's stage play alike.
-// `shell` (games/shell.js `shellFor`): while the shell is paused the clock stops and the board takes no hands.
+// `shell` (games/shell.js `shellFor`): while the shell is paused the clock stops and the board takes no hands; every act and
+// tick sounds what it made through it (games/kit/heard.js: the module's own `sounds`, else a press's tap or nope).
 // Nothing here knows a game.
 import { answered, morph, sceneAt, tapGate, tapInk, tapNope } from '../live-games.js';
 import { crosses, stroke } from './swipe.js';
+import { sounded } from './kit/heard.js';
 
 const STEP = 50;
 const WIN_HOLD = 1600; // the won frame (its seal) stands this long before the game settles
@@ -64,8 +66,10 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       const before = el ? mod.html(g.state, lang) : null, was = g.state;
       const r = mod.act(g.state, d);
       g.state = r.state ?? g.state;
-      if (el && !answered(before, mod.html(g.state, lang), r)) tapNope(doc, el); // never a silent tap
-      else if (refused && g.state === was && !r.send) tapNope(doc, refused);
+      let press = el ? 'tap' : null;
+      if (el && !answered(before, mod.html(g.state, lang), r)) { tapNope(doc, el); press = 'nope'; } // never a silent tap
+      else if (refused && g.state === was && !r.send) { tapNope(doc, refused); press = 'nope'; }
+      sounded(shell, mod, was, g.state, press);
       paint();
       check();
     };
@@ -73,7 +77,9 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       const now = performance.now(), dt = Math.min(250, now - last);
       last = now;
       if (!live(mod, g.state) || doc.visibilityState !== 'visible' || paused()) return;
+      const was = g.state;
       g.state = mod.tick(g.state, dt);
+      sounded(shell, mod, was, g.state);
       paint();
       check();
     }, STEP);

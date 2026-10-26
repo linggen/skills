@@ -16,11 +16,14 @@
 import { Matter } from './physics.js';
 import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
-import { blowGust, buildWorld, cutVine, dist, outOf, stepWorld, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
+import { blowGust, buildWorld, cutVine, dist, outOf, ropeSounds, stepWorld, ROPE_SOUNDS, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
 
 const { Body } = Matter;
 
+/** What a step sounded (games/kit/heard.js): the rope kit's, as every 割绳子 board's. */
+export const sounds = ropeSounds;
 export const meta = {
+  sounds: ROPE_SOUNDS,
   id: 'bread',
   name: { zh: '喂饼 · 那张厚饼', en: 'The flatbread · Down to the fox' },
   how: {

@@ -120,7 +120,7 @@ test('every game in the registry can be hosted in the shell, and every place a g
   const page = read('../scripts/lingjing.js');
   assert.match(page, /kapai\.mount\(node, \{ data: \{ setup: b\.setup, brief: b\.brief, st: b\.st, catalog: cardCatalog\(\) \}/);
   assert.match(page, /focus\.innerHTML = frameHtml\(\{ id, title: duelTitle/);
-  assert.match(page, /shell: shellFor\(fightShell\(b\)\), story: boutHooks\(b\)/);
+  assert.match(page, /shell: shellFor\(fightShell\(b\), 'kapai'\), story: boutHooks\(b\)/);
   assert.doesNotMatch(page, /wireDrag\(|battleHtml\(|\['\[data-spot\]'/, 'no second room, drag or tap route on the page');
   for (const page of ['index.html', 'arcade.html', 'try-game.html']) assert.match(read(`../scripts/${page}`), /games\/shell\.css/, page);
   // Pause reaches every clock a game runs on: the pure boards' (mountPure) and 气走经脉's own frame loop.

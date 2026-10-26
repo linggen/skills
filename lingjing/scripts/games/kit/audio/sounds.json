@@ -674,6 +674,16 @@
   "result.star": {
    "sound": "tone.star",
    "min": 120
+  },
+  "tap": {
+   "sound": "ui.click",
+   "min": 60,
+   "vol": 0.5
+  },
+  "nope": {
+   "sound": "ui.error",
+   "min": 150,
+   "vol": 0.45
   }
  },
  "kits": {
@@ -734,7 +744,18 @@
      "sound": "ui.pluck",
      "min": 80
     },
-    "eat": "tone.good"
+    "eat": "tone.good",
+    "gust": "tone.whoosh",
+    "pop": "tone.pop",
+    "star": {
+     "sound": "tone.star",
+     "min": 100
+    },
+    "miss": "tone.bad",
+    "lay": {
+     "sound": "ui.drop",
+     "vol": 0.5
+    }
    }
   },
   "flight": {
@@ -744,7 +765,14 @@
      "sound": "tone.pop",
      "min": 60
     },
-    "crash": "hit.soft.heavy"
+    "crash": "hit.soft.heavy",
+    "cha": "tone.bad",
+    "cp": "tone.chime",
+    "beat": {
+     "sound": "hit.soft",
+     "min": 200,
+     "vol": 0.6
+    }
    }
   },
   "whack": {
@@ -758,7 +786,20 @@
      "sound": "ui.drop",
      "min": 50
     },
-    "miss": "ui.error"
+    "miss": "ui.error",
+    "start": "tone.go",
+    "drip": {
+     "sound": "ui.drop",
+     "min": 90,
+     "vol": 0.35
+    },
+    "spill": {
+     "sound": "hit.soft",
+     "min": 120,
+     "vol": 0.5
+    },
+    "flood": "tone.lose",
+    "thick": "tone.warn"
    }
   },
   "card": {
@@ -781,12 +822,111 @@
    "music": null,
    "events": {
     "cast": "tone.cast",
-    "fail": "tone.bad"
+    "fail": "tone.bad",
+    "seal": {
+     "sound": "ui.pluck",
+     "min": 80
+    },
+    "fizzle": "tone.fire",
+    "miss": {
+     "sound": "ui.error",
+     "min": 150,
+     "vol": 0.6
+    },
+    "done": "tone.good",
+    "hit": "hit.punch.heavy",
+    "dry": {
+     "sound": "ui.error",
+     "min": 800,
+     "vol": 0.5
+    },
+    "fade": "tone.bad",
+    "kou": "tone.chime",
+    "boss": "hit.bell",
+    "escape": {
+     "sound": "step.grass",
+     "min": 200,
+     "vol": 0.6
+    }
    }
   },
   "board": {
    "music": null,
-   "events": {}
+   "events": {
+    "start": "tone.go",
+    "pick": {
+     "sound": "ui.select",
+     "min": 60,
+     "vol": 0.6
+    },
+    "place": "card.place",
+    "lift": {
+     "sound": "ui.back",
+     "vol": 0.6
+    },
+    "move": {
+     "sound": "hit.wood.light",
+     "min": 50
+    },
+    "turn": {
+     "sound": "ui.pluck",
+     "min": 60,
+     "vol": 0.6
+    },
+    "match": "tone.chime",
+    "capture": "hit.wood.heavy",
+    "reply": {
+     "sound": "hit.wood.light",
+     "vol": 0.7
+    },
+    "good": "tone.good",
+    "bad": "tone.bad",
+    "hurt": {
+     "sound": "hit.punch",
+     "min": 80
+    },
+    "early": {
+     "sound": "ui.error",
+     "min": 150,
+     "vol": 0.5
+    },
+    "short": {
+     "sound": "ui.error",
+     "min": 150,
+     "vol": 0.5
+    },
+    "tell": "tone.whoosh",
+    "beat": {
+     "sound": "tone.tick",
+     "min": 120
+    },
+    "sneeze": "hit.soft",
+    "hold": {
+     "sound": "cloth",
+     "vol": 0.6
+    },
+    "step": {
+     "sound": "step.grass",
+     "min": 80
+    },
+    "loud": {
+     "sound": "hit.stone",
+     "vol": 0.6
+    },
+    "trip": "hit.soft.heavy",
+    "bet": "coins",
+    "open": "door",
+    "send": "tone.pop",
+    "recv": {
+     "sound": "ui.pluck",
+     "min": 120
+    },
+    "stroke": {
+     "sound": "blade.draw",
+     "min": 400,
+     "vol": 0.4
+    }
+   }
   }
  },
  "games": {
@@ -1125,7 +1265,41 @@
    "kit": "whack"
   },
   "kapai": {
-   "kit": "card"
+   "kit": "card",
+   "events": {
+    "drew": {
+     "sound": "card.flip",
+     "min": 90
+    },
+    "played": "card.place",
+    "summoned": "card.place",
+    "power": "tone.cast",
+    "pill": "tone.chime",
+    "hurt": {
+     "sound": "hit.punch",
+     "min": 60
+    },
+    "hurt-minion": {
+     "sound": "hit.punch",
+     "min": 60,
+     "vol": 0.7
+    },
+    "hurt-ally": {
+     "sound": "hit.punch",
+     "min": 60,
+     "vol": 0.7
+    },
+    "heal": "tone.chime",
+    "charge": "tone.warn",
+    "unleash": "tone.boom",
+    "dodged": "tone.whoosh",
+    "withdrew": "hit.soft.heavy",
+    "mana": {
+     "sound": "coins",
+     "min": 200,
+     "vol": 0.5
+    }
+   }
   },
   "jieyin": {
    "kit": "seal"

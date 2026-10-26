@@ -25,6 +25,7 @@ import { inkView } from './texie/ink.js';
 
 export const meta = {
   id: 'texie',
+  sounds: ['cast'], // the seal kit's (games/kit/audio/sounds.json)
   pause: true, // the shell's pause stops the camera
   camera: true,
   name: { zh: '施法特写', en: 'Casting close-up' },
@@ -211,7 +212,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           ps = p.state;
           panel.dataset.phase = ps.phase;
           box.dataset.cast = c.cast ?? box.dataset.cast ?? '';
-          if (castNow) cast();
+          if (castNow) { shell?.sound?.('cast'); cast(); }
           const line = !seen && ps.phase === 'hidden' && !busy ? w.raise : busy && !shell?.say ? null : '';
           if (line != null && $('.tx-status').textContent !== line) status(line);
           const glyph = sealNow ? table[sealNow]?.glyph ?? '' : '';

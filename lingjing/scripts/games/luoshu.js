@@ -3,6 +3,7 @@
 
 export const meta = {
   id: 'luoshu',
+  sounds: ['pick', 'place', 'lift', 'nope'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)
   name: { zh: '洛书九宫', en: 'The Luo Shu square' },
   how: {
     zh: '选一数，点空格落下；横竖斜皆合十五，封印自破。',
@@ -147,4 +148,15 @@ export function html(state, lang = 'zh') {
     ? `<div class="g-luoshu-solved">${esc(state.solved ?? t.solved)}</div>`
     : `${trayHtml(state)}<div class="g-luoshu-note${state.ask ? ' is-ask' : ''}">${state.ask ? t.ask : t.clear}</div>`;
   return `<div class="g-luoshu${state.won ? ' is-won' : ''}">${board}${anti}${bottom}</div>`;
+}
+
+/** What a step sounded (games/kit/heard.js): a number taken from the tray (pick), set in a cell (place) or lifted out
+    (lift), a cell tapped with nothing in hand (nope). */
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  const n = (s) => (s.cells ?? []).filter(Boolean).length;
+  if (n(a) > n(b)) return ['place'];
+  if (n(a) < n(b)) return ['lift'];
+  if ((a.ask ?? 0) > (b.ask ?? 0)) return ['nope'];
+  return a.pick !== b.pick ? ['pick'] : [];
 }

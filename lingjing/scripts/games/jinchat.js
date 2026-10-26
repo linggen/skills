@@ -26,6 +26,7 @@ import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './
 
 export const meta = {
   id: 'jinchat',
+  sounds: ['send', 'recv'], // what it names (games/kit/audio/sounds.json)
   name: { zh: '聊天 · 今线', en: 'Chat · the present line' },
   how: { zh: '打字，回他们。', en: 'Type, and answer them.' },
   ai: true, // the other half is a model's (no bot plays it)

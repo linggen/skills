@@ -63,6 +63,8 @@ export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside,
 
 export const meta = {
   id: 'shoulu',
+  // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `shoulu`; tests/game-sound.test.mjs).
+  sounds: ['build', 'hit', 'bite', 'wave', 'howl', 'pounce', 'foxfire', 'hair', 'throw', 'snap', 'feed', 'kill', 'zap', 'boom', 'heroDown', 'heroUp', 'cry', 'low', 'early'],
   pause: true, // the shell's bar pauses the play (its own loop reads `shell.onPause`)
   tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   aspect: 600 / 760, // the field's width : height — the story's card is as wide as the field at the stage's height

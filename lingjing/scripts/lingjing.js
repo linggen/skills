@@ -22,7 +22,8 @@ let arcadeDeal = { row: null, title: null };
 import { plateHtml } from './plate.js';
 import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
-import { newBoard, tap } from './board.js';
+import { newBoard, tapHeard } from './board.js';
+import { sounded } from './games/kit/heard.js';
 import { REALMS, begin, missingCards, view as boutView } from './battle.js';
 import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
@@ -71,7 +72,7 @@ import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost, mountOnly } from './beat-host.js';
 import { fellBack, probeCaps, withCaps } from './caps.js';
-import { anyPaused, forget as forgetShell, frameHtml, isPaused, say as shellSay, setPaused, shellFor, timedOf, wireShell } from './games/shell.js';
+import { anyPaused, forget as forgetShell, frameHtml, isPaused, say as shellSay, setPaused, settle as settleShell, shellFor, timedOf, wireShell } from './games/shell.js';
 import { fenceBoards } from './board-fence.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -3259,15 +3260,17 @@ function gameMove(gmove) {
   const g = boardFor(ghost.dataset.game);
   if (!g) return true;
   if (g.state.wait) return true; // the rival's turn: taps wait for the reply
-  const before = g.mod.html ? g.mod.html(g.state, lang()) : null;
+  const before = g.mod.html ? g.mod.html(g.state, lang()) : null, was = g.state;
   const r = g.mod.act(g.state, { ...gmove.dataset });
   g.state = r.state;
-  if (before != null && !answered(before, g.mod.html(g.state, lang()), r)) tapNope(document, gmove); // never a silent tap
+  let press = 'tap';
+  if (before != null && !answered(before, g.mod.html(g.state, lang()), r)) { tapNope(document, gmove); press = 'nope'; } // never a silent tap
+  sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state, press); // its sound, as off the story (games/kit/heard.js)
   render();
   // A board the rules judge hands back a verb to run (`send`) and a turn to 银月 (`her`) — never a win of its own.
   if (r.her) boardAsksHer(g);
   if (r.send) { g.sent = true; run(`send:${g.taskId}:${r.send.args?.action ?? ''}`, () => boardSends(g, r.send)); return true; }
-  if (r.won && !g.sent) { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); }
+  if (r.won && !g.sent) { g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); run(`win:${g.taskId}`, () => onWin(g.taskId)); }
   if (r.state.wait && g.mod.think) rivalTurn(g);
   return true;
 }
@@ -3276,7 +3279,9 @@ function gameMove(gmove) {
    hears that the old pages here are hers to read (her own tool, Mishi, carries them — never this page). */
 async function boardSends(g, send) {
   const res = await write(send.verb, send.args ?? {}).catch(failed);
+  const was = g.state;
   if (g.mod.heard) g.state = g.mod.heard(g.state, res);
+  sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state);
   render();
   if (res?.ok && res.opened) tellYinyue('mishi', MISHI_FACT.zh, MISHI_FACT.en, { mood: 'neutral' });
   else if (res?.ok && res.right && !res.out) tellYinyue('mishi', MISHI_STEP.zh, MISHI_STEP.en, { mood: 'happy' });
@@ -3321,16 +3326,18 @@ const think = thinker(() => new Worker(new URL('./think-worker.js', import.meta.
 function rivalTurn(g) {
   const asked = g.state;
   think(g.mod, asked)
-    .then((m) => { if (stillAsked(boards, g, asked)) { g.state = g.mod.answer(asked, m); render(); } })
+    .then((m) => { if (stillAsked(boards, g, asked)) { g.state = g.mod.answer(asked, m); sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, asked, g.state); render(); } })
     .catch((e) => console.warn('[lingjing] rival', g.taskId, e));
 }
 function tileTap(tile) {
   const host = tile.closest('[data-board]');
   if (!host) return false;
   const board = boardFor(host.dataset.board);
-  const cleared = tap(board, Number(tile.dataset.tile));
+  // The herbs sound as the 游戏厅's lianliankan does (board.js tapHeard), and the furnace made chimes (the shell's settle).
+  const { won: cleared, event } = tapHeard(board, Number(tile.dataset.tile));
+  shellFor(board.taskId, 'lianliankan').sound(event);
   render();
-  if (cleared && !board.sent) { board.sent = true; run(`win:${board.taskId}`, () => onWin(board.taskId)); }
+  if (cleared && !board.sent) { board.sent = true; settleShell(board.taskId, { won: true }); forgetShell(board.taskId); run(`win:${board.taskId}`, () => onWin(board.taskId)); }
   return true;
 }
 /* A word from the stage, said as his own line in the chat. */
@@ -3513,7 +3520,10 @@ const CLICKS = [
 // The shell's pause (games/shell.js) stops a board's clock and hands as 回看 does; its buttons are heard once, here.
 wireShell(document);
 fenceBoards();
-wireLiveGames({ boardFor, lang, paused: () => popOpen() || anyPaused(), onWon: (g) => { g.sent = true; forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
+// Its sounds and its kit's bed are the shell's (shellOf, by the module's id), and its win chimes (settle) as every board's does.
+wireLiveGames({ boardFor, lang, paused: () => popOpen() || anyPaused(),
+  shellOf: (id, g) => shellFor(id, g.mod?.meta?.id), onGone: (id) => forgetShell(id),
+  onWon: (g) => { g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 /* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
 function beatSettled(g, result) {
   if (g.left) return; // put down (收手): nothing to settle
@@ -3863,7 +3873,7 @@ function mountBout(b) {
   b.node = node;
   forgetShell(fightShell(b));
   const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
-  Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog() }, lang: lang(), reducedMotion, shell: shellFor(fightShell(b)), story: boutHooks(b) }))
+  Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog() }, lang: lang(), reducedMotion, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
     .then((out) => settleBout(b, out))
     .catch((e) => { console.warn('[lingjing] the fight room', e); return settleBout(b, { r: failed(e) }); });
 }
@@ -4735,6 +4745,7 @@ if (SCRATCH) {
       if (!g || g.sent) return false;
       if (g.state) g.state = { ...g.state, won: true, live: false, grade };
       g.sent = true;
+      settleShell(id, { won: true, stars: g.state?.stars ?? null }); // its chime, as a played win's (a mount board's beat-host settles it)
       render();
       run(`win:${id}`, () => onWin(id));
       return true;

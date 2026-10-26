@@ -20,6 +20,8 @@
 // level is dealt again in place under the lead card. Without a level asked for, the fort select is the start.
 export const meta = {
   id: 'zhazhai',
+  // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `zhazhai`; tests/game-sound.test.mjs).
+  sounds: ['impactWoodLight', 'impactWoodMedium', 'impactWoodHeavy', 'impactGlassLight', 'impactGlassMedium', 'impactGlassHeavy', 'impactMetalLight', 'impactMetalMedium', 'impactMetalHeavy', 'impactStoneLight', 'impactStoneMedium', 'impactStoneHeavy', 'pigDestroy01', 'pigDestroy02', 'pigDestroy03', 'pigDestroy04', 'pigDestroy05', 'pigDestroy06', 'pigDestroy07', 'pigDestroy08', 'pigDestroy09', 'pigDestroy10', 'click', 'select', 'back', 'drop', 'pluck', 'birdLaunch', 'birdImpact', 'explosion', 'birdSplit', 'jingleWin', 'jingleLose'],
   name: { zh: '砸寨', en: 'Smash the Fort' },
   how: {
     zh: '往后拉弹弓，松手，砸塌黄鼠狼精的寨子；飞行中点一下，各有一手。',

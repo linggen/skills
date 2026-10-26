@@ -7,5 +7,6 @@ export const act = game.act;
 export const tick = game.tick;
 export const html = game.html;
 export const stuck = game.stuck;
+export const sounds = game.sounds;
 export const paceOf = game.paceOf;
 export const mount = game.mount;

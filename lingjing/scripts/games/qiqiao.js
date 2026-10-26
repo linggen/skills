@@ -4,6 +4,7 @@
 const LACQUER = new URL('./boards/qq-lacquer.webp', import.meta.url).href;
 export const meta = {
   id: 'qiqiao',
+  sounds: ['pick', 'turn', 'place', 'lift', 'nope'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)
   name: { zh: '七巧板', en: 'Tangram' },
   how: {
     zh: '点一块选中，再点转向，对准阵位落子；七位皆满，阵成。',
@@ -215,4 +216,16 @@ export function html(state, lang = 'zh') {
     + `<div class="qq-slots">${slots}</div>`
     + `<p class="qq-msg${state.refused ? ' is-refused' : ''}">${msg}</p>`
     + `<div class="qq-tray">${tray}</div><div class="qq-tools">${tools}</div></div>`;
+}
+
+/** What a step sounded (games/kit/heard.js): a piece picked (pick) or turned/flipped (turn), set in its place (place) or
+    lifted out (lift), refused by the silhouette (nope). */
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  const n = (s) => (s.slots ?? []).filter((x) => x != null).length;
+  if (a.refused) return ['nope'];
+  if (n(a) > n(b)) return ['place'];
+  if (n(a) < n(b)) return ['lift'];
+  if (a.sel !== b.sel) return ['pick'];
+  return (a.moves ?? 0) > (b.moves ?? 0) ? ['turn'] : [];
 }

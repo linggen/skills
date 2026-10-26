@@ -104,7 +104,25 @@ export const LEVEL = {
   art: { stage: 'sneeze/stage.webp', idle: 'sneeze/heqi-guard.webp', tell: 'sneeze/heqi-punch.webp', me: 'sneeze/xiaoman.webp' },
 };
 
-export const meta = { id: 'sneeze', name: LEVEL.name, how: LEVEL.how };
+export const meta = { id: 'sneeze', name: LEVEL.name, how: LEVEL.how, sounds: ['start', 'good', 'hurt', 'early', 'bad', 'short', 'tell', 'beat', 'sneeze', 'hold'] };
+
+/** What a step sounded (games/kit/heard.js): a step done (good), the fist landing (hurt), too soon (early), held too long
+    (bad) or too short (short), the shoulder dropping (tell), a count's beat and its 「嚏！」, the breath taken (hold). */
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  const out = [];
+  if (b.phase === 'ready' && a.phase !== 'ready') out.push('start');
+  if (a.step > b.step || (a.won && !b.won)) out.push('good');
+  if (a.hits > b.hits) out.push('hurt');
+  if (a.early > b.early) out.push('early');
+  if (a.over > b.over) out.push('bad');
+  if (a.note === 'short' && b.held != null && a.held == null) out.push('short');
+  if (a.held != null && b.held == null) out.push('hold');
+  if (a.note !== b.note && a.note === 'tell') out.push('tell');
+  if (a.part === 'choo' && b.part !== 'choo') out.push('sneeze');
+  else if (a.k !== b.k || (a.note !== b.note && /^s\d+$/.test(a.note ?? ''))) out.push('beat');
+  return out;
+}
 
 /* ── The level ─────────────────────────────────────────────────────────────────────────────── */
 

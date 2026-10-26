@@ -13,6 +13,8 @@
 // next one (`next`, its id) so the shell offers 下一关. Nothing touches the save.
 export const meta = {
   id: 'sadou',
+  // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `sadou`; tests/game-sound.test.mjs).
+  sounds: ['pop', 'good', 'bad', 'thud', 'hit', 'slam', 'tick', 'go', 'win', 'lose'],
   pause: true, // the shell's bar pauses the play (tools/sadou/src/play.js setPaused)
   tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   aspect: 9 / 16, // the field's width : height — the story's card is as wide as the field at the stage's height

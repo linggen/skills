@@ -13,6 +13,7 @@ const DOOR_ART = new URL('./boards/', import.meta.url).href;
 
 export const meta = {
   id: 'yabao',
+  sounds: ['bet', 'bad'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)
   name: { zh: '押宝 · 钱掌柜的摊子', en: 'The bet · Money Qian’s stall' },
   how: {
     zh: '宝盒四门，押中一门便赢。他转过的门不再转，你刚押过的门他也不转。三押为限。',
@@ -111,4 +112,11 @@ export function html(state, lang = 'zh') {
     <div class="g-shouye-spots">${doors}</div>
     <div class="g-shouye-log">${log}</div>
   </div>`;
+}
+
+/** What a step sounded (games/kit/heard.js): a bet laid and lost (bet), the last one lost (bad); a win is the shell's. */
+export function sounds(b, a) {
+  if (!b || !a || (a.log?.length ?? 0) <= (b.log?.length ?? 0)) return [];
+  if (a.won) return [];
+  return a.lost ? ['bet', 'bad'] : ['bet'];
 }

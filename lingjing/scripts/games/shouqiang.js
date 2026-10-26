@@ -23,6 +23,8 @@
 // without a camera (hands from the console), `&jy=always` offers spells on every wave.
 export const meta = {
   id: 'shouqiang',
+  // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `shouqiang`; tests/game-sound.test.mjs).
+  sounds: ['hit', 'kill', 'chain', 'strike', 'howl', 'roar', 'wail', 'cast', 'wall', 'spawn', 'huge', 'picked', 'offer', 'wave', 'clear', 'boss', 'low', 'won', 'lost'],
   pause: true, // the shell's bar pauses the play (tools/shouqiang/src/play.js setPaused)
   tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   aspect: 9 / 16, // the field's width : height — the story's card is as wide as the field at the stage's height

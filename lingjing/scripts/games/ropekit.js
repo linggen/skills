@@ -24,7 +24,7 @@
 import { Matter } from './physics.js';
 import { btn, n, scene, splash, still } from './ink.js';
 import { mountPure } from './mount.js';
-import { blowGust, buildWorld, cutPack, cutVine, dist, outOf, paceAfter, popBubble, stepWorld, calm as hangsStill, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
+import { blowGust, buildWorld, cutPack, cutVine, dist, outOf, paceAfter, popBubble, ropeSounds, stepWorld, calm as hangsStill, ROPE_SOUNDS, BREAD_R, FLOOR, GUST_BAND, GUST_MS, H, STEP_MS, W } from './rope.js';
 import { FALLBACK, MOUTH_R, STAR_R } from './rope-gen.js';
 import { crowsPicture, sealsPicture, springPicture, toolMark } from './rope-art.js';
 
@@ -354,7 +354,7 @@ export function makeRopeGame(spec) {
     return `<div class="g-bread g-ft g-ink ${spec.cls ?? ''}">${head}${playScene(s)}<p class="g-line-say${teaching ? ' g-teach-say' : ''}">${esc(lineOf(s, t))}</p>${row}</div>`;
   }
 
-  const game = { meta, newGame, act, tick, html, stuck, paceOf };
+  const game = { meta: { ...meta, sounds: ROPE_SOUNDS }, newGame, act, tick, html, stuck, paceOf, sounds: ropeSounds };
   game.mount = (container, opts = {}) => mountPure(game)(container, { ...opts, data: { ...(opts.data ?? {}), ...(opts.reducedMotion ? { still: true } : {}) } });
   return game;
 }

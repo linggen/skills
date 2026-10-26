@@ -26,6 +26,7 @@
 
 /** A game that runs in time right now: its taps are taken on pointerdown. */
 import { crosses, stroke } from './games/swipe.js';
+import { sounded } from './games/kit/heard.js';
 
 export const runsLive = (g) => Boolean(g?.mod?.tick && g.state?.live && !g.state.won && !g.state.wait);
 
@@ -119,7 +120,10 @@ export function sceneAt(host, e) {
   return { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 };
 }
 
-export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, step = 50 }) {
+/* `shellOf(id, g)`: the board's shell (games/shell.js shellFor) — its sounds and its kit's bed; every act and tick sounds
+   what it made (games/kit/heard.js), as games/mount.js does off the story. `onGone(id)`: a board that sounded is off the
+   stage without a win (its card gone): its bed stops. */
+export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, step = 50, shellOf = () => null, onGone = () => {} }) {
   let last = performance.now();
   let held = null;
 
@@ -137,6 +141,12 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
     drawn.set(host, html);
     morph(host, html);
   };
+  const shells = new Map(); // task id → the board it was made for
+  const shellFor = (id, g) => {
+    if (!id || !g) return null;
+    if (shells.get(id)?.g !== g) shells.set(id, { g, shell: shellOf(id, g) });
+    return shells.get(id).shell;
+  };
   const settle = (g) => {
     if (g.state?.won && !g.sent) onWon(g);
   };
@@ -147,16 +157,21 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
     if (!runsLive(g)) return;
     const lead = Math.min(250, performance.now() - last) - (ahead.get(g) ?? 0);
     if (lead <= 0) return;
+    const was = g.state;
     g.state = g.mod.tick(g.state, lead);
+    sounded(shellFor(g.taskId, g), g.mod, was, g.state);
     ahead.set(g, (ahead.get(g) ?? 0) + lead);
   };
   const apply = (h, data, el = null) => {
     seen(h.host, h.g);
     catchUp(h.g);
     const before = el ? h.g.mod.html(h.g.state, lang()) : null;
+    const was = h.g.state;
     const r = h.g.mod.act(h.g.state, data);
     h.g.state = r.state;
-    if (el && !answered(before, h.g.mod.html(h.g.state, lang()), r)) tapNope(document, el);
+    let press = el ? 'tap' : null;
+    if (el && !answered(before, h.g.mod.html(h.g.state, lang()), r)) { tapNope(document, el); press = 'nope'; }
+    sounded(shellFor(h.g.taskId ?? h.host?.dataset?.game, h.g), h.g.mod, was, h.g.state, press);
     paint(h.host, h.g);
     settle(h.g);
   };
@@ -165,6 +180,13 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
     const now = performance.now();
     const dt = Math.min(250, now - last);
     last = now;
+    if (shells.size) {
+      const up = new Set([...document.querySelectorAll('[data-game]')].map((h) => h.dataset.game));
+      for (const [id, e] of shells) {
+        if (e.g.state?.won || e.g.sent) shells.delete(id);
+        else if (!up.has(id)) { shells.delete(id); onGone(id); }
+      }
+    }
     if (document.visibilityState !== 'visible' || paused()) return;
     for (const host of document.querySelectorAll('[data-game]')) {
       const g = boardFor(host.dataset.game);
@@ -172,7 +194,7 @@ export function wireLiveGames({ boardFor, lang, onWon, paused = () => false, ste
       seen(host, g);
       const own = dt - (ahead.get(g) ?? 0);
       ahead.delete(g);
-      if (own > 0) g.state = g.mod.tick(g.state, own);
+      if (own > 0) { const was = g.state; g.state = g.mod.tick(g.state, own); sounded(shellFor(host.dataset.game, g), g.mod, was, g.state); }
       paint(host, g);
       settle(g);
     }

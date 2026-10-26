@@ -37,7 +37,7 @@ export const STOPS = {
 
 export function makeYubu(stop) {
   const S = STOPS[stop];
-  const meta = { id: `yubu${stop}`, name: S.name, how: S.how };
+  const meta = { id: `yubu${stop}`, name: S.name, how: S.how, sounds: ['start', 'step', 'loud', 'trip'] };
   const newGame = (seed) => ({ seed: String(seed), phase: 'ready', live: false, t: 0, k: 0, beat: 0, last: -1e9, trips: 0, loud: 0, fx: null, note: 'ready', won: false, grade: null });
   const heard = (s) => (s.t - s.last < HASTE ? 1 : 0);
   const trip = (s) => ({ ...s, beat: 0, trips: s.trips + 1, note: 'trip', fx: { at: s.t, ok: false } });
@@ -91,5 +91,14 @@ export function makeYubu(stop) {
   }
 
   const stuck = (s) => s.trips >= 5;
-  return { meta, newGame, act, tick, html, stuck };
+  /* What a step sounded (games/kit/heard.js): the walk begun (start), a foot down quietly (step) or with a scrape (loud),
+     a trip. */
+  const sounds = (b, a) => {
+    if (!b || !a) return [];
+    if (!b.live && a.live && !a.won) return ['start'];
+    if (a.trips > b.trips) return ['trip'];
+    if (a.loud > b.loud) return ['loud'];
+    return a.last !== b.last ? ['step'] : [];
+  };
+  return { meta, newGame, act, tick, html, stuck, sounds };
 }

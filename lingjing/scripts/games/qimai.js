@@ -101,12 +101,28 @@ export const meta = {
   // The story lays it through its own mount (beat-host.js): html() is the first frame, mount() paints
   // the lamp, trail, ring and bead each animation frame — the page's 50 ms html redraw would lose them.
   beat: 'mount',
+  sounds: ['tap', 'crash', 'cha', 'cp', 'beat'], // the flight kit's (games/kit/audio/sounds.json)
   name: { zh: '气走经脉', en: 'Qi through the meridians' },
   how: {
     zh: '按住是吸，气往上走；松开是吐，气往下沉。别碰脉壁，贴着金线走。',
     en: 'Hold to breathe in: the qi rises. Let go to breathe out: it sinks. Keep off the walls; ride the gold thread.',
   },
 };
+
+/** What a stretch of play sounded (games/kit/heard.js) — read off its counts, so a snapshot (`soundSnap`) does as well
+    as a state: a breath drawn in (tap), the bead on the wall (crash), the breath broken (cha), a 穴 passed (cp), a
+    heartbeat's jolt (beat). The mount sounds it each frame; the state is stepped in place, so it keeps a snapshot. */
+export const soundSnap = (s) => ({ holding: s.holding, touches: s.touches, chas: s.chas, cp: s.cp, beat: s.beat });
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  const out = [];
+  if (a.holding && !b.holding) out.push('tap');
+  if (a.touches > b.touches) out.push('crash');
+  if (a.chas > b.chas) out.push('cha');
+  if (a.cp > b.cp) out.push('cp');
+  if (a.beat && a.beat !== b.beat) out.push('beat');
+  return out;
+}
 
 /* ── The channel, sampled once ────────────────────────────────────────────────────────────── */
 
@@ -586,8 +602,12 @@ export async function mount(container, opts = {}) {
     doc.body.appendChild(i); win.setTimeout(() => i.remove(), 520);
   };
 
-  let seenTouch = 0, seenCha = 0, seenBeat = null;
+  let seenTouch = 0, seenCha = 0, seenBeat = null, heard = soundSnap(s);
   const paint = () => {
+    // its sound, by what changed since the last frame (the shell plays it; games/kit/audio/sounds.json)
+    const now = soundSnap(s);
+    for (const e of sounds(heard, now)) shell?.sound?.(e);
+    heard = now;
     const cam = BX - s.x;
     world.setAttribute('transform', `translate(${fmt(cam)} 0)`);
     scroll();

@@ -24,6 +24,7 @@ import { handHint } from './jieyin/hint.js';
 
 export const meta = {
   id: 'zhidian',
+  sounds: ['cast', 'hit', 'miss'], // the seal kit's (games/kit/audio/sounds.json)
   pause: true, // the shell's pause stops the camera
   camera: true,
   name: { zh: '隔空指点', en: 'Point in the air' },
@@ -208,7 +209,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         if (!r.shot || ending) return;
         const thrown = throwEgg(field);
         field = thrown.state;
-        if (thrown.egg) eggFx(fieldEl, $('.zd-xm'), thrown.egg.to, reducedMotion ? 120 : level.eggMs);
+        if (thrown.egg) { shell?.sound?.('cast'); eggFx(fieldEl, $('.zd-xm'), thrown.egg.to, reducedMotion ? 120 : level.eggMs); }
       };
 
       const hud = () => {
@@ -237,6 +238,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           const r = land(field);
           field = r.state;
           for (const ev of r.events) {
+            shell?.sound?.(ev.type === 'hit' ? 'hit' : 'miss'); // the seal kit's (games/kit/audio/sounds.json)
             if (ev.type === 'hit') { struckFx(beastsEl, ev.beast); say(w.hit); } else missFx(fieldEl, ev.at);
           }
           if (over(field) && !field.eggs.length) end();

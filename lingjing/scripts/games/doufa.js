@@ -21,6 +21,7 @@ import { applyCast, fieldStart, fieldTick } from './doufa/field.js';
 
 export const meta = {
   id: 'doufa',
+  sounds: ['cast', 'dry', 'fade', 'kou', 'boss', 'escape'], // the seal kit's (games/kit/audio/sounds.json)
   pause: true,
   camera: true,
   name: { zh: '法术试炼', en: 'Spell trial' },
@@ -207,6 +208,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       };
 
       const act = (e) => {
+        shell?.sound?.(e.type); // the seal kit's (games/kit/audio/sounds.json)
         if (e.type === 'cast') { say(`${w.tiers[e.tier]} · ${nameOf(e)}`); land(e); }
         if (e.type === 'dry') say(w.dry);
         if (e.type === 'fade') say(w.fade);
@@ -230,6 +232,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         if (!shell?.paused?.()) {
           const fr = fieldTick(field, dt, level);
           field = fr.field;
+          for (const e of fr.events) if (e.type === 'boss' || e.type === 'escape') shell?.sound?.(e.type);
           for (const e of fr.events) if (e.type === 'boss') { duel = duelFill(duel, kit, 'boss'); say(w.boss, 2400); }
           const r = duelStep(duel, { world: hands, image: picture, handed, aspect, t: now }, dt, kit);
           duel = r.state;

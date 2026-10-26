@@ -167,3 +167,82 @@ test('the one mute (the shell\'s bar, Hanli 10-22: 「添加一个静音按钮�
   s.set('music', { on: true });
   assert.equal(s.settings().muted, false, 'turning a part on lifts the mute');
 });
+
+/* ── Every board sounds (Hanli 10-26: 「查一下, 有很多小游戏没有声音和退出」) ──
+   The audit found most boards silent but for the end chime: a pure board named nothing, the story's own runner never
+   gave its boards a shell, the kits' rows (rope, whack, flight, card, seal) were data nobody named. The lock: every game
+   a player can open — the 游戏厅's rows and every story task's — declares what it names (`meta.sounds`), each of those
+   names resolves to a real sound in sounds.json, its module's id is its file's (the story looks its sounds up by it), a
+   pure board names them through `sounds(before, after)` (games/kit/heard.js), and each runner sounds every step. */
+import { loadContent } from '../scripts/content.mjs';
+import { heardOf } from '../scripts/games/kit/heard.js';
+import { loadPair, playOnce } from '../tools/board-bots.mjs';
+
+const GAMES = new URL('../scripts/games/', import.meta.url);
+const REG = read('../worlds/jiuding/games.json');
+const has = (id) => fs.existsSync(new URL(`${id}.js`, GAMES));
+// The registry is the whole catalogue (every game a task names has a row; a cut one says so): its rows still played.
+const playable = [...new Set(REG.games.filter((r) => !r.replaced).map((r) => r.id))].filter(has).sort(); // a `stage` row with a module (密室) too
+const storyGames = new Set(loadContent().tasks.tasks.filter((t) => t.kind === 'board' && t.game).map((t) => t.game));
+const SHELL_OWN = new Set(['tap', 'nope']);
+
+test('every playable game is in the lock (the 游戏厅\'s rows and the story\'s boards)', () => {
+  for (const id of ['rain', 'qimai', 'jinchat', 'sneeze', 'shouqiang', 'kapai', 'luoshu', 'bread', 'lianliankan', 'yubujiuge']) assert.ok(playable.includes(id), id);
+  const cut = new Set(REG.games.filter((r) => r.replaced).map((r) => r.id));
+  assert.deepEqual([...storyGames].filter((g) => has(g) && !playable.includes(g) && !cut.has(g)), [], 'a story board\'s game outside the lock');
+});
+
+for (const id of playable) {
+  test(`${id}: names its sounds, and each is a real sound`, async () => {
+    const mod = await import(new URL(`${id}.js`, GAMES));
+    assert.equal(mod.meta?.id, id, 'its id is its file\'s: the story and the shell look its sounds up by it');
+    const names = mod.meta?.sounds ?? [];
+    assert.ok(names.length, `${id} names no sound (meta.sounds): it would play silent but for the end chime`);
+    let heard = 0;
+    for (const ev of names) {
+      const rule = resolve(SOUNDS, id, ev);
+      if (SOUNDS.games[id]?.events?.[ev] === null) continue; // silent on purpose (the shell's result sounds instead)
+      assert.ok(rule?.sounds.length, `${id}: '${ev}' sounds like nothing in sounds.json`);
+      heard += 1;
+      for (const s of rule.sounds) assert.ok(SOUNDS.sounds[s], `${id}: '${ev}' → '${s}', no such sound`);
+    }
+    assert.ok(heard, `${id}: every name it declares is silent`);
+    const src = fs.readFileSync(new URL(`${id}.js`, GAMES), 'utf8');
+    // A pure board names through `sounds` (its runners call it); a game with its own loop calls the shell itself.
+    if (mod.act && !(mod.meta?.beat === 'mount')) assert.equal(typeof mod.sounds, 'function', `${id}: a pure board names its moments with sounds(before, after)`);
+    else assert.ok(typeof mod.sounds === 'function' || /shell\?\.sound\?\.\(|onEntry: \(t\) => shell\?\.sound/.test(src) || /export const \{[^}]*\} = makeYubu/.test(src)
+      || /from '\.\/ropebeats\.js'/.test(src) || fs.existsSync(new URL(`${id}/${id}.min.mjs`, GAMES)), `${id}: its own loop never calls the shell's sound`);
+  });
+}
+
+test('a pure board\'s bot play names its moments, and only the ones it declares', async () => {
+  const quiet = [];
+  for (const id of playable) {
+    const { mod, bot, deal } = await loadPair(id);
+    if (!bot || !mod.act || !mod.tick && !mod.sounds) continue;
+    const heard = new Set();
+    const snap = mod.soundSnap ?? ((s) => s);
+    const spy = {
+      ...mod,
+      act: (s, d) => { const b = snap(s); const r = mod.act(s, d); for (const e of heardOf(mod, b, snap(r.state ?? s), 'tap')) heard.add(e.event); return r; },
+      tick: mod.tick && ((s, ms) => { const b = snap(s); const n = mod.tick(s, ms); for (const e of heardOf(mod, b, snap(n))) heard.add(e.event); return n; }),
+    };
+    playOnce(spy, bot, { deal, limit: 60000 });
+    const own = [...heard].filter((e) => !SHELL_OWN.has(e));
+    if (!own.length) quiet.push(id);
+    for (const e of own) assert.ok(mod.meta.sounds.includes(e), `${id} named '${e}', which its meta.sounds does not declare`);
+  }
+  assert.deepEqual(quiet, [], 'played by its bot, these named nothing of their own');
+});
+
+test('every runner sounds each step: off the story (mount.js), the story\'s clock and taps (live-games.js, lingjing.js), the fight\'s log', () => {
+  const src = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
+  const mount = src('../scripts/games/mount.js'), live = src('../scripts/live-games.js'), page = src('../scripts/lingjing.js');
+  assert.equal((mount.match(/sounded\(shell, mod,/g) ?? []).length, 2, 'mount.js: an act and a tick');
+  assert.equal((live.match(/sounded\(shellFor\(/g) ?? []).length, 3, 'live-games.js: a press, the catch-up and the clock');
+  assert.match(page, /shellOf: \(id, g\) => shellFor\(id, g\.mod\?\.meta\?\.id\)/, 'the story\'s live boards get their shell (sounds, bed)');
+  assert.match(page, /onWon: \(g\) => \{ g\.sent = true; settleShell\(g\.taskId/, 'a story board\'s win chimes');
+  assert.match(page, /sounded\(shellFor\(g\.taskId, g\.mod\.meta\?\.id\), g\.mod, was, g\.state, press\)/, 'a tapped story board sounds');
+  assert.match(page, /shellFor\(fightShell\(b\), 'kapai'\)/, 'the story\'s card fight sounds as the 游戏厅\'s');
+  assert.match(page, /shellFor\(board\.taskId, 'lianliankan'\)\.sound\(event\)/, 'the herb board sounds');
+});

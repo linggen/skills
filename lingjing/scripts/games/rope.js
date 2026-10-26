@@ -293,3 +293,21 @@ export function outOf(w) {
   const p = w.bread.position, r = w.bread.circleRadius;
   return p.x < -40 || p.x > W + 40 || p.y > H + 40 || p.y < -60 || p.y + r >= FLOOR - 1;
 }
+
+/* ── What a step sounded (games/kit/heard.js; the rope kit's names in games/kit/audio/sounds.json) ── */
+export const ROPE_SOUNDS = ['cut', 'gust', 'pop', 'star', 'eat', 'miss', 'lay'];
+/** A rope board's step, by its own counts and phase: a vine cut, a gust, a bubble popped, a star (or the 饼's corner)
+    caught, the thing eaten or missed, laid again. Shared by every 割绳子 board (ropekit.js) and 喂饼 (bread.js). */
+export function ropeSounds(b, a) {
+  if (!b || !a) return [];
+  const out = [];
+  if ((a.moves ?? 0) > (b.moves ?? 0) && ['cut', 'gust', 'pop'].includes(a.note)) out.push(a.note);
+  const stars = (s) => (s.caught ?? []).filter(Boolean).length + (s.piece ? 1 : 0);
+  if (a.phase === b.phase && stars(a) > stars(b)) out.push('star');
+  if (a.phase !== b.phase) {
+    if (a.phase === 'eat') out.push('eat');
+    else if (a.phase === 'miss') out.push('miss');
+    else if (a.phase === 'play' && b.phase === 'miss') out.push('lay');
+  }
+  return out;
+}

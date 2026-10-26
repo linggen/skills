@@ -15,6 +15,8 @@ import { comicArt } from './items-comic.js';
 
 export const meta = {
   id: 'kailu',
+  // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `kailu`; tests/game-sound.test.mjs).
+  sounds: ['chew', 'reveal'],
   name: { zh: '喂饭桶 · 开炉', en: 'Feed the Rice Bucket' },
   how: {
     zh: '把最多三样东西拖进饭桶嘴里，可搭灵石。开炉后饭桶嚼着，盖子冒红烟、金烟——金烟冒起时按住压盖，品级升一档。',

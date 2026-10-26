@@ -50,6 +50,7 @@ export const MIJING = {
 
 export const meta = {
   id: 'huarong',
+  sounds: ['pick', 'move'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)
   name: MIJING.name,
   how: MIJING.how,
   // WASD and the arrow keys slide the picked block (Hanli 2026-10-20: 「可以用wsad触发移动吗」).
@@ -269,4 +270,11 @@ ${state.won ? '' : `<div class="g-huarong-pad">${arrows.join('')}</div>`}
 export async function mount(container, opts = {}) {
   const level = await levelFor(opts);
   return mountPure({ meta, newGame, act, html })(container, { ...opts, data: { ...(opts.data ?? {}), levels: [level] } });
+}
+
+/** What a step sounded (games/kit/heard.js): a block picked up or put back (pick), a block slid (move). */
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  if ((a.moves ?? 0) > (b.moves ?? 0)) return ['move'];
+  return a.sel !== b.sel ? ['pick'] : [];
 }

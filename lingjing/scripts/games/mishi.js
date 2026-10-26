@@ -15,6 +15,7 @@ const art = (name) => new URL(`./mishi/${name}.webp`, import.meta.url).href;
 
 export const meta = {
   id: 'mishi',
+  sounds: ['turn', 'pick', 'open', 'good', 'bad'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)
   name: { zh: '密室', en: 'The hidden room' },
   how: {
     zh: '机关你看得见，古籍上的字只有银月读得懂。跟她说你看见了什么，问她读到了什么。',
@@ -253,4 +254,15 @@ export function html(state, lang = 'zh') {
   const tryRow = `<div class="g-pair">${p.kind === 'dial' ? '' : btn(t.clear, 'data-g="clear"', 'soft')}${btn(t.try, `data-g="try"${ready(state, p) ? '' : ' disabled'}`)}</div>`;
   const skip = v.can_skip ? `<div class="g-mishi-skip">${btn(t.skip, 'data-g="skip"', 'quiet')}</div>` : '';
   return wrap(`${head}${roomScene(v)}${behind}${intro}<p class="g-mishi-his">${esc(p.his)}</p>${mech}${note ? `<p class="g-mishi-note${state.note === 'wrong' ? ' is-wrong' : ''}">${esc(note)}</p>` : ''}${tryRow}<div class="g-mishi-ask">${herBtn}${hint}</div>${waitLine}${skip}`);
+}
+
+/** What a step sounded (games/kit/heard.js): a dial turned (turn), a glyph picked (pick), the room opened (open), a
+    mechanism given way (good) or not (bad). The rules' answers sound through `heard`, laid in by the page. */
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  if (a.note !== b.note && a.note === 'wrong') return ['bad'];
+  if (a.note !== b.note && /^right:/.test(a.note ?? '')) return ['good'];
+  if (!b.view?.step && a.view?.step) return ['open'];
+  if (a.dial?.s !== b.dial?.s || a.dial?.b !== b.dial?.b) return ['turn'];
+  return (a.picks?.length ?? 0) !== (b.picks?.length ?? 0) ? ['pick'] : [];
 }

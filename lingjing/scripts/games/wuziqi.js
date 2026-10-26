@@ -4,6 +4,7 @@
 
 export const meta = {
   id: 'wuziqi',
+  sounds: ['place', 'reply', 'bad'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)
   name: { zh: '五子棋', en: 'Five in a row' },
   how: {
     zh: '执黑先行，横竖斜连成五子即胜；对手连成五子则败。',
@@ -262,4 +263,15 @@ export function html(state, lang = 'zh') {
     + `<div class="g-wuziqi-board" style="--n:${N}">${cells}</div>`
     + `<div class="g-wuziqi-foot"><span class="g-wuziqi-status">${statusOf(state, t, lang)}</span>${stars}${again}</div>`
     + `</div>`;
+}
+
+/** What a step sounded (games/kit/heard.js): his stone down (place), the rival's answer (reply), five of the rival's or a
+    full board (bad); a fresh game after a loss is a pick-up (place). */
+export function sounds(b, a) {
+  if (!b || !a) return [];
+  if ((a.moves ?? 0) <= (b.moves ?? 0)) return (a.again ?? 0) > (b.again ?? 0) ? ['place'] : [];
+  const out = ['place'];
+  if (a.last?.by === 'white') out.push('reply');
+  if (a.outcome === 'lost' || a.outcome === 'draw') out.push('bad');
+  return out;
 }

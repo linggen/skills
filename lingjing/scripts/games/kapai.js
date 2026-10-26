@@ -38,6 +38,9 @@ export const meta = {
   pause: true,
   // The 游戏厅 opens a foe picker before it (arcade.js): one fight a foe.
   pick: true,
+  id: 'kapai',
+  // Its sounds are the fight's log, entry by entry as it is drawn (battle.js acts; the card kit's row in sounds.json).
+  sounds: ['drew', 'played', 'summoned', 'power', 'pill', 'hurt', 'hurt-minion', 'hurt-ally', 'heal', 'charge', 'unleash', 'dodged', 'withdrew', 'mana'],
 };
 
 const WORLD = new URL('../../worlds/jiuding/', import.meta.url).href;
@@ -156,7 +159,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
         const ghosts = ghostsOf(battle(), since(room.st.log, mark), by);
         draw();
         const cx = ctx(), sig = room.st.foe.signature?.name;
-        await playLog(battle(), since(room.st.log, mark), { words: cx.words, ghosts, faceOf: (id) => cardFaceHtml(id, cx), sigName: name(sig) });
+        await playLog(battle(), since(room.st.log, mark), { words: cx.words, ghosts, faceOf: (id) => cardFaceHtml(id, cx), sigName: name(sig), onEntry: (t) => shell?.sound?.(t.act) });
       } finally {
         room.busy = false;
       }
