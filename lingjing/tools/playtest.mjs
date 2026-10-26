@@ -320,6 +320,7 @@ export async function crawl(opts) {
         rec.find({ kind: 'blank-stage', scene: sceneId, why, what: `the stage held nothing to tap for ${Math.round((Date.now() - blankFrom) / 1000)} s (footer: ${snap.taps.filter((t) => t.where === 'foot' || t.where === 'chips').map((t) => t.text).join(' · ').slice(0, 80)})`, shot: await shot(`blank-${sceneId}`) });
       }
       const act = choose(snap, ctx);
+      if (process.env.PT_TRACE) console.log("   ~", act?.kind, act?.why, act?.game ?? ""); // PT_TRACE=1: every pick, for a loop that logs nothing
       // 1. something to tap
       if (!act) {
         // Patient: the engine may be busy (a Verb queued behind another app's), and the page
@@ -342,6 +343,15 @@ export async function crawl(opts) {
         const ok = await page.evaluate(`globalThis.__lingjingPlay?.stuck?.(${JSON.stringify(act.game)}) ?? 'no-seam'`);
         if (ok === 'no-seam') throw new Error('the page has no __lingjingPlay.stuck seam — install the skill first');
         await sleep(400);
+        // The gate opened three times and still no 「算了，往下走」 to tap: a finding, and the board left through the seam
+        // (10-26: 讨饼债 at 00-yinyue looped here for all 900 steps).
+        ctx.stuckTries = { ...(ctx.stuckTries ?? {}), [act.game]: (ctx.stuckTries?.[act.game] ?? 0) + 1 };
+        if (ctx.stuckTries[act.game] === 3) {
+          rec.find({ kind: 'no-skip', soft: true, scene: sceneId, what: `${act.game}: the stuck gate opened and no 「算了，往下走」 stood`, shot: await shot(`no-skip-${n}`) });
+          await page.evaluate(`globalThis.__lingjingPlay?.skip?.(${JSON.stringify(act.game)})`);
+          rec.seen('games', `${act.game}:skip`);
+          await settle(page, snap, () => verb('look'), { ms: 9000 });
+        }
         continue;
       }
       if (act.kind === 'game' && hands) {
