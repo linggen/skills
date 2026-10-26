@@ -57,7 +57,7 @@ function assertJinNext(l, scene) {
 }
 
 test('the 柴房 holds a game of its own: 孙二狗\'s 七巧, open there on the open map', () => {
-  const l = look(atChaifang(null, ['j04-gym', 'j04-line', 'j04-dog']), content, ctx);
+  const l = look(atChaifang(null, ['j04-gym', 'j04-trial', 'j04-line', 'j04-dog']), content, ctx);
   assert.ok(kinds(l.stage).includes('board:qiqiao'), kinds(l.stage).join());
 });
 
@@ -83,12 +83,13 @@ test('a 今 interlude played with the 古 place holding a game: that game, its e
       if (added.some((c) => c.card === 'next')) assertJinNext(won, s.scene);
     }
   }
-  assert.deepEqual(seen, ['j04-gym', 'j04-line', 'j04-dog']);
+  assert.deepEqual(seen, ['j04-gym', 'j04-trial', 'j04-line', 'j04-dog']); // j04-trial: the tryouts split off 2026-10-26
   assert.equal(s.scene, 'wm-mijing');
 });
 
 test('今 → 古: the interlude\'s last tap puts him at the 古 scene\'s place, where 「完」, the seal and the passage come before any game', () => {
-  const s = resolve(atChaifang('j04-dog', ['j04-gym', 'j04-line']), content, ctx, { exit: 'on' }).state;
+  const at = atChaifang('j04-dog', ['j04-gym', 'j04-trial', 'j04-line']);
+  const s = resolve({ ...at, tasks: { ...at.tasks, 'jin-xisi': { status: 'done' } } }, content, ctx, { exit: 'on' }).state; // 吸四吐六 played (2026-10-26)
   assert.deepEqual([s.scene, s.place], ['wm-mijing', 'shimen'], 'carried to 石门, never left at 柴房');
   const l = look(s, content, ctx);
   assert.equal(l.chapter.close?.id, 'j04', '「今 · 二 · 完」 stands');

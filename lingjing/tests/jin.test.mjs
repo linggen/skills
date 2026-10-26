@@ -177,7 +177,9 @@ test('an interlude the book holds back (`draft`) is not played', async () => {
 // a 砸寨 throw. 先吐, 黑地十一步 and 罚球 are cut (their ways on tell them); 晨脉 was cut 10-19.
 test('every 今线 board is a chat, 最后一罚 or 白线上: its task pays nothing, and its scene waits on it; the cut ones are offered nowhere', () => {
   // 10-22 (Hanli: 「改成玩」): 最后一罚 back as 今四's board, 今二's free throws a 砸寨 throw (白线上)
-  const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-lastshot': 'qimai', 'jin-whiteline': 'zhazhai' };
+  const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-lastshot': 'qimai', 'jin-whiteline': 'zhazhai',
+    // 今二's four (全文后的小游戏 2026-10-26)
+    'jin-wotui': 'qimai', 'jin-didi': 'sneeze', 'jin-qiu': 'rain', 'jin-xisi': 'qimai' };
   for (const [id, game] of Object.entries(games)) {
     const t = content.tasks.tasks.find(x => x.id === id);
     assert.equal(t.game, game, id);
@@ -185,7 +187,9 @@ test('every 今线 board is a chat, 最后一罚 or 白线上: its task pays not
     assert.equal(t.grant.wealth ?? 0, 0);
     const at = scenes().find(({ sc }) => sc.offers?.tasks?.includes(id));
     assert.ok(at && /^j\d\d$/.test(at.sc.hui), `${id} is an interlude's`);
-    assert.ok(at.sc.exits.some(e => e.needs?.task === id && e.refuse?.zh && e.refuse?.en));
+    // its scene waits on it: the way on needs it, or a board shown after it (j04-gym's 视频 then 卧推, j04-line's 捡球 then 投篮)
+    const order = (at.sc.show ?? []).filter((c) => c.card === 'board').map((c) => c.id);
+    assert.ok(at.sc.exits.some(e => e.needs?.task && order.indexOf(e.needs.task) >= order.indexOf(id) && e.refuse?.zh && e.refuse?.en), id);
   }
   for (const id of ['jin-qianmi', 'jin-dark', 'jin-faqiu']) {
     assert.ok(content.tasks.tasks.find(x => x.id === id)?.cut, `${id} cut`);

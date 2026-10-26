@@ -20,6 +20,8 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   'xirang-wumen': 'xirang',
   // 第四回's breath (全文后的小游戏 2026-10-26): the night watch on a broken rib, 褚先生's iron brush
   'xunye-duanlei': 'duanlei', 'yan-tieshua': 'tieshua',
+  // 今·二's (2026-10-26): 阿禾's bench lesson, the dog's 吸四吐六
+  'jin-wotui': 'wotui', 'jin-xisi': 'xisi',
   // the reading cap before 入门 (2026-10-20): 00-halfyear's 挑水上坡 (on the cut 练功's task id), 今一's 边跑边念
   // the 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」): 挑水上坡, 后山, 随叶 and 顺风溜 told — rows, levels and tasks gone
   // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket

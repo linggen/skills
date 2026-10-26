@@ -147,6 +147,7 @@
    "wm-yan",
    "wm-baoming",
    "j04-gym",
+   "j04-trial",
    "j04-line",
    "j04-dog",
    "wm-mijing",
@@ -398,7 +399,27 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "jin-wotui": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-didi": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-qiu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "jin-whiteline": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-xisi": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -1022,6 +1043,7 @@
    "wm-yan",
    "wm-baoming",
    "j04-gym",
+   "j04-trial",
    "j04-line",
    "j04-dog",
    "wm-mijing",

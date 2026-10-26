@@ -1,0 +1,83 @@
+{
+ "version": 1,
+ "id": "j04-trial",
+ "chapter": "00-waimen",
+ "hui": "j04",
+ "scape": "court",
+ "place": {
+  "zh": "沂中医 · 体育馆一楼 · 试训",
+  "en": "Yizhong · the sports hall · tryouts"
+ },
+ "_board": "j04-trial (全文后的小游戏 2026-10-26): 时机 `didi` — the shuttle run's beeps, each quicker; j04-gym's passage split at the tryouts. Pays nothing (不跨线).",
+ "setup": {
+  "zh": "十月十七日，早上八点，试训：体能、技术、力量。头一项，二十米往返跑。",
+  "en": "The seventeenth of October, eight in the morning, tryouts: fitness, skills, strength. First, the twenty-metre shuttle."
+ },
+ "recap": {
+  "zh": "试训四个，替补第三，末一个进队；合影里半个人出了框；解剖课上看见那两根白线，「吐气的时候它说得多一点」。",
+  "en": "Four reps at tryouts, third substitute, the last one in; half out of the team photo; two white threads in anatomy, \"when you breathe out it says a bit more\"."
+ },
+ "cast": [],
+ "people": [
+  "jin-shenmang",
+  "jin-maxiaobao",
+  "jin-ahe",
+  "jin-lei"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "十月十七日，试训。",
+    "嘀声一回比一回急。",
+    "替补第三，末一个进队。"
+   ],
+   "en": [
+    "The seventeenth: tryouts.",
+    "The beeps get faster each time.",
+    "Third substitute, the last one in."
+   ]
+  }
+ },
+ "story": {
+  "zh": "十月十七日，星期六，早上八点，体育馆一楼。来试训的二十三个人站成三排。老队员坐在场边看，马小宝坐在最前头，脚边那只大摇杯。",
+  "en": "The seventeenth of October, Saturday, eight in the morning, the ground floor of the sports hall. The twenty-three who had come for the trials stood in three rows. The old team members sat at the side to watch, Ma Xiaobao in front, the big shaker at his feet."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "jin-didi"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jin-didi"
+  ]
+ },
+ "story_after": {
+  "zh": "头一项体能，二十米往返跑：跟着录音里的嘀嘀声来回跑，嘀声一回比一回急，跟不上就出局。沈芒慌了一早上，可一跑起来，他的腿认得这个——这一个月，他的二十分钟一天没断过。嘀声越来越急，一个一个的人退了下去，他还在跑，吐，吸，吐。跑到后来两条腿又不听使唤了，嗓子眼里又烧了起来，跟九月体测那天一个样；场边马小宝喊了一嗓子：「不行就下来，别吐在地板上！」那一句倒把他喊醒了。他没往嗓子眼里抢气，往外吐，吐干净，又撑了三个来回，撑到嘀声响过去、他的脚还没够着线，才停。二十三个人里，他排第十四。场边有人「咦」了一声。\n\n第二项技术。运球绕桩上篮，他踢倒了一个桩，上篮没进，补了一个，进了；罚球十个进三个，及格线正是三个，正卡在线上。雷老师在表上打了个钩。\n\n第三项力量。卧推凳摆在场地正中间，四十公斤。马小宝站起来晃到凳子后头，两只手虚托在杠底下，冲他挤了挤眼睛：「来，我给你数。」又俯下身，压低了嗓子，「你黑过一回。今天要是再黑，我可就当着她的面接住你了。」\n\n沈芒躺下去。四周围着二十几个人，场边一排老队员，阿禾坐在记分台后头，本子摊着。他觉得全馆的眼睛都落在他胸口那道还没褪干净的红印上。\n\n他把杠放下来，吸气，往上推——「呵——」\n\n「一个！」马小宝喊得全馆都听得见。「两个！」「三个！」\n\n第四个，杠走到一半慢了，慢得像一头拉不动车的老牛。他嘴里「呵」得又长又响，那口气没憋，一丝一丝往外吐，杠一寸一寸往上挪，挪上去了。「……四个。」\n\n第五个，杠落到胸口，往上走了一拳，停住了。他吐着气往上顶，顶不动；他没憋气——他记着太奶坐在小板凳上说的那句「先喘口气」。杠一动不动。马小宝的两只手托上来，把杠接走了，放回架子上。\n\n「只推了四个，还差一个。」马小宝冲着全场宣布，又拍了拍杠，「咱们队的吉祥物，尽力了。」\n\n场边的老队员哄地一声笑了，笑声一传，传遍了半个馆。沈芒从凳子上坐起来，坐在那片笑声正中间，脸从耳根烧到脖子。他想起手札里那一条：满殿皆笑。一个孩子，满殿的人。\n\n记分台后头，阿禾没笑。她低头写了一笔，抬起头：「下一个。」笑声停了一停，下一个人站了起来。\n\n中午名单出来了，阿禾站在记分台前头一个一个念。三项全过的四个，进轮换；过两项的三个，进替补。念到替补，她念得跟前头一样，一个字不重：「……替补第三，沈芒。」替补第三，是七个人里的最后一个。往下，她没再念名字。\n\n雷老师把表一合，跟老队员们道：「二十三个里第十四。上个月，一千米倒数第一。三项过两项，按规矩，替补。没什么好笑的。」\n\n马小宝走过来拍他的肩：「恭喜，你是进队的最后一个。」又压低了嗓子，「过了两项，没过一项——我要替你跟她说的那句话，先替你留着。」\n\n下午队里照合影。全队二十个人站在篮架底下，前头蹲一排，后头站一排。几个老队员起哄，一声「起——」，把马小宝扛到了肩膀上，他坐在那几只肩膀上，一只手举着摇杯，冲镜头咧着嘴笑。沈芒站在最边上。摄影的同学喊：「最右边那个，往里靠靠！」马小宝在肩膀上头接了一句：「跑龙套的，往里靠！」底下一片笑。他往里挤了挤，挤不进去。\n\n照片发到队群里。他放大了看：马小宝在最上头高高地坐着；他在最右边，半个人出了框，只剩一只胳膊、半张脸、半个笑。他把这半张脸看了很久，到底存了下来——这是他进队以后的头一张合影，里头有他。\n\n十月二十六日，星期一，下午两点，解剖实验室。白布掀开的还是胸口，这一节看心。\n\n大体老师刘桂芝的心，比他想的小，一只拳头那么大，颜色是暗的。老师拿镊子指着心的上头、顺着脖子下来的两根白线，比鞋带还细：「迷走神经。一边一根，从颅底下来，贴着大血管一路走，走到心，走到肺，走到胃肠。身子里管内脏的神经有两套：一套催，从脊柱两边出来，人一急一怕，它把心催快；一套缓，就是这两根——它一说话，心就慢。」\n\n轮着看。轮到沈芒，他凑近了，那根白线安安静静地贴在血管旁边，什么也不做。他举手：「老师，那怎么叫它说话？」\n\n老师看了他一眼。这孩子每回都问一句书上没有的。「它不归你直接指挥。」她道，「不过它跟着喘气动：吐气的时候，它说得多一点。为什么，下学期生理课讲。」\n\n沈芒「哦」了一声。吐气他会；喘气跟心跳有什么关系，他想不出来，也就没往心里去。",
+  "en": "First, fitness: the twenty-metre shuttle run, back and forth to the beeps on a recording, the beeps getting faster each time, and if you couldn't keep up, you were out. Shen Mang had been panicking all morning, but once he started running, his legs knew this. For a month he hadn't missed his twenty minutes a single day. The beeps got faster and faster, people dropped out one by one, and he was still running: out, in, out. Near the end his legs stopped obeying him again and his throat started burning again, just like the fitness test in September. At the side Ma Xiaobao yelled, \"If you can't hack it, come off, don't throw up on the floor!\" and that yell woke him up. He didn't snatch for air at his throat; he breathed out, breathed out clean, and held on for three more lengths, held on until a beep went and his foot hadn't reached the line, and only then stopped. Out of twenty-three, he came fourteenth. Someone at the side said \"Huh.\"\n\nSecond, skills. Dribbling round cones to a layup, he knocked over a cone and missed the layup, put back the rebound, and it went in; free throws, three out of ten, and the pass mark was exactly three, right on the line. Coach Lei put a tick on his sheet.\n\nThird, strength. The bench was set in the very middle of the court: forty kilos. Ma Xiaobao got up, sauntered round behind the bench, held his two hands ready under the bar and winked at him. \"Go on, I'll count for you.\" Then he leaned down and lowered his voice. \"You've blacked out once. If you black out again today, I'll be catching you right in front of her.\"\n\nShen Mang lay down. Twenty-odd people round him, a row of old team members at the side, Ahe behind the scorer's table with her notebook open. He felt that every eye in the hall had landed on the red mark on his chest that still hadn't quite faded.\n\nHe brought the bar down, breathed in, and pushed. \"Hhhh...\"\n\n\"One!\" Ma Xiaobao shouted it for the whole hall to hear. \"Two!\" \"Three!\"\n\nThe fourth slowed halfway, slow as an old ox that can't pull the cart. The \"hhh\" in his mouth went long and loud. He didn't hold the breath; it went out thread by thread, and the bar edged up inch by inch, and went up. \"...Four.\"\n\nThe fifth came down to his chest, went up a fist's height, and stopped. He pushed against it, breathing out, and couldn't move it; he didn't hold his breath. He remembered his great-grandmother on her little stool saying \"Catch your breath first.\" The bar didn't move at all. Ma Xiaobao's hands came up under it and took the bar away and put it back on the rack.\n\n\"Only four. One short.\" Ma Xiaobao announced it to the whole hall, then patted the bar. \"Our team mascot. Gave it his all.\"\n\nThe old team members at the side burst out laughing, and the laughter spread through half the hall. Shen Mang sat up on the bench and sat right in the middle of that laughter, his face burning from his ears down to his neck. He thought of that line in the notebooks: the whole hall laughed. One child, a whole hall.\n\nBehind the scorer's table, Ahe didn't laugh. She bent her head and wrote something, then looked up. \"Next.\" The laughter paused, and the next person stood up.\n\nAt noon the list came out, and Ahe stood in front of the scorer's table reading it out name by name. Four had passed all three parts and were in the rotation; three had passed two and were reserves. When she reached the reserves she read them just as she had the others, not a word stressed: \"...Third reserve, Shen Mang.\" Third reserve was the last of the seven. After that she didn't read out any more names.\n\nCoach Lei closed his sheet and said to the old team members, \"Fourteenth out of twenty-three. Last month, dead last in the thousand metres. Passed two parts out of three; by the rules, reserve. There's nothing funny about it.\"\n\nMa Xiaobao came over and patted him on the shoulder. \"Congratulations. You're the last one in.\" Then he lowered his voice. \"Passed two, failed one. That thing I was going to tell her for you, I'll hang on to it for you for now.\"\n\nIn the afternoon the team had its photo taken. All twenty of them stood under the basket, a row crouching in front, a row standing behind. A few of the old team members started fooling about and, with a shout of \"Up!\", hoisted Ma Xiaobao onto their shoulders, and he sat up there on those shoulders, one hand raising his shaker, grinning at the camera. Shen Mang stood at the very end. The student taking the photo called out, \"The one on the far right, move in a bit!\" From up on the shoulders Ma Xiaobao added, \"The extra! Move in!\" Everyone below laughed. He squeezed in a little and couldn't squeeze in.\n\nThe photo went into the team group chat. He zoomed in: Ma Xiaobao sitting high at the very top; him at the far right, half of him out of the frame, only an arm, half a face, half a smile left. He looked at that half a face for a long time and in the end saved it. It was the first team photo since he'd made the team, and he was in it.\n\nMonday the twenty-sixth of October, two in the afternoon, the anatomy lab. When the white sheet came back it was the chest again; this session was the heart.\n\nThe heart of their Silent Teacher, Liu Guizhi, was smaller than he'd imagined, the size of a fist, and dark in colour. The lecturer pointed with her tweezers to the top of the heart, to two white threads running down from the neck, finer than shoelaces. \"The vagus nerve. One on each side, down from the base of the skull, along the great vessels all the way, to the heart, to the lungs, to the stomach and gut. The nerves that run the organs come in two sets: one hurries things up, coming out either side of the spine; when a person's anxious or afraid, it speeds the heart up. One calms things down, and that's these two. When it speaks, the heart slows.\"\n\nThey took turns to look. When it was Shen Mang's turn he leaned in close. The white thread lay quietly beside the vessel, doing nothing. He put up his hand. \"Then how do you get it to speak?\"\n\nThe lecturer gave him a look. This boy always asked one thing that wasn't in the book. \"It doesn't take orders from you directly,\" she said. \"But it moves with your breathing: when you breathe out, it speaks a bit more. Why, you'll get in physiology next semester.\"\n\nShen Mang said \"Oh.\" Breathing out, he could do; what breathing had to do with heartbeat, he couldn't think, so he didn't give it a second thought."
+ },
+ "lines": [],
+ "buttons": [
+  "scrimmage"
+ ],
+ "exits": [
+  {
+   "id": "scrimmage",
+   "label": {
+    "zh": "十月三十一日，对抗赛",
+    "en": "The thirty-first: the scrimmage"
+   },
+   "means": "goes on to the team scrimmage",
+   "beat": [],
+   "next": "j04-line",
+   "needs": {
+    "task": "jin-didi"
+   },
+   "refuse": {
+    "zh": "嘀声还在响。",
+    "en": "The beeps are still going."
+   }
+  }
+ ]
+}

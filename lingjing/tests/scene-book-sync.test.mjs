@@ -151,7 +151,7 @@ test('every interlude and every 回 ends on the book\'s last sentence (今 · �
   }
   assert.deepEqual(short, [], short.join('\n'));
   // 今 · 二's landing, whole: 爸's dig, the long shaky breath, the book shut, the one pay left.
-  const dog = ends.find((e) => e.where === 'j04-dog');
+  const dog = ends.find((e) => e.where === 'j04-dog/after'); // its passage the scene's own since 吸四吐六 (2026-10-26)
   for (const line of ['跪着也是站着，矮一截', '只有一口很长、很抖的气，从手机里一点一点漏出来', '他盯着「长不回来」四个字看了很久，把书合上了', '家里一个月的进项，眼下只剩他妈超市那一份', '这时候，离院系杯头一轮只剩五天了。']) {
     assert.ok(dog.story.zh.includes(line), `j04-dog keeps 「${line}」`);
   }
