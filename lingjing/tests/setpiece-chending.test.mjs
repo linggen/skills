@@ -38,6 +38,7 @@ function atGate(lang) {
   // 今 · 一 played through, its boards in order (2026-10-26: 那一圈 · 投一个 · 十二正经 · 葛奶奶 · 六一七); the retest is told
   const play = (id) => { s = win(s, content, ctx, { id }).state; s = task(s, content, ctx, { action: 'done', id }).state; };
   play('jin-yiquan'); play('jin-toulan'); s = resolve(s, content, ctx, { exit: 'on' }).state;
+  play('jin-biedou'); s = resolve(s, content, ctx, { exit: 'on' }).state;
   play('jin-jingluo'); s = resolve(s, content, ctx, { exit: 'on' }).state;
   play('jin-chat-ge'); play('jin-chat-617'); s = resolve(s, content, ctx, { exit: 'on' }).state;
   return resolve(s, content, ctx, { exit: 'finish' }).state;

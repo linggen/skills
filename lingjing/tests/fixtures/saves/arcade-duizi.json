@@ -120,6 +120,7 @@
    "00-uncle",
    "00-notice",
    "j01-track",
+   "j01-weigh",
    "j01-loop",
    "j01-anatomy",
    "j01-retest",
@@ -212,6 +213,11 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "cliff-shangya": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "deer-wind": {
     "status": "done",
     "period": "once",
@@ -272,6 +278,11 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "jin-biedou": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "jin-jingluo": {
     "status": "done",
     "period": "once",
@@ -298,6 +309,11 @@
     "done_at": "2026-10-01T01:00:00.000Z"
    },
    "steps-sanbai": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "steps-tuifeng": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -928,6 +944,7 @@
    "00-uncle",
    "00-notice",
    "j01-track",
+   "j01-weigh",
    "j01-loop",
    "j01-anatomy",
    "j01-retest",

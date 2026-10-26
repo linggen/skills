@@ -189,7 +189,7 @@ test('the hero is fixed — 沈小满, a boy, from the first Look; 石坳村 goe
   const cliff = walk(on.state, [...TO_HALL.slice(1, TO_HALL.findIndex(([, a]) => a.exit === 'follow') + 1)], content, NOW);
   assert.equal(cliff.scene, '00-cliff');
   assert.match(tellOf(content, cliff).tell.at(-1).text, /那山谷的出口，是沈小满找着的。/);
-  const up = walk(cliff, [['resolve', { exit: 'climb' }]], content, NOW);
+  const up = walk(cliff, [['win', { id: 'cliff-shangya' }], ['task', { action: 'done', id: 'cliff-shangya' }], ['resolve', { exit: 'climb' }]], content, NOW); // 上崖 (2026-10-26)
   assert.match(tellOf(content, up).tell.find(t => t.id === '00-cliff/climb').text, /却是阿禾她爹老周/);
 });
 

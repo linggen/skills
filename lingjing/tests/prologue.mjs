@@ -53,6 +53,10 @@ export const JIN_ONE = [
   ['win', { id: 'jin-toulan' }, 'jin'],
   ['task', { action: 'done', id: 'jin-toulan' }, 'jin'],
   ['resolve', { exit: 'on' }, 'jin'],
+  // 别抖 (时机, j01-weigh, 2026-10-26): the skinfold calipers
+  ['win', { id: 'jin-biedou' }, 'jin'],
+  ['task', { action: 'done', id: 'jin-biedou' }, 'jin'],
+  ['resolve', { exit: 'on' }, 'jin'],
   // 十二正经 (气走经脉, j01-loop, 2026-10-26): the channels traced with his arms up
   ['win', { id: 'jin-jingluo' }, 'jin'],
   ['task', { action: 'done', id: 'jin-jingluo' }, 'jin'],
@@ -72,6 +76,9 @@ export const TO_HALL = [
   ...TO_VALLEY,
   // 认路 cut 2026-10-21; 二十问 · 银月 there since 10-22 (yinyue-what, played by boardsFor), then out
   ['resolve', { exit: 'follow' }],
+  // 上崖 (时机, 2026-10-26) before the climb
+  ['win', { id: 'cliff-shangya' }],
+  ['task', { action: 'done', id: 'cliff-shangya' }],
   ['resolve', { exit: 'climb' }],
   ['win', { id: 'deer-wind' }],
   ['task', { action: 'done', id: 'deer-wind' }],
@@ -121,6 +128,8 @@ export const TO_HALL = [
   ['resolve', { exit: 'steady' }],
   ['win', { id: 'steps-sanbai' }],
   ['task', { action: 'done', id: 'steps-sanbai' }],
+  ['win', { id: 'steps-tuifeng' }],
+  ['task', { action: 'done', id: 'steps-tuifeng' }],
   ['resolve', { exit: 'on' }],
   ['win', { id: 'gate-luoshu' }],
   ['task', { action: 'done', id: 'gate-luoshu' }],

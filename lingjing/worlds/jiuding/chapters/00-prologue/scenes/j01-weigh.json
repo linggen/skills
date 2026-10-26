@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "j01-weigh",
+ "chapter": "00-prologue",
+ "hui": "j01",
+ "scape": "track",
+ "place": {
+  "zh": "沂中医 · 球馆器材室",
+  "en": "Yizhong · the gym equipment room"
+ },
+ "_board": "2026-10-26 (全文后的小游戏): j01-track's way on split at the equipment room — 时机 `biedou`: the skinfold calipers, three pinches, ticklish (「捏一下抖一下，抖到第三下，阿禾道：『再抖…』」). Pays nothing (不跨线).",
+ "setup": {
+  "zh": "器材室里一台体重秤，一把钳子模样的东西。阿禾要量你的体脂。",
+  "en": "In the equipment room, a set of scales and something like pliers. Ahe is going to measure your body fat."
+ },
+ "recap": {
+  "zh": "体重秤，皮褶卡钳；你原来是瘦子里的胖子。罚球十投一中。",
+  "en": "The scales, the skinfold calipers: it turns out you're a fat thin man. One free throw in ten."
+ },
+ "cast": [],
+ "people": [
+  "jin-shenmang",
+  "jin-ahe",
+  "jin-maxiaobao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "器材室里一台体重秤。",
+    "「这是皮褶卡钳。」",
+    "捏一下，抖一下。"
+   ],
+   "en": [
+    "A set of scales in the equipment room.",
+    "\"These are skinfold calipers.\"",
+    "A pinch, a shiver."
+   ]
+  }
+ },
+ "story": {
+  "zh": "器材室里一台体重秤，一把钳子模样的东西。秤上的数字刚停，一只大脚伸过来，脚尖在秤沿上轻轻一踩，数字往上一蹿。马小宝倚在门框上：「给你添两斤，看着体面点。」阿禾头也不抬：「把你的脚拿开。」数字落回去：五十九点六。阿禾记下，看了马小宝一眼：「秤是准的。你那两斤，记你账上。」马小宝笑了一声，晃着摇杯走了。",
+  "en": "In the equipment room there was a set of scales and a thing that looked like pincers. The numbers on the scales had just settled when a big foot came over and pressed lightly on the edge of the scales with its toe, and the numbers shot up. Ma Xiaobao was leaning on the doorframe. \"I'll give you an extra kilo, make you look respectable.\" Ahe didn't look up. \"Take your foot off.\" The numbers dropped back: fifty-nine point six. Ahe wrote it down and glanced at Ma Xiaobao. \"The scales are accurate. That kilo of yours goes on your account.\" Ma Xiaobao laughed and wandered off, swinging his shaker."
+ },
+ "story_after": {
+  "zh": "「这是皮褶卡钳。捏一捏皮下有多厚，算体脂。」她捏他胳膊后头，捏他肩胛骨底下，捏他肚子旁边。沈芒怕痒，捏一下抖一下，抖到第三下，阿禾道：「再抖，就按抖的算。」他便不抖了。她按了一会儿计算器：「百分之二十一点四。你这个体重，不少。瘦，可是没什么肉，油倒是有一点。」\n\n沈芒低头看了看自己。他十八年来一直以为自己是瘦，原来是瘦子里的胖子——好比一个人一直以为自己穷，一查，还欠着钱。\n\n最后是罚球，他投了十个，只进了一个。阿禾合上本子：「周四默写，背了吗？去年这一回，白卷十一张。」又翻出一张通知：「十月十七，校队试训，三项：体能、力量、技术。过了，算校队的人；不过，这一行就划掉。你今天这几个数，三项里一项也过不了。」\n\n「称这个，有什么用？」他问，「称完了，我还是我。」\n\n「不称，你练了一个月，不知道是长了还是掉了。」阿禾道，「秤上的数不好看，不要紧。要紧的是，下一回它跟这一回不一样。」",
+  "en": "\"These are skinfold calipers. You pinch to see how thick the layer under the skin is, and work out body fat.\" She pinched the back of his arm, below his shoulder blade, the side of his belly. Shen Mang was ticklish and flinched at every pinch. At the third flinch Ahe said, \"Flinch again and I'll count the flinch.\" So he stopped flinching. She tapped at a calculator for a while. \"Twenty-one point four per cent. For your weight, that's a fair bit. You're thin, but there's not much muscle on you, and there is a bit of fat.\"\n\nShen Mang looked down at himself. For eighteen years he'd thought he was thin; it turned out he was a fat person among thin people — like someone who'd always thought he was poor, checked, and found he was in debt as well.\n\nLast came free throws. He shot ten and sank one. Ahe shut her notebook. \"The test on Thursday, have you learned it? Last year at this test there were eleven blank papers.\" She turned up a notice. \"October the seventeenth, team trials, three parts: fitness, strength, skills. Pass, and you're on the university team. Fail, and this line gets crossed out. With the numbers you've got today, you wouldn't pass any of the three.\"\n\n\"What's the point of weighing it?\" he asked. \"When you've weighed it, I'm still me.\"\n\n\"If you don't weigh it, you'll train for a month and not know if you've gone up or down,\" Ahe said. \"If the number on the scales doesn't look good, that doesn't matter. What matters is that next time it's different from this time.\""
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "jin-biedou"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jin-biedou"
+  ]
+ },
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "开课",
+    "en": "Term begins"
+   },
+   "means": "goes on to the first week of classes",
+   "beat": [],
+   "next": "j01-loop",
+   "needs": {
+    "task": "jin-biedou"
+   },
+   "refuse": {
+    "zh": "卡钳还捏着你。",
+    "en": "The calipers still have hold of you."
+   }
+  }
+ ]
+}

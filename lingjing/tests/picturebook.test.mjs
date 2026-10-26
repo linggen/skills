@@ -228,7 +228,7 @@ test('her lines in the book are the book\'s: played in place, awake or asleep (h
   assert.doesNotMatch(cliff.text, /〔银月〕|⟪|⟫/);
   assert.doesNotMatch(out.result.her_beat?.facts?.line ?? '', /让开/, 'never handed to her as well');
   // she faints at the deer, wakes at night, sleeps in the token the night she leaves (before the bath)
-  let s = walk(out.state, [['resolve', { exit: 'climb' }], ['win', { id: 'deer-wind' }], ['task', { action: 'done', id: 'deer-wind' }], ['resolve', { exit: 'left' }],
+  let s = walk(out.state, [['win', { id: 'cliff-shangya' }], ['task', { action: 'done', id: 'cliff-shangya' }], ['resolve', { exit: 'climb' }], ['win', { id: 'deer-wind' }], ['task', { action: 'done', id: 'deer-wind' }], ['resolve', { exit: 'left' }],
     ['win', { id: 'deer-carry' }], ['task', { action: 'done', id: 'deer-carry' }], ['resolve', { exit: 'on' }]], content, NOW); // 抬鹿下山 (00-tailu, 2026-10-22)
   assert.deepEqual(s.companion, { joined: '2026-09-28', asleep: true });
   assert.equal(look(s, content, ctx()).companion.asleep, true);

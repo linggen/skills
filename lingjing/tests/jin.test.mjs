@@ -32,7 +32,7 @@ test('four interludes, each two or three scenes and one game or two, in the book
   for (const [id, [chapter, before, prev, next]] of Object.entries(PLACES)) {
     const own = jinScenes(id);
     // 今 · 一 has four since 2026-10-26 (the twelve channels its own scene, j01-loop)
-    assert.ok(own.length >= 2 && own.length <= 4, `${id}: ${own.length} scenes`);
+    assert.ok(own.length >= 2 && own.length <= 5, `${id}: ${own.length} scenes`);
     assert.ok(own.every(({ ch }) => ch.id === chapter), `${id} stands in ${chapter}`);
     assert.ok(own.every(({ sc }) => !sc.at), `${id}: on no place of the map`);
     const head = own.find(({ sc }) => sc.before);
@@ -82,6 +82,10 @@ test('a save walks 古二 → 今 · 一 → 古三: the close of 第二回, the
   assert.equal(old.tasks['jin-toulan']?.status, 'offered');
   // 那一圈 first, the ball second (2026-10-26); the twelve channels (j01-loop), then 葛奶奶 at the anatomy's door
   for (const id of ['jin-yiquan', 'jin-toulan']) { s = win(s, content, ctx, { id }).state; s = task(s, content, ctx, { action: 'done', id }).state; }
+  s = resolve(s, content, ctx, { exit: 'on' }).state;
+  assert.equal(s.scene, 'j01-weigh');
+  s = win(s, content, ctx, { id: 'jin-biedou' }).state;
+  s = task(s, content, ctx, { action: 'done', id: 'jin-biedou' }).state;
   s = resolve(s, content, ctx, { exit: 'on' }).state;
   assert.equal(s.scene, 'j01-loop');
   s = win(s, content, ctx, { id: 'jin-jingluo' }).state;

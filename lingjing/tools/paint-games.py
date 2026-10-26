@@ -77,6 +77,19 @@ SUBJECTS = {
   'rain/basin': ('sprite', (360, 200), (1024, 576), 1,
     'ONE old round wooden washbasin seen from the front and a little above, staves bound with two thin hoops, empty. Muted '
     'brown wash with dark ink edges.'),
+  # ── 打地鼠's story levels (全文后的小游戏, 2026-10-26; rain.js levels): 银色的血 (00-xiuxian) · 捡球递水 (j04-line).
+  'rain/xue-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of a small silver-white fox\'s tail fur seen close, soft silvery fur running across the whole width, '
+    'several stumps of broken tails along it, faint silver beads of liquid hanging from them, moonlight. Silver-grey ink wash.'),
+  'rain/xue-palm': ('sprite', (360, 200), (1024, 576), 1,
+    'A boy\'s two cupped hands held together palm up with a scrap of patched grey cloth in them, seen from the front and a little '
+    'above. Muted ink and soft wash.'),
+  'rain/qiu-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of the edge of an indoor basketball court seen from the side: the bench, a row of plastic water '
+    'bottles and a few basketballs along it. Grey ink wash and dark ink, modern setting drawn in old Chinese album style.'),
+  'rain/qiu-ball': ('sprite', (360, 200), (1024, 576), 1,
+    'A plastic sports water bottle lying beside a basketball on the floor, seen from the front and a little above. '
+    'Muted ink and soft wash, modern objects drawn in old Chinese album style.'),
   'rain/beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of an old thatched cottage ceiling seen from below: one dark wooden roof beam running across the '
     'whole width, with rafters and straw thatch above it, wet, a few drops hanging from it. Dark ink and grey wash.'),
@@ -115,18 +128,18 @@ SUBJECTS = {
   'sneeze/stage': ('sprite', (960, 160), (1536, 256), 3,
     'The front edge of a low stone fighting platform seen from the side, a long horizontal strip of big grey dressed stone '
     'blocks running across the whole width, its top edge flat, a few cracks and moss. Grey ink wash and dark ink.'),
-  # ── 时机's story levels (全文后的小游戏, 2026-10-26; sneeze.js steps): each a stage strip, the other side idle and on
+  # ── 时机's story levels (全文后的小游戏, 2026-10-26; kept seeds looked at 2 a piece; sneeze.js steps): each a stage strip, the other side idle and on
   #    its tell, and the hero. 今 levels are 沈芒 at the 沂中医 gym, the same ink as the 古.
   'shiji/shangya-stage': ('sprite', (960, 160), (1536, 256), 1,
     'A long horizontal strip of steep rock cliff face seen from the side, a narrow crack running across it with clumps of '
     'thorny wild brambles sprouting from it, wet with rain. Grey ink wash and dark ink.'),
-  'shiji/shangya-idle': ('sprite', (300, 560), (768, 1152), 1,
+  'shiji/shangya-idle': ('sprite', (300, 560), (768, 1152), 2,
     'A long thorny bramble stem hanging down slack from a rock crack above, a few leaves and thorns, loose and still. '
     'Ink lines and soft grey wash.'),
-  'shiji/shangya-tell': ('sprite', (300, 560), (768, 1152), 1,
+  'shiji/shangya-tell': ('sprite', (300, 560), (768, 1152), 2,
     'A long thorny bramble stem pulled taut and straight, bending under a weight, a few leaves shaking off. '
     'Ink lines and soft grey wash.'),
-  'shiji/shangya-me': ('sprite', (360, 560), (768, 1152), 1,
+  'shiji/shangya-me': ('sprite', (360, 560), (768, 1152), 2,
     'A thin Chinese boy of twelve climbing a cliff, seen from the side facing RIGHT, his right hand reaching up to grab a '
     'bramble, his swollen left wrist held close, a tiny silver fox curled on his shoulder. A patched hemp jacket, rope belt, '
     'straw sandals, hair in a small topknot. Old Chinese storybook figure. Ink lines and soft grey wash.'),
@@ -151,7 +164,7 @@ SUBJECTS = {
     'Two Chinese sedan-litter bearers seen from the side facing LEFT, standing close together on stone steps carrying the long '
     'bamboo poles of a litter on their shoulders, their legs together, blocking the way. Old Chinese storybook figures. '
     'Ink lines and soft grey wash.'),
-  'shiji/tuifeng-tell': ('sprite', (520, 600), (1024, 1152), 1,
+  'shiji/tuifeng-tell': ('sprite', (520, 600), (1024, 1152), 2,
     'Two Chinese sedan-litter bearers seen from the side facing LEFT, mid-stride on stone steps carrying the long bamboo '
     'poles of a litter on their shoulders, their legs wide apart leaving a gap under the poles. Old Chinese storybook '
     'figures. Ink lines and soft grey wash.'),
@@ -172,7 +185,7 @@ SUBJECTS = {
   'shiji/luobo-me': ('sprite', (360, 560), (768, 1152), 1,
     'A thin Chinese boy of thirteen crouching facing RIGHT, holding out a big white radish at arm\'s length, keeping very '
     'still. A grey disciple\'s robe, hair in a small topknot. Old Chinese storybook figure. Ink lines and soft grey wash.'),
-  'shiji/didi-stage': ('sprite', (960, 160), (1536, 256), 1,
+  'shiji/didi-stage': ('sprite', (960, 160), (1536, 256), 2,
     'A long horizontal strip of an indoor basketball court floor seen from the side, a painted line on the boards. '
     'Grey ink wash and dark ink, modern setting drawn in old Chinese album style.'),
   'shiji/didi-idle': ('sprite', (400, 600), (768, 1152), 1,
@@ -182,7 +195,7 @@ SUBJECTS = {
     'A slim young Chinese woman college student of eighteen in a modern tracksuit, hair in a ponytail, whole body seen from '
     'the side facing LEFT, one arm raised high as a signal, a stopwatch in the other hand. Modern figure in ink lines and '
     'soft grey wash.'),
-  'shiji/didi-me': ('sprite', (360, 560), (768, 1152), 1,
+  'shiji/didi-me': ('sprite', (360, 560), (768, 1152), 2,
     'A lanky Chinese young man of eighteen in a T-shirt and shorts, whole body seen from the side facing RIGHT, running '
     'hard mid-stride. Modern figure drawn in ink lines and soft grey wash.'),
 }
