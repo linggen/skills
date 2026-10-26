@@ -44,7 +44,7 @@ export const WORDS = {
     elite: '精英',
     // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
     tamesFor: '收服{names}所需',
-    replayPlay: '再试一回', replayLater: '改日', boardLeft: '没走完，往下走了。',
+    replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。',
     keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽', waitShi: '约 {n} 时辰后', waitKe: '约 {n} 刻后',
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；满{rest}小时体力回满。',
@@ -102,7 +102,7 @@ export const WORDS = {
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
-    replayPlay: 'Try again', replayLater: 'Another day', boardLeft: 'Left unfinished — on you go.',
+    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Stop here', boardLeft: 'Left unfinished — on you go.',
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. {rest} hours or more refills stamina.',
@@ -552,8 +552,11 @@ function board(card, ctx) {
   const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
   // A board offered again (Look's replay, rules/skips.mjs) may be left again, by the same gate.
   const skip = (own || task?.replay) && !today && !made && !shut ? skipBoard(g, id, ctx) : '';
+  // 收手: a board he opened by choice is put down at any moment (Look's task `leave`, rules/skips.mjs leaveOf) — one
+  // quiet word under the board, outside its play; the story's own keep 「算了，往下走」 once stuck (skip, above).
+  const leave = task?.leave && !made && !g?.state?.won && !g?.sent ? `<div class="acts gleave"><button class="act quiet" data-board-leave="${esc(id)}">${esc(ctx.words.boardLeave)}</button></div>` : '';
   const tall = framed && tallStyle(g.mod) ? ` style="${tallStyle(g.mod)}"` : '';
-  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
+  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${leave}${own ? '' : acts([{ label: ctx.words.about, ask: true, say: ask }])}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.

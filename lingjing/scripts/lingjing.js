@@ -71,7 +71,8 @@ import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost, mountOnly } from './beat-host.js';
 import { fellBack, probeCaps, withCaps } from './caps.js';
-import { anyPaused, forget as forgetShell, frameHtml, say as shellSay, shellFor, timedOf, wireShell } from './games/shell.js';
+import { anyPaused, forget as forgetShell, frameHtml, isPaused, say as shellSay, setPaused, shellFor, timedOf, wireShell } from './games/shell.js';
+import { fenceBoards } from './board-fence.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, gameAlone, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
@@ -349,6 +350,7 @@ const view = {
   trialTold: null, //    the way taken at a 抉择, on the stage until he walks on: { place, success, line, cost }
   gearNote: null, //     a 储物袋 tap the rules refused, in their words, inside the panel
   opened: null, //       a board he opened from the tray: { id, place } — it stays until he walks on
+  left: [], //           boards he put down (收手): [{ id, place, scene }] — back in the tray, never up again by themselves here
   walkedOut: null, //    a fight he left that the rules would not settle: it waits on its card, not pulled back in
   luOpen: false, //      the 录 chip's book (九鼎录), over the stage
   lu: null, //           the rules' `story` read behind it, fetched when it opens
@@ -612,6 +614,7 @@ async function readOnce() {
   const here = look.place?.id ?? null;
   // …or until the scene moves on: a board left queued must not come up after another scene's play (a tame).
   if (view.opened && (view.opened.place !== here || (view.opened.scene ?? null) !== (look.scene?.id ?? null))) keep({ opened: null });
+  if (view.left.length) keep({ left: view.left.filter((l) => l.place === here && (l.scene ?? null) === (look.scene?.id ?? null)) });
   queueMicrotask(payKeptWins);
   if (view.qPlace !== here) keep({ qSkip: [], qPlace: here });
   keep({ focus: [] });
@@ -1067,6 +1070,8 @@ function stageNow() {
   // A board he opened from the tray stays before him through the next Look
   // and whatever Ling shows, until he walks on.
   if (view.opened && !cards.some((c) => c.card === 'board' && c.id === view.opened.id)) cards = [...cards, { card: 'board', id: view.opened.id }];
+  // A board he put down (收手) is in the tray again, never back up on the stage by itself (a hosted board stands up alone).
+  if (view.left.length) cards = cards.filter((c) => !(c.card === 'board' && view.left.some((l) => l.id === c.id)));
   // The errand just taken keeps its card a moment, sealed 已接下 — not where a scene card stands:
   // there it was one of the scene's choices, and it simply leaves them (stage.mjs).
   if (view.tookOffer && !look.scene?.panel && !cards.some((c) => c.card === 'offer')) cards = [...cards, { card: 'offer' }];
@@ -1130,6 +1135,20 @@ function stageNow() {
    in play in main, or the one he opened from the tray (queued behind the scene card's rank otherwise) — main is
    that board only, no header, nothing counted in the footer; the box steps aside (boxYields), the tray goes
    (draw: `solo`). The rest stands again once it ends. */
+/* A popover, sheet or book open over the stage (事 · 物品 · 书 · 天气 · 去往 · 录 · 回看): a board in time waits under
+   it (Hanli, 2026-10-26: 交差 tapped over 兽潮) — the shell's own pause, taken off again when the last one shuts, and
+   only from the boards it paused (his own pause stays his). Its taps never reach the board (board-fence.js). */
+const popOpen = () => Boolean(view.bookOpen || view.gearOpen || view.shelfOpen || view.wxOpen || view.roadsOpen || view.luOpen || view.logOpen);
+const popPaused = new Set();
+function holdForPops(slots) {
+  if (popOpen()) {
+    for (const c of slots?.main ?? []) if (c.card === 'board' && timedOf(boards.get(c.id)?.mod) && !isPaused(c.id)) { setPaused(c.id, true); popPaused.add(c.id); }
+    return;
+  }
+  for (const id of popPaused) setPaused(id, false);
+  popPaused.clear();
+}
+
 function soloSlots(slots, cards) {
   const inMain = new Set(slots.main);
   const alone = gameAlone(cards, { up: (c) => c.card === 'board' && boardOpenNow(c.id) && (inMain.has(c) || c.id === view.opened?.id), chosen: view.opened?.id ?? null });
@@ -1620,6 +1639,7 @@ function draw() {
   // away with the rest (queue.js gameAlone) — and the stage takes the tray's height, so no board is cut off.
   const solo = Boolean(slots?.solo) || momentUp();
   document.body.classList.toggle('solo', solo);
+  holdForPops(slots);
   { const realLook = look; look = headLook(); try { paintIf('headCards', headHtml(slots && look !== realLook ? { ...slots, header: headOf(look) } : slots)); } finally { look = realLook; } }
   paintIf('footRow', footRowHtml(slots));
   paintIf('footChips', footChipsHtml(slots));
@@ -2438,7 +2458,7 @@ function logAtEnd() {
    it waits for the passage, and its tray button says so (cards.js trayHtml trayQueued). */
 function openFromTray(id) {
   const inBox = choicesInBox();
-  show({ opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
+  show({ opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, left: view.left.filter((l) => l.id !== id), qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
   if (inBox) nextBeat();
 }
 
@@ -3148,6 +3168,25 @@ function toggleOffer(id) { show({ offerRow: view.offerRow === id ? null : id });
 /* 「算了，往下走」 under a story's board, there once he is stuck (stuck.js): left, not won — the rules
    pay nothing for it (rules/skips.mjs), no win line is read, and the story goes on as after a win.
    A board the rules would not let go is laid again as it was. */
+/* 收手 — a board he opened by choice, put down at any moment (Look's task `leave`, rules/skips.mjs leaveOf): its play
+   taken down (the canvas, its loop, its window listeners), the board back in the tray, the stage as it stood before it
+   — the scene's choices, the tray. The rules write nothing for it, or put a board offered again back with the skipped.
+   Nothing is paid and nothing is spent. */
+function leaveGame(id) {
+  const g = boards.get(id);
+  if (g?.sent || g?.state?.won) return true;
+  if (g) g.left = true;
+  beats.leave(id);
+  boards.delete(id);
+  forgetShell(id);
+  show({ opened: view.opened?.id === id ? null : view.opened, left: [...view.left.filter((l) => l.id !== id), { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }] });
+  run(`leave:${id}`, async () => {
+    const r = await write('task', { action: 'leave', id }).catch(failed);
+    if (!r?.ok) keep({ doNote: refusal(r) });
+    await refresh();
+  });
+  return true;
+}
 function skipGame(id) {
   const g = boardFor(id);
   if (!g?.mod || g.state?.won || g.sent || g.skipped) return true;
@@ -3352,6 +3391,7 @@ const CLICKS = [
   // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
   ['[data-game-skip]', (el) => skipGame(el.dataset.gameSkip)],
+  ['[data-board-leave]', (el) => leaveGame(el.dataset.boardLeave)],
   ['[data-replay-play]', (el) => { run(`replay:${el.dataset.replayPlay}`, () => replayTap(el.dataset.replayPlay, true)); return true; }],
   ['[data-replay-later]', (el) => { run(`replay:${el.dataset.replayLater}`, () => replayTap(el.dataset.replayLater, false)); return true; }],
   ['[data-dlg-log]', () => { show({ logOpen: !view.logOpen }); lines.hold(view.logOpen); }],
@@ -3471,9 +3511,11 @@ const CLICKS = [
 // stepped and held here; its win goes the way a tapped win does.
 // The shell's pause (games/shell.js) stops a board's clock and hands as 回看 does; its buttons are heard once, here.
 wireShell(document);
-wireLiveGames({ boardFor, lang, paused: () => view.logOpen || anyPaused(), onWon: (g) => { g.sent = true; forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
+fenceBoards();
+wireLiveGames({ boardFor, lang, paused: () => popOpen() || anyPaused(), onWon: (g) => { g.sent = true; forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 /* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
 function beatSettled(g, result) {
+  if (g.left) return; // put down (收手): nothing to settle
   if (!result?.won && !g.sent && !g.skipped) fallBackFrom(g, result);
   if (!result?.won || g.sent || g.skipped) return;
   // A game that gives stars but no grade (结印) is graded by its deal's `grades` (stars → grade), as 砸寨 grades itself.

@@ -31,7 +31,7 @@ import { atScene, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeB
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
-import { replayBrief } from './skips.mjs';
+import { leaveOf, replayBrief } from './skips.mjs';
 import { asideLook } from './aside.mjs';
 import { capLook } from './cap.mjs';
 import { stageBack, stageNow, stagesPaid } from './gates.mjs';
@@ -477,6 +477,8 @@ function tasksBrief(content, state, ctx) {
         ...(task.alt ? { alt: task.alt.map(a => altOf(a, lang)) } : {}),
         ...(task.game && task.done_line ? { done_line: pick(task.done_line, lang) } : {}),
         ...(hosted[id] ? { hosted: true } : {}),
+        // A board he opened by choice may be put down at any moment (收手, rules/skips.mjs leaveOf); the story's own may not.
+        ...(task.kind === 'board' && leaveOf(content, state, id) ? { leave: true } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
         ...(task.kao ? { light: true, ...kaoBrief(content, state, ctx.now) } : {}),
         // A 奇遇: its frame is the board's line, its deal the game's (rules/qiyu.mjs).

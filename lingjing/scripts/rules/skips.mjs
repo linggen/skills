@@ -97,6 +97,34 @@ export function replayBrief(content, state, now) {
   return { task: due.task, title, line, ...(t.game ? { game: t.game } : {}) };
 }
 
+/* 收手 — a board he opened by choice is left at any moment, costing nothing and paying nothing (Hanli, 2026-10-26, at
+   兽潮's 先选一门本事: 「兽潮开始了, 不能退出来吗? 必须玩完才行?」). THE one rule of who may: the board's origin. The
+   story's own boards — the scene shows it (`show`), or a way on needs it (`needs.task`) — keep their rule (「算了，往下走」
+   once stuck, skipBoard); every other board (兽潮, a 秘境 run's, 本王考考你, a hosted or an errand's game, a board
+   offered again) is his to put down. Look carries it per task (`leave`); the Mac's card and the phone's ✕ read it. */
+export const storyBoard = (content, state, id) => {
+  const scene = sceneOf(content, state);
+  return sceneBoards(scene).includes(id) || (scene?.exits ?? []).some(e => e.needs?.task === id);
+};
+const replayHeld = (state, id) => Boolean(state.tasks?.[id]?.replay && state.tasks[id].status === 'offered');
+export const leaveOf = (content, state, id) => Boolean(taskOf(content, id)) && (replayHeld(state, id) || !storyBoard(content, state, id));
+
+/* `task --action=leave`: nothing is written for a board offered as it was (兽潮's night is not counted, no cooldown
+   starts, no 灵气 is spent: those come with the win, tasks.mjs). A board offered again goes back to the skipped list
+   as it stood before 再试一回 — over for the story, unpaid, and offered again on a later day (replayDue) — with
+   nothing handed over again (its `gives` went with the first skip). */
+export function leaveBoard(state, content, ctx, id) {
+  if (!taskOf(content, id)) return refuse('unknown-task', null);
+  if (!leaveOf(content, state, id)) return refuse('story-board', null);
+  if (!replayHeld(state, id)) return { state: null, result: { ok: true, left: id } };
+  const t = taskOf(content, id), held = state.tasks[id], from = held.from ?? {};
+  const s = clone(state);
+  delete s.wins?.[id];
+  s.tasks[id] = { status: 'done', skipped: true, period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
+  s.skipped = [...(s.skipped ?? []).filter(e => e.task !== id), { task: id, scene: from.scene ?? null, line: from.line ?? null, day: dayKey(ctx.now) }];
+  return { state: s, result: { ok: true, left: id, again: true } };
+}
+
 /* 再试一回: the board offered again stands open, as on the day it was first offered — its win
    is counted and paid as any (tasks.mjs taskDone), grade and mark with it. */
 export function replayBoard(state, content, ctx, id) {

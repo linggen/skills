@@ -94,6 +94,8 @@ export function asideOffers(content, state, view, now = new Date()) {
 /* The refusal for a verb while the book is set aside, or null. */
 export function asideVerb(content, state, verb, args = {}, ctx = {}) {
   if (!state?.aside || ASIDE_ALWAYS.has(verb)) return null;
+  // 收手 never moves the story: a board put down while the book is set aside is put down (rules/skips.mjs leaveBoard).
+  if (verb === 'task' && args.action === 'leave') return null;
   if (ASIDE_KIND_VERBS.has(verb) && ASIDE_KINDS.some(k => k.takes(verb, args, content, state, ctx.now ?? new Date()))) return null;
   return held(state, verb);
 }

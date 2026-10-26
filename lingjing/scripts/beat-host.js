@@ -60,6 +60,8 @@ export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc
     return entry;
   };
   return {
+    /* 收手: the play taken down now (its canvas, its loop, its listeners), and forgotten — opened again, it is dealt fresh. */
+    leave(id) { const entry = hosted.get(id); hosted.delete(id); if (entry && !entry.stop.signal.aborted) entry.stop.abort(); },
     attach() {
       const up = new Set();
       for (const host of doc.querySelectorAll('[data-mount]')) {

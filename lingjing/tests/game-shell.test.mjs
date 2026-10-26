@@ -114,7 +114,7 @@ test('every game in the registry can be hosted in the shell, and every place a g
   assert.match(read('../scripts/arcade.js'), /playAlone\(card, mount/);
   assert.match(read('../scripts/try-game.html'), /playAlone\(document\.getElementById\('play'\), mount/);
   assert.match(read('../scripts/beat-host.js'), /shell: shellFor\(id, g\.mod\.meta\?\.id\)/);
-  assert.match(read('../scripts/lingjing.js'), /paused: \(\) => view\.logOpen \|\| anyPaused\(\)/);
+  assert.match(read('../scripts/lingjing.js'), /paused: \(\) => popOpen\(\) \|\| anyPaused\(\)/); // 回看 and every popover (board-fence.test.mjs)
   // The story's card fight is the 游戏厅's mounted room in the shell (Hanli 10-22: 「故事里的对战迁移可以开」): mounted once a
   // fight into a shell frame, its taps and drag the room's own — the page draws no room and wires no drag of its own.
   const page = read('../scripts/lingjing.js');

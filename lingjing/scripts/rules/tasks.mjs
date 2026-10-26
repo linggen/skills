@@ -15,7 +15,7 @@ import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
-import { laterBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
+import { laterBoard, leaveBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
 import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, sceneOf } from './world.mjs';
@@ -36,7 +36,9 @@ export function task(state, content, ctx, args) {
   if (args.action === 'skip') return skipBoard(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'replay') return replayBoard(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'later') return laterBoard(state, content, ctx, String(args.id ?? ''));
-  return refuse('unknown-action', null, { actions: ['list', 'done', 'check', 'skip', 'replay', 'later'] });
+  // 收手: a board he opened by choice, put down (rules/skips.mjs leaveOf).
+  if (args.action === 'leave') return leaveBoard(state, content, ctx, String(args.id ?? ''));
+  return refuse('unknown-action', null, { actions: ['list', 'done', 'check', 'skip', 'replay', 'later', 'leave'] });
 }
 
 /* An errand held and not yet met that asks for a win on this board. It
