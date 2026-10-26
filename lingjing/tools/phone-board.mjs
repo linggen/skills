@@ -37,6 +37,18 @@ export function closure(entry, seen = new Set()) {
 
 const filesUnder = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? filesUnder(path.join(dir, e.name)) : [path.join(dir, e.name)]));
 
+/** A 大场面's paintings: the `'art/…'` strings its module names, under the world. */
+export const pieceArt = (module) => [...fs.readFileSync(path.join(SKILL, module), 'utf8').matchAll(/'(art\/[^']+\.webp)'/g)].map((m) => `worlds/jiuding/${m[1]}`);
+
+/** Every card's and every creature's art (the fight room's: a hand grows across the story), as the tables name it. */
+export function fightArt() {
+  const rows = ['cards.json', 'creatures.json'].flatMap((t) => { const d = JSON.parse(fs.readFileSync(path.join(SKILL, 'worlds/jiuding', t), 'utf8')); return d.cards ?? d.creatures ?? []; });
+  return [...new Set(rows.map((r) => r.art).filter((a) => typeof a === 'string' && fs.existsSync(path.join(SKILL, 'worlds/jiuding', a))).map((a) => `worlds/jiuding/${a}`))];
+}
+
+/** The story screen's own files (faces, the pouch's things): `story`, and every file under `storyDirs`. */
+export const storyFiles = () => [...(KIT.story ?? []), ...(KIT.storyDirs ?? []).flatMap((d) => filesUnder(path.join(SKILL, d)).map(rel))];
+
 /** Every file `game` needs, as sorted skill-relative paths. */
 export function boardFiles(game = 'shouqiang') {
   const g = KIT.games[game];
@@ -44,6 +56,8 @@ export function boardFiles(game = 'shouqiang') {
   const all = new Set();
   for (const e of [...KIT.entry, g.module, ...(g.modules ?? [])]) for (const f of closure(e)) all.add(f);
   for (const d of g.dirs ?? []) for (const f of filesUnder(path.join(SKILL, d))) all.add(f);
+  if (g.art === 'auto') for (const f of pieceArt(g.module)) all.add(path.join(SKILL, f));
+  if (g.art === 'cards') for (const f of fightArt()) all.add(path.join(SKILL, f));
   for (const f of g.exclude ?? []) all.delete(path.join(SKILL, f));
   for (const f of [...KIT.shared, ...(g.css ?? []), ...(g.files ?? [])]) {
     const file = path.join(SKILL, f);
@@ -68,11 +82,12 @@ export function kitPacks(games = kitGames()) {
   const need = new Map();
   for (const id of games) for (const f of boardFiles(id)) need.set(f, (need.get(f) ?? 0) + 1);
   const base = new Set([...KIT.entry.flatMap((e) => [...closure(e)].map(rel)), ...KIT.shared]);
-  for (const f of KIT.story ?? []) {
+  const story = new Set(storyFiles());
+  for (const f of story) {
     if (!fs.existsSync(path.join(SKILL, f))) throw new Error(`${f} is not in the skill`);
     need.set(f, need.get(f) ?? 0);
   }
-  const common = [...need.keys()].filter((f) => base.has(f) || need.get(f) > 1 || (KIT.story ?? []).includes(f)).sort();
+  const common = [...need.keys()].filter((f) => base.has(f) || need.get(f) > 1 || story.has(f)).sort();
   const inCommon = new Set(common);
   return { common, games: Object.fromEntries(games.map((id) => [id, boardFiles(id).filter((f) => !inCommon.has(f))])) };
 }

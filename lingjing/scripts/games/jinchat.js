@@ -15,11 +15,14 @@
 // nothing). Never stuck on a model: a 测试存档's stub (`&her=stub`) answers on the page; chat off, no engine, no chat
 // or a turn that fails → the book's own exchange is played and 「就到这儿」 ends it. The stuck gate (stuck.js) still
 // offers 「算了，往下走」 under the card after 75 s, as on every board.
+// A host with no Ling chat (the phone app, doc/lingjing-phone.md step 2) hands `data.ask({ agent, text, system })` →
+// `{ text }`: the same hidden line goes to its own model, with HOST_SYSTEM as the turn's system (what SKILL.md's
+// `[jinchat]` rule is to the Mac's Ling); a host that cannot reach one throws `far`, and the book's exchange plays.
 //
 // mount(container, { data, lang, signal, shell }) → Promise<{ won, grade, stars } | { won: false, left: true }>
 
 import { askInChat, reachable } from './drawguess-ling.js';
-import { castOf, outcome, parseChat, stubReply, turnLine } from './jinchat-rules.js';
+import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './jinchat-rules.js';
 
 export const meta = {
   id: 'jinchat',
@@ -164,6 +167,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     if (data.seam === 'stub') { await wait(900); return { text: stubReply(g.cast, g.sent) }; }
     const line = turnLine(g.chat, { k: g.sent, text, cast: g.cast, shown: g.shown.slice(0, g.chat.open?.length ?? 0), lang });
     log({ kind: 'sent', chat: data.chat, k: g.sent });
+    if (typeof data.ask === 'function') return data.ask({ agent: 'ling', text: line, system: HOST_SYSTEM[lang] ?? HOST_SYSTEM.zh });
     return askInChat({ sid: sessionOf(), agent: 'ling', text: line, signal, timeoutMs: TIMEOUT_MS });
   };
 
@@ -189,7 +193,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
       g.sent -= 1;
       g.fails = (g.fails ?? 0) + 1;
       g.busy = false;
-      if (g.fails >= 2) return cannot(w.far);
+      if (g.fails >= 2 || r?.err === 'far') return cannot(w.far);
       foot(w.err);
       inputOn(true);
       return;
@@ -219,7 +223,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     lefts();
     await typeOut((g.chat.open ?? []).map((l) => ({ who: l.who, card: l.card, text: pick(l.text, lang) })));
     if (data.seam === 'off') return cannot(w.off);
-    if (data.seam !== 'stub' && (!(await reachable()) || !sessionOf())) return cannot(w.far);
+    if (data.seam !== 'stub' && typeof data.ask !== 'function' && (!(await reachable()) || !sessionOf())) return cannot(w.far);
     inputOn(true);
   };
 

@@ -23,13 +23,27 @@ test('the kit holds the host page, the game, its level and the shared sound kit'
     'scripts/games/kit/sound.js', 'scripts/games/kit/audio/sounds.json', 'scripts/games/kit/audio/sfx.m4a']) assert.ok(set.has(f), `${f} is in the kit`);
 });
 
-test('every board of 第一回 the story stands is in the kit (00-fox: the fight room, kapai)', () => {
-  const games = JSON.parse(fs.readFileSync(path.join(WORLD, 'tasks/world.json'), 'utf8')).tasks;
-  const h01 = fs.readdirSync(path.join(WORLD, 'chapters/00-prologue/scenes')).map((f) => scene(f.replace('.json', ''))).filter((s) => s.hui === 'h01');
-  const boards = h01.flatMap((s) => (s.show ?? []).filter((c) => c.card === 'board').map((c) => games.find((t) => t.id === c.id)?.game));
-  assert.ok(boards.length >= 7, "the 回's boards");
-  for (const g of boards) assert.ok(kitGames().includes(g), `${g} is in the kit`);
-  assert.ok(h01.some((s) => s.exits.some((e) => e.game?.kind === 'duel')) && kitGames().includes('kapai'), 'the fight room');
+// 卷一: every chapter whose `juan` is 1 (蒙山 · 外门 · 筑基 · 冀州), 古 and 今 alike (doc/lingjing-phone.md step 2).
+const CHAPTERS = path.join(WORLD, 'chapters');
+const juan1 = fs.readdirSync(CHAPTERS).filter((c) => JSON.parse(fs.readFileSync(path.join(CHAPTERS, c, 'chapter.json'), 'utf8')).juan === 1);
+const scenes1 = juan1.flatMap((c) => fs.readdirSync(path.join(CHAPTERS, c, 'scenes')).filter((f) => f.endsWith('.json'))
+  .map((f) => JSON.parse(fs.readFileSync(path.join(CHAPTERS, c, 'scenes', f), 'utf8'))));
+const TASKS = fs.readdirSync(path.join(WORLD, 'tasks')).flatMap((f) => JSON.parse(fs.readFileSync(path.join(WORLD, 'tasks', f), 'utf8')).tasks ?? []);
+const taskOf = (id) => TASKS.find((t) => t.id === id);
+
+test('every board 卷一 stands is in the kit (a board missing here is a 「在 Mac 上玩」 on the phone: add it to tools/phone/board-kit.json)', () => {
+  const boards = scenes1.flatMap((s) => (s.show ?? []).filter((c) => c.card === 'board').map((c) => [s.id, c.id, taskOf(c.id)?.game]));
+  assert.ok(boards.length >= 60, "卷一's boards");
+  for (const [scene, id, g] of boards) assert.ok(g && kitGames().includes(g), `${scene} · ${id}: ${g} is in the kit`);
+  assert.ok(scenes1.some((s) => (s.exits ?? []).some((e) => e.game?.kind === 'duel')) && kitGames().includes('kapai'), 'the fight room');
+});
+
+test("the day's boards (兽潮 · 本王考考你 …), the 秘境's and the 奇遇's are in the kit (the camera 结印 and 密室 are the Mac's)", () => {
+  const live = new Set(JSON.parse(fs.readFileSync(path.join(WORLD, 'games.json'), 'utf8')).games.filter((g) => g.group !== 'old').map((g) => g.id));
+  const day = TASKS.filter((t) => t.kind === 'board' && t.period && live.has(t.game) && !['lianliankan', 'mishi', 'jieyin'].includes(t.game));
+  assert.ok(day.some((t) => t.id === 'shouchao') && day.some((t) => t.id === 'benwang-kao'), 'the tide and the 考');
+  for (const t of day) assert.ok(kitGames().includes(t.game), `${t.id}: ${t.game} is in the kit`);
+  for (const g of ['shoulu', 'sadou', 'huarong', 'wuziqi', 'luoshu', 'qiqiao', 'kailu']) assert.ok(kitGames().includes(g), `${g} is in the kit`);
 });
 
 for (const game of kitGames()) {
@@ -52,10 +66,9 @@ for (const game of kitGames()) {
   });
 }
 
-test('every 大场面 第一回 lays under a beat ({景=id}) is in the kit as piece-<id>, played by the host page', () => {
-  const h01 = fs.readdirSync(path.join(WORLD, 'chapters/00-prologue/scenes')).map((f) => scene(f.replace('.json', ''))).filter((s) => s.hui === 'h01');
-  const pieces = new Set(h01.flatMap((s) => [...JSON.stringify(s).matchAll(/\{景=([a-z]+)\}/g)].map((m) => m[1])));
-  assert.ok(pieces.size >= 3, "the 回's pieces");
+test('every 大场面 卷一 lays under a beat ({景=id}) is in the kit as piece-<id>, played by the host page', () => {
+  const pieces = new Set([...scenes1, ...TASKS].flatMap((s) => [...JSON.stringify(s).matchAll(/\{景=([a-z]+)\}/g)].map((m) => m[1])));
+  assert.ok(pieces.size >= 8, "卷一's pieces");
   for (const id of pieces) {
     assert.equal(KIT.games[`piece-${id}`]?.piece, id, `${id} is in the kit`);
     assert.equal(boardsTable().games[`piece-${id}`].piece, id, `${id} is in the host's table`);
@@ -66,14 +79,20 @@ test('every 大场面 第一回 lays under a beat ({景=id}) is in the kit as pi
   }
 });
 
-test("the fox's fight: every card it deals and its foe have their art in the kapai pack", () => {
-  const fox = scene('00-fox').exits.find((e) => e.game?.kind === 'duel').game;
-  const cards = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(WORLD, 'cards.json'), 'utf8')).cards.map((c) => [c.id, c]));
-  const creature = JSON.parse(fs.readFileSync(path.join(WORLD, 'creatures.json'), 'utf8')).creatures.find((c) => c.id === fox.creature);
+test("卷一's fights: every card a foe deals, and the foe, have their art in the kapai pack; so has every card", () => {
+  const cards = JSON.parse(fs.readFileSync(path.join(WORLD, 'cards.json'), 'utf8')).cards;
+  const byId = Object.fromEntries(cards.map((c) => [c.id, c]));
+  const creatures = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(WORLD, 'creatures.json'), 'utf8')).creatures.map((c) => [c.id, c]));
   const kapai = new Set(boardFiles('kapai'));
-  // The starter hand (娘烙的饼) is the rules' (cards.mjs fightSetup, rootless before 入门): checked by name here.
-  for (const id of ['niangbing', ...fox.foe.deck, ...fox.foe.extra]) assert.ok(kapai.has(`worlds/jiuding/${cards[id].art}`), `${id}'s art`);
-  assert.ok(kapai.has(`worlds/jiuding/${creature.art}`), "the foe's art");
+  const fights = scenes1.flatMap((s) => (s.exits ?? []).filter((e) => e.game?.kind === 'duel').map((e) => e.game));
+  assert.ok(fights.length >= 10, "卷一's fights");
+  for (const f of fights) {
+    for (const id of [...(f.foe?.deck ?? []), ...(f.foe?.extra ?? [])]) if (byId[id]?.art) assert.ok(kapai.has(`worlds/jiuding/${byId[id].art}`), `${f.id}: ${id}'s art`);
+    const c = creatures[f.creature];
+    if (c?.art) assert.ok(kapai.has(`worlds/jiuding/${c.art}`), `${f.id}: the foe's art`);
+  }
+  // A hand grows across the story (the 书 · 游戏 cards of doc/cards.md): every card with art ships.
+  for (const c of cards) if (c.art && fs.existsSync(path.join(WORLD, c.art))) assert.ok(kapai.has(`worlds/jiuding/${c.art}`) || boardFiles('kapai').length === 0, `${c.id}'s art`);
 });
 
 test('packs: every file in exactly one, the host page and the table in the common one, within a budget', () => {
@@ -88,8 +107,9 @@ test('packs: every file in exactly one, the host page and the table in the commo
   assert.deepEqual(Object.keys(boardsTable().games).sort(), kitGames().sort());
   assert.equal(BOARDS_JSON, 'scripts/games/phone/boards.json');
   const bytes = [...seen.keys()].reduce((n, f) => n + fs.statSync(path.join(SKILL, f)).size, 0);
-  // 第一回's eight boards, the fight and its three 大场面 (10-26: ~17.8 MB; the pieces' paintings and Pixi are ~3.5 MB of it).
-  assert.ok(bytes < 20 * 1024 * 1024, `all packs ${bytes} B`);
+  // 卷一's boards (24 games), the fight with every card and creature, and eight 大场面 (10-26 step 2: ~44 MB; step 1's
+  // 第一回 alone was ~17.8 MB). The phone keeps them bundled until ~100 MB (doc/lingjing-phone.md, decided 10-26).
+  assert.ok(bytes < 56 * 1024 * 1024, `all packs ${bytes} B`);
 });
 
 test('nothing outside the kit: no other game, no art of another board, within a budget', () => {
@@ -97,7 +117,8 @@ test('nothing outside the kit: no other game, no art of another board, within a 
   for (const id of kitGames()) assert.ok(!boardFiles(id).includes('scripts/games/jieyin/helper.js'), `${id}: the camera 结印 is not on the phone yet`);
   assert.ok(!set.has('scripts/games/jieyin/helper.js'), 'the camera 结印 is not on the phone yet');
   const bytes = files.reduce((n, f) => n + fs.statSync(path.join(SKILL, f)).size, 0);
-  assert.ok(bytes < 6 * 1024 * 1024, `kit is ${bytes} B`);
+  // 守墙关 with the shared kit: since step 2 every bed of the sound kit is shared (4.2 MB of it).
+  assert.ok(bytes < 10 * 1024 * 1024, `kit is ${bytes} B`);
 });
 
 test('the pack holds every file byte for byte', () => {

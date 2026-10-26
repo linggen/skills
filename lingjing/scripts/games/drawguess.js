@@ -209,9 +209,10 @@ function keepWho(who) { try { globalThis.localStorage?.setItem(WHO_KEY, who); } 
 /* Whether a round can be played here: a 测试存档's opt-in seam (`stub` answers on the page, `off` not
    at all), a way to the engine, the game's chat to look in (`sid`), and a model that is not declared
    blind. No opening look is spent (a look is a model turn): the first guess says whether she can see. */
-async function lookFirst(model, { seam = null, sid = null } = {}) {
+async function lookFirst(model, { seam = null, sid = null, host = false } = {}) {
   if (seam === 'stub') return { blind: false, model: { id: 'stub' } };
   if (seam) return { off: true };
+  if (host) return { blind: false, model: null }; // a host with its own model (`data.ask`, the phone): its first look says whether she sees
   if (!(await reachable())) return { far: true };
   if (!sid) return { nochat: true };
   const named = model ? null : await declaredBlind().catch(() => null);
@@ -242,6 +243,12 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const max = Math.max(1, Number(data.maxLooks) || MAX_LOOKS);
   const ctxLine = typeof data.context === 'string' ? data.context : null;
   const sessionOf = () => (typeof data.session === 'function' ? data.session() : data.session ?? null);
+  // A host with no Ling chat (the phone app) hands `data.ask({ agent, text, png })` → `{ text }`: a look goes to its own
+  // model (her soul there), the picture with the line; else the look is a turn in the game's chat (drawguess-ling.js).
+  const hostAsk = typeof data.ask === 'function' ? data.ask : null;
+  const lookAt = ({ png, text }) => (hostAsk
+    ? hostAsk({ agent: g.who, text, png })
+    : askInChat({ sid: sessionOf(), agent: g.who, png, text, model: data.model ?? null, signal }));
   const root = doc.createElement('div');
   root.className = `g-ink g-dg${fixed ? ' is-fixed' : ''}`;
   const names = w.names;
@@ -454,7 +461,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     }
     const png = paperPng(doc, g.strokes), text = askGuess(g.who, g.loop.calls, g.loop.calls <= 1 ? ctxLine : null, lang);
     log({ kind: 'sent', who: g.who, word: g.word.zh, n: g.loop.calls });
-    return askInChat({ sid: sessionOf(), agent: g.who, png, text, model: data.model ?? null, signal });
+    return lookAt({ png, text });
   };
 
   const begin = async () => {
@@ -495,7 +502,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   };
 
   const reveal = async (won) => {
-    const sid = data.seam === 'stub' ? null : sessionOf();
+    const sid = data.seam === 'stub' ? null : hostAsk ? 'host' : sessionOf();
     try {
       if (data.seam === 'stub') {
         await new Promise((r) => setTimeout(r, 800));
@@ -504,7 +511,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
         foot(sub(w.looking));
         const png = paperPng(doc, g.strokes), text = askReveal(g.who, lang === 'en' ? g.word.en : g.word.zh, won, lang);
         log({ kind: 'sent', who: g.who, word: g.word.zh, reveal: true });
-        const r = await Promise.race([askInChat({ sid, agent: g.who, png, text, model: data.model ?? null, signal }),
+        const r = await Promise.race([lookAt({ png, text }),
           new Promise((ok) => setTimeout(() => ok(null), 12000))]);
         if (r?.text) {
           const p = parseReply(r.text);
@@ -601,7 +608,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
     g.rounds = await setOf(data);
     letter();
     let s;
-    try { s = await lookFirst(data.model ?? null, { seam: data.seam ?? null, sid: sessionOf() }); } catch (e) { s = { far: true, err: e }; }
+    try { s = await lookFirst(data.model ?? null, { seam: data.seam ?? null, sid: sessionOf(), host: Boolean(hostAsk) }); } catch (e) { s = { far: true, err: e }; }
     if (who !== g.who) return; // the guesser changed while this one was asked
     g.model = s.model?.id ?? null;
     foot(modelLine());

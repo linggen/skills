@@ -213,7 +213,9 @@ test('画猜\'s turn shape (Hanli 10-19): the picture rides a turn in the game\'
   assert.match(ling, /const seen = \(await linesOf\(sid, agent\)\)\.length;\n  const res = await post\('\/api\/chat'/, 'counted before the turn goes');
   const src = fs.readFileSync(new URL('../scripts/games/drawguess.js', import.meta.url), 'utf8');
   assert.match(src, /askInChat\(\{ sid: sessionOf\(\), agent: g\.who, png, text/, 'a guess goes to the game\'s chat');
-  assert.match(src, /askInChat\(\{ sid, agent: g\.who, png, text/, 'the reveal too');
+  assert.match(src, /const r = await Promise\.race\(\[lookAt\(\{ png, text \}\)/, 'the reveal too (the same one way)');
+  // A host with its own model (the phone, `data.ask`) takes the look instead: the picture and the line, to her.
+  assert.match(src, /hostAsk\(\{ agent: g\.who, text, png \}\)/);
   // The page hands the board its chat (the session it is bound to now).
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /deal\.session = \(\) => chat\?\.getSessionId\?\.\(\) \?\? null;/);

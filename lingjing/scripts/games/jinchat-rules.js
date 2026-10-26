@@ -131,6 +131,13 @@ export function turnLine(chat, { k = 1, text = '', cast = [], shown = [], lang =
   ].filter(Boolean).join('');
 }
 
+/** The system turn a host with its own model gives each line (games/jinchat.js `data.ask`; the phone): what SKILL.md's
+    `[jinchat]` rule tells the Mac's Ling — their reply only, in the shape the hidden line asks, nothing else. */
+export const HOST_SYSTEM = {
+  zh: '这是灵境（一部修仙小说改成的游戏）里的一段聊天。只照 [HIDDEN] 那一行说的，替书中人物写下一条回话：不叙述，不解释，不调用工具，不提这是游戏。',
+  en: 'This is a chat inside Lingjing (a game made from a xianxia novel). Do only what the [HIDDEN] line says: write the next message from the people of the book — no narration, no explaining, no tools, never that this is a game.',
+};
+
 /** A 测试存档's stub (`&her=stub`): a marked line from the first in the chat, the goal met on his second line. */
 export function stubReply(cast, k) {
   const who = cast[0]?.name ?? '';

@@ -14,6 +14,10 @@
 //                    say   { who, text, ms }   a bubble over the field (台词预取's lines)
 //                    event { f }               the game's facts (start · wave · wave_cleared · boss · low · end …)
 //                    talk  { id, text }        a line for 银月 (讨饼债): the app asks the phone's Yinyue, answers heard()
+//                    ask   { id, game, agent, text, png?, system? }   a model turn for a chat or a 画猜 look (jinchat · drawguess:
+//                                              what the Mac sends to its chat, drawguess-ling.js askInChat): answered by heard()
+//                    rules { id, verb, args }  a rules call the board makes itself (开炉's feed, 本王考考你's `kao open`, 银月
+//                                              out of the 木牌 for a round): the app calls its rules, answers heard('{"result":…}')
 //                    stuck {}                  the board says it may be left (its `stuck()`): the app offers 「算了，往下走」
 //                    end   { won, stars, grade, left, next, stats, outcome, picks }
 //
@@ -27,6 +31,7 @@
 import { forget, setPaused, settle, shellFor } from '../shell.js';
 import { unlockOn } from '../kit/sound.js';
 import { stuckNow } from '../../stuck.js';
+import { mountPure } from '../mount.js';
 
 const ID = 'board';
 const SKILL = new URL('../../../', import.meta.url);
@@ -82,11 +87,47 @@ const talk = (text) => new Promise((resolve, reject) => {
   post({ t: 'talk', id, text });
 });
 
+/* A model turn (jinchat · drawguess): the Mac's askInChat answer, { text } or { refused }; 'far' when no model answers. */
+const ask = (game) => ({ agent = 'ling', text, png = null, system = null } = {}) => new Promise((resolve, reject) => {
+  const id = `a${(talkN += 1)}`;
+  talks.set(id, { resolve: (reply) => resolve({ text: reply }), reject });
+  post({ t: 'ask', id, game, agent, text, ...(png ? { png } : {}), ...(system ? { system } : {}) });
+});
+
+/* A rules call the board makes (answered with the rules' JSON). */
+const rules = (verb, args = {}) => new Promise((resolve, reject) => {
+  const id = `r${(talkN += 1)}`;
+  talks.set(id, { resolve, reject, raw: true });
+  post({ t: 'rules', id, verb, args });
+});
+
+/* What a board is dealt beyond its data: the seams to this host (the Mac's lingjing.js mountData does the same with its
+   own chat and verbs). A deal that names a rules verb (`begin`: 本王考考你) gets its call; a board that needs 银月
+   (`her`) wakes her for the round and puts her back; a chat or a 画猜 asks the app's model; 开炉 feeds through the rules. */
+function dealOf(game, data, task) {
+  const d = { ...data };
+  if (game === 'bingzhai') d.talk = talk;
+  if (game === 'jinchat' || game === 'drawguess') d.ask = ask(game);
+  if (game === 'kailu') d.roll = (ids, lingshi, press) => rules('fantong', { action: 'feed', ids: ids.join(','), lingshi: lingshi || 0, press: press ? 1 : 0 });
+  if (d.begin && typeof d.begin === 'object') {
+    const { verb, ...args } = d.begin;
+    d.begin = async () => {
+      const r = await rules(verb, args).catch(() => null);
+      return r?.ok ? { ok: true, word: r.word ?? null } : { ok: false, say: r?.say ?? null, done: r?.refused === 'cap' };
+    };
+  }
+  if (task?.her && task.id) {
+    d.wake = () => rules('hergame', { hold: 1, task: task.id });
+    d.rest = () => rules('hergame', { hold: 0, task: task.id });
+  }
+  return d;
+}
+
 let go = null, abort = null, stuckTimer = null;
 let state = () => undefined; // the board's state, when its mount hands a look at it (`peek`)
 
 async function mountBoard(spec) {
-  const { game, data = {}, lang = 'zh', seed, reducedMotion = false, lines } = spec;
+  const { game, data = {}, lang = 'zh', seed, reducedMotion = false, lines, level = 1, task = null } = spec;
   if (spec.trace) traceTaps();
   const row = (await table).games?.[game];
   if (!row) { post({ t: 'error', error: `no board ${game}` }); return; }
@@ -100,6 +141,9 @@ async function mountBoard(spec) {
   document.documentElement.classList.toggle('is-dom', Boolean(row.css?.length));
   if (row.piece) return playPiece(row.piece, lang);
   const mod = await import(new URL(`scripts/games/${game}.js`, SKILL).href);
+  // A pure board (meta · newGame · act · html: 洛书, 五子棋 …) gets the contract from mount.js, as the 游戏厅 gives it.
+  const mount = mod.mount ?? (mod.html ? mountPure(mod) : null);
+  if (!mount) { post({ t: 'error', error: `${game} has no mount` }); return; }
   const shell = {
     ...shellFor(ID, game),
     say: (who, text, ms) => post({ t: 'say', who, text, ms }),
@@ -109,7 +153,7 @@ async function mountBoard(spec) {
   // 斗法: the moves the rules will replay.
   const picks = [];
   const story = game === 'kapai' ? { onMove: (token) => picks.push(token) } : undefined;
-  const dealt = game === 'bingzhai' ? { ...data, talk } : data;
+  const dealt = dealOf(game, data, task);
   post({ t: 'mounted', game });
   // 「算了，往下走」 by the page's one rule (stuck.js): the board stood unwon long enough, or the game says so
   // (its `stuck(state)`; a pure board's state through mount.js `peek`).
@@ -117,8 +161,8 @@ async function mountBoard(spec) {
   const g = { mod, shownAt: performance.now(), get state() { return state(); } };
   stuckTimer = setInterval(() => { if (stuckNow(g, performance.now())) { clearInterval(stuckTimer); post({ t: 'stuck' }); } }, 1000);
   const stage = document.getElementById('stage');
-  const r = await mod.mount(stage, {
-    lang, data: dealt, seed, reducedMotion, lines, signal: abort.signal, shell, story, onEvent: (f) => post({ t: 'event', f }),
+  const r = await mount(stage, {
+    lang, data: dealt, seed, level, reducedMotion, lines, signal: abort.signal, shell, story, onEvent: (f) => post({ t: 'event', f }),
     peek: (look) => { state = look; },
   });
   clearInterval(stuckTimer);
@@ -171,6 +215,7 @@ globalThis.LingjingHost = {
     if (!t) return;
     talks.delete(id);
     const m = typeof json === 'string' ? JSON.parse(json) : json;
+    if (t.raw) { if (m?.result !== undefined) t.resolve(m.result); else t.reject(new Error(m?.error ?? 'no answer')); return; }
     if (m?.reply != null) t.resolve(String(m.reply)); else t.reject(new Error(m?.error ?? 'no answer'));
   },
 };
