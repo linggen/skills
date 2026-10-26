@@ -94,7 +94,7 @@
 .g-rain-pips { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
 .g-rain-pips i { width: 12px; height: 7px; border: 1.5px solid var(--dim); border-top: 0; border-radius: 0 0 8px 8px; opacity: .55; }
 .g-rain-pips i.is-on { background: var(--water); border-color: var(--water); opacity: 1; }
-.g-rain-house { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+.g-rain-house { display: grid; grid-template-columns: repeat(var(--rain-cols, 3), 1fr); gap: 8px; width: 100%; }
 .g-rain-spot { position: relative; padding: 0 0 6px; border-radius: 10px; border: 1px solid var(--line); background: transparent; cursor: pointer;
   display: flex; flex-direction: column; align-items: stretch; gap: 2px; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 .g-rain-spot .g-scene { border: 0; border-radius: 9px 9px 0 0; }

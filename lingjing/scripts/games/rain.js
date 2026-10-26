@@ -14,6 +14,28 @@
 // 娘 calls out and the same night starts again at once, as the dark's fall does. How dry the floor
 // stayed is the `grade` (dry · wet; a flooded try makes it wet) — the rules write it as a mark.
 // Pure module: newGame / html / act / tick (live-games.js runs the clock).
+//
+// The kit (打地鼠) plays any level from data; 接雨 above is its built-in default, `SHIAO` (id `shiao`),
+// and the exported constants (NEED, CAP, FLOOD, …) are its values. A level (every field optional; a
+// missing one is the default's — a line falls back line by line):
+//   id, name {zh, en}, how {zh, en}   the level's name and its how-to text (howOf)
+//   spots [{zh, en}]                  the spots that leak, one or more; `cols` the grid's columns (3)
+//   need                              leaks caught to win          cap    drops in one leak
+//   limit                             ms until the rain stops      flood  puddles that lose the try
+//   dry                               puddles at most for the good grade
+//   lead                              ms the stain shows before the first drop
+//   gap [dusk, end]                   ms leak-wave to leak-wave    beat [dusk, end]  ms drop to drop
+//   teach                             leaks that come alone first  three  share of the night from which three open
+//   jit                               ms a wave's leaks open apart at most
+//   lines {zh: {…}, en: {…}}          ready start go placed wasted poured spill thick thicker dry wet short
+//                                     flood, and the head labels full floor drip
+//   art {beam, basin, ground?}        images under worlds/jiuding/art/games/ (e.g. 'rain/beam.webp'):
+//                                     the overhead strip, the catcher, and a ground drawn under each spot
+//   grades [good, bad]                the grade names (dry · wet); the lines stay keyed dry / wet
+//   row {x, step, w, foot}            the end picture: `need` catchers in a row (default: centred to fit)
+// A host passes a level as mount(container, { data: { levels: [level] } }) or newGame(seed, 1, { levels:
+// [level] }); or names one with data.level — 'shiao', or a level of the games.json row with id `rain`
+// (ladderOf / levelFor, as qimai does). A state carries a data level as `level`; levelOf(s) reads it.
 import { rng } from './seeded.js';
 import { btn, n, scene, splash, still, stroke } from './ink.js';
 import { mountPure } from './mount.js';
@@ -27,41 +49,6 @@ export const meta = {
     en: 'Tap a spot as it starts to leak to set a basin there — only where it leaks. When it stops, the basin comes back by itself.',
   },
 };
-
-export const NEED = 17; //        leaks caught: the book's seventeen basins
-export const CAP = 4; //          drops in one leak (a basin that caught them all is full)
-export const LIMIT = 110000; //   the fifth watch: the rain stops
-export const DRY = 10; //         puddles at most for a dry floor
-export const LEAD = 900; //       the stain shows this long before a leak's first drop
-export const MISS_MS = 500; //    a tap on a dry spot: the hand is busy this long
-export const NOPE_MS = 350; //    a refused tap shakes its spot this long
-export const GRACE = 300; //      a tap this soon before a stain shows counts: a pair's second leak opens up to JIT after the first (seen on the phone 2026-10-26: the second basin, tapped at once, was a wasted trip)
-/* Puddles that lose the night — re-picked by play 2026-10-19, when the rain went to pairs (Hanli:
-   「提高一点难度, 同时放两个盆, 或者快一点」). 60 seeds, one night's puddles, the flood off; a hand lands
-   its tap its pace after the stain shows, and ~0.35 s after its last tap (two stains seen together
-   are tapped one after the other, not each seen afresh): a person's pace (the bot) 0; a 0.6 s hand
-   median 2, max 5 — puddles, never near the line; 1 s median 18, max 21 — 16 of 60 reach 19, tight;
-   1.3 s median 27 (60 of 60 reach 19); away 3 s of every 8 median 25 (57); away 5 s of 10 (60). Idle
-   reaches 19 at ~11 s. (Before, one leak at a time to a quarter of the night: 0.6 s max 3, 1 s max 18,
-   FLOOD 40 — nobody but the idle lost.) */
-export const FLOOD = 19;
-const CALM = 1500; //             after a flood: the line stands, no drip, then the rain again
-const AT = 1500; //               the first leak
-const GAP = [2400, 1200]; //    leaks to leaks, dusk → the fifth watch (and never over the cap)
-export const TEACH = 2; //        the first leaks come one at a time; then two open together
-export const THREE = 0.25; //     from this much of the night, a pair or three, three live at most
-export const JIT = 250; //        the leaks of one pair open this close together
-const BEAT = [500, 400]; //       drop to drop within a leak, dusk → the fifth watch
-const AFTER = 300; //             the leak's last drop → the basin carried off
-
-export const SPOTS = [
-  { zh: '灶台底下', en: 'Under the stove' },
-  { zh: '炕头', en: "Head of the bed" },
-  { zh: '堂屋当中', en: 'Middle of the room' },
-  { zh: '水缸边', en: 'By the water vat' },
-  { zh: '兽皮底下', en: 'Under the hides' },
-  { zh: '门槛里头', en: 'Inside the doorway' },
-];
 
 const T = {
   zh: {
@@ -98,13 +85,91 @@ const T = {
   },
 };
 
+/* 接雨 · 十七个盆, the built-in default level. Its numbers are pinned by tests/rain.test.mjs. */
+export const SHIAO = {
+  id: 'shiao',
+  name: meta.name,
+  how: meta.how,
+  spots: [
+    { zh: '灶台底下', en: 'Under the stove' },
+    { zh: '炕头', en: "Head of the bed" },
+    { zh: '堂屋当中', en: 'Middle of the room' },
+    { zh: '水缸边', en: 'By the water vat' },
+    { zh: '兽皮底下', en: 'Under the hides' },
+    { zh: '门槛里头', en: 'Inside the doorway' },
+  ],
+  need: 17, //        leaks caught: the book's seventeen basins
+  cap: 4, //          drops in one leak (a basin that caught them all is full)
+  limit: 110000, //   the fifth watch: the rain stops
+  flood: 19, //       puddles that lose the night (FLOOD below)
+  dry: 10, //         puddles at most for a dry floor
+  lead: 900, //       the stain shows this long before a leak's first drop
+  gap: [2400, 1200], // leaks to leaks, dusk → the fifth watch (and never over the cap)
+  beat: [500, 400], //  drop to drop within a leak, dusk → the fifth watch
+  teach: 2, //        the first leaks come one at a time; then two open together
+  three: 0.25, //     from this much of the night, a pair or three, three live at most
+  jit: 250, //        the leaks of one pair open this close together
+  lines: T,
+  art: { beam: 'rain/beam.webp', basin: 'rain/basin.webp' },
+  grades: ['dry', 'wet'],
+  row: { x: 14, step: 17.4, w: 15, foot: 44 },
+};
+
+export const NEED = SHIAO.need;
+export const CAP = SHIAO.cap;
+export const LIMIT = SHIAO.limit;
+export const DRY = SHIAO.dry;
+export const LEAD = SHIAO.lead;
+export const MISS_MS = 500; //    a tap on a dry spot: the hand is busy this long
+export const NOPE_MS = 350; //    a refused tap shakes its spot this long
+export const GRACE = 300; //      a tap this soon before a stain shows counts: a pair's second leak opens up to JIT after the first (seen on the phone 2026-10-26: the second basin, tapped at once, was a wasted trip)
+/* Puddles that lose the night — re-picked by play 2026-10-19, when the rain went to pairs (Hanli:
+   「提高一点难度, 同时放两个盆, 或者快一点」). 60 seeds, one night's puddles, the flood off; a hand lands
+   its tap its pace after the stain shows, and ~0.35 s after its last tap (two stains seen together
+   are tapped one after the other, not each seen afresh): a person's pace (the bot) 0; a 0.6 s hand
+   median 2, max 5 — puddles, never near the line; 1 s median 18, max 21 — 16 of 60 reach 19, tight;
+   1.3 s median 27 (60 of 60 reach 19); away 3 s of every 8 median 25 (57); away 5 s of 10 (60). Idle
+   reaches 19 at ~11 s. (Before, one leak at a time to a quarter of the night: 0.6 s max 3, 1 s max 18,
+   FLOOD 40 — nobody but the idle lost.) */
+export const FLOOD = SHIAO.flood;
+const CALM = 1500; //             after a flood: the line stands, no drip, then the rain again
+const AT = 1500; //               the first leak
+export const TEACH = SHIAO.teach;
+export const THREE = SHIAO.three;
+export const JIT = SHIAO.jit;
+const AFTER = 300; //             the leak's last drop → the basin carried off
+
+export const SPOTS = SHIAO.spots;
+
+/* A level as played: the data level over the default, field by field (lines line by line). */
+const filled = new WeakMap();
+const rowFor = (need) => {
+  const step = Math.min(26, 292 / Math.max(1, need)), w = Math.min(22, step * 0.86);
+  return { x: 160 - ((need - 1) * step) / 2, step, w, foot: 44 };
+};
+export function fill(raw) {
+  if (!raw || raw === SHIAO || typeof raw !== 'object') return SHIAO;
+  if (filled.has(raw)) return filled.get(raw);
+  const lines = Object.fromEntries(['zh', 'en'].map((k) => [k, { ...SHIAO.lines[k], ...(raw.lines?.[k] ?? {}) }]));
+  const need = raw.need ?? SHIAO.need;
+  const L = { ...SHIAO, ...raw, lines, art: { ...SHIAO.art, ...(raw.art ?? {}) }, row: { ...rowFor(need), ...(raw.row ?? {}) },
+    spots: raw.spots?.length ? raw.spots : SHIAO.spots, grades: raw.grades?.length === 2 ? raw.grades : SHIAO.grades };
+  filled.set(raw, L);
+  return L;
+}
+/** The level this board plays (a state saved before levels plays the default). */
+export const levelOf = (s) => fill(s?.level);
+/** The how-to text of a level, in `lang`. */
+export const howOf = (level, lang = 'zh') => { const h = fill(level).how; return h?.[lang] ?? h?.zh ?? ''; };
+
 const lerp = ([a, b], f) => a + (b - a) * Math.min(1, Math.max(0, f));
 
 /** The night's rain: every leak (spot, from, to, drops). The first TEACH come one at a time; then
     they open in pairs — two stains at once (JIT apart at most), two basins to set — and from THREE of
     the night a pair or three. Never more than two live before THREE, three after; a pair never
     opens on a spot still leaking or one the last leaks just left. */
-export function schedule(seed) {
+export function schedule(seed, level = SHIAO) {
+  const { spots: SPOTS, cap: CAP, limit: LIMIT, lead: LEAD, gap: GAP, beat: BEAT, teach: TEACH, three: THREE, jit: JIT } = fill(level);
   const rnd = rng(`rain:${seed}`);
   const leaks = [];
   // How many open together, and how many may be live then: one alone while it teaches, then pairs.
@@ -116,6 +181,7 @@ export function schedule(seed) {
     const live = leaks.filter((l) => l.to > at).map((l) => l.spot);
     let free = SPOTS.map((_, i) => i).filter((i) => !live.includes(i) && !last.includes(i));
     if (free.length < size) free = SPOTS.map((_, i) => i).filter((i) => !live.includes(i));
+    size = Math.min(size, free.length); // a level of few spots: never a leak at no spot
     const opened = Array.from({ length: size }, (_, m) => {
       const spot = free.splice(Math.floor(rnd() * free.length), 1)[0];
       const from = at + (m ? Math.round(rnd() * JIT) : 0);
@@ -145,22 +211,26 @@ export const leakingAt = (sched, spot, t) => sched.windows[spot].some(([from, to
 /** The leak at this spot at `t`, if any. */
 const leakOf = (sched, spot, t) => sched.leaks.find((l) => l.spot === spot && t >= l.from && t < l.to) ?? null;
 
-export function newGame(seed) {
-  return { seed: String(seed), sched: schedule(seed), t: 0, k: 0, e: 0, live: false, basins: SPOTS.map(() => null), caught: 0, puddles: 0, floods: 0, busy: null, note: 'ready', won: false, grade: null };
+/** A new board: the level is `deal.levels[0]` (a data level, kept on the state as `level`), else the default. */
+export function newGame(seed, _level = 1, deal = {}) {
+  const raw = deal?.levels?.[0], L = fill(raw);
+  return { seed: String(seed), ...(L === SHIAO ? {} : { level: raw }), sched: schedule(seed, L), t: 0, k: 0, e: 0, live: false, basins: L.spots.map(() => null), caught: 0, puddles: 0, floods: 0, busy: null, note: 'ready', won: false, grade: null };
 }
 /* A board saved before the 打地鼠 rain (2026-10-16) starts fresh on the new one. */
-const fit = (s) => (s.won || s.sched?.leaks ? s : { ...newGame(s.seed), live: s.live, note: s.live ? 'go' : 'ready' });
+const fit = (s) => (s.won || s.sched?.leaks ? s : { ...newGame(s.seed, 1, { levels: [s.level] }), live: s.live, note: s.live ? 'go' : 'ready' });
 
 /** Leaks caught: basins carried to the 水缸. */
 export const fullCount = (s) => s.caught ?? 0;
 
+/* The grade's line is keyed by its role (dry · wet) whatever the level names the grade. */
+const roleOf = (L, grade) => (grade === L.grades[0] ? 'dry' : 'wet');
 function finish(s, forced) {
-  const grade = !forced && !s.floods && s.puddles <= DRY ? 'dry' : 'wet';
-  return { ...s, live: false, won: true, grade, note: forced && fullCount(s) < NEED ? 'short' : grade };
+  const L = levelOf(s), role = !forced && !s.floods && s.puddles <= L.dry ? 'dry' : 'wet';
+  return { ...s, live: false, won: true, grade: L.grades[role === 'dry' ? 0 : 1], note: forced && fullCount(s) < L.need ? 'short' : role };
 }
 
 function tapSpot(s, i) {
-  if (!s.live || !Number.isInteger(i) || i < 0 || i >= SPOTS.length) return null;
+  if (!s.live || !Number.isInteger(i) || i < 0 || i >= levelOf(s).spots.length) return null;
   // A tap never goes unanswered (10-16 play-human: a tap while the hand was busy, or on a spot that
   // has its basin, did nothing at all): a refused tap shakes its spot (`nope`, NOPE_MS).
   const nope = { i, at: s.t };
@@ -185,7 +255,7 @@ export function act(state, data = {}) {
 }
 
 /* The night lost: the floor a river, every basin back, the same rain again after a breath. */
-const flooded = (s) => ({ ...s, t: -CALM, k: 0, e: 0, basins: SPOTS.map(() => null), caught: 0, puddles: 0, busy: null, floods: (s.floods ?? 0) + 1, note: 'flood' });
+const flooded = (s) => ({ ...s, t: -CALM, k: 0, e: 0, basins: levelOf(s).spots.map(() => null), caught: 0, puddles: 0, busy: null, floods: (s.floods ?? 0) + 1, note: 'flood' });
 
 /** Lost the night again and again: the page may offer its 「算了，往下走」 (stuck.js). */
 export const stuck = (s) => (s.floods ?? 0) >= 3;
@@ -194,6 +264,7 @@ export function tick(state, ms) {
   if (!state.live || state.won) return state;
   const prev = fit(state);
   const s = { ...prev, t: prev.t + ms, basins: [...prev.basins] };
+  const L = levelOf(s);
   const { drips, leaks, ends, thick, thicker } = s.sched;
   if (thick != null && thick > prev.t && thick <= s.t) s.note = 'thick';
   if (thicker != null && thicker > prev.t && thicker <= s.t) s.note = 'thicker';
@@ -207,7 +278,7 @@ export function tick(state, ms) {
       if (b != null) s.basins[d.spot] = b + 1;
       else { s.puddles += 1; s.note = 'spill'; }
       s.k += 1;
-      if (s.puddles >= FLOOD) return flooded(s);
+      if (s.puddles >= L.flood) return flooded(s);
     } else {
       const b = s.basins[l.spot];
       if (b != null) {
@@ -215,10 +286,10 @@ export function tick(state, ms) {
         if (b > 0) { s.caught += 1; s.note = 'poured'; }
       }
       s.e += 1;
-      if (fullCount(s) >= NEED) return finish(s, false);
+      if (fullCount(s) >= L.need) return finish(s, false);
     }
   }
-  return s.t >= LIMIT ? finish(s, true) : s;
+  return s.t >= L.limit ? finish(s, true) : s;
 }
 
 /* ── The picture (2026-10-14): each spot of the two rooms in ink — the thatch above, a damp
@@ -226,15 +297,17 @@ export function tick(state, ms) {
    filling. A basin that caught every drop rings 满; a drop on the floor is a small ink splash. */
 // Painted (2026-10-16, tools/paint-games.py): the wet beam under the thatch and the wooden basin are
 // house 水墨淡彩 pieces on the game's paper; the drops, the water and the ink stay the brush's.
-const ART = (f) => new URL(`../../worlds/jiuding/art/games/rain/${f}.webp`, import.meta.url).href;
-const PAINT = { basin: ART('basin'), beam: ART('beam') };
-const beam = (x, w, h = 16) => `<image class="g-rain-beam" href="${PAINT.beam}" x="${n(x)}" y="-3" width="${n(w)}" height="${h}" preserveAspectRatio="none"/>`;
+// A level's art: paths under worlds/jiuding/art/games/ (the default's are rain/beam.webp, rain/basin.webp).
+const ART = (path) => new URL(`../../worlds/jiuding/art/games/${path}`, import.meta.url).href;
+const beam = (L, x, w, h = 16) => `<image class="g-rain-beam" href="${ART(L.art.beam)}" x="${n(x)}" y="-3" width="${n(w)}" height="${h}" preserveAspectRatio="none"/>`;
+/* The level's ground, under a scene `w`×`h`, when it has one. */
+const ground = (L, w, h) => (L.art.ground ? `<image class="g-rain-ground" href="${ART(L.art.ground)}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice"/>` : '');
 /* A basin standing at (cx, foot), `w` wide; `lvl` 0…1 of water shows in its mouth. */
-function basinArt(cx, foot, w, lvl, full) {
+function basinArt(L, cx, foot, w, lvl, full) {
   // The painting is 273×200; its mouth is the top half. Water rises to the rim: the surface widens.
   const h = w * 0.73, k = Math.min(1, lvl);
   const water = lvl > 0 ? `<ellipse class="g-waterfill${full ? ' is-brim' : ''}" cx="${n(cx)}" cy="${n(foot - h * (0.6 + 0.1 * k))}" rx="${n(w * (0.3 + 0.12 * k))}" ry="${n(h * (0.09 + 0.07 * k))}"/>` : '';
-  return `<image class="g-rain-basin-art" href="${PAINT.basin}" x="${n(cx - w / 2)}" y="${n(foot - h)}" width="${n(w)}" height="${n(h)}"/>${water}`;
+  return `<image class="g-rain-basin-art" href="${ART(L.art.basin)}" x="${n(cx - w / 2)}" y="${n(foot - h)}" width="${n(w)}" height="${n(h)}"/>${water}`;
 }
 
 /* Where the falling drop is, 0…1, timed to land on the leak's next drop; null when none is falling. */
@@ -246,49 +319,72 @@ function fallOf(leak, t) {
   return ((t - (leak.drops[0] - beat)) % beat) / beat;
 }
 
-function spotScene(s, i) {
-  const b = s.basins[i], leak = s.live ? leakOf(s.sched, i, s.t) : null;
+function spotScene(s, i, L) {
+  const b = s.basins[i], leak = s.live ? leakOf(s.sched, i, s.t) : null, CAP = L.cap;
   const k = fallOf(leak, s.t);
-  const thatch = beam(-((i * 53) % 150), 260);
+  const thatch = beam(L, -((i * 53) % 150), 260);
   const drop = k != null ? `<path class="g-drop" transform="translate(45 ${n(10 + k * (b == null ? 52 : 30))})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>` : '';
   const land = k != null && k > 0.82 ? (b == null ? splash(45, 62, (k - 0.82) * 2400, { r: 6 }) : `<ellipse class="g-ripple" cx="45" cy="42" rx="${n(6 + (k - 0.82) * 60)}" ry="2"/>`) : '';
-  const basin = b == null ? '' : `<g class="g-rain-basin${b >= CAP ? ' is-full' : ''}">${basinArt(45, 68, 52, b / CAP, b >= CAP)}`
+  const basin = b == null ? '' : `<g class="g-rain-basin${b >= CAP ? ' is-full' : ''}">${basinArt(L, 45, 68, 52, b / CAP, b >= CAP)}`
     + `${b >= CAP ? '<text class="g-fullmark" x="84" y="30" text-anchor="end">满</text>' : ''}</g>`;
   const stain = s.t < 0 ? '<ellipse class="g-stain" cx="45" cy="63" rx="40" ry="5"/>' // the flood, while 娘's line stands
     : b == null && leak ? '<ellipse class="g-stain" cx="45" cy="63" rx="13" ry="3"/>' : '';
-  return scene(90, 70, thatch + stain + basin + drop + land, 'g-painted');
+  return scene(90, 70, ground(L, 90, 70) + thatch + stain + basin + drop + land, 'g-painted');
 }
-function spotHtml(s, i, t, lang) {
+function spotHtml(s, i, t, lang, L) {
   const b = s.basins[i], drip = s.live && leakingAt(s.sched, i, s.t);
   const nope = s.nope?.i === i && s.t >= s.nope.at && s.t - s.nope.at < NOPE_MS;
-  return `<button type="button" class="g-rain-spot${drip ? ' is-drip' : ''}${b == null ? '' : ' has-basin'}${b != null && b >= CAP ? ' is-full' : ''}${nope ? ' is-nope' : ''}" data-g="spot" data-i="${i}">`
-    + `${spotScene(s, i)}<span class="g-rain-name">${SPOTS[i][lang] ?? SPOTS[i].zh}</span>`
+  return `<button type="button" class="g-rain-spot${drip ? ' is-drip' : ''}${b == null ? '' : ' has-basin'}${b != null && b >= L.cap ? ' is-full' : ''}${nope ? ' is-nope' : ''}" data-g="spot" data-i="${i}">`
+    + `${spotScene(s, i, L)}<span class="g-rain-name">${L.spots[i][lang] ?? L.spots[i].zh}</span>`
     + `${drip ? `<span class="g-sr">${t.drip}</span>` : ''}</button>`;
 }
 
-/* The floor's count: wet past DRY, close to the flood in its last five. */
-const floorMark = (p) => (p >= FLOOD - 5 ? 'is-wet is-near' : p > DRY ? 'is-wet' : '');
+/* The floor's count: wet past the level's dry, close to the flood in its last five. */
+const floorMark = (L, p) => (p >= L.flood - 5 ? 'is-wet is-near' : p > L.dry ? 'is-wet' : '');
 
-const bowls = (full) => `<div class="g-rain-pips" aria-hidden="true">${Array.from({ length: NEED }, (_, i) => `<i class="${i < full ? 'is-on' : ''}"></i>`).join('')}</div>`;
+const bowls = (L, full) => `<div class="g-rain-pips" aria-hidden="true">${Array.from({ length: L.need }, (_, i) => `<i class="${i < full ? 'is-on' : ''}"></i>`).join('')}</div>`;
 
 export function html(state, lang = 'zh') {
-  const t = T[lang] || T.zh;
+  const L = levelOf(state);
+  const t = L.lines[lang] || L.lines.zh;
   const full = fullCount(state);
   if (state.won) {
-    // The seventeen in a row by the wall, full or not, and the floor as it was left.
-    const row = Array.from({ length: NEED }, (_, i) => basinArt(14 + i * 17.4, 44, 15, i < full ? 1 : 0, i < full)).join('');
-    const stains = state.grade === 'wet' ? [40, 120, 210, 280].map((x, i) => `<ellipse class="g-stain" cx="${x}" cy="${48 + (i % 2) * 3}" rx="${16 + i * 3}" ry="3.5"/>`).join('') : stroke(110, 50, 100, 400);
-    return `<div class="g-rain g-ink is-won">${scene(320, 58, row + stains, 'g-painted')}<p class="g-line-say">${t[state.note] ?? t[state.grade]}</p></div>`;
+    // The level's catchers in a row by the wall, full or not, and the floor as it was left.
+    const { x, step, w, foot } = L.row;
+    const row = Array.from({ length: L.need }, (_, i) => basinArt(L, x + i * step, foot, w, i < full ? 1 : 0, i < full)).join('');
+    const stains = roleOf(L, state.grade) === 'wet' ? [40, 120, 210, 280].map((x, i) => `<ellipse class="g-stain" cx="${x}" cy="${48 + (i % 2) * 3}" rx="${16 + i * 3}" ry="3.5"/>`).join('') : stroke(110, 50, 100, 400);
+    return `<div class="g-rain g-ink is-won">${scene(320, 58, ground(L, 320, 58) + row + stains, 'g-painted')}<p class="g-line-say">${t[state.note] ?? t[roleOf(L, state.grade)]}</p></div>`;
   }
-  if (!state.live) return `<div class="g-rain g-ink">${scene(320, 90, beam(-10, 340, 26) + [40, 95, 160, 220, 280].map((x, i) => `<path class="g-drop" transform="translate(${x} ${40 + (i % 3) * 12})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>`).join('') + basinArt(95, 88, 56, 0, false) + basinArt(225, 88, 56, 0.3, false), 'g-painted')}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
+  if (!state.live) return `<div class="g-rain g-ink">${scene(320, 90, ground(L, 320, 90) + beam(L, -10, 340, 26) + [40, 95, 160, 220, 280].map((x, i) => `<path class="g-drop" transform="translate(${x} ${40 + (i % 3) * 12})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>`).join('') + basinArt(L, 95, 88, 56, 0, false) + basinArt(L, 225, 88, 56, 0.3, false), 'g-painted')}<p class="g-line-say">${t.ready}</p>${btn(t.start, 'data-g="start"')}</div>`;
   const s = fit(state);
-  const spots = SPOTS.map((_, i) => spotHtml(s, i, t, lang)).join('');
+  const spots = L.spots.map((_, i) => spotHtml(s, i, t, lang, L)).join('');
   return `<div class="g-rain g-ink">`
-    + `<div class="g-rain-head g-head"><span>${t.full} <b>${full}</b> / ${NEED}</span><span class="${floorMark(s.puddles)}">${t.floor} <b>${s.puddles}</b> / ${FLOOD}</span></div>`
-    + bowls(full)
-    + `<div class="g-rain-house">${spots}</div>`
+    + `<div class="g-rain-head g-head"><span>${t.full} <b>${full}</b> / ${L.need}</span><span class="${floorMark(L, s.puddles)}">${t.floor} <b>${s.puddles}</b> / ${L.flood}</span></div>`
+    + bowls(L, full)
+    + `<div class="g-rain-house"${L.cols ? ` style="--rain-cols:${Number(L.cols)}"` : ''}>${spots}</div>`
     + `<p class="g-line-say">${t[s.note] ?? ''}</p></div>`;
 }
 
+/* ── Levels: the default, then the games.json rows with id `rain` (their `levels`), as qimai's. ── */
+/** Every level the kit knows: the default first, then the registry's rows of this kit, each with its row's name. */
+export function ladderOf(registry) {
+  const rows = (registry?.games ?? []).filter((g) => g.id === meta.id).flatMap((g) => (g.levels ?? []).map((l) => ({ ...(g.name ? { name: g.name } : {}), ...l })));
+  return [SHIAO, ...rows.filter((l) => l.id !== SHIAO.id)];
+}
+/** The level a mount plays: `data.levels[0]`, else the level named `data.level`, else the default.
+    The registry is fetched only for a level the kit doesn't hold (the phone's pack has no games.json). */
+export async function levelFor(opts = {}) {
+  if (opts.data?.levels?.length) return opts.data.levels[0];
+  const id = opts.data?.level;
+  if (!id || id === SHIAO.id) return SHIAO;
+  try {
+    const res = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url));
+    return ladderOf(await res.json()).find((l) => l.id === id) ?? SHIAO;
+  } catch { return SHIAO; }
+}
+
 /** The small-game contract (mount.js): this board alone in a container — the 游戏厅, a try page, or a beat's host. */
-export const mount = (container, opts) => mountPure(self)(container, opts);
+export async function mount(container, opts = {}) {
+  const level = await levelFor(opts);
+  return mountPure(self)(container, { ...opts, data: { ...(opts.data ?? {}), levels: [level] } });
+}

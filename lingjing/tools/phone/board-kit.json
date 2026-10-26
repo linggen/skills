@@ -99,7 +99,8 @@
       ],
       "files": [
         "scripts/games/kit/audio/music/whack.m4a",
-        "scripts/games/kit/audio/music/whack.ogg"
+        "scripts/games/kit/audio/music/whack.ogg",
+        "worlds/jiuding/games.json"
       ]
     },
     "bread": {
