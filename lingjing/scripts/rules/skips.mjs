@@ -20,6 +20,7 @@ import { taskOf } from './errands.mjs';
 import { sideLine } from './hui.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { owesTell } from './tell.mjs';
+import { skippedHere } from './aside.mjs';
 import { lockOf, sceneOf } from './world.mjs';
 
 /* A story fight inside a key beat's lock may be left once stuck (Hanli 2026-10-21: 「OK, a」): inside a lock
@@ -99,7 +100,8 @@ export function replayBrief(content, state, now) {
 /* 再试一回: the board offered again stands open, as on the day it was first offered — its win
    is counted and paid as any (tasks.mjs taskDone), grade and mark with it. */
 export function replayBoard(state, content, ctx, id) {
-  const due = replayDue(content, state, ctx.now);
+  // The book set aside (rules/aside.mjs): every skipped board of this line is offered at once, not only the day's.
+  const due = state.aside ? (state.skipped ?? []).find(e => e.task === id && skippedHere(content, state).includes(id)) : replayDue(content, state, ctx.now);
   if (!due || due.task !== id) return refuse('not-due', null);
   const s = clone(state);
   s.tasks[id] = { status: 'offered', replay: true, from: { scene: due.scene ?? null, line: due.line ?? null } };

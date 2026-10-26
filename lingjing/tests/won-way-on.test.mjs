@@ -148,7 +148,7 @@ test('the page wires both: every read and every passage drawn looks for the won 
   assert.match(body('readOnce'), /watchTell\(\);\n\s+watchWayOn\(\);/, 'on every Look: the live win and a reload alike');
   assert.match(body('watchTell'), /watchWayOn\(\);/, 'and once an owed passage is drawn');
   assert.match(body('watchWayOn'), /storyAhead\(\)/, 'never over words still to draw or still playing');
-  assert.match(page, /const storyAhead = \(\) => Boolean\(look\?\.tell_owed \|\| drawingTold \|\| playing\(readingHere\(\)\)\)/);
+  assert.match(page, /const storyAhead = \(\) => Boolean\(look\?\.tell_owed \|\| drawingTold \|\| playing\(readingHere\(\)\) \|\| asideOn\(\)\)/);
   assert.match(body('watchWayOn'), /wayOnTried/, 'tried once: a refusal never loops');
   assert.match(body('choicesInBox'), /!cardHoldsWay\(look\)/);
 });

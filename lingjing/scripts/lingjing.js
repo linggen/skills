@@ -62,7 +62,7 @@ import { placeArtOf } from './placeart.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, atLast, beatKey, choicesUp, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
+import { advance, asidePlace, atLast, beatKey, choicesUp, readingAt as readingSetAside, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
 import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lines.js';
 import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
@@ -1106,12 +1106,14 @@ function stageNow() {
   // Not under a 回's title card either: the passage is still to be told after it (a fresh 石坳村).
   // A scene's fight too (Hanli, 2026-10-14: the box's 「继续」 under 出手): it stands once the box is
   // put away — or once its words were chosen in the box, which puts the box away (data-panel-duel).
-  if (storyAhead()) cards = cards.filter((c) => (c.card !== 'board' || c.id === view.opened?.id) && !(c.card === 'duel' && sceneGame(look, c) && !called.has(c.id)));
+  // Set aside, a board of the tray's (a skipped one played again, 兽潮) stands; the scene's own waits for its passage.
+  const ownBoard = (id) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
+  if (storyAhead()) cards = cards.filter((c) => (c.card !== 'board' || c.id === view.opened?.id || (asideOn() && !ownBoard(c.id))) && !(c.card === 'duel' && sceneGame(look, c) && !called.has(c.id)));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds
   // its last beat, the choices inside it (2026-10-14) — no scene card stands.
-  if (cardsAhead() || choicesInBox()) cards = cards.filter((c) => c.card !== 'panel');
+  if (cardsAhead() || choicesInBox() || asideOn()) cards = cards.filter((c) => c.card !== 'panel');
   // The book first: a game waits until the passage that leads into it is told (queue.js afterBook).
   cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
@@ -2270,7 +2272,30 @@ const cardsAhead = () => bookAhead({ owed: Boolean(look?.tell_owed), drawing: dr
 // A board opened from the tray: the box put away first, not only its last beat, nor over a 回's turn.
 const trayAhead = () => trayWaits({ owed: Boolean(look?.tell_owed), drawing: drawingTold, playing: playing(readingHere()), huiTurn: atHuiTurn() });
 /* The scene's passage still to be told (owed, being drawn, or in the box): its games wait. */
-const storyAhead = () => Boolean(look?.tell_owed || drawingTold || playing(readingHere()));
+const storyAhead = () => Boolean(look?.tell_owed || drawingTold || playing(readingHere()) || asideOn());
+/* 先放一放 (rules/aside.mjs): the book set aside — its place on the save, Look's `aside` — and what may be
+   played meanwhile in the tray; the story's own games and the scene's choices wait, as they wait for the box. */
+const asideOn = () => Boolean(look?.aside?.on);
+/* May the box offer it now? Something to play meanwhile, a passage the rules can key, and the box mid-way —
+   not its last beat (the choices are up), not at a 回's turn, not under a moment or a fight. */
+const asideMay = (r) => Boolean(look?.aside && !look.aside.on && look.aside.offers?.length && asidePlace(r) && !atLast(r, lang())
+  && !atHuiTurn() && !momentUp() && !bout && !look.fight);
+async function asideTap() {
+  const r = readingHere(), at = asidePlace(r);
+  if (!at) return;
+  const out = await write('aside', { items: JSON.stringify(at.items), j: at.j }).catch(failed);
+  if (!out?.ok) { keep({ doNote: refusal(out) }); return; }
+  setReading({ ...r, closed: true });
+  await refresh();
+}
+/* 接着读: the passages again from the rules, at the beat set aside. */
+async function resumeTap() {
+  const out = await write('resume').catch(failed);
+  if (!out?.ok) { keep({ doNote: refusal(out) }); return; }
+  await refresh();
+  const next = readingSetAside(out.items ?? [], look?.scene?.id ?? out.scene ?? null, look?.run ?? null, out.j ?? 0);
+  if (next) setReading(next);
+}
 /* The look whose header stands now: the last scene's, while the box tells what leads into this one
    — the choice that left it, and a 前情 or that scene's unplayed beats before it (dialogue.js leadsIn;
    live 2026-10-14: a 前情 first in the reading put 00-waimen's people over 00-hall/born); else this one. */
@@ -2376,7 +2401,7 @@ function dialogBoxHtml(slots) {
   if (boxYields(slots)) return log;
   const voice = hasAudio(audio) ? dubOn() : null;
   const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
-  const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: modeAt(r, speedNow(), lang()), faces: r.all?.whole ? firstFaces() : [] }) : '';
+  const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: modeAt(r, speedNow(), lang()), faces: r.all?.whole ? firstFaces() : [], aside: asideMay(r) }) : '';
   return story + log;
 }
 
@@ -3315,6 +3340,8 @@ const CLICKS = [
   ['[data-dlg-logclose]', () => { show({ logOpen: false }); lines.hold(false); }],
   ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
   ['[data-dlg-speed]', (el) => setSpeed(el.dataset.dlgSpeed)],
+  ['[data-dlg-aside]', () => { run('aside', asideTap); return true; }],
+  ['[data-aside-resume]', () => { run('resume', resumeTap); return true; }],
   // …but a choice inside the box (its last beat's ways: an errand's 接下, any button there) is that choice's
   // own tap, never the next sentence — the box's catch-all yields to the rest of this list (2026-10-15, live:
   // 外门's 「接下差事：修屋顶」 inside the story view landed here and did nothing).

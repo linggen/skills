@@ -24,6 +24,7 @@ import { kao } from './kao.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { seclude } from './seclusion.mjs';
 import { caseVerb, haggle, twenty } from './aigames.mjs';
+import { resume, setAside } from './aside.mjs';
 import { duizi } from './duizi.mjs';
 import { rerun } from './rerun.mjs';
 import { unstick } from './unstick.mjs';
@@ -81,6 +82,8 @@ export const VERBS = gated({
     return ink ? { ...out, result: { ...out.result, ink: { ...ink, shapes: c.world.atlas.shapes ?? {}, ...(c.world.atlas.paint ? { paint: c.world.atlas.paint } : {}) } } } : out;
   },
   fly, unrolled, unfolded,
+  // 先放一放 · 接着读 (rules/aside.mjs): the book set aside mid-passage, and taken up at the same beat.
+  aside: setAside, resume,
 });
 
 /* A beast's first sight (creatures.json `appear`) played on the page's stage

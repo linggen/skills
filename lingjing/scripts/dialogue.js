@@ -20,8 +20,8 @@ import { joinSentences, linesHtml, paraHtml, screensOf } from './lines.js';
 
 // 跳过 (Hanli, 2026-10-14: 「2改跳过」): the skip reads 跳过 / Skip — never 继续, which is the way on.
 export const DLG_WORDS = {
-  zh: { skip: '跳过', log: '回看', close: '回到这里', logTitle: '回看', logNow: '此景', recap: '前情', before: '上一景', on: '点一下，下一句', held: '停', speed: '读法', speeds: ['自动', '全文', '跳过'], locked: '读完或跳过', ling: 'Ling', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音', onward: '接着往下', whole: '全文', pages: ['上一页', '下一页'] },
-  en: { skip: 'Skip', log: 'Look back', close: 'Back to it', logTitle: 'Look back', logNow: 'This scene', recap: 'Before this', before: 'Before this', on: 'Tap for the next line', held: 'Paused', speed: 'How to read', speeds: ['Auto', 'Whole', 'Skip'], locked: 'Read on or skip', ling: 'Ling', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)', onward: 'Read on', whole: 'The whole passage', pages: ['Back', 'Next'] },
+  zh: { skip: '跳过', log: '回看', close: '回到这里', logTitle: '回看', logNow: '此景', recap: '前情', before: '上一景', on: '点一下，下一句', held: '停', speed: '读法', speeds: ['自动', '全文', '跳过'], locked: '读完或跳过', ling: 'Ling', act: (a) => `（${a}）`, voice: ['无声', '有声'], voiceTitle: '评书配音', onward: '接着往下', whole: '全文', pages: ['上一页', '下一页'], aside: '先放一放' },
+  en: { skip: 'Skip', log: 'Look back', close: 'Back to it', logTitle: 'Look back', logNow: 'This scene', recap: 'Before this', before: 'Before this', on: 'Tap for the next line', held: 'Paused', speed: 'How to read', speeds: ['Auto', 'Whole', 'Skip'], locked: 'Read on or skip', ling: 'Ling', act: (a) => `(${a}) `, voice: ['Voice off', 'Voice on'], voiceTitle: 'The pingshu voice (Chinese)', onward: 'Read on', whole: 'The whole passage', pages: ['Back', 'Next'], aside: 'Set it aside' },
 };
 
 /* The reading as it stands: the play and scene it belongs to, the passages
@@ -290,6 +290,20 @@ export function bookPlace(r, lang = 'zh') {
   return { hui, ...(at ? { at } : {}) };
 }
 
+/* 先放一放 (rules/aside.mjs): the passages still to play from the one on show, as the rules key them, and the
+   beat on show — or null on a catch-up (a fold of recaps the book has no key for) or with nothing left. */
+const ASIDE_OF = new Set(['scene', 'after', 'choice']);
+export function asidePlace(r) {
+  if (!playing(r) || !ASIDE_OF.has(r.items[r.i]?.of)) return null;
+  const items = r.items.slice(r.i).filter((it) => ASIDE_OF.has(it.of)).map(({ of, id }) => ({ of, id }));
+  return items.length ? { items, j: r.j } : null;
+}
+/* The reading again from `resume`'s passages, at the beat set aside: this scene's, this play's. */
+export function readingAt(items, scene, run, j) {
+  const r = withTold(null, items, scene, run);
+  return r ? { ...r, i: 0, j: Math.max(0, j) } : null;
+}
+
 /* The beats told so far in this scene: up to the one on show (all of them, once put away). */
 export const toldSoFar = (r, lang = 'zh') => (!r?.items ? [] : r.closed ? flat(r, lang) : flat(r, lang).slice(0, current(r, lang).at + 1));
 
@@ -331,7 +345,8 @@ export const beatKey = (r, lang = 'zh') => (playing(r) ? `${r.run ?? ''}|${r.sce
    The whole stage is a tap: the next sentence now. `speed` the viewer's
    (lines.js speedNow); at 快 the rest of the passage stands as one column (wholeOf,
    `wholeHtml`). Nothing here reaches Ling. */
-export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = null, speed = 'mid', faces = [] } = {}) {
+/* `aside`: 先放一放 stands on the box (Look's `aside` has something to play meanwhile; rules/aside.mjs). */
+export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = null, speed = 'mid', faces = [], aside = false } = {}) {
   if (!playing(r)) return '';
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, { beat: b } = current(r, lang);
   const last = atLast(r, lang), key = beatKey(r, lang), whole = Boolean(r.all?.whole);
@@ -342,7 +357,7 @@ export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = nul
   return `<div class="${cls}" data-dlg-on data-dlg-next data-story="${esc(key)}" role="button" tabindex="0" aria-label="${esc(w.on)}">
     ${body}
     <div class="held" aria-hidden="true">${esc(w.held)}</div>
-    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${speedSeg(speed, w)}${whole ? pagerHtml(w) : countHtml(r, lang, w)}${voiceBtn(voice, w)}<span class="sp"></span></div></div>`;
+    <div class="ctrl"><button class="q" data-dlg-log>${esc(w.log)}</button>${aside ? `<button class="q" data-dlg-aside>${esc(w.aside)}</button>` : ''}${speedSeg(speed, w)}${whole ? pagerHtml(w) : countHtml(r, lang, w)}${voiceBtn(voice, w)}<span class="sp"></span></div></div>`;
 }
 /* 自动 · 全文 · 跳过 (Hanli, 2026-10-16, over 慢 · 中 · 快): one small control, kept for every passage (lines.js). */
 const speedSeg = (speed, w) => `<span class="seg" role="group" aria-label="${esc(w.speed)}">${['mid', 'fast', 'skip'].map((v, x) => `<button data-dlg-speed="${v}"${v === speed ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${esc(w.speeds[x])}</button>`).join('')}</span>`;

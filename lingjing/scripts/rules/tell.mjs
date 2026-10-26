@@ -224,6 +224,21 @@ function speakerOf(content, state, name, sid) {
   return p ? { who: p.id, name, art: portraitOf(content, state, p.id, p.art ?? null) } : { name };
 }
 
+/* One passage by its key, as the page plays it — both languages — or null when the book has none
+   there: a scene's own (`scene`), its rest after a board (`after`, `<scene>/after`), a choice's
+   (`choice`, `<scene>/<exit>`). The book set aside is taken up again from these (rules/aside.mjs). */
+export function aside(content, state, { of, id }) {
+  const sid = of === 'scene' ? id : id.split('/')[0], sc = findScene(content, sid);
+  const pair = of === 'scene' ? sc?.story : of === 'after' ? sc?.story_after : sc?.exits?.find(e => e.id === id.split('/')[1])?.story;
+  if (!pair?.zh) return null;
+  const beats = {};
+  for (const lang of ['zh', 'en']) {
+    const st = { ...state, lang }, told = toldOf(content, st, pair);
+    beats[lang] = told ? beatsOf(content, st, { of, id, ...told }) : [];
+  }
+  return { of, id, beats, ...(sc.hui ? { hui: sc.hui } : {}) };
+}
+
 /* The passages as the page plays them: each owed item with its beats in
    both languages (the same walk read in each — the same items, in order), so
    a switch of language mid-passage plays on in the other. The scene's caption

@@ -346,7 +346,7 @@ test('the story on the page: the whole stage, the keys that go on, and what it y
   assert.match(src, /e\.key === ' ' \|\| e\.key === 'Enter'/);
   assert.match(src, /boxGivesWay\(\{ bout: Boolean\(bout\), appearing: Boolean\(view\.appearing\)/);
   assert.match(src, /cards = afterBook\(cards, cardsAhead\(\)\);/, 'the games wait for the book — none over the passage');
-  assert.match(src, /if \(cardsAhead\(\) \|\| choicesInBox\(\)\) cards = cards\.filter\(\(c\) => c\.card !== 'panel'\);/, 'one text box: no scene card while the box tells, nor while its choices stand inside it');
+  assert.match(src, /if \(cardsAhead\(\) \|\| choicesInBox\(\) \|\| asideOn\(\)\) cards = cards\.filter\(\(c\) => c\.card !== 'panel'\);/, 'one text box: no scene card while the box tells, nor while its choices stand inside it');
   // the scene's choices come before the box's own taps: a choice inside the box resolves, never goes on
   assert.ok(src.indexOf("['[data-panel-exit]'") < src.indexOf("['[data-dlg-next]'"));
   assert.ok(src.indexOf("['[data-look-at]'") < src.indexOf("['[data-dlg-next]'"));

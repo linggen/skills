@@ -612,6 +612,8 @@ export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;
   let state = 'branch' in saved ? rest : saved;
+  // The book set aside at a scene the save no longer stands on (rules/aside.mjs): let go, so Move is never kept shut.
+  if (state.aside && state.aside.scene !== state.scene) state = (({ aside, ...r }) => r)(state);
   if ('ladder3' in state) state = threeToNine(content, state);
   if ('ladder9' in state) state = nineToThree(content, state);
   if ('ladder_zero' in state) state = zeroLayer(content, state);

@@ -39,7 +39,7 @@ test('no game stands over the passage: a fight, a 传闻, a 论道 wait for the 
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.doesNotMatch(page, /gamesEarly|sceneUnder\(/, 'the page lets nothing through early');
   // a scene's fight waits for the box to be put away, unless its words were chosen in the box — which puts it away
-  assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => \(c\.card !== 'board' \|\| c\.id === view\.opened\?\.id\) && !\(c\.card === 'duel' && sceneGame\(look, c\) && !called\.has\(c\.id\)\)\);/);
+  assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => \(c\.card !== 'board' \|\| c\.id === view\.opened\?\.id \|\| \(asideOn\(\) && !ownBoard\(c\.id\)\)\) && !\(c\.card === 'duel' && sceneGame\(look, c\) && !called\.has\(c\.id\)\)\);/);
   assert.match(page, /function callDuel\(id\) \{[\s\S]{0,300}if \(playing\(r\) && atLast\(r, lang\(\)\)\) setReading\(advance\(r, lang\(\)\), \{ called \}\);/);
   // another way taken (a `stay` one: 00-fox's 「别碰」) puts the chosen, unbegun fight's choice back among the ways (10-26)
   const tap = page.slice(page.indexOf('async function panelTap('), page.indexOf('function inertNow('));
@@ -181,8 +181,8 @@ test('a game and the box are never on the stage together (Hanli, 2026-10-14: 「
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /const boxYields = \(slots\) => boxGivesWay\(\{[^}]*game: gameUp\(slots\) \}\);/);
   // and a scene's game waits for the box to be put away, its last beat read
-  assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => \(c\.card !== 'board' \|\| c\.id === view\.opened\?\.id\) && /);
-  assert.match(page, /const storyAhead = \(\) => Boolean\(look\?\.tell_owed \|\| drawingTold \|\| playing\(readingHere\(\)\)\);/);
+  assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => \(c\.card !== 'board' \|\| c\.id === view\.opened\?\.id \|\| \(asideOn\(\) && !ownBoard\(c\.id\)\)\) && /);
+  assert.match(page, /const storyAhead = \(\) => Boolean\(look\?\.tell_owed \|\| drawingTold \|\| playing\(readingHere\(\)\) \|\| asideOn\(\)\);/);
   assert.match(page, /cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && played\(c\.id\) && !boards\.get\(c\.id\)\?\.winning\)\);/);
 });
 

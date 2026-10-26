@@ -1102,6 +1102,15 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
 - **The dialogue box** (dialogue.js, 2026-09-29): the book's passage for the
   beat plays a paragraph at a time, speaker by speaker, in both languages,
   sized to the view; a scene's own passage restarts only in that scene.
+- **先放一放 — the book set aside** (Hanli, 2026-10-26: 「能跳出来去玩小游戏, 玩完后在回来接着读」; rules/aside.mjs):
+  mid-passage the box offers 先放一放 when something may be played meanwhile; its place (the passages left, the
+  beat) goes on the save, so a reload or the phone takes it up; 接着读 rebuilds the beats from the book at that
+  beat. Meanwhile one declared rule (`ASIDE_KINDS`) says what may be played, each only when its own system has it
+  open: a skipped board (all of the line's, at once), the 秘境 rerun at its door, 人间功课, 饭桶 · 开炉, a pool's
+  fight where one stands (the pool's own rule keeps it off while he stands in a scene), 兽潮, 闭关, 银月's games,
+  今日传闻, 问卦. The story's own board, the scene's choices, Move
+  and anything of a later scene wait (refused `aside`). Never inside a key beat's lock. Before 入门 only a skipped
+  board can be open, so the control shows only after one was left.
 - **Yinyue on the stage:** one device, one Yinyue. The game stage is
   voice-only (`?pet=1&stage=1&body=0`, engine a250a04) — no 3D body in the
   game.

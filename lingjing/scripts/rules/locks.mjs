@@ -9,6 +9,7 @@
 import { lockedOf, lockSay, pick } from '../state.mjs';
 import { isOnce } from './chores.mjs';
 import { sealedVerb } from './sealed.mjs';
+import { asideVerb } from './aside.mjs';
 
 /* A chore by id: the apps' menu (`ctx.quests`), 开府's milestones are its `once` rows. */
 const choreSystem = (ctx, id) => {
@@ -40,9 +41,9 @@ export function lockedVerb(content, state, verb, args = {}, ctx = {}) {
   return { state: null, result: { ok: false, refused: 'not-yet', system, say } };
 }
 
-/* Every verb of the table, kept to the gates. */
+/* Every verb of the table, kept to the gates — and, while the book is set aside, to what may be played meanwhile (rules/aside.mjs). */
 export const gated = verbs => Object.fromEntries(Object.entries(verbs).map(([verb, fn]) => [verb,
-  (state, content, ctx, args) => lockedVerb(content, state, verb, args, ctx) ?? sealedVerb(content, state, verb, args) ?? fn(state, content, ctx, args)]));
+  (state, content, ctx, args) => lockedVerb(content, state, verb, args, ctx) ?? sealedVerb(content, state, verb, args) ?? asideVerb(content, state, verb, args) ?? fn(state, content, ctx, args)]));
 
 /* The fields of Look (and Progress) each shut system takes out. The book, the
    chores and 开府 are filtered where they are made (errands.mjs bookOf,
