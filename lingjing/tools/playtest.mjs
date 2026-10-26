@@ -113,8 +113,13 @@ export function choose(snap, ctx) {
   // The story box's own choices at its last beat, then the stage's scene card: the scene's ways.
   const ways = live.filter((t) => isA(t, 'panel-exit') || isA(t, 'panel-duel') || isA(t, 'look-at'));
   const exits = ways.filter((t) => !isA(t, 'look-at'));
+  // A way's own fight up (00-fox: 「脱下外衣」 → its 试) beside a way that only comes back (`stay`, 「别碰」): once
+  // every way there has been taken, 出手 — the way on (10-26: the crawl tapped 「别碰」 164 times over).
+  const duel = first((t) => isA(t, 'duel-start'));
+  const duelFirst = (ways) => duel && ways.length && ctx.allTaken?.(ways, snap);
   if (snap.boxOn) {
     const inBox = exits.filter((t) => t.where === 'box');
+    if (duelFirst(inBox)) return { kind: 'duel-start', tap: duel, why: '出手' };
     if (inBox.length) return { kind: 'way', tap: ctx.pick(inBox, snap), why: 'a way inside the box' };
     // The last line where only its 看 chips go on (黑松岭): a chip, not 跳过 (the passage is already at its end).
     const lookIn = ways.find((t) => t.where === 'box' && isA(t, 'look-at') && !ctx.looked.has(t.data['look-at']));
@@ -145,10 +150,7 @@ export function choose(snap, ctx) {
   const valuePick = first((t) => isA(t, 'value-pick'));
   if (valuePick && !ctx.valuePicked) return { kind: 'value-pick', tap: valuePick, why: 'a name offered' };
   if (valueGo) return { kind: 'value-go', tap: valueGo, why: 'take the name' };
-  // A way's own fight up (00-fox: 「脱下外衣」 → its 试) beside a way that only comes back (`stay`, 「别碰」): once
-  // every way there has been taken, 出手 — the way on (10-26: the crawl tapped 「别碰」 twenty times over).
-  const duel = first((t) => isA(t, 'duel-start'));
-  if (duel && exits.length && ctx.allTaken?.(exits, snap)) return { kind: 'duel-start', tap: duel, why: '出手' };
+  if (duelFirst(exits)) return { kind: 'duel-start', tap: duel, why: '出手' };
   if (exits.length) return { kind: 'way', tap: ctx.pick(exits, snap), why: 'the scene card' };
   if (duel) return { kind: 'duel-start', tap: duel, why: '出手' };
   const play = first((t) => isA(t, 'play') && t.where === 'focus');
