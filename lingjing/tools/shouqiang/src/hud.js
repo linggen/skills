@@ -166,7 +166,9 @@ export class Hud {
     this.pauseBtn = s.add.image(38, 40, 'btn').setDepth(this.d).setScale(0.82).setInteractive({ useHandCursor: true });
     this.pauseBtn.on('pointerdown', (p, x, y, ev) => { ev?.stopPropagation?.(); s.togglePause(); });
     const title = g.level.title?.[this.lang] ?? g.level.title?.zh ?? '';
-    this.text(W / 2 - 10, 30, title, 26, { color: '#fff6d8' });
+    // between the pause button and the wave pill: a long title (English 「Carrying the stag down」, 10-26) shrinks to fit
+    const head = this.text(W / 2 - 10, 30, title, 26, { color: '#fff6d8' }), room = 2 * Math.min(W / 2 - 10 - 76, 404 - (W / 2 - 10));
+    if (head.width > room) head.setScale(room / head.width);
     bar(s, W / 2 - 110, 56, 200, 12, 6, 0x000000, 0.5).setDepth(this.d);
     this.prog = bar(s, W / 2 - 108, 58, 196, 8, 4, 0xff8a3a).setDepth(this.d);
     s.add.image(472, 38, 'pill').setDepth(this.d).setScale(0.82);
