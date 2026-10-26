@@ -32,9 +32,18 @@ has it as his; **?** = the book is not clear, his call; **no**.
 Length: the bot's time at 390 (a person takes about twice). Skip: 「算了，往下走」 shows only when
 stuck — 75 s unwon, or the game's own `stuck` rule where noted; a skip pays nothing.
 
-## 全文后的小游戏 — the first batch (plan, 2026-10-26)
+## 全文后的小游戏 — the first batch (plan 2026-10-26; built 2026-10-26)
 
-**Plan only. Nothing here is built until Hanli says go.** Since 2026-10-26 the box plays the book's full text, and
+**Built** (the go, the coordinator for Hanli): 25 boards across 第二回 · 今一 · 第三回 · 第四回 · 今二, each 回's
+"Built" note below. Kit hooks (data levels, no scene names): 时机 (sneeze.js steps), 华容道 (layouts), 打地鼠 (rain.js
+levels). The four 大场面 (满殿青 · 御剑落堂 · 饭桶出世 · 铜肚子亮了) are **later**, not this batch. `tools/balance.mjs --fit`
+after the batch moved nothing (`fit.hold` keeps h05 · h07 · h08); typical days 古一 0.6 · 古二 3.1 · 古三 2.3 · 古四 7.4.
+Still over the cap where the book has no action (rhythm.json): 第三回 蠪侄 → 测灵石 5,146 · 测灵石 → end 2,650 ·
+人堆 → 三百级 2,470; 今一 十二正经 → 古籍部 2,312; 第四回 start → 小周天 3,918 (◆ 御剑落堂, later) · 小周天 → 一拳 2,386
+(the key moment) · 萝卜 → 喂饭桶 4,535 (the beating; ◆ 饭桶出世, later) · 喂饭桶 → 断肋 2,484 (the 饭桶's comedy) ·
+银月 → 今二 1,477 + 1,464 (◆ 铜肚子亮了, later); 今二 捡球 → 投篮 2,284 · 投篮 → 吸四吐六 2,201 · the tail into 古五 2,313.
+
+**The plan as written (before the go):** Since 2026-10-26 the box plays the book's full text, and
 the cap is 2,200 字 between play beats (scripts/rhythm.mjs, about 5 min at 450 字/min). The target is a main line that
 is at most 60% reading, with no stretch over about 2,200. The rules, briefly:
 - A board goes only where the book has action, never as filler.
@@ -80,9 +89,9 @@ is at most 60% reading, with no stretch over about 2,200. The rules, briefly:
 **Built 2026-10-26 (the go, the coordinator for Hanli):** ② 吓马三 (new scene 00-bluff, jinchat `masan`, the 古 look
 `face`) · ④ 洗髓 (00-sleep, qimai `xisui`) · ⑤ 镜光 (00-halfyear's second board, qimai `feather` re-titled: the same skill,
 「吐得比一根头发还细」; the board before the mirror's passage, the book's telling after it) · ⑦ 吴婆婆 (00-notice's second
-board, jinchat `wupo`). ⑥ 柴垛 dropped (the coordinator: the weakest). Still open, each needing kit work, not data: ① 上崖
-(禹步 is a button walk on 洛书 squares — no climb in it), ③ 银色的血 (接雨's roof is drawn in its module), and a swap for ⑥
-(its stretch reads 3,523 without it). Stretches now: tengyun → 射鹿 3,870 · 吓马三 → 洗髓 4,047 · 镜光 → 水桶 3,523 over.
+board, jinchat `wupo`). ⑥ 柴垛 dropped (the coordinator: the weakest). Then, on the kit hooks: ① 上崖 as 时机
+`shangya` (a 禹步 slot: the climb read as grab · push · let go), ③ 银色的血 as 打地鼠 `xue` (the eight stumps, the board after
+「拿身子挡着风」), and ⑥'s slot a chat: 舅舅 at the table (jinchat `jiujiu`). No stretch of 第二回 is over the cap now.
 
 | # | scene · ¶ | the book | kit · level | len | why it fits | pays |
 |---|---|---|---|---|---|---|
@@ -103,7 +112,8 @@ Stretches after: 1,741 (from 古一) · 2,129 · 736 · 1,785 · 1,135 · 2,083 
 **Built 2026-10-26:** ① 那一圈 (j01-track's first board, qimai `yiquan`, after 「今年体测，你是头一个吐的。」) · ③ 十二正经 (new
 scene j01-loop, qimai `jingluo`: the bead his arms tracing one line three times round) · a chat for ⑤: 葛奶奶 at the
 rare-books door (j01-anatomy's first board, jinchat `ge`, face to face) in place of 禹步 · 爬六楼 (no kit work for 禹步; the
-book's talk there). ④ 膈肌 dropped (it would sit next to ③'s qimai). ② 别抖 waits on the 时机 kit's levels.
+book's talk there). ④ 膈肌 dropped (it would sit next to ③'s qimai). ② 别抖 as 时机 `biedou` (new scene j01-weigh, split
+from j01-track's way on).
 
 | # | scene · ¶ | the book | kit · level | len | why it fits | pays |
 |---|---|---|---|---|---|---|
@@ -121,7 +131,7 @@ Stretches after: 1,760 · 2,107 · 2,149 · 2,244 ≈ · 1,637 · 1,616 · 1,035
 **Built 2026-10-26:** ① 人堆 (00-gate's second board, 华容道 level `crowd`: the 码头's porters, painted by
 tools/paint-huarong-crowd-flux.py; the morning after it is a new scene, 00-shijie, both ways up start there) · ② 三百级
 (new scene 00-steps on the steady way, qimai `sanbai`) · ④ 石蛋 (new scene 00-linzi before the wood — a fight's way on
-waits on its win alone — jinchat `shidan`) · ⑤ 测灵石 (00-hall, qimai `celing`). ③ 腿缝里 waits on its 时机 paintings.
+waits on its win alone — jinchat `shidan`) · ⑤ 测灵石 (00-hall, qimai `celing`). ③ 腿缝里 as 时机 `tuifeng`, 00-steps' second board.
 The 大场面 满殿青 is later. Over the cap, as planned: 蠪侄 → 测灵石 and 测灵石 → the 回's end (no action in the book).
 
 | # | scene · ¶ | the book | kit · level | len | why it fits | pays |
@@ -139,6 +149,13 @@ The two left over have no action: 石蛋's death and the 测灵石 line, then th
 are the book's landing, so no game goes there.
 
 ### 第四回 (h05): 7 boards + 3 大场面 (today: 3 boards)
+
+**Built 2026-10-26:** ① 一拳 (wm-qingshi, 时机 `qingshi`, painted: 砸寨's story throws are TypeScript levels in a bundle,
+port work) · ② 周衡 (new scene wm-zhishi at 外门, jinchat `zhouheng`) · ③ 萝卜 (wm-yaoyuan's second board, 时机 `luobo`) ·
+④ 断肋 (new scene wm-xunye, qimai `duanlei`) · ⑤ 阿禾 (new scene wm-duizhang, jinchat `duizhang` after the hearing, in
+place of 紫玉参: the hearing is 阿禾's, not his) · ⑥ 铁刷子 (new scene wm-yan at 外门, qimai `tieshua`) · ⑦ 银月 (new
+scene wm-baoming, jinchat `yinyue-pill`, in place of 开炉 · 保命). wm-diyilu's way on is now four scenes inside the
+woodshed lock; 留给爹 keeps its grant and mark. The three 大场面 are later.
 
 | # | scene · ¶ | the book | kit · level | len | why it fits | pays |
 |---|---|---|---|---|---|---|
@@ -162,6 +179,10 @@ Three of these are just over the cap, for reasons in the book:
 - 2,484: the 饭桶's comedy and the 回春丹 choice, with no action before the night patrol.
 
 ### 今·二 (j04): 4 boards (today: 2)
+
+**Built 2026-10-26:** ① 卧推 (j04-gym's second board, qimai `wotui`) · ② 嘀声 (new scene j04-trial, 时机 `didi`, in place of
+禹步) · ③ 捡球递水 (j04-line's first board, 打地鼠 `qiu`; eased after a live casual hand flooded) · ④ 吸四吐六 (j04-dog,
+qimai `xisi`, before 「他慢慢侧过身子」). All pay nothing.
 
 | # | scene · ¶ | the book | kit · level | len | why it fits | pays |
 |---|---|---|---|---|---|---|
