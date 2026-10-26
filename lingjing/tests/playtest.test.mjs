@@ -33,7 +33,7 @@ test('卷一 skipping every board (Hanli, 2026-10-15: 「对游戏进展要确�
   assert.deepEqual(r.forced, [], 'nothing a skipped board should have given had to be forced');
   // Every story board of 卷一 was met and left.
   const boards = JUAN_ONE.flatMap((ch) => Object.values(content.chapters[ch].scenes).flatMap((s) => (s.show ?? []).filter((c) => c.card === 'board').map((c) => c.id)));
-  const left = new Set([...r.states.values()].flatMap(({ s }) => (s.skipped ?? []).map((e) => e.task)));
+  const left = r.left;
   assert.ok(boards.length >= 20);
   assert.deepEqual(boards.filter((id) => !left.has(id)), [], 'every story board was left on the way');
 });

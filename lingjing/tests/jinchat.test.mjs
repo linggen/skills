@@ -13,15 +13,18 @@ const CHATS = base.data.chats;
 const tasks = JSON.parse(read('../worlds/jiuding/tasks/world.json')).tasks;
 const peopleRaw = JSON.parse(read('../worlds/jiuding/people.json'));
 const PEOPLE = Object.fromEntries((Array.isArray(peopleRaw.people) ? peopleRaw.people : Object.values(peopleRaw.people ?? peopleRaw)).filter((p) => p?.id).map((p) => [p.id, p]));
-const BOOK_ZH = ['01', '02', '03', '04'].map((n) => read(`../story/jiuding-lu/今线/插曲${n}.md`)).join('\n');
-const BOOK_EN = ['j01', 'j04', 'j07', 'j09'].map((n) => read(`../story/jiuding-lu/en/${n}.md`)).join('\n');
+// The book, every 回 of it: a 今 chat quotes its interlude, a 古 one (the `face` look, 2026-10-26) its 回.
+const BOOKJ = JSON.parse(read('../story/jiuding-lu/book.json')).volumes.flatMap((v) => v.hui);
+const BOOK_ZH = BOOKJ.map((h) => read(`../story/jiuding-lu/${h.file}`)).join('\n');
+const BOOK_EN = BOOKJ.filter((h) => h.file_en).map((h) => read(`../story/jiuding-lu/${h.file_en}`)).join('\n');
 const flat = (s) => s.replace(/\[([^\]]+)\]\{[^}]+\}/g, '$1').replace(/\*/g, '');
 
-test('every 今 chat board: a task on the jinchat game with its own chat, a story row naming it, paying nothing', () => {
+test('every chat board: a task on the jinchat game with its own chat, a story row naming it, paying nothing', () => {
   const rows = reg.games.filter((g) => g.id === 'jinchat' && g.task);
-  assert.equal(rows.length, 4, 'one a 今 interlude');
+  assert.equal(rows.filter((r) => r.group === 'jin').length, 4, 'one a 今 interlude');
   for (const row of rows) {
-    assert.equal(row.group, 'jin');
+    // a 今 chat is the phone's; a 古 one is said face to face, in its 回's group
+    assert.equal(row.group === 'jin', CHATS[row.data.chat].look !== 'face', `${row.task}: its look and its line`);
     assert.equal(row.mechanic, '对话');
     const t = tasks.find((x) => x.id === row.task);
     assert.ok(t, row.task);
@@ -36,7 +39,7 @@ test('every 今 chat board: a task on the jinchat game with its own chat, a stor
 
 test('the chats: who is in each, the book\'s own lines verbatim (zh and en), the facts and goal in both tongues', () => {
   for (const [id, c] of Object.entries(CHATS)) {
-    assert.ok(['phone', 'call', 'dark'].includes(c.look), `${id}: look`);
+    assert.ok(['phone', 'call', 'dark', 'face'].includes(c.look), `${id}: look`);
     for (const k of ['title', 'when', 'facts', 'goal']) assert.ok(c[k]?.zh && c[k]?.en, `${id}: ${k}`);
     assert.ok(c.turns >= 3 && c.turns <= 6, `${id}: 3–6 lines (short)`);
     const cast = castOf(c, PEOPLE, 'zh');
@@ -47,8 +50,8 @@ test('the chats: who is in each, the book\'s own lines verbatim (zh and en), the
     assert.ok(lines.length, `${id}: something of the book on the screen`);
     for (const l of lines) {
       assert.ok(ids.has(l.who), `${id}: ${l.who} is in the chat`);
-      assert.ok(BOOK_ZH.includes(l.text.zh), `${id}: 「${l.text.zh}」 is the book's (今线/插曲*.md)`);
-      assert.ok(flat(BOOK_EN).includes(l.text.en), `${id}: "${l.text.en}" is the book's (en/j*.md)`);
+      assert.ok(flat(BOOK_ZH).includes(l.text.zh), `${id}: 「${l.text.zh}」 is the book's`);
+      assert.ok(flat(BOOK_EN).includes(l.text.en), `${id}: "${l.text.en}" is the book's (en/*.md)`);
     }
   }
 });

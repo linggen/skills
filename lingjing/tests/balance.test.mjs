@@ -63,7 +63,8 @@ test('days per 回 (tools/balance.mjs): typical about a week, heavy a little les
   // 2026-10-26; the book's full text played (Hanli 「你的建议我同意」) reads 4.8 — held at 5 until the
   // new small games land (doc/games.md § 全文后的小游戏), Hanli's call.
   const first = rows.filter(r => ['h01', 'h02', 'h04'].includes(r.hui)).reduce((n, r) => n + r.typical, 0);
-  assert.ok(first <= 5, `古一–古三: ${first} days`);
+  // 2026-10-26, the new small games (doc/games.md § 全文后的小游戏) add their minutes: ≤ 6 while they land; the 层 re-fit after.
+  assert.ok(first <= 6, `古一–古三: ${first} days`);
   // 古九 has no stage quest — the 九转 lands 筑基小成圆满 (ladder.json caps._stage): its story's days only.
   assert.ok(rows.find(r => r.hui === 'h10').typical <= 3);
 });

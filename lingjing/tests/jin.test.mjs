@@ -62,7 +62,7 @@ test('the 古 scenes never name an interlude: the splice is the interlude\'s own
 
 test('a save walks 古二 → 今 · 一 → 古三: the close of 第二回, the modern stage, the game won, then the gate', () => {
   let s = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
-  s = { ...s, tasks: { ...s.tasks, 'notice-shuitong': { status: 'done' } } }; // 水桶落井 played (2026-10-20)
+  s = { ...s, tasks: { ...s.tasks, 'notice-shuitong': { status: 'done' }, 'notice-wupo': { status: 'done' } } }; // 水桶落井 played (2026-10-20)
   s = resolve(s, content, ctx, { exit: 'go' }).state;
   assert.equal(s.scene, 'j01-track');
   const l = look(s, content, ctx);
@@ -107,7 +107,7 @@ test('old saves: before the point they meet the interlude; past it they go on as
   const n = save('jin-notice');
   assert.equal(n.scene, '00-notice');
   // 00-notice's 水桶落井 (2026-10-20) waits first; played, the next step is 今 · 一
-  const nw = { ...n, tasks: { ...n.tasks, 'notice-shuitong': { status: 'done' } } };
+  const nw = { ...n, tasks: { ...n.tasks, 'notice-shuitong': { status: 'done' }, 'notice-wupo': { status: 'done' } } };
   assert.equal(resolve(nw, content, ctx, { exit: 'go' }).state.scene, 'j01-track');
   // 外门 from its first scene: 今 · 二 waits after 古四.
   const w = save('waimen');
@@ -208,7 +208,7 @@ test("今线's people: a card in the book at their first appearance (今 · 一)
   const html = renderMarkdown(md, { codex, chapter: 'j01', lang: 'zh' });
   for (const id of jin) assert.equal((html.match(new RegExp(`class="codexcard first" data-codex="${id}"`, 'g')) ?? []).length, 1, `${id}: one card in 今 · 一`);
   let s = { ...newState(content, 'zh', NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
-  s = { ...s, tasks: { ...s.tasks, 'notice-shuitong': { status: 'done' } } }; // 水桶落井 played (2026-10-20)
+  s = { ...s, tasks: { ...s.tasks, 'notice-shuitong': { status: 'done' }, 'notice-wupo': { status: 'done' } } }; // 水桶落井 played (2026-10-20)
   s = resolve(s, content, ctx, { exit: 'go' }).state;
   const met = story(s, content, { now: NOW, quests: [] }).result.codex ?? [];
   for (const id of jin) assert.ok(!met.includes(id), `${id} never met in play`);

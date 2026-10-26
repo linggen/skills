@@ -33,7 +33,7 @@ const PIECE = /\{景=([a-z]+)\}/g;
 /* 古二's last choice → 今 · 一 → its game won → 古三's gate, as a save walks it. */
 function atGate(lang) {
   let s = { ...newState(content, lang, NOW), chapter: '00-prologue', scene: '00-notice', place: 'shiao', done_scenes: ['00-uncle'] };
-  s = { ...s, tasks: { ...s.tasks, 'notice-shuitong': { status: 'done' } } }; // 水桶落井 played (2026-10-20)
+  s = { ...s, tasks: { ...s.tasks, 'notice-shuitong': { status: 'done' }, 'notice-wupo': { status: 'done' } } }; // 水桶落井 played (2026-10-20)
   s = resolve(s, content, ctx, { exit: 'go' }).state;
   // 今一's dawn run (边跑边念, 2026-10-20) is played before the track's way on
   s = win(s, content, ctx, { id: 'jin-toulan' }).state;

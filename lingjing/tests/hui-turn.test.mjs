@@ -27,7 +27,7 @@ const content = loadContent();
 const ctx = { now: new Date('2026-10-05T10:00:00'), quests: [] };
 const save = name => { const d = JSON.parse(fs.readFileSync(new URL(`./fixtures/saves/${name}.json`, import.meta.url), 'utf8')); return d.state ?? d; };
 /* 00-notice's 水桶落井 (气走经脉, 2026-10-20) waits before its way on: played, as the walk does. */
-const bucketPlayed = (st) => ({ ...st, tasks: { ...st.tasks, 'notice-shuitong': { status: 'done' } } });
+const bucketPlayed = (st) => ({ ...st, tasks: { ...st.tasks, 'notice-shuitong': { status: 'done' }, 'notice-wupo': { status: 'done' } } });
 const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
 
 /* 古二's last choice taken: the save on j01-track, 今 · 一's first scene. */

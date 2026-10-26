@@ -1,0 +1,84 @@
+{
+ "version": 1,
+ "id": "00-bluff",
+ "chapter": "00-prologue",
+ "hui": "h02",
+ "at": "shiao",
+ "place": {
+  "zh": "石坳村 · 交租",
+  "en": "Shi'ao village · the rent"
+ },
+ "weather": "clear",
+ "_weather": "「马三是晌午来的」 (00-rent): the same noon, the same yard",
+ "_board": "2026-10-26 (全文后的小游戏, doc/games.md; the coordinator for Hanli: 「你能先帮我定吧」): 00-rent's way 装傻 split at 「小满站在他爹身后，轻轻踩了一下他爹的脚后跟。」 — the bluff is the board (吓马三, jinchat `masan`, the 古 look `face`): 马三 is the model, the goal his nerve gone and the bow thrown back; then the book's own telling (`story_after`), then 马家 gone and 娘's 「鬼不吃饼」 on the way on. Nothing paid before 入门.",
+ "setup": {
+  "zh": "马三拎着爷爷的弓，压低了声音问：「黑松岭……你们进去了，还出来了？里头，还有什么？」爹张嘴就要说。你轻轻踩了一下他的脚后跟。",
+  "en": "Ma San holds Grandpa's bow and asks, low: \"Black Pine Ridge… you went in, and you came out? What else is in there?\" Father opens his mouth to answer. You tread lightly on his heel."
+ },
+ "recap": {
+  "zh": "你编了一个白衣服、没有脚、吃饼、还问「弓呢」的鬼，马三把弓扔了回来，说谁再靠近断碑就打断他的腿。娘说：鬼不吃饼，下回说它吃香火。",
+  "en": "You made up a ghost in white, with no feet, that eats flatbread and asks \"Where's the bow?\" Ma San threw the bow back and swore to break the legs of anyone who goes near the broken stone. Mother said: ghosts don't eat flatbread; next time say it eats incense."
+ },
+ "cast": [],
+ "people": [
+  "masan",
+  "maxiaobao",
+  "baba"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "爹这辈子不会撒谎。",
+    "你踩了一下他的脚后跟。",
+    "「三爷！里头……还有鬼！」"
+   ],
+   "en": [
+    "Father has never told a lie in his life.",
+    "You tread on his heel.",
+    "\"Third Master! In there… there's a ghost!\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "他爹张嘴就要说。他爹这个人，这辈子不会撒谎，人家问什么，他便答什么。他要是把那道摔不死人的山谷、谷里会发亮的草和会响的银叶子说出来，马三明天便会带着二十条猎狗、几十个家丁进去，把那道山谷翻个底朝天。\n\n小满站在他爹身后，轻轻踩了一下他爹的脚后跟。",
+  "en": "His father opened his mouth to speak. His father was a man who had never told a lie in his life; whatever people asked, he answered. If he told about that valley you couldn't die falling into, the grass in it that glowed and the silver leaves that rang, then tomorrow Ma San would take twenty hounds and dozens of men in there and turn that valley upside down.\n\nXiaoman, standing behind his father, trod lightly on his father's heel."
+ },
+ "story_after": {
+  "zh": "他爹一愣，嘴张着，没出声。小满抢着开了口——一面说，一面缩着脖子，两只手抱着胳膊，浑身上下抖得像一片秋风里的树叶——「三爷！里头……里头黑乎乎的，下大雨，我掉沟里了，差点就死了！还有鬼！」\n\n马三眉头一皱：「什么鬼？」\n\n「有个白衣服的！」小满抖得更厉害了，「没有脚，飘着走，头发老长老长，一直拖到地上——三爷，那地方真不能去，我爷爷就是在那儿没的！」\n\n院子里好几个婆娘已经拿手捂住了嘴，眼睛瞪得一个比一个圆。\n\n马三道：「……白衣服的？」\n\n「还吃饼！」\n\n马三一怔，两道眉毛一高一低，拧成了两个疙瘩：「鬼吃饼？」\n\n「吃得可香了！」小满拿手比了一比，「我娘烙的饼，这么厚一张，它三口就吃完了，一面吃还一面嫌难吃！」\n\n说到这里，他的眼睛往马三手里一瞟，声音忽然压低了，压得只剩一口气：「……吃完了饼，它还问我——」\n\n马三道：「问你什么？」\n\n小满道：「它问：『弓呢？』」\n\n马三没有动。他脑门上冒出汗来，黄豆大的一颗，顺着鼻梁滚到鼻尖上，挂了一挂，「吧嗒」，掉在那张弓的弓背上。过了半晌，他的嗓子有点发干，道：「……你看清它的脸了？」\n\n小满道：「没脸。就一把白胡子。」\n\n马三的手，这才抖了一抖，喉咙里「咕咚」一声，咽下一大口唾沫。小满便接着抖，从头顶抖到脚跟，抖到后来，牙齿也咯咯地打起架来：「它说，那张弓，是它的。谁拿了它的弓，它就跟谁回家。」他心里却一面抖，一面暗道：银月，对不住。你要是醒着，准要咬我。抖着抖着，他自己也分不清了：这一身抖，有几分是装的。\n\n马三的脸，先是红，跟着变紫，又跟着变黑，最后变成了那一种颜色。他瞧着手里那张弓，像瞧着一条盘起来的蛇。半晌，他把弓往小满他爹怀里一扔，扔得又急又慌，倒像那弓烫手，骂了一声：「晦气！」\n\n马小宝却不怕。他跟在他爹身后，走过小满身边，忽然伸出那只油乎乎的手，一把揪住了小满脖子上的「围脖」，凑到鼻子底下闻了闻：「一股狗味儿。不过毛倒是软——拿回去，给我娘缝个领子。」小满两只手死死捂住了它，脸上却抖得更凶了：「小宝哥，这皮子……是黑松岭里捡的，就在那白胡子脚底下。」马小宝「嗷」的一声，那只手像给火燎了一下，缩了回去，一张胖脸白得像刚出笼的馒头，在衣裳上蹭了三遍，道：「……谁稀罕。一张狐狸皮，我家要多少有多少。」\n\n马三已走到了门口，又回过头来，冲着满院子的人道：「都听着。打今儿起，谁敢靠近断碑一步，我打断他的腿。」说罢一跺脚，走了。\n\n马小宝跟在后头，走过老周家门口，瞧见阿禾蹲在篱笆里头，一脚踢翻了她搁在墙根的那只腌白菜坛子：「小母鹿？」坛子在地上滚了两滚，那一个秋天的白菜叶子，撒了一地。\n\n马家的人走远了，看热闹的人也散了。他爹把那张弓挂回墙上，挂了两回才挂稳，又蹲下去，把那挂下水捧了起来，捧得很小心。他道：「……这个，给老周家。赔白菜。」\n\n他娘道：「嗯，我送过去。」\n\n他爹又道：「棉袄……」\n\n他娘道：「不急。」\n\n说着把两只手往袖子里拢了拢。她那件棉袄，是嫁过来那年做的，袖子短了一截，一拢，手腕便露在外头，冻得发红。\n\n她把小满叫到跟前，看了他很久，才道：「那个白衣服、没有脚、吃饼的鬼。」\n\n小满只得招认：「……娘，那是我编的。」\n\n「嗯。编得不好。」他娘顿了一顿，「鬼不吃饼。下回说它吃香火。」\n\n小满一愣：「为什么？」\n\n他娘道：「鬼吃饼，马三会想，那是个饿死鬼，饿死鬼好打发，扔两张饼就是了。鬼吃香火，那就是有人供着的，有人供着的鬼，马三惹不起。」\n\n他娘伸出手来，替他把脖子上那条「围脖」理了一理。她是看不见银月的——可她的手，偏偏停在了银月的背上，停了一停。小满低头一看，只见围脖里那只昏迷的小狐狸，耳朵轻轻地动了一下。\n\n他娘说道：「小满，这条围脖，挺暖和的吧。」\n\n她什么都没问。他爹捧着那挂下水，站在门口，朝黑松岭那边望了一眼，道：「断碑不让靠近了。这个冬天……」他娘道：「这个冬天，还长着呢。」",
+  "en": "His father stopped, mouth open, without a sound. Xiaoman got in first — and as he spoke he hunched his neck down, clutched his arms, and shook all over like a leaf in the autumn wind — \"Third Master! In there… in there it's all black, and it was pouring, and I fell in a gully and nearly died! And there's a ghost!\"\n\nMa San frowned. \"What ghost?\"\n\n\"One in white!\" Xiaoman shook harder. \"No feet, it floats along, its hair's ever so long, trailing right down to the ground — Third Master, you really can't go there, that's where my grandpa died!\"\n\nSeveral of the women in the yard had already clapped their hands over their mouths, each pair of eyes rounder than the next.\n\nMa San said, \"…In white?\"\n\n\"And it eats flatbread!\"\n\nMa San stopped. His two eyebrows went one up and one down and screwed themselves into two knots. \"A ghost that eats flatbread?\"\n\n\"Gobbles it up!\" Xiaoman showed with his hands. \"My ma's flatbread, this thick, and it finished it in three bites, and the whole time it was eating it kept saying it was disgusting!\"\n\nAt this point his eyes flicked to Ma San's hand, and his voice suddenly dropped, dropped till it was only a breath: \"…And when it finished the flatbread, it asked me—\"\n\nMa San said, \"Asked you what?\"\n\nXiaoman said, \"It asked: 'Where's the bow?'\"\n\nMa San didn't move. Sweat broke out on his forehead, a drop as big as a soybean, which rolled down the bridge of his nose to the tip, hung there, and fell — *plip* — onto the back of the bow. After a long moment, his throat a little dry, he said, \"…Did you see its face clearly?\"\n\nXiaoman said, \"No face. Just a white beard.\"\n\nOnly then did Ma San's hand give a shake, and his throat went *gulp* as he swallowed a big mouthful of spit. Xiaoman kept shaking, shook from the top of his head to his heels, shook until his teeth were chattering too: \"It said that bow is its bow. Whoever takes its bow, it follows them home.\" But inside, even as he shook, he was thinking: Yinyue, sorry. If you were awake you'd bite me for sure. Shaking and shaking, he himself couldn't tell any more how much of all this shaking was put on.\n\nMa San's face went red first, then purple, then black, and in the end it turned that colour. He looked at the bow in his hand as if it were a coiled snake. After a long moment he threw it into the arms of Xiaoman's father, threw it fast and flustered, as though the bow were burning his hand, and swore: \"Bad luck!\"\n\nMa Xiaobao, though, wasn't afraid. Following his father, he walked past Xiaoman and suddenly reached out his greasy hand, grabbed the \"scarf\" round Xiaoman's neck, and brought it up under his nose to sniff. \"Smells like dog. The fur's soft, though — I'll take it home and have Ma sew a collar out of it.\" Xiaoman clamped both hands over it, and his face shook harder than ever: \"Brother Xiaobao, this pelt… I picked it up in Black Pine Ridge, right under that white beard's feet.\" Ma Xiaobao gave a yelp. His hand shot back as if it had been singed, his fat face went as white as a bun fresh out of the steamer, and he wiped it on his clothes three times. \"…Who wants it? A fox pelt — we've got as many of those as we like at home.\"\n\nMa San had reached the gate. He turned round and said to everyone in the yard, \"Listen, all of you. From today, anyone who goes one step near that broken stone, I'll break his legs.\" With that he stamped his foot and left.\n\nMa Xiaobao followed. Passing Old Zhou's gate, he saw Ahe crouching inside the fence and kicked over the crock of pickled cabbage she'd set by the foot of the wall: \"Little doe, eh?\" The crock rolled over twice on the ground, and a whole autumn's worth of cabbage leaves spilled out across it.\n\nThe Ma people had gone off, and the onlookers had gone too. His father hung the bow back on the wall — it took him two tries to get it to stay — then crouched and gathered up the string of offal, very carefully. He said, \"…This goes to Old Zhou's family. To make up for the cabbage.\"\n\nHis mother said, \"Mm. I'll take it over.\"\n\nHis father said, \"The padded jacket…\"\n\nHis mother said, \"No hurry.\"\n\nAnd she tucked her two hands into her sleeves. That padded jacket of hers had been made the year she married into the family; its sleeves were too short by a good bit, and when she tucked her hands in, her wrists stuck out, red with cold.\n\nShe called Xiaoman over and looked at him a long time before she said, \"That ghost in white, with no feet, that eats flatbread.\"\n\nXiaoman had to own up. \"…Ma, I made it up.\"\n\n\"Mm. You made it up badly.\" His mother paused. \"Ghosts don't eat flatbread. Next time say it eats incense.\"\n\nXiaoman stopped. \"Why?\"\n\nHis mother said, \"A ghost that eats flatbread — Ma San will think it's a starved ghost, and starved ghosts are easy to get rid of; throw them a couple of flatbreads and that's that. A ghost that eats incense is one that somebody's worshipping. A ghost with somebody worshipping it is one Ma San can't afford to cross.\"\n\nHis mother reached out and straightened the \"scarf\" round his neck. She couldn't see Yinyue — and yet her hand came to rest right on Yinyue's back, and rested there a moment. Xiaoman looked down and saw the little unconscious fox in the scarf twitch an ear, very slightly.\n\nHis mother said, \"Xiaoman, that scarf's nice and warm, isn't it.\"\n\nShe didn't ask anything. His father, holding the string of offal, stood in the doorway and looked off towards Black Pine Ridge. \"We're not allowed near the broken stone now. This winter…\" His mother said, \"This winter has a long way to go yet.\""
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "rent-bluff"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "rent-bluff"
+  ]
+ },
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "马家走了",
+    "en": "The Mas are gone"
+   },
+   "means": "the Mas gone; father hangs the bow back, the offal for the Zhous; mother: ghosts don't eat flatbread, say it eats incense; the scarf is warm",
+   "needs": {
+    "task": "rent-bluff"
+   },
+   "refuse": {
+    "zh": "马三还拎着弓，瞪着你——先把那个鬼说圆了。",
+    "en": "Ma San still holds the bow, glaring at you — finish the ghost story first."
+   },
+   "beat": [],
+   "next": "00-xiuxian"
+  }
+ ]
+}

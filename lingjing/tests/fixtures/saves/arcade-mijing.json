@@ -113,6 +113,7 @@
    "00-tailu",
    "00-dusk",
    "00-rent",
+   "00-bluff",
    "00-xiuxian",
    "00-sleep",
    "00-halfyear",
@@ -222,12 +223,32 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "rent-bluff": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "sleep-xisui": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "halfyear-chaiduo": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "halfyear-mirror": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "notice-shuitong": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "notice-wupo": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -856,6 +877,7 @@
    "00-tailu",
    "00-dusk",
    "00-rent",
+   "00-bluff",
    "00-xiuxian",
    "00-sleep",
    "00-halfyear",

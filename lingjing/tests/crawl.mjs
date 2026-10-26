@@ -94,6 +94,8 @@ export function wayOn(content, s, now) {
    scene was first reached in. */
 export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), chapters = JUAN_ONE, lang = 'zh', limit = 600, boards = 'play' } = {}) {
   const scenes = new Map(), exits = new Map(), findings = [], forcedAll = [], states = new Map();
+  // The boards left on the way (`boards: 'skip'`): as each exit is prepared — a branch's state may not be the one kept.
+  const left = new Set();
   const key = (s) => `${s.chapter}/${s.scene}`;
   const queue = [{ s: newState(content, lang, start), now: start, path: [] }];
   let n = 0;
@@ -112,6 +114,7 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
       const forced = [];
       // A 回's stage quest (rules/gates.mjs): the routine's days are the economy's — earned here.
       let s = earnedFor(content, prepare(content, fresh(s0, now), exit, now, forced, boards), exit.id);
+      for (const e of s.skipped ?? []) left.add(e.task);
       let r = resolve(s, content, { now, quests: [] }, argsFor(content, s, exit));
       // A day that must pass (the 大比 is tomorrow): the page's clock moves on.
       for (let d = 0; d < 3 && r.result.refused === 'needs' && exit.needs?.day_after; d++) {
@@ -141,5 +144,5 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
       if (!snub) queue.push({ s: next, now, path: [...path, id] });
     }
   }
-  return { scenes, exits, findings, forced: forcedAll, states };
+  return { scenes, exits, findings, forced: forcedAll, states, left };
 }

@@ -61,7 +61,14 @@
     "en": "It was a pain that drilled outward from the cracks between his bones, drilled inch by inch from his toes to the ends of his hair. He bit down on his own arm, bit till it bled, and didn't make a sound. Things kept seeping out of his body, black and sticky, and the tub of water went from dark green to pitch black. The pain made everything go white in front of his eyes, again and again, and in the white, sometimes there was his mother crouched on the floor picking up the bowl, and sometimes there was the hand his father had reached down from the cliff.\n\nWhen the pain stopped, the moon had moved from this end of the woodpile to the other. He hauled himself out by the edge of the tub. There was a faint layer of light under his skin, like a piece of jade under the moon. The wrist that had been swollen for days wasn't swollen at all. He tried a little jump — *thunk* — and his head had already hit the ridge beam of the woodshed. \"Your grandpa's—\" That beam was a good ten feet off the ground. He crouched holding his head, buried his face in his knees, and laughed. When he'd laughed enough, he took the tablet down from the forked stick, clutched it in his palm, and said, \"Yinyue. I didn't yell.\" The tablet didn't answer.\n\nEarly next morning the big wooden tub had gone. He ran to the well platform and found his mother crouched there scrubbing the tub with a handful of straw dipped in wood ash, stroke after stroke. The black water from the tub had been poured into the drain below the well platform, and overnight all the grass in the drain had turned yellow. She finished the third scrub, set the tub upside down on the well platform to dry, and only then looked up at his left hand. Xiaoman hid the hand behind his back, then brought it out and waved it, grimacing: \"Ma, it still hurts.\" His mother looked at it a while. \"Then keep it wrapped two more days.\"\n\nShe got up and went indoors. At the door, without turning round, she said, \"That tub. If you want it at night from now on, fetch it yourself. When you're done, scrub it yourself.\"\n\nIt was the first time in her life his mother had hidden something for him."
    },
    "beat": [],
-   "next": "00-halfyear"
+   "next": "00-halfyear",
+   "needs": {
+    "task": "sleep-xisui"
+   },
+   "refuse": {
+    "zh": "那盆墨绿的水还没凉——先泡进去，熬过这一夜。",
+    "en": "The dark green water hasn't cooled — get in and last the night first."
+   }
   },
   {
    "id": "out",
@@ -78,5 +85,17 @@
    "stay": true
   }
  ],
- "_beats": "Cut 2026-10-16 (Hanli 「入门前的怎么办? 减少数量, 推动剧情」): the board left this scene — the passage reads whole; before 入门 the only boards are 接雨 · 拽 · 喂饼 · 射鹿 · 洛书门."
+ "_beats": "Cut 2026-10-16 (Hanli 「入门前的怎么办? 减少数量, 推动剧情」): the board left this scene — the passage reads whole; before 入门 the only boards are 接雨 · 拽 · 喂饼 · 射鹿 · 洛书门.",
+ "show": [
+  {
+   "card": "board",
+   "id": "sleep-xisui"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "sleep-xisui"
+  ]
+ },
+ "_board": "2026-10-26 (全文后的小游戏): 洗髓 — 气走经脉 `xisui` (drawn for this night 09-30, idle in the 游戏厅 since 10-16) after 「你看着。我不喊。」, before the bath's passage. Nothing paid before 入门."
 }

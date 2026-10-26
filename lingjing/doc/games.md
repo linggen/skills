@@ -77,6 +77,13 @@ is at most 60% reading, with no stretch over about 2,200. The rules, briefly:
 
 ### 第二回 (h02): 7 boards (today: 5)
 
+**Built 2026-10-26 (the go, the coordinator for Hanli):** ② 吓马三 (new scene 00-bluff, jinchat `masan`, the 古 look
+`face`) · ④ 洗髓 (00-sleep, qimai `xisui`) · ⑤ 镜光 (00-halfyear's second board, qimai `feather` re-titled: the same skill,
+「吐得比一根头发还细」; the board before the mirror's passage, the book's telling after it) · ⑦ 吴婆婆 (00-notice's second
+board, jinchat `wupo`). ⑥ 柴垛 dropped (the coordinator: the weakest). Still open, each needing kit work, not data: ① 上崖
+(禹步 is a button walk on 洛书 squares — no climb in it), ③ 银色的血 (接雨's roof is drawn in its module), and a swap for ⑥
+(its stretch reads 3,523 without it). Stretches now: tengyun → 射鹿 3,870 · 吓马三 → 洗髓 4,047 · 镜光 → 水桶 3,523 over.
+
 | # | scene · ¶ | the book | kit · level | len | why it fits | pays |
 |---|---|---|---|---|---|---|
 | 1 | 00-cliff s16 「它没有说话，可趴在他肩上的那团毛…」 | the climb back up the crack: left wrist dead, right hand on one 荆条 at a time, her claws tightening each time he lets go (exit e1) | 禹步 rhythm · 上崖 | 45 s | a climb with a real read: grab, push, let go on her grip. (攀 was cut 10-16 as a 7 s button; this one has to be a rhythm, his call) | 0 · grade mark |

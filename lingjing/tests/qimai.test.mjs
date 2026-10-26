@@ -23,7 +23,9 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket
   'notice-shuitong': 'shuitong',
   // 第一回's lineup (2026-10-21, Hanli: 「按你的建议来」): 00-masan's 忍字 — the breath pressed down under the 桂花糕
-  'masan-taunt': 'renzi' };
+  'masan-taunt': 'renzi',
+  // 全文后的小游戏 (2026-10-26): 洗髓 back on its night (00-sleep), 吹鹅毛's level as the mirror's light (00-halfyear)
+  'sleep-xisui': 'xisui', 'halfyear-mirror': 'feather' };
 const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/tasks/${f}.json`, import.meta.url), 'utf8')).tasks);
 
 /** Played to the end by `policy(state)` (true = hold), on a `step` ms clock. */
@@ -71,10 +73,8 @@ test('the story: each board the kit took keeps its task id, marks and pay; its r
     if (t.marks) for (const k of [1, 2, 3]) assert.ok(Object.hasOwn(t.marks, L.grades?.[k]), `${id}: ★${k} → ${L.grades?.[k]}`);
     assert.ok(!reg.games.some((g) => g.id !== 'qimai' && g.task === id), `${id}: one row owns it`);
   }
-  for (const [id, scene] of [['feather-breath', '00-halfyear'], ['xisui-hold', '00-sleep']]) {
-    assert.ok(!rows.find((r) => r.data.level === (id === 'feather-breath' ? 'feather' : 'xisui')).task, `${id}: still cut, no story row`);
-    assert.ok(scene);
-  }
+  // the old boards' ids stay cut (a save holding one lets it go); the levels are new tasks'
+  for (const id of ['feather-breath', 'xisui-hold']) assert.ok(tasks.find((x) => x.id === id)?.cut, `${id}: still cut`);
   // the page lays it on its own mount (its frame loop), not the 50 ms html redraw
   assert.equal(qm.meta.beat, 'mount');
 });

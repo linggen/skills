@@ -76,16 +76,27 @@ export const TO_HALL = [
   ['win', { id: 'rent-scale' }],
   ['task', { action: 'done', id: 'rent-scale' }],
   ['resolve', { exit: 'dumb' }],
+  // 吓马三 (对话 · the 古 look, 全文后的小游戏 2026-10-26): the bluff at 00-bluff
+  ['win', { id: 'rent-bluff' }],
+  ['task', { action: 'done', id: 'rent-bluff' }],
   ['resolve', { exit: 'on' }],
+  ['resolve', { exit: 'on' }],
+  // 洗髓 (气走经脉, back on its night 2026-10-26)
+  ['win', { id: 'sleep-xisui' }],
+  ['task', { action: 'done', id: 'sleep-xisui' }],
   ['resolve', { exit: 'bath' }],
-  // half a year: 雪夜柴垛 (塔防 · 守炉, the 卷一 plan 2026-10-21) after the winter's practice, then 冬月廿二 and the mirror
+  // half a year: 雪夜柴垛 (塔防 · 守炉, the 卷一 plan 2026-10-21) after the winter's practice, then 冬月廿二 and the mirror (镜光, 2026-10-26)
   ['win', { id: 'halfyear-chaiduo' }],
   ['task', { action: 'done', id: 'halfyear-chaiduo' }],
+  ['win', { id: 'halfyear-mirror' }],
+  ['task', { action: 'done', id: 'halfyear-mirror' }],
   ['resolve', { exit: 'on' }],
   ['resolve', { exit: 'go' }],
-  // 水桶落井 (气走经脉, the reading cap's third beat 2026-10-20): the breath sinks past the heart
+  // 水桶落井 (气走经脉, the reading cap's third beat 2026-10-20): the breath sinks past the heart; 吴婆婆 the night before (2026-10-26)
   ['win', { id: 'notice-shuitong' }],
   ['task', { action: 'done', id: 'notice-shuitong' }],
+  ['win', { id: 'notice-wupo' }],
+  ['task', { action: 'done', id: 'notice-wupo' }],
   ['resolve', { exit: 'go' }],
   ...JIN_ONE,
   // 泗水路 (塔防 · 守炉, the 卷一 plan 2026-10-21): the night camp on the road, the fire and 舅舅 kept

@@ -2,7 +2,8 @@
 // 关键是能留住玩家」). The 今 interludes were 调息 after 调息; 今线 is campus life, so a chat with 阿禾 · 马小宝 · 眼镜 ·
 // 老蔡 · his mum is the 今's own game, and the contrast to the 古: he types anything, they answer in character.
 //
-// One module, every chat from data (games.json `jinchat` · `data.chats[deal.chat]`): `look` (phone · call · dark), the
+// One module, every chat from data (games.json `jinchat` · `data.chats[deal.chat]`): `look` (phone · call · dark; `face` for the
+// 古: said face to face, the page's paper and ink, no phone — 吓马三, 吴婆婆, 2026-10-26), the
 // chat's `title` and `when`, `who` (people.json ids, or `{ id, name, voice }`), `open` — the book's own lines on the
 // screen as it begins —, `chips` (the book's lines he may send with a tap), `facts` and `goal` (for Ling, hidden),
 // `turns` (how many lines he sends), `book` (the book's own exchange, played when no one can be asked), `typing`
@@ -119,7 +120,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const draw = () => {
     const c = g.chat, look = c.look ?? 'phone';
     root.className = `g-jc is-${esc(look)}`;
-    const head = look === 'dark' ? '' : `<div class="g-jc-head"><span class="g-jc-back">‹</span><b>${esc(pick(c.title, lang))}</b>`
+    const head = look === 'dark' ? '' : `<div class="g-jc-head">${look === 'face' ? '' : '<span class="g-jc-back">‹</span>'}<b>${esc(pick(c.title, lang))}</b>`
       + `<span class="g-jc-when">${look === 'call' ? `<i class="g-jc-rec"></i>${esc(w.calling)}` : esc(pick(c.when, lang))}</span></div>`;
     const darkHead = look === 'dark' ? `<div class="g-jc-dhead">${esc(pick(c.when, lang))}</div>` : '';
     const chips = (c.chips ?? []).map((t, i) => `<button type="button" class="g-jc-chip" data-chip="${i}">${esc(pick(t, lang))}</button>`).join('');
@@ -292,6 +293,15 @@ const STYLE = `
 .g-jc.is-dark .g-jc-send { background: #2f5a2a; border-color: #1c1e26; box-shadow: none; }
 .g-jc.is-dark .g-jc-chip { background: #14161d; color: #c9cede; border-color: #3a3e4c; }
 .g-jc.is-dark .g-jc-end { background: #14161d; color: #c9cede; border-color: #3a3e4c; }
+/* 古: face to face — the book's paper and ink, a seal-red for his own lines; no phone chrome. */
+.g-jc.is-face { --jc-bg: #f3ead6; --jc-ink: #2b2219; --jc-them: #fbf6ea; --jc-me: #ecd2b4; --jc-dim: #8a7a60; border-radius: 6px;
+  font-family: var(--serif, serif); box-shadow: 4px 5px 0 rgba(43, 34, 25, .55); }
+.g-jc.is-face .g-jc-head { background: #e8dcc2; justify-content: space-between; }
+.g-jc.is-face .g-jc-bub { border-width: 1.5px; box-shadow: none; border-radius: 4px; }
+.g-jc.is-face .g-jc-av { border-radius: 50%; border-width: 1.5px; }
+.g-jc.is-face .g-jc-bar, .g-jc.is-face .g-jc-footrow { background: #e8dcc2; }
+.g-jc.is-face .g-jc-send { background: #9a3b2a; box-shadow: none; }
+.g-jc.is-face .g-jc-chip { background: #fbf6ea; }
 @keyframes g-jc-pop { from { transform: translateY(6px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes g-jc-dot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
 @keyframes g-jc-blink { 50% { opacity: .25; } }

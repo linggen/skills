@@ -316,9 +316,47 @@
       },
       {
        "kind": "read",
-       "chars": 6946,
-       "run": 6946,
+       "chars": 1135,
+       "run": 1135,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "rent-bluff",
+       "scene": "00-bluff",
+       "title": {
+        "zh": "吓马三 · 弓呢",
+        "en": "Scaring Ma San · Where's the bow"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 75
+      },
+      {
+       "kind": "read",
+       "chars": 4047,
+       "run": 4047,
        "over": true
+      },
+      {
+       "kind": "board",
+       "id": "sleep-xisui",
+       "scene": "00-sleep",
+       "title": {
+        "zh": "洗髓 · 疼，别喊",
+        "en": "Marrow washing · Don't cry out"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 10
+      },
+      {
+       "kind": "read",
+       "chars": 1764,
+       "run": 1764,
+       "over": false
       },
       {
        "kind": "board",
@@ -335,8 +373,27 @@
       },
       {
        "kind": "read",
-       "chars": 5676,
-       "run": 5676,
+       "chars": 2153,
+       "run": 2153,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "halfyear-mirror",
+       "scene": "00-halfyear",
+       "title": {
+        "zh": "镜光 · 比头发还细",
+        "en": "The mirror's light · Thinner than a hair"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 6
+      },
+      {
+       "kind": "read",
+       "chars": 3523,
+       "run": 3523,
        "over": true
       },
       {
@@ -350,24 +407,44 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 7
+       "n": 7,
+       "same": true
       },
       {
        "kind": "read",
-       "chars": 1721,
-       "run": 4922,
+       "chars": 819,
+       "run": 819,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "notice-wupo",
+       "scene": "00-notice",
+       "title": {
+        "zh": "吴婆婆 · 那一句",
+        "en": "Granny Wu · The one thing"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 76
+      },
+      {
+       "kind": "read",
+       "chars": 902,
+       "run": 4103,
        "over": true
       }
      ],
      "counts": {
-      "board": 5,
+      "board": 9,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 6946,
+     "longest": 4103,
      "roaming": 0,
      "side": []
     },
@@ -381,7 +458,7 @@
       {
        "kind": "read",
        "chars": 3201,
-       "run": 4922,
+       "run": 4103,
        "over": true
       },
       {
