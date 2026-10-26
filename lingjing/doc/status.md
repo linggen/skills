@@ -4,7 +4,7 @@ The one list of what is in flight, parked, not started, and waiting on Hanli.
 Every agent reads it before starting and edits its own row when it lands (hash or tag, date).
 Systems themselves live in `design.md` (【已建】 · 【在建】 · 【远景】); this file is only the work.
 
-Updated 2026-10-22.
+Updated 2026-10-26.
 
 ## In flight
 
@@ -13,6 +13,7 @@ Updated 2026-10-22.
 | Small games — doc/games.md for Hanli's design check; mechanic changes wait on it (UI polish and stuck fixes go on) | `doc/games.md` | 10-16 |
 
 ## Done lately
+- 10-26 — **Mac QA pass on 9527** (Hanli: 「先确保游戏在mac, 手机上都没问题」; scratch saves `pc-mq-*`, 1440 mouse, zh + en). Live: 第一回 walked by playtest from a fresh save to 00-longzhi, and by hand at 守灶台 (lost, then dealt again; the 结印 dock opened by itself), 守白菜, 讨饼债 (chat on, one exchange), 斗法 00-fox, 暴雨坠谷, 腾云, 今 六一七 chat, 抬鹿下山 · 雪夜柴垛 · 守灶台 in English. page-crawl over 卷一's 33 story boards (古一–古九): every board with a DOM bot won on try 1 (rain, 喂饼, 割绳子 ×2, 洛书, 五子棋, 喷嚏, 鱼步九歌), no page error; the 20 Phaser / AI boards have no page bot and stand on their node sims (game-*.test). Fixed: a lost story board (守山门/守墙关/守炉/撒豆成兵) stood frozen with only the skip — now dealt again in place (`9dd7fab1`); a played board's Phaser game ran on detached with its WebGL context for the session (`5f595114`); every Pixi app was destroyed with `destroy(true)`, which releases Pixi's global pools under the others alive — 「reading 'geometry'」 at 暴雨坠谷 → 00-fox and a frozen ticker (`23724512`, fx.js `dropApp`); 00-fox: 「脱下外衣」 then 「别碰」 left 「别碰」 alone until a reload (`cdbe28f3`); 守墙关's English title ran into the wave pill (`dc6d4a64`). Tools: page-crawl crashed on 喂饼's Matter state and failed 气走经脉 for want of a seam (`ebd78b62`); playtest could not see a mount-only board, looped on 「别碰」, looped silently on 讨饼债's gate, and — since 10-15 — ran its first load with the real chat on (`50fc75fd` `ab8145d2` `94c8a5b9` `72bb1360` `07f2c0ee`).
 - 10-22 — **第一回: 二十问 · 银月 → 讨饼债** (Hanli played it: 「这个设计不太好. 太简单, 反倒不知道是答案.....怎么改一下呢?」 → 「可以, 试一下」; games.md § Before 入门): same board id `yinyue-what`, same split; games/bingzhai.js — make the proud 妖王 own the flatbread debt (「让她认下这笔饼债」, the lead's game line); she dodges, gives in to evidence · wit · a dare · a bargain; the win is HER reply, page-checked (bingzhai-rules.js `admits`, zh + en, negation guards); out after 4, over at 10, ★ by how soon, nothing paid; owned → mark `bing-debt`. Open for Hanli: the lead-card lines; whether `bing-debt` is read later.
 - 10-22 eve — **今线 climax played, 今二's free throws a throw** (Hanli: 「改成玩」; games.md § 今's 聊天): 最后一罚 back at j09-final; 罚球 · 吸四吐六 cut from j04-line (旧版); 白线上 (`jin-whiteline`), 砸寨 `faqiu` — a new `hoop` target (a ball through the rim), bots sensible 3/3 · lazy 0/2. The chats' goal tag is `<!--成-->` now, which the chat panel never shows. 卷一 调息 6, none back to back. Open: an indoor gym backdrop for 砸寨 (it plays on the campus painting).
 - 10-22 — **第一回: 二十问 · 银月 + a teaching 斗法** (Hanli: 「你说的1-6 都是好主意, 按你说的改一遍. 关键是能留住玩家」; games.md § Before 入门): 00-yinyue's passage split after 「烂成这样。」 for the AI board `yinyue-what` (games/twenty.js — ask her anything, typed or in the chat; a line naming her a fox ends it; way out after 4; she is held on the stage unmet, rules/hergame.mjs `stage`); 00-fox's 「脱下外衣，裹起它」 is a 试 of nerve, `fox-bite` vs `foe-yinhu` (survive 3, 枯枝 · 补丁外衣 · 不怕, never lost, pays nothing). Open for Hanli: the foe is 银月 in fox form (no beast in 第一/二回 for 小满 to fight); the three cards' own plates.
@@ -158,6 +159,7 @@ Updated 2026-10-22.
 
 ## Waiting on Hanli
 
+- 三试 · 蠪侄 (`gate-longzhi`, stand 4 turns) on a save that skipped every board: lost 4 of 4 (the crawler's win policy ×3, one hand: 20 → 13 by turn 3, then two of its 九首 and a spell take the rest on turn 4). The lock's 「算了，往下走」 after 3 losses is the way on. Balance with nothing earned — his call (games.md waits on his design check).
 - 剧情 × 开放世界 (10-21): a dated world event missed — does it pass without him (the world moves on, the 恩仇簿 remembers 迟了) or wait for him? (design.md proposal)
 - 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built.
 - Economy feel calls (10-16, `9c42af47`): the stage-quest gates sit at beat entries so he can walk away to earn them — 古四 the 柴房 night (not 第一路), 古五 the 秘境's door (not 息壤), 古六 the 大比's eve (wm-qianye), which makes 古六 ≈7–8 typical days. The rerun kept open in 00-zhuji. Minutes, reading speed (450 字/min) and the three players are guesses — hand-play them. A rising ladder with 古七 holding two layers is why heavy 古五/古六 come in at ≈3–4.5 days. 古九 has no quest (九转 lands full).
@@ -167,11 +169,13 @@ Updated 2026-10-22.
 
 ## Slow / stuck (for the bug hunt after the batch lands)
 
+- 10-26 crawl: 跳过 answered in 4–8 s at 00-yinyue (around 腾云) and 00-gate, the 回 seal in ~3 s. That run's chat was on (the playtest bug above), so recheck with chat=off before chasing it.
+- 10-26: 讨饼债 (`yinyue-what`) on a headless chat=off page never showed 「算了，往下走」 after the stuck seam (the crawl's `no-skip`); in Chrome it stands. Not chased.
 - The page re-reads 20–60 s after a tap on this machine (seen by the 对对子 agent, 10-16). Profiled 10-16 on scratch saves: each verb 90–500 ms, a tap fires 3–6 of them, tap → page 0.1–0.7 s — not reproduced. Two causes left: (1) the engine runs every page `Verb` of a skill one at a time across ALL saves and callers (linggen `engine/skill/tools.rs` per-skill lock; 8 at once → 1.4 s; with 4 crawlers looping every page verb waits ~0.5 s), so with several agents' crawlers on 9527 and a loaded CPU a tap's verbs queue behind theirs — proposal: let a skill declare its page tool unserialised (the rules hold their own per-save lock) or key the lock by save; an engine change, not made. (2) on the player's own save the page's re-read after a board win waits on Ling's turn (`report` → turn end → `refresh`), which a scratch save never runs — measure there.
 
 ## Known red
 
-- None at 10-21 (lingjing suite 1790 pass): skips, board-bots deerarc and mishi went green.
+- 10-26 (lingjing suite 2153 pass): `game-zhazhai.test` (runs only where tools/ has playwright) went red once under load — 古七 `yishui-reed` sensible hand won 1 of 3 — and green on the rerun: a flaky balance bar, not a code change. Repo-wide `cfo/tests/run-page.mjs` is red on this machine (it reads the live CFO page; not lingjing).
 
 ## Known
 
