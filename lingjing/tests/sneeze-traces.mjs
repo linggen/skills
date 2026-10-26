@@ -23,6 +23,10 @@ function hand(s, { lead }) {
   if (s.phase === 'sneeze') return s.k === 2 && s.part === 'ah' && s.t - s.at + lead < AH - 150 ? { g: 'push' } : null;
   return null;
 }
+/* The html with the art's base made relative: the page's image urls are absolute (import.meta.url),
+   so a hash taken in one checkout must not depend on where that checkout lives. */
+const BASE = new URL('../worlds/jiuding/art/games/', import.meta.url).href;
+const page = (mod, s, lang) => mod.html(s, lang).replaceAll(BASE, 'art:');
 const VERBS = ['start', 'yield', 'hold', 'release', 'push'];
 const TICKS = [10, 37, 50, 100, 250, 400];
 const RIGHT = { ready: 'start', face: 'yield', sneeze: 'push' };
@@ -33,7 +37,7 @@ const RIGHT = { ready: 'start', face: 'yield', sneeze: 'push' };
 function run(mod, seed, { ops = 1500, skipAt = -1, actP = 0.45, again = false } = {}) {
   const r = rng(seed), h = crypto.createHash('sha256');
   let s = mod.newGame(seed), sawAgain = !again;
-  const see = () => h.update(canon([old(s), mod.html(s, 'zh'), mod.html(s, 'en'), mod.stuck(s), mod.gradeOf(s)]));
+  const see = () => h.update(canon([old(s), page(mod, s, 'zh'), page(mod, s, 'en'), mod.stuck(s), mod.gradeOf(s)]));
   see();
   for (let i = 0; i < ops; i += 1) {
     if (i === skipAt) s = mod.act(s, { g: 'skip' }).state;
@@ -57,7 +61,7 @@ function byBot(mod) {
     const a = hand(s, { lead: 0 });
     if (a) s = mod.act(s, a.hold ? { ...a.hold, g: 'hold' } : a.release ? { g: 'release' } : a).state;
     s = mod.tick(s, 10);
-    h.update(canon([old(s), mod.html(s, 'zh'), mod.html(s, 'en')]));
+    h.update(canon([old(s), page(mod, s, 'zh'), page(mod, s, 'en')]));
   }
   return { hash: h.digest('hex'), last: old(s) };
 }
