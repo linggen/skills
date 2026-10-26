@@ -2279,7 +2279,7 @@ const asideOn = () => Boolean(look?.aside?.on);
 /* May the box offer it now? Something to play meanwhile, a passage the rules can key, and the box mid-way —
    not its last beat (the choices are up), not at a 回's turn, not under a moment or a fight. */
 const asideMay = (r) => Boolean(look?.aside && !look.aside.on && look.aside.offers?.length && asidePlace(r) && !atLast(r, lang())
-  && !atHuiTurn() && !momentUp() && !bout && !look.fight);
+  && !atHuiTurn() && !momentUp() && !piecePlays() && !bout && !look.fight);
 async function asideTap() {
   const r = readingHere(), at = asidePlace(r);
   if (!at) return;
