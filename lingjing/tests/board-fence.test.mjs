@@ -39,3 +39,26 @@ test('the page: the fence is wired once, and a board in time waits while a popov
   // only the boards the popover paused are let go again
   assert.match(PAGE, /for \(const id of popPaused\) setPaused\(id, false\);/);
 });
+
+// The fence sees only the page; Phaser's default `input.windowEvents` listens on window.top — the launcher shell
+// when Lingjing runs inside it — so every Phaser game turns it off and hears off-canvas presses on its own window
+// (tools/<game>/src/window-input.js). A new Phaser game must do the same; its bundle must be rebuilt with it.
+test('every Phaser game hears off-canvas input on its own window, never the shell (window-input.js)', async () => {
+  const { readdirSync, readFileSync, existsSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const here = new URL('..', import.meta.url).pathname;
+  const tools = join(here, 'tools'), games = join(here, 'scripts', 'games');
+  const phaser = readdirSync(tools).filter((d) => existsSync(join(tools, d, 'src')) && readdirSync(join(tools, d, 'src'), { recursive: true })
+    .some((f) => /\.(js|ts)$/.test(f) && /new Phaser\.Game\(/.test(readFileSync(join(tools, d, 'src', f), 'utf8')) && !/main\.ts$/.test(f)));
+  assert.ok(phaser.length >= 5, `found ${phaser.join(', ')}`);
+  const one = readFileSync(join(tools, 'shouqiang', 'src', 'window-input.js'), 'utf8');
+  for (const d of phaser) {
+    const ts = d === 'zhazhai';
+    const helper = join(tools, d, 'src', ...(ts ? ['zhazhai', 'window-input.ts'] : ['window-input.js']));
+    assert.ok(existsSync(helper), `${d}: no window-input`);
+    if (!ts) assert.equal(readFileSync(helper, 'utf8'), one, `${d}: window-input.js differs from shouqiang's`);
+    const bundle = readFileSync(join(games, d, `${d}.min.mjs`), 'utf8');
+    assert.match(bundle, /windowEvents:!1/, `${d}: the bundle still listens on window.top — rebuild it`);
+    assert.match(bundle, /onMouseUpWindow/, `${d}: the bundle does not hang Phaser's window handlers on the page`);
+  }
+});

@@ -1,6 +1,7 @@
 // main.js — 守山门's play: one Phaser game on the given parent. The engine (core.js) and Phaser come in as externals
 // (build.mjs), so the browser loads the one shared Phaser beside every game.
 import * as Phaser from 'phaser';
+import { WINDOW_INPUT, ownWindowInput } from './window-input.js';
 import { jieyinState } from 'sadoushou-core';
 import { setBoard } from './view.js';
 import { PlayScene } from './play.js';
@@ -32,7 +33,9 @@ export function start(opts) {
     audio: { noAudio: true },
     banner: false,
     disableContextMenu: true,
+    input: WINDOW_INPUT, // the page's window, never the shell's (window-input.js)
   });
+  ownWindowInput(game);
   const hold = { on: Boolean(opts.held) };
   game.scene.add('play', PlayScene, true, { ...opts, zoom, hold });
   const scene = () => game.scene?.getScene('play');

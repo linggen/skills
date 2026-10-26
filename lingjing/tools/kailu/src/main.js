@@ -1,6 +1,7 @@
 // main.js — 开炉's play: one Phaser game on the given parent. Phaser comes in as an external (build.mjs), so the
 // browser loads the one shared Phaser beside every game.
 import * as Phaser from 'phaser';
+import { WINDOW_INPUT, ownWindowInput } from './window-input.js';
 import { KailuScene, W, H, ZOOM_MAX } from './play.js';
 
 /**
@@ -25,7 +26,9 @@ export function start(opts) {
     audio: { noAudio: true },
     banner: false,
     disableContextMenu: true,
+    input: WINDOW_INPUT, // the page's window, never the shell's (window-input.js)
   });
+  ownWindowInput(game);
   game.scene.add('kailu', KailuScene, true, { ...opts, zoom });
   if (opts.dev) globalThis.__kailu = game; // ?dev=1 only: a live check reads fps and the phase from here
   // refresh(): the canvas was laid into a new host (the pouch pane redraws round it) — fit it again.

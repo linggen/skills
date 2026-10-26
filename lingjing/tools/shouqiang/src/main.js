@@ -1,6 +1,7 @@
 // main.js — 守墙关's play: one Phaser game on the given parent. The engine (core.js) and Phaser come in as externals
 // (build.mjs), so the browser loads the one shared Phaser beside every game.
 import * as Phaser from 'phaser';
+import { WINDOW_INPUT, ownWindowInput } from './window-input.js';
 import { W, H, jieyinState } from 'shouqiang-core';
 import { PlayScene, ZOOM_MAX } from './play.js';
 import { SIDE } from './lanes.js';
@@ -36,7 +37,9 @@ export function start(opts) {
     audio: { noAudio: true },
     banner: false,
     disableContextMenu: true,
+    input: WINDOW_INPUT, // the page's window, never the shell's (window-input.js)
   });
+  ownWindowInput(game);
   const hold = { on: Boolean(opts.held) }; // read by the scene as it is made; go() lets it run (it may not be made yet)
   game.scene.add('play', PlayScene, true, { ...opts, zoom, landscape, hold });
   const scene = () => game.scene?.getScene('play');

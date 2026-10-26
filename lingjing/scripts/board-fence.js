@@ -10,6 +10,8 @@
 // bubbling event before the window does — stops such an event on its way to the window when it lands OVER a board's
 // field but not ON it, unless the press began on the board (its own drag, released wherever). An event off every field
 // goes on as ever (the chat's own drags end on the window). Never preventDefault: a touch's click still follows.
+// The fence sees only this page. Phaser's windowEvents listen on `window.top` — the launcher shell, inside it — so
+// each Phaser game turns them off and hangs the same handlers on the page's own window (tools/<game>/src/window-input.js).
 // Pure parts first, for the tests; `fenceBoards` wires them.
 
 /* A board's field: the host its play is mounted in (beat-host.js `data-mount`), or a page-drawn board's (`data-game`). */

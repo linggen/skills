@@ -15,6 +15,7 @@ import { Runtime, type Lang, type LevelResult, type ShellHands } from "./zhazhai
 import { LEVELS, LEVEL_WORDS, levelIdOf } from "./data/levels";
 import { botHandle } from "./zhazhai/bot";
 import { gameEvents } from "./events/EventBus";
+import { WINDOW_INPUT, ownWindowInput } from "./zhazhai/window-input";
 
 /** The forts, for the host (their count, names and shots). */
 export const levels = () => LEVELS.map((l) => ({ id: l.levelId, key: l.key ?? null, birds: l.birds.map((b) => b.type), pigs: l.pigs.length, blocks: l.structures.length, words: LEVEL_WORDS[l.levelId] }));
@@ -65,7 +66,7 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave,
     loader: { baseURL: base },
     fps: { target: 60, forceSetTimeOut: false },
     audio: { noAudio: true }, // the shell plays its sounds (ShellSoundAdapter)
-    input: { activePointers: 3 },
+    input: { activePointers: 3, ...WINDOW_INPUT }, // the page's window, never the shell's (zhazhai/window-input.ts)
     render: {
       antialias: true,
       antialiasGL: !isMobile,
@@ -86,6 +87,7 @@ export function start({ parent, base, lang = "zh", level = 0, onResult, onLeave,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, autoRound: true, width: 1920, height: 1080 },
     scene: [BootScene, TransitionScene, MenuScene, LevelSelectScene, ParallaxScene, GameScene, UIScene],
   });
+  ownWindowInput(game);
   game.events.once(Phaser.Core.Events.DESTROY, () => gameEvents.removeAllListeners());
   // A handle for the page's checks (tools, screenshots): the host element's `zhazhaiGame`.
   (parent as HTMLElement & { zhazhaiGame?: Phaser.Game }).zhazhaiGame = game;
