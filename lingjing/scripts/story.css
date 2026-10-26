@@ -55,7 +55,7 @@
 .slotfoot .errands .bookwrap:has(+ .more) .bookchip { border-radius: 99px 0 0 99px; border-right-style: dashed; }
 .slotfoot .errands .bookwrap + .more { border-left: 0; }
 body.reading .slotfoot .errands .more { visibility: hidden; }
-.slotfoot .footchips { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px 8px; overflow: visible; }
+.slotfoot .footchips { flex: 1 1 0; min-width: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px 8px; overflow: visible; }
 .slotfoot .bookchip, .slotfoot .luchip, .slotfoot .act, .slotfoot .yytoken { flex: none; white-space: nowrap; }
 .slotfoot .bookchip { display: inline-flex; align-items: center; gap: 5px; }
 .slotfoot .bookchip.wxchip { font-variant-numeric: tabular-nums; }
