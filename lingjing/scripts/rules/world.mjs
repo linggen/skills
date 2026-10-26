@@ -364,11 +364,24 @@ const huntKey = id => `hunt:${id}`;
    `cooldowns.pool_rest_min`) after a win, then the next one comes. A loss or a beast run dry draws
    the next at once, as before. */
 const POOL_REST_MIN = 30;
-function poolResting(content, state, place, now) {
+/* Milliseconds the stretch here still rests (0: a beast stands). */
+function poolRestLeft(content, state, place, now) {
   const rec = state.duels?.[huntKey(place.id)];
-  if (!rec?.at || rec.outcome !== 'won' || rec.day !== dayKey(now)) return false;
+  if (!rec?.at || rec.outcome !== 'won' || rec.day !== dayKey(now)) return 0;
   const rest = (poolOf(content, place)?.rest ?? content.balance?.cooldowns?.pool_rest_min ?? POOL_REST_MIN) * 60000;
-  return now.getTime() - Date.parse(rec.at) < rest;
+  return Math.max(0, Date.parse(rec.at) + rest - now.getTime());
+}
+const poolResting = (content, state, place, now) => poolRestLeft(content, state, place, now) > 0;
+/* Look's `waits` row for a pool at rest where he stands: its name, the world's line (the pool's `rest_say`, else
+   creatures.json `hunt.rest_say`) and the minutes left — the page draws it waiting, never a blank stretch. */
+function poolWait(content, state, now) {
+  const place = placeOf(content, state.place);
+  if (!place || place.has?.creature || !poolOf(content, place) || atScene(content, state)) return null;
+  const left = poolRestLeft(content, state, place, now);
+  if (!left) return null;
+  const pool = poolOf(content, place), lang = state.lang;
+  return { id: `pool:${place.id}`, title: pick(pool.name, lang) ?? pick(place.name, lang) ?? place.id,
+    shut: pick(pool.rest_say ?? content.creatures?.hunt?.rest_say, lang) ?? null, wait_min: Math.ceil(left / 60000) };
 }
 /* 不打重复的怪 (Hanli, 2026-10-15: 「要确保有足够的怪……不要打重复的怪」) — creatures.json
    `hunt`: a pool's entry may wait for a 回 (`from`, a 回 id: drawn once the save has reached it,
@@ -653,4 +666,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

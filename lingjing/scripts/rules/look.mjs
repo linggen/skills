@@ -27,7 +27,7 @@ import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
-import { atScene, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
+import { atScene, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, poolWait, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
@@ -46,7 +46,7 @@ import { rerunBoardId, rerunBrief, runBoardHere, runRow } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 import { mishiHosted, mishiLook } from './mishi.mjs';
 import { kaoBrief, kaoHosted } from './kao.mjs';
-import { shouchaoHosted, shouchaoRow, shouchaoWaiting } from './shouchao.mjs';
+import { shouchaoHosted, shouchaoRow, shouchaoWait, shouchaoWaiting } from './shouchao.mjs';
 import { qiyuHosted, qiyuRow } from './qiyu.mjs';
 import { dealtOf } from './climb.mjs';
 
@@ -651,6 +651,8 @@ export function look(state, content, ctx) {
     ...(replayBrief(content, state, ctx.now) ? { replay: replayBrief(content, state, ctx.now) } : {}),
     // 刷副本 (rules/rerun.mjs): inside a run its rooms; outside, the rooms open again (the door) or how long until.
     ...(rerunBrief(content, state, ctx.now) ? { rerun: rerunBrief(content, state, ctx.now) } : {}),
+    // Every cooldown he waits out, one shape: { id, title, shut, wait_min } — the page draws each as one waiting row.
+    ...(waitsOf(content, state, ctx.now).length ? { waits: waitsOf(content, state, ctx.now) } : {}),
     ended: state.ended, story: state.story,
     // 前情提要 while owed, and the last story node while fresh (story.mjs).
     ...recapLook(content, state), ...nodeLook(state, ctx.now),
@@ -738,3 +740,11 @@ function worldBrief(content, lang) {
 }
 
 export { duelBrief, forSale, shopOf, shopOpen, ledgerOf, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };
+
+/* The cooldowns he waits out now, in one shape (cards.js waitRowHtml): 兽潮's (rules/shouchao.mjs), the 秘境 rerun's
+   (rules/rerun.mjs, shut), a pool at rest where he stands (world.mjs). Each its own line in the world's words. */
+function waitsOf(content, state, now) {
+  const r = rerunBrief(content, state, now);
+  const rerun = r && !r.inside && r.open === false ? { id: `rerun:${r.id}`, title: r.label ?? r.door?.name ?? r.id, shut: r.say ?? null, wait_min: r.wait_min } : null;
+  return [shouchaoWait(content, state, now), rerun, poolWait(content, state, now)].filter(Boolean);
+}

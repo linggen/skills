@@ -252,6 +252,11 @@ overflow pays more.
   reading takes about twice as long. The 层 are held at their numbers (`model.fit.hold` h05 · h07 · h08)
   and the bands of 古四 (≤ 8) and 古六 (≤ 10.5), and 古一–古三's ≤ 5 days, widened until the new small
   games land — then re-fit, Hanli's call.
+- **Every cooldown waits the same way** (2026-10-26): Look's `waits` lists each one he is waiting out —
+  兽潮's, the 秘境 rerun's shut, a pool at rest where he stands — as `{ id, title, shut, wait_min }`, the line in the
+  world's words (the task's `shut`, the rerun's `shut`, creatures.json `hunt.rest_say` or a pool's own); the tray
+  draws one row shape (cards.js waitRowHtml): name, line, 「约 N 时辰后」/「约 N 刻后」 ("back in about N h / min"),
+  nothing to start. The 饭桶 keeps its own pane, which shows its full phase.
 - **One model for every number.** `worlds/jiuding/balance.json` holds the 层 thresholds, the pay
   tables, the fight-to-灵石 rate and the cooldowns; content.mjs
   (`withBalance`) lands them where the rules read them. `node tools/balance.mjs` plays a light, a
@@ -297,8 +302,8 @@ often the 九鼎 veins swell and draw the beasts down; the outer disciples man t
 the knobs: tasks/world.json `shouchao`, its cooldown balance.json `cooldowns.shouchao_h`.
 - **When**: at any hour, once a cooldown — offered again 20 h after the last night counted (a little under a day, so
   the same time tomorrow is open; inside it `win`/`task done` are refused `shut` in the world's words with
-  `left_min`; Look keeps the row through the whole cooldown, past midnight, with `wait_min` and `shut`, and the
-  page's tray draws it waiting: the line and 「灵脉未涨 · 约 N 时辰后」 / "back in about N h"), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at
+  `left_min`; Look keeps the row through the whole cooldown, past midnight, with `wait_min` and `shut`, and carries it in
+  `waits` — § Pacing's one waiting row), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at
   沉鼎观, never inside a beat's lock, the 秘境, a rerun or a fight.
 - **Cost and pay**: 8 灵气 (a fight's), taken as the night is counted — a lost night costs nothing, an empty pool
   shuts the board. By stars: 1★ 修为 10 + 灵石 5 · 2★ 20 + 10 + an herb · 3★ 30 + 15 + an herb (修为 on the

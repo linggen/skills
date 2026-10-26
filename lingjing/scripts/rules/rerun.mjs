@@ -306,7 +306,7 @@ export function rerunBrief(content, state, now) {
   if (!r || state.sealed || beatOf(content, state)) return null;
   const door = placeName(content, state, placeOf(content, r.rerun.door));
   const wait = rerunWait(state, r, now);
-  if (wait > 0) return { open: false, id: r.beat.id, wait_min: Math.ceil(wait / MIN), say: pick(r.rerun.shut, lang) ?? null, door };
+  if (wait > 0) return { open: false, id: r.beat.id, label: pick(r.rerun.label, lang) ?? null, wait_min: Math.ceil(wait / MIN), say: pick(r.rerun.shut, lang) ?? null, door };
   return { open: true, id: r.beat.id, say: pick(r.rerun.open, lang) ?? null, door, here: state.place === r.rerun.door, runs: state.reruns?.[r.beat.id]?.n ?? 0 };
 }
 

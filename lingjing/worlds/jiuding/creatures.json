@@ -3568,11 +3568,12 @@
   "_decks": "每只妖的十二张牌就是它的人格 (design.md § 斗法 v3)。十二张是 PvE 的硬顶：抽空即力竭遁走 —— 一场绝不会拖过十回合。八张是第一版，闸发现那样它在被打退之前就先抽空了（2026-09-18：55–66% 的仗打成了平局）。",
   "_signatures": "杀招 (battle.js § 杀招)：它掉到一半气血时蓄力 —— 下一回合不出牌（它阵前的照样出手），页面写明将落下的点数 —— 再下一回合放出，一场一次。伤害先打护主。效果只用封闭词表。数值是闸量过的（2026-09-23）：会读场的赢约 84%、输约 2% —— 它是一场仗的高潮，不是一堵墙。量出来的另一件事：五回合、照剧本出牌的妖，打到杀招时胜负多半已定，所以真正的取舍在仗外（带什么牌、克哪一行、碰不碰它）。",
   "_elite": "精英 (his, 2026-09-23)：固定在世界里、地图与妖卡上一直标着 —— 选择是去不去、带着多少伤去。它满气血上阵（不打七折），赢了修为灵石加倍、留两张牌。雷神与夔，山海经里神一级的。",
-  "_hunt": "不打重复的怪 (Hanli, 2026-10-15: 「要确保有足够的怪……不要打重复的怪」; world.mjs poolBeast). A pool's entry may wait for a 回 (`from`: a 回 id — drawn once the save has reached it in the book's order) and keep to an hour (`when`: night or day; night is `night` [from, to) in the hours of the day). The draw never deals one of the last `memory` beasts fought at that place while the pool holds more than those (one is always left), and weighs a beast he has never fought `fresh` times. A pool may say its own `memory` and `fresh`. Every beast fought by any door is kept in `state.beasts` (met, won, first day) — 图鉴 reads it, and a stretch's card counts how many of its beasts are met.",
+  "_hunt": "不打重复的怪 (Hanli, 2026-10-15: 「要确保有足够的怪……不要打重复的怪」; world.mjs poolBeast). A pool's entry may wait for a 回 (`from`: a 回 id — drawn once the save has reached it in the book's order) and keep to an hour (`when`: night or day; night is `night` [from, to) in the hours of the day). The draw never deals one of the last `memory` beasts fought at that place while the pool holds more than those (one is always left), and weighs a beast he has never fought `fresh` times. A pool may say its own `memory` and `fresh`. Every beast fought by any door is kept in `state.beasts` (met, won, first day) — 图鉴 reads it, and a stretch's card counts how many of its beasts are met. `rest_say`: the line a pool at rest says while it waits (Look `waits`, world.mjs poolWait; a pool may say its own).",
   "hunt": {
     "memory": 3,
     "fresh": 3,
-    "night": [19, 6]
+    "night": [19, 6],
+    "rest_say": {"zh": "这一片刚打过一场，野物都躲起来了，过一阵才敢出来。", "en": "A fight has just ended here; the wild things are lying low. They will come out again in a while."}
   },
   "_loot": "不拿重复的物品 (Hanli, 2026-10-15; arms.mjs lootOf). `loot` on a creature: the table a beast of the wild (a pool's, a haunt's) leaves ONE thing from on each win, beside its `drops` — `[{item, w, n?, dup?}]`. A thing he never had (`state.found`, kept by every door that stows) weighs `loot_rules.fresh` times; the road's finds are weighed the same way (road.mjs). A one-off (the item's `once`) he has had comes as something useful instead: the row's `dup` (`{item, n}` or `{wealth}`), else the thing's own market price (`sell`) in 灵石, as if sold where it lay. Stackable things (herbs, hides, ores) come again as they are: they are spent at the furnace, the 饭桶 and the shops.",
   "loot_rules": {

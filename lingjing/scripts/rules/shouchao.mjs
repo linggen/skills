@@ -70,6 +70,13 @@ export function shouchaoWaiting(content, state, id, now) {
   const t = tideTask(content);
   return Boolean(t) && t.id === id && tideUp(content, state, t) && cooling(state, t, now);
 }
+/* Look's `waits` row for the tide inside its cooldown, where he may join: the tide just held, its line, the minutes left. */
+export function shouchaoWait(content, state, now) {
+  const t = tideTask(content);
+  if (!t || !shouchaoWaiting(content, state, t.id, now)) return null;
+  const r = shouchaoRow(content, state, now);
+  return { id: t.id, title: r.title, shut: r.shut ?? null, wait_min: r.wait_min };
+}
 /* The tide's task (tasks.mjs taskOpen asks it alone, never the generic period). */
 export const isTide = (content, id) => tideTask(content)?.id === id;
 /* Inside the cooldown where he may join: refused in the world's words, with the minutes left — else null. */

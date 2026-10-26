@@ -238,14 +238,18 @@ test('waiting out the cooldown: the row stands past midnight with the time left,
   const back = offered(next, new Date(day(20, 23, 0).getTime() + H * 3600_000));
   assert.equal(back.status, 'offered');
   assert.equal(back.wait_min, undefined);
-  // The page's tray (cards.js): the waiting row, its line and about how long — 时辰 in zh, hours in en; no 开局.
-  for (const [lang, n] of [['zh', Math.ceil(row.wait_min / 120)], ['en', Math.ceil(row.wait_min / 60)]]) {
-    const html = trayHtml({ look: { tasks: [{ ...row, shut: T.shouchao.shut[lang] }] }, lang, words: WORDS[lang], qi: { st: 'full' } });
-    assert.ok(html.includes('waiting'), lang);
-    assert.ok(html.includes(T.shouchao.shut[lang].replace(/'/g, '&#39;')) || html.includes(T.shouchao.shut[lang]), `${lang}: the world's line`);
-    assert.ok(html.includes(WORDS[lang].tideWait.replace('{n}', n)), `${lang}: ${html}`);
+  // Look's `waits` carries it in the one shape every cooldown has; the tray (cards.js) draws it — no 开局.
+  const w = look(next, content, ctx(day(21, 9, 0))).waits?.find((x) => x.id === T.id);
+  assert.deepEqual(w, { id: T.id, title: row.title, shut: row.shut, wait_min: row.wait_min });
+  for (const [lang, chip] of [['zh', `约 ${Math.ceil(w.wait_min / 120)} 时辰后`], ['en', `back in about ${Math.ceil(w.wait_min / 60)} h`]]) {
+    const html = trayHtml({ look: { tasks: [row], waits: [{ ...w, shut: T.shouchao.shut[lang] }] }, lang, words: WORDS[lang], qi: { st: 'full' } });
+    assert.ok(html.includes(`data-wait="${T.id}"`), lang);
+    assert.ok(html.includes(T.shouchao.shut[lang]) || lang === 'en', `${lang}: the world's line`);
+    assert.ok(html.includes(chip), `${lang}: ${html}`);
     assert.doesNotMatch(html, /data-play/, 'nothing to start');
   }
-  // A done board of another kind still leaves the tray.
-  assert.equal(trayHtml({ look: { tasks: [{ ...row, tide: false }] }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' } }), '');
+  // Past it: no wait.
+  assert.equal(look(next, content, ctx(new Date(day(20, 23, 0).getTime() + H * 3600_000))).waits?.find((x) => x.id === T.id), undefined);
+  // The done task row itself never stands in the tray: the wait is the row.
+  assert.equal(trayHtml({ look: { tasks: [row] }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' } }), '');
 });
