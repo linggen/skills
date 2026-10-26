@@ -8,6 +8,8 @@
 //   lingjing-world.json { "/lj/worlds/jiuding/…": "<json text>" } — every JSON the rules read: the world's
 //                       chapters, scenes, tasks, cards, creatures, games.json, levels/*.json …, and the book's
 //                       index (story/), and battle.js as text (the fight engine's stamp). No art, no markdown. Minified.
+//   lingjing-places.json { "yinyue": "<SKILL.md place.yinyue.text>" } — where 银月 stands in this game, the words the Mac's
+//                       engine gives her here: the phone's Yinyue reads them for 讨饼债 (her own soul is the app's).
 //
 // Usage: node tools/phone-bundle.mjs [--out <dir>]   (needs `npm ci` in tools/phone for esbuild)
 import fs from 'node:fs';
@@ -78,6 +80,18 @@ export function worldFiles({ world = 'jiuding' } = {}) {
   return out;
 }
 
+/** SKILL.md's `place.<who>.text` (a folded `>-` block), as the engine reads it: lines joined by spaces. */
+export function placesOf() {
+  const md = fs.readFileSync(path.join(SKILL, 'SKILL.md'), 'utf8');
+  const head = md.split(/^---$/m)[1] ?? '';
+  const out = {};
+  const block = head.match(/^place:\n((?:[ ]{2,}.*\n|\n)+)/m)?.[1] ?? '';
+  for (const m of block.matchAll(/^ {2}([a-z]+):\n(?: {4}.*\n)*? {4}text: >-\n((?: {6}.*\n)+)/gm)) {
+    out[m[1]] = m[2].split('\n').map((l) => l.trim()).filter(Boolean).join(' ');
+  }
+  return out;
+}
+
 export async function buildPhoneBundle({ out = path.resolve('phone-bundle'), minify = true } = {}) {
   const esbuild = await esbuildOf();
   if (!esbuild) throw new Error('esbuild is not installed: run `npm ci` in lingjing/tools/phone');
@@ -92,6 +106,7 @@ export async function buildPhoneBundle({ out = path.resolve('phone-bundle'), min
   const files = worldFiles();
   const world = path.join(out, 'lingjing-world.json');
   fs.writeFileSync(world, JSON.stringify(files));
+  fs.writeFileSync(path.join(out, 'lingjing-places.json'), JSON.stringify(placesOf()));
   const size = (f) => { const b = fs.readFileSync(f); return { bytes: b.length, gzip: zlib.gzipSync(b).length }; };
   return { rules, world, files: Object.keys(files).length, sizes: { rules: size(rules), world: size(world) } };
 }

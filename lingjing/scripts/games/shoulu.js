@@ -176,7 +176,7 @@ export function leadSplit(lines, lang = 'zh') {
   return { said: story.map((l) => word(l, lang)).filter(Boolean).join(lang === 'en' ? ' ' : ''), rest: at < 0 ? [] : all.slice(at) };
 }
 
-export async function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, shell } = {}) {
+export async function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, shell, peek } = {}) {
   lang = lang === 'en' ? 'en' : 'zh';
   let t = T[lang];
   const doc = container.ownerDocument, win = doc.defaultView;
@@ -205,6 +205,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
   // held: a level drawn but not started (the shell's lead card is up over it); frozen(): no clock, no orders
   let held = false, leadTok = 0;
   let g = null, li = -1, paper = null, speed = 1, paused = false, S = noSel(), aimAt = null, touchy = false, sel = -1, raf = 0, last = 0, acc = 0, shown = false, sc = 1, dpr = 1, previewKey = '';
+  peek?.(() => g); // a host that keeps the stuck rule itself (games/phone/host.js) looks at the board
   const sagaQ = [], toastQ = [];
   let sagaT = 0, toastT = 0;
 

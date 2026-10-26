@@ -35,13 +35,15 @@ export function mountPure(mod) {
   return (container, opts = {}) => run(mod, container, opts);
 }
 
-function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now()), level = 1, signal, winHold = WIN_HOLD, shell } = {}) {
+function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now()), level = 1, signal, winHold = WIN_HOLD, shell, peek } = {}) {
   const paused = () => Boolean(shell?.paused?.());
   const doc = container.ownerDocument;
   const host = doc.createElement('div');
   host.className = 'game g-mounted';
   container.replaceChildren(host);
   const g = { state: mod.newGame(seed, level, data), held: null };
+  // `peek`: a host that keeps the stuck rule itself (the phone's, games/phone/host.js) is handed a look at the state.
+  peek?.(() => g.state);
   const paint = () => morph(host, mod.html(g.state, lang));
   return new Promise((resolve) => {
     let last = performance.now(), done = false;

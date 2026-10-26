@@ -7,6 +7,19 @@
 <style>
   html, body { margin: 0; height: 100%; background: #0b0f0a; overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
   #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; --game-reserve: 0px; }
+  /* A board drawn in the page (rain, bread, qimai, shoulu, kapai, bingzhai): the paper ground, from the top, scrolling. */
+  html.is-dom, html.is-dom body { background: var(--ground); }
+  html.is-dom #stage { display: block; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px 10px calc(16px + env(safe-area-inset-bottom)); }
+  /* 斗法 (kapai): the room fills the page as in the 游戏厅 (arcade.css .is-fill): its own phone rules answer the
+     `scene` container (battle.css @container scene), which the Mac's story page gives it. */
+  html[data-board=kapai] #stage { padding: 0 0 env(safe-area-inset-bottom); overflow: hidden; }
+  html[data-board=kapai] .g-kapai { height: 100%; overflow: hidden; container: scene / inline-size; }
+  /* A 大场面 (a set piece): the picture fills the page, under the app's words. */
+  html.is-piece #stage { display: block; padding: 0; overflow: hidden; }
+  .phonepiece { position: absolute; inset: 0; }
+  .phonepiece .sphost { width: 100%; height: 100%; border-radius: 0; background: #f5efe1; }
+  .phonepiece canvas { width: 100% !important; height: 100% !important; object-fit: cover; }
+  .phonepiece .spstill { width: 100%; height: 100%; object-fit: cover; }
 </style>
 </head>
 <body>

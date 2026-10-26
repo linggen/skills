@@ -1,17 +1,37 @@
 {
-  "_about": "What a board needs to play in the phone app's local webview (tools/phone-board.mjs ships exactly this, mirrored under the skill's own paths — a game's `new URL('../../worlds/…', import.meta.url)` keeps working untouched). `entry` pages: the host page (scripts/games/phone/). `games.<id>`: the game's module, its own folder (bundle, engine, art, font), the shared files it names by URL, and the JS it loads through its static imports (found by walking them — never listed). `exclude`: build leftovers inside a game folder. `dynamic`: modules a game loads on demand that the phone does not ship yet (the camera 结印).",
-  "entry": ["scripts/games/phone/index.html", "scripts/games/phone/host.js"],
+  "_about": "What a board needs to play in the phone app's local webview (tools/phone-board.mjs ships exactly this, mirrored under the skill's own paths — a game's `new URL('../../worlds/…', import.meta.url)` keeps working untouched). `entry` pages: the host page (scripts/games/phone/). `shared`: what every board's page loads (the sound kit; lingjing.css, whose :root holds the colours and type every board's CSS reads). `games.<id>`: the game's module, its own folders (bundle, engine, art, font), the shared files it names by URL, and the JS it loads through its static imports (found by walking them — never listed); `css` the sheets the host page links before it mounts (shipped too). `exclude`: build leftovers inside a game folder. `dynamic`: modules a game loads on demand that the phone does not ship yet (the camera 结印: without it the dock is never offered, and every board is the board without it). Packs (phone-board.mjs --all): one `common` (the entry, `shared`, and every file two or more boards need) and one per game (the rest of its own); the app answers a path from whichever pack holds it. Step 1 of doc/lingjing-phone.md (linggen-mobile): 第一回's boards.",
+  "entry": [
+    "scripts/games/phone/index.html",
+    "scripts/games/phone/host.js"
+  ],
   "shared": [
+    "scripts/lingjing.css",
     "scripts/games/kit/audio/sounds.json",
     "scripts/games/kit/audio/bank.json",
     "scripts/games/kit/audio/sfx.m4a",
     "scripts/games/kit/audio/sfx.ogg"
   ],
+  "_story": "`story`: what the app's own story screen shows from the kit (not a board's): the faces on 第一回's people cards. In the common pack; the app reads them from the pack, not through the webview.",
+  "story": [
+    "worlds/jiuding/art/people/baba.webp",
+    "worlds/jiuding/art/people/mama.webp",
+    "worlds/jiuding/art/people/ahe-girl.webp",
+    "worlds/jiuding/art/people/masan.webp",
+    "worlds/jiuding/art/people/maxiaobao.webp",
+    "worlds/jiuding/art/people/wupo.webp",
+    "worlds/jiuding/art/people/yinyue.webp",
+    "worlds/jiuding/art/people/yinyue-fox.webp"
+  ],
   "games": {
     "shouqiang": {
       "module": "scripts/games/shouqiang.js",
-      "dirs": ["scripts/games/shouqiang"],
-      "exclude": ["scripts/games/shouqiang/source.json", "scripts/games/shouqiang/font/chars.txt"],
+      "dirs": [
+        "scripts/games/shouqiang"
+      ],
+      "exclude": [
+        "scripts/games/shouqiang/source.json",
+        "scripts/games/shouqiang/font/chars.txt"
+      ],
       "files": [
         "scripts/vendor/phaser.min.mjs",
         "worlds/jiuding/levels/shouqiang.json",
@@ -23,7 +43,207 @@
         "scripts/games/kit/audio/music/td.m4a",
         "scripts/games/kit/audio/music/td.ogg"
       ],
-      "dynamic": ["scripts/games/jieyin/helper.js"]
+      "dynamic": [
+        "scripts/games/jieyin/helper.js"
+      ]
+    },
+    "sadoushou": {
+      "module": "scripts/games/sadoushou.js",
+      "dirs": [
+        "scripts/games/sadoushou",
+        "scripts/games/sadou/art",
+        "scripts/games/shouqiang/art"
+      ],
+      "exclude": [
+        "scripts/games/sadoushou/source.json",
+        "scripts/games/sadoushou/font/chars.txt"
+      ],
+      "files": [
+        "scripts/vendor/phaser.min.mjs",
+        "worlds/jiuding/levels/sadoushou.json",
+        "scripts/games/kit/audio/music/td.m4a",
+        "scripts/games/kit/audio/music/td.ogg"
+      ],
+      "dynamic": [
+        "scripts/games/jieyin/helper.js"
+      ],
+      "_about": "守灶台 (games/sadoushou.js), 00-zaotai: its bundle loads its units from sadou/art and shouqiang/art by URL at run time (found missing on the simulator 10-26), so both folders ship (shouqiang's lands in the common pack, shared with 守白菜)."
+    },
+    "shoulu": {
+      "module": "scripts/games/shoulu.js",
+      "dirs": [
+        "scripts/games/shoulu"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/shoulu/shoulu.css"
+      ],
+      "files": [
+        "worlds/jiuding/games.json",
+        "worlds/jiuding/levels/jieyin.json",
+        "scripts/games/kit/audio/music/td.m4a",
+        "scripts/games/kit/audio/music/td.ogg"
+      ],
+      "dynamic": [
+        "scripts/games/jieyin/helper.js"
+      ]
+    },
+    "rain": {
+      "module": "scripts/games/rain.js",
+      "dirs": [
+        "worlds/jiuding/art/games/rain"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css"
+      ],
+      "files": [
+        "scripts/games/kit/audio/music/whack.m4a",
+        "scripts/games/kit/audio/music/whack.ogg"
+      ]
+    },
+    "bread": {
+      "module": "scripts/games/bread.js",
+      "dirs": [
+        "worlds/jiuding/art/games/bread"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css"
+      ],
+      "files": [
+        "scripts/vendor/matter-0.20.0.min.js",
+        "worlds/jiuding/games.json",
+        "worlds/jiuding/art/people/yinyue-fox.webp",
+        "scripts/games/kit/audio/music/rope.m4a",
+        "scripts/games/kit/audio/music/rope.ogg"
+      ]
+    },
+    "qimai": {
+      "module": "scripts/games/qimai.js",
+      "dirs": [
+        "scripts/games/qimai"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/qimai.css"
+      ],
+      "files": [
+        "worlds/jiuding/games.json",
+        "scripts/games/kit/audio/music/flight.m4a",
+        "scripts/games/kit/audio/music/flight.ogg"
+      ]
+    },
+    "kapai": {
+      "_about": "斗法 (games/kapai.js) for 第一回's teaching fight, 00-fox `fox-bite`: the room, its sheets, the card table and the art of the cards that fight deals (the starter 娘烙的饼, the book's three, 银狐's 龇牙) and its foe. A later 回's fight adds its cards' art here (tests/phone-board.test.mjs checks the fox's). `dynamic`: fx.js names the painting libraries it loads on demand for the stage's moments; the room only uses its `squash`, so none of them is shipped for the fight.",
+      "module": "scripts/games/kapai.js",
+      "dirs": [],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/battle.css",
+        "scripts/battle-party.css",
+        "scripts/danang.css"
+      ],
+      "files": [
+        "worlds/jiuding/cards.json",
+        "worlds/jiuding/art/cards/niangbing.webp",
+        "worlds/jiuding/art/cards/shizi.webp",
+        "worlds/jiuding/art/cards/tuou.webp",
+        "worlds/jiuding/art/people/yinyue-fox.webp",
+        "scripts/games/kit/audio/music/card.m4a",
+        "scripts/games/kit/audio/music/card.ogg"
+      ],
+      "dynamic": [
+        "scripts/vendor/pixi-8.21.0.min.mjs",
+        "scripts/vendor/gsap-3.15.0.min.js",
+        "scripts/vendor/phaser.min.mjs"
+      ]
+    },
+    "bingzhai": {
+      "_about": "讨饼债 (games/bingzhai.js), 00-yinyue: no art; 银月's turns come from the app (the host's `talk`, the phone's own Yinyue).",
+      "module": "scripts/games/bingzhai.js",
+      "dirs": [],
+      "files": [],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css"
+      ]
+    },
+    "piece-zhuigu": {
+      "piece": "zhuigu",
+      "module": "scripts/setpieces/zhuigu.js",
+      "modules": [
+        "scripts/setpiece.js"
+      ],
+      "dirs": [],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/setpiece.css"
+      ],
+      "files": [
+        "scripts/vendor/pixi-8.21.0.min.mjs",
+        "scripts/vendor/gsap-3.15.0.min.js",
+        "worlds/jiuding/art/setpiece/zhuigu-ya.webp",
+        "worlds/jiuding/art/setpiece/zhuigu-gun.webp",
+        "worlds/jiuding/art/setpiece/zhuigu-tai.webp"
+      ],
+      "dynamic": [
+        "scripts/vendor/phaser.min.mjs"
+      ]
+    },
+    "piece-yaowang": {
+      "piece": "yaowang",
+      "module": "scripts/setpieces/yaowang.js",
+      "modules": [
+        "scripts/setpiece.js"
+      ],
+      "dirs": [],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/setpiece.css"
+      ],
+      "files": [
+        "scripts/vendor/pixi-8.21.0.min.mjs",
+        "scripts/vendor/gsap-3.15.0.min.js",
+        "worlds/jiuding/art/setpiece/yaowang-cave.webp",
+        "worlds/jiuding/art/setpiece/yaowang-sky.webp",
+        "worlds/jiuding/art/setpiece/yaowang-moon.webp",
+        "worlds/jiuding/art/setpiece/yaowang-tail.webp",
+        "worlds/jiuding/art/setpiece/yaowang-ridge.webp",
+        "worlds/jiuding/art/setpiece/yaowang-yao.webp",
+        "worlds/jiuding/art/setpiece/yaowang-peak.webp",
+        "worlds/jiuding/art/setpiece/yaowang-flower.webp",
+        "worlds/jiuding/art/setpiece/tengyun-cloud.webp"
+      ],
+      "dynamic": [
+        "scripts/vendor/phaser.min.mjs"
+      ]
+    },
+    "piece-tengyun": {
+      "piece": "tengyun",
+      "module": "scripts/setpieces/tengyun.js",
+      "modules": [
+        "scripts/setpiece.js"
+      ],
+      "dirs": [],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/setpiece.css"
+      ],
+      "files": [
+        "scripts/vendor/phaser.min.mjs",
+        "scripts/vendor/matter-0.20.0.min.js",
+        "worlds/jiuding/art/places/yingu.webp",
+        "worlds/jiuding/art/setpiece/tengyun-stand.webp",
+        "worlds/jiuding/art/setpiece/tengyun-sit.webp",
+        "worlds/jiuding/art/setpiece/tengyun-cloud.webp",
+        "worlds/jiuding/art/setpiece/tengyun-ring.webp"
+      ],
+      "dynamic": [
+        "scripts/vendor/pixi-8.21.0.min.mjs",
+        "scripts/vendor/gsap-3.15.0.min.js"
+      ]
     }
-  }
+  },
+  "_pieces": "`games.piece-<id>`: a 大场面 (setpieces/<id>.js) the story screen plays under its beat (rules/tell.mjs `piece`): `piece` names it, the host page plays it through setpiece.js (`playSetPiece`, auto, cover) and ends like a board. `modules`: more JS whose static imports are walked (setpiece.js loads its piece by a dynamic import). The painting libraries it loads on demand (fx.js) are listed in `files`."
 }

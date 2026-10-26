@@ -11,7 +11,10 @@
 // the round (rules/hergame.mjs `stage`: deal.wake/rest). In the 游戏厅 (no deal on the row) the task's deal is fetched.
 //
 // mount(container, { data, lang, signal }) → { won: true, grade: 'admitted' | 'dodged', stars }
-//   data: { exchanges, skip_after, context: {zh, en}, hold: {zh, en}, hold_lines, press: {zh, en}, session(), seam ('stub' | 'off'), wake(), rest() }
+//   data: { exchanges, skip_after, context: {zh, en}, hold: {zh, en}, hold_lines, press: {zh, en}, session(), seam ('stub' | 'off'), wake(), rest(), talk() }
+//   `talk(text) → Promise<her reply>`: a host with its own 银月 (the phone app, which has no Ling chat — doc/lingjing-phone.md
+//   step 1 in linggen-mobile) answers each line itself; the line is the same one (lineFor), without the chat's `[HIDDEN]` and
+//   @-mention, and the page still judges her reply. No chat is read or polled then.
 // 「算了，往下走」 is the page's (stuck.js): `stuck()` says so once `skip_after` lines are sent, or she cannot be asked.
 import { refusalOf } from './drawguess-rules.js';
 import { admits, starsFor } from './bingzhai-rules.js';
@@ -31,12 +34,12 @@ const POLL_MS = 600, TIMEOUT_MS = 40000;
 
 const T = {
   zh: {
-    lead: '让她认下这笔饼债。', lead2: '凭据、嘴皮、激将、讲条件，都行——在这儿打字，或在对话里 @银月 说。',
+    lead: '让她认下这笔饼债。', lead2: '凭据、嘴皮、激将、讲条件，都行——在这儿打字，或在对话里 @银月 说。', lead2Own: '凭据、嘴皮、激将、讲条件，都行——在这儿打字跟她说。',
     ask: '跟她说……', go: '说', count: '已说 {n}/{max}', wait: '银月在想……',
     won: '她认了。', missed: '她到底没认。', far: '这里叫不应银月。', off: '这个测试存档不叫银月（chat=off）。', absent: '银月不在。', err: '她没答上来，再问一句。',
   },
   en: {
-    lead: 'Make her own the flatbread debt.', lead2: 'Evidence, wit, a dare, a bargain — type it here, or say it to @Yinyue in the chat.',
+    lead: 'Make her own the flatbread debt.', lead2: 'Evidence, wit, a dare, a bargain — type it here, or say it to @Yinyue in the chat.', lead2Own: 'Evidence, wit, a dare, a bargain — type it here.',
     ask: 'Tell her…', go: 'Say', count: 'Said {n}/{max}', wait: 'Yinyue is thinking…',
     won: 'She owned it.', missed: 'She never owned up.', far: 'Yinyue can\'t be reached here.', off: 'This test save calls no one (chat=off).', absent: 'Yinyue isn\'t here.', err: 'No answer from her. Ask again.',
   },
@@ -58,6 +61,8 @@ export function lineFor(deal, q, { n = 1, lang = 'zh' } = {}) {
   return `${note ? HIDDEN : ''}${AT[en ? 'en' : 'zh']}${note}${q}`;
 }
 const HIDDEN = '[HIDDEN] ';
+/** The same line for a host's own 银月 (`talk`): the round's notes and his words, no chat marks. */
+export const talkLine = (deal, q, o = {}) => lineFor(deal, q, o).replace(HIDDEN, '').replace(/^@\S+\s*/, '');
 
 /* The 游戏厅's 试玩 stands the board with no deal (its row carries none): the story task's own, fetched once. */
 const WORLD = new URL('../../worlds/jiuding/', import.meta.url);
@@ -103,7 +108,8 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   const sessionOf = () => (typeof data.session === 'function' ? data.session() : data.session ?? null);
   const root = doc.createElement('div');
   root.className = 'g-ink g-tq';
-  root.innerHTML = `<div class="g-tq-lead"><b>${w.lead}</b>${w.lead2}</div><div class="g-tq-count"></div><div class="g-tq-q"></div><div class="g-tq-say"></div>`
+  // A host with its own 银月 (`talk`: the phone) has no chat to @ her in.
+  root.innerHTML = `<div class="g-tq-lead"><b>${w.lead}</b>${typeof data.talk === 'function' ? w.lead2Own : w.lead2}</div><div class="g-tq-count"></div><div class="g-tq-q"></div><div class="g-tq-say"></div>`
     + `<form class="g-tq-form"><input type="text" maxlength="60" autocomplete="off" enterkeyhint="send" placeholder="${w.ask}"><button type="submit" class="g-btn g-btn-main">${w.go}</button></form><div class="g-tq-foot"></div>`;
   container.replaceChildren(root);
   const $ = (s) => root.querySelector(s);
@@ -118,8 +124,9 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
   count();
   const dealt = data.context || data.seam ? Promise.resolve(data) : storyDeal().then((d) => ({ ...d, ...data }));
   const woke = typeof data.wake === 'function' ? Promise.resolve(data.wake()).catch(() => null) : Promise.resolve(null);
+  const own = typeof data.talk === 'function';
   if (data.seam === 'off') cannot(w.off);
-  else if (data.seam !== 'stub' && (!globalThis.LinggenChannel?.fetch || !sessionOf())) cannot(w.far);
+  else if (data.seam !== 'stub' && !own && (!globalThis.LinggenChannel?.fetch || !sessionOf())) cannot(w.far);
 
   return new Promise((resolve) => {
     let poll = null;
@@ -164,6 +171,11 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
         if (data.seam === 'stub') {
           await new Promise((ok) => setTimeout(ok, 700));
           heard(r.asked >= 3 ? '[stub] ……罢了。本王欠你一张饼。' : '[stub] 哼，本王只是见它孤零零的，顺手收留了。');
+        } else if (own) {
+          // A host that cannot reach her at all (no model on this phone) says `far`: the way out shows at once.
+          const line = await data.talk(talkLine(await dealt, q, { n: r.asked, lang })).catch((e) => { if (String(e?.message) === 'far') { say(''); cannot(w.far); return undefined; } throw e; });
+          if (line === undefined) return;
+          if (line) heard(line); else { say(''); foot(w.err); }
         } else {
           await woke;
           const sid = sessionOf();
@@ -189,7 +201,7 @@ export function mount(container, { data = {}, lang = 'zh', signal } = {}) {
       ask(q);
     });
     // The chat's own lines to her count too — typed or said there (the mic is the chat's).
-    if (data.seam !== 'stub' && !r.unasked) {
+    if (data.seam !== 'stub' && !own && !r.unasked) {
       (async () => { const sid = sessionOf(); if (sid) r.seen = (await rowsOf(sid)).length; })().catch(() => {});
       poll = setInterval(async () => {
         if (r.busy || r.done || r.unasked) return;

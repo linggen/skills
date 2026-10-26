@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
-import { buildPhoneBundle, esbuildOf, worldFiles } from '../tools/phone-bundle.mjs';
+import { buildPhoneBundle, esbuildOf, placesOf, worldFiles } from '../tools/phone-bundle.mjs';
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NOW = '2026-10-23T08:00:00Z';
@@ -95,6 +95,26 @@ test('the phone bundle plays 第一回 exactly as rules.mjs does, in a bare JS c
     const a = same(phone.call(verb, args, opts)), b = same(cli(verb, args, opts));
     assert.equal(a, b, `${verb} ${JSON.stringify(args)} (seeded)`);
   }
+  // The rest of 第一回 as the phone plays it (step 1): a board's grade and stars, a choice with its passage, a thing
+  // looked at that opens the way (00-heisong), the teaching 斗法's door and the moves the rules replay (00-fox), two
+  // boards in one scene and a way chosen by a grade (00-cave), a board left (讨饼债, 「算了，往下走」) and the way on.
+  const REST = [
+    ['seed', { from: 'fresh', at: '00-masan' }], ['look', {}], ['tell', {}], ['look', { at: 'bowls' }],
+    ['win', { id: 'masan-taunt', stars: 3 }], ['task', { action: 'done', id: 'masan-taunt' }], ['resolve', { exit: 'endure' }], ['tell', {}], ['look', {}],
+    ['win', { id: 'masan-zaotai', stars: 2 }], ['task', { action: 'done', id: 'masan-zaotai' }], ['resolve', { exit: 'endure' }], ['tell', {}],
+    ['seed', { from: 'fresh', at: '00-heisong' }], ['tell', {}], ['resolve', { exit: 'carve' }], ['look', { at: 'stone' }], ['resolve', { exit: 'carve' }], ['tell', {}],
+    ['seed', { from: 'fresh', at: '00-fox' }], ['tell', {}], ['duel', { id: 'fox-bite' }], ['resolve', { exit: 'save' }], ['duel', { id: 'fox-bite', picks: 'end,end,end' }],
+    ['resolve', { exit: 'save' }], ['tell', {}], ['look', {}],
+    ['win', { id: 'bread-share', grade: 'most', stars: 2 }], ['win', { id: 'cave-fire', stars: 3 }], ['task', { action: 'done', id: 'cave-fire' }],
+    ['win', { id: 'bread-share', grade: 'most', stars: 2 }], ['task', { action: 'done', id: 'bread-share' }], ['resolve', { exit: 'keep' }], ['resolve', { exit: 'share' }], ['tell', {}],
+    ['look', {}], ['task', { action: 'skip', id: 'yinyue-what' }], ['resolve', { exit: 'follow' }], ['tell', {}], ['look', {}],
+  ];
+  for (const [verb, args] of REST) {
+    const a = same(phone.call(verb, args, { save: 't2' })), b = same(cli(verb, args, { save: 't2' }));
+    assert.equal(a, b, `${verb} ${JSON.stringify(args)} (the rest of 第一回)`);
+  }
+  const end = JSON.parse(phone.call('look', {}, { save: 't2' }));
+  assert.equal(end.scene.id, '00-cliff', '第一回 played through to 第二回');
   // Saves survive a restart of the engine: dump → a new context → restore → the same Look.
   const again = vm.createContext({});
   vm.runInContext(fs.readFileSync(out.rules, 'utf8'), again);
@@ -111,4 +131,9 @@ test('the world file carries the world as JSON text, no art', () => {
   assert.ok(names.length > 100 && names.every((n) => (n.endsWith('.json') || n === '/lj/scripts/battle.js') && !n.includes('/art/')), 'json only (and the fight engine for its stamp), no art');
   assert.ok(names.includes('/lj/worlds/jiuding/levels/shouqiang.json') && names.includes('/lj/worlds/jiuding/games.json'));
   for (const [n, text] of Object.entries(files)) if (n.endsWith('.json')) JSON.parse(text);
+});
+
+test("银月's place in the game, as SKILL.md gives it, travels for the phone's own Yinyue (讨饼债)", () => {
+  const { yinyue } = placesOf();
+  assert.ok(yinyue && yinyue.includes('Lingjing') && yinyue.includes('本王') && !yinyue.includes('\n'), yinyue);
 });

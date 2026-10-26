@@ -527,6 +527,7 @@ export async function mount(container, opts = {}) {
   const level = await levelFor(opts);
   const id = `qm${++uid}`;
   let s = newGame(seed, 1, { levels: level ? [level] : [] });
+  opts.peek?.(() => s); // a host that keeps the stuck rule itself (games/phone/host.js) looks at the board
   const host = doc.createElement('div');
   host.className = 'game g-mounted';
   container.replaceChildren(host);
