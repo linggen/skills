@@ -32,6 +32,143 @@ has it as his; **?** = the book is not clear, his call; **no**.
 Length: the bot's time at 390 (a person takes about twice). Skip: 「算了，往下走」 shows only when
 stuck — 75 s unwon, or the game's own `stuck` rule where noted; a skip pays nothing.
 
+## 全文后的小游戏 — the first batch (plan, 2026-10-26)
+
+**Plan only. Nothing here is built until Hanli says go.** Since 2026-10-26 the box plays the book's full text, and
+the cap is 2,200 字 between play beats (scripts/rhythm.mjs, about 5 min at 450 字/min). The target is a main line that
+is at most 60% reading, with no stretch over about 2,200. The rules, briefly:
+- A board goes only where the book has action, never as filler.
+- Mechanics vary within a 回, and no kit plays twice in a row. A riddle, a look or a set piece between two boards does
+  not separate them (tools/arcade-rhythm.mjs `same`).
+- A game never cuts across a key emotional moment.
+- Inside a key-beat lock (00-waimen `beats`: rumen wm-ahe · wm-jiangtang · wm-zhoutian · wm-qingshi; chaifang
+  wm-chaifang · wm-danlu · wm-diyilu), a board is a story board at its scene and needs no travel.
+- A board in the middle of an exit's passage, or a second board in the middle of a `story_after`, needs a **scene
+  split** (marked "split" below), as 00-tailu, 00-baicai and 00-zaotai were.
+- Pay follows the standing rules. Before 入门 (古一–古三) a board pays nothing, and its grade writes a mark. After
+  入门 (古四 on), the first clear pays 5 · 10 · 15 灵石 for plain · good · best (balance.json `boards`), and a replay
+  pays nothing. A 今 board pays nothing (不跨线).
+- "¶" is the paragraph the board sits under, numbered as in the scene file: s = `story`, a = `story_after`, e = the
+  main way on's passage. Every board is a new level of a kit that is already built: no new kit, no new engine.
+
+### 卷一 over the cap today (full text, cap 2,200): 40 stretches
+✔ = this batch brings it under (or to ≈ the cap). ◐ = shorter, but one piece of it is still over. — = a later batch.
+
+| 回 | from → to | 字 | |
+|---|---|---|---|
+| 古一 | 00-zaotai → 00-heisong/carve | 6,494 | — |
+| 古一/古二 | 00-yinyue{景=tengyun} → 00-deer | 3,870 | ✔ |
+| 古二 | 00-rent → 00-halfyear · 00-halfyear → 00-notice | 6,946 · 5,676 | ✔ ✔ |
+| 古二/今一 | 00-notice → j01-track | 4,922 | ✔ |
+| 今一 | j01-track → j01-anatomy | 8,681 | ✔ |
+| 古三 | 00-gate{景=chending} → 00-luoshu · 00-luoshu → 00-longzhi/subdue | 7,348 · 2,762 | ✔ ✔ |
+| 古三 | 00-longzhi/subdue → end | 7,796 | ◐ |
+| 古四 | start → wm-zhoutian · wm-zhoutian → wm-yaoyuan · wm-yaoyuan → wm-diyilu | 3,918 · 6,232 · 4,764 | ✔ ✔ ✔ |
+| 古四/今二 | wm-diyilu → j04-gym | 9,885 | ✔ |
+| 今二 | j04-gym → j04-line | 7,810 | ✔ |
+| 今二/古五 | j04-line → wm-wangzuo/open | 12,062 | ◐ (古五's 8,022 is a later batch) |
+| 古五 | wm-kunzhen → wm-xirang/swallow · wm-anhe → wm-kaikai · wm-kaikai → wm-chu{景=ershisan} · wm-chu{景=ershisan} → wm-qianye | 2,688 · 7,809 · 2,472 · 8,243 | — |
+| 古六 | wm-qianye → wm-zhaojing · wm-dabi → wm-fushi/flip · wm-fushi/flip → wm-lun2/dodge · wm-lun2/dodge → wm-juesai/face · wm-juesai/face → wm-jiaxin · wm-jiaxin → end | 2,947 · 2,371 · 2,336 · 3,924 · 8,053 · 2,628 | — |
+| 今三 | start → j07-dark · j07-dark → 09-snow/feed{景=huochai} | 6,029 · 6,547 | — |
+| 古七 | 09-snow/feed{景=huochai} → 09-jiuge · 09-jiuge → 09-furnace · 09-furnace → 09-lingcao/fight · 09-lingcao/fight → 09-yishui · 09-yishui → 09-futian/spar · 09-futian/spar → 09-dabi | 2,669 · 3,066 · 5,519 · 5,216 · 3,578 · 3,069 | — |
+| 古八 | 09-dabi → 09-cliff/take | 6,540 | — |
+| 今四 | start → j09-noise · j09-noise → j09-final · j09-final → 01-altar/send | 3,967 · 2,294 · 9,526 | — |
+| 古九 | 01-rise/stand → 01-deep/seal · 01-deep/seal → 01-laojing/dodge · 01-laojing/dodge → end | 4,421 · 2,757 · 4,362 | — |
+
+### 第二回 (h02): 7 boards (today: 5)
+
+| # | scene · ¶ | the book | kit · level | len | why it fits | pays |
+|---|---|---|---|---|---|---|
+| 1 | 00-cliff s16 「它没有说话，可趴在他肩上的那团毛…」 | the climb back up the crack: left wrist dead, right hand on one 荆条 at a time, her claws tightening each time he lets go (exit e1) | 禹步 rhythm · 上崖 | 45 s | a climb with a real read: grab, push, let go on her grip. (攀 was cut 10-16 as a 7 s button; this one has to be a rhythm, his call) | 0 · grade mark |
+| 2 | 00-rent e1 「小满站在他爹身后，轻轻踩了一下他爹的脚后跟。」 (split) | the ghost tale that wins the bow back: 白衣服、没有脚、吃饼、「弓呢？」 | AI chat (bingzhai shell) · 吓马三 | 60–90 s | 马三 is the model, and the rules hold his nerve. The book's four turns are what land, and 讨饼债 proved the shell. The book's own telling follows | 0 · mark `bow-bluffed` |
+| 3 | 00-xiuxian s4 「它一整天都没醒。身子还是凉的…」 | her silver blood dripping on the straw like frost; he holds her and shields her from the wind | 打地鼠 (rain) · 银色的血 | 40 s | 接雨's hands again: catch each drop before it marks the 柴垛. 藏本王 begins that night. It echoes 古一's basins | 0 |
+| 4 | 00-sleep s1 「他脱了衣裳，把那块木牌挂在柴垛的一根枝杈上…」 | 洗髓: pain out of the bones, an arm bitten, not a sound | 气走经脉 · 洗髓 (`xisui`, built) | 60 s | the level was drawn for this night (09-30) and is idle in the 游戏厅 | 0 |
+| 5 | 00-halfyear a23 「两个家丁踹开门，把小满从炕上拖了出来…」 (split) | the mirror's light crawls across the snow toward the 木牌; 爹: 「气往脚底下沉」; he breathes out thinner than a hair | 气走经脉 · 藏息 (`cangxi`, built) | 60 s | the book's own breath test, and 爹's line is the lead card. The level was cut from 古六 (10-19) and fits better here | 0 · grade mark |
+| 6 | 00-halfyear a43 「第二天，下了雪。隔了一夜，柴垛朝着路的那一面…」 (split) | the wood stacked into a wall overnight so nothing shows from the road | 华容道 · 柴垛 | 60 s | the night's work, done by 爹 in the book, is the player's here: slide the logs until the 柴垛 hides its top. It keeps the 藏 thread. **Weakest of the seven**: his call, else this stretch reads 3,523 | 0 |
+| 7 | 00-notice a10 「走的前一夜，小满去了一趟村东头。吴婆婆…」 | 吴婆婆's nine idle sayings and the one that saves a life | AI chat (twenty shell) · 九句废话 | 60 s | the book sets the game itself: find the one true line among nine | 0 · mark |
+
+Order: ①禹步 → 射鹿 砸寨 → 抬鹿 守墙关 → 算账 割绳子 → ②AI → ③rain → ④qimai → 雪夜柴垛 守炉 → ⑤qimai → ⑥华容道 → 水桶落井 qimai → ⑦AI.
+No kit plays twice in a row.
+Stretches after: 1,741 (from 古一) · 2,129 · 736 · 1,785 · 1,135 · 2,083 · 1,964 · 1,764 · 2,153 · 1,191 · 2,332 ≈ · 1,055 · 1,760 (into 今一).
+
+### 今·一 (j01): 5 boards (today: 2)
+
+| # | scene · ¶ | the book | kit · level | len | why it fits | pays |
+|---|---|---|---|---|---|---|
+| 1 | j01-track s10 「他最怕的，就是这一笔。他提着一袋自己的午饭…」 | the 1,000 m: dead at 400, sick, and he does not sit, walking the lap out | 气走经脉 · 一千米 | 45 s | the 今 line is breath. The lap walked out is why 阿禾 takes him | 0 |
+| 2 | j01-track a20 「「这是皮褶卡钳。捏一捏皮下有多厚…」」 | the skinfold calipers: ticklish, a shiver at each pinch, 「再抖…」 | 时机 (sneeze kit) · 别抖 | 30 s | a read: hold still as the calipers come. Light, and the book's own comedy | 0 |
+| 3 | j01-anatomy s17 「他的手停在胸口，愣住了：绕了一圈…」 | arms up in the dorm, tracing the twelve channels on his own body: a loop | 配对 (lianliankan) · 十二正经 | 60 s | link each channel to the next (hand ↔ foot, 阴 ↔ 阳). The book's insight is the order itself | 0 |
+| 4 | j01-anatomy s32 「傍晚他一个人去体育场，要拿肚子喘…」 | belly breathing on the track, done backwards (「你练反了」) | 气走经脉 · 膈肌 | 45 s | the diaphragm from the anatomy class: in down, out up, and his feet lose the count | 0 |
+| 5 | j01-anatomy s54 「回宿舍的路上，他攥着抄了字的纸…抬头…」 | up six floors on 葛奶奶's 「先吐」, not winded | 禹步 rhythm · 爬六楼 | 40 s | steps on the out-breath, the old 十八楼 replayed | 0 |
+
+Order: (古二 ⑦AI) → ①qimai → 投一个 砸寨 → ②时机 → ③配对 → ④qimai → ⑤禹步 → 六一七 jinchat.
+Stretches after: 1,760 · 2,107 · 2,149 · 2,244 ≈ · 1,637 · 1,616 · 1,035 · then retest + 古三's road 1,921.
+
+### 第三回 (h04): 5 boards + 1 大场面 (today: 2 boards, 洛书, 1 fight)
+
+| # | scene · ¶ | the book | kit · level | len | why it fits | pays |
+|---|---|---|---|---|---|---|
+| 1 | 00-gate a18 「这一身白，小满背上的汗毛先立了起来…」 (split) | the white robe on the 码头 testing children with his grey stone; 小满 slips behind a porter | 华容道 · 人堆 | 50 s | keep a body between you and his eye: slide the crowd. 藏, the 回's first move | 0 |
+| 2 | 00-gate a32 「一试考腿：三百级石阶，一级齐膝高，一炷香…」 | the 300 steps in one stick of incense: 三步一吸、三步一呼; 舅舅 stopped at 170 | 气走经脉 · 三百级 | 75 s | 爹's breath rule is the mechanic, the incense the clock, the 160th step 舅舅's | 0 · grade mark |
+| 3 | 00-gate e9 「他站在那里想了一想。他爹说过，堵在前头的东西…」 (split) | the 滑竿 blocks the steps; he crawls under, through the bearers' legs | 时机 (sneeze kit) · 腿缝里 | 40 s | watch the bearers' stride and dart through the gap | 0 |
+| 4 | 00-longzhi s7 「石蛋排在他后头，挨着他蹲下了…」 | 石蛋, one mark on his tally, asks him 「你算得出来」 | AI chat (bingzhai shell) · 石蛋 | 60 s | his only conversation before the claw. Played before the death, never across it | 0 |
+| 5 | 00-hall s32 「他把手放在测灵石上。」 | the stone: what does it see of the one asleep in his 木牌? 「藏。」 | 气走经脉 · 藏息 (a `cangxi` level) | 45 s | the mirror's lesson from 古二, kept at the stone. Then the five dim colours | 0 |
+| ◆ | 00-hall s12 「是青。起先只是石头肚里一点…」 | 阿禾's 天灵根: green fills the stone, then the hall | 大场面 · 满殿青 | — | the 回's wonder. Between the grief of 石蛋 and the long line, a game would be filler | — |
+
+Order: 泗水路 守炉 → 沉鼎山 piece → ①华容道 → ②qimai → ③时机 → 洛书 → ④AI → 蠪侄 斗法 → ◆ → ⑤qimai.
+Stretches after: 293 · 227 · 1,588 · 2,201 ≈ · 1,610 · 1,949 · 2,234 ≈ · 528 · **3,361** · 1,785 · **2,650**.
+The two left over have no action: 石蛋's death and the 测灵石 line, then the 考牌 raised, 舅舅, and the grave. These
+are the book's landing, so no game goes there.
+
+### 第四回 (h05): 7 boards + 3 大场面 (today: 3 boards)
+
+| # | scene · ¶ | the book | kit · level | len | why it fits | pays |
+|---|---|---|---|---|---|---|
+| ◆ | wm-jiangtang s6 「头一讲那天，钟敲过了…」 | 褚先生 lands at the lecture hall on a sword (rumen lock) | 大场面 · 御剑落堂 | — | the first flight he sees. 公中 and the lecture have no action | — |
+| 1 | wm-qingshi s1 「崖顶有一块大青石，比他还高出一头…」 | the first night's power: a fist into the big 青石 (rumen lock) | 投掷 砸寨 · 一拳 | 40 s | pull the warmth into the arm, then release. Placed after 小周天's moment, never in it | 5 · 10 · 15 |
+| 2 | wm-yaoyuan s17 「他从抽屉里取出一块木牌…」 | 周衡's 执事房: the 巡夜令, 马小宝 butting in, 银月's 「一个月多一株」 | AI chat (haggle shell) · 只认账 | 60 s | 周衡 is the model and takes only 账. Win the 令 and terms in his own coin | 5 · 10 · 15 |
+| 3 | wm-yaoyuan e1 「它停下嘴，看了看萝卜，又看了看他…」 (split, after 守炉) | the 狰 and the 萝卜: 「你在侮辱谁？」 | 时机 (sneeze kit) · 一根萝卜 | 45 s | hold still while it sniffs, and offer when it looks. Its 今 twin is 今二's dog | 5 · 10 · 15 |
+| ◆ | wm-danlu s2 「它平日嘴那么毒…『呸』」 (chaifang lock) | 银月 spits out the 饭桶 and fades: 「下次，打回去」 | 大场面 · 饭桶出世 | — | after the beating, which is a key moment and gets no board, the 回's wonder | — |
+| 4 | wm-diyilu e7 「那天夜里，子时，他翻不过墙…」 | the patrol nights on a broken rib: 「一口气吸不到底，他就不吸到底」 | 气走经脉 · 断肋 | 45 s | a breath game with a broken rib: short draws, long out | 5 · 10 · 15 |
+| 5 | wm-diyilu e21 「「不是昨夜。」」 (split) | the 紫玉参 frame-up and 阿禾's 对账 | AI chat (duanan shell) · 紫玉参 | 75 s | 断案 · 紫玉参 was written for this case. The 巡夜簿, the 食盒 and the leaf are its evidence | 5 · 10 · 15 |
+| 6 | wm-diyilu e47 「褚先生是给人从讲堂里请过来的…」 (split) | 褚先生's 验: an iron brush through the channels for a cup of tea | 气走经脉 · 铁刷子 | 45 s | hold the line steady while it scours, so the broken rib shows | 5 · 10 · 15 |
+| 7 | wm-diyilu e61 「他想，多送些，出的总该好些，便不停手…」 (split) | 「给我一样保命的」: thirty mouthfuls, then the wooden 牲口 | 开炉 (kailu) · 保命 | 60 s | the book's feed is a 开炉 pot. The kit's own grades (凡 · 有用) end on its joke | 5 · 10 · 15 |
+| ◆ | wm-diyilu e83 「先是绿锈底下透出一线金…」 | the 九转还魂丹 thrown in: the pot lights and breathes, and out comes one 聚气丹 | 大场面 · 铜肚子亮了 | — | the 回's comic payoff, then 银月 cries | — |
+
+Order: ◆ → 小周天 qimai → ①砸寨 → ②AI → 药园巡夜 守炉 → ③时机 → ◆ → 喂饭桶 割绳子 → ④qimai → ⑤AI → ⑥qimai →
+⑦开炉 → ◆. No kit plays twice in a row. qimai appears three times, never next to itself.
+Stretches after: 2,271 ≈ · 1,647 · 2,386 ≈ · 2,304 ≈ · 1,542 · 527 · 2,104 · 2,133 · 2,484 ≈ · 1,190 · 1,716 · 1,219 · 899 · 913 + 今二's gym.
+Three of these are just over the cap, for reasons in the book:
+- 2,386: 小周天 is the key moment, so nothing cuts it.
+- 2,304: the qingshi run into 执事房.
+- 2,484: the 饭桶's comedy and the 回春丹 choice, with no action before the night patrol.
+
+### 今·二 (j04): 4 boards (today: 2)
+
+| # | scene · ¶ | the book | kit · level | len | why it fits | pays |
+|---|---|---|---|---|---|---|
+| 1 | j04-gym a24 「他把杠放下来，吸气，肚子鼓起来，绷住，往上推——「呵」 | 阿禾's bench lesson: brace, breathe out on the push, five at 30 kg | 气走经脉 · 卧推 | 45 s | the opposite of the blackout: out-breath on the lift | 0 |
+| 2 | j04-gym a59 「头一项体能，二十米往返跑…」 | the beep test, each beep quicker | 禹步 rhythm · 嘀声 | 50 s | the book is a metronome | 0 |
+| 3 | j04-line s4 「沈芒坐在白队板凳的最末，坐了五十七分钟…」 | the bench: 19 balls fetched, 31 bottles handed out | 打地鼠 (rain) · 捡球递水 | 30 s | his whole game that day, in the book's own numbers. Then he is sent on | 0 |
+| 4 | j04-dog s13 「他把红薯掰成两半…手背贴地…」 | the dog with a horn of fur: crouch, eyes down, 吸四吐六, the 红薯 on a flat palm | 气走经脉 · 吸四吐六 | 45 s | the pulse lesson used for real. It mirrors 古四's 狰 and 萝卜 | 0 |
+
+Order: (古四 ◆) → 视频 jinchat → ①qimai → ②禹步 → ③rain → 白线上 砸寨 → ④qimai.
+Stretches after: 2,377 ≈ (古四's tail + the gym's set-up) · 1,678 · 1,899 · 2,104 · 2,129 · 1,934 · then 2,106 + 古五's
+8,022, which is the next batch.
+
+### Totals and what waits on Hanli
+- 28 boards and 4 大场面, all on built kits: 10 are 气走经脉 (8 new levels, plus the built `xisui` and `cangxi`), 5
+  are AI chats, and 3 use the sneeze-kit 时机.
+- 9 scene splits.
+- Reading share by 回 (450 字/min, a board 3 min, a 大场面 about 1 min, from the 10-26 counts): 第二回 39/70 min,
+  56%; 今一 25/44, 57%; 第三回 36/61, 59%; 第四回 46/76, 61%; 今二 24/40, 60%.
+- Waiting on his go:
+  - the batch as a whole;
+  - ⑥ 柴垛 (华容道) in 第二回, the weakest;
+  - 禹步 as the climb kit (攀 was cut 10-16);
+  - the two over-cap stretches left in 第三回;
+  - after it is built, re-fit the 层 (`tools/balance.mjs --fit`; the 10-26 hold in balance.json `fit._hold`).
+
 ## Before 入门 — five boards (Hanli 10-16, second cut)
 
 Hanli 10-16 「入门前的怎么办? 减少数量, 推动剧情」: before 入门 only five boards stand —
