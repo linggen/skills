@@ -11,7 +11,7 @@
     "scripts/games/kit/audio/sfx.m4a",
     "scripts/games/kit/audio/sfx.ogg"
   ],
-  "_story": "`story`: what the app's own story screen shows from the kit (not a board's): the faces on 第一回's people cards. In the common pack; the app reads them from the pack, not through the webview.",
+  "_story": "`story`: what the app's own story screen shows from the kit (not a board's): the faces on 第一回's people cards, and the art of the things 第一回 puts in the 储物袋 (the phone's pouch sheet). In the common pack; the app reads them from the pack, not through the webview.",
   "story": [
     "worlds/jiuding/art/people/baba.webp",
     "worlds/jiuding/art/people/mama.webp",
@@ -20,7 +20,14 @@
     "worlds/jiuding/art/people/maxiaobao.webp",
     "worlds/jiuding/art/people/wupo.webp",
     "worlds/jiuding/art/people/yinyue.webp",
-    "worlds/jiuding/art/people/yinyue-fox.webp"
+    "worlds/jiuding/art/people/yinyue-fox.webp",
+    "worlds/jiuding/art/items/fox-token.webp",
+    "worlds/jiuding/art/items/tuna-jing.webp",
+    "worlds/jiuding/art/items/old-bow.webp",
+    "worlds/jiuding/art/items/grey-robe.webp",
+    "worlds/jiuding/art/items/deer-hide.webp",
+    "worlds/jiuding/art/items/moon-bell.webp",
+    "worlds/jiuding/art/items/tongkuang.webp"
   ],
   "games": {
     "shouqiang": {
