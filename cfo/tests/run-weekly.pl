@@ -226,6 +226,9 @@ t('a page out of reach checks nothing', !defined on_page('rose 0.4%', undef));
     t('the notice is facts for Yinyue: totals, biggest move, reported, next week',
       $n->{totals}[0]{value_change} == -134.4 && $n->{biggest_move}{symbol} eq 'NVDA'
       && "@{ $n->{reported} }" eq 'NVDA' && $n->{next_week}[0]{kind} eq 'boc' && $n->{market_points} == 3, $J->encode($n));
+    t('the biggest move carries its own money and currency; a total says it is the net of every holding',
+      defined $n->{biggest_move}{value_change} && $n->{biggest_move}{currency} && $n->{biggest_move}{shares}
+      && $n->{totals}[0]{of} =~ /net/, $J->encode($n));
 
     local *main::fail = sub { die "$_[0]\n" };
     my $bad = eval { cmd_save('sections=not json'); 1 };

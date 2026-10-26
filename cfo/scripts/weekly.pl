@@ -479,8 +479,9 @@ sub notice_of {
     return {
         what      => 'CFO weekly report saved',
         week      => "$report->{from}..$report->{to}",
-        totals    => [ map { { currency => $_->{currency}, value_change => $_->{value_change}, change_pct => $_->{change_pct} } } @{ $report->{portfolio}{totals} } ],
-        biggest_move => @moved ? { symbol => $moved[0]{symbol}, change_pct => $moved[0]{change_pct} } : undef,
+        # Per currency, the net of every holding in it — never one stock's gain.
+        totals    => [ map { { currency => $_->{currency}, value_change => $_->{value_change}, change_pct => $_->{change_pct}, of => 'all holdings in this currency, net' } } @{ $report->{portfolio}{totals} } ],
+        biggest_move => @moved ? { map { $_ => $moved[0]{$_} } qw(symbol change_pct value_change currency shares) } : undef,
         reported  => [ map { $_->{symbol} } @{ $report->{reported} } ],
         market_points => scalar(map { @{ $_->{bullets} } } @{ $report->{sections} }),
         next_week => [ @{ $report->{next_week}{events} }[0 .. min(2, $#{ $report->{next_week}{events} })] ],
