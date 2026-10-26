@@ -65,6 +65,7 @@ test('set aside → a skipped board played → back at the same beat; the scene\
   assert.equal(back.state.aside, undefined);
   assert.equal(back.result.j, 1);
   assert.equal(back.result.items[0].id, '00-baicai');
+  assert.equal(back.result.i, 0);
   const { zh, en } = back.result.items[0].beats;
   assert.ok(zh.length === 2 && zh.length === en.length, `${zh.length} beats zh, ${en.length} en`);
   assert.notEqual(call('resolve', back.state, now, { exit }).result.refused, 'aside');
@@ -110,9 +111,9 @@ test('the page keys what it sets aside as the rules do, and takes it up at the s
   const { s, now } = at('00-prologue/00-baicai');
   const s1 = must('aside', s, now, { items: [{ of: 'scene', id: '00-baicai' }], j: 1 }).state;
   const back = must('resume', s1, now).result;
-  const r = readingAt(back.items, '00-baicai', null, back.j);
+  const r = readingAt(back.items, '00-baicai', null, back.i, back.j);
   assert.equal(current(r, 'zh').beat.text, back.items[0].beats.zh[1].text, 'the beat set aside is the one on show');
-  assert.deepEqual(asidePlace(r), { items: [{ of: 'scene', id: '00-baicai' }], j: 1 }, 'and set aside again, the same place');
+  assert.deepEqual(asidePlace(r), { items: [{ of: 'scene', id: '00-baicai' }], i: 0, j: 1 }, 'and set aside again, the same place');
   assert.equal(asidePlace({ ...r, closed: true }), null, 'a box put away has nothing to set aside');
   assert.equal(asidePlace({ ...r, items: [{ of: 'catchup', id: 'x', beats: { zh: [{ text: 'a', recap: true }] } }] }), null, 'nor a catch-up');
 });
@@ -122,7 +123,7 @@ test('the box offers 先放一放 only with something to play meanwhile; the tra
   const { asideHtml } = await import('../scripts/cards.js');
   const { s, now } = at('00-prologue/00-baicai');
   const back = must('resume', must('aside', s, now, { items: [{ of: 'scene', id: '00-baicai' }], j: 0 }).state, now).result;
-  const r = readingAt(back.items, '00-baicai', null, 0);
+  const r = readingAt(back.items, '00-baicai', null, 0, 0);
   assert.match(storyHtml(r, { aside: true }), /data-dlg-aside>先放一放</);
   assert.doesNotMatch(storyHtml(r, { aside: false }), /data-dlg-aside/);
   const look = { aside: { on: true, offers: [{ kind: 'replay', id: 'rain-basins', title: '接雨' }, { kind: 'her', id: 'tale' }] } };
@@ -132,4 +133,13 @@ test('the box offers 先放一放 only with something to play meanwhile; the tra
   assert.match(html, /<span class="chip">今日传闻<\/span>/, 'a kind with no opener of its own is named, not a dead button');
   assert.match(html, /data-aside-resume/);
   assert.equal(asideHtml({ look: {}, words }), '');
+});
+
+test('the passage on show among the scene\'s, kept: set aside in the rest after a board, taken up there with the first before it', () => {
+  const { s, now } = at('00-prologue/00-baicai');
+  const items = [{ of: 'scene', id: '00-baicai' }, { of: 'after', id: '00-baicai/after' }];
+  const s1 = must('aside', s, now, { items, i: 1, j: 3 }).state;
+  assert.equal(call('aside', s, now, { items, i: 2, j: 0 }).result.refused, 'bad-beat');
+  const back = must('resume', s1, now).result;
+  assert.deepEqual([back.i, back.j, back.items.map(x => x.id)], [1, 3, ['00-baicai', '00-baicai/after']]);
 });

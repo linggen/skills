@@ -1107,7 +1107,7 @@ function stageNow() {
   // A scene's fight too (Hanli, 2026-10-14: the box's 「继续」 under 出手): it stands once the box is
   // put away — or once its words were chosen in the box, which puts the box away (data-panel-duel).
   // Set aside, a board of the tray's (a skipped one played again, 兽潮) stands; the scene's own waits for its passage.
-  const ownBoard = (id) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
+  const ownBoard = (id) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(look?.tasks ?? []).some((t) => t.id === id && t.replay);
   if (storyAhead()) cards = cards.filter((c) => (c.card !== 'board' || c.id === view.opened?.id || (asideOn() && !ownBoard(c.id))) && !(c.card === 'duel' && sceneGame(look, c) && !called.has(c.id)));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
@@ -2283,7 +2283,7 @@ const asideMay = (r) => Boolean(look?.aside && !look.aside.on && look.aside.offe
 async function asideTap() {
   const r = readingHere(), at = asidePlace(r);
   if (!at) return;
-  const out = await write('aside', { items: JSON.stringify(at.items), j: at.j }).catch(failed);
+  const out = await write('aside', { items: JSON.stringify(at.items), i: at.i, j: at.j }).catch(failed);
   if (!out?.ok) { keep({ doNote: refusal(out) }); return; }
   setReading({ ...r, closed: true });
   await refresh();
@@ -2293,7 +2293,7 @@ async function resumeTap() {
   const out = await write('resume').catch(failed);
   if (!out?.ok) { keep({ doNote: refusal(out) }); return; }
   await refresh();
-  const next = readingSetAside(out.items ?? [], look?.scene?.id ?? out.scene ?? null, look?.run ?? null, out.j ?? 0);
+  const next = readingSetAside(out.items ?? [], look?.scene?.id ?? out.scene ?? null, look?.run ?? null, out.i ?? 0, out.j ?? 0);
   if (next) setReading(next);
 }
 /* The look whose header stands now: the last scene's, while the box tells what leads into this one

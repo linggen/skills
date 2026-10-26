@@ -290,18 +290,20 @@ export function bookPlace(r, lang = 'zh') {
   return { hui, ...(at ? { at } : {}) };
 }
 
-/* 先放一放 (rules/aside.mjs): the passages still to play from the one on show, as the rules key them, and the
-   beat on show — or null on a catch-up (a fold of recaps the book has no key for) or with nothing left. */
+/* 先放一放 (rules/aside.mjs): this scene's passages as the rules key them — from its first, so the count stands as
+   it stood — the one on show (`i`) and its beat (`j`); or null on a catch-up (a fold of recaps the book has no key
+   for), or on the last scene's leftovers still leading in. */
 const ASIDE_OF = new Set(['scene', 'after', 'choice']);
 export function asidePlace(r) {
-  if (!playing(r) || !ASIDE_OF.has(r.items[r.i]?.of)) return null;
-  const items = r.items.slice(r.i).filter((it) => ASIDE_OF.has(it.of)).map(({ of, id }) => ({ of, id }));
-  return items.length ? { items, j: r.j } : null;
+  if (!playing(r) || !ASIDE_OF.has(r.items[r.i]?.of) || r.i < baseOf(r)) return null;
+  const mine = r.items.slice(baseOf(r));
+  if (!mine.every((it) => ASIDE_OF.has(it.of))) return null;
+  return { items: mine.map(({ of, id }) => ({ of, id })), i: r.i - baseOf(r), j: r.j };
 }
-/* The reading again from `resume`'s passages, at the beat set aside: this scene's, this play's. */
-export function readingAt(items, scene, run, j) {
+/* The reading again from `resume`'s passages, at the passage and beat set aside: this scene's, this play's. */
+export function readingAt(items, scene, run, i, j) {
   const r = withTold(null, items, scene, run);
-  return r ? { ...r, i: 0, j: Math.max(0, j) } : null;
+  return r ? { ...r, i: Math.min(Math.max(0, i), r.items.length - 1), j: Math.max(0, j) } : null;
 }
 
 /* The beats told so far in this scene: up to the one on show (all of them, once put away). */

@@ -1776,7 +1776,7 @@ export function trayHtml(ctx) {
   const shown = new Set(ctx.onStage ?? []);
   // …nor a scene's later board while one before it is still to play (stage.mjs boardWaits).
   // …nor, the book set aside, the scene's own board: it waits for its passage (rules/aside.mjs).
-  const own = (id) => Boolean(ctx.look.aside?.on) && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
+  const own = (id) => Boolean(ctx.look.aside?.on) && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(ctx.look.tasks ?? []).some((t) => t.id === id && t.replay);
   const tasks = (ctx.look.tasks || []).filter((t) => t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id) && !own(t.id)).map((t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const shut = state === 'offered' && boardShut(t, ctx);

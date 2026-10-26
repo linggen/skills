@@ -99,8 +99,8 @@ export function asideVerb(content, state, verb, args = {}) {
 const KINDS = new Set(['scene', 'after', 'choice']);
 const keyOk = (content, state, it) => KINDS.has(it?.of) && typeof it.id === 'string' && Boolean(asideItem(content, state, it));
 
-/* `aside --items=[{of,id},…] --j=<beat>`: the passages still to play, from the one on show, and the beat
-   shown. Refused inside a key beat's lock, with nothing to play meanwhile, or for a passage the book
+/* `aside --items=[{of,id},…] --i=<passage> --j=<beat>`: the scene's passages, the one on show and its beat.
+   Refused inside a key beat's lock, with nothing to play meanwhile, or for a passage the book
    does not hold here. */
 export function setAside(state, content, ctx, args = {}) {
   if (lockOf(content, state)) return refuse('locked', null);
@@ -109,30 +109,30 @@ export function setAside(state, content, ctx, args = {}) {
   if (typeof items === 'string') { try { items = JSON.parse(items); } catch { return refuse('bad-items', null); } }
   items = (Array.isArray(items) ? items : []).map(it => ({ of: String(it?.of ?? ''), id: String(it?.id ?? '') }));
   if (!items.length || !items.every(it => keyOk(content, state, it))) return refuse('not-a-passage', null);
-  const j = Number(args.j ?? 0);
-  if (!Number.isInteger(j) || j < 0) return refuse('bad-beat', null);
+  const i = Number(args.i ?? 0), j = Number(args.j ?? 0);
+  if (![i, j].every((n) => Number.isInteger(n) && n >= 0) || i >= items.length) return refuse('bad-beat', null);
   const s = clone(state);
-  s.aside = { scene: state.scene, items, j, at: (ctx.now ?? new Date()).toISOString() };
-  return { state: s, result: { ok: true, aside: { scene: state.scene, j } } };
+  s.aside = { scene: state.scene, items, i, j, at: (ctx.now ?? new Date()).toISOString() };
+  return { state: s, result: { ok: true, aside: { scene: state.scene, i, j } } };
 }
 
-/* `resume`: the passages again as the box plays them (both languages), from the beat set aside — its
+/* `resume`: the passages again as the box plays them (both languages), at the passage and beat set aside — its
    set piece and the ones before it not played again — and the save as before. Back at the scene's
    place if a 秘境 run set him down elsewhere. Refused inside a run (leave it first). */
 export function resume(state, content, ctx) {
   const a = state.aside;
   if (!a) return refuse('not-aside', null);
   if (state.rerun) return refuse('in-run', null);
-  const items = a.items.map(it => asideItem(content, state, it)).filter(Boolean);
+  const all = a.items.map(it => asideItem(content, state, it)), i = Math.min(a.i ?? 0, all.length - 1);
+  const items = all.filter(Boolean), at = Math.max(0, items.indexOf(all[i]));
   const s = clone(state);
   delete s.aside;
   const scene = sceneOf(content, s);
   if (scene?.at && s.place !== scene.at && placeOf(content, scene.at)) s.place = scene.at;
-  if (items.length) for (const lang of ['zh', 'en']) {
-    const first = items[0].beats[lang] ?? [];
-    items[0].beats[lang] = first.map((b, k) => (k <= a.j && b.piece ? (({ piece, ...rest }) => rest)(b) : b));
-  }
-  return { state: s, result: { ok: true, scene: a.scene, j: items.length ? Math.min(a.j, Math.max(0, (items[0].beats.zh ?? []).length - 1)) : 0, items, day: dayKey(ctx.now ?? new Date()) } };
+  const unpiece = ({ piece, ...rest }) => rest;
+  items.forEach((it, k) => { if (k <= at) for (const lang of ['zh', 'en']) it.beats[lang] = (it.beats[lang] ?? []).map((b, n) => (b.piece && (k < at || n <= a.j) ? unpiece(b) : b)); });
+  const j = items.length ? Math.min(a.j, Math.max(0, (items[at].beats.zh ?? []).length - 1)) : 0;
+  return { state: s, result: { ok: true, scene: a.scene, i: at, j, items, day: dayKey(ctx.now ?? new Date()) } };
 }
 
 /* What Look carries: while set aside, where (the scene, the beat) and what may be played; before, only
@@ -140,7 +140,7 @@ export function resume(state, content, ctx) {
 export function asideLook(content, state, view, now = new Date()) {
   if (!state.aside && lockOf(content, state)) return null;
   const offers = asideOffers(content, state, view, now);
-  if (state.aside) return { aside: { on: true, scene: state.aside.scene, j: state.aside.j, offers } };
+  if (state.aside) return { aside: { on: true, scene: state.aside.scene, i: state.aside.i ?? 0, j: state.aside.j, offers } };
   return offers.length ? { aside: { on: false, offers } } : null;
 }
 
