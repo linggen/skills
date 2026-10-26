@@ -145,8 +145,11 @@ export function choose(snap, ctx) {
   const valuePick = first((t) => isA(t, 'value-pick'));
   if (valuePick && !ctx.valuePicked) return { kind: 'value-pick', tap: valuePick, why: 'a name offered' };
   if (valueGo) return { kind: 'value-go', tap: valueGo, why: 'take the name' };
-  if (exits.length) return { kind: 'way', tap: ctx.pick(exits, snap), why: 'the scene card' };
+  // A way's own fight up (00-fox: 「脱下外衣」 → its 试) beside a way that only comes back (`stay`, 「别碰」): once
+  // every way there has been taken, 出手 — the way on (10-26: the crawl tapped 「别碰」 twenty times over).
   const duel = first((t) => isA(t, 'duel-start'));
+  if (duel && exits.length && ctx.allTaken?.(exits, snap)) return { kind: 'duel-start', tap: duel, why: '出手' };
+  if (exits.length) return { kind: 'way', tap: ctx.pick(exits, snap), why: 'the scene card' };
   if (duel) return { kind: 'duel-start', tap: duel, why: '出手' };
   const play = first((t) => isA(t, 'play') && t.where === 'focus');
   if (play) return { kind: 'play', tap: play, why: '开局' };
@@ -234,6 +237,7 @@ export async function crawl(opts) {
       if (opts.games === 'skip' || opts.games === 'win' || opts.games === 'hands') return opts.games;
       return (rec.cov.games[`${id}:skip`] ?? 0) <= (rec.cov.games[`${id}:win`] ?? 0) ? 'skip' : 'win';
     },
+    allTaken: (ways, snap) => ways.every((t) => rec.cov.exits[`${snap.sceneId}:${t.data['panel-exit'] ?? t.data['panel-duel']}`]),
     pick(ways, snap) {
       const ids = ways.map((t) => t.data['panel-exit'] ?? t.data['panel-duel']);
       const planned = route.find((id) => ids.includes(id));
