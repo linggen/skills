@@ -11,16 +11,18 @@
 // adds a row, never code.
 //
 // Hands: its own, not mountPure's (which keeps one held pointer): every on-screen button is its own pointer, held
-// ones (◀ ▶ ▼ 挡) by pointer id, so a thumb walks while the other strikes; presses act on pointerdown and nothing
-// listens to the click after it (live-games.js tapGate's lesson: a fast tap is acted on once). Keys by `event.code`
-// (the same keys on any layout): W A S D move — A/D walk, W jump, S crouch; held away from her, a guard (S with it, a
-// low guard) — and the moves one row right of J: K 拳, L 腿, ; 火, O 迎. Arrows and Space are quiet aliases.
+// ones (◀ ▶ ▼) by pointer id, so a thumb walks while the other strikes; presses act on pointerdown and nothing listens
+// to the click after it (live-games.js tapGate's lesson: a fast tap is acted on once). Keys by `event.code` (the same
+// keys on any layout): W A S D move — A/D walk, W jump, S crouch; held away from her, a guard — and KOF '97's four
+// (Hanli 10-27: 「97那个就4个key?」): K A 轻拳 · L B 轻腿 · O C 重拳 · ; D 重腿; K+L a roll (迎), O+; a blowback; specials
+// are motions + 拳. Arrows and Space are quiet aliases. The phone: ▲ ◀ ▼ ▶, the four in a diamond, and 技 (掌心火; with
+// ▶ 升勾; a stock full, the 绝). The fighters are painted rigs (tools/paint-fighter.py; fighter/draw.js makeRig).
 // In the shell: its pause stops the clock and the hands and shows the move list; its lead card reads the level's
 // `ready` and the keys; every step sounds what it made (games/kit/heard.js, the names in sounds.json `fighter`).
 // Lost, it settles { won: false } and the host deals it again (the story) or offers 再来 (the 游戏厅).
 import { sounded } from './kit/heard.js';
 import { inputKind, forInput } from './kit/device.js';
-import { painter, FIELD } from './fighter/draw.js';
+import { painter, makeRig, FIELD } from './fighter/draw.js';
 import * as core from './fighter/core.js';
 import * as self from './fighter.js';
 
@@ -30,8 +32,8 @@ export const meta = {
   id: 'fighter',
   name: { zh: '格斗', en: 'Fight' },
   how: {
-    zh: { desk: 'WASD 走、跳、蹲，背向她按住挡；K 拳，L 腿，; 火，O 迎。', touch: '左边走、跳、蹲；右边挡、拳、腿、火、迎、技、绝。' },
-    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K jab, L kick, ; fire, O parry.', touch: 'Left: walk, jump, crouch. Right: guard, jab, kick, fire, parry, skill, super.' },
+    zh: { desk: 'WASD 走跳蹲，背向她按住是挡；K 轻拳 · L 轻腿 · O 重拳 · ; 重腿。', touch: '左边走跳蹲（背向她按住是挡）；右边拳 腿 重拳 重腿，技。' },
+    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K light punch · L light kick · O heavy punch · ; heavy kick.', touch: 'Left: walk, jump, crouch (hold away to guard). Right: punch, kick, heavy punch, heavy kick, and skill.' },
   },
   pause: true, // its own loop reads the shell's pause
   beat: 'mount', // the story mounts it (its hands are its own)
@@ -74,16 +76,19 @@ const CSS = `
 .g-fighter .gf-dirs [data-k=left] { grid-column: 1; grid-row: 2; }
 .g-fighter .gf-dirs [data-k=crouch] { grid-column: 2; grid-row: 2; }
 .g-fighter .gf-dirs [data-k=right] { grid-column: 3; grid-row: 2; }
-.g-fighter .gf-acts { display: grid; grid-template-columns: repeat(4, auto); gap: 6px; justify-items: center; }
-.g-fighter .gf-acts [data-k=ying] { grid-column: 2; }
+.g-fighter .gf-acts { display: flex; gap: 10px; align-items: center; }
+/* KOF on a phone: the four in a diamond — C 重拳 on top, A 轻拳 left, D 重腿 right, B 轻腿 below — and 技 beside it */
+.g-fighter .gf-diamond { display: grid; grid-template-columns: repeat(3, auto); grid-template-rows: repeat(3, auto); gap: 0 4px; }
+.g-fighter .gf-diamond [data-k=hpunch] { grid-column: 2; grid-row: 1; }
+.g-fighter .gf-diamond [data-k=light] { grid-column: 1; grid-row: 2; }
+.g-fighter .gf-diamond [data-k=heavy] { grid-column: 3; grid-row: 2; }
+.g-fighter .gf-diamond [data-k=lkick] { grid-column: 2; grid-row: 3; }
 .g-fighter button { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font: 600 18px "Songti SC","STSong","Noto Serif SC",serif;
   width: 46px; height: 46px; border-radius: 50%; border: 2px solid #2a241c; background: #f3ead6; color: #1c1a16; display: grid; place-items: center; position: relative; padding: 0; cursor: pointer; }
 .g-fighter button.is-down { background: #2a241c; color: #f3ead6; }
-.g-fighter button[data-k=heavy] { background: #e9d4b8; }
-.g-fighter button[data-k=special], .g-fighter button[data-k=skill] { background: #f0c9a8; }
-.g-fighter button[data-k=ying] { background: #e8dcb0; }
-.g-fighter button[data-k=super] { background: #d9c08a; opacity: .45; }
-.g-fighter button[data-k=super].is-ready { opacity: 1; background: #e7b84a; box-shadow: 0 0 0 3px rgba(231,184,74,.45); }
+.g-fighter button[data-k=hpunch], .g-fighter button[data-k=heavy] { background: #e9d4b8; font-size: 15px; }
+.g-fighter button[data-k=skill] { background: #f0c9a8; }
+.g-fighter button[data-k=skill].is-ready { background: #e7b84a; box-shadow: 0 0 0 3px rgba(231,184,74,.45); } /* a stock full: 技 is the 绝 */
 .g-fighter button.is-cool { opacity: .5; }
 .g-fighter button small { position: absolute; bottom: -3px; right: -4px; font: 600 9px ui-monospace, monospace; background: #2a241c; color: #f3ead6; border-radius: 6px; padding: 1px 4px; white-space: nowrap; }
 .g-fighter.is-touch button small { display: none; }
@@ -104,15 +109,16 @@ function sheet(doc) {
 
 const BUTTONS = {
   jump: { face: '▲', key: 'W' }, left: { face: '◀', key: 'A' }, crouch: { face: '▼', key: 'S' }, right: { face: '▶', key: 'D' },
-  ying: { face: '迎', key: 'O' }, skill: { face: '技', key: 'S D ;' }, super: { face: '绝', key: 'O+;' },
-  block: { face: '挡', key: '←' }, light: { face: '拳', key: 'K' }, heavy: { face: '腿', key: 'L' }, special: { face: '火', key: ';' },
+  light: { face: '拳', key: 'K' }, lkick: { face: '腿', key: 'L' }, hpunch: { face: '重拳', key: 'O' }, heavy: { face: '重腿', key: ';' },
+  skill: { face: '技', key: 'SD+K' },
 };
-/* Keys by where they sit (event.code): any layout plays alike; `;` is Semicolon wherever it is printed. */
+/* Keys by where they sit (event.code): any layout plays alike; `;` is Semicolon wherever it is printed. KOF '97's four:
+   K A 轻拳 · L B 轻腿 · O C 重拳 · ; D 重腿. */
 const CODES = {
-  KeyA: 'left', KeyD: 'right', KeyW: 'jump', KeyS: 'crouch', KeyK: 'light', KeyL: 'heavy', Semicolon: 'special', KeyO: 'ying',
+  KeyA: 'left', KeyD: 'right', KeyW: 'jump', KeyS: 'crouch', KeyK: 'light', KeyL: 'lkick', KeyO: 'hpunch', Semicolon: 'heavy',
   ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'jump', ArrowDown: 'crouch', Space: 'jump',
 };
-const HELD = new Set(['left', 'right', 'crouch', 'block']);
+const HELD = new Set(['left', 'right', 'crouch']);
 /* W is a press when it goes down (the jump) and a word when it comes up (let go soon: a short hop). */
 const LIFT = { jump: 'jumpRelease' };
 
@@ -123,7 +129,7 @@ function padHtml(level, lang) {
     return `<button type="button" data-k="${k}" aria-label="${face}">${face}<small>${BUTTONS[k].key}</small></button>`;
   };
   return `<div class="gf-pad"><div class="gf-dirs">${b('jump')}${b('left')}${b('crouch')}${b('right')}</div>`
-    + `<div class="gf-acts">${b('ying')}${b('skill')}${b('super')}${b('block')}${b('light')}${b('heavy')}${b('special')}</div></div>`;
+    + `<div class="gf-acts">${b('skill')}<div class="gf-diamond">${b('hpunch')}${b('light')}${b('heavy')}${b('lkick')}</div></div></div>`;
 }
 
 /** The small-game contract: this bout alone in a container (the 游戏厅, the story's card, the phone). */
@@ -149,7 +155,20 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     img.src = new URL(`../../worlds/jiuding/${face}`, import.meta.url).href;
     art[who] = img;
   }
-  const draw = painter(canvas, { art });
+  // The painted rigs (art/games/fighter/<who>.webp + .json): drawn as soon as they come; the figure in code until then.
+  const rigs = {};
+  for (const who of ['me', 'foe']) {
+    const look = level[who]?.look;
+    if (!look?.rig) continue;
+    const base = new URL(`../../worlds/jiuding/${look.rig}`, import.meta.url).href;
+    const img = new win.Image();
+    const loaded = new Promise((ok, no) => { img.onload = ok; img.onerror = no; });
+    img.src = `${base}.webp`;
+    Promise.all([fetch(`${base}.json`).then((r) => r.json()), loaded])
+      .then(([meta]) => { rigs[who] = makeRig(meta, img, look.height); })
+      .catch((e) => console.warn('[fighter] rig', who, e));
+  }
+  const draw = painter(canvas, { art, rigs });
   const g = { state: core.newGame(seed, 1, { levels: [level] }) };
   peek?.(() => g.state);
   root.__fighter = () => g.state; // the builder's look at the bout (a live check drives it as a hand would)
@@ -243,7 +262,8 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     draw(g.state, lang, textNow(g.state)); // the last frame stays
     resolve(r);
   };
-  const superBtn = root.querySelector('button[data-k=super]'), fireBtn = root.querySelector('button[data-k=special]'), skillBtn = root.querySelector('button[data-k=skill]');
+  const skillBtn = root.querySelector('button[data-k=skill]'), skillFace = skillBtn.firstChild;
+  const skillNames = [say(level.me?.buttons?.skill, lang) || BUTTONS.skill.face, say(level.me?.buttons?.super, lang) || '绝'];
   const frame = (now) => {
     raf = win.requestAnimationFrame(frame);
     let dt = Math.min(50, last ? now - last : 16);
@@ -253,9 +273,9 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
       if (s0.end && s0.t - s0.end.at < SLOW.ms) dt *= SLOW.rate; // the KO, slowed
       g.state = core.tick(s0, dt);
       if (g.state !== s0) sounded(shell, self, s0, g.state);
-      superBtn.classList.toggle('is-ready', g.state.me.qi >= core.QI);
-      fireBtn.classList.toggle('is-cool', g.state.me.cd > 0);
-      skillBtn.classList.toggle('is-cool', g.state.me.cdPf > 0);
+      const full = g.state.me.qi >= core.QI;
+      if (skillBtn.classList.contains('is-ready') !== full) { skillBtn.classList.toggle('is-ready', full); skillFace.textContent = skillNames[full ? 1 : 0]; }
+      skillBtn.classList.toggle('is-cool', !full && g.state.me.cdPf > 0);
       if (g.state.won) { const s = g.state; win.setTimeout(() => finish({ won: true, grade: s.grade, stars: s.stars }), winHold); started = false; }
       else if (g.state.lost) { win.setTimeout(() => finish({ won: false }), 500); started = false; }
     }

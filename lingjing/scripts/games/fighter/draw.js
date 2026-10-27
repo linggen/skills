@@ -7,6 +7,9 @@
 // the crowd bobbing on a big blow, and the KO's vignette. Nothing here plays: it reads a state.
 
 const W = 960, H = 540, FLOOR = 432;
+/* The painted fighters stand ~245 units tall (KOF scale: near half the field); the core counts heights for ~190: what it
+   places at a height (a spark, a shot) is drawn that much higher. Her ice flies at the head of a man standing. */
+const FY = 1.3, FY_ICE = 1.85;
 export const FIELD = { w: W, h: H, floor: FLOOR };
 const SERIF = '"Songti SC","STSong","Noto Serif SC",serif';
 
@@ -21,7 +24,11 @@ export const POSES = {
   walkA: P(7, [32, 8], [-28, -14], [34, 86], [28, 70]),
   walkB: P(7, [-8, -20], [12, 2], [44, 100], [16, 62]),
   air: P(10, [74, 14], [28, -44], [44, 116], [10, 64], { drop: -6 }),
-  crouch: P(10, [72, -10], [8, -60], [44, 110], [30, 96], { drop: 36 }),
+  crouch: P(30, [76, -6], [26, -76], [50, 110], [30, 96]), // low and leaning in, the back knee near the boards: her ice flies over
+  lkick: P(-8, [84, 88], [-14, -6], [40, 92], [8, 60]),
+  hpunch: P(24, [42, 10], [-32, -14], [92, 92], [-24, 16]),
+  hpunchUp: P(-8, [26, 6], [-22, -8], [10, 40], [34, 70]),
+  blow: P(20, [46, 10], [-38, -16], [88, 72], [84, 76]),
   light: P(14, [24, 6], [-22, -8], [88, 90], [16, 62]),
   lightUp: P(10, [22, 6], [-18, -8], [44, 64], [20, 70]),
   heavy: P(-16, [84, 94], [44, -44], [46, 70], [-40, -12]), // 勾: low along the boards, the back knee bent
@@ -30,7 +37,7 @@ export const POSES = {
   rise: P(-10, [40, 0], [-30, -30], [150, 170], [-20, 10], { drop: 0, head: -10 }),
   riseUp: P(16, [60, -10], [0, -50], [60, 30], [20, 40], { drop: 30 }),
   block: P(-6, [16, 2], [-24, -10], [64, 162], [48, 152], { head: -6 }),
-  crouchBlock: P(4, [72, -10], [8, -60], [70, 160], [56, 150], { drop: 36, head: -4 }),
+  crouchBlock: P(24, [76, -6], [26, -76], [74, 160], [58, 150], { head: -4 }),
   parry: P(10, [30, 8], [-26, -10], [110, 70], [40, 120], { head: 4 }),
   hit: P(-22, [14, 0], [-30, -16], [-20, 10], [-46, -14], { head: -18 }),
   down: P(-16, [86, 70], [70, 60], [-30, -20], [-50, -40], { drop: 50, head: -10 }),
@@ -80,7 +87,10 @@ function mePose(s) {
   if (a) {
     const e = t - a.at, m = a.m, up = e < m.startup;
     if (a.k === 'special') return 'cast';
-    if (a.k === 'palmfire') return up ? 'cast' : 'palmfire';
+    if (a.k === 'palmfire' || a.k === 'palmfireH') return up ? 'cast' : 'palmfire';
+    if (a.k === 'lkick') return up ? 'heavyUp' : e < m.startup + m.active + 60 ? 'lkick' : 'heavyUp';
+    if (a.k === 'hpunch') return up ? 'hpunchUp' : e < m.startup + m.active + 100 ? 'hpunch' : 'lightUp';
+    if (a.k === 'blow') return up ? 'hpunchUp' : 'blow';
     if (a.k === 'super') return 'super';
     if (a.k === 'air') return up ? 'air' : 'airKick';
     if (a.k === 'rise') return up ? 'riseUp' : 'rise';
@@ -346,6 +356,136 @@ function figure(ctx, x, y, face, p, look, extra = {}) {
   return tip;
 }
 
+
+/* ── The painted rig (v3, Hanli 10-27: 「人物正式画一下吧」): each fighter painted once and cut into parts
+   (tools/paint-fighter.py → art/games/fighter/<who>.webp + .json); the parts laid on the same skeleton angles as the
+   POSES, each turned about its joint. Every frame is the same painted parts, so every frame matches. Drawn into its
+   own small canvas first, then laid on the stage with a pale rim, so the figure stands off the boards. ── */
+const deg = (r) => (r * 180) / Math.PI;
+const restDown = (a, b) => deg(Math.atan2(b[0] - a[0], b[1] - a[1])); // from straight down, toward the facing side
+const OFF = { w: 460, h: 400, ox: 230, oy: 350 }; // a fighter's own canvas, in units; its feet at (ox, oy)
+
+/** A loaded rig: the atlas and its parts, with the numbers the drawing needs worked out once. */
+export function makeRig(meta, img, height = 245) {
+  const J = meta.joints, u = height / (meta.sole - J.top[1]);
+  const len = (a, b) => Math.hypot(J[b][0] - J[a][0], J[b][1] - J[a][1]) * u;
+  const rig = { meta, img, u, J, sole: (meta.sole - J.ankleF[1]) * u, len, rest: {} };
+  for (const [name, p] of Object.entries(meta.parts)) rig.rest[name] = p.pivot === p.to ? 0 : restDown(J[p.pivot], J[p.to]);
+  rig.restLean = deg(Math.atan2(J.neck[0] - J.hip[0], J.hip[1] - J.neck[1]));
+  rig.restHead = deg(Math.atan2(J.top[0] - J.neck[0], J.neck[1] - J.top[1]));
+  rig.thigh = len('hipF', 'kneeF'); rig.shin = len('kneeF', 'ankleF');
+  rig.upper = len('shoulderF', 'elbowF'); rig.fore = len('elbowF', 'handF');
+  rig.upperB = len('shoulderB', 'elbowB'); rig.foreB = len('elbowB', 'handB');
+  rig.restHip = Math.max(...['F', 'B'].map((k) => (J[`ankle${k}`][1] - J.hip[1]) * u)) + rig.sole;
+  return rig;
+}
+
+/* One part, its pivot at (x, y) in the fighter's own units, turned by `rot` (radians, clockwise); `sx`/`sy` stretch it. */
+function part(ctx, rig, name, x, y, rot, sx = 1, sy = 1) {
+  const p = rig.meta.parts[name];
+  if (!p) return;
+  const [rx, ry, rw, rh] = p.rect, piv = rig.J[p.pivot];
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  ctx.scale(rig.u * sx, rig.u * sy);
+  ctx.drawImage(rig.img, rx, ry, rw, rh, p.origin[0] - piv[0], p.origin[1] - piv[1], rw, rh);
+  ctx.restore();
+}
+const at = (x, y, a, l) => [x + Math.sin(rad(a)) * l, y + Math.cos(rad(a)) * l];
+const turn = (x, y, r) => [x * Math.cos(r) - y * Math.sin(r), x * Math.sin(r) + y * Math.cos(r)];
+
+/* The fighter in its own canvas, facing right, feet at (0, 0); answers where its hands and sword tip are (units). */
+function rigBody(ctx, rig, p, look, extra) {
+  const J = rig.J, u = rig.u, t = extra.t ?? 0;
+  const legH = (a) => rig.thigh * Math.cos(rad(a[0])) + rig.shin * Math.cos(rad(a[1]));
+  const hipH = Math.max(legH(p.legF), legH(p.legB), 24) + rig.sole - Math.min(0, p.drop) + (extra.breath ?? 0);
+  const hip = [0, -hipH];
+  const lean = p.lean, rt = rad(lean - rig.restLean);
+  const onTorso = (j) => { const [dx, dy] = turn((J[j][0] - J.hip[0]) * u, (J[j][1] - J.hip[1]) * u, rt); return [hip[0] + dx, hip[1] + dy]; };
+  const legJoint = (k) => [hip[0] + (J[`hip${k}`][0] - J.hip[0]) * u * 0.5, hip[1] + (J[`hip${k}`][1] - J.hip[1]) * u];
+  const out = {};
+  const armChain = (k, a) => {
+    const sh = onTorso(`shoulder${k}`), up = k === 'F' ? rig.upper : rig.upperB, fo = k === 'F' ? rig.fore : rig.foreB;
+    const el = at(sh[0], sh[1], a[0], up), hd = at(el[0], el[1], a[1], fo);
+    return { sh, el, hd, draw: () => { part(ctx, rig, `upperArm${k}`, sh[0], sh[1], rad(rig.rest[`upperArm${k}`] - a[0])); part(ctx, rig, `lowerArm${k}`, el[0], el[1], rad(rig.rest[`lowerArm${k}`] - a[1])); } };
+  };
+  const legChain = (k, a) => {
+    const hp = legJoint(k), kn = at(hp[0], hp[1], a[0], rig.thigh), an = at(kn[0], kn[1], a[1], rig.shin);
+    return { hp, kn, an, draw: () => {
+      if (rig.meta.parts[`thigh${k}`]) part(ctx, rig, `thigh${k}`, hp[0], hp[1], rad(rig.rest[`thigh${k}`] - a[0]));
+      if (rig.meta.parts[`shin${k}`]) part(ctx, rig, `shin${k}`, kn[0], kn[1], rad(rig.rest[`shin${k}`] - a[1]));
+      if (rig.meta.parts[`shoe${k}`]) part(ctx, rig, `shoe${k}`, an[0], an[1], rad((a[1] - 0) * -0.5));
+    } };
+  };
+  const aB = armChain('B', p.armB), aF = armChain('F', p.armF), lB = legChain('B', p.legB), lF = legChain('F', p.legF);
+  aB.draw();
+  if (!rig.meta.parts.thighF) { // a robe to the ankles: the trousers under it show only when a leg swings out
+    ctx.fillStyle = look.trousers ?? '#2a2622';
+    for (const l of [lB, lF]) { bone(ctx, l.hp[0], l.hp[1], l.kn[0], l.kn[1], 20, 15); bone(ctx, l.kn[0], l.kn[1], l.an[0], l.an[1], 15, 12); }
+  }
+  lB.draw();
+  lF.draw();
+  if (rig.meta.parts.skirt) {
+    // the skirt hangs from the waist: it leans a little with the legs, widens as they part, and folds as the hips drop
+    const spread = Math.abs(p.legF[0] - p.legB[0]), avg = (p.legF[0] + p.legB[0]) / 2;
+    const sx = Math.min(1.7, Math.max(0.9, 1 + (spread - 40) / 110)), sy = Math.min(1, Math.max(0.55, hipH / rig.restHip));
+    part(ctx, rig, 'skirt', hip[0], hip[1], rad(-avg * 0.25 + (extra.sway ?? 0) * 0.6) + rt * 0.3, sx, sy);
+  }
+  part(ctx, rig, 'torso', hip[0], hip[1], rt);
+  const nk = onTorso('neck');
+  part(ctx, rig, 'head', nk[0], nk[1], rt + rad(p.head));
+  aF.draw();
+  out.handF = aF.hd; out.handB = aB.hd; out.elF = aF.el;
+  if (look.weapon === 'sword' && !extra.noSword) {
+    const a = rad(p.armF[1]), g = at(aF.el[0], aF.el[1], p.armF[1], rig.fore * 0.82), len = 118;
+    const tip = [g[0] + Math.sin(a) * len, g[1] + Math.cos(a) * len];
+    ctx.lineCap = 'butt';
+    ctx.strokeStyle = '#e8edf0'; ctx.lineWidth = 4.5; ctx.beginPath(); ctx.moveTo(g[0], g[1]); ctx.lineTo(tip[0], tip[1]); ctx.stroke();
+    ctx.strokeStyle = 'rgba(40,46,52,.85)'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(g[0] - Math.cos(a) * 9, g[1] + Math.sin(a) * 9); ctx.lineTo(g[0] + Math.cos(a) * 9, g[1] - Math.sin(a) * 9); ctx.stroke();
+    ctx.strokeStyle = '#3a2a1c'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(g[0], g[1]); ctx.lineTo(g[0] - Math.sin(a) * 18, g[1] - Math.cos(a) * 18); ctx.stroke();
+    if (extra.qi) { ctx.strokeStyle = `rgba(90,200,155,${extra.qi})`; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(tip[0], tip[1]); ctx.lineTo(tip[0] + Math.sin(a) * 96, tip[1] + Math.cos(a) * 96); ctx.stroke(); }
+    out.tip = tip;
+  }
+  if (extra.glow) {
+    const [gx, gy] = aB.hd, r = 26 + 34 * extra.glow;
+    const g = ctx.createRadialGradient(gx, gy, 2, gx, gy, r);
+    g.addColorStop(0, `rgba(190,255,220,${0.95 * extra.glow})`); g.addColorStop(0.4, `rgba(80,200,150,${0.6 * extra.glow})`); g.addColorStop(1, 'rgba(80,200,150,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, r, 0, Math.PI * 2); ctx.fill();
+  }
+  if (extra.fire) {
+    const [fx_, fy_] = aF.hd, g = ctx.createRadialGradient(fx_, fy_, 1, fx_, fy_, 28 * extra.fire);
+    g.addColorStop(0, 'rgba(255,226,130,.95)'); g.addColorStop(1, 'rgba(220,70,30,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(fx_, fy_, 28 * extra.fire, 0, Math.PI * 2); ctx.fill();
+  }
+  return out;
+}
+
+/* A fighter from its rig onto the stage: its own canvas (cleared, drawn, turned to face), then laid on with a pale rim
+   and its shadow on the boards. Answers its sword tip in the field's units. */
+function rigFigure(ctx, off, k, rig, x, y, face, p, look, extra) {
+  const o = off.getContext('2d');
+  const pw = Math.ceil(OFF.w * k), ph = Math.ceil(OFF.h * k);
+  if (off.width !== pw || off.height !== ph) { off.width = pw; off.height = ph; }
+  o.setTransform(1, 0, 0, 1, 0, 0);
+  o.clearRect(0, 0, pw, ph);
+  o.setTransform(k * face, 0, 0, k, OFF.ox * k, OFF.oy * k);
+  // a roll turns him over about his middle; a fall lays him along the boards
+  const rot = (p.rot ?? 0) + (extra.spin ?? 0), about = extra.spin ? 60 : 16;
+  if (rot) { o.translate(0, -about); o.rotate(rad(rot)); o.translate(0, about); }
+  const got = rigBody(o, rig, p, look, extra);
+  if (!extra.noShadow) { ctx.fillStyle = 'rgba(0,0,0,.24)'; ctx.beginPath(); ctx.ellipse(x, y + (extra.floorAt ?? 0), 50 - Math.min(24, (extra.floorAt ?? 0) / 6), 8, 0, 0, Math.PI * 2); ctx.fill(); }
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,247,228,.9)';
+  ctx.shadowBlur = 7 * k;
+  ctx.drawImage(off, x - OFF.ox, y - OFF.oy, OFF.w, OFF.h);
+  ctx.restore();
+  const field = (pt) => (pt ? { x: x + face * pt[0], y: y + pt[1] } : null);
+  return got.tip ? field(got.tip) : null;
+}
+
 /* ── Effects ── */
 function splat(ctx, x, y, age, id, big) {
   const k = age / 480;
@@ -373,7 +513,7 @@ function splat(ctx, x, y, age, id, big) {
 }
 function effects(ctx, s) {
   for (const f of s.fx) {
-    const age = s.t - f.at, x = f.x, y = FLOOR - f.y;
+    const age = s.t - f.at, x = f.x, y = FLOOR - f.y * FY;
     if (f.kind === 'ink' || f.kind === 'cut') splat(ctx, x, y, age, f.id, f.big || f.kind === 'cut');
     if (f.kind === 'cut' && age < 400) { ctx.strokeStyle = `rgba(140,24,18,${1 - age / 400})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 40, y - 20); ctx.lineTo(x + 40, y + 16); ctx.stroke(); }
     if (f.kind === 'spark' && age < 280) {
@@ -411,7 +551,7 @@ function effects(ctx, s) {
     ctx.beginPath(); ctx.moveTo(s.wall.x - 18, FLOOR); ctx.lineTo(s.wall.x - 14, FLOOR - h); ctx.lineTo(s.wall.x + 2, FLOOR - h - 8); ctx.lineTo(s.wall.x + 16, FLOOR - h + 4); ctx.lineTo(s.wall.x + 18, FLOOR); ctx.closePath(); ctx.fill(); ctx.stroke();
   }
   for (const x of s.shots) {
-    const px = x.x, py = FLOOR - x.y, d = Math.sign(x.vx);
+    const px = x.x, py = FLOOR - x.y * (x.kind === 'ice' ? FY_ICE : FY), d = Math.sign(x.vx);
     if (x.kind === 'ice') {
       ctx.fillStyle = 'rgba(205,234,250,.96)'; ctx.strokeStyle = 'rgba(40,70,90,.9)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(px + d * 24, py); ctx.lineTo(px - d * 16, py - 6); ctx.lineTo(px - d * 10, py); ctx.lineTo(px - d * 16, py + 6); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -495,8 +635,7 @@ function hud(ctx, s, art, lang, view) {
     ctx.beginPath(); ctx.moveTo(cx, 82); ctx.arc(cx, 82, 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, ready)); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#f6eedc'; ctx.font = `700 10px ${SERIF}`; ctx.textAlign = 'center'; ctx.fillText(label, cx, 83);
   };
-  ring(96, say(me.specialName, lang) || '火', 1 - s.me.cd / s.R.me.special.cd);
-  ring(120, say(lv.words?.palmfire, lang)?.[0] || '掌', 1 - (s.me.cdPf ?? 0) / s.R.me.palmfire.cd);
+  ring(96, say(lv.words?.palmfire, lang)?.[0] || '掌', 1 - (s.me.cdPf ?? 0) / s.R.me.palmfire.cd); // 掌心火's readiness
   // the incense (the bout's clock, burning down) and her count of moves, small
   const total = lv.time ?? 120000, left = Math.max(0.06, 1 - s.t / total), ix = W / 2, top = 14, len = 34;
   ctx.fillStyle = '#6b4b2a'; ctx.fillRect(ix - 1.5, top + len * (1 - left), 3, len * left);
@@ -534,7 +673,7 @@ function cueMark(ctx, s, lang) {
   const c = s.cue;
   if (!c) return;
   const word = say(s.level?.cues?.[c.k], lang) || (c.k === 'ying' ? '迎' : '勾');
-  const age = s.t - c.at, k = Math.min(1, age / 140), x = s.me.x, y = FLOOR - 240;
+  const age = s.t - c.at, k = Math.min(1, age / 140), x = s.me.x, y = FLOOR - 310;
   ctx.save();
   ctx.globalAlpha = 1 - Math.max(0, age - 600) / 300;
   ctx.fillStyle = 'rgba(178,34,24,.92)';
@@ -601,8 +740,9 @@ function cutIn(ctx, c, img, lang, age) {
 }
 
 /** A painter for one canvas: `draw(state, lang, text)` each frame; the poses ease from the last. */
-export function painter(canvas, { art = {} } = {}) {
+export function painter(canvas, { art = {}, rigs = {} } = {}) {
   const ctx = canvas.getContext('2d');
+  const offs = { me: canvas.ownerDocument.createElement('canvas'), foe: canvas.ownerDocument.createElement('canvas') };
   let layers = null, layersFor = null;
   const eased = { me: null, foe: null }, sway = { me: 0, foe: 0 };
   const view = { ghostMe: 1, ghostFoe: 1, chain: null, now: 0, lift: 0, trail: [], cut: null, cutAt: 0 };
@@ -653,7 +793,8 @@ export function painter(canvas, { art = {} } = {}) {
     const glow = palm ? (palm.phase === 'glow' ? Math.min(1, (s.t - palm.at) / 500) : palm.phase === 'hold' ? 0.55 : palm.phase === 'strike' ? 0.4 : 0.12) : 0;
     const foeY = FLOOR - (s.foe.y ?? 0) - (s.foe.lift && s.t - s.foe.lift < 360 ? Math.sin(((s.t - s.foe.lift) / 360) * Math.PI) * 40 : 0), meY = FLOOR - s.me.y;
     const breath = (t) => Math.sin(t / 420) * 1.4;
-    const tip = figure(ctx, s.foe.x, foeY, s.foe.face, fp, foeLook, { t: s.t, qi, glow, sway: sway.foe, breath: breath(s.t + 300), scabbard: !palm && !s.hooked && !s.end, noShadow: s.foe.y < 0, inv });
+    const foeExtra = { t: s.t, qi, glow, sway: sway.foe, breath: breath(s.t + 300), scabbard: !palm && !s.hooked && !s.end, noShadow: s.foe.y < 0, inv };
+    const tip = rigs.foe ? rigFigure(ctx, offs.foe, k, rigs.foe, s.foe.x, foeY, s.foe.face, fp, foeLook, foeExtra) : figure(ctx, s.foe.x, foeY, s.foe.face, fp, foeLook, foeExtra);
     // the sword's trail: where its tip has been these last frames, while it cuts
     if (tip && striking) view.trail.push({ ...tip, at: now }); else if (!striking) view.trail.length = 0;
     view.trail = view.trail.filter((p) => now - p.at < 140);
@@ -665,8 +806,10 @@ export function painter(canvas, { art = {} } = {}) {
         ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
       }
     }
-    const casting = ['special', 'palmfire', 'super'].includes(s.me.act?.k) ? 1 : 0;
-    figure(ctx, s.me.x, meY, s.me.face, mp, meLook, { t: s.t, fire: casting, sway: sway.me, breath: s.me.act || s.me.air ? 0 : breath(s.t), floorAt: s.me.y, inv });
+    const casting = ['special', 'palmfire', 'palmfireH', 'super'].includes(s.me.act?.k) ? 1 : 0;
+    const rollK = s.me.act?.k === 'roll' ? Math.min(1, (s.t - s.me.act.at) / s.R.me.roll.ms) : null;
+    const meExtra = { t: s.t, fire: casting, sway: sway.me, breath: s.me.act || s.me.air ? 0 : breath(s.t), floorAt: s.me.y, inv, spin: rollK == null ? 0 : rollK * 360 * (s.me.act.dir === s.me.face ? 1 : -1) };
+    if (rigs.me) rigFigure(ctx, offs.me, k, rigs.me, s.me.x, meY, s.me.face, mp, meLook, meExtra); else figure(ctx, s.me.x, meY, s.me.face, mp, meLook, meExtra);
     effects(ctx, s);
     ctx.setTransform(k, 0, 0, k, 0, 0);
     crowd(ctx, s.t, view.lift);

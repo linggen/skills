@@ -10,17 +10,17 @@
 // She leaves the stage only over the slick (`stage.oil`, 那摊红油) with its edge at her back. Each has 气 (`qi`, 0…100):
 // it fills on blows given and taken, and full it pays for one 绝 (a super).
 //
-// His hands (the mount maps keys; the phone maps buttons):
-//   walk { dir } · crouch { on } (蹲: ducks her ice; held back with it, a low guard) · block { on } (挡, the phone's
-//   button; standing away from her guards too) · jump · light (拳 K) · heavy (腿 L — 勾 at her rear foot) · special
-//   (火 ;: fire at her feet, she hops back) · ying (迎 O: a roll — in along her blade and out past her, untouchable a
-//   moment; held away from her, a roll back; in the edge's push it is the book's 迎) · skill (技, the phone: 掌心火, or
-//   升勾 with a direction held) · jumpRelease (W let go soon: a short hop; held: the full jump). Double-tap toward her: a
-//   dash in; away: a back-step (KOF '97, Hanli's pick 10-27: fast and pressing, not SF's spacing).
-//   · super (绝, the phone; keys: O+; or K+L together, or ↓↓ then K+L). (Hanli 10-27: 「出招键可以右边一些, 变成okl;」.)
-// Combos: a 拳 that lands can be cut short into the next blow (K K L, K L …), and a 腿 that lands into a special or the
-// 绝 (K K L → S D ;); a jump-in 腿 stuns long enough for a 拳 on landing. Blows into a foe still reeling count a chain (`combo`, 「2 连」…), each a little lighter on her 稳.
-// Motions read the last directions pressed (`hist`, MOTION_MS): ↓→ + ; is 掌心火 (a fireball), →↓→ + L is 升勾.
+// His hands — KOF '97's four buttons (Hanli 10-27: 「这个是按照拳皇97来的吗? 97那个就4个key?」); the mount maps keys, the phone
+// buttons: light (A 轻拳, K) · lkick (B 轻腿, L) · hpunch (C 重拳, O) · heavy (D 重腿, ; — 勾 at her rear foot) · walk { dir }
+// · crouch { on } (蹲: ducks her ice; held away from her with it, a low guard) · block { on } (standing away from her
+// guards too) · jump · jumpRelease (W let go soon: a short hop). Two at once: A+B a roll (迎 — in along her blade and out
+// past her, untouchable a moment; held away, a roll back; in the edge's push it is the book's 迎), C+D a blowback.
+// Double-tap toward her: a dash in; away: a back-step (fast and pressing, not SF's spacing). The phone's skill (技):
+// 掌心火, with ▶ (▲, ▼) 升勾, and with a stock full the 绝. `ying` is the roll by name (the bot), `super` the 绝 by name.
+// Combos: a 轻拳 or 轻腿 that lands can be cut short into the next blow (K K L, K O …); a 重 that lands into a special
+// or the 绝; a jump-in blow stuns long enough for a 拳 on landing. Blows into a foe still reeling count a chain
+// (`combo`, 「2 连」…), each a little lighter on her 稳. Motions + 拳 (K or O; MOTION_MS): ↓→ 掌心火 (O: the heavier,
+// slower one), →↓→ 升勾, ↓→↓→ the 绝 (one stock).
 // Hits stop the clock a beat (`freeze`, hit-stop); a 绝 stops it for its cut-in.
 //
 // Her moves (`foe.moves`) are data; two are tricks the book has (doc/games.md § 格斗):
@@ -41,7 +41,7 @@
 export const STEP_MS = 10; //   one physics step; tick(ms) runs as many as fit (the same ms → the same bout)
 export const BUF_MS = 300; //   how long a press waits for his hands to be free (a chain's next blow, a fast thumb)
 export const MOTION_MS = 320; // a motion's directions, read back from the press that ends it
-export const PAIR_MS = 120; //  two keys at once (a 绝)
+export const PAIR_MS = 80; //   two keys at once (A+B a roll, C+D a blowback): as near together as KOF's
 export const END_MS = 1700; //  the last frame (her slide off the edge, his fall) before the bout is over
 export const GRAVITY = 2600;
 export const GAP = 58; //       the least distance between two bodies
@@ -58,12 +58,16 @@ export const STAGE = { w: 960, left: 140, right: 930, oil: { from: 140, to: 250 
 export const ME = {
   hp: 100, speed: 250, jump: 880, hop: 420, dash: 620, step: 480,
   light: { startup: 70, active: 90, recover: 150, reach: 108, dmg: 3, push: 24, stun: 300, cancel: true, qi: 4 },
-  heavy: { startup: 160, active: 110, recover: 320, reach: 130, dmg: 7, push: 70, stun: 440, hook: true, qi: 7, cancelTo: ['palmfire', 'rise', 'special', 'super'] },
+  heavy: { startup: 160, active: 110, recover: 320, reach: 134, dmg: 7, push: 70, stun: 440, hook: true, qi: 7, cancelTo: ['palmfire', 'palmfireH', 'rise', 'super'] },
+  lkick: { startup: 80, active: 100, recover: 170, reach: 134, dmg: 3, push: 26, stun: 300, cancel: true, qi: 4 },
+  hpunch: { startup: 150, active: 110, recover: 300, reach: 120, dmg: 7, push: 60, stun: 440, hook: true, qi: 7, cancelTo: ['palmfire', 'palmfireH', 'rise', 'super'] },
+  blow: { startup: 200, active: 110, recover: 360, reach: 132, dmg: 8, push: 230, stun: 620, qi: 6 },
   air: { startup: 90, active: 260, recover: 120, reach: 118, dmg: 6, push: 40, stun: 560, qi: 6 },
   rise: { startup: 110, active: 160, recover: 480, reach: 116, dmg: 11, push: 120, stun: 620, hook: true, qi: 9, lift: 520 },
   roll: { ms: 380, safe: 300, speed: 760 },
   special: { kind: 'fire', startup: 210, recover: 260, speed: 640, dmg: 6, push: 260, stun: 300, cd: 5000, qi: 5 },
-  palmfire: { kind: 'palmfire', startup: 240, recover: 300, speed: 760, dmg: 9, push: 120, stun: 420, cd: 2200, at: 108, qi: 6 },
+  palmfire: { kind: 'palmfire', startup: 240, recover: 300, speed: 760, dmg: 8, push: 120, stun: 420, cd: 2200, at: 108, qi: 6 },
+  palmfireH: { kind: 'palmfire', startup: 320, recover: 360, speed: 560, dmg: 11, push: 170, stun: 520, cd: 2200, at: 108, qi: 8, big: true },
   super: { name: { zh: '两样', en: 'Two at Once' }, cut: 900, startup: 120, recover: 600, speed: 700, dmg: 26, push: 340, stun: 1000 },
 };
 
@@ -162,7 +166,9 @@ const phaseOf = (act, t) => {
 const busy = (who, t) => Boolean(who.act) || who.stun > t;
 
 /* ── His hands ── */
-const PRESS = new Set(['jump', 'light', 'heavy', 'special', 'ying', 'skill', 'super']);
+const PRESS = new Set(['jump', 'light', 'lkick', 'hpunch', 'heavy', 'special', 'ying', 'skill', 'super']);
+const PUNCH = new Set(['light', 'hpunch']);
+const PAIRED = new Set(['super', 'roll', 'blow']); // a press that takes the place of the pair's first key
 const tapped = (s, k) => s.hist.filter((h) => h.k === k && s.t - h.at <= TAP_MS).length >= 2;
 /** The player's hand: `walk` { dir: -1 | 0 | 1 } (screen left/right), `crouch` { on }, `block` { on }, and the presses
     jump · light · heavy · special · ying · skill · super. Answers { state } (the same state when nothing changed). */
@@ -202,9 +208,9 @@ export function act(state, d = {}) {
     const s = clone(state);
     if (pressed(s, g)) return { state: s, won: false };
     const k = read(s, g);
-    s.last[g] = s.t;
+    s.last[g] = s.clock ?? 0;
     // a 绝 takes the place of the pair's first key, if it still waits
-    if (k) s.buf = [...s.buf.filter((b) => s.t - b.at <= BUF_MS && !(k === 'super' && ['light', 'heavy', 'special', 'roll'].includes(b.k))), { k, at: s.t }].slice(-3);
+    if (k) s.buf = [...s.buf.filter((b) => s.t - b.at <= BUF_MS && !(PAIRED.has(k) && ['light', 'lkick', 'hpunch', 'heavy'].includes(b.k))), { k, at: s.t }].slice(-3);
     return { state: s, won: false };
   }
   return { state, won: false };
@@ -221,13 +227,20 @@ const seq = (s, keys) => {
 /* What a press means: a 绝 (two at once with 气 full, or ↓↓ J+K), a motion's special, the phone's 技, else itself. */
 function read(s, g) {
   const me = s.me, full = me.qi >= QI;
-  const pair = (a) => s.t - (s.last[a] ?? -1e9) <= PAIR_MS;
+  const pair = (a) => (s.clock ?? 0) - (s.last[a] ?? -1e9) <= PAIR_MS; // on the hands' clock: a hit-stop never joins two presses
   if (g === 'super') return full ? 'super' : null;
-  if (full && ((g === 'heavy' && pair('light')) || (g === 'light' && pair('heavy')) || (g === 'special' && pair('ying')) || (g === 'ying' && pair('special')))) return 'super';
-  if (g === 'special' && seq(s, ['d', 'f'])) return 'palmfire';
-  if (g === 'heavy' && seq(s, ['f', 'd', 'f'])) return 'rise';
-  if (g === 'skill') return (s.in.dir === side(s) || s.in.crouch) ? 'rise' : 'palmfire';
   if (g === 'ying') return 'roll';
+  // KOF '97's four buttons (A 轻拳 K · B 轻腿 L · C 重拳 O · D 重腿 ;): A+B rolls, C+D blows her back
+  if ((g === 'light' && pair('lkick')) || (g === 'lkick' && pair('light'))) return 'roll';
+  if ((g === 'hpunch' && pair('heavy')) || (g === 'heavy' && pair('hpunch'))) return 'blow';
+  // motion + 拳: ↓→↓→ the 绝 (a stock), →↓→ 升勾, ↓→ 掌心火 (C: the heavier, slower one)
+  if (PUNCH.has(g)) {
+    if (full && seq(s, ['d', 'f', 'd', 'f'])) return 'super';
+    if (seq(s, ['f', 'd', 'f'])) return 'rise';
+    if (seq(s, ['d', 'f'])) return g === 'hpunch' ? 'palmfireH' : 'palmfire';
+  }
+  // the phone's 技: 掌心火; with ▶ (or ▲, ▼) 升勾; a full stock, the 绝
+  if (g === 'skill') return full ? 'super' : (s.in.dir === side(s) || s.in.crouch || me.air) ? 'rise' : 'palmfire';
   return g;
 }
 
@@ -420,7 +433,7 @@ function decide(s) {
   foe.think = t + ai.think * (0.8 + roll(s) * 0.5);
   if (me.stun > t + 200 || me.down > t) { foe.vx = 0; return; } // 不踩人: she waits him up
   // His blow coming within her reach: she may stand it off.
-  if (me.act && ['light', 'heavy', 'air'].includes(me.act.k) && d < 170 && roll(s) < ai.block) { startFoe(s, 'block'); return; }
+  if (me.act && ['light', 'lkick', 'hpunch', 'heavy', 'air'].includes(me.act.k) && d < 170 && roll(s) < ai.block) { startFoe(s, 'block'); return; }
   if (cornered(s) && foe.moves >= M.edge.after && foe.cd.edge <= 0 && d < M.poke.reach + 20) { startEdge(s); return; }
   if (d < M.palm.reach + 16 && foe.bal <= M.palm.under && foe.cd.palm <= 0 && roll(s) < 0.45) { startPalm(s, 'close'); return; }
   if (foe.qi >= QI && d < M.jianqi.reach - 20 && roll(s) < 0.6) { startFoe(s, 'jianqi'); return; }
@@ -527,7 +540,7 @@ function startMe(s, k) {
     fx(s, 'dust', me.x, 0, { small: true });
     return true;
   }
-  if (k === 'special' || k === 'palmfire') {
+  if (k === 'special' || k === 'palmfire' || k === 'palmfireH') {
     const m = R.me[k], cdKey = k === 'special' ? 'cd' : 'cdPf';
     if (me[cdKey] > 0 || me.air) return false;
     me[cdKey] = m.cd;
@@ -549,8 +562,8 @@ function startMe(s, k) {
     say(s, 'super');
     return true;
   }
-  if (k === 'heavy' && me.air) { if (me.airHit) return false; me.airHit = true; me.act = { k: 'air', at: s.t, m: R.me.air, hit: false }; bump(s, 'swing'); return true; }
-  if (me.air && k !== 'light') return false;
+  if (me.air && ['heavy', 'lkick', 'hpunch', 'light'].includes(k)) { if (me.airHit) return false; me.airHit = true; me.act = { k: 'air', at: s.t, m: R.me.air, hit: false }; bump(s, 'swing'); return true; } // a jump-in blow
+  if (me.air) return false;
   me.act = { k, at: s.t, m: R.me[k], hit: false };
   if (!me.air) me.vx = 0;
   if (k === 'rise') { me.vx = side(s) * 90; me.vy = 520; me.air = true; me.airHit = true; bump(s, 'rise'); }
@@ -568,7 +581,7 @@ function meStep(s) {
   if (me.act?.k === 'ying' && t - me.act.at >= me.act.m.recover) me.act = null;
   if (me.down && me.down <= t) { me.down = 0; bump(s, 'getup'); }
   // a 绝 cuts the pair's first key short while it is still winding up
-  if (s.buf[0]?.k === 'super' && me.qi >= QI && me.act && phaseOf(me.act, t) === 'startup') me.act = null;
+  if (PAIRED.has(s.buf[0]?.k) && me.act && phaseOf(me.act, t) === 'startup' && ['light', 'lkick', 'hpunch', 'heavy'].includes(me.act.k)) me.act = null;
   const free = (!me.act || cancellable(me.act, t, s.buf[0]?.k)) && me.stun <= t && !me.down;
   if (free && s.buf.length) {
     const b = s.buf.shift(), was = me.act;
@@ -584,16 +597,16 @@ function meStep(s) {
   if (me.act?.k === 'roll' || me.act?.k === 'dash') me.vx = me.act.k === 'roll' ? me.act.dir * R.me.roll.speed * (1 - (t - me.act.at) / (R.me.roll.ms + 120)) : me.vx;
   // His blow's active frames: once a move.
   const a = me.act;
-  if (a && !a.hit && ['light', 'heavy', 'air', 'rise'].includes(a.k) && phaseOf(a, t) === 'active') {
+  if (a && !a.hit && ['light', 'lkick', 'hpunch', 'heavy', 'air', 'rise', 'blow'].includes(a.k) && phaseOf(a, t) === 'active') {
     const reach = a.m.reach, high = Math.abs(s.foe.y - me.y) < 120;
-    if (dist(s) <= reach && high) { a.hit = true; a.landed = true; hurtFoe(s, a.m, { heavy: a.k === 'heavy' || a.k === 'rise' }); }
+    if (dist(s) <= reach && high) { a.hit = true; a.landed = true; hurtFoe(s, a.m, { heavy: ['heavy', 'rise', 'hpunch', 'blow'].includes(a.k) }); }
     else if (a.k !== 'air' || t - a.at > a.m.startup + a.m.active - STEP_MS) { a.hit = true; bump(s, 'whiff'); }
   }
-  if (a && !a.hit && (a.k === 'special' || a.k === 'palmfire') && t - a.at >= a.m.startup) {
+  if (a && !a.hit && (a.k === 'special' || a.k === 'palmfire' || a.k === 'palmfireH') && t - a.at >= a.m.startup) {
     a.hit = true;
     const m = R.me[a.k];
     s.n += 1;
-    s.shots.push({ who: 'me', kind: m.kind, x: me.x + toward * 34, y: m.at ?? 22, vx: toward * m.speed, id: s.n });
+    s.shots.push({ who: 'me', kind: m.kind, x: me.x + toward * 34, y: m.at ?? 22, vx: toward * m.speed, id: s.n, ...(m.big ? { heavy: true } : {}) });
     bump(s, a.k === 'special' ? 'fire' : 'palmfire');
   }
   if (a && !a.hit && a.k === 'super' && t - a.at >= a.m.startup) {
@@ -670,7 +683,7 @@ function shotsStep(s, dt) {
     }
     if (x.who === 'me' && !x.gone && Math.abs(x.x - foe.x) < 30 && !s.end) {
       x.gone = true;
-      const m = x.kind === 'wave' ? R.me.super : x.kind === 'palmfire' ? R.me.palmfire : R.me.special;
+      const m = x.kind === 'wave' ? R.me.super : x.kind === 'palmfire' ? (x.heavy ? R.me.palmfireH : R.me.palmfire) : R.me.special;
       hurtFoe(s, m, { fire: x.kind === 'fire', big: x.kind === 'wave' });
     }
   }
@@ -706,7 +719,8 @@ function endStep(s) {
 }
 
 function step(s) {
-  if (s.freeze > 0) { s.freeze = Math.max(0, s.freeze - STEP_MS); return; } // hit-stop: the clock holds
+  s.clock = (s.clock ?? 0) + STEP_MS; // the hands' clock runs through a hit-stop
+  if (s.freeze > 0) { s.freeze = Math.max(0, s.freeze - STEP_MS); return; } // hit-stop: the bout's clock holds
   s.t += STEP_MS;
   if (s.cutin && s.t - s.cutin.at > 200) s.cutin = null;
   if (s.end) { endStep(s); return; }
@@ -747,9 +761,10 @@ export const lineNow = (s) => s?.line ?? null;
 
 /** The move list (the pause veil's, the phone's): each move's name and its keys, from the level's words. */
 export const MOVES = [
-  { k: 'light', keys: 'K', touch: '拳' }, { k: 'heavy', keys: 'L', touch: '腿' }, { k: 'special', keys: ';', touch: '火' },
-  { k: 'roll', keys: 'O · A/D+O', touch: '迎' }, { k: 'dash', keys: 'D D · A A', touch: '▶▶ · ◀◀' }, { k: 'hop', keys: 'W 轻点 · 按住', touch: '▲' },
-  { k: 'chain', keys: 'K K L → S D ;', touch: '拳 拳 腿 → 技' },
-  { k: 'palmfire', keys: 'S D ;', touch: '技' }, { k: 'rise', keys: 'D S D L', touch: '▶ + 技' },
-  { k: 'super', keys: 'O+; · S S K+L', touch: '绝' }, { k: 'guard', keys: 'A/D 背向她 · S 蹲', touch: '挡 · ▼' },
+  { k: 'light', keys: 'K', touch: '拳' }, { k: 'lkick', keys: 'L', touch: '腿' }, { k: 'hpunch', keys: 'O', touch: '重拳' }, { k: 'heavy', keys: ';', touch: '重腿' },
+  { k: 'roll', keys: 'K+L · A/D+K+L', touch: '拳+腿' }, { k: 'blow', keys: 'O+;', touch: '重拳+重腿' },
+  { k: 'dash', keys: 'D D · A A', touch: '▶▶ · ◀◀' }, { k: 'hop', keys: 'W 轻点 · 按住', touch: '▲' },
+  { k: 'chain', keys: 'K K L · K O · 跳 ; K', touch: '拳 拳 腿' },
+  { k: 'palmfire', keys: 'S D + K/O', touch: '技' }, { k: 'rise', keys: 'D S D + K/O', touch: '▶ + 技' },
+  { k: 'super', keys: 'S D S D + K/O', touch: '技（气满：绝）' }, { k: 'guard', keys: 'A/D 背向她 · S+背向 低挡', touch: '◀/▶ 背向她' },
 ];

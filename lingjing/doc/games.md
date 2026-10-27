@@ -88,6 +88,16 @@ Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街
   parallax hills, banners 大比 · 沉鼎, the 气 stocks under each bar, plates for the names, a small incense and 第 N 招.
 - **Phone**: ◀ ▼ ▶ ▲ on the left; 迎 技 绝 / 挡 拳 腿 火 on the right (技: 掌心火; with ▶ or ▼ held, 升勾; 绝 lights with a stock).
   Pause shows the move list (shell `note(lines)`, the veil's). Sound: sounds.json kit `fight` (bed: card).
+- **v3 (10-27)** — 「出招按键有点多 … 97那个就4个key?」 and 「人物正式画一下吧」. **Four buttons** as KOF '97: K A 轻拳 · L B 轻腿 ·
+  O C 重拳 · ; D 重腿; guard by holding back (low: S + back); K+L the roll (迎; back + K+L rolls back); O+; a blowback.
+  Motions + 拳 (K or O): S D 掌心火 (O: heavier, slower) · D S D 升勾 · S D S D the 绝 (one stock). Chains K K L, K O, jump-in ;
+  then K; a 重 cancels into the specials. Story finale: 迎 = the K+L roll; 勾 = **升勾** (D S D + 拳; a 重 in her held-back palm
+  hooks too). Phone: ▲ ◀ ▼ ▶; 拳 腿 重拳 重腿 in a diamond; 技 (掌心火, ▶ + 技 升勾, 绝 while a stock is full); 拳+腿 together rolls.
+  **Painted rigs**: each fighter painted once by FLUX (tools/paint-fighter.py, kept seeds and cut polygons in tools/fighter-rig.json)
+  in a shadow-puppet layout, keyed off its paper, cut into parts (head, torso, upper/lower arms, thighs/shins; her skirt and
+  shoes), packed into art/games/fighter/<who>.webp + .json (~37 KB each); draw.js turns each part about its joint on the POSES'
+  angles, in its own canvas, laid on with a pale rim; ~245 units tall (KOF scale). Rig over frame-by-frame: one painting a fighter,
+  so every frame matches, the assets stay small, the motion stays smooth.
 - **Bot** (200 ms, chains, 技 and 绝 as the phone's buttons): wins 8/8 seeds in 41–65 s; 320 ms 8/8; masher, wall of blocks, idle lose.
 - **Skipped**: a mount-only board's skip shows the page's 「没走完，往下走了。」, as every board's; `won.skipped` kept in the level.
 
