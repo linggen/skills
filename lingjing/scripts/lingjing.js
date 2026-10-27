@@ -75,7 +75,7 @@ import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
 import { beatHost, mountOnly } from './beat-host.js';
 import { fellBack, probeCaps, withCaps } from './caps.js';
-import { anyPaused, forget as forgetShell, frameHtml, isPaused, say as shellSay, setPaused, settle as settleShell, shellFor, timedOf, wireShell } from './games/shell.js';
+import { anyPaused, forget as forgetShell, frameHtml, isPaused, say as shellSay, setPaused, settle as settleShell, shellFor, timedOf, toolHtml, wireShell } from './games/shell.js';
 import { fenceBoards } from './board-fence.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
@@ -3307,7 +3307,7 @@ function openStuckSlots() {
   for (const slot of document.querySelectorAll('[data-skip-slot]')) {
     const next = slotNext(boards.get(slot.dataset.skipSlot), Date.now(), Boolean(slot.firstElementChild));
     if (next === 'fill') {
-      slot.innerHTML = skipButton(slot.dataset.skipSlot, lang());
+      slot.innerHTML = skipButton(slot.dataset.skipSlot, lang(), 'skipIcon' in slot.dataset); // the shell bar's ✕, or the word under a board
       bringIntoFocus(slot.firstElementChild);
       // Stuck: she spurs him once a board, and may point to Ling (hersay.js stuck).
       herSay.say('stuck', '', { key: slot.dataset.skipSlot });
@@ -3557,6 +3557,7 @@ const CLICKS = [
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
   ['[data-game-skip]', (el) => skipGame(el.dataset.gameSkip)],
   ['[data-board-leave]', (el) => leaveGame(el.dataset.boardLeave)],
+  ['[data-fight-tap]', (el) => fightTap(el.dataset.fightTap)],
   ['[data-replay-play]', (el) => { run(`replay:${el.dataset.replayPlay}`, () => replayTap(el.dataset.replayPlay, true)); return true; }],
   ['[data-replay-later]', (el) => { run(`replay:${el.dataset.replayLater}`, () => replayTap(el.dataset.replayLater, false)); return true; }],
   ['[data-dlg-log]', () => { show({ logOpen: !view.logOpen }); lines.hold(view.logOpen); }],
@@ -4055,8 +4056,21 @@ function paintFight(b) {
   if (!b.node) mountBout(b);
   const frame = [...focus.children].find((el) => el.matches('.gshell') && el.dataset.shell === id);
   if (frame?.contains(b.node)) return;
-  focus.innerHTML = frameHtml({ id, title: duelTitle(b.brief.creature, words(), lang()), kind: kapai.meta.name[lang()] ?? kapai.meta.name.zh, how: forInput(kapai.meta.how[lang()] ?? kapai.meta.how.zh), timed: timedOf(kapai), lang: lang(), body: '<div class="g-mounthost g-fighthost"></div>' });
+  // 怎么玩 (?) and 认输 (✕) are the bar's icons, top right, as every board's (Hanli 10-27: 「全局统一改」); the room's
+  // own pair under them steps aside (battle.css), and the bar's taps reach the room through its door (fightTap).
+  const bw = boutWords(BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh, b.brief.creature, lang());
+  focus.innerHTML = frameHtml({ id, title: duelTitle(b.brief.creature, words(), lang()), kind: kapai.meta.name[lang()] ?? kapai.meta.name.zh, how: forInput(kapai.meta.how[lang()] ?? kapai.meta.how.zh), timed: timedOf(kapai), lang: lang(), body: '<div class="g-mounthost g-fighthost"></div>',
+    ask: toolHtml('ask', bw.how, 'data-fight-tap="help"'), close: toolHtml('close', bw.quit, 'data-fight-tap="quit"') });
   focus.querySelector('.g-fighthost')?.replaceChildren(b.node);
+}
+
+/* The bar's ? and ✕ over the room: its 怎么玩 and its 认输, as its own buttons did. 认输 under the pause veil is
+   still 认输 — the pause lifts and the room yields (the room ignores taps while paused). */
+function fightTap(kind) {
+  const room = boutRoom(bout);
+  if (!room) return;
+  if (kind === 'quit' && isPaused(fightShell(bout))) setPaused(fightShell(bout), false);
+  room.tap({ kind, index: -1 });
 }
 
 /* The rules settle it, and the scene reports it — the scene is still the only

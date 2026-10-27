@@ -105,7 +105,7 @@ export const WORDS = {
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
-    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Stop here', boardLeft: 'Left unfinished — on you go.',
+    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.',
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. {rest} hours or more refills stamina.',
@@ -150,7 +150,7 @@ import { TURNED_MS, turnedPays } from './turned.js';
 import { choicesStand } from './queue.js';
 import { AI_WORDS, caseCard, duizi, haggle, twenty } from './aigames-cards.js';
 import { mountHostHtml, mountOnly } from './beat-host.js';
-import { frameHtml, timedOf, tallOf, tallStyle } from './games/shell.js';
+import { frameHtml, timedOf, tallOf, tallStyle, toolHtml } from './games/shell.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -556,28 +556,34 @@ function board(card, ctx) {
   // the task's, else the game's own name; 炼丹 only for the herb board.
   const herbs = card.id === 'lianliankan' || task?.game === 'lianliankan';
   const title = task?.game ? task.title : herbs ? ctx.words.play : (g?.mod?.meta?.name?.[ctx.lang] ?? g?.mod?.meta?.name?.zh ?? ctx.boardTitle?.(id) ?? ctx.words.play);
-  // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
-  // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever.
-  const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod),
-    how: forInput(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
-    body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` })
-    // 炼丹's herbs (board.js) wear the same shell, its 🔊 with it (Hanli 10-26: every board has both); its tiles as ever.
-    : body === '' ? frameHtml({ id, title, lang: ctx.lang, body: boardHtml(g, ctx.words) }) : null;
   const ask = task?.game || !herbs ? say(ctx.words.sayTask, { title }) : ctx.words.sayBoard;
   // A scene's own game (the opening's beats, 射鹿 …) is played, not asked about: no 问询 in its corner.
   const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
-  // A board offered again (Look's replay, rules/skips.mjs) may be left again, by the same gate.
-  const skip = (own || task?.replay) && !today && !made && !shut ? skipBoard(g, id, ctx) : '';
-  // 收手: a board he opened by choice is put down at any moment (Look's task `leave`, rules/skips.mjs leaveOf) — one
-  // quiet word under the board, outside its play; the story's own keep 「算了，往下走」 once stuck (skip, above).
-  // On the 问询 row, never a row of its own: a tall board is sized to the stage, and one more row cut its foot off.
+  // 收手: a board he opened by choice is put down at any moment (Look's task `leave`, rules/skips.mjs leaveOf); the
+  // story's own (and a board offered again, Look's replay) keep 「算了，往下走」 once stuck (skipBoard's slot).
   const leaveBtn = task?.leave && !made && !g?.state?.won && !g?.sent ? { label: ctx.words.boardLeave, leave: id } : null;
-  const tall = framed && tallStyle(g.mod) ? ` style="${tallStyle(g.mod)}"` : '';
+  const skips = (own || task?.replay) && !today && !made && !shut;
   // A puzzle that is hers to explain (密室: `meta.askHer` names the module's tap) — 问询 goes to her with the room's
   // rules and where he stands, never to Ling for the scenery again (Hanli 10-27: 问询 twice, only the room re-described).
   const herAsk = g?.mod?.meta?.askHer?.(g.state);
   const about = own ? null : herAsk ? { label: ctx.words.about, g: herAsk, gfor: id } : { label: ctx.words.about, ask: true, say: ask };
-  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${own && !leaveBtn ? '' : acts([leaveBtn, about])}</div>`;
+  // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
+  // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever. Its way out
+  // and its 问询 are the bar's icons, top right (Hanli 10-27: 「收手按钮改成右上的关闭icon button吧」「问询改成右上的icon
+  // button也, 全局统一改」): ✕ puts it down (收手) or, once stuck, goes on (算了); ? asks — nothing under the board.
+  const tools = {
+    ask: !about ? '' : about.g ? toolHtml('ask', about.label, `data-g="${esc(about.g)}" data-gfor="${esc(about.gfor)}"`) : toolHtml('ask', about.label, askAttr(about.say)),
+    close: leaveBtn ? toolHtml('close', leaveBtn.label, `data-board-leave="${esc(id)}"`) : skips ? skipBoard(g, id, ctx, { icon: true }) : '',
+  };
+  const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod), ...tools,
+    how: forInput(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
+    body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` })
+    // 炼丹's herbs (board.js) wear the same shell, its 🔊 with it (Hanli 10-26: every board has both); its tiles as ever.
+    : body === '' ? frameHtml({ id, title, lang: ctx.lang, ...tools, body: boardHtml(g, ctx.words) }) : null;
+  const tall = framed && tallStyle(g.mod) ? ` style="${tallStyle(g.mod)}"` : '';
+  // Not in play (loading, done, kept, shut): no shell, so the words stay under the card as before.
+  const under = framed ? '' : `${skips ? skipBoard(g, id, ctx) : ''}${own && !leaveBtn ? '' : acts([leaveBtn, about])}`;
+  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${under}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.
@@ -948,15 +954,18 @@ function taleBody(st, ctx) {
 /// slot under the board stands empty until then, and the page fills it when the gate opens.
 /// Leaving pays nothing (rules/skips.mjs). Outside the [data-game] host, so a live game's
 /// repaint never takes it away. Modules draw no skip of their own.
-export function skipBoard(g, id, ctx, { always = false } = {}) {
+export function skipBoard(g, id, ctx, { always = false, icon = false } = {}) {
   if (!g?.mod || g.state?.won || g.skipped) return '';
   const now = Date.now();
   stampShown(g, now);
   // A board he took up by choice (a 传闻's step) shows its way out from the first moment (Hanli 10-27: 「确保都能跳过去」);
-  // the story's own keep the stuck gate (「玩家卡住了才显示」, 10-15).
-  return `<div class="acts gskip" data-skip-slot="${esc(id)}">${always || stuckNow(g, now) ? skipButton(id, ctx.lang) : ''}</div>`;
+  // the story's own keep the stuck gate (「玩家卡住了才显示」, 10-15). In a shell's bar (`icon`) the slot is the ✕.
+  const btn = always || stuckNow(g, now) ? skipButton(id, ctx.lang, icon) : '';
+  return icon ? `<span data-skip-slot="${esc(id)}" data-skip-icon>${btn}</span>` : `<div class="acts gskip" data-skip-slot="${esc(id)}">${btn}</div>`;
 }
-export const skipButton = (id, lang) => `<button class="act quiet" data-game-skip="${esc(id)}">${esc(SKIP[lang] ?? SKIP.zh)}</button>`;
+/* 「算了，往下走」: a quiet word under a board, or the shell bar's ✕ with it as its title (`icon`). */
+export const skipButton = (id, lang, icon = false) => (icon ? toolHtml('close', SKIP[lang] ?? SKIP.zh, `data-game-skip="${esc(id)}"`)
+  : `<button class="act quiet" data-game-skip="${esc(id)}">${esc(SKIP[lang] ?? SKIP.zh)}</button>`);
 
 /// A board left on an earlier day, offered again by itself once the stage is idle (Look's
 /// `replay`, rules/skips.mjs — Hanli: 「最好后面能自动触发重玩」): the world's line, and 再试一回 /

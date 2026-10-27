@@ -130,7 +130,7 @@ test('every story board\'s game can open the stuck gate (the clock, or its own s
   assert.deepEqual(shut, []);
 });
 
-test('the card draws the way out for every kind of board: the stuck slot under the story\'s own, 收手 under his', async () => {
+test('the card draws the way out for every kind of board, as the shell bar\'s ✕: the stuck slot on the story\'s own, 收手 on his', async () => {
   const kinds = [...new Set(boardTasks.map((t) => t.game).filter((g) => g && fs.existsSync(gameFile(g))))].sort();
   assert.ok(kinds.includes('jinchat') && kinds.includes('qimai') && kinds.includes('shouqiang'));
   for (const game of kinds) {
@@ -143,8 +143,11 @@ test('the card draws the way out for every kind of board: the stuck slot under t
       look: { tasks: [{ id, kind: 'board', game, title: game, ...(own ? {} : { leave: true }) }], scene: own ? { show: [{ card: 'board', id }] } : { show: [] } } });
     const own = cardHtml({ card: 'board', id }, page(true));
     assert.match(own, new RegExp(`class="gshell[^"]*" data-shell="${id}"`), `${game}: the shell's frame (its 🔊)`);
-    assert.match(own, new RegExp(`data-skip-slot="${id}"`), `${game}: the story's own board keeps the stuck slot`);
-    assert.match(own, new RegExp(`data-game-skip="${id}"`), `${game}: stuck, 「算了，往下走」 is drawn`);
-    assert.match(cardHtml({ card: 'board', id }, page(false)), new RegExp(`data-board-leave="${id}"[^>]*>收手<`), `${game}: his board offers 收手`);
+    // The way out is the shell bar's ✕, last at the far right (Hanli 10-27: 「收手按钮改成右上的关闭icon button吧」).
+    const bar = (html) => html.slice(html.indexOf('<div class="gshell-tools">'), html.indexOf('</header>'));
+    assert.match(bar(own), new RegExp(`<span data-skip-slot="${id}" data-skip-icon><button[^>]*class="gshell-btn gshell-close" title="算了，往下走"[^>]*data-game-skip="${id}">✕</button></span></div>`), `${game}: stuck, the story's own board's ✕ goes on (「算了，往下走」)`);
+    const his = cardHtml({ card: 'board', id }, page(false));
+    assert.match(bar(his), new RegExp(`class="gshell-btn gshell-close" title="收手" aria-label="收手" data-board-leave="${id}">✕</button></div>`), `${game}: his board's ✕ is 收手`);
+    assert.doesNotMatch(his, />收手<|>问询<|class="acts gskip"/, `${game}: no words under the board`);
   }
 });

@@ -560,6 +560,8 @@
 
 /* Mounted in a game's shell (games/kapai.js): paused, the hand is put away — the room stands still under the veil. */
 .gshell.is-paused .battle .bdock { visibility: hidden; }
+/* In the shell, 认输 and 怎么玩 are the bar's ✕ and ? (lingjing.js paintFight): the room's own pair steps aside. */
+.gshell:has(> .gshell-bar [data-fight-tap]) .btop :is(.bquit, .bhelpbtn) { display: none; }
 
 /* The story's room in the shell (lingjing.js paintFight; Hanli 10-22: 「故事里的对战迁移可以开」): the frame takes the
    focus column whole, as the room did — the bar over it, the room under it to the foot; on a phone the how-to line

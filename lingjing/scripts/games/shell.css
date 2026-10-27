@@ -15,6 +15,11 @@
 .gshell-btn.is-main { border-color: var(--seal); background: var(--seal); color: #fff; }
 .gshell-pause { padding: 4px 0; width: 32px; font-size: 12px; }
 .gshell-mute { padding: 4px 0; width: 32px; font-size: 15px; line-height: 1; }
+/* The bar's ? (问询) and ✕ (收手 · 算了 · 认输): the same round icon as 🔊 and Ⅱ, ✕ last (shell.js toolHtml). */
+.gshell-ask, .gshell-close { padding: 4px 0; width: 32px; font-size: 14px; font-weight: 600; line-height: 1; color: var(--dim); }
+.gshell-ask:hover, .gshell-close:hover { color: var(--text); }
+.gshell-close:hover { border-color: var(--seal); color: var(--seal); }
+.gshell-tools > [data-skip-slot] { display: contents; }
 
 .gshell-stage { position: relative; }
 .gshell-layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; }

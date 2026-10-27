@@ -58,14 +58,23 @@ export const tallOf = (mod) => Boolean(mod?.meta?.tall);
     stage's height, plus what the game sets `beside` its field. Empty for a game that does not play tall. */
 export const tallStyle = (mod) => (tallOf(mod) ? `--ar:${Number(mod.meta.aspect) || 9 / 16};--beside:${Number(mod.meta.beside) || 0}px` : '');
 
+/** The bar's two words as icons (Hanli 10-27: 「收手按钮改成右上的关闭icon button吧」「问询改成右上的icon button也, 全局统一改」):
+    `kind` 'ask' (?) or 'close' (✕), its word as title and aria-label, and `attrs` — the host's own route on it
+    (the story's `data-board-leave`, `data-ask` …), so the page hears the tap as it heard the text button. */
+export const TOOL_GLYPH = { ask: '?', close: '✕' };
+export const toolHtml = (kind, label, attrs = '') =>
+  `<button type="button" class="gshell-btn gshell-${kind}" title="${plain(label)}" aria-label="${plain(label)}" ${attrs}>${TOOL_GLYPH[kind]}</button>`;
+
 /** The shell around a game's body. `body` is the game's own node as HTML (its [data-game] / [data-mount]
-    host or a slot) and stays exactly as given. `timed`: the game runs in time, so it can be paused. */
-export function frameHtml({ id, title = '', kind = '', how = '', body = '', timed = false, lang = 'zh', tall = false } = {}) {
+    host or a slot) and stays exactly as given. `timed`: the game runs in time, so it can be paused.
+    `ask` and `close`: the host's own buttons for the bar (toolHtml, or a slot that fills with one), laid in the one
+    order every board keeps — ? · 🔊 · Ⅱ · ✕, the way out last at the far right. */
+export function frameHtml({ id, title = '', kind = '', how = '', body = '', timed = false, lang = 'zh', tall = false, ask = '', close = '' } = {}) {
   const w = words(lang), s = store.get(id);
   const pause = timed ? `<button type="button" class="gshell-btn gshell-pause" data-shell-pause="${plain(id)}" aria-pressed="${s?.paused ? 'true' : 'false'}" aria-label="${plain(s?.paused ? w.resume : w.pause)}">${s?.paused ? '▶' : 'Ⅱ'}</button>` : '';
   return `<section class="gshell${tall ? ' is-tall' : ''}${s?.paused ? ' is-paused' : ''}" data-shell="${plain(id)}">`
     + `<header class="gshell-bar"><div class="gshell-name"><b class="gshell-title">${plain(title)}</b>${kind ? `<em class="gshell-kind">${plain(kind)}</em>` : ''}</div>`
-    + `<div class="gshell-tools">${muteHtml(lang)}${pause}</div>${how ? `<p class="gshell-how">${plain(how)}</p>` : ''}</header>`
+    + `<div class="gshell-tools">${ask}${muteHtml(lang)}${pause}${close}</div>${how ? `<p class="gshell-how">${plain(how)}</p>` : ''}</header>`
     + `<div class="gshell-stage">${body}<div class="gshell-layer">${layerHtml(id, lang)}</div></div>`
     + `<footer class="gshell-foot">${footHtml(id, lang)}</footer></section>`;
 }

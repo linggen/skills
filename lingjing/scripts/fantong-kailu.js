@@ -4,8 +4,7 @@
 // laid into whatever host `[data-ft-kailu]` the redraw made (beat-host.js's way). The game feeds through
 // `feed(ids, lingshi, press)` — the page's `fantong feed`, the rules' roll — and shows what comes back; after 收下 it
 // comes up again on the brief that feed answered with (full, until the cooldown is over). Nothing here knows the rules.
-import { esc } from './esc.js';
-import { forget, frameHtml, shellFor } from './games/shell.js';
+import { forget, frameHtml, shellFor, toolHtml } from './games/shell.js';
 
 export const KAILU_SHELL = 'fantong-kailu';
 const BACK = { zh: '回储物袋', en: 'Back to the pouch' };
@@ -20,11 +19,12 @@ const HOW = {
   en: 'Drag up to three things into its mouth, add spirit stones if you like. As it chews the lid puffs red and gold — press it down on a gold puff to lift the grade a notch.',
 };
 
-/** The pane: back to the pouch, then the shell round an empty host the live game is laid into. */
+/** The pane: the shell round an empty host the live game is laid into; back to the pouch is the bar's ✕, as every
+    board's way out is (Hanli 10-27: 「全局统一改」). */
 export function kailuPaneHtml(lang = 'zh') {
   const L = lang === 'en' ? 'en' : 'zh';
-  return `<button class="act quiet pback" data-pouch-pane="">${esc(BACK[L])}</button><section class="psec ftong kailu" style="--game-reserve:230px">`
-    + frameHtml({ id: KAILU_SHELL, title: NAME[L], how: HOW[L], body: '<div class="gshell-slot" data-ft-kailu></div>', timed: false, lang: L })
+  return `<section class="psec ftong kailu" style="--game-reserve:230px">`
+    + frameHtml({ id: KAILU_SHELL, title: NAME[L], how: HOW[L], body: '<div class="gshell-slot" data-ft-kailu></div>', timed: false, lang: L, close: toolHtml('close', BACK[L], 'data-pouch-pane=""') })
     + '</section>';
 }
 
