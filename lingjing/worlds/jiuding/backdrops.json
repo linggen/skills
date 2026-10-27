@@ -270,6 +270,106 @@
    "indoor": false,
    "day": "art/places/dukou.webp"
   },
+  "sishui": {
+   "at": "sishui",
+   "indoor": false,
+   "day": "art/places/sishui.webp"
+  },
+  "sibei": {
+   "at": "sibei",
+   "indoor": false,
+   "day": "art/places/sibei.webp"
+  },
+  "pengcheng": {
+   "at": "pengcheng",
+   "indoor": false,
+   "day": "art/places/pengcheng.webp"
+  },
+  "yunlong": {
+   "at": "yunlong",
+   "indoor": false,
+   "day": "art/places/yunlong.webp"
+  },
+  "huaidu": {
+   "at": "huaidu",
+   "indoor": false,
+   "day": "art/places/huaidu.webp"
+  },
+  "yiqiao": {
+   "at": "yiqiao",
+   "indoor": false,
+   "day": "art/places/yiqiao.webp"
+  },
+  "sikou": {
+   "at": "sikou",
+   "indoor": false,
+   "day": "art/places/sikou.webp"
+  },
+  "lvliang": {
+   "at": "lvliang",
+   "indoor": false,
+   "day": "art/places/lvliang.webp"
+  },
+  "peize": {
+   "at": "peize",
+   "indoor": false,
+   "day": "art/places/peize.webp"
+  },
+  "weishan": {
+   "at": "weishan",
+   "indoor": false,
+   "day": "art/places/weishan.webp"
+  },
+  "xushan": {
+   "at": "xushan",
+   "indoor": false,
+   "day": "art/places/xushan.webp"
+  },
+  "daye": {
+   "at": "daye",
+   "indoor": false,
+   "day": "art/places/daye.webp"
+  },
+  "fuli": {
+   "at": "fuli",
+   "indoor": false,
+   "day": "art/places/fuli.webp"
+  },
+  "kongsang": {
+   "at": "kongsang",
+   "indoor": false,
+   "day": "art/places/kongsang.webp"
+  },
+  "siyuan": {
+   "at": "siyuan",
+   "indoor": false,
+   "day": "art/places/siyuan.webp"
+  },
+  "shanlu": {
+   "at": "shanlu",
+   "indoor": false,
+   "day": "art/places/shanlu.webp"
+  },
+  "fangshi": {
+   "at": "fangshi",
+   "indoor": false,
+   "day": "art/places/fangshi.webp"
+  },
+  "cangjing": {
+   "at": "cangjing",
+   "indoor": true,
+   "day": "art/places/cangjing.webp"
+  },
+  "fantang": {
+   "at": "fantang",
+   "indoor": true,
+   "day": "art/places/fantang.webp"
+  },
+  "zhishi": {
+   "at": "zhishi",
+   "indoor": true,
+   "day": "art/places/zhishi.webp"
+  },
   "jin-track": {
    "scape": [
     "track"

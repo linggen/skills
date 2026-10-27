@@ -59,6 +59,26 @@ KEPT = {
     'jin-night': {'seed': 11, 'round': 'r1', 'night': True},
     # r2 (2026-10-27, the places with no painting; picked by the builder's coordinator for Hanli): 渡口 first.
     'dukou': {'seed': 47, 'round': 'r2'},
+    'pengcheng': {'seed': 23, 'round': 'r2'},
+    'sishui': {'seed': 11, 'round': 'r2'},
+    'sibei': {'seed': 11, 'round': 'r2'},
+    'yunlong': {'seed': 11, 'round': 'r2'},
+    'huaidu': {'seed': 11, 'round': 'r2'},
+    'yiqiao': {'seed': 11, 'round': 'r2'},
+    'sikou': {'seed': 11, 'round': 'r2'},
+    'lvliang': {'seed': 11, 'round': 'r2'},
+    'peize': {'seed': 11, 'round': 'r2'},
+    'weishan': {'seed': 11, 'round': 'r2'},
+    'xushan': {'seed': 11, 'round': 'r2'},
+    'daye': {'seed': 11, 'round': 'r2'},
+    'fuli': {'seed': 11, 'round': 'r2'},
+    'kongsang': {'seed': 11, 'round': 'r2'},
+    'siyuan': {'seed': 11, 'round': 'r2'},
+    'shanlu': {'seed': 11, 'round': 'r2'},
+    'fangshi': {'seed': 11, 'round': 'r2'},
+    'cangjing': {'seed': 11, 'round': 'r2'},
+    'fantang': {'seed': 11, 'round': 'r2'},
+    'zhishi': {'seed': 11, 'round': 'r2'},
 }
 
 import argparse, json, os, subprocess, time

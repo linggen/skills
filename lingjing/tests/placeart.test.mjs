@@ -83,3 +83,17 @@ test('卷一: every scene stands at a painted place, and every painting is on di
   assert.equal(at('shimen', '沉鼎秘境 · 石室'), 'mijing-shishi');
   assert.equal(placeArtOf(tb, { scape: 'dark' }, true).night, true, '古籍部 at night is the night painting');
 });
+
+// 卷一's own province (Hanli 10-27 at 渡口: 「背景图片啥的不太匹配吧」 — the place had none, the 节气's autumn wood stood in):
+// every place of 徐 has its own painting, and the file is there.
+test('every place of 徐 has a painting of its own, on disk', async () => {
+  const fs = await import('node:fs');
+  const dir = new URL('../worlds/jiuding/', import.meta.url);
+  const backdrops = JSON.parse(fs.readFileSync(new URL('backdrops.json', dir), 'utf8'));
+  const xu = JSON.parse(fs.readFileSync(new URL('places/xu.json', dir), 'utf8'));
+  for (const p of xu.places) {
+    const art = placeArtOf(backdrops, { at: p.id, name: '' });
+    assert.ok(art, `${p.id} has no painting`);
+    assert.ok(fs.existsSync(new URL(art.src, dir)), `${p.id}: ${art.src} missing`);
+  }
+});
