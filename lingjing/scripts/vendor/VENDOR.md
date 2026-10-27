@@ -96,3 +96,11 @@ first, copy the same four files, update this table.
 ## 施法特写's 3D close-up — gone 2026-10-27
 
 three.js and three-vrm left with the 3D look (Hanli 10-21: 「3D的直接不用就行了」); 施法特写 plays its ink look only.
+
+## 抚琴 (games/fuqin.js) — rules ported, nothing vendored
+
+No upstream file is copied. `games/fuqin.js` ports the osu!mania ruleset's rules into its own code: hit windows by OD
+(`ManiaHitWindows.cs`), ordered hits, hold head · body · tail with the 1.5× release lenience (`TailNote.cs`,
+`DrawableHoldNote*.cs`), the health table (`ManiaHealthProcessor.cs`) and accuracy. Source: osu! by ppy Pty Ltd,
+github.com/ppy/osu, MIT; the licence text is `games/fuqin/LICENSE`, the credit is in the module's header. No osu! asset
+(osu-resources: skins, sounds, beatmaps) is used. Read on 2026-10-27.

@@ -239,8 +239,10 @@ note and costs the gauge (Piano Tiles' white tile, softened), so mashing loses.
   MIT code from osu-web plus a CC BY-NC licence and © ppy media — and osu!standard circles, not lanes); spacetme/bms (no licence);
   bemuse (AGPL) and Rhythm-Plus (GPL) — out. No mature Piano Tiles clone under MIT/Apache exists (316k/tap-the-black-tiles MIT 6★,
   cirocosta/react-piano-tiles MIT, stale since 2017).
-- **Tunes, public domain, in 简谱 per level** (`games.json` row `fuqin`, `levels[].tune`): 茉莉花 (江苏民歌), 送别 (J. P. Ordway 1851,
-  words 李叔同 1915). Tones are ZzFX plucks per pitch (`sounds.json` `qin.<midi>`, the `tiles` kit, no bed; a low drone on each
+- **Tunes, public domain, in 简谱 per level** (`games.json` row `fuqin`, `levels[].tune`): 茉莉花 (江苏民歌; checked bar by bar against
+  the F-major score at trillian.mit.edu/~jc/music/abc/China/JasmineFlower_F.abc, its one 2/4 bar kept, the drone following the
+  tune's own bar lines), 送别 (J. P. Ordway 1851, words 李叔同 1915). ↺ plays the tune from the top; a snapped string (the gauge
+  at zero) does the same under the shell's lead card. Tones are ZzFX plucks per pitch (`sounds.json` `qin.<midi>`, the `tiles` kit, no bed; a low drone on each
   bar). Ladder: 茉莉花 · 一句 (60 bpm, taps only, wide windows) → 茉莉花 (holds) → 送别 → 茉莉花 · 快板 (104 bpm).
 - **Art** (tools/paint-games.py, `fuqin/*`): a moonlit lake from a pavilion, black-lacquer keys with gold rims, a rosewood
   bridge (琴码) as the line, a plum blossom where a key is struck.

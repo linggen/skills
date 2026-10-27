@@ -70,9 +70,10 @@ const SCALE = [0, 2, 4, 5, 7, 9, 11]; // 1–7 in a major key
 /** A tune in 简谱 → [{ beat, len, midi }] (rests dropped). Throws on a token it cannot read. */
 export function readTune(text, key = 65) {
   const out = [];
+  out.bars = [0]; // the beat each bar starts on (its | marks): a tune may change metre (茉莉花's one 2/4 bar)
   let beat = 0, last = null;
   for (const tok of String(text ?? '').split(/\s+/).filter(Boolean)) {
-    if (tok === '|') continue;
+    if (tok === '|') { out.bars.push(beat); continue; }
     if (tok === '-') { if (!last) throw new Error('fuqin tune: "-" with no note before it'); last.len += 1; beat += 1; continue; }
     // a beamed group ("3_5_", "6_1'_") is its notes written together
     const parts = [...tok.matchAll(/([0-7])([',]*)(_*)(\.?)/g)];
@@ -123,13 +124,14 @@ export function chartOf(level) {
     return { i, t: Math.round(t), end: Math.round(end), hold, lane, midi: n.midi };
   });
 }
-/** Each bar's first beat while the tune plays (the drone). */
+/** Each bar's first beat while the tune plays (the drone): the tune's own bar lines, else every `meter` beats. */
 export function barsOf(level, notes) {
   if (level.drone == null || !notes.length) return [];
-  const beatMs = 60000 / (Number(level.bpm) || 72), bar = beatMs * (Number(level.meter) || 4);
-  const out = [], first = notes[0].t, lastT = Math.max(...notes.map((n) => n.end));
-  for (let t = first; t <= lastT; t += bar) out.push(Math.round(t));
-  return out;
+  const beatMs = 60000 / (Number(level.bpm) || 72), start = (Number(level.fall) || 2000) + LEAD_MS;
+  const lastBeat = (Math.max(...notes.map((n) => n.end)) - start) / beatMs;
+  const marked = readTune(level.tune, level.key ?? 65).bars;
+  const beats = marked.length > 1 ? marked : [...Array(Math.ceil(lastBeat / (Number(level.meter) || 4)) + 1).keys()].map((k) => k * (Number(level.meter) || 4));
+  return beats.filter((b) => b <= lastBeat).map((b) => Math.round(start + b * beatMs));
 }
 
 /* ── The model ──────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -160,6 +162,8 @@ export const meta = {
     en: 'Strike a lane as its key reaches the bridge (D F J K, or tap it); hold a long key to its end. Each key is the next note of the tune.',
   },
   keys: { d: 0, f: 1, j: 2, k: 3 },
+  // ↺ in the shell's bar (games/shell.js restartOf): the tune from the top, once it has begun
+  restart: (s) => Boolean(s?.live && s.phase === 'play' && s.clock > 0),
 };
 
 /** A fresh run of `deal.levels[0]` (or `deal.level` itself). */
@@ -434,9 +438,11 @@ export async function mount(container, opts = {}) {
     // the tune's name and the run's count
     cx.textBaseline = 'top';
     cx.font = '600 15px "Songti SC", "Noto Serif SC", serif'; cx.fillStyle = 'rgba(46,32,20,.9)'; cx.textAlign = 'left';
-    cx.fillText(tr(s.level.title, lang), SIDE, 28);
+    cx.lineWidth = 4; cx.lineJoin = 'round'; cx.strokeStyle = 'rgba(240,230,206,.85)'; // paper round the ink: it reads over a branch or a key
+    cx.strokeText(tr(s.level.title, lang), SIDE, 28); cx.fillText(tr(s.level.title, lang), SIDE, 28);
     cx.textAlign = 'right'; cx.font = '13px "Songti SC", "Noto Serif SC", serif';
-    cx.fillText(`${t.acc} ${(accOf(s) * 100).toFixed(1)}%`, W - SIDE, 30);
+    const acc = `${t.acc} ${(accOf(s) * 100).toFixed(1)}%`;
+    cx.strokeText(acc, W - SIDE, 30); cx.fillText(acc, W - SIDE, 30);
     if (s.combo >= 3) {
       cx.textAlign = 'center'; cx.fillStyle = 'rgba(46,32,20,.22)'; cx.font = '700 64px "Songti SC", "Noto Serif SC", serif';
       cx.fillText(String(s.combo), W / 2, 170);
@@ -470,6 +476,7 @@ export async function mount(container, opts = {}) {
     return g;
   }
 
+  const fingers = new Map(); // pointerId → lane
   return new Promise((resolve) => {
     let done = false, raf = 0, prev = win.performance.now();
     const off = [];
@@ -481,6 +488,9 @@ export async function mount(container, opts = {}) {
     const press = (lane, stamp) => { fx.glow[lane] = s.clock; act(s, { g: 'press', lane, at: at(stamp) }); hear(); };
     const release = (lane, stamp) => { act(s, { g: 'release', lane, at: at(stamp) }); hear(); };
     let again = null;
+    // the tune from the top: ↺, or a string snapped
+    const anew = () => { s = act(s, { g: 'restart' }).state; gaps.clear(); fx.blooms = []; fx.word = null; fingers.clear(); prev = win.performance.now(); };
+    const restartBtn = () => host.closest('.gshell')?.querySelector(':scope > .gshell-bar [data-g="restart"]');
     const frame = (now) => {
       if (done) return;
       const dt = Math.min(100, now - prev);
@@ -490,6 +500,9 @@ export async function mount(container, opts = {}) {
         hear();
       }
       draw();
+      const can = meta.restart(s) && !again;
+      const rb = restartBtn(); // the shell may paint its bar again: set it each frame, not once
+      if (rb && rb.disabled === can) rb.disabled = !can;
       if (s.phase === 'won') {
         done = true; win.cancelAnimationFrame(raf); off.forEach((f) => f());
         const next = place < ladder.length ? place + 1 : null;
@@ -500,12 +513,17 @@ export async function mount(container, opts = {}) {
       if (s.phase === 'failed' && !again) {
         // a string snaps: the tune from the top, under the shell's lead card (a story board never settles a loss)
         again = (shell?.lead ? shell.lead(t.again, { count: true, lang, reducedMotion: still }) : new Promise((r) => win.setTimeout(r, 1500)))
-          .then(() => { s = act(s, { g: 'restart' }).state; gaps.clear(); fx.blooms = []; fx.word = null; again = null; prev = win.performance.now(); });
+          .then(() => { anew(); again = null; });
       }
       raf = win.requestAnimationFrame(frame);
     };
     const laneAt = (e) => { const r = box.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * W; return Math.max(0, Math.min(LANES - 1, Math.floor((x - SIDE) / laneW))); };
-    const fingers = new Map(); // pointerId → lane
+    on(doc, 'click', (e) => {
+      const b = e.target.closest?.('.gshell-bar [data-g="restart"]');
+      if (!b || b !== restartBtn() || b.disabled || paused() || again) return;
+      e.preventDefault();
+      anew();
+    });
     on(box, 'pointerdown', (e) => {
       if ((e.pointerType === 'mouse' && e.button !== 0) || paused() || again) return;
       e.preventDefault();
@@ -529,7 +547,8 @@ export async function mount(container, opts = {}) {
     });
     on(doc, 'keyup', (e) => { const lane = laneOfKey(e); if (lane == null || !s.down[lane]) return; e.preventDefault(); release(lane, e.timeStamp); });
     on(win, 'blur', () => { for (let k = 0; k < LANES; k += 1) if (s.down[k]) release(k); });
-    shell?.onPause?.((p) => { if (p) for (let k = 0; k < LANES; k += 1) if (s.down[k]) release(k); });
+    const unPause = shell?.onPause?.((p) => { if (p) for (let k = 0; k < LANES; k += 1) if (s.down[k]) release(k); });
+    if (typeof unPause === 'function') off.push(unPause);
     if (signal) {
       if (signal.aborted) return finish({ won: false, left: true });
       signal.addEventListener('abort', () => finish({ won: false, left: true }), { once: true });
