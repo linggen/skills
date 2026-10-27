@@ -26,7 +26,7 @@
 // Pure model (newGame / act / tick: the bots and tests); the page is `mount` (its own frame loop, pointer and Space).
 import { forInput } from './kit/device.js';
 
-export const TILE = 20;
+export const TILE = 28; // a cube a little over a tenth of the view: the things read at a glance (10-27 live: 20 was too small)
 const K = TILE / 16; // famidash's 16 px tile → ours
 export const SPEEDS = { slow: 85.78125 * K, half: 133.8912134 * K, normal: 166.0181582 * K, double: 206.4516129 * K, triple: 249.5126706 * K };
 export const JUMP = 333.75 * K; //      JUMP_VEL (u/s, up)
@@ -42,7 +42,7 @@ const SPIKE_BOX = { w: 0.36 * TILE, h: 0.55 * TILE }; // a spike's hitbox, centr
 
 export const W = 360;
 export const H = 200;
-export const GROUND = 158; //            the ground's top on the screen
+export const GROUND = 160; //            the ground's top on the screen
 export const RX = 96; //                 where the runner stands on the screen; the world scrolls under it
 
 export const meta = {

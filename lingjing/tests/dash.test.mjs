@@ -26,7 +26,7 @@ const perfect = (s) => bot(s, { lead: 0 });
 const flat = (things, extra = {}) => ({ id: 't', speed: 'normal', bpm: 120, len: 24, things, ...extra });
 
 test('famidash\'s cube, on our 20-unit tile: its speeds, jump, gravity, fall cap, pad and orb, a 15/16-tile cube', () => {
-  const k = 20 / 16;
+  const k = d.TILE / 16;
   assert.equal(d.SPEEDS.normal, 166.0181582 * k);
   assert.equal(d.JUMP, 333.75 * k);
   assert.equal(d.GRAV, 1504.6875 * k);
