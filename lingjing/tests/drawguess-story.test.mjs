@@ -153,16 +153,21 @@ test('本王考考你: each round counted as it begins, three a calendar day (`p
   // Two more rounds (one lost, never won) and the day is spent.
   s = ok(VERBS.kao(s, content, at(now), { action: 'open' }));
   assert.ok(kaoRow(s, now)?.open, 'a round under way stands');
-  s = ok(VERBS.kao(s, content, at(now), { action: 'open' }));
+  // The page reloaded mid-round: `open` again resumes it — the same word, nothing counted (Hanli 10-27: 「不能开始」).
+  const resumed = VERBS.kao(s, content, at(now), { action: 'open' });
+  assert.equal(resumed.state, null);
+  assert.equal(resumed.result.resumed, true);
+  assert.equal(resumed.result.word.zh, s.kao.open.word);
+  s = ok(VERBS.kao(s, content, at(now), { action: 'open', next: 1 }));
   assert.ok(kaoRow(s, now), 'the third, open, still stands');
-  const capped = VERBS.kao(s, content, at(now), { action: 'open' }).result;
+  const capped = VERBS.kao(s, content, at(now), { action: 'open', next: 1 }).result;
   assert.equal(capped.refused, 'cap');
   assert.notEqual(s.kao.drawn[1], first, 'never the same word twice a day');
   assert.equal(content.tasks.tasks.find((t) => t.kao).per_day, 3, 'the allowance is `per_day`');
   assert.equal(s.kao.day, dayKey(now), 'keyed by the calendar day');
   // Still capped later the same day; past midnight a fresh day's rounds (no night spans two days).
   const late = new Date(now); late.setHours(23, 50);
-  assert.equal(VERBS.kao(s, content, at(late), { action: 'open' }).result.refused, 'cap');
+  assert.equal(VERBS.kao(s, content, at(late), { action: 'open', next: 1 }).result.refused, 'cap');
   assert.equal(kaoRow({ ...s, kao: { ...s.kao, open: null } }, late), null, 'spent: not offered');
   const after = new Date(now); after.setDate(after.getDate() + 1); after.setHours(0, 10);
   assert.equal(kaoRow({ ...s, kao: { ...s.kao, open: null } }, after)?.left, 3, 'a new day: three again');
@@ -238,7 +243,7 @@ test('奇遇: forced on a 测试存档, it stands in the run\'s first room with 
   assert.equal(task(s, content, at(now), { action: 'done', id: 'qiyu-drawguess' }).result.ok, false);
 });
 
-test('the stage: 本王考考你 stands only on an empty stage (as 二十问), or while a round is under way', () => {
+test('the stage: 本王考考你 stands only on an empty stage (as 二十问); a round left open waits in the tray (继续), never standing by itself', () => {
   const s = past(), now = night();
   const lk = look(s, content, at(now));
   const cards = stageCards(lk);
@@ -247,7 +252,9 @@ test('the stage: 本王考考你 stands only on an empty stage (as 二十问), o
   const busy = { ...lk, scene: { ...(lk.scene ?? {}), panel: true } };
   assert.ok(!stageCards(busy).some((c) => c.card === 'board' && c.id === 'benwang-kao'), 'a scene\'s business first');
   const under = { ...busy, tasks: lk.tasks.map((t) => (t.id === 'benwang-kao' ? { ...t, open: true } : t)) };
-  if (lk.tasks.some((t) => t.id === 'benwang-kao')) assert.ok(stageCards(under).some((c) => c.card === 'board' && c.id === 'benwang-kao'), 'a round under way stands');
+  if (lk.tasks.some((t) => t.id === 'benwang-kao')) assert.ok(!stageCards(under).some((c) => c.card === 'board' && c.id === 'benwang-kao'), 'a round left open waits in the tray');
+  const emptyOpen = { ...lk, tasks: under.tasks };
+  if (lk.tasks.some((t) => t.id === 'benwang-kao')) assert.ok(!stageCards(emptyOpen).some((c) => c.card === 'board' && c.id === 'benwang-kao'), '…on an empty stage too (a reload)');
 });
 
 test('her presence at the 家信: asleep in the 木牌 through the 观, out that one night (wm-laoyin `final` wakes, wm-jiaxin `rest` sleeps)', () => {

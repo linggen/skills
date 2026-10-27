@@ -475,7 +475,9 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     await wake();
     // The rules may hand the round its word, and count it (本王考考你's night cap): refused, no round.
     if (typeof data.begin === 'function') {
-      const r = await Promise.resolve(data.begin()).catch((e) => ({ ok: false, say: String(e?.message ?? e) }));
+      // The mount's first round may resume one left open (a reload); every later one is a new round (`next`).
+      const r = await Promise.resolve(data.begin({ next: Boolean(g.begun) })).catch((e) => ({ ok: false, say: String(e?.message ?? e) }));
+      if (r?.ok) g.begun = true;
       if (!r?.ok) { foot(r?.say ?? ''); goBtn.disabled = Boolean(r?.done); return; }
       word = r.word ?? word;
     }
@@ -611,6 +613,9 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     g.rounds = await setOf(data);
     letter();
     let s;
+    // The game's chat may still be binding (the page just loaded: its session is resumed a beat after the board
+    // stands — Hanli 10-27, 「这里没有对话」 after a reload): wait for it a while before saying there is none.
+    if (!hostAsk && !data.seam) for (let t = 0; !sessionOf() && t < 40 && who === g.who; t += 1) await new Promise((r) => setTimeout(r, 400));
     try { s = await lookFirst(data.model ?? null, { seam: data.seam ?? null, sid: sessionOf(), host: Boolean(hostAsk) }); } catch (e) { s = { far: true, err: e }; }
     if (who !== g.who) return; // the guesser changed while this one was asked
     g.model = s.model?.id ?? null;

@@ -258,9 +258,12 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
   // 二十问 offered fills an empty stage beside the coins (rules/aigames.mjs): never over a scene's business.
   if (has('hexagram') && look.twenty && !look.twenty.open && !look.twenty.outcome && look.twenty.rounds_left) cards.push({ card: 'twenty' });
-  // 本王考考你 (rules/kao.mjs) is as light: offered only on an empty stage — or standing while a round is under way.
+  // 本王考考你 (rules/kao.mjs) is as light: offered only on an empty stage. A round left open (the page reloaded
+  // mid-round) never stands up by itself: it waits in the tray, 「继续」, for his tap (Hanli 10-27, as 兽潮 waits).
+  // (The 游戏厅's 试玩 — `arcade:<game>`, a test save's — is a light board standing open by design: it stands.)
   for (const b of (look.tasks ?? []).filter(t => t.light && t.kind === 'board' && t.status !== 'done' && !t.won)) {
-    if ((has('hexagram') || b.open) && !has('board', b.id)) cards.push({ card: 'board', id: b.id });
+    const arcade = String(b.id).startsWith('arcade:');
+    if (((has('hexagram') && !b.open) || (arcade && b.open)) && !has('board', b.id)) cards.push({ card: 'board', id: b.id });
   }
 
   if (!line) {

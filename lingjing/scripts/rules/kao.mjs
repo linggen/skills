@@ -65,10 +65,16 @@ export function kaoBrief(content, state, now) {
 }
 
 /* `kao open` — the page's tap as a round begins: counted, a game's 体力 spent, the word handed back. */
-function open(state, content, ctx) {
+function open(state, content, ctx, args = {}) {
   const t = kaoTask(content), lang = state.lang;
   if (!t || !kaoUp(content, state, ctx.now)) return refuse('not-here', null);
   const day = dayKey(ctx.now), k = today(state, ctx.now), cap = capOf(t);
+  // A round under way (the page reloaded mid-round, Hanli 10-27: 「不能开始」): the same word again, a fresh clock on
+  // the page — never another of the day's rounds counted, nor 体力 spent twice.
+  // `next`: the page's 下一题 after a round it ended unwon — that round is over, a new one begins.
+  const next = ['1', 'true', 1, true].includes(args.next);
+  const held = !next && k?.open?.word ? metWords(content).find(w => w.zh === k.open.word) : null;
+  if (held) return { state: null, result: { ok: true, opened: k.n, left: cap - k.n, word: held, resumed: true } };
   if ((k?.n ?? 0) >= cap) return refuse('cap', pick({ zh: `今天考够了（${cap} 回）。`, en: `Enough for today (${cap} rounds).` }, lang));
   const n = (k?.n ?? 0) + 1, word = nextWord(content, state, day, n);
   if (!word) return refuse('no-words', null);
@@ -101,7 +107,7 @@ export function kaoDone(state, content, ctx, id) {
 /* The verb: `kao open` (the page's), `kao info` (anyone's). */
 export function kao(state, content, ctx, args = {}) {
   const action = String(args.action ?? 'info');
-  if (action === 'open') return open(state, content, ctx);
+  if (action === 'open') return open(state, content, ctx, args);
   if (action === 'info') return { state: null, result: { ok: true, kao: kaoUp(content, state, ctx.now) ? kaoBrief(content, state, ctx.now) : null } };
   return refuse('unknown-action', null, { actions: ['open', 'info'] });
 }
