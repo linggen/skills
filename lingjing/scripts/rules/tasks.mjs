@@ -1,6 +1,6 @@
 // rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, 论道.
 // Part of the rules engine; rules.mjs is its one door.
-import { playCounted, playGrant } from './playpay.mjs';
+import { fightReplay, hauntPlayId, playCounted, playGrant } from './playpay.mjs';
 import { festivalDone } from './festival.mjs';
 import { climbWon } from './climb.mjs';
 import { battle } from '../battle.js';
@@ -19,7 +19,7 @@ import { stow, storedLine } from './pouch.mjs';
 import { laterBoard, leaveBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
 import { writeLedger } from './ledger.mjs';
-import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, sceneOf } from './world.mjs';
+import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, restAfter, sceneOf } from './world.mjs';
 import { runBoardHere, runFindDone, runSpoils } from './rerun.mjs';
 import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
@@ -362,7 +362,7 @@ export function duel(state, content, ctx, args) {
     // pick for the next door, as many as the bag holds (cards.mjs pouchFor).
     if (args.pills != null && !resuming) s.pill_pick = String(args.pills).split(',').map(x => x.trim()).filter(id => fightPill(content, id)).slice(0, POUCH_MAX);
     // A pool's matched beast (rules/match.mjs) stands through its own fight: the settle finds the same one.
-    s.duels = { ...s.duels, [key]: { day, outcome: 'open', ...(hunt ? { n, ...(today?.last ? { last: today.last } : {}), ...(today?.day === day && today.stand ? { stand: today.stand } : {}) } : {}) } };
+    s.duels = { ...s.duels, [key]: { day, outcome: 'open', ...(hunt ? { n, ...(today?.last ? { last: today.last } : {}), ...(today?.day === day && today.stand ? { stand: today.stand } : {}), ...(today?.day === day && today.streak ? { streak: today.streak } : {}) } : {}) } };
     // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
     // from the save, not from a message, because a message can be lost.
     s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString() };
@@ -384,7 +384,10 @@ export function duel(state, content, ctx, args) {
   // A loss costs nothing but the beast, gone for the day (伤势 was cut, redesign-v2 § 四).
   // A pool remembers the beast it dealt (world.mjs poolBeast: the last few stand down), and every
   // beast fought is the 图鉴's (state.beasts) — a first meeting, a first win, said on the result.
-  s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString(), last: rememberAt(content, today, creature.id, poolOf(content, placeOf(content, game.hunt))) } : {}) };
+  // A pool's wins in a row (world.mjs poolRestLeft): it rests only after `rest_after` of them; a run that reached it
+  // and rested begins again.
+  const streakWas = hunt && (today.streak ?? 0) < restAfter(content, placeOf(content, game.hunt)) ? today.streak ?? 0 : 0;
+  s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString(), streak: streakWas + (played.outcome === 'won' ? 1 : 0), last: rememberAt(content, today, creature.id, poolOf(content, placeOf(content, game.hunt))) } : {}) };
   const firsts = creature.person ? {} : meetBeast(s, creature.id, played.outcome === 'won', ctx.now);
   // 新 is gone once a card is played, win or lose (cards.mjs gainCard).
   unmark(s, played.log);
@@ -421,7 +424,11 @@ export function duel(state, content, ctx, args) {
   const card = pays ? winCard(content, s, creature, ctx.now) : null;
   if (card) dropped.push(card);
   const t = content.rewards.tables.haunt;
-  const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth }) : null;
+  // The same beast beaten again the same day pays the play rules' falling share (balance.json play_pay.replay:
+  // 100 · 50 · 10%) — a pool fought without end is never a farm (Hanli 2026-10-27).
+  const replay = haunt && pays ? fightReplay(content, s, creature.id, ctx.now) : 1;
+  const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth, share: replay }) : null;
+  if (haunt && pays) playCounted(s, hauntPlayId(creature.id), ctx.now);
   const full = storedLine(s, dropped);
   // Not won: what beat him, and the ways to grow stronger now (rules/strengthen.mjs) — facts for 银月's
   // word and the result card's one button (Hanli 2026-10-27: a loss never strands him).

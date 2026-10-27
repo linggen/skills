@@ -63,9 +63,11 @@ function amountsOf(content, state, now, grant) {
   // against the 练气一层 it was written for. Capped by its table as authored.
   const fight = grant.table === 'haunt' && grant.progress ? fightPlay(content, state) : null;
   const authored = fight ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table);
-  const want = Math.round(authored * speedOf(content, state));
+  // `share`: a replay's falling share (tasks.mjs duel, playpay.mjs fightReplay) — 修为 and 灵石 alike.
+  const share = grant.share ?? 1;
+  const want = Math.round(authored * speedOf(content, state) * share);
   const base = Math.max(0, want);
-  const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth)));
+  const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth) * share));
   return { base, progress: Math.round(base * payOf(content, state) * layerPayOf(content, state, grant.table)), wealth };
 }
 

@@ -364,10 +364,14 @@ const huntKey = id => `hunt:${id}`;
    `cooldowns.pool_rest_min`) after a win, then the next one comes. A loss or a beast run dry draws
    the next at once, as before. */
 const POOL_REST_MIN = 30;
+/* …but only after a few wins in a row (Hanli 2026-10-27: 「后山的怪可以加多谢么? 或者做成打不完的」): the pool's `rest_after`
+   (else balance.json `cooldowns.pool_rest_after`; 1, every win, when neither says) — `streak` counts them (tasks.mjs duel). */
+const restAfter = (content, place) => poolOf(content, place)?.rest_after ?? content.balance?.cooldowns?.pool_rest_after ?? 1;
 /* Milliseconds the stretch here still rests (0: a beast stands). */
 function poolRestLeft(content, state, place, now) {
   const rec = state.duels?.[huntKey(place.id)];
   if (!rec?.at || rec.outcome !== 'won' || rec.day !== dayKey(now)) return 0;
+  if ((rec.streak ?? 1) < restAfter(content, place)) return 0;
   const rest = (poolOf(content, place)?.rest ?? content.balance?.cooldowns?.pool_rest_min ?? POOL_REST_MIN) * 60000;
   return Math.max(0, Date.parse(rec.at) + rest - now.getTime());
 }
@@ -686,4 +690,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { restAfter, fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

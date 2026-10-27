@@ -320,9 +320,10 @@
     "good": 10,
     "best": 15
   },
-  "_cooldowns": "`pool_rest_min`: a pool beast beaten rests that long before the next stands (world.mjs poolResting; a pool may say its own `rest`). `rerun_h`: a 秘境's outer rooms open again that many hours after the last run ended (rules/rerun.mjs). `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs). `shouchao_h`: 兽潮 comes again that many hours after the last night counted, at any hour (rules/shouchao.mjs; 2026-10-26, replacing the 酉时 window: about once a day, a little slack so the same time tomorrow is open).",
+  "_cooldowns": "`pool_rest_min`: a pool rests that long before the next beast stands — only after `pool_rest_after` wins in a row (Hanli 2026-10-27: 「后山的怪可以加多谢么? 或者做成打不完的」: never after every fight; a pool may say its own `rest` and `rest_after`; world.mjs poolResting). A beast beaten again the same day pays play_pay.replay's falling share. `rerun_h`: a 秘境's outer rooms open again that many hours after the last run ended (rules/rerun.mjs). `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs). `shouchao_h`: 兽潮 comes again that many hours after the last night counted, at any hour (rules/shouchao.mjs; 2026-10-26, replacing the 酉时 window: about once a day, a little slack so the same time tomorrow is open).",
   "cooldowns": {
     "pool_rest_min": 30,
+    "pool_rest_after": 3,
     "rerun_h": 3,
     "fantong_min": 60,
     "shouchao_h": 20

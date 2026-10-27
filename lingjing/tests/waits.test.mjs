@@ -16,7 +16,7 @@ test('a pool at rest: on Look as a wait where he stands, in the world\'s words, 
   const jiScenes = Object.keys(content.chapters['01-ji'].scenes);
   const base = { ...newState(content, 'zh', NOW), chapter: '01-ji', scene: null, place: 'mengshan', tier: 'foundation', step: 0, progress: 0, wealth: 10,
     traits: ['wood', 'fire'], ended: ['00-prologue', '00-waimen', '00-zhuji', '01-ji'], done_scenes: jiScenes, stamina: 100, stamina_at: NOW.toISOString() };
-  const won = (ago) => ({ ...base, duels: { 'hunt:mengshan': { at: new Date(NOW.getTime() - ago * 60000).toISOString(), outcome: 'won', day: dayKey(NOW), n: 1 } } });
+  const won = (ago) => ({ ...base, duels: { 'hunt:mengshan': { at: new Date(NOW.getTime() - ago * 60000).toISOString(), outcome: 'won', day: dayKey(NOW), n: 1, streak: content.balance.cooldowns.pool_rest_after } } });
   const w = look(won(10), content, { now: NOW, quests: [] }).waits?.find((x) => x.id === 'pool:mengshan');
   assert.deepEqual(w, { id: 'pool:mengshan', title: '蒙山', shut: content.creatures.hunt.rest_say.zh, wait_min: content.balance.cooldowns.pool_rest_min - 10 });
   assert.equal(look(won(31), content, { now: NOW, quests: [] }).waits, undefined, 'rested: the beast stands, no wait');

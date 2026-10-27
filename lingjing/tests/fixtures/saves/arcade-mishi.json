@@ -65,6 +65,7 @@
     "outcome": "won",
     "n": 1,
     "at": "2026-10-01T01:00:00.000Z",
+    "streak": 1,
     "last": [
      "qiuyu"
     ]
@@ -1154,6 +1155,7 @@
     "kouzi-crowd": 1,
     "kouzi-ergou": 1,
     "shiting-fanban": 1,
+    "haunt:qiuyu": 1,
     "wangzuo-xiongya": 1,
     "mijing-zhenyan": 1,
     "xirang-yinshen": 1,

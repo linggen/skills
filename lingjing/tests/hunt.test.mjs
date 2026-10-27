@@ -98,9 +98,11 @@ test('a pool\'s beast is up where no scene runs, fought again and again: each se
     if (out.result.outcome === 'won') { wins += 1; assert.ok(out.result.paid, 'a win pays the haunt table'); }
     s = out.state;
     assert.equal(s.duels['hunt:mengshan'].n, k + 1, 'the next beast is drawn');
-    // A win leaves the stretch quiet for its rest (30 min): the beaten beast does not stand up again at once.
-    if (out.result.outcome === 'won') {
-      assert.equal(encounterOf(content, s, NOW), null, 'quiet right after a win');
+    // A few wins in a row leave the stretch quiet for its rest (30 min; balance.json cooldowns.pool_rest_after, Hanli
+    // 2026-10-27: 「做成打不完的」) — before that, the next beast stands at once.
+    if (out.result.outcome === 'won' && s.duels['hunt:mengshan'].streak < content.balance.cooldowns.pool_rest_after) assert.ok(encounterOf(content, s, NOW), 'a win short of the streak: the next stands');
+    if (out.result.outcome === 'won' && s.duels['hunt:mengshan'].streak >= content.balance.cooldowns.pool_rest_after) {
+      assert.equal(encounterOf(content, s, NOW), null, 'quiet after the streak');
       s = { ...s, duels: { ...s.duels, 'hunt:mengshan': { ...s.duels['hunt:mengshan'], at: new Date(NOW.getTime() - 31 * 60000).toISOString() } } };
     }
   }

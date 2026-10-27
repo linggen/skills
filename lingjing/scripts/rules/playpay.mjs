@@ -62,6 +62,14 @@ export function playGrant(content, state, id, task, now, stars = null) {
   return progress || wealth ? { table: 'play', progress, wealth, kind, minutes } : null;
 }
 
+/* A beast fought for pay at a haunt or a pool, counted as a board is (its id in `plays`). */
+export const hauntPlayId = cid => `haunt:${cid}`;
+/* The share a win over this beast pays today: play_pay.replay by how often it was paid today (1 where none is declared). */
+export function fightReplay(content, state, cid, now) {
+  const replay = content.balance?.play_pay?.replay ?? [1];
+  return replay[Math.min(playsToday(state, hauntPlayId(cid), now), replay.length - 1)];
+}
+
 /* Counted: one more play of this board today. */
 export function playCounted(state, id, now) {
   const day = dayKey(now);

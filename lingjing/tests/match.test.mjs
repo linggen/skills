@@ -80,3 +80,51 @@ test('「换一只」: another of the fitting set, free once a visit, then 体�
   assert.equal(reroll({ ...s, fight: { game: 'haunt:lang' } }, content, ctx).result.refused, 'in-a-fight');
   assert.equal(reroll({ ...s, place: 'zhishi' }, content, ctx).result.refused, 'no-pool');
 });
+
+/* A fight at the 后山 played out by the bot (`win`: a careful line, else passing every turn). */
+function fightThere(s, now, win) {
+  const ctx = { now, quests: [] }, id = encounterOf(content, s, now)?.game?.id;
+  assert.ok(id, 'a beast stands');
+  const started = duel(s, content, ctx, { id });
+  assert.equal(started.result.ok, true, JSON.stringify(started.result));
+  const st = begin(started.result.duel.setup, catalog), picks = [];
+  for (let g = 0; g < 400 && st.outcome === 'open'; g += 1) {
+    if (st.whose === 'foe') { foeTurn(st); continue; }
+    const a = win ? lookahead(st, { deep: true }) : { kind: 'end' };
+    act(st, a, 'you'); picks.push(tokenOf(a));
+  }
+  return duel(started.state, content, ctx, { id, picks: picks.join(',') });
+}
+import { lookahead } from '../scripts/fightline.js';
+import { tokenOf } from '../scripts/battle.js';
+
+test('never empty after one fight: the 后山 rests only after `pool_rest_after` wins in a row; a loss never rests it', () => {
+  const after = content.balance.cooldowns.pool_rest_after;
+  assert.ok(after >= 2, 'a few, never every win');
+  let s = standFit(content, at('strong'), NOW), now = NOW, wins = 0;
+  for (let k = 0; k < 12 && wins < after; k += 1) {
+    now = new Date(now.getTime() + 60_000);
+    const r = fightThere(standFit(content, s, now), now, true);
+    s = r.state;
+    if (r.result.outcome === 'won') wins += 1;
+    if (wins < after) assert.ok(encounterOf(content, standFit(content, s, now), now), `after ${wins} win(s) a beast still stands`);
+  }
+  assert.equal(wins, after);
+  assert.equal(encounterOf(content, s, now), null, 'the streak reached: the stretch rests ' + JSON.stringify(s.duels['hunt:houshan']));
+  // Rested, the next beast stands and the streak begins again.
+  const later = new Date(now.getTime() + content.balance.cooldowns.pool_rest_min * 60_000 + 1000);
+  assert.ok(encounterOf(content, standFit(content, s, later), later));
+});
+
+test('the same beast beaten again the same day pays the play rules\' falling share (100 · 50 · 10%)', async () => {
+  const { fightReplay, hauntPlayId } = await import('../scripts/rules/playpay.mjs');
+  const s = at('mid');
+  assert.equal(fightReplay(content, s, 'yezhu', NOW), 1);
+  const once = { ...s, plays: { day: '2026-09-29', ids: { [hauntPlayId('yezhu')]: 1 } } };
+  const twice = { ...s, plays: { day: '2026-09-29', ids: { [hauntPlayId('yezhu')]: 2 } } };
+  const day = (await import('../scripts/state.mjs')).dayKey(NOW);
+  for (const x of [once, twice]) x.plays.day = day;
+  assert.equal(fightReplay(content, once, 'yezhu', NOW), 0.5);
+  assert.equal(fightReplay(content, twice, 'yezhu', NOW), 0.1);
+  assert.equal(fightReplay(content, twice, 'lang', NOW), 1, 'another beast pays whole');
+});
