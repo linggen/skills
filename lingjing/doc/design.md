@@ -399,7 +399,7 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
   - `ladder.json` per line, and `state` holding a 修为/tier per line;
   - the bar reading `sideLineOf(look)`;
   - the numbers tool's master table taking the line as a parameter;
-  - 人间功课's line is still to be decided.
+  - 人间功课 pays the 古 line's 修为 (Hanli, 2026-10-27: 「算古线吧」), the main line.
 
 The world's nine realms and their names are story DESIGN § 道统 (补丁①).
 `ladder.json` says 合道 (Union with the Dao) · 归真 (Return to Truth) since
