@@ -120,8 +120,10 @@
     },
     {
       "id": "dabi-sneeze",
+      "_was": "时机 → 打地鼠 (2026-10-27, Hanli: 「游戏厅里都是经典游戏类型了吧, 还有你自己编的吗?」 — the last 时机 story board; sneeze.js stays a module the tests drive)",
       "kind": "board",
-      "game": "sneeze",
+      "game": "rain",
+      "how": {"zh": "何七的拳往哪儿来，就往哪儿让一步；拳没来的地方，白让。", "en": "Wherever He Qi's fist is coming, step aside there; where none is coming, the step is wasted."},
       "period": "once",
       "title": {
         "zh": "喷嚏符 · 让一拳",

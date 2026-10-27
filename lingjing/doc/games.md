@@ -185,6 +185,13 @@ apart). Painted catchers for the 打地鼠 ones (tools/paint-games.py `rain/*-ba
 | 接镜 | wm-jiejing | 时机 | 打地鼠 `jiejing` |
 | 风掉头 | wm-fengtou | 时机 | 打地鼠 `fengtou` (祁长松's openings for the pig; 气走经脉 until 10-27) |
 | 纸垫 · 闭关三日 · 晨脉 | 今三 | (planned 时机) | 打地鼠 · 气走经脉 · 打地鼠 |
+| 喷嚏符 · 让一拳 | wm-dabi | 时机 | 打地鼠 `sneeze` (何七's fists: step aside where one comes; 2026-10-27) |
+
+**No home-made type left in the 游戏厅 (2026-10-27, Hanli: 「游戏厅里都是经典游戏类型了吧, 还有你自己编的吗?」):** 喷嚏符 is
+打地鼠 too, so no story board mounts sneeze.js (the module stays: the shell's tests drive it); 时机 is out of the 游戏厅's types;
+开炉 (`kailu`, the 饭桶's draw) is labelled 开炉 · Gacha. The 13 cut prototypes with no type and no module (相克 · 底册 · 猪蜻蜓 ·
+念开篇 · 认方 · 闻焦 · 扔石听声 · 吹鹅毛 · 烙饼 · 洗髓 · 晨脉坑 · 守夜 · 下崖) left the 游戏厅; their task ids stay, `cut`, so an old
+save holding one lets it go; their dead CSS went with them.
 
 **The 调息 cap held (2026-10-27, the coordinator for Hanli: at most two a 回):** 凶崖 and 风掉头 above, and 第五回's 隐身符
 (`yinshen`, wm-shishi: wherever 邹青松's spirit sense sweeps, go still), are 打地鼠 now, painted; 第五回 keeps 踏马符 · 息壤,

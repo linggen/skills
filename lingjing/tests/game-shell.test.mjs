@@ -152,14 +152,17 @@ const sceneFiles = () => {
 test('the catalogue: every game any task or scene names has a 游戏厅 row — or a cut row saying why', () => {
   const rows = new Map();
   for (const g of REG.games) rows.set(g.id, [...(rows.get(g.id) ?? []), g]);
-  const named = gamesIn([TASKS, sceneFiles()]);
+  // A cut task whose game is gone altogether (no module: the 13 home-made prototypes taken out of the 游戏厅 on 2026-10-27,
+  // Hanli: 「游戏厅里都是经典游戏类型了吧, 还有你自己编的吗?」) keeps its id only so an old save lets it go: no row asked.
+  const gone = (t) => t.cut && !fs.existsSync(new URL(`../scripts/games/${t.game}.js`, import.meta.url)) && !REG.games.some((g) => g.id === t.game);
+  const named = gamesIn([TASKS.filter((t) => !gone(t)), sceneFiles()]);
   // 今日传闻's boards (tale.json): each step's page; its word games (谜, 论道) are Ling's in the chat, not boards.
   const tale = JSON.parse(read('../worlds/jiuding/tale.json'));
   for (const g of Object.values(tale.games ?? {})) if (g.page) named.add(g.page);
   const missing = [...named].filter((id) => !rows.has(id) && !['riddle', 'lundao', 'alchemy'].includes(id));
   assert.deepEqual(missing, [], 'a game the content names with no 游戏厅 row');
   // A cut task's game: a row under 旧版 naming that task, with why; a live task's game: a row that plays.
-  for (const t of TASKS.filter((x) => x.game)) {
+  for (const t of TASKS.filter((x) => x.game && !gone(x))) {
     const rs = rows.get(t.game) ?? [];
     if (t.cut) {
       const r = rs.find((x) => x.task === t.id && x.replaced === 'cut');

@@ -214,6 +214,9 @@ SUBJECTS = {
     'an incense burner with one short stick of incense. Ink and warm orange wash.'),
   'rain/fengtou-basin': ('sprite', (360, 200), (1024, 576), 1,
     'ONE small yellow paper talisman with a crude drawing of a round pig with dragonfly wings on it. Muted ink and soft wash on plain paper.'),
+  #    喷嚏符 (第六回's 大比, 2026-10-27: the last 时机 board as 打地鼠; the stage is 风掉头's beam).
+  'rain/sneeze-basin': ('sprite', (360, 200), (1024, 576), 2,
+    'ONE foot in a black cloth shoe stepping sideways, a little dust kicked up. Only the foot and the lower leg in a grey robe. Muted ink and soft wash on plain paper.'),
   'rain/fanban-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of a dim stone corridor floor seen from the side and a little above: a row of square old '
     'flagstones running across the whole width, one of them tilted open over a black pit. Grey ink wash and dark ink.'),

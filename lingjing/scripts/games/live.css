@@ -1,54 +1,24 @@
-/* The games that run in time — 暴雨 (.g-storm), 射鹿 (.g-deer), 洗髓 (.g-xisui),
-   小周天 (.g-zt). One sheet for the four; each block keeps its own prefix. */
-.g-storm, .g-deer, .g-xisui, .g-zt { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 360px; margin: 0 auto; position: relative; }
-.g-storm-line, .g-deer-line, .g-xisui-line, .g-zt-line { font-family: var(--serif); font-size: 15px; line-height: 1.7; margin: 0; text-align: center; min-height: 3.4em; }
-.g-storm-btn, .g-deer-btn, .g-xisui-btn, .g-zt-btn {
+/* The games that run in time — 射鹿 (.g-deer); 暴雨, 洗髓 and 小周天's blocks went with their boards
+   (2026-10-27, the cut prototypes taken out of the 游戏厅). */
+.g-deer { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 360px; margin: 0 auto; position: relative; }
+.g-deer-line { font-family: var(--serif); font-size: 15px; line-height: 1.7; margin: 0; text-align: center; min-height: 3.4em; }
+.g-deer-btn {
   min-height: 52px; min-width: 60%; padding: 10px 22px; border-radius: 10px; border: 1px solid var(--ling);
   background: var(--ling-soft); color: var(--ling); font-family: var(--serif); font-size: 18px; cursor: pointer;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
-.g-storm-btn:active, .is-held { background: var(--ling); color: var(--surface); }
-.g-storm-meter, .g-deer-meter, .g-xisui-meter, .g-storm-dist { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 12px; color: var(--faint); }
-.g-storm-meter b, .g-deer-meter b { font-weight: 600; color: var(--dim); }
-.g-storm-meter b.is-calm, .g-deer-meter b.is-calm { color: var(--ling); }
-.g-storm-bar, .g-deer-bar, .g-xisui-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--raised); overflow: hidden; }
-.g-storm-bar i, .g-deer-bar i, .g-xisui-bar i { display: block; height: 100%; background: var(--dim); transition: width .1s linear; }
-.g-storm-bar i.is-calm, .g-deer-bar i.is-full { background: var(--ling); }
-.g-xisui-bar.is-wave i { background: #a8452f; }
-.g-xisui-bar.is-low i { background: #a8452f; opacity: .6; }
-.g-storm-pip { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); }
-.g-storm-pip.is-on { background: var(--ling); border-color: var(--ling); }
-.g-storm-fall { color: var(--dim); }
-/* rain: slanting streaks, slanted further by the wind */
-.g-storm-rain { position: absolute; inset: -6px; pointer-events: none; opacity: .25; border-radius: 8px;
-  background: repeating-linear-gradient(calc(100deg + var(--w, 0) * 40deg), transparent 0 7px, var(--faint) 7px 8px); }
-.g-storm-rain.is-live { animation: g-storm-fall .5s linear infinite; }
-@keyframes g-storm-fall { to { background-position: 0 24px; } }
+.is-held { background: var(--ling); color: var(--surface); }
+.g-deer-meter { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 12px; color: var(--faint); }
+.g-deer-meter b { font-weight: 600; color: var(--dim); }
+.g-deer-meter b.is-calm { color: var(--ling); }
+.g-deer-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--raised); overflow: hidden; }
+.g-deer-bar i { display: block; height: 100%; background: var(--dim); transition: width .1s linear; }
+.g-deer-bar i.is-full { background: var(--ling); }
 /* 射鹿: grass bends with the wind */
 .g-deer-grass { display: flex; gap: 10px; height: 34px; align-items: flex-end; }
 .g-deer-grass i { display: block; width: 2px; height: 30px; background: var(--dim); border-radius: 1px; transform-origin: bottom center;
   transform: rotate(calc(var(--w, 0) * 38deg)); transition: transform .35s ease; }
 .g-deer-hint { font-family: var(--serif); color: var(--ling); margin: 0; }
-/* 洗髓: three sticks of incense, the water darkening */
-.g-xisui { padding: 10px; border-radius: 10px; background: color-mix(in srgb, #2f4a2b calc((1 - var(--dark, 0)) * 25%), #111 calc(var(--dark, 0) * 25%)); }
-.g-xisui-sticks { display: flex; gap: 18px; height: 60px; align-items: flex-end; }
-.g-xisui-stick { width: 6px; height: 56px; display: flex; align-items: flex-end; border-bottom: 3px solid var(--dim); }
-.g-xisui-stick i { display: block; width: 100%; background: #8a5a2b; border-top: 3px solid #d0602a; transition: height .1s linear; }
-/* 小周天: the 三关 figure, the breath, the pips of the last half pass */
-.g-zt-fig { position: relative; width: 100%; }
-.g-zt-fig img { display: block; width: 100%; height: auto; border-radius: 8px; }
-.g-zt-fig svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.g-zt-pt circle { fill: var(--surface); stroke: var(--faint); stroke-width: .6; }
-.g-zt-pt text { font-size: 4px; fill: var(--dim); dominant-baseline: middle; }
-.g-zt-pt.is-open circle { fill: var(--ling); stroke: var(--ling); }
-.g-zt-pt.is-now circle { stroke: var(--ling); animation: g-zt-pulse 1.2s ease-in-out infinite; }
-@keyframes g-zt-pulse { 50% { r: 3.4; } }
-.g-zt-qi { stroke: var(--ling); stroke-width: 1.2; stroke-linecap: round; opacity: .8; }
-.g-zt-breath { font-family: var(--serif); font-size: 20px; color: var(--dim); transition: color .2s; }
-.g-zt-breath.is-rest { color: var(--ling); font-weight: 700; }
-.g-zt-pips { display: flex; gap: 8px; }
-.g-zt-pips span { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--ling); }
-.g-zt-pips span.is-on { background: var(--ling); }
 
 /* 2026-10-14 — the opening's playable beats, in ink (his: 「小游戏的UI太粗糙了，美化一下」):
    接雨 (.g-rain), 喂饼 (.g-bread), 射鹿 (.g-deer), 算账 (.g-scale), 吹鹅毛
@@ -153,7 +123,6 @@
   background: radial-gradient(130% 100% at 40% 30%, #e3cdab, var(--g-paper) 60%, #d2b792); box-shadow: 0 6px 22px rgba(0, 0, 0, .18); }
 .g-scene .g-fig, .g-scene .g-stage { pointer-events: none; }
 .g-scene .g-foe { transition: opacity .6s; }
-.g-scene .g-feather-art { filter: contrast(1.35) brightness(.9); }
 .g-scene .g-foe.is-off { opacity: .55; }
 /* 喂饼 painted (2026-10-16, tools/paint-games.py): the cave is a painting on paper, so the board is paper in
    either theme — ink-dark strokes on it, the fox laid on with multiply, no frame line around it. */
@@ -224,14 +193,6 @@
 .g-scene .g-mist { stroke: var(--water); stroke-width: 1.4; }
 .g-scene .g-guide { stroke: var(--ling); stroke-width: 1.5; stroke-dasharray: 3 6; opacity: .7; }
 .g-scene .g-guide-arrow { fill: none; stroke: var(--ling); stroke-width: 1.5; }
-.g-feather-pips { display: inline-flex; gap: 5px; vertical-align: middle; }
-.g-feather-pips i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--ling); }
-.g-feather-pips i.is-on { background: var(--ling); }
-.g-feather-pad { width: 100%; min-height: 150px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ling);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 15px; cursor: grab;
-  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.g-feather-pad .g-scene { width: 96px; border: 0; background: none; }
-.g-feather-pad.is-held { border-color: var(--ling); background: var(--ling-soft); cursor: grabbing; }
 /* the shared parts */
 .g-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; font-size: 13px; color: var(--faint); }
 .g-head b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -317,19 +278,11 @@
    底册 (.g-diche), 喷嚏符 (.g-sneeze), 猪蜻蜓 (.g-zqt), 写信 (.g-letter), 念开篇 (.g-kaipian) — the same .g-ink look. */
 .g-scene .g-spot.is-seal { fill: #A3352A; }
 .g-qiajue .g-tags, .g-letter .g-tags { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); }
-.g-diche-page { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--raised); }
-.g-diche-row { text-align: left; min-height: 34px; padding: 6px 8px; border: 0; border-bottom: 1px dashed var(--line); background: none; font-size: 14px; line-height: 1.5; cursor: pointer; }
-.g-diche-row b { color: var(--seal); font-weight: 600; margin-right: 4px; }
-.g-diche-row small { font-family: var(--ui); font-size: 11px; color: var(--dim); }
-.g-diche-row.is-blur { display: flex; align-items: center; }
 .g-ant { display: block; height: 4px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--faint) 0 3px, transparent 3px 5px); opacity: .7; }
-.g-diche .g-diche-pic { max-height: 90px; }
-.g-diche-row.is-on { background: var(--seal-soft); }
 .g-letter-sheet { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--raised); text-align: left; }
 .g-letter-sheet p { margin: 0; font-size: 14.5px; line-height: 1.8; }
 .g-letter-sheet s { color: var(--faint); text-decoration-thickness: 2px; }
 .g-letter-sheet b { color: var(--seal); font-weight: 600; }
-.g-kaipian .g-faint { opacity: .55; }
 .g-scene .g-beamlight { fill: var(--ling); stroke: none; }
 .g-yubu-grid { display: grid; grid-template-columns: repeat(3, 56px); gap: 6px; justify-content: center; }
 .g-yubu-grid .g-tag { min-height: 44px; font-size: 16px; }

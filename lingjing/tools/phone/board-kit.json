@@ -272,21 +272,6 @@
         "worlds/jiuding/art/people/neimen-shijie.webp"
       ]
     },
-    "sneeze": {
-      "_about": "时机 (games/sneeze.js): every level games.json gives it (上崖 · 别抖 · 腿缝里 · 一拳 · 萝卜 · 嘀声 · 喷嚏).",
-      "module": "scripts/games/sneeze.js",
-      "dirs": [
-        "worlds/jiuding/art/games/sneeze",
-        "worlds/jiuding/art/games/shiji"
-      ],
-      "css": [
-        "scripts/lingjing.css",
-        "scripts/games/live.css"
-      ],
-      "files": [
-        "worlds/jiuding/games.json"
-      ]
-    },
     "jinchat": {
       "_about": "聊天 (games/jinchat.js): 今线 and the 古's face-to-face chats; the other half comes from the app (the host's `ask`: the phone's own model). It reads games.json and people.json by a folder URL (not caught by the URL test), so both are listed.",
       "module": "scripts/games/jinchat.js",

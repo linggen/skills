@@ -26,7 +26,7 @@ const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
 // (Hanli, 10-19: 「能在游戏大厅标一下游戏类型吗, 是割绳子还是投掷等」). The English words live here.
 const KIND_EN = {
-  割绳子: 'Cut the rope', 投掷: 'Throw', 狩猎瞄准: 'Hunt & aim', 打地鼠: 'Whack-a-mole', 时机: 'Timing', 节奏: 'Rhythm',
+  割绳子: 'Cut the rope', 投掷: 'Throw', 狩猎瞄准: 'Hunt & aim', 打地鼠: 'Whack-a-mole', 节奏: 'Rhythm', 开炉: 'Gacha',
   调息: 'Breath', 解谜: 'Puzzle', 棋牌: 'Board & table', 判断: 'Read & pick', 剧情: 'Story', 你画我猜: 'Draw & guess',
   塔防: 'Tower defense', 结印: 'Hand seals', 配对: 'Match pairs', 对话: 'Talk', 探索: 'Explore', 斗法: 'Card duel', 格斗: 'Fighting',
 };
