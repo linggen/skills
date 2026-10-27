@@ -579,3 +579,11 @@ body.fighting .focus > .gshell { gap: 0; }
 body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: rgba(243, 238, 226, 0.9); border-bottom: 1px solid var(--ink-line, rgba(0, 0, 0, .12)); }
 /* The room's pictures are never dragged by the browser (battle-drag.js): a card held by its painting lifts as the card. */
 .battle img { -webkit-user-drag: none; user-select: none; }
+
+/* 牌组 (cards.js deckHtml): every card he holds as its face, the ten that fight lit, the rest dimmed; 新 on one not yet played. */
+.deckfaces { display: flex; flex-wrap: wrap; gap: 14px; padding: 6px 0 4px; background: none; border: 0; }
+.deckfaces .bcard.face { position: relative; animation: none; font: inherit; padding: 0; border: 0; background: none; }
+.deckfaces .bcard.face.out .bleaf { filter: grayscale(.7); opacity: .6; }
+.deckfaces button.bcard.face { cursor: pointer; }
+.deckfaces .deckfresh { position: absolute; top: -6px; right: -6px; z-index: 2; font-size: 11px; padding: 1px 6px; border-radius: 99px; background: var(--cinnabar); color: var(--paper); }
+.deckfaces .deckwhose { position: absolute; left: 0; right: 0; bottom: -18px; text-align: center; font-size: 11px; color: var(--ink-3); }

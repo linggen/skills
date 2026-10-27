@@ -1279,7 +1279,7 @@ const FOOT_CHIPS = {
   weather: () => wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote, wind: PREVIEW.wind ?? look?.wind }),
   books: () => shelfChipHtml(),
   errands: (slots) => `<span class="errands">${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}${moreHtml(slots)}</span>`,
-  bag: () => gearChipHtml(ctx(), view.gearOpen),
+  bag: () => gearChipHtml(ctx(), view.gearOpen ? (view.pouchPane === 'deck' ? 'deck' : 'items') : null),
 };
 const IN_A_FIGHT = new Set(['errands', 'bag']);
 function footChipsHtml(slots) {
@@ -3084,8 +3084,10 @@ async function useItem(id, action = 'use') {
   await refresh();
 }
 
-async function openGear() {
-  if (!view.gearOpen) show({ gearOpen: true, luOpen: false, ...othersShut('gearOpen'), gear: null, pouchToss: null });
+/* `pane`: null opens the 储物袋, 'deck' the 牌组 — two chips, one panel's read. An open panel on the other one switches. */
+async function openGear(pane = null) {
+  if (view.gearOpen) return show({ pouchPane: pane, pouchToss: null });
+  show({ gearOpen: true, luOpen: false, ...othersShut('gearOpen'), gear: null, pouchToss: null, pouchPane: pane });
   const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
   if (view.gearOpen) show({ gear: r?.gear ?? null, gearNote: null });
   if (view.gearOpen && view.pouchPane === 'fantong') await loadFantong();
@@ -3110,7 +3112,7 @@ function drawPouch() {
   el.hidden = !open;
   if (!open) { drawnPouch = null; ftKailu.stop(); return; }
   const fantongPane = view.pouchPane === 'fantong' ? kailuPaneHtml(lang()) : null;
-  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), fantongPane },
+  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongPane },
     { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
   if (view.pouchPane === 'fantong') ftKailu.show(view.fantong, { lang: lang(), reducedMotion: stillMotion() });
@@ -3608,7 +3610,8 @@ const CLICKS = [
   ['[data-unfold]', (el, e) => { if (e?.target?.closest?.('button')) return false; closeUnfold(); return true; }],
   ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
   ['[data-close-chapter]', (el) => { closeSeen(el.dataset.closeChapter, true); render(); }],
-  ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
+  ['[data-gear]', () => (view.gearOpen && view.pouchPane !== 'deck' ? show({ gearOpen: false }) : openGear())],
+  ['[data-deck-open]', () => (view.gearOpen && view.pouchPane === 'deck' ? show({ gearOpen: false }) : openGear('deck'))],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
   ['[data-deck-auto]', busy('deck:auto', () => deckTap({ action: 'auto' }))],
