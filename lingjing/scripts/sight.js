@@ -14,14 +14,16 @@
 // behind a slim bar instead (PHONE_QUERY, phone.css).
 import { esc } from './esc.js';
 
-/* The kinds that come on in person: a 人物 or a 生物 — a thing or an art does not. */
+/* The kinds that come on in person: a 人物 or a 生物 — a thing or an art does not, unless its entry says it does
+   (codex.json `sight`: the 饭桶, Hanli 2026-10-27 「饭桶第一次出现, 配个人物志类似的图吧」). */
 export const SIGHT_KINDS = new Set(['人物', '生物']);
+export const isSight = (e) => Boolean(e && (SIGHT_KINDS.has(e.kind) || e.sight));
 
 /* The large card: the picture (or a clean name card), the name, one line. A tap goes on, as the box does. */
 export function sightHtml(entries, { src = (p) => p } = {}) {
   const one = (e) => {
     const pic = e.image
-      ? `<img class="sightpic${e.kind === '生物' ? ' plate' : ''}" src="${esc(src(e.image))}" alt="${esc(e.name)}">`
+      ? `<img class="sightpic${e.kind === '生物' || e.sight ? ' plate' : ''}" src="${esc(src(e.image))}" alt="${esc(e.name)}">`
       : `<span class="sightpic namecard" aria-hidden="true"><b>${esc(e.name)}</b></span>`;
     const line = e.lines?.[0] ? `<span class="sightline">${esc(e.lines[0])}</span>` : '';
     return `<figure class="sightone" data-sight-id="${esc(e.id)}">${pic}<figcaption><b>${esc(e.name)}</b>${line}</figcaption></figure>`;

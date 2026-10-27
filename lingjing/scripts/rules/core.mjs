@@ -130,6 +130,13 @@ function pay(content, state, ctx, grant, landing = state) {
   return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
+/* What a story grant put in his hands: its thing (`n` of it), the rest (`more`), and the 灵石 it paid. Null: nothing. */
+function gainsOf(grant, paid) {
+  const items = [grant.item ? { id: grant.item, n: grant.n ?? 1 } : null, ...Object.entries(grant.more ?? {}).map(([id, n]) => ({ id, n }))].filter(Boolean);
+  const wealth = paid.wealth ?? 0;
+  return items.length || wealth > 0 ? { items, ...(wealth > 0 ? { wealth } : {}) } : null;
+}
+
 /* What was owed while a gate kept it shut (tasks.mjs owe: 开府 handed in before the 灵石 were his)
    lands the moment the gate opens: returns what landed, or null. */
 function landOwed(content, s, now) {
@@ -572,6 +579,11 @@ export function resolve(state, content, ctx, args) {
   const grant = passedRiddle || leftFight ? null : grantOf(s, scene, exit);
   const landing = exit.ends ? { ...s, scene: null } : exit.next && !inMade(s) ? { ...s, scene: exit.next } : s;
   const paid = grant ? pay(content, s, ctx, grant, landing) : null;
+  // 所得, shown big on the page one after another (lingjing.js revealQueue; Hanli 2026-10-27, the 饭桶's first meeting:
+  // 「只显示了获得这张牌的动画, 应该还有其他的」): what this step put in his hands and the 灵石 — counted, so the page
+  // shows each step's once, whoever took it (a tap, or Ling from the chat). The cards it gave have their own (cards_new).
+  const gained = paid ? gainsOf(grant, paid) : null;
+  if (gained) s.gained = { n: (state.gained?.n ?? 0) + 1, scene: scene.id, ...gained };
   const beat = spoken(content, s, exit.beat);
 
   let waiting = null, grew = null, node = null;

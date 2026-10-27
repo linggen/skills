@@ -30,8 +30,8 @@ const ELEMENT_WORD = {
   en: { metal: 'Metal', wood: 'Wood', water: 'Water', fire: 'Fire', earth: 'Earth' },
 };
 const WORDS = {
-  zh: { got: '得', minion: '灵兽', spell: '功法', pill: '丹', charm: '符', tap: '轻点继续', into: '收进了储物袋' },
-  en: { got: 'Gained', minion: 'Beast', spell: 'Art', pill: 'Pill', charm: 'Charm', tap: 'Tap to go on', into: 'into the pouch' },
+  zh: { got: '得', minion: '灵兽', spell: '功法', pill: '丹', charm: '符', thing: '物', tap: '轻点继续', into: '收进了储物袋' },
+  en: { got: 'Gained', minion: 'Beast', spell: 'Art', pill: 'Pill', charm: 'Charm', thing: 'Thing', tap: 'Tap to go on', into: 'into the pouch' },
 };
 const kindWord = (c, w) => (c.pill ? w.pill : c.charm ? w.charm : w[c.kind] ?? '');
 const nameOf = (n, lang) => (typeof n === 'string' ? n : n?.[lang] ?? n?.zh ?? '');

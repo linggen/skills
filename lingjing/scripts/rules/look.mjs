@@ -595,6 +595,9 @@ export function look(state, content, ctx) {
     ...(state.appeared?.length ? { appeared: state.appeared } : {}),
     // 新: cards gained and not yet played (cards.mjs gainCard) — the page plays the 得牌 reveal for each one it has not seen.
     ...(state.cards_new?.length ? { cards_new: state.cards_new } : {}),
+    // 所得: what the last story step put in his hands (core.mjs resolve `gained`), named — the page shows each thing big
+    // when its count `n` is new to it.
+    ...(state.gained ? { gained: gainedBrief(content, state) } : {}),
     // 恩仇簿: every debt the story has written down, good and bad.
     ...(state.ledger?.length ? { ledger: ledgerOf(content, state, ctx.now) } : {}),
     // The day's 功课 from the scroll in the bag (《吐纳经》, rules/scrolls.mjs).
@@ -767,4 +770,14 @@ function waitsOf(content, state, now) {
   const r = rerunBrief(content, state, now);
   const rerun = r && !r.inside && r.open === false ? { id: `rerun:${r.id}`, title: r.label ?? r.door?.name ?? r.id, shut: r.say ?? null, wait_min: r.wait_min } : null;
   return [shouchaoWait(content, state, now), rerun, poolWait(content, state, now)].filter(Boolean);
+}
+
+/* The last story step's 所得 as the page shows it: each thing's name, picture, kind and small print. */
+function gainedBrief(content, state) {
+  const g = state.gained, lang = state.lang;
+  const items = (g.items ?? []).map(({ id, n }) => {
+    const it = content.items.items.find(i => i.id === id);
+    return { id, n, name: itemName(it, state, lang) ?? id, kind: it?.kind ?? null, art: it?.art ?? null, hint: pick(it?.hint, lang) ?? null };
+  });
+  return { n: g.n, scene: g.scene ?? null, items, ...(g.wealth ? { wealth: g.wealth } : {}) };
 }

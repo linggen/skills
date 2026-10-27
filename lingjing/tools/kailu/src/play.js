@@ -201,7 +201,7 @@ export class KailuScene extends Phaser.Scene {
     if (this.phase === 'full') {
       this.status.setText(this.brief.wait ?? '');
       if (!this.calm) this.zzz();
-    } else this.status.setText(inputs.length ? this.w.empty : this.w.none);
+    } else this.status.setText(this.pot.length ? this.leanLine() : inputs.length ? this.w.empty : this.w.none);
     // The pot's three places.
     for (let k = 0; k < (this.brief.max_in ?? 3); k++) {
       const x = W / 2 + (k - 1) * 130, id = this.pot[k];
@@ -299,6 +299,17 @@ export class KailuScene extends Phaser.Scene {
     const [id] = this.pot.splice(k, 1);
     this.left[id] += 1;
     this.drawFill();
+  }
+
+  /* What the pot leans to, in one line before 开炉 (Hanli 10-27: 「多是草药 → 多半出丹」), so he can steer it: the
+     family most of its things lead to, one ahead of every other, else a mixed handful — the rules' own rule
+     (rules/fantong-roll.mjs leadOf), on each thing's `fam` from the brief. */
+  leanLine() {
+    const by = {};
+    for (const id of this.pot) { const f = this.brief.inputs.find((i) => i.id === id)?.fam ?? 'mixed'; by[f] = (by[f] ?? 0) + 1; }
+    const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
+    const lead = !rows.length ? null : rows[1] && rows[1][1] === rows[0][1] ? 'mixed' : rows[0][0];
+    return (lead && this.brief.leans?.[lead]) || this.w.empty;
   }
 
   /* The lean: the colour of the kinds in the pot, brighter with its 品阶 and the 灵石. */

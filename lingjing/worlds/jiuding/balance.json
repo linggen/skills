@@ -173,6 +173,15 @@
       "play"
     ]
   },
+  "_kailu": "开炉's worth (rules/fantong-roll.mjs; Hanli 2026-10-27: 扔草药出丹, 扔物品出装备, 其他出符): what a thing is worth to the 饭桶 — its shop `sell` (prices below), else its 品阶's `tier` (fantong.json `tiers`); a 灵石 fed is worth `lingshi`. The grade rolled asks for an output worth the pot's worth × `x`, at least `floor` — 凡 a little under what went in, 有用 about it, 珍品 and 逆天 well over — so a pot of junk always gives something, a pot of good things gives about their worth back and the bucket is no farm. A row's chance falls off with how far its worth stands from that (log scale, `spread`), and nothing past `reach` times either way is drawn. `band`: what tools/numbers.mjs holds a pot's average return to (what comes out ÷ what went in) for the families' sample pots.",
+  "kailu": {
+    "lingshi": 1,
+    "tier": { "0": 0, "1": 8, "2": 25, "3": 70, "4": 200 },
+    "grades": { "junk": { "x": 0.8, "floor": 0 }, "useful": { "x": 1.1, "floor": 3 }, "rare": { "x": 1.6, "floor": 12 }, "best": { "x": 2.5, "floor": 40 } },
+    "spread": 0.4,
+    "reach": 3,
+    "band": [0.85, 1.6]
+  },
   "_prices": "Every shop price, one source (2026-10-16, Hanli: 灵石 buys pills): `buy` what a shop asks, `sell` what it gives back — folded onto items.json by content.mjs withBalance, so no item carries its own. 回春丹 15 and 回气丹 10: a typical day's 灵石 (tools/balance.mjs `--wealth`) buys two or three, and a pill eaten in a fight is gone.",
   "prices": {
     "mend-pill": {"buy": 15, "sell": 4},

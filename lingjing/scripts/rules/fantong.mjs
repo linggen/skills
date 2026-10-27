@@ -2,9 +2,11 @@
 // spits something out. Part of the rules engine; rules.mjs is its one door.
 //
 // Everything is the world's table (worlds/<id>/fantong.json): what is needed to play (`needs`), the limit
-// (`limit.cooldown_min` and/or `limit.per_day`), the 凡物 always at hand (`around`), what never goes in
-// (`never`), each thing's 品阶 (`tiers`), the lean of each kind (`kinds`), the odds (`odds`: four grades,
-// lifted smoothly by power — the pot's tier, his realm, the 灵石), the pools, the pity, the quirks, the
+// (`limit.cooldown_min` and/or `limit.per_day`), what never goes in (`never`) — what may go in is what his 储物袋
+// holds, nothing else — each thing's 品阶 (`tiers`), what each thing is (`kinds`) and the family it leads the pot to
+// (`families`: herbs → 丹, hides, ores and gear → 兵器 · 法衣 · 佩, 符纸 and 朱砂 → 符, a mixed handful → 符 and odds and
+// ends), the odds (`odds`: four grades, lifted smoothly by power — the pot's tier, his realm, the 灵石; each grade a
+// share of what the pot is worth, balance.json `kailu`), the pools, the pity, the quirks, the
 // 方子 (`recipes`, `pages`), the book's fixed outputs (`recipes.story`) and the 银月 gag (`events`). No item id
 // is named here. The roll is the rules', seeded by the day, the save's feed count, what went in and the 灵石 —
 // never the press (the page's timing result), so timing can't re-roll; the press only lifts the grade a
@@ -12,13 +14,13 @@
 // (`hint`), never its effect.
 import { dayKey, itemName, pick } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
-import { itemOf, questDoneBefore } from './errands.mjs';
+import { itemOf } from './errands.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
 import { isLocked } from './locks.mjs';
 import { freeSlot, hasFound, pouchBrief, stow, storedLine } from './pouch.mjs';
-import { GRADES, LINGSHI, kindOf, odds, roll, tierOfItem } from './fantong-roll.mjs';
+import { LINGSHI, familyOfKind, kindOf, odds, roll, tierOfItem } from './fantong-roll.mjs';
 
-export { GRADES, gradeWeights, kindOf, powerOf, tierOfItem } from './fantong-roll.mjs';
+export { GRADES, familyOf, gradeWeights, kindOf, powerOf, tierOfItem, worthOf } from './fantong-roll.mjs';
 
 const tableOf = content => content.fantong ?? null;
 const wordsOf = (t, lang) => t.words?.[lang] ?? t.words?.zh ?? {};
@@ -56,7 +58,6 @@ function rowOpen(content, state, t, row) {
   if ((t.once?.kinds ?? []).includes(item.kind) && hasFound(state, row.item)) return false;
   return true;
 }
-const poolFor = (content, state, t, grade) => (t.pools?.[grade] ?? []).filter(r => rowOpen(content, state, t, r));
 
 /* ── The book's fixed outputs and the 方子 ── */
 const sameSet = (a, b) => a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|');
@@ -72,13 +73,12 @@ const recipeFor = (t, ids, lingshi, found = null, content = null, state = null) 
 export function rollFeed(t, { ids, id, found = null, content = null, state = null, ...o }) {
   ids = ids ?? (id ? [id] : []);
   return roll(t, { ...o, ids, recipe: recipeFor(t, ids, o.lingshi ?? 0, found, content, state), story: storyFor(content, t, ids),
-    open: content && state ? (r) => rowOpen(content, state, t, r) : null });
+    open: content && state ? (r) => rowOpen(content, state, t, r) : null});
 }
 /* Its exact odds (fantong-roll.mjs odds), gated the same way. */
 export const chances = (t, { content = null, state = null, ...o }) => odds(t, { ...o, open: content && state ? (r) => rowOpen(content, state, t, r) : null });
 
-/* ── What may go in ── */
-const aroundOf = (t, state) => (t.around?.items ?? []).filter(a => !a.after || questDoneBefore(state, a.after)).map(a => a.id);
+/* ── What may go in: what his 储物袋 holds, and nothing else (Hanli 2026-10-27) ── */
 /* What the bucket may have of a stack: all but the `keep` the story still reads from the bag (鼎苔: one for the 筑基). */
 /* …and only while a breakthrough still ahead reaches for it (ladder.json breakthrough.pill.items): past the 筑基, the
    鼎苔 kept for its throw is a 凡物 like the rest. A kept thing no breakthrough names is kept always. */
@@ -91,13 +91,12 @@ const keptOf = (content, t, state, id) => (readAhead(content, state, id) ? t.kee
 const spareOf = (content, t, state, id) => Math.max(0, (state.bag?.[id] ?? 0) - keptOf(content, t, state, id));
 function feedable(content, state, t, id) {
   if (!id || !itemOf(content, id)) return null;
-  if (aroundOf(t, state).includes(id)) return { around: true };
   if (!(spareOf(content, t, state, id) > 0) || id === t.needs?.item) return null;
   if (freeSlot(content, state, id) || Object.values(state.wear ?? {}).includes(id)) return null;
   if ((t.never?.kinds ?? []).includes(itemOf(content, id).kind) || (t.never?.items ?? []).includes(id)) return null;
   // The book's own pot: its inputs wait for the scene that feeds them (recipes.story `after`).
   if (storyIn(content, t, [id]).some(r => !(state.done_scenes ?? []).includes(r.after))) return null;
-  return { around: false };
+  return {};
 }
 
 /* ── The limit: when the bucket may eat again (null = now). ── */
@@ -143,7 +142,7 @@ export function fantongRecipes(content, state) {
    story hands over; a thing it has already had stays counted). */
 export function fantongAll(t, content = null, state = null) {
   const ids = new Set(), save = Boolean(content && state);
-  for (const g of GRADES) for (const r of t.pools?.[g] ?? []) {
+  for (const [k, rows] of Object.entries(t.pools ?? {})) for (const r of k === '_about' ? [] : rows) {
     if (save && !rowOpen(content, state, t, r) && !hasFound(state, r.item)) continue;
     ids.add(r.item ?? LINGSHI); if (r.with) ids.add(r.with);
   }
@@ -170,18 +169,19 @@ export function fantongBrief(content, state, now) {
   const t = tableOf(content), lang = state.lang;
   if (!t || !fantongOpen(content, state)) return null;
   const next = nextAt(t, state, now);
-  const around = aroundOf(t, state);
-  const bagIds = Object.keys(state.bag ?? {}).filter(id => !around.includes(id) && feedable(content, state, t, id));
-  const inputs = [...around, ...bagIds].map(id => {
-    const item = itemOf(content, id);
-    return { id, name: itemName(item, state, lang) ?? id, art: item?.art ?? null, kind: kindOf(t, id), tier: tierOfItem(t, id), ...(around.includes(id) ? { around: true } : { n: spareOf(content, t, state, id) }) };
+  const info = t.item_info ? (id) => t.item_info[id] : null;
+  const inputs = Object.keys(state.bag ?? {}).filter(id => feedable(content, state, t, id)).map(id => {
+    const item = itemOf(content, id), kind = kindOf(t, id, info);
+    return { id, name: itemName(item, state, lang) ?? id, art: item?.art ?? null, kind, fam: familyOfKind(t, kind), tier: tierOfItem(t, id), n: spareOf(content, t, state, id) };
   });
+  // The line the board says of the pot before 开炉 (games/kailu.js, the same rule as the roll's familyOf).
+  const leans = Object.fromEntries(Object.entries(t.families ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, pick(v.lean, lang) ?? null]));
   const locked = isLocked(content, state, 'wealth');
   const tints = Object.fromEntries(Object.entries(t.kinds ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, v.tint ?? null]));
   return {
     name: itemName(itemOf(content, t.needs.item), state, lang), ready: !next, ...(next ? { next_at: next.toISOString(), wait: fullSay(t, lang, next, now) } : {}),
     limit: { ...(t.limit?.cooldown_min ? { cooldown_min: t.limit.cooldown_min } : {}), ...(t.limit?.per_day ? { per_day: t.limit.per_day, today: state.fantong?.day === dayKey(now) ? state.fantong.today ?? 0 : 0 } : {}) },
-    inputs, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {}, quips: wordsOf(t, lang).quips ?? {},
+    inputs, leans, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {}, quips: wordsOf(t, lang).quips ?? {},
     lingshi: locked ? null : { max: t.lingshi?.max ?? 0, have: state.wealth ?? 0 },
     recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0, seen: (state.fantong?.seen ?? []).length, of: new Set([...fantongAll(t, content, state), ...(state.fantong?.seen ?? []).map(s => s.id)]).size,
   };
@@ -219,7 +219,7 @@ function feed(state, content, ctx, args, t) {
   const how = {};
   for (const [id, n] of Object.entries(need)) {
     how[id] = feedable(content, state, t, id);
-    if (!how[id] || (!how[id].around && spareOf(content, t, state, id) < n)) return refuse('not-feedable', w.not_feedable ?? null, { id });
+    if (!how[id] || spareOf(content, t, state, id) < n) return refuse('not-feedable', w.not_feedable ?? null, { id });
   }
   if (!Number.isInteger(lingshi) || lingshi < 0 || lingshi > (t.lingshi?.max ?? 0)) return refuse('bad-lingshi', null);
   if (lingshi && (isLocked(content, state, 'wealth') || (state.wealth ?? 0) < lingshi)) return refuse('no-lingshi', w.no_lingshi ?? null);
@@ -247,7 +247,7 @@ function feed(state, content, ctx, args, t) {
   }
 
   const s = clone(state);
-  for (const [id, k] of Object.entries(need)) if (!how[id].around) { s.bag[id] -= k; if (s.bag[id] <= 0) delete s.bag[id]; }
+  for (const [id, k] of Object.entries(need)) { s.bag[id] -= k; if (s.bag[id] <= 0) delete s.bag[id]; }
   if (lingshi) s.wealth = (s.wealth ?? 0) - lingshi;
   const lifted = lift && !roll.story && !roll.event ? lift : null;
   if (lifted) { s.bag[lifted] -= 1; if (s.bag[lifted] <= 0) delete s.bag[lifted]; }

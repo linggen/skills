@@ -301,7 +301,9 @@
     "book": "h05",
     "scene": "wm-danlu"
    },
-   "tag": "法宝"
+   "tag": "法宝",
+      "sight": true,
+      "_sight": "A thing that comes on as a face does (sight.js isSight; Hanli 2026-10-27: 「饭桶第一次出现, 配个人物志类似的图吧」): its 亮相 in 第四回 — 「那是一只巴掌大的[小铜家伙]」 — brings its painting on large, as a creature's plate"
   },
   "xirang": {
    "first": {

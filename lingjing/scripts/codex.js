@@ -82,6 +82,7 @@ export function resolveEntry(raw, { lang = 'zh', gender = 'male', say = (t) => t
     ...(over.first ? { first: over.first } : {}),
     ...(over.book_only ? { book_only: true } : {}),
     ...(over.tag ? { tag: over.tag } : {}),
+    ...(over.sight ? { sight: true } : {}),
     ...(over.becomes ? { becomes: over.becomes } : {}),
     ...(lang === 'zh' && raw.kind === '生物' && (over.pinyin ?? row?.pinyin) ? { pinyin: over.pinyin ?? row.pinyin } : {}),
   };

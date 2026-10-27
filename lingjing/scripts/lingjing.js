@@ -69,7 +69,7 @@ import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { advance, asidePlace, atLast, beatKey, choicesUp, readingAt as readingSetAside, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
 import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lines.js';
-import { SIGHT_KINDS, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
+import { isSight, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { answered, tapNope, wireLiveGames } from './live-games.js';
@@ -592,11 +592,24 @@ function nudgeTrial() {
 /* 得牌 (card-reveal.js, Hanli 2026-10-16: 同一张牌放大展示, 缩小进背包, 然后下一场战斗出现): a card
    new on this read (in `cards_new`, not in the last one) is shown big over the stage with its one line of
    where it came from (cards.json `from`), then flies into the 物品 chip; in the next fight it wears 新
-   until played. Waits while a fight holds the stage; the first read of a page plays nothing. */
+   until played. Waits while a fight holds the stage; the first read of a page plays nothing.
+   所得 the same way (Hanli 2026-10-27, the 饭桶's first meeting: 「只显示了获得这张牌的动画, 应该还有其他的」): every
+   thing a story step put in his hands and its 灵石 (Look's `gained`, new when its count `n` is), each big in turn
+   before the step's cards — a queue entry is a card's id or `{ thing }`. */
 const revealQueue = [];
 let revealing = false;
 // A won beat (beat-won.js) may have given its card (射鹿 → 一箭, 吹鹅毛 → 吐纳): read, then the reveal plays.
 onBeatWon(() => refresh().then(() => playReveals()));
+const STONES = { zh: '灵石', en: 'Spirit stones' };
+function gainedThings(was, now) {
+  const g = now?.gained;
+  if (!was || !g || g.n === was.gained?.n) return;
+  for (const it of g.items ?? []) revealQueue.push({ thing: it });
+  if (g.wealth) revealQueue.push({ thing: { id: 'lingshi', n: g.wealth, name: STONES[lang()] ?? STONES.zh, art: 'art/items-comic/lingshi.webp', kind: 'stone' } });
+  queueMicrotask(playReveals);
+}
+/* A thing as the big card shows it: its picture, its name (×n), 丹 or 符 when it is one, its small print. */
+const thingCard = (t) => ({ id: t.id, name: t.n > 1 ? `${t.name} ×${t.n}` : t.name, art: t.art, pill: t.kind === 'pill', charm: t.kind === 'charm', kind: 'thing', line: t.hint ?? '' });
 function gainedCards(was, now) {
   if (!was) return;
   const before = new Set(was.cards_new ?? []);
@@ -608,8 +621,7 @@ async function playReveals() {
   revealing = true;
   try {
     const catalog = cardCatalog(), l = lang();
-    const cards = revealQueue.splice(0).map(id => catalog[id]).filter(Boolean)
-      .map(c => ({ ...c, line: c.from?.[0]?.line?.[l] ?? c.from?.[0]?.line?.zh ?? '' }));
+    const cards = revealQueue.splice(0).map((x) => (x?.thing ? thingCard(x.thing) : catalog[x] ? { ...catalog[x], line: catalog[x].from?.[0]?.line?.[l] ?? catalog[x].from?.[0]?.line?.zh ?? '' } : null)).filter(Boolean);
     await revealCards(cards, { host: $('view') ?? document.body, target: () => document.querySelector('.gearchip'), lang: l, artBase: artBase() });
   } finally { revealing = false; }
   if (revealQueue.length) playReveals();
@@ -636,6 +648,7 @@ async function readOnce() {
     // The scene just left, kept for its header while its choice's passage is still told.
     if (look?.scene && seen?.scene?.id !== look.scene.id) leftLook(look);
     stageQuestDone(look, seen);
+    gainedThings(look, seen);
     gainedCards(look, seen);
     look = withArcade(withCaps(seen, caps), ARCADE_GAME, arcadeDeal);
     tracker.watchLook(look, [look.capped ? 'cap' : null, look.stamina?.now === 0 ? 'stamina' : null, ...(look.waits ?? []).map((w) => (w.id ? `wait:${w.id}` : null))]);
@@ -2801,7 +2814,7 @@ function voiceBeat(shown) {
 /* The faces whose 亮相 the reading holds — the beats the book marks `{注=id}` (rules/tell.mjs
    beatsOf `notes`) — as their 图鉴 entries: people and creatures, never a thing. A passage is
    told once a play (told_scenes), so each comes on large once, at the book's own point. */
-const firstFaces = () => noted(readingHere(), lang()).map((id) => codexNow()?.get?.(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
+const firstFaces = () => noted(readingHere(), lang()).map((id) => codexNow()?.get?.(id)).filter(isSight);
 const faceSrc = (f) => worldPath(look.world?.made ? `worlds/${look.world.base}` : look.world?.dir ?? 'worlds/jiuding', f);
 const nextBeat = () => { const r = readingOfPlay(); if (playing(r)) setReading(advance(r, lang())); };
 

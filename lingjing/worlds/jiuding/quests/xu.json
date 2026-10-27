@@ -308,7 +308,9 @@
       "grant": {
         "table": "labor",
         "wealth": 5,
-        "item": "qi-pill-9"
+        "item": "qi-pill-9",
+        "more": { "huangjing-gen": 3, "huangqi-canzhu": 3 },
+        "_more": "周衡's culls themselves (Hanli 2026-10-27: the 饭桶's tray is the bag, nothing else) — what 古七's first two 方子 are fed; once by the woodpile, always at hand"
       },
       "opens": {
         "after": "xu-yaoyuan-shouye"

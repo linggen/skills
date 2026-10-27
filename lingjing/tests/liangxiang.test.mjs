@@ -15,7 +15,7 @@ import { codexOf } from '../scripts/codex.js';
 import { newState } from '../scripts/state.mjs';
 import { beatsOf, passageFor, playOf, tellOf } from '../scripts/rules/tell.mjs';
 import { advance, noted, sightNow, sightings, withTold } from '../scripts/dialogue.js';
-import { SIGHT_KINDS } from '../scripts/sight.js';
+import { isSight } from '../scripts/sight.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const content = loadContent();
@@ -34,7 +34,7 @@ const norm = (t) => String(t).replace(/\[([^\]]*)\]\{[^}]*\}/g, '$1').replace(/\
 const bookFile = (hui, lang) => path.join(ROOT, 'story/jiuding-lu', lang === 'zh' ? JUAN1.find((h) => h.id === hui).file : `en/${hui}.md`);
 
 // Every face of 卷一 with a picture: a person or a creature whose first appearance is a 卷一 回.
-const faces = [...codex.values()].filter((e) => SIGHT_KINDS.has(e.kind) && e.image && JUAN1.some((h) => h.id === e.first?.book));
+const faces = [...codex.values()].filter((e) => isSight(e) && e.image && JUAN1.some((h) => h.id === e.first?.book));
 
 // The book's 亮相 of a face: the first paragraph of its 回 that marks it, the marked words, and the
 // words right around them (an anchor that finds the same place in a scene, however it splits paragraphs).
@@ -118,7 +118,7 @@ const readOf = (lang, key) => {
   return withTold(null, [{ ...item, beats: { [lang]: beatsOf(content, s, item) } }], sid);
 };
 const shown = (r, lang) => {
-  const entries = noted(r, lang).map((id) => codex.get(id)).filter((e) => e && SIGHT_KINDS.has(e.kind));
+  const entries = noted(r, lang).map((id) => codex.get(id)).filter(isSight);
   const out = [];
   for (let x = r, k = 0; k < 400 && !x.closed; k += 1, x = advance(x, lang)) for (const e of sightNow(x, entries, lang)) out.push([k, e.id]);
   return out;

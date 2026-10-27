@@ -23,6 +23,7 @@ import { paysOf } from '../scripts/rules/core.mjs';
 import { chorePlay, errandGrant, playGrant } from '../scripts/rules/playpay.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
 import { runsPay } from '../scripts/rules/rerun.mjs';
+import { chances, realmOf } from '../scripts/rules/fantong.mjs';
 import { play, table as paceTable } from './balance.mjs';
 
 export const OUT = new URL('../worlds/jiuding/levels/numbers.json', import.meta.url);
@@ -327,6 +328,41 @@ function creatures(ctx, weighed) {
   return ctx.content.creatures.creatures.filter(c => !c._retired).map(c => ({ id: c.id, name: zh(c.name), hp: c.hp ?? null, deck: (c.deck ?? []).length, elite: Boolean(c.elite), weighed: seen.has(c.id) }));
 }
 
+/* ── 开炉: what a pot gives back against what went in (balance.json `kailu`; Hanli 2026-10-27: 扔草药出丹, 扔物品出装备,
+   其他出符 — 「让玩家可以清空身上不用的物品」). Each family's sample pot, on a save standing at the 饭桶's first 回 and at
+   卷一's last, at that 回's layer: its average return (the worth that comes out ÷ the worth that went in, items.json
+   `sell` or the 品阶's worth) must sit in `kailu.band` — under it the bucket loses to the shop, over it the bucket is a
+   farm — and a pot of junk must give something. Bought at the shop, a pot must never sell back for more than it cost. ── */
+const KAILU_POTS = [
+  { family: 'pill', name: '三味草药', ids: ['huangjing', 'fuling', 'chaihu'] },
+  { family: 'gear', name: '三样兽材', ids: ['zhu-ya', 'chai-ya', 'lang-pi'] },
+  { family: 'fu', name: '符与雄黄', ids: ['talisman', 'talisman', 'xionghuang'] },
+  { family: 'mixed', name: '一药一牙一符', ids: ['huangjing', 'zhu-ya', 'talisman'] },
+  { family: 'junk', name: '柴火石子枯叶', ids: ['chaihuo', 'shizi', 'kuye'] },
+  { family: 'pill', name: '一颗九转丹', ids: ['qi-pill-9'] },
+];
+function kailu(ctx) {
+  const { content } = ctx, t = content.fantong;
+  if (!t?.worth) return [];
+  const sceneOf = h => Object.values(content.chapters).flatMap(ch => Object.values(ch.scenes ?? {})).find(sc => sc.hui === h) ?? null;
+  const first = content.chapters[Object.keys(content.chapters).find(k => content.chapters[k].scenes?.[content.balance.model.fantong_from])]?.scenes?.[content.balance.model.fantong_from]?.hui;
+  const huis = [...new Set([first, huisOf(content).at(-1)].filter(Boolean))];
+  const items = new Map(content.items.items.map(i => [i.id, i]));
+  const rows = [];
+  for (const h of huis) {
+    const at = paying(content, ctx.layerAt(h)), sc = sceneOf(h);
+    if (!at || !sc) continue;
+    const s = { ...ctx.saveFor(at), chapter: sc.chapter, scene: sc.id, bag: { danlu: 1 } };
+    for (const pot of KAILU_POTS) {
+      const o = chances(t, { ids: pot.ids, realm: realmOf(content, s, t), content, state: s });
+      const buys = pot.ids.map(id => items.get(id)?.buy ?? 0);
+      rows.push({ id: `${pot.family}@${h}`, name: pot.name, family: pot.family, leans: o.family, hui: h, layer: ctx.layer(at)?.name ?? null, ids: pot.ids,
+        worth: round(o.worth, 1), value: round(o.value, 1), ratio: o.worth ? round(o.value / o.worth, 2) : null, buy: buys.every(b => b > 0) ? buys.reduce((a, b) => a + b, 0) : null });
+    }
+  }
+  return rows;
+}
+
 /* ── the pace: days per 回 against the base bands (not the widened `except`) ── */
 function paces(content) {
   const bands = content.balance.model.bands;
@@ -411,7 +447,7 @@ function walkNumbers(node, path, out) {
 
 export function hardErrors(content) {
   const out = [], items = new Set(content.items.items.map(i => i.id)), b = content.balance ?? {};
-  for (const k of ['layers', 'pay', 'prices', 'pills', 'play_pay', 'cooldowns', 'convert', 'boards', 'layer_pay', 'dandu']) walkNumbers(b[k], `balance.${k}`, out);
+  for (const k of ['layers', 'pay', 'prices', 'pills', 'play_pay', 'cooldowns', 'convert', 'boards', 'layer_pay', 'dandu', 'kailu']) walkNumbers(b[k], `balance.${k}`, out);
   for (const i of content.items.items) walkNumbers({ effect: i.effect, buy: i.buy, sell: i.sell }, `item ${i.id}`, out);
   for (const c of content.creatures.creatures) if (c.hp != null && !(c.hp > 0)) out.push({ where: `creature ${c.id}`, say: `hp ${c.hp}` });
   for (const id of Object.keys(b.prices ?? {})) if (!items.has(id)) out.push({ where: `balance.prices.${id}`, say: `a price for ${id}, which items.json does not hold` });
@@ -423,6 +459,7 @@ export function hardErrors(content) {
 /* ── the red list: one table of rules a source's rows are read by ── */
 
 const pct = x => `${Math.round(x * 100)}%`;
+let KAILU_BAND = () => [0.85, 1.6];
 const offLayers = r => (r.drift ?? []).filter(d => d.ratio != null && Math.abs(Math.log(d.ratio)) > Math.log(1 + LIMITS.claim_off)).filter((d, k, a) => k === 0 || k === a.length - 1);
 const RED = {
   pills: [
@@ -446,6 +483,13 @@ const RED = {
     [r => r.prev && r.need && r.need < r.prev.need, r => `${r.name} asks ${r.need} 修为, under ${r.prev.name}'s ${r.prev.need} — the next realm is cheaper than the last layer of this one`],
     [r => r.target_h && r.chore_h && Math.abs(r.chore_h / r.target_h - 1) > LIMITS.hours_off, r => `${r.name}: with one 功课 a day its ${r.need} 修为 fill in ${r.chore_h} h of play (${r.chore_days} days at 30 min) — target ${r.target_h} h; the 功课 carries ${pct(1 - r.chore_h / r.rule_h)} of it`],
     [r => r.target_h && r.rule_h && r.rule_h / r.target_h > 1 + LIMITS.hours_off, r => `${r.name}: with no 功课 (a plain install) ${r.rule_h} h of play — ${round(r.rule_h / r.target_h, 1)}× the target ${r.target_h} h`],
+  ],
+  kailu: [
+    [r => r.ratio != null && r.ratio < KAILU_BAND()[0], r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in (${r.value} of ${r.worth} 灵石) — under ${pct(KAILU_BAND()[0])}, the shop pays better`],
+    [r => r.ratio != null && r.ratio > KAILU_BAND()[1], r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in — over ${pct(KAILU_BAND()[1])}, a farm`],
+    [r => !r.worth && !(r.value > 0), r => `开炉 ${r.name} (${r.hui}): a pot of junk gives nothing`],
+    [r => r.buy && r.value >= r.buy, r => `开炉 ${r.name} (${r.hui}): bought for ${r.buy}, it gives back ${r.value} — a farm`],
+    [r => r.family !== 'junk' && r.leans !== r.family, r => `开炉 ${r.name}: leans to ${r.leans}, meant for ${r.family}`],
   ],
   paces: [[r => r.later && r.typical != null && (r.typical < r.band[0] || r.typical > r.band[1]), r => `${r.label}: typical ${r.typical} days, base band ${r.band[0]}–${r.band[1]}`]],
   claims: [
@@ -473,11 +517,12 @@ export async function measure(content = loadContent(), { deals = 0, keep = null 
     stamp: { date: new Date().toISOString().slice(0, 10), commit: commit(), deals: deals || keep?.stamp?.deals || 0, target: { ...TARGET, games: gamesOf(content) }, limits: LIMITS },
     defs: { night_h: content.rewards.seclusion.rest_hours, caveats: ['The model plays practice boards only while a stage quest holds him (balance.json model.practice): its days per 回 run long.', 'The model plays no 杂役 errands and no 开府: 灵石 earned is low, affordability pessimistic.', 'A 回 holds him on its stage quest\'s layer (else its cap); a 今 interlude takes the 古 before it.', 'A day of sitting = one night of 闭关 (rewards.json seclusion rest_hours) at the layer, as the rules pay it.'] },
     layers, huis: Object.entries(hl).map(([h, at]) => ({ hui: h, label: huiLabel(content, h, 'zh', 'short') ?? h, layer: ctx.layer(at)?.name ?? layerName(content, at.tier, at.step), earned: null })),
-    paces: paces(content), pills: P, boards: boards(ctx), errands: errands(ctx), shops: shops(ctx), gear: gear(ctx), cards: cards(ctx),
+    paces: paces(content), kailu: kailu(ctx), pills: P, boards: boards(ctx), errands: errands(ctx), shops: shops(ctx), gear: gear(ctx), cards: cards(ctx),
     fights: F, creatures: creatures(ctx, F), claims: claims(ctx), errors: hardErrors(content),
   };
   const by = earnedBy(content);
   for (const h of report.huis) h.earned = round(by[h.hui]);
+  KAILU_BAND = () => content.balance?.kailu?.band ?? [0.85, 1.6];
   report.red = redList(report);
   return report;
 }

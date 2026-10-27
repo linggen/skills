@@ -38,18 +38,21 @@ async function loadFont(doc) {
 export const iconOf = (id, art = null) => comicArt(id) ?? (art ? new URL(art, WORLD).href : null);
 
 /* ── The sample pot (no save): the bare table, a handful of things of each kind, no wait ── */
-const SAMPLE = ['chaihuo', 'kuye', 'shizi', 'huangjing', 'fuling', 'lingzhi', 'yaodan-1', 'chai-ya', 'lang-pi', 'yaodan-2', 'yaodan-3', 'tie-sha', 'cishi', 'xionghuang'];
+const SAMPLE = ['chaihuo', 'kuye', 'shizi', 'huangjing', 'fuling', 'lingzhi', 'yaodan-1', 'chai-ya', 'lang-pi', 'zhu-ya', 'tie-sha', 'cishi', 'talisman', 'xionghuang', 'grey-robe'];
 async function sample(lang, seed, force) {
-  const [t, items, { roll, kindOf, tierOfItem, GRADES }] = await Promise.all([
-    fetch(new URL('fantong.json', WORLD)).then((r) => r.json()), fetch(new URL('items.json', WORLD)).then((r) => r.json()), import('../rules/fantong-roll.mjs'),
+  const [raw, items, balance, { roll, kindOf, familyOfKind, tierOfItem, withWorth, GRADES }] = await Promise.all([
+    fetch(new URL('fantong.json', WORLD)).then((r) => r.json()), fetch(new URL('items.json', WORLD)).then((r) => r.json()),
+    fetch(new URL('balance.json', WORLD)).then((r) => r.json()).catch(() => null), import('../rules/fantong-roll.mjs'),
   ]);
+  const t = withWorth(raw, balance, items.items); // its worth and what it knows of each thing, as content.mjs folds them
   const byId = new Map(items.items.map((i) => [i.id, i]));
   const pick = (o) => o?.[lang] ?? o?.zh ?? null;
   const words = t.words?.[lang] ?? t.words?.zh ?? {};
   const brief = {
     ready: true, max_in: t.max_in ?? 3, tints: Object.fromEntries(Object.entries(t.kinds).filter(([k]) => k !== '_about').map(([k, v]) => [k, v.tint])),
     grades: words.grades ?? {}, quips: words.quips ?? {}, lingshi: { max: t.lingshi?.max ?? 3, have: 9 },
-    inputs: SAMPLE.filter((id) => byId.has(id)).map((id) => ({ id, name: pick(byId.get(id).name) ?? id, art: byId.get(id).art, kind: kindOf(t, id), tier: tierOfItem(t, id), n: 9 })),
+    leans: Object.fromEntries(Object.entries(t.families ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, pick(v.lean)])),
+    inputs: SAMPLE.filter((id) => byId.has(id)).map((id) => { const kind = kindOf(t, id, (x) => t.item_info?.[x]); return { id, name: pick(byId.get(id).name) ?? id, art: byId.get(id).art, kind, fam: familyOfKind(t, kind), tier: tierOfItem(t, id), n: 9 }; }),
   };
   let n = 0, dry = 0;
   const brief1 = (id, grade) => (id === 'lingshi' ? { id, name: words.lingshi ?? '灵石', grade, wealth: true }
