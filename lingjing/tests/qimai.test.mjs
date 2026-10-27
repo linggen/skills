@@ -24,9 +24,9 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   'jin-wotui': 'wotui', 'jin-xisi': 'xisi',
   // 第五回's 隐身符, 凶崖 and 第六回's 风掉头 went 打地鼠 on 2026-10-27 (Hanli: at most two 调息 a 回)
   // 第六回's: 褚先生's two fingers on the pulse pillow
-  'yaban-maizhen': 'maizhen',
+  // (脉枕 · yaban-maizhen cut 2026-10-27: 第四回's 铁刷子 again)
   // 今三's (2026-10-26): eyes shut on one foot, day one under the bar
-  'jin-danjiao': 'danjiao', 'jin-shendun': 'shendun',
+  'jin-danjiao': 'danjiao', // 闭关三日 (jin-shendun) went 节奏 2026-10-27 (squats to the beat)
   // 时机 boards turned 调息 (Hanli 10-26: 「还是用现有的类型吧」): 嘀声, 凶崖, 踏马符, 风掉头
   // (嘀声 went 节奏 `shuttle` on 2026-10-27: 「这个小游戏连着出现, 换一个」, right after 卧推)
   'anhe-tama': 'tama',
@@ -37,7 +37,7 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   // 第一回's lineup (2026-10-21, Hanli: 「按你的建议来」): 00-masan's 忍字 — the breath pressed down under the 桂花糕
   'masan-taunt': 'renzi',
   // 全文后的小游戏 (2026-10-26): 洗髓 back on its night (00-sleep), 吹鹅毛's level as the mirror's light (00-halfyear)
-  'sleep-xisui': 'xisui', 'halfyear-mirror': 'feather',
+  'sleep-xisui': 'xisui', // 镜光 (halfyear-mirror, level feather) cut 2026-10-27: 第六回's 藏息 again
   // 今 · 一 (2026-10-26): the lap walked out after the 1,000 m, the twelve channels traced with his arms up
   'jin-yiquan': 'yiquan', 'jin-jingluo': 'jingluo',
   // 第三回 (2026-10-26): the three hundred steps, his hand on the testing stone

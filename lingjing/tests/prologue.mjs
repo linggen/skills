@@ -107,8 +107,7 @@ export const TO_HALL = [
   // half a year: 雪夜柴垛 (塔防 · 守炉, the 卷一 plan 2026-10-21) after the winter's practice, then 冬月廿二 and the mirror (镜光, 2026-10-26)
   ['win', { id: 'halfyear-chaiduo' }],
   ['task', { action: 'done', id: 'halfyear-chaiduo' }],
-  ['win', { id: 'halfyear-mirror' }],
-  ['task', { action: 'done', id: 'halfyear-mirror' }],
+  // (镜光 · halfyear-mirror cut 2026-10-27: 第六回's 藏息 again)
   ['resolve', { exit: 'on' }],
   // 舅舅 (对话, 2026-10-26) at the table, the notice
   ['win', { id: 'uncle-jiujiu' }],

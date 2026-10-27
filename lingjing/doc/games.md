@@ -373,6 +373,16 @@ story board of the same kind as the board or fight before it in reading order (r
 with its reason (KEPT_PAIRS): two jinchat pairs (今一's two chats in j01-anatomy; 第四回's 银月 → 今二's 马小宝), 测灵石 → 小周天
 across the 第三回/第四回 turn, and 别踩第三块 → 凶崖 (the 调息 cap's trade, above).
 
+**调息 fewer, and never the same twice (2026-10-27, Hanli: 「调息的游戏出现很多次, 每次都一样. 适当减少次数, 或者改变一下内容, 增加障碍物,
+道具, 增加趣味. 不要重复」 · 「最好小游戏关卡不重复…游戏类型不变」 · 「游戏难度可以延续」):** cut 镜光 (00-halfyear; 第六回's 藏息 · 镜光扫过来
+again) and 脉枕 (wm-yaban; 第四回's 铁刷子 again, 褚先生's probe); 闭关三日 is 节奏 (`shuttle` level `dunqi`: squats to the beat in the
+gym). 24 story 调息 boards → 21. The kit has things in the channel now (qimai.js): 礁石 to go over or under, 灵珠 (a 气 back), 护体
+(the next knock free), 定神 (the channel slows); every story level lays its own, more as the story goes, its speed never falling
+(88 → 105) and no two 调息 boards in a row on one land. 第四回 still holds three (小周天 · 断肋 · 铁刷子: each the scene's breath; cutting
+铁刷子 would put two chats back to back). The lock (tests/arcade-rhythm.test.mjs): no story board deals a layout an earlier one dealt;
+CLIMB per kit (打地鼠's gap · beat · pairs, 气走经脉's speed, 节奏's beat and window) never eases along the story. 打地鼠: sixteen story
+nights had one set of numbers (a reskin each); now each steps on from 接雨's.
+
 **The 调息 cap held (2026-10-27, the coordinator for Hanli: at most two a 回):** 凶崖 and 风掉头 above, and 第五回's 隐身符
 (`yinshen`, wm-shishi: wherever 邹青松's spirit sense sweeps, go still), are 打地鼠 now, painted; 第五回 keeps 踏马符 · 息壤,
 第六回 脉枕 · 藏息. 凶崖 follows 别踩第三块 (both 打地鼠, a scene apart): 踏马符 would have stood beside 谷粒 in one scene.

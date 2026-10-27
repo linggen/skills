@@ -9,6 +9,7 @@ import { RHYTHM_CAP, foldStretches, stretchesOf, timelineOf } from '../scripts/r
 import { FIGHT_KIND, OUT, text } from '../tools/arcade-rhythm.mjs';
 import { dealOf } from '../scripts/rules/look.mjs';
 import { fill as rainFill } from '../scripts/games/rain.js';
+import { fill as shuttleFill } from '../scripts/games/shuttle.js';
 
 const TABLE = JSON.parse(fs.readFileSync(OUT, 'utf8'));
 const REG = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
@@ -91,6 +92,10 @@ const boardsInOrder = () => plays().filter((x) => x.kind === 'board').map((it) =
 /* What may climb, per kit: numbers that only ever fall (a gap, a beat) or only ever rise, read off the level as played. */
 const CLIMB = {
   rain: (L) => { const f = rainFill(L); return { fall: { gapEnd: f.gap[1], beatEnd: f.beat[1], three: f.three, jit: f.jit, teach: f.teach } }; },
+  // 气走经脉: the channel's speed (its things — 礁石 and the pickups — are each level's own, laid in story order)
+  qimai: (L) => ({ rise: { speed: L.speed ?? 90 } }),
+  // 节奏: the first level's beat and window, and the last's
+  shuttle: (L) => { const st = shuttleFill(L).stages; return { fall: { gap0: st[0].gap, win0: st[0].win, gapEnd: st.at(-1).gap, winEnd: st.at(-1).win } }; },
 };
 test('no story board deals a level an earlier one dealt (古 and 今 alike): the same type, never the same layout', () => {
   const seen = new Map();

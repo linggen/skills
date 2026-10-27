@@ -91,3 +91,23 @@ test('it draws in both languages: the court, the two lines, the ring on the line
   }
   assert.match(sh.html(sh.newGame('x'), 'en'), /data-g="start"/);
 });
+
+test('a level is data: 闭关三日 (jin-shendun) is the kit\'s squat level — down on one beep, up on the next, under the bar in the gym, harder than 嘀声 and won by its bot', async () => {
+  const c = loadContent(), t = c.tasks.tasks.find((x) => x.id === 'jin-shendun');
+  assert.equal(t.game, 'shuttle');
+  const row = c.games.games.find((g) => g.task === 'jin-shendun');
+  assert.equal(row.mechanic, '节奏');
+  const L = row.levels[0];
+  assert.equal(L.move, 'squat');
+  assert.ok(L.stages[0].gap < sh.STAGES[0].gap && L.stages.at(-1).gap <= sh.STAGES.at(-1).gap, 'the climb goes on from 嘀声');
+  let s = sh.act(sh.newGame('q', 1, { levels: [L] }), { g: 'start' }).state;
+  s = run(s, 300);
+  const h = sh.html(s, 'zh');
+  assert.match(h, /jin-gym\.webp/);
+  assert.match(h, />蹲</, 'the button says the move to make: down first');
+  assert.match(sh.html(s, 'en'), />Down</);
+  for (let i = 0; i < 400000 && !s.won; i += 10) { const a = bot(s, { lead: 0 }); if (a) s = sh.act(s, a).state; s = sh.tick(s, 10); }
+  assert.equal(s.won, true);
+  assert.equal(s.laps, L.stages.reduce((n, x) => n + x.n, 0));
+  assert.match(sh.html(s, 'zh'), /一口没憋/);
+});

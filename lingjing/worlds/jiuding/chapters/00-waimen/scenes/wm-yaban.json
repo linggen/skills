@@ -8,7 +8,7 @@
   "zh": "沉鼎观 · 外门 · 伙房门口",
   "en": "Chending Temple · The outer court · the kitchen door"
  },
- "_board": "wm-yaban (全文后的小游戏 第二批 2026-10-26): wm-qianye's passage split before the lecture — 钱掌柜 weighs the bow (jinchat `qian-gong`, face) after 「…一个名字，我照价收，一文不少你的。」, then 褚先生's two fingers on the wrist (气走经脉 `maizhen`) after 「…像两根竹签，一寸一寸地往灶膛里捅。」 Before the 大比 lock, as wm-qianye (its entry) opens it.",
+ "_board": "wm-yaban (全文后的小游戏 第二批 2026-10-26): wm-qianye's passage split before the lecture — 钱掌柜 weighs the bow (jinchat `qian-gong`, face) after 「…一个名字，我照价收，一文不少你的。」, then 褚先生's two fingers on the wrist (气走经脉 `maizhen`) after 「…像两根竹签，一寸一寸地往灶膛里捅。」 Before the 大比 lock, as wm-qianye (its entry) opens it. 2026-10-27: 脉枕 (`yaban-maizhen`) CUT (Hanli: 「调息的游戏出现很多次, 每次都一样. 适当减少次数」): 褚先生's probe through the channels is 第四回's 铁刷子 again; 钱 stays the scene's board.",
  "setup": {
   "zh": "腊月初七，大比前一天。伙房门口的老槐树底下支起了押宝板；傍晚，讲堂里验修为。外门里传着一句话：马家为了这一颗筑基丹，把蒙山上的树卖了三成。",
   "en": "The seventh of the twelfth month, the day before the contest. A betting board goes up under the old pagoda tree by the kitchen; at dusk, cultivation is tested in the lecture hall. A rumour goes round the outer court: for this one Foundation pill the Ma family sold three-tenths of the trees on Mount Meng."
@@ -45,16 +45,11 @@
   {
    "card": "board",
    "id": "yaban-qian"
-  },
-  {
-   "card": "board",
-   "id": "yaban-maizhen"
   }
  ],
  "offers": {
   "tasks": [
-   "yaban-qian",
-   "yaban-maizhen"
+   "yaban-qian"
   ]
  },
  "story_after": {
@@ -76,11 +71,11 @@
    "beat": [],
    "next": "wm-qianye",
    "needs": {
-    "task": "yaban-maizhen"
+    "task": "yaban-qian"
    },
    "refuse": {
-    "zh": "褚先生的两根指头还搭在腕子上。",
-    "en": "Master Chu's two fingers are still on your wrist."
+    "zh": "钱掌柜的眼皮还落在你背上那张弓上。",
+    "en": "Shopkeeper Qian's eyes are still on the bow on your back."
    }
   }
  ]
