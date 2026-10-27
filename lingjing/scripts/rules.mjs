@@ -491,6 +491,8 @@ export function forLing(value) {
     if (k === 'her_beat' && v && typeof v === 'object') { out.her_beat = { id: v.id, facts: { happened: v.facts?.happened ?? null } }; continue; }
     // Her unease is hers to say: Ling gets only the one sentence of what she does.
     if (k === 'unease' && v && typeof v === 'object') { out.unease = { ling: v.ling ?? null }; continue; }
+    // Where a beast stands (rules/fights.mjs): the place, the roads and the beast are hers; the door's setup the page's (its 斗 grade).
+    if (k === 'fights' && Array.isArray(v)) { out.fights = v.map(({ setup, ...f }) => f); continue; }
     if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(shelfForLing); continue; }
     // A scene's people: their names, roles and voices are hers; the portraits the page's.
     if (k === 'people' && Array.isArray(v)) { out.people = v.map(shelfForLing); continue; }

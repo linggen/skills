@@ -424,7 +424,7 @@ export function duel(state, content, ctx, args) {
   const full = storedLine(s, dropped);
   // Not won: what beat him, and the ways to grow stronger now (rules/strengthen.mjs) — facts for 银月's
   // word and the result card's one button (Hanli 2026-10-27: a loss never strands him).
-  const way = won ? null : lossWay(content, s, ctx, game, setup, played);
+  const way = won || exit ? null : lossWay(content, s, ctx, game, setup, played);
   return { state: s, result: { ok: true, ...(way ? way : {}), outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 

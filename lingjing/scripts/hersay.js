@@ -90,7 +90,7 @@ const ASKS = {
   won: { zh: '玩家赢了一仗。', en: 'They won a fight.' },
   // Hanli 2026-10-27: 「玩家失败了, yinyue应该给一些情感安慰, 比如 "可惜了凡人, 你还不够强大, 先去xxxx提升一下吧"」 —
   // comfort first (tease him, 凡人), then the one step the facts name (rules/strengthen.mjs); twenty characters or so.
-  lost: { zh: '玩家输了这一仗。先安慰或逗他一句（叫他凡人），再点出上面那一步该去哪做什么。合起来二十字左右，不说教。', en: 'They lost. One beat of comfort or teasing ("mortal"), then the one step above — where, what. About fifteen words, no lecture.' },
+  lost: { zh: '玩家输了这一仗。先安慰或逗他一句（叫他凡人），再点出上面那一步该去哪做什么。合起来二十字左右，不说教。', en: 'Lost. Comfort or tease ("mortal"), then the step above. ~15 words.' },
   rise: { zh: '玩家刚突破，舞台上金光正亮。', en: 'They just broke through; gold on the stage.' },
   hui: { zh: '一回走完了。', en: 'A chapter is done.' },
   tamed: { zh: '玩家收服了灵兽，从此随行。', en: 'They won over a beast; it follows now.' },
@@ -378,4 +378,24 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
       return null;
     },
   };
+}
+
+/* The ways forward after a loss (rules/strengthen.mjs), as facts for her: the best, and one more. */
+export function wayFacts(way, zh) {
+  const fact = (o) => {
+    if (!o) return '';
+    const at = o.place_name ? (zh ? `去${String(o.place_name).split(' · ').at(-1)}（${o.steps}步）` : `at ${String(o.place_name).split(' · ').at(-1)} (${o.steps} roads)`) : '';
+    const say = {
+      wear: zh ? `戴上储物袋里的${o.name}（不花钱）` : `put on the ${o.name} already in the pouch (free)`,
+      buy: zh ? `${at}买一张牌「${o.name}」（${o.price}灵石）` : `buy card ${o.name} ${at}, ${o.price} stones`,
+      pills: zh ? `${at}买${o.n}颗${o.name}带进丹囊（${o.price}灵石）` : `buy ${o.n} ${o.name} ${at} for the pill pouch (${o.price} stones)`,
+      another: zh ? '再打一场，这里会换一只' : 'fight again — the place deals another beast',
+      seclude: zh ? `闭关，至多${o.hours}个时辰得${o.progress}修为` : `seclusion: up to ${o.progress} cultivation in ${o.hours} hours`,
+      gongke: zh ? `做今日功课，得${o.progress}修为` : `today's practice, ${o.progress} cultivation`,
+    }[o.kind];
+    return say ?? '';
+  };
+  const [a, b] = way ?? [];
+  if (!a) return '';
+  return zh ? `最好的一步：${fact(a)}${b ? `；也可以：${fact(b)}` : ''}。` : `Best next step: ${fact(a)}${b ? `; or: ${fact(b)}` : ''}.`;
 }

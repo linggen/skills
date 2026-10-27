@@ -23,3 +23,9 @@ test('in a fight, none; the seal names the beast and wears its grade once weighe
   assert.match(fightMarkHtml(hou, null), /class="fightmark" title="降妖 · .+">斗</);
   assert.match(fightMarkHtml(hou, () => ({ grade: 'hard', win: 0.1 })), /fightmark g-hard" title="降妖 · .+ · 难"/);
 });
+
+test('Ling is handed where the beasts stand, never the door\'s setup (the page grades it)', async () => {
+  const { forLing } = await import('../scripts/rules.mjs');
+  const f = forLing({ fights: fightsNear(content, gate(), NOW) }).fights;
+  assert.ok(f.length && f.every(x => !('setup' in x) && x.creature && x.steps != null));
+});

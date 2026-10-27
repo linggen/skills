@@ -89,3 +89,19 @@ test('a pool beast Ling Showed before stands no more once the place deals anothe
   const ids = stageCards(look, { focus: [{ card: 'duel', id: 'haunt:lang' }, { card: 'duel', id: 'haunt:mihou' }] }).filter(c => c.card === 'duel').map(c => c.id);
   assert.deepEqual(ids, ['haunt:chihu']);
 });
+
+test('a story fight lost carries no way (a key beat may lock the map; its own 算了 stands) — only a roaming fight does', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../scripts/rules/tasks.mjs', import.meta.url), 'utf8');
+  assert.match(src, /const way = won \|\| exit \? null : lossWay\(/);
+});
+
+test('her loss facts lead with the step, so it survives the cap, in both languages', async () => {
+  const { momentFacts, wayFacts } = await import('../scripts/hersay.js');
+  const way = strengthen(content, gateSave({ wear: { weapon: 'old-bow', robe: 'grey-robe' } }), { now: NOW, game: { hunt: 'houshan' } });
+  for (const zh of [true, false]) {
+    const tail = zh ? '输给了狼，撑了9回合；它还剩气血3/20，叫出3个护主。' : ' Lost to Wolf after 9 turns; it had 3/20 Life left, 3 guards called.';
+    const facts = momentFacts('lost', wayFacts(way, zh) + tail, zh ? 'zh' : 'en', { max: 260 });
+    assert.ok(facts.includes(way[0].name) && facts.includes(String(way[0].place_name).split(' · ').at(-1)), facts);
+  }
+});
