@@ -119,6 +119,43 @@ days at 30 min** — boards become the way, as Hanli asked.
 kinds above ~5–10 灵石 an active minute, so a 100-修为 pill (~10 active min) ≈ 60–100 灵石. Any pill priced under
 that is faster than playing — check the shelf (`pills`, `prices`) when the numbers go in.
 
+### Time-proportional fit (Hanli 10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」)
+
+A layer's 修为 is shared by its sources, and inside a source each thing pays by its minutes. **Proposed split** — time as
+it is spent (the model: reading ~55%, games and fights ~35%, the rest ~10%) against the 修为 each gets:
+
+| source | share of the layer's time | share of its 修为 | pays per minute, relative |
+|---|---|---|---|
+| small games and fights | 35% | **60%** | 1.7× (the play is where 修为 comes from) |
+| the story (passages read, ways, the 回's turn) | 55% | **25%** | 0.45× |
+| errands, 人间功课, 闭关, pills, 秘境 rerun | 10% | **15%** | 1.5× |
+
+A thing's 修为 = its minutes ÷ its source's minutes in the layer × the source's share. Minutes per kind (play-human and
+the model: a won 打地鼠 or 调息 ~1, 割绳子 · 投掷 · 节奏 ~2, 格斗 · 对话 ~3, 塔防 · 斗法 · 解谜 ~4, 你画我猜 ~5, 棋牌 ~6,
+the 秘境 rerun ~12; a passage ~2 min at 450 字 a minute; an errand ~5 with its walk). ★ × 0.6 · 0.8 · 1.0; replays 100 ·
+50 · 10%; 修为 stops at the gate (圆满 → 灵石).
+
+**With today's thresholds** (修为 per thing, ★3):
+
+| layer | gate | hours | games 60% | story 25% | rest 15% | 打地鼠 · 调息 | 割绳子 · 投掷 | 格斗 · 对话 | 塔防 · 斗法 · 解谜 | 棋牌 | rerun | a passage | an errand |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 一层 | 470 | 2 | 282 | 118 | 70 | 7 | 13 | 20 | 27 | 40 | 81 | 4 | 29 |
+| 二层 | 490 | 3 | 294 | 123 | 74 | 5 | 9 | 14 | 19 | 28 | 56 | 2 | 20 |
+| 三层 | 510 | 4 | 306 | 128 | 77 | 4 | 7 | 11 | 15 | 22 | 44 | 2 | 16 |
+| 四层 | 530 | 5 | 318 | 133 | 80 | 3 | 6 | 9 | 12 | 18 | 36 | 2 | 13 |
+| 五层 | 1040 | 6 | 624 | 260 | 156 | 5 | 10 | 15 | 20 | 30 | 59 | 3 | 22 |
+| 六层 | 1060 | 7 | 636 | 265 | 159 | 4 | 9 | 13 | 17 | 26 | 52 | 2 | 19 |
+| 七层 | 1080 | 8 | 648 | 270 | 162 | 4 | 8 | 12 | 15 | 23 | 46 | 2 | 17 |
+| 八层 | 1100 | 9 | 660 | 275 | 165 | 3 | 7 | 10 | 14 | 21 | 42 | 2 | 15 |
+| 九层 | 1120 | 10 | 672 | 280 | 168 | 3 | 6 | 10 | 13 | 19 | 38 | 2 | 14 |
+
+The pay per thing falls layer by layer — today's thresholds are almost flat while the hours climb. **Recommended: let
+the threshold carry the hours (235 修为 an hour) and the pay stay one number per kind**: 一层 470 · 二层 705 · 三层 940 ·
+四层 1175 · 五层 1410 · 六层 1645 · 七层 1880 · 八层 2115 · 九层 2350, and then every layer pays **打地鼠 · 调息 7, 割绳子 · 投掷
+13, 格斗 · 对话 20, 塔防 · 斗法 · 解谜 27, 你画我猜 34, 棋牌 40, the rerun 81, a passage 4, an errand 29** — a bigger bar
+for a higher layer, the same coin for the same minutes, which a player can learn. (The calendar this makes is above:
+练气 108 typical days at +1 h a layer, 72 at +0.5 h.)
+
 ## 四条 — the standing rule, audit 10-27
 
 Hanli 10-27: 「确保都能跳过去, 不会卡住游戏进程. 都有音效并可关闭, 都美化过并统一风格, 都用了小游戏的外壳.」 The 游戏厅 holds
