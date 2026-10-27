@@ -41,7 +41,7 @@ const T = {
   zh: {
     type: '说点什么……', send: '发送', typing: '对方正在输入…', left: '还能说 {n} 句', done: '聊完了', end: '就到这儿',
     calling: '通话中', far: '这会儿叫不应。', off: '这个测试存档不叫灵（chat=off）。', err: '没回。再说一句？',
-    riddle: '猜谜', guessIt: '你猜……', guessGo: '猜', hint: '提示', hintAt: '提示{n}：', skip: '跳过', answer: '谜底：{a}',
+    riddle: '猜谜', mi: '谜', wen: '问', guessIt: '你猜……', guessGo: '猜', hint: '提示', hintAt: '提示{n}：', skip: '跳过', answer: '谜底：{a}',
     tried: '猜错 {n} 回', hinted: '提示 {n}/{max}',
     twenty: '二十问 · 猜你心里的动物', think: '心里想好一种动物，就在下面这些里挑。他们只问是不是，{max} 问之内来猜。想好了，点「想好了」。',
     ready: '想好了', yes: '是', no: '不是', unknown: '不知道', right: '对', wrong: '不对', asked: '已问 {n}/{max}',
@@ -50,7 +50,7 @@ const T = {
   en: {
     type: 'Say something…', send: 'Send', typing: 'typing…', left: '{n} lines left', done: 'Chat over', end: 'Leave it there',
     calling: 'On call', far: 'No one answers just now.', off: 'This test save asks no one (chat=off).', err: 'No reply. Say it again?',
-    riddle: 'A riddle', guessIt: 'Your guess…', guessGo: 'Guess', hint: 'Hint', hintAt: 'Hint {n}: ', skip: 'Skip', answer: 'The answer: {a}',
+    riddle: 'A riddle', mi: '?', wen: '?', guessIt: 'Your guess…', guessGo: 'Guess', hint: 'Hint', hintAt: 'Hint {n}: ', skip: 'Skip', answer: 'The answer: {a}',
     tried: '{n} wrong', hinted: 'hints {n}/{max}',
     twenty: 'Twenty questions · the animal you think of', think: 'Think of an animal from the ones below. They ask only yes or no, and guess within {max}. Ready? Tap "Got one".',
     ready: 'Got one', yes: 'Yes', no: 'No', unknown: 'Don\'t know', right: 'Right', wrong: 'Wrong', asked: 'Asked {n}/{max}',
@@ -120,7 +120,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const sound = (name) => { try { shell?.sound?.(name); } catch { /* no sound: the chat goes on */ } };
   const typing = (on) => { $('.g-jc-typing')?.classList.toggle('is-on', on); if (on) scroll(); };
   const foot = (t) => { const f = $('.g-jc-foot'); if (f) f.textContent = t; };
-  const lefts = () => foot(g.over ? w.done : fill(w.left, { n: Math.max(0, turns() - g.sent) }));
+  const lefts = () => { if (!g.chat?.game) foot(g.over ? w.done : fill(w.left, { n: Math.max(0, turns() - g.sent) })); }; // a word game keeps its own count
   const turns = () => Math.max(1, Number(g.chat?.turns) || 5);
   const inputOn = (on) => {
     for (const el of root.querySelectorAll('.g-jc-in, .g-jc-send, .g-jc-chip')) el.disabled = !on;
@@ -384,11 +384,29 @@ const STYLE = `
 .g-jc [hidden] { display: none !important; }
 .g-jc-note { align-self: center; max-width: 92%; font-size: 12.5px; color: var(--jc-dim); text-align: center; font-style: italic; padding: 2px 6px; }
 .g-jc-row.is-card { justify-content: center; }
-.g-jc-riddle { width: min(100%, 420px); padding: 10px 14px; border: 2.5px solid var(--jc-ink); border-radius: 12px; background: #fff8dc;
-  box-shadow: 3px 4px 0 var(--jc-ink); text-align: center; }
-.g-jc-riddle i { display: block; font-style: normal; font-size: 11.5px; letter-spacing: .12em; color: var(--jc-dim); }
+.g-jc-riddle { width: min(100%, 420px); text-align: center; display: flex; flex-direction: column; align-items: center; }
+/* 灯谜: a red lantern with gold caps and a tassel, the riddle on a paper slip hung beneath it. */
+.g-jc-lan { position: relative; display: flex; flex-direction: column; align-items: center; transform-origin: 50% 0; animation: g-jc-swing 4.5s ease-in-out infinite; }
+.g-jc-lan-cap { width: 30px; height: 7px; border-radius: 2px; background: linear-gradient(#f6d77a, #b98a1e); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+.g-jc-lan-cap.is-low { width: 24px; }
+.g-jc-lan-body { position: relative; width: 70px; height: 52px; margin: -1px 0; border-radius: 50%;
+  background: repeating-linear-gradient(90deg, rgba(90,10,6,.0) 0 11px, rgba(90,10,6,.35) 11px 12.5px), radial-gradient(circle at 50% 38%, #ff8a5c 0, #e0321f 42%, #a3170f 78%, #6e0d08 100%);
+  box-shadow: 0 0 18px rgba(255, 120, 60, .45), inset 0 -6px 10px rgba(0,0,0,.25); display: grid; place-items: center; }
+.g-jc-lan-body b { font-family: var(--serif, serif); font-size: 22px; color: #ffe08a; text-shadow: 0 1px 0 #7a1208; }
+.g-jc-lan-cord { width: 2px; height: 12px; background: #b98a1e; }
+.g-jc-strip { position: relative; width: 100%; padding: 12px 16px 12px; border-radius: 3px; transform: rotate(-.6deg);
+  background: linear-gradient(#c8231b, #c8231b) top / 100% 5px no-repeat, linear-gradient(#c8231b, #c8231b) bottom / 100% 5px no-repeat, #fff3dc;
+  box-shadow: 2px 4px 0 rgba(34, 32, 28, .35), 0 0 0 1px rgba(150, 40, 20, .35); font-family: var(--serif, serif); }
+.g-jc-strip i { display: block; font-style: normal; font-size: 11.5px; letter-spacing: .14em; color: #9a3b2a; }
+.g-jc-q.is-small { font-size: 14px; font-weight: 600; }
+.g-jc.is-dark .g-jc-strip { filter: brightness(.82) sepia(.15); color: #2b2219; }
+.g-jc.is-dark .g-jc-pool { color: #6b5e48; }
+.g-jc.is-dark .g-jc-gbtn { box-shadow: none; border-color: #3a3e4c; background: #14161d; color: #c9cede; }
+.g-jc.is-dark .g-jc-gbtn.is-yes, .g-jc.is-dark .g-jc-gbtn.is-main { background: #2f5a2a; color: #e6f0e0; }
+.g-jc.is-dark .g-jc-gbtn.is-no { background: #5a2a24; color: #f0e0dc; }
 .g-jc-q { margin: 4px 0 2px; font-size: 16px; font-weight: 700; line-height: 1.55; }
 .g-jc-hints { margin: 6px 0 0; padding: 0; list-style: none; font-size: 13px; color: #6b4d12; }
+.g-jc-hints li { margin-top: 2px; }
 .g-jc-ans { margin: 6px 0 0; font-weight: 800; color: #9a3b2a; }
 .g-jc-pool { margin: 6px 0 0; font-size: 12.5px; color: var(--jc-dim); line-height: 1.6; }
 .g-jc-game { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 6px; border-top: 2.5px solid var(--jc-ink); background: #f7f6f2; }
@@ -404,13 +422,13 @@ const STYLE = `
 .g-jc-gbtn.is-no { background: #e8674f; color: #fff; }
 .g-jc-gbtn.is-skip { font-weight: 500; font-size: 12.5px; box-shadow: none; border-style: dashed; }
 .g-jc-gnote { margin: 0; font-size: 13px; text-align: center; }
-.g-jc.is-face .g-jc-riddle { background: #fbf6ea; border-width: 1.5px; border-radius: 4px; box-shadow: none; }
 .g-jc.is-face .g-jc-gbtn { box-shadow: none; border-width: 1.5px; }
 .g-jc.is-face .g-jc-gbtn.is-yes, .g-jc.is-face .g-jc-gbtn.is-main { background: #6f7f3a; }
 .g-jc.is-face .g-jc-gbtn.is-no { background: #9a3b2a; }
+@keyframes g-jc-swing { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
 @keyframes g-jc-pop { from { transform: translateY(6px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes g-jc-dot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
 @keyframes g-jc-blink { 50% { opacity: .25; } }
 @media (max-width: 600px) { .g-jc { height: min(520px, 64dvh); border-radius: 18px; } .g-jc-col { max-width: 80%; } }
-@media (prefers-reduced-motion: reduce) { .g-jc-row, .g-jc-typing span, .g-jc-rec { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .g-jc-row, .g-jc-typing span, .g-jc-rec, .g-jc-lan { animation: none; } }
 `;

@@ -28,6 +28,9 @@ function strip(ctx, html) {
   el.innerHTML = html;
   return el;
 }
+/* The lantern over a slip: its ribs, gold caps, a tassel; one character on its face. In the dark (黑地里) no lantern burns. */
+const lanternOf = (ctx) => (ch) => (ctx.chat.look === 'dark' ? '' : lantern(ch));
+const lantern = (ch) => `<div class="g-jc-lan" aria-hidden="true"><span class="g-jc-lan-cap"></span><span class="g-jc-lan-body"><b>${esc(ch)}</b></span><span class="g-jc-lan-cap is-low"></span><span class="g-jc-lan-cord"></span></div>`;
 const btn = (cls, label, data = '') => `<button type="button" class="g-jc-gbtn ${cls}"${data}>${esc(label)}</button>`;
 
 /* The book's closing lines (`game.after`): theirs typed out; his (`who: me`) a chip he taps, then his bubble. */
@@ -51,7 +54,9 @@ export async function riddleGame(ctx) {
   const game = chat.game, r = riddleOf(game, lang);
   const st = { misses: 0, hints: 0, choices: false, done: false };
   const label = pick(game.label, lang) || w.riddle;
-  ctx.add({ who: 'card', html: `<div class="g-jc-riddle"><i>${esc(label)}</i><p class="g-jc-q">${esc(r.q)}</p><ol class="g-jc-hints"></ol><p class="g-jc-ans" hidden></p></div>` });
+  // A 灯谜 as it is hung at a lantern fair: the red lantern, the riddle on the paper slip beneath it (Hanli 10-27: the
+  // boards in the house style, 「画面不精致」 never again).
+  ctx.add({ who: 'card', html: `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.mi)}<div class="g-jc-strip"><i>${esc(label)}</i><p class="g-jc-q">${esc(r.q)}</p><ol class="g-jc-hints"></ol><p class="g-jc-ans" hidden></p></div></div>` });
   // A quiet game (`quiet`: 黑地里, the ambulance) asks no one: the moment is no game of theirs, only his answer and the book.
   const react = game.quiet ? () => Promise.resolve() : ctx.react;
   react(riddleLine(chat, { event: 'open', riddle: r, cast: ctx.cast, lang }));
@@ -118,7 +123,7 @@ export async function guessGame(ctx) {
   const { chat, lang, w, cast } = ctx;
   const table = await ctx.table();
   const names = table.animals.map((a) => pick(a.name, lang));
-  ctx.add({ who: 'card', html: `<div class="g-jc-riddle"><i>${esc(pick(chat.game.label, lang) || w.twenty)}</i><p class="g-jc-q">${esc(fill(w.think, { max: table.max }))}</p><p class="g-jc-pool">${names.map(esc).join(' · ')}</p></div>` });
+  ctx.add({ who: 'card', html: `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.wen)}<div class="g-jc-strip"><i>${esc(pick(chat.game.label, lang) || w.twenty)}</i><p class="g-jc-q is-small">${esc(fill(w.think, { max: table.max }))}</p><p class="g-jc-pool">${names.map(esc).join(' · ')}</p></div></div>` });
   // Their questions in their own voice: one turn, asked while he thinks (the plain wording stands in until it lands).
   let bank = {};
   ctx.ask(bankLine(chat, table, { cast, lang })).then((r) => { bank = parseBank(r?.text, table, cast); ctx.log({ kind: 'bank', chat: ctx.id, lines: Object.keys(bank).length }); }).catch(() => {});
@@ -144,7 +149,9 @@ export async function guessGame(ctx) {
       ctx.sound(st.won ? 'right' : o.grade === 'skipped' ? 'skip' : 'wrong');
       ctx.foot(summary);
       // The result, in their words, is their last bubble — and the line the chat keeps (Hanli 10-27: one result line).
-      if (o.grade !== 'skipped') await ctx.react(resultLine(chat, summary, lang), { wait: true });
+      // The book closes it when it has the lines (黑地里: 「小宝哥。跟着我喘。……」); else their own word on the result.
+      if (chat.game.after?.length) { await ctx.settle(); await playAfter(ctx, chat.game.after); }
+      else if (o.grade !== 'skipped') await ctx.react(resultLine(chat, summary, lang), { wait: true });
       resolve(o);
     };
     const skipBtn = () => btn('is-skip', w.skip);
