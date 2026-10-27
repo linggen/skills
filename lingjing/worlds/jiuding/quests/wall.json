@@ -65,29 +65,6 @@
      ]
     },
     {
-     "id": "cangjing-qipu",
-     "title": {
-      "zh": "藏经阁 · 补谱",
-      "en": "The scripture hall · The game book"
-     },
-     "say": {
-      "zh": "东墙一块乌木牌：「二层翻出半本旧棋谱，末一页的残局缺了着法。解出来，补在页脚。」杂役，外门可揭。",
-      "en": "An ebony tag on the east wall: \"Half an old book of xiangqi turned up on the second floor; the endgame on its last page has lost its moves. Solve it and write them at the foot of the page.\" A chore, outer disciples may take it."
-     },
-     "done": {
-      "zh": "着法补在页脚，墨还没干。抄经的师兄凑过来看了一眼：「……红先，是这么走。」",
-      "en": "The moves are at the foot of the page, the ink still wet. The copying brother leans over to look: \"…Red first. Yes, that's how it goes.\""
-     },
-     "need": [
-      {
-       "kind": "board",
-       "task": "xiangqi",
-       "n": 1,
-       "at": "cangjing"
-      }
-     ]
-    },
-    {
      "id": "chaifang-tengdi",
      "title": {
       "zh": "柴房 · 腾地方",

@@ -38,6 +38,8 @@ test('each 观 place has a pool of two or three of the kit\'s practice boards, a
     assert.equal(poolToday(p, day(0, 1)).join(), poolToday(p, day(0, 23)).join(), 'the same all day');
   }
   assert.ok(!GUAN.some((id) => gamesToday(content, placeOf(content, id), day(0)).includes('luoshu')), '洛书 stays at its one gate (Hanli 10-19)');
+  // 象棋 has three endgames a level (games/xiangqi.js PUZZLES): one place of the 观, not spread over the pools.
+  assert.deepEqual(GUAN.filter((id) => placeOf(content, id).has.games_pool.from.includes('xiangqi')), ['zhishi']);
 });
 
 test('the tray and Look show today\'s set: practice boards where he stands, the plate\'s tags for every place of the 观', () => {
