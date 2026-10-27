@@ -24,9 +24,9 @@
       {
         "task": "qiyu-huarong", "weight": 2,
         "frames": [
-          { "zh": "碎石堵了岔口的一道口子，得一块一块挪开。", "en": "Fallen stone blocks one of the mouths at the fork; it has to be shifted block by block." },
-          { "zh": "暗河的河床里卡着几截浮木和石块，挪出一条路来。", "en": "Driftwood and stones jam the dry riverbed; work a way through." },
-          { "zh": "凶崖底下塌了半边，有只小兽困在石缝里，把石头挪开放它出来。", "en": "Half the foot of the cliff has fallen in and a small beast is trapped in a crack; shift the stones and let it out." }
+          { "zh": "碎石堵了岔口的一道口子，得一块一块挪开。把小满挪到下方缺口。", "en": "Fallen stone blocks one of the mouths at the fork; it has to be shifted block by block. Get Xiaoman to the gap at the bottom." },
+          { "zh": "暗河的河床里卡着几截浮木和石块，挪出一条路来。把小满挪到下方缺口。", "en": "Driftwood and stones jam the dry riverbed; work a way through. Get Xiaoman to the gap at the bottom." },
+          { "zh": "凶崖底下塌了半边，有只小兽困在石缝里。把小满挪到下方缺口，石头就让开了。", "en": "Half the foot of the cliff has fallen in and a small beast is trapped in a crack. Get Xiaoman to the gap at the bottom and the stones give way." }
         ]
       },
       {

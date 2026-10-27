@@ -54,7 +54,13 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
   const g = { state: mod.newGame(seed, level, data), held: null };
   // `peek`: a host that keeps the stuck rule itself (the phone's, games/phone/host.js) is handed a look at the state.
   peek?.(() => g.state);
-  const paint = () => morph(host, mod.html(g.state, lang));
+  // The frame's own bar may hold this board's taps (the shell's ↺, games/shell.js restartHtml): it follows the state.
+  const frame = () => host.closest('.gshell');
+  const paint = () => {
+    morph(host, mod.html(g.state, lang));
+    const re = mod.meta?.restart && frame()?.querySelector(':scope > .gshell-bar [data-g="restart"]');
+    if (re) re.disabled = !mod.meta.restart(g.state);
+  };
   return new Promise((resolve) => {
     let last = performance.now(), done = false;
     const gate = tapGate();
@@ -125,6 +131,12 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       const el = e.target.closest?.('[data-g]');
       if (!el || el.disabled || !host.contains(el) || paused()) return;
       if (gate.click('m') && e.detail !== 0) return; // already acted on as the finger went down
+      apply({ ...el.dataset }, el);
+    });
+    // A tap on this board from its frame's bar (↺ 重来: `data-gfor`), outside the host.
+    on(doc, 'click', (e) => {
+      const el = e.target.closest?.('.gshell-bar [data-g][data-gfor]');
+      if (!el || el.disabled || paused() || !frame() || el.closest('.gshell') !== frame()) return;
       apply({ ...el.dataset }, el);
     });
     // A pressed pointer drawn across a [data-g-swipe] control acts on it, once per control per

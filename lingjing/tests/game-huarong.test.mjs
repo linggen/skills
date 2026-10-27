@@ -6,8 +6,9 @@ const SIZE = { k: [2, 2], v: [1, 2], h: [2, 1], s: [1, 1] };
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 
 // Optimal single-step solutions (one block, one cell = one move).
-const OPTIMAL = { 1: [12, 15, 19], 2: [29, 32, 40], 3: [63, 88, 115] };
-const RANGE = { 1: [8, 20], 2: [20, 40], 3: [41, 200] };
+// 0 is the first meeting (the daily board's climb; Hanli 10-27: 「第一次玩华容道, 能不能简单一点」).
+const OPTIMAL = { 0: [10, 10], 1: [12, 15, 19], 2: [29, 32, 40], 3: [63, 88, 115] };
+const RANGE = { 0: [8, 12], 1: [8, 20], 2: [20, 40], 3: [41, 200] };
 
 // Shape-only key: identical pieces are interchangeable.
 function key(blocks) {
@@ -60,7 +61,7 @@ test('meta shape', () => {
 });
 
 test('deal is deterministic and JSON-serializable', () => {
-  for (const lv of [1, 2, 3]) {
+  for (const lv of [0, 1, 2, 3]) {
     const a = newGame('seed-x', lv), b = newGame('seed-x', lv);
     assert.deepEqual(a, b);
     assert.deepEqual(JSON.parse(JSON.stringify(a)), a);
@@ -340,4 +341,99 @@ test('keyboard-only: Q/E cycle the picked block in reading order, Esc puts it ba
   assert.equal(m.act(s0, m.meta.keys.Escape).state, s0);
   assert.match(m.html(e, 'zh'), /is-sel/);
   assert.match(m.html(s0, 'zh'), /Q\/E/);
+});
+
+// The story's three levels (worlds/jiuding/games.json): every one a first encounter, none over 20 moves.
+test('the story levels in games.json: each layout solvable, none over 20 moves', async () => {
+  const { readFileSync } = await import('node:fs');
+  const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url)));
+  const STORY = { crowd: [16, 13], kouzi: [12, 15, 19], wali: [12, 15, 19] };
+  const seen = ladderOf(reg);
+  assert.deepEqual(seen.map((l) => l.id).sort(), Object.keys(STORY).sort());
+  for (const l of seen) assert.deepEqual(l.layouts[1].map((g) => solve(parseLayout(g))?.length), STORY[l.id], l.id);
+});
+
+test('a climbing deal: `deal.lv` is the difficulty (0 the first time), over the realm\'s level', () => {
+  const s = newGame('climb', 1, { lv: 0 });
+  assert.equal(s.level, 0);
+  assert.ok(layouts[0].includes(s.grid));
+  assert.equal(solve(s.blocks).length, 10);
+  assert.equal(newGame('climb', 1, { lv: 2 }).level, 2);
+  assert.equal(newGame('climb', 2, {}).level, 2, 'no lv: the level as ever');
+  // A data level with no tier 0 plays its own (the story's levels never climb).
+  assert.equal(newGame('climb', 1, { lv: 0, levels: [CROWD] }).level, 1);
+});
+
+test('the daily board and the 秘境\'s two climb from the first meeting (worlds/jiuding/tasks/world.json)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const tasks = JSON.parse(readFileSync(new URL('../worlds/jiuding/tasks/world.json', import.meta.url))).tasks;
+  for (const id of ['huarong', 'mijing-huarong', 'qiyu-huarong']) {
+    const t = tasks.find((x) => x.id === id);
+    assert.equal(t.climb[0], 0, `${id} starts at the first meeting`);
+    for (const lv of t.climb) assert.ok(layouts[lv], `${id}: level ${lv} has layouts`);
+  }
+  for (const t of tasks.filter((x) => x.game === 'huarong' && x.deal?.level)) assert.equal(t.climb, undefined, `${t.id}: a story level never climbs`);
+});
+
+test('重来: the same deal at 0 moves; nothing to undo, it stands', () => {
+  const s0 = newGame('again', 1);
+  assert.equal(meta.restart(s0), false, 'a fresh deal has nothing to undo');
+  assert.equal(act(s0, { g: 'restart' }).state, s0);
+  const path = solve(s0.blocks);
+  let s = s0;
+  for (const step of path.slice(0, 3)) {
+    s = act(s, { g: 'block', b: String(step.id) }).state;
+    if (s.sel !== step.id) s = act(s, { g: 'block', b: String(step.id) }).state;
+    s = act(s, { g: 'move', dir: step.dir }).state;
+  }
+  assert.equal(s.moves, 3);
+  assert.equal(meta.restart(s), true);
+  const r = act(s, { g: 'restart' }).state;
+  assert.deepEqual(r.blocks, s0.blocks);
+  assert.equal(r.moves, 0);
+  assert.equal(r.sel, null);
+  assert.equal(r.grid, s0.grid);
+  assert.match(html(r, 'zh'), /步数 0/);
+  // A data level's own layout comes back too.
+  const c0 = newGame('again', 1, { levels: [CROWD] }), first = solve(c0.blocks)[0];
+  const cs = act(act(c0, { g: 'block', b: String(first.id) }).state, { g: 'move', dir: first.dir }).state;
+  assert.equal(cs.moves, 1);
+  assert.deepEqual(act(cs, { g: 'restart' }).state.blocks, c0.blocks);
+});
+
+test('问询 is the board\'s own: the goal and the rule first, then a lit next move that wins if followed', () => {
+  assert.equal(meta.ask(newGame('ask', 1)), 'hint');
+  let s = newGame('ask', 0, { lv: 0 });
+  s = act(s, { g: 'hint' }).state;
+  assert.equal(s.help, 1);
+  assert.equal(s.hint, null);
+  const zh = html(s, 'zh');
+  assert.match(zh, /g-huarong-help/);
+  assert.match(zh, /小满从下方缺口出去就成；每块只能滑进空格。/);
+  assert.match(zh, /再点 \? 亮出下一步。/);
+  assert.match(html(s, 'en'), /Get Xiaoman out through the gap at the bottom/);
+  // Each 问询 after lights a move; following the lit moves wins in the optimal count.
+  const need = solve(s.blocks).length;
+  for (let n = 0; n < 40 && !s.won; n++) {
+    s = act(s, { g: 'hint' }).state;
+    assert.ok(s.hint, 'a move is lit');
+    assert.equal(s.sel, s.hint.id, 'its block is picked');
+    const lit = html(s, 'zh');
+    assert.match(lit, new RegExp(`is-hint" data-g="block" data-b="${s.hint.id}"`));
+    assert.match(lit, new RegExp(`g-huarong-${s.hint.dir} is-hint"`));
+    s = act(s, { g: 'move', dir: s.hint.dir }).state;
+    assert.equal(s.hint, null, 'a move spends the hint');
+  }
+  assert.equal(s.won, true);
+  assert.equal(s.moves, need);
+  assert.equal(meta.ask(s), null, 'won: nothing to ask');
+});
+
+test('the how-line says the goal and the one rule first, in two short sentences', () => {
+  for (const lang of ['zh', 'en'])
+    for (const k of ['desk', 'touch']) {
+      const how = meta.how[lang][k];
+      assert.ok(how.length <= (lang === 'zh' ? 40 : 120), `${lang} ${k}: ${how.length}`);
+      assert.match(how, lang === 'zh' ? /^把小满.*出口。每块只能滑进空格/ : /^Get Xiaoman .*exit\. A block slides only into empty squares/);
+    }
 });

@@ -10,7 +10,7 @@
 import { esc } from './esc.js';
 import { forInput } from './games/kit/device.js';
 import { mountPure } from './games/mount.js';
-import { playAlone, timedOf, tallOf } from './games/shell.js';
+import { playAlone, restartOf, timedOf, tallOf } from './games/shell.js';
 import { arcadePlayUrl, arcadeStageUrl, visitDays } from './arcade-board.js';
 import { devPrefetch } from './games/prefetch-ling.js';
 
@@ -180,7 +180,7 @@ async function playPage(id, n) {
   if (!mount) { card.textContent = w().missing; return; }
   const reducedMotion = Boolean(matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   playAlone(card, mount, {
-    id: `arcade-${id}`, game: id, title: [titleOf(row, mod), foe ? await mod.pickName(foe, lang()) : null].filter(Boolean).join(' · '), kind: kindOf(row), how: howOf(mod, row), timed: timedOf(mod), tall: tallOf(mod), lang: lang(),
+    id: `arcade-${id}`, game: id, title: [titleOf(row, mod), foe ? await mod.pickName(foe, lang()) : null].filter(Boolean).join(' · '), kind: kindOf(row), how: howOf(mod, row), timed: timedOf(mod), tall: tallOf(mod), restart: restartOf(mod), lang: lang(),
     leadLine: row.lead?.[lang()] ?? row.lead?.zh ?? '',
     opts: { reducedMotion, seed: `arcade|${Date.now()}`, data: { ...data, ...(foe ? { foe } : {}) } },
     // 下一关: a game with levels names its next one when won (`r.next`); the page opens it by `lv` (斗法: the next foe, by `foe`)

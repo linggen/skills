@@ -28,7 +28,7 @@
   <div class="try" id="try"></div>
   <script type="module">
     import { mountPure } from './games/mount.js';
-    import { playAlone, timedOf } from './games/shell.js';
+    import { playAlone, restartOf, timedOf } from './games/shell.js';
     import { devPrefetch } from './games/prefetch-ling.js';
     const q = new URLSearchParams(location.search);
     const root = document.getElementById('try');
@@ -45,7 +45,7 @@
       try { data = q.get('data') ? JSON.parse(q.get('data')) : undefined; } catch { data = undefined; }
       // The one shell every small game wears (games/shell.js): title and how-to in its bar, the result and 再来 under it.
       playAlone(document.getElementById('play'), mount, {
-        id: `try-${id}`, game: id, title: mod.meta?.name?.[lang] ?? id, how: mod.meta?.how?.[lang] ?? '', timed: timedOf(mod), lang,
+        id: `try-${id}`, game: id, title: mod.meta?.name?.[lang] ?? id, how: mod.meta?.how?.[lang] ?? '', timed: timedOf(mod), restart: restartOf(mod), lang,
         opts: { data, seed: q.get('seed') || String(Date.now()), level: Number(q.get('level') || 1) },
         prefetch: devPrefetch(mod, { data, lang }), // 台词预取 only with &prefetch=1
       });

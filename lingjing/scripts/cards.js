@@ -150,7 +150,7 @@ import { TURNED_MS, turnedPays } from './turned.js';
 import { choicesStand } from './queue.js';
 import { AI_WORDS, caseCard, duizi, haggle, twenty } from './aigames-cards.js';
 import { mountHostHtml, mountOnly } from './beat-host.js';
-import { frameHtml, timedOf, tallOf, tallStyle, toolHtml } from './games/shell.js';
+import { frameHtml, restartHtml, restartOf, timedOf, tallOf, tallStyle, toolHtml } from './games/shell.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -565,7 +565,8 @@ function board(card, ctx) {
   const skips = (own || task?.replay) && !today && !made && !shut;
   // A puzzle that is hers to explain (密室: `meta.askHer` names the module's tap) — 问询 goes to her with the room's
   // rules and where he stands, never to Ling for the scenery again (Hanli 10-27: 问询 twice, only the room re-described).
-  const herAsk = g?.mod?.meta?.askHer?.(g.state);
+  // A board that answers 问询 itself (华容道 `meta.ask`: how to play, then a lit next move) takes it the same way.
+  const herAsk = (g?.mod?.meta?.ask ?? g?.mod?.meta?.askHer)?.(g.state);
   const about = own ? null : herAsk ? { label: ctx.words.about, g: herAsk, gfor: id } : { label: ctx.words.about, ask: true, say: ask };
   // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
   // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever. Its way out
@@ -573,6 +574,8 @@ function board(card, ctx) {
   // button也, 全局统一改」): ✕ puts it down (收手) or, once stuck, goes on (算了); ? asks — nothing under the board.
   const tools = {
     ask: !about ? '' : about.g ? toolHtml('ask', about.label, `data-g="${esc(about.g)}" data-gfor="${esc(about.gfor)}"`) : toolHtml('ask', about.label, askAttr(about.say)),
+    // 重来 (↺): a board that can start over (shell.js restartOf); its tap is the board's own, by `data-gfor`.
+    restart: restartOf(g?.mod) && !g?.state?.won ? restartHtml(id, ctx.lang, g.mod.meta.restart(g.state)) : '',
     close: leaveBtn ? toolHtml('close', leaveBtn.label, `data-board-leave="${esc(id)}"`) : skips ? skipBoard(g, id, ctx, { icon: true }) : '',
   };
   const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod), ...tools,

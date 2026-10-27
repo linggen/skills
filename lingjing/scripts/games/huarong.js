@@ -3,6 +3,11 @@
 // Pure module: newGame/html/act never touch document or window; `mount` (games/mount.js's contract) resolves
 // the level first, then plays the pure board.
 //
+// 问询 on this board is the board's own (`meta.ask`, cards.js): the first tap says the goal and the one rule, each
+// tap after lights one good next move (the shortest way out from the board as it stands, `solve`) — never the
+// scenery (Hanli 10-27, 晒经: 「这个怎么玩, 有点难, 第一次玩华容道」). 重来 (`meta.restart`, the shell's ↺) lays the
+// same deal again at 0 moves (「能否加一个重来的按钮」).
+//
 // Levels are data. A level (all keys optional but `id`; a missing one falls back to the built-in `mijing`'s):
 //   id        string
 //   name      {zh, en}                    the level's title (a host's bar reads it; meta.name is mijing's)
@@ -24,7 +29,9 @@
 import { mountPure } from './mount.js';
 
 // Rows top→bottom, 20 chars; same letter = one block, Y = the 2×2, '.' = empty.
+// 0 is a first meeting (the daily board's `climb`, worlds/jiuding/tasks/world.json): 小满 straight above the exit.
 const LAYOUTS = {
+  0: ['ABBCDYYEFYYGH..IHJKI', 'CCABDYYEFYYGH..IHJKI'], // 10 · 10
   1: ['GDHIBDEEB.YYACYYACF.', 'IFC.EECBYYGBYYADH.AD', 'A.EEA.FBYYCBYYCDIGHD'], // 12 · 15 · 19
   2: ['FEEHAYYBAYYBDC.GDC.I', 'IGEEBYYCBYYCH.DA.FDA', 'EEGDFYYDHYYIB.CAB.CA'], // 29 · 32 · 40
   3: ['YYDDYYG.IB.AHBCAEECF', 'YYFAYYHA.DDB.CCBGIEE', 'CYYDCYYDAEE.A.IBGFHB'], // 63 · 88 · 115
@@ -37,8 +44,8 @@ export const MIJING = {
   id: 'mijing',
   name: { zh: '华容道', en: 'Huarong Pass' },
   how: {
-    zh: { desk: '点一块再点箭头或旁边空格，一次滑一格；键盘 WASD 或方向键也行，Q/E 换一块，Esc 回小满。把小满挪到下方出口。', touch: '点一块再点箭头或旁边空格，一次滑一格。把小满挪到下方出口。' },
-    en: { desk: 'Tap a block, then an arrow or an empty cell beside it; or WASD / arrows, Q/E to pick, Esc back to Xiaoman. Get Xiaoman out through the bottom exit.', touch: 'Tap a block, then an arrow or an empty cell beside it. Get Xiaoman out through the bottom exit.' },
+    zh: { desk: '把小满（最大那块）挪出下方出口。每块只能滑进空格：点它，再点箭头。', touch: '把小满（最大那块）挪出下方出口。每块只能滑进空格：点它，再点箭头。' },
+    en: { desk: 'Get Xiaoman (the big block) out the bottom exit. A block slides only into empty squares: tap it, then an arrow.', touch: 'Get Xiaoman (the big block) out the bottom exit. A block slides only into empty squares: tap it, then an arrow.' },
   },
   layouts: LAYOUTS,
   win: { zh: '挤出来了 · {n} 步', en: 'Squeezed out · {n} moves' },
@@ -61,6 +68,10 @@ export const meta = {
     ArrowUp: { g: 'move', dir: 'up' }, ArrowLeft: { g: 'move', dir: 'left' }, ArrowDown: { g: 'move', dir: 'down' }, ArrowRight: { g: 'move', dir: 'right' },
     q: { g: 'cycle', step: -1 }, e: { g: 'cycle', step: 1 }, Escape: { g: 'unpick', pass: true },
   },
+  // The card's 问询 is this board's tap (cards.js): how to play, then a next move — not lore.
+  ask: (state) => (state && !state.won ? 'hint' : null),
+  // The shell's ↺ (shell.js restartHtml): this board can start over, once a move has been made.
+  restart: (state) => Boolean(state && !state.won && (state.moves > 0 || state.sel != null)),
 };
 
 const W = 4, H = 5;
@@ -130,11 +141,13 @@ export async function levelFor(opts = {}) {
 export function newGame(seed, level = 1, deal = {}) {
   const lvl = pickLevel(deal);
   const lays = lvl === MIJING ? LAYOUTS : layoutsOf(lvl);
-  const lv = lays[level] ? Number(level) : lays[1] ? 1 : Math.min(...Object.keys(lays).map(Number));
+  // A climbing task's `deal.lv` (rules/climb.mjs: 0 the first time he meets the board) is the difficulty, else `level`.
+  const want = deal?.lv != null && lays[Number(deal.lv)] ? Number(deal.lv) : level;
+  const lv = lays[want] ? Number(want) : lays[1] ? 1 : Math.min(...Object.keys(lays).map(Number));
   const list = lays[lv];
   const pick = hash(`${seed}`) % list.length;
   const own = lvl === MIJING ? {} : { lv: Object.fromEntries(['id', 'name', 'start', 'win', 'you', 'labels', 'exit', 'art'].filter((k) => lvl[k] != null).map((k) => [k, lvl[k]])) };
-  return { level: lv, layout: pick, blocks: parseLayout(list[pick]), sel: null, moves: 0, won: false, ...own };
+  return { level: lv, layout: pick, grid: list[pick], blocks: parseLayout(list[pick]), sel: null, moves: 0, won: false, help: 0, hint: null, ...own };
 }
 
 const covers = (b, x, y) => {
@@ -173,7 +186,58 @@ function slide(state, id, dir) {
   const [dx, dy] = DIRS[dir];
   const blocks = state.blocks.map((b) => (b.id === id ? { ...b, x: b.x + dx, y: b.y + dy } : b));
   const won = isWon(blocks);
-  return { state: { ...state, blocks, sel: won ? null : id, moves: state.moves + 1, won }, won };
+  // A move spends the lit hint; the next 问询 lights the next one from where the board now stands.
+  return { state: { ...state, blocks, sel: won ? null : id, moves: state.moves + 1, won, hint: null }, won };
+}
+
+/* Shape-only key: like pieces are interchangeable. */
+function shape(blocks) {
+  const g = Array(W * H).fill('.');
+  for (const b of blocks) {
+    const [w, h] = SIZE[b.t];
+    for (let y = b.y; y < b.y + h; y++) for (let x = b.x; x < b.x + w; x++) g[y * W + x] = b.t;
+  }
+  return g.join('');
+}
+
+/** The shortest way out from `start` (a breadth-first search, one block one cell a step), as steps by id; null if none. */
+export function solve(start) {
+  const prev = new Map([[shape(start), null]]);
+  let frontier = [start];
+  while (frontier.length) {
+    const next = [];
+    for (const s of frontier) {
+      if (isWon(s)) {
+        const path = [];
+        for (let k = shape(s); prev.get(k); k = prev.get(k).from) path.unshift(prev.get(k).step);
+        return path;
+      }
+      for (const b of s)
+        for (const dir of Object.keys(DIRS)) {
+          if (!canMove(s, b.id, dir)) continue;
+          const n = s.map((o) => (o.id === b.id ? { ...o, x: o.x + DIRS[dir][0], y: o.y + DIRS[dir][1] } : o));
+          const k = shape(n);
+          if (prev.has(k)) continue;
+          prev.set(k, { from: shape(s), step: { id: b.id, dir } });
+          next.push(n);
+        }
+    }
+    frontier = next;
+  }
+  return null;
+}
+
+/* 问询: the first tap says the goal and the rule; each one after lights a good next move and picks its block. */
+function ask(state) {
+  if (!state.help) return { ...state, help: 1 };
+  const step = solve(state.blocks)?.[0] ?? null;
+  return step ? { ...state, help: 2, hint: step, sel: step.id } : state;
+}
+
+/* 重来: the same deal, as it was laid. */
+function restart(state) {
+  if (!meta.restart(state) || !okGrid(state.grid)) return state;
+  return { ...state, blocks: parseLayout(state.grid), sel: null, moves: 0, won: false, hint: null };
 }
 
 function tapCell(state, x, y) {
@@ -205,6 +269,8 @@ export function act(state, data = {}) {
     const next = at < 0 ? (step > 0 ? order[0] : order[order.length - 1]) : order[(at + step + order.length) % order.length];
     return { state: { ...state, sel: next }, won: false };
   }
+  if (g === 'hint') return { state: ask(state), won: false };
+  if (g === 'restart') return { state: restart(state), won: false };
   if (g === 'unpick') return state.sel == null ? { state, won: false } : { state: { ...state, sel: null }, won: false };
   if (g === 'move') {
     if (!DIRS[data.dir]) return { state, won: false };
@@ -223,8 +289,10 @@ export function act(state, data = {}) {
 }
 
 const T = {
-  zh: { moves: '步数', pick: '先点一块', keys: { desk: 'WASD/方向键 挪动 · Q/E 换一块 · Esc 回小满', touch: '' } },
-  en: { moves: 'Moves', pick: 'Tap a block first', keys: { desk: 'WASD/arrows move · Q/E pick · Esc back to Xiaoman', touch: '' } },
+  zh: { moves: '步数', pick: '先点一块', keys: { desk: 'WASD/方向键 挪动 · Q/E 换一块 · Esc 回小满', touch: '' },
+    rule: '{you}从下方缺口出去就成；每块只能滑进空格。', more: '再点 ? 亮出下一步。', hint: '亮着的这块，往 {arrow} 挪一格。' },
+  en: { moves: 'Moves', pick: 'Tap a block first', keys: { desk: 'WASD/arrows move · Q/E pick · Esc back to Xiaoman', touch: '' },
+    rule: 'Get {you} out through the gap at the bottom; a block slides only into an empty square.', more: 'Tap ? again for a next move.', hint: 'Slide the lit block {arrow} one square.' },
 };
 
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -258,21 +326,26 @@ export function html(state, lang = 'zh') {
         cells.push(`<button type="button" class="g-huarong-cell" data-g="cell" data-x="${x}" data-y="${y}" style="grid-column:${x + 1};grid-row:${y + 1}" aria-label="${x},${y}"${state.won ? ' disabled' : ''}></button>`);
   const blocks = state.blocks.map((b) => {
     const [w, h] = SIZE[b.t];
-    const cls = `g-huarong-block g-huarong-${b.t}${state.sel === b.id ? ' is-sel' : ''}`;
+    const cls = `g-huarong-block g-huarong-${b.t}${state.sel === b.id ? ' is-sel' : ''}${state.hint?.id === b.id ? ' is-hint' : ''}`;
     const label = labelOf(lvl, state, b, lang);
     return `<button type="button" class="${cls}" data-g="block" data-b="${b.id}" aria-label="${esc(label || b.t)}" style="grid-column:${b.x + 1} / span ${w};grid-row:${b.y + 1} / span ${h}${bg(b.t) ? `;background-image:${bg(b.t)}` : ''}"${state.won ? ' disabled' : ''}></button>`;
   });
   const arrows = Object.keys(ARROW).map((dir) => {
     const ok = !state.won && state.sel != null && canMove(state.blocks, state.sel, dir);
-    return `<button type="button" class="g-huarong-arrow g-huarong-${dir}" data-g="move" data-dir="${dir}"${ok ? '' : ' disabled'}>${ARROW[dir]}</button>`;
+    const lit = ok && state.hint?.id === state.sel && state.hint?.dir === dir ? ' is-hint' : '';
+    return `<button type="button" class="g-huarong-arrow g-huarong-${dir}${lit}" data-g="move" data-dir="${dir}"${ok ? '' : ' disabled'}>${ARROW[dir]}</button>`;
   });
   const start = state.moves === 0 && !state.won ? say(lvl.start, lang) : '';
+  // 问询's words, two short lines at most: the goal and the rule, then the lit move.
+  const fill = (s) => s.replace('{you}', say(lvl.you ?? MIJING.you, lang) === say(MIJING.you, lang) ? (lang === 'en' ? 'Xiaoman' : '小满') : say(lvl.you, lang))
+    .replace('{arrow}', ARROW[state.hint?.dir] ?? '');
+  const help = !state.won && state.help ? `<div class="g-huarong-help"><p>${esc(fill(t.rule))}</p><p>${esc(fill(state.hint ? t.hint : t.more))}</p></div>` : '';
   const status = state.won
     ? `<div class="g-huarong-won">${esc(say(lvl.win ?? MIJING.win, lang).replace('{n}', String(state.moves)))}</div>`
     : `${start ? `<div class="g-huarong-start">${esc(start)}</div>` : ''}<div class="g-huarong-moves">${t.moves} ${state.moves}${state.sel == null ? ` · ${t.pick}` : ''}</div>`;
   return `<div class="g-huarong${state.won ? ' is-won' : ''}">
 <div class="g-huarong-board"${boardStyle}>${cells.join('')}${blocks.join('')}<div class="g-huarong-exit" aria-hidden="true">${esc(say(lvl.exit ?? MIJING.exit, lang))}</div></div>
-${status}
+${help}${status}
 ${state.won ? '' : `<div class="g-huarong-pad">${arrows.join('')}</div><div class="g-huarong-keys">${esc(t.keys.desk)}</div>`}
 </div>`;
 }
