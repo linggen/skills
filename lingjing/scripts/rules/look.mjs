@@ -762,7 +762,7 @@ function worldBrief(content, lang) {
   };
 }
 
-export { duelBrief, forSale, shopOf, shopOpen, ledgerOf, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };
+export { dealOf, duelBrief, forSale, shopOf, shopOpen, ledgerOf, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };
 
 /* The cooldowns he waits out now, in one shape (cards.js waitRowHtml): 兽潮's (rules/shouchao.mjs), the 秘境 rerun's
    (rules/rerun.mjs, shut), a pool at rest where he stands (world.mjs). Each its own line in the world's words. */

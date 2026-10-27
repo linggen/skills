@@ -7,6 +7,8 @@ import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { RHYTHM_CAP, foldStretches, stretchesOf, timelineOf } from '../scripts/rhythm.mjs';
 import { FIGHT_KIND, OUT, text } from '../tools/arcade-rhythm.mjs';
+import { dealOf } from '../scripts/rules/look.mjs';
+import { fill as rainFill } from '../scripts/games/rain.js';
 
 const TABLE = JSON.parse(fs.readFileSync(OUT, 'utf8'));
 const REG = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
@@ -73,6 +75,42 @@ test('no story board follows one of its own kind in reading order (the kept pair
   }
   assert.deepEqual(met.filter((k) => !KEPT_PAIRS[k]), [], 'back to back with its own kind: swap one for another type');
   assert.deepEqual(Object.keys(KEPT_PAIRS).filter((k) => !met.includes(k)), [], 'a kept pair no longer back to back: drop it from KEPT_PAIRS');
+});
+
+/* Never the same level twice, and the climb goes on (Hanli 10-27: 「最好小游戏关卡不重复, 比如古线玩过的关卡, 到今线换一个关卡,
+   游戏类型不变」 · 「游戏难度可以延续, 因为玩家在古线已经熟悉了小游戏, 后面可以适当难一些」): along the main line, 古 · 今 as
+   one reading, each story board deals what look.mjs deals it (dealOf). Its layout — the level less its words, art and id —
+   is never one an earlier board dealt; and a kit's pace (CLIMB) never eases from one board of it to the next. */
+const WORDS = new Set(['id', 'n', 'name', 'title', 'how', 'say', 'end', 'book', 'lines', 'art', 'look', 'words', 'grades', 'story', 'ready', 'start', 'won', 'row', 'solved', 'spots', 'item']);
+const layout = (v) => (Array.isArray(v) ? v.map(layout) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).filter(([k]) => !WORDS.has(k)).sort(([a], [b]) => a.localeCompare(b)).map(([k, x]) => [k, layout(x)])) : v);
+const boardsInOrder = () => plays().filter((x) => x.kind === 'board').map((it) => {
+  const task = content.tasks.tasks.find((t) => t.id === it.id);
+  const deal = dealOf(content, task, { lang: 'zh' }).deal ?? {};
+  return { id: it.id, game: task.game, levels: deal.levels ?? null, deal };
+});
+/* What may climb, per kit: numbers that only ever fall (a gap, a beat) or only ever rise, read off the level as played. */
+const CLIMB = {
+  rain: (L) => { const f = rainFill(L); return { fall: { gapEnd: f.gap[1], beatEnd: f.beat[1], three: f.three, jit: f.jit, teach: f.teach } }; },
+};
+test('no story board deals a level an earlier one dealt (古 and 今 alike): the same type, never the same layout', () => {
+  const seen = new Map();
+  for (const b of boardsInOrder()) {
+    const key = `${b.game}:${JSON.stringify(b.levels ? b.levels.map((l) => [layout(l), l.spots?.length ?? null]) : layout(b.deal))}`;
+    assert.ok(!seen.has(key), `${b.id} deals the layout ${seen.get(key)} dealt (${b.game}): give it its own`);
+    seen.set(key, b.id);
+  }
+});
+test('a kit\'s pace never eases along the story: each board of it as hard as the last, or harder (CLIMB)', () => {
+  const last = {};
+  for (const b of boardsInOrder()) {
+    const climb = CLIMB[b.game];
+    if (!climb) continue;
+    const now = climb(b.levels?.[0] ?? null);
+    const was = last[b.game];
+    if (was) for (const [k, v] of Object.entries(now.fall ?? {})) assert.ok(v <= was.at.fall[k], `${b.id}: ${b.game} ${k} ${v} eases after ${was.id}'s ${was.at.fall[k]}`);
+    if (was) for (const [k, v] of Object.entries(now.rise ?? {})) assert.ok(v >= was.at.rise[k], `${b.id}: ${b.game} ${k} ${v} eases after ${was.id}'s ${was.at.rise[k]}`);
+    last[b.game] = { id: b.id, at: now };
+  }
 });
 
 test('a read is over the cap when its whole stretch is; a 回\'s counts and longest are its items\'', () => {
