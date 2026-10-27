@@ -12,10 +12,13 @@
   html.is-dom #stage { display: flex; flex-direction: column; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px 10px calc(16px + env(safe-area-inset-bottom)); }
   /* …standing at the bottom, where the thumb reaches (Hanli on the phone 2026-10-26: 接雨 「太靠上了, 不方便手指点击」); a board taller than the screen still scrolls from its top. */
   html.is-dom #stage > * { margin-top: auto; flex-shrink: 0; }
+  /* …as wide as the page, as the Mac's stage gives it: a board sized by `min(100%, …)` (五子棋's 15×15) shrank to a
+     thumbnail when the column fitted it to its content (sim 10-26, step 2). */
+  html.is-dom #stage { align-items: stretch; }
   /* 斗法 (kapai): the room fills the page as in the 游戏厅 (arcade.css .is-fill): its own phone rules answer the
      `scene` container (battle.css @container scene), which the Mac's story page gives it. */
   html[data-board=kapai] #stage { padding: 0 0 env(safe-area-inset-bottom); overflow: hidden; }
-  html[data-board=kapai] .g-kapai { height: 100%; overflow: hidden; container: scene / inline-size; }
+  html[data-board=kapai] .g-kapai { height: 100%; width: 100%; align-self: stretch; margin-top: 0; overflow: hidden; container: scene / inline-size; }
   /* A 大场面 (a set piece): the picture fills the page, under the app's words. */
   html.is-piece #stage { display: block; padding: 0; overflow: hidden; }
   .phonepiece { position: absolute; inset: 0; }

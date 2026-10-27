@@ -72,7 +72,7 @@ export const kitGames = () => Object.keys(KIT.games);
 
 /** The host page's table (scripts/games/phone/boards.json): each board's pack and the sheets it links (skill-relative). */
 export function boardsTable() {
-  return { games: Object.fromEntries(kitGames().map((id) => [id, { pack: `board-${id}.pack`, css: KIT.games[id].css ?? [], ...(KIT.games[id].piece ? { piece: KIT.games[id].piece } : {}) }])) };
+  return { games: Object.fromEntries(kitGames().map((id) => [id, { pack: `board-${id}.pack`, css: KIT.games[id].css ?? [], ...(KIT.games[id].piece ? { piece: KIT.games[id].piece } : {}), ...(KIT.games[id].ai ? { ai: true } : {}) }])) };
 }
 export const BOARDS_JSON = 'scripts/games/phone/boards.json';
 

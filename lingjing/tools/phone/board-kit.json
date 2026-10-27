@@ -184,7 +184,8 @@
       "css": [
         "scripts/lingjing.css",
         "scripts/games/live.css"
-      ]
+      ],
+      "ai": true
     },
     "piece-zhuigu": {
       "piece": "zhuigu",
@@ -287,7 +288,8 @@
       "files": [
         "worlds/jiuding/games.json",
         "worlds/jiuding/people.json"
-      ]
+      ],
+      "ai": true
     },
     "drawguess": {
       "_about": "画猜 (games/drawguess.js): 家信 and 本王考考你; 银月 guesses through the app (the host's `ask`: a picture and a line).",
@@ -299,7 +301,8 @@
       ],
       "files": [
         "worlds/jiuding/games.json"
-      ]
+      ],
+      "ai": true
     },
     "zhazhai": {
       "_about": "砸寨 (games/zhazhai.js): 射鹿 and every story throw; its bundle carries its own Phaser and matter.",
@@ -310,13 +313,14 @@
       "files": []
     },
     "rentrope": {
-      "_about": "割绳子 · 收租 (games/rentrope.js, the rope kit): its pieces are named from art/ by the level data, so the folders the kit draws from ship whole.",
+      "_about": "割绳子 · 收租 (games/rentrope.js, the rope kit): its pieces are named from art/ by the level data, so the folders the kit draws from ship whole. The puff (a gust) is bread's art (art/games/bread/puff.webp, missed on the sim 10-26).",
       "module": "scripts/games/rentrope.js",
       "dirs": [
         "scripts/games/boards",
         "worlds/jiuding/art/games/anchor",
         "worlds/jiuding/art/games/fall",
-        "worlds/jiuding/art/items-comic"
+        "worlds/jiuding/art/items-comic",
+        "worlds/jiuding/art/games/bread"
       ],
       "css": [
         "scripts/lingjing.css",
@@ -339,13 +343,14 @@
       ]
     },
     "niugurope": {
-      "_about": "割绳子 · 牛骨头 (games/niugurope.js, the rope kit), as rentrope.",
+      "_about": "割绳子 · 牛骨头 (games/niugurope.js, the rope kit), as rentrope. The puff (a gust) is bread's art (art/games/bread/puff.webp, missed on the sim 10-26).",
       "module": "scripts/games/niugurope.js",
       "dirs": [
         "scripts/games/boards",
         "worlds/jiuding/art/games/anchor",
         "worlds/jiuding/art/games/fall",
-        "worlds/jiuding/art/items-comic"
+        "worlds/jiuding/art/items-comic",
+        "worlds/jiuding/art/games/bread"
       ],
       "css": [
         "scripts/lingjing.css",
@@ -634,5 +639,6 @@
     "worlds/jiuding/art/people",
     "worlds/jiuding/art/items"
   ],
-  "_storyDirs": "`storyDirs`: whole folders for the story screen (step 2: every face a 卷一 card shows, every thing its 储物袋 can hold), in the common pack."
+  "_storyDirs": "`storyDirs`: whole folders for the story screen (step 2: every face a 卷一 card shows, every thing its 储物袋 can hold), in the common pack.",
+  "_ai": "`ai`: a board a model plays half of (银月, or the book's people): the app asks its cloud-AI consent before dealing it, so the board's clock never runs under the ask."
 }
