@@ -80,8 +80,8 @@
       "element": "wood",
       "atk": 1,
       "hp": 2,
-      "art": "art/cards/xiaoyao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/mucao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 27632.",
       "from": [
         {
           "kind": "story",
@@ -113,8 +113,8 @@
       "keywords": [
         "taunt"
       ],
-      "art": "art/creatures/xiong.webp",
-      "art_source": "Borrowed for now: the 熊 plate. Its own card picture (tools/paint-cards.py xiongzai) waits in the painter's queue.",
+      "art": "art/cards/xiongzai.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 90349.",
       "from": [
         {
           "kind": "beast",
@@ -169,8 +169,8 @@
       "keywords": [
         "taunt"
       ],
-      "art": "art/cards/shanjing.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/shangen.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 84631.",
       "owner": "sun",
       "from": [
         {
@@ -993,8 +993,8 @@
       "element": "wood",
       "atk": 2,
       "hp": 2,
-      "art": "art/creatures/mihou.webp",
-      "art_source": "Borrowed for now: the 猕猴 plate. Its own card picture (tools/paint-cards.py houer) waits in the painter's queue.",
+      "art": "art/cards/houer.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 83687.",
       "from": [
         {
           "kind": "beast",
@@ -1176,8 +1176,8 @@
       "keywords": [
         "taunt"
       ],
-      "art": "art/creatures/shanli.webp",
-      "art_source": "Borrowed for now: the 山狸 plate. Its own card picture (tools/paint-cards.py fuli) waits in the painter's queue.",
+      "art": "art/cards/fuli.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 74623.",
       "from": [
         {
           "kind": "beast",
@@ -1232,8 +1232,8 @@
       "keywords": [
         "taunt"
       ],
-      "art": "art/cards/gupi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/tiegu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 94052.",
       "owner": "sun",
       "from": [
         {
@@ -1339,8 +1339,8 @@
       "element": "metal",
       "atk": 2,
       "hp": 1,
-      "art": "art/creatures/lang.webp",
-      "art_source": "Borrowed for now: the 狼 plate. Its own card picture (tools/paint-cards.py huilang) waits in the painter's queue.",
+      "art": "art/cards/huilang.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 75440.",
       "from": [
         {
           "kind": "foe",
@@ -1385,8 +1385,8 @@
       "element": "metal",
       "atk": 2,
       "hp": 1,
-      "art": "art/cards/jinsuo.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/feijian.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 69517.",
       "from": [
         {
           "kind": "shop",
@@ -1443,8 +1443,8 @@
       "element": "metal",
       "atk": 5,
       "hp": 3,
-      "art": "art/creatures/lang.webp",
-      "art_source": "Borrowed for now: the 狼 plate. Its own card picture (tools/paint-cards.py elang) waits in the painter's queue.",
+      "art": "art/cards/elang.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 91003.",
       "from": [
         {
           "kind": "foe",
@@ -1489,8 +1489,8 @@
       "element": "fire",
       "atk": 5,
       "hp": 3,
-      "art": "art/cards/jianying.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/huochai.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 9279.",
       "from": [
         {
           "kind": "story",
@@ -1604,8 +1604,8 @@
       "keywords": [
         "taunt"
       ],
-      "art": "art/creatures/lang.webp",
-      "art_source": "The 狼's own plate (creatures.json lang), borrowed: the grey wolf on the ridge rock is the pack's head. Its own card picture (tools/paint-cards.py toulang) waits for the painter.",
+      "art": "art/cards/toulang.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 97695.",
       "from": [
         {
           "kind": "beast",
@@ -1890,8 +1890,8 @@
       "element": "fire",
       "atk": 3,
       "hp": 1,
-      "art": "art/items/huojing.webp",
-      "art_source": "Borrowed for now: the 火精 (邹青松's fire) plate. Its own card picture (tools/paint-cards.py huoshe) waits in the painter's queue.",
+      "art": "art/cards/huoshe.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 47583.",
       "from": [
         {
           "kind": "beast",
@@ -2023,8 +2023,8 @@
       "keywords": [
         "taunt"
       ],
-      "art": "art/cards/tuou.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/tuqiang.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 47664.",
       "from": [
         {
           "kind": "story",
@@ -2248,8 +2248,8 @@
       "effect": {
         "draw": 1
       },
-      "art": "art/creatures/chihu.webp",
-      "art_source": "Borrowed for now: the 赤狐 plate. Its own card picture (tools/paint-cards.py xiaochihu) waits in the painter's queue.",
+      "art": "art/cards/xiaochihu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 63929.",
       "from": [
         {
           "kind": "beast",
@@ -2828,7 +2828,7 @@
       "mortal": true
     },
     {"id": "kuzhi", "kind": "spell", "name": {"zh": "枯枝", "en": "A Dry Stick"}, "cost": 1, "element": null, "_token": true, "effect": {"damage": 1}, "_about": "第一回 · 浅坑（2026-10-22 教学斗法）：「他捡起一根枯枝扔到坑边」——先试一试它。试里白给的一张，不入牌库、不作赏。", "art": "art/cards/shizi.webp", "art_source": "The 三试's 石子 plate, borrowed (a thrown thing); its own picture is not painted yet.", "mortal": true},
-    {"id": "waiyi", "kind": "minion", "is": "thing", "name": {"zh": "补丁外衣", "en": "The Patched Coat"}, "cost": 1, "element": null, "_token": true, "atk": 0, "hp": 3, "keywords": ["taunt"], "_about": "第一回 · 浅坑：「他脱下了外衣……轻轻盖在它身上」——袖口打着补丁，补丁上还打着补丁。挡在前头，咬它不咬你。试里白给的一张，不入牌库、不作赏。", "art": "art/cards/tuou.webp", "art_source": "The 土偶 plate, borrowed (a thing that stands in front); its own picture is not painted yet.", "mortal": true},
+    {"id": "waiyi", "kind": "minion", "is": "thing", "name": {"zh": "补丁外衣", "en": "The Patched Coat"}, "cost": 1, "element": null, "_token": true, "atk": 0, "hp": 3, "keywords": ["taunt"], "_about": "第一回 · 浅坑：「他脱下了外衣……轻轻盖在它身上」——袖口打着补丁，补丁上还打着补丁。挡在前头，咬它不咬你。试里白给的一张，不入牌库、不作赏。", "art": "art/cards/waiyi.webp", "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 56465.", "mortal": true},
     {"id": "bupa", "kind": "spell", "name": {"zh": "不怕", "en": "Don't Be Scared"}, "cost": 0, "element": null, "_token": true, "effect": {"heal": 2}, "_about": "第一回 · 浅坑：「不怕。我也掉下来了。咱俩，做个伴。」试里白给的一张，不入牌库、不作赏。", "art": "art/cards/niangbing.webp", "art_source": "The 娘的饼 plate, borrowed (a comfort); its own picture is not painted yet.", "mortal": true},
     {"id": "ziya", "kind": "spell", "name": {"zh": "龇牙", "en": "Bared Teeth"}, "cost": 1, "element": "metal", "_token": true, "effect": {"damage": 1, "bite": true}, "_about": "坑底那只小银狐：「龇了一下牙……可它连头都抬不起来」。A bite (`bite`), not a spell's blow: a 护主 takes it first (Hanli 10-22: 「护主牌没发挥作用」 — the teaching fight is 「挡住它咬」).兽的牌，永不入牌库、不作赏。", "art": "art/people/yinyue-fox.webp", "art_source": "Her own fox plate (world.json companion.forms.fox)."},
     {

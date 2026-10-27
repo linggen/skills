@@ -93,6 +93,14 @@ SUBJECTS = {
   'waiyi': 'a worn patched coat laid gently over a small shape at the bottom of a shallow pit, patches sewn on patches at the cuffs',
   'feijian': 'a small willow-leaf shaped flying sword a hand-span long, a red thread tied at its hilt, darting through the air',
   'huochai': 'a plain iron sword lying on dark cloth, a faint glow of fire along its spine where two characters are carved',
+  # ── spells that wore another spell's picture until 2026-10-27 ──
+  'bingzhuifu': 'a yellow paper talisman with an ice spike drawn on it in blue ink, frost spreading out from its edges, held between two fingers',
+  'zhenyuefu': 'a yellow paper talisman with a mountain drawn on it in red cinnabar, pressing down on the ground, dust rising around it',
+  'yangzhen': 'a little cloth roll of fine silver needles with tiny feather tufts, one needle flying out of it',
+  'tuna': 'a boy sitting cross-legged on a rock at dawn, eyes closed, one thin wisp of breath in the cold air',
+  'jinren': 'a crescent blade of golden light flying from an old teacher\'s two fingers',
+  'ruxi': 'a thin blade of light slipping into a hairline crack in a great boulder',
+  'bingzhui': 'a single sharp spike of ice shooting through the air, a trail of frost behind it',
   # ── 钱掌柜's three for the 练气一层 hand (2026-10-27) ──
   'tieji': 'a handful of four-pointed iron caltrops scattered on a dirt path, one spike always pointing up',
   'sanhuo': 'a young disciple flicking his sleeve, a spray of small fire sparks scattering in an arc',
