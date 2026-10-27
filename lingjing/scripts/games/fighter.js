@@ -1,4 +1,5 @@
-// fighter.js — 格斗: the arcade 1v1 (Hanli 10-26: 「街霸好做吗? 拳皇之类的」 → 「好, 先做秦雁那一场」; doc/games.md § 格斗).
+// fighter.js — 格斗: the arcade 1v1 (Hanli 10-26: 「街霸好做吗? 拳皇之类的」 → 「好, 先做秦雁那一场」; v2 10-27:
+// 「用wasd控制 … 组合技什么的都加一下」, then 「出招键可以右边一些, 变成okl;」; doc/games.md § 格斗).
 // The rules are fighter/core.js (pure, seeded: the bot and the tests play them in node), the picture fighter/draw.js
 // (ink shadow-puppets on one canvas); this module keeps the small-game contract (games/mount.js):
 //
@@ -10,14 +11,15 @@
 // adds a row, never code.
 //
 // Hands: its own, not mountPure's (which keeps one held pointer): every on-screen button is its own pointer, held
-// ones (◀ ▶ 挡) by pointer id, so a thumb walks while the other strikes; presses act on pointerdown and nothing
-// listens to the click after it (live-games.js tapGate's lesson: a fast tap is acted on once). Keys: A/D or ← →
-// walk, W/↑/Space jump, S/↓ guard (or hold away from her), J 拳, K 勾, L the spell.
-// In the shell: its pause stops the clock and the hands; its lead card reads the level's `ready` before the bout;
-// every step sounds what it made (games/kit/heard.js, the names in sounds.json `fighter`). Lost, it settles
-// { won: false } and the host deals it again (the story) or offers 再来 (the 游戏厅).
+// ones (◀ ▶ ▼ 挡) by pointer id, so a thumb walks while the other strikes; presses act on pointerdown and nothing
+// listens to the click after it (live-games.js tapGate's lesson: a fast tap is acted on once). Keys by `event.code`
+// (the same keys on any layout): W A S D move — A/D walk, W jump, S crouch; held away from her, a guard (S with it, a
+// low guard) — and the moves one row right of J: K 拳, L 腿, ; 火, O 迎. Arrows and Space are quiet aliases.
+// In the shell: its pause stops the clock and the hands and shows the move list; its lead card reads the level's
+// `ready` and the keys; every step sounds what it made (games/kit/heard.js, the names in sounds.json `fighter`).
+// Lost, it settles { won: false } and the host deals it again (the story) or offers 再来 (the 游戏厅).
 import { sounded } from './kit/heard.js';
-import { inputKind } from './kit/device.js';
+import { inputKind, forInput } from './kit/device.js';
 import { painter, FIELD } from './fighter/draw.js';
 import * as core from './fighter/core.js';
 import * as self from './fighter.js';
@@ -28,8 +30,8 @@ export const meta = {
   id: 'fighter',
   name: { zh: '格斗', en: 'Fight' },
   how: {
-    zh: { desk: 'A/D 走，W 或空格跳，S 或往后按住挡；J 拳，K 勾，L 法术。', touch: '左边走、跳；右边挡、拳、勾、法术。' },
-    en: { desk: 'A/D walk, W or Space jump, S or hold back to guard; J jab, K hook, L spell.', touch: 'Left: walk and jump. Right: guard, jab, hook, spell.' },
+    zh: { desk: 'WASD 走、跳、蹲，背向她按住挡；K 拳，L 腿，; 火，O 迎。', touch: '左边走、跳、蹲；右边挡、拳、腿、火、迎、技、绝。' },
+    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K jab, L kick, ; fire, O parry.', touch: 'Left: walk, jump, crouch. Right: guard, jab, kick, fire, parry, skill, super.' },
   },
   pause: true, // its own loop reads the shell's pause
   beat: 'mount', // the story mounts it (its hands are its own)
@@ -40,6 +42,7 @@ export const meta = {
 
 const say = (x, lang) => (x && typeof x === 'object' ? x[lang] ?? x.zh ?? '' : x ?? '');
 const LINE_MS = 2600;
+const SLOW = { ms: 900, rate: 0.35 }; // the KO in slow motion
 
 /* ── The level ── */
 export function ladderOf(registry) {
@@ -54,59 +57,87 @@ export async function levelFor(data = {}) {
   return all.find((l) => l.id === data.level) ?? all[0] ?? {};
 }
 
+/** The move list, as lines (the pause veil's note): each move's name, then its keys (desk) or its buttons (touch). */
+export function moveLines(level = {}, lang = 'zh', kind = 'desk') {
+  const names = level.moves ?? {};
+  return core.MOVES.map((m) => `${say(names[m.k], lang) || m.k}　${kind === 'touch' ? m.touch : m.keys}`);
+}
+
 /* ── The page's pieces ── */
 const CSS = `
 .g-fighter { display: flex; flex-direction: column; gap: 8px; width: 100%; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
 .g-fighter .gf-field { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #e4d6b8; }
 .g-fighter canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.g-fighter .gf-pad { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; padding: 0 4px; }
-.g-fighter .gf-dirs, .g-fighter .gf-acts { display: flex; gap: 8px; align-items: flex-end; }
-.g-fighter .gf-acts { flex-wrap: wrap; justify-content: flex-end; }
-.g-fighter button { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font: 600 20px "Songti SC","STSong","Noto Serif SC",serif;
-  width: 54px; height: 54px; border-radius: 50%; border: 2px solid #2a241c; background: #f3ead6; color: #1c1a16; display: grid; place-items: center; position: relative; padding: 0; cursor: pointer; }
+.g-fighter .gf-pad { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; padding: 0 2px; }
+.g-fighter .gf-dirs { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; }
+.g-fighter .gf-dirs [data-k=jump] { grid-column: 2; }
+.g-fighter .gf-dirs [data-k=left] { grid-column: 1; grid-row: 2; }
+.g-fighter .gf-dirs [data-k=crouch] { grid-column: 2; grid-row: 2; }
+.g-fighter .gf-dirs [data-k=right] { grid-column: 3; grid-row: 2; }
+.g-fighter .gf-acts { display: grid; grid-template-columns: repeat(4, auto); gap: 6px; justify-items: center; }
+.g-fighter .gf-acts [data-k=ying] { grid-column: 2; }
+.g-fighter button { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font: 600 18px "Songti SC","STSong","Noto Serif SC",serif;
+  width: 46px; height: 46px; border-radius: 50%; border: 2px solid #2a241c; background: #f3ead6; color: #1c1a16; display: grid; place-items: center; position: relative; padding: 0; cursor: pointer; }
 .g-fighter button.is-down { background: #2a241c; color: #f3ead6; }
 .g-fighter button[data-k=heavy] { background: #e9d4b8; }
-.g-fighter button[data-k=special] { background: #f0c9a8; }
-.g-fighter button[data-k=special].is-cool { opacity: .5; }
-.g-fighter button small { position: absolute; bottom: -2px; right: -2px; font: 600 10px ui-monospace, monospace; background: #2a241c; color: #f3ead6; border-radius: 6px; padding: 1px 4px; }
+.g-fighter button[data-k=special], .g-fighter button[data-k=skill] { background: #f0c9a8; }
+.g-fighter button[data-k=ying] { background: #e8dcb0; }
+.g-fighter button[data-k=super] { background: #d9c08a; opacity: .45; }
+.g-fighter button[data-k=super].is-ready { opacity: 1; background: #e7b84a; box-shadow: 0 0 0 3px rgba(231,184,74,.45); }
+.g-fighter button.is-cool { opacity: .5; }
+.g-fighter button small { position: absolute; bottom: -3px; right: -4px; font: 600 9px ui-monospace, monospace; background: #2a241c; color: #f3ead6; border-radius: 6px; padding: 1px 4px; white-space: nowrap; }
 .g-fighter.is-touch button small { display: none; }
-.g-fighter.is-touch button { width: 64px; height: 64px; font-size: 24px; }
+.g-fighter.is-touch button { width: 48px; height: 48px; font-size: 20px; }
 html[data-board=fighter] #stage .g-fighter { height: 100%; justify-content: center; padding: 6px 8px calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; }
-html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 190px) * 16 / 9)); margin: auto; } /* the field in the middle, the buttons under the thumbs */
+html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px) * 16 / 9)); margin: auto; } /* the field in the middle, the buttons under the thumbs */
 `;
 function sheet(doc) {
-  if (doc.getElementById('g-fighter-css')) return;
+  const old = doc.getElementById('g-fighter-css');
+  if (old?.dataset.v === '2') return;
+  old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
+  st.dataset.v = '2';
   st.textContent = CSS;
   doc.head.append(st);
 }
 
 const BUTTONS = {
-  left: { zh: '◀', en: '◀', key: 'A' }, jump: { zh: '▲', en: '▲', key: 'W' }, right: { zh: '▶', en: '▶', key: 'D' },
-  block: { zh: '挡', en: 'G', key: 'S' }, light: { zh: '拳', en: 'J', key: 'J' }, heavy: { zh: '勾', en: 'K', key: 'K' }, special: { zh: '法', en: 'L', key: 'L' },
+  jump: { face: '▲', key: 'W' }, left: { face: '◀', key: 'A' }, crouch: { face: '▼', key: 'S' }, right: { face: '▶', key: 'D' },
+  ying: { face: '迎', key: 'O' }, skill: { face: '技', key: 'S D ;' }, super: { face: '绝', key: 'O+;' },
+  block: { face: '挡', key: '←' }, light: { face: '拳', key: 'K' }, heavy: { face: '腿', key: 'L' }, special: { face: '火', key: ';' },
 };
-const KEYS = { a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right', w: 'jump', arrowup: 'jump', ' ': 'jump', s: 'block', arrowdown: 'block', j: 'light', k: 'heavy', l: 'special' };
-const HELD = new Set(['left', 'right', 'block']);
+/* Keys by where they sit (event.code): any layout plays alike; `;` is Semicolon wherever it is printed. */
+const CODES = {
+  KeyA: 'left', KeyD: 'right', KeyW: 'jump', KeyS: 'crouch', KeyK: 'light', KeyL: 'heavy', Semicolon: 'special', KeyO: 'ying',
+  ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'jump', ArrowDown: 'crouch', Space: 'jump',
+};
+const HELD = new Set(['left', 'right', 'crouch', 'block']);
+/* W is a press when it goes down (the jump) and a word when it comes up (let go soon: a short hop). */
+const LIFT = { jump: 'jumpRelease' };
 
 function padHtml(level, lang) {
   const names = level.me?.buttons ?? {};
-  const b = (k) => `<button type="button" data-k="${k}" aria-label="${say(names[k], lang) || k}">${say(names[k], lang) || BUTTONS[k][lang] || BUTTONS[k].zh}<small>${BUTTONS[k].key}</small></button>`;
-  return `<div class="gf-pad"><div class="gf-dirs">${b('left')}${b('jump')}${b('right')}</div><div class="gf-acts">${b('block')}${b('light')}${b('heavy')}${b('special')}</div></div>`;
+  const b = (k) => {
+    const face = say(names[k], lang) || BUTTONS[k].face;
+    return `<button type="button" data-k="${k}" aria-label="${face}">${face}<small>${BUTTONS[k].key}</small></button>`;
+  };
+  return `<div class="gf-pad"><div class="gf-dirs">${b('jump')}${b('left')}${b('crouch')}${b('right')}</div>`
+    + `<div class="gf-acts">${b('ying')}${b('skill')}${b('super')}${b('block')}${b('light')}${b('heavy')}${b('special')}</div></div>`;
 }
 
 /** The small-game contract: this bout alone in a container (the 游戏厅, the story's card, the phone). */
 export function mount(container, opts = {}) {
-  const { data = {}, signal } = opts;
+  const { data = {} } = opts;
   if (data.levels?.length || (data.level && typeof data.level === 'object')) return run(container, opts, data.levels?.[0] ?? data.level);
   return levelFor(data).then((level) => run(container, opts, level));
 }
 
 function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell, peek, winHold = 0 } = {}, level = {}) {
-  const doc = container.ownerDocument, win = doc.defaultView;
+  const doc = container.ownerDocument, win = doc.defaultView, kind = inputKind(doc);
   sheet(doc);
   const root = doc.createElement('div');
-  root.className = `g-fighter${inputKind(doc) === 'touch' ? ' is-touch' : ''}`;
+  root.className = `g-fighter${kind === 'touch' ? ' is-touch' : ''}`;
   root.innerHTML = `<div class="gf-field"><canvas></canvas></div>${padHtml(level, lang)}`;
   container.replaceChildren(root);
   const canvas = root.querySelector('canvas');
@@ -122,11 +153,13 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   const g = { state: core.newGame(seed, 1, { levels: [level] }) };
   peek?.(() => g.state);
   root.__fighter = () => g.state; // the builder's look at the bout (a live check drives it as a hand would)
+  root.__fighterSet = (fn) => { g.state = fn(structuredClone(g.state)) ?? g.state; }; // …and sets a moment up (a live check of the 绝, the palm)
+  shell?.note?.(moveLines(level, lang, kind)); // the move list under the pause
   let started = false, done = false, raf = 0, last = 0, line = null;
   const off = [];
   const on = (el, type, fn, o) => { el.addEventListener(type, fn, o); off.push(() => el.removeEventListener(type, fn, o)); };
 
-  /* Size the canvas to its box, at the screen's pixels. */
+  /* Size the canvas to its box, at the screen's pixels (2× at most: the phone keeps 60 frames). */
   const fit = () => {
     const r = canvas.getBoundingClientRect(), dpr = Math.min(2, win.devicePixelRatio || 1);
     const w = Math.max(320, Math.round(r.width * dpr)), h = Math.round((w * FIELD.h) / FIELD.w);
@@ -137,7 +170,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   fit();
 
   /* ── Hands ── */
-  const held = { left: new Set(), right: new Set(), block: new Set() }; // who holds each: pointer ids and 'key'
+  const held = { left: new Set(), right: new Set(), crouch: new Set(), block: new Set() }; // who holds each: pointer ids and 'key'
   const apply = (d) => {
     if (!started || done || shell?.paused?.()) return;
     const was = g.state;
@@ -147,9 +180,8 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   const sync = () => {
     const dir = (held.right.size ? 1 : 0) - (held.left.size ? 1 : 0);
     if (dir !== g.state.in.dir) apply({ g: 'walk', dir });
-    const blk = held.block.size > 0;
-    if (blk !== g.state.in.block) apply({ g: 'block', on: blk });
-    for (const b of root.querySelectorAll('button[data-k]')) b.classList.toggle('is-down', Boolean(held[b.dataset.k]?.size));
+    for (const k of ['crouch', 'block']) if ((held[k].size > 0) !== g.state.in[k]) apply({ g: k, on: held[k].size > 0 });
+    for (const b of root.querySelectorAll('button[data-k]')) if (HELD.has(b.dataset.k)) b.classList.toggle('is-down', Boolean(held[b.dataset.k]?.size));
   };
   const press = (k, who) => {
     if (HELD.has(k)) { held[k].add(who); sync(); return; }
@@ -158,7 +190,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     win.setTimeout(() => btn?.classList.remove('is-down'), 110);
     apply({ g: k });
   };
-  const lift = (k, who) => { if (HELD.has(k) && held[k].delete(who)) sync(); };
+  const lift = (k, who) => { if (LIFT[k]) apply({ g: LIFT[k] }); if (HELD.has(k) && held[k].delete(who)) sync(); };
   const liftAll = () => { for (const s of Object.values(held)) s.clear(); sync(); };
   const pads = new Map(); // pointer id → the button it went down on
   on(root, 'pointerdown', (e) => {
@@ -175,21 +207,16 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   on(root, 'lostpointercapture', up);
   on(root, 'contextmenu', (e) => e.preventDefault());
   on(root, 'click', (e) => { if (e.target.closest?.('button[data-k]')) e.preventDefault(); }); // acted on as it went down
+  const keyOf = (e) => (e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.('input,textarea,select,[contenteditable]') || !root.isConnected ? null : CODES[e.code] ?? null);
   on(doc, 'keydown', (e) => {
-    if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.('input,textarea,select,[contenteditable]') || !root.isConnected) return;
-    const k = KEYS[e.key.toLowerCase()];
+    const k = keyOf(e);
     if (!k) return;
     e.preventDefault();
-    if (e.repeat && !HELD.has(k)) return;
-    press(k, 'key');
+    if (e.repeat) return;
+    press(k, `key:${e.code}`);
   });
   // …and its keyup kept too: Space on a focused shell button (Ⅱ, 🔊) would click it as the key comes up.
-  on(doc, 'keyup', (e) => {
-    const k = KEYS[e.key.toLowerCase()];
-    if (!k || e.target.closest?.('input,textarea,select,[contenteditable]')) return;
-    if (root.isConnected) e.preventDefault();
-    lift(k, 'key');
-  });
+  on(doc, 'keyup', (e) => { const k = keyOf(e); if (!k) return; e.preventDefault(); lift(k, `key:${e.code}`); });
   on(win, 'blur', liftAll);
   on(doc, 'visibilitychange', liftAll);
   const offPause = shell?.onPause?.((p) => { if (p) liftAll(); });
@@ -216,16 +243,19 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     draw(g.state, lang, textNow(g.state)); // the last frame stays
     resolve(r);
   };
+  const superBtn = root.querySelector('button[data-k=super]'), fireBtn = root.querySelector('button[data-k=special]'), skillBtn = root.querySelector('button[data-k=skill]');
   const frame = (now) => {
     raf = win.requestAnimationFrame(frame);
-    const dt = Math.min(50, last ? now - last : 16);
+    let dt = Math.min(50, last ? now - last : 16);
     last = now;
     if (started && !done && !shell?.paused?.() && doc.visibilityState === 'visible') {
-      const was = g.state;
-      g.state = core.tick(g.state, dt);
-      if (g.state !== was) sounded(shell, self, was, g.state);
-      const cool = root.querySelector('button[data-k=special]');
-      cool?.classList.toggle('is-cool', g.state.me.cd > 0);
+      const s0 = g.state;
+      if (s0.end && s0.t - s0.end.at < SLOW.ms) dt *= SLOW.rate; // the KO, slowed
+      g.state = core.tick(s0, dt);
+      if (g.state !== s0) sounded(shell, self, s0, g.state);
+      superBtn.classList.toggle('is-ready', g.state.me.qi >= core.QI);
+      fireBtn.classList.toggle('is-cool', g.state.me.cd > 0);
+      skillBtn.classList.toggle('is-cool', g.state.me.cdPf > 0);
       if (g.state.won) { const s = g.state; win.setTimeout(() => finish({ won: true, grade: s.grade, stars: s.stars }), winHold); started = false; }
       else if (g.state.lost) { win.setTimeout(() => finish({ won: false }), 500); started = false; }
     }
@@ -236,11 +266,14 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     if (signal.aborted) finish({ won: false, left: true });
     else signal.addEventListener('abort', () => finish({ won: false, left: true }), { once: true });
   }
-  const ready = say(level.ready, lang);
-  Promise.resolve(shell?.lead && ready ? shell.lead(ready, { auto: 'read', lang }) : null).then(() => {
+  // The lead card: the book's line, then (smaller) the keys or the buttons.
+  const ready = say(level.ready, lang), hint = forInput(level.hint?.[lang] ?? level.hint?.zh ?? '', kind);
+  const leadText = [ready, hint].filter(Boolean).join('\n\n');
+  Promise.resolve(shell?.lead && leadText ? shell.lead(leadText, { auto: 'read', lang }) : null).then(() => {
     if (done) return;
     started = true;
     last = 0;
+    doc.activeElement?.blur?.(); // a focused shell button never takes the bout's Space
     shell?.sound?.('start');
   });
   return settled;

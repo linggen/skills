@@ -23,6 +23,9 @@
   padding: 24px; text-align: center; border-radius: 12px; background: color-mix(in srgb, var(--ground) 82%, transparent);
   backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
 .gshell-veil b { font-family: var(--serif); font-size: 20px; letter-spacing: .2em; color: var(--text); }
+/* A game's note under the pause (its move list): small, two columns where there is room. */
+.gshell-note { columns: 2 180px; column-gap: 18px; max-width: min(520px, 92%); text-align: left; font-size: 12px; line-height: 1.5; color: var(--text); }
+.gshell-note p { margin: 0 0 2px; break-inside: avoid; }
 /* 音效 · 音乐 under the pause (games/kit/sound.js): one setting for every game. */
 .gshell-sound { display: grid; gap: 8px; min-width: min(240px, 80%); }
 .gshell-snd { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); }

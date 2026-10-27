@@ -914,7 +914,35 @@
     "palm": "hit.soft.heavy",
     "hook": "hit.punch.heavy",
     "slip": "tone.whoosh",
-    "down": "tone.thud"
+    "down": "tone.thud",
+    "dash": {
+     "sound": "step.grass",
+     "min": 120,
+     "vol": 0.7
+    },
+    "roll": {
+     "sound": "cloth",
+     "min": 150
+    },
+    "palmfire": "tone.fire",
+    "rise": {
+     "sound": "tone.whoosh",
+     "min": 120
+    },
+    "combo": {
+     "sound": "hit.punch",
+     "min": 40,
+     "vol": 0.6
+    },
+    "cutin": "hit.bell",
+    "super": "tone.boom",
+    "wall": "hit.stone",
+    "knock": "tone.thud",
+    "getup": {
+     "sound": "cloth",
+     "min": 200,
+     "vol": 0.5
+    }
    }
   },
   "board": {

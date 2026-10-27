@@ -69,14 +69,26 @@ Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街
 - **Kit** `games/fighter.js` (mount, own hands) · `fighter/core.js` (pure, seeded rules + her AI) · `fighter/draw.js` (ink 皮影 on a
   canvas, poses as joint angles — no painted frames) · `bots/fighter.js` · tests/game-fighter.test.mjs. A bout is a games.json level
   (fighters, bars, looks, faces, lines, numbers laid on the kit's); 祁长松, 斗法, a beast add a level.
-- **Play**: walk, jump, 拳 (J), 勾 (K), 火 (L, cooldown), 挡 (S or hold back). Her: pokes and thrusts at 三尺 of 剑气, ice spikes, a
-  block; 头十招 at half strength. The book's two reads: past ~24 moves, his back to an edge, her point at his throat → **迎** in the
-  push (any fresh press) takes him past her, she where he stood; the **palm** comes at once: glow, 「收了三分」 (cue 勾), strike at three
-  tenths, never lethal. 勾 while she holds back, over the red oil at the left edge → she skids off: **clean** (★3). Hooked after the
-  palm landed → **clumsy** (★2/1). Lost at 血 0 (dealt again). She never hits him while he is down; the 雷符 is never drawn.
-- **Hands**: Mac keys A/D ←→, W ↑ Space, S ↓, J K L + clickable buttons; phone buttons, multi-touch by pointer id, presses on
-  pointerdown, buffered 160 ms. Sound: sounds.json kit `fight` (bed: card).
-- **Bot** (200 ms): wins every seed in 35–50 s; 320 ms wins 7/8; masher, wall of blocks, idle lose.
+- **v2 (10-27)** — Hanli played it: 「基本的逻辑都有了, 需要美观和优化. 用wasd控制, ijkl等是招数 … 组合技什么的都加一下」, then
+  「出招键可以右边一些, 变成okl;」; the coordinator picked KOF '97 for the feel (fast, pressing).
+- **Keys** (by `event.code`, any layout): W A S D — A/D walk (double-tap: dash in / back-step), W jump (a tap: a short hop), S crouch
+  (ducks her ice); held away from her, a guard (with S, a low guard). K 拳 · L 腿 (勾) · ; 火 (at her feet, cooldown) · O 迎 — a roll
+  in along her blade and out past her, untouchable a moment (A/D away + O: a roll back). Arrows and Space are quiet aliases.
+- **Combos**: K K L chains (hit-stun holds her, 「N 连」 counted, each blow a little lighter on her 稳); L cancels into a special or
+  the 绝; a jump-in L then K. Motions (≈320 ms buffer): **S D ;** 掌心火 (fireball) · **D S D L** 升勾 (rising hook).
+  **气**: three stocks, filled by blows given and taken; **绝** (one stock): O+; or K+L together (or S S then K+L) — 「两样」: cut-in with
+  his face, an earth wall up and a fire wave along the boards. Hers: 剑气三尺 (cut-in, a long low sweep that knocks him down).
+- **Story shape kept**: her 稳 bar; past ~24 moves, his back to an edge, her point at his throat → **迎** in the push (O, forward or
+  any blow) takes him past her, she where he stood; the **palm** comes at once: glow, 「收了三分」 (cue 勾), strike at three tenths,
+  never lethal. L while she holds back, over the red oil → she skids off: **clean** (★3); after the palm landed → **clumsy** (★2/1);
+  a 绝 over the oil with its edge at her back takes her off too. Lost at 血 0 (dealt again). She never hits him while he is down.
+- **Look**: procedural ink 皮影 with robes that swing, wide sleeves, boots, profile heads and hair; poses eased from one to the next
+  (idle breathing, walk, hop, crouch, each blow's wind-up / strike / recovery, hit, knockdown, roll, dash). Hit-stop 65–140 ms, screen
+  shake and a crowd that jumps on heavy blows, ink starbursts, the sword-qi trail, dust, the KO in slow motion with a vignette;
+  parallax hills, banners 大比 · 沉鼎, the 气 stocks under each bar, plates for the names, a small incense and 第 N 招.
+- **Phone**: ◀ ▼ ▶ ▲ on the left; 迎 技 绝 / 挡 拳 腿 火 on the right (技: 掌心火; with ▶ or ▼ held, 升勾; 绝 lights with a stock).
+  Pause shows the move list (shell `note(lines)`, the veil's). Sound: sounds.json kit `fight` (bed: card).
+- **Bot** (200 ms, chains, 技 and 绝 as the phone's buttons): wins 8/8 seeds in 41–65 s; 320 ms 8/8; masher, wall of blocks, idle lose.
 - **Skipped**: a mount-only board's skip shows the page's 「没走完，往下走了。」, as every board's; `won.skipped` kept in the level.
 
 ## 全文后的小游戏 — the second batch, 古五 → 古九 (plan 2026-10-26; Hanli 「都开吧」)

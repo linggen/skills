@@ -156,3 +156,98 @@ test('its sounds: every name a bout makes is declared', () => {
   for (const e of heard) assert.ok(F.meta.sounds.includes(e), e);
   for (const e of ['hit', 'block', 'glow', 'hook', 'slip']) assert.ok(heard.has(e), `${e} sounded`);
 });
+
+/* ── v2 (Hanli 10-27: 「组合技什么的都加一下」, KOF '97's feel; keys O K L ;) ── */
+
+/* Her standing still close by, thinking of nothing for a while: a dummy for his hands. */
+function dummy(seed = 'dummy', gap = 90) {
+  const s = F.newGame(seed, 1, deal);
+  s.me.x = 400; s.foe.x = 400 + gap; s.foe.think = 1e9; s.foe.cd.ice = 1e9;
+  return s;
+}
+const hand = (s, list) => { for (const [d, ms] of list) { s = press(s, d); s = run(s, ms); } return s; };
+
+test('a chain: 拳 拳 腿 into a reeling foe counts 「3 连」, each blow a little lighter; the 腿 cancels into 掌心火', () => {
+  let s = dummy('chain');
+  s = hand(s, [[{ g: 'light' }, 120], [{ g: 'light' }, 120], [{ g: 'heavy' }, 260]]);
+  assert.equal(s.best, 3, 'three in a chain');
+  assert.ok((s.snd.combo ?? 0) >= 2);
+  // K K L → S D ;: the motion read off the directions, the 腿 cut short into it
+  s = dummy('cancel');
+  s = hand(s, [[{ g: 'heavy' }, 200], [{ g: 'crouch', on: true }, 30], [{ g: 'crouch', on: false }, 0], [{ g: 'walk', dir: 1 }, 30], [{ g: 'special' }, 400]]);
+  assert.equal(s.snd.palmfire ?? 0, 1, '掌心火 came out of the 腿');
+  assert.equal(s.best, 2);
+});
+
+test('motions: S D ; is 掌心火, D S D L is 升勾; a plain ; is the fire at her feet; the phone\'s 技 gives both', () => {
+  let s = dummy('pf', 300);
+  s = hand(s, [[{ g: 'crouch', on: true }, 40], [{ g: 'crouch', on: false }, 0], [{ g: 'walk', dir: 1 }, 40], [{ g: 'walk', dir: 0 }, 0], [{ g: 'special' }, 300]]);
+  assert.equal(s.snd.palmfire, 1);
+  s = dummy('rise');
+  s = hand(s, [[{ g: 'walk', dir: 1 }, 40], [{ g: 'walk', dir: 0 }, 0], [{ g: 'crouch', on: true }, 40], [{ g: 'crouch', on: false }, 0], [{ g: 'walk', dir: 1 }, 40], [{ g: 'heavy' }, 300]]);
+  assert.equal(s.snd.rise, 1);
+  s = dummy('fire', 300);
+  s = hand(s, [[{ g: 'special' }, 300]]);
+  assert.equal(s.snd.fire, 1);
+  assert.equal(s.snd.palmfire ?? 0, 0);
+  s = hand(dummy('skill', 300), [[{ g: 'skill' }, 300]]);
+  assert.equal(s.snd.palmfire, 1);
+  s = hand(dummy('skill2'), [[{ g: 'walk', dir: 1 }, 20], [{ g: 'skill' }, 300]]);
+  assert.equal(s.snd.rise, 1);
+});
+
+test('气 in three stocks: it fills on blows given and taken; a 绝 (O+; or K+L together, the phone\'s 绝) costs one and cuts in', () => {
+  let s = dummy('qi');
+  assert.equal(s.me.qi, 0);
+  s = hand(s, [[{ g: 'light' }, 300]]);
+  assert.ok(s.me.qi > 0);
+  s.me.qi = 250;
+  s = press(s, { g: 'ying' });
+  s = press(s, { g: 'special' }); // together
+  assert.equal(s.buf.at(-1).k, 'super');
+  s = run(s, 30);
+  assert.ok(s.cutin && s.cutin.who === 'me', 'the cut-in');
+  assert.equal(s.me.qi, 150, 'one stock spent');
+  s = run(s, 2000);
+  assert.ok((s.snd.super ?? 0) >= 1, 'the fire wave landed');
+  s = dummy('kl'); s.me.qi = 100;
+  s = hand(s, [[{ g: 'light' }, 0], [{ g: 'heavy' }, 30]]);
+  assert.ok(s.cutin, 'K+L together');
+  s = dummy('none'); s.me.qi = 60;
+  s = hand(s, [[{ g: 'super' }, 300]]);
+  assert.equal(s.supers, 0, 'nothing without a stock');
+  s = dummy('cap'); s.me.qi = 298;
+  s = hand(s, [[{ g: 'light' }, 300]]);
+  assert.equal(s.me.qi, 300, 'three stocks at most');
+});
+
+test('KOF\'s feet: a double tap dashes in; a tap of W hops lower than a held jump; O rolls through her, untouchable', () => {
+  let s = dummy('dash', 300);
+  const x0 = s.me.x;
+  s = hand(s, [[{ g: 'walk', dir: 1 }, 30], [{ g: 'walk', dir: 0 }, 30], [{ g: 'walk', dir: 1 }, 10], [{ g: 'walk', dir: 0 }, 300]]);
+  assert.equal(s.snd.dash, 1);
+  assert.ok(s.me.x - x0 > 100, `dashed ${s.me.x - x0}`);
+  const peak = (release) => { let t = dummy('hop', 400), top = 0; t = press(t, { g: 'jump' }); t = run(t, 40); if (release) t = press(t, { g: 'jumpRelease' }); for (let i = 0; i < 80; i += 1) { t = run(t, 10); top = Math.max(top, t.me.y); } return top; };
+  assert.ok(peak(true) < peak(false) * 0.6, 'a hop is low');
+  s = dummy('roll', 80);
+  const order = s.order;
+  s = press(s, { g: 'ying' });
+  s = run(s, 500);
+  assert.equal(s.snd.roll, 1);
+  assert.equal(s.order, -order, 'past her');
+  assert.ok((s.foe.x - s.me.x) * s.order > 0);
+  // untouchable as it rolls: her blade goes through
+  s = dummy('safe', 150); s.foe.think = 0;
+  s = until(s, (x) => x.foe.act && ['poke', 'thrust'].includes(x.foe.act.k), 4000);
+  s = until(s, (x) => x.t - x.foe.act.at >= x.foe.act.m.startup - 60, 2000);
+  const hp = s.me.hp;
+  s = press(s, { g: 'ying' });
+  s = run(s, 250);
+  assert.equal(s.me.hp, hp, 'rolled through the blade');
+});
+
+test('the move list names every move with its keys, for the pause veil', () => {
+  const lines = F.moveLines(LEVEL, 'zh', 'desk');
+  for (const want of ['掌心火', 'S D ;', '升勾', 'D S D L', 'O+;', 'K K L']) assert.ok(lines.some((l) => l.includes(want)), want);
+  assert.ok(F.moveLines(LEVEL, 'zh', 'touch').some((l) => l.includes('技')));
+});

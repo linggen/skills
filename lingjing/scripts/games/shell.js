@@ -11,7 +11,7 @@
 //               result (stars, 再来 / 下一关 off the story; the story's own pay and 得牌 follow its win as
 //               ever), and `say(id, who, text)`, a bubble over the stage (台词预取's lines land there).
 //
-// A game hears the shell through its mount options: `shell: { paused(), onPause(fn), say(who, text), lead(text, o), sound(event, o) }`.
+// A game hears the shell through its mount options: `shell: { paused(), onPause(fn), say(who, text), lead(text, o), sound(event, o), note(lines) }`.
 // Sound (Hanli 10-22: 「开吧. 统一做进外壳」): the shell owns it (games/kit/sound.js). A game only names what happened
 // (`sound('hit')`); data says what it sounds like. The shell sounds its own moments — a button, the 3-2-1, the result —
 // plays its kit's bed while the board is up (quiet under the pause veil, gone at the result), and its pause veil holds
@@ -73,7 +73,9 @@ export function frameHtml({ id, title = '', kind = '', how = '', body = '', time
 function layerHtml(id, lang) {
   const s = store.get(id), w = words(lang);
   const bubble = s?.bubble ? `<div class="gshell-bubble" data-who="${plain(s.bubble.who)}">${plain(s.bubble.text)}</div>` : '';
-  const pause = s?.paused ? `<div class="gshell-veil"><b>${plain(w.paused)}</b><button type="button" class="gshell-btn is-main" data-shell-pause="${plain(id)}">${plain(w.resume)}</button>${soundHtml(lang)}</div>` : '';
+  // A game's own note under the pause (its move list: 格斗), lines as it gave them.
+  const note = s?.note?.length ? `<div class="gshell-note">${s.note.map((l) => `<p>${plain(l)}</p>`).join('')}</div>` : '';
+  const pause = s?.paused ? `<div class="gshell-veil"><b>${plain(w.paused)}</b><button type="button" class="gshell-btn is-main" data-shell-pause="${plain(id)}">${plain(w.resume)}</button>${note}${soundHtml(lang)}</div>` : '';
   const lead = s?.lead ? `<div class="gshell-veil gshell-lead">${leadParas(s.lead.text)}${s.lead.count != null ? `<b class="gshell-count">${s.lead.count || plain(w.start)}</b>` : `<button type="button" class="gshell-btn is-main" data-shell-go="${plain(id)}">${plain(w.start)}</button>`}</div>` : '';
   return lead + pause + bubble;
 }
@@ -206,6 +208,8 @@ export function shellFor(id, game) {
     say: (who, text, ms) => say(id, who, text, ms),
     lead: (text, o) => lead(id, text, o),
     onPause: (fn) => onShell((k, s) => { if (k === id) fn(s.paused); }),
+    // lines the pause veil shows for this game (its move list); none clears them
+    note: (lines) => { entry(id).note = lines?.length ? [...lines] : null; paint(id); },
   };
 }
 
