@@ -1743,6 +1743,8 @@ function pillWords() {
 
 /* What the fight's card draws itself from: this world's cards, this world's
    pictures, and the words of the language in play. */
+/* Her word on a lost fight's closing card, once it has come (her own, or the 木牌's pool). */
+const lossLine = (b) => (b?.lossOut?.id != null && herSay.st.line?.id === b.lossOut.id && herSay.st.line.from !== 'wait' ? herSay.st.line.text : null);
 function boutCtx() {
   const c = bout.brief.creature;
   return {
@@ -1760,7 +1762,7 @@ function boutCtx() {
     ended: Boolean(boutRoom(bout)?.room().ended),
     // Why this fight, and who speaks in it (the brief carries them when the story gives them). The foe's first
     // word and 银月's lines stand in the shell's bubble over the room (paintHer), not in it.
-    stake: bout.brief.stake ?? null, says: { ...(boutSays(bout.brief.says, bout.st.outcome) ?? {}), foe: null, her: null },
+    stake: bout.brief.stake ?? null, says: { ...(boutSays(bout.brief.says, bout.st.outcome) ?? {}), foe: null, her: lossLine(bout) },
     // 问银月 (fightsay.js): only while she walks with him here, and its count left.
     herAsk: herFights(bout) && bout.say ? { can: bout.say.canAsk(boutView(bout.st)), left: bout.say.asksLeft(), name: look.companion?.name ?? words().yinyue } : null,
   };
@@ -3837,6 +3839,8 @@ const herSay = createHerSay({
     // The pool's words are the page's: copied into the chat as hers (her own line lands there by itself).
     if (line.from === 'fallback') quietCopy(`${look?.companion?.name ?? words().yinyue}${line.mode === 'asleep' ? (lang() === 'en' ? ' (from the tablet)' : '（木牌里）') : ''}：${line.text}`);
     showHerBub(line.text, line);
+    // A loss's word stands on the fight's closing card too (boutCtx says.her).
+    if (bout?.lossOut) boutRoom(bout)?.draw?.();
   },
 });
 function showHerBub(text, line, wait = false) {
@@ -3984,7 +3988,12 @@ function boutHooks(b) {
     onStep: () => { if (bout === b) fightMoments(); },
     onPlayed: ({ before, mark, mine }) => herCues(b, before, mark, mine),
     onAsk: () => askHerInFight(b),
-    settle: () => writeBout(b),
+    // A loss with a way forward: her word comes as the closing card stands, on it beside the button (boutCtx).
+    settle: async () => {
+      const r = await writeBout(b);
+      if (r?.ok && r.outcome === 'lost' && r.way?.length) b.lossOut = herFightOver(b, r);
+      return r;
+    },
     // The closing card (won · lost · withdrew, battle-card.js endHtml) stands long enough to be read —
     // longer with the beast's last word in it — or until 收起. Never a gate: the report goes by itself.
     // A loss with a way forward (rules/strengthen.mjs) stands until he takes it or puts it away.
@@ -4045,7 +4054,7 @@ async function settleBout(b, out = {}) {
   if (finale && r.outcome === 'won') taleEnded(finale.title, true);
   // Every win and every loss gets her (hersay.js) — the closing word said in the fight is not said
   // twice; a beast that walked off is told to her quietly, as before.
-  else if (r.outcome === 'won' || r.outcome === 'lost') herFightOver(b, r);
+  else if ((r.outcome === 'won' || r.outcome === 'lost') && !b.lossOut) herFightOver(b, r);
   else if (!b.say?.st.told.has(r.outcome)) toldOutcome(brief, r.outcome);
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.
