@@ -183,6 +183,12 @@ test('their voice: one bank turn rewrites the questions; only well-formed questi
   assert.equal(bank.fly.who, 'jin-laocai');
   assert.equal(bank.eggs.text, '我查了，它下蛋吗？');
   assert.match(resultLine(c, '12 问猜中了狐狸', 'zh'), /12 问猜中了狐狸.*别改这个结果/);
+  // The list never shows in the chat panel: it is asked for inside one comment, which the panel drops, and read from there.
+  assert.match(line, /<!-- 和 -->/);
+  const panel = (t) => t.replace(/<!--[\s\S]*?-->/g, '');
+  const wrapped = '<!--\nfly｜老蔡：这玩意儿能上天不？\nguess｜眼镜：我赌是{x}，对不对？\n-->';
+  assert.equal(panel(wrapped).trim(), '', 'the panel shows nothing of it');
+  assert.deepEqual(Object.keys(parseBank(wrapped, TABLE, cast)).sort(), ['fly', 'guess']);
 });
 
 test('the module: the page judges (no tag, no model verdict); every game is skippable, sounds through the shell', () => {

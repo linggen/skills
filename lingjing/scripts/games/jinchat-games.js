@@ -167,7 +167,7 @@ const W = {
     choices: '页面给了他四个选项挑。',
     solved: '他猜中了：「{guess}」（页面判的）。用一句话认了。',
     skip: '他不猜了，跳过；页面亮出了谜底：「{answer}」。回他一句，收个尾。',
-    bank: '这一局是二十问反着玩：他心里想好一种动物，你们只问是或不是，来猜。下面每个问题，照你们平常说话的样子各改写成一句（意思不变，还是只能答是或不是），一行一个，照「编号｜名字：问句」写，名字轮着来；最后一行写「guess｜名字：……{x}……？」——猜的那一句，{x} 原样留着。不要别的字。',
+    bank: '这一局是二十问反着玩：他心里想好一种动物，你们只问是或不是，来猜。下面每个问题，照你们平常说话的样子各改写成一句（意思不变，还是只能答是或不是），一行一个，照「编号｜名字：问句」写，名字轮着来；最后一行写「guess｜名字：……{x}……？」——猜的那一句，{x} 原样留着。整段从第一行到最后一行用一对 <!-- 和 --> 包起来（页面读它，聊天里不显示），不要别的字。',
     bankQ: '{id}｜{q}',
     result: '二十问完了（页面判的）：{summary}。说一句收尾，别改这个结果。',
   },
@@ -182,7 +182,7 @@ const W = {
     choices: 'The page has given him four choices.',
     solved: 'He has it: "{guess}" (the page judged it). Own it in a line.',
     skip: 'He gives up and skips; the page shows the answer: "{answer}". Answer him in a line and close it.',
-    bank: 'This round is twenty questions the other way round: he thinks of an animal and you ask only yes-or-no questions to guess it. Rewrite each question below in your own voice, one line each (same meaning, still yes or no), as "id｜Name: question", taking turns; the last line "guess｜Name: … {x} …?" — the guessing line, {x} left exactly as it is. Nothing else.',
+    bank: 'This round is twenty questions the other way round: he thinks of an animal and you ask only yes-or-no questions to guess it. Rewrite each question below in your own voice, one line each (same meaning, still yes or no), as "id｜Name: question", taking turns; the last line "guess｜Name: … {x} …?" — the guessing line, {x} left exactly as it is. Wrap the whole list, first line to last, in one <!-- and --> (the page reads it; the chat never shows it). Nothing else.',
     bankQ: '{id}｜{q}',
     result: 'The twenty questions are over (the page judged it): {summary}. Close it with a line; never change that result.',
   },
@@ -222,7 +222,8 @@ export function parseBank(text, table, cast) {
   const ids = new Set([...table.questions.map((q) => q.id), 'guess']);
   const names = cast.map((c) => c.name);
   const out = {};
-  for (const raw of String(text ?? '').split(/\n+/)) {
+  // The list comes wrapped in one HTML comment, so the chat panel never shows it (it drops every <!-- … -->); the page reads inside.
+  for (const raw of String(text ?? '').replace(/<!--|-->/g, '\n').split(/\n+/)) {
     const m = raw.replace(/\*\*/g, '').trim().match(/^([\w-]+)\s*[｜|]\s*(.+)$/);
     if (!m || !ids.has(m[1])) continue;
     let line = m[2].trim(), who = null;
