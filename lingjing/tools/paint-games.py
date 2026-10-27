@@ -150,20 +150,7 @@ SUBJECTS = {
     'Grey ink wash and dark ink.'),
   # ── the second batch (全文后的小游戏 古五 → 古九, 2026-10-26): 时机 and 打地鼠 story levels, as the first batch's.
   #    第五回 · the 秘境: 凶崖 (the climb down, the torch below) · 踏马符 (邹青松's four snakes) · 翻板 (阿禾's warning) · 谷粒.
-  #    第六回 · the 大比: 扣 (the fist held through the incense) · 迎剑 (秦雁's palm held back) · 接镜 (马小宝's beam) · 风掉头 (the pig talisman).
-  'shiji/yingjian-stage': ('sprite', (960, 160), (1536, 256), 1,
-    'The front edge of a low round stone fighting platform seen from the side, big grey stone blocks, a smear of red chilli oil '
-    'spilled on its top. Grey ink wash and dark ink.'),
-  'shiji/yingjian-idle': ('sprite', (400, 600), (768, 1152), 1,
-    'A tall young Chinese swordswoman of about twenty in a pale blue robe, sleeves bound tight, straight brows, whole body seen '
-    'from the side facing LEFT, her sword point held out level. Old Chinese storybook figure. Ink lines and soft grey wash.'),
-  'shiji/yingjian-tell': ('sprite', (520, 600), (1024, 1152), 1,
-    'A tall young Chinese swordswoman in a pale blue robe, whole body seen from the side facing LEFT, her left palm thrust '
-    'forward glowing with a faint green light, her sword hand drawn back. Old Chinese storybook figure. Ink lines and soft grey '
-    'wash with a faint green.'),
-  'shiji/yingjian-me': ('sprite', (360, 560), (768, 1152), 2,
-    'A thin Chinese boy of thirteen in a torn grey disciple\'s robe seen from the side facing RIGHT, lunging in low and close, his '
-    'left arm bleeding, one foot hooking forward along the ground. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  #    第六回 · the 大比: 扣 (the fist held through the incense) · 接镜 (马小宝's beam) · 风掉头 (the pig talisman).
   'shiji/jiejing-stage': ('sprite', (960, 160), (1536, 256), 1,
     'The front edge of a low round stone fighting platform seen from the side at dusk, big grey stone blocks, frozen earth '
     'below. Grey ink wash and dark ink.'),

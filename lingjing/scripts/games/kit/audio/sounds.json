@@ -850,6 +850,73 @@
     }
    }
   },
+  "fight": {
+   "music": "card",
+   "events": {
+    "start": "tone.go",
+    "swing": {
+     "sound": "tone.whoosh",
+     "min": 90,
+     "vol": 0.45
+    },
+    "whiff": {
+     "sound": "tone.whoosh",
+     "min": 120,
+     "vol": 0.25
+    },
+    "hit": {
+     "sound": "hit.punch",
+     "min": 60
+    },
+    "heavy": {
+     "sound": "hit.punch.heavy",
+     "min": 80
+    },
+    "hurt": {
+     "sound": "hit.soft",
+     "min": 80,
+     "vol": 0.8
+    },
+    "block": {
+     "sound": "hit.wood.medium",
+     "min": 70,
+     "vol": 0.7
+    },
+    "jump": {
+     "sound": "cloth",
+     "min": 120,
+     "vol": 0.6
+    },
+    "land": {
+     "sound": "step.grass",
+     "min": 120,
+     "vol": 0.5
+    },
+    "cast": "tone.cast",
+    "fire": "tone.fire",
+    "ice": {
+     "sound": "tone.ice",
+     "min": 90
+    },
+    "steam": "tone.pop",
+    "tell": {
+     "sound": "tone.warn",
+     "min": 200
+    },
+    "early": {
+     "sound": "ui.error",
+     "min": 200,
+     "vol": 0.5
+    },
+    "ying": "blade.slice",
+    "glow": "tone.cast",
+    "hold": "tone.chime",
+    "palm": "hit.soft.heavy",
+    "hook": "hit.punch.heavy",
+    "slip": "tone.whoosh",
+    "down": "tone.thud"
+   }
+  },
   "board": {
    "music": null,
    "events": {
@@ -1342,6 +1409,9 @@
   },
   "lianliankan": {
    "kit": "board"
+  },
+  "fighter": {
+   "kit": "fight"
   },
   "sneeze": {
    "kit": "board"

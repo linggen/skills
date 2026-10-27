@@ -263,6 +263,15 @@
         "scripts/vendor/gsap-3.15.0.min.js"
       ]
     },
+    "fighter": {
+      "_about": "格斗 (games/fighter.js): the 1v1 bouts games.json gives it (秦雁's in 第六回's 大比). Drawn on its own canvas (fighter/draw.js) with its own sheet, so no `css` (the page does not scroll); the two faces by its bars.",
+      "module": "scripts/games/fighter.js",
+      "files": [
+        "worlds/jiuding/games.json",
+        "worlds/jiuding/art/people/xiaoman.webp",
+        "worlds/jiuding/art/people/neimen-shijie.webp"
+      ]
+    },
     "sneeze": {
       "_about": "时机 (games/sneeze.js): every level games.json gives it (上崖 · 别抖 · 腿缝里 · 一拳 · 萝卜 · 嘀声 · 喷嚏).",
       "module": "scripts/games/sneeze.js",

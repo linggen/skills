@@ -62,6 +62,23 @@ sounds.json. Locks: tests/game-sound.test.mjs (every registry game names real so
 runner sounds), tests/board-leave.test.mjs (no board the story needs without a scene; every kind draws its way out).
 Left: the story's 炼丹 herb board has no shell frame, so no 🔊 of its own (it follows the one shared mute set on any other board).
 
+## 格斗 — the arcade 1v1 (10-26, first bout: 秦雁)
+
+Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街霸好做吗? 拳皇之类的」 → 「好, 先做秦雁那一场」. One bout only, wm-yingjian
+(task `yingjian-hook`, its won lines and stars kept), until he has played it on the Mac and the phone.
+- **Kit** `games/fighter.js` (mount, own hands) · `fighter/core.js` (pure, seeded rules + her AI) · `fighter/draw.js` (ink 皮影 on a
+  canvas, poses as joint angles — no painted frames) · `bots/fighter.js` · tests/game-fighter.test.mjs. A bout is a games.json level
+  (fighters, bars, looks, faces, lines, numbers laid on the kit's); 祁长松, 斗法, a beast add a level.
+- **Play**: walk, jump, 拳 (J), 勾 (K), 火 (L, cooldown), 挡 (S or hold back). Her: pokes and thrusts at 三尺 of 剑气, ice spikes, a
+  block; 头十招 at half strength. The book's two reads: past ~24 moves, his back to an edge, her point at his throat → **迎** in the
+  push (any fresh press) takes him past her, she where he stood; the **palm** comes at once: glow, 「收了三分」 (cue 勾), strike at three
+  tenths, never lethal. 勾 while she holds back, over the red oil at the left edge → she skids off: **clean** (★3). Hooked after the
+  palm landed → **clumsy** (★2/1). Lost at 血 0 (dealt again). She never hits him while he is down; the 雷符 is never drawn.
+- **Hands**: Mac keys A/D ←→, W ↑ Space, S ↓, J K L + clickable buttons; phone buttons, multi-touch by pointer id, presses on
+  pointerdown, buffered 160 ms. Sound: sounds.json kit `fight` (bed: card).
+- **Bot** (200 ms): wins every seed in 35–50 s; 320 ms wins 7/8; masher, wall of blocks, idle lose.
+- **Skipped**: a mount-only board's skip shows the page's 「没走完，往下走了。」, as every board's; `won.skipped` kept in the level.
+
 ## 全文后的小游戏 — the second batch, 古五 → 古九 (plan 2026-10-26; Hanli 「都开吧」)
 
 The first batch's rules, unchanged (below): a board only where the book has action, no kit twice in a row, nothing
@@ -125,7 +142,7 @@ fit._hold).
 | 2 | wm-qianye s11 (split) | 褚先生's two dry fingers probing, 「像两根竹签」 | 气走经脉 `maizhen` |
 | 3 | wm-qianye a5 (split) | 扣: thumb on the 午文, 「四层，一炷香」 | 时机 `kou` |
 | 4 | wm-lun2 s4 | 秦雁 at the water jar hands him the ladle | jinchat `qinyan` (face) |
-| 5 | wm-juesai (split of the 秦雁 bout's telling) e8 | the sword at his throat: step INTO it | 时机 `yingjian` |
+| 5 | wm-juesai (split of the 秦雁 bout's telling) e8 | the sword at his throat: step INTO it | ~~时机 `yingjian`~~ → 格斗 `qinyan` (10-26, § 格斗) |
 | 6 | wm-laoyin s8 | 阿禾's slip: 「没法打，认输」 | jinchat `renshu` (face) |
 | 7 | wm-laoyin e2 (split) | 半炷香, the flag droops, the pig talisman on 祁长松's back | 时机 `fengtou` |
 

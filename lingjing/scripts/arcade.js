@@ -28,7 +28,7 @@ const w = () => W[lang()];
 const KIND_EN = {
   割绳子: 'Cut the rope', 投掷: 'Throw', 狩猎瞄准: 'Hunt & aim', 打地鼠: 'Whack-a-mole', 时机: 'Timing', 节奏: 'Rhythm',
   调息: 'Breath', 解谜: 'Puzzle', 棋牌: 'Board & table', 判断: 'Read & pick', 剧情: 'Story', 你画我猜: 'Draw & guess',
-  塔防: 'Tower defense', 结印: 'Hand seals', 配对: 'Match pairs', 对话: 'Talk', 探索: 'Explore', 斗法: 'Card duel',
+  塔防: 'Tower defense', 结印: 'Hand seals', 配对: 'Match pairs', 对话: 'Talk', 探索: 'Explore', 斗法: 'Card duel', 格斗: 'Fighting',
 };
 const kindOf = (g) => (lang() === 'en' ? KIND_EN[g.mechanic] ?? g.mechanic : g.mechanic) ?? '';
 
@@ -151,7 +151,7 @@ async function listPage() {
 
 // A wide scene (the throws: 480×300; 结印's 4:3 field with the camera in its corner) plays as large as the window lets it, not in the phone-wide card
 // (Hanli 10-19: 「射鹿…把画面调大一些, 就很像愤怒小鸟了」).
-const WIDE = new Set(['投掷', '结印']);
+const WIDE = new Set(['投掷', '结印', '格斗']);
 // A game that takes the window's height whole (斗法's room: `meta.pick`, one foe a deal) plays in a full-height card.
 const FILL = (mod) => Boolean(mod?.meta?.pick);
 // A tall board (守炉's 600×760) plays as tall as the window lets it — the module says so (`meta.tall`, games/shell.js).
