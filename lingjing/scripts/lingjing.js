@@ -3299,6 +3299,8 @@ function gameKey(e) {
   for (const ghost of document.querySelectorAll('[data-game]')) {
     const g = boardFor(ghost.dataset.game), action = g?.mod?.meta?.keys?.[key];
     if (!action || g.sent || g.state?.won || !ghost.offsetParent) continue;
+    // A `pass` key that would change nothing (华容道's Esc with nothing picked) goes on to the page's own use.
+    if (action.pass && g.mod.act(g.state, action).state === g.state) continue;
     gameAct(ghost, { ...action }, ghost);
     return true;
   }

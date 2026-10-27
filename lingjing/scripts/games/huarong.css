@@ -115,13 +115,18 @@
 }
 
 .g-huarong-block.is-sel {
-  box-shadow: 0 0 0 3px var(--ling-soft), 0 0 0 1px var(--ling) inset;
+  box-shadow: 0 0 0 3px var(--ling), 0 0 0 6px var(--ling-soft), 0 0 14px 4px var(--ling-soft);
   transform: scale(0.97);
+  z-index: 1;
 }
 
 .g-huarong-k.is-sel {
-  box-shadow: 0 0 0 3px var(--ling-soft);
+  box-shadow: 0 0 0 3px var(--ling), 0 0 0 6px var(--ling-soft);
 }
+
+/* The keys, on a desk only (a keyboard to press them with). */
+.g-huarong-keys { display: none; text-align: center; font-size: 12px; color: var(--faint); margin-top: 6px; }
+@media (hover: hover) and (pointer: fine) { .g-huarong-keys { display: block; } }
 
 .g-huarong-block:disabled,
 .g-huarong-cell:disabled {

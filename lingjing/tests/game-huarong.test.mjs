@@ -325,3 +325,19 @@ test('the bot wins every mijing layout and a data level in the optimal count', a
   const r = playOnce(mod, bot, { seed: 'bot-crowd', deal: { levels: [CROWD] } });
   assert.equal(r.won, true);
 });
+
+test('keyboard-only: Q/E cycle the picked block in reading order, Esc puts it back (a `pass` key: nothing picked, it changes nothing)', async () => {
+  const m = await import('../scripts/games/huarong.js');
+  const s0 = m.newGame('kb', 1);
+  const order = [...s0.blocks].sort((a, b) => a.y - b.y || a.x - b.x).map((b) => b.id);
+  const e = m.act(s0, m.meta.keys.e).state;
+  assert.equal(e.sel, order[0]);
+  assert.equal(m.act(e, m.meta.keys.e).state.sel, order[1]);
+  assert.equal(m.act(s0, m.meta.keys.q).state.sel, order[order.length - 1]);
+  assert.equal(m.act(e, m.meta.keys.q).state.sel, order[order.length - 1]);
+  assert.equal(m.act(e, m.meta.keys.Escape).state.sel, null);
+  assert.equal(m.meta.keys.Escape.pass, true);
+  assert.equal(m.act(s0, m.meta.keys.Escape).state, s0);
+  assert.match(m.html(e, 'zh'), /is-sel/);
+  assert.match(m.html(s0, 'zh'), /Q\/E/);
+});

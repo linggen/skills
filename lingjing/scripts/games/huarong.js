@@ -37,8 +37,8 @@ export const MIJING = {
   id: 'mijing',
   name: { zh: '华容道', en: 'Huarong Pass' },
   how: {
-    zh: { desk: '点一块再点箭头或旁边空格，一次滑一格；键盘 WASD 或方向键也行（没选时动小满）。把小满挪到下方出口。', touch: '点一块再点箭头或旁边空格，一次滑一格。把小满挪到下方出口。' },
-    en: { desk: 'Tap a block, then an arrow or an empty cell beside it; or WASD / arrow keys (they move Xiaoman when none is picked). Get Xiaoman out through the bottom exit.', touch: 'Tap a block, then an arrow or an empty cell beside it. Get Xiaoman out through the bottom exit.' },
+    zh: { desk: '点一块再点箭头或旁边空格，一次滑一格；键盘 WASD 或方向键也行，Q/E 换一块，Esc 回小满。把小满挪到下方出口。', touch: '点一块再点箭头或旁边空格，一次滑一格。把小满挪到下方出口。' },
+    en: { desk: 'Tap a block, then an arrow or an empty cell beside it; or WASD / arrows, Q/E to pick, Esc back to Xiaoman. Get Xiaoman out through the bottom exit.', touch: 'Tap a block, then an arrow or an empty cell beside it. Get Xiaoman out through the bottom exit.' },
   },
   layouts: LAYOUTS,
   win: { zh: '挤出来了 · {n} 步', en: 'Squeezed out · {n} moves' },
@@ -54,9 +54,12 @@ export const meta = {
   name: MIJING.name,
   how: MIJING.how,
   // WASD and the arrow keys slide the picked block (Hanli 2026-10-20: 「可以用wsad触发移动吗」).
+  // Q / E pick the block before / after in reading order, Esc puts it back (小满 moves again) — keyboard-only play
+  // (Hanli 10-27). `pass`: a key that would change nothing goes on to the page (Esc with nothing picked closes as ever).
   keys: {
     w: { g: 'move', dir: 'up' }, a: { g: 'move', dir: 'left' }, s: { g: 'move', dir: 'down' }, d: { g: 'move', dir: 'right' },
     ArrowUp: { g: 'move', dir: 'up' }, ArrowLeft: { g: 'move', dir: 'left' }, ArrowDown: { g: 'move', dir: 'down' }, ArrowRight: { g: 'move', dir: 'right' },
+    q: { g: 'cycle', step: -1 }, e: { g: 'cycle', step: 1 }, Escape: { g: 'unpick', pass: true },
   },
 };
 
@@ -195,6 +198,14 @@ export function act(state, data = {}) {
     if (!state.blocks.some((b) => b.id === id)) return { state, won: false };
     return { state: { ...state, sel: state.sel === id ? null : id }, won: false };
   }
+  if (g === 'cycle') {
+    // Reading order (top→bottom, left→right); from none, E takes the first and Q the last.
+    const order = [...state.blocks].sort((a, b) => a.y - b.y || a.x - b.x).map((b) => b.id);
+    const at = order.indexOf(state.sel), step = Number(data.step) < 0 ? -1 : 1;
+    const next = at < 0 ? (step > 0 ? order[0] : order[order.length - 1]) : order[(at + step + order.length) % order.length];
+    return { state: { ...state, sel: next }, won: false };
+  }
+  if (g === 'unpick') return state.sel == null ? { state, won: false } : { state: { ...state, sel: null }, won: false };
   if (g === 'move') {
     if (!DIRS[data.dir]) return { state, won: false };
     // Nothing picked: a key moves 你 (an arrow button stays disabled until a block is picked).
@@ -212,8 +223,8 @@ export function act(state, data = {}) {
 }
 
 const T = {
-  zh: { moves: '步数', pick: '先点一块' },
-  en: { moves: 'Moves', pick: 'Tap a block first' },
+  zh: { moves: '步数', pick: '先点一块', keys: { desk: 'WASD/方向键 挪动 · Q/E 换一块 · Esc 回小满', touch: '' } },
+  en: { moves: 'Moves', pick: 'Tap a block first', keys: { desk: 'WASD/arrows move · Q/E pick · Esc back to Xiaoman', touch: '' } },
 };
 
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -262,7 +273,7 @@ export function html(state, lang = 'zh') {
   return `<div class="g-huarong${state.won ? ' is-won' : ''}">
 <div class="g-huarong-board"${boardStyle}>${cells.join('')}${blocks.join('')}<div class="g-huarong-exit" aria-hidden="true">${esc(say(lvl.exit ?? MIJING.exit, lang))}</div></div>
 ${status}
-${state.won ? '' : `<div class="g-huarong-pad">${arrows.join('')}</div>`}
+${state.won ? '' : `<div class="g-huarong-pad">${arrows.join('')}</div><div class="g-huarong-keys">${esc(t.keys.desk)}</div>`}
 </div>`;
 }
 

@@ -155,6 +155,8 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.('input,textarea,select,[contenteditable]')) return;
       const action = keys[e.key.length === 1 ? e.key.toLowerCase() : e.key];
       if (!action || !host.isConnected || paused()) return;
+      // `pass`: a key that would change nothing goes on to the page (华容道's Esc with nothing picked).
+      if (action.pass && mod.act(g.state, action).state === g.state) return;
       e.preventDefault();
       apply({ ...action });
     });
