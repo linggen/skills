@@ -491,4 +491,4 @@ body.storylock :is(#footRow, #footChips, #headCards, .tray) :is(button, a, [role
 .story .wayacts .gatecard .small { color: #5a5048; }
 .story .wayacts .gatecard .acts { justify-content: center; }
 .story .wayacts .gatecard .act { color: #fff; background: var(--ling); border-color: var(--ling); }
-.story .wayacts .paneltap:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+.story .wayacts .paneltap:disabled, .story.done .wayacts .paneltaps > .paneltap:disabled { animation: none; opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
