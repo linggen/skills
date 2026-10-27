@@ -64,6 +64,25 @@ test("a win gives the beast's own card, never one at random; a beast that names 
   assert.equal(winCard(content, s, { id: 'chance:x', root: 'wood' }, NOW, 'chance'), null, 'no chance card at random');
 });
 
+test("each beast leaves a card of itself (2026-10-27), the old card's numbers in the old card's slots — the fight weighs the same", () => {
+  const drops = { xiong: ['xiongzai', 'shanjing'], mihou: ['houer', 'leipu'], shanli: ['fuli', 'gupi'], congcong: ['liuzu', 'xianshi'], chihu: ['xiaochihu', 'tongling'],
+    geju: ['chishou', 'jianying'], tianma: ['tianmaju', 'jinsuo'], 'foe-zou': ['huoshe', 'huoya'], lang: ['toulang', 'jingang'] };
+  const BODY = ['kind', 'cost', 'element', 'atk', 'hp', 'keywords', 'effect', 'binds'];
+  for (const [beast, [card, was]] of Object.entries(drops)) {
+    const s = { cards: [], lang: 'zh', seed: 'x' };
+    assert.equal(winCard(content, s, creatureOf(content, beast), NOW)?.id, card, beast);
+    const a = cards.find(c => c.id === card), b = cards.find(c => c.id === was);
+    for (const k of BODY) assert.deepEqual(a[k], b[k], `${card}.${k} = ${was}.${k}`);
+    assert.ok(creatureOf(content, beast).deck.includes(card) && !creatureOf(content, beast).deck.includes(was), `${beast} deals ${card}, not ${was}`);
+    assert.ok(b.from.every(f => f.kind === 'foe' && f.creature !== beast), `${was} is no longer ${beast}'s`);
+  }
+  // the pack: 群狼 calls 灰狼, and the wolf's two are its own (never a gift)
+  const lang = creatureOf(content, 'lang');
+  assert.equal(lang.signature.effect.summon.id, 'huilang');
+  for (const id of ['huilang', 'elang']) assert.deepEqual(cards.find(c => c.id === id).from.map(f => [f.kind, f.creature]), [['foe', 'lang']]);
+  assert.ok(!lang.deck.some(id => ['jinsuo', 'jianying'].includes(id)));
+});
+
 test('钱掌柜 sells the cards that name his stall; each costs what the card says', () => {
   const shop = Object.values(content.places).flatMap(d => d.places).find(p => p.has?.shop?.name?.zh === '钱掌柜的摊子').has.shop;
   for (const c of cards) for (const f of (c.from ?? []).filter(x => x.kind === 'shop' && x.keeper?.zh === '钱掌柜')) {

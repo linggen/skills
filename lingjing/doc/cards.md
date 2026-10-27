@@ -131,10 +131,17 @@ Spells won from a fight follow one rule: the beast was fighting with it, and he 
 |---|---|---|---|
 | zheng 狰 | 2费 2/2, draw | 第四回 wm-yaoyuan: 小狰 follows him (won with a 萝卜) | 书 |
 | gui 蛫 | 3费 2/5 护主 | Not tamed in the book (it is the 门闩). Comes only through the 踏马符 jump, 第五回 | 书 |
-| xianshi 衔石 | 1费 1/2 | won from 从从 (后山崖顶) | 游戏 |
-| leipu 雷仆 | 2费 2/2 | won from 猕猴 | 游戏 |
-| tongling 童灵 | 2费 2/2, draw | won from 赤狐 | 游戏 |
+| liuzu 六足犬 | 1费 1/2 | won from 从从 (后山崖顶); its plate. Was 衔石 (精卫's bird) until 2026-10-27 — 衔石 is now 精卫's foe card | 游戏 |
+| houer 猴儿 | 2费 2/2 | won from 猕猴. Was 雷仆 until 2026-10-27 — 雷仆 is now 雷神's foe card | 游戏 |
+| xiaochihu 小赤狐 | 2费 2/2, draw | won from 赤狐 (叼了就跑). Was 童灵 (a child) until 2026-10-27 — 童灵 is now 狰's foe card | 游戏 |
 | toulang 头狼 | 5费 3/7 护主 | won from 狼 (elite). Was 金刚 until 2026-10-27 (a wolf leaving a man in armour); 金刚 is now only 羬羊's foe card | 游戏 |
+| xiongzai 熊崽 | 2费 1/4 护主 | won from 熊. Was 山精 until 2026-10-27 — 山精 is now 孙二狗's foe card | 游戏 |
+| fuli 伏狸 | 2费 0/5 护主 | won from 山狸. Was 鼓皮 (夔's drum) until 2026-10-27 — 鼓皮 is now 夔's foe card | 游戏 |
+| chishou 赤首 | 4费 5/3 | won from 猲狙; its plate. Was 剑影 until 2026-10-27 — 剑影 is now 马小宝's foe card | 游戏 |
+| tianmaju 天马驹 | 1费 2/1 | won from 天马; its plate. Was 金梭 until 2026-10-27 — 金梭 is now 马小宝's foe card | 游戏 |
+| huoshe 火蛇 | 2费 3/1 | won from 邹青松 (his gourd 「放得出火蛇」). Was 火鸦 until 2026-10-27 — 火鸦 is now 鬿雀's foe card | 游戏 |
+
+The wolf's pack (2026-10-27): 狼's 群狼 calls two 灰狼 (1费 2/1, was 金梭) and its deck holds 灰狼 ×3 and 饿狼 ×2 (4费 5/3, was 剑影) — the same numbers, so its fights weigh the same; both are only the wolf's, never a gift.
 | shishou 石兽 | 4费 3/6 护主 | won from 精精 | 游戏 |
 
 **Later 卷 (tamed in their own 卷, `creatures.json juan`):** 精卫 (2) · 狍鸮 (2) · 雷神 (2) · 无支祁 (4) · 夔 (3) · 狪狪 (3) · 防风氏 (5) · 长右 (5) · 巴蛇 (6) · 夔牛 (7) · 窃脂 (7) · 肥遗 (8) · 羬羊 (8) · 泰逢 (9) · 马腹 (9) · 夫诸 (9). These 16 are 游戏 until those 卷 are written.

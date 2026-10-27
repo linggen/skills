@@ -41,7 +41,8 @@
     "tool": {"zh": "法器", "en": "Artifact"},
     "puppet": {"zh": "傀儡", "en": "Puppet"},
     "plant": {"zh": "灵植", "en": "Plant"},
-    "thing": {"zh": "物", "en": "Thing"}
+    "thing": {"zh": "物", "en": "Thing"},
+    "conjured": {"zh": "召物", "en": "Conjured"}
   },
   "_from": "出处 (cards.md, Hanli 2026-10-16: 每张牌都在剧情里收集或者购买)：`from` 是一串来源，每个 {kind, src: 书|游戏, line}。story (scene：离开那一场时得) · beat (task：小游戏赢了得) · beast (creature：打赢它得 —— 它拿这张牌打过你) · shop (item：买那件东西得) · tame (creature：收服) · summon (只由一件东西召来) · tale (传闻了结) · member (小队里那个人的牌，由他出) · foe (只是对手的牌)。`owner`：谁出这张牌 (battle.js § sideOf)；没有 owner 的是小满的。",
   "cards": [
@@ -98,6 +99,36 @@
       ]
     },
     {
+      "id": "xiongzai",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "熊崽",
+        "en": "Bear Cub"
+      },
+      "cost": 2,
+      "element": "earth",
+      "atk": 1,
+      "hp": 4,
+      "keywords": [
+        "taunt"
+      ],
+      "art": "art/creatures/xiong.webp",
+      "art_source": "Borrowed for now: the 熊 plate. Its own card picture (tools/paint-cards.py xiongzai) waits in the painter's queue.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "xiong",
+          "line": {
+            "zh": "熊人立一掌，身后的崽也学着立起来",
+            "en": "The bear rears and strikes; its cub rears up behind, copying."
+          },
+          "src": "游戏"
+        }
+      ],
+      "_about": "熊留下的牌 (2026-10-27)：原先是山精 —— 一只熊留下一个石头精怪。熊崽人立学它娘，皮厚：同山精一样的二费 1/4 护主，熊的牌组里换下那一格，斗法闸不动。"
+    },
+    {
       "id": "shanjing",
       "kind": "minion",
       "is": "sprite",
@@ -116,15 +147,12 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
-          "kind": "beast",
-          "creature": "xiong",
-          "line": {
-            "zh": "熊人立一掌",
-            "en": "The bear rears and strikes."
-          },
+          "kind": "foe",
+          "creature": "foe-sunergou",
           "src": "游戏"
         }
-      ]
+      ],
+      "_from": "2026-10-27: no longer xiong's drop (it now leaves a card of its own); only foe-sunergou deals it. Saves that hold it keep it."
     },
     {
       "id": "shangen",
@@ -545,8 +573,8 @@
           "kind": "beast",
           "creature": "heyu",
           "line": {
-            "zh": "合窳：其音如婴儿",
-            "en": "The heyu: a voice like a baby."
+            "zh": "合窳一拱，崖上的石头滚下来",
+            "en": "The heyu shoulders the cliff, and the stones come down."
           },
           "src": "游戏"
         }
@@ -841,8 +869,8 @@
           "kind": "beast",
           "creature": "xiegou",
           "line": {
-            "zh": "絜钩带来的潮",
-            "en": "The tide the xiegou brings."
+            "zh": "一群絜钩扑下水，浪头跟着它们起来",
+            "en": "A flock of xiegou dives, and the water rises after them."
           },
           "src": "游戏"
         }
@@ -904,6 +932,33 @@
       ]
     },
     {
+      "id": "liuzu",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "六足犬",
+        "en": "Six-legged Hound"
+      },
+      "cost": 1,
+      "element": "fire",
+      "atk": 1,
+      "hp": 2,
+      "art": "art/congcong.webp",
+      "art_source": "The 从从's own plate (creatures.json congcong), as its tamed cards wear theirs: a 山海经 beast keeps its classical picture (tools/paint-cards.py).",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "congcong",
+          "line": {
+            "zh": "其状如犬，六足，其鸣自詨",
+            "en": "Like a dog, with six legs; it cries its own name."
+          },
+          "src": "游戏"
+        }
+      ],
+      "_about": "从从留下的牌 (2026-10-27)：原先是衔石 (精卫衔石的那只鸟)。同衔石一样的一费 1/2，从从的牌组里换下那两格。"
+    },
+    {
       "id": "xianshi",
       "kind": "minion",
       "is": "beast",
@@ -919,15 +974,39 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
+          "kind": "foe",
+          "creature": "jingwei",
+          "src": "游戏"
+        }
+      ],
+      "_from": "2026-10-27: no longer congcong's drop (it now leaves a card of its own); only jingwei deals it. Saves that hold it keep it."
+    },
+    {
+      "id": "houer",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "猴儿",
+        "en": "Young Macaque"
+      },
+      "cost": 2,
+      "element": "wood",
+      "atk": 2,
+      "hp": 2,
+      "art": "art/creatures/mihou.webp",
+      "art_source": "Borrowed for now: the 猕猴 plate. Its own card picture (tools/paint-cards.py houer) waits in the painter's queue.",
+      "from": [
+        {
           "kind": "beast",
-          "creature": "congcong",
+          "creature": "mihou",
           "line": {
-            "zh": "从从衔来的石子",
-            "en": "A pebble the congcong carried."
+            "zh": "猕猴呼群，一只猴儿先蹦下来",
+            "en": "The macaque calls its troop; a young one drops down first."
           },
           "src": "游戏"
         }
-      ]
+      ],
+      "_about": "猕猴留下的牌 (2026-10-27)：原先是雷仆 (雷神的仆从)。同雷仆一样的二费 2/2，猕猴的牌组里换下那两格。"
     },
     {
       "id": "leipu",
@@ -945,15 +1024,12 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
-          "kind": "beast",
-          "creature": "mihou",
-          "line": {
-            "zh": "猕猴呼群",
-            "en": "The macaque calls its troop."
-          },
+          "kind": "foe",
+          "creature": "leishen",
           "src": "游戏"
         }
-      ]
+      ],
+      "_from": "2026-10-27: no longer mihou's drop (it now leaves a card of its own); only leishen deals it. Saves that hold it keep it."
     },
     {
       "id": "leiming",
@@ -974,8 +1050,8 @@
           "kind": "beast",
           "creature": "yuanhu",
           "line": {
-            "zh": "妴胡林子里的雷声",
-            "en": "Thunder in the yuanhu's wood."
+            "zh": "妴胡一蹬蹄，林子里像打了个雷",
+            "en": "The yuanhu stamps, and the wood booms like thunder."
           },
           "src": "游戏"
         }
@@ -1086,6 +1162,36 @@
       ]
     },
     {
+      "id": "fuli",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "伏狸",
+        "en": "Crouching Wildcat"
+      },
+      "cost": 2,
+      "element": "water",
+      "atk": 0,
+      "hp": 5,
+      "keywords": [
+        "taunt"
+      ],
+      "art": "art/creatures/shanli.webp",
+      "art_source": "Borrowed for now: the 山狸 plate. Its own card picture (tools/paint-cards.py fuli) waits in the painter's queue.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "shanli",
+          "line": {
+            "zh": "山狸伏在草里，扑也无声，挨打也无声",
+            "en": "The wildcat lies flat in the grass: silent in the pounce, silent under the blow."
+          },
+          "src": "游戏"
+        }
+      ],
+      "_about": "山狸留下的牌 (2026-10-27)：原先是鼓皮 (夔皮作的鼓)。同鼓皮一样的二费 0/5 护主，山狸的牌组里换下那一格。"
+    },
+    {
       "id": "gupi",
       "kind": "minion",
       "is": "tool",
@@ -1104,15 +1210,12 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
-          "kind": "beast",
-          "creature": "shanli",
-          "line": {
-            "zh": "山狸无声一扑",
-            "en": "The wildcat pounces without a sound."
-          },
+          "kind": "foe",
+          "creature": "kui",
           "src": "游戏"
         }
-      ]
+      ],
+      "_from": "2026-10-27: no longer shanli's drop (it now leaves a card of its own); only kui deals it. Saves that hold it keep it."
     },
     {
       "id": "tiegu",
@@ -1163,8 +1266,8 @@
           "kind": "beast",
           "creature": "dangkang",
           "line": {
-            "zh": "当康：天下大穰",
-            "en": "The dangkang: a great harvest."
+            "zh": "当康拱开的土里，一颗珠子发着光——见则天下大穰",
+            "en": "In the earth the dangkang roots up, a pearl glows — where it is seen, the harvest is great."
           },
           "src": "游戏"
         }
@@ -1198,6 +1301,56 @@
       ]
     },
     {
+      "id": "tianmaju",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "天马驹",
+        "en": "Tianma Foal"
+      },
+      "cost": 1,
+      "element": "metal",
+      "atk": 2,
+      "hp": 1,
+      "art": "art/tianma.webp",
+      "art_source": "The 天马's own plate (creatures.json tianma), as its tamed cards wear theirs: a 山海经 beast keeps its classical picture (tools/paint-cards.py).",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "tianma",
+          "line": {
+            "zh": "天马见人则飞",
+            "en": "The tianma takes wing at the sight of men."
+          },
+          "src": "游戏"
+        }
+      ],
+      "_about": "天马留下的牌 (2026-10-27)：原先是金梭 (一枚梭子)。同金梭一样的一费 2/1，天马的牌组里换下那四格。"
+    },
+    {
+      "id": "huilang",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "灰狼",
+        "en": "Grey Wolf"
+      },
+      "cost": 1,
+      "element": "metal",
+      "atk": 2,
+      "hp": 1,
+      "art": "art/creatures/lang.webp",
+      "art_source": "Borrowed for now: the 狼 plate. Its own card picture (tools/paint-cards.py huilang) waits in the painter's queue.",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "lang",
+          "src": "游戏"
+        }
+      ],
+      "_about": "狼群里的一只 (2026-10-27)：狼的「群狼」叫来两只，它的牌组里也有三只 —— 原先叫来的是金梭。同金梭一样的一费 2/1，斗法闸不动。只是狼的牌，不作赏。"
+    },
+    {
       "id": "jinsuo",
       "kind": "minion",
       "is": "tool",
@@ -1213,15 +1366,12 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
-          "kind": "beast",
-          "creature": "tianma",
-          "line": {
-            "zh": "天马见人则飞",
-            "en": "The tianma takes wing at the sight of men."
-          },
+          "kind": "foe",
+          "creature": "foe-maxiaobao",
           "src": "游戏"
         }
-      ]
+      ],
+      "_from": "2026-10-27: no longer tianma's drop (it now leaves a card of its own); only foe-maxiaobao deals it. Saves that hold it keep it."
     },
     {
       "id": "feijian",
@@ -1255,6 +1405,56 @@
       ]
     },
     {
+      "id": "chishou",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "赤首",
+        "en": "Red-head"
+      },
+      "cost": 4,
+      "element": "metal",
+      "atk": 5,
+      "hp": 3,
+      "art": "art/geju.webp",
+      "art_source": "The 猲狙's own plate (creatures.json geju), as its tamed cards wear theirs: a 山海经 beast keeps its classical picture (tools/paint-cards.py).",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "geju",
+          "line": {
+            "zh": "其状如狼，赤首鼠目——是食人",
+            "en": "Like a wolf, red-headed, rat-eyed — it eats men."
+          },
+          "src": "游戏"
+        }
+      ],
+      "_about": "猲狙留下的牌 (2026-10-27)：原先是剑影 (一口剑)。同剑影一样的四费 5/3，猲狙的牌组里换下那两格。"
+    },
+    {
+      "id": "elang",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "饿狼",
+        "en": "Starved Wolf"
+      },
+      "cost": 4,
+      "element": "metal",
+      "atk": 5,
+      "hp": 3,
+      "art": "art/creatures/lang.webp",
+      "art_source": "Borrowed for now: the 狼 plate. Its own card picture (tools/paint-cards.py elang) waits in the painter's queue.",
+      "from": [
+        {
+          "kind": "foe",
+          "creature": "lang",
+          "src": "游戏"
+        }
+      ],
+      "_about": "狼群里饿急了的那只 (2026-10-27)：原先狼手里是剑影。同剑影一样的四费 5/3。只是狼的牌，不作赏。"
+    },
+    {
       "id": "jianying",
       "kind": "minion",
       "is": "tool",
@@ -1270,15 +1470,12 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
-          "kind": "beast",
-          "creature": "geju",
-          "line": {
-            "zh": "猲狙：是食人",
-            "en": "The geju: it eats men."
-          },
+          "kind": "foe",
+          "creature": "foe-maxiaobao",
           "src": "游戏"
         }
-      ]
+      ],
+      "_from": "2026-10-27: no longer geju's drop (it now leaves a card of its own); only foe-maxiaobao deals it. Saves that hold it keep it."
     },
     {
       "id": "huochai",
@@ -1682,6 +1879,33 @@
       ]
     },
     {
+      "id": "huoshe",
+      "kind": "minion",
+      "is": "conjured",
+      "name": {
+        "zh": "火蛇",
+        "en": "Fire Snake"
+      },
+      "cost": 2,
+      "element": "fire",
+      "atk": 3,
+      "hp": 1,
+      "art": "art/items/huojing.webp",
+      "art_source": "Borrowed for now: the 火精 (邹青松's fire) plate. Its own card picture (tools/paint-cards.py huoshe) waits in the painter's queue.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "foe-zou",
+          "line": {
+            "zh": "赤铜葫芦一开，飞出一条火蛇",
+            "en": "The red-copper gourd opens, and a fire snake flies out."
+          },
+          "src": "游戏"
+        }
+      ],
+      "_about": "邹青松留下的牌 (2026-10-27, 杀人必摸尸)：书里他的葫芦放的是火蛇 (「放得出火蛇」)，原先却是火鸦。同火鸦一样的二费 3/1，邹青松的牌组里换下那三格。"
+    },
+    {
       "id": "huoya",
       "kind": "minion",
       "is": "beast",
@@ -1697,15 +1921,12 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
-          "kind": "beast",
-          "creature": "foe-zou",
-          "line": {
-            "zh": "邹青松的赤铜葫芦：一条火蛇",
-            "en": "Zou Qingsong's red-copper gourd: a fire snake."
-          },
-          "src": "书"
+          "kind": "foe",
+          "creature": "qique",
+          "src": "游戏"
         }
-      ]
+      ],
+      "_from": "2026-10-27: no longer foe-zou's drop (it now leaves a card of its own); only qique deals it. Saves that hold it keep it."
     },
     {
       "id": "yanxin",
@@ -1923,7 +2144,7 @@
       "effect": {
         "sweep": 1
       },
-      "_about": "外门的粗浅火诀 (items.json sanhuo-jian, 2026-10-27)：一费，对方阵前每个扎一点 —— 狼叫来的护主金梭一扫就散 (火克金)。须有火灵根。",
+      "_about": "外门的粗浅火诀 (items.json sanhuo-jian, 2026-10-27)：一费，对方阵前每个扎一点 —— 狼叫来的灰狼一扫就散 (火克金)。须有火灵根。",
       "art": "art/cards/sanhuo.webp",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py).",
       "from": [
@@ -2010,6 +2231,39 @@
       ]
     },
     {
+      "id": "xiaochihu",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "小赤狐",
+        "en": "Little Red Fox"
+      },
+      "cost": 2,
+      "element": "fire",
+      "atk": 2,
+      "hp": 2,
+      "keywords": [
+        "battlecry"
+      ],
+      "effect": {
+        "draw": 1
+      },
+      "art": "art/creatures/chihu.webp",
+      "art_source": "Borrowed for now: the 赤狐 plate. Its own card picture (tools/paint-cards.py xiaochihu) waits in the painter's queue.",
+      "from": [
+        {
+          "kind": "beast",
+          "creature": "chihu",
+          "line": {
+            "zh": "赤狐叼了就跑",
+            "en": "The red fox snatches and runs."
+          },
+          "src": "游戏"
+        }
+      ],
+      "_about": "赤狐留下的牌 (2026-10-27)：原先是童灵 (一个小孩)。叼了就跑 —— 入阵摸一张，同童灵一样的二费 2/2，赤狐的牌组里换下那三格。"
+    },
+    {
       "id": "tongling",
       "kind": "minion",
       "is": "sprite",
@@ -2031,15 +2285,12 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
-          "kind": "beast",
-          "creature": "chihu",
-          "line": {
-            "zh": "赤狐叼了就跑",
-            "en": "The red fox snatches and runs."
-          },
+          "kind": "foe",
+          "creature": "zheng",
           "src": "游戏"
         }
-      ]
+      ],
+      "_from": "2026-10-27: no longer chihu's drop (it now leaves a card of its own); only zheng deals it. Saves that hold it keep it."
     },
     {
       "id": "shewei",

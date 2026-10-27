@@ -13,7 +13,7 @@ and it needs HF_HOME pointed at the cached model or it re-downloads 4.3 GB.
 Each line below is written by hand, because a prompt stitched together from a
 card's fields gives a picture of a card, not a picture of the thing.
 """
-import argparse, json, os, subprocess, sys, tempfile
+import argparse, datetime, hashlib, json, os, re, subprocess, sys, tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -77,6 +77,22 @@ SUBJECTS = {
   'canwu': 'an old scholar reading by a window, one crane outside',
   # ── 狼's own card (2026-10-27): it left 金刚, a man in armour; now the lead wolf of the pack ──
   'toulang': 'a big grey lead wolf standing square in front of its pack on a dark pine ridge, head low, hackles up, green eyes, other wolves half hidden behind it',
+  # ── the beasts' own cards (2026-10-27: each beast leaves a card of itself, not a stranger's) ──
+  'xiongzai': 'a black bear cub standing up on its hind legs copying its mother, small paws raised, in autumn grass by a pine',
+  'houer': 'a young macaque leaping down from a pine branch, mouth open calling, its troop shadowy in the trees behind',
+  'fuli': 'a wild mountain cat crouched flat in tall grass at night, ears back, perfectly still, only its eyes catching the moonlight',
+  'xiaochihu': 'a small red fox running off with a stolen rice cake in its mouth, tail streaming, glancing back over its shoulder',
+  'huoshe': 'a snake made of living flame uncoiling out of the mouth of a red copper gourd, sparks drifting in the air',
+  'huilang': 'a lean grey wolf loping through pine shadow, head low, more wolves half seen behind it',
+  'elang': 'a starving grey wolf lunging forward with bared fangs, ribs showing under its coat, snow on the ground',
+  # ── cards that wore another card's picture until 2026-10-27 ──
+  'mucao': 'a small carved wooden toy animal with a long neck, small head and curly wool, half sheep half camel, dull round eyes, butting forward, a puff of firecracker smoke from its belly',
+  'shangen': 'a thick wooden stake driven deep into rocky ground, rough bark, a faded cloth charm tied round it, braced like a mountain',
+  'tiegu': 'a heavy wooden door plank bound with three iron hoops, dented and scratched, propped upright like a shield on a dirt road',
+  'tuqiang': 'a low wall of packed earth heaving up out of the ground, clods and pebbles tumbling from its top',
+  'waiyi': 'a worn patched coat laid gently over a small shape at the bottom of a shallow pit, patches sewn on patches at the cuffs',
+  'feijian': 'a small willow-leaf shaped flying sword a hand-span long, a red thread tied at its hilt, darting through the air',
+  'huochai': 'a plain iron sword lying on dark cloth, a faint glow of fire along its spine where two characters are carved',
   # ── 钱掌柜's three for the 练气一层 hand (2026-10-27) ──
   'tieji': 'a handful of four-pointed iron caltrops scattered on a dirt path, one spike always pointing up',
   'sanhuo': 'a young disciple flicking his sleeve, a spray of small fire sparks scattering in an arc',
@@ -101,10 +117,31 @@ def paint(card_id, subject, width, height, seed):
   png.unlink(missing_ok=True)
   return None if c.returncode == 0 else f'{card_id}: cwebp failed'
 
+ART_SOURCE = 'Painted for Lingjing by the local picture model (FLUX.2 klein 4B), {day}, from the description (tools/paint-cards.py).'
+
+def set_art(path, card_id, art, source):
+  """Write the card's `art` and `art_source` in place, and nothing else: cards.json is hand-formatted
+  (rows on one line, arrays open), so a json.dumps of the whole file would reformat every card
+  (2026-10-27). The card's block is found by its id and only those two lines change."""
+  text = path.read_text()
+  m = re.search(r'\{\s*"id": "%s",' % re.escape(card_id), text)
+  if not m:
+    raise SystemExit(f'{card_id}: not in cards.json')
+  end = text.find('\n    {', m.end())
+  end = len(text) if end < 0 else end
+  block = text[m.start():end]
+  for key, value in (('art', art), ('art_source', source)):
+    pat = re.compile(r'("%s": )"(?:[^"\\]|\\.)*"' % key)
+    if not pat.search(block):
+      raise SystemExit(f'{card_id}: no "{key}" to set')
+    block = pat.sub(lambda mm: mm.group(1) + json.dumps(value, ensure_ascii=False), block, count=1)
+  path.write_text(text[:m.start()] + block + text[end:])
+
 def main():
   ap = argparse.ArgumentParser()
   ap.add_argument('--only', default='')
   ap.add_argument('--force', action='store_true')
+  ap.add_argument('--seed', type=int, default=None, help='one seed for every card painted (default: from its id)')
   ap.add_argument('--size', default='448x320')
   args = ap.parse_args()
   w, h = (int(x) for x in args.size.split('x'))
@@ -118,17 +155,18 @@ def main():
       continue
     if cid not in SUBJECTS:
       continue  # a 山海经 creature: it keeps its plate
-    if card.get('art') and not args.force and (WORLD / card['art']).exists():
+    own = f'art/cards/{cid}.webp'
+    # A card wearing another's picture (a borrowed plate) is painted; its own picture only with --force.
+    if card.get('art') == own and not args.force and (WORLD / own).exists():
       continue
     print(f'painting {cid} — {SUBJECTS[cid][:52]}…', flush=True)
-    err = paint(cid, SUBJECTS[cid], w, h, abs(hash(cid)) % 100000)
+    seed = args.seed if args.seed is not None else int(hashlib.sha1(cid.encode()).hexdigest(), 16) % 100000
+    err = paint(cid, SUBJECTS[cid], w, h, seed)
     if err:
       failed.append(err)
       print('  ✗ ' + err, flush=True)
       continue
-    card['art'] = f'art/cards/{cid}.webp'
-    card['art_source'] = 'Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.'
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+    set_art(path, cid, own, ART_SOURCE.format(day=datetime.date.today().isoformat()) + f' Seed {seed}.')
     done += 1
     print(f'  ✓ {done} done', flush=True)
   print(f'\npainted {done}, failed {len(failed)}')

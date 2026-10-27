@@ -612,7 +612,7 @@ test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物�
   const before = pouchBrief(content, s).used;
   assert.equal(before, Object.keys(s.bag).filter(id => !items[id].story && items[id].kind !== 'key').length);
   const card = winCard(content, { ...s, cards: [] }, zou, DAY1);
-  assert.equal(card?.id, 'huoya', 'the win deals the gourd\'s fire snakes');
+  assert.equal(card?.id, 'huoshe', 'the win deals the gourd\'s fire snake (火蛇, 2026-10-27; it was 火鸦)');
   const e = CH.scenes['wm-xirang'].exits.find(x => x.id === 'swallow');
   assert.equal(e.grant.wealth, 9, 'the 钱袋: seven from the fat 公子, two from the underground river');
   // the 回气丹 bottle: its card is the scene's own (cards.json from: story wm-xirang), given as he leaves it
