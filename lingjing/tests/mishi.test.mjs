@@ -181,15 +181,24 @@ test('the hint: never before he asked her; after asking, only once the wait went
   assert.equal(lk.mishi.hint_at, new Date(NOW.getTime() + wait).toISOString());
 });
 
-test('the skip shows only when stuck, opens the mechanism, and the room then pays nothing', () => {
+test('no way in is a trap: 跳过这一道 stands on every mechanism of every room from the start, and 收手 (Look\'s task `leave`) on the board', () => {
+  for (const room of data.rooms.filter((r) => r.id.startsWith('cangjing'))) {
+    let s = opened({ ...base, mishi_log: { day: null, n: 0, paid: Object.fromEntries(data.rooms.filter((r) => r.id !== room.id).map((r) => [r.id, NOW.toISOString()])) } });
+    assert.equal(s.mishi.room, room.id);
+    for (let step = 0; step < room.puzzles.length; step += 1) {
+      const lk = look(s, content, ctxAt(NOW));
+      assert.equal(lk.mishi.can_skip, true, `${room.id} ${step}`);
+      assert.equal(lk.tasks.find((t) => t.id === 'mishi')?.leave, true, `${room.id} ${step}: 收手`);
+      s = run(s, { action: 'skip' }).state;
+    }
+    assert.equal(s.mishi.done, true);
+  }
+});
+
+test('跳过这一道 opens the mechanism at once, and the room then pays nothing', () => {
   let s = opened();
-  assert.equal(run(s, { action: 'skip' }).result.refused, 'not-stuck');
-  for (let i = 0; i < data.limits.skip.wrong; i += 1) s = run(s, { action: 'try', input: '99' }).state;
-  assert.equal(look(s, content, ctxAt(NOW)).mishi.can_skip, true);
   s = run(s, { action: 'skip' }).state;
   assert.equal(s.mishi.step, 1);
-  // …stuck by the clock too.
-  assert.equal(run(s, { action: 'skip' }, later(data.limits.skip.minutes * 60000 + 1000)).result.ok, true);
   const v = dealtOf(s);
   let st = s;
   for (let i = 1; i < v.length; i += 1) st = run(st, { action: 'try', input: answerOf(v[i]) }).state;

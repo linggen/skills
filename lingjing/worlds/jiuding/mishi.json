@@ -2,11 +2,11 @@
   "version": 1,
   "_doc": "密室 (Hanli, 2026-10-15) — the first of the popular AI games. A hidden room of 2–3 linked mechanisms; ASYMMETRIC: the player sees the mechanisms on the page, 银月 reads the old pages (`her`) through her own tool result (SKILL.md Mishi, --for=yinyue) and never on the page. Neither half solves it alone; the rules (rules/mishi.mjs) hold the solution, seeded per entry, and check every input. `hint` is her half paraphrased, given on the page only after he asked her and `hint_wait_s` went by without her (the model slow, or she sleeps in the token). Kinds: dial (干支盘, 60-cycle), hand (掐诀 铜掌, qiajue.js WEN — the twelve 文 as 古六 teaches them), luoshu (洛书九宫, 戴九履一 — items.json's 半卷竹简), stars (二十八宿), scroll (an annals page read right to left). Placeholders in braces are filled by the variant. Numbers here are defaults; the economy agent tunes them (worlds/jiuding/balance.json `mishi`, read over these when present).",
   "limits": {
-    "_doc": "per_day: rooms entered a day (token cost — about ten minutes of her each; the ~30 min routine). repeat: a room escaped and paid within `days` pays `factor` of its 灵石 and no find. hint_wait_s: after he asks her, how long before the page may show the written hint. skip: the gated skip shows after `wrong` misses on one mechanism or `minutes` on it; a skip opens it and the room then pays nothing.",
+    "_doc": "per_day: rooms entered a day (token cost — about ten minutes of her each; the ~30 min routine). repeat: a room escaped and paid within `days` pays `factor` of its 灵石 and no find. hint_wait_s: after he asks her, how long before the page may show the written hint. skip: 跳过这一道 stands from the start (Hanli 10-27, the 四条 rule); a skip opens the mechanism and the room then pays nothing. `skip` is no longer a gate.",
     "per_day": 2,
     "repeat": { "days": 7, "factor": 0.25 },
     "hint_wait_s": 25,
-    "skip": { "wrong": 3, "minutes": 5 }
+    "skip": {}
   },
   "entries": [
     { "task": "mishi", "place": "cangjing", "rooms": ["cangjing-jiabi", "cangjing-shuku"] },

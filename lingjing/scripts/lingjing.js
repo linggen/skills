@@ -3327,6 +3327,9 @@ function gameAct(ghost, action, at) {
    hears that the old pages here are hers to read (her own tool, Mishi, carries them — never this page). */
 async function boardSends(g, send) {
   const res = await write(send.verb, send.args ?? {}).catch(failed);
+  // Answered: the board plays on — its next try, 跳过这一道, and 收手 (cards.js reads `sent`) stand again
+  // (Hanli 10-27, 密室: 「这个也没有跳过去的办法」 — `sent` stayed set after 推开看看 and took 收手 away for good).
+  g.sent = false;
   const was = g.state;
   if (g.mod.heard) g.state = g.mod.heard(g.state, res);
   sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state);

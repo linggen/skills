@@ -641,7 +641,7 @@
       ]
     },
     "mishi": {
-      "_about": "密室 (games/mishi.js): a board the rules judge — the host mounts it on the rules' Look (host.js mountRuled), every try is a `mishi` verb, the rules pay on the way out (never `win`). 问银月 with no chat on the phone: her clock runs and the torn page (the hint) comes when it runs out; 算了，硬撬开 and 出去 always stand.",
+      "_about": "密室 (games/mishi.js): a board the rules judge — the host mounts it on the rules' Look (host.js mountRuled), every try is a `mishi` verb, the rules pay on the way out (never `win`). 问银月 with no chat on the phone: her clock runs and the torn page (the hint) comes when it runs out; 跳过这一道 (every mechanism, from the start), ✕ (收手, Look's task `leave`) and 出去 always stand.",
       "module": "scripts/games/mishi.js",
       "dirs": [
         "scripts/games/mishi"

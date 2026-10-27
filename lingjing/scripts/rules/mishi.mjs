@@ -168,7 +168,9 @@ const openNow = (state, now) => (state.mishi && state.mishi.day === dayKey(now) 
 /* The room open today where he stands — the only one his taps can reach. */
 const roomHere = (state, now) => (openNow(state, now)?.place === state.place ? state.mishi : null);
 const dealOf = (content, state, m) => { const data = mishiData(content); return dealRoom(data, roomOf(data, m.room), m.seed, state.lang); };
-const canSkip = (data, m, now) => !m.done && (m.wrong >= limits(data).skip.wrong || now - new Date(m.step_at) >= limits(data).skip.minutes * 60000);
+/* 跳过这一道 — always there (Hanli 10-27: 「这个也没有跳过去的办法」; the 四条 rule: every board can be left, nothing blocks).
+   A skipped mechanism opens the next; a room with one skipped pays nothing. */
+const canSkip = (data, m) => !m.done;
 const hintAt = (data, m) => (m.asked_at ? new Date(new Date(m.asked_at).getTime() + limits(data).hint_wait_s * 1000).toISOString() : null);
 
 /* Look's `mishi` — the page's and Ling's: the mechanisms and their state, never her pages. */
@@ -197,7 +199,7 @@ export function mishiLook(content, state, ctx) {
   return {
     mishi: {
       task: m.task, room: { id: room.id, name: pick(room.name, lang), line: pick(room.line, lang) }, step: m.step, of: room.puzzles.length, puzzles,
-      wrong: m.wrong, can_skip: canSkip(data, m, ctx.now), asked_at: m.asked_at ?? null, hint_at: hintAt(data, m), hint_wait_s: limits(data).hint_wait_s,
+      wrong: m.wrong, can_skip: canSkip(data, m), asked_at: m.asked_at ?? null, hint_at: hintAt(data, m), hint_wait_s: limits(data).hint_wait_s,
       ...(m.done ? { done: true, escaped: !m.skipped.length, ...(m.paid ? { paid: m.paid } : {}), escape: m.skipped.length ? null : pick(room.escape, lang) } : {}),
     },
   };
@@ -257,7 +259,7 @@ const ACTIONS = {
     const s = clone(state), sm = s.mishi;
     if (!checkInput(dealt[m.step], args.input)) {
       sm.wrong += 1;
-      return { state: s, result: { ok: true, right: false, wrong: sm.wrong, can_skip: canSkip(data, sm, ctx.now) } };
+      return { state: s, result: { ok: true, right: false, wrong: sm.wrong, can_skip: canSkip(data, sm) } };
     }
     sm.solved.push(m.step);
     const line = lineOf(p.right, state.lang, dealt[m.step].vars);
@@ -296,7 +298,7 @@ const ACTIONS = {
   skip(state, content, ctx, args, data) {
     const m = roomHere(state, ctx.now);
     if (!m || m.done) return refuse('no-room', null);
-    if (!canSkip(data, m, ctx.now)) return refuse('not-stuck', null);
+    if (!canSkip(data, m)) return refuse('not-stuck', null);
     const s = clone(state);
     s.mishi.skipped.push(m.step);
     return advance(s, content, ctx, data, { skipped: true });
