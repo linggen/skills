@@ -205,12 +205,14 @@ test('beasts only of his 回 or before — read in book order (h11 is 古七, h0
   assert.ok(kinds(past).has('heyu'), 'the boss, of his 回');
 });
 
-test('on the stage: the night\'s board stands at 沉鼎观, titled by the night', () => {
+test('the night\'s board waits in the tray at 沉鼎观, titled by the night — never dealt by itself', () => {
   const s = at('wm-yaoyuan');
   const l = look(s, content, ctx(day(20, 17, 30)));
   const o = l.tasks.find((t) => t.id === T.id);
   assert.match(o.title, /兽潮 · 第1潮/);
-  assert.ok(stageCards(l).some((c) => c.card === 'board' && c.id === T.id), 'a board card');
+  // Hanli 10-27: 「兽潮时间到了不要自动开始, 让玩家点击开始」 — its time come, it waits for his 开局.
+  assert.equal(o.tide, true, 'Look marks the night\'s board');
+  assert.ok(!stageCards(l).some((c) => c.card === 'board' && c.id === T.id), 'not on the stage by itself');
   // …never beside the scene card (Hanli, 2026-10-26: 「Mac上游戏界面需要独占UI」 — a board up takes the stage alone,
   // so a tide up by itself would hold the story): it waits in the tray's 开局, and opened it stands alone.
   const p = look(at('wm-luobo'), content, ctx(day(20, 17, 30)));

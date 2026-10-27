@@ -277,8 +277,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     // 刷副本: the door's way in while the rooms are open, and the run's own card inside (rules/rerun.mjs).
     if (look.rerun && (look.rerun.inside || (look.rerun.open && look.rerun.here)) && !has('rerun')) cards.push({ card: 'rerun' });
     // Every board open here: the story's, an errand's, and the games this place hosts.
-    // A place's game open only as practice (Look's `practice`) waits in the tray for his 开局 — never dealt by itself.
-    for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won && !t.light && !t.practice)) {
+    // A place's game open only as practice (Look's `practice`) waits in the tray for his 开局 — never dealt by itself;
+    // so does 兽潮's night when its time comes (Look's `tide`; Hanli 10-27: 「兽潮时间到了不要自动开始, 让玩家点击开始」).
+    for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won && !t.light && !t.practice && !t.tide)) {
       if (!has('board', board.id)) cards.push({ card: 'board', id: board.id });
     }
     // A fight the scene offers, and a creature at its haunt with no scene
