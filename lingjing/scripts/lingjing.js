@@ -3163,6 +3163,7 @@ document.addEventListener('keydown', (e) => {
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
   if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); lines.hold(false); return; }
   if ((e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel') && titleAway()) { e.preventDefault(); return; }
+  if (gameKey(e)) { e.preventDefault(); return; }
   if (pageKey(e)) { e.preventDefault(); return; }
   if (boxKey(e)) { e.preventDefault(); storyTap(); return; }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen || view.roadsOpen || view.shelfOpen || view.wxOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false, roadsOpen: false, shelfOpen: false, wxOpen: false }); }
@@ -3283,14 +3284,30 @@ async function replayTap(id, play) {
 function gameMove(gmove) {
   const ghost = gmove.closest('[data-game]');
   if (!ghost || gmove.disabled) return false;
+  return gameAct(ghost, { ...gmove.dataset }, gmove);
+}
+/* A board that names keys (`meta.keys`: 华容道's WASD and arrows) plays by them on the story's stage too, as
+   games/mount.js plays them off it (Hanli 10-27: 「华容道让玩家可以wasd移动物品」 — on the stage the keys did nothing). */
+function gameKey(e) {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing || e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel')) return false;
+  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  for (const ghost of document.querySelectorAll('[data-game]')) {
+    const g = boardFor(ghost.dataset.game), action = g?.mod?.meta?.keys?.[key];
+    if (!action || g.sent || g.state?.won || !ghost.offsetParent) continue;
+    gameAct(ghost, { ...action }, ghost);
+    return true;
+  }
+  return false;
+}
+function gameAct(ghost, action, at) {
   const g = boardFor(ghost.dataset.game);
   if (!g) return true;
   if (g.state.wait) return true; // the rival's turn: taps wait for the reply
   const before = g.mod.html ? g.mod.html(g.state, lang()) : null, was = g.state;
-  const r = g.mod.act(g.state, { ...gmove.dataset });
+  const r = g.mod.act(g.state, action);
   g.state = r.state;
   let press = 'tap';
-  if (before != null && !answered(before, g.mod.html(g.state, lang()), r)) { tapNope(document, gmove); press = 'nope'; } // never a silent tap
+  if (before != null && !answered(before, g.mod.html(g.state, lang()), r)) { tapNope(document, at); press = 'nope'; } // never a silent tap
   sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state, press); // its sound, as off the story (games/kit/heard.js)
   render();
   // A board the rules judge hands back a verb to run (`send`) and a turn to 银月 (`her`) — never a win of its own.
