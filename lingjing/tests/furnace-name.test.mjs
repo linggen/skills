@@ -66,7 +66,10 @@ test('「你这饭桶」 clicks: the name is saved, the furnace is in the bag as
   const l = look(s, content, ctx());
   assert.equal(l.bag.find(b => b.id === 'danlu').name, '小铜炉 · 饭桶');
   assert.deepEqual(l.named, { danlu: '小铜炉 · 饭桶' }, 'the 图鉴 card title reads it');
-  assert.equal(VERBS.gear(s, content).result.gear.bag.find(b => b.id === 'danlu').name, '小铜炉 · 饭桶');
+  // In the 储物袋 the furnace is its 饭桶 tab, not a tile too (Hanli 10-27: 「饭桶不要出现在储物袋中了」).
+  const gear = VERBS.gear(s, content).result.gear;
+  assert.equal(gear.fantong, true);
+  assert.equal(gear.bag.find(b => b.id === 'danlu'), undefined);
 });
 
 test('typed to Ling: only a name holding 饭桶 is taken; anything else gets 纹丝不动', () => {
