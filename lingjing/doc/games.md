@@ -51,7 +51,6 @@ silences all of it. Way out = 「算了，往下走」 once stuck (story) / 收�
 | 结印 · 斗法试炼 · 指点 · 特写 (seal) | buttons only | seal, cast, fizzle, hit, miss | ✓ | 往下走 ✓ |
 | 炼丹 lianliankan (story's herb board) | **silent** | pick, match, nope · chime | — (no frame) | 收手 ✓ |
 | 守墙关 · 撒豆 · 守山门 · 守炉 · 砸寨 · 开炉 | already wired | unchanged | ✓ | 往下走 / 收手 ✓ |
-| 密室 mishi | **silent** | turn, pick, open, right/wrong | ✓ | its own 离开 |
 | every story board's end | **no chime** for a pure board | win chime + ★ | | |
 | phone (every board) | sound ✓ (mount.js) | + the step sounds above | **none → 🔊 in the bar** | ✕ · 算了 ✓ |
 
@@ -1296,7 +1295,9 @@ after; idle never wins. `n` is story order (古七 before 今三), and the climb
 **His call:** whether the late story levels (藏息 on) are too much for a first play — a casual hand sees the
 75 s 「算了，往下走」 there about half the time; the feel (fall/rise 260, damping 3); paintings (the looks are ink in code).
 
-## Daily boards, 秘境, 密室 (not story beats; no card)
+## Daily boards, 秘境 (not story beats; no card)
+
+**密室 cut 2026-10-27** (Hanli: 「这个游戏, 3关都玩不明白, 去掉吧. 天干地址教学虽然好, 但这个游戏没法玩. 一般人没有这个背景知识. 教学关得让玩家能学会」): the 藏经阁 room and a rerun's 暗室 are gone, module and rules with them; old saves let it go (state.mjs fitWorld). The idea waits in design.md (a teaching board teaches from zero first).
 
 **喂饭桶 · 开炉** (`kailu`, 10-20; Hanli: 「现在可以, 但东西太少, 以后在扩吧. 装备武器饰品都可以出」): the 饭桶's lottery, in
 the 物品 panel once he holds it (古四) and in the 游戏厅 (`daily`, a sample pot, no save; `?force=best`). Up to three things
@@ -1309,7 +1310,7 @@ thing lands in the 饭桶图鉴 (录). 古七's 方子, three 方子残页 → �
 rules/fantong-roll.mjs (pure); the Phaser play tools/kailu/ → games/kailu/; the pane fantong-kailu.js.
 
 炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 拼图 (七巧 until 10-27) · 五子 ·
-残局 · 密室 (he sees the mechanisms, 银月 reads the pages). 守夜 (药园) and 下崖 (秘境) cut 10-19 (the sweep); 拾遗 (秘境,
+残局. 守夜 (药园) and 下崖 (秘境) cut 10-19 (the sweep); 拾遗 (秘境,
 and the rerun's) was a 割藤 10-19 → 10-20; now 撒豆成兵 (the story's) and a short 守炉 (the rerun's), § Pruned 10-20.
 洛书 was the same square three times (二试, 困阵, daily); since 10-19 it is played once, at 洛书门 —
 the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ below).

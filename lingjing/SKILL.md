@@ -374,18 +374,6 @@ tools:
         type: string
         description: For guess — the animal the player named.
 
-  - name: Mishi
-    # 密室's old pages are 银月's alone (AppTool → this tool, `--for=yinyue`;
-    # rules.mjs answers no other reader). Never Ling's (page_only), never Look.
-    description: >-
-      密室 — your old pages in the hidden room. Follow `how`.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs mishi --action=read --save={{session.save}} --for=yinyue"
-    tier: read
-    pet: true
-    page_only: true
-    others_read: [open, room, step, of]
-    timeout_ms: 8000
-
   - name: Couplet
     # 对对子's 银月 half (AppTool → this tool, `--for=yinyue`): one hint a round,
     # one 下联 of her own; asleep in the token it refuses. Never Ling's (page_only).
@@ -905,7 +893,7 @@ decide or promise it (`page-throws`); tell the 雷劫 from the result (guide `st
 
 The page calls the rules itself for: a panel's choice, **去X**, 接下 · 交差, a board won, 买 · 卖 ·
 服用 · 佩戴, 喂它X / 献上X, 炼化本命, 问卦 and 命格, 收下 / 不取, a 抉择's way,
-a fight or a board begun, 组牌, 闭关 · 出关, 渡劫, `mishi`. Nothing reaches you; never offer
+a fight or a board begun, 组牌, 闭关 · 出关, 渡劫. Nothing reaches you; never offer
 or narrate them. Only when the player TYPES one do you act with the
 tool — then a line in the world, never the numbers.
 

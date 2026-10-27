@@ -67,7 +67,7 @@ export const toolHtml = (kind, label, attrs = '') =>
 
 /** 重来 (Hanli 10-27, 华容道: 「能否加一个重来的按钮」): a board that can start over says so (`meta.restart(state)`, true
     once there is something to undo); its ↺ sits after ? and is the board's own tap (`data-g="restart"` for the board
-    `id`, as 密室's ? is) — the story's page routes it by `data-gfor`, mountPure by the frame it shares. */
+    `id`, as 华容道's ? is) — the story's page routes it by `data-gfor`, mountPure by the frame it shares. */
 export const restartOf = (mod) => typeof mod?.meta?.restart === 'function';
 export const restartHtml = (id, lang, on = true) =>
   toolHtml('restart', words(lang).restart, `data-g="restart" data-gfor="${plain(id)}"${on ? '' : ' disabled'}`);

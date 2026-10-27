@@ -159,7 +159,7 @@ export function stalls(lines) {
 /* A pay line's source, as the plan counts it. */
 export function categoryOf(l) {
   const v = l.verb ?? String(l.src ?? '').split(':')[0], a = String(l.src ?? '').split(':')[1] ?? null;
-  if (v === 'win' || v === 'kao' || v === 'shouchao' || v === 'mishi' || (v === 'task' && a === 'done') || (v === 'tale' && a === 'win') || v === 'duizi' || v === 'lundao') return 'games';
+  if (v === 'win' || v === 'kao' || v === 'shouchao' || (v === 'task' && a === 'done') || (v === 'tale' && a === 'win') || v === 'duizi' || v === 'lundao') return 'games';
   if (v === 'duel' || v === 'tame') return 'fights';
   if (v === 'task' && (a === 'check' || a === 'quest')) return 'chores';
   if (v === 'quest') return 'chores';

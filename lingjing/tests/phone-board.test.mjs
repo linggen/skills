@@ -38,9 +38,9 @@ test('every board 卷一 stands is in the kit (a board missing here is a 「在 
   assert.ok(scenes1.some((s) => (s.exits ?? []).some((e) => e.game?.kind === 'duel')) && kitGames().includes('kapai'), 'the fight room');
 });
 
-test("the day's boards (兽潮 · 本王考考你 …), the 秘境's and the 奇遇's are in the kit (the camera 结印 and 密室 are the Mac's)", () => {
+test("the day's boards (兽潮 · 本王考考你 …), the 秘境's and the 奇遇's are in the kit (the camera 结印 is the Mac's)", () => {
   const live = new Set(JSON.parse(fs.readFileSync(path.join(WORLD, 'games.json'), 'utf8')).games.filter((g) => g.group !== 'old').map((g) => g.id));
-  const day = TASKS.filter((t) => t.kind === 'board' && t.period && live.has(t.game) && !['lianliankan', 'mishi', 'jieyin'].includes(t.game));
+  const day = TASKS.filter((t) => t.kind === 'board' && t.period && live.has(t.game) && !['lianliankan', 'jieyin'].includes(t.game));
   assert.ok(day.some((t) => t.id === 'shouchao') && day.some((t) => t.id === 'benwang-kao'), 'the tide and the 考');
   for (const t of day) assert.ok(kitGames().includes(t.game), `${t.id}: ${t.game} is in the kit`);
   for (const g of ['shoulu', 'sadou', 'huarong', 'wuziqi', 'luoshu', 'pintu', 'kailu']) assert.ok(kitGames().includes(g), `${g} is in the kit`);

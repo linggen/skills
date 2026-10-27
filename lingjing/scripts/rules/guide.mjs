@@ -39,8 +39,6 @@ export const TOPICS = {
   duizi: ({ verb, said, result }) => verb === 'duizi' || Boolean(result?.duizi?.round || result?.duizi?.rev) || tag(said, /^\[scene\] duizi\b|对对子|上联|下联/),
   tale: ({ verb, said, result }) => verb === 'tale' || Boolean(result?.story_due || result?.tale) || tag(said, /^\[scene\] tale\b|今日传闻/),
   her: ({ verb, result }) => verb === 'ring' || Boolean(result?.quest),
-  // 密室 (rules/mishi.mjs): a door where he stands, or a room open.
-  mishi: ({ verb, result }) => verb === 'mishi' || Boolean(result?.mishi),
   divine: ({ verb, said }) => verb === 'divine' || tag(said, /起一?卦|算一?卦|问卦|命格|生辰|属相|八字|\bdivine\b/i),
   made: ({ verb, said, result }) => ['make', 'build', 'amend', 'art', 'enter', 'leave'].includes(verb) || Boolean(result?.building || result?.made?.at)
     || result?.refused === 'still-building' || tag(said, /造一|自己的(场景|世界)|make (a|my) (scene|world)/i),

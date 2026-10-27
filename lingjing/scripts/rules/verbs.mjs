@@ -20,7 +20,6 @@ import { look, stageAt } from './look.mjs';
 import { examine } from './examine.mjs';
 import { stageTurn } from './gates.mjs';
 import { fantong, fantongBook, fantongOpen, fantongRecipes } from './fantong.mjs';
-import { mishi } from './mishi.mjs';
 import { kao } from './kao.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
 import { reroll } from './match.mjs';
@@ -74,8 +73,6 @@ export const VERBS = gated({
   // `fantong`: the 物品 panel's 饭桶 chip shows once he holds it.
   gear: (s, c, x) => ({ state: null, result: { ok: true, gear: { ...gearBrief(c, s, x?.now), ...(fantongOpen(c, s) ? { fantong: true } : {}) } } }),
   appear, remember, unstick,
-  // 密室 (rules/mishi.mjs): the hidden room — the page's taps checked by the rules; `info` is anyone's.
-  mishi,
   // 本王考考你 (rules/kao.mjs): a round begun on the page, counted against the night's cap.
   kao,
   // The page's map: each province's places, and the 九州 in ink as the save stands (rules/inkmap.mjs).

@@ -645,19 +645,6 @@
         "worlds/jiuding/herbs.json"
       ]
     },
-    "mishi": {
-      "_about": "密室 (games/mishi.js): a board the rules judge — the host mounts it on the rules' Look (host.js mountRuled), every try is a `mishi` verb, the rules pay on the way out (never `win`). 问银月 with no chat on the phone: the next help tier (how it plays, then her page, then nearly the answer) is read off the board at once (`alone`); 跳过这一道 (every mechanism, from the start), ✕ (收手, Look's task `leave`) and 出去 always stand.",
-      "module": "scripts/games/mishi.js",
-      "dirs": [
-        "scripts/games/mishi"
-      ],
-      "css": [
-        "scripts/lingjing.css",
-        "scripts/games/live.css",
-        "scripts/games/mishi.css"
-      ],
-      "files": []
-    },
     "jieyin": {
       "_about": "结印 (games/jieyin/helper.js, the dock a 塔防 board offers where a camera is; games/jieyin.js the board itself): the hand model on the device (MediaPipe Hand Landmarker, scripts/vendor/mediapipe, ~19 MB). Its own pack: the boards load helper.js on demand (their `dynamic`), and BoardServer answers it from here. No camera, or the camera refused: the dock is never offered and every board is the board without it.",
       "module": "scripts/games/jieyin.js",

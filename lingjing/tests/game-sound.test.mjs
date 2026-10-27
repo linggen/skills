@@ -182,7 +182,7 @@ const GAMES = new URL('../scripts/games/', import.meta.url);
 const REG = read('../worlds/jiuding/games.json');
 const has = (id) => fs.existsSync(new URL(`${id}.js`, GAMES));
 // The registry is the whole catalogue (every game a task names has a row; a cut one says so): its rows still played.
-const playable = [...new Set(REG.games.filter((r) => !r.replaced).map((r) => r.id))].filter(has).sort(); // a `stage` row with a module (密室) too
+const playable = [...new Set(REG.games.filter((r) => !r.replaced).map((r) => r.id))].filter(has).sort();
 const storyGames = new Set(loadContent().tasks.tasks.filter((t) => t.kind === 'board' && t.game).map((t) => t.game));
 const SHELL_OWN = new Set(['tap', 'nope']);
 

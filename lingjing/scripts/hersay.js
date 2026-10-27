@@ -43,7 +43,7 @@ export const MOMENTS = {
   hui: { group: 'cheer' },
   tamed: { group: 'cheer' },
   quest: { group: 'cheer', once: 'key' }, //               the 修行 stage quest done (its reward toast)
-  rare: { group: 'cheer', once: 'key' }, //                饭桶's 逆天, a 稀有 drop, a 密室 escape
+  rare: { group: 'cheer', once: 'key' }, //                饭桶's 逆天, a 稀有 drop
   game_first: { group: 'cheer', once: 'key' }, //          the first win at an AI mini-game, ever
   bt_failed: { group: 'comfort' },
   skipped: { group: 'comfort', once: 30 * 60_000 }, //     a board left: gentle, never guilt

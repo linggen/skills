@@ -17,7 +17,6 @@ import { duelBrief } from './look.mjs';
 import { stow } from './pouch.mjs';
 import { hashOf } from './travel.mjs';
 import { beatOf, creatureOf, mapOf, metNow, passed, placeBrief, placeName, placeOf, settlePlace } from './world.mjs';
-import { mishiOffer, mishiRoll } from './mishi.mjs';
 import { lastQiyu, rollQiyu } from './qiyu.mjs';
 import { scratchName } from './files.mjs';
 import { dealtOf } from './climb.mjs';
@@ -133,9 +132,6 @@ function enterRun(state, content, ctx, args = {}) {
   const s = clone(state);
   const n = (state.reruns?.[here.beat.id]?.n ?? 0) + 1, seed = `${seedOf(state)}|${here.beat.id}|run${n}`;
   s.rerun = { id: here.beat.id, n, seed, since: ctx.now.toISOString(), rooms: rollRun(content, state, here, seed, ctx.now) };
-  // A run with no cache may roll a 暗室 instead (密室, rules/mishi.mjs — its chance and rooms are mishi.json's): offered in one of the run's rooms.
-  const dark = !Object.values(s.rerun.rooms).some(r => r.cache) && mishiRoll(content, state, { seed, now: ctx.now });
-  if (dark) s.mishi_offer = mishiOffer(content, s, { place: x.rooms[Math.floor(draw(`${seed}|anshi`) * x.rooms.length)], now: ctx.now }).mishi_offer;
   // 奇遇 (rules/qiyu.mjs): a room may roll one small game from the run's pool. A 测试存档 may force one
   // into the first room (`--qiyu=<task>`), so a check (and Hanli on a scratch save) can try it at once.
   const force = scratchName() && args.qiyu ? String(args.qiyu) : null;

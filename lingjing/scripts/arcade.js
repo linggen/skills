@@ -4,7 +4,7 @@
 // no seeding, no pay; the result is shown, and 再来 deals a fresh one. A game the model plays (画猜,
 // `meta.ai`) is tried on the REAL game page instead (arcade-board.js, Hanli 10-19): its own test save,
 // its board on the stage, the real chat beside it — the same UI and logic as in the story. So is a game the
-// rules stand on the stage themselves (a row's `stage`: 二十问, 讨价还价, 断案, 对对子, 密室, the 秘境 rerun —
+// rules stand on the stage themselves (a row's `stage`: 二十问, 讨价还价, 断案, 对对子, the 秘境 rerun —
 // Hanli 10-21: the 游戏厅 holds every playable thing), on a save seeded where its card stands (tools/arcade-saves.mjs).
 // A board the story cut (`replaced: 'cut'`) is listed under 旧版 with why, and opens nothing.
 import { esc } from './esc.js';

@@ -270,11 +270,7 @@ function dealtBoard(taskId) {
       if (mountOnly(mod)) boards.set(taskId, { taskId, mod, day, round, data: mountData(task), state: { won: false } });
       else boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, { ...(task.deal ?? {}), ...(task.done_line ? { solved: task.done_line } : {}) }) });
     }
-    // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.
-    const g = boards.get(taskId);
-    // Here, asleep too (she speaks from the 木牌, half awake — Hanli 2026-10-27): the 密室's 问银月 is hers to answer.
-    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herHere() && !CHATLESS });
-    return g;
+    return boards.get(taskId);
   }
   if (!boards.has(taskId)) {
     const herbs = authored.herbs.map((h) => ({ id: h.id, tile: h.tile, label: h.name[lang()] }));
@@ -3214,12 +3210,10 @@ function sendAsk() {
   // player's gentle nudge to talk.
   closeAsk();
   if (!herHere()) return noOne();
-  tracker.ask('her', bout ? 'fight' : 'ask', boardWaitsOnHer?.taskId ?? null);
+  tracker.ask('her', bout ? 'fight' : 'ask', null);
   // In a fight, his words go with the position (fightsay.js) — while asks are left.
   if (bout && askHerInFight(bout, q)) return;
   deliver(`@银月 ${q || words().askHerEmpty}`, false);
-  // A board waiting on her (密室): its clock starts with the words sent.
-  if (boardWaitsOnHer) herClock(boardWaitsOnHer);
 }
 /// Rows that open where they lie answer the keyboard as a button does.
 const KEY_ROWS = [
@@ -3289,8 +3283,6 @@ function leaveGame(id) {
   const g = boards.get(id);
   if (g?.sent || g?.state?.won) return true;
   if (g) g.left = true;
-  // A rules-judged board that held her out (密室) puts her back; a mounted one does so itself (its `rest`).
-  if (g?.mod?.fromLook && look?.companion?.out_for === id) herOut(id, false);
   tracker.boardEnd(id, 'left');
   beats.leave(id);
   boards.delete(id);
@@ -3382,7 +3374,7 @@ async function replayTap(id, play) {
   await refresh();
 }
 function gameMove(gmove) {
-  // A board's tap outside its host (the card's 问询 on a 密室: `data-gfor`) acts on the board it names.
+  // A board's tap outside its host (the bar's ↺ 重来, a board's own 问询: `data-gfor`) acts on the board it names.
   const ghost = gmove.closest('[data-game]') ?? (gmove.dataset.gfor ? document.querySelector(`[data-game="${CSS.escape(gmove.dataset.gfor)}"]`) : null);
   if (!ghost || gmove.disabled) return false;
   return gameAct(ghost, { ...gmove.dataset }, gmove);
@@ -3413,106 +3405,9 @@ function gameAct(ghost, action, at) {
   if (before != null && !answered(before, g.mod.html(g.state, lang()), r)) { tapNope(document, at); press = 'nope'; } // never a silent tap
   sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state, press); // its sound, as off the story (games/kit/heard.js)
   render();
-  // A board the rules judge hands back a verb to run (`send`) and a turn to 银月 (`her`) — never a win of its own.
-  if (r.her) boardAsksHer(g);
-  if (r.send) { g.sent = true; run(`send:${g.taskId}:${r.send.args?.action ?? ''}`, () => boardSends(g, r.send)); return true; }
   if (r.won && !g.sent) { g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); run(`win:${g.taskId}`, () => onWin(g.taskId)); }
   if (r.state.wait && g.mod.think) rivalTurn(g);
   return true;
-}
-/* A rules-judged board's verb (密室: open, try, asked, hint, skip, leave): the answer goes back to the
-   module (`heard`), then the save is read again — the room's view, the pay on the strip. Opened, she
-   hears that the old pages here are hers to read (her own tool, Mishi, carries them — never this page). */
-async function boardSends(g, send) {
-  // A board that needs her out of the 木牌 (task `needs: "her"`) wakes her for its round; back in once he is out. Here
-  // — awake, or asleep and speaking half awake (the 密室, Hanli 2026-10-27: 「yinyue睡着也可以说话」) — the help is
-  // hers to say, no longer read off the board (`alone`).
-  const task = look?.tasks?.find((t) => t.id === g.taskId);
-  if (send.args?.action === 'hint') tracker.boardHint(g.taskId);
-  if (task?.her && !CHATLESS && ['open', 'ask'].includes(send.args?.action) && !herUp()) await herOut(g.taskId, true);
-  if (herHere() && !CHATLESS && send.args?.alone) { const { alone, ...rest } = send.args; send = { ...send, args: rest }; }
-  const res = await write(send.verb, send.args ?? {}).catch(failed);
-  if (task?.her && (res?.out || res?.left)) herOut(g.taskId, false);
-  // Answered: the board plays on — its next try, 跳过这一道, and 收手 (cards.js reads `sent`) stand again
-  // (Hanli 10-27, 密室: 「这个也没有跳过去的办法」 — `sent` stayed set after 推开看看 and took 收手 away for good).
-  g.sent = false;
-  const was = g.state;
-  if (g.mod.heard) g.state = g.mod.heard(g.state, res);
-  sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state);
-  render();
-  // A help tier opened (问银月, or unasked below): she says it in her own words, from the rules' facts.
-  if (res?.ok && res.asked) mishiHelp(g, res);
-  // Unasked, she explains the play: a room just opened, a new mechanism up, or a few misses on one (Hanli 10-27:
-  // 「关键是问yinyue怎么玩, 她应该告诉玩法才对」). Each opens the next tier, as 问银月 would.
-  else if (res?.ok && (res.opened || (res.right && !res.out) || res.offer)) { await refresh(); return boardAsks(g, res.opened ? 'open' : res.offer ? 'offer' : 'next'); }
-  // Out of the 密室 with nothing skipped: a rare find, worth her word (hersay.js rare).
-  if (res?.ok && res.out && res.escaped) herSay.say('rare', lang() === 'en' ? `Escaped the hidden room, nothing skipped.${res.paid?.wealth ? ` +${res.paid.wealth} stones.` : ''}` : `走出了密室，一道机关都没跳过。${res.paid?.wealth ? `得灵石${res.paid.wealth}。` : ''}`, { key: `mishi|${Date.now()}` });
-  await refresh();
-}
-/* 问银月 from a board: the ask bar turned to her, when she is here to hear it; her clock starts when the words go (sendAsk). Absent, it starts now — the module
-   waits out its short wait and offers the torn page itself. */
-let boardWaitsOnHer = null;
-function boardAsksHer(g) {
-  boardWaitsOnHer = g;
-  if (herUp() && !CHATLESS) openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue));
-  else herClock(g);
-}
-function herClock(g) {
-  if (!g?.mod?.heard) return;
-  g.state = g.mod.heard(g.state, { her: 'asked' });
-  render();
-  // Read again after: the room's `hint_at` (when the torn page may be read) is the rules' answer.
-  run(`send:${g.taskId}:asked`, () => write('mishi', { action: 'asked' }).catch(failed).then(() => refresh()));
-}
-/* Her guest turn ended: the board that waited on her stops its clock — she answered in time. */
-/* Her reply as she said it: the last paragraph (the spoken one), plain; SILENT is no line. */
-const herLast = (text) => { const p = String(text ?? '').split(/\n\s*\n/).map((x) => x.replace(/[*_`]/g, '').trim()).filter(Boolean).at(-1) ?? ''; return /^SILENT$/i.test(p) ? '' : p.replace(/^(银月|Yinyue)\s*[：:]\s*/, ''); };
-function herAnswered(text = '') {
-  const g = boardWaitsOnHer;
-  boardWaitsOnHer = null;
-  // Her line stands on the board too (密室): what she said is there when the chat is shut.
-  if (g?.mod?.heard) { g.state = g.mod.heard(g.state, { her: 'spoke', text: herLast(text) }); render(); }
-}
-/* The 密室's next help tier, asked for without a tap (a room opened, a new mechanism, a few misses). */
-function boardAsks(g, why) {
-  boardFor(g.taskId); // the room as Look has it now (fromLook): the new mechanism's step, never the last one's
-  const p = g.state?.view?.puzzles?.find((x) => x.at === 'open');
-  if (!p || g.state.busy) return;
-  g.askWhy = why;
-  const r = g.mod.act(g.state, { g: 'her' });
-  g.state = r.state;
-  render();
-  if (r.send) { g.sent = true; run(`send:${g.taskId}:ask`, () => boardSends(g, r.send)); }
-}
-/* Her word on the 密室: the room's facts and the tier the rules opened, to say as herself in a line or two; the board
-   waits on her (her clock) and shows the tier's words itself only if she lets it run out. */
-function mishiHelp(g, res) {
-  const why = g.askWhy ?? 'asked';
-  g.askWhy = null;
-  const last = res.help?.[res.help.length - 1] ?? '';
-  const whyZh = { open: '你们刚推开暗门进来，他还不知道这机关怎么玩', next: '前一道机关开了，下一道露了出来', offer: `他试错了${res.wrong}次，还卡着`, asked: '他问你这道机关怎么玩' }[why];
-  const whyEn = { open: 'You two just came in; he does not know how the mechanism works yet', next: 'The last mechanism gave way; the next one shows', offer: `He has missed ${res.wrong} times and is stuck`, asked: 'He asks you how this mechanism works' }[why];
-  // The engine keeps 300 characters of a moment's facts: the tier first and whole, then what he sees, as room allows.
-  const fit = (head, tail, max = herFactsMax()) => { const t = `${head}${tail}`; return [...t].length <= max ? t : head; };
-  // Tier 1 is the play alone: nothing on the board goes with it, so she never works a year or an answer out of it
-  // (live 10-27: given the needle's 甲子 and 「封后2岁」 she told him 丙寅 — a guess, and wrong).
-  const play = res.tier <= 1;
-  const zh = fit(`密室第${res.step}道。${whyZh}。用你自己的话一两句告诉他（提示${res.tier}/${res.of}，只说这条，${play ? '只讲怎么玩，不提任何年份、字或答案' : '别越过它，别自己推算'}）：${last}`, play ? '' : `\n他眼前：${res.read ? `铜盘先前停在${res.read}。` : ''}${res.seen}`);
-  const enT = fit(`Hidden room, mechanism ${res.step}. ${whyEn}. Tell him in your own words, a line or two (hint ${res.tier}/${res.of}, this only — ${play ? 'how it plays, no year, character or answer' : 'nothing past it, work nothing out yourself'}): ${last}`, play ? '' : `\nBefore him: ${res.read ? `the dial stopped on ${res.read}. ` : ''}${res.seen}`);
-  boardWaitsOnHer = g;
-  const sid = chat?.getSessionId?.() ?? null, before = herLinesIn(sid);
-  askHer('mishi', zh, enT, 'neutral').then(async (heard) => {
-    // Nobody will hear it (the pet off, her presence refused): the tier is read off the board at once.
-    if (!heard) { if (boardWaitsOnHer === g) boardWaitsOnHer = null; run(`send:${g.taskId}:hint`, () => boardSends(g, { verb: 'mishi', args: { action: 'hint', alone: 1 } })); return; }
-    // A moment's answer is spoken by her (the pet) and kept in this chat's session, not streamed to the page:
-    // her new line is read from there, so it stands on the board and stops the clock (live 10-27).
-    const seen = (await before).length, until = Date.now() + ((g.state.view?.hint_wait_s ?? 25) + 5) * 1000;
-    while (boardWaitsOnHer === g && Date.now() < until) {
-      await new Promise((r) => setTimeout(r, 1200));
-      const lines = await herLinesIn(sid);
-      if (lines.length > seen && boardWaitsOnHer === g) { herAnswered(lines.at(-1)); return; }
-    }
-  });
 }
 /* Her first line in this chat's session after `before` (herLinesIn as the ask went out), read every 1.2 s for a
    while; never resolves when none comes (the moment's own fallback stands). */
@@ -3939,7 +3834,7 @@ function herMomentAsk(kind, facts, { mode, mood }) {
   if (HER_SEAM === 'slow') return { sent: Promise.resolve(true), line: new Promise(() => {}) };
   if (CHATLESS) return { sent: Promise.resolve(false), line: new Promise(() => {}) };
   // Her answer to a moment is spoken by her and kept in this chat's session, not always streamed to the page
-  // (the 密室's finding, 10-27): the first new line of hers there, or her stream, whichever comes first.
+  // (found live 10-27): the first new line of hers there, or her stream, whichever comes first.
   const sid = chat?.getSessionId?.() ?? null;
   const line = Promise.race([herNextLine(), herNewLine(sid, herLinesIn(sid))]);
   const id = HER_MOMENT_ID[kind] ?? (mood === 'sad' ? 'comfort' : 'cheer');
@@ -3986,8 +3881,8 @@ function paintHerBub() {
   const a = tok.getBoundingClientRect(), f = foot.getBoundingClientRect();
   foot.lastElementChild.style.left = `${Math.round(a.left + a.width / 2 - f.left)}px`;
 }
-/* A moment another part of the game raises (the 修行 stage quest's reward,
-   a 密室 escaped): `lingjing:her` with { kind, what, key } — hersay.js MOMENTS. */
+/* A moment another part of the game raises (the 修行 stage quest's reward):
+   `lingjing:her` with { kind, what, key } — hersay.js MOMENTS. */
 document.addEventListener('lingjing:her', (e) => { const d = e.detail ?? {}; if (d.kind) herSay.say(d.kind, d.what ?? '', { key: d.key ?? null }); });
 /* 阶段任务 (rules/gates.mjs, Look's `stage_quest`): the layer filled while the page watched — her
    word, once for that gate (hersay.js MOMENTS.quest, `once: 'key'`). Read across two Looks, so a
@@ -4362,7 +4257,7 @@ async function mountChat() {
     onStreamEnd: (_text, info) => {
       // Ling or 银月 wrote: on a phone with the sheet shut, a dot on the chat's bar (sight.js).
       chatHeard(document.querySelector('.shell'));
-      if (info?.own === false) { voice.heard(); herLineCame(_text); herAnswered(_text); return; }
+      if (info?.own === false) { voice.heard(); herLineCame(_text); return; }
       turnEnded();
       voice.heard();
       streaming = false;

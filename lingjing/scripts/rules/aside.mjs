@@ -46,7 +46,7 @@ export const ASIDE_KINDS = [
   { kind: 'rerun', // 秘境 again, at its door, out of its cooldown (rules/rerun.mjs)
     open: (content, state, view, now) => { const r = rerunOpen(content, state, now); return r && state.place === r.rerun.door ? [{ id: r.beat.id }] : []; },
     // Inside a run its rooms are walked (`move`, `go`: sealed.mjs keeps him to the run's places) and fought.
-    takes: (verb, args, content, state) => verb === 'rerun' || (Boolean(state.rerun) && ['duel', 'win', 'task', 'tame', 'mishi', 'move', 'go'].includes(verb)) },
+    takes: (verb, args, content, state) => verb === 'rerun' || (Boolean(state.rerun) && ['duel', 'win', 'task', 'tame', 'move', 'go'].includes(verb)) },
   { kind: 'gongke', // 人间功课 (rules/gongke.mjs)
     open: (content, state, view) => (view?.gongke ? [{ id: 'gongke' }] : []),
     takes: (verb, args) => verb === 'task' && args.action === 'check' },
@@ -84,7 +84,7 @@ export const ASIDE_REFUSED = new Set(['resolve', 'judge', 'travel', 'fly', 'meet
   'worlds', 'amend', 'art']);
 /* Verbs some kind may take (a call each kind's `takes` answers); else refused. */
 export const ASIDE_KIND_VERBS = new Set(['move', 'go', 'task', 'win', 'duel', 'reroll', 'tame', 'rerun', 'fantong', 'seclude', 'twenty', 'haggle', 'case', 'duizi', 'kao', 'tale',
-  'lundao', 'divine', 'fate', 'mishi']);
+  'lundao', 'divine', 'fate']);
 
 /* What may be played now, while set aside (or, before, whether the control has anything to offer). */
 export function asideOffers(content, state, view, now = new Date()) {

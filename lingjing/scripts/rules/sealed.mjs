@@ -49,10 +49,8 @@ export function withoutSealed(content, state, brief) {
   if (out.today) out.today = { ...out.today, festival: null, term: null, jieqi: null };
   if (out.place) { const { pass, meet, ...place } = out.place; out.place = place; }
   // A rerun (rules/rerun.mjs): the story outside waits — its boards and the rooms' story stalls too; only the run's own boards stand
-  // (its 拾遗, a 奇遇 the run rolled in this room — rules/qiyu.mjs — and the 暗室 it rolled instead of a cache, rules/mishi.mjs
-  // mishiOffer: Look offers it only in its room, on its day, while the run is on).
-  const anshi = state.mishi_offer?.task ?? null;
-  if (sealed.run && out.tasks) out.tasks = out.tasks.filter(t => t.id === sealed.board || t.qiyu || t.id === anshi);
+  // (its 拾遗, and a 奇遇 the run rolled in this room — rules/qiyu.mjs).
+  if (sealed.run && out.tasks) out.tasks = out.tasks.filter(t => t.id === sealed.board || t.qiyu);
   // A rerun's goal points nowhere outside: the story's road waits, frozen.
   if (sealed.goal) out.waypoint = sealed.run ? { text: sealed.goal, sealed: true } : { ...(brief.waypoint ?? {}), text: sealed.goal, sealed: true };
   return out;

@@ -49,7 +49,6 @@ import { castShown, newHere, portraitOf } from './codex.mjs';
 import { withoutSealed } from './sealed.mjs';
 import { rerunBoardId, rerunBrief, runBoardHere, runRow } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
-import { mishiHosted, mishiLook } from './mishi.mjs';
 import { kaoBrief, kaoHosted } from './kao.mjs';
 import { shouchaoHosted, shouchaoRow, shouchaoWait, shouchaoWaiting } from './shouchao.mjs';
 import { qiyuHosted, qiyuRow } from './qiyu.mjs';
@@ -448,8 +447,6 @@ function tasksBrief(content, state, ctx) {
   // The board a beast here is caught with (狰's 守夜), until it is caught.
   const cid = placeOf(content, state.place)?.has?.creature, katch = cid ? creatureOf(content, cid)?.catch : null;
   if (katch && catchHere(content, state, katch)) hosted[katch] = { status: 'offered' };
-  // 密室's door where he stands (rules/mishi.mjs): its board offered as a hosted game is.
-  Object.assign(hosted, mishiHosted(content, state, ctx.now));
   // 本王考考你 (rules/kao.mjs) while she is awake, its rounds a day, and a 秘境 rerun's 奇遇 in its room (rules/qiyu.mjs).
   Object.assign(hosted, kaoHosted(content, state, ctx.now), qiyuHosted(content, state));
   // 兽潮 (rules/shouchao.mjs): 守墙关's next night at 沉鼎观, out of its cooldown.
@@ -683,8 +680,6 @@ export function look(state, content, ctx) {
     ...(danduBrief(content, state) ? { dandu: danduBrief(content, state) } : {}),
     // 闭关 running: the hours in and what 出关 would grow now (rules/seclusion.mjs).
     ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : {}),
-    // 密室 (rules/mishi.mjs): the door here, or the room open — the mechanisms only, never her pages.
-    ...mishiLook(content, state, ctx),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
     // 节日 · 节气 (rules/festival.mjs): the player's real day, reckoned on the device.

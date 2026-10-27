@@ -1,5 +1,5 @@
 // wen.js — the thirteen 文 of the left hand, as 褚先生 teaches them in 古六 (wm-qianye; 《太清玉册》: 「自四指根逐节数，
-// 共十二目，以按十二辰」), and the five spells' marks. The 密室's 铜掌 reads them (games/mishi.js, rules/mishi.mjs).
+// 共十二目，以按十二辰」), and the five spells' marks.
 // Kept from the 讲堂三日 board (games/qiajue.js), deleted 2026-10-19 once the story played 气走经脉 · 掐诀 in its place.
 
 // The twelve 文 (玉册: from the ring finger's root, joint by joint) and the middle finger's middle joint.

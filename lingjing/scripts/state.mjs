@@ -611,6 +611,8 @@ function renamedCards(content, state) {
   return { ...(cards?.some(id => map[id]) ? { cards: [...new Set(cards.map(to))] } : {}), ...list('deck'), ...list('deck_out'), ...list('cards_new'), ...keyed('card_from'), ...keyed('card_stars') };
 }
 
+/* State a system cut whole left in saves (fitWorld drops it): 密室's open room, a rerun's 暗室 offer, the day's count (2026-10-27). */
+const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log'];
 export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;
@@ -676,6 +678,10 @@ export function fitWorld(saved, content) {
   const held = Object.fromEntries(Object.entries(raw).filter(([id, t]) => !known || t?.status === 'done' || known.has(id)));
   const unoffered = (here?.offers?.tasks ?? []).filter(id => !held[id]);
   if (unoffered.length || Object.keys(held).length !== Object.keys(raw).length) fix.tasks = { ...held, ...Object.fromEntries(unoffered.map(id => [id, { status: 'offered' }])) };
+  // 银月 held out of the 木牌 for a board cut since: back in.
+  const drop = known && state.her_game?.task && !known.has(state.her_game.task) ? ['her_game'] : [];
+  // A system cut whole leaves its state behind (密室 2026-10-27: the room open, a rerun's 暗室, the day's count): gone.
+  drop.push(...RETIRED_KEYS.filter(key => key in state));
   // The rest of a passage owed after a board the scene no longer has (`after/<scene>`, its
   // `story_after` merged back into its `story`): nothing is owed. Nor when the passage was re-cut
   // under the save and its first board is not over (a new board placed, 2026-10-26): it is owed
@@ -688,6 +694,7 @@ export function fitWorld(saved, content) {
   if (owing.length !== owed.length) fix.tell_owed = owing;
   // Before a story gate, nothing the gate keeps (lockReset): read where the save now stands.
   Object.assign(fix, lockReset(content, { ...state, ...fix }));
-  if ('seclusion' in fix) { const { seclusion, ...kept } = { ...state, ...fix }; return kept; }
+  if ('seclusion' in fix) drop.push('seclusion');
+  if (drop.length) { const kept = { ...state, ...fix }; for (const key of drop) delete kept[key]; return kept; }
   return Object.keys(fix).length ? { ...state, ...fix } : state;
 }

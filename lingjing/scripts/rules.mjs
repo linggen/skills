@@ -48,7 +48,6 @@ import { owesTell, playOf, stagedOf, tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 import { changes } from './rules/changes.mjs';
 import { playTo, summaryOf, toldUpTo } from './rules/progress.mjs';
-import { herMishi } from './rules/mishi.mjs';
 import { fightStamp } from './rules/engine.mjs';
 import { pageReading, readingHold, readingNow, THEN_READING } from './rules/reading.mjs';
 import { huiLabel } from './rules/hui.mjs';
@@ -86,7 +85,6 @@ export { rerun, rerunBrief, rerunHere, rerunOpen, rerunWait, rollRun, runsPay } 
 export { quest, show, VERBS } from './rules/verbs.mjs';
 export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { playTo, summaryOf, targetOf } from './rules/progress.mjs';
-export { checkInput, dealRoom, herMishi, mishi, mishiData, mishiLook, mishiOffer, mishiRoll } from './rules/mishi.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
 
 /* A birthday (the 生辰 card, the 命格 form) is read and let go: never in the log. */
@@ -189,8 +187,7 @@ function trackPay(verb, args, result, before, after, content, now) {
   } catch { /* the log is never the game's problem */ }
 }
 
-const MISHI_SHUT = { open: false, how: 'No hidden room is open where you two stand.' };
-const PAGE_ACTIONS = { task: ['skip', 'replay', 'later'], tale: ['skip'], mishi: ['open', 'try', 'asked', 'hint', 'skip', 'leave'] };
+const PAGE_ACTIONS = { task: ['skip', 'replay', 'later'], tale: ['skip'] };
 export const pageOnly = (verb, args = {}) => Boolean(PAGE_ACTIONS[verb]?.includes(String(args.action ?? '')));
 function runLocked(verb, args, stateFile, reader) {
   const logFile = path.join(dataDir(), 'log.jsonl');
@@ -254,9 +251,6 @@ function runLocked(verb, args, stateFile, reader) {
     const c = (keep ?? state).companion;
     return { ...r.result, awake: Boolean(c?.awake), asleep: Boolean(c?.asleep && !c?.awake) };
   }
-  // 密室: her old pages are read by her own tool alone (SKILL.md Mishi, `--for=yinyue`) — never
-  // Ling's, never the page's door, never in Look (rules/mishi.mjs herMishi).
-  if (verb === 'mishi' && String(args.action ?? '') === 'read') return reader === 'yinyue' ? { ...(herMishi(content, state, now) ?? MISHI_SHUT), ok: true } : { ok: false, refused: 'hers', say: null };
   const fn = VERBS[verb];
   if (!fn) return { ok: false, refused: 'unknown-verb', verbs: ['init', ...Object.keys(VERBS), 'undo'] };
   if (BUILDING_WAITS.has(verb)) {

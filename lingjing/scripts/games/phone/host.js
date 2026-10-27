@@ -20,8 +20,7 @@
 //                    rules { id, verb, args }  a rules call the board makes itself (开炉's feed, 本王考考你's `kao open`, 银月
 //                                              out of the 木牌 for a round): the app calls its rules, answers heard('{"result":…}')
 //                    stuck {}                  the board says it may be left (its `stuck()`): the app offers 「算了，往下走」
-//                    end   { won, stars, grade, left, next, stats, outcome, picks, settled }
-//                                              settled: a board the rules judge (密室) — they paid it already; never `win`
+//                    end   { won, stars, grade, left, next, stats, outcome, picks }
 //
 // Which boards there are, and the sheets each links, is boards.json (written by tools/phone-board.mjs from
 // tools/phone/board-kit.json); a board's module is scripts/games/<id>.js, as on the Mac.
@@ -34,7 +33,6 @@ import { forget, setPaused, settle, shellFor } from '../shell.js';
 import { sound, unlockOn } from '../kit/sound.js';
 import { stuckNow } from '../../stuck.js';
 import { mountPure } from '../mount.js';
-import { sounded } from '../kit/heard.js';
 
 const ID = 'board';
 const SKILL = new URL('../../../', import.meta.url);
@@ -126,50 +124,6 @@ function dealOf(game, data, task) {
   return d;
 }
 
-/* A board the rules judge (密室, games/mishi.js: newGame · fromLook · act · heard · tick · html): what it is comes from
-   the rules' Look, every try goes to the rules (`send`), which hold the answer and pay on the way out — the board never
-   wins by itself (the Mac's lingjing.js boardSends). 问银月 with no chat here: her clock runs (`asked`) and the torn
-   page may be read when it runs out, as on a Mac with the chat away. Ends when the room is left (出去, or escaped). */
-function mountRuled(mod, task) {
-  return (container, { lang = 'zh', seed = String(Date.now()), signal, shell, peek } = {}) => new Promise((resolve) => {
-    const host = document.createElement('div');
-    host.className = 'game g-mounted';
-    container.replaceChildren(host);
-    let state = mod.newGame(seed), done = false, last = performance.now();
-    peek?.(() => state);
-    const paint = () => { host.innerHTML = mod.html(state, lang); };
-    const set = (next) => { const was = state; state = next; sounded(shell, mod, was, state); paint(); };
-    const look = async () => { const l = await rules('look').catch(() => null); set(mod.fromLook(state, l, { task, present: false })); return l; };
-    const finish = (r) => { if (done) return; done = true; clearInterval(clock); resolve({ ...r, settled: true }); };
-    const send = async ({ verb, args = {} }) => {
-      const res = await rules(verb, args).catch((e) => ({ ok: false, error: String(e) }));
-      set(mod.heard(state, res));
-      await look();
-      if (res?.ok && (res.out || res.left)) setTimeout(() => finish({ won: Boolean(res.escaped) }), 1400);
-    };
-    const clock = setInterval(() => {
-      const now = performance.now(), dt = Math.min(250, now - last);
-      last = now;
-      if (!mod.tick || !state.live || shell?.paused?.()) return;
-      set(mod.tick(state, dt));
-      if (!state.live) look(); // the wait ran out: the torn page may be offered now (the rules' hint_at)
-    }, 250);
-    host.addEventListener('click', (e) => {
-      const el = e.target.closest?.('[data-g]');
-      if (!el || el.disabled || !host.contains(el) || done || shell?.paused?.()) return;
-      const r = mod.act(state, { ...el.dataset });
-      set(r.state ?? state);
-      if (r.her) {
-        set(mod.heard(state, { her: 'asked' }));
-        rules('mishi', { action: 'asked' }).then(look, () => {});
-      }
-      if (r.send) send(r.send);
-    });
-    signal?.addEventListener('abort', () => finish({ won: false, left: true }), { once: true });
-    look();
-  });
-}
-
 let go = null, abort = null, stuckTimer = null;
 let state = () => undefined; // the board's state, when its mount hands a look at it (`peek`)
 
@@ -189,7 +143,7 @@ async function mountBoard(spec) {
   if (row.piece) return playPiece(row.piece, lang);
   const mod = await import(new URL(`scripts/games/${game}.js`, SKILL).href);
   // A pure board (meta · newGame · act · html: 洛书, 五子棋 …) gets the contract from mount.js, as the 游戏厅 gives it.
-  const mount = mod.mount ?? (mod.fromLook ? mountRuled(mod, task?.id ?? null) : mod.html ? mountPure(mod) : null);
+  const mount = mod.mount ?? (mod.html ? mountPure(mod) : null);
   if (!mount) { post({ t: 'error', error: `${game} has no mount` }); return; }
   const shell = {
     ...shellFor(ID, game),
@@ -216,7 +170,7 @@ async function mountBoard(spec) {
   settle(ID, r);
   post({
     t: 'end', won: Boolean(r?.won), stars: r?.stars ?? null, grade: r?.grade ?? null, left: Boolean(r?.left), next: r?.next ?? null,
-    stats: r?.stats ?? null, outcome: r?.outcome ?? null, ...(story ? { picks } : {}), ...(r?.settled ? { settled: true } : {}),
+    stats: r?.stats ?? null, outcome: r?.outcome ?? null, ...(story ? { picks } : {}),
   });
 }
 

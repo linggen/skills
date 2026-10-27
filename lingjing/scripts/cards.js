@@ -566,11 +566,9 @@ function board(card, ctx) {
   // A board an errand here needs (Look's task `skip`, rules/tasks.mjs errandSkip): once stuck, 「跳过 · 酬减半」 beside the ✕ —
   // the errand met, the board's pay cut (Hanli 10-27, 晒经's 华容道: 「让用户能跳过去, 就好了」). The ✕ stays 收手.
   const cutSkip = task?.skip && !skips && !today && !made && !shut && !g?.sent ? skipBoard(g, id, ctx, { icon: true, cut: task.skip.cut }) : '';
-  // A puzzle that is hers to explain (密室: `meta.askHer` names the module's tap) — 问询 goes to her with the room's
-  // rules and where he stands, never to Ling for the scenery again (Hanli 10-27: 问询 twice, only the room re-described).
-  // A board that answers 问询 itself (华容道 `meta.ask`: how to play, then a lit next move) takes it the same way.
-  const herAsk = (g?.mod?.meta?.ask ?? g?.mod?.meta?.askHer)?.(g.state);
-  const about = own ? null : herAsk ? { label: ctx.words.about, g: herAsk, gfor: id } : { label: ctx.words.about, ask: true, say: ask };
+  // A board that answers 问询 itself (华容道 `meta.ask`: how to play, then a lit next move) takes it on the board.
+  const boardAsk = g?.mod?.meta?.ask?.(g.state);
+  const about = own ? null : boardAsk ? { label: ctx.words.about, g: boardAsk, gfor: id } : { label: ctx.words.about, ask: true, say: ask };
   // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
   // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever. Its way out
   // and its 问询 are the bar's icons, top right (Hanli 10-27: 「收手按钮改成右上的关闭icon button吧」「问询改成右上的icon

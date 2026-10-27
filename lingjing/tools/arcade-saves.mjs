@@ -1,5 +1,5 @@
 // tools/arcade-saves.mjs — the 游戏厅's stage saves (Hanli 2026-10-21: the 游戏厅 holds every playable thing).
-// A game the rules stand on the real page (二十问 · 讨价还价 · 断案 · 对对子 · 密室 · 秘境 rerun: no board module,
+// A game the rules stand on the real page (二十问 · 讨价还价 · 断案 · 对对子 · 秘境 rerun: no board module,
 // or one Look drives) is tried there on a test save of its own. Its games.json row says where (`stage`):
 //   save   the scratch save's name, and the fixture it seeds from (tests/fixtures/saves/<save>.json) — or `seed`, a fixture there already
 //   from   how far the story is played first (rules/progress.mjs playTo: a scene, a 回) — mid-回, so no 回's close stands

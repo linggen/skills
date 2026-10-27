@@ -82,7 +82,7 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
       g.state = r.state ?? g.state;
       let press = el ? 'tap' : null;
       if (el && !answered(before, mod.html(g.state, lang), r)) { tapNope(doc, el); press = 'nope'; } // never a silent tap
-      else if (refused && g.state === was && !r.send) { tapNope(doc, refused); press = 'nope'; }
+      else if (refused && g.state === was) { tapNope(doc, refused); press = 'nope'; }
       sounded(shell, mod, was, g.state, press);
       paint();
       check();
