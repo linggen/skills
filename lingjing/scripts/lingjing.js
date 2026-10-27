@@ -34,7 +34,7 @@ import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } fro
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt, asideOpens } from './cards.js';
+import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt, asideOpens, doorLine } from './cards.js';
 import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongKailu, kailuPaneHtml } from './fantong-kailu.js';
@@ -1688,13 +1688,18 @@ function draw() {
   const closing = closeUp() ? ended?.id ?? null : null;
   $('huiLine').textContent = look.chapter?.hui ? huiLineOf({ hui: look.chapter.hui, title: look.chapter.title, telling: closing ?? huiAt(told), titles }) : '';
   // Inside a sealed instance: 「沉鼎秘境 · 第二夜 · 石室」 — the instance, the book's night, the room (rules/sealed.mjs).
-  $('place').textContent = look.sealed ? [look.sealed.header, look.sealed.where].filter(Boolean).join(' · ') : look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
+  // At a sealed instance's door, not yet in (Look's `door`): where he stands and what opens the door — 「渡口　沉鼎秘境 · 石门 ·
+  // 练气二层圆满即开」, never the scene's 「秘境石门前」 alone, which read as inside (Hanli 10-27 at 渡口).
+  const door = !look.sealed && look.door ? doorLine(look.door, lang()) : '';
+  $('place').textContent = look.sealed ? [look.sealed.header, look.sealed.where].filter(Boolean).join(' · ')
+    : door ? (look.door.here ? door : `${look.place?.name ?? ''}　${door}`)
+    : look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
   // The bar is thin now (2026-10-14): the caption keeps its small line where there is room, and is the place's title always.
   $('place').title = (look.scene?.panel?.caption ?? []).join(' ');
   // 「有铺子 · 药铺」 beside the place where he stands at an open shop (shopmark.js; Look's `shops`, steps 0) —
   // only while the header names that place, not a scene's room in it (邺城's 东街市 under 「邺城 · 客栈」).
-  const headIsPlace = !look.sealed && !look.chapter?.close?.place && (!look.scene?.place || look.scene.place === look.place?.name);
+  const headIsPlace = !look.sealed && (door ? !look.door.here : !look.chapter?.close?.place && (!look.scene?.place || look.scene.place === look.place?.name));
   $('placeShop').innerHTML = headIsPlace ? shopHereHtml(look, lang()) : '';
   $('placeCap').textContent = (look.scene?.panel?.caption ?? []).join(' ');
   } finally { look = realLook; }

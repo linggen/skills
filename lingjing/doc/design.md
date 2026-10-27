@@ -518,6 +518,10 @@ the book's own `days` — 「沉鼎秘境 · 第二夜」), the room, and the sc
 goal line and 下一步). The stage shows the rooms' paintings (backdrops.json `places` by room id);
 the sealed tier outranks festival and 节气 (atmos.js `stagePick`), with no weather, season, wind or
 particles. Nothing names the 秘境: the 外门大比 or a later 秘境 declares the same — sealed mode is a reusable shape, not this 秘境's code.
+**At the door, not yet in** (Hanli 10-27 at 渡口: 「上面显示剧情是秘境里, 对吧」): while the story stands at the sealed beat's
+entry scene, or a scene after it at the same door before the first room, Look's `door` (world.mjs `doorOf`) names the door's
+place, the instance and the stage quest that opens it; the top line reads 「渡口　沉鼎秘境 · 石门 · 练气二层圆满即开」 and the
+主页 says the same. A board hosted on the open map never wears a 秘境 title (华容道's own is 「挪出一条路」; the 岔口's is 「挤出石厅」).
 **Rooms as a small dungeon** (Hanli, 2026-10-15: 「秘境太短了, 里面多加点战斗和小游戏等」): each room
 holds something between the beats, in the book's places and never against it — 岔口 华容道
 「挤出石厅」 (a stall board); 凶崖 the 犰狳 on the stair (pool `mijing-ya`, 见人则眠) and 下崖

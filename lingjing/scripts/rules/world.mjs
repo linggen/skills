@@ -244,6 +244,18 @@ function sealedOf(content, state) {
   const beat = (content.chapters?.[state.chapter]?.beats ?? []).find(b => b.sealed && b.scenes.indexOf(state.scene) > 0);
   return beat ? { ...beat.sealed, beat: beat.id, first: beat.scenes[1] } : null;
 }
+/* The door of a sealed instance, while the story stands at its entry scene and he is not yet inside (its
+   antechamber: the scene before `sealedOf` holds): the instance's name and the door's place (the scene's `at`).
+   The page says plainly where the door is and what opens it — the scene's place alone reads as inside. */
+function doorOf(content, state) {
+  if (!state?.scene || state.rerun || inMade(state) || sealedOf(content, state)) return null;
+  const done = state.done_scenes ?? [], here = sceneOf(content, state)?.at;
+  const atDoor = b => b.scenes[0] === state.scene
+    || (done.includes(b.scenes[0]) && !done.includes(b.scenes[1]) && here === sceneOf(content, { ...state, scene: b.scenes[0] })?.at);
+  const beat = (content.chapters?.[state.chapter]?.beats ?? []).find(b => b.sealed && atDoor(b));
+  const at = beat ? placeOf(content, sceneOf(content, { ...state, scene: beat.scenes[0] })?.at) : null;
+  return at ? { beat: beat.id, label: beat.sealed.label ?? null, place: at } : null;
+}
 /* A room is open once the scene its `opens` names is behind him — and always where the story stands now. */
 const roomOpen = (content, state, sealed, id) => !sealed.opens?.[id] || (state.done_scenes ?? []).includes(sealed.opens[id]) || sceneOf(content, state)?.at === id;
 function sealedMap(content, state) {
@@ -690,4 +702,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { restAfter, fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { doorOf, restAfter, fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

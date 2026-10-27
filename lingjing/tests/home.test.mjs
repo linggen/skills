@@ -2,6 +2,7 @@
 // from the boards' own pay — the ONE thing to do next, ranked by the rules (rules/home.mjs), and what waits. Seeded saves:
 // the 回's stage quest short (古四, 146/470), an errand ready to hand in, nothing left here today, mid-cooldown, a loss.
 import test from 'node:test';
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
@@ -188,4 +189,17 @@ test('a board played once today is not the button: the 主页 never sends him st
   const s = { ...gate146(), plays: { day: '2026-10-27', ids: { pintu: 1 } } };
   const l = look(s, content, ctx());
   assert.ok(!(l.home.next.kind === 'board' && l.home.next.id === 'pintu'), JSON.stringify(l.home.next));
+});
+
+test('at a sealed instance\'s door, walked off to 渡口: the 主页 says where the door is and what opens it, and where he stands (Hanli 10-27)', () => {
+  let s = playTo(content, newState(content, 'zh', NOW), 'wm-mijing', { now: NOW }).state;
+  s = told(move({ ...s, stamina: 100, stamina_at: NOW.toISOString() }, content, ctx(), { place: 'dukou' }).state);
+  const l = look(s, content, ctx());
+  assert.equal(l.door.place.id, 'shimen');
+  assert.equal(l.door.met, false);
+  const h = html(l);
+  assert.match(h, new RegExp(`沉鼎秘境 · 石门 · ${l.door.step}即开`));
+  assert.match(h, /还在门外 · 在渡口/);
+  // The page's top line names where he stands, then the door (lingjing.js paint): never the scene's 「秘境石门前」 alone.
+  assert.match(fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8'), /look\.door\.here \? door : `\$\{look\.place\?\.name \?\? ''\}　\$\{door\}`/);
 });

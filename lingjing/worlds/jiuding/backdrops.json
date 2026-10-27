@@ -260,6 +260,16 @@
    "indoor": true,
    "day": "art/places/mijing-cliff.webp"
   },
+  "yanwu-place": {
+   "at": "yanwu",
+   "indoor": false,
+   "day": "art/places/yanwu.webp"
+  },
+  "dukou": {
+   "at": "dukou",
+   "indoor": false,
+   "day": "art/places/dukou.webp"
+  },
   "jin-track": {
    "scape": [
     "track"

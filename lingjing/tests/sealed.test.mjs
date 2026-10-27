@@ -103,9 +103,34 @@ test('entry: through the door he stands in the forking hall, sealed, the 令 and
   assert.deepEqual(s.chance, atDoor().chance);
 });
 
+test('at the door, not yet in: Look names the door, the instance and the stage quest that opens it — never the inside (Hanli 10-27 at 渡口)', () => {
+  const s = atDoor();
+  const there = look(s, content, ctx()).door;
+  assert.deepEqual({ ...there, step: undefined, met: undefined }, { place: { id: 'shimen', name: '沉鼎秘境 · 石门' }, label: SEALED.label.zh, here: true, step: undefined, met: undefined });
+  // Walked off to 渡口 with the story still at the door: where he stands is not the door, and 去往 is the open map.
+  const away = must(move, fresh(s), { place: 'dukou' });
+  const l = look(away, content, ctx());
+  assert.equal(l.door.here, false);
+  assert.equal(l.sealed, undefined, 'outside');
+  assert.ok(l.director.near.some(p => p.id === 'shimen'), 'the door is a road away');
+  // Inside, there is no door to name.
+  assert.equal(look(inside(), content, ctx()).door, undefined);
+});
+
+test('a board hosted on the open map never wears a 秘境 title (Hanli 10-27: 「华容道 · 走出秘境」 at 渡口)', () => {
+  const rooms = new Set([...SEALED.places, ...(SEALED.rerun?.rooms ?? [])]);
+  for (const d of Object.values(content.places)) for (const p of d.places ?? []) {
+    if (rooms.has(p.id)) continue;
+    for (const id of p.has?.games ?? []) {
+      const t = content.tasks.tasks.find(x => x.id === id);
+      for (const lang of ['zh', 'en']) assert.doesNotMatch(String(t?.title?.[lang] ?? ''), /秘境|hidden realm/i, `${p.id} hosts ${id}`);
+    }
+  }
+});
+
 test('the gate: only the rooms open to him; a way out is refused in the instance\'s own words', () => {
   let s = inside();
-  for (const place of ['shimen', 'dukou', 'waimen', 'fangshi']) {
+  for (const place of ['shimen', 'dukou', 'waimen', 'fangshi', 'houshan']) {
     const r = move(s, content, ctx(), { place });
     assert.equal(r.result.ok, false, place);
     assert.equal(r.result.say, '秘境未开，出不去。', place);

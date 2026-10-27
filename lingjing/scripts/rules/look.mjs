@@ -30,7 +30,7 @@ import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
 import { shopsNear } from './shops.mjs';
 import { fightsNear } from './fights.mjs';
-import { atScene, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, poolWait, sceneOf, settlePlace } from './world.mjs';
+import { atScene, doorOf, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, poolWait, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
@@ -429,6 +429,14 @@ function boardTitle(content, state, id, task, forErrand) {
   return `${own.split(' · ')[0]} · ${pick(q.title, state.lang)}`;
 }
 
+function doorLook(content, state) {
+  const d = doorOf(content, state);
+  if (!d) return {};
+  const q = stageNow(content, state);
+  return { door: { place: { id: d.place.id, name: pick(d.place.name, state.lang) }, ...(d.label ? { label: pick(d.label, state.lang) } : {}),
+    here: state.place === d.place.id, ...(q ? { step: q.step, met: Boolean(q.met) } : {}) } };
+}
+
 function tasksBrief(content, state, ctx) {
   const lang = state.lang;
   // The boards before him: the story's (a scene offers them), and a game an
@@ -657,6 +665,9 @@ export function look(state, content, ctx) {
     // 阶段任务 (rules/gates.mjs): the layer the 回's next stage waits on, and his 修为 toward it — the 事 book's row.
     // Short of it, where 修为 is earned — even standing at the scene that waits (the 事 row's go).
     ...((q => (q ? { stage_quest: q.met ? q : { ...q, work: workOf(content, state, ctx, { anywhere: true, cultivate: true }) } } : {}))(stageNow(content, state))),
+    // 秘境石门 (world.mjs doorOf): the story at a sealed instance's entry, he not yet in — the door's place, the instance,
+    // and the stage quest that opens it (Hanli 10-27 at 渡口: 「上面显示剧情是秘境里, 对吧」). Facts; the page words it.
+    ...doorLook(content, state),
     // Handed in, this 回 (the book's 已交); and those settled by themselves on a load, a day long (gates.mjs settleStages).
     ...(stagesPaid(content, state).length ? { stages_paid: stagesPaid(content, state) } : {}),
     ...(stageBack(state, ctx.now) ? { stage_back: stageBack(state, ctx.now) } : {}),

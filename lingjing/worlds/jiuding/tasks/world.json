@@ -479,7 +479,7 @@
     {
       "id": "huarong", "kind": "board", "game": "huarong", "period": "day", "hosted": true, "climb": [0, 1, 1, 2],
       "_climb": "华容道 (Hanli 10-27, 晒经: 「第一次玩华容道, 能不能简单一点」): the first one he meets is level 0 (10 moves, 小满 straight above the exit), then 12–19, then 29–40 (games/huarong.js LAYOUTS); shared by every board here that climbs it.",
-      "title": { "zh": "华容道 · 走出秘境", "en": "Huarong · Out of the hidden realm" },
+      "title": { "zh": "华容道 · 挪出一条路", "en": "Huarong · Slide a way out" },
       "grant": { "table": "game", "progress": 5, "wealth": 10 },
       "done_line": { "zh": "成了。", "en": "Done." }
     },

@@ -1085,12 +1085,14 @@ const HOME_WORDS = {
     resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}',
     boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',
     ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}',
-    tide: '兽潮 · 开局', rerun: '{title} · 已开', skipped: '先放下的 {n} 局', enough: '{what} · 够了' },
+    tide: '兽潮 · 开局', rerun: '{title} · 已开', skipped: '先放下的 {n} 局', enough: '{what} · 够了',
+    door: '{door} · {step}即开', doorOpen: '{door} · 门已开', doorAt: '还在门外 · 在{here}' },
   en: { stage: 'Stage quest · {step}', short: '{n} cultivation to go', chores: 'chores +{n}', plays: 'about {n} games', playsMore: 'then about {n} games', todo: 'Waiting',
     resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}',
     boardPays: 'Play · {title} · cultivation +{n}', take: 'Take · {title}', go: 'Go to {name} ›', goWhat: 'To {name} · {what}', wait: '{title} · in {t}', seclude: 'Seclusion',
     ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}',
-    tide: 'Beast tide · play', rerun: '{title} · open', skipped: '{n} games set aside', enough: '{what} · enough' },
+    tide: 'Beast tide · play', rerun: '{title} · open', skipped: '{n} games set aside', enough: '{what} · enough',
+    door: '{door} · opens at {step}', doorOpen: '{door} · open', doorAt: 'Not inside yet · at {here}' },
 };
 const homeWait = (min, w) => { const m = Math.max(1, Math.round(min ?? 0)); return m >= 60 ? say(w.chanceHM, { h: Math.floor(m / 60), m: m % 60 }) : say(w.chanceM, { m }); };
 const bareName = (name) => String(name ?? '').split(' · ').at(-1);
@@ -1133,6 +1135,13 @@ const HOME_TODO = {
   skipped: (r, h) => `<span class="small dim hometodo">${esc(say(h.skipped, { n: r.n }))}</span>`,
   strengthen: (r, h, ctx) => homeWay(r.way, 'todo', ctx),
 };
+/// 秘境石门 (Look's `door`, world.mjs doorOf): the story at a sealed instance's door, he not yet in — where the door is
+/// and what opens it, 「沉鼎秘境 · 石门 · 练气二层圆满即开」 (Hanli 10-27 at 渡口: 「上面显示剧情是秘境里, 对吧」).
+export function doorLine(door, lang) {
+  if (!door?.place) return '';
+  const h = HOME_WORDS[lang] ?? HOME_WORDS.zh;
+  return door.step && !door.met ? say(h.door, { door: door.place.name, step: door.step }) : say(h.doorOpen, { door: door.place.name });
+}
 /* The gate's bar: the step, where he stands, what it still asks — 「146/470 · 还差 324 修为 · 功课 +201 · 再约 5 局」. */
 function homeGate(g, h, ctx) {
   const of = Math.max(1, g.of), at = Math.min(of, g.progress), pct = Math.round((100 * at) / of);
@@ -1147,11 +1156,13 @@ function homeHtml(home, ctx) {
   const h = HOME_WORDS[ctx.lang] ?? HOME_WORDS.zh, look = ctx.look ?? {}, n = home.next;
   const head = look.chapter?.title ? `<div class="small dim homehui">${esc(look.chapter.title)}</div>` : '';
   const goal = home.gate ? homeGate(home.gate, h, ctx) : `<div class="say">${esc(goalText(ctx) || (NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh).idle)}</div>`;
+  // At a sealed instance's door, not yet in: where the door is and what opens it, and where he stands.
+  const d = look.door, door = d ? `<div class="say homedoor">${esc(doorLine(d, ctx.lang))}</div>${d.here ? '' : `<div class="small dim">${esc(say(h.doorAt, { here: look.place?.name ?? '' }))}</div>`}` : '';
   const act = n ? HOME_ACTS[n.kind]?.(n, h, ctx) ?? '' : '';
   const todo = (home.todo ?? []).map((r) => HOME_TODO[r.kind]?.(r, h, ctx) ?? '').filter(Boolean).join('');
   const guard = look.place?.guard ? `<div class="small dim guardnote">${esc(look.place.guard)}</div>` : '';
   const rr = rerunNext(NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh, look);
-  return `<div class="card next home">${head}${goal}${guard}<div class="acts homeact">${act}</div>`
+  return `<div class="card next home">${head}${door}${goal}${guard}<div class="acts homeact">${act}</div>`
     + `${todo || rr.note || visitorsLine(look) ? `<div class="hometodos"><div class="small dim">${esc(h.todo)}</div>${rr.note}${visitorsLine(look)}<div class="acts">${todo}${visitorGo(look)}${rr.acts}</div></div>` : ''}</div>`;
 }
 
