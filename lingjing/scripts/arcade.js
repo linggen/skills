@@ -19,8 +19,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时', rhythm: '节奏', numbers: '数值', rhythmNote: '沿主线：读了多少字、玩了什么 · 条越长读得越久，红的超过 {cap} 字', same: (k) => `连着两个${k}`, longest: '最长', roaming: '游荡斗法', side: '支线斗法', chars: '字' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there', rhythm: 'Rhythm', numbers: 'Numbers', rhythmNote: 'Along the main line: what is read, what is played · a longer bar is a longer read; red is over {cap} characters', same: (k) => `Two ${k} in a row`, longest: 'longest', roaming: 'roaming fights', side: 'side fights', chars: 'chars' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时', rhythm: '节奏', stats: '游戏记录', numbers: '数值', rhythmNote: '沿主线：读了多少字、玩了什么 · 条越长读得越久，红的超过 {cap} 字', same: (k) => `连着两个${k}`, longest: '最长', roaming: '游荡斗法', side: '支线斗法', chars: '字' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there', rhythm: 'Rhythm', stats: 'Play log', numbers: 'Numbers', rhythmNote: 'Along the main line: what is read, what is played · a longer bar is a longer read; red is over {cap} characters', same: (k) => `Two ${k} in a row`, longest: 'longest', roaming: 'roaming fights', side: 'side fights', chars: 'chars' },
 };
 const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
@@ -146,6 +146,8 @@ async function listPage() {
     + `<a class="arcade-view" href="${href({ view: 'rhythm' })}">${esc(w().rhythm)}</a>`
     // 数值 (tools/numbers.mjs's report, Hanli 10-27: 「全局校验游戏数值」): its own page, the 游戏厅's dev gate kept.
     + `<a class="arcade-view" href="arcade-numbers.html${href()}">${esc(w().numbers)}</a>`
+    // 游戏记录 (stats.html): the play log read back — the save's own when the arcade came from a test save.
+    + `<a class="arcade-view" href="stats.html?dev=1${save ? `&save=${encodeURIComponent(save)}` : ''}">${esc(w().stats)}</a>`
     + `<a class="arcade-lang" href="${langHref()}">${esc(w().lang)}</a>${home()}</header>`
     + `${kindsHtml(reg.games.filter((g) => !g.replaced))}${groups.join('')}${await oldHtml(reg)}`;
   for (const b of root.querySelectorAll('.arcade-kindchip')) b.onclick = () => filterBy(b.dataset.kind);

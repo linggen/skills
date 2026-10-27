@@ -50,6 +50,9 @@ import { playTo, summaryOf, toldUpTo } from './rules/progress.mjs';
 import { herMishi } from './rules/mishi.mjs';
 import { fightStamp } from './rules/engine.mjs';
 import { pageReading, readingHold, readingNow, THEN_READING } from './rules/reading.mjs';
+import { huiLabel } from './rules/hui.mjs';
+import { appendLines, batchSeen, isOff, linesOf, markBatch, payEvent, putLines, readLines, setOff, standing } from './rules/analytics.mjs';
+import { report as statsReport } from './stats.mjs';
 
 export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
@@ -104,6 +107,9 @@ function run(verb, args, reader = null) {
   if (verb === 'guide') return guideVerb(args);
   // 「只看改动」 (rules/changes.mjs): the book reader's own state, never the save.
   if (verb === 'changes') return changes(args);
+  // 数据埋点 (rules/analytics.mjs): the page's play log and its report — never under the save's lock, never in its
+  // log or `page_did`, never Ling's or 银月's to call.
+  if (verb === 'track' || verb === 'stats') return reader ? { ok: false, refused: 'page-only', say: null } : verb === 'track' ? track(args) : stats(args);
   const stateFile = path.join(dataDir(), 'state.json');
   if (verb === 'seed') return withLock(stateFile, () => seed(args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
   if (verb === 'shift') return withLock(stateFile, () => shift(args), () => ({ ok: false, refused: 'busy', say: null }));
@@ -118,6 +124,67 @@ function guided(verb, args, reader, stateFile, result) {
   const out = withGuides({ verb, said: args.said, result, state, session: process.env.LINGGEN_SESSION_ID });
   if (out.guided) writeAtomic(stateFile, stateText({ ...state, guided: out.guided }));
   return out.result;
+}
+
+/* The save as it stands and its world, read without the lock (an atomic rename: a whole save or the one before). */
+function standingNow() {
+  try {
+    const st = JSON.parse(fs.readFileSync(path.join(dataDir(), 'state.json'), 'utf8'));
+    return { state: st, content: knownWorld(st.world) ? loadWorld(st.world) : null };
+  } catch { return { state: null, content: null }; }
+}
+const saveName = () => scratchName() ?? 'main';
+
+/* `track`: the page's batch kept (`--events`), or the switch (`--action=status|off|on`). */
+function track(args) {
+  const dir = dataDir();
+  const action = String(args.action ?? '');
+  if (action === 'off' || action === 'on') return { ok: true, off: setOff(dir, action === 'off') };
+  if (action === 'status') return { ok: true, off: isOff(dir), save: saveName() };
+  // The phone's own log, carried over (linggen-mobile LingjingTrack): lines already stamped there, kept once a batch.
+  if (action === 'put') {
+    let lines;
+    try { lines = JSON.parse(String(args.lines ?? '[]')); } catch { return { ok: false, refused: 'bad-lines', say: null }; }
+    const batch = /^[a-z0-9-]{4,64}$/i.test(String(args.batch ?? '')) ? String(args.batch) : null;
+    return { ok: true, ...putLines(dir, lines, { batch, dev: 'phone', now: clock() }) };
+  }
+  if (isOff(dir)) return { ok: true, off: true, kept: 0 };
+  let events;
+  try { events = JSON.parse(String(args.events ?? '[]')); } catch { return { ok: false, refused: 'bad-events', say: null }; }
+  const batch = /^[a-z0-9-]{4,64}$/i.test(String(args.batch ?? '')) ? String(args.batch) : null;
+  if (batchSeen(dir, batch)) return { ok: true, off: false, kept: 0, again: true };
+  const now = clock();
+  const { state, content } = standingNow();
+  const lines = linesOf(events, { now, save: saveName(), stamp: standing(content, state), dev: String(args.dev ?? 'mac') === 'phone' ? 'phone' : 'mac' });
+  const kept = appendLines(dir, lines, now);
+  markBatch(dir, batch);
+  return { ok: true, off: false, kept };
+}
+
+/* `stats`: the report over this save's log (scripts/stats.mjs), the world's model beside it. */
+function stats() {
+  const { content } = standingNow();
+  const world = content ?? loadWorld(DEFAULT_WORLD);
+  const report = statsReport(readLines(dataDir()), world, { now: clock() });
+  return { ok: true, save: saveName(), off: isOff(dataDir()), report, names: namesOf(world, report) };
+}
+
+/* The report's ids in the book's words (zh): 回, beasts, boards — for the dev page only. */
+function namesOf(content, report) {
+  const zh = (v) => (typeof v === 'string' ? v : v?.zh ?? v?.en ?? null);
+  const hui = Object.fromEntries((report.time?.hui ?? []).map((h) => [h.hui, h.hui ? huiLabel(content, h.hui, 'zh', 'short') ?? h.hui : null]));
+  const beasts = Object.fromEntries((report.fights ?? []).map((f) => [f.beast, zh(content.creatures?.creatures?.find((c) => c.id === f.beast)?.name) ?? f.beast]));
+  const games = Object.fromEntries((report.boards ?? []).map((b) => [b.game, zh((content.games?.games ?? []).find((g) => g.id === b.game)?.name) ?? b.game]));
+  const tiers = Object.fromEntries((content.ladder?.tiers ?? []).map((t) => [t.id, zh(t.name) ?? t.id]));
+  return { hui, beasts, games, tiers };
+}
+
+/* What a verb that changed the save paid, kept as a `pay` line — Ling's calls too. Never fails the verb. */
+function trackPay(verb, args, result, before, after, content, now) {
+  try {
+    const e = payEvent({ verb, args, result, before, after });
+    if (e) appendLines(dataDir(), linesOf([e], { now, save: saveName(), stamp: standing(content, after) }), now);
+  } catch { /* the log is never the game's problem */ }
 }
 
 const MISHI_SHUT = { open: false, how: 'No hidden room is open where you two stand.' };
@@ -233,6 +300,7 @@ function runLocked(verb, args, stateFile, reader) {
     next.updated = now.toISOString();
     writeAtomic(stateFile, stateText(next));
     if (!(standOnly && !out.state)) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args), before: unconfirmed(raw ?? state) }) + '\n');
+    trackPay(verb, args, out.result, raw ?? state, next, content, now);
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const asking = next ?? state;

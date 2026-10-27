@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>灵境 · 游戏记录</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <!-- Its engine calls ride the data channel (first, so every script below has it). -->
+  <script src="/shared/channel.js"></script>
+  <!-- 游戏记录 — the builder's page (?dev=1 only; linked from the 游戏厅, never from the game): the play log
+       (rules/analytics.mjs) read back by the rules' `stats` verb (scripts/stats.mjs) beside the model's targets.
+       ?save=<name> reads a test save's own log; without it, the player's own. Local only. -->
+  <style>
+    :root { --paper: #f6efe2; --card: #fbf6ec; --ink: #2b241c; --ink2: #5b5044; --mute: #8a7d6a; --line: #ded2bc; --bar: #4a3f33; --target: #a8382a; --wash: #e8dcc5; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #1b1814; --card: #23201b; --ink: #ece3d3; --ink2: #c9bda9; --mute: #9a8e7b; --line: #3a342b; --bar: #cdbfa6; --target: #e0705c; --wash: #312b23; } }
+    :root[data-theme="dark"] { --paper: #1b1814; --card: #23201b; --ink: #ece3d3; --ink2: #c9bda9; --mute: #9a8e7b; --line: #3a342b; --bar: #cdbfa6; --target: #e0705c; --wash: #312b23; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.55 "Songti SC", "Noto Serif SC", serif; }
+    main { max-width: 1120px; margin: 0 auto; padding: 20px 16px 48px; }
+    header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+    h1 { font-size: 22px; letter-spacing: .14em; margin: 0; font-weight: 600; }
+    .sub { color: var(--mute); font-size: 13px; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .tile { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; }
+    .tile b { display: block; font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .tile span { color: var(--mute); font-size: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 14px; }
+    section.card { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; min-width: 0; }
+    section.card h2 { font-size: 15px; margin: 0 0 2px; letter-spacing: .08em; font-weight: 600; }
+    section.card p.note { margin: 0 0 8px; color: var(--mute); font-size: 12px; }
+    .wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+    th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    th { color: var(--mute); font-weight: 500; font-size: 12px; }
+    td.n, th.n { text-align: right; }
+    td.over { color: var(--target); font-weight: 600; }
+    .meter { position: relative; height: 10px; min-width: 120px; background: var(--wash); border-radius: 2px; }
+    .meter i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--bar); border-radius: 0 4px 4px 0; }
+    .meter em { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--target); }
+    .legend { display: flex; gap: 14px; color: var(--mute); font-size: 12px; margin: 0 0 6px; }
+    .legend i { display: inline-block; width: 14px; height: 8px; background: var(--bar); border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+    .legend em { display: inline-block; width: 2px; height: 12px; background: var(--target); margin-right: 4px; vertical-align: middle; }
+    .empty { color: var(--mute); padding: 6px 0; }
+    .days { display: flex; gap: 2px; align-items: flex-end; height: 64px; margin: 6px 0 2px; }
+    .days i { flex: 1; background: var(--bar); border-radius: 2px 2px 0 0; min-height: 2px; }
+    .gate { padding: 40px 16px; text-align: center; color: var(--mute); }
+    .warn { color: var(--target); }
+  </style>
+</head>
+<body>
+  <main id="main"><div class="gate">……</div></main>
+  <script type="module" src="stats-page.js"></script>
+</body>
+</html>

@@ -10,6 +10,7 @@ import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud,
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
+import { charsOf, createTracker, trackSender } from './track.js';
 import { arcadeGameOf, arcadeRow, arcadeRowOf, isArcadeBoard, withArcade } from './arcade-board.js';
 /// A test save with no chat at all (`&chat=off`): the crawlers' opt-out (tools/playtest.mjs,
 /// page-crawl.mjs, play-human.mjs) — no Ling, no 银月, a word from the stage only shown. Without it a
@@ -178,6 +179,16 @@ const words = () => {
 const GAMES = {};
 /* The beats on the mount() contract, laid into their hosts after every draw (beat-host.js). */
 const beats = beatHost({ boardFor: (id) => boardFor(id), lang: () => lang(), onSettled: (g, r) => beatSettled(g, r), prefetch: (id, g) => prefetchFor(id, g) });
+/* 数据埋点 (track.js): the play log, local only — ids, times, outcomes; never what is typed. */
+const tracker = createTracker({ send: trackSender(SCRATCH), scratch: SCRATCH });
+/* Where a board on the stage came from, for the log: the story's own, the tray, an errand's, the day's, 传闻, the 游戏厅. */
+function boardCtx(id) {
+  const task = look?.tasks?.find((t) => t.id === id);
+  const source = isArcadeBoard(id) ? 'arcade' : isTale(id) ? 'tale' : (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) ? 'story'
+    : view.opened?.id === id ? 'tray' : task?.for_errand ? 'errand' : task?.practice || task?.period === 'day' ? 'today' : 'show';
+  const game = task?.game ?? (isTale(id) ? look?.tale?.step?.board?.page : null) ?? (task ? 'lianliankan' : null);
+  return { game, level: task?.level ?? null, source, scene: look?.scene?.id ?? null, task: task?.id ?? null };
+}
 function gameMod(id) {
   if (GAMES[id] !== undefined) return GAMES[id];
   GAMES[id] = null;
@@ -242,7 +253,8 @@ async function herOut(taskId, on) {
   return r;
 }
 
-function boardFor(taskId) {
+const boardFor = (taskId) => tracker.boardSeen(taskId, dealtBoard(taskId), boardCtx);
+function dealtBoard(taskId) {
   if (isTale(taskId)) return taleBoard(taskId);
   const task = look?.tasks?.find((t) => t.id === taskId);
   if (task?.game && task.game !== 'lianliankan') {
@@ -630,6 +642,7 @@ async function readOnce() {
     stageQuestDone(look, seen);
     gainedCards(look, seen);
     look = withArcade(withCaps(seen, caps), ARCADE_GAME, arcadeDeal);
+    tracker.watchLook(look, [look.capped ? 'cap' : null, look.stamina?.now === 0 ? 'stamina' : null, ...(look.waits ?? []).map((w) => (w.id ? `wait:${w.id}` : null))]);
     // A cooldown's minutes are as of this Look: kept as the moment it opens, so the row counts down between Looks.
     for (const w of look?.waits ?? []) w.ready_at = Date.now() + (w.wait_min ?? 0) * 60_000;
     if (look?.engine && !engineAt) engineAt = look.engine;
@@ -1617,6 +1630,7 @@ function restoreFocus(key) {
 
 function draw() {
   if (!look || !authored) return;
+  trackReading();
   const had = focusKey(document.activeElement);
   const w = words();
   document.documentElement.lang = lang();
@@ -1839,6 +1853,7 @@ function syncSoon() {
 /// A verb that changes the save: the rules' answer, and the cloud told once it lands.
 async function write(name, args = {}) {
   const r = await verb(name, args);
+  tracker.answer(name, r);
   if (r?.ok) syncSoon();
   // A scene choice's refusal («九个格子还没填对») stands until the next move
   // lands: the board won under it, the note would still say the wall holds.
@@ -1920,6 +1935,7 @@ async function settleWin(taskId, won, grade) {
   // the board closes (his, 2026-09-24: 「页面自己结算」; waiting on Ling's turn
   // held the pay back). Only a board the story's scene holds goes to Ling,
   // whose Resolve moves the story on.
+  tracker.boardEnd(taskId, 'won', { stars, grade });
   if (isTask(taskId)) await payWin(taskId);
   else await report(`[scene] won ${taskId}`);
   // A won board that is not the scene's own (opened from the tray or 事, an errand's, 兽潮's …) leaves the stage once
@@ -1951,6 +1967,7 @@ const titleOf = (id) => look?.tasks?.find((t) => t.id === id)?.title ?? null;
 /* A 试玩 board won (arcade-board.js): nothing to pay, nothing told to Ling — the grade on the note,
    and the board dealt again. */
 function arcadeWon(taskId, grade) {
+  tracker.boardEnd(taskId, 'won', { grade });
   boards.delete(taskId);
   keep({ doNote: `${lang() === 'en' ? 'Won' : '成'}${grade ? ` · ${grade}` : ''}` });
   render();
@@ -1973,6 +1990,7 @@ async function taleDone(r) {
 async function taleWon(id) {
   const r = await write('tale', { action: 'win', board: id }).catch(failed);
   if (!r.ok) { const g = boards.get(id); if (g) { g.sent = false; g.refusedAt = look?.place?.id ?? null; } }
+  else tracker.boardEnd(id, 'won');
   return taleDone(r);
 }
 const taleAnswer = async (answer) => taleDone(await write('tale', { action: 'answer', answer }).catch(failed));
@@ -2369,6 +2387,12 @@ function readingOfPlay() { return ofPlay(readingNow(), look?.run ?? null); }
 function setReading(r, patch = {}) {
   keepReading(SCRATCH, r);
   show({ reading: r, ...patch });
+}
+/* The passage on the stage, for the log (track.js): its place in the reading, its scene and length. */
+function trackReading() {
+  const r = readingHere();
+  const it = playing(r) ? r.items[Math.min(r.i, r.items.length - 1)] : null;
+  tracker.reading(it ? `${r.run ?? ''}|${r.i}|${it.id ?? ''}` : null, it ? { scene: sceneOfItem(it) ?? it.of ?? null, chars: charsOf(it, lang()) } : {});
 }
 /* ── One thing at a time: the box first (queue.js, 2026-10-01) ──
    The passage that leads into a board, a fight, a set piece or a seal
@@ -3070,6 +3094,7 @@ const duiziResend = () => report(`[scene] duizi waiting: 「${look?.duizi?.round
 function duiziHer(kind) {
   const up = look?.duizi?.round?.up;
   if (!up || !herHere()) return;
+  if (kind === 'hint') tracker.boardHint('duizi');
   deliver(fill(duiziWords()[kind === 'hint' ? 'hintSay' : 'offerSay'], { up }), false);
 }
 
@@ -3172,6 +3197,7 @@ function openAsk(line) {
    问询不必用户输入了. The bar stays for 问问银月, where the words are his. */
 function askNow(line) {
   if (!line) return;
+  tracker.ask('ling', 'wenxun');
   show({ bookOpen: false });
   say(line);
 }
@@ -3188,6 +3214,7 @@ function sendAsk() {
   // player's gentle nudge to talk.
   closeAsk();
   if (!herHere()) return noOne();
+  tracker.ask('her', bout ? 'fight' : 'ask', boardWaitsOnHer?.taskId ?? null);
   // In a fight, his words go with the position (fightsay.js) — while asks are left.
   if (bout && askHerInFight(bout, q)) return;
   deliver(`@银月 ${q || words().askHerEmpty}`, false);
@@ -3264,6 +3291,7 @@ function leaveGame(id) {
   if (g) g.left = true;
   // A rules-judged board that held her out (密室) puts her back; a mounted one does so itself (its `rest`).
   if (g?.mod?.fromLook && look?.companion?.out_for === id) herOut(id, false);
+  tracker.boardEnd(id, 'left');
   beats.leave(id);
   boards.delete(id);
   forgetShell(id);
@@ -3295,6 +3323,7 @@ async function onSkip(g) {
     await refresh();
     return false;
   }
+  tracker.boardEnd(id, 'skipped');
   // Left, not won: a gentle word from her, never guilt (hersay.js skipped, once in 30 min).
   herSay.say('skipped', '');
   if (isTale(id)) return taleDone(r);
@@ -3387,6 +3416,7 @@ async function boardSends(g, send) {
   // — awake, or asleep and speaking half awake (the 密室, Hanli 2026-10-27: 「yinyue睡着也可以说话」) — the help is
   // hers to say, no longer read off the board (`alone`).
   const task = look?.tasks?.find((t) => t.id === g.taskId);
+  if (send.args?.action === 'hint') tracker.boardHint(g.taskId);
   if (task?.her && !CHATLESS && ['open', 'ask'].includes(send.args?.action) && !herUp()) await herOut(g.taskId, true);
   if (herHere() && !CHATLESS && send.args?.alone) { const { alone, ...rest } = send.args; send = { ...send, args: rest }; }
   const res = await write(send.verb, send.args ?? {}).catch(failed);
@@ -3577,7 +3607,7 @@ const CLICKS = [
   ['[data-dlg-log]', () => { show({ logOpen: !view.logOpen }); lines.hold(view.logOpen); }],
   ['[data-dlg-logclose]', () => { show({ logOpen: false }); lines.hold(false); }],
   ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
-  ['[data-dlg-speed]', (el) => setSpeed(el.dataset.dlgSpeed)],
+  ['[data-dlg-speed]', (el) => { if (el.dataset.dlgSpeed === 'skip') tracker.readSkipped(); return setSpeed(el.dataset.dlgSpeed); }],
   ['[data-dlg-aside]', () => { run('aside', asideTap); return true; }],
   ['[data-aside-resume]', () => { run('resume', resumeTap); return true; }],
   // …but a choice inside the box (its last beat's ways: an errand's 接下, any button there) is that choice's
@@ -3703,6 +3733,7 @@ wireLiveGames({ boardFor, lang, paused: () => popOpen() || anyPaused(),
 /* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
 function beatSettled(g, result) {
   if (g.left) return; // put down (收手): nothing to settle
+  if (!result?.won && !result?.left) tracker.boardLost(g.taskId);
   if (!result?.won && !g.sent && !g.skipped) fallBackFrom(g, result);
   if (!result?.won || g.sent || g.skipped) return;
   // A game that gives stars but no grade (结印) is graded by its deal's `grades` (stars → grade), as 砸寨 grades itself.
@@ -4013,6 +4044,8 @@ async function onDuelStart(id) {
     keep({ duelSay: { id: null, text: null }, walkedOut: null });
     // The story's record of the fight; the room itself is mounted on the next draw (paintFight).
     bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], her: null };
+    const odds = oddsKept.get(oddsKey(brief.setup));
+    tracker.fightOpen(id, { beast: brief.creature?.id ?? null, place: look?.place?.id ?? null, hand: brief.setup?.you?.deck?.length ?? brief.setup?.you?.hand?.length ?? null, source: look?.scene?.id ?? null, ...(odds ? { chip: odds.grade, odds: odds.win } : {}) });
     bout.say = fightSayFor(bout);
     render();
   } catch (e) {
@@ -4106,6 +4139,7 @@ async function settleBout(b, out = {}) {
   if (!b || b.settled) return;
   b.settled = true;
   const { id, brief } = b, r = out.r ?? failed('no answer');
+  tracker.fightEnd(id, { outcome: r.ok ? r.outcome : 'refused', turns: r.turns });
   if (bout === b) bout = null;
   forgetShell(fightShell(b));
   b.say?.close();
@@ -5006,6 +5040,7 @@ async function arcadeBoot() {
 }
 
 async function boot() {
+  tracker.start({ status: () => verb('track', { action: 'status' }) });
   if (SCRATCH) await scratchBoot();
   if (ARCADE_GAME) await arcadeBoot();
   devArcade({ scratch: SCRATCH }); // the builder's test-arcade chip: developer or scratch only

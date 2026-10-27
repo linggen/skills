@@ -77,8 +77,9 @@ permission:
   warning: >-
     Lingjing keeps your game — realm, bag, the story so far — in this skill's
     own folder, and reads only whether your other Linggen apps marked a task
-    done — and, if you give it a city, the weather there. It writes nothing
-    anywhere else.
+    done — and, if you give it a city, the weather there. It keeps a small
+    play log there too (times and results, never your words; off in
+    Settings). It writes nothing anywhere else.
 tools:
   - name: Look
     description: >-

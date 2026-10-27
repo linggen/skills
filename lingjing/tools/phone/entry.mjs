@@ -7,10 +7,13 @@
 //   Lingjing.look() / tell() / resolve(exit) / task(action, id) / win(id, stars) / init() / playTo(at)
 //   Lingjing.dump() / Lingjing.restore(json) the player's files (the save, its log, parked worlds) — the host keeps them
 //   Lingjing.env(key, value)                 LINGGEN_LANGUAGE, LINGJING_NOW …, as the engine reads them
+//   Lingjing.drainTrack()                    the play log's lines since the last drain (rules/analytics.mjs), as JSON
+//                                            text — the app keeps them in its own folder, never in the dumped save
 //
 // Nothing here is a rule: the rules are rules.mjs and rules/*.mjs, unchanged.
 import { parseArgs } from '../../scripts/rules/files.mjs';
 import { forLing, run } from '../../scripts/rules.mjs';
+import { drainSink } from '../../scripts/rules/analytics.mjs';
 import fs, { dump, restore, seed, stats } from './shims/fs.mjs';
 import { process } from './shims/process.mjs';
 
@@ -33,6 +36,7 @@ const SAVE = /^[a-z0-9][a-z0-9_-]{0,31}$/i;
 
 process.env.LINGJING_DATA = DATA;
 process.env.LINGJING_QUESTS = QUESTS;
+process.env.LINGJING_TRACK_SINK = '1'; // the play log waits for the app (drainTrack), never in /data
 process.env.LINGJING_STAMINA_LIMIT ??= '0'; // as the command line sets it while the game is tested (rules.mjs)
 
 /* `{k: v}` through the command line's own reading (`--k=v`: strings, true / false, empty dropped). */
@@ -69,6 +73,7 @@ const api = {
   task: (action, id, opts) => call('task', { action, id }, opts),
   win: (id, stars, opts) => call('win', { id, ...(stars != null ? { stars } : {}) }, opts),
   playTo: (at, opts) => call('seed', { at }, { save: 'play', ...opts }),
+  drainTrack: () => JSON.stringify(drainSink()),
   stats,
 };
 globalThis.Lingjing = api;
