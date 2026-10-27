@@ -122,7 +122,7 @@ export function choose(snap, ctx) {
   if (snap.title) return { kind: 'title', at: { x: Math.round(snap.taps[0]?.x ?? 400), y: 300 }, why: 'the 回 title card' };
   // The story box's own choices at its last beat, then the stage's scene card: the scene's ways.
   const ways = live.filter((t) => isA(t, 'panel-exit') || isA(t, 'panel-duel') || isA(t, 'look-at'));
-  // A way on held by the 回's stage quest (rules/gates.mjs: 先坐到练气一层圆满) is refused until the layer is full:
+  // A way on held by the 回's stage quest (rules/gates.mjs: 先修炼到练气一层圆满) is refused until the layer is full:
   // never tapped while it holds (10-26: wm-chaifang's 「护住木牌，数着」 was tapped round and round).
   const held = (t) => Boolean(ctx.held?.has(t.data['panel-exit'] ?? t.data['panel-duel']));
   const allExits = ways.filter((t) => !isA(t, 'look-at') && !held(t)), exits = allExits.filter((t) => isA(t, 'panel-exit') || story(t));

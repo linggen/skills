@@ -3769,7 +3769,7 @@ document.addEventListener('lingjing:her', (e) => { const d = e.detail ?? {}; if 
 function stageQuestDone(was, now) {
   const a = was?.stage_quest, b = now?.stage_quest;
   if (!a || !b || a.met || !b.met || a.scene !== b.scene) return;
-  const what = lang() === 'en' ? `Sat to ${b.step}: the stage quest is done, the story goes on.` : `坐到了${b.step}，阶段任务成了，故事往下走。`;
+  const what = lang() === 'en' ? `Cultivated to ${b.step}: the stage quest is done, the story goes on.` : `修炼到了${b.step}，阶段任务成了，故事往下走。`;
   document.dispatchEvent(new CustomEvent('lingjing:her', { detail: { kind: 'quest', what, key: `stage|${b.hui}|${b.scene}` } }));
 }
 /* A settled fight, for her: every win and every loss, weighed (hersay.js weighWin). */

@@ -66,7 +66,7 @@ test('入秋 waits on 九层圆满 — the choice is the beat\'s name, refused w
   assert.deepEqual(exit.label, { zh: '入秋', en: 'Autumn' });
   const short = resolve(his({ progress: 100 }), content, ctx, { exit: 'ruqiu' });
   assert.equal(short.result.refused, 'stage');
-  assert.match(short.result.say, /阶段任务：先坐到练气九层圆满/);
+  assert.match(short.result.say, /阶段任务：先修炼到练气九层圆满/);
   const full = his({ progress: threshold(content, his()) });
   const on = resolve(full, content, ctx, { exit: 'ruqiu' });
   assert.equal(on.result.ok, true, JSON.stringify(on.result).slice(0, 300));

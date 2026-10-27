@@ -67,7 +67,7 @@ test('the 事 book holds it: 阶段任务 · 练气一层圆满, where he stands
   // Away from the scene, the goal line is the stage quest's (下一步), and the work it points at raises 修为.
   assert.equal(l.waypoint.gate.kind, 'stage');
   const html = bookPopHtml({ look: l, lang: 'zh', words: { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' } });
-  assert.match(html, /阶段任务 · 坐到练气一层圆满/);
+  assert.match(html, /阶段任务 · 修炼到练气一层圆满/);
   assert.match(html, /t-stage[^>]*>阶段<[\s\S]*阶段任务 · 练气一层圆满[\s\S]*如今 练气一层 · 40\//);
   const full = look({ ...away, progress: th[1] }, content, ctx);
   assert.equal(full.stage_quest.met, true);

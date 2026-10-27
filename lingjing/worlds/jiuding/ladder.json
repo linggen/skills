@@ -339,8 +339,8 @@
         "en": "Stage quest · {step}"
       },
       "refuse": {
-        "zh": "阶段任务：先坐到{step}。功课、秘境、斗法，都长修为。",
-        "en": "Stage quest: first sit to {step}. Practice, the secret realm and fights all raise cultivation."
+        "zh": "阶段任务：先修炼到{step}。功课、秘境、斗法，都长修为。",
+        "en": "Stage quest: first cultivate to {step}. Practice, the secret realm and fights all raise cultivation."
       }
     },
     "hui": {
