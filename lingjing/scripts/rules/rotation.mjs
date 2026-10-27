@@ -48,10 +48,11 @@ export function gamesToday(content, place, now = new Date()) {
 /* Every board a place may ever host (fixed and pooled): for what lints it and for a sim that wants the whole map. */
 export const gamesEver = place => [...new Set([...(place?.has?.games ?? []), ...(place?.has?.games_pool?.from ?? [])])];
 
-/* Each place of the walkable set whose boards turn, with today's — Look's `boards` (the plate's and 去往's tags). */
+/* Each place of the set whose boards turn, with the day's of its pool — Look's `boards` (the plate's captions; a fixed
+   board, 周衡's 灯谜, is the place's every day and needs no caption). */
 export function boardsToday(content, ids, now) {
   const want = new Set(ids);
-  return allPlaces(content).filter(p => want.has(p.id) && p.has?.games_pool).map(p => ({ id: p.id, games: gamesToday(content, p, now) }));
+  return allPlaces(content).filter(p => want.has(p.id) && p.has?.games_pool).map(p => ({ id: p.id, games: poolToday(p, now) }));
 }
 
 /* ── A wall's errands ── */

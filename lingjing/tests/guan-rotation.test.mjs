@@ -46,7 +46,8 @@ test('the tray and Look show today\'s set: practice boards where he stands, the 
     const practice = l.tasks.filter((t) => t.practice).map((t) => t.id).sort();
     assert.deepEqual(practice, poolToday(placeOf(content, 'cangjing'), now).sort());
     const tag = l.boards.find((b) => b.id === 'cangjing');
-    assert.deepEqual(tag.games.map((g) => g.id), gamesToday(content, placeOf(content, 'cangjing'), now));
+    assert.deepEqual(tag.games.map((g) => g.id), poolToday(placeOf(content, 'cangjing'), now));
+    assert.deepEqual(l.boards.find((b) => b.id === 'zhishi').games.map((g) => g.id), poolToday(placeOf(content, 'zhishi'), now), '周衡\'s 灯谜 is every day\'s: no caption');
     assert.ok(tag.games.every((g) => g.name && !g.name.includes(' · ')), JSON.stringify(tag));
     assert.deepEqual(l.boards.map((b) => b.id).sort(), [...GUAN].sort());
   }
