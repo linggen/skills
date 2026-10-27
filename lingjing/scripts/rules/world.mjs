@@ -403,7 +403,10 @@ function reachedAt(content, state) {
   const now = huiNow(content, state), all = [now, ...(state.done_scenes ?? []).map(id => sceneHui(content, id))].filter(Boolean);
   return all.length ? Math.max(...all.map(h => huiOrder(content, h))) : Infinity;
 }
-const fromReached = (content, state, b) => !b.from || reachedAt(content, state) >= huiOrder(content, b.from);
+const fromReached = (content, state, b) => (!b.from || reachedAt(content, state) >= huiOrder(content, b.from))
+  // `after`: a scene passed first — 古四's 猕猴 · 从从 · 熊 wait for wm-diyilu's 木草泥马, so the 练气一层 player
+  // farming the wm-chaifang gate meets only the beasts his hand was weighed against (2026-10-27, h05g).
+  && (!b.after || (state.done_scenes ?? []).includes(b.after));
 /* An entry up now: its 回 reached, its hour. */
 const entryUp = (content, state, b, now) => fromReached(content, state, b)
   && (!b.when || (b.when === 'night') === nightNow(content, now));

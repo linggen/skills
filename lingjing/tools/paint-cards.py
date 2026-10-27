@@ -75,6 +75,10 @@ SUBJECTS = {
   'liaotian': 'a wall of fire rising to the clouds over a burning ridge',
   'houtu': 'deep dark earth in cross-section, roots and stones layered',
   'canwu': 'an old scholar reading by a window, one crane outside',
+  # ── 钱掌柜's three for the 练气一层 hand (2026-10-27) ──
+  'tieji': 'a handful of four-pointed iron caltrops scattered on a dirt path, one spike always pointing up',
+  'sanhuo': 'a young disciple flicking his sleeve, a spray of small fire sparks scattering in an arc',
+  'caoren': 'a small straw effigy tied with red cord, a yellow paper talisman on its chest, standing on a mountain path',
 }
 
 def paint(card_id, subject, width, height, seed):

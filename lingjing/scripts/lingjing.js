@@ -26,6 +26,7 @@ import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tapHeard } from './board.js';
 import { sounded } from './games/kit/heard.js';
 import { REALMS, begin, missingCards, view as boutView } from './battle.js';
+import { fightOdds, oddsKey } from './fightodds.js';
 import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
 import { since } from './battle-anim.js';
@@ -371,6 +372,24 @@ const view = {
 const keep = (patch) => Object.assign(view, patch);
 function show(patch) { keep(patch); render(); }
 const duelFor = (id) => (view.duelSay.id === id ? view.duelSay : { text: null });
+/* 难度 on a beast's card (fightodds.js): the door's setup played out over a few deals, once a setup, when the
+   page is idle — the card shows it on the next draw; kept by setup, so a Look never waits for it. */
+const oddsKept = new Map();
+let oddsBusy = null;
+function oddsFor(brief) {
+  if (!brief?.setup || brief.today?.outcome) return null;
+  const key = oddsKey(brief.setup);
+  if (oddsKept.has(key)) return oddsKept.get(key);
+  if (oddsBusy !== key) {
+    oddsBusy = key;
+    setTimeout(() => {
+      try { oddsKept.set(key, fightOdds(brief.setup, cardCatalog())); } catch (e) { console.warn('[lingjing] odds', e); oddsKept.set(key, null); }
+      oddsBusy = null;
+      render();
+    }, 300);
+  }
+  return null;
+}
 
 /* When each 所得 first stood on the stage — its animation's clock. */
 const handedAt = new Map();
@@ -392,7 +411,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -3863,12 +3882,33 @@ function herFightOver(b, r) {
   const hp = zh ? `气血剩${v.you.hp}/${v.you.hpMax}` : `${v.you.hp}/${v.you.hpMax} Life left`;
   const what = r.outcome === 'won'
     ? (zh ? `胜了${c.name ?? ''}，${v.turn}回合，${hp}${close ? '，险胜' : ''}${r.first_win ? '，头一回赢它' : ''}。` : `Beat ${c.name ?? ''} in ${v.turn} turns, ${hp}${close ? ', a close one' : ''}${r.first_win ? ', the first win over it' : ''}.`)
-    : (zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合；它还剩气血${v.foe.hp}/${v.foe.hpMax}。` : `Lost to ${c.name ?? ''} after ${v.turn} turns; it had ${v.foe.hp}/${v.foe.hpMax} Life left.`);
-  const out = herSay.fight({ outcome: r.outcome, story: Boolean(c.goal || c.person || c.elite || c.title), strong: strongFoe(b.brief), close, newBeast: Boolean(r.first_win), repeat, what, saidInFight: Boolean(b.say?.st.told.has(r.outcome)) });
+    : (zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合；它还剩气血${v.foe.hp}/${v.foe.hpMax}${r.beat?.guards ? `，叫出${r.beat.guards}个护主` : ''}。` : `Lost to ${c.name ?? ''} after ${v.turn} turns; it had ${v.foe.hp}/${v.foe.hpMax} Life left${r.beat?.guards ? `, ${r.beat.guards} guards called` : ''}.`)
+      + wayFacts(r.way, zh);
+  const out = herSay.fight({ outcome: r.outcome, way: r.outcome === 'won' ? null : r.way?.[0]?.kind ?? null, story: Boolean(c.goal || c.person || c.elite || c.title), strong: strongFoe(b.brief), close, newBeast: Boolean(r.first_win), repeat, what, saidInFight: Boolean(b.say?.st.told.has(r.outcome)) });
   // A 稀有 arm out of the fight: a rare find (hersay.js rare).
   const rare = (r.dropped ?? []).find((d) => d.rarity === 'rare');
   if (r.outcome === 'won' && rare) herSay.say('rare', zh ? `${c.name ?? ''}掉了一件稀有的${rare.name ?? ''}。` : `${c.name ?? ''} dropped a rare ${rare.name ?? ''}.`, { key: `drop|${b.id}|${Date.now()}` });
   return out;
+}
+
+/* The ways forward after a loss (rules/strengthen.mjs), as facts for her: the best, and one more. */
+function wayFacts(way, zh) {
+  const fact = (o) => {
+    if (!o) return '';
+    const at = o.place_name ? (zh ? `去${String(o.place_name).split(' · ').at(-1)}（${o.steps}步）` : `at ${o.place_name} (${o.steps} steps)`) : '';
+    const say = {
+      wear: zh ? `戴上储物袋里的${o.name}（不花钱）` : `put on the ${o.name} already in the pouch (free)`,
+      buy: zh ? `${at}买一张牌「${o.name}」（${o.price}灵石）` : `buy the card ${o.name} ${at} (${o.price} stones)`,
+      pills: zh ? `${at}买${o.n}颗${o.name}带进丹囊（${o.price}灵石）` : `buy ${o.n} ${o.name} ${at} for the pill pouch (${o.price} stones)`,
+      another: zh ? '再打一场，这里会换一只' : 'fight again — the place deals another beast',
+      seclude: zh ? `闭关，至多${o.hours}个时辰得${o.progress}修为` : `seclusion: up to ${o.progress} cultivation in ${o.hours} hours`,
+      gongke: zh ? `做今日功课，得${o.progress}修为` : `today's practice, ${o.progress} cultivation`,
+    }[o.kind];
+    return say ?? '';
+  };
+  const [a, b] = way ?? [];
+  if (!a) return '';
+  return zh ? `最好的一步：${fact(a)}${b ? `；也可以：${fact(b)}` : ''}。` : ` Best next step: ${fact(a)}${b ? `; or: ${fact(b)}` : ''}.`;
 }
 
 /* ── 降妖: the page plays the fight, the rules decide it ── */
@@ -3947,7 +3987,8 @@ function boutHooks(b) {
     settle: () => writeBout(b),
     // The closing card (won · lost · withdrew, battle-card.js endHtml) stands long enough to be read —
     // longer with the beast's last word in it — or until 收起. Never a gate: the report goes by itself.
-    holdMs: (end) => (end ? SEAL_SAID_MS : SEAL_HOLD_MS),
+    // A loss with a way forward (rules/strengthen.mjs) stands until he takes it or puts it away.
+    holdMs: (end, r) => (r?.way?.length && r.outcome !== 'won' ? WAY_HOLD_MS : end ? SEAL_SAID_MS : SEAL_HOLD_MS),
   };
 }
 function mountBout(b) {
@@ -3975,7 +4016,7 @@ function paintFight(b) {
 /* The rules settle it, and the scene reports it — the scene is still the only
    witness to a fight (design.md § 降妖). The whole list of moves goes to the rules, which replay them and
    settle — win, loss, or the beast walking away; the room's closing card waits for this answer. */
-const SEAL_HOLD_MS = 3000, SEAL_SAID_MS = 4200;
+const SEAL_HOLD_MS = 3000, SEAL_SAID_MS = 4200, WAY_HOLD_MS = 20000;
 async function writeBout(b) {
   const r = await write('duel', { id: b.id, picks: b.actions.join(',') }).catch(failed);
   return r ?? failed('no answer');
@@ -4024,6 +4065,22 @@ async function settleBout(b, out = {}) {
   await refresh();
   // The rules' Look is in and any passage owed is drawn (watchTell): 所得 may stand, after it.
   if (view.spoils?.pending) show({ spoils: { ...view.spoils, pending: false } });
+  // The loss card's way forward, tapped (battle-card.js endHtml): taken now, by the page's own verb.
+  if (out.go && r.outcome !== 'won') await takeWay(out.go);
+}
+
+/* A way to grow stronger (rules/strengthen.mjs), taken from the loss card: put on, walk to the shelf,
+   fight the pool's next beast, 闭关, the day's 功课 — each the page's own verb, no model turn. */
+const WAYS_TAKEN = {
+  wear: (o) => useItem(o.item),
+  buy: (o) => goTo(o.place),
+  pills: (o) => goTo(o.place),
+  another: () => { const id = look?.place?.encounter?.game?.id; return id ? onDuelStart(id) : null; },
+  seclude: () => openSeclude(),
+  gongke: () => show({ bookOpen: true, ...othersShut('bookOpen') }),
+};
+async function takeWay(o) {
+  await WAYS_TAKEN[o?.kind]?.(o);
 }
 
 /* ── The chat ── */

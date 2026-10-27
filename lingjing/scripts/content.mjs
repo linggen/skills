@@ -821,6 +821,7 @@ function lintPlaces(content, ids, bad) {
         if (b.deck != null && !(Array.isArray(b.deck) && b.deck.length === 12 && b.deck.every(c => known.has(c)))) bad(`pool ${id}`, `${b.creature}: deck is twelve known cards`);
         // creatures.json `_hunt`: an entry waits for a 回 of the book, and keeps to night or day.
         if (b.from != null && !huiOf(content, b.from)) bad(`pool ${id}`, `${b.creature}: from names no 回 of the book (${b.from})`);
+        if (b.after != null && !scenes.has(b.after)) bad(`pool ${id}`, `${b.creature}: after names no scene (${b.after})`);
         if (b.when != null && !['night', 'day'].includes(b.when)) bad(`pool ${id}`, `${b.creature}: when is night or day, not ${b.when}`);
       }
       if (pool.memory != null && !(Number.isInteger(pool.memory) && pool.memory >= 0)) bad(`pool ${id}`, 'memory is a whole number from 0');

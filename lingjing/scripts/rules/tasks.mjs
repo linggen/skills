@@ -20,6 +20,7 @@ import { sideLine } from './hui.mjs';
 import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, sceneOf } from './world.mjs';
 import { runBoardHere, runFindDone, runSpoils } from './rerun.mjs';
+import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
 import { qiyuDone, qiyuHere } from './qiyu.mjs';
 import { isTide, shouchaoDone, shouchaoHere, shouchaoShut } from './shouchao.mjs';
@@ -397,7 +398,19 @@ export function duel(state, content, ctx, args) {
   const t = content.rewards.tables.haunt;
   const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth }) : null;
   const full = storedLine(s, dropped);
-  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  // Not won: what beat him, and the ways to grow stronger now (rules/strengthen.mjs) — facts for 银月's
+  // word and the result card's one button (Hanli 2026-10-27: a loss never strands him).
+  const way = won ? null : lossWay(content, s, ctx, game, setup, played);
+  return { state: s, result: { ok: true, ...(way ? way : {}), outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+}
+
+/* A fight not won: `beat` — the beast's 护主 (bodies it stood up), its 气血 left, the turns he lasted —
+   and `way`, strengthen()'s options, best first. */
+function lossWay(content, s, ctx, game, setup, played) {
+  const catalog = cardCatalog(content);
+  const guards = played.log.filter(e => e.who === 'foe' && (e.act === 'summoned' || (e.act === 'played' && catalog[e.id]?.kind === 'minion'))).length;
+  const beat = { guards, foe_hp: played.foe.hp, foe_hp_max: played.foe.hpMax, you_hp_max: played.you.hpMax, turns: played.turn, deck: setup.you.deck.length };
+  return { beat, way: strengthen(content, s, { now: ctx.now, beat, game }) };
 }
 
 /* The cards he played in this fight lose their 新. */

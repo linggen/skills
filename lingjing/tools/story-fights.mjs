@@ -18,7 +18,8 @@
 //   h04r 练气零层 · the 三试 (a 试 of nerve, survive 4): 娘的饼 (00-kitchen), 一箭 (射鹿), 吐纳 (吹鹅毛),
 //        each twice (under ten, two copies), and the 试's own 一滚 · 石子.
 //   h04  the same, rooted (00-hall), the 灰袍 (grey-robe) — the 蒙山 and 林子 pools.
-//   h05  练气一层 · + 木草泥马 (wm-diyilu), 狰 tamed with a 萝卜 (wm-yaoyuan) — the 后山崖顶's first beasts.
+//   h05g 练气一层 · 狰 tamed (wm-yaoyuan), no 木草泥马 yet, 灰袍 · 爷爷的弓 worn — the wm-chaifang gate's farm: the 后山崖顶's first beasts.
+//   h05  练气一层 · + 木草泥马 (wm-diyilu) — 猕猴 · 从从 · 熊 join the 后山 (their pool entries' `after`).
 //   h07  练气二层 · the 秘境: the 凶崖's 犰狳 on the stair down, 蛫 (wm-wangzuo).
 //   h07z 练气三层 · + the 踏马符 in the bag — 邹青松 (wm-xirang, 阿禾 behind the wall), the 暗河.
 //   h08  练气四层 · + 回气丹 (wm-xirang), 火鸦 (邹青松's gourd), 褚先生's five (wm-qianye), 痒痒针
@@ -36,7 +37,7 @@ import { fightSetup } from '../scripts/rules.mjs';
 import { creatureOf, foeOf as sceneFoe } from '../scripts/rules/world.mjs';
 import { act, begin, foeTurn } from '../scripts/battle.js';
 import { fightOnce, lookahead } from './trial-sim.mjs';
-import { EARLY, H05, H08, H10B, H11 } from './road-hand.mjs';
+import { EARLY, H05, H05G, H08, H10B, H11 } from './road-hand.mjs';
 
 export const content = loadContent();
 export const NOW = new Date('2026-09-29T11:00:00Z');
@@ -49,6 +50,9 @@ const STOPS = {
   h01: { tier: 'qi', step: 0, rootless: true, cards: ['niangbing'], at: ['00-prologue', '00-fox'] },
   h04r: { tier: 'qi', step: 0, rootless: true, cards: EARLY, at: ['00-prologue', '00-longzhi'] },
   h04: { tier: 'qi', step: 0, cards: EARLY, wear: { robe: 'grey-robe' }, at: ['00-prologue', '00-waimen'] },
+  // The wm-chaifang gate (ladder.json gates: 练气一层圆满 before the story goes on, 2026-10-27): 修为 is farmed on
+  // the 后山 with the hand before wm-diyilu — no 木草泥马 yet — the 灰袍 and 爷爷的弓 (00-notice) worn.
+  h05g: { tier: 'qi', step: 1, cards: H05G, cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'old-bow' }, at: ['00-waimen', 'wm-chaifang'] },
   h05: { tier: 'qi', step: 1, cards: H05, cast: ['zheng'], wear: { robe: 'grey-robe' }, at: ['00-waimen', 'wm-diyilu'] },
   h07: { tier: 'qi', step: 2, cards: H05, cast: ['zheng'], wear: { robe: 'grey-robe' }, at: ['00-waimen', 'wm-wangzuo'] },
   h07z: { tier: 'qi', step: 3, cards: H05, cast: ['zheng'], wear: { robe: 'grey-robe' }, bag: { 'tama-fu': 1 }, at: ['00-waimen', 'wm-xirang'] },
@@ -98,21 +102,21 @@ export const FIGHTS = [
   { id: 'xiong', name: '熊 (蒙山)', at: 'h05', pool: 'mengshan' },
   { id: 'longzhi', name: '蠪侄 (林子 pool)', at: 'h05', pool: 'songlin' },
   { id: 'zheng', name: '狰 (药园外 pool)', at: 'h05', pool: 'yaoyuan-wai' },
-  { id: 'yezhu', name: '野猪 (后山崖顶 pool)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'yezhu', name: '野猪 (后山崖顶 pool)', at: 'h05g', pool: 'yaoyuan-wai' },
   { id: 'lang', name: '狼 (林子 pool)', at: 'h05', pool: 'songlin' },
   { id: 'gui', name: '蛫 (泗水 pool)', at: 'h10', pool: 'sishui' },
   { id: 'tianma', name: '天马 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'linghu', name: '领胡 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'renyu', name: '人鱼 (柳湾)', at: 'h10', pool: 'liuwan' },
   // 后山崖顶's beasts by the 回 their entry opens (2026-10-15, 不打重复的怪 — places/xu.json `from`).
-  { id: 'chihu', name: '赤狐 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
-  { id: 'shanli', name: '山狸 (后山崖顶 · 夜)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'chihu', name: '赤狐 (后山崖顶)', at: 'h05g', pool: 'yaoyuan-wai' },
+  { id: 'shanli', name: '山狸 (后山崖顶 · 夜)', at: 'h05g', pool: 'yaoyuan-wai' },
   { id: 'mihou', name: '猕猴 (后山崖顶 · 昼)', at: 'h05', pool: 'yaoyuan-wai' },
-  { id: 'fushe', name: '蝮蛇 (后山崖顶 · 昼)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'fushe', name: '蝮蛇 (后山崖顶 · 昼)', at: 'h05g', pool: 'yaoyuan-wai' },
   { id: 'congcong', name: '从从 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
-  { id: 'xiegou', name: '絜钩 (后山崖顶 · 夜)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'xiegou', name: '絜钩 (后山崖顶 · 夜)', at: 'h05g', pool: 'yaoyuan-wai' },
   // 古四's pass (2026-10-21): 蒙山's 狼 and 熊 on the 后山 too — the 狰 tamed at the 药园 leaves the pool, so 古四 still meets nine.
-  { id: 'lang', name: '狼 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
+  { id: 'lang', name: '狼 (后山崖顶)', at: 'h05g', pool: 'yaoyuan-wai' },
   { id: 'xiong', name: '熊 (后山崖顶)', at: 'h05', pool: 'yaoyuan-wai' },
   { id: 'lingling', name: '軨軨 (后山崖顶, 古五)', at: 'h07', pool: 'yaoyuan-wai' },
   { id: 'cangying', name: '苍鹰 (后山崖顶 · 昼, 古六)', at: 'h08', pool: 'yaoyuan-wai' },

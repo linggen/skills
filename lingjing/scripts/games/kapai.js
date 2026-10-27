@@ -101,7 +101,7 @@ function ctxOf(room) {
     party: setup.you?.party ?? [], fresh: setup.you?.fresh ?? [],
     pillNames: Object.fromEntries(Object.entries(pills).map(([id, p]) => [id, name(p.name)])),
     pillArt: Object.fromEntries(Object.entries(pills).filter(([, p]) => p.art).map(([id, p]) => [id, p.art])),
-    ended: Boolean(room.ended), stake: brief.stake ?? null,
+    ended: Boolean(room.ended), stake: brief.stake ?? null, way: room.result?.way?.[0] ?? null,
     says: { ...(boutSays(brief.says, room.st.outcome) ?? {}), foe: null, her: null }, herAsk: null,
   };
 }
@@ -172,16 +172,17 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       clearTimeout(idleTimer);
       // The story's rules answer first; the closing card waits for their word, not for the last blow.
       const r = story.settle ? await Promise.resolve().then(() => story.settle(room.st)).catch((e) => ({ ok: false, error: String(e?.message ?? e) })) : null;
+      room.result = r;
       const out = { ...resultOf(room.st), ...(fight.next ? { next: fight.next } : {}), ...(r ? { r } : {}) };
       if (done) return;
       if (r && r.ok === false) return finish(out);
       room.ended = true;
       draw();
       const end = boutSays(fight.brief.says, room.st.outcome)?.end;
-      const hold = hook('holdMs', end) ?? SEAL_MS;
+      const hold = hook('holdMs', end, r) ?? SEAL_MS;
       if (end) shell?.say?.(fight.brief.creature.name, end, hold);
       await new Promise((go) => { release = go; setTimeout(go, hold); });
-      finish(out);
+      finish(room.go ? { ...out, go: room.go } : out);
     }
 
     async function doMove(out) {
@@ -246,6 +247,8 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
 
     function onTap(spot) {
       if (spot.kind === 'close') return release?.();
+      // The loss card's way forward (battle-card.js endHtml): the story takes it once the room is closed.
+      if (spot.kind === 'way') { room.go = room.result?.way?.[0] ?? null; return release?.(); }
       if (room.ended) return;
       if (spot.kind === 'help' || spot.kind === 'help-bg') { room.help = !room.help; return draw(); }
       if (spot.kind === 'more') { room.openLog = !room.openLog; return draw(); }

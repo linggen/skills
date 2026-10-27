@@ -893,6 +893,18 @@ export function endOf(st) {
 /* A beast beaten goes its own way — one of twenty lines, by the fight's seed (Hanli, 2026-10-15:
    「战胜后的“它退入雾中”能换一换吗?」 → 「从这20个里每次挑一个」), so a redraw keeps the same one. */
 const wonLine = (st, lines) => lines[hashOf(`won|${st.seed ?? ''}|${st.turn ?? 0}`) % lines.length];
+/* The loss card's one way forward (rules/strengthen.mjs, its first option): a button of what and where,
+   next to 收起 — the page's label of the rules' fact; 银月 says it in her own words (hersay.js lost). */
+const WAYS = {
+  zh: { wear: '戴上 · {name}', buy: '去{place} · 买{name}', pills: '去{place} · 买{name}', another: '再来一场 · 换一只', seclude: '去闭关', gongke: '做今日功课' },
+  en: { wear: 'Put on · {name}', buy: 'To {place} · buy {name}', pills: 'To {place} · buy {name}', another: 'Again · another beast', seclude: 'Go into seclusion', gongke: "Today's practice" },
+};
+export function wayLabel(o, lang = 'zh') {
+  const t = (WAYS[lang === 'en' ? 'en' : 'zh'])[o?.kind];
+  if (!t) return null;
+  const place = String(o.place_name ?? '').split(' · ').at(-1);
+  return t.replace('{name}', o.name ?? '').replace('{place}', place);
+}
 function endHtml(st, ctx) {
   const w = ctx.words, e = ENDS[ctx.lang === 'en' ? 'en' : 'zh'], end = endOf(st);
   const said = end === 'won' && w.wonSays?.length ? wonLine(st, w.wonSays) : w[`${end}Say`] ?? '';
@@ -904,6 +916,6 @@ function endHtml(st, ctx) {
       <div class="closetitle">${esc(title)}</div>
       ${said ? `<p class="closedid">${esc(said)}</p>` : ''}
       ${bubble}
-      <div class="acts"><button class="act closeshut" data-spot="close">${esc(e.close)}</button></div>
+      <div class="acts">${ctx.way && st.outcome !== 'won' && wayLabel(ctx.way, ctx.lang) ? `<button class="act closeway" data-spot="way">${esc(wayLabel(ctx.way, ctx.lang))}</button>` : ''}<button class="act closeshut" data-spot="close">${esc(e.close)}</button></div>
     </div></div>`;
 }

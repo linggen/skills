@@ -428,6 +428,12 @@ body.fighting .sight { display: none; }
 .closecard .closeshut { min-width: 200px; padding: 11px 26px; border-radius: 10px; border: 1px solid rgba(227, 192, 126, .7); background: var(--surface); color: var(--text);
   font-family: var(--serif); font-size: 16px; letter-spacing: .3em; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
 .closecard .closeshut:hover { border-color: var(--ling); transform: translateY(-1px); }
+/* A loss's way forward (rules/strengthen.mjs, battle-card.js endHtml): the one step, in cinnabar ink, before 收起. */
+.closecard .acts:has(.closeway) { gap: 10px; flex-wrap: wrap; }
+.closecard .closeway { min-width: 200px; padding: 11px 22px; border-radius: 10px; border: 1px solid var(--seal); background: var(--seal-soft); color: var(--seal);
+  font-family: var(--serif); font-size: 16px; letter-spacing: .12em; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
+.closecard .closeway:hover { transform: translateY(-1px); }
+.closecard:has(.closeway) .closeshut { min-width: 120px; }
 @container scene (max-width: 640px) { .focus .card.closecard { padding: 26px 18px 22px; } }
 /* The next 回's line on one line at a phone's width (2026-10-16, 390: 「…抵旧」 / 「债」): narrower spacing, a size the stage's width sets. */
 @container scene (max-width: 640px) { .focus .card.closecard .closecoming { white-space: nowrap; max-width: 100%; padding: 3px 10px; letter-spacing: .04em; font-size: min(13px, 3.1cqi); } }

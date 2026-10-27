@@ -5,6 +5,7 @@
 import { boardHtml } from './board.js';
 import { worldPath } from './rules.js';
 import { WORDS as BATTLE_WORDS, boutWords, challengeHtml } from './battle-card.js';
+import { GRADE_WORDS } from './fightodds.js';
 import { SKIP } from './games/ink.js';
 import { stampShown, stuckNow } from './stuck.js';
 import { layoutRoads } from './roadmap.js';
@@ -670,6 +671,14 @@ function huntBadge(e, lang) {
   return fresh + tally;
 }
 
+/// 难度 against his power (fightodds.js, the page's): 易 · 相当 · 稍难 · 难, with the share won in its title.
+function oddsChip(o, lang) {
+  if (!o) return '';
+  const word = (GRADE_WORDS[lang] ?? GRADE_WORDS.zh)[o.grade];
+  const title = lang === 'en' ? `A careful player wins about ${Math.round(o.win * 100)}% with your hand` : `照你现在的牌，细心打约胜${Math.round(o.win * 100)}%`;
+  return ` <span class="chip codds ${esc(o.grade)}" title="${esc(title)}">${esc(word)}</span>`;
+}
+
 /// 降妖 on the scene: the exit's duel from Look, the bout from the page.
 function duel(card, ctx) {
   const e = ctx.look.place?.encounter;
@@ -678,7 +687,7 @@ function duel(card, ctx) {
   if (!exit) return '';
   // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
   // creature's own card offers 收服 (creature, below).
-  const html = challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, badge: exit === e ? huntBadge(e, ctx.lang) : '' });
+  const html = challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, badge: exit === e ? huntBadge(e, ctx.lang) + oddsChip(ctx.oddsFor?.(exit.duel), ctx.lang) : '' });
   // Inside a key beat's lock, lost often enough (Look's `stuck`, rules/skips.mjs fightStuck): 「算了，往下走」
   // under the card — the way on, no reward, as a riddle passed (core.mjs resolve `pass`).
   // Laid as a board's own skip is (skipButton, the .gskip row), so the two read alike.

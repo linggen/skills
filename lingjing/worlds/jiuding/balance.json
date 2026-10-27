@@ -307,7 +307,7 @@
     "lipi-kanjian": {"buy": 36, "sell": 12},
     "chaiya-zhui": {"buy": 90, "sell": 30},
     "wulei-fu": {"buy": 60},
-    "feijian-duan": {"buy": 60, "sell": 0},
+    "feijian-duan": {"buy": 60, "sell": 0}, "tieji-bao": {"buy": 40, "sell": 0}, "sanhuo-jian": {"buy": 50, "sell": 0}, "caoren-zha": {"buy": 60, "sell": 0},
     "canwu-jian": {"buy": 80, "sell": 0},
     "chenlian-fu": {"buy": 0, "sell": 0},
     "anshen-xiang": {"buy": 0, "sell": 0},

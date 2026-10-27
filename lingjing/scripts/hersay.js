@@ -88,7 +88,9 @@ const LENGTH = {
 /* What each moment asks of her, after its facts. */
 const ASKS = {
   won: { zh: '玩家赢了一仗。', en: 'They won a fight.' },
-  lost: { zh: '玩家输了这一仗。', en: 'They lost this fight.' },
+  // Hanli 2026-10-27: 「玩家失败了, yinyue应该给一些情感安慰, 比如 "可惜了凡人, 你还不够强大, 先去xxxx提升一下吧"」 —
+  // comfort first (tease him, 凡人), then the one step the facts name (rules/strengthen.mjs); twenty characters or so.
+  lost: { zh: '玩家输了这一仗。先安慰或逗他一句（叫他凡人），再点出上面那一步该去哪做什么。合起来二十字左右，不说教。', en: 'They lost. One beat of comfort or teasing ("mortal"), then the one step above — where, what. About fifteen words, no lecture.' },
   rise: { zh: '玩家刚突破，舞台上金光正亮。', en: 'They just broke through; gold on the stage.' },
   hui: { zh: '一回走完了。', en: 'A chapter is done.' },
   tamed: { zh: '玩家收服了灵兽，从此随行。', en: 'They won over a beast; it follows now.' },
@@ -126,6 +128,13 @@ export const POOLS = {
       won_react: ['哼。', '嗯。', '……还行。'],
       lost: ['输给这种东西？起来，本王还没说你可以趴下。', '记住它怎么出手的。下回，本王要看它趴下。', '哭丧着脸给谁看？……没伤着吧。起来。'],
       lost_short: ['又输？……起来。', '再来。本王看着。'],
+      // A loss with its way forward (rules/strengthen.mjs, `lost_<kind>`): comfort, then the step — the button names where.
+      lost_wear: ['可惜了，凡人。囊里的家伙先穿戴上，再来。', '哼，空着手也敢去？把囊里的穿上。'],
+      lost_buy: ['可惜了，凡人。你还不够强——先去添张牌。', '别丧气。牌太薄，去铺子买一张再来。'],
+      lost_pills: ['可惜了，凡人。揣两颗回春丹再来。', '撑不住就吞丹。先去买两颗回春丹。'],
+      lost_another: ['可惜了。这只不好惹，换一只再来。', '凡人，别跟它较劲。换一只打。'],
+      lost_seclude: ['可惜了，凡人。先闭关攒攒修为。', '打不过就坐下修。闭关去。'],
+      lost_gongke: ['可惜了。先把今日的功课做了。', '凡人，歇口气。功课做了再说。'],
       rise: ['这一步，本王等你很久了。……别得意，路还长。', '总算像个修士了。本王的人，就该往上走。', '哼，比本王当年慢了些。……不过，走得稳。'],
       hui: ['这一回，算你没白走。', '一回完了。本王陪你走的路，可不止这些。'],
       tamed: ['又收了一个。本王的队伍，总算有点样子。', '它肯跟你？……眼光倒不差。'],
@@ -145,6 +154,12 @@ export const POOLS = {
       won_react: ['Hmph.', 'Mm.', '…Passable.'],
       lost: ['Lose to that? Up. This king has not said you may lie down.', 'Remember how it moved. Next time, this king wants it on the ground.', 'Who is the long face for? …Not hurt, are you. Up.'],
       lost_short: ['Again? …Up.', 'Once more. This king is watching.'],
+      lost_wear: ['A pity, mortal. Put on what is in your pouch first.', 'Bare-handed? Wear what you carry, then again.'],
+      lost_buy: ['A pity, mortal. Not strong enough — go buy a card.', 'Chin up. Your hand is thin; buy one more.'],
+      lost_pills: ['A pity, mortal. Carry two mending pills next time.', 'Swallow a pill when it hurts. Go buy two.'],
+      lost_another: ['A pity. That one is mean — try another.', 'Mortal, do not fight it head-on. Another one.'],
+      lost_seclude: ['A pity, mortal. Go sit in seclusion first.', 'Cannot win? Sit and cultivate. Seclusion.'],
+      lost_gongke: ["A pity. Do today's practice first.", "Mortal, breathe. Practice first."],
       rise: ['This king has waited long for that step. …Do not gloat — the road is long.', 'At last you look like a cultivator. Mine should climb.', 'Slower than this king was. …But steady.'],
       hui: ['This chapter was not walked for nothing.', 'One more done. The road this king walks with you is longer than that.'],
       tamed: ['Another one. This king’s train starts to look like something.', 'It follows you? …Its eye is not bad.'],
@@ -167,6 +182,12 @@ export const POOLS = {
       won_react: ['……嗯。', '……哼。'],
       lost: ['……别哭丧着脸。再来。', '……趴着干什么，起来。本王还在。', '……输了？……下回赢回来。'],
       lost_short: ['……又输。起来。', '……再来。'],
+      lost_wear: ['……可惜了，凡人。囊里的……穿戴上。', '……空着手？……穿上再去。'],
+      lost_buy: ['……可惜了，凡人。……去添张牌。', '……牌太薄。……买一张再来。'],
+      lost_pills: ['……可惜。……揣两颗回春丹。', '……疼就吞丹。……去买。'],
+      lost_another: ['……可惜。……换一只打。', '……那只凶。……换一只。'],
+      lost_seclude: ['……可惜。……闭关去。', '……坐下修吧。'],
+      lost_gongke: ['……可惜。……先做功课。', '……功课……做了再说。'],
       rise: ['……破境了？……哼，总算。', '……这一步，本王听见了。……别吵，路还长。'],
       hui: ['……一回完了？……嗯。', '……走完了就好。本王再睡会儿。'],
       tamed: ['……又捡了一只？……随你。', '……它肯跟你？……哼，眼光不差。'],
@@ -186,6 +207,12 @@ export const POOLS = {
       won_react: ['…Mm.', '…Hmph.'],
       lost: ['…Drop the long face. Again.', '…Why lie there. Up. This king is still here.', '…Lost? …Win it back.'],
       lost_short: ['…Again. Up.', '…Once more.'],
+      lost_wear: ['…A pity, mortal. …Wear what you carry.', '…Bare-handed? …Put it on.'],
+      lost_buy: ['…A pity, mortal. …Buy a card.', '…Thin hand. …Buy one more.'],
+      lost_pills: ['…A pity. …Two mending pills.', '…It hurts? …Buy pills.'],
+      lost_another: ['…A pity. …Another one.', '…That one bites. …Another.'],
+      lost_seclude: ['…A pity. …Seclusion.', '…Sit and cultivate.'],
+      lost_gongke: ['…A pity. …Practice first.', '…Practice, then fight.'],
       rise: ['…Broke through? …Hmph. At last.', '…This king heard that step. …Quiet. The road is long.'],
       hui: ['…A chapter done? …Mm.', '…Done is good. This king sleeps a little more.'],
       tamed: ['…Picked up another? …As you like.', '…It follows you? …Hmph. Not a bad eye.'],
@@ -203,9 +230,11 @@ export const POOLS = {
 };
 
 /* The pool for a moment, a weight and her mode, in turn. */
-export function poolOf(kind, { mode = 'awake', lang = 'zh', weight = 'full' } = {}) {
+export function poolOf(kind, { mode = 'awake', lang = 'zh', weight = 'full', variant = null } = {}) {
   const p = POOLS[mode === 'asleep' ? 'asleep' : 'awake'][lang === 'en' ? 'en' : 'zh'];
-  return (weight !== 'full' && p[`${kind}_${weight}`]) || (weight === 'react' && p[`${kind}_short`]) || p[kind] || p.won;
+  // A variant (a loss's way forward, `lost_wear`…) stands over the moment's own pool — a full word only:
+  // a second loss inside ten minutes keeps its short one, and the button names the step.
+  return (variant && weight === 'full' && p[`${kind}_${variant}`]) || (weight !== 'full' && p[`${kind}_${weight}`]) || (weight === 'react' && p[`${kind}_short`]) || p[kind] || p.won;
 }
 
 /* Her line as it came: one or two lines, trimmed for the bubble. */
@@ -277,10 +306,10 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
     if (mem.day !== today()) mem = { ...mem, day: today(), fights: 0, wins: 0, onceDay: {} };
     return mem;
   };
-  let cur = { mode: 'awake', weight: 'full' };
+  let cur = { mode: 'awake', weight: 'full', variant: null };
   const fallbackOf = (kind) => {
-    const pool = poolOf(kind, { mode: cur.mode, lang: lang(), weight: cur.weight });
-    const key = `${cur.mode}|${kind}|${cur.weight}`, n = st.used[key] ?? 0;
+    const pool = poolOf(kind, { mode: cur.mode, lang: lang(), weight: cur.weight, variant: cur.variant });
+    const key = `${cur.mode}|${kind}|${cur.weight}|${cur.variant ?? ''}`, n = st.used[key] ?? 0;
     st.used[key] = n + 1;
     return pool[n % pool.length];
   };
@@ -303,12 +332,12 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
     return true;
   }
   /* A moment, said now: the pool alone for a reaction (no model, no chat). */
-  function say(kind, what, { weight = 'full', key = null } = {}) {
+  function say(kind, what, { weight = 'full', key = null, variant = null } = {}) {
     const m = mode();
     if (m === 'absent' || !MOMENTS[kind]) return null;
     if (!allowed(kind, key)) { save(); return null; }
     save();
-    cur = { mode: m, weight };
+    cur = { mode: m, weight, variant };
     if (weight === 'react') {
       const id = ++st.seq;
       st.pending = false;
@@ -344,7 +373,7 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
         const again = t - (mem.lastLoss ?? -Infinity) < MOMENTS.lost.repeatMs;
         mem.lastLoss = t;
         save();
-        return { weight: again ? 'short' : 'full', id: f.saidInFight ? null : say('lost', f.what, { weight: again ? 'short' : 'full' }) };
+        return { weight: again ? 'short' : 'full', id: f.saidInFight ? null : say('lost', f.what, { weight: again ? 'short' : 'full', variant: f.way ?? null }) };
       }
       return null;
     },

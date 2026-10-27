@@ -2776,6 +2776,69 @@
       }
     },
     {
+      "id": "tieji-bao",
+      "kind": "treasure",
+      "name": {
+        "zh": "铁蒺藜",
+        "en": "Caltrops"
+      },
+      "art": "art/cards/tieji.webp",
+      "about": {
+        "zh": "一包四角的铁刺，撒在地上，哪一头都朝上。妖兽踩着了，先停一停。",
+        "en": "A pouch of four-pointed iron spikes; however they land, one points up. A beast that treads on one stops a beat."
+      },
+      "hint": {
+        "zh": "一张牌：铁蒺藜。",
+        "en": "A card: Caltrops."
+      },
+      "sold": [],
+      "effect": {
+        "card": "tieji"
+      }
+    },
+    {
+      "id": "sanhuo-jian",
+      "kind": "scroll",
+      "name": {
+        "zh": "散火诀玉简",
+        "en": "Jade slip: Scatter Fire"
+      },
+      "art": "art/cards/sanhuo.webp",
+      "about": {
+        "zh": "外门的粗浅火诀，贴在额上便会：一口火气撒出去，散成一片火星子。",
+        "en": "The outer gate's crude fire art; pressed to the brow, it is learned: one breath of fire, scattered into sparks."
+      },
+      "hint": {
+        "zh": "一张牌：散火诀。",
+        "en": "A card: Scatter Fire."
+      },
+      "sold": [],
+      "effect": {
+        "card": "sanhuo"
+      }
+    },
+    {
+      "id": "caoren-zha",
+      "kind": "treasure",
+      "name": {
+        "zh": "替身草人",
+        "en": "Straw stand-in"
+      },
+      "art": "art/cards/caoren.webp",
+      "about": {
+        "zh": "稻草扎的小人，胸口贴一道黄符。斗法时立在你身前，替你挨打。",
+        "en": "A little man of straw, a yellow charm on its chest. In a fight it stands before you and takes the blows."
+      },
+      "hint": {
+        "zh": "一张牌：替身草人。",
+        "en": "A card: Straw Stand-in."
+      },
+      "sold": [],
+      "effect": {
+        "card": "caoren"
+      }
+    },
+    {
       "id": "canwu-jian",
       "kind": "scroll",
       "name": {

@@ -54,6 +54,7 @@ export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
+export { shopsInReach, strengthen } from './rules/strengthen.mjs';
 import { fitPresence } from './rules/companion.mjs';
 import { pageHerGame } from './rules/hergame.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';

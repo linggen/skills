@@ -3,6 +3,7 @@
 // none at the root test). One list for the fight bands (tools/story-fights.mjs) and the trial
 // sims (tools/trial-sim.mjs roadHand), so the two never weigh different hands.
 export const EARLY = ['niangbing', 'yijian', 'tuna']; //               00-kitchen · 射鹿 · 吹鹅毛
+export const H05G = [...EARLY, 'zheng']; //                               the wm-chaifang gate (练气一层圆满), before wm-diyilu's 木草泥马
 export const H05 = [...EARLY, 'mucao', 'zheng']; //                        木草泥马 (wm-diyilu) · 狰 tamed with a 萝卜
 export const H08 = [...H05, 'huiqi', 'huoya', 'huodan', 'bingzhui', 'jinren', 'tuqiang', 'mutang', 'yangzhen']; // 秘境 · 褚先生's five · 痒痒针
 export const H11 = [...H08, 'houtu', 'luying', 'suijin', 'huochai']; //   the 大比's three won · 火柴 (09-snow)

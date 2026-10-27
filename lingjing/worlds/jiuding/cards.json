@@ -1808,6 +1808,105 @@
       ]
     },
     {
+      "id": "tieji",
+      "kind": "spell",
+      "name": {
+        "zh": "铁蒺藜",
+        "en": "Caltrops"
+      },
+      "cost": 1,
+      "element": "metal",
+      "effect": {
+        "damage": 1,
+        "draw": 1
+      },
+      "_about": "钱掌柜的一包铁蒺藜 (items.json tieji-bao, 2026-10-27, Hanli: 「1层的玩家牌有点少, 可以设计几个商店里的卡」)：一费，扎一点，再摸一张 —— 练气一层手里缺的一费牌。属金 (铁)：须有金灵根。",
+      "art": "art/cards/tieji.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py).",
+      "from": [
+        {
+          "kind": "shop",
+          "item": "tieji-bao",
+          "keeper": {
+            "zh": "钱掌柜",
+            "en": "Money Qian"
+          },
+          "price": 40,
+          "line": {
+            "zh": "撒一把在地上，狼也得绕着走",
+            "en": "Scatter a handful; even a wolf walks round."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "sanhuo",
+      "kind": "spell",
+      "name": {
+        "zh": "散火诀",
+        "en": "Scatter Fire"
+      },
+      "cost": 1,
+      "element": "fire",
+      "effect": {
+        "sweep": 1
+      },
+      "_about": "外门的粗浅火诀 (items.json sanhuo-jian, 2026-10-27)：一费，对方阵前每个扎一点 —— 狼叫来的护主金梭一扫就散 (火克金)。须有火灵根。",
+      "art": "art/cards/sanhuo.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py).",
+      "from": [
+        {
+          "kind": "shop",
+          "item": "sanhuo-jian",
+          "keeper": {
+            "zh": "钱掌柜",
+            "en": "Money Qian"
+          },
+          "price": 50,
+          "line": {
+            "zh": "外门弟子人人会的粗浅火诀",
+            "en": "A crude fire art every outer disciple knows."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
+      "id": "caoren",
+      "kind": "minion",
+      "name": {
+        "zh": "替身草人",
+        "en": "Straw Stand-in"
+      },
+      "cost": 2,
+      "element": "wood",
+      "atk": 1,
+      "hp": 3,
+      "keywords": [
+        "taunt"
+      ],
+      "_about": "钱掌柜扎的替身草人 (items.json caoren-zha, 2026-10-27)：两费 1/3，护主 —— 替你挨下护主们的三下。属木 (稻草)；随从不看灵根，人人带得。",
+      "art": "art/cards/caoren.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py).",
+      "from": [
+        {
+          "kind": "shop",
+          "item": "caoren-zha",
+          "keeper": {
+            "zh": "钱掌柜",
+            "en": "Money Qian"
+          },
+          "price": 60,
+          "line": {
+            "zh": "扎得结实，替你挨三下",
+            "en": "Tied tight; it takes three blows for you."
+          },
+          "src": "游戏"
+        }
+      ]
+    },
+    {
       "id": "canwu",
       "kind": "spell",
       "name": {

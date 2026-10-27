@@ -199,6 +199,12 @@ body.fighting .placecap { display: none; }
 .cardtitle { font-family: var(--serif); font-weight: 600; font-size: 14.5px; margin-bottom: 4px; }
 .chip { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 2px 7px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--dim); }
 .chip.real { border-color: var(--jade); color: var(--jade); }
+/* 难度 on a beast's card (fightodds.js): ink for the easy, cinnabar for the hard. */
+.chip.codds { font-family: var(--serif); letter-spacing: .1em; }
+.chip.codds.easy { border-color: var(--jade); color: var(--jade); }
+.chip.codds.fair { border-color: var(--ling); color: var(--ling); }
+.chip.codds.hardish { border-color: var(--seal); color: var(--seal); }
+.chip.codds.hard { border-color: var(--seal); color: #fff; background: var(--seal); }
 .tasktitle { font-weight: 600; font-size: 13.5px; }
 .taskfoot { margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .task.done { background: var(--jade-soft); border-color: transparent; }
