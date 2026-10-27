@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>灵境 · 数值</title>
+  <style>
+    :root { --bg: #f7f2e8; --card: #fffaf1; --ink: #2b241c; --ink-2: #5d5244; --muted: #8a7d6b; --rule: #e3d8c4; --grid: #ece3d3;
+      --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --band: rgba(42, 120, 214, .12); --red: #c0392b; --red-bg: #fbe9e5; --ok: #2f7d4f; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #1a1916; --card: #23211d; --ink: #f0ece4; --ink-2: #c8c0b2; --muted: #968c7c;
+      --rule: #3a362f; --grid: #2e2b26; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --band: rgba(57, 135, 229, .18); --red: #f07b6b; --red-bg: #3a2420; --ok: #6cc28f; } }
+    :root[data-theme="dark"] { --bg: #1a1916; --card: #23211d; --ink: #f0ece4; --ink-2: #c8c0b2; --muted: #968c7c; --rule: #3a362f; --grid: #2e2b26;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --band: rgba(57, 135, 229, .18); --red: #f07b6b; --red-bg: #3a2420; --ok: #6cc28f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.55 -apple-system, "PingFang SC", "Noto Sans SC", sans-serif; }
+    main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    a { color: var(--s1); }
+    h1 { font-size: 22px; margin: 4px 0; } h2 { font-size: 16px; margin: 0 0 8px; }
+    .dim { color: var(--muted); } .small { font-size: 12px; }
+    .head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+    .card { background: var(--card); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; margin: 12px 0; }
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 12px; }
+    .grid2 .card { margin: 0; }
+    .red { list-style: none; padding: 0; margin: 0; max-height: 360px; overflow-y: auto; }
+    .red li { padding: 4px 8px; border-left: 3px solid var(--red); background: var(--red-bg); margin: 3px 0; border-radius: 0 3px 3px 0; }
+    .red li b { color: var(--red); font-weight: 600; margin-right: 6px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+    .chips button { border: 1px solid var(--rule); background: var(--card); color: var(--ink-2); border-radius: 12px; padding: 2px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+    .chips button[aria-pressed="true"] { border-color: var(--ink-2); color: var(--ink); }
+    .scroll { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+    th, td { text-align: right; padding: 3px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+    th:first-child, td:first-child, td.l, th.l { text-align: left; }
+    th { color: var(--ink-2); font-weight: 600; position: sticky; top: 0; background: var(--card); }
+    tr.is-red td { background: var(--red-bg); }
+    details > summary { cursor: pointer; font-weight: 600; }
+    svg text { fill: var(--ink-2); font-size: 12px; }
+    svg .axis { stroke: var(--rule); } svg .gridl { stroke: var(--grid); }
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+    .legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+    .tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 4px 8px; border-radius: 4px; white-space: pre; z-index: 9; display: none; }
+  </style>
+</head>
+<body>
+  <!-- 数值 — tools/numbers.mjs's report (worlds/jiuding/levels/numbers.json): every number in the system's units,
+       the curves, the red list. Hanli's test page only, like the 游戏厅 it hangs off: nothing without ?dev=1. -->
+  <main id="numbers"></main>
+  <div class="tip" id="tip"></div>
+  <script type="module" src="arcade-numbers.js"></script>
+</body>
+</html>

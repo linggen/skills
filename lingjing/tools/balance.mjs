@@ -297,6 +297,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
         gain(Math.round((boardPlay(content, { ...s, need: need() }, P.minutes) ?? 0) * P.factor), false, 'play', 'boards');
       }
     }
+    // Where the day ends (tools/numbers.mjs reads it): the layer, the 回, the wallet and all 灵石 earned so far.
+    Object.assign(D, { at: { tier: s.tier, step: s.step }, hui, wallet: W.now, earned: W.earned });
   }
   // A 今 interlude is the 古 回's before it (as its cap is, rules/cap.mjs): its time goes there.
   const out = [];

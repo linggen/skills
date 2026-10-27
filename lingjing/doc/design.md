@@ -317,6 +317,72 @@ the knobs: tasks/world.json `shouchao`, its cooldown balance.json `cooldowns.sho
   回 in the row's boss's place). A row added later is played first. Rows now: 兽潮 1–3 (野猪 · 狰, 古四), 4 (犰狳,
   古五), the 山门 (鬿雀 · 合窳, 古八).
 
+### 数值系统 — one validator, then a master table 【phase 1 已建 · phase 2 待批】 (Hanli, 2026-10-27)
+
+Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局校验游戏数值, 平衡战斗力, 游戏难易, 时长的. 以后我们调整难度,
+进度可以统一调整, 不必单个物品调.」 The trigger was the 九转聚气丹's card: a fixed +60 while 练气一层 asks 470, and
+「坊市的聚气丹抵半日打坐；它抵三日」 that nothing checked.
+
+**Phase 1 (built): `node tools/numbers.mjs`.** It reads every number the way the rules read it, and changes none.
+- **The pay comes from the rules themselves.** The tool sets a save at each layer and asks `paysOf`, `playGrant`,
+  `errandGrant` and `chorePlay` what that layer pays, so the units follow any change to the pay rules.
+- **The units:**
+  - 修为: a share of the layer where he meets the thing, and the minutes of board play it equals there;
+  - 灵石: minutes of the typical player's income, and the 回 by which he has earned a shelf's price;
+  - a fight: the lookahead bot's win rate against its band (tools/story-fights.mjs);
+  - time: the hours a layer asks, by the play rule (games pay 60% of the 修为 over 35% of the time), with and
+    without a daily 功课, against the target, plus the model players' days per 回 and per layer.
+- **Where a thing is met:**
+  - a 回 holds him on its stage quest's layer, else on its cap's;
+  - an item's first 回 is the earliest of a scene's grant, an errand, a board's gift, a shop on that 回's map, the
+    开炉 pools, or a rerun's drops;
+  - 零层 pays nothing, so anything met there is weighed at 一层.
+- **Text checks:** a 「抵N日」 claim is checked against N nights of 闭关 at that layer, as the rules pay a night; the
+  table of patterns is in the tool. Because 闭关 grows with the layer, the check is repeated on every layer.
+- **Outputs:**
+  - `--write` writes worlds/jiuding/levels/numbers.json for the 游戏厅's 数值 page (arcade-numbers.html?dev=1): the red
+    list, four curves, and a table per source;
+  - `--check` fails on hard errors only (a NaN, a negative, a price with no item, a buy-back over the price, a layer
+    under the one below), and tests/numbers.test.mjs runs it;
+  - the red list never fails a push;
+  - the pace targets are read from balance.json `play_pay.hours` and `play_pay.games`, added with the percentage pay on
+    2026-10-27; the fight bands and the red-list limits are `TARGET` and `LIMITS` in the tool until phase 2.
+
+**Phase 2 (the proposal, waiting on Hanli's go):** a few knobs, everything else derived.
+- **The master table.** balance.json `play_pay` already holds half of it since the percentage pay (`hours`, `games`,
+  `errand`, `chore`, `authored`). Phase 2 completes it and makes the rest derive from it.
+  - **Pace:**
+    - `hours`: 练气一层 2 h and +1 h a layer, or +0.5 h;
+    - the realm curve: each realm's layers one size, +2 h a realm (筑基 3 × 6 h, 金丹 3 × 8 h …);
+    - `games`: 60% of the 修为 over 35% of the time;
+    - `chore`: a day's 10%. One daily 功课 now carries about half of a layer from 五层 up (the 数值 page), so its share
+      is a pace knob too.
+  - **Difficulty:** `win_band`, a story fight's first meeting bare (the 30–62% band) and with two pills, and a pool
+    beast's band.
+  - **Economy:**
+    - `income`: 灵石 a minute of play, by layer;
+    - `sinks`: a pill costs the minutes of income its 修为 would take to play, gear costs a fixed number of minutes
+      of income per point, and the buy-back is a share of the price;
+    - `convert`: the 圆满 → 灵石 rate.
+- **Derived by formula.** `--apply` computes these from the knobs and writes them:
+  - the 层 thresholds, which today are still hand-set (470 · 490 … 1120, and 筑基 400 under 练气九层's 1120);
+  - pill 修为, as a share of the layer. `authored` already scales a pill by the layer against 470; phase 2 states it as
+    the share outright (a 九转 = 12.8%);
+  - every shop `buy`/`sell`;
+  - board, errand, 功课 and fight pay;
+  - the creatures' `hp` multipliers and decks, fitted by the bot to `win_band` (the slow part, run per beast).
+- **Overrides.** A number that must not follow its formula is an explicit override in balance.json `overrides`, as
+  `{path, value, why}`. `--apply` keeps it and the report lists it, so nothing is hand-set silently.
+- **How a knob change flows:** change a knob, then run `node tools/numbers.mjs --apply` (a dry-run diff by default,
+  `--write` to commit). It re-derives the world, then re-runs balance.mjs and the fight bands, and the 数值 page shows
+  the new curves. Tuning the difficulty or the pace becomes one edit, never a sweep of single items.
+- **Text that states an amount** follows one of two rules:
+  - it is generated: the card's 「修为 +N」 and 「抵N日打坐」 come from the number at the player's layer (`look.mjs`
+    already shows the landing number);
+  - or it is relative and checked: authored prose says only what stays true at every layer, such as 「比坊市的聚气丹足三倍」,
+    and the validator's `CLAIMS` table holds each ratio to the numbers.
+  A fixed 「抵三日」 is wrong on every layer but one, because 闭关 grows with the layer and a pill does not.
+
 ### 境界 in the game 【已建】
 
 The world's nine realms and their names are story DESIGN § 道统 (补丁①).
