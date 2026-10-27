@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>灵境评审表</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a review sheet — verdict and priorities up top, then six ledgers of dimensions, each row a score bar + evidence + action. */
+:root{
+  --paper:#eef0ea;      /* rice paper with a celadon cast */
+  --sheet:#f8f9f5;
+  --ink:#1d2320;
+  --ink-2:#4c5650;
+  --rule:#d3d8cf;
+  --accent:#2f6f62;     /* 铜绿 verdigris */
+  --seal:#b23a2a;       /* 朱印, critical */
+  --warn:#b07a1c;
+  --ok:#3f7d4a;
+  --serif:"Noto Serif SC","Songti SC","STSong",serif;
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#151a18;--sheet:#1c2220;--ink:#e6ebe6;--ink-2:#a4afa8;--rule:#2f3834;
+  --accent:#6fb3a3;--seal:#e0705e;--warn:#d9a54a;--ok:#78b884;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#151a18;--sheet:#1c2220;--ink:#e6ebe6;--ink-2:#a4afa8;--rule:#2f3834;
+  --accent:#6fb3a3;--seal:#e0705e;--warn:#d9a54a;--ok:#78b884;color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font:15px/1.7 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1040px;margin:0 auto;display:grid;gap:28px}
+h1,h2,h3{font-family:var(--serif);text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:clamp(28px,5vw,40px);font-weight:900;letter-spacing:.04em}
+h2{font-size:21px;font-weight:600;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2 .en{font:500 12px var(--mono);color:var(--ink-2);letter-spacing:.08em;text-transform:uppercase}
+.lede{color:var(--ink-2);max-width:65ch;margin:6px 0 0}
+.top{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:start;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:22px}
+.verdict{display:grid;justify-items:center;gap:4px;padding:6px 18px;border-right:1px solid var(--rule)}
+.verdict .n{font:900 52px/1 var(--serif);color:var(--accent);font-variant-numeric:tabular-nums}
+.verdict .of{font:500 12px var(--mono);color:var(--ink-2);letter-spacing:.1em}
+.prio{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:p}
+.prio li{display:grid;grid-template-columns:24px 1fr;gap:8px;min-width:0}
+.prio li::before{counter-increment:p;content:counter(p);font:600 13px/22px var(--mono);color:var(--sheet);background:var(--seal);border-radius:3px;text-align:center;height:22px}
+.prio b{font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--ink-2)}
+.legend span{font-family:var(--mono);color:var(--ink);margin-right:4px}
+section{display:grid;gap:10px}
+.tbl{overflow-x:auto;background:var(--sheet);border:1px solid var(--rule);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid var(--rule)}
+tr:last-child td{border-bottom:0}
+th{font:500 12px var(--mono);letter-spacing:.06em;color:var(--ink-2);text-transform:uppercase;background:transparent}
+td.dim{width:180px}
+td.dim b{display:block;font-weight:700}
+td.dim i{font:normal 12px var(--mono);color:var(--ink-2)}
+td.sc{width:112px}
+.bar{display:flex;gap:3px;margin-top:4px}
+.bar i{width:16px;height:6px;border-radius:2px;background:var(--rule)}
+.s1 .bar i:nth-child(-n+1),.s2 .bar i:nth-child(-n+2){background:var(--seal)}
+.s3 .bar i:nth-child(-n+3){background:var(--warn)}
+.s4 .bar i:nth-child(-n+4),.s5 .bar i:nth-child(-n+5){background:var(--ok)}
+.num{font:600 15px var(--mono);font-variant-numeric:tabular-nums}
+td.ev{color:var(--ink-2);font-size:14px;min-width:0}
+td.act{font-size:14px;min-width:0}
+.chip{display:inline-block;font:500 11px var(--mono);padding:1px 7px;border-radius:999px;border:1px solid currentColor;margin-top:6px;white-space:nowrap}
+.chip.go{color:var(--accent)}.chip.todo{color:var(--warn)}.chip.done{color:var(--ok)}
+.how{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:20px 22px;display:grid;gap:10px}
+.how ol{margin:0;padding-left:1.3em;display:grid;gap:6px;max-width:72ch}
+.hist{font-size:14px}
+.hist td,.hist th{padding:8px 12px}
+footer{font-size:12px;color:var(--ink-2);font-family:var(--mono)}
+@media (max-width:640px){.top{grid-template-columns:1fr}.verdict{border-right:0;border-bottom:1px solid var(--rule);padding-bottom:14px}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>灵境评审表</h1>
+  <p class="lede">按专业游戏开发的维度给《灵境》打分，定期复评。第 1 次评审：2026-10-27，依据今天在 Mac 和手机上的试玩、自动测试和后台报告。</p>
+</header>
+
+<div class="top">
+  <div class="verdict"><div class="n">2.7</div><div class="of">总分 / 5</div></div>
+  <div>
+    <h3 style="font-size:16px;margin-bottom:8px">本期最该先改的五件事</h3>
+    <ol class="prio">
+      <li><span><b>修为卡点（墙）太硬：</b>练气一层 146/470 卡住，小游戏原本不给修为，徐州没有商店。奖励改版、库房、后山匹配都在做。</span></li>
+      <li><span><b>卡关（Soft-lock）频发：</b>密室没有出口、画猜刷新卡死、赢了没下一步、柴房读完才被挡。需要一条「任何时刻都有出路」的总测试。</span></li>
+      <li><span><b>新手引导缺位：</b>密室、掐指、画猜都没人讲怎么玩，「问询」只描述风景。由银月先讲玩法。</span></li>
+      <li><span><b>没有数据（埋点）：</b>不知道玩家在哪里放弃、玩多久、留存多少。现在全凭你一个人的试玩。</span></li>
+      <li><span><b>数值不是一个系统：</b>物品和任务的数字单独手填，文字与数值对不上（九转聚气丹「抵三日」）。数值校验工具在做。</span></li>
+    </ol>
+  </div>
+</div>
+
+<div class="legend" aria-label="评分标准">
+  <div><span>1</span>缺失</div><div><span>2</span>能用，但有明显问题</div><div><span>3</span>合格</div><div><span>4</span>好</div><div><span>5</span>出色，可作参照</div>
+  <div style="margin-left:auto"><span class="chip go">进行中</span> <span class="chip todo">待开始</span> <span class="chip done">已完成</span></div>
+</div>
+
+<section>
+  <h2>一 · 数值与经济 <span class="en">Economy</span></h2>
+  <div class="tbl"><table>
+    <thead><tr><th>维度</th><th>评分</th><th>现状与证据</th><th>改进行动</th></tr></thead>
+    <tbody>
+      <tr class="s2"><td class="dim"><b>成长曲线</b><i>Progression Curve</i></td><td class="sc"><span class="num">2</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">层级门槛已按模型拟合，但直到今天小游戏几乎不给修为，按「每层+1小时」算练气要 54 小时（约 108 天）。</td>
+        <td class="act">按游戏时长、按门槛百分比给修为；练气内每层可能改为 +0.5 小时，筑基后按大阶段计时。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s2"><td class="dim"><b>产出与消耗</b><i>Faucet / Sink</i></td><td class="sc"><span class="num">2</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">灵石只进不出：古四之前没有可去的商店。丹药、卡牌、装备的价格没有对照收入核算。</td>
+        <td class="act">外门库房上线；数值工具算出每件东西要攒多少分钟、出售时买不买得起。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s2"><td class="dim"><b>数值一致性</b><i>Data-driven balance</i></td><td class="sc"><span class="num">2</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">balance.json 是总表，但很多物品数字是手填的；说明文字的说法（「抵三日」）没有核对。</td>
+        <td class="act">第一步：全局校验工具和报告页。第二步：几个旋钮统一推导所有数字（等你批准）。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s3"><td class="dim"><b>期望值与保底</b><i>EV / Pity</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">开炉抽奖有分档出货，没有保底，也没有算过期望价值。</td>
+        <td class="act">数值工具里加开炉期望值；考虑十次保底一件「有用」以上。<br><span class="chip todo">待开始</span></td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <h2>二 · 节奏与进度 <span class="en">Pacing</span></h2>
+  <div class="tbl"><table>
+    <thead><tr><th>维度</th><th>评分</th><th>现状与证据</th><th>改进行动</th></tr></thead>
+    <tbody>
+      <tr class="s3"><td class="dim"><b>游戏节奏</b><i>Pacing</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">卷一每回阅读约占 56–64%，达到你定的 6 成；剧情全文可读，小游戏穿插在剧情里。</td>
+        <td class="act">节奏表进数值报告页，每回都看阅读、游戏、等待的比例。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s2"><td class="dim"><b>卡点 / 墙</b><i>Gate / Wall</i></td><td class="sc"><span class="num">2</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">阶段任务挡在读完之后；要攒的数和能拿到的修为不匹配，玩家不知道怎么过。</td>
+        <td class="act">路口先显示条件，挡住时给进度卡和「去修炼」；主页显示还差多少、约几局。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s3"><td class="dim"><b>刷与递减回报</b><i>Grind / Diminishing returns</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">今天加了同局重复递减（100 / 50 / 10%），玩得多走得快，但避免刷爆。</td>
+        <td class="act">试玩一周后再定递减力度（可改为 100 / 50 / 25）。<br><span class="chip done">已完成</span></td></tr>
+      <tr class="s3"><td class="dim"><b>核心循环</b><i>Core Loop</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">读剧情 → 小游戏与差事攒修为 → 突破 → 下一段，循环成立；人间功课把现实连进来，是独有的亮点。</td>
+        <td class="act">主页把循环摆在眼前：目标、进度、一个主按钮。<br><span class="chip go">进行中</span></td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <h2>三 · 战斗与难度 <span class="en">Combat</span></h2>
+  <div class="tbl"><table>
+    <thead><tr><th>维度</th><th>评分</th><th>现状与证据</th><th>改进行动</th></tr></thead>
+    <tbody>
+      <tr class="s2"><td class="dim"><b>难度曲线</b><i>Difficulty curve</i></td><td class="sc"><span class="num">2</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">后山难度按过关后才有的牌配置，练气一层胜率只有 10–40%；两个目标（初见约 45% / 模型 80%）互相矛盾。</td>
+        <td class="act">已下调后山妖兽、挪后三只；统一目标胜率进数值系统。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s2"><td class="dim"><b>动态难度</b><i>DDA</i></td><td class="sc"><span class="num">2</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">今天以前出哪只妖兽是固定的，不看玩家实力。</td>
+        <td class="act">按手牌、装备、伙伴挑「相当 / 稍难」的妖兽，「换一只」，越强对手越强。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s3"><td class="dim"><b>战力可读性</b><i>Power score</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">新加了「易 / 相当 / 稍难 / 难」标签和地图上的「斗」印；还没有一个总战力数。</td>
+        <td class="act">考虑在主页显示战力和推荐去处。<br><span class="chip todo">待开始</span></td></tr>
+      <tr class="s3"><td class="dim"><b>格斗手感</b><i>Frame data / Combo</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">秦雁一场：连招、搓招、绝招、打击停顿都有；人物仍是程序画的，逐帧正式画面在做。</td>
+        <td class="act">秦雁 45 帧 → 沈小满；按 97 四键；手机实测帧率。<br><span class="chip go">进行中</span></td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <h2>四 · 体验与引导 <span class="en">Player experience</span></h2>
+  <div class="tbl"><table>
+    <thead><tr><th>维度</th><th>评分</th><th>现状与证据</th><th>改进行动</th></tr></thead>
+    <tbody>
+      <tr class="s2"><td class="dim"><b>新手引导</b><i>Onboarding</i></td><td class="sc"><span class="num">2</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">密室铜盘、掐指、画猜都看不懂；「问询」只描述场景，不讲玩法。</td>
+        <td class="act">陌生玩法由银月先讲规则，再分层提示；谜题缩小到一分钟可解。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s2"><td class="dim"><b>卡关</b><i>Soft-lock</i></td><td class="sc"><span class="num">2</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">今天发现 5 处：密室无出口、画猜刷新卡死、五子赢后停住、柴房读完被挡、那天傍晚点了没反应。</td>
+        <td class="act">一个都不赢也能走完卷一（已加测试）；每个小游戏页面上都有可见出口（检查中）。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s3"><td class="dim"><b>反馈与打击感</b><i>Feedback / Juice</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">每个小游戏都有声音、能静音；斗法有胜败印章；画猜赢输看不出来，奖励有时没有提示。</td>
+        <td class="act">统一胜 / 负印章、所得卡；「收手」「问询」统一放到右上角图标。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s3"><td class="dim"><b>心流</b><i>Flow</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">剧情段落流畅；卡点和过难的战斗打断心流；大部分小游戏一到三次能过。</td>
+        <td class="act">难度匹配 + 主页下一步 + 银月输后指路，把断点接上。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s3"><td class="dim"><b>信息架构</b><i>UI / HUD</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">目标、待办、进度分散在修为条、事、今日、手边的棋局；地图没有商店和战斗标记（今天补上）。</td>
+        <td class="act">主页统一显示；地图加印记；手机布局已收紧。<br><span class="chip go">进行中</span></td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <h2>五 · 内容与表现 <span class="en">Content</span></h2>
+  <div class="tbl"><table>
+    <thead><tr><th>维度</th><th>评分</th><th>现状与证据</th><th>改进行动</th></tr></thead>
+    <tbody>
+      <tr class="s4"><td class="dim"><b>叙事</b><i>Narrative</i></td><td class="sc"><span class="num">4</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">卷一全文、古今两线、银月性格鲜明；剧情与小游戏结合紧。</td>
+        <td class="act">保持；卷二动笔前先定数值系统，避免同样的卡点。<br><span class="chip todo">待开始</span></td></tr>
+      <tr class="s3"><td class="dim"><b>小游戏质量与多样性</b><i>Mini-game variety</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">16 类经典玩法、上百局；自创玩法已清除；质量参差（说明、画面）。</td>
+        <td class="act">按评审表四条规则逐个过；每类挑一局做成样板。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s4"><td class="dim"><b>美术风格</b><i>Art direction</i></td><td class="sc"><span class="num">4</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">水墨风统一，有辨识度；个别小游戏仍有程序画面，格斗人物在重画。</td>
+        <td class="act">数值报告页同时列出未正式绘制的资源。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s4"><td class="dim"><b>音效</b><i>Audio</i></td><td class="sc"><span class="num">4</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">每个小游戏都有声音并可关闭，开关会被记住；银月有语音。</td>
+        <td class="act">保持；新玩法照这个标准做。<br><span class="chip done">已完成</span></td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <h2>六 · 平台、质量与数据 <span class="en">Production</span></h2>
+  <div class="tbl"><table>
+    <thead><tr><th>维度</th><th>评分</th><th>现状与证据</th><th>改进行动</th></tr></thead>
+    <tbody>
+      <tr class="s3"><td class="dim"><b>多端一致</b><i>Mac / iPhone parity</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">卷一小游戏手机上基本都有；存档同步、天气、推送今天刚完成，还没在真机上验证。</td>
+        <td class="act">真机走一遍；打开 app 全量同步；手机补地图与银月提示。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s4"><td class="dim"><b>自动测试</b><i>QA</i></td><td class="sc"><span class="num">4</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">2300+ 个测试、电脑对手、模拟玩家；但多次「测试通过、页面上不行」。</td>
+        <td class="act">每次交付必须在页面上实际走一遍，说明哪些是真看过的。<br><span class="chip go">进行中</span></td></tr>
+      <tr class="s3"><td class="dim"><b>试玩</b><i>Playtest</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">只有你一个试玩者，发现问题快，但样本只有 1。</td>
+        <td class="act">找 3–5 个外部玩家玩第一回，记录在哪里卡住。<br><span class="chip todo">待开始</span></td></tr>
+      <tr class="s3"><td class="dim"><b>性能与稳定</b><i>Performance</i></td><td class="sc"><span class="num">3</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">后台测试时 CPU 吃满；引擎在你玩时被重启过；手机资源包 66MB，在上限内。</td>
+        <td class="act">测试一次只跑一个、不录屏；重启前先问。<br><span class="chip done">已完成</span></td></tr>
+      <tr class="s1"><td class="dim"><b>数据埋点与留存</b><i>Analytics / Retention</i></td><td class="sc"><span class="num">1</span><div class="bar"><i></i><i></i><i></i><i></i><i></i></div></td>
+        <td class="ev">没有任何游戏内统计：不知道每局时长、在哪里放弃、次日留存。</td>
+        <td class="act">在本机记录匿名事件（开局、胜负、跳过、卡点停留时长），数值报告页读取；不上传。<br><span class="chip todo">待开始</span></td></tr>
+    </tbody></table></div>
+</section>
+
+<section class="how">
+  <h2>怎么复评 <span class="en">Cadence</span></h2>
+  <ol>
+    <li>每周一次，或每发一个大版本前一次。</li>
+    <li>先玩：你自己从最新存档玩 30 分钟，加上至少一个新存档从第一回开始。</li>
+    <li>再看：数值报告页的红色清单、自动测试结果、试玩中卡住的地方。</li>
+    <li>逐行打分，只写证据和下一步行动；分数变动要写原因。</li>
+    <li>挑出本期最该改的五件事，放到下一周的开发计划里。</li>
+    <li>把这一期的总分记进下面的历史表，看趋势。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>历史 <span class="en">History</span></h2>
+  <div class="tbl"><table class="hist">
+    <thead><tr><th>日期</th><th>总分</th><th>最低项</th><th>备注</th></tr></thead>
+    <tbody><tr><td class="num">2026-10-27</td><td class="num">2.7</td><td>数据埋点 1 · 成长曲线 2 · 产出消耗 2 · 卡关 2 · 引导 2</td><td>第一次评审，基于当天试玩与修复。</td></tr></tbody>
+  </table></div>
+</section>
+
+<footer>灵境 · Lingjing · 评审表 v1</footer>
+</div>
+
+</html>
