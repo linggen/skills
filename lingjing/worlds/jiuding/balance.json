@@ -1,11 +1,11 @@
 {
   "version": 1,
   "_about": "One model for every number (Hanli, 2026-10-15; design.md § Pacing and the economy). The rules read these through content.mjs (withBalance) — the 层 thresholds onto the ladder, the pay tables onto rewards, the cooldowns onto the rerun and the 饭桶 — and tools/balance.mjs simulates a light, a typical and a heavy player on them, day by day, printing days per 回; tests/balance.test.mjs holds the bands. Change a number here, run `node tools/balance.mjs`, and hand-play it on the live page.",
-  "_master": "数值系统 phase 2 (Hanli 2026-10-27: 「数值系统继续做吧」; design.md § 数值系统): the knobs. Everything this table derives — `layers`, `play_pay`'s hours · games · errand · chore · seclusion, `pills`, the `pill` and `seclusion` pay caps, `convert.rate`, a 修为 pill's and gear's `buy` and every `sell` — is written by `node tools/numbers.mjs --apply --write` (a dry-run diff without --write), never by hand; a number that must not follow its formula is an `overrides` row. tests/numbers.test.mjs holds the dry run empty. Every 修为 pay is a share of the layer (play_pay), so `need` is the numbers he reads, not the pace: the pace is `hours`, the shares, the model's minutes and the book's length. A line is a ladder of its own (Hanli 10-27: 古 · 今 · 未来 each their own 修为 and realms): `lines.gu` is built; 今 and 未来 get their rows, with their own pace, when their pay is.",
+  "_master": "数值系统 phase 2 (Hanli 2026-10-27: 「数值系统继续做吧」; design.md § 数值系统): the knobs. Everything this table derives — `layers`, `play_pay`'s hours · games · errand · wall · chore · seclusion, `pills`, the `pill` and `seclusion` pay caps, `convert.rate`, a 修为 pill's and gear's `buy` and every `sell` — is written by `node tools/numbers.mjs --apply --write` (a dry-run diff without --write), never by hand; a number that must not follow its formula is an `overrides` row. tests/numbers.test.mjs holds the dry run empty. Every 修为 pay is a share of the layer (play_pay), so `need` is the numbers he reads, not the pace: the pace is `hours`, the shares, the model's minutes and the book's length. A line is a ladder of its own (Hanli 10-27: 古 · 今 · 未来 each their own 修为 and realms): `lines.gu` is built; 今 and 未来 get their rows, with their own pace, when their pay is.",
   "master": {
     "lines": {
       "gu": {
-        "_about": "古's ladder (ladder.json tiers: 练气 九层 from 零层, three steps a realm above). `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm, so 筑基小成 is above 练气九层 and every step above the one below. `hours`: the games' rate — a layer's play hours. `chore`: 人间功课 is 古-line income (Hanli 10-27: 「算古线吧」), a day's 10% and a week's 20% of the layer (Hanli 「按照百分比奖励」). `seclusion.night`: a night's 闭关 (rest_hours) as a share of the layer (ruling a: it was 40 × layer_pay, ~23% at 四层) — the idle fallback, and the yardstick 「抵N日打坐」 is checked against. `pills`: a 修为 pill's share by 转 (一转 half a night, 三转 a night and a half, 九转 three nights: the cards' 「抵半日」 · 「抵三日」 hold at every layer); `below`: past its 阶, a quarter a realm.",
+        "_about": "古's ladder (ladder.json tiers: 练气 九层 from 零层, three steps a realm above). `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm, so 筑基小成 is above 练气九层 and every step above the one below. `hours`: the games' rate — a layer's play hours. `chore`: 人间功课 is 古-line income (Hanli 10-27: 「算古线吧」), a day's 10% and a week's 20% of the layer (Hanli 「按照百分比奖励」). `wall.day`: a day's posted 杂役 tags together (执事堂's east wall, quests/wall.json), as a share of the layer — about a day's 功课; each tag is it over the wall's `posts` (Hanli 10-27: three a day at the full errand rate were half a layer of short fetch-and-deliver chores). `seclusion.night`: a night's 闭关 (rest_hours) as a share of the layer (ruling a: it was 40 × layer_pay, ~23% at 四层) — the idle fallback, and the yardstick 「抵N日打坐」 is checked against. `pills`: a 修为 pill's share by 转 (一转 half a night, 三转 a night and a half, 九转 three nights: the cards' 「抵半日」 · 「抵三日」 hold at every layer); `below`: past its 阶, a quarter a realm.",
         "tiers": ["qi", "foundation", "core", "nascent", "deity", "void", "body", "maha", "tribulation"],
         "need": {"first": 470, "layer": 1.1, "realm": 1.3, "round": 10},
         "hours": {
@@ -16,6 +16,7 @@
         },
         "games": {"share": 0.6, "time": 0.35},
         "errand": {"share": 0.15, "time": 0.1},
+        "wall": {"day": 0.1},
         "chore": {"day": 0.1, "week": 0.2, "month": 0.3},
         "seclusion": {"night": 0.1},
         "pills": {"1": 0.05, "3": 0.15, "9": 0.3, "below": 0.25}
@@ -440,7 +441,8 @@
         "pill"
       ]
     },
-    "seclusion": {"night": 0.1}
+    "seclusion": {"night": 0.1},
+    "wall": {"day": 0.1}
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
   "lock_fight": {"losses": 3}

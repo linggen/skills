@@ -73,8 +73,14 @@ test('the east wall posts three a day from its pool, all at once — never a tag
   for (const o of offers) {
     assert.match(o.say, /^东墙/, o.id);
     assert.equal(o.who, '执事堂 · 东墙的牌子');
-    assert.ok(o.pays.progress > 0 && o.pays.wealth > 0, `${o.id} pays the errand share and 灵石: ${JSON.stringify(o.pays)}`);
+    assert.ok(o.pays.progress > 0 && o.pays.wealth > 0, `${o.id} pays the wall share and 灵石: ${JSON.stringify(o.pays)}`);
   }
+  // A day's three together pay about a day's 功课 (balance.json master wall.day, Hanli 10-27: the full errand rate was
+  // half a layer a day): 练气一层 470 → 16 a tag, 47 the day's 功课.
+  const day3 = offers.reduce((n, o) => n + o.pays.progress, 0), chore = Math.round(content.balance.play_pay.chore.day * 470);
+  assert.equal(offers.length, 3);
+  assert.ok(Math.abs(day3 - chore) <= 3, `a day's tags ${day3} against a day's 功课 ${chore}`);
+  assert.ok(offers.every((o) => o.pays.progress === Math.round((content.balance.play_pay.wall.day / WALL.posts) * 470)), 'each tag a third of the day');
   assert.equal((look(at('cangjing'), content, ctx(day(0))).offers ?? []).filter((o) => o.id.startsWith('wall-')).length, 0, 'only at the wall');
 });
 

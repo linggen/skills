@@ -12,6 +12,8 @@
 //   hours      a layer's play hours (the games' rate): 练气 `qi` by 层, each realm above `realm_first` + `realm_step` a realm;
 //   games      the small games' and fights' share of a layer's 修为 over their share of its time;
 //   errand     an errand's share over its share of the time;
+//   wall       a wall's posted 杂役 (quests/wall.json): a day's tags together as a share of the layer, each tag it over
+//              the wall's `posts` (rules/playpay.mjs wallGrant) — lighter than an errand: a short fetch-and-deliver chore;
 //   chore      人间功课 (古-line income, Hanli 「算古线吧」): a day's and a week's chore as a share of the layer;
 //   seclusion  a night of 闭关 (rewards.json seclusion `rest_hours`) as a share of the layer;
 //   pills      a 修为 pill's share of the layer by 转 (named 转 between them run straight), `below` a realm past its 阶.
@@ -95,6 +97,7 @@ export function derive(raw0, { ladder, items }) {
   pp.hours = hoursOf(gu, tiers);
   pp.games = { share: gu.games.share, time: gu.games.time };
   pp.errand = { ...pp.errand, share: gu.errand.share, time: gu.errand.time };
+  if (gu.wall) pp.wall = { day: gu.wall.day };
   pp.chore = { ...gu.chore };
   pp.seclusion = { night: gu.seclusion.night };
   // `authored.base` stays the book's yardstick (the 练气一层 its grants were written against, 470): never `need.first`, which is

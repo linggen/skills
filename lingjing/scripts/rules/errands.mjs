@@ -7,11 +7,11 @@ import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, root
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
 import { meets, pay, paysOf } from './core.mjs';
-import { errandGrant } from './playpay.mjs';
+import { workGrant } from './playpay.mjs';
 
 /* What an errand pays, as it will land: its grant, and an 外门 errand's minutes (rules/playpay.mjs, 2026-10-27). */
 export function questPays(content, state, now, q) {
-  const a = paysOf(content, state, now, q.grant), more = q.work ? errandGrant(content, state) : null;
+  const a = paysOf(content, state, now, q.grant), more = workGrant(content, state, q);
   const b = more ? paysOf(content, state, now, more) : null;
   return a && b ? { ...a, progress: (a.progress ?? 0) + (b.progress ?? 0), wealth: (a.wealth ?? 0) + (b.wealth ?? 0) } : a ?? b;
 }
@@ -359,8 +359,8 @@ function complete(content, s, ctx, id, q) {
   }
   s.quests[id] = { ...s.quests[id], done_at: ctx.now.toISOString() };
   const paid = pay(content, s, ctx, q.grant);
-  // An 外门 errand (`work`) pays its share of the layer by its minutes too (rules/playpay.mjs, Hanli 2026-10-27).
-  const more = q.work ? errandGrant(content, s) : null;
+  // An 外门 errand (`work`) pays its share of the layer by its minutes too, a wall's tag its wall share (rules/playpay.mjs).
+  const more = workGrant(content, s, q);
   if (more) {
     const got = pay(content, s, ctx, more);
     paid.progress = (paid.progress ?? 0) + (got.progress ?? 0);

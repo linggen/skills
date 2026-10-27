@@ -86,6 +86,24 @@ export function errandGrant(content, state) {
   return progress || e.wealth ? { table: 'play', progress, wealth: e.wealth ?? 0 } : null;
 }
 
+/* A wall's posted tag (rules/rotation.mjs: 执事堂's east wall): a fixed share of the layer — a day's posts together pay
+   `play_pay.wall.day` (from the master table: about a day's 功课), so each tag is that over the wall's `posts`. Short
+   fetch-and-deliver chores, never the full errand rate (Hanli 10-27: three a day at the errand rate was half a layer). 灵石
+   as an errand's. Null where none. */
+export function wallGrant(content, state, q) {
+  const day = content.balance?.play_pay?.wall?.day, wall = (content.walls ?? []).find(w => w.id === q?.wall);
+  if (!day || !wall || !state) return null;
+  const progress = Math.round((day / Math.max(1, wall.posts ?? 3)) * needOf(content, state));
+  const wealth = content.balance?.play_pay?.errand?.wealth ?? 0;
+  return progress || wealth ? { table: 'play', progress, wealth } : null;
+}
+
+/* What an errand's work pays on top of its grant: a wall tag its wall share, an 外门 errand (`work`) its minutes. */
+export function workGrant(content, state, q) {
+  if (q?.wall) return wallGrant(content, state, q);
+  return q?.work ? errandGrant(content, state) : null;
+}
+
 /* A 人间功课's 修为 (Hanli 2026-10-27, then 「按照百分比奖励」): a fixed share of the layer by its period — a day's 10%, a
    week's 20%, a month's 30% (`play_pay.chore`, from the master table). 人间功课 is 古-line income (Hanli 「算古线吧」): paid on the 古 ladder
    he stands on. Never ★, never the replay: one chore is paid once a period (chores.mjs). Null where none. */
