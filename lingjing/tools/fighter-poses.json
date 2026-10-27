@@ -488,7 +488,13 @@
      140
     ],
     "words": "standing in guard, the sword lowered in her right hand, her LEFT palm turned up open in front of her chest, looking at it. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
-    "seed": 2
+    "seed": 2,
+    "points": {
+     "handB": [
+      540,
+      395
+     ]
+    }
    },
    "hold1": {
     "lean": -12,
@@ -525,6 +531,12 @@
        645
       ]
      ]
+    },
+    "points": {
+     "handB": [
+      447,
+      370
+     ]
     }
    },
    "strike1": {
@@ -546,7 +558,13 @@
      92
     ],
     "words": "striking with her LEFT open palm thrust straight forward to the right at chest height, front knee bent, the sword hand swept back behind her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
-    "seed": 2
+    "seed": 2,
+    "points": {
+     "handB": [
+      664,
+      320
+     ]
+    }
    },
    "strike2": {
     "lean": 10,

@@ -266,7 +266,7 @@ def build(who, raw, pick, sheet_out):
     im, (dx, dy, s, fx, fy) = placed(im0, p, fix)
     tr = lambda pt: (fx + (pt[0] - fx) * s + dx, fy + (pt[1] - fy) * s + dy)
     pts = {k: tr(v) for k, v in points(p, armed).items()}
-    pts.update({k: tuple(v) for k, v in p.get('points', {}).items()})  # a hand placed by eye
+    pts.update({k: tr(v) for k, v in p.get('points', {}).items()})  # a hand placed by eye (painting pixels)
     frames[name] = (im, pts, (HIPX + p.get('anchor', 0), PGROUND))
   # the standing height: the first idle frame's top of ink to the ground
   first = frames[next(iter(spec['clips']['idle']['frames']))][0]
