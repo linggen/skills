@@ -3407,6 +3407,7 @@ function herAnswered(text = '') {
 }
 /* The 密室's next help tier, asked for without a tap (a room opened, a new mechanism, a few misses). */
 function boardAsks(g, why) {
+  boardFor(g.taskId); // the room as Look has it now (fromLook): the new mechanism's step, never the last one's
   const p = g.state?.view?.puzzles?.find((x) => x.at === 'open');
   if (!p || g.state.busy) return;
   g.askWhy = why;
@@ -3425,8 +3426,11 @@ function mishiHelp(g, res) {
   const whyEn = { open: 'You two just came in; he does not know how the mechanism works yet', next: 'The last mechanism gave way; the next one shows', offer: `He has missed ${res.wrong} times and is stuck`, asked: 'He asks you how this mechanism works' }[why];
   // The engine keeps 300 characters of a moment's facts: the tier first and whole, then what he sees, as room allows.
   const fit = (head, tail, max = herFactsMax()) => { const t = `${head}${tail}`; return [...t].length <= max ? t : head; };
-  const zh = fit(`密室第${res.step}道。${whyZh}。用你自己的话一两句告诉他（提示${res.tier}/${res.of}，只说这条，别越过）：${last}`, `\n他眼前：${res.goal ?? ''}${res.read ? `（铜盘先前停在${res.read}）` : ''}${res.seen}`);
-  const enT = fit(`Hidden room, mechanism ${res.step}. ${whyEn}. Tell him in your own words, a line or two (hint ${res.tier}/${res.of}, this only, nothing past it): ${last}`, `\nBefore him: ${res.goal ?? ''}${res.read ? ` (the dial stopped on ${res.read})` : ''} ${res.seen}`);
+  // Tier 1 is the play alone: nothing on the board goes with it, so she never works a year or an answer out of it
+  // (live 10-27: given the needle's 甲子 and 「封后2岁」 she told him 丙寅 — a guess, and wrong).
+  const play = res.tier <= 1;
+  const zh = fit(`密室第${res.step}道。${whyZh}。用你自己的话一两句告诉他（提示${res.tier}/${res.of}，只说这条，${play ? '只讲怎么玩，不提任何年份、字或答案' : '别越过它，别自己推算'}）：${last}`, play ? '' : `\n他眼前：${res.read ? `铜盘先前停在${res.read}。` : ''}${res.seen}`);
+  const enT = fit(`Hidden room, mechanism ${res.step}. ${whyEn}. Tell him in your own words, a line or two (hint ${res.tier}/${res.of}, this only — ${play ? 'how it plays, no year, character or answer' : 'nothing past it, work nothing out yourself'}): ${last}`, play ? '' : `\nBefore him: ${res.read ? `the dial stopped on ${res.read}. ` : ''}${res.seen}`);
   boardWaitsOnHer = g;
   askHer('mishi', zh, enT, 'neutral').then((heard) => { if (!heard && boardWaitsOnHer === g) boardWaitsOnHer = null; });
 }

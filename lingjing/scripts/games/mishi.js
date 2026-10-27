@@ -169,7 +169,7 @@ function dialHtml(state, p, t, lang) {
 }
 
 function handHtml(state, p, t) {
-  // The bronze hand: thirteen studs, unmarked (the names are on her page).
+  // The bronze hand: thirteen studs, each its worn character (which to press, and in what order, is on her page).
   // Where the old 讲堂三日 board drew each 文 (FX 70…220 of 320, LY 138…42 of 160), as a share of the picture.
   const FXp = [21.9, 37.5, 53.1, 68.8], LYp = [86.3, 66.3, 46.3, 26.3];
   const at = (w) => [FXp[w.f], w.lv === 1.5 ? 56.3 : LYp[w.lv]];

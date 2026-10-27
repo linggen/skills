@@ -105,8 +105,8 @@
           "kind": "hand",
           "link": "dial",
           "his": {
-            "zh": "小门里一张矮案，案上嵌一只铜手掌：左手，掌心朝上，指节上十三颗小铜钉，钉上没有字。按下去，会陷一下。",
-            "en": "Behind the little door, a low desk with a bronze hand set in it: a left hand, palm up, thirteen small studs on its joints, none of them marked. Press one, and it sinks a little."
+            "zh": "小门里一张矮案，案上嵌一只铜手掌：左手，掌心朝上，指节上十三颗小铜钉，钉上各刻一个字，磨得浅了。按下去，会陷一下。",
+            "en": "Behind the little door, a low desk with a bronze hand set in it: a left hand, palm up, thirteen small studs on its joints, each cut with a worn character. Press one, and it sinks a little."
           },
           "goal": {
             "zh": "目标：按诀谱的顺序，依次按下三颗铜钉。",
