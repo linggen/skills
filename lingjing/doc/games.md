@@ -1263,6 +1263,15 @@ an indoor gym backdrop is not painted yet. 卷一 still six 调息, none back to
 
 ## 今's 聊天 — a phone chat in each 今 (games/jinchat.js, 2026-10-22)
 
+**2026-10-27: word games now.** Every chat but the call with his mum (`ma`, kept: 「是个好例子」) carries a `game` and
+plays a classic with the person, the goal on the page (Hanli: 「这个对话小游戏好像不太合理」 · 「AI对话可以对对子, 猜谜语等」 ·
+「你不要自己发明这种游戏了」): a **灯谜** under a red lantern (games/jinchat-play.js — answer lists, hints in tiers, four
+choices after misses, 跳过; the page judges, never the model; nothing shown before he answers names the answer) or a
+**reverse 二十问** (he thinks of one of the 30 animals, they ask from aigames.json `twenty.reverse`, he taps 是 · 不是 ·
+不知道; only his 对 is their win): 617 and 黑地里. The book frames each (`setup` narration first, `after` closing lines,
+a `me` line his tap). Their bubbles are the model's (银月 her own); the 二十问's questions are rewritten in their voice in one
+turn, inside a comment the chat panel drops. The old free chat below stays for `ma`.
+
 One module, every chat a row of games.json `jinchat` · `data.chats`; the task's `deal.chat` names it, its `how` says the goal
 in the shell's bar. A phone screen (comic: ink outlines, hard shadows, WeChat greens; `call` a video call's bar; `dark` a
 black room where only the voices show), 「对方正在输入…」 between bubbles (阿禾 `typing: slow` — types, stops, types).
