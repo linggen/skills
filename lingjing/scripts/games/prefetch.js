@@ -98,11 +98,13 @@ export function promptOf(f) {
     ? `- ${m.name} (${m.n} line${m.n > 1 ? 's' : ''}): ${m.means} The level's own: ${m.sample.map((s) => `"${s}"`).join(' ')}`
     : `- ${m.name}（${m.n}句）：${m.means}关里原本的：${m.sample.map((s) => `「${s}」`).join('')}`)).join('\n');
   const keys = f.moments.map((m) => m.name).join(', ');
+  // Asleep in the 木牌 (`f.asleep`, the page's): her lines are a half-awake fox's murmurs (Hanli 2026-10-27: 「yinyue睡着也可以说话」).
+  const drowsy = !f.asleep ? '' : en ? 'You sleep in the wooden token, half awake: murmurs, trailing "…". ' : '你睡在木牌里，半梦半醒：台词是含糊的梦话，带「……」。';
   return en
-    ? `[Small game · your lines ahead of time] Xiaoman is about to play the level "${f.title}". ${f.scene}${f.beasts.length ? ` Beasts: ${f.beasts.join(', ')}.` : ''}\n`
+    ? `[Small game · your lines ahead of time] ${drowsy}Xiaoman is about to play the level "${f.title}". ${f.scene}${f.beasts.length ? ` Beasts: ${f.beasts.join(', ')}.` : ''}\n`
       + `In play, at each moment below, a line of yours shows over your head at once. Write them now, in English, in your own voice, each at most ${MAX.en} characters, fitting this place and these beasts. "The level's own" lines only show the tone; don't copy them:\n${list}\n`
       + `Reply with exactly two lines. Line 1: the word LINES, a space, then one JSON object on that same line, the keys exactly ${keys}, each value an array of lines, e.g. LINES {"${f.moments[0]?.name ?? 'win'}": ["…"]}. Line 2, no blank line between: SILENT (the lines are for the game; nothing is said aloud now). No tools.`
-    : `［小游戏 · 先备台词］小满要打一关「${f.title}」。${f.scene}${f.beasts.length ? `兽：${f.beasts.join('、')}。` : ''}\n`
+    : `［小游戏 · 先备台词］${drowsy}小满要打一关「${f.title}」。${f.scene}${f.beasts.length ? `兽：${f.beasts.join('、')}。` : ''}\n`
       + `玩的时候，到了下面每个时刻，你的一句话就立刻冒在你头上。现在先写好，用你自己的口气，每句不超过${MAX.zh}个字，贴这一关的地方和兽。「关里原本的」只是给你看语气，别照抄：\n${list}\n`
       + `只回两行。第一行：先写 LINES，空一格，同一行接一个JSON对象，键就是 ${keys}，值是台词数组，例如 LINES {"${f.moments[0]?.name ?? 'win'}": ["……"]}。第二行（不空行）只写 SILENT（台词是给游戏的，现在不出声）。不用工具。`;
 }

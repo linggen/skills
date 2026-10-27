@@ -30,7 +30,9 @@ const hold = (s, task, now = NIGHT) => fitPresence(content, pageHerGame(content,
 
 test('卷一 by the book: asleep in the 木牌 — the save, the presence flag, Look, her chip', () => {
   const s = fitPresence(content, structuredClone(PLAYED.state), NIGHT);
-  assert.deepEqual(Object.keys(s.companion).sort(), ['asleep', 'joined']);
+  // Asleep she is still `here` — the engine's flag (SKILL.md absent_until): she speaks half asleep (Hanli 2026-10-27:
+  // 「yinyue睡着也可以说话」); `awake` stays the page's, for her body on the stage and the games she plays in.
+  assert.deepEqual(Object.keys(s.companion).sort(), ['asleep', 'here', 'joined']);
   assert.equal(herAwake(s, NIGHT), false);
   const l = look(s, content, at(NIGHT));
   assert.equal(l.companion.asleep, true);

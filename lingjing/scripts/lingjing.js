@@ -123,11 +123,15 @@ const IDLE_FACT = { zh: '玩家在这页上静了好一会儿，什么也没动�
 /// She is in Lingjing only once the player has found her (the save's
 /// `companion.joined`; SKILL.md `place.yinyue.absent_until` — the engine keeps
 /// her out of this skill's sessions until then). Every call to her asks this.
-/// Asleep in 吴婆婆's fox token (prologue-v3), she walks with the player but is
-/// not present: no moments, no body on the stage (`companion.asleep`). Nor on
-/// a line of the book she does not live on (`companion.away`: a 今 interlude,
-/// 沈芒's world — the rules drop her presence flag there too).
-const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.asleep && !look?.companion?.away);
+/// Asleep in 吴婆婆's fox token (prologue-v3) she still speaks, half asleep (Hanli 2026-10-27:
+/// 「yinyue睡着也可以说话」 — the save's `companion.here`, what the engine reads), but has no body on
+/// the stage and plays in no game (`herUp`, awake). Not on a line of the book she does not live on
+/// (`companion.away`: a 今 interlude, 沈芒's world — the rules drop her presence flag there).
+const herHere = () => Boolean(look?.companion?.joined && !look?.companion?.away);
+const herUp = () => herHere() && !look?.companion?.asleep;
+/// Told to her with every word she is asked for while she sleeps: the state, as a fact.
+const SLEEP_NOTE = { zh: '（她睡在木牌里，半梦半醒。）', en: '(She sleeps in the wooden token, half awake.) ' };
+const sleepNote = () => (herHere() && look?.companion?.asleep ? SLEEP_NOTE[lang()] : '');
 /// Her companion moments (hersay.js) reach her asleep too: from the 木牌, in its voice.
 /// 'absent' (not met, or 今线) · 'asleep' · 'awake'.
 const herNow = () => herMode(look);
@@ -138,7 +142,7 @@ const herFights = (b) => herNear() && (b?.brief?.setup?.you?.party ?? []).some((
 const voice = createVoice({
   // A test save (?save=) tells her too: its chat is bound to that save (SKILL.md session-params).
   post: (id, fact, flags, opts) => (CHATLESS ? Promise.resolve(false) : postMoment(fact, flags, opts)),
-  sees: () => ({ fighting: Boolean(bout), present: herHere() }),
+  sees: () => ({ fighting: Boolean(bout), present: herUp() }),
 });
 /// Resolves true when she will hear it; false when nobody will (the pet off
 /// answers 503 at once) — a page that waits on her must not wait then.
@@ -150,7 +154,7 @@ function postMoment(fact, flags, { mood = null } = {}) {
   // In the game the player has a 名字, and she calls them by it (his screen,
   // 2026-09-24: 「今天也辛苦了，Hanli」 inside 灵境). First, so no cap cuts it.
   const name = look?.name, called = !name ? '' : lang() === 'en' ? `(In the game the player is ${name}.) ` : `（灵境里玩家叫${name}。）`;
-  const body = { app: SKILL, text: called + (lang() === 'en' ? fact.en : fact.zh), ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
+  const body = { app: SKILL, text: called + sleepNote() + (lang() === 'en' ? fact.en : fact.zh), ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
   return fetch('/api/yinyue/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     .then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
 }
@@ -256,7 +260,7 @@ function boardFor(taskId) {
     }
     // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.
     const g = boards.get(taskId);
-    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herHere() && !CHATLESS });
+    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herUp() && !CHATLESS });
     return g;
   }
   if (!boards.has(taskId)) {
@@ -1673,8 +1677,8 @@ function draw() {
   // as the moon and her name, never her 3D body: in this world she is the
   // silver fox of the story, and the desktop girl did not fit it (his,
   // 2026-09-29: 「3D 模型就不用放在webUI了吧，和剧情合不上」).
-  const her = herHere() && !bout;
-  holdHerVoice(herHere());
+  const her = herUp() && !bout;
+  holdHerVoice(herUp());
   tellCompanion(companionShown(look));
   // Her name and the ask are the footer's 木牌 now (footChipsHtml herTokenHtml); the corner chip
   // stays empty — unease.js still draws her price on its frame (#stage .body).
@@ -3379,9 +3383,9 @@ async function boardSends(g, send) {
   // 密室 needs her (task `needs: "her"`): out of the 木牌 for the room, so she can tell him the play herself; back in
   // once he is out. Out now, the help is hers to say — no longer read off the board (`alone`).
   const task = look?.tasks?.find((t) => t.id === g.taskId);
-  if (task?.her && !CHATLESS && ['open', 'ask'].includes(send.args?.action) && !herHere()) {
+  if (task?.her && !CHATLESS && ['open', 'ask'].includes(send.args?.action) && !herUp()) {
     await herOut(g.taskId, true);
-    if (herHere() && send.args.alone) { const { alone, ...rest } = send.args; send = { ...send, args: rest }; }
+    if (herUp() && send.args.alone) { const { alone, ...rest } = send.args; send = { ...send, args: rest }; }
   }
   const res = await write(send.verb, send.args ?? {}).catch(failed);
   if (task?.her && (res?.out || res?.left)) herOut(g.taskId, false);
@@ -3406,7 +3410,7 @@ async function boardSends(g, send) {
 let boardWaitsOnHer = null;
 function boardAsksHer(g) {
   boardWaitsOnHer = g;
-  if (herHere() && !CHATLESS) openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue));
+  if (herUp() && !CHATLESS) openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue));
   else herClock(g);
 }
 function herClock(g) {
@@ -3792,7 +3796,7 @@ function herFightAsk(kind, facts) {
 function herFactsMax() {
   const name = look?.name ?? '';
   const called = !name ? '' : lang() === 'en' ? `(In the game the player is ${name}.) ` : `（灵境里玩家叫${name}。）`;
-  return 296 - [...called].length;
+  return 296 - [...called].length - [...sleepNote()].length;
 }
 const herFactsCtx = (b) => ({ ...boutCtx(), tiers: { you: b.setup?.you?.tier, foe: b.setup?.foe?.tier }, max: herFactsMax() });
 function fightSayFor(b) {
@@ -3848,11 +3852,12 @@ function herCues(b, before, mark, mine) {
 let prefetchLog = null;
 const stubLines = (text) => JSON.stringify(Object.fromEntries([...text.matchAll(/^- ([a-z_]+)/gm)].map(([, m]) => [m, [`（桩）${m}`]])));
 function prefetchFor(id, g) {
-  if (typeof g?.mod?.levelOf !== 'function' || CHATLESS || herNow() !== 'awake') return null;
+  if (typeof g?.mod?.levelOf !== 'function' || CHATLESS || herNow() === 'absent') return null;
   const ask = HER_SEAM === 'slow' ? () => new Promise(() => {})
     : HER_SEAM === 'stub' ? (text) => new Promise((done) => setTimeout(() => done(`${stubLines(text)}\nSILENT`), 1500))
       : (text, o) => askHerLines(text, { ...o, params: CHAT_PARAMS });
-  const p = prefetchLines({ facts: factsFor(g.mod, { data: g.data ?? {}, lang: lang() }), ask, shape: g.mod.meta?.lines });
+  const asleep = Boolean(look?.companion?.asleep);
+  const p = prefetchLines({ facts: factsFor(g.mod, { data: g.data ?? {}, lang: lang() })?.then((f) => (f && asleep ? { ...f, asleep } : f)), ask, shape: g.mod.meta?.lines });
   if (!p) return null;
   prefetchLog = { id, asking: true };
   p.done.then((r) => { prefetchLog = { id, ...r }; console.info('[lingjing] 台词预取', id, r.ok ? `${Object.keys(r.got).length} moments` : r.why, `${r.ms} ms`); });
@@ -3868,7 +3873,8 @@ function prefetchFor(id, g) {
 const HER_MOMENT_ID = { rise: 'rise', hui: 'chapter', tamed: 'tamed' };
 function herMomentAsk(kind, facts, { mode, mood }) {
   herFactsSent = { kind, facts };
-  if (mode !== 'awake') return { sent: Promise.resolve(false), line: new Promise(() => {}) };
+  // Asleep in the 木牌 she is asked too (her model writes the murmur; the pool answers only when she is late or offline).
+  if (mode === 'absent') return { sent: Promise.resolve(false), line: new Promise(() => {}) };
   if (HER_SEAM === 'stub') return { sent: Promise.resolve(true), line: new Promise((done) => setTimeout(() => done(`[stub] ${kind} · ${[...facts].length}`), 1500)) };
   if (HER_SEAM === 'slow') return { sent: Promise.resolve(true), line: new Promise(() => {}) };
   if (CHATLESS) return { sent: Promise.resolve(false), line: new Promise(() => {}) };

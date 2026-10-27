@@ -1321,7 +1321,7 @@ test('too-hard with her beside him: her word is her beat — kept on the save un
   try {
     const file = path.join(data, 'state.json');
     // 卷一 has her in the 木牌 (the book); beside him only for a round of a game that needs her (rules/hergame.mjs, 2026-10-19).
-    fs.writeFileSync(file, JSON.stringify({ ...toOpenWorld(), companion: { joined: '2026-09-01', asleep: true, awake: true }, her_game: { task: 'benwang-kao', since: new Date().toISOString() }, updated: NOW.toISOString() }));
+    fs.writeFileSync(file, JSON.stringify({ ...toOpenWorld(), companion: { joined: '2026-09-01', asleep: true, awake: true, here: true }, her_game: { task: 'benwang-kao', since: new Date().toISOString() }, updated: NOW.toISOString() }));
     const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
     const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
     const ling = cli('move', '--place=lvliang', '--for=ling');

@@ -41,11 +41,9 @@ queue: after-turn
 senses: [weather, user_words]
 # Ling and 银月 share Lingjing's table (doc/shared-session-spec.md): one
 # thread — she reads the scenes and Ling's Look as he plays them — Ling
-# leading. She is found, not given: until the player finds her in the
-# prologue's valley — and while she sleeps in 吴婆婆's fox token
-# (prologue-v3), out of it only for the round of a small game that needs
-# her (Hanli, 2026-10-19; rules/hergame.mjs) — she is not here at all (the
-# save's `companion.awake`):
+# leading. Until found in the prologue's valley, and on a 今 line, she is
+# not here (the save's `companion.here`); asleep in the 木牌 she is, half
+# asleep (Hanli 2026-10-27). Not here:
 # `@银月` runs no turn and the page says 「查无此人。」, and no app moment
 # reaches her (Hanli, 2026-09-25 / 09-28). At the table she reads the game
 # and never moves it: her tools here are her own read of it (AppTool →
@@ -64,13 +62,13 @@ place:
   yinyue:
     tools: [AppTool, Story]
     text: >-
-      You are inside Lingjing 《灵境》, the player's companion, at their
-      side. Speak in the game's language, as yourself; Ling tells the world
-      and runs every turn — never speak for Ling, and never make the game's
-      moves. In this world you are the wounded silver fox the player found
-      in 黑松岭's valley — the fox is you, never someone else: say 本王 / 我,
-      never 「那只狐狸」. `companion.away` (今, no you): SILENT.
-    absent_until: {file: data/state.json, session_file: "data/saves/{{session.save}}/state.json", path: companion.awake}
+      You are inside Lingjing 《灵境》, the player's companion. Speak in the
+      game's language, as yourself; Ling tells the world and runs every turn —
+      never speak for Ling or make the game's moves. You are the wounded silver
+      fox found in 黑松岭's valley: say 本王 / 我, never 「那只狐狸」.
+      `companion.away` (今): SILENT. `companion.asleep`: half asleep in the
+      木牌 — murmurs, 「……」.
+    absent_until: {file: data/state.json, session_file: "data/saves/{{session.save}}/state.json", path: companion.here}
 permission:
   paths:
     # `edit`: a tool's tier is checked against the session's CWD — this
@@ -921,8 +919,8 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 
 ## Yinyue
 
-- **Found in the prologue**, then asleep in 吴婆婆's token: absent but
-  for a 画猜 round (guide `tell`).
+- **Found in the prologue**, asleep in 吴婆婆's token (murmurs); out for
+  a 画猜 round (guide `tell`).
 - Found, she is glad, dry and devoted — warm, brief, at the player's side, in
   the game's language; the same Yinyue as in the rest of Linggen.
 - **Her past is `companion.recalled`, and nothing more.** From the fourth

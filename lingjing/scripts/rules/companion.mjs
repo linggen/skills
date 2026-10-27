@@ -78,10 +78,11 @@ export function herAway(content, state) {
   const line = sceneLine(content, sceneOf(content, state));
   return line && !lore.lines.includes(line) ? pick(lore.away, state.lang) : null;
 }
-/* The flag the engine's presence reads (SKILL.md `absent_until:
-   companion.awake`): found, awake (herAwake: not asleep, or out of the token
-   for a game that needs her), and not away — so on a line she does not live
-   on, nothing of hers runs: no turn, no moment, no AppTool. Fitted as a save
+/* The flags of her presence. `here` is the one the engine reads (SKILL.md `absent_until:
+   companion.here`): found and not away — asleep in the 木牌 she still speaks, half asleep
+   (Hanli 2026-10-27: 「yinyue睡着也可以说话」) — so on a line she does not live on, nothing of
+   hers runs: no turn, no moment, no AppTool. `awake` (herAwake: not asleep, or out of the token
+   for a game that needs her) is the page's: her body on the stage, the games she plays in. Fitted as a save
    is read and before it is written (the page's `hergame` hold too); the same
    object when it fits already. A save the book has asleep and the save does
    not (written awake through 卷一 by the 10-19 morning's rule, 504b73fc) goes
@@ -89,18 +90,21 @@ export function herAway(content, state) {
 export function fitPresence(content, state, now = new Date()) {
   const c0 = state?.companion;
   if (!c0?.joined) {
-    // Unmet: awake only for an on-stage hold (herOnStage); else no flag of hers stands.
+    // Unmet: here and awake only for an on-stage hold (herOnStage); else no flag of hers stands.
     const on = herOnStage(content, state, now);
-    if (on === Boolean(c0?.awake)) return state;
-    const { awake, ...rest } = c0 ?? {};
-    return { ...state, companion: on ? { ...rest, awake: true } : rest };
+    if (on === Boolean(c0?.awake) && on === Boolean(c0?.here)) return state;
+    const { awake, here, ...rest } = c0 ?? {};
+    return { ...state, companion: on ? { ...rest, awake: true, here: true } : rest };
   }
   const back = !c0.asleep && bookAsleep(content, state) === true;
   const s = back ? { ...state, companion: { ...c0, asleep: true } } : state;
   const c = s.companion;
-  const want = !herAwake(s, now) ? {} : herAway(content, s) ? { away: true } : { awake: true };
-  if (Boolean(c.awake) === Boolean(want.awake) && Boolean(c.away) === Boolean(want.away)) return s;
-  const { awake, away, ...rest } = c;
+  // `here` (the engine's flag, SKILL.md absent_until): found and on her line of the book — asleep in the 木牌 too
+  // (Hanli 2026-10-27: 「yinyue睡着也可以说话」: she murmurs, half asleep). `awake`: out of the 木牌 as well.
+  const away = Boolean(herAway(content, s));
+  const want = away ? { away: true } : { here: true, ...(herAwake(s, now) ? { awake: true } : {}) };
+  if (Boolean(c.awake) === Boolean(want.awake) && Boolean(c.away) === Boolean(want.away) && Boolean(c.here) === Boolean(want.here)) return s;
+  const { awake, away: _a, here, ...rest } = c;
   return { ...s, companion: { ...rest, ...want } };
 }
 const callDue = (content, state) => {

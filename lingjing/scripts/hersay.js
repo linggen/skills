@@ -11,9 +11,8 @@
 // facts plus the register (`momentFacts`); her line comes back on the chat's
 // guest stream. The pools below are the only code-held wording of hers: the
 // fallback when she is slow (WAIT_MS) or nobody will hear (a scratch save, the
-// pet off) — and, by the engine's gate, her whole voice while she sleeps in
-// the 木牌 (SKILL.md `place.yinyue.absent_until: companion.awake`: the engine
-// answers 409 to every moment then, so the asleep voice is the pool's).
+// pet off, the cloud down). Asleep in the 木牌 her model still writes the word,
+// half awake (REGISTER_ASLEEP; Hanli 2026-10-27: 「yinyue睡着也可以说话」).
 //
 // NOTHING WAITS ON HER. `speak` returns at once; her line, should it land
 // late, still takes the bubble while that moment is the newest.
@@ -76,6 +75,11 @@ export function weighWin(f, { lastShort = -Infinity, now = 0 } = {}) {
 }
 
 /* ── Her register, told to her model with every moment ── */
+/* Asleep in the 木牌 (Hanli 2026-10-27: 「yinyue睡着也可以说话」): her model still writes the word, half awake. */
+export const REGISTER_ASLEEP = {
+  zh: '她睡在木牌里，半梦半醒：含糊的一两句梦话，带「……」，仍是骄傲的本王，半醒地逗他，叫他凡人。',
+  en: 'She sleeps in the wooden token, half awake: a drowsy murmur, trailing "…", still the proud "this king", calling him mortal.',
+};
 export const REGISTER = {
   zh: '以骄傲妖王的口吻（自称本王，嘴硬带刺）：夸要居高临下、反着夸；安慰靠傲气和命令，不可怜；真心最多漏一个软字就收回。不说恭喜，不哄。',
   en: 'Be the proud demon king ("this king"): backhanded praise, comfort by command, no pity; one soft word at most.',
@@ -109,9 +113,9 @@ const ASKS = {
    already in the player's language — how close, what it took), the ask, the
    register and the length. Kept under `max` characters (the engine keeps
    300, the name line in front): `what` gives way first. */
-export function momentFacts(kind, what, lang = 'zh', { weight = 'full', max = 260 } = {}) {
+export function momentFacts(kind, what, lang = 'zh', { weight = 'full', max = 260, mode = 'awake' } = {}) {
   const zh = lang !== 'en', L = zh ? 'zh' : 'en', sep = zh ? '' : ' ';
-  const tail = [ASKS[kind]?.[L] ?? '', REGISTER[L], (LENGTH[weight] ?? LENGTH.full)[L]].filter(Boolean).join(sep);
+  const tail = [ASKS[kind]?.[L] ?? '', (mode === 'asleep' ? REGISTER_ASLEEP : REGISTER)[L], (LENGTH[weight] ?? LENGTH.full)[L]].filter(Boolean).join(sep);
   const room = max - [...tail].length - (what ? [...sep].length : 0);
   let w = String(what ?? '').trim();
   if ([...w].length > room) w = room > 1 ? `${[...w].slice(0, room - 1).join('')}…` : '';
@@ -345,7 +349,7 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
       onLine(st.line);
       return id;
     }
-    return speak(kind, momentFacts(kind, what, lang(), { weight, max: max() }));
+    return speak(kind, momentFacts(kind, what, lang(), { weight, max: max(), mode: m }));
   }
   return {
     st,

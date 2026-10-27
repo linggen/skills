@@ -70,7 +70,8 @@ test('银月 is away on the 今: the presence flag drops, her read says only tha
   assert.match(herAway(content, s), /今线.*保持沉默/);
   assert.match(herAway(content, { ...s, lang: 'en' }), /not in this world.*silent/i);
   const fitted = fitPresence(content, s);
-  assert.equal(fitted.companion.awake, undefined, 'the engine reads companion.awake: unset, she is absent');
+  assert.equal(fitted.companion.here, undefined, 'the engine reads companion.here: unset, she is absent');
+  assert.equal(fitted.companion.awake, undefined);
   assert.equal(fitted.companion.away, true);
   assert.equal(fitPresence(content, fitted), fitted, 'fitted once, the same object');
   const l = look(fitted, content, ctx);
@@ -82,9 +83,10 @@ test('银月 is away on the 今: the presence flag drops, her read says only tha
   assert.deepEqual([back.companion.awake, back.companion.away], [true, undefined]);
   assert.equal(herAway(content, back), null);
   assert.ok(progress(back, content, ctx).result.stamina);
-  // Asleep in the token she stays asleep, on either line.
+  // Asleep in the token she stays asleep, on either line — and on the 今 she is away too: she speaks half
+  // asleep on her own line only (Hanli 2026-10-27: 「yinyue睡着也可以说话」).
   const asleep = fitPresence(content, { ...s, companion: { joined: '2026-10-01', asleep: true } });
-  assert.deepEqual(asleep.companion, { joined: '2026-10-01', asleep: true });
+  assert.deepEqual(asleep.companion, { joined: '2026-10-01', asleep: true, away: true });
   assert.deepEqual(lint(content), []);
 });
 

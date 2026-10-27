@@ -52,6 +52,7 @@ test('before she joins, nothing reaches her — rise, chapter, spent and every o
     voice: { moment: (id) => { calls.push(id); return { said: Promise.resolve(true) }; } },
     fetch: (...a) => { fetches.push(a); return Promise.resolve({ ok: true }); },
     chat: { getSessionId: () => 's1' }, lang: () => 'zh', SKILL: 'lingjing', JSON, console, Promise,
+    sleepNote: () => '',
   };
   const page = `${HER_HERE} ${fnSource('askHer')} ${fnSource('tellYinyue')} ${fnSource('postMoment')}
     return { askHer, tellYinyue, postMoment };`;

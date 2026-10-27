@@ -114,21 +114,23 @@ test("place: 银月 is a guest with her own text, absent until the save says she
   const her = place.yinyue;
   assert.ok(her.text.length > 40 && her.text.length < 400, 'one or two short lines');
   // A chat bound to a test save reads that save's state (skill-spec § Session parameters): the file
-  // the rules write for `--save=<name>`, the same `companion.awake` the her-game hold sets there.
-  assert.deepEqual(her.absent_until, { file: 'data/state.json', session_file: 'data/saves/{{session.save}}/state.json', path: 'companion.awake' });
+  // the rules write for `--save=<name>`, the same `companion.here` the rules fit there.
+  assert.deepEqual(her.absent_until, { file: 'data/state.json', session_file: 'data/saves/{{session.save}}/state.json', path: 'companion.here' });
   // The rules keep the save at data/state.json in the skill folder …
   const { dataDir } = await import('../scripts/rules/files.mjs');
   const skillDir = path.resolve(path.dirname(SKILL_MD));
   if (!process.env.LINGJING_DATA) assert.equal(path.relative(skillDir, path.join(dataDir(), 'state.json')), her.absent_until.file);
   const { scratchDir } = await import('../scripts/rules/files.mjs');
   if (!process.env.LINGJING_DATA) assert.equal(path.relative(skillDir, path.join(scratchDir('cc-x'), 'state.json')), her.absent_until.session_file.replace('{{session.save}}', 'cc-x'));
-  // … and `companion.awake` is what joining (and waking) writes and sleeping
-  // takes away (prologue-v3: asleep in the fox token), read the engine's way
-  // (set = present and not null/false/0/""/[]/{}).
-  const { herAwake: hasCompanion } = await import('../scripts/rules/companion.mjs');
+  // … and `companion.here` is what the rules write as a save is fitted (companion.mjs fitPresence): found and not
+  // away — asleep in the fox token too, where she speaks half asleep (Hanli 2026-10-27: 「yinyue睡着也可以说话」) —
+  // read the engine's way (set = present and not null/false/0/""/[]/{}).
+  const { fitPresence } = await import('../scripts/rules/companion.mjs');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const content = loadContent();
   const valueAt = (json, p) => p.split('.').reduce((v, k) => (v == null ? undefined : v[k]), json);
   const isSet = (v) => v != null && v !== false && v !== 0 && v !== '' && !(Array.isArray(v) && !v.length) && !(typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length);
-  for (const s of [{}, { companion: {} }, { companion: { riddle: { day: 'x' } } }, { companion: { joined: '2026-09-18', awake: true } }, { companion: { joined: '2026-09-28', asleep: true } }]) {
-    assert.equal(isSet(valueAt(s, her.absent_until.path)), hasCompanion(s), JSON.stringify(s));
+  for (const [s, here] of [[{}, false], [{ companion: {} }, false], [{ companion: { riddle: { day: 'x' } } }, false], [{ companion: { joined: '2026-09-18', awake: true } }, true], [{ companion: { joined: '2026-09-28', asleep: true } }, true]]) {
+    assert.equal(isSet(valueAt(fitPresence(content, s), her.absent_until.path)), here, JSON.stringify(s));
   }
 });
