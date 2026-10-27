@@ -805,5 +805,36 @@ t('with Toronto held, the check runs any weekday until 16:00 (US Thanksgiving; a
     t('no cache and no source: an error, no rows', $none->{error} && !$none->{rows});
 }
 
+# ── The Watch line for a closed phone ───────────────────────────────────────
+{
+    my $doc = {
+        items => [
+            { id => 'news:AAPL:1', symbol => 'AAPL', also => ['MSFT', 'ZZZZ'], holdings => ['AAPL'], line => 'Apple beat.',
+              materiality => 'high', held => JSON::PP::true, stake => 812.4, moved => JSON::PP::true, exposure => 9000, currency => 'USD' },
+            { id => 'cal:fomc:2026-10-28', holdings => ['VFV.TO'], line => 'The Fed held.', materiality => 'medium',
+              held => JSON::PP::true, stake => 40, moved => JSON::PP::false, exposure => 12000.6, currency => 'CAD' },
+            { id => 'news:X:2', symbol => 'X', line => 'Stranger news.', materiality => 'low', held => JSON::PP::false, stake => 0, currency => 'USD' },
+        ],
+        briefs => {
+            '2026-10-27' => { lines => ['news:AAPL:1', 'cal:fomc:2026-10-28', 'gone:id'], quiet => JSON::PP::false },
+            '2026-10-26' => { lines => [], quiet => JSON::PP::true },
+        },
+    };
+    my $n = watch_notice($doc, '2026-10-27', { AAPL => 1, MSFT => 1, 'VFV.TO' => 1 });
+    t('the morning notice keys on the phone\'s told key', $n && $n->{key} eq 'watch|2026-10-27');
+    t('its route lands on the first line', $n && $n->{route} eq 'cfo/invest/news%3AAAPL%3A1');
+    t('one fact per line the brief names, unknown ids dropped', $n && @{ $n->{facts} } == 2);
+    my ($aapl, $fed) = @{ $n->{facts} || [] };
+    t('a company line names its ticker and their other tickers, never a stranger\'s', $aapl && $aapl->{about} eq 'AAPL, MSFT');
+    t('money that moved is the figure', $aapl && $aapl->{their_money_moved} eq '812 USD' && !exists $aapl->{their_holding_it_touches});
+    t('an economy line names the holdings it touches and what they are worth',
+      $fed && $fed->{about} eq 'VFV.TO' && $fed->{their_holding_it_touches} eq '12001 CAD' && !exists $fed->{their_money_moved});
+    t('what happened and how much it matters ride along', $fed && $fed->{what_happened} eq 'The Fed held.' && $fed->{matters} eq 'medium');
+    t('a quiet night says nothing', !defined watch_notice($doc, '2026-10-26', {}));
+    t('a brief for another day says nothing', !defined watch_notice($doc, '2026-10-28', {}));
+    my $stranger = watch_fact($doc->{items}[2], {});
+    t('a line with no stake carries no figure', !exists $stranger->{their_money_moved} && !exists $stranger->{their_holding_it_touches});
+}
+
 print "\n$pass passed, $fail failed\n";
 exit($fail ? 1 : 0);

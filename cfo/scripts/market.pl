@@ -31,6 +31,9 @@
 #   perl market.pl watch-alerts          what can't wait for the morning: rate
 #                                        decisions, CPI, jobs, a holding's 5% day;
 #                                        and the releases of the next two weeks
+#   perl market.pl watch-notice          this morning's brief as the line the Mac
+#                                        may push to a closed phone: {key, facts,
+#                                        route}, or nothing on a quiet night
 #   perl market.pl history SYM [5Y|1D|1W]
 #                                        a stock card's chart: five years of daily
 #                                        OHLC, or the last session / five sessions
@@ -82,6 +85,7 @@ sub main {
         'save-watch'     => \&cmd_save_watch,
         'watch-level'    => \&cmd_watch_level,
         'watch-alerts'   => \&cmd_watch_alerts,
+        'watch-notice'   => \&cmd_watch_notice,
         history          => \&cmd_history,
     );
     my $run = $commands{ $verb // '' }
@@ -95,7 +99,7 @@ sub usage {
                . "       market.pl read URL | save-report symbol=… period=… form=… filed=… url=… summary=…\n"
                . "       market.pl watch-scan [--since=TIME] [SYMBOL...] | save-watch judgments=JSON\n"
                . "       market.pl watch-level quiet|normal|everything\n"
-               . "       market.pl watch-alerts [--force] [--now=TIME]\n"
+               . "       market.pl watch-alerts [--force] [--now=TIME] | watch-notice\n"
                . "       market.pl history SYMBOL [5Y|1D|1W]\n";
     exit 2;
 }
@@ -1683,6 +1687,63 @@ sub record_watch {
     delete @$briefs{ grep { $_ le $keep } keys %$briefs };
     return { judged => scalar @fresh, candidates => scalar @{ $scan->{events} || [] }, level => $level,
              brief => [ map { { id => $_->{id}, line => $_->{line}, stake => $_->{stake}, moved => $_->{moved}, exposure => $_->{exposure}, currency => $_->{currency} } } @lines ] };
+}
+
+# ── The Watch line for a closed phone (SKILL.md `notices:`) ────────────────
+#
+# The engine runs this when the watch mission ends; what it prints is the line
+# Yinyue writes on the Mac and pushes when the phone hasn't told it itself.
+# The facts are the phone's own (`WatchLine.facts()` in the app), so the words
+# come out the same through either door, and the key is the phone's told key
+# (`watch|<day>`). A quiet night, or a brief for another day, prints nothing.
+
+sub cmd_watch_notice {
+    my $doc = read_json(data_dir() . '/watch.json') or return;
+    my $notice = watch_notice($doc, today(), { map { $_ => 1 } watched_symbols() }) or return;
+    say_json($notice);
+}
+
+sub watch_notice {
+    my ($doc, $today, $mine) = @_;
+    my $brief = ($doc->{briefs} || {})->{$today} or return undef;
+    return undef if $brief->{quiet} || !@{ $brief->{lines} || [] };
+    my %item = map { $_->{id} => $_ } grep { ref eq 'HASH' && defined $_->{id} } @{ $doc->{items} || [] };
+    my @lines = grep { defined } map { $item{$_} } @{ $brief->{lines} };
+    return undef unless @lines;
+    return {
+        key   => "watch|$today",
+        facts => [ map { watch_fact($_, $mine) } @lines ],
+        route => 'cfo/invest/' . url_escape($lines[0]{id}),
+    };
+}
+
+# One line's facts, as the phone builds them: who it is about (their tickers
+# only), what happened, how much it matters, and the one figure it carries.
+sub watch_fact {
+    my ($it, $mine) = @_;
+    my %theirs = %$mine ? %$mine : map { $_ => 1 } @{ $it->{holdings} || [] };
+    my @syms = $it->{symbol}
+        ? ($it->{symbol}, grep { $theirs{$_} && $_ ne $it->{symbol} } @{ $it->{also} || [] })
+        : @{ $it->{holdings} || [] };
+    my %seen;
+    @syms = grep { !$seen{$_}++ } @syms;
+    my $held = $it->{held} ? 1 : 0;
+    my $num = sub { my $v = $it->{ $_[0] } // 0; return $held && $v =~ /^-?[\d.]+$/ ? $v : 0 };
+    my ($stake, $exposure) = ($num->('stake'), $num->('exposure'));
+    my %money;
+    if (defined $it->{currency}) {
+        if ($it->{moved}) {
+            %money = (their_money_moved => sprintf('%d %s', int($stake + 0.5), $it->{currency})) if $stake > 0;
+        } elsif ($exposure > 0) {
+            %money = (their_holding_it_touches => sprintf('%d %s', int($exposure + 0.5), $it->{currency}));
+        }
+    }
+    return {
+        about         => @syms ? join(', ', @syms) : 'the economy',
+        what_happened => $it->{line},
+        matters       => $it->{materiality} // 'low',
+        %money,
+    };
 }
 
 # A candidate with Ling's judgment, or undef when she judged it nothing. The

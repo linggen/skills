@@ -37,6 +37,17 @@ quests:
     cfo-trends: cfo-review
     cfo-invest: cfo-invest
     cfo-first-stock: cfo-first-stock
+# Lines Yinyue may tell a closed phone, pushed by the Mac (engine
+# doc/phone-push-spec.md). The Watch's morning line: raised when the nightly
+# watch mission ends; pushed at the phone's morning hour only when the phone
+# hasn't told it itself. The prompt mirrors the app's (cfo_lines.dart
+# _watchPrompt) — change both together.
+notices:
+  - line: watch
+    tier: record
+    prompt: notices/watch.md
+    after: watch
+    facts: perl scripts/market.pl watch-notice
 permission:
   paths:
     - { path: ~/.linggen/skills/cfo, mode: edit }
