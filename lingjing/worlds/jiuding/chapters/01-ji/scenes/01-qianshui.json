@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "id": "01-qianshui",
+ "chapter": "01-ji",
+ "hui": "h10",
+ "at": "zhangyuan",
+ "place": {
+  "zh": "漳水 · 河心坑",
+  "en": "The Zhang · the pit under the river"
+ },
+ "_board": "01-qianshui (全文后的小游戏 第二批 2026-10-26): 01-deep's passage split before the cold ring — down the pit in one breath (气走经脉 `qianshui`) after 「…只有坑底那一点光。」 Inside the 河伯 lock.",
+ "setup": {
+  "zh": "河伯没走。他悬在漳水正中，踩着两条龙，低头看着你的胸口：「……你身上，有青丘的味道。」河心底下，有一样东西在一明一暗地呼吸。",
+  "en": "The River Lord has not gone. He hangs over the middle of the Zhang on his two dragons, looking down at your chest: \"…You smell of Qingqiu.\" Deep in mid-river, something breathes, light and dark, light and dark."
+ },
+ "recap": {
+  "zh": "二十五个姑娘活在柳湾；拦船的老胡死在城楼底下——把河伯请上来的，是你。河伯原是冰夷；他守了两千年的东西在河心坑底，上头压着洛书之封。你潜下去，呛了水，差一点没上来；九块石头一块没错，是心定住了，最后一块才落进去。",
+  "en": "The twenty-five girls were alive at Willow Bend; Old Hu, who came to stop the boat, died under the gate tower — and it was you who brought the River Lord up. The River Lord was Bingyi; what he had kept two thousand years lay at the bottom of the pit mid-river under the Luo Writing seal. You dived, swallowed water, nearly did not come up; you placed nine stones and not one wrong — your heart held steady, and only then did the last one go in."
+ },
+ "cast": [],
+ "people": [
+  "ban",
+  "zhouheng"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「你下去，把它拿走。」",
+    "能靠的只有你自己憋住的那一口气。",
+    "越往下越黑。"
+   ],
+   "en": [
+    "\"Go down and take it away.\"",
+    "All you can rely on is the breath you hold.",
+    "The further down, the darker."
+   ]
+  }
+ },
+ "story": {
+  "zh": "河伯还悬在漳水当中，看着城楼底下这一堆人。过了很久，他才转过头来，对着岸上的人道：「……那些姑娘，没死。下游三十里，柳湾。二十五年，二十五个，都在。」他看了一眼瘫在岸上的巫祝，「她们自己知道：回了家，全家陪葬。柳湾的人替她们瞒着；往下游那条路，我淹了二十五年。」顿了一顿，「今天起，不淹了。」\n\n二十五个姑娘，一个也没死。来拦船的那一个爹，死在了城楼底下。\n\n河伯没走。他悬在漳水正中，踩着两条龙，低头看着小满——说得准些，是看着他胸口。他开口的时候，嘴唇却没有动，那声音是从小满脚底下的水里漫上来的，一个字一个字，只往他一个人耳朵里钻：「……你身上，有青丘的味道。」\n\n小满张着嘴，一个字也说不出来。银月钻了出来，蹲在他肩膀上，这一回，岸上的人都看不见她，只有他和河伯看得见。她瞧着河伯，开口便道：「……[冰夷]{注=bingyi}。」\n\n这两个字一出口，她自己倒先愣了一愣，仿佛这名字不是想起来的，是从嘴里自己掉出来的。河伯看着她，眼神晃了一下。他道：「……你。你还活着。」他的眼睛落到她身后那一条尾巴上，便不说话了。银月也没有说话，把那条尾巴往身子底下收了一收。\n\n小满压着嗓子问道：「冰夷？」银月道：「这是他的本名，『河伯』是你们凡人叫的。他是守这条漳水的水神，两千年前就在这条河里了。论本事，你们观主在他跟前也只是一个小辈。可他是守河的，离不开这条河，也不能随便对岸上的人动手。」\n\n河伯没理银月，又看了小满一眼，道：「那婆子掉下来的时候，在我水里喊。她喊的不是河伯。她喊『仙长』。」又道：「……那仙长是谁？」\n\n小满往河里走了两步，站在齐膝深的水里，压低了声音——站在他的水里，说什么他都听得见——把那两锭大银、在庙里给巫祝银子的老井，还有老井说的那两句话，一样一样说了。说到「去年漳水涨了三尺，今年，他该忍不住了」，河伯的脸色变了。说到「他上来的时候，你们谁也不许拦」，河伯半晌没有作声。\n\n过了很久，他才道：「……原来如此。」那声音里没有怒气，只有一股说不出的疲倦，「我在这水底下两千年，没挪过窝。我从哪里上来，底下便压着什么。漳水长八百里，他们找不着；便一年砸一个姑娘下来，砸我，砸了二十五年，等我自己浮上来。」他望着东边的城墙，「修士动我，天上要往下看；凡人往河里扔媳妇，天上不看。……好算计。」\n\n小满听到这里，手脚一阵冰凉。那个圈，那锭银子，还有老井——他们花了二十五年、两千五百两银子，没能做成的事，他一个上午便替他们做成了。他把巫祝扔下了河，他把河伯请了上来。\n\n他在心里一样一样地往回算：是他把巫祝扔进了河里，河伯才给惊动了，从水底下上来；河伯上来的时候发了怒，一浪拍下来，拍塌了城楼的那一角；塌下来的那一角城楼，压死了老胡。算到头，老胡这条命，有一份是记在他沈小满账上的。\n\n银月蹲在他肩上，一个字也没有说。\n\n河伯道：「两千年前，有人托我守它。她说，会有人来拿。拿的人，身上有青丘的味道。」又道：「光有味道不够。方才那两条龙，是替她问你的。」\n\n银月道：「……谁托你的？」河伯看了银月一眼，没有回答，只对小满道：「我上来了，该知道的人，也就知道了。你下去，把它拿走。」小满道：「您不能拿上来么？」河伯道：「那口鼎上头有一道封，我打不开。封里头的那一圈水，不归我管：在那里头，我分不开水，也送不进气，一点忙也帮不上你。你下去以后，能靠的只有你自己憋住的那一口气。」\n\n等岸上的人散尽，日头已挨着了西边的城墙，小满才下了水。\n\n漳水很深，越往下越黑。河心底下还有一个坑，他顺着坑壁往下潜，头顶上那一点天光便没了，只有坑底那一点光。",
+  "en": "The River Lord still hung in the middle of the Zhang, looking at the knot of people under the gate tower. After a long time he turned and said to the people on the bank, \"…Those girls aren't dead. Thirty li downstream, Willow Bend. Twenty-five years, twenty-five of them, all there.\" He glanced at the shaman sprawled on the bank. \"They knew it themselves: if they went home, the whole family would go down with them. The people of Willow Bend kept it quiet for them; the road downstream I flooded for twenty-five years.\" He paused. \"From today, I won't.\"\n\nTwenty-five girls, and not one of them dead. The one father who had come to stop the boat died under the gate tower.\n\nThe River Lord hadn't gone. He hung in the very middle of the Zhang, standing on his two dragons, looking down at Xiaoman — or, more exactly, at his chest. When he spoke, his lips didn't move; the voice came welling up out of the water under Xiaoman's feet, word by word, and went into his ears alone: \"…You smell of Qingqiu.\"\n\nXiaoman's mouth hung open; he couldn't say a word. Yinyue slipped out and crouched on his shoulder. This time the people on the bank couldn't see her; only he and the River Lord could. She looked at the River Lord and the first thing she said was, \"…[Bingyi]{注=bingyi}.\"\n\nThe moment the name was out, she herself was taken aback, as if it hadn't been remembered but had fallen out of her mouth by itself. The River Lord looked at her, and something flickered in his eyes. He said, \"…You. You're still alive.\" His eyes went to the one tail behind her, and he said nothing more. Yinyue said nothing either, and tucked that tail in under herself.\n\nXiaoman asked under his breath, \"Bingyi?\" Yinyue said, \"That's his own name. 'River Lord' is what you mortals call him. He's the water god who guards the Zhang; he's been in this river for two thousand years. For power, your Abbot is only a junior beside him. But he's a guardian of the river; he can't leave it, and he can't just raise his hand against people on the bank.\"\n\nThe River Lord ignored Yinyue and looked at Xiaoman again. \"When that old woman fell in, she shouted in my water. What she shouted wasn't 'River Lord.' She shouted 'Immortal.'\" Then: \"…Who is the Immortal?\"\n\nXiaoman walked two steps into the river and stood knee-deep in the water, and lowered his voice — standing in his water, anything he said the River Lord could hear — and told him all of it, one thing after another: the two big ingots, Old Well giving the shaman silver in the temple, and the two things Old Well had said. When he got to \"Last year the Zhang rose three feet. This year he ought not to be able to hold back,\" the River Lord's face changed. When he got to \"When he comes up, none of you is to stand in his way,\" the River Lord said nothing for a long while.\n\nAfter a long time he said, \"…So that's how it is.\" There was no anger in his voice, only a weariness beyond words. \"Two thousand years I have been under this water and never moved. Wherever I come up from, something lies under it. The Zhang is eight hundred li long; they couldn't find it. So every year they dropped a girl on me, on me, twenty-five years of it, waiting for me to come up by myself.\" He looked towards the eastern city wall. \"When cultivators move against me, heaven looks down; when mortals throw brides into a river, heaven doesn't look. …A fine piece of reckoning.\"\n\nAt this, Xiaoman's hands and feet went icy. That circle, that ingot, and Old Well — what they had spent twenty-five years and two thousand five hundred taels of silver and failed to do, he had done for them in a single morning. He had thrown the shaman into the river. He had brought the River Lord up.\n\nHe reckoned it back in his head, item by item: it was because he threw the shaman into the river that the River Lord was disturbed and came up from under the water; when the River Lord came up he was angry, and the wave he brought down knocked down that corner of the gate tower; the fallen corner of the gate tower crushed Old Hu. Reckoned to the end, a share of Old Hu's life was entered in Shen Xiaoman's books.\n\nYinyue crouched on his shoulder and said not a word.\n\nThe River Lord said, \"Two thousand years ago someone asked me to guard it. She said someone would come for it. The one who came would smell of Qingqiu.\" Then: \"The smell alone isn't enough. Those two dragons just now were asking you on her behalf.\"\n\nYinyue said, \"…Who asked you?\" The River Lord looked at Yinyue and didn't answer, only said to Xiaoman, \"I've come up; those who ought to know now know. Go down and take it away.\" Xiaoman said, \"Can't you bring it up?\" The River Lord said, \"There's a seal on that cauldron that I can't open. The ring of water inside the seal isn't mine to command. In there I can't part the water or send in air; I can't help you at all. Once you go down, all you'll have to rely on is the one breath you hold.\"\n\nOnly when the people on the bank had all gone, and the sun was touching the western city wall, did Xiaoman go into the water.\n\nThe Zhang was very deep, and the further down, the darker. Under the middle of the river there was a pit as well, and he swam down along its side until the little bit of daylight overhead was gone and there was only the little bit of light at the bottom of the pit."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "qianshui-qi"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "qianshui-qi"
+  ]
+ },
+ "lines": [],
+ "buttons": [
+  "down"
+ ],
+ "exits": [
+  {
+   "id": "down",
+   "label": {
+    "zh": "坑底",
+    "en": "The bottom of the pit"
+   },
+   "means": "into the cold ring the River Lord can't reach; the cauldron",
+   "beat": [],
+   "next": "01-deep",
+   "needs": {
+    "task": "qianshui-qi"
+   },
+   "refuse": {
+    "zh": "那一口气还没憋稳。",
+    "en": "That breath isn't steady yet."
+   }
+  }
+ ]
+}

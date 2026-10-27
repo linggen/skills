@@ -1585,6 +1585,9 @@ function toJi() {
   return { ...answer(move, woke, { place: 'zhangnan' }).state, stamina: 100, wealth: 300 };
 }
 
+// A story board counted (第二批 2026-10-26): the way on that waits on it opens.
+const boardsDone = (st, ...ids) => ({ ...st, tasks: { ...st.tasks, ...Object.fromEntries(ids.map((id) => [id, { status: 'done' }])) } });
+
 test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the wedding, the dragons\' trial, the seal, the first 鼎, the end', () => {
   let s = toJi();
   // arrive → Ye: the scene moves, and the exit walks the player the one road there
@@ -1613,6 +1616,9 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
     s = r.state;
   }
   s = answer(resolve, s, { exit: 'shrine' }).state;
+  // 全文后的小游戏 第二批 (2026-10-26): the well in the inn's yard (阿禾 in the borrowed red) before the wedding
+  assert.equal(s.scene, '01-jingtai');
+  s = answer(resolve, boardsDone(s, 'jingtai-jiayi'), { exit: 'dawn' }).state;
   assert.equal(s.place, 'hebo');
   const altar = look(s, content, octx()).scene;
   assert.equal(altar.id, '01-altar');
@@ -1632,7 +1638,9 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 0); // no story 修为 (2026-10-16)
   // 老胡 under the fallen tower (古九): 阿禾's 青光 holds him a cup of tea's time — no pill (the book, 2026-10-13: 九纹 is not for mortals)
   assert.deepEqual(look(r.state, content, octx()).scene.exits.map(e => e.id).filter(id => id !== 'run'), ['hold']);
-  r = answer(resolve, r.state, { exit: 'hold' });
+  r = answer(resolve, boardsDone(r.state, 'tower-bingyi', 'tower-wali'), { exit: 'hold' }); // 河伯明鉴 · 瓦砾 (2026-10-26)
+  assert.equal(r.state.scene, '01-qianshui');
+  r = answer(resolve, boardsDone(r.state, 'qianshui-qi'), { exit: 'down' });
   assert.equal(r.state.scene, '01-deep');
   s = r.state; assert.equal(s.place, 'zhangyuan');
   r = answer(resolve, s, { exit: 'seal', answer: '5' });
@@ -1645,6 +1653,8 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   assert.equal(r.result.breakthrough, null);
   assert.equal(r.state.tier, tier, 'no realm is crossed here: that is the cliff\'s business');
   assert.deepEqual(r.state.memories, [1]);
+  assert.equal(r.state.scene, '01-zhaoang', '赵昂 under the willow (2026-10-26)');
+  r = answer(resolve, boardsDone(r.state, 'zhaoang-talk'), { exit: 'on' });
   // 老井 on the 河滩 (古九's per-回 pass, 2026-10-21): a 试 with 阿禾 beside him, won before the way on
   assert.equal(r.state.scene, '01-laojing');
   s = r.state;
@@ -1654,7 +1664,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   s = { ...s, wins: { ...s.wins, 'laojing-trial': OCT.toISOString() } };
   r = answer(resolve, s, { exit: 'dodge' });
   assert.equal(r.state.scene, '01-end');
-  r = answer(resolve, r.state, { exit: 'rest' });
+  r = answer(resolve, boardsDone(r.state, 'end-sangzi'), { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji']);
   assert.equal(r.state.scene, null);
   const thread = look(r.state, content, octx()).director.thread;
@@ -1664,7 +1674,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
 
 test('问卦 is the day\'s fight luck alone: its grade turns the lower trigram\'s 功法, reads the beast at 吉 — and never touches pay or a step', () => {
   const castOn = (st, ask, grade, hexagram = 1) => ({ ...st, divination: { day: '2026-10-02', ask, throws: [[3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2]], hexagram, changed: null, grade } });
-  const atShrine = () => answer(resolve, answer(resolve, toJi(), { exit: 'town' }).state, { exit: 'shrine' }).state;
+  const atShrine = () => answer(resolve, boardsDone(answer(resolve, answer(resolve, toJi(), { exit: 'town' }).state, { exit: 'shrine' }).state, 'jingtai-jiayi'), { exit: 'dawn' }).state;
   const paidBy = st => must(resolve, st, { exit: 'send' }, octx()).result.paid;
   const plain = paidBy(atShrine());
   // A cast made before the merge that asked about cultivation or wealth, and a
@@ -1726,7 +1736,7 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   let s = { ...toJi(), seed: '沈小满' };
   s = answer(resolve, s, { exit: 'town' }).state;
   assert.equal(s.place, 'ye');
-  s = answer(resolve, s, { exit: 'shrine' }).state;
+  s = answer(resolve, boardsDone(answer(resolve, s, { exit: 'shrine' }).state, 'jingtai-jiayi'), { exit: 'dawn' }).state; // the well first (2026-10-26)
   assert.equal(s.place, 'hebo', 'the exit walks the one road to the shrine');
   s = answer(resolve, s, { exit: 'send' }).state;
   assert.equal(s.scene, '01-rise');

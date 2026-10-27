@@ -134,8 +134,10 @@ test('story nodes: a scene passed carries its recap; a cauldron its memory once 
   assert.equal(look(step.state, content, ctx(new Date(NOW.getTime() + 3600000))).story_node, undefined, 'only while fresh');
 
   const road = roadOf('01-ji');
-  const last = { ...at('01-ji', road.slice(0, -1), { stamina: 100, companion: { joined: '2026-09-01' } }) };
   const endScene = content.chapters['01-ji'].scenes[road.at(-1)];
+  // its boards counted (01-end's 嗓子, 2026-10-26): the chapter's end waits on them
+  const boardsOver = Object.fromEntries((endScene.show ?? []).filter((c) => c.card === 'board').map((c) => [c.id, { status: 'done' }]));
+  const last = { ...at('01-ji', road.slice(0, -1), { stamina: 100, companion: { joined: '2026-09-01' }, tasks: boardsOver }) };
   const found = resolve(last, content, ctx(), { exit: endScene.exits.find(e => e.ends).id });
   assert.equal(found.result.ok, true, JSON.stringify(found.result));
   assert.equal(found.result.node.kind, 'cauldron');
@@ -164,7 +166,7 @@ test('Look: a chapter just begun carries its intro (the title card); one scene i
 
 test('前情提要 is owed as a sitting opens — back after a while, not after a short break, and never with no story', () => {
   const day = h => new Date(NOW.getTime() + h * 3600000);
-  const played = () => ({ ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() });
+  const played = () => ({ ...at('01-ji', roadOf('01-ji').slice(0, 1)), updated: NOW.toISOString() });
   assert.equal(owesRecap(played(), day(0.5)), false, 'half an hour: the same sitting');
   assert.equal(owesRecap(played(), day(2)), true, 'two hours away');
   assert.equal(owesRecap(played(), day(13)), true, 'thirteen hours');
@@ -185,7 +187,7 @@ test('前情提要 is owed as a sitting opens — back after a while, not after 
 
 test('a new chat session of Ling\'s opens a sitting: owed on its first Look, once — a brand-new game only remembers the session', () => {
   const later = new Date(NOW.getTime() + 10 * 60000);
-  const s = { ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() };
+  const s = { ...at('01-ji', roadOf('01-ji').slice(0, 1)), updated: NOW.toISOString() };
   assert.equal(owesRecap(s, later), false, 'ten minutes, no session: the same sitting');
   assert.equal(owesRecap(s, later, 's1'), true, 'a new session');
   assert.equal(s.recap.session, 's1');
@@ -205,7 +207,7 @@ test('the command line: owed on the first call after a while away, kept without 
   try {
     const file = path.join(data, 'state.json');
     const away = new Date('2026-09-13T09:00:00');
-    fs.writeFileSync(file, JSON.stringify({ ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() }));
+    fs.writeFileSync(file, JSON.stringify({ ...at('01-ji', roadOf('01-ji').slice(0, 1)), updated: NOW.toISOString() }));
     const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], {
       cwd: path.resolve(import.meta.dirname, '..'), encoding: 'utf8',
       env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: away.toISOString() },
@@ -434,7 +436,7 @@ for (const lang of ['zh', 'en']) {
 }
 
 test('目前任务 is one finished line from what is in hand, in the game\'s language — in a scene with nothing in hand, the scene\'s own words', () => {
-  const s = { ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() };
+  const s = { ...at('01-ji', roadOf('01-ji').slice(0, 1)), updated: NOW.toISOString() };
   // 2026-10-05: left empty here, Ling wrote one of her own — the setup's first sentence now (tests/side-line.test.mjs).
   const here = content.chapters['01-ji'].scenes[s.scene];
   assert.ok(taskLine(content, s, ctx()).startsWith('目前任务：' + fill(here.setup.zh, s, content).split('。')[0]), 'standing in a scene, no errand: the scene says it');
@@ -448,7 +450,7 @@ test('once a sitting: told on the opening Look, the page reopened an hour on wit
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-once-'));
   try {
     const file = path.join(data, 'state.json');
-    fs.writeFileSync(file, JSON.stringify({ ...at('01-ji', roadOf('01-ji').slice(0, 2)), updated: NOW.toISOString() }));
+    fs.writeFileSync(file, JSON.stringify({ ...at('01-ji', roadOf('01-ji').slice(0, 1)), updated: NOW.toISOString() }));
     const cli = (mins, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], {
       cwd: path.resolve(import.meta.dirname, '..'), encoding: 'utf8',
       env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: new Date(NOW.getTime() + mins * 60000).toISOString(), LINGGEN_SESSION_ID: 's1' },
@@ -458,7 +460,7 @@ test('once a sitting: told on the opening Look, the page reopened an hour on wit
     // recap owed again, sent `[scene] recap`, and Ling told it twice.
     assert.equal(cli(68, 'look').recap_due, undefined, 'the page, an hour on, nothing lived: the telling still stands');
     assert.equal(cli(69, 'look', '--for=ling').recap_due, undefined, 'and Ling\'s next Look has none');
-    const here = content.chapters['01-ji'].scenes[nextOf('01-ji', roadOf('01-ji')[1])];
+    const here = content.chapters['01-ji'].scenes[nextOf('01-ji', roadOf('01-ji')[0])]; // 01-ye: 01-jingtai's way on waits on its board (2026-10-26)
     const exit = here.exits.find(e => e.next && !e.game && !e.key && !e.needs && !e.value);
     const step = cli(70, 'resolve', `--exit=${exit.id}`);
     assert.equal(step.ok, true, 'a scene lived on the page: ' + JSON.stringify(step).slice(0, 200));

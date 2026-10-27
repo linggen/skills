@@ -152,7 +152,8 @@ test('a passage carries its 回, so the page plays an ending 回\'s last words b
 
 test('卷一 ends on its own card: 01-end rest waits on 「卷二 · 即将开放」 under 「卷一 · 沉鼎 · 完」 over 「第十回 · 完」, what he did, and only 「卷二待续」 — nothing of 卷二 (Hanli, 2026-10-05: 游戏只到卷一)', async () => {
   const fs = await import('node:fs');
-  const s0 = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/ji-end.json', import.meta.url), 'utf8')).state;
+  const f0 = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/ji-end.json', import.meta.url), 'utf8')).state;
+  const s0 = { ...f0, tasks: { ...f0.tasks, 'end-sangzi': { status: 'done' } } }; // 嗓子 (2026-10-26): the rest waits on 阿禾's thread
   const end = resolve(s0, content, ctx(), { exit: 'rest' });
   assert.equal(end.result.ok, true);
   assert.deepEqual(end.result.waiting, { chapter: '02-yan', coming: '卷二 · 即将开放' });

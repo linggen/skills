@@ -238,17 +238,27 @@ the down on his lip, dawn and the black car told on the way on. Reading 今四: 
 
 Over after: 最后一罚's first miss → the final (j09-final) 2,294, the told match.
 
-### 第九回 (h10): +8
+### 第九回 (h10): +8 → built 6
+**Built 2026-10-26:** ① 船 dropped: at the boatyard 阿禾 only watches 刘船匠 plane boards and reads his ledger (no action) ·
+② 阿禾 in the borrowed red (jinchat `jiayi`, 「先对着我，练一遍。」 → 「这新娘子……太好看了……」) in a new 01-jingtai (the inn's well,
+01-ye's `shrine` passage split at the dress) · ③ 数到三十 dropped (was 时机): it sits inside 漳水立起's way on (01-altar `send`),
+the set piece read whole · ④ 河伯明鉴 (jinchat `bingyi`, 「凡人的嘴」 → 「没有一样瞒得过我」) and ⑤ 瓦砾 (华容道 `wali`, painted; kouzi's
+layouts mirrored, solved in 12 · 15 · 19) in 01-tower · ⑥ 一口气 (气走经脉 `qianshui`) in a new 01-qianshui (01-deep's head: the
+dive down the pit), inside the 河伯 lock · ⑦ 赵昂 under the willow (jinchat `zhaoang`, 「……二十五个。」, 「因为天下，该归于一。」) in a
+new 01-zhaoang (01-cauldron's `take` split at the willow), inside the lock · ⑧ 嗓子 (气走经脉 `sangzi`) in 01-end, the rest waits on
+it. The 河伯 beat's scenes: altar · rise · tower · qianshui · deep · cauldron · zhaoang · laojing. 调息 two. A `h10` group in
+the 游戏厅. Reading 第九回: 43 min, 11 boards, fights and pieces, 64%.
 | # | scene · ¶ | the book | kit · level |
 |---|---|---|---|
-| 1 | 01-ye e6 (split) | the boat on the slip: seven holes bored in its bottom | 打地鼠 `chuan` |
-| 2 | 01-ye e19 (split) | 阿禾 in the borrowed red: 「先对着我，练一遍」 | jinchat `jiayi` (face) |
-| 3 | 01-altar e9 (split) | 「数到三十，就下去捞」 — five, seven, and she jumps | 时机 `sanshi` (count) |
-| 4 | 01-tower s7 (split) | 冰夷 over the city: 「河伯大人明鉴！」 | jinchat `bingyi` (face) |
+| 2 | 01-jingtai e19 (new scene) | 阿禾 in the borrowed red: 「先对着我，练一遍」 | jinchat `jiayi` (face) |
+| 4 | 01-tower s8 (split) | 「凡人的嘴。两千年来，我听得多了。」 | jinchat `bingyi` (face) |
 | 5 | 01-tower s31 (split) | brick by brick off 老胡, the beam | 华容道 `wali` |
-| 6 | 01-deep s16 (split) | down the pit in one breath, the cold ring | 气走经脉 `qianshui` |
-| 7 | 01-cauldron e9 (split) | 赵昂 under the willow: the ingot, 小豆 | jinchat `zhaoang` (face) |
-| 8 | 01-end s7 | 阿禾's thread of qi into the girl's throat | 气走经脉 `sangzi` |
+| 6 | 01-qianshui s16 (new scene) | down the pit in one breath | 气走经脉 `qianshui` |
+| 7 | 01-zhaoang e8 (new scene, split) | 赵昂 under the willow: the ingot mark, 二十五个 | jinchat `zhaoang` (face) |
+| 8 | 01-end s7 (split) | 阿禾's thread of qi into the girl's throat | 气走经脉 `sangzi` |
+
+Over after: 01-ye and its errands (三老 · 河伯庙) → the well ≈ 2,800; the wedding (漳水立起, a set piece) ≈ 3,250; the
+chapter's last telling (the rest) ≈ 2,216.
 
 **大场面, later:** 鯥 up the bank (09-yishui), 漳水立起 is built, 筑基天象 is built. Each 回's "Built" note below
 says what landed, what moved and why.

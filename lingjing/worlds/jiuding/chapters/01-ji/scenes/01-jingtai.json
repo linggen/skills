@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "id": "01-jingtai",
+ "chapter": "01-ji",
+ "hui": "h10",
+ "at": "ye",
+ "place": {
+  "zh": "邺城 · 客栈后院 · 井台",
+  "en": "Ye · The inn's back yard · the well"
+ },
+ "_board": "01-jingtai (全文后的小游戏 第二批 2026-10-26): 01-ye's `shrine` passage split at the borrowed dress — 阿禾's 「先对着我，练一遍。」 (jinchat `jiayi`, face), then 「太好看了」 and 「利息另算」 told after it; 01-altar its way on, as `shrine` was.",
+ "setup": {
+  "zh": "十月十七夜，客栈后院井台上一盏油灯。阿禾解了斗篷，底下是一身借来的红嫁衣。",
+  "en": "The night of the seventeenth, one oil lamp on the inn's back-yard well. Ahe undoes her cloak: under it, a borrowed red wedding dress."
+ },
+ "recap": {
+  "zh": "阿禾借了客栈老板娘的嫁衣，万一你那张嘴不管用，她替新娘子上船。井台上她叫你先对着她练那句「这新娘子，不够好看」——你说成了「太好看了」。「这一笔，利息另算。」",
+  "en": "Ahe borrowed the innkeeper's wife's wedding dress to take the bride's place if your mouth failed. At the well she had you practise \"this bride isn't pretty enough\" on her, and you said \"too pretty\". \"That one's charged extra interest.\""
+ },
+ "cast": [],
+ "people": [
+  "ahe",
+  "ban"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "斗篷底下，是一身红红的嫁衣。",
+    "「先对着我，练一遍。」",
+    "「这一笔，利息另算。」"
+   ],
+   "en": [
+    "Under the cloak, a red, red wedding dress.",
+    "\"Practise it once on me first.\"",
+    "\"That one's charged extra interest.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "阿禾低头扯了扯袖口，一本正经地道：「客栈老板娘压箱底的，借的，三十文，记我账上。」又道：「船推到河当中，岸上就没人敢看了——二十五年，谁也不敢往下游看一眼。我从水底下摸过去，替她坐进船里，拿藤把她送到下游柳树底下。新娘子是哑巴，红盖头一蒙，换了人，也没人听得出来。船底七个洞，我的藤缠得住，沉不了。」她顿了一顿，「漂到没人瞧见的地方，我自己划回来。」\n\n小满道：「老井就在城里。你一个人漂在河当中，他要是冲着你去呢？」阿禾道：「所以先说好。明天你那张嘴要是管用，新娘子就不用下水，我也用不着替她上船，这身嫁衣就算白借了，白花三十文。」\n\n她把斗篷搭在井栏上，站直了，两只手垂在身边，下巴一抬：「明天你要当着几千个人说那句话。说的时候脸上不能有一点虚，有一点虚，巫祝就看出来了。先对着我，练一遍。」",
+  "en": "Ahe looked down and tugged at a cuff and said, perfectly seriously, \"The innkeeper's wife kept it at the bottom of her chest. Borrowed. Thirty cash, put it on my books.\" Then: \"Once the boat's pushed out into the middle, nobody on the bank dares look — twenty-five years, nobody's dared take one look downstream. I swim over underwater, sit in the boat in her place, and send her off downstream to under the willows with a vine. The bride's mute; with the red veil over her face, nobody can hear that it's a different person. Seven holes in the bottom of the boat — my vines can bind them. It won't sink.\" She paused. \"Once I've floated somewhere no one can see, I'll row myself back.\"\n\nXiaoman said, \"Old Well's in the city. You, alone, floating in the middle of the river — what if he comes for you?\" Ahe said, \"So we settle it now. Tomorrow, if that mouth of yours works, the bride doesn't have to go into the water, I don't have to get into the boat in her place, and this dress was borrowed for nothing. Thirty cash wasted.\"\n\nShe laid the cloak over the well rail, stood up straight, hands hanging at her sides, chin up. \"Tomorrow you have to say that line in front of thousands of people. When you say it there can't be the least bit of doubt on your face; the least bit, and the shaman will see it. Practise it once on me first.\""
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "jingtai-jiayi"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jingtai-jiayi"
+  ]
+ },
+ "story_after": {
+  "zh": "小满道：「哪句？」\n\n阿禾道：「这新娘子，不够好看。」\n\n小满张开嘴。\n\n井台上那盏油灯，灯芯噼的一响。她就站在灯跟前，两根辫子垂在那一身红上，红鼻头底下抿着嘴，等他。那件嫁衣原是给一个比她胖些的人做的，肩上塌了一点，她站得笔直，也就撑起来了。小满看着她，这才发觉，当年在井台边拦住他、问泗水几天路的那个黄毛丫头，不知是哪一年起，已经长成了这个样子：一张鹅蛋脸，眉毛细细弯弯，一双杏眼清清亮亮的，平日里板着脸算账，这会儿垂着眼，睫毛底下藏着一点笑；灯火一跳，她脸上那一层红，也不知是嫁衣映上去的，还是她自己的。\n\n小满看呆了。他张着嘴，过了好一会儿，嘴里出来的却是：「这新娘子……太好看了……」\n\n话一出口，他自己先愣住了，两只眼睛还直直地看着她，怎么也挪不开。\n\n阿禾的脸「腾」地一下，一直红到了耳朵根。她等了一会儿，见他还呆在那里，才道：「……你说反了。叫你说的是『不够好看』。」\n\n小满这才回过神来，赶紧把眼睛挪到井里去。井里也有一盏灯，一点红。他道：「……明天再说。」\n\n阿禾看了他一会儿，没说什么，把斗篷从井栏上拿下来，裹回身上，一直裹到下巴，端起油灯。走到后院门口，她回过头来，道：「就一句『这新娘子不够好看』，你对着我练，偏偏说成了『太好看了』。明天当着几千个人，你可别再说反了。这一笔，利息另算。」",
+  "en": "Xiaoman said, \"Which line?\"\n\nAhe said, \"This bride isn't pretty enough.\"\n\nXiaoman opened his mouth.\n\nThe oil lamp on the well platform crackled at the wick. She stood right in front of the lamp, her two plaits hanging down over all that red, her lips pressed together under the red nose, waiting for him. The dress had been made for someone a little plumper than her and sagged a little at the shoulders, but she stood so straight that she filled it out. Looking at her, Xiaoman only now noticed that the yellow-haired little girl who had stopped him by the well that year and asked how many days it was to the Si River had, from some year or other, grown into this: an oval face, fine curved brows, a pair of almond eyes clear and bright; on ordinary days she kept a straight face doing sums, and now with her eyes lowered there was a hint of a smile hidden under her lashes. When the flame leapt, the flush on her face — he couldn't tell whether the dress had cast it there or it was her own.\n\nXiaoman was struck dumb staring at her. His mouth hung open, and after a good while what came out of it was: \"This bride… is too pretty…\"\n\nThe moment the words were out, he froze himself, his eyes still fixed straight on her. He couldn't move them away.\n\nAhe's face went red all at once, right up to the roots of her ears. She waited a moment, and seeing him still standing there dazed, said, \"…You said it backwards. What you were meant to say was 'not pretty enough.'\"\n\nOnly then did Xiaoman come to himself and hurriedly move his eyes into the well. In the well there was a lamp too, and a spot of red. He said, \"…I'll say it tomorrow.\"\n\nAhe looked at him for a while, said nothing, took the cloak off the well rail, wrapped it back around herself right up to her chin, and picked up the lamp. At the back-yard gate she turned round and said, \"One line, 'this bride isn't pretty enough,' and practising it on me you go and turn it into 'too pretty.' Tomorrow in front of thousands of people, don't you say it backwards again. That one's charged extra interest.\""
+ },
+ "lines": [],
+ "buttons": [
+  "dawn"
+ ],
+ "exits": [
+  {
+   "id": "dawn",
+   "label": {
+    "zh": "十月十八 · 河边",
+    "en": "The eighteenth · the river"
+   },
+   "means": "the wedding day: to the riverbank as the drummer",
+   "beat": [],
+   "next": "01-altar",
+   "needs": {
+    "task": "jingtai-jiayi"
+   },
+   "refuse": {
+    "zh": "那句话还没对着她练过。",
+    "en": "You haven't practised the line on her yet."
+   }
+  }
+ ]
+}

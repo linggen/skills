@@ -30,7 +30,8 @@ function atEnd(chapter, extra = {}) {
   const i = CH.indexOf(chapter), road = roadOf(chapter);
   const before = ['00-prologue', ...CH.slice(0, i)];
   const scene = content.chapters[chapter].scenes[road.at(-1)];
-  return { ...newState(content, 'zh', NOW), tier: 'nascent', stamina: 100, chapter, scene: scene.id, place: scene.at, ended: before, done_scenes: [...before.flatMap(scenesOf), ...road.slice(0, -1)], ...extra };
+  const tasks = Object.fromEntries((scene.show ?? []).filter((c) => c.card === 'board').map((c) => [c.id, { status: 'done' }])); // the end scene's boards counted (01-end's 嗓子, 2026-10-26)
+  return { ...newState(content, 'zh', NOW), tier: 'nascent', stamina: 100, chapter, scene: scene.id, place: scene.at, ended: before, done_scenes: [...before.flatMap(scenesOf), ...road.slice(0, -1)], tasks, ...extra };
 }
 const endChapter = s => {
   const end = content.chapters[s.chapter].scenes[s.scene];

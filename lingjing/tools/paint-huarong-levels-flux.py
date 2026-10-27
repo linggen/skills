@@ -41,7 +41,7 @@ LEVELS = {
 # Looked at (2 seeds each); the seed kept per piece.
 KEPT = {
   'kouzi': {'v': 2, 'h': 1, 's': 1, 'floor': 2},
-  'wali': {'v': 1, 'h': 1, 's': 1, 'floor': 1},
+  'wali': {'v': 1, 'h': 1, 's': 1, 'floor': 2},
 }
 SIZE = {'v': (160, 320), 'h': (320, 160), 's': (160, 160), 'floor': (480, 600)}
 PAINT = {'v': (384, 768), 'h': (768, 384), 's': (512, 512), 'floor': (768, 960)}

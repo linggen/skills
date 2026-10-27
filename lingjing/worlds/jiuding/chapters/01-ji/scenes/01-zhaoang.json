@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "01-zhaoang",
+ "chapter": "01-ji",
+ "hui": "h10",
+ "at": "zhangyuan",
+ "place": {
+  "zh": "漳水边 · 老柳树底下",
+  "en": "The Zhang · under the old willow"
+ },
+ "_board": "01-zhaoang (全文后的小游戏 第二批 2026-10-26): 01-cauldron's `take` passage split at the willow — 赵昂 (jinchat `zhaoang`, face) after 「…他要的是那口鼎，不是人。」; 「二十五个」 and 「天下，该归于一」 told after it; 01-laojing (老井) its way on, as `take` was. Inside the 河伯 lock.",
+ "setup": {
+  "zh": "月下，岸边老柳树底下站着一个白衣佩剑的少年；剑鞘头刻着一个圆圈，圈里一横。",
+  "en": "By moonlight, under the old willow on the bank, a youth in white with a sword; on the scabbard tip, a circle with a bar inside it."
+ },
+ "recap": {
+  "zh": "老柳树底下，太一宫的赵昂谢你把河伯请了上来；剑鞘头一个圆圈、圈里一横。你说二十五个姑娘、一个卖豆腐的；他眉头动了一下：「……二十五个。」这口鼎，该归太一宫——「因为天下，该归于一。」",
+  "en": "Under the old willow Zhao Ang of the Taiyi Palace thanked you for bringing the River Lord up; on his scabbard, a circle with a bar. You said twenty-five girls and a tofu seller; his brow moved once: \"…Twenty-five.\" The cauldron belongs to the Palace: \"Because all under heaven should be one.\""
+ },
+ "cast": [],
+ "people": [
+  "ban",
+  "zhouheng",
+  "ahe"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「多谢。」",
+    "一个圆圈，圈里一横。",
+    "「因为天下，该归于一。」"
+   ],
+   "en": [
+    "\"Thank you.\"",
+    "A circle with a bar inside it.",
+    "\"Because all under heaven should be one.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "还有一个人。那人站在岸边一株老柳树底下，一身白衣，腰悬长剑，正是白天站在上游柳树底下的那个佩剑的少年。他站的地方，正好在冰夷的水够不着的地方。他年纪跟小满差不多，相貌比小满好看得多；腰间那柄剑没出鞘，挨着剑鞘的几片柳叶，叶尖上已凝了一层白霜。白天站在他身后半步的老井，这时候却不在柳荫里，不知到哪里去了。\n\n他的目光，落在小满手心里那口巴掌大的鼎上，开口第一句话，却是：「多谢。」那声音清清亮亮，是个少年人的嗓子，跟庙里那口「老井」半点也不像。小满心里一松，跟着又是一紧：又是一身白衣。\n\n小满一怔：「谢什么？」那人道：「二十五年，宫里请不动他。你一个上午，就把他请上来了。」他往前走了两步，月光照在他腰间那柄剑的剑鞘上，剑鞘头上刻着一个记号：一个圆圈，圈里一横。「太一宫，[赵昂]{注=zhaoang}。」\n\n太一宫，这三个字小满听过不止一回；从宫里的人自己嘴里报出来，这是头一回。眼前这一个，小满的神识探过去，只探得出是筑基，再往里便是一片雾，探不到底；听那口气，不是跑腿的。\n\n小满身后「哗啦」一声，是周衡翻账簿的声音。他翻到十月初八那一页，瞧瞧账簿，又瞧瞧那剑鞘，两只手抖得那一页纸哗哗直响，嘴里喃喃地道：「……一年十锭。二十五年。」\n\n赵昂瞥了他一眼，道：「查账的？查得倒细。」\n\n他的神识从岸上扫过去，扫过周衡，扫过阿禾，在阿禾身上停了一停。小满觉出来了，像一阵冷风贴着河滩刮过去。阿禾蹲在岸边拧袖子上的水，头也没抬，红鼻头冻得通红。那一道神识在她身上停了一口气的工夫，看清了她是筑基中成，便滑开了。他要的是那口鼎，不是人。",
+  "en": "There was one more person. He stood under an old willow on the bank, in white, a long sword at his waist: the youth with the sword who had stood under the willows upstream that day. Where he stood was just out of reach of Bingyi's water. He was about Xiaoman's age and a good deal better-looking; the sword at his waist was still in its scabbard, and the few willow leaves brushing the scabbard had a layer of white frost on their tips. Old Well, who had stood half a step behind him that day, wasn't in the willow shade now; where he had gone, there was no telling.\n\nHis gaze fell on the palm-sized cauldron in Xiaoman's hand, and the first thing he said was: \"Thank you.\" The voice was clear and bright, a young man's voice, nothing at all like that \"old well\" in the temple. Xiaoman's heart eased, and then tightened again: white robes, again.\n\nXiaoman was taken aback. \"For what?\" The youth said, \"Twenty-five years the Palace couldn't get him to come up. You did it in one morning.\" He came two steps forward, and the moonlight fell on the scabbard at his waist; on its tip was carved a mark: a circle, and inside it one stroke. \"Taiyi Palace. [Zhao Ang]{注=zhaoang}.\"\n\nThe Taiyi Palace — Xiaoman had heard those words more than once; this was the first time he had heard them from the mouth of one of the Palace's own. He reached out to this one with his spirit sense and could only make out that he was at Foundation Establishment; further in there was only fog, and he couldn't find the bottom. By the sound of him, he was no errand boy.\n\nBehind Xiaoman there was a rustle: Zhou Heng turning the pages of his ledger. He turned to the page for the eighth of the tenth month, looked at the ledger, looked at the scabbard, his hands shaking so that the page rattled, muttering, \"…Ten ingots a year. Twenty-five years.\"\n\nZhao Ang glanced at him. \"Checking the accounts? Thoroughly, too.\"\n\nHis spirit sense swept across the bank, over Zhou Heng, over Ahe, and paused on Ahe. Xiaoman felt it, like a cold wind skimming low over the riverbank. Ahe crouched at the water's edge wringing out her sleeve, didn't even look up, her red nose red with cold. The spirit sense rested on her for the space of a breath, saw that she was at Middle Attainment of Foundation Establishment, and slid away. What he wanted was the cauldron, not people."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "zhaoang-talk"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "zhaoang-talk"
+  ]
+ },
+ "story_after": {
+  "zh": "小满攥紧了手里的鼎，道：「你们拿姑娘砸了他二十五年。二十五个姑娘。今天城楼底下，还压死了一个卖豆腐的。」\n\n赵昂的眉头动了一动。那一下极快，快得小满几乎以为是月光晃的。他的眼睛往城西水门那边偏了一偏，又收了回来。他道：「……二十五个。」隔了一会儿，又道：「宫里有位执事，年年入秋到这城里来，住到十月十八。二十五年。我来了半个月，他怎么办差，我没问。」他说完这一句，脸上便又什么都没有了，目光重新落回那口鼎上，道：「这东西，该归太一宫。」\n\n小满道：「为什么？」\n\n赵昂这才正眼看了他，道：「因为天下，该归于一。」\n\n小满怀里的银月，猛地一颤。他低头看她，她从他衣襟里抬起头来，一双金色的眼睛直直地盯着赵昂，盯着他剑鞘上那个记号，身上的毛，一根一根，全炸开了。她的声音很轻，很冷：「……这句话，本王听过。」\n\n「在九天之上。」银月一字一字地道，「那道光劈下来的时候，光里那个声音，说的就是这一句：天下，该归于一。」\n\n赵昂看不见银月，也听不见她说话，他只看见小满抱着一团湿衣裳，脸色一下子变了。他的手，慢慢地按上了剑柄。\n\n便在这时，小满身后的漳水，轻轻地响了一声。他不用回头，也知道那是什么：河心那片黑水里，两条青龙的脑袋浮了上来，四只眼睛，一齐睁开了，在月光底下，像四盏青色的灯笼。\n\n赵昂的手，停在剑柄上。他看了看那四盏灯笼，又看了看小满，道：「那道封，宫里的人对着旧图，看了二十五年，解不开。你是怎么解开的？」小满道：「蒙的。」赵昂道：「……蒙的。」\n\n小满的眼睛往下一落，落在赵昂按着的那口剑上：剑鞘头上錾着一个圈，圈里一横。赵昂顺着他的眼睛低头看了一眼，脸上第一回有了一点东西，说不清是惊，还是别的什么。他道：「宫里的印。」\n\n小满道：「开山门那天，泗水码头上，一个穿白的拿一锭银子，从一个石匠手里换走了一个五六岁的娃。那锭银子底下，也錾着这个。」他看着赵昂，「那娃叫小豆。是你们的人么？」\n\n赵昂没有答。月光底下，他那张好看的脸，一点一点地白了下去。过了很久，他才道：「……宫里的孩子，没有名字。」\n\n小满没有再问。他听明白了：小豆在宫里，没有名字；说这话的人，大约也是宫里的孩子。\n\n赵昂盯着他，按在剑柄上的手松了又紧，终于放了下来，道：「今日冰夷护着你。我不跟一条河打架。」他转过身去，走了两步，又停住，头也不回地道：「这东西，你拿不稳的。」说罢，一步一步走进了柳树后面的黑地里，脚下没有一点声息。\n\n银月缩在他怀里，身上的毛一点一点平了下去，可她一直在发抖，把脸埋进他的衣襟里，很久很久，没有抬起来。\n\n小满站在河边，把这几年里见过的那个记号，一个一个摆在心里：开山门那天码头上塞进一个石匠手里的那一锭，三老匣子里那一锭，赵昂剑鞘头上那一个。买孩子的，是它；拿镜子满山找白狐狸的，是它；拿姑娘砸了冰夷二十五年的，是它。劈断银月尾巴的那道光里，说的也是它：一。\n\n天下，该归于一。他从前只当这是一句好听的话。\n\n河心那两盏青灯笼，一直亮到赵昂走远了，才慢慢地沉了下去。沉下去之前，冰夷的脸在水面上露了一露，冲着小满怀里的银月，远远地拱了拱手。\n\n灯笼沉下去，河滩上便只剩一个月亮。小满把鼎揣进怀里，转身要走，脚底下的水，不响了。",
+  "en": "Xiaoman gripped the cauldron in his hand. \"You dropped girls on him for twenty-five years. Twenty-five girls. And today a man who sold tofu was crushed to death under the gate tower.\"\n\nZhao Ang's brows moved. It was very quick, so quick Xiaoman almost thought it was the moonlight wavering. His eyes flicked towards the water gate in the west of the city, then came back. He said, \"…Twenty-five.\" After a while he went on, \"There's a steward of the Palace who comes to this city every year when autumn begins and stays till the eighteenth of the tenth month. Twenty-five years. I've been here half a month. How he goes about his duties, I didn't ask.\" When he had said that, there was nothing on his face again; his gaze went back to the cauldron. \"That thing belongs to the Taiyi Palace.\"\n\nXiaoman said, \"Why?\"\n\nOnly then did Zhao Ang look at him properly. \"Because all under heaven should be one.\"\n\nIn Xiaoman's arms Yinyue gave a violent shudder. He looked down at her; she raised her head from the front of his robe, her golden eyes fixed straight on Zhao Ang, on the mark on his scabbard, and the fur all over her body stood up, hair by hair. Her voice was very soft, very cold: \"…This queen has heard those words before.\"\n\n\"Above the Ninth Heaven,\" Yinyue said, word by word. \"When that light came cutting down, the voice in the light said exactly this: all under heaven should be one.\"\n\nZhao Ang couldn't see Yinyue or hear her speak; he only saw Xiaoman holding a bundle of wet clothes, and his face suddenly change. His hand slowly came to rest on the hilt of his sword.\n\nJust then, behind Xiaoman, the Zhang made a soft sound. He didn't need to turn round to know what it was: in the black water in the middle of the river the heads of the two green dragons had surfaced, and four eyes opened together, like four green lanterns in the moonlight.\n\nZhao Ang's hand stopped on the hilt. He looked at the four lanterns, then at Xiaoman. \"That seal — the Palace's people studied it against the old diagrams for twenty-five years and couldn't undo it. How did you undo it?\" Xiaoman said, \"Guessed.\" Zhao Ang said, \"…Guessed.\"\n\nXiaoman's eyes dropped to the sword under Zhao Ang's hand: on the tip of the scabbard was chiselled a circle, and inside it one stroke. Zhao Ang followed his eyes and glanced down, and for the first time something showed on his face; whether it was surprise or something else, there was no telling. He said, \"The Palace's seal.\"\n\nXiaoman said, \"The day the gates opened, on the Si River wharf, a man in white handed a stonemason an ingot of silver and took a child of five or six off him in exchange. That ingot had this chiselled on the bottom too.\" He looked at Zhao Ang. \"The child's called Xiaodou. Is he one of yours?\"\n\nZhao Ang didn't answer. In the moonlight his handsome face went white, little by little. After a long time he said, \"…Children in the Palace have no names.\"\n\nXiaoman asked no more. He had understood: in the Palace, Xiaodou had no name; and the one saying so had most likely been a child of the Palace too.\n\nZhao Ang stared at him, the hand on his hilt loosening and tightening, and at last he let it drop. \"Today Bingyi is protecting you. I don't fight a river.\" He turned, took two steps, stopped again, and said without looking back, \"You won't be able to hold on to that thing.\" With that he walked step by step into the darkness behind the willows, without a sound underfoot.\n\nYinyue huddled in his arms. The fur on her body slowly lay flat again, but she didn't stop trembling, and she buried her face in the front of his robe and for a long, long time didn't lift it.\n\nXiaoman stood by the river and laid out in his mind, one by one, the times he had seen that mark these past years: the ingot pushed into a stonemason's hand on the wharf the day the gates opened, the ingot in the Three Elders' casket, the one on the tip of Zhao Ang's scabbard. The ones buying children: it. The ones combing the mountains for a white fox with a mirror: it. The ones dropping girls on Bingyi for twenty-five years: it. And in the light that cut off Yinyue's tails, what was spoken was it too — that single stroke, the word \"one.\"\n\nAll under heaven should be one. He used to think it was just a fine-sounding saying.\n\nThe two green lanterns in the middle of the river stayed lit until Zhao Ang was far away, and only then slowly sank. Before they sank, Bingyi's face showed for a moment on the surface, and from far off he cupped his hands in salute to Yinyue in Xiaoman's arms.\n\nOnce the lanterns had sunk, there was only the moon left on the riverbank. Xiaoman tucked the cauldron inside his robe and turned to go — and the water under his feet stopped making any sound."
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "那口鼎",
+    "en": "The cauldron"
+   },
+   "means": "Zhao Ang wants the cauldron; Old Well comes",
+   "beat": [],
+   "next": "01-laojing",
+   "needs": {
+    "task": "zhaoang-talk"
+   },
+   "refuse": {
+    "zh": "赵昂还站在老柳树底下等你答话。",
+    "en": "Zhao Ang is still under the willow, waiting for your answer."
+   }
+  }
+ ]
+}

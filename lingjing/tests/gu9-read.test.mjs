@@ -26,14 +26,15 @@ test('邺城: the two plans that fail are taken once each — never offered agai
 });
 
 test('the four eyes are lanterns before 「灯笼沉下去」', () => {
-  const take = scene('01-cauldron').exits.find((x) => x.id === 'take').story;
+  // 第二批 (2026-10-26): `take` stops at the willow; 赵昂 and the lanterns are 01-zhaoang's passage after its board.
+  const take = scene('01-zhaoang').story_after;
   for (const [t, intro, sink] of [[take.zh, '像四盏青色的灯笼', '灯笼沉下去'], [take.en, 'like four green lanterns', 'Once the lanterns had sunk']]) {
     assert.ok(t.indexOf(intro) >= 0 && t.indexOf(intro) < t.indexOf(sink), sink);
   }
 });
 
 test('城楼: 「凡人的嘴」 after 小满\'s line is said by the River Lord, by name', () => {
-  const t = scene('01-tower').story;
+  const t = scene('01-tower').story_after; // 河伯明鉴 (2026-10-26) stands before 「凡人的嘴」
   assert.ok(t.zh.includes('河伯低头瞧着小满，瞧了很久') && t.zh.includes('却听他淡淡地道：「凡人的嘴。'));
   assert.ok(!t.zh.includes('」河伯道：「二十五年'), 'two lines of his are not glued together');
 });
