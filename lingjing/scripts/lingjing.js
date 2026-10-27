@@ -391,7 +391,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1865,6 +1865,10 @@ async function settleWin(taskId, won, grade) {
   // whose Resolve moves the story on.
   if (isTask(taskId)) await payWin(taskId);
   else await report(`[scene] won ${taskId}`);
+  // A won board that is not the scene's own (opened from the tray or 事, an errand's, 兽潮's …) leaves the stage once
+  // paid: what it paid (所得), the errand handed in (交差) and the next step stand there instead — never a won board
+  // with nothing after it (live 10-27: 周衡's 五子棋 sat 「成了」 with no way on).
+  if (!story) leaveWonBoard(taskId);
   await refresh();
   bringWonIntoFocus();
   // The one hook for what follows a won beat (beat-won.js: the 得牌 reveal listens here).
@@ -1875,6 +1879,17 @@ async function settleWin(taskId, won, grade) {
   if (on && !look?.tell_owed) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
   return true;
 }
+
+/* A won board off the story's own stage: put away — the tray's opened board, Ling's Show of it, its live state. */
+function leaveWonBoard(taskId) {
+  boardTitles.set(taskId, boardTitles.get(taskId) ?? titleOf(taskId));
+  if (view.opened?.id === taskId) keep({ opened: null });
+  if (view.focus.some((f) => f.card === 'board' && f.id === taskId)) keep({ focus: view.focus.filter((f) => !(f.card === 'board' && f.id === taskId)) });
+  boards.delete(taskId);
+}
+/* The title a board opened with (its task's), remembered past the win (cards.js keeps it on the card). */
+const boardTitles = new Map();
+const titleOf = (id) => look?.tasks?.find((t) => t.id === id)?.title ?? null;
 
 /* A 试玩 board won (arcade-board.js): nothing to pay, nothing told to Ling — the grade on the note,
    and the board dealt again. */

@@ -541,7 +541,10 @@ function board(card, ctx) {
     : made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
     : g?.mod ? null
       : g ? '' : `<div class="dim small">…</div>`;
-  const title = task?.game ? task.title : ctx.words.play;
+  // Its own title, kept once the win is paid and the task leaves Look's list (live 10-27: a won 五子棋 read 「炼丹」):
+  // the task's, else the game's own name; 炼丹 only for the herb board.
+  const herbs = card.id === 'lianliankan' || task?.game === 'lianliankan';
+  const title = task?.game ? task.title : herbs ? ctx.words.play : (g?.mod?.meta?.name?.[ctx.lang] ?? g?.mod?.meta?.name?.zh ?? ctx.boardTitle?.(id) ?? ctx.words.play);
   // A game in play wears the one shell every small game wears (games/shell.js; Hanli 10-20: 「确保所有小游戏一套外壳」):
   // its title and how-to in the shell's bar, pause for a game in time; the game's own host inside, as ever.
   const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod),
@@ -549,7 +552,7 @@ function board(card, ctx) {
     body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` })
     // 炼丹's herbs (board.js) wear the same shell, its 🔊 with it (Hanli 10-26: every board has both); its tiles as ever.
     : body === '' ? frameHtml({ id, title, lang: ctx.lang, body: boardHtml(g, ctx.words) }) : null;
-  const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;
+  const ask = task?.game || !herbs ? say(ctx.words.sayTask, { title }) : ctx.words.sayBoard;
   // A scene's own game (the opening's beats, 射鹿 …) is played, not asked about: no 问询 in its corner.
   const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
   // A board offered again (Look's replay, rules/skips.mjs) may be left again, by the same gate.
