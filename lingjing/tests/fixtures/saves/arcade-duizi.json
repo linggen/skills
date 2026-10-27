@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 565,
-  "wealth": 577,
+  "wealth": 592,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -189,7 +189,8 @@
    "j07-chenmai",
    "09-snow",
    "09-jiuge",
-   "09-furnace"
+   "09-furnace",
+   "09-danfang"
   ],
   "ended": [
    "00-prologue",
@@ -597,7 +598,17 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "jiuge-xunsi": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "jiuge-yubu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "furnace-deng": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -606,6 +617,14 @@
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "danfang-min": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "year-kanlu": {
+    "status": "offered"
    }
   },
   "chores": {},
@@ -622,7 +641,7 @@
   "day": {
    "key": "2026-10-01",
    "progress": 170,
-   "wealth": 580
+   "wealth": 595
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -686,7 +705,7 @@
     "id": "00-zhuji",
     "title": "卷一 · 沉鼎 · 第七回"
    },
-   "recap": "除夕，周衡的旧账上一行没有数的字：十月十八。漳水。阿姊。正月初一，执事堂两面墙：东墙杂役，西墙差事，打妖的红牌五层以下不许揭。开春的残株喂进饭桶，开出三颗聚气丹——一纹、二纹、九纹各一；分堆一认，认出三张方子。缸是饭桶涨的，层不动；三月里一个早上，你在崖顶上看见了叶子起来的那一下，往旁边挪了半步——定风，过了五层。灵石先见了底。阿禾、孙二狗的书案底下，各多了一个油纸包：二狗的二纹，阿禾的那一颗九纹。",
+   "recap": "饭堂里说你偷药园的灵草炼丹，周衡翻开巡夜簿：「要说他偷，拿赃来。」私下只说一句：孙二狗那颗，「我看了。二转。」观里传开「沈小满手里有丹，好丹」，传到了丹房：守了三十年炉子的闵丹师叫你去，拿一颗看——数到第二道停了：「二转。这一颗，比我炉里的好。」「这丹，不是炉里出来的。没有火气。」他出神的当口，你闻出了药气里那一丝焦；他说：「明天去执事堂，把牌子揭了，来报到。」你揭了东墙的「看丹炉」牌。清明替外公烧了纸；伏天的夜里，三个人坐在药园的矮墙上乘凉。",
    "mystery": "瞿老四十多年没收过徒弟——他上一个徒弟，后来怎样了？"
   },
   "mark_days": {
@@ -1113,8 +1132,11 @@
    "fengtou-pig",
    "jiaxin-zhouheng",
    "jiaxin-letter",
+   "jiuge-xunsi",
    "jiuge-yubu",
-   "furnace-ding"
+   "furnace-deng",
+   "furnace-ding",
+   "danfang-min"
   ],
   "handed": [],
   "stages": [
@@ -1237,7 +1259,8 @@
    "j07-chenmai",
    "09-snow",
    "09-jiuge",
-   "09-furnace"
+   "09-furnace",
+   "09-danfang"
   ]
  }
 }

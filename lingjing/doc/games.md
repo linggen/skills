@@ -186,17 +186,27 @@ lean on 打地鼠, 对话 and the others instead.
 
 Over after: j07-ankle's tail → 黑地里 ≈ 2,489 (the locked-in afternoon has no action).
 
-### 第七回 (h11): +6
+### 第七回 (h11): +6 → built 6
+**Built 2026-10-26:** no 时机, and no 调息: 随叶 (09-jiuge) and 顺风溜 (09-xie) are the 调息 Hanli cut on 10-20 (「调息感觉太多了」),
+so neither comes back. ① 瞿老 on 巽 (jinchat `xunsi`, 「为什么头一个教巽？」 → 「巽，就一个字：入。」, 09-jiuge's first board; the 禹步 its
+second; the leaf stays told) · ② 邓执事 (jinchat `deng`, 09-furnace's first; 开春 its second) · ③ 闵丹师 (jinchat `min`) in a new
+09-danfang split off 09-year's head (the furnace's `fire` walks there) · ④ 丹焦 dropped: it is the 闻焦 moment cut on 10-19, so
+it stays told, now 09-year's first lines · ⑤ 看炉 (打地鼠 `kanlu`, painted; titled 头几夜 so it doesn't read as 古八's 守炉 ·
+丹房看炉) after 「看炉看的是药，不是火。」 in 09-year, whose 清明 and 伏天 (the 四层 gate) stay put; 伏天 waits on 清明 and the board ·
+⑥ 钱掌柜's back room (jinchat `qian-dan`) and ⑦ 秦雁's 流云剑 (打地鼠 `liuyun`, painted) in a new 09-fangshi between the 犰狳
+and the 鯥 (09-yishui's first ten paragraphs). Old saves: an `after/<scene>` owed before the scene's first board is over is let
+go (state.mjs fitWorld, health.mjs), so a re-cut passage is never told ahead of its board. Reading 第七回: 50 min, 11 boards and
+fights, 60%.
 | # | scene · ¶ | the book | kit · level |
 |---|---|---|---|
-| 1 | 09-jiuge s12 | 瞿老's broom follows the leaf down: 「你得随它」 | 气走经脉 `suifeng` |
-| 2 | 09-furnace s19 (split) | 邓执事 on the threshold: 「看懂了？」 — the black lines | jinchat `deng` (face) |
-| 3 | 09-year s8 (split) | 闵丹师: 「听说你手里有丹。拿一颗我看看。」 | jinchat `min` (face) |
-| 4 | 09-year s26 (split) | 「这个……是不是就是丹焦的味儿？」 — half a breath | 时机 `wenyao` |
-| 5 | 09-yishui s1 | 钱掌柜's back room: a year's jar of 回春丹 | jinchat `qian-dan` (face) |
-| 6 | 09-yishui s10 (split) | 秦雁's 流云剑 on the cliff: her point stops at his heart | 时机 `liuyun` |
+| 1 | 09-jiuge s12 (split) | 「师父，九宫八个字，为什么头一个教巽？」 | jinchat `xunsi` (face) |
+| 2 | 09-furnace s19 (split) | 邓执事 on the threshold: the black lines, 「九层以后再来看。」 | jinchat `deng` (face) |
+| 3 | 09-danfang s8 (new scene, split) | 闵丹师: 「听说你手里有丹。拿一颗我看看。」 | jinchat `min` (face) |
+| 4 | 09-year s10 (split) | the nights at the furnace: 「看炉看的是药，不是火。」 | 打地鼠 `kanlu` |
+| 5 | 09-fangshi s1 (new scene) | 钱掌柜's back room: a year's jar of 回春丹 | jinchat `qian-dan` (face) |
+| 6 | 09-fangshi s10 | 秦雁's 流云剑 on the cliff: her point stops at his heart | 打地鼠 `liuyun` |
 
-Over after: the 犰狳's telling into 钱掌柜 ≈ 2,809; 鯥 → 顺风溜 ≈ 2,700 (the ferry, no board); 秦雁 → 丹房 ≈ 2,350.
+Over after: the 犰狳's telling into 钱掌柜 ≈ 2,809; 鯥 → 秦雁's spar ≈ 3,578 (the ferry, no board; 顺风溜 told, the 调息 cut).
 
 ### 第八回 (h09): +2
 | # | scene · ¶ | the book | kit · level |

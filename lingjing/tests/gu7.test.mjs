@@ -33,16 +33,19 @@ const go = (s, exit) => { const n = must(resolve, s, { exit }); return { ...n, p
 const run = (mod, s, verbs) => verbs.reduce((x, d) => mod.act(x, d).state, s);
 const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i = 0; i < 6000 && !done(x); i += 1) x = step(mod.tick(x, 50)); return x; };
 
-const H11 = ['09-snow', '09-jiuge', '09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie', '09-futian'];
+const H11 = ['09-snow', '09-jiuge', '09-furnace', '09-danfang', '09-year', '09-lingcao', '09-fangshi', '09-yishui', '09-xie', '09-futian'];
+// 全文后的小游戏 第二批 (2026-10-26): 09-danfang (闵丹师's pill) split off 09-year's head, 09-fangshi (钱掌柜 · 秦雁's 流云剑) off 09-yishui's.
 // 09-snow has no board since 2026-10-19: its feeding is the 大场面 扔了干净 (tests/setpiece-huochai.test.mjs).
 const BOARDS = { '09-jiuge': ['jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'] };
 // 随叶 and 顺风溜 told again 2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」): 禹步 is 09-jiuge's one board, 09-xie reads whole.
 const FIGHTS = { '09-lingcao': ['fight', 'lingcao-qiuyu', 'qiuyu'], '09-futian': ['spar', 'futian-qinyan', 'foe-shijie'] };
 // 认方 cut 2026-10-19 (the standing rule Hanli approved 10-19: a memory puzzle): 定风 is 09-furnace's one board.
 BOARDS['09-furnace'] = ['furnace-ding'];
+// 第二批 (2026-10-26): 瞿老 on 巽 before the 禹步, 邓执事 before 开春, 闵丹师 in 09-danfang, 看炉 in 09-year, 钱掌柜 and 流云剑 in 09-fangshi.
+Object.assign(BOARDS, { '09-jiuge': ['jiuge-xunsi', 'jiuge-yubu'], '09-furnace': ['furnace-deng', 'furnace-ding'], '09-danfang': ['danfang-min'], '09-year': ['year-kanlu'], '09-fangshi': ['fangshi-qian', 'fangshi-liuyun'] });
 const RISES = { '09-furnace/fire': 5, '09-year/futian': 5, '09-yishui/night': 6, '09-futian/spar': 7 };
 
-test('古七 runs in the book\'s order on the `next` chain — eight scenes, every one h11, then 古八\'s 09-dabi', () => {
+test('古七 runs in the book\'s order on the `next` chain — ten scenes, every one h11, then 古八\'s 09-dabi', () => {
   const chain = [];
   for (let id = '09-snow'; id && CH.scenes[id]?.hui === 'h11';) { chain.push(id); id = CH.scenes[id].exits.map((e) => e.next).find(Boolean); }
   assert.deepEqual(chain, H11);
@@ -105,21 +108,25 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   assert.equal(s.bag['huochai-jian'], 1);
   assert.equal(s.scene, '09-jiuge');
   const p0 = s.progress;
-  s = play(s, 'jiuge-yubu', 'quiet');
+  s = play(play(s, 'jiuge-xunsi'), 'jiuge-yubu', 'quiet');
   assert.ok(s.progress > p0, '禹步 raised 修为');
   s = go(s, 'down');
   assert.ok(s.marks.includes('yubu'));
   assert.equal(s.step, 4);
-  s = play(s, 'furnace-ding'); // 守墙关 · 药园巡夜 · 开春 since the 调息 cut (2026-10-20): no grade
+  s = play(play(s, 'furnace-deng'), 'furnace-ding'); // 守墙关 · 药园巡夜 · 开春 since the 调息 cut (2026-10-20): no grade
   s = go(s, 'fire');
   assert.ok(s.bag['qi-pill'] > 0, 'the way on: a 聚气丹 (认方 cut 2026-10-19)');
-  assert.deepEqual([s.scene, s.step], ['09-year', 4], '定风 lifts nothing: 五层 is ground');
-  s = go(s, 'qingming'); // 闻焦 cut 2026-10-19: no board in 09-year
+  assert.deepEqual([s.scene, s.step], ['09-danfang', 4], '定风 lifts nothing: 五层 is ground');
+  s = go(play(s, 'danfang-min'), 'smell');
+  assert.equal(s.scene, '09-year');
+  s = go(play(s, 'year-kanlu'), 'qingming'); // 闻焦 cut 2026-10-19: told; 看炉 (2026-10-26) the nights
   s = go(s, 'futian');
   assert.deepEqual([s.scene, s.step], ['09-lingcao', 4], '伏天 moves nothing');
   const lc = look(s, content, ctx()).scene.exits.find((e) => e.id === 'fight');
   assert.equal(lc.duel.creature.id, 'qiuyu');
   s = go({ ...s, wins: { ...s.wins, 'lingcao-qiuyu': NOW.toISOString() } }, 'fight');
+  assert.equal(s.scene, '09-fangshi');
+  s = go(play(play(s, 'fangshi-qian'), 'fangshi-liuyun'), 'autumn');
   assert.deepEqual([s.scene, s.step], ['09-yishui', 5], 'the boards\' 修为 banked past 四层 steps him once 伏天 is behind him — his own');
   s = go(play(s, 'yishui-reed', 'still'), 'night');
   assert.deepEqual([s.scene, s.step], ['09-xie', 5], '沂水 waited on 五层圆满, earned; it lifts nothing');
@@ -153,13 +160,15 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
   // Mid-09-year: the old furnace never rose him (the cap held 四层); 伏天 lands on 灵草谷, and lifts him to 五层 as the furnace would have.
   const mid = fitWorld(at('09-year', { marks: ['y-qingming'], done_scenes: ['wm-heluo', '09-snow', '09-furnace'] }), content);
   assert.equal(mid.tasks['year-smell'], undefined, '闻焦 cut 2026-10-19: no board offered there');
-  const on = go(mid, 'futian');
+  assert.equal(mid.tasks['year-kanlu']?.status, 'offered', '看炉 (2026-10-26) is offered to a save standing here');
+  const on = go(play(mid, 'year-kanlu'), 'futian');
   assert.deepEqual([on.scene, on.step], ['09-lingcao', 4]);
   // Standing in 09-furnace from before: its board is offered (认方 cut 2026-10-19: one held offered is let go), the way on is the 定风 morning.
   const fur = fitWorld(at('09-furnace', { tasks: { 'furnace-recipe': { status: 'offered' } } }), content);
   assert.deepEqual(['furnace-recipe', 'furnace-ding'].map((id) => fur.tasks[id]?.status), [undefined, 'offered']);
-  assert.match(CH.scenes['09-furnace'].story.zh, /足足九道。\n\n打这以后，饭桶吐一颗聚气丹[\s\S]*看落叶打转。$/, 'the passage whole again, word for word');
-  assert.equal(CH.scenes['09-furnace'].story_after, undefined);
+  // 第二批 (2026-10-26): 邓执事 splits it again — the passage word for word across story and story_after.
+  const furnace = CH.scenes['09-furnace'];
+  assert.match(`${furnace.story.zh}\n\n${furnace.story_after.zh}`, /足足九道。\n\n打这以后，饭桶吐一颗聚气丹[\s\S]*看落叶打转。$/, 'the passage whole, word for word');
 });
 
 /* ── the boards themselves ── */
@@ -192,14 +201,13 @@ test('闻焦 has left 09-year: the passage whole (story_after merged, word for w
   const sc = CH.scenes['09-year'];
   assert.ok(!(sc.show ?? []).some((c) => c.id === 'year-smell') && !(sc.offers?.tasks ?? []).includes('year-smell'));
   assert.ok(!sc.exits.some((e) => e.needs?.task === 'year-smell'));
-  assert.equal(sc.story_after, undefined);
-  assert.equal(sc.story_after, undefined);
-  assert.match(sc.story.zh, /头一回有人问到我答不上的。」\n\n就在闵丹师出神的当口，炉里的药气变了，多出了一丝焦。/);
-  assert.match(sc.story.zh, /头一回有人问到我答不上的。」\n\n就在闵丹师出神的当口/);
+  // 第二批 (2026-10-26): 闵丹师's questions are 09-danfang's; 闻焦 still told, word for word, on 09-year's first lines.
+  assert.match(CH.scenes['09-danfang'].story_after.zh, /头一回有人问到我答不上的。」$/);
+  assert.match(sc.story.zh, /^就在闵丹师出神的当口，炉里的药气变了，多出了一丝焦。/);
   assert.equal(content.tasks.tasks.find((t) => t.id === 'year-smell').cut, '2026-10-19');
   assert.equal(content.games.games.find((g) => g.id === 'huohousmell' && g.replaced !== 'cut'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
   const old = fitWorld(at('09-year', { marks: ['y-qingming'], tasks: { 'year-smell': { status: 'offered' } }, tell_owed: ['after/09-year'] }), content);
   assert.equal(old.tasks['year-smell'], undefined, 'never winnable here now: let go');
   assert.deepEqual(old.tell_owed ?? [], [], 'the merged passage is owed nowhere');
-  assert.equal(go(old, 'futian').scene, '09-lingcao');
+  assert.equal(go(play(old, 'year-kanlu'), 'futian').scene, '09-lingcao');
 });

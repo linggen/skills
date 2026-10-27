@@ -180,7 +180,12 @@ function tellChecks(content, state) {
   const find = sid => Object.values(content.chapters).map(ch => ch.scenes?.[sid]).find(Boolean);
   for (const key of state.tell_owed ?? []) {
     const [sid, eid] = key.split('/');
-    const ok = sid === 'scene' || sid === 'after' ? Boolean(find(eid)) : Boolean(find(sid)?.exits?.some(e => e.id === eid));
+    // `after/<scene>` is owed only once the scene's first board is over (tasks.mjs taskDone): a passage
+    // re-cut under an old save (the board moved, a new one placed) is let go, never told ahead of its board.
+    const first = sid === 'after' ? (find(eid)?.show ?? []).find(c => c.card === 'board')?.id : null;
+    const ok = sid === 'scene' ? Boolean(find(eid))
+      : sid === 'after' ? Boolean(find(eid)?.story_after) && (!first || state.tasks?.[first]?.status === 'done')
+      : Boolean(find(sid)?.exits?.some(e => e.id === eid));
     if (!ok) out.push(problem('owed-missing', 'error', `an owed passage ${key} that the book no longer has`, { kind: 'drop-owed', key }));
   }
   const last = (state.done_scenes ?? []).at(-1), sc = last && content.chapters[state.chapter]?.scenes?.[last];

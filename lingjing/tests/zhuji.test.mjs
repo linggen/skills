@@ -55,12 +55,12 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
   // Each scene names the 回 whose text it plays (2026-10-07 split): the first half to 阿禾's 「亲传，不算外门」, then 年六 on.
   const huiOfScene = Object.fromEntries(Object.values(CH.scenes).filter(sc => sc.hui !== 'j07').map(sc => [sc.id, sc.hui]));
   // 古七's five years played since the 2026-10-15 split (tests/gu7.test.mjs): nine scenes, then 古八's.
-  assert.deepEqual(huiOfScene, { '09-snow': 'h11', '09-jiuge': 'h11', '09-furnace': 'h11', '09-year': 'h11', '09-lingcao': 'h11', '09-yishui': 'h11', '09-xie': 'h11', '09-futian': 'h11', '09-dabi': 'h09', '09-qulao': 'h09', '09-cliff': 'h09' });
+  assert.deepEqual(huiOfScene, { '09-snow': 'h11', '09-jiuge': 'h11', '09-furnace': 'h11', '09-danfang': 'h11', '09-year': 'h11', '09-lingcao': 'h11', '09-fangshi': 'h11', '09-yishui': 'h11', '09-xie': 'h11', '09-futian': 'h11', '09-dabi': 'h09', '09-qulao': 'h09', '09-cliff': 'h09' });
 });
 
 test('the winter and the years: 火柴 at the move, the furnace\'s culls, the seasons and the five years — the story\'s own, free of 体力 but a story step (Hanli, 2026-10-01), in order, once; the layers one at a time (2026-10-15)', () => {
   // Every 古七 board counted and its two fights won (tests/gu7.test.mjs plays them): the ways on are the story's.
-  const H11 = ['jiuge-yubu', 'furnace-recipe', 'furnace-ding', 'year-smell', 'yishui-reed'];
+  const H11 = ['jiuge-xunsi', 'jiuge-yubu', 'furnace-recipe', 'furnace-deng', 'furnace-ding', 'danfang-min', 'year-smell', 'year-kanlu', 'fangshi-qian', 'fangshi-liuyun', 'yishui-reed']; // + 第二批 (2026-10-26)
   const placed = (s) => full({ ...s, place: CH.scenes[s.scene]?.at ?? s.place });
   let s = { ...atSnow({ step: 4 }), tasks: Object.fromEntries(H11.map(id => [id, { status: 'done' }])), wins: { 'lingcao-qiuyu': NOW.toISOString(), 'futian-qinyan': NOW.toISOString() } };
   assert.deepEqual(buttons(s), ['feed'], 'the gourd and the shards tossed into the 饭桶 to be rid of them — nothing asked (Hanli 2026-10-06)');
@@ -74,6 +74,8 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   assert.equal(s.step, 4, '腊月: still 四层');
   s = go(placed(s), 'fire').state;
   assert.equal(s.bag['foundation-pill-9'], undefined, 'the furnace gives qi pills, not a 九转');
+  assert.equal(s.scene, '09-danfang', '闵丹师\'s pill (第二批 2026-10-26), then the year');
+  s = go(placed(s), 'smell').state;
   assert.equal(s.scene, '09-year');
   assert.equal(s.step, 4, '定风 lifts no layer (2026-10-16): 五层 is ground behind the next gate');
   s = placed(s);
@@ -89,7 +91,7 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   assert.ok(!buttons(s).includes('qingming'), '清明 is not offered again');
   assert.equal(resolve(s, content, ctx, { exit: 'futian' }).result.refused, 'no-stamina', '伏天 moves the story on: a spent pool waits on the step');
   const layers = [];
-  for (const [exit, at] of [['futian', '09-lingcao'], ['fight', '09-yishui'], ['night', '09-xie'], ['go', '09-futian'], ['spar', '09-dabi']]) {
+  for (const [exit, at] of [['futian', '09-lingcao'], ['fight', '09-fangshi'], ['autumn', '09-yishui'], ['night', '09-xie'], ['go', '09-futian'], ['spar', '09-dabi']]) {
     const r = go(placed(s), exit);
     assert.equal(r.state.scene, at, `${exit} → ${at}`);
     s = r.state; layers.push(s.step);
@@ -97,7 +99,7 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   }
   // No story rise (2026-10-16): each layer is his own, earned behind its gate (earnedFor stands in for the routine) —
   // 伏天 四层 · 灵草谷 五层 (what he banked steps him once 伏天 is behind) · 沂水 五层 · the boots 六层 · 秦雁 六层.
-  assert.deepEqual(layers, [4, 5, 5, 6, 6]);
+  assert.deepEqual(layers, [4, 5, 5, 5, 6, 6]);
   assert.equal(s.bag['shunfeng-liu'], 1, 'the boots, from the 鯥\'s hide');
   assert.deepEqual(buttons(placed(s)), ['dabi'], '古八 opens on its own years; 入秋 waits on them');
   const seven = look(placed(s), content, ctx).chapter.close;

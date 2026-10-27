@@ -674,10 +674,14 @@ export function fitWorld(saved, content) {
   const unoffered = (here?.offers?.tasks ?? []).filter(id => !held[id]);
   if (unoffered.length || Object.keys(held).length !== Object.keys(raw).length) fix.tasks = { ...held, ...Object.fromEntries(unoffered.map(id => [id, { status: 'offered' }])) };
   // The rest of a passage owed after a board the scene no longer has (`after/<scene>`, its
-  // `story_after` merged back into its `story`): nothing is owed.
+  // `story_after` merged back into its `story`): nothing is owed. Nor when the passage was re-cut
+  // under the save and its first board is not over (a new board placed, 2026-10-26): it is owed
+  // again when that board is (tasks.mjs taskDone), never told ahead of it.
   const sceneById = sid => Object.values(content.chapters).find(ch => ch.scenes?.[sid])?.scenes[sid];
+  const tasksNow = fix.tasks ?? state.tasks ?? {};
+  const afterOwed = sc => Boolean(sc?.story_after) && ((b) => !b || tasksNow[b]?.status === 'done')((sc.show ?? []).find(c => c.card === 'board')?.id);
   const owed = state.tell_owed ?? [];
-  const owing = owed.filter(k => !k.startsWith('after/') || sceneById(k.slice(6))?.story_after);
+  const owing = owed.filter(k => !k.startsWith('after/') || afterOwed(sceneById(k.slice(6))));
   if (owing.length !== owed.length) fix.tell_owed = owing;
   // Before a story gate, nothing the gate keeps (lockReset): read where the save now stands.
   Object.assign(fix, lockReset(content, { ...state, ...fix }));

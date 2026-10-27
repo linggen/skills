@@ -1,0 +1,86 @@
+{
+ "version": 1,
+ "id": "09-fangshi",
+ "chapter": "00-zhuji",
+ "hui": "h11",
+ "at": "shanmen",
+ "place": {
+  "zh": "彭城坊市 · 钱掌柜的铺子 → 后山崖顶",
+  "en": "The market · Shopkeeper Qian's shop → the clifftop"
+ },
+ "_board": "09-fangshi (全文后的小游戏 第二批 2026-10-26): 09-yishui's passage split before the 鯥 — 钱掌柜's back room (jinchat `qian-dan`, face) after 「…数出一百四十块灵石…一年一回。」…, then 秦雁's 流云剑 on the cliff (打地鼠 `liuyun`) after 「…她的剑尖便停在了他心口上，停得稳稳的。」…",
+ "setup": {
+  "zh": "那年腊月，你下了一趟山，去坊市找钱掌柜，从后门进了他那间一排一排抽屉码到房梁的铺子。",
+  "en": "That twelfth month you went down to the market and in by the back door of Shopkeeper Qian's shop, drawers stacked to the roof beam."
+ },
+ "recap": {
+  "zh": "一罐回春丹换了一百四十块灵石；你买的都是保命的东西：一道遁符、一口短飞剑、一件妖筋软甲。瞿老一个月两回教你巽四的剑；秦雁不服大比那一场，上崖来再比，头一场不到二十招，剑尖停在你心口上。",
+  "en": "A jar of Spring-Return Pills fetched a hundred and forty stones; you bought only things to stay alive with: a flight talisman, a short flying sword, a soft armour of beast sinew. Elder Qu taught you the sword of Xun-four twice a month; Qin Yan, not satisfied with the contest, came up the cliff for another bout, and in under twenty moves her point stopped at your heart."
+ },
+ "cast": [],
+ "people": [
+  "neimen-shijie",
+  "qulao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「来路不问，童叟无欺。」",
+    "「这回的台子是整座崖，没有台边。」",
+    "剑尖停在他心口上。"
+   ],
+   "en": [
+    "\"No questions where it came from; no cheating young or old.\"",
+    "\"This time the stage is the whole cliff, and it has no edge.\"",
+    "The point stopped at his heart."
+   ]
+  }
+ },
+ "story": {
+  "zh": "那年腊月，小满下了一趟山，去坊市找钱掌柜。钱掌柜在集上摆的只是一张板子，坊市街尾却还有他一间铺子：门脸窄得只容一个人侧身进，里头却深，一排一排的抽屉从地上码到房梁，每只抽屉上贴一张红纸条，字是他自己写的，歪歪扭扭。小满等铺子上了板，才从后门进去，把一只小瓦罐放在柜台上，罐里是一年攒下的回春丹，一道纹的、两道纹的，二十来颗。钱掌柜一颗一颗捻过，对着灯看了，拨了半天算盘，数出一百四十块灵石，推过来。内门一年的份例，是一百二十块；这一罐，抵得过一年还多。钱掌柜又道：「要是有好的——三纹往上的——我这铺子也收不起。好东西，不在我这儿，在彭城的拍卖会上，一年一回。」小满记下了。",
+  "en": "In the twelfth month of that year Xiaoman went down the mountain to the market to find Shopkeeper Qian. At the fair Shopkeeper Qian set out only one board, but at the end of the market street he had a shop too. The front was so narrow one man had to turn sideways to get in, but inside it went deep, rows of drawers stacked from floor to roof beam, each with a slip of red paper pasted on it, the writing his own, crooked and wobbly. Xiaoman waited till the shutters went up and came in by the back door, and set a small clay jar on the counter: a year's saved Spring-Return Pills, one-line and two-line, twenty or so. Shopkeeper Qian rolled them one by one between his fingers, looked at them against the lamp, clicked his abacus a long time, counted out a hundred and forty spirit stones and pushed them across. A year's inner-sect allowance was a hundred and twenty; this jar was worth more than a year. Shopkeeper Qian added, \"If you've got good ones, three lines and up, my shop can't afford them. Good things don't stay with me. They go to the auction at Pengcheng, once a year.\" Xiaoman made a note of it."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "fangshi-qian"
+  },
+  {
+   "card": "board",
+   "id": "fangshi-liuyun"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "fangshi-qian",
+   "fangshi-liuyun"
+  ]
+ },
+ "story_after": {
+  "zh": "灵石推过来，他没急着揣。大比那一夜银月的话，一直在他耳朵里：本王在谁身上，他找谁。他在铺子里转了一圈，挑的都是能保命的东西。\n\n先是草药。黄精、黄芪、紫玉参，一样一捆；又添了几样新方子上要的：茯苓、何首乌、石菖蒲，各称了半斤。回去喂饭桶。丹是命，自己炼得出来，比哪里买的都靠得住。\n\n再是符。钱掌柜搬了梯子，从最高一层抽屉里取下一只扁木匣，里头躺着三道符，金粉画的：「遁符。压在掌心里，掐个诀，人就在三丈外头了。」小满问多少，钱掌柜道：「四十块一道。」小满咬咬牙，买了一道，拿油纸包了三层，贴身揣着。\n\n还有兵刃。火柴是好剑，可剑够不着的地方，得有别的。他挑了一口短飞剑，一拃来长，柳叶形，剑柄上系一根红丝；扣在指间掐个诀放出去，能飞出两三丈，再招回来。钱掌柜说，下品的，练气五层驱得动。\n\n末了，是一件软甲。灰扑扑的，薄得能叠进袖子里，钱掌柜说是拿妖兽的筋编的。他拿刀在上头砍了两下，砍出两道白印子：「练气的刀，进不去。」小满问：「筑基的呢？」钱掌柜把刀放下，看了他一眼：「筑基的，你买什么都没用。」小满想了一想，还是买了。\n\n一百四十块灵石，揣回山上的，剩下不到二十块。家里捎去十两银子，信上写，爹的膝盖，看大夫。打这以后，他年年腊月下一趟山，卖一罐丹，买一回东西；钱掌柜年年收丹，年年是那一句：「来路不问，童叟无欺。」坊市上他拿这些丹当「好货」卖，谁问是谁炼的，也是这一句。往后小满出门办差，照例先在钱掌柜的铺子里交易两笔，卖两颗丹，买几样东西；回来了，再把用不着的卖掉。\n\n瞿老一个月两回，在崖顶上拿扫帚把教他巽四的剑，他拿那口火柴跟着学。瞿老教剑不多话，一层一式，一式一句。五年里，剑柄上缠的布，换了三回。\n\n大比那一场，秦雁不服。年三开春，她头一回上崖来，剑没出鞘，先在崖边站着看了他半天，才道：「那一场，你是跑赢的。」小满道：「掉下台就是输，大比的规矩。」秦雁道：「所以我上来，再比一场。这回的台子是整座崖，没有台边。」\n\n她使的是观里正经传下来的「流云剑」，一招有一招的名字，起手、变招、收势，一丝不乱；小满使的是瞿老的巽四，东一脚西一脚，没个章法。头一场，不到二十招，她的剑尖便停在了他心口上，停得稳稳的。小满低头看着那一点剑尖，头一回明白：瞿老教他的是怎么看、怎么等，却没教他一剑接着一剑地往下走——那是秦雁有、他还没有的东西。",
+  "en": "The spirit stones were pushed across, and he didn't hurry to pocket them. What Yinyue had said on the night of the Grand Contest stayed in his ears: whoever this queen is on, that's who he looks for. He went once round the shop, and everything he picked was something to keep him alive.\n\nFirst, herbs. Solomon's seal, milkvetch, purple jade ginseng, a bundle of each; and a few the new recipes needed: poria, fleeceflower root, sweet flag, half a jin of each weighed out. To take back for the Rice Bucket. Pills were his life, and the ones he could make himself were more reliable than any he could buy.\n\nNext, talismans. Shopkeeper Qian fetched the ladder and took a flat wooden box down from the topmost drawer. Inside lay three talismans drawn in gold dust: \"Escape talismans. Press it in your palm, make a sign, and you're three zhang away.\" Xiaoman asked how much, and Shopkeeper Qian said, \"Forty a sheet.\" Xiaoman gritted his teeth and bought one, wrapped it in three layers of oilpaper, and kept it next to his skin.\n\nThen weapons. Matchstick was a good sword, but where a sword couldn't reach, you needed something else. He chose a short flying sword, a span long, willow-leaf shaped, with a red silk cord tied to the hilt. Held between the fingers, a sign sent it out two or three zhang, and then called it back. Low-grade, Shopkeeper Qian said; a fifth-layer Qi Condensation cultivator could drive it.\n\nLast, a soft mail vest. Dusty grey, so thin it could be folded into a sleeve; Shopkeeper Qian said it was woven from demon-beast sinew. He hacked at it twice with a knife and left two white marks: \"A Qi Condensation blade won't get through.\" Xiaoman asked, \"And a Foundation Establishment one?\" Shopkeeper Qian put the knife down and gave him a look: \"Against Foundation Establishment, nothing you buy will help.\" Xiaoman thought about it, and bought it anyway.\n\nOf a hundred and forty spirit stones, fewer than twenty came back up the mountain with him. He sent ten taels of silver home, and wrote in the letter: Pa's knees, see a doctor. From then on, every year in the twelfth month he went down the mountain once, sold a jar of pills and bought a round of things; every year Shopkeeper Qian took the pills, and every year said the same thing: \"I don't ask where things come from, and I cheat neither old nor young.\" At the market he sold these pills as \"good goods\", and whoever asked who made them got the same answer. After that, whenever Xiaoman went out on a job, he first did a couple of deals at Shopkeeper Qian's as a matter of course, selling a couple of pills and buying a few things; when he came back, he sold off what he hadn't needed.\n\nTwice a month Elder Qu taught him the Xun Four sword on the clifftop with the broom handle, and he followed along with Matchstick. Elder Qu didn't say much when he taught the sword: one form a layer, one sentence a form. In five years the cloth on the hilt was rewound three times.\n\nQin Yan didn't accept that bout at the contest. In the spring of the third year she came up the cliff for the first time. She didn't draw her sword; she stood at the edge of the cliff watching him a good while first, then said, \"That bout, you won by running.\" Xiaoman said, \"Off the stage is a loss. That's the contest rule.\" Qin Yan said, \"That's why I've come up. One more bout. This time the stage is the whole cliff, and it has no edge.\"\n\nShe used the Flowing Cloud Sword, handed down properly in the abbey, every move with its name, opening, change and close, not a hair out of place. Xiaoman used Elder Qu's Xun Four, a foot here and a foot there, with no method to it. The first bout, inside twenty moves, her sword point stopped over his heart, and stopped steady. Xiaoman looked down at that point and understood for the first time: Elder Qu had taught him how to watch and how to wait, but not how to go on, one cut after another. That was something Qin Yan had and he didn't yet."
+ },
+ "lines": [],
+ "buttons": [
+  "autumn"
+ ],
+ "exits": [
+  {
+   "id": "autumn",
+   "label": {
+    "zh": "那年入秋",
+    "en": "That autumn"
+   },
+   "means": "Elder Qu teaches going with the wind; the red tablet for the east bank of the Yi",
+   "beat": [],
+   "next": "09-yishui",
+   "needs": {
+    "task": "fangshi-liuyun"
+   },
+   "refuse": {
+    "zh": "秦雁的剑尖还停在心口上。",
+    "en": "Qin Yan's point is still at your heart."
+   }
+  }
+ ]
+}

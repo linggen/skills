@@ -176,6 +176,28 @@ SUBJECTS = {
     'Two fingertips pressed on the inside of a wrist, feeling the pulse. Only the hand and the wrist. Muted ink and soft wash on plain paper.'),
   'rain/biedou-basin': ('sprite', (360, 200), (1024, 576), 1,
     'ONE pair of plastic skinfold calipers, pinching a fold of skin on an upper arm. Only the calipers and a bit of the arm. Muted ink and soft wash on plain paper.'),
+  #    第七回: 看炉 (闵丹师's furnace) · 流云剑 (秦雁 on the cliff top).
+  'rain/kanlu-beam': ('sprite', (960, 200), (1536, 320), 2,
+    'A long horizontal strip of a dark low alchemy room seen from the side: one big round bronze furnace in the middle on a stone base, '
+    'rows of small wooden medicine drawers along the wall, a bronze grinding trough on the floor. Dark ink and grey wash, a faint red glow.'),
+  'rain/kanlu-basin': ('sprite', (360, 200), (1024, 576), 1,
+    'ONE small iron pair of fire tongs held in a hand, tipped with a little live coal. Only the hand and the tongs. Muted ink and soft wash on plain paper.'),
+  'rain/liuyun-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of a windy mountain clifftop seen from the side, an old bent pine at one end with sword marks cut in its bark, '
+    'a drop beyond the edge. Grey ink wash and dark ink.'),
+  'rain/liuyun-basin': ('sprite', (360, 200), (1024, 576), 1,
+    'ONE dull red bronze short sword held level in a hand, parrying. Only the hand and the sword. Muted ink and soft wash on plain paper.'),
+  #    今四: 红薯 under the hoop · 冬至夜, listening in the dark.
+  'rain/hongshu-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of an open-air basketball court at night in winter seen from the side: one hoop on a pole, a chain-link fence, '
+    'one tall floodlight, bare trees beyond. Grey ink wash and dark ink, cold.'),
+  'rain/hongshu-basin': ('sprite', (360, 200), (1024, 576), 1,
+    'ONE small scruffy reddish-yellow mongrel dog with a tuft of hair standing up on its forehead, nosing a basketball along with its head. Muted ink and soft wash on plain paper.'),
+  'rain/ting-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of a dark old library stack room at night seen from the side: tall wooden bookshelves of thread-bound books, '
+    'one small humming climate-control box on the wall, a desk and a chair. Almost black ink wash, a faint grey glow.'),
+  'rain/ting-basin': ('sprite', (360, 200), (1024, 576), 1,
+    'ONE hand laid flat on the left side of a chest over a sweater, feeling the heartbeat. Only the hand and the chest. Muted ink and soft wash on plain paper.'),
   'rain/fanban-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of a dim stone corridor floor seen from the side and a little above: a row of square old '
     'flagstones running across the whole width, one of them tilted open over a black pit. Grey ink wash and dark ink.'),
