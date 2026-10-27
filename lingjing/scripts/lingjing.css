@@ -1342,3 +1342,12 @@ body.fighting .atmos { display: none; }
 .lookchip.beckon { animation: lookBeckon 2.6s ease-in-out 1.5s infinite; }
 @keyframes lookBeckon { 0%, 100% { box-shadow: 0 0 0 0 rgba(227, 192, 126, 0); } 50% { box-shadow: 0 0 0 3px rgba(227, 192, 126, .45); } }
 @media (prefers-reduced-motion: reduce) { .lookchip.beckon { animation: none; box-shadow: 0 0 0 2px rgba(227, 192, 126, .45); } }
+
+/* The stage quest holding a scene's ways (cards.js gateCardHtml, Hanli 10-27: 「两个按钮都不能点…感觉卡住了」):
+   the layer, the bar, what is short and one way to earn it; the ways under it drawn shut. */
+.gatecard { flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; margin-bottom: 6px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--raised); text-align: left; }
+.gatecard .cardtitle { margin: 0; }
+.gatebar { height: 8px; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+.gatebar i { display: block; height: 100%; background: var(--ling); transition: width .6s ease; }
+.paneltaps .paneltap:disabled, .paneltaps .quietnext:disabled { opacity: .45; cursor: not-allowed; }

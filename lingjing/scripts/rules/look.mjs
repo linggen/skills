@@ -34,7 +34,7 @@ import { chapterLabel, huiOf, sideLine } from './hui.mjs';
 import { leaveOf, replayBrief } from './skips.mjs';
 import { asideLook } from './aside.mjs';
 import { capLook } from './cap.mjs';
-import { stageBack, stageNow, stagesPaid } from './gates.mjs';
+import { entryGate, stageBack, stageBrief, stageGate, stageNow, stagesPaid } from './gates.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { owesTell } from './tell.mjs';
 import { mainRoot, rootName } from './roots.mjs';
@@ -387,6 +387,10 @@ function drawnOffers(state, exit) {
 function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sceneOf(content, state)) {
   const brief = { id: exit.id, means: exit.means, button };
   if (exit.needs) brief.needs = exit.needs;
+  // A way the 回's stage quest holds (rules/gates.mjs): drawn shut, with the gate and his 修为 toward it — never a live
+  // button that refuses (Hanli 10-27: 「两个按钮都不能点…感觉卡住了」).
+  const gate = scene ? stageGate(content, state, scene.id, exit.id) ?? entryGate(content, state, exit) : null;
+  if (gate) brief.stage = stageBrief(content, state, gate);
   if (exit.breakthrough) brief.breakthrough = breakthroughOf(content, state, ctxNow);
   if (exit.key) {
     const key = riddleOf(state, scene, exit, ctxNow);

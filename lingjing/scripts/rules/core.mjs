@@ -19,7 +19,7 @@ import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
 import { comingOf, sideLine } from './hui.mjs';
 import { capLook, pastCapSay, storyAllows, underCap } from './cap.mjs';
-import { stageBrief, stageGate, stageSay } from './gates.mjs';
+import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
@@ -494,7 +494,7 @@ export function resolve(state, content, ctx, args) {
     return refuse('game-not-won', null, { game: game.id, ...(fightStuck(content, s, game) ? { stuck: true } : {}) });
   }
   // 阶段任务 — after the scene's own board or fight, which may be played before the bar is full (rules/gates.mjs): the next stage waits on 圆满 of the layer he holds — earned, never paid by the story.
-  const staged = stageGate(content, s, scene.id, exit.id);
+  const staged = stageGate(content, s, scene.id, exit.id) ?? entryGate(content, s, exit);
   if (staged) return refuse('stage', stageSay(content, s, staged, lang), { exit: exit.id, stage: stageBrief(content, s, staged, lang) });
   let named = null;
   if (exit.value) {

@@ -28,7 +28,7 @@ import { shelfOf } from './look.mjs';
 import { fightStuck } from './skips.mjs';
 import { riddleOf } from './core.mjs';
 import { tellOf } from './tell.mjs';
-import { earned, stageGate } from './gates.mjs';
+import { earned, entryGate, stageGate } from './gates.mjs';
 
 const DAY = 86_400_000;
 /* The birthday a way on that reads the roots is taken with (tests/prologue.mjs V1_BIRTH). */
@@ -333,7 +333,7 @@ function take(content, r, s, exit, policy) {
   // fill it are the economy's (tools/balance.mjs), not played here: the realm stands there, earned.
   // Earned before the way on's fight: a player grinds the layer the gate asks, then goes up
   // (古八's 腊八 final is weighed at the 八层 its gate holds — tools/story-fights.mjs h09b).
-  const gate = stageGate(content, s, sc?.id, exit.id);
+  const gate = stageGate(content, s, sc?.id, exit.id) ?? entryGate(content, s, exit);
   if (gate) { s = earned(content, s, gate); r.log.push(`earned ${gate.hui} ${gate.tier}:${gate.layer}`); }
   s = handIn(r, s); // the 回's stage quest met (earned here, or already by the realm he holds): 交差
   const game = exit.game ?? null;

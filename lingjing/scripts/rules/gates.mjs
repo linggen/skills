@@ -44,6 +44,21 @@ export function stageGate(content, state, sceneId, exitId) {
   return g && !gateMet(content, state, g) ? g : null;
 }
 
+/* A gate held at the way INTO its scene (Hanli 10-27: 「读了一段剧情, 两个按钮都不能点…感觉卡住了」): where every way on
+   of the gated scene is gated and the scene gives nothing to do first (no board, no fight), the passage would be read
+   only to stop at two dead buttons — so the way that leads there waits instead, where he stands and can walk off to
+   earn it. The gate stays the scene's own (its key, its pay, a save already standing in it); this only holds the door. */
+export function entryGate(content, state, exit) {
+  const to = exit?.next;
+  if (!to || exit.stay || (state.done_scenes ?? []).includes(to)) return null;
+  const g = gatesOf(content).find(x => x.scene === to);
+  if (!g || gateMet(content, state, g)) return null;
+  const sc = Object.values(content.chapters).map(ch => ch.scenes?.[to]).find(Boolean);
+  if (!sc || (sc.show ?? []).some(c => c.card === 'board') || sc.exits.some(e => e.game)) return null;
+  const ways = sc.exits.filter(e => !e.stay);
+  return ways.length && ways.every(e => g.exits.includes(e.id)) ? g : null;
+}
+
 /* How the gate reads, beside where he stands: its name (练气四层圆满), and his 修为 toward it. */
 export function stageBrief(content, state, gate, lang = state.lang) {
   const here = gate.tier === state.tier && gate.step === state.step;
