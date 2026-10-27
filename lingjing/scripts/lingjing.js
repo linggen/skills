@@ -3287,7 +3287,8 @@ async function replayTap(id, play) {
   await refresh();
 }
 function gameMove(gmove) {
-  const ghost = gmove.closest('[data-game]');
+  // A board's tap outside its host (the card's 问询 on a 密室: `data-gfor`) acts on the board it names.
+  const ghost = gmove.closest('[data-game]') ?? (gmove.dataset.gfor ? document.querySelector(`[data-game="${CSS.escape(gmove.dataset.gfor)}"]`) : null);
   if (!ghost || gmove.disabled) return false;
   return gameAct(ghost, { ...gmove.dataset }, gmove);
 }
@@ -3336,8 +3337,11 @@ async function boardSends(g, send) {
   if (g.mod.heard) g.state = g.mod.heard(g.state, res);
   sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state);
   render();
-  if (res?.ok && res.opened) tellYinyue('mishi', MISHI_FACT.zh, MISHI_FACT.en, { mood: 'neutral' });
-  else if (res?.ok && res.right && !res.out) tellYinyue('mishi', MISHI_STEP.zh, MISHI_STEP.en, { mood: 'happy' });
+  // A help tier opened (问银月, or unasked below): she says it in her own words, from the rules' facts.
+  if (res?.ok && res.asked) mishiHelp(g, res);
+  // Unasked, she explains the play: a room just opened, a new mechanism up, or a few misses on one (Hanli 10-27:
+  // 「关键是问yinyue怎么玩, 她应该告诉玩法才对」). Each opens the next tier, as 问银月 would.
+  else if (res?.ok && (res.opened || (res.right && !res.out) || res.offer)) { await refresh(); return boardAsks(g, res.opened ? 'open' : res.offer ? 'offer' : 'next'); }
   // Out of the 密室 with nothing skipped: a rare find, worth her word (hersay.js rare).
   if (res?.ok && res.out && res.escaped) herSay.say('rare', lang() === 'en' ? `Escaped the hidden room, nothing skipped.${res.paid?.wealth ? ` +${res.paid.wealth} stones.` : ''}` : `走出了密室，一道机关都没跳过。${res.paid?.wealth ? `得灵石${res.paid.wealth}。` : ''}`, { key: `mishi|${Date.now()}` });
   await refresh();
@@ -3363,15 +3367,29 @@ function herAnswered() {
   boardWaitsOnHer = null;
   if (g?.mod?.heard) { g.state = g.mod.heard(g.state, { her: 'spoke' }); render(); }
 }
-const MISHI_FACT = {
-  zh: '你们进了一间密室。机关他看得见；墙上、地上的古籍和刻字是旧篆，只有你读得懂——用 AppTool 调 Mishi 读你手里的那几页。用你自己的话告诉他你读到了什么，问他机关上看见了什么；答案你不知道，别猜别编。',
-  en: 'You two are in a hidden room. He sees the mechanisms; the old pages and carvings are in old seal script only you can read — read them with AppTool → Mishi. Tell him in your own words what you read and ask what he sees on the mechanism; you do not know the answer, so never guess or make one up.',
-};
-const MISHI_STEP = {
-  zh: '密室里一道机关开了，下一道露了出来；你手里的古籍也翻到了下一页（AppTool → Mishi）。',
-  en: 'A mechanism in the hidden room gave way and the next one shows; your old pages turn to the next one too (AppTool → Mishi).',
-};
-
+/* The 密室's next help tier, asked for without a tap (a room opened, a new mechanism, a few misses). */
+function boardAsks(g, why) {
+  const p = g.state?.view?.puzzles?.find((x) => x.at === 'open');
+  if (!p || g.state.busy) return;
+  g.askWhy = why;
+  const r = g.mod.act(g.state, { g: 'her' });
+  g.state = r.state;
+  render();
+  if (r.send) { g.sent = true; run(`send:${g.taskId}:ask`, () => boardSends(g, r.send)); }
+}
+/* Her word on the 密室: the room's facts and the tier the rules opened, to say as herself in a line or two; the board
+   waits on her (her clock) and shows the tier's words itself only if she lets it run out. */
+function mishiHelp(g, res) {
+  const why = g.askWhy ?? 'asked';
+  g.askWhy = null;
+  const en = lang() === 'en', last = res.help?.[res.help.length - 1] ?? '', earlier = (res.help ?? []).slice(0, -1);
+  const whyZh = { open: '你们刚推开暗门进来，他还不知道这机关怎么玩', next: '前一道机关开了，下一道露了出来', offer: `他试错了${res.wrong}次，还卡着`, asked: '他问你这道机关怎么玩' }[why];
+  const whyEn = { open: 'You two just came in; he does not know how the mechanism works yet', next: 'The last mechanism gave way; the next one shows', offer: `He has missed ${res.wrong} times and is stuck`, asked: 'He asks you how this mechanism works' }[why];
+  const zh = `密室「${res.room}」第${res.step}道（共${res.steps}道）。${whyZh}。他眼前：${res.goal ?? ''}${res.read ? `（铜盘先前停在${res.read}）` : ''} ${res.seen}\n${earlier.length ? `你先前已告诉他：${earlier.join(' ')}\n` : ''}这回要告诉他的（提示 ${res.tier}/${res.of}）：${last}\n用你自己的话、你自己的口吻，一两句说给他——只说这一条，别越过它，别报出更多。`;
+  const enT = `Hidden room "${res.room}", mechanism ${res.step} of ${res.steps}. ${whyEn}. Before him: ${res.goal ?? ''}${res.read ? ` (the dial stopped on ${res.read})` : ''} ${res.seen}\n${earlier.length ? `You already told him: ${earlier.join(' ')}\n` : ''}Tell him now (hint ${res.tier}/${res.of}): ${last}\nIn your own words, as yourself, a line or two — this one only, nothing past it.`;
+  boardWaitsOnHer = g;
+  askHer('mishi_help', zh, enT, 'neutral').then((heard) => { if (!heard && boardWaitsOnHer === g) boardWaitsOnHer = null; });
+}
 /* The rival's turn (a module that `think`s, as 象棋 does): thought in a Worker so
    the page stays live, laid in by the module's `answer` — only if the board is
    still the one it was thought for. */

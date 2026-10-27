@@ -18,9 +18,11 @@ export const meta = {
   sounds: ['turn', 'pick', 'open', 'good', 'bad'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)
   name: { zh: '密室', en: 'The hidden room' },
   how: {
-    zh: '机关你看得见，古籍上的字只有银月读得懂。跟她说你看见了什么，问她读到了什么。',
-    en: 'You can see the mechanisms; only Yinyue can read the old pages. Tell her what you see, ask her what she reads.',
+    zh: '机关你看得见，古籍只有银月读得懂。不会玩，就点「问银月」。',
+    en: 'You see the mechanisms; only Yinyue reads the old pages. Stuck? Tap "Ask Yinyue".',
   },
+  // The card's 问询 on this board is hers (cards.js): the room's play and the next hint, never the scenery again.
+  askHer: (state) => (state?.view && !state.view.door && !state.view.done ? 'her' : null),
 };
 
 const STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
@@ -30,7 +32,8 @@ const NEED = { hand: 3, luoshu: 3, stars: 1, scroll: 2 };
 const T = {
   zh: {
     door: '书架后头，有一块木板敲着是空的。', open: '推开看看', none: '今天不进暗室了，明天再来。',
-    step: '第{k}道 · 共{of}道', try: '试一试', clear: '重来', her: '问银月', herAsleep: '木牌温温的',
+    step: '第{k}道 · 共{of}道', try: '试一试', clear: '重来', her: '问银月', herAsleep: '木牌温温的', tier: '提示 {n}/{of}', turned: '已扣转 {n} 年', from: '从{y}起',
+    readAt: { dial: '铜盘停在：', scroll: '卷上念出：' },
     waiting: '等她开口……', herSaid: '银月说完了。机关还在那儿。', hintBtn: '翻看古籍残页', hintHead: '残页上写着',
     asleep: '木牌温温的，她睡着。古籍上的字，等一等也许会自己浮出来。',
     wrong: '机关纹丝不动。', skip: '跳过这一道', skipped: '这一道跳过了。',
@@ -41,7 +44,8 @@ const T = {
   },
   en: {
     door: 'Behind the shelves, one board rings hollow when you knock.', open: 'Push it', none: 'No more hidden rooms today; come back tomorrow.',
-    step: 'Mechanism {k} of {of}', try: 'Try it', clear: 'Again', her: 'Ask Yinyue', herAsleep: 'The token is warm',
+    step: 'Mechanism {k} of {of}', try: 'Try it', clear: 'Again', her: 'Ask Yinyue', herAsleep: 'The token is warm', tier: 'hint {n}/{of}', turned: 'turned locked {n} years', from: 'from {y}',
+    readAt: { dial: 'The dial stopped on: ', scroll: 'Read off the scroll: ' },
     waiting: 'Waiting for her to speak…', herSaid: 'Yinyue has spoken. The mechanism waits.', hintBtn: 'Read the torn page', hintHead: 'The torn page says',
     asleep: 'The token is warm; she sleeps. Wait a little — the old words may surface by themselves.',
     wrong: 'The mechanism does not move.', skip: 'Skip this one', skipped: 'Skipped.',
@@ -55,7 +59,7 @@ const say = (s, v) => String(s).replace(/\{(\w+)\}/g, (m, k) => (v[k] == null ? 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 export function newGame(seed) {
-  return { seed: String(seed), task: null, view: null, present: false, dial: { s: 0, b: 0 }, picks: [], note: null, wait: 0, live: false, hinted: false, spoke: false, busy: false, won: false };
+  return { seed: String(seed), task: null, view: null, present: false, dial: { s: 0, b: 0 }, turned: 0, from: null, picks: [], note: null, wait: 0, live: false, hinted: false, spoke: false, busy: false, won: false };
 }
 
 /* The rules' view, laid in on every draw (the page's boardFor): the room as Look has it. */
@@ -64,7 +68,7 @@ export function fromLook(state, look, { task = null, present = false } = {}) {
   if (view === state.view && present === state.present && task === state.task) return state;
   const step = view?.step ?? null, was = state.view?.step ?? null;
   // A new mechanism: its controls start clean.
-  const fresh = step !== was ? { picks: [], dial: { s: 0, b: 0 }, wait: 0, live: false, hinted: false, spoke: false } : {};
+  const fresh = step !== was ? { picks: [], dial: { s: 0, b: 0 }, turned: 0, from: null, wait: 0, live: false, hinted: false, spoke: false } : {};
   return { ...state, ...fresh, task, view, present };
 }
 
@@ -82,7 +86,10 @@ export function act(state, d) {
       const k = Number(d.d) || 0, ring = d.ring;
       const s = ring === 'inner' ? state.dial.s : (state.dial.s + k + 10) % 10;
       const b = ring === 'outer' ? state.dial.b : (state.dial.b + k + 12) % 12;
-      return { state: { ...state, dial: { s, b }, note: null } };
+      // 扣转 counts its years from where it began (「已扣转 N 年」); a ring turned alone starts the count again.
+      const locked = ring === 'both';
+      const from = locked ? (state.turned ? state.from : { ...state.dial }) : null;
+      return { state: { ...state, dial: { s, b }, turned: locked ? state.turned + k : 0, from, note: null } };
     }
     case 'pick': {
       if (!p || p.kind === 'dial') return { state };
@@ -96,7 +103,9 @@ export function act(state, d) {
       if (!p || !ready(state, p)) return { state };
       return { state: { ...state, busy: true }, send: { verb: 'mishi', args: { action: 'try', step: v.step, input: inputOf(state, p) } } };
     // The page turns to her (the ask bar) and, once the words go, calls heard({her: 'asked'}).
-    case 'her': return p && !state.live ? { state, her: true } : { state };
+    // 问银月: the rules open the next help tier and hand it back as facts for her (`ask`); the page gives them to her.
+    // Nobody to say it (she sleeps, or the phone with no chat): `alone`, the tier is read off the page at once.
+    case 'her': return p ? { state: { ...state, busy: true }, send: { verb: 'mishi', args: { action: 'ask', step: v.step, input: inputOf(state, p), turned: state.turned, ...(state.present ? {} : { alone: 1 }) } } } : { state };
     case 'hint': return { state: { ...state, busy: true }, send: { verb: 'mishi', args: { action: 'hint' } } };
     case 'skip': return { state: { ...state, busy: true }, send: { verb: 'mishi', args: { action: 'skip' } } };
     case 'leave': return { state: { ...state, busy: true }, send: { verb: 'mishi', args: { action: 'leave' } } };
@@ -111,6 +120,9 @@ export function heard(state, res) {
   if (res?.her === 'asked') return { ...state, wait: ((state.view?.hint_wait_s ?? 25) + 1) * 1000, live: true, spoke: false, note: null };
   if (res?.her === 'spoke') return state.wait > 0 || state.live ? { ...state, wait: 0, live: false, spoke: true, note: 'herSaid' } : state;
   const s = { ...state, busy: false };
+  // A help tier opened: her clock starts — the page shows the tier's words only if she lets it run out.
+  if (res?.asked && res.hint) return { ...s, wait: 0, live: false, hinted: true, note: null };
+  if (res?.asked) return { ...s, wait: ((state.view?.hint_wait_s ?? 25) + 1) * 1000, live: true, spoke: false, note: null };
   if (!res || res.ok === false) return { ...s, note: res?.refused ? `refused:${res.refused}` : null };
   if (res.right === false) return { ...s, picks: [], note: 'wrong' };
   if (res.hint) return { ...s, hinted: true, note: null };
@@ -152,7 +164,8 @@ function dialHtml(state, p, t, lang) {
   const pic = scene(320, 180, `<image href="${art('dial')}" x="70" y="0" width="180" height="180"/><path class="g-mishi-pointer" d="M160 2 l-6 -0 l6 10 l6 -10 z"/>${ring(STEMS, 71, s, 'is-stem')}${ring(BRANCHES, 46, b, 'is-branch')}`, 'g-mishi-dial');
   const turn = (ring, d, label) => `<button type="button" class="g-nudgebtn" data-g="turn" data-ring="${ring}" data-d="${d}" aria-label="${esc(label)}">${d < 0 ? '‹' : '›'}</button>`;
   const row = (ring, label) => `<div class="g-nudge"><span class="g-nudgesay">${esc(label)}</span>${turn(ring, -1, `${label} −1`)}${turn(ring, 1, `${label} +1`)}</div>`;
-  return `${pic}<p class="g-mishi-read">${esc(t.reads)}<b>${STEMS[s]}${BRANCHES[b]}</b></p>${row('outer', t.outer)}${row('inner', t.inner)}${row('both', t.both)}`;
+  const turned = state.turned ? `<p class="g-mishi-turned">${esc(say(t.from, { y: `${STEMS[state.from?.s ?? 0]}${BRANCHES[state.from?.b ?? 0]}` }))} · ${esc(say(t.turned, { n: state.turned }))}</p>` : '';
+  return `${pic}<p class="g-mishi-read">${esc(t.reads)}<b>${STEMS[s]}${BRANCHES[b]}</b></p>${turned}${row('outer', t.outer)}${row('inner', t.inner)}${row('both', t.both)}`;
 }
 
 function handHtml(state, p, t) {
@@ -162,9 +175,10 @@ function handHtml(state, p, t) {
   const at = (w) => [FXp[w.f], w.lv === 1.5 ? 56.3 : LYp[w.lv]];
   // painted by an edit pass from the old drawing, so the fingers sit where the studs are
   const pic = scene(320, 160, `<image href="${art('hand')}" width="320" height="160"/>`, 'g-mishi-handpic');
+  // Each stud wears its worn character (Hanli 10-27: 「玩家不可能知道怎么掐」) — the clue is then 「按 子 卯 申」, no 掌诀 to know.
   const studs = WEN.map((w) => {
     const [x, y] = at(w), k = state.picks.indexOf(w.id);
-    return `<button type="button" class="g-mishi-stud${k >= 0 ? ' is-on' : ''}" style="left:${x}%;top:${y}%" data-g="pick" data-i="${w.id}" aria-label="${k >= 0 ? k + 1 : ''}">${k >= 0 ? k + 1 : ''}</button>`;
+    return `<button type="button" class="g-mishi-stud${k >= 0 ? ' is-on' : ''}" style="left:${x}%;top:${y}%" data-g="pick" data-i="${w.id}" aria-label="${w.ch}${k >= 0 ? ` ${k + 1}` : ''}"><span class="g-mishi-wen">${w.ch}</span>${k >= 0 ? `<i>${k + 1}</i>` : ''}</button>`;
   }).join('');
   return `<div class="g-mishi-hand">${pic}${studs}</div>`;
 }
@@ -242,18 +256,20 @@ export function html(state, lang = 'zh') {
   }
   const p = open(v);
   const head = `<div class="g-head"><span>${esc(v.room.name)}</span><span>${esc(say(t.step, { k: v.step + 1, of: v.of }))}</span></div>`;
-  const behind = v.puzzles.filter((x) => x.at === 'solved' || x.at === 'skipped').map((x) => `<p class="g-mishi-done">${esc(x.at === 'solved' ? x.right : t.skipped)}${x.read ? ` <b>${esc(t.read)}${esc(x.read)}</b>` : ''}</p>`).join('');
+  const behind = v.puzzles.filter((x) => x.at === 'solved' || x.at === 'skipped').map((x) => `<p class="g-mishi-done">${esc(x.at === 'solved' ? x.right : t.skipped)}${x.read ? ` <b>${esc(t.readAt[x.kind] ?? t.read)}${esc(x.read)}</b>` : ''}</p>`).join('');
   const intro = v.step === 0 && !state.picks.length && !state.note ? `<p class="g-line-say g-mishi-dim">${esc(v.room.line)}</p>` : '';
   if (!p) return wrap(head + roomScene(v));
   const mech = MECH[p.kind]?.(state, p, t, lang) ?? '';
   // The line of the mechanism just opened already stands above (its `right`): not said twice.
   const note = String(state.note ?? '').startsWith('right:') ? '' : noteOf(state, t);
-  const herBtn = btn(state.present ? t.her : t.herAsleep, 'data-g="her"', 'soft', state.live ? 'is-wait' : '');
+  const tier = p.tier ?? 0, more = tier < 3 ? ` · ${say(t.tier, { n: tier + 1, of: 3 })}` : '';
+  const herBtn = btn(`${state.present ? t.her : t.herAsleep}${more}`, 'data-g="her"', 'main', state.live ? 'is-wait' : '');
+  const goal = p.goal ? `<p class="g-mishi-goal">${esc(p.goal)}</p>` : '';
   const waitLine = state.live ? `<p class="g-mishi-wait">${esc(state.present ? t.waiting : t.asleep)} <b>${Math.ceil(state.wait / 1000)}</b></p>` : '';
   const hint = p.hint ? `<div class="g-mishi-hint"><b>${esc(t.hintHead)}</b>${esc(p.hint)}</div>` : hintOpen(state, v) ? btn(t.hintBtn, 'data-g="hint"', 'soft') : '';
   const tryRow = `<div class="g-pair">${p.kind === 'dial' ? '' : btn(t.clear, 'data-g="clear"', 'soft')}${btn(t.try, `data-g="try"${ready(state, p) ? '' : ' disabled'}`)}</div>`;
   const skip = v.can_skip ? `<div class="g-mishi-skip">${btn(t.skip, 'data-g="skip"', 'quiet')}</div>` : '';
-  return wrap(`${head}${roomScene(v)}${behind}${intro}<p class="g-mishi-his">${esc(p.his)}</p>${mech}${note ? `<p class="g-mishi-note${state.note === 'wrong' ? ' is-wrong' : ''}">${esc(note)}</p>` : ''}${tryRow}<div class="g-mishi-ask">${herBtn}${hint}</div>${waitLine}${skip}`);
+  return wrap(`${head}${roomScene(v)}${behind}${intro}<p class="g-mishi-his">${esc(p.his)}</p>${goal}${mech}${note ? `<p class="g-mishi-note${state.note === 'wrong' ? ' is-wrong' : ''}">${esc(note)}</p>` : ''}${tryRow}<div class="g-mishi-ask">${herBtn}${hint}</div>${waitLine}${skip}`);
 }
 
 /** What a step sounded (games/kit/heard.js): a dial turned (turn), a glyph picked (pick), the room opened (open), a

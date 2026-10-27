@@ -57,7 +57,7 @@ test('the data: rooms declared (at least two), each 2–3 mechanisms of known ki
     assert.ok(room.puzzles.length >= 2 && room.puzzles.length <= 3, room.id);
     for (const p of room.puzzles) {
       assert.ok(['dial', 'hand', 'luoshu', 'stars', 'scroll'].includes(p.kind), p.kind);
-      for (const k of ['his', 'her', 'hint', 'right']) for (const l of ['zh', 'en']) assert.ok(p[k]?.[l], `${room.id} ${p.kind} ${k}.${l}`);
+      for (const k of ['his', 'her', 'goal', 'right']) for (const l of ['zh', 'en']) assert.ok(p[k]?.[l], `${room.id} ${p.kind} ${k}.${l}`);
     }
   }
   for (const e of data.entries) assert.ok(content.tasks.tasks.some((t) => t.id === e.task), e.task);
@@ -286,8 +286,9 @@ test('the board (games/mishi.js): drawn from Look alone, its tries go to the rul
   assert.equal(tried.send.args.action, 'try');
   assert.equal(run(s, tried.send.args).result.right, true);
   // Asked: the clock runs; she speaks — no torn page; she does not — the page offers it once the rules allow.
-  assert.equal(mod.act(g, { g: 'her' }).her, true);
-  let w = mod.heard(g, { her: 'asked' });
+  const her = mod.act(g, { g: 'her' });
+  assert.equal(her.send.args.action, 'ask');
+  let w = mod.heard(her.state, run(s, her.send.args).result);
   assert.equal(w.live, true);
   assert.equal(mod.heard(w, { her: 'spoke' }).spoke, true);
   // (the board reads the real clock against `hint_at`: asked a minute before now)
@@ -325,4 +326,42 @@ test('a real 秘境 rerun: a run with no cache may roll the 暗室 into one of i
   assert.ok(lk.tasks.some((t) => t.id === 'mishi-mijing' && t.status === 'offered'));
   const inRoom = mishi(there, content, ctxAt(open), { action: 'open' });
   assert.equal(inRoom.result.opened, 'mijing-anshi');
+});
+
+test('问银月 opens the help one tier at a time — how it plays first, then her page, then nearly the answer; never past three; the words are the room\'s data', () => {
+  for (const room of data.rooms.filter((r) => r.id.startsWith('cangjing'))) {
+    let s = opened({ ...base, mishi_log: { day: null, n: 0, paid: Object.fromEntries(data.rooms.filter((r) => r.id !== room.id).map((r) => [r.id, NOW.toISOString()])) } });
+    for (let step = 0; step < room.puzzles.length; step += 1) {
+      const p = room.puzzles[step];
+      assert.equal(p.help?.length, 3, `${room.id} ${step}`);
+      const lk = look(s, content, ctxAt(NOW)).mishi.puzzles[step];
+      assert.equal(lk.tier, 0);
+      assert.ok(lk.goal && !/\{/.test(lk.goal), lk.goal);
+      const tiers = [];
+      for (let k = 1; k <= 4; k += 1) {
+        const r = run(s, { action: 'ask', input: '', turned: 0 });
+        assert.equal(r.result.tier, Math.min(k, 3));
+        tiers.push(r.result.help.at(-1));
+        s = r.state;
+      }
+      assert.ok(!/\{\w+\}/.test(tiers.join('')), tiers.join(' | '));
+      assert.equal(new Set(tiers.slice(0, 3)).size, 3);
+      // Her own tool carries the tiers asked for; Look never (only a tier read off the page after the wait).
+      assert.equal(herMishi(content, s, NOW).help.length, 3);
+      const seen = JSON.stringify(look(s, content, ctxAt(NOW)));
+      for (const t of tiers.slice(1)) assert.ok(!seen.includes(t), `tier in Look: ${t}`);
+      s = run(s, { action: 'skip' }).state;
+    }
+  }
+});
+
+test('the dial asks a handful of years (Hanli 10-27: 「20太多了」), and a few misses offer her next tier unasked', () => {
+  for (const room of data.rooms) for (let n = 0; n < 40; n += 1) {
+    for (const v of dealRoom(data, room, `n${n}|${room.id}`, 'zh')) if (v.kind === 'dial') assert.ok(v.vars.n >= 2 && v.vars.n <= 5, String(v.vars.n));
+  }
+  let s = opened();
+  const every = data.limits.offer_after;
+  let r;
+  for (let i = 0; i < every; i += 1) { r = run(s, { action: 'try', input: '99,99' }); s = r.state; }
+  assert.equal(r.result.offer, true);
 });

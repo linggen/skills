@@ -186,6 +186,7 @@ const goAttr = (id) => `data-go="${esc(id)}"`;
    the ask bar of 2026-09-21 is kept only for 问问银月). */
 const askAttr = (line) => `data-ask="${esc(line)}"`;
 const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) => (a.do ? doBtn(a.label, a.do, a.id) : a.leave ? `<button class="act quiet" data-board-leave="${esc(a.leave)}">${esc(a.label)}</button>` :
+  a.g ? `<button class="act ask" data-g="${esc(a.g)}" data-gfor="${esc(a.gfor)}">${esc(a.label)}</button>` :
   `<button class="act ${a.ask ? 'ask' : 'say'}" ${a.ask ? askAttr(a.say) : sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`)).join('')}</div>`;
 
 /// A tap that only changes the save — 接下 · 交差 · 买 · 卖 · 服用 · 佩戴. The page
@@ -570,7 +571,11 @@ function board(card, ctx) {
   // On the 问询 row, never a row of its own: a tall board is sized to the stage, and one more row cut its foot off.
   const leaveBtn = task?.leave && !made && !g?.state?.won && !g?.sent ? { label: ctx.words.boardLeave, leave: id } : null;
   const tall = framed && tallStyle(g.mod) ? ` style="${tallStyle(g.mod)}"` : '';
-  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${own && !leaveBtn ? '' : acts([leaveBtn, own ? null : { label: ctx.words.about, ask: true, say: ask }])}</div>`;
+  // A puzzle that is hers to explain (密室: `meta.askHer` names the module's tap) — 问询 goes to her with the room's
+  // rules and where he stands, never to Ling for the scenery again (Hanli 10-27: 问询 twice, only the room re-described).
+  const herAsk = g?.mod?.meta?.askHer?.(g.state);
+  const about = own ? null : herAsk ? { label: ctx.words.about, g: herAsk, gfor: id } : { label: ctx.words.about, ask: true, say: ask };
+  return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${skip}${own && !leaveBtn ? '' : acts([leaveBtn, about])}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.

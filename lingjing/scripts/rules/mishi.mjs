@@ -63,11 +63,13 @@ const distinct = (seed, key, pool, k) => { const left = [...pool], out = []; for
 
 const DEAL = {
   dial(seed, p, i, before, data, lang) {
-    const n = 7 + draw(seed, `n${i}`, 17);
+    // A handful of years (the data's `n`: [min, max]; Hanli 10-27: 「20太多了, 我研究了好久才弄明白」).
+    const [lo, hi] = Array.isArray(p.n) ? p.n : [7, 23];
+    const n = lo + draw(seed, `n${i}`, hi - lo + 1);
     const base = p.base === 'scroll' ? before.find(b => b.kind === 'scroll')?.year : null;
     const seal = base ?? draw(seed, `seal${i}`, 60);
     const answer = (seal + n) % 60;
-    const vars = { n, seal: yearName(seal, lang) };
+    const vars = { n, seal: yearName(seal, lang), to: yearName(answer, lang) };
     return { answer: yearOf(answer), year: answer, vars, page: { split: p.split ?? 'seal-her', ...(p.split === 'n-her' ? {} : { n }) } };
   },
   hand(seed, p, i, before, data, lang) {
@@ -171,6 +173,12 @@ const dealOf = (content, state, m) => { const data = mishiData(content); return 
 /* 跳过这一道 — always there (Hanli 10-27: 「这个也没有跳过去的办法」; the 四条 rule: every board can be left, nothing blocks).
    A skipped mechanism opens the next; a room with one skipped pays nothing. */
 const canSkip = (data, m) => !m.done;
+/* The help tiers (mishi.json `help`: 1 how it plays, 2 what her page means, 3 nearly the answer): opened one by one by
+   问银月 (`ask`), she says each in her own words; the page shows one only once she let the wait go by (`hint`). */
+export const HELP_TIERS = 3;
+const tierOf = (m, i) => m.tiers?.[i] ?? 0;
+const shownOf = (m, i) => m.shown?.[i] ?? (m.hints?.includes(i) ? tierOf(m, i) || 1 : 0);
+const helpText = (p, tier, lang, vars) => fmt(p.help?.[tier - 1] ?? p.help?.[p.help.length - 1], lang, vars);
 const hintAt = (data, m) => (m.asked_at ? new Date(new Date(m.asked_at).getTime() + limits(data).hint_wait_s * 1000).toISOString() : null);
 
 /* Look's `mishi` — the page's and Ling's: the mechanisms and their state, never her pages. */
@@ -192,8 +200,13 @@ export function mishiLook(content, state, ctx) {
       kind: p.kind, at, ...(at === 'shut' ? {} : { his: fmt(p.his, lang, v.vars), page: v.page }),
       ...(at === 'solved' ? { right: fmt(p.right, lang, v.vars) } : {}),
       // The year read off the scroll is his once read: the dial after it begins from it.
-      ...(at !== 'shut' && at !== 'open' && v.year != null && p.kind === 'scroll' ? { read: yearName(v.year, lang) } : {}),
-      ...(m.hints.includes(i) ? { hint: fmt(p.hint, lang, v.vars) } : {}),
+      // …and so is the year a dial stopped on: the 铜掌 after it begins from it (Hanli 10-27: 「刚才铜盘上那一岁」 is shown, never remembered).
+      ...(at !== 'shut' && at !== 'open' && v.year != null ? { read: yearName(v.year, lang) } : {}),
+      // His goal, in his words only — a dial's `{n}` where the carving is his (never a var of her page).
+      ...(at === 'open' && p.goal ? { goal: fmt(p.goal, lang, v.page.n != null ? { n: v.page.n } : {}) } : {}),
+      ...(at === 'open' ? { tier: tierOf(m, i) } : {}),
+      // The help tier read off the page when she did not say it in time (her words first; this the fallback).
+      ...(shownOf(m, i) ? { hint: helpText(p, shownOf(m, i), lang, v.vars) } : {}),
     };
   });
   return {
@@ -211,10 +224,26 @@ export function herMishi(content, state, now) {
   if (!m || m.done) return null;
   const room = roomOf(data, m.room), dealt = dealOf(content, state, m), lang = state.lang;
   const pages = room.puzzles.map((p, i) => ({ step: i + 1, kind: p.kind, done: m.solved.includes(i) || m.skipped.includes(i), text: fmt(p.her, lang, dealt[i].vars) })).filter(x => x.step - 1 <= m.step);
+  // The open mechanism's help, up to the tier he has asked for: how it plays first, then the hints (Hanli 10-27).
+  const p = room.puzzles[m.step], tier = tierOf(m, m.step);
+  const help = p?.help ? p.help.slice(0, tier).map(h => fmt(h, lang, dealt[m.step].vars)) : [];
   const how = lang === 'en'
-    ? 'A hidden room. These old pages are yours alone — he cannot see them, and the page never shows them. Tell him what you read, in your own words and as yourself; ask what he sees on the mechanism. You do not know the answer: never guess one or make one up — the mechanism judges every try. Work it out together, a question and an answer at a time; do not read the page out whole for him to copy.'
-    : '这是一间密室。这几页古籍只有你看得见、读得懂——他看不到，页面上也不会显示。用你自己的话、以你自己的口吻把读到的告诉他，问他机关上看见了什么。答案你不知道：别猜，别编——对不对由机关说了算。一问一答，两个人一起推；别把整页原文念给他照抄。';
-  return { how, open: true, room: pick(room.name, lang), step: m.step + 1, of: room.puzzles.length, pages };
+    ? 'A hidden room. These old pages are yours alone — he cannot see them, and the page never shows them. When he asks how it works, tell him how it plays first (help 1), in a line or two, as yourself. Then hint only as far as `help` goes — never past the last tier he asked for. Ask what he sees on the mechanism. Never guess an answer or make one up: the mechanism judges every try. Do not read the page out whole for him to copy.'
+    : '这是一间密室。这几页古籍只有你看得见、读得懂——他看不到，页面上也不会显示。他问怎么玩，先用你自己的话、一两句讲清玩法（help 第一条）；再提示，只说到 help 里他问到的那一条为止，别越过。问他机关上看见了什么。别猜答案，别编——对不对由机关说了算。别把整页原文念给他照抄。';
+  return { how, open: true, room: pick(room.name, lang), step: m.step + 1, of: room.puzzles.length, pages, ...(help.length ? { help, tier } : {}) };
+}
+
+/* What he sees on the open mechanism now, in words for her (the try's own input shape; nothing of her page). */
+function seenOf(v, input, turned, lang) {
+  const en = lang === 'en', parts = input.split(',').filter(x => x !== '');
+  const SEEN = {
+    dial: () => { const [st, br] = parts.map(Number); const at = Number.isInteger(st) && Number.isInteger(br) && STEMS[st] && BRANCHES[br] ? `${STEMS[st]}${BRANCHES[br]}` : '?'; return en ? `The needle reads ${at}${turned ? `; turned locked ${turned} so far` : ''}.` : `针下是${at}${turned ? `，已扣转${turned}年` : ''}。`; },
+    hand: () => (parts.length ? (en ? `Pressed: ${parts.map(id => wenName(id, 'en')).join(', ')}.` : `已按：${parts.map(id => wenName(id, 'zh')).join('、')}。`) : (en ? 'Nothing pressed yet.' : '还没按。')),
+    luoshu: () => (parts.length ? (en ? `Tapped the squares of ${parts.map(i => v.page.grid[Number(i)]).join(', ')} dots.` : `已点：${parts.map(i => `${v.page.grid[Number(i)]}点`).join('、')}。`) : (en ? 'Nothing tapped yet.' : '还没点。')),
+    stars: () => (en ? (parts.length ? 'One cluster picked.' : 'Nothing picked yet.') : (parts.length ? '已点了一簇。' : '还没点。')),
+    scroll: () => (parts.length ? (en ? `Picked: ${parts.map(i => v.page.cols[Math.floor(Number(i) / 5)]?.[Number(i) % 5] ?? '?').join('')}.` : `已点：${parts.map(i => v.page.cols[Math.floor(Number(i) / 5)]?.[Number(i) % 5] ?? '?').join('')}。`) : (en ? 'Nothing picked yet.' : '还没点。')),
+  };
+  return SEEN[v.kind]?.() ?? '';
 }
 
 /* ── The verb ── */
@@ -259,11 +288,36 @@ const ACTIONS = {
     const s = clone(state), sm = s.mishi;
     if (!checkInput(dealt[m.step], args.input)) {
       sm.wrong += 1;
-      return { state: s, result: { ok: true, right: false, wrong: sm.wrong, can_skip: canSkip(data, sm) } };
+      // Every few misses, her next help tier is offered unasked (limits.offer_after; Hanli 10-27).
+      const every = limits(data).offer_after ?? 2, offer = sm.wrong % every === 0 && tierOf(sm, m.step) < HELP_TIERS;
+      return { state: s, result: { ok: true, right: false, wrong: sm.wrong, can_skip: canSkip(data, sm), ...(offer ? { offer: true } : {}) } };
     }
     sm.solved.push(m.step);
     const line = lineOf(p.right, state.lang, dealt[m.step].vars);
     return advance(s, content, ctx, data, { right: true, line });
+  },
+
+  /* 问银月 (and unasked: a room opened, a mechanism new, a few misses): the next help tier opened and handed back as
+     facts for her to say in her own words — with what he sees on the board now (`input`, the try's shape). Her clock
+     starts too: the tier's text shows on the page only if she let it go by (`hint`). */
+  ask(state, content, ctx, args, data) {
+    const m = roomHere(state, ctx.now);
+    if (!m || m.done) return refuse('no-room', null);
+    if (args.step != null && Number(args.step) !== m.step) return refuse('stale', null);
+    const room = roomOf(data, m.room), p = room.puzzles[m.step], dealt = dealOf(content, state, m), v = dealt[m.step], lang = state.lang;
+    const s = clone(state), sm = s.mishi;
+    const tier = Math.min(HELP_TIERS, tierOf(sm, m.step) + 1);
+    sm.tiers = { ...(sm.tiers ?? {}), [m.step]: tier };
+    sm.asked_at = ctx.now.toISOString();
+    const told = (p.help ?? []).slice(0, tier).map(h => fmt(h, lang, v.vars));
+    // Nobody to say it (`alone`: she sleeps in the token, or the phone, which has no chat): the page reads the tier at once.
+    if (args.alone === true || args.alone === 'true' || args.alone === '1' || args.alone === 1) {
+      sm.shown = { ...(sm.shown ?? {}), [m.step]: tier };
+      if (!sm.hints.includes(m.step)) sm.hints.push(m.step);
+    }
+    const goal = p.goal ? fmt(p.goal, lang, v.page.n != null ? { n: v.page.n } : {}) : null;
+    const before = room.puzzles.map((q, i) => (i < m.step && dealt[i].year != null ? yearName(dealt[i].year, lang) : null)).filter(Boolean);
+    return { state: s, result: { ok: true, asked: true, tier, of: HELP_TIERS, step: m.step + 1, steps: room.puzzles.length, room: pick(room.name, lang), goal, help: told, seen: seenOf(v, String(args.input ?? ''), Number(args.turned) || 0, lang), wrong: sm.wrong, ...(before.length ? { read: before[before.length - 1] } : {}), hint_at: hintAt(data, sm), ...(sm.shown?.[m.step] === tier ? { hint: told[told.length - 1] } : {}) } };
   },
 
   asked(state, content, ctx, args, data) {
@@ -281,9 +335,10 @@ const ACTIONS = {
     // Only after he asked her and the wait went by: she is the clue's first door, the page the fallback.
     if (!at || ctx.now < new Date(at)) return refuse('too-soon', null, { hint_at: at });
     const dealt = dealOf(content, state, m), p = roomOf(data, m.room).puzzles[m.step];
-    const s = clone(state);
+    const s = clone(state), tier = Math.max(1, tierOf(m, m.step));
     if (!s.mishi.hints.includes(m.step)) s.mishi.hints.push(m.step);
-    return { state: s, result: { ok: true, hint: lineOf(p.hint, state.lang, dealt[m.step].vars) } };
+    s.mishi.shown = { ...(s.mishi.shown ?? {}), [m.step]: tier };
+    return { state: s, result: { ok: true, tier, hint: helpText(p, tier, state.lang, dealt[m.step].vars) } };
   },
 
   /* 出去 — out of the room, its board put away for the day (what he found was read on it first). */

@@ -36,6 +36,13 @@
   background: color-mix(in srgb, var(--earth, #8a6224) 18%, var(--surface)); font-size: 13px; font-weight: 700; color: var(--seal); cursor: pointer; touch-action: manipulation; padding: 0; }
 .g-mishi-stud::after { content: ''; position: absolute; inset: -7px; } /* a 44px target */
 .g-mishi-stud.is-on { border-color: var(--seal); background: var(--seal-soft); }
+/* the stud's worn character, faint until pressed; the press order in a corner */
+.g-mishi-stud .g-mishi-wen { font-family: var(--serif); font-size: 14px; font-weight: 600; color: #4a3518; opacity: .62; }
+.g-mishi-stud.is-on .g-mishi-wen { opacity: 1; color: var(--seal); }
+.g-mishi-stud i { position: absolute; top: -9px; right: -9px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--seal); color: var(--surface); font-style: normal; font-size: 11px; line-height: 16px; }
+/* the goal, plain, and the count of 扣转 years */
+.g-mishi-goal { margin: 0; width: 100%; padding: 8px 12px; border-left: 3px solid var(--seal); background: var(--seal-soft); font-size: 15px; font-weight: 600; color: var(--text); }
+.g-mishi-turned { margin: 0; font-size: 14px; color: var(--seal); font-variant-numeric: tabular-nums; }
 /* the 洛书 lid: nine squares of dots */
 .g-mishi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: min(100%, 260px); }
 .g-mishi-cell { position: relative; aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; padding: 6px; touch-action: manipulation; }
