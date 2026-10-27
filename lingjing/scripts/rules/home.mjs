@@ -76,13 +76,10 @@ const placeRef = p => (p ? { id: p.id, name: p.name } : null);
 const lostAt = (state, place) => (state.hunt_losses?.[place] ?? 0) > (state.hunted?.[place] ?? 0);
 const lostAny = state => Object.values(state.fight_losses ?? {}).some(n => n > 0) || Object.keys(state.hunt_losses ?? {}).some(p => lostAt(state, p));
 /* …and is it the thing in the way (Hanli 10-27: a buy button for an old 后山 loss, with the gate 41 short and a 功课 open):
-   the story's own fight here lost, or the step the rules ranked first is the fight he lost, or the walk to where he lost. */
-function lossInWay(content, state, kept, next) {
-  const story = (kept.scene?.exits ?? []).filter(e => e.game?.kind === 'duel').some(e => (state.fight_losses?.[e.game.id] ?? 0) > 0);
-  if (story) return true;
-  if (next?.kind === 'fight') return lostAt(state, here(kept));
-  if (next?.kind === 'go') return lostAt(state, next.place?.id);
-  return false;
+   Only the story's own fight: a haunt is matched to his hand and never runs dry (rules/match.mjs), so a loss there
+   never stands in his way — it is a 待办 line at most (Hanli 10-27, again: 「这个买东西的按钮是什么意思?」). */
+function lossInWay(content, state, kept) {
+  return (kept.scene?.exits ?? []).filter(e => e.game?.kind === 'duel').some(e => (state.fight_losses?.[e.game.id] ?? 0) > 0);
 }
 /* The best way to grow stronger now that is a thing to do (rules/strengthen.mjs): put on, buy, the 丹囊. */
 const strongerWay = (content, state, now) => strengthen(content, state, { now }).find(o => ['wear', 'buy', 'pills'].includes(o.kind)) ?? null;
@@ -163,7 +160,7 @@ export function homeOf(content, state, kept, now) {
   if (sc && sideLine(content, sc)) return null;
   let next = NEXT.reduce((got, rule) => got ?? rule(content, state, kept, now), null);
   const way = lostAny(state) ? strongerWay(content, state, now) : null;
-  const inWay = way && lossInWay(content, state, kept, next);
+  const inWay = way && lossInWay(content, state, kept);
   if (inWay) next = { kind: 'strengthen', way };
   return { gate: gateOf(content, state, kept, now), next, todo: todoOf(kept, inWay ? null : way) };
 }

@@ -134,17 +134,13 @@ test('an old loss not in the way is a line at most; the button is what advances 
   assert.doesNotMatch(html(l), /data-home-way="next"/);
 });
 
-test('a loss in the way — the beast here he lost to is the next step — the best way to grow stronger comes first', () => {
+test('a haunt lost to is never in the way: the fight is the button, the way to grow stronger a 待办 line (Hanli 10-27: 「这个买东西的按钮是什么意思?」)', () => {
   let s = gate146();
   for (const p of ['yaoyuan', 'houshan']) s = move(s, content, ctx(), { place: p }).state ?? s;
   s = told({ ...s, bag: { ...s.bag, 'old-bow': 1 }, wear: {}, hunt_losses: { houshan: 2 } });
   const l = look(s, content, ctx());
-  assert.equal(l.home.next.kind, 'strengthen', JSON.stringify(l.home.next));
-  assert.equal(l.home.next.way.kind, 'wear');
-  assert.match(html(l), /data-home-way="next"[^>]*>戴上 · /);
-  assert.ok(!l.home.todo.some((r) => r.kind === 'strengthen'), 'not twice');
-  // Won there since: the fight itself.
-  assert.equal(look({ ...s, hunted: { houshan: 2 } }, content, ctx()).home.next.kind, 'fight');
+  assert.notEqual(l.home.next.kind, 'strengthen', JSON.stringify(l.home.next));
+  assert.ok(l.home.todo.some((r) => r.kind === 'strengthen'), 'the way stays as a line');
 });
 
 test('short by what one thing pays: that thing is the button, named as enough — a 功课 before a board, an old loss never', () => {
