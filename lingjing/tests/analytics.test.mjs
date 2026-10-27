@@ -222,3 +222,45 @@ test('the tracker: a batch that may not have arrived as the page went is sent ag
   assert.deepEqual(r.sent.filter((e) => e.kind === 'read').map((e) => e.scene), ['b']);
   assert.equal(r.sent.filter((e) => e.kind === 'refused').length, 0, 'the page\'s own quiet asks are no refused tap');
 });
+
+test('a story board standing after its win is never a second board; a gate\'s wait spans a reload; a fight\'s rate is over fights ended', async () => {
+  const r = rig();
+  await r.tr.start();
+  const g = {};
+  r.tr.boardSeen('rain-basins', g, () => ({ game: 'rain', source: 'story', scene: 's1' }));
+  r.tr.boardEnd('rain-basins', 'won');
+  r.tr.boardSeen('rain-basins', g, () => ({ game: 'rain', source: 'story', scene: 's1' })); // the next draw, same deal
+  r.tr.watchLook({ scene: { id: 's1' } });
+  r.tr.watchLook({ scene: { id: 's2' } });
+  await r.tr.flush('test');
+  assert.equal(r.sent.filter((e) => e.kind === 'board').length, 1);
+  // The 修为 wall: shut on one load, open on the next — the wait counts from the first.
+  const store = new Map();
+  const win = { localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) } };
+  let t = Date.parse('2026-10-27T10:00:00Z');
+  const sent = [];
+  const a = createTracker({ send: async ({ events }) => { sent.push(...events); return { ok: true }; }, win, doc: null, clock: () => t });
+  await a.start();
+  a.watchLook({ scene: { id: 'x' } }, ['cap']);
+  t += 2 * 86_400_000;
+  const b = createTracker({ send: async ({ events }) => { sent.push(...events); return { ok: true }; }, win, doc: null, clock: () => t });
+  await b.start();
+  b.watchLook({ scene: { id: 'x' } }, []);
+  await b.flush('test');
+  assert.equal(sent.find((e) => e.kind === 'gate' && e.op === 'open').waited_s, 2 * 86_400);
+  const rep = report([
+    { at: '2026-10-27T10:00:00Z', kind: 'fight', beast: 'lang', outcome: 'won' },
+    { at: '2026-10-27T10:00:00Z', kind: 'fight', beast: 'lang', outcome: 'refused' },
+    { at: '2026-10-27T10:00:00Z', kind: 'fight', beast: 'lang', outcome: 'left' },
+  ], {});
+  assert.deepEqual([rep.fights[0].n, rep.fights[0].fought, rep.fights[0].won], [3, 1, 100]);
+});
+
+test('days are the player\'s own: a line carries its local day, and an evening never splits at UTC midnight', () => {
+  const at = new Date(2026, 9, 27, 23, 30); // 23:30 local
+  const [l] = linesOf([{ kind: 'ask', to: 'her', t: at.getTime() }], { now: new Date(2026, 9, 27, 23, 31) });
+  assert.equal(l.day, '2026-10-27');
+  const day = (d, h) => ({ at: new Date(2026, 9, d, h, 30).toISOString(), day: `2026-10-${d}`, kind: 'session', op: 'start' });
+  assert.equal(retention([day(27, 20), day(27, 21)], new Date(2026, 9, 27, 22)).days, 1);
+  assert.equal(retention([day(27, 23), day(28, 0)], new Date(2026, 9, 28, 1)).days, 2);
+});

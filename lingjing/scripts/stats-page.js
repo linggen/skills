@@ -6,6 +6,8 @@ import { esc } from './esc.js';
 const main = document.getElementById('main');
 const DEV = new URLSearchParams(location.search).get('dev') === '1';
 
+/* A moment in this machine's own time, as the player lived it: YYYY-MM-DD HH:MM. */
+const when = (iso) => { const d = new Date(iso); const p = (n) => String(n).padStart(2, '0'); return Number.isNaN(d.getTime()) ? '' : `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
 const fmt = (v, d = '—') => (v == null || Number.isNaN(v) ? d : String(v));
 const pc = (v) => (v == null ? '—' : `${v}%`);
 const OUTCOME = { won: '成', lost: '败', skipped: '跳过', left: '离开' };
@@ -29,7 +31,7 @@ const legend = '<p class="legend"><span><i></i>实际</span><span><em></em>设�
 function tiles(rep) {
   const r = rep.retention;
   const t = [
-    [r.days, '玩过的天数'], [r.sessions, '次数（坐下来玩）'], [fmt(r.sessions_per_day), '每天几次'], [fmt(r.active_min), '有效分钟（2 分钟无操作不计）'],
+    [r.days, '玩过的天数'], [r.sessions, '次数（坐下来玩）'], [fmt(r.sessions_per_day), '每天几次'], [fmt(r.active_min), '有效分钟（翻书也算 · 2 分钟无动静不计）'],
     [`${r.streak.current} / ${r.streak.longest}`, '连续天数 · 最长'], [pc(r.next_day), '次日还来'], [rep.income.xw, '修为（记录内）'], [rep.lines, '记录条数'],
   ];
   return `<div class="tiles">${t.map(([v, l]) => `<div class="tile"><b>${esc(fmt(v))}</b><span>${esc(l)}</span></div>`).join('')}</div>`;
@@ -66,7 +68,7 @@ function boardsCard(rep, names) {
 function fightsCard(rep, names) {
   const rows = rep.fights.map((f) => {
     const off = f.bot != null && f.won != null && Math.abs(f.won - f.bot) >= 20;
-    return `<tr><td>${esc(names.beasts[f.beast] ?? f.beast)}</td><td class="n">${f.n}</td><td class="n${off ? ' over' : ''}">${pc(f.won)}</td><td>${meter(f.won, f.bot, 100)}</td><td class="n">${pc(f.bot)}</td><td>${esc(f.chip ?? '—')}</td><td class="n">${fmt(f.turns)}</td><td class="n">${fmt(f.hand)}</td><td class="n">${fmt(f.min)}</td></tr>`;
+    return `<tr><td>${esc(names.beasts[f.beast] ?? f.beast)}</td><td class="n" title="打完 ${f.fought} 场">${f.n}</td><td class="n${off ? ' over' : ''}">${pc(f.won)}</td><td>${meter(f.won, f.bot, 100)}</td><td class="n">${pc(f.bot)}</td><td>${esc(f.chip ?? '—')}</td><td class="n">${fmt(f.turns)}</td><td class="n">${fmt(f.hand)}</td><td class="n">${fmt(f.min)}</td></tr>`;
   });
   return card('斗法', '实际胜率 vs 机器人胜率（开打时牌上的难度：fightodds.js 的十局）；红字 = 相差 20 点以上', legend + table(['妖兽', { t: '场', n: 1 }, { t: '胜', n: 1 }, '实际 vs 机器人', { t: '机器人', n: 1 }, '难度', { t: '回合', n: 1 }, { t: '牌', n: 1 }, { t: '分钟', n: 1 }], rows));
 }
@@ -86,11 +88,11 @@ function incomeCard(rep) {
 
 function stallsCard(rep, names) {
   const s = rep.stalls;
-  const gates = s.gates.map((g) => `<tr><td>${esc(GATE[g.what] ?? g.what)}</td><td class="n">${g.waited_min}</td><td>${esc(names.hui[g.hui] ?? g.hui ?? '')}</td><td>${esc(g.scene ?? '')}</td><td>${esc(String(g.at).slice(0, 16).replace('T', ' '))}</td></tr>`);
+  const gates = s.gates.map((g) => `<tr><td>${esc(GATE[g.what] ?? g.what)}</td><td class="n">${g.waited_min}</td><td>${esc(names.hui[g.hui] ?? g.hui ?? '')}</td><td>${esc(g.scene ?? '')}</td><td>${esc(when(g.at))}</td></tr>`);
   const sig = s.signals.map((x) => `<tr><td>${esc(x.what === 'board-idle' ? '小游戏无操作' : x.what)}</td><td>${esc(x.board ?? '')}</td><td>${esc(x.scene ?? '')}</td><td class="n">${x.n}</td><td class="n">${x.idle_min}</td></tr>`);
   const ref = s.refusals.map((x) => `<tr><td>${esc(x.verb)}</td><td>${esc(x.why)}</td><td class="n">${x.n}</td><td class="n">${x.streak}</td></tr>`);
   const err = s.errors.map((x) => `<tr><td>${esc(x.where)}</td><td style="white-space:normal">${esc(x.msg)}</td><td class="n">${x.n}</td></tr>`);
-  const ends = s.day_ends.slice().reverse().map((d) => `<tr><td>${esc(d.day)}</td><td>${esc(String(d.at).slice(11, 16))}</td><td>${esc(names.hui[d.hui] ?? d.hui ?? '')}</td><td>${esc(d.scene ?? '')}</td><td>${esc(d.kind)}${d.what ? ` · ${esc(d.what)}` : ''}${d.outcome ? ` · ${esc(OUTCOME[d.outcome] ?? d.outcome)}` : ''}</td></tr>`);
+  const ends = s.day_ends.slice().reverse().map((d) => `<tr><td>${esc(d.day)}</td><td>${esc(when(d.at).slice(11))}</td><td>${esc(names.hui[d.hui] ?? d.hui ?? '')}</td><td>${esc(d.scene ?? '')}</td><td>${esc(d.kind)}${d.what ? ` · ${esc(d.what)}` : ''}${d.outcome ? ` · ${esc(OUTCOME[d.outcome] ?? d.outcome)}` : ''}</td></tr>`);
   return card('卡在哪', `等关口最久的（${s.gates_shut} 次进入）· 卡死信号 · 被拒的点击 · 页面报错 · 每天在哪停下`,
     table(['关口', { t: '等了分钟', n: 1 }, '回', '场景', '时间'], gates, '没有等过关口')
     + table(['信号', '小游戏', '场景', { t: '次', n: 1 }, { t: '最长分钟', n: 1 }], sig, '没有卡死信号')
@@ -102,7 +104,8 @@ function stallsCard(rep, names) {
 async function draw() {
   if (!DEV) { main.innerHTML = '<div class="gate">开发者页面 · ?dev=1</div>'; return; }
   let out;
-  try { out = await verb('stats'); } catch (e) { main.innerHTML = `<div class="gate warn">${esc(String(e.message || e))}</div>`; return; }
+  // The data channel may take a while to come up in a fresh tab (opened from the 游戏厅): one more try before saying so.
+  try { out = await verb('stats').catch(() => verb('stats')); } catch (e) { main.innerHTML = `<div class="gate warn">${esc(String(e.message || e))}</div>`; return; }
   if (!out?.ok) { main.innerHTML = `<div class="gate warn">${esc(out?.refused ?? out?.error ?? '读不到')}</div>`; return; }
   const rep = out.report, names = out.names ?? { hui: {}, beasts: {}, games: {}, tiers: {} };
   const save = out.save === 'main' ? '主存档' : `测试存档 · ${out.save}`;

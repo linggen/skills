@@ -651,7 +651,8 @@ async function readOnce() {
     gainedThings(look, seen);
     gainedCards(look, seen);
     look = withArcade(withCaps(seen, caps), ARCADE_GAME, arcadeDeal);
-    tracker.watchLook(look, [look.capped ? 'cap' : null, look.stamina?.now === 0 ? 'stamina' : null, ...(look.waits ?? []).map((w) => (w.id ? `wait:${w.id}` : null))]);
+    tracker.watchLook(look, [look.capped ? 'cap' : null, look.stamina?.now === 0 ? 'stamina' : null, ...(look.waits ?? []).map((w) => (w.id ? `wait:${w.id}` : null))],
+      (id) => Boolean(document.querySelector(`[data-game="${CSS.escape(id)}"],[data-board="${CSS.escape(id)}"],[data-shell="${CSS.escape(id)}"]`)));
     // A cooldown's minutes are as of this Look: kept as the moment it opens, so the row counts down between Looks.
     for (const w of look?.waits ?? []) w.ready_at = Date.now() + (w.wait_min ?? 0) * 60_000;
     if (look?.engine && !engineAt) engineAt = look.engine;
@@ -2402,6 +2403,7 @@ function trackReading() {
   const r = readingHere();
   const it = playing(r) ? r.items[Math.min(r.i, r.items.length - 1)] : null;
   tracker.reading(it ? `${r.run ?? ''}|${r.i}|${it.id ?? ''}` : null, it ? { scene: sceneOfItem(it) ?? it.of ?? null, chars: charsOf(it, lang()) } : {});
+  if (it) tracker.alive(beatKey(r, lang()));
 }
 /* ── One thing at a time: the box first (queue.js, 2026-10-01) ──
    The passage that leads into a board, a fight, a set piece or a seal

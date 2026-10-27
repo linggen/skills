@@ -20,7 +20,9 @@ export function median(xs) {
   const m = v.length >> 1;
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 }
-const dayOf = (at) => String(at).slice(0, 10);
+/* A line's day: the player's own (stamped at ingest, local), else its UTC date (a line from before the stamp). */
+const dayOf = (l) => (typeof l === 'object' ? l.day ?? String(l.at).slice(0, 10) : String(l).slice(0, 10));
+const localDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const group = (xs, key) => { const m = new Map(); for (const x of xs) { const k = key(x); if (k == null) continue; if (!m.has(k)) m.set(k, []); m.get(k).push(x); } return m; };
 const sum = (xs, f) => xs.reduce((a, x) => a + (Number(f(x)) || 0), 0);
 
@@ -31,9 +33,9 @@ const activeOf = (l) => (l.kind === 'session' && (l.op === 'tick' || l.op === 'e
 
 /** Days played, sittings a day, streaks. */
 export function retention(lines, now) {
-  const days = [...new Set(lines.map((l) => dayOf(l.at)))].sort();
+  const days = [...new Set(lines.map((l) => dayOf(l)))].sort();
   const starts = lines.filter((l) => l.kind === 'session' && l.op === 'start');
-  const byDay = group(lines, (l) => dayOf(l.at));
+  const byDay = group(lines, (l) => dayOf(l));
   const perDay = days.map((d) => {
     const ls = byDay.get(d) ?? [];
     return { day: d, sessions: ls.filter((l) => l.kind === 'session' && l.op === 'start').length, active_min: r1(sum(ls, activeOf) / 60), boards: ls.filter((l) => l.kind === 'board').length, fights: ls.filter((l) => l.kind === 'fight').length };
@@ -45,8 +47,8 @@ export function retention(lines, now) {
     longest = Math.max(longest, run);
     prev = d;
   }
-  const today = now ? now.toISOString().slice(0, 10) : null;
-  const yesterday = now ? new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10) : null;
+  const today = now ? localDay(now) : null;
+  const yesterday = now ? localDay(new Date(now.getTime() - 86_400_000)) : null;
   const current = prev && (prev === today || prev === yesterday) ? run : 0;
   // Next-day return: of the days played (but the last), the share followed by a day played.
   const set = new Set(days);
@@ -66,13 +68,13 @@ export function timeBy(lines, content) {
   const huiTarget = band && perDay ? [band[0] * perDay, band[1] * perDay] : null;
   const ticks = lines.filter((l) => activeOf(l) > 0);
   const hui = [...group(ticks, (l) => l.hui ?? null)].map(([id, ls]) => ({
-    hui: id, active_min: r1(sum(ls, activeOf) / 60), days: new Set(ls.map((l) => dayOf(l.at))).size,
+    hui: id, active_min: r1(sum(ls, activeOf) / 60), days: new Set(ls.map((l) => dayOf(l))).size,
     target_min: huiTarget, first: ls[0].at,
   })).sort((a, b) => String(a.first).localeCompare(String(b.first)));
   const layer = [...group(ticks, (l) => (l.tier ? `${l.tier}:${l.layer ?? 0}` : null))].map(([key, ls]) => {
     const [tier, n] = key.split(':'), L = Number(n);
     const target = tier === 'qi' && L >= 1 ? (LAYER_HOURS.first + (L - 1) * LAYER_HOURS.per) * 60 : null;
-    return { tier, layer: L, active_min: r1(sum(ls, activeOf) / 60), target_min: target, days: new Set(ls.map((l) => dayOf(l.at))).size, first: ls[0].at };
+    return { tier, layer: L, active_min: r1(sum(ls, activeOf) / 60), target_min: target, days: new Set(ls.map((l) => dayOf(l))).size, first: ls[0].at };
   }).sort((a, b) => String(a.first).localeCompare(String(b.first)));
   return { hui, layer, hui_target: huiTarget, layer_rule: LAYER_HOURS };
 }
@@ -107,11 +109,12 @@ export function boards(lines, content) {
 export function fights(lines) {
   const rows = lines.filter((l) => l.kind === 'fight' && l.outcome);
   return [...group(rows, (l) => l.beast ?? l.id)].map(([beast, ls]) => {
-    const n = ls.length, won = ls.filter((l) => l.outcome === 'won').length;
+    // The win rate over fights fought to an end (won or lost) — a refusal at the door or a page left is no result.
+    const n = ls.length, won = ls.filter((l) => l.outcome === 'won').length, ended = ls.filter((l) => l.outcome === 'won' || l.outcome === 'lost').length;
     const odds = ls.map((l) => Number(l.odds)).filter(Number.isFinite);
     const chips = [...group(ls, (l) => l.chip ?? null)].sort((a, b) => b[1].length - a[1].length);
     return {
-      beast, n, won: pct(won, n), bot: odds.length ? r1((sum(odds, (x) => x) / odds.length) * 100) : null,
+      beast, n, fought: ended, won: pct(won, ended), bot: odds.length ? r1((sum(odds, (x) => x) / odds.length) * 100) : null,
       chip: chips[0]?.[0] ?? null, turns: median(ls.map((l) => Number(l.turns))), hand: median(ls.map((l) => Number(l.hand))),
       places: [...new Set(ls.map((l) => l.place).filter(Boolean))].slice(0, 4),
       min: median(ls.map((l) => (Number(l.active_s) || 0) / 60)) != null ? r1(median(ls.map((l) => (Number(l.active_s) || 0) / 60))) : null,
@@ -147,7 +150,7 @@ export function stalls(lines) {
     .map(([, ls]) => ({ where: ls[0].where, msg: ls[0].msg ?? '', n: ls.length, last: ls.at(-1).at }))
     .sort((a, b) => b.n - a.n).slice(0, 12);
   // Where each day's play stopped: the day's last line — its scene and 回, and what was on.
-  const days = [...group(lines, (l) => dayOf(l.at))].map(([day, ls]) => {
+  const days = [...group(lines, (l) => dayOf(l))].map(([day, ls]) => {
     const last = ls.filter((l) => !(l.kind === 'session' && l.op !== 'start')).at(-1) ?? ls.at(-1);
     return { day, at: last.at, kind: last.kind, what: last.game ?? last.beast ?? last.what ?? last.scene ?? null, outcome: last.outcome ?? null, hui: last.hui ?? null, scene: last.at_scene ?? null };
   });

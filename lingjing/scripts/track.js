@@ -27,9 +27,13 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
   let queue = [];
   let sid = null, startedAt = 0, lastInput = 0, activeMs = 0, tickedActive = 0, tickedAt = 0;
   const boards = new Map(); //  id → { at, active0, g, retries, hints, asks, ctx, stalled }
+  const ended = new WeakSet(); // the deals already ended: a story board stays on the stage after its win, never a second open
   const fights = new Map(); //  id → { at, active0, ctx }
   let read = null; //           the passage on the stage: { key, scene, chars, at, active0, skipped }
-  let gates = new Map(); //     what → since (ms)
+  /* A gate's wait spans reloads and days (the 修为 wall): when each shut is kept per save, in this browser. */
+  const GATES_KEY = `lingjing.track.gates.${scratch || 'main'}`;
+  const gates = (() => { try { return new Map(Object.entries(JSON.parse(win?.localStorage?.getItem(GATES_KEY) ?? '{}'))); } catch { return new Map(); } })();
+  const keepGates = () => { try { win?.localStorage?.setItem(GATES_KEY, JSON.stringify(Object.fromEntries(gates))); } catch { /* this load only */ } };
   let scene = null, refusedStreak = 0, errors = 0;
 
   const activeS = () => Math.round(activeMs / 1000);
@@ -68,7 +72,7 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
   /* ── Boards ── */
   /** A board on the stage, as the page holds it (`g`, its deal): new → open; a new deal of the same id → a retry. */
   function boardSeen(id, g, ctx = () => ({})) {
-    if (!id || !g || off) return g;
+    if (!id || !g || off || ended.has(g)) return g;
     const b = boards.get(id);
     if (!b) boards.set(id, { at: clock(), active0: activeMs, g, retries: 0, hints: 0, asks: 0, ctx: ctx(id) ?? {} });
     else if (b.g !== g) { b.g = g; b.retries += 1; }
@@ -80,6 +84,7 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
     const b = boards.get(id);
     if (!b) return;
     boards.delete(id);
+    if (b.g && typeof b.g === 'object') ended.add(b.g);
     const o = outcome === 'left' && b.lost ? 'lost' : outcome;
     push('board', {
       id, ...b.ctx, ms: clock() - b.at, active_s: Math.round((activeMs - b.active0) / 1000), outcome: o,
@@ -107,6 +112,13 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
     readEnd();
     if (key) read = { key, scene: sc, chars, at: clock(), active0: activeMs, skipped };
   }
+  /** The book moving on the stage while it is seen (自动 reads with no tap): play, as a tap is. */
+  let beatAt = null;
+  function alive(key) {
+    if (!key || key === beatAt) return;
+    beatAt = key;
+    if (!doc?.hidden) input();
+  }
   function readSkipped() { if (read) read.skipped = true; }
   function readEnd() {
     if (!read) return;
@@ -129,17 +141,20 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
     push('refused', { verb: name, why: r.refused ?? (r.error ? 'error' : 'unknown'), streak: refusedStreak });
   }
   /** The save's Look: what is shut by a gate (the 回's cap, 体力 spent …), and the scene. */
-  function watchLook(look, shut = []) {
+  function watchLook(look, shut = [], onStage = null) {
     if (off || !look) return;
     const nowShut = new Set(shut.filter(Boolean));
-    for (const w of nowShut) if (!gates.has(w)) { gates.set(w, clock()); push('gate', { what: w, op: 'shut' }); }
-    for (const [w, since] of [...gates]) if (!nowShut.has(w)) { gates.delete(w); push('gate', { what: w, op: 'open', waited_s: Math.round((clock() - since) / 1000) }); }
+    let moved = false;
+    for (const w of nowShut) if (!gates.has(w)) { gates.set(w, clock()); moved = true; push('gate', { what: w, op: 'shut' }); }
+    for (const [w, since] of [...gates]) if (!nowShut.has(w)) { gates.delete(w); moved = true; push('gate', { what: w, op: 'open', waited_s: Math.round((clock() - Number(since)) / 1000) }); }
+    if (moved) keepGates();
     const sc = look.scene?.id ?? null;
     if (sc !== scene) {
       const was = scene;
       scene = sc;
       // The boards of the scene left behind are over (left), whatever stands next.
-      if (was) for (const [id, b] of [...boards]) if (b.ctx.scene === was && b.ctx.source === 'story') boardEnd(id, 'left', { why: 'moved' });
+      // …and any other board no longer on the stage (`onStage`: the page's own answer).
+      if (was) for (const [id, b] of [...boards]) if ((b.ctx.scene === was && b.ctx.source === 'story') || (onStage && !onStage(id))) boardEnd(id, 'left', { why: 'moved' });
       if (was) flush('scene');
     }
   }
@@ -209,7 +224,9 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
     win?.addEventListener?.('pagehide', () => { end('left'); flush('left', { leaving: true }); });
     win?.addEventListener?.('error', (e) => error(`${String(e.filename ?? '').split('/').pop() || 'page'}:${e.lineno ?? 0}`, e.message));
     win?.addEventListener?.('unhandledrejection', (e) => error('promise', e.reason?.message ?? e.reason));
-    setInterval(() => { stallWatch(); if (queue.length) flush('tick'); }, TICK_MS)?.unref?.();
+    // Once a minute: the time since the last tick (stamped where the save stands now — a long passage is its own 回's),
+    // and whatever waits. Nothing is sent while no time passed and nothing waits.
+    setInterval(() => { stallWatch(); tick(); if (queue.length) flush('tick'); }, TICK_MS)?.unref?.();
   }
 
   /** Begin: the switch read, what an earlier load could not send sent now, the sitting opened. */
@@ -223,7 +240,7 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
   }
 
   const api = {
-    start, flush, boardSeen, boardLost, boardHint, boardEnd, fightOpen, fightEnd, reading, readSkipped, ask, answer, watchLook, error, input,
+    start, flush, alive, boardSeen, boardLost, boardHint, boardEnd, fightOpen, fightEnd, reading, readSkipped, ask, answer, watchLook, error, input,
     get off() { return off; }, get queued() { return queue.length; }, get open() { return { boards: [...boards.keys()], fights: [...fights.keys()] }; },
     _stallWatch: stallWatch, _end: end,
   };

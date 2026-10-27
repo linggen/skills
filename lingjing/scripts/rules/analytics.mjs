@@ -100,13 +100,15 @@ export function linesOf(events, { now, save = 'main', stamp = {}, dev = 'mac' } 
     const e = cleanEvent(raw);
     if (!e) continue;
     const { t, ...rest } = e;
-    out.push({ at: momentOf(t, now).toISOString(), save, ...stamp, dev: rest.dev ?? dev, ...rest });
+    const at = momentOf(t, now);
+    // `day`: the player's own calendar day (the game's dayKey, local) — days played and streaks never split at UTC midnight.
+    out.push({ at: at.toISOString(), day: dayKey(at), save, ...stamp, dev: rest.dev ?? dev, ...rest });
   }
   return out;
 }
 
 /* The stamp a kept line carries (linesOf), each checked again when a line comes from another device. */
-const STAMP = { save: ID, tier: ID, layer: NUM, hui: ID, chapter: ID, at_scene: ID };
+const STAMP = { day: ID, save: ID, tier: ID, layer: NUM, hui: ID, chapter: ID, at_scene: ID };
 const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
 
 /** A line another device kept (the phone's, carried over): its event cleaned as any, its stamp checked, `dev` fixed. */
