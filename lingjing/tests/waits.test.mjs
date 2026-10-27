@@ -20,9 +20,10 @@ test('a pool at rest: on Look as a wait where he stands, in the world\'s words, 
   const w = look(won(4), content, { now: NOW, quests: [] }).waits?.find((x) => x.id === 'pool:mengshan');
   assert.deepEqual(w, { id: 'pool:mengshan', title: '蒙山', shut: content.creatures.hunt.rest_say.zh, wait_min: content.balance.cooldowns.pool_rest_min - 4 });
   assert.equal(look(won(content.balance.cooldowns.pool_rest_min + 1), content, { now: NOW, quests: [] }).waits, undefined, 'rested: the beast stands, no wait');
-  const html = tray([w]);
+  // The tray's words for a 20-minute wait, whatever the rest is set to.
+  const row = { ...w, wait_min: 20 }, html = tray([row]);
   assert.ok(html.includes('data-wait="pool:mengshan"') && html.includes(w.shut) && html.includes('约 2 刻后'), html);
-  assert.ok(tray([w], 'en').includes('back in about 20 min'));
+  assert.ok(tray([row], 'en').includes('back in about 20 min'));
 });
 
 test('the 秘境 rerun shut: on Look as a wait, its label and shut line, the same row on the page', () => {
