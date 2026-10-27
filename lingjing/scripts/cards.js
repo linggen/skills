@@ -1074,12 +1074,12 @@ const HOME_WORDS = {
     resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}',
     boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',
     ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}',
-    tide: '兽潮 · 开局', rerun: '{title} · 已开', skipped: '先放下的 {n} 局' },
+    tide: '兽潮 · 开局', rerun: '{title} · 已开', skipped: '先放下的 {n} 局', enough: '{what} · 够了' },
   en: { stage: 'Stage quest · {step}', short: '{n} cultivation to go', chores: 'chores +{n}', plays: 'about {n} games', playsMore: 'then about {n} games', todo: 'Waiting',
     resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}',
     boardPays: 'Play · {title} · cultivation +{n}', take: 'Take · {title}', go: 'Go to {name} ›', goWhat: 'To {name} · {what}', wait: '{title} · in {t}', seclude: 'Seclusion',
     ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}',
-    tide: 'Beast tide · play', rerun: '{title} · open', skipped: '{n} games set aside' },
+    tide: 'Beast tide · play', rerun: '{title} · open', skipped: '{n} games set aside', enough: '{what} · enough' },
 };
 const homeWait = (min, w) => { const m = Math.max(1, Math.round(min ?? 0)); return m >= 60 ? say(w.chanceHM, { h: Math.floor(m / 60), m: m % 60 }) : say(w.chanceM, { m }); };
 const bareName = (name) => String(name ?? '').split(' · ').at(-1);
@@ -1088,10 +1088,12 @@ const HOME_ACTS = {
   resume: (n, h) => `<button class="act primary" data-aside-resume>${esc(h.resume)}</button>`,
   way: (n, h) => `<button class="act go primary" data-go="${esc(n.place.id)}">${esc(say(h.way, { name: n.place.name }))}</button>`,
   turnin: (n, h) => `<button class="act primary do" data-do="turn" data-id="${esc(n.stage ? 'stage' : n.id)}">${esc(say(h.turnin, { title: n.title }))}</button>`,
-  strengthen: (n, h, ctx) => `<button class="act primary" data-home-way>${esc(wayLabel(n.way, ctx.lang) ?? '')}</button>`,
+  strengthen: (n, h, ctx) => `<button class="act primary" data-home-way="next">${esc(wayLabel(n.way, ctx.lang) ?? '')}</button>`,
+  // A 功课 whose pay covers what the gate is short (rules/home.mjs): it opens the book, where the chore is done.
+  gongke: (n, h) => `<button class="act primary" data-book>${esc(say(h.enough, { what: say(h.gongke, { name: n.means ?? n.title, n: n.progress }) }))}</button>`,
   errand: (n, h) => `<button class="act primary" data-book>${esc(say(h.errand, { title: n.title }))}</button>`,
   fight: (n, h) => `<button class="act primary" data-duel-start="${esc(n.id)}">${esc(say(h.fight, { title: n.title ?? '' }))}</button>`,
-  board: (n, h) => `<button class="act primary" data-play="${esc(n.id)}">${esc(n.progress ? say(h.boardPays, { title: n.title, n: n.progress }) : say(h.board, { title: n.title }))}</button>`,
+  board: (n, h) => { const t = n.progress ? say(h.boardPays, { title: n.title, n: n.progress }) : say(h.board, { title: n.title }); return `<button class="act primary" data-play="${esc(n.id)}">${esc(n.enough ? say(h.enough, { what: t }) : t)}</button>`; },
   take: (n, h) => `<button class="act primary do" data-do="take" data-id="${esc(n.id)}">${esc(say(h.take, { title: n.title }))}</button>`,
   go: (n, h) => `<button class="act go primary" data-go="${esc(n.place.id)}">${esc(n.titles?.length ? say(h.goWhat, { name: bareName(n.place.name), what: n.titles.join(' · ') }) : say(h.go, { name: n.place.name }))}</button>`,
   wait: (n, h, ctx) => `<div class="small dim homewait">${esc(say(h.wait, { title: n.title, t: homeWait(n.wait_min, ctx.words) }))}</div>`,
@@ -1107,6 +1109,7 @@ const HOME_TODO = {
   wait: (r, h, ctx) => `<span class="small dim hometodo">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</span>`,
   rerun: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.rerun, { title: r.title ?? r.place.name }))}</button>` : ''),
   skipped: (r, h) => `<span class="small dim hometodo">${esc(say(h.skipped, { n: r.n }))}</span>`,
+  strengthen: (r, h, ctx) => (wayLabel(r.way, ctx.lang) ? `<button class="act quiet hometodo" data-home-way="todo">${esc(wayLabel(r.way, ctx.lang))}</button>` : ''),
 };
 /* The gate's bar: the step, where he stands, what it still asks — 「146/470 · 还差 324 修为 · 功课 +201 · 再约 5 局」. */
 function homeGate(g, h, ctx) {

@@ -3641,7 +3641,7 @@ const CLICKS = [
   ['[data-emerge]', () => run('emerge', () => emerge())],
   ['[data-emerged-close]', () => show({ emerged: null })],
   // 主页's one way to grow stronger after a loss (rules/home.mjs → strengthen.mjs): the loss card's own verb.
-  ['[data-home-way]', () => run('home-way', () => takeWay(look?.home?.next?.way))],
+  ['[data-home-way]', (el) => run('home-way', () => takeWay(el.dataset.homeWay === 'todo' ? look?.home?.todo?.find((r) => r.kind === 'strengthen')?.way : look?.home?.next?.way))],
   ['[data-duel-start]', (el) => run(`duel:${el.dataset.duelStart}`, () => { keep({ walkedOut: null }); return onDuelStart(el.dataset.duelStart); })],
   // 丹囊 at the door (danang.js): one more pill packed, or the pouch emptied — the page's own until 出手.
   ['[data-pill-add]', (el) => { const [id, pill] = el.dataset.pillAdd.split('|'); const b = doorBrief(id); if (b) show({ pillPick: { ...view.pillPick, [id]: pickAfter(b, ctx(), pill) } }); }],

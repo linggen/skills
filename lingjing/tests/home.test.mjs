@@ -123,15 +123,43 @@ test('the order is the rules\': set aside → 接着读 before anything; a fight
   assert.equal(homeOf(content, s, { ...l, seclusion: {} }, NOW), null);
 });
 
-test('lost where he must win: the best way to grow stronger now (rules/strengthen.mjs), before playing on', () => {
+test('an old loss not in the way is a line at most; the button is what advances the goal (Hanli 10-27: 「这里提示去买东西是什么意思?」)', () => {
   let s = gate146();
-  s = { ...s, bag: { ...s.bag, 'old-bow': 1 }, wear: {}, hunt_losses: { houshan: 2 } };
+  s = { ...s, bag: { ...s.bag, 'old-bow': 1 }, wear: {}, hunt_losses: { houshan: 1 } };
+  const l = look(s, content, ctx());
+  assert.equal(l.home.next.kind, 'board', JSON.stringify(l.home.next));
+  const line = l.home.todo.find((r) => r.kind === 'strengthen');
+  assert.equal(line?.way.kind, 'wear');
+  assert.match(html(l), /data-home-way="todo"[^>]*>戴上 · /);
+  assert.doesNotMatch(html(l), /data-home-way="next"/);
+});
+
+test('a loss in the way — the beast here he lost to is the next step — the best way to grow stronger comes first', () => {
+  let s = gate146();
+  for (const p of ['yaoyuan', 'houshan']) s = move(s, content, ctx(), { place: p }).state ?? s;
+  s = told({ ...s, bag: { ...s.bag, 'old-bow': 1 }, wear: {}, hunt_losses: { houshan: 2 } });
   const l = look(s, content, ctx());
   assert.equal(l.home.next.kind, 'strengthen', JSON.stringify(l.home.next));
   assert.equal(l.home.next.way.kind, 'wear');
-  assert.match(html(l), /data-home-way[^>]*>戴上 · /);
-  // No loss: the board, as before.
-  assert.equal(look({ ...s, hunt_losses: {} }, content, ctx()).home.next.kind, 'board');
+  assert.match(html(l), /data-home-way="next"[^>]*>戴上 · /);
+  assert.ok(!l.home.todo.some((r) => r.kind === 'strengthen'), 'not twice');
+  // Won there since: the fight itself.
+  assert.equal(look({ ...s, hunted: { houshan: 2 } }, content, ctx()).home.next.kind, 'fight');
+});
+
+test('short by what one thing pays: that thing is the button, named as enough — a 功课 before a board, an old loss never', () => {
+  const LEDGER = { id: 'cfo-import', app: 'cfo', kind: 'ledger', period: 'week', pool: true, due: true, title: { zh: '导入账单', en: 'Import' } };
+  let s = { ...gate146(), progress: 429, hunt_losses: { houshan: 1 }, bag: { ...gate146().bag, 'old-bow': 1 }, wear: {} };
+  const l = look(s, content, ctx([LEDGER]));
+  assert.equal(l.home.gate.short, 41);
+  assert.deepEqual(l.home.next, { kind: 'gongke', id: 'cfo-import', title: '导入账单', means: '算账', progress: 94, enough: true });
+  assert.match(html(l), /data-book>算账 · 修为 \+94 · 够了</);
+  // No 功课 that covers it: the best board here, when it does (七巧 +27 for 20 short).
+  const near = look({ ...s, progress: 450 }, content, ctx());
+  assert.deepEqual([near.home.next.kind, near.home.next.id, near.home.next.enough], ['board', 'qiqiao', true]);
+  assert.match(html(near), /data-play="qiqiao"[^>]*>开局 · 七巧[^<]*· 修为 \+27 · 够了</);
+  // Short by more than either: the plain ranking.
+  assert.equal(look({ ...s, progress: 146 }, content, ctx()).home.next.enough, undefined);
 });
 
 test('the page: the 主页 replaces 下一步, the bar grows from where it stood, 兽潮 waits in the tray', async () => {
@@ -139,7 +167,7 @@ test('the page: the 主页 replaces 下一步, the bar grows from where it stood
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /\$\('focus'\)\.innerHTML = focusHtml\(slots\); moveHomeBar\(\);/);
   assert.match(page, /tideBoard\(c\.id\) && view\.opened\?\.id !== c\.id/);
-  assert.match(page, /\['\[data-home-way\]', \(\) => run\('home-way', \(\) => takeWay\(look\?\.home\?\.next\?\.way\)\)\]/);
+  assert.match(page, /\['\[data-home-way\]', \(el\) => run\('home-way', \(\) => takeWay\(el\.dataset\.homeWay === 'todo'/);
   const s = gate146(), l = look(s, content, ctx());
   const grown = cardHtml({ card: 'next' }, { look: l, words: WORDS.zh, lang: 'zh', homeFrom: 10 });
   assert.match(grown, /<i style="width:10%" data-to="31"><\/i>/, 'drawn where it stood, moved to now');

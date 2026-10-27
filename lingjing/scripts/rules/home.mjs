@@ -73,10 +73,19 @@ const here = kept => kept.place?.id ?? null;
 const placeRef = p => (p ? { id: p.id, name: p.name } : null);
 
 /* A loss not yet made good: a story fight lost and not won since, or a beast's pool lost at more than won. */
-function lostHere(state) {
-  if (Object.values(state.fight_losses ?? {}).some(n => n > 0)) return true;
-  return Object.entries(state.hunt_losses ?? {}).some(([p, n]) => n > (state.hunted?.[p] ?? 0));
+const lostAt = (state, place) => (state.hunt_losses?.[place] ?? 0) > (state.hunted?.[place] ?? 0);
+const lostAny = state => Object.values(state.fight_losses ?? {}).some(n => n > 0) || Object.keys(state.hunt_losses ?? {}).some(p => lostAt(state, p));
+/* …and is it the thing in the way (Hanli 10-27: a buy button for an old 后山 loss, with the gate 41 short and a 功课 open):
+   the story's own fight here lost, or the step the rules ranked first is the fight he lost, or the walk to where he lost. */
+function lossInWay(content, state, kept, next) {
+  const story = (kept.scene?.exits ?? []).filter(e => e.game?.kind === 'duel').some(e => (state.fight_losses?.[e.game.id] ?? 0) > 0);
+  if (story) return true;
+  if (next?.kind === 'fight') return lostAt(state, here(kept));
+  if (next?.kind === 'go') return lostAt(state, next.place?.id);
+  return false;
 }
+/* The best way to grow stronger now that is a thing to do (rules/strengthen.mjs): put on, buy, the 丹囊. */
+const strongerWay = (content, state, now) => strengthen(content, state, { now }).find(o => ['wear', 'buy', 'pills'].includes(o.kind)) ?? null;
 
 /* A practice board here that still pays above the floor share (the replay's last), best first — or, `tide`, 兽潮 when it is up. */
 function boardHere(content, state, kept, now, tide) {
@@ -95,8 +104,16 @@ const NEXT = [
   // 2 · something to hand in here: the stage quest met, an errand or a 功课 done.
   (c, s, k) => (k.stage_quest?.met ? { kind: 'turnin', stage: true, title: k.stage_quest.step } : null),
   (c, s, k) => { const q = (k.book ?? []).find(b => b.ready && !b.away); return q ? { kind: 'turnin', id: q.id, title: q.title } : null; },
-  // A loss in the way: the best way to grow stronger now (rules/strengthen.mjs), when it is a thing to do.
-  (c, s, k, now) => { if (!lostHere(s)) return null; const w = strengthen(c, s, { now }).find(o => ['wear', 'buy', 'pills'].includes(o.kind)); return w ? { kind: 'strengthen', way: w } : null; },
+  // The gate short by what one thing here pays: that thing, named as enough (Hanli 10-27, 429/470 with 算账 +94 open and
+  // the button saying 「去执事堂 · 买铁蒺藜」) — a 功课 to do (the smallest that covers it), else the best board here.
+  (c, s, k, now) => {
+    const short = k.stage_quest && !k.stage_quest.met ? (k.stage_quest.now?.of ?? 0) - (k.stage_quest.now?.progress ?? 0) : 0;
+    if (short <= 0) return null;
+    const q = choresOpen(k).filter(x => !x.done && x.pays.progress >= short).sort((a, b) => a.pays.progress - b.pays.progress)[0];
+    if (q) return { kind: 'gongke', id: q.id, title: q.title, ...(q.means ? { means: q.means } : {}), progress: q.pays.progress, enough: true };
+    const t = boardHere(c, s, k, now, false);
+    return t && (t.pays?.progress ?? 0) >= short ? { kind: 'board', id: t.id, title: t.title, progress: t.pays.progress, enough: true } : null;
+  },
   // 3 · something to do here: an errand's count met here, the place's beast, a board that still pays well, an errand to take.
   (c, s, k) => {
     const q = (k.book ?? []).find(b => !b.ready && !b.chore && b.where?.id === here(k));
@@ -119,8 +136,10 @@ const NEXT = [
 ];
 
 /* What waits, compact: hand-ins, errands in hand and where, today's 功课, 兽潮 · 秘境, the boards set aside. */
-function todoOf(kept) {
+function todoOf(kept, way = null) {
   const out = [];
+  // A loss not in the way: a way to grow stronger, a line at most — never the one button.
+  if (way) out.push({ kind: 'strengthen', way });
   const ready = [...(kept.stage_quest?.met ? [{ title: kept.stage_quest.step }] : []), ...(kept.book ?? []).filter(b => b.ready && !b.away)];
   if (ready.length) out.push({ kind: 'ready', n: ready.length, title: ready[0].title });
   for (const q of (kept.book ?? []).filter(b => !b.ready && !b.chore).slice(0, 3)) out.push({ kind: 'held', id: q.id, title: q.title, ...(q.where ? { place: placeRef(q.where) } : {}) });
@@ -139,6 +158,9 @@ export function homeOf(content, state, kept, now) {
   if (!kept || kept.fight || kept.seclusion || kept.rerun?.inside) return null;
   const sc = sceneOf(content, state);
   if (sc && sideLine(content, sc)) return null;
-  const next = NEXT.reduce((got, rule) => got ?? rule(content, state, kept, now), null);
-  return { gate: gateOf(content, state, kept, now), next, todo: todoOf(kept) };
+  let next = NEXT.reduce((got, rule) => got ?? rule(content, state, kept, now), null);
+  const way = lostAny(state) ? strongerWay(content, state, now) : null;
+  const inWay = way && lossInWay(content, state, kept, next);
+  if (inWay) next = { kind: 'strengthen', way };
+  return { gate: gateOf(content, state, kept, now), next, todo: todoOf(kept, inWay ? null : way) };
 }
