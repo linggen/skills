@@ -43,18 +43,18 @@ const T = {
     calling: '通话中', far: '这会儿叫不应。', off: '这个测试存档不叫灵（chat=off）。', err: '没回。再说一句？',
     riddle: '猜谜', mi: '谜', wen: '问', guessIt: '你猜……', guessGo: '猜', hint: '提示', hintAt: '提示{n}：', skip: '跳过', answer: '谜底：{a}',
     tried: '猜错 {n} 回', hinted: '提示 {n}/{max}',
-    twenty: '二十问 · 猜你心里的动物', think: '心里想好一种动物，就在下面这些里挑。他们只问是不是，{max} 问之内来猜。想好了，点「想好了」。',
+    twenty: '二十问 · 猜你心里的动物', think: '心里想好一种动物，就在下面这些里挑。只许问是不是，{max} 问之内来猜。想好了，点「想好了」。',
     ready: '想好了', yes: '是', no: '不是', unknown: '不知道', right: '对', wrong: '不对', asked: '已问 {n}/{max}',
-    tell: '他们猜不着了。告诉他们，你心里是什么：', itWas: '它是……', tellGo: '告诉他们',
+    tell: '没猜着。说出来，你心里是什么：', itWas: '它是……', tellGo: '说',
   },
   en: {
     type: 'Say something…', send: 'Send', typing: 'typing…', left: '{n} lines left', done: 'Chat over', end: 'Leave it there',
     calling: 'On call', far: 'No one answers just now.', off: 'This test save asks no one (chat=off).', err: 'No reply. Say it again?',
     riddle: 'A riddle', mi: '?', wen: '?', guessIt: 'Your guess…', guessGo: 'Guess', hint: 'Hint', hintAt: 'Hint {n}: ', skip: 'Skip', answer: 'The answer: {a}',
     tried: '{n} wrong', hinted: 'hints {n}/{max}',
-    twenty: 'Twenty questions · the animal you think of', think: 'Think of an animal from the ones below. They ask only yes or no, and guess within {max}. Ready? Tap "Got one".',
+    twenty: 'Twenty questions · the animal you think of', think: 'Think of an animal from the ones below. Yes-or-no questions only, and a guess within {max}. Ready? Tap "Got one".',
     ready: 'Got one', yes: 'Yes', no: 'No', unknown: 'Don\'t know', right: 'Right', wrong: 'Wrong', asked: 'Asked {n}/{max}',
-    tell: 'They can\'t get it. Tell them what you thought of:', itWas: 'It was…', tellGo: 'Tell them',
+    tell: 'Not guessed. Say what you thought of:', itWas: 'It was…', tellGo: 'Say',
   },
 };
 const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -401,6 +401,7 @@ const STYLE = `
 .g-jc-q.is-small { font-size: 14px; font-weight: 600; }
 .g-jc.is-dark .g-jc-strip { filter: brightness(.82) sepia(.15); color: #2b2219; }
 .g-jc.is-dark .g-jc-pool { color: #6b5e48; }
+.g-jc.is-dark .g-jc-list { scrollbar-color: #2a2d38 #0b0c10; }
 .g-jc.is-dark .g-jc-gbtn { box-shadow: none; border-color: #3a3e4c; background: #14161d; color: #c9cede; }
 .g-jc.is-dark .g-jc-gbtn.is-yes, .g-jc.is-dark .g-jc-gbtn.is-main { background: #2f5a2a; color: #e6f0e0; }
 .g-jc.is-dark .g-jc-gbtn.is-no { background: #5a2a24; color: #f0e0dc; }
