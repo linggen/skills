@@ -232,9 +232,9 @@ export const POOLS = {
 /* The pool for a moment, a weight and her mode, in turn. */
 export function poolOf(kind, { mode = 'awake', lang = 'zh', weight = 'full', variant = null } = {}) {
   const p = POOLS[mode === 'asleep' ? 'asleep' : 'awake'][lang === 'en' ? 'en' : 'zh'];
-  // A variant (a loss's way forward, `lost_wear`…) stands over the moment's own pool — a full word only:
-  // a second loss inside ten minutes keeps its short one, and the button names the step.
-  return (variant && weight === 'full' && p[`${kind}_${variant}`]) || (weight !== 'full' && p[`${kind}_${weight}`]) || (weight === 'react' && p[`${kind}_short`]) || p[kind] || p.won;
+  // A variant (a loss's way forward, `lost_wear`…) stands over the moment's own pool, a second loss inside ten
+  // minutes too: each loss names the step its button takes.
+  return (variant && weight !== 'react' && p[`${kind}_${variant}`]) || (weight !== 'full' && p[`${kind}_${weight}`]) || (weight === 'react' && p[`${kind}_short`]) || p[kind] || p.won;
 }
 
 /* Her line as it came: one or two lines, trimmed for the bubble. */

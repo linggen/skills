@@ -11,6 +11,7 @@ import { stampShown, stuckNow } from './stuck.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, mapName, placeLabels, within } from './atlas.js';
 import { shopMarkHtml, shopsById, shopTagHtml } from './shopmark.js';
+import { fightMarkHtml, fightsById } from './fightmark.js';
 import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
 import { boardDoneToday, boardWaits, herAwake, onRoad, sideLineOf, sideStep, winnable, wonWayOn } from './stage.mjs';
 import { dayKey, fitValue } from './state.mjs';
@@ -354,8 +355,8 @@ function atlasMap(ctx) {
   const rank = (p) => (other ? 2 : p.here ? 0 : p.road && !p.too_hard ? 1 : p.closed ? 4 : p.too_hard ? 3 : 2) + (mapName(p.name, shownNames) !== p.name ? 0.5 : 0);
   const order = shown.map((_, k) => k).sort((a, b) => rank(shown[a]) - rank(shown[b]) || a - b);
   // 铺子 (Look's `shops`, rules/shops.mjs): an open shop's seal stands after its name, so the layout counts it.
-  const shops = shopsById(ctx.look);
-  const sides = whole ? [] : placeLabels(order.map((k) => ({ ...within(frame, shown[k].map), name: mapName(shown[k].name, shownNames) + (shops.has(shown[k].id) ? '铺' : ''), flip: within(frame, shown[k].map).left > 78, rank: rank(shown[k]) })),
+  const shops = shopsById(ctx.look), fights = fightsById(ctx.look);
+  const sides = whole ? [] : placeLabels(order.map((k) => ({ ...within(frame, shown[k].map), name: mapName(shown[k].name, shownNames) + (shops.has(shown[k].id) ? '铺' : '') + (fights.has(shown[k].id) ? '斗' : ''), flip: within(frame, shown[k].map).left > 78, rank: rank(shown[k]) })),
     { width: 560, height: 560 * frame.h / (frame.w * atlas.aspect) });
   const sideOf = new Map(order.map((k, i) => [k, sides[i]]));
   const SIDE_CLS = { r: '', l: ' flip', a: ' lbl-a', b: ' lbl-b' };
@@ -371,8 +372,8 @@ function atlasMap(ctx) {
     const held = Boolean(lock) && !other && !p.here;
     const th = other ? null : threads[p.id];
     const shop = shops.get(p.id);
-    const cls = `pt${kind ? ` ${kind}` : ''}${shop ? ' shop' : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${held ? ' held' : ''}${th ? ` th-${th}` : ''}${side ? SIDE_CLS[side] : ' nolbl'}`;
-    const label = `<i></i><span>${esc(mapName(p.name, shownNames))}${shopMarkHtml(shop)}</span>`;
+    const cls = `pt${kind ? ` ${kind}` : ''}${shop ? ' shop' : ''}${!other && fights.has(p.id) ? ' fight' : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${held ? ' held' : ''}${th ? ` th-${th}` : ''}${side ? SIDE_CLS[side] : ' nolbl'}`;
+    const label = `<i></i><span>${esc(mapName(p.name, shownNames))}${shopMarkHtml(shop)}${fightMarkHtml(other ? null : fights.get(p.id), ctx.oddsFor, ctx.lang)}</span>`;
     // 地图展开: the places come out of the mist one after another (--k).
     const at = `${pos(p.map)}${ctx.unfold ? `;--k:${k}` : ''}`;
     // Beyond the map this chapter opens: greyed, and nothing to tap.
@@ -401,10 +402,10 @@ function atlasMap(ctx) {
 function placesHtml(ctx) {
   const place = ctx.look.place;
   if (!place?.places?.length) return '';
-  const shops = shopsById(ctx.look);
+  const shops = shopsById(ctx.look), fights = fightsById(ctx.look);
   const chips = place.places.map((p) => {
     const kind = p.here ? 'here' : p.closed || ctx.look.lock ? 'far' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
-    const tag = shopTagHtml(shops.get(p.id));
+    const tag = shopTagHtml(shops.get(p.id)) + fightMarkHtml(fights.get(p.id), ctx.oddsFor, ctx.lang);
     if (p.here || p.closed || ctx.look.lock) return `<span class="pl ${kind}"${ctx.look.lock && !p.here ? ` title="${esc(ctx.look.lock.say ?? '')}"` : ''}>${esc(p.name)}${tag}</span>`;
     return `<button class="pl${kind ? ` ${kind}` : ''}" ${goAttr(p.id)}>${esc(p.name)}${tag}</button>`;
   });
@@ -437,11 +438,11 @@ function roadMap(ctx) {
       : `M${p.x * 100} ${p.y * 100} L${q.x * 100} ${q.y * 100}`;
     return `<path class="${kind}" d="${d}"/>`;
   });
-  const shops = shopsById(ctx.look);
+  const shops = shopsById(ctx.look), fights = fightsById(ctx.look);
   const chips = place.places.map((p) => {
     const kind = p.here ? 'here' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
     const tag = p.here ? `<small>${esc(ctx.words.here)}</small>` : '';
-    const mark = shopMarkHtml(shops.get(p.id));
+    const mark = shopMarkHtml(shops.get(p.id)) + fightMarkHtml(fights.get(p.id), ctx.oddsFor, ctx.lang);
     const style = `style="left:${at[p.id].x * 100}%;top:${at[p.id].y * 100}%;max-width:${Math.floor(92 / widest)}%"`;
     if (p.here) return `<span class="pl here" ${style}>${esc(p.name)}${mark}${tag}</span>`;
     if (ctx.look.lock) return `<span class="pl far" ${style} title="${esc(ctx.look.lock.say ?? '')}">${esc(p.name)}${mark}</span>`;

@@ -55,6 +55,7 @@ export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
 export { shopsInReach, strengthen } from './rules/strengthen.mjs';
+export { fightsNear } from './rules/fights.mjs';
 import { fitPresence } from './rules/companion.mjs';
 import { pageHerGame } from './rules/hergame.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';

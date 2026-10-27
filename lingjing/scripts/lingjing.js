@@ -21,6 +21,7 @@ const ARCADE_ROW = arcadeRowOf(location.search, SCRATCH); // a story row's own d
 let arcadeDeal = { row: null, title: null };
 import { plateHtml } from './plate.js';
 import { shopHereHtml, shopsById, shopTagHtml } from './shopmark.js';
+import { fightMarkHtml, fightsById } from './fightmark.js';
 import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tapHeard } from './board.js';
@@ -1530,9 +1531,10 @@ function roadsHtml() {
   const onPlate = new Set((plate?.spots ?? []).map((s) => s.id));
   const off = near.filter((p) => !onPlate.has(p.id));
   // 铺子 (Look's `shops`): a road to an open shop says its kind after the name (shopmark.js).
-  const shops = shopsById(look);
-  const chips = off.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}${shopTagHtml(shops.get(p.id))}</button>`).join('');
-  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: plate.file ? worldPath(look.world.dir, plate.file) : null, here: w.needHere, threads: threadsAt(look), shops }) : '';
+  // 斗 (Look's `fights`, rules/fights.mjs): a road to a beast standing now, inked by how hard it is (fightmark.js).
+  const shops = shopsById(look), fights = fightsById(look);
+  const chips = off.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}${shopTagHtml(shops.get(p.id))}${fightMarkHtml(fights.get(p.id), oddsFor, lang())}</button>`).join('');
+  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: plate.file ? worldPath(look.world.dir, plate.file) : null, here: w.needHere, threads: threadsAt(look), shops, fights, odds: oddsFor, lang: lang() }) : '';
   const pop = open ? `<div class="bookpop roadspop${painted ? ' plated' : ''}" role="dialog"><div class="cardtitle">${esc(painted ? plate.name : w.roads)}</div>${painted}${chips ? `<div class="roadlist">${chips}</div>` : ''}</div>` : '';
   return `<span class="bookwrap roadswrap"><button class="bookchip roadschip" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(near.map((p) => p.name).join(' · '))}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }

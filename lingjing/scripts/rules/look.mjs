@@ -29,6 +29,7 @@ import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
 import { shopsNear } from './shops.mjs';
+import { fightsNear } from './fights.mjs';
 import { atScene, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, poolWait, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
@@ -659,6 +660,8 @@ export function look(state, content, ctx) {
     ...(visitorsBrief(content, state, ctx.now).length ? { visitors: visitorsBrief(content, state, ctx.now) } : {}),
     // 铺子 (rules/shops.mjs): every open shop he can walk to, its kind and how many roads away — the map's marks, 去往, 「有铺子」.
     ...((shops => (shops.length ? { shops } : {}))(shopsNear(content, state, ctx.now))),
+    // 斗 (rules/fights.mjs): every place he can walk to where a beast stands now, with its door's setup — the map's marks, graded by the page.
+    ...((fights => (fights.length ? { fights } : {}))(fightsNear(content, state, ctx.now))),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
     // 今日传闻 (tale.mjs): the step open now and its people; `story_due` when nothing story-like happened for a while.
     ...taleLook(content, state, ctx),
