@@ -44,7 +44,7 @@ export function revealHtml(card, { lang = 'zh', line = '', artBase = '' } = {}) 
   const body = card.atk != null ? `<span class="rv-atk">${esc(card.atk)}</span><span class="rv-hp">${esc(card.hp)}</span>` : '';
   return `<div class="rv-card" data-el="${esc(el)}">
     <div class="rv-paper">
-      <span class="rv-cost">${esc(card.cost ?? '')}</span>
+      ${card.cost != null ? `<span class="rv-cost">${esc(card.cost)}</span>` : ''}
       <div class="rv-art">${card.art ? `<img src="${esc(artBase)}${esc(card.art)}" alt="">` : ''}</div>
       <div class="rv-name">${esc(nameOf(card.name, lang))}</div>
       <div class="rv-kind">${esc([elWord, kindWord(card, w)].filter(Boolean).join(' · '))}</div>
