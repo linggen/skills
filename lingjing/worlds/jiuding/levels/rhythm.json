@@ -69,10 +69,10 @@
         "zh": "忍字 · 那口气",
         "en": "Holding it in · That breath"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 13
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 142
       },
       {
        "kind": "read",

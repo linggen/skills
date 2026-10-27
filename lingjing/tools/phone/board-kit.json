@@ -455,6 +455,23 @@
         "worlds/jiuding/art/codex/sanguan.webp"
       ]
     },
+    "dash": {
+      "_about": "几何冲刺 (games/dash.js, its own frame loop): the runner over 气走经脉's painted lands.",
+      "module": "scripts/games/dash.js",
+      "dirs": [
+        "scripts/games/dash/art",
+        "scripts/games/qimai/art"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css",
+        "scripts/games/qimai.css",
+        "scripts/games/dash.css"
+      ],
+      "files": [
+        "worlds/jiuding/games.json"
+      ]
+    },
     "yubujiuge": {
       "_about": "禹步 · 九歌 (games/yubujiuge.js, pure; 第七回).",
       "module": "scripts/games/yubujiuge.js",

@@ -34,8 +34,7 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   // the 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」): 挑水上坡, 后山, 随叶 and 顺风溜 told — rows, levels and tasks gone
   // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket
   'notice-shuitong': 'shuitong',
-  // 第一回's lineup (2026-10-21, Hanli: 「按你的建议来」): 00-masan's 忍字 — the breath pressed down under the 桂花糕
-  'masan-taunt': 'renzi',
+  // (00-masan's 忍字 went 几何冲刺 2026-10-27; its level renzi stays in the 游戏厅)
   // 全文后的小游戏 (2026-10-26): 洗髓 back on its night (00-sleep), 吹鹅毛's level as the mirror's light (00-halfyear)
   'sleep-xisui': 'xisui', // 镜光 (halfyear-mirror, level feather) cut 2026-10-27: 第六回's 藏息 again
   // 今 · 一 (2026-10-26): the lap walked out after the 1,000 m, the twelve channels traced with his arms up

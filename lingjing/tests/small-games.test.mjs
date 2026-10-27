@@ -28,7 +28,7 @@ test('every registered game has a type (`mechanic`) from the 游戏厅\'s small 
   // Hanli 10-19: 「能在游戏大厅标一下游戏类型吗, 是割绳子还是投掷等」. A new row picks one of these; a new type
   // is added to arcade.js's KIND_EN (its English) on purpose, not by a typo.
   const vocab = new Set([...read('../scripts/arcade.js').match(/const KIND_EN = \{([\s\S]*?)\};/)[1].matchAll(/([^\s,:'{}]+):\s*'/g)].map((m) => m[1]));
-  assert.ok(vocab.size >= 8 && vocab.size <= 19, `a small vocabulary (${vocab.size})`); // 19: + 格斗 (秦雁's bout, 10-26)
+  assert.ok(vocab.size >= 8 && vocab.size <= 20, `a small vocabulary (${vocab.size})`); // 19: + 格斗 (秦雁's bout, 10-26); 20: + 几何冲刺 (the dash runner, 10-27)
   for (const g of reg.games.filter((r) => r.replaced !== 'cut')) assert.ok(vocab.has(g.mechanic), `${g.id}: mechanic ${g.mechanic ?? '(none)'} is one of ${[...vocab].join(' ')}`);
 });
 

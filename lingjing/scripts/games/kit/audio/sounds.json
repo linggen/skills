@@ -948,6 +948,31 @@
     }
    }
   },
+  "dash": {
+   "music": null,
+   "events": {
+    "start": "tone.go",
+    "jump": {
+     "sound": "ui.pluck",
+     "min": 60,
+     "vol": 0.5
+    },
+    "die": "hit.soft.heavy",
+    "beat": {
+     "sound": "hit.soft",
+     "min": 120,
+     "vol": 0.75
+    },
+    "off": {
+     "sound": "tone.tick",
+     "min": 100,
+     "vol": 0.3
+    },
+    "pad": "tone.whoosh",
+    "orb": "tone.chime",
+    "cp": "ui.confirm"
+   }
+  },
   "board": {
    "music": null,
    "events": {
@@ -1461,6 +1486,9 @@
     "skip": "ui.back",
     "tap": "ui.tick"
    }
+  },
+  "dash": {
+   "kit": "dash"
   }
  }
 }

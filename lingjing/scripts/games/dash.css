@@ -1,0 +1,23 @@
+/* 几何冲刺 (games/dash.js) — the runner over 气走经脉's painted lands (qimai.css's .g-qm-land / .g-qm-strip / .g-qm-card),
+   or the scene's own picture. Loaded by the module itself. */
+.g-dash { display: flex; flex-direction: column; gap: 8px; align-items: stretch; position: relative; }
+.g-dash-head { display: flex; align-items: center; gap: 10px; }
+.g-dash-attempt { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.g-dash-bar { flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--text) 12%, transparent); overflow: hidden; }
+.g-dash-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ffd257, #ff9f43); border-radius: 3px; }
+.g-dash-pct { font-variant-numeric: tabular-nums; min-width: 3em; text-align: right; color: var(--text); }
+.g-dash-board { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); cursor: pointer;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.g-dash-back { position: absolute; inset: 0; overflow: hidden; background: #1d2740 center / cover no-repeat; pointer-events: none; }
+.g-dash-scene.g-scene { position: relative; display: block; width: 100%; height: auto; border: 0; border-radius: 0; background: none; }
+.g-dash-scene .g-dash-ground, .g-dash-scene .g-dash-ceil { stroke: none; }
+.g-dash-scene .g-dash-edge { stroke: #2a1d14; stroke-width: 2.4; stroke-linecap: round; }
+.g-dash-scene .g-dash-cp { fill: #9fe870; stroke: #2a1d14; stroke-width: 1.2; }
+.g-dash-scene .g-dash-goal-line { stroke: #ffd257; stroke-width: 2; stroke-dasharray: 4 4; }
+.g-dash-scene .g-dash-glow { opacity: .6; }
+.g-dash.is-dead .g-dash-runner { animation: g-dash-burst .7s ease-out forwards; }
+@keyframes g-dash-burst { 0% { opacity: 1; } 30% { opacity: .2; } 60% { opacity: .8; } 100% { opacity: 0; } }
+.g-dash.is-titled .g-qm-card { opacity: 1; }
+.g-dash-tools { display: flex; gap: 6px; }
+.g-dash.is-practice .g-dash-practice { color: #3d7a2a; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .g-dash.is-dead .g-dash-runner { animation: none; opacity: .4; } }

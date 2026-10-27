@@ -395,11 +395,8 @@
   },
   {
    "id": "qimai",
-   "group": "h01",
+   "group": "qimai",
    "mechanic": "调息",
-   "scene": "00-masan",
-   "hui": "第一回",
-   "task": "masan-taunt",
    "stars": 3,
    "name": {"zh":"气走经脉 · 忍字","en":"Qi path · Holding it in"},
    "data": {"level":"renzi"},
@@ -1115,6 +1112,7 @@
   {"id": "jinchat", "group": "h10", "mechanic": "对话", "scene": "01-tower", "hui": "第九回", "task": "tower-bingyi", "name": {"zh": "河伯明鉴", "en": "Your lordship, in your wisdom"}, "data": {"chat": "bingyi"}},
   {"id": "jinchat", "group": "h10", "mechanic": "对话", "scene": "01-zhaoang", "hui": "第九回", "task": "zhaoang-talk", "name": {"zh": "赵昂 · 天下归一", "en": "Zhao Ang · All under heaven, one"}, "data": {"chat": "zhaoang"}},
   {"id": "jinchat", "group": "h09", "mechanic": "对话", "scene": "09-dabi", "hui": "第八回", "task": "dabi-kaoshu", "name": {"zh": "闵丹师 · 考书", "en": "Pill-master Min · The test"}, "data": {"chat": "kaoshu"}},
-  {"id": "jinchat", "group": "h09", "mechanic": "对话", "scene": "09-qulao", "hui": "第八回", "task": "qulao-dan", "name": {"zh": "瞿老 · 用哪颗丹", "en": "Elder Qu · Which pill"}, "data": {"chat": "qulao-dan"}}
+  {"id": "jinchat", "group": "h09", "mechanic": "对话", "scene": "09-qulao", "hui": "第八回", "task": "qulao-dan", "name": {"zh": "瞿老 · 用哪颗丹", "en": "Elder Qu · Which pill"}, "data": {"chat": "qulao-dan"}},
+  {"id": "dash", "group": "h01", "mechanic": "几何冲刺", "scene": "00-masan", "hui": "第一回", "task": "masan-taunt", "stars": 3, "name": {"zh": "几何冲刺 · 忍字", "en": "Dash · Holding it in"}, "data": {"level": "renzi-dash"}, "how": {"zh": "把那口气压到底：点一下跳过尖刺，按住落地就再跳。碰上了，从头再来。", "en": "Press the breath all the way down: tap to jump the spikes, hold to jump again as you land. Touch one and it starts over."}, "_was": "气走经脉 `renzi` → 几何冲刺 (Hanli 10-27: 「调息的不太好玩, 能换成geometry dash那种蹦着躲避障碍的吗」 · 「现在的调息留2个就好」): the breath pressed down is the 气 running the 经脉 to the belly, the knots of hunger in its way. The kit's first level: slow, single spikes and a low block, far apart. The 调息 level stays in the 游戏厅.", "levels": [{"id": "renzi-dash", "title": {"zh": "忍字", "en": "Holding it in"}, "book": {"zh": "「那股香味从他鼻孔里钻进去，顺着喉咙往下滑，一路滑到他空了一整天的肚子里。」", "en": "\"The smell crept in at his nostrils, slid down his throat, slid all the way down into a stomach that had been empty all day.\""}, "say": {"zh": "糕举到鼻子底下了。那口气往上冲——点一下，压着它冲到底。", "en": "The cake is under your nose. The breath surges up: tap, and press it all the way down."}, "end": {"zh": "他没敢出声，在心里骂得极响：你爷爷的。", "en": "He didn't dare say it out loud, but in his heart he swore it as loud as he could: Your grandpa's—"}, "speed": "slow", "bpm": 100, "len": 40, "land": "dusk", "things": [[8, "s"], [14, "s"], [20, "b"], [26, "s"], [31, "s"], [36, "b"]]}]}
  ]
 }
