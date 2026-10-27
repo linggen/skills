@@ -1,20 +1,47 @@
-// rules/playpay.mjs — what a board, a fight's room or an errand pays by the minutes it takes (Hanli 2026-10-27:
-// 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」; doc/games.md § Pacing proposal). A layer is a budget of
-// play time (练气一层 ~2 h, +1 h a layer); small games carry ~60% of its 修为, paid by each thing's share of the games'
-// minutes: 修为 = the layer's rate a minute × the kind's minutes × ★ (0.6 · 0.8 · 1.0) × the replay (100 · 50 · 10% the
-// same board the same day). 灵石 by the kind (Hanli's 20/5 · 10/10 · 5/10 …), on the same ★ and replay. No daily cap;
-// 修为 stops at the gate and turns to 灵石 there (the `play` table is a converting one, core.mjs pay). Every number is
-// balance.json `play_pay`; nothing here names a board.
+// rules/playpay.mjs — every 修为 pay is a share of the layer he stands on (Hanli 2026-10-27: 「一层才要470修为, 我们可否按照
+// 百分比奖励, 这样等级高了后, 奖励也合理」; doc/games.md § Pay as a share of the layer). A layer is a budget of play time
+// (`hours`: 练气一层 2 h, +1 h a layer); the small games and fights carry `games.share` (60%) of its 修为 over `games.time`
+// (35%) of its minutes, so a thing that takes m minutes pays m ÷ (time × the layer's minutes) × share of the layer's need —
+// × ★ (0.6 · 0.8 · 1.0) × the replay (100 · 50 · 10% the same board the same day). Errands the same on their own share;
+// a 人间功课 a fixed share (`chore`: a day's 10%, a week's 20%); what the book authors (a scene's, a pill's, a rumor's 修为)
+// is read as a share of the 练气一层 it was written against (`authored.base`, core.mjs amountsOf). 灵石 by the kind (Hanli's
+// 20/5 · 10/10 · 5/10 …), on the same ★ and replay. No daily cap; 修为 stops at the gate and turns to 灵石 there (`play`
+// converts, core.mjs pay). Every number is balance.json `play_pay`; nothing here names a board.
 import { dayKey } from '../state.mjs';
 
 const kindOf = (content, id, task) => (content.games?.games ?? []).find(g => g.task === id)?.mechanic
   ?? (content.games?.games ?? []).find(g => g.id === task?.game && !g.replaced)?.mechanic ?? null;
 
-/* The layer's rate a minute: by tier and step (练气 by its 层), else the default; 零层 pays none. */
-function rateOf(table, state) {
-  const row = table?.[state.tier];
-  if (Array.isArray(row)) return row[state.step] ?? row.at(-1) ?? 0;
-  return table?.default ?? 0;
+/* The 修为 the layer he stands on asks (`need` when a model plays it), else its threshold. */
+export function needOf(content, state) {
+  if (Number.isFinite(state?.need)) return state.need;
+  const tier = content.ladder?.tiers?.find(t => t.id === state?.tier);
+  return tier?.thresholds?.[state?.step ?? 0] ?? 0;
+}
+/* The layer's play minutes: `hours` by tier (练气 by its 层), else the default. */
+function minutesOf(pp, state) {
+  const row = pp.hours?.[state.tier] ?? pp.hours?.default ?? 0;
+  return 60 * (Array.isArray(row) ? row[state.step] ?? row.at(-1) ?? 0 : row);
+}
+/* What one minute of a source is worth: its share of the layer over its share of the layer's minutes. 零层 pays none. */
+function perMinute(content, state, src) {
+  const pp = content.balance?.play_pay, mins = pp ? minutesOf(pp, state) : 0;
+  return src && mins ? (src.share * needOf(content, state)) / (src.time * mins) : 0;
+}
+/* A fight won (the `haunt` table, a pool's or a rerun's beast): its minutes of play, as a board's (core.mjs amountsOf). */
+export function fightPlay(content, state) {
+  const pp = content.balance?.play_pay;
+  return pp?.fight ? Math.round(perMinute(content, state, pp.games) * pp.fight.minutes) : null;
+}
+/* A board of `minutes` at the layer's share, at full ★ and first play (tools/balance.mjs plays it). */
+export function boardPlay(content, state, minutes) {
+  const pp = content.balance?.play_pay;
+  return pp ? Math.round(perMinute(content, state, pp.games) * minutes) : null;
+}
+/* An authored 修为 on a table the book writes (a scene's way on, a pill, a rumor): its share of 练气一层, at this layer. */
+export function authoredScale(content, state, table) {
+  const a = content.balance?.play_pay?.authored;
+  return a?.base && (a.tables ?? []).includes(table) ? needOf(content, state) / a.base : 1;
 }
 
 /* How many times this board was paid today (the replay's falling share). */
@@ -30,7 +57,7 @@ export function playGrant(content, state, id, task, now, stars = null) {
   const replay = pp.replay ?? [1];
   const share = replay[Math.min(playsToday(state, id, now), replay.length - 1)];
   const f = star * share;
-  const progress = Math.round(rateOf(pp.rate, state) * minutes * f);
+  const progress = Math.round(perMinute(content, state, pp.games) * minutes * f);
   const wealth = Math.round((pp.wealth?.[kind] ?? pp.wealth?.default ?? 0) * f);
   return progress || wealth ? { table: 'play', progress, wealth, kind, minutes } : null;
 }
@@ -43,20 +70,18 @@ export function playCounted(state, id, now) {
   state.plays = { day, ids };
 }
 
-/* An errand's own share of the layer (the rest's ~15%, by its minutes): 修为 by the errand rate, 灵石 its kind's. */
+/* An errand's own share of the layer (the rest's 15% over 10% of the time, by its minutes); 灵石 its own. */
 export function errandGrant(content, state) {
   const e = content.balance?.play_pay?.errand;
   if (!e) return null;
-  const progress = Math.round(rateOf(e.rate, state) * (e.minutes ?? 0));
+  const progress = Math.round(perMinute(content, state, e) * (e.minutes ?? 0));
   return progress || e.wealth ? { table: 'play', progress, wealth: e.wealth ?? 0 } : null;
 }
 
-/* A 人间功课's 修为 (Hanli 2026-10-27: 「相比每日linggen任务, health等app的任务, 可以多给一些修为」): a chore done in real
-   life is worth so many minutes of board play at the layer's rate — `play_pay.chore.minutes` by its period (a day's 30,
-   a week's 60). Never ★, never the replay: one chore is paid once a period (chores.mjs). Null where none is declared. */
+/* A 人间功课's 修为 (Hanli 2026-10-27, then 「按照百分比奖励」): a fixed share of the layer by its period — a day's 10%, a
+   week's 20% (`play_pay.chore`). Never ★, never the replay: one chore is paid once a period (chores.mjs). Null where none. */
 export function chorePlay(content, state, period) {
-  const c = content.balance?.play_pay?.chore;
-  const minutes = c?.minutes?.[period];
-  if (!minutes || !state) return null;
-  return Math.round(rateOf(content.balance.play_pay.rate, state) * minutes);
+  const pct = content.balance?.play_pay?.chore?.[period];
+  if (!pct || !state) return null;
+  return Math.round(pct * needOf(content, state));
 }

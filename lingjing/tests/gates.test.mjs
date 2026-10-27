@@ -147,7 +147,7 @@ test('古七\'s cap follows its stage quests (2026-10-16): grinding stops at the
   const T = content.rewards.tables;
   const at = (done, step, progress) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'],
     done_scenes: ['09-snow', '09-jiuge', ...done], tier: 'qi', step, progress, traits: ROOTS });
-  const grind = s => { for (let k = 0; k < 60; k += 1) pay(content, s, { now: new Date(NOW.getTime() + k * 86_400_000), quests: [] }, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }); return s; };
+  const grind = s => { for (let k = 0; k < 120; k += 1) pay(content, s, { now: new Date(NOW.getTime() + k * 86_400_000), quests: [] }, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }); return s; };
   // Before 定风: 四层, full, and no further — the furnace's rise still carries him to 五层.
   const snow = grind(at([], 4, 0));
   assert.deepEqual([snow.step, snow.progress], [4, th[4]]);

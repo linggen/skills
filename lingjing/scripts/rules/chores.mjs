@@ -92,7 +92,7 @@ export function choreCounts(state, quests, q, now, content) {
    灵石; 2026-10-27: 「health等app的任务, 可以多给一些修为」): the fixed one — the
    workout, the day's 功课 — on the `gongke` table; the day's pick (a scan, the
    books, a backup) on the `life` table, its `reward` read as stones; both
-   their period's minutes of board play in 修为 (playpay.mjs chorePlay); a 开府 milestone on the `once` table,
+   a share of the layer in 修为 by their period (playpay.mjs chorePlay); a 开府 milestone on the `once` table,
    灵石. rewards.json caps each; 体力 is the app's own, else the quest refill.
    At 练气零层, which takes no 修为, the 功课 pays the `gongke_zero` table's
    灵石 instead (Hanli, 2026-10-15: every hand-in visibly raises one or the
@@ -102,8 +102,8 @@ const choreTable = (content, q, state) => (isOnce(q) ? 'once' : !isFixed(q) ? 'l
 const FLAT = new Set(['once', 'gongke_zero']); // the table's own 灵石, not the chore's `reward`
 export function choreGrant(content, q, state = null) {
   const table = choreTable(content, q, state), cap = content.rewards.tables[table] ?? {};
-  // The day's and the week's chores pay their minutes of board play (rules/playpay.mjs chorePlay, 2026-10-27).
-  // Read off the save's layer: with no save, none (a world declaring no chore minutes pays the chore's `reward`).
+  // The day's and the week's chores pay a share of the layer (rules/playpay.mjs chorePlay, 2026-10-27).
+  // A share of the save's layer (play_pay.chore); with no save, none (a world declaring no `chore` pays the chore's `reward`).
   const minutes = Boolean(content.balance?.play_pay?.chore);
   const played = FLAT.has(table) ? 0 : minutes ? chorePlay(content, state, q.period) ?? 0 : q.reward ?? 0;
   return {

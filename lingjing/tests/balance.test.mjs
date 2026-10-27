@@ -15,7 +15,7 @@ import { STATE_VERSION, fitWorld, layerPayOf, migrate, newState, realmName } fro
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
-import { chorePlay } from '../scripts/rules/playpay.mjs';
+import { chorePlay, fightPlay } from '../scripts/rules/playpay.mjs';
 import { turnedPays } from '../scripts/turned.js';
 import { BALANCE_FILE, bookWalk, errandPays, fit, play, table } from '../tools/balance.mjs';
 
@@ -119,20 +119,25 @@ test('修屋顶 is handed in for 灵石 and, since 2026-10-27, its minutes\' 修
   const turned = quest(s, content, ctx, { action: 'turn', id: 'xu-waimen-roof' });
   assert.ok(turned.state, JSON.stringify(turned.result));
   const e = content.balance.play_pay.errand;
-  assert.equal(turned.result.paid.progress, Math.round(e.rate.qi[1] * e.minutes), 'an errand\'s minutes at 练气一层');
+  // 15% of the layer over 10% of its minutes: 5 minutes at 练气一层 (2 h, 470) — 6.25%, 29.
+  assert.equal(turned.result.paid.progress, Math.round((e.share * 470 / (e.time * 120)) * e.minutes), 'an errand\'s minutes at 练气一层');
+  assert.equal(turned.result.paid.progress, 29);
   assert.equal(turned.result.paid.wealth, 5 + e.wealth, '周衡: 「记你五块灵石」, and the errand\'s own');
   const f = structuredClone(s);
-  assert.equal(pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress, T.haunt.progress);
+  // A fight won: its minutes of play at the layer's share (play_pay.fight) — 4 minutes at 练气一层, 27.
+  assert.equal(pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress, fightPlay(content, f));
+  assert.equal(fightPlay(content, f), 27);
 });
 
 test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零层); the day\'s pick and 开府 pay 灵石', () => {
   const s = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: null, place: 'waimen', ended: ['00-prologue'], tier: 'qi', step: 1, progress: 0, traits: ROOTS };
   const payOf = q => paysOf(content, s, NOW, choreGrant(content, q, s));
-  // 2026-10-27: a chore pays its period's minutes of board play at the layer's rate (play_pay.chore) — 练气一层 ≈ 200 a day's, ≈ 400 a week's.
-  const pp = content.balance.play_pay, at = m => Math.round(pp.rate.qi[1] * m);
-  assert.deepEqual(payOf({ id: 'health-workout', period: 'day', reward: 20 }), { progress: at(pp.chore.minutes.day), wealth: 0 });
-  assert.deepEqual(payOf({ id: 'shifu-scan', period: 'week', pool: true, reward: 30 }), { progress: at(pp.chore.minutes.week), wealth: T.life.wealth });
-  assert.equal(at(pp.chore.minutes.day), 201);
+  // 2026-10-27 (Hanli 「按照百分比奖励」): a chore pays a share of the layer by its period — a day's 10%, a week's 20% (练气一层 47 · 94).
+  const pp = content.balance.play_pay, at = pct => Math.round(pct * 470);
+  assert.deepEqual(payOf({ id: 'health-workout', period: 'day', reward: 20 }), { progress: at(pp.chore.day), wealth: 0 });
+  assert.deepEqual(payOf({ id: 'shifu-scan', period: 'week', pool: true, reward: 30 }), { progress: at(pp.chore.week), wealth: T.life.wealth });
+  assert.deepEqual([at(pp.chore.day), at(pp.chore.week)], [47, 94]);
+  assert.equal(chorePlay(content, { ...s, step: 3 }, 'day'), 51, '三层: 10% of 510 — the pay grows with the layer');
   assert.deepEqual(choreGrant(content, { id: 'health-workout', period: 'day', reward: 20 }).progress, 0, 'no save, no layer: nothing read off it');
   assert.deepEqual(payOf({ id: 'linggen-pair', period: 'once', reward: 50 }), { progress: 0, wealth: T.once.wealth });
   const zero = { ...s, step: 0 };
@@ -143,20 +148,20 @@ test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零�
   assert.deepEqual(turnedPays(turned.result.paid, { xw: '修为', ls: '灵石' }, 'zh'), [`灵石 +${T.gongke_zero.wealth}`]);
 });
 
-test('no daily thinning (Hanli, 2026-10-16): every pool win pays the haunt table\'s 修为 until the layer is full — then 灵石; 体力 is the day\'s limit', () => {
+test('no daily thinning (Hanli, 2026-10-16): every pool win pays its share of the layer until the layer is full — then 灵石; 体力 is the day\'s limit', () => {
   assert.equal('pool' in B, false, 'balance.json declares no day\'s fight bands');
   const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['09-snow'], tier: 'qi', step: 4, progress: 0, wealth: 0, traits: ROOTS };
-  // Each win the haunt table's 修为 times the layer he stands on (balance.json layer_pay).
-  const want = [], paid = [], wins = Math.min(6, Math.floor(content.ladder.tiers[0].thresholds[4] / Math.round(T.haunt.progress * layerPayOf(content, s, 'haunt'))));
+  // Each win its minutes of play at the layer's share (play_pay.fight, 2026-10-27) — 四层: 4 ÷ (0.35 × 300) × 60% of 530 ≈ 12.
+  const each = fightPlay(content, s), want = [], paid = [], wins = Math.min(6, Math.floor(content.ladder.tiers[0].thresholds[4] / each));
+  assert.equal(each, 12);
   assert.ok(wins >= 3, 'the layer holds a few wins');
-  for (let k = 0; k < wins; k += 1) { want.push(Math.round(T.haunt.progress * layerPayOf(content, s, 'haunt'))); paid.push(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress); }
+  for (let k = 0; k < wins; k += 1) { want.push(each); paid.push(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress); }
   assert.deepEqual(paid, want);
-  assert.ok(want[0] > T.haunt.progress, '四层 pays more than the table: the layer scales it');
-  // …until the layer is full: the scaled 修为 past the mark is 灵石 at the convert rate (圆满 → 灵石).
-  const room = content.ladder.tiers[0].thresholds[4] - s.progress, full = want[0];
-  const last = pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
-  assert.equal(last.progress, Math.min(full, room));
-  if (full > room) assert.deepEqual(last.converted, { progress: full - room, wealth: Math.round((full - room) * B.convert.rate) });
+  // …until the layer is full: the 修为 past the mark is 灵石 at the convert rate (圆满 → 灵石).
+  const full = { ...structuredClone(s), progress: content.ladder.tiers[0].thresholds[4] - 5 };
+  const last = pay(content, full, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
+  assert.equal(last.progress, 5);
+  assert.deepEqual(last.converted, { progress: each - 5, wealth: Math.round((each - 5) * B.convert.rate) });
 });
 
 test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight pays 灵石; 第一路 moves no layer — 二层 is ground', () => {
@@ -169,7 +174,7 @@ test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight
   const f = structuredClone(s);
   const won = pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
   assert.equal(won.progress, 0, 'no 修为 past the mark from a fight');
-  assert.equal(won.wealth, T.haunt.wealth + Math.round(T.haunt.progress * content.rewards.xiuwei_to_lingshi.rate));
+  assert.equal(won.wealth, T.haunt.wealth + Math.round(fightPlay(content, f) * content.rewards.xiuwei_to_lingshi.rate));
   // 第一路 (wm-diyilu): once a rise to 二层; now the story moves nothing — 古五's grinding steps him. (Its way on waits on
   // 喂饭桶 · 一根牛骨头 since 2026-10-21: played.)
   const r = resolve({ ...s, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...s.tasks, 'diyilu-niugu': { status: 'done' } } }, content, ctx, { exit: 'save' });

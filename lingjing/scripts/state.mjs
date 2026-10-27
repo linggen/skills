@@ -495,8 +495,8 @@ const MIGRATIONS = [
   // v11 (2026-10-16, Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): no story rise, so 练气 re-fit
   // again (balance.json). Its 层 kept, its bar as full as it stood, as v10 (paceLayer).
   [11, m => { m.ladder_pace ??= 11; }],
-  // v12 (2026-10-27, Hanli: 「health等app的任务, 可以多给一些修为」): 人间功课 pays its minutes of play, and 练气's
-  // 层 from 二层 ask the more it brings. Its 层 kept, its bar as full as it stood (paceLayer); 一层 is unchanged.
+  // v12 (2026-10-27): 练气's 层 from 二层 were raised for 人间功课's pay, then taken back the same day when every pay
+  // became a share of the layer (balance.json `_play_pay`). `thresholds_were["12"]` is the same ladder: a no-op carry.
   [12, m => { m.ladder_pace ??= 12; }],
 ];
 

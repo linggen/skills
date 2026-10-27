@@ -16,6 +16,9 @@ import { beforeChapterOne, TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from 
 import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
+import { authoredScale, chorePlay } from '../scripts/rules/playpay.mjs';
+// What the book authors is a share of 练气一层, read at the layer he stands on (play_pay.authored, 2026-10-27).
+const atLayer = (s, n, table = 'scene') => Math.round(n * authoredScale(content, s, table));
 
 // These tests play the 体力 pool as it was: the command turns it off for live play while we test (state.mjs staminaLimited).
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
@@ -904,9 +907,11 @@ test('at the realm peak the player stays until the chapter opens — the 修为 
   s.step = 9; s.progress = peak - 10;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.deepEqual([out.state.step, out.state.progress], [9, peak + 10]);
-  assert.deepEqual(out.result.paid.hold, { gate: 1, held: 0, over: 10 });
-  assert.equal(out.result.paid.progress, 20, 'the whole grant counted');
+  // The grant's 20 is a share of 练气一层, read at 九层 (play_pay.authored): the whole of it counted, past the mark.
+  const g = atLayer(s, 20, 'task');
+  assert.deepEqual([out.state.step, out.state.progress], [9, peak - 10 + g]);
+  assert.deepEqual(out.result.paid.hold, { gate: 1, held: 0, over: g - 10 });
+  assert.equal(out.result.paid.progress, g, 'the whole grant counted');
 });
 
 test('no day cap: a day full of play pays every time — 灵气 is the only limit', () => {
@@ -923,11 +928,12 @@ test('a later realm pays more for the same task; the day counts base', () => {
   s.tier = 'deity'; s.step = 0; s.progress = 0; // 化神, pay ×3
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  // 20 base × 3 for the grant; the board's minutes (rules/playpay.mjs) pay by the realm's own rate, never × the realm
-  const play = out.result.paid.progress - 60;
-  assert.ok(play >= 0 && play < 60, String(out.result.paid.progress));
-  assert.equal(out.state.progress, 60 + play);
-  assert.ok(out.state.day.progress > 20 && out.state.day.progress <= 20 + play, 'the day counts base');
+  // The grant's 20 read at 化神's layer (play_pay.authored), × 3 for the realm; the board's minutes (rules/playpay.mjs) on top
+  const base = atLayer(s, 20, 'task'), grant = base * 3, play = out.result.paid.progress - grant;
+  assert.ok(base > 20, 'a later layer, a bigger share');
+  assert.ok(play >= 0, String(out.result.paid.progress));
+  assert.equal(out.state.progress, grant + play);
+  assert.ok(out.state.day.progress >= base && out.state.day.progress <= base + play, 'the day counts base');
 });
 
 test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
@@ -1017,7 +1023,7 @@ test('a quest pays when its app says it was done this period, once', () => {
   const seen = look(s, content, done).quests[0];
   assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
   const paid = must(task, s, { action: 'check', id: 'shifu-scan' }, done);
-  assert.equal(paid.result.paid.progress, Math.round(content.balance.play_pay.rate.qi[s.step] * content.balance.play_pay.chore.minutes.week), 'a fixed one is the day\'s 功课: 修为, its week\'s minutes of board play (2026-10-27)');
+  assert.equal(paid.result.paid.progress, chorePlay(content, s, 'week'), 'a fixed one is the day\'s 功课: 修为, a week\'s 20% of the layer (2026-10-27)');
   assert.equal(paid.state.chores['shifu-scan'].period, weekKey(NOW), 'the apps\' 功课 are the chores book; `quests` is 差事 now');
   assert.equal(look(paid.state, content, done).quests[0].paid, true);
   refused(task, paid.state, { action: 'check', id: 'shifu-scan' }, 'already-paid', done);
@@ -2219,10 +2225,10 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   const lei = riddleAt(s, 'riddle', nctx());
   missed(resolve, s, { exit: 'riddle', answer: lei.wrong }, nctx());
   r = answerN(resolve, s, { exit: 'riddle', answer: lei.right });
-  assert.equal(r.state.scene, '02-deep'); assert.equal(r.result.paid.progress, 40);
+  assert.equal(r.state.scene, '02-deep'); assert.equal(r.result.paid.progress, atLayer(s, 40));
   // and 舜's way, from the same shore
   const yielded = answerN(resolve, s, { exit: 'yield' });
-  assert.equal(yielded.state.scene, '02-deep'); assert.equal(yielded.result.paid.progress, 40);
+  assert.equal(yielded.state.scene, '02-deep'); assert.equal(yielded.result.paid.progress, atLayer(s, 40));
   s = r.state; assert.equal(s.place, 'leiyuan');
   missed(resolve, s, { exit: 'seal', answer: '西' }, nctx());
   r = answerN(resolve, s, { exit: 'seal', answer: '东' });
@@ -2237,7 +2243,7 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   r = answerN(resolve, s, { exit: 'take' });
   assert.deepEqual(btOf(r.result.breakthrough), { from: '筑基圆满', to: '结丹小成', tier: 'core', success: true });
   assert.equal(r.state.tier, 'core'); assert.equal(r.state.step, 0);
-  assert.equal(r.state.progress, 60);
+  assert.equal(r.state.progress, atLayer(r.state, 60)); // the way on's 60, read at 结丹小成 (play_pay.authored)
   assert.equal(r.state.scene, '02-end');
   r = answerN(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan']);
@@ -2301,10 +2307,10 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   const kui = riddleAt(s, 'riddle', dctx());
   missed(resolve, s, { exit: 'riddle', answer: kui.wrong }, dctx());
   r = answerD(resolve, s, { exit: 'riddle', answer: kui.right });
-  assert.equal(r.state.scene, '03-deep'); assert.equal(r.result.paid.progress, 40);
+  assert.equal(r.state.scene, '03-deep'); assert.equal(r.result.paid.progress, atLayer(s, 40));
   // and 孔子's word, from the same shore
   const enough = answerD(resolve, s, { exit: 'enough' });
-  assert.equal(enough.state.scene, '03-deep'); assert.equal(enough.result.paid.progress, 40);
+  assert.equal(enough.state.scene, '03-deep'); assert.equal(enough.result.paid.progress, atLayer(s, 40));
   s = r.state; assert.equal(s.place, 'liubo');
   missed(resolve, s, { exit: 'seal', answer: '震' }, dctx());
   r = answerD(resolve, s, { exit: 'seal', answer: '离' });
@@ -2319,7 +2325,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   r = answerD(resolve, s, { exit: 'take' });
   assert.deepEqual(btOf(r.result.breakthrough), { from: '结丹圆满', to: '元婴小成', tier: 'nascent', success: true });
   assert.equal(r.state.tier, 'nascent'); assert.equal(r.state.step, 0);
-  assert.equal(r.state.progress, 120);
+  assert.equal(r.state.progress, atLayer(r.state, 60) * content.ladder.tiers.find(t => t.id === 'nascent').pay); // read at 元婴, × the realm's pay
   assert.equal(r.state.scene, '03-end');
   r = answerD(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan', '03-qing']);
@@ -2495,7 +2501,7 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   assert.equal(wrong.result.refused, 'wrong-answer');
   assert.ok(wrong.result.hint && !wrong.result.choices.includes(wrongChoice));
   const answered = must(meet, wrong.state, { action: 'answer', answer: right }, rd);
-  assert.equal(answered.result.paid.progress, 20);
+  assert.equal(answered.result.paid.progress, atLayer(wrong.state ?? asked.state, 20, 'meet'));
   assert.ok(answered.state.riddles_seen.includes(key));
   assert.equal(askOf(content, answered.state, rd, answered.result), null, 'answered, the chat asks nothing — the roads are on the page (2026-09-25)');
 

@@ -14,16 +14,21 @@ const content = loadContent();
 const NOW = new Date('2026-10-27T09:00:00-03:00');
 const ctx = { now: NOW };
 const PP = content.balance.play_pay;
+// A minute of a board at 练气一层: 60% of 470 over 35% of its 2 hours (play_pay.games, hours) — 6.71 修为, 1.43% of the layer.
+const PER_MIN = (PP.games.share * 470) / (PP.games.time * PP.hours.qi[1] * 60);
 
-test('the kinds at 练气一层: minutes × the layer\'s rate, ★ and the replay scaling it', () => {
+test('the kinds at 练气一层: minutes × the layer\'s share a minute, ★ and the replay scaling it; 三层 the same minutes of a bigger layer', () => {
   const s = { tier: 'qi', step: 1, plays: null };
   const grant = (kind, stars) => playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } }, s, 'x', { game: 'x' }, NOW, stars);
-  assert.equal(grant('棋牌').progress, Math.round(PP.rate.qi[1] * 6));
-  assert.equal(grant('打地鼠').progress, Math.round(PP.rate.qi[1] * 1));
-  assert.equal(grant('解谜', 1).progress, Math.round(PP.rate.qi[1] * 4 * 0.6), '★1 is 0.6');
+  assert.equal(grant('棋牌').progress, Math.round(PER_MIN * 6));
+  assert.equal(grant('打地鼠').progress, Math.round(PER_MIN * 1));
+  assert.equal(grant('解谜', 1).progress, Math.round(PER_MIN * 4 * 0.6), '★1 is 0.6');
   const again = { ...s, plays: { day: '2026-10-27', ids: { x: 1 } } };
-  assert.equal(playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: '解谜' }] } }, again, 'x', { game: 'x' }, NOW).progress, Math.round(PP.rate.qi[1] * 4 * 0.5), 'the same board again today: 50%');
+  assert.equal(playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: '解谜' }] } }, again, 'x', { game: 'x' }, NOW).progress, Math.round(PER_MIN * 4 * 0.5), 'the same board again today: 50%');
   assert.equal(playGrant(content, { tier: 'qi', step: 0 }, 'qiqiao', { game: 'qiqiao' }, NOW)?.progress ?? 0, 0, '零层 pays no 修为');
+  assert.deepEqual(['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌'].map((k) => grant(k).progress), [7, 13, 20, 27, 34, 40], 'Hanli\'s 7–40 at 一层');
+  const three = (kind) => playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } }, { tier: 'qi', step: 3, plays: null }, 'x', { game: 'x' }, NOW).progress;
+  assert.deepEqual(['打地鼠', '棋牌'].map(three), [4, 22], '三层 (510, 4 h): 0.7% and 4.3% of the layer');
 });
 
 test('古四 at 146/470: the place games at 沉鼎观 reach the gate in three short sittings — the place games alone, errands and fights on top', () => {

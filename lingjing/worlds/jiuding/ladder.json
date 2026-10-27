@@ -6,7 +6,7 @@
     {
       "id": "qi",
       "pay": 1,
-      "_thresholds_were": "练气's thresholds a save older than each state version was played on (with 零层, by step): \"9\" before 2026-10-15's first re-derivation, \"10\" before the stage quests (2026-10-16, balance.json), \"11\" before the story stopped raising 层 (2026-10-16, the re-fit after), \"12\" before 人间功课 paid its minutes of play (2026-10-27: 二层 on ≈ 2.7×, balance.json play_pay._chore). A save from then keeps its 层 and its bar's fill (state.mjs paceLayer).",
+      "_thresholds_were": "练气's thresholds a save older than each state version was played on (with 零层, by step): \"9\" before 2026-10-15's first re-derivation, \"10\" before the stage quests (2026-10-16, balance.json), \"11\" before the story stopped raising 层 (2026-10-16, the re-fit after), \"12\" the ladder of 2026-10-27 before the raise for 人间功课, which was taken back the same day (pay became a share of the layer, balance.json `_play_pay`): the same numbers, so a v12 save reads as it stood. A save from then keeps its 层 and its bar's fill (state.mjs paceLayer).",
       "thresholds_were": {
         "9": [0, 50, 60, 70, 80, 90, 100, 110, 120, 130],
         "10": [0, 200, 350, 480, 660, 720, 820, 920, 1020, 1120],

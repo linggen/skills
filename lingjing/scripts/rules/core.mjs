@@ -22,6 +22,7 @@ import { capLook, pastCapSay, storyAllows, underCap } from './cap.mjs';
 import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
+import { authoredScale, fightPlay } from './playpay.mjs';
 
 /* ── Changing it ── */
 
@@ -58,7 +59,11 @@ export function meets(state, needs, now = new Date(), sceneId = state.scene) {
    `state.day` still counts what the day paid. */
 function amountsOf(content, state, now, grant) {
   const table = content.rewards.tables[grant.table];
-  const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state));
+  // 修为 as a share of the layer (rules/playpay.mjs, 2026-10-27): a fight by its minutes; what the book authors read
+  // against the 练气一层 it was written for. Capped by its table as authored.
+  const fight = grant.table === 'haunt' && grant.progress ? fightPlay(content, state) : null;
+  const authored = fight ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table);
+  const want = Math.round(authored * speedOf(content, state));
   const base = Math.max(0, want);
   const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth)));
   return { base, progress: Math.round(base * payOf(content, state) * layerPayOf(content, state, grant.table)), wealth };

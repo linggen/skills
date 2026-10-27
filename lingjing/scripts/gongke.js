@@ -29,7 +29,7 @@ const hm = (iso) => {
   return d && !Number.isNaN(d.getTime()) ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '';
 };
 
-/* What a row pays, as labels: the chore's own (`pays`, its minutes of board play in 修为) and its meaning's (`adds`), summed. */
+/* What a row pays, as labels: the chore's own (`pays`, its share of the layer in 修为) and its meaning's (`adds`), summed. */
 function addsHtml(r, gw) {
   if (!r.adds && !r.pays) return '';
   const xw = (r.pays?.progress ?? 0) + (r.adds?.progress ?? 0), ls = (r.pays?.wealth ?? 0) + (r.adds?.wealth ?? 0);

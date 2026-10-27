@@ -156,36 +156,44 @@ the threshold carry the hours (235 修为 an hour) and the pay stay one number p
 for a higher layer, the same coin for the same minutes, which a player can learn. (The calendar this makes is above:
 练气 108 typical days at +1 h a layer, 72 at +0.5 h.)
 
-## 人间功课 pay — in the rules 10-27
+## Pay as a share of the layer — in the rules 10-27
 
-Hanli 10-27: 「小游戏的有点高, 相比每日linggen任务, health等app的任务, 可以多给一些修为 … 你计算决定吧」. Board pay stays
-(`play_pay`). A chore of the day — the workout, the day's pick, any app's daily — pays **30 minutes of board play at the
-layer's rate** in 修为, a week's **60**; no ★, no replay, once a period (rules/playpay.mjs chorePlay, chores.mjs choreGrant).
-灵石 stays the tables' own. 开府 and 零层 unchanged; 功课 left `layer_pay` (the rate already grows with the layer).
-Its 修为 still counts on past a full mark (not a converting table). The 人间功课 board and the 事 book show each row's
-修为 as it would land (`pays`, plus the meaning's `adds`).
+Hanli 10-27: 「小游戏的有点高, 相比每日linggen任务, health等app的任务, 可以多给一些修为」, then, seeing 功课 +201 at 一层:
+「修为奖励过于多了吧? 一层才要470修为, 我们可否按照百分比奖励, 这样等级高了后, 奖励也合理」. **Every 修为 pay is a share of the
+layer he stands on** (rules/playpay.mjs; balance.json `play_pay`; core.mjs amountsOf). Thresholds stay where the time fit
+put them (练气 470 · 490 · 510 · 530 · 1040 … 1120); the raise asked first was taken back. ★, the replay's 100 · 50 · 10%, no
+daily cap and 圆满 → 灵石 are kept.
 
-**Thresholds** (练气二层 on; 一层 stays 470 — a save inside it keeps its goal; state v12 carries a bar's fill): a layer's
-board and story 修为 (the old threshold, at +1 h a layer) plus one daily 功课 a day over its calendar at 30 min a day
-(2 × its play hours). Written through `model.fit.hold` (each 回's layers equal, +20 a 层):
+- **Boards and fights**: a thing of m minutes pays m ÷ (35% × the layer's play minutes) × 60% of its need (`games`, `hours`:
+  练气一层 2 h, +1 h a layer; 筑基 6 h a step, 金丹 8, 元婴 10). A fight won is 4 minutes (`fight`).
+- **Errands**: 15% of the layer over 10% of its time, by their 5 minutes (`errand`).
+- **人间功课**: a day's 10%, a week's 20% of the layer (`chore`), once a period.
+- **What the book authors** — a scene's way on, a pill, a rumor, a 机缘, a road-meet (`authored.tables`) — is read as a share
+  of the 练气一层 it was written against (`authored.base` 470): a scene's 60 is 12.8% of whatever layer he is on.
+- 闭关 keeps its hourly rate × `layer_pay` (not asked; the one pay still by table).
 
-| 层 | old | new | daily 功课 | weekly | typical days (30 min + one 功课 a day) | games only (no 功课) |
-|---|---|---|---|---|---|---|
-| 一层 | 470 | 470 | 201 | 402 | ~1.5 (unchanged gate, the 功课 on top) | 4 |
-| 二层 | 490 | 1330 | 140 | 280 | 6 | 16 |
-| 三层 | 510 | 1350 | 109 | 218 | 8 | 21 |
-| 四层 | 530 | 1440 | 91 | 182 | 10 | 27 |
-| 五层 | 1040 | 2890 | 149 | 297 | 12 | 33 |
-| 六层 | 1060 | 2910 | 130 | 260 | 14 | 38 |
-| 七层 | 1080 | 2930 | 116 | 232 | 16 | 43 |
-| 八层 | 1100 | 2950 | 105 | 209 | 18 | 48 |
-| 九层 | 1120 | 2970 | 96 | 192 | 20 | 53 |
+| thing | share at 练气一层 (470, 2 h) | 修为 | share at 三层 (510, 4 h) | 修为 |
+|---|---|---|---|---|
+| 打地鼠 · 调息 · 开炉 (1 min) | 1.4% | 7 | 0.7% | 4 |
+| 割绳子 · 投掷 · 节奏 · 结印 (2) | 2.9% | 13 | 1.4% | 7 |
+| 格斗 · 对话 · 配对 (3) | 4.3% | 20 | 2.1% | 11 |
+| 塔防 · 斗法 · 解谜 (4), a fight won | 5.7% | 27 | 2.9% | 15 |
+| 你画我猜 (5) | 7.1% | 34 | 3.6% | 18 |
+| 棋牌 (6) | 8.6% | 40 | 4.3% | 22 |
+| 探索 · the 秘境 room (12) | 17.1% | 81 | 8.6% | 44 |
+| an errand (5) | 6.3% | 29 | 3.1% | 16 |
+| 人间功课, a day's | 10% | 47 | 10% | 51 |
+| 人间功课, a week's | 20% | 94 | 20% | 102 |
+| a scene's way on (authored 60 · 40) | 12.8% · 8.5% | 60 · 40 | 12.8% · 8.5% | 65 · 43 |
+| a pill (authored 40 · 60) | 8.5% · 12.8% | 40 · 60 | 8.5% · 12.8% | 43 · 65 |
 
-**A player who never hands in a 功课 takes ≈ 2.7× the typical days** (the 功课 is 30 of a typical day's ~47.5
-修为-minutes: 1 + 30 ÷ 17.5). For 1.5× the day's minutes would be ~9 (≈ 60 修为 at 一层); 15 minutes gives ~1.9×. Only
-`play_pay.chore.minutes` and the holds move it. A plain install without Health, CFO or Shifu has no daily 功课 (Linggen's own
-are 开府, once) — that player is the games-only column. tools/balance.mjs plays the 功课 at its new pay but no practice
-boards, so its 古五–古八 run long (typical 7.8 · 13.7 · 12.1 · 15.6 days); its bands are widened until it plays them.
+**古四 146 → 470** on the place games alone: **17 plays** (≈ 78 board minutes, 3 short days, the replay's share counted);
+with a day's 功课 (+47), about 12. The 主页 counts it the same way (rules/home.mjs playsFor).
+
+**What it changed elsewhere.** A fight at 练气四层 paid 30 × `layer_pay` 3 = 90; now 12 — the time it takes. tools/balance.mjs
+plays fights, 闭关, the 功课 and, held at a stage quest, practice boards (`model.practice`), and runs 古六–古八 long (typical
+13 · 10.1 · 12.6 days): its bands are widened until the 层 are re-fit with the practice share played in full. The 秘境
+rerun's 修为 share of a day fell to 9–15% (its band from 0.08). State v12 stays (its `thresholds_were` row is the same ladder).
 
 ## 四条 — the standing rule, audit 10-27
 

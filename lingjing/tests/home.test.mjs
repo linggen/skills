@@ -32,16 +32,16 @@ const mainOf = (l) => stageSlots(l, withNext(l, stageCards(l).filter((c) => !(c.
 test('the gate short: the bar, what it still asks with today\'s 功课 counted, and the best board here first', () => {
   const s = gate146(), l = look(s, content, ctx([WORKOUT]));
   const g = l.home.gate;
-  assert.deepEqual([g.step, g.progress, g.of, g.short, g.chores], ['练气一层圆满', 146, 470, 324, 201]);
-  assert.equal(g.plays, playsFor(content, s, l, 324 - 201, NOW), 'the boards for what the 功课 leaves');
-  assert.ok(g.plays >= 4 && g.plays <= 6, `${g.plays} boards for 123 修为`);
+  assert.deepEqual([g.step, g.progress, g.of, g.short, g.chores], ['练气一层圆满', 146, 470, 324, 47]);
+  assert.equal(g.plays, playsFor(content, s, l, 324 - 47, NOW), 'the boards for what the 功课 leaves');
+  assert.ok(g.plays >= 10 && g.plays <= 16, `${g.plays} boards for 277 修为`);
   assert.deepEqual(l.home.next, { kind: 'board', id: 'qiqiao', title: l.tasks.find((t) => t.id === 'qiqiao').title, progress: 27 });
-  assert.ok(l.home.todo.some((r) => r.kind === 'gongke' && r.progress === 201 && r.means === '练功'));
+  assert.ok(l.home.todo.some((r) => r.kind === 'gongke' && r.progress === 47 && r.means === '练功'));
   const h = html(l);
   assert.match(h, /class="card next home"/);
-  assert.match(h, new RegExp(`146/470 · 还差 324 修为 · 功课 \\+201 · 再约 ${g.plays} 局`));
+  assert.match(h, new RegExp(`146/470 · 还差 324 修为 · 功课 \\+47 · 再约 ${g.plays} 局`));
   assert.match(h, /data-play="qiqiao"[^>]*>开局 · 七巧[^<]*· 修为 \+27</);
-  assert.match(h, /练功 · 修为 \+201/);
+  assert.match(h, /练功 · 修为 \+47/);
   assert.doesNotMatch(h, /undefined|\{\w+\}/);
   // No 功课 today: the boards alone, the replay's falling share counted (17 at 古四, tests/play-pay).
   const bare = look(s, content, ctx());
