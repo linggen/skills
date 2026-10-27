@@ -1,0 +1,87 @@
+{
+ "version": 1,
+ "id": "wm-yaban",
+ "chapter": "00-waimen",
+ "hui": "h08",
+ "at": "waimen",
+ "place": {
+  "zh": "沉鼎观 · 外门 · 伙房门口",
+  "en": "Chending Temple · The outer court · the kitchen door"
+ },
+ "_board": "wm-yaban (全文后的小游戏 第二批 2026-10-26): wm-qianye's passage split before the lecture — 钱掌柜 weighs the bow (jinchat `qian-gong`, face) after 「…一个名字，我照价收，一文不少你的。」, then 褚先生's two fingers on the wrist (气走经脉 `maizhen`) after 「…像两根竹签，一寸一寸地往灶膛里捅。」 Before the 大比 lock, as wm-qianye (its entry) opens it.",
+ "setup": {
+  "zh": "腊月初七，大比前一天。伙房门口的老槐树底下支起了押宝板；傍晚，讲堂里验修为。外门里传着一句话：马家为了这一颗筑基丹，把蒙山上的树卖了三成。",
+  "en": "The seventh of the twelfth month, the day before the contest. A betting board goes up under the old pagoda tree by the kitchen; at dusk, cultivation is tested in the lecture hall. A rumour goes round the outer court: for this one Foundation pill the Ma family sold three-tenths of the trees on Mount Meng."
+ },
+ "recap": {
+  "zh": "腊月初七，钱掌柜的押宝板上写着：沈小满，一赔一百；他掂了掂你那张弓：「这木头，我叫不出名字。」马小宝押了自己，船头上坐着一个宽得像门的人。傍晚验修为：马小宝一夜长了两层，脸上全是丹毒的斑；褚先生那两根指头搭上你的腕子，像两根竹签往灶膛里捅——「四层。」",
+  "en": "On the seventh of the twelfth month, Shopkeeper Qian's betting board read: Shen Xiaoman, a hundred to one; he weighed your bow: \"This wood, I can't put a name to it.\" Ma Xiaobao bet on himself; at a boat's bow sat a man as wide as a door. In the evening, the cultivation check: Ma Xiaobao had grown two layers in a night, his face all pill-poison blotches; Master Chu's two fingers on your wrist were bamboo skewers poking into a stove. \"Fourth layer.\""
+ },
+ "cast": [],
+ "people": [
+  "maxiaobao",
+  "ahe",
+  "chuxiansheng"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "宗门大比押冠军。沈小满，一赔一百。",
+    "「这木头——我叫不出名字。」",
+    "「四层。」"
+   ],
+   "en": [
+    "Bets on the sect champion. Shen Xiaoman, a hundred to one.",
+    "\"This wood — I can't put a name to it.\"",
+    "\"Fourth layer.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "腊月初七，沉鼎观外门，伙房门口那棵老槐树底下，支起了一块木板。\n\n木板顶上拿炭条写着一行大字：**宗门大比　押冠军**。底下一行一行的名字，名字后头跟着数目。头几行全是内门的人：头一个是祁长松，后头跟着「一赔一」；第二个是秦雁，一赔二；往下是几位内门师兄，一赔三、一赔四；再往下才轮到外门，马小宝一赔八，几位老弟子一赔十几；再往下，名字越写越小，数目越写越大，到了最底下，挤在木板角上，一行比蚊子腿还细的小字：**沈小满　一赔一百。**围着看的人笑成了一片，有一个笑得最响，一面「哈哈哈」地笑，一面拍大腿，拍得大腿都红了，笑出了眼泪：「一百！钱掌柜这是菩萨心肠，白送钱哪！」\n\n木板旁边坐着一个胖子，穿一件洗得发白的绸袄，左手一把算盘，右手一杆秤，秤杆上挂着一个小布袋，布袋里叮叮当当，全是铜钱和碎灵石。木板顶上钉着一块小木牌，上写八个字：**明码标价，童叟无欺。**阿禾挤在小满身边，拿下巴朝那胖子一努，低声道：「钱掌柜。坊市押宝的，十押九赔。」外人上不得山，钱掌柜不算外人：每年大比，观里收他十块灵石的摊钱，准他把摊子搬上来摆两天，周衡的账上记一笔公中的进项。\n\n小满挤到板前：「掌柜的，一赔一百，怎么算的？」钱掌柜头也不抬，啪啪啪拨了三下算盘：「杂灵根上台，十个里赢不了一个；进门才三个月的，十个里赢不了一个；头一回上台的，十个里也赢不了一个。三样占全了——十里挑一，挑三回，一千个里才轮得着一个。该写一赔一千；我写一百，剩下那九百，是我的。」小满的眼珠子跟着他的算盘珠子转了三圈，转晕了。旁边一个老弟子嗤地一笑：「钱掌柜赔钱？太阳打西边出来。」钱掌柜也不恼，拿秤杆敲了敲顶上那八个字。\n\n他把秤杆收回来的时候，眼皮一抬，落在小满背上那张弓上，算盘珠子停了。「借我掂一掂。」他接过弓去，掂了一掂，拿指甲弹了弹弓背，侧着耳朵听；又把弓背凑到眼前，顺着木纹看了好一会儿，看得很慢，跟看木板上那些名字不是一个看法。看完了，他把弓递回来，道：「牛筋十七道，值三钱银子。弦是新的，值五十文。这木头——」他顿了一顿，「我叫不出名字。你哪天打听出来，告诉我一声。一个名字，我照价收，一文不少你的。」",
+  "en": "On the seventh of the twelfth month, in the outer sect of the Sunken Cauldron Abbey, under the old pagoda tree outside the kitchen door, a wooden board went up.\n\nAt the top of the board, in big charcoal letters: **SECT GRAND CONTEST · BET ON THE CHAMPION**. Below, line after line of names, each followed by a number. The first few lines were all inner sect: first Qi Changsong, followed by \"evens\"; second Qin Yan, two to one; below them several inner-sect senior brothers, three to one, four to one; only further down did the outer sect come in, Ma Xiaobao at eight to one, a few older disciples at ten-something to one; further down still the names got smaller and the numbers bigger, and at the very bottom, squeezed into the corner of the board, one line of writing thinner than a mosquito's leg: **Shen Xiaoman · a hundred to one.** The crowd round it dissolved into laughter. One man laughed loudest, going \"Hahaha\" and slapping his thigh till his thigh was red, laughing till he cried: \"A hundred! Shopkeeper Qian's got a bodhisattva's heart, he's giving money away!\"\n\nBeside the board sat a fat man in a silk jacket washed pale, an abacus in his left hand and a steelyard in his right; from the steelyard hung a little cloth bag that jingled and clinked, all copper coins and chips of spirit stone. A small wooden plaque was nailed to the top of the board, with eight characters on it: **PRICES MARKED PLAIN · NO CHEATING YOUNG OR OLD.** Ahe squeezed in beside Xiaoman, jerked her chin at the fat man, and said low: \"Shopkeeper Qian. Runs the betting at the market. Nine bets in ten, he pays out.\" Outsiders couldn't come up the mountain, but Shopkeeper Qian didn't count as an outsider: every year at the contest, the abbey took ten spirit stones from him as stall fee and let him bring his stall up for two days, and Zhou Heng's ledger entered a line of income for the Common Fund.\n\nXiaoman squeezed up to the board: \"Shopkeeper, a hundred to one, how's that worked out?\" Shopkeeper Qian didn't look up. He clicked the abacus three times, *tak tak tak*: \"A mixed spirit root on the stage: not one in ten wins. Three months in the sect: not one in ten wins. First time on the stage: not one in ten wins either. All three at once: one in ten, picked three times over, that's one in a thousand. It ought to say a thousand to one. I write a hundred; the other nine hundred is mine.\" Xiaoman's eyeballs went round three times following the abacus beads and came out dizzy. An older disciple beside him sniggered: \"Shopkeeper Qian lose money? The sun'll come up in the west.\" Shopkeeper Qian didn't take offence. He tapped the eight characters at the top with his steelyard.\n\nAs he drew the steelyard back, his eyes lifted and came to rest on the bow on Xiaoman's back, and the abacus beads stopped. \"Let me heft it.\" He took the bow, weighed it in his hand, flicked the back of it with a fingernail and cocked his ear to listen; then held the bow up to his eye and looked along the grain a good while, looking very slowly, not at all the way he looked at the names on the board. When he had finished he handed it back and said: \"Seventeen layers of ox sinew, worth three qian of silver. The string's new, worth fifty coppers. This wood—\" He paused. \"I can't put a name to it. If you ever find out, let me know. A name, I'll buy at its price, and not a copper short.\""
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "yaban-qian"
+  },
+  {
+   "card": "board",
+   "id": "yaban-maizhen"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "yaban-qian",
+   "yaban-maizhen"
+  ]
+ },
+ "story_after": {
+  "zh": "人群忽然往两边一分。马小宝来了。他今日又换了一身法衣，腰里挂着一面巴掌大的铜镜，镜面朝外，磨得雪亮。他那张脸，小满险些没认出来：一片一片的斑，红的紫的，从下巴一直漫到了额角，像一块没擦干净的灶台。昨天马三坐船到了山脚，外门不让外人进，他便把船泊在泗水边上，托人往山上送了一只描金食盒、三只药瓶，还有这面镜子。马家的丹两个月硬喂到了三层；这三只药瓶，一夜之间，全空了。\n\n马小宝从怀里掏出一个布袋，往秤盘上一扔，「哗啦」一声，是一袋子灵石：「押马小宝。」钱掌柜道：「马少爷押自己？一赔八。」马小宝道：「我不图你赔。」他转过脸来，冲小满笑了一笑，「我押的不是钱，是个彩头。」说完，拿指头在铜镜上弹了一下，「当」的一声。他一走，人群里便有人说，马家老爷为了这一颗筑基丹，把蒙山上的树卖了三成。小满挤出人群，往山门外望了一眼。山脚下泗水边上泊着一条船，船头插着一面旗，旗上绣着一行金字，隔着老远也看得清：**马家小宝　仙途无量**。船头上坐着一个宽得像门的人，正在剥花生。\n\n阿禾在小满身后问：「你押谁？」小满道：「我押我自己。」阿禾上上下下打量了他一遍：「你拿什么押？」小满一摸怀里，只摸出一块灵石——腊月初一领的那一块；秘境里摸来的那一袋子，早喂了饭桶。他攥了一攥，又揣了回去：「这块，有用处。」他把手张开来给阿禾看：「押个空。」阿禾没说话。小满回头去看木板的时候，瞥见她挤到了秤盘前，从袖子里摸出一样很小的东西放了上去，钱掌柜看了一眼，写了一张纸条给她，她折成一小块，塞进了小本子里。小满问她押了谁，她说：「不告诉你。」\n\n那天傍晚，报了名的人都要到讲堂里去验一回修为，好写进名册：几层便是几层，抽签、排座，都照这个来。验修为的是褚先生。他坐在讲台后头，报名的人一个一个上去，把手腕搁在一块垫着青布的脉枕上，他伸两根指头搭着，闭着眼睛，搭一会儿，报一个数，旁边的执事便往名册上写一个数。\n\n排在小满前头的，是马小宝。褚先生搭着他的腕子，眉头一点一点皱起来，看了一眼他脸上的斑，到底报了一声：「五层。」他没松手，又道：「一夜之间，长了两层。你那脸上的斑，是丹毒往外走。灵力是虚的。明天上台，莫使全力。」马小宝把腕子抽回来，笑道：「先生放心，我家的丹，是县城最好的铺子出的。」褚先生道：「最好的铺子，出的也是一转。」他把那两根指头在青布上擦了擦，慢慢道：「《道德经》{典=laozi-qizhe}上说：『企者不立，跨者不行。』踮着脚的，站不住；一步跨两步的，走不远。你一夜跨了两层，明天站不站得住，自己掂量。」马小宝没听，咧着嘴回过头来，冲小满扬了扬下巴。\n\n轮到小满了。他把手腕搁在脉枕上。褚先生那两根指头又干又凉，一搭上来，小满便觉出它们在往里探，像两根竹签，一寸一寸地往灶膛里捅。",
+  "en": "The crowd suddenly parted. Ma Xiaobao had arrived. He had changed into yet another cultivator's robe today, and at his waist hung a copper mirror the size of a palm, face outwards, polished snow-bright. His face Xiaoman almost didn't recognise: blotch after blotch, red and purple, spreading from his chin right up to his temples, like a stove top nobody had wiped clean. Yesterday Ma San had come by boat to the foot of the mountain. The outer sect didn't let outsiders in, so he had moored his boat on the Si and had someone send up the mountain a gilded food box, three medicine bottles, and this mirror. The Ma family's pills had force-fed him up to the third layer in two months; these three medicine bottles were all empty in a single night.\n\nMa Xiaobao took a cloth bag out of his robe and tossed it onto the steelyard pan with a clatter: a bag of spirit stones. \"On Ma Xiaobao.\" Shopkeeper Qian said: \"Young Master Ma bets on himself? Eight to one.\" Ma Xiaobao said: \"I'm not after your payout.\" He turned his face and smiled at Xiaoman. \"What I'm betting isn't money. It's a prize.\" Having said it, he flicked the copper mirror with a finger: *tang*. When he'd gone, someone in the crowd said that Master Ma, for this one Foundation Pill, had sold three tenths of the trees on Mount Meng. Xiaoman squeezed out of the crowd and looked out beyond the mountain gate. At the foot of the mountain, on the Si, a boat was moored with a banner planted at its bow, embroidered with a line of gold characters you could read from a long way off: **MA XIAOBAO · BOUNDLESS IMMORTAL ROAD**. At the bow sat a man as wide as a door, shelling peanuts.\n\nBehind Xiaoman, Ahe asked: \"Who are you betting on?\" Xiaoman said: \"I'm betting on myself.\" Ahe looked him up and down: \"With what?\" Xiaoman felt in his robe and came out with only one spirit stone, the one he'd drawn on the first of the twelfth month; the pouchful from the secret realm had long since gone into the Rice Bucket. He gripped it once and tucked it back: \"This one has a use.\" He opened his hand to show Ahe: \"I'm betting nothing.\" Ahe said nothing. When Xiaoman turned back to the board he caught sight of her squeezing to the steelyard pan, taking something very small from her sleeve and putting it on; Shopkeeper Qian looked at it and wrote her a slip of paper, and she folded it small and tucked it into her little notebook. Xiaoman asked her who she'd bet on. She said: \"Not telling you.\"\n\nThat evening everyone who had signed up had to go to the lecture hall to have their cultivation checked, so it could be written into the register: whatever layer you were was your layer, and the drawing of lots and the seating went by it. The one checking was Master Chu. He sat behind the lectern, and the entrants went up one by one and laid their wrists on a pulse pillow padded with blue cloth. He laid two fingers on, eyes closed, held them a while, called out a number, and the steward beside him wrote a number in the register.\n\nAhead of Xiaoman was Ma Xiaobao. As Master Chu felt his wrist, his brows knitted a little at a time. He glanced at the blotches on the boy's face, and in the end called out: \"Fifth layer.\" He didn't let go, and said: \"Two layers grown in one night. Those blotches on your face are pill poison working its way out. The spiritual power is hollow. On the stage tomorrow, don't use your full strength.\" Ma Xiaobao pulled his wrist back and smiled: \"Don't worry, Master. My family's pills come from the best shop in the county town.\" Master Chu said: \"What the best shop makes is still one-turn.\" He wiped his two fingers on the blue cloth and said slowly: \"The *Daodejing*{典=laozi-qizhe} says: 'One on tiptoe does not stand; one who straddles does not walk.' Up on your toes, you can't stand; taking two steps in one, you don't get far. You straddled two layers in a night. Whether you can stand tomorrow, weigh that for yourself.\" Ma Xiaobao wasn't listening. He turned round with a grin and lifted his chin at Xiaoman.\n\nIt was Xiaoman's turn. He laid his wrist on the pulse pillow. Master Chu's two fingers were dry and cold, and as soon as they settled, Xiaoman felt them probing inwards, like two bamboo skewers poking an inch at a time into a stove."
+ },
+ "lines": [],
+ "buttons": [
+  "lecture"
+ ],
+ "exits": [
+  {
+   "id": "lecture",
+   "label": {
+    "zh": "去讲堂",
+    "en": "To the lecture hall"
+   },
+   "means": "goes on to Master Chu's month of lessons",
+   "beat": [],
+   "next": "wm-qianye",
+   "needs": {
+    "task": "yaban-maizhen"
+   },
+   "refuse": {
+    "zh": "褚先生的两根指头还搭在腕子上。",
+    "en": "Master Chu's two fingers are still on your wrist."
+   }
+  }
+ ]
+}

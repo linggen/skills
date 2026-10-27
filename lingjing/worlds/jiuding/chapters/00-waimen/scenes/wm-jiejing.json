@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "wm-jiejing",
+ "chapter": "00-waimen",
+ "hui": "h08",
+ "at": "zhengdian",
+ "place": {
+  "zh": "沉鼎观 · 大比 · 半决 · 台边",
+  "en": "Chending Temple · The contest · the semi-final · the stage's edge"
+ },
+ "_board": "wm-jiejing (全文后的小游戏 第二批 2026-10-26): the 马小宝 bout's telling (wm-juesai · face) split at the stage's edge — 时机 `jiejing` (dodge the beams, then catch the last with the 自拍镜) after 「…他把身子里剩下的那一口，全灌进了镜子里。」 Inside the 大比 lock.",
+ "setup": {
+  "zh": "马小宝不照了，捧着镜子一步一步往前逼，把你逼到了台边。脚后跟底下，只剩半寸。",
+  "en": "Ma Xiaobao stops shining and presses forward step by step with the mirror, until you are at the stage's edge, half an inch under your heels."
+ },
+ "recap": {
+  "zh": "你按住胸口的木牌，掌心托着那面自拍镜迎上去；那一道黄光钻进镜子找木牌，自拍镜不认得它，原样扔了回去，烙白了马小宝一脸的斑。两面镜子一齐裂了。",
+  "en": "You pressed the tablet on your chest and held the Selfie Mirror up on your palm; the yellow beam bored in looking for the tablet, the Selfie Mirror didn't know it and threw it straight back, branding Ma Xiaobao's blotches white. Both mirrors cracked."
+ },
+ "cast": [],
+ "people": [
+  "maxiaobao",
+  "xuanchenzi",
+  "qulao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "左边是马小宝的镜子，右边是马小宝的镜子。",
+    "躲了五道，等的就是这一道。",
+    "「他也有镜子？」"
+   ],
+   "en": [
+    "On the left, Ma Xiaobao's mirror; on the right, Ma Xiaobao's mirror.",
+    "Five dodged; this one was what he waited for.",
+    "\"He's got a mirror too?\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "马小宝喘着，往山脚下泗水那边望了一眼。船头上那个宽得像门的人，站起来了，正望着这边。马小宝的脸白了一白，斑却红得更凶了。他不照了。他捧着镜子，一步一步往前逼，不让小满再绕到他身后去；小满往左，他往左，小满往右，他往右，一步一步，把小满逼到了台边。小满脚后跟底下，又只剩了半寸。左边是马小宝的镜子，右边是马小宝的镜子，身后是冻土。马小宝那张脸上，斑一片挨一片，红得发紫，他把身子里剩下的那一口，全灌进了镜子里。",
+  "en": "Panting, Ma Xiaobao glanced down the mountain towards the Si. The man as wide as a door, at the bow of the boat, had stood up and was looking this way. Ma Xiaobao's face went a shade whiter, but the blotches flushed redder than ever. He stopped shining. Holding the mirror, he pressed forward step by step so Xiaoman couldn't get round behind him again. Xiaoman went left, he went left; Xiaoman went right, he went right; step by step he pressed Xiaoman to the stage's edge. Under Xiaoman's heels, again, there was only half an inch. On the left, Ma Xiaobao's mirror; on the right, Ma Xiaobao's mirror; behind, the frozen earth. On Ma Xiaobao's face the blotches lay patch against patch, red going on purple, and he poured the last mouthful left in his body into the mirror."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "jiejing-mirror"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jiejing-mirror"
+  ]
+ },
+ "story_after": {
+  "zh": "那一霎，小满胸口的木牌烫得像一块烧红的铁。躲了五道，等的就是这一道。他没处挪了。他把左手平平地按在胸口上，压住了那块木牌，右手从袖子里摸出那面自拍镜，托在掌心里，镜面朝外，迎了上去——巴掌大一块铜，缺着一个角。台下有人「噗」地笑出了声：「他也有镜子？」\n\n那一道黄光撞在了自拍镜上。它不像打在青石板上那样一扑就散，倒像一根冰锥，往镜子里钻，钻着找什么东西——找木牌，找木牌里那一缕银。自拍镜不认得它。这面破铜一辈子只会一样：什么光打上来，原样扔回去。「嗡」的一声，那道黄光折了回去，不偏不倚，正扑在马小宝那张捧着镜子的脸上。\n\n马小宝「啊」地一声惨叫。那光是冷的：打在青石板上，石缝里的草白了一片；打在人脸上，脸上那一片片斑「嗤嗤」地冒白烟，像一瓢冰水泼在烧红的锅底。他眼睛还睁着，叫那道光灌了个满。他手里的镜子还在往外抽他，抽出来照过去，又叫自拍镜原样扔回来，一道一道，全扑在他自己脸上；两面镜子当中，拉成了一根亮得睁不开眼的光柱。小满掌心里那块铜烫得托不住，他没撒手——五扇门一齐开了，头一回，在人前扒开了；五行那一圈在他身子里转成了一个轮子，转得飞快，全推到那一只手掌上，托着它。他按着胸口的那只手底下，那块木牌隔着衣裳亮了一亮，一线银光从他指缝里漏出来，只一霎，便灭了。马小宝手里的镜子先是「嗡」的一声，跟着「咔」的一响，镜面上从当中裂开一道缝，裂缝一路爬到镜沿，镜子里的光，灭了。跟着又是「咔」的一声——小满掌心里那面自拍镜，从缺角那里裂开了，碎成七八瓣，叮叮当当掉在青石板上。\n\n演武场上，一个声音也没有。\n\n那一霎，有没有人看见他指缝里那一线银，小满不知道。他只听见自己的心，一下一下，撞着胸口那块木牌。\n\n马小宝举着那面裂了的铜镜，傻站在台上，两只眼睛直勾勾的，眼白上蒙着一层灰，什么也照不进去了。他摸索着把镜子翻过来，又翻过去，使劲拍了两下。然后他的腿一软，跪了下去，两只手捂住了脸，指缝里往外冒白气——脸上那一片片斑，叫冷光烙成了一片片白，像霜打过的茄子皮。他捂着脸往前一栽，脸贴在青石板上，不动了。\n\n小满站在台边，没有再出手。他蹲下来，看着那张贴在石头上的脸，烙白了的斑一片挨一片，眼泪一道一道往外淌，嘴唇发白，喘得像一条搁在岸上的鱼。他低声道：「那些，是公中的。还有一笔，不在公中——冬月初二夜，凶崖，孟有田。」马小宝把脸扭开了，扭向山门外头泗水那边，眼睛睁着，什么也望不见。山脚下，马家那条船还泊着，船头上站着那个宽得像门的人，望着这边，望了一会儿，转过身去，钻进了船舱。\n\n马小宝的脸还朝着那条船，朝得像一个在集上走丢了的孩子。小满蹲在那里，把到了嘴边的下一句，咽了回去。",
+  "en": "In that instant the wooden tablet on Xiaoman's chest burned like a red-hot iron. He had dodged five beams, and this one was what he'd been waiting for. He had nowhere to move. He laid his left hand flat on his chest and pressed down on the tablet, and with his right hand took the Selfie Mirror from his sleeve, held it on his palm with its face outwards, and raised it to meet the beam: a piece of copper the size of a palm, one corner missing. Someone below snorted with laughter: \"He's got a mirror too?\"\n\nThe beam of yellow light struck the Selfie Mirror. It didn't break up as it had on the bluestone; instead, like an ice spike, it bored into the mirror, boring as if looking for something: looking for the tablet, for the wisp of silver inside the tablet. The Selfie Mirror didn't know it. All its life this broken bit of copper could do only one thing: whatever light hit it, throw it straight back. With a *hum* the yellow beam turned back on itself, dead straight, right into Ma Xiaobao's face behind the mirror he held.\n\nMa Xiaobao screamed. The light was cold: on the bluestone, it had turned the grass in the cracks white in a patch; on a face, the blotches all over it sent up white smoke, *tsss, tsss*, like a ladle of ice water thrown onto the bottom of a red-hot pot. His eyes were still open, and that light filled them right up. The mirror in his hands was still drawing out of him, drawing it out and shining it, and the Selfie Mirror threw it straight back, beam after beam, all into his own face; between the two mirrors it drew out into one column of light too bright to open your eyes on. The copper in Xiaoman's palm was too hot to hold. He didn't let go. His five doors all opened at once, opened up, for the first time, in front of people; the round of the five phases in his body turned into a wheel, spinning fast, all of it pushed into that one palm, holding the mirror up. Under the hand pressed to his chest, the wooden tablet glowed once through his clothes, and a thread of silver light leaked out between his fingers, just for an instant, and went out. The mirror in Ma Xiaobao's hands first hummed, then gave a *crack*: a split opened across its face from the middle and crept all the way to the rim, and the light in the mirror went out. Then another *crack*: the Selfie Mirror in Xiaoman's palm split open from the missing corner and broke into seven or eight pieces, tinkling down onto the bluestone.\n\nOn the training ground, not a sound.\n\nWhether anyone had seen that thread of silver between his fingers in that instant, Xiaoman didn't know. He only heard his heart, beat after beat, knocking against the wooden tablet on his chest.\n\nMa Xiaobao stood stupidly on the stage holding up the cracked copper mirror, his two eyes staring straight ahead, a grey film over the whites; nothing would show in it any more. He fumbled the mirror over, and over again, and slapped it hard twice. Then his legs gave and he went down on his knees, both hands over his face, white vapour coming out between his fingers. The blotches on his face had been branded white by the cold light, patch after patch, like frost-bitten aubergine skin. Clutching his face he pitched forward, his face against the bluestone, and didn't move.\n\nXiaoman stood at the stage's edge and didn't strike again. He crouched and looked at that face against the stone, the branded-white blotches patch against patch, tears running out streak after streak, lips white, gasping like a fish landed on the bank. He said low: \"Those were the Common Fund. There's one more item, not in the Common Fund. The night of the second of the eleventh month, the Deadly Cliff, Meng Youtian.\" Ma Xiaobao turned his face away, towards the Si beyond the mountain gate, eyes open, seeing nothing. At the foot of the mountain the Ma family's boat was still moored, and at its bow stood the man as wide as a door, looking this way. He looked a while, then turned and ducked into the cabin.\n\nMa Xiaobao's face was still turned towards that boat, turned like a child lost at a market fair. Xiaoman crouched there, and swallowed the next thing he'd been about to say."
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "拾起碎铜",
+    "en": "Pick up the copper"
+   },
+   "means": "picks up the pieces of the broken mirror",
+   "beat": [],
+   "next": "wm-laoyin",
+   "needs": {
+    "task": "jiejing-mirror"
+   },
+   "refuse": {
+    "zh": "那一道黄光还没到。",
+    "en": "That yellow beam hasn't come yet."
+   }
+  }
+ ]
+}

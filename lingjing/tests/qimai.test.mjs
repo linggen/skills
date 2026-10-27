@@ -24,6 +24,8 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   'jin-wotui': 'wotui', 'jin-xisi': 'xisi',
   // 第五回's (全文后的小游戏 第二批 2026-10-26): 阿禾 under her 隐身符
   'xirang-yinshen': 'yinshen',
+  // 第六回's: 褚先生's two fingers on the pulse pillow
+  'yaban-maizhen': 'maizhen',
   // the reading cap before 入门 (2026-10-20): 00-halfyear's 挑水上坡 (on the cut 练功's task id), 今一's 边跑边念
   // the 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」): 挑水上坡, 后山, 随叶 and 顺风溜 told — rows, levels and tasks gone
   // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket

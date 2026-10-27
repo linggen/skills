@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "id": "wm-koujue",
+ "chapter": "00-waimen",
+ "hui": "h08",
+ "at": "waimen",
+ "place": {
+  "zh": "沉鼎观 · 讲堂",
+  "en": "Chending Temple · The lecture hall"
+ },
+ "_board": "wm-koujue (全文后的小游戏 第二批 2026-10-26): wm-qianye's after-passage split at the third day — 扣 (时机 `kou`: the half fist held through the incense) after 「…扣得久了，自己就散了，白掐一回。」 Inside the 大比 lock.",
+ "setup": {
+  "zh": "第三天，褚先生教的是扣：拇指掐着午文，四个指头一收，攥成半个拳，拳心里透出一点红。「先掐好，扣在手里，要用的时候，一松。」",
+  "en": "On the third day Master Chu taught holding: thumb on the wu mark, four fingers closed round it into half a fist, a little red showing through. \"Pinch it first, hold it in your hand, and when you need it, let go.\""
+ },
+ "recap": {
+  "zh": "褚先生点上一炷香，叫掐得出火弹的七八个各扣一颗；香灰落尽，只剩两只拳头还透着红，最后一排那一只是你的。扣诀三条规矩：一只手扣一样；松了要从头抡；别叫人看见你扣的是什么。往后一样一样教法术，五个脾气，《素问》上五句。",
+  "en": "Master Chu lit an incense stick and had the seven or eight who could pinch a fireball each hold one; when the ash fell, only two fists still glowed red, and the one in the back row was yours. Three rules for holding: one hand, one thing; once let go, swing from the start; never let anyone see what you hold. Then the spells one by one, five tempers, the five lines of the *Suwen*."
+ },
+ "cast": [],
+ "people": [
+  "chuxiansheng",
+  "sunergou"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「先掐好，扣在手里。」",
+    "香灰落尽，只剩两只拳头还透着红。",
+    "「攥严了。」"
+   ],
+   "en": [
+    "\"Pinch it first, hold it in your hand.\"",
+    "When the ash fell, only two fists still glowed.",
+    "\"Grip it close.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "第三天，褚先生教的是扣。「打起架来，没人站着等你抡十几口气。」他拇指掐着午文不动，四个指头一收，把拇指包在里头，攥成半个拳——头一天那个娃娃拳——拳心里透出一点红，不亮，也不灭，「先掐好，扣在手里，要用的时候，一松。」他把那只拳头举起来给大家看，「扣着的这只手，便什么也干不了——端不得碗，挡不得刀。气还一丝一丝从指缝里漏，扣得久了，自己就散了，白掐一回。」",
+  "en": "On the third day Master Chu taught holding. \"When you fight, nobody's going to stand there waiting while you swing for a dozen breaths.\" His thumb pinched the wu mark and stayed, and his four fingers closed, wrapping the thumb, into half a fist: the baby's fist from the first day. A little red showed through the hollow of the fist, not bright, not going out. \"Pinch it first, hold it in your hand, and when you need it, let go.\" He held the fist up for them all to see. \"The hand that's holding can't do anything else: it can't carry a bowl, can't block a blade. And the qi still leaks out thread by thread between the fingers; hold too long and it scatters by itself, and you've pinched for nothing.\""
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "koujue-kou"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "koujue-kou"
+  ]
+ },
+ "story_after": {
+  "zh": "有人问能扣多久。褚先生道：「看你的手紧不紧。四层，一炷香；六层，小半个时辰。指头缝并得严的，多扣一会儿；手心出汗的，少扣一会儿。」满堂的新弟子，这几天掐得出火弹的不过七八个。他叫这七八个各扣一颗，自己点上一炷香，背着手在过道里走。香烧到一半，「噗」「噗」地灭了三只；烧到大半，有一个打了个喷嚏，手一松，一颗火弹滚在自己裤腿上，他跳着脚拍了半天。香灰落尽的时候，只剩两只拳头还透着红：前排一个，憋得脸都紫了；最后一排，还有一只。\n\n「扣诀有三条规矩。」褚先生竖起三根指头，「一，一只手扣一样，两只手，最多两样。二，松了一样，要再掐，得从头抡——所以台上打架，打的是谁先用完。三，」他把那只扣着的拳头往身后一背，「别叫人看见你扣的是什么。拳心透红是火，透白是金，透青是木，透一点墨色是水，透黄是土。对面的人往你指头缝里看一眼，便知道该拿什么等你。」他把拳头又伸出来，这一回五指并得死紧，一丝光也不漏，「攥严了。攥严了，漏得也慢。」\n\n小满在最后一排看着自己的两只手，心里算了一笔账：人有两只手。旁人两只手扣的，是自己灵根里的那一两样，对面的人掰着指头便猜得着；他五扇门都开着，两只手，可以是五样里的随便哪两样。\n\n往后的日子，一样一样地教法术。「五样，五个脾气。」褚先生道。火弹走得远，三丈开外还烫人，可它是直的，一偏头便躲了；冰锥最快，出手便到，只是细，扎不着要害，等于没扎；金刃贴着地走，专削脚踝，青石板上削得下一个角来；木藤不伤人，缠人，缠住了，才轮得到别的；土墙不打人，挡人，也挤人——台子只有那么大，墙立在哪里，哪里便少一块地方。「火是矛，冰是针，金是镰，木是绳，土是墙。」他道，「一个人一辈子，多半只使得好一样。使得好一样，便够了——灵根越纯，那一样越厉害；天灵根只有一门，那一门，压得住旁人五门。可另外四样，你得认得：你不使，对面的人使。」\n\n「这四样怎么认？」他拿戒尺敲了敲桌子，「《素问》{典=suwen-wusheng}上有一句，岐伯说的：『木得金而伐，火得水而灭，土得木而达，金得火而缺，水得土而绝。』五句，背下来。」他一句一句地拆：对面立土墙，你拿火去烧，烧黑一块，墙还是墙；拿木藤去钻，根往土里一扎，墙自己便裂了。对面放木藤，一道金刃，削断。对面使金刃，火弹迎上去，刃口便卷。对面扔火弹，一根冰锥，两样一齐化成白汽。对面的冰锥来了，立一堵土墙，全扎在土里。「一样吃一样，转一圈，谁也不是老大。」\n\n有人问：「先生，那天灵根只有一门，碰上吃它的那一样，岂不是白给？」褚先生道：「天灵根，三百年才出一个，轮不着你替他操心。」满堂笑了。他等笑声落下去，才道：「不过问得不蠢。《孟子》{典=mengzi-beishui}里说，『以一杯水救一车薪之火』，火不灭，便说水胜不了火——那是水少。《墨子》{典=mozi-wuxing}里说得更干脆：『五行毋常胜。』火化得了金，是火多；金压得灭炭火，是金多。吃不吃得动，看多少。」他拿戒尺往正殿后头那座山头虚虚点了一下，「天灵根的人，一门灵根，顶你们五门粗；一口气吸进来，一丝不漏，全走那一条路。你拿一瓢水，去泼他一山的火？」那人不问了。\n\n有人举手：「先生，我灵根里最粗的是金，对面偏偏使火，怎么办？」褚先生道：「跑。」满堂笑了。他没笑：「你们多半是两门、三门的灵根，练的是里头最粗的那一两样。碰上吃你的那一样，要么比他快，要么比他厚，要么认输。五样都使得出来的——」他的眼睛往最后一排扫了一下，又收了回去，「——样样稀松，也没什么用。」\n\n小满低下了头。稀松是真的稀松。可他把那五句在心里过了一遍，过到第二遍，手心里有一点出汗：这五句，旁人背下来，是知道自己怕什么；他背下来，是对面出什么，他手里都有吃它的那一样。\n\n小满五样都学了，五样都只学了个皮毛，扔一回，丹田便空一截；可他五扇门都开着，哪一样，都扔得出来。褚先生看他在讲堂后头一样一样地试，捋着山羊胡子，没说话。",
+  "en": "Someone asked how long you could hold. Master Chu said: \"Depends how tight your hand is. Fourth layer, one incense stick; sixth layer, the best part of an hour. Fingers that close tight hold a bit longer; sweaty palms, a bit shorter.\" Of all the new disciples in the hall, only seven or eight could pinch a fireball by now. He had those seven or eight hold one each, lit an incense stick, and walked up and down the aisle with his hands behind his back. When the stick was half burned, three had gone out, *pft, pft*. When it was mostly burned, one sneezed, his hand opened, and a fireball rolled onto his own trouser leg, and he hopped about slapping at it for ages. When the last ash fell, only two fists were still glowing red: one in the front row, its owner's face purple with the strain; and in the back row, one more.\n\n\"Holding a sign has three rules.\" Master Chu held up three fingers. \"One: one hand holds one thing; two hands, two things at most. Two: once you've let one go, to pinch it again you swing from the beginning, so a fight on the stage comes down to who runs out first. Three—\" he put the holding fist behind his back— \"don't let anyone see what you're holding. Red through the fist is fire, white is metal, green is wood, a touch of ink-black is water, yellow is earth. Your opponent takes one look between your fingers and knows what to have ready for you.\" He brought the fist out again; this time the five fingers were pressed together dead tight, and not a glimmer leaked. \"Grip it close. Grip it close, and it leaks slower too.\"\n\nIn the back row Xiaoman looked at his two hands and did a sum in his head: people have two hands. What other people held in two hands was the one or two things in their own spirit roots, and an opponent could guess them on his fingers. Xiaoman's five doors were all open: his two hands could be any two of the five.\n\nIn the days after, the spells were taught one by one. \"Five of them, five tempers,\" said Master Chu. The fireball went far, still hot three yards off, but it went straight, and a turn of the head dodged it. The ice spike was fastest, there the moment it left the hand, but it was thin; miss a vital spot and it was as good as no hit. The metal blade ran along the ground and went for the ankles; it could shear a corner off a bluestone flag. The wood vine didn't hurt you, it tied you up, and once you were tied, the others got their turn. The earth wall didn't hit, it blocked, and it crowded you too: the stage was only so big, and wherever a wall stood, there was that much less room. \"Fire is a spear, ice a needle, metal a sickle, wood a rope, earth a wall,\" he said. \"Most people use one of them well in a lifetime. Use one well and that's enough. The purer the spirit root, the stronger that one is; a heavenly spirit root has only one door, and that one door outweighs another man's five. But the other four, you have to know: if you don't use them, the person facing you will.\"\n\n\"How do you know these four?\" He rapped the desk with the ferule. \"There's a line in the *Suwen*{典=suwen-wusheng}, said by Qibo: 'Wood meets metal and is felled; fire meets water and is put out; earth meets wood and is pierced; metal meets fire and is notched; water meets earth and is cut off.' Five lines. Learn them by heart.\" He took them apart line by line: your opponent puts up an earth wall, you burn it with fire, you blacken a patch and the wall's still a wall; send a wood vine to bore into it, the roots go down into the earth, and the wall cracks by itself. Your opponent sends a wood vine: one metal blade, and it's cut. Your opponent uses a metal blade: meet it with a fireball and the edge curls. Your opponent throws a fireball: one ice spike, and both turn to white steam together. Your opponent's ice spike is coming: put up an earth wall, and it all sticks in the earth. \"Each one eats another. Round the circle, nobody's top dog.\"\n\nSomeone asked: \"Master, then a heavenly spirit root, with only one door, if it meets the one that eats it, isn't it just giving itself away?\" Master Chu said: \"A heavenly spirit root comes along once in three hundred years. It's not your turn to worry about him.\" The whole hall laughed. He waited for the laughter to settle and said: \"Still, not a stupid question. The *Mencius*{典=mengzi-beishui} says, 'a cup of water to save a cartload of burning firewood': the fire doesn't go out, and so they say water can't beat fire. That's too little water. The *Mozi*{典=mozi-wuxing} says it more bluntly: 'none of the five phases always wins.' Fire melts metal when there's more fire; metal smothers a charcoal fire when there's more metal. Whether one eats the other depends on how much.\" He pointed the ferule vaguely at the peak behind the main hall. \"Someone with a heavenly spirit root: one root, as thick as all five of yours; a breath drawn in, not a thread leaked, all of it down that one road. You're going to throw a ladle of water at his mountain of fire?\" The questioner didn't ask any more.\n\nSomeone raised a hand: \"Master, the thickest in my spirit root is metal, and the person facing me just happens to use fire. What do I do?\" Master Chu said: \"Run.\" The whole hall laughed. He didn't: \"Most of you have two or three roots, and you train the thickest one or two. When you meet the one that eats yours, you either have to be faster than him, or deeper than him, or concede. Someone who can use all five—\" his eyes swept the back row once and came away— \"is thin at all of them, and not much use either.\"\n\nXiaoman lowered his head. Thin was true; he was thin. But he went over the five lines in his head, and the second time through, his palms sweated a little. Other people who learned those five lines knew what they had to fear. For him, learning them meant that whatever his opponent brought out, he had in his hand the thing that ate it.\n\nXiaoman learned all five, and learned all five only skin-deep; one throw and a stretch of his dantian was empty. But his five doors were all open, and he could throw any of them. Master Chu watched him at the back of the lecture hall trying them one by one, stroked his goatee, and said nothing."
+ },
+ "lines": [],
+ "buttons": [
+  "night"
+ ],
+ "exits": [
+  {
+   "id": "night",
+   "label": {
+    "zh": "大比前夜",
+    "en": "The contest's eve"
+   },
+   "means": "goes back to the long bunk on the contest's eve",
+   "beat": [],
+   "next": "wm-zhaojing",
+   "needs": {
+    "task": "koujue-kou"
+   },
+   "refuse": {
+    "zh": "拳头里那一点红还没扣住。",
+    "en": "The red in your fist isn't held yet."
+   }
+  }
+ ]
+}

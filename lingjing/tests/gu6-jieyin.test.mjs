@@ -84,7 +84,10 @@ test('both win paths reach the same way on and the same pay', () => {
     assert.equal(grade.zhazhai, grade.jieyin, `★${stars}`);
     let s = must(win, at(), { id: row.id, grade: grade.jieyin, stars });
     s = must(task, s, { action: 'done', id: row.id });
-    return must(resolve, s, { exit: 'eve' });
+    s = must(resolve, s, { exit: 'eve' });
+    // 扣 (wm-koujue, 全文后的小游戏 第二批 2026-10-26) between the lesson and the eve
+    s = must(task, must(win, s, { id: 'koujue-kou' }), { action: 'done', id: 'koujue-kou' });
+    return must(resolve, s, { exit: 'night' });
   };
   for (const stars of [1, 2, 3]) {
     const s = after(stars);

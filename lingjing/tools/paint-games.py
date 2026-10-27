@@ -241,6 +241,92 @@ SUBJECTS = {
     'A thin Chinese boy of thirteen seen from the side facing RIGHT, stamping down hard with his left foot, a small yellow '
     'paper talisman slapped under his sole, his robe torn and scorched, one arm bound with a bloody strip of cloth. Old '
     'Chinese storybook figure. Ink lines and soft grey wash.'),
+  #    第六回 · the 大比: 扣 (the fist held through the incense) · 迎剑 (秦雁's palm held back) · 接镜 (马小宝's beam) · 风掉头 (the pig talisman).
+  'shiji/kou-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'A long horizontal strip of the plain wooden floor and the low back benches of an old Chinese lecture hall seen from the side, '
+    'an incense burner with one stick of incense at one end. Grey ink wash and dark ink.'),
+  'shiji/kou-idle': ('sprite', (400, 600), (768, 1152), 2,
+    'An old thin Chinese scholar-teacher with a goatee in a plain grey robe, whole body seen from the side facing LEFT, hands '
+    'clasped behind his back, watching, beside a burning stick of incense. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/kou-tell': ('sprite', (400, 600), (768, 1152), 1,
+    'An old thin Chinese scholar-teacher with a goatee in a plain grey robe, whole body seen from the side facing LEFT, one hand '
+    'raised, pointing sharply, calling out. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/kou-me': ('sprite', (360, 560), (768, 1152), 2,
+    'A thin Chinese boy of thirteen in a grey disciple\'s robe sitting cross-legged facing RIGHT, his right hand closed in a tight '
+    'fist held up before his chest, a faint red glow showing between the fingers. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/yingjian-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'The front edge of a low round stone fighting platform seen from the side, big grey stone blocks, a smear of red chilli oil '
+    'spilled on its top. Grey ink wash and dark ink.'),
+  'shiji/yingjian-idle': ('sprite', (400, 600), (768, 1152), 1,
+    'A tall young Chinese swordswoman of about twenty in a pale blue robe, sleeves bound tight, straight brows, whole body seen '
+    'from the side facing LEFT, her sword point held out level. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/yingjian-tell': ('sprite', (520, 600), (1024, 1152), 1,
+    'A tall young Chinese swordswoman in a pale blue robe, whole body seen from the side facing LEFT, her left palm thrust '
+    'forward glowing with a faint green light, her sword hand drawn back. Old Chinese storybook figure. Ink lines and soft grey '
+    'wash with a faint green.'),
+  'shiji/yingjian-me': ('sprite', (360, 560), (768, 1152), 2,
+    'A thin Chinese boy of thirteen in a torn grey disciple\'s robe seen from the side facing RIGHT, lunging in low and close, his '
+    'left arm bleeding, one foot hooking forward along the ground. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/jiejing-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'The front edge of a low round stone fighting platform seen from the side at dusk, big grey stone blocks, frozen earth '
+    'below. Grey ink wash and dark ink.'),
+  'shiji/jiejing-idle': ('sprite', (400, 600), (768, 1152), 1,
+    'A big plump Chinese youth in a new embroidered robe, his face blotched red, whole body seen from the side facing LEFT, '
+    'holding up a round bronze mirror in both hands. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/jiejing-tell': ('sprite', (520, 600), (1024, 1152), 2,
+    'A big plump Chinese youth in an embroidered robe, face blotched deep red, whole body seen from the side facing LEFT, a '
+    'beam of cold yellow light shooting out of the bronze mirror in his hands toward the LEFT. Old Chinese storybook figure. '
+    'Ink lines and soft grey wash, the beam a pale yellow.'),
+  'shiji/jiejing-me': ('sprite', (360, 560), (768, 1152), 2,
+    'A thin Chinese boy of thirteen in a torn grey robe seen from the side facing RIGHT, left hand pressed flat on his chest, '
+    'right hand holding out a small broken bronze hand mirror on his palm, its face outward. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  'shiji/fengtou-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'A long horizontal strip of a stone fighting platform at sunset seen from the side, a cloth banner on a pole at one end. '
+    'Grey ink wash and dark ink with a faint warm sunset tint.'),
+  'shiji/fengtou-idle': ('sprite', (300, 560), (768, 1152), 2,
+    'A tall cloth banner on a bamboo pole, the banner hanging limp and still. Ink lines and soft grey wash.'),
+  'shiji/fengtou-tell': ('sprite', (300, 560), (768, 1152), 2,
+    'A tall cloth banner on a bamboo pole, the banner flipping over hard in a sudden gust of wind. Ink lines and soft grey wash.'),
+  'shiji/fengtou-me': ('sprite', (360, 560), (768, 1152), 1,
+    'A thin Chinese boy of thirteen in a bloodied grey robe seen from the side facing RIGHT, walking forward holding out a small '
+    'yellow paper talisman with a winged pig drawn on it. Old Chinese storybook figure. Ink lines and soft grey wash.'),
+  #    今三 · 沂中医: the paper pad (严老师) · day one under the bar · the morning pulse.
+  'shiji/zhizhen-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'A long horizontal strip of a modern laboratory bench seen from the side, a few thick pads of rough paper tied with thread '
+    'and cotton balls on it. Grey ink wash and dark ink, modern setting drawn in old Chinese album style.'),
+  'shiji/zhizhen-idle': ('sprite', (400, 600), (768, 1152), 1,
+    'A middle-aged Chinese university teacher in a white lab coat buttoned to the top, glasses, whole body seen from the side '
+    'facing LEFT, hands behind his back, watching calmly. Modern figure drawn in ink lines and soft grey wash.'),
+  'shiji/zhizhen-tell': ('sprite', (400, 600), (768, 1152), 1,
+    'A middle-aged Chinese university teacher in a white lab coat buttoned to the top, glasses, whole body seen from the side '
+    'facing LEFT, leaning in and pointing at something on the bench. Modern figure drawn in ink lines and soft grey wash.'),
+  'shiji/zhizhen-me': ('sprite', (360, 560), (768, 1152), 1,
+    'A lanky Chinese young man of eighteen in a T-shirt, leaning on a crutch under one arm, seen from the side facing RIGHT, holding a thin acupuncture needle '
+    'between thumb and forefinger, concentrating. Modern figure drawn in ink lines and soft grey wash.'),
+  'shiji/shendun-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'A long horizontal strip of a modern gym floor seen from the side at night, rubber floor, a squat rack and a weight bench. '
+    'Grey ink wash and dark ink, modern setting drawn in old Chinese album style.'),
+  'shiji/shendun-idle': ('sprite', (400, 600), (768, 1152), 1,
+    'A big dark window at night in a gym seen straight on, a faint reflection of a row of exercise machines in the glass. Ink '
+    'lines and soft grey wash, modern setting drawn in old Chinese album style.'),
+  'shiji/shendun-tell': ('sprite', (400, 600), (768, 1152), 1,
+    'A loaded barbell resting on a squat rack seen from the side, heavy plates on each end. Ink lines and soft grey wash, '
+    'modern object drawn in old Chinese album style.'),
+  'shiji/shendun-me': ('sprite', (360, 560), (768, 1152), 1,
+    'A lanky Chinese young man of eighteen in a T-shirt and shorts, seen from the side facing RIGHT, in a deep squat with a barbell across his shoulders, '
+    'straining. Modern figure drawn in ink lines and soft grey wash.'),
+  'shiji/chenmai-stage': ('sprite', (960, 160), (1536, 256), 1,
+    'A long horizontal strip of a cramped student dormitory at dawn seen from the side, bunk beds and a desk, still dark. '
+    'Grey ink wash and dark ink, modern setting drawn in old Chinese album style.'),
+  'shiji/chenmai-idle': ('sprite', (300, 560), (768, 1152), 1,
+    'A smartphone standing upright, its screen dark, seen straight on. Ink lines and soft grey wash, modern object drawn in old '
+    'Chinese album style.'),
+  'shiji/chenmai-tell': ('sprite', (300, 560), (768, 1152), 1,
+    'A smartphone standing upright, its screen lit showing a running stopwatch, seen straight on. Ink lines and soft grey '
+    'wash, modern object drawn in old Chinese album style.'),
+  'shiji/chenmai-me': ('sprite', (360, 560), (768, 1152), 1,
+    'A lanky Chinese young man of eighteen sitting up in a lower bunk under a quilt, seen from the side facing RIGHT, two fingers of one hand pressed on the '
+    'other wrist, counting his pulse, eyes on a phone. Modern figure drawn in ink lines and soft grey wash.'),
   'rain/fanban-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of a dim stone corridor floor seen from the side and a little above: a row of square old '
     'flagstones running across the whole width, one of them tilted open over a black pit. Grey ink wash and dark ink.'),

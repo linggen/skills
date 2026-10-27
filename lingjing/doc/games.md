@@ -109,7 +109,15 @@ gate play at the door. Reading 第五回: 64 min, 15 boards and fights, 59%.
 Over the cap after, as the book has it: 今二's tail into 古五 2,313 + 662; wm-anhe e27 → 息壤 (the end of the fight,
 the kill, 银月's words) ≈ 4,400; 息壤 → 二十三下 2,472 (老蔫's fall).
 
-### 第六回 (h08): +7 (and 第五回's tail)
+### 第六回 (h08): +7 (and 第五回's tail) → built 9
+**Built 2026-10-26:** the 萝卜 went into 第五回's commit (wm-luobo is 第五回's). ① 钱掌柜 and ② 脉枕 in a new first scene,
+wm-yaban (wm-qianye's passage split before the lesson; the 大比 lock still opens at wm-qianye) · ③ 扣 (new wm-koujue) ·
+④ 秦雁 at the vat (new wm-shuigang, before her bout: a fight's way on waits on its win alone) · ⑤ 迎剑 moved to after her
+palm (「她收了三分」), new wm-yingjian · ⑥ was 阿禾's slip, swapped for 祁长松 across the stage (jinchat `qichangsong`,
+wm-laoyin after 「香点着了。」: the slip is read, not said) · ⑦ 接镜 (new wm-jiejing) · ⑧ 风掉头 (new wm-fengtou, his
+lightest instant) · and 周衡's 腊八 reckoning (jinchat `zhouheng-laba`, wm-jiaxin's first board, the 家信 its second) for
+the 8,053 after 马小宝. Reading 第六回: 64 min, 16 boards and fights, 57%. Light days 19 → 22 (balance band widened to 23 under
+fit._hold).
 | # | scene · ¶ | the book | kit · level |
 |---|---|---|---|
 | 0 | wm-luobo s3 「…「吃！你吃！」」 (split) | the 萝卜 into the 饭桶 that ate everything: 「咔哒」 | 割绳子 `luobo` (niugu's twin) |

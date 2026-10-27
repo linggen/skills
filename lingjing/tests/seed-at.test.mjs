@@ -21,7 +21,7 @@ const NOW = new Date('2026-10-15T09:00:00+08:00');
 /* Every 回 of 卷一 and the 秘境's door, with the scene each opens on as played. */
 const TARGETS = {
   古一: '00-shiao', 古二: '00-cliff', 今一: 'j01-track', 古三: '00-gate', 古四: 'wm-ahe', 今二: 'j04-gym',
-  古五: 'wm-mijing', 古六: 'wm-qianye', 今三: 'j07-ankle', 古七: '09-snow', 古八: '09-dabi', 今四: 'j09-noise',
+  古五: 'wm-mijing', 古六: 'wm-yaban', 今三: 'j07-ankle', 古七: '09-snow', 古八: '09-dabi', 今四: 'j09-noise',
   古九: '01-arrive', 秘境: 'wm-mijing',
 };
 

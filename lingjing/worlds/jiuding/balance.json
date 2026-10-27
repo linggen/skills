@@ -447,7 +447,7 @@
         8,
         21
       ],
-      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days. 2026-10-26: with the book's full text, 古四 (h05) reads 7.7 typical days and 古六 (h08) 10.1 — allowed to 8 and 10.5 until the new small games land and the 层 are re-fit (fit._hold).",
+      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days. 2026-10-26: with the book's full text, 古四 (h05) reads 7.7 typical days and 古六 (h08) 10.1 — allowed to 8 and 10.5 until the new small games land and the 层 are re-fit (fit._hold). 2026-10-26 (全文后的小游戏 第二批): 古六's nine new boards add their minutes to the light player (19 → 22 days); its light band allowed to 23 while fit._hold keeps 古四–古六 at 470…530.",
       "except": {
         "h07": {
           "typical": [
@@ -465,6 +465,10 @@
           "typical": [
             5,
             10.5
+          ],
+          "light": [
+            8,
+            23
           ]
         }
       }

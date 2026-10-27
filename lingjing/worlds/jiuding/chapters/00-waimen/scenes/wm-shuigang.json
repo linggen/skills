@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "id": "wm-shuigang",
+ "chapter": "00-waimen",
+ "hui": "h08",
+ "at": "zhengdian",
+ "place": {
+  "zh": "沉鼎观 · 大比 · 台角的水缸",
+  "en": "Chending Temple · The contest · the water vat at the stage's corner"
+ },
+ "_board": "wm-shuigang (全文后的小游戏 第二批 2026-10-26): wm-lun2's passage split before the bout — 秦雁 at the water vat (jinchat `qinyan`, face) after 「小满对的，是秦雁。」; her bout (wm-lun2) after it, a fight's way on waiting on its win alone. Inside the 大比 lock.",
+ "setup": {
+  "zh": "第三轮，马小宝对鲁泥鳅：那面镜子不是一举就亮的，马小宝脸上的斑先红一下。下一场，你对秦雁。",
+  "en": "Third round, Ma Xiaobao against Lu the Loach: the mirror doesn't light when raised; the blotches on Ma Xiaobao's face flush first. Next bout: you against Qin Yan."
+ },
+ "recap": {
+  "zh": "鲁泥鳅说那面镜子是他爹的船捎上来的，半夜自己亮过，冷的，「不是照妖的，是认东西的」。马小宝照了三回，鲁泥鳅跌下了台。台角的水缸边上，秦雁舀了半瓢水递给你：她八层卡了两年，她爹的腿叫熊咬了，筑基丹她非拿不可。「我不让你。你也别让我。」",
+  "en": "Lu the Loach said the mirror came up on his pa's boat and lit by itself one night, cold: \"not for showing demons, for recognising things.\" Ma Xiaobao shone it three times and Lu fell off the stage. By the water vat Qin Yan handed you half a ladle: two years stuck at eighth layer, her pa's leg bitten by a bear; she has to have the Foundation Pill. \"I won't give way to you. Don't you give way to me either.\""
+ },
+ "cast": [],
+ "people": [
+  "neimen-shijie",
+  "maxiaobao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「那不是照妖的，是认东西的。」",
+    "台角的水缸边上，半瓢水。",
+    "「我不让你。你也别让我。」"
+   ],
+   "en": [
+    "\"It's not for showing demons. It's for recognising things.\"",
+    "Half a ladle of water by the vat.",
+    "\"I won't give way to you. Don't you give way to me either.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "第三轮，马小宝对鲁泥鳅。鲁泥鳅上台前，从小满身边挤过去，压低了嗓子：「昨儿我下山去船上看我爹。那面镜子，是我爹的船从下邳捎上来的——马三老爷雇的是我爹的船——在我爹船舱里搁了一路。红布底下，半夜里自己亮过一回——冷的，像泗水底下的光。我爹说，那不是照妖的，是认东西的。」说完，他搓了搓手，上台去了。鲁泥鳅是渔户的儿子，水性好，身子滑，头一拳便钻到了马小宝腋下。马小宝这才摘下了铜镜。\n\n小满站在台下，看得清清楚楚：那面镜子，不是一举就亮的。马小宝两手捧着它，脸上的斑「腾」地一红，一片一片鼓起来，像是有人往他身子里抽东西，抽出来，灌进镜子里——镜面这才亮了，一道黄光扑在鲁泥鳅脸上。鲁泥鳅「哎哟」一声，捂着眼睛倒退，嘴里直叫：「冷的！那光是冷的，往心口钻！」他退一步，马小宝又照一回，斑又红一回，喘得两个肩膀一耸一耸；照到第三回，鲁泥鳅一脚踩空，跌下了台。马小宝捧着镜子，站在那里喘了好一会儿，才喘匀。他冲台下的小满扬了扬下巴。\n\n小满对的，是秦雁。",
+  "en": "In the third round, Ma Xiaobao faced Lu the Loach. Before going up, Lu the Loach squeezed past Xiaoman and said under his breath: \"Yesterday I went down the mountain to see my pa on his boat. That mirror came up from Xiapi on my pa's boat; Master Ma San hired my pa's boat. It sat in my pa's cabin the whole way. Under a red cloth, in the middle of the night, it lit up by itself once. Cold, like the light at the bottom of the Si. My pa says it's not for showing demons. It's for recognising things.\" Having said it, he rubbed his hands and went up. Lu the Loach was a fisherman's son, a good swimmer, slippery-bodied, and with his first punch he'd ducked in under Ma Xiaobao's armpit. Only then did Ma Xiaobao take off the copper mirror.\n\nXiaoman stood below the stage and saw it plainly: that mirror didn't light the moment it was raised. Ma Xiaobao held it in both hands, and the blotches on his face flushed red all at once and swelled up patch by patch, as if something were being drawn out of his body, drawn out and poured into the mirror. Only then did the mirror's face light, and a beam of yellow light struck Lu the Loach in the face. Lu the Loach cried out and backed away with his hands over his eyes, yelling: \"It's cold! The light's cold, it goes into your heart!\" Each step he backed, Ma Xiaobao shone it again, and the blotches flushed again, and he panted till both his shoulders heaved. At the third shining, Lu the Loach put a foot on nothing and fell off the stage. Ma Xiaobao stood there holding the mirror, panting a good while before he got his breath even. He lifted his chin at Xiaoman below.\n\nXiaoman's opponent was Qin Yan."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "shuigang-qinyan"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "shuigang-qinyan"
+  ]
+ },
+ "story_after": {
+  "zh": "台角的水缸边上，两个人碰上了。秦雁舀了半瓢水，没喝，递给了他。小满接过来喝了，道：「秦师姐。秘境里那一回……」秦雁道：「你没往下坠。我记得。」她又舀了一瓢，自己喝了，望着台上那炷香，「你知道我为什么非拿这个头名不可？」小满摇头。秦雁道：「头名那颗筑基丹。我八层卡了两年了。我爹前年叫熊把腿咬了，躺到如今，凡药接不上；坊市上有接得上的，三道纹的回春丹，一颗二百块灵石，我一月的份例是十块。筑了基，这些都不算事——筑基的师叔开口，丹房肯赊；练气的开口，没人听。」她顿了一顿，「境界上去了，别的都好办。上不去，什么都办不了。」她把瓢放回缸沿上，看着他，「我不让你。你也别让我。」\n\n小满捧着那瓢，半天没说出话来。他把瓢放下。秦雁点了点头，先上了台。",
+  "en": "By the water vat at the stage's corner, the two of them met. Qin Yan scooped half a ladle of water, didn't drink it, and handed it to him. Xiaoman took it and drank, and said: \"Senior Sister Qin. That time in the secret realm...\" Qin Yan said: \"You didn't hang on it. I remember.\" She scooped another ladle and drank it herself, watching the incense stick on the stage. \"Do you know why I have to have first place?\" Xiaoman shook his head. Qin Yan said: \"The first-place Foundation Pill. I've been stuck at eighth layer two years. The year before last a bear bit my pa's leg, and he's been lying in bed ever since; ordinary medicine can't mend it. At the market there's medicine that can: a Spring-Return Pill of three lines, two hundred spirit stones each, and my monthly allowance is ten. Once I've established my foundation, none of that counts. When a martial uncle of Foundation Establishment asks, the pill house will give credit; when a Qi Condensation disciple asks, nobody listens.\" She paused. \"Get your realm up, and everything else is easy. Don't, and you can't do anything.\" She set the ladle back on the vat's rim and looked at him. \"I won't give way to you. Don't you give way to me either.\"\n\nXiaoman held the ladle and for a long while couldn't say anything. He put the ladle down. Qin Yan nodded and went up on the stage first."
+ },
+ "lines": [],
+ "buttons": [
+  "up"
+ ],
+ "exits": [
+  {
+   "id": "up",
+   "label": {
+    "zh": "上台",
+    "en": "Up on the stage"
+   },
+   "means": "goes up on the stage after Qin Yan",
+   "beat": [],
+   "next": "wm-lun2",
+   "needs": {
+    "task": "shuigang-qinyan"
+   },
+   "refuse": {
+    "zh": "瓢还在手里。",
+    "en": "The ladle is still in your hand."
+   }
+  }
+ ]
+}

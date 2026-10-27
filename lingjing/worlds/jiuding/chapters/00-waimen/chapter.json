@@ -405,14 +405,19 @@
       },
       "scenes": [
         "wm-qianye",
+        "wm-koujue",
         "wm-zhaojing",
         "wm-laba",
         "wm-dabi",
         "wm-lun1",
         "wm-fushi",
+        "wm-shuigang",
         "wm-lun2",
+        "wm-yingjian",
         "wm-juesai",
+        "wm-jiejing",
         "wm-laoyin",
+        "wm-fengtou",
         "wm-jiaxin"
       ],
       "say": {

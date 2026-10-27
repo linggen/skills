@@ -51,7 +51,7 @@ function step(s, exit) {
 }
 
 /* 古六's boards (the per-回 plan, 2026-10-15): the board each way on waits on, played (won, counted) before it. */
-const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror'], go: ['laba-diche'], up: ['dabi-sneeze'], rest: ['jiaxin-letter'], read: ['heluo-kaipian'],
+const BOARD_BEFORE = { eve: ['qianye-qiajue', 'qianye-xiangke'], sleep: ['zhaojing-mirror'], go: ['laba-diche'], up: ['dabi-sneeze'], rest: ['jiaxin-zhouheng', 'jiaxin-letter'], read: ['heluo-kaipian'],
   // the reading cap (2026-10-20): 息壤 · 五门 before the second night (喂息珠 told since 10-20; 后山 told again 10-20, the 调息 cut)
   sit: ['xirang-wumen'],
   // 暗河's throw (2026-10-20, 砸寨 anhe-dark): the swallow passage split at its stone
@@ -71,7 +71,9 @@ const on = (s, exit, now = DAY1) => must(resolve, before(s, exit, now), { exit }
 /* To the 秘境's door and in (全文后的小游戏 第二批 2026-10-26): 老蔫 at wm-mijing, 阿禾's 口子 and 孙二狗 at wm-kouzi, the hall's 翻板 at wm-shiting. */
 const intoRealm = (s) => ['refuse', 'gate', 'cleft'].reduce((x, exit) => must(resolve, before(fresh(x), exit), { exit }), s);
 /* The 大比's eve, now three scenes (wm-qianye · wm-zhaojing · wm-laba), each by its boards. */
-const throughEve = (s, now = DAY1) => ['eve', 'sleep', 'go'].reduce((x, exit) => on(x, exit, now), s);
+const throughEve = (s, now = DAY1) => ['lecture', 'eve', 'night', 'sleep', 'go'].reduce((x, exit) => on(x, exit, now), s); // + wm-yaban's lecture, wm-koujue's night (2026-10-26)
+/* A way on taken after the boards it waits on (its scene's `show` order) — no other scene's (全文后的小游戏 第二批 2026-10-26). */
+const pass = (s, exit, now = DAY1) => must(resolve, boardsFor(s, content, exit).reduce((x, [verb, args]) => must(verb === 'win' ? win : task, x, args, now), s), { exit }, now);
 
 /* The whole chapter, by its buttons and the page's own taps, with the threads done. */
 function playThrough() {
@@ -113,10 +115,10 @@ function playThrough() {
   s = fresh(s);
   s = on(s, 'up', DAY2);
   s = must(resolve, s, { exit: 'hold' }, DAY2);
-  s = must(resolve, won(s, 'dabi-lu', DAY2), { exit: 'flip' }, DAY2);
-  s = must(resolve, won(s, 'dabi-shijie', DAY2), { exit: 'dodge' }, DAY2);
-  s = must(resolve, won(s, 'dabi-ma', DAY2), { exit: 'face' }, DAY2);
-  s = on(s, 'final', DAY2); // 掌心的烙印, then the final lost (wm-laoyin, 古六)
+  s = pass(must(resolve, won(s, 'dabi-lu', DAY2), { exit: 'flip' }, DAY2), 'up', DAY2); // 秦雁 at the vat (wm-shuigang)
+  s = pass(must(resolve, won(s, 'dabi-shijie', DAY2), { exit: 'dodge' }, DAY2), 'on', DAY2); // 迎剑 (wm-yingjian)
+  s = pass(must(resolve, won(s, 'dabi-ma', DAY2), { exit: 'face' }, DAY2), 'on', DAY2); // 接镜 (wm-jiejing)
+  s = pass(on(s, 'final', DAY2), 'down', DAY2); // 祁长松's chat, then the wind (wm-fengtou) // 掌心的烙印, then the final lost (wm-laoyin, 古六)
   for (const exit of ['rest', 'follow', 'step', 'sign', 'read']) s = on(s, exit, DAY2); // 刮鞋底 or not, before the 拜师帖 (古六, 2026-10-15)
   return s;
 }
@@ -173,7 +175,7 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
     for (const e of CH.scenes[id].exits) if (e.next) todo.push(e.next);
   }
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
-  assert.equal(Object.keys(CH.scenes).length, 44); // + wm-kouzi, wm-shiting, wm-xiongya, wm-shishi, wm-tama, wm-hetan (全文后的小游戏 第二批 2026-10-26: 古五's splits); + j04-trial (今二's tryouts, 2026-10-26); + wm-zhishi, wm-xunye, wm-duizhang, wm-yan, wm-baoming (全文后的小游戏 2026-10-26: 古四's splits); + wm-anhe (暗河, 砸寨's anhe-dark: the swallow passage split at its throw, 2026-10-20); + wm-zhaojing, wm-laba (古六's eve split, 2026-10-15); + wm-luobo (喂息珠, the reading cap, 2026-10-20)
+  assert.equal(Object.keys(CH.scenes).length, 50); // + wm-yaban, wm-koujue, wm-shuigang, wm-yingjian, wm-jiejing, wm-fengtou (第六回, 2026-10-26); + wm-kouzi, wm-shiting, wm-xiongya, wm-shishi, wm-tama, wm-hetan (全文后的小游戏 第二批 2026-10-26: 古五's splits); + j04-trial (今二's tryouts, 2026-10-26); + wm-zhishi, wm-xunye, wm-duizhang, wm-yan, wm-baoming (全文后的小游戏 2026-10-26: 古四's splits); + wm-anhe (暗河, 砸寨's anhe-dark: the swallow passage split at its throw, 2026-10-20); + wm-zhaojing, wm-laba (古六's eve split, 2026-10-15); + wm-luobo (喂息珠, the reading cap, 2026-10-20)
   // // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六); + 今 · 二's three (2026-10-05)
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
   // 观内 (2026-10-15): every scene stands in the 观 — but the 秘境's, at 石门, whose road the story itself opens (world.mjs leaveOf).
@@ -270,7 +272,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
   // 2026-10-26: the chamber's 隐身符 (wm-shishi · wait), the ledge's 踏马符 and 谷粒 (wm-tama · after), 阿禾 on the mudflat (wm-hetan · rest), the 萝卜 (wm-luobo · on)
   for (const exit of ['go', 'wait', 'swallow', 'light', 'after', 'sit', 'out', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : exit === 'go' ? s : boardsFor(fresh(s), content, exit).reduce((x, [verb, args]) => must(verb === 'win' ? win : task, x, args), fresh(s)), { exit });
-  assert.equal(s.scene, 'wm-qianye');
+  assert.equal(s.scene, 'wm-yaban'); // 钱掌柜 and the pulse pillow before the lesson (2026-10-26)
   // The 秘境 over, he walks back up with the others (观内, 2026-10-15): set down at 外门 in the story's words, where the eve stands.
   const back = look(s, content, ctx(DAY1));
   assert.equal(back.place.id, 'waimen');
@@ -295,8 +297,9 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
     assert.equal(e.game.retry, true);
     refused(resolve, s, { exit }, 'game-not-won', DAY2);
     s = must(resolve, won(s, game, DAY2), { exit }, DAY2);
+    s = pass(s, { flip: 'up', dodge: 'on', face: 'on' }[exit], DAY2); // the vat, 迎剑, 接镜 (2026-10-26)
   }
-  s = on(s, 'final', DAY2); // 掌心的烙印, then the final (wm-laoyin, 古六)
+  s = pass(on(s, 'final', DAY2), 'down', DAY2); // 掌心的烙印, then the final (wm-laoyin, 古六)
   assert.equal(s.scene, 'wm-jiaxin', 'the night of the contest, before the master');
   assert.equal(s.bag['foundation-pill'], undefined, 'the final is lost: no 筑基丹');
 });
@@ -305,15 +308,18 @@ test('the 大比 final is a loss told as a passage: 「……祁长松，胜。�
   const final = CH.scenes['wm-laoyin'].exits.find(e => e.id === 'final');
   assert.equal(final.game, undefined, 'no duel for the final');
   assert.equal(final.grant, undefined, 'the final grants nothing');
-  assert.match(final.story.zh, /……祁长松，胜。/);
-  assert.doesNotMatch(final.story.zh, /沈小满，胜。」\s*$/);
+  // the final's telling goes on in wm-fengtou (风掉头, 全文后的小游戏 第二批 2026-10-26)
+  const told = CH.scenes['wm-fengtou'].story_after;
+  assert.match(told.zh, /……祁长松，胜。/);
+  assert.doesNotMatch(told.zh, /沈小满，胜。」\s*$/);
   for (const sc of Object.values(CH.scenes)) for (const e of sc.exits) {
     assert.notEqual(e.grant?.item, 'foundation-pill', `${sc.id}/${e.id} grants no 筑基丹`);
   }
-  const s = on({ ...opened(), scene: 'wm-laoyin', place: 'zhengdian' }, 'final', DAY2);
+  const o = opened(), at = { ...o, scene: 'wm-laoyin', place: 'zhengdian', tasks: { ...o.tasks, 'laoyin-qi': { status: 'offered' }, 'fengtou-pig': { status: 'offered' } } };
+  const s = pass(on(at, 'final', DAY2), 'down', DAY2);
   assert.equal(s.bag['foundation-pill'], undefined);
   assert.match(CH.scenes['wm-jiaxin'].story.zh, /四层了。过了年，搬到内门去。/);
-  assert.match(CH.scenes['wm-jiaxin'].story.zh, /我押的那一文，输了。」[^]*拿炭条一笔一笔地写/); // the line itself surfaces in 古七 (Hanli 2026-10-06)
+  assert.match(CH.scenes['wm-jiaxin'].story_after.zh, /我押的那一文，输了。」[^]*拿炭条一笔一笔地写/); // 周衡's chat before it (2026-10-26) // the line itself surfaces in 古七 (Hanli 2026-10-06)
   assert.doesNotMatch(JSON.stringify(CH.scenes), /复试|第十七条|当票|往后一倒/);
 });
 

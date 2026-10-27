@@ -15,8 +15,8 @@
   ],
   "tier": "qi",
   "step": 4,
-  "progress": 550,
-  "wealth": 532,
+  "progress": 570,
+  "wealth": 577,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -164,15 +164,21 @@
    "wm-chu",
    "wm-hetan",
    "wm-luobo",
+   "wm-yaban",
    "wm-qianye",
+   "wm-koujue",
    "wm-zhaojing",
    "wm-laba",
    "wm-dabi",
    "wm-lun1",
    "wm-fushi",
+   "wm-shuigang",
    "wm-lun2",
+   "wm-yingjian",
    "wm-juesai",
+   "wm-jiejing",
    "wm-laoyin",
+   "wm-fengtou",
    "wm-jiaxin",
    "wm-baishi",
    "wm-caowu",
@@ -495,7 +501,22 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "yaban-qian": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "yaban-maizhen": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "qianye-qiajue": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "koujue-kou": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -506,6 +527,36 @@
     "done_at": "2026-10-01T01:00:00.000Z"
    },
    "dabi-sneeze": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "shuigang-qinyan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "yingjian-hook": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jiejing-mirror": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "laoyin-qi": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "fengtou-pig": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jiaxin-zhouheng": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -544,8 +595,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 150,
-   "wealth": 535
+   "progress": 175,
+   "wealth": 580
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1023,9 +1074,18 @@
    "xirang-wumen",
    "chu-ahe",
    "luobo-rope",
+   "yaban-qian",
+   "yaban-maizhen",
    "qianye-qiajue",
+   "koujue-kou",
    "zhaojing-mirror",
    "dabi-sneeze",
+   "shuigang-qinyan",
+   "yingjian-hook",
+   "jiejing-mirror",
+   "laoyin-qi",
+   "fengtou-pig",
+   "jiaxin-zhouheng",
    "jiaxin-letter",
    "jiuge-yubu",
    "furnace-ding"
@@ -1041,7 +1101,7 @@
   "furnace_name": "饭桶",
   "stretch": {
    "qi:2": 8,
-   "qi:3": 30
+   "qi:3": 28
   },
   "hunted": {
    "mijing-xiongya": 1
@@ -1127,15 +1187,21 @@
    "wm-chu",
    "wm-hetan",
    "wm-luobo",
+   "wm-yaban",
    "wm-qianye",
+   "wm-koujue",
    "wm-zhaojing",
    "wm-laba",
    "wm-dabi",
    "wm-lun1",
    "wm-fushi",
+   "wm-shuigang",
    "wm-lun2",
+   "wm-yingjian",
    "wm-juesai",
+   "wm-jiejing",
    "wm-laoyin",
+   "wm-fengtou",
    "wm-jiaxin",
    "wm-baishi",
    "wm-caowu",

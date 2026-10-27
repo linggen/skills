@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "id": "wm-fengtou",
+ "chapter": "00-waimen",
+ "hui": "h08",
+ "at": "zhengdian",
+ "place": {
+  "zh": "沉鼎观 · 大比 · 决赛",
+  "en": "Chending Temple · The contest · the final"
+ },
+ "_board": "wm-fengtou (全文后的小游戏 第二批 2026-10-26): the final's telling (wm-laoyin · final) split at 祁长松's lightest instant — 时机 `fengtou` (the banner droops, walk in; the palm; slap the 猪蜻蜓 as his rear foot follows) after 「…这一霎，是他二十年来最轻的一霎。」 Inside the 大比 lock.",
+ "setup": {
+  "zh": "香只剩一指。你攥着那张猪，挨住了祁长松那一掌，揪住了他的袍子。他后头那只脚，正要跟上来。",
+  "en": "A finger's width of incense left. Holding the pig, you took Qi Changsong's palm and grabbed his robe. His rear foot is just about to follow."
+ },
+ "recap": {
+  "zh": "自拍镜碎了，你把碎片拾起来揣着。决赛，九层的「祁不退」祁长松一招进一步，你的法术、痒痒针全叫他的护体灵光弹开，一步一步把你压到台边；香只剩一指，他出了掌，你挨住了，把猪蜻蜓拍在他背上——风掉头，两个人一齐飞起来，撞了两棵老柏；他撕了符，落在起脚处后头三尺——二十年头一回退了一步；你的腰带挂在西角的柏树上。「……祁长松，胜。」筑基丹归了他；观主对你说：「四层了。过了年，搬到内门去。」",
+  "en": "The Selfie Mirror broke; you picked up the pieces and kept them. In the final Qi Changsong of the ninth layer — \"Never-Back Qi\" — came on one step a move; his body-guarding light threw off every spell and itching needle you had, and step by step he pressed you to the edge; with one finger of incense left he struck, you took the palm and slapped the pig dragonfly on his back — the wind turned, the two of you flew up together and banged into the two old cypresses; he tore off the charm and landed three feet behind where he'd stepped from — his first step back in twenty years; your belt hung you from the cypress at the west corner. \"…Qi Changsong wins.\" The Foundation pill went to him; the Abbot told you: \"Fourth layer now. After the New Year, move to the inner sect.\""
+ },
+ "cast": [],
+ "people": [
+  "xuanchenzi",
+  "qulao",
+  "chuxiansheng"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "日头沉下去了，旗先是一垂。",
+    "那张猪蜻蜓，贴在了祁长松的后背上。",
+    "风掉头了。"
+   ],
+   "en": [
+    "The sun sank; the banner drooped.",
+    "The Pigcopter stuck to Qi Changsong's back.",
+    "The wind had turned."
+   ]
+  }
+ },
+ "story": {
+  "zh": "祁长松这一掌推出去，人跟着迈了一步，前脚踩得青石板一沉；脚底下那股土气，跟着那一掌，全走到了手上。他后头那只脚，正要跟上来——这一霎，是他二十年来最轻的一霎。",
+  "en": "As Qi Changsong pushed out that palm, he stepped forward with it, his front foot pressing the bluestone down; the earth qi under his feet had all gone, along with the palm, into his hand. His rear foot was just about to follow. That instant was the lightest he had been in twenty years."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "fengtou-pig"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "fengtou-pig"
+  ]
+ },
+ "story_after": {
+  "zh": "小满揪着他袍子的那只手，往他背上一拍。那张猪蜻蜓，贴在了祁长松的后背上。\n\n便在这时，演武场边上那面旗「哗」地翻了个面。风掉头了。\n\n祁长松两只脚，离了地。\n\n台下「啊」的一声，两百来张嘴一齐张开了。祁不退，在内门往前走了二十年、没退过一步的祁不退，给一张画着猪的黄纸提了起来，一寸，两寸，脚尖离了青石板。他到底是九层，身子一飘起来，一只手已闪电般反抓过来，一把揪住了小满的后领——要走，一块儿走。\n\n两个人一齐飘了起来。\n\n飘得并不好看。祁长松那张二十年没变过颜色的方脸，绿了又白，白了又绿；他头朝前，屁股朝后，一只手揪着小满，一只手往背上去够那张符；小满给他揪着领子，两条腿在半空里乱蹬，像一只叫人拎着后颈的猫。那猪蜻蜓专往树上撞，认准了演武场东角那棵老柏，一头撞了过去，「咚」的一声，弹回来；又认准了西角那棵，「咚」的一声，又弹回来。台下的人抱着脑袋四下乱躲，方才挨了一针、这时候还在「嘻嘻」的那个内门师兄，躲得慢了，发髻叫小满一脚踢歪了，他捂着脑袋在原地转了三圈，一面笑一面叫：「我的头！哈哈——我的头！」祁长松在半空里打了个转，总算够着了背上那张黄纸，「嘶」的一声，撕成了两半。\n\n他撒了小满的领子，自己往下一落，落在了五行台的边上——不是他起脚的地方，是那地方后头三尺。一只脚的脚尖点着石沿，脚跟悬在外头，身子晃了一晃，又晃了一晃，袍袖张开像一只落枝的鹤，到底站住了。\n\n小满没有落下来。西角那棵老柏的一根横杈，从他肚子底下兜了过去，勾住了他的腰带。他对折着挂在杈上，脑袋垂在这一边，两条腿垂在那一边，两只胳膊也耷拉着，晃荡着，像一件搭在晾衣绳上的湿袄子，鼻子里的血一滴一滴，往下滴。\n\n便在这时，执事敲响了铜锣。那半炷香，到了。\n\n执事看看台边上脚跟悬空的那一个，又看看树上挂着的那一个，锣槌在手里转了两转，才道：「……祁长松，胜。」\n\n那一声落下去，全场翻了天——一半是笑，「哈哈哈哈」，笑得前仰后合，笑得有人坐在地上捶腿，有人笑岔了气，一声接一声地打嗝；一半是吼，吼的是「祁不退退了！」「退了一步！」「二十年，头一回！」笑声和吼声搅在一处，滚过五行台，滚过四棵老柏，滚得山门那边的鸟都飞了起来。\n\n小满挂在树上，倒着看这一场。输了。他心里先是一空，一口气提了一整天，这时候泄了，泄得他连手指头都抬不起来。挂了一会儿，血往脑门上涌，他忽然觉得这样子实在好笑——一个四层，打了一天，打到最后，挂在树上，像他娘晾的一条咸鱼。他倒挂着，「噗」地笑出了声，跟着便「哈哈哈」地收不住了，一笑，肋下那根骨头一疼，又笑，又疼，笑得在树杈上一晃一晃，真像一条叫风吹着打秋千的咸鱼。\n\n祁长松站在台边，一身的汗，袖子上是小满的血。他低头看了看自己的脚后跟，又抬眼看了看三尺开外、他起脚的那块青石板，看了很久，才抬起头，看着树上挂着的那个孩子，道：「二十年。头一回退了一步。」又道：「你那张符，哪来的？」小满在树上晃了一晃，倒着答：「……捡的。」祁长松看着他，没说信，也没说不信，冲他点了一点头，走下了台，走的时候，伸手把那个发髻歪了、还在「嘻嘻」的师兄扶了一把。",
+  "en": "The hand holding his robe slapped against his back. The Pigcopter stuck to Qi Changsong's back.\n\nJust then the banner at the edge of the training ground flipped over with a *flap*. The wind had turned.\n\nQi Changsong's two feet left the ground.\n\nBelow, an \"Ah!\" went up, two hundred-odd mouths opening at once. Qi Who Doesn't Step Back, who had walked forward in the inner sect for twenty years and never stepped back once, was being lifted by a sheet of yellow paper with a pig drawn on it: an inch, two inches, his toes off the bluestone. He was a ninth layer after all; the moment his body began to float, one hand had already shot back like lightning and grabbed Xiaoman by the back of the collar. If he was going, they were going together.\n\nThe two of them floated up together.\n\nIt was not a pretty float. Qi Changsong's square face, which hadn't changed colour in twenty years, went green then white, white then green; head forwards, backside behind, one hand gripping Xiaoman, the other reaching over his back for the talisman. Xiaoman, held by the collar, kicked both legs in mid-air like a cat picked up by the scruff. The Pigcopter made a point of flying into trees. It fixed on the old cypress at the east corner of the training ground and flew straight into it, *thunk*, and bounced off; fixed on the one at the west corner, *thunk*, bounced off again. Below, people ducked every which way with their arms over their heads. The inner-sect senior brother who'd taken a needle just now and was still going \"hee hee\" was too slow; Xiaoman's foot knocked his topknot sideways, and he spun round three times on the spot clutching his head, laughing and yelling at once: \"My head! Haha— my head!\" Qi Changsong turned a circle in mid-air and at last reached the yellow paper on his back and tore it, *rrip*, in two.\n\nHe let go of Xiaoman's collar and dropped, and landed on the edge of the Five Phases Stage: not where he had taken off, but three feet behind it. The toes of one foot on the stone edge, the heel hanging out over nothing, he swayed once, swayed again, his sleeves spread like a crane landing on a branch, and stood his ground at last.\n\nXiaoman didn't come down. A branch of the old cypress at the west corner caught him under the belly and hooked his belt. He hung folded in two over the branch, head dangling on this side, legs dangling on that, arms hanging and swinging too, like a wet jacket thrown over a washing line, the blood from his nose dripping down drop by drop.\n\nJust then the steward struck the copper gong. The half incense stick was done.\n\nThe steward looked at the one at the stage's edge with his heel over nothing, then at the one hanging in the tree, turned the gong stick round twice in his hand, and only then said: \"...Qi Changsong wins.\"\n\nAs the words fell, the whole place went wild. Half of it was laughter, \"Hahahaha,\" people rocking back and forth with it, some sitting on the ground pounding their legs, some laughing till they got the hiccups, one hiccup after another; half of it was roaring, and what they roared was \"Qi Who Doesn't Step Back stepped back!\" \"One step back!\" \"Twenty years, and the first time!\" Laughter and roaring churned together, rolled over the Five Phases Stage, rolled past the four old cypresses, rolled until the birds over by the mountain gate flew up.\n\nXiaoman hung in the tree and watched it all upside down. He'd lost. First his heart went empty: the breath he'd been holding in all day went out of him, went out until he couldn't lift a finger. After hanging a while, with the blood rushing to his forehead, it suddenly struck him how funny this really was. A fourth layer fights all day, and at the end of it he's hanging in a tree like a salted fish his mother had put out to dry. Hanging upside down he snorted out a laugh, and then \"Hahaha,\" and couldn't stop. Every laugh hurt the bone in his side, and he laughed again, and it hurt again, and he laughed until he swung back and forth on the branch, for all the world like a salted fish swinging in the wind.\n\nQi Changsong stood at the stage's edge in a sweat, Xiaoman's blood on his sleeve. He looked down at his own heel, then raised his eyes to the bluestone slab three feet off where he'd taken off, looked for a long time, and only then lifted his head and looked at the boy hanging in the tree. He said: \"Twenty years. The first step back.\" And then: \"That talisman of yours. Where did it come from?\" Xiaoman swung in the tree and answered upside down: \"...Found it.\" Qi Changsong looked at him, didn't say he believed it and didn't say he didn't, gave him one nod, and walked off the stage; and as he went he reached out a hand to steady the senior brother with the knocked-over topknot who was still going \"hee hee.\""
+ },
+ "lines": [],
+ "buttons": [
+  "down"
+ ],
+ "exits": [
+  {
+   "id": "down",
+   "label": {
+    "zh": "下台",
+    "en": "Off the stage"
+   },
+   "means": "the final lost: hanging in the old cypress, poked down; the champion's pill to Qi Changsong",
+   "beat": [],
+   "next": "wm-jiaxin",
+   "needs": {
+    "task": "fengtou-pig"
+   },
+   "refuse": {
+    "zh": "那张猪还攥在手心里。",
+    "en": "The pig is still in your fist."
+   }
+  }
+ ]
+}

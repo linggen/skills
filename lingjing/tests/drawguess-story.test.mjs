@@ -56,7 +56,7 @@ test('第六回\'s 家信: the board is drawn for 娘, 银月 reads it; the line
   const scene = content.chapters['00-waimen'].scenes['wm-jiaxin'];
   const book = scene.exits.find((e) => e.id === 'rest').story.zh;
   for (const r of rounds) assert.ok(book.includes(r.line.zh.replace(/。$/, '')), `「${r.line.zh}」 is the book's`);
-  assert.match(scene.story.zh, /银月钻了出来，蹲在锅沿上/, 'she is out that night (the 火锅)');
+  assert.match(scene.story_after.zh, /银月钻了出来，蹲在锅沿上/, 'she is out that night (the 火锅)');
   assert.deepEqual([3, 2, 0].map((n) => letterGrade(n, 3)), ['all', 'some', 'none']);
   for (const g of ['all', 'some', 'none', 'written']) assert.ok(Object.hasOwn(t.ranks, g) && Object.hasOwn(t.marks, g), g);
   // The 游戏厅 keeps the old 写信 board; the story's row is drawguess at wm-jiaxin.

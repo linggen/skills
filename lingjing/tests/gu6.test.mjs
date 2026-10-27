@@ -29,11 +29,12 @@ const play = (s, id, grade) => must(task, must(win, { ...s, tasks: { [id]: { sta
 const run = (mod, s, verbs) => verbs.reduce((x, d) => mod.act(x, d).state, s);
 const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i = 0; i < 4000 && !done(x); i += 1) x = step(mod.tick(x, 100)); return x; };
 
-const H08 = ['wm-qianye', 'wm-zhaojing', 'wm-laba', 'wm-dabi', 'wm-lun1', 'wm-fushi', 'wm-lun2', 'wm-juesai', 'wm-laoyin', 'wm-jiaxin', 'wm-baishi', 'wm-caowu', 'wm-heluo'];
+// 全文后的小游戏 第二批 (2026-10-26): wm-yaban before the lesson; 扣, the water vat, the two bouts' told ends and the final's wind split off
+const H08 = ['wm-yaban', 'wm-qianye', 'wm-koujue', 'wm-zhaojing', 'wm-laba', 'wm-dabi', 'wm-lun1', 'wm-fushi', 'wm-shuigang', 'wm-lun2', 'wm-yingjian', 'wm-juesai', 'wm-jiejing', 'wm-laoyin', 'wm-fengtou', 'wm-jiaxin', 'wm-baishi', 'wm-caowu', 'wm-heluo'];
 // 2026-10-19 (the standing rule Hanli approved 10-19): 讲堂三日 is a 气走经脉 level (id kept), 相克 cut (a quiz), 底册
 // a 大场面 (setpieces/diche.js) — wm-laba has no board; the marks they wrote come with the ways on. 喂饭桶 · 开炉夜
 // told since 2026-10-20 (the 饭桶's old play deleted): wm-zhaojing's one board is 藏息.
-const BOARDS = { 'wm-qianye': ['qianye-qiajue'], 'wm-zhaojing': ['zhaojing-mirror'], 'wm-dabi': ['dabi-sneeze'], 'wm-jiaxin': ['jiaxin-letter'] };
+const BOARDS = { 'wm-qianye': ['qianye-qiajue'], 'wm-zhaojing': ['zhaojing-mirror'], 'wm-dabi': ['dabi-sneeze'], 'wm-jiaxin': ['jiaxin-zhouheng', 'jiaxin-letter'] };
 
 test('tasks/*.json are one list: 古六\'s boards come from tasks/h08.json, and an id defined twice fails the lint', () => {
   for (const id of [...Object.values(BOARDS).flat(), 'qianye-xiangke', 'laba-diche', 'heluo-kaipian']) assert.ok(content.tasks.tasks.some((t) => t.id === id), id);
@@ -43,9 +44,9 @@ test('tasks/*.json are one list: 古六\'s boards come from tasks/h08.json, and 
   assert.ok(lint(twice).some((p) => /is defined twice/.test(p)));
 });
 
-test('古六 runs in the book\'s order on the `next` chain — 13 scenes, every one h08, the eve split into 前夜 and 腊八', () => {
+test('古六 runs in the book\'s order on the `next` chain — 19 scenes, every one h08, the eve split into 前夜 and 腊八', () => {
   const chain = [];
-  for (let id = 'wm-qianye'; id && CH.scenes[id]?.hui === 'h08';) { chain.push(id); id = CH.scenes[id].exits.map((e) => e.next).find(Boolean); }
+  for (let id = 'wm-yaban'; id && CH.scenes[id]?.hui === 'h08';) { chain.push(id); id = CH.scenes[id].exits.map((e) => e.next).find(Boolean); }
   assert.deepEqual(chain, H08);
   for (const [scene, ids] of Object.entries(BOARDS)) {
     const sc = CH.scenes[scene];
@@ -79,6 +80,7 @@ test('walking 古六 by its boards: 修为 rises at each cultivation board, the 
   assert.ok(!(s.marks ?? []).includes('xiangke'));
   s = must(resolve, s, { exit: 'eve' });
   assert.ok(s.marks.includes('xiangke'), 'the 五句 told, the way on writes the mark the 大比 reads');
+  s = must(resolve, play(s, 'koujue-kou'), { exit: 'night' }); // 扣 (wm-koujue, 2026-10-26)
   assert.equal(s.scene, 'wm-zhaojing');
   s = play(s, 'zhaojing-mirror', 'still'); // 开炉夜 told since 2026-10-20
   s = must(resolve, s, { exit: 'sleep' });
@@ -88,12 +90,13 @@ test('walking 古六 by its boards: 修为 rises at each cultivation board, the 
   assert.ok(s.marks.includes('diche'), 'the page burnt, the way on writes `diche`');
   s = must(resolve, play(s, 'dabi-sneeze', 'clean'), { exit: 'up' });
   assert.equal(s.scene, 'wm-lun1');
-  s = must(resolve, { ...s, scene: 'wm-laoyin', place: 'zhengdian' }, { exit: 'final' }); // 猪蜻蜓 cut 2026-10-19: no board before it
+  s = must(resolve, play({ ...s, scene: 'wm-laoyin', place: 'zhengdian' }, 'laoyin-qi'), { exit: 'final' }); // 猪蜻蜓 cut 2026-10-19; 祁长松's chat before it (2026-10-26)
+  s = must(resolve, play(s, 'fengtou-pig'), { exit: 'down' }); // the wind (wm-fengtou, 2026-10-26)
   assert.equal(s.scene, 'wm-jiaxin');
   assert.equal(s.bag['foundation-pill'], undefined, 'no 筑基丹');
-  assert.match(CH.scenes['wm-laoyin'].exits[0].story.zh, /……祁长松，胜。/);
+  assert.match(CH.scenes['wm-fengtou'].story_after.zh, /……祁长松，胜。/);
   const n = s.ledger.length;
-  s = play(s, 'jiaxin-letter');
+  s = play(play(s, 'jiaxin-zhouheng'), 'jiaxin-letter');
   assert.equal(s.ledger.length, n + 1);
   assert.match(s.ledger.at(-1).what.zh, /我倒了七回，起来了七回/);
   s = must(resolve, { ...s, scene: 'wm-heluo', place: 'houshan' }, { exit: 'read' }); // 念开篇 cut 2026-10-19: the rhyme is the way on's
@@ -119,7 +122,9 @@ test('the 10-19 sweep and the 10-20 调息 cut: 讲堂 plays 砸寨 (讲堂试�
   assert.equal(t('laba-diche').cut, '2026-10-19');
   const q = CH.scenes['wm-qianye'], l = CH.scenes['wm-laba'];
   assert.match(q.story.zh, /头一天他不教法术，先教手[\s\S]*第二天他教咒。$/, 'day one told before the board');
-  assert.match(q.story_after.zh, /第三天，褚先生教的是扣。[\s\S]*木得金而伐/, 'day three and the 五句 after it');
+  // day three is wm-koujue's since 2026-10-26 (扣, 全文后的小游戏 第二批): the 五句 told after its board
+  assert.match(CH.scenes['wm-koujue'].story.zh, /^第三天，褚先生教的是扣。/);
+  assert.match(CH.scenes['wm-koujue'].story_after.zh, /木得金而伐/, 'day three and the 五句 after it');
   assert.equal(q.exits[0].mark, 'xiangke');
   assert.equal(l.show, undefined); assert.equal(l.exits[0].needs, undefined);
   assert.equal(l.exits[0].mark, 'diche');
@@ -218,10 +223,10 @@ test('猪蜻蜓 has left wm-laoyin: no board before 摸出那个油纸包; an ol
   const sc = CH.scenes['wm-laoyin'];
   assert.ok(!(sc.show ?? []).some((c) => c.id === 'laoyin-zhuqingting') && !(sc.offers?.tasks ?? []).includes('laoyin-zhuqingting'));
   assert.ok(!sc.exits.some((e) => e.needs?.task === 'laoyin-zhuqingting'));
-  assert.match(sc.story.zh, /香，烧过一半了。$/);
+  assert.match(sc.story_after.zh, /香，烧过一半了。$/); // 祁长松's chat after 「香点着了。」 (2026-10-26)
   assert.equal(content.tasks.tasks.find((t) => t.id === 'laoyin-zhuqingting').cut, '2026-10-19');
   assert.equal(content.games.games.find((g) => g.id === 'zhuqingting' && g.replaced !== 'cut'), undefined, 'its game deleted 2026-10-19; the task id stays, cut');
   const old = fitWorld(at('wm-laoyin', 'zhengdian', { tasks: { 'laoyin-zhuqingting': { status: 'offered' } } }), content);
   assert.equal(old.tasks['laoyin-zhuqingting'], undefined, 'never winnable here now: let go');
-  assert.equal(must(resolve, old, { exit: 'final' }).scene, 'wm-jiaxin');
+  assert.equal(must(resolve, play(old, 'laoyin-qi'), { exit: 'final' }).scene, 'wm-fengtou');
 });
