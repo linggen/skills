@@ -229,6 +229,26 @@ SUBJECTS = {
   'rain/guli-basin': ('sprite', (360, 200), (1024, 576), 2,
     'A young green vine bursting up out of a single blackened grain of rice, curling tendrils and three small leaves, '
     'seen from the front. Muted green-grey ink wash with dark ink veins.'),
+  # ── 抚琴 (games/fuqin.js, the tiles board on osu!mania's rules, 2026-10-27): ink keys fall down a 古琴's strings by moonlight.
+  'fuqin/stage': ('vignette', (720, 1280), (720, 1280), 3,
+    'A tall picture of a quiet lake at night under a full moon, seen from a waterside pavilion. Top: the pale full moon in a '
+    'misty sky and a few soft distant mountain ridges in grey wash. A dark gnarled plum branch with a few small red blossoms '
+    'reaches in from the upper left corner. Middle: wide, calm, EMPTY misty water, only faint ripples of pale wash, nothing in it. '
+    'Bottom: the dark wooden edge of the pavilion floor across the whole width. Quiet, deep, a little dark. No people.'),
+  'fuqin/key': ('sprite', (240, 360), (512, 768), 1,
+    'ONE upright tall rectangular tablet of black lacquered wood, like a single big piano key, standing straight and seen '
+    'flat from the front, its edges clean and straight with slightly rounded corners, a thin worn pale gold line inset along its '
+    'border, the black lacquer with soft ink-wash sheen and a faint lighter streak down one side. Plain, no pattern.'),
+  'fuqin/key-long': ('sprite', (120, 720), (256, 1024), 2,
+    'ONE very tall narrow upright strip of black lacquered wood, like the long board of a Chinese zither stood on end, seen flat '
+    'from the front, straight clean edges top to bottom, a thin worn pale gold line inset along both long sides, the black '
+    'lacquer even from top to bottom with a soft ink-wash sheen. Plain, no pattern.'),
+  'fuqin/bridge': ('sprite', (720, 88), (1024, 192), 3,
+    'ONE long thin straight horizontal bar of dark polished rosewood lying level across the whole picture from edge to edge, '
+    'like the bridge of a Chinese zither, with a thin pale gold inlay line along its top edge. Seen from the front.'),
+  'fuqin/bloom': ('sprite', (200, 200), (512, 512), 1,
+    'ONE single open red plum blossom seen face on: five round petals in muted vermilion wash, darker at the edges, a pale '
+    'centre with fine dark ink stamens and yellow dots. Nothing else.'),
 }
 
 

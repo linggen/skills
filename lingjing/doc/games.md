@@ -225,6 +225,34 @@ gates. The stage quests ask a layer full, never a board: the routine (修炼 · 
 the economy's days (tools/balance.mjs). Left as style notes, not failures: 气走经脉's channel is drawn over its painted
 landscape (by design: the path is the game); the 秘境 room and 闭关 keep the page's own chrome.
 
+## 抚琴 — the tiles board (10-27, `fuqin`; 游戏厅 only)
+
+Hanli 10-27: 「你不要自己发明这种游戏了, 画面不精致, 可玩性不高」 · 「节奏类, 如果有开源的成熟玩法可以借鉴」 · 「比如弹钢琴的那种节奏类游戏可以」.
+A classic, not ours: **Piano Tiles** (别踩白块 / Magic Tiles) **on osu!mania's rules.** Four lanes, D F J K or a finger; each key
+is the tune's next note, so a clean run plays the melody; long keys are held to their end; a press on an empty lane is a wrong
+note and costs the gauge (Piano Tiles' white tile, softened), so mashing loses.
+
+- **Licences checked (10-27).** Ported: osu! (github.com/ppy/osu, MIT © ppy Pty Ltd) — the mania ruleset's hit windows by OD,
+  ordered hits, hold head · body · tail with the 1.5× release lenience, the health table, accuracy; licence in
+  `scripts/games/fuqin/LICENSE`, credit in the module's header. No osu! asset (osu-resources is not MIT). Looked at and not used:
+  taiko-web (github.com/bui/taiko-web is gone; its surviving copies carry no licence file — ideas only); webosu (111116/webosu:
+  MIT code from osu-web plus a CC BY-NC licence and © ppy media — and osu!standard circles, not lanes); spacetme/bms (no licence);
+  bemuse (AGPL) and Rhythm-Plus (GPL) — out. No mature Piano Tiles clone under MIT/Apache exists (316k/tap-the-black-tiles MIT 6★,
+  cirocosta/react-piano-tiles MIT, stale since 2017).
+- **Tunes, public domain, in 简谱 per level** (`games.json` row `fuqin`, `levels[].tune`): 茉莉花 (江苏民歌), 送别 (J. P. Ordway 1851,
+  words 李叔同 1915). Tones are ZzFX plucks per pitch (`sounds.json` `qin.<midi>`, the `tiles` kit, no bed; a low drone on each
+  bar). Ladder: 茉莉花 · 一句 (60 bpm, taps only, wide windows) → 茉莉花 (holds) → 送别 → 茉莉花 · 快板 (104 bpm).
+- **Art** (tools/paint-games.py, `fuqin/*`): a moonlit lake from a pavilion, black-lacquer keys with gold rims, a rosewood
+  bridge (琴码) as the line, a plum blossom where a key is struck.
+- **Tests** (tests/fuqin.test.mjs): osu!'s windows to the half-ms; every level won 3★ by a steady hand (±25 ms), won under 3★ by a
+  loose one (±110 ms), lost by one that never plays and by one that mashes every lane.
+- **Story spots, proposed — not wired (Hanli decides after playing):** 今 · 闭关三日 (j07-guan, today 节奏 `shuttle` `dunqi`, the
+  squat board) → the school's music room piano (a 今 look of this board); 古 · 小满 on the threshold through 马家寿宴's 锣鼓
+  (00-chushan, a told memory today) → a Taiko board when it is built; 大比 (09-dabi) → a drum moment, Taiko; 吴婆婆's 锣鼓 line
+  (wm-zhaojing) → the 茉莉花 she hums, here.
+- **Next:** Taiko (咚 · 咔, drumroll, balloon) on osu!taiko's windows (TaikoHitWindows.cs: great 50/35/20, ok 120/80/50, miss
+  135/95/70 ms at OD 0/5/10), the same kit and tone bank.
+
 ## 格斗 — the arcade 1v1 (10-26, first bout: 秦雁)
 
 Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街霸好做吗? 拳皇之类的」 → 「好, 先做秦雁那一场」. One bout only, wm-yingjian
