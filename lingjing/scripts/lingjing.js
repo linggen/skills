@@ -1302,7 +1302,7 @@ const FOOT_CHIPS = {
   weather: () => wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote, wind: PREVIEW.wind ?? look?.wind }),
   books: () => shelfChipHtml(),
   errands: (slots) => `<span class="errands">${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}${moreHtml(slots)}</span>`,
-  bag: () => gearChipHtml(ctx(), view.gearOpen ? (view.pouchPane === 'deck' ? 'deck' : 'items') : null),
+  bag: () => gearChipHtml(ctx(), view.gearOpen),
 };
 const IN_A_FIGHT = new Set(['errands', 'bag']);
 function footChipsHtml(slots) {
@@ -3562,8 +3562,7 @@ const CLICKS = [
   ['[data-unfold]', (el, e) => { if (e?.target?.closest?.('button')) return false; closeUnfold(); return true; }],
   ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
   ['[data-close-chapter]', (el) => { closeSeen(el.dataset.closeChapter, true); render(); }],
-  ['[data-gear]', () => (view.gearOpen && view.pouchPane !== 'deck' ? show({ gearOpen: false }) : openGear())],
-  ['[data-deck-open]', () => (view.gearOpen && view.pouchPane === 'deck' ? show({ gearOpen: false }) : openGear('deck'))],
+  ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
   ['[data-deck-auto]', busy('deck:auto', () => deckTap({ action: 'auto' }))],

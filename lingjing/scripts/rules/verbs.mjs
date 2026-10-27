@@ -71,7 +71,11 @@ export const VERBS = gated({
     return found.length || book ? { ...out, result: { ...out.result, ...(found.length ? { fantong: found } : {}), ...(book ? { fantong_book: book } : {}) } } : out;
   },
   // `fantong`: the 物品 panel's 饭桶 chip shows once he holds it.
-  gear: (s, c, x) => ({ state: null, result: { ok: true, gear: { ...gearBrief(c, s, x?.now), ...(fantongOpen(c, s) ? { fantong: true } : {}) } } }),
+  // The thing the 饭桶 needs is its tab, never a tile too (Hanli, 2026-10-27: 「饭桶不要出现在储物袋中了」).
+  gear: (s, c, x) => {
+    const g = gearBrief(c, s, x?.now), open = fantongOpen(c, s), key = c.fantong?.needs?.item;
+    return { state: null, result: { ok: true, gear: { ...g, ...(open ? { fantong: true, bag: g.bag.filter(i => i.id !== key) } : {}) } } };
+  },
   appear, remember, unstick,
   // 本王考考你 (rules/kao.mjs): a round begun on the page, counted against the night's cap.
   kao,

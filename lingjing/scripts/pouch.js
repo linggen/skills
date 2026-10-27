@@ -13,7 +13,7 @@ export const POUCH_WORDS = {
     title: '储物袋', close: '合上', used: '{used}/{cap} 格', over: '超出 {n} 格：新得的东西会先存进洞府。',
     held: '待取 {n}', heldTitle: '洞府 · 待取', heldNote: '储物袋满时得的东西在这里等着。有空位就能收进。', claim: '收进',
     tabs: { all: '全部', pill: '丹药', arms: '法器', material: '材料', charm: '符', story: '剧情' },
-    deck: '牌组', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
+    deck: '牌组', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
     take: '服用', wear: '佩戴', study: '参悟', carry: '换上', sell: '卖 {n}', toss: '丢',
     tossAsk: '丢掉{name} ×{n}？丢了就找不回了。', tossYes: '丢掉', tossNo: '留着',
     free: '剧情所需，不占格', grown: '已换上：{names}', fantong: '饭桶',
@@ -22,7 +22,7 @@ export const POUCH_WORDS = {
     title: 'Storage Pouch', close: 'Close', used: '{used}/{cap} slots', over: '{n} over: new things wait at the abode first.',
     held: '{n} waiting', heldTitle: 'The abode · waiting', heldNote: 'What came while the pouch was full waits here. Take it in when there is room.', claim: 'Take in',
     tabs: { all: 'All', pill: 'Pills', arms: 'Arms', material: 'Materials', charm: 'Talismans', story: 'Story' },
-    deck: 'Deck', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
+    deck: 'Deck', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
     take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it', sell: 'Sell {n}', toss: 'Drop',
     tossAsk: 'Throw away {name} ×{n}? It is gone for good.', tossYes: 'Throw away', tossNo: 'Keep it',
     free: 'the story needs it — takes no slot', grown: 'Carried: {names}', fantong: 'Rice Bucket',
@@ -124,17 +124,18 @@ export function pouchHtml(ctx, ui = {}) {
   const pane = ui.pane === 'held' && heldN ? 'held' : ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong'
     : ui.pane === 'gongke' && board ? 'gongke' : null;
   const note = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
-  // 牌组 — its own panel off its own chip: the cards, nothing of the bag's.
-  if (pane === 'deck') return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.deck)}"><header class="luhead phead"><b>${esc(pw.deck)}</b>${close}</header>${note}<section class="psec">${deckHtml(g, ctx)}</section></div>`;
   const used = p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : '';
   const seg = (id, label, extra = '') => `<button role="tab" class="pseg${pane === id ? ' on' : ''}" data-pouch-pane="${id ?? ''}" aria-selected="${pane === id}">${esc(label)}${extra}</button>`;
   const segs = [seg(null, pw.title, used), heldN ? seg('held', say(pw.held, { n: heldN })) : '', g.fantong ? seg('fantong', pw.fantong) : '',
-    board ? seg('gongke', (GONGKE_WORDS[ctx.lang] ?? GONGKE_WORDS.zh).chip) : ''].join('');
+    board ? seg('gongke', (GONGKE_WORDS[ctx.lang] ?? GONGKE_WORDS.zh).chip) : '',
+    // 牌组 — the last tab (Hanli, 2026-10-27: 「牌组合进储物袋吧, 放到功课后面」), 新 n on cards not yet played.
+    g.cards?.length ? seg('deck', pw.deck, ctx.look?.cards_new?.length ? ` <b class="pnew">${esc(say(pw.deckNew, { n: ctx.look.cards_new.length }))}</b>` : '') : ''].join('');
   const head = `<header class="luhead phead"><div class="psegs" role="tablist">${segs}</div>${close}</header>`;
   const shell = (body) => `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${body}</div>`;
   if (pane === 'fantong') return shell(ctx.fantongPane ?? '');
   if (pane === 'held') return shell(heldHtml(p, ctx, pw));
   if (pane === 'gongke') return shell(gongkeHtml(board, ctx.lang));
+  if (pane === 'deck') return shell(`<section class="psec">${deckHtml(g, ctx)}</section>`);
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
   const grown = p.grown?.length ? `<p class="small dim">${esc(say(pw.grown, { names: p.grown.join(ctx.lang === 'en' ? ', ' : '、') }))}</p>` : '';
   // 丹毒 (rules/dandu.mjs): the turns owed and what they take off the 体力 pool, in the rules' words — a fact on the page.

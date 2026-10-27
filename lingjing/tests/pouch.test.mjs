@@ -185,7 +185,7 @@ test('the panel: header used/cap and 待取, tabs with counts, tiles, the detail
     for (const pane of [null, 'held']) {
       const h = pouchHtml(c, { pane });
       const head = h.match(/<header class="luhead phead">([\s\S]*?)<\/header>/)[1];
-      assert.deepEqual([...head.matchAll(/class="pseg( on)?" data-pouch-pane="(\w*)"/g)].map((m) => [m[2], Boolean(m[1])]), [['', !pane], ['held', pane === 'held']]);
+      assert.deepEqual([...head.matchAll(/class="pseg( on)?" data-pouch-pane="(\w*)"/g)].map((m) => [m[2], Boolean(m[1])]), [['', !pane], ['held', pane === 'held'], ['deck', false]]);
       assert.equal((head.match(/data-pouch-close/g) ?? []).length, 1);
       assert.doesNotMatch(h, /回储物袋|Back to the pouch|pback/);
       assert.equal(/class="pwornrow"/.test(h), !pane, 'the worn row under 储物袋 only');
