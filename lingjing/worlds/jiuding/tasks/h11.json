@@ -6,13 +6,21 @@
     {
       "id": "jiuge-yubu",
       "kind": "board",
-      "game": "yubujiuge",
+      "game": "simon",
+      "_was": "禹步 · 九格 (games/yubujiuge.js, home-made: 左脚 · 右脚绕 · the next square) until 2026-10-27, deleted; the classic Simon (照着走) plays the same lesson — 瞿老 walks the nine squares, you follow his feet. Id, pay and marks kept, so a save holding it done or offered goes on as it was.",
+      "deal": {
+        "lv": 0,
+        "lines": {
+          "zh": { "ready": "「九格你摆得出来，走却是另一回事。」瞿老道，「照着我的脚，走一遍。」", "start": "照着走", "show": "瞿老走在前头。看他的脚。", "go": "该你了。照着他的脚。", "step": "并住。", "trip": "右脚绕过左脚的时候，自己绊了自己一下。瞿老再走一遍。", "quiet": "他走完九格，站在中宫，一点声息也没有。瞿老背对着他道：「猎户的脚。」", "loudly": "他走完了九格，站在中宫。瞿老扫着青石上的雪末子，道：「再走。脚落下去，先落脚尖。」", "skipped": "瞿老走完九格，站在中宫，道：「这叫禹步。」" },
+          "en": { "ready": "\"Laying out the nine squares is one thing; walking them is another,\" said Elder Qu. \"Follow my feet. Walk it once.\"", "start": "Follow him", "show": "Elder Qu walks ahead. Watch his feet.", "go": "Your turn. Follow his feet.", "step": "Close.", "trip": "As his right foot went round the left, he tripped himself. Elder Qu walks it again.", "quiet": "He walked all nine squares and stood in the centre palace without a sound. With his back to him, Elder Qu said, \"A hunter's feet.\"", "loudly": "He walked all nine and stood in the centre palace. Elder Qu, sweeping the snow off the bluestone, said, \"Again. When the foot comes down, toes first.\"", "skipped": "Elder Qu walked the nine squares and stood in the centre palace. \"This is called the Step of Yu.\"" }
+        }
+      },
       "period": "once",
-      "title": { "zh": "禹步 · 九格", "en": "The Step of Yu · Nine squares" },
+      "title": { "zh": "禹步 · 照着走", "en": "The Step of Yu · Follow his feet" },
       "grant": { "table": "task", "progress": 5 },
       "marks": { "quiet": "yubu", "loud": "yubu" },
       "done_line": { "zh": "「猎户的脚。」", "en": "\"A hunter's feet.\"" },
-      "_reward": "修为 5, and the mark `yubu` either way (he walked it) — 古九's 量河滩 board reads it."
+      "_reward": "修为 5, and the mark `yubu` either way (he walked it). No line reads it yet (古九's 量河滩 board was planned, never built)."
     },
     {
       "_cut": "Off 09-furnace 2026-10-19 (the standing rule Hanli approved 10-19: a memory puzzle, button-only, fits no kit): the passage whole again (story_after merged), 定风 the scene's one board; its 聚气丹 is the way on's (09-furnace/fire grant). `cut` lets a save holding it offered let it go on load (state.mjs fitWorld); row and module stay in the 游戏厅.",

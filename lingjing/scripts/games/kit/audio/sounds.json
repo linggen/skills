@@ -1796,8 +1796,22 @@
   "fighter": {
    "kit": "fight"
   },
-  "yubujiuge": {
-   "kit": "board"
+  "simon": {
+   "kit": "board",
+   "_about": "照着走: each of the nine squares its own qin note (by its 洛书 number, low to high), as it lights and as it is tapped right.",
+   "events": {
+    "note": {"sound": "qin.65", "min": 0},
+    "note.1": {"sound": "qin.60", "min": 0},
+    "note.2": {"sound": "qin.62", "min": 0},
+    "note.3": {"sound": "qin.64", "min": 0},
+    "note.4": {"sound": "qin.67", "min": 0},
+    "note.5": {"sound": "qin.69", "min": 0},
+    "note.6": {"sound": "qin.72", "min": 0},
+    "note.7": {"sound": "qin.74", "min": 0},
+    "note.8": {"sound": "qin.76", "min": 0},
+    "note.9": {"sound": "qin.77", "min": 0},
+    "good": {"sound": "tone.chime", "vol": 0.6}
+   }
   },
   "jinchat": {
    "kit": "board",

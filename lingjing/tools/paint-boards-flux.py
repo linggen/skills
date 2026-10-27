@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """paint-boards-flux.py — the small boards' faces on the local FLUX (Hanli 10-20: 「代码画的都查一下, 用flux画吧」;
-doc/art-audit-2026-10-20.md items 8–9): the rope boards' cave, 禹步's bluestone on the clifftop, 象棋's board and
+doc/art-audit-2026-10-20.md items 8–9): the rope boards' cave, 禹步's bluestone on the clifftop (照着走's since 2026-10-27, the home-made 九格 board cut), 象棋's board and
 blank pieces, 押宝's four doors (七巧板's lacquer went with the board, cut 2026-10-27).
 
     PY=~/.linggen/runtime/envs/pictures/bin/python
     FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py paint [--only id,…] [--seeds 1,2]
     FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py cut [--only id,…]  # the KEPT seeds → scripts/games/boards/
 
-What is the puzzle stays code or text over the paint: the rope game's vines and items, 禹步's grid lines and dots,
+What is the puzzle stays code or text over the paint: the rope game's vines and items, 照着走's chestnut dots, lit square and footprint,
 象棋's grid and piece glyphs, 押宝's door names.
 """
 import sys

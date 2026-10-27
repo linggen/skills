@@ -104,3 +104,10 @@ No upstream file is copied. `games/fuqin.js` ports the osu!mania ruleset's rules
 `DrawableHoldNote*.cs`), the health table (`ManiaHealthProcessor.cs`) and accuracy. Source: osu! by ppy Pty Ltd,
 github.com/ppy/osu, MIT; the licence text is `games/fuqin/LICENSE`, the credit is in the module's header. No osu! asset
 (osu-resources: skins, sounds, beatmaps) is used. Read on 2026-10-27.
+
+## 照着走 (games/simon.js) — rules read, nothing vendored
+
+No upstream file is copied and none is ported. Simon's rules (one more square a round; tap the run back) were checked against
+KDE's Blinken (invent.kde.org/education/blinken, `src/blinkengame.cpp`), which is GPL-2.0-or-later — so ideas only: no
+code, art or sound of it is used. The quickening at the 5th, 9th and 13th step is the 1978 Simon's rule. The art is our own
+painting (tools/paint-boards-flux.py `yubu-ground`, `yubu-slab`); the notes are the kit's own qin tones (sounds.json). Read on 2026-10-27.

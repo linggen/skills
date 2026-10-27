@@ -28,7 +28,7 @@ const w = () => W[lang()];
 const KIND_EN = {
   割绳子: 'Cut the rope', 投掷: 'Throw', 狩猎瞄准: 'Hunt & aim', 打地鼠: 'Whack-a-mole', 节奏: 'Rhythm', 开炉: 'Gacha',
   调息: 'Breath', 几何冲刺: 'Dash runner', 解谜: 'Puzzle', 棋牌: 'Board & table', 判断: 'Read & pick', 剧情: 'Story', 你画我猜: 'Draw & guess',
-  塔防: 'Tower defense', 结印: 'Hand seals', 配对: 'Match pairs', 对话: 'Talk', 探索: 'Explore', 斗法: 'Card duel', 格斗: 'Fighting',
+  塔防: 'Tower defense', 结印: 'Hand seals', 配对: 'Match pairs', 对话: 'Talk', 记忆: 'Simon says', 探索: 'Explore', 斗法: 'Card duel', 格斗: 'Fighting',
 };
 const kindOf = (g) => (lang() === 'en' ? KIND_EN[g.mechanic] ?? g.mechanic : g.mechanic) ?? '';
 

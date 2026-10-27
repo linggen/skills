@@ -45,7 +45,7 @@ silences all of it. Way out = 「算了，往下走」 once stuck (story) / 收�
 | 喷嚏符 sneeze | **silent** · **silent** | tell, good, hold, early, short | ✓ | 往下走 ✓ |
 | 割绳子 rentrope/niugurope, 喂饼 bread (rope) | bed only · **silent** | cut, star, gust, eat, miss · bed · chime | ✓ | 往下走 ✓ |
 | 气走经脉 qimai (flight) | bed only · bed only | breath, crash, 岔气, 穴 | ✓ | 往下走 ✓ |
-| 华容道 · 洛书 · 五子棋 · 七巧 (cut 10-27 → 拼图) · 象棋 · 押宝 · 禹步 | **silent** · **silent** | pick, move/place, reply, nope … · chime | ✓ | 往下走 / 收手 ✓ |
+| 华容道 · 洛书 · 五子棋 · 七巧 (cut 10-27 → 拼图) · 象棋 · 押宝 · 禹步 (cut 10-27 → 照着走, a note per square) | **silent** · **silent** | pick, move/place, reply, nope … · chime | ✓ | 往下走 / 收手 ✓ |
 | 聊天 jinchat · 讨饼债 · 画猜 | jinchat send/recv (its word games right, wrong, hint, skip, tap); the others **silent** | send, recv, right | ✓ | 往下走 ✓; a word game's own 跳过 |
 | 斗法 kapai (card) | bed only (story: **none**) | drew, played, hurt, heal … per log entry | ✓ | 认输 |
 | 结印 · 斗法试炼 · 指点 · 特写 (seal) | buttons only | seal, cast, fizzle, hit, miss | ✓ | 往下走 ✓ |
@@ -197,13 +197,13 @@ rerun's 修为 share of a day fell to 9–15% (its band from 0.08). State v12 st
 ## 四条 — the standing rule, audit 10-27
 
 Hanli 10-27: 「确保都能跳过去, 不会卡住游戏进程. 都有音效并可关闭, 都美化过并统一风格, 都用了小游戏的外壳.」 The 游戏厅 holds
-16 types now, every one a kind players know: 投掷 · 割绳子 · 打地鼠 · 调息 · 解谜 · 对话 · 棋牌 · 格斗 · 节奏 · 你画我猜 · 斗法 ·
-塔防 · 结印 · 配对 · 探索 · 开炉 (no 时机; the 13 cut prototypes are gone). Checked from the code and the locks (tests named),
+17 types now, every one a kind players know: 投掷 · 割绳子 · 打地鼠 · 调息 · 解谜 · 对话 · 棋牌 · 格斗 · 节奏 · 你画我猜 · 斗法 ·
+塔防 · 结印 · 配对 · 记忆 · 探索 · 开炉 (no 时机; the 13 cut prototypes are gone). Checked from the code and the locks (tests named),
 and live on 9527 where marked; the phone runs the same modules through games/phone/host.js (its 🔊 and ✕ · 算了 from 10-26).
 
 | board (kit) | 1 never blocks | 2 sound · 🔊 | 3 one style | 4 the shell |
 |---|---|---|---|---|
-| story boards of every kit (rain · rope · qimai · huarong · luoshu · pintu · jinchat · bingzhai · drawguess · yubujiuge · wuziqi · xiangqi · yabao · 塔防 · 结印 · lianliankan · mishi · fighter · zhazhai) | ✓ 「算了，往下走」 once stuck (rules/skips.mjs; tests/board-leave, skips) | ✓ (tests/game-sound: every registry game names real sounds; the shell's 🔊 kept in localStorage, kit/sound.js) | ✓ painted beams and catchers for every 打地鼠 level (喷嚏符 · 凶崖 · 隐身符 · 风掉头 painted 10-27; 瓦砾's floor repainted) | ✓ cards.js board card → frameHtml (lead card, pause, 🔊, result) |
+| story boards of every kit (rain · rope · qimai · huarong · luoshu · pintu · jinchat · bingzhai · drawguess · simon · wuziqi · xiangqi · yabao · 塔防 · 结印 · lianliankan · mishi · fighter · zhazhai) | ✓ 「算了，往下走」 once stuck (rules/skips.mjs; tests/board-leave, skips) | ✓ (tests/game-sound: every registry game names real sounds; the shell's 🔊 kept in localStorage, kit/sound.js) | ✓ painted beams and catchers for every 打地鼠 level (喷嚏符 · 凶崖 · 隐身符 · 风掉头 painted 10-27; 瓦砾's floor repainted) | ✓ cards.js board card → frameHtml (lead card, pause, 🔊, result) |
 | story fights (斗法 kapai) | **before: only inside a key beat's lock** → **after: every story fight**, three losses then 「算了，往下走」 (skips.mjs fightStuck; tests/lock-fight-skip) | ✓ per log entry | ✓ | ✓ lingjing.js framed (frameHtml) |
 | a guarded room (the 秘境's 犰狳) | **before: had to be won** → **after: lost to three times, it lets him by** (world.mjs guardOf `hunt_losses`) | ✓ (斗法) | ✓ | ✓ |
 | riddles (读封 …) | ✓ three misses then 算了 (core.mjs) | — (a card) | ✓ | a card, not a board |
@@ -224,6 +224,29 @@ the riddle missed and passed; four teaching fights no line can lose (狐咬 · �
 gates. The stage quests ask a layer full, never a board: the routine (修炼 · 人间功课 · 闭关) fills it — the walk's `earned`,
 the economy's days (tools/balance.mjs). Left as style notes, not failures: 气走经脉's channel is drawn over its painted
 landscape (by design: the path is the game); the 秘境 room and 闭关 keep the page's own chrome.
+
+## 照着走 — Simon on the nine squares (10-27, `simon`; 第七回's 禹步)
+
+Hanli 10-27: 「按你的建议做」 — the home-made 禹步 · 九格 (`yubujiuge`: tap 左脚, 右脚绕, then the next square, one to nine) cut,
+a classic in its place. **Simon** (Milton Bradley, 1978): the board lights a run of squares, each its own note, and you tap it
+back; every round adds one. It is the book's action as it stands — 「照着我的脚，走一遍」, 瞿老 walking the nine squares and
+小满 following, 头一遍 tripped, the third clean.
+
+- **Licence checked (10-27).** The mature open-source Simon is KDE's **Blinken** (invent.kde.org/education/blinken,
+  GPL-2.0-or-later): read for its rules only (the run grows one a round; a wrong press ends it) — no code, art or sound taken
+  (scripts/vendor/VENDOR.md § 照着走). The quickening at the 5th, 9th and 13th step is the 1978 original's.
+- **Ours, as every board here:** a wrong square is never a loss — 「绊了自己一下」, and the same run is shown again; three trips
+  and 「算了，往下走」. Grade quiet (no trip) · loud; the task keeps id `jiuge-yubu`, its 修为 5 and the mark `yubu`.
+- **Board:** the 洛书's nine squares (戴九履一…), 瞿老's chestnuts on each its number; the painted clifftop and bluestone slabs
+  kept from the old board (tools/paint-boards-flux.py), the lit square and footprint drawn over them. Each square a qin note
+  by its number (sounds.json `simon`); keys 1–9 tap the square of that number.
+- **Levels:** 0 the story's (古七's 崖顶): the nine each once in a seeded order, ending in 中五, runs 4 → 9 — 「走完九格，
+  站在中宫」. 1–3 the 游戏厅's: any squares, 3 → 10 · 4 → 14 · 5 → 18, each quicker. One story board, so no level repeats.
+- **Type:** 记忆 (Simon says) — its neighbours in reading order are both 对话 (瞿老 on 巽 · 邓执事), so never back to back.
+- **Why not 华容道 or 推箱子:** 华容道 is the kit's 4×5 and would have to be rebuilt for 3×3 (a sliding 八数码 is a puzzle, not
+  a walk); 洛书 stays played once (10-19: 「9宫格出现一次就可以了」); a 推箱子 path pushes things, and 瞿老 teaches feet.
+- **古九:** nothing read the `yubu` mark (the 量河滩 board in yubu.js's notes was never built); h11's note says so now. The
+  book's 古九 line — 「九宫在心里铺开，他站的是坎一，往巽四上一斜，左脚先出，右脚绕过去。」 — still reads true and is unchanged.
 
 ## 抚琴 — the tiles board (10-27, `fuqin`; 游戏厅 only)
 
@@ -904,7 +927,7 @@ the strap cut like a vine) dragging under him. The ledge is on the cliff side, o
 | 一 · 00-masan | 忍字 `taunt` | 「学声狗叫，给你舔一口」 | the taunt once, then said back piece by piece; wrong pieces and time close the fist | the right piece is easy to spot; the fist barely shows | **cut** (the passage carries it) | 5 s | 75 s | no | **cut 10-16 (before 入门)** — **back 10-20 as 割绳子 `tauntrope`** (§ 读太长) |
 | 一 · 00-shiao | 接雨 `rain` ★ | 「一场雨接满十七个盆」 | tap a dripping spot to set a basin, tap a full one to bank it; 17 to fill | a full basin takes two taps (lift, set again); a leak gives no warning; the water in a basin barely shows; the cap is 110 s | **keep**; one tap swaps a full basin for an empty; a leak shows as a stain 1.5 s ahead; overflow splashes; 4 drips a basin → ~45 s | 38 s | 75 s | no | kept (the six) |
 | 一 · 00-shiao, 00-xiuxian, 00-notice | 石坳村 `village*` | the village | a map with a few optional things; 「回家」 whenever | a stroll, not a game, and need not be | keep as the map (not counted as a beat) | free | own 「回家」 | no | — (the map) |
-| 一 · 00-kitchen | 烙饼 `griddle` | 「一张厚，一张薄」 | call 「翻！」 when a side goes golden; thin then thick | a real timing read, but the brown is hard to see on the paper | second tier; kit: stronger browning, a pop on each call | 21 s | 75 s | no | kept (second tier) — replace with 割绳子 or another proven mechanic if it isn't fun (his play) |
+| 一 · 00-kitchen | 烙饼 `griddle` | 「一张厚，一张薄」 | call 「翻！」 when a side goes golden; thin then thick | a real timing read, but the brown is hard to see on the paper | second tier; kit: stronger browning, a pop on each call | 21 s | 75 s | no | ~~kept (second tier)~~ → **照着走 · Simon (10-27)**, § 照着走 — the home-made board deleted |
 | 一 · 00-masan | 忍字 `taunt` | 「学声狗叫，给你舔一口」 | the taunt once, then said back piece by piece; wrong pieces and time close the fist | the right piece is easy to spot; the fist barely shows | **cut** (the passage carries it) | 5 s | 75 s | no | kept — **replace with 割绳子** (cut, 村口 → 灶间 reads 1,866 字 > 1,500) |
 | 一 · 00-shiao | 接雨 `rain` ★ | 「一场雨接满十七个盆」 | **打地鼠 (10-16, Hanli: 「一个或2个地方漏雨, 只能相应的盆」)**: a leak pops up — its stain 0.9 s before the first of 4 drops — then stops, and another pops up elsewhere. **Harder 10-19 (「同时放两个盆, 或者快一点」)**: the first two leaks come alone (the teaching), then two open together (≤0.25 s apart) — two basins to set — and from a quarter of the night a pair or three; quicker (drops 0.5→0.4 s, leaks 2.4→1.2 s). A basin goes only where it leaks now (a dry tap is a wasted trip, the hand busy 0.5 s); when the leak stops the basin goes to the 水缸 and is back by itself — no running out, no covering spots ahead. 17 leaks caught to win (~29 s at a person's pace). **Fail**: 19 puddles (`FLOOD`, the head shows `地上 n / 19`, red in the last five) before the fifth watch lose the night — 娘: 「屋里成河了！」, the same night again after a 1.5 s calm; 3 floods → the skip | (old board: six basins down at the start won it; basins ran out at 16/17; it never failed) | N re-picked 10-19, 60 seeds, one night's puddles (a hand taps its pace after the stain, ~0.35 s after its last tap): bot 0 · 0.6 s median 2, max 5 (never floods) · 1 s median 18, 16/60 reach 19 · 1.3 s median 27, 60/60 · away 3 s in 8 median 25, 57/60 · away 5 s in 10 60/60 · idle floods at ~11 s (was FLOOD 40: one at a time to a quarter of the night, 0.6 s max 3, nobody but the idle lost) | ~29 s | 75 s or 3 floods | no | kept (the six) |
 | 一 · 00-shiao, 00-xiuxian, 00-notice | ~~石坳村 `village*`~~ | the village | (was: a map with a few optional errands — shoo hens, name prints, pick 艾草, guess prices, guess the tale) | homemade quizzes (Hanli 10-16: 「轰鸡这几个小游戏, 不太好玩」, 「这几个要不要删掉? 有用吗?」) | — | — | — | no | **cut 10-16** — the passages carry 阿禾's cabbage, 吴婆婆, 爹's knee; code, bots, tasks gone; the map painting stays at art/backdrop/village.webp |
@@ -1139,7 +1162,7 @@ uses — row, module, bot, tests, its CSS and dead art: 射鹿 · 等风 `deerhu
 art/games/stone/); this sweep's 讲堂三日 `qiajue`, 相克 `xiangke`, 底册 `diche`, 晨脉 `pulse`, 认方 `recipe`, 念开篇 `kaipian`,
 顺风溜 `wind`, 下崖 `descend`, 拾遗 `gather`, 守夜 `shouye`; and the orphan modules 算账 `scale`, 忍字 `taunt`, 认路 `way`.
 Every task id stays (`cut`), so an old save holding one offered lets it go. **Kept:** `deer.js` (deerarc.js imports it),
-the 文 as `games/wen.js` (the 密室's 铜掌; qiajue.js deleted), `yubu.js` (禹步), `throwkit` (the throw kit's own 游戏厅
+the 文 as `games/wen.js` (the 密室's 铜掌; qiajue.js deleted), ~~`yubu.js` (禹步)~~ (deleted 2026-10-27 with its board, § 照着走), `throwkit` (the throw kit's own 游戏厅
 sandbox), the 气走经脉 试作 levels (the kit's climb), art/games/feather/ (rope-art.js draws with it). **Left for their
 agents:** the 割绳子 trio `rentrope` · `tauntrope` · `wayrope` (their scenes lost the boards 10-16; the code is in
 ropebeats.js, off limits to this sweep) and the two 喂饭桶 boards. The arcade's 旧版 fold is empty now; its code stays for a

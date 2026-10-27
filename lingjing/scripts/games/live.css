@@ -284,8 +284,6 @@
 .g-letter-sheet s { color: var(--faint); text-decoration-thickness: 2px; }
 .g-letter-sheet b { color: var(--seal); font-weight: 600; }
 .g-scene .g-beamlight { fill: var(--ling); stroke: none; }
-.g-yubu-grid { display: grid; grid-template-columns: repeat(3, 56px); gap: 6px; justify-content: center; }
-.g-yubu-grid .g-tag { min-height: 44px; font-size: 16px; }
 .g-recipe-tracks p { margin: 0; font-size: 13.5px; line-height: 1.6; text-align: left; }
 .g-recipe-tracks small { font-family: var(--ui); font-size: 11px; color: var(--dim); }
 .g-recipe-tracks b { color: var(--seal); font-weight: 600; }
@@ -355,9 +353,27 @@
   }
 }
 
-/* 禹步's painted terrace; 押宝's painted doors (tools/paint-boards-flux.py) */
-.g-yubu .g-scene.g-yubu-pic { border-radius: 10px; overflow: hidden; }
-.g-yubu .g-yubu-pic .g-line { stroke: #2d3a46; }
+/* 照着走's painted terrace and bluestone slabs; 押宝's painted doors (tools/paint-boards-flux.py) */
+.g-simon-stage { position: relative; width: 100%; max-width: 420px; margin: 0 auto; padding: 14px 0 12px; border-radius: 10px; overflow: hidden;
+  background: var(--g-simon-ground) center 70% / cover no-repeat, #9cc4e4; }
+.g-simon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: min(66%, 240px, calc(100dvh - 380px)); min-width: 180px; margin: 0 auto; }
+.g-simon-sq { position: relative; aspect-ratio: 1; padding: 10%; border: 0; border-radius: 12px; background: var(--g-simon-slab) center / 100% 100% no-repeat;
+  cursor: pointer; transition: transform .08s ease, filter .12s ease; -webkit-tap-highlight-color: transparent; }
+.g-simon-sq svg { width: 100%; height: 100%; display: block; }
+.g-simon-dot { fill: #6b3f22; stroke: #3a2212; stroke-width: .8; }
+.g-simon-foot { fill: #2d3a46; opacity: .82; }
+.g-simon-sq.is-lit { filter: brightness(1.32) saturate(1.2) drop-shadow(0 0 10px #ffe9a8); transform: scale(1.05); }
+.g-simon-sq.is-lit .g-simon-dot { opacity: .35; }
+.g-simon-sq.is-walked { filter: brightness(.86); }
+.g-simon-sq.is-hit { filter: brightness(1.22) drop-shadow(0 0 8px #fff3c4); transform: scale(.96); }
+.g-simon-sq.is-miss { filter: sepia(.6) hue-rotate(-30deg) saturate(2.4); animation: g-simon-shake .3s; }
+.g-simon.is-show .g-simon-sq { cursor: default; }
+@keyframes g-simon-shake { 25% { translate: -3px 0; } 75% { translate: 3px 0; } }
+.g-simon-head { justify-content: space-between; }
+.g-simon-pips { display: inline-flex; gap: 4px; align-items: center; }
+.g-simon-pips i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); }
+.g-simon-pips i.is-on { background: var(--seal); border-color: var(--seal); }
+@media (prefers-reduced-motion: reduce) { .g-simon-sq { transition: none; } .g-simon-sq.is-miss { animation: none; } }
 .g-yabao .g-shouye-spots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
 .g-yabao .g-shouye-spot { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; min-height: 44px;
   border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; font: inherit; color: inherit; }

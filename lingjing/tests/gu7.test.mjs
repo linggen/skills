@@ -10,8 +10,7 @@ import { fitWorld, newState } from '../scripts/state.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { health } from '../scripts/rules/health.mjs';
 import { huiNow } from '../scripts/rules/hui.mjs';
-import * as yubu from '../scripts/games/yubujiuge.js';
-import { GRID } from '../scripts/games/yubu.js';
+import * as simon from '../scripts/games/simon.js';
 import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
@@ -94,7 +93,7 @@ test('every board pays what the plan names: 修为 for cultivation, a pill or �
   assert.equal(CH.scenes['09-furnace'].exits[0].grant.item, 'qi-pill', '认方\'s 聚气丹 comes with the way on');
   assert.equal(t('year-smell').grant.wealth, 3);
   assert.equal(t('yishui-reed').grant.wealth, 2);
-  assert.deepEqual(Object.values(t('jiuge-yubu').marks), ['yubu', 'yubu'], '古九\'s beach reads `yubu`');
+  assert.deepEqual(Object.values(t('jiuge-yubu').marks), ['yubu', 'yubu'], 'the mark `yubu` either way (no line reads it yet)');
   assert.equal(CH.scenes['09-snow'].exits[0].grant.item, 'huochai-jian');
   assert.equal(CH.scenes['09-xie'].exits[0].grant.item, 'shunfeng-liu');
   const lc = CH.scenes['09-lingcao'].exits[0].grant, sp = CH.scenes['09-futian'].exits[0].grant;
@@ -174,8 +173,9 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
 /* ── the boards themselves ── */
 
 test('no 古七 board draws its own skip (the page lays it), each says what it is in both languages, and a skip still draws a line', () => {
-  for (const mod of [yubu]) { // the rest of 古七's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); 喂饭桶 · 扔了干净 2026-10-20
-    const s = mod.newGame('t');
+  const deal = content.tasks.tasks.find((x) => x.id === 'jiuge-yubu').deal;
+  for (const mod of [simon]) { // the rest of 古七's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); 喂饭桶 · 扔了干净 2026-10-20; 禹步 · 九格 (home-made) 2026-10-27
+    const s = mod.newGame('t', 1, deal);
     for (const lang of ['zh', 'en']) {
       assert.doesNotMatch(mod.html(s, lang), /data-g="skip"/);
       assert.ok(mod.meta.name[lang] && mod.meta.how[lang]);
@@ -186,15 +186,27 @@ test('no 古七 board draws its own skip (the page lays it), each says what it i
   }
 });
 
-test('禹步: 左脚 · 右脚绕 · the next square, 一 to 九, on the 洛书 (戴九履一) → quiet; a beat out of order trips', () => {
-  assert.deepEqual(GRID, [4, 9, 2, 3, 5, 7, 8, 1, 6]);
-  let s = run(yubu, yubu.newGame('a'), [{ g: 'start' }, { g: 'right' }]);
-  assert.equal(s.note, 'trip');
-  s = yubu.newGame('b');
-  s = run(yubu, s, [{ g: 'start' }]);
-  for (let k = 1; k <= 9; k += 1) { for (const d of [{ g: 'left' }, { g: 'right' }, { g: 'sq', n: String(k) }]) { s = yubu.tick(s, 300); s = yubu.act(s, d).state; } }
+test('禹步 · 照着走 (Simon, in 禹步 · 九格\'s place 2026-10-27): 瞿老 walks the nine squares each once, ending in 中五; a run grows 4 → 9; a wrong square trips and shows the run again; walked whole → quiet, 「猎户的脚」', () => {
+  const t = content.tasks.tasks.find((x) => x.id === 'jiuge-yubu');
+  assert.equal(t.game, 'simon');
+  assert.deepEqual(simon.GRID, [4, 9, 2, 3, 5, 7, 8, 1, 6]);
+  const watch = (s) => { while (s.phase === 'show') s = simon.tick(s, 50); return s; };
+  let s = watch(run(simon, simon.newGame('a', 1, t.deal), [{ g: 'start' }]));
+  assert.equal(s.level, 0);
+  assert.deepEqual([...s.run].sort(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  assert.equal(s.run[8], 5, 'ends in 中宫');
+  assert.equal(s.len, 4);
+  const wrong = s.run.find((v) => v !== s.run[0]);
+  s = simon.act(s, { g: 'sq', n: String(wrong) }).state;
+  assert.deepEqual([s.note, s.phase, s.trips], ['trip', 'show', 1]);
+  assert.match(simon.html(s, 'zh'), /自己绊了自己一下/);
+  s = simon.newGame('b', 1, t.deal);
+  s = run(simon, s, [{ g: 'start' }]);
+  while (!s.won) { s = watch(s); s = simon.act(s, { g: 'sq', n: String(s.run[s.i]) }).state; }
+  assert.equal(s.len, 9);
   assert.equal(s.grade, 'quiet');
-  assert.match(yubu.html(s, 'zh'), /猎户的脚/);
+  assert.match(simon.html(s, 'zh'), /猎户的脚/);
+  assert.equal(simon.newGame('c').level, 1, 'the 游戏厅 plays the kit\'s own ladder');
 });
 
 test('闻焦 has left 09-year: the passage whole (story_after merged, word for word), 伏天 waits on 清明 alone; an old save holding it offered lets it go', () => {

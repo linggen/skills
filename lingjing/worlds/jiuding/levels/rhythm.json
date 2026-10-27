@@ -2011,12 +2011,12 @@
        "id": "jiuge-yubu",
        "scene": "09-jiuge",
        "title": {
-        "zh": "禹步 · 九格",
-        "en": "The Step of Yu · Nine squares"
+        "zh": "禹步 · 照着走",
+        "en": "The Step of Yu · Follow his feet"
        },
-       "mechanic": "节奏",
-       "variety": "节奏",
-       "game": "yubujiuge",
+       "mechanic": "记忆",
+       "variety": "记忆",
+       "game": "simon",
        "n": 58
       },
       {

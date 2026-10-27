@@ -472,9 +472,9 @@
         "worlds/jiuding/games.json"
       ]
     },
-    "yubujiuge": {
-      "_about": "禹步 · 九歌 (games/yubujiuge.js, pure; 第七回).",
-      "module": "scripts/games/yubujiuge.js",
+    "simon": {
+      "_about": "照着走 · Simon (games/simon.js, pure; 第七回's 禹步).",
+      "module": "scripts/games/simon.js",
       "dirs": [],
       "css": [
         "scripts/lingjing.css",

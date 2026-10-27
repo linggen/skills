@@ -187,7 +187,7 @@ const storyGames = new Set(loadContent().tasks.tasks.filter((t) => t.kind === 'b
 const SHELL_OWN = new Set(['tap', 'nope']);
 
 test('every playable game is in the lock (the 游戏厅\'s rows and the story\'s boards)', () => {
-  for (const id of ['rain', 'qimai', 'jinchat', 'shouqiang', 'kapai', 'luoshu', 'bread', 'lianliankan', 'yubujiuge']) assert.ok(playable.includes(id), id);
+  for (const id of ['rain', 'qimai', 'jinchat', 'shouqiang', 'kapai', 'luoshu', 'bread', 'lianliankan', 'simon']) assert.ok(playable.includes(id), id);
   const cut = new Set(REG.games.filter((r) => r.replaced).map((r) => r.id));
   assert.deepEqual([...storyGames].filter((g) => has(g) && !playable.includes(g) && !cut.has(g)), [], 'a story board\'s game outside the lock');
 });
