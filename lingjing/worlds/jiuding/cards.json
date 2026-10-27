@@ -81,7 +81,7 @@
       "atk": 1,
       "hp": 2,
       "art": "art/cards/mucao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 27632.",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 606, the best of three (repainted the same day: tighter subject).",
       "from": [
         {
           "kind": "story",
@@ -114,7 +114,7 @@
         "taunt"
       ],
       "art": "art/cards/xiongzai.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 90349.",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 202, the best of three (repainted the same day: tighter subject).",
       "from": [
         {
           "kind": "beast",
@@ -1177,7 +1177,7 @@
         "taunt"
       ],
       "art": "art/cards/fuli.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 74623.",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 202, the best of three (repainted the same day: tighter subject).",
       "from": [
         {
           "kind": "beast",
@@ -1233,7 +1233,7 @@
         "taunt"
       ],
       "art": "art/cards/tiegu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 94052.",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 202, the best of three (repainted the same day: tighter subject).",
       "owner": "sun",
       "from": [
         {

@@ -78,17 +78,17 @@ SUBJECTS = {
   # ── 狼's own card (2026-10-27): it left 金刚, a man in armour; now the lead wolf of the pack ──
   'toulang': 'a big grey lead wolf standing square in front of its pack on a dark pine ridge, head low, hackles up, green eyes, other wolves half hidden behind it',
   # ── the beasts' own cards (2026-10-27: each beast leaves a card of itself, not a stranger's) ──
-  'xiongzai': 'a black bear cub standing up on its hind legs copying its mother, small paws raised, in autumn grass by a pine',
+  'xiongzai': 'a black bear cub standing up on its hind legs copying its mother, small paws raised, in autumn grass by a pine, no calligraphy, no writing, no characters, no seal',
   'houer': 'a young macaque leaping down from a pine branch, mouth open calling, its troop shadowy in the trees behind',
-  'fuli': 'a wild mountain cat crouched flat in tall grass at night, ears back, perfectly still, only its eyes catching the moonlight',
+  'fuli': 'a lean wild mountain cat with bold dark stripes and tufted ears, crouched low in tall grass ready to pounce, fierce wild eyes, not a house cat',
   'xiaochihu': 'a small red fox running off with a stolen rice cake in its mouth, tail streaming, glancing back over its shoulder',
   'huoshe': 'a snake made of living flame uncoiling out of the mouth of a red copper gourd, sparks drifting in the air',
   'huilang': 'a lean grey wolf loping through pine shadow, head low, more wolves half seen behind it',
   'elang': 'a starving grey wolf lunging forward with bared fangs, ribs showing under its coat, snow on the ground',
   # ── cards that wore another card's picture until 2026-10-27 ──
-  'mucao': 'a small carved wooden toy animal with a long neck, small head and curly wool, half sheep half camel, dull round eyes, butting forward, a puff of firecracker smoke from its belly',
+  'mucao': 'a carved wooden toy figurine on a small wooden base, a little beast between a sheep and a camel with a long neck and small head, made entirely of brown carved wood with visible wood grain lines, chisel marks and wooden joints at the legs, painted dot eyes, a puff of firecracker smoke from its belly, not woolly, no fur, not a real animal',
   'shangen': 'a thick wooden stake driven deep into rocky ground, rough bark, a faded cloth charm tied round it, braced like a mountain',
-  'tiegu': 'a heavy wooden door plank bound with three iron hoops, dented and scratched, propped upright like a shield on a dirt road',
+  'tiegu': 'a heavy wooden door plank bound with three thick black iron hoops wrapped clearly across it from edge to edge, iron bands prominent, propped upright like a shield on a dirt road',
   'tuqiang': 'a low wall of packed earth heaving up out of the ground, clods and pebbles tumbling from its top',
   'waiyi': 'a worn patched coat laid gently over a small shape at the bottom of a shallow pit, patches sewn on patches at the cuffs',
   'feijian': 'a small willow-leaf shaped flying sword a hand-span long, a red thread tied at its hilt, darting through the air',
