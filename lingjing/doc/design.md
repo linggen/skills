@@ -383,18 +383,23 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
     and the validator's `CLAIMS` table holds each ratio to the numbers.
   A fixed 「抵三日」 is wrong on every layer but one, because 闭关 grows with the layer and a pill does not.
 
-### 境界 in the game 【已建】 · one 修为 across the lines 【设计 · 待建】 (Hanli, 2026-10-27)
+### 境界 in the game 【已建】 · each line its own 修为 【设计 · 待建】 (Hanli, 2026-10-27)
 
-**One 修为, one ladder, three names** (story `宇宙.md` § 一个修为，一套境界，三套名字).
-- 修为 is the **player's**, not a character's. 古, 今, 未来 boards and the real-life 人间功课 all pay the same number.
-- `ladder.json` keeps one set of tiers and thresholds. Each line gets its own **names** for the nine realms:
+**Each line has its own 修为 and ladder** (story `宇宙.md` § 三条线，各自一套修为与境界). 古, 今 and 未来 don't advance together, so one bar can't line up across them.
+- Every line has nine realms under its own names:
   - 古: 练气…渡劫;
   - 今: 新生 · 立身 · 成器 · 立业 · 通达 · 担当 · 有容 · 知命 · 从心;
-  - 未来: 应物 · 明理 · 先知 · 通言 · 通灵 · 开化 · 有情 · 知我 · 无上.
-- The top bar shows the line the player stands on.
-- The 今 pays 修为 like any board: 「不跨线」 no longer holds for pay, only for story facts.
-- `tools/numbers.mjs` counts 今 play time in the same layer hours.
-- To build: names per line in `ladder.json`, the bar's name by `sideLineOf(look)`, 今 boards on the percent pay, the numbers report.
+  - 未来: 应物…无上.
+- Thresholds fit each line's own play time, and each line starts from zero.
+- Its boards and errands pay its own 修为. The 今 boards stop paying nothing.
+- The top bar keeps the character's name and that line's realm.
+- **Levels never repeat across lines.** A game type may recur, but the layout or level does not, and difficulty continues from what the player has played (`rules/climb.mjs` counts across lines).
+- **Items and cards** are per line.
+- **To build:**
+  - `ladder.json` per line, and `state` holding a 修为/tier per line;
+  - the bar reading `sideLineOf(look)`;
+  - the numbers tool's master table taking the line as a parameter;
+  - 人间功课's line is still to be decided.
 
 The world's nine realms and their names are story DESIGN § 道统 (补丁①).
 `ladder.json` says 合道 (Union with the Dao) · 归真 (Return to Truth) since
