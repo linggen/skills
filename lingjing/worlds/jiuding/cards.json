@@ -539,8 +539,8 @@
       "effect": {
         "damage": 4
       },
-      "art": "art/cards/hantan.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/bingzhuifu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 77491.",
       "owner": "ahe",
       "from": [
         {
@@ -592,8 +592,8 @@
       "effect": {
         "damage": 5
       },
-      "art": "art/cards/luoshi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/zhenyuefu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 41698.",
       "owner": "ahe",
       "from": [
         {
@@ -668,8 +668,8 @@
       "effect": {
         "sweep": 2
       },
-      "art": "art/cards/jinzhen.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/yangzhen.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 40854.",
       "from": [
         {
           "kind": "story",
@@ -750,8 +750,8 @@
       "effect": {
         "draw": 2
       },
-      "art": "art/cards/wudao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/tuna.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 12183.",
       "from": [{"kind": "story", "scene": "00-halfyear", "who": {"zh": "爹", "en": "Father"}, "line": {"zh": "爹：「它听见的不是你喘，是你心慌。」", "en": "Father: \"It hears your fear, not your breath.\""}, "src": "书"}],
       "mortal": true
     },
@@ -1143,8 +1143,8 @@
       "effect": {
         "damage": 3
       },
-      "art": "art/cards/jinzhua.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/jinren.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 74627.",
       "from": [
         {
           "kind": "story",
@@ -1545,8 +1545,8 @@
       "effect": {
         "damage": 5
       },
-      "art": "art/cards/suijin.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/ruxi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 17498.",
       "from": [
         {
           "kind": "story",
@@ -1802,8 +1802,8 @@
       "effect": {
         "damage": 2
       },
-      "art": "art/cards/shuiwu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
+      "art": "art/cards/bingzhui.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 38360.",
       "from": [
         {
           "kind": "story",
