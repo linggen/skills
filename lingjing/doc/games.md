@@ -62,6 +62,63 @@ sounds.json. Locks: tests/game-sound.test.mjs (every registry game names real so
 runner sounds), tests/board-leave.test.mjs (no board the story needs without a scene; every kind draws its way out).
 Left: the story's 炼丹 herb board has no shell frame, so no 🔊 of its own (it follows the one shared mute set on any other board).
 
+## Pacing proposal — rewards by kind, hours per layer (10-27, numbers only, for Hanli)
+
+Hanli 10-27 (ling-mem 3m6p5mNIpx): every board, errand, fight and 调息 pays 修为 and 灵石 by its kind, ★ scales it (0.6 ·
+0.8 · 1.0), a skip pays nothing, no daily cap (replays pay 100% · 50% · 10%), 修为 stops at the 回's gate. Then: 「练气1层
+比如要玩2小时 … 这个时间应该是递增的, 每一层多比如1个小时」 — the target is play time per layer, reading (~60%) inside it.
+Nothing below is in the rules or balance.json yet.
+
+**The rate the hours ask.** A minute of play is ~40% active (a board 2 min, a fight 4, the model's `minutes`). Today's
+thresholds over Hanli's hours:
+
+| layer | threshold now | hours (+1 h a layer) | 修为 / active min | Hanli's kinds × | days @ 30 min | days @ 75 min |
+|---|---|---|---|---|---|---|
+| 一层 | 470 | 2 | 9.8 | 1.00 | 4 | 1.6 |
+| 二层 | 490 | 3 | 6.8 | 0.69 | 6 | 2.4 |
+| 三层 | 510 | 4 | 5.3 | 0.54 | 8 | 3.2 |
+| 四层 | 530 | 5 | 4.4 | 0.45 | 10 | 4 |
+| 五层 | 1040 | 6 | 7.2 | 0.74 | 12 | 4.8 |
+| 六层 | 1060 | 7 | 6.3 | 0.64 | 14 | 5.6 |
+| 七层 | 1080 | 8 | 5.6 | 0.57 | 16 | 6.4 |
+| 八层 | 1100 | 9 | 5.1 | 0.52 | 18 | 7.2 |
+| 九层 | 1120 | 10 | 4.7 | 0.48 | 20 | 8 |
+
+Hanli's numbers fit 一层 as they stand: a combat board, 20 修为 for ~2 active minutes, is the 9.8 / min 一层 asks. With
+today's flat thresholds every later layer would have to pay LESS per board (the × column) — backwards against
+`layer_pay`. **Proposal: keep the per-kind pay flat (Hanli's numbers × ★) and let the threshold carry the hours** —
+~235 修为 an hour: 一层 470 · 二层 705 · 三层 940 · 四层 1175 · 五层 1410 · 六层 1645 · 七层 1880 · 八层 2115 · 九层 2350;
+`layer_pay` retired for boards (the 层 grows the bar, not the pay).
+
+| kind | 修为 / 灵石 (★3) | ~min | 修为 / active min |
+|---|---|---|---|
+| 塔防 · 格斗 · 投掷 · 兽潮 | 20 / 5 | 2 | 10 |
+| 斗法 | 25 / 5 | 4 | 6 (the fight's own drop and card on top) |
+| 调息 | 20 / 0 | 2 | 10 |
+| 解谜 · 棋牌 | 10 / 10 | 3 | 3.3 |
+| 对话 | 5 / 10 | 3 | 1.7 |
+| 外门差事 | 10 / 15 | ~5 with the walk | 2 |
+| 人间功课 | 30 / 5 | off the game (real life) | — |
+
+The board kinds are far apart per minute: chats and puzzles pay a third or less of a combat board. Fine if they are the
+灵石 kinds (they are, 10/10 and 5/10); say so on their cards so a player who wants 修为 knows where it is.
+
+**The calendar it makes.** 练气 一→九 is 54 hours: **108 days at 30 min a day** (typical), 43 at 75 min (heavy),
+against ~40 typical days today for 古四 → 古八. Per 回: 古四 (一层) 4 days, 古五 (二→四层) 24, 古六 (四层 held) —, 古七 (五→七)
+42, 古八 (八 · 九) 38. 古五 alone goes from 6.5 days to 24. **The linear +1 h breaks above 练气:** 筑基's three phases
+at +1 h are 11 · 12 · 13 h (72 days), 金丹 14–16 h (90 days), 元婴 17–19 h — a 卷 becomes a season. A curve that holds
+the story's beat: **+0.5 h a layer inside 练气** (2 → 6 h, 36 h, 72 days typical), **then each realm's phases at the
+realm's own size** — 筑基 3 × 6 h, 金丹 3 × 8 h, 元婴 3 × 10 h (+2 h a realm) — about a 卷 a quarter at 30 min a day.
+
+**古四's gate (146 / 470 today, 324 short).** Today the typical player clears 古四 in 7.4 days, mostly from 功课, overnight
+闭关 and fights; a practice board pays 6 修为 (`game`), so the 324 would be **54 practice boards** — the board itself is
+not where 修为 comes from now. Under the proposal: **16 combat boards ≈ 32 active minutes ≈ 80 min of play, under 3
+days at 30 min** — boards become the way, as Hanli asked.
+
+**Pills.** To stay a conversion and not a shortcut, a pill's 修为 should cost the 灵石 the same minutes earn: at the
+kinds above ~5–10 灵石 an active minute, so a 100-修为 pill (~10 active min) ≈ 60–100 灵石. Any pill priced under
+that is faster than playing — check the shelf (`pills`, `prices`) when the numbers go in.
+
 ## 四条 — the standing rule, audit 10-27
 
 Hanli 10-27: 「确保都能跳过去, 不会卡住游戏进程. 都有音效并可关闭, 都美化过并统一风格, 都用了小游戏的外壳.」 The 游戏厅 holds
