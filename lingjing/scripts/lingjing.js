@@ -3432,7 +3432,24 @@ function mishiHelp(g, res) {
   const zh = fit(`密室第${res.step}道。${whyZh}。用你自己的话一两句告诉他（提示${res.tier}/${res.of}，只说这条，${play ? '只讲怎么玩，不提任何年份、字或答案' : '别越过它，别自己推算'}）：${last}`, play ? '' : `\n他眼前：${res.read ? `铜盘先前停在${res.read}。` : ''}${res.seen}`);
   const enT = fit(`Hidden room, mechanism ${res.step}. ${whyEn}. Tell him in your own words, a line or two (hint ${res.tier}/${res.of}, this only — ${play ? 'how it plays, no year, character or answer' : 'nothing past it, work nothing out yourself'}): ${last}`, play ? '' : `\nBefore him: ${res.read ? `the dial stopped on ${res.read}. ` : ''}${res.seen}`);
   boardWaitsOnHer = g;
-  askHer('mishi', zh, enT, 'neutral').then((heard) => { if (!heard && boardWaitsOnHer === g) boardWaitsOnHer = null; });
+  const sid = chat?.getSessionId?.() ?? null, before = herLinesIn(sid);
+  askHer('mishi', zh, enT, 'neutral').then(async (heard) => {
+    if (!heard) { if (boardWaitsOnHer === g) boardWaitsOnHer = null; return; }
+    // A moment's answer is spoken by her (the pet) and kept in this chat's session, not streamed to the page:
+    // her new line is read from there, so it stands on the board and stops the clock (live 10-27).
+    const seen = (await before).length, until = Date.now() + ((g.state.view?.hint_wait_s ?? 25) + 5) * 1000;
+    while (boardWaitsOnHer === g && Date.now() < until) {
+      await new Promise((r) => setTimeout(r, 1200));
+      const lines = await herLinesIn(sid);
+      if (lines.length > seen && boardWaitsOnHer === g) { herAnswered(lines.at(-1)); return; }
+    }
+  });
+}
+/* Her lines to the player in this chat's session, oldest first (the engine keeps them; /shared/api.js). */
+async function herLinesIn(sid) {
+  if (!sid || typeof sharedApi.fetchSessionMessages !== 'function') return [];
+  const rows = await sharedApi.fetchSessionMessages(SKILL, sid).catch(() => []);
+  return rows.filter(([m]) => m?.from === 'yinyue' && m.to === 'user').map(([, text]) => String(text ?? ''));
 }
 /* The rival's turn (a module that `think`s, as 象棋 does): thought in a Worker so
    the page stays live, laid in by the module's `answer` — only if the board is
