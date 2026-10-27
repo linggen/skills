@@ -170,6 +170,8 @@ test('every input is checked: a wrong one counts and moves nothing; the dealt an
 test('the hint: never before he asked her; after asking, only once the wait went by; then on the page, her half paraphrased', () => {
   const s = opened();
   assert.equal(run(s, { action: 'hint' }).result.refused, 'too-soon');
+  // …but at once when nobody can say it (the page found her not there: `alone`).
+  assert.equal(run(s, { action: 'hint', alone: 1 }).result.ok, true);
   const asked = run(s, { action: 'asked' }).state;
   assert.equal(run(asked, { action: 'hint' }, later(5000)).result.refused, 'too-soon');
   const wait = data.limits.hint_wait_s * 1000;

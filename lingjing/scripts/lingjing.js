@@ -251,7 +251,7 @@ function boardFor(taskId) {
     }
     // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.
     const g = boards.get(taskId);
-    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herHere() });
+    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herHere() && !CHATLESS });
     return g;
   }
   if (!boards.has(taskId)) {
@@ -3359,7 +3359,7 @@ async function boardSends(g, send) {
   // 密室 needs her (task `needs: "her"`): out of the 木牌 for the room, so she can tell him the play herself; back in
   // once he is out. Out now, the help is hers to say — no longer read off the board (`alone`).
   const task = look?.tasks?.find((t) => t.id === g.taskId);
-  if (task?.her && ['open', 'ask'].includes(send.args?.action) && !herHere()) {
+  if (task?.her && !CHATLESS && ['open', 'ask'].includes(send.args?.action) && !herHere()) {
     await herOut(g.taskId, true);
     if (herHere() && send.args.alone) { const { alone, ...rest } = send.args; send = { ...send, args: rest }; }
   }
@@ -3434,7 +3434,8 @@ function mishiHelp(g, res) {
   boardWaitsOnHer = g;
   const sid = chat?.getSessionId?.() ?? null, before = herLinesIn(sid);
   askHer('mishi', zh, enT, 'neutral').then(async (heard) => {
-    if (!heard) { if (boardWaitsOnHer === g) boardWaitsOnHer = null; return; }
+    // Nobody will hear it (the pet off, her presence refused): the tier is read off the board at once.
+    if (!heard) { if (boardWaitsOnHer === g) boardWaitsOnHer = null; run(`send:${g.taskId}:hint`, () => boardSends(g, { verb: 'mishi', args: { action: 'hint', alone: 1 } })); return; }
     // A moment's answer is spoken by her (the pet) and kept in this chat's session, not streamed to the page:
     // her new line is read from there, so it stands on the board and stops the clock (live 10-27).
     const seen = (await before).length, until = Date.now() + ((g.state.view?.hint_wait_s ?? 25) + 5) * 1000;

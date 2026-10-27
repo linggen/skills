@@ -333,7 +333,9 @@ const ACTIONS = {
     if (!m || m.done) return refuse('no-room', null);
     const at = hintAt(data, m);
     // Only after he asked her and the wait went by: she is the clue's first door, the page the fallback.
-    if (!at || ctx.now < new Date(at)) return refuse('too-soon', null, { hint_at: at });
+    // …or at once when nobody can say it (`alone`: the page found her not there to hear the tier).
+    const alone = ['1', 'true', 1, true].includes(args.alone);
+    if (!alone && (!at || ctx.now < new Date(at))) return refuse('too-soon', null, { hint_at: at });
     const dealt = dealOf(content, state, m), p = roomOf(data, m.room).puzzles[m.step];
     const s = clone(state), tier = Math.max(1, tierOf(m, m.step));
     if (!s.mishi.hints.includes(m.step)) s.mishi.hints.push(m.step);
