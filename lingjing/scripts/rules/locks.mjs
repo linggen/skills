@@ -50,7 +50,7 @@ export const gated = verbs => Object.fromEntries(Object.entries(verbs).map(([ver
    look.mjs tasksBrief), so every reader of them agrees. */
 const HIDES = {
   cultivation: ['tier', 'progress', 'next', 'practice_hint'],
-  wealth: ['wealth', 'haggle'],
+  wealth: ['wealth', 'haggle', 'shops'],
   divine: ['divination'],
   errands: ['offers', 'work', 'handed', 'tale', 'known', 'story_due', 'story_why', 'lundao', 'case'],
   road: ['chance'],

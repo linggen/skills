@@ -216,7 +216,7 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   assert.match(html, /<div class="slots">\s*<div class="focus" id="focus"><\/div>\s*<\/div>/);
   // The 回 and the place on the strip's own line (Hanli, 2026-10-05: two rows made one); the header's
   // cards — the people, the goal — on the same thin bar since 2026-10-14 (the approved prototypes).
-  assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow"><span class="huiline" id="huiLine"><\/span><span class="place" id="place"><\/span><\/div><div class="placecap" id="placeCap"><\/div><div class="headcards" id="headCards"><\/div><\/header>/);
+  assert.match(html, /<header class="topbar"><div class="status" id="status"><\/div><div class="titlerow"><span class="huiline" id="huiLine"><\/span><span class="place" id="place"><\/span><span class="placeshop" id="placeShop"><\/span><\/div><div class="placecap" id="placeCap"><\/div><div class="headcards" id="headCards"><\/div><\/header>/);
   assert.match(html, /<footer class="slotfoot" id="slotFoot"><div class="footrow" id="footRow"><\/div><div class="footchips" id="footChips"><\/div><div class="askbar" id="askbar" hidden><\/div><\/footer>/);
   assert.match(html, /id="stage"/, 'her place on the stage stays');
   const focus = src.slice(src.indexOf('function focusHtml(slots)'), src.indexOf('function toastsHtml()'));

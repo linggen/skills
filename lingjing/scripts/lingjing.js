@@ -20,6 +20,7 @@ const ARCADE_GAME = arcadeGameOf(location.search, SCRATCH);
 const ARCADE_ROW = arcadeRowOf(location.search, SCRATCH); // a story row's own deal (今's 聊天: one chat a row)
 let arcadeDeal = { row: null, title: null };
 import { plateHtml } from './plate.js';
+import { shopHereHtml, shopsById, shopTagHtml } from './shopmark.js';
 import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tapHeard } from './board.js';
@@ -1509,8 +1510,10 @@ function roadsHtml() {
   const w = words(), open = view.roadsOpen;
   const onPlate = new Set((plate?.spots ?? []).map((s) => s.id));
   const off = near.filter((p) => !onPlate.has(p.id));
-  const chips = off.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}</button>`).join('');
-  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: plate.file ? worldPath(look.world.dir, plate.file) : null, here: w.needHere, threads: threadsAt(look) }) : '';
+  // 铺子 (Look's `shops`): a road to an open shop says its kind after the name (shopmark.js).
+  const shops = shopsById(look);
+  const chips = off.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}${shopTagHtml(shops.get(p.id))}</button>`).join('');
+  const painted = plate && look?.world?.dir ? plateHtml(plate, { src: plate.file ? worldPath(look.world.dir, plate.file) : null, here: w.needHere, threads: threadsAt(look), shops }) : '';
   const pop = open ? `<div class="bookpop roadspop${painted ? ' plated' : ''}" role="dialog"><div class="cardtitle">${esc(painted ? plate.name : w.roads)}</div>${painted}${chips ? `<div class="roadlist">${chips}</div>` : ''}</div>` : '';
   return `<span class="bookwrap roadswrap"><button class="bookchip roadschip" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(near.map((p) => p.name).join(' · '))}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }
@@ -1616,6 +1619,8 @@ function draw() {
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
   // The bar is thin now (2026-10-14): the caption keeps its small line where there is room, and is the place's title always.
   $('place').title = (look.scene?.panel?.caption ?? []).join(' ');
+  // 「有铺子 · 药铺」 beside the place where he stands at an open shop (shopmark.js; Look's `shops`, steps 0).
+  $('placeShop').innerHTML = look.sealed ? '' : shopHereHtml(look, lang());
   $('placeCap').textContent = (look.scene?.panel?.caption ?? []).join(' ');
   } finally { look = realLook; }
   // She is always at the player's side: on the stage whenever the game is

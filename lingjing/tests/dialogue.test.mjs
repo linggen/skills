@@ -378,7 +378,7 @@ test('the caption is no beat (2026-10-14: told three times) — the box plays th
   assert.deepEqual(played[0].beats.zh.map((b) => b.text), ['甲。', '乙。']);
   assert.ok(played.every((t) => !t.beats.zh.some((b) => b.cap) && !t.beats.en.some((b) => b.cap)));
   const html = fs.readFileSync(path.join(ROOT, 'scripts/index.html'), 'utf8');
-  assert.match(html, /<span class="place" id="place"><\/span><\/div><div class="placecap" id="placeCap"><\/div>/);
+  assert.match(html, /<span class="place" id="place"><\/span><span class="placeshop" id="placeShop"><\/span><\/div><div class="placecap" id="placeCap"><\/div>/);
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /\$\('placeCap'\)\.textContent = /);
 });

@@ -37,7 +37,7 @@ export function sealedBrief(content, state) {
 }
 
 /* The fields of Look the world outside fills — frozen while sealed. */
-const OUTSIDE = ['offers', 'work', 'visitors', 'chance', 'lundao', 'haggle', 'case', 'tale', 'known', 'story_due', 'story_why', 'handed', 'quests', 'kaifu', 'weather', 'season', 'wind'];
+const OUTSIDE = ['offers', 'work', 'visitors', 'shops', 'chance', 'lundao', 'haggle', 'case', 'tale', 'known', 'story_due', 'story_why', 'handed', 'quests', 'kaifu', 'weather', 'season', 'wind'];
 
 /* A reading with the outside taken out and `sealed` in. The goal line (the
    waypoint) is the scene's goal; the 事 book holds nothing from outside. */
