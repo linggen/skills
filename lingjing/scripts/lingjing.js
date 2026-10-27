@@ -1619,8 +1619,10 @@ function draw() {
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
   // The bar is thin now (2026-10-14): the caption keeps its small line where there is room, and is the place's title always.
   $('place').title = (look.scene?.panel?.caption ?? []).join(' ');
-  // 「有铺子 · 药铺」 beside the place where he stands at an open shop (shopmark.js; Look's `shops`, steps 0).
-  $('placeShop').innerHTML = look.sealed ? '' : shopHereHtml(look, lang());
+  // 「有铺子 · 药铺」 beside the place where he stands at an open shop (shopmark.js; Look's `shops`, steps 0) —
+  // only while the header names that place, not a scene's room in it (邺城's 东街市 under 「邺城 · 客栈」).
+  const headIsPlace = !look.sealed && !look.chapter?.close?.place && (!look.scene?.place || look.scene.place === look.place?.name);
+  $('placeShop').innerHTML = headIsPlace ? shopHereHtml(look, lang()) : '';
   $('placeCap').textContent = (look.scene?.panel?.caption ?? []).join(' ');
   } finally { look = realLook; }
   // She is always at the player's side: on the stage whenever the game is

@@ -92,7 +92,8 @@ test('the page: a seal on the map\'s dot, a tag in the list, 「有铺子」 whe
   const l = look(at('ye'), content, ctx());
   const map = cardHtml({ card: 'map' }, { look: l, words: WORDS.zh, lang: 'zh', content });
   assert.match(map, /class="shopmark k-yi"[^>]*>衣</, '裁缝铺 wears 衣 on the map');
-  assert.match(map, /class="pt[^"]*shop"[^>]*data-go="ye-caifeng"|data-go="ye-caifeng"[^>]*class="pt[^"]*shop"/);
+  assert.match(map, /class="pt[^"]*\bshop\b[^"]*"[^>]*data-go="ye-caifeng"/, 'its dot a square seal');
+  assert.match(map, /class="pt here shop[^"]*"/, 'where he stands, too (邺城\'s 东街市)');
   const shops = shopsById(l);
   assert.match(shopTagHtml(shops.get('ye-caifeng')), />衣铺</);
   assert.equal(shopMarkHtml(undefined), '');

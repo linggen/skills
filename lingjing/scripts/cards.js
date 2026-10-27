@@ -369,15 +369,15 @@ function atlasMap(ctx) {
     // A key beat running (Look's `lock`): every dot of his own map greyed, its title the beat's reason.
     const held = Boolean(lock) && !other && !p.here;
     const th = other ? null : threads[p.id];
-    const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${held ? ' held' : ''}${th ? ` th-${th}` : ''}${side ? SIDE_CLS[side] : ' nolbl'}`;
     const shop = shops.get(p.id);
+    const cls = `pt${kind ? ` ${kind}` : ''}${shop ? ' shop' : ''}${p.too_hard || p.closed ? ' far' : ''}${p.closed ? ' shut' : ''}${held ? ' held' : ''}${th ? ` th-${th}` : ''}${side ? SIDE_CLS[side] : ' nolbl'}`;
     const label = `<i></i><span>${esc(mapName(p.name, shownNames))}${shopMarkHtml(shop)}</span>`;
     // 地图展开: the places come out of the mist one after another (--k).
     const at = `${pos(p.map)}${ctx.unfold ? `;--k:${k}` : ''}`;
     // Beyond the map this chapter opens: greyed, and nothing to tap.
     return (p.here && !other) || p.closed || held
       ? `<span class="${cls}" style="${at}" title="${esc(held && heldBy ? `${p.name} · ${heldBy}` : p.name)}"${held ? ' aria-disabled="true"' : ''}>${label}</span>`
-      : `<button class="${cls}${shop ? ' shop' : ''}" ${goAttr(p.id)} style="${at}" title="${esc(shop ? `${p.name} · ${shop.label}` : p.name)}" aria-label="${esc(shop ? `${p.name} · ${shop.label}` : p.name)}">${label}</button>`;
+      : `<button class="${cls}" ${goAttr(p.id)} style="${at}" title="${esc(shop ? `${p.name} · ${shop.label}` : p.name)}" aria-label="${esc(shop ? `${p.name} · ${shop.label}` : p.name)}">${label}</button>`;
   });
   const title = whole ? ctx.words.mapTitle : other ? other.name : place.province.name;
   const toWhole = `<button class="act" data-mapview="world">${esc(ctx.words.mapWhole)}</button>`;
