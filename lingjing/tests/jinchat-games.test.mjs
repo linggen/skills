@@ -199,6 +199,7 @@ test('the module: the page judges (no tag, no model verdict); every game is skip
   for (const [id] of GAMES) {
     const t = TASKS.find((x) => x.game === 'jinchat' && x.deal?.chat === id);
     if (!t) continue;
-    assert.deepEqual(t.grant, { table: 'task' }, `${id}: pays as before`);
+    assert.equal(t.grant.table, 'task', `${id}: pays as before`);
+    assert.ok(!t.grant.progress, `${id}: nothing of its own`);
   }
 });

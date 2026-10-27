@@ -1,4 +1,4 @@
-// rules/aigames.mjs — AI mini-games: 二十问 · 讨价还价 · 断案 (design.md § AI mini-games,
+// rules/aigames.mjs — AI mini-games: 二十问 · 讨价还价 (design.md § AI mini-games; 断案 cut 2026-10-27,
 // Hanli 2026-10-15). Part of the rules engine; rules.mjs is its one door.
 //
 // The model talks, plays roles and judges fuzzy things against a declared
@@ -6,10 +6,8 @@
 // every turn and decide outcome and pay — capped by the rewards table each
 // grant names. Look carries the facts the page draws and never a secret:
 // the animal (二十问) reaches only 银月's own tool (`--for=yinyue`), the floor
-// (讨价还价) reaches no one, the case's truth and what each person hides
-// (断案) reach only Ling's Case answers. A win is never self-reported: a guess
-// is checked against the animal, a deal against the floor, an accusation
-// against the truth's ids.
+// (讨价还价) reaches no one. A win is never self-reported: a guess is checked
+// against the animal, a deal against the floor.
 import { dayKey, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { hashOf } from './travel.mjs';
@@ -18,7 +16,6 @@ import { forSale, shopOf } from './look.mjs';
 import { visitorHere } from './visiting.mjs';
 import { itemBrief, itemOf } from './errands.mjs';
 import { bagFull, roomFor } from './pouch.mjs';
-import { writeLedger } from './ledger.mjs';
 import { placeOf } from './world.mjs';
 
 const cfgOf = content => content.aigames ?? null;
@@ -324,113 +321,4 @@ function haggleDeal(content, s, ctx, o) {
   s.haggle.open = null;
   const saved = (o.list - o.ask) * o.qty;
   return { state: s, result: { ok: true, deal: true, bought: item.id, qty: o.qty, price: o.ask, saved, item: itemBrief(content, s, item), paid: { wealth: -total }, wealth: s.wealth, ...(o.barter ? { traded: o.barter } : {}), haggle: haggleBrief(content, s, now) } };
-}
-
-/* ════════ 断案 — Ling plays the people ════════
-   state.cases = {[id]: {day, asked, clues: [id], tries, outcome}} — a day's
-   questions and tries; the clues found stay found; solved stays solved. */
-const casesOf = content => cfgOf(content)?.cases ?? [];
-const caseOf = (content, id) => casesOf(content).find(c => c.id === id) ?? null;
-/* The case to be had where he stands: its place, its scene behind him. */
-const caseHere = (content, state) => casesOf(content).find(c => c.at === state.place && (state.done_scenes ?? []).includes(c.after)) ?? null;
-const caseState = (state, c, now) => {
-  const k = state.cases?.[c.id];
-  if (!k) return { day: dayKey(now), asked: 0, clues: [], tries: 0, outcome: null };
-  // A new day: the questions and the tries come back; what was found stays.
-  return k.day === dayKey(now) || k.outcome === 'solved' ? k : { ...k, day: dayKey(now), asked: 0, tries: 0, outcome: null };
-};
-const personName = (content, state, c, p) => pick(p.name, state.lang) ?? pick((content.people?.people ?? []).find(x => x.id === p.id)?.name, state.lang)
-  ?? pick(content.creatures?.creatures?.find(x => x.id === p.id)?.name, state.lang) ?? p.id;
-
-/* What the page and Ling's Look see: who is there, what was found, the count —
-   never the culprit, nor what anyone knows or hides. */
-export function caseBrief(content, state, now) {
-  const c = caseHere(content, state);
-  if (!c) return null;
-  const k = caseState(state, c, now), lang = state.lang;
-  return {
-    id: c.id, title: pick(c.title, lang), line: pick(c.line, lang), outcome: k.outcome ?? 'open',
-    asked: k.asked, max: c.questions, tries_left: Math.max(0, c.tries - k.tries),
-    people: c.people.map(p => ({ id: p.id, name: personName(content, state, c, p), role: pick(p.role, lang), ...(p.suspect ? { suspect: true } : {}) })),
-    clues: k.clues.map(id => c.clues.find(x => x.id === id)).filter(Boolean).map(x => ({ id: x.id, name: pick(x.name, lang), fact: pick(x.fact, lang) })),
-    spots: c.spots.filter(sp => !k.clues.includes(sp.clue)).map(sp => ({ id: sp.id, label: pick(sp.label, lang) })),
-  };
-}
-
-/* Ling's Case answers: the brief, and the people as she plays them. */
-function caseView(content, state, now, c, extra = {}) {
-  return {
-    ok: true, ...extra, case: caseBrief(content, state, now),
-    play: {
-      people: c.people.map(p => ({ id: p.id, name: personName(content, state, c, p), knows: p.knows, hides: p.hides, voice: p.voice })),
-      topics: Object.fromEntries(Object.entries(c.topics).filter(([k]) => !k.startsWith('_')).map(([k, v]) => [k, v.about])),
-      note: 'Play each person from `knows`, `hides` and `voice`, in character; say only what they know, keep what they hide. A clue becomes a fact only when the rules return it as `found` — never state a clue first. Never name the culprit, never judge the accusation: the page\'s 指认 does, or the player\'s own words passed to accuse.',
-    },
-  };
-}
-
-/* Who plays the people is Ling: anyone else (the page) is handed the brief only. */
-export function caseVerb(state, content, ctx, args) {
-  const out = caseTurn(state, content, ctx, args);
-  if (ctx.reader === 'ling' || !out.result?.play) return out;
-  const { play, ...rest } = out.result;
-  return { ...out, result: rest };
-}
-
-function caseTurn(state, content, ctx, args) {
-  const lang = state.lang, now = ctx.now, action = text(args.action) || 'open';
-  const c = caseHere(content, state);
-  if (!c) return refuse('not-here', pick({ zh: '这里没有要断的案子。', en: 'There is no case to settle here.' }, lang));
-  const s = clone(state);
-  const k = caseState(s, c, now);
-  s.cases = { ...s.cases, [c.id]: k };
-  if (k.outcome === 'solved' && action !== 'open') return refuse('solved', null, caseView(content, state, now, c));
-  if (action === 'open') return { state: s, result: caseView(content, s, now, c, { opened: true }) };
-  if (k.outcome === 'wrong') return refuse('come-back', pick(c.wrong, lang), { case: caseBrief(content, state, now) });
-  if (action === 'ask') {
-    const who = c.people.find(p => p.id === text(args.who));
-    if (!who) return refuse('no-such-person', null, { people: c.people.map(p => p.id) });
-    if (k.asked >= c.questions) return refuse('no-questions', pick({ zh: '今天问够了。该指认了——或者改日再问。', en: 'That is enough questions today. Name someone — or ask again another day.' }, lang), caseView(content, state, now, c));
-    const topic = c.topics[text(args.topic)] && !text(args.topic).startsWith('_') ? text(args.topic) : 'other';
-    k.asked += 1;
-    const clue = c.finds?.[who.id]?.[topic];
-    const fresh = clue && !k.clues.includes(clue);
-    if (fresh) k.clues = [...k.clues, clue];
-    return { state: s, result: caseView(content, s, now, c, { who: who.id, topic, ...(fresh ? { found: clueBrief(c, clue, lang) } : {}) }) };
-  }
-  if (action === 'look') {
-    const spot = c.spots.find(sp => sp.id === text(args.at));
-    if (!spot) return refuse('no-such-spot', null, { spots: c.spots.map(sp => sp.id) });
-    const fresh = !k.clues.includes(spot.clue);
-    if (fresh) k.clues = [...k.clues, spot.clue];
-    return { state: fresh ? s : null, result: { ok: true, case: caseBrief(content, fresh ? s : state, now), found: clueBrief(c, spot.clue, lang) } };
-  }
-  if (action === 'accuse') return accuse(content, s, ctx, c, k, args);
-  return refuse('unknown-action', null, { actions: ['open', 'ask', 'look', 'accuse'] });
-}
-const clueBrief = (c, id, lang) => { const x = c.clues.find(y => y.id === id); return { id, name: pick(x.name, lang), fact: pick(x.fact, lang) }; };
-
-/* The accusation: a suspect and the evidence named, by id. Right when the
-   suspect is the culprit and the evidence holds every `must` and `more` of
-   `from` — each one found. Wrong: the day's try is spent, nothing told. */
-function accuse(content, s, ctx, c, k, args) {
-  const lang = s.lang, now = ctx.now;
-  if (k.tries >= c.tries) return refuse('come-back', pick(c.wrong, lang), { case: caseBrief(content, s, now) });
-  const who = text(args.who);
-  if (!c.people.some(p => p.id === who && p.suspect)) return refuse('not-a-suspect', null, { suspects: c.people.filter(p => p.suspect).map(p => p.id) });
-  const named = [...new Set(text(args.evidence).split(/[,\s，、]+/).filter(Boolean))];
-  const unfound = named.filter(id => !k.clues.includes(id));
-  if (!named.length || unfound.length) return refuse('unfound-evidence', pick({ zh: '凭据要是你自己找着的。', en: 'The proof must be something you found.' }, lang), { found: k.clues, ...(unfound.length ? { unfound } : {}) });
-  k.tries += 1;
-  const t = c.truth;
-  const right = who === t.culprit && t.must.every(id => named.includes(id)) && named.filter(id => t.from.includes(id)).length >= t.more;
-  if (!right) {
-    k.outcome = 'wrong';
-    return { state: s, result: { ok: true, right: false, line: pick(c.wrong, lang), case: caseBrief(content, s, now) } };
-  }
-  k.outcome = 'solved';
-  k.solved_at = now.toISOString();
-  const paid = pay(content, s, ctx, c.pay);
-  const ledger = writeLedger(content, s, { ledger: c.solved.ledger }, ctx);
-  return { state: s, result: { ok: true, right: true, line: pick(c.solved.line, lang), paid, ...(ledger.length ? { ledger: ledger.map(e => ({ who: e.who, kind: e.kind, what: pick(e.what, lang) })) } : {}), case: caseBrief(content, s, now) } };
 }

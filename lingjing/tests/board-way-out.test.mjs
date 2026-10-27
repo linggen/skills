@@ -15,7 +15,7 @@ const storyIds = new Set(scenes.flatMap((sc) => [...(sc.show ?? []).filter((c) =
 const offStory = content.tasks.tasks.filter((t) => t.kind === 'board' && !t.cut && !storyIds.has(t.id));
 
 test('every off-story board is his to put down (收手) wherever he stands', () => {
-  const s = JSON.parse(read('./fixtures/saves/arcade-duanan.json')).state;
+  const s = JSON.parse(read('./fixtures/saves/zhishi-09year.json')).state;
   assert.ok(offStory.length >= 10, `${offStory.length} off-story boards`);
   for (const t of offStory) assert.ok(leaveOf(content, s, t.id), `${t.id}: leavable`);
 });

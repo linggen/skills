@@ -74,7 +74,7 @@ export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './
 export { look } from './rules/look.mjs';
 export { SHOP_KINDS, shopKind, shopsNear } from './rules/shops.mjs';
 export { closeStaleFight, duel, fightHold, lundao, task, win } from './rules/tasks.mjs';
-export { animalsKnown, caseBrief, caseVerb, guessed, haggle, haggleBrief, twenty, twentyBrief } from './rules/aigames.mjs';
+export { animalsKnown, guessed, haggle, haggleBrief, twenty, twentyBrief } from './rules/aigames.mjs';
 export { duizi, duiziBrief, markFor } from './rules/duizi.mjs';
 export { go, lang, move, summarize, trade } from './rules/travel.mjs';
 export { chooseLang, inPlay, langNow, langOfTag, stateText, writeGlobalLang } from './rules/language.mjs';

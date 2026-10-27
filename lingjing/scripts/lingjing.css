@@ -825,11 +825,10 @@ button.gcard { cursor: pointer; font: inherit; }
 .card.lundao .lundaoprompt { margin: 8px 0 6px; font-family: var(--serif); font-size: 20px; color: var(--ling); }
 .card.lundao .lundaodots { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
 .card.lundao .lundaodots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ling); }
-/* AI mini-games (aigames-cards.js): 二十问 · 讨价还价 · 断案 — the count, the lists, the price. */
+/* AI mini-games (aigames-cards.js): 二十问 · 讨价还价 — the count, the lists, the price. */
 .card.twenty .lundaoprompt, .card.haggle .lundaoprompt { margin: 8px 0 6px; font-family: var(--serif); font-size: 18px; color: var(--ling); }
-.card .twentylist, .card .caseclues, .card .casepeople { margin: 4px 0 6px; padding-left: 1.4em; font-size: 13px; line-height: 1.6; max-height: 9.6em; overflow-y: auto; }
+.card .twentylist { margin: 4px 0 6px; padding-left: 1.4em; font-size: 13px; line-height: 1.6; max-height: 9.6em; overflow-y: auto; }
 .card .twentylist b { color: var(--ling); margin-left: 4px; }
-.card.case .casepeople { list-style: none; padding-left: 0; max-height: none; }
 /* 对对子 (aigames-cards.js): the pair hung right to left, each read top to bottom on its strip of
    paper; the form's checks as chips beside the input; the teacher's mark and dots once graded. */
 .card.duizi .dzpair { display: flex; justify-content: center; gap: 28px; margin: 10px 0 8px; }

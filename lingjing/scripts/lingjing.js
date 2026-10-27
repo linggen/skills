@@ -326,7 +326,7 @@ const view = {
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
-  twentyGuess: '', caseWho: null, caseEv: [], aiNote: null, // AI mini-games (aigames-cards.js): the guess typed, the suspect and proof picked, a refusal
+  twentyGuess: '', aiNote: null, // AI mini-games (aigames-cards.js): the guess typed, a refusal
   duiziDraft: '', duiziUp: '', duiziRung: null, duiziRevOpen: false, // 对对子: the 下联 typed, his own 上联 typed, the rung picked, the reverse unfolded
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
   panelSaid: null, //   what a choice that stays in the scene said: { scene, run, lines }
@@ -430,7 +430,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -3039,7 +3039,7 @@ function tookOffer(id) {
 /* ── AI mini-games (rules/aigames.mjs) — the page's taps ──
    二十问 opens on his tap (a game's 体力) and the chat carries a word to her;
    the guess box is checked by the rules, then she is told, so she reacts in
-   her own words; 断案's look-around and 指认 are his taps, judged by the rules. */
+   her own words. */
 async function aiTap(name, args) {
   const r = await write(name, args).catch(failed);
   keep({ aiNote: r.ok ? null : refusal(r) });
@@ -3057,11 +3057,6 @@ async function twentyGuess() {
   if (r.ok) { keep({ twentyGuess: '' }); if (!r.again && herHere()) deliver(fill(words().twentySaid, { g }), false); }
   // The first win at it ever (hersay.js game_first: once a game) — asleep, from the 木牌; awake the chat carries it.
   if (r.ok && r.right && !herHere()) herSay.say('game_first', lang() === 'en' ? 'Twenty Questions, guessed right.' : '二十问，猜中了。', { key: 'twenty' });
-}
-async function caseAccuse() {
-  const r = await aiTap('case', { action: 'accuse', who: view.caseWho, evidence: (view.caseEv ?? []).join(',') });
-  if (r.ok && r.right) herSay.say('game_first', lang() === 'en' ? 'The case, solved — the right culprit, the right proof.' : '断案，指认对了，证据也对。', { key: 'case' });
-  if (r.ok) { keep({ caseWho: null, caseEv: [] }); await report(`[scene] case ${r.right ? 'solved' : 'wrong'}`); }
 }
 
 /* ── 对对子 (rules/duizi.mjs) — the page's taps ──
@@ -3506,10 +3501,6 @@ const CLICKS = [
   ['[data-twenty-open]', () => run('twenty:open', () => twentyOpen())],
   ['[data-twenty-guess]', () => run('twenty:guess', () => twentyGuess())],
   ['[data-twenty-quit]', () => run('twenty:quit', () => aiTap('twenty', { action: 'quit' }))],
-  ['[data-case-look]', (el) => run(`case:look:${el.dataset.caseLook}`, () => aiTap('case', { action: 'look', at: el.dataset.caseLook }))],
-  ['[data-case-who]', (el) => show({ caseWho: view.caseWho === el.dataset.caseWho ? null : el.dataset.caseWho, aiNote: null })],
-  ['[data-case-ev]', (el) => { const id = el.dataset.caseEv, ev = view.caseEv ?? []; show({ caseEv: ev.includes(id) ? ev.filter((x) => x !== id) : [...ev, id], aiNote: null }); }],
-  ['[data-case-accuse]', (el) => { if (!el.matches(':disabled')) run('case:accuse', () => caseAccuse()); }],
   ['[data-duizi-open]', () => run('duizi:open', () => duiziOpen())],
   ['[data-duizi-rung]', (el) => show({ duiziRung: el.dataset.duiziRung, aiNote: null })],
   ['[data-duizi-submit]', (el) => { if (!el.matches(':disabled')) run('duizi:submit', () => duiziSubmit()); }],

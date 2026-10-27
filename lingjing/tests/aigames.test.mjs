@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
-import { dayKey, newState } from '../scripts/state.mjs';
+import { dayKey, fitWorld, newState } from '../scripts/state.mjs';
 import { forLing, look, playTo, VERBS } from '../scripts/rules.mjs';
 import { guessed } from '../scripts/rules/aigames.mjs';
 import { stageCards } from '../scripts/stage.mjs';
@@ -200,66 +200,22 @@ test('讨价还价: a thing in trade comes off the ask and leaves the bag at the
   assert.equal(deal.r.traded, 'ganliang');
 });
 
-/* ════════ 断案 ════════ */
+/* ════════ 断案 — cut 2026-10-27 ════════ */
 
-const office = () => at('zhishi');
-
-test('断案: only after 古四\'s scene, at the 执事堂', () => {
-  assert.ok(look(office(), content, ctx()).case);
-  const early = { ...office(), done_scenes: base.done_scenes.filter(id => id !== 'wm-diyilu') };
-  assert.equal(look(early, content, ctx()).case, undefined);
-  assert.equal(run('case', early, { action: 'open' }).r.refused, 'not-here');
-});
-
-test('断案: the truth reaches Ling\'s Case answers only — never Look, never the page', () => {
-  const s = office();
-  for (const seen of [look(s, content, ctx()), forLing(look(s, content, ctx())), run('case', s, { action: 'open' }).r]) {
-    const keys = keysOf(seen);
-    for (const k of ['play', 'knows', 'hides', 'culprit', 'truth', 'finds']) assert.ok(!keys.has(k), k);
-  }
-  const ling = run('case', s, { action: 'open' }, ctx({ reader: 'ling' })).r;
-  assert.ok(ling.play.people.find(p => p.id === 'ahe').knows.includes('42'));
-  assert.ok(!keysOf(ling).has('culprit'), 'not even Ling is told who');
-});
-
-test('断案: questions counted and limited; a clue only from its person and topic', () => {
-  let { s } = must('case', office(), { action: 'open' });
-  const L = ctx({ reader: 'ling' });
-  let r;
-  ({ s, r } = must('case', s, { action: 'ask', who: 'maxiaobao', topic: 'count' }, L));
-  assert.equal(r.found, undefined);
-  ({ s, r } = must('case', s, { action: 'ask', who: 'ahe', topic: 'count' }, L));
-  assert.equal(r.found.id, 'count');
-  ({ s, r } = must('case', s, { action: 'ask', who: 'ahe', topic: 'nonsense' }, L));
-  assert.equal(r.topic, 'other');
-  for (let i = s.cases['yaoyuan-shen'].asked; i < 8; i++) ({ s } = must('case', s, { action: 'ask', who: 'zheng', topic: 'night' }, L));
-  assert.equal(run('case', s, { action: 'ask', who: 'ahe', topic: 'steps' }, L).r.refused, 'no-questions');
-  assert.deepEqual(look(s, content, ctx()).case.clues.map(c => c.id), ['count']);
-});
-
-test('断案: judged by ids — proof must be found; wrong spends the day; right pays once and writes the 恩仇簿', () => {
-  let { s } = must('case', office(), { action: 'open' });
-  const L = ctx({ reader: 'ling' });
-  ({ s } = must('case', s, { action: 'ask', who: 'ahe', topic: 'count' }, L));
-  assert.equal(run('case', s, { action: 'accuse', who: 'maxiaobao', evidence: 'xunye,count' }).r.refused, 'unfound-evidence');
-  ({ s } = must('case', s, { action: 'look', at: 'xitou' }));
-  const wrong = must('case', s, { action: 'accuse', who: 'zheng', evidence: 'yaying,count' });
-  assert.equal(wrong.r.right, false);
-  assert.equal(run('case', wrong.s, { action: 'ask', who: 'zhouheng', topic: 'book' }, L).r.refused, 'come-back');
-  // The next day: questions back, what was found kept.
-  const d2 = nextDay();
-  ({ s } = must('case', wrong.s, { action: 'ask', who: 'zhouheng', topic: 'book' }, { ...d2, reader: 'ling' }));
-  assert.deepEqual(look(s, content, d2).case.clues.map(c => c.id).sort(), ['count', 'xunye', 'yaying']);
-  // The culprit with the night book alone is not enough: `more` asks one more of the book's facts.
-  const thin = run('case', s, { action: 'accuse', who: 'maxiaobao', evidence: 'xunye,yaying' }, d2);
-  assert.equal(thin.r.right, false);
-  const right = must('case', s, { action: 'accuse', who: 'maxiaobao', evidence: 'xunye,count' }, d2);
-  assert.equal(right.r.right, true);
-  assert.equal(right.r.case.outcome, 'solved');
-  assert.ok(right.r.paid.wealth > 0);
-  assert.deepEqual(right.s.ledger.slice(-2).map(e => [e.who, e.kind]), [['ahe', '恩'], ['maxiaobao', '仇']]);
-  assert.equal(run('case', right.s, { action: 'accuse', who: 'maxiaobao', evidence: 'xunye,count' }, d2).r.refused, 'solved');
-  assert.match(cardHtml({ card: 'case' }, { look: look(right.s, content, d2), words: WORDS.zh }), /账对上了/);
+test('断案 is cut (Hanli 10-27: 「紫玉参断案也不好玩, 删了吧, 改成灯谜之类的」): no case, no verb, no card; an old save drops its cases', () => {
+  assert.equal(content.aigames.cases, undefined, 'no cases in the data');
+  assert.equal(look(at('zhishi'), content, ctx()).case, undefined, 'Look carries none at the 执事堂');
+  assert.equal(VERBS.case, undefined, 'no case verb');
+  assert.ok(!topics().includes('case'), 'no guide topic');
+  assert.ok(!fs.readFileSync(path.join(ROOT, 'SKILL.md'), 'utf8').includes('  - name: Case\n'), 'no Case tool');
+  const kept = fitWorld({ ...at('zhishi'), cases: { 'yaoyuan-shen': { day: '2026-10-20', asked: 3, clues: ['count'], tries: 0, outcome: null } } }, content);
+  assert.equal(kept.cases, undefined, 'an old save lets its cases go');
+  // In its place at the 执事堂: 周衡's 灯谜 on the 紫玉参, an errand of his after the same scene, its 10 灵石.
+  const q = content.quests.find((x) => x.id === 'guan-zhishi-shen');
+  assert.ok(q, 'the errand');
+  assert.deepEqual(q.opens, { done: 'wm-diyilu' });
+  assert.deepEqual(q.need, [{ kind: 'board', task: 'zhishi-shen', n: 1, at: 'zhishi' }]);
+  assert.deepEqual(q.grant, { table: 'labor', wealth: 10 });
 });
 
 /* ════════ The door ════════ */
@@ -274,13 +230,13 @@ test('SKILL.md: her Twenty is a pet tool she may call (read tier, page_only for 
   assert.match(twenty, /--for=yinyue/);
   const others = /others_read: \[(.*)\]/.exec(twenty)[1];
   assert.ok(!/secret|reveal/.test(others));
-  for (const name of ['Haggle', 'Case']) assert.ok(!/floor|play|knows|hides/.test(/others_read: \[(.*)\]/.exec(block(name))[1]), name);
-  for (const t of ['haggle', 'case', 'twenty']) assert.ok(topics().includes(t) && guideText(t), t);
+  for (const name of ['Haggle']) assert.ok(!/floor|play|knows|hides/.test(/others_read: \[(.*)\]/.exec(block(name))[1]), name);
+  for (const t of ['haggle', 'twenty']) assert.ok(topics().includes(t) && guideText(t), t);
 });
 
 test('the AI games\' pay is declared in data, under a table that caps it', () => {
   const g = content.aigames;
-  for (const grant of [g.twenty.pay, ...g.cases.map(c => c.pay)]) assert.ok(content.rewards.tables[grant.table], grant.table);
+  for (const grant of [g.twenty.pay]) assert.ok(content.rewards.tables[grant.table], grant.table);
   assert.ok(g._pay.includes('balance'));
   assert.equal(dayKey(NOW).length, 10);
 });

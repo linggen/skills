@@ -990,7 +990,7 @@ Rules: 60–90 s, one thumb, instant retry; three stars (stars set the reward, a
 fewer and better (keep five or six great ones in 卷一, cut the rest); local only, no LLM in the loop;
 physics from a small vendored MIT library (matter.js), no network.
 
-### AI mini-games 【已建 · 二十问 · 讨价还价 · 断案 · 对对子】 (Hanli, 2026-10-15/16)
+### AI mini-games 【已建 · 二十问 · 讨价还价 · 对对子; 断案 cut 2026-10-27】 (Hanli, 2026-10-15/16)
 
 **The AI talks, plays roles and judges fuzzy things against a rubric; the rules decide outcomes
 and pay (capped).** Token cost counts in the daily routine: a few rounds a day, on a cheaper model.

@@ -209,7 +209,7 @@ and live on 9527 where marked; the phone runs the same modules through games/pho
 | riddles (读封 …) | ✓ three misses then 算了 (core.mjs) | — (a card) | ✓ | a card, not a board |
 | 喷嚏符 | 时机 (home-made) → 打地鼠 | ✓ | **before: ink-drawn 时机 figures** → painted | ✓ |
 | 开炉 · 兽潮 · 秘境 rerun · 本王考考你 · 闭关 | ✓ 收手 / walk out / leave the chat / the overlay's close (opened by choice, never a gate) | ✓ (kailu · shouqiang · kapai kits) | ✓ | 开炉 and 兽潮 framed (fantong-kailu.js · board card); the 秘境 room and 闭关 are page rooms with their own close, not boards |
-| the arcade-only 对话 rooms (断案 · 对子 · 讨价 · 二十问) | ✓ (opened by choice) | ✓ jinchat sounds | ✓ | page looks on a scratch save (`stage` rows), the page's chrome |
+| the arcade-only 对话 rooms (对子 · 讨价 · 二十问; 断案 cut 10-27) | ✓ (opened by choice) | ✓ jinchat sounds | ✓ | page looks on a scratch save (`stage` rows), the page's chrome |
 
 **Way out, every moment, off the story (re-check 10-27, after 密室 was found with none — that one is another agent's):**
 errand boards, the tray's 先放一放, 今日's, 兽潮 and 本王考考你 are all `leave` boards (rules/skips.mjs leaveOf) and their card
@@ -1336,7 +1336,7 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
 - **二十问** — 银月 thinks of an ordinary animal; yes/no in the chat; guess within twenty.
   In the story it was 第一回's 00-yinyue till 10-22's play; that board is now 讨饼债 (`bingzhai`, above, § Before 入门).
 - **讨价还价** — haggle with a keeper in the chat; the rules hold the floor and the mood.
-- **断案** — ask the people, find the proof, name who did it.
+- **断案** — cut 2026-10-27 (「紫玉参断案也不好玩」): 周衡's 灯谜 at the 执事堂 in its place.
 - **对对子** — being built 10-16 by another agent.
 - **画猜 · 你画我猜** — prototype 10-16 (`drawguess`, group AI · 试作; Hanli: 「玩家画AI猜, 试一下吧」); in the story 10-19 (below).
   A word from 卷一 (弓 鹿 狐狸 饼 盆 白菜 鸡 葫芦 剑 山 月亮 灯), 60 s, an ink brush on rice paper; 笔 / 擦 (an eraser, its ring

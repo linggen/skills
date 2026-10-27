@@ -135,8 +135,8 @@ export const CARD_KINDS = {
   // A chapter over, the next one waiting: its ending card (story.mjs closeOf) — told, never asking.
   closed: { holds: false },
   lundao: { holds: false }, //     论道 at 稷下: offered, or a game under way — never holds the roads
-  // AI mini-games (rules/aigames.mjs): 二十问 with her, 讨价还价 at a keeper's shelf, 断案 where a case is — never hold the roads.
-  twenty: { holds: false }, haggle: { holds: false }, case: { holds: false },
+  // AI mini-games (rules/aigames.mjs): 二十问 with her, 讨价还价 at a keeper's shelf — never hold the roads.
+  twenty: { holds: false }, haggle: { holds: false },
   duizi: { holds: false }, //     对对子 at the teacher's (rules/duizi.mjs): offered, or a round under way
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
@@ -274,7 +274,6 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
     // AI mini-games: a haggle or a case where he stands; 二十问 once played today (offered, it fills an empty stage below).
     if (look.haggle && !has('haggle')) cards.push({ card: 'haggle' });
-    if (look.case && !has('case')) cards.push({ card: 'case' });
     if (look.duizi && !has('duizi')) cards.push({ card: 'duizi' });
     if (look.twenty && (look.twenty.open || look.twenty.outcome) && !has('twenty')) cards.push({ card: 'twenty' });
     // 刷副本: the door's way in while the rooms are open, and the run's own card inside (rules/rerun.mjs).
@@ -433,7 +432,7 @@ export const MAIN = [
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
-  { kinds: ['board', 'duel', 'lundao', 'twenty', 'haggle', 'case', 'duizi', 'rerun'] }, //  a game to play here
+  { kinds: ['board', 'duel', 'lundao', 'twenty', 'haggle', 'duizi', 'rerun'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do

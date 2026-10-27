@@ -115,8 +115,6 @@ const PAGE_DID = {
     : a.action === 'walk' && r.walked ? 'walked away from the haggle on the page card (list price only for it today)' : null),
   // 对对子 (rules/duizi.mjs): the round dealt, his 下联 sent (Ling grades it), a round let go, his 上联 for the teacher.
   duizi: (r, a) => DUIZI_DID[a.action]?.(r) ?? null,
-  case: (r, a) => (a.action === 'look' && r.found ? `looked around for the case: found 「${r.found.name}」 — ${r.found.fact}`
-    : a.action === 'accuse' && r.right != null ? `named someone on the case card: ${r.right ? 'the accounts tally — solved' : 'it does not tally'}` : null),
 };
 
 const formSaid = f => Object.entries(f?.checks ?? {}).filter(([, v]) => v === 'bad').map(([k]) => k).join(', ') || 'holds';

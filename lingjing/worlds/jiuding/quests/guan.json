@@ -113,6 +113,46 @@
       }
     },
     {
+      "id": "guan-zhishi-shen",
+      "_was": "断案 · 药园那株紫玉参 (aigames.json cases, cut 2026-10-27; Hanli: 「紫玉参断案也不好玩, 删了吧, 改成灯谜之类的, 猜动物也行」): the same place, the same scene behind him, its 10 灵石 — a 灯谜 now (games.json jinchat `shen`); a board errand is 杂役 by the balance law (灵石, and its minutes' 修为 through rules/playpay.mjs), never the case's flat 10 修为.",
+      "title": {
+        "zh": "灯谜 · 紫玉参",
+        "en": "A riddle · The ginseng"
+      },
+      "thread": "person",
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "周衡",
+          "en": "Zhou Heng"
+        }
+      },
+      "say": {
+        "zh": "周衡把账簿合上，从袖子里摸出一张红纸条：「药园那一株，账上不记。可我心里那本账，得平。」纸条上一个谜：「猜着了，算你一份。」",
+        "en": "Zhou Heng shuts the ledger and takes a strip of red paper from his sleeve: \"That plant from the herb garden: not entered in the accounts. But the book in my head has to balance.\" A riddle on the strip: \"Guess it, and there's a share in it for you.\""
+      },
+      "done": {
+        "zh": "周衡在账簿上记了一笔：「平了。」",
+        "en": "Zhou Heng makes a note in the ledger: \"Balanced.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "zhishi-shen",
+          "n": 1,
+          "at": "zhishi"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 10
+      },
+      "opens": {
+        "done": "wm-diyilu"
+      }
+    },
+    {
       "id": "guan-cangjing-shai",
       "title": {
         "zh": "晒经",

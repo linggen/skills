@@ -618,8 +618,9 @@ function renamedCards(content, state) {
   return { ...(cards?.some(id => map[id]) ? { cards: [...new Set(cards.map(to))] } : {}), ...list('deck'), ...list('deck_out'), ...list('cards_new'), ...keyed('card_from'), ...keyed('card_stars') };
 }
 
-/* State a system cut whole left in saves (fitWorld drops it): 密室's open room, a rerun's 暗室 offer, the day's count (2026-10-27). */
-const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log'];
+/* State a system cut whole left in saves (fitWorld drops it): 密室's open room, a rerun's 暗室 offer, the day's count;
+   断案's cases (both 2026-10-27). */
+const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log', 'cases'];
 export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;

@@ -989,7 +989,8 @@
    ],
    "has": {
     "games": [
-     "wuziqi"
+     "wuziqi",
+     "zhishi-shen"
     ],
     "shop": {"_about": "外门库房 (2026-10-27, Hanli on 古四: 「现在看地图也不知到商店在哪里」 — 外门弟子无令不得下山, so the 坊市 is shut to him until the story sends him down, and the pedlar comes one day in three): 周衡 keeps the 公中 store in the stewards' hall and sells to disciples against 灵石, from 古四's 小周天 on. Stock for the 练气一层 hand: 回春丹 · 回气丹, 钱掌柜's three cards (consigned), a 竹剑.", "name": {"zh": "外门库房", "en": "The outer gate's store"}, "keeper": {"zh": "周衡 · 公中的账", "en": "Zhou Heng, on the common account"}, "goods": ["mend-pill", "huiqi-pill", "tieji-bao", "sanhuo-jian", "caoren-zha", "bamboo-sword"], "opens": {"done": "wm-zhoutian"}}
    },

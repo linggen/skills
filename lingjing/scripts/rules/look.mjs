@@ -24,7 +24,7 @@ import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gongkeBoard, meaningOf } from './gongke.mjs';
 import { catchHere, errandAsking, errandWants, gameLevel, hostedHere, lundaoBrief, reopened, skipCut, stallHere } from './tasks.mjs';
-import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
+import { haggleBrief, twentyBrief } from './aigames.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
@@ -646,7 +646,6 @@ export function look(state, content, ctx) {
     // AI mini-games (rules/aigames.mjs): facts only — never the animal, the floor or the case's truth.
     ...(twentyBrief(content, state, ctx.now) ? { twenty: twentyBrief(content, state, ctx.now) } : {}),
     ...(haggleBrief(content, state, ctx.now) ? { haggle: haggleBrief(content, state, ctx.now) } : {}),
-    ...(caseBrief(content, state, ctx.now) ? { case: caseBrief(content, state, ctx.now) } : {}),
     // 对对子 (rules/duizi.mjs): the teacher here, the rungs, today's round — never the classic 下联 before it is graded.
     ...(duiziBrief(content, state, ctx.now) ? { duizi: duiziBrief(content, state, ctx.now) } : {}),
     // 所得: errands that handed themselves in here, until he walks on.

@@ -15,7 +15,7 @@ const must = (fn, s, args) => { const r = fn(s, content, ctx, args); assert.ok(r
 
 test('the errand board won: the errand is handed in, the stage holds 交差 and the next step — not the won board', () => {
   // A save at 09-year standing in the 执事堂 (the arcade's fixture, seeded by tools/arcade-saves.mjs).
-  let s = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/arcade-duanan.json', import.meta.url), 'utf8')).state;
+  let s = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/zhishi-09year.json', import.meta.url), 'utf8')).state;
   assert.equal(s.place, 'zhishi');
   s = must(quest, s, { id: 'guan-zhishi-ledger', action: 'take' });
   s = must(win, s, { id: 'wuziqi' });

@@ -31,7 +31,8 @@ test('every chat board: a task on the jinchat game with its own chat, a story ro
     assert.equal(t.game, 'jinchat');
     assert.equal(t.deal.chat, row.data.chat, `${row.task}: the row and the task deal the same chat`);
     assert.ok(CHATS[t.deal.chat], `${row.task}: its chat ${t.deal.chat}`);
-    assert.deepEqual(t.grant, { table: 'task' }, '不跨线: the 今 lifts nothing of the 古');
+    // 不跨线: the 今 lifts nothing of the 古; a hosted one (周衡's 灯谜 at the 执事堂) names its 0 for the balance law.
+    assert.deepEqual(t.grant, t.hosted ? { table: 'task', progress: 0 } : { table: 'task' }, '不跨线: the 今 lifts nothing of the 古');
     assert.ok(t.how?.zh && t.how?.en, `${row.task}: the goal said to him in the shell's bar`);
     assert.ok(t.replay?.zh && t.replay?.en, `${row.task}: a line to offer it again, left`);
   }

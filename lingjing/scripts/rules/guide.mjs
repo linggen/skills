@@ -31,9 +31,8 @@ export const TOPICS = {
   trial: ({ said, result }) => result?.place?.meet?.kind === 'trial' || tag(said, /^\[scene\] trial\b/),
   tasks: ({ verb, result }) => ['task', 'quest'].includes(verb) || has(result?.offers) || has(result?.book) || Boolean(result?.handed),
   lundao: ({ verb, result }) => verb === 'lundao' || Boolean(result?.lundao) || (result?.tasks ?? []).some(t => t.kind === 'word' && t.status !== 'done'),
-  // AI mini-games (rules/aigames.mjs): a haggle or a case where he stands, 二十问 under way.
+  // AI mini-games (rules/aigames.mjs): a haggle where he stands, 二十问 under way.
   haggle: ({ verb, result }) => verb === 'haggle' || Boolean(result?.haggle),
-  case: ({ verb, said, result }) => verb === 'case' || Boolean(result?.case && result.case.outcome === 'open') || tag(said, /^\[scene\] case\b/),
   twenty: ({ verb, result }) => verb === 'twenty' || Boolean(result?.twenty?.open),
   // 对对子 (rules/duizi.mjs): a round or a reverse under way, or the page's word that one was sent.
   duizi: ({ verb, said, result }) => verb === 'duizi' || Boolean(result?.duizi?.round || result?.duizi?.rev) || tag(said, /^\[scene\] duizi\b|对对子|上联|下联/),
