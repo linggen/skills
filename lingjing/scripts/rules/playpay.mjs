@@ -87,7 +87,7 @@ export function errandGrant(content, state) {
 }
 
 /* A 人间功课's 修为 (Hanli 2026-10-27, then 「按照百分比奖励」): a fixed share of the layer by its period — a day's 10%, a
-   week's 20% (`play_pay.chore`). Never ★, never the replay: one chore is paid once a period (chores.mjs). Null where none. */
+   week's 20%, a month's 30% (`play_pay.chore`). Never ★, never the replay: one chore is paid once a period (chores.mjs). Null where none. */
 export function chorePlay(content, state, period) {
   const pct = content.balance?.play_pay?.chore?.[period];
   if (!pct || !state) return null;

@@ -22,7 +22,7 @@ const scratch = () => {
 test('every entry carries the protocol fields, and each pool chore is modest', () => {
   for (const m of MENU) {
     assert.match(m.id, /^cfo-/);
-    assert.ok(['day', 'week', 'once'].includes(m.period), m.id);
+    assert.ok(['day', 'week', 'month', 'once'].includes(m.period), m.id);
     assert.ok(['mac', 'phone', 'both'].includes(m.device), m.id);
     if (m.period === 'once') assert.ok(m.reward === 50 && m.stamina === 20 && !('pool' in m), m.id); // linggen.json's 开府 shape
     else assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina >= 10 && m.stamina <= 20, m.id);
@@ -31,6 +31,16 @@ test('every entry carries the protocol fields, and each pool chore is modest', (
   const doc = merged(null, {});
   assert.equal(doc.app, 'cfo');
   assert.ok(doc.quests.every((q) => q.due === true && q.done_at === null));
+});
+
+test('importing a statement is a month\'s chore (Hanli 2026-10-27): a stamp moves it on like any repeating chore, never held like 开府', () => {
+  const imp = MENU.find((m) => m.id === 'cfo-import');
+  assert.equal(imp.period, 'month');
+  assert.equal(imp.pool, true);
+  const sept = merged(null, { 'cfo-import': '2026-09-30T10:00:00Z' });
+  const oct = merged(sept, { 'cfo-import': '2026-10-27T09:00:00Z' });
+  assert.equal(oct.quests.find((q) => q.id === 'cfo-import').done_at, '2026-10-27T09:00:00Z', 'next month\'s import is its own');
+  assert.equal(merged(oct, { 'cfo-import': '2026-10-01T09:00:00Z' }).quests.find((q) => q.id === 'cfo-import').done_at, '2026-10-27T09:00:00Z', 'never back');
 });
 
 test('a stamp sets its own done_at and keeps every other id, known or not', async () => {

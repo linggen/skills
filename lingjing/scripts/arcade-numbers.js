@@ -101,7 +101,7 @@ function fightsChart(r) {
 
 function layersTable(r) {
   return section('每层 · 单位', tableHtml([
-    ['层', 'name', { left: true }], ['门槛', 'need'], ['修为/分 (小游戏)', 'rate'], ['一夜闭关', 'night'], ['日功课', 'chore_day'], ['周功课', 'chore_week'],
+    ['层', 'name', { left: true }], ['门槛', 'need'], ['修为/分 (小游戏)', 'rate'], ['一夜闭关', 'night'], ['日功课', 'chore_day'], ['周功课', 'chore_week'], ['月功课', 'chore_month'],
     ['一场游荡斗法', 'haunt'], ['一件差事', 'errand'], ['目标 h', 'target_h'], ['功课 h', 'chore_h'], ['无功课 h', 'rule_h'],
     ['模型 h (中)', 'model_h'], ['模型天 轻·中·重', (l) => ['light', 'typical', 'heavy'].map((k) => l.model_days?.[k] ?? '—').join('·')], ['灵石/分 (中)', 'ls_min'],
   ], r.layers.map((l) => ({ ...l, id: l.key }))), true);

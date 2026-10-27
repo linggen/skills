@@ -213,7 +213,7 @@ export function normalizeAnswer(answer) {
     .replace(/^(an?|the) /, '');
 }
 
-/* ── Time: local days, ISO weeks ── */
+/* ── Time: local days, ISO weeks, calendar months ── */
 
 const pad = n => String(n).padStart(2, '0');
 
@@ -230,15 +230,22 @@ export function weekKey(now) {
   return `${d.getUTCFullYear()}-W${pad(week)}`;
 }
 
+/* The local calendar month: 2026-10. */
+export const monthKey = now => `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
+
+/* A chore's period (any app's quest file): day · week · month · once. */
+export const PERIODS = ['day', 'week', 'month', 'once'];
+const KEY = { day: dayKey, week: weekKey, month: monthKey };
+
 export function periodKey(period, now) {
-  if (period === 'day') return dayKey(now);
-  if (period === 'week') return weekKey(now);
-  return 'once';
+  return KEY[period]?.(now) ?? 'once';
 }
 
+/* Where the period began, at local midnight: today, the week's Monday, the month's 1st; once is all time. */
 export function periodStart(period, now) {
   const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   if (period === 'week') d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  if (period === 'month') d.setDate(1);
   if (period === 'once') return new Date(0);
   return d;
 }

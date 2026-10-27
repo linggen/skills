@@ -163,7 +163,7 @@ export function layersOf(content, base) {
       key: keyOf(at), name: layerName(content, t.id, step), ...at, need, prev: out.at(-1) ? { name: out.at(-1).name, need: out.at(-1).need } : null,
       // 零层 takes no 修为 (state.mjs addProgress): nothing a layer pays lands there.
       zero: z, rate: z ? 0 : round(rate, 2), night: z ? 0 : nightOf(content, s),
-      chore_day: chorePlay(content, s, 'day'), chore_week: chorePlay(content, s, 'week'),
+      chore_day: chorePlay(content, s, 'day'), chore_week: chorePlay(content, s, 'week'), chore_month: chorePlay(content, s, 'month'),
       haunt: z ? 0 : paysOf(content, s, NOW, content.rewards.tables.haunt ? { table: 'haunt', progress: content.rewards.tables.haunt.progress } : null)?.progress ?? 0,
       errand: z ? 0 : errandGrant(content, s)?.progress ?? 0,
       target_h: targetHours(content, at), rule_h: round(gamesHours, 1), chore_h: round(choreDays && (choreDays * day) / 60, 1), chore_days: round(choreDays, 1),
@@ -482,6 +482,8 @@ const RED = {
   layers: [
     [r => r.prev && r.need && r.need < r.prev.need, r => `${r.name} asks ${r.need} 修为, under ${r.prev.name}'s ${r.prev.need} — the next realm is cheaper than the last layer of this one`],
     [r => r.target_h && r.chore_h && Math.abs(r.chore_h / r.target_h - 1) > LIMITS.hours_off, r => `${r.name}: with one 功课 a day its ${r.need} 修为 fill in ${r.chore_h} h of play (${r.chore_days} days at 30 min) — target ${r.target_h} h; the 功课 carries ${pct(1 - r.chore_h / r.rule_h)} of it`],
+    // A rarer 功课 pays more: a day's < a week's < a month's (balance.json play_pay.chore).
+    [r => !r.zero && [r.chore_day, r.chore_week, r.chore_month].filter(x => x != null).some((x, i, a) => i && x <= a[i - 1]), r => `${r.name}: a day's · a week's · a month's 功课 pay ${r.chore_day} · ${r.chore_week} · ${r.chore_month} — a rarer one should pay more`],
     [r => r.target_h && r.rule_h && r.rule_h / r.target_h > 1 + LIMITS.hours_off, r => `${r.name}: with no 功课 (a plain install) ${r.rule_h} h of play — ${round(r.rule_h / r.target_h, 1)}× the target ${r.target_h} h`],
   ],
   kailu: [
@@ -531,8 +533,8 @@ export async function measure(content = loadContent(), { deals = 0, keep = null 
 
 function summary(r) {
   const lines = [`数值 ${r.stamp.date} @${r.stamp.commit ?? '?'} — ${r.errors.length} hard errors · ${r.red.length} red`];
-  lines.push('层          need  修为/min  night  功课/day  rule h  target h  model h (typical days)');
-  for (const l of r.layers) lines.push(`${l.name.padEnd(8)} ${String(l.need).padStart(6)} ${String(l.rate).padStart(8)} ${String(l.night).padStart(6)} ${String(l.chore_day ?? '—').padStart(8)} ${String(l.rule_h ?? '—').padStart(7)} ${String(l.target_h ?? '—').padStart(9)} ${String(l.model_h ?? '—').padStart(8)} (${l.model_days.typical ?? '—'})`);
+  lines.push('层          need  修为/min  night  功课/day  功课/mo  rule h  target h  model h (typical days)');
+  for (const l of r.layers) lines.push(`${l.name.padEnd(8)} ${String(l.need).padStart(6)} ${String(l.rate).padStart(8)} ${String(l.night).padStart(6)} ${String(l.chore_day ?? '—').padStart(8)} ${String(l.chore_month ?? '—').padStart(8)} ${String(l.rule_h ?? '—').padStart(7)} ${String(l.target_h ?? '—').padStart(9)} ${String(l.model_h ?? '—').padStart(8)} (${l.model_days.typical ?? '—'})`);
   lines.push('回 days (light · typical · heavy): ' + r.paces.map(p => `${p.hui} ${p.light}·${p.typical}·${p.heavy}`).join('  '));
   for (const e of r.errors) lines.push(`ERROR ${e.where}: ${e.say}`);
   const bySrc = {};

@@ -23,7 +23,7 @@ const OPEN = '/apps/cfo/scripts/index.html';
 
 export const MENU = [
   {
-    id: 'cfo-import', kind: 'ledger', period: 'week', reward: 30, stamina: 20, device: 'both', pool: true, open: `${OPEN}?tab=report`,
+    id: 'cfo-import', kind: 'ledger', period: 'month', reward: 30, stamina: 20, device: 'both', pool: true, open: `${OPEN}?tab=report`,
     title: { zh: '清点府库 · 在 CFO 导入一份账单', en: 'Balance the treasury · import a statement in CFO' },
   },
   {

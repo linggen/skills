@@ -136,7 +136,8 @@ test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零�
   const pp = content.balance.play_pay, at = pct => Math.round(pct * 470);
   assert.deepEqual(payOf({ id: 'health-workout', period: 'day', reward: 20 }), { progress: at(pp.chore.day), wealth: 0 });
   assert.deepEqual(payOf({ id: 'shifu-scan', period: 'week', pool: true, reward: 30 }), { progress: at(pp.chore.week), wealth: T.life.wealth });
-  assert.deepEqual([at(pp.chore.day), at(pp.chore.week)], [47, 94]);
+  assert.deepEqual([at(pp.chore.day), at(pp.chore.week), at(pp.chore.month)], [47, 94, 141], 'a month\'s 30%: rarer, so more');
+  assert.deepEqual(payOf({ id: 'cfo-import', period: 'month', pool: true, reward: 30 }), { progress: at(pp.chore.month), wealth: T.life.wealth });
   assert.equal(chorePlay(content, { ...s, step: 3 }, 'day'), 51, '三层: 10% of 510 — the pay grows with the layer');
   assert.deepEqual(choreGrant(content, { id: 'health-workout', period: 'day', reward: 20 }).progress, 0, 'no save, no layer: nothing read off it');
   assert.deepEqual(payOf({ id: 'linggen-pair', period: 'once', reward: 50 }), { progress: 0, wealth: T.once.wealth });

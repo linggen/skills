@@ -515,7 +515,7 @@
       ]
     }
   },
-  "_play_pay": "Every 修为 pay is a share of the layer he stands on (Hanli 2026-10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」, then 「一层才要470修为, 我们可否按照百分比奖励, 这样等级高了后, 奖励也合理」; doc/games.md § Pay as a share of the layer; rules/playpay.mjs). A layer is a play-time budget (`hours`: 练气一层 2 h, +1 h a layer; 筑基 6 h a step, 金丹 8, 元婴 10). The small games and fights carry `games.share` (60%) of its 修为 over `games.time` (35%) of its minutes: a board of m minutes pays m ÷ (0.35 × the layer's minutes) × 60% of the layer's need — 练气一层 a 1-minute board 1.4% (7), a 6-minute 棋牌 8.6% (40); a fight won (`haunt`) its `fight.minutes`. ★ 0.6 · 0.8 · 1.0; the same board again the same day 100 · 50 · 10%. Errands: 15% of the layer over 10% of its time, by `errand.minutes` (练气一层 6.3%, 29). 人间功课 (`chore`): a day's 10%, a week's 20% of the layer (练气一层 47 · 94), no ★, no replay. What the book authors — a scene's way on, a pill, a rumor, a 机缘, the tables in `authored.tables` — is read as a share of the 练气一层 it was written against (`authored.base` 470: a scene's 60 is 12.8%). 灵石 stays by the kind and the tables. No daily cap; 修为 stops at the gate and turns to 灵石 (`convert` lists `play` and `haunt`). Supersedes the per-layer `rate` tables and `layer_pay` for fights (2026-10-27).",
+  "_play_pay": "Every 修为 pay is a share of the layer he stands on (Hanli 2026-10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」, then 「一层才要470修为, 我们可否按照百分比奖励, 这样等级高了后, 奖励也合理」; doc/games.md § Pay as a share of the layer; rules/playpay.mjs). A layer is a play-time budget (`hours`: 练气一层 2 h, +1 h a layer; 筑基 6 h a step, 金丹 8, 元婴 10). The small games and fights carry `games.share` (60%) of its 修为 over `games.time` (35%) of its minutes: a board of m minutes pays m ÷ (0.35 × the layer's minutes) × 60% of the layer's need — 练气一层 a 1-minute board 1.4% (7), a 6-minute 棋牌 8.6% (40); a fight won (`haunt`) its `fight.minutes`. ★ 0.6 · 0.8 · 1.0; the same board again the same day 100 · 50 · 10%. Errands: 15% of the layer over 10% of its time, by `errand.minutes` (练气一层 6.3%, 29). 人间功课 (`chore`): a day's 10%, a week's 20%, a month's 30% of the layer (练气一层 47 · 94 · 141; Hanli 2026-10-27: 「cfo倒入账单应该是每月任务」 — rarer, so more), no ★, no replay. What the book authors — a scene's way on, a pill, a rumor, a 机缘, the tables in `authored.tables` — is read as a share of the 练气一层 it was written against (`authored.base` 470: a scene's 60 is 12.8%). 灵石 stays by the kind and the tables. No daily cap; 修为 stops at the gate and turns to 灵石 (`convert` lists `play` and `haunt`). Supersedes the per-layer `rate` tables and `layer_pay` for fights (2026-10-27).",
   "play_pay": {
     "hours": { "qi": [0, 2, 3, 4, 5, 6, 7, 8, 9, 10], "foundation": 6, "core": 8, "nascent": 10, "default": 12 },
     "games": { "share": 0.6, "time": 0.35 },
@@ -525,7 +525,7 @@
     "replay": [1, 0.5, 0.1],
     "fight": { "minutes": 4 },
     "errand": { "share": 0.15, "time": 0.1, "minutes": 5, "wealth": 15 },
-    "chore": { "day": 0.1, "week": 0.2 },
+    "chore": { "day": 0.1, "week": 0.2, "month": 0.3 },
     "_skip": "跳过 · 酬减半 (Hanli 2026-10-27, 晒经's 华容道: 「让用户能跳过去, 就好了」): a board an errand needs, left once stuck, counts for the errand — met and paid in full — and pays this share of the board's own play pay at full ★ (rules/tasks.mjs errandSkip). The page's button says the cut from this number.",
     "skip": 0.5,
     "authored": { "base": 470, "tables": ["scene", "task", "puzzle", "branch", "tale", "tale_end", "chore_kind", "game", "quest", "meet", "trial", "chance"] }

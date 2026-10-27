@@ -166,7 +166,7 @@ daily cap and 圆满 → 灵石 are kept.
 - **Boards and fights**: a thing of m minutes pays m ÷ (35% × the layer's play minutes) × 60% of its need (`games`, `hours`:
   练气一层 2 h, +1 h a layer; 筑基 6 h a step, 金丹 8, 元婴 10). A fight won is 4 minutes (`fight`).
 - **Errands**: 15% of the layer over 10% of its time, by their 5 minutes (`errand`).
-- **人间功课**: a day's 10%, a week's 20% of the layer (`chore`), once a period.
+- **人间功课**: a day's 10%, a week's 20%, a month's 30% of the layer (`chore`), once a period.
 - **What the book authors** — a scene's way on, a pill, a rumor, a 机缘, a road-meet (`authored.tables`) — is read as a share
   of the 练气一层 it was written against (`authored.base` 470): a scene's 60 is 12.8% of whatever layer he is on.
 - 闭关 keeps its hourly rate × `layer_pay` (not asked; the one pay still by table).

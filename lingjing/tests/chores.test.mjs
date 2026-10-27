@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { monthKey, newState, periodKey, periodStart } from '../scripts/state.mjs';
+import { chorePlay } from '../scripts/rules/playpay.mjs';
 import { look, quest, task, progress } from '../scripts/rules.mjs';
 import { dailyPick, phoneReady } from '../scripts/rules/chores.mjs';
 import { readQuests } from '../scripts/rules/files.mjs';
@@ -106,6 +107,39 @@ test('only the pick and the fixed pay; another pool chore done anyway is shown n
   const paid = quest(s, content, ctx(allDone), { action: 'turn', id: pickId });
   assert.equal(paid.result.ok, true);
   assert.equal(quest(paid.state, content, ctx(allDone), { action: 'turn', id: 'health-workout' }).result.ok, true);
+});
+
+test('a month\'s 功课: keyed YYYY-MM from the 1st at local midnight; paid once a month at 30% of the layer; last month\'s done does not count', () => {
+  const oct = new Date(2026, 9, 27, 10), first = new Date(2026, 9, 1, 0, 0, 0), lastOfSep = new Date(2026, 8, 30, 23, 59);
+  assert.equal(monthKey(oct), '2026-10');
+  assert.equal(periodKey('month', oct), '2026-10');
+  assert.equal(periodKey('month', new Date(2027, 0, 3)), '2027-01');
+  assert.equal(periodKey('month', lastOfSep), '2026-09', 'the last minute of a month is still its own');
+  assert.equal(periodStart('month', oct).getTime(), first.getTime());
+  assert.equal(periodStart('month', first).getTime(), first.getTime(), 'the 1st at midnight starts it');
+  const s = start();
+  const imp = entry('cfo-import', { period: 'month', device: 'both', kind: 'ledger' });
+  // done on the 30th of September: not this month's
+  const sept = [{ ...imp, done_at: lastOfSep.toISOString() }];
+  const stale = chores(look(s, content, ctx(sept, oct)).book).find(x => x.id === imp.id);
+  assert.ok(stale, 'still this month\'s to do');
+  assert.equal(stale.chore.done_at, null);
+  refused(quest(s, content, ctx(sept, oct), { action: 'turn', id: imp.id }), 'not-done');
+  // done this morning: the book's line, a month's, paid 30% of the layer
+  const done = [{ ...imp, done_at: new Date(2026, 9, 27, 9).toISOString() }];
+  const line = chores(look(s, content, ctx(done, oct)).book).find(x => x.id === imp.id);
+  assert.equal(line.chore.period, 'month');
+  const out = quest(s, content, ctx(done, oct), { action: 'turn', id: imp.id });
+  assert.equal(out.result.ok, true);
+  assert.equal(content.balance.play_pay.chore.month, 0.3);
+  assert.ok(chorePlay(content, s, 'month') > chorePlay(content, s, 'week'), 'rarer, so more than a week\'s');
+  assert.equal(out.result.paid.progress, chorePlay(content, s, 'month'));
+  assert.equal(out.state.chores[imp.id].period, '2026-10');
+  // once a month: again later in October it is spent; in November, done again, it pays again
+  refused(quest(out.state, content, ctx(done, new Date(2026, 9, 30, 10)), { action: 'turn', id: imp.id }), 'already-paid');
+  const nov = new Date(2026, 10, 3, 10), doneNov = [{ ...imp, done_at: new Date(2026, 10, 3, 9).toISOString() }];
+  refused(quest(out.state, content, ctx(done, nov), { action: 'turn', id: imp.id }), 'not-done');
+  assert.equal(quest(out.state, content, ctx(doneNov, nov), { action: 'turn', id: imp.id }).result.ok, true);
 });
 
 test('开府: done_at null is not done; a done one pays once ever — capped, on any device, in any week', () => {
