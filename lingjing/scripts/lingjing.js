@@ -599,6 +599,8 @@ async function readOnce() {
     stageQuestDone(look, seen);
     gainedCards(look, seen);
     look = withArcade(withCaps(seen, caps), ARCADE_GAME, arcadeDeal);
+    // A cooldown's minutes are as of this Look: kept as the moment it opens, so the row counts down between Looks.
+    for (const w of look?.waits ?? []) w.ready_at = Date.now() + (w.wait_min ?? 0) * 60_000;
     if (look?.engine && !engineAt) engineAt = look.engine;
     watchRun();
     if (look.divination) keep({ casting: false });
@@ -3075,6 +3077,15 @@ async function fedFantong(r) {
   if (view.gearOpen && g?.gear) keep({ gear: g.gear });
   await refresh();
 }
+/* A cooldown row counts down by the minute (Hanli 10-27: 「这个倒计时好像不变呢, 一直是7刻」 — the minutes were
+   the last Look's); the moment one opens, the rules are read again so its board stands ready. */
+setInterval(() => {
+  const waits = look?.waits ?? [];
+  if (!waits.length || document.visibilityState !== 'visible') return;
+  if (waits.some((w) => w.ready_at && Date.now() >= w.ready_at)) { refresh(); return; }
+  render();
+}, 60_000);
+
 /* The bowl fills back while the board is open; the moment it may eat, the brief is read again. */
 setInterval(() => {
   const fb = view.fantong;

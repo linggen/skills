@@ -1756,11 +1756,13 @@ function waitWords(min, ctx) {
   if (zh) return min >= 120 ? say(ctx.words.waitShi, { n: Math.ceil(min / 120) }) : say(ctx.words.waitKe, { n: Math.max(1, Math.ceil(min / 15)) });
   return min >= 60 ? say(ctx.words.waitShi, { n: Math.ceil(min / 60) }) : say(ctx.words.waitKe, { n: Math.max(1, Math.ceil(min)) });
 }
+/// Minutes left on a cooldown: from the moment it opens (stamped by the page at each Look), else as Look said.
+const waitLeft = (w) => (w.ready_at ? Math.max(0, (w.ready_at - Date.now()) / 60_000) : w.wait_min);
 /// A cooldown waited out (Look's `waits`: 兽潮, the 秘境 rerun, a pool at rest — one shape, one row): its name, the
 /// world's line, about how long. Nothing to start.
 function waitRowHtml(w, ctx) {
   return `<div class="card task waiting" data-wait="${esc(w.id)}"><div class="tasktitle">${esc(w.title)}</div>${w.shut ? `<div class="small dim">${esc(w.shut)}</div>` : ''}
-      <div class="taskfoot"><span class="chip">${esc(waitWords(w.wait_min, ctx))}</span></div></div>`;
+      <div class="taskfoot"><span class="chip">${esc(waitWords(waitLeft(w), ctx))}</span></div></div>`;
 }
 
 /// The boards at hand: a scene's, or a game an errand asks for here — never a daily chore.
