@@ -681,6 +681,13 @@ function huntBadge(e, lang) {
   return fresh + tally;
 }
 
+/// 「换一只」 on a pool's beast (rules/match.mjs reroll): another of the beasts that fit him stands — free once a visit, then 体力.
+function rerollHtml(r, lang) {
+  const en = lang === 'en';
+  const cost = r.free ? '' : en ? ` · ${r.cost} stamina` : ` · 体力${r.cost}`;
+  return `<button class="act quiet" data-reroll title="${esc(en ? 'Another beast of your measure stands' : '换一只与你相当的')}">${esc(en ? 'Another' : '换一只')}${esc(cost)}</button>`;
+}
+
 /// 难度 against his power (fightodds.js, the page's): 易 · 相当 · 稍难 · 难, with the share won in its title.
 function oddsChip(o, lang) {
   if (!o) return '';
@@ -697,7 +704,7 @@ function duel(card, ctx) {
   if (!exit) return '';
   // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
   // creature's own card offers 收服 (creature, below).
-  const html = challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, badge: exit === e ? huntBadge(e, ctx.lang) + oddsChip(ctx.oddsFor?.(exit.duel), ctx.lang) : '' });
+  const html = challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, badge: exit === e ? huntBadge(e, ctx.lang) + oddsChip(ctx.oddsFor?.(exit.duel), ctx.lang) : '', feed: exit === e && e.pool && e.reroll ? `${ctx.feed ?? ''}${rerollHtml(e.reroll, ctx.lang)}` : ctx.feed });
   // Inside a key beat's lock, lost often enough (Look's `stuck`, rules/skips.mjs fightStuck): 「算了，往下走」
   // under the card — the way on, no reward, as a riddle passed (core.mjs resolve `pass`).
   // Laid as a board's own skip is (skipButton, the .gskip row), so the two read alike.

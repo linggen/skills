@@ -3684,6 +3684,7 @@ const CLICKS = [
   // 开局 from the tray puts the board in the line, behind an errand not yet taken.
   ['[data-play]', (el) => !el.matches(':disabled') && openFromTray(el.dataset.play)],
   ['[data-qnext]', (el) => putOff(el.dataset.qnext)],
+  ['[data-reroll]', () => rerollTap()],
   ['[data-g]', (el) => gameMove(el)],
   ['[data-tile]', (el) => tileTap(el)],
 ];
@@ -4142,6 +4143,13 @@ async function settleBout(b, out = {}) {
   if (view.spoils?.pending) show({ spoils: { ...view.spoils, pending: false } });
   // The loss card's way forward, tapped (battle-card.js endHtml): taken now, by the page's own verb.
   if (out.go && r.outcome !== 'won') await takeWay(out.go);
+}
+
+/* 「换一只」 (rules/match.mjs reroll): another beast of his measure stands at this pool — the rules choose, the page redraws. */
+async function rerollTap() {
+  const r = await write('reroll', {}).catch(failed);
+  keep({ doNote: r.ok ? null : refusal(r) });
+  await refresh();
 }
 
 /* A way to grow stronger (rules/strengthen.mjs), taken from the loss card: put on, walk to the shelf,

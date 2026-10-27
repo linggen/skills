@@ -33,6 +33,7 @@ import { chooseLang, inPlay, langNow, stateText } from './rules/language.mjs';
 import { pageNames, pageThrows } from './rules/core.mjs';
 import { clock, dataDir, freshState, withRun, shiftDays, shiftFile, homeDir, parseArgs, readQuests, SAVE_NAME, savedFile, savedFor, scratchName, skillDir, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
+import { standFit } from './rules/match.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { seclusionHold } from './rules/seclusion.mjs';
 import { VERBS } from './rules/verbs.mjs';
@@ -56,6 +57,7 @@ export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mj
 export { hasCompanion } from './rules/companion.mjs';
 export { shopsInReach, strengthen } from './rules/strengthen.mjs';
 export { fightsNear } from './rules/fights.mjs';
+export { pickStand, reroll, standFit, MATCH } from './rules/match.mjs';
 import { fitPresence } from './rules/companion.mjs';
 import { pageHerGame } from './rules/hergame.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';
@@ -146,7 +148,11 @@ function runLocked(verb, args, stateFile, reader) {
   // earlier day closed — both written with whatever this call writes.
   // Her presence fitted to the scene (companion.mjs fitPresence) — the flag the engine reads.
   // A stage quest behind him never handed in is paid once, here (rules/gates.mjs settleStages).
-  const saved = raw && raw.world === worldId ? settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now), now), now) : raw;
+  // …and a pool's beast matched to him where he stands (rules/match.mjs standFit), chosen again when it no longer holds.
+  const fitted = raw && raw.world === worldId ? settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now), now), now) : raw;
+  const saved = fitted && raw?.world === worldId ? standFit(content, fitted, now) : fitted;
+  // Only the stand moved (a read): written, never logged — Undo takes back moves, not a beast chosen.
+  const standOnly = Boolean(raw) && fitted === raw && saved !== raw;
   const state = verb === 'init' || !saved ? freshState(content, langNow(), now, saved) : saved;
   // 前情提要 owed as a sitting opens (story.mjs): a chat session of Ling's seen
   // first on her Look, or a while away. Marked in place, and kept below
@@ -226,7 +232,7 @@ function runLocked(verb, args, stateFile, reader) {
     markBeen(content, next);
     next.updated = now.toISOString();
     writeAtomic(stateFile, stateText(next));
-    fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args), before: unconfirmed(raw ?? state) }) + '\n');
+    if (!(standOnly && !out.state)) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args), before: unconfirmed(raw ?? state) }) + '\n');
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const asking = next ?? state;
@@ -234,7 +240,7 @@ function runLocked(verb, args, stateFile, reader) {
   // A refusal with her word in it (Move's `too-hard`) writes nothing, but her
   // beat is kept on the save as a node for the page to raise — never logged,
   // so Undo still takes back the last real move (story.mjs refusalBeat).
-  if (!next && out.result?.ok === false && out.result.her_beat) {
+  if ((!next || (standOnly && !out.state)) && out.result?.ok === false && out.result.her_beat) {
     asking.node = withHerBeat(null, out.result.her_beat, now);
     writeAtomic(stateFile, stateText(asking));
   }

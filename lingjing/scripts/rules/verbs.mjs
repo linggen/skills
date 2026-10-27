@@ -23,6 +23,7 @@ import { fantong, fantongBook, fantongOpen, fantongRecipes } from './fantong.mjs
 import { mishi } from './mishi.mjs';
 import { kao } from './kao.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
+import { reroll } from './match.mjs';
 import { seclude } from './seclusion.mjs';
 import { caseVerb, haggle, twenty } from './aigames.mjs';
 import { resume, setAside } from './aside.mjs';
@@ -58,7 +59,7 @@ export const VERBS = gated({
     }
     return { state: next, result };
   },
-  resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
+  resolve, judge, task, win, duel, reroll, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong, rerun,
   // AI mini-games (rules/aigames.mjs): 二十问 (银月's), 讨价还价 and 断案 (Ling's).
   twenty, haggle, case: caseVerb,

@@ -361,7 +361,8 @@ export function duel(state, content, ctx, args) {
     // 丹囊: the pills he picked at the door (`pills`, ids comma-separated; '' carries none) — kept as his
     // pick for the next door, as many as the bag holds (cards.mjs pouchFor).
     if (args.pills != null && !resuming) s.pill_pick = String(args.pills).split(',').map(x => x.trim()).filter(id => fightPill(content, id)).slice(0, POUCH_MAX);
-    s.duels = { ...s.duels, [key]: { day, outcome: 'open', ...(hunt ? { n, ...(today?.last ? { last: today.last } : {}) } : {}) } };
+    // A pool's matched beast (rules/match.mjs) stands through its own fight: the settle finds the same one.
+    s.duels = { ...s.duels, [key]: { day, outcome: 'open', ...(hunt ? { n, ...(today?.last ? { last: today.last } : {}), ...(today?.day === day && today.stand ? { stand: today.stand } : {}) } : {}) } };
     // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
     // from the save, not from a message, because a message can be lost.
     s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString() };

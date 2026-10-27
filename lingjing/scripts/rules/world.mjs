@@ -414,9 +414,17 @@ const entryUp = (content, state, b, now) => fromReached(content, state, b)
 const poolUp = (content, state, place, now) => (poolOf(content, place)?.beasts ?? [])
   .filter(b => (b.weight ?? 1) > 0 && metNow(content, b.creature, now) && !(state.cast ?? []).includes(b.creature) && entryUp(content, state, b, now));
 const recentAt = (state, placeId) => state.duels?.[huntKey(placeId)]?.last ?? [];
+/* The stand rules/match.mjs keeps for a pool: today's, after the same number of fights there. */
+const standHere = (state, place, now) => {
+  const rec = state.duels?.[huntKey(place.id)];
+  return rec?.day === dayKey(now) && rec.stand && rec.stand.n === (rec.n ?? 0) ? rec.stand : null;
+};
 function poolBeast(content, state, place, now) {
   const up = poolUp(content, state, place, now);
   if (!up.length) return null;
+  // The beast matched to him (rules/match.mjs standFit, kept on the save): it stands while it holds.
+  const stood = standHere(state, place, now);
+  if (stood && up.some(b => b.creature === stood.cid)) return stood.cid;
   const rules = huntRules(content, poolOf(content, place));
   const day = dayKey(now), rec = state.duels?.[huntKey(place.id)];
   const n = rec?.day === day ? rec.n ?? 0 : 0;
@@ -462,7 +470,9 @@ function foeOf(content, game) {
   // A rerun's elite (rules/rerun.mjs): the harder deck its instance declares.
   if (creature && game.deck) return { ...creature, deck: game.deck };
   const entry = creature && game.hunt ? poolEntry(content, game.hunt, game.creature) : null;
-  const base = entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}), ...(entry.roaming ? { roaming: entry.roaming } : {}) } : creature;
+  const base0 = entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}), ...(entry.roaming ? { roaming: entry.roaming } : {}) } : creature;
+  // Grown toward his band (match.mjs): its 气血 by the stand's scale.
+  const base = base0 && game.scale ? { ...base0, hp: Math.round((base0.hp ?? 1) * game.scale * 100) / 100 } : base0;
   return base && game.foe ? weighed(base, game.foe) : base;
 }
 /* A scene's fight weighed for where the story meets its beast (the exit game's `foe`: `hp`, `deck`,
@@ -488,11 +498,15 @@ function encounterOf(content, state, now) {
     if (creature) {
       // `deal`: each fight of the day its own shuffle — the same beast met again is not the same fight again.
       const n = state.duels?.[huntKey(place.id)]?.day === dayKey(now) ? state.duels[huntKey(place.id)].n ?? 0 : 0;
-      const game = { id: hauntId(cid), kind: 'duel', creature: cid, hunt: place.id, deal: `${hauntId(cid)}|${place.id}|${n}` };
+      // A matched beast that had to grow toward his band (match.mjs pickStand) carries its growth.
+      const grow = standHere(state, place, now)?.cid === cid ? standHere(state, place, now).scale : null;
+      const game = { id: hauntId(cid), kind: 'duel', creature: cid, hunt: place.id, deal: `${hauntId(cid)}|${place.id}|${n}`, ...(grow ? { scale: grow } : {}) };
       return {
         creature: { id: cid, name: pick(creature.name, state.lang) }, game, pool: { id: place.has.pool, name: pick(poolOf(content, place).name, state.lang) ?? null, ...poolTally(content, state, place, now) },
         ...(state.beasts?.[cid] ? {} : { new: true }),
         duel: duelBrief(content, state, game, now), won: false, withdrawn: false, tamed: false,
+        // 「换一只」 (rules/match.mjs reroll): free once a visit, then its 体力.
+        reroll: state.duels?.[huntKey(place.id)]?.day === dayKey(now) && state.duels[huntKey(place.id)].rerolled ? { free: false, cost: content.rewards?.stamina?.cost?.reroll ?? 0 } : { free: true },
         beaten: Boolean(state.wins?.[game.id]), likes: null,
       };
     }
