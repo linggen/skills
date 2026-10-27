@@ -174,7 +174,8 @@ function namesOf(content, report) {
   const zh = (v) => (typeof v === 'string' ? v : v?.zh ?? v?.en ?? null);
   const hui = Object.fromEntries((report.time?.hui ?? []).map((h) => [h.hui, h.hui ? huiLabel(content, h.hui, 'zh', 'short') ?? h.hui : null]));
   const beasts = Object.fromEntries((report.fights ?? []).map((f) => [f.beast, zh(content.creatures?.creatures?.find((c) => c.id === f.beast)?.name) ?? f.beast]));
-  const games = Object.fromEntries((report.boards ?? []).map((b) => [b.game, zh((content.games?.games ?? []).find((g) => g.id === b.game)?.name) ?? b.game]));
+  const games = Object.fromEntries((report.boards ?? []).map((b) => [b.game, zh((content.games?.games ?? []).find((g) => g.id === b.game)?.name)
+    ?? zh((content.tasks?.tasks ?? []).find((t) => t.game === b.game || t.id === b.game)?.title) ?? b.game]));
   const tiers = Object.fromEntries((content.ladder?.tiers ?? []).map((t) => [t.id, zh(t.name) ?? t.id]));
   return { hui, beasts, games, tiers };
 }

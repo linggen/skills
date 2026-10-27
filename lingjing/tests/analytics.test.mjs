@@ -193,3 +193,32 @@ test('the report: medians, streaks and next-day return, a board beside its desig
   assert.equal(rep.income.by.find((c) => c.cat === 'games').share, 60);
   assert.equal(retention([], null).days, 0);
 });
+
+test('the tracker: a batch that may not have arrived as the page went is sent again under its own id, so it is kept once', async () => {
+  const store = new Map();
+  const win = { localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) } };
+  const first = createTracker({ send: async () => { throw new Error('page gone'); }, win, doc: null });
+  await first.start();
+  first.ask('ling', 'wenxun');
+  await first.flush('left', { leaving: true });
+  const kept = JSON.parse([...store.values()][0]);
+  assert.equal(kept.length, 1);
+  const seen = [];
+  const next = createTracker({ send: async (b) => { seen.push(b.batch); return { ok: true }; }, win, doc: null });
+  await next.start();
+  await new Promise((r) => setTimeout(r, 10));
+  assert.deepEqual(seen, [kept[0].batch], 'the same batch id: the rules keep it once');
+  assert.equal(store.size, 0);
+  // A blip of a passage (under a second, not skipped) is no read.
+  const r = rig();
+  await r.tr.start();
+  r.tr.reading('k1', { scene: 'a', chars: 100 });
+  r.at(200);
+  r.tr.reading('k2', { scene: 'b', chars: 100 });
+  r.at(5000);
+  r.tr.reading(null);
+  r.tr.answer('greet', { ok: false, refused: 'no-companion' });
+  await r.tr.flush('test');
+  assert.deepEqual(r.sent.filter((e) => e.kind === 'read').map((e) => e.scene), ['b']);
+  assert.equal(r.sent.filter((e) => e.kind === 'refused').length, 0, 'the page\'s own quiet asks are no refused tap');
+});

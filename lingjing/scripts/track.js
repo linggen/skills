@@ -14,6 +14,8 @@ const NEW_SITTING_MS = 30 * 60_000; // away this long, and the next input begins
 const STALL_MS = 3 * 60_000; //    a board on the stage with no input this long is a soft-lock signal
 const TICK_MS = 60_000; //         the flush's own pace while events wait
 const KEEPALIVE_MAX = 60_000; //   a keepalive request's body is capped at 64 KB
+/* The page's own calls that ask and may be told no without any tap of his (银月's greeting, a passage's hold …). */
+const QUIET_VERBS = new Set(['greet', 'reading', 'hergame', 'tell', 'look', 'track']);
 const PENDING_KEY = (save) => `lingjing.track.pending.${save || 'main'}`;
 
 const rid = () => Math.random().toString(36).slice(2, 10);
@@ -109,6 +111,8 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
   function readEnd() {
     if (!read) return;
     const r = read; read = null;
+    // A passage that stood less than a second (a redraw's blip, not a read) is not one.
+    if (clock() - r.at < 1000 && !r.skipped) return;
     push('read', { scene: r.scene, chars: r.chars, ms: clock() - r.at, active_s: Math.round((activeMs - r.active0) / 1000), skipped: r.skipped });
   }
 
@@ -120,7 +124,7 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
   /** A verb's answer: a refusal counts toward the streak; a refusal of `busy` (two writers at once) is not his. */
   function answer(name, r) {
     if (r?.ok) { refusedStreak = 0; return; }
-    if (!r || r.refused === 'busy' || r.refused === 'page-only') return;
+    if (!r || r.refused === 'busy' || r.refused === 'page-only' || QUIET_VERBS.has(name)) return;
     refusedStreak += 1;
     push('refused', { verb: name, why: r.refused ?? (r.error ? 'error' : 'unknown'), streak: refusedStreak });
   }
@@ -159,8 +163,12 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
 
   /* ── The flush ── */
   const pendingKey = PENDING_KEY(scratch);
-  function keepPending(events) { try { const was = JSON.parse(win?.localStorage?.getItem(pendingKey) ?? '[]'); win?.localStorage?.setItem(pendingKey, JSON.stringify([...was, ...events].slice(-400))); } catch { /* this load only */ } }
-  function takePending() { try { const p = JSON.parse(win?.localStorage?.getItem(pendingKey) ?? '[]'); win?.localStorage?.removeItem(pendingKey); return Array.isArray(p) ? p : []; } catch { return []; } }
+  /* What may not have arrived, kept by batch: sent again on the next load under the same batch id, which the rules
+     keep once — a batch that did arrive (its answer lost as the page went) is never kept twice. */
+  const readPending = () => { try { const p = JSON.parse(win?.localStorage?.getItem(pendingKey) ?? '[]'); return Array.isArray(p) ? p.filter((b) => b?.batch && Array.isArray(b.events)) : []; } catch { return []; } };
+  const writePending = (list) => { try { if (list.length) win?.localStorage?.setItem(pendingKey, JSON.stringify(list.slice(-20))); else win?.localStorage?.removeItem(pendingKey); } catch { /* this load only */ } };
+  const keepPending = (b) => writePending([...readPending().filter((x) => x.batch !== b.batch), b]);
+  const dropPending = (batch) => writePending(readPending().filter((x) => x.batch !== batch));
 
   /* A batch's pieces, each under the keepalive cap. */
   function pieces(events) {
@@ -174,22 +182,23 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
     if (cur.length) out.push(cur);
     return out;
   }
+  async function sendBatch(b, leaving) {
+    if (leaving) keepPending(b);
+    try {
+      const r = await send({ events: b.events, batch: b.batch, keepalive: leaving });
+      if (r?.off) { off = true; queue = []; }
+      if (r?.ok || r?.off) dropPending(b.batch);
+      else if (!leaving) keepPending(b);
+    } catch {
+      if (!leaving) keepPending(b); // sent again on the next load
+    }
+  }
   async function flush(why = 'tick', { leaving = false } = {}) {
     if (off) { queue = []; return; }
     if (why !== 'tick' || queue.length) tick();
     if (!queue.length) return;
     const events = queue; queue = [];
-    if (leaving) keepPending(events);
-    for (const part of pieces(events)) {
-      const batch = rid() + rid();
-      try {
-        const r = await send({ events: part, batch, keepalive: leaving });
-        if (r?.off) { off = true; queue = []; }
-        if (leaving && r?.ok) takePending();
-      } catch {
-        if (!leaving) keepPending(part); // sent again on the next load
-      }
-    }
+    for (const part of pieces(events)) await sendBatch({ batch: rid() + rid(), events: part }, leaving);
   }
 
   function bind() {
@@ -207,8 +216,7 @@ export function createTracker({ send, scratch = null, win = globalThis.window, d
   async function start({ status = null } = {}) {
     try { const s = status ? await status() : null; off = Boolean(s?.off); } catch { /* kept until told otherwise */ }
     if (off) return api;
-    const pending = takePending();
-    if (pending.length) { queue.push(...pending); flush('pending'); }
+    for (const b of readPending()) sendBatch(b, false);
     begin();
     bind();
     return api;
