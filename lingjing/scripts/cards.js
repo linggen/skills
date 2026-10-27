@@ -4,7 +4,7 @@
 
 import { boardHtml } from './board.js';
 import { worldPath } from './rules.js';
-import { WORDS as BATTLE_WORDS, boutWords, challengeHtml } from './battle-card.js';
+import { WORDS as BATTLE_WORDS, boutWords, challengeHtml, wayLabel } from './battle-card.js';
 import { GRADE_WORDS } from './fightodds.js';
 import { SKIP } from './games/ink.js';
 import { stampShown, stuckNow } from './stuck.js';
@@ -1033,6 +1033,8 @@ function next(card, ctx) {
   const t = NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh, look = ctx.look ?? {};
   // A 今 scene: its own way on — never the 古's goal, road, errands, book or 货郎 (stage.mjs withNext).
   if (sideLineOf(look)) return sideNext(t, look, ctx);
+  // 主页 (rules/home.mjs): where Look carries it, the stage's default between passages.
+  if (look.home) return homeHtml(look.home, ctx);
   const to = nextTo(look);
   const work = !to && look.work?.place && !look.work.here ? look.work.place : null;
   const go = to ? `<button class="act go primary" data-go="${esc(to.id)}">${esc(say(t.go, { name: to.name }))}</button>${to.via?.length ? `<div class="small dim">${esc(say(t.via, { names: to.via.join(' · ') }))}</div>` : ''}`
@@ -1043,6 +1045,70 @@ function next(card, ctx) {
   const guard = look.place?.guard ? `<div class="small dim guardnote">${esc(look.place.guard)}</div>` : '';
   const rr = rerunNext(t, look);
   return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}</div>${guard}${rr.note}${visitorsLine(look)}<div class="acts">${go}${book}${visitorGo(look)}${rr.acts}</div></div>`;
+}
+
+/// 主页 (Hanli 10-27; rules/home.mjs `home`): the 回 and the gate's bar with what it still asks (修为, today's 功课, about
+/// how many boards), the ONE thing to do next (the rules' ranking), and what waits — each row a tap into its own sheet.
+/// Facts from Look, words from here; the bar moves from where it stood (`ctx.homeFrom`, the page's last) to now.
+const HOME_WORDS = {
+  zh: { stage: '阶段任务 · {step}', short: '还差 {n} 修为', chores: '功课 +{n}', plays: '约 {n} 局', playsMore: '再约 {n} 局', todo: '待办',
+    resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}',
+    boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',
+    ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}', gongkeDone: '{name} · 可交 · 修为 +{n}',
+    tide: '兽潮 · 开局', rerun: '{title} · 已开', skipped: '先放下的 {n} 局' },
+  en: { stage: 'Stage quest · {step}', short: '{n} cultivation to go', chores: 'chores +{n}', plays: 'about {n} games', playsMore: 'then about {n} games', todo: 'Waiting',
+    resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}',
+    boardPays: 'Play · {title} · cultivation +{n}', take: 'Take · {title}', go: 'Go to {name} ›', goWhat: 'To {name} · {what}', wait: '{title} · in {t}', seclude: 'Seclusion',
+    ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}', gongkeDone: '{name} · hand in · cultivation +{n}',
+    tide: 'Beast tide · play', rerun: '{title} · open', skipped: '{n} games set aside' },
+};
+const homeWait = (min, w) => { const m = Math.max(1, Math.round(min ?? 0)); return m >= 60 ? say(w.chanceHM, { h: Math.floor(m / 60), m: m % 60 }) : say(w.chanceM, { m }); };
+const bareName = (name) => String(name ?? '').split(' · ').at(-1);
+/* The one primary action, by the rules' kind: the page's own verb for each, never a model turn. */
+const HOME_ACTS = {
+  resume: (n, h) => `<button class="act primary" data-aside-resume>${esc(h.resume)}</button>`,
+  way: (n, h) => `<button class="act go primary" data-go="${esc(n.place.id)}">${esc(say(h.way, { name: n.place.name }))}</button>`,
+  turnin: (n, h) => `<button class="act primary do" data-do="turn" data-id="${esc(n.stage ? 'stage' : n.id)}">${esc(say(h.turnin, { title: n.title }))}</button>`,
+  strengthen: (n, h, ctx) => `<button class="act primary" data-home-way>${esc(wayLabel(n.way, ctx.lang) ?? '')}</button>`,
+  errand: (n, h) => `<button class="act primary" data-book>${esc(say(h.errand, { title: n.title }))}</button>`,
+  fight: (n, h) => `<button class="act primary" data-duel-start="${esc(n.id)}">${esc(say(h.fight, { title: n.title ?? '' }))}</button>`,
+  board: (n, h) => `<button class="act primary" data-play="${esc(n.id)}">${esc(n.progress ? say(h.boardPays, { title: n.title, n: n.progress }) : say(h.board, { title: n.title }))}</button>`,
+  take: (n, h) => `<button class="act primary do" data-do="take" data-id="${esc(n.id)}">${esc(say(h.take, { title: n.title }))}</button>`,
+  go: (n, h) => `<button class="act go primary" data-go="${esc(n.place.id)}">${esc(n.titles?.length ? say(h.goWhat, { name: bareName(n.place.name), what: n.titles.join(' · ') }) : say(h.go, { name: n.place.name }))}</button>`,
+  wait: (n, h, ctx) => `<div class="small dim homewait">${esc(say(h.wait, { title: n.title, t: homeWait(n.wait_min, ctx.words) }))}</div>`,
+  seclude: (n, h) => `<button class="act primary" data-seclude-open>${esc(h.seclude)}</button>`,
+};
+/* What waits, one quiet row each. */
+const HOME_TODO = {
+  ready: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.ready, { n: r.n, title: r.title }))}</button>`,
+  held: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.held, { title: r.title, place: bareName(r.place.name) }))}</button>`
+    : `<button class="act quiet hometodo" data-book>${esc(say(h.heldBare, { title: r.title }))}</button>`),
+  gongke: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(r.done ? h.gongkeDone : h.gongke, { name: r.means ?? r.title, n: r.progress }))}</button>`,
+  tide: (r, h) => `<button class="act quiet hometodo" data-play="${esc(r.id)}">${esc(h.tide)}</button>`,
+  wait: (r, h, ctx) => `<span class="small dim hometodo">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</span>`,
+  rerun: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.rerun, { title: r.title ?? r.place.name }))}</button>` : ''),
+  skipped: (r, h) => `<span class="small dim hometodo">${esc(say(h.skipped, { n: r.n }))}</span>`,
+};
+/* The gate's bar: the step, where he stands, what it still asks — 「146/470 · 还差 324 修为 · 功课 +201 · 再约 5 局」. */
+function homeGate(g, h, ctx) {
+  const of = Math.max(1, g.of), at = Math.min(of, g.progress), pct = Math.round((100 * at) / of);
+  const from = Number.isFinite(ctx.homeFrom) && ctx.homeFrom < pct ? ctx.homeFrom : pct;
+  const asks = [`${at}/${of}`, say(h.short, { n: g.short }), g.chores ? say(h.chores, { n: g.chores }) : '',
+    g.plays ? say(g.chores ? h.playsMore : h.plays, { n: g.plays }) : ''].filter(Boolean).join(' · ');
+  return `<div class="homegate"><div class="small">${esc(say(h.stage, { step: g.step }))}</div>`
+    + `<div class="gatebar homebar" role="progressbar" aria-valuemin="0" aria-valuemax="${of}" aria-valuenow="${at}"><i style="width:${from}%" data-to="${pct}"></i></div>`
+    + `<div class="small dim">${esc(asks)}</div></div>`;
+}
+function homeHtml(home, ctx) {
+  const h = HOME_WORDS[ctx.lang] ?? HOME_WORDS.zh, look = ctx.look ?? {}, n = home.next;
+  const head = look.chapter?.title ? `<div class="small dim homehui">${esc(look.chapter.title)}</div>` : '';
+  const goal = home.gate ? homeGate(home.gate, h, ctx) : `<div class="say">${esc(goalText(ctx) || (NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh).idle)}</div>`;
+  const act = n ? HOME_ACTS[n.kind]?.(n, h, ctx) ?? '' : '';
+  const todo = (home.todo ?? []).map((r) => HOME_TODO[r.kind]?.(r, h, ctx) ?? '').filter(Boolean).join('');
+  const guard = look.place?.guard ? `<div class="small dim guardnote">${esc(look.place.guard)}</div>` : '';
+  const rr = rerunNext(NEXT_WORDS[ctx.lang] ?? NEXT_WORDS.zh, look);
+  return `<div class="card next home">${head}${goal}${guard}<div class="acts homeact">${act}</div>`
+    + `${todo || rr.note || visitorsLine(look) ? `<div class="hometodos"><div class="small dim">${esc(h.todo)}</div>${rr.note}${visitorsLine(look)}<div class="acts">${todo}${visitorGo(look)}${rr.acts}</div></div>` : ''}</div>`;
 }
 
 /// An errand handed in (Quest turn): what it found (`seen`, the 香烛铺's ledger), what it paid, and the

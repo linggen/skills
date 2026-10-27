@@ -1,0 +1,144 @@
+// rules/home.mjs — 主页: what the stage holds between passages (Hanli 10-27: the stage's default — where the story
+// stands and its gate, the ONE thing to do next, and what waits). Facts only, read from the finished Look (`kept`, as
+// rules/aside.mjs reads it), so whatever a story gate or a sealed room keeps out of Look stays out of it too; the page
+// (cards.js home) and the phone (lingjing_play.dart) put the words on it. Small on purpose: Look reaches Ling.
+//
+//   home: { gate: { step, progress, of, short, chores, plays } | null,
+//           next: { kind, … },            // the first of NEXT that has anything — the one primary action
+//           todo: [{ kind, … }] }         // what waits, each a tap into its own sheet
+//
+// 「约 N 局」 is the boards' honest count: the practice boards on the open map, best first, each day's replay share
+// falling as rules/playpay.mjs pays it (100 · 50 · 10%), after today's undone 人间功课 is counted (it is worth ~7 boards).
+import { dayKey } from '../state.mjs';
+import { chorePlay, playGrant } from './playpay.mjs';
+import { questOf, taskOf } from './errands.mjs';
+import { strengthen } from './strengthen.mjs';
+import { allPlaces, sceneOf } from './world.mjs';
+import { sideLine } from './hui.mjs';
+import { entryGate, stageGate } from './gates.mjs';
+
+const MAX_PLAYS = 200;
+const floorAt = content => (content.balance?.play_pay?.replay ?? [1]).length - 1;
+
+/* The practice boards the open map hosts (a place's `has.games`, a hosted board that is no stall). */
+function practiceIds(content, kept) {
+  const open = new Set([kept.place?.id, ...(kept.place?.places ?? []).filter(p => !p.closed).map(p => p.id)].filter(Boolean));
+  const ids = new Set();
+  for (const p of allPlaces(content)) if (open.has(p.id)) for (const id of p.has?.games ?? []) {
+    const t = taskOf(content, id);
+    if (t?.hosted && t.kind === 'board' && !t.stall) ids.add(id);
+  }
+  return [...ids];
+}
+
+/* Boards to fill `need` 修为: greedy, best grant first, the replay share per board per day; a day rolls over when
+   the best left is at the floor share. Returns the plays, or null when no board pays. */
+export function playsFor(content, state, kept, need, now) {
+  if (need <= 0) return 0;
+  const ids = practiceIds(content, kept);
+  if (!ids.length || !content.balance?.play_pay) return null;
+  const today = dayKey(now), floor = floorAt(content);
+  let counts = state.plays?.day === today ? { ...state.plays.ids } : {};
+  const grant = id => playGrant(content, { ...state, plays: { day: today, ids: counts } }, id, taskOf(content, id), now)?.progress ?? 0;
+  let left = need, plays = 0;
+  while (left > 0 && plays < MAX_PLAYS) {
+    const best = ids.map(id => ({ id, g: grant(id), at: counts[id] ?? 0 })).sort((a, b) => b.g - a.g)[0];
+    if (!best.g) return null;
+    if (best.at >= floor) { counts = {}; continue; } // a new day: every board fresh again
+    left -= best.g; plays += 1; counts[best.id] = best.at + 1;
+  }
+  return plays;
+}
+
+/* Today's undone 人间功课, as it would land (Look's `quests`, unpaid, not 开府). */
+const choresOpen = kept => (kept.quests ?? []).filter(q => !q.paid && q.period !== 'once' && (q.pays?.progress ?? 0) > 0);
+
+/* The bar toward the 回's stage quest (or a cauldron that waits on 修为), the boards it still asks. */
+function gateOf(content, state, kept, now) {
+  const q = kept.stage_quest;
+  if (!q || q.met) return null;
+  const short = Math.max(0, (q.now?.of ?? 0) - (q.now?.progress ?? 0));
+  const chores = choresOpen(kept).reduce((n, c) => n + c.pays.progress, 0);
+  return { step: q.step, progress: q.now?.progress ?? 0, of: q.now?.of ?? 0, short, ...(chores ? { chores } : {}), plays: playsFor(content, state, kept, short - chores, now) };
+}
+
+/* The story's way on held by a stage quest: every way out of the scene he stands in the story at waits on its gate
+   (rules/gates.mjs — the scene's own gate, or the gate of the scene each way leads into). */
+function wayHeld(content, state) {
+  const sc = sceneOf(content, state);
+  const ways = (sc?.exits ?? []).filter(e => !e.stay);
+  return ways.length > 0 && ways.every(e => stageGate(content, state, sc.id, e.id) ?? entryGate(content, state, e));
+}
+const here = kept => kept.place?.id ?? null;
+const placeRef = p => (p ? { id: p.id, name: p.name } : null);
+
+/* A loss not yet made good: a story fight lost and not won since, or a beast's pool lost at more than won. */
+function lostHere(state) {
+  if (Object.values(state.fight_losses ?? {}).some(n => n > 0)) return true;
+  return Object.entries(state.hunt_losses ?? {}).some(([p, n]) => n > (state.hunted?.[p] ?? 0));
+}
+
+/* A practice board here that still pays above the floor share (the replay's last), best first — or, `tide`, 兽潮 when it is up. */
+function boardHere(content, state, kept, now, tide) {
+  const played = id => (state.plays?.day === dayKey(now) ? state.plays.ids?.[id] ?? 0 : 0);
+  const rows = (kept.tasks ?? []).filter(t => (tide ? t.tide : t.practice) && t.status === 'offered' && !t.skipped);
+  const paying = rows.filter(t => t.tide || ((t.pays?.progress ?? 0) > 0 && played(t.id) < floorAt(content)));
+  return paying.sort((a, b) => (b.pays?.progress ?? 0) - (a.pays?.progress ?? 0))[0] ?? null;
+}
+
+/* The ranking — Hanli's order, the first that has anything wins. Each returns a fact or null. */
+const NEXT = [
+  // 1 · the story: set aside → 接着读; the way on open → walk it. (A passage owed the page tells by itself: the 主页
+  //     stands only between passages.)
+  (c, s, k) => (k.aside?.on ? { kind: 'resume' } : null),
+  (c, s, k) => { const to = k.waypoint?.toward; return to && !k.waypoint.gate && to.id !== here(k) && !wayHeld(c, s) ? { kind: 'way', place: placeRef(to), ...(to.via?.length ? { via: to.via } : {}) } : null; },
+  // 2 · something to hand in here: the stage quest met, an errand or a 功课 done.
+  (c, s, k) => (k.stage_quest?.met ? { kind: 'turnin', stage: true, title: k.stage_quest.step } : null),
+  (c, s, k) => { const q = (k.book ?? []).find(b => b.ready && !b.away); return q ? { kind: 'turnin', id: q.id, title: q.title } : null; },
+  // A loss in the way: the best way to grow stronger now (rules/strengthen.mjs), when it is a thing to do.
+  (c, s, k, now) => { if (!lostHere(s)) return null; const w = strengthen(c, s, { now }).find(o => ['wear', 'buy', 'pills'].includes(o.kind)); return w ? { kind: 'strengthen', way: w } : null; },
+  // 3 · something to do here: an errand's count met here, the place's beast, a board that still pays well, an errand to take.
+  (c, s, k) => {
+    const q = (k.book ?? []).find(b => !b.ready && !b.chore && b.where?.id === here(k));
+    if (!q) return null;
+    // A board it asks for, offered here: that board, one tap (修屋顶's 七巧).
+    const t = (questOf(c, q.id)?.need ?? []).map(n => n.task && (k.tasks ?? []).find(x => x.id === n.task && x.status === 'offered')).find(Boolean);
+    return t ? { kind: 'board', id: t.id, title: t.title, for: q.title } : { kind: 'errand', id: q.id, title: q.title };
+  },
+  (c, s, k) => { const e = k.place?.encounter; return e?.game && !(e.won || e.withdrawn || e.tamed) ? { kind: 'fight', id: e.game.id, title: e.creature?.name ?? null } : null; },
+  (c, s, k, now) => { const t = boardHere(c, s, k, now, false); return t ? { kind: 'board', id: t.id, title: t.title, ...(t.pays?.progress ? { progress: t.pays.progress } : {}) } : null; },
+  (c, s, k) => { const o = (k.offers ?? []).find(x => !x.locked); return o ? { kind: 'take', id: o.id, title: o.title } : null; },
+  (c, s, k, now) => { const t = boardHere(c, s, k, now, true); return t ? { kind: 'board', id: t.id, title: t.title, tide: true } : null; },
+  // 4 · somewhere with work: the stage quest's work, else the nearest, else an errand in hand elsewhere.
+  (c, s, k) => { const w = k.stage_quest?.work ?? k.work; return w?.place && !w.here ? { kind: 'go', place: placeRef(w.place), titles: (w.titles ?? []).slice(0, 2) } : null; },
+  (c, s, k) => { const q = (k.book ?? []).find(b => !b.chore && b.where?.id && b.where.id !== here(k)); return q ? { kind: 'go', place: placeRef(q.where), titles: [q.title] } : null; },
+  // 5 · the soonest cooldown.
+  (c, s, k) => { const w = [...(k.waits ?? [])].sort((a, b) => (a.wait_min ?? 0) - (b.wait_min ?? 0))[0]; return w ? { kind: 'wait', id: w.id, title: w.title, wait_min: w.wait_min } : null; },
+  // 6 · 闭关.
+  (c, s, k) => (!(k.locked ?? []).includes('seclusion') && !k.seclusion ? { kind: 'seclude' } : null),
+];
+
+/* What waits, compact: hand-ins, errands in hand and where, today's 功课, 兽潮 · 秘境, the boards set aside. */
+function todoOf(kept) {
+  const out = [];
+  const ready = [...(kept.stage_quest?.met ? [{ title: kept.stage_quest.step }] : []), ...(kept.book ?? []).filter(b => b.ready && !b.away)];
+  if (ready.length) out.push({ kind: 'ready', n: ready.length, title: ready[0].title });
+  for (const q of (kept.book ?? []).filter(b => !b.ready && !b.chore).slice(0, 3)) out.push({ kind: 'held', id: q.id, title: q.title, ...(q.where ? { place: placeRef(q.where) } : {}) });
+  for (const q of choresOpen(kept)) out.push({ kind: 'gongke', id: q.id, title: q.title, ...(q.means ? { means: q.means } : {}), progress: q.pays.progress, done: Boolean(q.done) });
+  const tide = (kept.tasks ?? []).find(t => t.tide && t.status === 'offered');
+  if (tide) out.push({ kind: 'tide', id: tide.id, title: tide.title });
+  for (const w of kept.waits ?? []) out.push({ kind: 'wait', id: w.id, title: w.title, wait_min: w.wait_min });
+  if (kept.rerun?.open && !kept.rerun.inside) out.push({ kind: 'rerun', place: placeRef(kept.rerun.door), title: kept.rerun.label ?? null });
+  const skipped = (kept.aside?.offers ?? []).filter(o => o.kind === 'replay').length;
+  if (skipped) out.push({ kind: 'skipped', n: skipped });
+  return out;
+}
+
+/* The 主页, or null where it never stands: a fight, 闭关, a 今 interlude (its own ways only), a sealed run. */
+export function homeOf(content, state, kept, now) {
+  if (!kept || kept.fight || kept.seclusion || kept.rerun?.inside) return null;
+  const sc = sceneOf(content, state);
+  if (sc && sideLine(content, sc)) return null;
+  const next = NEXT.reduce((got, rule) => got ?? rule(content, state, kept, now), null);
+  return { gate: gateOf(content, state, kept, now), next, todo: todoOf(kept) };
+}

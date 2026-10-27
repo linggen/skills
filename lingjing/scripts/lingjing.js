@@ -412,7 +412,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, caseWho: view.caseWho, caseEv: view.caseEv, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1146,6 +1146,8 @@ function stageNow() {
   // The book first: a game waits until the passage that leads into it is told (queue.js afterBook).
   cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
+  // 兽潮 waits in the tray (开局) and stands only opened (stage.mjs sceneGame): the 主页 is the stage's default.
+  cards = cards.filter((c) => !(c.card === 'board' && tideBoard(c.id) && view.opened?.id !== c.id && !view.focus.some((f) => f.card === 'board' && f.id === c.id)));
   const queued = cards.filter(inQueue);
   // Never a blank stage (Hanli, 2026-10-15): what the page took off above (a 完 put away, a board
   // played) can leave main empty — then, with no passage to tell, the 下一步 card stands (withNext).
@@ -1436,6 +1438,7 @@ async function festivalMoment() {
 /* The day's practice waits in the tray: a board comes onto the stage when he
    opens it there, when Ling shows it, or when this place hosts it or an errand
    asks for it here. */
+const tideBoard = (id) => Boolean((look?.tasks ?? []).find((t) => t.id === id)?.tide);
 function inQueue(c) {
   if (c.card !== 'board') return true;
   // Done for the day (the tray's 已完成), it never queues — opened, shown or hosted (stage.mjs).
@@ -1542,6 +1545,18 @@ function roadsHtml() {
 /* A slot redrawn only when what it holds changed — or what the chat asks,
    which marks the slot's buttons it repeats (draw's answered-in-chat). */
 const painted = {};
+/* 主页's bar (cards.js homeHtml): drawn where it stood last, then moved to now on the next frame — a gain is seen
+   to land (Hanli 10-27: every board, fight, hand-in and 闭关 comes back to it, the bar visibly moved). */
+let homePct;
+function moveHomeBar() {
+  const bar = $('focus').querySelector('.homebar i[data-to]');
+  if (!bar) return;
+  const to = Number(bar.dataset.to);
+  if (homePct === to) return;
+  homePct = to;
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = `${to}%`; }));
+}
+
 function paintIf(id, html) {
   const key = `${html}\u0000${[...(view.asked ?? [])].join('|')}`;
   if (painted[id] === key) return;
@@ -1675,7 +1690,7 @@ function draw() {
   { const realLook = look; look = headLook(); try { paintIf('headCards', headHtml(slots && look !== realLook ? { ...slots, header: headOf(look) } : slots)); } finally { look = realLook; } }
   paintIf('footRow', footRowHtml(slots));
   paintIf('footChips', footChipsHtml(slots));
-  if (bout) paintFight(bout); else $('focus').innerHTML = focusHtml(slots);
+  if (bout) paintFight(bout); else { $('focus').innerHTML = focusHtml(slots); moveHomeBar(); }
   // The story on the full stage (lines.js): the beat's words over the picture, a sentence at a time.
   // 景: a beat marked with its set piece lays the piece's picture under its words (beatPiece).
   matchPace();
@@ -3600,6 +3615,8 @@ const CLICKS = [
   ['[data-seclude-go]', () => run('seclude', () => goSeclude())],
   ['[data-emerge]', () => run('emerge', () => emerge())],
   ['[data-emerged-close]', () => show({ emerged: null })],
+  // 主页's one way to grow stronger after a loss (rules/home.mjs → strengthen.mjs): the loss card's own verb.
+  ['[data-home-way]', () => run('home-way', () => takeWay(look?.home?.next?.way))],
   ['[data-duel-start]', (el) => run(`duel:${el.dataset.duelStart}`, () => { keep({ walkedOut: null }); return onDuelStart(el.dataset.duelStart); })],
   // 丹囊 at the door (danang.js): one more pill packed, or the pouch emptied — the page's own until 出手.
   ['[data-pill-add]', (el) => { const [id, pill] = el.dataset.pillAdd.split('|'); const b = doorBrief(id); if (b) show({ pillPick: { ...view.pillPick, [id]: pickAfter(b, ctx(), pill) } }); }],

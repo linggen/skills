@@ -39,6 +39,7 @@ import { asideLook } from './aside.mjs';
 import { capLook } from './cap.mjs';
 import { entryGate, stageBack, stageBrief, stageGate, stageNow, stagesPaid } from './gates.mjs';
 import { practiceHint } from './scrolls.mjs';
+import { homeOf } from './home.mjs';
 import { owesTell } from './tell.mjs';
 import { mainRoot, rootName } from './roots.mjs';
 import { memoriesLook } from './memories.mjs';
@@ -698,7 +699,10 @@ export function look(state, content, ctx) {
   // Inside a sealed instance the world outside is frozen and kept out (rules/sealed.mjs).
   const kept = withoutSealed(content, state, withoutLocked(content, state, brief));
   // 先放一放 (rules/aside.mjs): what may be played while the book is set aside, from this same reading.
-  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...asideLook(content, state, kept, ctx.now) };
+  const aside = asideLook(content, state, kept, ctx.now);
+  // 主页 (rules/home.mjs): the gate's bar, the one thing to do next, what waits — from this same reading.
+  const home = homeOf(content, state, { ...kept, ...aside }, ctx.now);
+  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(home ? { home } : {}) };
 }
 
 /* 传闻 as Look carries it: the tale, the people met in finished ones, and a nudge. */
