@@ -107,6 +107,22 @@ test('the book frames each game, verbatim: the setup line, the closing lines; th
   assert.deepEqual(pill.after.map((l) => l.who), ['yinyue', 'me', 'yinyue']);
 });
 
+test('what the page shows before he answers — the board\'s title, its how, the chat\'s header and opening — never names the answer', () => {
+  // Live 10-27: 「周衡 · 灯谜 · 紫玉参」 stood over 周衡's riddle; 「秦雁 · 半瓢水」 over a riddle on 水.
+  const boards = reg.games.filter((g) => g.id === 'jinchat' && g.task);
+  for (const [id, c] of GAMES.filter(([, x]) => x.game.kind === 'riddle')) {
+    const row = boards.find((b) => b.data?.chat === id), t = TASKS.find((x) => x.game === 'jinchat' && x.deal?.chat === id);
+    const errand = JSON.parse(read('../worlds/jiuding/quests/guan.json')).quests.find((q) => q.need?.some((n) => n.task === t?.id));
+    for (const lang of LANGS) {
+      const r = riddleOf(c.game, lang);
+      const shown = [row?.name?.[lang], t?.title?.[lang], t?.how?.[lang], errand?.title?.[lang], c.title[lang], c.when[lang], ...(c.open ?? []).map((l) => l.text[lang]), ...(c.game.setup ?? []).map((l) => l[lang])].filter(Boolean).join(' / ');
+      const a = r.answers[0];
+      const hit = lang === 'en' ? new RegExp(`\\b${a}\\b`, 'i').test(shown) : shown.includes(a);
+      assert.ok(!hit, `${id} ${lang}: 「${a}」 shows before he answers — ${shown}`);
+    }
+  }
+});
+
 test('a riddle\'s stars: clean 3, with hints or choices 2, skipped 1; the story goes on every way', () => {
   assert.deepEqual(riddleOutcome({ solved: true }), { over: true, won: true, grade: 'solved', stars: 3 });
   assert.deepEqual(riddleOutcome({ solved: true, hints: 1 }), { over: true, won: true, grade: 'hinted', stars: 2 });
