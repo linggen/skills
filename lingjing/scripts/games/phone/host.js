@@ -91,7 +91,7 @@ const talk = (text) => new Promise((resolve, reject) => {
 /* A model turn (jinchat · drawguess): the Mac's askInChat answer, { text } or { refused }; 'far' when no model answers. */
 const ask = (game) => ({ agent = 'ling', text, png = null, system = null } = {}) => new Promise((resolve, reject) => {
   const id = `a${(talkN += 1)}`;
-  talks.set(id, { resolve: (reply) => resolve({ text: reply }), reject });
+  talks.set(id, { resolve: (reply) => resolve({ text: reply }), refused: (why) => resolve({ refused: why }), reject });
   post({ t: 'ask', id, game, agent, text, ...(png ? { png } : {}), ...(system ? { system } : {}) });
 });
 
@@ -219,6 +219,7 @@ globalThis.LingjingHost = {
     talks.delete(id);
     const m = typeof json === 'string' ? JSON.parse(json) : json;
     if (t.raw) { if (m?.result !== undefined) t.resolve(m.result); else t.reject(new Error(m?.error ?? 'no answer')); return; }
+    if (m?.refused && t.refused) { t.refused(String(m.refused)); return; } // `blind`: the model cannot see (画猜 says so)
     if (m?.reply != null) t.resolve(String(m.reply)); else t.reject(new Error(m?.error ?? 'no answer'));
   },
 };

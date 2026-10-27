@@ -91,6 +91,8 @@ test("卷一's fights: every card a foe deals, and the foe, have their art in th
     const c = creatures[f.creature];
     if (c?.art) assert.ok(kapai.has(`worlds/jiuding/${c.art}`), `${f.id}: the foe's art`);
   }
+  // The 丹囊's pills are named from the fight table (games/kapai.js ctxOf `pillNames`), never their ids.
+  assert.ok(kapai.has('worlds/jiuding/levels/kapai.json'), "the fight table (the pills' names)");
   // A hand grows across the story (the 书 · 游戏 cards of doc/cards.md): every card with art ships.
   for (const c of cards) if (c.art && fs.existsSync(path.join(WORLD, c.art))) assert.ok(kapai.has(`worlds/jiuding/${c.art}`) || boardFiles('kapai').length === 0, `${c.id}'s art`);
 });

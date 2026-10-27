@@ -167,7 +167,8 @@
       ],
       "files": [
         "worlds/jiuding/cards.json",
-        "worlds/jiuding/creatures.json"
+        "worlds/jiuding/creatures.json",
+        "worlds/jiuding/levels/kapai.json"
       ],
       "dynamic": [
         "scripts/vendor/pixi-8.21.0.min.mjs",

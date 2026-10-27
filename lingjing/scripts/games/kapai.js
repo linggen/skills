@@ -108,7 +108,8 @@ function ctxOf(room) {
 
 /** The fight the mount was handed: given whole, or a key of the table. */
 async function fightFrom(data, lang) {
-  const [catalog, table] = await Promise.all([data.catalog ?? catalogOf(), data.setup ? null : fightTable()]);
+  // The table is read for a fight handed whole too: its `pills` name the 丹囊's pills (the phone showed `mend-pill`).
+  const [catalog, table] = await Promise.all([data.catalog ?? catalogOf(), data.setup ? fightTable().catch(() => null) : fightTable()]);
   const row = data.setup ? data : fightOf(table, data.foe);
   if (!row) throw new Error(`no fight ${data.foe}`);
   const brief = row.brief?.[lang] ?? row.brief?.zh ?? row.brief;
