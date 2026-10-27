@@ -18,6 +18,17 @@
 // 3:2; `from`: the least level it is dealt at), one picked by the seed; else the built-in list. A picture not square is cut from its middle.
 import { mountPure } from './mount.js';
 
+/* Its own stylesheet, fetched by the module itself (as 气走经脉's and 守炉's are): a page loaded before this board
+   existed, or one that never links pintu.css, still draws the grid and the picture (Hanli 10-27: 「图看不到了」 —
+   a page open from before the install showed the tiles unstyled). Nothing in node. */
+export function ensureCss(doc = globalThis.document) {
+  if (!doc?.head || doc.getElementById('g-pintu-css') || doc.querySelector('link[href$="games/pintu.css"]')) return;
+  const l = doc.createElement('link');
+  l.id = 'g-pintu-css'; l.rel = 'stylesheet'; l.href = new URL('./pintu.css', import.meta.url).href;
+  doc.head.appendChild(l);
+}
+ensureCss();
+
 export const meta = {
   id: 'pintu',
   sounds: ['pick', 'move', 'turn', 'nope'], // what it names (games/kit/audio/sounds.json; tests/game-sound.test.mjs)

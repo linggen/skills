@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { meta, newGame, act, html, sounds, least, LEVELS, PICS, levelOf } from '../scripts/games/pintu.js';
+import { meta, newGame, act, html, sounds, least, LEVELS, PICS, levelOf, ensureCss } from '../scripts/games/pintu.js';
 import { loadContent } from '../scripts/content.mjs';
 import { everyJuan } from './prologue.mjs';
 import { fitWorld, newState } from '../scripts/state.mjs';
@@ -127,6 +127,21 @@ test('the board draws: a picture cut into its squares, the picture beside it, th
   assert.ok(PICS.some((p) => p.src === newGame('p', 1, { pics: ['../../etc/x.webp'] }).pic.src));
   for (let k = 0; k < 30; k++) for (const lv of [0, 1]) assert.ok(!newGame(`easy-${k}`, 1, { lv }).pic.src.includes('jiuzhou-ink'), 'the pale ink map never at a first meeting');
   for (const p of PICS) assert.ok(fs.existsSync(new URL(`../${p.src}`, import.meta.url)), p.src);
+});
+
+test('the board fetches its own stylesheet, once: a page open from before the install still draws it (Hanli 10-27: 「图看不到了」)', () => {
+  const fake = (linked) => {
+    const kids = [], byId = {};
+    return { kids, head: { appendChild: (l) => { kids.push(l); byId[l.id] = l; } }, createElement: () => ({}),
+      getElementById: (id) => byId[id] ?? null, querySelector: () => (linked ? {} : null) };
+  };
+  const bare = fake(false);
+  ensureCss(bare); ensureCss(bare);
+  assert.equal(bare.kids.length, 1);
+  assert.match(bare.kids[0].href, /games\/pintu\.css$/);
+  const linked = fake(true);
+  ensureCss(linked);
+  assert.equal(linked.kids.length, 0, 'a page that links it is left alone');
 });
 
 /* ── 七巧 gone from play ── */
