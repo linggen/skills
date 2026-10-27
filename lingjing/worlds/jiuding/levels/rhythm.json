@@ -1305,10 +1305,11 @@
         "zh": "凶崖 · 往下爬",
         "en": "The Deadly Cliff · Climbing down"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 50
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 50,
+       "same": true
       },
       {
        "kind": "read",
@@ -1360,12 +1361,12 @@
        "id": "xirang-yinshen",
        "scene": "wm-shishi",
        "title": {
-        "zh": "气走经脉 · 隐身符",
-        "en": "Qi path · The concealing talisman"
+        "zh": "隐身符 · 比草叶还轻",
+        "en": "The concealing talisman · Lighter than a blade of grass"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
        "n": 25
       },
       {
@@ -1822,9 +1823,9 @@
         "zh": "风掉头 · 猪蜻蜓",
         "en": "The wind turns · The Pigcopter"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
        "n": 55
       },
       {

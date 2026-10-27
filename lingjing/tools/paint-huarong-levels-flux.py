@@ -34,8 +34,9 @@ LEVELS = {
     'v': ('ONE heavy broken wooden roof beam standing upright, splintered at one end, dark old wood, ' + TALL),
     'h': ('ONE stack of grey city-wall bricks lying flat, a few broken, ' + WIDE),
     's': ('ONE small heap of broken dark grey roof tiles, ' + SQUARE),
-    'floor': ('Seen from straight above: rubble-strewn earth under a collapsed tower, dust, small stones and tile chips; NO '
-              'people, nothing standing up; evenly lit, a flat texture filling the WHOLE picture edge to edge.'),
+    'floor': ('Seen from straight above: flat packed earth with a light scatter of dust, grit and tiny tile chips, an even '
+              'pattern; NO building, NO tower, NO wall, NO people, nothing standing up, no object in the middle; evenly lit, a flat '
+              'texture filling the WHOLE picture edge to edge.'),
   },
 }
 # Looked at (2 seeds each); the seed kept per piece.

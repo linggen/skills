@@ -167,14 +167,17 @@ apart). Painted catchers for the 打地鼠 ones (tools/paint-games.py `rain/*-ba
 | 一拳 | wm-qingshi | 时机 | 打地鼠 `qingshi` (the warmth drawn up the arm) |
 | 一根萝卜 · 别动 | wm-yaoyuan | 时机 | 打地鼠 `luobo` |
 | 嘀声 | j04-trial | 时机 | 气走经脉 `didi` |
-| 凶崖 | wm-xiongya | 时机 | 气走经脉 `xiongya` |
+| 凶崖 | wm-xiongya | 时机 | 打地鼠 `xiongya` (a loose hold under each hand and foot; 气走经脉 until 10-27) |
 | 踏马符 | wm-tama | 时机 | 气走经脉 `tama` (three feet up, through the fire) |
 | 扣 | wm-koujue | 时机 | 对话 jinchat `chu-kou` (褚先生 on holding) |
 | 接镜 | wm-jiejing | 时机 | 打地鼠 `jiejing` |
-| 风掉头 | wm-fengtou | 时机 | 气走经脉 `fengtou` |
+| 风掉头 | wm-fengtou | 时机 | 打地鼠 `fengtou` (祁长松's openings for the pig; 气走经脉 until 10-27) |
 | 纸垫 · 闭关三日 · 晨脉 | 今三 | (planned 时机) | 打地鼠 · 气走经脉 · 打地鼠 |
 
-The cost: more 调息 (第五回 4, 第六回 3, 今二 3, with 嘀声 next to 卧推) — the price of no new type; the later 回s
+**The 调息 cap held (2026-10-27, the coordinator for Hanli: at most two a 回):** 凶崖 and 风掉头 above, and 第五回's 隐身符
+(`yinshen`, wm-shishi: wherever 邹青松's spirit sense sweeps, go still), are 打地鼠 now, painted; 第五回 keeps 踏马符 · 息壤,
+第六回 脉枕 · 藏息. 凶崖 follows 别踩第三块 (both 打地鼠, a scene apart): 踏马符 would have stood beside 谷粒 in one scene.
+Before that, the cost was more 调息 (第五回 4, 第六回 3, 今二 3, with 嘀声 next to 卧推) — the price of no new type; the later 回s
 lean on 打地鼠, 对话 and the others instead.
 | # | scene · ¶ | the book | kit · level |
 |---|---|---|---|

@@ -198,6 +198,22 @@ SUBJECTS = {
     'one small humming climate-control box on the wall, a desk and a chair. Almost black ink wash, a faint grey glow.'),
   'rain/ting-basin': ('sprite', (360, 200), (1024, 576), 1,
     'ONE hand laid flat on the left side of a chest over a sweater, feeling the heartbeat. Only the hand and the chest. Muted ink and soft wash on plain paper.'),
+  #    the 调息 cap (2026-10-27): 凶崖 · 隐身符 (第五回) and 风掉头 (第六回) as 打地鼠.
+  'rain/xiongya-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of a sheer bare grey cliff face seen from the side at night, deep cracks and ledges, not a blade of grass, '
+    'a faint orange glow of firelight from far below. Dark ink and grey wash.'),
+  'rain/xiongya-basin': ('sprite', (360, 200), (1024, 576), 2,
+    'ONE hand gripping the edge of a crack in bare grey rock, knuckles tight. Only the hand and the rock edge. Muted ink and soft wash on plain paper.'),
+  'rain/yinshen-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of a dark cave floor seen from the side: a narrow rock crack, a few blades of dry grass at its mouth, '
+    'a cold pale mist lying along the ground. Dark ink and blue-grey wash.'),
+  'rain/yinshen-basin': ('sprite', (360, 200), (1024, 576), 2,
+    'ONE yellow paper talisman with red cinnabar brush strokes, slightly curled, on its own. Muted ink and soft wash on plain paper.'),
+  'rain/fengtou-beam': ('sprite', (960, 200), (1536, 320), 1,
+    'A long horizontal strip of a raised wooden contest stage at sunset seen from the side, a tall flagpole with a drooping banner, '
+    'an incense burner with one short stick of incense. Ink and warm orange wash.'),
+  'rain/fengtou-basin': ('sprite', (360, 200), (1024, 576), 1,
+    'ONE small yellow paper talisman with a crude drawing of a round pig with dragonfly wings on it. Muted ink and soft wash on plain paper.'),
   'rain/fanban-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of a dim stone corridor floor seen from the side and a little above: a row of square old '
     'flagstones running across the whole width, one of them tilted open over a black pit. Grey ink wash and dark ink.'),

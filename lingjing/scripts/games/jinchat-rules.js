@@ -80,7 +80,7 @@ const W = {
     facts: '此刻：{facts}',
     shown: '屏幕上已有——{lines}',
     goal: '他这一局想做到（你心里有数，不说破，不替他做到；他真做到了，就认）：{goal}',
-    shape: '回法：一到三行，每行不超过三十字{multi}；不叙述，不旁白。哪一条他做到了，那一条回复最后另起一行只写 <!--成-->（原样，别加别的）。',
+    shape: '回法：用中文写，一到三行，每行不超过三十字{multi}；不叙述，不旁白。哪一条他做到了，那一条回复最后另起一行只写 <!--成-->（原样，别加别的）。',
     multi: '，每行以说话人的名字加冒号开头',
     count: '第{k}条（共{n}条）。',
     last: '这是他最后一条：顺着话收个尾，自然地结束这段聊天。',
@@ -95,12 +95,12 @@ const W = {
     facts: 'Now: {facts}',
     shown: 'Already on the screen — {lines}',
     goal: 'What he wants this round (you know it; never say it, never do it for him; once he truly has, own it): {goal}',
-    shape: 'Shape: one to three lines, each under twenty words{multi}; no narration. The reply in which he has done it ends with a line of only <!--成--> (exactly that).',
+    shape: 'Shape: in English (the chat is played in English, whatever language the rest of the session speaks), one to three lines, each under twenty words{multi}; no narration. The reply in which he has done it ends with a line of only <!--成--> (exactly that).',
     multi: ', each line starting with the speaker\'s name and a colon',
     count: 'Line {k} of {n}.',
     last: 'This is his last line: answer it and let the chat end naturally.',
     said: 'He sends: "{text}"',
-    again: '[HIDDEN] [jinchat] {title} · ',
+    again: '[HIDDEN] [jinchat] {title} · (reply in English) ',
     tag: ' (Only if, by the goal, he has truly done it now: a last line <!--成-->; not yet, none.)',
   },
 };
@@ -135,7 +135,7 @@ export function turnLine(chat, { k = 1, text = '', cast = [], shown = [], lang =
     `[jinchat]` rule tells the Mac's Ling — their reply only, in the shape the hidden line asks, nothing else. */
 export const HOST_SYSTEM = {
   zh: '这是灵境（一部修仙小说改成的游戏）里的一段聊天。只照 [HIDDEN] 那一行说的，替书中人物写下一条回话：不叙述，不解释，不调用工具，不提这是游戏。',
-  en: 'This is a chat inside Lingjing (a game made from a xianxia novel). Do only what the [HIDDEN] line says: write the next message from the people of the book — no narration, no explaining, no tools, never that this is a game.',
+  en: 'This is a chat inside Lingjing (a game made from a xianxia novel). Do only what the [HIDDEN] line says: write the next message from the people of the book, in English — no narration, no explaining, no tools, never that this is a game.',
 };
 
 /** A 测试存档's stub (`&her=stub`): a marked line from the first in the chat, the goal met on his second line. */
