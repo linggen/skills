@@ -160,11 +160,11 @@
    the beast is against his hand (fightodds.js): jade 易, gold 相当, vermilion 稍难, filled vermilion 难; plain ink
    while it is weighed. */
 .fightmark { display: inline-block; margin-left: 3px; padding: 0 2px; min-width: 1.1em; border-radius: 50%; border: 1px solid currentColor;
-  font-family: var(--serif, serif); font-size: 9.5px; font-weight: 600; line-height: 1.3; text-align: center; vertical-align: 1px; color: var(--text, #3a3226); opacity: .9; }
-.fightmark.g-easy { color: var(--jade, #2E7A57); }
-.fightmark.g-fair { color: var(--ling, #8A6224); }
-.fightmark.g-hardish { color: var(--seal, #B03A2B); }
-.fightmark.g-hard { color: #FBF6EC; background: var(--seal, #B03A2B); border-color: var(--seal, #B03A2B); }
+  font-family: var(--serif, serif); font-size: 9.5px; font-weight: 600; line-height: 1.3; text-align: center; vertical-align: 1px; color: #3a3226; background: #FBF6EC; opacity: .95; }
+.fightmark.g-easy { color: #2E7A57; }
+.fightmark.g-fair { color: #8A6224; }
+.fightmark.g-hardish { color: #B03A2B; }
+.fightmark.g-hard { color: #FBF6EC; background: #7A1E14; border-color: #FBF6EC; }
 .atlas .pt.far .fightmark { opacity: .5; }
 .plate .spot .fightmark { font-size: 9px; }
 .shophere { padding: 0 6px; border: 1px solid var(--seal, #B03A2B); border-radius: 3px; font-family: var(--serif, serif);
