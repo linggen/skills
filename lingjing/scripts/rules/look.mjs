@@ -499,6 +499,8 @@ function tasksBrief(content, state, ctx) {
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
         // A practice board shows what its next play lands (rules/playpay.mjs): 修为 and 灵石, the replay's share counted.
+        // Played today already (a practice board): the tray rests it till tomorrow (Hanli, 2026-10-27: 「左下角还是有刚玩完的拼图任务」).
+        ...(hosted[id]?.practice && state.plays?.day === dayKey(ctx.now) && (state.plays.ids?.[id] ?? 0) > 0 ? { played_today: state.plays.ids[id] } : {}),
         pays: hosted[id]?.practice ? paysOf(content, state, ctx.now, playGrant(content, state, id, task, ctx.now)) : again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
       };
     });
