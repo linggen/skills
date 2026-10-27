@@ -4064,6 +4064,10 @@ async function settleBout(b, out = {}) {
   if (bout === b) bout = null;
   forgetShell(fightShell(b));
   b.say?.close();
+  // The beast just fought is gone from the stage at once: the next one stands only when the rules' Look comes
+  // back (its match weighs his hand, a second or two) — never the old foe's card with 出手 meanwhile
+  // (Hanli, 2026-10-27: 「longzhi打完出来, 中间还显示longzhi的出手」).
+  if (look?.place?.encounter?.game?.id === id) look = { ...look, place: { ...look.place, encounter: null } };
   render();
   queueMicrotask(playReveals); // a card won waits for the room to close, then lands in the bag
   if (!r.ok && engineMoved(r)) return reloadForEngine(r);
