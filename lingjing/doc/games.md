@@ -46,7 +46,7 @@ silences all of it. Way out = 「算了，往下走」 once stuck (story) / 收�
 | 割绳子 rentrope/niugurope, 喂饼 bread (rope) | bed only · **silent** | cut, star, gust, eat, miss · bed · chime | ✓ | 往下走 ✓ |
 | 气走经脉 qimai (flight) | bed only · bed only | breath, crash, 岔气, 穴 | ✓ | 往下走 ✓ |
 | 华容道 · 洛书 · 五子棋 · 七巧 (cut 10-27 → 拼图) · 象棋 · 押宝 · 禹步 | **silent** · **silent** | pick, move/place, reply, nope … · chime | ✓ | 往下走 / 收手 ✓ |
-| 聊天 jinchat · 讨饼债 · 画猜 | jinchat send/recv; the others **silent** | send, recv, right | ✓ | 往下走 ✓ |
+| 聊天 jinchat · 讨饼债 · 画猜 | jinchat send/recv (its word games right, wrong, hint, skip, tap); the others **silent** | send, recv, right | ✓ | 往下走 ✓; a word game's own 跳过 |
 | 斗法 kapai (card) | bed only (story: **none**) | drew, played, hurt, heal … per log entry | ✓ | 认输 |
 | 结印 · 斗法试炼 · 指点 · 特写 (seal) | buttons only | seal, cast, fizzle, hit, miss | ✓ | 往下走 ✓ |
 | 炼丹 lianliankan (story's herb board) | **silent** | pick, match, nope · chime | — (no frame) | 收手 ✓ |

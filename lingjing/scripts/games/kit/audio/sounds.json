@@ -1451,7 +1451,12 @@
     "recv": {
      "sound": "ui.pluck",
      "min": 120
-    }
+    },
+    "right": "tone.good",
+    "wrong": "tone.bad",
+    "hint": "tone.chime",
+    "skip": "ui.back",
+    "tap": "ui.tick"
    }
   },
   "shuttle": {

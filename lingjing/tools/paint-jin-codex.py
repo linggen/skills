@@ -92,6 +92,19 @@ SUBJECTS = {
               'combed short greying hair. A plain long-sleeved shirt buttoned to the collar, neat trousers, leather shoes. '
               'He walks along the rows with his hands clasped behind his back, a stick of white chalk between his fingers. '
               'No blackboard, no writing anywhere. Full length.'),
+  # Hanli 2026-10-27: 「今1 没有人物志图片呢」 — his parents, on the 9/11 video call (插曲01: 「他爸的大脸「呼」地挤进镜头」,
+  # 「护膝缠得像个粽子」); 定例 § 三: 德州乡下, 爸跑长途货车、膝盖不好, 妈在县城超市收银; 妈问话、爸补刀. Painted with local
+  # FLUX (--flux), so the reference is the style's only.
+  'jin-ma': ('qulao', 'Shen Mang\'s mother, a Chinese countrywoman of about forty-five from the plains of rural Shandong, a '
+             'cashier at a small county-town supermarket: a weathered, sharp-eyed, practical face, eyes narrowed in a '
+             'suspicious squint as she peers closely at the screen of a smartphone she holds up in front of her face in one '
+             'hand; short dark permed hair. A plain knitted cardigan over a blouse, a plain apron-style work vest with no '
+             'lettering, plain trousers, cloth shoes. Standing. Full length.'),
+  'jin-ba': ('qulao', 'Shen Mang\'s father, a Chinese long-haul lorry driver of about fifty from rural Shandong: burly, a big '
+             'broad sunburnt face, mouth wide open mid-joke as if talking loudly, short cropped greying hair. A plain old '
+             'work jacket over a vest, work trousers rolled up on the right leg, where a thick bulky knee brace is wrapped '
+             'round his right knee; he sits on a low wooden stool with that right leg stretched out and propped on a second '
+             'stool. Full length.'),
 }
 
 

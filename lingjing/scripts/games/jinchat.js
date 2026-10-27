@@ -23,10 +23,12 @@
 
 import { askInChat, reachable } from './drawguess-ling.js';
 import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './jinchat-rules.js';
+import { stubLine } from './jinchat-games.js';
+import { guessGame, riddleGame, tableOf } from './jinchat-play.js';
 
 export const meta = {
   id: 'jinchat',
-  sounds: ['send', 'recv'], // what it names (games/kit/audio/sounds.json)
+  sounds: ['send', 'recv', 'right', 'wrong', 'hint', 'skip', 'tap'], // what it names (games/kit/audio/sounds.json)
   name: { zh: '聊天 · 今线', en: 'Chat · the present line' },
   how: { zh: '打字，回他们。', en: 'Type, and answer them.' },
   ai: true, // the other half is a model's (no bot plays it)
@@ -39,10 +41,20 @@ const T = {
   zh: {
     type: '说点什么……', send: '发送', typing: '对方正在输入…', left: '还能说 {n} 句', done: '聊完了', end: '就到这儿',
     calling: '通话中', far: '这会儿叫不应。', off: '这个测试存档不叫灵（chat=off）。', err: '没回。再说一句？',
+    riddle: '猜谜', guessIt: '你猜……', guessGo: '猜', hint: '提示', hintAt: '提示{n}：', skip: '跳过', answer: '谜底：{a}',
+    tried: '猜错 {n} 回', hinted: '提示 {n}/{max}',
+    twenty: '二十问 · 猜你心里的动物', think: '心里想好一种动物，就在下面这些里挑。他们只问是不是，{max} 问之内来猜。想好了，点「想好了」。',
+    ready: '想好了', yes: '是', no: '不是', unknown: '不知道', right: '对', wrong: '不对', asked: '已问 {n}/{max}',
+    tell: '他们猜不着了。告诉他们，你心里是什么：', itWas: '它是……', tellGo: '告诉他们',
   },
   en: {
     type: 'Say something…', send: 'Send', typing: 'typing…', left: '{n} lines left', done: 'Chat over', end: 'Leave it there',
     calling: 'On call', far: 'No one answers just now.', off: 'This test save asks no one (chat=off).', err: 'No reply. Say it again?',
+    riddle: 'A riddle', guessIt: 'Your guess…', guessGo: 'Guess', hint: 'Hint', hintAt: 'Hint {n}: ', skip: 'Skip', answer: 'The answer: {a}',
+    tried: '{n} wrong', hinted: 'hints {n}/{max}',
+    twenty: 'Twenty questions · the animal you think of', think: 'Think of an animal from the ones below. They ask only yes or no, and guess within {max}. Ready? Tap "Got one".',
+    ready: 'Got one', yes: 'Yes', no: 'No', unknown: 'Don\'t know', right: 'Right', wrong: 'Wrong', asked: 'Asked {n}/{max}',
+    tell: 'They can\'t get it. Tell them what you thought of:', itWas: 'It was…', tellGo: 'Tell them',
   },
 };
 const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -51,7 +63,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const WORLD = new URL('../../worlds/jiuding/', import.meta.url);
-let regP = null, peopleP = null;
+let regP = null, peopleP = null, twentyP = null;
+const twentyOf = () => (twentyP ??= fetch(new URL('aigames.json', WORLD)).then((r) => r.json()).then((d) => tableOf(d.twenty)));
 const chatsOf = () => (regP ??= fetch(new URL('games.json', WORLD)).then((r) => r.json())
   .then((reg) => reg.games.find((g) => g.id === 'jinchat' && !g.task)?.data?.chats ?? {}).catch(() => ({})));
 const peopleOf = () => (peopleP ??= fetch(new URL('people.json', WORLD)).then((r) => r.json())
@@ -78,6 +91,8 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     ? `<img class="g-jc-av" src="${esc(new URL(c.art, WORLD).href)}" alt="" draggable="false">`
     : `<span class="g-jc-av is-letter">${esc([...(c?.name ?? '·')][0])}</span>`);
   const bubbleHtml = (line) => {
+    if (line.who === 'card') return `<div class="g-jc-row is-card">${line.html}</div>`;
+    if (line.who === 'note') return `<div class="g-jc-note">${esc(line.text)}</div>`;
     const mine = line.who === 'me';
     const c = g.cast.find((x) => x.id === line.who);
     const name = !mine && g.cast.length > 1 ? `<i class="g-jc-name">${esc(c?.name ?? '')}</i>` : '';
@@ -98,10 +113,11 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const add = (line) => {
     g.stick = true;
     g.shown.push(line);
-    try { shell?.sound?.(line.who === 'me' ? 'send' : 'recv'); } catch { /* no sound: the chat goes on */ }
+    if (line.who !== 'card' && line.who !== 'note') sound(line.who === 'me' ? 'send' : 'recv');
     list()?.insertAdjacentHTML('beforeend', bubbleHtml(line));
     scroll();
   };
+  const sound = (name) => { try { shell?.sound?.(name); } catch { /* no sound: the chat goes on */ } };
   const typing = (on) => { $('.g-jc-typing')?.classList.toggle('is-on', on); if (on) scroll(); };
   const foot = (t) => { const f = $('.g-jc-foot'); if (f) f.textContent = t; };
   const lefts = () => foot(g.over ? w.done : fill(w.left, { n: Math.max(0, turns() - g.sent) }));
@@ -128,10 +144,12 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
       + `<span class="g-jc-when">${look === 'call' ? `<i class="g-jc-rec"></i>${esc(w.calling)}` : esc(pick(c.when, lang))}</span></div>`;
     const darkHead = look === 'dark' ? `<div class="g-jc-dhead">${esc(pick(c.when, lang))}</div>` : '';
     const chips = (c.chips ?? []).map((t, i) => `<button type="button" class="g-jc-chip" data-chip="${i}">${esc(pick(t, lang))}</button>`).join('');
+    // A word game (`game`, 2026-10-27) has its own strip of controls under the chat, in place of the free box.
+    const game = c.game ? '<div class="g-jc-game"></div>' : '';
     root.innerHTML = `${head}${darkHead}<div class="g-jc-list"></div>`
-      + `<div class="g-jc-typing"><span></span><span></span><span></span><em>${esc(w.typing)}</em></div>`
-      + `<div class="g-jc-chips">${chips}</div>`
-      + `<form class="g-jc-bar"><input class="g-jc-in" type="text" maxlength="120" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.type)}">`
+      + `<div class="g-jc-typing"><span></span><span></span><span></span><em>${esc(w.typing)}</em></div>${game}`
+      + `<div class="g-jc-chips"${c.game ? ' hidden' : ''}>${chips}</div>`
+      + `<form class="g-jc-bar"${c.game ? ' hidden' : ''}><input class="g-jc-in" type="text" maxlength="120" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.type)}">`
       + `<button type="submit" class="g-jc-send">${esc(w.send)}</button></form>`
       + `<div class="g-jc-footrow"><span class="g-jc-foot"></span><button type="button" class="g-jc-end" hidden>${esc(w.end)}</button></div>`;
     // A key in the box is the chat's, never the page's or a game's (Enter sends; an IME's Enter composes).
@@ -148,7 +166,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     g.over = true;
     inputOn(false);
     $('.g-jc-chips')?.replaceChildren();
-    lefts();
+    if (!g.chat?.game) lefts();
     log({ kind: 'end', chat: data.chat, ...r, sent: g.sent, ms: Date.now() - g.t0 });
     setTimeout(() => finish(r), r.grade === 'met' ? 1800 : 1200);
   };
@@ -168,8 +186,56 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     if (data.seam === 'stub') { await wait(900); return { text: stubReply(g.cast, g.sent) }; }
     const line = turnLine(g.chat, { k: g.sent, text, cast: g.cast, shown: g.shown.slice(0, g.chat.open?.length ?? 0), lang });
     log({ kind: 'sent', chat: data.chat, k: g.sent });
+    return send(line);
+  };
+  // One hidden line to whoever writes their words: Ling, or the person's own agent (`chat.agent`: 银月 writes her own
+  // lines, the standing rule — her guest turn, as 讨饼债's; she refuses when not awake, and Ling, who wrote her
+  // before, answers instead).
+  const send = async (line, timeoutMs = TIMEOUT_MS) => {
     if (typeof data.ask === 'function') return data.ask({ agent: 'ling', text: line, system: HOST_SYSTEM[lang] ?? HOST_SYSTEM.zh });
-    return askInChat({ sid: sessionOf(), agent: 'ling', text: line, signal, timeoutMs: TIMEOUT_MS });
+    const agent = g.chat.agent ?? 'ling';
+    if (agent !== 'ling') {
+      const at = lang === 'en' ? '@Yinyue ' : '@银月 ';
+      const r = await askInChat({ sid: sessionOf(), agent, text: line.replace(/^\[HIDDEN\] /, `[HIDDEN] ${at}`), signal, timeoutMs }).catch((e) => ({ err: String(e?.message ?? e) }));
+      if (r?.text) return r;
+      log({ kind: 'refused', chat: data.chat, agent, why: r?.refused ?? r?.err ?? null });
+    }
+    return askInChat({ sid: sessionOf(), agent: 'ling', text: line, signal, timeoutMs });
+  };
+
+  /* ── A word game (`chat.game`): the page plays it; their bubbles come when they come. ── */
+  // One of their lines at a time: a moment while one is still on its way goes unanswered (the game never waits on it,
+  // except the last, `wait`). After `settle()` (the book's lines close the game) no late bubble is laid.
+  const react = (text, { wait: hold = false } = {}) => {
+    if (!g.live || g.hush) return Promise.resolve();
+    if (g.inflight && !hold) return g.inflight;
+    const run = (g.inflight ?? Promise.resolve()).then(() => talk(text)).catch((e) => log({ kind: 'react-fail', chat: data.chat, err: String(e?.message ?? e) }))
+      .finally(() => { if (g.inflight === run) g.inflight = null; });
+    g.inflight = run;
+    return run;
+  };
+  const say1 = async (text, event) => {
+    if (data.seam === 'stub') { await wait(700); return { text: stubLine(g.cast, event) }; }
+    return send(text);
+  };
+  const talk = async (text) => {
+    const t = performance.now();
+    const r = await say1(text, (text.match(/·(\S{0,6})/) ?? [])[1] ?? 'line');
+    const p = r?.text ? parseChat(r.text, g.cast) : { lines: [] };
+    log({ kind: 'react', chat: data.chat, ms: Math.round(performance.now() - t), lines: p.lines.length, err: r?.err ?? r?.refused ?? null });
+    if (!p.lines.length || g.hush || g.over) return;
+    await typeOut(p.lines.slice(0, 2));
+  };
+  const settle = async () => { await Promise.race([g.inflight ?? Promise.resolve(), wait(12000)]); g.hush = true; };
+  const playGame = async () => {
+    const ctx = {
+      root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, react, settle, sound, foot, log,
+      table: twentyOf,
+      ask: (text) => (g.live && data.seam !== 'stub' ? send(text, 60000) : Promise.resolve({ text: '' })),
+    };
+    const kind = g.chat.game.kind;
+    const r = await (kind === 'guess' ? guessGame(ctx) : riddleGame(ctx));
+    end(r);
   };
 
   const say = async (raw) => {
@@ -222,7 +288,14 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     g.keep = setInterval(keepDown, 300);
     inputOn(false);
     lefts();
+    // A word game's context first (`game.setup`, the book's own narration: 最后一颗 — what the 饭桶 just did).
+    for (const l of g.chat.game?.setup ?? []) add({ who: 'note', text: pick(l, lang) });
     await typeOut((g.chat.open ?? []).map((l) => ({ who: l.who, card: l.card, text: pick(l.text, lang) })));
+    if (g.chat.game) {
+      // Every game plays with no one to ask (chat off, no engine): the page judges, the book closes it.
+      g.live = data.seam === 'stub' || typeof data.ask === 'function' || (data.seam !== 'off' && Boolean(sessionOf()) && (await reachable()));
+      return playGame();
+    }
     if (data.seam === 'off') return cannot(w.off);
     if (data.seam !== 'stub' && typeof data.ask !== 'function' && (!(await reachable()) || !sessionOf())) return cannot(w.far);
     inputOn(true);
@@ -307,6 +380,34 @@ const STYLE = `
 .g-jc.is-face .g-jc-bar, .g-jc.is-face .g-jc-footrow { background: #e8dcc2; }
 .g-jc.is-face .g-jc-send { background: #9a3b2a; box-shadow: none; }
 .g-jc.is-face .g-jc-chip { background: #fbf6ea; }
+/* A word game (2026-10-27): the riddle's card in the list, the context's narration line, the controls' strip. */
+.g-jc [hidden] { display: none !important; }
+.g-jc-note { align-self: center; max-width: 92%; font-size: 12.5px; color: var(--jc-dim); text-align: center; font-style: italic; padding: 2px 6px; }
+.g-jc-row.is-card { justify-content: center; }
+.g-jc-riddle { width: min(100%, 420px); padding: 10px 14px; border: 2.5px solid var(--jc-ink); border-radius: 12px; background: #fff8dc;
+  box-shadow: 3px 4px 0 var(--jc-ink); text-align: center; }
+.g-jc-riddle i { display: block; font-style: normal; font-size: 11.5px; letter-spacing: .12em; color: var(--jc-dim); }
+.g-jc-q { margin: 4px 0 2px; font-size: 16px; font-weight: 700; line-height: 1.55; }
+.g-jc-hints { margin: 6px 0 0; padding: 0; list-style: none; font-size: 13px; color: #6b4d12; }
+.g-jc-ans { margin: 6px 0 0; font-weight: 800; color: #9a3b2a; }
+.g-jc-pool { margin: 6px 0 0; font-size: 12.5px; color: var(--jc-dim); line-height: 1.6; }
+.g-jc-game { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 6px; border-top: 2.5px solid var(--jc-ink); background: #f7f6f2; }
+.g-jc.is-face .g-jc-game { background: #e8dcc2; border-top-width: 1.5px; }
+.g-jc.is-dark .g-jc-game { background: #0d0e13; border-color: #1c1e26; }
+.g-jc-game:empty { display: none; }
+.g-jc-game .g-jc-bar { margin: 0; padding: 0; border: 0; background: none; }
+.g-jc-gacts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.g-jc-gbtn { font: inherit; font-size: 14px; font-weight: 700; padding: 6px 16px; border: 2.5px solid var(--jc-ink); border-radius: 999px; background: #fff; color: var(--jc-ink);
+  box-shadow: 2px 2px 0 var(--jc-ink); cursor: pointer; }
+.g-jc-gbtn:disabled { opacity: .4; cursor: default; }
+.g-jc-gbtn.is-yes, .g-jc-gbtn.is-main { background: #5cc23a; color: #fff; }
+.g-jc-gbtn.is-no { background: #e8674f; color: #fff; }
+.g-jc-gbtn.is-skip { font-weight: 500; font-size: 12.5px; box-shadow: none; border-style: dashed; }
+.g-jc-gnote { margin: 0; font-size: 13px; text-align: center; }
+.g-jc.is-face .g-jc-riddle { background: #fbf6ea; border-width: 1.5px; border-radius: 4px; box-shadow: none; }
+.g-jc.is-face .g-jc-gbtn { box-shadow: none; border-width: 1.5px; }
+.g-jc.is-face .g-jc-gbtn.is-yes, .g-jc.is-face .g-jc-gbtn.is-main { background: #6f7f3a; }
+.g-jc.is-face .g-jc-gbtn.is-no { background: #9a3b2a; }
 @keyframes g-jc-pop { from { transform: translateY(6px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes g-jc-dot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
 @keyframes g-jc-blink { 50% { opacity: .25; } }
