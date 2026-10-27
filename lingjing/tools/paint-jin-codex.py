@@ -94,7 +94,8 @@ SUBJECTS = {
               'No blackboard, no writing anywhere. Full length.'),
   # Hanli 2026-10-27: 「今1 没有人物志图片呢」 — his parents, on the 9/11 video call (插曲01: 「他爸的大脸「呼」地挤进镜头」,
   # 「护膝缠得像个粽子」); 定例 § 三: 德州乡下, 爸跑长途货车、膝盖不好, 妈在县城超市收银; 妈问话、爸补刀. Painted with local
-  # FLUX (--flux), so the reference is the style's only.
+  # FLUX (--flux), so the reference is the style's only. Kept: seed 1 of both (2026-10-27; looked at: the squint at the
+  # phone, the knee brace and the stool; FLUX takes no face reference, so no 古 face carries over).
   'jin-ma': ('qulao', 'Shen Mang\'s mother, a Chinese countrywoman of about forty-five from the plains of rural Shandong, a '
              'cashier at a small county-town supermarket: a weathered, sharp-eyed, practical face, eyes narrowed in a '
              'suspicious squint as she peers closely at the screen of a smartphone she holds up in front of her face in one '

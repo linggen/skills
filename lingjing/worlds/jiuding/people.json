@@ -240,6 +240,24 @@
       "role": { "zh": "严振华，教针灸推拿学导论和针灸实验课", "en": "Yan Zhenhua, who teaches Introduction to Acupuncture and Tuina and the acupuncture lab" },
       "voice": { "zh": "板正，照本宣科；下课前默写。", "en": "Upright and by the book; a dictation before the bell." },
       "art": "art/people/jin-yan.webp"
+    },
+    {
+      "id": "jin-ma",
+      "line": "jin",
+      "gender": "female",
+      "name": { "zh": "妈", "en": "Mum" },
+      "role": { "zh": "沈芒的妈，德州乡下人，在县城超市收银", "en": "Shen Mang's mum, from the Dezhou countryside; a cashier at the county-town supermarket" },
+      "voice": { "zh": "德州乡下人，在超市上班；眼尖，爱眯着眼往屏幕里瞅，一句一句往下问；疼儿子，嘴上不饶人。", "en": "From the Dezhou countryside, works at the supermarket; sharp-eyed, squints into the screen, asks one question after another; dotes on her son and never lets anything slide." },
+      "art": "art/people/jin-ma.webp"
+    },
+    {
+      "id": "jin-ba",
+      "line": "jin",
+      "gender": "male",
+      "name": { "zh": "爸", "en": "Dad" },
+      "role": { "zh": "沈芒的爸，跑长途货车二十年，膝盖不好", "en": "Shen Mang's dad, twenty years a long-haul lorry driver, with a bad knee" },
+      "voice": { "zh": "开大车，刚跑完日照回来，膝盖缠着护膝；嗓门大，离手机远，爱插一句冷笑话，开口「芒啊」。", "en": "Drives a lorry, just back from Rizhao, a brace round his knee; loud, sits far from the phone, cuts in with a deadpan joke, starts with 'Mang, son'." },
+      "art": "art/people/jin-ba.webp"
     }
   ]
 }

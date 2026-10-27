@@ -677,6 +677,18 @@
     "book": "j01"
    },
    "book_only": true
+  },
+  "jin-ma": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
+  },
+  "jin-ba": {
+   "first": {
+    "book": "j01"
+   },
+   "book_only": true
   }
  }
 }

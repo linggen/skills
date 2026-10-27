@@ -220,7 +220,7 @@ test("今线's people: a card in the book at their first appearance (今 · 一)
   const { renderMarkdown } = await import('../scripts/read-md.js');
   const codex = codexOf(codexFiles(content), { lang: 'zh' });
   const jin = content.people.people.filter(p => p.line === 'jin').map(p => p.id);
-  assert.equal(jin.length, 8);
+  assert.equal(jin.length, 10); // 妈 · 爸 since 2026-10-27 (「今1 没有人物志图片呢」)
   for (const id of jin) assert.ok(codex.get(id)?.book_only && codex.get(id).first?.book === 'j01' && codex.get(id).image, id);
   const md = fs.readFileSync(new URL('../story/jiuding-lu/今线/插曲01.md', import.meta.url), 'utf8');
   const html = renderMarkdown(md, { codex, chapter: 'j01', lang: 'zh' });
