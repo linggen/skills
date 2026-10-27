@@ -23,7 +23,7 @@ import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gongkeBoard, meaningOf } from './gongke.mjs';
-import { catchHere, errandAsking, errandWants, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
+import { catchHere, errandAsking, errandWants, gameLevel, hostedHere, lundaoBrief, reopened, skipCut, stallHere } from './tasks.mjs';
 import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
@@ -34,7 +34,7 @@ import { atScene, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeB
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
-import { leaveOf, replayBrief } from './skips.mjs';
+import { leaveOf, replayBrief, storyBoard } from './skips.mjs';
 import { asideLook } from './aside.mjs';
 import { capLook } from './cap.mjs';
 import { entryGate, stageBack, stageBrief, stageGate, stageNow, stagesPaid } from './gates.mjs';
@@ -489,6 +489,8 @@ function tasksBrief(content, state, ctx) {
         ...(hosted[id] ? { hosted: true, ...(hosted[id].practice ? { practice: true } : {}) } : {}),
         // A board he opened by choice may be put down at any moment (收手, rules/skips.mjs leaveOf); the story's own may not.
         ...(task.kind === 'board' && leaveOf(content, state, id) ? { leave: true } : {}),
+        // …and one an errand here needs may be skipped once stuck, its pay cut (跳过 · 酬减半, rules/tasks.mjs errandSkip).
+        ...(task.kind === 'board' && skipCut(content) != null && !storyBoard(content, state, id) && errandWants(content, state, id, state.place) ? { skip: { cut: skipCut(content) } } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
         ...(task.kao ? { light: true, ...kaoBrief(content, state, ctx.now) } : {}),
         // A 奇遇: its frame is the board's line, its deal the game's (rules/qiyu.mjs).

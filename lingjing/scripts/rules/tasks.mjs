@@ -16,7 +16,7 @@ import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, storedLine } from './pouch.mjs';
-import { laterBoard, leaveBoard, replayBoard, sceneBoards, skipBoard } from './skips.mjs';
+import { laterBoard, leaveBoard, replayBoard, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
 import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, restAfter, sceneOf } from './world.mjs';
@@ -35,7 +35,8 @@ export function task(state, content, ctx, args) {
   if (args.action === 'done') return taskDone(state, content, ctx, args.id);
   if (args.action === 'check') return questCheck(state, content, ctx, args.id);
   // A story board left (「算了，往下走」, paid nothing), and offered again later (rules/skips.mjs).
-  if (args.action === 'skip') return skipBoard(state, content, ctx, String(args.id ?? ''));
+  // …and an errand's board, once stuck: 跳过 · 酬减半 (errandSkip below) — the errand met, the board's pay cut.
+  if (args.action === 'skip') return errandSkip(state, content, ctx, String(args.id ?? '')) ?? skipBoard(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'replay') return replayBoard(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'later') return laterBoard(state, content, ctx, String(args.id ?? ''));
   // 收手: a board he opened by choice, put down (rules/skips.mjs leaveOf).
@@ -195,6 +196,35 @@ function taskDone(state, content, ctx, id) {
   const wrote = t.ledger ? writeLedger(content, s, t, ctx) : [];
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);
   return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(wrote.length ? { ledger: wrote } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}) } };
+}
+
+/* 跳过 · 酬减半 — a board an errand needs, left once stuck (Hanli 2026-10-27, at 晒经's 华容道: 「华容道yinyue提示也不太好用,
+   就是有点难, 让用户能跳过去, 就好了」). It counts for the errand as a win would — the errand met, handed in, paid in full —
+   but the board's own pay is cut (balance.json `play_pay.skip`, half at full ★), and it is kept as skipped, not won: the
+   held errand names the need (`skipped`), the result says `skipped`. The same as an errand's win otherwise (taskDone above):
+   its 体力 where hosted, a play counted, nothing written to the task — so practice and the story stay as they were.
+   Null where no errand here asks for it (the story's own board: skips.mjs skipBoard). */
+export const skipCut = content => content.balance?.play_pay?.skip ?? null;
+function errandSkip(state, content, ctx, id) {
+  const t = taskOf(content, id), cut = skipCut(content);
+  if (!t || t.kind !== 'board' || cut == null || storyBoard(content, state, id)) return null;
+  const q = errandAsking(content, state, id, state.place);
+  if (!q || !taskOpen(content, state, id, ctx.now)) return null;
+  const s = clone(state);
+  delete s.wins?.[id];
+  if (t.hosted) {
+    const empty = spendStamina(content, s, ctx, 'game');
+    if (empty) return empty;
+  }
+  const full = sideLine(content, sceneOf(content, s)) ? null : playGrant(content, s, id, t, ctx.now, null);
+  const play = full ? { ...full, progress: Math.round(full.progress * cut), wealth: Math.round(full.wealth * cut) } : null;
+  const paid = play && (play.progress || play.wealth) ? pay(content, s, ctx, play) : null;
+  if (full) playCounted(s, id, ctx.now);
+  const held = s.quests[q.id];
+  const at = q.need.findIndex(n => n.kind === 'board' && n.task === id);
+  s.quests[q.id] = { ...held, skipped: [...new Set([...(held.skipped ?? []), at])] };
+  const handed = advance(content, s, { kind: 'board', task: id }, ctx);
+  return { state: s, result: { ok: true, skipped: id, for: 'errand', quest: q.id, cut, paid, gives: null, ...(handed.length ? { handed } : {}) } };
 }
 
 /* A real-life chore handed in: today's pick, a fixed one, or a 开府

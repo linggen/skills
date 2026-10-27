@@ -517,6 +517,8 @@
     "fight": { "minutes": 4 },
     "errand": { "share": 0.15, "time": 0.1, "minutes": 5, "wealth": 15 },
     "chore": { "day": 0.1, "week": 0.2 },
+    "_skip": "跳过 · 酬减半 (Hanli 2026-10-27, 晒经's 华容道: 「让用户能跳过去, 就好了」): a board an errand needs, left once stuck, counts for the errand — met and paid in full — and pays this share of the board's own play pay at full ★ (rules/tasks.mjs errandSkip). The page's button says the cut from this number.",
+    "skip": 0.5,
     "authored": { "base": 470, "tables": ["scene", "task", "puzzle", "branch", "tale", "tale_end", "chore_kind", "game", "quest", "meet", "trial", "chance"] }
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",

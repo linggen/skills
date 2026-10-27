@@ -3324,12 +3324,22 @@ async function onSkip(g) {
     return false;
   }
   tracker.boardEnd(id, 'skipped');
+  // An errand's board skipped (跳过 · 酬减半, rules/tasks.mjs errandSkip): counted for the errand at the cut pay — off the
+  // stage as a won one leaves it, what it paid as 所得, the errand handed in after it; no word of hers.
+  if (r.for === 'errand') return errandSkipped(id, r);
   // Left, not won: a gentle word from her, never guilt (hersay.js skipped, once in 30 min).
   herSay.say('skipped', '');
   if (isTale(id)) return taleDone(r);
   await refresh();
   const on = winExit(id, null, true);
   if (on && !look?.tell_owed) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
+  return true;
+}
+async function errandSkipped(id, r) {
+  keep({ doNote: null, ...(boardPaid(r) ? { spoils: { place: look?.place?.id ?? null, cards: [], items: [], paid: r.paid, spent: [], line: null } } : {}) });
+  leaveWonBoard(id);
+  await refresh();
+  bringWonIntoFocus();
   return true;
 }
 /* The skip's slot fills itself the moment he is stuck — the clock, or the game saying so — without
@@ -3339,10 +3349,12 @@ function openStuckSlots() {
   for (const slot of document.querySelectorAll('[data-skip-slot]')) {
     const next = slotNext(boards.get(slot.dataset.skipSlot), Date.now(), Boolean(slot.firstElementChild));
     if (next === 'fill') {
-      slot.innerHTML = skipButton(slot.dataset.skipSlot, lang(), 'skipIcon' in slot.dataset); // the shell bar's ✕, or the word under a board
+      const cut = slot.dataset.skipCut ?? null; // an errand's board: 「跳过 · 酬减半」 (cards.js skipBoard)
+      slot.innerHTML = skipButton(slot.dataset.skipSlot, lang(), 'skipIcon' in slot.dataset, cut); // the shell bar's ✕, or the word under a board
       bringIntoFocus(slot.firstElementChild);
-      // Stuck: she spurs him once a board, and may point to Ling (hersay.js stuck).
-      herSay.say('stuck', '', { key: slot.dataset.skipSlot });
+      // Stuck: she spurs him once a board, and may point to Ling (hersay.js stuck) — a story board's only; an errand's
+      // skip says its cut and nothing more (Hanli 10-27: no 银月 lines for it).
+      if (cut == null) herSay.say('stuck', '', { key: slot.dataset.skipSlot });
     } else if (next === 'clear') slot.innerHTML = '';
   }
 }

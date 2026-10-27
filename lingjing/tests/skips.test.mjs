@@ -197,8 +197,8 @@ test('one rule for every board: no game draws a skip of its own; the page lays i
     for (const lang of ['zh', 'en']) assert.doesNotMatch(mod.html(s, lang), /data-g="skip"/, `${f}: no skip from the start`);
   }
   const cards = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
-  assert.match(cards, /const btn = always \|\| stuckNow\(g, now\) \? skipButton\(id, ctx\.lang, icon\) : '';/, 'the page\'s skip waits on the gate (a board taken up by choice: from the first moment)');
-  assert.match(cards, /data-skip-slot="\$\{esc\(id\)\}" data-skip-icon>\$\{btn\}/, 'in a shell\'s bar the slot is the ✕');
+  assert.match(cards, /const btn = always \|\| stuckNow\(g, now\) \? skipButton\(id, ctx\.lang, icon, cut\) : '';/, 'the page\'s skip waits on the gate (a board taken up by choice: from the first moment)');
+  assert.match(cards, /data-skip-slot="\$\{esc\(id\)\}" data-skip-icon\$\{cutAttr\}>\$\{btn\}/, 'in a shell\'s bar the slot is the ✕');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /write\('task', \{ action: 'skip', id \}\)/, 'a skip is the rules\' skip, never a win');
   assert.doesNotMatch(page.slice(page.indexOf('function skipGame'), page.indexOf('async function onSkip')), /won: true|onWin/, 'never sent as a win');
@@ -223,7 +223,7 @@ test('the skip slot empties once its board is won or left, and fills only when s
 
 test('the way out comes into sight: a skip slot filled below the stage\'s fold scrolls #focus to it, never the page (live 390, 2026-10-19)', () => {
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(src, /slot\.innerHTML = skipButton\(slot\.dataset\.skipSlot, lang\(\), 'skipIcon' in slot\.dataset\);[^\n]*\n\s*bringIntoFocus\(slot\.firstElementChild\);/);
+  assert.match(src, /slot\.innerHTML = skipButton\(slot\.dataset\.skipSlot, lang\(\), 'skipIcon' in slot\.dataset, cut\);[^\n]*\n\s*bringIntoFocus\(slot\.firstElementChild\);/);
   const fn = src.slice(src.indexOf('function bringIntoFocus('), src.indexOf('function bringIntoFocus(') + 500);
   assert.match(fn, /const box = \$\('focus'\);/);
   assert.match(fn, /box\.scrollBy\(/);

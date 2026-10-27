@@ -563,6 +563,9 @@ function board(card, ctx) {
   // story's own (and a board offered again, Look's replay) keep 「算了，往下走」 once stuck (skipBoard's slot).
   const leaveBtn = task?.leave && !made && !g?.state?.won && !g?.sent ? { label: ctx.words.boardLeave, leave: id } : null;
   const skips = (own || task?.replay) && !today && !made && !shut;
+  // A board an errand here needs (Look's task `skip`, rules/tasks.mjs errandSkip): once stuck, 「跳过 · 酬减半」 beside the ✕ —
+  // the errand met, the board's pay cut (Hanli 10-27, 晒经's 华容道: 「让用户能跳过去, 就好了」). The ✕ stays 收手.
+  const cutSkip = task?.skip && !skips && !today && !made && !shut && !g?.sent ? skipBoard(g, id, ctx, { icon: true, cut: task.skip.cut }) : '';
   // A puzzle that is hers to explain (密室: `meta.askHer` names the module's tap) — 问询 goes to her with the room's
   // rules and where he stands, never to Ling for the scenery again (Hanli 10-27: 问询 twice, only the room re-described).
   // A board that answers 问询 itself (华容道 `meta.ask`: how to play, then a lit next move) takes it the same way.
@@ -576,7 +579,7 @@ function board(card, ctx) {
     ask: !about ? '' : about.g ? toolHtml('ask', about.label, `data-g="${esc(about.g)}" data-gfor="${esc(about.gfor)}"`) : toolHtml('ask', about.label, askAttr(about.say)),
     // 重来 (↺): a board that can start over (shell.js restartOf); its tap is the board's own, by `data-gfor`.
     restart: restartOf(g?.mod) && !g?.state?.won ? restartHtml(id, ctx.lang, g.mod.meta.restart(g.state)) : '',
-    close: leaveBtn ? toolHtml('close', leaveBtn.label, `data-board-leave="${esc(id)}"`) : skips ? skipBoard(g, id, ctx, { icon: true }) : '',
+    close: cutSkip + (leaveBtn ? toolHtml('close', leaveBtn.label, `data-board-leave="${esc(id)}"`) : skips ? skipBoard(g, id, ctx, { icon: true }) : ''),
   };
   const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod), ...tools,
     how: forInput(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
@@ -964,17 +967,26 @@ function taleBody(st, ctx) {
 /// slot under the board stands empty until then, and the page fills it when the gate opens.
 /// Leaving pays nothing (rules/skips.mjs). Outside the [data-game] host, so a live game's
 /// repaint never takes it away. Modules draw no skip of their own.
-export function skipBoard(g, id, ctx, { always = false, icon = false } = {}) {
+export function skipBoard(g, id, ctx, { always = false, icon = false, cut = null } = {}) {
   if (!g?.mod || g.state?.won || g.skipped) return '';
   const now = Date.now();
   stampShown(g, now);
   // A board he took up by choice (a 传闻's step) shows its way out from the first moment (Hanli 10-27: 「确保都能跳过去」);
-  // the story's own keep the stuck gate (「玩家卡住了才显示」, 10-15). In a shell's bar (`icon`) the slot is the ✕.
-  const btn = always || stuckNow(g, now) ? skipButton(id, ctx.lang, icon) : '';
-  return icon ? `<span data-skip-slot="${esc(id)}" data-skip-icon>${btn}</span>` : `<div class="acts gskip" data-skip-slot="${esc(id)}">${btn}</div>`;
+  // the story's own keep the stuck gate (「玩家卡住了才显示」, 10-15). In a shell's bar (`icon`) the slot is the ✕ —
+  // or, for an errand's board (`cut`), the words 「跳过 · 酬减半」 beside it, by the same gate.
+  const btn = always || stuckNow(g, now) ? skipButton(id, ctx.lang, icon, cut) : '';
+  const cutAttr = cut != null ? ` data-skip-cut="${esc(String(cut))}"` : '';
+  return icon ? `<span data-skip-slot="${esc(id)}" data-skip-icon${cutAttr}>${btn}</span>` : `<div class="acts gskip" data-skip-slot="${esc(id)}"${cutAttr}>${btn}</div>`;
 }
-/* 「算了，往下走」: a quiet word under a board, or the shell bar's ✕ with it as its title (`icon`). */
-export const skipButton = (id, lang, icon = false) => (icon ? toolHtml('close', SKIP[lang] ?? SKIP.zh, `data-game-skip="${esc(id)}"`)
+/* 「跳过 · 酬减半」: the pay's cut said plainly, from the world's number (balance.json `play_pay.skip`). */
+export const skipCutWord = (cut, lang) => {
+  const half = Math.abs(cut - 0.5) < 1e-9;
+  return lang === 'en' ? (half ? 'Skip · half pay' : `Skip · ${Math.round(cut * 100)}% pay`) : half ? '跳过 · 酬减半' : `跳过 · 酬${Math.round(cut * 10)}成`;
+};
+/* 「算了，往下走」: a quiet word under a board, or the shell bar's ✕ with it as its title (`icon`); with a `cut`, the words of it. */
+export const skipButton = (id, lang, icon = false, cut = null) => (cut != null
+  ? `<button type="button" class="${icon ? 'gshell-btn gshell-skip' : 'act quiet'}" data-game-skip="${esc(id)}">${esc(skipCutWord(Number(cut), lang))}</button>`
+  : icon ? toolHtml('close', SKIP[lang] ?? SKIP.zh, `data-game-skip="${esc(id)}"`)
   : `<button class="act quiet" data-game-skip="${esc(id)}">${esc(SKIP[lang] ?? SKIP.zh)}</button>`);
 
 /// A board left on an earlier day, offered again by itself once the stage is idle (Look's
