@@ -62,6 +62,30 @@ sounds.json. Locks: tests/game-sound.test.mjs (every registry game names real so
 runner sounds), tests/board-leave.test.mjs (no board the story needs without a scene; every kind draws its way out).
 Left: the story's 炼丹 herb board has no shell frame, so no 🔊 of its own (it follows the one shared mute set on any other board).
 
+## 四条 — the standing rule, audit 10-27
+
+Hanli 10-27: 「确保都能跳过去, 不会卡住游戏进程. 都有音效并可关闭, 都美化过并统一风格, 都用了小游戏的外壳.」 The 游戏厅 holds
+16 types now, every one a kind players know: 投掷 · 割绳子 · 打地鼠 · 调息 · 解谜 · 对话 · 棋牌 · 格斗 · 节奏 · 你画我猜 · 斗法 ·
+塔防 · 结印 · 配对 · 探索 · 开炉 (no 时机; the 13 cut prototypes are gone). Checked from the code and the locks (tests named),
+and live on 9527 where marked; the phone runs the same modules through games/phone/host.js (its 🔊 and ✕ · 算了 from 10-26).
+
+| board (kit) | 1 never blocks | 2 sound · 🔊 | 3 one style | 4 the shell |
+|---|---|---|---|---|
+| story boards of every kit (rain · rope · qimai · huarong · luoshu · qiqiao · jinchat · bingzhai · drawguess · yubujiuge · wuziqi · xiangqi · yabao · 塔防 · 结印 · lianliankan · mishi · fighter · zhazhai) | ✓ 「算了，往下走」 once stuck (rules/skips.mjs; tests/board-leave, skips) | ✓ (tests/game-sound: every registry game names real sounds; the shell's 🔊 kept in localStorage, kit/sound.js) | ✓ painted beams and catchers for every 打地鼠 level (喷嚏符 · 凶崖 · 隐身符 · 风掉头 painted 10-27; 瓦砾's floor repainted) | ✓ cards.js board card → frameHtml (lead card, pause, 🔊, result) |
+| story fights (斗法 kapai) | **before: only inside a key beat's lock** → **after: every story fight**, three losses then 「算了，往下走」 (skips.mjs fightStuck; tests/lock-fight-skip) | ✓ per log entry | ✓ | ✓ lingjing.js framed (frameHtml) |
+| a guarded room (the 秘境's 犰狳) | **before: had to be won** → **after: lost to three times, it lets him by** (world.mjs guardOf `hunt_losses`) | ✓ (斗法) | ✓ | ✓ |
+| riddles (读封 …) | ✓ three misses then 算了 (core.mjs) | — (a card) | ✓ | a card, not a board |
+| 喷嚏符 | 时机 (home-made) → 打地鼠 | ✓ | **before: ink-drawn 时机 figures** → painted | ✓ |
+| 开炉 · 兽潮 · 秘境 rerun · 本王考考你 · 闭关 | ✓ 收手 / walk out / leave the chat / the overlay's close (opened by choice, never a gate) | ✓ (kailu · shouqiang · kapai kits) | ✓ | 开炉 and 兽潮 framed (fantong-kailu.js · board card); the 秘境 room and 闭关 are page rooms with their own close, not boards |
+| the arcade-only 对话 rooms (断案 · 对子 · 讨价 · 二十问) | ✓ (opened by choice) | ✓ jinchat sounds | ✓ | page looks on a scratch save (`stage` rows), the page's chrome |
+
+The walk: **tests/no-win-walk.test.mjs** — a fresh save to 01-end and 卷一's end with nothing won: 104 boards left, 8 story
+fights lost three times and left (蛫 · 邹青松 · 卢方 · 马小宝 · 犰狳 · 腊八 final · 冰夷双龙 · 老井), the 犰狳's room lost to and let by,
+the riddle missed and passed; four teaching fights no line can lose (狐咬 · 龙脂门 · 大比 试戒 · 秦雁 at 伏天) are named, never
+gates. The stage quests ask a layer full, never a board: the routine (修炼 · 人间功课 · 闭关) fills it — the walk's `earned`,
+the economy's days (tools/balance.mjs). Left as style notes, not failures: 气走经脉's channel is drawn over its painted
+landscape (by design: the path is the game); the 秘境 room and 闭关 keep the page's own chrome.
+
 ## 格斗 — the arcade 1v1 (10-26, first bout: 秦雁)
 
 Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街霸好做吗? 拳皇之类的」 → 「好, 先做秦雁那一场」. One bout only, wm-yingjian
