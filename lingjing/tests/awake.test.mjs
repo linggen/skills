@@ -52,8 +52,9 @@ test('her day game stays with the book: no 二十问 while she sleeps (问卦 co
 
 test('the games that need her are declared, and offered from the 木牌', () => {
   for (const id of ['jiaxin-letter', 'benwang-kao', 'qiyu-drawguess']) assert.equal(needsHer(content, PLAYED.state, id), true, id);
-  // 密室: she reads the old pages and tells him the play (Hanli 10-27: 「问yinyue怎么玩, 她应该告诉玩法才对」) — out for the room.
-  assert.equal(needsHer(content, PLAYED.state, 'mishi'), true);
+  // 密室: she reads the old pages and tells him the play (Hanli 10-27: 「问yinyue怎么玩, 她应该告诉玩法才对」) — from her
+  // sleep, half awake (「yinyue睡着也可以说话」): she is here asleep, so the room no longer wakes her.
+  assert.equal(needsHer(content, PLAYED.state, 'mishi'), false);
   assert.equal(needsHer(content, PLAYED.state, 'arcade:drawguess'), true, 'the 游戏厅\'s 画猜, a game her tasks play');
   assert.equal(needsHer(content, PLAYED.state, 'arcade:huarong'), false);
   assert.deepEqual(lint(content), []);

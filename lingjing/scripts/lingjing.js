@@ -260,7 +260,8 @@ function boardFor(taskId) {
     }
     // A board the rules judge (密室, games/mishi.js `fromLook`): what it is comes from Look, laid in on every draw.
     const g = boards.get(taskId);
-    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herUp() && !CHATLESS });
+    // Here, asleep too (she speaks from the 木牌, half awake — Hanli 2026-10-27): the 密室's 问银月 is hers to answer.
+    if (mod.fromLook) g.state = mod.fromLook(g.state, look, { task: taskId, present: herHere() && !CHATLESS });
     return g;
   }
   if (!boards.has(taskId)) {
@@ -3380,13 +3381,12 @@ function gameAct(ghost, action, at) {
    module (`heard`), then the save is read again — the room's view, the pay on the strip. Opened, she
    hears that the old pages here are hers to read (her own tool, Mishi, carries them — never this page). */
 async function boardSends(g, send) {
-  // 密室 needs her (task `needs: "her"`): out of the 木牌 for the room, so she can tell him the play herself; back in
-  // once he is out. Out now, the help is hers to say — no longer read off the board (`alone`).
+  // A board that needs her out of the 木牌 (task `needs: "her"`) wakes her for its round; back in once he is out. Here
+  // — awake, or asleep and speaking half awake (the 密室, Hanli 2026-10-27: 「yinyue睡着也可以说话」) — the help is
+  // hers to say, no longer read off the board (`alone`).
   const task = look?.tasks?.find((t) => t.id === g.taskId);
-  if (task?.her && !CHATLESS && ['open', 'ask'].includes(send.args?.action) && !herUp()) {
-    await herOut(g.taskId, true);
-    if (herUp() && send.args.alone) { const { alone, ...rest } = send.args; send = { ...send, args: rest }; }
-  }
+  if (task?.her && !CHATLESS && ['open', 'ask'].includes(send.args?.action) && !herUp()) await herOut(g.taskId, true);
+  if (herHere() && !CHATLESS && send.args?.alone) { const { alone, ...rest } = send.args; send = { ...send, args: rest }; }
   const res = await write(send.verb, send.args ?? {}).catch(failed);
   if (task?.her && (res?.out || res?.left)) herOut(g.taskId, false);
   // Answered: the board plays on — its next try, 跳过这一道, and 收手 (cards.js reads `sent`) stand again
@@ -3469,6 +3469,18 @@ function mishiHelp(g, res) {
       if (lines.length > seen && boardWaitsOnHer === g) { herAnswered(lines.at(-1)); return; }
     }
   });
+}
+/* Her first line in this chat's session after `before` (herLinesIn as the ask went out), read every 1.2 s for a
+   while; never resolves when none comes (the moment's own fallback stands). */
+async function herNewLine(sid, before, ms = 25000) {
+  if (!sid) return new Promise(() => {});
+  const seen = (await before).length, until = Date.now() + ms;
+  while (Date.now() < until) {
+    await new Promise((r) => setTimeout(r, 1200));
+    const lines = await herLinesIn(sid);
+    if (lines.length > seen) return lines.at(-1);
+  }
+  return new Promise(() => {});
 }
 /* Her lines to the player in this chat's session, oldest first (the engine keeps them; /shared/api.js). */
 async function herLinesIn(sid) {
@@ -3879,7 +3891,10 @@ function herMomentAsk(kind, facts, { mode, mood }) {
   if (HER_SEAM === 'stub') return { sent: Promise.resolve(true), line: new Promise((done) => setTimeout(() => done(`[stub] ${kind} · ${[...facts].length}`), 1500)) };
   if (HER_SEAM === 'slow') return { sent: Promise.resolve(true), line: new Promise(() => {}) };
   if (CHATLESS) return { sent: Promise.resolve(false), line: new Promise(() => {}) };
-  const line = herNextLine();
+  // Her answer to a moment is spoken by her and kept in this chat's session, not always streamed to the page
+  // (the 密室's finding, 10-27): the first new line of hers there, or her stream, whichever comes first.
+  const sid = chat?.getSessionId?.() ?? null;
+  const line = Promise.race([herNextLine(), herNewLine(sid, herLinesIn(sid))]);
   const id = HER_MOMENT_ID[kind] ?? (mood === 'sad' ? 'comfort' : 'cheer');
   const r = voice.moment(id, { zh: facts, en: facts }, { mood });
   return { sent: r.said, line };
