@@ -1,19 +1,21 @@
 // fx-alive.js — the paintings breathe (design.md § 画面效果; Hanli 2026-10-20: 「start the
 // Pixi pass after 砸寨」). A still painting on the stage — the place's, the sky's, a beast's
-// 出场 — drawn on a PixiJS MeshPlane whose grid bends a little where the painting has
-// something that moves: trees and grass sway from their roots, cloth from where it hangs,
-// water shimmers, smoke and steam and flame waver up, mist drifts, a beast breathes. Ink, not
-// a cartoon: a tree's crown moves a few pixels.
+// 出场 — drawn on a Phaser Plane whose grid bends a little where the painting has something
+// that moves: trees and grass sway from their roots, cloth from where it hangs, water
+// shimmers, smoke and steam and flame waver up, mist drifts, a beast breathes. Ink, not a
+// cartoon: a tree's crown moves a few pixels.
 //
 // Which painting moves, and where, is data (worlds/<w>/backdrops.json `alive`, keyed by the
 // painting's path; `alive_creature` for every beast's painting without its own row), never a
-// list here. The motion itself is pure (motionAt — the tests drive it); the drawing is
-// one Application per painting on the stage, destroyed when the painting goes. A painting is
-// not a moment: it lives as long as it stands, so its canvas runs at 30 fps, sleeps while it is
-// covered (a set piece over the stage) or the tab is hidden, and is gone with the painting.
-// The CSS still stays under the canvas: no WebGL, reduced motion, nothing declared — the
-// still is all there is, and a frame the canvas misses shows the same painting.
-import { glOK, loadPixi } from './fx.js';
+// list here. The motion itself is pure (motionAt — the tests drive it). The stage's painting is
+// drawn on the stage's one Phaser game (kit/stage.js, layer `alive`, in the painting's own box
+// under the season's tint and the shade), taking the .bd's look each frame; a beast's 出场 stands
+// over the words, so it breathes on a short-lived game of its own (game-kit.md § One engine,
+// step 7). A painting lives as long as it stands: 30 fps, asleep while covered (a set piece, a
+// fight) or the tab is hidden, gone with the painting. The CSS still stays under the canvas: no
+// WebGL, reduced motion, nothing declared — the still is all there is.
+import { glOK, loadPhaser } from './fx.js';
+import { bootGame, dprOf, stageOf } from './kit/stage.js';
 
 /// What may move, and how far at full strength (a share of the painting's width).
 export const KINDS = { sway: 0.007, cloth: 0.004, water: 0.0018, rise: 0.006, drift: 0.012, breathe: 0.008 };
@@ -148,95 +150,223 @@ function windOf(el) {
 }
 
 const stillMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const loadImage = async (src) => { const img = new Image(); img.src = src; await img.decode(); return img; };
 
-/// Bring the painting `src` to life in `host` (an element the painting fills). `regions` from
-/// aliveOf. `fit`/`px`/`py` as fitOf; `gone()` true once the painting is leaving (its canvas goes
-/// then); `covered()` true while nothing of it shows (the canvas sleeps). Resolves to
-/// {canvas, stats(), destroy()} — or null, and the still stands (nothing moves, no WebGL,
-/// reduced motion, or the painting left before it loaded).
+/* ── Drawing: a Phaser Plane whose grid the regions bend ── */
+
+/// The CSS `filter` a painting wears (a night's `dim`), as ColorMatrix steps on Phaser's FX:
+/// [[method, value]] — brightness ×, saturate (0 = as is, −1 grey), hue (°), contrast. Others drop.
+export function filterSteps(css = 'none') {
+  const steps = [];
+  for (const [, fn, arg] of String(css).matchAll(/([a-z-]+)\(([^)]*)\)/g)) {
+    const n = Number.parseFloat(arg), v = /%$/.test(arg.trim()) ? n / 100 : n;
+    if (!Number.isFinite(v)) continue;
+    if (fn === 'brightness') steps.push(['brightness', v]);
+    else if (fn === 'saturate') steps.push(['saturate', v - 1]);
+    else if (fn === 'grayscale') steps.push(['saturate', -v]);
+    else if (fn === 'hue-rotate') steps.push(['hue', /rad$/.test(arg) ? (v * 180) / Math.PI : v]);
+    else if (fn === 'contrast') steps.push(['contrast', v - 1]);
+  }
+  return steps;
+}
+
+/// The painting `key` on a Plane of GRID's points (Phaser lays 6 vertices a cell): each vertex
+/// mapped once to its grid point, so a frame writes only the vertices a region moves, in the
+/// painting's own pixels (tw×th) before the plane's place and scale. Mesh.preUpdate leaves the
+/// written vertices alone while the plane's 3D model is still (it never moves here).
+function bendingPlane(scene, key, regions) {
+  const gx = GRID.x, gy = GRID.y;
+  const plane = scene.add.plane(0, 0, key, undefined, gx - 1, gy - 1);
+  plane.hideCCW = false;
+  const fr = plane.frame, tw = fr.width, th = fr.height;
+  const at = (v, a, b, n) => Math.round(((v - a) / (b - a || 1)) * (n - 1));
+  const gridOf = plane.vertices.map((v) => at(v.v, fr.v0, fr.v1, gy) * gx + at(v.u, fr.u0, fr.u1, gx));
+  const base = new Float32Array(gx * gy * 2);
+  for (let i = 0; i < gy; i += 1) for (let j = 0; j < gx; j += 1) { base[(i * gx + j) * 2] = (j / (gx - 1)) * tw; base[(i * gx + j) * 2 + 1] = (i / (gy - 1)) * th; }
+  const pos = Float32Array.from(base);
+  const bendAt = bender(regions, tw, th);
+  const moved = new Set(touched(regions).map((p) => p.k));
+  const live = plane.vertices.map((v, i) => [v, gridOf[i]]).filter(([, k]) => moved.has(k));
+  const write = (list) => { for (const [v, k] of list) { v.vx = pos[k * 2]; v.vy = pos[k * 2 + 1]; } };
+  const all = plane.vertices.map((v, i) => [v, gridOf[i]]);
+  return {
+    plane, tw, th, count: bendAt.count,
+    /// Lay every vertex flat (once after the plane's first projection, and now and then).
+    flat: () => write(all),
+    bend(t, wind) { bendAt(base, pos, t, wind); write(live); },
+  };
+}
+
+/* One breathing painting in `scene`: its plane in a box that takes the .bd's look each frame. */
+function paintingIn(scene, key, regions, place) {
+  const box = scene.add.container(0, 0);
+  const p = bendingPlane(scene, key, regions);
+  box.add(p.plane);
+  let filter = 'none', laid = 0, cost = 0, frames = 0;
+  const look = (css) => {
+    if (css === filter) return;
+    filter = css;
+    box.postFX.clear();
+    const steps = filterSteps(css);
+    if (!steps.length) return;
+    const cm = box.postFX.addColorMatrix();
+    steps.forEach(([m, v], i) => cm[m](v, i > 0));
+  };
+  return {
+    box, count: p.count,
+    /// A frame at `t` (s): placed and looked as `place()` says ({x, y, sx, sy, alpha, filter, m: [a, d, e, f]}).
+    frame(t, wind) {
+      const a = performance.now();
+      const at = place(p.tw, p.th);
+      if (!at) { box.setVisible(false); return; }
+      box.setVisible(true).setAlpha(at.alpha).setScale(at.m[0], at.m[1]).setPosition(at.m[2], at.m[3]);
+      p.plane.setPosition(at.x, at.y).setScale(at.sx, at.sy);
+      look(at.filter);
+      if (laid < 2) { p.flat(); laid += 1; }
+      p.bend(t, wind);
+      cost += performance.now() - a;
+      frames += 1;
+    },
+    stats: () => ({ bendMs: frames ? +(cost / frames).toFixed(3) : 0, frames, fps: FPS, verts: p.count }),
+    destroy: () => box.destroy(true),
+  };
+}
+
+/* A CSS transform as [a, d, e, f] (scale and move: the ken drift is no more), about the box's centre. */
+const matrixOf = (tf) => {
+  const m = /matrix\(([^)]+)\)/.exec(tf ?? '');
+  if (!m) return [1, 1, 0, 0];
+  const [a, , , d, e, f] = m[1].split(',').map(Number);
+  return [a, d, e, f];
+};
+
+/* ── The stage's painting: a scene on the stage game (kit/stage.js `alive`) ── */
+
+/* The alive layer's scene: every breathing painting on the stage, a frame each 30th of a second. */
+const aliveScene = {
+  create() { this.paintings = new Set(); this.t0 = performance.now(); },
+  update() {
+    const t = (performance.now() - this.t0) / 1000;
+    for (const p of this.paintings) p.frame(t);
+  },
+};
+const scenes = new WeakMap(); // host → Promise<scene>
+function aliveSceneOf(host, under) {
+  const now = host.sceneOf('alive');
+  if (now && scenes.has(host)) return scenes.get(host);
+  const made = host.run('alive', aliveScene, {}, { under });
+  scenes.set(host, made);
+  return made;
+}
+
+/// The stage's backdrop painting `bd` (lingjing.js paintBackdrop's `.bd`) breathing on the stage's
+/// game, under the season's tint, the shade and the words: it takes the .bd's own look each frame
+/// (the ken drift, the cross-fade, a night's dim), sleeps while covered (a set piece, a fight, a
+/// hidden tab) and is gone with the .bd. Resolves to {canvas, stats(), destroy()} or null.
+async function stagePainting(bd, src, regions) {
+  const view = bd.closest('.view');
+  const [host, img] = await Promise.all([stageOf(view), loadImage(src).catch(() => null)]);
+  if (!host || !img || !bd.isConnected || bd.classList.contains('going')) return null;
+  const scene = await aliveSceneOf(host, bd.parentElement);
+  const key = host.texture('alive', img);
+  let wind = windOf(bd), dead = false;
+  const t0 = performance.now();
+  const covered = () => document.hidden || document.body.classList.contains('fighting') || Boolean(view.querySelector('.spback'));
+  // Where the .bd stands now, in canvas px: the cover fit, its transform about the centre, its fade and filter.
+  const place = (tw, th) => {
+    const { dpr } = host.size, W = bd.clientWidth, H = bd.clientHeight;
+    if (!W || !H) return null;
+    const cs = getComputedStyle(bd), f = fitOf(tw, th, W, H), [a, d, e, g] = matrixOf(cs.transform);
+    const cx = (W * dpr) / 2, cy = (H * dpr) / 2;
+    const ramp = Math.min(1, (performance.now() - t0) / 800);
+    return { x: f.x * dpr, y: f.y * dpr, sx: f.sx * dpr, sy: f.sy * dpr, alpha: Number(cs.opacity) * ramp, filter: cs.filter, m: [a, d, cx * (1 - a) + e * dpr, cy * (1 - d) + g * dpr] };
+  };
+  const p = paintingIn(scene, key, regions, place);
+  const painting = { frame: (t) => p.frame(t, wind) };
+  scene.paintings.add(painting);
+  const destroy = () => {
+    if (dead) return;
+    dead = true;
+    clearInterval(watch);
+    scene.paintings.delete(painting);
+    p.destroy();
+    host.free('alive', key);
+    if (!scene.paintings.size && host.sceneOf('alive') === scene) { scenes.delete(host); host.stop('alive'); }
+  };
+  // Once a second: the .bd gone → so is this; covered → the layer idles; the wind as the stage has it now.
+  const watch = setInterval(() => {
+    if (!bd.isConnected || host.sceneOf('alive') !== scene) return destroy();
+    wind = windOf(bd);
+    host.idle('alive', covered());
+  }, 1000);
+  return { canvas: host.game.canvas, stats: () => ({ ...p.stats(), res: host.size.dpr }), destroy };
+}
+
+/// Bring the painting `src` to life in `host` (an element the painting fills) on a short-lived
+/// Phaser game of its own: a beast's 出场 (it stands over the words, where the stage's canvas is
+/// not) and the 画活 preview. `regions` from aliveOf. `fit`/`px`/`py` as fitOf; `gone()` true once
+/// the painting is leaving (its game goes then); `covered()` true while nothing of it shows (it
+/// sleeps). Resolves to {canvas, stats(), destroy()} — or null, and the still stands (nothing
+/// moves, no WebGL, reduced motion, or the painting left before it loaded).
 export async function livePainting(host, src, regions, { fit = 'cover', px = 0.5, py = 0.4, still = stillMotion(), gone = () => false, covered = () => false } = {}) {
   if (!host || !src || !regions?.length || still || !glOK()) return null;
-  const PIXI = await loadPixi();
-  const img = new Image();
-  img.src = src;
-  try { await img.decode(); } catch { return null; }
-  if (!host.isConnected || gone()) return null;
+  const [Phaser, img] = await Promise.all([loadPhaser(), loadImage(src).catch(() => null)]);
+  if (!img || !host.isConnected || gone()) return null;
   const box = () => ({ w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) });
   let { w: W, h: H } = box();
-  const app = new PIXI.Application();
   // No more pixels than the painting has: a 1536-wide painting gains nothing at 2× on a wide screen.
-  const res = Math.max(1, Math.min(globalThis.devicePixelRatio || 1, 2, img.naturalWidth / W));
-  await app.init({ width: W, height: H, backgroundAlpha: 0, antialias: false, resolution: res, autoDensity: true, preference: 'webgl' });
-  const canvas = app.canvas;
-  canvas.className = 'fxalive';
-  Object.assign(canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', pointerEvents: 'none', opacity: '0', transition: 'opacity .8s ease' });
-  host.appendChild(canvas);
-  // The painting from a fresh image (fx.js: a texture cached across Applications drew blank).
-  const tex = PIXI.Texture.from(img);
-  const tw = tex.width, th = tex.height;
-  const plane = new PIXI.MeshPlane({ texture: tex, verticesX: GRID.x, verticesY: GRID.y });
-  app.stage.addChild(plane);
-  const place = () => { const f = fitOf(tw, th, W, H, { fit, px, py }); plane.scale.set(f.sx, f.sy); plane.position.set(f.x, f.y); };
-  place();
-
-  const buf = plane.geometry.getBuffer('aPosition');
-  const base = Float32Array.from(buf.data);
-  const bendAt = bender(regions, tw, th);
-  let wind = windOf(host), cost = 0, frames = 0;
+  const res = Math.max(1, Math.min(dprOf(globalThis.devicePixelRatio), img.naturalWidth / W));
+  let p = null, wind = windOf(host);
   const t0 = performance.now();
-  const bend = () => {
-    const a = performance.now();
-    bendAt(base, buf.data, (a - t0) / 1000, wind);
-    buf.update();
-    cost += performance.now() - a;
-    frames += 1;
+  const scene = {
+    key: 'alive',
+    create() {
+      this.textures.addImage('painting', img);
+      p = paintingIn(this, 'painting', regions, (tw, th) => {
+        const f = fitOf(tw, th, W, H, { fit, px, py });
+        return { x: f.x * res, y: f.y * res, sx: f.sx * res, sy: f.sy * res, alpha: Math.min(1, (performance.now() - t0) / 800), filter: 'none', m: [1, 1, 0, 0] };
+      });
+    },
+    update() { p?.frame((performance.now() - t0) / 1000, wind); },
   };
-  app.ticker.maxFPS = FPS;
-  app.ticker.add(bend);
-  requestAnimationFrame(() => { canvas.style.opacity = '1'; });
-
+  const game = await bootGame(Phaser, host, { w: W, h: H }, res, [scene]);
+  const canvas = game.canvas;
+  canvas.className = 'fxalive';
+  Object.assign(canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', pointerEvents: 'none' });
+  game.loop._limitRate = 900 / FPS;
   let dead = false;
   const destroy = () => {
     if (dead) return;
     dead = true;
     clearInterval(watch);
     ro?.disconnect();
-    app.destroy(true, { children: true });
-    tex.destroy(true);
+    game.destroy(true);
   };
   // Once a second: gone → destroyed; covered → asleep; the wind as the stage has it now.
   const watch = setInterval(() => {
     if (!host.isConnected || gone()) return destroy();
     wind = windOf(host);
-    if (covered()) app.ticker.stop(); else if (!app.ticker.started) app.ticker.start();
+    if (covered()) { if (game.loop.running) game.loop.sleep(); } else if (!game.loop.running) game.loop.wake();
   }, 1000);
   const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
     if (dead) return;
     ({ w: W, h: H } = box());
-    app.renderer.resize(W, H);
-    place();
+    game.scale.resize(Math.round(W * res), Math.round(H * res));
   }) : null;
   ro?.observe(host);
-
-  return {
-    canvas,
-    /// The frame's own cost so far: the bend (ms, mean) and frames drawn — for the preview and the report.
-    stats: () => ({ bendMs: frames ? +(cost / frames).toFixed(3) : 0, frames, fps: FPS, verts: bendAt.count, res }),
-    destroy,
-  };
+  return { canvas, stats: () => ({ ...(p?.stats() ?? {}), res }), destroy };
 }
 
 /* ── The stage's two paintings ── */
 
 /// The stage's backdrop (lingjing.js paintBackdrop's `.bd`): the painting `art` (the world's path)
-/// at `src`, if its row in backdrops.json `alive` says something in it moves. Gone when the
-/// backdrop cross-fades out (`.going`); asleep under a set piece (story.css hides the backdrop then).
+/// at `src`, if its row in backdrops.json `alive` says something in it moves — on the stage's one
+/// game (stagePainting). Gone when the backdrop cross-fades out (`.going`, then removed); asleep
+/// under a set piece.
 export function liveBackdrop(bd, src, table, art) {
   const regions = aliveOf(table, art);
-  return livePainting(bd, src, regions, {
-    gone: () => bd.classList.contains('going'),
-    covered: () => document.hidden || Boolean(bd.closest('.view')?.querySelector('.spback')),
-  }).catch(() => null);
+  if (!bd || !src || !regions.length || stillMotion() || !glOK()) return Promise.resolve(null);
+  return stagePainting(bd, src, regions).catch(() => null);
 }
 
 /// What the breathing canvas's frame takes from the 出场's picture (`box` its inline place, `cs` its computed

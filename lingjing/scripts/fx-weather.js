@@ -1,6 +1,8 @@
 // fx-weather.js — the weather's particles in WebGL (design.md § 画面效果 「weather particles」, §
 // 真实世界). atmos.js names what falls and writes a few dozen CSS spans; where it pays off — snow,
-// rain, fog, the three the sky brings — this draws them instead with PixiJS: snow in three depths,
+// rain, fog, the three the sky brings — this draws them instead on the stage's one Phaser game
+// (kit/stage.js, layer `weather`, in the painting's box: over the painting, under the shade and the
+// cards — game-kit.md § One engine, § 5 q4): snow in three depths,
 // each flake its own speed and sway, carried by the stage's wind; rain as fine leaning streaks with
 // rings where it lands on the lower stage; fog as two sheets of soft paper-cloud drifting at
 // different speeds. Everything else (petals, leaves, fireflies, a festival's sparks) stays CSS.
@@ -9,7 +11,8 @@
 // while the layer is hidden (a fight, a set piece, a hidden tab), gone when atmos.js lays the next
 // layer. Its spans for the kinds drawn here are hidden, not removed: no WebGL, reduced motion, a
 // failure — the CSS particles are all there is (and with reduced motion they stand still).
-import { glOK, loadPixi } from './fx.js';
+import { glOK } from './fx.js';
+import { stageOf } from './kit/stage.js';
 
 /// What this draws, of atmos.js PARTICLES.
 export const GL_KINDS = ['snow', 'rain', 'fog'];
@@ -108,79 +111,95 @@ function windOf(el) {
 
 const stillMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* Each kind: build its sprites in `layer`, return a step(dt, t). */
+/* Each kind: lay its images in `layer` (a container in CSS px), return a step(dt, t, wind).
+   `tex(canvas)` makes a texture for the layer's run. */
 const BUILD = {
-  snow({ PIXI, layer, W, H, r, made }) {
-    const tex = PIXI.Texture.from(flakeCanvas());
-    made.push(tex);
+  snow({ scene, layer, W, H, r, tex }) {
+    const key = tex(flakeCanvas());
     const flakes = Array.from({ length: countFor('snow', W(), H()) }, () => {
       const p = flakeOf(r, W(), H());
-      const s = new PIXI.Sprite(tex);
-      s.anchor.set(0.5);
-      s.width = s.height = p.size * 2;
-      s.alpha = p.alpha;
-      layer.addChild(s);
+      const s = scene.add.image(p.x, p.y, key).setDisplaySize(p.size * 2, p.size * 2).setAlpha(p.alpha);
+      layer.add(s);
       return { p, s };
     });
-    return (dt, t, wind) => { for (const { p, s } of flakes) { fallStep(p, dt, t, W(), H(), wind.wdx); s.position.set(p.x, p.y); } };
+    return (dt, t, wind) => { for (const { p, s } of flakes) { fallStep(p, dt, t, W(), H(), wind.wdx); s.setPosition(p.x, p.y); } };
   },
-  rain({ PIXI, layer, W, H, r, made }) {
-    const tex = PIXI.Texture.from(streakCanvas()), ringTex = PIXI.Texture.from(ringCanvas());
-    made.push(tex, ringTex);
+  rain({ scene, layer, W, H, r, tex }) {
+    const key = tex(streakCanvas()), ringKey = tex(ringCanvas());
     const drops = Array.from({ length: countFor('rain', W(), H()) }, () => {
       const p = dropOf(r, W(), H());
-      const s = new PIXI.Sprite(tex);
-      s.anchor.set(0.5, 1);
-      s.height = p.len;
-      s.width = 1.6;
-      s.alpha = p.alpha;
-      layer.addChild(s);
+      const s = scene.add.image(p.x, p.y, key).setOrigin(0.5, 1).setDisplaySize(1.6, p.len).setAlpha(p.alpha);
+      layer.add(s);
       return { p, s };
     });
     // Rings on the lower stage (the ground, the water), a few at a time.
-    const rings = Array.from({ length: 8 }, () => { const s = new PIXI.Sprite(ringTex); s.anchor.set(0.5); s.alpha = 0; layer.addChild(s); return { s, age: r() * 0.7, x: 0, y: 0 }; });
+    const rings = Array.from({ length: 8 }, () => { const s = scene.add.image(0, 0, ringKey).setAlpha(0); layer.add(s); return { s, age: r() * 0.7, x: 0, y: 0 }; });
     return (dt, t, wind) => {
       const lean = Math.atan(wind.wdx);
-      for (const { p, s } of drops) { fallStep(p, dt, t, W(), H(), wind.wdx); s.position.set(p.x, p.y); s.rotation = -lean; }
+      for (const { p, s } of drops) { fallStep(p, dt, t, W(), H(), wind.wdx); s.setPosition(p.x, p.y).setRotation(-lean); }
       for (const g of rings) {
         g.age += dt;
         if (g.age > 0.7) { g.age = 0; g.x = r() * W(); g.y = H() * (0.78 + r() * 0.2); }
         const k = g.age / 0.7;
-        g.s.position.set(g.x, g.y);
-        g.s.width = 6 + 34 * k;
-        g.s.height = 2 + 10 * k;
-        g.s.alpha = 0.35 * (1 - k);
+        g.s.setPosition(g.x, g.y).setDisplaySize(6 + 34 * k, 2 + 10 * k).setAlpha(0.35 * (1 - k));
       }
     };
   },
-  fog({ PIXI, layer, W, H, r, made }) {
+  fog({ scene, layer, W, H, r, tex }) {
     const sheets = [0, 1].map((i) => {
-      const tex = PIXI.Texture.from(fogCanvas(r));
-      tex.source.addressMode = 'repeat';
-      made.push(tex);
-      const s = new PIXI.TilingSprite({ texture: tex, width: W(), height: H() * 0.6 });
-      s.position.set(0, H() * (0.3 + i * 0.12));
-      s.tileScale.set(1.6 + i * 0.9, 1.4 + i * 0.6);
-      s.alpha = 0.55 - i * 0.15;
-      layer.addChild(s);
-      return { s, speed: 9 + i * 7 };
+      const s = scene.add.tileSprite(0, H() * (0.3 + i * 0.12), W(), H() * 0.6, tex(fogCanvas(r))).setOrigin(0).setTileScale(1.6 + i * 0.9, 1.4 + i * 0.6).setAlpha(0.55 - i * 0.15);
+      layer.add(s);
+      return { s, speed: 9 + i * 7, x: 0 };
     });
     return (dt, t, wind) => {
       for (const [i, f] of sheets.entries()) {
-        f.s.width = W();
-        f.s.height = H() * 0.6;
-        f.s.y = H() * (0.3 + i * 0.12);
-        f.s.tilePosition.x += (f.speed * (0.6 + wind.force) * (wind.wdx > 0 ? 1 : -1)) * dt;
-        f.s.alpha = (0.55 - i * 0.15) * (0.85 + 0.15 * Math.sin(t / 5 + i * 2));
+        f.x += (f.speed * (0.6 + wind.force) * (wind.wdx > 0 ? 1 : -1)) * dt;
+        // The tile offset is in the texture's own pixels: the drift is in the stage's.
+        f.s.setTilePosition(-f.x / f.s.tileScaleX, 0).setAlpha((0.55 - i * 0.15) * (0.85 + 0.15 * Math.sin(t / 5 + i * 2)));
       }
     };
   },
 };
 
-/// The weather in WebGL over the stage: `pts` the layer's box (#atmosPts, just laid by atmos.js
-/// particlesHtml), `particles` its kinds, `seed` its seed (the day). Hides the CSS spans of the kinds
-/// it draws once it draws. Resolves to {stats(), destroy()} or null (nothing of ours falls, no WebGL,
-/// reduced motion, or the layer was laid again before it loaded).
+/* Lay the weather on `scene` (its `d`: {kinds, seed, host, wind()}) in CSS px, under one root scaled
+   to the canvas — again when the stage changes size. */
+function layWeather(scene) {
+  const { host, kinds, seed } = scene.d;
+  for (const k of scene.made ?? []) host.free('weather', k);
+  scene.root.removeAll(true);
+  scene.made = [];
+  const { w, h, dpr } = host.size;
+  scene.at = `${w}×${h}@${dpr}`;
+  scene.root.setScale(dpr);
+  const r = rngOf(`${seed}:gl`);
+  const tex = (c) => { const k = host.texture('weather', c); scene.made.push(k); return k; };
+  scene.steps = kinds.map((k) => { const layer = scene.add.container(0, 0); scene.root.add(layer); return BUILD[k]({ scene, layer, W: () => w, H: () => h, r, tex }); });
+}
+
+/* The weather layer's scene on the stage game. */
+const weatherScene = {
+  create(d) {
+    this.d = d;
+    this.root = this.add.container(0, 0);
+    this.cost = 0;
+    this.frames = 0;
+    layWeather(this);
+  },
+  update(time, delta) {
+    const { host } = this.d, { w, h, dpr } = host.size;
+    if (`${w}×${h}@${dpr}` !== this.at) layWeather(this);
+    const a = performance.now(), dt = Math.min(0.1, delta / 1000), t = a / 1000, wind = this.d.wind();
+    for (const s of this.steps) s(dt, t, wind);
+    this.cost += performance.now() - a;
+    this.frames += 1;
+  },
+};
+
+/// The weather on the stage's one Phaser game (kit/stage.js, layer `weather`, in the painting's box:
+/// under the shade and the cards, over the painting): `pts` the layer's box (#atmosPts, just laid by
+/// atmos.js particlesHtml), `particles` its kinds, `seed` its seed (the day). Hides the CSS spans of
+/// the kinds it draws once it draws. Resolves to {stats(), destroy()} or null (nothing of ours falls,
+/// no WebGL, reduced motion, or the layer was laid again before it loaded).
 let latest = 0, current = null;
 export async function liveWeather(pts, particles, seed = 'lingjing') {
   // The newest layer wins: one laid while an older one was still loading takes its place.
@@ -189,61 +208,36 @@ export async function liveWeather(pts, particles, seed = 'lingjing') {
   current = null;
   const kinds = glKinds(particles);
   if (!pts || !kinds.length || stillMotion() || !glOK()) return null;
-  const PIXI = await loadPixi();
-  if (mine !== latest || !pts.isConnected) return null;
-  const wrap = document.createElement('div');
-  wrap.className = 'pts p-fx';
-  pts.appendChild(wrap);
-  // The layer's box is the stage's .atmos (#atmosPts itself is a bare div; its groups are placed against .atmos).
-  const stage = pts.closest('.atmos') ?? pts.parentElement;
-  const size = () => ({ w: Math.max(1, stage.clientWidth), h: Math.max(1, stage.clientHeight) });
-  let { w, h } = size();
-  const app = new PIXI.Application();
-  await app.init({ width: w, height: h, backgroundAlpha: 0, antialias: false, resolution: Math.min(globalThis.devicePixelRatio || 1, 1.5), autoDensity: true, preference: 'webgl' });
-  if (mine !== latest || !wrap.isConnected) { app.destroy(true, { children: true }); wrap.remove(); return null; }
-  Object.assign(app.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%' });
-  wrap.appendChild(app.canvas);
-  const made = [];
-  const r = rngOf(`${seed}:gl`);
-  const W = () => w, H = () => h;
-  // Laid over the stage's size; laid again when the stage changes size (a resize, or a layer laid while hidden).
-  let steps = [];
-  const build = () => {
-    app.stage.removeChildren().forEach((c) => c.destroy({ children: true }));
-    for (const t of made.splice(0)) t.destroy(true);
-    steps = kinds.map((k) => { const layer = new PIXI.Container(); app.stage.addChild(layer); return BUILD[k]({ PIXI, layer, W, H, r, made }); });
-  };
-  build();
+  const view = pts.closest('.view');
+  const host = await stageOf(view);
+  if (!host || mine !== latest || !pts.isConnected) return null;
+  // A mark in the layer: laid again (atmos.js replaces #atmosPts' content), the mark is gone and so is this.
+  const mark = document.createElement('i');
+  mark.className = 'pts p-fx';
+  mark.hidden = true;
+  pts.appendChild(mark);
+  const atmos = pts.closest('.atmos') ?? pts.parentElement;
+  let wind = windOf(pts);
+  const scene = await host.run('weather', weatherScene, { kinds, seed, host, wind: () => wind }, { under: view.querySelector('.backdrop') ?? atmos });
+  if (mine !== latest || !mark.isConnected) { if (host.sceneOf('weather') === scene) host.stop('weather'); return null; }
   // Ours drawn: the CSS spans of the same kinds step aside.
   for (const k of kinds) for (const el of pts.querySelectorAll(`.pts.p-${k}`)) el.style.display = 'none';
-  let wind = windOf(pts), cost = 0, frames = 0;
-  const step = (ticker) => {
-    const a = performance.now(), dt = Math.min(0.1, ticker.deltaMS / 1000), t = a / 1000;
-    for (const s of steps) s(dt, t, wind);
-    cost += performance.now() - a;
-    frames += 1;
-  };
-  app.ticker.maxFPS = FPS;
-  app.ticker.add(step);
   let dead = false;
   const destroy = () => {
     if (dead) return;
     dead = true;
     clearInterval(watch);
-    app.destroy(true, { children: true });
-    for (const t of made) t.destroy(true);
-    wrap.remove();
+    if (host.sceneOf('weather') === scene) host.stop('weather');
+    mark.remove();
   };
-  // Once a second: laid again → gone; hidden (a fight, a set piece, a hidden tab) → asleep; the wind now; the size.
+  // Once a second: laid again → gone; hidden (a fight, 今线, a hidden tab) → idle; the wind now.
   const watch = setInterval(() => {
-    if (!wrap.isConnected) return destroy();
+    if (!mark.isConnected || host.sceneOf('weather') !== scene) return destroy();
     wind = windOf(pts);
-    const hidden = document.hidden || !stage.offsetParent || getComputedStyle(wrap).opacity === '0';
-    if (hidden) { app.ticker.stop(); return; }
-    if (!app.ticker.started) app.ticker.start();
-    const now = size();
-    if (now.w !== w || now.h !== h) { ({ w, h } = now); app.renderer.resize(w, h); build(); }
+    const hidden = document.hidden || !atmos.offsetParent || getComputedStyle(atmos).opacity === '0';
+    scene.root.setVisible(!hidden);
+    host.idle('weather', hidden);
   }, 1000);
-  current = { stats: () => ({ stepMs: frames ? +(cost / frames).toFixed(3) : 0, frames, kinds }), destroy };
+  current = { stats: () => ({ stepMs: scene.frames ? +(scene.cost / scene.frames).toFixed(3) : 0, frames: scene.frames, kinds }), destroy };
   return current;
 }

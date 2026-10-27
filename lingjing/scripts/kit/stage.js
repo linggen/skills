@@ -14,20 +14,30 @@
 // WebGL contexts — every one, the stage's and any other library's.
 import { fxTimes, glOK, loadPhaser } from '../fx.js';
 
-/// Each layer's place on the stage: its z among the page's own (story.css: .appear/.spstage 30,
-/// the 「新的一回」 seal 32) and the frame rate it wants.
-export const LAYERS = { moment: { z: 31, fps: 60 } };
+/// Each layer's place on the stage, bottom to top: `under` — it draws with the painting, so the canvas
+/// stands in the painting's own box (#backdrop, after the .bd's, under the season tint, the shade, the
+/// cards and the words); else its z among the page's (story.css: .appear/.spstage 30, the 「新的一回」
+/// seal 32). `covers`: the layers it hides while it runs (asleep, woken after). The fps it wants.
+export const LAYERS = {
+  alive: { under: true, fps: 30 },
+  weather: { under: true, fps: 30 },
+  moment: { z: 31, fps: 60, covers: ['alive', 'weather'] },
+};
 /// The device pixels drawn per CSS pixel, at most (Phaser has no autoDensity: the canvas is drawn
 /// at w·dpr and shown at 1/dpr).
 export const DPR_CAP = 2;
 export const dprOf = (dpr = 1, cap = DPR_CAP) => Math.max(1, Math.min(cap, Number(dpr) || 1));
 
-/// Where the canvas stands for the running layers: the topmost one's z, the fastest one's fps — or
-/// null, nothing runs (the loop sleeps).
+/// Where the canvas stands for the running layers — or null, nothing runs (the loop sleeps):
+/// the topmost one's place (`under`, else its z), the fastest awake one's fps, and the layers
+/// asleep under a cover.
 export function hostFor(running = [], table = LAYERS) {
-  const rows = running.map((k) => table[k]).filter(Boolean);
-  if (!rows.length) return null;
-  return { z: Math.max(...rows.map((r) => r.z)), fps: Math.max(...rows.map((r) => r.fps)) };
+  const order = Object.keys(table).filter((k) => running.includes(k));
+  if (!order.length) return null;
+  const asleep = new Set(order.flatMap((k) => table[k].covers ?? []));
+  const awake = order.filter((k) => !asleep.has(k));
+  const top = table[order.at(-1)];
+  return { under: Boolean(top.under), z: top.under ? null : top.z, fps: Math.max(...awake.map((k) => table[k].fps)), asleep: order.filter((k) => asleep.has(k)) };
 }
 
 /* ── ?perf=1: every WebGL context the page makes, counted as it is made ── */
@@ -59,7 +69,9 @@ export function stageOf(view) {
 /* The box's size in CSS px. */
 const sizeOf = (el) => ({ w: Math.max(1, el.clientWidth), h: Math.max(1, el.clientHeight) });
 
-function bootGame(Phaser, el, { w, h }, dpr) {
+/// A Phaser game made for drawing only, in `el`: transparent, WebGL, no input or sound, drawn at
+/// w·dpr shown at 1/dpr. The stage's own, and a short-lived one beside it (a beast's 出场). Resolves when ready.
+export function bootGame(Phaser, el, { w, h }, dpr, scene = []) {
   const t = performance.now();
   const game = new Phaser.Game({
     type: Phaser.WEBGL,
@@ -75,6 +87,7 @@ function bootGame(Phaser, el, { w, h }, dpr) {
     audio: { noAudio: true },
     fps: { target: 60, limit: 60, smoothStep: true },
     render: { antialias: true, powerPreference: 'low-power' },
+    scene,
   });
   return new Promise((ok, no) => {
     const late = setTimeout(() => no(new Error('the stage game did not boot')), 8000);
@@ -92,17 +105,47 @@ async function makeHost(view) {
   const game = await bootGame(Phaser, el, size, dpr);
   Object.assign(game.canvas.style, { display: 'block', pointerEvents: 'none' });
   game.canvas.setAttribute('aria-hidden', 'true');
-  const running = new Map(); // layer → {key, textures}
-  let serial = 0, dead = false;
+  const running = new Map(); // layer → {key, textures, idle}
+  // Frames drawn a second (Phaser's actualFps counts the browser's frames, not the ones under the limit).
+  let drawn = 0, fps = 0, fpsAt = performance.now();
+  game.events.on('postrender', () => { drawn += 1; const now = performance.now(); if (now - fpsAt >= 1000) { fps = Math.round((drawn * 1000) / (now - fpsAt)); drawn = 0; fpsAt = now; } });
+  let serial = 0, dead = false, under = null, keepLast = null;
 
   const awake = () => !document.hidden && !gamePlays();
-  /* The canvas where the running layers want it; the loop asleep when nothing runs or a game plays. */
+  /* The host's place: in the painting's box (last there, so a new .bd lays under it) or over the stage at a z. */
+  const placeAt = (parent, z) => {
+    if (el.parentElement !== parent || (z === null && parent.lastElementChild !== el)) parent.appendChild(el);
+    el.style.zIndex = z === null ? 'auto' : String(z);
+    keepLast?.disconnect();
+    keepLast = null;
+    if (z === null && typeof MutationObserver === 'function') {
+      keepLast = new MutationObserver(() => { if (parent.lastElementChild !== el) parent.appendChild(el); });
+      keepLast.observe(parent, { childList: true });
+    }
+  };
+  /* The scenes in the layers' order, those under a cover asleep. */
+  const order = (at) => {
+    for (const k of Object.keys(LAYERS)) {
+      const run = running.get(k);
+      if (!run || !game.scene.getScene(run.key)) continue;
+      game.scene.bringToTop(run.key);
+      const sleepIt = at.asleep.includes(k);
+      if (sleepIt && game.scene.isActive(run.key)) game.scene.sleep(run.key);
+      else if (!sleepIt && game.scene.isSleeping(run.key)) game.scene.wake(run.key);
+    }
+  };
+  /* The canvas where the running layers want it; the loop asleep when nothing runs or draws, or a game plays. */
   const refresh = () => {
     if (dead) return;
     const at = hostFor([...running.keys()]);
     el.style.visibility = at ? 'visible' : 'hidden';
-    if (at) { el.style.zIndex = String(at.z); game.loop._limitRate = 1000 / at.fps; }
-    const sleep = !at || !awake();
+    if (at) {
+      placeAt(at.under ? (under?.isConnected ? under : view) : view, at.z);
+      game.loop._limitRate = 900 / at.fps; // a hair under: a 60 Hz frame pair is not cut to every third
+      order(at);
+    }
+    const busy = at && [...running].some(([k, r]) => !r.idle && !at.asleep.includes(k));
+    const sleep = !busy || !awake();
     if (sleep && game.loop.running) game.loop.sleep();
     else if (!sleep && !game.loop.running) game.loop.wake();
   };
@@ -125,25 +168,37 @@ async function makeHost(view) {
     /// CSS px of the box, and device px per CSS px: a layer draws at `size.w × dpr`.
     get size() { return { ...size, dpr }; },
     /// Run `scene` ({create(data), update(time, delta)}, `this` the Phaser scene) as `layer`: the one
-    /// running there ends first. Resolves to the scene once created.
-    run(layer, scene, data = {}) {
+    /// running there ends first. `opts.under`: the painting's box, for a layer drawn with the painting.
+    /// Resolves to the scene once created.
+    run(layer, scene, data = {}, opts = {}) {
       host.stop(layer);
+      if (opts.under) under = opts.under;
       const key = `${layer}#${serial += 1}`;
-      running.set(layer, { key, textures: [] });
-      refresh();
+      running.set(layer, { key, textures: [], idle: false });
       if (!game.loop.running) game.loop.wake(); // a scene is made on the loop's next step
       return new Promise((ok) => {
-        game.scene.add(key, { ...scene, create(d) { scene.create?.call(this, d); ok(this); } }, true, data);
+        game.scene.add(key, { ...scene, create(d) { scene.create?.call(this, d); ok(this); refresh(); } }, true, data);
       });
     },
-    /// A texture for `layer`'s run, from an image or canvas; freed when the layer ends. Returns its key.
+    /// The scene `layer` runs now, or null.
+    sceneOf: (layer) => (running.has(layer) ? game.scene.getScene(running.get(layer).key) : null),
+    /// A layer with nothing to draw for now (a weather hidden by a fight, a painting covered): the
+    /// loop may sleep for it.
+    idle(layer, yes) { const r = running.get(layer); if (r && r.idle !== Boolean(yes)) { r.idle = Boolean(yes); refresh(); } },
+    /// A texture for `layer`'s run, from an image or canvas; freed when the layer ends (or `free`). Returns its key.
     texture(layer, source) {
       const run = running.get(layer);
-      const key = `${run?.key ?? layer}:t${run?.textures.length ?? 0}`;
+      const key = `${run?.key ?? layer}:t${serial += 1}`;
       if (source instanceof HTMLCanvasElement) game.textures.addCanvas(key, source);
       else game.textures.addImage(key, source);
       run?.textures.push(key);
       return key;
+    },
+    /// Free one texture of `layer`'s now.
+    free(layer, key) {
+      const run = running.get(layer);
+      if (run) run.textures = run.textures.filter((t) => t !== key);
+      if (!dead && game.textures.exists(key)) game.textures.remove(key);
     },
     /// End `layer` (its scene removed, its textures freed). The game stays.
     stop(layer) {
@@ -159,12 +214,13 @@ async function makeHost(view) {
     /// Whether `layer` is running the run that `scene` belongs to (a late callback of an ended run does nothing).
     owns: (layer, scene) => running.get(layer)?.key === scene?.sys?.settings?.key,
     layers: () => [...running.keys()],
-    stats: () => ({ fps: game.loop.running ? Math.round(game.loop.actualFps) : 0, layers: [...running.keys()].join(',') || '—', textures: game.textures.getTextureKeys().length, dpr, boot_ms: fxTimes.boot, phaser_ms: fxTimes.phaser }),
+    stats: () => ({ fps: game.loop.running ? fps : 0, layers: [...running.keys()].join(',') || '—', textures: game.textures.getTextureKeys().length, dpr, boot_ms: fxTimes.boot, phaser_ms: fxTimes.phaser }),
     destroy() {
       if (dead) return;
       dead = true;
       clearInterval(watch);
       ro?.disconnect();
+      keepLast?.disconnect();
       document.removeEventListener('visibilitychange', refresh);
       running.clear();
       game.destroy(true);
