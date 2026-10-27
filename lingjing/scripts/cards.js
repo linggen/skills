@@ -19,7 +19,7 @@ import { dayKey, fitValue } from './state.mjs';
 export const WORDS = {
   zh: {
     title: '灵境', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
-    play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
+    play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', playedToday: '今日已玩', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', unfoldNew: '地图展开', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', go: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
@@ -78,7 +78,7 @@ export const WORDS = {
   },
   en: {
     title: 'Lingjing', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
-    play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
+    play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', playedToday: 'Played today', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.', boardDoneToday: 'Done for today — brew again tomorrow', gameDoneToday: 'Done for today — again tomorrow', lundaoWon: 'Won for today — again tomorrow', lundaoLost: 'Done for today — again tomorrow',
     tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', unfoldNew: 'A new region', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
@@ -1944,8 +1944,10 @@ export function trayHtml(ctx) {
   // …nor a scene's later board while one before it is still to play (stage.mjs boardWaits).
   // …nor, the book set aside, the scene's own board: it waits for its passage (rules/aside.mjs).
   const own = (id) => Boolean(ctx.look.aside?.on) && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(ctx.look.tasks ?? []).some((t) => t.id === id && t.replay);
-  // …nor a practice board already played today: it is no 待做 — it comes back tomorrow (Look's `played_today`; Hanli 10-27).
-  const tasks = (ctx.look.tasks || []).filter((t) => t.status !== 'done' && !t.played_today && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id) && !own(t.id)).map((t) => {
+  // A practice board already played today is no 待做: it stays, last, as 「今日已玩」 for a replay at the falling share
+  // (Look's `played_today`; Hanli 10-27: 「左下角还是有刚玩完的拼图任务」, then 「好像没什么任务能做」).
+  const fresh = (t) => (t.played_today ? 1 : 0);
+  const tasks = (ctx.look.tasks || []).slice().sort((a, b) => fresh(a) - fresh(b)).filter((t) => t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id) && !own(t.id)).map((t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const shut = state === 'offered' && boardShut(t, ctx);
     // 开局 tapped while the passage still plays: the board waits for it (lingjing.js trayAhead) — and says so on
@@ -1956,7 +1958,7 @@ export function trayHtml(ctx) {
         : `<button class="act" data-play="${esc(t.id)}"${shut ? ` disabled title="${esc(ctx.words.emptyNoPlay)}"` : ''}>${t.light && t.open ? ctx.words.playOn : t.game && t.game !== 'lianliankan' ? ctx.words.playGame : ctx.words.play}</button>` : '';
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${esc(ctx.words.about)}</button>`;
     return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
-      <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : ctx.words[state])}</span>${act}${tell}</div></div>`;
+      <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : t.played_today ? ctx.words.playedToday : ctx.words[state])}</span>${act}${tell}</div></div>`;
   });
   // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥).
   // Every cooldown waited out stands after them, one row shape (Look's `waits`).
