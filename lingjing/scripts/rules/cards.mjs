@@ -365,6 +365,8 @@ function cardBook(content, state) {
     const c = catalog[id], f = from[id] ?? guess(id);
     return {
       id, name: pick(c.name, lang), kind: c.kind, element: c.element ?? null, cost: c.cost ?? null,
+      // what a 随从 is, worded (cards.json `is` · `is_words`): the 牌谱 row says it, never 「minion = 灵兽」
+      ...(c.is && content.cards?.is_words?.[c.is] ? { is: pick(content.cards.is_words[c.is], lang) } : {}),
       ...(c.atk != null ? { atk: c.atk, hp: c.hp } : {}), ...(c.art ? { art: c.art } : {}),
       // Whose it is (a party member's card is theirs to play) and the one line of where it is from.
       ...(c.owner ? { owner: c.owner } : {}), ...(c.from?.[0]?.line ? { said: pick(c.from[0].line, lang), src: c.from[0].src } : {}),

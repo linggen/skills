@@ -1600,11 +1600,15 @@ function lintFrom(content, bad) {
     const where = `card ${c.id}`;
     if (c.owner && !has.member(c.owner) && !has.creature(c.owner)) bad(where, `owned by unknown ${c.owner}`);
     if (!c._token && !(c.from ?? []).length) bad(where, 'says no 出处 (from)');
+    // What a 随从 is (cards.json `_is`, 2026-10-27): its face says it, never guessed from kind (a man in armour is no 灵兽).
+    if (c.kind === 'minion' && !content.cards?.is_words?.[c.is]) bad(where, `a 随从 says no known \`is\` (${c.is ?? 'none'})`);
     for (const f of c.from ?? []) {
       const key = FROM_KINDS[f.kind];
       if (!(f.kind in FROM_KINDS)) { bad(where, `from an unknown kind ${f.kind}`); continue; }
       if (key && !has[key](f[key])) bad(where, `from ${f.kind} names unknown ${key} ${f[key]}`);
       if (!['书', '游戏'].includes(f.src)) bad(where, `from ${f.kind} is neither 书 nor 游戏`);
+      // A beast's gift is a card it fought him with (`_from`: 它拿这张牌打过你) — in its own deck.
+      if (f.kind === 'beast' && !(content.creatures.creatures.find(k => k.id === f.creature)?.deck ?? []).includes(c.id)) bad(where, `from beast ${f.creature}, not in its deck`);
     }
   }
   for (const [id, m] of Object.entries(content.party?.members ?? {})) {

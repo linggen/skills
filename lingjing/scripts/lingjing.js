@@ -41,7 +41,7 @@ import { fantongKailu, kailuPaneHtml } from './fantong-kailu.js';
 import { spentBoard } from './board-deal.js';
 import { esc } from './esc.js';
 import { forInput } from './games/kit/device.js';
-import { revealCards } from './card-reveal.js';
+import { revealCards, whenceLine } from './card-reveal.js';
 import { pickAfter, pickNow } from './danang.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
@@ -621,8 +621,11 @@ async function playReveals() {
   revealing = true;
   try {
     const catalog = cardCatalog(), l = lang();
-    const cards = revealQueue.splice(0).map((x) => (x?.thing ? thingCard(x.thing) : catalog[x] ? { ...catalog[x], line: catalog[x].from?.[0]?.line?.[l] ?? catalog[x].from?.[0]?.line?.zh ?? '' } : null)).filter(Boolean);
-    await revealCards(cards, { host: $('view') ?? document.body, target: () => document.querySelector('.gearchip'), lang: l, artBase: artBase() });
+    // Under the card: where it came from, plainly (降服狼所得), then the source's own words (card-reveal.js whenceLine).
+    const creatureOf = (id) => authored?.creatures?.find((k) => k.id === id) ?? null;
+    const sourced = (c) => { const f = c.from?.[0]; return { ...c, line: whenceLine(f, { lang: l, creatureOf }), said: f?.line?.[l] ?? f?.line?.zh ?? '' }; };
+    const cards = revealQueue.splice(0).map((x) => (x?.thing ? thingCard(x.thing) : catalog[x] ? sourced(catalog[x]) : null)).filter(Boolean);
+    await revealCards(cards, { host: $('view') ?? document.body, target: () => document.querySelector('.gearchip'), lang: l, artBase: artBase(), isWords: authored?.cards?.is_words });
   } finally { revealing = false; }
   if (revealQueue.length) playReveals();
 }

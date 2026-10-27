@@ -30,11 +30,25 @@
     "gupi": "tiegu"
   },
   "_renamed_about": "旧档里的牌，照书里的名字换成新的那一张 (state.mjs fitWorld)：他拿着的是金爪，现在是金刃。旧的一行留给兽 —— 它们的十二张一张不动。山精、鼓皮原是起手牌，归了孙二狗的山根桩、铁箍板，旧档里的照留 (在牌谱里，不进他的十张)。",
+  "_is": "一张随从牌是什么 (Hanli 2026-10-27: 「这张牌下面写群狼, 上面写金刚, 不太一致吧?」——一个披甲的人印着「灵兽」)：每张随从声明 `is`，牌面上「金 · 灵兽」的后半由它而来 (card-reveal.js · 牌谱)，不由 kind 猜。词在 `is_words`；内容 lint 要每张随从都有一个。",
+  "is_words": {
+    "beast": {"zh": "灵兽", "en": "Beast"},
+    "sprite": {"zh": "精怪", "en": "Sprite"},
+    "spirit": {"zh": "妖灵", "en": "Spirit"},
+    "god": {"zh": "神", "en": "God"},
+    "person": {"zh": "人", "en": "Person"},
+    "guardian": {"zh": "护法", "en": "Guardian"},
+    "tool": {"zh": "法器", "en": "Artifact"},
+    "puppet": {"zh": "傀儡", "en": "Puppet"},
+    "plant": {"zh": "灵植", "en": "Plant"},
+    "thing": {"zh": "物", "en": "Thing"}
+  },
   "_from": "出处 (cards.md, Hanli 2026-10-16: 每张牌都在剧情里收集或者购买)：`from` 是一串来源，每个 {kind, src: 书|游戏, line}。story (scene：离开那一场时得) · beat (task：小游戏赢了得) · beast (creature：打赢它得 —— 它拿这张牌打过你) · shop (item：买那件东西得) · tame (creature：收服) · summon (只由一件东西召来) · tale (传闻了结) · member (小队里那个人的牌，由他出) · foe (只是对手的牌)。`owner`：谁出这张牌 (battle.js § sideOf)；没有 owner 的是小满的。",
   "cards": [
     {
       "id": "xiaoyao",
       "kind": "minion",
+      "is": "sprite",
       "name": {
         "zh": "小妖",
         "en": "Imp"
@@ -56,6 +70,7 @@
     {
       "id": "mucao",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "木草泥马",
         "en": "Grass-Mud Horse"
@@ -85,6 +100,7 @@
     {
       "id": "shanjing",
       "kind": "minion",
+      "is": "sprite",
       "name": {
         "zh": "山精",
         "en": "Hill Spirit"
@@ -113,6 +129,7 @@
     {
       "id": "shangen",
       "kind": "minion",
+      "is": "thing",
       "name": {
         "zh": "山根桩",
         "en": "Mountain-Root Stance"
@@ -142,6 +159,7 @@
     {
       "id": "jingwei",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "精卫",
         "en": "Jingwei"
@@ -170,6 +188,7 @@
     {
       "id": "fuzhu",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "夫诸",
         "en": "Fuzhu"
@@ -199,6 +218,7 @@
     {
       "id": "tongtong",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "狪狪",
         "en": "Tongtong"
@@ -224,6 +244,7 @@
     {
       "id": "longzhi",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "蠪侄",
         "en": "Longzhi"
@@ -245,6 +266,7 @@
     {
       "id": "paoxiao",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "狍鸮",
         "en": "Paoxiao"
@@ -274,6 +296,7 @@
     {
       "id": "kui",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "夔",
         "en": "Kui"
@@ -304,6 +327,7 @@
     {
       "id": "leishen",
       "kind": "minion",
+      "is": "god",
       "name": {
         "zh": "雷神",
         "en": "The Thunderer"
@@ -333,6 +357,7 @@
     {
       "id": "yinyue",
       "kind": "minion",
+      "is": "spirit",
       "name": {
         "zh": "银月",
         "en": "Yinyue"
@@ -774,6 +799,7 @@
     {
       "id": "luying",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "鹿影",
         "en": "Deer Shade"
@@ -880,6 +906,7 @@
     {
       "id": "xianshi",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "衔石",
         "en": "Stone Bearer"
@@ -905,6 +932,7 @@
     {
       "id": "leipu",
       "kind": "minion",
+      "is": "sprite",
       "name": {
         "zh": "雷仆",
         "en": "Thunder Servant"
@@ -982,6 +1010,7 @@
     {
       "id": "jiushou",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "九首",
         "en": "Nine Heads"
@@ -1059,6 +1088,7 @@
     {
       "id": "gupi",
       "kind": "minion",
+      "is": "tool",
       "name": {
         "zh": "鼓皮",
         "en": "Drumhide"
@@ -1087,6 +1117,7 @@
     {
       "id": "tiegu",
       "kind": "minion",
+      "is": "thing",
       "name": {
         "zh": "铁箍板",
         "en": "Iron-Hooped Board"
@@ -1169,6 +1200,7 @@
     {
       "id": "jinsuo",
       "kind": "minion",
+      "is": "tool",
       "name": {
         "zh": "金梭",
         "en": "Gold Shuttle"
@@ -1194,6 +1226,7 @@
     {
       "id": "feijian",
       "kind": "minion",
+      "is": "tool",
       "name": {
         "zh": "短飞剑",
         "en": "Short Flying Sword"
@@ -1224,6 +1257,7 @@
     {
       "id": "jianying",
       "kind": "minion",
+      "is": "tool",
       "name": {
         "zh": "剑影",
         "en": "Blade Shade"
@@ -1249,6 +1283,7 @@
     {
       "id": "huochai",
       "kind": "minion",
+      "is": "tool",
       "name": {
         "zh": "火柴",
         "en": "Matchstick"
@@ -1334,6 +1369,7 @@
     {
       "id": "jingang",
       "kind": "minion",
+      "is": "guardian",
       "name": {
         "zh": "金刚",
         "en": "Adamant"
@@ -1349,19 +1385,47 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description.",
       "from": [
         {
+          "kind": "foe",
+          "creature": "qianyang",
+          "src": "游戏"
+        }
+      ],
+      "_from": "2026-10-27 (Hanli: 「这张牌下面写群狼, 上面写金刚, 不太一致吧?」)：狼不再留它 —— 狼留头狼。卷一里没有庙、没有金刚像，没有一处合它的出处；它只是羬羊手里的牌 (皮厚，站得住)。手里已有它的存档照旧留着。"
+    },
+    {
+      "id": "toulang",
+      "kind": "minion",
+      "is": "beast",
+      "name": {
+        "zh": "头狼",
+        "en": "Lead Wolf"
+      },
+      "cost": 5,
+      "element": "metal",
+      "atk": 3,
+      "hp": 7,
+      "keywords": [
+        "taunt"
+      ],
+      "art": "art/creatures/lang.webp",
+      "art_source": "The 狼's own plate (creatures.json lang), borrowed: the grey wolf on the ridge rock is the pack's head. Its own card picture (tools/paint-cards.py toulang) waits for the painter.",
+      "from": [
+        {
           "kind": "beast",
           "creature": "lang",
           "line": {
-            "zh": "群狼",
-            "en": "The pack."
+            "zh": "头狼挡在狼群前头",
+            "en": "The lead wolf stands before the pack."
           },
           "src": "游戏"
         }
-      ]
+      ],
+      "_about": "狼留下的牌 (2026-10-27)：原先是金刚 —— 一只狼留下一个披甲的人。头狼站在狼群前头，替群挡：同金刚一样的五费 3/7 护主，狼的牌组里换下金刚这一格，斗法闸不动。"
     },
     {
       "id": "tengmiao",
       "kind": "minion",
+      "is": "plant",
       "name": {
         "zh": "藤苗",
         "en": "Vine Sprout"
@@ -1397,6 +1461,7 @@
     {
       "id": "tengmiao_token",
       "kind": "minion",
+      "is": "plant",
       "name": {
         "zh": "藤须",
         "en": "Tendril"
@@ -1473,6 +1538,7 @@
     {
       "id": "linmu",
       "kind": "minion",
+      "is": "plant",
       "name": {
         "zh": "林母",
         "en": "Grove Mother"
@@ -1560,6 +1626,7 @@
     {
       "id": "hanquan",
       "kind": "minion",
+      "is": "thing",
       "name": {
         "zh": "寒泉",
         "en": "Cold Spring"
@@ -1617,6 +1684,7 @@
     {
       "id": "huoya",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "火鸦",
         "en": "Fire Crow"
@@ -1697,6 +1765,7 @@
     {
       "id": "tuou",
       "kind": "minion",
+      "is": "puppet",
       "name": {
         "zh": "土偶",
         "en": "Clay Figure"
@@ -1721,6 +1790,7 @@
     {
       "id": "tuqiang",
       "kind": "minion",
+      "is": "thing",
       "name": {
         "zh": "土墙",
         "en": "Earth Wall"
@@ -1753,6 +1823,7 @@
     {
       "id": "shishou",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "石兽",
         "en": "Stone Beast"
@@ -1875,6 +1946,7 @@
     {
       "id": "caoren",
       "kind": "minion",
+      "is": "puppet",
       "name": {
         "zh": "替身草人",
         "en": "Straw Stand-in"
@@ -1940,6 +2012,7 @@
     {
       "id": "tongling",
       "kind": "minion",
+      "is": "sprite",
       "name": {
         "zh": "童灵",
         "en": "Page Spirit"
@@ -2074,6 +2147,7 @@
     {
       "id": "wuzhiqi",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "无支祁",
         "en": "Wuzhiqi"
@@ -2104,6 +2178,7 @@
     {
       "id": "fangfeng",
       "kind": "minion",
+      "is": "person",
       "name": {
         "zh": "防风氏",
         "en": "Fangfeng"
@@ -2130,6 +2205,7 @@
     {
       "id": "changyou",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "长右",
         "en": "Changyou"
@@ -2152,6 +2228,7 @@
     {
       "id": "bashe",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "巴蛇",
         "en": "The Ba Snake"
@@ -2181,6 +2258,7 @@
     {
       "id": "gui",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "蛫",
         "en": "Gui"
@@ -2209,6 +2287,7 @@
     {
       "id": "kuiniu",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "夔牛",
         "en": "The Kui Ox"
@@ -2241,6 +2320,7 @@
     {
       "id": "qiezhi",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "窃脂",
         "en": "Qiezhi"
@@ -2263,6 +2343,7 @@
     {
       "id": "feiyi",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "肥遗",
         "en": "Feiyi"
@@ -2289,6 +2370,7 @@
     {
       "id": "qianyang",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "羬羊",
         "en": "Qianyang"
@@ -2314,6 +2396,7 @@
     {
       "id": "taifeng",
       "kind": "minion",
+      "is": "god",
       "name": {
         "zh": "泰逢",
         "en": "Taifeng"
@@ -2343,6 +2426,7 @@
     {
       "id": "mafu",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "马腹",
         "en": "Mafu"
@@ -2365,6 +2449,7 @@
     {
       "id": "zheng",
       "kind": "minion",
+      "is": "beast",
       "name": {
         "zh": "狰",
         "en": "Zheng"
@@ -2492,7 +2577,7 @@
       "mortal": true
     },
     {"id": "kuzhi", "kind": "spell", "name": {"zh": "枯枝", "en": "A Dry Stick"}, "cost": 1, "element": null, "_token": true, "effect": {"damage": 1}, "_about": "第一回 · 浅坑（2026-10-22 教学斗法）：「他捡起一根枯枝扔到坑边」——先试一试它。试里白给的一张，不入牌库、不作赏。", "art": "art/cards/shizi.webp", "art_source": "The 三试's 石子 plate, borrowed (a thrown thing); its own picture is not painted yet.", "mortal": true},
-    {"id": "waiyi", "kind": "minion", "name": {"zh": "补丁外衣", "en": "The Patched Coat"}, "cost": 1, "element": null, "_token": true, "atk": 0, "hp": 3, "keywords": ["taunt"], "_about": "第一回 · 浅坑：「他脱下了外衣……轻轻盖在它身上」——袖口打着补丁，补丁上还打着补丁。挡在前头，咬它不咬你。试里白给的一张，不入牌库、不作赏。", "art": "art/cards/tuou.webp", "art_source": "The 土偶 plate, borrowed (a thing that stands in front); its own picture is not painted yet.", "mortal": true},
+    {"id": "waiyi", "kind": "minion", "is": "thing", "name": {"zh": "补丁外衣", "en": "The Patched Coat"}, "cost": 1, "element": null, "_token": true, "atk": 0, "hp": 3, "keywords": ["taunt"], "_about": "第一回 · 浅坑：「他脱下了外衣……轻轻盖在它身上」——袖口打着补丁，补丁上还打着补丁。挡在前头，咬它不咬你。试里白给的一张，不入牌库、不作赏。", "art": "art/cards/tuou.webp", "art_source": "The 土偶 plate, borrowed (a thing that stands in front); its own picture is not painted yet.", "mortal": true},
     {"id": "bupa", "kind": "spell", "name": {"zh": "不怕", "en": "Don't Be Scared"}, "cost": 0, "element": null, "_token": true, "effect": {"heal": 2}, "_about": "第一回 · 浅坑：「不怕。我也掉下来了。咱俩，做个伴。」试里白给的一张，不入牌库、不作赏。", "art": "art/cards/niangbing.webp", "art_source": "The 娘的饼 plate, borrowed (a comfort); its own picture is not painted yet.", "mortal": true},
     {"id": "ziya", "kind": "spell", "name": {"zh": "龇牙", "en": "Bared Teeth"}, "cost": 1, "element": "metal", "_token": true, "effect": {"damage": 1, "bite": true}, "_about": "坑底那只小银狐：「龇了一下牙……可它连头都抬不起来」。A bite (`bite`), not a spell's blow: a 护主 takes it first (Hanli 10-22: 「护主牌没发挥作用」 — the teaching fight is 「挡住它咬」).兽的牌，永不入牌库、不作赏。", "art": "art/people/yinyue-fox.webp", "art_source": "Her own fox plate (world.json companion.forms.fox)."},
     {

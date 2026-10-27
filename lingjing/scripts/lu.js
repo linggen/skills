@@ -18,7 +18,7 @@ export const LU_WORDS = {
     fantong: '饭桶方子', fantongNote: '喂对了东西，饭桶吐对的丹；几道纹，看它的脾气。', fantongBook: '饭桶图鉴 · {n}/{of}', fantongBookNote: '饭桶吐出来过的，头一回都记在这里。',
     paipu: '牌谱 · {n}', paipuNote: '你手上的每一张牌，和它从哪里来。', animals: '识得的动物 · {n}', animalsNote: '二十问里猜中的。',
     how: { starter: '测灵根时所得', companion: '{creature}随你而来', tame: '收服{creature}', win: '胜{creature}所得', chance: '机缘所得', tale: '传闻《{tale}》', story: '{chapter}', beat: '{chapter}', shop: '买来的', old: '旧日所得' },
-    at: '于{place}', kinds: { minion: '灵兽', spell: '法术' },
+    at: '于{place}', cardKinds: { spell: '法术' },
   },
   en: {
     chip: 'Nine Cauldrons', title: 'The Nine Cauldrons', close: 'Close', found: '{n}/9 found', map: 'The nine',
@@ -30,7 +30,7 @@ export const LU_WORDS = {
     fantong: 'Rice Bucket recipes', fantongNote: 'Feed it the right thing and it spits the right pill; how many rings is up to its temper.', fantongBook: 'What the Rice Bucket gave · {n}/{of}', fantongBookNote: 'Everything it has ever spat out, noted the first time.',
     paipu: 'Cards · {n}', paipuNote: 'Every card you hold, and where it came from.', animals: 'Animals known · {n}', animalsNote: 'Guessed in twenty questions.',
     how: { starter: 'From the root test', companion: '{creature} came with you', tame: 'Tamed {creature}', win: 'Won from {creature}', chance: 'A chance taken', tale: 'The rumor “{tale}”', story: '{chapter}', beat: '{chapter}', shop: 'Bought', old: 'From earlier days' },
-    at: 'at {place}', kinds: { minion: 'Beast', spell: 'Spell' },
+    at: 'at {place}', cardKinds: { spell: 'Spell' },
   },
 };
 
@@ -130,7 +130,7 @@ function paipuHtml(cards, w, { artBase = '', her = null } = {}) {
     return f.place && f.how !== 'story' ? `${how} · ${say(w.at, { place: f.place })}` : how;
   };
   const row = (c) => `<div class="lucard">${c.art ? `<img src="${esc(artBase + c.art)}" alt="" loading="lazy">` : '<i class="noart" aria-hidden="true"></i>'}
-    <div><b class="cost">${esc(c.cost ?? '')}</b> <b>${esc(c.name)}</b> <span class="small dim">${esc(w.kinds[c.kind] ?? '')}${c.atk != null ? ` · ${esc(c.atk)}/${esc(c.hp)}` : ''}</span>
+    <div><b class="cost">${esc(c.cost ?? '')}</b> <b>${esc(c.name)}</b> <span class="small dim">${esc(c.is ?? w.cardKinds[c.kind] ?? '')}${c.atk != null ? ` · ${esc(c.atk)}/${esc(c.hp)}` : ''}</span>
     <div class="small">${esc(origin(c.from ?? {}))}${c.from?.day ? ` <span class="dim">· ${esc(c.from.day)}</span>` : ''}</div>
     ${c.said ? `<div class="small dim">${esc(c.said)}${c.src ? ` · ${esc(c.src)}` : ''}</div>` : ''}</div></div>`;
   return `<section class="lusec lupaipu"><h3>${esc(say(w.paipu, { n: cards.length }))}</h3><p class="small dim">${esc(w.paipuNote)}</p>${cards.map(row).join('')}</section>`;

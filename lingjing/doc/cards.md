@@ -134,7 +134,7 @@ Spells won from a fight follow one rule: the beast was fighting with it, and he 
 | xianshi 衔石 | 1费 1/2 | won from 从从 (后山崖顶) | 游戏 |
 | leipu 雷仆 | 2费 2/2 | won from 猕猴 | 游戏 |
 | tongling 童灵 | 2费 2/2, draw | won from 赤狐 | 游戏 |
-| jingang 金刚 | 5费 3/7 护主 | won from 狼 (elite) | 游戏 |
+| toulang 头狼 | 5费 3/7 护主 | won from 狼 (elite). Was 金刚 until 2026-10-27 (a wolf leaving a man in armour); 金刚 is now only 羬羊's foe card | 游戏 |
 | shishou 石兽 | 4费 3/6 护主 | won from 精精 | 游戏 |
 
 **Later 卷 (tamed in their own 卷, `creatures.json juan`):** 精卫 (2) · 狍鸮 (2) · 雷神 (2) · 无支祁 (4) · 夔 (3) · 狪狪 (3) · 防风氏 (5) · 长右 (5) · 巴蛇 (6) · 夔牛 (7) · 窃脂 (7) · 肥遗 (8) · 羬羊 (8) · 泰逢 (9) · 马腹 (9) · 夫诸 (9). These 16 are 游戏 until those 卷 are written.

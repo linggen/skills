@@ -75,6 +75,8 @@ SUBJECTS = {
   'liaotian': 'a wall of fire rising to the clouds over a burning ridge',
   'houtu': 'deep dark earth in cross-section, roots and stones layered',
   'canwu': 'an old scholar reading by a window, one crane outside',
+  # ── 狼's own card (2026-10-27): it left 金刚, a man in armour; now the lead wolf of the pack ──
+  'toulang': 'a big grey lead wolf standing square in front of its pack on a dark pine ridge, head low, hackles up, green eyes, other wolves half hidden behind it',
   # ── 钱掌柜's three for the 练气一层 hand (2026-10-27) ──
   'tieji': 'a handful of four-pointed iron caltrops scattered on a dirt path, one spike always pointing up',
   'sanhuo': 'a young disciple flicking his sleeve, a spray of small fire sparks scattering in an arc',

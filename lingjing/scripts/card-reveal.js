@@ -30,15 +30,37 @@ const ELEMENT_WORD = {
   en: { metal: 'Metal', wood: 'Wood', water: 'Water', fire: 'Fire', earth: 'Earth' },
 };
 const WORDS = {
-  zh: { got: '得', minion: '灵兽', spell: '功法', pill: '丹', charm: '符', thing: '物', tap: '轻点继续', into: '收进了储物袋' },
-  en: { got: 'Gained', minion: 'Beast', spell: 'Art', pill: 'Pill', charm: 'Charm', thing: 'Thing', tap: 'Tap to go on', into: 'into the pouch' },
+  zh: { got: '得', spell: '功法', pill: '丹', charm: '符', thing: '物', tap: '轻点继续', into: '收进了储物袋' },
+  en: { got: 'Gained', spell: 'Art', pill: 'Pill', charm: 'Charm', thing: 'Thing', tap: 'Tap to go on', into: 'into the pouch' },
 };
-const kindWord = (c, w) => (c.pill ? w.pill : c.charm ? w.charm : w[c.kind] ?? '');
+/* What the card is, under its name. A 随从 says its own (cards.json `is`, worded in `is_words`) — never 「minion = 灵兽」
+   (Hanli 2026-10-27: a bald man in armour printed 「金 · 灵兽」); a 随从 that says none shows its 五行 alone. */
+const kindWord = (c, w, isWords, lang) => (c.pill ? w.pill : c.charm ? w.charm
+  : c.kind === 'minion' ? nameOf(isWords?.[c.is], lang) : w[c.kind] ?? '');
 const nameOf = (n, lang) => (typeof n === 'string' ? n : n?.[lang] ?? n?.zh ?? '');
 
+/* Where a card came from, said plainly (Hanli 2026-10-27: the bare 「群狼」 under 金刚 read like a second name).
+   `from` is the card's own source (cards.json `from`, the first); `creatureOf(id)` → { name, person } from the
+   world's creatures; a person beaten is 胜, a beast 降服. A source a hand never gains from (a foe's, a member's) says nothing. */
+const WHENCE = {
+  zh: { beast: '降服{name}所得', bout: '胜{name}所得', tame: '收服{name}', story: '得自{name}', shop: '{name}处买来', beat: '赢下一局所得', tale: '传闻了结所得' },
+  en: { beast: 'Won by subduing {name}', bout: 'Won from {name}', tame: 'Tamed {name}', story: 'From {name}', shop: 'Bought from {name}', beat: 'Won in a game', tale: 'Left when a tale was done' },
+};
+export function whenceLine(from, { lang = 'zh', creatureOf = () => null } = {}) {
+  const t = WHENCE[lang] ?? WHENCE.zh;
+  if (!from) return '';
+  const k = from.creature ? creatureOf(from.creature) : null;
+  const key = from.kind === 'beast' && (k?.person || k?.gender) ? 'bout' : from.kind;
+  const name = nameOf(k?.name ?? from.who ?? from.keeper, lang);
+  const tpl = t[key];
+  if (!tpl || (tpl.includes('{name}') && !name)) return '';
+  return tpl.replace('{name}', name);
+}
+
 /// The big card's face. `card` is a cards.json row (or its brief: id, name,
-/// kind, cost, element, atk, hp, art); `line` the one line of where it came from.
-export function revealHtml(card, { lang = 'zh', line = '', artBase = '' } = {}) {
+/// kind, is, cost, element, atk, hp, art); `line` the one line of where it came from, plain;
+/// `said` the source's own words under it (cards.json `from[].line`); `isWords` cards.json `is_words`.
+export function revealHtml(card, { lang = 'zh', line = '', said = '', artBase = '', isWords = null } = {}) {
   const w = WORDS[lang] ?? WORDS.zh, el = card.element ?? 'none';
   const elWord = card.element ? ELEMENT_WORD[lang]?.[card.element] ?? '' : '';
   const body = card.atk != null ? `<span class="rv-atk">${esc(card.atk)}</span><span class="rv-hp">${esc(card.hp)}</span>` : '';
@@ -47,12 +69,12 @@ export function revealHtml(card, { lang = 'zh', line = '', artBase = '' } = {}) 
       ${card.cost != null ? `<span class="rv-cost">${esc(card.cost)}</span>` : ''}
       <div class="rv-art">${card.art ? `<img src="${esc(artBase)}${esc(card.art)}" alt="">` : ''}</div>
       <div class="rv-name">${esc(nameOf(card.name, lang))}</div>
-      <div class="rv-kind">${esc([elWord, kindWord(card, w)].filter(Boolean).join(' · '))}</div>
+      <div class="rv-kind">${esc([elWord, kindWord(card, w, isWords, lang)].filter(Boolean).join(' · '))}</div>
       ${body}
     </div>
     <span class="rv-seal" aria-hidden="true">${esc(w.got)}</span>
   </div>
-  ${line ? `<p class="rv-line">${esc(line)}</p>` : ''}
+  ${line || said ? `<p class="rv-line">${esc(line || said)}${line && said && said !== line ? `<span class="rv-said">${esc(said)}</span>` : ''}</p>` : ''}
   <p class="rv-tap">${esc(w.tap)}</p>`;
 }
 
@@ -75,7 +97,7 @@ function playOne(host, card, opts) {
   veil.setAttribute('role', 'dialog');
   veil.dataset.reveal = card.id ?? '';
   veil.setAttribute('aria-label', `${(WORDS[opts.lang] ?? WORDS.zh).got} ${nameOf(card.name, opts.lang)}`);
-  veil.innerHTML = revealHtml(card, { ...opts, line: card.line ?? opts.line ?? '' });
+  veil.innerHTML = revealHtml(card, { ...opts, line: card.line ?? opts.line ?? '', said: card.said ?? '' });
   host.appendChild(veil);
   return new Promise(resolve => {
     let flown = false;
@@ -108,11 +130,11 @@ function playOne(host, card, opts) {
 
 /// Play each card gained, one after another, over `host` (the stage), landing
 /// on `target` (the bag chip, or a function that finds it as the card flies). `cards`: [{...card, line}]. Resolves when done.
-export async function revealCards(cards, { host, target = null, lang = 'zh', artBase = '', still = null } = {}) {
+export async function revealCards(cards, { host, target = null, lang = 'zh', artBase = '', still = null, isWords = null } = {}) {
   if (!host || !cards?.length) return;
   const reduced = still ?? (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
   for (const [i, card] of cards.entries()) {
     if (i) await wait(REVEAL_MS.gap);
-    await playOne(host, card, { lang, artBase, still: reduced, target });
+    await playOne(host, card, { lang, artBase, still: reduced, target, isWords });
   }
 }

@@ -57,6 +57,10 @@ test("a win gives the beast's own card, never one at random; a beast that names 
   assert.equal(winCard(content, s, creatureOf(content, 'yezhu'), NOW)?.id, 'jixiao');
   assert.equal(winCard(content, s, creatureOf(content, 'yezhu'), NOW), null, 'held already');
   assert.equal(winCard(content, s, creatureOf(content, 'longzhi'), NOW), null);
+  // 狼 leaves a wolf (Hanli 10-27: 「这张牌下面写群狼, 上面写金刚」): 头狼, the card it fought with; 金刚 is no beast's gift.
+  assert.equal(winCard(content, s, creatureOf(content, 'lang'), NOW)?.id, 'toulang');
+  assert.ok(creatureOf(content, 'lang').deck.includes('toulang') && !creatureOf(content, 'lang').deck.includes('jingang'));
+  assert.deepEqual(cards.find(c => c.id === 'jingang').from.map(f => f.kind), ['foe']);
   assert.equal(winCard(content, s, { id: 'chance:x', root: 'wood' }, NOW, 'chance'), null, 'no chance card at random');
 });
 
