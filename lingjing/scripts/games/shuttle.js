@@ -139,7 +139,7 @@ function picture(s) {
   const ground = `<image href="${COURT}" x="0" y="-80" width="${W}" height="${W * 2 / 3}" preserveAspectRatio="xMidYMid slice" opacity="0.85"/>`;
   const lines = LINES.map((lx, i) => `<rect class="g-shuttle-line${lit && i === 1 - s.side ? ' is-lit' : ''}" x="${lx - 2}" y="${floor - 30}" width="4" height="40" rx="1"/>`).join('');
   const left = s.next - s.t, ring = s.phase === 'run' && !s.won && left > -stage(s).win
-    ? `<circle class="g-shuttle-ring${s.mark === 'hit' ? ' is-hit' : ''}" cx="${x1}" cy="${floor - 10}" r="${n(8 + Math.max(0, left) / 18)}"/>` : '';
+    ? `<circle class="g-shuttle-ring${s.mark === 'hit' ? ' is-hit' : ''}" cx="${x1}" cy="${floor - 10}" r="${n(7 + Math.min(34, Math.max(0, left) / 30))}"/>` : '';
   const stride = Math.sin((s.t / 90) * Math.PI) * 5 * (s.phase === 'run' ? 1 : 0);
   const runner = `<g class="g-shuttle-runner" transform="translate(${n(x)} ${floor}) scale(${dir} 1)">`
     + `<circle cx="1" cy="-34" r="5"/><path d="M0 -29 L-2 -14 M-2 -14 L${n(4 + stride)} 0 M-2 -14 L${n(-4 - stride)} 0 M0 -25 L${n(6 - stride / 2)} -18 M0 -25 L${n(-5 + stride / 2)} -17"/></g>`;
