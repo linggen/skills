@@ -91,7 +91,9 @@ const strongerWay = (content, state, now) => strengthen(content, state, { now })
 function boardHere(content, state, kept, now, tide) {
   const played = id => (state.plays?.day === dayKey(now) ? state.plays.ids?.[id] ?? 0 : 0);
   const rows = (kept.tasks ?? []).filter(t => (tide ? t.tide : t.practice) && t.status === 'offered' && !t.skipped);
-  const paying = rows.filter(t => t.tide || ((t.pays?.progress ?? 0) > 0 && played(t.id) < floorAt(content)));
+  // Not one he has already played today: the 主页 never sends him straight back into the board he just finished
+  // (Hanli, 2026-10-27: 「拼图刚玩完, 又出来了」); it stays in the tray for a replay of his own choosing.
+  const paying = rows.filter(t => t.tide || ((t.pays?.progress ?? 0) > 0 && played(t.id) === 0));
   return paying.sort((a, b) => (b.pays?.progress ?? 0) - (a.pays?.progress ?? 0))[0] ?? null;
 }
 

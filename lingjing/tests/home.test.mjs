@@ -183,3 +183,9 @@ test('an errand done away from its giver stays in 待办, pointing at where it i
   assert.deepEqual([row?.kind, row?.place?.id, row?.done], ['held', 'yaoyuan', true], JSON.stringify(l.home.todo));
   assert.match(html(l), /data-go="yaoyuan"[^>]*>后山的野猪 · 药园</);
 });
+
+test('a board played once today is not the button: the 主页 never sends him straight back in (Hanli 10-27: 「拼图刚玩完, 又出来了」)', () => {
+  const s = { ...gate146(), plays: { day: '2026-10-27', ids: { pintu: 1 } } };
+  const l = look(s, content, ctx());
+  assert.ok(!(l.home.next.kind === 'board' && l.home.next.id === 'pintu'), JSON.stringify(l.home.next));
+});
