@@ -3395,10 +3395,13 @@ function herClock(g) {
   run(`send:${g.taskId}:asked`, () => write('mishi', { action: 'asked' }).catch(failed).then(() => refresh()));
 }
 /* Her guest turn ended: the board that waited on her stops its clock — she answered in time. */
-function herAnswered() {
+/* Her reply as she said it: the last paragraph (the spoken one), plain; SILENT is no line. */
+const herLast = (text) => { const p = String(text ?? '').split(/\n\s*\n/).map((x) => x.replace(/[*_`]/g, '').trim()).filter(Boolean).at(-1) ?? ''; return /^SILENT$/i.test(p) ? '' : p.replace(/^(银月|Yinyue)\s*[：:]\s*/, ''); };
+function herAnswered(text = '') {
   const g = boardWaitsOnHer;
   boardWaitsOnHer = null;
-  if (g?.mod?.heard) { g.state = g.mod.heard(g.state, { her: 'spoke' }); render(); }
+  // Her line stands on the board too (密室): what she said is there when the chat is shut.
+  if (g?.mod?.heard) { g.state = g.mod.heard(g.state, { her: 'spoke', text: herLast(text) }); render(); }
 }
 /* The 密室's next help tier, asked for without a tap (a room opened, a new mechanism, a few misses). */
 function boardAsks(g, why) {
@@ -3415,11 +3418,13 @@ function boardAsks(g, why) {
 function mishiHelp(g, res) {
   const why = g.askWhy ?? 'asked';
   g.askWhy = null;
-  const last = res.help?.[res.help.length - 1] ?? '', earlier = (res.help ?? []).slice(0, -1);
+  const last = res.help?.[res.help.length - 1] ?? '';
   const whyZh = { open: '你们刚推开暗门进来，他还不知道这机关怎么玩', next: '前一道机关开了，下一道露了出来', offer: `他试错了${res.wrong}次，还卡着`, asked: '他问你这道机关怎么玩' }[why];
   const whyEn = { open: 'You two just came in; he does not know how the mechanism works yet', next: 'The last mechanism gave way; the next one shows', offer: `He has missed ${res.wrong} times and is stuck`, asked: 'He asks you how this mechanism works' }[why];
-  const zh = `密室「${res.room}」第${res.step}道（共${res.steps}道）。${whyZh}。他眼前：${res.goal ?? ''}${res.read ? `（铜盘先前停在${res.read}）` : ''} ${res.seen}\n${earlier.length ? `你先前已告诉他：${earlier.join(' ')}\n` : ''}这回要告诉他的（提示 ${res.tier}/${res.of}）：${last}\n用你自己的话、你自己的口吻，一两句说给他——只说这一条，别越过它，别报出更多。`;
-  const enT = `Hidden room "${res.room}", mechanism ${res.step} of ${res.steps}. ${whyEn}. Before him: ${res.goal ?? ''}${res.read ? ` (the dial stopped on ${res.read})` : ''} ${res.seen}\n${earlier.length ? `You already told him: ${earlier.join(' ')}\n` : ''}Tell him now (hint ${res.tier}/${res.of}): ${last}\nIn your own words, as yourself, a line or two — this one only, nothing past it.`;
+  // The engine keeps 300 characters of a moment's facts: the tier first and whole, then what he sees, as room allows.
+  const fit = (head, tail, max = herFactsMax()) => { const t = `${head}${tail}`; return [...t].length <= max ? t : head; };
+  const zh = fit(`密室第${res.step}道。${whyZh}。用你自己的话一两句告诉他（提示${res.tier}/${res.of}，只说这条，别越过）：${last}`, `\n他眼前：${res.goal ?? ''}${res.read ? `（铜盘先前停在${res.read}）` : ''}${res.seen}`);
+  const enT = fit(`Hidden room, mechanism ${res.step}. ${whyEn}. Tell him in your own words, a line or two (hint ${res.tier}/${res.of}, this only, nothing past it): ${last}`, `\nBefore him: ${res.goal ?? ''}${res.read ? ` (the dial stopped on ${res.read})` : ''} ${res.seen}`);
   boardWaitsOnHer = g;
   askHer('mishi', zh, enT, 'neutral').then((heard) => { if (!heard && boardWaitsOnHer === g) boardWaitsOnHer = null; });
 }
@@ -4239,7 +4244,7 @@ async function mountChat() {
     onStreamEnd: (_text, info) => {
       // Ling or 银月 wrote: on a phone with the sheet shut, a dot on the chat's bar (sight.js).
       chatHeard(document.querySelector('.shell'));
-      if (info?.own === false) { voice.heard(); herLineCame(_text); herAnswered(); return; }
+      if (info?.own === false) { voice.heard(); herLineCame(_text); herAnswered(_text); return; }
       turnEnded();
       voice.heard();
       streaming = false;

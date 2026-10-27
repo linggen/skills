@@ -63,3 +63,5 @@
 .g-mishi-char { position: relative; width: 44px; height: 44px; border-radius: 6px; border: 1px solid transparent; background: transparent; font-family: var(--serif); font-size: 20px; cursor: pointer; touch-action: manipulation; padding: 0; }
 .g-mishi-char:hover { border-color: var(--line); }
 @media (max-width: 380px) { .g-mishi-char { width: 40px; height: 40px; font-size: 18px; } }
+.g-mishi-said { margin: 0; width: 100%; padding: 8px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 14.5px; line-height: 1.7; color: var(--text); }
+.g-mishi-said b { margin-right: 6px; font-family: var(--serif); color: var(--yinyue, var(--ling)); }
