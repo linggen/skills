@@ -652,7 +652,7 @@ function item(card, ctx) {
     // ever earns a refusal is the stage lying about what can be done.
     const forHer = Boolean(e.wear) && !ctx.look?.companion;
     const wearable = !forHer && (e.wear || e.atk || e.def || e.ward);
-    const use = e.progress && i.held ? doBtn(ctx.words.use, 'use', i.id)
+    const use = e.progress != null && i.held ? doBtn(ctx.words.use, 'use', i.id)
       : wearable && i.held && !i.worn ? doBtn(ctx.words.wear, 'use', i.id) : '';
     const worn = i.worn ? `<span class="chip">${esc(ctx.words.worn)}</span>` : '';
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayItem, { name: i.name }))}>${esc(ctx.words.about)}</button>`;

@@ -82,7 +82,7 @@ function detailHtml(i, g, ctx, pw, ui) {
   const w = ctx.words, e = i.effect ?? {};
   const kind = ctx.look?.words?.[i.kind] ?? i.kind ?? '';
   const acts = [];
-  if (e.progress) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.take)}</button>`);
+  if (e.progress != null) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.take)}</button>`);
   else if (e.learn) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.study)}</button>`);
   else if (e.pouch) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.carry)}</button>`);
   if (i.slot && !i.worn) acts.push(`<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`);

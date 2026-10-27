@@ -619,8 +619,8 @@ const ELEMENT_NAME = (content, lang, el) => pick(content.traits.elements[el], la
 const EFFECT_BRIEF = {
   key: () => ({ key: true }),
   // What lands at the layer he stands on (数值系统 phase 2: a pill is a share of the layer), never the authored number.
-  // Where nothing lands yet (零层, before 入门) the 练气一层 number it was written as.
-  progress: (e, content, lang, state) => ({ progress: (state ? paysOf(content, state, new Date(), { table: e.table, progress: e.progress, tier: e.tier })?.progress : null) || Math.round(e.progress) }),
+  // Where nothing lands (零层, before 入门) it says 0: the card never promises what eating it would not pay.
+  progress: (e, content, lang, state) => ({ progress: (state ? paysOf(content, state, new Date(), { table: e.table, progress: e.progress, tier: e.tier })?.progress : null) ?? Math.round(e.progress) }),
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
   charm: () => ({ charm: true }),

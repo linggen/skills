@@ -97,7 +97,8 @@ export function derive(raw0, { ladder, items }) {
   pp.errand = { ...pp.errand, share: gu.errand.share, time: gu.errand.time };
   pp.chore = { ...gu.chore };
   pp.seclusion = { night: gu.seclusion.night };
-  pp.authored = { ...pp.authored, base: gu.need.first };
+  // `authored.base` stays the book's yardstick (the 练气一层 its grants were written against, 470): never `need.first`, which is
+  // display only — moving it must not move what a story grant is worth.
   for (const t of ['pill']) if (!pp.authored.tables.includes(t)) pp.authored.tables.push(t);
   // 闭关 is a share now (ruling a, 2026-10-27): `layer_pay` scaled it by the layer; nothing does any more.
   delete raw.layer_pay; delete raw._layer_pay;

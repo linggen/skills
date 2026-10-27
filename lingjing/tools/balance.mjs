@@ -4,10 +4,7 @@
 // content.mjs withBalance) and plays 卷一 day by day for three players — light, typical, heavy
 // (balance.json `model.players`) — printing the days each 回 takes. The target: about 30 minutes
 // a day and one 回 a week; the story is the reward; 古一–古三 fast.
-//   --fit     (retired 2026-10-27: node tools/numbers.mjs --apply derives the 层 and fits the hours) re-derived the 练气 thresholds the 回s' stage quests hold him on, so `model.fit.player`
-//             meets `model.fit.days`, and writes them into balance.json `layers.qi`
-//             (the 层 a rise jumps over sit between their neighbours); a 回 named in `model.fit.hold`
-//             is not searched — its first layer stays at the held number (a decision, `_hold` says why);
+//   --fit     retired 2026-10-27: node tools/numbers.mjs --apply derives the 层 from the master table and fits the hours
 //   --json    the rows as JSON;
 //   --wealth  the 灵石 flow per player, and the 秘境 rerun's share of the day (修为, 灵石, its spoils).
 // tests/balance.test.mjs holds the bands (`model.bands`).
@@ -348,33 +345,6 @@ export function grindLayers(content) {
     if (g.tier === content.ladder.tiers[0].id && !r.layers.includes(g.step) && !out.some(x => x !== r && x.layers.includes(g.step))) r.layers.push(g.step);
   }
   return out;
-}
-
-/* Re-derive the 练气 thresholds: in the book's order, each 回's layers set (equal, at least the one
-   below) so `fit.player` takes `fit.days` there; the 层 jumped over sit between. The heavy player is
-   the one a stage quest holds back — the typical one reads a 回 in about as long as it fills. */
-export function fit(content) {
-  const model = content.balance.model, th = [...content.ladder.tiers[0].thresholds], who = model.players[model.fit.player];
-  const ladder = structuredClone(content.ladder), step = model.step_min;
-  const daysOf = h => play(content, who, { ladder }).rows.find(r => r.hui === h)?.days ?? Infinity;
-  const held = new Set(grindLayers(content).flatMap(r => r.layers));
-  // A 层 no stage quest holds (one a rise jumps over): just above the one below it.
-  const fill = upTo => { for (let l = 1; l < upTo; l++) if (!held.has(l)) th[l] = th[l - 1] + step; ladder.tiers[0].thresholds = [...th]; };
-  for (const { hui, layers } of grindLayers(content)) {
-    if (!layers.length) continue;
-    const want = model.fit.days[hui] ?? model.fit.days.default;
-    const sorted = [...layers].sort((a, b) => a - b);
-    fill(sorted[0]);
-    let lo = th[sorted[0] - 1] + step, hi = 20000;
-    const set = x => { sorted.forEach((l, k) => { th[l] = Math.round(x / 10) * 10 + k * step; }); ladder.tiers[0].thresholds = [...th]; };
-    // Held by decision (`model.fit.hold`): the 回's layers start at the held number, unsearched.
-    if (model.fit.hold?.[hui] != null) { set(Math.max(lo, model.fit.hold[hui])); continue; }
-    for (let k = 0; k < 30; k++) { const mid = (lo + hi) / 2; set(mid); if (daysOf(hui) < want) lo = mid; else hi = mid; }
-    set(lo);
-  }
-  fill(th.length);
-  for (let l = 1; l < th.length; l++) th[l] = Math.max(th[l], th[l - 1] + step);
-  return th;
 }
 
 /* balance.json as written: two-space JSON, a small object or a row of numbers on one line (≤ 120 characters), the price
