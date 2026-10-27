@@ -3210,6 +3210,8 @@ function leaveGame(id) {
   const g = boards.get(id);
   if (g?.sent || g?.state?.won) return true;
   if (g) g.left = true;
+  // A rules-judged board that held her out (密室) puts her back; a mounted one does so itself (its `rest`).
+  if (g?.mod?.fromLook && look?.companion?.out_for === id) herOut(id, false);
   beats.leave(id);
   boards.delete(id);
   forgetShell(id);
@@ -3329,7 +3331,15 @@ function gameAct(ghost, action, at) {
    module (`heard`), then the save is read again — the room's view, the pay on the strip. Opened, she
    hears that the old pages here are hers to read (her own tool, Mishi, carries them — never this page). */
 async function boardSends(g, send) {
+  // 密室 needs her (task `needs: "her"`): out of the 木牌 for the room, so she can tell him the play herself; back in
+  // once he is out. Out now, the help is hers to say — no longer read off the board (`alone`).
+  const task = look?.tasks?.find((t) => t.id === g.taskId);
+  if (task?.her && ['open', 'ask'].includes(send.args?.action) && !herHere()) {
+    await herOut(g.taskId, true);
+    if (herHere() && send.args.alone) { const { alone, ...rest } = send.args; send = { ...send, args: rest }; }
+  }
   const res = await write(send.verb, send.args ?? {}).catch(failed);
+  if (task?.her && (res?.out || res?.left)) herOut(g.taskId, false);
   // Answered: the board plays on — its next try, 跳过这一道, and 收手 (cards.js reads `sent`) stand again
   // (Hanli 10-27, 密室: 「这个也没有跳过去的办法」 — `sent` stayed set after 推开看看 and took 收手 away for good).
   g.sent = false;

@@ -50,7 +50,8 @@ test('her day game stays with the book: no 二十问 while she sleeps (问卦 co
 
 test('the games that need her are declared, and offered from the 木牌', () => {
   for (const id of ['jiaxin-letter', 'benwang-kao', 'qiyu-drawguess']) assert.equal(needsHer(content, PLAYED.state, id), true, id);
-  assert.equal(needsHer(content, PLAYED.state, 'mishi'), false);
+  // 密室: she reads the old pages and tells him the play (Hanli 10-27: 「问yinyue怎么玩, 她应该告诉玩法才对」) — out for the room.
+  assert.equal(needsHer(content, PLAYED.state, 'mishi'), true);
   assert.equal(needsHer(content, PLAYED.state, 'arcade:drawguess'), true, 'the 游戏厅\'s 画猜, a game her tasks play');
   assert.equal(needsHer(content, PLAYED.state, 'arcade:huarong'), false);
   assert.deepEqual(lint(content), []);
@@ -83,7 +84,7 @@ test('a round of a game that needs her wakes her; its end puts her back', () => 
 
 test('only a game that needs her, and only her own line', () => {
   const s = structuredClone(PLAYED.state);
-  assert.equal(pageHerGame(content, s, { hold: 1, task: 'mishi' }, NIGHT).result.refused, 'not-hers');
+  assert.equal(pageHerGame(content, s, { hold: 1, task: 'kouzi-crowd' }, NIGHT).result.refused, 'not-hers');
   const unmet = { ...s, companion: undefined };
   assert.equal(pageHerGame(content, unmet, { hold: 1, task: 'benwang-kao' }, NIGHT).result.refused, 'no-host');
 });
