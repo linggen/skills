@@ -1,0 +1,361 @@
+{
+ "_about": "格斗's frames: each frame's pose sketch (a plain mannequin, side view facing right: lean, legF/legB/armF/armB as [upper, lower] angles from straight down; `dx` the hips' offset, `up` a lift, `width` the canvas when a blade needs room) and the words the FLUX edit is given beside the master painting. tools/fighter-frames.py reads `dx` for each frame's anchor.",
+ "qinyan": {
+  "idle1": {
+   "lean": 6,
+   "legF": [
+    24,
+    -4
+   ],
+   "legB": [
+    -10,
+    -30
+   ],
+   "armF": [
+    60,
+    88
+   ],
+   "armB": [
+    30,
+    140
+   ],
+   "words": "a martial guard stance, knees bent, weight low, sword held forward level toward the right, left hand raised open by her chest."
+  },
+  "idle2": {
+   "lean": 5,
+   "legF": [
+    23,
+    -3
+   ],
+   "legB": [
+    -10,
+    -29
+   ],
+   "armF": [
+    58,
+    86
+   ],
+   "armB": [
+    30,
+    138
+   ],
+   "up": 4,
+   "words": "the same guard stance, breathing in, sword held forward toward the right, left hand open by her chest."
+  },
+  "idle3": {
+   "lean": 4,
+   "legF": [
+    22,
+    -2
+   ],
+   "legB": [
+    -9,
+    -28
+   ],
+   "armF": [
+    56,
+    84
+   ],
+   "armB": [
+    28,
+    136
+   ],
+   "up": 7,
+   "words": "the same guard stance, a breath held, sword held forward toward the right, left hand open by her chest."
+  },
+  "idle4": {
+   "lean": 5,
+   "legF": [
+    23,
+    -3
+   ],
+   "legB": [
+    -10,
+    -29
+   ],
+   "armF": [
+    58,
+    86
+   ],
+   "armB": [
+    30,
+    138
+   ],
+   "up": 3,
+   "words": "the same guard stance, breathing out, sword held forward toward the right, left hand open by her chest."
+  },
+  "walk1": {
+   "lean": 8,
+   "legF": [
+    36,
+    0
+   ],
+   "legB": [
+    -26,
+    -40
+   ],
+   "armF": [
+    60,
+    88
+   ],
+   "armB": [
+    30,
+    140
+   ],
+   "words": "a step forward to the right in her guard: front foot reaching forward, back foot behind with the heel lifted, sword held forward."
+  },
+  "walk2": {
+   "lean": 8,
+   "legF": [
+    22,
+    6
+   ],
+   "legB": [
+    -14,
+    -50
+   ],
+   "armF": [
+    60,
+    88
+   ],
+   "armB": [
+    30,
+    140
+   ],
+   "up": 6,
+   "words": "walking forward to the right in her guard, the back foot lifting to pass, sword held forward."
+  },
+  "walk3": {
+   "lean": 8,
+   "legF": [
+    4,
+    -6
+   ],
+   "legB": [
+    6,
+    -20
+   ],
+   "armF": [
+    60,
+    88
+   ],
+   "armB": [
+    30,
+    140
+   ],
+   "up": 10,
+   "words": "walking forward to the right, the feet passing each other under the robe, sword held forward."
+  },
+  "walk4": {
+   "lean": 8,
+   "legF": [
+    -24,
+    -40
+   ],
+   "legB": [
+    34,
+    0
+   ],
+   "armF": [
+    60,
+    88
+   ],
+   "armB": [
+    30,
+    140
+   ],
+   "words": "walking forward to the right in her guard, the other foot now reaching forward, sword held forward."
+  },
+  "walk5": {
+   "lean": 8,
+   "legF": [
+    -12,
+    -50
+   ],
+   "legB": [
+    22,
+    6
+   ],
+   "armF": [
+    60,
+    88
+   ],
+   "armB": [
+    30,
+    140
+   ],
+   "up": 6,
+   "words": "walking forward to the right, the back foot lifting to pass, sword held forward."
+  },
+  "walk6": {
+   "lean": 8,
+   "legF": [
+    6,
+    -20
+   ],
+   "legB": [
+    4,
+    -6
+   ],
+   "armF": [
+    60,
+    88
+   ],
+   "armB": [
+    30,
+    140
+   ],
+   "up": 10,
+   "words": "walking forward to the right, the feet passing under the robe, sword held forward. Only one bare sword, no scabbard."
+  },
+  "poke1": {
+   "lean": -4,
+   "legF": [
+    24,
+    -4
+   ],
+   "legB": [
+    -12,
+    -32
+   ],
+   "armF": [
+    30,
+    70
+   ],
+   "armB": [
+    30,
+    140
+   ],
+   "words": "drawing the sword back by her right hip before a thrust, the point still toward the right, body upright, knees bent."
+  },
+  "poke2": {
+   "lean": 16,
+   "legF": [
+    32,
+    0
+   ],
+   "legB": [
+    -20,
+    -36
+   ],
+   "armF": [
+    88,
+    90
+   ],
+   "armB": [
+    -20,
+    20
+   ],
+   "dx": 20,
+   "width": 1088,
+   "words": "a quick straight thrust, her right arm and the sword fully extended forward to the right in one line at chest height, leaning forward, left arm swept back. Only ONE sword, in her right hand; nothing on her back."
+  },
+  "poke3": {
+   "lean": 10,
+   "legF": [
+    28,
+    -2
+   ],
+   "legB": [
+    -14,
+    -32
+   ],
+   "armF": [
+    70,
+    92
+   ],
+   "armB": [
+    10,
+    90
+   ],
+   "dx": 10,
+   "words": "recovering from a thrust, the sword arm coming back, the blade still pointing toward the right."
+  },
+  "thrust1": {
+   "lean": -10,
+   "legF": [
+    30,
+    20
+   ],
+   "legB": [
+    -30,
+    -20
+   ],
+   "armF": [
+    10,
+    -10
+   ],
+   "armB": [
+    40,
+    120
+   ],
+   "swordTurn": 180,
+   "words": "winding up for a lunge: crouched a little, the bare sword blade raised back over her right shoulder in her right hand (no scabbard), left hand reaching forward."
+  },
+  "thrust2": {
+   "lean": 30,
+   "legF": [
+    64,
+    4
+   ],
+   "legB": [
+    -50,
+    -56
+   ],
+   "armF": [
+    90,
+    90
+   ],
+   "armB": [
+    -40,
+    -20
+   ],
+   "dx": 30,
+   "width": 1088,
+   "words": "a deep lunge: front knee deeply bent, back leg stretched straight behind, body leaning forward, right arm and the sword fully extended forward to the right in one line. ONE sword only, held in her right hand."
+  },
+  "thrust3": {
+   "lean": 26,
+   "legF": [
+    60,
+    4
+   ],
+   "legB": [
+    -46,
+    -54
+   ],
+   "armF": [
+    86,
+    88
+   ],
+   "armB": [
+    -30,
+    -10
+   ],
+   "dx": 30,
+   "width": 1088,
+   "words": "holding the deep lunge: front knee bent, back leg straight behind, the sword extended forward to the right, robe still swirling. ONE sword only, held in her right hand."
+  },
+  "thrust4": {
+   "lean": 12,
+   "legF": [
+    36,
+    0
+   ],
+   "legB": [
+    -24,
+    -40
+   ],
+   "armF": [
+    66,
+    88
+   ],
+   "armB": [
+    20,
+    120
+   ],
+   "dx": 14,
+   "words": "rising out of the lunge back into her guard, the sword coming back to chest height pointing to the right."
+  }
+ }
+}

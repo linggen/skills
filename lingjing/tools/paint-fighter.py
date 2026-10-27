@@ -50,7 +50,11 @@ def key(png):
   paper = np.median(band, axis=0)
   # the paper's own unevenness: compare to a heavily blurred picture where it is near paper
   d = np.abs(a - paper).max(axis=2)
-  near = (d < 0.10).astype(np.uint8)
+  # near the paper: its own colour, or a stain lighter than it and as warm (the robe's pale blue is not)
+  lum0 = a @ np.array([0.299, 0.587, 0.114], np.float32)
+  plum0 = float(paper @ np.array([0.299, 0.587, 0.114], np.float32))
+  hue = np.abs((a - a.mean(axis=2, keepdims=True)) - (paper - paper.mean())).max(axis=2)
+  near = ((d < 0.10) | ((lum0 > plum0 - 0.01) & (hue < 0.035))).astype(np.uint8)
   # flood the paper from every border pixel through what is near paper
   m = np.zeros((h + 2, w + 2), np.uint8)
   bg = near.copy() * 255
@@ -67,8 +71,14 @@ def key(png):
   # drop specks: keep the big pieces only
   n, lab, stats, _ = cv2.connectedComponentsWithStats(body, connectivity=8)
   keep = np.zeros_like(body)
+  lum = a @ np.array([0.299, 0.587, 0.114], np.float32)
+  plum = float(paper @ np.array([0.299, 0.587, 0.114], np.float32))
+  big = max(range(1, n), key=lambda i: stats[i, cv2.CC_STAT_AREA]) if n > 1 else 0
   for i in range(1, n):
-    if stats[i, cv2.CC_STAT_AREA] > h * w * 0.002:
+    if stats[i, cv2.CC_STAT_AREA] <= h * w * 0.002:
+      continue
+    # the figure, and any other piece with ink in it (a blade apart from the hand); never a stain lighter than the paper
+    if i == big or float(lum[lab == i].mean()) < plum - 0.12:
       keep[lab == i] = 1
   alpha = cv2.GaussianBlur((keep * 255).astype(np.uint8), (3, 3), 0)
   # the edge pixels carry paper: pull their colour toward the body's

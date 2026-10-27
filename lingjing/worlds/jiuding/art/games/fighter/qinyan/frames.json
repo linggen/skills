@@ -1,0 +1,128 @@
+{
+ "size": [
+  525,
+  520
+ ],
+ "scale": 0.5,
+ "frames": {
+  "idle1": {
+   "file": "idle1.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "idle2": {
+   "file": "idle2.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "idle3": {
+   "file": "idle3.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "idle4": {
+   "file": "idle4.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "poke1": {
+   "file": "poke1.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "poke2": {
+   "file": "poke2.webp",
+   "anchor": [
+    157.8,
+    496.5
+   ]
+  },
+  "poke3": {
+   "file": "poke3.webp",
+   "anchor": [
+    152.8,
+    496.5
+   ]
+  },
+  "thrust1": {
+   "file": "thrust1.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "thrust2": {
+   "file": "thrust2.webp",
+   "anchor": [
+    162.8,
+    496.5
+   ]
+  },
+  "thrust3": {
+   "file": "thrust3.webp",
+   "anchor": [
+    162.8,
+    496.5
+   ]
+  },
+  "thrust4": {
+   "file": "thrust4.webp",
+   "anchor": [
+    154.8,
+    496.5
+   ]
+  },
+  "walk1": {
+   "file": "walk1.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "walk2": {
+   "file": "walk2.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "walk3": {
+   "file": "walk3.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "walk4": {
+   "file": "walk4.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "walk5": {
+   "file": "walk5.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  },
+  "walk6": {
+   "file": "walk6.webp",
+   "anchor": [
+    147.8,
+    496.5
+   ]
+  }
+ }
+}
