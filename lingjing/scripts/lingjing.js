@@ -220,7 +220,7 @@ function mountData(task) {
       // A round under way stands because he is playing it (the page's `opened`), never by the stage rule: after a
       // reload it waits in the tray, 「继续」 (stage.mjs, Hanli 10-27).
       if (r?.ok && task?.id && view.opened?.id !== task.id) keep({ opened: { id: task.id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null } });
-      return r?.ok ? { ok: true, word: r.word ?? null } : { ok: false, say: r?.say ?? null, done: r?.refused === 'cap' };
+      return r?.ok ? { ok: true, word: r.word ?? null, n: r.opened ?? null } : { ok: false, say: r?.say ?? null, done: r?.refused === 'cap' };
     };
   }
   return deal;

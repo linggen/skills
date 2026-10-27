@@ -551,6 +551,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
       if (r?.ok) g.begun = true;
       if (!r?.ok) { foot(r?.say ?? ''); goBtn.disabled = Boolean(r?.done); return; }
       word = r.word ?? word;
+      if (Number.isInteger(r.n) && r.n > 0) g.n = r.n - 1; // the day's round (本王考考你: 第二题), not this mount's
     }
     g.word = word ?? g.next ?? pickWord(g.words, Math.random, lastWord);
     g.next = null;
