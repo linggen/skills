@@ -608,6 +608,7 @@ body.fighting .footrow { display: none; }
 .pchip { font: inherit; font-family: var(--ui); font-size: 12.5px; padding: 1px 10px; border-radius: 99px; border: 1px solid var(--seal); background: var(--surface); color: var(--seal); cursor: pointer; }
 .pchip[data-pouch-pane="deck"] { border-color: var(--ling); color: var(--ling); }
 .pchip.on { background: var(--seal-soft); }
+.pchip .pnew { font-weight: 600; color: var(--seal); margin-left: 2px; }
 .pchip[data-pouch-pane="deck"].on { background: var(--ling-soft); }
 .phead .pchip + .act, .phead .pused + .act { margin-left: auto; }
 .pouch .donote { margin-top: 10px; }

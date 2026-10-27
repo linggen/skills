@@ -13,7 +13,7 @@ export const POUCH_WORDS = {
     title: '储物袋', close: '合上', used: '{used}/{cap} 格', over: '超出 {n} 格：新得的东西会先存进洞府。',
     held: '待取 {n}', heldTitle: '洞府 · 待取', heldNote: '储物袋满时得的东西在这里等着。有空位就能收进。', claim: '收进', back: '回储物袋',
     tabs: { all: '全部', pill: '丹药', arms: '法器', material: '材料', charm: '符', story: '剧情' },
-    deck: '牌组', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
+    deck: '牌组', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
     take: '服用', wear: '佩戴', study: '参悟', carry: '换上', sell: '卖 {n}', toss: '丢',
     tossAsk: '丢掉{name} ×{n}？丢了就找不回了。', tossYes: '丢掉', tossNo: '留着',
     free: '剧情所需，不占格', grown: '已换上：{names}', fantong: '饭桶',
@@ -22,7 +22,7 @@ export const POUCH_WORDS = {
     title: 'Storage Pouch', close: 'Close', used: '{used}/{cap} slots', over: '{n} over: new things wait at the abode first.',
     held: '{n} waiting', heldTitle: 'The abode · waiting', heldNote: 'What came while the pouch was full waits here. Take it in when there is room.', claim: 'Take in', back: 'Back to the pouch',
     tabs: { all: 'All', pill: 'Pills', arms: 'Arms', material: 'Materials', charm: 'Talismans', story: 'Story' },
-    deck: 'Deck', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
+    deck: 'Deck', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
     take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it', sell: 'Sell {n}', toss: 'Drop',
     tossAsk: 'Throw away {name} ×{n}? It is gone for good.', tossYes: 'Throw away', tossNo: 'Keep it',
     free: 'the story needs it — takes no slot', grown: 'Carried: {names}', fantong: 'Rice Bucket',
@@ -123,7 +123,7 @@ export function pouchHtml(ctx, ui = {}) {
   const head = `<header class="luhead phead"><b>${esc(pw.title)}</b>
     ${p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : ''}
     ${heldN ? `<button class="pchip${pane === 'held' ? ' on' : ''}" data-pouch-pane="held">${esc(say(pw.held, { n: heldN }))}</button>` : ''}
-    ${g.cards?.length ? `<button class="pchip${pane === 'deck' ? ' on' : ''}" data-pouch-pane="deck">${esc(pw.deck)}</button>` : ''}
+    ${g.cards?.length ? `<button class="pchip${pane === 'deck' ? ' on' : ''}" data-pouch-pane="deck">${esc(pw.deck)} · ${esc(g.cards.length)}${ctx.look?.cards_new?.length ? ` <b class="pnew">${esc(say(pw.deckNew, { n: ctx.look.cards_new.length }))}</b>` : ''}</button>` : ''}
     ${g.fantong ? `<button class="pchip${pane === 'fantong' ? ' on' : ''}" data-pouch-pane="fantong">${esc(pw.fantong)}</button>` : ''}
     ${board ? `<button class="pchip${pane === 'gongke' ? ' on' : ''}" data-pouch-pane="gongke">${esc((GONGKE_WORDS[ctx.lang] ?? GONGKE_WORDS.zh).chip)}</button>` : ''}${close}</header>`;
   const note = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
