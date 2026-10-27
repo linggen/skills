@@ -77,6 +77,8 @@ export const MOMENTS = {
   // word at a key moment of a fight — on the screen now, so she is woken now.
   // fightsay keeps their limits (two asks, three words a fight).
   fight_ask: { who: 'yinyue', priority: 'asked' },
+  // 问银月 on the 主页's way to grow stronger (hersay.js why_strong): he asked why that step — answered at once.
+  strong_ask: { who: 'yinyue', priority: 'asked' },
   fight_cue: { who: 'yinyue', priority: 'big', now: true },
   // 伴 (hersay.js, 2026-10-15): her word at a win, an achievement, a setback — hersay keeps
   // which moments are said and how often (a repeatable fight is weighed); woken now, so her

@@ -105,3 +105,79 @@ test('her loss facts lead with the step, so it survives the cap, in both languag
     assert.ok(facts.includes(way[0].name) && facts.includes(String(way[0].place_name).split(' · ').at(-1)), facts);
   }
 });
+
+/* Hanli 2026-10-27: 「去执事堂 · 买铁蒺藜, 如果是推荐玩家变强, 应该让yinyue解释一下, 为什么要买东西? 能增强什么」 — the
+   step says what it is and does, which fight it is for, and the odds there before → after; 银月 is given the same. */
+const lostAtHoushan = (extra = {}) => gateSave({ wear: { weapon: 'old-bow', robe: 'grey-robe' }, hunt_losses: { houshan: 1 }, duels: { 'hunt:houshan': { day: '2026-10-26', outcome: 'lost', n: 1, last: ['chihu'] } }, ...extra });
+
+test('each step says what it is and does: a card its cost, body, keywords and effect; gear its slot and what it lends; a pill its effect', () => {
+  const way = strengthen(content, gateSave(), { now: NOW });
+  const bow = way.find(o => o.item === 'old-bow');
+  assert.deepEqual(bow.does, { atk: 2, root: 'wood' });
+  const caoren = strengthen(content, gateSave({ wear: { weapon: 'old-bow', robe: 'grey-robe' } }), { now: NOW }).find(o => o.card === 'caoren');
+  assert.deepEqual(caoren.does, { card_kind: 'minion', cost: 2, atk: 1, hp: 3, keywords: ['taunt'], element: 'wood' });
+  assert.equal(caoren.line.split(' · ')[0], '替身草人');
+  assert.match(caoren.line, /2 灵力 · 1\/3 · 护主/);
+  const tieji = strengthen(content, lostAtHoushan({ wealth: 45 }), { now: NOW }).find(o => o.card === 'tieji');
+  assert.deepEqual(tieji.does.effect, { damage: 1, draw: 1 });
+  const pill = way.find(o => o.kind === 'pills');
+  assert.deepEqual(pill.does, { heal: 10 });
+});
+
+test('the first step is for the fight he lost, and its odds there are weighed once and kept on the save', async () => {
+  const { strongFit } = await import('../scripts/rules.mjs');
+  const s = lostAtHoushan({ wealth: 45 });
+  const fitted = strongFit(content, s, NOW);
+  assert.notEqual(fitted, s, 'weighed and written');
+  assert.equal(fitted.strong_odds.for.creature, 'chihu', 'the beast he lost to, not the one standing now');
+  assert.equal(strongFit(content, fitted, NOW), fitted, 'kept: a read weighs nothing again');
+  const top = strengthen(content, fitted, { now: NOW })[0];
+  assert.equal(top.card, 'tieji');
+  assert.equal(top.for.name, '赤狐');
+  assert.ok(top.odds.after > top.odds.before, JSON.stringify(top.odds));
+  assert.match(top.line, /^铁蒺藜 · 1 灵力 · 打 1 点，抽 1 张 · 对赤狐 \d+% → \d+%$/);
+  // The hand changes (the card bought): the kept odds no longer hold, and are weighed again for the next step.
+  const bought = { ...fitted, cards: [...fitted.cards, 'tieji'], wealth: 5 };
+  assert.equal(strengthen(content, bought, { now: NOW }).find(o => o.odds), undefined, 'stale odds are never shown');
+  const refit = strongFit(content, bought, NOW);
+  assert.ok(!refit.strong_odds || refit.strong_odds.key !== fitted.strong_odds.key);
+  // Made good (won there since): nothing is kept.
+  const won = strongFit(content, { ...fitted, hunted: { houshan: 1 } }, NOW);
+  assert.equal(won.strong_odds, undefined);
+});
+
+test('odds that do not rise are no reason: neither the line nor her facts carry them', async () => {
+  const { wayLine } = await import('../scripts/wayline.js');
+  const { wayFacts, whyFacts } = await import('../scripts/hersay.js');
+  const o = { kind: 'buy', name: '铁蒺藜', price: 40, place_name: '沉鼎观 · 执事堂', steps: 4, card: 'tieji', does: { card_kind: 'spell', cost: 1, effect: { damage: 1, draw: 1 } }, for: { name: '赤狐' }, odds: { before: 0.5, after: 0.5 } };
+  assert.equal(wayLine(o, 'zh'), '铁蒺藜 · 1 灵力 · 打 1 点，抽 1 张');
+  assert.ok(!wayFacts([o], true).includes('%') && !whyFacts(o, true).includes('%'));
+  const up = { ...o, odds: { before: 0.44, after: 0.56 } };
+  assert.equal(wayLine(up, 'zh'), '铁蒺藜 · 1 灵力 · 打 1 点，抽 1 张 · 对赤狐 44% → 56%');
+  assert.equal(wayLine(up, 'en'), '铁蒺藜 · 1 Force · 1 damage, draw 1 · vs 赤狐 44% → 56%');
+  assert.match(whyFacts(up, true), /输给过赤狐.*胜算约44%→56%（1 灵力 · 打 1 点，抽 1 张）/);
+});
+
+test('her loss facts keep the step, its odds (and in Chinese what it does) under the cap, in both languages', async () => {
+  const { momentFacts, wayFacts } = await import('../scripts/hersay.js');
+  const { strongFit } = await import('../scripts/rules.mjs');
+  const s = strongFit(content, lostAtHoushan({ wealth: 45 }), NOW);
+  for (const zh of [true, false]) {
+    const way = strengthen(content, { ...s, lang: zh ? 'zh' : 'en' }, { now: NOW, game: { hunt: 'houshan' } });
+    const tail = zh ? '输给了赤狐，撑了9回合；它还剩气血3/20，叫出3个护主。' : ' Lost to Red Fox after 9 turns; it had 3/20 Life left, 3 guards called.';
+    const facts = momentFacts('lost', wayFacts(way, zh) + tail, zh ? 'zh' : 'en', { max: 260 });
+    const pct = `${Math.round(way[0].odds.after * 100)}%`;
+    // English leaves little room under the register: the name and the odds lead, what it does follows as room allows.
+    assert.ok(facts.includes(pct) && facts.includes(way[0].name) && (!zh || facts.includes('打 1 点')), facts);
+  }
+});
+
+test('the 主页 hands its way with the fact line (the phone reads `line` from Look); the ? asks her by the asked moment', async () => {
+  const { readFileSync } = await import('node:fs');
+  const cards = readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
+  assert.match(cards, /data-home-why="\$\{at\}"/);
+  const page = readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /herSay\.say\('why_strong', whyFacts\(/);
+  const { MOMENTS, flagsOf } = await import('../scripts/voice.js');
+  assert.deepEqual(flagsOf('strong_ask', MOMENTS), { asked: true });
+});

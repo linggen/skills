@@ -48,7 +48,7 @@ import { thinker, stillAsked } from './think.js';
 import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
-import { CLOSE_AT, POOR_AT, createHerSay, herMode, wayFacts } from './hersay.js';
+import { CLOSE_AT, POOR_AT, createHerSay, herMode, wayFacts, whyFacts } from './hersay.js';
 import { factsFor, prefetchLines } from './games/prefetch.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
 import { raiseUnease } from './unease.js';
@@ -3586,7 +3586,9 @@ const CLICKS = [
   ['[data-emerge]', () => run('emerge', () => emerge())],
   ['[data-emerged-close]', () => show({ emerged: null })],
   // 主页's one way to grow stronger after a loss (rules/home.mjs → strengthen.mjs): the loss card's own verb.
-  ['[data-home-way]', (el) => run('home-way', () => takeWay(el.dataset.homeWay === 'todo' ? look?.home?.todo?.find((r) => r.kind === 'strengthen')?.way : look?.home?.next?.way))],
+  ['[data-home-way]', (el) => run('home-way', () => takeWay(homeWayOf(el.dataset.homeWay)))],
+  // …and its ?: 银月 says why that step, from its facts (hersay.js whyFacts) — his tap, so always heard.
+  ['[data-home-why]', (el) => askWhyStrong(homeWayOf(el.dataset.homeWhy))],
   ['[data-duel-start]', (el) => run(`duel:${el.dataset.duelStart}`, () => { keep({ walkedOut: null }); return onDuelStart(el.dataset.duelStart); })],
   // 丹囊 at the door (danang.js): one more pill packed, or the pouch emptied — the page's own until 出手.
   ['[data-pill-add]', (el) => { const [id, pill] = el.dataset.pillAdd.split('|'); const b = doorBrief(id); if (b) show({ pillPick: { ...view.pillPick, [id]: pickAfter(b, ctx(), pill) } }); }],
@@ -3833,7 +3835,7 @@ function prefetchFor(id, g) {
    gives the facts, she says it as the proud 妖王 — asleep, from the 木牌
    (its pool: the engine keeps her model away then). Her line stands in a
    bubble over the 木牌 and goes into the chat; nothing waits on her. */
-const HER_MOMENT_ID = { rise: 'rise', hui: 'chapter', tamed: 'tamed' };
+const HER_MOMENT_ID = { rise: 'rise', hui: 'chapter', tamed: 'tamed', why_strong: 'strong_ask' };
 function herMomentAsk(kind, facts, { mode, mood }) {
   herFactsSent = { kind, facts };
   // Asleep in the 木牌 she is asked too (her model writes the murmur; the pool answers only when she is late or offline).
@@ -4120,6 +4122,14 @@ const WAYS_TAKEN = {
 };
 async function takeWay(o) {
   await WAYS_TAKEN[o?.kind]?.(o);
+}
+const homeWayOf = (at) => (at === 'todo' ? look?.home?.todo?.find((r) => r.kind === 'strengthen')?.way : look?.home?.next?.way) ?? null;
+/* 问银月 on a way to grow stronger: the step's facts go to her in a hidden line; she says why, in her voice (asleep, from the 木牌). */
+function askWhyStrong(o) {
+  if (!o) return;
+  if (!herHere()) { noOne(); return; }
+  tracker.ask('her', 'why_strong', null);
+  herSay.say('why_strong', whyFacts(o, lang() !== 'en'), { variant: o.kind });
 }
 
 /* ── The chat ── */

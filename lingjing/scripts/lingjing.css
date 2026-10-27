@@ -1373,4 +1373,10 @@ body.fighting .atmos { display: none; }
 .card.home .hometodos .acts { flex-wrap: wrap; gap: 6px; justify-content: flex-start; }
 .card.home .hometodo { font-size: .86em; }
 .card.home span.hometodo { align-self: center; }
+/* A way to grow stronger: its button, one fact line under it, 问银月's ? beside the line (cards.js homeWay). */
+.card.home .homeway { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.card.home .homeway.todo { flex-basis: 100%; align-items: flex-start; }
+.card.home .homewhy { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.card.home .homewhy .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.card.home .homewhy .gshell-btn { min-width: 26px; min-height: 26px; padding: 0 8px; flex: none; }
 @media (prefers-reduced-motion: reduce) { .card.home .homebar i { transition: none; } }

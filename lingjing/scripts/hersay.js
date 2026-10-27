@@ -19,6 +19,8 @@
 //
 // Pure of the DOM: the page hands in `ask`, the clock, the timers and storage.
 
+import { wayDoes } from './wayline.js';
+
 export const WAIT_MS = 7000;
 
 /* Where she is for the player right now (Look's `companion`):
@@ -51,8 +53,9 @@ export const MOMENTS = {
   grind: { group: 'comfort', once: 'day' }, //             a long day of the same fights
   poor: { group: 'comfort', once: 'day' }, //              the purse near empty
   gongke: { group: 'cheer', once: 'key' }, //              a real-life chore handed in (rules/gongke.mjs): once a chore a day
+  why_strong: { group: 'advise' }, //                      his ? on the 主页's way to grow stronger: why that step (his tap — always)
 };
-export const MOOD = { cheer: 'happy', comfort: 'sad' };
+export const MOOD = { cheer: 'happy', comfort: 'sad', advise: 'neutral' };
 
 /* A repeatable fight (a pool's beast, the 秘境's rooms) is weighed: the full
    word only when the win means something; otherwise a short one, at most one
@@ -107,6 +110,8 @@ const ASKS = {
   grind: { zh: '玩家今天已经打了很多场一样的仗。轻轻一句，可以让他歇歇。', en: 'The same fights all day. Light; maybe rest.' },
   poor: { zh: '玩家的灵石快见底了。轻轻一句。', en: 'Nearly out of stones. Light.' },
   gongke: { zh: '玩家在人间做完了一件功课，书里有它的意思。', en: 'A real-life chore done; the book gives it a meaning.' },
+  // Hanli 2026-10-27: 「如果是推荐玩家变强, 应该让yinyue解释一下, 为什么要买东西? 能增强什么」 — he asked; she says why.
+  why_strong: { zh: '玩家点了问你：为什么要做上面这一步？用你的话说它能补他哪里、打那只妖兽时会怎样（胜算有变化就说出来）。不说教，不念数据表。', en: 'He asked why the step above: what it fixes, how that fight changes (odds if given). No lecture.' },
 };
 
 /* The facts she is given for a moment: what happened (the page's `what`,
@@ -139,6 +144,10 @@ export const POOLS = {
       lost_another: ['可惜了。这只不好惹，换一只再来。', '凡人，别跟它较劲。换一只打。'],
       lost_seclude: ['可惜了，凡人。先闭关攒攒修为。', '打不过就坐下修。闭关去。'],
       lost_gongke: ['可惜了。先把今日的功课做了。', '凡人，歇口气。功课做了再说。'],
+      why_strong: ['问本王？手里多一样，它就少一分便宜。去拿。', '凡人，缺什么补什么。这一步补的就是你的短处。'],
+      why_strong_wear: ['囊里放着不穿，留着生灰？穿上，打起来硬气些。', '凡人，现成的家伙不用？穿上它，本王才懒得替你挨打。'],
+      why_strong_buy: ['你那几张牌，本王都看腻了。添一张，它就没那么好对付你。', '牌薄就挨打。买下这张，下回轮到它头疼。'],
+      why_strong_pills: ['撑不住的时候吞一颗，血就回来了。带上，别逞强。', '凡人的命金贵些。揣两颗丹，本王少操一份心。'],
       rise: ['这一步，本王等你很久了。……别得意，路还长。', '总算像个修士了。本王的人，就该往上走。', '哼，比本王当年慢了些。……不过，走得稳。'],
       hui: ['这一回，算你没白走。', '一回完了。本王陪你走的路，可不止这些。'],
       tamed: ['又收了一个。本王的队伍，总算有点样子。', '它肯跟你？……眼光倒不差。'],
@@ -164,6 +173,10 @@ export const POOLS = {
       lost_another: ['A pity. That one is mean — try another.', 'Mortal, do not fight it head-on. Another one.'],
       lost_seclude: ['A pity, mortal. Go sit in seclusion first.', 'Cannot win? Sit and cultivate. Seclusion.'],
       lost_gongke: ["A pity. Do today's practice first.", "Mortal, breathe. Practice first."],
+      why_strong: ['You ask this king? One more thing in hand, one less edge for it. Go get it.', 'Mortal, mend what is short. This step mends yours.'],
+      why_strong_wear: ['Gear in the pouch gathers dust. Wear it; you hit harder.', 'You carry it and do not wear it? Put it on, mortal.'],
+      why_strong_buy: ['This king is bored of your hand. One more card, and it stops having its way.', 'A thin hand takes blows. Buy this one; let it worry next time.'],
+      why_strong_pills: ['When it hurts, swallow one and the Life comes back. Carry them.', 'Mortal lives are fragile. Two pills, and this king worries less.'],
       rise: ['This king has waited long for that step. …Do not gloat — the road is long.', 'At last you look like a cultivator. Mine should climb.', 'Slower than this king was. …But steady.'],
       hui: ['This chapter was not walked for nothing.', 'One more done. The road this king walks with you is longer than that.'],
       tamed: ['Another one. This king’s train starts to look like something.', 'It follows you? …Its eye is not bad.'],
@@ -192,6 +205,10 @@ export const POOLS = {
       lost_another: ['……可惜。……换一只打。', '……那只凶。……换一只。'],
       lost_seclude: ['……可惜。……闭关去。', '……坐下修吧。'],
       lost_gongke: ['……可惜。……先做功课。', '……功课……做了再说。'],
+      why_strong: ['……问本王？……缺什么……补什么。', '……这一步……补你的短处。……去。'],
+      why_strong_wear: ['……囊里的……穿上。……打起来硬些。', '……现成的……不穿？……凡人。'],
+      why_strong_buy: ['……牌太薄……添一张……它就难缠不了你。', '……买下它……下回……它头疼。'],
+      why_strong_pills: ['……疼了……吞一颗……血就回来。', '……揣上丹……本王……少操心。'],
       rise: ['……破境了？……哼，总算。', '……这一步，本王听见了。……别吵，路还长。'],
       hui: ['……一回完了？……嗯。', '……走完了就好。本王再睡会儿。'],
       tamed: ['……又捡了一只？……随你。', '……它肯跟你？……哼，眼光不差。'],
@@ -217,6 +234,10 @@ export const POOLS = {
       lost_another: ['…A pity. …Another one.', '…That one bites. …Another.'],
       lost_seclude: ['…A pity. …Seclusion.', '…Sit and cultivate.'],
       lost_gongke: ['…A pity. …Practice first.', '…Practice, then fight.'],
+      why_strong: ['…You ask this king? …Mend what is short.', '…This step… mends you. …Go.'],
+      why_strong_wear: ['…Wear what you carry. …Hit harder.', '…You carry it… wear it, mortal.'],
+      why_strong_buy: ['…Thin hand… one more card.', '…Buy it… let it worry.'],
+      why_strong_pills: ['…It hurts… swallow one.', '…Carry pills… this king worries less.'],
       rise: ['…Broke through? …Hmph. At last.', '…This king heard that step. …Quiet. The road is long.'],
       hui: ['…A chapter done? …Mm.', '…Done is good. This king sleeps a little more.'],
       tamed: ['…Picked up another? …As you like.', '…It follows you? …Hmph. Not a bad eye.'],
@@ -384,22 +405,45 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
   };
 }
 
-/* The ways forward after a loss (rules/strengthen.mjs), as facts for her: the best, and one more. */
+/* One way forward as a fact for her (rules/strengthen.mjs): what, where, the price — and, `full`, the odds it changes
+   against the fight he lost and what the thing is and does (wayline.js), so she can say why. The odds come right after
+   the name: the cap (momentFacts) cuts from the end, and English leaves little room. */
+function wayFact(o, zh, full = false) {
+  if (!o) return '';
+  const place = String(o.place_name ?? '').split(' · ').at(-1);
+  const at = o.place_name ? (zh ? `去${place}（${o.steps}步）` : `at ${place} (${o.steps} roads)`) : '';
+  const head = {
+    wear: zh ? `戴上储物袋里的${o.name}` : `put on the ${o.name} in the pouch`,
+    buy: zh ? `买一张牌「${o.name}」` : `buy card ${o.name}`,
+    pills: zh ? `买${o.n}颗${o.name}带进丹囊` : `buy ${o.n} ${o.name} for the pill pouch`,
+    another: zh ? '再打一场，这里会换一只' : 'fight again — the place deals another beast',
+    seclude: zh ? `闭关，至多${o.hours}个时辰得${o.progress}修为` : `seclusion: up to ${o.progress} cultivation in ${o.hours} hours`,
+    gongke: zh ? `做今日功课，得${o.progress}修为` : `today's practice, ${o.progress} cultivation`,
+  }[o.kind];
+  if (!head) return '';
+  const cost = o.kind === 'wear' ? (zh ? '不花钱' : 'free') : o.price != null ? (zh ? `${o.price}灵石` : `${o.price} stones`) : '';
+  if (!['wear', 'buy', 'pills'].includes(o.kind)) return head;
+  if (!full) return zh ? `${at}${head}（${cost}）` : `${[head, at].filter(Boolean).join(' ')}${cost ? `, ${cost}` : ''}`;
+  const od = o.odds?.after > o.odds?.before ? o.odds : null;
+  const pct = (x) => `${Math.round(x * 100)}%`;
+  const odds = od ? (zh ? `，对${o.for?.name ?? ''}的胜算约${pct(od.before)}→${pct(od.after)}` : ` (vs ${o.for?.name ?? ''} ${pct(od.before)}→${pct(od.after)})`) : '';
+  const does = wayDoes(o, zh ? 'zh' : 'en');
+  return zh ? `${head}${odds}${does ? `（${does}）` : ''}，${[at, cost].filter(Boolean).join('，')}`
+    : `${head}${odds}${does ? `: ${does}` : ''}; ${[at, cost].filter(Boolean).join(', ')}`;
+}
+
+/* The ways forward after a loss (rules/strengthen.mjs), as facts for her: the best (with what it does and the odds), and
+   one more. The best leads, so the cap (momentFacts) takes the second first. */
 export function wayFacts(way, zh) {
-  const fact = (o) => {
-    if (!o) return '';
-    const at = o.place_name ? (zh ? `去${String(o.place_name).split(' · ').at(-1)}（${o.steps}步）` : `at ${String(o.place_name).split(' · ').at(-1)} (${o.steps} roads)`) : '';
-    const say = {
-      wear: zh ? `戴上储物袋里的${o.name}（不花钱）` : `put on the ${o.name} already in the pouch (free)`,
-      buy: zh ? `${at}买一张牌「${o.name}」（${o.price}灵石）` : `buy card ${o.name} ${at}, ${o.price} stones`,
-      pills: zh ? `${at}买${o.n}颗${o.name}带进丹囊（${o.price}灵石）` : `buy ${o.n} ${o.name} ${at} for the pill pouch (${o.price} stones)`,
-      another: zh ? '再打一场，这里会换一只' : 'fight again — the place deals another beast',
-      seclude: zh ? `闭关，至多${o.hours}个时辰得${o.progress}修为` : `seclusion: up to ${o.progress} cultivation in ${o.hours} hours`,
-      gongke: zh ? `做今日功课，得${o.progress}修为` : `today's practice, ${o.progress} cultivation`,
-    }[o.kind];
-    return say ?? '';
-  };
   const [a, b] = way ?? [];
   if (!a) return '';
-  return zh ? `最好的一步：${fact(a)}${b ? `；也可以：${fact(b)}` : ''}。` : `Best next step: ${fact(a)}${b ? `; or: ${fact(b)}` : ''}.`;
+  return zh ? `最好的一步：${wayFact(a, zh, true)}${b ? `；也可以：${wayFact(b, zh)}` : ''}。` : `Best next step: ${wayFact(a, zh, true)}${b ? `; or: ${wayFact(b, zh)}` : ''}.`;
+}
+
+/* His ? on the 主页's way (cards.js homeWay): the step, what it does, the fight it is for and the odds — the facts she
+   says why from (moment why_strong). */
+export function whyFacts(o, zh) {
+  if (!o) return '';
+  const lost = o.for?.name ? (zh ? `他输给过${o.for.name}。` : `He lost to ${o.for.name}. `) : '';
+  return zh ? `${lost}上面这一步：${wayFact(o, zh, true)}。` : `${lost}The step above: ${wayFact(o, zh, true)}.`;
 }

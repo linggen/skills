@@ -132,6 +132,9 @@ test('an old loss not in the way is a line at most; the button is what advances 
   assert.equal(line?.way.kind, 'wear');
   assert.match(html(l), /data-home-way="todo"[^>]*>戴上 · /);
   assert.doesNotMatch(html(l), /data-home-way="next"/);
+  // …and under it ONE fact line of what it does (Hanli 10-27: 「为什么要买东西? 能增强什么」), the same on Look for the phone.
+  assert.match(line.way.line, /^爷爷的弓 · 法器 · 主灵根一击 \+2，借木/);
+  assert.match(html(l), /<div class="homewhy"><span class="small dim">爷爷的弓 · 法器 · 主灵根一击 \+2，借木/);
 });
 
 test('a haunt lost to is never in the way: the fight is the button, the way to grow stronger a 待办 line (Hanli 10-27: 「这个买东西的按钮是什么意思?」)', () => {
@@ -163,7 +166,8 @@ test('the page: the 主页 replaces 下一步, the bar grows from where it stood
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /\$\('focus'\)\.innerHTML = focusHtml\(slots\); moveHomeBar\(\);/);
   assert.match(page, /tideBoard\(c\.id\) && view\.opened\?\.id !== c\.id/);
-  assert.match(page, /\['\[data-home-way\]', \(el\) => run\('home-way', \(\) => takeWay\(el\.dataset\.homeWay === 'todo'/);
+  assert.match(page, /\['\[data-home-way\]', \(el\) => run\('home-way', \(\) => takeWay\(homeWayOf\(el\.dataset\.homeWay\)\)\)\]/);
+  assert.match(page, /const homeWayOf = \(at\) => \(at === 'todo' \? look\?\.home\?\.todo\?\.find\(\(r\) => r\.kind === 'strengthen'\)\?\.way : look\?\.home\?\.next\?\.way\)/);
   const s = gate146(), l = look(s, content, ctx());
   const grown = cardHtml({ card: 'next' }, { look: l, words: WORDS.zh, lang: 'zh', homeFrom: 10 });
   assert.match(grown, /<i style="width:10%" data-to="31"><\/i>/, 'drawn where it stood, moved to now');

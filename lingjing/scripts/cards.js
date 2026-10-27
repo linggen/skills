@@ -6,6 +6,7 @@ import { boardHtml } from './board.js';
 import { worldPath } from './rules.js';
 import { WORDS as BATTLE_WORDS, boutWords, cardFaceHtml, challengeHtml, wayLabel } from './battle-card.js';
 import { GRADE_WORDS } from './fightodds.js';
+import { wayLine } from './wayline.js';
 import { SKIP } from './games/ink.js';
 import { stampShown, stuckNow } from './stuck.js';
 import { layoutRoads } from './roadmap.js';
@@ -1093,12 +1094,23 @@ const HOME_WORDS = {
 };
 const homeWait = (min, w) => { const m = Math.max(1, Math.round(min ?? 0)); return m >= 60 ? say(w.chanceHM, { h: Math.floor(m / 60), m: m % 60 }) : say(w.chanceM, { m }); };
 const bareName = (name) => String(name ?? '').split(' · ').at(-1);
+/* A way to grow stronger (rules/strengthen.mjs): its button, and under it ONE fact line — what the thing is and does, the
+   odds against the fight he lost before → after (wayline.js) — with 问银月's ? beside it: she says why (Hanli 10-27:
+   「去执事堂 · 买铁蒺藜, 如果是推荐玩家变强, 应该让yinyue解释一下, 为什么要买东西? 能增强什么」). `at`: next | todo. */
+function homeWay(way, at, ctx) {
+  const label = wayLabel(way, ctx.lang);
+  if (!label) return '';
+  const btn = `<button class="act ${at === 'next' ? 'primary' : 'quiet hometodo'}" data-home-way="${at}">${esc(label)}</button>`;
+  const line = wayLine(way, ctx.lang), c = ctx.look?.companion;
+  const ask = line && c?.joined && !c.away ? toolHtml('ask', (ctx.lang === 'en' ? 'Ask {name} why' : '问{name}为什么').replace('{name}', c.name ?? ''), `data-home-why="${at}"`) : '';
+  return line ? `<div class="homeway ${at}">${btn}<div class="homewhy"><span class="small dim">${esc(line)}</span>${ask}</div></div>` : btn;
+}
 /* The one primary action, by the rules' kind: the page's own verb for each, never a model turn. */
 const HOME_ACTS = {
   resume: (n, h) => `<button class="act primary" data-aside-resume>${esc(h.resume)}</button>`,
   way: (n, h) => `<button class="act go primary" data-go="${esc(n.place.id)}">${esc(say(h.way, { name: n.place.name }))}</button>`,
   turnin: (n, h) => `<button class="act primary do" data-do="turn" data-id="${esc(n.stage ? 'stage' : n.id)}">${esc(say(h.turnin, { title: n.title }))}</button>`,
-  strengthen: (n, h, ctx) => `<button class="act primary" data-home-way="next">${esc(wayLabel(n.way, ctx.lang) ?? '')}</button>`,
+  strengthen: (n, h, ctx) => homeWay(n.way, 'next', ctx),
   // A 功课 whose pay covers what the gate is short (rules/home.mjs): it opens the book, where the chore is done.
   gongke: (n, h) => `<button class="act primary" data-book>${esc(say(h.enough, { what: say(h.gongke, { name: n.means ?? n.title, n: n.progress }) }))}</button>`,
   errand: (n, h) => `<button class="act primary" data-book>${esc(say(h.errand, { title: n.title }))}</button>`,
@@ -1119,7 +1131,7 @@ const HOME_TODO = {
   wait: (r, h, ctx) => `<span class="small dim hometodo">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</span>`,
   rerun: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.rerun, { title: r.title ?? r.place.name }))}</button>` : ''),
   skipped: (r, h) => `<span class="small dim hometodo">${esc(say(h.skipped, { n: r.n }))}</span>`,
-  strengthen: (r, h, ctx) => (wayLabel(r.way, ctx.lang) ? `<button class="act quiet hometodo" data-home-way="todo">${esc(wayLabel(r.way, ctx.lang))}</button>` : ''),
+  strengthen: (r, h, ctx) => homeWay(r.way, 'todo', ctx),
 };
 /* The gate's bar: the step, where he stands, what it still asks — 「146/470 · 还差 324 修为 · 功课 +201 · 再约 5 局」. */
 function homeGate(g, h, ctx) {

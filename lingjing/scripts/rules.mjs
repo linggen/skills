@@ -34,6 +34,7 @@ import { pageNames, pageThrows } from './rules/core.mjs';
 import { clock, dataDir, freshState, withRun, shiftDays, shiftFile, homeDir, parseArgs, readQuests, SAVE_NAME, savedFile, savedFor, scratchName, skillDir, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { standFit } from './rules/match.mjs';
+import { oddsOn, strongFit } from './rules/strengthen.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { seclusionHold } from './rules/seclusion.mjs';
 import { VERBS } from './rules/verbs.mjs';
@@ -58,7 +59,7 @@ export { refine, TREASURE_TOP } from './rules/arms.mjs';
 export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
-export { shopsInReach, strengthen } from './rules/strengthen.mjs';
+export { lostFight, shopsInReach, strengthen, strongFit, weighOdds } from './rules/strengthen.mjs';
 export { fightsNear } from './rules/fights.mjs';
 export { pickStand, reroll, standFit, MATCH } from './rules/match.mjs';
 import { fitPresence } from './rules/companion.mjs';
@@ -215,9 +216,11 @@ function runLocked(verb, args, stateFile, reader) {
   // Her presence fitted to the scene (companion.mjs fitPresence) — the flag the engine reads.
   // A stage quest behind him never handed in is paid once, here (rules/gates.mjs settleStages).
   // …and a pool's beast matched to him where he stands (rules/match.mjs standFit), chosen again when it no longer holds.
+  // …and the odds a way to grow stronger changes against the fight he lost (rules/strengthen.mjs strongFit), weighed again
+  // only when they no longer hold — read as the stand is: written, never logged.
   // …and a full layer whose door has opened since steps up (rules/cap.mjs settleHeld).
   const fitted = raw && raw.world === worldId ? settleHeld(content, settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now), now), now)) : raw;
-  const saved = fitted && raw?.world === worldId ? standFit(content, fitted, now) : fitted;
+  const saved = fitted && raw?.world === worldId ? strongFit(content, standFit(content, fitted, now), now) : fitted;
   // Only the stand moved (a read): written, never logged — Undo takes back moves, not a beast chosen.
   const standOnly = Boolean(raw) && fitted === raw && saved !== raw;
   const state = verb === 'init' || !saved ? freshState(content, langNow(), now, saved) : saved;
@@ -289,6 +292,16 @@ function runLocked(verb, args, stateFile, reader) {
   const noted = (!reader && notePage(verb, args, out.result, changed, content, now)) || changed;
   // Into a 今 interlude or out of it: her presence follows the scene it is written with.
   const next = noted && fitPresence(content, noted, now);
+  // A fight lost with a way forward: the odds its first step changes against that fight are weighed now, kept with the
+  // loss, and handed on the result for 银月's word (rules/strengthen.mjs) — at this door, so a run of the rules alone
+  // (rules/progress.mjs, the sims) never pays for them.
+  if (verb === 'duel' && next && out.result?.way?.length) {
+    // The fight is this one: a pool's beast (its `haunt:` id) at the place he fought it.
+    const id = String(out.result.game ?? ''), game = id.startsWith('haunt:') ? { id, creature: id.slice(6), hunt: next.place } : null;
+    const weighed = strongFit(content, next, now, { game });
+    if (weighed.strong_odds) next.strong_odds = weighed.strong_odds; else delete next.strong_odds;
+    oddsOn(content, next, out.result.way, now, game);
+  }
   // Something of the story happened: 传闻's quiet clock starts again (tale.mjs storyDue).
   if (next && out.result?.ok && STORY_VERBS.has(verb)) next.story_at = now.toISOString();
   if (next) {
