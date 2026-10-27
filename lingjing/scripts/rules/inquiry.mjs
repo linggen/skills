@@ -103,13 +103,13 @@ const LINES = {
   zh: {
     you: '你', played: { spell: (w, n) => `${w}施出「${n}」`, minion: (w, n) => `${w}唤出「${n}」` },
     power: w => `${w}以主灵根一击`, unleash: (w, n) => `${w}使出杀招「${n}」`, charge: w => `${w}蓄势，杀招将至`,
-    hurt: (w, from, down) => `${w}中了${{ spell: '法术', attack: '一扑', power: '主灵根一击', sweep: '余波', return: '反噬' }[from] ?? '一击'}${down ? '，气血尽了' : ''}`,
+    hurt: (w, from, down) => `${w}中了${{ spell: '法术', attack: '一扑', power: '主灵根一击', sweep: '余波', return: '还手' }[from] ?? '一击'}${down ? '，气血尽了' : ''}`,
     withdrew: n => `「${n}」退下`, gone: w => `${w}牌已用尽，转身遁走`, heal: w => `${w}缓过一口气`,
   },
   en: {
     you: 'You', played: { spell: (w, n) => `${w} cast ${n}`, minion: (w, n) => `${w} called ${n}` },
     power: w => `${w} struck with the root's own blow`, unleash: (w, n) => `${w} unleashed ${n}`, charge: w => `${w} gathered for a killing move`,
-    hurt: (w, from, down) => `${w} took ${{ spell: 'a spell', attack: 'a blow', power: 'the root\'s blow', sweep: 'the backwash', return: 'its own force' }[from] ?? 'a blow'}${down ? ' and fell' : ''}`,
+    hurt: (w, from, down) => `${w} took ${{ spell: 'a spell', attack: 'a blow', power: 'the root\'s blow', sweep: 'the backwash', return: 'the hit back' }[from] ?? 'a blow'}${down ? ' and fell' : ''}`,
     withdrew: n => `${n} withdrew`, gone: w => `${w} ran out of cards and fled`, heal: w => `${w} caught a breath`,
   },
 };
