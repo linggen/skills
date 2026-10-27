@@ -183,7 +183,13 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     if (e.repeat && !HELD.has(k)) return;
     press(k, 'key');
   });
-  on(doc, 'keyup', (e) => { const k = KEYS[e.key.toLowerCase()]; if (k) lift(k, 'key'); });
+  // …and its keyup kept too: Space on a focused shell button (Ⅱ, 🔊) would click it as the key comes up.
+  on(doc, 'keyup', (e) => {
+    const k = KEYS[e.key.toLowerCase()];
+    if (!k || e.target.closest?.('input,textarea,select,[contenteditable]')) return;
+    if (root.isConnected) e.preventDefault();
+    lift(k, 'key');
+  });
   on(win, 'blur', liftAll);
   on(doc, 'visibilitychange', liftAll);
   const offPause = shell?.onPause?.((p) => { if (p) liftAll(); });
