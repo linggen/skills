@@ -627,6 +627,31 @@
         "scripts/games/live.css"
       ],
       "files": []
+    },
+    "lianliankan": {
+      "_about": "炼丹 · 配一炉丹 (games/lianliankan.js over board.js, the story's herb board): its own mount; the herbs are text tiles from herbs.json.",
+      "module": "scripts/games/lianliankan.js",
+      "dirs": [],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css"
+      ],
+      "files": [
+        "worlds/jiuding/herbs.json"
+      ]
+    },
+    "mishi": {
+      "_about": "密室 (games/mishi.js): a board the rules judge — the host mounts it on the rules' Look (host.js mountRuled), every try is a `mishi` verb, the rules pay on the way out (never `win`). 问银月 with no chat on the phone: her clock runs and the torn page (the hint) comes when it runs out; 算了，硬撬开 and 出去 always stand.",
+      "module": "scripts/games/mishi.js",
+      "dirs": [
+        "scripts/games/mishi"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css",
+        "scripts/games/mishi.css"
+      ],
+      "files": []
     }
   },
   "_pieces": "`games.piece-<id>`: a 大场面 (setpieces/<id>.js) the story screen plays under its beat (rules/tell.mjs `piece`): `piece` names it, the host page plays it through setpiece.js (`playSetPiece`, auto, cover) and ends like a board. `modules`: more JS whose static imports are walked (setpiece.js loads its piece by a dynamic import). The painting libraries it loads on demand (fx.js) are listed in `files`. `art: \"auto\"`: the piece's paintings are the `'art/…'` strings its module names (the same reading tests/phone-board.test.mjs holds every piece to).",
