@@ -197,7 +197,30 @@ function makeRunner(content, opts) {
     }
     return s;
   };
+  /* `policy: 'none'` (2026-10-27, Hanli: 「确保都能跳过去, 不会卡住游戏进程」): nothing won — each fight lost (a line
+     that does not win the deal) until it may be left (rules/skips.mjs fightStuck), and a guard's pool lost to until it
+     lets him by (world.mjs guardOf). Returns the state; `r.leave` names the fight to pass. */
+  r.lose = (s, game, until) => {
+    for (let d = 0; d < FIGHT_DAYS && !until(s); d += 1) {
+      const started = r.call('duel', s, { id: game.id });
+      if (!started.result.ok) {
+        if (['withdrawn', 'spent-today', 'subdued-today'].includes(started.result.refused)) { r.nextDay(); continue; }
+        throw new Stuck(s, `fight ${game.id} refused ${started.result.refused}`);
+      }
+      const t = started.state;
+      let line = null;
+      for (let w = 0; w < 40 && !line; w += 1) { const l = playLine(t.fight.setup, catalog, w); if (l.outcome !== 'won') line = l; }
+      if (!line) { r.unlosable = [...(r.unlosable ?? []), game.id]; return null; } // a teaching fight no line loses: never a dead end
+      const out = r.call('duel', t, { id: game.id, picks: line.picks.join(',') });
+      s = out.state ?? t;
+      if (s.wins?.[game.id]) throw new Stuck(s, `fight ${game.id}: won while losing`);
+      r.nextDay();
+    }
+    if (!until(s)) throw new Stuck(s, `fight ${game.id}: never let by after ${FIGHT_DAYS} losses`);
+    return s;
+  };
   r.fight = (s, game) => {
+    if (r.policy === 'none') { const lost = r.lose(s, game, (x) => fightStuck(content, x, game)); if (lost) { r.leave = game.id; return lost; } }
     s = r.dress(s);
     for (let d = 0; d < FIGHT_DAYS; d += 1) {
       const pills = r.pouch(s, game);
@@ -237,9 +260,9 @@ function boards(content, r, s, exit, policy) {
   const need = exit.needs?.task;
   if (!need || s.tasks?.[need]?.status === 'done') return s;
   const order = (sceneOf(content, s)?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id);
-  const ids = [...order.slice(0, Math.max(0, order.indexOf(need))), need].filter((id) => s.tasks?.[id]?.status !== 'done' && !(policy === 'skip' && (s.skipped ?? []).some((e) => e.task === id)));
+  const ids = [...order.slice(0, Math.max(0, order.indexOf(need))), need].filter((id) => s.tasks?.[id]?.status !== 'done' && !((policy === 'skip' || policy === 'none') && (s.skipped ?? []).some((e) => e.task === id)));
   for (const id of ids) {
-    if (policy === 'skip') { s = r.must('task', s, { action: 'skip', id }); continue; }
+    if (policy === 'skip' || policy === 'none') { s = r.must('task', s, { action: 'skip', id }); continue; }
     const grade = gradeOf(content, id, id === need ? exit.needs.grade : null);
     s = r.must('win', s, { id, ...(grade ? { grade } : {}) });
     s = r.must('task', s, { action: 'done', id });
@@ -263,11 +286,14 @@ function argsFor(content, s, exit, now) {
 function clearGuard(content, r, s) {
   const g = allPlaces(content).find((p) => p.id === s.place)?.has?.guard;
   if (!g) return s;
-  for (let k = 0; k < 6 && g.won && (s.hunted?.[s.place] ?? 0) < g.won.n; k += 1) {
+  const letBy = content.balance?.lock_fight?.losses;
+  const passed = (x) => (x.hunted?.[x.place] ?? 0) >= g.won.n || (letBy != null && (x.hunt_losses?.[x.place] ?? 0) >= letBy);
+  for (let k = 0; k < 6 && g.won && !passed(s); k += 1) {
     const enc = encounterOf(content, s, r.now);
     if (!enc?.game) throw new Stuck(s, `guarded at ${s.place}: no beast up to fight`);
-    s = r.fight(s, enc.game);
+    s = (r.policy === 'none' ? r.lose(s, enc.game, (x) => passed(x) || (x.hunt_losses?.[x.place] ?? 0) > (s.hunt_losses?.[s.place] ?? 0)) : null) ?? r.fight(s, enc.game);
   }
+  if (g.task && s.tasks?.[g.task.id]?.status !== 'done' && r.policy === 'none') s = r.must('task', s, { action: 'skip', id: g.task.id });
   if (g.task && s.tasks?.[g.task.id]?.status !== 'done') {
     const grade = gradeOf(content, g.task.id, null);
     s = r.must('win', s, { id: g.task.id, ...(grade ? { grade } : {}) });
@@ -312,8 +338,17 @@ function take(content, r, s, exit, policy) {
   s = handIn(r, s); // the 回's stage quest met (earned here, or already by the realm he holds): 交差
   const game = exit.game ?? null;
   if (game?.kind === 'duel' && !s.wins?.[game.id]) s = r.fight(s, game);
-  const pass = game && r.leave === game.id ? { pass: 1 } : {};
-  let out = r.call('resolve', s, { ...argsFor(content, s, exit, r.now), ...pass });
+  let pass = game && r.leave === game.id ? { pass: 1 } : {};
+  // Nothing won (`policy: 'none'`): a riddle's way is missed until it may be left (core.mjs RIDDLE_TRIES), then passed.
+  if (policy === 'none' && exit.key) {
+    for (let k = 0; k < 6; k += 1) {
+      const miss = r.call('resolve', s, { exit: exit.id, answer: `不知道${k}` });
+      s = miss.state ?? s;
+      if (miss.result.stuck) break;
+    }
+    pass = { pass: 1 };
+  }
+  let out = r.call('resolve', s, { ...(pass.pass && exit.key ? { exit: exit.id } : argsFor(content, s, exit, r.now)), ...pass });
   // A day that must pass (the 大比 is tomorrow): the clock moves on, as `shift` does.
   for (let d = 0; d < 3 && out.result.refused === 'needs' && exit.needs?.day_after; d += 1) {
     r.nextDay();
@@ -375,6 +410,7 @@ function stepScene(content, r, s, policy, route) {
    cannot go on. Every call here is in memory: nothing is written. */
 export function playTo(content, state, target, { now = new Date(), policy = 'win', route = [], limit = 400, targets = null, onAt = null } = {}) {
   const r = makeRunner(content, { now });
+  r.policy = policy;
   const want = targets ?? [[String(target), targetOf(content, target)]];
   for (const [label, t] of want) if (!t) throw Object.assign(new Error(`unknown target ${label}`), { scene: null, why: 'unknown-target' });
   const pending = new Map(want);
@@ -391,7 +427,7 @@ export function playTo(content, state, target, { now = new Date(), policy = 'win
   }
   if (pending.size) throw new Stuck(s, `not reached in ${limit} scenes: ${[...pending.keys()].join(', ')}`);
   if (rest.length) throw new Stuck(s, `--route ${rest.join(',')} never offered on the way`);
-  return { state: s, now: r.now, days: r.days, steps: r.log };
+  return { state: s, now: r.now, days: r.days, steps: r.log, unlosable: [...new Set(r.unlosable ?? [])] };
 }
 
 /* The save a seed hands over owes the stage only the target scene's own passage:

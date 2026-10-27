@@ -21,15 +21,15 @@ import { sideLine } from './hui.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { owesTell } from './tell.mjs';
 import { skippedHere } from './aside.mjs';
-import { lockOf, sceneOf } from './world.mjs';
+import { sceneOf } from './world.mjs';
 
-/* A story fight inside a key beat's lock may be left once stuck (Hanli 2026-10-21: 「OK, a」): inside a lock
-   no shelf is reachable, so a weak hand with an empty 丹囊 had no way past a 试. From balance.json
-   `lock_fight.losses` fights of it not won (lost or run dry — tasks.mjs keeps `fight_losses`), 「算了，往下走」
-   walks the way on a win would take, paying nothing (core.mjs resolve `pass`). Never outside a lock. */
+/* A story fight may be left once stuck. First inside a key beat's lock only (Hanli 2026-10-21: 「OK, a」: no shelf
+   is reachable there); every story fight since 2026-10-27 (Hanli: 「确保都能跳过去, 不会卡住游戏进程」). From
+   balance.json `lock_fight.losses` fights of it not won (lost or run dry — tasks.mjs keeps `fight_losses`),
+   「算了，往下走」 walks the way on a win would take, paying nothing (core.mjs resolve `pass`). */
 export const lockLosses = content => content.balance?.lock_fight?.losses ?? null;
 export function fightStuck(content, state, game) {
-  if (game?.kind !== 'duel' || state.wins?.[game.id] || !lockOf(content, state)) return false;
+  if (game?.kind !== 'duel' || state.wins?.[game.id]) return false;
   const n = lockLosses(content);
   return n != null && (state.fight_losses?.[game.id] ?? 0) >= n;
 }

@@ -379,6 +379,8 @@ export function duel(state, content, ctx, args) {
   if (exit && won && s.fight_losses?.[id] != null) { const { [id]: _, ...rest } = s.fight_losses; if (Object.keys(rest).length) s.fight_losses = rest; else delete s.fight_losses; }
   // A pool's fights won, by the place (a guarded room counts them, world.mjs guardOf).
   if (won && hunt) s.hunted = { ...s.hunted, [game.hunt]: (s.hunted?.[game.hunt] ?? 0) + 1 };
+  // …and those not won there: a guard lost to often enough lets him by (world.mjs guardOf, 2026-10-27).
+  if (!won && hunt) s.hunt_losses = { ...s.hunt_losses, [game.hunt]: (s.hunt_losses?.[game.hunt] ?? 0) + 1 };
   // A beast met on the road, beaten, has been met: it leaves the road.
   if (won && haunt?.road) s.meets.places[s.place] = { ...s.meets.places[s.place], done: true };
   const say = played.outcome === 'lost' ? withdrawnLine

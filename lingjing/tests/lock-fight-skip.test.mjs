@@ -64,13 +64,14 @@ test('three fights lost: 「算了，往下走」 is offered, and leaving it pay
   assert.ok(r.state.fights_left?.[GAME.id], 'kept as left');
 });
 
-test('outside a lock the same three losses offer nothing', () => {
+test('outside a lock the same three losses may be left too (Hanli 2026-10-27: 「确保都能跳过去, 不会卡住游戏进程」)', () => {
   let s = base();
-  for (let d = 0; d < 3; d += 1) s = lose(s, new Date(at.now.getTime() + d * 864e5));
   const open = structuredClone(content);
   for (const b of open.chapters['01-ji'].beats) b.scenes = b.scenes.filter(id => id !== '01-laojing');
-  assert.equal(fightStuck(open, s, GAME), false);
-  assert.equal(resolve(s, open, ctx(at.now), { exit: 'dodge', pass: 1 }).result.refused, 'not-stuck');
+  assert.equal(fightStuck(open, s, GAME), false, 'not before the losses');
+  for (let d = 0; d < 3; d += 1) s = lose(s, new Date(at.now.getTime() + d * 864e5));
+  assert.equal(fightStuck(open, s, GAME), true);
+  assert.equal(resolve(s, open, ctx(at.now), { exit: 'dodge', pass: 1 }).result.ok, true);
 });
 
 test('a forward run that cannot win 马小宝 leaves him and goes on (the clock that stuck at wm-juesai)', () => {

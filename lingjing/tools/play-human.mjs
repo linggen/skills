@@ -3,7 +3,7 @@
 // (Hanli 2026-10-16: a 弹竹 that did nothing passed every bot — 「agent操作浏览器太慢」).
 //
 //   node lingjing/tools/play-human.mjs [--games=rain,bread,…] [--widths=1440,390]
-//        [--policies=casual,sloppy,idle] [--seeds=2] [--seconds=90] [--jobs=3] [--out=<dir>] [--keep]
+//        [--policies=casual,sloppy,idle] [--seeds=2] [--seconds=90] [--jobs=3] [--out=<dir>] [--keep] [--no-video]
 //   (cd lingjing/tools && npm install) once: playwright is a devDependency here, its Chromium cached.
 //
 // The hands see only what the screen shows (the board's DOM: what is drawn, where, what it says) and
@@ -288,12 +288,15 @@ export async function breathe(page, hand, policy, r, host, judgeOnce, stintMs = 
   return out;
 }
 
+/* `--no-video` (2026-10-27, the Mac's CPU: headless Chrome plus ffmpeg ran ~125%): no clip recorded; findings keep their frames. */
+const NO_VIDEO = process.argv.includes('--no-video');
+
 /* ── One run ── */
 async function playOnce(browser, t, { width, policy, seed, seconds, out, base }) {
   const touch = width < 600;
   const tag = `${t.name}-${width}-${policy}-${seed}`;
   const vdir = path.join(out, 'video', tag);
-  const ctx = await browser.newContext({ viewport: { width, height: touch ? 844 : 900 }, deviceScaleFactor: touch ? 3 : 1, isMobile: touch, hasTouch: touch, recordVideo: { dir: vdir, size: { width: Math.min(width, 900), height: touch ? 844 : 560 } } });
+  const ctx = await browser.newContext({ viewport: { width, height: touch ? 844 : 900 }, deviceScaleFactor: touch ? 3 : 1, isMobile: touch, hasTouch: touch, ...(NO_VIDEO ? {} : { recordVideo: { dir: vdir, size: { width: Math.min(width, 900), height: touch ? 844 : 560 } } }) });
   await ctx.tracing.start({ screenshots: true, snapshots: true });
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);

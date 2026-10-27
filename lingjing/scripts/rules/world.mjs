@@ -606,7 +606,10 @@ const guardHere = (content, state, place) => {
 function guardOf(content, state, from, to) {
   const g = from?.has?.guard;
   if (!g || !(g.holds ?? []).includes(to?.id)) return null;
-  if (g.won && (state.hunted?.[from.id] ?? 0) < g.won.n) return { place: from.id, say: g.won.say };
+  // Never a dead end (Hanli 2026-10-27: 「确保都能跳过去, 不会卡住游戏进程」): lost to as often as a story fight may be
+  // left (balance.json `lock_fight.losses`), the guard lets him by, paying nothing.
+  const letBy = content.balance?.lock_fight?.losses;
+  if (g.won && (state.hunted?.[from.id] ?? 0) < g.won.n && !(letBy != null && (state.hunt_losses?.[from.id] ?? 0) >= letBy)) return { place: from.id, say: g.won.say };
   if (g.task && state.tasks?.[g.task.id]?.status !== 'done') return { place: from.id, say: g.task.say };
   return null;
 }
