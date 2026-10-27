@@ -85,6 +85,10 @@
 @media (min-width: 900px) {
   .gshell.is-tall { display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 18px; }
   .gshell.is-tall .gshell-bar { grid-column: 1; grid-row: 1; align-self: start; padding-top: 6px; }
+  /* The column is narrow for a title beside four icons (兽潮 · 第1潮 broke in three): the icons stand on their own row,
+     at its top right, and the title takes the whole line under them. */
+  .gshell.is-tall .gshell-tools { order: -1; flex-basis: 100%; justify-content: flex-end; }
+  .gshell.is-tall .gshell-name { flex-basis: 100%; }
   .gshell.is-tall .gshell-stage { grid-column: 2; grid-row: 1 / span 2; }
   .gshell.is-tall .gshell-foot { grid-column: 1; grid-row: 2; flex-direction: column; align-items: flex-start; align-self: end; }
 }
