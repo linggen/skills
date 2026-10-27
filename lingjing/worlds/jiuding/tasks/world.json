@@ -491,6 +491,13 @@
       "done_line": { "zh": "成了。", "en": "Done." }
     },
     {
+      "id": "yaoyuan-zhuochong", "kind": "board", "game": "rain", "period": "day", "hosted": true, "climb": ["yaoyuan-1","yaoyuan-2","yaoyuan-3","yaoyuan-4","yaoyuan-5","yaoyuan-6"],
+      "_climb": "药园捉虫 (Hanli 10-27: 「可以, 加吧」): the 打地鼠 kit's practice rungs at the 药园 (games.json the daily rain row's levels), easiest first; the top rung again after it, a new day's rain each time.",
+      "title": { "zh": "捉虫 · 药园的架子底下", "en": "Grubs · Under the herb garden's trellises" },
+      "grant": { "table": "game", "progress": 5, "wealth": 5 },
+      "done_line": { "zh": "虫捉完了。", "en": "The grubs are caught." }
+    },
+    {
       "id": "wuziqi", "kind": "board", "game": "wuziqi", "period": "day", "hosted": true,
       "title": { "zh": "五子 · 与人对弈", "en": "Five in a row · A game with a rival" },
       "grant": { "table": "game", "progress": 5, "wealth": 10 },

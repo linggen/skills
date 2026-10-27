@@ -31,6 +31,7 @@
 //                                     flood, and the head labels full floor drip
 //   art {beam, basin, ground?}        images under worlds/jiuding/art/games/ (e.g. 'rain/beam.webp'):
 //                                     the overhead strip, the catcher, and a ground drawn under each spot
+// A climbing practice board (tasks/world.json `climb`) hands every rung in `levels` and the one it is on as `lv`.
 //   grades [good, bad]                the grade names (dry · wet); the lines stay keyed dry / wet
 //   row {x, step, w, foot}            the end picture: `need` catchers in a row (default: centred to fit)
 // A host passes a level as mount(container, { data: { levels: [level] } }) or newGame(seed, 1, { levels:
@@ -212,9 +213,12 @@ export const leakingAt = (sched, spot, t) => sched.windows[spot].some(([from, to
 /** The leak at this spot at `t`, if any. */
 const leakOf = (sched, spot, t) => sched.leaks.find((l) => l.spot === spot && t >= l.from && t < l.to) ?? null;
 
-/** A new board: the level is `deal.levels[0]` (a data level, kept on the state as `level`), else the default. */
+/** The data level a deal plays: the one a climbing task names (`deal.lv`, rules/climb.mjs — a practice board's ladder,
+    every rung in `levels`), else `levels[0]`. */
+export const dealtLevel = (deal) => (deal?.lv != null ? deal?.levels?.find((l) => l.id === deal.lv) : null) ?? deal?.levels?.[0];
+/** A new board: the level is the deal's (a data level, kept on the state as `level`), else the default. */
 export function newGame(seed, _level = 1, deal = {}) {
-  const raw = deal?.levels?.[0], L = fill(raw);
+  const raw = dealtLevel(deal), L = fill(raw);
   return { seed: String(seed), ...(L === SHIAO ? {} : { level: raw }), sched: schedule(seed, L), t: 0, k: 0, e: 0, live: false, basins: L.spots.map(() => null), caught: 0, puddles: 0, floods: 0, busy: null, note: 'ready', won: false, grade: null };
 }
 /* A board saved before the 打地鼠 rain (2026-10-16) starts fresh on the new one. */
@@ -392,7 +396,7 @@ export function ladderOf(registry) {
 /** The level a mount plays: `data.levels[0]`, else the level named `data.level`, else the default.
     The registry is fetched only for a level the kit doesn't hold (the phone's pack has no games.json). */
 export async function levelFor(opts = {}) {
-  if (opts.data?.levels?.length) return opts.data.levels[0];
+  if (opts.data?.levels?.length) return dealtLevel(opts.data);
   const id = opts.data?.level;
   if (!id || id === SHIAO.id) return SHIAO;
   try {

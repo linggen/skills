@@ -1118,6 +1118,655 @@
   {"id": "dash", "group": "jin", "mechanic": "几何冲刺", "scene": "j09-diban", "hui": "今 · 四", "task": "jin-shouhuan", "stars": 3, "name": {"zh": "几何冲刺 · 手环 · 吸四吐六", "en": "Dash · The band · In four, out six"}, "data": {"level": "shouhuan-dash"}, "how": {"zh": "盯着手环，把心跳压下来：点一下跳，空中碰到金环再点，矮顶底下别跳。碰上了，从头。", "en": "Eyes on the band, bring the heart down: tap to jump, tap again on a gold ring in the air, stay down under the low roofs. Touch one, start over."}, "_was": "气走经脉 `shouhuan` → 几何冲刺 (Hanli 10-27: 「调息的不太好玩…」 · 「现在的调息留2个就好」); the 调息 level stays in the 游戏厅.", "levels": [{"id": "shouhuan-dash", "title": {"zh": "手环 · 吸四吐六", "en": "The band · In four, out six"}, "book": {"zh": "吸四拍，吐六拍，吐得慢", "en": "breathed in for four, out for six, breathed out slowly"}, "end": {"zh": "「刹得住一截，刹不干净。」", "en": "\"It brakes one stretch. It doesn't brake clean.\""}, "speed": "normal", "bpm": 138, "len": 64, "land": "jade", "things": [[6, "ss"], [9, "s"], [12.5, "ceil", 3], [20, "s"], [23, "ceil", 5], [31, "s"], [34, "b"], [37.5, "pit", 1], [41.5, "ss"], [44.5, "bb"], [48, "b"], [51.5, "ss"], [55.5, "orb", 6]]}]},
   {"id": "dash", "group": "jin", "mechanic": "几何冲刺", "scene": "j09-final", "hui": "今 · 四", "task": "jin-lastshot", "stars": 3, "name": {"zh": "几何冲刺 · 最后一罚", "en": "Dash · The last free throw"}, "data": {"level": "lastshot-dash"}, "how": {"zh": "带着怕，冲到罚球线：点一下跳，按住连跳，矮顶底下别跳。碰上了，从头。", "en": "Carry the fear to the line: tap to jump, hold to keep jumping, stay down under the low roofs. Touch one, start over."}, "_was": "气走经脉 `lastshot` → 几何冲刺 (Hanli 10-27: 「调息的不太好玩…」 · 「现在的调息留2个就好」); the 调息 level stays in the 游戏厅.", "levels": [{"id": "lastshot-dash", "title": {"zh": "最后一罚", "en": "The last free throw"}, "book": {"zh": "惧是油门，长吐是刹车——刹得住一截，刹不干净。带着怕投。", "en": "Fear is the throttle, a long breath out the brake: it slows, never stops. Shoot with the fear."}, "end": {"zh": "它掉了进去。", "en": "It drops in."}, "speed": "normal", "bpm": 140, "len": 64, "land": "dusk", "things": [[6, "ceil", 4], [14, "s"], [17.5, "ceil", 5], [26.5, "ceil", 4], [34.5, "pad"], [40, "ss"], [44, "pad"], [49.5, "ceil", 3], [57.5, "ceil", 4]]}]},
   {"id": "dash", "group": "h10", "mechanic": "几何冲刺", "scene": "01-qianshui", "hui": "第九回", "task": "qianshui-qi", "stars": 3, "name": {"zh": "几何冲刺 · 一口气 · 河心坑", "en": "Dash · One breath · The pit"}, "data": {"level": "qianshui-dash"}, "how": {"zh": "顺着坑壁潜到底：点一下跳，空中碰到金环再点，矮顶底下别跳。碰上了，从头。", "en": "Down the pit wall to the bottom: tap to jump, tap again on a gold ring in the air, stay down under the low roofs. Touch one, start over."}, "_was": "气走经脉 `qianshui` → 几何冲刺 (Hanli 10-27: 「调息的不太好玩…」 · 「现在的调息留2个就好」); the 调息 level stays in the 游戏厅.", "levels": [{"id": "qianshui-dash", "title": {"zh": "一口气 · 河心坑", "en": "One breath · The pit"}, "book": {"zh": "能靠的只有你自己憋住的那一口气", "en": "all you can rely on is the breath you hold"}, "end": {"zh": "坑底便是那口鼎。", "en": "At the bottom of the pit was the cauldron."}, "speed": "normal", "bpm": 144, "len": 64, "land": "mist", "things": [[6, "ceil", 4], [13.5, "ss"], [16.5, "ss"], [19, "s"], [22, "ss"], [24.5, "pad"], [29.5, "b"], [32, "b"], [35, "ss"], [38, "ss"], [41.5, "ceil", 5], [49.5, "ss"], [52.5, "orb", 6], [58.5, "bb"]]}]},
-  {"id": "dash", "group": "h10", "mechanic": "几何冲刺", "scene": "01-end", "hui": "第九回", "task": "end-sangzi", "stars": 3, "name": {"zh": "几何冲刺 · 嗓子 · 一丝一丝", "en": "Dash · The voice · A thread at a time"}, "data": {"level": "sangzi-dash"}, "how": {"zh": "一丝一丝送到她喉咙里：点一下跳，空中碰到金环再点，矮顶底下别跳。碰上了，从头。", "en": "Into her throat a thread at a time: tap to jump, tap again on a gold ring in the air, stay down under the low roofs. Touch one, start over."}, "_was": "气走经脉 `sangzi` → 几何冲刺 (Hanli 10-27: 「调息的不太好玩…」 · 「现在的调息留2个就好」); the 调息 level stays in the 游戏厅.", "levels": [{"id": "sangzi-dash", "title": {"zh": "嗓子 · 一丝一丝", "en": "The voice · A thread at a time"}, "book": {"zh": "凡人的身子经不起猛灌，只能一丝一丝地来", "en": "a mortal body can't take a sudden flood; it has to go a thread at a time"}, "end": {"zh": "「……爹。」", "en": "\"…Pa.\""}, "speed": "normal", "bpm": 146, "len": 68, "land": "jade", "things": [[6, "b"], [9, "orb", 6], [14.5, "pit", 2], [18, "b"], [21.5, "bb"], [25.5, "ceil", 3], [33, "ceil", 3], [40, "pit", 2], [43.5, "s"], [47, "ceil", 4], [54.5, "orb", 6], [60, "pad"]]}]}
+  {"id": "dash", "group": "h10", "mechanic": "几何冲刺", "scene": "01-end", "hui": "第九回", "task": "end-sangzi", "stars": 3, "name": {"zh": "几何冲刺 · 嗓子 · 一丝一丝", "en": "Dash · The voice · A thread at a time"}, "data": {"level": "sangzi-dash"}, "how": {"zh": "一丝一丝送到她喉咙里：点一下跳，空中碰到金环再点，矮顶底下别跳。碰上了，从头。", "en": "Into her throat a thread at a time: tap to jump, tap again on a gold ring in the air, stay down under the low roofs. Touch one, start over."}, "_was": "气走经脉 `sangzi` → 几何冲刺 (Hanli 10-27: 「调息的不太好玩…」 · 「现在的调息留2个就好」); the 调息 level stays in the 游戏厅.", "levels": [{"id": "sangzi-dash", "title": {"zh": "嗓子 · 一丝一丝", "en": "The voice · A thread at a time"}, "book": {"zh": "凡人的身子经不起猛灌，只能一丝一丝地来", "en": "a mortal body can't take a sudden flood; it has to go a thread at a time"}, "end": {"zh": "「……爹。」", "en": "\"…Pa.\""}, "speed": "normal", "bpm": 146, "len": 68, "land": "jade", "things": [[6, "b"], [9, "orb", 6], [14.5, "pit", 2], [18, "b"], [21.5, "bb"], [25.5, "ceil", 3], [33, "ceil", 3], [40, "pit", 2], [43.5, "s"], [47, "ceil", 4], [54.5, "orb", 6], [60, "pad"]]}]},
+  {
+   "id": "rain",
+   "group": "daily",
+   "mechanic": "打地鼠",
+   "task": "yaoyuan-zhuochong",
+   "stars": 3,
+   "name": {
+    "zh": "捉虫 · 药园的架子底下",
+    "en": "Grubs · Under the herb garden's trellises"
+   },
+   "_about": "药园's practice board (Hanli 10-27: 「可以, 加吧」 — the 观's places want boards of their own): the 打地鼠 kit (games/rain.js) on six rungs that climb (tasks/world.json yaoyuan-zhuochong `climb`): four trellises and three-drop leaks alone first, then six, then nine beds, the grubs quicker and two or three at once sooner. Each day deals its own rain (the board's seed is the day's and the save's), so no two plays fall alike. Weighed by a paced hand (tests/yaoyuan-practice.test.mjs): a 0.6 s hand wins every rung, a 0.9 s hand all but the last, idle floods. Painted herb beds (tools/paint-games.py rain/yaoyuan-*).",
+   "levels": [
+    {
+     "id": "yaoyuan-1",
+     "name": {
+      "zh": "药园捉虫 · 头一回 · 四架",
+      "en": "Grubs in the herb garden · The first time · Four trellises"
+     },
+     "how": {
+      "zh": "哪架的叶子抖了，虫就要往下掉：点哪架，把竹篓递到底下接住；叶子不抖的地方，白递。篓满了自己回到手边。",
+      "en": "Where a trellis's leaves shake, a grub is about to drop: tap it to hold the basket under. Where nothing shakes, the reach is wasted. A full basket comes back to hand by itself."
+     },
+     "spots": [
+      {
+       "zh": "黄精架",
+       "en": "The Solomon's-seal trellis"
+      },
+      {
+       "zh": "茯苓垄",
+       "en": "The poria bed"
+      },
+      {
+       "zh": "柴胡垄",
+       "en": "The bupleurum bed"
+      },
+      {
+       "zh": "当归架",
+       "en": "The angelica trellis"
+      }
+     ],
+     "cols": 2,
+     "need": 8,
+     "cap": 3,
+     "limit": 72000,
+     "flood": 14,
+     "dry": 4,
+     "lead": 1150,
+     "gap": [
+      2900,
+      1900
+     ],
+     "beat": [
+      540,
+      470
+     ],
+     "teach": 3,
+     "three": 0.7,
+     "jit": 280,
+     "lines": {
+      "zh": {
+       "start": "提竹篓",
+       "go": "哪架叶子抖，竹篓就往哪架底下递。",
+       "placed": "「啪嗒」，一条青虫落进篓里。",
+       "wasted": "这架叶子没动——白递了。",
+       "poured": "篓里的虫倒进鸡笼，篓又回到手边。",
+       "spill": "虫掉在垄上，啃了一口苗。",
+       "thick": "两架一齐抖。",
+       "thicker": "三架一齐抖，满园沙沙响。",
+       "dry": "虫捉干净了，苗一片没缺。",
+       "wet": "虫捉完了，几垄苗叫啃了边。",
+       "short": "日头偏西，虫没捉完。",
+       "flood": "垄上爬满了虫——闵丹师的脸要黑了。从头捉。",
+       "full": "捉虫",
+       "floor": "啃苗",
+       "drip": "叶子抖",
+       "ready": "入了伏，药园的架子上生了青虫。闵丹师递来一只竹篓：「掉下来一条，接一条。」"
+      },
+      "en": {
+       "start": "Take the basket",
+       "go": "Wherever the leaves shake, hold the basket under that trellis.",
+       "placed": "Plop: a green grub drops into the basket.",
+       "wasted": "Those leaves are still: a wasted reach.",
+       "poured": "The grubs go to the hens; the basket comes back to hand.",
+       "spill": "A grub lands on the bed and takes a bite of a seedling.",
+       "thick": "Two trellises shake at once.",
+       "thicker": "Three at once: the whole garden rustles.",
+       "dry": "Every grub caught, not a seedling lost.",
+       "wet": "Every grub caught, but a few beds were nibbled.",
+       "short": "The sun is low and the grubs are not all caught.",
+       "flood": "The beds are crawling with grubs: Alchemist Min will be thunderous. Again from the start.",
+       "full": "Caught",
+       "floor": "Nibbled",
+       "drip": "leaves shaking",
+       "ready": "Midsummer, and green grubs on the herb garden's trellises. Alchemist Min hands over a bamboo basket: \"One drops, you catch one.\""
+      }
+     },
+     "art": {
+      "beam": "rain/yaoyuan-beam.webp",
+      "basin": "rain/yaoyuan-basin.webp",
+      "ground": "rain/yaoyuan-bed.webp"
+     },
+     "grades": [
+      "dry",
+      "wet"
+     ]
+    },
+    {
+     "id": "yaoyuan-2",
+     "name": {
+      "zh": "药园捉虫 · 六架 · 两处一齐",
+      "en": "Grubs in the herb garden · Six trellises · Two at once"
+     },
+     "how": {
+      "zh": "哪架的叶子抖了，虫就要往下掉：点哪架，把竹篓递到底下接住；叶子不抖的地方，白递。篓满了自己回到手边。",
+      "en": "Where a trellis's leaves shake, a grub is about to drop: tap it to hold the basket under. Where nothing shakes, the reach is wasted. A full basket comes back to hand by itself."
+     },
+     "spots": [
+      {
+       "zh": "黄精架",
+       "en": "The Solomon's-seal trellis"
+      },
+      {
+       "zh": "茯苓垄",
+       "en": "The poria bed"
+      },
+      {
+       "zh": "柴胡垄",
+       "en": "The bupleurum bed"
+      },
+      {
+       "zh": "当归架",
+       "en": "The angelica trellis"
+      },
+      {
+       "zh": "白芷垄",
+       "en": "The angelica-root bed"
+      },
+      {
+       "zh": "灵芝棚",
+       "en": "The lingzhi shade"
+      }
+     ],
+     "need": 10,
+     "cap": 3,
+     "limit": 78000,
+     "flood": 14,
+     "dry": 5,
+     "lead": 1050,
+     "gap": [
+      2700,
+      1650
+     ],
+     "beat": [
+      510,
+      440
+     ],
+     "teach": 3,
+     "three": 0.5,
+     "jit": 260,
+     "lines": {
+      "zh": {
+       "start": "提竹篓",
+       "go": "哪架叶子抖，竹篓就往哪架底下递。",
+       "placed": "「啪嗒」，一条青虫落进篓里。",
+       "wasted": "这架叶子没动——白递了。",
+       "poured": "篓里的虫倒进鸡笼，篓又回到手边。",
+       "spill": "虫掉在垄上，啃了一口苗。",
+       "thick": "两架一齐抖。",
+       "thicker": "三架一齐抖，满园沙沙响。",
+       "dry": "虫捉干净了，苗一片没缺。",
+       "wet": "虫捉完了，几垄苗叫啃了边。",
+       "short": "日头偏西，虫没捉完。",
+       "flood": "垄上爬满了虫——闵丹师的脸要黑了。从头捉。",
+       "full": "捉虫",
+       "floor": "啃苗",
+       "drip": "叶子抖",
+       "ready": "又生了一茬。这回六架都有，叶子底下密密麻麻。"
+      },
+      "en": {
+       "start": "Take the basket",
+       "go": "Wherever the leaves shake, hold the basket under that trellis.",
+       "placed": "Plop: a green grub drops into the basket.",
+       "wasted": "Those leaves are still: a wasted reach.",
+       "poured": "The grubs go to the hens; the basket comes back to hand.",
+       "spill": "A grub lands on the bed and takes a bite of a seedling.",
+       "thick": "Two trellises shake at once.",
+       "thicker": "Three at once: the whole garden rustles.",
+       "dry": "Every grub caught, not a seedling lost.",
+       "wet": "Every grub caught, but a few beds were nibbled.",
+       "short": "The sun is low and the grubs are not all caught.",
+       "flood": "The beds are crawling with grubs: Alchemist Min will be thunderous. Again from the start.",
+       "full": "Caught",
+       "floor": "Nibbled",
+       "drip": "leaves shaking",
+       "ready": "Another hatch. All six trellises this time, the undersides of the leaves thick with them."
+      }
+     },
+     "art": {
+      "beam": "rain/yaoyuan-beam.webp",
+      "basin": "rain/yaoyuan-basin.webp",
+      "ground": "rain/yaoyuan-bed.webp"
+     },
+     "grades": [
+      "dry",
+      "wet"
+     ]
+    },
+    {
+     "id": "yaoyuan-3",
+     "name": {
+      "zh": "药园捉虫 · 六架 · 虫肥了",
+      "en": "Grubs in the herb garden · Six trellises · Fat grubs"
+     },
+     "how": {
+      "zh": "哪架的叶子抖了，虫就要往下掉：点哪架，把竹篓递到底下接住；叶子不抖的地方，白递。篓满了自己回到手边。",
+      "en": "Where a trellis's leaves shake, a grub is about to drop: tap it to hold the basket under. Where nothing shakes, the reach is wasted. A full basket comes back to hand by itself."
+     },
+     "spots": [
+      {
+       "zh": "黄精架",
+       "en": "The Solomon's-seal trellis"
+      },
+      {
+       "zh": "茯苓垄",
+       "en": "The poria bed"
+      },
+      {
+       "zh": "柴胡垄",
+       "en": "The bupleurum bed"
+      },
+      {
+       "zh": "当归架",
+       "en": "The angelica trellis"
+      },
+      {
+       "zh": "白芷垄",
+       "en": "The angelica-root bed"
+      },
+      {
+       "zh": "灵芝棚",
+       "en": "The lingzhi shade"
+      }
+     ],
+     "need": 12,
+     "cap": 4,
+     "limit": 84000,
+     "flood": 15,
+     "dry": 6,
+     "lead": 980,
+     "gap": [
+      2500,
+      1450
+     ],
+     "beat": [
+      490,
+      415
+     ],
+     "teach": 2,
+     "three": 0.38,
+     "jit": 240,
+     "lines": {
+      "zh": {
+       "start": "提竹篓",
+       "go": "哪架叶子抖，竹篓就往哪架底下递。",
+       "placed": "「啪嗒」，一条青虫落进篓里。",
+       "wasted": "这架叶子没动——白递了。",
+       "poured": "篓里的虫倒进鸡笼，篓又回到手边。",
+       "spill": "虫掉在垄上，啃了一口苗。",
+       "thick": "两架一齐抖。",
+       "thicker": "三架一齐抖，满园沙沙响。",
+       "dry": "虫捉干净了，苗一片没缺。",
+       "wet": "虫捉完了，几垄苗叫啃了边。",
+       "short": "日头偏西，虫没捉完。",
+       "flood": "垄上爬满了虫——闵丹师的脸要黑了。从头捉。",
+       "full": "捉虫",
+       "floor": "啃苗",
+       "drip": "叶子抖",
+       "ready": "虫吃肥了，一条掉下来有半截手指长。"
+      },
+      "en": {
+       "start": "Take the basket",
+       "go": "Wherever the leaves shake, hold the basket under that trellis.",
+       "placed": "Plop: a green grub drops into the basket.",
+       "wasted": "Those leaves are still: a wasted reach.",
+       "poured": "The grubs go to the hens; the basket comes back to hand.",
+       "spill": "A grub lands on the bed and takes a bite of a seedling.",
+       "thick": "Two trellises shake at once.",
+       "thicker": "Three at once: the whole garden rustles.",
+       "dry": "Every grub caught, not a seedling lost.",
+       "wet": "Every grub caught, but a few beds were nibbled.",
+       "short": "The sun is low and the grubs are not all caught.",
+       "flood": "The beds are crawling with grubs: Alchemist Min will be thunderous. Again from the start.",
+       "full": "Caught",
+       "floor": "Nibbled",
+       "drip": "leaves shaking",
+       "ready": "The grubs have fattened: one that drops is half a finger long."
+      }
+     },
+     "art": {
+      "beam": "rain/yaoyuan-beam.webp",
+      "basin": "rain/yaoyuan-basin.webp",
+      "ground": "rain/yaoyuan-bed.webp"
+     },
+     "grades": [
+      "dry",
+      "wet"
+     ]
+    },
+    {
+     "id": "yaoyuan-4",
+     "name": {
+      "zh": "药园捉虫 · 九垄 · 满园",
+      "en": "Grubs in the herb garden · Nine beds · The whole garden"
+     },
+     "how": {
+      "zh": "哪架的叶子抖了，虫就要往下掉：点哪架，把竹篓递到底下接住；叶子不抖的地方，白递。篓满了自己回到手边。",
+      "en": "Where a trellis's leaves shake, a grub is about to drop: tap it to hold the basket under. Where nothing shakes, the reach is wasted. A full basket comes back to hand by itself."
+     },
+     "spots": [
+      {
+       "zh": "黄精架",
+       "en": "The Solomon's-seal trellis"
+      },
+      {
+       "zh": "茯苓垄",
+       "en": "The poria bed"
+      },
+      {
+       "zh": "柴胡垄",
+       "en": "The bupleurum bed"
+      },
+      {
+       "zh": "当归架",
+       "en": "The angelica trellis"
+      },
+      {
+       "zh": "白芷垄",
+       "en": "The angelica-root bed"
+      },
+      {
+       "zh": "灵芝棚",
+       "en": "The lingzhi shade"
+      },
+      {
+       "zh": "金银花架",
+       "en": "The honeysuckle trellis"
+      },
+      {
+       "zh": "紫玉参旁",
+       "en": "By the purple jade ginseng"
+      },
+      {
+       "zh": "篱笆根",
+       "en": "The fence's foot"
+      }
+     ],
+     "need": 14,
+     "cap": 4,
+     "limit": 92000,
+     "flood": 16,
+     "dry": 7,
+     "lead": 920,
+     "gap": [
+      2400,
+      1300
+     ],
+     "beat": [
+      470,
+      395
+     ],
+     "teach": 2,
+     "three": 0.3,
+     "jit": 230,
+     "lines": {
+      "zh": {
+       "start": "提竹篓",
+       "go": "哪架叶子抖，竹篓就往哪架底下递。",
+       "placed": "「啪嗒」，一条青虫落进篓里。",
+       "wasted": "这架叶子没动——白递了。",
+       "poured": "篓里的虫倒进鸡笼，篓又回到手边。",
+       "spill": "虫掉在垄上，啃了一口苗。",
+       "thick": "两架一齐抖。",
+       "thicker": "三架一齐抖，满园沙沙响。",
+       "dry": "虫捉干净了，苗一片没缺。",
+       "wet": "虫捉完了，几垄苗叫啃了边。",
+       "short": "日头偏西，虫没捉完。",
+       "flood": "垄上爬满了虫——闵丹师的脸要黑了。从头捉。",
+       "full": "捉虫",
+       "floor": "啃苗",
+       "drip": "叶子抖",
+       "ready": "连紫玉参旁边、篱笆根底下都爬上了虫。九处，一个人。"
+      },
+      "en": {
+       "start": "Take the basket",
+       "go": "Wherever the leaves shake, hold the basket under that trellis.",
+       "placed": "Plop: a green grub drops into the basket.",
+       "wasted": "Those leaves are still: a wasted reach.",
+       "poured": "The grubs go to the hens; the basket comes back to hand.",
+       "spill": "A grub lands on the bed and takes a bite of a seedling.",
+       "thick": "Two trellises shake at once.",
+       "thicker": "Three at once: the whole garden rustles.",
+       "dry": "Every grub caught, not a seedling lost.",
+       "wet": "Every grub caught, but a few beds were nibbled.",
+       "short": "The sun is low and the grubs are not all caught.",
+       "flood": "The beds are crawling with grubs: Alchemist Min will be thunderous. Again from the start.",
+       "full": "Caught",
+       "floor": "Nibbled",
+       "drip": "leaves shaking",
+       "ready": "Grubs even by the purple jade ginseng and along the fence's foot. Nine places, one boy."
+      }
+     },
+     "art": {
+      "beam": "rain/yaoyuan-beam.webp",
+      "basin": "rain/yaoyuan-basin.webp",
+      "ground": "rain/yaoyuan-bed.webp"
+     },
+     "grades": [
+      "dry",
+      "wet"
+     ]
+    },
+    {
+     "id": "yaoyuan-5",
+     "name": {
+      "zh": "药园捉虫 · 九垄 · 起风",
+      "en": "Grubs in the herb garden · Nine beds · The wind gets up"
+     },
+     "how": {
+      "zh": "哪架的叶子抖了，虫就要往下掉：点哪架，把竹篓递到底下接住；叶子不抖的地方，白递。篓满了自己回到手边。",
+      "en": "Where a trellis's leaves shake, a grub is about to drop: tap it to hold the basket under. Where nothing shakes, the reach is wasted. A full basket comes back to hand by itself."
+     },
+     "spots": [
+      {
+       "zh": "黄精架",
+       "en": "The Solomon's-seal trellis"
+      },
+      {
+       "zh": "茯苓垄",
+       "en": "The poria bed"
+      },
+      {
+       "zh": "柴胡垄",
+       "en": "The bupleurum bed"
+      },
+      {
+       "zh": "当归架",
+       "en": "The angelica trellis"
+      },
+      {
+       "zh": "白芷垄",
+       "en": "The angelica-root bed"
+      },
+      {
+       "zh": "灵芝棚",
+       "en": "The lingzhi shade"
+      },
+      {
+       "zh": "金银花架",
+       "en": "The honeysuckle trellis"
+      },
+      {
+       "zh": "紫玉参旁",
+       "en": "By the purple jade ginseng"
+      },
+      {
+       "zh": "篱笆根",
+       "en": "The fence's foot"
+      }
+     ],
+     "need": 16,
+     "cap": 4,
+     "limit": 100000,
+     "flood": 18,
+     "dry": 8,
+     "lead": 860,
+     "gap": [
+      2300,
+      1180
+     ],
+     "beat": [
+      455,
+      375
+     ],
+     "teach": 2,
+     "three": 0.24,
+     "jit": 220,
+     "lines": {
+      "zh": {
+       "start": "提竹篓",
+       "go": "哪架叶子抖，竹篓就往哪架底下递。",
+       "placed": "「啪嗒」，一条青虫落进篓里。",
+       "wasted": "这架叶子没动——白递了。",
+       "poured": "篓里的虫倒进鸡笼，篓又回到手边。",
+       "spill": "虫掉在垄上，啃了一口苗。",
+       "thick": "两架一齐抖。",
+       "thicker": "三架一齐抖，满园沙沙响。",
+       "dry": "虫捉干净了，苗一片没缺。",
+       "wet": "虫捉完了，几垄苗叫啃了边。",
+       "short": "日头偏西，虫没捉完。",
+       "flood": "垄上爬满了虫——闵丹师的脸要黑了。从头捉。",
+       "full": "捉虫",
+       "floor": "啃苗",
+       "drip": "叶子抖",
+       "ready": "起了风，叶子一齐乱抖。哪片是风，哪片是虫，得看准了。"
+      },
+      "en": {
+       "start": "Take the basket",
+       "go": "Wherever the leaves shake, hold the basket under that trellis.",
+       "placed": "Plop: a green grub drops into the basket.",
+       "wasted": "Those leaves are still: a wasted reach.",
+       "poured": "The grubs go to the hens; the basket comes back to hand.",
+       "spill": "A grub lands on the bed and takes a bite of a seedling.",
+       "thick": "Two trellises shake at once.",
+       "thicker": "Three at once: the whole garden rustles.",
+       "dry": "Every grub caught, not a seedling lost.",
+       "wet": "Every grub caught, but a few beds were nibbled.",
+       "short": "The sun is low and the grubs are not all caught.",
+       "flood": "The beds are crawling with grubs: Alchemist Min will be thunderous. Again from the start.",
+       "full": "Caught",
+       "floor": "Nibbled",
+       "drip": "leaves shaking",
+       "ready": "The wind gets up and every leaf shakes. Which is wind and which is a grub: look hard."
+      }
+     },
+     "art": {
+      "beam": "rain/yaoyuan-beam.webp",
+      "basin": "rain/yaoyuan-basin.webp",
+      "ground": "rain/yaoyuan-bed.webp"
+     },
+     "grades": [
+      "dry",
+      "wet"
+     ]
+    },
+    {
+     "id": "yaoyuan-6",
+     "name": {
+      "zh": "药园捉虫 · 九垄 · 一夜孵出来的",
+      "en": "Grubs in the herb garden · Nine beds · Hatched overnight"
+     },
+     "how": {
+      "zh": "哪架的叶子抖了，虫就要往下掉：点哪架，把竹篓递到底下接住；叶子不抖的地方，白递。篓满了自己回到手边。",
+      "en": "Where a trellis's leaves shake, a grub is about to drop: tap it to hold the basket under. Where nothing shakes, the reach is wasted. A full basket comes back to hand by itself."
+     },
+     "spots": [
+      {
+       "zh": "黄精架",
+       "en": "The Solomon's-seal trellis"
+      },
+      {
+       "zh": "茯苓垄",
+       "en": "The poria bed"
+      },
+      {
+       "zh": "柴胡垄",
+       "en": "The bupleurum bed"
+      },
+      {
+       "zh": "当归架",
+       "en": "The angelica trellis"
+      },
+      {
+       "zh": "白芷垄",
+       "en": "The angelica-root bed"
+      },
+      {
+       "zh": "灵芝棚",
+       "en": "The lingzhi shade"
+      },
+      {
+       "zh": "金银花架",
+       "en": "The honeysuckle trellis"
+      },
+      {
+       "zh": "紫玉参旁",
+       "en": "By the purple jade ginseng"
+      },
+      {
+       "zh": "篱笆根",
+       "en": "The fence's foot"
+      }
+     ],
+     "need": 18,
+     "cap": 4,
+     "limit": 108000,
+     "flood": 20,
+     "dry": 9,
+     "lead": 820,
+     "gap": [
+      2250,
+      1120
+     ],
+     "beat": [
+      450,
+      370
+     ],
+     "teach": 2,
+     "three": 0.2,
+     "jit": 210,
+     "lines": {
+      "zh": {
+       "start": "提竹篓",
+       "go": "哪架叶子抖，竹篓就往哪架底下递。",
+       "placed": "「啪嗒」，一条青虫落进篓里。",
+       "wasted": "这架叶子没动——白递了。",
+       "poured": "篓里的虫倒进鸡笼，篓又回到手边。",
+       "spill": "虫掉在垄上，啃了一口苗。",
+       "thick": "两架一齐抖。",
+       "thicker": "三架一齐抖，满园沙沙响。",
+       "dry": "虫捉干净了，苗一片没缺。",
+       "wet": "虫捉完了，几垄苗叫啃了边。",
+       "short": "日头偏西，虫没捉完。",
+       "flood": "垄上爬满了虫——闵丹师的脸要黑了。从头捉。",
+       "full": "捉虫",
+       "floor": "啃苗",
+       "drip": "叶子抖",
+       "ready": "一夜之间又孵了一茬，虫掉得跟下雨似的。闵丹师在门口抱着手看。"
+      },
+      "en": {
+       "start": "Take the basket",
+       "go": "Wherever the leaves shake, hold the basket under that trellis.",
+       "placed": "Plop: a green grub drops into the basket.",
+       "wasted": "Those leaves are still: a wasted reach.",
+       "poured": "The grubs go to the hens; the basket comes back to hand.",
+       "spill": "A grub lands on the bed and takes a bite of a seedling.",
+       "thick": "Two trellises shake at once.",
+       "thicker": "Three at once: the whole garden rustles.",
+       "dry": "Every grub caught, not a seedling lost.",
+       "wet": "Every grub caught, but a few beds were nibbled.",
+       "short": "The sun is low and the grubs are not all caught.",
+       "flood": "The beds are crawling with grubs: Alchemist Min will be thunderous. Again from the start.",
+       "full": "Caught",
+       "floor": "Nibbled",
+       "drip": "leaves shaking",
+       "ready": "Another hatch overnight, and the grubs fall like rain. Alchemist Min watches from the gate, arms folded."
+      }
+     },
+     "art": {
+      "beam": "rain/yaoyuan-beam.webp",
+      "basin": "rain/yaoyuan-basin.webp",
+      "ground": "rain/yaoyuan-bed.webp"
+     },
+     "grades": [
+      "dry",
+      "wet"
+     ]
+    }
+   ]
+  }
  ]
 }

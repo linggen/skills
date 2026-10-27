@@ -51,7 +51,8 @@ test('the tray and Look show today\'s set: practice boards where he stands, the 
     assert.deepEqual(tag.games.map((g) => g.id), poolToday(placeOf(content, 'cangjing'), now));
     assert.deepEqual(l.boards.find((b) => b.id === 'zhishi').games.map((g) => g.id), poolToday(placeOf(content, 'zhishi'), now), '周衡\'s 灯谜 is every day\'s: no caption');
     assert.ok(tag.games.every((g) => g.name && !g.name.includes(' · ')), JSON.stringify(tag));
-    assert.deepEqual(l.boards.map((b) => b.id).sort(), [...GUAN].sort());
+    // …and the 药园's, whose 捉虫 turns with 拼图 (tests/yaoyuan-practice.test.mjs).
+    assert.deepEqual(l.boards.map((b) => b.id).sort(), [...GUAN, 'yaoyuan'].sort());
   }
 });
 
@@ -130,9 +131,9 @@ test('a tag lapses with its day: taken and undone, it is gone tomorrow, and the 
 test('the plate wears today\'s boards under each seal (Look\'s `boards`)', async () => {
   const { boardsById, plateHtml } = await import('../scripts/plate.js');
   const l = look(at('waimen'), content, ctx(day(0)));
-  const plate = { spots: [{ id: 'cangjing', name: '藏经阁', at: [0.2, 0.3] }, { id: 'yaoyuan', name: '药园', at: [0.5, 0.5] }] };
+  const plate = { spots: [{ id: 'cangjing', name: '藏经阁', at: [0.2, 0.3] }, { id: 'houshan', name: '后山', at: [0.5, 0.5] }] };
   const html = plateHtml(plate, { boards: boardsById(l) });
   const names = l.boards.find((b) => b.id === 'cangjing').games.map((g) => g.name).join(' · ');
   assert.ok(html.includes(`<small class="spotgames">${names}</small>`), html);
-  assert.ok(!/药园<\/span><small/.test(html), 'a place with no pool wears nothing');
+  assert.ok(!/后山<\/span><small/.test(html), 'a place with no pool wears nothing');
 });

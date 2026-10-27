@@ -795,7 +795,8 @@
     0.3978
    ],
    "has": {
-    "creature": "zheng"
+    "creature": "zheng",
+    "games_pool": {"from": ["yaoyuan-zhuochong", "pintu"], "today": 1}
    },
    "line": {
     "zh": "药园一片银白。最里面那株最贵的紫玉参旁边，夜里常有「咔嚓、咔嚓」的声音。园门上挂着一块牌子：药园重地，偷者必究。",

@@ -246,6 +246,20 @@ SUBJECTS = {
   'fuqin/bridge': ('sprite', (720, 88), (1024, 192), 3,
     'ONE long thin straight horizontal bar of dark polished rosewood lying level across the whole picture from edge to edge, '
     'like the bridge of a Chinese zither, with a thin pale gold inlay line along its top edge. Seen from the front.'),
+  # ── 药园捉虫 (the 药园's practice board, 2026-10-27; games.json the daily rain row): grubs drop from the herb trellises;
+  #    the overhead strip is a trellis of herb vines, each spot's ground a herb bed, the catcher a bamboo basket (kept seeds
+  #    looked at two a piece).
+  'rain/yaoyuan-beam': ('sprite', (960, 200), (1536, 320), 2,
+    'A long horizontal strip of a low bamboo herb trellis seen from the side: thin bamboo poles tied crosswise running across the '
+    'whole width, climbing herb vines with broad green leaves hanging from it, two or three small fat green caterpillars on the '
+    'undersides of the leaves. Soft green and grey ink wash.'),
+  'rain/yaoyuan-bed': ('vignette', (360, 280), (768, 576), 2,
+    'A close view of one tidy raised bed of a medicinal herb garden seen from the front and a little above: dark tilled earth '
+    'in neat furrows filling the picture, rows of small young herb seedlings with round leaves, a low edging of stones along the '
+    'bottom. Calm and plain in the middle. Soft brown and green wash.'),
+  'rain/yaoyuan-basin': ('sprite', (360, 200), (1024, 576), 1,
+    'ONE small round woven bamboo basket with a wide open mouth, seen from the front and a little above, empty, a short loop '
+    'handle on one side. Muted straw-yellow wash with dark ink weave lines.'),
   'fuqin/bloom': ('sprite', (200, 200), (512, 512), 1,
     'ONE single open red plum blossom seen face on: five round petals in muted vermilion wash, darker at the edges, a pale '
     'centre with fine dark ink stamens and yellow dots. Nothing else.'),
