@@ -119,7 +119,7 @@ test('every interlude hands into its 古 scene\'s place — the turn ahead of Ha
     if (!jin(sc.id)) continue;
     for (const e of sc.exits ?? []) if (e.next && !jin(e.next)) ends.push({ ch, sc, e });
   }
-  assert.deepEqual(ends.map(({ sc }) => sc.id).sort(), ['j01-retest', 'j04-dog', 'j07-guan', 'j09-dongzhi']);
+  assert.deepEqual(ends.map(({ sc }) => sc.id).sort(), ['j01-retest', 'j04-dog', 'j07-chenmai', 'j09-dongzhi']);
   for (const { ch, sc, e } of ends) {
     const into = sceneOf(e.next);
     assert.ok(into.at, `${e.next} stands somewhere`);
@@ -148,9 +148,10 @@ test('古 → 今 keeps him where he stood: a 今 scene stands nowhere on the ma
 
 test('a chapter opened by a 今 interlude unfolds its 古 map only once the 古 scene is reached (徐州 over 沈芒\'s hospital bed, live 2026-10-15)', () => {
   const base = fixture('zhuji-cliff');
-  const inJin = fresh({ ...base, chapter: '00-zhuji', scene: 'j07-guan', place: 'houshan', unfolded: [], tell_owed: [], node: null,
-    done_scenes: base.done_scenes.filter((x) => !Object.keys(content.chapters['00-zhuji'].scenes).includes(x)).concat(['j07-ankle', 'j07-dark']),
-    ended: (base.ended ?? []).filter((x) => x !== '00-zhuji'), tasks: { ...base.tasks, 'jin-pulse': { status: 'done', period: 'once', done_at: NOW.toISOString() } } });
+  // 今三's last scene since 2026-10-26: j07-chenmai (the hospital door, the morning count)
+  const inJin = fresh({ ...base, chapter: '00-zhuji', scene: 'j07-chenmai', place: 'houshan', unfolded: [], tell_owed: [], node: null,
+    done_scenes: base.done_scenes.filter((x) => !Object.keys(content.chapters['00-zhuji'].scenes).includes(x)).concat(['j07-ankle', 'j07-dark', 'j07-guan']),
+    ended: (base.ended ?? []).filter((x) => x !== '00-zhuji'), tasks: { ...base.tasks, 'jin-pulse': { status: 'done', period: 'once', done_at: NOW.toISOString() }, 'jin-chenmai': { status: 'done', period: 'once', done_at: NOW.toISOString() } } });
   assert.equal(look(inJin, content, ctx).scene.line, 'jin');
   assert.equal(jiudingBrief(content, inJin).unfold?.walk, false, 'no 古 map unfolds on 沈芒\'s stage');
   const back = resolve(inJin, content, ctx, { exit: 'out' }).state;

@@ -15,7 +15,7 @@
   ],
   "tier": "qi",
   "step": 4,
-  "progress": 570,
+  "progress": 565,
   "wealth": 577,
   "bag": {
    "fox-token": 1,
@@ -186,6 +186,7 @@
    "j07-ankle",
    "j07-dark",
    "j07-guan",
+   "j07-chenmai",
    "09-snow",
    "09-jiuge",
    "09-furnace"
@@ -566,7 +567,32 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "jin-zhizhen": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-danjiao": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "jin-chat-dark": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-shendun": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-quxian": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-chenmai": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -595,7 +621,7 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 175,
+   "progress": 170,
    "wealth": 580
   },
   "stamina": 100,
@@ -1208,6 +1234,7 @@
    "wm-heluo",
    "j07-dark",
    "j07-guan",
+   "j07-chenmai",
    "09-snow",
    "09-jiuge",
    "09-furnace"

@@ -131,7 +131,34 @@ fit._hold).
 
 Over after: wm-lufang → 秦雁 2,336 ≈; 镜子 → 决赛 the told bout; wm-jiaxin's tail into the 后山 2,628 ≈ (no action).
 
-### 今三 (j07): +5
+### 今三 (j07): +5 → built 5
+**Built 2026-10-26:** ① 纸垫 as 打地鼠 `zhizhen` · ② 闭眼单脚站 (气走经脉 `danjiao`, j07-ankle's second board; 「只站了三秒」 on
+is the way on's passage) · ③ 闭关三日 as 气走经脉 `shendun` · ④ 阿禾's curve (jinchat `quxian`) · ⑤ 晨脉 as 打地鼠 `chenmai`
+in a new last scene, j07-chenmai (j07-guan split after 阿禾's visit). No 时机 (below). Reading 今三: 27 min, 60%.
+
+### 时机 → the types players know (Hanli 10-26: 「你编的小游戏不太对啊, 似乎, 还是用现有的类型吧」)
+The one-button 时机 board (sneeze.js tell · hold · count) is a home-made mechanic; every story board on it moved to a
+type already in the game, its scene, task, title, done line, stars and end lines kept. Two stay on sneeze.js: 喷嚏符
+(wm-dabi, the original, kept by Hanli 10-16) and 迎剑 (wm-yingjian, the prototype of the arcade fighter being built
+apart). Painted catchers for the 打地鼠 ones (tools/paint-games.py `rain/*-basin`; each strip is the old stage strip).
+
+| board | scene | was | now |
+|---|---|---|---|
+| 上崖 | 00-cliff | 时机 | 打地鼠 `shangya` |
+| 别抖 | j01-weigh | 时机 | 打地鼠 `biedou` |
+| 腿缝里 | 00-steps | 时机 | 打地鼠 `tuifeng` |
+| 一拳 | wm-qingshi | 时机 | 打地鼠 `qingshi` (the warmth drawn up the arm) |
+| 一根萝卜 · 别动 | wm-yaoyuan | 时机 | 打地鼠 `luobo` |
+| 嘀声 | j04-trial | 时机 | 气走经脉 `didi` |
+| 凶崖 | wm-xiongya | 时机 | 气走经脉 `xiongya` |
+| 踏马符 | wm-tama | 时机 | 气走经脉 `tama` (three feet up, through the fire) |
+| 扣 | wm-koujue | 时机 | 对话 jinchat `chu-kou` (褚先生 on holding) |
+| 接镜 | wm-jiejing | 时机 | 打地鼠 `jiejing` |
+| 风掉头 | wm-fengtou | 时机 | 气走经脉 `fengtou` |
+| 纸垫 · 闭关三日 · 晨脉 | 今三 | (planned 时机) | 打地鼠 · 气走经脉 · 打地鼠 |
+
+The cost: more 调息 (第五回 4, 第六回 3, 今二 3, with 嘀声 next to 卧推) — the price of no new type; the later 回s
+lean on 打地鼠, 对话 and the others instead.
 | # | scene · ¶ | the book | kit · level |
 |---|---|---|---|
 | 1 | j07-ankle s24 | the paper pad: 「一捻一捻往里送…要快、要直」 | 时机 `zhidian` (needle) |

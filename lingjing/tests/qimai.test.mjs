@@ -26,6 +26,10 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   'xirang-yinshen': 'yinshen',
   // 第六回's: 褚先生's two fingers on the pulse pillow
   'yaban-maizhen': 'maizhen',
+  // 今三's (2026-10-26): eyes shut on one foot, day one under the bar
+  'jin-danjiao': 'danjiao', 'jin-shendun': 'shendun',
+  // 时机 boards turned 调息 (Hanli 10-26: 「还是用现有的类型吧」): 嘀声, 凶崖, 踏马符, 风掉头
+  'jin-didi': 'didi', 'wangzuo-xiongya': 'xiongya', 'anhe-tama': 'tama', 'fengtou-pig': 'fengtou',
   // the reading cap before 入门 (2026-10-20): 00-halfyear's 挑水上坡 (on the cut 练功's task id), 今一's 边跑边念
   // the 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」): 挑水上坡, 后山, 随叶 and 顺风溜 told — rows, levels and tasks gone
   // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket

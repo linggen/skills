@@ -53,7 +53,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 67
+       "n": 71
       },
       {
        "kind": "read",
@@ -91,7 +91,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 68
+       "n": 72
       },
       {
        "kind": "read",
@@ -161,7 +161,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 75
+       "n": 79
       },
       {
        "kind": "read",
@@ -214,7 +214,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "bingzhai",
-       "n": 99
+       "n": 103
       },
       {
        "kind": "read",
@@ -271,10 +271,10 @@
         "zh": "上崖 · 一根一根",
         "en": "Up the cliff · One stem at a time"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 34
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 35
       },
       {
        "kind": "read",
@@ -293,7 +293,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 81
+       "n": 85
       },
       {
        "kind": "read",
@@ -312,7 +312,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 69
+       "n": 73
       },
       {
        "kind": "read",
@@ -350,7 +350,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 111
+       "n": 115
       },
       {
        "kind": "read",
@@ -407,7 +407,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 76
+       "n": 80
       },
       {
        "kind": "read",
@@ -445,7 +445,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 106
+       "n": 110
       },
       {
        "kind": "read",
@@ -483,7 +483,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 112
+       "n": 116
       },
       {
        "kind": "read",
@@ -528,7 +528,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 90
+       "n": 94
       },
       {
        "kind": "read",
@@ -547,7 +547,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 87
+       "n": 91
       },
       {
        "kind": "read",
@@ -563,10 +563,10 @@
         "zh": "皮褶卡钳 · 别抖",
         "en": "The skinfold calipers · Hold still"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 35
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 36
       },
       {
        "kind": "read",
@@ -585,7 +585,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 91
+       "n": 95
       },
       {
        "kind": "read",
@@ -604,7 +604,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 92
+       "n": 96
       },
       {
        "kind": "read",
@@ -623,7 +623,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 89,
+       "n": 93,
        "same": true
       },
       {
@@ -669,7 +669,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 77
+       "n": 81
       },
       {
        "kind": "read",
@@ -703,7 +703,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 25
+       "n": 26
       },
       {
        "kind": "read",
@@ -738,10 +738,10 @@
         "zh": "腿缝里 · 钻过去",
         "en": "Between the legs · Through"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 36
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 37
       },
       {
        "kind": "read",
@@ -779,7 +779,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 24
+       "n": 25
       },
       {
        "kind": "read",
@@ -818,7 +818,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 23
+       "n": 24
       },
       {
        "kind": "read",
@@ -873,7 +873,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 27,
+       "n": 28,
        "same": true
       },
       {
@@ -890,10 +890,10 @@
         "zh": "一拳 · 大青石",
         "en": "One punch · The bluestone"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 37
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 38
       },
       {
        "kind": "read",
@@ -912,7 +912,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 107
+       "n": 111
       },
       {
        "kind": "read",
@@ -931,7 +931,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 78
+       "n": 82
       },
       {
        "kind": "read",
@@ -947,10 +947,10 @@
         "zh": "一根萝卜 · 别动",
         "en": "A radish · Keep still"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 38
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 39
       },
       {
        "kind": "read",
@@ -969,7 +969,7 @@
        "mechanic": "割绳子",
        "variety": "割绳子",
        "game": "niugurope",
-       "n": 28
+       "n": 29
       },
       {
        "kind": "read",
@@ -1007,7 +1007,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 108
+       "n": 112
       },
       {
        "kind": "read",
@@ -1045,7 +1045,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 109
+       "n": 113
       },
       {
        "kind": "read",
@@ -1090,7 +1090,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 93,
+       "n": 97,
        "same": true
       },
       {
@@ -1126,10 +1126,11 @@
         "zh": "嘀声 · 二十米往返跑",
         "en": "The beeps · The twenty-metre shuttle"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 39
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 40,
+       "same": true
       },
       {
        "kind": "read",
@@ -1167,7 +1168,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 88
+       "n": 92
       },
       {
        "kind": "read",
@@ -1231,7 +1232,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 113
+       "n": 117
       },
       {
        "kind": "read",
@@ -1250,7 +1251,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 26
+       "n": 27
       },
       {
        "kind": "read",
@@ -1269,7 +1270,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 114
+       "n": 118
       },
       {
        "kind": "read",
@@ -1304,10 +1305,10 @@
         "zh": "凶崖 · 往下爬",
         "en": "The Deadly Cliff · Climbing down"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 40
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 41
       },
       {
        "kind": "read",
@@ -1346,7 +1347,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "wuziqi",
-       "n": 30
+       "n": 31
       },
       {
        "kind": "read",
@@ -1404,7 +1405,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 82
+       "n": 86
       },
       {
        "kind": "read",
@@ -1420,10 +1421,10 @@
         "zh": "踏马符 · 足下一踏",
         "en": "The horse talisman · Tread it underfoot"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 41
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 42
       },
       {
        "kind": "read",
@@ -1461,7 +1462,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 31
+       "n": 32
       },
       {
        "kind": "read",
@@ -1495,7 +1496,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 115
+       "n": 119
       },
       {
        "kind": "read",
@@ -1514,7 +1515,7 @@
        "mechanic": "割绳子",
        "variety": "割绳子",
        "game": "luoborope",
-       "n": 29
+       "n": 30
       },
       {
        "kind": "read",
@@ -1559,7 +1560,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 116
+       "n": 120
       },
       {
        "kind": "read",
@@ -1597,7 +1598,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 83
+       "n": 87
       },
       {
        "kind": "read",
@@ -1613,10 +1614,10 @@
         "zh": "扣 · 一炷香",
         "en": "Holding · One incense stick"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 42
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 43
       },
       {
        "kind": "read",
@@ -1635,7 +1636,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 32
+       "n": 33
       },
       {
        "kind": "read",
@@ -1669,7 +1670,7 @@
        "mechanic": "时机",
        "variety": "时机",
        "game": "sneeze",
-       "n": 33
+       "n": 34
       },
       {
        "kind": "read",
@@ -1708,7 +1709,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 117
+       "n": 121
       },
       {
        "kind": "read",
@@ -1747,7 +1748,7 @@
        "mechanic": "时机",
        "variety": "时机",
        "game": "sneeze",
-       "n": 43
+       "n": 44
       },
       {
        "kind": "read",
@@ -1783,10 +1784,10 @@
         "zh": "接镜 · 最后一道",
         "en": "Catching the beam · The last one"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 44
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 45
       },
       {
        "kind": "read",
@@ -1805,7 +1806,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 118
+       "n": 122
       },
       {
        "kind": "read",
@@ -1821,10 +1822,10 @@
         "zh": "风掉头 · 猪蜻蜓",
         "en": "The wind turns · The Pigcopter"
        },
-       "mechanic": "时机",
-       "variety": "时机",
-       "game": "sneeze",
-       "n": 45
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 46
       },
       {
        "kind": "read",
@@ -1843,7 +1844,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 119
+       "n": 123
       },
       {
        "kind": "read",
@@ -1862,7 +1863,7 @@
        "mechanic": "你画我猜",
        "variety": "你画我猜",
        "game": "drawguess",
-       "n": 59
+       "n": 63
       },
       {
        "kind": "read",
@@ -1902,8 +1903,46 @@
      "items": [
       {
        "kind": "read",
-       "chars": 6029,
-       "run": 6029,
+       "chars": 1450,
+       "run": 1450,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-zhizhen",
+       "scene": "j07-ankle",
+       "title": {
+        "zh": "纸垫 · 一捻一捻",
+        "en": "The paper pad · Twist by twist"
+       },
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 47
+      },
+      {
+       "kind": "read",
+       "chars": 1951,
+       "run": 1951,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-danjiao",
+       "scene": "j07-ankle",
+       "title": {
+        "zh": "气走经脉 · 闭眼单脚站",
+        "en": "Qi path · One foot, eyes shut"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 23
+      },
+      {
+       "kind": "read",
+       "chars": 2628,
+       "run": 2628,
        "over": true
       },
       {
@@ -1917,24 +1956,81 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 94
+       "n": 98
       },
       {
        "kind": "read",
-       "chars": 6322,
-       "run": 6547,
-       "over": true
+       "chars": 2143,
+       "run": 2143,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-shendun",
+       "scene": "j07-guan",
+       "title": {
+        "zh": "闭关三日 · 头一天",
+        "en": "Three days in seclusion · Day one"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 48
+      },
+      {
+       "kind": "read",
+       "chars": 2154,
+       "run": 2154,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-quxian",
+       "scene": "j07-guan",
+       "title": {
+        "zh": "阿禾 · 那条线",
+        "en": "Ahe · That line"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 124
+      },
+      {
+       "kind": "read",
+       "chars": 1487,
+       "run": 1487,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-chenmai",
+       "scene": "j07-chenmai",
+       "title": {
+        "zh": "晨脉 · 六十九",
+        "en": "Morning pulse · Sixty-nine"
+       },
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 49
+      },
+      {
+       "kind": "read",
+       "chars": 538,
+       "run": 763,
+       "over": false
       }
      ],
      "counts": {
-      "board": 1,
+      "board": 6,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 6547,
+     "longest": 2628,
      "roaming": 0,
      "side": []
     },
@@ -1948,8 +2044,8 @@
       {
        "kind": "read",
        "chars": 225,
-       "run": 6547,
-       "over": true
+       "run": 763,
+       "over": false
       },
       {
        "kind": "piece",
@@ -1977,7 +2073,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "yubujiuge",
-       "n": 46
+       "n": 50
       },
       {
        "kind": "read",
@@ -1996,7 +2092,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 86
+       "n": 90
       },
       {
        "kind": "read",
@@ -2035,7 +2131,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 85
+       "n": 89
       },
       {
        "kind": "read",
@@ -2072,7 +2168,7 @@
       "breakthrough": 0,
       "piece": 1
      },
-     "longest": 6547,
+     "longest": 5519,
      "roaming": 3,
      "side": []
     },
@@ -2100,7 +2196,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 79
+       "n": 83
       },
       {
        "kind": "read",
@@ -2194,7 +2290,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 95
+       "n": 99
       },
       {
        "kind": "read",
@@ -2213,7 +2309,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 50
+       "n": 54
       },
       {
        "kind": "read",

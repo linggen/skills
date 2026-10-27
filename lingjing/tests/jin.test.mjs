@@ -139,7 +139,7 @@ test('old saves: before the point they meet the interlude; past it they go on as
 });
 
 test('今 · 三 opens 筑基\'s chapter (古七, the old 古九) without spending its intro; 今 · 四 never closes the 卷', () => {
-  let s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: 'j07-ankle', place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['wm-heluo'] };
+  let s = fitWorld({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: 'j07-ankle', place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['wm-heluo'] }, content); // its boards offered as it loads (今三's, 2026-10-26)
   assert.equal(look(s, content, ctx).chapter.fresh, undefined, 'the snow\'s intro waits for the snow');
   const wealth = s.wealth;
   s = throughJin(s, content, NOW);
@@ -179,7 +179,9 @@ test('every 今线 board is a chat, 最后一罚 or 白线上: its task pays not
   // 10-22 (Hanli: 「改成玩」): 最后一罚 back as 今四's board, 今二's free throws a 砸寨 throw (白线上)
   const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-lastshot': 'qimai', 'jin-whiteline': 'zhazhai',
     // 今二's four (全文后的小游戏 2026-10-26)
-    'jin-wotui': 'qimai', 'jin-didi': 'sneeze', 'jin-qiu': 'rain', 'jin-xisi': 'qimai' };
+    'jin-wotui': 'qimai', 'jin-didi': 'qimai', 'jin-qiu': 'rain', 'jin-xisi': 'qimai', // 嘀声 a 时机 until 10-26 (Hanli: 「还是用现有的类型吧」)
+    // 今三's five (全文后的小游戏 第二批 2026-10-26)
+    'jin-zhizhen': 'rain', 'jin-danjiao': 'qimai', 'jin-shendun': 'qimai', 'jin-quxian': 'jinchat', 'jin-chenmai': 'rain' };
   for (const [id, game] of Object.entries(games)) {
     const t = content.tasks.tasks.find(x => x.id === id);
     assert.equal(t.game, game, id);
@@ -198,14 +200,14 @@ test('every 今线 board is a chat, 最后一罚 or 白线上: its task pays not
   assert.ok(!scenes().some(({ sc }) => sc.offers?.tasks?.includes('jin-pulse')), '晨脉: cut, offered nowhere');
 });
 
-test('晨脉 is off j07-guan (2026-10-19): the way on tells the 六十九 as before, unasked; an old save holding it offered lets it go', () => {
-  const sc = scenes().find(({ sc }) => sc.id === 'j07-guan').sc;
-  assert.equal(sc.show, undefined);
+test('晨脉 (jin-pulse) was cut 2026-10-19; the way on tells the 六十九 — after j07-chenmai\'s own count (打地鼠 `chenmai`, 2026-10-26); an old save holding the cut board lets it go', () => {
+  const sc = scenes().find(({ sc }) => sc.id === 'j07-chenmai').sc;
+  assert.deepEqual(sc.show, [{ card: 'board', id: 'jin-chenmai' }]);
   const out = sc.exits.find(e => e.id === 'out');
-  assert.equal(out.needs, undefined);
+  assert.equal(out.needs.task, 'jin-chenmai');
   assert.match(out.story.zh, /六十九[\s\S]*「出关了。」/);
   assert.equal(content.tasks.tasks.find(t => t.id === 'jin-pulse').cut, '2026-10-19');
-  const s = { ...newState(content, 'zh', new Date('2026-10-19T10:00:00')), chapter: '00-zhuji', scene: 'j07-guan', tasks: { 'jin-pulse': { status: 'offered' } } };
+  const s = { ...newState(content, 'zh', new Date('2026-10-19T10:00:00')), chapter: '00-zhuji', scene: 'j07-chenmai', tasks: { 'jin-pulse': { status: 'offered' }, 'jin-chenmai': { status: 'done' } } };
   const fit = fitWorld(s, content);
   assert.equal(fit.tasks['jin-pulse'], undefined, 'let go on load');
   const on = resolve(fit, content, { now: new Date('2026-10-19T10:00:00'), quests: [] }, { exit: 'out' });
