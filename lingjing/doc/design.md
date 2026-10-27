@@ -383,7 +383,18 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
     and the validator's `CLAIMS` table holds each ratio to the numbers.
   A fixed 「抵三日」 is wrong on every layer but one, because 闭关 grows with the layer and a pill does not.
 
-### 境界 in the game 【已建】
+### 境界 in the game 【已建】 · one 修为 across the lines 【设计 · 待建】 (Hanli, 2026-10-27)
+
+**One 修为, one ladder, three names** (story `宇宙.md` § 一个修为，一套境界，三套名字).
+- 修为 is the **player's**, not a character's. 古, 今, 未来 boards and the real-life 人间功课 all pay the same number.
+- `ladder.json` keeps one set of tiers and thresholds. Each line gets its own **names** for the nine realms:
+  - 古: 练气…渡劫;
+  - 今: 新生 · 立身 · 成器 · 立业 · 通达 · 担当 · 有容 · 知命 · 从心;
+  - 未来: 应物 · 明理 · 先知 · 通言 · 通灵 · 开化 · 有情 · 知我 · 无上.
+- The top bar shows the line the player stands on.
+- The 今 pays 修为 like any board: 「不跨线」 no longer holds for pay, only for story facts.
+- `tools/numbers.mjs` counts 今 play time in the same layer hours.
+- To build: names per line in `ladder.json`, the bar's name by `sideLineOf(look)`, 今 boards on the percent pay, the numbers report.
 
 The world's nine realms and their names are story DESIGN § 道统 (补丁①).
 `ladder.json` says 合道 (Union with the Dao) · 归真 (Return to Truth) since
