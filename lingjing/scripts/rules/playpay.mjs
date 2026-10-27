@@ -50,3 +50,13 @@ export function errandGrant(content, state) {
   const progress = Math.round(rateOf(e.rate, state) * (e.minutes ?? 0));
   return progress || e.wealth ? { table: 'play', progress, wealth: e.wealth ?? 0 } : null;
 }
+
+/* A 人间功课's 修为 (Hanli 2026-10-27: 「相比每日linggen任务, health等app的任务, 可以多给一些修为」): a chore done in real
+   life is worth so many minutes of board play at the layer's rate — `play_pay.chore.minutes` by its period (a day's 30,
+   a week's 60). Never ★, never the replay: one chore is paid once a period (chores.mjs). Null where none is declared. */
+export function chorePlay(content, state, period) {
+  const c = content.balance?.play_pay?.chore;
+  const minutes = c?.minutes?.[period];
+  if (!minutes || !state) return null;
+  return Math.round(rateOf(content.balance.play_pay.rate, state) * minutes);
+}

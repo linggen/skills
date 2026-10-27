@@ -1,7 +1,7 @@
 {
  "_about": "游戏厅 stage save for duizi (tools/arcade-saves.mjs, from its games.json row)",
  "state": {
-  "version": 11,
+  "version": 12,
   "world": "jiuding",
   "lang": "zh",
   "name": "沈小满",
@@ -15,7 +15,7 @@
   ],
   "tier": "qi",
   "step": 4,
-  "progress": 565,
+  "progress": 1475,
   "wealth": 696,
   "bag": {
    "fox-token": 1,

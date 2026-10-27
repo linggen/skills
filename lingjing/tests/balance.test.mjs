@@ -11,10 +11,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
-import { fitWorld, layerPayOf, migrate, newState, realmName } from '../scripts/state.mjs';
+import { STATE_VERSION, fitWorld, layerPayOf, migrate, newState, realmName } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
+import { chorePlay } from '../scripts/rules/playpay.mjs';
 import { turnedPays } from '../scripts/turned.js';
 import { BALANCE_FILE, bookWalk, errandPays, fit, play, table } from '../tools/balance.mjs';
 
@@ -126,9 +127,13 @@ test('修屋顶 is handed in for 灵石 and, since 2026-10-27, its minutes\' 修
 
 test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零层); the day\'s pick and 开府 pay 灵石', () => {
   const s = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: null, place: 'waimen', ended: ['00-prologue'], tier: 'qi', step: 1, progress: 0, traits: ROOTS };
-  const payOf = q => paysOf(content, s, NOW, choreGrant(content, q));
-  assert.deepEqual(payOf({ id: 'health-workout', period: 'day', reward: 20 }), { progress: T.gongke.progress, wealth: 0 });
-  assert.deepEqual(payOf({ id: 'shifu-scan', period: 'week', pool: true, reward: 30 }), { progress: 0, wealth: T.life.wealth });
+  const payOf = q => paysOf(content, s, NOW, choreGrant(content, q, s));
+  // 2026-10-27: a chore pays its period's minutes of board play at the layer's rate (play_pay.chore) — 练气一层 ≈ 200 a day's, ≈ 400 a week's.
+  const pp = content.balance.play_pay, at = m => Math.round(pp.rate.qi[1] * m);
+  assert.deepEqual(payOf({ id: 'health-workout', period: 'day', reward: 20 }), { progress: at(pp.chore.minutes.day), wealth: 0 });
+  assert.deepEqual(payOf({ id: 'shifu-scan', period: 'week', pool: true, reward: 30 }), { progress: at(pp.chore.minutes.week), wealth: T.life.wealth });
+  assert.equal(at(pp.chore.minutes.day), 201);
+  assert.deepEqual(choreGrant(content, { id: 'health-workout', period: 'day', reward: 20 }).progress, 0, 'no save, no layer: nothing read off it');
   assert.deepEqual(payOf({ id: 'linggen-pair', period: 'once', reward: 50 }), { progress: 0, wealth: T.once.wealth });
   const zero = { ...s, step: 0 };
   const workout = { id: 'health-workout', app: 'health', period: 'day', reward: 20, due: true, done_at: NOW.toISOString(), title: { zh: '锻炼', en: 'Workout' } };
@@ -158,7 +163,7 @@ test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight
   const th = content.ladder.tiers[0].thresholds;
   const s = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: null, place: 'waimen', ended: ['00-prologue'], done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'],
     tier: 'qi', step: 1, progress: th[1], traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString() };
-  const g = T.gongke.progress;
+  const g = chorePlay(content, s, 'day'); // the day's 功课, its minutes of board play (2026-10-27)
   assert.equal(pay(content, s, ctx, { table: 'gongke', progress: g }).progress, g, 'the whole 功课 counted');
   assert.deepEqual([s.step, s.progress], [1, th[1] + g]);
   const f = structuredClone(s);
@@ -178,7 +183,9 @@ test('a save from before keeps its 层 and its bar as full as it stood — a v8 
   const save = (version, extra) => ({ ...newState(content, 'zh', NOW), version, chapter: '00-waimen', scene: 'wm-chaifang', place: 'chaifang', ended: ['00-prologue'],
     done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'], tier: 'qi', traits: ROOTS, ...extra });
   const v9half = migrate(save(9, { step: 4, progress: was['10'][4] / 2 }), content);
-  assert.deepEqual([v9half.step, v9half.progress, v9half.version], [4, Math.round(th[4] / 2), 11]);
+  assert.deepEqual([v9half.step, v9half.progress, v9half.version], [4, Math.round(th[4] / 2), STATE_VERSION]);
+  // v11 (before 人间功课 paid its minutes, 2026-10-27): 一层 kept as it stood, a half 二层 bar stays half of the new one.
+  assert.deepEqual([migrate(save(11, { step: 1, progress: 146 }), content).progress, migrate(save(11, { step: 2, progress: was['12'][2] / 2 }), content).progress], [146, Math.round(th[2] / 2)]);
   // v10 (the stage quests' ladder, before the story stopped raising 层): his 九层 · 0 stays 九层 · 0; half a bar stays half.
   assert.deepEqual([migrate(save(10, { step: 9, progress: 0 }), content).step, migrate(save(10, { step: 9, progress: 0 }), content).progress], [9, 0]);
   assert.equal(migrate(save(10, { step: 7, progress: was['11'][7] / 2 }), content).progress, Math.round(th[7] / 2));

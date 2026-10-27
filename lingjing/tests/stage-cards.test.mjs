@@ -15,6 +15,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, quest, tale } from '../scripts/rules.mjs';
 import { TO_WAIMEN, TO_HALL, TO_VALLEY, walk, everyJuan } from './prologue.mjs';
+import { chorePlay } from '../scripts/rules/playpay.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const read = f => JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding', f), 'utf8'));
@@ -114,7 +115,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   assert.deepEqual([chained.next, chained.then, chained.taken, chained.gives], ['林子里的蠪侄', undefined, false, '竹剑']);
   assert.match(opened, /data-go="lvliang">去吕梁洪</, 'where the count is met is one tap from the opened row — the page walks it');
   const chore = quest(took.state, content, at, { action: 'info', id: 'health-workout' }).result;
-  assert.deepEqual([chore.kind, chore.app, chore.grant.progress], ['chore', 'health', 20]);
+  assert.deepEqual([chore.kind, chore.app, chore.grant.progress], ['chore', 'health', chorePlay(content, took.state, 'day')], 'its day\'s minutes of board play (2026-10-27)');
   assert.doesNotMatch(bookPopHtml({ ...page, bookRow: 'health-workout', bookInfo: chore }), /data-drop/, 'life\'s own cannot be put down');
   assert.equal(quest(took.state, content, at, { action: 'info', id: 'nope' }).result.refused, 'no-such-quest');
   // nothing in hand and no thread: no chip

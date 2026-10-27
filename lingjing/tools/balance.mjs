@@ -14,7 +14,7 @@
 //
 // A day, as the model plays it (every number from balance.json `model` or the world's data):
 //   - the routine first, where it stands open and once past 零层 (it takes no 修为): the day's 功课
-//     (`pay.gongke`, done on `gongke` of the days); the 秘境 rerun (rules/rerun.mjs: open in its
+//     (its minutes of board play, `play_pay.chore`, done on `gongke` of the days); the 秘境 rerun (rules/rerun.mjs: open in its
 //     chapter, and the ones its `also` names, once its beat is behind him; one a sitting, its
 //     beasts × the fight win rate); pool fights (a pool on the map: one win per pool per
 //     `cooldowns.pool_rest_min` of a sitting); the 饭桶 (once he holds it: `fantong_progress` a
@@ -40,6 +40,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
 import { runsPay } from '../scripts/rules/rerun.mjs';
+import { chorePlay } from '../scripts/rules/playpay.mjs';
 import { gatesOf } from '../scripts/rules/gates.mjs';
 import { lockedOf } from '../scripts/state.mjs';
 import { huiOf } from '../scripts/rules/hui.mjs';
@@ -225,7 +226,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
       qi = k === 0 ? Q.max : Math.min(Q.max, qi + Q.max * (model.waking_h / n) / Q.refill_hours);
       const at = () => day + (k * sit + (sit - left)) / total;
       if (!zero()) {
-        if (k === 0) gain(pay.gongke.progress * player.gongke, false, 'gongke', 'gongke');
+        // The day's 功课: its minutes of board play at the layer he stands on (rules/playpay.mjs chorePlay, 2026-10-27).
+        if (k === 0) gain((chorePlay(content, s, 'day') ?? Math.min(pay.gongke.progress, 20)) * player.gongke, false, 'gongke', 'gongke');
         if (k === 0) earn((pay.gongke.wealth ?? 0) * player.gongke, 'gongke');
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
         if (k === 0 && day > 0 && player.seclude) gain(Math.min(content.rewards.seclusion.progress_per_hour * Math.min(player.seclude, content.rewards.seclusion.cap_hours), pay.seclusion.progress), false, 'seclusion', 'seclusion');

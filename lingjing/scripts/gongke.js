@@ -29,10 +29,11 @@ const hm = (iso) => {
   return d && !Number.isNaN(d.getTime()) ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '';
 };
 
-/* What a row adds, as labels. */
+/* What a row pays, as labels: the chore's own (`pays`, its minutes of board play in 修为) and its meaning's (`adds`), summed. */
 function addsHtml(r, gw) {
-  if (!r.adds) return '';
-  const bits = [r.adds.wealth ? say(gw.wealth, { n: r.adds.wealth }) : '', r.adds.progress ? say(gw.progress, { n: r.adds.progress }) : '', r.adds.item ?? ''].filter(Boolean);
+  if (!r.adds && !r.pays) return '';
+  const xw = (r.pays?.progress ?? 0) + (r.adds?.progress ?? 0), ls = (r.pays?.wealth ?? 0) + (r.adds?.wealth ?? 0);
+  const bits = [xw ? say(gw.progress, { n: xw }) : '', ls ? say(gw.wealth, { n: ls }) : '', r.adds?.item ?? ''].filter(Boolean);
   return bits.length ? `<span class="gkadds">${esc(gw.adds)} ${esc(bits.join(' · '))}</span>` : '';
 }
 

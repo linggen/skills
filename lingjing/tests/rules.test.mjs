@@ -1017,7 +1017,7 @@ test('a quest pays when its app says it was done this period, once', () => {
   const seen = look(s, content, done).quests[0];
   assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
   const paid = must(task, s, { action: 'check', id: 'shifu-scan' }, done);
-  assert.equal(paid.result.paid.progress, content.rewards.tables.gongke.progress, 'a fixed one is the day\'s 功课: 修为, capped by its table (2026-10-15)');
+  assert.equal(paid.result.paid.progress, Math.round(content.balance.play_pay.rate.qi[s.step] * content.balance.play_pay.chore.minutes.week), 'a fixed one is the day\'s 功课: 修为, its week\'s minutes of board play (2026-10-27)');
   assert.equal(paid.state.chores['shifu-scan'].period, weekKey(NOW), 'the apps\' 功课 are the chores book; `quests` is 差事 now');
   assert.equal(look(paid.state, content, done).quests[0].paid, true);
   refused(task, paid.state, { action: 'check', id: 'shifu-scan' }, 'already-paid', done);
@@ -1038,7 +1038,7 @@ test('a quest pays when its app says it was done this period, once', () => {
   assert.equal(look(s, content, nobody).book.find(b => b.id === 'shifu-scan').chore.open, null, 'no entry, no link');
   refused(quest, s, { action: 'turn', id: 'shifu-scan' }, 'not-done', lastWeek);
   const turned = must(quest, s, { action: 'turn', id: 'shifu-scan' }, done);
-  assert.equal(turned.result.paid.progress, content.rewards.tables.gongke.progress);
+  assert.equal(turned.result.paid.progress, paid.result.paid.progress, 'handed in from the book: the same pay');
   assert.deepEqual(turned.result.book, [], 'paid for its period, it leaves the book');
   refused(quest, turned.state, { action: 'turn', id: 'shifu-scan' }, 'already-paid', done);
 });

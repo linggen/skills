@@ -293,6 +293,7 @@ test('a fight in the run: the room\'s beast, paid as a haunt, the room moves on,
   assert.ok(r);
 });
 import { runSpoils } from '../scripts/rules/rerun.mjs';
+import { chorePlay } from '../scripts/rules/playpay.mjs';
 const runSpoilsOf = (state, game) => runSpoils(content, state, game);
 
 // The run's board is a short 守炉 since 2026-10-20 (was 割藤, deleted with the 饭桶's old play): the room's find is its pay,
@@ -341,7 +342,7 @@ test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶
   const s0 = { ...past(), step: 4, progress: 0 }; // at 古六's cap, 四层 — ground since 2026-10-16 (息壤 no longer lifts him there)
   const need = threshold(content, s0);
   // 修为 by the layer (balance.json layer_pay): what a fight and the 功课 are worth on 四层 — converted as it is paid.
-  const H = Math.round(T.haunt.progress * layerPayOf(content, s0, 'haunt')), G = Math.round(T.gongke.progress * layerPayOf(content, s0, 'gongke'));
+  const H = Math.round(T.haunt.progress * layerPayOf(content, s0, 'haunt')), G = chorePlay(content, s0, 'day'); // the 功课: its minutes of board play at the layer (2026-10-27)
   // Full at the 回's cap (古六: 四层): a fight pays 灵石, no 修为, no held line.
   const full = { ...structuredClone(s0), progress: need };
   const w0 = full.wealth;
@@ -363,7 +364,7 @@ test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶
   assert.equal(pay(content, low, at(openAt()), { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress, H);
   // The day's 功课 (not a fight) at full still counts on past the mark, as before.
   const g = { ...structuredClone(s0), progress: need };
-  assert.equal(pay(content, g, at(openAt()), { table: 'gongke', progress: T.gongke.progress }).progress, G);
+  assert.equal(pay(content, g, at(openAt()), { table: 'gongke', progress: G }).progress, G);
   assert.equal(g.progress, need + G);
   // A run's fight at full: the win card's pay is 灵石.
   const now = openAt();

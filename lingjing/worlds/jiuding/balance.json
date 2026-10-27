@@ -6,14 +6,14 @@
     "qi": [
       0,
       470,
-      490,
-      510,
-      530,
-      1040,
-      1060,
-      1080,
-      1100,
-      1120
+      1330,
+      1350,
+      1440,
+      2890,
+      2910,
+      2930,
+      2950,
+      2970
     ],
     "foundation": [
       400,
@@ -58,10 +58,9 @@
   },
   "_overflow_stretch": "Hanli, 2026-10-15 (approved): a step up — the story's rise, a throw, or grinding the 回's cap allows — carries the 修为 over the last mark in whole, and the new step asks this share of it more (state.mjs stepUp, `state.stretch`): 100 over 一层's mark enters 二层 at 100/450, not 0/400. Grinders stay only somewhat ahead; nothing is held or lost.",
   "overflow_stretch": 0.5,
-  "_layer_pay": "Hanli 2026-10-16 (option A): 修为 grows with the layer — a higher layer's beasts and practice give more. The routine tables named here (功课, a haunt's or pool's fight, 闭关) pay their 修为 times the layer's multiplier, by tier (state.mjs layerPayOf; tools/balance.mjs plays the same). The story's grants are never scaled. A smooth rise with no cliff (same day: a near-tripling between two layers reads as a glitch), front-loaded: 古六 holds him on 三层–四层 right after 古五's 二层, and a layer never costs less than the one below, so 三层–四层 must pay well above 二层 for 古六 to fit a week — the steepest step is 二→三 (×2), the rest a gentle climb to 3.6 at 九层. A geometric 1 → 3.6 left 古六 at 9.3 typical days. The price: 古五 runs a little fast (4.5 typical days, its band's low end lowered to 4.5 — `model.bands.except`), in keeping with 古一–古三 fast.",
+  "_layer_pay": "Hanli 2026-10-16 (option A): 修为 grows with the layer — a higher layer's beasts and practice give more. The routine tables named here (功课, a haunt's or pool's fight, 闭关) pay their 修为 times the layer's multiplier, by tier (state.mjs layerPayOf; tools/balance.mjs plays the same). The story's grants are never scaled. A smooth rise with no cliff (same day: a near-tripling between two layers reads as a glitch), front-loaded: 古六 holds him on 三层–四层 right after 古五's 二层, and a layer never costs less than the one below, so 三层–四层 must pay well above 二层 for 古六 to fit a week — the steepest step is 二→三 (×2), the rest a gentle climb to 3.6 at 九层. A geometric 1 → 3.6 left 古六 at 9.3 typical days. The price: 古五 runs a little fast (4.5 typical days, its band's low end lowered to 4.5 — `model.bands.except`), in keeping with 古一–古三 fast. 2026-10-27: 功课 left the list — it pays its minutes of play at the layer's own rate now (play_pay._chore).",
   "layer_pay": {
     "tables": [
-      "gongke",
       "haunt",
       "seclusion"
     ],
@@ -78,7 +77,7 @@
       3.6
     ]
   },
-  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth). 2026-10-22 (人间功课 as cultivation, worlds/jiuding/gongke.json): `chore_kind` caps what a chore's meaning adds on top of its own pay, `chore_week` the 宗门月俸.",
+  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth). 2026-10-22 (人间功课 as cultivation, worlds/jiuding/gongke.json): `chore_kind` caps what a chore's meaning adds on top of its own pay, `chore_week` the 宗门月俸. 2026-10-27: `gongke` and `life` pay a chore's minutes of board play (play_pay._chore, ≈ 200 修为 a day's at 练气一层) — their `progress` here is no cap any more.",
   "pay": {
     "play": { "progress": 100000, "wealth": 100000 },
     "scene": {
@@ -150,7 +149,7 @@
       "wealth": 20
     },
     "gongke": {
-      "progress": 20,
+      "progress": 100000,
       "wealth": 0
     },
     "gongke_zero": {
@@ -158,7 +157,7 @@
       "wealth": 5
     },
     "life": {
-      "progress": 0,
+      "progress": 100000,
       "wealth": 10
     },
     "stage": {
@@ -449,51 +448,24 @@
         8,
         21
       ],
-      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days. 2026-10-26: with the book's full text, 古四 (h05) reads 7.7 typical days and 古六 (h08) 10.1 — allowed to 8 and 10.5 until the new small games land and the 层 are re-fit (fit._hold). 2026-10-26 (全文后的小游戏 第二批): 古六's nine new boards add their minutes to the light player (19 → 22 days); its light band allowed to 24, its typical to 11, its heavy to 6.5 while fit._hold keeps 古四–古六 at 470…530. 第八回 (h09)'s three boards (考书 · 用哪颗丹 · 恬惔虚无) lift its typical 7.1 → 7.8, and 今四's six (it rides with 古八) to 8.1: allowed to 8.5, the same hold.",
+      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days. 2026-10-26: with the book's full text, 古四 (h05) reads 7.7 typical days and 古六 (h08) 10.1 — allowed to 8 and 10.5 until the new small games land and the 层 are re-fit (fit._hold). 2026-10-26 (全文后的小游戏 第二批): 古六's nine new boards add their minutes to the light player (19 → 22 days); its light band allowed to 24, its typical to 11, its heavy to 6.5 while fit._hold keeps 古四–古六 at 470…530. 第八回 (h09)'s three boards (考书 · 用哪颗丹 · 恬惔虚无) lift its typical 7.1 → 7.8, and 今四's six (it rides with 古八) to 8.1: allowed to 8.5, the same hold. 2026-10-27 (人间功课 pays its minutes of play, play_pay._chore): 练气二层 on ask ≈ 2.7× (fit.hold 1330 · 1440 · 2890), sized for a player who plays the practice boards (play_pay) and hands in one 功课 a day. This model plays no practice boards — only the story's own, pool fights and the 功课 — so its 古五–古八 run long (typical 7.8 · 13.7 · 12.1 · 15.6 days): the bands are widened to what it prints, until the model plays the practice boards and the 层 are re-fit (doc/games.md § 人间功课 pay).",
       "except": {
-        "h09": {
-          "typical": [
-            5,
-            8.5
-          ]
-        },
-        "h07": {
-          "typical": [
-            4,
-            7.5
-          ]
-        },
-        "h05": {
-          "typical": [
-            5,
-            8
-          ]
-        },
-        "h08": {
-          "typical": [
-            5,
-            11
-          ],
-          "light": [
-            8,
-            24
-          ],
-          "heavy": [
-            1.5,
-            6.5
-          ]
-        }
+        "h05": { "typical": [4.5, 8] },
+        "h07": { "typical": [4, 8.5], "light": [8, 21], "heavy": [1.5, 7] },
+        "h08": { "typical": [5, 15], "light": [8, 32], "heavy": [1.5, 8.5] },
+        "h11": { "typical": [5, 13.5], "light": [8, 30], "heavy": [1.5, 8] },
+        "h09": { "typical": [5, 17], "light": [8, 38], "heavy": [1.5, 11] }
       }
     },
     "fit": {
       "player": "heavy",
       "hold": {
         "h05": 470,
-        "h07": 490,
-        "h08": 510,
-        "h11": 1040
+        "h07": 1330,
+        "h08": 1440,
+        "h11": 2890
       },
-      "_hold": "2026-10-20 (Hanli 「可以, 按你说的做」): 古七 (h11) holds 练气五–九层 at 1040…1120. After the 10-19 weak-board sweep the heavy player's 古七 is flat at 3.2 days from 960 to 1310, so its 3.7 target lands on the next step, 1390 — which puts the typical 古八 (h09) at 7.7 days, outside its 5–7.5 band. 1040 keeps every band and the old pace. 2026-10-26 (the book's full text played, Hanli 「你的建议我同意」): 古四–古六 (h05 · h07 · h08) hold 练气一–四层 at 470…530, the numbers before the change. Played whole, the book reads about twice as long; --fit would drop 一层 to 290 and still leave 古六 at 9.4 typical days. The re-fit waits for the new small games (doc/games.md § 全文后的小游戏) — Hanli's call.",
+      "_hold": "2026-10-20 (Hanli 「可以, 按你说的做」): 古七 (h11) holds 练气五–九层 at 1040…1120. After the 10-19 weak-board sweep the heavy player's 古七 is flat at 3.2 days from 960 to 1310, so its 3.7 target lands on the next step, 1390 — which puts the typical 古八 (h09) at 7.7 days, outside its 5–7.5 band. 1040 keeps every band and the old pace. 2026-10-26 (the book's full text played, Hanli 「你的建议我同意」): 古四–古六 (h05 · h07 · h08) hold 练气一–四层 at 470…530, the numbers before the change. Played whole, the book reads about twice as long; --fit would drop 一层 to 290 and still leave 古六 at 9.4 typical days. The re-fit waits for the new small games (doc/games.md § 全文后的小游戏) — Hanli's call. 2026-10-27 (人间功课 pays its minutes of play, Hanli 「你计算决定吧」): 古五–古七 hold 练气二–九层 at 1330 · 1440 · 2890 — each layer's board and story 修为 (the old 490…1120) plus one daily 功课 a day over the layer's calendar at 30 minutes a day (2 × its play hours, +1 h a layer), ≈ 2.7×; 一层 stays 470 (a save inside it keeps its goal).",
       "days": {
         "default": 4.5,
         "h05": 3.4,
@@ -539,7 +511,9 @@
     "rate": { "qi": [0, 6.7, 4.67, 3.64, 3.03, 4.95, 4.33, 3.86, 3.49, 3.2], "default": 3.2 },
     "stars": { "1": 0.6, "2": 0.8, "3": 1 },
     "replay": [1, 0.5, 0.1],
-    "errand": { "minutes": 5, "rate": { "qi": [0, 5.88, 4.08, 3.19, 2.65, 4.33, 3.79, 3.38, 3.06, 2.8], "default": 2.8 }, "wealth": 15 }
+    "errand": { "minutes": 5, "rate": { "qi": [0, 5.88, 4.08, 3.19, 2.65, 4.33, 3.79, 3.38, 3.06, 2.8], "default": 2.8 }, "wealth": 15 },
+    "_chore": "人间功课 (Hanli 2026-10-27: 「小游戏的有点高, 相比每日linggen任务, health等app的任务, 可以多给一些修为」): a chore of the day — the workout, the day's pick, any app's daily — pays `minutes.day` of board play at the layer's `rate` (练气一层 30 × 6.7 ≈ 200 修为), a week's `minutes.week` (≈ 400); no ★, no replay, once a period as before (rules/playpay.mjs chorePlay, chores.mjs choreGrant). 灵石 stays the tables' own (`gongke` 0, `life` 10); 开府 and 零层 (`gongke_zero`) unchanged. The 练气 thresholds from 二层 carry it (model.fit.hold, doc/games.md § 人间功课 pay).",
+    "chore": { "minutes": { "day": 30, "week": 60 } }
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
   "lock_fight": {

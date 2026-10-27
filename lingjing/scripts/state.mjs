@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 11;
+export const STATE_VERSION = 12;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -495,6 +495,9 @@ const MIGRATIONS = [
   // v11 (2026-10-16, Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): no story rise, so 练气 re-fit
   // again (balance.json). Its 层 kept, its bar as full as it stood, as v10 (paceLayer).
   [11, m => { m.ladder_pace ??= 11; }],
+  // v12 (2026-10-27, Hanli: 「health等app的任务, 可以多给一些修为」): 人间功课 pays its minutes of play, and 练气's
+  // 层 from 二层 ask the more it brings. Its 层 kept, its bar as full as it stood (paceLayer); 一层 is unchanged.
+  [12, m => { m.ladder_pace ??= 12; }],
 ];
 
 export function migrate(state, content = null) {

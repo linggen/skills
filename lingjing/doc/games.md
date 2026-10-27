@@ -156,6 +156,37 @@ the threshold carry the hours (235 修为 an hour) and the pay stay one number p
 for a higher layer, the same coin for the same minutes, which a player can learn. (The calendar this makes is above:
 练气 108 typical days at +1 h a layer, 72 at +0.5 h.)
 
+## 人间功课 pay — in the rules 10-27
+
+Hanli 10-27: 「小游戏的有点高, 相比每日linggen任务, health等app的任务, 可以多给一些修为 … 你计算决定吧」. Board pay stays
+(`play_pay`). A chore of the day — the workout, the day's pick, any app's daily — pays **30 minutes of board play at the
+layer's rate** in 修为, a week's **60**; no ★, no replay, once a period (rules/playpay.mjs chorePlay, chores.mjs choreGrant).
+灵石 stays the tables' own. 开府 and 零层 unchanged; 功课 left `layer_pay` (the rate already grows with the layer).
+Its 修为 still counts on past a full mark (not a converting table). The 人间功课 board and the 事 book show each row's
+修为 as it would land (`pays`, plus the meaning's `adds`).
+
+**Thresholds** (练气二层 on; 一层 stays 470 — a save inside it keeps its goal; state v12 carries a bar's fill): a layer's
+board and story 修为 (the old threshold, at +1 h a layer) plus one daily 功课 a day over its calendar at 30 min a day
+(2 × its play hours). Written through `model.fit.hold` (each 回's layers equal, +20 a 层):
+
+| 层 | old | new | daily 功课 | weekly | typical days (30 min + one 功课 a day) | games only (no 功课) |
+|---|---|---|---|---|---|---|
+| 一层 | 470 | 470 | 201 | 402 | ~1.5 (unchanged gate, the 功课 on top) | 4 |
+| 二层 | 490 | 1330 | 140 | 280 | 6 | 16 |
+| 三层 | 510 | 1350 | 109 | 218 | 8 | 21 |
+| 四层 | 530 | 1440 | 91 | 182 | 10 | 27 |
+| 五层 | 1040 | 2890 | 149 | 297 | 12 | 33 |
+| 六层 | 1060 | 2910 | 130 | 260 | 14 | 38 |
+| 七层 | 1080 | 2930 | 116 | 232 | 16 | 43 |
+| 八层 | 1100 | 2950 | 105 | 209 | 18 | 48 |
+| 九层 | 1120 | 2970 | 96 | 192 | 20 | 53 |
+
+**A player who never hands in a 功课 takes ≈ 2.7× the typical days** (the 功课 is 30 of a typical day's ~47.5
+修为-minutes: 1 + 30 ÷ 17.5). For 1.5× the day's minutes would be ~9 (≈ 60 修为 at 一层); 15 minutes gives ~1.9×. Only
+`play_pay.chore.minutes` and the holds move it. A plain install without Health, CFO or Shifu has no daily 功课 (Linggen's own
+are 开府, once) — that player is the games-only column. tools/balance.mjs plays the 功课 at its new pay but no practice
+boards, so its 古五–古八 run long (typical 7.8 · 13.7 · 12.1 · 15.6 days); its bands are widened until it plays them.
+
 ## 四条 — the standing rule, audit 10-27
 
 Hanli 10-27: 「确保都能跳过去, 不会卡住游戏进程. 都有音效并可关闭, 都美化过并统一风格, 都用了小游戏的外壳.」 The 游戏厅 holds
