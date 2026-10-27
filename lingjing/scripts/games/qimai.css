@@ -69,3 +69,15 @@
 @media (prefers-reduced-motion: reduce) {
   .g-qm-scene .g-qm-teach, .g-qm-scene .g-qm-bead.is-ready .g-qm-bead-glow, .g-qm-board.is-beat .g-qm-scene .g-qm-heart, .g-qm-scene .g-qm-bead.is-hurt .g-qm-bead-core { animation: none; }
 }
+
+/* Things in the channel (10-27): 礁石 the land's rock cut round; 灵珠 · 护体 · 定神 on the pearl's glow; a taken one fades */
+.g-qm-scene .g-qm-stone-rim { fill: none; stroke: var(--qm-ink, #2e3a42); stroke-width: 1.6; }
+.g-qm-scene .g-qm-pick-ring { fill: rgba(255, 248, 225, 0.85); stroke: #b8862a; stroke-width: 1.4; }
+.g-qm-scene .g-qm-pick.is-shield .g-qm-pick-ring { stroke: #3d7a8c; }
+.g-qm-scene .g-qm-pick.is-slow .g-qm-pick-ring { stroke: #6a5a9c; }
+.g-qm-scene .g-qm-pick-mark { font-size: 9px; font-weight: 700; text-anchor: middle; fill: #2a1d14; }
+.g-qm-scene .g-qm-pick { transition: opacity 0.25s; }
+.g-qm-scene .g-qm-pick.is-got { opacity: 0; }
+.g-qm-held { margin-left: 6px; padding: 0 5px; border-radius: 8px; font-size: 11px; background: rgba(61, 122, 140, 0.18); color: #2d5a68; }
+.g-qm-held.is-calm { background: rgba(106, 90, 156, 0.18); color: #4f437a; }
+.g-qimai.is-calm .g-qm-land { filter: saturate(0.7) brightness(1.04); }

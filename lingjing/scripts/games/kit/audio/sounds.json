@@ -772,7 +772,10 @@
      "sound": "hit.soft",
      "min": 200,
      "vol": 0.6
-    }
+    },
+    "orb": "tone.good",
+    "shield": "tone.cast",
+    "slow": "tone.ice"
    }
   },
   "whack": {

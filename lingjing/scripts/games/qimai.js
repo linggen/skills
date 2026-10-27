@@ -21,6 +21,12 @@
 //   gold   [{from, to, amp?, period?, rise?, off?}]  金线: a thread that rises over `rise` of its period
 //                               and falls over the rest (吸四吐六: rise 0.4) — hug it for the star
 //   dark   [{from, to, r?}]     暗: the channel unlit but for a small round about the bead
+// Things in the channel (Hanli 10-27: 「调息的游戏出现很多次, 每次都一样…增加障碍物, 道具, 增加趣味」), each at x, `off`
+// from the channel's middle (+ down), so every level lays its own:
+//   rocks  [{x, off?, r?}]      礁石: a stone in the way (r 9); touching it costs a 气 as a wall does — go over or under
+//   orbs   [{x, off?}]          灵珠: a 气 back (to three) as the bead passes through it
+//   shields [{x, off?}]         护体: the next touch (wall or stone) costs nothing
+//   slows  [{x, off?, ms?, k?}] 定神: the channel goes by at k (0.55) of its speed for ms (3000)
 //   speed (u/s), len (u), say · book · end · title ({zh, en})
 //   goldTol, goldNeed           the 金线's bar for ★3 (within goldTol of it for goldNeed of its length)
 //   grades {3, 2, 1}            the story task's grade for each star count (its `marks` keys)
@@ -70,6 +76,9 @@ export const GATE_HALF = 14;
 export const NARROW = 36;
 const TOUCH_COOL = 650, CHA_MS = 900, READY_MS = 1500, START_MS = 2600, SAMPLE = 2;
 const WAVE_PUSH = 160, HEART_BEAT = 850, HEART_KICK = 40, DARK_R = 52;
+export const ROCK_R = 9, PICK_R = R + 7, SLOW_MS = 3000, SLOW_K = 0.55;
+/** The things a level lays in its channel, by kind (rocks to dodge, three pickups). */
+export const PICKS = ['orbs', 'shields', 'slows'];
 
 /** The elements a level may declare, and what a player is taught the first time each comes into view. */
 export const ELEMENTS = {
@@ -80,16 +89,21 @@ export const ELEMENTS = {
   wave: { zh: '浪头', en: 'Wave', teach: { zh: '浪头压下来了——浪头上别松口。', en: 'A wave comes down on you. On the wave, don\'t let go.' } },
   heart: { zh: '心跳乱流', en: 'Heartbeat', teach: { zh: '心跳乱流：心一跳，气就一抖。带着怕走。', en: 'Heartbeat: each beat jolts the breath. Go on with the fear.' } },
   dark: { zh: '暗', en: 'Dark', teach: { zh: '暗：看不见脉壁了，只看得见眼前一小圈。', en: 'Dark: the walls are gone but for a small round around you.' } },
+  rock: { zh: '礁石', en: 'Stone', teach: { zh: '礁石：撞上就散一分气。从上头或底下绕过去。', en: 'A stone: hitting it costs qi. Go over it or under it.' } },
+  orb: { zh: '灵珠', en: 'Qi pearl', teach: { zh: '灵珠：穿过去，补回一分气。', en: 'A qi pearl: pass through it to win back some qi.' } },
+  shield: { zh: '护体', en: 'Guard', teach: { zh: '护体：拿到它，下一回碰壁不散气。', en: 'A guard: take it, and the next knock costs nothing.' } },
+  slow: { zh: '定神', en: 'Calm', teach: { zh: '定神：拿到它，四下慢下来一会儿。', en: 'Calm: take it, and everything slows for a while.' } },
 };
+const KIND = { rocks: 'rock', orbs: 'orb', shields: 'shield', slows: 'slow' };
 
 export const T = {
   zh: {
-    qi: '气', gold: '金线', start: '起', touch: ['碰壁，气散了一分。', '蹭着脉壁了。稳住。', '又碰了一下。'],
+    qi: '气', gold: '金线', guard: '护', calm: '定', start: '起', touch: ['碰壁，气散了一分。', '蹭着脉壁了。稳住。', '又碰了一下。'],
     cha: '岔气了。从{at}再来。', origin: '起点', end: '气走通了。', hint: { desk: '按住 吸 · 松开 吐（空格亦可）', touch: '按住 吸 · 松开 吐' }, restart: '从头',
     won: ['气走通了，可是碰了壁。', '一口不乱，脉壁没碰。', '一口不乱，金线也贴住了。'],
   },
   en: {
-    qi: 'Qi', gold: 'Gold', start: 'Go', touch: ['A wall — some qi is lost.', 'Grazed the wall. Steady.', 'Touched again.'],
+    qi: 'Qi', gold: 'Gold', guard: 'Guard', calm: 'Calm', start: 'Go', touch: ['A wall — some qi is lost.', 'Grazed the wall. Steady.', 'Touched again.'],
     cha: 'The breath breaks. From {at} again.', origin: 'the start', end: 'Through.', hint: { desk: 'Hold: in · Let go: out (or Space)', touch: 'Hold: in · Let go: out' }, restart: 'Restart',
     won: ['Through, though the walls were touched.', 'Not a wall touched.', 'Not a wall touched, and the gold thread kept.'],
   },
@@ -101,7 +115,7 @@ export const meta = {
   // The story lays it through its own mount (beat-host.js): html() is the first frame, mount() paints
   // the lamp, trail, ring and bead each animation frame — the page's 50 ms html redraw would lose them.
   beat: 'mount',
-  sounds: ['tap', 'crash', 'cha', 'cp', 'beat'], // the flight kit's (games/kit/audio/sounds.json)
+  sounds: ['tap', 'crash', 'cha', 'cp', 'beat', 'orb', 'shield', 'slow'], // the flight kit's (games/kit/audio/sounds.json)
   name: { zh: '气走经脉', en: 'Qi through the meridians' },
   how: {
     zh: '按住是吸，气往上走；松开是吐，气往下沉。别碰脉壁，贴着金线走。',
@@ -112,7 +126,7 @@ export const meta = {
 /** What a stretch of play sounded (games/kit/heard.js) — read off its counts, so a snapshot (`soundSnap`) does as well
     as a state: a breath drawn in (tap), the bead on the wall (crash), the breath broken (cha), a 穴 passed (cp), a
     heartbeat's jolt (beat). The mount sounds it each frame; the state is stepped in place, so it keeps a snapshot. */
-export const soundSnap = (s) => ({ holding: s.holding, touches: s.touches, chas: s.chas, cp: s.cp, beat: s.beat });
+export const soundSnap = (s) => ({ holding: s.holding, touches: s.touches, chas: s.chas, cp: s.cp, beat: s.beat, picked: s.picked ? { ...s.picked } : null });
 export function sounds(b, a) {
   if (!b || !a) return [];
   const out = [];
@@ -121,6 +135,7 @@ export function sounds(b, a) {
   if (a.chas > b.chas) out.push('cha');
   if (a.cp > b.cp) out.push('cp');
   if (a.beat && a.beat !== b.beat) out.push('beat');
+  for (const [k, ev] of [['orbs', 'orb'], ['shields', 'shield'], ['slows', 'slow']]) if ((a.picked?.[k] ?? 0) > (b.picked?.[k] ?? 0)) out.push(ev);
   return out;
 }
 
@@ -176,6 +191,12 @@ export function goldAt(level, ch, x) {
   return null;
 }
 
+/** Where a thing in the channel stands: its x, and its y off the channel's middle there (inside the walls). */
+export function thingAt(ch, t, r = 0) {
+  const { top, bot, mid } = wallsAt(ch, t.x);
+  return { x: t.x, y: Math.max(top + r + 1, Math.min(bot - r - 1, mid + (t.off ?? 0))) };
+}
+
 /** Where a level's checkpoints stand: its start, every 关 (just past it) and every 穴. */
 export function checkpoints(level) {
   const cps = [{ x: 0, name: null }];
@@ -196,6 +217,10 @@ export function lessons(level, ch) {
   zones('wave', level.waves);
   zones('heart', level.heart);
   zones('dark', level.dark);
+  for (const [list, kind] of Object.entries(KIND)) {
+    const t0 = [...(level[list] ?? [])].sort((a, b) => a.x - b.x)[0];
+    if (t0) first(kind, t0.x, thingAt(ch, t0).y);
+  }
   const gz = [...(level.gold ?? [])].sort((a, b) => a.from - b.from)[0];
   if (gz) first('gold', gz.from + 10, goldAt(level, ch, gz.from + 10));
   return out.sort((a, b) => a.x - b.x);
@@ -213,6 +238,8 @@ export function newGame(seed, _level = 1, deal = {}) {
     phase: 'ready', t: 0, clock: 0, acc: 0, x: 0, y: wallsAt(ch, 0).mid, vy: 0, holding: false,
     qi: QI, touches: 0, chas: 0, cp: 0, touchAt: -1e9, touch: null, chaAt: null, pressAt: -1e9, releaseAt: -1e9, startAt: 0,
     gold: (level.gold ?? []).map(() => ({ on: 0, hug: 0 })), trail: [], beat: null, first: true, hb: [],
+    got: Object.fromEntries(PICKS.map((k) => [k, (level[k] ?? []).map(() => false)])), picked: { orbs: 0, shields: 0, slows: 0 },
+    guard: false, slowUntil: -1, slowK: 1,
   };
   return s;
 }
@@ -231,7 +258,10 @@ function reset(s, cp, full = false) {
   const x = at.x;
   Object.assign(s, { phase: 'ready', t: 0, x, y: wallsAt(s.ch, x).mid, vy: 0, qi: QI, cp, trail: [], beat: null, touch: null, holding: false, hb: [] });
   for (const [i, g] of (s.level.gold ?? []).entries()) if (full || g.to > x) s.gold[i] = { on: 0, hug: 0 };
-  if (full) Object.assign(s, { touches: 0, chas: 0, taught: [], teaching: null, first: true, clock: 0, acc: 0 });
+  // what lies ahead of the checkpoint is there again (a 岔气 does not keep a pearl taken past it); a guard or a calm goes
+  for (const k of PICKS) for (const [i, t] of (s.level[k] ?? []).entries()) if (full || t.x > x) s.got[k][i] = false;
+  Object.assign(s, { guard: false, slowUntil: -1, slowK: 1 });
+  if (full) Object.assign(s, { touches: 0, chas: 0, taught: [], teaching: null, first: true, clock: 0, acc: 0, picked: { orbs: 0, shields: 0, slows: 0 } });
   return s;
 }
 
@@ -288,13 +318,45 @@ function forces(s, x) {
 /** A current's sign now: +1, or −1 through every other `flip` ms of play (a wind that turns). */
 export const flipOf = (s, c) => (c.flip ? (Math.floor((s.clock - s.startAt + (c.phase ?? 0)) / c.flip) % 2 === 0 ? 1 : -1) : 1);
 
+/* A knock (a wall or a stone): one 气, unless a guard takes it (护体: gone, nothing lost, no touch counted). */
+function knock(s, side) {
+  if (s.clock - s.touchAt < TOUCH_COOL) return;
+  s.touchAt = s.clock;
+  if (s.guard) { s.guard = false; s.touch = null; return; }
+  s.qi -= 1; s.touches += 1; s.touch = { at: s.clock, x: s.x, y: s.y, side };
+  if (s.qi <= 0) { s.phase = 'cha'; s.t = 0; s.chas += 1; s.chaAt = s.clock; s.holding = false; }
+}
 function touchWall(s, side, top, bot) {
   s.y = side < 0 ? top + R : bot - R;
   s.vy = side < 0 ? Math.max(40, Math.abs(s.vy) * 0.3) : -Math.max(40, Math.abs(s.vy) * 0.3);
-  if (s.clock - s.touchAt < TOUCH_COOL) return;
-  s.touchAt = s.clock; s.qi -= 1; s.touches += 1; s.touch = { at: s.clock, x: s.x, y: s.y, side };
-  if (s.qi <= 0) { s.phase = 'cha'; s.t = 0; s.chas += 1; s.chaAt = s.clock; s.holding = false; }
+  knock(s, side);
 }
+/* A stone: the bead is put back out of it on the side it came from, and bounced that way. */
+function hitRock(s, rk) {
+  const { y } = thingAt(s.ch, rk, rk.r ?? ROCK_R), r = (rk.r ?? ROCK_R) + R;
+  const dx = s.x - rk.x, dy = s.y - y;
+  if (dx * dx + dy * dy >= r * r) return;
+  const side = dy < 0 ? -1 : 1;
+  s.y = y + side * Math.sqrt(Math.max(0, r * r - dx * dx));
+  s.vy = side * Math.max(50, Math.abs(s.vy) * 0.4);
+  knock(s, side);
+}
+/* The pickups the bead passes through: a pearl a 气 back, a guard, a calm. */
+const TAKE = {
+  orbs: (s) => { s.qi = Math.min(QI, s.qi + 1); },
+  shields: (s) => { s.guard = true; },
+  slows: (s, t) => { s.slowUntil = s.clock + (t.ms ?? SLOW_MS); s.slowK = t.k ?? SLOW_K; },
+};
+function pick(s) {
+  for (const k of PICKS) for (const [i, t] of (s.level[k] ?? []).entries()) {
+    if (s.got[k][i] || Math.abs(s.x - t.x) > PICK_R) continue;
+    const { y } = thingAt(s.ch, t);
+    if ((s.x - t.x) ** 2 + (s.y - y) ** 2 > PICK_R * PICK_R) continue;
+    s.got[k][i] = true; s.picked[k] += 1; TAKE[k](s, t);
+  }
+}
+/** The channel's speed now: the level's, slowed while a 定神 lasts. */
+export const speedNow = (s) => (s.level.speed ?? 90) * (s.clock < s.slowUntil ? s.slowK : 1);
 
 function teach(s) {
   const next = s.lessons.find((l) => !s.taught.includes(l.kind) && l.x - s.x < W - BX - 40);
@@ -317,10 +379,12 @@ function step(s) {
   s.vy += ((s.holding ? -LIFT : GRAV) + a - DRAG * s.vy) * dt + kick;
   s.vy = Math.max(-VMAX, Math.min(VMAX, s.vy));
   s.y += s.vy * dt;
-  s.x += (L.speed ?? 90) * dt;
+  s.x += speedNow(s) * dt;
   const { top, bot } = wallsAt(s.ch, s.x);
   if (s.y - R < top) touchWall(s, -1, top, bot);
   else if (s.y + R > bot) touchWall(s, 1, top, bot);
+  for (const rk of L.rocks ?? []) if (Math.abs(s.x - rk.x) < (rk.r ?? ROCK_R) + R && s.phase === 'play') hitRock(s, rk);
+  if (s.phase === 'play') pick(s);
   for (const [i, g] of (L.gold ?? []).entries()) {
     if (!inZone(g, s.x)) continue;
     s.gold[i].on += STEP_MS;
@@ -420,11 +484,19 @@ function worldSvg(s, lang, id) {
     return `<g class="g-qm-xue" data-xue="${i}"><circle class="g-qm-xue-dot" cx="${p.x}" cy="${fmt(bot + 8)}" r="3.6"/>`
       + `<text class="g-qm-name" x="${p.x}" y="${fmt(Math.min(H - 3, bot + 22))}">${esc(tr(p.name, lang))}</text></g>`;
   }).join('');
+  // 礁石: the land's own rock, cut round; 灵珠 · 护体 · 定神: the pearl's glow, each its own mark (data-pick: the page hides a taken one)
+  const rocks = (L.rocks ?? []).map((rk) => { const r = rk.r ?? ROCK_R, p = thingAt(ch, rk, r); return `<g class="g-qm-stone"><circle cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="${r}" style="fill:url(#${id}-rock)"/><circle class="g-qm-stone-rim" cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="${r}"/></g>`; }).join('');
+  const MARK = { orbs: '', shields: '护', slows: '定' };
+  const picks = PICKS.flatMap((k) => (L[k] ?? []).map((t, i) => {
+    const p = thingAt(ch, t), got = s.got?.[k]?.[i] ? ' is-got' : '';
+    return `<g class="g-qm-pick is-${KIND[k]}${got}" data-pick="${k}:${i}"><image class="g-qm-pick-glow" href="${art('glow')}" x="${fmt(p.x - 12)}" y="${fmt(p.y - 12)}" width="24" height="24"/>`
+      + (k === 'orbs' ? `<image href="${art('pearl')}" x="${fmt(p.x - 5)}" y="${fmt(p.y - 5)}" width="10" height="10"/>` : `<circle class="g-qm-pick-ring" cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="7"/><text class="g-qm-pick-mark" x="${fmt(p.x)}" y="${fmt(p.y + 3.5)}">${MARK[k]}</text>`) + '</g>';
+  })).join('');
   const inner = `<polygon class="g-qm-body" points="${body}"/>`
     + `<polygon class="g-qm-rock" points="${above}" style="fill:url(#${id}-rock)"/><polygon class="g-qm-rock is-below" points="${below}" style="fill:url(#${id}-rock)"/>`
     + `<polyline class="g-qm-wall-wash" points="${line(ch, ch.top, X0, X1)}"/><polyline class="g-qm-wall-wash" points="${line(ch, ch.bot, X0, X1)}"/>`
     + `<polyline class="g-qm-wall" data-side="top" points="${line(ch, ch.top, X0, X1)}"/><polyline class="g-qm-wall" data-side="bot" points="${line(ch, ch.bot, X0, X1)}"/>`
-    + `${gold}${currents}${waves}${hearts}${gates}${xue}`;
+    + `${gold}${currents}${waves}${hearts}${gates}${xue}${rocks}${picks}`;
   // only a level with 暗 masks the world by the bead's lamp (a moving mask over bitmaps costs every frame)
   const lit = (L.dark ?? []).length ? `<g mask="url(#${id}-lamp)">${inner}</g>` : inner;
   const end = wallsAt(ch, len), gr = Math.min(24, (end.bot - end.top) / 2);
@@ -456,7 +528,8 @@ function headHtml(s, t) {
   if (s.won) return `<span>${t.end}</span><span class="g-qm-stars">★ ${s.stars} / 3</span>`;
   const share = goldShare(s);
   const gold = s.level.gold?.length ? `<span class="g-qm-goldpct">${t.gold} <b>${share == null ? '—' : `${Math.round(share * 100)}%`}</b></span>` : '';
-  return `<span class="g-qm-qi${s.qi < QI ? ' is-low' : ''}">${t.qi} <b>${pips(s.qi)}</b></span>${gold}<span class="g-qm-prog">${Math.min(100, Math.round((s.x / s.level.len) * 100))}%</span>`;
+  const held = `${s.guard ? `<span class="g-qm-held is-guard">${t.guard}</span>` : ''}${s.clock < s.slowUntil ? `<span class="g-qm-held is-calm">${t.calm}</span>` : ''}`;
+  return `<span class="g-qm-qi${s.qi < QI ? ' is-low' : ''}">${t.qi} <b>${pips(s.qi)}</b>${held}</span>${gold}<span class="g-qm-prog">${Math.min(100, Math.round((s.x / s.level.len) * 100))}%</span>`;
 }
 
 function sayOf(s, t, lang) {
@@ -579,6 +652,7 @@ export async function mount(container, opts = {}) {
   ro?.observe(board);
   measure();
   const xues = [...host.querySelectorAll('.g-qm-xue')], turns = [...host.querySelectorAll('.g-qm-turn')];
+  const picks = [...host.querySelectorAll('.g-qm-pick')].map((el) => { const [k, i] = el.dataset.pick.split(':'); return { el, k, i: Number(i) }; });
   let last = { head: '', say: '', cls: '' };
 
   const pulse = (k) => {
@@ -618,6 +692,8 @@ export async function mount(container, opts = {}) {
     for (const l of lamps) { l.setAttribute('cx', fmt(s.x)); l.setAttribute('cy', fmt(s.y)); }
     if (s.teaching) { ring.setAttribute('cx', fmt(s.teaching.x)); ring.setAttribute('cy', fmt(s.teaching.y)); ring.style.display = ''; } else ring.style.display = 'none';
     xues.forEach((g, i) => g.classList.toggle('is-lit', s.x >= (s.level.xue[i]?.x ?? Infinity)));
+    for (const p of picks) p.el.classList.toggle('is-got', Boolean(s.got?.[p.k]?.[p.i]));
+    root.classList.toggle('is-calm', s.clock < s.slowUntil);
     const h = headHtml(s, t);
     if (h !== last.head) { head.innerHTML = h; last.head = h; }
     const line = sayOf(s, t, lang);

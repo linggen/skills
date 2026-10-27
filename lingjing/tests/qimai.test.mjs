@@ -132,7 +132,7 @@ test('every element a level declares is taught in it, once, with a ring and a li
   for (const L of ladder) {
     const s = qm.newGame('t', 1, { levels: [L] });
     const kinds = s.lessons.map((l) => l.kind);
-    for (const [k, list] of [['gate', L.gates], ['current', L.currents], ['wave', L.waves], ['heart', L.heart], ['gold', L.gold], ['dark', L.dark]]) {
+    for (const [k, list] of [['gate', L.gates], ['current', L.currents], ['wave', L.waves], ['heart', L.heart], ['gold', L.gold], ['dark', L.dark], ['rock', L.rocks], ['orb', L.orbs], ['shield', L.shields], ['slow', L.slows]]) {
       if (list?.length) assert.ok(kinds.includes(k), `${L.id}: ${k} taught`);
     }
     assert.equal(new Set(kinds).size, kinds.length);
@@ -254,4 +254,53 @@ test('the page: mount() on the contract, its own css, Space and a pointer both b
   assert.match(html, /class="g-qm-wall" data-side="top"/);
   assert.match(html, /data-g="restart"/);
   assert.doesNotMatch(html, /data-g="again"/, 'the idle hand of play-human taps "again"');
+});
+
+/* Things in the channel (Hanli 10-27: 「调息的游戏出现很多次, 每次都一样…增加障碍物, 道具, 增加趣味」). */
+const straight = (extra = {}) => ({ id: 't-things', len: 1600, speed: 90, path: [[0, 110], [1600, 110]], width: [[0, 46], [1600, 46]], ...extra });
+const hold = (s, on) => (on !== s.holding && (s.phase === 'play' || (s.phase === 'ready' && on)) ? qm.act(s, { g: on ? 'hold' : 'release' }).state : s);
+/** Keep the bead level at `y` (a steady hand), on a 10 ms clock, until x passes `to`. */
+function ride(s, y, to) { while (!s.won && s.x < to && s.clock < 120000) { s = hold(s, s.y + 0.3 * s.vy > y); s = qm.tick(s, 10); } return s; }
+
+test('a stone costs a 气 as a wall does, and the bead is put back out on the side it came from; over or under it costs nothing', () => {
+  const L = straight({ rocks: [{ x: 400, off: 0 }] });
+  let s = ride(qm.newGame('t', 1, { levels: [L] }), 110, 500);
+  assert.equal(s.touches, 1, 'straight into the stone');
+  assert.equal(s.qi, qm.QI - 1);
+  s = ride(qm.newGame('t', 1, { levels: [L] }), 110 - 24, 500);
+  assert.equal(s.touches, 0, 'over it');
+  assert.equal(s.lessons.find((l) => l.kind === 'rock')?.x, 400);
+});
+
+test('a pearl gives a 气 back (never past three); a guard takes the next knock whole; a calm slows the channel for its while', () => {
+  const L = straight({ rocks: [{ x: 300, off: 0 }], orbs: [{ x: 600, off: 0 }], shields: [{ x: 800, off: 0 }], slows: [{ x: 1100, off: 0, ms: 2000 }], speed: 90 });
+  let s = ride(qm.newGame('t', 1, { levels: [L] }), 110, 400);
+  assert.equal(s.qi, qm.QI - 1);
+  s = ride(s, 110, 650);
+  assert.equal(s.qi, qm.QI, 'the pearl gave it back');
+  assert.equal(s.picked.orbs, 1);
+  s = ride(s, 110, 850);
+  assert.equal(s.guard, true);
+  while (s.guard && s.clock < 60000) s = qm.tick(hold(s, false), 10); // let it sink to the floor
+  assert.equal(s.guard, false, 'the guard took the knock');
+  assert.equal(s.qi, qm.QI, 'and nothing was lost');
+  assert.equal(s.touches, 1, 'the one knock counted is the stone\'s');
+  s = ride(s, 110, 1110);
+  assert.ok(qm.speedNow(s) < 90 * 0.6, 'calm: slowed');
+  const x0 = s.x;
+  s = qm.tick(hold(s, false), 500);
+  assert.ok(s.x - x0 < 90 * 0.5 * 0.6, 'half a second goes about half as far');
+  s = qm.tick(s, 2500);
+  assert.equal(qm.speedNow(s), 90, 'and it wears off');
+});
+
+test('a 岔气 puts back the pickups past the checkpoint it goes back to, and takes the guard and the calm away', () => {
+  const L = straight({ orbs: [{ x: 300, off: 0 }], shields: [{ x: 350, off: 0 }] });
+  let s = ride(qm.newGame('t', 1, { levels: [L] }), 110, 400);
+  assert.equal(s.got.orbs[0], true);
+  assert.equal(s.guard, true);
+  while (s.chas === 0 && s.clock < 60000) s = qm.tick(hold(s, false), 10); // idle: walls till 岔气
+  s = qm.tick(s, 1000);
+  assert.equal(s.got.orbs[0], false, 'the pearl is there again');
+  assert.equal(s.guard, false);
 });

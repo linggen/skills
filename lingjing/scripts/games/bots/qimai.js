@@ -4,7 +4,7 @@
 // aim a little ahead — at the gold thread where there is one, else the middle — kept inside the
 // tightest part of the channel in the next half second; hold when the bead (and where it is going)
 // is below the aim, let go when above.
-import { BX, DRAG, GRAV, LIFT, R, STEP_MS, VMAX, W, goldAt, newGame, act, tick, wallsAt } from '../qimai.js';
+import { BX, DRAG, GRAV, LIFT, PICKS, R, ROCK_R, STEP_MS, VMAX, W, goldAt, newGame, act, speedNow, tick, thingAt, wallsAt } from '../qimai.js';
 
 const AHEAD_S = 0.25, WINDOW_S = 0.5, MARGIN = 3;
 
@@ -14,7 +14,23 @@ export function aimAt(s, x, sight = W - BX) {
   let lo = -Infinity, hi = Infinity;
   for (let k = 0; k <= far; k += 4) { const w = wallsAt(s.ch, x + k); lo = Math.max(lo, w.top + R + MARGIN); hi = Math.min(hi, w.bot - R - MARGIN); }
   const ax = x + Math.min(v * AHEAD_S, sight);
-  const want = goldAt(L, s.ch, ax) ?? wallsAt(s.ch, ax).mid;
+  let want = goldAt(L, s.ch, ax) ?? wallsAt(s.ch, ax).mid;
+  // a stone in sight: pass it on the roomier side (the side the aim is on, when both are open)
+  for (const rk of L.rocks ?? []) {
+    const r = (rk.r ?? ROCK_R) + R + MARGIN + 2;
+    if (rk.x + r < x || rk.x - r > x + far) continue;
+    const { y } = thingAt(s.ch, rk, rk.r ?? ROCK_R), w = wallsAt(s.ch, rk.x);
+    const up = y - r - (w.top + R + MARGIN), down = (w.bot - R - MARGIN) - (y + r);
+    const over = up >= 0 && (down < 0 || (want <= y ? up >= 0 : up > down + 12));
+    if (over) hi = Math.min(hi, y - r); else lo = Math.max(lo, y + r);
+    want = over ? Math.min(want, y - r - 2) : Math.max(want, y + r + 2);
+  }
+  // a pickup in sight and in reach: go for it
+  for (const k of PICKS) for (const [i, t] of (L[k] ?? []).entries()) {
+    if (s.got?.[k]?.[i] || t.x < x || t.x > x + Math.min(v * 0.7, sight)) continue;
+    const { y } = thingAt(s.ch, t);
+    if (y >= lo && y <= hi) want = y;
+  }
   return lo > hi ? (lo + hi) / 2 : Math.max(lo, Math.min(hi, want));
 }
 
@@ -39,7 +55,7 @@ const sightOf = (s, x) => { const d = (s.level.dark ?? []).find((z) => x >= z.fr
 export function bot(s, see = {}) {
   if (!s.live || s.won || s.phase === 'cha') return s.holding ? { release: true } : null;
   if (s.phase === 'ready') return null;
-  const p = ahead(s, see.lead ?? 0, s.level.speed ?? 90);
+  const p = ahead(s, see.lead ?? 0, speedNow(s));
   const want = decide(s, p, { sight: sightOf(s, p.x) });
   if (want && !s.holding) return { hold: {} };
   if (!want && s.holding) return { release: true };
@@ -87,7 +103,7 @@ export function simulate(level, hand = HANDS.casual, { seed = 'sim', step = 16, 
           const seen = [...snaps].reverse().find((p) => p.t <= t - lag) ?? snaps[0];
           if (t >= noiseUntil) { aimNoise = gauss(r) * (hand.noise ?? 0); noiseUntil = t + 400; }
           if (s.phase === 'play' || s.phase === 'ready') {
-            const base = hand.predict ? ahead(seen, lag, level.speed ?? 90) : seen;
+            const base = hand.predict ? ahead(seen, lag, speedNow(s)) : seen;
             const want = decide(s, { ...base, y: base.y + aimNoise, holding: s.holding }, { kd: hand.kd, sight: sightOf(s, base.x) });
             if (s.phase === 'ready' ? want : want !== s.holding) s = act(s, { g: want ? 'hold' : 'release' }).state;
           }
