@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """paint-boards-flux.py — the small boards' faces on the local FLUX (Hanli 10-20: 「代码画的都查一下, 用flux画吧」;
 doc/art-audit-2026-10-20.md items 8–9): the rope boards' cave, 禹步's bluestone on the clifftop, 象棋's board and
-blank pieces, 押宝's four doors, 七巧板's lacquer.
+blank pieces, 押宝's four doors (七巧板's lacquer went with the board, cut 2026-10-27).
 
     PY=~/.linggen/runtime/envs/pictures/bin/python
     FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py paint [--only id,…] [--seeds 1,2]
     FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py cut [--only id,…]  # the KEPT seeds → scripts/games/boards/
 
 What is the puzzle stays code or text over the paint: the rope game's vines and items, 禹步's grid lines and dots,
-象棋's grid and piece glyphs, 押宝's door names, 七巧板's shapes (filled with the painted lacquer).
+象棋's grid and piece glyphs, 押宝's door names.
 """
 import sys
 from pathlib import Path
@@ -63,18 +63,14 @@ JOBS = {
     'ONE round flat wooden CHESS PIECE disc seen straight down from above: pale cream wood face, a thick glossy '
     'BLACK lacquered rim ring round its edge, the face in the middle completely plain and empty, no character, no '
     'writing. ' + STYLE + ' ' + fc.ON_MAGENTA)),
-  'qq-lacquer': dict(w=512, h=512, prompt=TEX + (
-    'glossy cream-white lacquered WOOD, very fine soft grain, a gentle sheen and a few tiny gold flecks. ' + STYLE
-    + ' No text, no lines, no marks.')),
 }
 for k, what in DOORS.items():
   JOBS[f'door-{k}'] = dict(key='magenta', w=512, h=768, prompt=DOOR + what + '. No writing, no plaque. ' + STYLE + ' '
                            + fc.ON_MAGENTA)
 
-KEPT = {'cave': 1, 'chaifang': 2, 'yubu-ground': 1, 'yubu-slab': 2, 'xq-board': 2, 'xq-red': 1, 'xq-black': 1, 'qq-lacquer': 1,
+KEPT = {'cave': 1, 'chaifang': 2, 'yubu-ground': 1, 'yubu-slab': 2, 'xq-board': 2, 'xq-red': 1, 'xq-black': 1,
         'door-long': 1, 'door-hu': 2, 'door-que': 1, 'door-wu': 1}
-SIZE = {'cave': 720, 'chaifang': 720, 'yubu-ground': 1024, 'yubu-slab': 256, 'xq-board': 512, 'xq-red': 96, 'xq-black': 96,
-        'qq-lacquer': 256}
+SIZE = {'cave': 720, 'chaifang': 720, 'yubu-ground': 1024, 'yubu-slab': 256, 'xq-board': 512, 'xq-red': 96, 'xq-black': 96}
 
 
 def cut(only=()):

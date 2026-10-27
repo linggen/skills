@@ -765,10 +765,19 @@
    "task": "huarong"
   },
   {
-   "id": "qiqiao",
+   "id": "pintu",
    "group": "daily",
    "mechanic": "解谜",
-   "task": "qiqiao"
+   "task": "pintu",
+   "_about": "拼图 (games/pintu.js; 2026-10-27, in 七巧's place — Hanli: 「七巧板的游戏删了吧, 换成别的. 感觉想给3岁小孩玩的」): the classic swap jigsaw on the book's own paintings; tap one piece, then another, and they trade. Levels 0–4 climb (tasks/world.json pintu `climb`): 3×3 two pairs out → 3×3 all out → 4×4 → 4×4 turned → 5×5 turned."
+  },
+  {
+   "id": "qiqiao",
+   "group": "old",
+   "replaced": "cut", "cut": "2026-10-27",
+   "why": {"zh": "太像给小孩玩的：换成拼图", "en": "Too much a toddler's toy: the jigsaw plays in its place"},
+   "_cut": "七巧板 (games/qiqiao.js, deleted 2026-10-27; Hanli: 「七巧板的游戏删了吧, 换成别的. 感觉想给3岁小孩玩的」): every place, errand, 奇遇 and 传闻 that dealt it deals 拼图 (pintu) now.",
+   "mechanic": "解谜"
   },
   {
    "id": "wuziqi",

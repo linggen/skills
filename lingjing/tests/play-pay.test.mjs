@@ -25,7 +25,7 @@ test('the kinds at 练气一层: minutes × the layer\'s share a minute, ★ and
   assert.equal(grant('解谜', 1).progress, Math.round(PER_MIN * 4 * 0.6), '★1 is 0.6');
   const again = { ...s, plays: { day: '2026-10-27', ids: { x: 1 } } };
   assert.equal(playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: '解谜' }] } }, again, 'x', { game: 'x' }, NOW).progress, Math.round(PER_MIN * 4 * 0.5), 'the same board again today: 50%');
-  assert.equal(playGrant(content, { tier: 'qi', step: 0 }, 'qiqiao', { game: 'qiqiao' }, NOW)?.progress ?? 0, 0, '零层 pays no 修为');
+  assert.equal(playGrant(content, { tier: 'qi', step: 0 }, 'pintu', { game: 'pintu' }, NOW)?.progress ?? 0, 0, '零层 pays no 修为');
   assert.deepEqual(['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌'].map((k) => grant(k).progress), [7, 13, 20, 27, 34, 40], 'Hanli\'s 7–40 at 一层');
   const three = (kind) => playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } }, { tier: 'qi', step: 3, plays: null }, 'x', { game: 'x' }, NOW).progress;
   assert.deepEqual(['打地鼠', '棋牌'].map(three), [4, 22], '三层 (510, 4 h): 0.7% and 4.3% of the layer');
@@ -35,8 +35,8 @@ test('古四 at 146/470: the place games at 沉鼎观 reach the gate in three sh
   let s = playTo(content, newState(content, 'zh', NOW), 'wm-chaifang', { now: NOW, policy: 'skip' }).state;
   s = { ...s, tier: 'qi', step: 1, progress: 146, stamina: 100 };
   let plays = 0, minutes = 0, days = 0;
-  // a day: each place game twice (the 柴房's 七巧 and 华容道, again at the 外门 and the 藏经阁; 五子 at the 执事堂 twice)
-  const rounds = [['chaifang', ['qiqiao', 'huarong']], ['zhishi', ['wuziqi', 'wuziqi']], ['cangjing', ['huarong']], ['waimen', ['qiqiao']]];
+  // a day: each place game twice (the 柴房's 拼图 and 华容道, again at the 外门 and the 藏经阁; 五子 at the 执事堂 twice)
+  const rounds = [['chaifang', ['pintu', 'huarong']], ['zhishi', ['wuziqi', 'wuziqi']], ['cangjing', ['huarong']], ['waimen', ['pintu']]];
   for (let pass = 0; pass < 6 && s.progress < 470 && s.step === 1; pass += 1) {
     // two plays of each a day (100% · 50%), then the next day: the replay's share is the only limit
     const day = { now: new Date(NOW.getTime() + pass * 86400000) };

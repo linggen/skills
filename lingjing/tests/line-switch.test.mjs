@@ -2,7 +2,7 @@
 // 太突然了... 今线感觉还没结束.」 and 「刚才今线没完就跳回了古, 然后又跳回了今」).
 //
 // j04-dog's last tap put him back on the open map at 柴房, the 古 place he had stood on before
-// the interlude: 孙二狗's 七巧 board (an errand hosted there) stood on the stage, 第五回's 「完」,
+// the interlude: 孙二狗's 拼图 board (an errand hosted there) stood on the stage, 第五回's 「完」,
 // seal and opening passage all left behind a walk to 石门 — where, under 「今 · 二 · 完」, the 今
 // picture came back. And inside the interlude, between the 罚球 board and the next passage, the 古's
 // 下一步 card (「去沉鼎秘境 · 石门」, the 货郎) could stand a moment on 沈芒's stage.
@@ -35,7 +35,7 @@ const sceneOf = (id) => Object.values(content.chapters).map((ch) => ch.scenes[id
 const jin = (id) => huiOf(content, sceneHui(content, id))?.line === 'jin';
 const fresh = (s) => ({ ...s, stamina: 100, stamina_at: NOW.toISOString() });
 
-/* 古四 over at 柴房 (wm-diyilu), 孙二狗's charm taken: its 七巧 board is open AT 柴房. */
+/* 古四 over at 柴房 (wm-diyilu), 孙二狗's charm taken: its 拼图 board is open AT 柴房. */
 const WAIMEN = ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-yaoyuan', 'wm-chaifang', 'wm-danlu', 'wm-diyilu'];
 function atChaifang(scene, passed = []) {
   const s = fixture('waimen');
@@ -45,7 +45,7 @@ function atChaifang(scene, passed = []) {
     quests: { ...(s.quests ?? {}), 'xu-sun-charm': { took: '2026-10-15', have: {} } } }), content);
 }
 const kinds = (cards) => cards.map((c) => `${c.card}${c.id ? `:${c.id}` : ''}`);
-const hosted = (cards) => cards.filter((c) => c.card === 'board' && c.id === 'qiqiao' || ['next', 'offer', 'duel', 'creature', 'hexagram', 'goal', 'handed', 'road'].includes(c.card));
+const hosted = (cards) => cards.filter((c) => c.card === 'board' && c.id === 'pintu' || ['next', 'offer', 'duel', 'creature', 'hexagram', 'goal', 'handed', 'road'].includes(c.card));
 
 /* 下一步 on a 今 scene: the scene's own ways on — no 古 goal, road, errand, book or 货郎. */
 function assertJinNext(l, scene) {
@@ -56,9 +56,9 @@ function assertJinNext(l, scene) {
   assert.ok(!/石门|秘境|找事做|货郎/.test(html), `${scene}: ${html}`);
 }
 
-test('the 柴房 holds a game of its own: 孙二狗\'s 七巧, open there on the open map', () => {
+test('the 柴房 holds a game of its own: 孙二狗\'s 拼图, open there on the open map', () => {
   const l = look(atChaifang(null, ['j04-gym', 'j04-trial', 'j04-line', 'j04-dog']), content, ctx);
-  assert.ok(kinds(l.stage).includes('board:qiqiao'), kinds(l.stage).join());
+  assert.ok(kinds(l.stage).includes('board:pintu'), kinds(l.stage).join());
 });
 
 test('a 今 interlude played with the 古 place holding a game: that game, its errands and its 下一步 never stand while 沈芒\'s scenes are on', () => {
@@ -96,7 +96,7 @@ test('今 → 古: the interlude\'s last tap puts him at the 古 scene\'s place,
   assert.equal(l.chapter.close.title, '今 · 二 · 完');
   assert.equal(l.chapter.hui, 'h07', 'and the 回 now beginning is 第五回');
   assert.ok((s.tell_owed ?? []).includes('scene/wm-mijing'), 'the scene\'s opening passage is owed');
-  assert.ok(!kinds(l.stage).includes('board:qiqiao'), '柴房\'s 七巧 is not here');
+  assert.ok(!kinds(l.stage).includes('board:pintu'), '柴房\'s 拼图 is not here');
   // The page at the turn: the 「完」 alone (queue.js atTurnCards), nothing queued behind it.
   const held = atTurnCards(l.stage, { turn: atTurn({ closeUp: true }), ahead: true });
   assert.deepEqual(stageSlots(l, held).main.map((c) => c.card), ['closed']);
@@ -104,7 +104,7 @@ test('今 → 古: the interlude\'s last tap puts him at the 古 scene\'s place,
   // 「完」 put away, the seal on its way: still the turn — the passage waits for the seal.
   assert.equal(atTurn({ closeUp: false, sealOwed: true }), true);
   // The seal played, the passage told: no game stands over it (queue.js afterBook), and only then the scene's own.
-  const withGame = [...l.stage.filter((c) => c.card !== 'closed'), { card: 'board', id: 'qiqiao' }];
+  const withGame = [...l.stage.filter((c) => c.card !== 'closed'), { card: 'board', id: 'pintu' }];
   assert.ok(!afterBook(withGame, true).some((c) => c.card === 'board'), 'a board waits for the passage');
   // then the scene card and the scene's own board (老蔫, 全文后的小游戏 第二批 2026-10-26; 交 / 不交 wait on it)
   assert.deepEqual(stageSlots(l, afterBook(l.stage.filter((c) => c.card !== 'closed'), false)).main.map((c) => c.card), ['panel', 'board'], 'then the scene card and its board');

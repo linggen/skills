@@ -395,7 +395,7 @@ const landFill = (content, exit, breakthrough) =>
    world straight into its opening passage (the 「完」, the new 回's seal, the passage, then its
    choices and games), never onto the open map at the 古 place he last stood (Hanli, 2026-10-15,
    今 · 二 → 古五: 「太突然了……今线感觉还没结束」 — j04-dog's last tap left him at 柴房 on 孙二狗's
-   七巧 board, 第五回's 「完」, seal and passage behind a walk to 石门). Only the place moves, once,
+   拼图 board (七巧's then), 第五回's 「完」, seal and passage behind a walk to 石门). Only the place moves, once,
    on this step: the scene is a waypoint as ever, and he may walk off it. Read off the lines. */
 function backFromSide(content, left, next) {
   const into = Object.values(content.chapters).map(ch => ch.scenes?.[next]).find(Boolean);

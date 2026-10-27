@@ -30,7 +30,14 @@
         ]
       },
       {
-        "task": "qiyu-qiqiao", "weight": 1,
+        "task": "qiyu-pintu", "weight": 1,
+        "frames": [
+          { "zh": "地上散着一地碎石板，拼回去是一幅刻画。", "en": "Broken stone tablets lie all over the floor; put back together, they make a carving." },
+          { "zh": "石壁上的彩绘剥落了一地，捡起来拼回原样。", "en": "The painting on the wall has flaked off onto the floor; fit the flakes back as they were." }
+        ]
+      },
+      {
+        "task": "qiyu-qiqiao", "weight": 1, "retired": true,
         "frames": [
           { "zh": "地上散着七片碎石板，拼回去是一道符。", "en": "Seven broken stone tablets lie on the floor; put back together, they make a talisman." },
           { "zh": "石壁上剥落了七块彩绘，捡起来拼回原样。", "en": "Seven painted flakes have fallen from the wall; fit them back as they were." }

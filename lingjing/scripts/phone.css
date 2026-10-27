@@ -64,7 +64,7 @@
   .g-huarong-board { width: min(100%, 320px, calc((100dvh - 340px) * .8)); }
   .g-xiangqi-board { width: min(100%, 360px, calc((100dvh - 350px) * .9)); }
   .g-wuziqi-board { width: min(100%, 560px, calc(100dvh - 330px)); }
-  .g-qiqiao .qq-board { max-height: min(300px, calc(100dvh - 380px)); }
+  .g-pintu-board { width: min(100%, 340px, calc(100dvh - 380px)); }
 }
 
 /* Portrait phones only (a landscape phone's stage is wide: the 亮相 stands on the right, the bar is one row). */

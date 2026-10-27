@@ -45,7 +45,7 @@ silences all of it. Way out = 「算了，往下走」 once stuck (story) / 收�
 | 喷嚏符 sneeze | **silent** · **silent** | tell, good, hold, early, short | ✓ | 往下走 ✓ |
 | 割绳子 rentrope/niugurope, 喂饼 bread (rope) | bed only · **silent** | cut, star, gust, eat, miss · bed · chime | ✓ | 往下走 ✓ |
 | 气走经脉 qimai (flight) | bed only · bed only | breath, crash, 岔气, 穴 | ✓ | 往下走 ✓ |
-| 华容道 · 洛书 · 五子棋 · 七巧 · 象棋 · 押宝 · 禹步 | **silent** · **silent** | pick, move/place, reply, nope … · chime | ✓ | 往下走 / 收手 ✓ |
+| 华容道 · 洛书 · 五子棋 · 七巧 (cut 10-27 → 拼图) · 象棋 · 押宝 · 禹步 | **silent** · **silent** | pick, move/place, reply, nope … · chime | ✓ | 往下走 / 收手 ✓ |
 | 聊天 jinchat · 讨饼债 · 画猜 | jinchat send/recv; the others **silent** | send, recv, right | ✓ | 往下走 ✓ |
 | 斗法 kapai (card) | bed only (story: **none**) | drew, played, hurt, heal … per log entry | ✓ | 认输 |
 | 结印 · 斗法试炼 · 指点 · 特写 (seal) | buttons only | seal, cast, fizzle, hit, miss | ✓ | 往下走 ✓ |
@@ -204,7 +204,7 @@ and live on 9527 where marked; the phone runs the same modules through games/pho
 
 | board (kit) | 1 never blocks | 2 sound · 🔊 | 3 one style | 4 the shell |
 |---|---|---|---|---|
-| story boards of every kit (rain · rope · qimai · huarong · luoshu · qiqiao · jinchat · bingzhai · drawguess · yubujiuge · wuziqi · xiangqi · yabao · 塔防 · 结印 · lianliankan · mishi · fighter · zhazhai) | ✓ 「算了，往下走」 once stuck (rules/skips.mjs; tests/board-leave, skips) | ✓ (tests/game-sound: every registry game names real sounds; the shell's 🔊 kept in localStorage, kit/sound.js) | ✓ painted beams and catchers for every 打地鼠 level (喷嚏符 · 凶崖 · 隐身符 · 风掉头 painted 10-27; 瓦砾's floor repainted) | ✓ cards.js board card → frameHtml (lead card, pause, 🔊, result) |
+| story boards of every kit (rain · rope · qimai · huarong · luoshu · pintu · jinchat · bingzhai · drawguess · yubujiuge · wuziqi · xiangqi · yabao · 塔防 · 结印 · lianliankan · mishi · fighter · zhazhai) | ✓ 「算了，往下走」 once stuck (rules/skips.mjs; tests/board-leave, skips) | ✓ (tests/game-sound: every registry game names real sounds; the shell's 🔊 kept in localStorage, kit/sound.js) | ✓ painted beams and catchers for every 打地鼠 level (喷嚏符 · 凶崖 · 隐身符 · 风掉头 painted 10-27; 瓦砾's floor repainted) | ✓ cards.js board card → frameHtml (lead card, pause, 🔊, result) |
 | story fights (斗法 kapai) | **before: only inside a key beat's lock** → **after: every story fight**, three losses then 「算了，往下走」 (skips.mjs fightStuck; tests/lock-fight-skip) | ✓ per log entry | ✓ | ✓ lingjing.js framed (frameHtml) |
 | a guarded room (the 秘境's 犰狳) | **before: had to be won** → **after: lost to three times, it lets him by** (world.mjs guardOf `hunt_losses`) | ✓ (斗法) | ✓ | ✓ |
 | riddles (读封 …) | ✓ three misses then 算了 (core.mjs) | — (a card) | ✓ | a card, not a board |
@@ -1308,7 +1308,7 @@ thing lands in the 饭桶图鉴 (录). 古七's 方子, three 方子残页 → �
 饱嗝令 waives the next hosted game's 灵气. All data: fantong.json (rows, tiers, odds); rules/fantong.mjs (on a save) and
 rules/fantong-roll.mjs (pure); the Phaser play tools/kailu/ → games/kailu/; the pane fantong-kailu.js.
 
-炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 七巧 · 五子 ·
+炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 拼图 (七巧 until 10-27) · 五子 ·
 残局 · 密室 (he sees the mechanisms, 银月 reads the pages). 守夜 (药园) and 下崖 (秘境) cut 10-19 (the sweep); 拾遗 (秘境,
 and the rerun's) was a 割藤 10-19 → 10-20; now 撒豆成兵 (the story's) and a short 守炉 (the rerun's), § Pruned 10-20.
 洛书 was the same square three times (二试, 困阵, daily); since 10-19 it is played once, at 洛书门 —
@@ -1380,7 +1380,7 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
     - **秘境 · 奇遇** (rules/qiyu.mjs, worlds/jiuding/qiyu.json; a pool, not one spot): as a rerun of the 外圈 is
       entered, each room (岔口 · 凶崖 · 暗河) rolls 0.3 — about one room a run; a hit draws by weight 你画我猜 3
       (once 银月 is met, the 木牌 too; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 撒豆成兵 3 (割藤 until 10-20; the next level each
-      time, rules/climb.mjs) · 华容道 2 · 七巧 1 · 五子棋 1 (洛书 until 10-19), never the game the room before drew nor the last run's last. Each entry
+      time, rules/climb.mjs) · 华容道 2 · 拼图 1 (七巧 until 10-27) · 五子棋 1 (洛书 until 10-19), never the game the room before drew nor the last run's last. Each entry
       has 2–3 frames grounded in the rooms (the 岔口's carved 「凶」 crack, the 凶崖's steps, the dry 暗河's
       flat stone…) — the board's line, facts only. A win pays a find from the run's own `finds` (as 拾遗) and its
       first clear ever the small-game 灵石. A drawing round ≤ 3 looks ≈ 26k tokens. On a 测试存档:

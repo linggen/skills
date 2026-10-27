@@ -70,7 +70,7 @@
       "need": [
         {
           "kind": "board",
-          "task": "qiqiao",
+          "task": "pintu",
           "n": 1,
           "at": "waimen"
         }
@@ -340,7 +340,7 @@
       "need": [
         {
           "kind": "board",
-          "task": "qiqiao",
+          "task": "pintu",
           "n": 1,
           "at": "chaifang"
         }

@@ -171,7 +171,7 @@ test('the pay: the tables\' caps, a fifth step eating into the finale — nothin
   assert.equal(four.end.progress, r.tables.tale_end.progress);
   const t = example();
   t.steps.push({ game: 'huarong', at: 'sibei', giver: 'old-fisher', line: '把这堆石头挪开。', clue: '老祁说出了实话。' },
-    { game: 'qiqiao', at: 'sishui', giver: 'xiucai', line: '拼回这道符。', clue: '符上写着河伯的名字。' });
+    { game: 'pintu', at: 'sishui', giver: 'xiucai', line: '拼回这道符。', clue: '符上写着河伯的名字。' });
   const five = made(open(), t).tale.grants;
   assert.equal(5 * five.step.progress + five.end.progress, r.tale.cap.progress);
   assert.ok(5 * five.step.wealth + five.end.wealth <= r.tale.cap.wealth);

@@ -43,7 +43,7 @@ test("the day's boards (兽潮 · 本王考考你 …), the 秘境's and the 奇
   const day = TASKS.filter((t) => t.kind === 'board' && t.period && live.has(t.game) && !['lianliankan', 'mishi', 'jieyin'].includes(t.game));
   assert.ok(day.some((t) => t.id === 'shouchao') && day.some((t) => t.id === 'benwang-kao'), 'the tide and the 考');
   for (const t of day) assert.ok(kitGames().includes(t.game), `${t.id}: ${t.game} is in the kit`);
-  for (const g of ['shoulu', 'sadou', 'huarong', 'wuziqi', 'luoshu', 'qiqiao', 'kailu']) assert.ok(kitGames().includes(g), `${g} is in the kit`);
+  for (const g of ['shoulu', 'sadou', 'huarong', 'wuziqi', 'luoshu', 'pintu', 'kailu']) assert.ok(kitGames().includes(g), `${g} is in the kit`);
 });
 
 for (const game of kitGames()) {

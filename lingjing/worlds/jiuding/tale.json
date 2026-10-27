@@ -37,9 +37,20 @@
         { "zh": "渡口挤满了船，要挪出一条水路", "en": "A ferry landing jammed with boats, a channel to be cleared" }
       ]
     },
+    "pintu": {
+      "page": "pintu",
+      "name": { "zh": "拼图", "en": "Jigsaw" },
+      "frames": [
+        { "zh": "一道碎成好几片的符，要拼回原样", "en": "A talisman broken into pieces, to be made whole" },
+        { "zh": "被撕碎的旧地图，拼回来才看得出路", "en": "A torn old map that shows the way only once it is pieced together" },
+        { "zh": "失传的阵图，只剩一地残片", "en": "A lost formation diagram, left only in scattered fragments" }
+      ]
+    },
     "qiqiao": {
-      "page": "qiqiao",
-      "name": { "zh": "七巧", "en": "Tangram" },
+      "page": "pintu",
+      "retired": true,
+      "_cut": "七巧 cut 2026-10-27 (Hanli: 「七巧板的游戏删了吧」): a tale already made with it deals 拼图.",
+      "name": { "zh": "拼图", "en": "Jigsaw" },
       "frames": [
         { "zh": "一道碎成七片的符，要拼回原样", "en": "A talisman broken into seven pieces, to be made whole" },
         { "zh": "被撕碎的旧地图，拼回来才看得出路", "en": "A torn old map that shows the way only once it is pieced together" },

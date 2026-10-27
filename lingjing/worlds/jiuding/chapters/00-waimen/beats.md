@@ -36,7 +36,7 @@ every other place refused with 「外门弟子，无令不得下山」. It ends 
   waited nor the way it came (「它在进步」, 「贼不认字」), caught within three nights.
   Then Tame with a 萝卜 (坊市, 1 灵石). Handed in: 灵石 ten.
   Then 药园残株 (`xu-yaoyuan-canzhu`): 小狰's nose, the 炼丹 board → 聚气丹.
-- silver 孙二狗 · 护身符 (`xu-sun-charm`, 七巧 at the 柴房): the charm he wears into the 大比 (its string snaps under 卢方's seven falls).
+- silver 孙二狗 · 护身符 (`xu-sun-charm`, 拼图 at the 柴房): the charm he wears into the 大比 (its string snaps under 卢方's seven falls).
 - silver 阿禾 · 利息 (`xu-ahe-lixi`, 坊市): two 萝卜 and a word to 渡口 → a 符
   for the 大比 (a card in the fight).
 - pressure 马小宝: the 公中 (prologue 00-waimen, 秘境门口) and the woodshed; paid back

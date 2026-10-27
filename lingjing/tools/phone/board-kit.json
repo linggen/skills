@@ -437,17 +437,22 @@
       ],
       "files": []
     },
-    "qiqiao": {
-      "_about": "七巧 (games/qiqiao.js, pure): the 奇遇's.",
-      "module": "scripts/games/qiqiao.js",
+    "pintu": {
+      "_about": "拼图 (games/pintu.js, pure): the place game, the errands' and the 奇遇's; its pictures are the book's paintings.",
+      "module": "scripts/games/pintu.js",
       "dirs": [],
       "css": [
         "scripts/lingjing.css",
         "scripts/games/live.css",
-        "scripts/games/qiqiao.css"
+        "scripts/games/pintu.css"
       ],
       "files": [
-        "scripts/games/boards/qq-lacquer.webp"
+        "worlds/jiuding/art/map/jiuzhou-ink.webp",
+        "worlds/jiuding/art/setpiece/chendingshan.webp",
+        "worlds/jiuding/art/places/waimen.webp",
+        "worlds/jiuding/art/places/zhengdian.webp",
+        "worlds/jiuding/art/zheng.webp",
+        "worlds/jiuding/art/codex/sanguan.webp"
       ]
     },
     "yubujiuge": {

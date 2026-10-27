@@ -85,7 +85,7 @@ function playThrough() {
   s = on(won(s, 'yaoyuan-zheng'), 'tame');
   s = must(move, s, { place: 'chaifang' });
   s = must(quest, s, { action: 'take', id: 'xu-sun-charm' });
-  s = must(win, s, { id: 'qiqiao' }); s = must(task, s, { action: 'done', id: 'qiqiao' });
+  s = must(win, s, { id: 'pintu' }); s = must(task, s, { action: 'done', id: 'pintu' });
   assert.ok(s.quests['xu-sun-charm'].done_at, 'the charm mended, the errand hands itself in');
   for (const exit of ['count', 'keep', 'save', 'morning', 'reckoning', 'realm', 'enter']) s = must(resolve, before(fresh(s), exit), { exit, ...(exit === 'keep' ? { said: '你这饭桶' } : {}) });
   s = throughJin(fresh(s), content, DAY1); // 今 · 二, between 古四 and 古五 (2026-10-05)
