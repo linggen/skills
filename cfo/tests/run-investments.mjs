@@ -223,8 +223,8 @@ t('the read prompt names the button and carries the item whole',
 {
   const doc = {
     items: [
-      { id: 'move:TSLA', symbol: 'TSLA', kind: 'move', at: '2026-09-16T20:00:00Z', held: true, stake: 2173, currency: 'USD', materiality: 'high', line: 'Tesla fell 14.5%.', url: 'https://x/1' },
-      { id: 'policy:1', scope: 'economy', kind: 'policy', at: '2026-09-16T12:00:00Z', holdings: ['TSLA', 'NVDA'], held: true, stake: 555, currency: 'USD', materiality: 'medium', line: 'Tariffs.' },
+      { id: 'move:TSLA', symbol: 'TSLA', kind: 'move', at: '2026-09-16T20:00:00Z', held: true, stake: 2173, moved: true, currency: 'USD', materiality: 'high', line: 'Tesla fell 14.5%.', url: 'https://x/1' },
+      { id: 'policy:1', scope: 'economy', kind: 'policy', at: '2026-09-16T12:00:00Z', holdings: ['TSLA', 'NVDA'], held: true, stake: 555, moved: false, exposure: 18500, currency: 'USD', materiality: 'medium', line: 'Tariffs.' },
       { id: 'news:ry', symbol: 'RY.TO', kind: 'news', at: '2026-09-15T12:00:00Z', held: false, stake: 0, materiality: 'low', line: 'Royal Bank news.' },
       { id: 'news:old', symbol: 'NVDA', also: ['TSLA', 'NVDA'], kind: 'news', at: '2026-09-14T12:00:00Z', held: true, stake: 42, currency: 'USD', materiality: 'low', line: 'Older.' },
     ],
@@ -244,8 +244,11 @@ t('the read prompt names the button and carries the item whole',
   t('who: the ticker and the other holdings it names, an economy event\'s holdings, or the economy',
     whoOf(doc.items[3]) === 'NVDA, TSLA' && whoOf(doc.items[1]) === 'TSLA, NVDA' && whoOf({ scope: 'economy' }) === 'Economy');
   const usd0 = (n) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
-  t('a holding shows its stake; a watched ticker says so',
-    stakeText(doc.items[0]) === `${usd0(2173)} at stake` && stakeText(doc.items[2]) === 'Watching' && stakeText({ held: false, scope: 'economy' }) === '');
+  t('a move shows the money that moved; anything else what of theirs it touches; a watched ticker says so',
+    stakeText(doc.items[0]) === `${usd0(2173)} moved` && stakeText(doc.items[1]) === `${usd0(18500)} of yours`
+    && stakeText(doc.items[2]) === 'Watching' && stakeText({ held: false, scope: 'economy' }) === '');
+  t('a non-move saved before `moved` shows no figure — its stake is a ranking weight',
+    stakeText({ held: true, stake: 42, currency: 'USD' }) === '');
   t('Ask CFO quotes the line and its source', askText(doc.items[0]) === 'What does this mean for my holdings? "Tesla fell 14.5%." (https://x/1)'
     && askText(doc.items[1]) === 'What does this mean for my holdings? "Tariffs."');
 }

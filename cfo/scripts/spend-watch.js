@@ -112,12 +112,15 @@ const newest = (briefs) => {
   return days.length ? { day: days.at(-1), ...briefs[days.at(-1)] } : null;
 };
 
-/// The market brief's newest lines from watch.json (market.pl's file).
+/// The market brief's newest lines from watch.json (market.pl's file). Only
+/// money that moved, or what of theirs a line touches, is handed on — a
+/// non-move's `stake` is market.pl's ranking weight, not a figure to say.
 export function marketBrief(doc) {
   const b = newest(doc?.briefs);
   if (!b) return null;
   const items = new Map((doc.items || []).map((i) => [i.id, i]));
-  return { day: b.day, quiet: !!b.quiet, lines: (b.lines || []).map((id) => items.get(id)).filter(Boolean).map((i) => ({ symbol: i.symbol || null, line: i.line, stake: i.stake ?? null, currency: i.currency ?? null })) };
+  const money = (i) => (i.moved ? { money_moved: i.stake ?? null } : { their_holding: i.exposure ?? null });
+  return { day: b.day, quiet: !!b.quiet, lines: (b.lines || []).map((id) => items.get(id)).filter(Boolean).map((i) => ({ symbol: i.symbol || null, line: i.line, ...money(i), currency: i.currency ?? null })) };
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────

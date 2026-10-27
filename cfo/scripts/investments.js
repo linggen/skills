@@ -483,10 +483,14 @@ export function whoOf(item) {
   return syms.length ? [...new Set(syms)].join(', ') : t('inv.economy');
 }
 
-/// "$428 at stake" for a holding, "Watching" for a watched-only ticker.
+/// "$2,173 moved" for a move, "$15,700 of yours" for anything else on a
+/// holding, "Watching" for a watched-only ticker. A non-move's `stake` is a
+/// ranking weight, never shown (an item saved before `moved` shows nothing).
 export function stakeText(item) {
   if (!item.held) return item.symbol ? t('inv.watching') : '';
-  return item.stake > 0 && item.currency ? t('inv.atStake', { amount: money(item.stake, item.currency, 0) }) : '';
+  if (!item.currency) return '';
+  if (item.moved) return item.stake > 0 ? t('inv.moved', { amount: money(item.stake, item.currency, 0) }) : '';
+  return item.exposure > 0 ? t('inv.touches', { amount: money(item.exposure, item.currency, 0) }) : '';
 }
 
 /// The line Check now asks before it starts a run: the rough cost, from the

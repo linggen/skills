@@ -491,6 +491,10 @@ t('with Toronto held, the check runs any weekday until 16:00 (US Thanksgiving; a
     t('a move\'s stake is the position\'s real change; a policy\'s a share of what it touches',
       $item{'move:TSLA:2026-09-16'}{stake} == 2173 && $item{'move:TSLA:2026-09-16'}{stake_pct} == 11.74
       && $item{'policy:1'}{stake} == 428 && join(',', @{ $item{'policy:1'}{holdings} }) eq 'TSLA');
+    t('only a move is money that moved; anything else says what it touches',
+      $item{'move:TSLA:2026-09-16'}{moved} && !$item{'policy:1'}{moved}
+      && $item{'policy:1'}{exposure} > $item{'policy:1'}{stake},
+      "policy exposure $item{'policy:1'}{exposure}");
     t('a headline tagged with two holdings weighs both', $item{'news:a'}{weight_pct} == 100 && $item{'news:a'}{line} eq 'NVIDIA and Tesla named in a chip deal.');
     t('a currency day touches only holdings priced in the other currency', !$item{'fx:USDCAD:2026-09-16'}{held});
     t('judged nothing, or not in the scan: no item; every candidate is seen',

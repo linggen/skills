@@ -1682,7 +1682,7 @@ sub record_watch {
     my $keep = shift_date($today, -$BRIEFS_DAYS);
     delete @$briefs{ grep { $_ le $keep } keys %$briefs };
     return { judged => scalar @fresh, candidates => scalar @{ $scan->{events} || [] }, level => $level,
-             brief => [ map { { id => $_->{id}, line => $_->{line}, stake => $_->{stake}, currency => $_->{currency} } } @lines ] };
+             brief => [ map { { id => $_->{id}, line => $_->{line}, stake => $_->{stake}, moved => $_->{moved}, exposure => $_->{exposure}, currency => $_->{currency} } } @lines ] };
 }
 
 # A candidate with Ling's judgment, or undef when she judged it nothing. The
@@ -1712,12 +1712,16 @@ sub judged_item {
 # What the event puts at stake in the user's money, in the currency most of it
 # is in: a move's real change; a currency day's real change on the holdings
 # priced in the other currency; otherwise a share of the positions' value by
-# materiality. `weight_pct` = the touched holdings' share of that currency's
-# total (null when a holding there couldn't be priced), `stake_pct` = the
-# stake's.
+# materiality. Only the first two are money that moved (`moved`); the share is
+# a ranking weight, never a figure to show or say — `exposure`, the touched
+# holdings' value, is what's said then (Hanli 2026-10-27: 「涉及约600美元」
+# on an FOMC date meant nothing). `weight_pct` = the touched holdings' share
+# of that currency's total (null when a holding there couldn't be priced),
+# `stake_pct` = the stake's.
 sub stake_of {
     my ($ev, $held, $positions, $home, $materiality) = @_;
-    return { stake => 0, stake_pct => 0, weight_pct => 0, currency => undef, held => JSON::PP::false } unless @$held;
+    my $none = { stake => 0, stake_pct => 0, weight_pct => 0, exposure => 0, moved => JSON::PP::false, currency => undef, held => JSON::PP::false };
+    return $none unless @$held;
     my %by;
     for my $sym (@$held) {
         my $p = $positions->{$sym};
@@ -1731,12 +1735,14 @@ sub stake_of {
         $g->{weight_pct} = defined $p->{weight_pct} && defined $g->{weight_pct} ? $g->{weight_pct} + $p->{weight_pct} : undef;
     }
     my ($currency) = sort { $by{$b}{value} <=> $by{$a}{value} || $a cmp $b } keys %by;
-    return { stake => 0, stake_pct => 0, weight_pct => 0, currency => undef, held => JSON::PP::false } unless $currency;
+    return $none unless $currency;
     my $total = sum(0, map { $_->{value} // 0 } grep { ($_->{currency} // 'USD') eq $currency } values %$positions);
     return {
         held       => JSON::PP::true,
         currency   => $currency,
         stake      => round_to($by{$currency}{stake}, 0),
+        moved      => $ev->{kind} eq 'move' || $ev->{kind} eq 'fx' ? JSON::PP::true : JSON::PP::false,
+        exposure   => round_to($by{$currency}{value}, 0),
         stake_pct  => $total ? round_to($by{$currency}{stake} / $total * 100, 2) : 0,
         weight_pct => defined $by{$currency}{weight_pct} ? round_to($by{$currency}{weight_pct}, 1) : undef, # a holding unpriced: no weight bar
     };
