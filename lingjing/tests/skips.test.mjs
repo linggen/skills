@@ -197,7 +197,7 @@ test('one rule for every board: no game draws a skip of its own; the page lays i
     for (const lang of ['zh', 'en']) assert.doesNotMatch(mod.html(s, lang), /data-g="skip"/, `${f}: no skip from the start`);
   }
   const cards = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
-  assert.match(cards, /data-skip-slot="\$\{esc\(id\)\}">\$\{stuckNow\(g, now\) \? skipButton\(id, ctx\.lang\) : ''\}/, 'the page\'s skip waits on the gate');
+  assert.match(cards, /data-skip-slot="\$\{esc\(id\)\}">\$\{always \|\| stuckNow\(g, now\) \? skipButton\(id, ctx\.lang\) : ''\}/, 'the page\'s skip waits on the gate (a board taken up by choice: from the first moment)');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /write\('task', \{ action: 'skip', id \}\)/, 'a skip is the rules\' skip, never a win');
   assert.doesNotMatch(page.slice(page.indexOf('function skipGame'), page.indexOf('async function onSkip')), /won: true|onWin/, 'never sent as a win');
