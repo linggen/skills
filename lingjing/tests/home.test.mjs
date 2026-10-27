@@ -172,3 +172,14 @@ test('the page: the 主页 replaces 下一步, the bar grows from where it stood
   const grown = cardHtml({ card: 'next' }, { look: l, words: WORDS.zh, lang: 'zh', homeFrom: 10 });
   assert.match(grown, /<i style="width:10%" data-to="31"><\/i>/, 'drawn where it stood, moved to now');
 });
+
+test('an errand done away from its giver stays in 待办, pointing at where it is handed in (后山的野猪 won, 周衡 at 药园)', () => {
+  let s = gate146('yaoyuan');
+  s = quest(s, content, ctx(), { action: 'take', id: 'guan-houshan-yezhu' }).state;
+  s = { ...s, quests: { ...s.quests, 'guan-houshan-yezhu': { ...s.quests['guan-houshan-yezhu'], have: { 0: 1 } } } };
+  s = told(move(s, content, ctx(), { place: 'houshan' }).state ?? s);
+  const l = look(s, content, ctx());
+  const row = l.home.todo.find((r) => r.id === 'guan-houshan-yezhu');
+  assert.deepEqual([row?.kind, row?.place?.id, row?.done], ['held', 'yaoyuan', true], JSON.stringify(l.home.todo));
+  assert.match(html(l), /data-go="yaoyuan"[^>]*>后山的野猪 · 药园</);
+});
