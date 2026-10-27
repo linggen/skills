@@ -355,16 +355,6 @@
   }
 }
 
-/* 嘀声 · 往返跑 (shuttle.js): the court, two lines, the runner; the ring closing on the line he runs to is the beat seen */
-.g-shuttle .g-scene.g-shuttle-pic { border-radius: 10px; overflow: hidden; }
-.g-scene .g-shuttle-line { fill: #f4efe4; stroke: #2d3a46; stroke-width: 0.6; transition: fill 120ms; }
-.g-scene .g-shuttle-line.is-lit { fill: var(--seal, #b23a2a); }
-.g-scene .g-shuttle-ring { fill: none; stroke: #2d3a46; stroke-width: 1.6; opacity: 0.75; }
-.g-scene .g-shuttle-ring.is-hit { stroke: var(--seal, #b23a2a); }
-.g-scene .g-shuttle-runner circle { fill: #1f2a33; }
-.g-scene .g-shuttle-runner path { fill: none; stroke: #1f2a33; stroke-width: 3; stroke-linecap: round; }
-.g-shuttle .g-shuttle-turn { width: 100%; min-height: 56px; font-size: 18px; touch-action: manipulation; }
-
 /* 禹步's painted terrace; 押宝's painted doors (tools/paint-boards-flux.py) */
 .g-yubu .g-scene.g-yubu-pic { border-radius: 10px; overflow: hidden; }
 .g-yubu .g-yubu-pic .g-line { stroke: #2d3a46; }

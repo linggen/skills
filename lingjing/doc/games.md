@@ -351,7 +351,7 @@ apart). Painted catchers for the 打地鼠 ones (tools/paint-games.py `rain/*-ba
 | 腿缝里 | 00-steps | 时机 | 打地鼠 `tuifeng` |
 | 一拳 | wm-qingshi | 时机 | 打地鼠 `qingshi` (the warmth drawn up the arm) |
 | 一根萝卜 · 别动 | wm-yaoyuan | 时机 | 打地鼠 `luobo` |
-| 嘀声 | j04-trial | 时机 | ~~气走经脉 `didi`~~ → 节奏 `shuttle` (10-27, below) |
+| 嘀声 | j04-trial | 时机 | ~~气走经脉 `didi`~~ → ~~节奏~~ cut 10-27 (below) |
 | 凶崖 | wm-xiongya | 时机 | 打地鼠 `xiongya` (a loose hold under each hand and foot; 气走经脉 until 10-27) |
 | 踏马符 | wm-tama | 时机 | 气走经脉 `tama` (three feet up, through the fire) |
 | 扣 | wm-koujue | 时机 | 对话 jinchat `chu-kou` (褚先生 on holding) |
@@ -366,17 +366,16 @@ apart). Painted catchers for the 打地鼠 ones (tools/paint-games.py `rain/*-ba
 念开篇 · 认方 · 闻焦 · 扔石听声 · 吹鹅毛 · 烙饼 · 洗髓 · 晨脉坑 · 守夜 · 下崖) left the 游戏厅; their task ids stay, `cut`, so an old
 save holding one lets it go; their dead CSS went with them.
 
-**嘀声 → 节奏 `shuttle` (2026-10-27, Hanli: 「这个小游戏连着出现, 换一个」):** it was 气走经脉 right after 卧推's. Now the beep
-test itself (games/shuttle.js): he runs between two lines on the court (jin-court), a tap 转身 on each beep; early or late costs one
-of three, 出局 replays that level; five levels, each quicker and tighter. And the lock: tests/arcade-rhythm.test.mjs fails any
-story board of the same kind as the board or fight before it in reading order (rhythm.json `same`), but four kept pairs, each
-with its reason (KEPT_PAIRS): two jinchat pairs (今一's two chats in j01-anatomy; 第四回's 银月 → 今二's 马小宝), 测灵石 → 小周天
-across the 第三回/第四回 turn, and 别踩第三块 → 凶崖 (the 调息 cap's trade, above).
+**嘀声 · 闭关三日: cut (2026-10-27, Hanli: 「这个是你发明的吧, 去掉吧」 · 「你不要自己发明这种游戏了, 画面不精致, 可玩性不高」):** the 节奏
+`shuttle` board (a beep-test turn, then a squat level) was home-made, drawn in bare shapes; it is gone, module and all. j04-trial and
+j07-guan read whole (story_after back into story); both tasks `cut`. Only well-known classics from here, painted. The lock stays
+(tests/arcade-rhythm.test.mjs KEPT_PAIRS): no story board of the same kind as the one before it; 闭关三日's cut leaves 今三's two chats
+side by side, kept with that reason until a classic board stands there.
 
 **调息 fewer, and never the same twice (2026-10-27, Hanli: 「调息的游戏出现很多次, 每次都一样. 适当减少次数, 或者改变一下内容, 增加障碍物,
 道具, 增加趣味. 不要重复」 · 「最好小游戏关卡不重复…游戏类型不变」 · 「游戏难度可以延续」):** cut 镜光 (00-halfyear; 第六回's 藏息 · 镜光扫过来
 again) and 脉枕 (wm-yaban; 第四回's 铁刷子 again, 褚先生's probe); 闭关三日 is 节奏 (`shuttle` level `dunqi`: squats to the beat in the
-gym). 24 story 调息 boards → 21. The kit has things in the channel now (qimai.js): 礁石 to go over or under, 灵珠 (a 气 back), 护体
+gym; since cut, below). 24 story 调息 boards → 21. The kit has things in the channel now (qimai.js): 礁石 to go over or under, 灵珠 (a 气 back), 护体
 (the next knock free), 定神 (the channel slows); every story level lays its own, more as the story goes, its speed never falling
 (88 → 105) and no two 调息 boards in a row on one land. 第四回 still holds three (小周天 · 断肋 · 铁刷子: each the scene's breath; cutting
 铁刷子 would put two chats back to back). The lock (tests/arcade-rhythm.test.mjs): no story board deals a layout an earlier one dealt;
