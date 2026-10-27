@@ -17,7 +17,7 @@
 // A save already past the cap (one played before 2026-10-05) is never pulled
 // down: it keeps its layer and fills it, and goes no higher until the story
 // catches up.
-import { pick, stepOfLayer, threshold, tierOf, zeroAt } from '../state.mjs';
+import { addProgress, pick, stepOfLayer, threshold, tierOf, zeroAt } from '../state.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
 
 /* A realm and layer as one number, low to high: tier index, then layer. */
@@ -91,3 +91,15 @@ export function capLook(content, state, lang) {
 
 /* A breakthrough past the cap, refused in the world's words. */
 export const pastCapSay = (content, lang) => pick(content.ladder.caps?.refuse, lang);
+
+/* A full layer whose door has opened since (a gate passed, the next 回's cap) steps now: the 修为
+   already past its mark carries him up as the next grant would (Hanli 10-27: the bar stood at
+   「一层圆满 · 候」 while the book had him at 二层). Run on every load (rules.mjs), as settleStages;
+   a save with nothing to step comes back as it was (the same object). */
+export function settleHeld(content, state) {
+  if (!state || !content.ladder?.caps || !tierOf(content, state.tier) || zeroAt(content, state.tier, state.step)) return state;
+  if ((state.progress ?? 0) < threshold(content, state)) return state;
+  const s = structuredClone(state);
+  const { levels } = addProgress(content, s, 0, (tier, step) => underCap(content, state, tier, step));
+  return levels.length ? s : state;
+}

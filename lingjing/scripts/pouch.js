@@ -11,7 +11,7 @@ import { GONGKE_WORDS, gongkeHtml } from './gongke.js';
 export const POUCH_WORDS = {
   zh: {
     title: '储物袋', close: '合上', used: '{used}/{cap} 格', over: '超出 {n} 格：新得的东西会先存进洞府。',
-    held: '待取 {n}', heldTitle: '洞府 · 待取', heldNote: '储物袋满时得的东西在这里等着。有空位就能收进。', claim: '收进', back: '回储物袋',
+    held: '待取 {n}', heldTitle: '洞府 · 待取', heldNote: '储物袋满时得的东西在这里等着。有空位就能收进。', claim: '收进',
     tabs: { all: '全部', pill: '丹药', arms: '法器', material: '材料', charm: '符', story: '剧情' },
     deck: '牌组', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
     take: '服用', wear: '佩戴', study: '参悟', carry: '换上', sell: '卖 {n}', toss: '丢',
@@ -20,7 +20,7 @@ export const POUCH_WORDS = {
   },
   en: {
     title: 'Storage Pouch', close: 'Close', used: '{used}/{cap} slots', over: '{n} over: new things wait at the abode first.',
-    held: '{n} waiting', heldTitle: 'The abode · waiting', heldNote: 'What came while the pouch was full waits here. Take it in when there is room.', claim: 'Take in', back: 'Back to the pouch',
+    held: '{n} waiting', heldTitle: 'The abode · waiting', heldNote: 'What came while the pouch was full waits here. Take it in when there is room.', claim: 'Take in',
     tabs: { all: 'All', pill: 'Pills', arms: 'Arms', material: 'Materials', charm: 'Talismans', story: 'Story' },
     deck: 'Deck', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
     take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it', sell: 'Sell {n}', toss: 'Drop',
@@ -109,6 +109,9 @@ function heldHtml(p, ctx, pw) {
 
 /// The panel. `ui` is the page's own view of it: `tab`, `sel` (the item
 /// tapped), `toss` (the item asking 丢?), `pane` ('held' | 'deck' | 'fantong' | 'gongke' | null).
+/// Its head is one row of segments — 储物袋 (the grid) · 待取 · 饭桶 · 人间功课 — and one 合上 at
+/// the right; a segment is the way between them, so no pane carries a 「回储物袋」 of its own
+/// (Hanli 10-27: 「回储物袋这个按钮和其他几个关系不合理」). The 牌组 is its own panel, off its own chip.
 export function pouchHtml(ctx, ui = {}) {
   const pw = POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh, g = ctx.gear;
   const close = `<button class="act quiet" data-pouch-close>${esc(pw.close)}</button>`;
@@ -120,25 +123,23 @@ export function pouchHtml(ctx, ui = {}) {
   const board = ctx.look?.gongke ?? null;
   const pane = ui.pane === 'held' && heldN ? 'held' : ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong'
     : ui.pane === 'gongke' && board ? 'gongke' : null;
-  const head = `<header class="luhead phead"><b>${esc(pw.title)}</b>
-    ${p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : ''}
-    ${heldN ? `<button class="pchip${pane === 'held' ? ' on' : ''}" data-pouch-pane="held">${esc(say(pw.held, { n: heldN }))}</button>` : ''}
-    ${g.fantong ? `<button class="pchip${pane === 'fantong' ? ' on' : ''}" data-pouch-pane="fantong">${esc(pw.fantong)}</button>` : ''}
-    ${board ? `<button class="pchip${pane === 'gongke' ? ' on' : ''}" data-pouch-pane="gongke">${esc((GONGKE_WORDS[ctx.lang] ?? GONGKE_WORDS.zh).chip)}</button>` : ''}${close}</header>`;
   const note = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
+  // 牌组 — its own panel off its own chip: the cards, nothing of the bag's.
+  if (pane === 'deck') return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.deck)}"><header class="luhead phead"><b>${esc(pw.deck)}</b>${close}</header>${note}<section class="psec">${deckHtml(g, ctx)}</section></div>`;
+  const used = p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : '';
+  const seg = (id, label, extra = '') => `<button role="tab" class="pseg${pane === id ? ' on' : ''}" data-pouch-pane="${id ?? ''}" aria-selected="${pane === id}">${esc(label)}${extra}</button>`;
+  const segs = [seg(null, pw.title, used), heldN ? seg('held', say(pw.held, { n: heldN })) : '', g.fantong ? seg('fantong', pw.fantong) : '',
+    board ? seg('gongke', (GONGKE_WORDS[ctx.lang] ?? GONGKE_WORDS.zh).chip) : ''].join('');
+  const head = `<header class="luhead phead"><div class="psegs" role="tablist">${segs}</div>${close}</header>`;
+  const shell = (body) => `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${body}</div>`;
+  if (pane === 'fantong') return shell(ctx.fantongPane ?? '');
+  if (pane === 'held') return shell(heldHtml(p, ctx, pw));
+  if (pane === 'gongke') return shell(gongkeHtml(board, ctx.lang));
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
   const grown = p.grown?.length ? `<p class="small dim">${esc(say(pw.grown, { names: p.grown.join(ctx.lang === 'en' ? ', ' : '、') }))}</p>` : '';
   // 丹毒 (rules/dandu.mjs): the turns owed and what they take off the 体力 pool, in the rules' words — a fact on the page.
   const dandu = ctx.look?.dandu ? `<p class="small pdandu">${esc(ctx.look.dandu.say)}</p>` : '';
   const worn = `<section class="psec">${wornHtml(g, ctx)}</section>`;
-  // 牌组 — its own panel off its own chip: the cards, nothing of the bag's.
-  if (pane === 'deck') return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.deck)}"><header class="luhead phead"><b>${esc(pw.deck)}</b>${close}</header>${note}<section class="psec">${deckHtml(g, ctx)}</section></div>`;
-  if (pane === 'fantong') return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${ctx.fantongPane ?? ''}</div>`;
-  if (pane) {
-    const body = pane === 'held' ? heldHtml(p, ctx, pw) : pane === 'gongke' ? gongkeHtml(board, ctx.lang) : `<section class="psec">${deckHtml(g, ctx)}</section>`;
-    return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${worn}
-      <button class="act quiet pback" data-pouch-pane="">${esc(pw.back)}</button>${body}</div>`;
-  }
   const tab = TABS.includes(ui.tab) ? ui.tab : 'all';
   const count = (t) => (t === 'all' ? g.bag.length : g.bag.filter((i) => tabOf(i) === t).length);
   const tabs = `<div class="ptabs" role="tablist">${TABS.map((t) => `<button role="tab" class="ptab${t === tab ? ' on' : ''}${count(t) ? '' : ' none'}" data-pouch-tab="${t}" aria-selected="${t === tab}">${esc(pw.tabs[t])}<span>${count(t)}</span></button>`).join('')}</div>`;
@@ -146,6 +147,5 @@ export function pouchHtml(ctx, ui = {}) {
   const sel = g.bag.find((i) => i.id === ui.sel) ?? null;
   const grid = shown.length ? `<div class="pgrid">${shown.map((i) => tileHtml(i, ctx, ui.sel)).join('')}</div>`
     : `<p class="small dim">${esc(g.bag.length ? pw.tabEmpty : pw.empty)}</p>`;
-  return `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${worn}
-    <section class="psec">${over}${grown}${dandu}${tabs}<div class="pbody">${grid}${g.bag.length ? detailHtml(sel, g, ctx, pw, ui) : ''}</div></section></div>`;
+  return shell(`${worn}<section class="psec">${over}${grown}${dandu}${tabs}<div class="pbody">${grid}${g.bag.length ? detailHtml(sel, g, ctx, pw, ui) : ''}</div></section>`);
 }

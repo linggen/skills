@@ -10,7 +10,7 @@ import { lint, loadContent } from '../scripts/content.mjs';
 import { newState, stepName, threshold } from '../scripts/state.mjs';
 import { look, resolve } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
-import { capOf } from '../scripts/rules/cap.mjs';
+import { capOf, settleHeld } from '../scripts/rules/cap.mjs';
 import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
@@ -33,7 +33,7 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
   const row = id => { const e = caps[id]; return [`${e.tier}${e.layer}`, e.story ? `${e.story.tier}${e.story.layer}` : null]; };
   assert.deepEqual(Object.fromEntries(Object.keys(caps).map(id => [id, row(id)])), {
     h04: ['qi0', null], // 古三: 入门 at 零层 (the book; the game's too since 2026-10-15)
-    h05: ['qi1', null], // 古四: the 小周天 → 一层 (入门, the one rise), ground full; 第一路 lifts nothing since 2026-10-16
+    h05: ['qi2', null], // 古四: the 小周天 → 一层 (入门, the one rise); past the 柴房 gate 二层 ground (十月廿五 「自己坐上了二层」, 2026-10-27)
     h07: ['qi2', null], // 古五: 二层 ground; 息壤 lifts nothing
     h08: ['qi4', null], // 古六: 三层 and 四层 ground, 大比 on 四层
     h11: ['qi6', null], // 古七 (its first half since 2026-10-07): 五层 and 六层 ground behind its stage quests
@@ -151,4 +151,25 @@ test('an old save already past its cap is never pulled down: it fills its own st
   const f = at('01-ji', '01-arrive', 'yecheng', ['00-prologue', '00-waimen', '00-zhuji'], { tier: 'foundation', step: 1, progress: 0 });
   grind(f, 300);
   assert.equal(named(f), '筑基中成');
+});
+
+// Hanli's save 10-27: 古四 past the 柴房 gate, at wm-baoming (「十月廿五坐上的二层…二层巅峰」), the bar
+// read 「练气一层圆满 · 485/470 · 候」 — h05's cap was 一层, a layer under the book.
+test('古四 past the 柴房 gate: the full 一层 steps to 二层 on load, as the book has it — before the gate it still waits', () => {
+  const done = ['00-prologue'];
+  const his = at('00-waimen', 'wm-baoming', 'waimen', done, { step: 1, progress: 485,
+    done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-yaoyuan', 'wm-chaifang', 'wm-danlu', 'wm-diyilu', 'wm-xunye', 'wm-duizhang', 'wm-yan'], stages: ['wm-chaifang/count'] });
+  const need = threshold(content, his);
+  const s = settleHeld(content, his);
+  assert.notEqual(s, his, 'a held 圆满 whose door is open steps');
+  assert.equal(named(s), '练气二层');
+  assert.equal(s.progress, 485 - need, 'the 修为 past the mark carried in');
+  assert.equal(look(s, content, ctx).capped, undefined, 'no 候 seal');
+  assert.equal(settleHeld(content, s), s, 'nothing more to step: the same object');
+  // Before the 柴房 gate grinding still fills 一层 and waits there.
+  const before = at('00-waimen', 'wm-chaifang', 'waimen', done, { step: 1, done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-yaoyuan'] });
+  grind(before);
+  assert.equal(named(before), '练气一层');
+  assert.equal(settleHeld(content, before), before);
+  assert.ok(look(before, content, ctx).capped, '候 by the full bar until the gate');
 });

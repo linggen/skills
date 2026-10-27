@@ -7,7 +7,8 @@
 import { forget, frameHtml, shellFor, toolHtml } from './games/shell.js';
 
 export const KAILU_SHELL = 'fantong-kailu';
-const BACK = { zh: '回储物袋', en: 'Back to the pouch' };
+// The ✕ goes where the head's 储物袋 segment goes (pouch.js), and says so in that segment's word.
+const BACK = { zh: '储物袋', en: 'Storage Pouch' };
 // The game's module, fetched on first open — never a static import: the page's own modules must not declare the
 // engine's helper names (`mount`) at the top level when the relay inlines the page (tests/pages.test.mjs).
 let game = null;

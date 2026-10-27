@@ -602,15 +602,19 @@ body.fighting .footrow { display: none; }
 .pouch .gcard.picked { border-style: solid; }
 .pouch button.gcard { background: transparent; color: inherit; }
 .pouch .gcard b.cost { display: inline-grid; place-items: center; min-width: 1.35em; height: 1.35em; border-radius: 50%; font-size: 11px; background: var(--ling, #3b6ea5); color: #fff; margin-right: 2px; }
-.phead .pused { font-family: var(--ui); font-size: 13px; color: var(--dim); }
+/* The head's segments (pouch.js pouchHtml): 储物袋 · 待取 · 饭桶 · 人间功课, one pill-shaped row, the one shown filled;
+   合上 at the right. A narrow phone scrolls the row rather than wrap it under 合上. */
+.phead { flex-wrap: nowrap; align-items: center; }
+.psegs { display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 2px; border: 1px solid var(--line); border-radius: 99px; background: var(--raised); }
+.psegs::-webkit-scrollbar { display: none; }
+.pseg { flex: none; font: inherit; font-family: var(--serif); font-size: 15px; letter-spacing: .08em; padding: 4px 14px; border: 0; border-radius: 99px; background: none; color: var(--dim); cursor: pointer; }
+.pseg.on { background: var(--surface); color: var(--ling); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+.pseg .pused { margin-left: 6px; letter-spacing: 0; }
+.phead > .act { flex: none; }
+@media (max-width: 560px) { .pseg { font-size: 14px; padding: 4px 10px; } }
+.phead .pused { font-family: var(--ui); font-size: 13px; color: var(--dim); font-weight: 400; }
 .phead .pused.full { color: var(--seal); }
 .phead .pused.over { color: var(--seal); font-weight: 600; }
-.pchip { font: inherit; font-family: var(--ui); font-size: 12.5px; padding: 1px 10px; border-radius: 99px; border: 1px solid var(--seal); background: var(--surface); color: var(--seal); cursor: pointer; }
-.pchip[data-pouch-pane="deck"] { border-color: var(--ling); color: var(--ling); }
-.pchip.on { background: var(--seal-soft); }
-.pchip .pnew { font-weight: 600; color: var(--seal); margin-left: 2px; }
-.pchip[data-pouch-pane="deck"].on { background: var(--ling-soft); }
-.phead .pchip + .act, .phead .pused + .act { margin-left: auto; }
 .pouch .donote { margin-top: 10px; }
 .psec { margin-top: 14px; font-family: var(--ui); }
 .psec h3 { font-family: var(--serif); font-size: 14px; letter-spacing: .15em; color: var(--dim); margin: 0 0 6px; font-weight: 600; }
@@ -620,7 +624,6 @@ body.fighting .footrow { display: none; }
 .pworn b { font-family: var(--serif); overflow-wrap: anywhere; }
 .pworn b[role="button"] { cursor: pointer; }
 .pworn .act { align-self: flex-start; margin-top: 2px; padding: 1px 8px; font-size: 12px; }
-.pback { margin: 12px 0 0; }
 .pover { color: var(--seal); margin: 0 0 8px; }
 .pdandu { color: var(--seal); margin: 0 0 8px; }
 .ptabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
@@ -678,7 +681,6 @@ body.fighting .footrow { display: none; }
 .gkrow.paid .gktitle { color: var(--dim); }
 .gkadds { color: var(--dim); }
 /* 喂饭桶 · 开炉 (fantong-kailu.js): the game in the shell, in the pouch's grid place. */
-.pchip[data-pouch-pane="fantong"] { border-color: var(--gold, var(--seal)); }
 .ftong.kailu { display: block; max-width: 520px; margin-left: auto; margin-right: auto; }
 .lurecipe { margin: 2px 0; font-size: 13.5px; }
 .luftgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; margin-top: 6px; }

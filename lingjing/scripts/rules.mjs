@@ -42,6 +42,7 @@ import { recapFacts } from './rules/recap.mjs';
 import { guideVerb, withGuides } from './rules/guide.mjs';
 import { atScene } from './rules/world.mjs';
 import { settleStages } from './rules/gates.mjs';
+import { settleHeld } from './rules/cap.mjs';
 import { markBeen } from './rules/inkmap.mjs';
 import { owesTell, playOf, stagedOf, tellOf } from './rules/tell.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
@@ -217,7 +218,8 @@ function runLocked(verb, args, stateFile, reader) {
   // Her presence fitted to the scene (companion.mjs fitPresence) — the flag the engine reads.
   // A stage quest behind him never handed in is paid once, here (rules/gates.mjs settleStages).
   // …and a pool's beast matched to him where he stands (rules/match.mjs standFit), chosen again when it no longer holds.
-  const fitted = raw && raw.world === worldId ? settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now), now), now) : raw;
+  // …and a full layer whose door has opened since steps up (rules/cap.mjs settleHeld).
+  const fitted = raw && raw.world === worldId ? settleHeld(content, settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now), now), now)) : raw;
   const saved = fitted && raw?.world === worldId ? standFit(content, fitted, now) : fitted;
   // Only the stand moved (a read): written, never logged — Undo takes back moves, not a beast chosen.
   const standOnly = Boolean(raw) && fitted === raw && saved !== raw;

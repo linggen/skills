@@ -158,7 +158,7 @@ test('the panel: header used/cap and 待取, tabs with counts, tiles, the detail
     const c = { look: { lang, words: content.dictionary.words?.[lang] ?? {} }, gear: VERBS.gear({ ...s, lang }, content, ctx()).result.gear, lang, words: WORDS[lang], artBase: '../worlds/jiuding/' };
     const all = pouchHtml(c, {});
     assert.match(all, lang === 'zh' ? /储物袋[\s\S]*5\/24 格/ : /Storage Pouch[\s\S]*5\/24 slots/, `${lang}: the ferry token takes no slot`);
-    assert.match(all, lang === 'zh' ? /data-pouch-pane="held">待取 1</ : /data-pouch-pane="held">1 waiting</);
+    assert.match(all, lang === 'zh' ? /data-pouch-pane="held" aria-selected="false">待取 1</ : /data-pouch-pane="held" aria-selected="false">1 waiting</);
     assert.match(all, /data-pouch-tab="all"[^>]*>[^<]+<span>6<\/span>/);
     assert.match(all, /data-pouch-tab="arms"[^>]*>[^<]+<span>2<\/span>/);
     assert.match(all, /data-pouch-tab="story"[^>]*>[^<]+<span>1<\/span>/);
@@ -180,6 +180,16 @@ test('the panel: header used/cap and 待取, tabs with counts, tiles, the detail
     // a bigger pouch is carried; 待取 has its 收进
     assert.match(pouchHtml(c, { sel: 'pouch-mid' }), /data-use="pouch-mid"/);
     assert.match(pouchHtml(c, { pane: 'held' }), /data-claim="jade-fish"/);
+    // The head is one row of segments and one 合上 (Hanli 10-27: 「回储物袋这个按钮和其他几个关系不合理」):
+    // the shown one marked, the same head on every pane, no 「回储物袋」 anywhere, the worn row under 储物袋 only.
+    for (const pane of [null, 'held']) {
+      const h = pouchHtml(c, { pane });
+      const head = h.match(/<header class="luhead phead">([\s\S]*?)<\/header>/)[1];
+      assert.deepEqual([...head.matchAll(/class="pseg( on)?" data-pouch-pane="(\w*)"/g)].map((m) => [m[2], Boolean(m[1])]), [['', !pane], ['held', pane === 'held']]);
+      assert.equal((head.match(/data-pouch-close/g) ?? []).length, 1);
+      assert.doesNotMatch(h, /回储物袋|Back to the pouch|pback/);
+      assert.equal(/class="pwornrow"/.test(h), !pane, 'the worn row under 储物袋 only');
+    }
     // away from a market there is no 卖
     const road = { ...c, gear: VERBS.gear({ ...s, lang, place: 'sishui' }, content, ctx()).result.gear };
     assert.doesNotMatch(pouchHtml(road, { sel: 'qi-pill' }), /data-sell/);

@@ -54,6 +54,6 @@ test('the shell bar lays its icons in one order: ? · 🔊 · Ⅱ · ✕ — the
   // 开炉: back to the pouch is its ✕, no word over the pane.
   const { kailuPaneHtml } = await import('../scripts/fantong-kailu.js');
   const k = kailuPaneHtml('zh');
-  assert.match(k, /class="gshell-btn gshell-close" title="回储物袋" aria-label="回储物袋" data-pouch-pane="">✕<\/button><\/div>/);
+  assert.match(k, /class="gshell-btn gshell-close" title="储物袋" aria-label="储物袋" data-pouch-pane="">✕<\/button><\/div>/);
   assert.doesNotMatch(k, /class="act quiet pback"/);
 });

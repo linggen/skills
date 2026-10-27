@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 572,
-  "wealth": 690,
+  "wealth": 668,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -641,8 +641,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 560,
-   "wealth": 693
+   "progress": 540,
+   "wealth": 671
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1194,10 +1194,6 @@
    "09-year/futian"
   ],
   "furnace_name": "饭桶",
-  "stretch": {
-   "qi:2": 8,
-   "qi:3": 28
-  },
   "hunted": {
    "mijing-xiongya": 1
   },
@@ -1212,6 +1208,9 @@
     "n": 0,
     "ended_at": "2026-01-01T00:00:00.000Z"
    }
+  },
+  "stretch": {
+   "qi:3": 28
   },
   "told_scenes": [
    "00-baicai",
