@@ -53,7 +53,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 74
+       "n": 77
       },
       {
        "kind": "read",
@@ -72,7 +72,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 11
+       "n": 13
       },
       {
        "kind": "read",
@@ -91,7 +91,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 75
+       "n": 78
       },
       {
        "kind": "read",
@@ -161,7 +161,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 82
+       "n": 85
       },
       {
        "kind": "read",
@@ -180,7 +180,7 @@
        "mechanic": "割绳子",
        "variety": "割绳子",
        "game": "bread",
-       "n": 9
+       "n": 11
       },
       {
        "kind": "read",
@@ -214,7 +214,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "bingzhai",
-       "n": 106
+       "n": 109
       },
       {
        "kind": "read",
@@ -274,7 +274,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 38
+       "n": 41
       },
       {
        "kind": "read",
@@ -293,7 +293,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 88
+       "n": 91
       },
       {
        "kind": "read",
@@ -312,7 +312,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 76
+       "n": 79
       },
       {
        "kind": "read",
@@ -331,7 +331,7 @@
        "mechanic": "割绳子",
        "variety": "割绳子",
        "game": "rentrope",
-       "n": 10
+       "n": 12
       },
       {
        "kind": "read",
@@ -350,7 +350,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 118
+       "n": 121
       },
       {
        "kind": "read",
@@ -388,7 +388,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 16
+       "n": 18
       },
       {
        "kind": "read",
@@ -407,7 +407,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 83
+       "n": 86
       },
       {
        "kind": "read",
@@ -426,7 +426,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 12
+       "n": 14
       },
       {
        "kind": "read",
@@ -445,7 +445,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 113
+       "n": 116
       },
       {
        "kind": "read",
@@ -464,7 +464,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 13
+       "n": 15
       },
       {
        "kind": "read",
@@ -483,7 +483,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 119
+       "n": 122
       },
       {
        "kind": "read",
@@ -528,7 +528,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 97
+       "n": 100
       },
       {
        "kind": "read",
@@ -547,7 +547,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 94
+       "n": 97
       },
       {
        "kind": "read",
@@ -566,7 +566,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 39
+       "n": 42
       },
       {
        "kind": "read",
@@ -585,7 +585,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 98
+       "n": 101
       },
       {
        "kind": "read",
@@ -604,7 +604,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 99
+       "n": 102
       },
       {
        "kind": "read",
@@ -623,7 +623,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 96,
+       "n": 99,
        "same": true
       },
       {
@@ -669,7 +669,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 84
+       "n": 87
       },
       {
        "kind": "read",
@@ -703,7 +703,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 29
+       "n": 32
       },
       {
        "kind": "read",
@@ -722,7 +722,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 18
+       "n": 20
       },
       {
        "kind": "read",
@@ -741,7 +741,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 40
+       "n": 43
       },
       {
        "kind": "read",
@@ -760,7 +760,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "luoshu",
-       "n": 17
+       "n": 19
       },
       {
        "kind": "read",
@@ -779,7 +779,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 28
+       "n": 31
       },
       {
        "kind": "read",
@@ -818,7 +818,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 27
+       "n": 30
       },
       {
        "kind": "read",
@@ -873,7 +873,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 31,
+       "n": 34,
        "same": true
       },
       {
@@ -893,7 +893,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 41
+       "n": 44
       },
       {
        "kind": "read",
@@ -912,7 +912,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 114
+       "n": 117
       },
       {
        "kind": "read",
@@ -931,7 +931,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 85
+       "n": 88
       },
       {
        "kind": "read",
@@ -950,7 +950,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 42
+       "n": 45
       },
       {
        "kind": "read",
@@ -969,7 +969,7 @@
        "mechanic": "割绳子",
        "variety": "割绳子",
        "game": "niugurope",
-       "n": 32
+       "n": 35
       },
       {
        "kind": "read",
@@ -988,7 +988,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 19
+       "n": 21
       },
       {
        "kind": "read",
@@ -1007,7 +1007,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 115
+       "n": 118
       },
       {
        "kind": "read",
@@ -1026,7 +1026,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 20
+       "n": 22
       },
       {
        "kind": "read",
@@ -1045,7 +1045,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 116
+       "n": 119
       },
       {
        "kind": "read",
@@ -1090,7 +1090,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 100,
+       "n": 103,
        "same": true
       },
       {
@@ -1110,7 +1110,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 21
+       "n": 23
       },
       {
        "kind": "read",
@@ -1129,7 +1129,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 43,
+       "n": 46,
        "same": true
       },
       {
@@ -1168,7 +1168,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 95
+       "n": 98
       },
       {
        "kind": "read",
@@ -1187,7 +1187,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 22
+       "n": 24
       },
       {
        "kind": "read",
@@ -1232,7 +1232,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 120
+       "n": 123
       },
       {
        "kind": "read",
@@ -1251,7 +1251,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 30
+       "n": 33
       },
       {
        "kind": "read",
@@ -1270,7 +1270,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 121
+       "n": 124
       },
       {
        "kind": "read",
@@ -1308,7 +1308,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 44
+       "n": 47
       },
       {
        "kind": "read",
@@ -1347,7 +1347,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "wuziqi",
-       "n": 34
+       "n": 37
       },
       {
        "kind": "read",
@@ -1366,7 +1366,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 23
+       "n": 25
       },
       {
        "kind": "read",
@@ -1405,7 +1405,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 89
+       "n": 92
       },
       {
        "kind": "read",
@@ -1424,7 +1424,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 45
+       "n": 48
       },
       {
        "kind": "read",
@@ -1462,7 +1462,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 35
+       "n": 38
       },
       {
        "kind": "read",
@@ -1496,7 +1496,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 122
+       "n": 125
       },
       {
        "kind": "read",
@@ -1515,7 +1515,7 @@
        "mechanic": "割绳子",
        "variety": "割绳子",
        "game": "luoborope",
-       "n": 33
+       "n": 36
       },
       {
        "kind": "read",
@@ -1560,7 +1560,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 123
+       "n": 126
       },
       {
        "kind": "read",
@@ -1579,7 +1579,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 24
+       "n": 26
       },
       {
        "kind": "read",
@@ -1598,7 +1598,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 90
+       "n": 93
       },
       {
        "kind": "read",
@@ -1617,7 +1617,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 46
+       "n": 49
       },
       {
        "kind": "read",
@@ -1636,7 +1636,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 36
+       "n": 39
       },
       {
        "kind": "read",
@@ -1670,7 +1670,7 @@
        "mechanic": "时机",
        "variety": "时机",
        "game": "sneeze",
-       "n": 37
+       "n": 40
       },
       {
        "kind": "read",
@@ -1709,7 +1709,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 124
+       "n": 127
       },
       {
        "kind": "read",
@@ -1748,7 +1748,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 47
+       "n": 50
       },
       {
        "kind": "read",
@@ -1787,7 +1787,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 48
+       "n": 51
       },
       {
        "kind": "read",
@@ -1806,7 +1806,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 125
+       "n": 128
       },
       {
        "kind": "read",
@@ -1825,7 +1825,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 49
+       "n": 52
       },
       {
        "kind": "read",
@@ -1844,7 +1844,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 126
+       "n": 129
       },
       {
        "kind": "read",
@@ -1863,7 +1863,7 @@
        "mechanic": "你画我猜",
        "variety": "你画我猜",
        "game": "drawguess",
-       "n": 66
+       "n": 69
       },
       {
        "kind": "read",
@@ -1918,7 +1918,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 50
+       "n": 53
       },
       {
        "kind": "read",
@@ -1937,7 +1937,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 25
+       "n": 27
       },
       {
        "kind": "read",
@@ -1956,7 +1956,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 101
+       "n": 104
       },
       {
        "kind": "read",
@@ -1975,7 +1975,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 51
+       "n": 54
       },
       {
        "kind": "read",
@@ -1994,7 +1994,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 127
+       "n": 130
       },
       {
        "kind": "read",
@@ -2013,7 +2013,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 52
+       "n": 55
       },
       {
        "kind": "read",
@@ -2073,7 +2073,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 128
+       "n": 131
       },
       {
        "kind": "read",
@@ -2092,7 +2092,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "yubujiuge",
-       "n": 53
+       "n": 56
       },
       {
        "kind": "read",
@@ -2111,7 +2111,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 129
+       "n": 132
       },
       {
        "kind": "read",
@@ -2130,7 +2130,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 93
+       "n": 96
       },
       {
        "kind": "read",
@@ -2149,7 +2149,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 130
+       "n": 133
       },
       {
        "kind": "read",
@@ -2207,7 +2207,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 131
+       "n": 134
       },
       {
        "kind": "read",
@@ -2245,7 +2245,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 92
+       "n": 95
       },
       {
        "kind": "read",
@@ -2310,7 +2310,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 132
+       "n": 136
       },
       {
        "kind": "read",
@@ -2329,7 +2329,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 86
+       "n": 89
       },
       {
        "kind": "read",
@@ -2348,7 +2348,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 133
+       "n": 137
       },
       {
        "kind": "read",
@@ -2367,7 +2367,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 26
+       "n": 29
       },
       {
        "kind": "read",
@@ -2446,14 +2446,52 @@
      "items": [
       {
        "kind": "read",
-       "chars": 3967,
-       "run": 3967,
-       "over": true
+       "chars": 389,
+       "run": 389,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-hongshu",
+       "scene": "j09-noise",
+       "title": {
+        "zh": "红薯 · 篮下",
+        "en": "Sweet Potato · Under the basket"
+       },
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 9
+      },
+      {
+       "kind": "read",
+       "chars": 1892,
+       "run": 1892,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-shouhuan",
+       "scene": "j09-diban",
+       "title": {
+        "zh": "气走经脉 · 吸四吐六",
+        "en": "Qi path · In four, out six"
+       },
+       "mechanic": "调息",
+       "variety": "调息",
+       "game": "qimai",
+       "n": 28
+      },
+      {
+       "kind": "read",
+       "chars": 1686,
+       "run": 1686,
+       "over": false
       },
       {
        "kind": "board",
        "id": "jin-chat-ahe",
-       "scene": "j09-noise",
+       "scene": "j09-diban",
        "title": {
         "zh": "决赛前夜 · 正在输入",
         "en": "The night before · Typing…"
@@ -2461,7 +2499,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 102
+       "n": 105
       },
       {
        "kind": "read",
@@ -2480,24 +2518,62 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 57
+       "n": 60
       },
       {
        "kind": "read",
-       "chars": 4191,
-       "run": 9526,
+       "chars": 1536,
+       "run": 1536,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-jijiu",
+       "scene": "j09-dongzhi",
+       "title": {
+        "zh": "随车的大夫 · 吃过什么",
+        "en": "The ambulance doctor · Taken anything"
+       },
+       "mechanic": "对话",
+       "variety": "对话",
+       "game": "jinchat",
+       "n": 135
+      },
+      {
+       "kind": "read",
+       "chars": 1931,
+       "run": 1931,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "jin-ting",
+       "scene": "j09-dongzhi",
+       "title": {
+        "zh": "冬至夜 · 先听",
+        "en": "The solstice night · Listen first"
+       },
+       "mechanic": "打地鼠",
+       "variety": "打地鼠",
+       "game": "rain",
+       "n": 10
+      },
+      {
+       "kind": "read",
+       "chars": 724,
+       "run": 6059,
        "over": true
       }
      ],
      "counts": {
-      "board": 2,
+      "board": 6,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "longest": 9526,
+     "longest": 6059,
      "roaming": 0,
      "side": []
     },
@@ -2511,7 +2587,7 @@
       {
        "kind": "read",
        "chars": 5335,
-       "run": 9526,
+       "run": 6059,
        "over": true
       },
       {
@@ -2624,7 +2700,7 @@
       "breakthrough": 0,
       "piece": 3
      },
-     "longest": 9526,
+     "longest": 6059,
      "roaming": 4,
      "side": []
     }

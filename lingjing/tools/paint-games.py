@@ -191,7 +191,7 @@ SUBJECTS = {
   'rain/hongshu-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of an open-air basketball court at night in winter seen from the side: one hoop on a pole, a chain-link fence, '
     'one tall floodlight, bare trees beyond. Grey ink wash and dark ink, cold.'),
-  'rain/hongshu-basin': ('sprite', (360, 200), (1024, 576), 1,
+  'rain/hongshu-basin': ('sprite', (360, 200), (1024, 576), 2,
     'ONE small scruffy reddish-yellow mongrel dog with a tuft of hair standing up on its forehead, nosing a basketball along with its head. Muted ink and soft wash on plain paper.'),
   'rain/ting-beam': ('sprite', (960, 200), (1536, 320), 1,
     'A long horizontal strip of a dark old library stack room at night seen from the side: tall wooden bookshelves of thread-bound books, '

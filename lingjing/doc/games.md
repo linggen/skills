@@ -222,13 +222,21 @@ boards and fights, 64%. Typical days 7.1 → 7.8 (band allowed to 8 under fit._h
 
 Over after: 用哪颗丹 → the 160th step (子安, the night home) ≈ 3,600 — the 回's heart, read whole.
 
-### 今四 (j09): +4
+### 今四 (j09): +4 → built 4
+**Built 2026-10-26:** ① 红薯 under the hoop (打地鼠 `hongshu`, painted) after 「…追到了还不给。」 · ② 吸四吐六 (气走经脉 `shouhuan`,
+the band at 112: 「再来一回。这回我吐气。」) in a new j09-diban (j09-noise split at the new floor; 决赛前夜 · 正在输入 moved there with its
+way on, its reply told on the way on) · ③ 急救 was 时机 `jijiu`: now 随车的大夫 (jinchat `jijiu`, 「吃过什么没有？」 — he tells
+what he'd kept quiet) · ④ 长息 (气走经脉 `changxi`) dropped for the 调息 cap (最后一罚 and 吸四吐六 are two); 冬至夜 · 先听
+(打地鼠 `ting`, painted: the climate unit, his breath, the *thud* in the chest) after 「…这一回，他是真听见了。」 in its place;
+the down on his lip, dawn and the black car told on the way on. Reading 今四: 23 min, 6 boards, 56%.
 | # | scene · ¶ | the book | kit · level |
 |---|---|---|---|
-| 1 | j09-noise s4 | 红薯 under the hoop, heading the misses back | 打地鼠 `hongshu` |
-| 2 | j09-noise s33 (split) | 「再来一回。这回我吐气。」 — 老蔡's yell, the band at 112 | 时机 `shouhuan` (hold) |
-| 3 | j09-dongzhi s8 (split) | 马小宝 down on the new floor: legs up, 「先别吸气，往外吐」 | 时机 `jijiu` |
-| 4 | j09-dongzhi s33 (split) | 冬至夜 in the dark: the down on his lip that doesn't stir | 气走经脉 `changxi` |
+| 1 | j09-noise s4 (split) | 红薯 under the hoop, heading the misses back | 打地鼠 `hongshu` |
+| 2 | j09-diban s15 (new scene, split) | 「再来一回。这回我吐气。」 — the band at 112 | 气走经脉 `shouhuan` |
+| 3 | j09-dongzhi s10 (split) | 「吃过什么没有？」 — 马小宝's eyes: don't tell | jinchat `jijiu` (face) |
+| 4 | j09-dongzhi s32 (split) | 冬至夜 in the dark: listen first | 打地鼠 `ting` |
+
+Over after: 最后一罚's first miss → the final (j09-final) 2,294, the told match.
 
 ### 第九回 (h10): +8
 | # | scene · ¶ | the book | kit · level |

@@ -42,8 +42,8 @@ const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'ji
   'jin-yiquan': 'yiquan', 'jin-jingluo': 'jingluo',
   // 第三回 (2026-10-26): the three hundred steps, his hand on the testing stone
   'steps-sanbai': 'sanbai', 'hall-celing': 'celing',
-  // 全文后的小游戏 第二批 (2026-10-26): 第八回's 160th step
-  'shijie-tiandan': 'tiandan' };
+  // 全文后的小游戏 第二批 (2026-10-26): 第八回's 160th step; 今四's band
+  'shijie-tiandan': 'tiandan', 'jin-shouhuan': 'shouhuan' };
 const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/tasks/${f}.json`, import.meta.url), 'utf8')).tasks);
 
 /** Played to the end by `policy(state)` (true = hold), on a `step` ms clock. */

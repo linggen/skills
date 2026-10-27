@@ -24,7 +24,7 @@ test('j09-dongzhi: the last cup comes while she clears the bench', () => {
 });
 
 test('j09-noise: the notebook that closes on 「替补席上，你最准」 is named as hers', () => {
-  const { zh, en } = scene('j09-noise').story;
+  const { zh, en } = scene('j09-noise').story_after; // 红薯 (2026-10-26) splits the passage: the 摸底 is told after the board
   assert.match(zh, /阿禾的本子上只有一行：「沈芒　罚球 十投七。」\n\n她合上本子：「替补席上，你最准。」/);
   assert.match(en, /In Ahe's notebook there was only one line: [^\n]*\n\nShe shut the notebook/);
 });
