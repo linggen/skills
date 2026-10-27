@@ -137,7 +137,7 @@ test('the page wires it: the band, the pager, keys, swipe, and the fitted pictur
   assert.match(js, /fitAppear\(el\);/, 'the 出场 plate is fitted');
   const sight = fs.readFileSync(path.join(ROOT, 'scripts/sight.js'), 'utf8');
   assert.match(sight, /if \(card\) fitCard\(card\);/, 'every 亮相 picture is fitted');
-  assert.match(sight, /e\.kind === '生物' \? ' plate' : ''/, 'a creature\'s plate keeps the ink fade at its edges');
+  assert.match(sight, /e\.kind === '生物' \|\| e\.sight \? ' plate' : ''/, 'a creature\'s plate (and a thing that comes on, the 饭桶) keeps the ink fade at its edges');
   const css = fs.readFileSync(path.join(ROOT, 'scripts/story.css'), 'utf8');
   assert.match(css, /\.sightcard img\.sightpic\.fit[^{]*\{[^}]*object-fit: contain/);
   assert.match(css, /\.appear \.appearart\.fit \{[^}]*object-fit: contain/);
