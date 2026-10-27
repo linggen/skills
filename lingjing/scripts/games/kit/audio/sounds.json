@@ -1453,6 +1453,26 @@
      "min": 120
     }
    }
+  },
+  "shuttle": {
+   "kit": "board",
+   "events": {
+    "beat": {
+     "sound": "tone.tick",
+     "min": 120
+    },
+    "turn": {
+     "sound": "step.grass",
+     "min": 80
+    },
+    "miss": {
+     "sound": "ui.error",
+     "min": 150,
+     "vol": 0.6
+    },
+    "level": "ui.confirm",
+    "out": "tone.bad"
+   }
   }
  }
 }

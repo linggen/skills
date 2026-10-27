@@ -351,7 +351,7 @@ apart). Painted catchers for the 打地鼠 ones (tools/paint-games.py `rain/*-ba
 | 腿缝里 | 00-steps | 时机 | 打地鼠 `tuifeng` |
 | 一拳 | wm-qingshi | 时机 | 打地鼠 `qingshi` (the warmth drawn up the arm) |
 | 一根萝卜 · 别动 | wm-yaoyuan | 时机 | 打地鼠 `luobo` |
-| 嘀声 | j04-trial | 时机 | 气走经脉 `didi` |
+| 嘀声 | j04-trial | 时机 | ~~气走经脉 `didi`~~ → 节奏 `shuttle` (10-27, below) |
 | 凶崖 | wm-xiongya | 时机 | 打地鼠 `xiongya` (a loose hold under each hand and foot; 气走经脉 until 10-27) |
 | 踏马符 | wm-tama | 时机 | 气走经脉 `tama` (three feet up, through the fire) |
 | 扣 | wm-koujue | 时机 | 对话 jinchat `chu-kou` (褚先生 on holding) |
@@ -365,6 +365,13 @@ apart). Painted catchers for the 打地鼠 ones (tools/paint-games.py `rain/*-ba
 开炉 (`kailu`, the 饭桶's draw) is labelled 开炉 · Gacha. The 13 cut prototypes with no type and no module (相克 · 底册 · 猪蜻蜓 ·
 念开篇 · 认方 · 闻焦 · 扔石听声 · 吹鹅毛 · 烙饼 · 洗髓 · 晨脉坑 · 守夜 · 下崖) left the 游戏厅; their task ids stay, `cut`, so an old
 save holding one lets it go; their dead CSS went with them.
+
+**嘀声 → 节奏 `shuttle` (2026-10-27, Hanli: 「这个小游戏连着出现, 换一个」):** it was 气走经脉 right after 卧推's. Now the beep
+test itself (games/shuttle.js): he runs between two lines on the court (jin-court), a tap 转身 on each beep; early or late costs one
+of three, 出局 replays that level; five levels, each quicker and tighter. And the lock: tests/arcade-rhythm.test.mjs fails any
+story board of the same kind as the board or fight before it in reading order (rhythm.json `same`), but four kept pairs, each
+with its reason (KEPT_PAIRS): two jinchat pairs (今一's two chats in j01-anatomy; 第四回's 银月 → 今二's 马小宝), 测灵石 → 小周天
+across the 第三回/第四回 turn, and 别踩第三块 → 凶崖 (the 调息 cap's trade, above).
 
 **The 调息 cap held (2026-10-27, the coordinator for Hanli: at most two a 回):** 凶崖 and 风掉头 above, and 第五回's 隐身符
 (`yinshen`, wm-shishi: wherever 邹青松's spirit sense sweeps, go still), are 打地鼠 now, painted; 第五回 keeps 踏马符 · 息壤,

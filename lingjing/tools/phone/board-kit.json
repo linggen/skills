@@ -455,6 +455,18 @@
         "worlds/jiuding/art/codex/sanguan.webp"
       ]
     },
+    "shuttle": {
+      "_about": "嘀声 · 二十米往返跑 (games/shuttle.js, pure; 今二's beep test).",
+      "module": "scripts/games/shuttle.js",
+      "dirs": [],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css"
+      ],
+      "files": [
+        "worlds/jiuding/art/places/jin-court.webp"
+      ]
+    },
     "yubujiuge": {
       "_about": "禹步 · 九歌 (games/yubujiuge.js, pure; 第七回).",
       "module": "scripts/games/yubujiuge.js",

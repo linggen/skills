@@ -179,7 +179,7 @@ test('every 今线 board is a chat, 最后一罚 or 白线上: its task pays not
   // 10-22 (Hanli: 「改成玩」): 最后一罚 back as 今四's board, 今二's free throws a 砸寨 throw (白线上)
   const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-lastshot': 'qimai', 'jin-whiteline': 'zhazhai',
     // 今二's four (全文后的小游戏 2026-10-26)
-    'jin-wotui': 'qimai', 'jin-didi': 'qimai', 'jin-qiu': 'rain', 'jin-xisi': 'qimai', // 嘀声 a 时机 until 10-26 (Hanli: 「还是用现有的类型吧」)
+    'jin-wotui': 'qimai', 'jin-didi': 'shuttle', 'jin-qiu': 'rain', 'jin-xisi': 'qimai', // 嘀声 a 时机 until 10-26 (Hanli: 「还是用现有的类型吧」), 调息 until 10-27 (「这个小游戏连着出现, 换一个」): 节奏
     // 今三's five (全文后的小游戏 第二批 2026-10-26)
     'jin-zhizhen': 'rain', 'jin-danjiao': 'qimai', 'jin-shendun': 'qimai', 'jin-quxian': 'jinchat', 'jin-chenmai': 'rain' };
   for (const [id, game] of Object.entries(games)) {

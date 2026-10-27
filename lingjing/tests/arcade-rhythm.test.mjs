@@ -54,6 +54,27 @@ test('`same` flags a board or fight of the variety the last one was (every fight
   }
 });
 
+/* No board back to back with one of its own kind (Hanli 10-27, 嘀声 right after 卧推, both 气走经脉: 「这个小游戏连着出现,
+   换一个」): a story board whose variety (`same`, above: the mechanic; a 塔防 by its game) is the last board's or fight's,
+   in reading order, fails here — but for the pairs below, each kept for its reason. A new pair is a swap to make, not a
+   row to add without one. */
+const KEPT_PAIRS = {
+  'jin-chat-ge>jin-chat-617': '今一, one scene (j01-anatomy): 古籍部 then 六一七 — two chats; the jinchat boards\' own pass',
+  'hall-celing>zhoutian-sanguan': '第三回\'s last board, 第四回\'s first: 测灵石 · 藏 then 小周天 · 冲三关, both the breath itself — a 回 turns between',
+  'baoming-yinyue>jin-chat-ma': '第四回\'s last chat (银月), 今二\'s first (马小宝\'s video) — a 回 and a line turn between; the jinchat boards\' own pass',
+  'shiting-fanban>wangzuo-xiongya': '第五回: 凶崖 went 打地鼠 to hold the 调息 cap (2026-10-27; doc/games.md § 时机), a scene after 别踩第三块',
+};
+test('no story board follows one of its own kind in reading order (the kept pairs aside, each with its reason)', () => {
+  let last = null;
+  const met = [];
+  for (const it of plays()) {
+    if (it.kind === 'board' && it.same) met.push(`${last.id}>${it.id}`);
+    last = it;
+  }
+  assert.deepEqual(met.filter((k) => !KEPT_PAIRS[k]), [], 'back to back with its own kind: swap one for another type');
+  assert.deepEqual(Object.keys(KEPT_PAIRS).filter((k) => !met.includes(k)), [], 'a kept pair no longer back to back: drop it from KEPT_PAIRS');
+});
+
 test('a read is over the cap when its whole stretch is; a 回\'s counts and longest are its items\'', () => {
   assert.equal(TABLE.cap, RHYTHM_CAP);
   const runs = new Set(Object.values(content.chapters).flatMap((ch) => stretchesOf(ch).map((s) => s.chars)));

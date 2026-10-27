@@ -1126,11 +1126,10 @@
         "zh": "嘀声 · 二十米往返跑",
         "en": "The beeps · The twenty-metre shuttle"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 49,
-       "same": true
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "shuttle",
+       "n": 49
       },
       {
        "kind": "read",
