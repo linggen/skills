@@ -111,13 +111,18 @@ test('packs: every file in exactly one, the host page and the table in the commo
   const bytes = [...seen.keys()].reduce((n, f) => n + fs.statSync(path.join(SKILL, f)).size, 0);
   // 卷一's boards (24 games), the fight with every card and creature, and eight 大场面 (10-26 step 2: ~44 MB; step 1's
   // 第一回 alone was ~17.8 MB). The phone keeps them bundled until ~100 MB (doc/lingjing-phone.md, decided 10-26).
-  assert.ok(bytes < 56 * 1024 * 1024, `all packs ${bytes} B`);
+  // 10-27: + the camera 结印's pack (the hand model, ~19 MB).
+  assert.ok(bytes < 76 * 1024 * 1024, `all packs ${bytes} B`);
 });
 
 test('nothing outside the kit: no other game, no art of another board, within a budget', () => {
   assert.ok(files.every((f) => !f.startsWith('scripts/games/zhazhai/') && !f.startsWith('scripts/games/sadou') && !f.startsWith('worlds/jiuding/chapters/')));
-  for (const id of kitGames()) assert.ok(!boardFiles(id).includes('scripts/games/jieyin/helper.js'), `${id}: the camera 结印 is not on the phone yet`);
-  assert.ok(!set.has('scripts/games/jieyin/helper.js'), 'the camera 结印 is not on the phone yet');
+  // The camera 结印 (10-27): its own pack, loaded on demand — never in a board's pack or the common one.
+  for (const id of kitGames().filter((g) => g !== 'jieyin')) assert.ok(!boardFiles(id).includes('scripts/games/jieyin/helper.js'), `${id} carries the 结印 helper`);
+  assert.ok(!set.has('scripts/games/jieyin/helper.js'), 'the 守墙关 kit carries the 结印 helper');
+  const { common, games } = kitPacks();
+  assert.ok(games.jieyin.includes('scripts/games/jieyin/helper.js') && games.jieyin.includes('scripts/vendor/mediapipe/hand_landmarker.task'), 'the 结印 pack holds the helper and the hand model');
+  assert.ok(!common.some((f) => f.startsWith('scripts/vendor/mediapipe/')), 'the hand model stays out of the common pack');
   const bytes = files.reduce((n, f) => n + fs.statSync(path.join(SKILL, f)).size, 0);
   // 守墙关 with the shared kit: since step 2 every bed of the sound kit is shared (4.2 MB of it).
   assert.ok(bytes < 10 * 1024 * 1024, `kit is ${bytes} B`);

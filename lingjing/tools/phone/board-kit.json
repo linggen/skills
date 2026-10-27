@@ -1,5 +1,5 @@
 {
-  "_about": "What a board needs to play in the phone app's local webview (tools/phone-board.mjs ships exactly this, mirrored under the skill's own paths — a game's `new URL('../../worlds/…', import.meta.url)` keeps working untouched). `entry` pages: the host page (scripts/games/phone/). `shared`: what every board's page loads (the sound kit; lingjing.css, whose :root holds the colours and type every board's CSS reads). `games.<id>`: the game's module, its own folders (bundle, engine, art, font), the shared files it names by URL, and the JS it loads through its static imports (found by walking them — never listed); `css` the sheets the host page links before it mounts (shipped too). `exclude`: build leftovers inside a game folder. `dynamic`: modules a game loads on demand that the phone does not ship yet (the camera 结印: without it the dock is never offered, and every board is the board without it). Packs (phone-board.mjs --all): one `common` (the entry, `shared`, and every file two or more boards need) and one per game (the rest of its own); the app answers a path from whichever pack holds it. Step 1 of doc/lingjing-phone.md (linggen-mobile): 第一回's boards.",
+  "_about": "What a board needs to play in the phone app's local webview (tools/phone-board.mjs ships exactly this, mirrored under the skill's own paths — a game's `new URL('../../worlds/…', import.meta.url)` keeps working untouched). `entry` pages: the host page (scripts/games/phone/). `shared`: what every board's page loads (the sound kit; lingjing.css, whose :root holds the colours and type every board's CSS reads). `games.<id>`: the game's module, its own folders (bundle, engine, art, font), the shared files it names by URL, and the JS it loads through its static imports (found by walking them — never listed); `css` the sheets the host page links before it mounts (shipped too). `exclude`: build leftovers inside a game folder. `dynamic`: modules a game loads on demand, not shipped in its own pack (the camera 结印 is its own pack, `jieyin`, which the app loads when a board first asks for it — 10-27; with no camera the dock is never offered, and every board is the board without it). Packs (phone-board.mjs --all): one `common` (the entry, `shared`, and every file two or more boards need) and one per game (the rest of its own); the app answers a path from whichever pack holds it. Step 1 of doc/lingjing-phone.md (linggen-mobile): 第一回's boards.",
   "entry": [
     "scripts/games/phone/index.html",
     "scripts/games/phone/host.js"
@@ -652,6 +652,31 @@
         "scripts/games/mishi.css"
       ],
       "files": []
+    },
+    "jieyin": {
+      "_about": "结印 (games/jieyin/helper.js, the dock a 塔防 board offers where a camera is; games/jieyin.js the board itself): the hand model on the device (MediaPipe Hand Landmarker, scripts/vendor/mediapipe, ~19 MB). Its own pack: the boards load helper.js on demand (their `dynamic`), and BoardServer answers it from here. No camera, or the camera refused: the dock is never offered and every board is the board without it.",
+      "module": "scripts/games/jieyin.js",
+      "modules": [
+        "scripts/games/jieyin/helper.js"
+      ],
+      "dirs": [
+        "scripts/games/jieyin/art"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/jieyin/jieyin.css",
+        "scripts/games/jieyin/helper.css"
+      ],
+      "files": [
+        "worlds/jiuding/levels/jieyin.json",
+        "scripts/games/shouqiang/art/bg.webp",
+        "scripts/games/shouqiang/art/xiaoman-cast.webp",
+        "scripts/vendor/mediapipe/vision_bundle.mjs",
+        "scripts/vendor/mediapipe/vision_wasm_internal.js",
+        "scripts/vendor/mediapipe/vision_wasm_internal.wasm",
+        "scripts/vendor/mediapipe/hand_landmarker.task",
+        "scripts/vendor/mediapipe/LICENSE.txt"
+      ]
     }
   },
   "_pieces": "`games.piece-<id>`: a 大场面 (setpieces/<id>.js) the story screen plays under its beat (rules/tell.mjs `piece`): `piece` names it, the host page plays it through setpiece.js (`playSetPiece`, auto, cover) and ends like a board. `modules`: more JS whose static imports are walked (setpiece.js loads its piece by a dynamic import). The painting libraries it loads on demand (fx.js) are listed in `files`. `art: \"auto\"`: the piece's paintings are the `'art/…'` strings its module names (the same reading tests/phone-board.test.mjs holds every piece to).",
