@@ -37,6 +37,7 @@ import { standFit } from './rules/match.mjs';
 import { oddsOn, strongFit } from './rules/strengthen.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { seclusionHold } from './rules/seclusion.mjs';
+import { lapseWall } from './rules/rotation.mjs';
 import { VERBS } from './rules/verbs.mjs';
 import { owesRecap, withHerBeat } from './rules/story.mjs';
 import { recapFacts } from './rules/recap.mjs';
@@ -219,7 +220,8 @@ function runLocked(verb, args, stateFile, reader) {
   // …and the odds a way to grow stronger changes against the fight he lost (rules/strengthen.mjs strongFit), weighed again
   // only when they no longer hold — read as the stand is: written, never logged.
   // …and a full layer whose door has opened since steps up (rules/cap.mjs settleHeld).
-  const fitted = raw && raw.world === worldId ? settleHeld(content, settleStages(content, fitPresence(content, closeStaleFight(migrate(raw, content), now), now), now)) : raw;
+  // …and a wall's tag of an earlier day gone with its day (rules/rotation.mjs lapseWall).
+  const fitted = raw && raw.world === worldId ? settleHeld(content, settleStages(content, fitPresence(content, lapseWall(closeStaleFight(migrate(raw, content), now), now), now), now)) : raw;
   const saved = fitted && raw?.world === worldId ? strongFit(content, standFit(content, fitted, now), now) : fitted;
   // Only the stand moved (a read): written, never logged — Undo takes back moves, not a beast chosen.
   const standOnly = Boolean(raw) && fitted === raw && saved !== raw;

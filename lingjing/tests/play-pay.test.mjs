@@ -9,6 +9,8 @@ import { newState } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { look, move, task, win } from '../scripts/rules.mjs';
 import { playGrant } from '../scripts/rules/playpay.mjs';
+import { gamesToday } from '../scripts/rules/rotation.mjs';
+import { placeOf } from '../scripts/rules/world.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-10-27T09:00:00-03:00');
@@ -37,16 +39,17 @@ test('古四 at 146/470: the place games at 沉鼎观 reach the gate in three sh
   let s = playTo(content, newState(content, 'zh', NOW), 'wm-chaifang', { now: NOW, policy: 'skip' }).state;
   s = { ...s, tier: 'qi', step: 1, progress: 146, stamina: 100 };
   let plays = 0, minutes = 0, days = 0;
-  // a day: each place game twice (the 柴房's 拼图 and 华容道, again at the 外门 and the 藏经阁; 五子 at the 执事堂 twice)
-  const rounds = [['chaifang', ['pintu', 'huarong']], ['zhishi', ['wuziqi', 'wuziqi']], ['cangjing', ['huarong']], ['waimen', ['pintu']]];
+  // a day: each board standing at the 观's places that day (their pools turn with the day, rules/rotation.mjs), once
+  const PLACES = ['chaifang', 'zhishi', 'cangjing', 'waimen', 'fantang', 'jiangtang'];
   for (let pass = 0; pass < 6 && s.progress < 470 && s.step === 1; pass += 1) {
     // two plays of each a day (100% · 50%), then the next day: the replay's share is the only limit
     const day = { now: new Date(NOW.getTime() + pass * 86400000) };
     days = pass + 1;
-    for (const [place, ids] of rounds) {
+    for (const place of PLACES) {
       const m = move(s, content, day, { place });
       if (!m.result.ok) continue;
       s = m.state;
+      const ids = gamesToday(content, placeOf(content, place), day.now).filter((id) => content.tasks.tasks.find((t) => t.id === id)?.kind === 'board');
       for (const id of ids) {
         const w = win(s, content, day, { id, stars: 3 });
         if (!w.result.ok) continue;

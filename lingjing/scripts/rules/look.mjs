@@ -29,8 +29,9 @@ import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
 import { visitorGoods, visitorHere, visitorsBrief } from './visiting.mjs';
 import { shopsNear } from './shops.mjs';
+import { boardsToday, gamesToday } from './rotation.mjs';
 import { fightsNear } from './fights.mjs';
-import { atScene, doorOf, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, poolWait, sceneOf, settlePlace } from './world.mjs';
+import { allPlaces, atScene, doorOf, lockOf, creatureOf, encounterOf, foeOf, ofJuan, passed, placeBrief, placeOf, poolWait, sceneOf, settlePlace } from './world.mjs';
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
@@ -445,8 +446,10 @@ function tasksBrief(content, state, ctx) {
   // not today's (his "what is this task for today?", 2026-09-16).
   const today = dayKey(ctx.now);
   // A board an errand wants stands offered, whatever it was: the errand pays.
-  const hosted = Object.fromEntries((placeOf(content, state.place)?.has?.games ?? [])
-    .filter(id => hostedHere(content, state, id) || stallHere(content, state, id, ctx.now))
+  // Today's boards here (rules/rotation.mjs: the fixed and the day's of its pool), and a pooled one a wall tag in the book names here.
+  const here = placeOf(content, state.place);
+  const hosted = Object.fromEntries([...new Set([...gamesToday(content, here, ctx.now), ...(here?.has?.games_pool?.from ?? [])])]
+    .filter(id => hostedHere(content, state, id, ctx.now) || stallHere(content, state, id, ctx.now))
     // A place's game open as practice (no errand wants it, rules/playpay.mjs): in the tray, never standing on the stage by itself.
     .map(id => [id, { status: 'offered', ...(stallHere(content, state, id, ctx.now) || errandWants(content, state, id, state.place) ? {} : { practice: true }) }]));
   // A rerun's 拾遗, in a room whose find is not yet taken (rules/rerun.mjs).
@@ -570,6 +573,15 @@ const altOf = (a, lang) => ({
    paintings (`art`, or the row it names). A row whose levels mark some `story` deals the story only
    those; the 游戏厅 keeps all. (A throw is a level of 砸寨 named by the task's `deal.lv`, 2026-10-20: its
    throws are the book's there, the card law kept in the level itself — no tray of cards dealt.) */
+/* Look's `boards`: today's boards at each place of the plate he stands on whose pool turns, by their short names (拼图 · 华容道). */
+function boardsLook(content, state, now) {
+  const here = placeOf(content, state.place), plate = here?.plate?.id;
+  if (!plate) return {};
+  const ids = allPlaces(content).filter(p => p.plate?.id === plate).map(p => p.id);
+  const rows = boardsToday(content, ids, now).map(r => ({ id: r.id, games: r.games.map(g => ({ id: g, name: String(pick(taskOf(content, g)?.title, state.lang) ?? g).split(' · ')[0] })) }));
+  return rows.length ? { boards: rows } : {};
+}
+
 function dealOf(content, task, state) {
   // A game with a row a level (气走经脉, 10-19: every `qimai` row is one level) deals the row that names this task —
   // never another task's own level (华容道's 人堆, 2026-10-26, is 00-gate's alone): else a ladder row's.
@@ -656,6 +668,8 @@ export function look(state, content, ctx) {
     ...(haggleBrief(content, state, ctx.now) ? { haggle: haggleBrief(content, state, ctx.now) } : {}),
     // 对对子 (rules/duizi.mjs): the teacher here, the rungs, today's round — never the classic 下联 before it is graded.
     ...(duiziBrief(content, state, ctx.now) ? { duizi: duiziBrief(content, state, ctx.now) } : {}),
+    // 今日棋局 (rules/rotation.mjs): each place of his plate whose boards turn with the day, with today's — the plate's tags.
+    ...(boardsLook(content, state, ctx.now)),
     // 所得: errands that handed themselves in here, until he walks on.
     ...(handedHere(content, state).length ? { handed: handedHere(content, state) } : {}),
     // 机缘: where, and how long it lasts — the page counts it down.

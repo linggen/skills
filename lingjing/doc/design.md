@@ -496,6 +496,14 @@ only while a walled map (`home`) holds the place. A shop's shape (`name · keepe
 `odd` turning by visit), catalog prices; `buys {kinds, rate}` takes herbs and hides at 0.6 of
 钱掌柜's. No 押宝. Look `visitors` feeds the 事 row, the 下一步 line and the plate seal's mark.
 Not 石坳村's 走南路的货郎 (古二). No 符: a made thing is sold nowhere.
+**今日棋局 · 东墙的杂役** (Hanli 2026-10-27: 「好像没什么任务能做, 感觉卡在了一个小地图」 → 「可以, 加吧」): each 观 place keeps a
+pool of two or three of the kit's practice boards (places' `has.games_pool {from, today}`: 外门 拼图·五子·残局 (2 a day),
+藏经阁 华容道·拼图·残局 (2), 讲堂 残局·五子, 柴房 华容道·拼图, 饭堂 拼图·残局, 执事堂 五子·残局 beside 周衡's 灯谜); today's stand
+there, the same on every device (rules/rotation.mjs, by the day and the place) — the tray, the 主页 and the plate's captions
+(Look `boards`) show them. 执事堂's east wall (quests/wall.json, 07-第七回's 乌木牌) posts three 杂役 a day from thirteen —
+a board at a 观 place (the tag stands it there whatever the day's set) or a fetch-and-deliver walk — by the day and the
+save's seed, never a tag two days running; `work: labor` pay; one undone lapses at day's end (rules.mjs fits the save).
+Only boards that deal a new level a sitting; 洛书 keeps its one gate. A day: ~48 min of boards + 15 of tags + fights.
 **Not yet:** sparring at the 演武场 — it wants a duel with a person outside a scene (people are
 fought only in the story's scenes; a pool never holds one), so it waits for person duels.
 

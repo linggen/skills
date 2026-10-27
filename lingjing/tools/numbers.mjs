@@ -389,8 +389,10 @@ function gates(ctx) {
   const reach = sceneId => {
     const ch = Object.values(content.chapters).find(c => c.scenes?.[sceneId]);
     const all = new Map(Object.values(content.places).flatMap(d => d.places).map(p => [p.id, p]));
-    return (ch?.map?.places ?? []).map(id => all.get(id)).filter(p => p && (p.has?.pool || (p.has?.games ?? []).length))
-      .map(p => `${zh(p.name) || p.id}${p.has?.pool ? ' 斗法' : ''}${(p.has?.games ?? []).length ? ` ${p.has.games.length} 局` : ''}`);
+    // A day's boards at a place: its fixed and the day's of its pool (rules/rotation.mjs).
+    const nGames = p => (p.has?.games ?? []).length + (p.has?.games_pool?.today ?? 0);
+    return (ch?.map?.places ?? []).map(id => all.get(id)).filter(p => p && (p.has?.pool || nGames(p)))
+      .map(p => `${zh(p.name) || p.id}${p.has?.pool ? ' 斗法' : ''}${nGames(p) ? ` ${nGames(p)} 局` : ''}`);
   };
   return typ.map(g => {
     const s2 = ses.find(x => x.scene === g.scene), at = g.layer, L = ctx.layer(at);

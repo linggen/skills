@@ -163,6 +163,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     seeds: loadSeeds(path.join(dir, 'seeds')),
     quests: loadQuests(path.join(dir, 'quests')),
     notices: loadNotices(path.join(dir, 'quests', 'templates.json')),
+    // A wall's daily tags (rules/rotation.mjs: 执事堂's east wall), each file's `walls`.
+    walls: loadWalls(path.join(dir, 'quests')),
     meets: fs.existsSync(path.join(dir, 'meets.json')) ? readJson(path.join(dir, 'meets.json')) : null,
     lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
     // The small games' registry (games.json, 2026-10-16): each standalone module and its levels.
@@ -323,6 +325,13 @@ function loadQuests(root) {
     for (const q of doc.quests ?? []) out.push({ ...q, province: doc.province });
   }
   return out;
+}
+
+/* A wall's daily tags (rules/rotation.mjs): every quests file's `walls`, each with its file's province. */
+function loadWalls(root) {
+  if (!fs.existsSync(root)) return [];
+  return fs.readdirSync(root).filter(f => f.endsWith('.json')).sort()
+    .flatMap(file => { const doc = readJson(path.join(root, file)); return (doc.walls ?? []).map(w => ({ ...w, province: doc.province })); });
 }
 
 /* 榜文: the templates a market's daily 差事 is made from. A world without
@@ -580,6 +589,7 @@ export function lint(content) {
   lintSeeds(content, ids, bad);
   lintQuests(content, ids, bad);
   lintNotices(content, bad);
+  lintWalls(content, ids, bad);
   lintMeets(content, ids, bad);
   lintPlaces(content, ids, bad);
   lintAtlas(content, bad);
@@ -761,7 +771,7 @@ function lintAtlas(content, bad) {
 
 function lintVisitor(p, itemIds, bad) {
   const st = p.has.visitor, v = st.visits ?? {}, where = `place ${p.id} visitor`;
-  if (p.has.shop || p.has.games?.length) bad(where, 'a visiting shop stands alone: no shop, no game beside it');
+  if (p.has.shop || p.has.games?.length || p.has.games_pool) bad(where, 'a visiting shop stands alone: no shop, no game beside it');
   if (!pair(st.name) || !pair(st.keeper) || !pair(st.line)) bad(where, 'needs a name, a keeper and a line in zh and en');
   for (const id of [...(st.goods ?? []), ...(st.odd ?? [])]) if (!itemIds.has(id)) bad(where, `unknown item ${id}`);
   if (!(st.goods ?? []).length) bad(where, 'sells nothing');
@@ -806,8 +816,11 @@ function lintPlaces(content, ids, bad) {
       // A pool (world.mjs poolBeast): one of its province's, and not beside a haunt of its own.
       if (place.has?.pool != null && !doc.pools?.[place.has.pool]) bad(at, `joins unknown pool ${place.has.pool}`);
       if (place.has?.pool != null && place.has?.creature) bad(at, 'a haunt or a pool, not both');
-      // A game a place hosts is a hosted board task with a module to play it.
-      for (const g of place.has?.games ?? []) {
+      // A game a place hosts is a hosted board task with a module to play it — fixed, or in its daily pool (rules/rotation.mjs).
+      const pool = place.has?.games_pool;
+      if (pool && !(Array.isArray(pool.from) && pool.from.length >= 2 && Number.isInteger(pool.today) && pool.today >= 1 && pool.today < pool.from.length)) bad(at, 'games_pool needs `from` (two boards or more) and `today` (1 to one fewer than `from`)');
+      if (pool && (pool.from ?? []).some(g => (place.has?.games ?? []).includes(g))) bad(at, 'a board is fixed (`games`) or pooled (`games_pool`), not both');
+      for (const g of [...(place.has?.games ?? []), ...(pool?.from ?? [])]) {
         const t = (content.tasks?.tasks ?? []).find(x => x.id === g);
         if (!t) bad(at, `hosts unknown game ${g}`);
         else if (!t.hosted || !['board', 'word'].includes(t.kind)) bad(at, `hosts ${g}, which is not a hosted game`);
@@ -947,6 +960,38 @@ function lintNotices(content, bad) {
     if (badThread(t.thread)) bad(where, `thread is one of ${THREADS.join(', ')}`);
     for (const key of ['title', 'who', 'say']) if (!pair(t[key])) bad(where, `${key} needs zh and en`);
     if (!content.rewards.tables[t.grant?.table]) bad(where, `unknown reward table ${t.grant?.table}`);
+  }
+}
+
+/* A wall's daily tags (rules/rotation.mjs): a place to hang on, a pool of at least three days' posts (so no tag
+   stands two days running), each tag a quest's words and needs — a board one its place hosts (fixed or pooled). */
+const gamesEver = place => [...(place?.has?.games ?? []), ...(place?.has?.games_pool?.from ?? [])];
+function lintWalls(content, ids, bad) {
+  const byPlace = Object.fromEntries(Object.values(content.places).flatMap(d => d.places.map(p => [p.id, p])));
+  const quests = new Set((content.quests ?? []).map(q => q.id)), seen = new Set();
+  for (const w of content.walls ?? []) {
+    const where = `wall ${w.id}`, pool = w.pool ?? [];
+    if (!/^[a-z0-9-]+$/.test(w.id ?? '')) bad(where, 'id must be lowercase letters, digits and dashes');
+    if (!byPlace[w.at]) bad(where, `hangs at unknown place ${w.at}`);
+    if (!(Number.isInteger(w.posts) && w.posts >= 1)) bad(where, 'posts is a whole number from 1');
+    if (pool.length < 3 * (w.posts ?? 1)) bad(where, `a pool of ${pool.length} cannot post ${w.posts} a day without a tag two days running (needs ${3 * (w.posts ?? 1)})`);
+    if (w.who && !pair(w.who)) bad(where, 'who needs zh and en');
+    for (const e of pool) {
+      const at = `${where} tag ${e.id}`, grant = e.grant ?? w.grant;
+      if (!/^[a-z0-9-]+$/.test(e.id ?? '')) bad(at, 'id must be lowercase letters, digits and dashes');
+      if (seen.has(e.id) || quests.has(e.id)) bad(at, 'duplicate id');
+      seen.add(e.id);
+      for (const k of ['title', 'say', 'done']) if (!pair(e[k])) bad(at, `${k} needs zh and en`);
+      if (badThread(e.thread ?? w.thread)) bad(at, `thread is one of ${THREADS.join(', ')}`);
+      if (!content.rewards.tables[grant?.table]) bad(at, `unknown reward table ${grant?.table}`);
+      if (!(e.need ?? []).length) bad(at, 'needs at least one thing to do');
+      for (const n of e.need ?? []) {
+        if (!['board', 'visit'].includes(n?.kind)) bad(at, `a wall tag asks a board or a walk, not ${n?.kind}`);
+        if (!(n?.n > 0)) bad(at, `${n?.kind} needs a count`);
+        if (n?.place && !byPlace[n.place]) bad(at, `names unknown place ${n.place}`);
+        if (n?.kind === 'board' && !gamesEver(byPlace[n.at]).includes(n.task)) bad(at, `asks ${n.task} at ${n.at}, which does not host it`);
+      }
+    }
   }
 }
 

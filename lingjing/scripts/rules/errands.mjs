@@ -20,6 +20,7 @@ import { buyBack, visitorHere } from './visiting.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
 import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
+import { gamesToday, wallOf, wallPosts } from './rotation.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
@@ -36,7 +37,7 @@ import { hiddenRoom, sealedOf, allPlaces, poolBeast, poolResting, atScene, creat
 
 export const BOOK_MAX = 3; // a chat game cannot show a log of twenty-five
 
-const questOf = (content, id) => (content.quests ?? []).find(q => q.id === id) ?? noticeOf(content, id);
+const questOf = (content, id) => (content.quests ?? []).find(q => q.id === id) ?? noticeOf(content, id) ?? wallOf(content, id);
 const questDoneBefore = (state, id) => Boolean(state.quests?.[id]?.done_at);
 
 /* An errand whose beast is already won over (降 or 驯 — it walks in the cast) before it was ever
@@ -146,7 +147,7 @@ function whereFor(content, state, quest, need, lang, now) {
     : open.kind === 'subdue' || open.kind === 'tame' ? (hauntsOf(content, open.creature).map(p => placeOf(content, p.id)).find(p => p && placeOpen(content, state, p, now)) ?? hauntsOf(content, open.creature)[0])
       : open.kind === 'carry' ? nearestPlace(content, state, now, p => p.has?.shop)
         // a game: the nearest place that hosts it (his, 2026-09-23: 没有去碣石的按钮)
-        : open.kind === 'board' ? (open.at ? placeOf(content, open.at) : nearestPlace(content, state, now, p => (p.has?.games ?? []).includes(open.task)))
+        : open.kind === 'board' ? (open.at ? placeOf(content, open.at) : nearestPlace(content, state, now, p => gamesToday(content, p, now).includes(open.task)))
           : null;
   if (!at) return null;
   // nearestPlace hands back a name already said; the rest wants the place itself.
@@ -181,7 +182,8 @@ function noticeOf(content, id) {
   if (!market) return null;
   // A game notice: one of the place's own games (never the market's 炼丹),
   // by the notice's id — so 稷下's 论道 is asked for as often as its 象棋.
-  const games = t.kind === 'board' ? (at.has?.games ?? []).filter(g => g !== 'alchemy-daily') : [];
+  // …of the notice's own day (rules/rotation.mjs), so the id rebuilds the same game whenever it is read.
+  const games = t.kind === 'board' ? gamesToday(content, at, new Date(`${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)}T12:00:00`)).filter(g => g !== 'alchemy-daily') : [];
   const game = games.length ? games[hashOf(id) % games.length] : null;
   if (t.kind === 'board' && !game) return null;
   const name = t.kind === 'visit' || t.kind === 'board' ? at.name : creatureOf(content, target)?.name;
@@ -213,7 +215,7 @@ function noticeTargets(content, state, market, t, now) {
   const reach = withinRoads(content, state, market, now, NOTICE_REACH);
   const near = allPlaces(content).filter(p => p.province === market.province && reach.has(p.id));
   if (t.kind === 'visit') return near.map(p => p.id);
-  if (t.kind === 'board') return near.filter(p => (p.has?.games ?? []).some(g => g !== 'alchemy-daily')).map(p => p.id);
+  if (t.kind === 'board') return near.filter(p => gamesToday(content, p, now).some(g => g !== 'alchemy-daily')).map(p => p.id);
   // A bounty that cannot be won is a lie: not a beast that walks with him, nor one already met today.
   return near.filter(p => huntable(content, p, now) && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(now)).map(p => p.has.creature);
 }
@@ -242,7 +244,8 @@ function noticeAt(content, state, now) {
 function offersOf(content, state, lang, now) {
   if (state.quests && Object.keys(state.quests).filter(id => !questDoneBefore(state, id)).length >= BOOK_MAX) return [];
   const notice = noticeAt(content, state, now);
-  return [...(content.quests ?? []), ...(notice ? [notice] : [])]
+  // A wall's tags of the day (rules/rotation.mjs: 执事堂's east wall), all up at once.
+  return [...(content.quests ?? []), ...(notice ? [notice] : []), ...wallPosts(content, state, now)]
     .filter(q => q.from?.place === state.place && !state.quests?.[q.id] && ofJuan(content, q, now) && !mootQuest(state, q)
       && (!q.opens?.after || afterMet(content, state, q.opens.after))
       // Story time: after a scene (`done`), or only while it is still ahead (`before`) — 邺城 before and after the 漳水.

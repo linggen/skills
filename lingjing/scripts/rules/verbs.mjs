@@ -9,6 +9,7 @@ import { choreGrant, isOnce, kaifuAfter, kaifuList, kaifuOpen } from './chores.m
 import { greet } from './daily.mjs';
 import { afterMet, layerMet, awayLine, BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, mootQuest, noticeAt, noticeOf, questDoneBefore, questOf, questReady, withGiver } from './errands.mjs';
 import { meet } from './road.mjs';
+import { wallLapsed, wallPosts } from './rotation.mjs';
 import { grantPass } from './world.mjs';
 import { remember } from './ledger.mjs';
 import { PAGE_OWNS, showable } from '../stage.mjs';
@@ -144,6 +145,9 @@ export function quest(state, content, ctx, args) {
     // One 令 at a time (执事堂, 2026-10-15): the next waits until the first is spent.
     if (q.pass && s.pass) return refuse('pass-held', pick({ zh: '腰里已挂着一块令。先把那一件了了，再来揭。', en: 'A pass already hangs at your belt. See that one through before you take another.' }, lang));
     if (q.notice && noticeAt(content, s, ctx.now)?.id !== id) return refuse('not-posted', null);
+    // A wall's tag is taken the day it is up (rules/rotation.mjs), and an earlier day's leaves the save as it is taken.
+    if (q.wall && !wallPosts(content, s, ctx.now).some(p => p.id === id)) return refuse('not-posted', pick({ zh: '东墙上今天没挂这块牌子。', en: 'That tag is not on the east wall today.' }, lang));
+    for (const old of Object.keys(s.quests)) if (wallLapsed(old, ctx.now)) delete s.quests[old];
     // A notice done on an earlier day has nothing left to say: the save keeps today's only.
     for (const old of Object.keys(s.quests)) if (noticeOf(content, old) && questDoneBefore(s, old) && noticeOf(content, old).day !== q.day) delete s.quests[old];
     s.quests[id] = { took: dayKey(ctx.now), have: {} };

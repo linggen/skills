@@ -13,17 +13,22 @@ const pct = (v) => `${Math.round(v * 1000) / 10}%`;
 /// A plate with no painting (沉鼎秘境's rooms) is drawn in ink: its seals on paper, at the same places.
 /// `threads`: place id → 主线 · 人物线 · 杂务 (cards.js threadsAt), the seal ringed in its colour.
 /// `shops`: place id → Look's shop there (shopmark.js shopsById), its kind's seal after the name.
-export function plateHtml(plate, { src = null, here = '', threads = {}, shops = new Map(), fights = new Map(), odds = null, lang = 'zh' } = {}) {
+/// `boards`: place id → today's boards there (Look's `boards`, rules/rotation.mjs: a place's pool turns with the day),
+/// their short names in a small caption under the seal.
+export const boardsById = (look) => new Map((look?.boards ?? []).map((b) => [b.id, (b.games ?? []).map((g) => g.name)]));
+export function plateHtml(plate, { src = null, here = '', threads = {}, shops = new Map(), fights = new Map(), boards = new Map(), odds = null, lang = 'zh' } = {}) {
   if (!plate?.spots?.length) return '';
   const spots = plate.spots.map((s) => {
     const at = `left:${pct(s.at[0])};top:${pct(s.at[1])}`;
     // A visiting shop there today (rules/visiting.mjs): the seal wears a small mark.
     const cls = `spot${s.here ? ' here' : ''}${s.closed ? ' shut' : ''}${s.visitor ? ' visitor' : ''}${threads[s.id] ? ` th-${threads[s.id]}` : ''}`;
     // In ink (one instance's rooms) the seal says the room alone: 「沉鼎秘境 · 石室」 → 石室.
-    const label = `<span class="spotname">${esc(src ? s.name : String(s.name).split(' · ').pop())}${shopMarkHtml(shops.get(s.id))}${fightMarkHtml(fights.get(s.id), odds, lang)}</span>`;
+    const games = s.closed ? [] : boards.get(s.id) ?? [], today = games.join(' · ');
+    const label = `<span class="spotname">${esc(src ? s.name : String(s.name).split(' · ').pop())}${shopMarkHtml(shops.get(s.id))}${fightMarkHtml(fights.get(s.id), odds, lang)}</span>${today ? `<small class="spotgames">${esc(today)}</small>` : ''}`;
+    const title = [s.here ? `${s.name} · ${here}` : s.name, today].filter(Boolean).join(' · ');
     return s.here || s.closed
-      ? `<span class="${cls}" style="${at}" title="${esc(s.here ? `${s.name} · ${here}` : s.name)}" aria-disabled="true">${label}</span>`
-      : `<button class="${cls}" style="${at}" data-go="${esc(s.id)}" title="${esc(s.name)}">${label}</button>`;
+      ? `<span class="${cls}" style="${at}" title="${esc(title)}" aria-disabled="true">${label}</span>`
+      : `<button class="${cls}" style="${at}" data-go="${esc(s.id)}" title="${esc(title)}">${label}</button>`;
   }).join('');
   const bg = src ? `;background-image:url('${esc(src)}')` : '';
   return `<div class="plate${src ? '' : ' ink'}" style="aspect-ratio:${plate.aspect ?? 1.5}${bg}" role="group" aria-label="${esc(plate.name ?? '')}">${spots}</div>`;

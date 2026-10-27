@@ -15,6 +15,7 @@ import { payMeaning } from './gongke.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
+import { gamesToday } from './rotation.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { laterBoard, leaveBoard, replayBoard, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
@@ -53,11 +54,11 @@ export function errandWants(content, state, id, place = null) {
 }
 /* …and which errand it is: the board opened for it is titled by it (2026-10-15 play-test:
    码柴 opened 华容道 under the task's own 「走出秘境」). */
-function errandAsking(content, state, id, place = null) {
+function errandAsking(content, state, id, place = null, exact = false) {
   for (const qid of Object.keys(state.quests ?? {})) {
     if (questDoneBefore(state, qid)) continue;
     const q = questOf(content, qid);
-    if (q && countsOf(content, state, q).some(n => n.kind === 'board' && n.task === id && !n.done && (!place || !n.at || n.at === place))) return q;
+    if (q && countsOf(content, state, q).some(n => n.kind === 'board' && n.task === id && !n.done && (exact ? n.at === place : !place || !n.at || n.at === place))) return q;
   }
   return null;
 }
@@ -78,19 +79,27 @@ function reopened(content, state, id, now) {
    daily chore (redesign-v2 § 四, 2026-09-24: the practice boards are not
    功课 any more; the mini-games live on as 今日传闻's steps, a scene's
    boards, and the errands that ask for them). */
-function hostedHere(content, state, id) {
+function hostedHere(content, state, id, now = new Date()) {
   const t = taskOf(content, id);
   // Open as practice wherever a place hosts it once boards pay by their minutes (rules/playpay.mjs, Hanli 2026-10-27:
   // 「玩的多应该走的快」) — an errand that wants it still takes the win; the replay's falling share is the only limit.
-  return Boolean(t?.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id)
+  return Boolean(t?.hosted) && hostsNow(content, state, id, now)
     && (errandWants(content, state, id, state.place) || (Boolean(content.balance?.play_pay) && t.kind === 'board' && !t.stall));
+}
+/* The place he stands hosts it now: one of today's boards there (rules/rotation.mjs: the fixed and the day's of its
+   pool) — or a board of its pool an errand in the book names at this very place (a wall tag sends him to 柴房's
+   华容道 on a 拼图 day: the tag is what stands it there). */
+function hostsNow(content, state, id, now) {
+  const place = placeOf(content, state.place);
+  if (gamesToday(content, place, now).includes(id)) return true;
+  return (place?.has?.games_pool?.from ?? []).includes(id) && Boolean(errandAsking(content, state, id, state.place, true));
 }
 /* A stall's board (tasks/world.json `stall: true`, 钱掌柜's 押宝): played where a
    place hosts it whenever he stands there, once a period, for its own pay — no
    errand needed. An errand that wants it still takes it first (it pays the errand). */
 function stallHere(content, state, id, now) {
   const t = taskOf(content, id);
-  return Boolean(t?.stall && t.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id)
+  return Boolean(t?.stall && t.hosted) && hostsNow(content, state, id, now)
     && !doneThisPeriod(content, state, id, now) && !errandWants(content, state, id, state.place);
 }
 const doneThisPeriod = (content, state, id, now) => {
@@ -120,7 +129,7 @@ function taskOpen(content, state, id, now) {
   if (!t) return false;
   // 兽潮 is open by its cooldown alone (rules/shouchao.mjs), never by the generic period: a night counted at 23:00 stays shut the next morning.
   if (isTide(content, id)) return shouchaoHere(content, state, id, now);
-  if (reopened(content, state, id, now) || hostedHere(content, state, id) || catchHere(content, state, id) || stallHere(content, state, id, now) || runBoardHere(content, state, id) || kaoHere(content, state, id, now) || qiyuHere(content, state, id) || shouchaoHere(content, state, id, now)) return true;
+  if (reopened(content, state, id, now) || hostedHere(content, state, id, now) || catchHere(content, state, id) || stallHere(content, state, id, now) || runBoardHere(content, state, id) || kaoHere(content, state, id, now) || qiyuHere(content, state, id) || shouchaoHere(content, state, id, now)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
@@ -147,7 +156,7 @@ function taskDone(state, content, ctx, id) {
   // an empty pool counts whenever 体力 is back (the page says so).
   const wonHere = Boolean(t.hosted && state.wins?.[id] && errandWants(content, state, id));
   const stall = stallHere(content, state, id, ctx.now);
-  if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !catchHere(content, state, id) && !wonHere && !stall) return refuse('not-offered', null);
+  if (!state.tasks[id] && !again && !hostedHere(content, state, id, ctx.now) && !catchHere(content, state, id) && !wonHere && !stall) return refuse('not-offered', null);
   if (!wonHere && !taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
@@ -571,7 +580,7 @@ const judgeOf = down => ({ reference_down: down, note: 'For judging only — nev
 
 export function lundao(state, content, ctx, args) {
   const cfg = content.lundao, lang = state.lang, action = String(args.action ?? 'open');
-  if (!cfg || !hostedHere(content, state, 'lundao')) return refuse('not-here', pick({ zh: '这里没有可论道的人。', en: 'There is no one here to debate.' }, lang));
+  if (!cfg || !hostedHere(content, state, 'lundao', ctx.now)) return refuse('not-here', pick({ zh: '这里没有可论道的人。', en: 'There is no one here to debate.' }, lang));
   const s = clone(state), today = lundaoToday(s, ctx.now);
   if (action === 'open') {
     if (today?.outcome === 'lost') return refuse('lost-today', pick({ zh: '先生已起身，明日再来。', en: 'The scholar has risen for the day. Come back tomorrow.' }, lang));

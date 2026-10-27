@@ -166,7 +166,7 @@ export const READS_PAGE = {
    misses — only what the player has been shown; never the rules' model line. */
 const LUNDAO_HELP = 'If the player asks your help: give a hint or one or two candidate lines in your own words; never answer for them — they give their answer to the host themselves.';
 function lundaoHelp(content, state, now) {
-  const board = hostedHere(content, state, 'lundao') ? lundaoBrief(content, state, now) : null;
+  const board = hostedHere(content, state, 'lundao', now) ? lundaoBrief(content, state, now) : null;
   const open = board?.outcome === 'open' ? { game: board.game, prompt: board.prompt, last: board.last, misses: board.misses, max_misses: board.max_misses } : taleLundao(content, state);
   if (!open) return null;
   return { form: lundaoName(open.game, state.lang), prompt: open.game === 'chengyu' ? open.last : open.prompt, misses: `${open.misses}/${open.max_misses}`, help: LUNDAO_HELP };

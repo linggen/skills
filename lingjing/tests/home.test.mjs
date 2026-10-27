@@ -26,6 +26,13 @@ function gate146(at = 'waimen') {
   if (at !== 'yaoyuan') s = move(s, content, ctx(), { place: at }).state;
   return told({ ...s, progress: 146, stamina: 100, stamina_at: NOW.toISOString() });
 }
+/* The best practice board standing here today (the 观's boards turn with the day, rules/rotation.mjs): what the 主页 names first. */
+function bestHere(s, l) {
+  const ids = l.tasks.filter((t) => t.practice).map((t) => t.id);
+  const pay = (id) => playGrant(content, s, id, content.tasks.tasks.find((t) => t.id === id), NOW)?.progress ?? 0;
+  const id = ids.sort((a, b) => pay(b) - pay(a))[0];
+  return { id, progress: pay(id), name: l.tasks.find((t) => t.id === id).title.split(' · ')[0], all: ids };
+}
 const html = (l) => cardHtml({ card: 'next' }, { look: l, words: WORDS.zh, lang: 'zh' });
 /* The stage as the page lays it between passages: 兽潮 in the tray (lingjing.js), then 下一步/主页 where nothing else is to do. */
 const mainOf = (l) => stageSlots(l, withNext(l, stageCards(l).filter((c) => !(c.card === 'board' && l.tasks?.find((t) => t.id === c.id)?.tide)))).main.map((c) => c.card);
@@ -36,12 +43,13 @@ test('the gate short: the bar, what it still asks with today\'s 功课 counted, 
   assert.deepEqual([g.step, g.progress, g.of, g.short, g.chores], ['练气一层圆满', 146, 470, 324, 47]);
   assert.equal(g.plays, playsFor(content, s, l, 324 - 47, NOW), 'the boards for what the 功课 leaves');
   assert.ok(g.plays >= 10 && g.plays <= 16, `${g.plays} boards for 277 修为`);
-  assert.deepEqual(l.home.next, { kind: 'board', id: 'pintu', title: l.tasks.find((t) => t.id === 'pintu').title, progress: 27 });
+  const b = bestHere(s, l);
+  assert.deepEqual(l.home.next, { kind: 'board', id: b.id, title: l.tasks.find((t) => t.id === b.id).title, progress: b.progress });
   assert.ok(l.home.todo.some((r) => r.kind === 'gongke' && r.progress === 47 && r.means === '练功'));
   const h = html(l);
   assert.match(h, /class="card next home"/);
   assert.match(h, new RegExp(`146/470 · 还差 324 修为 · 功课 \\+47 · 再约 ${g.plays} 局`));
-  assert.match(h, /data-play="pintu"[^>]*>开局 · 拼图[^<]*· 修为 \+27</);
+  assert.match(h, new RegExp(`data-play="${b.id}"[^>]*>开局 · ${b.name}[^<]*· 修为 \\+${b.progress}<`));
   assert.match(h, /练功 · 修为 \+47/);
   assert.doesNotMatch(h, /undefined|\{\w+\}/);
   // No 功课 today: the boards alone, the replay's falling share counted (17 at 古四, tests/play-pay).
@@ -87,8 +95,10 @@ test('an errand ready here: 交差 first, the stage quest met too', () => {
 
 test('nothing left here today: the board at its floor share, the errands done, 兽潮 shut — the next thing is elsewhere or to take; what waits says when', () => {
   let s = gate146();
+  // Every board standing here today at its floor share (the day's set, rules/rotation.mjs).
+  const floor = Object.fromEntries(bestHere(s, look(s, content, ctx())).all.map((id) => [id, 2]));
   for (const id of ['xu-waimen-roof', 'xu-yaoyuan-shouye']) s = quest(s, content, ctx(), { action: 'take', id }).state;
-  s = { ...s, plays: { day: '2026-10-27', ids: { pintu: 2 } }, shouchao: { ...(s.shouchao ?? {}), at: NOW.toISOString() },
+  s = { ...s, plays: { day: '2026-10-27', ids: floor }, shouchao: { ...(s.shouchao ?? {}), at: NOW.toISOString() },
     quests: Object.fromEntries(Object.entries(s.quests).map(([id, q]) => [id, { ...q, done_at: NOW.toISOString() }])) };
   const l = look(s, content, ctx());
   assert.notEqual(l.home.next.kind, 'board', JSON.stringify(l.home.next));
@@ -154,10 +164,10 @@ test('short by what one thing pays: that thing is the button, named as enough �
   assert.equal(l.home.gate.short, 41);
   assert.deepEqual(l.home.next, { kind: 'gongke', id: 'cfo-import', title: '导入账单', means: '算账', progress: 94, enough: true });
   assert.match(html(l), /data-book>算账 · 修为 \+94 · 够了</);
-  // No 功课 that covers it: the best board here, when it does (拼图 +27 for 20 short).
-  const near = look({ ...s, progress: 450 }, content, ctx());
-  assert.deepEqual([near.home.next.kind, near.home.next.id, near.home.next.enough], ['board', 'pintu', true]);
-  assert.match(html(near), /data-play="pintu"[^>]*>开局 · 拼图[^<]*· 修为 \+27 · 够了</);
+  // No 功课 that covers it: the best board here today, when it does (拼图 +27 or 残局 +40 for 20 short).
+  const near = look({ ...s, progress: 450 }, content, ctx()), b = bestHere({ ...s, progress: 450 }, near);
+  assert.deepEqual([near.home.next.kind, near.home.next.id, near.home.next.enough], ['board', b.id, true]);
+  assert.match(html(near), new RegExp(`data-play="${b.id}"[^>]*>开局 · ${b.name}[^<]*· 修为 \\+${b.progress} · 够了<`));
   // Short by more than either: the plain ranking.
   assert.equal(look({ ...s, progress: 146 }, content, ctx()).home.next.enough, undefined);
 });

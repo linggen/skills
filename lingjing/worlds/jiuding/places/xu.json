@@ -4,6 +4,7 @@
  "start": "sishui",
  "_about": "The places of 徐 — a map, not a chain. `roads` go both ways; `tier` is the ladder index a place asks for (0 练气 … 8 渡劫), and a place above the player's tier is refused in the mist with a fitting place to go instead. `has` says what is there: a creature with its card, the province's seed pool, the market, a chapter scene. `line` is one sentence of what is there, for the director's brief.",
  "_pools": "游荡的怪 (Hanli, 2026-10-05: 一片地方一个游荡怪物池，可重复打): a pool is a stretch of country's beasts and their weights; a place joins it by `has.pool` (world.mjs poolBeast). Only beasts of 卷一's book and a few added: 蒙山's are a hunter's trade (野猪 · 狼 · 熊), 狰 runs wild outside the herb garden (with 蒙山's 狼 and 熊 there too from 古四, 2026-10-21: the 狰 tamed at the 药园 leaves the pool, and 观内 has no other), 蠪侄 in the wood outside the gate (古三), 蛫 by the Si (古五's 秘境). An entry's `deck` is how the pool deals that beast (world.mjs foeOf): 蠪侄 and 狰 are the story's fights too, and their scenes keep the creature's own deck — the pool's is weighed in 蛫's band (tools/battle-sim.mjs --pools). The 秘境's rooms (2026-10-15): 犰狳 on the 凶崖's stair (见人则眠 — it lies across the way playing dead) and in the dry river with 合窳 (见则天下大水 — the river that floods again in three days); 犰狳's pool deck is weighed into 蛫's band.",
+ "_games_pool": "今日棋局 (Hanli 2026-10-27: 「目前就只能战斗刷经验吗? 好像没什么任务能做, 感觉卡在了一个小地图」 → 「可以, 加吧」): a place of the 观 keeps a pool of two or three of the kit's practice boards (`has.games_pool: {from, today}`), and `today` of them stand there each day beside its fixed `games`, turning with the day — the same on every device and save (rules/rotation.mjs). Only boards that deal a new level each sitting (拼图 · 华容道 climb, 五子 · 象棋 by realm and seed); 洛书 stays at its one gate (Hanli 10-19: 「9宫格出现一次就可以了」). A board a wall tag names at a place stands there on any day the tag is in the book.",
  "_plates": "A painted map of one small area (观内, 2026-10-15): the 去往 list opens on it while he stands on one of its places — each place's `plate.at`, fractions of the painting, set on the painted building (rules/plate.mjs, scripts/plate.js). 沉鼎观 is tools/paint-guan.py seed 47, picked 2026-10-15. A plate with no `file` is drawn in ink, its places as seals on paper (沉鼎秘境's rooms, plate.js); a `sealed` plate's places are an instance's rooms, seen only from inside it (world.mjs hiddenRoom).",
  "plates": {"guan": {"name": {"zh": "沉鼎观", "en": "Chending Temple"}, "file": "art/map/guan.webp", "aspect": 1.5}, "mijing": {"name": {"zh": "沉鼎秘境", "en": "The Sunken Cauldron hidden realm"}, "aspect": 1.2, "sealed": true}},
  "pools": {"mengshan": {"name": {"zh": "蒙山", "en": "Mount Meng"}, "beasts": [{"creature": "yezhu", "hp": 0.95, "weight": 3, "from": "h05"}, {"creature": "lang", "hp": 1.45, "weight": 2, "from": "h05"}, {"creature": "xiong", "hp": 1.25, "weight": 1, "from": "h05"}]}, "songlin": {"name": {"zh": "山门外的林子", "en": "The wood outside the gate"}, "beasts": [{"creature": "longzhi", "weight": 2, "hp": 1.25, "deck": ["jinsuo", "jinsuo", "jinsuo", "jinsuo", "jiushou", "jiushou", "longzhi", "jinzhua", "jinzhua", "jinzhen", "qianyang", "qianyang"], "from": "h05"}, {"creature": "lang", "weight": 1, "hp": 1.45, "from": "h05"}, {"creature": "chihu", "weight": 1, "from": "h05", "when": "day"}, {"creature": "shanli", "weight": 1, "from": "h05", "when": "night"}]}, "yaoyuan-wai": {"name": {"zh": "药园外", "en": "Outside the herb garden"}, "beasts": [{"creature": "zheng", "weight": 3, "hp": 1.45, "deck": ["huoya", "huoya", "tongling", "tongling", "huodan", "huodan", "yanxin", "yanxin", "huoya", "qiezhi", "zheng", "fenghuo"]}, {"creature": "yezhu", "weight": 1, "hp": 0.9}, {"creature": "chihu", "hp": 1.4, "weight": 1, "from": "h05"}, {"creature": "shanli", "hp": 0.9, "weight": 1, "from": "h05", "when": "night"}, {"creature": "mihou", "hp": 1.65, "weight": 1, "from": "h05", "after": "wm-diyilu", "when": "day"}, {"creature": "fushe", "hp": 0.9, "weight": 1, "from": "h05", "when": "day"}, {"creature": "congcong", "hp": 1.45, "weight": 1, "from": "h05", "after": "wm-diyilu"}, {"creature": "xiegou", "hp": 1.1, "weight": 1, "from": "h05", "when": "night"}, {"creature": "lang", "hp": 1.3, "weight": 1, "from": "h05"}, {"creature": "xiong", "hp": 1.25, "weight": 1, "from": "h05", "after": "wm-diyilu"}, {"creature": "lingling", "hp": 0.8, "weight": 1, "from": "h07"}, {"creature": "cangying", "hp": 2.05, "weight": 1, "from": "h08", "when": "day"}, {"creature": "yuanhu", "hp": 1.85, "weight": 1, "from": "h08"}, {"creature": "jingjing", "hp": 1.75, "weight": 1, "from": "h08"}, {"creature": "chai", "hp": 3.1, "weight": 1, "from": "h11", "roaming": {"extra": 4}}, {"creature": "bibi", "hp": 2.7, "weight": 1, "from": "h11", "roaming": {"hp": 0.25, "extra": 4}}, {"creature": "dangkang", "hp": 2.9, "weight": 1, "from": "h11", "roaming": {"hp": 0.6, "extra": 4}}, {"creature": "geju", "hp": 2.9, "weight": 1, "from": "h09", "when": "night", "roaming": {"hp": 0.05}}, {"creature": "qique", "hp": 3.9, "weight": 1, "from": "h09", "roaming": {"hp": 0.05, "extra": 4}}]}, "sishui": {"name": {"zh": "泗水边", "en": "By the Si"}, "beasts": [{"creature": "gui", "weight": 1, "hp": 3.35, "roaming": {"hp": 0.45, "extra": 4}}]}, "mijing-ya": {"name": {"zh": "凶崖的石阶", "en": "The stair of the Cliff of Danger"}, "beasts": [{"creature": "qiuyu", "weight": 1, "hp": 1.1, "deck": ["tengmiao", "tengmiao", "mafu", "mafu", "mafu", "leipu", "leipu", "fengmao", "fengmao", "peiyuan", "leiming", "chunsheng"]}]}, "mijing-anhe": {"name": {"zh": "干了的暗河", "en": "The dry underground river"}, "beasts": [{"creature": "heyu", "hp": 2.2, "weight": 2}, {"creature": "qiuyu", "weight": 1, "hp": 1.25, "deck": ["tengmiao", "tengmiao", "mafu", "mafu", "mafu", "leipu", "leipu", "fengmao", "fengmao", "peiyuan", "leiming", "chunsheng"]}]}},
@@ -574,11 +575,7 @@
     0.8375,
     0.409
    ],
-   "has": {
-    "games": [
-     "pintu"
-    ]
-   },
+   "has": {"games_pool": {"from": ["pintu", "wuziqi", "xiangqi"], "today": 2}},
    "line": {
     "zh": "外门的院子：晒着的柴，井边的水桶，周衡的账本。",
     "en": "The outer court: firewood drying, buckets by the well, Zhou Heng's ledger."
@@ -714,6 +711,7 @@
     0.8432,
     0.4046
    ],
+   "has": {"games_pool": {"from": ["xiangqi", "wuziqi"], "today": 1}},
    "line": {
     "zh": "外门的讲堂：一排排矮桌，褚先生的山羊胡子一翘一翘。每日辰时上课。",
     "en": "The outer court's lecture hall: rows of low desks, and Master Chu's goat beard bobbing. Lessons every morning at the hour of the dragon."
@@ -741,11 +739,7 @@
     0.8492,
     0.4101
    ],
-   "has": {
-    "games": [
-     "huarong"
-    ]
-   },
+   "has": {"games_pool": {"from": ["huarong", "pintu", "xiangqi"], "today": 2}},
    "line": {
     "zh": "藏经阁七层，外门弟子只许上三层。最顶层的门上一把铜锁，锁眼都绿了。你走近的时候，胸口的木牌烫了一下，一个很困的声音：「……九鼎……神丹……」然后就没声了。",
     "en": "Seven floors, and outer disciples may climb only three. The top floor's door has a bronze lock gone green in the keyhole. As you come near, the token on your chest flares, and a very sleepy voice: \"…Nine cauldrons… divine elixir…\" Then nothing."
@@ -772,12 +766,7 @@
     0.8322,
     0.4043
    ],
-   "has": {
-    "games": [
-     "pintu",
-     "huarong"
-    ]
-   },
+   "has": {"games_pool": {"from": ["huarong", "pintu"], "today": 1}},
    "line": {
     "zh": "外门后院的柴房，挨着伙房和猪圈。外门也有柴堆——你觉得这是缘分。",
     "en": "The woodshed behind the outer court, by the kitchen and the pigsty. The outer court has a woodpile too — you call that fate."
@@ -917,11 +906,7 @@
     0.8405,
     0.4125
    ],
-   "has": {
-    "games": [
-     "pintu"
-    ]
-   },
+   "has": {"games_pool": {"from": ["pintu", "xiangqi"], "today": 1}},
    "line": {
     "zh": "饭堂门口摆一张榆木桌子，初一发灵石，周衡坐在后头。饭是糙米，菜是萝卜。",
     "en": "A elm-wood table stands at the dining-hall door; on the first of the month Zhou Heng sits behind it handing out spirit stones. The rice is coarse, the vegetable is radish."
@@ -989,9 +974,9 @@
    ],
    "has": {
     "games": [
-     "wuziqi",
      "zhishi-shen"
     ],
+    "games_pool": {"from": ["wuziqi", "xiangqi"], "today": 1},
     "shop": {"_about": "外门库房 (2026-10-27, Hanli on 古四: 「现在看地图也不知到商店在哪里」 — 外门弟子无令不得下山, so the 坊市 is shut to him until the story sends him down, and the pedlar comes one day in three): 周衡 keeps the 公中 store in the stewards' hall and sells to disciples against 灵石, from 古四's 小周天 on. Stock for the 练气一层 hand: 回春丹 · 回气丹, 钱掌柜's three cards (consigned), a 竹剑.", "name": {"zh": "外门库房", "en": "The outer gate's store"}, "keeper": {"zh": "周衡 · 公中的账", "en": "Zhou Heng, on the common account"}, "goods": ["mend-pill", "huiqi-pill", "tieji-bao", "sanhuo-jian", "caoren-zha", "bamboo-sword"], "opens": {"done": "wm-zhoutian"}}
    },
    "line": {

@@ -1,0 +1,339 @@
+{
+ "version": 1,
+ "province": "徐",
+ "_about": "执事堂's east wall (07-第七回: 「东墙上的牌子是乌木的…这些牌子不打架，是外门的杂役，谁揭都成」; Hanli 2026-10-27: 「目前就只能战斗刷经验吗? 好像没什么任务能做」 → new 杂役 posted daily, 「可以, 加吧」). `posts` of the `pool` go up each day (rules/rotation.mjs wallToday: by the day and the save's seed; never a tag two days running), all at once, taken at the wall (`at`) and handed in anywhere; one not done by day's end lapses with its day. Each tag asks one of a 观 place's boards (fixed or pooled: the tag stands it there whatever the day's set) or a small walk to fetch and deliver between 观 places. Pay: `work: labor` — the errand's share of the layer (balance.json play_pay.errand, rules/playpay.mjs errandGrant) and the labor table's 灵石, as 码柴 and 晒经. Only places on the 观's map; people as the book has them (周衡 keeps the account, 褚先生 teaches at the 讲堂).",
+ "walls": [
+  {
+   "id": "zhishi-east",
+   "at": "zhishi",
+   "posts": 3,
+   "who": {
+    "zh": "执事堂 · 东墙的牌子",
+    "en": "a tag on the stewards' hall's east wall"
+   },
+   "thread": "chore",
+   "work": "labor",
+   "grant": {
+    "table": "labor",
+    "wealth": 5
+   },
+   "pool": [
+    {
+     "id": "cangjing-chaojing",
+     "title": {
+      "zh": "藏经阁 · 抄经",
+      "en": "The scripture hall · Copying"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「藏经阁 · 抄经。下三层一卷经叫虫蛀了，散成几片。先拼齐，才抄得下去。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"Scripture hall · copying. A scroll on the lower floors has been eaten by worms and come apart in pieces. Fit it together first, or it cannot be copied.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "散页拼回一卷，字一个不缺。抄经的师兄接过去，压在镇纸底下。",
+      "en": "The loose leaves are one scroll again, not a word missing. The brother copying it takes it and sets a paperweight on it."
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "pintu",
+       "n": 1,
+       "at": "cangjing"
+      }
+     ]
+    },
+    {
+     "id": "cangjing-lijia",
+     "title": {
+      "zh": "藏经阁 · 理架",
+      "en": "The scripture hall · The shelves"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「三层靠窗那一架底下，压着一函旧档，周执事要用。架子挤，得一架一架挪开了抽出来。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"Under the shelf by the window on the third floor lies a case of old records Steward Zhou needs. The shelves are packed: move them one at a time to get it out.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "那一函旧档抽出来了，一层灰。周衡掸了掸：「就是它。」",
+      "en": "The case of records comes out under a coat of dust. Zhou Heng brushes it off: \"That's the one.\""
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "huarong",
+       "n": 1,
+       "at": "cangjing"
+      }
+     ]
+    },
+    {
+     "id": "cangjing-qipu",
+     "title": {
+      "zh": "藏经阁 · 补谱",
+      "en": "The scripture hall · The game book"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「二层翻出半本旧棋谱，末一页的残局缺了着法。解出来，补在页脚。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"Half an old book of xiangqi turned up on the second floor; the endgame on its last page has lost its moves. Solve it and write them at the foot of the page.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "着法补在页脚，墨还没干。抄经的师兄凑过来看了一眼：「……红先，是这么走。」",
+      "en": "The moves are at the foot of the page, the ink still wet. The copying brother leans over to look: \"…Red first. Yes, that's how it goes.\""
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "xiangqi",
+       "n": 1,
+       "at": "cangjing"
+      }
+     ]
+    },
+    {
+     "id": "chaifang-tengdi",
+     "title": {
+      "zh": "柴房 · 腾地方",
+      "en": "The woodshed · Making room"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「新柴明日进门。旧柴挪进里头，压在底下那捆干松枝先得出来，伙房等着引火。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"New wood comes in tomorrow. Shift the old wood to the back — the bundle of dry pine at the bottom has to come out first; the kitchen is waiting on it for kindling.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "那捆松枝拖出来了，旧柴码进了里头。门口空出一块地，等新柴。",
+      "en": "The pine bundle is out and the old wood stacked at the back. A space stands clear by the door for the new."
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "huarong",
+       "n": 1,
+       "at": "chaifang"
+      }
+     ]
+    },
+    {
+     "id": "chaifang-menshen",
+     "title": {
+      "zh": "柴房 · 门神",
+      "en": "The woodshed · The door god"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「柴房门上的旧门神叫雨泡烂了，一揭碎成几块。拼起来，好照着样子描一张新的。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"The old door god on the woodshed door has rotted in the rain and broke in pieces when it came off. Fit it together, so a new one can be traced from it.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "门神拼回来了，一边胡子缺了半截。照样描的那张贴上门，倒也威风。",
+      "en": "The door god is whole again, half of one whisker gone. The new one traced from it goes up on the door, fierce enough."
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "pintu",
+       "n": 1,
+       "at": "chaifang"
+      }
+     ]
+    },
+    {
+     "id": "fantang-zaowang",
+     "title": {
+      "zh": "伙房 · 灶王像",
+      "en": "The kitchen · The stove god"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「灶头那张灶王像叫烟熏潮了，一揭就碎。拼齐了，好照着请一张新的。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"The stove god's picture over the stove has gone damp with smoke and fell apart when it came down. Fit it together so a new one can be had to match.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "灶王爷拼回来了，一脸油烟，照旧笑眯眯的。",
+      "en": "The stove god is back together, his face black with smoke, smiling as ever."
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "pintu",
+       "n": 1,
+       "at": "fantang"
+      }
+     ]
+    },
+    {
+     "id": "fantang-bangchu",
+     "title": {
+      "zh": "伙房 · 帮厨",
+      "en": "The kitchen · Helping out"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「伙房 · 帮厨。讲堂午后要茶水，到伙房提一壶，送去讲堂。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"Kitchen · helping out. The lecture hall wants tea in the afternoon: fetch a pot from the kitchen and take it there.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "茶送到时褚先生正讲到一半，抬眼看了看你，接着讲。",
+      "en": "When the tea arrives Master Chu is halfway through a lesson. He glances up at you and goes on."
+     },
+     "need": [
+      {
+       "kind": "visit",
+       "place": "fantang",
+       "n": 1
+      },
+      {
+       "kind": "visit",
+       "place": "jiangtang",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "id": "zhishi-canju",
+     "title": {
+      "zh": "执事堂 · 解残局",
+      "en": "The stewards' hall · An endgame"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌，抄着一局残棋，底下一行白粉小字：「红先胜。解者记功。」",
+      "en": "An ebony tag on the east wall with an endgame chalked on it, and under it in small white letters: \"Red to move and win. Credit to whoever solves it.\""
+     },
+     "done": {
+      "zh": "你把着法写在牌子背面。周衡翻过来看了看，在账上记了一笔：「记功。」",
+      "en": "You write the moves on the back of the tag. Zhou Heng turns it over, looks, and makes an entry: \"Credited.\""
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "xiangqi",
+       "n": 1,
+       "at": "zhishi"
+      }
+     ]
+    },
+    {
+     "id": "waimen-peibing",
+     "title": {
+      "zh": "外门 · 陪病号",
+      "en": "The outer court · Keeping a patient company"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「通铺东头的师兄崴了脚，躺了三天，闷得慌。去陪他下一盘五子。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"The brother at the east end of the sleeping hall turned his ankle and has been lying there three days, bored stiff. Go and play him a game of five in a row.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "他输了也不恼，把棋子一颗一颗拣回罐里：「明天再来。」",
+      "en": "He loses and doesn't mind, picking the stones back into the pot one by one: \"Come again tomorrow.\""
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "wuziqi",
+       "n": 1,
+       "at": "waimen"
+      }
+     ]
+    },
+    {
+     "id": "jiangtang-zhiri",
+     "title": {
+      "zh": "讲堂 · 值日",
+      "en": "The lecture hall · On duty"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「讲堂 · 值日。散了课，后排矮桌上还摆着一盘没下完的五子。下完了，才好收拾。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"Lecture hall · duty. After class there's an unfinished game of five in a row on a back desk. Finish it, then it can be cleared.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "一局下完，棋子收回罐里，矮桌也擦干净了。",
+      "en": "The game is played out, the stones back in their pots, the desk wiped clean."
+     },
+     "need": [
+      {
+       "kind": "board",
+       "task": "wuziqi",
+       "n": 1,
+       "at": "jiangtang"
+      }
+     ]
+    },
+    {
+     "id": "shanmen-quxin",
+     "title": {
+      "zh": "山门 · 取信",
+      "en": "The gate · Fetching the post"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「山下捎来的家信压在山门的石屋里。取了，送回外门通铺。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"Letters from home sent up the mountain are waiting in the stone hut at the gate. Fetch them and take them to the outer court's sleeping hall.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "信一封一封搁到各人铺头。好几个师兄当场就拆了。",
+      "en": "The letters go one by one onto each bed. Several brothers tear theirs open on the spot."
+     },
+     "need": [
+      {
+       "kind": "visit",
+       "place": "shanmen",
+       "n": 1
+      },
+      {
+       "kind": "visit",
+       "place": "waimen",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "id": "zhengdian-dengyou",
+     "title": {
+      "zh": "正殿 · 添灯油",
+      "en": "The main hall · Lamp oil"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「正殿的长明灯油浅了。到伙房灌一壶灯油，送去正殿。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"The ever-burning lamp in the main hall is running low. Fill a pot with lamp oil at the kitchen and take it there.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "灯油添满，火苗稳了。正殿里很静，只有你倒油的声音。",
+      "en": "The lamp is full and the flame steadies. The main hall is very quiet but for the oil you pour."
+     },
+     "need": [
+      {
+       "kind": "visit",
+       "place": "fantang",
+       "n": 1
+      },
+      {
+       "kind": "visit",
+       "place": "zhengdian",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "id": "yaoyuan-chutou",
+     "title": {
+      "zh": "药园 · 送锄头",
+      "en": "The herb garden · The hoes"
+     },
+     "say": {
+      "zh": "东墙一块乌木牌：「柴房里修好的两把锄头，送去药园。」杂役，外门可揭。",
+      "en": "An ebony tag on the east wall: \"Two hoes mended in the woodshed — take them to the herb garden.\" A chore, outer disciples may take it."
+     },
+     "done": {
+      "zh": "药园的人接过锄头，掂了掂，没说话，扛着下地了。",
+      "en": "The garden hand takes the hoes, weighs them, says nothing, and shoulders them off to the beds."
+     },
+     "need": [
+      {
+       "kind": "visit",
+       "place": "chaifang",
+       "n": 1
+      },
+      {
+       "kind": "visit",
+       "place": "yaoyuan",
+       "n": 1
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
