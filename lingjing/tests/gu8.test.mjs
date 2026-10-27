@@ -27,9 +27,9 @@ const at = (scene, extra = {}) => ({
 });
 const play = (s, id) => must(task, must(win, { ...s, tasks: { [id]: { status: 'offered' }, ...s.tasks } }, { id }), { action: 'done', id });
 const go = (s, exit) => { const n = must(resolve, s, { exit }); return { ...n, place: CH.scenes[n.scene]?.at ?? n.place, stamina: 100 }; };
-const H09 = ['09-dabi', '09-qulao', '09-cliff'];
+const H09 = ['09-dabi', '09-qulao', '09-shijie', '09-cliff']; // 09-shijie (the 160th step) split off 09-cliff's head, 2026-10-26
 
-test('古八 runs in the book\'s order — three scenes, every one h09 — and the lint is clean', () => {
+test('古八 runs in the book\'s order — four scenes, every one h09 — and the lint is clean', () => {
   const chain = [];
   for (let id = '09-dabi'; id && CH.scenes[id]?.hui === 'h09';) { chain.push(id); id = CH.scenes[id].exits.map((e) => e.next).find(Boolean); }
   assert.deepEqual(chain, H09);
@@ -38,17 +38,18 @@ test('古八 runs in the book\'s order — three scenes, every one h09 — and t
 
 test('one board and one fight, both in 09-dabi: 守炉 · 丹房看炉 shown and offered, the 大比 final the way on\'s card fight; the 回家 night and the 筑基 stay read', () => {
   const sc = CH.scenes['09-dabi'];
-  assert.deepEqual(sc.show.filter((c) => c.card === 'board').map((c) => c.id), ['danfang-kanlu']);
-  assert.deepEqual(sc.offers.tasks, ['danfang-kanlu']);
+  // 全文后的小游戏 第二批 (2026-10-26): 闵丹师's 考书 before the 看炉; 瞿老's 用哪颗丹 and the 160th step's 恬惔虚无 after.
+  assert.deepEqual(sc.show.filter((c) => c.card === 'board').map((c) => c.id), ['dabi-kaoshu', 'danfang-kanlu']);
+  assert.deepEqual(sc.offers.tasks, ['dabi-kaoshu', 'danfang-kanlu']);
   const dabi = sc.exits.find((e) => e.id === 'dabi');
   assert.equal(dabi.needs, undefined, 'a fight\'s way on has nothing but the win before it');
   assert.deepEqual(sc.exits.find((e) => e.id === 'ruqiu').needs, { mark: 'y-dabi', task: 'danfang-kanlu' }, '入秋 waits on the 大比 and the 看炉');
   assert.deepEqual([dabi.game.id, dabi.game.kind, dabi.game.creature, dabi.game.foe.party], ['dabi-final', 'duel', 'foe-jiuceng', []], 'alone on the stage');
   assert.deepEqual([dabi.mark, dabi.once, dabi.stay, dabi.grant.item, dabi.was_rise], ['y-dabi', true, true, 'foundation-pill', 9], 'the way on as it was');
-  for (const id of ['09-qulao', '09-cliff']) {
-    assert.ok(!(CH.scenes[id].show ?? []).some((c) => c.card === 'board'), `${id}: no board`);
-    assert.ok(!CH.scenes[id].exits.some((e) => e.game), `${id}: no fight`);
-  }
+  assert.deepEqual(CH.scenes['09-qulao'].show.filter((c) => c.card === 'board').map((c) => c.id), ['qulao-dan']);
+  assert.deepEqual(CH.scenes['09-shijie'].show.filter((c) => c.card === 'board').map((c) => c.id), ['shijie-tiandan']);
+  assert.ok(!(CH.scenes['09-cliff'].show ?? []).some((c) => c.card === 'board'), '09-cliff: no board');
+  for (const id of ['09-qulao', '09-shijie', '09-cliff']) assert.ok(!CH.scenes[id].exits.some((e) => e.game), `${id}: no fight`);
   const t = content.tasks.tasks.find((x) => x.id === 'danfang-kanlu');
   assert.deepEqual([t.game, t.deal.lv, t.grant.progress, t.gives.bag], ['shoulu', 'danfang-kanlu', 5, 'huangjing-10']);
   assert.ok(t.how.zh && t.how.en && t.title.en, 'says what it is in both languages');
@@ -62,7 +63,7 @@ test('the two stage quests stand: 八层圆满 before the 大比, 九层圆满 b
 test('walking 古八: the board gives the 十年黄精, the way on waits on the board and then the final; the 饭桶 turns the 黄精 into three 三转聚气丹', () => {
   let s = at('09-dabi');
   assert.equal(resolve(earnedFor(content, s, 'dabi'), content, ctx(), { exit: 'dabi' }).result.refused, 'game-not-won', 'the 大比 waits on its final');
-  s = play(s, 'danfang-kanlu');
+  s = play(play(s, 'dabi-kaoshu'), 'danfang-kanlu');
   assert.equal(s.bag['huangjing-10'], 1, 'the 君, the month\'s wage');
   const door = look(s, content, ctx()).scene.exits.find((e) => e.id === 'dabi').duel;
   assert.equal(door.creature.id, 'foe-jiuceng');

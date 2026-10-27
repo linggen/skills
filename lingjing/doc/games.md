@@ -208,13 +208,19 @@ fights, 60%.
 
 Over after: the 犰狳's telling into 钱掌柜 ≈ 2,809; 鯥 → 秦雁's spar ≈ 3,578 (the ferry, no board; 顺风溜 told, the 调息 cut).
 
-### 第八回 (h09): +2
+### 第八回 (h09): +2 → built 3
+**Built 2026-10-26:** ① 考书 (jinchat `kaoshu`, 闵丹师's 「『夫金丹之为物』，下一句。」 → 「对了一半。」, 09-dabi's first board; 守炉 ·
+丹房看炉 its second) · ② 用哪颗丹 (jinchat `qulao-dan`, 瞿老 after 「……赶着回去，告诉我娘。」; the lie 「观里那颗。」 kept, 「坐下。」
+the goal; 子安's story, the way on, read whole) · ③ 恬惔虚无 (气走经脉 `tiandan`) in a new 09-shijie (the 160th step, 09-cliff's
+first six paragraphs), inside the 筑基 beat (its scenes now 09-qulao · 09-shijie · 09-cliff). 调息 one. Reading 第八回: 21 min, 4
+boards and fights, 64%. Typical days 7.1 → 7.8 (band allowed to 8 under fit._hold).
 | # | scene · ¶ | the book | kit · level |
 |---|---|---|---|
-| 1 | 09-dabi s5 | 闵丹师's test: 「夫金丹之为物」，下一句 | jinchat `kaoshu` (face) |
-| 2 | 09-cliff s4 (split) | the 160th step: 恬惔虚无, three times lost at fifty | 气走经脉 `tiandan` |
+| 1 | 09-dabi s2 (split) | 闵丹师's test: 「『夫金丹之为物』，下一句。」 | jinchat `kaoshu` (face) |
+| 2 | 09-qulao s2 (split) | 瞿老: 「用哪颗丹？」 | jinchat `qulao-dan` (face) |
+| 3 | 09-shijie s4 (new scene, split) | the 160th step: 恬惔虚无, three times lost at fifty | 气走经脉 `tiandan` |
 
-Over after: 瞿老 → the 160th step (子安, the night home) ≈ 3,400 — the 回's heart, read whole.
+Over after: 用哪颗丹 → the 160th step (子安, the night home) ≈ 3,600 — the 回's heart, read whole.
 
 ### 今四 (j09): +4
 | # | scene · ¶ | the book | kit · level |

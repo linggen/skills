@@ -55,7 +55,7 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
   // Each scene names the 回 whose text it plays (2026-10-07 split): the first half to 阿禾's 「亲传，不算外门」, then 年六 on.
   const huiOfScene = Object.fromEntries(Object.values(CH.scenes).filter(sc => sc.hui !== 'j07').map(sc => [sc.id, sc.hui]));
   // 古七's five years played since the 2026-10-15 split (tests/gu7.test.mjs): nine scenes, then 古八's.
-  assert.deepEqual(huiOfScene, { '09-snow': 'h11', '09-jiuge': 'h11', '09-furnace': 'h11', '09-danfang': 'h11', '09-year': 'h11', '09-lingcao': 'h11', '09-fangshi': 'h11', '09-yishui': 'h11', '09-xie': 'h11', '09-futian': 'h11', '09-dabi': 'h09', '09-qulao': 'h09', '09-cliff': 'h09' });
+  assert.deepEqual(huiOfScene, { '09-snow': 'h11', '09-jiuge': 'h11', '09-furnace': 'h11', '09-danfang': 'h11', '09-year': 'h11', '09-lingcao': 'h11', '09-fangshi': 'h11', '09-yishui': 'h11', '09-xie': 'h11', '09-futian': 'h11', '09-dabi': 'h09', '09-qulao': 'h09', '09-shijie': 'h09', '09-cliff': 'h09' });
 });
 
 test('the winter and the years: 火柴 at the move, the furnace\'s culls, the seasons and the five years — the story\'s own, free of 体力 but a story step (Hanli, 2026-10-01), in order, once; the layers one at a time (2026-10-15)', () => {
@@ -124,8 +124,10 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
 });
 
 test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 古十 opens at once', () => {
-  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 9, progress: PEAK, bag: { 'foundation-pill': 1 } };
+  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 9, progress: PEAK, bag: { 'foundation-pill': 1 }, tasks: { 'qulao-dan': { status: 'done' }, 'shijie-tiandan': { status: 'done' } } };
   s = go(s, 'listen').state;
+  assert.equal(s.scene, '09-shijie', 'the 160th step (2026-10-26), then the cliff');
+  s = go({ ...s, place: CH.scenes['09-shijie'].at }, 'dawn').state;
   assert.equal(s.scene, '09-cliff');
   assert.equal(s.bag['foundation-pill-9'], 1, 'the 九转 comes out on the eve of 筑基');
   const odds = oddsOf(content, s, NOW, 'foundation');
@@ -235,7 +237,7 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   assert.equal(dabi.grant?.item, 'foundation-pill', '腊八 · 再上五行台 grants the sect\'s pill');
   assert.match(dabi.story.zh, /第五年腊八[\s\S]*写了「沈小满」三个字[\s\S]*米汤/, 'the year-five 大比 won plainly, the seal glued back with rice water');
   assert.match(fu.story.zh, /往后殿静室那边看了一眼，没再往下说。\n\n周衡出了正殿[\s\S]*他知道里头是谁。$/, '伏天 ends where 古七 ends (the 观主\'s glance at the quiet room, then 周衡 at the 柴房 door — the book\'s last line, restored 2026-10-15; 「亲传，不算外门」 cut 2026-10-09)');
-  assert.match(CH.scenes['09-dabi'].story.zh, /^年六，沈小满十七岁[\s\S]*闵丹师头一回不叫他碾药[\s\S]*九节聚气/, 'and 古八 opens on 年六 (grounding: 火柴, 顺风溜, 丹房), then 闵丹师\'s lesson and the 九节聚气 recipe (the bear tag cut 2026-10-09)');
+  assert.match(`${CH.scenes['09-dabi'].story.zh}\n\n${CH.scenes['09-dabi'].story_after.zh}`, /^年六，沈小满十七岁[\s\S]*闵丹师头一回不叫他碾药[\s\S]*九节聚气/, 'and 古八 opens on 年六 (grounding: 火柴, 顺风溜, 丹房), then 闵丹师\'s lesson and the 九节聚气 recipe (the bear tag cut 2026-10-09)');
   assert.match(CH.scenes['09-xie'].story.zh, // 顺风溜 told 2026-10-20: the passage whole
     /祁长松是年三开春出的关。[\s\S]*还是一个九层[\s\S]*「身子记下了，下回再来。」[\s\S]*第二回闭关，这一回，筑了基/, '祁长松 fails his first 筑基 the spring after 古六 and lays it on the second (Hanli 2026-10-06: a failed attempt is experience)');
   const grants = Object.values(CH.scenes).flatMap(sc => sc.exits.filter(e => e.grant?.item === 'foundation-pill').map(e => `${sc.id}/${e.id}`));

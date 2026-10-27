@@ -1,0 +1,78 @@
+{
+ "version": 1,
+ "id": "09-shijie",
+ "chapter": "00-zhuji",
+ "hui": "h09",
+ "at": "shanmen",
+ "place": {
+  "zh": "沉鼎山 · 山门石阶 · 第一百六十级",
+  "en": "Mount Chending · The gate steps · the hundred and sixtieth"
+ },
+ "_board": "09-shijie (全文后的小游戏 第二批 2026-10-26): 09-cliff's passage split before the clifftop — the night on the 160th step: 恬惔虚无 (气走经脉 `tiandan`) after 「…三回都乱在五十上头。」; 「银月。我有点怕。」 told after it. Inside the 筑基 beat.",
+ "setup": {
+  "zh": "九月初二夜里，你下了崖，顺着山门那三百级石阶往下数，数到第一百六十级，坐下了。胸口揣着木牌，和那颗九转筑基丹。",
+  "en": "On the night of the second of the ninth month you came down off the cliff and counted down the gate's three hundred steps; at the hundred and sixtieth you sat down, the tablet and the Nine-Turn Foundation Pill inside your robe."
+ },
+ "recap": {
+  "zh": "九月初二，阿禾的禾抽了穗，十七粒。那夜你坐在山门石阶的第一百六十级上——舅舅在这儿坐了一炷香下了山，外公喘了一炷香又爬到了顶。你说了谎，饭桶的事瞒着师父。《吐纳经》后头那片竹简：「恬惔虚无，真气从之。」你试了三回，三回都乱在五十上头。天快亮时：「银月。我有点怕。」木牌暖了一下。",
+  "en": "On the second of the ninth month Ahe's rice came into ear: seventeen grains. That night you sat on the hundred and sixtieth gate step: Uncle sat here a stick of incense and went down; Grandfather panted a stick of incense and climbed to the top. You had lied; the Rice Bucket stayed hidden from your master. The slip at the back of *The Scroll of Breath*: \"Calm and still, empty and without desire, and the true qi follows.\" Three tries, and three times the breath fell apart past fifty. Near dawn: \"Yinyue. I'm a bit scared.\" The tablet grew warm for a moment."
+ },
+ "cast": [],
+ "people": [],
+ "panel": {
+  "caption": {
+   "zh": [
+    "数到第一百六十级，坐下了。",
+    "恬惔虚无，真气从之。",
+    "「银月。我有点怕。」"
+   ],
+   "en": [
+    "At the hundred and sixtieth he sat down.",
+    "Calm and still, empty and without desire, and the true qi follows.",
+    "\"Yinyue. I'm a bit scared.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "九月初二，药园东角墙根底下，阿禾的禾抽了穗。三棵里，两棵是空穗，只有一棵结了饱的。她掐下来，蹲在地头数了三遍：十七粒，粒粒是黑的。她装回竹筒，封上了蜡。\n\n那天夜里，小满下了崖，一路走到山门口，顺着那三百级石阶往下数，数到第一百六十级，坐下了。石阶被几百年的脚磨得凹下去一道，像一只碗。他舅舅说，自己当年也在这一级上坐过，坐了一炷香，下山学打算盘去了；他外公当年也在这一级上坐过，喘了一炷香，又站起来，一直爬到了顶上——最后还是下了山。\n\n他胸口揣着两样东西。一样是那块木牌，温的；一样是那颗九转筑基丹，五年里压在储物袋最底下，这一夜才摸出来，拿油纸包着，摸上去凉凉的。师父问他用哪颗丹，他说了谎。他恨不得跑回崖顶，把饭桶捧到师父面前，把这五年的事一件一件都说出来。可他不能。银月教他的头一个字是「藏」；他这一辈子，头一回觉得这个字，这么沉。瞒着师父，算不算一件过不去的事，他不知道。\n\n他从怀里摸出那卷《吐纳经》，就着月光翻到后头。有一片竹简，他从前总是跳过去，看不懂，这时候却一眼便看住了：「[恬惔虚无，真气从之]{典=suwen}。」心里什么也不想，什么也不要，真气自己便跟着来。他在石阶上盘腿坐好，数着气，学那「什么也不想」。数到三十，想起外公在崖顶上坐的那三天；数到五十，想起师父攥白了的那只手，那口气便自己乱了。他试了三回，三回都乱在五十上头。",
+  "en": "On the second of the ninth month, at the foot of the wall in the east corner of the herb garden, Ahe's grain came into ear. Of the three, two ears were empty; only one had filled. She pinched it off and squatted at the end of the strip counting three times: seventeen grains, every one black. She put them back in the bamboo tube and sealed it with wax.\n\nThat night Xiaoman came down off the cliff, walked all the way to the mountain gate, and counted down those three hundred stone steps; at the hundred and sixtieth he sat down. Hundreds of years of feet had worn the step into a hollow, like a bowl. Uncle had said he too sat on this step in his day, sat for a stick of incense, and went down the mountain to learn the abacus. Grandfather in his day had sat on this step too, panted for a stick of incense, and stood up again, and climbed all the way to the top. And in the end he had gone down the mountain all the same.\n\nHe had two things inside his robe. One was the wooden tablet, warm. The other was the Nine-Turn Foundation Pill, pressed at the very bottom of his storage pouch for five years and only taken out tonight, wrapped in oilpaper, cool to the touch. When his master asked which pill he'd use, he had lied. He wished he could run back to the clifftop, set the Rice Bucket in front of his master, and tell him everything of these five years, piece by piece. But he couldn't. The first word Yinyue taught him was \"hide\"; and for the first time in his life that word felt so heavy. Whether hiding things from his master counted as something he couldn't get past, he didn't know.\n\nHe took *The Scroll of Breath* from inside his robe and by the moonlight turned to the back. There was one bamboo slip he had always skipped before, not understanding it, but now his eye caught on it at once: \"[Calm and still, empty and without desire, and the true qi follows]{典=suwen}.\" Think of nothing, want nothing, and the true qi comes of itself. He sat cross-legged on the step, counting breaths, practising that \"think of nothing\". At thirty he thought of the three days Grandfather sat on the clifftop; at fifty he thought of his master's hand clenched white, and the breath fell apart of itself. He tried three times, and three times it fell apart past fifty."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "shijie-tiandan"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "shijie-tiandan"
+  ]
+ },
+ "story_after": {
+  "zh": "天快亮的时候，他对着胸口的木牌，小声道：「银月。我有点怕。」木牌没有回答。他又道：「……我外公，也怕过吧。」\n\n木牌仍旧没有回答。可过了一会儿，它暖了一下，暖得很轻很轻，像是有人在很远的地方，隔着很厚的一层被子，伸手拍了拍他。",
+  "en": "Just before dawn, he spoke quietly to the wooden tablet on his chest: \"Yinyue. I'm a bit scared.\" The wooden tablet didn't answer. He went on, \"...My grandfather was scared too, I suppose.\"\n\nStill the tablet didn't answer. But after a while it grew warm for a moment, warm very, very faintly, as though someone very far away had reached out through a very thick quilt and patted him."
+ },
+ "lines": [],
+ "buttons": [
+  "dawn"
+ ],
+ "exits": [
+  {
+   "id": "dawn",
+   "label": {
+    "zh": "天亮 · 上崖顶",
+    "en": "Dawn · Up to the clifftop"
+   },
+   "means": "the third of the ninth month: up to the clifftop to swallow the pill",
+   "beat": [],
+   "next": "09-cliff",
+   "needs": {
+    "task": "shijie-tiandan"
+   },
+   "refuse": {
+    "zh": "那口气还乱在五十上头。",
+    "en": "The breath still falls apart past fifty."
+   }
+  }
+ ]
+}
