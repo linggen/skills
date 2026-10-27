@@ -1,10 +1,9 @@
 // texie.js — 施法特写 (the casting close-up), a TEST in the 游戏厅 for Hanli to choose a look (2026-10-21: 「用yinyue的3D模型
 // 试一下. 另C的效果也给我看一下.」). The field is 结印's (守墙关's 山道, 小满 from behind, a boar); when a hand is seen a
 // close-up panel slides in at the top corner, and the player's hands are 小满's in it. A seal held or a push at the
-// camera: the panel's hand thrusts, a 火蛋 flies from 小满 on the field; the panel fades after. Two looks, one module:
-//   `ink` (version C) — 小满 in side profile (one local-FLUX painting), his hands live ink strokes (texie/ink.js)
-//   `vrm`             — Yinyue's VRM as his stand-in, her finger bones live (texie/vrm.js; the model from the engine)
-// `&cutin=ink|vrm` picks, else the games.json row's `data.cutin` (one tile each). Not in the story: 10-14 「游戏里不需要3D模型」 stands.
+// camera: the panel's hand thrusts, a 火蛋 flies from 小满 on the field; the panel fades after. One look, ink (version C):
+// 小满 in side profile (one local-FLUX painting), his hands live ink strokes (texie/ink.js). The 3D look (Yinyue's VRM as
+// his stand-in) went 2026-10-27 — Hanli 10-21: 「3D的直接不用就行了」. Not in the story: 10-14 「游戏里不需要3D模型」.
 //
 // The parts: games/jieyin/eye.js (camera + the vendored MediaPipe model, on the device), jieyin/judge.js sealOf (the
 // device's seals, jieyin.json), zhidian/poke.js (a push), texie/panel.js (when the panel shows). Numbers:
@@ -46,14 +45,14 @@ const ART = {
 const foeArt = (id, frame) => new URL(`./shouqiang/art/${id}-${frame}.webp`, import.meta.url).href;
 
 const W = {
-  zh: { nocam: '施法特写要用摄像头，这里用不了。', nogl: '这台设备画不了3D。', asking: '请允许使用摄像头……', loading: '模型加载中', raise: '把手举到摄像头前', hit: '中了！', won: '野猪跑了。', who: '小满', ink: '水墨', vrm: '3D' },
-  en: { nocam: 'The casting close-up needs a camera — none here.', nogl: 'No 3D on this device.', asking: 'Allow the camera…', loading: 'Loading the model', raise: 'Raise your hands to the camera', hit: 'Hit!', won: 'The boar runs off.', who: 'Xiaoman', ink: 'Ink', vrm: '3D' },
+  zh: { nocam: '施法特写要用摄像头，这里用不了。', asking: '请允许使用摄像头……', loading: '模型加载中', raise: '把手举到摄像头前', hit: '中了！', won: '野猪跑了。', who: '小满', ink: '水墨' },
+  en: { nocam: 'The casting close-up needs a camera — none here.', asking: 'Allow the camera…', loading: 'Loading the model', raise: 'Raise your hands to the camera', hit: 'Hit!', won: 'The boar runs off.', who: 'Xiaoman', ink: 'Ink' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
 
-/** Which look: the link's `cutin` (`&cutin=ink|vrm`), else the row's `data.cutin`; ink unless it says vrm. */
-export const cutinOf = (data = {}, search = '') => ((new URLSearchParams(search).get('cutin') ?? data?.cutin) === 'vrm' ? 'vrm' : 'ink');
+/** Which look: ink, the one there is. */
+export const cutinOf = () => 'ink'; // one look since 2026-10-27 (the 3D one went: Hanli 10-21 「3D的直接不用就行了」)
 
 /** The one line when the game cannot be offered; nothing else is drawn. */
 export const unavailableHtml = (lang = 'zh', why = 'nocam') => `<p class="tx-nocam" role="status">${plain(W[lang === 'en' ? 'en' : 'zh'][why] ?? W.zh.nocam)}</p>`;
@@ -160,15 +159,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const video = $('video'), panel = $('.tx-panel');
       const status = (t) => { $('.tx-status').textContent = t; };
 
-      // The close-up: the ink view at once; the VRM loaded now (16 MB from the engine) while the lead is read.
-      let ready = null;
-      if (cutin === 'ink') view = inkView(panel, { lang });
-      else {
-        status(`${w.loading}…`);
-        ready = import('./texie/vrm.js').then((m) => m.vrmView(panel, { onProgress: (k) => { if (!done) status(`${w.loading} ${Math.round(k * 100)}%`); } }))
-          .then((v) => { if (done) { v.destroy(); return; } view = v; box.dataset.model3d = 'ready'; status(''); })
-          .catch((e) => { console.warn('[texie]', e); box.dataset.model3d = 'failed'; });
-      }
+      // The close-up: the ink view (the 3D look went 2026-10-27, Hanli 10-21: 「3D的直接不用就行了」).
+      view = inkView(panel, { lang });
 
       let hands = [], picture = [], handed = [], hp = level.hits, busy = false, last = win.performance.now();
       let ps = startPanel(), cs = startCaster(), sealNow = null, drawing = true;
@@ -218,7 +210,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
           const glyph = sealNow ? table[sealNow]?.glyph ?? '' : '';
           const shown = ps.phase !== 'hidden' && ps.phase !== 'rest';
           if (shown) view?.update?.({ world: hands, image: picture, handed, aspect: 4 / 3, glyph });
-          // The 3D view draws only while the panel is up (no GPU spent on a hidden panel).
+          // The view draws only while the panel is up.
           if (shown !== drawing) { drawing = shown; if (shown) view?.resume?.(); else view?.pause?.(); }
           box.dataset.seal = sealNow ?? '';
         }
@@ -229,9 +221,6 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       if (shell?.lead) await shell.lead(tr(level.lead, lang));
       else await new Promise((r) => { const b = doc.createElement('button'); b.className = 'gshell-btn is-main tx-go'; b.textContent = lang === 'en' ? 'Start' : '开始'; b.onclick = () => { b.remove(); r(); }; box.append(b); });
       if (done) return;
-      if (ready) await ready;
-      if (done) return;
-      if (cutin === 'vrm' && !view) return nocam('nogl');
       if (feedOnly) {
         win.texieFeed = (world, image = world, which = []) => { botOn = false; hands = world ?? []; picture = image ?? []; handed = which; };
         win.texieFeed.bot = (on = true) => { botOn = on; };

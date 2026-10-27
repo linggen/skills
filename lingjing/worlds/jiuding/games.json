@@ -976,15 +976,6 @@
    "_about": "施法特写, version C — a TEST for Hanli's choice, 游戏厅 only (Hanli 10-21: 「用yinyue的3D模型试一下. 另C的效果也给我看一下.」): 结印's field; a hand seen → a close-up panel slides in, 小满 in side profile (one local-FLUX painting) with his hands live ink strokes from the player's; a seal held or a push → the hand thrusts, a 火蛋 flies. Numbers: levels/texie.json. doc/games.md § 施法特写."
   },
   {
-   "id": "texie",
-   "group": "main",
-   "mechanic": "结印",
-   "stars": 3,
-   "name": {"zh": "施法特写 · 3D", "en": "Casting close-up · 3D"},
-   "data": {"cutin": "vrm"},
-   "_about": "施法特写, the 3D version — the same test with Yinyue's VRM (the engine's /yinyue.vrm, loaded at run time, never copied: its licence allows no redistribution) as 小满's stand-in, her finger bones live from the player's. A test only: 10-14 「游戏里不需要3D模型」 stands for the game. doc/games.md § 施法特写."
-  },
-  {
    "id": "shoulu",
    "group": "h01",
    "mechanic": "塔防",
