@@ -78,8 +78,9 @@ export const MOMENTS = {
   // fightsay keeps their limits (two asks, three words a fight).
   fight_ask: { who: 'yinyue', priority: 'asked' },
   fight_cue: { who: 'yinyue', priority: 'big', now: true },
-  // 密室 (games/mishi.js): the room opened, a mechanism given way — his own taps, so always told; her pages are her Progress.
-  mishi: { who: 'yinyue', priority: 'asked' },
+  // 密室 (games/mishi.js): a help tier — he asked her (问银月), or the room opened, a mechanism showed, a few misses —
+  // the board waits on her, so she is woken now (Hanli 10-27: 「问yinyue怎么玩, 她应该告诉玩法才对」).
+  mishi: { who: 'yinyue', priority: 'asked', now: true },
   // 伴 (hersay.js, 2026-10-15): her word at a win, an achievement, a setback — hersay keeps
   // which moments are said and how often (a repeatable fight is weighed); woken now, so her
   // word meets the picture.

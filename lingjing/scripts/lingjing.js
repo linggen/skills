@@ -3415,13 +3415,13 @@ function boardAsks(g, why) {
 function mishiHelp(g, res) {
   const why = g.askWhy ?? 'asked';
   g.askWhy = null;
-  const en = lang() === 'en', last = res.help?.[res.help.length - 1] ?? '', earlier = (res.help ?? []).slice(0, -1);
+  const last = res.help?.[res.help.length - 1] ?? '', earlier = (res.help ?? []).slice(0, -1);
   const whyZh = { open: '你们刚推开暗门进来，他还不知道这机关怎么玩', next: '前一道机关开了，下一道露了出来', offer: `他试错了${res.wrong}次，还卡着`, asked: '他问你这道机关怎么玩' }[why];
   const whyEn = { open: 'You two just came in; he does not know how the mechanism works yet', next: 'The last mechanism gave way; the next one shows', offer: `He has missed ${res.wrong} times and is stuck`, asked: 'He asks you how this mechanism works' }[why];
   const zh = `密室「${res.room}」第${res.step}道（共${res.steps}道）。${whyZh}。他眼前：${res.goal ?? ''}${res.read ? `（铜盘先前停在${res.read}）` : ''} ${res.seen}\n${earlier.length ? `你先前已告诉他：${earlier.join(' ')}\n` : ''}这回要告诉他的（提示 ${res.tier}/${res.of}）：${last}\n用你自己的话、你自己的口吻，一两句说给他——只说这一条，别越过它，别报出更多。`;
   const enT = `Hidden room "${res.room}", mechanism ${res.step} of ${res.steps}. ${whyEn}. Before him: ${res.goal ?? ''}${res.read ? ` (the dial stopped on ${res.read})` : ''} ${res.seen}\n${earlier.length ? `You already told him: ${earlier.join(' ')}\n` : ''}Tell him now (hint ${res.tier}/${res.of}): ${last}\nIn your own words, as yourself, a line or two — this one only, nothing past it.`;
   boardWaitsOnHer = g;
-  askHer('mishi_help', zh, enT, 'neutral').then((heard) => { if (!heard && boardWaitsOnHer === g) boardWaitsOnHer = null; });
+  askHer('mishi', zh, enT, 'neutral').then((heard) => { if (!heard && boardWaitsOnHer === g) boardWaitsOnHer = null; });
 }
 /* The rival's turn (a module that `think`s, as 象棋 does): thought in a Worker so
    the page stays live, laid in by the module's `answer` — only if the board is
