@@ -9,6 +9,8 @@ import { RHYTHM_CAP, foldStretches, stretchesOf, timelineOf } from '../scripts/r
 import { FIGHT_KIND, OUT, text } from '../tools/arcade-rhythm.mjs';
 import { dealOf } from '../scripts/rules/look.mjs';
 import { fill as rainFill } from '../scripts/games/rain.js';
+import { SPEEDS as DASH_SPEEDS } from '../scripts/games/dash.js';
+const dashSpeed = (L) => (typeof L.speed === 'number' ? L.speed : DASH_SPEEDS[L.speed] ?? DASH_SPEEDS.normal);
 
 const TABLE = JSON.parse(fs.readFileSync(OUT, 'utf8'));
 const REG = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
@@ -62,7 +64,7 @@ test('`same` flags a board or fight of the variety the last one was (every fight
    row to add without one. */
 const KEPT_PAIRS = {
   'jin-chat-ge>jin-chat-617': '今一, one scene (j01-anatomy): 古籍部 then 六一七 — two chats; the jinchat boards\' own pass',
-  'hall-celing>zhoutian-sanguan': '第三回\'s last board, 第四回\'s first: 测灵石 · 藏 then 小周天 · 冲三关, both the breath itself — a 回 turns between',
+  'hall-celing>zhoutian-sanguan': '第三回\'s last board, 第四回\'s first, both 几何冲刺 since 10-27 (each its own level, the second harder) — a 回 turns between',
   'baoming-yinyue>jin-chat-ma': '第四回\'s last chat (银月), 今二\'s first (马小宝\'s video) — a 回 and a line turn between; the jinchat boards\' own pass',
   'jin-chat-dark>jin-quxian': '今三: 闭关三日 (节奏, home-made) cut between them 2026-10-27 (Hanli: 「这个是你发明的吧, 去掉吧」); two chats until a classic board stands there again',
   'shiting-fanban>wangzuo-xiongya': '第五回: 凶崖 went 打地鼠 to hold the 调息 cap (2026-10-27; doc/games.md § 时机), a scene after 别踩第三块',
@@ -94,6 +96,8 @@ const CLIMB = {
   rain: (L) => { const f = rainFill(L); return { fall: { gapEnd: f.gap[1], beatEnd: f.beat[1], three: f.three, jit: f.jit, teach: f.teach } }; },
   // 气走经脉: the channel's speed (its things — 礁石 and the pickups — are each level's own, laid in story order)
   qimai: (L) => ({ rise: { speed: L.speed ?? 90 } }),
+  // 几何冲刺: the run's speed and its beat (the things' types come in by story order: tests/dash.test.mjs)
+  dash: (L) => ({ rise: { speed: dashSpeed(L), bpm: L.bpm ?? 120 } }),
 };
 test('no story board deals a level an earlier one dealt (古 and 今 alike): the same type, never the same layout', () => {
   const seen = new Map();

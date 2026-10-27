@@ -400,15 +400,19 @@ j07-guan read whole (story_after back into story); both tasks `cut`. Only well-k
 (tests/arcade-rhythm.test.mjs KEPT_PAIRS): no story board of the same kind as the one before it; 闭关三日's cut leaves 今三's two chats
 side by side, kept with that reason until a classic board stands there.
 
-**调息 fewer, and never the same twice (2026-10-27, Hanli: 「调息的游戏出现很多次, 每次都一样. 适当减少次数, 或者改变一下内容, 增加障碍物,
-道具, 增加趣味. 不要重复」 · 「最好小游戏关卡不重复…游戏类型不变」 · 「游戏难度可以延续」):** cut 镜光 (00-halfyear; 第六回's 藏息 · 镜光扫过来
-again) and 脉枕 (wm-yaban; 第四回's 铁刷子 again, 褚先生's probe); 闭关三日 is 节奏 (`shuttle` level `dunqi`: squats to the beat in the
-gym; since cut, below). 24 story 调息 boards → 21. The kit has things in the channel now (qimai.js): 礁石 to go over or under, 灵珠 (a 气 back), 护体
-(the next knock free), 定神 (the channel slows); every story level lays its own, more as the story goes, its speed never falling
-(88 → 105) and no two 调息 boards in a row on one land. 第四回 still holds three (小周天 · 断肋 · 铁刷子: each the scene's breath; cutting
-铁刷子 would put two chats back to back). The lock (tests/arcade-rhythm.test.mjs): no story board deals a layout an earlier one dealt;
-CLIMB per kit (打地鼠's gap · beat · pairs, 气走经脉's speed, 节奏's beat and window) never eases along the story. 打地鼠: sixteen story
-nights had one set of numbers (a reskin each); now each steps on from 接雨's.
+**调息 → 几何冲刺, two kept (2026-10-27, Hanli: 「调息的不太好玩, 能换成geometry dash那种蹦着躲避障碍的吗」 · 「现在的调息留2个就好」 ·
+「经典小游戏都可以用, 但别凭空编造」 · 「先找开源实现」):** the breath tunnel stays on two story boards — 洗髓 (00-sleep: the first night of
+the 吐纳经 and the pill; the winter's own practice, 镜光, was cut as 第六回's 藏息 again) and 恬惔虚无 (09-shijie: the night before the
+breakthrough on the cliff) — each its own layout (waves and pearls at 89; heart, stones and calms at 102). The other 19 (忍字 first)
+are 几何冲刺 (games/dash.js): Geometry Dash's cube, the runner on its own, a press to jump, hold to jump on each landing, orbs and
+pads, spikes · blocks · pits · low roofs, a hit starts over (attempts counted), practice checkpoints, a progress bar, ↺. Physics from
+famidash (github.com/tfdsoft/famidash, MIT: cube speed, jump, gravity, fall cap, pad and orb, hold-buffered jump); our level
+format, collision, drawing; none of its art or music. The beat is the music: no bed (a loop can't stay in step through restarts);
+things laid so each press falls on a beat; a kick each beat, a tick each off-beat, from the runner's clock. Painted on the local
+FLUX (tools/paint-dash-flux.py: spike, block, pad, orb); the runner is 气走经脉's 灵珠, the lands its skies and rock. Each level its
+own (tests/arcade-rhythm.test.mjs: no layout twice), speed and beat never falling, its kinds coming in by story order (s · b · pit
+· bb · ss · ceil · pad · sss · orb); 忍字 slow, single spikes and low blocks. Earlier the same day: things in the 调息 channel
+(礁石 · 灵珠 · 护体 · 定神) and 镜光 · 脉枕 cut; those things stay for the two kept boards and the 游戏厅.
 
 **The 调息 cap held (2026-10-27, the coordinator for Hanli: at most two a 回):** 凶崖 and 风掉头 above, and 第五回's 隐身符
 (`yinshen`, wm-shishi: wherever 邹青松's spirit sense sweeps, go still), are 打地鼠 now, painted; 第五回 keeps 踏马符 · 息壤,

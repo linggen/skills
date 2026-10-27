@@ -14,37 +14,11 @@ const rows = reg.games.filter((g) => g.id === 'qimai');
 const ladder = qm.ladderOf(reg);
 /* The story boards the kit took over (Hanli 10-19: 「气走经脉 可以」): task → level. 吹鹅毛 and 洗髓 stay cut
    (their scenes lost their boards 10-16), their levels in the 游戏厅 only. */
-const STORY = { 'zhoutian-sanguan': 'zhoutian', 'zhaojing-mirror': 'cangxi', 'jin-qianmi': 'qianmi', 'jin-faqiu': 'faqiu', 'jin-dark': 'dark', 'jin-lastshot': 'lastshot',
-  // the weak-board sweep (2026-10-19, the standing rule Hanli approved): 讲堂三日's chant up the arm, 顺风溜's glide
-  // the reading cap (2026-10-20, Hanli: 「剧情连续阅读太长的地方, 你处理一下」): 息壤's circle, 后山's narrowing path
-  'xirang-wumen': 'xirang',
-  // 第四回's breath (全文后的小游戏 2026-10-26): the night watch on a broken rib, 褚先生's iron brush
-  'xunye-duanlei': 'duanlei', 'yan-tieshua': 'tieshua',
-  // 今·二's (2026-10-26): 阿禾's bench lesson, the dog's 吸四吐六
-  'jin-wotui': 'wotui', 'jin-xisi': 'xisi',
-  // 第五回's 隐身符, 凶崖 and 第六回's 风掉头 went 打地鼠 on 2026-10-27 (Hanli: at most two 调息 a 回)
-  // 第六回's: 褚先生's two fingers on the pulse pillow
-  // (脉枕 · yaban-maizhen cut 2026-10-27: 第四回's 铁刷子 again)
-  // 今三's (2026-10-26): eyes shut on one foot, day one under the bar
-  'jin-danjiao': 'danjiao', // 闭关三日 (jin-shendun) went 节奏 2026-10-27 (squats to the beat)
-  // 时机 boards turned 调息 (Hanli 10-26: 「还是用现有的类型吧」): 嘀声, 凶崖, 踏马符, 风掉头
-  // (嘀声 went 节奏 then was cut 2026-10-27: 「这个是你发明的吧, 去掉吧」)
-  'anhe-tama': 'tama',
-  // the reading cap before 入门 (2026-10-20): 00-halfyear's 挑水上坡 (on the cut 练功's task id), 今一's 边跑边念
-  // the 调息 cut (2026-10-20, Hanli: 「调息感觉太多了」): 挑水上坡, 后山, 随叶 and 顺风溜 told — rows, levels and tasks gone
-  // its third beat (Hanli 10-20: 「可以, 把水桶那关也加上」): 00-notice's bucket
-  'notice-shuitong': 'shuitong',
-  // (00-masan's 忍字 went 几何冲刺 2026-10-27; its level renzi stays in the 游戏厅)
-  // 全文后的小游戏 (2026-10-26): 洗髓 back on its night (00-sleep), 吹鹅毛's level as the mirror's light (00-halfyear)
-  'sleep-xisui': 'xisui', // 镜光 (halfyear-mirror, level feather) cut 2026-10-27: 第六回's 藏息 again
-  // 今 · 一 (2026-10-26): the lap walked out after the 1,000 m, the twelve channels traced with his arms up
-  'jin-yiquan': 'yiquan', 'jin-jingluo': 'jingluo',
-  // 第三回 (2026-10-26): the three hundred steps, his hand on the testing stone
-  'steps-sanbai': 'sanbai', 'hall-celing': 'celing',
-  // 全文后的小游戏 第二批 (2026-10-26): 第八回's 160th step; 今四's band
-  'shijie-tiandan': 'tiandan', 'jin-shouhuan': 'shouhuan',
-  // 第九回: the dive down the pit, 阿禾's thread into the girl's throat
-  'qianshui-qi': 'qianshui', 'end-sangzi': 'sangzi' };
+const STORY = { 'jin-qianmi': 'qianmi', 'jin-faqiu': 'faqiu', 'jin-dark': 'dark',
+  // 2026-10-27 (Hanli: 「调息的不太好玩, 能换成geometry dash那种蹦着躲避障碍的吗」 · 「现在的调息留2个就好」): two story boards keep the
+  // breath — 洗髓 (00-sleep, the first night of the 吐纳经 and the pill) and 恬惔虚无 (09-shijie, the night before the
+  // breakthrough on the cliff); every other 调息 board is 几何冲刺 now (tests/dash.test.mjs), its level here in the 游戏厅 only.
+  'sleep-xisui': 'xisui', 'shijie-tiandan': 'tiandan' };
 const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/tasks/${f}.json`, import.meta.url), 'utf8')).tasks);
 
 /** Played to the end by `policy(state)` (true = hold), on a `step` ms clock. */

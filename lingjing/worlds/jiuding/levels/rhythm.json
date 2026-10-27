@@ -442,10 +442,10 @@
         "zh": "练功 · 水桶落井",
         "en": "Practice · The bucket goes down"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 15
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 144
       },
       {
        "kind": "read",
@@ -506,10 +506,10 @@
         "zh": "那一圈 · 别蹲",
         "en": "That lap · Don't squat"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 102
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 145
       },
       {
        "kind": "read",
@@ -563,10 +563,10 @@
         "zh": "十二正经 · 绕一圈",
         "en": "The twelve channels · All the way round"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 103
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 146
       },
       {
        "kind": "read",
@@ -700,10 +700,10 @@
         "zh": "三百级 · 一炷香",
         "en": "Three hundred steps · One stick of incense"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 20
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 147
       },
       {
        "kind": "read",
@@ -796,10 +796,10 @@
         "zh": "测灵石 · 藏",
         "en": "The testing stone · Hide"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 32
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 148
       },
       {
        "kind": "read",
@@ -851,10 +851,10 @@
         "zh": "小周天 · 冲三关",
         "en": "The small circuit · Three passes"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 37,
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 149,
        "same": true
       },
       {
@@ -966,10 +966,10 @@
         "zh": "气走经脉 · 断肋",
         "en": "Qi path · The broken rib"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 21
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 150
       },
       {
        "kind": "read",
@@ -1004,10 +1004,10 @@
         "zh": "气走经脉 · 铁刷子",
         "en": "Qi path · The iron brush"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 22
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 151
       },
       {
        "kind": "read",
@@ -1088,10 +1088,10 @@
         "zh": "气走经脉 · 卧推",
         "en": "Qi path · The bench"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 23
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 152
       },
       {
        "kind": "read",
@@ -1145,10 +1145,10 @@
         "zh": "气走经脉 · 吸四吐六",
         "en": "Qi path · In four, out six"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 24
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 153
       },
       {
        "kind": "read",
@@ -1383,10 +1383,10 @@
         "zh": "踏马符 · 足下一踏",
         "en": "The horse talisman · Tread it underfoot"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 50
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 154
       },
       {
        "kind": "read",
@@ -1421,10 +1421,10 @@
         "zh": "息壤 · 推着它们走一圈",
         "en": "The swelling earth · Push them round once"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 41
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 155
       },
       {
        "kind": "read",
@@ -1576,10 +1576,10 @@
         "zh": "藏息 · 镜光扫过来",
         "en": "Hide the breath · The mirror's light"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 42
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 156
       },
       {
        "kind": "read",
@@ -1877,10 +1877,10 @@
         "zh": "气走经脉 · 闭眼单脚站",
         "en": "Qi path · One foot, eyes shut"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 27
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 157
       },
       {
        "kind": "read",
@@ -2402,10 +2402,10 @@
         "zh": "气走经脉 · 吸四吐六",
         "en": "Qi path · In four, out six"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 28
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 158
       },
       {
        "kind": "read",
@@ -2440,10 +2440,10 @@
         "zh": "最后一罚 · 带着怕投",
         "en": "The last free throw · Shoot with the fear"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 62
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 159
       },
       {
        "kind": "read",
@@ -2632,10 +2632,10 @@
         "zh": "气走经脉 · 一口气",
         "en": "Qi path · One breath"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 29
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 160
       },
       {
        "kind": "read",
@@ -2718,10 +2718,10 @@
         "zh": "气走经脉 · 嗓子",
         "en": "Qi path · The voice"
        },
-       "mechanic": "调息",
-       "variety": "调息",
-       "game": "qimai",
-       "n": 30
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 161
       },
       {
        "kind": "read",

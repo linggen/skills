@@ -177,11 +177,11 @@ test('an interlude the book holds back (`draft`) is not played', async () => {
 // a 砸寨 throw. 先吐, 黑地十一步 and 罚球 are cut (their ways on tell them); 晨脉 was cut 10-19.
 test('every 今线 board is a chat, 最后一罚 or 白线上: its task pays nothing, and its scene waits on it; the cut ones are offered nowhere', () => {
   // 10-22 (Hanli: 「改成玩」): 最后一罚 back as 今四's board, 今二's free throws a 砸寨 throw (白线上)
-  const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-lastshot': 'qimai', 'jin-whiteline': 'zhazhai',
+  const games = { 'jin-chat-617': 'jinchat', 'jin-chat-ma': 'jinchat', 'jin-chat-dark': 'jinchat', 'jin-chat-ahe': 'jinchat', 'jin-lastshot': 'dash', 'jin-whiteline': 'zhazhai',
     // 今二's four (全文后的小游戏 2026-10-26)
-    'jin-wotui': 'qimai', 'jin-qiu': 'rain', 'jin-xisi': 'qimai', // 嘀声 a 时机 until 10-26 (Hanli: 「还是用现有的类型吧」), 调息 until 10-27 (「这个小游戏连着出现, 换一个」): 节奏
+    'jin-wotui': 'dash', 'jin-qiu': 'rain', 'jin-xisi': 'dash', // 调息 → 几何冲刺 10-27 (「调息的不太好玩…」); 嘀声 cut 10-27
     // 今三's five (全文后的小游戏 第二批 2026-10-26)
-    'jin-zhizhen': 'rain', 'jin-danjiao': 'qimai', 'jin-quxian': 'jinchat', 'jin-chenmai': 'rain' };
+    'jin-zhizhen': 'rain', 'jin-danjiao': 'dash', 'jin-quxian': 'jinchat', 'jin-chenmai': 'rain' };
   for (const [id, game] of Object.entries(games)) {
     const t = content.tasks.tasks.find(x => x.id === id);
     assert.equal(t.game, game, id);

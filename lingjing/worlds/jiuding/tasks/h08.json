@@ -73,9 +73,9 @@
       "_reward": "灵石 +3 (the plan: a lesson, not cultivation); its mark puts 素问's line for the foe's element at the door of the 大比's three bouts (the exits' game `hints`)."
     },
     {
-      "id": "zhaojing-mirror",
+      "_dash": "2026-10-27 (Hanli: 「调息的不太好玩, 能换成geometry dash那种蹦着躲避障碍的吗」 · 「现在的调息留2个就好」): 几何冲刺 now (games.json dash `cangxi-dash`), its own layout in the story's climb; the 调息 level stays in the 游戏厅. Id kept.", "id": "zhaojing-mirror",
       "kind": "board",
-      "game": "qimai",
+      "game": "dash", "how": {"zh": "镜光扫过来之前冲过去：点一下跳，按住连跳，矮顶底下别跳。碰上了，从头。", "en": "Through before the mirror's light sweeps: tap to jump, hold to keep jumping, stay down under the low roofs. Touch one, start over."},
       "period": "once",
       "title": {
         "zh": "藏息 · 镜光扫过来",
