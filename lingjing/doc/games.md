@@ -173,6 +173,13 @@ and live on 9527 where marked; the phone runs the same modules through games/pho
 | 开炉 · 兽潮 · 秘境 rerun · 本王考考你 · 闭关 | ✓ 收手 / walk out / leave the chat / the overlay's close (opened by choice, never a gate) | ✓ (kailu · shouqiang · kapai kits) | ✓ | 开炉 and 兽潮 framed (fantong-kailu.js · board card); the 秘境 room and 闭关 are page rooms with their own close, not boards |
 | the arcade-only 对话 rooms (断案 · 对子 · 讨价 · 二十问) | ✓ (opened by choice) | ✓ jinchat sounds | ✓ | page looks on a scratch save (`stage` rows), the page's chrome |
 
+**Way out, every moment, off the story (re-check 10-27, after 密室 was found with none — that one is another agent's):**
+errand boards, the tray's 先放一放, 今日's, 兽潮 and 本王考考你 are all `leave` boards (rules/skips.mjs leaveOf) and their card
+draws 收手 while they play (tests/board-way-out.test.mjs walks every off-story board); **a 传闻's step board drew its
+「算了，往下走」 only once stuck — now from the first moment** (cards.js skipBoard `always`); 开炉 has its pane's back; haunt
+and pool fights their 认输 at any moment (kapai); riddles in the story keep 算了 after three misses; on the phone every board
+opens on its own screen with ✕ (linggen-mobile's board route: 收手 for a `leave` board, the story's skip otherwise).
+
 The walk: **tests/no-win-walk.test.mjs** — a fresh save to 01-end and 卷一's end with nothing won: 104 boards left, 8 story
 fights lost three times and left (蛫 · 邹青松 · 卢方 · 马小宝 · 犰狳 · 腊八 final · 冰夷双龙 · 老井), the 犰狳's room lost to and let by,
 the riddle missed and passed; four teaching fights no line can lose (狐咬 · 龙脂门 · 大比 试戒 · 秦雁 at 伏天) are named, never

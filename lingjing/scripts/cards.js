@@ -916,7 +916,7 @@ function taleBody(st, ctx) {
   if (TALE_BODY[st.game]) return TALE_BODY[st.game](st, ctx);
   if (st.won) return `<div class="small dim">${esc(ctx.words.taleKept)}</div>`;
   const g = st.board ? ctx.boardFor?.(st.board.id) : null;
-  return g?.mod ? `<div class="small dim">${esc(forInput(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? ''))}</div>${mountOnly(g.mod) ? mountHostHtml(st.board.id, esc) : `<div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>`}${skipBoard(g, st.board.id, ctx)}`
+  return g?.mod ? `<div class="small dim">${esc(forInput(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? ''))}</div>${mountOnly(g.mod) ? mountHostHtml(st.board.id, esc) : `<div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>`}${skipBoard(g, st.board.id, ctx, { always: true })}`
     : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
 }
 
@@ -925,11 +925,13 @@ function taleBody(st, ctx) {
 /// slot under the board stands empty until then, and the page fills it when the gate opens.
 /// Leaving pays nothing (rules/skips.mjs). Outside the [data-game] host, so a live game's
 /// repaint never takes it away. Modules draw no skip of their own.
-export function skipBoard(g, id, ctx) {
+export function skipBoard(g, id, ctx, { always = false } = {}) {
   if (!g?.mod || g.state?.won || g.skipped) return '';
   const now = Date.now();
   stampShown(g, now);
-  return `<div class="acts gskip" data-skip-slot="${esc(id)}">${stuckNow(g, now) ? skipButton(id, ctx.lang) : ''}</div>`;
+  // A board he took up by choice (a 传闻's step) shows its way out from the first moment (Hanli 10-27: 「确保都能跳过去」);
+  // the story's own keep the stuck gate (「玩家卡住了才显示」, 10-15).
+  return `<div class="acts gskip" data-skip-slot="${esc(id)}">${always || stuckNow(g, now) ? skipButton(id, ctx.lang) : ''}</div>`;
 }
 export const skipButton = (id, lang) => `<button class="act quiet" data-game-skip="${esc(id)}">${esc(SKIP[lang] ?? SKIP.zh)}</button>`;
 
