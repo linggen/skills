@@ -142,7 +142,7 @@ const herFights = (b) => herNear() && (b?.brief?.setup?.you?.party ?? []).some((
 const voice = createVoice({
   // A test save (?save=) tells her too: its chat is bound to that save (SKILL.md session-params).
   post: (id, fact, flags, opts) => (CHATLESS ? Promise.resolve(false) : postMoment(fact, flags, opts)),
-  sees: () => ({ fighting: Boolean(bout), present: herUp() }),
+  sees: () => ({ fighting: Boolean(bout), present: herHere() }),
 });
 /// Resolves true when she will hear it; false when nobody will (the pet off
 /// answers 503 at once) — a page that waits on her must not wait then.
