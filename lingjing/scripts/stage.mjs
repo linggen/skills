@@ -242,7 +242,11 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // is never Ling's to stand up: she Showed [panel, people] on 2026-09-29 and
   // the 小人书 panel stood twice (PAGE_OWNS, below).
   const inHead = c => head.some(h => h.card === c.card && (h.id ?? null) === (c.id ?? null));
-  const kept = focus.filter(showable).map(c => boardOf(look, c)).filter(c => !inHead(c) && !(c.card === 'board' && boardDoneToday(look, c.id)));
+  // A fight Ling Showed stands only while it is up here — a scene's exit, the beast the place deals now, the fight
+  // held open: a pool deals another after each fight, and the old beast's card drew nothing (live 2026-10-27, the
+  // 后山 after a loss: a blank stage with 「还有：斗法 +1」).
+  const fightUp = c => c.card !== 'duel' || look.place?.encounter?.game?.id === c.id || look.fight?.game === c.id || (look.scene?.exits ?? []).some(e => e.game?.id === c.id);
+  const kept = focus.filter(showable).map(c => boardOf(look, c)).filter(c => fightUp(c) && !inHead(c) && !(c.card === 'board' && boardDoneToday(look, c.id)));
   const shown = look.offers?.length ? kept.filter(c => c.card !== 'creature') : kept;
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
   const naming = head.some(c => c.card === 'value' || c.card === 'born' || c.card === 'breakthrough');

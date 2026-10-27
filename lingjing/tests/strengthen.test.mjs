@@ -82,3 +82,10 @@ test('a loss at the 后山 carries what beat him and the way forward', () => {
   assert.ok(r.beat && Number.isFinite(r.beat.foe_hp) && Number.isFinite(r.beat.guards), JSON.stringify(r.beat));
   assert.equal(r.way?.[0]?.kind, 'wear', JSON.stringify(r.way));
 });
+
+test('a pool beast Ling Showed before stands no more once the place deals another: never a blank stage', async () => {
+  const { stageCards } = await import('../scripts/stage.mjs');
+  const look = { place: { id: 'houshan', encounter: { game: { id: 'haunt:chihu' }, creature: { id: 'chihu' } } }, companion: { joined: true, asleep: true } };
+  const ids = stageCards(look, { focus: [{ card: 'duel', id: 'haunt:lang' }, { card: 'duel', id: 'haunt:mihou' }] }).filter(c => c.card === 'duel').map(c => c.id);
+  assert.deepEqual(ids, ['haunt:chihu']);
+});
