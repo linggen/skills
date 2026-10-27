@@ -30,7 +30,8 @@ test('the boards Hanli named are word games now; the call with his mum is kept a
   assert.equal(CHATS['yinyue-pill'].agent, 'yinyue', '银月 writes her own lines');
   assert.equal(CHATS['617'].game?.kind, 'guess', '617: 二十问, they guess his animal');
   assert.equal(CHATS.ma.game, undefined, 'Hanli 10-27: 「今1和妈妈的视频通话是个好例子, 保留」');
-  assert.ok(GAMES.length >= 5);
+  // Hanli 10-27 (of 老蔫 · 窗户底下: 「这个不好, 换掉」): every chat board but the call with his mum is a word game.
+  for (const [id, c] of Object.entries(CHATS)) if (id !== 'ma') assert.ok(c.game, `${id}: a word game`);
 });
 
 test('each riddle: both tongues, tiers of hints, choices with exactly one right, the page\'s answer list', () => {
@@ -80,15 +81,21 @@ test('the book frames each game, verbatim: the setup line, the closing lines; th
     if (c.game.kind !== 'riddle') continue;
     for (const lang of LANGS) {
       const r = riddleOf(c.game, lang);
-      const facts = c.game.facts[lang].toLowerCase();
+      // (who they are is no leak: the River Lord is called so — his name is left out of the check)
+      const names = castOf(c, PEOPLE, lang).map((p) => p.name).concat(lang === 'en' ? ['River Lord'] : []);
+      const unnamed = (t) => names.reduce((x, n) => x.split(n).join(' '), t);
+      const facts = unnamed(c.game.facts[lang]).toLowerCase();
       const says = (text, a) => (lang === 'en' ? new RegExp(`\\b${a.toLowerCase()}\\b`).test(text.toLowerCase()) : text.includes(a));
-      for (const a of r.answers.filter((x) => [...x].length >= (lang === 'en' ? 4 : 1))) assert.ok(!says(facts, a), `${id} ${lang}: the facts never say 「${a}」`);
+      for (const a of r.answers.filter((x) => [...x].length >= (lang === 'en' ? 4 : 2))) assert.ok(!says(facts, a), `${id} ${lang}: the facts never say 「${a}」`);
       // Before he has it, no line they are handed carries the answer (skip comes after the page has shown it).
       const cast = castOf(c, PEOPLE, lang);
       for (const event of ['open', 'miss']) {
-        const line = riddleLine(c, { event, guess: 'x', hint: r.hints[0], riddle: r, cast, lang });
+        // (the chat's own header — its place and time, on the page anyway — is left out: 台角的水缸 is where 秦雁 stands)
+        const line = riddleLine(c, { event, guess: 'x', hint: r.hints[0], riddle: r, cast, lang }).replace(c.title[lang], '').replace(c.when[lang], '');
+        const bare = unnamed(line);
         assert.match(line, /^\[HIDDEN\] \[jinchat\] /);
-        assert.ok(!says(line, r.answers[0]), `${id} ${lang} ${event}: no answer in the line`);
+        // (a one-character answer — 气, 水 — is in too many words to check; the riddle and the hints were checked above)
+        for (const ans of r.answers.filter((x) => [...x].length >= 2)) assert.ok(!says(bare, ans), `${id} ${lang} ${event}: no 「${ans}」 in the line`);
       }
     }
   }

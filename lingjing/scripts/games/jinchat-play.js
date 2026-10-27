@@ -52,7 +52,9 @@ export async function riddleGame(ctx) {
   const st = { misses: 0, hints: 0, choices: false, done: false };
   const label = pick(game.label, lang) || w.riddle;
   ctx.add({ who: 'card', html: `<div class="g-jc-riddle"><i>${esc(label)}</i><p class="g-jc-q">${esc(r.q)}</p><ol class="g-jc-hints"></ol><p class="g-jc-ans" hidden></p></div>` });
-  ctx.react(riddleLine(chat, { event: 'open', riddle: r, cast: ctx.cast, lang }));
+  // A quiet game (`quiet`: 黑地里, the ambulance) asks no one: the moment is no game of theirs, only his answer and the book.
+  const react = game.quiet ? () => Promise.resolve() : ctx.react;
+  react(riddleLine(chat, { event: 'open', riddle: r, cast: ctx.cast, lang }));
   const card = () => [...ctx.root.querySelectorAll('.g-jc-riddle')].at(-1);
   const showHint = () => {
     if (st.hints >= r.hints.length) return '';
@@ -75,7 +77,7 @@ export async function riddleGame(ctx) {
       ctx.log({ kind: 'riddle', chat: ctx.id, solved, misses: st.misses, hints: st.hints, choices: st.choices, guess: guess ?? null });
       // The book closes it when it has the lines (最后一颗: 「本王还有一颗。最后一颗。」…「抢的。」); else their own word.
       if (game.after?.length) { await ctx.settle(); await playAfter(ctx, game.after); }
-      else await ctx.react(riddleLine(chat, { event: solved ? 'solved' : 'skip', guess, riddle: r, cast: ctx.cast, lang }), { wait: true });
+      else await react(riddleLine(chat, { event: solved ? 'solved' : 'skip', guess, riddle: r, cast: ctx.cast, lang }), { wait: true });
       resolve(o);
     };
     const guess = (raw) => {
@@ -89,7 +91,7 @@ export async function riddleGame(ctx) {
       // A miss lights the next hint by itself after the first; past `tries`, the choices.
       const hint = st.misses >= 2 ? showHint() : '';
       if (st.misses >= r.tries && r.choices.length && !st.choices) st.choices = true;
-      ctx.react(riddleLine(chat, { event: 'miss', guess: text, hint, choices: st.choices && st.misses === r.tries, riddle: r, cast: ctx.cast, lang }));
+      react(riddleLine(chat, { event: 'miss', guess: text, hint, choices: st.choices && st.misses === r.tries, riddle: r, cast: ctx.cast, lang }));
       draw();
     };
     const draw = () => {

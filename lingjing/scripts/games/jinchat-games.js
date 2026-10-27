@@ -25,7 +25,7 @@ const fill = (t, o) => String(t).replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
 
 const FILL_ZH = /^(我猜|我觉得|应该是|大概是|是不是|就是|莫非是|难道是|那就是|是)+|(吧|吗|嘛|呀|啊|呢|咯|喽|了|的)+$/g;
 const FILL_EN = /^(i think|i guess|my guess is|maybe|perhaps|is it|it's|it is|its|you have)\s+|\b(a|an|the|your|her|his)\b\s*/g;
-const NEG = { zh: /^(不是|不|没|没有|别)/, en: /^(not|no|never)\b/ };
+const NEG = { zh: /(不是|不要|不|没|没有|别|莫)$/, en: /^(not|no|never|isn't|isnt)$/ };
 /** His answer as compared: lower case, no spaces or marks, no filler (「我猜是……吧」, "I think it's a …"). */
 export function normAnswer(s, lang = 'zh') {
   let t = String(s ?? '').toLowerCase().trim();
@@ -58,9 +58,13 @@ export function checkRiddle(riddle, raw, lang = 'zh') {
   if (!said) return 'empty';
   const all = riddle.answers.map((a) => normAnswer(a, lang)).filter(Boolean);
   if (all.includes(said)) return 'right';
-  if (NEG[lang === 'en' ? 'en' : 'zh'].test(said)) return 'wrong';
+  // An answer inside what he said counts unless a denial stands right before it (「不是丹药」, "not a pill").
+  const denied = (i) => NEG[lang === 'en' ? 'en' : 'zh'].test(lang === 'en' ? said.slice(0, i).split(' ').filter(Boolean).at(-1) ?? '' : said.slice(Math.max(0, i - 2), i));
   for (const n of all) {
-    if (lang === 'en' ? new RegExp(`(^| )${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(s|es)?( |$)`).test(said) : n.length >= 2 && said.includes(n)) return 'right';
+    if (lang === 'en') {
+      const m = new RegExp(`(^| )${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(s|es)?( |$)`).exec(said);
+      if (m && !denied(m.index + m[1].length)) return 'right';
+    } else if (n.length >= 2 && said.includes(n) && !denied(said.indexOf(n))) return 'right';
   }
   return 'wrong';
 }
@@ -157,13 +161,13 @@ const W = {
     multi: '，每行以说话人的名字加冒号开头',
     facts: '此刻：{facts}',
     riddle: '这一局是猜谜：{names}出的谜，页面上已经写着——「{q}」{kind}。',
-    open: '你先开口，用你的口气叫他猜（谜面别重复，答案一个字也别漏）。',
+    open: '你先开口，照你平常说话的样子叫他猜（谜面别重复，答案一个字也别漏）。',
     miss: '他猜：「{guess}」。页面判了：不对。（谜底别说破，也别替他猜。）回他一句——损他也行，激他也行。{hint}',
     hint: '页面这会儿亮出了提示：「{hint}」。',
     choices: '页面给了他四个选项挑。',
     solved: '他猜中了：「{guess}」（页面判的）。用一句话认了。',
     skip: '他不猜了，跳过；页面亮出了谜底：「{answer}」。回他一句，收个尾。',
-    bank: '这一局是二十问反着玩：他心里想好一种动物，你们只问是或不是，来猜。下面每个问题，用你们自己的口气各改写成一句（意思不变，还是只能答是或不是），一行一个，照「编号｜名字：问句」写，名字轮着来；最后一行写「guess｜名字：……{x}……？」——猜的那一句，{x} 原样留着。不要别的字。',
+    bank: '这一局是二十问反着玩：他心里想好一种动物，你们只问是或不是，来猜。下面每个问题，照你们平常说话的样子各改写成一句（意思不变，还是只能答是或不是），一行一个，照「编号｜名字：问句」写，名字轮着来；最后一行写「guess｜名字：……{x}……？」——猜的那一句，{x} 原样留着。不要别的字。',
     bankQ: '{id}｜{q}',
     result: '二十问完了（页面判的）：{summary}。说一句收尾，别改这个结果。',
   },
