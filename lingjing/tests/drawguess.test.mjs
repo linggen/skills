@@ -176,22 +176,25 @@ test('throttle on the real clock (the default timers, called unbound as a page c
 test('猜者: Ling or 银月; each look is the player\'s short line to her in the game\'s chat, and the engine\'s refusal (not met yet, pet off) is read as such', async () => {
   const { GUESSERS, askGuess, askReveal } = await import('../scripts/games/drawguess.js');
   assert.deepEqual(GUESSERS, ['ling', 'yinyue']);
-  // Her name opens the line (her guest turn), Ling's never; a short line, and one note of the reply's shape.
-  assert.match(askGuess('yinyue', 1), /^@银月 我画了一样东西，你猜是什么？（.*「猜：」.*）$/);
-  assert.match(askGuess('yinyue', 1, null, 'en'), /^@yinyue I drew something.*"Guess: "/);
+  // A hidden turn (Hanli 10-27: the prompts stood in the chat as his words), then her name (her guest turn), Ling's
+  // never; a short line, and one note of the reply's shape.
+  assert.match(askGuess('yinyue', 1), /^\[HIDDEN\] @银月 我画了一样东西，你猜是什么？（.*「猜：」.*）$/);
+  assert.match(askGuess('yinyue', 1, null, 'en'), /^\[HIDDEN\] @yinyue I drew something.*"Guess: "/);
   assert.doesNotMatch(askGuess('ling', 1), /@|银月/);
   // Where they are rides the round's first look only; later looks are short. She sees the dialogue:
   // nothing restates her earlier guesses, and no brief tells her who she is.
-  assert.match(askGuess('yinyue', 1, '腊八夜里'), /^@银月 （腊八夜里）/);
+  assert.match(askGuess('yinyue', 1, '腊八夜里'), /^\[HIDDEN\] @银月 （腊八夜里）/);
   for (const n of [1, 2, 3]) {
     const line = askGuess('yinyue', n);
-    assert.ok([...line].length < 60, `${n}: ${line}`);
-    assert.doesNotMatch(line, /先前猜|别再猜|妖王|本王|不调用|\[画猜\]/, line);
+    assert.ok([...line].length < 70, `${n}: ${line}`);
+    assert.doesNotMatch(line, /妖王|本王|不调用|\[画猜\]/, line);
   }
+  // Her wrong guesses this round ride the next look: never the same thing twice (Hanli 10-27: 「同一个东西猜多次也不对吧」).
+  assert.match(askGuess('yinyue', 2, null, 'zh', ['饼', '铜手掌']), /不是饼，也不是铜手掌——换一样猜/);
   assert.match(askGuess('yinyue', 2), /又添了几笔/);
   // The reveal: the word, won or not, and her feeling and her word on the drawing asked for.
-  assert.match(askReveal('yinyue', '鸡', true), /^@银月 对了，就是「鸡」！.*点评/);
-  assert.match(askReveal('yinyue', '鸡', false), /^@银月 时间到——我画的是「鸡」。.*懊恼/);
+  assert.match(askReveal('yinyue', '鸡', true), /^\[HIDDEN\] @银月 对了，就是「鸡」！.*点评/);
+  assert.match(askReveal('yinyue', '鸡', false), /^\[HIDDEN\] @银月 时间到——我画的是「鸡」。.*懊恼/);
   assert.equal(refusalOf({ status: 'absent', agent_id: 'yinyue' }), 'absent');
   assert.equal(refusalOf({ status: 'unavailable' }), 'unavailable');
   assert.equal(refusalOf({ status: 'started' }), null);

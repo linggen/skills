@@ -12,7 +12,7 @@
 // 妖王 voice, her lines in the chat and in the paper's bubble. She is gated as in the world: until the save has met her
 // (`absent_until`) the engine runs no turn and answers `absent` — the game says so and won't start.
 // The paper and the player's own strokes are the only things drawn here; nothing is painted in code.
-import { ERASER, guessLoop, isBlindReply, letterGrade, matches, parseReply, pickWord, roundsOf, starsFor, strokeOp, stubReply } from './drawguess-rules.js';
+import { ERASER, guessLoop, isBlindReply, letterGrade, matches, normalize, parseReply, pickWord, roundsOf, starsFor, strokeOp, stubReply } from './drawguess-rules.js';
 import { askInChat, declaredBlind, reachable } from './drawguess-ling.js';
 
 export const meta = {
@@ -35,6 +35,8 @@ const T = {
     absent: '还没遇见银月。', unavailable: '银月不在。', asleep: '银月在木牌里睡着，叫不应。',
     won: '对了，是「{w}」。', time: '时间到。是「{w}」。',
     next: '下一句', again: '再画一张', write: '就写字吧', off: '这个测试存档不叫银月（chat=off）。', plain: '这一句只写了字：「{w}」。',
+    nth: '第{n}题', got: '猜中了 · {w}', missed: '没认出来 · 是「{w}」', last: '她最后猜：{g}', none: '她一个也没猜出来', nextQ: '下一题', leave: '收手', thinking: '{who}在想……钟先停着',
+    sealWon: '胜', sealLost: '负', ordinal: ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'],
   },
   en: {
     draw: 'Draw', start: 'Start', pen: 'Brush', eraser: 'Eraser', clear: 'Clear', done: 'Done', who: 'Guesser', names: { ling: 'Ling', yinyue: 'Yinyue' },
@@ -43,6 +45,8 @@ const T = {
     absent: 'You haven\'t met Yinyue yet.', unavailable: 'Yinyue isn\'t here.', asleep: 'Yinyue is asleep in the token and does not answer.',
     won: 'Right — {w}.', time: 'Time. It was {w}.',
     next: 'Next line', again: 'Draw another', write: 'Just write it', off: 'This test save calls no one (chat=off).', plain: 'This line is in words only: {w}.',
+    nth: 'Round {n}', got: 'Guessed · {w}', missed: 'Not this time · it was {w}', last: 'Her last guess: {g}', none: 'She named nothing', nextQ: 'Next word', leave: 'Put it down', thinking: '{who} is thinking… the clock waits',
+    sealWon: 'Won', sealLost: 'Lost', ordinal: null,
   },
 };
 const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -73,7 +77,20 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-foot{font-size:11px;color:var(--faint);font-family:var(--ui);min-height:1em}
 .g-dg-letter{width:100%;box-sizing:border-box;padding:6px 10px;border-left:2px solid var(--line);font-family:var(--serif);font-size:15px;line-height:1.6;color:var(--text)}
 .g-dg-letter:empty{display:none}.g-dg-letter .g-dg-ask{display:block;margin-top:4px;font-size:16px;color:var(--accent,#8a5a1f)}.g-dg-letter small{display:block;font-size:11px;color:var(--faint);font-family:var(--ui)}
-.g-dg.is-fixed .g-dg-who{display:none}`;
+.g-dg.is-fixed .g-dg-who{display:none}
+.g-dg-chips{display:flex;flex-wrap:wrap;gap:4px;width:100%;min-height:0}.g-dg-chips:empty{display:none}
+.g-dg-chips s{padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px;color:var(--faint);font-family:var(--serif)}
+.g-dg-beat,.g-dg-result{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:10px;padding:20px;text-align:center;font-family:var(--serif);color:#3d3122;background:rgba(236,218,187,.82)}
+.g-dg-beat{font-size:30px;letter-spacing:.2em;animation:g-dg-in .35s ease-out both}.g-dg-beat small{display:block;font-size:13px;letter-spacing:.1em;color:#6b5a43}
+.g-dg-result{background:rgba(236,218,187,.72)}.g-dg-result[hidden],.g-dg-beat[hidden]{display:none}
+.g-dg-result .g-dg-big{font-size:24px;font-weight:700;letter-spacing:.08em}.g-dg-result .g-dg-sub{font-size:14px;color:#6b5a43}
+.g-dg-result .g-dg-stars{font-size:22px;color:var(--seal,#b0412e);letter-spacing:.1em}
+.g-dg-result .g-dg-acts{display:flex;gap:10px;justify-content:center;margin-top:6px}.g-dg-result .g-btn{min-width:110px}
+.g-dg-seal{position:absolute;top:14px;right:14px;display:grid;place-items:center;min-width:60px;height:60px;padding:0 8px;box-sizing:border-box;border-radius:6px;font-size:28px;font-weight:700;color:#FBF5EA;background:var(--cinnabar,#b0412e);box-shadow:inset 0 0 0 3px rgba(251,245,234,.7),0 6px 16px rgba(31,28,24,.25);transform:rotate(-8deg);animation:g-dg-stamp .5s cubic-bezier(.3,1.4,.4,1) .1s both}
+.g-dg-result.is-lost .g-dg-seal{background:none;color:var(--cinnabar,#b0412e);box-shadow:inset 0 0 0 3px var(--cinnabar,#b0412e)}
+@keyframes g-dg-stamp{from{opacity:0;transform:rotate(-8deg) scale(1.9)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
+@keyframes g-dg-in{from{opacity:0;transform:scale(1.15)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.g-dg-seal,.g-dg-beat{animation:none}}`;
 
 function styleOnce(doc) {
   if (doc.getElementById('g-dg-style')) return;
@@ -178,12 +195,17 @@ const SHAPE = {
   zh: '（一句话就好，最后一行写「猜：」加一个名词。）',
   en: ' (Just a line, then a last line "Guess: " and one noun.)',
 };
-/** The player's line for a look: the first of a round (`n` 1) with where they are (`context`), the next ones short. */
-export const askGuess = (who, n = 1, context = null, lang = 'zh') => {
+/* A look is a hidden turn (`[HIDDEN]`, the engine's mark — tests/hidden): the game's line to her, never shown as
+   his words in the chat (Hanli 10-27: the board's prompts stood in the chat as 「[Hanli] …」); her reply shows. */
+const HIDDEN = '[HIDDEN] ';
+/** The player's line for a look: the first of a round (`n` 1) with where they are (`context`), the next ones short.
+    `tried`: her guesses this round, all wrong — never guessed again (Hanli 10-27: 「同一个东西猜多次也不对吧」). */
+export const askGuess = (who, n = 1, context = null, lang = 'zh', tried = []) => {
   const en = lang === 'en';
   const scene = context ? (en ? `(${context}) ` : `（${context}）`) : '';
   const said = n <= 1 ? (en ? 'I drew something — what is it?' : '我画了一样东西，你猜是什么？') : (en ? 'I added a few strokes. Another guess?' : '我又添了几笔，再猜猜？');
-  return `${at(who, lang)}${scene}${said}${SHAPE[en ? 'en' : 'zh']}`;
+  const no = tried.length ? (en ? ` Not ${tried.join(', not ')} — guess something else.` : `不是${tried.join('，也不是')}——换一样猜。`) : '';
+  return `${HIDDEN}${at(who, lang)}${scene}${said}${no}${SHAPE[en ? 'en' : 'zh']}`;
 };
 /* The reveal (Hanli 10-19: 「最后解释答案的时候, 让yingyue表达一下懊恼等感情, 评论一下作者的画. 把情绪价值拉满」):
    one more look at the finished picture, now with the answer — she owns the miss or crows over the hit,
@@ -191,10 +213,10 @@ export const askGuess = (who, n = 1, context = null, lang = 'zh') => {
 export const askReveal = (who, word, won, lang = 'zh') => {
   const en = lang === 'en';
   if (en) {
-    return `${at(who, lang)}${won ? `Yes — it's ${word}!` : `Time's up. It was ${word}.`} What do you make of my drawing?`
+    return `${HIDDEN}${at(who, lang)}${won ? `Yes — it's ${word}!` : `Time's up. It was ${word}.`} What do you make of my drawing?`
       + (won ? ' (A line or two: crow over it, and say something about the drawing.)' : ' (A line or two: let the miss sting, and say what the drawing got wrong.)');
   }
-  return `${at(who, lang)}${won ? `对了，就是「${word}」！` : `时间到——我画的是「${word}」。`}你说说我这画？`
+  return `${HIDDEN}${at(who, lang)}${won ? `对了，就是「${word}」！` : `时间到——我画的是「${word}」。`}你说说我这画？`
     + (won ? '（一两句：得意就说足，再点评一下这幅画。）' : '（一两句：懊恼不服就说足，再说说这东西该怎么画。）');
 };
 
@@ -258,7 +280,8 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     + '<div class="g-dg-time"><i></i></div>'
     + '<div class="g-dg-letter"></div>'
     + `<div class="g-dg-say is-wait"><b></b><span class="g-dg-line"></span><span class="g-dg-other"></span></div>`
-    + '<div class="g-dg-paper is-off"><canvas></canvas><div class="g-dg-eraser"></div><div class="g-dg-veil"></div></div>'
+    + '<div class="g-dg-chips" aria-label="guessed"></div>'
+    + '<div class="g-dg-paper is-off"><canvas></canvas><div class="g-dg-eraser"></div><div class="g-dg-veil"></div><div class="g-dg-beat" hidden></div><div class="g-dg-result" hidden></div></div>'
     + `<div class="g-dg-bar"><button type="button" class="g-btn g-btn-soft g-dg-tool is-on" data-k="pen">${w.pen}</button>`
     + `<button type="button" class="g-btn g-btn-soft g-dg-tool" data-k="eraser">${w.eraser}</button>`
     + `<button type="button" class="g-btn g-btn-soft" data-k="clear">${w.clear}</button>`
@@ -269,7 +292,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const canvas = $('canvas'), paper = $('.g-dg-paper'), veil = $('.g-dg-veil'), goBtn = $('[data-k="go"]'), rub = $('.g-dg-eraser');
 
   const who0 = fixed && GUESSERS.includes(data.who) ? data.who : whoKept(data);
-  const g = { phase: 'check', who: who0, tool: 'pen', word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null, rounds: null, i: 0, got: 0 };
+  const g = { phase: 'check', who: who0, tool: 'pen', word: null, strokes: [], cur: null, guesses: [], t0: 0, timer: null, loop: null, rounds: null, i: 0, got: 0, n: 0, held: 0, tickAt: 0 };
   let finish = () => {};
   const wake = () => (typeof data.wake === 'function' ? Promise.resolve(data.wake(g.who)).catch(() => {}) : Promise.resolve());
   root.dataset.phase = g.phase;
@@ -319,6 +342,42 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     if (r.word) $('.g-dg-word b').textContent = lang === 'en' ? `${r.word.zh} · ${r.word.en}` : r.word.zh;
   };
   const tools = (on) => root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = !on; });
+  /* Her wrong guesses this round, crossed out under her bubble: he sees she tries different things. */
+  const chips = () => {
+    const el = $('.g-dg-chips');
+    el.replaceChildren(...g.guesses.map((x) => { const c = doc.createElement('s'); c.textContent = x; return c; }));
+  };
+  const word$ = (wd) => (lang === 'en' ? wd.en : wd.zh);
+  /* A new word is announced on clean paper before the clock runs (Hanli 10-27: the word changed under his old drawing
+     and nothing said so): 「第二题 · 木牌」 a beat, then the round. */
+  const beat = (wd) => new Promise((done) => {
+    const el = $('.g-dg-beat'), n = g.n;
+    const nth = fill(w.nth, { n: w.ordinal?.[n - 1] ?? String(n) });
+    el.innerHTML = '';
+    el.append(nth, Object.assign(doc.createElement('small'), { textContent: `${w.draw} ${word$(wd)}` }));
+    el.hidden = false;
+    setTimeout(() => { el.hidden = true; done(); }, 1600);
+  });
+  /* How the round went, over his drawing: the seal (胜 / 负), the word, her last guess, and — a miss in the story —
+     下一题 or 收手 (Hanli 10-27: 「成功失败也看不太出来」). */
+  const result = (won, { acts = false, stars = null } = {}) => {
+    const el = $('.g-dg-result'), lastGuess = [...g.guesses].reverse().find(Boolean) ?? g.right ?? null;
+    el.classList.toggle('is-lost', !won);
+    const line = (cls, text) => Object.assign(doc.createElement('div'), { className: cls, textContent: text });
+    const parts = [Object.assign(doc.createElement('b'), { className: 'g-dg-seal', textContent: won ? w.sealWon : w.sealLost }),
+      line('g-dg-big', fill(won ? w.got : w.missed, { w: word$(g.word) }))];
+    if (won && stars != null) parts.push(line('g-dg-stars', `${'★'.repeat(stars)}${'☆'.repeat(Math.max(0, 3 - stars))}`));
+    if (!won) parts.push(line('g-dg-sub', lastGuess ? fill(w.last, { g: lastGuess }) : w.none));
+    if (acts) {
+      const row = doc.createElement('div');
+      row.className = 'g-dg-acts';
+      row.innerHTML = `<button type="button" class="g-btn g-btn-main" data-r="next">${w.nextQ}</button><button type="button" class="g-btn g-btn-soft" data-r="leave">${w.leave}</button>`;
+      parts.push(row);
+    }
+    el.replaceChildren(...parts);
+    el.hidden = false;
+  };
+  const clearResult = () => { $('.g-dg-result').hidden = true; $('.g-dg-result').replaceChildren(); };
 
   // The canvas follows its box at the device's pixel ratio; the strokes are kept in paper units.
   const fit = () => {
@@ -395,6 +454,10 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   canvas.addEventListener('pointercancel', lift);
 
   root.addEventListener('click', (e) => {
+    const r = e.target.closest?.('[data-r]')?.dataset.r;
+    if (r === 'next' && g.phase === 'between') { clearResult(); freshPaper(); setPhase('ready'); return begin(); }
+    // 收手: the board put down as the card's own 收手 puts it (the page's `data.leave`), else left here.
+    if (r === 'leave' && g.phase === 'between') { setPhase('over'); return typeof data.leave === 'function' ? data.leave() : finish({ won: false, left: true }); }
     const who = e.target.closest?.('[data-who]')?.dataset.who;
     if (who && !fixed && CHOOSE.has(g.phase) && who !== g.who) { g.who = who; keepWho(who); start(); return; }
     const k = e.target.closest?.('[data-k]')?.dataset.k;
@@ -430,7 +493,11 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     const ok = p.guess != null && matches(p.guess, g.word);
     log({ kind: 'guess', who: g.who, word: g.word.zh, n: g.loop.calls, ms: r.ms, model: r.model?.id, guess: p.guess, ok, zh: p.zh, en: p.en });
     g.note = '';
-    if (p.guess) g.guesses.push(p.guess);
+    // A guess she made already this round is no new guess (she is told them; one slipping through is not shown twice).
+    const again = p.guess != null && g.guesses.some((x) => normalize(x) === normalize(p.guess));
+    if (p.guess && !ok && !again) g.guesses.push(p.guess);
+    if (ok) g.right = p.guess;
+    chips();
     shell?.sound?.(ok ? 'good' : 'recv');
     sayParsed(p.zh || p.en ? p : { zh: p.guess, en: null });
     if (ok) end(true);
@@ -441,11 +508,15 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   };
 
   const tick = () => {
-    const left = Math.max(0, ROUND_MS - (performance.now() - g.t0));
+    // Her look takes 5–10 s: the clock waits while she thinks, so a slow reply never eats his time (Hanli 10-27).
+    const now = performance.now();
+    if (g.loop?.busy && g.phase === 'draw') g.held += now - (g.tickAt || now);
+    g.tickAt = now;
+    const left = Math.max(0, ROUND_MS - (now - g.t0 - g.held));
     $('.g-dg-sec').textContent = String(Math.ceil(left / 1000));
     $('.g-dg-time i').style.transform = `scaleX(${left / ROUND_MS})`;
     lefts();
-    foot(g.loop?.busy ? sub(w.looking) : g.note || modelLine());
+    foot(g.loop?.busy ? sub(w.thinking) : g.note || modelLine());
     if (left <= 0 && g.phase === 'draw') closing();
   };
   const closing = () => {
@@ -462,7 +533,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
       await new Promise((r) => setTimeout(r, 1200));
       return { text: stubReply(g.word, g.loop.calls), ms: 1200, model: { id: 'stub' }, tools: 0 };
     }
-    const png = paperPng(doc, g.strokes), text = askGuess(g.who, g.loop.calls, g.loop.calls <= 1 ? ctxLine : null, lang);
+    const png = paperPng(doc, g.strokes), text = askGuess(g.who, g.loop.calls, g.loop.calls <= 1 ? ctxLine : null, lang, g.guesses);
     log({ kind: 'sent', who: g.who, word: g.word.zh, n: g.loop.calls });
     return lookAt({ png, text });
   };
@@ -485,9 +556,20 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     g.next = null;
     lastWord = g.word.zh;
     $('.g-dg-word b').textContent = lang === 'en' ? `${g.word.zh} · ${g.word.en}` : g.word.zh;
+    // A new word always starts on blank paper, her guesses gone, and is announced before the clock runs.
     g.strokes = [];
+    g.cur = null;
     g.guesses = [];
+    g.right = null;
+    g.held = 0;
+    g.tickAt = 0;
+    g.n += 1;
+    chips();
+    clearResult();
+    redraw();
+    say('……', '', true);
     veil.textContent = '';
+    if (!g.rounds) { setPhase('between'); tools(false); await beat(g.word); }
     tools(true);
     goBtn.textContent = w.done;
     g.loop = guessLoop({
@@ -563,16 +645,19 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
       return;
     }
     foot(fill(won ? w.won : w.time, { w: word }));
-    // In the story a miss is another try (a new word, a new round the rules may count), never the end.
+    // In the story a miss is another try — but only when he says so: the result stands over his drawing with
+    // 下一题 / 收手, never a new word rolled in by itself (Hanli 10-27: 「AI猜对了, 怎么卡在这这么久」).
     if (fixed && !won && data.retry !== false) {
       setPhase('between');
       tools(false);
-      after(900, () => { freshPaper(); goBtn.textContent = w.again; setPhase('ready'); goBtn.disabled = false; });
+      shell?.sound?.('result.lose');
+      result(false, { acts: true });
       return;
     }
     setPhase('over');
     tools(false);
     if (won) root.classList.add('is-won');
+    result(won, { stars: won ? starsFor(calls) : null });
     // In the story a grade is a mark id the task may name (`look1` · `look2` …: how many looks it took).
     after(won ? 1800 : 600, () => finish(won ? { won: true, stars: starsFor(calls), grade: fixed ? `look${calls}` : `${calls}` } : { won: false, grade: `${word}` }));
   };

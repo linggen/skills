@@ -211,6 +211,8 @@ function mountData(task) {
   // A board that needs her (Look's `her`: the task or 传闻 game declares `needs: "her"`) wakes her out
   // of the 木牌 as its round begins, and puts her back as it ends (rules/hergame.mjs).
   if (task?.her && task.id) { deal.wake = () => herOut(task.id, true); deal.rest = () => herOut(task.id, false); }
+  // 收手 from inside the board (画猜's result card: 下一题 · 收手) puts it down as the card's own 收手 does.
+  if (task?.leave && task.id) deal.leave = () => leaveGame(task.id);
   if (deal.begin) {
     const { verb: name, ...args } = deal.begin;
     deal.begin = async ({ next = false } = {}) => {
