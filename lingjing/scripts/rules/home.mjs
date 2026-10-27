@@ -124,7 +124,7 @@ function todoOf(kept) {
   const ready = [...(kept.stage_quest?.met ? [{ title: kept.stage_quest.step }] : []), ...(kept.book ?? []).filter(b => b.ready && !b.away)];
   if (ready.length) out.push({ kind: 'ready', n: ready.length, title: ready[0].title });
   for (const q of (kept.book ?? []).filter(b => !b.ready && !b.chore).slice(0, 3)) out.push({ kind: 'held', id: q.id, title: q.title, ...(q.where ? { place: placeRef(q.where) } : {}) });
-  for (const q of choresOpen(kept)) out.push({ kind: 'gongke', id: q.id, title: q.title, ...(q.means ? { means: q.means } : {}), progress: q.pays.progress, done: Boolean(q.done) });
+  for (const q of choresOpen(kept).filter(c => !c.done)) out.push({ kind: 'gongke', id: q.id, title: q.title, ...(q.means ? { means: q.means } : {}), progress: q.pays.progress });
   const tide = (kept.tasks ?? []).find(t => t.tide && t.status === 'offered');
   if (tide) out.push({ kind: 'tide', id: tide.id, title: tide.title });
   for (const w of kept.waits ?? []) out.push({ kind: 'wait', id: w.id, title: w.title, wait_min: w.wait_min });

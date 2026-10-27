@@ -1073,12 +1073,12 @@ const HOME_WORDS = {
   zh: { stage: '阶段任务 · {step}', short: '还差 {n} 修为', chores: '功课 +{n}', plays: '约 {n} 局', playsMore: '再约 {n} 局', todo: '待办',
     resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}',
     boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',
-    ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}', gongkeDone: '{name} · 可交 · 修为 +{n}',
+    ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}',
     tide: '兽潮 · 开局', rerun: '{title} · 已开', skipped: '先放下的 {n} 局' },
   en: { stage: 'Stage quest · {step}', short: '{n} cultivation to go', chores: 'chores +{n}', plays: 'about {n} games', playsMore: 'then about {n} games', todo: 'Waiting',
     resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}',
     boardPays: 'Play · {title} · cultivation +{n}', take: 'Take · {title}', go: 'Go to {name} ›', goWhat: 'To {name} · {what}', wait: '{title} · in {t}', seclude: 'Seclusion',
-    ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}', gongkeDone: '{name} · hand in · cultivation +{n}',
+    ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}',
     tide: 'Beast tide · play', rerun: '{title} · open', skipped: '{n} games set aside' },
 };
 const homeWait = (min, w) => { const m = Math.max(1, Math.round(min ?? 0)); return m >= 60 ? say(w.chanceHM, { h: Math.floor(m / 60), m: m % 60 }) : say(w.chanceM, { m }); };
@@ -1102,7 +1102,7 @@ const HOME_TODO = {
   ready: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.ready, { n: r.n, title: r.title }))}</button>`,
   held: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.held, { title: r.title, place: bareName(r.place.name) }))}</button>`
     : `<button class="act quiet hometodo" data-book>${esc(say(h.heldBare, { title: r.title }))}</button>`),
-  gongke: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(r.done ? h.gongkeDone : h.gongke, { name: r.means ?? r.title, n: r.progress }))}</button>`,
+  gongke: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.gongke, { name: r.means ?? r.title, n: r.progress }))}</button>`,
   tide: (r, h) => `<button class="act quiet hometodo" data-play="${esc(r.id)}">${esc(h.tide)}</button>`,
   wait: (r, h, ctx) => `<span class="small dim hometodo">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</span>`,
   rerun: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.rerun, { title: r.title ?? r.place.name }))}</button>` : ''),
