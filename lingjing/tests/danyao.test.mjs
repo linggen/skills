@@ -9,6 +9,7 @@ import { newState, settleStamina, staminaMax } from '../scripts/state.mjs';
 import { look, trade, VERBS } from '../scripts/rules.mjs';
 import { rollFeed, chances } from '../scripts/rules/fantong.mjs';
 import { cureDandu, eatPill } from '../scripts/rules/dandu.mjs';
+import { paysOf } from '../scripts/rules/core.mjs';
 
 const content = loadContent();
 const T0 = new Date('2026-10-21T20:00:00');
@@ -30,19 +31,29 @@ const eat = (s, id, now = T0) => {
   return r;
 };
 
-test('every pill says its 阶 and its 转; a family\'s 修为 is the curve — 一转 20 · 三转 30 · 九转 60, the numbers the game had', () => {
+test('every pill says its 阶 and its 转; a family\'s 修为 is its 转\'s share of the layer (数值系统 phase 2: 一转 5% · 三转 15% · 九转 30%)', () => {
   for (const p of pills) {
     assert.ok(content.ladder.tiers.some(t => t.id === p.tier), `${p.id} has a 阶`);
     assert.ok(p.zhuan >= 1 && p.zhuan <= 9, `${p.id} has a 转`);
   }
-  assert.deepEqual(['qi-pill', 'qi-pill-3', 'qi-pill-9', 'mend-pill-3', 'mend-pill-9'].map(id => item(id).effect.progress), [20, 30, 60, 30, 60]);
-  // Tamed: a 九转 is three 一转s, never 9⁸; a 阶 above adds one 一阶's worth, never ×10.
-  assert.equal(pillPay(content.balance, { of: 'qi', zhuan: 9, tier: 'qi' }), 3 * pillPay(content.balance, { of: 'qi', zhuan: 1, tier: 'qi' }));
-  assert.equal(pillPay(content.balance, { of: 'qi', zhuan: 1, tier: 'foundation' }), 2 * pillPay(content.balance, { of: 'qi', zhuan: 1, tier: 'qi' }));
-  // Each within its table's cap, and the fight pills keep their own numbers (the 丹囊 bands).
+  // Read against the 练气一层 the book is written for (play_pay.authored.base): the share × 470, so at every layer the share.
+  const base = content.balance.play_pay.authored.base, share = content.balance.pills.share;
+  assert.deepEqual([share[0], share[2], share[8]], [0.05, 0.15, 0.3]);
+  assert.deepEqual(['qi-pill', 'qi-pill-3', 'qi-pill-9', 'mend-pill-3', 'mend-pill-9'].map(id => item(id).effect.progress), [1, 3, 9, 3, 9].map(z => Math.round(share[z - 1] * base * 10) / 10));
+  assert.ok(pills.filter(x => x.of).every(p => p.effect.table === 'pill' && p.effect.tier === p.tier), 'on the pill table, its 阶 carried');
+  // A 九转 is six 一转s; a pill of a 阶 above pays its own 转's share (never ×10 a 阶).
+  assert.equal(pillPay(content.balance, { of: 'qi', zhuan: 9, tier: 'qi' }), 6 * pillPay(content.balance, { of: 'qi', zhuan: 1, tier: 'qi' }));
+  assert.equal(pillPay(content.balance, { of: 'qi', zhuan: 1, tier: 'foundation' }), pillPay(content.balance, { of: 'qi', zhuan: 1, tier: 'qi' }));
   for (const p of pills.filter(x => x.of)) assert.ok(p.effect.progress <= content.rewards.tables[p.effect.table].progress, p.id);
   assert.deepEqual([item('mend-pill').effect.fight, item('huiqi-pill').effect.fight], [{ heal: 10 }, { mana: 3 }]);
   assert.deepEqual(lint(content).filter(x => /pill|阶|转/.test(x)), []);
+});
+
+test('a 修为 pill eaten pays its share of the layer he stands on — the same share on every layer, a quarter a realm past its 阶', () => {
+  const at = (tier, step) => ({ ...newState(content, 'zh', new Date('2026-10-27T12:00:00')), chapter: '00-waimen', ended: ['00-prologue'], done_scenes: ['wm-zhoutian'], tier, step, progress: 0, traits: ['wood', 'water', 'fire', 'earth', 'metal'] });
+  const e = item('qi-pill').effect, need = (tier, step) => content.ladder.tiers.find(t => t.id === tier).thresholds[step];
+  for (const step of [1, 4, 9]) assert.equal(paysOf(content, at('qi', step), new Date(), { table: e.table, progress: e.progress, tier: e.tier }).progress, Math.round(0.05 * need('qi', step)), `练气${step}层`);
+  assert.equal(paysOf(content, at('foundation', 0), new Date(), { table: e.table, progress: e.progress, tier: e.tier }).progress, Math.round(0.05 * 0.25 * need('foundation', 0)), '筑基: a 练气 pill, a quarter');
 });
 
 test('the lint refuses a pill with no 阶 or 转, or of an unknown family', () => {

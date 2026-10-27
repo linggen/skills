@@ -7,7 +7,7 @@ import { esc } from './esc.js';
 const q = new URLSearchParams(location.search);
 const root = document.getElementById('numbers');
 const tip = document.getElementById('tip');
-const SRC = { pills: '丹药', boards: '小游戏', errands: '差事', shops: '铺子', gear: '装备', cards: '卡牌', fights: '斗法', layers: '每层时长', paces: '每回天数', claims: '文字 vs 数值' };
+const SRC = { pills: '丹药', boards: '小游戏', errands: '差事', shops: '铺子', gear: '装备', cards: '卡牌', fights: '斗法', layers: '每层时长', paces: '每回天数', gates: '关口等待', claims: '文字 vs 数值' };
 const back = () => `arcade.html?${new URLSearchParams({ dev: '1', ...(q.get('save') ? { save: q.get('save') } : {}), ...(q.get('from') ? { from: q.get('from') } : {}) })}`;
 const pct = (x) => (x == null ? '—' : `${Math.round(x * 1000) / 10}%`);
 const v = (x) => (x == null || x === '' ? '—' : x);
@@ -50,7 +50,7 @@ const section = (title, body, open = false) => `<details class="card"${open ? ' 
 function headHtml(r) {
   const s = r.stamp;
   return `<div class="head"><a href="${esc(back())}">← 游戏厅</a><h1>数值</h1><span class="dim small">${esc(s.date)} · ${esc(s.commit ?? '?')} · 斗法 ${s.deals || '未算'}${s.deals ? ' 局/场' : ''}</span></div>`
-    + `<p class="dim small">node tools/numbers.mjs --write 重算 · ${r.defs.caveats.map(esc).join(' · ')}</p>`;
+    + `<p class="dim small">node tools/numbers.mjs --write 重算 · node tools/numbers.mjs --apply 由总表推出 · ${r.defs.caveats.map(esc).join(' · ')}</p>`;
 }
 
 function redHtml(r) {
@@ -62,15 +62,29 @@ function redHtml(r) {
   return `<section class="card"><h2>红单 · ${r.errors.length} 硬错 · ${r.red.length} 偏离</h2>${chips}<ul class="red">${errs}${items}</ul></section>`;
 }
 
+/* 总表: the master table's knobs (balance.json `master`), everything else derived from them by --apply, and the overrides. */
+function masterHtml(r) {
+  const m = r.master;
+  if (!m) return '';
+  const rows = [];
+  const walk = (v, path) => { if (v && typeof v === 'object' && !Array.isArray(v)) for (const [k, x] of Object.entries(v)) walk(x, path ? `${path}.${k}` : k); else rows.push({ id: path, path, value: Array.isArray(v) ? v.join(' · ') : String(v) }); };
+  walk(m.knobs, '');
+  const knobs = tableHtml([['旋钮', 'path', { left: true }], ['值', 'value', { left: true }]], rows);
+  const over = m.overrides.length ? tableHtml([['例外', 'path', { left: true }], ['值', (o) => JSON.stringify(o.value)], ['为何', 'why', { left: true }]], m.overrides.map((o) => ({ ...o, id: o.path })))
+    : '<p class="dim small">无例外</p>';
+  return section(`总表 · ${rows.length} 个旋钮 · ${m.overrides.length} 个例外`, `<p class="dim small">改旋钮后 node tools/numbers.mjs --apply (先看差) · --apply --write (写入, 再算一遍)。其余数值都由此推出。</p>${knobs}<h3>例外 (overrides)</h3>${over}`, true);
+}
+
 function hoursChart(r) {
   const L = r.layers.filter((l) => l.target_h);
   const xs = L.map((l) => l.name.replace('练气', ''));
   const body = chart({ xs, unit: 'h', series: [
+    { name: '曲线', color: 'var(--muted)', values: L.map((l) => l.curve_h ?? null), dash: true },
     { name: '目标', color: 'var(--s1)', values: L.map((l) => l.target_h), dash: true },
     { name: '每日一功课', color: 'var(--s2)', values: L.map((l) => l.chore_h) },
     { name: '无功课', color: 'var(--s3)', values: L.map((l) => l.rule_h) },
   ] });
-  return `<section class="card"><h2>每层要玩几小时</h2>${body}${legend([['目标 (balance play_pay.hours)', 'var(--s1)'], ['每日交一功课, 30 分/日', 'var(--s2)'], ['无功课 (只玩小游戏)', 'var(--s3)']])}</section>`;
+  return `<section class="card"><h2>每层要玩几小时</h2>${body}${legend([['总表曲线 (master hours)', 'var(--muted)'], ['目标 (play_pay.hours, 按每回目标带拟合)', 'var(--s1)'], ['每日交一功课, 30 分/日', 'var(--s2)'], ['无功课 (只玩小游戏)', 'var(--s3)']])}</section>`;
 }
 
 function pacesChart(r) {
@@ -80,7 +94,7 @@ function pacesChart(r) {
     { name: '中', color: 'var(--s1)', values: r.paces.map((p) => p.typical) },
     { name: '重', color: 'var(--s2)', values: r.paces.map((p) => p.heavy) },
   ] });
-  return `<section class="card"><h2>每回几天 · 模型玩家</h2>${body}${legend([['轻', 'var(--s3)'], ['中 (typical)', 'var(--s1)'], ['重', 'var(--s2)'], ['中的目标带 5–7.5', 'var(--band)', ';height:10px']])}</section>`;
+  return `<section class="card"><h2>每回几天 · 模型玩家</h2>${body}${legend([['轻', 'var(--s3)'], ['中 (typical)', 'var(--s1)'], ['重', 'var(--s2)'], [`中的目标带 ${r.paces[0]?.band?.join('–') ?? ''}`, 'var(--band)', ';height:10px']])}</section>`;
 }
 
 function wealthChart(r) {
@@ -107,7 +121,9 @@ function layersTable(r) {
   ], r.layers.map((l) => ({ ...l, id: l.key }))), true);
 }
 
+const gateCell = (x) => (x ? (x.below ? '差一层' : `${pct(x.pct)} · 约${x.wait ?? '—'}分`) : '—');
 const SOURCES = [
+  ['关口 · 阶段任务', 'gates', [['回', 'label'], ['关口', 'scene', { left: true }], ['层', 'layer'], ['中: 到时 · 要等', (g) => gateCell(g.typical)], ['一口气玩: 到时 · 要等', (g) => gateCell(g.session)], ['模型等了 (中, 分·天)', (g) => `${g.typical?.model_min ?? '—'}·${g.typical?.days ?? '—'}`], ['那里能做', (g) => g.reach.join(' · '), { left: true }]]],
   ['丹药', 'pills', [['丹', 'name', { left: true }], ['转', 'zhuan'], ['初遇', 'hui'], ['来源', (p) => p.sources.join(' · '), { left: true }], ['层', 'layer'], ['修为', 'xw'], ['占层', (p) => pct(p.pct)], ['抵小游戏分', 'play_min'], ['价', 'buy'], ['价合几分收入', 'price_min']]],
   ['小游戏', 'boards', [['游戏', 'name', { left: true }], ['类型', 'kind'], ['回', 'hui'], ['层', 'layer'], ['分钟', 'minutes'], ['修为', 'xw'], ['其中任务', 'own'], ['其中时长', 'play'], ['占层', (b) => pct(b.pct)], ['灵石', 'ls']]],
   ['差事', 'errands', [['差事', 'name', { left: true }], ['类', 'work'], ['回', 'hui'], ['层', 'layer'], ['修为', 'xw'], ['其中丹', 'pill'], ['占层', (e) => pct(e.pct)], ['灵石', 'ls']]],
@@ -151,7 +167,7 @@ async function main() {
   const res = await fetch('../worlds/jiuding/levels/numbers.json').catch(() => null);
   if (!res?.ok) { root.innerHTML = '<p>没有 numbers.json — node tools/numbers.mjs --write</p>'; return; }
   const r = await res.json();
-  root.innerHTML = headHtml(r) + redHtml(r) + `<div class="grid2">${hoursChart(r)}${pacesChart(r)}${wealthChart(r)}${fightsChart(r)}</div>`
+  root.innerHTML = headHtml(r) + redHtml(r) + masterHtml(r) + `<div class="grid2">${hoursChart(r)}${pacesChart(r)}${wealthChart(r)}${fightsChart(r)}</div>`
     + layersTable(r) + claimsHtml(r) + sourcesHtml(r);
   wire();
 }

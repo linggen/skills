@@ -150,12 +150,11 @@
       { "found": 9, "id": "moonfall", "lift": { "damage": 4 }, "name": { "zh": "月落", "en": "Moonfall" }, "does": { "zh": "入阵直击妖身 4 点", "en": "On arrival: strikes the beast itself for 4" } }
     ]
   },
-  "_seclusion": "闭关修炼 (his, 2026-09-24: one pick per seclusion; rules/seclusion.mjs). Real hours from the save's own stamp, at most `cap_hours`; under `min_hours` nothing but the clock's refill. One focus: a 功法 gains a ★ per `star_hours` (to `star_top`; the hours left over wait for the next seclusion on that card), 修为 `progress_per_hour` (the `seclusion` table caps it, scaled by roots and realm like any grant — 60 a 12-hour night at 练气, against ~170 for a day of play: playing stays better), or the 本命法宝 one 重 per `treasure_hours` (left over kept). Any focus: `rest_hours` or more fills 体力. A pill in `pills` taken going in multiplies the hours counted (not the cap on real hours).",
+  "_seclusion": "闭关修炼 (his, 2026-09-24: one pick per seclusion; rules/seclusion.mjs). Real hours from the save's own stamp, at most `cap_hours`; under `min_hours` nothing but the clock's refill. One focus: a 功法 gains a ★ per `star_hours` (to `star_top`; the hours left over wait for the next seclusion on that card), 修为 an hour's share of the layer he sits on (balance.json play_pay.seclusion: a `rest_hours` night is 10% of the layer since 2026-10-27, 数值系统 phase 2 — 闭关 is the idle fallback, play is the game), or the 本命法宝 one 重 per `treasure_hours` (left over kept). Any focus: `rest_hours` or more fills 体力. A pill in `pills` taken going in multiplies the hours counted (not the cap on real hours).",
   "seclusion": {
     "cap_hours": 12,
     "min_hours": 1,
     "rest_hours": 8,
-    "progress_per_hour": 5,
     "star_hours": 6,
     "star_top": 3,
     "treasure_hours": 8,

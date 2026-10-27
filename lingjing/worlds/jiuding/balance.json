@@ -1,234 +1,156 @@
 {
   "version": 1,
   "_about": "One model for every number (Hanli, 2026-10-15; design.md § Pacing and the economy). The rules read these through content.mjs (withBalance) — the 层 thresholds onto the ladder, the pay tables onto rewards, the cooldowns onto the rerun and the 饭桶 — and tools/balance.mjs simulates a light, a typical and a heavy player on them, day by day, printing days per 回; tests/balance.test.mjs holds the bands. Change a number here, run `node tools/balance.mjs`, and hand-play it on the live page.",
+  "_master": "数值系统 phase 2 (Hanli 2026-10-27: 「数值系统继续做吧」; design.md § 数值系统): the knobs. Everything this table derives — `layers`, `play_pay`'s hours · games · errand · chore · seclusion, `pills`, the `pill` and `seclusion` pay caps, `convert.rate`, a 修为 pill's and gear's `buy` and every `sell` — is written by `node tools/numbers.mjs --apply --write` (a dry-run diff without --write), never by hand; a number that must not follow its formula is an `overrides` row. tests/numbers.test.mjs holds the dry run empty. Every 修为 pay is a share of the layer (play_pay), so `need` is the numbers he reads, not the pace: the pace is `hours`, the shares, the model's minutes and the book's length. A line is a ladder of its own (Hanli 10-27: 古 · 今 · 未来 each their own 修为 and realms): `lines.gu` is built; 今 and 未来 get their rows, with their own pace, when their pay is.",
+  "master": {
+    "lines": {
+      "gu": {
+        "_about": "古's ladder (ladder.json tiers: 练气 九层 from 零层, three steps a realm above). `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm, so 筑基小成 is above 练气九层 and every step above the one below. `hours`: the games' rate — a layer's play hours. `chore`: 人间功课 is 古-line income (Hanli 10-27: 「算古线吧」), a day's 10% and a week's 20% of the layer (Hanli 「按照百分比奖励」). `seclusion.night`: a night's 闭关 (rest_hours) as a share of the layer (ruling a: it was 40 × layer_pay, ~23% at 四层) — the idle fallback, and the yardstick 「抵N日打坐」 is checked against. `pills`: a 修为 pill's share by 转 (一转 half a night, 三转 a night and a half, 九转 three nights: the cards' 「抵半日」 · 「抵三日」 hold at every layer); `below`: past its 阶, a quarter a realm.",
+        "tiers": ["qi", "foundation", "core", "nascent", "deity", "void", "body", "maha", "tribulation"],
+        "need": {"first": 470, "layer": 1.1, "realm": 1.3, "round": 10},
+        "hours": {
+          "qi": [0, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6],
+          "realm_first": 4,
+          "realm_step": 2,
+          "fit": {"player": "typical", "inset": 0.3, "range": [0.1, 8], "arrive": 0.88, "gates": ["wm-mijing"]}
+        },
+        "games": {"share": 0.6, "time": 0.35},
+        "errand": {"share": 0.15, "time": 0.1},
+        "chore": {"day": 0.1, "week": 0.2, "month": 0.3},
+        "seclusion": {"night": 0.1},
+        "pills": {"1": 0.05, "3": 0.15, "9": 0.3, "below": 0.25}
+      }
+    },
+    "pills_families": ["qi", "mend"],
+    "difficulty": {
+      "_about": "The fight bands the bot (tools/story-fights.mjs, lookahead) is held to: a story fight's first meeting bare, a pool's beast; `slack` the deals' noise before a fight is red. A fight may name its own band (story-fights FIGHTS `band`).",
+      "story": [0.3, 0.62],
+      "pool": [0.25, 0.68],
+      "slack": 0.08
+    },
+    "economy": {
+      "_about": "`income`: 灵石 a minute of play, the typical player's from 三层 on (tools/numbers.mjs `ls_min`, ~3.0–3.3). A 修为 pill costs `pill_minutes` of income for each 1% of a layer it gives (聚气丹, 5%: 80, its price before the table); gear `gear_minutes` of income a point (攻 · 防 · 抗) by kind; a shop buys back `sell_back` of its price (a third), where it buys back at all. `convert`: 灵石 per 修为 past the mark, read at 练气一层 (playpay.mjs convertRate) — the same 灵石 at every layer.",
+      "income": 3.2,
+      "pill_minutes": 5,
+      "gear_minutes": {"weapon": 8, "robe": 7, "pendant": 8},
+      "sell_back": 0.33334,
+      "convert": 0.333
+    }
+  },
+  "_overrides": "Numbers that do not follow their formula, each with its reason; --apply lays them on last and the 数值 page lists them.",
+  "overrides": [
+    {
+      "path": "prices.yaodan-1.sell",
+      "value": 40,
+      "why": "妖丹 are the beasts' trade goods: a shop buys them back at two thirds (the 秘境 rerun's spoils sell on them)."
+    },
+    {"path": "prices.yaodan-2.sell", "value": 100, "why": "妖丹: two thirds, as 一阶."},
+    {"path": "prices.yaodan-3.sell", "value": 240, "why": "妖丹: two thirds, as 一阶."}
+  ],
   "_layers": "The progress each step asks, by tier (ladder.json names the steps). 练气 counts from 零层 (0). Fitted by `node tools/balance.mjs --fit` to `model.target_days` for the typical player (the 层 a 回's stage quest holds him on); the 层 a rise jumps over sit between. 筑基 and above wait for 卷二.",
   "layers": {
-    "qi": [
-      0,
-      470,
-      490,
-      510,
-      530,
-      1040,
-      1060,
-      1080,
-      1100,
-      1120
-    ],
-    "foundation": [
-      400,
-      500,
-      600
-    ],
-    "core": [
-      800,
-      1000,
-      1200
-    ],
-    "nascent": [
-      1600,
-      2000,
-      2400
-    ],
-    "deity": [
-      3000,
-      3600,
-      4200
-    ],
-    "void": [
-      5000,
-      6000,
-      7000
-    ],
-    "body": [
-      8000,
-      9500,
-      11000
-    ],
-    "maha": [
-      12500,
-      14500,
-      16500
-    ],
-    "tribulation": [
-      19000,
-      22000,
-      25000
-    ]
+    "qi": [0, 470, 520, 570, 630, 690, 760, 830, 920, 1010],
+    "foundation": [1310, 1440, 1580],
+    "core": [2060, 2270, 2490],
+    "nascent": [3240, 3560, 3920],
+    "deity": [5100, 5610, 6170],
+    "void": [8020, 8820, 9700],
+    "body": [12610, 13870, 15260],
+    "maha": [19840, 21820, 24010],
+    "tribulation": [31210, 34330, 37760]
   },
   "_overflow_stretch": "Hanli, 2026-10-15 (approved): a step up — the story's rise, a throw, or grinding the 回's cap allows — carries the 修为 over the last mark in whole, and the new step asks this share of it more (state.mjs stepUp, `state.stretch`): 100 over 一层's mark enters 二层 at 100/450, not 0/400. Grinders stay only somewhat ahead; nothing is held or lost.",
   "overflow_stretch": 0.5,
-  "_layer_pay": "Hanli 2026-10-16 (option A): 修为 grows with the layer — a higher layer's beasts and practice give more. The routine tables named here (功课, a haunt's or pool's fight, 闭关) pay their 修为 times the layer's multiplier, by tier (state.mjs layerPayOf; tools/balance.mjs plays the same). The story's grants are never scaled. A smooth rise with no cliff (same day: a near-tripling between two layers reads as a glitch), front-loaded: 古六 holds him on 三层–四层 right after 古五's 二层, and a layer never costs less than the one below, so 三层–四层 must pay well above 二层 for 古六 to fit a week — the steepest step is 二→三 (×2), the rest a gentle climb to 3.6 at 九层. A geometric 1 → 3.6 left 古六 at 9.3 typical days. The price: 古五 runs a little fast (4.5 typical days, its band's low end lowered to 4.5 — `model.bands.except`), in keeping with 古一–古三 fast. 2026-10-27: 功课 and fights left the list — they pay a share of the layer now (play_pay); 闭关 stays.",
-  "layer_pay": {
-    "tables": [
-      "seclusion"
-    ],
-    "qi": [
-      1,
-      1,
-      1.2,
-      2.4,
-      3,
-      3.2,
-      3.35,
-      3.45,
-      3.55,
-      3.6
-    ]
-  },
   "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth). 2026-10-22 (人间功课 as cultivation, worlds/jiuding/gongke.json): `chore_kind` caps what a chore's meaning adds on top of its own pay, `chore_week` the 宗门月俸. 2026-10-27: `gongke` and `life` pay a share of the layer (play_pay.chore: a day's 10%, a week's 20%) — their `progress` here is no cap any more; `haunt` pays its minutes of play (play_pay.fight), the rest as authored, read against 练气一层 (play_pay.authored).",
   "pay": {
-    "play": { "progress": 100000, "wealth": 100000 },
-    "scene": {
-      "progress": 60,
-      "wealth": 20
-    },
-    "task": {
-      "progress": 40,
-      "wealth": 10
-    },
-    "puzzle": {
-      "progress": 20,
-      "wealth": 0
-    },
-    "branch": {
-      "progress": 20,
-      "wealth": 5
-    },
-    "tale": {
-      "progress": 15,
-      "wealth": 3
-    },
-    "once": {
-      "progress": 0,
-      "wealth": 20
-    },
-    "chore_kind": {
-      "progress": 6,
-      "wealth": 10
-    },
-    "chore_week": {
-      "progress": 0,
-      "wealth": 30
-    },
-    "tale_end": {
-      "progress": 30,
-      "wealth": 10
-    },
-    "haunt": {
-      "progress": 30,
-      "wealth": 16
-    },
-    "game": {
-      "progress": 6,
-      "wealth": 10
-    },
-    "quest": {
-      "progress": 60,
-      "wealth": 20
-    },
-    "meet": {
-      "progress": 20,
-      "wealth": 10
-    },
-    "trial": {
-      "progress": 30,
-      "wealth": 20
-    },
-    "chance": {
-      "progress": 20,
-      "wealth": 20
-    },
-    "seclusion": {
-      "progress": 90,
-      "wealth": 0
-    },
-    "labor": {
-      "progress": 0,
-      "wealth": 20
-    },
-    "gongke": {
-      "progress": 100000,
-      "wealth": 0
-    },
-    "gongke_zero": {
-      "progress": 0,
-      "wealth": 5
-    },
-    "life": {
-      "progress": 100000,
-      "wealth": 10
-    },
-    "stage": {
-      "progress": 0,
-      "wealth": 60
-    }
+    "play": {"progress": 100000, "wealth": 100000},
+    "scene": {"progress": 60, "wealth": 20},
+    "task": {"progress": 40, "wealth": 10},
+    "puzzle": {"progress": 20, "wealth": 0},
+    "branch": {"progress": 20, "wealth": 5},
+    "tale": {"progress": 15, "wealth": 3},
+    "once": {"progress": 0, "wealth": 20},
+    "chore_kind": {"progress": 6, "wealth": 10},
+    "chore_week": {"progress": 0, "wealth": 30},
+    "tale_end": {"progress": 30, "wealth": 10},
+    "haunt": {"progress": 30, "wealth": 16},
+    "game": {"progress": 6, "wealth": 10},
+    "quest": {"progress": 60, "wealth": 20},
+    "meet": {"progress": 20, "wealth": 10},
+    "trial": {"progress": 30, "wealth": 20},
+    "chance": {"progress": 20, "wealth": 20},
+    "seclusion": {"progress": 100000, "wealth": 0},
+    "labor": {"progress": 0, "wealth": 20},
+    "gongke": {"progress": 100000, "wealth": 0},
+    "gongke_zero": {"progress": 0, "wealth": 5},
+    "life": {"progress": 100000, "wealth": 10},
+    "stage": {"progress": 0, "wealth": 60},
+    "pill": {"progress": 100000, "wealth": 0}
   },
   "_pay_stage": "`stage` pays a 阶段任务 handed in (rules/gates.mjs stageTurn, Hanli 2026-10-16: 「七层圆满的任务大成了应该可以交任务拿奖励」). At 圆满 the 修为 cannot rise, so it pays 灵石: 60, three scenes' pay (`scene` 20) — about three days of the 回's 杂役 and 开府 — once per gate, never again; a gate crossed before stage quests paid is settled once on the next load (settleStages).",
   "_convert": "圆满之后走剧情到下一个阶段; 刷副本或者打怪奖励的修为改为灵石 (Hanli, 2026-10-15). A grant on one of `tables` (a pool's or a haunt's fight, a 秘境 rerun's beast — never a scene, a board, the 功课, a rumor or a road-meet) pays 修为 only up to the full mark of the layer he may not step past (the 回's cap, or a realm's peak waiting on its cauldron); the rest is paid as 灵石 at `rate` per 修为 (rules/core.mjs pay), and never carries into the next layer. Default 1/3: a converted fight (30 修为 → 10, with its own 10 灵石) pays about one 杂役 errand (labor 20). The economy (tools/balance.mjs) owns the number.",
-  "convert": {
-    "rate": 0.333,
-    "tables": [
-      "haunt",
-      "play"
-    ]
-  },
+  "convert": {"rate": 0.333, "tables": ["haunt", "play"]},
   "_kailu": "开炉's worth (rules/fantong-roll.mjs; Hanli 2026-10-27: 扔草药出丹, 扔物品出装备, 其他出符): what a thing is worth to the 饭桶 — its shop `sell` (prices below), else its 品阶's `tier` (fantong.json `tiers`); a 灵石 fed is worth `lingshi`. The grade rolled asks for an output worth the pot's worth × `x`, at least `floor` — 凡 a little under what went in, 有用 about it, 珍品 and 逆天 well over — so a pot of junk always gives something, a pot of good things gives about their worth back and the bucket is no farm. A row's chance falls off with how far its worth stands from that (log scale, `spread`), and nothing past `reach` times either way is drawn. `band`: what tools/numbers.mjs holds a pot's average return to (what comes out ÷ what went in) for the families' sample pots.",
   "kailu": {
     "lingshi": 1,
-    "tier": { "0": 0, "1": 8, "2": 25, "3": 70, "4": 200 },
-    "grades": { "junk": { "x": 0.8, "floor": 0 }, "useful": { "x": 1.1, "floor": 3 }, "rare": { "x": 1.6, "floor": 12 }, "best": { "x": 2.5, "floor": 40 } },
+    "tier": {"0": 0, "1": 8, "2": 25, "3": 70, "4": 200},
+    "grades": {
+      "junk": {"x": 0.8, "floor": 0},
+      "useful": {"x": 1.1, "floor": 3},
+      "rare": {"x": 1.6, "floor": 12},
+      "best": {"x": 2.5, "floor": 40}
+    },
     "spread": 0.4,
     "reach": 3,
     "band": [0.85, 1.6]
   },
   "_prices": "Every shop price, one source (2026-10-16, Hanli: 灵石 buys pills): `buy` what a shop asks, `sell` what it gives back — folded onto items.json by content.mjs withBalance, so no item carries its own. 回春丹 15 and 回气丹 10: a typical day's 灵石 (tools/balance.mjs `--wealth`) buys two or three, and a pill eaten in a fight is gone.",
   "prices": {
-    "mend-pill": {"buy": 15, "sell": 4},
+    "mend-pill": {"buy": 15, "sell": 5},
     "huiqi-pill": {"buy": 10, "sell": 3},
     "lingzhi": {"buy": 30, "sell": 10},
-    "qi-pill": {"buy": 80, "sell": 20},
+    "qi-pill": {"buy": 80, "sell": 26},
     "ginseng": {"buy": 24, "sell": 8},
-    "bamboo-sword": {"buy": 60, "sell": 15},
-    "straw-cloak": {"buy": 20, "sell": 5},
-    "grey-robe": {"buy": 30, "sell": 8},
+    "bamboo-sword": {"buy": 51, "sell": 17},
+    "straw-cloak": {"buy": 22, "sell": 7},
+    "grey-robe": {"buy": 22, "sell": 7},
     "ganliang": {"buy": 6, "sell": 2},
     "jade-fish": {"buy": 150, "sell": 50},
     "ferry-token": {"buy": 10, "sell": 3},
-    "moon-bell": {"buy": 200, "sell": 60},
-    "iron-sword": {"buy": 120, "sell": 40},
+    "moon-bell": {"buy": 200, "sell": 66},
+    "iron-sword": {"buy": 77, "sell": 25},
     "foundation-pill": {"buy": 0, "sell": 0},
     "foundation-pill-9": {"buy": 0, "sell": 0},
-    "firm-pill": {"buy": 260, "sell": 65},
-    "pojing-pill": {"buy": 400, "sell": 100},
+    "firm-pill": {"buy": 260, "sell": 86},
+    "pojing-pill": {"buy": 400, "sell": 133},
     "mend-pill-9": {"buy": 0, "sell": 0},
     "qi-pill-9": {"buy": 0, "sell": 0},
-    "wangqi-1": {"buy": 120, "sell": 30},
-    "wangqi-2": {"buy": 300, "sell": 75},
-    "sang-paper": {"buy": 30, "sell": 8},
+    "wangqi-1": {"buy": 120, "sell": 40},
+    "wangqi-2": {"buy": 300, "sell": 100},
+    "sang-paper": {"buy": 30, "sell": 10},
     "qi-salt": {"buy": 20, "sell": 6},
-    "qi-silk": {"buy": 240, "sell": 70},
+    "qi-silk": {"buy": 240, "sell": 80},
     "talisman": {"buy": 20},
     "penti-fu": {"buy": 0, "sell": 0},
     "yangyang-zhen": {"buy": 0, "sell": 0},
     "zipai-jing": {"buy": 0, "sell": 0},
     "niuzhi-ganlu": {"buy": 0, "sell": 0},
-    "jingjin": {"buy": 320, "sell": 90},
-    "leijimu": {"buy": 300, "sell": 85},
-    "hanyu": {"buy": 340, "sell": 95},
-    "huojing": {"buy": 320, "sell": 90},
-    "xirang": {"buy": 380, "sell": 110},
+    "jingjin": {"buy": 320, "sell": 106},
+    "leijimu": {"buy": 300, "sell": 100},
+    "hanyu": {"buy": 340, "sell": 113},
+    "huojing": {"buy": 320, "sell": 106},
+    "xirang": {"buy": 380, "sell": 126},
     "yaodan-1": {"buy": 60, "sell": 40},
     "yaodan-2": {"buy": 150, "sell": 100},
     "yaodan-3": {"buy": 360, "sell": 240},
-    "jade-ring": {"buy": 180, "sell": 55},
-    "juyou": {"buy": 24, "sell": 7},
-    "dansha": {"buy": 36, "sell": 10},
-    "shujin": {"buy": 90, "sell": 25},
-    "langgan": {"buy": 120, "sell": 35},
-    "pouch-mid": {"buy": 280, "sell": 70},
-    "pouch-high": {"buy": 800, "sell": 200},
-    "pouch-low": {"buy": 80, "sell": 20},
+    "jade-ring": {"buy": 51, "sell": 17},
+    "juyou": {"buy": 24, "sell": 8},
+    "dansha": {"buy": 36, "sell": 12},
+    "shujin": {"buy": 90, "sell": 30},
+    "langgan": {"buy": 120, "sell": 40},
+    "pouch-mid": {"buy": 280, "sell": 93},
+    "pouch-high": {"buy": 800, "sell": 266},
+    "pouch-low": {"buy": 80, "sell": 26},
     "chitong-hulu": {"buy": 0, "sell": 0},
     "huochai-jian": {"buy": 0, "sell": 0},
     "shunfeng-liu": {"buy": 0, "sell": 0},
@@ -237,9 +159,9 @@
     "zou-purse": {"buy": 0, "sell": 0},
     "neimen-map": {"buy": 0, "sell": 0},
     "fox-token": {"buy": 0, "sell": 0},
-    "deer-hide": {"buy": 40, "sell": 20},
-    "old-bow": {"buy": 50, "sell": 10},
-    "duan-dao": {"buy": 8, "sell": 5},
+    "deer-hide": {"buy": 40, "sell": 13},
+    "old-bow": {"buy": 51, "sell": 17},
+    "duan-dao": {"buy": 26, "sell": 8},
     "dingtai": {"buy": 0, "sell": 0},
     "longxu-cao": {"buy": 0, "sell": 0},
     "xizhu": {"buy": 0, "sell": 0},
@@ -270,19 +192,19 @@
     "fangzi-canye": {"buy": 0, "sell": 0},
     "baoge-ling": {"buy": 0, "sell": 0},
     "yinyue-lingdang": {"buy": 0, "sell": 0},
-    "qiuyu-ci": {"buy": 12, "sell": 4},
-    "heyu-dao": {"buy": 36, "sell": 12},
-    "qingtong-jian": {"buy": 100, "sell": 35},
-    "pi-kanjian": {"buy": 12, "sell": 4},
-    "heyu-ao": {"buy": 36, "sell": 12},
-    "shi-zhui": {"buy": 12, "sell": 4},
-    "shisui-zhui": {"buy": 36, "sell": 12},
-    "anhe-yu": {"buy": 100, "sell": 35},
+    "qiuyu-ci": {"buy": 26, "sell": 8},
+    "heyu-dao": {"buy": 51, "sell": 17},
+    "qingtong-jian": {"buy": 77, "sell": 25},
+    "pi-kanjian": {"buy": 22, "sell": 7},
+    "heyu-ao": {"buy": 45, "sell": 15},
+    "shi-zhui": {"buy": 26, "sell": 8},
+    "shisui-zhui": {"buy": 51, "sell": 17},
+    "anhe-yu": {"buy": 102, "sell": 34},
     "hu-pi": {"buy": 36, "sell": 12},
     "li-pi": {"buy": 30, "sell": 10},
     "houer-jiu": {"buy": 24, "sell": 8},
     "she-tui": {"buy": 18, "sell": 6},
-    "she-dan": {"buy": 40, "sell": 14},
+    "she-dan": {"buy": 40, "sell": 13},
     "ying-yu": {"buy": 24, "sell": 8},
     "chai-ya": {"buy": 27, "sell": 9},
     "zhu-ya": {"buy": 27, "sell": 9},
@@ -313,10 +235,13 @@
     "cishi": {"buy": 30, "sell": 10},
     "xionghuang": {"buy": 27, "sell": 9},
     "chishizhi": {"buy": 21, "sell": 7},
-    "lipi-kanjian": {"buy": 36, "sell": 12},
-    "chaiya-zhui": {"buy": 90, "sell": 30},
+    "lipi-kanjian": {"buy": 22, "sell": 7},
+    "chaiya-zhui": {"buy": 26, "sell": 8},
     "wulei-fu": {"buy": 60},
-    "feijian-duan": {"buy": 60, "sell": 0}, "tieji-bao": {"buy": 40, "sell": 0}, "sanhuo-jian": {"buy": 50, "sell": 0}, "caoren-zha": {"buy": 60, "sell": 0},
+    "feijian-duan": {"buy": 60, "sell": 0},
+    "tieji-bao": {"buy": 40, "sell": 0},
+    "sanhuo-jian": {"buy": 50, "sell": 0},
+    "caoren-zha": {"buy": 60, "sell": 0},
     "canwu-jian": {"buy": 80, "sell": 0},
     "chenlian-fu": {"buy": 0, "sell": 0},
     "anshen-xiang": {"buy": 0, "sell": 0},
@@ -324,73 +249,24 @@
     "hushan-qi": {"buy": 0, "sell": 0}
   },
   "_boards": "Hanli 2026-10-16: a small game after 入门 pays 灵石 on its first clear only — plain 5, good 10, best (or all three 灵光) 15; a replay pays nothing. Before 入门 nothing is paid (state.mjs lockedOf shuts wealth). The rank: a task's `ranks` names it outright; else three stars is best, and of the listed marks the first (the clean clear) is best, the last plain, one between good; a board with no marks (洛书门, 小周天, the 今 boards) pays plain — a reading, not Hanli's word, to change here. On top of the task's own grant (rules/tasks.mjs boardPay).",
-  "boards": {
-    "plain": 5,
-    "good": 10,
-    "best": 15
-  },
+  "boards": {"plain": 5, "good": 10, "best": 15},
   "_cooldowns": "`pool_rest_min`: a pool rests that long before the next beast stands — only after `pool_rest_after` wins in a row (Hanli 2026-10-27: 「后山的怪可以加多谢么? 或者做成打不完的」: never after every fight; a pool may say its own `rest` and `rest_after`; world.mjs poolResting). A beast beaten again the same day pays play_pay.replay's falling share. `rerun_h`: a 秘境's outer rooms open again that many hours after the last run ended (rules/rerun.mjs). `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs). `shouchao_h`: 兽潮 comes again that many hours after the last night counted, at any hour (rules/shouchao.mjs; 2026-10-26, replacing the 酉时 window: about once a day, a little slack so the same time tomorrow is open).",
-  "cooldowns": {
-    "pool_rest_min": 10,
-    "pool_rest_after": 5,
-    "rerun_h": 3,
-    "fantong_min": 60,
-    "shouchao_h": 20
-  },
+  "cooldowns": {"pool_rest_min": 10, "pool_rest_after": 5, "rerun_h": 3, "fantong_min": 60, "shouchao_h": 20},
   "_pills": "丹药 in the game (design.md § 丹药; story DESIGN § 六·五): every pill is `tier` (its 阶 — the realm it is for, a ladder tier id) and `zhuan` (一至九转) on items.json; a pill that pays 修为 names its `of` (the family, its 一转 一阶 pay in `base`), and content.mjs withBalance folds `effect.progress` = base × by_zhuan[转] × by_tier[阶], so no pill carries its own number. Tamed (Hanli: the story's ×9 a 转 and ×10 a 阶 are never the game's): 一转 ×1 · 三转 ×1.5 · 九转 ×3, a quarter more each 转 — the numbers the game already had (聚气丹 20, the 饭桶's 三转 30, the furnace's 九转 60) — and one 阶 adds one 一阶's worth. A pill eaten pays at most its table's cap (rewards tables), so the 九转 at 60 stands on the scene table's 60. Breakthrough pills (ladder.json breakthrough.pill.items) declare no `of`: the throw reads them by 转 (by_zhuan there); fight pills keep `effect.fight` (the 丹囊 bands).",
   "pills": {
-    "base": {
-      "qi": 20,
-      "mend": 20
-    },
-    "by_zhuan": [
-      1,
-      1.25,
-      1.5,
-      1.75,
-      2,
-      2.25,
-      2.5,
-      2.75,
-      3
-    ],
-    "by_tier": {
-      "qi": 1,
-      "foundation": 2,
-      "core": 3,
-      "nascent": 4,
-      "deity": 5,
-      "void": 6,
-      "body": 7,
-      "maha": 8,
-      "tribulation": 9
-    }
+    "families": ["qi", "mend"],
+    "table": "pill",
+    "share": [0.05, 0.1, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3],
+    "below": 0.25
   },
   "_dandu": "丹毒 and 补转 (story DESIGN § 六·五: 下品吃多了积毒，体力上限一时降低，闭关可排；上品无毒；九转反能化毒). A 修为 pill eaten (服用 from the pouch, the 闭关 pill, a breakthrough's pill) leaves the turns its furnace left out owing: `owed` by 转 (一转 8 — the nine a 九转 has, less the one it got; 中品 四至六转 看体质, none in 卷一; 上品 none). Each turn owed takes `per_turn` off the 体力 pool's top, `cap` at most (state.mjs staminaMax). 闭关 is 补转 — the body makes up `cure_per_hour` turns an hour of any focus (rules/seclusion.mjs). A pill of `clears` 转 or more clears every turn owed. Fight pills (the 丹囊's 回春丹 · 回气丹) owe nothing for now (Hanli's call: 灵石 buys them, and 丹毒 there would tax the 灵石 once 体力 is on). With these numbers a 聚气丹 a day is made up by one hour's sitting; four at once stand at the cap until a night's 闭关.",
-  "dandu": {
-    "owed": {
-      "1": 8,
-      "2": 7,
-      "3": 6
-    },
-    "clears": 9,
-    "per_turn": 1,
-    "cap": 30,
-    "cure_per_hour": 4
-  },
+  "dandu": {"owed": {"1": 8, "2": 7, "3": 6}, "clears": 9, "per_turn": 1, "cap": 30, "cure_per_hour": 4},
   "_model": "The players tools/balance.mjs plays, day by day (design.md § Pacing: ~30 minutes a day, one 回 a week; 古一–古三 fast). `minutes`: what each thing takes (a scene's passages read at `chars_per_min`). `players`: minutes a day (the first day longer), sittings, and what each does daily — `gongke` the share of days the 功课 is handed in, `reruns` 秘境 runs, `fights` pool fights, `fantong` feeds, `tale` 今日传闻s, `gate_fights` more pool fights while a stage quest waits, `seclude` hours of 闭关 a night (focus 修为: rewards.json seclusion's rate, the seclusion table's cap). `fight_win_rate`: a fight won (the 斗法 band, played again when lost). `fantong_progress`: a feed's 修为 on average (a pill now and then). `errands_at`: the 回 each errand that pays 修为 or a pill is done in (null: on no 卷一 map; tests/balance.test.mjs makes a new one name its 回). `fit`: the player and the days --fit aims the stage quests at (the heavy player: the one they hold back); `bands`: what the test holds, for the 回s from `later` on. Guesses to be hand-played on the live page (Hanli). `waking_h`: the waking day the sittings spread over, for 体力 — the model plays it ON (rewards.json stamina), as players will have it; while we test it is off (rules.mjs), and with these players it never binds.",
   "model": {
     "_practice": "2026-10-27 (pay as a share of the layer): while a stage quest holds the way, the minutes left after the pool's fights go to practice boards — `minutes` a board, `factor` for its ★ (≈0.8) and the replay's falling share over a sitting (≈0.75).",
-    "practice": { "minutes": 3, "factor": 0.6 },
+    "practice": {"minutes": 3, "factor": 0.6},
     "chars_per_min": 450,
-    "minutes": {
-      "scene": 1,
-      "board": 2,
-      "fight": 4,
-      "rerun": 12,
-      "fantong": 1,
-      "tale": 15
-    },
+    "minutes": {"scene": 1, "board": 2, "fight": 4, "rerun": 12, "fantong": 1, "tale": 15},
     "fight_win_rate": 0.8,
     "fantong_progress": 3,
     "fantong_from": "wm-danlu",
@@ -443,95 +319,136 @@
         "pills": 1.1
       }
     },
+    "_session": "2026-10-27 (Hanli at 古五's 渡口, 129/498: 「渡口前应该让玩家接近2层圆满」): the playtest player — the book straight through in long sittings, no nights between, no 功课, no 闭关. The gate rule (master hours.fit `arrive`) holds the 修为 a one-layer gate asks to be about earned by the time he reaches it; never in the bands.",
+    "session": {
+      "minutes": 600,
+      "first_minutes": 600,
+      "sittings": 1,
+      "gongke": 0,
+      "reruns": 1,
+      "fights": 0,
+      "fantong": 1,
+      "tale": 0,
+      "gate_fights": 3,
+      "seclude": 0,
+      "pills": 0.75
+    },
+    "_story_stars": "The story's own boards, played on the way: each pays its play pay (its minutes at the layer, rules/playpay.mjs) at this ★ (2 = 0.8), on top of its task's grant (数值系统 phase 2: they had been counted for their grant alone).",
+    "story_stars": 2,
     "step_min": 20,
     "max_days": 400,
     "later": "h07",
     "bands": {
-      "typical": [
-        5,
-        7.5
-      ],
-      "heavy": [
-        1.5,
-        6
-      ],
-      "light": [
-        8,
-        21
-      ],
-      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days. 2026-10-26: with the book's full text, 古四 (h05) reads 7.7 typical days and 古六 (h08) 10.1 — allowed to 8 and 10.5 until the new small games land and the 层 are re-fit (fit._hold). 2026-10-26 (全文后的小游戏 第二批): 古六's nine new boards add their minutes to the light player (19 → 22 days); its light band allowed to 24, its typical to 11, its heavy to 6.5 while fit._hold keeps 古四–古六 at 470…530. 第八回 (h09)'s three boards (考书 · 用哪颗丹 · 恬惔虚无) lift its typical 7.1 → 7.8, and 今四's six (it rides with 古八) to 8.1: allowed to 8.5, the same hold. 2026-10-27 (pay as a share of the layer, play_pay): a fight won pays its minutes of play (练气四层 ≈ 12, was 30 × layer_pay 3 = 90), so this model — which plays fights, 闭关, the 功课 and, held at a stage quest, practice boards (`practice`) — runs 古六–古八 long (typical 13 · 10.1 · 12.6 days); the bands are widened to what it prints until the 层 are re-fit or the practice share is played in full (doc/games.md § Pay as a share of the layer).",
-      "except": {
-        "h05": { "typical": [5, 8] },
-        "h07": { "typical": [4, 7.5] },
-        "h08": { "typical": [5, 14], "light": [8, 32], "heavy": [1.5, 8.5] },
-        "h11": { "typical": [5, 11], "light": [8, 24], "heavy": [1.5, 7.5] },
-        "h09": { "typical": [5, 13.5], "light": [8, 33], "heavy": [1.5, 10] }
-      }
+      "typical": [5, 7.5],
+      "heavy": [1.5, 6],
+      "light": [8, 21],
+      "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days. 2026-10-26: with the book's full text, 古四 (h05) reads 7.7 typical days and 古六 (h08) 10.1 — allowed to 8 and 10.5 until the new small games land and the 层 are re-fit (fit._hold). 2026-10-26 (全文后的小游戏 第二批): 古六's nine new boards add their minutes to the light player (19 → 22 days); its light band allowed to 24, its typical to 11, its heavy to 6.5 while fit._hold keeps 古四–古六 at 470…530. 第八回 (h09)'s three boards (考书 · 用哪颗丹 · 恬惔虚无) lift its typical 7.1 → 7.8, and 今四's six (it rides with 古八) to 8.1: allowed to 8.5, the same hold. 2026-10-27 (pay as a share of the layer, play_pay): a fight won pays its minutes of play (练气四层 ≈ 12, was 30 × layer_pay 3 = 90), so this model — which plays fights, 闭关, the 功课 and, held at a stage quest, practice boards (`practice`) — runs 古六–古八 long (typical 13 · 10.1 · 12.6 days); the bands are widened to what it prints until the 层 are re-fit or the practice share is played in full (doc/games.md § Pay as a share of the layer). 2026-10-27 (数值系统 phase 2): the hours are fitted to the bands (master.lines.gu.hours.fit), so 古六–古八 (h08 · h11 · h09) are back in the one band and their widenings are gone; 古五's light player reads 7.9 days with the rerun run only while it raises him — its light band from 7.5. 古七 (h11) reads 4.5 typical days on the curve's 五–六层 (4 · 4.5 h): dearer layers would stretch it into 5–7.5 only by keeping him at 09-futian's gate (Hanli 10-27: no gate may keep him where there is little to do) — allowed from 4 until its book is longer.",
+      "except": {"h05": {"typical": [5, 8]}, "h07": {"typical": [4, 7.5], "light": [7.5, 21]}, "h11": {"typical": [4, 7.5]}}
     },
     "fit": {
       "player": "heavy",
-      "hold": {
-        "h05": 470,
-        "h07": 490,
-        "h08": 510,
-        "h11": 1040
-      },
+      "hold": {"h05": 470, "h07": 490, "h08": 510, "h11": 1040},
       "_hold": "2026-10-20 (Hanli 「可以, 按你说的做」): 古七 (h11) holds 练气五–九层 at 1040…1120. After the 10-19 weak-board sweep the heavy player's 古七 is flat at 3.2 days from 960 to 1310, so its 3.7 target lands on the next step, 1390 — which puts the typical 古八 (h09) at 7.7 days, outside its 5–7.5 band. 1040 keeps every band and the old pace. 2026-10-26 (the book's full text played, Hanli 「你的建议我同意」): 古四–古六 (h05 · h07 · h08) hold 练气一–四层 at 470…530, the numbers before the change. Played whole, the book reads about twice as long; --fit would drop 一层 to 290 and still leave 古六 at 9.4 typical days. The re-fit waits for the new small games (doc/games.md § 全文后的小游戏) — Hanli's call.",
-      "days": {
-        "default": 4.5,
-        "h05": 3.4,
-        "h07": 3.8,
-        "h08": 3,
-        "h11": 3.7,
-        "h09": 3.7
-      }
+      "days": {"default": 4.5, "h05": 3.4, "h07": 3.8, "h08": 3, "h11": 3.7, "h09": 3.7}
     },
     "waking_h": 16,
     "_pills": "灵石 out (2026-10-16): the pills a player carries into a fight and eats — `pills` per fight a player, bought at the mean shelf price of `pills_bought`, only with what he has (tools/balance.mjs --wealth prints the flow).",
-    "pills_bought": [
-      "mend-pill",
-      "huiqi-pill"
-    ],
+    "pills_bought": ["mend-pill", "huiqi-pill"],
     "_fit_days": "2026-10-16 (no story rise): 古四 (h05) 2 heavy days, 古五 (h07) 3, 古六 3, the rest 4.5 — 古四/古五 a little longer than before so the typical player is not through them in three days.",
     "_rerun": "2026-10-21 (design.md § Reruns): a 秘境 rerun's spoils in the model — its beasts' drops (rewards.json drop_tables, an elite's own odds), the 拾遗 find, the cache under it (chapter.json sealed.rerun), read by rules/rerun.mjs runsPay at a shop's `sell`. `found`: the share of runs whose 拾遗 (the short 守炉) is won; `three_stars`: of those, the share with the fire kept whole (the cache's grade); `sold`: the share of the spoils' worth turned into 灵石 — the rest worn, or fed to the 饭桶 (three things a feed). 鼎苔 sells for nothing: counted apart. 修为 is the beasts' alone, as before — the spoils never move a 回's days. Guesses, to be hand-played.",
     "rerun": {
       "found": 0.9,
       "three_stars": 0.4,
       "sold": 0.5,
-      "_share": "What tests/balance-rerun.test.mjs holds, for every player over the days a rerun stands open (`node tools/balance.mjs --wealth`). `xw`: the rerun's share of the day's 修为 — at most about half, so 功课, 闭关 and the story stay the clock (the story is the reward; Hanli 10-15, 30 min a day, one 回 a week), at least a quarter, so the 3 h slot is worth its 12 minutes (2026-10-21: light 48%, typical 37%, heavy 48%). `ls`: its share of the day's 灵石 — the typical player's one fight slot, and fights are where the model's 灵石 come from (杂役 and 开府 are not played), so most of it, never all (2026-10-21: 65%, 81%, 70%). `spoils`: a run's spoils at sell over its fights' own 灵石 — the drops and finds about as much as the fights, never far past (0.94). 2026-10-27 (pay as a share of the layer): a rerun's beast pays its minutes of play like any fight (play_pay.fight, 四层 ≈ 12, was 90 with layer_pay), so its 修为 share fell to 9–15% (its time's share of a day's games): `xw` from 0.08.",
-      "share": {
-        "xw": [
-          0.08,
-          0.55
-        ],
-        "ls": [
-          0.5,
-          0.9
-        ]
-      },
-      "spoils": [
-        0.5,
-        1.25
-      ]
+      "_at_full": "2026-10-27 (数值系统 phase 2): at 圆满 a rerun pays no 修为 — its beasts' is all 灵石 (convert) — so a player reading on spends those 12 minutes on the book. false: the model runs a rerun only while its 修为 lands. With a rerun every day the typical 古六 read 10 days on the book alone; this is the model, not the pay.",
+      "at_full": false,
+      "_share": "What tests/balance-rerun.test.mjs holds, for every player over the days a rerun stands open (`node tools/balance.mjs --wealth`). `xw`: the rerun's share of the day's 修为 — at most about half, so 功课, 闭关 and the story stay the clock (the story is the reward; Hanli 10-15, 30 min a day, one 回 a week), at least a quarter, so the 3 h slot is worth its 12 minutes (2026-10-21: light 48%, typical 37%, heavy 48%). `ls`: its share of the day's 灵石 — the typical player's one fight slot, and fights are where the model's 灵石 come from (杂役 and 开府 are not played), so most of it, never all (2026-10-21: 65%, 81%, 70%). `spoils`: a run's spoils at sell over its fights' own 灵石 — the drops and finds about as much as the fights, never far past (0.94). 2026-10-27 (pay as a share of the layer): a rerun's beast pays its minutes of play like any fight (play_pay.fight, 四层 ≈ 12, was 90 with layer_pay), so its 修为 share fell to 9–15% (its time's share of a day's games): `xw` from 0.08. 2026-10-27 (数值系统 phase 2): the model runs a rerun only while its 修为 lands (`at_full`), so on the days a layer stands full the 灵石 come from the pool and the story: the light and heavy players' rerun 灵石 share is ~33% — `ls` from 0.3.",
+      "share": {"xw": [0.08, 0.55], "ls": [0.3, 0.9]},
+      "spoils": [0.5, 1.25]
     }
   },
   "_play_pay": "Every 修为 pay is a share of the layer he stands on (Hanli 2026-10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」, then 「一层才要470修为, 我们可否按照百分比奖励, 这样等级高了后, 奖励也合理」; doc/games.md § Pay as a share of the layer; rules/playpay.mjs). A layer is a play-time budget (`hours`: 练气一层 2 h, +1 h a layer; 筑基 6 h a step, 金丹 8, 元婴 10). The small games and fights carry `games.share` (60%) of its 修为 over `games.time` (35%) of its minutes: a board of m minutes pays m ÷ (0.35 × the layer's minutes) × 60% of the layer's need — 练气一层 a 1-minute board 1.4% (7), a 6-minute 棋牌 8.6% (40); a fight won (`haunt`) its `fight.minutes`. ★ 0.6 · 0.8 · 1.0; the same board again the same day 100 · 50 · 10%. Errands: 15% of the layer over 10% of its time, by `errand.minutes` (练气一层 6.3%, 29). 人间功课 (`chore`): a day's 10%, a week's 20%, a month's 30% of the layer (练气一层 47 · 94 · 141; Hanli 2026-10-27: 「cfo倒入账单应该是每月任务」 — rarer, so more), no ★, no replay. What the book authors — a scene's way on, a pill, a rumor, a 机缘, the tables in `authored.tables` — is read as a share of the 练气一层 it was written against (`authored.base` 470: a scene's 60 is 12.8%). 灵石 stays by the kind and the tables. No daily cap; 修为 stops at the gate and turns to 灵石 (`convert` lists `play` and `haunt`). Supersedes the per-layer `rate` tables and `layer_pay` for fights (2026-10-27).",
   "play_pay": {
-    "hours": { "qi": [0, 2, 3, 4, 5, 6, 7, 8, 9, 10], "foundation": 6, "core": 8, "nascent": 10, "default": 12 },
-    "games": { "share": 0.6, "time": 0.35 },
-    "minutes": { "打地鼠": 1, "调息": 1, "几何冲刺": 1, "开炉": 1, "割绳子": 2, "投掷": 2, "节奏": 2, "结印": 2, "格斗": 3, "对话": 3, "配对": 3, "塔防": 4, "斗法": 4, "解谜": 4, "你画我猜": 5, "棋牌": 6, "探索": 12, "default": 3 },
-    "wealth": { "打地鼠": 5, "调息": 0, "几何冲刺": 0, "开炉": 0, "割绳子": 5, "投掷": 5, "节奏": 5, "结印": 5, "格斗": 5, "塔防": 5, "斗法": 5, "对话": 10, "配对": 10, "解谜": 10, "你画我猜": 10, "棋牌": 10, "探索": 10, "default": 5 },
-    "stars": { "1": 0.6, "2": 0.8, "3": 1 },
+    "hours": {
+      "qi": [0, 2, 0.772, 1.032, 1.204, 4, 4.5, 1.373, 1.511, 1.648],
+      "foundation": 4,
+      "core": 6,
+      "nascent": 8,
+      "deity": 10,
+      "void": 12,
+      "body": 14,
+      "maha": 16,
+      "tribulation": 18,
+      "default": 20
+    },
+    "games": {"share": 0.6, "time": 0.35},
+    "minutes": {
+      "打地鼠": 1,
+      "调息": 1,
+      "几何冲刺": 1,
+      "开炉": 1,
+      "割绳子": 2,
+      "投掷": 2,
+      "节奏": 2,
+      "结印": 2,
+      "格斗": 3,
+      "对话": 3,
+      "配对": 3,
+      "塔防": 4,
+      "斗法": 4,
+      "解谜": 4,
+      "你画我猜": 5,
+      "棋牌": 6,
+      "探索": 12,
+      "default": 3
+    },
+    "wealth": {
+      "打地鼠": 5,
+      "调息": 0,
+      "几何冲刺": 0,
+      "开炉": 0,
+      "割绳子": 5,
+      "投掷": 5,
+      "节奏": 5,
+      "结印": 5,
+      "格斗": 5,
+      "塔防": 5,
+      "斗法": 5,
+      "对话": 10,
+      "配对": 10,
+      "解谜": 10,
+      "你画我猜": 10,
+      "棋牌": 10,
+      "探索": 10,
+      "default": 5
+    },
+    "stars": {"1": 0.6, "2": 0.8, "3": 1},
     "replay": [1, 0.5, 0.1],
-    "fight": { "minutes": 4 },
-    "errand": { "share": 0.15, "time": 0.1, "minutes": 5, "wealth": 15 },
-    "chore": { "day": 0.1, "week": 0.2, "month": 0.3 },
+    "fight": {"minutes": 4},
+    "errand": {"share": 0.15, "time": 0.1, "minutes": 5, "wealth": 15},
+    "chore": {"day": 0.1, "week": 0.2, "month": 0.3},
     "_skip": "跳过 · 酬减半 (Hanli 2026-10-27, 晒经's 华容道: 「让用户能跳过去, 就好了」): a board an errand needs, left once stuck, counts for the errand — met and paid in full — and pays this share of the board's own play pay at full ★ (rules/tasks.mjs errandSkip). The page's button says the cut from this number.",
     "skip": 0.5,
-    "authored": { "base": 470, "tables": ["scene", "task", "puzzle", "branch", "tale", "tale_end", "chore_kind", "game", "quest", "meet", "trial", "chance"] }
+    "authored": {
+      "base": 470,
+      "tables": [
+        "scene",
+        "task",
+        "puzzle",
+        "branch",
+        "tale",
+        "tale_end",
+        "chore_kind",
+        "game",
+        "quest",
+        "meet",
+        "trial",
+        "chance",
+        "pill"
+      ]
+    },
+    "seclusion": {"night": 0.1}
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
-  "lock_fight": {
-    "losses": 3
-  }
+  "lock_fight": {"losses": 3}
 }

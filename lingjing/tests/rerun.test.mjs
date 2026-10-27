@@ -293,7 +293,7 @@ test('a fight in the run: the room\'s beast, paid as a haunt, the room moves on,
   assert.ok(r);
 });
 import { runSpoils } from '../scripts/rules/rerun.mjs';
-import { chorePlay, fightPlay } from '../scripts/rules/playpay.mjs';
+import { chorePlay, convertRate, fightPlay } from '../scripts/rules/playpay.mjs';
 const runSpoilsOf = (state, game) => runSpoils(content, state, game);
 
 // The run's board is a short 守炉 since 2026-10-20 (was 割藤, deleted with the 饭桶's old play): the room's find is its pay,
@@ -350,7 +350,9 @@ test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶
   const paid = pay(content, full, at(openAt()), { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
   assert.equal(paid.progress, 0);
   assert.equal(paid.converted.progress, H);
-  assert.equal(paid.wealth, T.haunt.wealth + Math.round(H * conv.rate));
+  // 灵石 per 修为 read at 练气一层 (playpay.mjs convertRate, 数值系统 phase 2): the same 灵石 at every layer.
+  const rate = convertRate(content, s0);
+  assert.equal(paid.wealth, T.haunt.wealth + Math.round(H * rate));
   assert.equal(full.progress, need, 'nothing past the mark: no carry into the next layer');
   assert.equal(full.wealth, w0 + paid.wealth);
   assert.equal(paid.hold, null, 'never a held-back 修为 line');
@@ -359,7 +361,7 @@ test('修为 at 圆满 is 灵石 (Hanli: 「圆满之后走剧情到下一个阶
   const p2 = pay(content, near, at(openAt()), { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
   assert.equal(p2.progress, 10);
   assert.equal(near.progress, need);
-  assert.equal(p2.wealth, T.haunt.wealth + Math.round((H - 10) * conv.rate));
+  assert.equal(p2.wealth, T.haunt.wealth + Math.round((H - 10) * rate));
   // Well below: all 修为.
   const low = { ...structuredClone(s0), progress: 0 };
   assert.equal(pay(content, low, at(openAt()), { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress, H);

@@ -66,20 +66,21 @@ test('buy and sell at his pole: catalog prices to buy, herbs and hides bought ba
   assert.equal(bought.state.bag['qi-pill'], 2);
   const sold = trade(s, content, ctx(HIS), { action: 'sell', id: 'deer-hide' });
   assert.equal(sold.result.ok, true, JSON.stringify(sold.result));
-  assert.equal(sold.result.paid.wealth, 12, '鹿皮: 20 at 钱掌柜, 12 here');
-  assert.equal(sold.state.wealth, 512);
+  const hide = content.items.items.find(i => i.id === 'deer-hide').sell;
+  assert.ok(sold.result.paid.wealth > 0 && sold.result.paid.wealth < hide, `鹿皮: ${hide} at 钱掌柜, less here`);
+  assert.equal(sold.state.wealth, 500 + sold.result.paid.wealth);
   const pill = trade(s, content, ctx(HIS), { action: 'sell', id: 'qi-pill' });
   assert.equal(pill.result.refused, 'not-bought-here');
   assert.match(pill.result.say, /药材皮货我收/);
   // The bag's 卖 quotes his price, and only for what he buys.
   const gear = VERBS.gear(s, content, ctx(HIS)).result.gear;
   assert.equal(gear.market, true);
-  assert.equal(gear.bag.find(i => i.id === 'deer-hide').sell, 12);
+  assert.equal(gear.bag.find(i => i.id === 'deer-hide').sell, sold.result.paid.wealth, 'the bag\'s 卖 quotes what he pays');
   assert.equal(gear.bag.find(i => i.id === 'qi-pill').sell, null);
   assert.equal(look(s, content, ctx(HIS)).place.shelf.find(i => i.id === 'qi-pill').sell, null, 'his shelf offers no 卖 for a pill');
   // 钱掌柜 below pays the catalog's price, as before.
   const below = { ...s, chapter: '01-ji', ended: ['00-prologue', '00-waimen', '00-zhuji'], place: 'fangshi' };
-  assert.equal(trade(below, content, ctx(HIS), { action: 'sell', id: 'deer-hide' }).result.paid.wealth, 20);
+  assert.equal(trade(below, content, ctx(HIS), { action: 'sell', id: 'deer-hide' }).result.paid.wealth, hide);
 });
 
 test('off his day neither buy nor sell lands at the 演武场, and the refusal says when he comes', () => {

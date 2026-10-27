@@ -87,9 +87,32 @@ export function errandGrant(content, state) {
 }
 
 /* A 人间功课's 修为 (Hanli 2026-10-27, then 「按照百分比奖励」): a fixed share of the layer by its period — a day's 10%, a
-   week's 20%, a month's 30% (`play_pay.chore`). Never ★, never the replay: one chore is paid once a period (chores.mjs). Null where none. */
+   week's 20%, a month's 30% (`play_pay.chore`, from the master table). 人间功课 is 古-line income (Hanli 「算古线吧」): paid on the 古 ladder
+   he stands on. Never ★, never the replay: one chore is paid once a period (chores.mjs). Null where none. */
 export function chorePlay(content, state, period) {
   const pct = content.balance?.play_pay?.chore?.[period];
   if (!pct || !state) return null;
   return Math.round(pct * needOf(content, state));
+}
+
+/* A pill eaten past its own 阶 (a 练气 pill in 筑基) pays `pills.below` of its share for each realm between (数值系统 phase 2:
+   a pill is a share of the layer by its 转, at its own realm; one below is a lesser thing). 1 at or under its 阶. */
+export function pillBelow(content, state, tier) {
+  const below = content.balance?.pills?.below, tiers = content.ladder?.tiers ?? [];
+  const gap = tiers.findIndex(t => t.id === state?.tier) - tiers.findIndex(t => t.id === tier);
+  return below != null && tier && gap > 0 ? below ** gap : 1;
+}
+
+/* What a night's 闭关 is a share of the layer (play_pay.seclusion.night over rewards.json seclusion `rest_hours`): an hour's
+   修为 at this layer, as the 闭关 card says it. */
+export function secludeHour(content, state) {
+  const night = content.balance?.play_pay?.seclusion?.night, r = content.rewards?.seclusion;
+  return night && r?.rest_hours ? (night * needOf(content, state)) / r.rest_hours : null;
+}
+
+/* 圆满 → 灵石 (balance.json `convert.rate`): 灵石 per 修为 at the 练气一层 the book is written against (`authored.base`), so a
+   converted fight pays the same 灵石 at every layer, whatever the layer's 修为 numbers. */
+export function convertRate(content, state, conv = content.rewards?.xiuwei_to_lingshi) {
+  const base = content.balance?.play_pay?.authored?.base, need = needOf(content, state);
+  return (conv?.rate ?? 0) * (base && need ? base / need : 1);
 }

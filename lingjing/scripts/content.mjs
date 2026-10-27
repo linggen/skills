@@ -224,16 +224,18 @@ export function withBalance(content) {
   return { ...content, ladder, rewards, fantong, items, tasks };
 }
 
-/* 丹药 (balance.json `pills`): what a pill of a family pays — its 一转 一阶 `base`, by its 转 and its 阶, tamed
-   (the story's ×9 a 转 and ×10 a 阶 are never the game's numbers). null for a pill of no family. */
+/* 丹药 (balance.json `pills`, 数值系统 phase 2): a pill of a family (`of`) pays its 转's share of the layer (`share`, 一转 5% ·
+   三转 15% · 九转 30% — derived by tools/numbers.mjs --apply from the master table), on the `pill` table, read as the
+   练气一层 the book is written against (play_pay.authored.base) and so a share at every layer (core.mjs amountsOf); past its
+   own 阶 less (`below`, playpay.mjs pillBelow). null for a pill of no family. */
 export function pillPay(balance, item) {
-  const P = balance?.pills, base = P?.base?.[item?.of];
-  if (base == null) return null;
-  return Math.round(base * (P.by_zhuan?.[(item.zhuan ?? 1) - 1] ?? 1) * (P.by_tier?.[item.tier] ?? 1));
+  const P = balance?.pills, share = P?.share?.[(item?.zhuan ?? 1) - 1];
+  if (item?.of == null || !P?.families?.includes(item.of) || share == null) return null;
+  return Math.round(share * (balance.play_pay?.authored?.base ?? 470) * 10) / 10;
 }
 const pillFolded = (b, i) => {
   const pay = i.kind === 'pill' ? pillPay(b, i) : null;
-  return pay == null ? i : { ...i, effect: { ...i.effect, progress: pay } };
+  return pay == null ? i : { ...i, effect: { ...i.effect, table: b.pills.table ?? i.effect?.table, progress: pay, tier: i.tier } };
 };
 
 /* The chapters as played: each 今 interlude spliced in where it stands
@@ -1621,7 +1623,7 @@ function lintFrom(content, bad) {
 function lintPill(content, item, where, bad) {
   if (!content.ladder.tiers.some(t => t.id === item.tier)) bad(where, `a pill's 阶 (tier) is a realm of the ladder, not ${item.tier}`);
   if (!(Number.isInteger(item.zhuan) && item.zhuan >= 1 && item.zhuan <= 9)) bad(where, 'a pill\'s 转 (zhuan) is a whole number, 一 to 九');
-  if (item.of != null && content.balance?.pills?.base?.[item.of] == null) bad(where, `of an unknown pill family ${item.of}`);
+  if (item.of != null && !(content.balance?.pills?.families ?? []).includes(item.of)) bad(where, `of an unknown pill family ${item.of}`);
   if (item.of != null && item.effect?.table == null) bad(where, 'a pill of a family pays 修为: it names its table');
 }
 

@@ -15,9 +15,9 @@ import { STATE_VERSION, fitWorld, layerPayOf, migrate, newState, realmName } fro
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
-import { chorePlay, fightPlay } from '../scripts/rules/playpay.mjs';
+import { chorePlay, convertRate, fightPlay } from '../scripts/rules/playpay.mjs';
 import { turnedPays } from '../scripts/turned.js';
-import { BALANCE_FILE, bookWalk, errandPays, fit, play, table } from '../tools/balance.mjs';
+import { BALANCE_FILE, bookWalk, errandPays, play, table } from '../tools/balance.mjs';
 
 const content = loadContent();
 const B = content.balance, M = B.model;
@@ -70,10 +70,11 @@ test('days per 回 (tools/balance.mjs): typical about a week, heavy a little les
   assert.ok(rows.find(r => r.hui === 'h10').typical <= 3);
 });
 
-test('the thresholds are the model\'s: --fit re-derives the world\'s own, and each 层 asks more than the one below', () => {
-  assert.deepEqual(fit(loadContent()), B.layers.qi, 'node tools/balance.mjs --fit was run on these numbers');
-  const th = B.layers.qi;
+test('the thresholds are the master table\'s (tools/master.mjs needsOf, 数值系统 phase 2): 练气一层 470, each 层 more than the one below', () => {
+  const th = B.layers.qi, N = B.master.lines.gu.need;
+  assert.equal(th[1], N.first);
   for (let i = 2; i < th.length; i += 1) assert.ok(th[i] > th[i - 1], `层 ${i}`);
+  assert.ok(B.layers.foundation[0] > th.at(-1), '筑基小成 above 练气九层');
 });
 
 test('every 回 the stage quests hold reaches the book\'s layer at its close — never ahead, never behind', () => {
@@ -138,7 +139,7 @@ test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零�
   assert.deepEqual(payOf({ id: 'shifu-scan', period: 'week', pool: true, reward: 30 }), { progress: at(pp.chore.week), wealth: T.life.wealth });
   assert.deepEqual([at(pp.chore.day), at(pp.chore.week), at(pp.chore.month)], [47, 94, 141], 'a month\'s 30%: rarer, so more');
   assert.deepEqual(payOf({ id: 'cfo-import', period: 'month', pool: true, reward: 30 }), { progress: at(pp.chore.month), wealth: T.life.wealth });
-  assert.equal(chorePlay(content, { ...s, step: 3 }, 'day'), 51, '三层: 10% of 510 — the pay grows with the layer');
+  assert.equal(chorePlay(content, { ...s, step: 3 }, 'day'), Math.round(0.1 * B.layers.qi[3]), '三层: 10% of its 层 — the pay grows with the layer');
   assert.deepEqual(choreGrant(content, { id: 'health-workout', period: 'day', reward: 20 }).progress, 0, 'no save, no layer: nothing read off it');
   assert.deepEqual(payOf({ id: 'linggen-pair', period: 'once', reward: 50 }), { progress: 0, wealth: T.once.wealth });
   const zero = { ...s, step: 0 };
@@ -152,9 +153,9 @@ test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零�
 test('no daily thinning (Hanli, 2026-10-16): every pool win pays its share of the layer until the layer is full — then 灵石; 体力 is the day\'s limit', () => {
   assert.equal('pool' in B, false, 'balance.json declares no day\'s fight bands');
   const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['09-snow'], tier: 'qi', step: 4, progress: 0, wealth: 0, traits: ROOTS };
-  // Each win its minutes of play at the layer's share (play_pay.fight, 2026-10-27) — 四层: 4 ÷ (0.35 × 300) × 60% of 530 ≈ 12.
-  const each = fightPlay(content, s), want = [], paid = [], wins = Math.min(6, Math.floor(content.ladder.tiers[0].thresholds[4] / each));
-  assert.equal(each, 12);
+  // Each win its minutes of play at the layer's share (play_pay.fight, 2026-10-27) — 四层: 4 ÷ (0.35 × its hours) × 60% of its 层.
+  const pp = B.play_pay, each = fightPlay(content, s), want = [], paid = [], wins = Math.min(6, Math.floor(content.ladder.tiers[0].thresholds[4] / each));
+  assert.equal(each, Math.round((pp.fight.minutes / (pp.games.time * 60 * pp.hours.qi[4])) * pp.games.share * B.layers.qi[4]));
   assert.ok(wins >= 3, 'the layer holds a few wins');
   for (let k = 0; k < wins; k += 1) { want.push(each); paid.push(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress); }
   assert.deepEqual(paid, want);
@@ -162,7 +163,8 @@ test('no daily thinning (Hanli, 2026-10-16): every pool win pays its share of th
   const full = { ...structuredClone(s), progress: content.ladder.tiers[0].thresholds[4] - 5 };
   const last = pay(content, full, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
   assert.equal(last.progress, 5);
-  assert.deepEqual(last.converted, { progress: each - 5, wealth: Math.round((each - 5) * B.convert.rate) });
+  // 灵石 per 修为 read at 练气一层 (playpay.mjs convertRate): the same 灵石 at every layer.
+  assert.deepEqual(last.converted, { progress: each - 5, wealth: Math.round((each - 5) * B.convert.rate * B.play_pay.authored.base / B.layers.qi[4]) });
 });
 
 test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight pays 灵石; 第一路 moves no layer — 二层 is ground', () => {
@@ -175,7 +177,7 @@ test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight
   const f = structuredClone(s);
   const won = pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
   assert.equal(won.progress, 0, 'no 修为 past the mark from a fight');
-  assert.equal(won.wealth, T.haunt.wealth + Math.round(fightPlay(content, f) * content.rewards.xiuwei_to_lingshi.rate));
+  assert.equal(won.wealth, T.haunt.wealth + Math.round(fightPlay(content, f) * convertRate(content, f)));
   // 第一路 (wm-diyilu): once a rise to 二层; now the story moves nothing — 古五's grinding steps him. (Its way on waits on
   // 喂饭桶 · 一根牛骨头 since 2026-10-21: played.)
   const r = resolve({ ...s, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...s.tasks, 'diyilu-niugu': { status: 'done' } } }, content, ctx, { exit: 'save' });
@@ -203,5 +205,18 @@ test('a save from before keeps its 层 and its bar as full as it stood — a v8 
   assert.deepEqual([cliff.step, cliff.progress], [9, th[9]], '九层圆满 waits at the cliff still');
   assert.equal('ladder_pace' in cliff, false, 'the mark goes once carried');
   const zhuji = migrate(save(9, { chapter: '01-ji', scene: null, tier: 'foundation', step: 0, progress: 100 }), content);
-  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 0, 100], 'past 练气: untouched');
+  const fd = content.ladder.tiers[1];
+  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 0, Math.round(100 * fd.thresholds[0] / fd.thresholds_were['13'][0])], 'past 练气: its bar as full as it stood (v13, the master table\'s 筑基)');
+});
+
+test('v13 (数值系统 phase 2): a 练气二层 save keeps its 层, its bar and the stretch over its mark as full as they stood', () => {
+  const qi = content.ladder.tiers[0], was = qi.thresholds_were['13'][2], now = qi.thresholds[2];
+  const save = { ...newState(content, 'zh', NOW), version: 12, chapter: '00-waimen', scene: 'wm-chaifang', place: 'chaifang', ended: ['00-prologue'],
+    done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'], tier: 'qi', traits: ROOTS, step: 2, progress: 300, stretch: { 'qi:2': 40 } };
+  const m = migrate(save, content);
+  assert.equal(m.version, STATE_VERSION);
+  assert.deepEqual([m.tier, m.step], ['qi', 2]);
+  assert.equal(m.progress, Math.round(300 * now / was));
+  assert.deepEqual(m.stretch, { 'qi:2': Math.round(40 * now / was) });
+  assert.ok(Math.abs(m.progress / (now + m.stretch['qi:2']) - 300 / (was + 40)) < 0.005, 'the bar as full');
 });

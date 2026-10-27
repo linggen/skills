@@ -6,12 +6,13 @@
     {
       "id": "qi",
       "pay": 1,
-      "_thresholds_were": "练气's thresholds a save older than each state version was played on (with 零层, by step): \"9\" before 2026-10-15's first re-derivation, \"10\" before the stage quests (2026-10-16, balance.json), \"11\" before the story stopped raising 层 (2026-10-16, the re-fit after), \"12\" the ladder of 2026-10-27 before the raise for 人间功课, which was taken back the same day (pay became a share of the layer, balance.json `_play_pay`): the same numbers, so a v12 save reads as it stood. A save from then keeps its 层 and its bar's fill (state.mjs paceLayer).",
+      "_thresholds_were": "练气's thresholds a save older than each state version was played on (with 零层, by step): \"9\" before 2026-10-15's first re-derivation, \"10\" before the stage quests (2026-10-16, balance.json), \"11\" before the story stopped raising 层 (2026-10-16, the re-fit after), \"12\" the ladder of 2026-10-27 before the raise for 人间功课, which was taken back the same day (pay became a share of the layer, balance.json `_play_pay`): the same numbers, so a v12 save reads as it stood. A save from then keeps its 层 and its bar's fill (state.mjs paceLayer). \"13\" the ladder before the master table (2026-10-27, 数值系统 phase 2: 练气一层 470 ×1.1 a layer; v13 carries the bar as full as it stood).",
       "thresholds_were": {
         "9": [0, 50, 60, 70, 80, 90, 100, 110, 120, 130],
         "10": [0, 200, 350, 480, 660, 720, 820, 920, 1020, 1120],
         "11": [0, 270, 480, 500, 520, 540, 560, 1150, 1170, 1190],
-        "12": [0, 470, 490, 510, 530, 1040, 1060, 1080, 1100, 1120]
+        "12": [0, 470, 490, 510, 530, 1040, 1060, 1080, 1100, 1120],
+        "13": [0, 470, 490, 510, 530, 1040, 1060, 1080, 1100, 1120]
       },
       "_zero": "`zero`: this tier counts from 零层 (story DESIGN: 主角零层入门; 古四's one night of 小周天 → 一层, Hanli 2026-10-15). steps[0] is 零层, its threshold 0: entered with no 修为 and no bar, nothing fills it, and only a story's `rise` (wm-zhoutian's 小周天) leaves it. Its layer N is step N (state.mjs layerNo/stepOfLayer), so a `rise` or a cap's `layer` names the 层 as the book does. Before 2026-10-15 step 0 was 一层 (state.mjs v8 zeroLayer carries the save).",
       "zero": true,
@@ -49,6 +50,8 @@
     {
       "id": "foundation",
       "gate": 1,
+      "_thresholds_were": "筑基's (and every realm's above it, each its own) thresholds a save older than state v13 was played on (2026-10-27, 数值系统 phase 2: the master table's numbers; state.mjs paceLayer).",
+      "thresholds_were": { "13": [400, 500, 600] },
       "pay": 1,
       "name": {
         "zh": "筑基",
@@ -70,6 +73,7 @@
     {
       "id": "core",
       "gate": 2,
+      "thresholds_were": { "13": [800, 1000, 1200] },
       "pay": 1,
       "name": {
         "zh": "结丹",
@@ -91,6 +95,7 @@
     {
       "id": "nascent",
       "gate": 3,
+      "thresholds_were": { "13": [1600, 2000, 2400] },
       "pay": 2,
       "name": {
         "zh": "元婴",
@@ -112,6 +117,7 @@
     {
       "id": "deity",
       "gate": 4,
+      "thresholds_were": { "13": [3000, 3600, 4200] },
       "pay": 3,
       "name": {
         "zh": "化神",
@@ -133,6 +139,7 @@
     {
       "id": "void",
       "gate": 5,
+      "thresholds_were": { "13": [5000, 6000, 7000] },
       "pay": 6,
       "name": {
         "zh": "炼虚",
@@ -154,6 +161,7 @@
     {
       "id": "body",
       "gate": 6,
+      "thresholds_were": { "13": [8000, 9500, 11000] },
       "pay": 9,
       "name": {
         "zh": "合道",
@@ -175,6 +183,7 @@
     {
       "id": "maha",
       "gate": 7,
+      "thresholds_were": { "13": [12500, 14500, 16500] },
       "pay": 14,
       "name": {
         "zh": "归真",
@@ -196,6 +205,7 @@
     {
       "id": "tribulation",
       "gate": 8,
+      "thresholds_were": { "13": [19000, 22000, 25000] },
       "pay": 20,
       "name": {
         "zh": "渡劫",

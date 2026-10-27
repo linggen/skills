@@ -260,7 +260,7 @@ export function trade(state, content, ctx, args) {
     if (e.progress) {
       s.bag[item.id] = held - 1;
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
-      const paid = pay(content, s, ctx, { table: e.table, progress: e.progress });
+      const paid = pay(content, s, ctx, { table: e.table, progress: e.progress, tier: e.tier });
       // 丹毒: the turns its furnace left out, owed until 闭关 (rules/dandu.mjs); a 九转 clears them.
       const dandu = eatPill(content, s, item.id);
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), paid, ...(dandu ? { dandu: { ...dandu, now: danduBrief(content, s) } } : {}) } };

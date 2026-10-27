@@ -28,7 +28,9 @@ test('the kinds at 练气一层: minutes × the layer\'s share a minute, ★ and
   assert.equal(playGrant(content, { tier: 'qi', step: 0 }, 'pintu', { game: 'pintu' }, NOW)?.progress ?? 0, 0, '零层 pays no 修为');
   assert.deepEqual(['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌'].map((k) => grant(k).progress), [7, 13, 20, 27, 34, 40], 'Hanli\'s 7–40 at 一层');
   const three = (kind) => playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } }, { tier: 'qi', step: 3, plays: null }, 'x', { game: 'x' }, NOW).progress;
-  assert.deepEqual(['打地鼠', '棋牌'].map(three), [4, 22], '三层 (510, 4 h): 0.7% and 4.3% of the layer');
+  // 三层: its 层 (balance.json layers) over its hours (play_pay.hours, the master table's curve fitted to 古六's band).
+  const pp = content.balance.play_pay, perMin3 = (pp.games.share * content.balance.layers.qi[3]) / (pp.games.time * 60 * pp.hours.qi[3]);
+  assert.deepEqual(['打地鼠', '棋牌'].map(three), [1, 6].map(m => Math.round(perMin3 * m)), '三层: the same minutes of its own layer');
 });
 
 test('古四 at 146/470: the place games at 沉鼎观 reach the gate in three short sittings — the place games alone, errands and fights on top', () => {

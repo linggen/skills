@@ -171,7 +171,7 @@ test('the panel: header used/cap and 待取, tabs with counts, tiles, the detail
     // the detail: a pill is taken, sold at this market, dropped with a question first
     const pill = pouchHtml(c, { sel: 'qi-pill' });
     assert.match(pill, /data-use="qi-pill"/);
-    assert.match(pill, /data-sell="qi-pill"[^>]*>[^<]*20</);
+    assert.match(pill, new RegExp(`data-sell="qi-pill"[^>]*>[^<]*${content.items.items.find(i => i.id === 'qi-pill').sell}<`));
     assert.match(pill, /data-toss="qi-pill"/);
     assert.match(pouchHtml(c, { sel: 'qi-pill', toss: 'qi-pill' }), /role="alertdialog"[\s\S]*data-toss-yes="qi-pill"[\s\S]*data-toss-no/);
     // the story's key: no 卖, no 丢

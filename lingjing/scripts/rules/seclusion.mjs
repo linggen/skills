@@ -16,6 +16,7 @@ import { cardCatalog, ownedCards, rootsOf, usable } from './cards.mjs';
 import { clone, pay, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { cureDandu, eatPill } from './dandu.mjs';
+import { secludeHour } from './playpay.mjs';
 
 const RULE = content => content.rewards.seclusion ?? null;
 const HOUR = 3600_000;
@@ -55,6 +56,8 @@ function choices(content, state) {
   return {
     spells: spellsOf(content, state).map(x => spellBrief(content, state, x)),
     progress: true,
+    // 修为 an hour at the layer he sits on, as it lands (a night's share of the layer over its hours).
+    per_hour: Math.round(secludeHour(content, state) ?? 0),
     treasure: treasureOpen(content, state) ? treasureBrief(content, state) : null,
     pills: pillsOf(content, state),
     rule: RULE(content),
@@ -84,7 +87,8 @@ const GROW = {
     return { card: { id, name: pick(c?.name, s.lang), from, to, cost: costOf({ stars: { [id]: to } }, c), was: c?.cost, study: round1(left), need: r.star_hours } };
   },
   progress: (content, s, sec, hours, ctx) => {
-    const r = RULE(content), want = Math.floor(hours * r.progress_per_hour);
+    // An hour's share of the layer he sits on (balance.json play_pay.seclusion, rules/playpay.mjs secludeHour).
+    const want = Math.floor(hours * (secludeHour(content, s) ?? 0));
     if (!want) return { progress: { paid: 0 } };
     const p = pay(content, s, ctx, { table: 'seclusion', progress: want });
     return { progress: { paid: p.progress, levels: p.levels, ...(p.hold ? { hold: p.hold } : {}) } };
@@ -131,7 +135,7 @@ const TARGET = {
     return { name: pick(c?.name, s.lang), star, top: r.star_top, cost, next: cost > 1 ? 'cost' : 'power',
       pool, need: r.star_hours, done: star >= r.star_top };
   },
-  progress: (content, s, sec, counted) => ({ now: s.progress, per_hour: RULE(content).progress_per_hour, pool: counted, need: 1 }),
+  progress: (content, s, sec, counted) => ({ now: s.progress, per_hour: Math.round(secludeHour(content, s) ?? 0), pool: counted, need: 1 }),
   treasure: (content, s, sec, counted) => (boundOf(content, s) ? { name: s.treasure.name, level: s.treasure.level, step: treasureBrief(content, s).step,
     pool: (s.treasure.tempered ?? 0) + counted, need: RULE(content).treasure_hours, done: s.treasure.level >= TREASURE_TOP } : null),
 };

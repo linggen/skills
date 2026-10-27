@@ -12,6 +12,7 @@ import { costOf, effectOf, begin, act, offers } from '../scripts/battle.js';
 import { WORDS, cardHtml, emergedHtml, say } from '../scripts/cards.js';
 import { loadContent } from '../scripts/content.mjs';
 import { migrate, newState, STATE_VERSION } from '../scripts/state.mjs';
+import { secludeHour } from '../scripts/rules/playpay.mjs';
 import { fightSetup, fightHold, look, seclusionHold, VERBS } from '../scripts/rules.mjs';
 import { MOMENTS } from '../scripts/voice.js';
 
@@ -39,11 +40,11 @@ const inAndOut = (s, hours, args) => {
 
 test('the numbers: a day away is capped, a short sit grows nothing, and sitting pays less than playing', () => {
   assert.deepEqual([R.cap_hours, R.min_hours, R.rest_hours, R.star_hours, R.star_top, R.treasure_hours], [12, 1, 8, 6, 3, 8]);
-  // An hour of play: a pool of 体力 spent on fights (the best 修为 per 体力).
-  const hourOfPlay = content.rewards.tables.haunt.progress / content.rewards.stamina.cost.duel * content.rewards.stamina.max;
-  const night = R.cap_hours * R.progress_per_hour * Math.max(...Object.values(R.pills));
-  assert.ok(night <= content.rewards.tables.seclusion.progress, 'the table caps even a pilled night');
-  assert.ok(night < hourOfPlay / 3, `a whole pilled night (${night}) is far under an hour of play (${hourOfPlay})`);
+  // 数值系统 phase 2: a night (rest_hours) is play_pay.seclusion.night of the layer; a whole pilled night (cap_hours × the
+  // strongest pill) is still under an hour of the small games on every 练气 layer (games.share over games.time × its hours).
+  const pp = content.balance.play_pay, nightShare = pp.seclusion.night * (R.cap_hours / R.rest_hours) * Math.max(...Object.values(R.pills));
+  for (const [step, h] of pp.hours.qi.entries()) if (h) assert.ok(nightShare < pp.games.share / (pp.games.time * h), `练气${step}层: a pilled night ${nightShare} under an hour of play`);
+  assert.ok(R.cap_hours * secludeHour(content, player()) <= content.rewards.tables.seclusion.progress, 'the table caps nothing a night pays');
 });
 
 test('a spell: a ★ each 6 h counted, the hours over kept for the next seclusion, at most ★3', () => {
@@ -81,14 +82,16 @@ test('under an hour nothing grows; 8 h or more fills 体力 whatever the focus',
 
 test('修为: per hour counted, through the tables like any grant; at the realm\'s peak it counts on past the mark', () => {
   const r = inAndOut(player(), 10, { focus: 'progress' });
-  assert.equal(r.result.emerged.progress.paid, 50);
-  assert.equal(r.state.progress, 150);
+  const p0 = player(), hour = secludeHour(content, p0);
+  assert.equal(r.result.emerged.progress.paid, Math.floor(10 * hour), 'ten hours at an hour\'s share of the layer');
+  assert.equal(r.state.progress, p0.progress + Math.floor(10 * hour));
   // At the peak of 结丹 the rest waits for the breakthrough.
   const top = content.ladder.tiers.find(t => t.id === 'core').thresholds;
   const peak = inAndOut(player({ step: top.length - 1, progress: top.at(-1) - 10 }), 12, { focus: 'progress' });
-  assert.equal(peak.result.emerged.progress.paid, 60);
+  const got = Math.floor(12 * secludeHour(content, player({ step: top.length - 1 })));
+  assert.equal(peak.result.emerged.progress.paid, got);
   assert.ok(peak.result.emerged.progress.hold, 'the realm\'s top: the rest waits for the breakthrough');
-  assert.equal(peak.state.progress, top.at(-1) + 50);
+  assert.equal(peak.state.progress, top.at(-1) - 10 + got);
   assert.equal(peak.state.step, top.length - 1);
 });
 

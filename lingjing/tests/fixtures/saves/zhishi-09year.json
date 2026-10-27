@@ -1,7 +1,7 @@
 {
  "_about": "A 09-year save standing in the 执事堂 (made by tools/arcade-saves.mjs for 断案's 游戏厅 row, cut 2026-10-27; kept for the errand tests)",
  "state": {
-  "version": 12,
+  "version": 13,
   "world": "jiuding",
   "lang": "zh",
   "name": "沈小满",
@@ -15,8 +15,8 @@
   ],
   "tier": "qi",
   "step": 4,
-  "progress": 572,
-  "wealth": 663,
+  "progress": 679,
+  "wealth": 893,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -621,8 +621,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 531,
-   "wealth": 666
+   "progress": 1703,
+   "wealth": 896
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1198,7 +1198,7 @@
    }
   },
   "stretch": {
-   "qi:3": 28
+   "qi:3": 33
   },
   "told_scenes": [
    "00-baicai",

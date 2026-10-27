@@ -24,6 +24,8 @@ const atLayer = (s, n, table = 'scene') => Math.round(n * authoredScale(content,
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 
 const content = beforeChapterOne(loadContent());
+/* A tier's thresholds as the world's balance.json sets them (数值系统: derived from the master table). */
+const TH = id => content.ladder.tiers.find(t => t.id === id).thresholds;
 // 夫诸 at the Si's north bank — the v1 prologue's creature scene, retired by
 // prologue-v3 and kept as a fixture for the fight engine's tests (a gift, a
 // riddle, a duel that withdraws, staying exits). Reached only by `toFuzhu`.
@@ -1479,7 +1481,7 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   assert.equal(bought.result.item.held, 1);
   assert.deepEqual(look(bought.state, content, ctx()).bag.map(b => b.id), ['fox-token', 'tuna-jing', 'old-bow', 'grey-robe', 'qi-pill']);
   const sold = must(trade, bought.state, { action: 'sell', id: 'qi-pill' });
-  assert.equal(sold.state.wealth, 40);
+  assert.equal(sold.state.wealth, 20 + content.items.items.find(i => i.id === 'qi-pill').sell, 'bought back a third (balance.json master economy)');
   assert.deepEqual(sold.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1 });
   refused(trade, sold.state, { action: 'sell', id: 'qi-pill' }, 'not-in-bag');
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
@@ -1496,7 +1498,7 @@ test('no market away from one; a pill is used anywhere; a wear waits for her', (
   assert.equal(refused(trade, away, { action: 'buy', id: 'ginseng' }, 'no-market').say, '这里没有坊市。');
   const withPill = must(trade, s, { action: 'buy', id: 'qi-pill' }).state;
   const used = must(trade, must(move, withPill, { place: 'sishui' }).state, { action: 'use', id: 'qi-pill' });
-  assert.equal(used.result.paid.progress, 20);
+  assert.equal(used.result.paid.progress, Math.round(content.balance.pills.share[0] * TH(s.tier)[s.step]), 'a 一转 is 5% of the layer he stands on');
   assert.deepEqual(used.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1 }); // what the prologue gave is carried on
   refused(trade, s, { action: 'use', id: 'qi-pill' }, 'not-in-bag');
   const withSword = must(trade, s, { action: 'buy', id: 'bamboo-sword' }).state;
@@ -1616,7 +1618,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   assert.equal(ye.scene.id, '01-ye');
   assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'mend-pill', 'huiqi-pill', 'wangqi-1', 'huojing', 'pouch-mid'], 'no shelf sells 筑基丹 (全观一年一颗)');
   s = answer(trade, s, { action: 'buy', id: 'iron-sword' }).state;
-  assert.equal(s.wealth, 180);
+  assert.equal(s.wealth, 300 - content.items.items.find(i => i.id === 'iron-sword').buy);
   s = answer(resolve, s, { exit: 'market' }).state; // stays
   // the two plans that fail (the book's): each stays, each owes its passage
   for (const plan of ['bribe', 'ghost']) {
@@ -2239,7 +2241,7 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   assert.ok(held.say.startsWith('鼎气扑到你身上'));
   assert.equal(held.peak_step, 3, 'three steps a realm past 练气: 小成, 中成, 大成');
   // at the peak (筑基圆满): the Core forms, then paid into the new tier
-  s = lucky({ ...s, step: 2, progress: 600 }, 'core', nctx());
+  s = lucky({ ...s, step: 2, progress: TH('foundation')[2] }, 'core', nctx());
   r = answerN(resolve, s, { exit: 'take' });
   assert.deepEqual(btOf(r.result.breakthrough), { from: '筑基圆满', to: '结丹小成', tier: 'core', success: true });
   assert.equal(r.state.tier, 'core'); assert.equal(r.state.step, 0);
@@ -2321,7 +2323,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   assert.ok(held.say.startsWith('鼎气涌上来'));
   assert.equal(held.peak_step, 3);
   // at the peak (结丹圆满): the Nascent Soul forms, then paid into the new tier — which pays double
-  s = lucky({ ...s, step: 2, progress: 1200 }, 'nascent', dctx());
+  s = lucky({ ...s, step: 2, progress: TH('core')[2] }, 'nascent', dctx());
   r = answerD(resolve, s, { exit: 'take' });
   assert.deepEqual(btOf(r.result.breakthrough), { from: '结丹圆满', to: '元婴小成', tier: 'nascent', success: true });
   assert.equal(r.state.tier, 'nascent'); assert.equal(r.state.step, 0);
@@ -2359,7 +2361,7 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   const l = look(s, content, c);
   const take = l.scene.exits.find(e => e.id === 'take');
   assert.equal(take.breakthrough.ready, false);
-  assert.deepEqual(take.breakthrough.need, { step: '结丹圆满', progress: 1200, to: '元婴' });
+  assert.deepEqual(take.breakthrough.need, { step: '结丹圆满', progress: TH('core')[2], to: '元婴' });
   assert.ok(!l.ask.options.some(o => o.exit === 'take'), 'no breath to tap');
   const back = l.ask.options.find(o => o.move);
   assert.equal(back?.label, '先回蓬莱');
@@ -2370,10 +2372,10 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   assert.notEqual(choice.options.find(o => o.move)?.move, 'liubo');
   // and the goal says why the story waits: what the breath asks, where he stands, no road to it
   const waits = look(away.state, content, c).waypoint;
-  assert.deepEqual(waits.gate, { step: '结丹圆满', progress: 1200, to: '元婴', now: { step: '结丹小成', progress: 222, of: 800 } });
+  assert.deepEqual(waits.gate, { step: '结丹圆满', progress: TH('core')[2], to: '元婴', now: { step: '结丹小成', progress: 222, of: TH('core')[0] } });
   assert.equal(waits.toward, undefined);
   // at the peak, the breath is the odds card's throw — never the chat's (Hanli, 2026-09-28)
-  const peak = { ...s, step: 2, progress: 1200 };
+  const peak = { ...s, step: 2, progress: TH('core')[2] };
   const ready = look(peak, content, c);
   assert.equal(ready.scene.exits.find(e => e.id === 'take').breakthrough.ready, true);
   assert.ok(ready.stage.some(x => x.card === 'breakthrough' && x.id === 'take'), JSON.stringify(ready.stage));

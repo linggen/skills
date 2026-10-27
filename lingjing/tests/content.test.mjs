@@ -165,7 +165,7 @@ test('the catalog: a price below its sell, a missing picture, a pill over its ta
   prologue(c).scenes['00-rent'].exits.find(e => e.id === 'dumb').needs.bag = 'unicorn-horn';
   c.tasks.tasks[0].gives = { bag: 'unicorn-horn' };
   const problems = lint(c);
-  assert.ok(has(problems, 'item qi-pill: buys for 10, below its sell price 20'));
+  assert.ok(has(problems, `item qi-pill: buys for 10, below its sell price ${item('qi-pill').sell}`));
   assert.ok(has(problems, 'item ginseng: art art/items/nothing.svg is missing'));
   assert.ok(has(problems, 'item lingzhi: progress 99 is over the puzzle cap of 20'));
   assert.ok(has(problems, 'item moon-bell: cannot wear on hat'));

@@ -317,7 +317,7 @@ the knobs: tasks/world.json `shouchao`, its cooldown balance.json `cooldowns.sho
   回 in the row's boss's place). A row added later is played first. Rows now: 兽潮 1–3 (野猪 · 狰, 古四), 4 (犰狳,
   古五), the 山门 (鬿雀 · 合窳, 古八).
 
-### 数值系统 — one validator, then a master table 【phase 1 已建 · phase 2 待批】 (Hanli, 2026-10-27)
+### 数值系统 — one validator, then a master table 【phase 1 · phase 2 已建】 (Hanli, 2026-10-27)
 
 Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局校验游戏数值, 平衡战斗力, 游戏难易, 时长的. 以后我们调整难度,
 进度可以统一调整, 不必单个物品调.」 The trigger was the 九转聚气丹's card: a fixed +60 while 练气一层 asks 470, and
@@ -348,40 +348,39 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
   - the pace targets are read from balance.json `play_pay.hours` and `play_pay.games`, added with the percentage pay on
     2026-10-27; the fight bands and the red-list limits are `TARGET` and `LIMITS` in the tool until phase 2.
 
-**Phase 2 (the proposal, waiting on Hanli's go):** a few knobs, everything else derived.
-- **The master table.** balance.json `play_pay` already holds half of it since the percentage pay (`hours`, `games`,
-  `errand`, `chore`, `authored`). Phase 2 completes it and makes the rest derive from it.
-  - **Pace:**
-    - `hours`: 练气一层 2 h and +1 h a layer, or +0.5 h;
-    - the realm curve: each realm's layers one size, +2 h a realm (筑基 3 × 6 h, 金丹 3 × 8 h …);
-    - `games`: 60% of the 修为 over 35% of the time;
-    - `chore`: a day's 10%. One daily 功课 now carries about half of a layer from 五层 up (the 数值 page), so its share
-      is a pace knob too.
-  - **Difficulty:** `win_band`, a story fight's first meeting bare (the 30–62% band) and with two pills, and a pool
-    beast's band.
-  - **Economy:**
-    - `income`: 灵石 a minute of play, by layer;
-    - `sinks`: a pill costs the minutes of income its 修为 would take to play, gear costs a fixed number of minutes
-      of income per point, and the buy-back is a share of the price;
-    - `convert`: the 圆满 → 灵石 rate.
-- **Derived by formula.** `--apply` computes these from the knobs and writes them:
-  - the 层 thresholds, which today are still hand-set (470 · 490 … 1120, and 筑基 400 under 练气九层's 1120);
-  - pill 修为, as a share of the layer. `authored` already scales a pill by the layer against 470; phase 2 states it as
-    the share outright (a 九转 = 12.8%);
-  - every shop `buy`/`sell`;
-  - board, errand, 功课 and fight pay;
-  - the creatures' `hp` multipliers and decks, fitted by the bot to `win_band` (the slow part, run per beast).
-- **Overrides.** A number that must not follow its formula is an explicit override in balance.json `overrides`, as
-  `{path, value, why}`. `--apply` keeps it and the report lists it, so nothing is hand-set silently.
-- **How a knob change flows:** change a knob, then run `node tools/numbers.mjs --apply` (a dry-run diff by default,
-  `--write` to commit). It re-derives the world, then re-runs balance.mjs and the fight bands, and the 数值 page shows
-  the new curves. Tuning the difficulty or the pace becomes one edit, never a sweep of single items.
-- **Text that states an amount** follows one of two rules:
-  - it is generated: the card's 「修为 +N」 and 「抵N日打坐」 come from the number at the player's layer (`look.mjs`
-    already shows the landing number);
-  - or it is relative and checked: authored prose says only what stays true at every layer, such as 「比坊市的聚气丹足三倍」,
-    and the validator's `CLAIMS` table holds each ratio to the numbers.
-  A fixed 「抵三日」 is wrong on every layer but one, because 闭关 grows with the layer and a pill does not.
+**Phase 2 (built 2026-10-27, Hanli 「数值系统继续做吧」): `balance.json` `master`, everything else derived.**
+- **The knobs** (`master`; tools/master.mjs reads them):
+  - `lines.gu` — a line is a ladder of its own (古 · 今 · 未来 each their own 修为 and realms, Hanli 10-27). Only 古 is
+    built; 今 and 未来 get a row of their own, with their own pace, when their pay is built.
+    - `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm. Every pay is a share of the layer, so these are the
+      numbers he reads, never the pace. 筑基小成 (1310) is above 练气九层 (1010).
+    - `hours`: a layer's play hours (the games' rate), a curve (练气 2 h +0.5 h a layer; 筑基 4 h, +2 h a realm), then
+      **fitted**: in the book's order a 回 whose typical days fall outside its band has the hours of the layers it grinds
+      scaled until it lands (master.mjs fitHours). Today 古六's 三–四层 fit to ~1.0–1.2 h and 古八's 七–九层 to ~1.4–1.6 h:
+      those 回 are long on reading, so their layers must go fast.
+    - `games` 60% over 35% · `errand` 15% over 10% · `chore` (人间功课, 古-line income — Hanli 「算古线吧」) a day's 10%, a
+      week's 20% · `seclusion.night` a night's 闭关 = 10% of the layer (ruling a: it was 40 × `layer_pay`, 23% at 四层;
+      `layer_pay` is gone) · `pills` 一转 5% · 三转 15% · 九转 30% of the layer, ¼ a realm past its 阶.
+  - `difficulty`: the fight bands (story 30–62%, pool 25–68%) and the bot's slack.
+  - `economy`: `income` 3 灵石 a minute; a 修为 pill costs 5 minutes of income per 1% (聚气丹 75); gear 8 · 7 · 8 minutes a
+    point (法器 · 法衣 · 佩); a shop buys back a third; `convert` 灵石 per 修为 past the mark, read at 练气一层, so the same
+    at every layer.
+- **Overrides**: `overrides` rows `{path, value, why}` (today the 妖丹's two-thirds buy-back), laid on last and listed.
+- **`node tools/numbers.mjs --apply`** prints what the knobs make against balance.json (the fit, then the rows); `--write`
+  writes it and runs the model, the red list and numbers.json again. tests/numbers.test.mjs holds the dry run empty, so
+  no derived number is hand-set. `balance.mjs --fit` is retired.
+- **Texts that state an amount**: a pill's card says what lands at his layer (「服下：修为 +N」, errands.mjs itemBrief);
+  「抵半日打坐」 · 「抵三日」 are ratios that now hold at every layer (a pill and a night are both shares), and the test
+  holds each at every 练气 layer.
+- **The gate rule** (Hanli 10-27, at 古五's 渡口: 「渡口前应该让玩家接近2层圆满」): a 修为 gate never keeps him where there
+  is little to do — the grind belongs in the content before it. `hours.fit.gates` (now wm-mijing) is fitted so the player
+  who plays the book straight through (`model.session`: long sittings, no nights, no 功课) comes to it ≥ 88% full (二层
+  0.77 h). Every gate is on the red list where its wait — the 修为 still owed on arrival ÷ a minute of what is reachable
+  there — passes `LIMITS.gate_wait` (40 min), with what is reachable listed. The fit never makes a layer dearer than the
+  curve: a 回 short of its band (古七, 4.5 days) is short on its book, and dearer layers would only lengthen its gates.
+- **The model**: at 圆满 a 秘境 rerun is all 灵石, so the model runs one only while its 修为 lands (`model.rerun.at_full`);
+  the story's boards pay their play pay on the way (`model.story_stars`), as the rules do.
+- **Old saves** (state v13): the 层 kept, the bar and its stretch as full as they stood (ladder.json `thresholds_were["13"]`).
 
 ### 境界 in the game 【已建】 · each line its own 修为 【设计 · 待建】 (Hanli, 2026-10-27)
 

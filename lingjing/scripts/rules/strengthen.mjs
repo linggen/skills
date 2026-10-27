@@ -29,6 +29,7 @@ import { shelfOf } from './look.mjs';
 import { poolGame } from './match.mjs';
 import { allPlaces, creatureOf, foeOf, huntKey, pathOf, placeName, placeOf, sceneOf } from './world.mjs';
 import { visitorHere } from './visiting.mjs';
+import { chorePlay, secludeHour } from './playpay.mjs';
 
 const SLOTS = { weapon: 'weapon', robe: 'robe', pendant: 'pendant' };
 const MEND = 'mend-pill';
@@ -102,9 +103,10 @@ const another = (content, state, game) => (game?.hunt ? [{ kind: 'another', plac
 /* 5 · 修为 without a fight: 闭关 (rewards.json seclusion: so much an hour, to a cap), the day's 功课. */
 function quiet(content, state, now) {
   const sec = content.rewards?.seclusion, out = [];
-  if (sec && !state.seclusion) out.push({ kind: 'seclude', progress: sec.progress_per_hour * sec.cap_hours, hours: sec.cap_hours });
-  const gk = content.rewards?.tables?.gongke;
-  if (gk?.progress && state.gongke?.day?.key !== dayKey(now)) out.push({ kind: 'gongke', progress: gk.progress });
+  // Each at the layer he stands on (rules/playpay.mjs: a night's share of the layer, the 功课's minutes of play).
+  if (sec && !state.seclusion) out.push({ kind: 'seclude', progress: Math.floor((secludeHour(content, state) ?? 0) * sec.cap_hours), hours: sec.cap_hours });
+  const gk = chorePlay(content, state, 'day') ?? content.rewards?.tables?.gongke?.progress;
+  if (gk && state.gongke?.day?.key !== dayKey(now)) out.push({ kind: 'gongke', progress: gk });
   return out;
 }
 

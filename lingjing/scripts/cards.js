@@ -799,7 +799,7 @@ function seclude(card, ctx) {
   return `<div class="card seclude"><div class="cardtitle">${esc(w.secludeTitle)}</div>
     <div class="small dim">${esc(w.secludeHint)}</div>
     ${spells ? `<div class="small">${esc(say(w.secludeSpells, { h: r.star_hours }))}</div><div class="gcards">${spells}</div><div class="small dim secludenext">${esc(next)}</div>` : ''}
-    <div class="acts"><button class="act${on('progress')}" data-seclude-focus="progress">${esc(say(w.secludeProgress, { n: r.progress_per_hour }))}</button>
+    <div class="acts"><button class="act${on('progress')}" data-seclude-focus="progress">${esc(say(w.secludeProgress, { n: ch.per_hour ?? 0 }))}</button>
     ${ch.treasure ? `<button class="act${on('treasure')}" data-seclude-focus="treasure">${esc(say(w.secludeTreasure, { h: r.treasure_hours }))} · ${esc(ch.treasure.name)} ${esc(ch.treasure.step)}</button>` : ''}</div>
     ${pills ? `<div class="acts">${pills}</div>` : ''}
     <div class="small dim">${esc(say(w.secludeRule, { cap: r.cap_hours, min: r.min_hours, rest: r.rest_hours }))}</div>

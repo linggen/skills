@@ -15,16 +15,20 @@
 //   node tools/numbers.mjs --fights N   weigh the fights over N deals (default 30 with --write; slow: ~2 min)
 //   node tools/numbers.mjs --check      hard errors only (a NaN, a negative price…): exit 1 (tests/numbers.test.mjs)
 //   node tools/numbers.mjs --json       the report as JSON on stdout
+//   node tools/numbers.mjs --apply      phase 2: what the master table (balance.json `master`, tools/master.mjs) derives,
+//                                       as a diff against balance.json — a dry run; with --write it is written, then the
+//                                       model's 回 days and the red list are run again on it (and numbers.json written)
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent, withBalance } from '../scripts/content.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
-import { chorePlay, errandGrant, playGrant } from '../scripts/rules/playpay.mjs';
+import { chorePlay, errandGrant, pillBelow, playGrant, secludeHour } from '../scripts/rules/playpay.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
 import { runsPay } from '../scripts/rules/rerun.mjs';
 import { chances, realmOf } from '../scripts/rules/fantong.mjs';
-import { play, table as paceTable } from './balance.mjs';
+import { BALANCE_FILE, balanceText, grindLayers, play, table as paceTable } from './balance.mjs';
+import { derive, diffOf, fitHours, setPath } from './master.mjs';
 
 export const OUT = new URL('../worlds/jiuding/levels/numbers.json', import.meta.url);
 const FIXTURE = new URL('../tests/fixtures/saves/waimen.json', import.meta.url);
@@ -49,6 +53,7 @@ export const LIMITS = {
   card_off: 3,
   shop_wait: 2, // a shop's thing the typical player has earned only this many 古 回 after it is sold // a minion's 攻+血 this far over its cost's median
   fight_slack: 0.08, // a fight's bot win rate outside its band by more than this (the deals' noise)
+  gate_wait: 40, // a stage quest's wait, minutes of play — about one sitting (Hanli 2026-10-27, 古五's 渡口)
 };
 
 const round = (x, d = 0) => (Number.isFinite(x) ? Math.round(x * 10 ** d) / 10 ** d : null);
@@ -114,10 +119,10 @@ function playRate(content, s, kinds) {
   return median(rates) ?? 0;
 }
 
-/* A day of sitting: one night's 闭关 (rewards.json seclusion `rest_hours`, the rate, its table's cap, the layer's pay). */
+/* A day of sitting: one night's 闭关 (rewards.json seclusion `rest_hours`, an hour's share of the layer — rules/seclusion.mjs). */
 function nightOf(content, s) {
   const r = content.rewards.seclusion;
-  return paysOf(content, s, NOW, { table: 'seclusion', progress: Math.floor(r.rest_hours * r.progress_per_hour) })?.progress ?? 0;
+  return paysOf(content, s, NOW, { table: 'seclusion', progress: Math.floor(r.rest_hours * (secludeHour(content, s) ?? 0)) })?.progress ?? 0;
 }
 
 /* The model's days on each layer, per player, and the typical player's 灵石 a minute there (the day's end layer). */
@@ -144,6 +149,12 @@ function targetHours(content, at) {
   if (row != null) return Array.isArray(row) ? row[at.step] ?? row.at(-1) : row;
   return at.tier === content.ladder.tiers[0].id ? TARGET.hours.first + (at.step - 1) * TARGET.hours.step : null;
 }
+/* The master table's curve for a layer, before the pace fit (tools/master.mjs fitHours). */
+function curveHours(content, at) {
+  const H = content.balance.master?.lines?.gu?.hours;
+  if (!H || (tierOf(content, at.tier)?.zero && at.step === 0)) return null;
+  return at.tier === content.ladder.tiers[0].id ? H.qi[at.step] ?? null : null;
+}
 const gamesOf = content => ({ xiuwei: content.balance.play_pay?.games?.share ?? TARGET.games.xiuwei, time: content.balance.play_pay?.games?.time ?? TARGET.games.time });
 
 /* Every layer of 卷一 (练气一层…九层, 筑基's three) in its units. */
@@ -166,7 +177,7 @@ export function layersOf(content, base) {
       chore_day: chorePlay(content, s, 'day'), chore_week: chorePlay(content, s, 'week'), chore_month: chorePlay(content, s, 'month'),
       haunt: z ? 0 : paysOf(content, s, NOW, content.rewards.tables.haunt ? { table: 'haunt', progress: content.rewards.tables.haunt.progress } : null)?.progress ?? 0,
       errand: z ? 0 : errandGrant(content, s)?.progress ?? 0,
-      target_h: targetHours(content, at), rule_h: round(gamesHours, 1), chore_h: round(choreDays && (choreDays * day) / 60, 1), chore_days: round(choreDays, 1),
+      target_h: targetHours(content, at), curve_h: curveHours(content, at), rule_h: round(gamesHours, 1), chore_h: round(choreDays && (choreDays * day) / 60, 1), chore_days: round(choreDays, 1),
       model_days: Object.fromEntries(Object.entries(m).map(([w, r]) => [w, r.days])),
       model_h: ty ? round(ty.minutes / 60, 1) : null,
       ls_min: ty?.minutes ? round(ty.ls / ty.minutes, 2) : null,
@@ -237,10 +248,12 @@ function pills(ctx) {
   const { content, layerAt, met, saveFor } = ctx;
   return content.items.items.filter(i => i.kind === 'pill' && i.effect?.progress && (i.juan ?? 1) <= 1).map(i => {
     const where = met(i.id), at = where ? paying(content, layerAt(where.hui)) : null;
-    const xw = at ? paysOf(content, saveFor(at), NOW, { table: i.effect.table, progress: i.effect.progress })?.progress ?? 0 : i.effect.progress;
+    const xw = at ? paysOf(content, saveFor(at), NOW, { table: i.effect.table, progress: i.effect.progress, tier: i.effect.tier })?.progress ?? 0 : i.effect.progress;
     const L = at ? ctx.layer(at) : null;
     const price = i.buy ?? 0;
-    return { ...inUnits({ id: i.id, name: zh(i.name), hui: where?.hui ?? null, how: where?.how ?? null, sources: where?.all ?? [], xw, raw: i.effect.progress, table: i.effect.table, zhuan: i.zhuan ?? null, buy: price || null }, L), price_min: price && L?.ls_min ? round(price / L.ls_min, 1) : null };
+    const share = i.of ? content.balance.pills?.share?.[(i.zhuan ?? 1) - 1] : null;
+    const want_pct = share != null && at ? share * pillBelow(content, saveFor(at), i.tier) : null;
+    return { ...inUnits({ id: i.id, name: zh(i.name), hui: where?.hui ?? null, how: where?.how ?? null, sources: where?.all ?? [], xw, raw: i.effect.progress, table: i.effect.table, zhuan: i.zhuan ?? null, buy: price || null }, L), want_pct, price_min: price && L?.ls_min ? round(price / L.ls_min, 1) : null };
   });
 }
 
@@ -252,14 +265,14 @@ function boards(ctx) {
     const h = hui.get(g.scene) ?? null, at = h ? layerAt(h) : null, s = at ? saveFor(at) : null;
     const paid = s ? paysOf(content, s, NOW, t.grant) : null, own = paid?.progress ?? 0, pp = s ? playGrant(content, s, t.id, t, NOW, 3) : null;
     const xw = own + (pp?.progress ?? 0);
-    return inUnits({ id: t.id, name: zh(t.title), kind: g.mechanic, hui: h, xw, own, play: pp?.progress ?? 0, minutes: pp?.minutes ?? mm[g.mechanic] ?? mm.default ?? null, ls: (paid?.wealth ?? 0) + (pp?.wealth ?? 0) }, at ? ctx.layer(at) : null);
+    return inUnits({ id: t.id, name: zh(t.title), kind: g.mechanic, hui: h, xw, own, layer_need: at ? ctx.layer(at)?.need ?? null : null, play: pp?.progress ?? 0, minutes: pp?.minutes ?? mm[g.mechanic] ?? mm.default ?? null, ls: (paid?.wealth ?? 0) + (pp?.wealth ?? 0) }, at ? ctx.layer(at) : null);
   }).filter(Boolean);
 }
 
 /* What a pill pays eaten on this save's layer (0 for a thing that is not a 修为 pill). */
 function pillAt(content, s, id) {
   const e = content.items.items.find(i => i.id === id)?.effect;
-  return e?.progress ? paysOf(content, s, NOW, { table: e.table, progress: e.progress })?.progress ?? 0 : 0;
+  return e?.progress ? paysOf(content, s, NOW, { table: e.table, progress: e.progress, tier: e.tier })?.progress ?? 0 : 0;
 }
 
 function errands(ctx) {
@@ -315,11 +328,13 @@ async function fights(ctx, deals) {
   const catalog = Object.fromEntries(ctx.content.cards.cards.map(c => [c.id, c]));
   return sf.FIGHTS.map(f => {
     const r = sf.rateOf(f, deals, 0, 'lookahead'), st = sf.stateAt(f.at), setup = sf.setupOf(f);
-    const band = f.band ?? (f.pool ? TARGET.band.pool : TARGET.band.story), hui = f.at.replace(/^(h\d+).*/, '$1');
+    // The bands are the master table's (`difficulty`); a fight may name its own (story-fights FIGHTS `band`).
+    const D = ctx.content.balance.master?.difficulty ?? TARGET.band;
+    const band = f.band ?? (f.pool ? D.pool : D.story), hui = f.at.replace(/^(h\d+).*/, '$1');
     // His side and the beast's as the door deals them: 气血, the deck, gear's 攻/甲.
     const opened = begin({ ...setup, seed: 'numbers' }, catalog);
     const you = { hp: opened.you?.hpMax ?? null, deck: (setup.you?.deck ?? []).length, armor: setup.you?.armor ?? 0 };
-    return { key: sf.keyOf(f), id: f.id, name: f.name, at: f.at, hui, layer: ctx.layer({ tier: st.tier, step: st.step })?.name ?? null, pool: f.pool ?? null, band, win: round(r.win, 2), lost: round(r.lost, 2), turns: round(r.turns, 1), you, foe: { hp: opened.foe?.hpMax ?? null, deck: (setup.foe?.deck ?? []).length }, deals };
+    return { key: sf.keyOf(f), id: f.id, name: f.name, at: f.at, hui, slack: D.slack ?? LIMITS.fight_slack, layer: ctx.layer({ tier: st.tier, step: st.step })?.name ?? null, pool: f.pool ?? null, band, win: round(r.win, 2), lost: round(r.lost, 2), turns: round(r.turns, 1), you, foe: { hp: opened.foe?.hpMax ?? null, deck: (setup.foe?.deck ?? []).length }, deals };
   });
 }
 
@@ -363,10 +378,44 @@ function kailu(ctx) {
   return rows;
 }
 
+/* ── the gates (Hanli 2026-10-27, at 古五's 渡口: a 修为 gate must never keep him where there is little to do) ── */
+/* Each stage quest's way: how full the layer he needs stands when he comes to it — the typical player (30 min a day, 功课
+   and 闭关) and the one who plays the book straight through (`model.session`) — and the wait there: the 修为 still owed ÷
+   what a minute of what is reachable pays (the pool's fights and the boards he can play again, at the layer's games rate,
+   a replay's falling share), with what is reachable listed. */
+function gates(ctx) {
+  const { content } = ctx, M = content.balance.model, kinds = kindTasks(content);
+  const typ = play(content, M.players.typical).gates, ses = M.session ? play(content, M.session).gates : [];
+  const reach = sceneId => {
+    const ch = Object.values(content.chapters).find(c => c.scenes?.[sceneId]);
+    const all = new Map(Object.values(content.places).flatMap(d => d.places).map(p => [p.id, p]));
+    return (ch?.map?.places ?? []).map(id => all.get(id)).filter(p => p && (p.has?.pool || (p.has?.games ?? []).length))
+      .map(p => `${zh(p.name) || p.id}${p.has?.pool ? ' 斗法' : ''}${(p.has?.games ?? []).length ? ` ${p.has.games.length} 局` : ''}`);
+  };
+  return typ.map(g => {
+    const s2 = ses.find(x => x.scene === g.scene), at = g.layer, L = ctx.layer(at);
+    // A minute of reachable play on a layer: the games' rate there (the median board's ★3 first play), at a replay's share.
+    const rate = l => playRate(content, ctx.saveFor(l), kinds) * (M.practice?.factor ?? 0.6);
+    // The minutes from where he stands to the gate's layer full: what his layer still asks, then each layer between, whole.
+    const wait = x => {
+      if (!x?.from) return null;
+      const f = x.from, rows = ctx.layers.filter(l => l.tier === at.tier && l.step >= f.step && l.step <= at.step && !l.zero);
+      if (f.tier !== at.tier) return null;
+      const m = rows.reduce((n, l) => n + ((l.step === f.step ? Math.max(0, f.need - f.progress) : l.need) / (rate(l) || Infinity)), 0);
+      return Number.isFinite(m) ? round(m) : null;
+    };
+    return { id: g.scene, scene: g.scene, hui: g.hui, label: huiLabel(content, g.hui, 'zh', 'short') ?? g.hui, layer: L?.name ?? null,
+      typical: { pct: round(g.pct, 2), below: g.below, wait: wait(g), model_min: round(g.wait), days: round(g.days, 1), did: g.did },
+      session: s2 ? { pct: round(s2.pct, 2), below: s2.below, wait: wait(s2), model_min: round(s2.wait), did: s2.did } : null,
+      reach: reach(g.scene) };
+  });
+}
+
 /* ── the pace: days per 回 against the base bands (not the widened `except`) ── */
 function paces(content) {
-  const bands = content.balance.model.bands;
-  return paceTable(content).map(r => ({ ...r, label: huiLabel(content, r.hui, 'zh', 'short') ?? r.hui, band: bands.typical, later: huiOrder(content, r.hui) >= huiOrder(content, content.balance.model.later) }));
+  const bands = content.balance.model.bands, held = new Set(grindLayers(content).map(g => g.hui));
+  // A 回's own band where one is decided (`bands.except`); `held`: it holds a stage quest (古九 has none: its days are its story's).
+  return paceTable(content).map(r => ({ ...r, label: huiLabel(content, r.hui, 'zh', 'short') ?? r.hui, band: bands.except?.[r.hui]?.typical ?? bands.typical, own: Boolean(bands.except?.[r.hui]?.typical), held: held.has(r.hui), later: huiOrder(content, r.hui) >= huiOrder(content, content.balance.model.later) }));
 }
 
 /* ── text that states an amount (design.md § 数值系统: generated or checked) ── */
@@ -428,11 +477,11 @@ function claims(ctx) {
 function claimRow(ctx, t, subject, days, said) {
   const where = t.item ? ctx.met(t.item) : null, at = where ? paying(ctx.content, ctx.layerAt(where.hui)) : null, L = at ? ctx.layer(at) : null;
   const pill = ctx.content.items.items.find(i => i.id === subject);
-  const xw = pill?.effect?.progress && at ? paysOf(ctx.content, ctx.saveFor(at), NOW, { table: pill.effect.table, progress: pill.effect.progress })?.progress ?? null : null;
+  const xw = pill?.effect?.progress && at ? paysOf(ctx.content, ctx.saveFor(at), NOW, { table: pill.effect.table, progress: pill.effect.progress, tier: pill.effect.tier })?.progress ?? null : null;
   const claimed = L ? days * L.night : null;
   // The same claim read on every 练气 layer: 闭关 grows with the layer (layer_pay), a pill does not.
   const drift = pill?.effect?.progress ? ctx.layers.filter(l => l.tier === ctx.content.ladder.tiers[0].id && l.need).map(l => {
-    const x = paysOf(ctx.content, ctx.saveFor(l), NOW, { table: pill.effect.table, progress: pill.effect.progress })?.progress ?? 0;
+    const x = paysOf(ctx.content, ctx.saveFor(l), NOW, { table: pill.effect.table, progress: pill.effect.progress, tier: pill.effect.tier })?.progress ?? 0;
     return { layer: l.name, ratio: l.night ? round(x / (days * l.night), 2) : null };
   }) : [];
   return { drift, where: t.where, id: t.id, field: t.field, lang: t.lang, said, subject, days, layer: L?.name ?? null, night: L?.night ?? null, claimed, actual: xw, ratio: claimed && xw != null ? round(xw / claimed, 2) : null, text: t.text };
@@ -463,13 +512,17 @@ let KAILU_BAND = () => [0.85, 1.6];
 const offLayers = r => (r.drift ?? []).filter(d => d.ratio != null && Math.abs(Math.log(d.ratio)) > Math.log(1 + LIMITS.claim_off)).filter((d, k, a) => k === 0 || k === a.length - 1);
 const RED = {
   pills: [
-    [r => r.pct > LIMITS.thing_pct, r => `${r.name}: 修为 ${r.xw} = ${pct(r.pct)} of ${r.layer} (first met ${r.hui} by ${r.how}; all: ${r.sources.join(' · ')}) — ${r.play_min} min of board play`],
+    // A 修为 pill is its 转's share of the layer (balance.json pills, from the master table): red where it is not.
+    [r => r.want_pct != null && r.pct != null && Math.abs(r.pct / r.want_pct - 1) > 0.1, r => `${r.name}: 修为 ${r.xw} = ${pct(r.pct)} of ${r.layer}, its ${r.zhuan}转's share is ${pct(r.want_pct)}`],
     [r => r.price_min != null && r.play_min != null && r.price_min < r.play_min, r => `${r.name}: buys ${r.play_min} min of play's 修为 for ${r.price_min} min of 灵石 — faster than playing`],
     [r => !r.hui, r => `${r.name}: met nowhere in 卷一 that the validator finds`],
   ],
-  boards: [[r => r.pct > LIMITS.thing_pct, r => `${r.name} (${r.kind}, ${r.hui}): 修为 ${r.xw} = ${pct(r.pct)} of ${r.layer}`]],
+  // A board's play pay is its minutes at the layer's rate (play_pay): one over the limit is the layer's hours, told once a
+  // layer (below, redList); only its own authored grant is the board's.
+  boards: [[r => r.own && r.layer_need && r.own / r.layer_need > LIMITS.thing_pct, r => `${r.name} (${r.kind}, ${r.hui}): its own grant ${r.own} = ${pct(r.own / r.layer_need)} of ${r.layer}`]],
   errands: [
-    [r => r.pct > LIMITS.thing_pct, r => `${r.name} (${r.hui}): 修为 ${r.xw} = ${pct(r.pct)} of ${r.layer}${r.pill ? ` (its pill ${r.pill})` : ''}`],
+    // Its own pay (the pill it hands over is weighed as a pill).
+    [r => r.pct != null && r.xw && ((r.xw - (r.pill ?? 0)) / r.xw) * r.pct > LIMITS.thing_pct, r => `${r.name} (${r.hui}): 修为 ${r.xw - (r.pill ?? 0)} = ${pct(((r.xw - (r.pill ?? 0)) / r.xw) * r.pct)} of ${r.layer}${r.pill ? ` (and its pill ${r.pill})` : ''}`],
     [r => !r.hui, r => `${r.name}: on no 卷一 map (errands_at) — not weighed`],
   ],
   shops: [
@@ -478,7 +531,7 @@ const RED = {
   ],
   gear: [[r => r.per_point && r.kind_median && (r.per_point > r.kind_median * LIMITS.gear_off || r.per_point < r.kind_median / LIMITS.gear_off), r => `${r.name} (${r.kind}): ${r.per_point} 灵石 a point, its kind's median ${r.kind_median}`]],
   cards: [[r => r.cost_median != null && r.stats - r.cost_median >= LIMITS.card_off && !r.keywords && !r.effect, r => `${r.name} (cost ${r.cost}): 攻${r.atk}+血${r.hp}, its cost's median ${r.cost_median}`]],
-  fights: [[r => r.win < r.band[0] - LIMITS.fight_slack || r.win > r.band[1] + LIMITS.fight_slack, r => `${r.name} (${r.at}, ${r.layer}): bot wins ${pct(r.win)}, band ${pct(r.band[0])}–${pct(r.band[1])}`]],
+  fights: [[r => r.win < r.band[0] - (r.slack ?? LIMITS.fight_slack) || r.win > r.band[1] + (r.slack ?? LIMITS.fight_slack), r => `${r.name} (${r.at}, ${r.layer}): bot wins ${pct(r.win)}, band ${pct(r.band[0])}–${pct(r.band[1])}`]],
   layers: [
     [r => r.prev && r.need && r.need < r.prev.need, r => `${r.name} asks ${r.need} 修为, under ${r.prev.name}'s ${r.prev.need} — the next realm is cheaper than the last layer of this one`],
     [r => r.target_h && r.chore_h && Math.abs(r.chore_h / r.target_h - 1) > LIMITS.hours_off, r => `${r.name}: with one 功课 a day its ${r.need} 修为 fill in ${r.chore_h} h of play (${r.chore_days} days at 30 min) — target ${r.target_h} h; the 功课 carries ${pct(1 - r.chore_h / r.rule_h)} of it`],
@@ -493,7 +546,9 @@ const RED = {
     [r => r.buy && r.value >= r.buy, r => `开炉 ${r.name} (${r.hui}): bought for ${r.buy}, it gives back ${r.value} — a farm`],
     [r => r.family !== 'junk' && r.leans !== r.family, r => `开炉 ${r.name}: leans to ${r.leans}, meant for ${r.family}`],
   ],
-  paces: [[r => r.later && r.typical != null && (r.typical < r.band[0] || r.typical > r.band[1]), r => `${r.label}: typical ${r.typical} days, base band ${r.band[0]}–${r.band[1]}`]],
+  // A gate he comes to well short, or below its layer, waits longer than a sitting where only the pool and a few boards stand.
+  gates: [[r => [r.typical, r.session].some(x => x && (x.wait ?? 0) > LIMITS.gate_wait), r => `${r.label} ${r.scene} (${r.layer}): ${[['typical', r.typical], ['straight through', r.session]].filter(([, x]) => x).map(([w, x]) => `${w} comes ${x.below ? 'a layer short' : `${pct(x.pct)} full`}, ~${x.wait} min of play`).join(' · ')} — reachable: ${r.reach.join(' · ') || 'nothing'}`]],
+  paces: [[r => r.later && r.held && r.typical != null && (r.typical < r.band[0] || r.typical > r.band[1]), r => `${r.label}: typical ${r.typical} days, band ${r.band[0]}–${r.band[1]}${r.own ? ' (its own, balance.json model.bands.except)' : ''}`]],
   claims: [
     [r => r.ratio != null && Math.abs(Math.log(r.ratio)) <= Math.log(1 + LIMITS.claim_off) && offLayers(r).length, r => `${r.id} says 「${r.said}」 of ${r.subject}: true at ${r.layer}, but 闭关 grows with the layer — ${offLayers(r).map(d => `${d.layer} ×${d.ratio}`).join(' · ')}`],
     [r => r.ratio != null && Math.abs(Math.log(r.ratio)) > Math.log(1 + LIMITS.claim_off), r => `${r.id} says 「${r.said}」 of ${r.subject}: ${r.days} × a night's 闭关 at ${r.layer} (${r.night}) = ${r.claimed}, it pays ${r.actual}`]],
@@ -501,8 +556,22 @@ const RED = {
 
 function redList(report) {
   const out = [];
+  // Boards past the limit by the layer's hours: one row a layer.
+  const by = new Map();
+  for (const b of report.boards ?? []) if (b.pct > LIMITS.thing_pct) (by.get(b.layer) ?? by.set(b.layer, []).get(b.layer)).push(b);
+  for (const [layer, bs] of by) {
+    const L = report.layers.find(l => l.name === layer), top = bs.sort((a, b) => b.pct - a.pct)[0];
+    out.push({ src: 'layers', id: L?.key ?? layer, say: `${layer}: ${L?.target_h} h of play a layer — ${bs.length} boards pay over ${pct(LIMITS.thing_pct)} of it each (${top.name}, ${top.minutes} min: ${pct(top.pct)})${L?.curve_h != null && L.curve_h !== L.target_h ? ` — the curve's ${L.curve_h} h, fitted down so the 回 holding it lands in its band` : ''}` });
+  }
   for (const [src, rules] of Object.entries(RED)) for (const row of src === 'claims' ? report.claims.checked.filter(c => c.lang === 'zh') : report[src] ?? []) for (const [when, say] of rules) if (when(row)) out.push({ src, id: row.id ?? row.key ?? row.hui, say: say(row) });
   return out;
+}
+
+/* ── the master table: its knobs (no `_` notes) and the overrides, as the page lists them ── */
+const knobs = v => (Array.isArray(v) ? v : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).filter(([k]) => !k.startsWith('_')).map(([k, x]) => [k, knobs(x)])) : v);
+function masterOf(content) {
+  const b = content.balance ?? {};
+  return b.master ? { knobs: knobs(b.master), overrides: (b.overrides ?? []).map(o => ({ ...o })) } : null;
 }
 
 /* ── the report ── */
@@ -519,8 +588,10 @@ export async function measure(content = loadContent(), { deals = 0, keep = null 
     stamp: { date: new Date().toISOString().slice(0, 10), commit: commit(), deals: deals || keep?.stamp?.deals || 0, target: { ...TARGET, games: gamesOf(content) }, limits: LIMITS },
     defs: { night_h: content.rewards.seclusion.rest_hours, caveats: ['The model plays practice boards only while a stage quest holds him (balance.json model.practice): its days per 回 run long.', 'The model plays no 杂役 errands and no 开府: 灵石 earned is low, affordability pessimistic.', 'A 回 holds him on its stage quest\'s layer (else its cap); a 今 interlude takes the 古 before it.', 'A day of sitting = one night of 闭关 (rewards.json seclusion rest_hours) at the layer, as the rules pay it.'] },
     layers, huis: Object.entries(hl).map(([h, at]) => ({ hui: h, label: huiLabel(content, h, 'zh', 'short') ?? h, layer: ctx.layer(at)?.name ?? layerName(content, at.tier, at.step), earned: null })),
-    paces: paces(content), kailu: kailu(ctx), pills: P, boards: boards(ctx), errands: errands(ctx), shops: shops(ctx), gear: gear(ctx), cards: cards(ctx),
+    paces: paces(content), gates: gates(ctx), kailu: kailu(ctx), pills: P, boards: boards(ctx), errands: errands(ctx), shops: shops(ctx), gear: gear(ctx), cards: cards(ctx),
     fights: F, creatures: creatures(ctx, F), claims: claims(ctx), errors: hardErrors(content),
+    // The master table's knobs and the overrides laid on what it derives (tools/master.mjs; the 数值 page's 总表).
+    master: masterOf(content),
   };
   const by = earnedBy(content);
   for (const h of report.huis) h.earned = round(by[h.hui]);
@@ -544,10 +615,24 @@ function summary(r) {
   return lines.join('\n');
 }
 
+/* The master table's world against balance.json as it stands: the rows that would change (tests/numbers.test.mjs holds it empty). */
+const WORLD = new URL('../worlds/jiuding/', import.meta.url);
+export function applied() {
+  const read = f => JSON.parse(fs.readFileSync(new URL(f, WORLD), 'utf8'));
+  const raw = JSON.parse(fs.readFileSync(BALANCE_FILE, 'utf8'));
+  const next = derive(raw, { ladder: read('ladder.json'), items: read('items.json').items });
+  // The pace fit plays the model on the derived world (master.mjs fitHours): the hours of the layers a 回 holds.
+  const world = withBalance({ ...loadContent(), balance: structuredClone(next) });
+  const fit = fitHours(world, { grindLayers, table: paceTable, play });
+  next.play_pay.hours.qi = fit.qi;
+  for (const o of next.overrides ?? []) if (o.path.startsWith('play_pay.hours')) setPath(next, o.path, structuredClone(o.value));
+  return { raw, next, fit, diff: diffOf(raw, next) };
+}
+
 const arg = (name, d) => { const i = process.argv.indexOf(name); return i < 0 ? null : Number(process.argv[i + 1]) || d; };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const content = loadContent();
+  const content = process.argv.includes('--apply') ? null : loadContent();
   if (process.argv.includes('--check')) {
     const errs = hardErrors(content);
     for (const e of errs) console.error(`ERROR ${e.where}: ${e.say}`);
@@ -555,8 +640,20 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.exit(errs.length ? 1 : 0);
   }
   const write = process.argv.includes('--write');
+  if (process.argv.includes('--apply')) {
+    const { next, diff, fit } = applied();
+    for (const f of fit.fitted) console.log(`fit ${f.hui}: 层 ${f.layers.join('·')} ${f.curve.join('·')} h → ${f.hours.join('·')} h (typical ${round(f.days_were, 1)} → ${round(f.days, 1)} days)${f.gate ? ' — cut for its gates' : ''}${f.out ? ` — OUT of its band ${f.out.join('–')}` : ''}`);
+    for (const w of fit.waits) console.log(`gate ${w.hui}: ${w.say}`);
+    for (const f of fit.unfit) console.log(f.short ? `short ${f.hui}: 层 ${f.layers.join('·')} — typical ${round(f.days, 1)} days, under its band; kept at the curve (dearer layers would only lengthen its gates)` : `unfit ${f.hui}: 层 ${f.layers.join('·')} at ${round(f.days, 1)} days; no hours reach the band (${f.reach.map(x => round(x, 1)).join(' – ')})`);
+    for (const d of diff) console.log(`${d.path}: ${JSON.stringify(d.was)} → ${JSON.stringify(d.now)}`);
+    console.log(diff.length ? `${diff.length} rows ${write ? 'written' : 'would change (dry run: --write to write)'}` : 'the master table and balance.json agree');
+    for (const o of next.overrides ?? []) console.log(`override ${o.path} = ${JSON.stringify(o.value)} — ${o.why}`);
+    if (!write) process.exit(0);
+    if (diff.length) fs.writeFileSync(BALANCE_FILE, balanceText(next));
+  }
+  const world = content ?? loadContent();
   const keep = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : null;
-  const report = await measure(content, { deals: arg('--fights', 30) ?? (write ? 30 : 0), keep });
+  const report = await measure(world, { deals: arg('--fights', 30) ?? (write ? 30 : 0), keep });
   if (write) { fs.writeFileSync(OUT, JSON.stringify(report) + '\n'); console.log(`→ ${fileURLToPath(OUT)}`); }
   console.log(process.argv.includes('--json') ? JSON.stringify(report, null, 1) : summary(report));
 }

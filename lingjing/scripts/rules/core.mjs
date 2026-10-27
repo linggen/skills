@@ -22,7 +22,7 @@ import { capLook, pastCapSay, storyAllows, underCap } from './cap.mjs';
 import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
-import { authoredScale, fightPlay } from './playpay.mjs';
+import { authoredScale, convertRate, fightPlay, pillBelow } from './playpay.mjs';
 
 /* ── Changing it ── */
 
@@ -62,7 +62,8 @@ function amountsOf(content, state, now, grant) {
   // 修为 as a share of the layer (rules/playpay.mjs, 2026-10-27): a fight by its minutes; what the book authors read
   // against the 练气一层 it was written for. Capped by its table as authored.
   const fight = grant.table === 'haunt' && grant.progress ? fightPlay(content, state) : null;
-  const authored = fight ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table);
+  // A pill (`pill`, its 阶 in `tier`): its 转's share of the layer at its own realm, less past it (playpay.mjs pillBelow).
+  const authored = fight ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table) * (grant.table === 'pill' ? pillBelow(content, state, grant.tier) : 1);
   // `share`: a replay's falling share (tasks.mjs duel, playpay.mjs fightReplay) — 修为 and 灵石 alike.
   const share = grant.share ?? 1;
   const want = Math.round(authored * speedOf(content, state) * share);
@@ -106,7 +107,7 @@ function pay(content, state, ctx, grant, landing = state) {
   const base = shut.includes('cultivation') ? 0 : due.base, progress = shut.includes('cultivation') ? 0 : due.progress;
   // A fight's 修为 past the held mark is paid as 灵石 (converting, above).
   const conv = converting(content, grant), over = conv ? pastMark(content, state, progress) : 0;
-  const lingshi = over && !shut.includes('wealth') ? Math.round(over * conv.rate) : 0;
+  const lingshi = over && !shut.includes('wealth') ? Math.round(over * convertRate(content, state, conv)) : 0;
   const wealth = (shut.includes('wealth') ? 0 : due.wealth) + lingshi;
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold: kept } = addProgress(content, state, progress - over, (tier, step) => underCap(content, state, tier, step));

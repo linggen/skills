@@ -618,7 +618,9 @@ const itemOf = (content, id) => content.items.items.find(i => i.id === id);
 const ELEMENT_NAME = (content, lang, el) => pick(content.traits.elements[el], lang);
 const EFFECT_BRIEF = {
   key: () => ({ key: true }),
-  progress: e => ({ progress: e.progress }),
+  // What lands at the layer he stands on (数值系统 phase 2: a pill is a share of the layer), never the authored number.
+  // Where nothing lands yet (零层, before 入门) the 练气一层 number it was written as.
+  progress: (e, content, lang, state) => ({ progress: (state ? paysOf(content, state, new Date(), { table: e.table, progress: e.progress, tier: e.tier })?.progress : null) || Math.round(e.progress) }),
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
   charm: () => ({ charm: true }),
@@ -629,10 +631,10 @@ const EFFECT_BRIEF = {
   ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),
   core: (e, content, lang) => ({ core: e.core, core_name: ELEMENT_NAME(content, lang, e.core) }),
 };
-function effectBrief(content, lang, effect) {
+function effectBrief(content, lang, effect, state = null) {
   const e = effect ?? {};
   const key = Object.keys(EFFECT_BRIEF).find(k => e[k] != null);
-  return key ? EFFECT_BRIEF[key](e, content, lang) : null;
+  return key ? EFFECT_BRIEF[key](e, content, lang, state) : null;
 }
 
 /* An item as Look and the card tell it: its words, its prices, its one
@@ -642,7 +644,7 @@ function itemBrief(content, state, item) {
   return {
     id: item.id, kind: item.kind, name: itemName(item, state, lang), about: pick(item.about, lang), art: item.art,
     buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
-    effect: effectBrief(content, lang, item.effect),
+    effect: effectBrief(content, lang, item.effect, state),
     worn: Object.values(state.wear ?? {}).includes(item.id),
     // A furnace pill's 转 (丹纹): the card draws that many lines, nine in gold (story/jiuding-lu/DESIGN.md § 丹药等级).
     ...(item.zhuan ? { zhuan: item.zhuan } : {}),

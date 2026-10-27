@@ -38,7 +38,7 @@ const atJi = (extra = {}) => ({
 /* At 青鼎, the peak of 结丹, 银月 found — the third cauldron's gift is hers. */
 const atQing = (extra = {}) => ({
   ...atJi(), chapter: '03-qing', scene: '03-cauldron', place: 'liubo', ended: ['00-prologue', '01-ji', '02-yan'],
-  tier: 'core', step: 2, progress: 1200, companion: { joined: '2026-09-20' }, ...extra,
+  tier: 'core', step: 2, progress: content.ladder.tiers.find(t => t.id === 'core').thresholds.at(-1), companion: { joined: '2026-09-20' }, ...extra,
 });
 /* The try whose die lands (or not) under the chance. */
 function tryThat(state, to, lands) {
@@ -216,7 +216,8 @@ test('the odds card draws: the chance, each row, the price of failing, the throw
     assert.doesNotMatch(html, /undefined|\{\w+\}|NaN/, html.match(/.{0,30}(undefined|\{\w+\}|NaN).{0,30}/)?.[0]);
     assert.match(html, new RegExp(`<b>${o.chance}%</b>`));
     assert.equal((html.match(/<li /g) ?? []).length, 1 + o.parts.length, 'the base and a row a factor');
-    assert.match(html, lang === 'zh' ? /渡劫 · 元婴[\s\S]*破境丹[\s\S]*带伤 · 体力不足一半[\s\S]*−10[\s\S]*银月相伴[\s\S]*失手：体力 −30 · 修为 −360/ : /Tribulation · Nascent Soul[\s\S]*Breach pill[\s\S]*Hurt · stamina under half[\s\S]*Yinyue beside you[\s\S]*If it fails: Stamina −30 · cultivation −360/);
+    const lost = o.risk.progress; // a share of 结丹圆满's 修为 (ladder.json breakthrough.fail)
+    assert.match(html, lang === 'zh' ? new RegExp(`渡劫 · 元婴[\\s\\S]*破境丹[\\s\\S]*带伤 · 体力不足一半[\\s\\S]*−10[\\s\\S]*银月相伴[\\s\\S]*失手：体力 −30 · 修为 −${lost}`) : new RegExp(`Tribulation · Nascent Soul[\\s\\S]*Breach pill[\\s\\S]*Hurt · stamina under half[\\s\\S]*Yinyue beside you[\\s\\S]*If it fails: Stamina −30 · cultivation −${lost}`));
     assert.match(html, /data-throw="take">/, 'the throw, open');
     const shut = look({ ...atQing({ lang }), breakthrough: { until: new Date(NOW.getTime() + 2 * HOUR).toISOString() } }, content, ctx);
     const shutHtml = cardHtml({ card: 'breakthrough', id: 'take' }, { ...pageCtx(), look: shut });

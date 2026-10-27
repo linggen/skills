@@ -60,7 +60,7 @@
         "徐"
       ],
       "effect": {
-        "table": "puzzle"
+        "table": "pill"
       }
     },
     {
@@ -422,7 +422,7 @@
       },
       "sold": [],
       "effect": {
-        "table": "scene"
+        "table": "pill"
       }
     },
     {
@@ -431,7 +431,7 @@
       "tier": "qi",
       "zhuan": 9,
       "of": "qi",
-      "_furnace": "Made in 银月's furnace from the garden's culls (xu-yaoyuan-canzhu): 九转, three times the market 聚气丹's 修为; not sold.",
+      "_furnace": "Made in 银月's furnace from the garden's culls (xu-yaoyuan-canzhu): 九转: 30% of the layer he eats it on, six times the market 聚气丹's 5% (balance.json pills, from the master table); not sold. Its card's 「抵三日」 is three nights of 闭关 (10% each) at every layer — tools/numbers.mjs holds it.",
       "name": {
         "zh": "九转聚气丹",
         "en": "Nine-turn qi-gathering pill"
@@ -447,7 +447,7 @@
       },
       "sold": [],
       "effect": {
-        "table": "scene"
+        "table": "pill"
       }
     },
     {
@@ -1649,9 +1649,9 @@
       },
       "sold": [],
       "effect": {
-        "table": "task"
+        "table": "pill"
       },
-      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七: 隔上好几个月，才蹦出一颗三道四道的 — the rare draw of the 聚气丹 方子. 30 修为 from the task table, between the market one (20) and the nine-turn (60); never sold.",
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七: 隔上好几个月，才蹦出一颗三道四道的 — the rare draw of the 聚气丹 方子. 15% of the layer (balance.json pills, 三转), between the market one (5%) and the nine-turn (30%); never sold.",
       "art_source": "The 聚气丹's picture."
     },
     {
@@ -1675,9 +1675,9 @@
       },
       "sold": [],
       "effect": {
-        "table": "task"
+        "table": "pill"
       },
-      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七's 回春丹 方子, its rare draw. 30 修为 from the task table; never sold.",
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 古七's 回春丹 方子, its rare draw. 15% of the layer (balance.json pills, 三转); never sold.",
       "art_source": "The 回春丹's picture."
     },
     {

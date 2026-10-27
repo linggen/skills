@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 12;
+export const STATE_VERSION = 13;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -505,6 +505,10 @@ const MIGRATIONS = [
   // v12 (2026-10-27): 练气's 层 from 二层 were raised for 人间功课's pay, then taken back the same day when every pay
   // became a share of the layer (balance.json `_play_pay`). `thresholds_were["12"]` is the same ladder: a no-op carry.
   [12, m => { m.ladder_pace ??= 12; }],
+  // v13 (2026-10-27, 数值系统 phase 2): the 层 numbers come from the master table (balance.json `master`: 练气一层 470, ×1.1 a
+  // layer, 筑基 above 练气九层). Every pay is a share of the layer, so only the numbers move: the 层 kept, the bar as full as
+  // it stood, the stretch with it (paceLayer; ladder.json `thresholds_were["13"]`, 练气 and 筑基).
+  [13, m => { m.ladder_pace ??= 13; }],
 ];
 
 export function migrate(state, content = null) {
@@ -591,10 +595,15 @@ export function zeroLayer(content, saved) {
 export function paceLayer(content, saved) {
   const { ladder_pace, ...s } = saved;
   // `thresholds_were` by the version a save was older than (a mark of `true` is v9's, as first written).
-  const from = ladder_pace === true ? 9 : ladder_pace, tier = tierOf(content, s.tier);
-  const was = tier?.thresholds_were?.[from]?.[s.step], now = tier?.thresholds?.[s.step];
+  // A tier with no ladder of that version (筑基 and above changed first at v13) reads the oldest it has after it.
+  const from = ladder_pace === true ? 9 : ladder_pace, tier = tierOf(content, s.tier), were = tier?.thresholds_were ?? {};
+  const ver = Object.keys(were).map(Number).filter(k => k >= from).sort((a, b) => a - b)[0];
+  const was = were[ver]?.[s.step], now = tier?.thresholds?.[s.step];
   if (!(was > 0) || !(now > 0)) return s;
-  return { ...s, progress: Math.min(now, Math.round((s.progress ?? 0) * now / was)) };
+  // The bar as full as it stood — past the mark too (230/200 at a cap stays as far past) — and the stretch the step asks
+  // on top (stepUp's `stretch`, 修为 carried over the last mark) by the same measure.
+  const k = now / was, key = stretchKey(s.tier, s.step), st = s.stretch?.[key];
+  return { ...s, progress: Math.round((s.progress ?? 0) * k), ...(st ? { stretch: { ...s.stretch, [key]: Math.round(st * k) } } : {}) };
 }
 
 /* What a save rooted before 2026-10-16 held without writing it down: the `_legacy_starter` of
