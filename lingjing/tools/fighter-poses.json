@@ -1,361 +1,2308 @@
 {
- "_about": "格斗's frames: each frame's pose sketch (a plain mannequin, side view facing right: lean, legF/legB/armF/armB as [upper, lower] angles from straight down; `dx` the hips' offset, `up` a lift, `width` the canvas when a blade needs room) and the words the FLUX edit is given beside the master painting. tools/fighter-frames.py reads `dx` for each frame's anchor.",
+ "_about": "格斗's painted frames (tools/fighter-frames.py): each fighter's master (txt2img, or an edit of a `base` painting; the kept seed and words), the words naming who it is in every frame, each frame's pose sketch (lean, legF/legB/armF/armB as [upper, lower] degrees from straight down toward the facing side; `up` a lift, `rot` a fall, `width` room for a blade, `air`/`free` not stood on the ground, `fix` {dx, dy, s} placed by eye, `seed` the kept painting) and words, and the clips the board plays (fps, loop, `hit` the strike frame, `calm` the frames reduced motion keeps). 秦雁's master: txt2img seed 2; 沈小满's: an edit of his `base` (the v3 rig's painting, seed 2) toward his guard.",
  "qinyan": {
-  "idle1": {
-   "lean": 6,
-   "legF": [
-    24,
-    -4
-   ],
-   "legB": [
-    -10,
-    -30
-   ],
-   "armF": [
-    60,
-    88
-   ],
-   "armB": [
-    30,
-    140
-   ],
-   "words": "a martial guard stance, knees bent, weight low, sword held forward level toward the right, left hand raised open by her chest."
+  "master": {
+   "seed": 2,
+   "words": "A tall young Chinese swordswoman of twenty, black hair gathered in a high bun with a wooden hairpin, a straight serious face, wearing a long pale blue-grey hanfu robe to the ankles with a white inner collar and wide sleeves, a dark blue-grey sash tied at the waist with its ends hanging, dark cloth shoes. She holds a plain straight Chinese jian sword with a brass guard in her right hand. She stands in a martial guard stance: knees slightly bent, weight low, the sword held out forward and level toward the right at chest height, the left hand raised open by her chest. Drawn in soft graphite pencil and light watercolour wash on warm aged paper, in the manner of an old Chinese book illustration, clean confident outlines, gentle shading. The whole figure from the top of the bun to the shoes, seen from the SIDE, facing RIGHT, alone on plain empty paper, no ground, no other objects, no text. Set in old rural China (Ming dynasty dress), not Japanese, not Western."
   },
-  "idle2": {
-   "lean": 5,
-   "legF": [
-    23,
-    -3
-   ],
-   "legB": [
-    -10,
-    -29
-   ],
-   "armF": [
-    58,
-    86
-   ],
-   "armB": [
-    30,
-    138
-   ],
-   "up": 4,
-   "words": "the same guard stance, breathing in, sword held forward toward the right, left hand open by her chest."
+  "armed": true,
+  "robe": true,
+  "who": "the same young Chinese swordswoman from the first image — the same face, high bun with a wooden hairpin, the same long pale blue-grey hanfu robe with a white inner collar and wide sleeves, the dark blue-grey sash, dark cloth shoes, the same plain straight jian sword with a brass guard in her right hand — ",
+  "frames": {
+   "idle1": {
+    "lean": 6,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -10,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a martial guard stance, knees bent, weight low, sword held forward level toward the right, left hand raised open by her chest."
+   },
+   "idle2": {
+    "lean": 5,
+    "legF": [
+     23,
+     -3
+    ],
+    "legB": [
+     -10,
+     -29
+    ],
+    "armF": [
+     58,
+     86
+    ],
+    "armB": [
+     30,
+     138
+    ],
+    "up": 4,
+    "words": "the same guard stance, breathing in, sword held forward toward the right, left hand open by her chest."
+   },
+   "idle3": {
+    "lean": 4,
+    "legF": [
+     22,
+     -2
+    ],
+    "legB": [
+     -9,
+     -28
+    ],
+    "armF": [
+     56,
+     84
+    ],
+    "armB": [
+     28,
+     136
+    ],
+    "up": 7,
+    "words": "the same guard stance, a breath held, sword held forward toward the right, left hand open by her chest."
+   },
+   "idle4": {
+    "lean": 5,
+    "legF": [
+     23,
+     -3
+    ],
+    "legB": [
+     -10,
+     -29
+    ],
+    "armF": [
+     58,
+     86
+    ],
+    "armB": [
+     30,
+     138
+    ],
+    "up": 3,
+    "words": "the same guard stance, breathing out, sword held forward toward the right, left hand open by her chest."
+   },
+   "walk1": {
+    "lean": 8,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -26,
+     -40
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a step forward to the right in her guard: front foot reaching forward, back foot behind with the heel lifted, sword held forward."
+   },
+   "walk2": {
+    "lean": 8,
+    "legF": [
+     22,
+     6
+    ],
+    "legB": [
+     -14,
+     -50
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "walking forward to the right in her guard, the back foot lifting to pass, sword held forward."
+   },
+   "walk3": {
+    "lean": 8,
+    "legF": [
+     4,
+     -6
+    ],
+    "legB": [
+     6,
+     -20
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "walking forward to the right, the feet passing each other under the robe, sword held forward."
+   },
+   "walk4": {
+    "lean": 8,
+    "legF": [
+     -24,
+     -40
+    ],
+    "legB": [
+     34,
+     0
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "walking forward to the right in her guard, the other foot now reaching forward, sword held forward."
+   },
+   "walk5": {
+    "lean": 8,
+    "legF": [
+     -12,
+     -50
+    ],
+    "legB": [
+     22,
+     6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "walking forward to the right, the back foot lifting to pass, sword held forward."
+   },
+   "walk6": {
+    "lean": 8,
+    "legF": [
+     6,
+     -20
+    ],
+    "legB": [
+     4,
+     -6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "walking forward to the right, the feet passing under the robe, sword held forward. Only one bare sword, no scabbard."
+   },
+   "poke1": {
+    "lean": -4,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -12,
+     -32
+    ],
+    "armF": [
+     30,
+     70
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "drawing the sword back by her right hip before a thrust, the point still toward the right, body upright, knees bent."
+   },
+   "poke2": {
+    "lean": 16,
+    "legF": [
+     32,
+     0
+    ],
+    "legB": [
+     -20,
+     -36
+    ],
+    "armF": [
+     88,
+     90
+    ],
+    "armB": [
+     -20,
+     20
+    ],
+    "dx": 20,
+    "width": 1088,
+    "words": "a quick straight thrust, her right arm and the sword fully extended forward to the right in one line at chest height, leaning forward, left arm swept back. Only ONE sword, in her right hand; nothing on her back."
+   },
+   "poke3": {
+    "lean": 10,
+    "legF": [
+     28,
+     -2
+    ],
+    "legB": [
+     -14,
+     -32
+    ],
+    "armF": [
+     70,
+     92
+    ],
+    "armB": [
+     10,
+     90
+    ],
+    "dx": 10,
+    "words": "recovering from a thrust, the sword arm coming back, the blade still pointing toward the right."
+   },
+   "thrust1": {
+    "lean": -10,
+    "legF": [
+     30,
+     20
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     10,
+     -10
+    ],
+    "armB": [
+     40,
+     120
+    ],
+    "swordTurn": 180,
+    "words": "winding up for a lunge: crouched a little, the bare sword blade raised back over her right shoulder in her right hand (no scabbard), left hand reaching forward."
+   },
+   "thrust2": {
+    "lean": 30,
+    "legF": [
+     64,
+     4
+    ],
+    "legB": [
+     -50,
+     -56
+    ],
+    "armF": [
+     90,
+     90
+    ],
+    "armB": [
+     -40,
+     -20
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "a deep lunge: front knee deeply bent, back leg stretched straight behind, body leaning forward, right arm and the sword fully extended forward to the right in one line. ONE sword only, held in her right hand.",
+    "fix": {
+     "s": 1.08
+    }
+   },
+   "thrust3": {
+    "lean": 26,
+    "legF": [
+     60,
+     4
+    ],
+    "legB": [
+     -46,
+     -54
+    ],
+    "armF": [
+     86,
+     88
+    ],
+    "armB": [
+     -30,
+     -10
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "holding the deep lunge: front knee bent, back leg straight behind, the sword extended forward to the right, robe still swirling. ONE sword only, held in her right hand."
+   },
+   "thrust4": {
+    "lean": 12,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -24,
+     -40
+    ],
+    "armF": [
+     66,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "dx": 14,
+    "words": "rising out of the lunge back into her guard, the sword coming back to chest height pointing to the right."
+   },
+   "ice1": {
+    "lean": 2,
+    "legF": [
+     20,
+     2
+    ],
+    "legB": [
+     -14,
+     -20
+    ],
+    "armF": [
+     14,
+     20
+    ],
+    "armB": [
+     120,
+     175
+    ],
+    "words": "standing upright, she raises two fingers of her LEFT hand up in front of her face as if casting a spell, the sword held low at her right side pointing down and forward. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2,
+    "fix": {
+     "erase": [
+      [
+       458,
+       650,
+       607,
+       997
+      ],
+      [
+       485,
+       315,
+       545,
+       375
+      ]
+     ]
+    }
+   },
+   "ice2": {
+    "lean": 8,
+    "legF": [
+     26,
+     4
+    ],
+    "legB": [
+     -16,
+     -24
+    ],
+    "armF": [
+     14,
+     24
+    ],
+    "armB": [
+     86,
+     90
+    ],
+    "words": "casting: her LEFT arm thrust straight forward to the right at shoulder height, two fingers pointing ahead, the sword held low at her right side. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2,
+    "fix": {
+     "erase": [
+      [
+       491,
+       702,
+       630,
+       881
+      ],
+      [
+       465,
+       765,
+       573,
+       994
+      ],
+      [
+       470,
+       240,
+       570,
+       310
+      ]
+     ]
+    }
+   },
+   "edge1": {
+    "lean": 4,
+    "legF": [
+     22,
+     0
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     84,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "words": "perfectly still, her sword arm straight out forward to the right, the sword point level at the height of a man's throat, left hand open by her chest.",
+    "width": 1088
+   },
+   "glow1": {
+    "lean": 4,
+    "legF": [
+     20,
+     2
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     12,
+     30
+    ],
+    "armB": [
+     56,
+     140
+    ],
+    "words": "standing in guard, the sword lowered in her right hand, her LEFT palm turned up open in front of her chest, looking at it. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2
+   },
+   "hold1": {
+    "lean": -12,
+    "legF": [
+     30,
+     14
+    ],
+    "legB": [
+     -8,
+     -30
+    ],
+    "armF": [
+     8,
+     30
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "words": "her weight sunk back onto her rear foot, body leaning back, her LEFT open palm drawn back by her shoulder, holding back, the sword low in her right hand. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2,
+    "fix": {
+     "erase": [
+      [
+       454,
+       668,
+       640,
+       1002
+      ],
+      [
+       475,
+       575,
+       545,
+       645
+      ]
+     ]
+    }
+   },
+   "strike1": {
+    "lean": 18,
+    "legF": [
+     34,
+     6
+    ],
+    "legB": [
+     -24,
+     -30
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     88,
+     92
+    ],
+    "words": "striking with her LEFT open palm thrust straight forward to the right at chest height, front knee bent, the sword hand swept back behind her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2
+   },
+   "strike2": {
+    "lean": 10,
+    "legF": [
+     28,
+     4
+    ],
+    "legB": [
+     -20,
+     -26
+    ],
+    "armF": [
+     0,
+     20
+    ],
+    "armB": [
+     66,
+     80
+    ],
+    "words": "just after a palm strike, her LEFT palm still forward, drawing back into her stance, the sword low behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2
+   },
+   "sblock": {
+    "lean": -6,
+    "legF": [
+     16,
+     4
+    ],
+    "legB": [
+     -24,
+     -12
+    ],
+    "armF": [
+     30,
+     170
+    ],
+    "armB": [
+     30,
+     120
+    ],
+    "words": "blocking: the sword held upright in front of her body, blade pointing up, her left hand braced on her right wrist, leaning back slightly.",
+    "fix": {
+     "s": 1.12
+    }
+   },
+   "hit1": {
+    "lean": -20,
+    "legF": [
+     14,
+     0
+    ],
+    "legB": [
+     -30,
+     -16
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     -46,
+     -14
+    ],
+    "words": "struck: she reels backward to the left, head and shoulders thrown back, arms flung out, the sword still in her right hand.",
+    "head": -18
+   },
+   "hit2": {
+    "lean": -10,
+    "legF": [
+     18,
+     2
+    ],
+    "legB": [
+     -24,
+     -16
+    ],
+    "armF": [
+     10,
+     30
+    ],
+    "armB": [
+     -20,
+     0
+    ],
+    "words": "staggered, catching herself, bent a little forward and back on her heels, the sword low in her right hand. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2,
+    "fix": {
+     "erase": [
+      [
+       498,
+       585,
+       649,
+       760
+      ],
+      [
+       442,
+       605,
+       657,
+       1009
+      ]
+     ]
+    }
+   },
+   "jianqi1": {
+    "lean": -16,
+    "legF": [
+     40,
+     30
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     -60,
+     -100
+    ],
+    "armB": [
+     20,
+     40
+    ],
+    "words": "winding up for a great sweeping cut: crouched, the sword swung back low behind her body in her right hand, left hand forward."
+   },
+   "jianqi2": {
+    "lean": 30,
+    "legF": [
+     70,
+     40
+    ],
+    "legB": [
+     -50,
+     -30
+    ],
+    "armF": [
+     100,
+     110
+    ],
+    "armB": [
+     -30,
+     -10
+    ],
+    "words": "a long low sweeping slash: deep lunge to the right, the sword swept out forward at knee height in her right hand, robe flaring.",
+    "width": 1088,
+    "fix": {
+     "s": 1.15
+    }
+   },
+   "slip1": {
+    "lean": -30,
+    "legF": [
+     60,
+     60
+    ],
+    "legB": [
+     10,
+     -10
+    ],
+    "armF": [
+     -50,
+     -80
+    ],
+    "armB": [
+     90,
+     140
+    ],
+    "words": "her front heel skidding out from under her on slippery oil, losing her balance backward, arms flung up, the sword in her right hand.",
+    "head": -14
+   },
+   "slip2": {
+    "lean": -48,
+    "legF": [
+     72,
+     76
+    ],
+    "legB": [
+     32,
+     10
+    ],
+    "armF": [
+     -62,
+     -92
+    ],
+    "armB": [
+     100,
+     142
+    ],
+    "words": "falling backward, both feet sliding out forward, arms flailing, the sword flung up in her right hand.",
+    "head": -20,
+    "fix": {
+     "s": 1.2
+    }
+   },
+   "win1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     16,
+     0
+    ],
+    "armB": [
+     40,
+     100
+    ],
+    "words": "standing calm and straight after a bout, the sword pointed down at her right side, her left hand raised before her chest in a polite salute. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2,
+    "fix": {
+     "erase": [
+      [
+       530,
+       395,
+       650,
+       475
+      ]
+     ]
+    }
+   },
+   "lose1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     10,
+     10
+    ],
+    "armB": [
+     10,
+     -6
+    ],
+    "words": "standing quietly with her shoulders lowered, the sword hanging down in her right hand, conceding with a small nod. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2,
+    "fix": {
+     "erase": [
+      [
+       487,
+       673,
+       592,
+       844
+      ],
+      [
+       466,
+       817,
+       584,
+       902
+      ],
+      [
+       467,
+       909,
+       552,
+       993
+      ]
+     ]
+    }
+   }
   },
-  "idle3": {
-   "lean": 4,
-   "legF": [
-    22,
-    -2
-   ],
-   "legB": [
-    -9,
-    -28
-   ],
-   "armF": [
-    56,
-    84
-   ],
-   "armB": [
-    28,
-    136
-   ],
-   "up": 7,
-   "words": "the same guard stance, a breath held, sword held forward toward the right, left hand open by her chest."
+  "clips": {
+   "idle": {
+    "frames": [
+     "idle1",
+     "idle2",
+     "idle3",
+     "idle4"
+    ],
+    "fps": 4,
+    "loop": true,
+    "calm": [
+     "idle1"
+    ],
+    "fade": true
+   },
+   "walk": {
+    "frames": [
+     "walk1",
+     "walk2",
+     "walk3",
+     "walk4",
+     "walk5",
+     "walk6"
+    ],
+    "fps": 9,
+    "loop": true,
+    "calm": [
+     "walk1",
+     "walk4"
+    ]
+   },
+   "back": {
+    "frames": [
+     "walk6",
+     "walk5",
+     "walk4",
+     "walk3",
+     "walk2",
+     "walk1"
+    ],
+    "fps": 8,
+    "loop": true,
+    "calm": [
+     "walk4",
+     "walk1"
+    ]
+   },
+   "poke": {
+    "frames": [
+     "poke1",
+     "poke2",
+     "poke3"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "poke1",
+     "poke2"
+    ]
+   },
+   "thrust": {
+    "frames": [
+     "thrust1",
+     "thrust2",
+     "thrust3",
+     "thrust4"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "thrust1",
+     "thrust2"
+    ]
+   },
+   "ice": {
+    "frames": [
+     "ice1",
+     "ice2"
+    ],
+    "hit": 1,
+    "fps": 8
+   },
+   "edge": {
+    "frames": [
+     "edge1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "glow": {
+    "frames": [
+     "glow1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hold": {
+    "frames": [
+     "hold1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "strike": {
+    "frames": [
+     "strike1",
+     "strike2"
+    ],
+    "fps": 6,
+    "calm": [
+     "strike1"
+    ]
+   },
+   "block": {
+    "frames": [
+     "sblock"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hit": {
+    "frames": [
+     "hit1",
+     "hit2"
+    ],
+    "fps": 7,
+    "calm": [
+     "hit1"
+    ]
+   },
+   "jianqi": {
+    "frames": [
+     "jianqi1",
+     "jianqi2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "jianqi2"
+    ]
+   },
+   "slip": {
+    "frames": [
+     "slip1",
+     "slip2"
+    ],
+    "fps": 6,
+    "calm": [
+     "slip2"
+    ]
+   },
+   "win": {
+    "frames": [
+     "win1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "lose": {
+    "frames": [
+     "lose1"
+    ],
+    "fps": 1,
+    "loop": true
+   }
+  }
+ },
+ "xiaoman": {
+  "master": {
+   "seed": 1,
+   "pose": "idle1",
+   "words": "Repaint the same thin Chinese peasant boy from the first image — the same face, small top-knot of black hair with loose short hair, the same loose grey-brown patched hemp jacket tied with a rope belt, sleeves rolled to the forearm, the same baggy hemp trousers with frayed hems above the ankle, rope-bound straw sandals, EMPTY HANDS, no weapon, no bow, nothing on his back — in the pose of the second image: a martial-arts guard stance, knees bent, weight low and springy, both fists raised in front of his face and chest, chin tucked. Drawn in the same soft graphite pencil and light watercolour wash on warm aged paper as the first image, in the manner of an old Chinese book illustration, the whole figure from the top-knot to the sandals, seen from the side facing right, alone on plain empty paper, no ground, no other objects, no text. The second image is only a pose guide: copy its body pose exactly, never its grey shapes.",
+   "base": {
+    "seed": 2,
+    "words": "A thin Chinese peasant boy of fourteen with a small top-knot of black hair and loose short hair, wearing a plain loose grey-brown patched hemp jacket tied with a rope belt, sleeves rolled to the forearm, baggy hemp trousers ending above the ankle with frayed hems, rope-bound straw sandals. Seen exactly from the SIDE in full profile, the whole body from the top of the head to the feet, facing RIGHT. Standing in a wide stance like a paper shadow-puppet figure laid out for cutting: feet planted far apart, the front leg forward and the back leg behind with a clear gap of empty paper between the legs; the front arm held straight out forward and slightly down, away from the body, the back arm held straight out behind and slightly down, away from the body, both hands open, clear empty paper between each arm and the body. Calm face in profile.Drawn in soft graphite pencil and light watercolour wash on warm aged paper, in the manner of an old Chinese book illustration, clean confident outlines, gentle shading.  The subject ALONE in the middle of the picture with wide plain empty paper all around it, the paper even and clean, no ground, no shadow, no landscape, no other objects. Set in old rural China (Ming dynasty dress), not Japanese, not Western. Style: Chinese ink wash painting (shuimo with light colour) on warm aged sepia rice paper, loose xieyi brushwork, soft ink gradations from black to pale grey, the faintest muted mineral tint only where it carries meaning, in the manner of an old Chinese album leaf. No bright or saturated colour, no white paper, no pen hatching, no Western field-guide rendering, no photograph, no 3D. No text, no characters, no calligraphy, no seal, no signature, no border, no frame."
+   }
   },
-  "idle4": {
-   "lean": 5,
-   "legF": [
-    23,
-    -3
-   ],
-   "legB": [
-    -10,
-    -29
-   ],
-   "armF": [
-    58,
-    86
-   ],
-   "armB": [
-    30,
-    138
-   ],
-   "up": 3,
-   "words": "the same guard stance, breathing out, sword held forward toward the right, left hand open by her chest."
+  "armed": false,
+  "robe": false,
+  "who": "the same thin Chinese peasant boy from the first image — the same face, small top-knot of black hair with loose short hair, the same loose grey-brown patched hemp jacket tied with a rope belt, sleeves rolled to the forearm, the same baggy hemp trousers with frayed hems above the ankle, rope-bound straw sandals, EMPTY HANDS, no weapon, no bow, nothing on his back — ",
+  "frames": {
+   "idle1": {
+    "lean": 8,
+    "legF": [
+     24,
+     -6
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     30,
+     150
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "a martial-arts guard stance, knees bent, weight low and springy, both fists raised in front of his face and chest, chin tucked.",
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "idle2": {
+    "lean": 7,
+    "legF": [
+     23,
+     -5
+    ],
+    "legB": [
+     -13,
+     -29
+    ],
+    "armF": [
+     30,
+     148
+    ],
+    "armB": [
+     44,
+     158
+    ],
+    "words": "the same fighting guard, bouncing up a little on the balls of his feet, both fists up.",
+    "up": 4,
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "idle3": {
+    "lean": 6,
+    "legF": [
+     22,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     30,
+     146
+    ],
+    "armB": [
+     44,
+     156
+    ],
+    "words": "the same fighting guard at the top of a little bounce, both fists up.",
+    "up": 8,
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "idle4": {
+    "lean": 7,
+    "legF": [
+     23,
+     -5
+    ],
+    "legB": [
+     -13,
+     -29
+    ],
+    "armF": [
+     30,
+     148
+    ],
+    "armB": [
+     44,
+     158
+    ],
+    "words": "the same fighting guard, settling down from a little bounce, both fists up.",
+    "up": 3,
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "walk1": {
+    "lean": 10,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -26,
+     -40
+    ],
+    "armF": [
+     30,
+     150
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "stepping forward to the right in his fighting guard: front foot reaching forward, back heel lifted, both fists up.",
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "walk2": {
+    "lean": 6,
+    "legF": [
+     40,
+     10
+    ],
+    "legB": [
+     -10,
+     -30
+    ],
+    "armF": [
+     40,
+     120
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "falling down through the air after a jump, his feet off the ground, both legs hanging down straight together with toes pointed down, arms raised out for balance. No ground under him.",
+    "fix": {
+     "s": 1.08
+    },
+    "seed": 3
+   },
+   "walk3": {
+    "lean": 10,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     60,
+     160
+    ],
+    "words": "leaping high up in the air, his feet far off the ground, both knees pulled up tight to his chest, feet tucked under him, fists up. No ground under him.",
+    "fix": {
+     "s": 1.0
+    },
+    "seed": 3
+   },
+   "crouch1": {
+    "lean": 18,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -50
+    ],
+    "armF": [
+     40,
+     150
+    ],
+    "armB": [
+     50,
+     160
+    ],
+    "words": "dropping into a crouch, knees bending deep, fists up by his face.",
+    "fix": {
+     "s": 1.024
+    }
+   },
+   "crouch2": {
+    "lean": 30,
+    "legF": [
+     80,
+     -6
+    ],
+    "legB": [
+     26,
+     -80
+    ],
+    "armF": [
+     50,
+     150
+    ],
+    "armB": [
+     60,
+     160
+    ],
+    "words": "crouching low on bent knees, the back knee near the ground, both fists up guarding his face.",
+    "fix": {
+     "s": 0.929
+    }
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     10,
+     30
+    ],
+    "armB": [
+     0,
+     20
+    ],
+    "words": "crouched to spring, about to jump up, arms swung low behind.",
+    "fix": {
+     "s": 1.083
+    }
+   },
+   "jump2": {
+    "lean": 10,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     60,
+     160
+    ],
+    "words": "leaping high up in the air, his feet far off the ground, both knees pulled up tight to his chest, feet tucked under him, fists up. No ground under him.",
+    "air": true,
+    "fix": {
+     "s": 1.0
+    },
+    "seed": 2
+   },
+   "jump3": {
+    "lean": 6,
+    "legF": [
+     40,
+     10
+    ],
+    "legB": [
+     -10,
+     -30
+    ],
+    "armF": [
+     40,
+     120
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "falling down through the air after a jump, his feet off the ground, both legs hanging down straight together with toes pointed down, arms raised out for balance. No ground under him.",
+    "air": true,
+    "fix": {
+     "s": 1.03
+    },
+    "seed": 2
+   },
+   "air1": {
+    "lean": -6,
+    "legF": [
+     92,
+     96
+    ],
+    "legB": [
+     10,
+     -40
+    ],
+    "armF": [
+     60,
+     90
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a flying kick in mid-air: his front leg kicked straight out forward to the right, the other leg tucked, arms out for balance.",
+    "air": true,
+    "fix": {
+     "s": 1.182
+    }
+   },
+   "lp1": {
+    "lean": 12,
+    "legF": [
+     26,
+     -4
+    ],
+    "legB": [
+     -18,
+     -30
+    ],
+    "armF": [
+     60,
+     110
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "starting a quick jab, his front fist beginning to shoot forward, the other fist up by his chin.",
+    "fix": {
+     "s": 1.016
+    }
+   },
+   "lp2": {
+    "lean": 16,
+    "legF": [
+     28,
+     -2
+    ],
+    "legB": [
+     -22,
+     -30
+    ],
+    "armF": [
+     88,
+     90
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "a quick straight jab: his front arm fully extended forward to the right at face height with a fist, the other fist up by his chin.",
+    "fix": {
+     "s": 1.083
+    }
+   },
+   "lk1": {
+    "lean": 0,
+    "legF": [
+     70,
+     -40
+    ],
+    "legB": [
+     -10,
+     -10
+    ],
+    "armF": [
+     30,
+     140
+    ],
+    "armB": [
+     50,
+     150
+    ],
+    "words": "chambering a quick kick, his front knee raised high, fists up.",
+    "fix": {
+     "s": 1.3
+    }
+   },
+   "lk2": {
+    "lean": -8,
+    "legF": [
+     84,
+     88
+    ],
+    "legB": [
+     -14,
+     -6
+    ],
+    "armF": [
+     30,
+     130
+    ],
+    "armB": [
+     50,
+     150
+    ],
+    "words": "a quick front kick: his front leg kicked straight out forward to the right at waist height, standing on the other leg, fists up.",
+    "fix": {
+     "s": 1.13
+    }
+   },
+   "hp1": {
+    "lean": -4,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     -20,
+     60
+    ],
+    "armB": [
+     40,
+     150
+    ],
+    "words": "winding up a big punch: his rear fist drawn back by his ear, body twisted, weight on the back foot.",
+    "fix": {
+     "s": 1.016
+    }
+   },
+   "hp2": {
+    "lean": 26,
+    "legF": [
+     44,
+     10
+    ],
+    "legB": [
+     -34,
+     -16
+    ],
+    "armF": [
+     92,
+     92
+    ],
+    "armB": [
+     -24,
+     16
+    ],
+    "words": "a big straight punch thrown with his whole body: his arm fully extended forward to the right at head height with a fist, front knee bent, the other arm pulled back.",
+    "fix": {
+     "s": 1.13
+    }
+   },
+   "hp3": {
+    "lean": 14,
+    "legF": [
+     34,
+     4
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     60,
+     120
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "recovering from a big punch, drawing the fist back toward his guard.",
+    "fix": {
+     "s": 1.016
+    }
+   },
+   "hk1": {
+    "lean": -6,
+    "legF": [
+     50,
+     10
+    ],
+    "legB": [
+     30,
+     -36
+    ],
+    "armF": [
+     36,
+     82
+    ],
+    "armB": [
+     10,
+     52
+    ],
+    "words": "twisting to throw a low hooking kick, his front leg swinging back to start, arms out.",
+    "fix": {
+     "s": 1.182
+    }
+   },
+   "hk2": {
+    "lean": -16,
+    "legF": [
+     84,
+     94
+    ],
+    "legB": [
+     44,
+     -44
+    ],
+    "armF": [
+     46,
+     70
+    ],
+    "armB": [
+     -40,
+     -12
+    ],
+    "words": "a low hooking sweep kick: dropping low, his front leg swept out along the ground forward to the right to hook an ankle, the back knee bent, arms out for balance.",
+    "fix": {
+     "s": 1.238
+    }
+   },
+   "clp1": {
+    "lean": 28,
+    "legF": [
+     80,
+     -6
+    ],
+    "legB": [
+     26,
+     -80
+    ],
+    "armF": [
+     86,
+     90
+    ],
+    "armB": [
+     60,
+     160
+    ],
+    "words": "crouching low and throwing a quick jab forward to the right, his front arm extended with a fist at chest height.",
+    "fix": {
+     "s": 1.13
+    }
+   },
+   "clk1": {
+    "lean": 20,
+    "legF": [
+     90,
+     90
+    ],
+    "legB": [
+     30,
+     -70
+    ],
+    "armF": [
+     50,
+     150
+    ],
+    "armB": [
+     60,
+     160
+    ],
+    "words": "crouching low and kicking his front foot straight out forward along the ground, fists up.",
+    "fix": {
+     "s": 1.182
+    }
+   },
+   "chp1": {
+    "lean": 10,
+    "legF": [
+     70,
+     -10
+    ],
+    "legB": [
+     26,
+     -80
+    ],
+    "armF": [
+     150,
+     170
+    ],
+    "armB": [
+     50,
+     150
+    ],
+    "words": "rising from a crouch with an upward punch, his front fist driven straight up above his head.",
+    "fix": {
+     "s": 1.13
+    }
+   },
+   "chk1": {
+    "lean": 30,
+    "legF": [
+     100,
+     90
+    ],
+    "legB": [
+     40,
+     -80
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     40,
+     20
+    ],
+    "words": "a crouching sweep: very low, one hand on the ground, his front leg swept out flat along the ground forward to the right.",
+    "fix": {
+     "s": 1.238
+    }
+   },
+   "block1": {
+    "lean": -6,
+    "legF": [
+     16,
+     2
+    ],
+    "legB": [
+     -24,
+     -10
+    ],
+    "armF": [
+     64,
+     162
+    ],
+    "armB": [
+     48,
+     152
+    ],
+    "words": "blocking: both forearms raised crossed in front of his face, leaning back, bracing.",
+    "head": -6,
+    "fix": {
+     "s": 1.083
+    }
+   },
+   "cblock1": {
+    "lean": 24,
+    "legF": [
+     76,
+     -6
+    ],
+    "legB": [
+     26,
+     -76
+    ],
+    "armF": [
+     74,
+     160
+    ],
+    "armB": [
+     58,
+     150
+    ],
+    "words": "crouching low, both forearms raised crossed in front of his face, blocking.",
+    "head": -4,
+    "fix": {
+     "s": 0.963
+    }
+   },
+   "hit1": {
+    "lean": -22,
+    "legF": [
+     14,
+     0
+    ],
+    "legB": [
+     -30,
+     -16
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     -46,
+     -14
+    ],
+    "words": "struck: he reels backward to the left, his head and shoulders thrown back, arms flung out.",
+    "head": -18,
+    "fix": {
+     "s": 1.083
+    }
+   },
+   "hit2": {
+    "lean": -6,
+    "legF": [
+     18,
+     2
+    ],
+    "legB": [
+     -24,
+     -16
+    ],
+    "armF": [
+     20,
+     60
+    ],
+    "armB": [
+     10,
+     40
+    ],
+    "words": "staggered, hunched over in pain, catching himself on his heels, arms low.",
+    "fix": {
+     "s": 1.083
+    }
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward.",
+    "air": true,
+    "fix": {
+     "s": 1.238
+    }
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on his back on the ground, knocked down, arms spread, legs out.",
+    "rot": -88,
+    "free": true,
+    "fix": {
+     "s": 1.25
+    }
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     20,
+     20
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, rising.",
+    "fix": {
+     "s": 1.238
+    }
+   },
+   "rise1": {
+    "lean": 16,
+    "legF": [
+     60,
+     -10
+    ],
+    "legB": [
+     0,
+     -50
+    ],
+    "armF": [
+     60,
+     30
+    ],
+    "armB": [
+     20,
+     40
+    ],
+    "words": "crouched low, coiling to spring upward, his fist drawn down by his hip.",
+    "fix": {
+     "s": 0.963
+    }
+   },
+   "rise2": {
+    "lean": -10,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     150,
+     170
+    ],
+    "armB": [
+     -20,
+     10
+    ],
+    "words": "a rising uppercut leaping upward: his front fist driven straight up high above his head, body stretched up, one knee raised.",
+    "up": 40,
+    "fix": {
+     "s": 1.238
+    }
+   },
+   "cast1": {
+    "lean": 4,
+    "legF": [
+     28,
+     6
+    ],
+    "legB": [
+     -22,
+     -8
+    ],
+    "armF": [
+     -30,
+     40
+    ],
+    "armB": [
+     60,
+     140
+    ],
+    "words": "gathering his inner breath: his right palm drawn back by his hip, the left hand open in front, knees bent, focused.",
+    "fix": {
+     "s": 1.04
+    }
+   },
+   "cast2": {
+    "lean": 16,
+    "legF": [
+     36,
+     10
+    ],
+    "legB": [
+     -30,
+     -14
+    ],
+    "armF": [
+     88,
+     92
+    ],
+    "armB": [
+     80,
+     92
+    ],
+    "words": "pushing both open palms straight forward to the right at chest height, as if releasing a burst of fire from his palms, front knee bent.",
+    "fix": {
+     "s": 1.083
+    }
+   },
+   "super1": {
+    "lean": 40,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     100,
+     40
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "dropping to one knee and slapping one open palm flat on the ground in front of him, the other hand drawn back.",
+    "fix": {
+     "s": 1.182
+    }
+   },
+   "super2": {
+    "lean": 10,
+    "legF": [
+     50,
+     6
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     92,
+     92
+    ],
+    "armB": [
+     -60,
+     -40
+    ],
+    "words": "springing up from the ground and thrusting one open palm straight forward to the right, the other arm swept back, a fierce shout.",
+    "fix": {
+     "s": 1.13
+    }
+   },
+   "blow1": {
+    "lean": 20,
+    "legF": [
+     46,
+     10
+    ],
+    "legB": [
+     -38,
+     -16
+    ],
+    "armF": [
+     88,
+     72
+    ],
+    "armB": [
+     84,
+     76
+    ],
+    "words": "a two-handed shove: both open palms pushed straight forward to the right at chest height, front knee bent, leaning in.",
+    "fix": {
+     "s": 1.083
+    }
+   },
+   "dash1": {
+    "lean": 30,
+    "legF": [
+     60,
+     10
+    ],
+    "legB": [
+     -50,
+     -30
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     -40,
+     -10
+    ],
+    "words": "dashing forward to the right in a low running lunge, leaning far forward, fists up.",
+    "fix": {
+     "s": 1.182
+    }
+   },
+   "roll1": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled into a tight ball rolling forward on the ground, head tucked, knees to chest, arms hugging his shins.",
+    "free": true,
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "win1": {
+    "lean": 0,
+    "legF": [
+     14,
+     0
+    ],
+    "legB": [
+     -12,
+     0
+    ],
+    "armF": [
+     170,
+     170
+    ],
+    "armB": [
+     20,
+     10
+    ],
+    "words": "cheering after winning: standing tall with one fist punched straight up in the air above his head, grinning.",
+    "fix": {
+     "s": 1.04
+    }
+   },
+   "lose1": {
+    "lean": -10,
+    "legF": [
+     80,
+     0
+    ],
+    "legB": [
+     70,
+     -10
+    ],
+    "armF": [
+     30,
+     10
+    ],
+    "armB": [
+     -40,
+     -10
+    ],
+    "words": "sitting down on the ground after losing, legs out in front, leaning back on one hand, rueful.",
+    "free": true,
+    "fix": {
+     "s": 1.3
+    }
+   }
   },
-  "walk1": {
-   "lean": 8,
-   "legF": [
-    36,
-    0
-   ],
-   "legB": [
-    -26,
-    -40
-   ],
-   "armF": [
-    60,
-    88
-   ],
-   "armB": [
-    30,
-    140
-   ],
-   "words": "a step forward to the right in her guard: front foot reaching forward, back foot behind with the heel lifted, sword held forward."
-  },
-  "walk2": {
-   "lean": 8,
-   "legF": [
-    22,
-    6
-   ],
-   "legB": [
-    -14,
-    -50
-   ],
-   "armF": [
-    60,
-    88
-   ],
-   "armB": [
-    30,
-    140
-   ],
-   "up": 6,
-   "words": "walking forward to the right in her guard, the back foot lifting to pass, sword held forward."
-  },
-  "walk3": {
-   "lean": 8,
-   "legF": [
-    4,
-    -6
-   ],
-   "legB": [
-    6,
-    -20
-   ],
-   "armF": [
-    60,
-    88
-   ],
-   "armB": [
-    30,
-    140
-   ],
-   "up": 10,
-   "words": "walking forward to the right, the feet passing each other under the robe, sword held forward."
-  },
-  "walk4": {
-   "lean": 8,
-   "legF": [
-    -24,
-    -40
-   ],
-   "legB": [
-    34,
-    0
-   ],
-   "armF": [
-    60,
-    88
-   ],
-   "armB": [
-    30,
-    140
-   ],
-   "words": "walking forward to the right in her guard, the other foot now reaching forward, sword held forward."
-  },
-  "walk5": {
-   "lean": 8,
-   "legF": [
-    -12,
-    -50
-   ],
-   "legB": [
-    22,
-    6
-   ],
-   "armF": [
-    60,
-    88
-   ],
-   "armB": [
-    30,
-    140
-   ],
-   "up": 6,
-   "words": "walking forward to the right, the back foot lifting to pass, sword held forward."
-  },
-  "walk6": {
-   "lean": 8,
-   "legF": [
-    6,
-    -20
-   ],
-   "legB": [
-    4,
-    -6
-   ],
-   "armF": [
-    60,
-    88
-   ],
-   "armB": [
-    30,
-    140
-   ],
-   "up": 10,
-   "words": "walking forward to the right, the feet passing under the robe, sword held forward. Only one bare sword, no scabbard."
-  },
-  "poke1": {
-   "lean": -4,
-   "legF": [
-    24,
-    -4
-   ],
-   "legB": [
-    -12,
-    -32
-   ],
-   "armF": [
-    30,
-    70
-   ],
-   "armB": [
-    30,
-    140
-   ],
-   "words": "drawing the sword back by her right hip before a thrust, the point still toward the right, body upright, knees bent."
-  },
-  "poke2": {
-   "lean": 16,
-   "legF": [
-    32,
-    0
-   ],
-   "legB": [
-    -20,
-    -36
-   ],
-   "armF": [
-    88,
-    90
-   ],
-   "armB": [
-    -20,
-    20
-   ],
-   "dx": 20,
-   "width": 1088,
-   "words": "a quick straight thrust, her right arm and the sword fully extended forward to the right in one line at chest height, leaning forward, left arm swept back. Only ONE sword, in her right hand; nothing on her back."
-  },
-  "poke3": {
-   "lean": 10,
-   "legF": [
-    28,
-    -2
-   ],
-   "legB": [
-    -14,
-    -32
-   ],
-   "armF": [
-    70,
-    92
-   ],
-   "armB": [
-    10,
-    90
-   ],
-   "dx": 10,
-   "words": "recovering from a thrust, the sword arm coming back, the blade still pointing toward the right."
-  },
-  "thrust1": {
-   "lean": -10,
-   "legF": [
-    30,
-    20
-   ],
-   "legB": [
-    -30,
-    -20
-   ],
-   "armF": [
-    10,
-    -10
-   ],
-   "armB": [
-    40,
-    120
-   ],
-   "swordTurn": 180,
-   "words": "winding up for a lunge: crouched a little, the bare sword blade raised back over her right shoulder in her right hand (no scabbard), left hand reaching forward."
-  },
-  "thrust2": {
-   "lean": 30,
-   "legF": [
-    64,
-    4
-   ],
-   "legB": [
-    -50,
-    -56
-   ],
-   "armF": [
-    90,
-    90
-   ],
-   "armB": [
-    -40,
-    -20
-   ],
-   "dx": 30,
-   "width": 1088,
-   "words": "a deep lunge: front knee deeply bent, back leg stretched straight behind, body leaning forward, right arm and the sword fully extended forward to the right in one line. ONE sword only, held in her right hand."
-  },
-  "thrust3": {
-   "lean": 26,
-   "legF": [
-    60,
-    4
-   ],
-   "legB": [
-    -46,
-    -54
-   ],
-   "armF": [
-    86,
-    88
-   ],
-   "armB": [
-    -30,
-    -10
-   ],
-   "dx": 30,
-   "width": 1088,
-   "words": "holding the deep lunge: front knee bent, back leg straight behind, the sword extended forward to the right, robe still swirling. ONE sword only, held in her right hand."
-  },
-  "thrust4": {
-   "lean": 12,
-   "legF": [
-    36,
-    0
-   ],
-   "legB": [
-    -24,
-    -40
-   ],
-   "armF": [
-    66,
-    88
-   ],
-   "armB": [
-    20,
-    120
-   ],
-   "dx": 14,
-   "words": "rising out of the lunge back into her guard, the sword coming back to chest height pointing to the right."
+  "clips": {
+   "idle": {
+    "frames": [
+     "idle1",
+     "idle2",
+     "idle3",
+     "idle4"
+    ],
+    "fps": 6,
+    "loop": true,
+    "calm": [
+     "idle1"
+    ]
+   },
+   "walk": {
+    "frames": [
+     "walk1",
+     "walk2",
+     "walk3",
+     "walk2"
+    ],
+    "fps": 7,
+    "loop": true,
+    "calm": [
+     "walk1",
+     "walk3"
+    ]
+   },
+   "back": {
+    "frames": [
+     "walk3",
+     "walk2",
+     "walk1",
+     "walk2"
+    ],
+    "fps": 6,
+    "loop": true,
+    "calm": [
+     "walk3",
+     "walk1"
+    ]
+   },
+   "crouch": {
+    "frames": [
+     "crouch1",
+     "crouch2"
+    ],
+    "fps": 20,
+    "calm": [
+     "crouch2"
+    ]
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 1,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "light": {
+    "frames": [
+     "lp1",
+     "lp2"
+    ],
+    "hit": 1,
+    "fps": 14,
+    "calm": [
+     "lp2"
+    ]
+   },
+   "lkick": {
+    "frames": [
+     "lk1",
+     "lk2"
+    ],
+    "hit": 1,
+    "fps": 12,
+    "calm": [
+     "lk2"
+    ]
+   },
+   "hpunch": {
+    "frames": [
+     "hp1",
+     "hp2",
+     "hp3"
+    ],
+    "hit": 1,
+    "fps": 9,
+    "calm": [
+     "hp1",
+     "hp2"
+    ]
+   },
+   "heavy": {
+    "frames": [
+     "hk1",
+     "hk2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "hk2"
+    ]
+   },
+   "clight": {
+    "frames": [
+     "crouch2",
+     "clp1"
+    ],
+    "hit": 1,
+    "fps": 14,
+    "calm": [
+     "clp1"
+    ]
+   },
+   "clkick": {
+    "frames": [
+     "crouch2",
+     "clk1"
+    ],
+    "hit": 1,
+    "fps": 12,
+    "calm": [
+     "clk1"
+    ]
+   },
+   "chpunch": {
+    "frames": [
+     "crouch2",
+     "chp1"
+    ],
+    "hit": 1,
+    "fps": 9,
+    "calm": [
+     "chp1"
+    ]
+   },
+   "cheavy": {
+    "frames": [
+     "crouch2",
+     "chk1"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "chk1"
+    ]
+   },
+   "blow": {
+    "frames": [
+     "hp1",
+     "blow1"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "blow1"
+    ]
+   },
+   "rise": {
+    "frames": [
+     "rise1",
+     "rise2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "rise2"
+    ]
+   },
+   "cast": {
+    "frames": [
+     "cast1",
+     "cast2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "cast2"
+    ]
+   },
+   "super": {
+    "frames": [
+     "super1",
+     "super2"
+    ],
+    "hit": 1,
+    "fps": 5,
+    "calm": [
+     "super2"
+    ]
+   },
+   "block": {
+    "frames": [
+     "block1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "cblock": {
+    "frames": [
+     "cblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hit": {
+    "frames": [
+     "hit1",
+     "hit2"
+    ],
+    "fps": 7,
+    "calm": [
+     "hit1"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "dash": {
+    "frames": [
+     "dash1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "roll": {
+    "frames": [
+     "roll1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "win": {
+    "frames": [
+     "win1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "lose": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "lose1"
+    ],
+    "fps": 2.5,
+    "calm": [
+     "knock2",
+     "lose1"
+    ]
+   }
   }
  }
 }

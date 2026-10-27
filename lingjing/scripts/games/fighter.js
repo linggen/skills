@@ -16,13 +16,13 @@
 // keys on any layout): W A S D move — A/D walk, W jump, S crouch; held away from her, a guard — and KOF '97's four
 // (Hanli 10-27: 「97那个就4个key?」): K A 轻拳 · L B 轻腿 · O C 重拳 · ; D 重腿; K+L a roll (迎), O+; a blowback; specials
 // are motions + 拳. Arrows and Space are quiet aliases. The phone: ▲ ◀ ▼ ▶, the four in a diamond, and 技 (掌心火; with
-// ▶ 升勾; a stock full, the 绝). The fighters are painted rigs (tools/paint-fighter.py; fighter/draw.js makeRig).
+// ▶ 升勾; a stock full, the 绝). The fighters are painted frame by frame (tools/fighter-frames.py → one sheet each; fighter/draw.js plays the clips).
 // In the shell: its pause stops the clock and the hands and shows the move list; its lead card reads the level's
 // `ready` and the keys; every step sounds what it made (games/kit/heard.js, the names in sounds.json `fighter`).
 // Lost, it settles { won: false } and the host deals it again (the story) or offers 再来 (the 游戏厅).
 import { sounded } from './kit/heard.js';
 import { inputKind, forInput } from './kit/device.js';
-import { painter, makeRig, FIELD } from './fighter/draw.js';
+import { painter, makeSheet, FIELD } from './fighter/draw.js';
 import * as core from './fighter/core.js';
 import * as self from './fighter.js';
 
@@ -155,20 +155,22 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     img.src = new URL(`../../worlds/jiuding/${face}`, import.meta.url).href;
     art[who] = img;
   }
-  // The painted rigs (art/games/fighter/<who>.webp + .json): drawn as soon as they come; the figure in code until then.
-  const rigs = {};
+  // The painted frames (art/games/fighter/<who>.webp, one sheet, + .json): drawn as soon as they come; the figure in
+  // code until then. Reduced motion (the OS's setting) plays fewer frames.
+  const sheets = {};
+  const still = win.matchMedia?.('(prefers-reduced-motion: reduce)');
   for (const who of ['me', 'foe']) {
     const look = level[who]?.look;
-    if (!look?.rig) continue;
-    const base = new URL(`../../worlds/jiuding/${look.rig}`, import.meta.url).href;
+    if (!look?.sheet) continue;
+    const base = new URL(`../../worlds/jiuding/${look.sheet}`, import.meta.url).href;
     const img = new win.Image();
     const loaded = new Promise((ok, no) => { img.onload = ok; img.onerror = no; });
     img.src = `${base}.webp`;
     Promise.all([fetch(`${base}.json`).then((r) => r.json()), loaded])
-      .then(([meta]) => { rigs[who] = makeRig(meta, img, look.height); })
-      .catch((e) => console.warn('[fighter] rig', who, e));
+      .then(([meta]) => { sheets[who] = makeSheet(meta, img, look.height); })
+      .catch((e) => console.warn('[fighter] frames', who, e));
   }
-  const draw = painter(canvas, { art, rigs });
+  const draw = painter(canvas, { art, sheets, calm: () => Boolean(still?.matches) });
   const g = { state: core.newGame(seed, 1, { levels: [level] }) };
   peek?.(() => g.state);
   root.__fighter = () => g.state; // the builder's look at the bout (a live check drives it as a hand would)

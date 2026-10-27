@@ -255,3 +255,40 @@ test('the move list names every move with its keys, for the pause veil', () => {
   for (const want of ['掌心火', 'S D + K/O', '升勾', 'D S D + K/O', 'S D S D', 'K K L', 'K+L', 'O+;']) assert.ok(lines.some((l) => l.includes(want)), want);
   assert.ok(F.moveLines(LEVEL, 'zh', 'touch').some((l) => l.includes('技')));
 });
+
+/* The painted frames (tools/fighter-frames.py; Hanli 10-27: frame by frame, as KOF '97 is made). */
+import { frameOf } from '../scripts/games/fighter/draw.js';
+const CLIPS = {
+  me: ['idle', 'walk', 'back', 'crouch', 'jump', 'air', 'light', 'lkick', 'hpunch', 'heavy', 'clight', 'clkick', 'chpunch', 'cheavy', 'blow', 'rise', 'cast', 'super', 'block', 'cblock', 'hit', 'knock', 'dash', 'roll', 'win', 'lose'],
+  foe: ['idle', 'walk', 'back', 'poke', 'thrust', 'ice', 'edge', 'glow', 'hold', 'strike', 'block', 'hit', 'jianqi', 'slip', 'win', 'lose'],
+};
+
+test('every fighter has one painted sheet whose clips name only frames it holds, one for every state the board draws', () => {
+  for (const who of ['me', 'foe']) {
+    const look = LEVEL[who].look;
+    assert.ok(look.sheet, who);
+    const meta = read(`../worlds/jiuding/${look.sheet}.json`);
+    assert.ok(fs.statSync(new URL(`../worlds/jiuding/${look.sheet}.webp`, import.meta.url)).size > 1000);
+    assert.ok(meta.stand > 200, 'the standing figure is tall enough for the board');
+    for (const c of CLIPS[who]) assert.ok(meta.clips[c], `${who} clip ${c}`);
+    for (const [name, c] of Object.entries(meta.clips)) {
+      for (const f of [...c.frames, ...(c.calm ?? [])]) assert.ok(meta.frames[f], `${who} ${name}: ${f}`);
+      if (c.hit != null) assert.ok(c.hit < c.frames.length, `${who} ${name} hit`);
+    }
+    for (const [name, f] of Object.entries(meta.frames)) assert.equal(f.rect.length, 4, name);
+  }
+});
+
+test('a blow shows its strike frame exactly while it can land; loops go round at their fps; reduced motion keeps the calm frames', () => {
+  const clip = { frames: ['a', 'b', 'c', 'd'], hit: 1, fps: 10, calm: ['a', 'b'] };
+  const m = { startup: 100, active: 80, recover: 200 };
+  assert.equal(frameOf(clip, 10, m), 'a');
+  assert.equal(frameOf(clip, 100, m), 'b');
+  assert.equal(frameOf(clip, 230, m), 'b');
+  assert.equal(frameOf(clip, 250, m), 'c');
+  assert.equal(frameOf(clip, 400, m), 'd');
+  assert.equal(frameOf(clip, 400, m, true), 'b');
+  const loop = { frames: ['x', 'y', 'z'], fps: 10, loop: true };
+  assert.deepEqual([0, 100, 200, 300].map((e) => frameOf(loop, e)), ['x', 'y', 'z', 'x']);
+  assert.equal(frameOf({ frames: ['p', 'q'], fps: 10 }, 5000), 'q');
+});

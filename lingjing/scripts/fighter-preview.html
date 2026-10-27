@@ -9,81 +9,66 @@
   header { padding: 14px 18px 4px; }
   header b { font-size: 20px; }
   header small { display: block; opacity: .7; margin-top: 4px; }
-  .row { display: flex; flex-wrap: wrap; gap: 14px; padding: 12px 18px; }
+  header a { color: inherit; margin-right: 12px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 18px; }
   figure { margin: 0; background: #f1e9d6; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 0 rgba(0,0,0,.08); }
   figcaption { padding: 6px 10px; font-size: 14px; }
-  canvas { display: block; width: min(92vw, 420px); height: auto; }
+  canvas { display: block; width: min(92vw, 300px); height: auto; }
   .sheet { padding: 0 18px 24px; }
-  .sheet img { width: 100%; max-width: 1400px; border-radius: 8px; }
+  .sheet canvas { width: auto; height: 160px; display: inline-block; margin: 4px; background: #efe5cd; border-radius: 6px; }
 </style>
 </head>
 <body>
-<!-- A builder's page (?dev=1), never linked in the game: 秦雁's painted frames played at the game's speed, for Hanli's look
-     before the full set is painted (10-27: 「街霸…拳皇」 → frame by frame). Frames: art/games/fighter/qinyan/ (tools/fighter-frames.py). -->
-<header><b>秦雁 · 画帧预览</b><small>逐帧手绘（同一张母图作参照），按游戏速度循环：站姿呼吸 · 走 · 点剑接长刺。</small></header>
+<!-- A builder's page (?dev=1), never linked in the game: a fighter's painted clips played at the board's speed, each
+     clip on its loop, and every frame of the sheet. Frames: art/games/fighter/<who>.webp + .json (tools/fighter-frames.py);
+     the board plays them through fighter/draw.js (frameOf). ?who=qinyan | xiaoman. -->
+<header><b>格斗 · 画帧预览</b><small><a href="?dev=1&who=qinyan">秦雁</a><a href="?dev=1&who=xiaoman">沈小满</a>每段动作按游戏的帧速循环；下面是整张画帧。</small></header>
 <div class="row" id="row"></div>
+<div class="sheet" id="sheet"></div>
 <script type="module">
+import { frameOf } from './games/fighter/draw.js';
 const q = new URLSearchParams(location.search);
 const row = document.getElementById('row');
 if (q.get('dev') !== '1') row.textContent = '—';
 else {
   const who = (q.get('who') || 'qinyan').replace(/[^a-z]/g, '');
-  const base = new URL(`../worlds/jiuding/art/games/fighter/${who}/`, import.meta.url);
-  const meta = await fetch(new URL('frames.json', base)).then((r) => r.json());
-  const img = {};
-  await Promise.all(Object.entries(meta.frames).map(([n, f]) => new Promise((ok) => { const i = new Image(); i.onload = ok; i.onerror = ok; i.src = new URL(f.file, base).href; img[n] = i; })));
-  // Each loop: frames with hold times (ms), as KOF plays them — no tween between poses. `move`: how far the whole sprite
-  // travels over the loop (eased), `smear`: frames that strike (an ink streak behind the blade), `fade`: a slow loop may
-  // crossfade (the breathing only).
-  const LOOPS = [
-    { title: '站姿 · 呼吸', frames: [['idle1', 260], ['idle2', 240], ['idle3', 300], ['idle4', 240]], fade: true },
-    { title: '走', frames: [['walk1', 110], ['walk2', 100], ['walk3', 100], ['walk4', 110], ['walk5', 100], ['walk6', 100]], move: 120, repeat: 2 },
-    { title: '点剑 → 长刺', frames: [['idle1', 400], ['poke1', 90], ['poke2', 150], ['poke3', 110], ['thrust1', 170], ['thrust2', 170], ['thrust3', 160], ['thrust4', 180], ['idle1', 500]], smear: ['poke2', 'thrust2'], lunge: { thrust2: 26, thrust3: 26, poke2: 8 } },
-  ];
-  const W = 420, H = 300, K = 2;
-  for (const L of LOOPS) {
+  const base = new URL(`../worlds/jiuding/art/games/fighter/${who}`, import.meta.url).href;
+  const sheetJson = new URL(`${base}.json`);
+  const meta = await fetch(sheetJson).then((r) => r.json());
+  const img = new Image();
+  await new Promise((ok) => { img.onload = ok; img.onerror = ok; img.src = `${base}.webp`; });
+  const W = 300, H = 300, K = 2, u = 250 / meta.stand;
+  const put = (g, name, x, y) => {
+    const f = meta.frames[name]; if (!f) return;
+    g.drawImage(img, f.rect[0], f.rect[1], f.rect[2], f.rect[3], x - f.anchor[0] * u, y - f.anchor[1] * u, f.rect[2] * u, f.rect[3] * u);
+  };
+  const views = Object.entries(meta.clips).map(([name, clip]) => {
     const fig = document.createElement('figure');
     const c = document.createElement('canvas'); c.width = W * K; c.height = H * K;
-    fig.append(c);
-    const cap = document.createElement('figcaption'); cap.textContent = L.title; fig.append(cap);
-    row.append(fig);
-    L.ctx = c.getContext('2d'); L.total = L.frames.reduce((t, f) => t + f[1], 0) * (L.repeat ?? 1);
-  }
-  const scale = 250 / meta.size[1] * 1.0; // the figure's box in units, about the game's
-  const draw = (L, now) => {
-    const g = L.ctx; g.setTransform(K, 0, 0, K, 0, 0);
-    const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#f3ecd9'); sky.addColorStop(1, '#ddcda9');
-    g.fillStyle = sky; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#9aa19a'; g.fillRect(0, H - 34, W, 8); g.fillStyle = '#5e645e'; g.fillRect(0, H - 26, W, 26);
-    const one = L.frames.reduce((t, f) => t + f[1], 0), t = now % L.total, tt = t % one;
-    let acc = 0, i = 0;
-    for (; i < L.frames.length; i += 1) { if (tt < acc + L.frames[i][1]) break; acc += L.frames[i][1]; }
-    i = Math.min(i, L.frames.length - 1);
-    const [name, hold] = L.frames[i], k = (tt - acc) / hold;
-    // the whole sprite travels smoothly (eased) while the pose snaps
-    const ease = (x) => x * x * (3 - 2 * x);
-    const walkX = L.move ? -L.move / 2 + L.move * ease(t / L.total) : 0;
-    const lunge = L.lunge?.[name] ?? 0;
-    const ax = W * 0.42 + walkX + lunge, ay = H - 34;
-    const s = scale, w = meta.size[0] * s, h = meta.size[1] * s;
-    const put = (n, alpha = 1) => { if (!img[n]?.naturalWidth) return; const an = meta.frames[n].anchor; g.globalAlpha = alpha; g.drawImage(img[n], ax - an[0] * s, ay - an[1] * s, w, h); g.globalAlpha = 1; };
-    g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(ax + 6, ay + 2, 56, 7, 0, 0, Math.PI * 2); g.fill();
-    // an ink streak behind the blade on a strike frame
-    if (L.smear?.includes(name) && k < 0.7) {
-      const a = 0.45 * (1 - k);
-      g.fillStyle = `rgba(30,30,28,${a})`;
-      g.beginPath(); g.moveTo(ax - 10, ay - 150); g.quadraticCurveTo(ax + 60, ay - 175, ax + 190, ay - 156); g.quadraticCurveTo(ax + 70, ay - 150, ax - 10, ay - 140); g.fill();
-      g.strokeStyle = `rgba(110,215,170,${a})`; g.lineWidth = 6; g.beginPath(); g.moveTo(ax + 30, ay - 160); g.lineTo(ax + 200, ay - 158); g.stroke();
-    }
-    if (L.fade) { const next = L.frames[(i + 1) % L.frames.length][0]; put(name, 1); put(next, ease(k) * 0.9); }
-    else put(name);
-  };
+    const cap = document.createElement('figcaption'); cap.textContent = `${name} · ${clip.frames.length} 帧 · ${clip.fps} fps`;
+    fig.append(c, cap); row.append(fig);
+    // a one-shot clip plays once, holds its last frame, and starts again
+    const once = clip.frames.length * 1000 / (clip.fps ?? 8);
+    return { clip, g: c.getContext('2d'), period: clip.loop ? 1e9 : once + 700 };
+  });
   const t0 = performance.now();
-  const frame = (now) => { for (const L of LOOPS) draw(L, now - t0); requestAnimationFrame(frame); };
+  const frame = (now) => {
+    for (const v of views) {
+      const g = v.g; g.setTransform(K, 0, 0, K, 0, 0);
+      g.fillStyle = '#f3ecd9'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#9aa19a'; g.fillRect(0, H - 30, W, 6); g.fillStyle = '#5e645e'; g.fillRect(0, H - 24, W, 24);
+      put(g, frameOf(v.clip, (now - t0) % v.period), W * 0.4, H - 30);
+    }
+    requestAnimationFrame(frame);
+  };
   requestAnimationFrame(frame);
-  const sheet = document.createElement('div'); sheet.className = 'sheet';
-  sheet.innerHTML = '<h3>全部画帧</h3>' + Object.keys(meta.frames).map((n) => `<figure style="display:inline-block;margin:4px"><img src="${new URL(meta.frames[n].file, base)}" style="height:220px;background:#e9dcc0"><figcaption>${n}</figcaption></figure>`).join('');
-  document.body.append(sheet);
+  const sheet = document.getElementById('sheet');
+  sheet.innerHTML = `<h3>全部画帧 · ${Object.keys(meta.frames).length}</h3>`;
+  for (const name of Object.keys(meta.frames)) {
+    const c = document.createElement('canvas'); c.width = 240; c.height = 320; c.title = name;
+    const g = c.getContext('2d'); put(g, name, 100, 300); g.fillStyle = '#000'; g.font = '14px serif'; g.fillText(name, 4, 16);
+    sheet.append(c);
+  }
 }
 </script>
 </body>

@@ -260,7 +260,7 @@ note and costs the gauge (Piano Tiles' white tile, softened), so mashing loses.
 Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街霸好做吗? 拳皇之类的」 → 「好, 先做秦雁那一场」. One bout only, wm-yingjian
 (task `yingjian-hook`, its won lines and stars kept), until he has played it on the Mac and the phone.
 - **Kit** `games/fighter.js` (mount, own hands) · `fighter/core.js` (pure, seeded rules + her AI) · `fighter/draw.js` (ink 皮影 on a
-  canvas, poses as joint angles — no painted frames) · `bots/fighter.js` · tests/game-fighter.test.mjs. A bout is a games.json level
+  canvas: the fighters' painted frames, the stage, the effects) · `bots/fighter.js` · tests/game-fighter.test.mjs. A bout is a games.json level
   (fighters, bars, looks, faces, lines, numbers laid on the kit's); 祁长松, 斗法, a beast add a level.
 - **v2 (10-27)** — Hanli played it: 「基本的逻辑都有了, 需要美观和优化. 用wasd控制, ijkl等是招数 … 组合技什么的都加一下」, then
   「出招键可以右边一些, 变成okl;」; the coordinator picked KOF '97 for the feel (fast, pressing).
@@ -286,11 +286,19 @@ Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街
   Motions + 拳 (K or O): S D 掌心火 (O: heavier, slower) · D S D 升勾 · S D S D the 绝 (one stock). Chains K K L, K O, jump-in ;
   then K; a 重 cancels into the specials. Story finale: 迎 = the K+L roll; 勾 = **升勾** (D S D + 拳; a 重 in her held-back palm
   hooks too). Phone: ▲ ◀ ▼ ▶; 拳 腿 重拳 重腿 in a diamond; 技 (掌心火, ▶ + 技 升勾, 绝 while a stock is full); 拳+腿 together rolls.
-  **Painted rigs**: each fighter painted once by FLUX (tools/paint-fighter.py, kept seeds and cut polygons in tools/fighter-rig.json)
-  in a shadow-puppet layout, keyed off its paper, cut into parts (head, torso, upper/lower arms, thighs/shins; her skirt and
-  shoes), packed into art/games/fighter/<who>.webp + .json (~37 KB each); draw.js turns each part about its joint on the POSES'
-  angles, in its own canvas, laid on with a pale rim; ~245 units tall (KOF scale). Rig over frame-by-frame: one painting a fighter,
-  so every frame matches, the assets stay small, the motion stays smooth.
+- **v4 (10-27) — painted frame by frame**, as KOF '97 is made: the rig 「像纸片人」 (joint circles, paper cut-outs) → every pose
+  painted by hand; Hanli on 秦雁's 17-frame preview: 「很好」. tools/fighter-frames.py: a MASTER per fighter (秦雁 txt2img seed 2;
+  沈小满 an edit of his v3 painting toward his guard, seed 1), then every frame a FLUX.2 klein EDIT with two references — the
+  master (who) and a plain mannequin sketch of the pose (tools/fighter-poses.json: angles + words) — keyed off the paper, soles set
+  on one ground line, packed into ONE sheet a fighter (art/games/fighter/<who>.webp + .json: rects, anchors, sword tip and hands,
+  the clips); `--sheet` writes the builder's check (each clip on one ground line, neighbours overlaid: 「两帧切换要顺」).
+  The board (draw.js `pick` · `frameOf` · `sprite`) maps a state to a clip; a clip plays at its fps on the bout's clock, so a
+  hit-stop holds the picture (the one struck shivers); a blow's frames are laid on its startup · active · recover, the strike frame
+  exactly while it can land; mirrored by facing; `prefers-reduced-motion` plays only each clip's `calm` frames, no crossfade.
+  Frames by what the board plays: his KOF set (idle, walk ↔ back, crouch, jump, the four normals standing and crouching, block,
+  hit, knockdown/get-up, 掌心火, 升勾, the 绝, roll, dash, win, lose); hers by her moves (guard, walk, 点剑, 长刺, 冰, the edge's
+  point, the palm's glow · hold · strike, block, hit, 剑气三尺, the slip off the oil, win, lose) — she never throws K/L/O/;.
+  沈小满 44 frames (612 KB), 秦雁 33 (424 KB): ~1 MB for both, one webp sheet each (2048 px wide), figures ~430 px tall · preview: scripts/fighter-preview.html?dev=1&who=qinyan|xiaoman.
 - **Bot** (200 ms, chains, 技 and 绝 as the phone's buttons): wins 8/8 seeds in 41–65 s; 320 ms 8/8; masher, wall of blocks, idle lose.
 - **Skipped**: a mount-only board's skip shows the page's 「没走完，往下走了。」, as every board's; `won.skipped` kept in the level.
 
