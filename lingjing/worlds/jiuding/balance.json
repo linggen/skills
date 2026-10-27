@@ -80,6 +80,7 @@
   },
   "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth). 2026-10-22 (人间功课 as cultivation, worlds/jiuding/gongke.json): `chore_kind` caps what a chore's meaning adds on top of its own pay, `chore_week` the 宗门月俸.",
   "pay": {
+    "play": { "progress": 100000, "wealth": 100000 },
     "scene": {
       "progress": 60,
       "wealth": 20
@@ -170,7 +171,8 @@
   "convert": {
     "rate": 0.333,
     "tables": [
-      "haunt"
+      "haunt",
+      "play"
     ]
   },
   "_prices": "Every shop price, one source (2026-10-16, Hanli: 灵石 buys pills): `buy` what a shop asks, `sell` what it gives back — folded onto items.json by content.mjs withBalance, so no item carries its own. 回春丹 15 and 回气丹 10: a typical day's 灵石 (tools/balance.mjs `--wealth`) buys two or three, and a pill eaten in a fight is gone.",
@@ -529,6 +531,15 @@
         1.25
       ]
     }
+  },
+  "_play_pay": "Every board and errand pays 修为 + 灵石 by the minutes it takes (Hanli 2026-10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」; doc/games.md § Pacing proposal; rules/playpay.mjs). A layer is a play-time budget (练气一层 ~2 h, +1 h a layer); the small games carry ~60% of its 修为 over ~35% of its time, so `rate` (修为 a minute of a board, by 层) = 0.6 × the layer's threshold ÷ (0.35 × its minutes); a kind's `minutes` (play-human and the model); `wealth` per play by kind (Hanli's 20/5 · 10/10 · 5/10); ★ 0.6 · 0.8 · 1.0; the same board again the same day 100 · 50 · 10%. No daily cap; 修为 stops at the gate and turns to 灵石 (`convert` lists `play`). Errands: the rest's ~15% over ~10% of the time, by `errand.minutes`. Supersedes 2026-10-16's 「小游戏只给灵石」 (`boards` still adds the first clear's grade 灵石). A save's past wins pay nothing again.",
+  "play_pay": {
+    "minutes": { "打地鼠": 1, "调息": 1, "开炉": 1, "割绳子": 2, "投掷": 2, "节奏": 2, "结印": 2, "格斗": 3, "对话": 3, "配对": 3, "塔防": 4, "斗法": 4, "解谜": 4, "你画我猜": 5, "棋牌": 6, "探索": 12, "default": 3 },
+    "wealth": { "打地鼠": 5, "调息": 0, "开炉": 0, "割绳子": 5, "投掷": 5, "节奏": 5, "结印": 5, "格斗": 5, "塔防": 5, "斗法": 5, "对话": 10, "配对": 10, "解谜": 10, "你画我猜": 10, "棋牌": 10, "探索": 10, "default": 5 },
+    "rate": { "qi": [0, 6.7, 4.67, 3.64, 3.03, 4.95, 4.33, 3.86, 3.49, 3.2], "default": 3.2 },
+    "stars": { "1": 0.6, "2": 0.8, "3": 1 },
+    "replay": [1, 0.5, 0.1],
+    "errand": { "minutes": 5, "rate": { "qi": [0, 5.88, 4.08, 3.19, 2.65, 4.33, 3.79, 3.38, 3.06, 2.8], "default": 2.8 }, "wealth": 15 }
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
   "lock_fight": {

@@ -1,5 +1,6 @@
 // rules/verbs.mjs — The verb table, quest and show.
 // Part of the rules engine; rules.mjs is its one door.
+import { questPays } from './errands.mjs';
 import { dayKey, fill, pick } from '../state.mjs';
 import { artBrief, artOf, refine } from './arms.mjs';
 import { deck } from './cards.mjs';
@@ -182,7 +183,7 @@ function questInfo(state, content, ctx, id) {
   if (!q) return { ok: false, refused: 'no-such-quest' };
   const next = q.then ? questOf(content, q.then) : null;
   return { ok: true, id, kind: 'errand', title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state),
-    from: placeName(content, state, placeOf(content, q.from.place)), grant: q.grant, pays: paysOf(content, state, ctx.now, q.grant), taken: Boolean(row),
+    from: placeName(content, state, placeOf(content, q.from.place)), grant: q.grant, pays: questPays(content, state, ctx.now, q), taken: Boolean(row),
     ...(row ? { need: row.need, where: row.where, ready: row.ready } : { need: q.need.map(n => ({ kind: n.kind, have: 0, n: n.n })) }),
     ...(q.grant?.item ? { gives: pick(itemOf(content, q.grant.item)?.name, lang) } : {}),
     // `then` is the wrapper's word to Ling on every result; the next link is `next`.

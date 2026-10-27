@@ -111,14 +111,15 @@ test('every errand and 榜文 says what work it is: 修行 pays 修为 for a fig
   assert.deepEqual(Object.keys(M.errands_at).sort(), paying, 'balance.json model.errands_at names every errand that pays 修为 or a pill');
 });
 
-test('修屋顶 is handed in for 灵石, nothing for 修为; a haunt fight still pays 修为', () => {
+test('修屋顶 is handed in for 灵石 and, since 2026-10-27, its minutes\' 修为 (rules/playpay.mjs); a haunt fight still pays 修为', () => {
   const s = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: null, place: 'waimen', ended: ['00-prologue'], done_scenes: ['wm-zhoutian'],
     tier: 'qi', step: 1, progress: 10, wealth: 0, traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString(),
     quests: { 'xu-waimen-roof': { took: '2026-10-15', have: { 0: 1 } } } };
   const turned = quest(s, content, ctx, { action: 'turn', id: 'xu-waimen-roof' });
   assert.ok(turned.state, JSON.stringify(turned.result));
-  assert.equal(turned.result.paid.progress, 0);
-  assert.equal(turned.result.paid.wealth, 5, '周衡: 「记你五块灵石」');
+  const e = content.balance.play_pay.errand;
+  assert.equal(turned.result.paid.progress, Math.round(e.rate.qi[1] * e.minutes), 'an errand\'s minutes at 练气一层');
+  assert.equal(turned.result.paid.wealth, 5 + e.wealth, '周衡: 「记你五块灵石」, and the errand\'s own');
   const f = structuredClone(s);
   assert.equal(pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress, T.haunt.progress);
 });

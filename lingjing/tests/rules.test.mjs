@@ -893,7 +893,8 @@ test('a layer fills and the next begins, the rest carried over', () => {
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
   assert.equal(out.state.step, 2);
-  assert.equal(out.state.progress, 10);
+  // the grant's 20 crosses the mark with 10 over; the board's minutes (rules/playpay.mjs, 2026-10-27) pay on top, at 二层's rate
+  assert.ok(out.state.progress >= 10, String(out.state.progress));
   assert.deepEqual(out.result.paid.levels, [{ from: '练气一层', to: '练气二层' }]);
 });
 
@@ -913,7 +914,7 @@ test('no day cap: a day full of play pays every time — 灵气 is the only limi
   s.day.progress = 10000; s.day.wealth = 10000;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.result.paid.progress, 20);
+  assert.ok(out.result.paid.progress >= 20, 'the grant and the board\'s minutes, whatever the day already paid');
   assert.equal(out.result.paid.capped, undefined);
 });
 
@@ -922,9 +923,11 @@ test('a later realm pays more for the same task; the day counts base', () => {
   s.tier = 'deity'; s.step = 0; s.progress = 0; // 化神, pay ×3
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.result.paid.progress, 60); // 20 base × 3
-  assert.equal(out.state.progress, 60);
-  assert.equal(out.state.day.progress, 20);
+  // 20 base × 3 for the grant; the board's minutes (rules/playpay.mjs) pay by the realm's own rate, never × the realm
+  const play = out.result.paid.progress - 60;
+  assert.ok(play >= 0 && play < 60, String(out.result.paid.progress));
+  assert.equal(out.state.progress, 60 + play);
+  assert.ok(out.state.day.progress > 20 && out.state.day.progress <= 20 + play, 'the day counts base');
 });
 
 test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
@@ -1769,7 +1772,7 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   assert.equal(seen.divination, null);
   // The opening's play beats grow (batch two, 2026-10-14): every board on the way here done, the first six among them.
   // (本王考考你, a light offer at any hour since 2026-10-26, stands beside them: not the story's.)
-  const story = seen.tasks.filter(t => !t.light);
+  const story = seen.tasks.filter(t => !t.light && !t.practice); // a place's game open as practice (2026-10-27) is not the story's
   assert.ok(story.every(t => t.status === 'done'), JSON.stringify(story.map(t => [t.id, t.status])));
   const ids = story.map(t => t.id);
   // 忍字 · 认路 · 算账 back 2026-10-20 as 割绳子 levels (「可以, 放宽, 把那三关加进去」); the old weak boards stay cut.
@@ -2561,8 +2564,8 @@ test('arriving is an event: the errand met there is told with what is seen, 交�
   // met, it hands itself in (his pick, 2026-09-23): no 交差 is asked, the roads are
   assert.deepEqual(arrived.result.handed.map(h => h.id), ['xu-lvliang-look']);
   assert.ok(arrived.state.quests['xu-lvliang-look'].done_at);
-  // A walk for someone is 杂役 (Hanli, 2026-10-15): stones, no 修为.
-  assert.deepEqual([arrived.result.handed[0].paid.progress, arrived.result.handed[0].paid.wealth > 0], [0, true]);
+  // An errand pays 修为 and 灵石 by its minutes since 2026-10-27 (Hanli: every errand pays both; was 杂役's stones only).
+  assert.ok(arrived.result.handed[0].paid.progress > 0 && arrived.result.handed[0].paid.wealth > 0);
   assert.ok(!askOf(content, arrived.state, at, arrived.result)?.options.some(o => o.turn));
   assert.deepEqual(look(arrived.state, content, at).handed.map(h => h.id), ['xu-lvliang-look'], 'the stage shows what it paid');
   // walking on puts the 所得 away, and coming back meets nothing new
@@ -2647,7 +2650,7 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   assert.equal(look(withHerb, content, at).book[0].ready, true);
   // …and it is handed in far from 彭城, which is the whole point
   const turned = must(quest, { ...withHerb, place: 'weishan' }, { action: 'turn', id: 'xu-elder-herb' }, at);
-  assert.ok(turned.result.paid.wealth > 0 && turned.result.paid.progress === 0, '杂役: stones, no 修为');
+  assert.ok(turned.result.paid.wealth > 0 && turned.result.paid.progress > 0, 'an errand pays both (2026-10-27)');
   assert.equal(turned.state.bag.lingzhi, undefined, 'the herb changed hands');
   assert.equal(turned.state.bag['bamboo-sword'], 1, 'and the sword came back');
   // the giver hands the next step over with it (his pick A, 2026-09-23)
@@ -3131,12 +3134,12 @@ test('体力: walking costs by the road, an elite no more than a fight; empty, t
 // The mini-games had no way in (2026-09-23): a place hosts its game, open there
 // once a day, won through the same `win` as 炼丹, paid by the task; a market's
 // notice may ask for a nearby place's game.
-test('a place\'s game is no daily chore: it opens there only for an errand that asks for it, and the errand pays', () => {
+test('a place\'s game is practice there, paid by its minutes; an errand that asks for it takes the win and pays too', () => {
   const at = ctx();
   const s = { ...toOpenWorld(), place: 'yunlong', tier: 'core', stamina: 100, stamina_at: NOW.toISOString() };
-  // No errand asks: the game is not on offer, not even once a day (redesign-v2 § 四).
-  assert.equal(look(s, content, at).tasks.find(t => t.id === 'wuziqi'), undefined);
-  refused(win, s, { id: 'wuziqi' }, 'not-here', at);
+  // No errand asks: open as practice since 2026-10-27 (Hanli: 「玩的多应该走的快」), in the tray, never standing by itself.
+  assert.equal(look(s, content, at).tasks.find(t => t.id === 'wuziqi')?.practice, true);
+  refused(win, { ...s, place: 'sishui' }, { id: 'wuziqi' }, 'not-here', at);
   // A market's notice asks for it here: now it stands, for the errand.
   const asked = { ...s, quests: { 'daily-20260911-trial-yunlong': { took: '2026-09-11', have: {} } } };
   const seen = look(asked, content, at).tasks.find(t => t.id === 'wuziqi');
@@ -3145,13 +3148,10 @@ test('a place\'s game is no daily chore: it opens there only for an errand that 
   refused(win, { ...asked, place: 'sishui' }, { id: 'wuziqi' }, 'not-here', at);
   const won = must(win, asked, { id: 'wuziqi' }, at);
   const done = must(task, won.state, { action: 'done', id: 'wuziqi' }, at);
-  assert.equal(done.result.paid, null, 'the game pays nothing of its own');
+  assert.ok(done.result.paid?.progress > 0, 'the game pays by its minutes (2026-10-27)');
   assert.deepEqual(done.result.handed.map(h => h.id), ['daily-20260911-trial-yunlong']);
   assert.ok(done.result.handed[0].paid.wealth > 0, 'the notice pays — stones: a game for the board is 杂役');
   assert.equal(done.state.stamina, 100 - content.rewards.stamina.cost.game, 'a game\'s 体力');
-  assert.equal(look(done.state, content, at).tasks.find(t => t.id === 'wuziqi'), undefined, 'met, it is gone');
-  const tomorrow = ctx({ now: new Date(NOW.getTime() + 86400000) });
-  assert.equal(look(done.state, content, tomorrow).tasks.find(t => t.id === 'luoshu'), undefined, 'and not back tomorrow by itself');
 });
 
 test('a market notice can ask for a nearby place\'s game, and a win there meets it', () => {
@@ -3507,7 +3507,8 @@ test('an errand shows what it pays (`pays`), the tier and the roots counted — 
   const turned = must(quest, taken, { action: 'turn', id: 'xu-lvliang-look' });
   assert.equal(offer.pays.progress, turned.result.paid.progress + (turned.result.paid.hold?.held ?? 0));
   assert.equal(offer.pays.wealth, turned.result.paid.wealth);
-  assert.deepEqual([offer.pays.progress, offer.pays.wealth], [0, offer.grant.wealth]);
+  // an errand pays 修为 too since 2026-10-27 (rules/playpay.mjs): the card shows what lands
+  assert.ok(offer.pays.progress > 0 && offer.pays.wealth >= offer.grant.wealth);
 });
 
 test('a save the world no longer fits comes back fitted, and a bad 体力 clock never becomes NaN', async () => {

@@ -7,6 +7,14 @@ import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, root
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
 import { meets, pay, paysOf } from './core.mjs';
+import { errandGrant } from './playpay.mjs';
+
+/* What an errand pays, as it will land: its grant, and an 外门 errand's minutes (rules/playpay.mjs, 2026-10-27). */
+export function questPays(content, state, now, q) {
+  const a = paysOf(content, state, now, q.grant), more = q.work ? errandGrant(content, state) : null;
+  const b = more ? paysOf(content, state, now, more) : null;
+  return a && b ? { ...a, progress: (a.progress ?? 0) + (b.progress ?? 0), wealth: (a.wealth ?? 0) + (b.wealth ?? 0) } : a ?? b;
+}
 import { nameOf, shopOf } from './look.mjs';
 import { buyBack, visitorHere } from './visiting.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
@@ -118,7 +126,7 @@ function errandsOf(content, state, lang, now) {
       const ready = need.every(x => x.done), away = ready && !withGiver(state, q);
       // Who gives it and what it pays — the 事 book's row says both under the title (2026-10-15).
       // Its thread (quests' `thread`): the colour the 事 book and the map draw it in; a wall tag's grey unless declared.
-      return { id, title: pick(q.title, lang), thread: threadColour(q), who: q.from?.who ? pick(q.from.who, lang) : null, pays: paysOf(content, state, now, q.grant),
+      return { id, title: pick(q.title, lang), thread: threadColour(q), who: q.from?.who ? pick(q.from.who, lang) : null, pays: questPays(content, state, now, q),
         need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready,
         // Done, but the person it is for is elsewhere: who, and the way there.
         ...(away ? { away: { who: pick(q.from.who, lang) } } : {}),
@@ -244,7 +252,7 @@ function offersOf(content, state, lang, now) {
       && (!q.pass || (!state.pass && !tooHard(content, state, placeOf(content, q.pass.to) ?? { tier: Infinity })))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier))
       && layerMet(content, state, q))
-    .map(q => ({ id: q.id, title: pick(q.title, lang), thread: threadColour(q), work: q.work ?? null, who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
+    .map(q => ({ id: q.id, title: pick(q.title, lang), thread: threadColour(q), work: q.work ?? null, who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state, content), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: questPays(content, state, now, q) }));
 }
 
 const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
@@ -348,6 +356,15 @@ function complete(content, s, ctx, id, q) {
   }
   s.quests[id] = { ...s.quests[id], done_at: ctx.now.toISOString() };
   const paid = pay(content, s, ctx, q.grant);
+  // An 外门 errand (`work`) pays its share of the layer by its minutes too (rules/playpay.mjs, Hanli 2026-10-27).
+  const more = q.work ? errandGrant(content, s) : null;
+  if (more) {
+    const got = pay(content, s, ctx, more);
+    paid.progress = (paid.progress ?? 0) + (got.progress ?? 0);
+    paid.wealth = (paid.wealth ?? 0) + (got.wealth ?? 0);
+    if (got.levels?.length) paid.levels = [...(paid.levels ?? []), ...got.levels];
+    if (got.hold) paid.hold = got.hold;
+  }
   const next = q.then ? questOf(content, q.then) : null;
   const open = Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length;
   const took = Boolean(next) && !s.quests[next.id] && open < BOOK_MAX && layerMet(content, s, next);

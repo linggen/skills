@@ -672,7 +672,7 @@ test('an errand finished: what it found stands on the stage, with the way back t
   const paid = go.result.handed.find(h => h.id === met.id).paid;
   const l = R.look(go.state, content, c);
   const html = handinHtml({ title: met.title, seen: met.seen, paid }, { look: l, lang: 'zh', words: WORDS.zh });
-  assert.match(html, /香烛铺的伙计/); assert.match(html, /灵石 \+10/); assert.match(html, /data-handin-close/);
+  assert.match(html, /香烛铺的伙计/); assert.match(html, /灵石 \+\d+/); assert.match(html, /data-handin-close/);
   if (l.waypoint?.place && l.waypoint.place.id !== l.place.id) assert.match(html, /data-go="/, '下一步: the way back to the story');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(src, /const found = \(r\.met \?\? \[\]\)\.find\(\(m\) => m\.seen\);\n\s+if \(found\) show\(\{ handin:/, 'the arrival shows it');

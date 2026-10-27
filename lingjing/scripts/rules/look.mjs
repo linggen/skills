@@ -1,5 +1,6 @@
 // rules/look.mjs — The reading: the shelf, the briefs, Look, and what is on the stage.
 // Part of the rules engine; rules.mjs is its one door.
+import { playGrant } from './playpay.mjs';
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo } from '../state.mjs';
@@ -22,7 +23,7 @@ import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gongkeBoard, meaningOf } from './gongke.mjs';
-import { catchHere, errandAsking, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
+import { catchHere, errandAsking, errandWants, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { caseBrief, haggleBrief, twentyBrief } from './aigames.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
@@ -436,7 +437,9 @@ function tasksBrief(content, state, ctx) {
   const today = dayKey(ctx.now);
   // A board an errand wants stands offered, whatever it was: the errand pays.
   const hosted = Object.fromEntries((placeOf(content, state.place)?.has?.games ?? [])
-    .filter(id => hostedHere(content, state, id) || stallHere(content, state, id, ctx.now)).map(id => [id, { status: 'offered' }]));
+    .filter(id => hostedHere(content, state, id) || stallHere(content, state, id, ctx.now))
+    // A place's game open as practice (no errand wants it, rules/playpay.mjs): in the tray, never standing on the stage by itself.
+    .map(id => [id, { status: 'offered', ...(stallHere(content, state, id, ctx.now) || errandWants(content, state, id, state.place) ? {} : { practice: true }) }]));
   // A rerun's 拾遗, in a room whose find is not yet taken (rules/rerun.mjs).
   const runBoard = rerunBoardId(content, state);
   if (runBoard && runBoardHere(content, state, runBoard)) hosted[runBoard] = { status: 'offered' };
@@ -471,7 +474,7 @@ function tasksBrief(content, state, ctx) {
         ...(task.stars ? { stars: state.stars?.[id] ?? 0, stars_of: task.stars } : {}),
         // A board left (「算了，往下走」) is over for the story and paid nothing (rules/skips.mjs).
         paid: t.status === 'done' && !t.skipped, ...(t.skipped ? { skipped: true } : {}), ...(t.replay ? { replay: true } : {}), period: t.period ?? task.period ?? null, // done = paid, once or per period
-        ...(again.has(id) ? { for_errand: true } : {}),
+        ...(again.has(id) && !hosted[id]?.practice ? { for_errand: true } : {}),
         done_at: t.done_at ?? null,
         // what it asks and what it pays, so Ling can tell the practice
         ...(task.game ? { game: task.game, level: gameLevel(content, state) } : {}),
@@ -481,7 +484,7 @@ function tasksBrief(content, state, ctx) {
         // page chooses (caps.js); the rules only hand it on, its words in the reader's tongue.
         ...(task.alt ? { alt: task.alt.map(a => altOf(a, lang)) } : {}),
         ...(task.game && task.done_line ? { done_line: pick(task.done_line, lang) } : {}),
-        ...(hosted[id] ? { hosted: true } : {}),
+        ...(hosted[id] ? { hosted: true, ...(hosted[id].practice ? { practice: true } : {}) } : {}),
         // A board he opened by choice may be put down at any moment (收手, rules/skips.mjs leaveOf); the story's own may not.
         ...(task.kind === 'board' && leaveOf(content, state, id) ? { leave: true } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
@@ -494,7 +497,8 @@ function tasksBrief(content, state, ctx) {
         ...rr, ...deal,
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
-        pays: again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
+        // A practice board shows what its next play lands (rules/playpay.mjs): 修为 and 灵石, the replay's share counted.
+        pays: hosted[id]?.practice ? paysOf(content, state, ctx.now, playGrant(content, state, id, task, ctx.now)) : again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
       };
     });
   // Today's 人间功课 only — the fixed ones and the day's pick — and a 开府

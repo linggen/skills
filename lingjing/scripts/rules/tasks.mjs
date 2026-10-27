@@ -1,5 +1,6 @@
 // rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, 论道.
 // Part of the rules engine; rules.mjs is its one door.
+import { playCounted, playGrant } from './playpay.mjs';
 import { festivalDone } from './festival.mjs';
 import { climbWon } from './climb.mjs';
 import { battle } from '../battle.js';
@@ -46,7 +47,7 @@ export function task(state, content, ctx, args) {
    reopens a board already done: 云龙山的八味 asks a pill of alchemy-first,
    done once in the story, so the furnace never came back and the errand
    could not be met (his, 2026-09-23: 我已经到这里了, 没触发差事). */
-function errandWants(content, state, id, place = null) {
+export function errandWants(content, state, id, place = null) {
   return Boolean(errandAsking(content, state, id, place));
 }
 /* …and which errand it is: the board opened for it is titled by it (2026-10-15 play-test:
@@ -78,7 +79,10 @@ function reopened(content, state, id, now) {
    boards, and the errands that ask for them). */
 function hostedHere(content, state, id) {
   const t = taskOf(content, id);
-  return Boolean(t?.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id) && errandWants(content, state, id, state.place);
+  // Open as practice wherever a place hosts it once boards pay by their minutes (rules/playpay.mjs, Hanli 2026-10-27:
+  // 「玩的多应该走的快」) — an errand that wants it still takes the win; the replay's falling share is the only limit.
+  return Boolean(t?.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id)
+    && (errandWants(content, state, id, state.place) || (Boolean(content.balance?.play_pay) && t.kind === 'board' && !t.stall));
 }
 /* A stall's board (tasks/world.json `stall: true`, 钱掌柜's 押宝): played where a
    place hosts it whenever he stands there, once a period, for its own pay — no
@@ -156,8 +160,12 @@ function taskDone(state, content, ctx, id) {
       const empty = spendStamina(content, s, ctx, 'game');
       if (empty) return empty;
     }
+    // A board pays by its minutes (rules/playpay.mjs, Hanli 2026-10-27) — the errand it was for pays too; the 今 never pays the 古.
+    const play = sideLine(content, sceneOf(content, s)) ? null : playGrant(content, s, id, t, ctx.now, s.play_stars?.[id] ?? null);
+    const paid = play ? pay(content, s, ctx, play) : null;
+    if (play) playCounted(s, id, ctx.now);
     const handed = advance(content, s, { kind: 'board', task: id }, ctx);
-    return { state: s, result: { ok: true, done: id, paid: null, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
+    return { state: s, result: { ok: true, done: id, paid, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
   }
   // A board left and offered again (rules/skips.mjs) pays in full now — its passage was told the day it was left.
   const replayed = Boolean(state.tasks[id]?.replay);
@@ -170,6 +178,19 @@ function taskDone(state, content, ctx, id) {
   const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   const paid = pay(content, s, ctx, t.grant);
   boardPay(content, s, t, id, paid);
+  // …and by its minutes (rules/playpay.mjs, 2026-10-27): the story's board is a small game too, paid once.
+  // Its 灵石 stays the first clear's grade (`boards`, boardPay above); the minutes pay its 修为.
+  const playFull = replayed || sideLine(content, here) ? null : playGrant(content, s, id, t, ctx.now, s.play_stars?.[id] ?? null);
+  const play = playFull?.progress ? { ...playFull, wealth: 0 } : null;
+  if (play) {
+    const more = pay(content, s, ctx, play);
+    paid.progress = (paid.progress ?? 0) + (more.progress ?? 0);
+    paid.wealth = (paid.wealth ?? 0) + (more.wealth ?? 0);
+    if (more.levels?.length) paid.levels = [...(paid.levels ?? []), ...more.levels];
+    if (more.hold) paid.hold = more.hold;
+    if (more.converted) paid.converted = more.converted;
+    playCounted(s, id, ctx.now);
+  }
   // A board's own 恩仇簿 line (`ledger`, as an exit writes it — 古六's 写信: 孙二狗's letter).
   const wrote = t.ledger ? writeLedger(content, s, t, ctx) : [];
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);
@@ -262,6 +283,9 @@ export function win(state, content, ctx, args) {
   // how many it has, his best ever — a knob pay can scale on later (balance.json), paid on nothing yet.
   const stars = starsOf(content, id, args.stars);
   if (stars != null) s.stars = { ...s.stars, [id]: Math.max(stars, s.stars?.[id] ?? 0) };
+  // This win's own ★, for its pay by the minutes (rules/playpay.mjs): the best ever is the record, this one the pay.
+  if (stars != null) s.play_stars = { ...s.play_stars, [id]: stars };
+  else if (s.play_stars?.[id] != null) { const { [id]: _, ...rest } = s.play_stars; s.play_stars = rest; }
   // A board that climbs (rules/climb.mjs): the level he was dealt is behind him; the next deal is the one after.
   climbWon(s, content.tasks.tasks.find(t => t.id === id));
   // A board won gives the card its book action is (cards.json `from: {kind: 'beat', task}` —
