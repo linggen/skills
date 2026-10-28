@@ -722,7 +722,8 @@ test('泗水路, the first build board (第三回): gentler than 药园巡夜 �
   const first = SEEDS20.map((seed) => sim(l, hand(), { seed })), human = run(l, 'human', SEEDS20);
   assert.ok(allWin(first) && share(first, (x) => x.stars === 3) >= 0.9, `first-timer: ${fiveLine(first)}`);
   assert.ok(allWin(human) && share(human, (x) => x.stars >= 2) >= 0.95, `human: ${fiveLine(human)}`);
-  assert.ok(allWin(run(l, 'thin')), 'two of them and their upgrades hold it');
+  const thin = run(l, 'thin');
+  assert.ok(allWin(thin) && share(thin, (x) => x.hp < 10) >= 0.6, `two of them hold it, losing fire on most nights (it bites): ${thin.map((x) => x.hp)}`);
   assert.ok(allLose(run(l, 'none')), 'nothing laid: the camp is overrun');
   const keep = (rs) => rs.reduce((n, x) => n + x.hp, 0);
   assert.ok(keep(run(l, 'thin')) > keep(run(story('yaoyuan-xunye'), 'thin')), 'gentler than 药园巡夜 (古四), the next story 守炉');

@@ -310,14 +310,14 @@ spots, no money, one beast, four short waves, every tap an order — throw a sto
   countdown; 舅舅 asleep by the camp fire still to keep (`keep`); 小满 the hero, throwing stones. Before 入门 there are no
   talismans, so the level's `skin` (core.js `skinOf`) names and paints them as the road's camps — the families going to
   the 试 sleep along it (「几千户人家，赶的是同一个日子」): 剑阵 → a boy's **弹弓** (it shoots a stone), 火符 → a man's **火把**.
-  The numbers stay the talismans'. The first build board a player meets: hpMul 2.2, gentler than 药园巡夜. Its how-line
+  The numbers stay the talismans'. The first build board a player meets: gentler than 药园巡夜, yet it bites (hpMul 2.5). Its how-line
   rewritten (no fire to feed); the book's text untouched.
 - **药园巡夜 · 丹房看炉 own maps**: 巡夜 comes in low from the west cliff's foot (the book's tracks) and winds to the plot
   by the east wall; 看炉 comes down the east ridge to the 丹炉 where it stood (its lantern glow is painted there), the
   鬿雀 diving from the west; hpMul 1.4 → 1.7 for its shorter road. A test keeps every story build level off the 游戏厅's
   and 秘境's roads and spots.
-- Bots (20 seeds, tests/game-shoulu.test.mjs): 泗水路 first-timer 20/20 ★★★, human 20/20 ★★★, two kinds alone hold it,
-  nothing laid loses, ~160 s. 药园巡夜 first-timer 20/20 (★★–★★★), human 20/20, ~165 s. 丹房看炉 first-timer 20/20, 13
+- Bots (20 seeds, tests/game-shoulu.test.mjs): 泗水路 first-timer 20/20 ★★★, human 20/20 ★★★; two of them alone win but
+  lose fire on most nights, 弹弓 alone loses fire; nothing laid loses, ~160 s. 药园巡夜 first-timer 20/20 (★★–★★★), human 20/20, ~165 s. 丹房看炉 first-timer 20/20, 13
   losing a little fire; human 20/20 (★–★★★); fire alone loses to the birds; ~170 s.
 - The module, its 游戏厅 rows and the two kept levels stay; nothing cut.
 
