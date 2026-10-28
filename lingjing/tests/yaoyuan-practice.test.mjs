@@ -39,6 +39,7 @@ test('six rungs, each its own, climbing: more beds, more grubs to catch, quicker
   assert.equal(ROW.group, 'daily');
   assert.equal(ROW.mechanic, '打地鼠');
   assert.equal(TASK.game, 'rain');
+  assert.deepEqual(TASK.how, RUNGS[0].how, 'the frame\'s how-line is the board\'s own (live 10-27 it read 接雨\'s 「摆盆」)');
   assert.equal(RUNGS.length, 6);
   assert.equal(new Set(TASK.climb).size, TASK.climb.length, 'no rung twice');
   assert.ok(RUNGS.every(Boolean), 'every rung is a level of the row');

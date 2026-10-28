@@ -494,6 +494,7 @@
       "id": "yaoyuan-zhuochong", "kind": "board", "game": "rain", "period": "day", "hosted": true, "climb": ["yaoyuan-1","yaoyuan-2","yaoyuan-3","yaoyuan-4","yaoyuan-5","yaoyuan-6"],
       "_climb": "药园捉虫 (Hanli 10-27: 「可以, 加吧」): the 打地鼠 kit's practice rungs at the 药园 (games.json the daily rain row's levels), easiest first; the top rung again after it, a new day's rain each time.",
       "title": { "zh": "捉虫 · 药园的架子底下", "en": "Grubs · Under the herb garden's trellises" },
+      "how": {"zh": "哪架的叶子抖了，虫就要往下掉：点哪架，把竹篓递到底下接住；叶子不抖的地方，白递。篓满了自己回到手边。", "en": "Where a trellis's leaves shake, a grub is about to drop: tap it to hold the basket under. Where nothing shakes, the reach is wasted. A full basket comes back to hand by itself."},
       "grant": { "table": "game", "progress": 5, "wealth": 5 },
       "done_line": { "zh": "虫捉完了。", "en": "The grubs are caught." }
     },
