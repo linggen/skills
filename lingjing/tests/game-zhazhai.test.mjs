@@ -202,6 +202,8 @@ test('each 柴房 rung and top layout is won by a sensible hand and not by a laz
   const srv = await serve();
   const browser = await pw.chromium.launch();
   try {
+    // A first load warms the bundle and its atlases (a cold load right after a build can outrun the boot's wait).
+    assert.ok(await fieldOf(browser, srv.url, 'chaifang-1'), 'the level starts');
     for (const lv of ['chaifang-1', 'chaifang-2', 'chaifang-3', 'chaifang-4', 'chaifang-5', 'chaifang-6', 'chaifang-top-1', 'chaifang-top-2', 'chaifang-top-3', 'chaifang-top-4', 'chaifang-top-5']) {
       const n = Number(lv.match(/^chaifang-(\d)$/)?.[1] ?? 9), sensible = [], lazy = [];
       for (const seed of [1, 2, 3]) sensible.push(await playLevel(browser, srv.url, lv, 'sensible', seed));

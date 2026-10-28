@@ -1,5 +1,5 @@
 {
- "source": "0e02034825b87708a2b7e7e6196b8759d1be3717e68372a64627275324f3ee8d",
+ "source": "69e05d5c8d5c6e8965045d9dcaae05d808a60354c504d18bfbc95d2f8862b39c",
  "levels": [
   {
    "id": 1,
@@ -862,8 +862,7 @@
    ],
    "blocks": 13,
    "materials": [
-    "wood",
-    "stone"
+    "wood"
    ],
    "stars": {
     "oneStar": 0,
@@ -872,12 +871,12 @@
    },
    "words": {
     "zh": {
-     "name": "柴房 · 门口一只",
+     "name": "柴房 · 近处一只",
      "description": "最近那只先露了头，后面两座垛，棚顶压着石板。",
      "teachingFocus": "砸柴不砸鸡——把柴垛砸塌在它身上，它就跑了。"
     },
     "en": {
-     "name": "The Woodshed · One at the door",
+     "name": "The Woodshed · The near one",
      "description": "The nearest one shows its head first; behind it two piles with shelters on top.",
      "teachingFocus": "Hit the wood, not the hens: bring the pile down on it and it runs."
     }
@@ -905,7 +904,7 @@
     "SMALL",
     "SMALL"
    ],
-   "blocks": 12,
+   "blocks": 13,
    "materials": [
     "wood",
     "stone"
