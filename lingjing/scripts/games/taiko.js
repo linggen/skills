@@ -124,8 +124,8 @@ export const meta = {
   sounds: ['don', 'ka', 'big', 'miss', 'luo', 'pop'],
   name: { zh: '太鼓', en: 'The drum' },
   how: {
-    zh: '红的到鼓圈时打鼓心（F 或 J），蓝的打鼓边（D 或 K）；大的两键齐下，黄条连打，气球咚咔交替打破。',
-    en: 'As a red mark reaches the ring strike the head (F or J); a blue one, the rim (D or K). Big marks want both keys; drum the yellow roll; burst the balloon, head and rim in turn.',
+    zh: '红的到鼓圈时打鼓心（F 或 J，或点鼓心），蓝的打鼓边（D 或 K，或点鼓边）；大的两键齐下（或两指同点），黄条连打，气球咚咔交替打破。',
+    en: 'As a red mark reaches the ring strike the head (F or J, or tap the head); a blue one, the rim (D or K, or tap the rim). Big marks want both keys (or two fingers at once); drum the yellow roll; burst the balloon, head and rim in turn.',
   },
   // the keys: a side and a hand (two of a side within 30 ms strike a big mark)
   keys: { d: ['ka', 0], f: ['don', 0], j: ['don', 1], k: ['ka', 1] },
