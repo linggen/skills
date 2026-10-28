@@ -190,3 +190,19 @@ test('the board: a sparring bout ends when her 稳 is gone (she yields) or the i
     assert.ok(wins >= 1, `${st.id}: the hand wins some (${wins}/6)`);
   }
 });
+
+test('a bout won may drop a 秘境令 (rules/mijing.mjs keyDrop, source `qiecuo`): its chance, the day\'s shared cap; a loss never', async () => {
+  const { keyDrop } = await import('../scripts/rules/mijing.mjs');
+  assert.match(JSON.stringify(content.balance), /"drops":\{[^}]*"qiecuo":0\.\d/, 'a 切磋 chance declared beside 兽潮\'s');
+  let s = save(AFTER), now = at(8), keys = 0;
+  for (let i = 0; i < 6; i += 1) {
+    const d = won(s, now);
+    if (d.result.key) keys += 1;
+    s = d.state;
+    now = new Date(now.getTime() + 3.05 * 3600_000);
+  }
+  assert.ok(keys <= 2, `the shared day cap (${keys})`);
+  const lost = task(save(AFTER), content, ctx(at(9)), { action: 'lost', id: T.id });
+  assert.equal(lost.result.key, undefined);
+  assert.equal(typeof keyDrop, 'function');
+});

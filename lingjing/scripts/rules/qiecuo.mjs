@@ -18,6 +18,7 @@ import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { sideLine } from './hui.mjs';
 import { needOf } from './playpay.mjs';
 import { hashOf } from './travel.mjs';
+import { keyDrop } from './mijing.mjs';
 import { beatOf, passed, sceneOf } from './world.mjs';
 import { rulesOf } from '../games/fighter/core.js';
 
@@ -214,7 +215,8 @@ export function qiecuoDone(state, content, ctx, id) {
   const locked = lockedOf(content, s).includes('wealth');
   const paid = g ? pay(content, s, ctx, { table: g.table, progress: g.progress, wealth: locked ? 0 : g.wealth }) : {};
   overOn(s, bout, ctx, id, 'won', true);
-  return { state: s, result: { ok: true, done: id, bout: bout.n, foe: bout.foe.id, style: bout.style?.id ?? null, stars, paid, ...(g && g.share < 1 ? { share: g.share } : {}), gives: null, line: pick(t.done_line, s.lang) } };
+  const key = keyDrop(content, s, ctx, 'qiecuo'); // a bout won may drop a 秘境令 (rules/mijing.mjs: balance.json's chance, its day cap)
+  return { state: s, result: { ok: true, done: id, ...(key ? { key } : {}), bout: bout.n, foe: bout.foe.id, style: bout.style?.id ?? null, stars, paid, ...(g && g.share < 1 ? { share: g.share } : {}), gives: null, line: pick(t.done_line, s.lang) } };
 }
 /* Lost (`task --action=lost`, the page as the bout ends unwon) or put down (收手): over, unpaid, the cooldown started. */
 export function qiecuoOver(state, content, ctx, id, outcome) {
