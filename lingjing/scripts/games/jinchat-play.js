@@ -251,7 +251,7 @@ export async function coupletGame(ctx) {
     return h;
   };
   const whyOf = (raw) => { const f = shapeOf(c, raw, tones); return fill(w.why[f?.id ?? 'form'], f ?? {}); };
-  const status = () => ctx.foot(fill(w.tried, { n: st.misses }) + (c.hints.length ? ` · ${fill(w.hinted, { n: st.hints, max: c.hints.length })}` : ''));
+  const status = () => ctx.foot(fill(w.triedDown, { n: st.misses }) + (c.hints.length ? ` · ${fill(w.hinted, { n: st.hints, max: c.hints.length })}` : ''));
 
   return new Promise((resolve) => {
     const finish = async (solved, guess) => {

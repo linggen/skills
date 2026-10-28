@@ -249,8 +249,12 @@ export function replyOf(dict, said) {
 /** A link played: his (`who: 'me'`) or theirs. */
 export const playLink = (st, word, who) => ({ ...st, said: [...st.said, word], who: [...st.who, who], links: st.links + (who === 'me' ? 1 : 0), misses: who === 'me' ? 0 : st.misses });
 
-/** The way on, for a hint or the choices: the commonest idiom that follows. */
-export const wayOn = (dict, st) => nextsOf(dict, needOf(st), st.said)[0] ?? null;
+/** The way on, for a hint or the choices: the commonest idiom that follows and leaves the person room to answer (a hint
+    never hands him a dead end — 上行下效 — for a cheap win), else the commonest. */
+export function wayOn(dict, st) {
+  const cands = nextsOf(dict, needOf(st), st.said);
+  return cands.find((w) => nextsOf(dict, lastOf(w), [...st.said, w]).length >= 3) ?? cands[0] ?? null;
+}
 /** The k-th hint (1, 2): the way on, its first k+1 characters showing (「欺人□□」). */
 export const chainHint = (dict, st, k) => { const w = wayOn(dict, st); return w ? [...w].map((c, i) => (i <= k ? c : '□')).join('') : ''; };
 /** Four to pick from, one right: the way on, and three that hold the character but not at the head (自欺欺人 for 欺),

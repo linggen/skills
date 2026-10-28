@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import {
   answerGuess, bankLine, chainChoices, chainHint, chainLine, chainOf, checkDown, checkLink, checkRiddle, coupletLine, coupletOf,
   dictOf, freshChain, freshGuess, guessOutcome, guessSummary, judgeGuess, kindOf, needOf, nextMove, nextsOf, normAnswer, parseBank,
-  playLink, replyOf, resultLine, riddleLine, riddleOf, riddleOutcome, shapeOf, stillPossible, tableOf,
+  playLink, replyOf, resultLine, wayOn, riddleLine, riddleOf, riddleOutcome, shapeOf, stillPossible, tableOf,
 } from '../scripts/games/jinchat-games.js';
 import { castOf } from '../scripts/games/jinchat-rules.js';
 
@@ -314,6 +314,9 @@ test('成语接龙 is judged by the list alone: the head must be the last one\'s
   assert.equal(checkLink(DICT, { ...st, said: [...st.said, '欺人太甚'] }, '欺人太甚').v, 'mismatch');
   // the hint and the choices: the way on, one right among four
   assert.match(chainHint(DICT, st, 1), new RegExp(`^${needOf(st)}.□□$`));
+  const shang = { ...st, said: ['童叟无欺', '欺人太甚', '甚嚣尘上'] };
+  assert.notEqual(wayOn(DICT, shang), '上行下效', 'the hint never hands him a dead end (效: nothing follows) — live 10-27');
+  assert.ok(nextsOf(DICT, [...wayOn(DICT, shang)].at(-1), [...shang.said, wayOn(DICT, shang)]).length >= 3);
   const four = chainChoices(DICT, st);
   assert.equal(four.length, 4);
   assert.equal(four.filter((w) => checkLink(DICT, st, w).v === 'right').length, 1);
