@@ -164,6 +164,9 @@ function todoOf(kept, way = null) {
   // 兽潮 and 切磋 (rules/qiecuo.mjs), each up: a row each.
   for (const tide of (kept.tasks ?? []).filter(t => t.tide && t.status === 'offered')) out.push({ kind: 'tide', id: tide.id, title: tide.title, ...(tide.qiecuo ? { qiecuo: true } : {}) });
   for (const w of kept.waits ?? []) out.push({ kind: 'wait', id: w.id, title: w.title, wait_min: w.wait_min });
+  // 妖兽出没 (rules/yaoshou.mjs): a batch up — one row, said where it waits; standing there, the fight is the stage's own.
+  const ys = kept.yaoshou;
+  if (ys?.up && ys.left > 0 && !ys.here && ys.places?.length) out.push({ kind: 'yaoshou', title: ys.title, left: ys.left, place: placeRef(ys.places[0]) });
   // The boards set aside: the count, and the first, which the row's tap opens again.
   const skipped = (kept.aside?.offers ?? []).filter(o => o.kind === 'replay');
   if (skipped.length) out.push({ kind: 'skipped', n: skipped.length, id: skipped[0].id });

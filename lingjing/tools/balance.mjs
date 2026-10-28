@@ -7,6 +7,7 @@
 //   --fit     retired 2026-10-27: node tools/numbers.mjs --apply derives the 层 from the master table and fits the hours
 //   --json    the rows as JSON;
 //   --wealth  the 灵石 flow per player.
+//   --events  妖兽出没's day per player: its 修为 as a share of the layer, of the day, its 灵石.
 // tests/balance.test.mjs holds the bands (`model.bands`).
 //
 // A day, as the model plays it (every number from balance.json `model` or the world's data):
@@ -186,7 +187,23 @@ export function play(content, player, { model = content.balance.model, ladder = 
   // A fight's 修为 past the mark he may not leave is 灵石 at the convert rate (rules/core.mjs pay).
   // Read at the layer he stands on (playpay.mjs convertRate: 灵石 per 修为 at 练气一层, the same 灵石 at every layer).
   const converts = (content.rewards.xiuwei_to_lingshi?.tables ?? []).includes('haunt');
-  const win = (n, src = 'pool') => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); const rate = converts ? convertRate(content, { ...s, need: need() }) : 0; earn(rate * gain((fightPlay(content, { ...s, need: need() }) ?? pay.haunt.progress) * whole, true, 'haunt', src), src); wins += whole; } earn((pay.haunt.wealth ?? 0) * n, src); takePills(n / model.fight_win_rate); };
+  // `mult`: the 冷却事件's day share on top (妖兽出没's third batch of a day half, rules/events.mjs eventShare).
+  const win = (n, src = 'pool', mult = 1) => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); const rate = converts ? convertRate(content, { ...s, need: need() }) : 0; earn(rate * gain((fightPlay(content, { ...s, need: need() }) ?? pay.haunt.progress) * whole * mult, true, 'haunt', src), src); wins += whole; } earn((pay.haunt.wealth ?? 0) * n * mult, src); takePills(n / model.fight_win_rate); };
+  /* 妖兽出没 (rules/yaoshou.mjs, balance.json `events.yaoshou`): on a chapter map whose pools are all the event's (卷一's
+     外门 and 沉鼎观), the pool's fights come in batches of `batch`, the next `every_h` hours after the last is fought out;
+     the sittings spread over the waking day (`waking_h`), each at its own hour. Elsewhere the old rest (`pool_rest_min`). */
+  const EV = content.balance.events?.yaoshou, evPools = new Set(EV?.pools ?? []);
+  const batched = () => {
+    const map = content.chapters[chapterOf()]?.map?.places;
+    const ps = EV && map ? map.map(id => places.get(id)?.has?.pool).filter(Boolean) : [];
+    return ps.length > 0 && ps.every(p => evPools.has(p));
+  };
+  const E = { at: -Infinity, taken: 0, day: -1, n: 0 };
+  const evToday = () => (E.day === day ? E.n : 0);
+  const evShare = () => { const fall = content.balance.play_pay?.replay ?? [1]; return evToday() < EV.full ? 1 : fall[Math.min(evToday() - EV.full + 1, fall.length - 1)]; };
+  /* Fights left in the batch at hour `h` (Infinity where the map's pools are not batched). */
+  const evLeft = h => (batched() ? (h >= E.at + EV.every_h ? EV.batch - E.taken : 0) : Infinity);
+  const evFight = h => { if (!batched()) return; E.taken += 1; if (E.taken >= EV.batch) { E.n = evToday() + 1; E.day = day; E.at = h; E.taken = 0; } };
   const chapterOf = () => walk[Math.min(i, walk.length - 1)].chapter;
   const walled = () => Boolean(content.chapters[chapterOf()]?.map?.home);
   const pools = () => {
@@ -237,7 +254,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const total = day === 0 ? player.first_minutes : player.minutes, n = player.sittings, sit = total / n;
     const poolCap = pools() * (1 + Math.floor(sit / content.balance.cooldowns.pool_rest_min));
     wins = 0;
-    D = { xw: {}, ls: {} };
+    D = { xw: {}, ls: {}, need: need(), batched: batched() };
     ledger.push(D);
     for (let k = 0; k < n && i < walk.length; k++) {
       let left = sit, fought = 0;
@@ -246,6 +263,10 @@ export function play(content, player, { model = content.balance.model, ladder = 
       qi = k === 0 ? Q.max : Math.min(Q.max, qi + Q.max * (model.waking_h / n) / Q.refill_hours);
       const at = () => day + (k * sit + (sit - left)) / total;
       const played = () => before + k * sit + (sit - left);
+      // The hour of the model's clock now (from the first day's first sitting): the event's cooldown runs on it.
+      const hour = () => day * 24 + k * (model.waking_h / n) + (sit - left) / 60;
+      /* One pool fight: in a batch (妖兽出没) it takes a slot and pays the batch's day share; its 修为 booked as `yaoshou`. */
+      const poolFight = () => { const b = batched(), mult = b ? evShare() : 1; win(model.fight_win_rate, b ? 'yaoshou' : 'pool', mult); evFight(hour()); };
       if (!zero()) {
         // The day's 功课: its share of the layer he stands on (rules/playpay.mjs chorePlay, 2026-10-27).
         if (k === 0) gain((chorePlay(content, { ...s, need: need() }, 'day') ?? 0) * player.gongke, false, 'gongke', 'gongke');
@@ -253,7 +274,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night at an hour's share of the layer (play_pay.seclusion).
         if (k === 0 && day > 0 && player.seclude) gain(Math.floor(Math.min(player.seclude, content.rewards.seclusion.cap_hours) * (secludeHour(content, { ...s, need: need() }) ?? 0)), false, 'seclusion', 'seclusion');
-        for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && left >= T.fight && spend(Q.cost.duel); f++) { left -= T.fight; fought += 1; win(model.fight_win_rate); const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.fights += 1; }
+        for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && evLeft(hour()) > 0 && left >= T.fight && spend(Q.cost.duel); f++) { left -= T.fight; fought += 1; poolFight(); const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.fights += 1; }
         if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(model.fantong_progress, false, null, 'fantong'); }
         if (k === 0 && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale, false, null, 'tale'); }
         if (k === 0 && player.walls && wallsOpen().length) { left -= playWalls(left, Math.min(1, player.walls)); wallsOn = day; wallsTaken = Math.min(1, player.walls); }
@@ -321,7 +342,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
         // at a time, and the story goes on the moment the layer is full.
         if (!gated) break;
         const waiting = [...gates.values()].find(g => g.wait == null);
-        if (extra < player.gate_fights && fought + extra < poolCap && left >= T.fight && spend(Q.cost.duel)) { left -= T.fight; extra += 1; win(model.fight_win_rate); if (waiting) waiting.did.fights += 1; continue; }
+        if (extra < player.gate_fights && fought + extra < poolCap && evLeft(hour()) > 0 && left >= T.fight && spend(Q.cost.duel)) { left -= T.fight; extra += 1; poolFight(); if (waiting) waiting.did.fights += 1; continue; }
         // …then the day's wall tags he has not taken yet.
         if (wallsLeft() > 0.01 && wallsOpen().length) { const share = wallsLeft(); wallsOn = day; wallsTaken = 1; const used = playWalls(left, share); if (used) { left -= used; if (waiting) waiting.did.walls += share; continue; } }
         // …then the practice boards (play_pay, 2026-10-27): a board's minutes at the layer's share, `model.practice.factor`
@@ -392,6 +413,16 @@ export function wealthTable(content) {
   });
 }
 
+/* 妖兽出没's day (rules/yaoshou.mjs), per player, over the days its pools are the map's (卷一): the 修为 its batches pay as a
+   share of the layer he stands on that morning, its 灵石, and the share of the day's 修为 it is (`--events`). */
+export function eventDay(content, player) {
+  const days = play(content, player).ledger.filter(d => d.batched), n = days.length || 1;
+  const sum = f => days.reduce((t, d) => t + f(d), 0) / n;
+  const xw = sum(d => d.xw.yaoshou ?? 0), all = sum(d => Object.values(d.xw).reduce((a, x) => a + x, 0));
+  return { days: days.length, layer: sum(d => (d.need ? (d.xw.yaoshou ?? 0) / d.need : 0)), xw, of_day: all ? xw / all : 0, ls: sum(d => d.ls.yaoshou ?? 0) };
+}
+export const eventTable = content => Object.entries(content.balance.model.players).map(([who, p]) => ({ who, ...eventDay(content, p) }));
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const content = loadContent();
   if (process.argv.includes('--fit')) {
@@ -405,6 +436,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`练气 ${JSON.stringify(content.ladder.tiers[0].thresholds)}`);
     console.log('回     轻   中   重   (days)');
     for (const r of rows) console.log(`${r.hui.padEnd(5)} ${[r.light, r.typical, r.heavy].map(x => String(x ?? '—').padStart(4)).join(' ')}`);
+    const pct = x => `${(x * 100).toFixed(1)}%`;
+    if (process.argv.includes('--events')) for (const e of eventTable(content)) console.log(`妖兽出没 ${e.who.padEnd(8)} ${e.days} days: 修为 ${Math.round(e.xw)}/day = ${pct(e.layer)} of the layer · ${pct(e.of_day)} of the day's 修为 · 灵石 ${Math.round(e.ls)}/day`);
     if (process.argv.includes('--wealth')) for (const w of wealthTable(content)) console.log(`灵石 ${w.who.padEnd(8)} ${w.days} days: in ${w.in}/day · pills out ${w.out}/day (${w.pills} pills) · end ${w.end} · lowest ${w.low}`);
   }
 }

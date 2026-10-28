@@ -27,6 +27,7 @@ import { kaoDone, kaoHere } from './kao.mjs';
 import { isTide, shouchaoDone, shouchaoFirst, shouchaoHere, shouchaoShut } from './shouchao.mjs';
 import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardHere, mijingDuel } from './mijing.mjs';
 import { isBout, qiecuoDone, qiecuoHere, qiecuoOver, qiecuoShut } from './qiecuo.mjs';
+import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
 
 /* Each line its own 修为 (rules/lines.mjs, Hanli 2026-10-27): a board pays the line it belongs to — a 今 board the 今, wherever
    it is replayed; on a 今 scene, the 今 — by the same minutes on that line's ladder, and never 灵石. Null: the 古's own. */
@@ -459,6 +460,9 @@ export function duel(state, content, ctx, args) {
   // beast fought is the 图鉴's (state.beasts) — a first meeting, a first win, said on the result.
   // A pool's wins in a row (world.mjs poolRestLeft): it rests only after `rest_after` of them; a run that reached it
   // and rested begins again.
+  // 妖兽出没 (rules/yaoshou.mjs): the batch's day share, read before this fight takes its slot (the last one completes it).
+  const huntAt = hunt ? placeOf(content, game.hunt) : null, batchShare = hunt ? yaoshouShare(content, s, huntAt, ctx.now) : 1;
+  if (hunt) yaoshouFought(content, s, huntAt, ctx.now);
   const streakWas = hunt && (today.streak ?? 0) < restAfter(content, placeOf(content, game.hunt)) ? today.streak ?? 0 : 0;
   s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString(), streak: streakWas + (played.outcome === 'won' ? 1 : 0), last: rememberAt(content, today, creature.id, poolOf(content, placeOf(content, game.hunt))) } : {}) };
   const firsts = creature.person ? {} : meetBeast(s, creature.id, played.outcome === 'won', ctx.now);
@@ -499,7 +503,7 @@ export function duel(state, content, ctx, args) {
   const t = content.rewards.tables.haunt;
   // The same beast beaten again the same day pays the play rules' falling share (balance.json play_pay.replay:
   // 100 · 50 · 10%) — a pool fought without end is never a farm (Hanli 2026-10-27).
-  const replay = haunt && pays ? fightReplay(content, s, creature.id, ctx.now) : 1;
+  const replay = haunt && pays ? fightReplay(content, s, creature.id, ctx.now) * batchShare : 1;
   const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth, share: replay }) : null;
   if (haunt && pays) playCounted(s, hauntPlayId(creature.id), ctx.now);
   const full = storedLine(s, dropped);
@@ -544,7 +548,7 @@ const FIGHT_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, haggle: true, duizi: a => ['open', 'reverse'].includes(a.action),
-  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', quest: a => !['info', 'kaifu'].includes(a.action), mijing: a => !['info', 'close'].includes(a.action ?? 'info'),
+  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', yaoshou: a => a.action !== 'info', quest: a => !['info', 'kaifu'].includes(a.action), mijing: a => !['info', 'close'].includes(a.action ?? 'info'),
   seclude: a => a.action === 'enter',
 };
 export function fightHold(state, verb, args = {}) {

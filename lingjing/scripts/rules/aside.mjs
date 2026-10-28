@@ -51,7 +51,7 @@ export const ASIDE_KINDS = [
     takes: verb => verb === 'fantong' },
   { kind: 'pool', // a pool's fight at the place he stands, rested (world.mjs encounterOf; 体力 is the fight's own)
     open: (content, state, view, now) => { const e = encounterOf(content, state, now); return e?.pool ? [{ id: e.game.id, title: e.creature.name }] : []; },
-    takes: (verb, args) => (verb === 'duel' && String(args.id ?? '').startsWith('haunt:')) || verb === 'tame' || verb === 'reroll' },
+    takes: (verb, args) => (verb === 'duel' && String(args.id ?? '').startsWith('haunt:')) || verb === 'tame' || verb === 'reroll' || verb === 'yaoshou' },
   { kind: 'tide', // 兽潮, out of its cooldown (rules/shouchao.mjs)
     // …and 切磋's bout (rules/qiecuo.mjs), the same kind: a cooldown's board at hand
     open: (content, state, view, now) => tasksOf(view).filter(t => t.tide && (shouchaoHere(content, state, t.id, now) || qiecuoHere(content, state, t.id, now))).map(t => ({ id: t.id, title: t.title })),
@@ -80,7 +80,7 @@ export const ASIDE_ALWAYS = new Set(['look', 'show', 'progress', 'story', 'bag',
 export const ASIDE_REFUSED = new Set(['move', 'go', 'resolve', 'judge', 'travel', 'fly', 'meet', 'ring', 'make', 'enter', 'leave', 'build',
   'worlds', 'amend', 'art', 'mijing']);
 /* Verbs some kind may take (a call each kind's `takes` answers); else refused. */
-export const ASIDE_KIND_VERBS = new Set(['task', 'win', 'duel', 'reroll', 'tame', 'fantong', 'seclude', 'duizi', 'kao', 'tale',
+export const ASIDE_KIND_VERBS = new Set(['task', 'win', 'duel', 'reroll', 'tame', 'yaoshou', 'fantong', 'seclude', 'duizi', 'kao', 'tale',
   'lundao', 'divine', 'fate']);
 
 /* What may be played now, while set aside (or, before, whether the control has anything to offer). */

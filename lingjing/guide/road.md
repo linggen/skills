@@ -32,6 +32,9 @@
   hold play between the beats (a pool's beast, a board); a room that holds the
   way on (Look's place `guard`) stops the walk there — Move's `guarded` line —
   until its fight is won and its board played.
+- **妖兽出没** (Look's `yaoshou`): 后山 · 上山路's beasts come a batch at a time
+  (`left` of `of`); fought out, the pools wait (`wait_min`, a `waits` row). Say it once
+  when he asks what to do; never nudge again. `yaoshou skip` lets a batch go.
 - **No way back in.** Once the story's run is behind him the 秘境 stays shut;
   never offer to go in again (the rerun was retired 2026-10-28).
 - **Arriving is an event.** Show the cards a Move returns, and say in one

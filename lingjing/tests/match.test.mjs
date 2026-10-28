@@ -98,22 +98,17 @@ function fightThere(s, now, win) {
 import { lookahead } from '../scripts/fightline.js';
 import { tokenOf } from '../scripts/battle.js';
 
-test('never empty after one fight: the 后山 rests only after `pool_rest_after` wins in a row; a loss never rests it', () => {
-  const after = content.balance.cooldowns.pool_rest_after;
-  assert.ok(after >= 2, 'a few, never every win');
-  let s = standFit(content, at('strong'), NOW), now = NOW, wins = 0;
-  for (let k = 0; k < 12 && wins < after; k += 1) {
+test('妖兽出没 at the 后山 (2026-10-28): a batch of `events.yaoshou.batch` fights, won or lost, then the stretch rests `every_h`', () => {
+  const ev = content.balance.events.yaoshou;
+  let s = standFit(content, at('strong'), NOW), now = NOW;
+  for (let k = 0; k < ev.batch; k += 1) {
+    assert.ok(encounterOf(content, standFit(content, s, now), now), `after ${k} fight(s) of the batch a beast still stands`);
     now = new Date(now.getTime() + 60_000);
-    const r = fightThere(standFit(content, s, now), now, true);
-    s = r.state;
-    if (r.result.outcome === 'won') wins += 1;
-    if (wins < after) assert.ok(encounterOf(content, standFit(content, s, now), now), `after ${wins} win(s) a beast still stands`);
+    s = fightThere(standFit(content, s, now), now, true).state;
   }
-  assert.equal(wins, after);
-  assert.equal(encounterOf(content, s, now), null, 'the streak reached: the stretch rests ' + JSON.stringify(s.duels['hunt:houshan']));
-  // Rested, the next beast stands and the streak begins again.
-  const later = new Date(now.getTime() + content.balance.cooldowns.pool_rest_min * 60_000 + 1000);
-  assert.ok(encounterOf(content, standFit(content, s, later), later));
+  assert.equal(encounterOf(content, s, now), null, 'the batch fought out: the stretch rests ' + JSON.stringify(s.events));
+  const later = new Date(now.getTime() + ev.every_h * 3600_000 + 1000);
+  assert.ok(encounterOf(content, standFit(content, s, later), later), 'the next batch');
 });
 
 test('the same beast beaten again the same day pays the play rules\' falling share (100 · 50 · 10%)', async () => {

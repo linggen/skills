@@ -36,6 +36,7 @@ import { go, lang, move, summarize, trade } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
 import { fly, inkMapOf, jiudingBrief, unfolded, unrolled } from './inkmap.mjs';
 import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save, saves, tame, travel, wake, worlds } from './worlds.mjs';
+import { yaoshou } from './yaoshou.mjs';
 
 /* Every verb kept to the story gates (rules/locks.mjs): a shut system's verb is refused `not-yet`. */
 export const VERBS = gated({
@@ -60,7 +61,7 @@ export const VERBS = gated({
     return { state: next, result };
   },
   resolve, judge, task, win, duel, reroll, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong,
+  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong, yaoshou,
   // 秘境探险 (rules/mijing.mjs): the page's own verb — in at the door, the map's rooms, out.
   mijing,
   // AI mini-games (rules/aigames.mjs): 砍价 (the shop panel's). 断案 cut 2026-10-27; the player-asks 二十问 2026-10-28.

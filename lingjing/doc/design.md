@@ -243,7 +243,7 @@ overflow pays more.
 
 | | |
 |---|---|
-| Daily routine (~15–20 min) | 功课 · 饭桶 (1 h cooldown) · pool fights (30 min rest; 体力 is the day's only limit) · 兽潮 (20 h cooldown, any hour, ≤ ~20 min, below) · 本王考考你 (3 rounds a day, any hour) |
+| Daily routine (~15–20 min) | 功课 · 饭桶 (1 h cooldown) · 妖兽出没 at 后山 · 上山路 (a batch of 3 fights, 1.5 h after the last is fought; below) · other pools' fights (rest after 5 wins in a row) · 兽潮 (20 h cooldown, any hour, ≤ ~20 min, below) · 本王考考你 (3 rounds a day, any hour) |
 | Story + its boards (~1 h a 回) | unlimited, at the player's pace, up to the 回's stage quest |
 | A 回 | typical ≈4–7 days (古六 ≈7.4: thirteen scenes behind its quest), heavy ≈3–5, light ≈10–16 (体力 on) |
 | 古一–古三 | fast — no quest; a first sitting or two |
@@ -252,6 +252,15 @@ overflow pays more.
   reading takes about twice as long. The 层 are held at their numbers (`model.fit.hold` h05 · h07 · h08)
   and the bands of 古四 (≤ 8) and 古六 (≤ 10.5), and 古一–古三's ≤ 5 days, widened until the new small
   games land — then re-fit, Hanli's call.
+- **冷却事件 — three cooldown events** (Hanli 2026-10-28: 「按你说的来」) 【在建】: 兽潮 (塔防, 1 h), 比武切磋 (格斗, 3 h, after
+  宗门大比) and 妖兽出没 (斗法 at 后山 · 上山路, 1.5 h), each on a 主力 game. One mechanism, rules/events.mjs (balance.json
+  `events.<id>`): the cooldown runs from completion (won, lost or skipped); a waiting event waits and never stacks; announced
+  once (the tray or the 主页), never nudged; the day's first `full` (2) pay in full, then play_pay.replay's 50 · 10%.
+  **妖兽出没** 【已建】 (rules/yaoshou.mjs): the two pools hold a batch of 3 fights; each settle takes one (won, lost or run dry),
+  the last completes it, `yaoshou skip` lets it go; the pool waits between batches (world.mjs poolRestLeft, so the encounter,
+  换一只, the match and the errands' hints wait with it); Look `yaoshou` (left/of, or the wait), a `waits` row, one 主页 row
+  while a batch is up elsewhere. Pay: the fight's own (the beast's replay share kept) × the batch's day share. The model
+  (tools/balance.mjs `--events`) plays the batches on 卷一's maps.
 - **Every cooldown waits the same way** (2026-10-26): Look's `waits` lists each one he is waiting out —
   兽潮's, a pool at rest where he stands — as `{ id, title, shut, wait_min }`, the line in the
   world's words (the task's `shut`, creatures.json `hunt.rest_say` or a pool's own); the tray

@@ -54,6 +54,7 @@ import { kaoBrief, kaoHosted } from './kao.mjs';
 import { shouchaoHosted, shouchaoRow, shouchaoWait, shouchaoWaiting } from './shouchao.mjs';
 import { mijingBrief, mijingHosted, mijingRow } from './mijing.mjs';
 import { qiecuoHosted, qiecuoRow, qiecuoWait, qiecuoWaiting } from './qiecuo.mjs';
+import { yaoshouBrief, yaoshouWait } from './yaoshou.mjs';
 import { dealtOf } from './climb.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
@@ -702,6 +703,8 @@ export function look(state, content, ctx) {
     ...(mijingBrief(content, state, ctx.now) ? { mijing: mijingBrief(content, state, ctx.now) } : {}),
     // Every cooldown he waits out, one shape: { id, title, shut, wait_min } — the page draws each as one waiting row.
     ...(waitsOf(content, state, ctx.now).length ? { waits: waitsOf(content, state, ctx.now) } : {}),
+    // 妖兽出没 (rules/yaoshou.mjs): the batch up at 后山 · 上山路 (how many left), or how long until the next.
+    ...(yaoshouBrief(content, state, ctx.now) ? { yaoshou: yaoshouBrief(content, state, ctx.now) } : {}),
     ended: state.ended, story: state.story,
     // 前情提要 while owed, and the last story node while fresh (story.mjs).
     ...recapLook(content, state), ...nodeLook(state, ctx.now),
@@ -793,9 +796,9 @@ function worldBrief(content, lang) {
 export { dealOf, duelBrief, forSale, shopOf, shopOpen, ledgerOf, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };
 
 /* The cooldowns he waits out now, in one shape (cards.js waitRowHtml): 兽潮's (rules/shouchao.mjs), a pool at rest where he
-   stands (world.mjs). Each its own line in the world's words. */
+   stands (world.mjs), 妖兽出没's between its batches (rules/yaoshou.mjs). Each its own line in the world's words. */
 function waitsOf(content, state, now) {
-  return [shouchaoWait(content, state, now), qiecuoWait(content, state, now), poolWait(content, state, now)].filter(Boolean);
+  return [shouchaoWait(content, state, now), qiecuoWait(content, state, now), yaoshouWait(content, state, now), poolWait(content, state, now)].filter(Boolean);
 }
 
 /* The last story step's 所得 as the page shows it: each thing's name, picture, kind and small print. */
