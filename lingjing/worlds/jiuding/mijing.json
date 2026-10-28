@@ -57,7 +57,7 @@
         {
           "creature": "qiuyu",
           "weight": 3,
-          "hp": 1.1,
+          "hp": 0.9,
           "deck": [
             "tengmiao",
             "tengmiao",
@@ -75,7 +75,8 @@
         },
         {
           "creature": "yezhu",
-          "weight": 2
+          "weight": 2,
+          "hp": 1.0
         }
       ],
       "xiong": [

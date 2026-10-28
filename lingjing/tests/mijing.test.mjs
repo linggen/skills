@@ -313,3 +313,9 @@ test('a day\'s 秘境 never breaks the pace: the day\'s cap of runs, cleared, is
     assert.ok(day < 0.2, `${s.tier} ${s.step}: a day's 秘境 is ${(day * 100).toFixed(1)}% of the layer`);
   }
 });
+
+test('the map forks: across many seeds some room leads two ways', () => {
+  const t = M.tiers[0];
+  const forks = Array.from({ length: 20 }, (_, k) => mapOf(content, t, `fork-${k}`)).filter(m => m.layers.slice(0, -1).flat().some(r => m.ways[r.id].length > 1)).length;
+  assert.ok(forks >= 15, `${forks}/20 maps fork`);
+});

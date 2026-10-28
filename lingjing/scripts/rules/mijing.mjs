@@ -106,7 +106,7 @@ export function mapOf(content, tier, seed) {
       const to = new Set([nearest(r.at, next).id]);
       if (next.length > 1 && u(`${key}|${r.id}|branch`) < 0.5) {
         const others = next.filter(n => !to.has(n.id)).sort((a, b) => Math.abs(a.at - r.at) - Math.abs(b.at - r.at));
-        if (others[0] && Math.abs(others[0].at - r.at) <= 0.75) to.add(others[0].id);
+        if (others[0]) to.add(others[0].id); // the nearest other: a fork
       }
       ways[r.id] = [...to];
     }
