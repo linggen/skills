@@ -634,9 +634,6 @@ function filler(content, state, said) {
   return pair.find(f => f.label !== last) ?? pair[0];
 }
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
-/* A board the story plays once and never offers again (`again: false` — 守火 · 雪夜柴垛, Hanli 2026-10-28: 「这两个在剧情里
-   出现一次, 还可以, 不要让玩家反复玩」): left, it is not kept to be offered again (rules/skips.mjs); no errand reopens it. */
-const playsAgain = (content, id) => { const t = taskOf(content, id); return Boolean(t) && t.again !== false; };
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
 
 /* One effect, as the card tells it. Arms carry the fight's own numbers: 攻
@@ -747,4 +744,4 @@ function gearBrief(content, state, now = new Date()) {
   };
 }
 
-export { afterMet, layerMet, awayLine, bookOf, mootQuest, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, onStoryRoad, TIERS_ORDER, playsAgain, wayBack, waypointOf, whereAt, withinRoads, workOf };
+export { afterMet, layerMet, awayLine, bookOf, mootQuest, breakthroughOf, complete, countsOf, directorBrief, errandFor, filler, FILLERS, GEAR_SLOTS, gearBrief, HANDED_KEEP, handedHere, handedOne, itemBrief, itemOf, noticeAt, noticeOf, offersOf, questDoneBefore, questOf, questReady, settleErrands, withGiver, taskOf, threadOf, onStoryRoad, TIERS_ORDER, wayBack, waypointOf, whereAt, withinRoads, workOf };
