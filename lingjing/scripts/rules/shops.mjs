@@ -26,6 +26,8 @@ export const SHOP_KINDS = {
   liang: { zh: '粮铺', en: 'Provisions', mark: { zh: '粮', en: 'Pr' } },
   za: { zh: '杂货', en: 'Sundries', mark: { zh: '杂', en: 'Su' } },
   shi: { zh: '坊市', en: 'Market', mark: { zh: '市', en: 'Mk' } },
+  // A sect's own store, sold from the common account (外门库房): never a 坊市, whatever its shelf holds.
+  ku: { zh: '库房', en: 'Stores', mark: { zh: '库', en: 'St' } },
 };
 
 /* The class of one good, by the catalog's `kind`: a herb (herbs.json) is the apothecary's too. */
