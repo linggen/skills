@@ -70,9 +70,22 @@ export function boardFiles(game = 'shouqiang') {
 /** The boards of the kit. */
 export const kitGames = () => Object.keys(KIT.games);
 
-/** The host page's table (scripts/games/phone/boards.json): each board's pack and the sheets it links (skill-relative). */
+/** A board module's own name (its `meta.name: { zh, en }`, the 游戏厅's tile title on the Mac), read from its text — the
+    module is a browser module and is never imported here. Null when it declares none. */
+export function metaNameOf(module) {
+  const text = fs.readFileSync(path.join(SKILL, module), 'utf8');
+  const meta = /export const meta = \{([\s\S]*?)\n\};/.exec(text)?.[1] ?? '';
+  const m = /\n  name: \{ zh: '([^']+)', en: '([^']+)' \}/.exec(meta);
+  return m ? { zh: m[1], en: m[2] } : null;
+}
+
+/** The host page's table (scripts/games/phone/boards.json): each board's pack and the sheets it links (skill-relative),
+    and a board's own name (the phone's 游戏厅 titles it so). */
 export function boardsTable() {
-  return { games: Object.fromEntries(kitGames().map((id) => [id, { pack: `board-${id}.pack`, css: KIT.games[id].css ?? [], ...(KIT.games[id].piece ? { piece: KIT.games[id].piece } : {}), ...(KIT.games[id].ai ? { ai: true } : {}) }])) };
+  return { games: Object.fromEntries(kitGames().map((id) => {
+    const g = KIT.games[id], name = g.piece ? null : metaNameOf(g.module);
+    return [id, { pack: `board-${id}.pack`, css: g.css ?? [], ...(g.piece ? { piece: g.piece } : {}), ...(g.ai ? { ai: true } : {}), ...(name ? { name } : {}) }];
+  })) };
 }
 export const BOARDS_JSON = 'scripts/games/phone/boards.json';
 

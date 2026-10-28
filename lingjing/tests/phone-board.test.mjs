@@ -125,6 +125,14 @@ test("the art every kit board is dealt (its tasks' deals, its games.json rows) i
   }
 });
 
+test("a board's own name (its meta.name) travels in the table, for the phone's 游戏厅", () => {
+  const t = boardsTable().games;
+  assert.deepEqual(t.fuqin.name, { zh: '抚琴', en: 'The qin' });
+  assert.equal(t.sadou.name.zh, '撒豆成兵');
+  assert.equal(t.zhazhai.name.zh, '砸寨');
+  assert.ok(Object.entries(t).every(([id, g]) => !id.startsWith('piece-') || !g.name), 'a 大场面 is no tile');
+});
+
 test('packs: every file in exactly one, the host page and the table in the common one, within a budget', () => {
   const { common, games } = kitPacks();
   const seen = new Map();
