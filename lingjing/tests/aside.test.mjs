@@ -29,7 +29,7 @@ test('every verb is in exactly one bucket: always, refused, or a kind\'s — a v
     const n = [ASIDE_ALWAYS.has(verb), ASIDE_REFUSED.has(verb), ASIDE_KIND_VERBS.has(verb)].filter(Boolean).length;
     assert.equal(n, 1, `${verb}: in ${n} buckets`);
   }
-  assert.deepEqual(ASIDE_KINDS.map(k => k.kind), ['replay', 'rerun', 'gongke', 'fantong', 'pool', 'tide', 'seclusion', 'her']);
+  assert.deepEqual(ASIDE_KINDS.map(k => k.kind), ['replay', 'gongke', 'fantong', 'pool', 'tide', 'seclusion', 'her']);
 });
 
 test('set aside → a skipped board played → back at the same beat; the scene\'s own board and Move wait', () => {
@@ -171,21 +171,13 @@ test('each kind offered only when open by its own rule, and its verbs pass while
   // 人间功课: its check is the kind's.
   assert.ok(has(offers(), 'gongke'));
   notHeld('task', s, now, { action: 'check', id: 'x' });
-  // 秘境 again: only at its door, out of its cooldown.
-  assert.ok(!has(offers(), 'rerun'), 'not at the door');
-  // (a day on, past the cooldown the story's own run started)
+  // The 秘境 rerun is retired (2026-10-28): never offered, not even at its old door a day on.
   const day = new Date(now.getTime() + 864e5), door = { ...s, place: 'shimen' };
-  assert.ok(has(lookOf(door, day).aside.offers, 'rerun'), 'at the door');
-  assert.ok(!has(lookOf({ ...door, reruns: { ...door.reruns, mijing: { ...door.reruns?.mijing, ended_at: day.toISOString() } } }, day).aside.offers, 'rerun'), 'inside its cooldown');
-  // …and its whole flow while set aside: in, a room walked, out, then 接着读.
-  const inRun = must('rerun', door, day, { action: 'enter' }).state;
-  const walked = call('move', inRun, day, { place: 'mijing-xiongya' });
-  assert.equal(walked.result.ok, true, JSON.stringify(walked.result));
-  const out = must('rerun', walked.state ?? inRun, day, { action: 'leave' }).state;
-  assert.equal(call('resume', walked.state ?? inRun, day).result.refused, 'in-run', 'never resumed inside a run');
-  const back = must('resume', out, day);
+  assert.ok(!has(lookOf(door, day).aside.offers, 'rerun'), 'no rerun at the door');
+  // 接着读 from elsewhere: back at the scene's place.
+  const back = must('resume', door, day);
   assert.equal(back.state.place, content.chapters['00-waimen'].scenes[s.scene].at, 'back at the scene\'s place');
-  // Outside a run, a walk is the story's: refused.
+  // A walk is the story's: refused.
   assert.equal(call('move', s, now, { place: 'shimen' }).result.refused, 'aside');
   // 兽潮, on its cooldown (rules/shouchao.mjs): open at 古七's 09-snow.
   const tide = asideAt('00-zhuji/09-snow');

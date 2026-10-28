@@ -1,6 +1,6 @@
 // Every cooldown waits the same way (2026-10-26, the coordinator for Hanli): Look's `waits` carries each one in one
 // shape — { id, title, shut, wait_min } — and the page's tray draws one row shape (cards.js waitRowHtml), in the
-// world's words. 兽潮's is held in tests/shouchao.test.mjs; here the 秘境 rerun's and a pool at rest.
+// world's words. 兽潮's is held in tests/shouchao.test.mjs; here a pool at rest.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -26,19 +26,3 @@ test('a pool at rest: on Look as a wait where he stands, in the world\'s words, 
   assert.ok(tray([row], 'en').includes('back in about 20 min'));
 });
 
-test('the 秘境 rerun shut: on Look as a wait, its label and shut line, the same row on the page', () => {
-  const start = new Date('2026-10-15T09:00:00+08:00');
-  // The walk plays without 灵气, as every walk does.
-  process.env.LINGJING_STAMINA_LIMIT = '0';
-  let out;
-  try { out = playTo(content, newState(content, 'zh', start), 'wm-qianye', { now: start }); } finally { delete process.env.LINGJING_STAMINA_LIMIT; }
-  const R = Object.values(content.chapters).flatMap((c) => c.beats ?? []).find((b) => b.sealed?.rerun);
-  const ended = Date.parse(out.state.reruns[R.id].ended_at), H = R.sealed.rerun.every_h;
-  const at = new Date(ended + 60 * 60000);
-  const w = look(out.state, content, { now: at, quests: [] }).waits?.find((x) => x.id === `rerun:${R.id}`);
-  assert.deepEqual(w, { id: `rerun:${R.id}`, title: R.sealed.rerun.label.zh, shut: R.sealed.rerun.shut.zh, wait_min: (H - 1) * 60 });
-  assert.equal(look(out.state, content, { now: new Date(ended + H * 3600000), quests: [] }).waits?.find((x) => x.id === w.id), undefined, 'open again: no wait');
-  const html = tray([w]);
-  assert.ok(html.includes(`data-wait="${w.id}"`) && html.includes(w.shut) && html.includes('约 1 时辰后'), html);
-  assert.doesNotMatch(html, /data-play/);
-});

@@ -16,9 +16,9 @@ test('a hard error is caught: a NaN price, a negative pay, a buy-back over the p
   c.balance = structuredClone(c.balance);
   c.balance.prices['mend-pill'] = { buy: 10, sell: 12 };
   c.balance.pay.scene.progress = -1;
-  c.balance.cooldowns.rerun_h = NaN;
+  c.balance.cooldowns.fantong_min = NaN;
   const where = hardErrors(c).map(e => e.where);
-  for (const w of ['balance.prices.mend-pill', 'balance.pay.scene.progress', 'balance.cooldowns.rerun_h']) assert.ok(where.includes(w), w);
+  for (const w of ['balance.prices.mend-pill', 'balance.pay.scene.progress', 'balance.cooldowns.fantong_min']) assert.ok(where.includes(w), w);
 });
 
 test('the report weighs every source in the layer\'s units, and reads a text that states an amount', async () => {

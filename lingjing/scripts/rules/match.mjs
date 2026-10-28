@@ -68,7 +68,7 @@ export function pickStand(weighed) {
    when nothing changes. `exclude`: beasts not to stand (a reroll's current one). */
 export function standFit(content, state, now = new Date(), { exclude = [], force = false } = {}) {
   const place = placeOf(content, state?.place);
-  if (!place || place.has?.creature || !poolOf(content, place) || atScene(content, state) || state.fight || state.rerun?.inside) return state;
+  if (!place || place.has?.creature || !poolOf(content, place) || atScene(content, state) || state.fight) return state;
   if (poolResting(content, state, place, now)) return state;
   const kept = force ? null : standOf(content, state, place, now);
   const anyUp = poolUp(content, state, place, now)[0];

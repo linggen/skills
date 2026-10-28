@@ -21,16 +21,15 @@ const dayName = (day, lang) => (lang === 'zh'
 export function sealedBrief(content, state) {
   const sealed = sealedOf(content, state);
   if (!sealed) return null;
-  const lang = state.lang, label = pick(sealed.label, lang), day = sealed.run ? null : sealed.days?.[state.scene] ?? null;
+  const lang = state.lang, label = pick(sealed.label, lang), day = sealed.days?.[state.scene] ?? null;
   const when = day ? dayName(day, lang) : null;
   // The room's own short name: 「沉鼎秘境 · 石室」 → 石室 — or, standing at a scene that says where it is
   // told, the scene's (live, 2026-10-15: wm-chu, told outside the stone door, read 「崖壁」, its room).
-  const scene = sealed.run ? null : sceneOf(content, state), atIt = scene && (!scene.at || scene.at === state.place);
+  const scene = sceneOf(content, state), atIt = scene && (!scene.at || scene.at === state.place);
   const where = pick((atIt && scene.place) || placeOf(content, state.place)?.name, lang)?.split(' · ').pop() ?? null;
-  // A rerun (rules/rerun.mjs) has one goal for the whole run.
-  const goal = pick(sealed.run ? sealed.goal : sealed.goals?.[state.scene], lang) ?? null;
+  const goal = pick(sealed.goals?.[state.scene], lang) ?? null;
   return {
-    id: sealed.beat, label, header: [label, when].filter(Boolean).join(' · '), ...(sealed.run ? { run: true, ...(sealed.board ? { board: sealed.board } : {}) } : {}),
+    id: sealed.beat, label, header: [label, when].filter(Boolean).join(' · '),
     ...(day ? { day: { n: day.n, unit: day.unit, name: when } } : {}),
     ...(where ? { where } : {}), ...(goal ? { goal } : {}), say: pick(sealed.say, lang),
   };
@@ -48,11 +47,7 @@ export function withoutSealed(content, state, brief) {
   for (const key of OUTSIDE) delete out[key];
   if (out.today) out.today = { ...out.today, festival: null, term: null, jieqi: null };
   if (out.place) { const { pass, meet, ...place } = out.place; out.place = place; }
-  // A rerun (rules/rerun.mjs): the story outside waits — its boards and the rooms' story stalls too; only the run's own boards stand
-  // (its 拾遗, and a 奇遇 the run rolled in this room — rules/qiyu.mjs).
-  if (sealed.run && out.tasks) out.tasks = out.tasks.filter(t => t.id === sealed.board || t.qiyu);
-  // A rerun's goal points nowhere outside: the story's road waits, frozen.
-  if (sealed.goal) out.waypoint = sealed.run ? { text: sealed.goal, sealed: true } : { ...(brief.waypoint ?? {}), text: sealed.goal, sealed: true };
+  if (sealed.goal) out.waypoint = { ...(brief.waypoint ?? {}), text: sealed.goal, sealed: true };
   return out;
 }
 

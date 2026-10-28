@@ -158,7 +158,6 @@ test('待办: every kind that asks something of him is a tap (a cooldown and the
     heldBare: { kind: 'held', id: 'q', title: 'x' },
     gongke: { kind: 'gongke', id: 'g', title: 'x', progress: 5 },
     tide: { kind: 'tide', id: 'shouchao', title: 'x' },
-    rerun: { kind: 'rerun', place, title: 'x' },
   };
   for (const [name, r] of Object.entries(rows)) {
     const out = homeHtml({ home: { gate: null, next: null, todo: [r] } });

@@ -28,7 +28,7 @@ function perMinute(content, state, src) {
   const pp = content.balance?.play_pay, mins = pp ? minutesOf(pp, state) : 0;
   return src && mins ? (src.share * needOf(content, state)) / (src.time * mins) : 0;
 }
-/* A fight won (the `haunt` table, a pool's or a rerun's beast): its minutes of play, as a board's (core.mjs amountsOf). */
+/* A fight won (the `haunt` table, a pool's beast): its minutes of play, as a board's (core.mjs amountsOf). */
 export function fightPlay(content, state) {
   const pp = content.balance?.play_pay;
   return pp?.fight ? Math.round(perMinute(content, state, pp.games) * pp.fight.minutes) : null;

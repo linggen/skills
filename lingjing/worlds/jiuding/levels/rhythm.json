@@ -72,7 +72,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 182
+       "n": 181
       },
       {
        "kind": "read",
@@ -110,7 +110,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 185
+       "n": 184
       },
       {
        "kind": "read",
@@ -233,7 +233,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 143
+       "n": 142
       },
       {
        "kind": "read",
@@ -369,7 +369,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 161
+       "n": 160
       },
       {
        "kind": "read",
@@ -445,7 +445,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 148
+       "n": 147
       },
       {
        "kind": "read",
@@ -464,7 +464,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 187
+       "n": 186
       },
       {
        "kind": "read",
@@ -483,7 +483,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 162
+       "n": 161
       },
       {
        "kind": "read",
@@ -528,7 +528,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 188
+       "n": 187
       },
       {
        "kind": "read",
@@ -585,7 +585,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 189
+       "n": 188
       },
       {
        "kind": "read",
@@ -722,7 +722,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 190
+       "n": 189
       },
       {
        "kind": "read",
@@ -818,7 +818,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 191
+       "n": 190
       },
       {
        "kind": "read",
@@ -873,7 +873,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 192,
+       "n": 191,
        "same": true
       },
       {
@@ -912,7 +912,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "wuziqi",
-       "n": 149
+       "n": 148
       },
       {
        "kind": "read",
@@ -931,7 +931,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 150
+       "n": 149
       },
       {
        "kind": "board",
@@ -944,7 +944,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "xiangqi",
-       "n": 155
+       "n": 154
       },
       {
        "kind": "board",
@@ -957,7 +957,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "pintu",
-       "n": 151
+       "n": 150
       },
       {
        "kind": "board",
@@ -970,7 +970,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "wuziqi",
-       "n": 154
+       "n": 153
       },
       {
        "kind": "board",
@@ -983,7 +983,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 193
+       "n": 192
       },
       {
        "kind": "board",
@@ -996,7 +996,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "pintu",
-       "n": 153
+       "n": 152
       },
       {
        "kind": "board",
@@ -1009,7 +1009,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "wuziqi",
-       "n": 152
+       "n": 151
       },
       {
        "kind": "read",
@@ -1028,7 +1028,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 156
+       "n": 155
       },
       {
        "kind": "read",
@@ -1104,7 +1104,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 194
+       "n": 193
       },
       {
        "kind": "read",
@@ -1123,7 +1123,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 157
+       "n": 156
       },
       {
        "kind": "read",
@@ -1142,7 +1142,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 195
+       "n": 194
       },
       {
        "kind": "read",
@@ -1161,7 +1161,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 158
+       "n": 157
       },
       {
        "kind": "read",
@@ -1226,7 +1226,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 196
+       "n": 195
       },
       {
        "kind": "read",
@@ -1283,7 +1283,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 197
+       "n": 196
       },
       {
        "kind": "read",
@@ -1328,7 +1328,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 163
+       "n": 162
       },
       {
        "kind": "read",
@@ -1366,7 +1366,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 164
+       "n": 163
       },
       {
        "kind": "read",
@@ -1521,7 +1521,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 198
+       "n": 197
       },
       {
        "kind": "read",
@@ -1559,7 +1559,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 199
+       "n": 198
       },
       {
        "kind": "read",
@@ -1593,7 +1593,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 165
+       "n": 164
       },
       {
        "kind": "read",
@@ -1657,7 +1657,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 166
+       "n": 165
       },
       {
        "kind": "read",
@@ -1676,7 +1676,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "wuziqi",
-       "n": 167
+       "n": 166
       },
       {
        "kind": "read",
@@ -1733,7 +1733,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 200
+       "n": 199
       },
       {
        "kind": "read",
@@ -1806,7 +1806,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 168
+       "n": 167
       },
       {
        "kind": "read",
@@ -1903,7 +1903,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 169
+       "n": 168
       },
       {
        "kind": "read",
@@ -1941,7 +1941,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 170
+       "n": 169
       },
       {
        "kind": "read",
@@ -2034,7 +2034,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 201
+       "n": 200
       },
       {
        "kind": "read",
@@ -2072,7 +2072,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 171,
+       "n": 170,
        "same": true
       },
       {
@@ -2152,7 +2152,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 172
+       "n": 171
       },
       {
        "kind": "read",
@@ -2190,7 +2190,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 173
+       "n": 172
       },
       {
        "kind": "read",
@@ -2228,7 +2228,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 174
+       "n": 173
       },
       {
        "kind": "read",
@@ -2286,7 +2286,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 175
+       "n": 174
       },
       {
        "kind": "read",
@@ -2589,7 +2589,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 180
+       "n": 179
       },
       {
        "kind": "read",
@@ -2692,7 +2692,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 202
+       "n": 201
       },
       {
        "kind": "read",
@@ -2789,7 +2789,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 203
+       "n": 202
       },
       {
        "kind": "read",
@@ -2925,7 +2925,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 181
+       "n": 180
       },
       {
        "kind": "read",
@@ -3055,7 +3055,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 204
+       "n": 203
       },
       {
        "kind": "read",
@@ -3093,7 +3093,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 205
+       "n": 204
       },
       {
        "kind": "read",
@@ -3112,7 +3112,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 176
+       "n": 175
       },
       {
        "kind": "read",
@@ -3176,7 +3176,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 177
+       "n": 176
       },
       {
        "kind": "read",
@@ -3195,7 +3195,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 186
+       "n": 185
       },
       {
        "kind": "read",
@@ -3266,7 +3266,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 178
+       "n": 177
       },
       {
        "kind": "read",
@@ -3304,7 +3304,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 206
+       "n": 205
       },
       {
        "kind": "read",
@@ -3351,7 +3351,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 179
+       "n": 178
       },
       {
        "kind": "read",
@@ -3390,7 +3390,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 207
+       "n": 206
       },
       {
        "kind": "read",

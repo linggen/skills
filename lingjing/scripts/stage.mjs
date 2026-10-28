@@ -151,8 +151,6 @@ export const CARD_KINDS = {
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
   // A board left on an earlier day, offered again (rules/skips.mjs): optional — 再试一回 or 改日, never asking.
   replay: { holds: false },
-  // 刷副本 (rules/rerun.mjs, Look's `rerun`): at the door with the rooms open, the way in; inside, the rooms and the way out — optional, never holds.
-  rerun: { holds: false },
   goal: { holds: false }, building: { holds: false }, empty: { holds: false },
   // 下一步: where the story goes and the one tap toward it, when nothing else stands (withNext).
   next: { holds: false },
@@ -281,8 +279,6 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
     // AI mini-games: 对对子 where the teacher is. (砍价 is the shelf's own button, 2026-10-28.)
     if (look.duizi && !has('duizi')) cards.push({ card: 'duizi' });
-    // 刷副本: the door's way in while the rooms are open, and the run's own card inside (rules/rerun.mjs).
-    if (look.rerun && (look.rerun.inside || (look.rerun.open && look.rerun.here)) && !has('rerun')) cards.push({ card: 'rerun' });
     // Every board open here: the story's, an errand's, and the games this place hosts.
     // A place's game open only as practice (Look's `practice`) waits in the tray for his 开局 — never dealt by itself;
     // so does 兽潮's night when its time comes (Look's `tide`; Hanli 10-27: 「兽潮时间到了不要自动开始, 让玩家点击开始」).
@@ -383,7 +379,7 @@ export function wonWayOn(look) {
    people, the goal line, the name and 生辰 cards (the scene's exits), a world
    being painted, an empty pool. Never Ling's to Show — the `show` verb drops
    them (rules/verbs.mjs) and the stage drops them from what she showed. */
-export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'unfold', 'closed', 'next', 'rerun']);
+export const PAGE_OWNS = new Set(['meet', 'panel', 'people', 'goal', 'value', 'born', 'building', 'empty', 'memory', 'homing', 'doors', 'unfold', 'closed', 'next']);
 
 /* Never a blank stage (Hanli, 2026-10-15: 「没有空白webUI的情况……webUI要提示下一步的事情，不要让
    玩家不知道下面该做什么」). When nothing in main is a step or a thing to do — no scene card, no
@@ -437,7 +433,7 @@ export const MAIN = [
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
-  { kinds: ['board', 'duel', 'lundao', 'duizi', 'rerun'] }, //  a game to play here
+  { kinds: ['board', 'duel', 'lundao', 'duizi'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do
@@ -493,14 +489,12 @@ export const mainIsStep = (look, main = []) => main.some(c => STEP_KINDS.has(c.c
    choices itself, at its last beat — lingjing.js footRowHtml). */
 export function stageSlots(look, cards = [], { skip = [] } = {}) {
   const header = HEADER.flatMap(k => cards.filter(c => c.card === k));
-  // 刷副本's card (the door's way in, the run's rooms and way out) rides under whatever stands — never queued behind a board or a fight.
-  const rider = cards.find(c => c.card === 'rerun') ?? null;
-  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, rider ? cards.filter(c => c !== rider) : cards, look));
+  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, cards, look));
   const real = things.filter(t => !t.filler);
   const order = t => { const put = skip.indexOf(t.key); return put < 0 ? t.rank * 1000 + t.i : 1e6 + put; };
   const [now = null, ...queue] = (real.length ? real : things).sort((a, b) => order(a) - order(b));
   const roads = stageHolds(look, cards) && !look?.seclusion && !look?.director?.corridor;
-  const main = [...(now?.cards ?? []), ...(rider ? [rider] : [])];
+  const main = [...(now?.cards ?? [])];
   const step = mainIsStep(look, main);
   const waits = queue.map(t => ({ key: t.key, cards: t.cards }));
   return { header, main, key: now?.key ?? null, queue: waits, footer: { roads, step, waiting: step ? 0 : waits.length, next: step ? null : waits[0] ?? null } };

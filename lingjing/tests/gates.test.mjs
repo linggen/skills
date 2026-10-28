@@ -7,11 +7,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { newState, threshold } from '../scripts/state.mjs';
-import { look, move, playTo, rerun, resolve, targetOf } from '../scripts/rules.mjs';
+import { look, move, playTo, resolve, targetOf } from '../scripts/rules.mjs';
 import { health } from '../scripts/rules/health.mjs';
 import { gatesOf, stageGate, stageNow } from '../scripts/rules/gates.mjs';
 import { pay } from '../scripts/rules/core.mjs';
-import { rerunHere } from '../scripts/rules/rerun.mjs';
 import { WORDS, bookPopHtml, panelActsHtml } from '../scripts/cards.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0'; // as the game plays (体力 off while we test), and tests/seed-at.test.mjs
@@ -88,12 +87,6 @@ test('古七 on the stage quests: the furnace\'s 定风 waits on 四层圆满, t
   assert.equal(threshold(content, s), th[6]);
 });
 
-test('the 秘境 rerun stays a slot of the routine through 古七 and 古八 (the same 观): open in 00-zhuji too, never in 冀', () => {
-  const s = (chapter, ended) => ({ ...newState(content, 'zh', NOW), chapter, scene: null, ended, done_scenes: [] });
-  assert.ok(rerunHere(content, s('00-zhuji', ['00-prologue', '00-waimen'])));
-  assert.equal(rerunHere(content, s('01-ji', ['00-prologue', '00-waimen', '00-zhuji'])), null);
-});
-
 /* Every gate's scene reached by a forward run (rules/progress.mjs, boards won), set below its mark. */
 const GATED = [...new Set(gatesOf(content).map(g => g.scene))];
 const reached = new Map();
@@ -130,18 +123,6 @@ test('every gate stands where he can walk away to earn it, and come back: refuse
   }
 });
 
-test('the rerun from 古七: through the door, into the outer ring, and back to the 观', () => {
-  const { s: st } = below('09-yishui'), later = new Date(NOW.getTime() + 30 * 86_400_000), c = { now: later, quests: [] };
-  const door = move(st, content, c, { place: 'shimen' });
-  assert.equal(door.result.ok, true, JSON.stringify(door.result).slice(0, 200));
-  const inn = rerun(door.state, content, c, { action: 'enter' });
-  assert.equal(inn.result.ok, true, JSON.stringify(inn.result).slice(0, 200));
-  const out = rerun(inn.state, content, c, { action: 'leave' });
-  assert.equal(out.result.ok, true, JSON.stringify(out.result).slice(0, 200));
-  assert.equal(out.state.chapter, '00-zhuji');
-  assert.ok(content.chapters['00-zhuji'].map.places.includes(out.state.place), `back in the 观: ${out.state.place}`);
-  assert.equal(out.state.scene, '09-yishui', 'the story where he left it');
-});
 
 test('古七\'s cap follows its stage quests (2026-10-16): grinding stops at the layer the next one asks, and the way on lifts nothing — the next layer is ground', () => {
   const T = content.rewards.tables;

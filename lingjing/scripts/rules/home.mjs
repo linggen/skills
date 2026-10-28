@@ -164,7 +164,6 @@ function todoOf(kept, way = null) {
   const tide = (kept.tasks ?? []).find(t => t.tide && t.status === 'offered');
   if (tide) out.push({ kind: 'tide', id: tide.id, title: tide.title });
   for (const w of kept.waits ?? []) out.push({ kind: 'wait', id: w.id, title: w.title, wait_min: w.wait_min });
-  if (kept.rerun?.open && !kept.rerun.inside) out.push({ kind: 'rerun', place: placeRef(kept.rerun.door), title: kept.rerun.label ?? null });
   // The boards set aside: the count, and the first, which the row's tap opens again.
   const skipped = (kept.aside?.offers ?? []).filter(o => o.kind === 'replay');
   if (skipped.length) out.push({ kind: 'skipped', n: skipped.length, id: skipped[0].id });
@@ -173,7 +172,7 @@ function todoOf(kept, way = null) {
 
 /* The 主页, or null where it never stands: a fight, 闭关, a 今 interlude (its own ways only), a sealed run. */
 export function homeOf(content, state, kept, now) {
-  if (!kept || kept.fight || kept.seclusion || kept.rerun?.inside) return null;
+  if (!kept || kept.fight || kept.seclusion) return null;
   const sc = sceneOf(content, state);
   if (sc && sideLine(content, sc)) return null;
   let next = NEXT.reduce((got, rule) => got ?? rule(content, state, kept, now), null);

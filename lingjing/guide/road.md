@@ -32,12 +32,8 @@
   hold play between the beats (a pool's beast, a board); a room that holds the
   way on (Look's place `guard`) stops the walk there — Move's `guarded` line —
   until its fight is won and its board played.
-- **A rerun of its outer rooms** (Look's `rerun`; `sealed.run` inside). Once
-  the story's run is behind him the outer rooms loosen again every few hours:
-  `rerun.open` with its `say` and `door` — mention it only when he asks what
-  to do, never over the story. The page enters (`rerun enter` at the door) and
-  leaves (`rerun leave`); inside it is the same sealed mode, `rerun.rooms`
-  saying what each room still holds. Leaving or the run's time ends it.
+- **No way back in.** Once the story's run is behind him the 秘境 stays shut;
+  never offer to go in again (the rerun was retired 2026-10-28).
 - **Arriving is an event.** Show the cards a Move returns, and say in one
   line what is HERE before the roads. A
   Move with `met` reached what an errand sent them for: speak its `seen` as
@@ -70,7 +66,7 @@
 - **The stage quest (阶段任务).** A way on refuses `stage` until the realm
   stands at the layer it names full (`stage.step`, `stage.now`): say its
   `say` once, in the world, and point to where 修为 is earned — the day's
-  功课, the 秘境 rerun, the pool's beasts (Look's `work`). Never fill it, never
+  功课, the pool's beasts (妖兽出没) (Look's `work`). Never fill it, never
   promise the story will; the 事 book shows its progress.
 - **Real life belongs to Yinyue, outside the game** — the weather, reminders,
   files, the body. Say so in one line and turn back to the scene.

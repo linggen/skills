@@ -6,14 +6,12 @@
 // a day and one 回 a week; the story is the reward; 古一–古三 fast.
 //   --fit     retired 2026-10-27: node tools/numbers.mjs --apply derives the 层 from the master table and fits the hours
 //   --json    the rows as JSON;
-//   --wealth  the 灵石 flow per player, and the 秘境 rerun's share of the day (修为, 灵石, its spoils).
+//   --wealth  the 灵石 flow per player.
 // tests/balance.test.mjs holds the bands (`model.bands`).
 //
 // A day, as the model plays it (every number from balance.json `model` or the world's data):
 //   - the routine first, where it stands open and once past 零层 (it takes no 修为): the day's 功课
-//     (a share of the layer, `play_pay.chore`, done on `gongke` of the days); the 秘境 rerun (rules/rerun.mjs: open in its
-//     chapter, and the ones its `also` names, once its beat is behind him; one a sitting, its
-//     beasts × the fight win rate); pool fights (a pool on the map: one win per pool per
+//     (a share of the layer, `play_pay.chore`, done on `gongke` of the days); pool fights (a pool on the map: one win per pool per
 //     `cooldowns.pool_rest_min` of a sitting); the 饭桶 (once he holds it: `fantong_progress` a
 //     feed, one an hour); 今日传闻 where the map is not walled (a heavy player's: the `tale` cap);
 //     闭关 overnight (`seclude` hours, focus 修为, the rules' rate and its table's cap);
@@ -29,14 +27,12 @@
 //     price — out of it, the sitting stops. (While we test the switch is off: rules.mjs.)
 // Days per 回: from the day its first scene is reached to the day its last is done (fractional,
 // by the minutes used). 修为 is the clock; 灵石 runs beside it (a fight's 修为 past the mark at the convert
-// rate; a rerun's spoils — drops, the 拾遗 find, the cache — at a shop's sell, the share `model.rerun.sold`;
-// 2026-10-21). The 杂役 errands' and 开府's 灵石 are not played; 执事堂's east-wall tags are (`walls`, 2026-10-27, playWalls).
+// rate). The 杂役 errands' and 开府's 灵石 are not played; 执事堂's east-wall tags are (`walls`, 2026-10-27, playWalls).
 // Grinding stops where the 回's cap says — and, while a stage quest is ahead, at its layer.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
-import { runsPay } from '../scripts/rules/rerun.mjs';
 import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour, wallGrant } from '../scripts/rules/playpay.mjs';
 const NOW = new Date('2026-10-27T12:00:00Z');
 import { gatesOf } from '../scripts/rules/gates.mjs';
@@ -136,7 +132,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const pay = content.rewards.tables;
   const tierAt = id => tiers.find(t => t.id === id), rank = (tier, step) => tiers.findIndex(t => t.id === tier) * 100 + step;
   const stepOf = (tier, layer) => layer - (tierAt(tier).zero ? 0 : 1);
-  const walk = bookWalk(content, model), rooms = roomsPay(content), runs = runsPay(content);
+  const walk = bookWalk(content, model), rooms = roomsPay(content);
   const quests = new Map(content.quests.map(q => [q.id, q]));
   const places = placeById(content);
   const s = { tier: tiers[0].id, step: 0, progress: 0, stretch: 0, pill9: false };
@@ -154,7 +150,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   /* `table`: a routine table balance.json `layer_pay` scales by the layer he stands on. */
   const lp = content.balance.layer_pay;
   const layerPay = table => (lp && (lp.tables ?? []).includes(table) ? lp[s.tier]?.[s.step] ?? 1 : 1);
-  /* `src`: where it came from, for the day's ledger (the rerun's share). Returns a fight's 修为 past the mark (圆满 → 灵石). */
+  /* `src`: where it came from, for the day's ledger (a routine's share). Returns a fight's 修为 past the mark (圆满 → 灵石). */
   const gain = (n, fight = false, table = null, src = 'story') => {
     if (n <= 0 || zero()) return 0;
     // What the book authors (a scene's, a board's, a pill's, an errand's 修为) is a share of 练气一层 (play_pay.authored,
@@ -191,15 +187,6 @@ export function play(content, player, { model = content.balance.model, ladder = 
   // Read at the layer he stands on (playpay.mjs convertRate: 灵石 per 修为 at 练气一层, the same 灵石 at every layer).
   const converts = (content.rewards.xiuwei_to_lingshi?.tables ?? []).includes('haunt');
   const win = (n, src = 'pool') => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); const rate = converts ? convertRate(content, { ...s, need: need() }) : 0; earn(rate * gain((fightPlay(content, { ...s, need: need() }) ?? pay.haunt.progress) * whole, true, 'haunt', src), src); wins += whole; } earn((pay.haunt.wealth ?? 0) * n, src); takePills(n / model.fight_win_rate); };
-  /* A run's spoils (rules/rerun.mjs runsPay): drops per beast won, the 拾遗 find, the cache on three stars —
-     the share `sold` at a shop's sell price (the rest worn, or fed to the 饭桶), and apart what fetches nothing (鼎苔). */
-  const R = model.rerun ?? {};
-  const spoils = (run, won, runs) => {
-    const g = run.goods, found = (R.found ?? 1) * runs, rich = found * (R.three_stars ?? 0);
-    const worth = g.drop * won + g.find * found + g.cache * rich;
-    book(D.goods, 'rerun', worth); book(D.goods, 'unsold', run.unsold.find * found + run.unsold.cache * rich);
-    earn(worth * (R.sold ?? 0), 'rerun');
-  };
   const chapterOf = () => walk[Math.min(i, walk.length - 1)].chapter;
   const walled = () => Boolean(content.chapters[chapterOf()]?.map?.home);
   const pools = () => {
@@ -207,18 +194,16 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const ids = map ?? [...places.keys()];
     return ids.filter(id => places.get(id)?.has?.pool).length > 0 ? 1 : 0;
   };
-  const rerunOpen = () => runs.find(r => (r.chapter === chapterOf() || r.also.includes(chapterOf())) && done.has(r.last)) ?? null;
   const holdsFantong = () => walk.slice(0, i).some(w => w.id === model.fantong_from);
   const rows = new Map(), row = id => { if (!rows.has(id)) rows.set(id, { hui: id, start: null, end: null }); return rows.get(id); };
   const T = model.minutes, Q = content.rewards.stamina;
   let qi = Q.max;
   const spend = c => (qi >= c ? ((qi -= c), true) : false);
-  /* The day's ledger: 修为 (`xw`) and 灵石 (`ls`) by where they came from, the spoils' worth (`goods`), the runs;
-     `open` while a rerun stands open that day. One row a day, in `ledger`. */
+  /* The day's ledger: 修为 (`xw`) and 灵石 (`ls`) by where they came from. One row a day, in `ledger`. */
   const ledger = [], book = (m, k, n) => { if (n) m[k] = (m[k] ?? 0) + n; };
-  let D = { xw: {}, ls: {}, goods: {}, runs: 0 };
+  let D = { xw: {}, ls: {} };
   let day = 0;
-  /* The day's routine split over its sittings (`k` of `n`): 功课 at the first, a rerun a sitting,
+  /* The day's routine split over its sittings (`k` of `n`): 功课 at the first,
      the fights and feeds spread; the rest of the sitting is the story's. */
   const share = (n, k, of) => Math.floor((n * (k + 1)) / of) - Math.floor((n * k) / of);
   /* Each stage quest's way, as he comes to it (Hanli 10-27: a gate must never keep him where there is little to do): how
@@ -252,7 +237,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const total = day === 0 ? player.first_minutes : player.minutes, n = player.sittings, sit = total / n;
     const poolCap = pools() * (1 + Math.floor(sit / content.balance.cooldowns.pool_rest_min));
     wins = 0;
-    D = { open: Boolean(rerunOpen()), xw: {}, ls: {}, goods: {}, runs: 0 };
+    D = { xw: {}, ls: {} };
     ledger.push(D);
     for (let k = 0; k < n && i < walk.length; k++) {
       let left = sit, fought = 0;
@@ -268,11 +253,6 @@ export function play(content, player, { model = content.balance.model, ladder = 
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night at an hour's share of the layer (play_pay.seclusion).
         if (k === 0 && day > 0 && player.seclude) gain(Math.floor(Math.min(player.seclude, content.rewards.seclusion.cap_hours) * (secludeHour(content, { ...s, need: need() }) ?? 0)), false, 'seclusion', 'seclusion');
-        // At 圆满 a rerun's 修为 is all 灵石 (convert): a player reading on runs it only while it raises him (`rerun.at_full`).
-        const run = rerunOpen() && (R.at_full !== false || !held()) ? rerunOpen() : null;
-        // A share under one (`reruns` 0.5: every other day) is its expected worth.
-        const runs = run ? Math.min(1, player.reruns - k) : 0;
-        if (runs > 0 && left >= T.rerun * runs && spend(run.beasts * runs * Q.cost.duel)) { left -= T.rerun * runs; win(run.beasts * model.fight_win_rate * runs, 'rerun'); spoils(run, run.beasts * model.fight_win_rate * runs, runs); D.runs += runs; const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.reruns += runs; }
         for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && left >= T.fight && spend(Q.cost.duel); f++) { left -= T.fight; fought += 1; win(model.fight_win_rate); const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.fights += 1; }
         if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(model.fantong_progress, false, null, 'fantong'); }
         if (k === 0 && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale, false, null, 'tale'); }
@@ -291,7 +271,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
           // 大比前夜's 掐诀 counts toward the 四层 he needs there); one with none is held at the way into it (rules/gates.mjs entryGate).
           const late = Boolean(w.gate && w.nboards);
           const arrive = () => {
-            if (!gates.has(w.id)) gates.set(w.id, { scene: w.id, hui: w.hui ?? hui, layer: { tier: w.gate.tier, step: w.gate.step }, pct: Math.min(1, gateMet(w.gate) ? 1 : (rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step) ? 0 : s.progress / need())), below: rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step), from: { tier: s.tier, step: s.step, progress: s.progress, need: need() }, at: played(), day: at(), did: { fights: 0, boards: 0, reruns: 0, walls: 0 } });
+            if (!gates.has(w.id)) gates.set(w.id, { scene: w.id, hui: w.hui ?? hui, layer: { tier: w.gate.tier, step: w.gate.step }, pct: Math.min(1, gateMet(w.gate) ? 1 : (rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step) ? 0 : s.progress / need())), below: rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step), from: { tier: s.tier, step: s.step, progress: s.progress, need: need() }, at: played(), day: at(), did: { fights: 0, boards: 0, walls: 0 } });
             if (!gateMet(w.gate)) return false;
             if (gates.get(w.id).wait == null) Object.assign(gates.get(w.id), { wait: played() - gates.get(w.id).at, days: at() - gates.get(w.id).day });
             return true;
@@ -412,16 +392,6 @@ export function wealthTable(content) {
   });
 }
 
-/* The rerun's share of the day (design.md § Reruns: one slot of the routine), per player, over the days a rerun
-   stands open: 修为 and 灵石 a day from all sources and from the rerun, the spoils' worth, and the finds no shop buys. */
-export function rerunShare(content, player) {
-  const days = play(content, player).ledger.filter(d => d.open), n = days.length || 1;
-  const sum = (m, k) => days.reduce((t, d) => t + (k ? d[m][k] ?? 0 : Object.values(d[m]).reduce((a, x) => a + x, 0)), 0) / n;
-  const xw = sum('xw'), ls = sum('ls'), rxw = sum('xw', 'rerun'), rls = sum('ls', 'rerun');
-  return { days: days.length, runs: days.reduce((t, d) => t + d.runs, 0) / n, xw, rerun_xw: rxw, xw_share: xw ? rxw / xw : 0, ls, rerun_ls: rls, ls_share: ls ? rls / ls : 0, goods: sum('goods', 'rerun'), unsold: sum('goods', 'unsold') };
-}
-export const rerunTable = content => Object.entries(content.balance.model.players).map(([who, p]) => ({ who, ...rerunShare(content, p) }));
-
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const content = loadContent();
   if (process.argv.includes('--fit')) {
@@ -435,9 +405,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`练气 ${JSON.stringify(content.ladder.tiers[0].thresholds)}`);
     console.log('回     轻   中   重   (days)');
     for (const r of rows) console.log(`${r.hui.padEnd(5)} ${[r.light, r.typical, r.heavy].map(x => String(x ?? '—').padStart(4)).join(' ')}`);
-    for (const r of runsPay(content)) console.log(`刷副本 ${r.beat} (${[r.chapter, ...r.also].join(' · ')}, every ${r.every_h} h): ${r.beasts} beasts a run`);
     if (process.argv.includes('--wealth')) for (const w of wealthTable(content)) console.log(`灵石 ${w.who.padEnd(8)} ${w.days} days: in ${w.in}/day · pills out ${w.out}/day (${w.pills} pills) · end ${w.end} · lowest ${w.low}`);
-    const pct = x => `${Math.round(x * 100)}%`, r0 = x => Math.round(x);
-    if (process.argv.includes('--wealth')) for (const r of rerunTable(content)) console.log(`刷副本 ${r.who.padEnd(8)} ${r.days} open days, ${r.runs.toFixed(2)} runs/day: 修为 ${r0(r.rerun_xw)}/${r0(r.xw)} (${pct(r.xw_share)}) · 灵石 ${r0(r.rerun_ls)}/${r0(r.ls)} (${pct(r.ls_share)}) · spoils worth ${r0(r.goods)}/day · unsold (鼎苔) ${r.unsold.toFixed(2)}/day`);
   }
 }

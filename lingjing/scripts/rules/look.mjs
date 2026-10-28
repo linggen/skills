@@ -49,11 +49,9 @@ import { todayBrief } from './festival.mjs';
 import { seasonBrief, storySky, weatherBrief, windBrief } from './weather.mjs';
 import { castShown, newHere, portraitOf } from './codex.mjs';
 import { withoutSealed } from './sealed.mjs';
-import { rerunBoardId, rerunBrief, runBoardHere, runRow } from './rerun.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 import { kaoBrief, kaoHosted } from './kao.mjs';
 import { shouchaoHosted, shouchaoRow, shouchaoWait, shouchaoWaiting } from './shouchao.mjs';
-import { qiyuHosted, qiyuRow } from './qiyu.mjs';
 import { dealtOf } from './climb.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
@@ -453,14 +451,11 @@ function tasksBrief(content, state, ctx) {
     .filter(id => hostedHere(content, state, id, ctx.now) || stallHere(content, state, id, ctx.now))
     // A place's game open as practice (no errand wants it, rules/playpay.mjs): in the tray, never standing on the stage by itself.
     .map(id => [id, { status: 'offered', ...(stallHere(content, state, id, ctx.now) || errandWants(content, state, id, state.place) ? {} : { practice: true }) }]));
-  // A rerun's 拾遗, in a room whose find is not yet taken (rules/rerun.mjs).
-  const runBoard = rerunBoardId(content, state);
-  if (runBoard && runBoardHere(content, state, runBoard)) hosted[runBoard] = { status: 'offered' };
   // The board a beast here is caught with (狰's 守夜), until it is caught.
   const cid = placeOf(content, state.place)?.has?.creature, katch = cid ? creatureOf(content, cid)?.catch : null;
   if (katch && catchHere(content, state, katch)) hosted[katch] = { status: 'offered' };
-  // 本王考考你 (rules/kao.mjs) while she is awake, its rounds a day, and a 秘境 rerun's 奇遇 in its room (rules/qiyu.mjs).
-  Object.assign(hosted, kaoHosted(content, state, ctx.now), qiyuHosted(content, state));
+  // 本王考考你 (rules/kao.mjs) while she is awake, its rounds a day.
+  Object.assign(hosted, kaoHosted(content, state, ctx.now));
   // 兽潮 (rules/shouchao.mjs): 守墙关's next night at 沉鼎观, out of its cooldown.
   Object.assign(hosted, shouchaoHosted(content, state, ctx.now));
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
@@ -474,10 +469,10 @@ function tasksBrief(content, state, ctx) {
     .filter(([id]) => taskOf(content, id))
     .map(([id, t]) => {
       const task = taskOf(content, id);
-      // The deal: the task's own (and its game's levels), a 奇遇's frame, 兽潮's night and a run's find laid over it — one deal.
-      const own = dealOf(content, task, state, ctx.now), q = task.qiyu ? qiyuRow(content, state, id) : {}, rr = task.run ? runRow(content, state, id) : {};
+      // The deal: the task's own (and its game's levels) and 兽潮's night laid over it — one deal.
+      const own = dealOf(content, task, state, ctx.now);
       const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : {};
-      const deal = own.deal || q.deal || sc.deal || rr.deal ? { deal: { ...own.deal, ...q.deal, ...sc.deal, ...rr.deal } } : {};
+      const deal = own.deal || sc.deal ? { deal: { ...own.deal, ...sc.deal } } : {};
       return {
         id, title: boardTitle(content, state, id, task, again.has(id)), kind: task.kind, status: t.status,
         won: Boolean(state.wins?.[id]),
@@ -502,12 +497,9 @@ function tasksBrief(content, state, ctx) {
         ...(task.kind === 'board' && skipCut(content) != null && !storyBoard(content, state, id) && errandWants(content, state, id, state.place) ? { skip: { cut: skipCut(content) } } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
         ...(task.kao ? { light: true, ...kaoBrief(content, state, ctx.now) } : {}),
-        // A 奇遇: its frame is the board's line, its deal the game's (rules/qiyu.mjs).
-        ...q,
         // 兽潮: tonight's row of 守墙关's table (or the rise past it), its title and lead (rules/shouchao.mjs).
         ...sc,
-        // A run's board (a short 守炉 since 2026-10-20): the room's find named, its pay (rules/rerun.mjs).
-        ...rr, ...deal,
+        ...deal,
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
         // A practice board shows what its next play lands (rules/playpay.mjs): 修为 and 灵石, the replay's share counted.
@@ -699,8 +691,6 @@ export function look(state, content, ctx) {
     ...taleLook(content, state, ctx),
     // A board left on an earlier day, offered again now the stage is idle (rules/skips.mjs): the page's optional beat.
     ...(replayBrief(content, state, ctx.now) ? { replay: replayBrief(content, state, ctx.now) } : {}),
-    // 刷副本 (rules/rerun.mjs): inside a run its rooms; outside, the rooms open again (the door) or how long until.
-    ...(rerunBrief(content, state, ctx.now) ? { rerun: rerunBrief(content, state, ctx.now) } : {}),
     // Every cooldown he waits out, one shape: { id, title, shut, wait_min } — the page draws each as one waiting row.
     ...(waitsOf(content, state, ctx.now).length ? { waits: waitsOf(content, state, ctx.now) } : {}),
     ended: state.ended, story: state.story,
@@ -793,12 +783,10 @@ function worldBrief(content, lang) {
 
 export { dealOf, duelBrief, forSale, shopOf, shopOpen, ledgerOf, nameOf, onStage, sceneBrief, shelfOf, shownHere, spoken, stageAt, tasksBrief, withMap, wordsOf };
 
-/* The cooldowns he waits out now, in one shape (cards.js waitRowHtml): 兽潮's (rules/shouchao.mjs), the 秘境 rerun's
-   (rules/rerun.mjs, shut), a pool at rest where he stands (world.mjs). Each its own line in the world's words. */
+/* The cooldowns he waits out now, in one shape (cards.js waitRowHtml): 兽潮's (rules/shouchao.mjs), a pool at rest where he
+   stands (world.mjs). Each its own line in the world's words. */
 function waitsOf(content, state, now) {
-  const r = rerunBrief(content, state, now);
-  const rerun = r && !r.inside && r.open === false ? { id: `rerun:${r.id}`, title: r.label ?? r.door?.name ?? r.id, shut: r.say ?? null, wait_min: r.wait_min } : null;
-  return [shouchaoWait(content, state, now), rerun, poolWait(content, state, now)].filter(Boolean);
+  return [shouchaoWait(content, state, now), poolWait(content, state, now)].filter(Boolean);
 }
 
 /* The last story step's 所得 as the page shows it: each thing's name, picture, kind and small print. */

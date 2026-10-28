@@ -33,8 +33,6 @@ test('balance.json is the numbers\' one home: the ladder, the pay tables, the co
   assert.deepEqual(content.rewards.tables, B.pay);
   assert.deepEqual(content.rewards.xiuwei_to_lingshi, B.convert);
   assert.equal(content.ladder.overflow_stretch, B.overflow_stretch);
-  const beat = content.chapters['00-waimen'].beats.find(b => b.sealed?.rerun);
-  assert.equal(beat.sealed.rerun.every_h, B.cooldowns.rerun_h);
   assert.equal(content.fantong.limit.cooldown_min, B.cooldowns.fantong_min);
   assert.equal(content.tasks.tasks.find(t => t.shouchao).shouchao.every_h, B.cooldowns.shouchao_h, '兽潮\'s cooldown');
   // Nowhere else: a second copy would drift.
@@ -43,7 +41,6 @@ test('balance.json is the numbers\' one home: the ladder, the pay tables, the co
   assert.equal('tables' in raw('rewards.json'), false);
   assert.equal('xiuwei_to_lingshi' in raw('rewards.json'), false);
   assert.equal('cooldown_min' in raw('fantong.json').limit, false);
-  assert.equal('every_h' in raw('chapters/00-waimen/chapter.json').beats.find(b => b.sealed?.rerun).sealed.rerun, false);
   const tide = raw('tasks/world.json').tasks.find(t => t.shouchao).shouchao;
   assert.ok(!('every_h' in tide) && !('hours' in tide) && !('grace_min' in tide), '兽潮: no cooldown of its own, no clock window');
 });

@@ -83,7 +83,6 @@ export { chooseLang, inPlay, langNow, langOfTag, stateText, writeGlobalLang } fr
 export { chapterLook, owesRecap, recapLook, story, storyNode } from './rules/story.mjs';
 export { lintTale, tale } from './rules/tale.mjs';
 export { seclude, seclusionBrief, seclusionHold } from './rules/seclusion.mjs';
-export { rerun, rerunBrief, rerunHere, rerunOpen, rerunWait, rollRun, runsPay } from './rules/rerun.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';
 export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { playTo, summaryOf, targetOf } from './rules/progress.mjs';

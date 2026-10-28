@@ -1,10 +1,10 @@
 // tools/arcade-saves.mjs — the 游戏厅's stage saves (Hanli 2026-10-21: the 游戏厅 holds every playable thing).
-// A game the rules stand on the real page (二十问 · 讨价还价 · 对对子 · 秘境 rerun: no board module,
+// A game the rules stand on the real page (讨价还价 · 对对子: no board module,
 // or one Look drives) is tried there on a test save of its own. Its games.json row says where (`stage`):
 //   save   the scratch save's name, and the fixture it seeds from (tests/fixtures/saves/<save>.json) — or `seed`, a fixture there already
 //   from   how far the story is played first (rules/progress.mjs playTo: a scene, a 回) — mid-回, so no 回's close stands
 //   place  where he stands then (the story's scene stays, a walk away: the game's card stands where he is)
-//   her    银月 awake (a game she hosts or reads for); wealth  灵石 in hand; rerun  that rerun's cracks open
+//   her    银月 awake (a game she hosts or reads for); wealth  灵石 in hand
 //   visitor  a visiting shop's place (province/place) whose day the 游戏厅 shifts the save's clock to (`&days=`)
 //   look   the key of Look that shows the game (tests/game-shell.test.mjs holds that it does)
 //
@@ -31,7 +31,6 @@ function inZone(tz, fn) {
   process.env.TZ = tz;
   try { return fn(); } finally { if (was === undefined) delete process.env.TZ; else process.env.TZ = was; }
 }
-const EPOCH = '2026-01-01T00:00:00.000Z';
 
 /** The save a stage row plays on: the story played to `from`, then the row's own few facts. */
 export function stageSave(content, stage) {
@@ -41,7 +40,6 @@ export function stageSave(content, stage) {
   const out = { ...toldUpTo(content, s), place: stage.place };
   if (stage.her) { const { asleep, ...c } = s.companion ?? {}; out.companion = { ...c, awake: true }; }
   if (stage.wealth) out.wealth = Math.max(s.wealth ?? 0, stage.wealth);
-  if (stage.rerun) out.reruns = { ...(s.reruns ?? {}), [stage.rerun]: { ...(s.reruns?.[stage.rerun] ?? {}), ended_at: EPOCH } };
   return out;
 }
 

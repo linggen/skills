@@ -658,8 +658,30 @@ function renamedCards(content, state) {
 }
 
 /* State a system cut whole left in saves (fitWorld drops it): 密室's open room, a rerun's 暗室 offer, the day's count;
-   断案's cases (both 2026-10-27); the player-asks 二十问's day (`twenty`, 2026-10-28 — 录's `animals` stay). */
-const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log', 'cases', 'twenty'];
+   断案's cases (both 2026-10-27); the player-asks 二十问's day (`twenty`, 2026-10-28 — 录's `animals` stay); the 秘境
+   rerun's run and its clocks (`rerun`, `reruns`, 2026-10-28 — runLeft lets an open run go first). */
+const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log', 'cases', 'twenty', 'rerun', 'reruns'];
+
+/* 刷副本 retired 2026-10-28 (Hanli: 「按你说的来」): a save that stood inside a run of the 秘境's outer rooms leaves it as
+   leaving would have — the fight on a run's beast let go unsettled (nothing paid, nothing lost), the room's fight record
+   cleared, a 奇遇 or 拾遗 won in it and not handed in dropped, 银月 back from one, the run's sealed mark let go by the
+   next settle (world.mjs fitSealed thaws the 机缘), and the room he stood in no place of his map, so the settle sets
+   him at the map's home (world.mjs fitLeave). The fields to change; `drop`: keys to remove. */
+function runLeft(state) {
+  const run = state.rerun;
+  if (!run && !state.returned?.rerun) return { fix: {}, drop: [] };
+  const fix = {}, drop = [];
+  if (state.returned?.rerun) drop.push('returned');
+  if (!run) return { fix, drop };
+  const rooms = Object.keys(run.rooms ?? {}), held = Object.values(run.rooms ?? {}).map(r => r.qiyu?.task).filter(Boolean);
+  if (state.fight && rooms.some(id => String(state.fight.setup?.seed ?? '').includes(`|${id}|`) || state.duels?.[`hunt:${id}`]?.outcome === 'open')) drop.push('fight');
+  if (state.duels && rooms.some(id => `hunt:${id}` in state.duels)) fix.duels = Object.fromEntries(Object.entries(state.duels).filter(([k]) => !rooms.includes(k.slice(5)) || !k.startsWith('hunt:')));
+  const own = id => held.includes(id) || id === run.board;
+  for (const k of ['wins', 'stars', 'grades']) if (state[k] && Object.keys(state[k]).some(own)) fix[k] = Object.fromEntries(Object.entries(state[k]).filter(([id]) => !own(id)));
+  if (state.her_game?.task && own(state.her_game.task)) drop.push('her_game');
+  if (state.sealed?.run) fix.sealed = (({ run: _, ...rest }) => rest)(state.sealed);
+  return { fix, drop };
+}
 export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;
@@ -736,7 +758,10 @@ export function fitWorld(saved, content) {
   // 银月 held out of the 木牌 for a board cut since: back in.
   const drop = known && state.her_game?.task && !known.has(state.her_game.task) ? ['her_game'] : [];
   // A system cut whole leaves its state behind (密室 2026-10-27: the room open, a rerun's 暗室, the day's count): gone.
-  drop.push(...RETIRED_KEYS.filter(key => key in state));
+  // An open 秘境 rerun (retired 2026-10-28) is left first, as leaving would have.
+  const left = runLeft(state);
+  Object.assign(fix, left.fix);
+  drop.push(...left.drop, ...RETIRED_KEYS.filter(key => key in state));
   // The rest of a passage owed after a board the scene no longer has (`after/<scene>`, its
   // `story_after` merged back into its `story`): nothing is owed. Nor when the passage was re-cut
   // under the save and its first board is not over (a new board placed, 2026-10-26): it is owed

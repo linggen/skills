@@ -28,7 +28,7 @@ const capOf = t => t.per_day ?? 3;
    round wakes her (rules/hergame.mjs) — after 入门, out of any instance, run or fight. */
 function kaoUp(content, state, now) {
   return Boolean(kaoTask(content)) && herNear(content, state)
-    && !isLocked(content, state, 'wealth') && !state.sealed && !state.rerun && !state.fight;
+    && !isLocked(content, state, 'wealth') && !state.sealed && !state.fight;
 }
 
 /* The things they have met together, as the save stands. */

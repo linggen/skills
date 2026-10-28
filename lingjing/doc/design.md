@@ -243,7 +243,7 @@ overflow pays more.
 
 | | |
 |---|---|
-| Daily routine (~15–20 min) | 功课 · a 秘境 rerun (3 h cooldown; open through 古七/古八 too, the same 观) · 饭桶 (1 h cooldown) · pool fights (30 min rest; 体力 is the day's only limit) · 兽潮 (20 h cooldown, any hour, ≤ ~20 min, below) · 本王考考你 (3 rounds a day, any hour) |
+| Daily routine (~15–20 min) | 功课 · 饭桶 (1 h cooldown) · pool fights (30 min rest; 体力 is the day's only limit) · 兽潮 (20 h cooldown, any hour, ≤ ~20 min, below) · 本王考考你 (3 rounds a day, any hour) |
 | Story + its boards (~1 h a 回) | unlimited, at the player's pace, up to the 回's stage quest |
 | A 回 | typical ≈4–7 days (古六 ≈7.4: thirteen scenes behind its quest), heavy ≈3–5, light ≈10–16 (体力 on) |
 | 古一–古三 | fast — no quest; a first sitting or two |
@@ -253,8 +253,8 @@ overflow pays more.
   and the bands of 古四 (≤ 8) and 古六 (≤ 10.5), and 古一–古三's ≤ 5 days, widened until the new small
   games land — then re-fit, Hanli's call.
 - **Every cooldown waits the same way** (2026-10-26): Look's `waits` lists each one he is waiting out —
-  兽潮's, the 秘境 rerun's shut, a pool at rest where he stands — as `{ id, title, shut, wait_min }`, the line in the
-  world's words (the task's `shut`, the rerun's `shut`, creatures.json `hunt.rest_say` or a pool's own); the tray
+  兽潮's, a pool at rest where he stands — as `{ id, title, shut, wait_min }`, the line in the
+  world's words (the task's `shut`, creatures.json `hunt.rest_say` or a pool's own); the tray
   draws one row shape (cards.js waitRowHtml): name, line, 「约 N 时辰后」/「约 N 刻后」 ("back in about N h / min"),
   nothing to start. The 饭桶 keeps its own pane, which shows its full phase.
 - **One model for every number.** `worlds/jiuding/balance.json` holds the 层 thresholds, the pay
@@ -555,7 +555,9 @@ holds something between the beats, in the book's places and never against it —
 trial); 暗河 合窳 and 犰狳 (pool `mijing-anhe`) and 拾遗 (games/gather.js — herbs and ore in the
 cracks, 灵芝 and 灵石). Fights pay the haunt table (修为), boards their grants, gleaning stones and a
 herb; their sums are balance.json's. A natural player: about 20 minutes inside.
-**Reruns** (Hanli, 2026-10-15) 【已建】: after the story run the **outer rooms** (岔口 · 凶崖 · 暗河)
+**Reruns** (Hanli, 2026-10-15) — **retired 2026-10-28** (Hanli: 「按你说的来」): the outer rooms no longer reopen; the
+day's cooldown events are 兽潮 · 比武切磋 · 妖兽出没 (§ Pacing), and the 秘境 comes back as a roguelite map run (§ Backlog).
+A save inside a run leaves it on load (state.mjs fitWorld runLeft). What it was: after the story run the **outer rooms** (岔口 · 凶崖 · 暗河)
 reopen **3 h after the last run ends** — one slot of the daily routine, through 古七/古八 too (the
 rerun's `also`: the same 观). Each run rolls its spawns
 (now and then an elite), its finds (鼎苔, 灵草, ore, a rare cache) and drops, gear among them. The
@@ -858,8 +860,8 @@ is the pure core; the page draws it on the stage beside the chat.
 - **Persons are persons:** 卢方, 邹青松 … are a 比试, and beaten 「他退了下去」. A beast's win line
   is one of twenty, picked by the fight's seed.
 - **Portraits** crop to head and shoulders for `art/people/`.
-- **Gear** (兵器 · 法衣 · 佩) comes in 普通 · 精良 · 稀有, small bonuses only — from the 秘境 reruns'
-  drops among others.
+- **Gear** (兵器 · 法衣 · 佩) comes in 普通 · 精良 · 稀有, small bonuses only — the 秘境 reruns' drop tables
+  (rewards.json `drop_tables`) are kept for the roguelite to come; nothing drops from them since 2026-10-28.
 - **Modes** (`battle.js` knobs): PvE today. PvP (levelled, no realm
   suppression, 10 each) and the raid (a boss with aggro; pull · help · damage)
   are 【远景】 — the table (§ Playing together) comes first.
@@ -1230,7 +1232,7 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   mid-passage the box offers 先放一放 when something may be played meanwhile; its place (the passages left, the
   beat) goes on the save, so a reload or the phone takes it up; 接着读 rebuilds the beats from the book at that
   beat. Meanwhile one declared rule (`ASIDE_KINDS`) says what may be played, each only when its own system has it
-  open: a skipped board (all of the line's, at once), the 秘境 rerun at its door, 人间功课, 饭桶 · 开炉, a pool's
+  open: a skipped board (all of the line's, at once), 人间功课, 饭桶 · 开炉, a pool's
   fight where one stands (the pool's own rule keeps it off while he stands in a scene), 兽潮, 闭关, 银月's games,
   今日传闻, 问卦. The story's own board, the scene's choices, Move
   and anything of a later scene wait (refused `aside`). Never inside a key beat's lock. Before 入门 only a skipped
@@ -1473,3 +1475,13 @@ person, no gender marks, and the game follows 原神 (story DESIGN § 四, § �
 - Offline play (the save needs the network) · the phone's chat · whether the
   plan's players get a larger 体力 pool · a healthy user gets a better Linggen
   (to talk through).
+
+## Backlog 【远景】
+
+- **秘境 as a roguelite map run** (Hanli 2026-10-28: 「按你说的来」; after the 秘境 rerun was retired). A run is a
+  random map of 5–7 rooms with a choice of path, in the shape of *Slay the Spire* or *Hades*. The rooms are 斗法, TD,
+  格斗, a puzzle (华容道 / 推箱子), an 奇遇 or a chest. A 大妖 waits at the end, then the loot. There is no story
+  re-reading: the book's 秘境 passage is told once and stays the story's.
+  - The 主力 games are the main course and the small games the seasoning.
+  - The 奇遇 pool and frames (worlds/jiuding/qiyu.json, its boards) and the drop tables (rewards.json) are kept for it.
+  - Starts only after the three cooldown events (兽潮 · 比武切磋 · 妖兽出没) are stable.

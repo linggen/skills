@@ -30,8 +30,8 @@ export function arcadeRowOf(search, scratch) {
 }
 
 /**
- * 试玩's address for a game the rules stand on the stage themselves (a registry row's `stage`: 二十问, 讨价还价,
- * 对对子, the 秘境 rerun): its own test save begun again from its fixture (tools/arcade-saves.mjs —
+ * 试玩's address for a game the rules stand on the stage themselves (a registry row's `stage`: 讨价还价,
+ * 对对子): its own test save begun again from its fixture (tools/arcade-saves.mjs —
  * where its card stands; or a fixture it names, `seed`), and no `board=` — Look brings the card, as in the story.
  */
 // `open`: a shelf thing whose 砍价 panel opens as the page lands (the 游戏厅's 砍价 · 货郎上山, kanjia.js).

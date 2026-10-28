@@ -28,7 +28,6 @@ import { seclude } from './seclusion.mjs';
 import { haggle } from './aigames.mjs';
 import { resume, setAside } from './aside.mjs';
 import { duizi } from './duizi.mjs';
-import { rerun } from './rerun.mjs';
 import { unstick } from './unstick.mjs';
 import { story } from './story.mjs';
 import { tale, taleInfo } from './tale.mjs';
@@ -60,7 +59,7 @@ export const VERBS = gated({
     return { state: next, result };
   },
   resolve, judge, task, win, duel, reroll, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong, rerun,
+  go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong,
   // AI mini-games (rules/aigames.mjs): 砍价 (the shop panel's). 断案 cut 2026-10-27; the player-asks 二十问 2026-10-28.
   haggle,
   // 对对子 (rules/duizi.mjs): the page opens and submits, Ling grades, 银月 hints and offers.

@@ -2033,11 +2033,9 @@ async function payWin(id) {
   const r = await write('task', { action: 'done', id }).catch(failed);
   if (!r.ok && r.refused !== 'no-stamina') console.warn('[lingjing] practice done refused', r);
   keep({ doNote: r.ok ? null : refusal(r) });
-  // A rerun's 拾遗 (rules/rerun.mjs): what it found stands as 所得, with its line.
-  if (r.ok && r.found?.length) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: r.found.filter((d) => !d.stored), paid: null, spent: [], line: r.line ?? null } });
   // Every win shows what it paid (古五, 2026-10-15: a board won moved only the strip): 修为 · 灵石 and the
   // thing granted stand as 所得, with the task's own line.
-  else if (r.ok && boardPaid(r)) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: boardItems(r.paid), paid: r.paid, spent: [], line: r.line ?? null } });
+  if (r.ok && boardPaid(r)) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: boardItems(r.paid), paid: r.paid, spent: [], line: r.line ?? null } });
   return r;
 }
 
@@ -2047,14 +2045,6 @@ function boardItems(paid) {
   const it = authored?.codexFiles?.items?.items?.find((i) => i.id === paid.item);
   const name = it?.name?.[lang()] ?? it?.name?.zh ?? it?.name;
   return typeof name === 'string' ? [{ id: paid.item, name, n: 1 }] : [];
-}
-
-/// 刷副本 (rules/rerun.mjs): in at the door, out from any room — the page's own verb.
-async function rerunTap(action) {
-  const r = await write('rerun', { action }).catch(failed);
-  if (!r.ok) return noteAWhile(refusal(r));
-  keep({ spoils: null, doNote: r.say ?? null });
-  await refresh();
 }
 
 /// A board won while 体力 was empty, paid now it is back — the same day,
@@ -3651,7 +3641,6 @@ const CLICKS = [
   ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
   // 去X, 喂它X, 炼化: the page's own verbs — no word to Ling.
   ['[data-go]', (el) => { if (!el.matches(':disabled')) run(`go:${el.dataset.go}`, () => goTo(el.dataset.go)); }],
-  ['[data-rerun]', (el) => { if (!el.matches(':disabled')) run(`rerun:${el.dataset.rerun}`, () => rerunTap(el.dataset.rerun)); }],
   ['[data-tame]', (el) => { if (!el.matches(':disabled')) run(`tame:${el.dataset.tame}`, () => tameTap(el.dataset.tame)); }],
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
   ['[data-value-pick]', (el) => show({ valuePick: el.dataset.valuePick, valueText: '', valueNote: null })],

@@ -9,7 +9,7 @@ const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url),
 const body = (name) => page.slice(page.indexOf(`function ${name}(`), page.indexOf('\n}\n', page.indexOf(`function ${name}(`)));
 
 test('a board won stands its 所得: the pay, the item, the line', () => {
-  assert.match(body('payWin'), /else if \(r\.ok && boardPaid\(r\)\) keep\(\{ spoils: \{[^}]*paid: r\.paid[^}]*line: r\.line \?\? null \} \}\)/);
+  assert.match(body('payWin'), /if \(r\.ok && boardPaid\(r\)\) keep\(\{ spoils: \{[^}]*paid: r\.paid[^}]*line: r\.line \?\? null \} \}\)/);
   assert.match(page, /const boardPaid = \(r\) => Boolean\(r\.paid\?\.progress \|\| r\.paid\?\.wealth/);
   const html = spoilsHtml({ cards: [], items: [{ name: '灵芝', n: 1 }], paid: { progress: 12, wealth: 3 }, spent: [], line: '洛书成了。' }, { words: WORDS.zh, catalog: {}, lang: 'zh' });
   assert.match(html, /修为 \+12 · 灵石 \+3/);

@@ -203,7 +203,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
 /* One model for every number (Hanli, 2026-10-15): balance.json declares the 层 thresholds, the pay
    tables, the fight-to-灵石 rate and the routine's cooldowns, and they land where the rules read
    them — each tier's `thresholds`, rewards `tables` and `xiuwei_to_lingshi`, the ladder's
-   `overflow_stretch`, every rerun's `every_h`, the 饭桶's `limit.cooldown_min` and its `worth`, 兽潮's `every_h`. A world with no
+   `overflow_stretch`, the 饭桶's `limit.cooldown_min` and its `worth`, 兽潮's `every_h`. A world with no
    balance.json keeps its own files' numbers. tools/balance.mjs simulates the players on it. */
 export function withBalance(content) {
   const b = content.balance;
@@ -215,7 +215,6 @@ export function withBalance(content) {
     ...(content.ladder.lines ? { lines: Object.fromEntries(Object.entries(content.ladder.lines).map(([id, L]) => [id, !L?.tiers ? L
       : { ...L, tiers: L.tiers.map(t => (b.layers?.[t.id] ? { ...t, thresholds: [...b.layers[t.id]] } : t)) }])) } : {}) };
   const rewards = { ...content.rewards, ...(b.pay ? { tables: structuredClone(b.pay) } : {}), ...(b.convert ? { xiuwei_to_lingshi: structuredClone(b.convert) } : {}) };
-  if (c.rerun_h != null) for (const ch of Object.values(content.chapters ?? {})) for (const beat of ch.beats ?? []) if (beat.sealed?.rerun) beat.sealed.rerun.every_h = c.rerun_h;
   const fantong0 = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
   // 兽潮's cooldown (rules/shouchao.mjs): onto its task row's `shouchao.every_h`.
   const tasks = content.tasks?.tasks && c.shouchao_h != null

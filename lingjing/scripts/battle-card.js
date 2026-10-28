@@ -468,7 +468,7 @@ export function spoilsHtml(spoils, ctx) {
     const c = ctx.catalog[row.id];
     return c ? `<div class="bcard face el-${esc(c.element ?? 'none')}">${leafHtml(c, ctx)}</div>` : '';
   }).join('');
-  // An arm of a rarity (a rerun's drop, rules/rerun.mjs) says it: 「青铜古剑 · 稀有」.
+  // An arm of a rarity (a drop table's) says it: 「青铜古剑 · 稀有」.
   // 不拿重复的物品 (2026-10-15): the first of a thing is marked 新; a one-off had before came as its worth.
   const things = (spoils.items ?? []).map((i) => thingHtml(i, ctx.lang === 'en')).join(' · ');
   // A 符 played is gone from the bag (result.spent), won or lost.

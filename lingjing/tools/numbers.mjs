@@ -26,7 +26,6 @@ import { paysOf } from '../scripts/rules/core.mjs';
 import { chorePlay, errandGrant, pillBelow, playGrant, secludeHour, wallGrant, workGrant } from '../scripts/rules/playpay.mjs';
 import { wallOf } from '../scripts/rules/rotation.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
-import { runsPay } from '../scripts/rules/rerun.mjs';
 import { chances, realmOf } from '../scripts/rules/fantong.mjs';
 import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, table as paceTable } from './balance.mjs';
 import { derive, diffOf, fitHours, fitLine, lineWalk, setPath } from './master.mjs';
@@ -214,12 +213,11 @@ function itemsMet(content) {
   for (const q of content.quests) add(q.grant?.item, content.balance.model.errands_at?.[q.id], 'errand');
   for (const g of content.games?.games ?? []) for (const id of Object.keys(content.tasks.tasks.find(t => t.id === g.task)?.gives?.bag ?? {})) add(id, hui.get(g.scene), 'board');
   for (const [id, h] of shopsMet(content)) add(id, h, 'shop');
-  // The 饭桶's (开炉's) pools, from the scene that hands it over; a 秘境 rerun's drops, from its last scene.
-  const fantong = idsIn(content.fantong?.pools), drops = idsIn(content.rewards.drop_tables);
-  const runs = runsPay(content).map(r => hui.get(r.last));
+  // The 饭桶's (开炉's) pools, from the scene that hands it over. (rewards.json `drop_tables` stay for the 秘境 roguelite to come,
+  // design.md § Backlog: since the rerun was retired, 2026-10-28, nothing drops from them.)
+  const fantong = idsIn(content.fantong?.pools);
   for (const i of content.items.items) {
     if (fantong.has(i.id)) add(i.id, hui.get(content.balance.model.fantong_from), 'fantong');
-    if (drops.has(i.id)) for (const h of runs) add(i.id, h, 'rerun');
   }
   return id => { const all = met.get(id) ?? []; const h = earliest(content, all.map(x => x.hui)); return h ? { hui: h, how: all.find(x => x.hui === h).how, all: [...new Set(all.map(x => `${x.hui} ${x.how}`))] } : null; };
 }

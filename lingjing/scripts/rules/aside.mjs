@@ -15,7 +15,6 @@ import { clone, refuse } from './core.mjs';
 import { taskOf } from './errands.mjs';
 import { fantongBrief } from './fantong.mjs';
 import { sideLine } from './hui.mjs';
-import { rerunOpen } from './rerun.mjs';
 import { isTide, shouchaoHere } from './shouchao.mjs';
 import { kaoHere } from './kao.mjs';
 import { aside as asideItem } from './tell.mjs';
@@ -43,10 +42,6 @@ export const ASIDE_KINDS = [
     open: (content, state) => skippedHere(content, state).map(id => ({ id, title: pick(taskOf(content, id).title, state.lang) })),
     takes: (verb, args, content, state) => (verb === 'task' && args.action === 'replay' && skippedHere(content, state).includes(String(args.id ?? '')))
       || (['win', 'task'].includes(verb) && ['done', undefined].includes(args.action) && Boolean(state.tasks?.[String(args.id ?? '')]?.replay)) },
-  { kind: 'rerun', // 秘境 again, at its door, out of its cooldown (rules/rerun.mjs)
-    open: (content, state, view, now) => { const r = rerunOpen(content, state, now); return r && state.place === r.rerun.door ? [{ id: r.beat.id }] : []; },
-    // Inside a run its rooms are walked (`move`, `go`: sealed.mjs keeps him to the run's places) and fought.
-    takes: (verb, args, content, state) => verb === 'rerun' || (Boolean(state.rerun) && ['duel', 'win', 'task', 'tame', 'move', 'go'].includes(verb)) },
   { kind: 'gongke', // 人间功课 (rules/gongke.mjs)
     open: (content, state, view) => (view?.gongke ? [{ id: 'gongke' }] : []),
     takes: (verb, args) => verb === 'task' && args.action === 'check' },
@@ -78,12 +73,12 @@ export const ASIDE_KINDS = [
    pouch, an errand held — and these two. */
 export const ASIDE_ALWAYS = new Set(['look', 'show', 'progress', 'story', 'bag', 'gear', 'deck', 'atlas', 'saves', 'save', 'load', 'forget',
   'lang', 'summarize', 'greet', 'remember', 'appear', 'unrolled', 'unfolded', 'unstick', 'quest', 'trade', 'haggle', 'refine', 'aside', 'resume']);
-/* Verbs that move the story, or take him elsewhere: refused while the book is set aside (Move and Go are a run's
-   only, below). */
-export const ASIDE_REFUSED = new Set(['resolve', 'judge', 'travel', 'fly', 'meet', 'ring', 'make', 'enter', 'leave', 'build',
+/* Verbs that move the story, or take him elsewhere: refused while the book is set aside (Move and Go
+   too: no kind takes them since the 秘境 rerun was retired, 2026-10-28). */
+export const ASIDE_REFUSED = new Set(['move', 'go', 'resolve', 'judge', 'travel', 'fly', 'meet', 'ring', 'make', 'enter', 'leave', 'build',
   'worlds', 'amend', 'art']);
 /* Verbs some kind may take (a call each kind's `takes` answers); else refused. */
-export const ASIDE_KIND_VERBS = new Set(['move', 'go', 'task', 'win', 'duel', 'reroll', 'tame', 'rerun', 'fantong', 'seclude', 'duizi', 'kao', 'tale',
+export const ASIDE_KIND_VERBS = new Set(['task', 'win', 'duel', 'reroll', 'tame', 'fantong', 'seclude', 'duizi', 'kao', 'tale',
   'lundao', 'divine', 'fate']);
 
 /* What may be played now, while set aside (or, before, whether the control has anything to offer). */
@@ -125,11 +120,10 @@ export function setAside(state, content, ctx, args = {}) {
 
 /* `resume`: the passages again as the box plays them (both languages), at the passage and beat set aside — its
    set piece and the ones before it not played again — and the save as before. Back at the scene's
-   place if a 秘境 run set him down elsewhere. Refused inside a run (leave it first). */
+   place if he stands elsewhere. */
 export function resume(state, content, ctx) {
   const a = state.aside;
   if (!a) return refuse('not-aside', null);
-  if (state.rerun) return refuse('in-run', null);
   const all = a.items.map(it => asideItem(content, state, it)), i = Math.min(a.i ?? 0, all.length - 1);
   const items = all.filter(Boolean), at = Math.max(0, items.indexOf(all[i]));
   const s = clone(state);

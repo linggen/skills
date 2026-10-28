@@ -1,18 +1,16 @@
 // 画猜 in the story (Hanli 10-19: 「ai游戏放到游戏中吧, 还挺好玩的. 但要结合剧情」, 「秘境里也放一个.
 // AI猜都是Yinyue猜」, 「秘境里可以有随机游戏」, 「AI猜画可以多放几个地方」). The guesser is always 银月,
 // and only where she is: 第六回's 家信 (娘 cannot read: a picture beside each line), 本王考考你 at any
-// hour she is awake (after 入门, a capped few a day), a 秘境 rerun's 奇遇 (a room may roll one small game
-// from a pool), and a 今日传闻 step (never while she sleeps — the rules', not a prompt's).
+// hour she is awake (after 入门, a capped few a day), and a 今日传闻 step (the 秘境 rerun's 奇遇 went with the rerun,
+// 2026-10-28; its pool and frames, worlds/jiuding/qiyu.json, wait for the roguelite) (never while she sleeps — the rules', not a prompt's).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { dayKey, newState } from '../scripts/state.mjs';
-import { look, playTo, rerun, tale, task, win, VERBS } from '../scripts/rules.mjs';
+import { look, playTo, tale, task, win, VERBS } from '../scripts/rules.mjs';
 import { letterGrade, matches, normalize, roundsOf, stubReply } from '../scripts/games/drawguess-rules.js';
 import { kaoWords } from '../scripts/rules/kao.mjs';
-import { rollQiyu } from '../scripts/rules/qiyu.mjs';
-import { draw } from '../scripts/rules/rerun.mjs';
 import { stageCards } from '../scripts/stage.mjs';
 import { everyJuan } from './prologue.mjs';
 
@@ -182,65 +180,6 @@ test('本王考考你: each round counted as it begins, three a calendar day (`p
   const again = task(t, content, at(next), { action: 'done', id: K });
   assert.equal(again.result.first, false);
   assert.equal(again.state.wealth, t0, 'a word cleared before pays nothing');
-});
-
-const RERUN = Object.values(content.chapters).flatMap((c) => c.beats ?? []).find((b) => b.sealed?.rerun);
-const openAt = () => new Date(new Date(PLAYED.state.reruns[RERUN.id].ended_at).getTime() + RERUN.sealed.rerun.every_h * 3600000);
-const atDoor = (s = past(), now = openAt()) => ({ ...s, place: RERUN.sealed.rerun.door, stamina: 100, stamina_at: now.toISOString() });
-
-test('奇遇: a room rolls one small game from the pool — about one in three, never the same twice running, 你画我猜 once she is met (the 木牌 too)', () => {
-  const rooms = RERUN.sealed.rerun.rooms, s = past(), seen = new Map();
-  let hits = 0, all = 0;
-  for (let n = 0; n < 400; n += 1) {
-    const q = rollQiyu(content, s, { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw });
-    all += rooms.length; hits += Object.keys(q).length;
-    const games = rooms.map((r) => q[r]?.task).filter(Boolean);
-    games.forEach((g, i) => { assert.notEqual(g, games[i - 1]); seen.set(g, (seen.get(g) ?? 0) + 1); });
-  }
-  assert.ok(hits / all > 0.22 && hits / all < 0.38, `one room in three or four (${(hits / all).toFixed(2)})`);
-  for (const id of ['qiyu-drawguess', 'qiyu-sadou', 'qiyu-huarong', 'qiyu-pintu', 'qiyu-wuziqi']) assert.ok(seen.get(id) > 0, id);
-  assert.ok(!seen.has('qiyu-luoshu'), '洛书 retired from the pool (10-19): never drawn');
-  const unmet = { ...s, companion: undefined };
-  let slept = 0;
-  for (let n = 0; n < 200; n += 1) {
-    const q = rollQiyu(content, unmet, { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw });
-    assert.ok(!Object.values(q).some((x) => x.task === 'qiyu-drawguess'), 'not met: no drawing');
-    slept += Object.values(rollQiyu(content, asleep(s), { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw })).filter((x) => x.task === 'qiyu-drawguess').length;
-  }
-  assert.ok(slept > 0, 'in the 木牌: a drawing may roll — its round wakes her');
-  const last = { ...s, reruns: { ...s.reruns, [RERUN.id]: { ...s.reruns[RERUN.id], qiyu_last: 'qiyu-huarong' } } };
-  for (let n = 0; n < 200; n += 1) {
-    const q = rollQiyu(content, last, { rerunId: RERUN.id, rooms, seed: `t|${n}`, draw });
-    const firstRoom = rooms.map((r) => q[r]).find(Boolean);
-    assert.notEqual(firstRoom?.task, 'qiyu-huarong', 'not the game the last run ended on');
-  }
-});
-
-test('奇遇: forced on a 测试存档, it stands in the run\'s first room with its frame; won, it pays a find and its first clear\'s 灵石 once', () => {
-  const now = openAt();
-  const prev = process.env.LINGJING_SAVE;
-  process.env.LINGJING_SAVE = 'cc-qiyu-test';
-  let s;
-  try {
-    s = ok(rerun(atDoor(), content, at(now), { action: 'enter', qiyu: 'qiyu-drawguess' }));
-  } finally {
-    if (prev == null) delete process.env.LINGJING_SAVE; else process.env.LINGJING_SAVE = prev;
-  }
-  const room = RERUN.sealed.rerun.rooms[0];
-  assert.equal(s.place, room);
-  assert.equal(s.rerun.rooms[room].qiyu.task, 'qiyu-drawguess');
-  const row = look(s, content, at(now)).tasks.find((t) => t.id === 'qiyu-drawguess');
-  assert.ok(row, 'the board stands in the run (sealed mode keeps it)');
-  assert.ok(row.how && row.deal.word?.zh && row.deal.who === 'yinyue', JSON.stringify(row));
-  const w0 = s.wealth;
-  s = ok(win(s, content, at(now), { id: 'qiyu-drawguess', stars: 2, grade: 'look2' }));
-  const done = task(s, content, at(now), { action: 'done', id: 'qiyu-drawguess' });
-  s = ok(done);
-  assert.ok(done.result.found.length === 1 && done.result.found[0].got >= 1, 'a find of the run\'s');
-  assert.equal(s.wealth - w0, content.balance.boards.good, 'its first clear: two looks, good');
-  assert.equal(s.rerun.rooms[room].qiyu.done, true);
-  assert.ok(!look(s, content, at(now)).tasks.some((t) => t.id === 'qiyu-drawguess'), 'done: no longer offered');
-  assert.equal(task(s, content, at(now), { action: 'done', id: 'qiyu-drawguess' }).result.ok, false);
 });
 
 test('the stage: 本王考考你 stands only on an empty stage (as 二十问); a round left open waits in the tray (继续), never standing by itself', () => {

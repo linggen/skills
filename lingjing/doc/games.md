@@ -1513,7 +1513,7 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
       狰 · 犰狳 · 鯥, each open after its scene or with its beast), never twice a day, a word never cleared
       first. A word's first clear pays the small-game 灵石 by its looks (1 → 15, 2 → 10, 3 → 5); a miss is
       another round. ≤ 3 looks a round: ≤ 9 looks ≈ 78k tokens a day.
-    - **秘境 · 奇遇** (rules/qiyu.mjs, worlds/jiuding/qiyu.json; a pool, not one spot): as a rerun of the 外圈 is
+    - **秘境 · 奇遇** — retired with the 秘境 rerun 2026-10-28 (rules/qiyu.mjs gone; worlds/jiuding/qiyu.json and the boards kept for the roguelite, design.md § Backlog). As it was (a pool, not one spot): as a rerun of the 外圈 is
       entered, each room (岔口 · 凶崖 · 暗河) rolls 0.3 — about one room a run; a hit draws by weight 你画我猜 3
       (once 银月 is met, the 木牌 too; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 撒豆成兵 3 (割藤 until 10-20; the next level each
       time, rules/climb.mjs) · 华容道 2 · 拼图 1 (七巧 until 10-27) · 五子棋 1 (洛书 until 10-19), never the game the room before drew nor the last run's last. Each entry
