@@ -482,7 +482,8 @@
       ],
       "files": [
         "scripts/games/boards/yubu-ground.webp",
-        "scripts/games/boards/yubu-slab.webp"
+        "scripts/games/boards/yubu-slab.webp",
+        "scripts/games/boards/yubu-foot.webp"
       ]
     },
     "sadou": {

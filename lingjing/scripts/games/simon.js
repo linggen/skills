@@ -7,7 +7,7 @@
 //
 // The squares are the 洛书 (戴九履一，左三右七，二四为肩，六八为足，五居中央), the chestnut dots on each its number; the
 // keys 1–9 tap the square of that number. The picture is painted (tools/paint-boards-flux.py: the clifftop terrace and the
-// bluestone slab, kept from the board this one replaced); the dots, the lit square and the footprint are drawn over it.
+// bluestone slab, kept from the board this one replaced, and 瞿老's straw-sandal print); the dots and the lit square are drawn over it.
 //
 // Levels by number (a task's `deal.lv`; else `level`):
 //   0  the nine squares each once, in an order the seed picks, ending in 中五 — runs 4 → 9 (a first meeting: 古七's 崖顶)
@@ -128,7 +128,8 @@ export const stuck = (s) => s.trips >= 3;
 
 /* ── The picture: the terrace, nine bluestone slabs laid as the 洛书, his chestnuts on each, the square lit now, the
    squares walked back this round inked. ── */
-const FOOT = '<path class="g-simon-foot" d="M12 3c3 0 5 4 5 9s-2 9-5 9-5-3-5-8 2-10 5-10z"/>';
+// 瞿老's print on the lit slab: a painted straw-sandal print (tools/paint-boards-flux.py `yubu-foot`), never a drawn shape.
+const FOOT = `<image class="g-simon-foot" href="${ART}yubu-foot.webp" x="5" y="2" width="22" height="28" preserveAspectRatio="xMidYMid meet"/>`;
 function dots(v) {
   return Array.from({ length: v }, (_, j) => `<circle class="g-simon-dot" cx="${n(8 + (j % 3) * 8)}" cy="${n(8 + Math.floor(j / 3) * 8)}" r="2.6"/>`).join('');
 }
@@ -137,7 +138,7 @@ function slab(v, s, lit, lang) {
   const hit = s.fx && s.fx.v === v && s.t - s.fx.at < 360 ? (s.fx.ok ? ' is-hit' : ' is-miss') : '';
   const cls = `g-simon-sq${lit === v ? ' is-lit' : ''}${walked ? ' is-walked' : ''}${hit}`;
   return `<button type="button" class="${cls}" data-g="sq" data-n="${v}" aria-label="${NUM[lang]?.[v - 1] ?? v}"${s.phase !== 'input' ? ' aria-disabled="true"' : ''}>`
-    + `<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">${dots(v)}${lit === v ? `<g transform="translate(4 4)">${FOOT}</g>` : ''}</svg></button>`;
+    + `<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">${dots(v)}${lit === v ? FOOT : ''}</svg></button>`;
 }
 
 export function html(state, lang = 'zh') {

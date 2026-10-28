@@ -7,7 +7,7 @@ blank pieces, 押宝's four doors (七巧板's lacquer went with the board, cut 
     FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py paint [--only id,…] [--seeds 1,2]
     FLUX_REVIEW=<scratch> $PY tools/paint-boards-flux.py cut [--only id,…]  # the KEPT seeds → scripts/games/boards/
 
-What is the puzzle stays code or text over the paint: the rope game's vines and items, 照着走's chestnut dots, lit square and footprint,
+What is the puzzle stays code or text over the paint: the rope game's vines and items, 照着走's chestnut dots and lit square (its footprint is painted, `yubu-foot`),
 象棋's grid and piece glyphs, 押宝's door names.
 """
 import sys
@@ -52,6 +52,11 @@ JOBS = {
     'ONE big perfectly SQUARE flat slab of smooth grey-blue BLUESTONE seen straight down from directly above, its '
     'face plain, flat and empty with a bevelled rim and a little moss at one corner, no lines, no marks, no writing. '
     + STYLE + ' ' + fc.ON_MAGENTA)),
+  # 照着走 (2026-10-27): the print 瞿老's foot leaves on the lit slab — a painted straw-sandal print, not a drawn shape.
+  'yubu-foot': dict(key='magenta', w=512, h=512, prompt=(
+    'ONE single FOOTPRINT of a woven STRAW SANDAL seen straight down from above, pointing straight up: a dark '
+    'blue-black INK print pressed on the ground, the woven straw texture of the sole showing in the ink, a rounded '
+    'toe end and a narrower heel, soft dry-brush edges, nothing else in the picture. ' + STYLE + ' ' + fc.ON_MAGENTA)),
   'xq-board': dict(w=768, h=768, prompt=TEX + (
     'warm honey-coloured polished WOOD of an old game board, fine straight grain running across, a soft varnish '
     'shine. ' + STYLE + ' No text, no lines, no grid, no marks.')),
@@ -68,9 +73,9 @@ for k, what in DOORS.items():
   JOBS[f'door-{k}'] = dict(key='magenta', w=512, h=768, prompt=DOOR + what + '. No writing, no plaque. ' + STYLE + ' '
                            + fc.ON_MAGENTA)
 
-KEPT = {'cave': 1, 'chaifang': 2, 'yubu-ground': 1, 'yubu-slab': 2, 'xq-board': 2, 'xq-red': 1, 'xq-black': 1,
+KEPT = {'cave': 1, 'chaifang': 2, 'yubu-ground': 1, 'yubu-slab': 2, 'yubu-foot': 2, 'xq-board': 2, 'xq-red': 1, 'xq-black': 1,
         'door-long': 1, 'door-hu': 2, 'door-que': 1, 'door-wu': 1}
-SIZE = {'cave': 720, 'chaifang': 720, 'yubu-ground': 1024, 'yubu-slab': 256, 'xq-board': 512, 'xq-red': 96, 'xq-black': 96}
+SIZE = {'cave': 720, 'chaifang': 720, 'yubu-ground': 1024, 'yubu-slab': 256, 'yubu-foot': 128, 'xq-board': 512, 'xq-red': 96, 'xq-black': 96}
 
 
 def cut(only=()):

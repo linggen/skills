@@ -361,7 +361,7 @@
   cursor: pointer; transition: transform .08s ease, filter .12s ease; -webkit-tap-highlight-color: transparent; }
 .g-simon-sq svg { width: 100%; height: 100%; display: block; }
 .g-simon-dot { fill: #6b3f22; stroke: #3a2212; stroke-width: .8; }
-.g-simon-foot { fill: #2d3a46; opacity: .82; }
+.g-simon-foot { opacity: .9; }
 .g-simon-sq.is-lit { filter: brightness(1.32) saturate(1.2) drop-shadow(0 0 10px #ffe9a8); transform: scale(1.05); }
 .g-simon-sq.is-lit .g-simon-dot { opacity: .35; }
 .g-simon-sq.is-walked { filter: brightness(.86); }

@@ -238,7 +238,8 @@ back; every round adds one. It is the book's action as it stands — 「照着�
 - **Ours, as every board here:** a wrong square is never a loss — 「绊了自己一下」, and the same run is shown again; three trips
   and 「算了，往下走」. Grade quiet (no trip) · loud; the task keeps id `jiuge-yubu`, its 修为 5 and the mark `yubu`.
 - **Board:** the 洛书's nine squares (戴九履一…), 瞿老's chestnuts on each its number; the painted clifftop and bluestone slabs
-  kept from the old board (tools/paint-boards-flux.py), the lit square and footprint drawn over them. Each square a qin note
+  kept from the old board (tools/paint-boards-flux.py), the lit square drawn over them, and on it 瞿老's
+  print — a painted straw-sandal sole (`yubu-foot`, 10-27; the plain drawn oval it replaced was a bare shape). Each square a qin note
   by its number (sounds.json `simon`); keys 1–9 tap the square of that number.
 - **Levels:** 0 the story's (古七's 崖顶): the nine each once in a seeded order, ending in 中五, runs 4 → 9 — 「走完九格，
   站在中宫」. 1–3 the 游戏厅's: any squares, 3 → 10 · 4 → 14 · 5 → 18, each quicker. One story board, so no level repeats.
