@@ -22,7 +22,7 @@
 //     pit (n tiles)  a gap in the ground                         ceil (n tiles)  a low roof: stay down (no press) under it
 //     pad            a pad on the ground at the beat that throws the runner over a wide pit (no press)
 //     orb (n tiles)  a jump, then a press on the orb at its height over a pit n tiles wide
-//   land  气走经脉's painted lands (dawn · dusk · jade · mist · moon · star), or  backdrop  a picture under worlds/jiuding/art/
+//   land  the sky's palette (dawn · dusk · jade · mist · moon · star · cave: dash.css), or  backdrop  a picture under worlds/jiuding/art/
 // Pure model (newGame / act / tick: the bots and tests); the page is `mount` (its own frame loop, pointer and Space).
 import { forInput } from './kit/device.js';
 
@@ -212,42 +212,99 @@ export function sounds(b, a) {
 const fmt = (v) => (Number.isFinite(v) ? Math.round(v * 10) / 10 : 0);
 const esc = (v) => String(v ?? '').replace(/[&"<>]/g, (c) => `&#${c.charCodeAt(0)};`);
 const tr = (o, lang) => (o ? o[lang] ?? o.zh ?? '' : '');
-const own = (name) => new URL(`./dash/art/${name}.webp`, import.meta.url).href;
-const land = (name) => new URL(`./qimai/art/${name}.webp`, import.meta.url).href;
 const world = (path) => new URL(`../../worlds/jiuding/art/${path}`, import.meta.url).href;
-export const LANDS = ['dawn', 'dusk', 'jade', 'mist', 'moon', 'star'];
+export const LANDS = ['dawn', 'dusk', 'jade', 'mist', 'moon', 'star', 'cave'];
 const landOf = (L) => (LANDS.includes(L?.land) ? L.land : 'dusk');
-let uid = 0;
+
+/* ── The look: flat comic shapes drawn here (Hanli 10-28: 「做成漫画风格就行. 背景简单一些. 现在障碍物看不清」) ──────────────
+   One calm sky per land (dash.css's [data-land] palette) and one faint far ridge; the things in bold black outlines and
+   flat cel shades: what kills is always the one red (spikes, a roof's underside), what carries is solid ground (blocks
+   in the ground's colours), the pad yellow, the orb cyan, the runner a white 灵珠. Every shape covers its hitbox:
+   a spike's triangle holds SPIKE_BOX, a block is its square, a pad its tile, an orb's ring its reach. */
+const SPIKE = { half: 0.46 * TILE, tall: 0.94 * TILE }; // the drawn triangle: SPIKE_BOX's corners lie inside it
+export const spikeHolds = () => SPIKE.half * (1 - SPIKE_BOX.h / SPIKE.tall) >= SPIKE_BOX.w / 2;
+const ORB_R = 0.42 * TILE, ORB_REACH = 0.9 * TILE, TRAIL = 5;
+
+function spikeSvg(k) {
+  const c = k.x + TILE / 2, l = c - SPIKE.half, r = c + SPIKE.half, top = GROUND - SPIKE.tall;
+  return `<g class="g-dash-spike"><path class="g-dash-spike-lit" d="M${fmt(l)} ${GROUND}L${fmt(c)} ${fmt(top)}L${fmt(r)} ${GROUND}Z"/>`
+    + `<path class="g-dash-spike-shade" d="M${fmt(c)} ${fmt(top)}L${fmt(r)} ${GROUND}L${fmt(c + 1)} ${GROUND}Z"/>`
+    + `<path class="g-dash-spike-glint" d="M${fmt(c - 2.2)} ${fmt(top + 7)}L${fmt(l + 6)} ${GROUND - 4}"/>`
+    + `<path class="g-dash-ink" d="M${fmt(l)} ${GROUND}L${fmt(c)} ${fmt(top)}L${fmt(r)} ${GROUND}Z"/></g>`;
+}
+function blockSvg(b) {
+  const n = Math.round(b.h / TILE);
+  return Array.from({ length: n }, (_, i) => {
+    const y0 = GROUND - (i + 1) * TILE;
+    return `<g class="g-dash-block"><rect class="g-dash-block-face" x="${fmt(b.x)}" y="${fmt(y0)}" width="${TILE}" height="${TILE}"/>`
+      + `<rect class="g-dash-block-shade" x="${fmt(b.x)}" y="${fmt(y0 + TILE * 0.72)}" width="${TILE}" height="${fmt(TILE * 0.28)}"/>`
+      + (i === n - 1 ? `<rect class="g-dash-lip" x="${fmt(b.x)}" y="${fmt(y0)}" width="${TILE}" height="4"/>` : '')
+      + `<rect class="g-dash-block-inset" x="${fmt(b.x + 6)}" y="${fmt(y0 + 7)}" width="${TILE - 12}" height="${TILE - 13}" rx="2"/>`
+      + `<rect class="g-dash-ink" x="${fmt(b.x)}" y="${fmt(y0)}" width="${TILE}" height="${TILE}" rx="1.5"/></g>`;
+  }).join('');
+}
+function padSvg(p) {
+  const l = p.x, r = p.x + TILE, c = p.x + TILE / 2, hy = GROUND - TILE * 0.3;
+  return `<g class="g-dash-pad"><g class="g-dash-pulse"><path class="g-dash-pad-ray" d="M${fmt(c - 7)} ${fmt(hy - 5)}l7 -7l7 7M${fmt(c - 7)} ${fmt(hy - 13)}l7 -7l7 7"/></g>`
+    + `<path class="g-dash-pad-face" d="M${fmt(l)} ${GROUND}Q${fmt(l)} ${fmt(hy)} ${fmt(c)} ${fmt(hy)}Q${fmt(r)} ${fmt(hy)} ${fmt(r)} ${GROUND}Z"/>`
+    + `<path class="g-dash-pad-glint" d="M${fmt(l + 6)} ${GROUND - 3}Q${fmt(l + 7)} ${fmt(hy + 3)} ${fmt(c - 2)} ${fmt(hy + 2.5)}"/>`
+    + `<path class="g-dash-ink" d="M${fmt(l)} ${GROUND}Q${fmt(l)} ${fmt(hy)} ${fmt(c)} ${fmt(hy)}Q${fmt(r)} ${fmt(hy)} ${fmt(r)} ${GROUND}Z"/></g>`;
+}
+function orbSvg(o) {
+  const cx = fmt(o.x), cy = fmt(GROUND - o.h);
+  return `<g class="g-dash-orb"><g class="g-dash-pulse"><circle class="g-dash-orb-reach" cx="${cx}" cy="${cy}" r="${fmt(ORB_REACH)}"/></g>`
+    + `<circle class="g-dash-orb-face" cx="${cx}" cy="${cy}" r="${fmt(ORB_R)}"/><circle class="g-dash-orb-core" cx="${cx}" cy="${cy}" r="${fmt(ORB_R * 0.45)}"/>`
+    + `<circle class="g-dash-orb-glint" cx="${fmt(o.x - ORB_R * 0.4)}" cy="${fmt(GROUND - o.h - ORB_R * 0.4)}" r="2.2"/>`
+    + `<circle class="g-dash-ink" cx="${cx}" cy="${cy}" r="${fmt(ORB_R)}"/></g>`;
+}
 
 /** The world, in world units (y down from the screen's top; the ground's top at GROUND), scrolled by one transform. */
-function worldSvg(s, id) {
-  const L = s.lay, y = (h) => GROUND - h, X0 = -RX - 40, X1 = L.end + W;
-  // the ground: rock from GROUND down, cut where the pits are
+function worldSvg(s) {
+  const L = s.lay, y = (h) => GROUND - h, X0 = -RX - 40, X1 = L.end + W, B = H + 20;
+  // the ground: a flat band from GROUND down, cut where the pits are, each piece outlined (its top the jump line)
   const cuts = [...L.pits].sort((a, b) => a.x - b.x);
   let from = X0;
   const ground = [];
   for (const p of cuts) { if (p.x > from) ground.push([from, p.x]); from = Math.max(from, p.x + p.w); }
   ground.push([from, X1]);
-  const groundSvg = ground.map(([a, b]) => `<rect class="g-dash-ground" x="${fmt(a)}" y="${GROUND}" width="${fmt(b - a)}" height="${H - GROUND + 20}" style="fill:url(#${id}-rock)"/><line class="g-dash-edge" x1="${fmt(a)}" y1="${GROUND}" x2="${fmt(b)}" y2="${GROUND}"/>`).join('');
-  const spikes = L.spikes.map((k) => `<image class="g-dash-spike" href="${own('spike')}" x="${fmt(k.x)}" y="${fmt(y(TILE))}" width="${TILE}" height="${TILE}" preserveAspectRatio="xMidYMax meet"/>`).join('');
-  const blocks = L.blocks.map((b) => Array.from({ length: Math.round(b.h / TILE) }, (_, i) => `<image class="g-dash-block" href="${own('block')}" x="${fmt(b.x)}" y="${fmt(y((i + 1) * TILE))}" width="${TILE}" height="${TILE}" preserveAspectRatio="none"/>`).join('')).join('');
-  const ceils = L.ceils.map((c) => `<rect class="g-dash-ceil" x="${fmt(c.x)}" y="-20" width="${fmt(c.w)}" height="${fmt(y(CEIL_H) + 20)}" style="fill:url(#${id}-rock)"/><line class="g-dash-edge" x1="${fmt(c.x)}" y1="${fmt(y(CEIL_H))}" x2="${fmt(c.x + c.w)}" y2="${fmt(y(CEIL_H))}"/>`).join('');
-  const pads = L.pads.map((p) => `<image class="g-dash-pad" href="${own('pad')}" x="${fmt(p.x - 4)}" y="${fmt(y(TILE * 0.45))}" width="${TILE + 8}" height="${fmt(TILE * 0.5)}" preserveAspectRatio="xMidYMax meet"/>`).join('');
-  const orbs = L.orbs.map((o) => `<image class="g-dash-orb" href="${own('orb')}" x="${fmt(o.x - TILE * 0.7)}" y="${fmt(y(o.h) - TILE * 0.7)}" width="${fmt(TILE * 1.4)}" height="${fmt(TILE * 1.4)}"/>`).join('');
-  const cps = s.practice ? L.cps.map((c) => `<path class="g-dash-cp" d="M${fmt(c)} ${GROUND} v-30 l12 6 l-12 6"/>`).join('') : '';
-  const goal = `<g class="g-dash-goal"><image href="${land('glow')}" x="${fmt(L.end - 30)}" y="${GROUND - 70}" width="60" height="60"/><line class="g-dash-goal-line" x1="${fmt(L.end)}" y1="${GROUND - 90}" x2="${fmt(L.end)}" y2="${GROUND}"/></g>`;
-  return `${ceils}${groundSvg}${pads}${blocks}${spikes}${orbs}${cps}${goal}`;
+  const groundSvg = ground.map(([a, b]) => `<rect class="g-dash-ground" x="${fmt(a)}" y="${GROUND}" width="${fmt(b - a)}" height="${B - GROUND}"/>`
+    + `<rect class="g-dash-ground-low" x="${fmt(a)}" y="${GROUND + 16}" width="${fmt(b - a)}" height="${B - GROUND - 16}"/>`
+    + `<rect class="g-dash-lip" x="${fmt(a)}" y="${GROUND}" width="${fmt(b - a)}" height="4"/>`
+    + `<path class="g-dash-ink" d="M${fmt(a)} ${B}V${GROUND}H${fmt(b)}V${B}"/>`).join('');
+  const pits = L.pits.map((p) => `<rect class="g-dash-pit" x="${fmt(p.x)}" y="${GROUND + 6}" width="${fmt(p.w)}" height="${B - GROUND - 6}"/>`).join('');
+  const ceils = L.ceils.map((c) => `<g class="g-dash-ceil"><rect class="g-dash-block-face" x="${fmt(c.x)}" y="-20" width="${fmt(c.w)}" height="${fmt(y(CEIL_H) + 20)}"/>`
+    + `<rect class="g-dash-danger" x="${fmt(c.x)}" y="${fmt(y(CEIL_H) - 5)}" width="${fmt(c.w)}" height="5"/>`
+    + `<path class="g-dash-ink" d="M${fmt(c.x)} -20V${fmt(y(CEIL_H))}H${fmt(c.x + c.w)}V-20"/></g>`).join('');
+  const cps = s.practice ? L.cps.map((c) => `<path class="g-dash-cp" d="M${fmt(c)} ${GROUND}v-30l12 6l-12 6"/>`).join('') : '';
+  const gx = L.end, goal = `<g class="g-dash-goal"><path class="g-dash-goal-flag" d="M${fmt(gx)} ${GROUND - 64}h26l-7 9l7 9h-26z"/>`
+    + `<path class="g-dash-ink" d="M${fmt(gx)} ${GROUND}V${GROUND - 66}"/><path class="g-dash-ink" d="M${fmt(gx)} ${GROUND - 64}h26l-7 9l7 9h-26z"/></g>`;
+  return `${pits}${ceils}${groundSvg}${L.pads.map(padSvg).join('')}${L.blocks.map(blockSvg).join('')}${L.spikes.map(spikeSvg).join('')}${L.orbs.map(orbSvg).join('')}${cps}${goal}`;
 }
 
-function defsSvg(s, id) {
-  return `<defs><pattern id="${id}-rock" patternUnits="userSpaceOnUse" width="120" height="120"><image href="${land(`rock-${landOf(s.level)}`)}" width="120" height="120" preserveAspectRatio="none"/></pattern></defs>`;
+/** One faint ridge far back, scrolled at a tenth of the pace (the only thing behind the play line). */
+export const FAR_K = 0.1;
+function farSvg(L) {
+  const x1 = (L.end + W) * FAR_K + W + 40, pts = [];
+  for (let x = -20; x <= x1; x += 10) pts.push(`${x} ${fmt(GROUND - 22 - 13 * Math.sin(x / 47) - 7 * Math.sin(x / 19 + 1.3))}`);
+  return `<path class="g-dash-far" d="M-20 ${GROUND + 2}L${pts.join('L')}L${fmt(x1)} ${GROUND + 2}Z"/>`;
 }
 
-/** Behind it all: 气走经脉's painted land (sky, two parallax strips), or the scene's own picture. */
+/** The runner: a white 灵珠, outlined, a gold fleck that turns as it spins, a short trail behind. */
+function runnerSvg(s) {
+  const r = SIZE / 2, ty = fmt(GROUND - s.h - SIZE);
+  const trail = Array.from({ length: TRAIL }, (_, i) => `<circle cx="${fmt(RX + r)}" cy="${fmt(GROUND - s.h - r)}" r="${fmt(r * (0.78 - i * 0.12))}" style="opacity:0"/>`).join('');
+  return `<g class="g-dash-trail">${trail}</g><g class="g-dash-runner" transform="translate(${RX} ${ty})">`
+    + `<circle class="g-dash-pearl" cx="${fmt(r)}" cy="${fmt(r)}" r="${fmt(r)}"/>`
+    + `<path class="g-dash-pearl-shade" d="M${fmt(r * 0.25)} ${fmt(r * 1.55)}A${fmt(r)} ${fmt(r)} 0 0 0 ${fmt(r * 1.9)} ${fmt(r * 0.7)}A${fmt(r * 1.1)} ${fmt(r * 1.1)} 0 0 1 ${fmt(r * 0.25)} ${fmt(r * 1.55)}Z"/>`
+    + `<g class="g-dash-spin" transform="rotate(${fmt(s.spin)} ${fmt(r)} ${fmt(r)})"><circle class="g-dash-seam" cx="${fmt(r * 1.42)}" cy="${fmt(r * 1.2)}" r="${fmt(r * 0.2)}"/></g>`
+    + `<circle class="g-dash-pearl-glint" cx="${fmt(r * 0.62)}" cy="${fmt(r * 0.6)}" r="${fmt(r * 0.2)}"/>`
+    + `<circle class="g-dash-ink" cx="${fmt(r)}" cy="${fmt(r)}" r="${fmt(r)}"/></g>`;
+}
+
+/** Behind it all: the land's calm sky (dash.css), or the scene's own picture, quietened. */
 function backHtml(L) {
-  if (L.backdrop) return `<div class="g-dash-back" style="background-image:url(${world(L.backdrop)})"></div>`;
-  const k = landOf(L), strip = (n) => `<div class="g-qm-strip g-dash-strip is-${n}" style="background-image:url(${land(`${n}-${k}`)})"></div>`;
-  return `<div class="g-qm-land g-dash-back" data-land="${k}" style="background-image:url(${land(`sky-${k}`)})">${strip('far')}${strip('mid')}</div>`;
+  if (L.backdrop) return `<div class="g-dash-back is-picture" style="background-image:url(${world(L.backdrop)})"></div>`;
+  return `<div class="g-dash-back"></div>`;
 }
 
 function headHtml(s, t) {
@@ -262,18 +319,16 @@ function sayOf(s, t, lang) {
 }
 
 /** The board's whole markup for a state (the page lays it once, then moves it each frame). */
-export function html(s, lang = 'zh', id = 'dsh') {
+export function html(s, lang = 'zh') {
   const t = T[lang] || T.zh;
   if (!s.level) return `<div class="g-dash g-ink"><p class="g-line-say">—</p></div>`;
-  const runner = `<g class="g-dash-runner" transform="translate(${RX} ${fmt(GROUND - s.h - SIZE)})"><g class="g-dash-spin" transform="rotate(${fmt(s.spin)} ${fmt(SIZE / 2)} ${fmt(SIZE / 2)})">`
-    + `<image class="g-dash-glow" href="${land('glow')}" x="${fmt(-SIZE)}" y="${fmt(-SIZE)}" width="${fmt(SIZE * 3)}" height="${fmt(SIZE * 3)}"/>`
-    + `<image href="${land('pearl')}" x="-1" y="-1" width="${fmt(SIZE + 2)}" height="${fmt(SIZE + 2)}"/></g></g>`;
   const card = `<div class="g-qm-card g-dash-card"><b>${esc(tr(s.level.title, lang))}</b><span>${esc(tr(s.level.book, lang))}</span></div>`;
   return `<div class="g-dash g-ink${s.won ? ' is-won' : ''}${s.phase === 'ready' && s.first ? ' is-titled' : ''}${s.practice ? ' is-practice' : ''}" data-level="${esc(s.level.id ?? '')}">`
     + `<div class="g-head g-dash-head">${headHtml(s, t)}</div>`
-    + `<div class="g-dash-board g-hold" data-g-hold="">${backHtml(s.level)}`
-    + `<svg class="g-scene g-dash-scene" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tr(s.level.title ?? meta.name, lang))}" focusable="false">${defsSvg(s, id)}`
-    + `<g class="g-dash-world" transform="translate(${fmt(RX - s.x)} 0)">${worldSvg(s, id)}</g>${runner}<g class="g-dash-fx"></g></svg>${card}</div>`
+    + `<div class="g-dash-board g-hold" data-g-hold="" data-land="${landOf(s.level)}">${backHtml(s.level)}`
+    + `<svg class="g-scene g-dash-scene" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tr(s.level.title ?? meta.name, lang))}" focusable="false">`
+    + `${s.level.backdrop ? '' : `<g class="g-dash-far-g" transform="translate(${fmt(-s.x * FAR_K)} 0)">${farSvg(s.lay)}</g>`}`
+    + `<g class="g-dash-world" transform="translate(${fmt(RX - s.x)} 0)">${worldSvg(s)}</g>${runnerSvg(s)}<g class="g-dash-fx"></g></svg>${card}</div>`
     + `<p class="g-line-say">${esc(sayOf(s, t, lang))}</p>`
     + `<div class="g-qm-row"><span class="g-qm-hint">${forInput(t.hint)}</span><span class="g-dash-tools"><button type="button" class="g-btn g-btn-quiet g-dash-practice" data-g="practice">${s.practice ? t.practiceOn : t.practice}</button></span></div>`
     + `</div>`;
@@ -310,24 +365,34 @@ export async function mount(container, opts = {}) {
   const doc = container.ownerDocument, win = doc.defaultView;
   ensureCss(doc);
   const level = await levelFor(opts);
-  const id = `dsh${++uid}`;
   let s = newGame(seed, 1, { levels: level ? [level] : [] });
   opts.peek?.(() => s);
   const host = doc.createElement('div');
   host.className = 'game g-mounted';
   container.replaceChildren(host);
-  const lay = () => { host.innerHTML = html(s, lang, id); bind(); };
-  let board, worldG, runner, spin, head, say, root, practiceBtn, strips = [];
+  const lay = () => { host.innerHTML = html(s, lang); bind(); };
+  let board, worldG, farG, runner, spin, head, say, root, trail = [];
   const bind = () => {
     const $ = (q) => host.querySelector(q);
-    board = $('.g-dash-board'); worldG = $('.g-dash-world'); runner = $('.g-dash-runner'); spin = $('.g-dash-spin');
-    head = $('.g-dash-head'); say = $('.g-line-say'); root = $('.g-dash'); practiceBtn = $('.g-dash-practice');
-    strips = [...host.querySelectorAll('.g-dash-strip')].map((el) => ({ el, k: el.classList.contains('is-far') ? 0.12 : 0.38 }));
+    board = $('.g-dash-board'); worldG = $('.g-dash-world'); farG = $('.g-dash-far-g'); runner = $('.g-dash-runner'); spin = $('.g-dash-spin');
+    head = $('.g-dash-head'); say = $('.g-line-say'); root = $('.g-dash');
+    trail = [...host.querySelectorAll('.g-dash-trail circle')];
   };
   lay();
   if (!s.live) return { won: false, left: true };
   const t = T[lang] || T.zh;
-  let last = { head: '', say: '', practice: s.practice }, heard = soundSnap(s);
+  let last = { head: '', say: '', practice: s.practice }, heard = soundSnap(s), past = [];
+  // the trail: where the runner was a few frames back, drawn behind it (gone on a restart or a hit)
+  const paintTrail = () => {
+    if (s.phase !== 'play' || (past.length && s.x < past[past.length - 1].x)) past = [];
+    if (s.phase === 'play') { past.push({ x: s.x, h: s.h }); if (past.length > TRAIL * 3 + 1) past.shift(); }
+    const r = SIZE / 2;
+    trail.forEach((c, i) => {
+      const p = past[past.length - 1 - (i + 1) * 3];
+      if (!p) { c.style.opacity = '0'; return; }
+      c.setAttribute('cx', fmt(RX + r + p.x - s.x)); c.setAttribute('cy', fmt(GROUND - p.h - r)); c.style.opacity = '';
+    });
+  };
   const paint = () => {
     const now = soundSnap(s);
     for (const e of sounds(heard, now)) shell?.sound?.(e);
@@ -336,8 +401,8 @@ export async function mount(container, opts = {}) {
     worldG.setAttribute('transform', `translate(${fmt(RX - s.x)} 0)`);
     runner.setAttribute('transform', `translate(${RX} ${fmt(GROUND - s.h - SIZE)})`);
     spin.setAttribute('transform', `rotate(${fmt(s.spin)} ${fmt(SIZE / 2)} ${fmt(SIZE / 2)})`);
-    const unit = board.clientWidth / W;
-    for (const st of strips) st.el.style.transform = `translate3d(${-Math.round(s.x * unit * st.k) % Math.max(1, st.el.clientWidth / 3)}px,0,0)`;
+    farG?.setAttribute('transform', `translate(${fmt(-s.x * FAR_K)} 0)`);
+    paintTrail();
     const h = headHtml(s, t);
     if (h !== last.head) { head.innerHTML = h; last.head = h; }
     const line = sayOf(s, t, lang);

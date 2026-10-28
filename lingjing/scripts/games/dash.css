@@ -1,5 +1,5 @@
-/* 几何冲刺 (games/dash.js) — the runner over 气走经脉's painted lands (qimai.css's .g-qm-land / .g-qm-strip / .g-qm-card),
-   or the scene's own picture. Loaded by the module itself. */
+/* 几何冲刺 (games/dash.js) — flat comic shapes drawn in code over one calm sky per land (Hanli 10-28: 「做成漫画风格就行.
+   背景简单一些. 现在障碍物看不清」); the title card and hint row are qimai.css's (.g-qm-card / .g-qm-row). Loaded by the module itself. */
 .g-dash { display: flex; flex-direction: column; gap: 8px; align-items: stretch; position: relative; }
 .g-dash-head { display: flex; align-items: center; gap: 10px; }
 .g-dash-attempt { font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -8,16 +8,65 @@
 .g-dash-pct { font-variant-numeric: tabular-nums; min-width: 3em; text-align: right; color: var(--text); }
 .g-dash-board { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); cursor: pointer;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.g-dash-back { position: absolute; inset: 0; overflow: hidden; background: #1d2740 center / cover no-repeat; pointer-events: none; }
+.g-dash-back { position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  background: linear-gradient(180deg, var(--dash-sky-top) 0%, var(--dash-sky-bot) 78%); }
+.g-dash-back.is-picture { background: #1d2740 center / cover no-repeat; filter: saturate(.45) brightness(.92) contrast(.8); }
 .g-dash-scene.g-scene { position: relative; display: block; width: 100%; height: auto; border: 0; border-radius: 0; background: none; }
-.g-dash-scene .g-dash-ground, .g-dash-scene .g-dash-ceil { stroke: none; }
-.g-dash-scene .g-dash-edge { stroke: #2a1d14; stroke-width: 2.4; stroke-linecap: round; }
-.g-dash-scene .g-dash-cp { fill: #9fe870; stroke: #2a1d14; stroke-width: 1.2; }
-.g-dash-scene .g-dash-goal-line { stroke: #ffd257; stroke-width: 2; stroke-dasharray: 4 4; }
-.g-dash-scene .g-dash-glow { opacity: .6; }
+
+/* the palette, one per land: a calm sky (cool or muted where the play line runs, so the red reads), one faint ridge,
+   solid ground; the things' colours stay the same everywhere */
+.g-dash-board { --dash-ink: #17110f; --dash-red: #ff3b2f; --dash-red-dark: #c4231c; --dash-pad: #ffd23a; --dash-pad-ray: #fff3a8;
+  --dash-orb: #22d3f5; --dash-orb-core: #e9fdff; --dash-pearl: #fffbee; --dash-pearl-shade: #f2d38a; --dash-trail: #fff3c4;
+  --dash-sky-top: #a99ab8; --dash-sky-bot: #e3d3d6; --dash-far: #c4b3c6; --dash-ground: #4a3a4c; --dash-ground-low: #3c2e3e; --dash-lip: #7a6684; --dash-block: #5e4a62; --dash-block-shade: #4f3d52; }
+.g-dash-board[data-land="dawn"] { --dash-sky-top: #b7c6dd; --dash-sky-bot: #f0e4dc; --dash-far: #cdd2df; --dash-ground: #4b5470; --dash-ground-low: #3e4660; --dash-lip: #8494bd; --dash-block: #5d6886; --dash-block-shade: #4d5774; }
+.g-dash-board[data-land="jade"] { --dash-sky-top: #a7d3e3; --dash-sky-bot: #e5f2ee; --dash-far: #bcdcdc; --dash-ground: #3f6a4e; --dash-ground-low: #345a42; --dash-lip: #7fbf6a; --dash-block: #4f7d5d; --dash-block-shade: #426c4f; }
+.g-dash-board[data-land="mist"] { --dash-sky-top: #c3ced4; --dash-sky-bot: #eceee9; --dash-far: #d2d9da; --dash-ground: #4f5a62; --dash-ground-low: #434d54; --dash-lip: #8c9ca6; --dash-block: #616d76; --dash-block-shade: #535e66; }
+.g-dash-board[data-land="moon"] { --dash-sky-top: #1d2846; --dash-sky-bot: #3a4a70; --dash-far: #2f3d60; --dash-ground: #151b2e; --dash-ground-low: #0f1424; --dash-lip: #6c80bd; --dash-block: #5a6aa0; --dash-block-shade: #4a5888; }
+.g-dash-board[data-land="star"] { --dash-sky-top: #141834; --dash-sky-bot: #2e3460; --dash-far: #252b50; --dash-ground: #10132a; --dash-ground-low: #0b0d20; --dash-lip: #7a74c4; --dash-block: #4f4d92; --dash-block-shade: #413f7c; }
+.g-dash-board[data-land="cave"] { --dash-sky-top: #24201e; --dash-sky-bot: #3b3430; --dash-far: #332d29; --dash-ground: #15110e; --dash-ground-low: #0e0b09; --dash-lip: #8c7558; --dash-block: #7a6650; --dash-block-shade: #665441; }
+
+.g-dash-scene .g-dash-far { fill: var(--dash-far); }
+.g-dash-scene .g-dash-ink { fill: none; stroke: var(--dash-ink); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.g-dash-scene .g-dash-ground { fill: var(--dash-ground); }
+.g-dash-scene .g-dash-pit { fill: var(--dash-ink); fill-opacity: .28; }
+.g-dash-scene .g-dash-ground-low { fill: var(--dash-ground-low); }
+.g-dash-scene .g-dash-lip { fill: var(--dash-lip); }
+.g-dash-scene .g-dash-danger { fill: var(--dash-red); }
+.g-dash-scene .g-dash-spike-lit { fill: var(--dash-red); }
+.g-dash-scene .g-dash-spike-shade { fill: var(--dash-red-dark); }
+.g-dash-scene .g-dash-spike-glint { fill: none; stroke: #ffb59a; stroke-width: 1.6; stroke-linecap: round; }
+.g-dash-scene .g-dash-block-face { fill: var(--dash-block); }
+.g-dash-scene .g-dash-block-shade { fill: var(--dash-block-shade); }
+.g-dash-scene .g-dash-block-inset { fill: none; stroke: var(--dash-ink); stroke-opacity: .35; stroke-width: 1.2; }
+.g-dash-scene .g-dash-pad-face { fill: var(--dash-pad); }
+.g-dash-scene .g-dash-pad-glint { fill: none; stroke: #fff6c9; stroke-width: 1.6; stroke-linecap: round; }
+.g-dash-scene .g-dash-pad-ray { fill: none; stroke: var(--dash-pad); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; paint-order: stroke; }
+.g-dash-scene .g-dash-orb-face { fill: var(--dash-orb); }
+.g-dash-scene .g-dash-orb-core { fill: var(--dash-orb-core); }
+.g-dash-scene .g-dash-orb-glint { fill: #fff; }
+.g-dash-scene .g-dash-orb-reach { fill: var(--dash-orb); fill-opacity: .14; stroke: var(--dash-orb); stroke-width: 1.4; stroke-dasharray: 3 3; }
+.g-dash-scene .g-dash-pearl { fill: var(--dash-pearl); }
+.g-dash-scene .g-dash-pearl-shade { fill: var(--dash-pearl-shade); }
+.g-dash-scene .g-dash-pearl-glint { fill: #fff; }
+.g-dash-scene .g-dash-seam { fill: #e0a93a; }
+.g-dash-scene .g-dash-trail circle { fill: var(--dash-trail); stroke: var(--dash-ink); stroke-width: 1; stroke-opacity: .5; transition: none; }
+.g-dash-scene .g-dash-trail circle:nth-child(1) { fill-opacity: .7; }
+.g-dash-scene .g-dash-trail circle:nth-child(2) { fill-opacity: .55; stroke-opacity: .35; }
+.g-dash-scene .g-dash-trail circle:nth-child(3) { fill-opacity: .4; stroke-opacity: .2; }
+.g-dash-scene .g-dash-trail circle:nth-child(n+4) { fill-opacity: .25; stroke-opacity: 0; }
+.g-dash-scene .g-dash-cp { fill: #9fe870; stroke: var(--dash-ink); stroke-width: 1.4; stroke-linejoin: round; }
+.g-dash-scene .g-dash-goal-flag { fill: var(--dash-pad); }
+/* pads and orbs breathe a little (still under reduced motion) */
+.g-dash-scene .g-dash-pad .g-dash-pulse { animation: g-dash-rise 1s ease-in-out infinite; }
+.g-dash-scene .g-dash-orb .g-dash-pulse { transform-box: fill-box; transform-origin: center; animation: g-dash-throb 1.1s ease-in-out infinite; }
+@keyframes g-dash-rise { 0%, 100% { opacity: .55; transform: translateY(1.5px); } 50% { opacity: 1; transform: translateY(-1.5px); } }
+@keyframes g-dash-throb { 0%, 100% { opacity: .6; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.04); } }
 .g-dash.is-dead .g-dash-runner { animation: g-dash-burst .7s ease-out forwards; }
 @keyframes g-dash-burst { 0% { opacity: 1; } 30% { opacity: .2; } 60% { opacity: .8; } 100% { opacity: 0; } }
 .g-dash.is-titled .g-qm-card { opacity: 1; }
 .g-dash-tools { display: flex; gap: 6px; }
 .g-dash.is-practice .g-dash-practice { color: #3d7a2a; font-weight: 600; }
-@media (prefers-reduced-motion: reduce) { .g-dash.is-dead .g-dash-runner { animation: none; opacity: .4; } }
+@media (prefers-reduced-motion: reduce) {
+  .g-dash.is-dead .g-dash-runner { animation: none; opacity: .4; }
+  .g-dash-scene .g-dash-pad .g-dash-pulse, .g-dash-scene .g-dash-orb .g-dash-pulse { transform-box: fill-box; transform-origin: center; animation: none; }
+}

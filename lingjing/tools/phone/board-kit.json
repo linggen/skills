@@ -469,12 +469,8 @@
       ]
     },
     "dash": {
-      "_about": "几何冲刺 (games/dash.js, its own frame loop): the runner over 气走经脉's painted lands.",
+      "_about": "几何冲刺 (games/dash.js, its own frame loop): flat comic shapes drawn in code over one calm sky per land — no art.",
       "module": "scripts/games/dash.js",
-      "dirs": [
-        "scripts/games/dash/art",
-        "scripts/games/qimai/art"
-      ],
       "css": [
         "scripts/lingjing.css",
         "scripts/games/live.css",

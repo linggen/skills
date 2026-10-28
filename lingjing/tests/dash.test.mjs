@@ -146,11 +146,21 @@ test('the story\'s boards: each task plays its own row\'s level, its how first i
   assert.ok(first.things.every(([, k]) => k === 's' || k === 'b'));
 });
 
-test('painted, never bare shapes: the board draws the kit\'s painted spike, block, pad and orb and 气走经脉\'s pearl', () => {
-  const L = flat([[2, 's'], [6, 'b'], [10, 'pad'], [16, 'orb', 6]], { len: 30 });
+test('comic and clear (Hanli 10-28: 「做成漫画风格就行. 背景简单一些. 现在障碍物看不清」): every thing drawn in code, outlined, over a calm sky', () => {
+  const L = flat([[2, 's'], [6, 'b'], [10, 'pad'], [16, 'orb', 6], [22, 'ceil', 3]], { len: 30, land: 'moon' });
   const h = d.html(d.newGame('t', 1, { levels: [L] }), 'zh');
-  for (const art of ['dash/art/spike.webp', 'dash/art/block.webp', 'dash/art/pad.webp', 'dash/art/orb.webp', 'qimai/art/pearl.webp', 'qimai/art/sky-']) assert.ok(h.includes(art), art);
-  for (const f of ['spike', 'block', 'pad', 'orb']) assert.ok(fs.existsSync(new URL(`../scripts/games/dash/art/${f}.webp`, import.meta.url)), f);
+  for (const k of ['spike', 'block', 'pad', 'orb', 'ceil']) assert.match(h, new RegExp(`class="g-dash-${k}">[^]*?class="g-dash-ink"`), `${k}: outlined`);
+  assert.match(h, /class="g-dash-runner"[^]*class="g-dash-ink"/, 'the runner: outlined');
+  assert.equal((h.match(/class="g-dash-trail"[^]*?<\/g>/)[0].match(/<circle/g) ?? []).length, 5, 'the runner: a short trail');
+  assert.ok(!/<image/.test(h), 'no painted pictures: the things are shapes');
+  assert.match(h, /data-land="moon"/);
+  assert.equal((h.match(/class="g-dash-far"/g) ?? []).length, 1, 'one faint ridge behind, nothing else');
+  // what's drawn covers what kills: SPIKE_BOX inside the triangle
+  assert.ok(d.spikeHolds(), 'the spike\'s hitbox lies inside its drawn triangle');
+  // a palette for every land, and the pulses still under reduced motion
+  const css = fs.readFileSync(new URL('../scripts/games/dash.css', import.meta.url), 'utf8');
+  for (const land of d.LANDS.filter((x) => x !== 'dusk')) assert.match(css, new RegExp(`data-land="${land}"\\] \\{ --dash-sky-top`), land);
+  assert.match(css, /prefers-reduced-motion[^]*g-dash-pulse[^]*animation: none/);
   assert.match(h, /第 1 次/);
   assert.match(d.html(d.newGame('t', 1, { levels: [L] }), 'en'), /Attempt 1/);
 });
