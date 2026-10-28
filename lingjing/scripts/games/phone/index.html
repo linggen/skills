@@ -19,6 +19,13 @@
      `scene` container (battle.css @container scene), which the Mac's story page gives it. */
   html[data-board=kapai] #stage { padding: 0 0 env(safe-area-inset-bottom); overflow: hidden; }
   html[data-board=kapai] .g-kapai { height: 100%; width: 100%; align-self: stretch; margin-top: 0; overflow: hidden; container: scene / inline-size; }
+  /* 聊天 (jinchat): the card is the page, as a chat app's — from under the bar to the thumb, the list filling what is
+     between. Its own size (min(520px, 64dvh), a card in the Mac's story column) stood at the foot of the page with an
+     empty half above it (sim 10-28). */
+  html[data-board=jinchat] #stage > .g-jc { margin-top: 0; flex: 1 1 0; height: auto; min-height: 0; width: 100%; max-width: none; box-sizing: border-box; }
+  /* …its list scrolls inside it, never the page: with the keyboard up and down again the card stays whole (sim 10-28, SE). */
+  html[data-board=jinchat] #stage { overflow: hidden; }
+  html[data-board=jinchat] .g-jc-list { min-height: 0; }
   /* A 大场面 (a set piece): the picture fills the page, under the app's words. */
   html.is-piece #stage { display: block; padding: 0; overflow: hidden; }
   .phonepiece { position: absolute; inset: 0; }

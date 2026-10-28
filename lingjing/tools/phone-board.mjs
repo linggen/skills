@@ -71,12 +71,26 @@ export function boardFiles(game = 'shouqiang') {
 export const kitGames = () => Object.keys(KIT.games);
 
 /** A board module's own name (its `meta.name: { zh, en }`, the 游戏厅's tile title on the Mac), read from its text — the
-    module is a browser module and is never imported here. Null when it declares none. */
+    module is a browser module and is never imported here. Followed one step where the meta is another's: `name: T.name`
+    (a table of the same file: 华容道's MIJING) and `export const meta = game.meta` with `import { x as game } from './f.js'`
+    (a 割绳子 beat: ropebeats.js's `x`). Null when it declares none. */
+const NAME = /name: \{ zh: '([^']+)', en: '([^']+)' \}/;
+const nameIn = (text) => { const m = NAME.exec(text ?? ''); return m ? { zh: m[1], en: m[2] } : null; };
 export function metaNameOf(module) {
   const text = fs.readFileSync(path.join(SKILL, module), 'utf8');
-  const meta = /export const meta = \{([\s\S]*?)\n\};/.exec(text)?.[1] ?? '';
-  const m = /\n  name: \{ zh: '([^']+)', en: '([^']+)' \}/.exec(meta);
-  return m ? { zh: m[1], en: m[2] } : null;
+  const meta = /export const meta = \{([\s\S]*?)\n\};/.exec(text)?.[1];
+  if (meta != null) {
+    const own = /\n  (name: \{ zh: '[^']+', en: '[^']+' \})/.exec(meta)?.[1];
+    if (own) return nameIn(own);
+    const ref = /\n  name: ([A-Za-z_$][\w$]*)\.name,/.exec(meta)?.[1];
+    return ref ? nameIn(new RegExp(`\\n(?:export )?const ${ref} = \\{\\n  id: '[^']+',\\n  (name: [^\\n]+)`).exec(text)?.[1]) : null;
+  }
+  const alias = /export const meta = ([A-Za-z_$][\w$]*)\.meta;/.exec(text)?.[1];
+  const from = alias && new RegExp(`import \\{ ([\\w$]+) as ${alias} \\} from '(\\.[^']+)'`).exec(text);
+  if (!from) return null;
+  const other = fs.readFileSync(path.join(SKILL, path.dirname(module), from[2]), 'utf8');
+  const at = other.indexOf(`\nexport const ${from[1]} = `);
+  return at < 0 ? null : nameIn(/\n  meta: \{ id: '[^']+', (name: \{ zh: '[^']+', en: '[^']+' \})/.exec(other.slice(at))?.[1]);
 }
 
 /** The host page's table (scripts/games/phone/boards.json): each board's pack and the sheets it links (skill-relative),

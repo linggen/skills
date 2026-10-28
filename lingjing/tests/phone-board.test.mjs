@@ -130,6 +130,11 @@ test("a board's own name (its meta.name) travels in the table, for the phone's �
   assert.deepEqual(t.fuqin.name, { zh: '抚琴', en: 'The qin' });
   assert.equal(t.sadou.name.zh, '撒豆成兵');
   assert.equal(t.zhazhai.name.zh, '砸寨');
+  // one step to another's meta: a 割绳子 beat's (ropebeats.js), 华容道's table (MIJING)
+  assert.equal(t.rentrope.name.zh, '算账 · 肉上秤');
+  assert.equal(t.luoborope.name.zh, '喂饭桶 · 一根萝卜');
+  assert.deepEqual(t.huarong.name, { zh: '华容道', en: 'Huarong Pass' });
+  assert.deepEqual(Object.keys(t).filter((id) => !id.startsWith('piece-') && !t[id].name), [], 'every board tile has its name');
   assert.ok(Object.entries(t).every(([id, g]) => !id.startsWith('piece-') || !g.name), 'a 大场面 is no tile');
 });
 
