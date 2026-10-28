@@ -266,7 +266,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
       // The hour of the model's clock now (from the first day's first sitting): the event's cooldown runs on it.
       const hour = () => day * 24 + k * (model.waking_h / n) + (sit - left) / 60;
       /* One pool fight: in a batch (妖兽出没) it takes a slot and pays the batch's day share; its 修为 booked as `yaoshou`. */
-      const poolFight = () => { const b = batched(), mult = b ? evShare() : 1; win(model.fight_win_rate, b ? 'yaoshou' : 'pool', mult); evFight(hour()); };
+      const poolFight = () => { const b = batched(), mult = b ? evShare() * (EV.fight_scale ?? 1) : 1; win(model.fight_win_rate, b ? 'yaoshou' : 'pool', mult); evFight(hour()); };
       if (!zero()) {
         // The day's 功课: its share of the layer he stands on (rules/playpay.mjs chorePlay, 2026-10-27).
         if (k === 0) gain((chorePlay(content, { ...s, need: need() }, 'day') ?? 0) * player.gongke, false, 'gongke', 'gongke');

@@ -26,10 +26,11 @@ export function yaoshouBatch(content, state, now) {
   if (!e) return null;
   const wait = eventWait(content, state, YAOSHOU, now);
   if (wait > 0) return { up: false, wait_min: Math.ceil(wait / 60_000) };
-  return { up: true, left: Math.max(0, e.batch - takenOf(state)), of: e.batch, share: eventShare(content, state, YAOSHOU, now) };
+  return { up: true, left: Math.max(0, e.batch - takenOf(state)), of: e.batch, share: eventShare(content, state, YAOSHOU, now) * (e.fight_scale ?? 1) };
 }
-/* The share a fight at the event's pools pays now (1 elsewhere). */
-export const yaoshouShare = (content, state, place, now) => (yaoshouPlace(content, place) ? eventShare(content, state, YAOSHOU, now) : 1);
+/* The share a fight at the event's pools pays now (1 elsewhere): the batch's day share × `fight_scale` (a whole batch pays
+   as one play of the haunt table — about one 兽潮 night; tools/master.mjs derives it from `master.events.yaoshou`). */
+export const yaoshouShare = (content, state, place, now) => (yaoshouPlace(content, place) ? eventShare(content, state, YAOSHOU, now) * (ev(content).fight_scale ?? 1) : 1);
 
 /* A fight settled at one of its pools: one taken; the last completes the batch. Mutates `state`. */
 export function yaoshouFought(content, state, place, now) {

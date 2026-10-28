@@ -137,6 +137,10 @@ export function derive(raw0, { ladder, items }) {
   raw.convert = { ...raw.convert, rate: M.economy.convert };
   raw.prices = pricesOf(raw, items, shares);
   if (M.mijing) raw.mijing = mijingOf(M.mijing, M.economy);
+  // 冷却事件 (rules/events.mjs): a completion pays `batch_plays` plays of its table, spread over its `batch` fights.
+  for (const [id, E] of Object.entries(M.events ?? {}).filter(([k]) => !k.startsWith('_'))) {
+    if (E.batch_plays != null && raw.events?.[id]?.batch) raw.events[id].fight_scale = Math.round((E.batch_plays / raw.events[id].batch) * 10000) / 10000;
+  }
   for (const o of raw.overrides ?? []) setPath(raw, o.path, structuredClone(o.value));
   return raw;
 }

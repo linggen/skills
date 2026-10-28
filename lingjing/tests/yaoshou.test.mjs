@@ -9,7 +9,7 @@ import { dayKey, newState } from '../scripts/state.mjs';
 import { duel, look, move, playTo, reroll, yaoshou } from '../scripts/rules.mjs';
 import { eventDone, eventShare } from '../scripts/rules/events.mjs';
 import { yaoshouShare } from '../scripts/rules/yaoshou.mjs';
-import { fightReplay } from '../scripts/rules/playpay.mjs';
+import { fightPlay, fightReplay } from '../scripts/rules/playpay.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
@@ -39,7 +39,9 @@ function foughtOut(s, now) {
   return end.state;
 }
 
-test('declared in balance.json: 1.5 h, a batch of 3, the first 2 a day in full, at 后山 and 上山路', () => {
+test('declared in balance.json: 1.5 h, a batch of 3, the first 2 a day in full, at 后山 and 上山路; a batch pays as one fight', () => {
+  assert.equal(EV.fight_scale, Math.round((content.balance.master.events.yaoshou.batch_plays / EV.batch) * 10000) / 10000, 'derived (tools/master.mjs)');
+  assert.ok(Math.abs(EV.fight_scale * EV.batch - 1) < 0.001);
   assert.deepEqual({ every_h: EV.every_h, batch: EV.batch, full: EV.full }, { every_h: 1.5, batch: 3, full: 2 });
   assert.deepEqual([...EV.pools].sort(), ['songlin', 'yaoyuan-wai']);
   for (const id of ['houshan', 'shanlu']) assert.ok(EV.pools.includes(placeOf(content, id).has.pool), id);
@@ -94,7 +96,7 @@ test('pay: the day\'s first two batches in full, then half, then a tenth; the be
   assert.equal(eventShare(content, s, 'yaoshou', new Date(now.getTime() + 24 * HOUR)), 1);
   // Elsewhere (蒙山's pool is no event's) the share is 1.
   assert.equal(yaoshouShare(content, s, placeOf(content, 'mengshan'), now), 1);
-  assert.equal(yaoshouShare(content, s, place, now), replay[2]);
+  assert.equal(yaoshouShare(content, s, place, now), replay[2] * EV.fight_scale);
   // The beast's replay (playpay.mjs fightReplay) is untouched by the event.
   assert.equal(fightReplay(content, fresh(), 'chihu', now), 1);
 });
@@ -136,5 +138,8 @@ test('a win at the pool pays its haunt grant × the batch\'s share: the third ba
   // At the layer's full mark the 修为 is paid as 灵石 (converted): count both.
   const worth = p => p.progress + p.wealth + (p.converted?.progress ?? 0);
   assert.ok(worth(first) > 0);
+  // A batch pays as one fight: each of its fights a third of an ordinary win's 修为 (playpay.mjs fightPlay).
+  const xw = p => p.progress + (p.converted?.progress ?? 0), one = fightPlay(content, fresh());
+  assert.ok(Math.abs(xw(first) - one * EV.fight_scale) <= 2, `${xw(first)} vs ${one} × ${EV.fight_scale}`);
   assert.ok(Math.abs(worth(third) - worth(first) * content.balance.play_pay.replay[1]) <= 2, `${worth(third)} vs ${worth(first)}`);
 });
