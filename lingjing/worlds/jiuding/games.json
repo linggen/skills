@@ -1767,6 +1767,22 @@
      ]
     }
    ]
+  },
+  {
+   "id": "zhazhai",
+   "group": "daily",
+   "mechanic": "投掷",
+   "task": "chaifang-huangshulang",
+   "stars": 3,
+   "name": {
+    "zh": "赶黄鼠狼 · 柴垛里",
+    "en": "Weasels · In the woodpiles"
+   },
+   "how": {
+    "zh": "黄鼠狼钻进了柴房前的柴垛，盯着鸡笼。往后拉弹弓，松手扔石子——把柴垛砸塌在它身上，它就跑了。石子不多，省着扔。",
+    "en": "Weasels have got into the woodpiles by the shed, eyes on the hen coop. Pull the sling back and let a stone go: bring the pile down on one and it runs. Few stones: make them count."
+   },
+   "_about": "柴房's practice board (Hanli 10-27: 「可以, 加吧」): the throw kit (砸寨) on six rungs that climb (tasks/world.json chaifang-huangshulang `climb`): one weasel under a log, then taller piles, stone slabs for lids, three weasels and five stones at the top. Each rung is made by a seeded generator when the bundle is built (tools/zhazhai/src/data/chaifang.ts), so the bot proves exactly what is dealt (tests/game-zhazhai.test.mjs). The woodshed yard painted by the local painter (tools/paint-zhazhai-throws.py place-chaifang)."
   }
  ]
 }

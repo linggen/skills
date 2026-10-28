@@ -12,6 +12,7 @@ import {
 } from "../config/GameConfig";
 import type { Position } from "../types/Vector2";
 import { THROW_LEVELS, THROW_WORDS } from "./throws";
+import { CHAIFANG_LEVELS, CHAIFANG_WORDS } from "./chaifang";
 
 export type { ThemeType };
 
@@ -606,8 +607,9 @@ function convertGridLevelToLevelData(gridLevel: GridLevelData): LevelData {
   };
 }
 
-/** 砸寨: the forts (1…5, the title screen's select), then the story's throws (data/throws.ts: by `key`). */
-export const LEVELS: LevelData[] = [...GRID_LEVELS.map(convertGridLevelToLevelData), ...THROW_LEVELS];
+/** 砸寨: the forts (1…5, the title screen's select), then the story's throws (data/throws.ts: by `key`), then the 柴房's
+    practice rungs (data/chaifang.ts: `chaifang-1`…). */
+export const LEVELS: LevelData[] = [...GRID_LEVELS.map(convertGridLevelToLevelData), ...THROW_LEVELS, ...CHAIFANG_LEVELS];
 
 /** 砸寨's words for each fort, in both languages (upstream's English names stay in GRID_LEVELS, unused). */
 export const LEVEL_WORDS: Record<number, Record<Lang, { name: string; description: string; teachingFocus: string }>> = {
@@ -632,6 +634,7 @@ export const LEVEL_WORDS: Record<number, Record<Lang, { name: string; descriptio
     en: { name: "The Chief's Keep", description: "The weasel chief sits on top: stone, iron and tile, layer on layer.", teachingFocus: "Work from the top: bring the chief down first." },
   },
   ...THROW_WORDS,
+  ...CHAIFANG_WORDS,
 };
 
 const localize = (level: LevelData): LevelData => ({ ...level, ...(LEVEL_WORDS[level.levelId]?.[Runtime.lang] ?? {}) });

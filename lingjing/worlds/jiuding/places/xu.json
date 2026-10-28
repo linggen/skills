@@ -766,7 +766,7 @@
     0.8322,
     0.4043
    ],
-   "has": {"games_pool": {"from": ["huarong", "pintu"], "today": 1}},
+   "has": {"games_pool": {"from": ["huarong", "pintu", "chaifang-huangshulang"], "today": 1}},
    "line": {
     "zh": "外门后院的柴房，挨着伙房和猪圈。外门也有柴堆——你觉得这是缘分。",
     "en": "The woodshed behind the outer court, by the kitchen and the pigsty. The outer court has a woodpile too — you call that fate."

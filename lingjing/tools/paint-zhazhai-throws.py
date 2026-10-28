@@ -100,12 +100,18 @@ PICTURES = {
   'place-shoal': ('lu/shoal.webp', (1024, 576), None,
                   'Night on a wide river shoal under a full moon: dark blue water across the middle, a far low bank, '
                   'a deep blue night sky with stars, mud and pale sand on the near shore.'),
+  # 柴房 · 赶黄鼠狼 (the 柴房's practice throws, 2026-10-27; data/throws.ts CHAIFANG): the woodshed yard by day.
+  'place-chaifang': (None, (1024, 576), None,
+                     'Daytime in the back yard of an old Chinese mountain temple: a low wooden woodshed with a grey tiled roof '
+                     'and its door open on the right, neat stacks of split firewood along its wall, a chopping stump with an '
+                     'axe in it, a small bamboo hen coop far off on the left, a whitewashed wall with grey tiles behind, green '
+                     'hills and a pale blue sky, packed brown earth on the near ground.'),
 }
 
 # id: kept seed (after a look at review/).
 KEPT = {'deer-graze': 2, 'deer-look': 1, 'deer-bolt': 1, 'lu-shut': 1, 'lu-open': 1, 'prop-deadtree': 1, 'prop-log': 2,
         'prop-pine': 2, 'prop-rock': 1, 'place-creek': 2, 'place-shoal': 1, 'proj-arrow': 2, 'prop-bramble': 1, 'prop-bush': 1,
-        'prop-reeds': 1, 'prop-crown': 2, 'prop-torch': 2, 'zou': 1, 'place-anhe': 3}
+        'prop-reeds': 1, 'prop-crown': 2, 'prop-torch': 2, 'zou': 1, 'place-anhe': 3, 'place-chaifang': 1}
 
 
 def gpu_free():

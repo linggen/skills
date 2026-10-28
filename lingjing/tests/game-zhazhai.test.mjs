@@ -51,7 +51,7 @@ test('registered in the 游戏厅 as a throw (plays wide); the story’s throw b
   assert.equal(reg.projectiles, undefined, 'the old board’s projectile table went with it');
   const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(readFileSync(join(root, `worlds/jiuding/tasks/${f}.json`), 'utf8')).tasks);
   const keys = new Set(forts.levels.filter((l) => l.key).map((l) => l.key));
-  const beats = Object.fromEntries(tasks.filter((t) => t.game === 'zhazhai').map((t) => [t.id, t.deal?.lv]));
+  const beats = Object.fromEntries(tasks.filter((t) => t.game === 'zhazhai' && !t.climb).map((t) => [t.id, t.deal?.lv]));
   // + the 调息 cut (2026-10-20): 讲堂试法 on 第六回's 讲堂 board, 投一个给我看看 on 今一's.
   assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'anhe-dark': 'anhe-dark', 'qianye-qiajue': 'jiangtang', 'yishui-reed': 'yishui-reed', 'jin-toulan': 'toulan', 'jin-whiteline': 'faqiu' });
   for (const lv of Object.values(beats)) assert.ok(keys.has(lv), `${lv}: a level of the build`);
@@ -89,6 +89,30 @@ test('the story’s throws: the book’s place, target and the one thing 小满 
     for (const lang of ['zh', 'en']) for (const k of ['name', 'description', 'teachingFocus']) assert.ok(l.words[lang][k], `${l.key} ${lang} ${k}`);
     for (const a of l.art) assert.ok(existsSync(join(out, 'art', `${a}.webp`)), `${l.key}: art/${a}.webp`);
   }
+});
+
+test('the 柴房\'s practice rungs: six, made by a seeded generator at build time, climbing — more weasels, more wood, stone lids', () => {
+  const rungs = forts.levels.filter((l) => /^chaifang-\d$/.test(l.key ?? ''));
+  assert.deepEqual(rungs.map((l) => l.key), ['chaifang-1', 'chaifang-2', 'chaifang-3', 'chaifang-4', 'chaifang-5', 'chaifang-6']);
+  const tasks = JSON.parse(readFileSync(join(root, 'worlds/jiuding/tasks/world.json'), 'utf8')).tasks;
+  const t = tasks.find((x) => x.id === 'chaifang-huangshulang');
+  assert.equal(t.game, 'zhazhai');
+  assert.deepEqual(t.climb, rungs.map((l) => l.key), 'the task climbs them in order, none twice');
+  const xu = JSON.parse(readFileSync(join(root, 'worlds/jiuding/places/xu.json'), 'utf8')).places.find((p) => p.id === 'chaifang');
+  assert.ok(xu.has.games_pool.from.includes('chaifang-huangshulang'), 'in the 柴房\'s pool');
+  rungs.forEach((l, i) => {
+    assert.equal(l.place, 'chaifang');
+    assert.ok(l.shots.every((s) => s === 'red'), `${l.key}: stones only`);
+    for (const m of l.materials) assert.ok(['wood', 'stone'].includes(m), `${l.key}: ${m}`);
+    for (const lang of ['zh', 'en']) for (const k of ['name', 'description', 'teachingFocus']) assert.ok(l.words[lang][k], `${l.key} ${lang} ${k}`);
+    for (const a of l.art) assert.ok(existsSync(join(out, 'art', `${a}.webp`)), `${l.key}: art/${a}.webp`);
+    if (i) {
+      const p = rungs[i - 1];
+      assert.ok(l.weasels.length >= p.weasels.length && l.blocks > p.blocks, `${l.key} stands more than ${p.key}`);
+    }
+  });
+  assert.ok(rungs.at(-1).materials.includes('stone'), 'stone lids by the top');
+  assert.equal(new Set(rungs.map((l) => l.words.zh.description)).size, 6, 'each its own line');
 });
 
 test('five forts, each winnable in kind: weasels to knock out, shots to do it with, words in both languages', () => {
@@ -154,6 +178,26 @@ test('each story throw is won by a sensible hand and not by a lazy one, and each
       for (const seed of [1, 2, 3]) sensible.push(await playLevel(browser, srv.url, lv, 'sensible', seed));
       for (const seed of [1, 2]) lazy.push(await playLevel(browser, srv.url, lv, 'lazy', seed));
       assert.ok(sensible.filter((r) => r.won).length >= 2, `${lv}: sensible ${JSON.stringify(sensible)}`);
+      assert.equal(lazy.filter((r) => r.won).length, 0, `${lv}: lazy ${JSON.stringify(lazy)}`);
+      for (const r of [...sensible, ...lazy]) assert.ok(!r.errors?.length && !r.failed, `${lv}: no page error ${JSON.stringify(r)}`);
+    }
+  } finally {
+    await browser.close();
+    srv.close();
+  }
+});
+
+// The 柴房's rungs (data/chaifang.ts): each won by a sensible hand at least once in three (the first three, twice), never by
+// a lazy one. Slow: 30 games.
+test('each 柴房 rung is won by a sensible hand and not by a lazy one', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 1800000 }, async () => {
+  const srv = await serve();
+  const browser = await pw.chromium.launch();
+  try {
+    for (const n of [1, 2, 3, 4, 5, 6]) {
+      const lv = `chaifang-${n}`, sensible = [], lazy = [];
+      for (const seed of [1, 2, 3]) sensible.push(await playLevel(browser, srv.url, lv, 'sensible', seed));
+      for (const seed of [1, 2]) lazy.push(await playLevel(browser, srv.url, lv, 'lazy', seed));
+      assert.ok(sensible.filter((r) => r.won).length >= (n <= 3 ? 2 : 1), `${lv}: sensible ${JSON.stringify(sensible)}`);
       assert.equal(lazy.filter((r) => r.won).length, 0, `${lv}: lazy ${JSON.stringify(lazy)}`);
       for (const r of [...sensible, ...lazy]) assert.ok(!r.errors?.length && !r.failed, `${lv}: no page error ${JSON.stringify(r)}`);
     }

@@ -19,6 +19,8 @@ export const THROW_ART = [
   // The 调息 cut's two (tools/paint-zhazhai-story-flux.py): 讲堂试法 and 今一's 「你投一个给我看看」.
   "place-jiangtang", "dummy", "prop-bench", "proj-fire", "proj-ice", "proj-metal",
   "place-campus", "prop-hoop", "prop-table", "shaker", "proj-ball",
+  // The 柴房's practice rungs (data/chaifang.ts): the woodshed yard.
+  "place-chaifang",
 ] as const;
 
 export function loadArt(load: Phaser.Loader.LoaderPlugin): void {

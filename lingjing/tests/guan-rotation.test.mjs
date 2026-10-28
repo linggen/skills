@@ -31,7 +31,8 @@ test('each 观 place has a pool of two or three of the kit\'s practice boards, a
   for (const id of GUAN) {
     const p = placeOf(content, id), pool = p.has.games_pool;
     assert.ok(pool.from.length >= 2 && pool.from.length <= 3, id);
-    for (const g of pool.from) assert.ok(['pintu', 'huarong', 'wuziqi', 'xiangqi'].includes(g), `${id}: ${g} is one of the kit's practice boards`);
+    // The kit's practice boards, and a place's own (柴房's 赶黄鼠狼, 10-27).
+    for (const g of pool.from) assert.ok(['pintu', 'huarong', 'wuziqi', 'xiangqi', 'chaifang-huangshulang'].includes(g), `${id}: ${g} is one of the kit's practice boards`);
     const sets = new Set(Array.from({ length: 6 }, (_, n) => poolToday(p, day(n)).join('|')));
     assert.ok(sets.size >= 2, `${id} turns: ${[...sets]}`);
     for (let n = 0; n < 6; n += 1) assert.equal(poolToday(p, day(n)).length, pool.today, id);
