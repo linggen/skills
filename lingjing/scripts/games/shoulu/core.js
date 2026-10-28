@@ -9,6 +9,7 @@
 // `gap` s after the last beast of the wave before is out on the road. Calling a wave early is the
 // player's choice, paid in 灵石 for the seconds left.
 import { rng } from '../seeded.js';
+import { lookOf } from '../jieyin/flight.js';
 
 export const W = 600, H = 760;
 export const EARLY_RATE = 1.5;
@@ -126,7 +127,7 @@ const hs = (g) => g.HS ?? HERO;
 /** How near the hero stands to a beast it means to hit: its bite's reach, or a stone's throw. */
 const standOff = (g) => (g.THROW ? g.THROW.range * 0.85 : hs(g).reach);
 
-export function newGame(row, { seed = 'shoulu', headless = false } = {}) {
+export function newGame(row, { seed = 'shoulu', headless = false, show = false, calm = false } = {}) {
   const L = layLevel(row);
   const { at: [hx, hy], hair, who = 'yinyue', skills = true, stats: own, throw: THROW = null } = heroOf(row);
   const stats = own ? { ...HERO, ...own } : HERO, g = { HS: stats };
@@ -136,7 +137,7 @@ export function newGame(row, { seed = 'shoulu', headless = false } = {}) {
     hero: { x: hx, y: hy, tx: hx, ty: hy, hp: hs(g).hp[0], lvl: 0, xp: 0, cd: 0, dead: 0, face: -1, anim: 0, say: null, held: [],
       post: { x: hx, y: hy }, orders: [], foe: null, homing: false, dash: null, cast: null, act: null, wanderT: 4, moving: false,
       cds: { q: SKILLS.q.first, w: 0, e: 0, r: 0 }, auto: { q: skills }, hair, carry: 0, rnd: rng(`${seed}|yinyue`) },
-    home: { x: hx, y: hy }, shake: 0, furnFlash: 0, over: null, headless, uid: 0, seen: {}, events: [], rnd: rng(seed),
+    home: { x: hx, y: hy }, shake: 0, furnFlash: 0, over: null, headless, show, calm, uid: 0, seen: {}, events: [], rnd: rng(seed),
     keep: row.keep ? { x: row.keep.at[0], y: row.keep.at[1], hp: row.keep.hp, max: row.keep.hp, flash: 0 } : null,
     stats: { kills: 0, leaks: {}, built: {} } };
 }
@@ -290,13 +291,14 @@ function hurt(g, b, d, src) {
   b.hp -= d;
   const ticks = src === 'fox' || src === 'light'; // a burn or the fire's light ticks every frame: no flash, no number
   if (!ticks) b.flash = 0.1;
-  if (!g.headless && src !== 'han' && !ticks) addFx(g, { k: 'txt', x: b.x + (Math.random() * 10 - 5), y: b.y - BEASTS[b.type].r - 4, s: String(Math.round(d)), col: src === 'jian' && b.armor ? '#7a7066' : b.crying > 0 ? '#b0412e' : '#2a241d', life: 0.6, max: 0.6, vy: -30, size: b.crying > 0 ? 14 : 11 });
-  if (b.hp > 0) return;
+  if (!g.headless && src !== 'han' && src !== 'jy' && !ticks) addFx(g, { k: 'txt', x: b.x + (Math.random() * 10 - 5), y: b.y - BEASTS[b.type].r - 4, s: String(Math.round(d)), col: src === 'jian' && b.armor ? '#7a7066' : b.crying > 0 ? '#b0412e' : '#2a241d', life: 0.6, max: 0.6, vy: -30, size: b.crying > 0 ? 14 : 11 });
+  if (b.hp > 0) return d;
   b.dead = true;
   g.money += b.reward;
   g.stats.kills += 1;
   if (src === 'yue' || src === 'fox') heroXp(g, b.reward);
   emit(g, { kill: b.type, x: b.x, y: b.y, reward: b.reward });
+  return d;
 }
 function pickTarget(g, x, y, R, air) {
   let best = null, bv = 1e9;
@@ -693,6 +695,7 @@ export function step(g, dt) {
   g.t += dt;
   while (g.queue.length && g.queue[0].at <= g.t) { const e = g.queue.shift(); spawn(g, e.type, e.elite); }
   if (g.wave < waves(g) && !g.queue.length) { g.nextTimer -= dt; if (g.nextTimer <= 0) callWave(g, false); }
+  jieyinFlyStep(g);
   fireStep(g, dt);
   if (g.over) return g;
   beastsStep(g, dt);
@@ -1038,29 +1041,46 @@ export function jieyinSoon(g, cfg = {}) {
   return (g.L.waves[g.wave] ?? []).some(([type]) => BEASTS[type]?.boss);
 }
 
-/** A move cast: its harm and hold on the target (and those round it), then the rest. → true when it flew. */
+/** A move cast: it flies (the page's `show`: a sword's loop, 冰 a fan of shards, 火 an arc — jieyin/flight.js; the sim and
+    the tests land it at once), then its harm and hold fall on the target (and those round it) and each takes its number
+    — the damage `hurt` really did (Hanli 10-28: 「显示伤害」). → true when it flew. */
 export function jieyinCast(g, id, cfg = {}) {
   const m = (cfg.moves ?? []).find((x) => x.id === id);
   if (!m || !jieyinState(g, cfg).ready) return false;
   const t = jieyinTarget(g, cfg), R = m.radius ?? m.splash ?? 0;
   const hit = R ? g.beasts.filter((b) => !b.dead && (b === t || (!b.fly && dist(b, t) <= R))) : [t];
+  const look = lookOf(id), fly = g.show ? (g.calm ? 0.2 : look?.fly ?? 0.5) : 0, col = look?.rgb ?? m.glow ?? '255,170,70';
+  g.jy = { until: g.t + (cfg.cool ?? 0), last: id, casts: (g.jy?.casts ?? 0) + 1 };
+  const p = { at: g.t + fly, m, id, hit, t, cfg, R };
+  // Seen (Hanli 10-28: 「剑诀可以出来一把飞剑, 飞一圈打中怪物」): the flight from the furnace, then its impact (draw.js `jy`).
+  addFx(g, { k: 'jy', id, x0: g.L.furn.x, y0: g.L.furn.y - 30, x: t.x, y: t.y, t, r: Math.max(46, R), col, fly, calm: g.calm, life: fly + 0.9, max: fly + 0.9 });
+  emit(g, { sound: 'pounce' });
+  if (fly > 0) (g.jyFly ??= []).push(p); else landJieyin(g, p);
+  return true;
+}
+
+/** The cast lands: harm and holds, a number on each beast struck, the name over the target, the slow beat. */
+function landJieyin(g, { m, id, hit, t, cfg }) {
   for (const b of hit) {
+    if (b.dead) continue;
     const mul = BEASTS[b.type].boss ? cfg.bossMul ?? 1 : b.elite ? cfg.eliteMul ?? 1 : 1;
     if (m.root) b.stunT = Math.max(b.stunT, BEASTS[b.type].boss ? m.root * 0.4 : m.root);
     if (m.slow) { b.slowT = Math.max(b.slowT, m.for ?? 2); b.slowF = Math.max(b.slowF, m.slow); }
     if (m.push && !BEASTS[b.type].boss) { b.d = Math.max(0, b.d - m.push); place(g, b); }
-    if (m.dmg) hurt(g, b, m.dmg * mul * (b === t ? 1 : m.around ?? 1), 'jy');
+    const d = m.dmg ? hurt(g, b, m.dmg * mul * (b === t ? 1 : m.around ?? 1), 'jy') : 0;
+    if (d) addFx(g, { k: 'txt', x: b.x, y: b.y - BEASTS[b.type].r - 16, s: `-${Math.round(d)}`, col: '#c23b22', life: 1.5, max: 1.5, vy: -20, size: b === t ? 34 : 24, bold: true });
   }
-  g.jy = { until: g.t + (cfg.cool ?? 0), last: id, casts: (g.jy?.casts ?? 0) + 1 };
-  // Seen (Hanli 10-28: 「打怪的法术也让用户看到」): a streak from the furnace to the beast, its impact, the number big — and
-  // a slow beat the page plays (shoulu.js; never under reduced motion). The view's only; the harm above is all there is.
-  const tMul = BEASTS[t.type].boss ? cfg.bossMul ?? 1 : t.elite ? cfg.eliteMul ?? 1 : 1;
-  addFx(g, { k: 'jy', x0: g.L.furn.x, y0: g.L.furn.y - 30, x: t.x, y: t.y, r: Math.max(46, R), col: m.glow ?? '255,170,70', life: 0.9, max: 0.9 });
   addFx(g, { k: 'txt', x: t.x, y: t.y - 30, s: m.name?.zh ?? id, col: '#b0412e', life: 0.9, max: 0.9, vy: -24, size: 15 });
-  if (m.dmg) addFx(g, { k: 'txt', x: t.x, y: t.y - 52, s: `-${Math.round(m.dmg * tMul)}`, col: '#c23b22', life: 1.4, max: 1.4, vy: -18, size: 28, bold: true });
-  if (!g.headless) g.slowT = 0.4;
-  emit(g, { sound: 'pounce' });
-  return true;
+  if (!g.headless) { g.slowT = g.calm ? 0 : 0.4; if (!g.calm) g.shake = Math.max(g.shake, 9); }
+}
+
+/** The casts in the air (the page's): the ones whose time has come land. */
+function jieyinFlyStep(g) {
+  if (!g.jyFly?.length) return;
+  const due = g.jyFly.filter((p) => p.at <= g.t);
+  if (!due.length) return;
+  g.jyFly = g.jyFly.filter((p) => p.at > g.t);
+  for (const p of due) landJieyin(g, p);
 }
 
 /** The sim's 小满 at the camera: casts `move` each time one is ready and has stayed ready `delay` s (the hand made

@@ -12,6 +12,7 @@ import { W, H, CX, Y0, HY, HALF, CARD, sOf, yOf, xOf, zOfY, uOfX } from './view.
 import { makeTextures, makeNumberFont, makeEmitters, rng, canvasTex, rounded } from './fx.js';
 import { Hud, SealGlow, WORDS, text } from './hud.js';
 import { Sfx } from './sfx.js';
+import { lookOf, lookArts, loopAt, arcAt, fanAt } from '../../../scripts/games/jieyin/flight.js';
 
 const MAXQ = 160;                 // the squad's sprites at the wall at most (the blue number tells the rest)
 const MAXS = 60;                  // 豆兵 in flight drawn at most
@@ -55,6 +56,7 @@ export class PlayScene extends Phaser.Scene {
     this.load.image('tex-side', la.side ? `${own}${la.side}.webp` : `${sd}tex-side.webp`);
     this.load.image('wall', la.wall ? `${own}${la.wall}.webp` : `${sq}wall.webp`);
     this.load.image('xiaoman', `${sq}xiaoman-cast.webp`);
+    for (const a of lookArts()) this.load.image(`jy-${a}`, `${b}../jieyin/art/${a}.webp`); // 结印's spells' pictures (jieyin/flight.js)
     this.load.image('sky', la.sky ? `${own}${la.sky}.webp` : `${b}../../../worlds/jiuding/art/backdrop/${this.cfg.level.sky ?? 'cloudy-day'}.webp`);
     for (const [id, k] of Object.entries(this.cfg.kit.beasts)) {
       if (id.startsWith('_')) continue;
@@ -73,7 +75,7 @@ export class PlayScene extends Phaser.Scene {
     const { kit, level, seed, reducedMotion } = this.cfg;
     this.calm = Boolean(reducedMotion);
     this.cameras.main.setZoom(this.cfg.zoom ?? 1).centerOn(W / 2, H / 2);
-    this.g = newGame(kit, level, { seed });
+    this.g = newGame(kit, level, { seed, show: true, calm: this.calm }); // show: 结印 flies before it lands (core.js castJieyin)
     this.rand = rng(seed);
     makeTextures(this);
     this.cardTextures();
@@ -762,7 +764,10 @@ export class PlayScene extends Phaser.Scene {
     this.tweens.add({ targets: t, y: t.y - 40, alpha: 0, duration: 800, onComplete: () => t.destroy() });
   }
 
-  /** The spell flies from the squad to the beast it hit (the engine's `x` across, `z` up the road) and bursts there:
+  /** 小满's raised hand (xiaoman-cast.webp's charm), where a spell leaves from. */
+  handPos() { return { x: this.man.x + (HAND.u - 0.5) * this.man.displayWidth, y: this.man.y + (HAND.v - 0.9) * this.man.displayHeight }; }
+
+  /** The spell flies from 小满's hand to the beast it hit (the engine's `x` across, `z` up the road) and bursts there:
       fire, a ring, the number. */
   on_spell(e) {
     const z = Math.max(0, e.z ?? 0), x = xOf(e.x ?? colMid(e.col), z), y = yOf(z) - 40 * sOf(z);
@@ -773,24 +778,42 @@ export class PlayScene extends Phaser.Scene {
       this.hud.banner(this.cfg.level.jieyin.firstCast[this.lang] ?? this.cfg.level.jieyin.firstCast.zh, { color: '#bfe8ff', ribbon: true, y: 420 });
       this.flash(220, 200, 236, 255);
     }
-    const tint = /^huodan/.test(e.move) ? 0xff8a2a : e.move === 'bingzhui' ? 0x9fe0ff : e.move === 'muteng' ? 0x8fe07a : 0xfff0b0;
-    const orb = this.add.image(this.squadX, Y0 - 30, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(tint).setScale(3).setDepth(D.fx);
-    // Its streak up the road (Hanli 10-28: 「打怪的法术也让用户看到」): a light from the squad to the beast, its tail fading.
-    const streak = this.add.graphics().setDepth(D.fx - 0.1).setBlendMode(Phaser.BlendModes.ADD), pts = [];
+    const look = lookOf(e.move), tint = look?.tint ?? (/^huodan/.test(e.move) ? 0xff8a2a : e.move === 'bingzhui' ? 0x9fe0ff : e.move === 'muteng' ? 0x8fe07a : 0xfff0b0);
+    const loop = look?.kind === 'loop', key = look && this.textures.exists(`jy-${look.art}`) && !this.missing.has(`jy-${look.art}`) ? `jy-${look.art}` : null;
+    const from = this.handPos(), to = { x, y }, fly = this.calm ? 200 : Math.max(250, (e.fly || 0.3) * 1000);
+    const fit = (img, w) => { const f = img.texture.getSourceImage(); return img.setDisplaySize(w, w * (f.height / f.width)); };
+    const orb = this.add.image(from.x, from.y, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(tint).setScale(loop ? 3.4 : 3).setDepth(D.fx);
+    const n = look?.kind === 'volley' ? look.n : 1;
+    const bodies = key ? Array.from({ length: n }, () => fit(this.add.image(from.x, from.y, key), look.size).setDepth(D.fx + 0.1)) : [];
+    // Its streak (Hanli 10-28: 「剑诀可以出来一把飞剑, 飞一圈打中怪物」): a light behind the sword along its loop, the tail fading.
+    const streak = this.add.graphics().setDepth(D.fx - 0.1).setBlendMode(Phaser.BlendModes.ADD), pts = [], keep = loop ? 30 : 12, wide = loop ? 1.5 : 1;
+    if (this.calm) orb.setAlpha(0);
     this.sfx.go();
-    this.tweens.add({ targets: orb, x, y, scale: 1.4, duration: SPELL.fly, ease: 'Quad.easeIn', onUpdate: () => {
-      pts.push({ x: orb.x, y: orb.y });
-      if (pts.length > 12) pts.shift();
+    const place = (k) => {
+      if (this.calm) { bodies.forEach((o, i) => o.setPosition(to.x + (i - (n - 1) / 2) * 30, to.y).setAlpha(Math.min(1, k * 2)).setRotation(Math.PI * 0.75)); return; }
+      const q = !look || look.kind === 'arc' ? { ...arcAt(from, to, k, look ? 150 : 0), rot: 0 } : loop ? loopAt(from, to, k, { w: W, h: H }) : fanAt(from, to, k, 0, n, 90);
+      orb.setPosition(q.x, q.y).setScale((loop ? 3.4 : 3) * (1 - 0.4 * k));
+      bodies.forEach((o, i) => {
+        const r = look.kind === 'volley' ? fanAt(from, to, k, i, n, 90) : q;
+        o.setPosition(r.x, r.y);
+        if (look.spin) o.setAngle(k * 900); else if (look.kind === 'arc') o.setAngle(k * 500); else o.setRotation(r.rot + Math.PI / 4);
+      });
+      pts.push({ x: q.x, y: q.y });
+      if (pts.length > keep) pts.shift();
       streak.clear();
       for (let i = 1; i < pts.length; i += 1) {
-        const k = i / (pts.length - 1);
-        streak.lineStyle(22 * k, tint, 0.8 * k).lineBetween(pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y);
-        streak.lineStyle(7 * k, 0xffffff, 0.9 * k).lineBetween(pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y);
+        const u = i / (pts.length - 1);
+        streak.lineStyle(22 * wide * u, tint, 0.8 * u).lineBetween(pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y);
+        streak.lineStyle(7 * wide * u, 0xffffff, 0.9 * u).lineBetween(pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y);
       }
-      if (!this.calm || this.rand() < 0.4) this.em.burst('spark', 1, orb.x, orb.y);
-    }, onComplete: () => {
+      if (this.rand() < 0.7) this.em.burst('spark', 1, q.x, q.y);
+    };
+    place(0);
+    const hit = () => {
       orb.destroy();
       this.tweens.add({ targets: streak, alpha: 0, duration: 260, onComplete: () => streak.destroy() });
+      // the sword stays in the beast a beat, then fades
+      bodies.forEach((o, i) => { if (loop && !look.spin) { o.setPosition(x, y - 8).setRotation(Math.PI * 0.75); this.tweens.add({ targets: o, alpha: 0, y: y + 6, delay: 320, duration: 420, onComplete: () => o.destroy() }); } else o.destroy(); });
       this.shake(300, 0.018);
       this.flash(140, (tint >> 16) & 255, (tint >> 8) & 255, tint & 255);
       this.em.burst('fire', 40, x, y);
@@ -799,11 +822,12 @@ export class PlayScene extends Phaser.Scene {
       this.tweens.add({ targets: glow, alpha: 0, scale: 7.5, duration: 520, onComplete: () => glow.destroy() });
       const ring = this.add.image(x, y, 'ring').setDepth(D.fx).setTint(tint).setScale(0.3);
       this.tweens.add({ targets: ring, scale: 3.8, alpha: 0, duration: 520, onComplete: () => ring.destroy() });
-      this.num(x, y - 40, `-${e.dmg}`, 'numGold', big ? 120 : SPELL.num, { rise: 90, life: big ? 1.5 : 1.4 });
+      this.num(x, y - 40, `-${e.dmg}`, 'numGold', big ? 120 : SPELL.num, { rise: 90, life: big ? 1.5 : 1.4 }); // the cast's own damage (castJieyin)
       if (!this.calm && !big) this.slowT = Math.max(this.slowT ?? 0, SPELL.slow); // the slow beat at every impact (a first cast keeps its longer one)
       if (big) { this.em.burst('stars', 30, x, y - 30); this.em.burst('spark', 40, x, y); this.shake(420, 0.024); }
       this.sfx.slam();
-    } });
+    };
+    this.tweens.addCounter({ from: 0, to: 1, duration: fly, onUpdate: (tw) => place(tw.getValue()), onComplete: hit });
     this.fact({ t: 'spell', move: e.move, on: e.on });
   }
 

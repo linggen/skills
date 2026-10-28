@@ -26,16 +26,16 @@
   "roots": {"wood": {"zh": "木", "en": "wood"}, "fire": {"zh": "火", "en": "fire"}, "earth": {"zh": "土", "en": "earth"}, "metal": {"zh": "金", "en": "metal"}, "water": {"zh": "水", "en": "water"}},
   "_moves": "What each 手势斗法 move does here (doc/games.md § 手势斗法; the hands are read by games/jieyin/duel.js — its cast event's `move` is the id). 小招 (a shape + a jab or push: 飞剑 剑诀 · 点穴 单剑指 · 掌风 推掌 · 拳劲 拳) from the start — before 古六 they are all there is (Hanli 10-21: 「古6是系统学习, 前面可以出现简单的, 比如剑诀」, 隔空指点 「很不错, 加进去」); 法术 (the book's five, 文 → 扣 → 推) and the 大招 (the four-seal 火蛋) after 古六's 讲堂 (`from`: any of those marks in the save; the story hands its marks in, `data.marks`; the 游戏厅 gives none → all). shape: one | spear (the line from 小满's hand on through the beast, `width`, `splash`) | row (ground beasts within `width` of its height) | ring (`radius`, `splash`); dmg; root: s held; slow × for s; push: px back up the road (never the 大妖). The element (`wuxing`) is the beast-side 相克 key (creatures.json `root` spelling).",
   "moves": [
-   {"id": "feijian", "tier": "xiao", "name": {"zh": "飞剑", "en": "Flying sword"}, "from": null, "wuxing": null, "shape": "one", "dmg": 320, "fly": 0.35},
+   {"id": "feijian", "tier": "xiao", "name": {"zh": "飞剑", "en": "Flying sword"}, "from": null, "wuxing": null, "shape": "one", "dmg": 320, "fly": 0.95},
    {"id": "dianxue", "tier": "xiao", "name": {"zh": "点穴", "en": "Pressure point"}, "from": null, "wuxing": null, "shape": "one", "root": 3, "dmg": 60, "fly": 0.3},
    {"id": "zhangfeng", "tier": "xiao", "name": {"zh": "掌风", "en": "Palm wind"}, "from": null, "wuxing": null, "shape": "row", "width": 70, "push": 110, "fly": 0.3},
    {"id": "quanjin", "tier": "xiao", "name": {"zh": "拳劲", "en": "Fist force"}, "from": null, "wuxing": null, "shape": "ring", "radius": 90, "dmg": 140, "root": 1.5, "splash": 1, "fly": 0.3},
-   {"id": "huodan", "tier": "fa", "name": {"zh": "火弹", "en": "Fire shot"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "fire", "shape": "spear", "dmg": 420, "splash": 0.5, "width": 34, "fly": 0.45},
-   {"id": "bingzhui", "tier": "fa", "name": {"zh": "冰锥", "en": "Ice needle"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "water", "shape": "one", "dmg": 380, "slow": 0.4, "for": 3, "fly": 0.2},
-   {"id": "jinren", "tier": "fa", "name": {"zh": "金刃", "en": "Metal blade"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "metal", "shape": "row", "dmg": 200, "width": 60, "slow": 0.5, "for": 3, "fly": 0.4},
+   {"id": "huodan", "tier": "fa", "name": {"zh": "火弹", "en": "Fire shot"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "fire", "shape": "spear", "dmg": 420, "splash": 0.5, "width": 34, "fly": 0.7},
+   {"id": "bingzhui", "tier": "fa", "name": {"zh": "冰锥", "en": "Ice needle"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "water", "shape": "one", "dmg": 380, "slow": 0.4, "for": 3, "fly": 0.7},
+   {"id": "jinren", "tier": "fa", "name": {"zh": "金刃", "en": "Metal blade"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "metal", "shape": "row", "dmg": 200, "width": 60, "slow": 0.5, "for": 3, "fly": 0.95},
    {"id": "muteng", "tier": "fa", "name": {"zh": "木藤", "en": "Wood vine"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "wood", "shape": "ring", "radius": 110, "root": 3, "fly": 0.5},
    {"id": "tuqiang", "tier": "fa", "name": {"zh": "土墙", "en": "Earth wall"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "earth", "shape": "ring", "radius": 100, "push": 120, "dmg": 80, "fly": 0.5},
-   {"id": "huodan4", "tier": "da", "name": {"zh": "四印火蛋", "en": "Four-seal fire egg"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "fire", "shape": "ring", "radius": 130, "dmg": 700, "splash": 0.6, "fly": 0.55}
+   {"id": "huodan4", "tier": "da", "name": {"zh": "四印火蛋", "en": "Four-seal fire egg"}, "from": {"marks": ["qiajue-tight", "qiajue-loose"]}, "wuxing": "fire", "shape": "ring", "radius": 130, "dmg": 700, "splash": 0.6, "fly": 0.8}
   ]
  },
  "units": {

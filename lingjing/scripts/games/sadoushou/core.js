@@ -36,6 +36,7 @@
 // Events out on g.events: wave · card_hit · card · block_hit · block · strike · cleared · breach · boss · charge_warn ·
 // charge · charge_end · knock · bosshit · bossdown · eat · spell · low · end (a boss's carry `boss`: its index).
 
+import { lookOf } from '../jieyin/flight.js';
 export const TOP = 100;                                     // the road's far end (z)
 export const COLS = { L: [-1, -0.34], M: [-0.34, 0.34], R: [0.34, 1] };
 export const colOf = (x) => (x < COLS.M[0] ? 'L' : x > COLS.M[1] ? 'R' : 'M');
@@ -91,12 +92,12 @@ export function beltOf(level) {
   return kept.sort((a, b) => a.z - b.z).map((it, i) => ({ ...it, id: i }));
 }
 
-export function newGame(kit, level, { seed = 'sadoushou' } = {}) {
+export function newGame(kit, level, { seed = 'sadoushou', show = false, calm = false } = {}) {
   const k = level.difficulty ?? 1;
   const g = {
     kit, level, seed, rand: seeded(`core|${seed}`),
     t: 0, phase: 'waves',                          // waves · boss · won · lost
-    aimX: 0, hold: true, emitAcc: 0, tier: 0, spellCool: 0, casts: 0,
+    aimX: 0, hold: true, emitAcc: 0, tier: 0, spellCool: 0, casts: 0, show, calm,
     squad: level.squad, peak: level.squad,         // the 豆兵 at the wall: the blue number
     shots: [],                                     // 豆兵 thrown up the road: { x, z, dmg }
     belt: beltOf(level),
@@ -430,11 +431,27 @@ export function castJieyin(g, id, lane = null) {
   const dmg = boss ? Math.min(raw, hit.hpMax * (c.bossCap ?? 1)) : raw; // a big chunk of a 大妖, never the whole fight
   g.spellCool = c.cool;
   g.casts += 1;
+  // The page's (`show`): it flies first (jieyin/flight.js — 剑诀 one loop over the field, a dive), the harm falls at the
+  // landing; the sims and the tests land it at once.
+  const fly = g.show ? (g.calm ? 0.2 : lookOf(m.id)?.fly ?? 0.5) : 0;
+  const land = () => landSpell(g, hit, dmg, boss);
+  if (fly > 0) (g.landing ??= []).push({ at: g.t + fly, land }); else land();
+  const x = boss ? hit.x : waveU(hit);
+  g.events.push({ t: 'spell', move: m.id, col: colOf(x), x, z: boss ? hit.z : hit.front, dmg: Math.round(dmg), fly, on: boss ? 'boss' : 'wave', ...(boss ? { boss: hit.i } : {}) });
+  return true;
+}
+
+function landSpell(g, hit, dmg, boss) {
   if (boss) { hit.hp = Math.max(0, hit.hp - dmg); g.stats.bossDmg += dmg; }
   else { const before = waveCount(hit); hit.hp -= dmg; g.stats.killed += before - waveCount(hit); }
-  const x = boss ? hit.x : waveU(hit);
-  g.events.push({ t: 'spell', move: m.id, col: colOf(x), x, z: boss ? hit.z : hit.front, dmg: Math.round(dmg), on: boss ? 'boss' : 'wave', ...(boss ? { boss: hit.i } : {}) });
-  return true;
+}
+
+/** The casts in the air: the ones whose time has come land. */
+function landingStep(g) {
+  if (!g.landing?.length) return;
+  const due = g.landing.filter((l) => l.at <= g.t);
+  g.landing = g.landing.filter((l) => l.at > g.t);
+  for (const l of due) l.land();
 }
 
 /* ── the run ── */
@@ -459,6 +476,7 @@ export function step(g, dt) {
   startWaves(g);
   moveBelt(g, dt);
   moveShots(g, dt);
+  landingStep(g);
   marchWaves(g, dt);
   if (g.phase === 'waves' && g.waves.every((w) => w.done)) bossIn(g);
   if (g.phase === 'boss') {

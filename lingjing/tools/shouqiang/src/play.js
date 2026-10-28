@@ -5,6 +5,7 @@ import { newGame, step, pick, setFocus, reachY, castJieyin, W, H } from 'shouqia
 import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
 import { Hud, SealGlow, WORDS, bar, setBarW, wordsFor } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
+import { lookOf, lookArts, loopAt, arcAt, fanAt } from '../../../scripts/games/jieyin/flight.js';
 
 const ICONS = ['jian-more', 'jian-pierce', 'jian-arc', 'huo-blast', 'huo-ground', 'han-slow', 'han-freeze', 'lei-chain', 'lei-strike', 'yy-foxfire', 'yy-howl'];
 const HIT_TINT = { spell: 0xffd27a, sword: 0xffffff, fire: 0xffb347, frost: 0x9fe8ff, thunder: 0xfff27a, fox: 0xcfe0ff, howl: 0xd9c2ff, ground: 0xff9a52 };
@@ -47,7 +48,8 @@ export class PlayScene extends Phaser.Scene {
     for (const k of ICONS) img(`icon-${k}`);
     if (this.cfg.level.grid) LaneView.preload(this, this.cfg.level, art);
     // 结印's 火蛋 (games/jieyin/art, local FLUX): only a page that offers 结印 casts it.
-    if (this.cfg.kit.jieyin) this.load.image('jy-huodan', `${this.cfg.base}../jieyin/art/huodan.webp`);
+    // …and the other spells' pictures (jieyin/flight.js lookOf): the flying sword, the ice shards, the blade.
+    if (this.cfg.kit.jieyin) for (const a of lookArts()) this.load.image(`jy-${a}`, `${this.cfg.base}../jieyin/art/${a}.webp`);
     const yy = `${this.cfg.base}../shoulu/art/`;
     this.load.image('yy-sheet', `${yy}yinyue.webp`);
     this.load.image('yy-skills', `${yy}yinyue-skills.webp`);
@@ -480,30 +482,52 @@ export class PlayScene extends Phaser.Scene {
     return { kind: sh.kind, parts: SHOTS[sh.kind](), t: 0 };
   }
 
-  // A spell in flight: 飞剑 the sword, 火弹 the 火蛋, the others a glow in their element's colour.
+  // A spell in flight (jieyin/flight.js lookOf): 飞剑 a big sword on one loop over the field, 冰锥 a fan of shards, 火弹 the
+  // 火蛋; the others a glow in their element's colour. Its streak trails from 小满's hand.
   spellParts(sh) {
-    const [, tint] = wuxingOf(sh.wuxing);
-    const glow = this.add.image(sh.x, sh.y, 'glow').setTint(tint).setBlendMode(Phaser.BlendModes.ADD).setScale(1.1).setDepth(D.shot - 1);
-    const body = sh.move === 'feijian' ? this.add.image(sh.x, sh.y, 'sword').setDisplaySize(72, 72)
-      : sh.move === 'huodan' || sh.move === 'huodan4' ? this.add.image(sh.x, sh.y, this.tex('jy-huodan', 'glow')).setDisplaySize(52, 52) : null;
-    // The streak it leaves from 小满's hand (Hanli 10-28: 「打怪的法术也让用户看到」): a comic ink-edged light, its tail fading.
+    const [, wt] = wuxingOf(sh.wuxing), look = lookOf(sh.move), tint = look?.tint ?? wt, loop = look?.kind === 'loop';
+    const glow = this.add.image(sh.x, sh.y, 'glow').setTint(tint).setBlendMode(Phaser.BlendModes.ADD).setScale(loop ? 2 : 1.1).setDepth(D.shot - 1);
+    const key = look && this.tex(`jy-${look.art}`, null);
+    const body = key ? this.fit(this.add.image(sh.x, sh.y, key), look.size) : sh.move === 'feijian' ? this.add.image(sh.x, sh.y, 'sword').setDisplaySize(72, 72) : null;
     const streak = this.add.graphics().setDepth(D.shot - 2).setBlendMode(Phaser.BlendModes.ADD);
     streak.pts = [{ x: this.g.at.hand.x, y: this.g.at.hand.y }];
     streak.tint = tint;
-    return body ? [body.setDepth(D.shot), glow, streak] : [glow, streak];
+    streak.wide = loop;
+    const shards = key && look.kind === 'volley' ? Array.from({ length: look.n - 1 }, () => Object.assign(this.fit(this.add.image(sh.x, sh.y, key), look.size).setDepth(D.shot), { shard: true })) : [];
+    return body ? [body.setDepth(D.shot), glow, streak, ...shards] : [glow, streak];
   }
+
+  /** An image at `w` wide, its own proportions. */
+  fit(img, w) { const f = img.texture.getSourceImage(); return img.setDisplaySize(w, w * (f.height / f.width)); }
 
   /** The streak behind a spell: its last points, wide and bright at the head, thin and faint at the tail. */
   drawStreak(g, x, y) {
     g.pts.push({ x, y });
-    if (g.pts.length > STREAK.trail) g.pts.shift();
+    if (g.pts.length > (g.wide ? STREAK.trail * 2.4 : STREAK.trail)) g.pts.shift();
     g.clear();
     for (let i = 1; i < g.pts.length; i += 1) {
       const k = i / (g.pts.length - 1), a = g.pts[i - 1], b = g.pts[i];
-      g.lineStyle(STREAK.width * k * 1.6, 0x2a1206, 0.18 * k).lineBetween(a.x, a.y, b.x, b.y); // the ink edge
-      g.lineStyle(STREAK.width * k, g.tint, 0.85 * k).lineBetween(a.x, a.y, b.x, b.y);
+      g.lineStyle(STREAK.width * (g.wide ? 1.5 : 1) * k * 1.6, 0x2a1206, 0.18 * k).lineBetween(a.x, a.y, b.x, b.y); // the ink edge
+      g.lineStyle(STREAK.width * (g.wide ? 1.5 : 1) * k, g.tint, 0.85 * k).lineBetween(a.x, a.y, b.x, b.y);
       g.lineStyle(STREAK.width * k * 0.35, 0xffffff, 0.9 * k).lineBetween(a.x, a.y, b.x, b.y); // its white core
     }
+  }
+
+  /** Where a spell is now (its look's way: the sword's loop, the 火蛋's arc, a shard fan) and how it turns. Reduced motion:
+      no flight — it shows at the beast and grows in. */
+  spellAt(s, sh, p) {
+    const look = lookOf(sh.move), k = Math.min(1, (sh.age ?? 0) / (sh.fly || 0.5)), a = { x: sh.fromX, y: sh.fromY }, b = { x: sh.toX, y: sh.toY };
+    if (!look) { p.setAngle(s.t * 600); return { x: sh.x, y: sh.y - (sh.z ?? 0) * (sh.move === 'feijian' ? 0.3 : 1), k }; }
+    if (this.calm) { p.setAlpha(Math.min(1, k * 2)).setRotation(Math.PI * 0.75); return { x: b.x, y: b.y, k: 1 }; }
+    if (look.kind === 'loop') {
+      const q = loopAt(a, b, k, { w: W, h: H });
+      if (look.spin) p.setAngle(s.t * 900); else p.setRotation(q.rot + Math.PI / 4);
+      return { x: q.x, y: q.y, k };
+    }
+    if (look.kind === 'volley') { const q = fanAt(a, b, k, 0, 3); p.setRotation(q.rot + Math.PI / 4); return { x: q.x, y: q.y, k }; }
+    const q = arcAt(a, b, k, 150);
+    p.setAngle(s.t * 500);
+    return { x: q.x, y: q.y, k };
   }
 
   poseShot(s, sh, dt) {
@@ -515,12 +539,12 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     if (sh.lob && s.kind === 'spell') {
-      const y = sh.y - (sh.z ?? 0) * (sh.move === 'feijian' ? 0.3 : 1);
-      p.setPosition(sh.x, y);
-      if (!shadow?.pts) shadow?.setPosition(sh.x, y); // (no body: the glow is the spell, the streak its trail)
+      const at = this.spellAt(s, sh, p);
+      p.setPosition(at.x, at.y);
+      if (!shadow?.pts) shadow?.setPosition(at.x, at.y); // (no body: the glow is the spell, the streak its trail)
       const streak = s.parts.find((o) => o.pts);
-      if (streak) this.drawStreak(streak, sh.x, y);
-      if (sh.move === 'feijian') p.setRotation(Math.atan2(sh.toY - sh.fromY, sh.toX - sh.fromX) + Math.PI / 4); else p.setAngle(s.t * 600);
+      if (streak && !this.calm) this.drawStreak(streak, at.x, at.y);
+      s.parts.filter((o) => o.shard).forEach((o, i) => { const q = fanAt({ x: sh.fromX, y: sh.fromY }, { x: sh.toX, y: sh.toY }, at.k, i + 1, 3); o.setPosition(q.x, q.y).setRotation(q.rot + Math.PI / 4).setAlpha(this.calm ? 0 : 1); });
     } else if (sh.lob) {
       p.setPosition(sh.x, sh.y - (sh.z ?? 0)).setAngle(s.t * 900);
       shadow?.setPosition(sh.x, sh.y);
@@ -780,6 +804,12 @@ export class PlayScene extends Phaser.Scene {
     this.em.burst('stars', 10, e.x, e.y - 20);
     this.flare(e.x, e.y, Math.max(240, (e.r ?? 60) * 3.4), tint);
     this.ring(e.x, e.y, Math.max(110, e.r ?? 60), tint, 520);
+    // The sword stays a beat in the beast, then fades (the loop's end: it dived in).
+    const look = lookOf(e.move), key = look?.kind === 'loop' && !look.spin && this.tex(`jy-${look.art}`, null);
+    if (key) {
+      const sw = this.fit(this.add.image(e.x, e.y - 8, key), look.size).setDepth(D.fx).setRotation(Math.PI * 0.75);
+      this.tweens.add({ targets: sw, alpha: 0, y: e.y + 6, delay: 320, duration: 420, onComplete: () => sw.destroy() });
+    }
     // The impact read (Hanli 10-28: 「现在手印成了, 框和被打的怪都很快消失, 没看到效果」): a flash, a hard shake and the slow
     // beat — none of it under reduced motion, where the light and the number stand.
     if (this.calm) return;

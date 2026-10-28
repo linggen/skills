@@ -4,6 +4,7 @@
 // sprite can replace it alone.
 // Pure canvas: it reads the game (core.js) and never changes it.
 import { BEASTS, HERO, SKILLS, TOWERS, W, H, posOnPath, offRoad, cleared, waves, lightOf } from './core.js';
+import { lookOf, loopAt, arcAt, fanAt } from '../jieyin/flight.js';
 
 export const INK = '#2a241d';
 const LVNAME = { zh: ['一重', '二重', '三重'], en: ['I', 'II', 'III'] };
@@ -532,6 +533,63 @@ function drawHero(c, h, t, sel, lang, says, g = null) {
 }
 
 /** One frame. `v`: { paper, sc, dpr, t, heroSel, sel, aim, paused, lang, says, bossName } — `aim`: { key, x, y } while a skill is aimed. */
+// 结印's spell (core.js jieyinCast): a flight from the furnace — 剑诀's 飞剑 one wide loop over the field and a dive onto the
+// beast, 冰锥 a fan of shards, 火弹 an arc — each with its own glowing trail (the path sampled back in time, so the draw
+// holds nothing); then the impact. Reduced motion: no flight — it shows at the beast.
+const jyPic = (ctx, name) => {
+  const k = `jy-${name}`;
+  let im = ART.img[k];
+  if (!im) { im = ART.img[k] = ctx.canvas.ownerDocument.createElement('img'); im.src = new URL(`../jieyin/art/${name}.webp`, import.meta.url).href; }
+  return okImg(im) ? im : null;
+};
+function jyPlace(f, look, k, i = 0) {
+  const a = { x: f.x0, y: f.y0 }, b = { x: f.x, y: f.y };
+  if (look.kind === 'loop') return loopAt(a, b, k, { w: W, h: H });
+  if (look.kind === 'volley') return fanAt(a, b, k, i, look.n ?? 3, 70);
+  const q = arcAt(a, b, k, 130), r = arcAt(a, b, Math.min(1, k + 0.02), 130);
+  return { ...q, rot: Math.atan2(r.y - q.y, r.x - q.x) };
+}
+function drawJy(ctx, f) {
+  if (f.t && !f.t.dead) { f.x = f.t.x; f.y = f.t.y; } // the dive follows its beast
+  const look = lookOf(f.id), c = f.col, e = f.max - f.life, fly = f.fly;
+  const pic = look && jyPic(ctx, look.art), sc = 0.7; // the sprites are 256 px; the field draws them at `size` × sc
+  if (e < fly) {
+    const k = Math.min(1, e / fly);
+    if (f.calm) { ctx.globalAlpha = Math.min(1, k * 2); if (pic) { const w = look.size * sc, h = w * pic.naturalHeight / pic.naturalWidth; ctx.drawImage(pic, f.x - w / 2, f.y - h / 2, w, h); } ctx.globalAlpha = 1; return; }
+    const kind = look?.kind ?? 'arc', n = kind === 'volley' ? look.n ?? 3 : 1, back = kind === 'loop' ? 0.3 : 0.18;
+    for (let i = 0; i < n; i += 1) {
+      const pts = [];
+      for (let j = 14; j >= 0; j -= 1) pts.push(jyPlace(f, look ?? { kind: 'arc' }, Math.max(0, k - back * (j / 14)), i));
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      const wide = kind === 'loop' ? 1.5 : 1;
+      for (let j = 1; j < pts.length; j += 1) {
+        const q = j / (pts.length - 1);
+        ctx.strokeStyle = `rgba(${c},${0.55 * q})`; ctx.lineWidth = 15 * wide * q + 1; ctx.beginPath(); ctx.moveTo(pts[j - 1].x, pts[j - 1].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+        ctx.strokeStyle = `rgba(255,255,250,${0.9 * q})`; ctx.lineWidth = 4.5 * wide * q; ctx.stroke();
+      }
+      ctx.lineCap = 'butt';
+      const h = pts[pts.length - 1];
+      ctx.fillStyle = `rgba(${c},0.45)`; ctx.beginPath(); ctx.arc(h.x, h.y, (kind === 'loop' ? 30 : 20), 0, 6.28); ctx.fill();
+      if (pic) {
+        const w = look.size * sc * (kind === 'volley' ? 0.8 : 1), ph = w * pic.naturalHeight / pic.naturalWidth;
+        ctx.save(); ctx.translate(h.x, h.y);
+        ctx.rotate(look.spin ? e * 14 : kind === 'arc' ? e * 8 : h.rot + Math.PI / 4);
+        ctx.drawImage(pic, -w / 2, -ph / 2, w, ph); ctx.restore();
+      }
+    }
+    return;
+  }
+  const a = Math.max(0, f.life / (f.max - fly)), h = 1 - a, R = f.r * (0.5 + 1.4 * h), o = 1 - h; // the impact
+  if (pic && look.kind === 'loop' && !look.spin) { // the sword stands in the beast a beat, then fades
+    const w = look.size * sc, ph = w * pic.naturalHeight / pic.naturalWidth;
+    ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, (0.55 - h) * 3)); ctx.translate(f.x, f.y - 6 + 8 * h); ctx.rotate(Math.PI * 0.75); ctx.drawImage(pic, -w / 2, -ph / 2, w, ph); ctx.restore();
+  }
+  ctx.fillStyle = `rgba(255,250,235,${0.8 * o * o})`; ctx.beginPath(); ctx.arc(f.x, f.y, R * 0.55, 0, 6.28); ctx.fill();
+  ctx.fillStyle = `rgba(${c},${0.38 * o})`; ctx.beginPath(); ctx.arc(f.x, f.y, R, 0, 6.28); ctx.fill();
+  ctx.strokeStyle = `rgba(${c},${0.9 * o})`; ctx.lineWidth = 4 * o + 1; ctx.stroke();
+  ctx.strokeStyle = `rgba(42,18,6,${0.5 * o})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(f.x, f.y, R + 3, 0, 6.28); ctx.stroke();
+}
+
 export function draw(ctx, g, v) {
   const { sc, dpr, t } = v;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -593,22 +651,7 @@ export function draw(ctx, g, v) {
     else if (f.k === 'spark') { ctx.fillStyle = `rgba(235,140,50,${a})`; ctx.beginPath(); ctx.arc(f.x, f.y, 2, 0, 6.28); ctx.fill(); }
     else if (f.k === 'drop') { ctx.fillStyle = `rgba(30,25,20,${a * 0.8})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.28); ctx.fill(); }
     else if (f.k === 'bolt') { ctx.strokeStyle = `rgba(150,120,230,${a})`; ctx.lineWidth = 4; ctx.beginPath(); f.pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); ctx.strokeStyle = `rgba(255,250,255,${a})`; ctx.lineWidth = 1.5; ctx.stroke(); }
-    else if (f.k === 'jy') { // 结印's spell (core.js jieyinCast): a streak from the furnace, then its impact
-      const k = 1 - a, fly = 0.22, c = f.col;
-      if (k < fly) {
-        const h = k / fly, tl = Math.max(0, (k - 0.12) / fly), hx = f.x0 + (f.x - f.x0) * h, hy = f.y0 + (f.y - f.y0) * h;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = `rgba(${c},0.85)`; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(f.x0 + (f.x - f.x0) * tl, f.y0 + (f.y - f.y0) * tl); ctx.lineTo(hx, hy); ctx.stroke();
-        ctx.strokeStyle = 'rgba(255,255,250,0.95)'; ctx.lineWidth = 4; ctx.stroke(); ctx.lineCap = 'butt';
-        ctx.fillStyle = `rgba(${c},0.5)`; ctx.beginPath(); ctx.arc(hx, hy, 14, 0, 6.28); ctx.fill();
-      } else {
-        const h = (k - fly) / (1 - fly), r = f.r * (0.5 + 1.4 * h), o = 1 - h;
-        ctx.fillStyle = `rgba(255,250,235,${0.75 * o * o})`; ctx.beginPath(); ctx.arc(f.x, f.y, r * 0.55, 0, 6.28); ctx.fill();
-        ctx.fillStyle = `rgba(${c},${0.35 * o})`; ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, 6.28); ctx.fill();
-        ctx.strokeStyle = `rgba(${c},${0.9 * o})`; ctx.lineWidth = 4 * o + 1; ctx.stroke();
-        ctx.strokeStyle = `rgba(42,18,6,${0.5 * o})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(f.x, f.y, r + 3, 0, 6.28); ctx.stroke();
-      }
-    }
+    else if (f.k === 'jy') drawJy(ctx, f);
     else if (f.k === 'txt') { ctx.globalAlpha = Math.min(1, a * 2); ctx.font = `${f.bold ? 'bold ' : ''}${f.size}px "Songti SC","STSong",serif`; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(246,239,223,0.9)'; ctx.strokeText(f.s, f.x, f.y); ctx.fillStyle = f.col; ctx.fillText(f.s, f.x, f.y); ctx.textAlign = 'left'; ctx.globalAlpha = 1; }
   }
   const boss = g.beasts.find((b) => BEASTS[b.type].boss);

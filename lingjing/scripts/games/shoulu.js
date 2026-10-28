@@ -300,7 +300,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       li = i;
       const row = levels[i];
       root.classList.remove('is-picking');
-      g = newGame(row, { seed: `shoulu|${Date.now()}` });
+      g = newGame(row, { seed: `shoulu|${Date.now()}`, show: true, calm: reducedMotion }); // show: 结印 flies before it lands (core.js jieyinCast)
       // a story level's own words and hero (守火: 小满, no talismans, no skills); the HUD and the hero bar follow
       t = wordsFor(T[lang], row.words, lang);
       root.classList.toggle('is-fire', Boolean(g.L.fire));
