@@ -40,8 +40,7 @@ const AFTER = 'wm-baishi'; // the first scene past the 大比 beat (wm-jiaxin) w
 
 test('the row: a 格斗 board on a 3 h cooldown from balance.json, opened by the 大比, its opponents 格斗 levels', () => {
   assert.equal(T.game, 'fighter');
-  assert.equal(C.every_h, 3);
-  assert.equal(C.every_h, content.balance.qiecuo_h, 'the cooldown is balance.json\'s');
+  assert.equal(content.balance.events.qiecuo.every_h, 3, 'the cooldown is balance.json\'s (rules/events.mjs)');
   assert.equal(C.after, 'wm-jiaxin');
   assert.ok(content.chapters['00-waimen'].beats.find((b) => b.id === 'dabi').scenes.includes('wm-jiaxin'), 'the 大比 beat\'s');
   for (const o of C.opponents) {
@@ -153,7 +152,7 @@ test('pay: a share of the layer × ★, the day\'s first two in full, then the r
   }
   assert.deepEqual(got.map((g) => g.share), [1, 1, pp.replay[1], pp.replay[2], pp.replay[2]]);
   assert.ok(got[0].paid > 0);
-  assert.ok(Math.abs(got[0].paid - pp.qiecuo.share * got[0].need) <= 2, `${got[0].paid} ≈ ${pp.qiecuo.share} of ${got[0].need}`);
+  assert.ok(Math.abs(got[0].paid - content.balance.events.qiecuo.share * got[0].need) <= 2, `${got[0].paid} ≈ ${content.balance.events.qiecuo.share} of ${got[0].need}`);
   assert.ok(got[2].paid < got[1].paid && got[3].paid < got[2].paid, 'falling');
   // the next day, in full again
   const next = boutShare(content, s, at(9, 0, 30));

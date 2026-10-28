@@ -317,10 +317,9 @@
   "boards": {"plain": 5, "good": 10, "best": 15},
   "_cooldowns": "(The pools of 后山 · 上山路 are 妖兽出没's since 2026-10-28: they come in batches, `events.yaoshou`, never by these two.) `pool_rest_min`: a pool rests that long before the next beast stands — only after `pool_rest_after` wins in a row (Hanli 2026-10-27: 「后山的怪可以加多谢么? 或者做成打不完的」: never after every fight; a pool may say its own `rest` and `rest_after`; world.mjs poolResting). A beast beaten again the same day pays play_pay.replay's falling share. `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs). `shouchao_h`: 兽潮 comes again that many hours after the last night counted, at any hour (rules/shouchao.mjs; 2026-10-26, replacing the 酉时 window; an hour since 2026-10-28, Hanli: 「兽潮好玩」 · 「改成1小时一次也行」 — the day's pay held by `play_pay.tide`).",
   "cooldowns": {"pool_rest_min": 10, "pool_rest_after": 5, "fantong_min": 60, "shouchao_h": 1},
-  "_qiecuo_h": "切磋's cooldown (rules/qiecuo.mjs; Hanli 2026-10-28: 「冷却3小时」): a bout comes again that many hours after the last was over — won, lost or put down.",
-  "qiecuo_h": 3,
   "_events": "冷却事件 (Hanli 2026-10-28: 「按你说的来」; rules/events.mjs): exactly three, each on a fun 主力 game — 兽潮 (塔防, rules/shouchao.mjs), 比武切磋 (格斗, after 宗门大比), 妖兽出没 (斗法). Shared: the cooldown `every_h` runs from completion (won, lost or skipped); a waiting event waits and never stacks; announced once (the tray or the 主页), never nudged; the day's first `full` pay in full, then play_pay.replay's falling share (the third half, the rest a tenth). `yaoshou` (rules/yaoshou.mjs; replacing `pool_rest_*` at these pools): the pools of 后山 · 上山路 (`pools`) hold a batch of `batch` fights; each fight settled there takes one, the last completes it; `yaoshou skip` lets a batch go (the clock starts, the day's count of batches paid in full does not move). A fight's pay keeps the beast's own replay share (play_pay.replay by beast), × the batch's day share, × `fight_scale` (derived from master.events.yaoshou.batch_plays: a whole batch pays as one fight, about one 兽潮 night). `title`, `open`, `shut`: the world's words for it.",
   "events": {
+    "qiecuo": {"every_h": 3, "full": 2, "share": 0.05, "_about": "比武切磋 (rules/qiecuo.mjs; Hanli 2026-10-28: 「冷却3小时」): a bout comes again `every_h` after the last was over — won, lost or put down; a bout won pays `share` of the layer he stands on × ★, the day's first `full` in full, then play_pay.replay's share; 灵石 as a 格斗 board (play_pay.wealth)."},
     "yaoshou": {
       "every_h": 1.5,
       "fight_scale": 0.3333,
@@ -506,8 +505,6 @@
     },
     "stars": {"1": 0.6, "2": 0.8, "3": 1},
     "replay": [1, 0.5, 0.1],
-    "_qiecuo": "切磋 (rules/qiecuo.mjs): a bout won pays `share` of the layer he stands on × ★; the day's first `full` bouts in full, the later ones `replay`'s falling share. 灵石 as a 格斗 board (`wealth`).",
-    "qiecuo": {"share": 0.05, "full": 2},
     "_tide": "兽潮 every hour (Hanli 2026-10-28: 「改成1小时一次也行」) is no farm: a day's first `full` nights pay in full, the later ones `replay`'s falling share (the third half, the rest a tenth) — rules/shouchao.mjs tideShare.",
     "tide": {"full": 2},
     "fight": {"minutes": 4},

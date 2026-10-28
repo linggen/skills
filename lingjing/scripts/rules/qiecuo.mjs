@@ -2,12 +2,13 @@
 // 兽潮 (Hanli 2026-10-28: 「宗门大比的剧情过后, 可以弄一个每天一次的日常比武切磋, 让用户玩格斗…和兽潮并列的一个时间触发游戏,
 // 冷却3小时」). Part of the rules engine; rules.mjs is its one door.
 //
-// Everything it knows is the task row's (tasks/world.json `qiecuo`): the cooldown (`every_h`, from balance.json
-// `cooldowns.qiecuo_h`), the scene that opens it (`after`: the 大比 behind him), the places of 沉鼎观 where it is offered,
+// The cooldown, the never-stacking wait and the day's falling share are the cooldown events' one mechanism (rules/events.mjs,
+// balance.json `events.qiecuo`: `every_h`, `full`, and the bout's `share` of the layer). The rest is the task row's
+// (tasks/world.json `qiecuo`): the scene that opens it (`after`: the 大比 behind him), the places of 沉鼎观 where it is offered,
 // the opponents (each a 格斗 level of games.json, `level`, open `after` a scene), the styles a bout is fought in (each the
 // AI's knobs laid on the level), the climb by his realm (`climb`), the frame lines (`lines`: who challenges, and why) and
-// 银月's one telling (`tell`, on the first bout until one is over). Its pay: balance.json `play_pay.qiecuo` — a fixed share
-// of the layer a bout, × ★, the day's first `full` bouts in full and the rest a replay's falling share.
+// 银月's one telling (`tell`, on the first bout until one is over). Its pay: `events.qiecuo.share` of the layer a bout, × ★,
+// × the event's day share.
 //
 // THE BOUTS: bout n (the bouts over + 1) is dealt from the save's seed and n alone — the opponent met least, never last
 // bout's when another is open; a style never last bout's — so a bout waiting is the same bout however long it waits
@@ -19,6 +20,7 @@ import { sideLine } from './hui.mjs';
 import { needOf } from './playpay.mjs';
 import { hashOf } from './travel.mjs';
 import { keyDrop } from './mijing.mjs';
+import { eventDone, eventOf, eventShare, eventWait } from './events.mjs';
 import { beatOf, passed, sceneOf } from './world.mjs';
 import { rulesOf } from '../games/fighter/core.js';
 
@@ -27,13 +29,10 @@ const boutTask = content => (content.tasks?.tasks ?? []).find(t => t.qiecuo) ?? 
 export const isBout = (content, id) => boutTask(content)?.id === id;
 
 /* ── The cooldown ── */
-const HOUR = 3600_000;
-/* Milliseconds until the next bout (0: one is up now): `every_h` from the last bout over. */
-export function boutWait(state, t, now) {
-  const last = state.qiecuo?.at;
-  return last ? Math.max(0, Date.parse(last) + (t.qiecuo.every_h ?? 3) * HOUR - now.getTime()) : 0;
-}
-const cooling = (state, t, now) => boutWait(state, t, now) > 0;
+const EVENT = 'qiecuo';
+/* Milliseconds until the next bout (0: one is up now): `every_h` from the last bout over (rules/events.mjs). */
+export const boutWait = (content, state, now) => eventWait(content, state, EVENT, now);
+const cooling = (content, state, now) => boutWait(content, state, now) > 0;
 
 /* ── Who may spar ── */
 /* Past the 大比, standing at 沉鼎观, out of any instance, run, fight or key beat, on the 古 line. */
@@ -48,30 +47,30 @@ function boutUp(content, state, t) {
 /* Look's task list: the bout offered, out of the cooldown. */
 export function qiecuoHosted(content, state, now) {
   const t = boutTask(content);
-  if (!t || !boutUp(content, state, t) || cooling(state, t, now)) return {};
+  if (!t || !boutUp(content, state, t) || cooling(content, state, now)) return {};
   return { [t.id]: { status: 'offered' } };
 }
 /* Its win may be played and counted: out of the cooldown. */
 export function qiecuoHere(content, state, id, now) {
   const t = boutTask(content);
-  return Boolean(t) && t.id === id && boutUp(content, state, t) && !cooling(state, t, now);
+  return Boolean(t) && t.id === id && boutUp(content, state, t) && !cooling(content, state, now);
 }
 /* Its row waits (Look keeps it past midnight): where he may spar, inside the cooldown. */
 export function qiecuoWaiting(content, state, id, now) {
   const t = boutTask(content);
-  return Boolean(t) && t.id === id && boutUp(content, state, t) && cooling(state, t, now);
+  return Boolean(t) && t.id === id && boutUp(content, state, t) && cooling(content, state, now);
 }
 /* Look's `waits` row inside the cooldown: the bout's name, the world's line, the minutes left. */
 export function qiecuoWait(content, state, now) {
   const t = boutTask(content);
   if (!t || !qiecuoWaiting(content, state, t.id, now)) return null;
-  return { id: t.id, title: pick(t.qiecuo.title, state.lang), shut: pick(t.qiecuo.shut, state.lang) ?? null, wait_min: Math.ceil(boutWait(state, t, now) / 60_000) };
+  return { id: t.id, title: pick(t.qiecuo.title, state.lang), shut: pick(t.qiecuo.shut, state.lang) ?? null, wait_min: Math.ceil(boutWait(content, state, now) / 60_000) };
 }
 /* Inside the cooldown where he may spar: refused in the world's words, with the minutes left — else null. */
 export function qiecuoShut(content, state, id, now) {
   const t = boutTask(content);
   if (!t || t.id !== id || !boutUp(content, state, t)) return null;
-  const wait = boutWait(state, t, now);
+  const wait = boutWait(content, state, now);
   return wait > 0 ? refuse('shut', pick(t.qiecuo.shut, state.lang) ?? null, { left_min: Math.ceil(wait / 60_000) }) : null;
 }
 
@@ -158,7 +157,7 @@ export function qiecuoRow(content, state, now) {
   if (!t || !bout) return {};
   const lang = state.lang, c = t.qiecuo;
   const name = pick(levelOf(content, bout.foe.level)?.foe?.name, lang) ?? bout.foe.id;
-  const wait = boutWait(state, t, now);
+  const wait = boutWait(content, state, now);
   if (wait > 0) return { tide: true, qiecuo: true, bout: bout.n - 1, title: pick(c.title, lang), wait_min: Math.ceil(wait / 60_000), shut: pick(c.shut, lang) ?? null };
   const style = bout.style ? pick(bout.style.name, lang) : null;
   const title = [pick(c.title, lang), name, style].filter(Boolean).join(' · ');
@@ -170,18 +169,14 @@ export function qiecuoRow(content, state, now) {
 }
 
 /* ── Pay ── */
-/* The day's share (balance.json `play_pay.qiecuo.full` bouts in full, then `play_pay.replay`'s falling share). */
-export function boutShare(content, state, now) {
-  const pp = content.balance?.play_pay ?? {}, full = pp.qiecuo?.full ?? Infinity, fall = pp.replay ?? [1];
-  const held = state.qiecuo ?? {}, today = held.day?.key === dayKey(now) ? held.day.count ?? 0 : 0;
-  return today < full ? 1 : fall[Math.min(today - full + 1, fall.length - 1)];
-}
-/* A bout won's grant: `play_pay.qiecuo.share` of the layer he stands on × ★ × the day's share; 灵石 as a 格斗 board's. */
+/* The day's share (rules/events.mjs: `events.qiecuo.full` bouts in full, then `play_pay.replay`'s falling share). */
+export const boutShare = (content, state, now) => eventShare(content, state, EVENT, now);
+/* A bout won's grant: `events.qiecuo.share` of the layer he stands on × ★ × the day's share; 灵石 as a 格斗 board's. */
 export function boutGrant(content, state, now, stars = 3) {
-  const pp = content.balance?.play_pay;
-  if (!pp?.qiecuo) return null;
+  const pp = content.balance?.play_pay ?? {}, ev = eventOf(content, EVENT);
+  if (!ev) return null;
   const star = pp.stars?.[String(stars)] ?? 1, f = star * boutShare(content, state, now);
-  const progress = Math.round((pp.qiecuo.share ?? 0) * needOf(content, state) * f);
+  const progress = Math.round((ev.share ?? 0) * needOf(content, state) * f);
   const wealth = Math.round((pp.wealth?.['格斗'] ?? pp.wealth?.default ?? 0) * f);
   return { table: 'play', progress, wealth, share: boutShare(content, state, now) };
 }
@@ -190,12 +185,12 @@ export function boutGrant(content, state, now, stars = 3) {
 /* The bout over, whatever its end: the cooldown starts now, the next bout is the next n, the opponent met. */
 function overOn(s, bout, ctx, id, outcome, paid) {
   const held = s.qiecuo ?? {}, key = dayKey(ctx.now);
+  // the clock and the day's count of bouts paid: the cooldown events' one record (rules/events.mjs)
+  eventDone(s, EVENT, ctx.now, { counted: paid });
   s.qiecuo = {
-    ...held, n: bout.n, at: ctx.now.toISOString(), told: true,
+    ...held, n: bout.n, told: true,
     met: { ...(held.met ?? {}), [bout.foe.id]: (held.met?.[bout.foe.id] ?? 0) + 1 },
     last: { foe: bout.foe.id, style: bout.style?.id ?? null, outcome },
-    // the bouts paid today (the falling share's count)
-    day: paid ? { key, count: (held.day?.key === key ? held.day.count ?? 0 : 0) + 1 } : held.day?.key === key ? held.day : { key, count: 0 },
   };
   s.tasks[id] = { status: 'done', period: key, done_at: ctx.now.toISOString(), ...(outcome !== 'won' ? { outcome } : {}) };
 }

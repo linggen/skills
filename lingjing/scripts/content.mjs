@@ -219,12 +219,8 @@ export function withBalance(content) {
   const rewards = { ...content.rewards, ...(b.pay ? { tables: structuredClone(b.pay) } : {}), ...(b.convert ? { xiuwei_to_lingshi: structuredClone(b.convert) } : {}) };
   const fantong0 = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
   // 兽潮's cooldown (rules/shouchao.mjs): onto its task row's `shouchao.every_h`.
-  const tasks0 = content.tasks?.tasks && c.shouchao_h != null
+  const tasks = content.tasks?.tasks && c.shouchao_h != null
     ? { ...content.tasks, tasks: content.tasks.tasks.map(t => (t.shouchao ? { ...t, shouchao: { ...t.shouchao, every_h: c.shouchao_h } } : t)) } : content.tasks;
-  // 切磋's (rules/qiecuo.mjs; balance.json `qiecuo_h`, a key of its own beside `cooldowns`): onto its task row's `qiecuo.every_h`.
-  const qh = b.qiecuo_h ?? c.qiecuo_h;
-  const tasks = tasks0?.tasks && qh != null
-    ? { ...tasks0, tasks: tasks0.tasks.map(t => (t.qiecuo ? { ...t, qiecuo: { ...t.qiecuo, every_h: qh } } : t)) } : tasks0;
   // Shop prices (`prices`): every `buy` and `sell` lives here, folded onto its item; a pill's 修为 (`pills`) too.
   const fold = i => pillFolded(b, b.prices?.[i.id] ? { ...i, ...b.prices[i.id] } : i);
   const items = content.items && (b.prices || b.pills) ? { ...content.items, items: content.items.items.map(fold) } : content.items;

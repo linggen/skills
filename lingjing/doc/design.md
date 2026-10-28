@@ -311,7 +311,7 @@ steadier wins). One bout a cooldown — 3 h from its end, won, lost or put down;
 long. Bout n is dealt from the save's seed and n: the opponent met least (never last bout's when another is open), a
 style never last bout's (稳守 · 抢攻 · 连招 · 运气: the AI's knobs), the climb by his realm, a frame line (who challenges,
 why). Pays a fixed share of the layer × ★, the day's first two in full, then the replay's falling share. Rules:
-rules/qiecuo.mjs; the knobs: tasks/world.json `qiecuo`, balance.json `qiecuo_h` and `play_pay.qiecuo`; the opponents'
+rules/qiecuo.mjs; the knobs: tasks/world.json `qiecuo`, balance.json `events.qiecuo` (the cooldown events' one mechanism, rules/events.mjs); the opponents'
 levels: games.json's 切磋 row (the 游戏厅's too).
 
 **兽潮 — the daily tide at 沉鼎观** 【已建】 (Hanli, 2026-10-20: 「兽潮塔防可以作为游戏里才有的一个情节. 比如每天固定时间有兽潮
