@@ -69,14 +69,21 @@ test('「约 N 局」 is the boards\' honest count: best first, each the replay 
   assert.equal(playsFor(content, s, l, 0, NOW), 0);
 });
 
-test('standing in the gated scene: its ways held, the work here comes first — the 药园\'s board, then 接下 · 后山的野猪', () => {
-  // The 药园 hosts a practice board since 10-27 (捉虫 or 拼图, its pool): Hanli's order puts a board that pays before an
-  // errand to take, as at 外门; played, the gate's own errand is next.
+test('standing in the gated scene: its ways held, the gate\'s own errand comes first — 接下 · 后山的野猪, then the 药园\'s board', () => {
+  // Decided 2026-10-27 (for Hanli, away): in the gated scene the gate's own errand to take comes before a practice board;
+  // taken, the best board here is next.
   const s = gate146('yaoyuan'), l = look(s, content, ctx()), best = bestHere(s, l);
-  assert.deepEqual(l.home.next, { kind: 'board', id: best.id, title: l.tasks.find((t) => t.id === best.id).title, progress: best.progress });
+  assert.deepEqual(l.home.next, { kind: 'take', id: 'guan-houshan-yezhu', title: '后山的野猪' });
   assert.ok(!l.home.next.place, 'never the held way on');
-  const played = { ...s, plays: { day: '2026-10-27', ids: Object.fromEntries(best.all.map((id) => [id, 1])) } };
-  assert.deepEqual(look(played, content, ctx()).home.next, { kind: 'take', id: 'guan-houshan-yezhu', title: '后山的野猪' });
+  const took = quest(s, content, ctx(), { action: 'take', id: 'guan-houshan-yezhu' }).state;
+  const after = look(took, content, ctx());
+  assert.deepEqual([after.home.next.kind, after.home.next.id], ['board', best.id]);
+});
+
+test('outside the gated scene the old order holds: a board that pays before an errand to take (执事堂, its wall\'s tags up)', () => {
+  const s = gate146('zhishi'), l = look(s, content, ctx());
+  assert.ok((l.offers ?? []).some((o) => !o.locked), 'the wall\'s tags to take');
+  assert.equal(l.home.next.kind, 'board', JSON.stringify(l.home.next));
 });
 
 test('an errand ready here: 交差 first, the stage quest met too', () => {

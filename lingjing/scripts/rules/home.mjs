@@ -77,6 +77,8 @@ function wayHeld(content, state) {
   return ways.length > 0 && ways.every(e => stageGate(content, state, sc.id, e.id) ?? entryGate(content, state, e));
 }
 const here = kept => kept.place?.id ?? null;
+/* He stands in the story's scene whose ways a stage quest holds, at that scene's own place. */
+const inHeldScene = (content, state, kept) => Boolean(kept.scene) && sceneOf(content, state)?.at === here(kept) && wayHeld(content, state);
 const placeRef = p => (p ? { id: p.id, name: p.name } : null);
 
 /* A loss not yet made good: a story fight lost and not won since, or a beast's pool lost at more than won. */
@@ -129,6 +131,9 @@ const NEXT = [
     return t ? { kind: 'board', id: t.id, title: t.title, for: q.title } : { kind: 'errand', id: q.id, title: q.title };
   },
   (c, s, k) => { const e = k.place?.encounter; return e?.game && !(e.won || e.withdrawn || e.tamed) ? { kind: 'fight', id: e.game.id, title: e.creature?.name ?? null } : null; },
+  // Standing in the gated scene (its ways held, at its own place): the gate's own errand to take before a practice board
+  // (decided 2026-10-27 for Hanli: 接下 · 后山的野猪 at the 药园 first). Anywhere else a board that pays comes first, as at 外门.
+  (c, s, k) => { const o = inHeldScene(c, s, k) && (k.offers ?? []).find(x => !x.locked); return o ? { kind: 'take', id: o.id, title: o.title } : null; },
   (c, s, k, now) => { const t = boardHere(c, s, k, now, false); return t ? { kind: 'board', id: t.id, title: t.title, ...(t.pays?.progress ? { progress: t.pays.progress } : {}) } : null; },
   (c, s, k) => { const o = (k.offers ?? []).find(x => !x.locked); return o ? { kind: 'take', id: o.id, title: o.title } : null; },
   (c, s, k, now) => { const t = boardHere(c, s, k, now, true); return t ? { kind: 'board', id: t.id, title: t.title, tide: true } : null; },
