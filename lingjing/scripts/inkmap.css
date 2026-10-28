@@ -167,5 +167,5 @@
 .fightmark.g-hard { color: #FBF6EC; background: #7A1E14; border-color: #FBF6EC; }
 .atlas .pt.far .fightmark { opacity: .5; }
 .plate .spot .fightmark { font-size: 9px; }
-.shophere { padding: 0 6px; border: 1px solid var(--seal, #B03A2B); border-radius: 3px; font-family: var(--serif, serif);
+.shophere { background: none; cursor: pointer; padding: 0 6px; border: 1px solid var(--seal, #B03A2B); border-radius: 3px; font-family: var(--serif, serif);
   font-size: 11px; line-height: 1.5; color: var(--seal, #B03A2B); white-space: nowrap; flex: none; }

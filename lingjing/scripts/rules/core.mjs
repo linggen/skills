@@ -78,8 +78,14 @@ function amountsOf(content, state, now, grant) {
    some of it back; that is told when it is paid. */
 const paysOf = (content, state, now, grant) => {
   if (!grant || !content.rewards.tables[grant.table]) return null;
-  const { progress, wealth } = amountsOf(content, state, now, grant), shut = lockedOf(content, state);
-  return { progress: shut.includes('cultivation') ? 0 : progress, wealth: shut.includes('wealth') ? 0 : wealth };
+  const { progress: due, wealth: coin } = amountsOf(content, state, now, grant), shut = lockedOf(content, state);
+  const progress = shut.includes('cultivation') ? 0 : due, wealth = shut.includes('wealth') ? 0 : coin;
+  // At 圆满 the row says what lands (Hanli 10-28: 「修为圆满了, 已接任务里应该不奖励修为了吧? 应该走剧情进阶后才能获得修为」):
+  // the 修为 past the held mark as 灵石 where its table converts, else none — and `full`, so the row can say why.
+  const conv = converting(content, grant), past = pastMark(content, state, progress);
+  if (!past) return { progress, wealth };
+  const lingshi = conv && !shut.includes('wealth') ? Math.round(past * convertRate(content, state, conv)) : 0;
+  return { progress: progress - past, wealth: wealth + lingshi, full: true };
 };
 
 /* 圆满之后走剧情到下一个阶段; 刷副本或者打怪奖励的修为改为灵石 (Hanli, 2026-10-15): a grant on

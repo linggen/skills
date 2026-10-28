@@ -1385,3 +1385,4 @@ body.fighting .atmos { display: none; }
 /* An errand's steps (rules/errand-line.mjs): one line each, a step done dimmed. */
 .bookrow.trow .tsteps { color: var(--dim); line-height: 1.5; }
 .bookrow.trow .tsteps .tstep.done { opacity: .6; }
+

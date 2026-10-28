@@ -350,6 +350,7 @@ const view = {
   pillPick: {}, //       丹囊 at a door: the pick he is making, by duel id (danang.js); his last is the rules'
   bookOpen: false, //    the 事 chip's popover
   roadsOpen: false, //   the 去往 chip's list of roads
+  shopShut: null, //     the place whose shop shelf he put away (合上)
   shelfOpen: false, //   the 书 chip's popover: 九鼎录 · 读原著
   gearOpen: false, //    the 储物袋 chip's panel over the stage: what he wears and his pouch, together
   gear: null, //         the rules' `gear` read behind it, fetched when it opens
@@ -1187,6 +1188,7 @@ function stageNow() {
   // A scene's fight too (Hanli, 2026-10-14: the box's 「继续」 under 出手): it stands once the box is
   // put away — or once its words were chosen in the box, which puts the box away (data-panel-duel).
   // Set aside, a board of the tray's (a skipped one played again, 兽潮) stands; the scene's own waits for its passage.
+  const isShopShelf = (c) => c.card === 'item' && (c.ids?.length ?? 0) > 1;
   const ownBoard = (id) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(look?.tasks ?? []).some((t) => t.id === id && t.replay);
   if (storyAhead()) cards = cards.filter((c) => (c.card !== 'board' || c.id === view.opened?.id || (asideOn() && !ownBoard(c.id))) && !(c.card === 'duel' && sceneGame(look, c) && !called.has(c.id)));
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
@@ -1194,6 +1196,9 @@ function stageNow() {
   // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds
   // its last beat, the choices inside it (2026-10-14) — no scene card stands.
   if (cardsAhead() || choicesInBox() || asideOn()) cards = cards.filter((c) => c.card !== 'panel');
+  // A shop's shelf he put away (合上, Hanli 10-28: 「商店的卡无法关上. 应该所有卡都能关上」) stays away at this place, till
+  // he taps the header's 「有铺子」 again or walks on.
+  if (view.shopShut && view.shopShut === look?.place?.id) cards = cards.filter((c) => !isShopShelf(c));
   // The book first: a game waits until the passage that leads into it is told (queue.js afterBook).
   cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
@@ -1707,7 +1712,8 @@ function draw() {
   // 练气二层圆满即开」, never the scene's 「秘境石门前」 alone, which read as inside (Hanli 10-27 at 渡口).
   const door = !look.sealed && look.door ? doorLine(look.door, lang()) : '';
   $('place').textContent = look.sealed ? [look.sealed.header, look.sealed.where].filter(Boolean).join(' · ')
-    : door ? (look.door.here ? door : `${look.place?.name ?? ''}　${door}`)
+    // Away from the door, an arrow between where he stands and the door (Hanli 10-28 at 彭城: 「彭城就是秘境吗?」).
+    : door ? (look.door.here ? door : `${look.place?.name ?? ''}　→ ${door}`)
     : look.scene?.place ?? look.chapter?.close?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // The scene's caption, small under the place (2026-10-14: never a beat in the box — told three times).
   // The bar is thin now (2026-10-14): the caption keeps its small line where there is room, and is the place's title always.
@@ -3532,6 +3538,8 @@ const busy = (key, fn) => () => run(key, fn);
 const CLICKS = [
   ['[data-book]', () => { show({ bookOpen: !view.bookOpen, ...othersShut('bookOpen') }); if (view.bookOpen) loadKaifu(); }],
   ['[data-roads]', () => show({ roadsOpen: !view.roadsOpen, ...othersShut('roadsOpen') })],
+  ['[data-shop-close]', () => { show({ shopShut: look?.place?.id ?? null, kanjiaPick: false }); return true; }],
+  ['[data-shop-open]', () => { show({ shopShut: null }); return true; }],
   ['[data-shelf]', () => show({ shelfOpen: !view.shelfOpen, ...othersShut('shelfOpen') })],
   ['[data-ledger]', () => show({ ledgerOpen: !view.ledgerOpen, ...othersShut('ledgerOpen') })],
   ['[data-wx]', () => run('wx:open', () => openWx())],

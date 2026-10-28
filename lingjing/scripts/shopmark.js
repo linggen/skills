@@ -26,5 +26,6 @@ export function shopHereHtml(look, lang = 'zh') {
   const s = shopHere(look);
   if (!s) return '';
   const w = SHOP_WORDS[lang] ?? SHOP_WORDS.zh;
-  return `<span class="shophere k-${esc(s.kind)}" title="${esc(shopTitle(s))}">${esc(w.here)} · ${esc(s.label)}</span>`;
+  // A tap brings back a shelf he put away (lingjing.js `shopShut`).
+  return `<button type="button" class="shophere k-${esc(s.kind)}" data-shop-open title="${esc(shopTitle(s))}">${esc(w.here)} · ${esc(s.label)}</button>`;
 }
