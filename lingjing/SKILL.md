@@ -323,32 +323,6 @@ tools:
         type: string
         description: For grade — 意境 · 巧, 0, 1 or 2.
 
-  - name: Twenty
-    # 二十问 is 银月's to host (AppTool → this tool, `--for=yinyue`): the secret
-    # reaches only her answer. Never Ling's (page_only); counts on the save.
-    description: >-
-      二十问 — you host it: host, ask, guess. Follow `host` in the answer.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs twenty --action={{action}} --question={{question}} --answer={{answer}} --guess={{guess}} --save={{session.save}} --for=yinyue"
-    tier: read
-    pet: true
-    page_only: true
-    others_read: [outcome, count, asked]
-    timeout_ms: 8000
-    args:
-      action:
-        type: string
-        required: true
-        description: host (read the game), open (only when the player asks to play), ask (a yes/no question) or guess.
-      question:
-        type: string
-        description: For ask — the player's question, verbatim.
-      answer:
-        type: string
-        description: For ask — your truthful answer, yes, no, partly or unknown.
-      guess:
-        type: string
-        description: For guess — the animal the player named.
-
   - name: Couplet
     # 对对子's 银月 half (AppTool → this tool, `--for=yinyue`): one hint a round,
     # one 下联 of her own; asleep in the token it refuses. Never Ling's (page_only).
@@ -713,7 +687,7 @@ tools:
   - name: Guide
     description: >-
       Read the rules of one part of the game by name: look, fight, road, trial,
-      tasks, lundao, haggle, twenty, duizi, tale, her, divine, made, steer, story. A result's `guide`
+      tasks, lundao, haggle, duizi, tale, her, divine, made, steer, story. A result's `guide`
       hands a part over the first time the game gets there; read this one when
       you need a part you do not have.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs guide --topic={{topic}} --save={{session.save}} --for=ling"
@@ -723,7 +697,7 @@ tools:
       topic:
         type: string
         required: true
-        description: look, fight, road, trial, tasks, lundao, haggle, twenty, duizi, tale, her, divine, made, steer or story.
+        description: look, fight, road, trial, tasks, lundao, haggle, duizi, tale, her, divine, made, steer or story.
 
   - name: Verb
     # The page's one door to the rules (skill-spec § Page door): any verb with
@@ -920,7 +894,7 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 - `trial` — 抉择: when the road's meet is `kind: trial`, you write it.
 - `tasks` — boards, 每日/每周 (Practice), 一次, 差事 (Quest): never invent one.
 - `lundao` — 论道, the scholar's word games; never be generous. Talk games:
-  `haggle` 讨价还价, `twenty` 二十问 (hers), `duizi` 对对子 (you grade).
+  `haggle` 讨价还价, `duizi` 对对子 (you grade).
 - `tale` — 今日传闻: once a day you write a small side story (Tale).
 - `her` — 月下之约: an old save finds Yinyue at 结丹 (Ring).
 - `divine` — 问卦 and 命格: Divine on the player's word, then stop.

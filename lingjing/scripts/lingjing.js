@@ -326,7 +326,7 @@ const view = {
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
-  twentyGuess: '', aiNote: null, // AI mini-games (aigames-cards.js): the guess typed, a refusal
+  aiNote: null, // AI mini-games (aigames-cards.js): a refusal
   duiziDraft: '', duiziUp: '', duiziRung: null, duiziRevOpen: false, // 对对子: the 下联 typed, his own 上联 typed, the rung picked, the reverse unfolded
   panelBusy: null, panelNote: null, // a 连环画 panel's choice in flight, or its refusal
   panelSaid: null, //   what a choice that stays in the scene said: { scene, run, lines }
@@ -430,7 +430,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, twentyGuess: view.twentyGuess, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -2285,7 +2285,6 @@ function countUp() {
   requestAnimationFrame(step);
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') keep({ refineName: e.target.value, refineNote: null }); });
-document.addEventListener('input', (e) => { if (e.target.id === 'twenty-guess') keep({ twentyGuess: e.target.value, aiNote: null }); });
 // 对对子: the form checked as he types (couplet.js) — redrawn in place, so the field keeps its focus.
 document.addEventListener('input', (e) => {
   if (e.target.id === 'duizi-up') { keep({ duiziUp: e.target.value, aiNote: null }); return; }
@@ -3060,18 +3059,6 @@ async function aiTap(name, args) {
   await refresh();
   return r;
 }
-async function twentyOpen() {
-  const r = await aiTap('twenty', { action: 'open' });
-  if (r.ok && r.opened && herHere()) deliver(words().twentyAsk, false);
-}
-async function twentyGuess() {
-  const g = (view.twentyGuess ?? '').trim();
-  if (!g) { document.getElementById('twenty-guess')?.focus(); return; }
-  const r = await aiTap('twenty', { action: 'guess', guess: g });
-  if (r.ok) { keep({ twentyGuess: '' }); if (!r.again && herHere()) deliver(fill(words().twentySaid, { g }), false); }
-  // The first win at it ever (hersay.js game_first: once a game) — asleep, from the 木牌; awake the chat carries it.
-  if (r.ok && r.right && !herHere()) herSay.say('game_first', lang() === 'en' ? 'Twenty Questions, guessed right.' : '二十问，猜中了。', { key: 'twenty' });
-}
 
 /* ── 对对子 (rules/duizi.mjs) — the page's taps ──
    请先生出上联 deals the round (a game's 体力); 对上 sends his 下联 to the rules,
@@ -3512,9 +3499,6 @@ const CLICKS = [
   }],
   // AI mini-games (aigames-cards.js): the page's own taps — the rules count and judge;
   // before the stage's own catch-all taps (the next sentence), which would take them.
-  ['[data-twenty-open]', () => run('twenty:open', () => twentyOpen())],
-  ['[data-twenty-guess]', () => run('twenty:guess', () => twentyGuess())],
-  ['[data-twenty-quit]', () => run('twenty:quit', () => aiTap('twenty', { action: 'quit' }))],
   ['[data-duizi-open]', () => run('duizi:open', () => duiziOpen())],
   ['[data-duizi-rung]', (el) => show({ duiziRung: el.dataset.duiziRung, aiNote: null })],
   ['[data-duizi-submit]', (el) => { if (!el.matches(':disabled')) run('duizi:submit', () => duiziSubmit()); }],

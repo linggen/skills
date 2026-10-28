@@ -1,17 +1,14 @@
-// rules/aigames.mjs — AI mini-games: 二十问 · 讨价还价 (design.md § AI mini-games; 断案 cut 2026-10-27,
+// rules/aigames.mjs — AI mini-games: 讨价还价 (design.md § AI mini-games; 断案 cut 2026-10-27, 二十问 2026-10-28,
 // Hanli 2026-10-15). Part of the rules engine; rules.mjs is its one door.
 //
 // The model talks, plays roles and judges fuzzy things against a declared
 // rubric (worlds/<id>/aigames.json); these rules hold every secret, count
 // every turn and decide outcome and pay — capped by the rewards table each
 // grant names. Look carries the facts the page draws and never a secret:
-// the animal (二十问) reaches only 银月's own tool (`--for=yinyue`), the floor
-// (讨价还价) reaches no one. A win is never self-reported: a guess is checked
-// against the animal, a deal against the floor.
-import { dayKey, pick, seedOf } from '../state.mjs';
-import { clone, pay, refuse, spendStamina } from './core.mjs';
-import { hashOf } from './travel.mjs';
-import { herAwake, herAway } from './companion.mjs';
+// the floor (讨价还价) reaches no one. A win is never self-reported: a deal is
+// checked against the floor.
+import { dayKey, pick } from '../state.mjs';
+import { clone, refuse, spendStamina } from './core.mjs';
 import { forSale, shopOf } from './look.mjs';
 import { visitorHere } from './visiting.mjs';
 import { itemBrief, itemOf } from './errands.mjs';
@@ -22,160 +19,11 @@ const cfgOf = content => content.aigames ?? null;
 const today = (slot, now) => (slot?.day === dayKey(now) ? slot : null);
 const text = v => String(v ?? '').trim();
 
-/* ════════ 二十问 — 银月 hosts ════════
-   state.twenty = {day, played, game: {round, animal, asked: [{q, a}], guesses: [{g, ok}], outcome, at}}
-   `open` is the page's tap (it spends a game's 体力); `ask` and `host` are her
-   tool's; `guess` is the page's guess box or her tool passing the player's
-   word; `quit` is the page's 认输. */
-const TWENTY_ANSWERS = new Set(['yes', 'no', 'partly', 'unknown']);
+/* ════════ 二十问 — retired 2026-10-28 ════════
+   The player-asks 二十问 is cut (Hanli 10-28: 「AI对话的游戏, 最好让AI提问」 · 「AI猜可以, 但别固定30种动物」): she
+   guesses now, on the page (games/jinchat-play.js guessGame — 讨饼债, the 游戏厅's 二十问 · 银月). What stays is 录's list
+   of the animals an old save guessed (`state.animals`), named from aigames.json `twenty.animals`. */
 const animalOf = (content, id) => (cfgOf(content)?.twenty?.animals ?? []).find(a => a.id === id) ?? null;
-const countOf = g => g.asked.length + g.guesses.filter(x => !x.ok).length;
-
-/* Today's game — or none. A game from an earlier day is over, unplayed out. */
-const twentyToday = (state, now) => today(state.twenty, now);
-const twentyGame = (state, now) => twentyToday(state, now)?.game ?? null;
-
-/* Her presence is the game's: no 银月, no host. */
-function hostHere(content, state) {
-  if (!cfgOf(content)?.twenty) return pick({ zh: '这里没有人陪你玩二十问。', en: 'There is no one here to play twenty questions with.' }, state.lang);
-  if (!herAwake(state) || herAway(content, state)) return pick({ zh: '银月不在身边。', en: 'Yinyue is not at your side.' }, state.lang);
-  return null;
-}
-
-/* The round's animal: one he has not named yet, seeded by day, save and round;
-   every one known, any. */
-function pickAnimal(content, state, day, round) {
-  const all = cfgOf(content).twenty.animals, known = new Set(state.animals ?? []);
-  const fresh = all.filter(a => !known.has(a.id));
-  const pool = fresh.length ? fresh : all;
-  return pool[hashOf(`${day}|${seedOf(state)}|twenty|${round}`) % pool.length];
-}
-
-/* What the page and Ling see: the count, the asked list, the guesses — never
-   the animal while the game is open. Once it is over, its name is a fact. */
-export function twentyBrief(content, state, now) {
-  const cfg = cfgOf(content)?.twenty;
-  if (!cfg || hostHere(content, state)) return null;
-  const t = twentyToday(state, now), g = t?.game ?? null;
-  const left = Math.max(0, cfg.rounds - (t?.played ?? 0));
-  const known = (state.animals ?? []).length;
-  if (!g) return { open: false, rounds_left: left, max: cfg.questions, known };
-  const outcome = g.outcome ?? 'open';
-  const a = outcome === 'open' ? null : animalOf(content, g.animal);
-  return {
-    open: outcome === 'open', outcome, count: countOf(g), max: cfg.questions, hint: countOf(g) >= cfg.hint_after,
-    asked: g.asked.map(x => ({ q: x.q, a: x.a })), guesses: g.guesses.map(x => x.g), rounds_left: left, known,
-    ...(a ? { animal: pick(a.name, state.lang) } : {}),
-  };
-}
-
-/* Her rules of play, handed in her tool's every answer: she reads no guide. */
-const HOST_NOTE = [
-  'You host 二十问 (twenty questions). `secret` is the animal: answer each yes/no question TRUTHFULLY about that real, ordinary animal, in your own voice — short, teasing, warm.',
-  'NEVER say, spell, rhyme or hint at its name or any of `secret.alias` while the game is open; never tell Ling. Before `hint` is true, give no clue beyond the answer; once `hint` is true, add one small hint to each answer.',
-  'Each yes/no question: call Twenty with action ask, the player\'s question verbatim and your answer (yes, no, partly or unknown) — before you reply. When the player names an animal as a guess, call Twenty with action guess and the name they said; never decide a guess yourself — `outcome` says it.',
-  'Never read the count out: the card shows it. `outcome` lost: say the animal (`reveal`) and console them. Won: praise them; the rules paid and recorded it.',
-  '【二十问 · 你是出题的人】谜底在 `secret`：一种寻常动物。玩家每问一句「是不是」，你照实回答——按那种真实的动物答，用你自己的口吻，短，带点逗。谜底未破之前，绝不说出、拼出、押韵暗示它的名字或任何别名；也不告诉 Ling。`hint` 为 true 之前，除了是或不是不给线索；之后每答一句，捎一点小提示。每个问题先调 Twenty（action ask，question 照抄玩家原话，answer 填 yes / no / partly / unknown），再回话。玩家说出一种动物来猜，调 Twenty（action guess，guess 填他说的名字）——猜没猜中看 `outcome`，不由你判。问了几句，卡片上有，不必念。输了（lost），说出谜底（`reveal`），安慰一句；赢了，夸他。',
-].join(' ');
-
-/* Her view: the open game with its secret (only ever on `--for=yinyue`). */
-function hostView(content, state, now, extra = {}) {
-  const g = twentyGame(state, now), cfg = cfgOf(content).twenty;
-  if (!g) return { ok: true, open: false, rounds_left: twentyBrief(content, state, now)?.rounds_left ?? 0, host: 'No game is open. The player starts one on the page card (二十问), or asks you to play: then call Twenty with action open.' };
-  const a = animalOf(content, g.animal), lang = state.lang, outcome = g.outcome ?? 'open';
-  const brief = twentyBrief(content, state, now);
-  // `host` first: another member reading this call is handed its head only
-  // (the engine's 1200 characters, chat/thread.rs) — the note fills it, so
-  // the secret after it never reaches Ling (tests/aigames.test.mjs).
-  return {
-    host: HOST_NOTE, ok: true, ...extra, outcome, count: brief.count, left: Math.max(0, cfg.questions - brief.count), hint: brief.hint,
-    secret: { name: pick(a.name, lang), alias: a.alias?.[lang] ?? [] },
-    asked: brief.asked, guesses: brief.guesses,
-    ...(outcome === 'lost' ? { reveal: pick(a.name, lang) } : {}),
-  };
-}
-
-/* The page's and Ling's answers never carry the secret; hers does. */
-const forReader = (content, state, now, ctx, extra) => (ctx.reader === 'yinyue'
-  ? hostView(content, state, now, extra)
-  : { ok: true, ...extra, twenty: twentyBrief(content, state, now) });
-
-/* A guess as said: the animal it names — the longest name or alias found in
-   it, over every animal, so 猫头鹰 is never read as 猫. Null when it names none. */
-export function guessed(content, lang, raw) {
-  const said = text(raw).toLowerCase();
-  if (!said) return null;
-  let best = null;
-  for (const a of cfgOf(content).twenty.animals) {
-    for (const lg of ['zh', 'en']) {
-      for (const n of [a.name[lg], ...(a.alias?.[lg] ?? [])].filter(Boolean).map(x => x.toLowerCase())) {
-        const hit = lg === 'zh' ? said.includes(n) : new RegExp(`(^|[^a-z])${n}(s|es)?($|[^a-z])`).test(said);
-        if (hit && (!best || n.length > best.n.length)) best = { id: a.id, n };
-      }
-    }
-  }
-  return best?.id ?? null;
-}
-
-export function twenty(state, content, ctx, args) {
-  const lang = state.lang, action = text(args.action) || 'host', now = ctx.now;
-  const away = hostHere(content, state);
-  if (away) return refuse('no-host', away);
-  const cfg = cfgOf(content).twenty;
-  if (action === 'host') return { state: null, result: forReader(content, state, now, ctx, {}) };
-  const s = clone(state);
-  const t = twentyToday(s, now), g = t?.game ?? null;
-  if (action === 'open') {
-    if (g && !g.outcome) return { state: null, result: forReader(content, state, now, ctx, { again: true }) };
-    if ((t?.played ?? 0) >= cfg.rounds) return refuse('rounds-done', pick({ zh: `今天的二十问玩够了（${cfg.rounds} 局）。明日再来。`, en: `Enough twenty questions for today (${cfg.rounds} rounds). Tomorrow.` }, lang));
-    const empty = spendStamina(content, s, ctx, 'game');
-    if (empty) return empty;
-    const day = dayKey(now), round = (t?.played ?? 0) + 1;
-    s.twenty = { day, played: round, game: { round, animal: pickAnimal(content, s, day, round).id, asked: [], guesses: [], outcome: null, at: now.toISOString() } };
-    return { state: s, result: forReader(content, s, now, ctx, { opened: true }) };
-  }
-  if (!g || g.outcome) return refuse('not-open', null, { twenty: twentyBrief(content, state, now) });
-  const game = s.twenty.game;
-  if (action === 'ask') {
-    const q = text(args.question), a = text(args.answer).toLowerCase();
-    if (!q) return refuse('no-question', null);
-    if (!TWENTY_ANSWERS.has(a)) return refuse('bad-answer', null, { answers: [...TWENTY_ANSWERS] });
-    // The same question twice in a row is one question (a retried call).
-    const last = game.asked.at(-1);
-    if (last?.q === q) return { state: null, result: forReader(content, state, now, ctx, { again: true }) };
-    game.asked.push({ q: q.slice(0, 80), a });
-    return settleTwenty(content, s, ctx, {});
-  }
-  if (action === 'guess') {
-    const said = text(args.guess ?? args.answer);
-    if (!said) return refuse('no-guess', null);
-    const id = guessed(content, lang, said);
-    const key = id ?? said.slice(0, 20);
-    // A guess already made (the page's, then her call on it) is counted once.
-    if (game.guesses.some(x => x.key === key)) return { state: null, result: forReader(content, state, now, ctx, { again: true }) };
-    const ok = id === game.animal;
-    game.guesses.push({ g: said.slice(0, 20), key, ok });
-    return settleTwenty(content, s, ctx, { right: ok });
-  }
-  if (action === 'quit') {
-    game.outcome = 'lost';
-    return { state: s, result: forReader(content, s, now, ctx, { gave_up: true }) };
-  }
-  return refuse('unknown-action', null, { actions: ['open', 'host', 'ask', 'guess', 'quit'] });
-}
-
-/* After a question or a guess: won on the right guess (paid, the animal known),
-   lost at the last question unguessed. */
-function settleTwenty(content, s, ctx, { right = false }) {
-  const cfg = cfgOf(content).twenty, game = s.twenty.game;
-  let paid = null;
-  if (right) {
-    game.outcome = 'won';
-    if (!(s.animals ?? []).includes(game.animal)) s.animals = [...(s.animals ?? []), game.animal];
-    paid = pay(content, s, ctx, cfg.pay);
-  } else if (countOf(game) >= cfg.questions) game.outcome = 'lost';
-  return { state: s, result: forReader(content, s, ctx.now, ctx, { ...(right ? { right: true } : {}), ...(paid ? { paid } : {}) }) };
-}
 
 /* The animals he has named (录): their names, in the order won. */
 export const animalsKnown = (content, state) => (state.animals ?? []).map(id => animalOf(content, id)).filter(Boolean).map(a => ({ id: a.id, name: pick(a.name, state.lang) }));

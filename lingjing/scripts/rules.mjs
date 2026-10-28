@@ -76,7 +76,7 @@ export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './
 export { look } from './rules/look.mjs';
 export { SHOP_KINDS, shopKind, shopsNear } from './rules/shops.mjs';
 export { closeStaleFight, duel, fightHold, lundao, task, win } from './rules/tasks.mjs';
-export { animalsKnown, guessed, haggle, haggleBrief, twenty, twentyBrief } from './rules/aigames.mjs';
+export { animalsKnown, haggle, haggleBrief } from './rules/aigames.mjs';
 export { duizi, duiziBrief, markFor } from './rules/duizi.mjs';
 export { go, lang, move, summarize, trade } from './rules/travel.mjs';
 export { chooseLang, inPlay, langNow, langOfTag, stateText, writeGlobalLang } from './rules/language.mjs';
@@ -94,7 +94,7 @@ const logged = ({ birth, ...rest }) => rest;
 
 /* Answers handed over as they are — no question, no stage: Progress is for
    a pet that only wants to know how the game stands; Story is a book to read. */
-const PLAIN = new Set(['progress', 'story', 'twenty']);
+const PLAIN = new Set(['progress', 'story']);
 /* The verbs that are story when they land: a scene step, something met on the road, a made scene entered. */
 const STORY_VERBS = new Set(['resolve', 'meet', 'enter']);
 /* The verbs whose answer to Ling says what the stage is playing (rules/tell.mjs `staged`). */

@@ -198,17 +198,17 @@ test('the catalogue: every story beat with a board — and its camera alt — ha
   for (const id of ['main', 'daily', 'ai', 'doufa', 'old']) assert.ok(groups.has(id), id);
 });
 
-test('the catalogue: a stage row (二十问, 讨价还价, 对对子, the 秘境 rerun) stands its card on its own test save', async () => {
+test('the catalogue: a stage row (讨价还价, 对对子, the 秘境 rerun) stands its card on its own test save', async () => {
   process.env.LINGJING_STAMINA_LIMIT ??= '0';
   const { loadContent } = await import('../scripts/content.mjs');
   const { look } = await import('../scripts/rules.mjs');
   const { stageSave } = await import('../tools/arcade-saves.mjs');
   const { stageCards } = await import('../scripts/stage.mjs');
-  const STAGE_CARD = { twenty: 'twenty', haggle: 'haggle', duizi: 'duizi', rerun: 'rerun' };
+  const STAGE_CARD = { haggle: 'haggle', duizi: 'duizi', rerun: 'rerun' };
   const { arcadeStageUrl, visitDays } = await import('../scripts/arcade-board.js');
   const content = loadContent();
   const stages = REG.games.filter((g) => g.stage);
-  assert.ok(stages.length >= 4);
+  assert.ok(stages.length >= 3);
   for (const g of stages) {
     const st = g.stage;
     assert.match(st.save, /^arcade-[a-z]+$/, `${g.id}: a scratch save of the 游戏厅's own`);

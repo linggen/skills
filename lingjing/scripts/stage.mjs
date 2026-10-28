@@ -146,8 +146,8 @@ export const CARD_KINDS = {
   // A chapter over, the next one waiting: its ending card (story.mjs closeOf) — told, never asking.
   closed: { holds: false },
   lundao: { holds: false }, //     论道 at 稷下: offered, or a game under way — never holds the roads
-  // AI mini-games (rules/aigames.mjs): 二十问 with her, 讨价还价 at a keeper's shelf — never hold the roads.
-  twenty: { holds: false }, haggle: { holds: false },
+  // AI mini-games (rules/aigames.mjs): 讨价还价 at a keeper's shelf — never holds the roads.
+  haggle: { holds: false },
   duizi: { holds: false }, //     对对子 at the teacher's (rules/duizi.mjs): offered, or a round under way
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
@@ -267,9 +267,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const coins = !(look.locked ?? []).includes('divine') && herAwake(look);
   const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet || !coins ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
-  // 二十问 offered fills an empty stage beside the coins (rules/aigames.mjs): never over a scene's business.
-  if (has('hexagram') && look.twenty && !look.twenty.open && !look.twenty.outcome && look.twenty.rounds_left) cards.push({ card: 'twenty' });
-  // 本王考考你 (rules/kao.mjs) is as light: offered only on an empty stage. A round left open (the page reloaded
+  // 本王考考你 (rules/kao.mjs) is light: offered only on an empty stage, never over a scene's business. A round left open (the page reloaded
   // mid-round) never stands up by itself: it waits in the tray, 「继续」, for his tap (Hanli 10-27, as 兽潮 waits).
   // (The 游戏厅's 试玩 — `arcade:<game>`, a test save's — is a light board standing open by design: it stands.)
   for (const b of (look.tasks ?? []).filter(t => t.light && t.kind === 'board' && t.status !== 'done' && !t.won)) {
@@ -283,10 +281,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     // 论道: the scholar is here (offered), or a game is under way today.
     const word = (look.tasks ?? []).find(t => t.kind === 'word' && t.status !== 'done');
     if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
-    // AI mini-games: a haggle or a case where he stands; 二十问 once played today (offered, it fills an empty stage below).
+    // AI mini-games: a haggle where he stands.
     if (look.haggle && !has('haggle')) cards.push({ card: 'haggle' });
     if (look.duizi && !has('duizi')) cards.push({ card: 'duizi' });
-    if (look.twenty && (look.twenty.open || look.twenty.outcome) && !has('twenty')) cards.push({ card: 'twenty' });
     // 刷副本: the door's way in while the rooms are open, and the run's own card inside (rules/rerun.mjs).
     if (look.rerun && (look.rerun.inside || (look.rerun.open && look.rerun.here)) && !has('rerun')) cards.push({ card: 'rerun' });
     // Every board open here: the story's, an errand's, and the games this place hosts.
@@ -443,7 +440,7 @@ export const MAIN = [
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
-  { kinds: ['board', 'duel', 'lundao', 'twenty', 'haggle', 'duizi', 'rerun'] }, //  a game to play here
+  { kinds: ['board', 'duel', 'lundao', 'haggle', 'duizi', 'rerun'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do

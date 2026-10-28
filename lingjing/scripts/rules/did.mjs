@@ -108,9 +108,6 @@ const PAGE_DID = {
       : `fed the 饭桶 ${r.fed?.name}${r.fed?.lingshi ? ` with ${r.fed.lingshi} 灵石` : ''}${r.fed?.press ? ', the lid pressed on the gold' : ''}${r.her ? ' (银月 touched it first)' : ''} — out came ${(r.outs ?? [r.out]).filter(Boolean).map(o => `${o.name}${o.wealth ? ` ×${o.n}` : `「${o.hint ?? ''}」`}`).join(' and ')} (${r.grade_name ?? r.grade})${r.with ? ` with ${r.with.name}` : ''}${r.story ? ' — the book\'s own pot' : ''}${r.discovered ? ` — a 方子 found: ${r.discovered.in} → ${r.discovered.out}` : ''}`),
   bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),
   // AI mini-games (rules/aigames.mjs): the page's taps on their cards — facts only, never a secret.
-  twenty: (r, a, x) => (a.action === 'open' && r.opened ? 'began 二十问 with Yinyue on the page card'
-    : a.action === 'guess' && !r.again ? `guessed 「${String(a.guess ?? a.answer ?? '').slice(0, 20)}」 in 二十问 on the page card — ${r.twenty?.outcome === 'won' ? `right: it was ${r.twenty.animal}${paidLine(r.paid, x.w)}` : r.twenty?.outcome === 'lost' ? `wrong, and the questions are spent: it was ${r.twenty.animal}` : 'wrong'}`
-      : a.action === 'quit' ? `gave up 二十问: it was ${r.twenty?.animal}` : null),
   haggle: (r, a) => (a.action === 'deal' && r.deal ? `struck the haggled deal on the page card: ${r.item?.name ?? r.bought}${r.qty > 1 ? ` ×${r.qty}` : ''} at ${r.price} each (saved ${r.saved})`
     : a.action === 'walk' && r.walked ? 'walked away from the haggle on the page card (list price only for it today)' : null),
   // 对对子 (rules/duizi.mjs): the round dealt, his 下联 sent (Ling grades it), a round let go, his 上联 for the teacher.

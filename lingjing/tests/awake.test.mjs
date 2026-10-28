@@ -43,13 +43,6 @@ test('卷一 by the book: asleep in the 木牌 — the save, the presence flag, 
   assert.equal(roam.companion.awake, undefined);
 });
 
-test('her day game stays with the book: no 二十问 while she sleeps (问卦 coins and 筑基 her odds ask the same herAwake)', () => {
-  const s = structuredClone(PLAYED.state);
-  const l = look(s, content, at(NIGHT));
-  assert.equal(l.twenty ?? null, null, '二十问 waits for her waking');
-  assert.equal(VERBS.twenty(s, content, at(NIGHT), { action: 'open' }).result.refused, 'no-host');
-});
-
 test('the games that need her are declared, and offered from the 木牌', () => {
   for (const id of ['jiaxin-letter', 'benwang-kao', 'qiyu-drawguess']) assert.equal(needsHer(content, PLAYED.state, id), true, id);
   assert.equal(needsHer(content, PLAYED.state, 'arcade:drawguess'), true, 'the 游戏厅\'s 画猜, a game her tasks play');

@@ -203,6 +203,12 @@ test('the open 二十问 (any animal, 10-28): their line is held to yes-or-no; a
   for (const bad of ['<!--问-->它是什么颜色？', '<!--问-->它有几条腿？', '它会飞吗？', '<!--问-->它会飞。', '<!--猜-->是袋鼠吗？', '']) assert.equal(yesNoOf(bad, cast), null, bad);
   assert.equal(yesNoOf('<!--ask-->Yinyue: Does it fly?', [{ id: 'yinyue', name: 'Yinyue' }], 'en')?.kind, 'ask');
   assert.equal(yesNoOf('<!--ask-->What colour is it?', [], 'en'), null);
+  assert.deepEqual(yesNoOf('<!--问:它有尾巴吗？-->', cast), { kind: 'ask', text: '它有尾巴吗？', who: 'jin-laocai' }, 'the question inside the mark');
+  // Past half she is nudged to guess, near the end pushed (live 10-28: fifteen asked, never a guess).
+  const at = (k) => freeLine(c, { log: Array.from({ length: k }, () => ({ q: '它会飞吗？', a: 'no' })) }, { max: 15, cast, lang: 'zh' });
+  assert.ok(!at(3).includes('该猜') && !at(3).includes('就猜'));
+  assert.match(at(8), /心里有谱就猜/);
+  assert.match(at(12), /该猜了/);
   // The turn line: the facts once, the log every time, the count; never an animal list.
   let st = freshFree();
   const first = freeLine(c, st, { max: 15, cast, lang: 'zh' });

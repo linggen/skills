@@ -523,7 +523,7 @@ const spentCharms = (content, setup, played) => {
 const FIGHT_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list',
-  win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, twenty: a => a.action === 'open', haggle: true, duizi: a => ['open', 'reverse'].includes(a.action),
+  win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, haggle: true, duizi: a => ['open', 'reverse'].includes(a.action),
   divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', quest: a => !['info', 'kaifu'].includes(a.action), rerun: a => a.action !== 'info',
   seclude: a => a.action === 'enter',
 };

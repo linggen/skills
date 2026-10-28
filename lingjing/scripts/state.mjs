@@ -658,8 +658,8 @@ function renamedCards(content, state) {
 }
 
 /* State a system cut whole left in saves (fitWorld drops it): 密室's open room, a rerun's 暗室 offer, the day's count;
-   断案's cases (both 2026-10-27). */
-const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log', 'cases'];
+   断案's cases (both 2026-10-27); the player-asks 二十问's day (`twenty`, 2026-10-28 — 录's `animals` stay). */
+const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log', 'cases', 'twenty'];
 export function fitWorld(saved, content) {
   // 奇遇 (Branch) went 2026-09-24 for 今日传闻: an open one is closed quietly, unpaid.
   const { branch, ...rest } = saved;

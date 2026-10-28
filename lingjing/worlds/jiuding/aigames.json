@@ -2,11 +2,7 @@
   "_about": "AI mini-games (design.md § AI mini-games, Hanli 2026-10-15): the model talks, plays roles and judges fuzzy things against the rubric here; the rules (scripts/rules/aigames.mjs) hold every secret, count every turn and decide outcome and pay. A few rounds a day each: token cost counts in the ~30 min routine.",
   "_pay": "Pay numbers are DECLARED DEFAULTS for the economy agent (tools/balance.mjs + balance.json own every number): each grant names its rewards.json table, which caps it. Retune here, nowhere else.",
   "twenty": {
-    "_about": "二十问 — 银月 hosts (her pet tool Twenty, tier read). The rules pick an ordinary animal per round (seeded by day + save + round, unknown ones first), count questions, check guesses against name + alias. The secret reaches only her tool's answer (--for=yinyue): never Look, never Ling.",
-    "questions": 20,
-    "hint_after": 15,
-    "rounds": 2,
-    "pay": { "table": "game", "progress": 0, "wealth": 5 },
+    "_about": "二十问's table — now only the offline fallback of the reverse 二十问 (games/jinchat-play.js guessGame; Hanli 10-28: 「AI猜可以, 但别固定30种动物, 全部动物都可以」): the model asks and guesses any animal; when no model answers a turn, `reverse` (a yes/no table) asks instead — never shown to the player. `animals` also names 录's list of the ones an old save guessed in the player-asks 二十问 (cut 2026-10-28).",
     "animals": [
       { "id": "cat", "name": { "zh": "猫", "en": "cat" }, "alias": { "zh": ["猫咪", "家猫", "狸猫", "小猫", "猫儿"], "en": ["kitten", "kitty", "housecat"] } },
       { "id": "dog", "name": { "zh": "狗", "en": "dog" }, "alias": { "zh": ["犬", "小狗", "狗子", "家犬", "黄狗", "土狗"], "en": ["puppy", "hound"] } },
