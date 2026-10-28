@@ -73,26 +73,18 @@
       "_reward": "灵石 +3 (the plan: a lesson, not cultivation); its mark puts 素问's line for the foe's element at the door of the 大比's three bouts (the exits' game `hints`)."
     },
     {
-      "_dash": "2026-10-27 (Hanli: 「调息的不太好玩, 能换成geometry dash那种蹦着躲避障碍的吗」 · 「现在的调息留2个就好」): 几何冲刺 now (games.json dash `cangxi-dash`), its own layout in the story's climb; the 调息 level stays in the 游戏厅. Id kept.", "id": "zhaojing-mirror",
+      "_dash": "2026-10-27 (Hanli: 「调息的不太好玩, 能换成geometry dash那种蹦着躲避障碍的吗」 · 「现在的调息留2个就好」): 几何冲刺 now (games.json dash `cangxi-dash`), its own layout in the story's climb; the 调息 level stays in the 游戏厅. Id kept.",
+      "id": "zhaojing-mirror",
       "kind": "board",
-      "game": "dash", "how": {"zh": "镜光扫过来之前冲过去：点一下跳，按住连跳，矮顶底下别跳。碰上了，从头。", "en": "Through before the mirror's light sweeps: tap to jump, hold to keep jumping, stay down under the low roofs. Touch one, start over."},
+      "game": "shouqiang",
+      "how": { "zh": "守住铺口：点一张符，再点一格畦地布下去；剑符守一路，聚灵阵攒灵气。", "en": "Hold the bunk door: tap a talisman, then a patch of bed, to set it; sword talismans hold a lane, spirit arrays gather qi." },
       "period": "once",
-      "title": {
-        "zh": "藏息 · 镜光扫过来",
-        "en": "Hide the breath · The mirror's light"
-      },
-      "grant": {
-        "table": "task",
-        "progress": 5
-      },
-      "marks": {
-        "still": "mirror-still",
-        "shaky": "mirror-shaky"
-      },
-      "done_line": {
-        "zh": "木牌凉了下去，凉得像一块冰。",
-        "en": "The token cools, cold as ice."
-      }
+      "title": { "zh": "藏息 · 镜光扫过来", "en": "Hide the breath · The mirror's light" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "still": "mirror-still", "shaky": "mirror-shaky" },
+      "done_line": { "zh": "木牌凉了下去，凉得像一块冰。", "en": "The token cools, cold as ice." },
+      "deal": { "lv": "zl-zhaojing-mirror" },
+      "_zhuli2": "2026-10-28 (Hanli: 「尽力让主力游戏多吧, 除非剧情需要其他类型」; doc/zhuli-placement-2026-10-28.md): a 主力 塔防 board — the story level `zl-zhaojing-mirror` of shouqiang (`story: wm-zhaojing`; 兽潮 never deals it, the 游戏厅 keeps it off the ladder). Was dash. Id, pay and done line kept."
     },
     {
       "_cut": "Off wm-laba 2026-10-19 (the standing rule Hanli approved 10-19): 「看完烧了」 is a 大场面 now (setpieces/diche.js, `{景=diche}` in the passage — the page under the lamp, its three lines lit, the paper curling in the 灶口); the way on writes the mark `diche` the 大比's 望气 and hints read. The task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",
@@ -122,25 +114,15 @@
       "id": "dabi-sneeze",
       "_was": "时机 → 打地鼠 (2026-10-27, Hanli: 「游戏厅里都是经典游戏类型了吧, 还有你自己编的吗?」 — the last 时机 story board; sneeze.js stays a module the tests drive)",
       "kind": "board",
-      "game": "rain",
-      "how": {"zh": "何七的拳往哪儿来，就往哪儿让一步；拳没来的地方，白让。", "en": "Wherever He Qi's fist is coming, step aside there; where none is coming, the step is wasted."},
+      "game": "sadoushou",
+      "how": { "zh": "守住五行台：按住左右挪，撒豆成兵；打两边的卡壮大队伍，打中间的兽。", "en": "Hold the Five Elements stage: hold left or right to scatter beans; hit the side cards to grow the squad, the beasts in the middle." },
       "period": "once",
-      "title": {
-        "zh": "喷嚏符 · 让一拳",
-        "en": "The sneezing charm · Let the punch go by"
-      },
-      "grant": {
-        "table": "task",
-        "progress": 5
-      },
-      "marks": {
-        "clean": "sneeze-clean",
-        "clumsy": "sneeze-clumsy"
-      },
-      "done_line": {
-        "zh": "「沈小满，胜。」",
-        "en": "\"Shen Xiaoman wins.\""
-      }
+      "title": { "zh": "喷嚏符 · 让一拳", "en": "The sneezing charm · Let the punch go by" },
+      "grant": { "table": "task", "progress": 5 },
+      "marks": { "clean": "sneeze-clean", "clumsy": "sneeze-clumsy" },
+      "done_line": { "zh": "「沈小满，胜。」", "en": "\"Shen Xiaoman wins.\"" },
+      "deal": { "lv": "zl-dabi-sneeze" },
+      "_zhuli2": "2026-10-28 (Hanli: 「尽力让主力游戏多吧, 除非剧情需要其他类型」; doc/zhuli-placement-2026-10-28.md): a 主力 塔防 board — the story level `zl-dabi-sneeze` of sadoushou (`story: wm-dabi`; 兽潮 never deals it, the 游戏厅 keeps it off the ladder). Was rain. Id, pay and done line kept."
     },
     {
       "_cut": "Off wm-laoyin 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): no board before 摸出那个油纸包; the task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",

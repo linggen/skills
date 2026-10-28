@@ -1837,6 +1837,6778 @@
    "moments": {
     "_about": "No 银月 yet (第一回: she is met in the valley): no bubble — the board's lines are its lead and its banners."
    }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "00-cliff",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-cliff-shangya",
+   "hui": "h02",
+   "title": {
+    "zh": "上崖 · 一根一根",
+    "en": "Up the cliff · One stem at a time"
+   },
+   "lead": [
+    {
+     "zh": "藤墙让开一条路。",
+     "en": "The wall of vines opens a way."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7,
+    "until": 700,
+    "lines": [
+     {
+      "col": "L",
+      "from": 14,
+      "every": 16,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 30,
+      "every": 16,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 55,
+      "every": 90,
+      "wall": {
+       "hp": 50
+      }
+     },
+     {
+      "col": "R",
+      "from": 61,
+      "every": 90,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 70,
+      "every": 170,
+      "wall": {
+       "hp": 65,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "yezhu",
+       256
+      ]
+     ],
+     "speed": 4.3
+    },
+    {
+     "t": 22,
+     "beasts": [
+      [
+       "yezhu",
+       444
+      ]
+     ],
+     "speed": 4.4,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 39,
+     "beasts": [
+      [
+       "yezhu",
+       462
+      ]
+     ],
+     "speed": 4.5
+    },
+    {
+     "t": 59,
+     "beasts": [
+      [
+       "yezhu",
+       564
+      ]
+     ],
+     "speed": 4.3
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.78,
+   "sky": "storm-night",
+   "tone": {
+    "color": "#22183a",
+    "alpha": 0.22
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "崖脚",
+     "won": "崖脚守住了！",
+     "lost": "崖脚没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the cliff foot",
+     "won": "Held!",
+     "lost": "The cliff foot fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "00-xiuxian",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-xiuxian-xue",
+   "hui": "h02",
+   "title": {
+    "zh": "银色的血 · 八道断口",
+    "en": "Silver blood · Eight stumps"
+   },
+   "lead": [
+    {
+     "zh": "柴垛上，一团凉冰冰的银毛。",
+     "en": "On the woodpile, a cold curl of silver fur."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.02,
+    "until": 702,
+    "lines": [
+     {
+      "col": "L",
+      "from": 21,
+      "every": 15,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": -4,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 32,
+      "every": 14,
+      "cards": [
+       {
+        "n": -4,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 70,
+      "every": 75,
+      "wall": {
+       "hp": 51
+      }
+     },
+     {
+      "col": "L",
+      "from": 76,
+      "every": 75,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 90,
+      "every": 150,
+      "wall": {
+       "hp": 66,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "yezhu",
+       288
+      ]
+     ],
+     "speed": 4.31
+    },
+    {
+     "t": 25,
+     "beasts": [
+      [
+       "yezhu",
+       407
+      ]
+     ],
+     "speed": 4.41,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 41,
+     "beasts": [
+      [
+       "yezhu",
+       420
+      ]
+     ],
+     "speed": 4.51,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 60,
+     "beasts": [
+      [
+       "yezhu",
+       470
+      ]
+     ],
+     "speed": 4.31,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 77,
+     "beasts": [
+      [
+       "yezhu",
+       624
+      ]
+     ],
+     "speed": 4.41,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.784,
+   "sky": "clear-night",
+   "tone": {
+    "color": "#14243a",
+    "alpha": 0.22
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "屋后",
+     "won": "屋后守住了！",
+     "lost": "屋后没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the back of the house",
+     "won": "Held!",
+     "lost": "The back of the house fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "00-steps",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-steps-sanbai",
+   "hui": "h04",
+   "title": {
+    "zh": "三百级 · 一炷香",
+    "en": "Three hundred steps · One stick of incense"
+   },
+   "lead": [
+    {
+     "zh": "三百级，一炷香。",
+     "en": "Three hundred steps, one stick of incense."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.05,
+    "until": 705,
+    "lines": [
+     {
+      "col": "L",
+      "from": 20,
+      "every": 15,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 33,
+      "every": 16,
+      "cards": [
+       {
+        "n": -6,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 65,
+      "every": 80,
+      "wall": {
+       "hp": 51
+      }
+     },
+     {
+      "col": "L",
+      "from": 71,
+      "every": 80,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 80,
+      "every": 170,
+      "wall": {
+       "hp": 66,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "yezhu",
+       288
+      ]
+     ],
+     "speed": 4.31,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 23,
+     "beasts": [
+      [
+       "yezhu",
+       333
+      ]
+     ],
+     "speed": 4.41,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 43,
+     "beasts": [
+      [
+       "yezhu",
+       336
+      ]
+     ],
+     "speed": 4.51,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 60,
+     "beasts": [
+      [
+       "yezhu",
+       470
+      ]
+     ],
+     "speed": 4.31
+    },
+    {
+     "t": 75,
+     "beasts": [
+      [
+       "yezhu",
+       520
+      ]
+     ],
+     "speed": 4.41
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.791,
+   "sky": "cloudy-night",
+   "tone": {
+    "color": "#2a1c2c",
+    "alpha": 0.26
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "石阶",
+     "won": "石阶守住了！",
+     "lost": "石阶没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the steps",
+     "won": "Held!",
+     "lost": "The steps fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "00-hall",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-hall-celing",
+   "hui": "h04",
+   "title": {
+    "zh": "测灵石 · 藏",
+    "en": "The testing stone · Hide"
+   },
+   "lead": [
+    {
+     "zh": "正殿没有神像，只有一口空的石座。",
+     "en": "No statue in the hall — only an empty stone seat."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.07,
+    "until": 707,
+    "lines": [
+     {
+      "col": "L",
+      "from": 21,
+      "every": 17,
+      "cards": [
+       {
+        "n": -5,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 26,
+      "every": 17,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": -5,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 55,
+      "every": 95,
+      "wall": {
+       "hp": 52
+      }
+     },
+     {
+      "col": "L",
+      "from": 61,
+      "every": 95,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "yezhu",
+       320
+      ]
+     ],
+     "speed": 4.32,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 21,
+     "beasts": [
+      [
+       "yezhu",
+       296
+      ]
+     ],
+     "speed": 4.42
+    },
+    {
+     "t": 39,
+     "beasts": [
+      [
+       "yezhu",
+       336
+      ]
+     ],
+     "speed": 4.52
+    },
+    {
+     "t": 56,
+     "beasts": [
+      [
+       "yezhu",
+       470
+      ]
+     ],
+     "speed": 4.32,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.795,
+   "sky": "fog-night",
+   "tone": {
+    "color": "#1b1f3a",
+    "alpha": 0.18
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "测灵石",
+     "won": "测灵石守住了！",
+     "lost": "测灵石没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the testing stone",
+     "won": "Held!",
+     "lost": "The testing stone fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "wm-qingshi",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-qingshi-yiquan",
+   "hui": "h05",
+   "title": {
+    "zh": "一拳 · 大青石",
+    "en": "One punch · The bluestone"
+   },
+   "lead": [
+    {
+     "zh": "崖顶一块大青石，比你还高出一头。",
+     "en": "On the clifftop, a great bluestone a head taller than you."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.13,
+    "until": 713,
+    "lines": [
+     {
+      "col": "L",
+      "from": 20,
+      "every": 15,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": -5,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 31,
+      "every": 17,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": -3,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 60,
+      "every": 80,
+      "wall": {
+       "hp": 53
+      }
+     },
+     {
+      "col": "L",
+      "from": 66,
+      "every": 80,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 80,
+      "every": 170,
+      "wall": {
+       "hp": 69,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 4,
+     "beasts": [
+      [
+       "yezhu",
+       384
+      ]
+     ],
+     "speed": 4.34,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 23,
+     "beasts": [
+      [
+       "yezhu",
+       333
+      ]
+     ],
+     "speed": 4.44
+    },
+    {
+     "t": 39,
+     "beasts": [
+      [
+       "yezhu",
+       336
+      ]
+     ],
+     "speed": 4.54
+    },
+    {
+     "t": 58,
+     "beasts": [
+      [
+       "yezhu",
+       376
+      ]
+     ],
+     "speed": 4.34,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 77,
+     "beasts": [
+      [
+       "yezhu",
+       416
+      ]
+     ],
+     "speed": 4.44,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.809,
+   "sky": "fog-night",
+   "tone": {
+    "color": "#14243a",
+    "alpha": 0.14
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "大青石",
+     "won": "大青石守住了！",
+     "lost": "大青石没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the bluestone",
+     "won": "Held!",
+     "lost": "The bluestone fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "wm-dianmao",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-dianmao-canju",
+   "hui": "h05",
+   "title": {
+    "zh": "讲堂后排",
+    "en": "The back row of the lecture hall"
+   },
+   "lead": [
+    {
+     "zh": "九月底，褚先生点卯。",
+     "en": "At the end of the ninth month, Master Chu takes the roll."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.15,
+    "until": 715,
+    "lines": [
+     {
+      "col": "L",
+      "from": 17,
+      "every": 17,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": -6,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 34,
+      "every": 15,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": -4,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 55,
+      "every": 80,
+      "wall": {
+       "hp": 54
+      }
+     },
+     {
+      "col": "L",
+      "from": 61,
+      "every": 80,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 85,
+      "every": 150,
+      "wall": {
+       "hp": 70,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "yezhu",
+       256
+      ]
+     ],
+     "speed": 4.34,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 20,
+     "beasts": [
+      [
+       "yezhu",
+       407
+      ]
+     ],
+     "speed": 4.44,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 39,
+     "beasts": [
+      [
+       "yezhu",
+       462
+      ]
+     ],
+     "speed": 4.54,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 55,
+     "beasts": [
+      [
+       "yezhu",
+       376
+      ]
+     ],
+     "speed": 4.34
+    },
+    {
+     "t": 75,
+     "beasts": [
+      [
+       "yezhu",
+       520
+      ]
+     ],
+     "speed": 4.44,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.813,
+   "sky": "fog-night",
+   "tone": {
+    "color": "#1b1f3a",
+    "alpha": 0.22
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "后排",
+     "won": "后排守住了！",
+     "lost": "后排没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the back row",
+     "won": "Held!",
+     "lost": "The back row fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "wm-dianmao",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-dianmao-yaoyuan",
+   "hui": "h05",
+   "title": {
+    "zh": "矮石墙 · 墙里的药园",
+    "en": "The low wall · The garden behind it"
+   },
+   "lead": [
+    {
+     "zh": "九月底，褚先生点卯。",
+     "en": "At the end of the ninth month, Master Chu takes the roll."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.18,
+    "until": 718,
+    "lines": [
+     {
+      "col": "L",
+      "from": 19,
+      "every": 17,
+      "cards": [
+       {
+        "n": -6,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 27,
+      "every": 17,
+      "cards": [
+       {
+        "n": -4,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 55,
+      "every": 70,
+      "wall": {
+       "hp": 55
+      }
+     },
+     {
+      "col": "R",
+      "from": 61,
+      "every": 70,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 80,
+      "every": 170,
+      "wall": {
+       "hp": 71,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "yezhu",
+       384
+      ]
+     ],
+     "speed": 4.35,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 20,
+     "beasts": [
+      [
+       "yezhu",
+       333
+      ]
+     ],
+     "speed": 4.45,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 38,
+     "beasts": [
+      [
+       "yezhu",
+       420
+      ]
+     ],
+     "speed": 4.55,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 58,
+     "beasts": [
+      [
+       "yezhu",
+       423
+      ]
+     ],
+     "speed": 4.35,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 77,
+     "beasts": [
+      [
+       "yezhu",
+       468
+      ]
+     ],
+     "speed": 4.45,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.82,
+   "sky": "cloudy-night",
+   "tone": {
+    "color": "#1b1f3a",
+    "alpha": 0.18
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "矮石墙",
+     "won": "矮石墙守住了！",
+     "lost": "矮石墙没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the low wall",
+     "won": "Held!",
+     "lost": "The low wall fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "wm-diyilu",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-diyilu-niugu",
+   "hui": "h05",
+   "title": {
+    "zh": "喂饭桶 · 一根牛骨头",
+    "en": "Feeding the Rice Bucket · A soup bone"
+   },
+   "lead": [
+    {
+     "zh": "柴火棍、窝头、牛骨头，一样一样扔进去。",
+     "en": "Firewood, a corn bun, a soup bone — in they go, one by one."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.21,
+    "until": 721,
+    "lines": [
+     {
+      "col": "L",
+      "from": 17,
+      "every": 15,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 34,
+      "every": 17,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": -4,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 55,
+      "every": 80,
+      "wall": {
+       "hp": 55
+      }
+     },
+     {
+      "col": "L",
+      "from": 61,
+      "every": 80,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "yezhu",
+       352
+      ]
+     ],
+     "speed": 4.36
+    },
+    {
+     "t": 21,
+     "beasts": [
+      [
+       "yezhu",
+       407
+      ]
+     ],
+     "speed": 4.46
+    },
+    {
+     "t": 38,
+     "beasts": [
+      [
+       "yezhu",
+       504
+      ]
+     ],
+     "speed": 4.56
+    },
+    {
+     "t": 55,
+     "beasts": [
+      [
+       "yezhu",
+       517
+      ]
+     ],
+     "speed": 4.36,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.826,
+   "sky": "snow-night",
+   "tone": {
+    "color": "#14243a",
+    "alpha": 0.14
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "牛骨头",
+     "won": "牛骨头守住了！",
+     "lost": "牛骨头没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the soup bone",
+     "won": "Held!",
+     "lost": "The soup bone fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "wm-shishi",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-xirang-yinshen",
+   "hui": "h07",
+   "title": {
+    "zh": "隐身符 · 比草叶还轻",
+    "en": "The concealing talisman · Lighter than a blade of grass"
+   },
+   "tone": {
+    "color": "#1b1f3a",
+    "alpha": 0.22
+   },
+   "lead": [
+    {
+     "zh": "四个空坑，一边七拃。",
+     "en": "Four empty pits, seven spans a side."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.32,
+    "until": 732,
+    "lines": [
+     {
+      "col": "L",
+      "from": 18,
+      "every": 13,
+      "cards": [
+       {
+        "n": -5,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 27,
+      "every": 15,
+      "cards": [
+       {
+        "n": -3,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 55,
+      "every": 70,
+      "wall": {
+       "hp": 58
+      }
+     },
+     {
+      "col": "L",
+      "from": 61,
+      "every": 70,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 85,
+      "every": 160,
+      "wall": {
+       "hp": 75,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "zheng",
+       24
+      ],
+      [
+       "qiuyu",
+       108
+      ]
+     ],
+     "speed": 4.9,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 23,
+     "beasts": [
+      [
+       "qiuyu",
+       204
+      ]
+     ],
+     "speed": 5
+    },
+    {
+     "t": 39,
+     "beasts": [
+      [
+       "zheng",
+       85
+      ],
+      [
+       "qiuyu",
+       104
+      ]
+     ],
+     "speed": 5.1,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 54,
+     "beasts": [
+      [
+       "zheng",
+       43
+      ],
+      [
+       "yezhu",
+       388
+      ]
+     ],
+     "speed": 4.6,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 74,
+     "beasts": [
+      [
+       "yezhu",
+       520
+      ]
+     ],
+     "speed": 4.5,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.85,
+   "sky": "snow-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳",
+     "wall": "石室",
+     "won": "石室守住了！",
+     "lost": "石室没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu",
+     "wall": "the stone chamber",
+     "won": "Held!",
+     "lost": "The stone chamber fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "wm-kaikai",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-xirang-wumen",
+   "hui": "h07",
+   "title": {
+    "zh": "息壤 · 推着它们走一圈",
+    "en": "The swelling earth · Push them round once"
+   },
+   "tone": {
+    "color": "#101a33",
+    "alpha": 0.22
+   },
+   "lead": [
+    {
+     "zh": "第二天夜里，隔着那道墙。",
+     "en": "The second night, through the wall."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.35,
+    "until": 735,
+    "lines": [
+     {
+      "col": "L",
+      "from": 16,
+      "every": 13,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 34,
+      "every": 17,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": -4,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 65,
+      "every": 85,
+      "wall": {
+       "hp": 59
+      }
+     },
+     {
+      "col": "R",
+      "from": 71,
+      "every": 85,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 90,
+      "every": 150,
+      "wall": {
+       "hp": 77,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "qiuyu",
+       36
+      ],
+      [
+       "yezhu",
+       216
+      ]
+     ],
+     "speed": 4.9
+    },
+    {
+     "t": 22,
+     "beasts": [
+      [
+       "qiuyu",
+       92
+      ],
+      [
+       "yezhu",
+       224
+      ]
+     ],
+     "speed": 5,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 40,
+     "beasts": [
+      [
+       "zheng",
+       42
+      ],
+      [
+       "yezhu",
+       378
+      ]
+     ],
+     "speed": 4.8,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 59,
+     "beasts": [
+      [
+       "yezhu",
+       564
+      ]
+     ],
+     "speed": 4.4
+    },
+    {
+     "t": 75,
+     "beasts": [
+      [
+       "yezhu",
+       468
+      ]
+     ],
+     "speed": 4.5,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.857,
+   "sky": "fog-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳",
+     "wall": "息壤",
+     "won": "息壤守住了！",
+     "lost": "息壤没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu",
+     "wall": "the swelling earth",
+     "won": "Held!",
+     "lost": "The swelling earth fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "wm-dabi",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-dabi-sneeze",
+   "hui": "h08",
+   "title": {
+    "zh": "喷嚏符 · 让一拳",
+    "en": "The sneezing charm · Let the punch go by"
+   },
+   "tone": {
+    "color": "#22183a",
+    "alpha": 0.14
+   },
+   "lead": [
+    {
+     "zh": "腊月初八，宗门大比。观主到了。",
+     "en": "The eighth of the twelfth month: the sect contest. The abbot has come."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.47,
+    "until": 747,
+    "lines": [
+     {
+      "col": "L",
+      "from": 21,
+      "every": 14,
+      "cards": [
+       {
+        "n": -3,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 32,
+      "every": 17,
+      "cards": [
+       {
+        "n": -3,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 65,
+      "every": 95,
+      "wall": {
+       "hp": 62
+      }
+     },
+     {
+      "col": "L",
+      "from": 71,
+      "every": 95,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "qiuyu",
+       86
+      ],
+      [
+       "yezhu",
+       211
+      ]
+     ],
+     "speed": 4.94,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 21,
+     "beasts": [
+      [
+       "zheng",
+       44
+      ],
+      [
+       "qiuyu",
+       81
+      ]
+     ],
+     "speed": 5.04
+    },
+    {
+     "t": 36,
+     "beasts": [
+      [
+       "zheng",
+       54
+      ],
+      [
+       "yezhu",
+       300
+      ]
+     ],
+     "speed": 4.84
+    },
+    {
+     "t": 51,
+     "beasts": [
+      [
+       "qiuyu",
+       66
+      ],
+      [
+       "yezhu",
+       244
+      ]
+     ],
+     "speed": 4.94,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.883,
+   "sky": "storm-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳",
+     "wall": "五行台",
+     "won": "五行台守住了！",
+     "lost": "五行台没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu",
+     "wall": "the Five Elements stage",
+     "won": "Held!",
+     "lost": "The Five Elements stage fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-suifeng",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-suifeng-qinyan",
+   "hui": "h11",
+   "title": {
+    "zh": "秦雁 · 崖顶",
+    "en": "Qin Yan · The clifftop"
+   },
+   "tone": {
+    "color": "#2a1c2c",
+    "alpha": 0.22
+   },
+   "lead": [
+    {
+     "zh": "「下个月，我再来。」",
+     "en": "\"Next month, I'll come again.\""
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.61,
+    "until": 761,
+    "lines": [
+     {
+      "col": "L",
+      "from": 15,
+      "every": 15,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 31,
+      "every": 14,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 60,
+      "every": 80,
+      "wall": {
+       "hp": 65
+      }
+     },
+     {
+      "col": "L",
+      "from": 66,
+      "every": 80,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 75,
+      "every": 150,
+      "wall": {
+       "hp": 85,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 4,
+     "beasts": [
+      [
+       "zheng",
+       65
+      ],
+      [
+       "qiuyu",
+       79
+      ]
+     ],
+     "speed": 4.98,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 21,
+     "beasts": [
+      [
+       "yezhu",
+       333
+      ]
+     ],
+     "speed": 4.58,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 40,
+     "beasts": [
+      [
+       "qiuyu",
+       113
+      ],
+      [
+       "yezhu",
+       277
+      ]
+     ],
+     "speed": 5.18,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 59,
+     "beasts": [
+      [
+       "yezhu",
+       470
+      ]
+     ],
+     "speed": 4.48
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.914,
+   "sky": "clear-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳",
+     "wall": "崖顶",
+     "won": "崖顶守住了！",
+     "lost": "崖顶没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu",
+     "wall": "the clifftop",
+     "won": "Held!",
+     "lost": "The clifftop fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-suifeng",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-suifeng-canju",
+   "hui": "h11",
+   "title": {
+    "zh": "顶是艮 · 崖顶",
+    "en": "The top is Gen · The clifftop"
+   },
+   "tone": {
+    "color": "#1a2440",
+    "alpha": 0.26
+   },
+   "lead": [
+    {
+     "zh": "「下个月，我再来。」",
+     "en": "\"Next month, I'll come again.\""
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.64,
+    "until": 764,
+    "lines": [
+     {
+      "col": "L",
+      "from": 19,
+      "every": 17,
+      "cards": [
+       {
+        "n": -5,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 33,
+      "every": 17,
+      "cards": [
+       {
+        "n": -6,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 55,
+      "every": 70,
+      "wall": {
+       "hp": 66
+      }
+     },
+     {
+      "col": "R",
+      "from": 61,
+      "every": 70,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 80,
+      "every": 170,
+      "wall": {
+       "hp": 86,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "qiuyu",
+       176
+      ]
+     ],
+     "speed": 4.99
+    },
+    {
+     "t": 23,
+     "beasts": [
+      [
+       "yezhu",
+       370
+      ]
+     ],
+     "speed": 4.59
+    },
+    {
+     "t": 40,
+     "beasts": [
+      [
+       "zheng",
+       32
+      ],
+      [
+       "qiuyu",
+       142
+      ]
+     ],
+     "speed": 5.19,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 58,
+     "beasts": [
+      [
+       "qiuyu",
+       90
+      ],
+      [
+       "yezhu",
+       336
+      ]
+     ],
+     "speed": 4.99,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.713,
+   "sky": "cloudy-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳",
+     "wall": "艮位",
+     "won": "艮位守住了！",
+     "lost": "艮位没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu",
+     "wall": "the Gen square",
+     "won": "Held!",
+     "lost": "The Gen square fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-suifeng",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-suifeng-shanmen",
+   "hui": "h11",
+   "title": {
+    "zh": "山门 · 扫帚靠回墙角",
+    "en": "The mountain gate · The broom back in its corner"
+   },
+   "tone": {
+    "color": "#1b1f3a",
+    "alpha": 0.22
+   },
+   "lead": [
+    {
+     "zh": "「下个月，我再来。」",
+     "en": "\"Next month, I'll come again.\""
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.67,
+    "until": 767,
+    "lines": [
+     {
+      "col": "L",
+      "from": 20,
+      "every": 15,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": -6,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 29,
+      "every": 17,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 70,
+      "every": 95,
+      "wall": {
+       "hp": 67
+      }
+     },
+     {
+      "col": "L",
+      "from": 76,
+      "every": 95,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "qiuyu",
+       40
+      ],
+      [
+       "yezhu",
+       240
+      ]
+     ],
+     "speed": 5
+    },
+    {
+     "t": 23,
+     "beasts": [
+      [
+       "zheng",
+       35
+      ],
+      [
+       "qiuyu",
+       96
+      ]
+     ],
+     "speed": 5.1,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 41,
+     "beasts": [
+      [
+       "qiuyu",
+       189
+      ]
+     ],
+     "speed": 5.2,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 56,
+     "beasts": [
+      [
+       "qiuyu",
+       282
+      ]
+     ],
+     "speed": 5
+    },
+    {
+     "t": 72,
+     "beasts": [
+      [
+       "yezhu",
+       416
+      ]
+     ],
+     "speed": 4.6,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.927,
+   "sky": "rain-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳",
+     "wall": "山门",
+     "won": "山门守住了！",
+     "lost": "山门没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu",
+     "wall": "the mountain gate",
+     "won": "Held!",
+     "lost": "The mountain gate fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-nianyao",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-nianyao-mindanshi",
+   "hui": "h11",
+   "title": {
+    "zh": "闵丹师 · 丹房",
+    "en": "Pill-master Min · The pill house"
+   },
+   "tone": {
+    "color": "#2a1c2c",
+    "alpha": 0.26
+   },
+   "lead": [
+    {
+     "zh": "「黄精，碾到看不见丝。」",
+     "en": "\"Solomon's seal, grind it till you can't see a fibre.\""
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.7,
+    "until": 770,
+    "lines": [
+     {
+      "col": "L",
+      "from": 17,
+      "every": 15,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 34,
+      "every": 15,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 65,
+      "every": 95,
+      "wall": {
+       "hp": 68
+      }
+     },
+     {
+      "col": "L",
+      "from": 71,
+      "every": 95,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 80,
+      "every": 150,
+      "wall": {
+       "hp": 88,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "yezhu",
+       288
+      ]
+     ],
+     "speed": 4.51,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 20,
+     "beasts": [
+      [
+       "yezhu",
+       407
+      ]
+     ],
+     "speed": 4.61,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 38,
+     "beasts": [
+      [
+       "qiuyu",
+       81
+      ],
+      [
+       "yezhu",
+       300
+      ]
+     ],
+     "speed": 5.21,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 54,
+     "beasts": [
+      [
+       "yezhu",
+       423
+      ]
+     ],
+     "speed": 4.51
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.934,
+   "sky": "snow-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、犰狳",
+     "wall": "丹房",
+     "won": "丹房守住了！",
+     "lost": "丹房没守住……"
+    },
+    "en": {
+     "horde": "boars and qiuyu",
+     "wall": "the pill house",
+     "won": "Held!",
+     "lost": "The pill house fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-nianyao",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-nianyao-jingshi",
+   "hui": "h11",
+   "title": {
+    "zh": "正殿 · 屋脊的瓦缝",
+    "en": "The main hall · The seams of the ridge"
+   },
+   "tone": {
+    "color": "#14243a",
+    "alpha": 0.14
+   },
+   "lead": [
+    {
+     "zh": "「黄精，碾到看不见丝。」",
+     "en": "\"Solomon's seal, grind it till you can't see a fibre.\""
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.73,
+    "until": 773,
+    "lines": [
+     {
+      "col": "L",
+      "from": 18,
+      "every": 17,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 31,
+      "every": 17,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 65,
+      "every": 90,
+      "wall": {
+       "hp": 68
+      }
+     },
+     {
+      "col": "R",
+      "from": 71,
+      "every": 90,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 85,
+      "every": 160,
+      "wall": {
+       "hp": 88,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "yezhu",
+       352
+      ]
+     ],
+     "speed": 4.52,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 23,
+     "beasts": [
+      [
+       "zheng",
+       37
+      ],
+      [
+       "qiuyu",
+       167
+      ]
+     ],
+     "speed": 5.12,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 41,
+     "beasts": [
+      [
+       "qiuyu",
+       113
+      ],
+      [
+       "yezhu",
+       277
+      ]
+     ],
+     "speed": 5.22,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 61,
+     "beasts": [
+      [
+       "yezhu",
+       423
+      ]
+     ],
+     "speed": 4.52,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.941,
+   "sky": "clear-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳",
+     "wall": "正殿",
+     "won": "正殿守住了！",
+     "lost": "正殿没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu",
+     "wall": "the main hall",
+     "won": "Held!",
+     "lost": "The main hall fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-shenshi",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-shenshi-canju",
+   "hui": "h09",
+   "title": {
+    "zh": "把鼻子收起来 · 讲堂",
+    "en": "Put the nose away · The lecture hall"
+   },
+   "tone": {
+    "color": "#14243a",
+    "alpha": 0.22
+   },
+   "lead": [
+    {
+     "zh": "「神识不是眼睛，也不是耳朵。」",
+     "en": "\"Spirit sense isn't the eyes, and it isn't the ears.\""
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.79,
+    "until": 779,
+    "lines": [
+     {
+      "col": "L",
+      "from": 20,
+      "every": 13,
+      "cards": [
+       {
+        "n": -4,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 34,
+      "every": 16,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": -5,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 55,
+      "every": 95,
+      "wall": {
+       "hp": 70
+      }
+     },
+     {
+      "col": "R",
+      "from": 61,
+      "every": 95,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 85,
+      "every": 140,
+      "wall": {
+       "hp": 91,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 4,
+     "beasts": [
+      [
+       "qiuyu",
+       88
+      ],
+      [
+       "yezhu",
+       144
+      ]
+     ],
+     "speed": 5.04
+    },
+    {
+     "t": 24,
+     "beasts": [
+      [
+       "yezhu",
+       74
+      ],
+      [
+       "qique",
+       222
+      ]
+     ],
+     "speed": 6.54,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 44,
+     "beasts": [
+      [
+       "qiuyu",
+       92
+      ],
+      [
+       "qique",
+       151
+      ]
+     ],
+     "speed": 6.64,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 62,
+     "beasts": [
+      [
+       "yezhu",
+       259
+      ],
+      [
+       "qique",
+       211
+      ]
+     ],
+     "speed": 6.44
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.954,
+   "sky": "cloudy-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、犰狳、鬿雀",
+     "wall": "后山",
+     "won": "后山守住了！",
+     "lost": "后山没守住……"
+    },
+    "en": {
+     "horde": "boars and qiuyu and qique",
+     "wall": "the back hill",
+     "won": "Held!",
+     "lost": "The back hill fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-shenshi",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-shenshi-qingshen",
+   "hui": "h09",
+   "title": {
+    "zh": "老松 · 挂在树杈里",
+    "en": "The old pine · Caught in the branches"
+   },
+   "tone": {
+    "color": "#101a33",
+    "alpha": 0.14
+   },
+   "lead": [
+    {
+     "zh": "「神识不是眼睛，也不是耳朵。」",
+     "en": "\"Spirit sense isn't the eyes, and it isn't the ears.\""
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.82,
+    "until": 782,
+    "lines": [
+     {
+      "col": "L",
+      "from": 19,
+      "every": 15,
+      "cards": [
+       {
+        "n": -3,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 31,
+      "every": 17,
+      "cards": [
+       {
+        "n": -4,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 60,
+      "every": 80,
+      "wall": {
+       "hp": 71
+      }
+     },
+     {
+      "col": "L",
+      "from": 66,
+      "every": 80,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 70,
+      "every": 160,
+      "wall": {
+       "hp": 92,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "qiuyu",
+       192
+      ]
+     ],
+     "speed": 5.05,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 22,
+     "beasts": [
+      [
+       "zheng",
+       61
+      ],
+      [
+       "yezhu",
+       224
+      ]
+     ],
+     "speed": 4.85
+    },
+    {
+     "t": 38,
+     "beasts": [
+      [
+       "qiuyu",
+       210
+      ]
+     ],
+     "speed": 5.25,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 56,
+     "beasts": [
+      [
+       "zheng",
+       43
+      ],
+      [
+       "qiuyu",
+       194
+      ]
+     ],
+     "speed": 5.05,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 74,
+     "beasts": [
+      [
+       "yezhu",
+       572
+      ]
+     ],
+     "speed": 4.65
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.744,
+   "sky": "cloudy-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳",
+     "wall": "老松",
+     "won": "老松守住了！",
+     "lost": "老松没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu",
+     "wall": "the old pine",
+     "won": "Held!",
+     "lost": "The old pine fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-dingfeng",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-dingfeng-zhenyan",
+   "hui": "h09",
+   "title": {
+    "zh": "困阵 · 崖顶",
+    "en": "The trapping formation · The clifftop"
+   },
+   "tone": {
+    "color": "#1a2440",
+    "alpha": 0.18
+   },
+   "lead": [
+    {
+     "zh": "「定风，不是站着不动。是等它吹完。」",
+     "en": "\"Settling the wind isn't standing still. It's waiting for it to finish blowing.\""
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.85,
+    "until": 785,
+    "lines": [
+     {
+      "col": "L",
+      "from": 20,
+      "every": 17,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       },
+       {
+        "n": -5,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 27,
+      "every": 16,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": -4,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 65,
+      "every": 95,
+      "wall": {
+       "hp": 72
+      }
+     },
+     {
+      "col": "L",
+      "from": 71,
+      "every": 95,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "yezhu",
+       288
+      ]
+     ],
+     "speed": 4.56,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 19,
+     "beasts": [
+      [
+       "yezhu",
+       296
+      ]
+     ],
+     "speed": 4.66,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 36,
+     "beasts": [
+      [
+       "zheng",
+       57
+      ],
+      [
+       "qiuyu",
+       104
+      ]
+     ],
+     "speed": 5.26,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 54,
+     "beasts": [
+      [
+       "qique",
+       564
+      ]
+     ],
+     "speed": 6.46,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 66,
+     "beasts": [
+      [
+       "zheng",
+       55
+      ],
+      [
+       "yezhu",
+       304
+      ]
+     ],
+     "speed": 4.86,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.967,
+   "sky": "storm-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳、鬿雀",
+     "wall": "阵眼",
+     "won": "阵眼守住了！",
+     "lost": "阵眼没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu and qique",
+     "wall": "the formation's eye",
+     "won": "Held!",
+     "lost": "The formation's eye fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-yanceng",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-yanceng-mingce",
+   "hui": "h09",
+   "title": {
+    "zh": "执事堂 · 内门的名册",
+    "en": "The stewards' hall · The inner-gate roll"
+   },
+   "tone": {
+    "color": "#22183a",
+    "alpha": 0.14
+   },
+   "lead": [
+    {
+     "zh": "「孙二狗」三个字。",
+     "en": "The three characters \"Sun Ergou\"."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.88,
+    "until": 788,
+    "lines": [
+     {
+      "col": "L",
+      "from": 18,
+      "every": 16,
+      "cards": [
+       {
+        "n": -3,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 31,
+      "every": 16,
+      "cards": [
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": -5,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 60,
+      "every": 70,
+      "wall": {
+       "hp": 72
+      }
+     },
+     {
+      "col": "L",
+      "from": 66,
+      "every": 70,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 85,
+      "every": 170,
+      "wall": {
+       "hp": 94,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 4,
+     "beasts": [
+      [
+       "qique",
+       158
+      ],
+      [
+       "yezhu",
+       130
+      ]
+     ],
+     "speed": 6.46,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 22,
+     "beasts": [
+      [
+       "qique",
+       104
+      ],
+      [
+       "yezhu",
+       192
+      ]
+     ],
+     "speed": 6.56,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 41,
+     "beasts": [
+      [
+       "yezhu",
+       95
+      ],
+      [
+       "qique",
+       284
+      ]
+     ],
+     "speed": 6.66,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 60,
+     "beasts": [
+      [
+       "qiuyu",
+       188
+      ]
+     ],
+     "speed": 5.06,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.857,
+   "sky": "rain-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、犰狳、鬿雀",
+     "wall": "执事堂",
+     "won": "执事堂守住了！",
+     "lost": "执事堂没守住……"
+    },
+    "en": {
+     "horde": "boars and qiuyu and qique",
+     "wall": "the stewards' hall",
+     "won": "Held!",
+     "lost": "The stewards' hall fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "09-yanceng",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-yanceng-xilang",
+   "hui": "h09",
+   "title": {
+    "zh": "西廊 · 搬铺",
+    "en": "The West Gallery · Moving in"
+   },
+   "tone": {
+    "color": "#101a33",
+    "alpha": 0.14
+   },
+   "lead": [
+    {
+     "zh": "「孙二狗」三个字。",
+     "en": "The three characters \"Sun Ergou\"."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.91,
+    "until": 791,
+    "lines": [
+     {
+      "col": "L",
+      "from": 22,
+      "every": 15,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 1,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 27,
+      "every": 17,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       },
+       {
+        "n": -6,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 70,
+      "every": 75,
+      "wall": {
+       "hp": 73
+      }
+     },
+     {
+      "col": "L",
+      "from": 76,
+      "every": 75,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 3,
+     "beasts": [
+      [
+       "qiuyu",
+       192
+      ]
+     ],
+     "speed": 5.07,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 20,
+     "beasts": [
+      [
+       "qiuyu",
+       185
+      ]
+     ],
+     "speed": 5.17,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 39,
+     "beasts": [
+      [
+       "qique",
+       462
+      ]
+     ],
+     "speed": 6.67
+    },
+    {
+     "t": 56,
+     "beasts": [
+      [
+       "qiuyu",
+       90
+      ],
+      [
+       "yezhu",
+       336
+      ]
+     ],
+     "speed": 5.07
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.588,
+   "sky": "rain-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、犰狳、鬿雀",
+     "wall": "西廊",
+     "won": "西廊守住了！",
+     "lost": "西廊没守住……"
+    },
+    "en": {
+     "horde": "boars and qiuyu and qique",
+     "wall": "the West Gallery",
+     "won": "Held!",
+     "lost": "The West Gallery fell…"
+    }
+   }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "01-end",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": {
+    "_about": "结印 at the camera (Hanli 10-21: 「把结印放到现有的塔防类游戏中」; the dock is games/jieyin/helper.js, only where a camera is). Offered `when` (boss · waves · always; boss by default — 「别让用户太累」), a move strikes a BEAST — the 大妖 when it is out, else the nearest wave down the hand's column (or the squad's), else the nearest anywhere; never a card or a wall (「接了印后, 火弹没有打怪, 打了一个近处的卡」) — for `secs` of the squad's attack at once (× `bossMul` on the 大妖, at most `bossCap` of its full hp: a big chunk, never the whole fight — one 火弹 used to take a 大妖 outright, found live 10-21; and only once it is on the road, z < TOP), then the hand rests `cool` s. Never needed to win (「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」); it makes the kill faster, so ★★★ inside `par` comes easier (「结印可以帮助更快杀敌, 更容易取得3星成就」). The move ids are 手势斗法's (games/jieyin/duel.js, jieyin.json `doufa`: 小招 · 法术 · 大招); `from`: the save's marks first (古六's lesson); `secs`: what it does here.",
+    "when": "boss",
+    "cool": 10,
+    "bossMul": 2,
+    "bossCap": 0.45,
+    "idle": 60,
+    "say": {
+     "zh": "大妖来了——结印！",
+     "en": "The great beast is here — make the seals!"
+    },
+    "first": {
+     "zh": "比个剑诀，飞剑就出去",
+     "en": "Make the sword seal and the flying sword goes"
+    },
+    "armedFps": 30,
+    "set": "simple"
+   },
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-end-sangzi",
+   "hui": "h10",
+   "title": {
+    "zh": "嗓子 · 往柳湾",
+    "en": "The voice · To the willow bend"
+   },
+   "tone": {
+    "color": "#14243a",
+    "alpha": 0.22
+   },
+   "lead": [
+    {
+     "zh": "一碗豆浆，温的，没有放糖。",
+     "en": "A bowl of soy milk, warm, no sugar."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.92,
+    "until": 792,
+    "lines": [
+     {
+      "col": "L",
+      "from": 14,
+      "every": 14,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": 3,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 28,
+      "every": 14,
+      "cards": [
+       {
+        "n": 2,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 70,
+      "every": 70,
+      "wall": {
+       "hp": 73
+      }
+     },
+     {
+      "col": "L",
+      "from": 76,
+      "every": 70,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 60,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "L",
+      "from": 90,
+      "every": 150,
+      "wall": {
+       "hp": 95,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 4,
+     "beasts": [
+      [
+       "qiuyu",
+       58
+      ],
+      [
+       "yezhu",
+       141
+      ]
+     ],
+     "speed": 5.08
+    },
+    {
+     "t": 24,
+     "beasts": [
+      [
+       "qique",
+       130
+      ],
+      [
+       "yezhu",
+       241
+      ]
+     ],
+     "speed": 6.58
+    },
+    {
+     "t": 43,
+     "beasts": [
+      [
+       "qiuyu",
+       139
+      ],
+      [
+       "qique",
+       227
+      ]
+     ],
+     "speed": 6.68
+    },
+    {
+     "t": 61,
+     "beasts": [
+      [
+       "zheng",
+       44
+      ],
+      [
+       "yezhu",
+       244
+      ]
+     ],
+     "speed": 4.78,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.982,
+   "sky": "rain-night",
+   "words": {
+    "zh": {
+     "horde": "野猪、狰、犰狳、鬿雀",
+     "wall": "柳湾",
+     "won": "柳湾守住了！",
+     "lost": "柳湾没守住……"
+    },
+    "en": {
+     "horde": "boars and zheng and qiuyu and qique",
+     "wall": "the willow bend",
+     "won": "Held!",
+     "lost": "The willow bend fell…"
+    }
+   }
   }
  ]
 }

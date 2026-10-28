@@ -364,7 +364,7 @@ test('the hand\'s progress to the host (Hanli 10-22: 「结印的过程中, 可�
 test('where the dock stands is the host\'s data (offerSeals `dock`): 守山门 top-left, narrow; 守墙关 · 守炉 the bottom corner, narrow', async () => withFetch(async () => {
   const sad = JSON.parse(readFileSync(at('worlds/jiuding/levels/sadoushou.json'), 'utf8'));
   const { jieyinOf } = await import('../scripts/games/sadoushou/core.js');
-  for (const l of sad.levels) assert.deepEqual(jieyinOf(sad, l).dock, sad.jieyinDock, `${l.id}: the kit's placement`);
+  for (const l of sad.levels.filter((x) => x.jieyin !== false)) assert.deepEqual(jieyinOf(sad, l).dock, sad.jieyinDock, `${l.id}: the kit's placement`); // `jieyin: false`: a story level before the lesson
   assert.equal(sad.jieyinDock.at, 'top');
   assert.ok(sad.jieyinDock.w > 0 && sad.jieyinDock.w <= 0.45, 'the frame stays off the middle column');
   const top = page(), low = page();

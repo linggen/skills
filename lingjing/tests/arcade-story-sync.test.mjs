@@ -27,7 +27,7 @@ test('every board a scene shows has its row under a 回', () => {
 // A row's own how-to (arcade.js howOf, 2026-10-22: 雪夜柴垛's tile said 「点虚线圈布符…选中银月」, the kit's, though the level
 // has neither) is its story task's, word for word — one how-to for the board, in the story and the 游戏厅.
 test('a 游戏厅 row that carries a how-to carries its task\'s', () => {
-  for (const g of reg.games.filter((r) => r.how)) {
+  for (const g of reg.games.filter((r) => r.how && !r.replaced)) { // a board the story gave to another kit (旧版) keeps the how it had
     const t = content.tasks.tasks.find((x) => x.id === g.task);
     assert.ok(t, `${g.id} ${g.task}: a task`);
     assert.deepEqual(g.how, t.how, `${g.id} ${g.task}: the task's how`);

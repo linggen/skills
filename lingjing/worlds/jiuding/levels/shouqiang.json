@@ -794,6 +794,2614 @@
      ]
     ]
    ]
+  },
+  {
+   "id": "zl-dianmao-sunergou",
+   "kit": "shouqiang",
+   "story": "wm-dianmao",
+   "jieyin": false,
+   "title": {
+    "zh": "孙二狗 · 讲堂",
+    "en": "Sun Ergou · The lecture hall"
+   },
+   "place": "shanmen",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 1.92,
+   "growth": 0.37,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      10,
+      0.51,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      18,
+      0.44,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      25,
+      0.2,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      28,
+      0.22,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      31,
+      0.21,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      37,
+      0.2,
+      0
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "九月底，褚先生点卯。",
+     "en": "At the end of the ninth month, Master Chu takes the roll."
+    },
+    {
+     "zh": "野猪来了！",
+     "en": "Boars are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-dianmao-maxiaobao",
+   "kit": "shouqiang",
+   "story": "wm-dianmao",
+   "jieyin": false,
+   "title": {
+    "zh": "马小宝 · 讲堂",
+    "en": "Ma Xiaobao · The lecture hall"
+   },
+   "place": "xikou",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 1.93,
+   "growth": 0.37,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      11,
+      0.77,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      19,
+      0.38,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      26,
+      0.25,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      26,
+      0.32,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      34,
+      0.2,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      37,
+      0.2,
+      0
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "tailu-bg",
+    "wall": "wall"
+   },
+   "paths": [
+    [
+     [
+      232,
+      -70
+     ],
+     [
+      222,
+      200
+     ],
+     [
+      200,
+      420
+     ],
+     [
+      179,
+      489
+     ],
+     [
+      166,
+      580
+     ],
+     [
+      138,
+      670
+     ],
+     [
+      124,
+      760
+     ]
+    ],
+    [
+     [
+      322,
+      -70
+     ],
+     [
+      340,
+      200
+     ],
+     [
+      356,
+      426
+     ],
+     [
+      370,
+      489
+     ],
+     [
+      375,
+      580
+     ],
+     [
+      396,
+      670
+     ],
+     [
+      412,
+      760
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "九月底，褚先生点卯。",
+     "en": "At the end of the ninth month, Master Chu takes the roll."
+    },
+    {
+     "zh": "野猪来了！",
+     "en": "Boars are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-yaoyuan-luobo",
+   "kit": "shouqiang",
+   "story": "wm-yaoyuan",
+   "jieyin": false,
+   "title": {
+    "zh": "一根萝卜 · 别动",
+    "en": "A radish · Keep still"
+   },
+   "place": "xikou",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 1.93,
+   "growth": 0.37,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      10,
+      0.84,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      14,
+      0.49,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      22,
+      0.33,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      25,
+      0.22,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      29,
+      0.23,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      38,
+      0.21,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      39,
+      0.2,
+      0
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "tailu-bg",
+    "wall": "wall"
+   },
+   "paths": [
+    [
+     [
+      232,
+      -70
+     ],
+     [
+      222,
+      200
+     ],
+     [
+      200,
+      420
+     ],
+     [
+      179,
+      489
+     ],
+     [
+      166,
+      580
+     ],
+     [
+      138,
+      670
+     ],
+     [
+      124,
+      760
+     ]
+    ],
+    [
+     [
+      322,
+      -70
+     ],
+     [
+      340,
+      200
+     ],
+     [
+      356,
+      426
+     ],
+     [
+      370,
+      489
+     ],
+     [
+      375,
+      580
+     ],
+     [
+      396,
+      670
+     ],
+     [
+      412,
+      760
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "十月初九，丑时，药园。",
+     "en": "The ninth of the tenth month, the hour of the Ox, the herb garden."
+    },
+    {
+     "zh": "野猪来了！",
+     "en": "Boars are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-wangzuo-xiongya",
+   "kit": "shouqiang",
+   "story": "wm-xiongya",
+   "jieyin": false,
+   "title": {
+    "zh": "凶崖 · 往下爬",
+    "en": "The Deadly Cliff · Climbing down"
+   },
+   "place": "shanmen",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 1.95,
+   "growth": 0.38,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      12,
+      0.54,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      6,
+      1.49,
+      0
+     ],
+     [
+      "zheng",
+      9,
+      0.57,
+      6
+     ]
+    ],
+    [
+     [
+      "zheng",
+      19,
+      0.38,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      26,
+      0.26,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      17,
+      0.63,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      13,
+      0.69,
+      0
+     ],
+     [
+      "yezhu",
+      11,
+      0.6,
+      3
+     ],
+     [
+      "qiuyu",
+      4,
+      2.27,
+      10
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      19,
+      0.45,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      17,
+      0.32,
+      0
+     ],
+     [
+      "zheng",
+      25,
+      0.23,
+      5
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "石桥窄，只容一个人。",
+     "en": "The stone bridge, room for one."
+    },
+    {
+     "zh": "野猪、狰、犰狳来了！",
+     "en": "Boars and zheng and qiuyu are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-anhe-guli",
+   "kit": "shouqiang",
+   "story": "wm-tama",
+   "jieyin": false,
+   "title": {
+    "zh": "一把谷粒 · 藤",
+    "en": "A handful of grain · Vines"
+   },
+   "place": "xikou",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 1.95,
+   "growth": 0.38,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      12,
+      0.68,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      16,
+      0.35,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      18,
+      0.46,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      25,
+      0.29,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      7,
+      1.56,
+      0
+     ],
+     [
+      "zheng",
+      16,
+      0.36,
+      4
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      32,
+      0.26,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      15,
+      0.41,
+      0
+     ],
+     [
+      "qiuyu",
+      5,
+      1.92,
+      4
+     ],
+     [
+      "yezhu",
+      17,
+      0.39,
+      10
+     ]
+    ],
+    [
+     [
+      "zheng",
+      17,
+      0.34,
+      0
+     ],
+     [
+      "yezhu",
+      14,
+      0.57,
+      5
+     ],
+     [
+      "qiuyu",
+      8,
+      1.02,
+      10
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "tailu-bg",
+    "wall": "wall"
+   },
+   "paths": [
+    [
+     [
+      232,
+      -70
+     ],
+     [
+      222,
+      200
+     ],
+     [
+      200,
+      420
+     ],
+     [
+      179,
+      489
+     ],
+     [
+      166,
+      580
+     ],
+     [
+      138,
+      670
+     ],
+     [
+      124,
+      760
+     ]
+    ],
+    [
+     [
+      322,
+      -70
+     ],
+     [
+      340,
+      200
+     ],
+     [
+      356,
+      426
+     ],
+     [
+      370,
+      489
+     ],
+     [
+      375,
+      580
+     ],
+     [
+      396,
+      670
+     ],
+     [
+      412,
+      760
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "四条火蛇，一齐扑了上来。",
+     "en": "Four fire snakes, all lunging at once."
+    },
+    {
+     "zh": "野猪、狰、犰狳来了！",
+     "en": "Boars and zheng and qiuyu are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-zhaojing-mirror",
+   "kit": "shouqiang",
+   "story": "wm-zhaojing",
+   "title": {
+    "zh": "藏息 · 镜光扫过来",
+    "en": "Hide the breath · The mirror's light"
+   },
+   "place": "shanmen",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 1.97,
+   "growth": 0.39,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      11,
+      0.7,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      15,
+      0.41,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      3,
+      2.53,
+      0
+     ],
+     [
+      "yezhu",
+      7,
+      1.18,
+      7
+     ],
+     [
+      "zheng",
+      9,
+      0.6,
+      12
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      6,
+      1.68,
+      0
+     ],
+     [
+      "zheng",
+      15,
+      0.47,
+      4
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      12,
+      0.64,
+      0
+     ],
+     [
+      "zheng",
+      24,
+      0.22,
+      7
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      6,
+      1.77,
+      0
+     ],
+     [
+      "zheng",
+      15,
+      0.51,
+      6
+     ],
+     [
+      "yezhu",
+      7,
+      1.09,
+      10
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      22,
+      0.32,
+      0
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "大比前夜，大通铺。",
+     "en": "The contest's eve, the big bunk."
+    },
+    {
+     "zh": "野猪、狰、犰狳来了！",
+     "en": "Boars and zheng and qiuyu are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-fengtou-pig",
+   "kit": "shouqiang",
+   "story": "wm-fengtou",
+   "title": {
+    "zh": "风掉头 · 猪蜻蜓",
+    "en": "The wind turns · The Pigcopter"
+   },
+   "place": "yaoyuan",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1100,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 1.97,
+   "growth": 0.39,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      11,
+      0.67,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      7,
+      1.17,
+      0
+     ],
+     [
+      "zheng",
+      11,
+      0.76,
+      7
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      14,
+      0.5,
+      0
+     ],
+     [
+      "zheng",
+      6,
+      1.45,
+      6
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      9,
+      0.84,
+      0
+     ],
+     [
+      "yezhu",
+      9,
+      1,
+      2
+     ]
+    ],
+    [
+     [
+      "zheng",
+      12,
+      0.47,
+      0
+     ],
+     [
+      "yezhu",
+      16,
+      0.5,
+      2
+     ]
+    ],
+    [
+     [
+      "zheng",
+      18,
+      0.36,
+      0
+     ],
+     [
+      "yezhu",
+      18,
+      0.47,
+      5
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      9,
+      0.82,
+      0
+     ],
+     [
+      "zheng",
+      22,
+      0.26,
+      4
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "yaoyuan-bg",
+    "wall": "yaoyuan-wall"
+   },
+   "paths": [
+    107,
+    215,
+    323,
+    431
+   ],
+   "lead": [
+    {
+     "zh": "日头沉下去了，旗先是一垂。",
+     "en": "The sun sank; the banner drooped."
+    },
+    {
+     "zh": "野猪、狰、犰狳来了！",
+     "en": "Boars and zheng and qiuyu are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-suifeng-yezi",
+   "kit": "shouqiang",
+   "story": "09-suifeng",
+   "title": {
+    "zh": "一片叶子 · 崖顶",
+    "en": "A single leaf · The clifftop"
+   },
+   "place": "yaoyuan",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1100,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 1.99,
+   "growth": 0.4,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      13,
+      0.48,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      7,
+      0.87,
+      0
+     ],
+     [
+      "yezhu",
+      11,
+      0.46,
+      2
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      4,
+      1.81,
+      0
+     ],
+     [
+      "yezhu",
+      14,
+      0.5,
+      3
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      8,
+      1.45,
+      0
+     ],
+     [
+      "yezhu",
+      12,
+      0.72,
+      3
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      5,
+      1.48,
+      0
+     ],
+     [
+      "yezhu",
+      21,
+      0.25,
+      5
+     ]
+    ],
+    [
+     [
+      "zheng",
+      18,
+      0.46,
+      0
+     ],
+     [
+      "yezhu",
+      15,
+      0.46,
+      3
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      47,
+      0.2,
+      0
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "yaoyuan-bg",
+    "wall": "yaoyuan-wall"
+   },
+   "paths": [
+    107,
+    215,
+    323,
+    431
+   ],
+   "lead": [
+    {
+     "zh": "「下个月，我再来。」",
+     "en": "\"Next month, I'll come again.\""
+    },
+    {
+     "zh": "野猪、狰、犰狳来了！",
+     "en": "Boars and zheng and qiuyu are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-suifeng-qulao",
+   "kit": "shouqiang",
+   "story": "09-suifeng",
+   "title": {
+    "zh": "瞿老 · 崖顶",
+    "en": "Old Qu · The clifftop"
+   },
+   "place": "xikou",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2,
+   "growth": 0.4,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      13,
+      0.54,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      17,
+      0.49,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      11,
+      0.73,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      14,
+      0.52,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      31,
+      0.22,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      42,
+      0.21,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      13,
+      0.9,
+      0
+     ],
+     [
+      "zheng",
+      15,
+      0.51,
+      4
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "tailu-bg",
+    "wall": "wall"
+   },
+   "paths": [
+    [
+     [
+      232,
+      -70
+     ],
+     [
+      222,
+      200
+     ],
+     [
+      200,
+      420
+     ],
+     [
+      179,
+      489
+     ],
+     [
+      166,
+      580
+     ],
+     [
+      138,
+      670
+     ],
+     [
+      124,
+      760
+     ]
+    ],
+    [
+     [
+      322,
+      -70
+     ],
+     [
+      340,
+      200
+     ],
+     [
+      356,
+      426
+     ],
+     [
+      370,
+      489
+     ],
+     [
+      375,
+      580
+     ],
+     [
+      396,
+      670
+     ],
+     [
+      412,
+      760
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "「下个月，我再来。」",
+     "en": "\"Next month, I'll come again.\""
+    },
+    {
+     "zh": "野猪、狰、犰狳来了！",
+     "en": "Boars and zheng and qiuyu are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-nianyao-yaoyuan",
+   "kit": "shouqiang",
+   "story": "09-nianyao",
+   "title": {
+    "zh": "夜里的药园 · 东角那三棵禾",
+    "en": "The herb garden at night · The three stalks in the east corner"
+   },
+   "place": "shanmen",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2,
+   "growth": 0.4,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      11,
+      0.65,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      16,
+      0.36,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      5,
+      1.57,
+      0
+     ],
+     [
+      "yezhu",
+      9,
+      0.77,
+      5
+     ]
+    ],
+    [
+     [
+      "zheng",
+      25,
+      0.24,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      7,
+      1.54,
+      0
+     ],
+     [
+      "zheng",
+      16,
+      0.52,
+      5
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      30,
+      0.25,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      20,
+      0.43,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      46,
+      0.2,
+      0
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "「黄精，碾到看不见丝。」",
+     "en": "\"Solomon's seal, grind it till you can't see a fibre.\""
+    },
+    {
+     "zh": "野猪、狰、犰狳来了！",
+     "en": "Boars and zheng and qiuyu are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-nianyao-shuangma",
+   "kit": "shouqiang",
+   "story": "09-nianyao",
+   "title": {
+    "zh": "双马饮泉 · 药园",
+    "en": "Two horses at the spring · The garden"
+   },
+   "place": "xikou",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.01,
+   "growth": 0.4,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      12,
+      0.56,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      10,
+      0.64,
+      0
+     ],
+     [
+      "yezhu",
+      6,
+      1.05,
+      4
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      21,
+      0.35,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      9,
+      0.73,
+      0
+     ],
+     [
+      "qiuyu",
+      8,
+      1.43,
+      4
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      12,
+      0.8,
+      0
+     ],
+     [
+      "yezhu",
+      10,
+      0.77,
+      5
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      17,
+      0.51,
+      0
+     ],
+     [
+      "qiuyu",
+      5,
+      2.41,
+      2
+     ],
+     [
+      "zheng",
+      12,
+      0.65,
+      9
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      40,
+      0.2,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      46,
+      0.2,
+      0
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "tailu-bg",
+    "wall": "wall"
+   },
+   "paths": [
+    [
+     [
+      232,
+      -70
+     ],
+     [
+      222,
+      200
+     ],
+     [
+      200,
+      420
+     ],
+     [
+      179,
+      489
+     ],
+     [
+      166,
+      580
+     ],
+     [
+      138,
+      670
+     ],
+     [
+      124,
+      760
+     ]
+    ],
+    [
+     [
+      322,
+      -70
+     ],
+     [
+      340,
+      200
+     ],
+     [
+      356,
+      426
+     ],
+     [
+      370,
+      489
+     ],
+     [
+      375,
+      580
+     ],
+     [
+      396,
+      670
+     ],
+     [
+      412,
+      760
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "「黄精，碾到看不见丝。」",
+     "en": "\"Solomon's seal, grind it till you can't see a fibre.\""
+    },
+    {
+     "zh": "野猪、狰、犰狳来了！",
+     "en": "Boars and zheng and qiuyu are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-shenshi-jiangtang",
+   "kit": "shouqiang",
+   "story": "09-shenshi",
+   "title": {
+    "zh": "讲堂 · 下了课",
+    "en": "The lecture hall · After class"
+   },
+   "place": "yaoyuan",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1100,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.02,
+   "growth": 0.41,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      12,
+      0.59,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      7,
+      1.06,
+      0
+     ],
+     [
+      "qiuyu",
+      5,
+      1.84,
+      4
+     ]
+    ],
+    [
+     [
+      "qique",
+      13,
+      0.67,
+      0
+     ],
+     [
+      "zheng",
+      8,
+      0.86,
+      3
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      25,
+      0.25,
+      0
+     ]
+    ],
+    [
+     [
+      "qique",
+      25,
+      0.24,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      17,
+      0.32,
+      0
+     ],
+     [
+      "qiuyu",
+      10,
+      1.03,
+      4
+     ]
+    ],
+    [
+     [
+      "zheng",
+      36,
+      0.24,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      16,
+      0.46,
+      0
+     ],
+     [
+      "yezhu",
+      9,
+      0.69,
+      5
+     ],
+     [
+      "qiuyu",
+      11,
+      0.89,
+      12
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "yaoyuan-bg",
+    "wall": "yaoyuan-wall"
+   },
+   "paths": [
+    107,
+    215,
+    323,
+    431
+   ],
+   "lead": [
+    {
+     "zh": "「神识不是眼睛，也不是耳朵。」",
+     "en": "\"Spirit sense isn't the eyes, and it isn't the ears.\""
+    },
+    {
+     "zh": "野猪、狰、犰狳、鬿雀来了！",
+     "en": "Boars and zheng and qiuyu and qique are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-shenshi-qinyan",
+   "kit": "shouqiang",
+   "story": "09-shenshi",
+   "title": {
+    "zh": "秦雁 · 后山崖顶",
+    "en": "Qin Yan · The back-hill clifftop"
+   },
+   "place": "xikou",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.02,
+   "growth": 0.41,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      12,
+      0.6,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      9,
+      0.79,
+      0
+     ]
+    ],
+    [
+     [
+      "qique",
+      10,
+      0.89,
+      0
+     ],
+     [
+      "yezhu",
+      10,
+      0.72,
+      2
+     ]
+    ],
+    [
+     [
+      "qique",
+      11,
+      0.62,
+      0
+     ],
+     [
+      "qiuyu",
+      7,
+      1.63,
+      4
+     ]
+    ],
+    [
+     [
+      "qique",
+      26,
+      0.27,
+      0
+     ]
+    ],
+    [
+     [
+      "qique",
+      32,
+      0.25,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      19,
+      0.41,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      25,
+      0.41,
+      0
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "tailu-bg",
+    "wall": "wall"
+   },
+   "paths": [
+    [
+     [
+      232,
+      -70
+     ],
+     [
+      222,
+      200
+     ],
+     [
+      200,
+      420
+     ],
+     [
+      179,
+      489
+     ],
+     [
+      166,
+      580
+     ],
+     [
+      138,
+      670
+     ],
+     [
+      124,
+      760
+     ]
+    ],
+    [
+     [
+      322,
+      -70
+     ],
+     [
+      340,
+      200
+     ],
+     [
+      356,
+      426
+     ],
+     [
+      370,
+      489
+     ],
+     [
+      375,
+      580
+     ],
+     [
+      396,
+      670
+     ],
+     [
+      412,
+      760
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "「神识不是眼睛，也不是耳朵。」",
+     "en": "\"Spirit sense isn't the eyes, and it isn't the ears.\""
+    },
+    {
+     "zh": "野猪、犰狳、鬿雀来了！",
+     "en": "Boars and qiuyu and qique are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-dingfeng-yading",
+   "kit": "shouqiang",
+   "story": "09-dingfeng",
+   "title": {
+    "zh": "崖顶的蜡烛 · 等它吹完",
+    "en": "The candle on the clifftop · Wait till it's blown out"
+   },
+   "place": "shanmen",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.03,
+   "growth": 0.41,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      11,
+      0.62,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      4,
+      2.29,
+      0
+     ],
+     [
+      "zheng",
+      7,
+      0.92,
+      5
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      5,
+      1.94,
+      0
+     ],
+     [
+      "zheng",
+      9,
+      0.74,
+      5
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      7,
+      0.96,
+      0
+     ],
+     [
+      "qiuyu",
+      6,
+      1.91,
+      5
+     ],
+     [
+      "zheng",
+      7,
+      0.91,
+      11
+     ]
+    ],
+    [
+     [
+      "qique",
+      26,
+      0.22,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      5,
+      1.71,
+      0
+     ],
+     [
+      "zheng",
+      10,
+      0.77,
+      2
+     ],
+     [
+      "qique",
+      13,
+      0.66,
+      9
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      15,
+      0.47,
+      0
+     ],
+     [
+      "qique",
+      17,
+      0.42,
+      4
+     ]
+    ],
+    [
+     [
+      "zheng",
+      11,
+      0.57,
+      0
+     ],
+     [
+      "qique",
+      15,
+      0.39,
+      5
+     ],
+     [
+      "qiuyu",
+      7,
+      1.65,
+      8
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      11,
+      0.89,
+      0
+     ],
+     [
+      "qique",
+      12,
+      0.61,
+      3
+     ],
+     [
+      "zheng",
+      14,
+      0.6,
+      6
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "「定风，不是站着不动。是等它吹完。」",
+     "en": "\"Settling the wind isn't standing still. It's waiting for it to finish blowing.\""
+    },
+    {
+     "zh": "野猪、狰、犰狳、鬿雀来了！",
+     "en": "Boars and zheng and qiuyu and qique are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-yanceng-sunergou",
+   "kit": "shouqiang",
+   "story": "09-yanceng",
+   "title": {
+    "zh": "孙二狗 · 执事堂",
+    "en": "Sun Ergou · The stewards' hall"
+   },
+   "place": "xikou",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.03,
+   "growth": 0.41,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      12,
+      0.49,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      15,
+      0.59,
+      0
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      7,
+      0.79,
+      0
+     ],
+     [
+      "qique",
+      6,
+      1.29,
+      4
+     ],
+     [
+      "zheng",
+      6,
+      1.28,
+      10
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      15,
+      0.72,
+      0
+     ]
+    ],
+    [
+     [
+      "qique",
+      29,
+      0.29,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      10,
+      0.57,
+      0
+     ],
+     [
+      "yezhu",
+      22,
+      0.3,
+      6
+     ]
+    ],
+    [
+     [
+      "zheng",
+      13,
+      0.49,
+      0
+     ],
+     [
+      "qique",
+      25,
+      0.31,
+      5
+     ]
+    ],
+    [
+     [
+      "zheng",
+      22,
+      0.29,
+      0
+     ],
+     [
+      "qiuyu",
+      11,
+      0.92,
+      4
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "tailu-bg",
+    "wall": "wall"
+   },
+   "paths": [
+    [
+     [
+      232,
+      -70
+     ],
+     [
+      222,
+      200
+     ],
+     [
+      200,
+      420
+     ],
+     [
+      179,
+      489
+     ],
+     [
+      166,
+      580
+     ],
+     [
+      138,
+      670
+     ],
+     [
+      124,
+      760
+     ]
+    ],
+    [
+     [
+      322,
+      -70
+     ],
+     [
+      340,
+      200
+     ],
+     [
+      356,
+      426
+     ],
+     [
+      370,
+      489
+     ],
+     [
+      375,
+      580
+     ],
+     [
+      396,
+      670
+     ],
+     [
+      412,
+      760
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "「孙二狗」三个字。",
+     "en": "The three characters \"Sun Ergou\"."
+    },
+    {
+     "zh": "野猪、狰、犰狳、鬿雀来了！",
+     "en": "Boars and zheng and qiuyu and qique are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-yanceng-zhuochong",
+   "kit": "shouqiang",
+   "story": "09-yanceng",
+   "title": {
+    "zh": "捉虫 · 阿禾那一小条地",
+    "en": "Catching bugs · Ahe's little strip"
+   },
+   "place": "shanmen",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1200,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.03,
+   "growth": 0.41,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      13,
+      0.5,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      8,
+      0.85,
+      0
+     ],
+     [
+      "qiuyu",
+      4,
+      1.76,
+      5
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      6,
+      1.96,
+      0
+     ],
+     [
+      "zheng",
+      12,
+      0.71,
+      3
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      7,
+      1.11,
+      0
+     ],
+     [
+      "yezhu",
+      10,
+      0.76,
+      3
+     ]
+    ],
+    [
+     [
+      "qique",
+      14,
+      0.4,
+      0
+     ],
+     [
+      "qiuyu",
+      8,
+      1.27,
+      3
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      16,
+      0.56,
+      0
+     ],
+     [
+      "qiuyu",
+      10,
+      0.7,
+      7
+     ]
+    ],
+    [
+     [
+      "qique",
+      13,
+      0.45,
+      0
+     ],
+     [
+      "yezhu",
+      24,
+      0.27,
+      4
+     ]
+    ],
+    [
+     [
+      "zheng",
+      13,
+      0.54,
+      0
+     ],
+     [
+      "yezhu",
+      17,
+      0.35,
+      3
+     ],
+     [
+      "qiuyu",
+      6,
+      1.42,
+      9
+     ]
+    ]
+   ],
+   "lead": [
+    {
+     "zh": "「孙二狗」三个字。",
+     "en": "The three characters \"Sun Ergou\"."
+    },
+    {
+     "zh": "野猪、狰、犰狳、鬿雀来了！",
+     "en": "Boars and zheng and qiuyu and qique are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
+  },
+  {
+   "id": "zl-qianshui-qi",
+   "kit": "shouqiang",
+   "story": "01-qianshui",
+   "title": {
+    "zh": "一口气 · 河心坑",
+    "en": "One breath · The pit mid-river"
+   },
+   "place": "yaoyuan",
+   "leadSec": 6,
+   "between": 3,
+   "wall": 1100,
+   "wallY": 760,
+   "rangeY": 160,
+   "difficulty": 1,
+   "hpMul": 2.04,
+   "growth": 0.41,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "waves": [
+    [
+     [
+      "yezhu",
+      12,
+      0.43,
+      0
+     ]
+    ],
+    [
+     [
+      "zheng",
+      6,
+      1.03,
+      0
+     ],
+     [
+      "qiuyu",
+      7,
+      1.52,
+      6
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      22,
+      0.28,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      12,
+      1.04,
+      0
+     ]
+    ],
+    [
+     [
+      "qique",
+      28,
+      0.25,
+      0
+     ]
+    ],
+    [
+     [
+      "qiuyu",
+      7,
+      1.72,
+      0
+     ],
+     [
+      "qique",
+      24,
+      0.37,
+      4
+     ]
+    ],
+    [
+     [
+      "zheng",
+      23,
+      0.33,
+      0
+     ],
+     [
+      "qiuyu",
+      10,
+      1.07,
+      3
+     ]
+    ],
+    [
+     [
+      "zheng",
+      16,
+      0.41,
+      0
+     ],
+     [
+      "yezhu",
+      29,
+      0.27,
+      6
+     ]
+    ]
+   ],
+   "art": {
+    "bg": "yaoyuan-bg",
+    "wall": "yaoyuan-wall"
+   },
+   "paths": [
+    107,
+    215,
+    323,
+    431
+   ],
+   "lead": [
+    {
+     "zh": "「你下去，把它拿走。」",
+     "en": "\"Go down and take it away.\""
+    },
+    {
+     "zh": "野猪、狰、犰狳、鬿雀来了！",
+     "en": "Boars and zheng and qiuyu and qique are coming!",
+     "big": true
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    }
+   ]
   }
  ]
 }

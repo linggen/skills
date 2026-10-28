@@ -53,7 +53,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 114,
+       "n": 159,
        "level": "baicai",
        "zhuli": true
       },
@@ -74,7 +74,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 183,
+       "n": 236,
        "level": "renzi-dash"
       },
       {
@@ -94,7 +94,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 115,
+       "n": 160,
        "level": "zaotai",
        "zhuli": true
       },
@@ -115,7 +115,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 187,
+       "n": 240,
        "level": "shouyan",
        "zhuli": true
       },
@@ -187,7 +187,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 121,
+       "n": 166,
        "level": "shouhuo",
        "zhuli": true
       },
@@ -208,7 +208,7 @@
        "mechanic": "割绳子",
        "variety": "割绳子",
        "game": "bread",
-       "n": 45,
+       "n": 77,
        "level": "one"
       },
       {
@@ -243,7 +243,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 144,
+       "n": 190,
        "level": "yinyue-bing"
       },
       {
@@ -302,11 +302,12 @@
         "zh": "上崖 · 一根一根",
         "en": "Up the cliff · One stem at a time"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 78,
-       "level": "shangya"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 117,
+       "level": "zl-cliff-shangya",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -325,7 +326,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 127,
+       "n": 172,
        "level": "deer-wind"
       },
       {
@@ -345,7 +346,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 116,
+       "n": 161,
        "level": "tailu",
        "zhuli": true
       },
@@ -363,11 +364,12 @@
         "zh": "算账 · 肉上秤",
         "en": "Settling up · The meat on the steelyard"
        },
-       "mechanic": "割绳子",
-       "variety": "割绳子",
-       "game": "rentrope",
-       "n": 46,
-       "level": "one"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 79,
+       "level": "zl-rent-scale",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -386,7 +388,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 162,
+       "n": 214,
        "level": "masan"
       },
       {
@@ -403,11 +405,12 @@
         "zh": "银色的血 · 八道断口",
         "en": "Silver blood · Eight stumps"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 3,
-       "level": "xue"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 4,
+       "level": "zl-xiuxian-xue",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -426,7 +429,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 52,
+       "n": 85,
        "level": "xisui"
       },
       {
@@ -446,7 +449,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 122,
+       "n": 167,
        "level": "chaiduo",
        "zhuli": true
       },
@@ -467,7 +470,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 149,
+       "n": 195,
        "level": "jiujiu"
       },
       {
@@ -484,11 +487,12 @@
         "zh": "练功 · 水桶落井",
         "en": "Practice · The bucket goes down"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 189,
-       "level": "shuitong-dash"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 243,
+       "level": "zl-notice-shuitong",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -507,7 +511,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 163,
+       "n": 215,
        "level": "wupo"
       },
       {
@@ -525,7 +529,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 2,
+     "zhuli": 6,
      "longest": 4024,
      "roaming": 0,
      "side": []
@@ -554,7 +558,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 190,
+       "n": 244,
        "level": "yiquan-dash"
       },
       {
@@ -574,7 +578,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 133,
+       "n": 179,
        "level": "toulan"
       },
       {
@@ -594,7 +598,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 79,
+       "n": 118,
        "level": "biedou"
       },
       {
@@ -614,7 +618,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 191,
+       "n": 245,
        "level": "jingluo-dash"
       },
       {
@@ -634,7 +638,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 138,
+       "n": 184,
        "level": "ge"
       },
       {
@@ -654,7 +658,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 135,
+       "n": 181,
        "level": "617",
        "same": true
       },
@@ -702,7 +706,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 123,
+       "n": 168,
        "level": "sishui",
        "zhuli": true
       },
@@ -738,7 +742,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 68,
+       "n": 102,
        "level": "crowd"
       },
       {
@@ -755,11 +759,12 @@
         "zh": "三百级 · 一炷香",
         "en": "Three hundred steps · One stick of incense"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 192,
-       "level": "sanbai-dash"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 247,
+       "level": "zl-steps-sanbai",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -775,11 +780,12 @@
         "zh": "腿缝里 · 钻过去",
         "en": "Between the legs · Through"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 80,
-       "level": "tuifeng"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 120,
+       "level": "zl-steps-tuifeng",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -798,7 +804,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "luoshu",
-       "n": 53
+       "n": 86
       },
       {
        "kind": "read",
@@ -817,7 +823,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 67,
+       "n": 101,
        "level": "shidan"
       },
       {
@@ -854,11 +860,12 @@
         "zh": "测灵石 · 藏",
         "en": "The testing stone · Hide"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 193,
-       "level": "celing-dash"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 249,
+       "level": "zl-hall-celing",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -875,7 +882,7 @@
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 1,
+     "zhuli": 4,
      "longest": 5146,
      "roaming": 0,
      "side": []
@@ -911,12 +918,12 @@
         "zh": "小周天 · 冲三关",
         "en": "The small circuit · Three passes"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 194,
-       "level": "zhoutian-dash",
-       "same": true
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 251,
+       "level": "zl-zhoutian-sanguan",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -932,11 +939,12 @@
         "zh": "一拳 · 大青石",
         "en": "One punch · The bluestone"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 81,
-       "level": "qingshi"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 122,
+       "level": "zl-qingshi-yiquan",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -949,13 +957,15 @@
        "id": "dianmao-sunergou",
        "scene": "wm-dianmao",
        "title": {
-        "zh": "五子 · 孙二狗",
-        "en": "Five in a row · Sun Ergou"
+        "zh": "孙二狗 · 讲堂",
+        "en": "Sun Ergou · The lecture hall"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 150
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 197,
+       "level": "zl-dianmao-sunergou",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -974,7 +984,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 151,
+       "n": 198,
        "level": "jingtai"
       },
       {
@@ -982,13 +992,15 @@
        "id": "dianmao-canju",
        "scene": "wm-dianmao",
        "title": {
-        "zh": "残局 · 讲堂后排",
-        "en": "Endgame · The back row"
+        "zh": "讲堂后排",
+        "en": "The back row of the lecture hall"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "xiangqi",
-       "n": 156
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 208,
+       "level": "zl-dianmao-canju",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -998,24 +1010,27 @@
         "zh": "挑水 · 矮石墙外头",
         "en": "Carrying water · Outside the low wall"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 152,
-       "level": "tiaoshui"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 200,
+       "level": "zl-dianmao-jiangtang",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "dianmao-maxiaobao",
        "scene": "wm-dianmao",
        "title": {
-        "zh": "五子 · 马小宝",
-        "en": "Five in a row · Ma Xiaobao"
+        "zh": "马小宝 · 讲堂",
+        "en": "Ma Xiaobao · The lecture hall"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 155
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 206,
+       "level": "zl-dianmao-maxiaobao",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -1025,24 +1040,27 @@
         "zh": "矮石墙 · 墙里的药园",
         "en": "The low wall · The garden behind it"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 154,
-       "level": "shiqiang"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 204,
+       "level": "zl-dianmao-yaoyuan",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "dianmao-ahe",
        "scene": "wm-dianmao",
        "title": {
-        "zh": "五子 · 阿禾",
-        "en": "Five in a row · Ahe"
+        "zh": "阿禾 · 讲堂",
+        "en": "Ahe · The lecture hall"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 153
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 202,
+       "level": "zl-dianmao-ahe",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1061,7 +1079,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 157,
+       "n": 209,
        "level": "zhouheng"
       },
       {
@@ -1081,7 +1099,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 124,
+       "n": 169,
        "level": "yaoyuan-xunye",
        "zhuli": true
       },
@@ -1099,11 +1117,12 @@
         "zh": "一根萝卜 · 别动",
         "en": "A radish · Keep still"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 82,
-       "level": "luobo"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 124,
+       "level": "zl-yaoyuan-luobo",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1119,11 +1138,12 @@
         "zh": "喂饭桶 · 一根牛骨头",
         "en": "Feeding the Rice Bucket · A soup bone"
        },
-       "mechanic": "割绳子",
-       "variety": "割绳子",
-       "game": "niugurope",
-       "n": 72,
-       "level": "one"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 108,
+       "level": "zl-diyilu-niugu",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1142,7 +1162,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 196,
+       "n": 253,
        "level": "xunye",
        "zhuli": true
       },
@@ -1163,7 +1183,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 158,
+       "n": 210,
        "level": "duizhang"
       },
       {
@@ -1177,14 +1197,15 @@
        "id": "yan-tieshua",
        "scene": "wm-yan",
        "title": {
-        "zh": "气走经脉 · 铁刷子",
-        "en": "Qi path · The iron brush"
+        "zh": "铁刷子 · 执事房",
+        "en": "The iron brush · The stewards' room"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 197,
-       "level": "tieshua-dash"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 255,
+       "level": "zl-yan-tieshua",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1203,7 +1224,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 159,
+       "n": 211,
        "level": "yinyue-pill"
       },
       {
@@ -1221,7 +1242,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 2,
+     "zhuli": 13,
      "longest": 4535,
      "roaming": 15,
      "side": []
@@ -1250,7 +1271,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 139,
+       "n": 185,
        "level": "ma",
        "same": true
       },
@@ -1271,7 +1292,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 198,
+       "n": 256,
        "level": "wotui-dash"
       },
       {
@@ -1291,7 +1312,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 4,
+       "n": 5,
        "level": "qiu"
       },
       {
@@ -1311,7 +1332,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 134,
+       "n": 180,
        "level": "faqiu"
       },
       {
@@ -1331,7 +1352,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 199,
+       "n": 257,
        "level": "xisi-dash"
       },
       {
@@ -1378,7 +1399,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 164,
+       "n": 216,
        "level": "laonian"
       },
       {
@@ -1398,7 +1419,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 69,
+       "n": 103,
        "level": "kouzi"
       },
       {
@@ -1418,7 +1439,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 165,
+       "n": 217,
        "level": "ergou"
       },
       {
@@ -1435,11 +1456,12 @@
         "zh": "别踩第三块 · 翻板",
         "en": "Not the third stone · The tipping slab"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 5,
-       "level": "fanban"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 7,
+       "level": "zl-shiting-fanban",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1455,12 +1477,12 @@
         "zh": "凶崖 · 往下爬",
         "en": "The Deadly Cliff · Climbing down"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 83,
-       "level": "xiongya",
-       "same": true
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 126,
+       "level": "zl-wangzuo-xiongya",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1499,7 +1521,7 @@
        "mechanic": "棋牌",
        "variety": "棋牌",
        "game": "wuziqi",
-       "n": 74
+       "n": 111
       },
       {
        "kind": "read",
@@ -1515,11 +1537,12 @@
         "zh": "隐身符 · 比草叶还轻",
         "en": "The concealing talisman · Lighter than a blade of grass"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 59,
-       "level": "yinshen"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 93,
+       "level": "zl-xirang-yinshen",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1555,11 +1578,12 @@
         "zh": "暗河 · 葫芦一开，就有光",
         "en": "The dry river · Open the gourd and there's light"
        },
-       "mechanic": "投掷",
-       "variety": "投掷",
-       "game": "zhazhai",
-       "n": 128,
-       "level": "anhe-dark"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 174,
+       "level": "zl-anhe-dark",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1578,7 +1602,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 200,
+       "n": 258,
        "level": "tama-dash"
       },
       {
@@ -1595,11 +1619,12 @@
         "zh": "一把谷粒 · 藤",
         "en": "A handful of grain · Vines"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 6,
-       "level": "guli"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 9,
+       "level": "zl-anhe-guli",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1615,11 +1640,12 @@
         "zh": "息壤 · 推着它们走一圈",
         "en": "The swelling earth · Push them round once"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 201,
-       "level": "xirang-dash"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 260,
+       "level": "zl-xirang-wumen",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1653,7 +1679,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 166,
+       "n": 218,
        "level": "chumen"
       },
       {
@@ -1670,11 +1696,12 @@
         "zh": "喂饭桶 · 一根萝卜",
         "en": "Feeding the Rice Bucket · A radish"
        },
-       "mechanic": "割绳子",
-       "variety": "割绳子",
-       "game": "luoborope",
-       "n": 73,
-       "level": "one"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 110,
+       "level": "zl-luobo-rope",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1691,7 +1718,7 @@
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 0,
+     "zhuli": 7,
      "longest": 4536,
      "roaming": 4,
      "side": []
@@ -1720,7 +1747,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 167,
+       "n": 219,
        "level": "qian-gong"
       },
       {
@@ -1734,13 +1761,15 @@
        "id": "yaban-maxiaobao",
        "scene": "wm-yaban",
        "title": {
-        "zh": "五子 · 马小宝",
-        "en": "Five in a row · Ma Xiaobao"
+        "zh": "马小宝 · 伙房门口",
+        "en": "Ma Xiaobao · The kitchen door"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 168
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 221,
+       "level": "zl-yaban-maxiaobao",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1759,7 +1788,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 129,
+       "n": 175,
        "level": "jiangtang"
       },
       {
@@ -1779,7 +1808,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 85,
+       "n": 128,
        "level": "chu-kou"
       },
       {
@@ -1796,11 +1825,12 @@
         "zh": "藏息 · 镜光扫过来",
         "en": "Hide the breath · The mirror's light"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 202,
-       "level": "cangxi-dash"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 262,
+       "level": "zl-zhaojing-mirror",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1831,11 +1861,12 @@
         "zh": "喷嚏符 · 让一拳",
         "en": "The sneezing charm · Let the punch go by"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 77,
-       "level": "sneeze"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 115,
+       "level": "zl-dabi-sneeze",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1874,7 +1905,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 169,
+       "n": 222,
        "level": "qinyan"
       },
       {
@@ -1914,7 +1945,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 86,
+       "n": 129,
        "level": "qinyan",
        "zhuli": true
       },
@@ -1952,11 +1983,12 @@
         "zh": "接镜 · 最后一道",
         "en": "Catching the beam · The last one"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 87,
-       "level": "jiejing"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 131,
+       "level": "zl-jiejing-mirror",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1975,7 +2007,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 170,
+       "n": 223,
        "level": "qichangsong"
       },
       {
@@ -1992,11 +2024,12 @@
         "zh": "风掉头 · 猪蜻蜓",
         "en": "The wind turns · The Pigcopter"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 88,
-       "level": "fengtou"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 133,
+       "level": "zl-fengtou-pig",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2015,7 +2048,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 171,
+       "n": 224,
        "level": "zhouheng-laba"
       },
       {
@@ -2035,7 +2068,7 @@
        "mechanic": "你画我猜",
        "variety": "你画我猜",
        "game": "drawguess",
-       "n": 106
+       "n": 151
       },
       {
        "kind": "read",
@@ -2052,7 +2085,7 @@
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 1,
+     "zhuli": 6,
      "longest": 2628,
      "roaming": 3,
      "side": []
@@ -2091,7 +2124,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 89,
+       "n": 134,
        "level": "zhizhen"
       },
       {
@@ -2111,7 +2144,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 203,
+       "n": 263,
        "level": "danjiao-dash"
       },
       {
@@ -2131,7 +2164,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 140,
+       "n": 186,
        "level": "dark"
       },
       {
@@ -2151,7 +2184,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 172,
+       "n": 225,
        "level": "quxian",
        "same": true
       },
@@ -2172,7 +2205,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 91,
+       "n": 136,
        "level": "chenmai"
       },
       {
@@ -2234,7 +2267,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 173,
+       "n": 226,
        "level": "xunsi"
       },
       {
@@ -2254,7 +2287,7 @@
        "mechanic": "记忆",
        "variety": "记忆",
        "game": "simon",
-       "n": 92,
+       "n": 137,
        "level": "0"
       },
       {
@@ -2274,7 +2307,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 174,
+       "n": 227,
        "level": "deng"
       },
       {
@@ -2294,7 +2327,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 132,
+       "n": 178,
        "level": "yaoyuan-spring",
        "zhuli": true
       },
@@ -2315,7 +2348,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 175,
+       "n": 228,
        "level": "min"
       },
       {
@@ -2332,11 +2365,12 @@
         "zh": "头几夜 · 看的是药",
         "en": "The first nights · The medicine, not the fire"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 7,
-       "level": "kanlu"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 11,
+       "level": "zl-year-kanlu",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2375,7 +2409,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 176,
+       "n": 229,
        "level": "qian-dan"
       },
       {
@@ -2395,7 +2429,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 8,
+       "n": 12,
        "level": "liuyun",
        "zhuli": true
       },
@@ -2410,13 +2444,15 @@
        "id": "suifeng-qinyan",
        "scene": "09-suifeng",
        "title": {
-        "zh": "五子 · 秦雁",
-        "en": "Five in a row · Qin Yan"
+        "zh": "秦雁 · 崖顶",
+        "en": "Qin Yan · The clifftop"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 11
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 16,
+       "level": "zl-suifeng-qinyan",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2426,39 +2462,42 @@
         "zh": "老松 · 那一道刻痕",
         "en": "The old pine · The notch"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 12,
-       "level": "kehen"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 18,
+       "level": "zl-suifeng-yading",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "suifeng-yezi",
        "scene": "09-suifeng",
        "title": {
-        "zh": "照着走 · 一片叶子",
-        "en": "Follow me · A leaf"
+        "zh": "一片叶子 · 崖顶",
+        "en": "A single leaf · The clifftop"
        },
-       "mechanic": "记忆",
-       "variety": "记忆",
-       "game": "simon",
-       "n": 13,
-       "level": "1"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 20,
+       "level": "zl-suifeng-yezi",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "suifeng-canju",
        "scene": "09-suifeng",
        "title": {
-        "zh": "残局 · 顶是艮",
-        "en": "Endgame · Pushing is Gen"
+        "zh": "顶是艮 · 崖顶",
+        "en": "The top is Gen · The clifftop"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "xiangqi",
-       "n": 14,
-       "level": "chuanxin"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 22,
+       "level": "zl-suifeng-canju",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2468,24 +2507,27 @@
         "zh": "巽那一格 · 跟着风走",
         "en": "The Xun square · Going with the wind"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 15,
-       "level": "yading"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 24,
+       "level": "zl-suifeng-xunwei",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "suifeng-qulao",
        "scene": "09-suifeng",
        "title": {
-        "zh": "五子 · 瞿老",
-        "en": "Five in a row · Elder Qu"
+        "zh": "瞿老 · 崖顶",
+        "en": "Old Qu · The clifftop"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 16
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 26,
+       "level": "zl-suifeng-qulao",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2495,11 +2537,12 @@
         "zh": "山门 · 扫帚靠回墙角",
         "en": "The mountain gate · The broom back in its corner"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 17,
-       "level": "shanmen"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 28,
+       "level": "zl-suifeng-shanmen",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2518,7 +2561,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 131,
+       "n": 177,
        "level": "yishui-reed"
       },
       {
@@ -2532,14 +2575,15 @@
        "id": "nianyao-canju",
        "scene": "09-nianyao",
        "title": {
-        "zh": "残局 · 碾船",
-        "en": "Endgame · The grinding boat"
+        "zh": "碾船 · 丹房",
+        "en": "The grinding boat · The pill house"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "xiangqi",
-       "n": 18,
-       "level": "chema"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 30,
+       "level": "zl-nianyao-canju",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2555,52 +2599,57 @@
         "zh": "夜里的药园 · 东角那三棵禾",
         "en": "The herb garden at night · The three stalks in the east corner"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 19,
-       "level": "yaoyuan-ye"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 32,
+       "level": "zl-nianyao-yaoyuan",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "nianyao-mindanshi",
        "scene": "09-nianyao",
        "title": {
-        "zh": "五子 · 闵丹师",
-        "en": "Five in a row · Pill-master Min"
+        "zh": "闵丹师 · 丹房",
+        "en": "Pill-master Min · The pill house"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 20
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 34,
+       "level": "zl-nianyao-mindanshi",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "nianyao-niannian",
        "scene": "09-nianyao",
        "title": {
-        "zh": "照着走 · 闭着眼睛",
-        "en": "Follow me · Eyes closed"
+        "zh": "闭着眼睛 · 药园",
+        "en": "Eyes closed · The herb garden"
        },
-       "mechanic": "记忆",
-       "variety": "记忆",
-       "game": "simon",
-       "n": 21,
-       "level": "2"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 36,
+       "level": "zl-nianyao-niannian",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "nianyao-shuangma",
        "scene": "09-nianyao",
        "title": {
-        "zh": "残局 · 双马饮泉",
-        "en": "Endgame · Two horses at the spring"
+        "zh": "双马饮泉 · 药园",
+        "en": "Two horses at the spring · The garden"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "xiangqi",
-       "n": 22,
-       "level": "shuangma"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 38,
+       "level": "zl-nianyao-shuangma",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2610,24 +2659,27 @@
         "zh": "正殿 · 屋脊的瓦缝",
         "en": "The main hall · The seams of the ridge"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 23,
-       "level": "zhengdian"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 40,
+       "level": "zl-nianyao-jingshi",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "nianyao-ahe",
        "scene": "09-nianyao",
        "title": {
-        "zh": "五子 · 阿禾",
-        "en": "Five in a row · Ahe"
+        "zh": "阿禾 · 药园东角",
+        "en": "Ahe · The garden's east corner"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 24
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 42,
+       "level": "zl-nianyao-ahe",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2646,7 +2698,7 @@
        "mechanic": "记忆",
        "variety": "记忆",
        "game": "simon",
-       "n": 9,
+       "n": 13,
        "level": "5"
       },
       {
@@ -2660,7 +2712,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 10,
+       "n": 14,
        "level": "futian",
        "zhuli": true
       },
@@ -2679,7 +2731,7 @@
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 3,
+     "zhuli": 18,
      "longest": 4224,
      "roaming": 3,
      "side": []
@@ -2708,7 +2760,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 181,
+       "n": 234,
        "level": "kaoshu"
       },
       {
@@ -2728,7 +2780,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 125,
+       "n": 170,
        "level": "danfang-kanlu",
        "zhuli": true
       },
@@ -2749,7 +2801,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 25,
+       "n": 43,
        "level": "chu-shenshi"
       },
       {
@@ -2760,52 +2812,57 @@
         "zh": "讲堂 · 下了课",
         "en": "The lecture hall · After class"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 26,
-       "level": "shenshi"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 45,
+       "level": "zl-shenshi-jiangtang",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "shenshi-canju",
        "scene": "09-shenshi",
        "title": {
-        "zh": "残局 · 把鼻子收起来",
-        "en": "Endgame · Put your nose away"
+        "zh": "把鼻子收起来 · 讲堂",
+        "en": "Put the nose away · The lecture hall"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "xiangqi",
-       "n": 27,
-       "level": "mabing"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 47,
+       "level": "zl-shenshi-canju",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "shenshi-zhique",
        "scene": "09-shenshi",
        "title": {
-        "zh": "照着走 · 纸雀儿",
-        "en": "Follow me · The paper sparrow"
+        "zh": "纸雀儿 · 讲堂",
+        "en": "The paper sparrow · The lecture hall"
        },
-       "mechanic": "记忆",
-       "variety": "记忆",
-       "game": "simon",
-       "n": 28,
-       "level": "3"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 49,
+       "level": "zl-shenshi-zhique",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "shenshi-qinyan",
        "scene": "09-shenshi",
        "title": {
-        "zh": "五子 · 秦雁",
-        "en": "Five in a row · Qin Yan"
+        "zh": "秦雁 · 后山崖顶",
+        "en": "Qin Yan · The back-hill clifftop"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 29
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 51,
+       "level": "zl-shenshi-qinyan",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2815,11 +2872,12 @@
         "zh": "老松 · 挂在树杈里",
         "en": "The old pine · Caught in the branches"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 204,
-       "level": "laosong"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 265,
+       "level": "zl-shenshi-qingshen",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2832,13 +2890,15 @@
        "id": "dingfeng-qulao",
        "scene": "09-dingfeng",
        "title": {
-        "zh": "五子 · 瞿老",
-        "en": "Five in a row · Elder Qu"
+        "zh": "瞿老 · 崖顶",
+        "en": "Old Qu · The clifftop"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 30
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 53,
+       "level": "zl-dingfeng-qulao",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2848,24 +2908,27 @@
         "zh": "崖顶的蜡烛 · 等它吹完",
         "en": "The candle on the clifftop · Wait till it's blown out"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 31,
-       "level": "lazhu"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 55,
+       "level": "zl-dingfeng-yading",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "dingfeng-zhenyan",
        "scene": "09-dingfeng",
        "title": {
-        "zh": "五子 · 困阵",
-        "en": "Five in a row · The trapping formation"
+        "zh": "困阵 · 崖顶",
+        "en": "The trapping formation · The clifftop"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 32
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 57,
+       "level": "zl-dingfeng-zhenyan",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2878,7 +2941,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 33,
+       "n": 58,
        "level": "kunzhen"
       },
       {
@@ -2892,7 +2955,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 34,
+       "n": 59,
        "level": "qulao-jintui"
       },
       {
@@ -2900,14 +2963,15 @@
        "id": "dingfeng-canju",
        "scene": "09-dingfeng",
        "title": {
-        "zh": "残局 · 你给自己留了一口",
-        "en": "Endgame · You kept a breath"
+        "zh": "你给自己留了一口 · 崖顶",
+        "en": "You left yourself a breath · The clifftop"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "xiangqi",
-       "n": 35,
-       "level": "lianjiang"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 61,
+       "level": "zl-dingfeng-canju",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2920,7 +2984,7 @@
        "mechanic": "记忆",
        "variety": "记忆",
        "game": "simon",
-       "n": 205,
+       "n": 266,
        "level": "4"
       },
       {
@@ -2954,13 +3018,15 @@
        "id": "yanceng-sunergou",
        "scene": "09-yanceng",
        "title": {
-        "zh": "五子 · 孙二狗",
-        "en": "Five in a row · Sun Ergou"
+        "zh": "孙二狗 · 执事堂",
+        "en": "Sun Ergou · The stewards' hall"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 36
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 63,
+       "level": "zl-yanceng-sunergou",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2970,11 +3036,12 @@
         "zh": "执事堂 · 内门的名册",
         "en": "The stewards' hall · The inner-gate roll"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 37,
-       "level": "mingce"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 65,
+       "level": "zl-yanceng-mingce",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2987,7 +3054,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 38,
+       "n": 66,
        "level": "ergou-siceng"
       },
       {
@@ -2995,14 +3062,15 @@
        "id": "yanceng-canju",
        "scene": "09-yanceng",
        "title": {
-        "zh": "残局 · 一颗也没糟蹋",
-        "en": "Endgame · Not one wasted"
+        "zh": "一颗也没糟蹋 · 执事堂",
+        "en": "Not one wasted · The stewards' hall"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "xiangqi",
-       "n": 39,
-       "level": "qiche"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 68,
+       "level": "zl-yanceng-canju",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -3012,11 +3080,12 @@
         "zh": "捉虫 · 阿禾那一小条地",
         "en": "Catching bugs · Ahe's little strip"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 40,
-       "level": "zhuochong"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 70,
+       "level": "zl-yanceng-zhuochong",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -3026,24 +3095,27 @@
         "zh": "西廊 · 搬铺",
         "en": "The West Gallery · Moving in"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 41,
-       "level": "xilang"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 72,
+       "level": "zl-yanceng-xilang",
+       "zhuli": true
       },
       {
        "kind": "board",
        "id": "yanceng-chu",
        "scene": "09-yanceng",
        "title": {
-        "zh": "五子 · 褚先生",
-        "en": "Five in a row · Master Chu"
+        "zh": "褚先生 · 讲堂",
+        "en": "Master Chu · The lecture hall"
        },
-       "mechanic": "棋牌",
-       "variety": "棋牌",
-       "game": "wuziqi",
-       "n": 42
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 74,
+       "level": "zl-yanceng-chu",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3062,7 +3134,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 182,
+       "n": 235,
        "level": "qulao-dan"
       },
       {
@@ -3082,7 +3154,7 @@
        "mechanic": "调息",
        "variety": "调息",
        "game": "qimai",
-       "n": 65,
+       "n": 99,
        "level": "tiandan"
       },
       {
@@ -3137,7 +3209,7 @@
       "breakthrough": 1,
       "piece": 2
      },
-     "zhuli": 1,
+     "zhuli": 16,
      "longest": 3596,
      "roaming": 2,
      "side": []
@@ -3176,7 +3248,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 43,
+       "n": 75,
        "level": "hongshu"
       },
       {
@@ -3196,7 +3268,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 206,
+       "n": 267,
        "level": "shouhuan-dash"
       },
       {
@@ -3216,7 +3288,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 141,
+       "n": 187,
        "level": "ahe"
       },
       {
@@ -3236,7 +3308,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 207,
+       "n": 268,
        "level": "lastshot-dash"
       },
       {
@@ -3256,7 +3328,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 177,
+       "n": 230,
        "level": "jijiu"
       },
       {
@@ -3276,7 +3348,7 @@
        "mechanic": "打地鼠",
        "variety": "打地鼠",
        "game": "rain",
-       "n": 44,
+       "n": 76,
        "level": "ting"
       },
       {
@@ -3323,7 +3395,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 178,
+       "n": 231,
        "level": "jiayi"
       },
       {
@@ -3343,7 +3415,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 188,
+       "n": 241,
        "level": "hebo",
        "zhuli": true
       },
@@ -3416,7 +3488,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 179,
+       "n": 232,
        "level": "bingyi"
       },
       {
@@ -3433,11 +3505,12 @@
         "zh": "瓦砾 · 一块砖一块砖",
         "en": "The rubble · Brick by brick"
        },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 70,
-       "level": "wali"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 105,
+       "level": "zl-tower-wali",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3450,14 +3523,15 @@
        "id": "qianshui-qi",
        "scene": "01-qianshui",
        "title": {
-        "zh": "气走经脉 · 一口气",
-        "en": "Qi path · One breath"
+        "zh": "一口气 · 河心坑",
+        "en": "One breath · The pit mid-river"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 208,
-       "level": "qianshui-dash"
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 270,
+       "level": "zl-qianshui-qi",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3504,7 +3578,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 180,
+       "n": 233,
        "level": "zhaoang"
       },
       {
@@ -3538,14 +3612,15 @@
        "id": "end-sangzi",
        "scene": "01-end",
        "title": {
-        "zh": "气走经脉 · 嗓子",
-        "en": "Qi path · The voice"
+        "zh": "嗓子 · 往柳湾",
+        "en": "The voice · To the willow bend"
        },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 209,
-       "level": "sangzi-dash"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 272,
+       "level": "zl-end-sangzi",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3562,7 +3637,7 @@
       "breakthrough": 0,
       "piece": 3
      },
-     "zhuli": 1,
+     "zhuli": 4,
      "longest": 2803,
      "roaming": 4,
      "side": []

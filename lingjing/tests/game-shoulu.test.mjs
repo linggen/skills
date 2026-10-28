@@ -447,7 +447,7 @@ const tasks = readdirSync(new URL('worlds/jiuding/tasks/', ROOT)).filter((f) => 
 const book = JSON.parse(readFileSync(new URL('story/jiuding-lu/book.json', ROOT), 'utf8'));
 const HUI = book.volumes.flatMap((v) => v.hui).map((h) => h.id); // the 回 in the order they are read
 const sceneOf = (id) => {
-  for (const ch of ['00-waimen', '00-zhuji', '00-prologue']) {
+  for (const ch of readdirSync(new URL('worlds/jiuding/chapters/', ROOT))) {
     try { return JSON.parse(readFileSync(new URL(`worlds/jiuding/chapters/${ch}/scenes/${id}.json`, ROOT), 'utf8')); } catch { /* not this chapter */ }
   }
   return null;

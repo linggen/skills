@@ -52,8 +52,9 @@ test('registered in the 游戏厅 as a throw (plays wide); the story’s throw b
   const tasks = ['world', 'h08', 'h11'].flatMap((f) => JSON.parse(readFileSync(join(root, `worlds/jiuding/tasks/${f}.json`), 'utf8')).tasks);
   const keys = new Set(forts.levels.filter((l) => l.key).map((l) => l.key));
   const beats = Object.fromEntries(tasks.filter((t) => t.game === 'zhazhai' && !t.climb).map((t) => [t.id, t.deal?.lv]));
+  // 暗河 (anhe-dark) went to 守炉 2026-10-28 (the 主力 pass, doc/zhuli-placement-2026-10-28.md); its level stays in the build.
   // + the 调息 cut (2026-10-20): 讲堂试法 on 第六回's 讲堂 board, 投一个给我看看 on 今一's.
-  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'anhe-dark': 'anhe-dark', 'qianye-qiajue': 'jiangtang', 'yishui-reed': 'yishui-reed', 'jin-toulan': 'toulan', 'jin-whiteline': 'faqiu' });
+  assert.deepEqual(beats, { 'deer-wind': 'deer-wind', 'qianye-qiajue': 'jiangtang', 'yishui-reed': 'yishui-reed', 'jin-toulan': 'toulan', 'jin-whiteline': 'faqiu' });
   for (const lv of Object.values(beats)) assert.ok(keys.has(lv), `${lv}: a level of the build`);
   // The marks a beat reads come from its grades.
   const reed = tasks.find((t) => t.id === 'yishui-reed');

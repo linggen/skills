@@ -164,3 +164,72 @@ The old 节奏 link (`?view=rhythm`) opens 按故事.
 | the rest | 0 | 0 |
 
 Typical arrival is 100% at every gate, before and after.
+
+## Second pass, 2026-10-28 evening: 主力 is the main content
+
+Hanli, reading the 按故事 counts (「小游戏 25 · 斗法 1 · 大场面 1 · 主力 3」): 「我看还不是以主力游戏为主啊」 · 「这个华容道有点多了」, then 「主力最少占1半吧」 · 「主力游戏数量占80% 也行」 · 「尽力让主力游戏多吧, 除非剧情需要其他类型」. The first pass above had swapped 拼图 for eleven new 华容道 instead of 主力. This pass makes every board of a 古 回 a 主力 塔防 level unless the story itself calls for another kind, and leaves at most one 华容道 a 回.
+
+**Rule.** A board stays non-主力 only if the passage plays it (a conversation, a riddle the plot turns on, a game the text sets, the 结印 teaching beat, a mark the story reads) or Hanli kept it by name. Nothing is kept "for variety": the 五子 · 象棋残局 · 照着走 boards of the 观内 pools, which no passage plays, are all 塔防 now.
+
+**The levels.** 63 boards swapped on their own task ids (id, pay, marks of the others and saves kept; the task's `how` and, where it named the old game, its title are the only text changed; the book's text is untouched). Each is a story level `zl-<task>` of one of three 兽潮 kits: 守炉 (`games.json` shoulu levels), 守墙关 (`levels/shouqiang.json`), 撒豆成兵 · 守山门 (`levels/sadoushou.json`); each dealt by the kit's own tide maker (games/<kit>/tide.js) from a seed named for its task, with the beasts of its 回 only (no 狰 in 古四), its tier climbing with the book (古二 0 → 古九 0.93), a layout of its own (守炉's roads at least 35 px apart from every other level's), and bot-proved: the human-like hand wins at least 11 of 12 plays, a hand that does nothing loses (`tests/story-zhuli.test.mjs` re-proves them on other seeds). The level's lead is the scene's first caption (the book's own line) and one instruction line. Before 入门 (古二, 古三) there are no talismans: 守炉 takes the `skin` of 泗水路 (弹弓 · 火把, 小满 the hero with no skills), 撒豆成兵 has no 结印; 守墙关 stands only from 古四. No two adjacent boards of a kit: each slot takes the least used kit of its 回 that its neighbours do not play. The replaced boards' game rows stay in the 游戏厅 under 旧版 (`replaced`).
+
+**Per 回, before → after** (boards · 主力 · 华容道):
+
+| 回 | Before | After |
+|---|---|---|
+| 第一回 | 8 · 4 · 0 | 8 · 4 · 0 |
+| 第二回 | 11 · 2 · 0 | 11 · 6 · 0 |
+| 第三回 | 7 · 1 · 1 | 7 · 4 · 1 |
+| 第四回 | 17 · 2 · 3 | 17 · 13 · 1 |
+| 第五回 | 13 · 0 · 1 | 13 · 7 · 1 |
+| 第六回 | 13 · 1 · 0 | 13 · 6 · 0 |
+| 第七回 | 25 · 3 · 5 | 25 · 18 · 0 |
+| 第八回 | 24 · 1 · 6 | 24 · 16 · 1 |
+| 第九回 | 7 · 1 · 1 | 7 · 4 · 0 |
+
+**Kept non-主力, with the story's reason** (every 对话 board, a conversation with a person, is the scene itself and is not listed; `tests/story-zhuli.test.mjs` holds this list):
+
+| Board | 回 | Why it stays |
+|---|---|---|
+| 接雨 · 忍字 · 喂饼 | 第一回 | The passages' own actions; Hanli kept them on 10-21. |
+| 射鹿 | 第二回 | The bow and the wind are the passage (Hanli: 「射鹿可以用砸寨代替」). |
+| 洗髓 | 第二回 | One of the two 调息 Hanli kept (10-27). |
+| 人堆 (华容道) | 第三回 | The crowd to slip to the back of; the 回's one 华容道. |
+| 洛书 | 第三回 | 娘's nine chestnuts: the riddle the second trial turns on. |
+| 井台 (华容道) | 第四回 | The 回's one 华容道. |
+| 困阵 (五子) | 第五回 | 「前人留下的一盘棋」: a game of the passage itself. |
+| 七八个口子 (华容道) | 第五回 | The crowd on the riverbank; the 回's one 华容道. |
+| 踏马符 | 第五回 | 邹青松's fight; it goes to 格斗 once he has frames. |
+| 讲堂试法 | 第六回 | The 结印 teaching beat; its grades are the marks the dock's moves wait on. |
+| 家信 | 第六回 | The picture drawn for 娘 is the passage. |
+| 禹步 · 随风那一式 | 第七回 | 瞿老: 「照着我的脚，走一遍」; walked on the clifftop over and over. |
+| 芦苇里那一等 | 第七回 | The throw from the 浮木; its stars mark the reed. |
+| 七块碎灵石 (华容道) | 第八回 | The 回's one 华容道. |
+| 一剑出去 | 第八回 | 瞿老's cliff, the steps the sword goes by. |
+| 恬惔虚无 | 第八回 | The second 调息 Hanli kept; 「真气从之」 is the passage. |
+
+**Left.** 第六回 is at 6 of 13: every other board there is a conversation, the 家信, or the 结印 teaching beat. Its card fight with 卢方 (wm-fushi) can become a 格斗 board (his frames exist: 7 of 14), but the exit carries the 相克 hints, the 看他的脚 refusal and eleven tests, so it is a change of its own. 邹青松's fight and 踏马符 wait for his frames. 抚琴 has no passage yet; 太鼓 plays at 寿宴 and 河伯娶妇.
+
+**接雨 (the `rain` kit) in the story** (Hanli: 「接水那个小游戏, 你用到了好几个地方, 不太合适, 看是否能换成主力. 或者不换也要把里面水滴什么的改成和情节一致」). Fourteen of its fifteen 古 uses are 主力 now; the one that stays is the board the kit was made for.
+
+| Board | 回 | Was | Became |
+|---|---|---|---|
+| 接雨 · 十七个盆 | 第一回 | 接雨 | **Kept**: 「屋顶漏雨，一场雨接满十七个盆」 — the water is the passage. |
+| 上崖 · 一根一根 | 第二回 | 接雨 / 打地鼠 | 撒豆成兵 · 守山门 (`zl-cliff-shangya`) |
+| 银色的血 · 八道断口 | 第二回 | 接雨 / 打地鼠 | 撒豆成兵 · 守山门 (`zl-xiuxian-xue`) |
+| 腿缝里 · 钻过去 | 第三回 | 接雨 / 打地鼠 | 守炉 (`zl-steps-tuifeng`) |
+| 一拳 · 大青石 | 第四回 | 接雨 / 打地鼠 | 撒豆成兵 · 守山门 (`zl-qingshi-yiquan`) |
+| 一根萝卜 · 别动 | 第四回 | 接雨 / 打地鼠 | 守墙关 (`zl-yaoyuan-luobo`) |
+| 一把谷粒 · 藤 | 第五回 | 接雨 / 打地鼠 | 守墙关 (`zl-anhe-guli`) |
+| 别踩第三块 · 翻板 | 第五回 | 接雨 / 打地鼠 | 守炉 (`zl-shiting-fanban`) |
+| 凶崖 · 往下爬 | 第五回 | 接雨 / 打地鼠 | 守墙关 (`zl-wangzuo-xiongya`) |
+| 隐身符 · 比草叶还轻 | 第五回 | 接雨 / 打地鼠 | 撒豆成兵 · 守山门 (`zl-xirang-yinshen`) |
+| 喷嚏符 · 让一拳 | 第六回 | 接雨 / 打地鼠 | 撒豆成兵 · 守山门 (`zl-dabi-sneeze`) |
+| 接镜 · 最后一道 | 第六回 | 接雨 / 打地鼠 | 守炉 (`zl-jiejing-mirror`) |
+| 风掉头 · 猪蜻蜓 | 第六回 | 接雨 / 打地鼠 | 守墙关 (`zl-fengtou-pig`) |
+| 头几夜 · 看的是药 | 第七回 | 接雨 / 打地鼠 | 守炉 (`zl-year-kanlu`) |
+| 捉虫 · 阿禾那一小条地 | 第八回 | 接雨 / 打地鼠 | 守墙关 (`zl-yanceng-zhuochong`) |
+
+The 今 boards that use the kit (捡球递水 · 红薯 · 冬至夜 · 皮褶卡钳 · 纸垫 · 晨脉) were re-skinned earlier (their own beam, basin and spots: a ball, a basket, a wrist); no water drops fall where the scene has none. 捉虫 · 药园的架子底下 is the 药园 practice, not a story board.
+
+**Gates after the pass** (node tools/numbers.mjs --apply --write; typical arrival 100% at every gate): session waits 柴房 10m · 大比前夜 8m (was 7) · 09-futian 9m · 09-yanceng 6m, the rest 0. The model counts a 塔防 board at a board's two minutes like every other; the swapped 守炉 levels play 2 to 4.6 minutes in the sim (the bot), so a sitting runs a little longer than the model says in 古七 and 古八.

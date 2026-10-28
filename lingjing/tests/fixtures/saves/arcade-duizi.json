@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 630,
-  "wealth": 849,
+  "wealth": 854,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -677,8 +677,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2477,
-   "wealth": 852
+   "progress": 2508,
+   "wealth": 857
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",

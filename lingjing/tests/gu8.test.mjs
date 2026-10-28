@@ -130,7 +130,7 @@ test('the 九节 pot is the 回\'s own: before 古八 the 十年黄精 is only a
 test('一剑出去 is 照着走 level 4, past 纸雀儿\'s 3, and a human-like hand walks it', async () => {
   const t = content.tasks.tasks.find((x) => x.id === 'dingfeng-songzhi');
   assert.deepEqual([t.game, t.deal.lv], ['simon', 4]);
-  assert.equal(content.tasks.tasks.find((x) => x.id === 'shenshi-zhique').deal.lv, 3);
+  // 纸雀儿 (level 3) is 守炉's story level since 2026-10-28 (the 主力 pass); the level stays in the kit
   const S = await import('../scripts/games/simon.js');
   const { bot } = await import('../scripts/games/bots/simon.js');
   const { playModule } = await import('../tools/board-bots.mjs');

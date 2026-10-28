@@ -9,8 +9,8 @@ import { playOnce } from '../tools/board-bots.mjs';
 
 const content = loadContent();
 // 忍字 and 认路 left their scenes 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」 — 忍字 a 气走经脉 level, 认路 cut): their
-// rope levels stay in the 游戏厅, no task (`null`); 算账 is still 00-rent's.
-const BEATS = { tauntrope: [null, 'spring', ['word', 'fist']], wayrope: [null, 'bubble', ['straight', 'wandered']], rentrope: ['rent-scale', 'crow', ['exact', 'over']] };
+// rope levels stay in the 游戏厅, no task (`null`); 算账 · 喂饭桶 ×2 went to 主力 塔防 on 2026-10-28 (doc/zhuli-placement-2026-10-28.md) and stand there too.
+const BEATS = { tauntrope: [null, 'spring', ['word', 'fist']], wayrope: [null, 'bubble', ['straight', 'wandered']], rentrope: [null, 'crow', ['exact', 'over']] };
 
 for (const [id, [task, tool, grades]] of Object.entries(BEATS)) {
   test(`${id}: the task ${task} plays it; its level is the registry's, with its tool (${tool}), proved both ways`, async () => {
@@ -154,10 +154,10 @@ test('niugurope: the task diyilu-niugu plays it in wm-diyilu; the 柴墩 and the
   const { bot, plans, starPlans } = await import('../scripts/games/bots/niugurope.js');
   const RG = await import('../scripts/games/rope-gen.js');
   const t = content.tasks.tasks.find((x) => x.id === 'diyilu-niugu');
-  assert.equal(t.game, 'niugurope');
+  assert.notEqual(t.game, 'niugurope', 'the board is a 塔防 level now (2026-10-28)');
   assert.equal(t.stars, 3);
   const row = content.games.games.find((g) => g.id === 'niugurope');
-  assert.deepEqual([row.task, row.scene, row.mechanic], ['diyilu-niugu', 'wm-diyilu', '割绳子']);
+  assert.deepEqual([row.task ?? null, row.scene ?? null, row.mechanic, row.replaced], [null, null, '割绳子', 'cut'], '旧版: the 游戏厅 only');
   const level = row.levels[0];
   assert.ok(level.gust && level.stones?.length === 1 && level.vines.length === 3, 'three strings, the block, the draught');
   assert.ok(!level.thorns && !level.crows && !level.bubbles, 'forgiving: nothing breaks it, nothing takes it');
@@ -221,10 +221,10 @@ test('luoborope: the task luobo-rope plays it in wm-luobo after 「吃！你吃�
   const { bot, plans, starPlans } = await import('../scripts/games/bots/luoborope.js');
   const RG = await import('../scripts/games/rope-gen.js');
   const t = content.tasks.tasks.find((x) => x.id === 'luobo-rope');
-  assert.equal(t.game, 'luoborope');
+  assert.notEqual(t.game, 'luoborope', 'the board is a 塔防 level now (2026-10-28)');
   assert.deepEqual(t.grant, { table: 'task', progress: 5 });
   const row = content.games.games.find((g) => g.id === 'luoborope');
-  assert.deepEqual([row.task, row.scene, row.mechanic], ['luobo-rope', 'wm-luobo', '割绳子']);
+  assert.deepEqual([row.task ?? null, row.scene ?? null, row.mechanic, row.replaced], [null, null, '割绳子', 'cut'], '旧版: the 游戏厅 only');
   const level = row.levels[0];
   const fed = (run) => !run.broke && run.path.some(([x, y], k) => k >= (run.path.first ?? 0) && Math.hypot(x - level.mouth[0], y - level.mouth[1]) < RG.MOUTH_R + 19 * 0.4);
   for (const hand of RG.HANDS) assert.ok(fed(RG.playPlan(level, plans.one, { hand })), `the answer feeds it at a ${hand} ms reaction`);

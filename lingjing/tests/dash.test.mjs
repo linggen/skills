@@ -166,7 +166,7 @@ test('comic and clear (Hanli 10-28: 「做成漫画风格就行. 背景简单一
 });
 
 test('the story\'s runs climb: their kinds come in one by one in reading order, each where its speed can clear it', () => {
-  const ORDER = ['s', 'b', 'pit', 'bb', 'ss', 'ceil', 'pad', 'sss', 'orb'];
+  const ORDER = ['s', 'b', 'pit', 'bb', 'ss', 'pad', 'ceil', 'sss', 'orb'];
   const rows = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced); // a board the story cut (旧版) plays no more
   const TABLE = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/levels/rhythm.json', import.meta.url), 'utf8'));
   const order = TABLE.chapters.flatMap((c) => c.huis.flatMap((h) => h.items)).filter((x) => x.kind === 'board' && x.game === 'dash').map((x) => x.id);
