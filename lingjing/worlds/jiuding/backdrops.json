@@ -633,7 +633,8 @@
   "luoshui": {
    "at": "luoshui",
    "indoor": false,
-   "day": "art/places/luoshui.webp"
+   "day": "art/places/luoshui.webp",
+   "night": "art/places/luoshui-night.webp"
   },
   "yique": {
    "at": "yique",
