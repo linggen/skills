@@ -299,6 +299,7 @@ export async function levelFor(opts = {}) {
 
 /* ── The page: a canvas, its own frame loop, D F J K and fingers ─────────────────────────────────────────────── */
 
+const KEYS = ['D', 'F', 'J', 'K']; // meta.keys, as the seals print them
 export const W = 360, H = 640, LINE_Y = 548, SIDE = 22;
 export const laneW = (W - 2 * SIDE) / LANES;
 export const laneX = (k) => SIDE + k * laneW;
@@ -458,13 +459,28 @@ export async function mount(container, opts = {}) {
       cx.strokeText(fx.word.text, W / 2, y); cx.fillText(fx.word.text, W / 2, y);
       cx.globalAlpha = 1;
     }
-    // the hint under the bridge, until the first key comes down
+    // the keys' seals under the bridge, the whole run (Hanli 10-28: 「最好在游戏开始后一直保持显示, 给个提示」): a small
+    // vermilion seal a lane, D F J K, filled while its key is down — a still highlight, never a flash. A finger needs
+    // none: the lanes themselves are what it taps.
+    if (inputDesk) seals();
+    // the hint under the seals, until the first key comes down
     if (s.clock < (s.notes[0]?.t ?? 0)) {
-      cx.textAlign = 'center'; cx.font = '13px "Songti SC", "Noto Serif SC", serif'; cx.fillStyle = 'rgba(240,230,206,.92)';
-      cx.fillText(hint, W / 2, LINE_Y + 34);
-      cx.font = '700 22px "Songti SC", "Noto Serif SC", serif'; cx.fillStyle = 'rgba(46,32,20,.55)';
-      ['D', 'F', 'J', 'K'].forEach((c, k) => { if (inputDesk) cx.fillText(c, laneX(k) + laneW / 2, LINE_Y - 44); });
+      cx.textAlign = 'center'; cx.textBaseline = 'top'; cx.font = '13px "Songti SC", "Noto Serif SC", serif'; cx.fillStyle = 'rgba(240,230,206,.92)';
+      cx.fillText(hint, W / 2, LINE_Y + (inputDesk ? 52 : 34));
     }
+  };
+  const SEAL = 20;
+  const seals = () => {
+    cx.save();
+    cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.font = '700 12px "Songti SC", "Noto Serif SC", serif'; cx.lineWidth = 1.2;
+    KEYS.forEach((c, k) => {
+      const x = laneX(k) + laneW / 2 - SEAL / 2, y = LINE_Y + 18, on = s.down[k];
+      cx.beginPath(); cx.roundRect ? cx.roundRect(x, y, SEAL, SEAL, 3) : cx.rect(x, y, SEAL, SEAL);
+      if (on) { cx.fillStyle = 'rgba(176,53,42,.88)'; cx.fill(); } else { cx.fillStyle = 'rgba(240,230,206,.6)'; cx.fill(); cx.strokeStyle = 'rgba(176,53,42,.6)'; cx.stroke(); }
+      cx.fillStyle = on ? 'rgba(244,234,214,.96)' : 'rgba(150,40,32,.88)';
+      cx.fillText(c, x + SEAL / 2, y + SEAL / 2 + 0.5);
+    });
+    cx.restore();
   };
   const inputDesk = !/touch/.test(String((await import('./kit/device.js')).inputKind(doc)));
   const gaps = new Map();

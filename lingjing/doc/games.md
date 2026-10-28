@@ -268,6 +268,8 @@ note and costs the gauge (Piano Tiles' white tile, softened), so mashing loses.
   tune's own bar lines), 送别 (J. P. Ordway 1851, words 李叔同 1915). ↺ plays the tune from the top; a snapped string (the gauge
   at zero) does the same under the shell's lead card. Tones are ZzFX plucks per pitch (`sounds.json` `qin.<midi>`, the `tiles` kit, no bed; a low drone on each
   bar). Ladder: 茉莉花 · 一句 (60 bpm, taps only, wide windows) → 茉莉花 (holds) → 送别 → 茉莉花 · 快板 (104 bpm).
+- **Keys shown the whole run** (Hanli 10-28: 「保持默认吧. 最好在游戏开始后一直保持显示, 给个提示」): D F J K kept; a small vermilion
+  seal a lane under the bridge, filled while its key is down (a still highlight, no flash). On a touch screen none — the lanes are the targets.
 - **Art** (tools/paint-games.py, `fuqin/*`): a moonlit lake from a pavilion, black-lacquer keys with gold rims, a rosewood
   bridge (琴码) as the line, a plum blossom where a key is struck.
 - **Tests** (tests/fuqin.test.mjs): osu!'s windows to the half-ms; every level won 3★ by a steady hand (±25 ms), won under 3★ by a
