@@ -1,0 +1,87 @@
+{
+ "version": 1,
+ "id": "09-laba",
+ "chapter": "00-zhuji",
+ "hui": "h09",
+ "at": "yanwu",
+ "season": "winter",
+ "_season": "年七腊月",
+ "place": {
+  "zh": "沉鼎观 · 丹房 → 演武场 · 年七腊月",
+  "en": "Chending Temple · The pill house → The training ground · The twelfth month of year seven"
+ },
+ "_split": "2026-10-28 (doc/gates-2026-10-27.md 古八 (a + c), Hanli: 「按你的建议做」): 09-dabi, one scene for the three years, split back into the book's years — 年六 (09-dabi, 09-shenshi), 年七 (09-dingfeng, then 09-laba's 腊八), 年八 (09-yanceng) — a stage quest each: 七层圆满 at 09-shenshi/winter, 八层圆满 at 09-dingfeng/laba, 九层圆满 at 09-yanceng/ruqiu. Every passage is the book's own (08-第八回.md, en/h09.md), cut at its paragraph breaks, nothing joined; the 神识 · 轻身 (¶29–45), 阵 (¶51–59) and 孙二狗's 四层 (¶99) passages the book gained on 2026-10-13 are played now.",
+ "_beats": "古八 年七 腊月 (2026-10-28): the side furnace (¶67–69) and the 腊月 board under the old locust (¶73–77), read; the 腊八 final is the way on's card fight (foe-jiuceng, a fight's way on has nothing but the win before it), its story the 大比 told (¶79–95), the 官丹 its grant. No board: the year's are 09-dingfeng's. Outside every beat.",
+ "setup": {
+  "zh": "那一年腊月，钱掌柜照旧把板子扛上了山，在老槐树底下支开摊子。",
+  "en": "That year in the twelfth month Shopkeeper Qian carried his board up the mountain as usual and set up his stall under the old locust tree."
+ },
+ "recap": {
+  "zh": "丹房角上那口小炉，第五炉出一颗一纹的——「有火气。」「能吃。」腊月钱掌柜把你写在最底下：一赔五十；阿禾放下一文钱。",
+  "en": "In the side furnace in the corner of the pill house, the fifth batch gave one pill of one line: \"There's fire in it.\" \"It can be eaten.\" In the twelfth month Shopkeeper Qian wrote you on the bottom line: one pays fifty; Ahe put down a single cash."
+ },
+ "cast": [],
+ "people": [
+  "min-danshi",
+  "ahe",
+  "sunergou"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「有火气。」「能吃。」",
+    "「姑娘，五年前你押过他一回。」「输了。」",
+    "腊八。"
+   ],
+   "en": [
+    "\"There's fire in it.\" \"It can be eaten.\"",
+    "\"Miss, five years ago you bet on him once.\" \"I lost.\"",
+    "Laba."
+   ]
+  }
+ },
+ "story": {
+  "zh": "那年秋天，闵丹师在丹房角上那口小炉跟前，给他搁了一只矮凳。那是观里的旁炉，炉壁裂过一道缝，拿泥糊上了；炉底接着丹房那眼地火分出来的一道细缝，火小得像灯芯，一炉只炼三颗。闵丹师只说了一句：「料你自己碾，火你自己看。炼糊了，碾了做药引。」料是丹房的下脚料：碾剩的黄精、黄芪，一捆一捆码在墙角。头一炉，三颗全糊了。第二炉，两颗糊了，一颗没转起来，是一团黑。第五炉，出了一颗，青白，一道纹，歪歪扭扭的，像孩子写的字。他捧着那颗丹去给闵丹师看，闵丹师捏起来，转了一圈，闻了闻，道：「有火气。」又道：「能吃。」这是五年里他从闵丹师嘴里听见的最长的一句夸奖。从此他往阿禾、孙二狗手里塞丹，再不用找由头：丹房里看炉的人，手里有几颗丹，谁也不觉得稀奇；是他炉里炼的，还是饭桶吐的，没人问。\n\n打这以后，丹房角上那口小炉，夜夜亮着一点灯芯大的火。他炼得慢，一个月不过三四炉，炼糊了的照旧碾了做药引。到了腊月，一炉三颗，糊的只剩一颗；开了春，三颗都成了，颗颗一道纹，纹也直了。闵丹师在正炉那头闻了闻，头也不回，道：「火小了。」小满道：「怕糊。」闵丹师道：「怕糊，就一辈子一道纹。首尾武，中间文——你中间那一段文火守得住，头尾那两段武火不敢下。」他走过来，一只手按在炉壁上，灌进去一口灵力，那灯芯大的火「呼」地蹿起半尺，又落了回去。「就这么大。记住这一下。」那一炉，小满头一回炼出了两道纹。到了年八入夏，那口小炉十炉里能出三炉两道纹的；闵丹师正炉开炉，叫他站到炉口跟前看火——这差事，丹房里从前只有闵丹师自己干。丹房的炉是观里的，炼的是手艺；回到柴房，他自己吃的丹，照旧交给饭桶。\n\n那一年腊月，钱掌柜照旧把板子扛上了山，在老槐树底下支开摊子。板上头几行，仍旧是内门的；最底下一行，写的是：**沈小满　一赔五十。**\n\n有人问：「九层了，还一赔五十？」钱掌柜拨着算盘道：「杂灵根拿头名，三百年没出过。」又拨了一下，「四年没上过台。全观记得的沈小满，是四层的、浑身是血、挂在树上的那一个——九层的他出手，谁见过？没见过的，我往大里写。」\n\n阿禾挤到秤盘跟前，放下一文钱。钱掌柜抬起眼皮：「姑娘，五年前你押过他一回。」阿禾道：「输了。」钱掌柜道：「还押？」阿禾道：「他四年没上台，我没处押。」接了纸条，揣好，走了。那一年押沈小满的，统共一文钱。",
+  "en": "That autumn, Pill-master Min set a low stool for him in front of the little furnace in the corner of the pill house. It was the abbey's side furnace. The furnace wall had cracked once and been plastered over with clay; its floor tapped a fine crack branching off the pill house's earth-fire vent, a fire as small as a lamp wick, and it made only three pills a firing. Pill-master Min said only one thing: \"Grind your own ingredients, watch your own fire. If you scorch them, grind them up for mixing.\" The ingredients were the pill house's leftovers: solomon's seal and milkvetch left over from grinding, stacked bundle on bundle in the corner. The first furnace, all three scorched. The second, two scorched, and one never turned, a black lump. The fifth gave one pill, blue-white, one line, crooked and wobbly like a child's writing. He took it in both hands to show Pill-master Min. Pill-master Min picked it up, turned it once, smelled it, and said, \"There's fire in it.\" And: \"Edible.\" It was the longest praise he'd heard from Pill-master Min's mouth in five years. From then on, when he pushed pills into Ahe's and Sun Ergou's hands he no longer needed an excuse: the man who tended the furnace in the pill house having a few pills in hand surprised no one. Whether they came from his furnace or the Rice Bucket spat them out, nobody asked.\n\nAfter that, the little furnace in the corner of the pill house had a wick-sized fire lit every night. He made them slowly, no more than three or four firings a month, and the scorched ones he ground up for mixing as before. By the twelfth month, of three pills a firing, only one scorched; when spring came, all three came out, one line each, and the lines were straight. Pill-master Min, at the main furnace, sniffed, didn't turn his head, and said, \"Fire's too low.\" Xiaoman said, \"I'm afraid of scorching.\" Pill-master Min said, \"Afraid of scorching, and you'll be one-line all your life. Martial at head and tail, civil in the middle. You can hold the civil fire in the middle, but you don't dare put down the martial fire at the two ends.\" He came over, put one hand on the furnace wall and poured in a breath of spiritual power, and the wick-sized fire leapt up half a foot with a *whoosh*, and dropped back. \"That big. Remember that.\" That firing, for the first time, Xiaoman made two lines. By the summer of the eighth year, that little furnace gave two-line pills three firings in ten; and when Pill-master Min opened the main furnace, he had Xiaoman stand at the furnace mouth to watch the fire, a job that before in the pill house only Pill-master Min had done himself. The pill-house furnaces belonged to the abbey, and what he made there was craft; back in the woodshed, the pills he ate himself he still left to the Rice Bucket.\n\nThat year in the twelfth month, Shopkeeper Qian carried his board up the mountain as usual and set up his stall under the old locust tree. The top few lines of the board were still inner sect; the very bottom line said: **Shen Xiaoman: fifty to one.**\n\nSomeone asked, \"He's ninth layer and still fifty to one?\" Shopkeeper Qian clicked his abacus and said, \"A mixed spirit root taking first place: not in three hundred years.\" Another click. \"Four years he hasn't been on the stage. The Shen Xiaoman the whole abbey remembers is the fourth-layer one, covered in blood, hanging in a tree. Who's seen him fight at the ninth? What nobody's seen, I write up big.\"\n\nAhe squeezed up to the scale pan and put down one copper. Shopkeeper Qian raised his eyelids: \"Miss, you bet on him once five years ago.\" Ahe said, \"And lost.\" Shopkeeper Qian said, \"Betting again?\" Ahe said, \"He hasn't been on the stage in four years. I had nowhere to bet.\" She took the slip, tucked it away, and left. That year, the bets on Shen Xiaoman came to one copper in all."
+ },
+ "lines": [],
+ "buttons": [
+  "dabi"
+ ],
+ "exits": [
+  {
+   "id": "dabi",
+   "label": {
+    "zh": "腊八 · 再上五行台",
+    "en": "Laba · Up on the stage again"
+   },
+   "game": {
+    "id": "dabi-final",
+    "kind": "duel",
+    "creature": "foe-jiuceng",
+    "retry": true,
+    "foe": {
+     "hp": 3.2,
+     "party": []
+    },
+    "_foe": "The 腊八 大比's final (古八): a 内门 九层圆满 whose 金刃 come one breath at a time (creatures.json foe-jiuceng — 火柴 in his hand from the first turn, the book's sword), alone on the stage (`party: []`); weighed at 八层 (he comes at 九层, 09-dingfeng's gate behind him) (tools/story-fights.mjs `foe-jiuceng@09-laba/dabi`, 2026-10-21): hp 3.2 → a player who thinks a turn ahead wins about 49% bare on average over ten save seeds (each deals its own ten, 15–67%), the fixture's ten 52%, with two pills 97%; the careless one-ply line 8%. tests/fight-band.test.mjs holds it."
+   },
+   "withdrawn": {
+    "zh": "执事的锣槌在手里转了两转：「歇一口，再上。」",
+    "en": "The steward turns the gong-stick twice in his hand: \"Catch your breath, then up again.\""
+   },
+   "means": "year six 闵丹师's lesson in the 丹房 (choosing stock by winters, the 君), the 九节聚气 recipe and a ten-year 黄精; the 饭桶 fed by it gives three-line pills; 八层 that winter; year seven 飘风不终朝 (定风 = waiting it out), 进退 (「初六：进退，利武人之贞」; the pine bough), 九层, the 火柴's line of sparks; a furnace of his own, a true 一纹 pill on the fifth batch — 「有火气。」「能吃。」; at the Laba of year seven (the book's 第五年腊八) he goes up again after four years away, Shopkeeper Qian lists him at one-pays-fifty, Ahe's single cash is the only stake; the final against a 九层圆满 won by an instant with 随风, waiting out his gasp between blades, a cut under the ribs; Qian counts out fifty-one cash to her; the sect's one-turn pill resealed with rice water into the storage pouch; 闵丹师's sniff after five years at one furnace; five brides on the Zhang",
+   "mark": "y-dabi",
+   "once": true,
+   "story": {
+    "zh": "第五年腊八，刮的是北风。头一场，小满抽着的是内门一个火行的八层。他上了台，头一件事不是看人，是看演武场边上那面旗——旗往南扯。先看风，后看鹿；身后没人替他说，他自己说。他往北边那块青石板上一站，便不挪了。那师兄的火弹一颗接一颗打过来，他拿土墙接，接一颗，碎一面，满台是烟；烟顺着北风，全往南倒，倒进那师兄自己的眼睛里。那师兄咳一声，退半步，咳得眼泪鼻涕一大把，咳到第七声，退到了台边。小满这才走过去，伸手一推，把他推下了台。\n\n中间三场，一场靠脚，一场靠数，一场靠对面那人自己急了，没一场打得好看。决赛的对手，是内门一个九层圆满，一上台便是全力，金刃一道接一道。小满躲得开的躲，躲不开的随——随风，剑贴着那金刃往旁边一引，刃上的劲卸去一半，剩下的一半照旧把他往后犁出半尺，脚底下那块厚地稳着；引不开的那几道，他便咬着牙硬挨。半炷香烧到一半，他左边肋下已经开了一道口子，血顺着裤腿流到台上。那师兄的金刃是一口气一口气发的，发一道，喘一口——跟当年的卢方一样。他等的是那一口喘。等到第十一道，那师兄一身的灵力全在刃上，胸前那层光薄了一霎，小满的火柴进去了——不是进人，是进那口喘：剑尖抵在那师兄胸口的衣襟上，停住了。那师兄低头看了看剑尖，看了很久，把手里掐到一半的诀松开了，道：「我认输。」执事的锣槌在手里转了两转：「沈小满，胜。」\n\n这一回没有猪蜻蜓，也没有镜子，五场，一场一场打下来，打得规规矩矩，台下的人都说没意思。只有小满自己知道，决赛那一剑要是晚一霎，先退出台边的是他。肋下那道口子，缝了七针，长了半个月。周衡把那本蓝布面的名录翻到新的一页，提起笔来，写了「沈小满」三个字，笔停了一停——三百年的名录上，头一回写一个杂灵根的名字。观主把玉盒子放在他手里，封条上盖着大印。\n\n钱掌柜在老槐树底下收摊。阿禾把那张纸条摊在秤盘上，一个字也没说。钱掌柜叹了一口气，解开布袋，一文一文往秤盘上数：「一，二，三……」数得极慢，数一文，嘴角往下耷拉一分。数到二十，围上来七八个人；数到四十，围了一圈，那张胖脸已皱成了一只苦瓜。数到五十，钱掌柜的手在袋口停了一停，又摸出一文，搁在最上头：「本钱。」\n\n阿禾把五十一文拢进帕子里，摸出小本子，翻到五年前那一页。那一页上只一行：**一文。利息另算。**她在底下添了一笔。\n\n钱掌柜把板子往肩上一扛，走出两步，又回过头来，冲小满背上那张弓一抬下巴：「那木头，打听出名字没有？」五年，他年年腊月扛板子上山，见了小满，头一句都是这一句。小满道：「没有。」钱掌柜道：「不急。」\n\n当夜小满在柴房里揭了封条，盒盖一开，一股药气又苦又腥；一道纹，纹边两三点黑斑，一转，下品；饭桶闻了一口，盖上那只小兽拿鼻孔对着他，「噗」地喷出一小股黑烟，炉盖「啪」地一合，再不理他。他讨了半碗米汤，把封条粘了回去，连玉盒子收进储物袋里——全天下唯一一颗他拿出来说得清来历的[筑基丹]{注=foundation-pill}。\n\n第二天他从正殿西北角过，闵丹师正从丹房里出来，两个人打了个照面。五年，隔着一口炉子，一个看火，一个看他。闵丹师的鼻子动了一动——守了三十年炉子的人，鼻子比眼睛灵——目光在他腰上那只储物袋上停了一停。他什么也没说，走了。\n\n这五年，漳水边上，每年十月十八，推下去一只船，船上坐一个穿嫁衣的姑娘。五年，五只船。沉鼎观离漳水十天的路，观里没有一个人知道她们叫什么。周衡知道是哪一天。",
+    "en": "On the eighth of the twelfth month in the fifth year, the wind was from the north. In his first bout Xiaoman drew a fire-type eighth-layer man from the inner sect. He went up on the stage, and the first thing he did was not look at the man but at the flag at the edge of the training ground: it was pulling south. Wind first, then deer; with no one behind him to say it, he said it to himself. He stood on the bluestone slab on the north side and didn't budge. The senior brother's fireballs came one after another, and he caught them with earth walls, one fireball, one wall shattered, the stage full of smoke; and the smoke went with the north wind, all of it falling south, falling into the senior brother's own eyes. The senior brother coughed and stepped back half a step, coughing up tears and snot by the handful, and by the seventh cough he'd backed to the stage edge. Only then did Xiaoman walk over, put out a hand, and push him off.\n\nThe three bouts in the middle, one he won on his feet, one on counting, one because the man opposite got rattled on his own, and not one of them was pretty. His opponent in the final was a perfected ninth-layer man from the inner sect who went all out from the moment he stepped up, metal blades one after another. What Xiaoman could dodge, he dodged; what he couldn't, he followed. Following the wind, his sword clung to the metal blade and led it aside, half its force spent, and the other half still ploughed him back half a foot, the thick earth under his feet holding him steady. The few he couldn't lead aside, he gritted his teeth and took. When the stick of incense was half burned, his left side had a gash under the ribs, and blood ran down his trouser leg onto the stage. The senior brother sent his metal blades breath by breath: one blade, one breath. Just like Lu Fang that year. What he waited for was the breath. He waited till the eleventh blade, when all the senior brother's spiritual power was in the blade, and the light on his chest thinned for an instant, and Xiaoman's Matchstick went in: not into the man, into that breath. The sword point rested against the front of the senior brother's robe, and stopped. The senior brother looked down at the sword point, looked a long time, let go of the sign he'd half made, and said, \"I yield.\" The steward turned the gong stick twice in his hand: \"Shen Xiaoman wins.\"\n\nThis time there were no pig dragonflies, and no mirrors. Five bouts, fought one by one, properly, and the people below the stage all said it was dull. Only Xiaoman knew that if that cut in the final had come an instant later, the one backing off the edge would have been him. The gash under his ribs took seven stitches and half a month to heal. Zhou Heng turned the blue-cloth register to a new page, took up his brush and wrote the three characters \"Shen Xiaoman\", and the brush stopped a moment: on three hundred years of the register, the first time it had written the name of a mixed spirit root. The Abbot put the jade box in his hand, the seal stamped with the great seal.\n\nShopkeeper Qian was packing up his stall under the old locust tree. Ahe laid the slip on the scale pan and said not a word. Shopkeeper Qian sighed, untied his cloth bag and counted coppers into the scale pan one by one: \"One, two, three...\" He counted very slowly, and with each copper the corners of his mouth sagged a shade further. By twenty, seven or eight people had gathered round; by forty, there was a ring of them, and his fat face had crumpled into a bitter gourd. At fifty, Shopkeeper Qian's hand stopped at the mouth of the bag a moment, then took out one more copper and set it on top: \"The stake.\"\n\nAhe gathered the fifty-one coppers into her handkerchief, took out her little notebook and turned to the page from five years before. There was only one line on that page: **One copper. Interest separately.** She added a stroke underneath.\n\nShopkeeper Qian swung the board onto his shoulder, walked two steps, then turned back and jerked his chin at the bow on Xiaoman's back: \"That wood: found out its name yet?\" For five years he had carried his board up the mountain every twelfth month, and every time he saw Xiaoman this was the first thing he said. Xiaoman said, \"No.\" Shopkeeper Qian said, \"No hurry.\"\n\nThat night in the woodshed Xiaoman broke the seal. When the lid came open the smell of medicine was bitter and rank: one line, with two or three black spots at the edge of the line, one-turn, low grade. The Rice Bucket took one sniff; the little beast on its lid turned its nostrils towards him and blew out a little puff of black smoke, *pff*, and the lid shut with a *snap* and ignored him after that. He begged half a bowl of rice water, stuck the seal back on, and put it, jade box and all, in his storage pouch: the one [Foundation Pill]{注=foundation-pill} in all the world whose origin he could explain out loud.\n\nThe next day he passed the north-west corner of the main hall just as Pill-master Min came out of the pill house, and the two came face to face. Five years, with a furnace between them, one watching the fire and one watching him. Pill-master Min's nose twitched (a man who had kept a furnace thirty years had a nose sharper than his eyes) and his gaze rested a moment on the storage pouch at Xiaoman's waist. He said nothing, and walked on.\n\nIn those five years, by the Zhang River, every year on the eighteenth of the tenth month, a boat was pushed out, and in the boat sat a girl in a wedding dress. Five years, five boats. The Sunken Cauldron Abbey was ten days' road from the Zhang, and nobody in the abbey knew their names. Zhou Heng knew which day it was."
+   },
+   "grant": {
+    "table": "scene",
+    "item": "foundation-pill"
+   },
+   "next": "09-yanceng"
+  }
+ ]
+}

@@ -1,0 +1,110 @@
+{
+ "version": 1,
+ "id": "09-shenshi",
+ "chapter": "00-zhuji",
+ "hui": "h09",
+ "at": "jiangtang",
+ "place": {
+  "zh": "沉鼎观 · 讲堂 → 后山崖顶 · 年六",
+  "en": "Chending Temple · The lecture hall → The clifftop · Year six"
+ },
+ "_split": "2026-10-28 (doc/gates-2026-10-27.md 古八 (a + c), Hanli: 「按你的建议做」): 09-dabi, one scene for the three years, split back into the book's years — 年六 (09-dabi, 09-shenshi), 年七 (09-dingfeng, then 09-laba's 腊八), 年八 (09-yanceng) — a stage quest each: 七层圆满 at 09-shenshi/winter, 八层圆满 at 09-dingfeng/laba, 九层圆满 at 09-yanceng/ruqiu. Every passage is the book's own (08-第八回.md, en/h09.md), cut at its paragraph breaks, nothing joined; the 神识 · 轻身 (¶29–45), 阵 (¶51–59) and 孙二狗's 四层 (¶99) passages the book gained on 2026-10-13 are played now.",
+ "_order": "One reorder, no join (2026-10-28): the book tells 「那年冬天，他过了八层」 (¶21) and the two paragraphs after it (¶25 十月十八, ¶27 阿禾's strip and 瞿老's rule) before the 神识 · 轻身 lessons (¶29–45); but ¶41 has 「七层的神识，铺得开一间屋子大」 — he is still 七层 in the 讲堂 — and the 八层 must come behind 七层圆满's gate. So the lessons are this scene's passage and ¶21 · 25 · 27 its way on, after the gate.",
+ "_beats": "古八 年六 (2026-10-28): six boards after the passage — 对对子 with 褚先生, 拼图 of the 讲堂, 象棋残局 mate in two, 照着走 after the paper sparrow, 五子 with 秦雁, 几何冲刺 轻身 — no kind twice running, each a step past 古七's; then 七层圆满 (caps.hui.h09) on the way on. Outside every beat: the 观 is open while he reads it.",
+ "setup": {
+  "zh": "七层往上，褚先生的讲堂上添了两样：神识，和轻身。",
+  "en": "Above the seventh layer, Master Chu's lecture hall added two things: spirit sense, and lightness of body."
+ },
+ "recap": {
+  "zh": "褚先生讲神识：「神识不是眼睛，也不是耳朵。」纸雀儿蹲在东边梁上，你是闻出来的——「把鼻子收起来。」轻身那一下你垫得上去，收不住，挂在了老松的树杈里；秦雁教你怎么落。",
+  "en": "Master Chu taught spirit sense: \"Spirit sense isn't the eyes, and it isn't the ears.\" The paper sparrow was on the east beam, and you smelled it out: \"Put your nose away.\" Lightness of body you could put on but not take off, and you hung in the fork of the old pine; Qin Yan taught you how to land."
+ },
+ "cast": [],
+ "people": [
+  "chuxiansheng",
+  "neimen-shijie"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「神识不是眼睛，也不是耳朵。」",
+    "「把鼻子收起来。」",
+    "「你垫得上去，却不会收？」"
+   ],
+   "en": [
+    "\"Spirit sense isn't the eyes, and it isn't the ears.\"",
+    "\"Put your nose away.\"",
+    "\"You can put the cushion on, but you can't take it off?\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "七层往上，褚先生的讲堂上添了两样：神识，和轻身。\n\n「神识不是眼睛，也不是耳朵。」褚先生道，「《庄子》{典=zhuangzi-xinzhai}里，孔子教颜回：『无听之以耳而听之以心，无听之以心而听之以气。』耳朵只听得见声音，心只认得它认得的东西；气是空的，空的才装得进东西。你把丹田里的灵力放出去薄薄一层，像往河面上撒一张网——碰着活物，网会动。」他叫满堂的人闭上眼，从袖子里放出一只纸折的雀儿，在讲堂里绕着梁飞，叫他们拿神识去找。\n\n「神识有三样要记住。」他背着手在过道里走，「一，你扫别人，别人知道——那一下是凉的，像一阵冷风贴着后脖颈子刮过去。二，修为比你高的，你扫不透，只扫得着一片雾。三，灵气厚的地方，处处是光，藏一个人进去，等于往灯笼铺里藏一盏灯。」话音没落，前排一位师姐猛地回过头来，「啪」的一声，给了后头那人一个耳光：他的神识没罩着雀儿，凉飕飕地罩在了她的后脖颈子上。褚先生眼皮也不抬：「头一条，方才讲过了。」\n\n满堂的人闭着眼，眉头拧成了疙瘩，一个个憋得脸通红。小满的神识还没放出去，先努了努鼻子，嗅了两下，又嗅了一下：纸是新裁的，浆糊是伙房今早熬的那一锅，里头搁了一点明矾。他眼睛也没睁，抬手往上一指：「在东边梁上。」\n\n讲堂里静了一静。那只纸雀儿正蹲在东边那根梁上，叫他这一指，扑棱一下，飞到西边去了。有人「噗」地笑出了声，跟着笑倒了一片；那几个憋了半天的，眼睛一睁，气得直拍桌子：「他那是闻出来的！」\n\n褚先生从过道里走过来，拿戒尺在他桌上敲了一下：「沈小满。」小满睁开眼：「先生，找着了。」褚先生道：「我叫你拿什么找？」小满道：「……神识。」褚先生道：「你拿的是什么？」小满不吭声了。褚先生山羊胡子一翘：「把鼻子收起来。哪一天你对面站着一个没味儿的，我看你拿什么闻。」他转身往回走，走出两步，头也没回，又添了一句：「闵丹师管你叫沈小狗，倒没叫错。」满堂又笑了一回。\n\n小满只好老老实实地放出神识。七层的神识，铺得开一间屋子大，薄薄的一层；碰着那只雀儿，神识轻轻一颤。\n\n「轻身是另一样。」褚先生道，「把灵力往脚底下一垫，人便轻三成；七层往上，顺着风，滑得出去一小段。《抱朴子》{典=baopu-chengqiao}里讲乘蹻，说老鹰飞到高处，『但直舒两翅，了不复扇摇之而自进』——翅膀张着不动，自己便往前走，是底下有气托着它。你们托不了那么高，托得起自己的两只脚，也就够了。」再往上是遁：火遁，土遁，水遁，把整个人化进那一样里头去，一息十丈。「那是九层的事。费灵力费得凶，一口缸，遁三回便见了底；遁符，是别人替你把这一下封在纸上。」\n\n那天下了课，小满在崖顶上试。灵力往鞋底一垫，顺风溜一步出去，比平日远了两丈，落地的时候收不住，一头扎进了老松的树杈里，挂在那里，上不去，下不来。秦雁正好上崖来，抱着剑在树底下看了半天，道：「你垫得上去，却不会收？」小满道：「先生只教了怎么垫。」秦雁道：「你先下来。我教你怎么落——脚尖先着地，灵力从脚跟上撤，跟收剑一个道理。」那一下午没比剑，他从松树上往下跳了三十几回。",
+  "en": "Above the seventh layer, Master Chu's lecture hall added two things: spirit sense, and lightness of body.\n\n\"Spirit sense isn't the eyes, and it isn't the ears,\" said Master Chu. \"In the *Zhuangzi*{典=zhuangzi-xinzhai}, Confucius teaches Yan Hui: 'Don't listen with the ears but with the heart; don't listen with the heart but with the qi.' The ears hear only sounds; the heart knows only what it already knows. Qi is empty, and only what's empty can hold things. Let a thin layer of the spiritual power in your dantian out, like casting a net over the river: when it touches something living, the net moves.\" He had the whole hall close their eyes, let a folded paper sparrow out of his sleeve to fly round the beams of the lecture hall, and told them to find it with their spirit sense.\n\n\"There are three things to remember about spirit sense.\" He walked up and down the aisle with his hands behind his back. \"One: when you sweep someone, they know it. It's cold, like a draught of cold wind brushing the back of your neck. Two: someone higher in cultivation than you, you can't sweep through; you only sweep a fog. Three: where spirit qi is thick, there's light everywhere, and hiding a man in it is like hiding a lantern in a lantern shop.\" Before he'd finished speaking, a senior sister in the front row whipped round and, with a *smack*, slapped the man behind her: his spirit sense hadn't settled over the sparrow, it had settled, cold, over the back of her neck. Master Chu didn't lift his eyelids: \"The first point, I've just covered.\"\n\nThe whole hall sat with eyes shut, brows knotted, faces red from the strain. Before Xiaoman had let his spirit sense out at all, he wrinkled his nose and sniffed twice, then once more: the paper was freshly cut, the paste was from the pot the kitchen had boiled that morning, with a little alum in it. Without opening his eyes he raised a hand and pointed up: \"It's on the east beam.\"\n\nThe lecture hall went quiet a moment. The paper sparrow was perched on the east beam, and at his pointing it flapped and flew off to the west. Someone burst out laughing, *pff*, and a whole row laughed after him; the ones who'd been straining all that time opened their eyes and banged the desks in fury: \"He smelled it!\"\n\nMaster Chu came down the aisle and rapped his desk once with the ruler: \"Shen Xiaoman.\" Xiaoman opened his eyes: \"Teacher, I found it.\" Master Chu said, \"What did I tell you to find it with?\" Xiaoman said, \"...Spirit sense.\" Master Chu said, \"And what did you use?\" Xiaoman said nothing more. Master Chu's goatee twitched up: \"Put your nose away. One day there'll be someone standing opposite you who has no smell, and we'll see what you smell then.\" He turned to go back, took two steps, and without turning his head added: \"Pill-master Min calls you Shen Little Dog. He wasn't wrong.\" The hall laughed again.\n\nXiaoman had no choice but to let his spirit sense out like a good boy. Seventh-layer spirit sense spread to the size of a room, a thin layer; it touched the sparrow, and the spirit sense gave a faint quiver.\n\n\"Lightness of body is something else,\" said Master Chu. \"Put a cushion of spiritual power under your feet and you're three-tenths lighter; above the seventh layer, going with the wind, you can glide a short way. The *Baopuzi*{典=baopu-chengqiao} speaks of riding the qiao. It says when an eagle flies high, 'it only stretches its two wings straight out, never flaps them again, and goes forward of itself.' The wings are spread and still, and it goes forward by itself, because there's qi underneath holding it up. You can't be held up that high. If you can hold up your own two feet, that's enough.\" Above that came escaping: fire escape, earth escape, water escape, dissolving your whole self into the element, ten zhang in a breath. \"That's ninth-layer business. It eats spiritual power ferociously: one vat, three escapes, and you've hit the bottom. An escape talisman is someone else sealing that move onto paper for you.\"\n\nAfter class that day, Xiaoman tried it on the clifftop. He put a cushion of spiritual power under his soles, and one Tailwind step went two zhang further than usual. When he landed he couldn't stop, and went headfirst into the fork of the old pine, and hung there, unable to get up or down. Qin Yan happened to come up the cliff just then, and stood under the tree holding her sword and watching him a long while, then said, \"You can put the cushion on, but you can't take it off?\" Xiaoman said, \"The teacher only taught how to put it on.\" Qin Yan said, \"Come down first. I'll teach you how to land. Toes touch first, spiritual power comes off at the heels, same as sheathing a sword.\" That afternoon there was no sword bout. He jumped down out of the pine thirty-odd times."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "shenshi-chu"
+  },
+  {
+   "card": "board",
+   "id": "shenshi-jiangtang"
+  },
+  {
+   "card": "board",
+   "id": "shenshi-canju"
+  },
+  {
+   "card": "board",
+   "id": "shenshi-zhique"
+  },
+  {
+   "card": "board",
+   "id": "shenshi-qinyan"
+  },
+  {
+   "card": "board",
+   "id": "shenshi-qingshen"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "shenshi-chu",
+   "shenshi-jiangtang",
+   "shenshi-canju",
+   "shenshi-zhique",
+   "shenshi-qinyan",
+   "shenshi-qingshen"
+  ]
+ },
+ "lines": [],
+ "buttons": [
+  "winter"
+ ],
+ "exits": [
+  {
+   "id": "winter",
+   "label": {
+    "zh": "那年冬天",
+    "en": "That winter"
+   },
+   "means": "the winter of year six: past the eighth layer; the tenth month's eighteenth, 阿禾's strip, 瞿老's one rule (no 蒙山 tablets), the 大比 he does not climb",
+   "beat": [],
+   "next": "09-dingfeng",
+   "needs": {
+    "task": "shenshi-qingshen"
+   },
+   "refuse": {
+    "zh": "讲堂上的功课还没做完。",
+    "en": "The lecture hall's lessons aren't done yet."
+   },
+   "was_rise": 8,
+   "_was_rise": "The book's 「那年冬天，他过了八层」 (¶21), behind 七层圆满's gate here since 2026-10-28 (state.mjs zeroLayer reads it).",
+   "story": {
+    "zh": "那年冬天，他过了八层。一口气吸进来，崖顶草屋门口那三根香的烟，都往他这边歪一歪。\n\n每年十月十八，周衡一整天不翻账簿，巡夜的蜡烛也不掰了；每年除夕他去一趟正殿，出来都是那一句「明年，弟子再来」。小满不问。\n\n阿禾那一小条地年年种，年年多半是瘪穗。瞿老只给他定过一条规矩：「差事，你尽管去。蒙山的牌子，不许揭——太一宫那个人，在泗水渡口伤过你的那一个，他知道你家在哪个村、哪一扇门里。他抓你爹娘没有用，他要的是你身上的东西；可他知道你早晚要回那扇门，只消守在那一带等着。你一个人回去，便是自己送上门。」差事他照揭；每回揭了牌出门，执事堂廊下唱名的那位，总要往簿子上多看一眼。出了山门，后脖颈子上总像落着一双眼睛，回头看，只有风。太一宫那个人，五年里再没露过面，像是真在等他找鼎。家信一年两封，他娘的字仍旧又小又密：屋顶不漏了；你爹的膝盖，阴天疼，晴天也疼。内门的单间一间也没空出来，他仍旧睡在西廊那间屋最靠门的那张铺上。大比年年比，头几年，他不上台——他还不到九层，拿了那颗筑基丹也只能揣着，倒招一观的眼睛。",
+    "en": "That winter he passed the eighth layer. When he drew a breath in, the smoke of the three sticks of incense at the door of the grass hut on the clifftop leaned towards him.\n\nEvery year on the eighteenth of the tenth month, Zhou Heng didn't open his ledger all day, and didn't break the night-watch candles either; every New Year's Eve he went once to the main hall, and every time came out with the same words: \"Next year, I'll come again.\" Xiaoman didn't ask.\n\nAhe planted her little strip of earth every year, and every year the ears came up mostly empty. Elder Qu had set him only one rule: \"Errands, go ahead. Mount Meng tablets, you may not take. That man from the Taiyi Palace, the one who hurt you at the Si River ferry, knows which village your family is in and which door is theirs. Taking your Pa and Ma would be no use to him; what he wants is the thing on you. But he knows you'll go back to that door sooner or later, and he need only wait around there. Go back alone and you're delivering yourself to him.\" Errands he took as before; and every time he took a tablet and went out, the steward who called names in the Stewards' Hall gallery would give the book one more look. Once outside the mountain gate, it always felt as if a pair of eyes rested on the back of his neck; he'd look round, and there was only wind. The man from the Taiyi Palace hadn't shown himself once in five years, as if he really were waiting for him to find the cauldrons. Letters from home came twice a year, Mother's writing as small and close as ever: the roof doesn't leak now; your Pa's knees hurt on cloudy days, and on clear days too. Not one single room in the inner sect came free, and he still slept in the bed nearest the door of that room in the West Gallery. The Grand Contest was held every year, and for the first few years he didn't go up on the stage. He wasn't yet at the ninth layer, and if he won the Foundation Pill he could only carry it about, and draw the whole abbey's eyes."
+   }
+  }
+ ]
+}

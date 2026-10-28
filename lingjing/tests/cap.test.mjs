@@ -90,20 +90,27 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 and n
   assert.ok(s.progress > threshold(content, s), 'full, and counting on');
 });
 
-test('古七: 四层 until 定风 is walked — each layer ground behind its gate; 古八 grinds 八层 for 腊八, then 九层 for 入秋', () => {
+test('古七: 四层 until 定风 is walked — each layer ground behind its gate; 古八 grinds 七层 for 年六, 八层 for 年七\'s 腊月, then 九层 for 入秋', () => {
   const s = at('00-zhuji', '09-year', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 4 });
   grind(s);
   // The cap follows the 回's stage quests (rules/cap.mjs heldBy): before 定风 he grinds no further than 四层.
   assert.equal(named(s).replace('圆满', ''), '练气四层');
-  // 古八 (09-dabi): 七层 → 八层圆满 for 腊八 (a stay that marks y-dabi), then 九层圆满 for 入秋.
-  const t = at('00-zhuji', '09-dabi', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 7 });
+  // 古八, a year a scene (2026-10-28, doc/gates-2026-10-27.md 古八 (a + c)): 七层圆满 for 年六's winter (09-shenshi), 八层圆满
+  // before 年七's 腊月 (09-dingfeng), then 九层圆满 for 入秋 (09-yanceng).
+  const t = at('00-zhuji', '09-shenshi', 'jiangtang', ['00-prologue', '00-waimen'], { step: 7 });
   grind(t);
-  assert.equal(named(t), '练气八层', 'held at 腊八\'s 八层');
-  // The 腊八 final won (古八's per-回 pass, 2026-10-21: a card fight on the way on).
-  const laba = resolve({ ...t, wins: { ...t.wins, 'dabi-final': new Date().toISOString() } }, content, ctx, { exit: 'dabi' });
+  assert.equal(named(t), '练气七层', 'held at 年六\'s 七层');
+  const tt = { ...t, tasks: { ...t.tasks, 'shenshi-qingshen': { status: 'done' } } };
+  const winter = resolve(tt, content, ctx, { exit: 'winter' });
+  assert.equal(winter.result.ok, true, JSON.stringify(winter.result).slice(0, 200));
+  assert.equal(winter.result.paid?.progress ?? 0, 0, '那年冬天 grants no 修为 (what he banked past 七层 is his own)');
+  const v = { ...winter.state, place: 'houshan' };
+  grind(v);
+  assert.equal(named(v), '练气八层', 'held at 年七\'s 八层');
+  const vv = { ...v, tasks: { ...v.tasks, 'dingfeng-songzhi': { status: 'done' } } };
+  const laba = resolve(vv, content, ctx, { exit: 'laba' });
   assert.equal(laba.result.ok, true, JSON.stringify(laba.result).slice(0, 200));
-  assert.equal(laba.result.paid?.progress ?? 0, 0, '腊八 grants no 修为 (what he had banked past 八层 is his own, and steps him once the gate is behind)');
-  const u = laba.state;
+  const u = { ...laba.state, scene: '09-yanceng', place: 'jiangtang' };
   grind(u);
   assert.equal(named(u), '练气九层', 'then 九层, ground');
   assert.ok(u.progress >= threshold(content, u), '圆满, ground — 入秋 opens');

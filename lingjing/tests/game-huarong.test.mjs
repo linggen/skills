@@ -348,7 +348,7 @@ test('keyboard-only: Q/E cycle the picked block in reading order, Esc puts it ba
 test('the story levels in games.json: each layout solvable, none over 20 moves', async () => {
   const { readFileSync } = await import('node:fs');
   const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url)));
-  const STORY = { crowd: [16, 13], jingtai: [14, 17, 17], kouzi: [12, 15, 19], wali: [12, 15, 19], yading: [17, 18, 19] };
+  const STORY = { crowd: [16, 13], jingtai: [14, 17, 17], kouzi: [12, 15, 19], wali: [12, 15, 19], yading: [17, 18, 19], kunzhen: [18, 19, 20], xilang: [19, 20, 20] }; // kunzhen · xilang: 古八's years, 2026-10-28
   const seen = ladderOf(reg);
   assert.deepEqual(seen.map((l) => l.id).sort(), Object.keys(STORY).sort());
   for (const l of seen) assert.deepEqual(l.layouts[1].map((g) => solve(parseLayout(g))?.length), STORY[l.id], l.id);

@@ -45,11 +45,16 @@
   {
    "card": "board",
    "id": "yaban-qian"
+  },
+  {
+   "card": "board",
+   "id": "yaban-maxiaobao"
   }
  ],
  "offers": {
   "tasks": [
-   "yaban-qian"
+   "yaban-qian",
+   "yaban-maxiaobao"
   ]
  },
  "story_after": {
@@ -71,7 +76,7 @@
    "beat": [],
    "next": "wm-qianye",
    "needs": {
-    "task": "yaban-qian"
+    "task": "yaban-maxiaobao"
    },
    "refuse": {
     "zh": "钱掌柜的眼皮还落在你背上那张弓上。",

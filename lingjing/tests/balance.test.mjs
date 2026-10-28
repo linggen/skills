@@ -91,7 +91,7 @@ test('the book as the model reads it: every 回\'s scenes, a way on from each, m
   const walk = bookWalk(content);
   for (const h of ['h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h11', 'h09', 'h10']) assert.ok(walk.some(w => w.hui === h), h);
   assert.ok(walk.every(w => w.minutes > 0));
-  assert.equal(walk.filter(w => w.gate).length, 8, 'the eight ways a stage quest holds on 卷一\'s line (古七\'s four)');
+  assert.equal(walk.filter(w => w.gate).length, 10, 'the ten ways a stage quest holds on 卷一\'s line (古七\'s four, 古八\'s three since 2026-10-28)');
 });
 
 test('every errand and 榜文 says what work it is: 修行 pays 修为 for a fight, 杂役 pays 灵石 only; the model places each 修为 errand in its 回', () => {

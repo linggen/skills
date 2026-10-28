@@ -24,12 +24,12 @@ const th = content.ladder.tiers[0].thresholds;
 const atChaifang = (progress, extra = {}) => ({ ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: 'wm-chaifang', place: 'chaifang', ended: ['00-prologue'],
   done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-yaoyuan'], tier: 'qi', step: 1, progress, traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString(), ...extra });
 
-test('every 回 past 古三 holds one (古九 aside); 古七\'s four as the book\'s layers come, 古八\'s two (腊八 八层, 入秋 九层) — the data, linted', () => {
+test('every 回 past 古三 holds one (古九 aside); 古七\'s four as the book\'s layers come, 古八\'s three, a year each (年六 七层, 年七 八层 before the 腊月, 入秋 九层; 2026-10-28) — the data, linted', () => {
   const by = {};
   for (const g of gatesOf(content)) (by[g.hui] ??= []).push(`${g.scene}@${g.layer}`);
   assert.deepEqual(by, {
     h05: ['wm-chaifang@1'], h07: ['wm-mijing@2'], h08: ['wm-qianye@3'],
-    h11: ['09-furnace@4', '09-year@4', '09-yishui@5', '09-futian@6'], h09: ['09-dabi@8', '09-dabi@9'],
+    h11: ['09-furnace@4', '09-year@4', '09-yishui@5', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-yanceng@9'],
   });
   assert.equal(content.ladder.caps.hui.h11.layer, 6, '古七 grinds to 六层 (its rises come behind its gates)');
   // Nothing in the rules names a 回 or a scene of them.

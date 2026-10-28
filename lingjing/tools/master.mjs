@@ -129,7 +129,7 @@ export function diffOf(a, b, path = '', out = []) {
    the layers it holds. In the book's order, each 回 that holds layers (its stage quests' — and the ones just below them
    it grinds through; balance.mjs grindLayers) keeps the curve's hours where the fit player's days already sit inside
    its band (`model.bands`, a 回's own in `except`); else those layers' hours are scaled together until the days reach
-   the near edge, `inset` inside it. A 回 no hours can bring in (its reading alone is past the band) keeps the curve and is told.
+   the near edge, `inset` inside it, and never under `floor` hours a layer. A 回 no hours can bring in (its reading alone is past the band) keeps the curve and is told.
    `content`: the world on this balance; `table`: balance.mjs's days per 回. Returns { qi, fitted, unfit }. */
 export function fitHours(content, { grindLayers, table, play }) {
   const gu = content.balance.master.lines.gu, F = gu.hours.fit, M = content.balance.model, bands = M.bands;
@@ -155,7 +155,9 @@ export function fitHours(content, { grindLayers, table, play }) {
     // A 回's own band where one is decided (`bands.except`), else the player's.
     const [lo, hi] = bands.except?.[hui]?.[F.player] ?? bands[F.player], want = [lo + F.inset, hi - F.inset];
     let k0 = 1;
-    const set = k => { for (const l of layers) qi[l] = Math.round(gu.hours.qi[l] * k * 1000) / 1000; hours.qi = [...qi]; };
+    // The floor (`fit.floor`, Hanli 2026-10-28): no layer under it however the fit scales — a layer of a few minutes makes one
+    // board half of it. Inside `set`, so the band fit and the gate rule both see the floored hours.
+    const set = k => { for (const l of layers) qi[l] = Math.max(F.floor ?? 0, Math.round(gu.hours.qi[l] * k * 1000) / 1000); hours.qi = [...qi]; };
     set(1);
     const d = daysOf(hui);
     let a = F.range[0], b = F.range[1];

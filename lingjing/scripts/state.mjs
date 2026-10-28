@@ -649,6 +649,10 @@ export function fitWorld(saved, content) {
   // ids are `aliases` keys) and stands on a scene the rewrite kept (00-waimen)
   // begins the rewrite at its first scene: the kept scene's story assumes the
   // new one before it (prologue-v3's outer court, the fox he never met).
+  // A scene split since, whose later part a mark proves he walked (chapter.json `moved`: 09-dabi's 腊八 went to its own year,
+  // 2026-10-28) — on to the scene that part stands in now, and the stage quests he handed in under the old ways named anew.
+  const moved = !alias && chapter?.moved?.[state.scene];
+  if (moved && (state.marks ?? []).includes(moved.mark) && chapter.scenes[moved.to]) alias = moved.to;
   const done = state.done_scenes ?? [];
   if (!alias && chapter?.aliases && state.scene && state.scene !== chapter.first_scene && chapter.scenes[state.scene]
     && !(state.ended ?? []).includes(chapter.id) && done.some(id => id in chapter.aliases) && !done.some(id => chapter.scenes[id])) alias = chapter.first_scene;
@@ -664,6 +668,8 @@ export function fitWorld(saved, content) {
     // Moved by an alias, a practice the retired scene offered and no scene of
     // the chapter offers now is let go (unfinished); what was done stays.
     ...(alias && scene ? { tasks: keptTasks(state.tasks, chapter) } : {}),
+    ...(alias && scene && moved?.stages && (state.stages ?? []).some(k => moved.stages[k]) ? { stages: [...new Set(state.stages.map(k => moved.stages[k] ?? k))] } : {}),
+    ...(alias && scene && moved?.done ? { done_scenes: [...new Set([...(state.done_scenes ?? []), ...moved.done])] } : {}),
     ...(chapter && state.scene != null && !scene ? { scene: state.ended?.includes(chapter.id) ? null : chapter.first_scene } : {}),
     // Unknown, the place is settled by the rules from the scene or the province's start.
     ...(state.place != null && !place ? { place: null } : {}),

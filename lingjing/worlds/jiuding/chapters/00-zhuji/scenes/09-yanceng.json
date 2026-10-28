@@ -1,0 +1,118 @@
+{
+ "version": 1,
+ "id": "09-yanceng",
+ "chapter": "00-zhuji",
+ "hui": "h09",
+ "at": "jiangtang",
+ "season": "winter",
+ "_season": "年七腊月 → 年八入秋",
+ "place": {
+  "zh": "沉鼎观 · 讲堂 → 西廊 · 年七腊月 → 年八",
+  "en": "Chending Temple · The lecture hall → The West Gallery · The twelfth month of year seven → Year eight"
+ },
+ "_split": "2026-10-28 (doc/gates-2026-10-27.md 古八 (a + c), Hanli: 「按你的建议做」): 09-dabi, one scene for the three years, split back into the book's years — 年六 (09-dabi, 09-shenshi), 年七 (09-dingfeng, then 09-laba's 腊八), 年八 (09-yanceng) — a stage quest each: 七层圆满 at 09-shenshi/winter, 八层圆满 at 09-dingfeng/laba, 九层圆满 at 09-yanceng/ruqiu. Every passage is the book's own (08-第八回.md, en/h09.md), cut at its paragraph breaks, nothing joined; the 神识 · 轻身 (¶29–45), 阵 (¶51–59) and 孙二狗's 四层 (¶99) passages the book gained on 2026-10-13 are played now.",
+ "_beats": "古八 年八 (2026-10-28): 孙二狗's 四层 at the 腊月 验层 (¶99), then seven boards — 五子 with 孙二狗, 拼图 of the 执事堂, 灯谜 with 孙二狗, 象棋残局 mate in three, 捉虫 on 阿禾's strip, 华容道 to the bed in the 西廊, 五子 with 褚先生 — no kind twice running; 入秋 (`ruqiu`, 九层圆满, caps.hui.h09) on the way on: 宁师伯's lecture (¶101–121) and 瞿老's call up the cliff (¶177) → 09-qulao. Outside every beat.",
+ "setup": {
+  "zh": "年七腊月验层，孙二狗四层了。",
+  "en": "At the layer check in the twelfth month of the seventh year, Sun Ergou was at the fourth layer."
+ },
+ "recap": {
+  "zh": "年七腊月验层，孙二狗四层了——八年里你塞在他书案底下的油纸包，他一颗也没糟蹋。过了年，他搬进西廊：「沈、沈师兄，往后我、我也是内门的了。」",
+  "en": "At the layer check in the twelfth month of year seven, Sun Ergou was at the fourth layer: the oilpaper packets you pushed under his desk for eight years, he wasted not one. After New Year he moved into the West Gallery: \"S-senior brother Shen, from now on I-I'm inner sect too.\""
+ },
+ "cast": [],
+ "people": [
+  "sunergou",
+  "chuxiansheng",
+  "zhouheng"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「孙二狗」三个字。",
+    "「往后我、我也是内门的了。」",
+    "入秋。"
+   ],
+   "en": [
+    "The three characters \"Sun Ergou\".",
+    "\"From now on I-I'm inner sect too.\"",
+    "Autumn."
+   ]
+  }
+ },
+ "story": {
+  "zh": "年七腊月验层，孙二狗四层了。一个零层的杂灵根，褚先生当年说他引气五年起步；这八年里，小满隔三岔五往他书案底下塞一个油纸包，他一颗一颗地吃，吃一颗，坐半个月，一颗也没糟蹋。那天褚先生搭着他的腕子，搭了比旁人长一倍的工夫，才报出那两个字。周衡把内门的名册翻开，添了「孙二狗」三个字。过了年，他搬进西廊，在小满铺前站了半天，道：「沈、沈师兄，往后我、我也是内门的了。」说完，又哭了一回。",
+  "en": "At the layer check in the twelfth month of the seventh year, Sun Ergou was at the fourth layer. A layer-zero mixed spirit root, of whom Master Chu had once said drawing in qi would take five years at least; in these eight years Xiaoman had every so often pushed an oilpaper packet under his desk, and he'd eaten them one by one, eaten one and sat half a month, and not wasted one. That day Master Chu held his wrist twice as long as anyone else's before he gave out the two words. Zhou Heng opened the inner sect's register and added the three characters \"Sun Ergou\". After New Year he moved into the West Gallery, stood in front of Xiaoman's bed for a long time and said, \"S-senior brother Shen, from now on I-I'm inner sect too.\" When he'd said it, he cried again."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "yanceng-sunergou"
+  },
+  {
+   "card": "board",
+   "id": "yanceng-mingce"
+  },
+  {
+   "card": "board",
+   "id": "yanceng-ergou"
+  },
+  {
+   "card": "board",
+   "id": "yanceng-canju"
+  },
+  {
+   "card": "board",
+   "id": "yanceng-zhuochong"
+  },
+  {
+   "card": "board",
+   "id": "yanceng-xilang"
+  },
+  {
+   "card": "board",
+   "id": "yanceng-chu"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "yanceng-sunergou",
+   "yanceng-mingce",
+   "yanceng-ergou",
+   "yanceng-canju",
+   "yanceng-zhuochong",
+   "yanceng-xilang",
+   "yanceng-chu"
+  ]
+ },
+ "lines": [],
+ "buttons": [
+  "ruqiu"
+ ],
+ "exits": [
+  {
+   "id": "ruqiu",
+   "label": {
+    "zh": "入秋",
+    "en": "Autumn"
+   },
+   "means": "the autumn of year eight: 宁师伯's one 筑基 lecture (the brick and the loose earth; one 筑基 pill a year; 「不是赏，是赌」); the jar brims over, ninth layer perfected; his master calls him up the cliff",
+   "needs": {
+    "task": "yanceng-chu"
+   },
+   "refuse": {
+    "zh": "这一年的事还没完。",
+    "en": "This year isn't done yet."
+   },
+   "was_rise": {
+    "layer": 9,
+    "full": true
+   },
+   "story": {
+    "zh": "年八，秋风一起，讲经堂门上那块木牌的第三行底下，添了一个日子。筑基课一季只开一讲，七层往上才许进门；讲的不是褚先生，是藏经阁的宁师伯。\n\n宁师伯六十来岁的样子，瘦高，背有一点驼，一件灰袍洗得发白；左边的袖管是空的，拿一根麻绳扎着。三十年前他冲结丹，没冲过去，废了一条胳膊，一身筑基圆满的修为倒保住了。打那以后他守藏经阁，一年下来说不了几句话；只这一门课，观里没人讲得过他——筑基是怎么成的，他知道；是怎么不成的，他也知道。\n\n这一课，讲堂里一个打瞌睡的也没有。宁师伯拿那只右手把一块砖头往讲台上一放，却不先讲砖头，翻开伍冲虚的《天仙正理》{典=wu-zhuji}，照本念道：「筑者，渐渐积累增益之义。基者，修炼阳神之本根，安神定息之处所也。」念完了，见满堂的眼睛都是直的，便拍了拍那块砖头：「说白了，盖房子。练气是往地里运土，运得再多，也只是一堆散土；筑基，是把这堆土夯实了。土，得先运够。丹田里那口缸，吸进去一口，溢出来一口，再也添不进去了，才算够——你们嘴上管这个叫『九层巅峰』，名册上写的是四个字：九层圆满。没到这一步的，筑基丹吃了也是白吃。」\n\n宁师伯从窗台上的花盆里抓了一把土，撒在砖头旁边，冲第一排道：「马小宝，你来。」\n\n马小宝那几年过得不大顺当：马家往山上送丹药，送了五年，他一层一层吃到了七层，一张脸上斑摞着斑；桂花糕照旧一天十一块。秘境里出来那天，他说老蔫是「自己爬的」；打那以后，他夜里睡觉，要点着灯。这时候他把桂花糕往桌上一搁，走上去，一掌拍在那把散土上，土扬了满讲台；又一掌拍在砖头上，砖头纹丝不动，他那只手掌，却红了一大片。\n\n宁师伯道：「丹吃得多，是土运得多。没夯实的土，一拍就散——散的是你自己。」\n\n满堂想笑，没一个敢笑出声。宁师伯又掰着那一只手的指头算：筑基丹一年只赏一颗，一转，下品。「人间的丹师，炼出一炉五转，就该收拾收拾，准备飞升了。」最后一排，小满隔着衣裳，按了按心口。「本观开山三百年，一万来人进过山门，筑了基的，一百来个。」算到这里，他又翻开一本旧册子，看了半晌，喃喃地道：「……头一百年，倒占了一半。」\n\n全堂没人听出这句话有什么要紧。小满却听见了：头一百年，一半；后二百年，一半。像一只碗，盛出来的饭，一年比一年少。\n\n宁师伯把那本旧册子合上，那只空袖管晃了一晃，道：「所以筑基丹，不是赏，是赌。」\n\n「赌」字刚落，马小宝还站在讲台边上，那只拍红了的手攥成了拳头。他往最后一排看了一眼，只一眼，便收回来了，拿起桌上那块桂花糕，回座位去了。这五年，他跟小满说过的话，拢共不到十句。\n\n下了课，小满在讲经堂的台阶上坐了一会儿，把手按在小腹上。宁师伯说的那口缸，他这一个月里天天摸得着：吸进去一口灵气，便溢出来一口，再也添不进去了。九层圆满，他已经到了；剩下的，便是那一个「赌」字。\n\n八月里，瞿老叫他上了一趟崖顶。",
+    "en": "In the eighth year, as soon as the autumn wind rose, a date was added under the third line of the board on the lecture-hall door. The Foundation Establishment lecture was given only once a season, and only those above the seventh layer were allowed in; and it wasn't Master Chu who taught it, but Martial Uncle Ning of the Scripture Library.\n\nMartial Uncle Ning looked about sixty, thin and tall, his back a little stooped, his grey robe washed white. His left sleeve was empty, tied off with a hemp cord. Thirty years ago he had tried to break through to Core Formation and failed, and lost an arm, though he kept his whole perfected Foundation Establishment cultivation. Since then he had kept the Scripture Library and wouldn't say a handful of words in a year. This one lecture, though, nobody in the abbey could teach better than him: how Foundation Establishment is reached, he knew; and how it isn't, he knew too.\n\nAt this lecture not one person in the hall dozed off. Martial Uncle Ning put a brick on the lectern with his right hand, but didn't speak of the brick first. He opened Wu Chongxu's *True Principles of Heavenly Immortality*{典=wu-zhuji} and read out: \"To lay means to accumulate and increase by degrees. The foundation is the root of cultivating the yang spirit, the place where spirit is settled and breath is stilled.\" When he'd finished, he saw that every eye in the hall had glazed over, and patted the brick: \"Put plainly, it's building a house. Qi Condensation is carrying earth onto the plot, and however much you carry, it's only a heap of loose earth. Foundation Establishment is tamping that heap down solid. First, you have to carry enough earth. The vat in your dantian: when one breath in makes one breath spill out, and nothing more will go in, then it's enough. You call it 'the peak of the ninth layer'; in the register it's written in four characters: ninth layer, perfected. Anyone not there yet, eating a Foundation Pill is eating it for nothing.\"\n\nMartial Uncle Ning took a handful of soil from the flowerpot on the windowsill, scattered it beside the brick, and said to the front row: \"Ma Xiaobao. You come.\"\n\nThose years hadn't gone very smoothly for Ma Xiaobao. The Ma family had sent pills and medicine up the mountain for five years, and he had eaten his way up layer by layer to the seventh, his face blotch upon blotch; still eleven osmanthus cakes a day. On the day they came out of the secret realm, he'd said Old Wilt \"climbed himself\"; and ever since, he slept with the lamp lit. Now he set his osmanthus cake on the desk, went up, and slapped his palm down on the loose soil, and the soil flew all over the lectern; then he slapped his palm on the brick, and the brick didn't stir, but his palm went red all over.\n\nMartial Uncle Ning said, \"Eating plenty of pills is carrying plenty of earth. Earth that isn't tamped scatters at one slap. And what scatters is you.\"\n\nThe whole hall wanted to laugh, and not one dared laugh aloud. Martial Uncle Ning counted on the fingers of his one hand: one Foundation Pill awarded a year, one-turn, low grade. \"A pill-master in the human world who makes one furnace of five-turn pills ought to pack his things and get ready to ascend.\" In the back row, Xiaoman pressed his heart through his clothes. \"In the three hundred years since this abbey was founded, some ten thousand people have come through the mountain gate, and those who reached Foundation Establishment: about a hundred.\" Having got that far, he opened an old book, looked at it a long while, and murmured: \"...The first hundred years took half of them.\"\n\nNobody in the hall heard anything important in that. But Xiaoman heard it: the first hundred years, half; the next two hundred, half. Like a bowl, and the rice ladled out of it less every year.\n\nMartial Uncle Ning shut the old book, his empty sleeve swung, and he said, \"So a Foundation Pill isn't a reward. It's a wager.\"\n\nThe word \"wager\" had just fallen. Ma Xiaobao was still standing at the edge of the lectern, the hand he'd slapped red clenched into a fist. He looked once towards the back row, just once, then drew his eyes back, picked up his osmanthus cake from the desk, and went back to his seat. In these five years, the words he'd said to Xiaoman came to fewer than ten.\n\nAfter class Xiaoman sat a while on the steps of the lecture hall, his hand pressed to his belly. The vat Martial Uncle Ning spoke of, he had felt every day this month: one breath of spirit qi in, and one spilled out, and no more would go in. Ninth layer, perfected: he had reached it already. What was left was that one word, \"wager\".\n\nIn the eighth month, Elder Qu had him come up to the clifftop."
+   },
+   "next": "09-qulao"
+  }
+ ]
+}

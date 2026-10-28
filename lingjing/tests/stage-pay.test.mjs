@@ -24,13 +24,16 @@ const ctx = { now: NOW, quests: [] };
 const PAY = content.rewards.tables.stage.wealth;
 const scenesOf = id => Object.keys(content.chapters[id].scenes);
 
-/* His save's shape (10-16): 古八's 09-dabi, 腊八 taken (y-dabi), 练气九层 with nothing in it; the 古七 scenes
-   passed on the older graph (09-yishui, 09-futian never in done_scenes). No stage quest ever paid. */
-const his = (extra = {}) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-dabi', place: 'yaoyuan', ended: ['00-prologue', '00-waimen'],
-  done_scenes: [...scenesOf('00-prologue'), ...scenesOf('00-waimen'), '09-snow', '09-furnace', '09-year'], marks: ['y-futian', 'y-dabi'],
+/* His save's shape (10-16): 古八, 腊八 taken (y-dabi), 练气九层 with nothing in it; the 古七 scenes
+   passed on the older graph (09-yishui, 09-futian never in done_scenes). No stage quest ever paid. It stood on 09-dabi;
+   since the 2026-10-28 split into the book's years that part of 古八 is 09-yanceng's (年八, 入秋 on its way on), where
+   the load moves it (chapter.json `moved`; the last test). */
+const his = (extra = {}) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-yanceng', place: 'jiangtang', ended: ['00-prologue', '00-waimen'],
+  done_scenes: [...scenesOf('00-prologue'), ...scenesOf('00-waimen'), '09-snow', '09-furnace', '09-year', '09-dabi', '09-shenshi', '09-dingfeng', '09-laba'], marks: ['y-futian', 'y-dabi'],
   tier: 'qi', step: 9, progress: 0, wealth: 112, traits: ['metal', 'wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
-  // 守炉 · 丹房看炉 played (2026-10-21: 入秋 waits on 09-dabi's board; a save standing here is offered it on load).
-  tasks: { 'danfang-kanlu': { status: 'done' } }, ...extra });
+  // 守炉 · 丹房看炉 played (2026-10-21); 年八's last board played (入秋 waits on it since 2026-10-28).
+  tasks: { 'danfang-kanlu': { status: 'done' }, 'yanceng-chu': { status: 'done' } }, ...extra });
+const BEHIND = ['09-shenshi/winter', '09-dingfeng/laba']; // 古八's 七层 and 八层, behind a save at 九层
 const words = { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' };
 
 test('the pay is declared: balance.json pay.stage, 灵石 only (at 圆满 修为 cannot rise)', () => {
@@ -39,12 +42,12 @@ test('the pay is declared: balance.json pay.stage, 灵石 only (at 圆满 修为
 });
 
 test('his save at 九层 in 古八: the gates behind him are paid once on load, with a note; the open row is 九层圆满, never 七层', () => {
-  const owed = gatesOf(content).filter(g => huiOrder(content, g.hui) < huiOrder(content, 'h09') || gateKey(g) === '09-dabi/dabi');
+  const owed = gatesOf(content).filter(g => huiOrder(content, g.hui) < huiOrder(content, 'h09') || BEHIND.includes(gateKey(g)));
   const healed = settleStages(content, his(), NOW);
   assert.equal(healed.wealth, 112 + owed.length * PAY, 'each gate behind him, once');
   assert.deepEqual([...healed.stages].sort(), owed.map(gateKey).sort());
   assert.equal(healed.stage_back.n, owed.length);
-  assert.ok(healed.stage_back.steps.includes('练气八层圆满'), '腊八\'s 八层 too: he is past it');
+  assert.ok(healed.stage_back.steps.includes('练气八层圆满') && healed.stage_back.steps.includes('练气七层圆满'), '年六\'s 七层 and 年七\'s 八层 too: he is past them');
   // Never twice.
   assert.equal(settleStages(content, healed, new Date(NOW.getTime() + 3_600_000)), healed, 'nothing more owed: the same save back');
   const row = stageNow(content, healed);
@@ -53,16 +56,16 @@ test('his save at 九层 in 古八: the gates behind him are paid once on load, 
   const l = look(healed, content, ctx);
   assert.equal(l.stage_quest.step, '练气九层圆满');
   assert.ok(l.stage_quest.work?.place?.id, 'and it points to where 修为 is earned');
-  assert.deepEqual(l.stages_paid, ['练气八层圆满'], '已交 in this 回');
+  assert.deepEqual(l.stages_paid, ['练气七层圆满', '练气八层圆满'], '已交 in this 回');
   assert.equal(l.stage_back.wealth, owed.length * PAY);
   const html = bookPopHtml({ look: l, lang: 'zh', words });
-  assert.doesNotMatch(html, /七层圆满/, 'no stale row');
+  assert.doesNotMatch(html, /已接[\s\S]*?阶段任务 · 练气[七八]层圆满[\s\S]*?可接/, 'no stale row (七层 and 八层 are 已交 since 2026-10-28)');
   assert.match(html, /补发 · 先前过的\d+件阶段任务/);
   assert.match(html, /阶段任务 · 练气九层圆满/);
 });
 
 test('入秋 waits on 九层圆满 — the choice is the beat\'s name, refused with the 阶段任务 line until he earns it; it raises nothing', () => {
-  const exit = content.chapters['00-zhuji'].scenes['09-dabi'].exits.find(e => e.id === 'ruqiu');
+  const exit = content.chapters['00-zhuji'].scenes['09-yanceng'].exits.find(e => e.id === 'ruqiu');
   assert.deepEqual(exit.label, { zh: '入秋', en: 'Autumn' });
   const short = resolve(his({ progress: 100 }), content, ctx, { exit: 'ruqiu' });
   assert.equal(short.result.refused, 'stage');
@@ -88,14 +91,14 @@ test('a stage quest met is 可交: 交差 pays 灵石 once and moves it to 已�
   assert.equal(turned.state.progress, full.progress, '修为 untouched');
   const after = look(turned.state, content, ctx);
   assert.equal(after.stage_quest, undefined, '古八 has no gate left');
-  assert.deepEqual(after.stages_paid, ['练气八层圆满', '练气九层圆满']);
+  assert.deepEqual(after.stages_paid, ['练气七层圆满', '练气八层圆满', '练气九层圆满']);
   assert.match(bookPopHtml({ look: after, lang: 'zh', words }), /已交[\s\S]*阶段任务 · 练气九层圆满/);
   assert.equal(quest(turned.state, content, ctx, { id: 'stage', action: 'turn' }).result.refused, 'no-stage', 'never twice');
   assert.equal(quest(his({ progress: 5 }), content, ctx, { id: 'stage', action: 'turn' }).result.refused, 'not-done');
   // Walked on without 交差: the next load settles it, once.
   const walked = resolve(full, content, ctx, { exit: 'ruqiu' }).state;
   const settled = settleStages(content, walked, NOW);
-  assert.ok(settled.stages.includes('09-dabi/ruqiu'));
+  assert.ok(settled.stages.includes('09-yanceng/ruqiu'));
   assert.equal(settleStages(content, settled, NOW), settled);
 });
 
@@ -104,8 +107,11 @@ test('the heal runs on the next load through the rules\' door, and pays exactly 
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
   const file = path.join(data, 'state.json'), state = () => JSON.parse(fs.readFileSync(file, 'utf8'));
-  fs.writeFileSync(file, JSON.stringify({ ...his(), version: 10 }));
+  // As it stood before the split (2026-10-28): on 09-dabi, the 腊八 taken, 七层 and 八层 handed in under the old way's name.
+  fs.writeFileSync(file, JSON.stringify({ ...his({ scene: '09-dabi', place: 'yaoyuan', stages: ['09-dabi/dabi'], done_scenes: [...scenesOf('00-prologue'), ...scenesOf('00-waimen'), '09-snow', '09-furnace', '09-year'] }), version: 10 }));
   const first = cli('look');
+  assert.equal(state().scene, '09-yanceng', 'the 腊八 behind him: on to where 入秋 stands now (chapter.json `moved`)');
+  assert.ok(state().stages.includes('09-dingfeng/laba') && !state().stages.includes('09-dabi/dabi'), 'the 八层 he handed in, named anew');
   const paid = state().wealth;
   assert.ok(paid > 112, `paid on the load: ${paid}`);
   assert.equal(first.stage_back.wealth, paid - 112);
@@ -131,8 +137,8 @@ test('no story choice in 卷一 raises 修为 or 层: no rise but 入门 (零层
   }
   // The broken lint: a rise put back is refused.
   const bad = structuredClone(content);
-  bad.chapters['00-zhuji'].scenes['09-dabi'].exits.find(e => e.id === 'ruqiu').rise = { layer: 9, full: true };
-  assert.ok(lint(bad).some(x => /09-dabi exit ruqiu: the story raises a layer/.test(x)));
+  bad.chapters['00-zhuji'].scenes['09-yanceng'].exits.find(e => e.id === 'ruqiu').rise = { layer: 9, full: true };
+  assert.ok(lint(bad).some(x => /09-yanceng exit ruqiu: the story raises a layer/.test(x)));
 });
 
 test('every rise the book had is a gate: at that choice, or — inside a locked beat — the next gate on, asking that layer or more', () => {
@@ -151,5 +157,5 @@ test('every rise the book had is a gate: at that choice, or — inside a locked 
       assert.ok(next && next.layer >= want && stepOfLayer(content, first, next.layer) >= 0, `${sc.id}/${e.id}: the next gate (${next?.scene}@${next?.layer}) asks ${want} or more`);
     }
   }
-  assert.equal(n, 8, 'the eight rises 卷一 had past 入门');
+  assert.equal(n, 9, 'the nine rises 卷一 had past 入门 (古八\'s 八层 · 「那年冬天」 its own since the 2026-10-28 split)');
 });

@@ -1,0 +1,116 @@
+{
+ "version": 1,
+ "id": "09-dingfeng",
+ "chapter": "00-zhuji",
+ "hui": "h09",
+ "at": "houshan",
+ "season": "summer",
+ "_season": "年七",
+ "place": {
+  "zh": "沉鼎观 · 后山崖顶 → 讲堂 · 年七",
+  "en": "Chending Temple · The clifftop → The lecture hall · Year seven"
+ },
+ "_split": "2026-10-28 (doc/gates-2026-10-27.md 古八 (a + c), Hanli: 「按你的建议做」): 09-dabi, one scene for the three years, split back into the book's years — 年六 (09-dabi, 09-shenshi), 年七 (09-dingfeng, then 09-laba's 腊八), 年八 (09-yanceng) — a stage quest each: 七层圆满 at 09-shenshi/winter, 八层圆满 at 09-dingfeng/laba, 九层圆满 at 09-yanceng/ruqiu. Every passage is the book's own (08-第八回.md, en/h09.md), cut at its paragraph breaks, nothing joined; the 神识 · 轻身 (¶29–45), 阵 (¶51–59) and 孙二狗's 四层 (¶99) passages the book gained on 2026-10-13 are played now.",
+ "_beats": "古八 年七 (2026-10-28): the passage runs the book unchanged — 定风 (¶49), 褚先生's 阵 (¶51–59), 进退 (¶61–63) — then seven boards: 五子 with 瞿老, 拼图 of the 崖顶, 五子 against the 困阵, 华容道 through the 困阵, 成语接龙 with 瞿老, 象棋残局 mate in two, 几何冲刺 one cut — no kind twice running; 八层圆满 (caps.hui.h09) on the way on, whose story is 「那年腊月之前，他九层了」 (¶65). The 腊八 is 09-laba's. Outside every beat.",
+ "setup": {
+  "zh": "年七，他八层。瞿老那年夏天教的，说是一式，其实是一句话。",
+  "en": "In the seventh year he was at the eighth layer. What Elder Qu taught that summer, called a form, was really a sentence."
+ },
+ "recap": {
+  "zh": "年七，瞿老教定风：「飘风不终朝，骤雨不终日。」褚先生讲阵，你拿炭条留记号，一步跨过了砖缝——「笨法子，破得了九个。」秋天瞿老教进退：「你给自己留了一口。」",
+  "en": "Year seven: Elder Qu taught settling the wind: \"A whirlwind doesn't last the morning; a cloudburst doesn't last the day.\" Master Chu taught formations, and you left marks with charcoal and stepped across the joint between the bricks: \"The clumsy one breaks nine.\" In autumn Elder Qu taught advancing and retreating: \"You kept a breath for yourself.\""
+ },
+ "cast": [],
+ "people": [
+  "qulao",
+  "chuxiansheng"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「定风，不是站着不动。是等它吹完。」",
+    "「笨法子，破得了九个。」",
+    "「你给自己留了一口。」"
+   ],
+   "en": [
+    "\"Settling the wind isn't standing still. It's waiting for it to finish blowing.\"",
+    "\"The clumsy one breaks nine.\"",
+    "\"You kept a breath for yourself.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "年七，他八层。瞿老那年夏天教的，说是一式，其实是一句话。小满问他：「师父，鯥吸气张翅那一下，为什么一定会来？」瞿老道：「再凶的东西，凶也凶不长。它把一身的劲都使在一声吼、一下撞上，使完了，总得喘一口——你等的，就是那一口。」他念了一句书：「《道德经》{典=laozi-piaofeng}里说：『飘风不终朝，骤雨不终日。』大风刮不了一早上，暴雨下不了一整天。天地使足了劲，都撑不久，何况一头畜生。」他点起一根蜡烛，搁在青石上：「你吹吹看。」小满鼓起腮帮子，使劲吹，火苗子贴着蜡烛倒下去，倒成一条线，可就是不灭；他吹到没气了，火苗子直起来，还是那样。瞿老道：「你吹不灭它。你吹到没气了，它还在。定风，不是站着不动。是等它吹完。」\n\n那一年，褚先生讲堂上讲的是阵。「阵，是不用人守着的法术。」他道，「诀要手掐着，符用一张少一张；阵是把路刻在地上，埋几块灵石进去养着它，人走了，它还在。」秘境凶崖上那一圈青白的光，粘住过马小宝他们六个人——布它的人，可能死了几百年了。\n\n「破阵，先得知道阵是怎么骗人的。」他转过身，在木板上画了一个圈，「《孙子》{典=sunzi-qizheng}里讲用兵：『奇正相生，如循环之无端，孰能穷之哉。』正，是摆给你看的；奇，是藏着的。一正一奇，首尾接起来，便是一个没有头的圈。困阵困人，用的就是这个圈：你当自己在往前走，脚底下的路早拐了弯，走来走去，走回原地。」他拿戒尺在圈上点了一下，「可圈是接起来的。接起来的东西，总有一个接头。奇变成正的那一处，路是硬拗过去的——那里便是阵眼。找着它，一步跨过去，阵就破了。」\n\n有人问怎么找。褚先生道：「阵骗得了眼睛，骗得了脚，骗不了死物。你们自己想去。」\n\n他在讲堂当中的地上摆了七块碎灵石，布了一个一丈见方的小困阵，叫人进去走。头一个进去的，原地转了一炷香，转得满头大汗，以为自己走出了二里地。第二个转了半炷香，吐了。轮到小满，他站在阵口，没急着迈步，先弯腰从地上拾了一截炭条。进了阵，走三步，在砖上画一道；再走三步，又画一道。他爹说过：山里遇上鬼打墙，别信眼睛，别信脚，信你自己留的记号。画到第七道，他站住了。前头的砖上已经有一道，是他自己画的头一道；可它在他左手边——他明明是一路往右拐的。两道记号当中，隔着一条砖缝。他抬起脚，从那条缝上跨了过去。七块灵石上的光，一齐暗了下去。\n\n褚先生捋着山羊胡子，看了他好一会儿：「这法子是谁教你的？」小满道：「是我爹教的。」褚先生道：「你爹是破阵的？」小满道：「我爹是打猎的。山里迷了路，就这么走。」满堂哄笑。褚先生没有笑。他弯下腰，把那七块碎灵石一块一块拾起来，道：「都记住他这个笨法子。聪明法子，十个阵里破得了三个；笨法子，破得了九个。」\n\n八层到九层，瞿老教的是进退。那是秋天，他把扫帚把在地上一点，道：「《周易》{典=zhouyi-xun}里，巽卦头一爻，开口两个字：『进退。』整句是：『初六：进退，利武人之贞。』」他拿扫帚把在青石上写了那六个字，「进进退退，是心里拿不定；拿得定的，是武人——一剑出去，全部的灵力，没有退的那一半。」他指着崖边一根碗口粗的松枝：「你砍它。」\n\n小满砍了。一剑下去，剑卡在松枝里，拔不出来——他压进去的是大半口气，留了小半口，怕砍空了收不回来。瞿老道：「你给自己留了一口。」小满拔出剑，又砍，这一回他把丹田里的灵力整个压进剑里，什么也没留，松枝「咔嚓」一声落了地，剑过去，人也过去，收不住，往前冲了两步才站住，缸里一滴灵力也没有了，腿软得像面条。瞿老道：「这才是进退。」他看着崖下，又添了一句，声音低得几乎听不见：「巽四这一宫的剑，不怕慢，不怕软，就怕进退。进了一半想退，那一剑，自己先散了。」顿了一顿，「……剑是这样，别的，也是这样。」",
+  "en": "In the seventh year he was at the eighth layer. What Elder Qu taught that summer, called a form, was really a sentence. Xiaoman asked him, \"Master, the moment the lu drew breath to open its wings, why was it sure to come?\" Elder Qu said, \"However fierce a thing is, it can't stay fierce long. It spends all its strength on one roar, one ram, and when it's spent, it has to catch its breath. That breath is what you wait for.\" He recited a line: \"The *Daodejing*{典=laozi-piaofeng} says: 'A whirlwind doesn't last the morning; a cloudburst doesn't last the day.' A gale can't blow a whole morning, a storm can't pour a whole day. When heaven and earth use all their strength they can't keep it up long, let alone a beast.\" He lit a candle and set it on the bluestone: \"Blow on it.\" Xiaoman puffed out his cheeks and blew hard. The flame lay down flat along the candle, down to a line, and just wouldn't go out; he blew till he was out of breath, and the flame stood up, the same as ever. Elder Qu said, \"You can't blow it out. You blow till you're out of breath, and it's still there. Settling the wind isn't standing still. It's waiting for it to finish blowing.\"\n\nThat year, Master Chu lectured in the hall on formations. \"A formation is a spell that needs no one to hold it,\" he said. \"A sign needs hands to pinch it, a talisman is one fewer every time you use it; a formation carves the road into the ground and buries a few spirit stones to feed it, and when the man's gone, it's still there.\" That ring of blue-white light on the deadly cliff in the secret realm had held Ma Xiaobao and his five fast. Whoever laid it might have been dead for hundreds of years.\n\n\"To break a formation, you must first know how a formation fools you.\" He turned and drew a circle on the board. \"The *Sunzi*{典=sunzi-qizheng} says of war: 'The surprising and the straight give rise to each other, like a ring with no end. Who can exhaust them?' The straight is what's put out for you to see; the surprising is what's hidden. One straight, one surprising, head joined to tail, and you have a ring with no beginning. A trapping formation traps people with exactly that ring: you think you're walking forward, and the road under your feet has long since turned, and you walk and walk and end up where you started.\" He touched the circle with the ruler. \"But a ring is joined up. Anything joined up has a joint. The place where the surprising turns into the straight, the road has been forced round. That is the formation's eye. Find it, take one step across, and the formation is broken.\"\n\nSomeone asked how to find it. Master Chu said, \"A formation can fool the eyes, it can fool the feet, but it can't fool dead things. Work it out yourselves.\"\n\nOn the floor in the middle of the lecture hall he set out seven broken spirit stones and laid a small trapping formation one zhang square, and had people go in and walk it. The first one in turned on the spot for a stick of incense and sweated buckets, thinking he'd walked two li. The second turned for half a stick and was sick. When it was Xiaoman's turn, he stood at the formation's mouth and didn't hurry to step in. First he bent and picked up a stick of charcoal from the floor. Inside the formation, he walked three steps and drew a line on the brick; walked three more and drew another. Father had said: in the mountains, when a ghost walls you in, don't trust your eyes, don't trust your feet, trust the marks you leave yourself. At the seventh line he stopped. On the brick ahead there was already a line, the first one he had drawn himself; but it was on his left, and he'd been turning right the whole way. Between the two marks lay one joint between the bricks. He lifted his foot and stepped across that joint. The light on the seven spirit stones went dim all together.\n\nMaster Chu stroked his goatee and looked at him a good while: \"Who taught you that?\" Xiaoman said, \"My Pa.\" Master Chu said, \"Your Pa breaks formations?\" Xiaoman said, \"My Pa's a hunter. When you get lost in the mountains, that's how you walk.\" The hall roared with laughter. Master Chu didn't laugh. He bent down, picked the seven broken spirit stones up one by one, and said, \"All of you, remember this clumsy method of his. The clever methods break three formations in ten. The clumsy one breaks nine.\"\n\nFrom the eighth layer to the ninth, Elder Qu taught advancing and retreating. It was autumn. He touched the broom handle to the ground and said, \"In the *Book of Changes*{典=zhouyi-xun}, the first line of the Xun hexagram opens with two words: 'Advancing, retreating.' The whole line is: 'First six: advancing, retreating; the steadfastness of a warrior is fitting.'\" He wrote the words on the bluestone with the broom handle. \"Advancing and retreating, back and forth, is a heart that can't make itself up. The one whose heart is made up is the warrior: one cut, all his spiritual power, with no half kept back for retreat.\" He pointed to a pine branch at the cliff edge as thick as a bowl's rim: \"Cut it.\"\n\nXiaoman cut it. The sword went in and stuck fast in the branch and wouldn't come out: he had pressed in the greater part of a breath and kept back the lesser part, afraid that if he cut through to nothing he couldn't recover. Elder Qu said, \"You kept a breath for yourself.\" Xiaoman pulled the sword out and cut again, and this time pressed all the spiritual power in his dantian into the sword, keeping nothing back. The branch dropped with a *crack*; the sword went through, and he went through after it, couldn't stop, and lurched two steps forward before he stood. There wasn't a drop of spiritual power left in the vat, and his legs were soft as noodles. Elder Qu said, \"That's advancing and retreating.\" He looked down the cliff and added, in a voice so low it could barely be heard: \"The sword of the Xun Four palace doesn't fear slowness, doesn't fear softness. It fears only advancing and retreating. Go halfway in and think of going back, and that cut has fallen apart before it lands.\" A pause. \"...The sword is like that. Other things are like that too.\""
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "dingfeng-qulao"
+  },
+  {
+   "card": "board",
+   "id": "dingfeng-yading"
+  },
+  {
+   "card": "board",
+   "id": "dingfeng-zhenyan"
+  },
+  {
+   "card": "board",
+   "id": "dingfeng-kunzhen"
+  },
+  {
+   "card": "board",
+   "id": "dingfeng-jintui"
+  },
+  {
+   "card": "board",
+   "id": "dingfeng-canju"
+  },
+  {
+   "card": "board",
+   "id": "dingfeng-songzhi"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "dingfeng-qulao",
+   "dingfeng-yading",
+   "dingfeng-zhenyan",
+   "dingfeng-kunzhen",
+   "dingfeng-jintui",
+   "dingfeng-canju",
+   "dingfeng-songzhi"
+  ]
+ },
+ "lines": [],
+ "buttons": [
+  "laba"
+ ],
+ "exits": [
+  {
+   "id": "laba",
+   "label": {
+    "zh": "那年腊月之前",
+    "en": "Before the twelfth month"
+   },
+   "means": "before the twelfth month of year seven: the ninth layer, no seam between breath in and out; 火柴's line of sparks",
+   "beat": [],
+   "next": "09-laba",
+   "needs": {
+    "task": "dingfeng-songzhi"
+   },
+   "refuse": {
+    "zh": "崖顶上的功课还没做完。",
+    "en": "The clifftop's lessons aren't done yet."
+   },
+   "was_rise": 9,
+   "_was_rise": "The book's 「那年腊月之前，他九层了」 (¶65) — 09-dabi/dabi carried it until the 2026-10-28 split (state.mjs zeroLayer reads it).",
+   "story": {
+    "zh": "小满那时候没听懂这一句添的是什么。那年腊月之前，他九层了，吸和吐之间，听不出缝来。九层的火柴，一剑出去，剑尖上会甩出一线火星子，细得像灶膛里崩出来的那种——他不知道那是什么，瞿老也没说。",
+    "en": "At the time Xiaoman didn't understand what that added sentence was about. Before the twelfth month of that year he was at the ninth layer, and between breath in and breath out you couldn't hear a seam. With a ninth-layer Matchstick, when a cut went out, a thread of sparks flicked off the sword tip, fine as the kind that pop out of a stove's firebox. He didn't know what that was, and Elder Qu didn't say."
+   }
+  }
+ ]
+}

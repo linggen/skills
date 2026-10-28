@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 630,
-  "wealth": 801,
+  "wealth": 814,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -540,6 +540,11 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "yaban-maxiaobao": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "qianye-qiajue": {
     "status": "done",
     "period": "once",
@@ -662,8 +667,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2334,
-   "wealth": 804
+   "progress": 2348,
+   "wealth": 817
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1160,6 +1165,7 @@
    "chu-ahe",
    "luobo-rope",
    "yaban-qian",
+   "yaban-maxiaobao",
    "qianye-qiajue",
    "koujue-kou",
    "zhaojing-mirror",
@@ -1212,6 +1218,7 @@
     "chu-ahe": 1,
     "luobo-rope": 1,
     "yaban-qian": 1,
+    "yaban-maxiaobao": 1,
     "qianye-qiajue": 1,
     "koujue-kou": 1,
     "zhaojing-mirror": 1,
