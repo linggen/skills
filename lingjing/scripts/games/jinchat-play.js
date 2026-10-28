@@ -11,17 +11,19 @@
 //                     the hints in tiers, the choices after `tries` misses, 跳过 always.
 //   chainGame(ctx)  — 成语接龙: the person opens, he follows from the last character; each link of theirs is the page's
 //                     pick from the dictionary (worlds/<id>/chengyu.json); N links of his and he has won.
-//   guessGame(ctx)  — 反着的二十问: the animals he may think of, shown; 想好了; then 是 · 不是 · 不知道 to each of
-//                     their questions, 对 · 不对 to a guess; missed, he types what it was, once.
+//   guessGame(ctx)  — 反着的二十问: he thinks of an animal; 想好了; then 是 · 不是 · 不知道 to each of their questions,
+//                     对 · 不对 to a guess; missed, he types what it was, once. Any animal (Hanli 10-28, 袋鼠 too): they
+//                     ask and guess freely, a model turn each — the page counts and holds each line to yes-or-no; a turn
+//                     the model cannot give is the table's question instead (offline: the table plays it all, unseen).
 //
 // ctx: { root, chat, cast, lang, w (words), add(line), typeOut(lines), react(text, o) → Promise, sound(name),
-//        foot(text), table() → Promise<twenty table>, ask(text) → Promise<{text}> (the bank turn), log(row) }
+//        foot(text), table() → Promise<twenty table>, ask(text) → Promise<{text}> (the open 二十问's turns), typing(on), log(row) }
 // Each answers a Promise of the result: { won: true, grade, stars }.
 
 import {
-  answerGuess, bankLine, chainChoices, chainHint, chainLine, chainOf, chainOutcome, checkDown, checkLink, checkRiddle,
-  coupletLine, coupletOf, freshChain, freshGuess, guessOutcome, guessSummary, judgeGuess, needOf, nextMove, parseBank,
-  playLink, replyOf, resultLine, riddleLine, riddleOf, riddleOutcome, shapeOf,
+  answerFree, answerGuess, chainChoices, chainHint, chainLine, chainOf, chainOutcome, checkDown, checkLink, checkRiddle,
+  coupletLine, coupletOf, freeLine, freeOutcome, freeSummary, freshChain, freshFree, freshGuess, judgeGuess, needOf, nextMove,
+  playLink, replyOf, resultLine, riddleLine, riddleOf, riddleOutcome, shapeOf, yesNoOf,
 } from './jinchat-games.js';
 
 const pick = (v, lang) => (v == null ? '' : typeof v === 'string' ? v : v[lang] ?? v.zh ?? '');
@@ -125,24 +127,34 @@ export async function riddleGame(ctx) {
 
 /* ════════ 反着的二十问 ════════ */
 
+/* The open 二十问 (Hanli 10-28: 「AI猜可以, 但别固定30种动物, 全部动物都可以」): their questions are theirs, his taps the
+   only verdict, the page the count. The table (aigames.json `twenty.reverse`) is never shown: it only asks a turn the
+   model could not give (offline, a stub, a line that is no yes-or-no twice). */
 export async function guessGame(ctx) {
   const { chat, lang, w, cast } = ctx;
   const table = await ctx.table();
-  const names = table.animals.map((a) => pick(a.name, lang));
-  ctx.add({ who: 'card', html: `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.wen)}<div class="g-jc-strip"><i>${esc(pick(chat.game.label, lang) || w.twenty)}</i><p class="g-jc-q is-small">${esc(fill(w.think, { max: table.max }))}</p><p class="g-jc-pool">${names.map(esc).join(' · ')}</p></div></div>` });
-  // Their questions in their own voice: one turn, asked while he thinks (the plain wording stands in until it lands).
-  let bank = {};
-  ctx.ask(bankLine(chat, table, { cast, lang })).then((r) => { bank = parseBank(r?.text, table, cast); ctx.log({ kind: 'bank', chat: ctx.id, lines: Object.keys(bank).length }); }).catch(() => {});
+  const max = Number(chat.game.max) || 15;
+  ctx.add({ who: 'card', html: `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.wen)}<div class="g-jc-strip"><i>${esc(pick(chat.game.label, lang) || w.twenty)}</i><p class="g-jc-q is-small">${esc(fill(w.think, { max }))}</p></div></div>` });
+  let st = freshFree();
+  let tst = freshGuess(); // the table's own state, for a turn the model could not give
   let turn = 0;
-  const speaker = (line) => line?.who ?? cast[turn % cast.length]?.id ?? cast[0]?.id;
-  const say = async (id, plain, x) => {
-    const b = bank[id];
-    const text = fill(b?.text ?? plain, { x });
-    await ctx.typeOut([{ who: b?.who ?? speaker(b), text }]);
-    turn += 1;
+  const status = () => ctx.foot(fill(w.asked, { n: st.log.length, max }));
+  const speaker = () => cast[turn % cast.length]?.id ?? cast[0]?.id;
+  // One turn of theirs: the model's line, held to yes-or-no (asked again once); else the table's next move, plainly.
+  const nextTurn = async () => {
+    for (const bad of [false, true]) {
+      const r = await ctx.ask(freeLine(chat, st, { max, cast, lang, bad })).catch(() => null);
+      const t = yesNoOf(r?.text, cast, lang);
+      ctx.log({ kind: 'free-turn', chat: ctx.id, n: st.log.length + 1, ok: Boolean(t), err: r?.err ?? r?.refused ?? null });
+      if (t) return t;
+      if (!r?.text) break; // no model at all: the table, at once
+    }
+    const mv = nextMove(table, { ...tst, n: st.log.length });
+    if (mv.kind === 'giveup') return null;
+    if (mv.kind === 'ask') return { kind: 'ask', text: pick(mv.q.q, lang), who: speaker(), tq: mv.q.id };
+    const x = pick(mv.animal.name, lang);
+    return { kind: 'guess', text: fill(pick(table.guess, lang) || '{x}？', { x }), who: speaker(), x, tid: mv.animal.id };
   };
-  let st = freshGuess();
-  const status = () => ctx.foot(fill(w.asked, { n: st.n, max: table.max }));
 
   return new Promise((resolve) => {
     let done = false;
@@ -150,18 +162,17 @@ export async function guessGame(ctx) {
       if (done) return;
       done = true;
       strip(ctx, '');
-      const summary = guessSummary(table, st, { said }, lang);
-      ctx.log({ kind: 'twenty', chat: ctx.id, n: st.n, won: st.won ?? null, said, summary });
+      const summary = freeSummary(st, { said }, lang);
+      ctx.log({ kind: 'twenty', chat: ctx.id, n: st.log.length, won: st.won, said, summary, free: true });
       ctx.sound(st.won ? 'right' : o.grade === 'skipped' ? 'skip' : 'wrong');
       ctx.foot(summary);
-      // The result, in their words, is their last bubble — and the line the chat keeps (Hanli 10-27: one result line).
-      // The book closes it when it has the lines (黑地里: 「小宝哥。跟着我喘。……」); else their own word on the result.
+      // Smug when she has it, sulking when stumped — her own last word on the page's result.
       if (chat.game.after?.length) { await ctx.settle(); await playAfter(ctx, chat.game.after); }
       else if (o.grade !== 'skipped') await ctx.react(resultLine(chat, summary, lang), { wait: true });
       resolve(o);
     };
     const skipBtn = () => btn('is-skip', w.skip);
-    const wire = (el) => el.querySelector('.is-skip')?.addEventListener('click', () => end(guessOutcome(st, { skipped: true })));
+    const wire = (el) => el.querySelector('.is-skip')?.addEventListener('click', () => end(freeOutcome(st, { skipped: true })));
     const tell = () => {
       const el = strip(ctx, `<p class="g-jc-gnote">${esc(w.tell)}</p><form class="g-jc-bar is-game"><input class="g-jc-in" type="text" maxlength="12" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.itWas)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.tellGo)}</button></form>`);
@@ -172,43 +183,38 @@ export async function guessGame(ctx) {
         const said = input.value.trim();
         if (!said) return;
         ctx.add({ who: 'me', text: said });
-        end(guessOutcome(st), said);
+        end(freeOutcome(st), said);
       });
       input.focus({ preventScroll: true });
     };
     const step = async () => {
       status();
-      const mv = nextMove(table, st);
-      if (mv.kind === 'giveup') { ctx.sound('wrong'); return tell(); }
+      if (st.log.length >= max) { ctx.sound('wrong'); return tell(); }
       strip(ctx, '');
-      if (mv.kind === 'ask') {
-        ctx.log({ kind: 'ask', chat: ctx.id, q: mv.q.id, n: st.n + 1 });
-        await say(mv.q.id, pick(mv.q.q, lang));
-        const el = strip(ctx, `<div class="g-jc-gacts is-answers">${btn('is-yes', w.yes, ' data-a="yes"')}${btn('is-no', w.no, ' data-a="no"')}${btn('is-unk', w.unknown, ' data-a="unknown"')}${skipBtn()}</div>`);
-        wire(el);
-        for (const b of el.querySelectorAll('[data-a]')) b.addEventListener('click', () => {
-          if (done) return;
-          ctx.sound('tap');
-          ctx.add({ who: 'me', text: b.textContent });
-          st = answerGuess(st, mv.q.id, b.dataset.a);
-          step();
-        });
-        return;
-      }
-      const name = pick(mv.animal.name, lang);
-      ctx.log({ kind: 'guess', chat: ctx.id, animal: mv.animal.id, n: st.n + 1 });
-      await say('guess', pick(table.guess, lang) || '{x}？', name);
-      const el = strip(ctx, `<div class="g-jc-gacts is-answers">${btn('is-yes', w.right, ' data-r="1"')}${btn('is-no', w.wrong, ' data-r="0"')}${skipBtn()}</div>`);
+      ctx.typing?.(true);
+      const t = await nextTurn();
+      ctx.typing?.(false);
+      if (done) return;
+      if (!t) { ctx.sound('wrong'); return tell(); }
+      await ctx.typeOut([{ who: t.who ?? speaker(), text: t.text }]);
+      turn += 1;
+      const guess = t.kind === 'guess';
+      const el = strip(ctx, `<div class="g-jc-gacts is-answers">${guess
+        ? `${btn('is-yes', w.right, ' data-a="right"')}${btn('is-no', w.wrong, ' data-a="wrong"')}`
+        : `${btn('is-yes', w.yes, ' data-a="yes"')}${btn('is-no', w.no, ' data-a="no"')}${btn('is-unk', w.unknown, ' data-a="unknown"')}`}${skipBtn()}</div>`);
       wire(el);
-      for (const b of el.querySelectorAll('[data-r]')) b.addEventListener('click', () => {
+      for (const b of el.querySelectorAll('[data-a]')) b.addEventListener('click', () => {
         if (done) return;
-        const right = b.dataset.r === '1';
+        ctx.sound('tap');
         ctx.add({ who: 'me', text: b.textContent });
-        st = judgeGuess(st, mv.animal.id, right);
-        if (right) return end(guessOutcome(st));
-        ctx.sound('wrong');
+        const a = b.dataset.a;
+        st = answerFree(st, t, a);
+        if (t.tq) tst = answerGuess(tst, t.tq, a);
+        if (t.tid && a === 'wrong') tst = judgeGuess(tst, t.tid, false);
+        if (st.over) return end(freeOutcome(st));
+        if (guess) ctx.sound('wrong');
         step();
-      });
+      }, { once: true });
     };
     const el = strip(ctx, `<div class="g-jc-gacts">${btn('is-main', w.ready)}${skipBtn()}</div>`);
     wire(el);

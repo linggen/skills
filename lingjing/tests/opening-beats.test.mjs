@@ -320,7 +320,7 @@ test('第一回 plays seven boards on five kits (二十问 · 银月 the AI one,
   const boards = h01.flatMap(sc => (sc.show ?? []).filter(c => c.card === 'board').map(c => c.id)).sort();
   assert.deepEqual(boards, ['baicai-hens', 'bread-share', 'cave-fire', 'masan-taunt', 'masan-zaotai', 'rain-basins', 'yinyue-what']);
   const kit = (id) => content.tasks.tasks.find(x => x.id === id).game;
-  assert.deepEqual(boards.map(kit), ['shouqiang', 'bread', 'shoulu', 'dash', 'sadoushou', 'rain', 'bingzhai']);
+  assert.deepEqual(boards.map(kit), ['shouqiang', 'bread', 'shoulu', 'dash', 'sadoushou', 'rain', 'jinchat']);
   assert.ok(content.tasks.tasks.find(x => x.id === 'fall-storm').cut, '拽爹 cut (10-22): a save holding it lets it go');
   assert.ok(!(scenes['00-yinyue'].show ?? []).some(c => c.id === 'yinyue-way') && !(scenes['00-yinyue'].offers?.tasks ?? []).includes('yinyue-way'), '认路 stays off 00-yinyue');
   assert.equal(content.games.games.find(g => g.id === 'dash' && g.task === 'masan-taunt')?.data.level, 'renzi-dash', '忍字: the breath pressed down, a run (几何冲刺 since 10-27)');

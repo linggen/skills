@@ -6,14 +6,16 @@
 //   riddle   猜谜 · 字谜 · 考书: the person sets it (`q`), he answers in the box. Right is his answer against the
 //            data's list (`answers`), never a model's say (live 10-27: a model invented a puzzle's answer). Hints come in
 //            tiers (`hints`), the choices (`choices`) after `tries` misses; 跳过 always. Solved or not, the story goes on.
-//   guess    反着的二十问: he thinks of an animal, they ask yes or no and he taps 是 · 不是 · 不知道 — no typing. The
-//            page asks: each question is the one that best splits the animals still possible (worlds/<id>/aigames.json
-//            `twenty.reverse`, a yes/no table), a guess when one is left; a guess counts as a question; the win is only
-//            his 对. Missed, he types what it was, once.
+//   guess    反着的二十问: he thinks of an animal — any animal (Hanli 10-28: 「别固定30种动物, 全部动物都可以」) — they
+//            ask yes or no and he taps 是 · 不是 · 不知道 — no typing. Their questions and guesses are the model's, free
+//            (`freeLine`); the page holds each to yes-or-no (`yesNoOf`) and counts; he alone knows the answer, so his 对 is
+//            the only win of theirs. A turn the model cannot give is the table's (worlds/<id>/aigames.json
+//            `twenty.reverse`: the question that best splits the animals still possible), never shown. Missed, he types
+//            what it was, once.
 //
 // Who writes what (design.md: Ling writes every word a player reads; code gives facts): the riddle, its hints and its
 // answers are data (a puzzle's face, like riddles/zh.json); the person's own bubbles are the model's — a lead-in, a
-// jab at a wrong guess, the questions in their voice (one turn at the start, `bankLine`, while he thinks of his animal)
+// jab at a wrong guess, the questions in their voice (in the open 二十问, every question and guess of theirs, one turn each, `freeLine`)
 // — each handed the page's verdict as a fact and never the answer before he has it. No model, every game still plays:
 // the questions' plain wording is data, and the book's own lines close it.
 
@@ -286,9 +288,14 @@ const W = {
     choices: '页面给了他四个选项挑。',
     solved: '他猜中了：「{guess}」（页面判的）。用一句话认了。',
     skip: '他不猜了，跳过；页面亮出了谜底：「{answer}」。回他一句，收个尾。',
-    bank: '这一局是二十问反着玩：他心里想好一种动物，你们只问是或不是，来猜。下面每个问题，照你们平常说话的样子各改写成一句（意思不变，还是只能答是或不是），一行一个，照「编号｜名字：问句」写，名字轮着来；最后一行写「guess｜名字：……{x}……？」——猜的那一句，{x} 原样留着。整段从第一行到最后一行用一对 <!-- 和 --> 包起来（页面读它，聊天里不显示），不要别的字。',
-    bankQ: '{id}｜{q}',
     result: '二十问完了（页面判的）：{summary}。说一句收尾，别改这个结果。',
+    free: '这一局是二十问反着玩：他心里想好了一种动物（什么动物都行），你们只问是或不是来猜，{max} 问之内，猜一回也算一问。',
+    freeTurn: '{log}现在是第 {n} 问（还剩 {left} 问）。只写一句{who}：要么问一个只能答「是」或「不是」的问题，要么猜。句首加一个标记——问就写 <!--问-->，猜就写 <!--猜:动物名-->（页面读它，聊天里不显示）。别重复问过的；「是什么」「哪种」「几条」这样答不了是不是的，不许问。',
+    freeWho: '，开头写说话人的名字加冒号，轮着来',
+    freeLog: '已经问过：\n{rows}\n',
+    freeQ: '{n}. 问：{q}——他答：{a}', freeG: '{n}. 猜：{x}——他说：{a}',
+    freeA: { yes: '是', no: '不是', unknown: '不知道', right: '对', wrong: '不对' },
+    freeBad: '（上一句不是只能答是或不是的问题，页面没收。重来一句。）',
     couplet: '这一局是对对子：{names}出上联，页面上已经写着——「{up}」{kind}。他对下联，对没对上，页面判。',
     cOpen: '你先开口，照你平常说话的样子叫他对下联（上联别重复，下联一个字也别说，别替他对）。',
     cMiss: '他对：「{guess}」。页面判了：没对上（{why}）。下联别说破，也别替他对。回他一句——损他也行，激他也行。{hint}',
@@ -313,9 +320,14 @@ const W = {
     choices: 'The page has given him four choices.',
     solved: 'He has it: "{guess}" (the page judged it). Own it in a line.',
     skip: 'He gives up and skips; the page shows the answer: "{answer}". Answer him in a line and close it.',
-    bank: 'This round is twenty questions the other way round: he thinks of an animal and you ask only yes-or-no questions to guess it. Rewrite each question below in your own voice, one line each (same meaning, still yes or no), as "id｜Name: question", taking turns; the last line "guess｜Name: … {x} …?" — the guessing line, {x} left exactly as it is. Wrap the whole list, first line to last, in one <!-- and --> (the page reads it; the chat never shows it). Nothing else.',
-    bankQ: '{id}｜{q}',
     result: 'The twenty questions are over (the page judged it): {summary}. Close it with a line; never change that result.',
+    free: 'This round is twenty questions the other way round: he has thought of an animal (any animal at all), and you ask only yes-or-no questions to guess it, within {max}; a guess counts as one.',
+    freeTurn: '{log}This is question {n} ({left} left). Write one line only{who}: either a question he can answer only yes or no, or a guess. Start it with a mark — a question <!--ask-->, a guess <!--guess:animal--> (the page reads it; the chat never shows it). Never repeat one asked; never "what is it", "which kind", "how many" — nothing that is not yes or no.',
+    freeWho: ', starting with the speaker\'s name and a colon, taking turns',
+    freeLog: 'Asked so far:\n{rows}\n',
+    freeQ: '{n}. Q: {q} — he said: {a}', freeG: '{n}. Guess: {x} — he said: {a}',
+    freeA: { yes: 'yes', no: 'no', unknown: 'don\'t know', right: 'right', wrong: 'wrong' },
+    freeBad: '(The last line was not a yes-or-no question; the page did not take it. Another.)',
     couplet: 'This round is couplets: {names} give the first line, and the page shows it — "{up}"{kind}. He answers with the second; the page judges.',
     cOpen: 'Speak first, in your own voice, daring him to match it (don\'t repeat the line; never say a word of the answer).',
     cMiss: 'He answers: "{guess}". The page judged it: no match ({why}). Never give the answer away. Answer him in a line. {hint}',
@@ -376,34 +388,56 @@ export function chainLine(chat, { event, guess = '', mine = '', why = '', n = 0,
   return event === 'open' ? `${headOf(chat, cast, lang)}${body}` : `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
 }
 
-/** The one turn at the start of a reverse 二十问: every question in their voice, while he thinks of his animal. */
-export function bankLine(chat, table, { cast = [], lang = 'zh' } = {}) {
-  const w = W[lang] ?? W.zh;
-  const qs = table.questions.map((q) => fill(w.bankQ, { id: q.id, q: pick(q.q, lang) })).join('\n');
-  return `${headOf(chat, cast, lang)}${w.bank}\n${qs}`;
-}
 export const resultLine = (chat, summary, lang = 'zh') => `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${fill((W[lang] ?? W.zh).result, { summary })}`;
 
-/** Their questions back from the bank turn: `{ id → { who, text } }`, only lines that are a question with an id the
-    table knows (the guess line keeps its `{x}`); the rest falls back to the data's plain wording. */
-export function parseBank(text, table, cast) {
-  const ids = new Set([...table.questions.map((q) => q.id), 'guess']);
+/* ════════ 反着的二十问, open (Hanli 10-28: he may think of any animal — 袋鼠 too) ════════
+   Live, the person asks and guesses freely, one model turn a question; he is the only one who knows the answer, so
+   nothing is theirs to judge: the page counts (`max`), holds each line to yes-or-no (`yesNoOf`), and his taps decide —
+   是 · 不是 · 不知道, and 对 · 不对 to a guess. Offline, the table (nextMove) plays instead. */
+
+/** The hidden line for their next question: the facts on the first, the log of what was asked every time. */
+export function freeLine(chat, st, { max, cast = [], lang = 'zh', bad = false } = {}) {
+  const w = W[lang] ?? W.zh;
+  const rows = st.log.map((x, i) => fill(x.guess ? w.freeG : w.freeQ, { n: i + 1, q: x.q, x: x.guess, a: w.freeA[x.a] ?? x.a })).join('\n');
+  const body = `${bad ? w.freeBad : ''}${fill(w.freeTurn, { log: rows ? fill(w.freeLog, { rows }) : '', n: st.log.length + 1, left: max - st.log.length, who: cast.length > 1 ? w.freeWho : '' })}`;
+  return st.log.length || bad ? `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${fill(w.free, { max })}${body}` : `${headOf(chat, cast, lang)}${fill(w.free, { max })}${body}`;
+}
+
+const NOT_YES_NO = { zh: /(什么|哪|几|多少|怎么|为什么|为啥|谁|啥)/, en: /^\W*(what|which|how|why|who|where|when)\b/i };
+/** Their line back: `{ kind: 'ask' | 'guess', text, who, x? }`, or null when it is not a yes-or-no question or a guess
+    (no mark, no question mark, a wh-question, too long) — the page asks again. */
+export function yesNoOf(text, cast = [], lang = 'zh') {
+  const raw = String(text ?? '').replace(/\*\*/g, '').trim();
+  const m = raw.match(/<!--\s*(问|猜|ask|guess)\s*(?:[:：]\s*([^>]*?))?\s*-->/i);
+  if (!m) return null;
+  const guess = /^(猜|guess)$/i.test(m[1]);
+  let line = raw.replace(/<!--[\s\S]*?-->/g, '').split(/\n+/).map((x) => x.trim()).filter(Boolean)[0] ?? '';
+  let who = cast[0]?.id ?? null;
+  const n = line.match(/^([^：:]{1,8})\s*[：:]\s*(.+)$/);
   const names = cast.map((c) => c.name);
-  const out = {};
-  // The list comes wrapped in one HTML comment, so the chat panel never shows it (it drops every <!-- … -->); the page reads inside.
-  for (const raw of String(text ?? '').replace(/<!--|-->/g, '\n').split(/\n+/)) {
-    const m = raw.replace(/\*\*/g, '').trim().match(/^([\w-]+)\s*[｜|]\s*(.+)$/);
-    if (!m || !ids.has(m[1])) continue;
-    let line = m[2].trim(), who = null;
-    const n = line.match(/^([^：:]{1,8})\s*[：:]\s*(.+)$/);
-    if (n && names.includes(n[1].trim())) { who = cast[names.indexOf(n[1].trim())].id; line = n[2].trim(); }
-    line = line.replace(/^[「"](.*)[」"]$/, '$1').trim();
-    if (!line || [...line].length > 40 || !/[?？]$/.test(line)) continue;
-    if (m[1] === 'guess' && !line.includes('{x}')) continue;
-    if (m[1] !== 'guess' && line.includes('{x}')) continue;
-    out[m[1]] = { who, text: line };
-  }
-  return out;
+  if (n && names.includes(n[1].trim())) { who = cast[names.indexOf(n[1].trim())].id; line = n[2].trim(); }
+  line = line.replace(/^[「"](.*)[」"]$/, '$1').trim();
+  if (!line || [...line].length > 60 || !/[?？]\s*$/.test(line)) return null;
+  const x = guess ? String(m[2] ?? '').trim() : '';
+  if (guess && !x) return null;
+  if (!guess && NOT_YES_NO[lang === 'en' ? 'en' : 'zh'].test(line)) return null;
+  return guess ? { kind: 'guess', text: line, who, x } : { kind: 'ask', text: line, who };
+}
+
+export const freshFree = () => ({ log: [], over: false, won: null });
+/** His tap: to a question (yes · no · unknown) or a guess (right · wrong). A right guess ends it, theirs. */
+export function answerFree(st, turn, a) {
+  const row = turn.kind === 'guess' ? { guess: turn.x, q: turn.text, a } : { q: turn.text, a };
+  const log = [...st.log, row];
+  return turn.kind === 'guess' && a === 'right' ? { ...st, log, over: true, won: turn.x } : { ...st, log };
+}
+/** How the open game came out: their right guess → 2 (guessed); never → 3 (stumped, he won); skipped → 1. */
+export const freeOutcome = (st, o = {}) => guessOutcome({ won: st.won }, o);
+/** One line of fact: 「7 问猜中了袋鼠」 · 「15 问没猜中，他心里是：袋鼠」. */
+export function freeSummary(st, { said = '' } = {}, lang = 'zh') {
+  const n = st.log.length;
+  if (lang === 'en') return st.won ? `guessed it in ${n} questions: ${st.won}` : `didn't guess it in ${n} questions${said ? `; it was: ${said}` : ''}`;
+  return st.won ? `${n} 问猜中了${st.won}` : `${n} 问没猜中${said ? `，他心里是：${said}` : ''}`;
 }
 
 /** A 测试存档's stub (`&her=stub`): a marked line, never a verdict. */

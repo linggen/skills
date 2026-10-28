@@ -177,19 +177,6 @@
       ],
       "art": "cards"
     },
-    "bingzhai": {
-      "_about": "讨饼债 (games/bingzhai.js), 00-yinyue: no art; 银月's turns come from the app (the host's `talk`, the phone's own Yinyue). With no deal (the 游戏厅's 试玩) it reads the story task's own from tasks/world.json by a folder URL, so that is listed.",
-      "module": "scripts/games/bingzhai.js",
-      "dirs": [],
-      "files": [
-        "worlds/jiuding/tasks/world.json"
-      ],
-      "css": [
-        "scripts/lingjing.css",
-        "scripts/games/live.css"
-      ],
-      "ai": true
-    },
     "piece-zhuigu": {
       "piece": "zhuigu",
       "module": "scripts/setpieces/zhuigu.js",

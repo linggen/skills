@@ -8,15 +8,14 @@
 //                    LingjingHost.pause(true)   the native pause button
 //                    LingjingHost.leave()       the player walked away (settles { left: true })
 //                    LingjingHost.mute(true)    the native 🔊 (the shell's one mute, kept in this webview: games/kit/sound.js)
-//                    LingjingHost.heard(id, '{"reply":"…"}' | '{"error":"…"}')   the answer to a `talk`
+//                    LingjingHost.heard(id, '{"reply":"…"}' | '{"error":"…"}')   the answer to an `ask`
 //                    LingjingHost.tool('restart' | 'ask')   the native ↺ 重来 or ? 问询 of a board that declares it
 //                                              (`meta.restart` · `meta.ask`): the board's own tap, as the Mac's shell bar sends it
-//   page → Flutter   Linggen.postMessage(JSON) with { t: 'ready' | 'mounted' | 'lead' | 'say' | 'event' | 'talk' | 'stuck' | 'end' | 'error', … }
+//   page → Flutter   Linggen.postMessage(JSON) with { t: 'ready' | 'mounted' | 'lead' | 'say' | 'event' | 'ask' | 'stuck' | 'end' | 'error', … }
 //                    mounted { game, muted }   the board's module is up (a lead card, if it has one, is asked for next); muted: the 🔊's state
 //                    lead  { text }            the story lines the lead card reads; the game starts when go() answers it
 //                    say   { who, text, ms }   a bubble over the field (台词预取's lines)
 //                    event { f }               the game's facts (start · wave · wave_cleared · boss · low · end …)
-//                    talk  { id, text }        a line for 银月 (讨饼债): the app asks the phone's Yinyue, answers heard()
 //                    ask   { id, game, agent, text, png?, system? }   a model turn for a chat or a 画猜 look (jinchat · drawguess:
 //                                              what the Mac sends to its chat, drawguess-ling.js askInChat): answered by heard()
 //                    rules { id, verb, args }  a rules call the board makes itself (开炉's feed, 本王考考你's `kao open`, 银月
@@ -82,14 +81,9 @@ function traceTaps() {
   }
 }
 
-/* 银月's turns (讨饼债): each line goes to the app, which answers with her reply. */
+/* The board's open calls to the app (a model turn, a rules call), by id. */
 const talks = new Map();
 let talkN = 0;
-const talk = (text) => new Promise((resolve, reject) => {
-  const id = `t${(talkN += 1)}`;
-  talks.set(id, { resolve, reject });
-  post({ t: 'talk', id, text });
-});
 
 /* A model turn (jinchat · drawguess): the Mac's askInChat answer, { text } or { refused }; 'far' when no model answers. */
 const ask = (game) => ({ agent = 'ling', text, png = null, system = null } = {}) => new Promise((resolve, reject) => {
@@ -110,7 +104,6 @@ const rules = (verb, args = {}) => new Promise((resolve, reject) => {
    (`her`) wakes her for the round and puts her back; a chat or a 画猜 asks the app's model; 开炉 feeds through the rules. */
 function dealOf(game, data, task) {
   const d = { ...data };
-  if (game === 'bingzhai') d.talk = talk;
   if (game === 'jinchat' || game === 'drawguess') d.ask = ask(game);
   if (game === 'kailu') d.roll = (ids, lingshi, press) => rules('fantong', { action: 'feed', ids: ids.join(','), lingshi: lingshi || 0, press: press ? 1 : 0 });
   if (d.begin && typeof d.begin === 'object') {

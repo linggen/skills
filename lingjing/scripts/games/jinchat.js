@@ -15,6 +15,9 @@
 // nothing). Never stuck on a model: a 测试存档's stub (`&her=stub`) answers on the page; chat off, no engine, no chat
 // or a turn that fails → the book's own exchange is played and 「就到这儿」 ends it. The stuck gate (stuck.js) still
 // offers 「算了，往下走」 under the card after 75 s, as on every board.
+// A board that needs 银月 (its task's `needs: "her"`: 讨饼债 at 00-yinyue, unmet, held on the stage) is dealt `wake` and
+// `rest` (lingjing.js mountData · the phone's host): she is held out for the round before her first turn and put back as
+// it ends — else the engine refuses her turn and Ling writes it.
 // A host with no Ling chat (the phone app, doc/lingjing-phone.md step 2) hands `data.ask({ agent, text, system })` →
 // `{ text }`: the same hidden line goes to its own model, with HOST_SYSTEM as the turn's system (what SKILL.md's
 // `[jinchat]` rule is to the Mac's Ling); a host that cannot reach one throws `far`, and the book's exchange plays.
@@ -44,7 +47,7 @@ const T = {
     calling: '通话中', far: '这会儿叫不应。', off: '这个测试存档不叫灵（chat=off）。', err: '没回。再说一句？',
     riddle: '猜谜', mi: '谜', wen: '问', guessIt: '你猜……', guessGo: '猜', hint: '提示', hintAt: '提示{n}：', skip: '跳过', answer: '谜底：{a}',
     tried: '猜错 {n} 回', hinted: '提示 {n}/{max}',
-    twenty: '二十问 · 猜你心里的动物', think: '心里想好一种动物，就在下面这些里挑。只许问是不是，{max} 问之内来猜。想好了，点「想好了」。',
+    twenty: '二十问 · 猜你心里的动物', think: '心里想好一种动物，什么动物都行。只答是、不是、不知道；{max} 问之内猜不中，算你赢。想好了，点「想好了」。',
     ready: '想好了', yes: '是', no: '不是', unknown: '不知道', right: '对', wrong: '不对', asked: '已问 {n}/{max}',
     tell: '没猜着。说出来，你心里是什么：', itWas: '它是……', tellGo: '说',
     duilian: '对对子', upLabel: '上联', downLabel: '下联', downIt: '对下联……', downGo: '对', triedDown: '没对上 {n} 回', srcBy: '——{src}',
@@ -59,7 +62,7 @@ const T = {
     calling: 'On call', far: 'No one answers just now.', off: 'This test save asks no one (chat=off).', err: 'No reply. Say it again?',
     riddle: 'A riddle', mi: '?', wen: '?', guessIt: 'Your guess…', guessGo: 'Guess', hint: 'Hint', hintAt: 'Hint {n}: ', skip: 'Skip', answer: 'The answer: {a}',
     tried: '{n} wrong', hinted: 'hints {n}/{max}',
-    twenty: 'Twenty questions · the animal you think of', think: 'Think of an animal from the ones below. Yes-or-no questions only, and a guess within {max}. Ready? Tap "Got one".',
+    twenty: 'Twenty questions · the animal you think of', think: 'Think of an animal — any animal at all. Answer yes, no or don\'t know; if it isn\'t guessed within {max}, you win. Ready? Tap "Got one".',
     ready: 'Got one', yes: 'Yes', no: 'No', unknown: 'Don\'t know', right: 'Right', wrong: 'Wrong', asked: 'Asked {n}/{max}',
     tell: 'Not guessed. Say what you thought of:', itWas: 'It was…', tellGo: 'Say',
     duilian: 'Couplets', upLabel: 'First line', downLabel: 'Second line', downIt: 'The second line…', downGo: 'Match', triedDown: '{n} unmatched', srcBy: '— {src}',
@@ -244,7 +247,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const settle = async () => { await Promise.race([g.inflight ?? Promise.resolve(), wait(12000)]); g.hush = true; };
   const playGame = async () => {
     const ctx = {
-      root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, react, settle, sound, foot, log,
+      root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, typing, react, settle, sound, foot, log,
       table: twentyOf, tones: tonesOf, dict: chengyuOf,
       ask: (text) => (g.live && data.seam !== 'stub' ? send(text, 60000) : Promise.resolve({ text: '' })),
     };
@@ -307,6 +310,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     for (const l of g.chat.game?.setup ?? []) add({ who: 'note', text: pick(l, lang) });
     await typeOut((g.chat.open ?? []).map((l) => ({ who: l.who, card: l.card, text: pick(l.text, lang) })));
     if (g.chat.game) {
+      if (g.chat.agent && typeof data.wake === 'function') await Promise.resolve(data.wake()).catch(() => null);
       // Every game plays with no one to ask (chat off, no engine): the page judges, the book closes it.
       g.live = data.seam === 'stub' || typeof data.ask === 'function' || (data.seam !== 'off' && Boolean(sessionOf()) && (await reachable()));
       return playGame();
@@ -318,7 +322,13 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
 
   return new Promise((resolve) => {
     let settled = false;
-    finish = (result) => { if (settled) return; settled = true; clearInterval(g.keep); resolve(result); };
+    finish = (result) => {
+      if (settled) return;
+      settled = true;
+      clearInterval(g.keep);
+      if (g.chat?.agent && typeof data.rest === 'function') Promise.resolve(data.rest()).catch(() => {});
+      resolve(result);
+    };
     signal?.addEventListener('abort', () => finish({ won: false, left: true }), { once: true });
     start().catch((e) => { console.warn('[jinchat]', e); cannot(w.far); });
   });

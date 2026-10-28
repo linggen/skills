@@ -6,8 +6,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
-  answerGuess, bankLine, chainChoices, chainHint, chainLine, chainOf, checkDown, checkLink, checkRiddle, coupletLine, coupletOf,
-  dictOf, freshChain, freshGuess, guessOutcome, guessSummary, judgeGuess, kindOf, needOf, nextMove, nextsOf, normAnswer, parseBank,
+  answerFree, answerGuess, chainChoices, chainHint, chainLine, chainOf, checkDown, checkLink, checkRiddle, coupletLine, coupletOf,
+  dictOf, freeLine, freeOutcome, freeSummary, freshChain, freshFree, freshGuess, guessOutcome, guessSummary, judgeGuess, kindOf, needOf, nextMove, nextsOf, normAnswer, yesNoOf,
   playLink, replyOf, resultLine, wayOn, riddleLine, riddleOf, riddleOutcome, shapeOf, stillPossible, tableOf,
 } from '../scripts/games/jinchat-games.js';
 import { castOf } from '../scripts/games/jinchat-rules.js';
@@ -196,22 +196,30 @@ test('反着的二十问: only his 对 is their win; one slip of his is forgiven
   assert.ok(stillPossible(TABLE, freshGuess()).length === 30);
 });
 
-test('their voice: one bank turn rewrites the questions; only well-formed questions with known ids are taken', () => {
+test('the open 二十问 (any animal, 10-28): their line is held to yes-or-no; a guess carries its animal; his 对 the only win', () => {
   const c = CHATS['617'], cast = castOf(c, PEOPLE, 'zh');
-  const line = bankLine(c, TABLE, { cast, lang: 'zh' });
-  assert.match(line, /^\[HIDDEN\] \[jinchat\] /);
-  assert.ok(TABLE.questions.every((q) => line.includes(`${q.id}｜`)), 'every question offered');
-  const bank = parseBank('fly｜老蔡：这玩意儿能上天不？\neggs｜眼镜：我查了，它下蛋吗？\nnope｜老蔡：乱来？\nfur｜老蔡：长毛\nguess｜眼镜：我赌是{x}，对不对？\nhorns｜{x}有角吗？', TABLE, cast);
-  assert.deepEqual(Object.keys(bank).sort(), ['eggs', 'fly', 'guess']);
-  assert.equal(bank.fly.who, 'jin-laocai');
-  assert.equal(bank.eggs.text, '我查了，它下蛋吗？');
+  assert.equal(yesNoOf('<!--问-->老蔡：这玩意儿能上天不？', cast)?.who, 'jin-laocai');
+  assert.deepEqual(yesNoOf('<!--猜:袋鼠-->眼镜：我赌是袋鼠，对不对？', cast), { kind: 'guess', text: '我赌是袋鼠，对不对？', who: 'jin-yanjing', x: '袋鼠' });
+  for (const bad of ['<!--问-->它是什么颜色？', '<!--问-->它有几条腿？', '它会飞吗？', '<!--问-->它会飞。', '<!--猜-->是袋鼠吗？', '']) assert.equal(yesNoOf(bad, cast), null, bad);
+  assert.equal(yesNoOf('<!--ask-->Yinyue: Does it fly?', [{ id: 'yinyue', name: 'Yinyue' }], 'en')?.kind, 'ask');
+  assert.equal(yesNoOf('<!--ask-->What colour is it?', [], 'en'), null);
+  // The turn line: the facts once, the log every time, the count; never an animal list.
+  let st = freshFree();
+  const first = freeLine(c, st, { max: 15, cast, lang: 'zh' });
+  assert.ok(first.includes(c.game.facts.zh) && /第 1 问（还剩 15 问）/.test(first));
+  assert.ok(!TABLE.animals.some((a) => first.includes(`${a.name.zh}、`)), 'no list offered');
+  st = answerFree(st, { kind: 'ask', text: '它会飞吗？' }, 'no');
+  st = answerFree(st, { kind: 'guess', text: '是袋鼠吗？', x: '袋鼠' }, 'wrong');
+  const next = freeLine(c, st, { max: 15, cast, lang: 'zh' });
+  assert.match(next, /1\. 问：它会飞吗？——他答：不是\n2\. 猜：袋鼠——他说：不对/);
+  assert.ok(!next.includes(c.game.facts.zh), 'the facts once');
+  assert.equal(st.over, false);
+  assert.deepEqual(freeOutcome(st), { over: true, won: true, grade: 'stumped', stars: 3 });
+  assert.match(freeSummary(st, { said: '穿山甲' }, 'zh'), /^2 问没猜中，他心里是：穿山甲$/);
+  const won = answerFree(st, { kind: 'guess', text: '是穿山甲？', x: '穿山甲' }, 'right');
+  assert.deepEqual(freeOutcome(won), { over: true, won: true, grade: 'guessed', stars: 2 });
+  assert.equal(freeSummary(won, {}, 'zh'), '3 问猜中了穿山甲');
   assert.match(resultLine(c, '12 问猜中了狐狸', 'zh'), /12 问猜中了狐狸.*别改这个结果/);
-  // The list never shows in the chat panel: it is asked for inside one comment, which the panel drops, and read from there.
-  assert.match(line, /<!-- 和 -->/);
-  const panel = (t) => t.replace(/<!--[\s\S]*?-->/g, '');
-  const wrapped = '<!--\nfly｜老蔡：这玩意儿能上天不？\nguess｜眼镜：我赌是{x}，对不对？\n-->';
-  assert.equal(panel(wrapped).trim(), '', 'the panel shows nothing of it');
-  assert.deepEqual(Object.keys(parseBank(wrapped, TABLE, cast)).sort(), ['fly', 'guess']);
 });
 
 test('the module: the page judges (no tag, no model verdict); every game is skippable, sounds through the shell', () => {
