@@ -64,7 +64,7 @@
    (100dvh − --game-reserve − --jy-strip) leaves the strip its room, so the field never moves as the box comes and goes. */
 .gshell-side { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 8px; }
 .gshell-side:empty { display: none; }
-.gshell:has(> .gshell-side:not(:empty)) { --jy-strip: 132px; }
+.gshell:has(> .gshell-side:not(:empty)) { --jy-strip: 164px; }
 
 .gshell-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
 .gshell-foot:empty { display: none; }
@@ -93,8 +93,8 @@
   .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) { display: flex; --game-reserve: 230px; }
   @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall { display: flex; --game-reserve: 230px; } }
   /* …and those two play the side as the strip under the stage, its room kept (the column's is free). */
-  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]):has(> .gshell-side:not(:empty)) { --jy-strip: 132px; }
-  @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall:has(> .gshell-side:not(:empty)) { --jy-strip: 132px; } }
+  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]):has(> .gshell-side:not(:empty)) { --jy-strip: 164px; }
+  @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall:has(> .gshell-side:not(:empty)) { --jy-strip: 164px; } }
 }
 
 /* A Mac window: a tall board takes the window's height, the bar and the result in a column beside it. */

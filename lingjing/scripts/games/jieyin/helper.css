@@ -113,11 +113,30 @@
 .jyh-btn[data-side].is-call { transform: scale(1.12); transform-origin: center; }
 [data-shell-side] > .jyh-callout { position: relative; left: auto; bottom: auto; top: auto; align-self: center; white-space: normal; max-width: 15em; animation: none; }
 [data-shell-side] > .jyh-callout::after { display: none; }
-.jyh-dock[data-side], .jyh-dock[data-side][data-narrow] { width: min(100%, 300px); min-width: 0; max-width: 300px; margin-top: 6px; }
+.jyh-dock[data-side], .jyh-dock[data-side][data-narrow] { min-width: 0; max-width: 300px; margin-top: 6px; }
 .jyh-dock[data-side] > .jyh-callout { position: relative; left: auto; bottom: auto; top: auto; max-width: none; width: auto; margin-top: 6px; animation: none; }
 .jyh-dock[data-side] > .jyh-callout::after { display: none; }
-/* The Mac's column (200 px): the box takes its width, the gesture big beside the live hand. */
-@media (min-width: 900px) { .gshell.is-tall .jyh-dock[data-side] { width: 100%; } }
+/* The strip (a phone, a narrow stage): short — the live hand small beside the gesture, so the field keeps its height
+   (shell.css --jy-strip). The Mac's column (the side under 260 px wide): the box takes its width, the hand big. */
+[data-shell-side] { container: jyside / inline-size; }
+/* …in a row: the frame, then 小满's first bubble beside it, so the strip stays one frame high. */
+.jyh-dock[data-side], .jyh-dock[data-side][data-narrow] { width: auto; max-width: 100%; flex-direction: row; align-items: center; gap: 8px; }
+.jyh-dock[data-side] > .jyh-hint { flex: none; }
+.jyh-dock[data-side] > .jyh-callout { margin-top: 0; max-width: 9.5em; font-size: 12px; }
+.jyh-dock[data-side] > .jyh-chips { position: absolute; left: 4px; right: 4px; bottom: -8px; }
+.jyh-dock[data-side] .jy-frame, .jyh-dock[data-side] .jy-hint-panel.is-compact .jy-frame { width: 116px; min-width: 0; }
+.jyh-dock[data-side] .jy-target-icon svg { width: 44px; height: 44px; }
+.jyh-dock[data-side] .jy-target-name { font-size: 12px; }
+.jyh-dock[data-side] .jy-target-face { max-width: 8.5em; font-size: 9px; line-height: 1.25; }
+@container jyside (max-width: 260px) {
+  .jyh-dock[data-side], .jyh-dock[data-side][data-narrow] { width: 100%; flex-direction: column; align-items: stretch; }
+  .jyh-dock[data-side] > .jyh-hint { flex: initial; }
+  .jyh-dock[data-side] > .jyh-callout { margin-top: 6px; max-width: none; font-size: 13px; }
+  .jyh-dock[data-side] > .jyh-chips { position: static; }
+  .jyh-dock[data-side] .jy-target-face { max-width: 8em; font-size: 10px; }
+  .jyh-dock[data-side] .jy-frame, .jyh-dock[data-side] .jy-hint-panel.is-compact .jy-frame { width: 100%; }
+  .jyh-dock[data-side] .jy-target-icon svg { width: 60px; height: 60px; }
+}
 
 /* A cast flew (Hanli 10-28: 「结手印成后, 特效动画做的更明显一点, 手印可以发个光」): the box blooms in the move's light
    (--jyh-glow, jieyin.json helper.glow) for ~0.6 s and holds 「成」 over the gesture till the hold ends (helper.js HOLD). */
@@ -152,10 +171,10 @@
 .jyh-soon-cam { display: none; font-style: normal; font-size: 11px; color: #a3221a; }
 .jyh-soon.is-cam .jyh-soon-cam { display: block; }
 .jyh-soon.is-cam .jyh-soon-cam::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; background: #ff3b30; vertical-align: 0; }
-@media (min-width: 900px) { /* the Mac's column: the card stands as the box will, its picture over its words */
-  .gshell.is-tall .jyh-soon[data-side] { width: 100%; flex-direction: column; align-items: center; text-align: center; }
-  .gshell.is-tall .jyh-soon[data-side] .jyh-soon-text { align-items: center; }
-  .gshell.is-tall .jyh-soon[data-side] .jyh-soon-on { align-self: center; }
+@container jyside (max-width: 260px) { /* the Mac's column: the card stands as the box will, its picture over its words */
+  .jyh-soon[data-side] { width: 100%; flex-direction: column; align-items: center; text-align: center; }
+  .jyh-soon[data-side] .jyh-soon-text { align-items: center; }
+  .jyh-soon[data-side] .jyh-soon-on { align-self: center; }
 }
 @keyframes jyh-soon-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
