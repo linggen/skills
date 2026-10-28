@@ -48,8 +48,8 @@ function run(s, count, from = new Date(2026, 10, 1, 0, 5)) {
 
 test('the task row: an hour\'s cooldown, the 主力 塔防 kits in turn, a 大妖 every 3rd night from night 4', () => {
   assert.equal(C.every_h, 1);
-  const main = (content.games?.games ?? []).filter((g) => g.group === 'main' && g.mechanic === '塔防').map((g) => g.id);
-  assert.deepEqual(C.rotation.map((k) => k.game).sort(), [...new Set(main)].sort(), 'the 游戏厅\'s 主力 塔防 boards (games.json group main)');
+  const main = (content.games?.games ?? []).filter((g) => g.group === 'tide' && g.mechanic === '塔防').map((g) => g.id);
+  assert.deepEqual(C.rotation.map((k) => k.game).sort(), [...new Set(main)].sort(), 'the 游戏厅\'s 兽潮 塔防 boards (games.json group tide)');
   assert.ok(TIDES.shouqiang, 'every turning kit has its maker');
   assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter((n) => bossNight(C, n)), [4, 7, 10]);
 });
