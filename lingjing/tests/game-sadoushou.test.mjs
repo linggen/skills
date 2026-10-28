@@ -24,7 +24,7 @@ const both = (o) => Boolean(o?.zh && o?.en);
 const run = (g, sec, x = 0) => { for (let t = 0; t < sec; t += 1 / 30) { aim(g, x); step(g, 1 / 30); } return g; };
 const quiet = (lv, belt) => ({ ...lv, waves: [{ t: 999, beasts: [['yezhu', 1]], speed: 1 }], belt: { ...lv.belt, lines: belt } });
 
-test('registered beside 撒豆成兵 (main, 塔防, tall); its ladder off the story, not dealt in the 秘境; one story row (守灶台, h01)', () => {
+test('registered beside 撒豆成兵 (main, 塔防, tall); its ladder off the story, dealt in 秘境探险 守关 rooms only; one story row (守灶台, h01)', () => {
   assert.equal(meta.id, 'sadoushou');
   assert.ok(both(meta.name) && both(meta.how) && meta.tall && meta.pause);
   const row = reg.games.find((g) => g.id === 'sadoushou');
@@ -32,8 +32,11 @@ test('registered beside 撒豆成兵 (main, 塔防, tall); its ladder off the st
   assert.ok(!row.scene && !row.task && !row.hui, 'not in the story');
   assert.equal(reg.games.indexOf(row), reg.games.findIndex((g) => g.id === 'sadou') + 1, 'tiled right after 撒豆成兵, to compare');
   assert.doesNotMatch(readFileSync(at('worlds/jiuding/qiyu.json'), 'utf8'), /sadoushou/, 'not in the 秘境 pool');
-  const tasks = JSON.parse(readFileSync(at('worlds/jiuding/tasks/world.json'), 'utf8')).tasks.filter((t) => t.game === 'sadoushou');
+  const all = JSON.parse(readFileSync(at('worlds/jiuding/tasks/world.json'), 'utf8')).tasks.filter((t) => t.game === 'sadoushou');
+  // 秘境探险's 守关 rooms deal its ladder (Hanli 10-28: the 主力 TD kits, 守山门 among them) — a run's room, never the story's.
+  const tasks = all.filter((t) => !t.mijing);
   assert.deepEqual(tasks.map((t) => [t.id, t.deal.lv]), [['masan-zaotai', 'zaotai']], 'the one story task: 守灶台');
+  assert.deepEqual(all.filter((t) => t.mijing).map((t) => t.id), ['mijing-guan-sadoushou'], 'and the 秘境探险 守关 room');
   const h01 = reg.games.find((g) => g.id === 'sadoushou' && g.group === 'h01');
   assert.ok(h01 && h01.task === 'masan-zaotai' && h01.scene === story.story && h01.data.lv === 'zaotai', 'its 游戏厅 row in 第一回');
   ladder.forEach((l, i) => {
