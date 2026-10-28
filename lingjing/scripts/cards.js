@@ -2001,10 +2001,9 @@ export function trayHtml(ctx) {
   // …nor a scene's later board while one before it is still to play (stage.mjs boardWaits).
   // …nor, the book set aside, the scene's own board: it waits for its passage (rules/aside.mjs).
   const own = (id) => Boolean(ctx.look.aside?.on) && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(ctx.look.tasks ?? []).some((t) => t.id === id && t.replay);
-  // A practice board already played today is no 待做: it stays, last, as 「今日已玩」 for a replay at the falling share
-  // (Look's `played_today`; Hanli 10-27: 「左下角还是有刚玩完的拼图任务」, then 「好像没什么任务能做」).
-  const fresh = (t) => (t.played_today ? 1 : 0);
-  const tasks = (ctx.look.tasks || []).slice().sort((a, b) => fresh(a) - fresh(b)).filter((t) => t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id) && !own(t.id)).map((t) => {
+  // …nor a practice board already played today: it comes round again tomorrow (Look's `played_today`; Hanli 10-28 on
+  // 「周衡 · 一个灯谜 · 今日已玩」: 「玩过一次怎么还有?」 — 10-27's 「今日已玩」 row, kept for a replay, read as a chore not done).
+  const tasks = (ctx.look.tasks || []).filter((t) => !t.played_today && t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id) && !own(t.id)).map((t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const shut = state === 'offered' && boardShut(t, ctx);
     // 开局 tapped while the passage still plays: the board waits for it (lingjing.js trayAhead) — and says so on
@@ -2015,7 +2014,7 @@ export function trayHtml(ctx) {
         : `<button class="act" data-play="${esc(t.id)}"${shut ? ` disabled title="${esc(ctx.words.emptyNoPlay)}"` : ''}>${t.light && t.open ? ctx.words.playOn : t.game && t.game !== 'lianliankan' ? ctx.words.playGame : ctx.words.play}</button>` : '';
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${esc(ctx.words.about)}</button>`;
     return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
-      <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : t.played_today ? ctx.words.playedToday : ctx.words[state])}</span>${act}${tell}</div></div>`;
+      <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : ctx.words[state])}</span>${act}${tell}</div></div>`;
   });
   // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥).
   // Every cooldown waited out stands after them, one row shape (Look's `waits`).
