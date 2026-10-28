@@ -176,13 +176,44 @@ export function keyInUse(content, state, id) {
    waits for the 炼化; a 妖丹 or an old 回春丹 is only goods now (强化 and
    伤势 were cut, redesign-v2 § 四). */
 /* 买一张牌: the thing carries its card (cards.json `from: {kind: 'shop', item}`); paid, it is his. */
-function buyCard(content, s, ctx, item) {
+function buyCard(content, s, ctx, item, price) {
   if (ownedCards(content, s).includes(item.effect.card)) return refuse('card-held', pick({ zh: '这张牌你已经有了。', en: 'You hold that card already.' }, s.lang));
   const empty = spendStamina(content, s, ctx, 'shop');
   if (empty) return empty;
-  s.wealth -= item.buy;
+  s.wealth -= price;
   const card = gainCard(content, s, item.effect.card, { how: 'shop', item: item.id, day: dayKey(ctx.now ?? new Date()) });
-  return { state: s, result: { ok: true, bought: item.id, ...(card ? { cards: [card] } : {}), paid: { wealth: -item.buy }, wealth: s.wealth } };
+  return { state: s, result: { ok: true, bought: item.id, ...(card ? { cards: [card] } : {}), paid: { wealth: -price }, wealth: s.wealth } };
+}
+
+/* Whether `qty` of a thing can be bought as goods in one go: a card or a pouch is one thing, once. */
+export const buysMany = item => !item.effect?.card && !item.effect?.pouch && !item.effect?.learn;
+
+/* One purchase off the shelf where he stands, at `price` each (the list price, or a haggled one — rules/aigames.mjs),
+   `qty` of it: the stones, the 储物袋's room, a card into the hand, a pouch not twice; the visit's stamina. Mutates `s`
+   (a clone) and answers { state, result } or a refusal. Every buy here is a deal at this place (熟客, aigames.mjs). */
+export function buyAt(content, s, ctx, item, price, qty = 1) {
+  const lang = s.lang, w = wordsOf(content, lang);
+  const total = price * qty;
+  if (s.wealth < total) return refuse('no-stones', pick({ zh: `${w.wealth}不够。`, en: `Not enough ${w.wealth}.` }, lang), { price: total, wealth: s.wealth });
+  // A bigger 储物袋 already put to use is not bought twice.
+  if (item.effect?.pouch && (s.pouch ?? []).includes(item.id)) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
+  if (qty > 1 && !buysMany(item)) return refuse('one-only', null);
+  const dealt = r => {
+    if (!r.result?.ok) return r;
+    s.haggle = { ...(s.haggle ?? {}), deals: { ...(s.haggle?.deals ?? {}), [s.place]: (s.haggle?.deals?.[s.place] ?? 0) + 1 } };
+    return r;
+  };
+  // A thing bought for its card (items `effect.card`: 短飞剑, 参悟玉简) is a card in hand, not a
+  // thing in the bag — and a card he holds is not bought twice.
+  if (item.effect?.card) return dealt(buyCard(content, s, ctx, item, price));
+  // A full 储物袋 buys nothing new — a stack he holds still takes one more.
+  const held = s.bag[item.id] ?? 0;
+  for (let i = 0; i < qty; i++) if (!roomFor(content, { ...s, bag: { ...s.bag, [item.id]: held + i } }, item.id)) return bagFull(content, s);
+  const empty = spendStamina(content, s, ctx, 'shop');
+  if (empty) return empty;
+  s.wealth -= total;
+  s.bag[item.id] = held + qty;
+  return dealt({ state: s, result: { ok: true, bought: item.id, ...(qty > 1 ? { qty } : {}), item: itemBrief(content, s, item), paid: { wealth: -total }, wealth: s.wealth } });
 }
 
 export function trade(state, content, ctx, args) {
@@ -202,21 +233,7 @@ export function trade(state, content, ctx, args) {
     }
     if (args.action === 'buy') {
       if (!forSale(content, s, item, here, now)) return refuse('not-for-sale-here', null, { shelf: shelfOf(content, here, s, now).map(i => i.id) });
-      if (s.wealth < item.buy) {
-        return refuse('no-stones', pick({ zh: `${w.wealth}不够。`, en: `Not enough ${w.wealth}.` }, lang), { price: item.buy, wealth: s.wealth });
-      }
-      // A bigger 储物袋 already put to use is not bought twice.
-      if (item.effect?.pouch && (s.pouch ?? []).includes(item.id)) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
-      // A thing bought for its card (items `effect.card`: 短飞剑, 参悟玉简) is a card in hand, not a
-      // thing in the bag — and a card he holds is not bought twice.
-      if (item.effect?.card) return buyCard(content, s, ctx, item);
-      // A full 储物袋 buys nothing new — a stack he holds still takes one more.
-      if (!roomFor(content, s, item.id)) return bagFull(content, s);
-      const empty = spendStamina(content, s, ctx, 'shop');
-      if (empty) return empty;
-      s.wealth -= item.buy;
-      s.bag[item.id] = held + 1;
-      return { state: s, result: { ok: true, bought: item.id, item: itemBrief(content, s, item), paid: { wealth: -item.buy }, wealth: s.wealth } };
+      return buyAt(content, s, ctx, item, item.buy);
     }
     if (held < 1) return refuse('not-in-bag', null);
     if (item.sell == null) return refuse('not-for-sale', pick({ zh: '这东西没有市价。', en: 'That has no market price.' }, lang));

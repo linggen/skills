@@ -25,7 +25,7 @@ const VERB_SYSTEM = {
   meet: () => 'road',
   tale: () => 'errands',
   trade: () => 'wealth',
-  haggle: () => 'wealth', //   讨价还价 (rules/aigames.mjs): a shelf's, like Trade
+  haggle: () => 'wealth', //   砍价 (rules/aigames.mjs): a shelf's, like Trade
   quest: (args, ctx) => (args.action === 'kaifu' ? 'kaifu' : choreSystem(ctx, String(args.id ?? '')) ?? 'errands'),
   task: (args, ctx) => (args.action === 'check' ? choreSystem(ctx, String(args.id ?? '')) ?? 'chores' : null),
 };

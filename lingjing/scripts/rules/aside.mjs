@@ -64,26 +64,26 @@ export const ASIDE_KINDS = [
     takes: verb => verb === 'seclude' },
   { kind: 'her', // 银月's games open to him, 今日传闻 and 问卦 (rules/aigames.mjs, kao.mjs, duizi.mjs, tale.mjs, fortune.mjs)
     open: (content, state, view) => [
-      ...['haggle', 'duizi'].filter(k => view?.[k]).map(id => ({ id })),
+      ...['duizi'].filter(k => view?.[k]).map(id => ({ id })),
       ...tasksOf(view).filter(t => t.light && t.open && t.left > 0).map(t => ({ id: 'kao', title: t.title })),
       ...(view?.tale && !view.tale.dropped ? [{ id: 'tale', title: view.tale.title ?? null }] : []),
       ...(view && !view.divination && !(view.locked ?? []).includes('divine') ? [{ id: 'divine' }] : []),
     ],
     // 本王考考你's word is counted as its task's (tasks.mjs taskDone → kao.mjs kaoDone).
-    takes: (verb, args, content, state, now) => ['haggle', 'duizi', 'kao', 'tale', 'lundao', 'divine', 'fate'].includes(verb)
+    takes: (verb, args, content, state, now) => ['duizi', 'kao', 'tale', 'lundao', 'divine', 'fate'].includes(verb)
       || (['win', 'task'].includes(verb) && kaoHere(content, state, String(args.id ?? ''), now)) },
 ];
 
 /* Verbs that never move the story: reads, the page's own marks, the save's keeping, the shelf, the
    pouch, an errand held — and these two. */
 export const ASIDE_ALWAYS = new Set(['look', 'show', 'progress', 'story', 'bag', 'gear', 'deck', 'atlas', 'saves', 'save', 'load', 'forget',
-  'lang', 'summarize', 'greet', 'remember', 'appear', 'unrolled', 'unfolded', 'unstick', 'quest', 'trade', 'refine', 'aside', 'resume']);
+  'lang', 'summarize', 'greet', 'remember', 'appear', 'unrolled', 'unfolded', 'unstick', 'quest', 'trade', 'haggle', 'refine', 'aside', 'resume']);
 /* Verbs that move the story, or take him elsewhere: refused while the book is set aside (Move and Go are a run's
    only, below). */
 export const ASIDE_REFUSED = new Set(['resolve', 'judge', 'travel', 'fly', 'meet', 'ring', 'make', 'enter', 'leave', 'build',
   'worlds', 'amend', 'art']);
 /* Verbs some kind may take (a call each kind's `takes` answers); else refused. */
-export const ASIDE_KIND_VERBS = new Set(['move', 'go', 'task', 'win', 'duel', 'reroll', 'tame', 'rerun', 'fantong', 'seclude', 'haggle', 'duizi', 'kao', 'tale',
+export const ASIDE_KIND_VERBS = new Set(['move', 'go', 'task', 'win', 'duel', 'reroll', 'tame', 'rerun', 'fantong', 'seclude', 'duizi', 'kao', 'tale',
   'lundao', 'divine', 'fate']);
 
 /* What may be played now, while set aside (or, before, whether the control has anything to offer). */

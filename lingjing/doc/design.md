@@ -1025,7 +1025,7 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 | | Game | Shape |
 |---|---|---|
 | **Now** | 二十问 | 银月 thinks of an **ordinary animal** (猫, 狗, 牛, 喜鹊, 狐狸 …), he asks yes/no; a win records it in 录 as a known animal (not the 图鉴) |
-| **Now** | 讨价还价 | haggle with 钱掌柜 or the 货郎; the price band is the rules' |
+| **Now** | 砍价 | a 砍价 button by every shelf item; the shop's own panel, the keeper voiced there (2026-10-28); the price band is the rules' |
 | **Now** | 断案 | 药园灵草案, 河伯娶妇's 账; the truth is fixed by the rules, the AI plays the suspects |
 | **Cut** | 密室 | cut 2026-10-27 (Hanli: 「这个游戏, 3关都玩不明白, 去掉吧…一般人没有这个背景知识. 教学关得让玩家能学会」): the 干支 dial · 掐诀 hand · 洛书 lid room asked for knowledge a player meets for the first time there; board, rules and room data deleted |
 | Later | 天干地支教学 | a teaching board must teach from zero first (no prior knowledge), then test — what 密室 lacked; no game yet |
@@ -1043,11 +1043,17 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   reader of the animal; 30 animals with aliases, unknown ones first; 20 questions, hints from 15,
   2 rounds a day, a game's 体力 at open; the guess box (page) or her call is checked by name/alias
   (longest match); a win pays `game` (5 灵石) and goes into 录 (识得的动物). Only while she is awake.
-- **讨价还价** — at a keeper aigames.json names (钱掌柜 · 坊市, the 货郎 · 石坳村, the 货郎 up the
-  mountain on his days): Ling tags each argument with the rubric (熟客 · 一次买多 · 指出瑕疵 ·
-  拿东西换 · 奉承 · 空口) and grades it 0–2; the rules step the ask, each reason once, clamp at the
-  floor (75–85% of list, never in any answer), sour on bare pushes; 6 turns, 3 haggles a day;
-  成交 / 不买了 on the card; walking away is list price for that thing today.
+- **砍价** (Hanli 2026-10-28, was 讨价还价 — a stage card Ling played in the chat) — a 砍价 button by
+  every shelf item's 买, at every shop (aigames.json `keepers`, `*` the default; 周衡 keeps the 执事堂's
+  store). It opens the shop's own panel (kanjia.js on npc-talk.js): the keeper's face and lines, his
+  patience (3 beads), the arguments he HOLDS as buttons (我常来 — a past buy here; 别家才卖 N — his own
+  cheaper deal elsewhere; 这是一转的 · 有瑕疵 — the pill's grade, a declared flaw; 买两件 — goods he can pay
+  two of), one counter-offer on a slider (taken within `counter.reach` of the ask, never under the floor;
+  lower costs a bead), 成交 (bought at once, Trade's buy path) and 不买了. The floor (75–85% of list) is in
+  no answer. One haggle a thing a day (a deal or a walk-off leaves it at list price); no other daily count.
+  The keeper's words come from a hidden call in his `voice` (npc-line.js), in a side session the panel
+  owns (npc-ask.js) — never the story's chat. 银月 says once when he is first short of a shelf thing
+  (hersay.js `short`): try 砍价, or that it cannot go that low; the 主页's buy way reads 「差 X · 可砍价」.
 - **断案 · 药园那株紫玉参** — 周衡 at the 执事堂 after `wm-diyilu`; five people (三 suspects, 阿禾 and
   周衡 witnesses) Ling plays from declared knows/hides; clues by asking (person × topic) or the
   card's look-around; 8 questions and 1 accusation a day; the card's 指认 is judged by ids

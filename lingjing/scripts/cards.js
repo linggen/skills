@@ -22,7 +22,7 @@ export const WORDS = {
     title: '灵境', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', playedToday: '今日已玩', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
-    tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', unfoldNew: '地图展开', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
+    tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', unfoldNew: '地图展开', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架', kanjia: '砍价', kanjiaDone: '今天只照价', shortBy: '差 {n}',
     sayBuy: '买{name}', go: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     choreOpen: '去 {app} 做', about: '问询', askHer: '问问{name}', askHerHint: '想对她说什么？留空，便请她说说', askHerEmpty: '说说看？', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', tameBy: '收服 · {what}', likesNone: '它喜欢{item}，囊中没有', playGame: '开局', playOn: '继续', trayQueued: '读完这段就开', asideTitle: '书先放着', asideHint: '这一页折个角，回来接着读。眼下能做的：', asideResume: '接着读', asideNone: '眼下没有能做的事，接着读吧。', asideKinds: { replay: '再玩 · {title}', rerun: '再入秘境', gongke: '人间功课', fantong: '喂饭桶', pool: '斗 · {title}', tide: '兽潮', seclusion: '闭关', haggle: '讨价还价', duizi: '对对子', kao: '本王考考你', tale: '今日传闻', divine: '问卦' }, lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featHp: '气血 {a}→{b}', featMana: '灵力上限 {a}→{b}', featPower: '一击 +{n}', featHer: '{name} {a}→{b}', featChapter: '新的一回', wonOver: '收服', subdue: '降妖', bout: '比试',
     effProgress: '服下：{xw} +{n}', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effPouch: '储物袋多 {n} 格，永久', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}' }, effKey: '路上有用之物', effHeal: '斗法里服下：气血 +{n}', effMana: '斗法里服下：灵力 +{n}', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', month: '本月', once: '' },
@@ -81,7 +81,7 @@ export const WORDS = {
     title: 'Lingjing', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', playedToday: 'Played today', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.', boardDoneToday: 'Done for today — brew again tomorrow', gameDoneToday: 'Done for today — again tomorrow', lundaoWon: 'Won for today — again tomorrow', lundaoLost: 'Done for today — again tomorrow',
-    tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', unfoldNew: 'A new region', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
+    tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', unfoldNew: 'A new region', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf', kanjia: 'Haggle', kanjiaDone: 'List price today', shortBy: '{n} short',
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', go: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
@@ -139,8 +139,8 @@ export const WORDS = {
 // The AI mini-games' words (aigames-cards.js), in both languages.
 Object.assign(WORDS.zh, AI_WORDS.zh);
 Object.assign(WORDS.en, AI_WORDS.en);
-Object.assign(WORDS.zh.queueKinds, { haggle: '讲价', duizi: '对对子' });
-Object.assign(WORDS.en.queueKinds, { haggle: 'Haggling', duizi: 'Couplets' });
+Object.assign(WORDS.zh.queueKinds, { duizi: '对对子' });
+Object.assign(WORDS.en.queueKinds, { duizi: 'Couplets' });
 
 export { esc } from './esc.js';
 import { esc } from './esc.js';
@@ -149,7 +149,7 @@ import { codexCompactHtml, codexHtml } from './codex.js';
 import { bookPlace, choicesUp, logLinkHtml, playing, toldSoFar } from './dialogue.js';
 import { TURNED_MS, turnedPays } from './turned.js';
 import { choicesStand } from './queue.js';
-import { AI_WORDS, duizi, haggle } from './aigames-cards.js';
+import { AI_WORDS, duizi } from './aigames-cards.js';
 import { mountHostHtml, mountOnly } from './beat-host.js';
 import { frameHtml, restartHtml, restartOf, timedOf, tallOf, tallStyle, toolHtml } from './games/shell.js';
 
@@ -634,8 +634,13 @@ function item(card, ctx) {
     // Buy and Sell are words to Ling; Trade decides. Greyed when the stones
     // are short or nothing is held — from Look, never counted here.
     const canBuy = i.buy != null && (ctx.look.wealth ?? 0) >= i.buy;
+    // 砍价 (rules/aigames.mjs, Hanli 2026-10-28): by every 买 where a keeper stands, always there — greyed once the
+    // thing was haggled over today; a 买 he cannot pay says how far short (the rules' `short`).
+    const mark = ctx.look.haggle?.marks?.[i.id];
+    const buyLabel = mark?.short ? `${ctx.words.buy} ${i.buy} · ${say(ctx.words.shortBy, { n: mark.short })}` : `${ctx.words.buy} ${i.buy}`;
+    const kanjia = mark ? `<button class="act kanjia" data-kanjia="${esc(i.id)}"${mark.can ? '' : ` disabled title="${esc(ctx.words.kanjiaDone)}"`}>${esc(ctx.words.kanjia)}</button>` : '';
     const price = i.buy != null
-      ? `<div class="price">${doBtn(`${ctx.words.buy} ${i.buy}`, 'buy', i.id, !canBuy)}
+      ? `<div class="price">${doBtn(buyLabel, 'buy', i.id, !canBuy)}${kanjia}
          ${i.sell != null ? doBtn(`${ctx.words.sell} ${i.sell}`, 'sell', i.id, !i.held) : ''}</div>`
       : '';
     const art = i.art ? `<img class="itemart" src="${esc(worldPath(world, i.art))}" alt="">` : '';
@@ -1914,7 +1919,7 @@ function closed(card, ctx) {
     + `<div class="acts"><button class="act closeshut" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
 }
 
-const RENDER = { rerun, replay, closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, haggle, duizi, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion, next };
+const RENDER = { rerun, replay, closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, duizi, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion, next };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

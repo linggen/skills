@@ -100,27 +100,49 @@
     }
   },
   "haggle": {
-    "_about": "讨价还价 — Ling plays the keeper. The rules hold the band: list price (items.json `buy`), a floor (`floor` × list, per keeper, `floors` per item over it), the mood; every step is the rubric's, clamped — the model only tags the argument and grades it. Walking away keeps the list price for that thing today.",
-    "per_day": 3,
-    "turns": 6,
+    "_about": "砍价 (Hanli 2026-10-28: 「直接放一个砍价按钮到商店UI里更简单点」) — a 砍价 button by every shelf item's 买; its panel is the shop's own (npc-talk.js), the keeper's lines voiced by a hidden model call in his `voice` and shown only there. The rules hold every number: the list price (balance.json `buy`), a floor (`floor` × list, per keeper, `floors` per item over it — never shown, never said), his patience (`mood` beads). An argument is a button only while he holds it (its `needs`) and takes its `step` of the list off, once; one counter-offer is taken when it is within `counter.reach` of the ask and not under the floor — lower costs a bead. A deal buys at once (Trade's buy path); walking off — or a deal — leaves that thing at list price for the day. No count a day: one haggle a thing a day already bounds it.",
     "mood": 3,
     "floor": 0.75,
     "floors": { "talisman": 0.85, "wangqi-1": 0.85, "qi-pill": 0.8 },
+    "counter": { "reach": 0.06, "min": 0.5 },
     "keepers": {
       "fangshi": { "who": { "zh": "钱掌柜", "en": "Money Qian" }, "floor": 0.75, "voice": { "zh": "坊市的老江湖，裹着棉被守摊，算盘不离手；爱讲「一分钱一分货」，嘴上吃亏，心里有数。", "en": "An old hand of the market, wrapped in a quilt at his stall, abacus always in hand; loves 'you get what you pay for', loses every argument out loud and none in his head." } },
       "shiao": { "who": { "zh": "走南路的货郎", "en": "the pedlar of the south road" }, "floor": 0.8, "voice": { "zh": "挑担走村的货郎，嗓门亮，嘴碎，爱讲路上的见闻；小本买卖，让价让得心疼。", "en": "A village pedlar with a pole, loud and chatty, full of road news; small trade, every coin given up hurts." } },
-      "yanwu": { "who": { "zh": "上山的货郎", "en": "the pedlar up the mountain" }, "floor": 0.8, "voice": { "zh": "交了摊钱上山摆一天摊的货郎，怕得罪观里的人，又舍不得让利；说话客气，算账不客气。", "en": "A pedlar who paid the temple its stall fee for one day up the mountain; afraid to offend anyone here and loath to give ground; polite words, impolite sums." } }
+      "yanwu": { "who": { "zh": "上山的货郎", "en": "the pedlar up the mountain" }, "floor": 0.8, "voice": { "zh": "交了摊钱上山摆一天摊的货郎，怕得罪观里的人，又舍不得让利；说话客气，算账不客气。", "en": "A pedlar who paid the temple its stall fee for one day up the mountain; afraid to offend anyone here and loath to give ground; polite words, impolite sums." } },
+      "zhishi": { "person": "zhouheng", "floor": 0.8, "voice": { "zh": "外门执事周衡，守着公中的库房：爱讲规矩、爱记账，句句带数；让一个灵石也要记一笔，刻薄，但不坏。", "en": "Zhou Heng, the outer court's steward, keeping the common store: loves rules and ledgers, every sentence has a number in it; even one stone off goes in the book. Sharp-tongued, not unkind." } },
+      "pengcheng": { "who": { "zh": "药铺伙计", "en": "the apothecary's boy" }, "floor": 0.85, "voice": { "zh": "南门药铺的伙计，掌柜不在，做不了大主；嘴上抹了蜜，让一文就说回去要挨骂。", "en": "The south-gate apothecary's boy, minding the counter with the master out; a honeyed tongue, and every coin off is a scolding later." } },
+      "ye-doufu": { "who": { "zh": "老胡", "en": "Old Hu" }, "floor": 0.8, "voice": { "zh": "城西豆腐坊的老胡，憨厚，话少，心软；豆腐西施在旁边替他把着价。", "en": "Old Hu of the tofu shop, plain-spoken and soft-hearted; the Tofu Beauty beside him keeps the price." } },
+      "ye-caifeng": { "who": { "zh": "裁缝铺老板娘", "en": "the tailor's proprietress" }, "floor": 0.8, "voice": { "zh": "城南裁缝铺的老板娘，嘴快手快，看你一眼就知道你几斤几两；爱夸自家针脚。", "en": "The tailor's proprietress, quick of mouth and hand, sizes you up at a glance; proud of her stitching." } },
+      "ye-kezhan": { "who": { "zh": "胖掌柜", "en": "the stout innkeeper" }, "floor": 0.8, "voice": { "zh": "城东客栈的胖掌柜，笑眯眯的，和气生财；嘴上应着，账上一文不让。", "en": "The stout innkeeper, all smiles; good cheer brings good trade; agrees to everything, gives up nothing." } },
+      "*": { "who": { "zh": "掌柜", "en": "the shopkeeper" }, "floor": 0.8, "voice": { "zh": "本地的掌柜，见惯了讲价的客人，客气，有分寸。", "en": "A local shopkeeper, used to hagglers: polite, and knows where to stop." } }
     },
     "rubric": [
-      { "id": "regular", "name": { "zh": "熟客", "en": "a regular" }, "step": 0.05, "once": true, "needs": "deal_here", "about": "The player has dealt with this keeper before (the rules check a past deal here)." },
-      { "id": "bulk", "name": { "zh": "一次买多", "en": "buying more at once" }, "step": 0.08, "once": true, "about": "The player will take two at once — the deal then buys two, at the price each." },
-      { "id": "flaw", "name": { "zh": "指出瑕疵", "en": "pointing out a flaw" }, "step": 0.06, "once": true, "about": "A real, plausible flaw in THIS thing (a nick, old stock, a weak seam) — not an insult." },
-      { "id": "barter", "name": { "zh": "拿东西换", "en": "a thing in trade" }, "step": 0, "once": true, "needs": "item", "about": "The player offers a thing from the bag as part of the price: its market value comes off (at most 30% of the list); it is handed over at the deal." },
-      { "id": "flattery", "name": { "zh": "奉承", "en": "flattery" }, "step": 0.03, "once": true, "about": "Praise of the keeper or the stall. Works once; again, it sours him." },
-      { "id": "none", "name": { "zh": "空口压价", "en": "a bare push" }, "step": 0, "about": "Only asking for less, a threat, or a reason that does not hold." }
+      { "id": "regular", "say": { "zh": "我常来", "en": "I come here often" }, "step": 0.05, "needs": "dealt_here", "about": "He has bought here before — any buy at this place, at list price or haggled." },
+      { "id": "cheaper", "say": { "zh": "别家才卖 {price}", "en": "It's {price} elsewhere" }, "needs": "cheaper_elsewhere", "about": "He bought this same thing for less at another shop: the ask comes down to that price (never under the floor)." },
+      { "id": "grade", "say": { "zh": "这是一转的", "en": "It's only first grade" }, "step": 0.06, "needs": "low_grade", "about": "A pill of the lowest grade (items.json `zhuan` 1): one gold line." },
+      { "id": "flaw", "say": { "zh": "有瑕疵", "en": "It has a flaw" }, "step": 0.06, "needs": "flaw", "about": "A flaw the thing really has (`flaws` below); the keeper knows it too." },
+      { "id": "bulk", "say": { "zh": "买两件", "en": "I'll take two" }, "step": 0.08, "needs": "two", "about": "Goods (no card, pouch or scroll) he has room for and can pay two of at the price after it: the deal then buys two." }
     ],
-    "grades": [0, 1, 1.5],
-    "barter_cap": 0.3
+    "flaws": {
+      "bamboo-sword": { "zh": "剑脊上一道细裂", "en": "a hairline crack along the spine" },
+      "straw-cloak": { "zh": "领口的草脱了一截", "en": "straw coming loose at the collar" },
+      "grey-robe": { "zh": "袖口磨毛了", "en": "frayed cuffs" },
+      "caoren-zha": { "zh": "草扎得松，一只胳膊歪着", "en": "loosely bound, one arm askew" },
+      "tieji-bao": { "zh": "有两颗蒺藜生了锈", "en": "two of the caltrops rusted" },
+      "duan-dao": { "zh": "刃口有个豁", "en": "a nick in the edge" },
+      "ganliang": { "zh": "有点受潮", "en": "a little damp" }
+    },
+    "lines": {
+      "_about": "The keeper's fallback lines, when no model answers (a 测试存档's chat=off, no engine, a turn that fails): one a moment. `{price}` is the rules' ask.",
+      "open": { "zh": "看中这件了？标价 {price}。", "en": "Taken with this one? {price}, as marked." },
+      "argue": { "zh": "唉……好吧，{price}。", "en": "Sigh… fine, {price}." },
+      "firm": { "zh": "{price}，再低真没有了。", "en": "{price}. Lower than that there isn't." },
+      "taken": { "zh": "行，依你，{price}。", "en": "Done — your price, {price}." },
+      "low": { "zh": "这个价可不行。再低要翻脸了。", "en": "Not at that price. Any lower and we're done." },
+      "soured": { "zh": "不卖了。今天这一样，照价。", "en": "Not selling. That one's list price today." },
+      "deal": { "zh": "成交，慢走。", "en": "Done. Mind how you go." },
+      "walk": { "zh": "慢走不送。", "en": "Suit yourself." }
+    }
   },
   "_cases": "断案 · 药园那株紫玉参 cut 2026-10-27 (Hanli: 「紫玉参断案也不好玩, 删了吧, 改成灯谜之类的, 猜动物也行」): in its place at the 执事堂 after wm-diyilu, 周衡's 灯谜 on the 紫玉参 (quests/guan.json `guan-zhishi-shen`, task `zhishi-shen`, games.json jinchat `shen`), its 10 灵石 (an errand's board is 杂役: 灵石 and its minutes' 修为). Old saves drop `cases` (state.mjs fitWorld).",
   "duizi": {

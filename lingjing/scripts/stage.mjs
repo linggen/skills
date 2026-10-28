@@ -146,8 +146,6 @@ export const CARD_KINDS = {
   // A chapter over, the next one waiting: its ending card (story.mjs closeOf) — told, never asking.
   closed: { holds: false },
   lundao: { holds: false }, //     论道 at 稷下: offered, or a game under way — never holds the roads
-  // AI mini-games (rules/aigames.mjs): 讨价还价 at a keeper's shelf — never holds the roads.
-  haggle: { holds: false },
   duizi: { holds: false }, //     对对子 at the teacher's (rules/duizi.mjs): offered, or a round under way
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
@@ -281,8 +279,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     // 论道: the scholar is here (offered), or a game is under way today.
     const word = (look.tasks ?? []).find(t => t.kind === 'word' && t.status !== 'done');
     if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
-    // AI mini-games: a haggle where he stands.
-    if (look.haggle && !has('haggle')) cards.push({ card: 'haggle' });
+    // AI mini-games: 对对子 where the teacher is. (砍价 is the shelf's own button, 2026-10-28.)
     if (look.duizi && !has('duizi')) cards.push({ card: 'duizi' });
     // 刷副本: the door's way in while the rooms are open, and the run's own card inside (rules/rerun.mjs).
     if (look.rerun && (look.rerun.inside || (look.rerun.open && look.rerun.here)) && !has('rerun')) cards.push({ card: 'rerun' });
@@ -440,7 +437,7 @@ export const MAIN = [
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
-  { kinds: ['board', 'duel', 'lundao', 'haggle', 'duizi', 'rerun'] }, //  a game to play here
+  { kinds: ['board', 'duel', 'lundao', 'duizi', 'rerun'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do

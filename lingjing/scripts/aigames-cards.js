@@ -1,48 +1,15 @@
 // aigames-cards.js — the stage cards of the AI mini-games (rules/aigames.mjs):
-// 讨价还价 (断案 cut 2026-10-27; the player-asks 二十问 2026-10-28). Facts only, from Look (`haggle`):
+// 对对子 (断案 cut 2026-10-27; the player-asks 二十问 2026-10-28; 讨价还价 became the shelf's 砍价, kanjia.js). Facts only, from Look:
 // counts, lists, what was found, the price standing now. The talk is the
 // chat's — 银月 and Ling write every sentence a person reads; these cards
 // never carry the floor or the truth (Look does not have them).
 import { esc } from './esc.js';
 import { CHECK_IDS, checkCouplet } from './couplet.js';
 
-export const AI_WORDS = {
-  zh: {
-    haggleTitle: '讨价还价 · {keeper}', haggleOffer: '架上的东西，可以跟{keeper}讲讲价。今日还能讲 {n} 回。', haggleBegin: '讲讲价', haggleSay: '{keeper}，这些东西能便宜点吗？',
-    haggleList: '标价 {n}', haggleAsk: '现价 {n}', haggleQty: '两件 · 共 {n}', haggleTurns: '已讲 {n}/{max} 句', haggleMood: '脸色：{m}', haggleUsed: '说动过：{r}', haggleBarter: '拿{item}抵一部分',
-    haggleFirm: '他说：这是底价了。', haggleLast: '最后一口价了。', haggleDeal: '成交 · {n} 灵石', haggleWalk: '不买了', haggleHow: '在对话里跟他讲：熟客、多买、瑕疵、拿东西换……空口压价，他会不高兴。', haggleOut: '今天讲价讲够了 · 照价买或明日再来',
-  },
-  en: {
-    haggleTitle: 'Haggling · {keeper}', haggleOffer: 'You can haggle with {keeper} over what is on the shelf. {n} more today.', haggleBegin: 'Haggle', haggleSay: '{keeper}, could any of this come cheaper?',
-    haggleList: 'List {n}', haggleAsk: 'Now {n}', haggleQty: 'Two · {n} in all', haggleTurns: 'Said {n}/{max}', haggleMood: 'Mood: {m}', haggleUsed: 'Moved by: {r}', haggleBarter: 'the {item} as part payment',
-    haggleFirm: 'He says that is as low as it goes.', haggleLast: 'That was the last word on price.', haggleDeal: 'Deal · {n} stones', haggleWalk: 'Walk away', haggleHow: 'Talk to him in the chat: a regular, buying more, a flaw, a thing in trade… a bare push sours him.', haggleOut: 'Enough haggling today · list price, or tomorrow',
-  },
-};
+export const AI_WORDS = { zh: {}, en: {} };
 
 const say = (tpl, fill) => String(tpl).replace(/\{(\w+)\}/g, (_, k) => fill[k] ?? '');
-const sayBtn = (label, line) => `<button class="act say" data-say="${esc(line)}">${esc(label)}</button>`;
-const doBtn = (label, action, id, disabled = false) => `<button class="act do" data-do="${esc(action)}" data-id="${esc(id)}"${disabled ? ' disabled' : ''}>${esc(label)}</button>`;
 const note = (ctx) => (ctx.aiNote ? `<div class="donote">${esc(ctx.aiNote)}</div>` : '');
-
-/// 讨价还价 — at a keeper's shelf: how many haggles are left and one word to
-/// begin; under way, the thing, its list price, the price standing now, how
-/// far along, and 成交 / 不买了 — the page's own taps, the rules' price.
-export function haggle(card, ctx) {
-  const h = ctx.look?.haggle, w = ctx.words;
-  if (!h) return '';
-  if (!h.open) {
-    if (!h.left) return `<div class="card haggle done"><div class="cardtitle">${esc(say(w.haggleTitle, { keeper: h.keeper }))}</div><div class="boarddone">${esc(w.haggleOut)}</div></div>`;
-    return `<div class="card haggle"><div class="cardtitle">${esc(say(w.haggleTitle, { keeper: h.keeper }))}</div><div class="small dim">${esc(say(w.haggleOffer, { keeper: h.keeper, n: h.left }))}</div>
-      <div class="acts">${sayBtn(w.haggleBegin, say(w.haggleSay, { keeper: h.keeper }))}</div>${note(ctx)}</div>`;
-  }
-  const price = h.qty > 1 ? say(w.haggleQty, { n: h.total }) : say(w.haggleAsk, { n: h.ask });
-  const facts = [say(w.haggleTurns, { n: h.turns, max: h.max_turns }), say(w.haggleMood, { m: h.mood }), h.reasons?.length ? say(w.haggleUsed, { r: h.reasons.join('、') }) : '', h.barter ? say(w.haggleBarter, { item: h.barter }) : ''].filter(Boolean);
-  return `<div class="card haggle"><div class="cardtitle">${esc(say(w.haggleTitle, { keeper: h.keeper }))} · ${esc(h.item.name)}</div>
-    <div class="lundaoprompt"><s class="dim">${esc(say(w.haggleList, { n: h.list }))}</s> · ${esc(price)}</div>
-    <div class="small dim">${facts.map(esc).join(' · ')}</div>${h.firm ? `<div class="small">${esc(w.haggleFirm)}</div>` : ''}${h.last_word ? `<div class="small">${esc(w.haggleLast)}</div>` : ''}
-    <div class="small dim">${esc(w.haggleHow)}</div>
-    <div class="acts">${doBtn(say(w.haggleDeal, { n: h.total }), 'haggle-deal', h.item.id)}${doBtn(w.haggleWalk, 'haggle-walk', h.item.id)}</div>${note(ctx)}</div>`;
-}
 
 /* ════════ 对对子 (rules/duizi.mjs) ════════
    The 上联 big and vertical (right), the 下联 beside it (left), as a pair is

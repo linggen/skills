@@ -171,7 +171,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     games: fs.existsSync(path.join(dir, 'games.json')) ? readJson(path.join(dir, 'games.json')) : null,
     // 人间功课 as cultivation (rules/gongke.mjs): a chore's `kind` → its meaning in the book.
     gongke: fs.existsSync(path.join(dir, 'gongke.json')) ? readJson(path.join(dir, 'gongke.json')) : null,
-    // AI mini-games (rules/aigames.mjs): 二十问's animals, 讨价还价's band and rubric (断案 cut 2026-10-27).
+    // AI mini-games (rules/aigames.mjs): 二十问's animals, 砍价's band and rubric (断案 cut 2026-10-27).
     aigames: fs.existsSync(path.join(dir, 'aigames.json')) ? readJson(path.join(dir, 'aigames.json')) : null,
     // 对对子's 平仄 (新韵, tools/tone-table.py): P · Z · B as strings of characters (scripts/couplet.js).
     tones: fs.existsSync(path.join(dir, 'tones.json')) ? readJson(path.join(dir, 'tones.json')) : null,

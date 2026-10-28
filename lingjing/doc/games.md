@@ -1454,7 +1454,7 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
 
 - **二十问** — 银月 thinks of an ordinary animal; yes/no in the chat; guess within twenty.
   In the story it was 第一回's 00-yinyue till 10-22's play; that board is now 讨饼债 (`bingzhai`, above, § Before 入门).
-- **讨价还价** — haggle with a keeper in the chat; the rules hold the floor and the mood.
+- **砍价** (was 讨价还价, 2026-10-28) — a button by every shelf item's 买: the shop's own panel (kanjia.js on npc-talk.js), the arguments he holds as buttons, one counter-offer, the keeper's lines voiced by a hidden call and shown only there; the rules hold the floor and his patience.
 - **断案** — cut 2026-10-27 (「紫玉参断案也不好玩」): 周衡's 灯谜 at the 执事堂 in its place.
 - **对对子** — being built 10-16 by another agent.
 - **画猜 · 你画我猜** — prototype 10-16 (`drawguess`, group AI · 试作; Hanli: 「玩家画AI猜, 试一下吧」); in the story 10-19 (below).

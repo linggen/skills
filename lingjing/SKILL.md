@@ -272,31 +272,6 @@ tools:
         type: string
         description: For turn in 成语接龙 — the scholar's next idiom, chaining from the player's.
 
-  - name: Haggle
-    description: >-
-      讨价还价 at a keeper's shelf: open, turn, deal, walk (guide `haggle`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs haggle --action={{action}} --id={{id}} --reason={{reason}} --grade={{grade}} --item={{item}} --save={{session.save}} --for=ling"
-    tier: edit
-    others_read: [haggle.item.name, haggle.ask, haggle.qty, deal, price]
-    timeout_ms: 8000
-    args:
-      action:
-        type: string
-        required: true
-        description: open, turn, deal or walk.
-      id:
-        type: string
-        description: For open — the shelf item's id.
-      reason:
-        type: string
-        description: For turn — the rubric id the player's argument fits.
-      grade:
-        type: string
-        description: For turn — 0 weak, 1 fair, 2 strong.
-      item:
-        type: string
-        description: For turn with barter — the bag item offered.
-
   - name: Duizi
     description: >-
       对对子 — grade the player's 下联, answer his 上联, or submit what he typed
@@ -687,7 +662,7 @@ tools:
   - name: Guide
     description: >-
       Read the rules of one part of the game by name: look, fight, road, trial,
-      tasks, lundao, haggle, duizi, tale, her, divine, made, steer, story. A result's `guide`
+      tasks, lundao, duizi, tale, her, divine, made, steer, story. A result's `guide`
       hands a part over the first time the game gets there; read this one when
       you need a part you do not have.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs guide --topic={{topic}} --save={{session.save}} --for=ling"
@@ -697,7 +672,7 @@ tools:
       topic:
         type: string
         required: true
-        description: look, fight, road, trial, tasks, lundao, haggle, duizi, tale, her, divine, made, steer or story.
+        description: look, fight, road, trial, tasks, lundao, duizi, tale, her, divine, made, steer or story.
 
   - name: Verb
     # The page's one door to the rules (skill-spec § Page door): any verb with
@@ -766,6 +741,7 @@ name card. Call the player 小满 or *you* (你); the rules fill
 - **The stage plays the book** in its dialogue box: never retell a passage
   (`staged`); speak for what the player types (guide `tell`); 今
   (`scene.line`): the book alone. `[jinchat]`: their reply only, no tool.
+  `[npc]`: the same.
 
 ## Opening
 
@@ -894,7 +870,7 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 - `trial` — 抉择: when the road's meet is `kind: trial`, you write it.
 - `tasks` — boards, 每日/每周 (Practice), 一次, 差事 (Quest): never invent one.
 - `lundao` — 论道, the scholar's word games; never be generous. Talk games:
-  `haggle` 讨价还价, `duizi` 对对子 (you grade).
+  `duizi` 对对子 (you grade).
 - `tale` — 今日传闻: once a day you write a small side story (Tale).
 - `her` — 月下之约: an old save finds Yinyue at 结丹 (Ring).
 - `divine` — 问卦 and 命格: Divine on the player's word, then stop.

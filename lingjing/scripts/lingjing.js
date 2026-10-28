@@ -51,6 +51,9 @@ import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fights
 import { CLOSE_AT, POOR_AT, createHerSay, herMode, wayFacts, whyFacts } from './hersay.js';
 import { factsFor, prefetchLines } from './games/prefetch.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
+import { NPC_TITLE, npcAsk } from './npc-ask.js';
+import { openKanjia } from './kanjia.js';
+import { sound as kitSound } from './games/kit/sound.js';
 import { raiseUnease } from './unease.js';
 import { keepTogether, LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 import { colourOn, freshMemory, memoryCardHtml, replayOf } from './memory.js';
@@ -862,6 +865,7 @@ function riseStats() {
     // The purse near empty: a light word, once a day (hersay.js poor).
     if (Number.isFinite(before.wealth) && before.wealth >= POOR_AT && now.wealth < POOR_AT) herSay.say('poor', lang() === 'en' ? `${now.wealth} spirit stones left.` : `只剩${now.wealth}块灵石。`);
   }
+  shortNudge();
   if (before && before.world === now.world) {
     const gained = {};
     for (const key of ['progress', 'wealth']) {
@@ -2995,9 +2999,6 @@ const DOES = {
   buy: (id) => write('trade', { action: 'buy', id }),
   sell: (id) => write('trade', { action: 'sell', id }),
   use: (id) => write('trade', { action: 'use', id }),
-  // 讨价还价's 成交 / 不买了 (rules/aigames.mjs): the rules' price, his tap.
-  'haggle-deal': () => write('haggle', { action: 'deal' }),
-  'haggle-walk': () => write('haggle', { action: 'walk' }),
 };
 async function doTap(action, id) {
   if (!DOES[action]) return;
@@ -3016,6 +3017,45 @@ async function doTap(action, id) {
   if (r.ok && id === 'tale' && r.ended) taleEnded(r.handed?.[0]?.title ?? r.title);
   if (r.ok && id === 'tale' && (r.ended || r.step)) await report(`[scene] tale ${r.ended ? 'end' : 'step'}`);
 }
+/* 砍价 (kanjia.js, Hanli 2026-10-28): the shop's own haggle panel over the shelf. Every tap is the rules' `haggle`;
+   the keeper's lines come from a hidden call in his voice, in a side session of the panel's own (npc-ask.js) — never
+   this chat; a 测试存档's `&her=stub` answers on the page, `chat=off` leaves his fallback lines. The deal is bought at
+   once and the shelf redrawn when the panel closes; Ling reads the outcome in what the page did (rules/did.mjs). */
+async function kanjia(id) {
+  if (view.kanjia) return;
+  keep({ kanjia: id });
+  const talk = HER_SEAM === 'stub' || CHATLESS ? null : npcAsk({ params: CHAT_PARAMS ?? null });
+  const ask = talk ? (line) => talk.say(line)
+    : HER_SEAM === 'stub' ? (line) => new Promise((done) => setTimeout(() => done(`[stub] ${[...line].length}`), 700))
+      : () => Promise.reject(new Error('off'));
+  const dir = look?.world?.dir ?? 'worlds/jiuding';
+  try {
+    await openKanjia({
+      doc: document, id, lang: lang(), ask,
+      verb: async (name, args) => { const r = await write(name, args); if (r?.ok) refreshSoon(200); return r; },
+      sound: (ev) => { try { kitSound.play('jinchat', ev); } catch { /* no sound */ } },
+      art: (a) => worldPath(dir, a),
+    });
+  } finally {
+    talk?.close();
+    keep({ kanjia: null });
+    await refresh();
+  }
+}
+/* 灵石 short of a thing on this shelf, the first time ever (hersay.js `short`): 银月 says it her way — try 砍价, or,
+   when the rules say no haggle closes it (`reach: far`), that it will not go that low. The cheapest such thing. */
+function shortNudge() {
+  const marks = look?.haggle?.marks, shelf = look?.place?.shelf ?? [];
+  if (!marks || !shelf.length) return;
+  const short = shelf.filter((i) => marks[i.id]?.short && marks[i.id]?.reach).sort((a, b) => (a.buy ?? 0) - (b.buy ?? 0));
+  const it = short.find((i) => marks[i.id].reach === 'can') ?? short[0];
+  if (!it) return;
+  const m = marks[it.id], far = m.reach === 'far', zh = lang() !== 'en';
+  const what = zh ? `他想买${it.name}（${it.buy}灵石），手上只有${look.wealth ?? 0}，差${m.short}。${far ? '砍价也砍不到那么低。' : '砍价能砍下来：买旁边就有砍价。'}`
+    : `He wants ${it.name} (${it.buy} stones) and has ${look.wealth ?? 0}: ${m.short} short. ${far ? 'No haggling brings it that low.' : 'Haggling can close it: 砍价 is by the Buy.'}`;
+  herSay.say('short', what, { key: 'first', ...(far ? { variant: 'far' } : {}) });
+}
+
 /* 人间功课 handed in: the facts to her — the chore, its meaning in the book, what landed — never a line of ours. */
 function tellGongke(r) {
   const m = r.meaning, p = m.paid ?? {};
@@ -3556,6 +3596,7 @@ const CLICKS = [
   ['[data-close-chapter]', (el) => { closeSeen(el.dataset.closeChapter, true); render(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
+  ['[data-kanjia]', (el) => { if (!el.matches(':disabled')) run(`kanjia:${el.dataset.kanjia}`, () => kanjia(el.dataset.kanjia)); }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
   ['[data-deck-auto]', busy('deck:auto', () => deckTap({ action: 'auto' }))],
   ['[data-pouch-close]', () => show({ gearOpen: false, pouchToss: null })],
@@ -4138,7 +4179,8 @@ function askWhyStrong(o) {
    save's (none). The main page never picks up a test save's chat, nor a test save the main one. */
 const CHAT_PARAMS = SCRATCH ? { save: SCRATCH } : undefined;
 // 台词预取's side session (games/prefetch-ling.js) is never the day's chat, should one outlive its ask.
-const notPrefetch = (list) => list.filter((s) => s.title !== PREFETCH_TITLE);
+// …nor 砍价's keeper talk (npc-ask.js): a side session of its own, removed when the panel closes.
+const notPrefetch = (list) => list.filter((s) => s.title !== PREFETCH_TITLE && s.title !== NPC_TITLE);
 const boundAsPage = (list) => notPrefetch(sharedApi.boundTo ? sharedApi.boundTo(list, CHAT_PARAMS ?? {}) : SCRATCH ? [] : list);
 async function recentSessionId() {
   try {

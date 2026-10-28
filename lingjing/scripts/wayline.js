@@ -6,6 +6,7 @@
 //
 //   wayLine(o, lang) → '铁蒺藜 · 1 灵力 · 打 1 点，抽 1 张 · 对赤狐 20% → 40%' | null
 //   wayDoes(o, lang) → the middle: what it is and does, without the name or the odds
+//   shortWords(o, lang) → '差 20 · 可砍价' for a buy he is short of, '' else
 
 const EL = { zh: { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' }, en: { metal: 'Metal', wood: 'Wood', water: 'Water', fire: 'Fire', earth: 'Earth' } };
 const SLOT = { zh: { weapon: '法器', robe: '法衣', pendant: '佩' }, en: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant' } };
@@ -69,8 +70,15 @@ export function oddsWords(o, lang = 'zh') {
   return zh ? `对${foe} ${pct(od.before)} → ${pct(od.after)}` : `vs ${foe} ${pct(od.before)} → ${pct(od.after)}`;
 }
 
+/* Short of the list price, and 砍价 there could close it (rules/strengthen.mjs `short` · `haggle`): 「差 20 · 可砍价」. */
+export function shortWords(o, lang = 'zh') {
+  if (!(o?.short > 0)) return '';
+  const zh = L(lang) === 'zh';
+  return zh ? `差 ${o.short}${o.haggle ? ' · 可砍价' : ''}` : `${o.short} short${o.haggle ? ' · haggle it down' : ''}`;
+}
+
 export function wayLine(o, lang = 'zh') {
   if (!o || !['wear', 'buy', 'pills'].includes(o.kind)) return null;
   const name = o.kind === 'pills' ? `${o.name} ×${o.n}` : o.name;
-  return [name, wayDoes(o, lang), oddsWords(o, lang)].filter(Boolean).join(' · ');
+  return [name, wayDoes(o, lang), oddsWords(o, lang), shortWords(o, lang)].filter(Boolean).join(' · ');
 }

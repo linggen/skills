@@ -30,6 +30,7 @@ import { poolGame } from './match.mjs';
 import { allPlaces, creatureOf, foeOf, huntKey, pathOf, placeName, placeOf, sceneOf } from './world.mjs';
 import { visitorHere } from './visiting.mjs';
 import { chorePlay, secludeHour } from './playpay.mjs';
+import { haggleReach } from './aigames.mjs';
 
 const SLOTS = { weapon: 'weapon', robe: 'robe', pendant: 'pendant' };
 const MEND = 'mend-pill';
@@ -73,14 +74,18 @@ const answers = c => [c.effect?.sweep ? 'guards' : null, c.keywords?.includes('t
 /* 2 · A card from a shelf in reach: not held, of a root he has, within his 灵石. A body that stands in
    front first (a 护主 takes the pack's blows: 替身草人 took the gate's 后山 from ~49% to ~77%), then a sweep
    for its 护主 (散火诀 ~67%), then a cheap one (铁蒺藜 ~63%) — tools/story-fights.mjs h05g, 2026-10-27. */
-function buyable(content, state, shops) {
+function buyable(content, state, shops, now = new Date()) {
   const owned = new Set(ownedCards(content, state)), roots = rootsOf(content, state), catalog = cardCatalog(content);
   const seen = new Set(), out = [];
   for (const shop of shops) for (const item of shop.shelf) {
     const card = catalog[item.effect?.card];
-    if (!card || owned.has(card.id) || seen.has(card.id) || !usable(card, roots) || (item.buy ?? Infinity) > (state.wealth ?? 0)) continue;
+    if (!card || owned.has(card.id) || seen.has(card.id) || !usable(card, roots)) continue;
+    // Short of the list price, it is a way only when 砍价 there could bring it within his 灵石 (rules/aigames.mjs):
+    // the 主页 says 「差 X · 可砍价」.
+    const short = Math.max(0, (item.buy ?? Infinity) - (state.wealth ?? 0));
+    if (short && !haggleReach(content, state, shop.place, item, now)) continue;
     seen.add(card.id);
-    out.push({ kind: 'buy', item: item.id, card: card.id, name: pick(card.name, state.lang), price: item.buy, place: shop.place, place_name: shop.place_name, steps: shop.steps, answers: answers(card), does: cardDoes(card) });
+    out.push({ kind: 'buy', item: item.id, card: card.id, name: pick(card.name, state.lang), price: item.buy, place: shop.place, place_name: shop.place_name, steps: shop.steps, answers: answers(card), does: cardDoes(card), ...(short ? { short, haggle: true } : {}) });
   }
   const want = ['blows', 'guards', 'cheap'];
   const rank = o => Math.min(...o.answers.map(a => want.indexOf(a)).filter(i => i >= 0), want.length);
@@ -182,7 +187,7 @@ export function strongFit(content, state, now = new Date(), { game = null } = {}
 
 function ways(content, state, now, game) {
   const shops = shopsInReach(content, state, now);
-  return [...wearable(content, state), ...buyable(content, state, shops).slice(0, 2), ...pills(content, state, shops), ...another(content, state, game), ...quiet(content, state, now)];
+  return [...wearable(content, state), ...buyable(content, state, shops, now).slice(0, 2), ...pills(content, state, shops), ...another(content, state, game), ...quiet(content, state, now)];
 }
 
 /* The first step he can act on, told the fight it is for and the odds kept for it (a fight in progress: none);

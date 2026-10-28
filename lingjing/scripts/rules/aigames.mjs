@@ -1,19 +1,21 @@
-// rules/aigames.mjs — AI mini-games: 讨价还价 (design.md § AI mini-games; 断案 cut 2026-10-27, 二十问 2026-10-28,
+// rules/aigames.mjs — AI mini-games: 砍价 (design.md § AI mini-games; 断案 cut 2026-10-27, 二十问 2026-10-28,
 // Hanli 2026-10-15). Part of the rules engine; rules.mjs is its one door.
 //
 // The model talks, plays roles and judges fuzzy things against a declared
 // rubric (worlds/<id>/aigames.json); these rules hold every secret, count
 // every turn and decide outcome and pay — capped by the rewards table each
 // grant names. Look carries the facts the page draws and never a secret:
-// the floor (讨价还价) reaches no one. A win is never self-reported: a deal is
+// the floor (砍价) reaches no one. A win is never self-reported: a deal is
 // checked against the floor.
-import { dayKey, pick } from '../state.mjs';
-import { clone, refuse, spendStamina } from './core.mjs';
-import { forSale, shopOf } from './look.mjs';
+import { dayKey, personOf, pick } from '../state.mjs';
+import { clone, refuse } from './core.mjs';
+import { forSale, shelfOf, shopOf, shopOpen } from './look.mjs';
 import { visitorHere } from './visiting.mjs';
-import { itemBrief, itemOf } from './errands.mjs';
-import { bagFull, roomFor } from './pouch.mjs';
-import { placeOf } from './world.mjs';
+import { itemOf } from './errands.mjs';
+import { roomFor } from './pouch.mjs';
+import { placeName, placeOf } from './world.mjs';
+import { buyAt, buysMany } from './travel.mjs';
+import { npcLine, NPC_SYSTEM } from '../npc-line.js';
 
 const cfgOf = content => content.aigames ?? null;
 const today = (slot, now) => (slot?.day === dayKey(now) ? slot : null);
@@ -28,145 +30,225 @@ const animalOf = (content, id) => (cfgOf(content)?.twenty?.animals ?? []).find(a
 /* The animals he has named (录): their names, in the order won. */
 export const animalsKnown = (content, state) => (state.animals ?? []).map(id => animalOf(content, id)).filter(Boolean).map(a => ({ id: a.id, name: pick(a.name, state.lang) }));
 
-/* ════════ 讨价还价 — Ling plays the keeper ════════
-   state.haggle = {day, used, walked: [item], open: {item, place, list, floor, ask, qty, turns, mood, used_reasons, barter}, deals: {place: n}}
-   `deals` outlives the day (熟客 is a past deal here). */
+/* ════════ 砍价 — a button by every shelf item (Hanli 2026-10-28) ════════
+   state.haggle = {day, walked: [item], haggled: [item], open: {item, place, list, floor, ask, qty, mood, used: [reason], countered, k},
+                   deals: {place: n}, paid: {item: {place, price}}}
+   The panel is the page's (npc-talk.js), every tap a call here: `open` · `argue` (a rubric id he holds) · `offer` (a
+   price) · `deal` · `walk`. The rules hold every number — the floor never leaves them. Each answer carries `talk`: the
+   hidden line the keeper's next words are asked by (npc-line.js), facts only, and his fallback line.
+   `deals` (any buy at a place — travel.mjs buyAt) and `paid` (his lowest haggled price for a thing, and where) outlive
+   the day: 我常来 and 别家才卖 are his own history. */
 const haggleCfg = content => cfgOf(content)?.haggle ?? null;
 
-/* The keeper at this place: a market's or a visiting shop's on its day, that
-   aigames.json names. */
-function keeperHere(content, state, now) {
-  const cfg = haggleCfg(content), here = placeOf(content, state.place);
-  const k = cfg?.keepers?.[state.place];
-  if (!k || !here) return null;
-  const open = here.has?.shop ? shopOf(here) : visitorHere(content, state, here, now);
-  return open ? { ...k, place: state.place } : null;
-}
-const haggleToday = (state, now) => today(state.haggle, now);
-const reasonOf = (content, id) => (haggleCfg(content)?.rubric ?? []).find(r => r.id === id) ?? null;
-const MOODS = { zh: ['翻脸', '不耐烦', '还行', '和气'], en: ['done with you', 'impatient', 'fair', 'amiable'] };
-const moodWord = (n, lang) => (MOODS[lang] ?? MOODS.zh)[Math.max(0, Math.min(3, n))];
-
-/* What the page and Ling see of it — never the floor. `firm` once the ask
-   has come down as far as it goes: he says so; the number is no secret then. */
-export function haggleBrief(content, state, now) {
-  const cfg = haggleCfg(content);
-  if (!cfg) return null;
-  const k = keeperHere(content, state, now), t = haggleToday(state, now), o = t?.open;
-  const left = Math.max(0, cfg.per_day - (t?.used ?? 0));
-  if (o && o.place === state.place) {
-    const item = itemOf(content, o.item);
-    return {
-      open: true, keeper: pick(k?.who ?? cfg.keepers[o.place]?.who, state.lang), item: { id: o.item, name: pick(item?.name, state.lang) ?? o.item },
-      list: o.list, ask: o.ask, qty: o.qty, total: o.ask * o.qty, turns: o.turns, max_turns: cfg.turns, mood: moodWord(o.mood, state.lang),
-      reasons: o.used_reasons.map(id => pick(reasonOf(content, id)?.name, state.lang) ?? id), ...(o.barter ? { barter: pick(itemOf(content, o.barter)?.name, state.lang) } : {}),
-      ...(o.ask <= o.floor ? { firm: true } : {}), ...(o.turns >= cfg.turns ? { last_word: true } : {}), left,
-    };
-  }
+/* The keeper at this place, while its shop is open: aigames.json's row for the place, else the default (`*`). A
+   `person` (people.json) gives the name and the portrait. */
+function keeperHere(content, state, now, at = state.place) {
+  const cfg = haggleCfg(content), here = placeOf(content, at);
+  if (!cfg || !here) return null;
+  const open = here.has?.shop ? (shopOf(here) ? shopOpen(shopOf(here), state, content) : true) : visitorHere(content, state, here, now);
+  if (!open) return null;
+  const k = cfg.keepers?.[at] ?? cfg.keepers?.['*'];
   if (!k) return null;
-  return { open: false, keeper: pick(k.who, state.lang), left, walked: (t?.walked ?? []).map(id => pick(itemOf(content, id)?.name, state.lang) ?? id) };
+  const p = k.person ? personOf(content, state, k.person) : null;
+  return { ...k, place: at, name: pick(p?.name ?? k.who, state.lang), art: p?.art ?? null };
 }
-
-/* Ling's own answer: the brief, the rubric to tag by, his voice — no floor. */
-function haggleView(content, state, now, extra = {}) {
-  const cfg = haggleCfg(content), k = keeperHere(content, state, now), lang = state.lang;
-  return {
-    ok: true, ...extra, haggle: haggleBrief(content, state, now),
-    ...(k ? { keeper: { who: pick(k.who, lang), voice: pick(k.voice, lang) } } : {}),
-    rubric: cfg.rubric.map(r => ({ id: r.id, name: pick(r.name, lang), about: r.about })),
-  };
-}
+const haggleToday = (state, now) => {
+  const t = today(state.haggle, now);
+  // An old save's haggle under way (the 讨价还价 card's: `used_reasons`, `turns`) is let go: its item is list price today.
+  if (t?.open && !Array.isArray(t.open.used)) return { ...t, open: null, walked: [...new Set([...(t.walked ?? []), t.open.item])] };
+  return t;
+};
+const reasonOf = (content, id) => (haggleCfg(content)?.rubric ?? []).find(r => r.id === id) ?? null;
 
 /* The floor for a thing at this keeper: the item's own, else the keeper's, else the default. */
 const floorOf = (content, k, item) => {
-  const cfg = haggleCfg(content), share = cfg.floors?.[item.id] ?? k.floor ?? cfg.floor;
+  const cfg = haggleCfg(content), share = cfg.floors?.[item.id] ?? k?.floor ?? cfg.floor;
   return Math.max(1, Math.ceil(item.buy * share));
+};
+const reachOf = (content, list) => Math.max(1, Math.round(list * (haggleCfg(content).counter?.reach ?? 0.05)));
+
+/* What a reason takes off the list for this thing — or null when he does not hold it (its `needs`). `o` the haggle
+   under way (its ask and qty), else the list price as it stands before one. */
+const NEEDS = {
+  dealt_here: (c, s, item, o) => (s.haggle?.deals?.[o.place] ?? 0) > 0,
+  cheaper_elsewhere: (c, s, item, o) => { const p = s.haggle?.paid?.[item.id]; return Boolean(p && p.place !== o.place && p.price < o.ask); },
+  low_grade: (c, s, item) => item.kind === 'pill' && item.zhuan === 1,
+  flaw: (c, s, item) => Boolean(haggleCfg(c).flaws?.[item.id]),
+  two: (c, s, item, o, r) => buysMany(item) && o.qty === 1 && roomFor(c, { ...s, bag: { ...s.bag, [item.id]: (s.bag[item.id] ?? 0) + 1 } }, item.id)
+    && 2 * Math.max(o.floor, o.ask - Math.round(o.list * r.step)) <= s.wealth,
+};
+const offOf = (r, item, o, s) => (r.needs === 'cheaper_elsewhere' ? o.ask - s.haggle.paid[item.id].price : Math.max(1, Math.round(o.list * (r.step ?? 0))));
+
+/* The arguments he holds for this thing now, as the panel shows them: what each says, what it takes off, used. */
+function argsHeld(content, state, item, o) {
+  const lang = state.lang;
+  return haggleCfg(content).rubric.filter(r => o.used.includes(r.id) || NEEDS[r.needs]?.(content, state, item, o, r)).map(r => {
+    const used = o.used.includes(r.id);
+    const price = r.needs === 'cheaper_elsewhere' ? state.haggle?.paid?.[item.id]?.price : null;
+    return { id: r.id, say: pick(r.say, lang).replace('{price}', price ?? ''), ...(used ? { used: true } : { off: offOf(r, item, o, state) }) };
+  });
+}
+
+/* A haggle about to open on `item`, as the rules would start it (no state written). */
+const fresh = (content, k, item, place) => ({ item: item.id, place, list: item.buy, floor: floorOf(content, k, item), ask: item.buy, qty: 1, mood: haggleCfg(content).mood, used: [], countered: false, k: 0 });
+
+/* How low a haggle he opened now could go with what he holds — every argument but 买两件, and one counter-offer —
+   never under the floor. The shelf's 「可砍价」 when that is within his 灵石. */
+function lowest(content, state, k, item) {
+  let o = fresh(content, k, item, k.place);
+  for (const r of haggleCfg(content).rubric) {
+    if (r.needs === 'two' || !NEEDS[r.needs]?.(content, state, item, o, r)) continue;
+    o = { ...o, ask: Math.max(o.floor, o.ask - offOf(r, item, o, state)) };
+  }
+  return Math.max(o.floor, o.ask - reachOf(content, o.list));
+}
+
+/* Whether haggling at `place` could bring `item` within his 灵石 (the 主页's 「差 X · 可砍价」, rules/strengthen.mjs):
+   a keeper there, the thing not haggled over today, and the lowest he could reach. */
+export function haggleReach(content, state, place, item, now = new Date()) {
+  const k = keeperHere(content, state, now, place), t = haggleToday(state, now);
+  if (!k || !(item?.buy > 0) || (t?.walked ?? []).includes(item.id) || (t?.haggled ?? []).includes(item.id)) return false;
+  return lowest(content, state, k, item) <= (state.wealth ?? 0);
+}
+
+/* Each shelf thing's mark where a keeper stands: `short` (灵石 short of the list price), `can` (a haggle open to it
+   today), `reach` ('can' · 'far' — whether haggling could bring it within his 灵石 when he is short). */
+function shelfMarks(content, state, k, now) {
+  const t = haggleToday(state, now), here = placeOf(content, state.place), out = {};
+  for (const item of shelfOf(content, here, state, now)) {
+    if (!(item.buy > 0)) continue;
+    const short = Math.max(0, item.buy - (state.wealth ?? 0));
+    const done = (t?.walked ?? []).includes(item.id) || (t?.haggled ?? []).includes(item.id);
+    out[item.id] = { ...(short ? { short } : {}), ...(done ? { done: true } : { can: true }), ...(short && !done ? { reach: lowest(content, state, k, item) <= (state.wealth ?? 0) ? 'can' : 'far' } : {}) };
+  }
+  return out;
+}
+
+/* What the page and Ling see — never the floor. Where a keeper stands: who, the shelf's marks; a haggle under way:
+   the thing, list and ask, his patience, the arguments he holds, the counter-offer's range. */
+export function haggleBrief(content, state, now) {
+  const cfg = haggleCfg(content);
+  if (!cfg) return null;
+  const k = keeperHere(content, state, now);
+  if (!k) return null;
+  const t = haggleToday(state, now), o = t?.open && t.open.place === state.place ? t.open : null;
+  const keeper = { name: k.name, ...(k.art ? { art: k.art } : {}) };
+  const base = { keeper, marks: shelfMarks(content, state, k, now) };
+  if (!o) return base;
+  const item = itemOf(content, o.item);
+  return {
+    ...base,
+    open: {
+      item: { id: o.item, name: pick(item?.name, state.lang) ?? o.item, ...(item?.art ? { art: item.art } : {}) },
+      list: o.list, ask: o.ask, qty: o.qty, total: o.ask * o.qty, mood: o.mood, max_mood: cfg.mood, wealth: state.wealth ?? 0,
+      args: argsHeld(content, state, item, o),
+      offer: o.countered ? null : { min: Math.max(1, Math.floor(o.list * (cfg.counter?.min ?? 0.5))), max: Math.max(1, o.ask - 1) },
+      ...(o.ask <= o.floor ? { firm: true } : {}),
+    },
+  };
+}
+
+/* The keeper's next words, asked for: facts for the hidden line (npc-line.js) and his fallback line. `event` is
+   what just happened; `did` what the player did, in plain facts. */
+function talkOf(content, state, k, o, event, did = '') {
+  const cfg = haggleCfg(content), lang = state.lang, zh = lang !== 'en';
+  const item = itemOf(content, o.item), name = pick(item?.name, lang) ?? o.item;
+  const here = placeOf(content, state.place), shop = shopOf(here);
+  const where = pick(shop?.name, lang) ?? placeName(content, state, here)?.name ?? '';
+  const total = o.ask * o.qty;
+  const price = o.qty > 1 ? (zh ? `两件共 ${total}` : `${total} for the two`) : `${o.ask}`;
+  const facts = zh
+    ? `玩家在讲价：${name}，标价 ${o.list} 灵石${o.qty > 1 ? '，他要买两件' : ''}；你现在开的价是 ${price} 灵石。你的耐性还剩 ${o.mood}/${cfg.mood}。`
+    : `The player is haggling over ${name}, marked ${o.list} stones${o.qty > 1 ? ', taking two' : ''}; your price now is ${price} stones. Your patience: ${o.mood}/${cfg.mood}.`;
+  const SAY = {
+    open: zh ? `招呼他，报标价 ${o.list}。` : `greet him and give the marked price, ${o.list}.`,
+    argue: zh ? `你让了一点，现价 ${price}；嘴上可以心疼。` : `you came down a little, to ${price}; grudge it if you like.`,
+    firm: zh ? `你让到 ${price}，并且说这已经到头了，再低不行。` : `you came down to ${price}, and say that is as low as it goes.`,
+    taken: zh ? `你答应了他还的价：${price}。` : `you accept his offer: ${price}.`,
+    low: zh ? `他还的价太低，你不答应，价还是 ${price}；警告他再低要翻脸了。` : `his offer is too low; you refuse, still ${price}; warn him any lower and you are done.`,
+    soured: zh ? '你翻脸了：这一样今天不讲价了，只照标价卖。' : 'you have had enough: no more haggling over this today, list price only.',
+    deal: zh ? `成交，${price}，送客。` : `the deal is struck at ${price}; see him off.`,
+    walk: zh ? '他不买了，放下东西走了；送一句。' : 'he puts it down and walks off; a parting word.',
+  };
+  const line = npcLine({ who: k.name, voice: pick(k.voice, lang), where, facts, did, say: SAY[event], first: o.k <= 1, lang });
+  const fallback = pick(cfg.lines?.[event] ?? cfg.lines?.argue, lang)?.replace('{price}', price) ?? '';
+  return { who: k.name, event, line, system: pick(NPC_SYSTEM, lang), fallback };
+}
+
+const answer = (content, s, now, k, o, event, did, extra = {}) => {
+  o.k = (o.k ?? 0) + 1;
+  return { state: s, result: { ok: true, ...extra, haggle: haggleBrief(content, s, now), talk: talkOf(content, s, k, o, event, did) } };
 };
 
 export function haggle(state, content, ctx, args) {
-  const cfg = haggleCfg(content), lang = state.lang, now = ctx.now, action = text(args.action) || 'open';
+  const cfg = haggleCfg(content), lang = state.lang, now = ctx.now, action = text(args.action) || 'open', zh = lang !== 'en';
   if (!cfg) return refuse('not-here', null);
   const k = keeperHere(content, state, now);
-  const t0 = haggleToday(state, now), o0 = t0?.open && t0.open.place === state.place ? t0.open : null;
-  if (!k && !o0) return refuse('not-here', pick({ zh: '这里没有可以讲价的摊子。', en: 'There is no stall here to haggle at.' }, lang));
+  if (!k) return refuse('not-here', pick({ zh: '这里没有可以讲价的铺子。', en: 'There is no shop here to haggle at.' }, lang));
   const s = clone(state);
-  s.haggle = haggleToday(s, now) ?? { day: dayKey(now), used: 0, walked: [], open: null, deals: s.haggle?.deals ?? {} };
+  const t = haggleToday(s, now);
+  s.haggle = { deals: s.haggle?.deals ?? {}, paid: s.haggle?.paid ?? {}, ...(t ?? {}), day: dayKey(now), walked: t?.walked ?? [], haggled: t?.haggled ?? [], open: t?.open ?? null };
   const h = s.haggle;
+  if (h.open && h.open.place !== s.place) h.open = null; // walked away from the shop with it open: it stands no more
   if (action === 'open') {
     const item = itemOf(content, text(args.id));
-    if (o0) return o0.item === item?.id || !item ? { state: null, result: haggleView(content, state, now, { again: true }) } : refuse('haggling', pick({ zh: '手上这一样还没谈完。', en: 'You are still haggling over the last thing.' }, lang), haggleView(content, state, now));
-    if (!item || !item.buy || !forSale(content, s, item, placeOf(content, s.place), now)) return refuse('not-on-shelf', null, haggleView(content, state, now));
-    if (h.used >= cfg.per_day) return refuse('haggled-out', pick({ zh: `今天讲价讲够了（${cfg.per_day} 回）。照价买，或明日再来。`, en: `Enough haggling for today (${cfg.per_day}). Pay the list price, or come back tomorrow.` }, lang));
-    if (h.walked.includes(item.id)) return refuse('walked-away', pick({ zh: '这一样今天你已经走过一回了，只照价卖。', en: 'You walked away from this one today — list price only.' }, lang));
-    h.used += 1;
-    h.open = { item: item.id, place: s.place, list: item.buy, floor: floorOf(content, k, item), ask: item.buy, qty: 1, turns: 0, mood: cfg.mood, used_reasons: [], barter: null };
-    return { state: s, result: haggleView(content, s, now, { opened: true }) };
+    if (h.open) {
+      if (h.open.item === item?.id) return { state: null, result: { ok: true, again: true, haggle: haggleBrief(content, s, now), talk: talkOf(content, s, k, h.open, 'open') } };
+      // Another thing picked: the one under way is walked off (list price today), as his ✕ would.
+      h.walked = [...new Set([...h.walked, h.open.item])];
+      h.open = null;
+    }
+    if (!item || !(item.buy > 0) || !forSale(content, s, item, placeOf(content, s.place), now)) return refuse('not-on-shelf', null);
+    if (h.walked.includes(item.id) || h.haggled.includes(item.id)) return refuse('walked-away', pick({ zh: '这一样今天已经讲过价了，只照价卖。', en: 'You haggled over this one today — list price only.' }, lang));
+    h.open = fresh(content, k, item, s.place);
+    return answer(content, s, now, k, h.open, 'open', '', { opened: true });
   }
-  if (!o0) return refuse('not-open', null, haggleView(content, state, now));
   const o = h.open;
-  if (action === 'turn') return haggleTurn(content, s, ctx, args, o);
-  if (action === 'deal') return haggleDeal(content, s, ctx, o);
+  if (!o) return refuse('not-open', null, { haggle: haggleBrief(content, s, now) });
+  const item = itemOf(content, o.item);
+  if (action === 'argue') {
+    const r = reasonOf(content, text(args.reason));
+    if (!r || o.used.includes(r.id) || !NEEDS[r.needs]?.(content, s, item, o, r)) return refuse('not-held', null, { haggle: haggleBrief(content, s, now) });
+    const said = argsHeld(content, s, item, o).find(a => a.id === r.id)?.say ?? r.id;
+    const before = o.ask;
+    o.ask = Math.max(o.floor, o.ask - offOf(r, item, o, s));
+    o.used.push(r.id);
+    if (r.needs === 'two') o.qty = 2;
+    return answer(content, s, now, k, o, o.ask <= o.floor ? 'firm' : 'argue', zh ? `说「${said}」。` : `said "${said}".`, { came_down: before - o.ask });
+  }
+  if (action === 'offer') {
+    const price = Math.trunc(Number(args.price));
+    if (o.countered) return refuse('countered', null, { haggle: haggleBrief(content, s, now) });
+    if (!Number.isFinite(price) || price < 1 || price >= o.ask) return refuse('bad-offer', null, { haggle: haggleBrief(content, s, now) });
+    const did = zh ? `还价 ${price} 灵石。` : `offered ${price} stones.`;
+    if (price >= Math.max(o.floor, o.ask - reachOf(content, o.list))) {
+      const before = o.ask;
+      o.ask = price;
+      o.countered = true;
+      return answer(content, s, now, k, o, 'taken', did, { came_down: before - o.ask, taken: true });
+    }
+    o.mood -= 1;
+    if (o.mood <= 0) {
+      h.walked = [...new Set([...h.walked, o.item])];
+      h.open = null;
+      return answer(content, s, now, k, o, 'soured', did, { soured: true });
+    }
+    return answer(content, s, now, k, o, 'low', did, { too_low: true });
+  }
+  if (action === 'deal') {
+    const bought = buyAt(content, s, ctx, item, o.ask, o.qty);
+    if (!bought.result?.ok) return bought;
+    const b = bought.state.haggle;
+    const best = b.paid?.[o.item];
+    b.paid = { ...(b.paid ?? {}), ...(!best || o.ask < best.price ? { [o.item]: { place: o.place, price: o.ask } } : {}) };
+    b.haggled = [...new Set([...(b.haggled ?? []), o.item])];
+    b.open = null;
+    return answer(content, bought.state, now, k, o, 'deal', '', { ...bought.result, deal: true, price: o.ask, qty: o.qty, saved: (o.list - o.ask) * o.qty });
+  }
   if (action === 'walk') {
     h.walked = [...new Set([...h.walked, o.item])];
     h.open = null;
-    return { state: s, result: haggleView(content, s, now, { walked: o.item, line: pick({ zh: '你放下东西走了。这一样今天只照价卖。', en: 'You put it down and walk off. Today it sells at list price only.' }, lang) }) };
+    return answer(content, s, now, k, o, 'walk', '', { walked: o.item });
   }
-  return refuse('unknown-action', null, { actions: ['open', 'turn', 'deal', 'walk'] });
-}
-
-/* One argument: Ling tags it (`reason`, a rubric id) and grades it (0 weak ·
-   1 fair · 2 strong); the rules apply the rubric's step, clamp at the floor,
-   and keep each reason to once. A bare push or a reason used again sours him;
-   soured to nothing, he will not haggle on — the list price stands today. */
-function haggleTurn(content, s, ctx, args, o) {
-  const cfg = haggleCfg(content), lang = s.lang, now = ctx.now;
-  if (o.turns >= cfg.turns) return refuse('last-word', pick({ zh: '掌柜的已经报了最后一口价：成交，或者走。', en: 'That was the last word on price: deal, or walk.' }, s.lang), haggleView(content, s, now));
-  const r = reasonOf(content, text(args.reason)) ?? reasonOf(content, 'none');
-  const grade = Math.max(0, Math.min(2, Math.trunc(Number(args.grade ?? 1)) || 0));
-  o.turns += 1;
-  let step = 0, why = null;
-  const again = r.once && o.used_reasons.includes(r.id);
-  if (r.id === 'none' || again || grade === 0) why = again ? 'used' : r.id === 'none' ? 'bare' : 'weak';
-  else if (r.needs === 'deal_here' && !(s.haggle.deals?.[o.place] > 0)) why = 'not-a-regular';
-  else if (r.needs === 'item') {
-    const offered = itemOf(content, text(args.item));
-    if (!offered || !(s.bag[offered.id] > 0) || offered.id === o.item || !(offered.sell > 0)) why = 'no-such-thing';
-    else {
-      o.barter = offered.id;
-      step = Math.min(offered.sell, Math.floor(o.list * cfg.barter_cap));
-    }
-  } else step = Math.round(o.list * r.step * cfg.grades[grade]);
-  if (why) o.mood -= 1;
-  else {
-    o.used_reasons.push(r.id);
-    if (r.id === 'bulk') o.qty = 2;
-  }
-  const before = o.ask;
-  o.ask = Math.max(o.floor, o.ask - step);
-  if (o.mood <= 0) {
-    s.haggle.walked = [...new Set([...s.haggle.walked, o.item])];
-    s.haggle.open = null;
-    return { state: s, result: haggleView(content, s, now, { soured: true, line: pick({ zh: '掌柜的脸一沉：「不卖了。今天这一样，照价。」', en: 'The keeper\'s face sets: "Not selling. That one is list price today."' }, lang) }) };
-  }
-  return { state: s, result: haggleView(content, s, now, { came_down: before - o.ask, ...(why ? { refused_reason: why } : {}) }) };
-}
-
-/* The deal at the ask he stands at now — the page's 成交 or Ling on the
-   player's word. Bought as Trade buys: on the shelf, room in the bag, stones
-   enough; a thing offered in trade leaves the bag. */
-function haggleDeal(content, s, ctx, o) {
-  const lang = s.lang, now = ctx.now, item = itemOf(content, o.item);
-  const total = o.ask * o.qty;
-  if (s.wealth < total) return refuse('no-stones', pick({ zh: '灵石不够。', en: 'Not enough spirit stones.' }, lang), { price: total, wealth: s.wealth });
-  for (let i = 0; i < o.qty; i++) if (!roomFor(content, { ...s, bag: { ...s.bag, [item.id]: (s.bag[item.id] ?? 0) + i } }, item.id)) return bagFull(content, s);
-  if (o.barter && !(s.bag[o.barter] > 0)) return refuse('no-such-thing', null);
-  const empty = spendStamina(content, s, ctx, 'shop');
-  if (empty) return empty;
-  s.wealth -= total;
-  s.bag[item.id] = (s.bag[item.id] ?? 0) + o.qty;
-  if (o.barter) { s.bag[o.barter] -= 1; if (s.bag[o.barter] <= 0) delete s.bag[o.barter]; }
-  s.haggle.deals = { ...s.haggle.deals, [o.place]: (s.haggle.deals?.[o.place] ?? 0) + 1 };
-  s.haggle.open = null;
-  const saved = (o.list - o.ask) * o.qty;
-  return { state: s, result: { ok: true, deal: true, bought: item.id, qty: o.qty, price: o.ask, saved, item: itemBrief(content, s, item), paid: { wealth: -total }, wealth: s.wealth, ...(o.barter ? { traded: o.barter } : {}), haggle: haggleBrief(content, s, now) } };
+  return refuse('unknown-action', null, { actions: ['open', 'argue', 'offer', 'deal', 'walk'] });
 }

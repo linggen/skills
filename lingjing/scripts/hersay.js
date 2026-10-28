@@ -54,6 +54,7 @@ export const MOMENTS = {
   poor: { group: 'comfort', once: 'day' }, //              the purse near empty
   gongke: { group: 'cheer', once: 'key' }, //              a real-life chore handed in (rules/gongke.mjs): once a chore a day
   why_strong: { group: 'advise' }, //                      his ? on the 主页's way to grow stronger: why that step (his tap — always)
+  short: { group: 'advise', once: 'key' }, //              灵石 short of a thing on the shelf, the first time ever: try 砍价 — or earn more (`far`)
 };
 export const MOOD = { cheer: 'happy', comfort: 'sad', advise: 'neutral' };
 
@@ -111,6 +112,9 @@ const ASKS = {
   poor: { zh: '玩家的灵石快见底了。轻轻一句。', en: 'Nearly out of stones. Light.' },
   gongke: { zh: '玩家在人间做完了一件功课，书里有它的意思。', en: 'A real-life chore done; the book gives it a meaning.' },
   // Hanli 2026-10-27: 「如果是推荐玩家变强, 应该让yinyue解释一下, 为什么要买东西? 能增强什么」 — he asked; she says why.
+  // Hanli 2026-10-28: 「玩家灵石只有80, 要买一颗100的丹…yinyue主动提示玩家, 你钱不够, 试试砍价」 — the facts say whether
+  // 砍价 could close it; she says it her way: try the 砍价 by the 买, or plainly that it will not go that low.
+  short: { zh: '玩家看中的东西灵石不够。照上面的事实说一句：砍得下来，就叫他试试铺子里的砍价；砍不到那么低，就直说砍不下来，先去挣灵石。', en: 'Short of stones. Haggling can close it: tell him to haggle. It cannot: say so; earn more first.' },
   why_strong: { zh: '玩家点了问你：为什么要做上面这一步？用你的话说它能补他哪里、打那只妖兽时会怎样（胜算有变化就说出来）。不说教，不念数据表。', en: 'He asked why the step above: what it fixes, how that fight changes (odds if given). No lecture.' },
 };
 
@@ -159,6 +163,8 @@ export const POOLS = {
       stuck: ['盯着它发呆，它也不会自己开。……实在不行，问问Ling。', '换个想法。本王不说，你自己来。……卡住了就问Ling。'],
       grind: ['打了一天了，手不酸？歇一歇，本王也乏了。', '天天打这几只，它们都认得你了。歇会儿。'],
       poor: ['灵石见底了？本王的储物袋……哼，自己想办法。', '穷成这样，出门别说是本王的人。'],
+      short: ['钱不够？凡人，跟他砍砍价。', '差那么几块灵石，嘴皮子磨一磨——砍价去。'],
+      short_far: ['差得太多，砍价也砍不下来。先去挣灵石。', '凡人，这个价砍不到你手里那点。挣够了再来。'],
       gongke: ['人间的功课也做了？……哼，修行本就不分山上山下。', '这点事做得踏实，本王看见了。'],
     },
     en: {
@@ -188,6 +194,8 @@ export const POOLS = {
       stuck: ['Staring will not open it. …If it will not give, ask Ling.', 'Think another way. This king will not say. …Stuck, ask Ling.'],
       grind: ['A whole day of this — your arms not sore? Rest. Even this king is tired.', 'The same few beasts every day; they know your face by now. Rest a while.'],
       poor: ['Out of stones? This king’s pouch is… hmph. Find your own way.', 'This poor — do not tell anyone you are mine.'],
+      short: ['Short, mortal? Haggle him down.', 'A few stones shy — work your tongue. Haggle.'],
+      short_far: ['Too far short; no haggling closes that. Earn more first.', 'Mortal, that price will not come down to your purse. Come back richer.'],
       gongke: ['The mortal chores done too? …Hmph. Cultivation knows no mountain from valley.', 'Done steadily. This king saw.'],
     },
   },
@@ -220,6 +228,8 @@ export const POOLS = {
       stuck: ['……还没解开？……问Ling去。', '……换个想法。……本王困。'],
       grind: ['……还打？……歇会儿。', '……手不酸？……睡了。'],
       poor: ['……又没灵石了？……哼。', '……穷。'],
+      short: ['……钱不够……砍价……', '……差几块……跟他……砍砍。'],
+      short_far: ['……差太多……砍不下来……先去挣。', '……这价……砍不动……'],
       gongke: ['……人间的事，也做完了？……嗯。', '……踏实。睡了。'],
     },
     en: {
@@ -249,6 +259,8 @@ export const POOLS = {
       stuck: ['…Still stuck? …Ask Ling.', '…Think another way. …This king is sleepy.'],
       grind: ['…Still fighting? …Rest.', '…Arms not sore? …Sleeping.'],
       poor: ['…Out of stones again? …Hmph.', '…Poor.'],
+      short: ['…Short… haggle…', '…A few stones… talk him down.'],
+      short_far: ['…Too far… no haggling… earn more.', '…That price… will not come down.'],
       gongke: ['…The mortal work, done too? …Mm.', '…Steady. Sleeping.'],
     },
   },
