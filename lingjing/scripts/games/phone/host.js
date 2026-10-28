@@ -9,6 +9,8 @@
 //                    LingjingHost.leave()       the player walked away (settles { left: true })
 //                    LingjingHost.mute(true)    the native 🔊 (the shell's one mute, kept in this webview: games/kit/sound.js)
 //                    LingjingHost.heard(id, '{"reply":"…"}' | '{"error":"…"}')   the answer to a `talk`
+//                    LingjingHost.tool('restart' | 'ask')   the native ↺ 重来 or ? 问询 of a board that declares it
+//                                              (`meta.restart` · `meta.ask`): the board's own tap, as the Mac's shell bar sends it
 //   page → Flutter   Linggen.postMessage(JSON) with { t: 'ready' | 'mounted' | 'lead' | 'say' | 'event' | 'talk' | 'stuck' | 'end' | 'error', … }
 //                    mounted { game, muted }   the board's module is up (a lead card, if it has one, is asked for next); muted: the 🔊's state
 //                    lead  { text }            the story lines the lead card reads; the game starts when go() answers it
@@ -20,6 +22,7 @@
 //                    rules { id, verb, args }  a rules call the board makes itself (开炉's feed, 本王考考你's `kao open`, 银月
 //                                              out of the 木牌 for a round): the app calls its rules, answers heard('{"result":…}')
 //                    stuck {}                  the board says it may be left (its `stuck()`): the app offers 「算了，往下走」
+//                    tools { restart, ask }    which of ↺ · ? the board declares, null when not, else whether it is on now
 //                    end   { won, stars, grade, left, next, stats, outcome, picks }
 //
 // Which boards there are, and the sheets each links, is boards.json (written by tools/phone-board.mjs from
@@ -124,7 +127,46 @@ function dealOf(game, data, task) {
   return d;
 }
 
-let go = null, abort = null, stuckTimer = null;
+let go = null, abort = null, stuckTimer = null, toolTimer = null;
+
+/* ↺ 重来 and ? 问询 (games/shell.js restartHtml · cards.js boardAsk): every board hears them as a tap on its frame's bar
+   (`.gshell > .gshell-bar [data-g][data-gfor]` — mount.js for a pure board, dash.js and fuqin.js on their own). The
+   phone's bar is native, so the page keeps that bar hidden — the body is the frame — and the app's taps click it
+   (Hanli 10-27: the phone's boards up to the Mac's). Which the board declares, and whether each is on now, go to the app. */
+function toolBar(mod, look) {
+  document.body.classList.add('gshell');
+  document.querySelector('body > .gshell-bar')?.remove();
+  clearInterval(toolTimer);
+  const bar = document.createElement('div');
+  bar.className = 'gshell-bar';
+  bar.hidden = true;
+  const has = { restart: typeof mod.meta?.restart === 'function', ask: typeof mod.meta?.ask === 'function' };
+  const btn = (kind) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.g = kind === 'restart' ? 'restart' : 'hint';
+    b.dataset.gfor = ID;
+    b.dataset.tool = kind;
+    return b;
+  };
+  for (const k of ['restart', 'ask']) if (has[k]) bar.append(btn(k));
+  document.body.append(bar);
+  let last = '';
+  const read = () => {
+    const s = look();
+    const on = { restart: has.restart ? Boolean(s !== undefined && mod.meta.restart(s)) : null, ask: null };
+    if (has.ask) {
+      const g = s !== undefined ? mod.meta.ask(s) : null;
+      on.ask = Boolean(g);
+      if (g) bar.querySelector('[data-tool=ask]').dataset.g = g;
+    }
+    for (const b of bar.children) b.disabled = !on[b.dataset.tool];
+    const now = JSON.stringify(on);
+    if (now !== last) { last = now; post({ t: 'tools', ...on }); }
+  };
+  if (has.restart || has.ask) toolTimer = setInterval(read, 250);
+  read();
+}
 let state = () => undefined; // the board's state, when its mount hands a look at it (`peek`)
 
 async function mountBoard(spec) {
@@ -135,6 +177,7 @@ async function mountBoard(spec) {
   abort?.abort();
   abort = new AbortController();
   clearInterval(stuckTimer);
+  clearInterval(toolTimer);
   forget(ID);
   await sheets(row.css ?? []);
   document.documentElement.dataset.board = game;
@@ -160,6 +203,7 @@ async function mountBoard(spec) {
   // (its `stuck(state)`; a pure board's state through mount.js `peek`).
   state = () => undefined;
   const g = { mod, shownAt: performance.now(), get state() { return state(); } };
+  toolBar(mod, () => state());
   stuckTimer = setInterval(() => { if (stuckNow(g, performance.now())) { clearInterval(stuckTimer); post({ t: 'stuck' }); } }, 1000);
   const stage = document.getElementById('stage');
   const r = await mount(stage, {
@@ -167,6 +211,7 @@ async function mountBoard(spec) {
     peek: (look) => { state = look; },
   });
   clearInterval(stuckTimer);
+  clearInterval(toolTimer);
   settle(ID, r);
   post({
     t: 'end', won: Boolean(r?.won), stars: r?.stars ?? null, grade: r?.grade ?? null, left: Boolean(r?.left), next: r?.next ?? null,
@@ -209,6 +254,8 @@ globalThis.LingjingHost = {
   go: () => { go?.(); go = null; },
   pause: (on) => setPaused(ID, Boolean(on)),
   leave: () => abort?.abort(),
+  /// The native ↺ or ?: a click on the hidden bar's button (toolBar), which the board hears as its own.
+  tool: (kind) => { const b = document.querySelector(`body > .gshell-bar [data-tool="${kind}"]`); if (b && !b.disabled) b.click(); return Boolean(b && !b.disabled); },
   /// The bar's 🔊 (Hanli 10-26: every board, Mac and phone): both parts at once, as the Mac's shell button.
   mute: (on) => { sound.mute(Boolean(on)); return sound.settings().muted; },
   /// The board's state as its mount shows it (the builder's drive and the stuck rule; undefined for a board that does not).
