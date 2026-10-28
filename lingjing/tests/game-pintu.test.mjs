@@ -156,7 +156,7 @@ test('七巧 is gone from play: no task, place, errand or new 奇遇 / 传闻 de
   const places = allPlaces(content);
   // Fixed or in a place's daily pool (rules/rotation.mjs): the nine places 七巧 stood, and 藏经阁's pool.
   const hosts = (p) => [...(p.has?.games ?? []), ...(p.has?.games_pool?.from ?? [])];
-  assert.equal(places.filter((p) => hosts(p).includes('pintu')).length, 12, 'the nine places 七巧 stood, 藏经阁 · 讲堂, and the 药园 (its pool beside 捉虫)');
+  assert.equal(places.filter((p) => hosts(p).includes('pintu')).length, 9, 'the places 七巧 stood, 藏经阁, 柴房 and 饭堂 (the east wall\'s torn scroll, door god and stove god) — 外门 · 讲堂 · 药园 took 华容道 for it, 2026-10-28 (Hanli: 「拼图也少一点」)');
   for (const p of places) assert.ok(!(p.has?.games ?? []).includes('qiqiao'), p.id);
   for (const q of content.quests) for (const n of q.need ?? []) assert.notEqual(n.task, 'qiqiao', q.id);
   for (const id of ['xu-waimen-roof', 'xu-sun-charm', 'guan-fantang-zhengti']) {

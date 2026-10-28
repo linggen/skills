@@ -62,7 +62,7 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
 
 test('the winter and the years: 火柴 at the move, the furnace\'s culls, the seasons and the five years — the story\'s own, free of 体力 but a story step (Hanli, 2026-10-01), in order, once; the layers one at a time (2026-10-15)', () => {
   // Every 古七 board counted and its two fights won (tests/gu7.test.mjs plays them): the ways on are the story's.
-  const H11 = ['jiuge-xunsi', 'jiuge-yubu', 'furnace-recipe', 'furnace-deng', 'furnace-ding', 'danfang-min', 'year-smell', 'year-kanlu', 'fangshi-qian', 'fangshi-liuyun', 'yishui-reed', ...CH.scenes['09-suifeng'].offers.tasks, ...CH.scenes['09-nianyao'].offers.tasks]; // + 第二批 (2026-10-26); + 年四 · 年五's (2026-10-27)
+  const H11 = ['jiuge-xunsi', 'jiuge-yubu', 'furnace-recipe', 'furnace-deng', 'furnace-ding', 'danfang-min', 'year-smell', 'year-kanlu', 'fangshi-qian', 'fangshi-liuyun', 'yishui-reed', 'futian-suifeng', 'futian-spar', ...CH.scenes['09-suifeng'].offers.tasks, ...CH.scenes['09-nianyao'].offers.tasks]; // + 第二批 (2026-10-26); + 年四 · 年五's (2026-10-27)
   const placed = (s) => full({ ...s, place: CH.scenes[s.scene]?.at ?? s.place });
   let s = { ...atSnow({ step: 4 }), tasks: Object.fromEntries(H11.map(id => [id, { status: 'done' }])), wins: { 'lingcao-qiuyu': NOW.toISOString(), 'futian-qinyan': NOW.toISOString() } };
   assert.deepEqual(buttons(s), ['feed'], 'the gourd and the shards tossed into the 饭桶 to be rid of them — nothing asked (Hanli 2026-10-06)');
@@ -256,7 +256,7 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   for (const sc of Object.values(content.chapters['00-waimen'].scenes)) for (const e of sc.exits) assert.notEqual(e.grant?.item, 'foundation-pill', `${sc.id}/${e.id}`);
   assert.doesNotMatch(JSON.stringify(CH.scenes), /验封|戒律堂执事|草木灰|当众/); // the cut 端午验封 (2026-10-03); 周衡's 「戒律堂头一个问你」 stays (Hanli 2026-10-14)
   assert.match(CH.scenes['09-furnace'].story.zh, /空着也是空着[\s\S]*戒律堂头一个问你/, 'the 巡夜令 handed back on 正月初一, as 古七 has it');
-  let s = full({ ...atSnow({ step: 6 }), scene: '09-futian', place: 'houshan', marks: ['y-qingming', 'y-futian'], wins: { 'futian-qinyan': NOW.toISOString() } });
+  let s = full({ ...atSnow({ step: 6 }), scene: '09-futian', place: 'houshan', marks: ['y-qingming', 'y-futian'], tasks: { 'futian-suifeng': { status: 'done' }, 'futian-spar': { status: 'done' } } }); // 秦雁's bout: 格斗 since 2026-10-28
   assert.equal(s.bag['foundation-pill'], undefined);
   s = go(s, 'spar').state;
   assert.equal(s.bag['foundation-pill'], undefined, 'not in 古七');

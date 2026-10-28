@@ -40,11 +40,11 @@ const YEARS = { '09-suifeng': ['suifeng-qinyan', 'suifeng-yading', 'suifeng-yezi
 // 09-snow has no board since 2026-10-19: its feeding is the 大场面 扔了干净 (tests/setpiece-huochai.test.mjs).
 const BOARDS = { '09-jiuge': ['jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'] };
 // 随叶 and 顺风溜 told again 2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」): 禹步 is 09-jiuge's one board, 09-xie reads whole.
-const FIGHTS = { '09-lingcao': ['fight', 'lingcao-qiuyu', 'qiuyu'], '09-futian': ['spar', 'futian-qinyan', 'foe-shijie'] };
+const FIGHTS = { '09-lingcao': ['fight', 'lingcao-qiuyu', 'qiuyu'] }; // 09-futian's 秦雁 bout is 格斗 since 2026-10-28 (the board futian-spar)
 // 认方 cut 2026-10-19 (the standing rule Hanli approved 10-19: a memory puzzle): 定风 is 09-furnace's one board.
 BOARDS['09-furnace'] = ['furnace-ding'];
 // 第二批 (2026-10-26): 瞿老 on 巽 before the 禹步, 邓执事 before 开春, 闵丹师 in 09-danfang, 看炉 in 09-year, 钱掌柜 and 流云剑 in 09-fangshi.
-Object.assign(BOARDS, { '09-jiuge': ['jiuge-xunsi', 'jiuge-yubu'], '09-furnace': ['furnace-deng', 'furnace-ding'], '09-danfang': ['danfang-min'], '09-year': ['year-kanlu'], '09-fangshi': ['fangshi-qian', 'fangshi-liuyun'] }, YEARS);
+Object.assign(BOARDS, { '09-jiuge': ['jiuge-xunsi', 'jiuge-yubu'], '09-furnace': ['furnace-deng', 'furnace-ding'], '09-danfang': ['danfang-min'], '09-year': ['year-kanlu'], '09-fangshi': ['fangshi-qian', 'fangshi-liuyun'], '09-futian': ['futian-suifeng', 'futian-spar'] }, YEARS);
 const RISES = { '09-furnace/fire': 5, '09-year/futian': 5, '09-yishui/night': 6, '09-futian/spar': 7 };
 
 test('古七 runs in the book\'s order on the `next` chain — twelve scenes, every one h11, then 古八\'s 09-dabi', () => {
@@ -99,9 +99,10 @@ test('every board pays what the plan names: 修为 for cultivation, a pill or �
   assert.deepEqual(Object.values(t('jiuge-yubu').marks), ['yubu', 'yubu'], 'the mark `yubu` either way (no line reads it yet)');
   assert.equal(CH.scenes['09-snow'].exits[0].grant.item, 'huochai-jian');
   assert.equal(CH.scenes['09-xie'].exits[0].grant.item, 'shunfeng-liu');
-  const lc = CH.scenes['09-lingcao'].exits[0].grant, sp = CH.scenes['09-futian'].exits[0].grant;
+  const lc = CH.scenes['09-lingcao'].exits[0].grant, sp = t('futian-spar').grant;
   assert.deepEqual([lc.progress, lc.wealth], [undefined, 20], '犰狳: the book\'s 「每人二十块灵石」 — no story 修为 (2026-10-16)');
-  assert.deepEqual([sp.table, sp.progress, sp.wealth], ['trial', undefined, 20]);
+  assert.deepEqual([sp.table, sp.progress, sp.wealth], ['task', 5, 10], '秦雁\'s bout, 格斗 since 2026-10-28: a board\'s 修为, its 灵石 at the task cap');
+  assert.equal(CH.scenes['09-futian'].exits[0].grant, undefined);
 });
 
 test('walking 古七 by its boards and fights: 修为 rises at each cultivation board, the realm 四 → 五 → 六 by his own work behind each gate, never by a choice', () => {
@@ -139,11 +140,10 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   assert.equal(s.scene, '09-nianyao');
   s = go(YEARS['09-nianyao'].reduce((x, id) => play(x, id), s), 'on'); // 年五's seven boards (2026-10-27)
   assert.equal(s.scene, '09-futian');
-  const door = look(s, content, ctx()).scene.exits.find((e) => e.id === 'spar').duel;
-  assert.match(door.creature.goal, /整座崖，没有台边/, '秦雁 on the 崖顶: the scene\'s goal over the 大比\'s');
-  assert.equal(resolve(s, content, ctx(), { exit: 'spar' }).result.refused, 'game-not-won', 'the autumn waits on her bout');
+  // 秦雁's monthly bout: 格斗 since 2026-10-28 (Hanli: 「故事里的战斗可以用格斗」) — the board futian-spar, the cliff's own level.
+  assert.equal(resolve(s, content, ctx(), { exit: 'spar' }).result.ok, false, 'the autumn waits on her bout');
   const before = s.progress;
-  s = go({ ...s, wins: { ...s.wins, 'futian-qinyan': NOW.toISOString() } }, 'spar');
+  s = go(play(play(s, 'futian-suifeng'), 'futian-spar'), 'spar');
   assert.deepEqual([s.scene, s.step], ['09-dabi', 6], '那年秋天 — 古八 opens on 六层圆满, earned; 七层 is ground in 古八');
   assert.ok(s.progress >= before, 'the bout takes nothing');
 });

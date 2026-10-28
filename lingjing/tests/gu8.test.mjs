@@ -70,7 +70,7 @@ test('the boards: 考书 and 看炉 in 09-dabi, the years\' twenty in theirs —
     assert.deepEqual(y.exits.map((e) => e.needs), [{ task: ids.at(-1) }], `${id} waits on its last board`);
     for (const t of ids) assert.ok(content.tasks.tasks.some((x) => x.id === t), t);
   }
-  assert.equal(Object.values(YEARS).flat().length, 20);
+  assert.equal(Object.values(YEARS).flat().length, 20); // the years' 拼图 became 华容道, 2026-10-28 (Hanli: 「拼图也少一点」)
   const dabi = CH.scenes['09-laba'].exits.find((e) => e.id === 'dabi');
   assert.equal(dabi.needs, undefined, 'a fight\'s way on has nothing but the win before it');
   assert.ok(!(CH.scenes['09-laba'].show ?? []).some((c) => c.card === 'board'), '09-laba: the year\'s boards are 09-dingfeng\'s');
@@ -123,4 +123,17 @@ test('the 九节 pot is the 回\'s own: before 古八 the 十年黄精 is only a
   const recipe = content.fantong.recipes.list.find((r) => r.id === 'jiujie');
   assert.deepEqual([recipe.in, recipe.out, recipe.n, recipe.hui], ['huangjing-10', 'qi-pill-3', 3, 'h09']);
   assert.equal(content.items.items.find((i) => i.id === 'huangjing-10').kind, 'material');
+});
+
+// 一剑出去 (09-dingfeng's last board, the way on waits on it): 照着走 level 4 where 几何冲刺 stood (2026-10-28, Hanli: 「气走经脉也少一点」)
+// — the longest and quickest run yet, past 09-shenshi's level 3; a human-like hand walks it.
+test('一剑出去 is 照着走 level 4, past 纸雀儿\'s 3, and a human-like hand walks it', async () => {
+  const t = content.tasks.tasks.find((x) => x.id === 'dingfeng-songzhi');
+  assert.deepEqual([t.game, t.deal.lv], ['simon', 4]);
+  assert.equal(content.tasks.tasks.find((x) => x.id === 'shenshi-zhique').deal.lv, 3);
+  const S = await import('../scripts/games/simon.js');
+  const { bot } = await import('../scripts/games/bots/simon.js');
+  const { playModule } = await import('../tools/board-bots.mjs');
+  assert.ok(S.LEVELS[4].to > S.LEVELS[3].to && S.LEVELS[4].on < S.LEVELS[3].on);
+  assert.ok(playModule(S, bot, { tries: 3, deal: t.deal, limit: 600000 }).won);
 });

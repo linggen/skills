@@ -12,6 +12,8 @@
 // Levels by number (a task's `deal.lv`; else `level`):
 //   0  the nine squares each once, in an order the seed picks, ending in 中五 — runs 4 → 9 (a first meeting: 古七's 崖顶)
 //   1  any squares, 3 → 10          2  any squares, 4 → 14, quicker          3  any squares, 5 → 18, quicker still
+//   4  any squares, 6 → 20, quicker again (古八's 09-dingfeng)
+//   5  any squares, 4 → 16, between 2 and 3 (古七's 09-futian: 随风 walked again and again on the 巽 square)
 // A deal's `lines` ({zh, en}: ready · start · show · go · step · trip · quiet · loudly · skipped) are the story's words
 // for its stop; the kit's own stand where it gives none. Grade: quiet (no trip) · loud.
 // Pure: newGame / act / tick / html / stuck / sounds; `mount` is mount.js mountPure.
@@ -29,6 +31,8 @@ export const LEVELS = {
   1: { walk: 'free', from: 3, to: 10, on: 560, off: 200 },
   2: { walk: 'free', from: 4, to: 14, on: 480, off: 170 },
   3: { walk: 'free', from: 5, to: 18, on: 420, off: 150 },
+  4: { walk: 'free', from: 6, to: 20, on: 380, off: 135 }, // 古八's 一剑出去 (2026-10-28, in 几何冲刺's place): the longest and quickest
+  5: { walk: 'free', from: 4, to: 16, on: 450, off: 160 }, // 古七's 随风 on the 巽 square (09-futian, 2026-10-28): between levels 2 and 3
 };
 export const LEAD = 700; // ms before a run is shown (the eye finds the board)
 export const QUICKEN = [5, 9, 13]; // the original's: the run quickens at these steps

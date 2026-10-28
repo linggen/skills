@@ -348,7 +348,7 @@ test('keyboard-only: Q/E cycle the picked block in reading order, Esc puts it ba
 test('the story levels in games.json: each layout solvable, none over 20 moves', async () => {
   const { readFileSync } = await import('node:fs');
   const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url)));
-  const STORY = { crowd: [16, 13], jingtai: [14, 17, 17], kouzi: [12, 15, 19], wali: [12, 15, 19], yading: [17, 18, 19], kunzhen: [18, 19, 20], xilang: [19, 20, 20] }; // kunzhen · xilang: 古八's years, 2026-10-28
+  const STORY = { crowd: [16, 13], jingtai: [14, 17, 17], kouzi: [12, 15, 19], wali: [12, 15, 19], yading: [17, 18, 19], kunzhen: [18, 19, 20], xilang: [19, 20, 20], tiaoshui: [14, 16, 17], shiqiang: [14, 16, 17], shanmen: [17, 18, 19], 'yaoyuan-ye': [17, 18, 19], zhengdian: [17, 18, 19], laosong: [18, 19, 20], lazhu: [18, 19, 20], kehen: [17, 18, 19], shenshi: [18, 19, 20], mingce: [18, 19, 20] }; // kunzhen · xilang: 古八's years, 2026-10-28; the rest where a 拼图 or a 几何冲刺 stood (2026-10-28, Hanli: 「拼图也少一点」 · 「气走经脉也少一点」), each its 回's band: 古四 14–17, 古七 17–19, 古八 18–20
   const seen = ladderOf(reg);
   assert.deepEqual(seen.map((l) => l.id).sort(), Object.keys(STORY).sort());
   for (const l of seen) assert.deepEqual(l.layouts[1].map((g) => solve(parseLayout(g))?.length), STORY[l.id], l.id);

@@ -292,3 +292,63 @@ test('a blow shows its strike frame exactly while it can land; loops go round at
   assert.deepEqual([0, 100, 200, 300].map((e) => frameOf(loop, e)), ['x', 'y', 'z', 'x']);
   assert.equal(frameOf({ frames: ['p', 'q'], fps: 10 }, 5000), 'q');
 });
+
+/* 流云剑 · 整座崖 (09-fangshi, 2026-10-28, Hanli: 「故事里的战斗可以用格斗」): 秦雁 on the cliff, 「这回的台子是整座崖，没有台边」
+   — no slick, no edge push, no palm; a bout to stand through (`outlast`), ending as the book's 「头一场，不到二十招，她的剑尖便
+   停在了他心口上」. A human-like hand stands it; a masher, a wall of blocks and an idle hand go down. */
+test('流云剑 · 整座崖: an outlast bout on the cliff — no slick, no edge, no palm; stood through, her point rests at his heart', () => {
+  const r = REG.games.find((g) => g.task === 'fangshi-liuyun' && !g.replaced);
+  assert.equal(r.id, 'fighter');
+  assert.equal(r.mechanic, '格斗');
+  assert.equal(r.group, 'h11');
+  const L = r.levels[0], d = { levels: [L] };
+  assert.equal(L.stage.oil, false);
+  assert.ok(L.outlast.moves >= 15, 'twenty moves, as the book counts them');
+  assert.match(L.won.clean.zh, /剑尖停在了他心口上/);
+  assert.ok(L.lines.outlast.zh && L.lines.outlast.en);
+  const task = TASKS.find((t) => t.id === 'fangshi-liuyun');
+  assert.equal(task.game, 'fighter');
+  assert.deepEqual(task.how, r.how);
+  // A bout with no slick: the edge push and the palm never come, she never leaves the stage, and the end is 'outlast'.
+  let s = F.newGame('cliff', 1, d), saw = { edge: false, palm: false };
+  for (let t = 0; t < 120000 && s.live; t += 10) { const a = bot(s); if (a) s = press(s, a); s = run(s, 10); saw.edge ||= Boolean(s.edge); saw.palm ||= Boolean(s.palm); }
+  assert.deepEqual(saw, { edge: false, palm: false });
+  const h = playModule(F, bot, { tries: 3, deal: d, limit: 180000 });
+  assert.ok(h.won, `lost all three: ${JSON.stringify(h.runs)}`);
+  assert.ok(playModule(F, bot, { tries: 3, deal: d, limit: 180000, reaction: 320 }).won, 'a slower hand (320 ms) too');
+  const mash = (x) => (x.end ? null : { g: (x.t / 150 | 0) % 2 ? 'light' : 'heavy' });
+  const wall = (x) => (x.in.block ? null : { g: 'block', on: true });
+  for (const [name, b] of [['mash', mash], ['wall', wall], ['idle', () => null]]) assert.ok(!playModule(F, b, { tries: 3, deal: d, limit: 180000 }).won, `${name} won`);
+});
+
+test('an outlast bout is graded by what is left of him; the 大比\'s bout (the slick) is untouched by it', () => {
+  const L = REG.games.find((g) => g.task === 'fangshi-liuyun').levels[0];
+  let s = F.newGame('g', 1, { levels: [L] });
+  s = { ...s, me: { ...s.me, hp: 40 }, foe: { ...s.foe, moves: L.outlast.moves, act: null, stun: 0 } };
+  s = run(s, 10);
+  assert.equal(s.end?.kind, 'outlast');
+  s = run(s, 3000);
+  assert.deepEqual([s.won, s.grade, s.stars], [true, 'clumsy', 2]);
+  assert.equal(LEVEL.outlast, undefined, '迎剑 is won only over the slick');
+});
+
+/* 秦雁's monthly bout (09-futian, 2026-10-28): the card duel (her outlast trial) as 格斗 — the cliff again, longer than 流云剑's
+   twenty and harder; the way on waits on the board. */
+test('撑过她的剑 · 你又跑: 09-futian\'s bout is a 格斗 board, a longer outlast than 流云剑\'s; a human-like hand stands it, the rest go down', () => {
+  const r = REG.games.find((g) => g.task === 'futian-spar' && !g.replaced);
+  const liu = REG.games.find((g) => g.task === 'fangshi-liuyun').levels[0];
+  assert.deepEqual([r.id, r.mechanic, r.group, r.scene], ['fighter', '格斗', 'h11', '09-futian']);
+  const L = r.levels[0], d = { levels: [L] };
+  assert.equal(L.stage.oil, false);
+  assert.ok(L.outlast.moves > liu.outlast.moves, 'more of her moves than 流云剑');
+  assert.ok(L.foe.rules.moves.thrust.dmg > liu.foe.rules.moves.thrust.dmg, 'and heavier');
+  const sc = read('../worlds/jiuding/chapters/00-zhuji/scenes/09-futian.json');
+  assert.deepEqual(sc.show.at(-1), { card: 'board', id: 'futian-spar' }, 'the bout is the scene\'s last board');
+  assert.equal(sc.exits[0].game, undefined, 'no card duel left: the bout is played once');
+  assert.equal(sc.exits[0].needs.task, 'futian-spar');
+  assert.ok(playModule(F, bot, { tries: 3, deal: d, limit: 180000 }).won, 'a human-like hand');
+  assert.ok(playModule(F, bot, { tries: 3, deal: d, limit: 180000, reaction: 320 }).won, 'a slower hand (320 ms) too');
+  const mash = (x) => (x.end ? null : { g: (x.t / 150 | 0) % 2 ? 'light' : 'heavy' });
+  const wall = (x) => (x.in.block ? null : { g: 'block', on: true });
+  for (const [name, b] of [['mash', mash], ['wall', wall], ['idle', () => null]]) assert.ok(!playModule(F, b, { tries: 3, deal: d, limit: 180000 }).won, `${name} won`);
+});

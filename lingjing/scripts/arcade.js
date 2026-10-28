@@ -19,8 +19,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时', rhythm: '节奏', stats: '游戏记录', numbers: '数值', rhythmNote: '沿主线：读了多少字、玩了什么 · 条越长读得越久，红的超过 {cap} 字', same: (k) => `连着两个${k}`, longest: '最长', roaming: '游荡斗法', side: '支线斗法', chars: '字' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there', rhythm: 'Rhythm', stats: 'Play log', numbers: 'Numbers', rhythmNote: 'Along the main line: what is read, what is played · a longer bar is a longer read; red is over {cap} characters', same: (k) => `Two ${k} in a row`, longest: 'longest', roaming: 'roaming fights', side: 'side fights', chars: 'chars' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时', rhythm: '节奏', byKind: '按类型', byStory: '按故事', zhuli: '主力', story: '故事', stats: '游戏记录', numbers: '数值', rhythmNote: '沿主线：读了多少字、玩了什么 · 条越长读得越久，红的超过 {cap} 字', same: (k) => `连着两个${k}`, longest: '最长', roaming: '游荡斗法', side: '支线斗法', chars: '字' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there', rhythm: 'Rhythm', byKind: 'By kind', byStory: 'By story', zhuli: 'Featured', story: 'Story', stats: 'Play log', numbers: 'Numbers', rhythmNote: 'Along the main line: what is read, what is played · a longer bar is a longer read; red is over {cap} characters', same: (k) => `Two ${k} in a row`, longest: 'longest', roaming: 'roaming fights', side: 'side fights', chars: 'chars' },
 };
 const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
@@ -48,10 +48,16 @@ const howOf = (mod, row) => forInput(row?.how?.[lang()] ?? row?.how?.zh ?? mod?.
 // A scratch save (`save=`) rides along so the way back lands on that save, not the player's own.
 const fromGame = q.get('from') === 'game';
 const save = /^[\w-]+$/.test(q.get('save') ?? '') ? q.get('save') : null;
-// The 节奏 view keeps its place across the language switch; nothing else carries `view` (a game opened from it is a game).
-const view = q.get('view') === 'rhythm' ? 'rhythm' : null;
+/* Two views, a tab each in the header (Hanli 10-28: 「游戏厅改成两个视图, 1个是按照类型排, 第二个按照故事排. 就是节奏那一页」):
+   按类型 (`kind`, the grid) and 按故事 (`story`, the 节奏 page folded in; the old `?view=rhythm` opens it). The tab last
+   opened is this viewer's (localStorage, a convenience: a blocked store opens 按类型); the view rides the language switch. */
+const VIEW_KEY = 'lingjing.arcade.view';
+const VIEWS = { kind: 'kind', story: 'story', rhythm: 'story' };
+const storeGet = () => { try { return localStorage.getItem(VIEW_KEY); } catch { return null; } };
+const storeSet = (v) => { try { localStorage.setItem(VIEW_KEY, v); } catch { /* a blocked store: nothing kept */ } };
+const view = VIEWS[q.get('view')] ?? VIEWS[storeGet()] ?? 'kind';
 const kept = (en = lang() === 'en') => ({ dev: '1', ...(en ? { lang: 'en' } : {}), ...(fromGame ? { from: 'game' } : {}), ...(save ? { save } : {}) });
-const langHref = () => `?${new URLSearchParams({ ...kept(lang() !== 'en'), ...(view ? { view } : {}) })}`;
+const langHref = () => `?${new URLSearchParams({ ...kept(lang() !== 'en'), view })}`;
 const href = (extra = {}) => `?${new URLSearchParams({ ...kept(), ...extra })}`;
 const home = () => (fromGame ? `<a class="arcade-home" href="index.html${save ? `?save=${save}` : ''}">${esc(w().home)}</a>` : '');
 
@@ -103,7 +109,7 @@ async function levelsOf(g) {
     const kit = await kitOf();
     return g.ladder.map((id) => ({ lv: id, name: name((kit?.levels ?? []).find((l) => l.id === id) ?? { id }) }));
   }
-  if (g.group !== 'main') return []; // the main games' ladders; a board's own deals are not levels to pick
+  if (!LADDERS.has(g.group)) return []; // the kits' ladders (兽潮 · 主力 · 结印 · 练习); a board's own deals are not levels to pick
   const numbered = (ls) => ls.map((l, k) => ({ lv: String(k + 1), name: name(l) }));
   if (Array.isArray(g.levels)) return numbered(g.levels.filter((l) => !l.story && !l.realm)); // a story level (守炉's 药园巡夜) has its own tile, off the ladder
   return numbered(((await kitOf())?.levels ?? []).filter((l) => !l.story)); // 守墙关's story level (药园巡夜 · 开春) is the story's, off the ladder
@@ -134,22 +140,39 @@ async function oldHtml(reg) {
   return `<details class="arcade-old"><summary>${esc(w().old)} <span class="dim small">${rows.length}</span></summary><div class="arcade-grid">${tiles.join('')}</div></details>`;
 }
 
-async function listPage() {
-  const reg = await registry();
-  const groups = await Promise.all(reg.groups.map(async (gr) => {
-    const rows = reg.games.map((g, i) => [g, i]).filter(([g]) => g.group === gr.id && !g.replaced);
-    if (!rows.length) return '';
-    const tiles = await Promise.all(rows.map(([g, i]) => tileHtml(g, i)));
-    return `<section><h2>${esc(gr[lang()] ?? gr.zh)}</h2><div class="arcade-grid">${tiles.join('')}</div></section>`;
-  }));
-  root.innerHTML = `<header class="arcade-head"><h1>${esc(w().title)}</h1><span class="dim small">${esc(w().note)}</span>`
-    + `<a class="arcade-view" href="${href({ view: 'rhythm' })}">${esc(w().rhythm)}</a>`
+/* The groups whose rows are kits with ladders, and the story's own groups (a 回 each; their rows are drawn by kind here,
+   by 回 in 按故事). */
+const LADDERS = new Set(['tide', 'main', 'seal']);
+const isStory = (gr) => /^h\d|^jin$/.test(gr?.id ?? gr ?? '');
+/* The header both views share: the two tabs, then the 数值 and 游戏记录 pages, the language. */
+function headHtml() {
+  const tab = (v, label) => `<a class="arcade-tab${view === v ? ' is-on' : ''}" href="${href({ view: v })}"${view === v ? ' aria-current="page"' : ''}>${esc(label)}</a>`;
+  return `<header class="arcade-head"><h1>${esc(w().title)}</h1><span class="dim small">${esc(w().note)}</span>`
+    + `<nav class="arcade-tabs">${tab('kind', w().byKind)}${tab('story', w().byStory)}</nav>`
     // 数值 (tools/numbers.mjs's report, Hanli 10-27: 「全局校验游戏数值」): its own page, the 游戏厅's dev gate kept.
     + `<a class="arcade-view" href="arcade-numbers.html${href()}">${esc(w().numbers)}</a>`
     // 游戏记录 (stats.html): the play log read back — the save's own when the arcade came from a test save.
     + `<a class="arcade-view" href="stats.html?dev=1${save ? `&save=${encodeURIComponent(save)}` : ''}">${esc(w().stats)}</a>`
-    + `<a class="arcade-lang" href="${langHref()}">${esc(w().lang)}</a>${home()}</header>`
-    + `${kindsHtml(reg.games.filter((g) => !g.replaced))}${groups.join('')}${await oldHtml(reg)}`;
+    + `<a class="arcade-lang" href="${langHref()}">${esc(w().lang)}</a>${home()}</header>`;
+}
+const section = (title, tiles) => `<section><h2>${esc(title)}</h2><div class="arcade-grid">${tiles.join('')}</div></section>`;
+/* 按类型: the kits' groups first (兽潮 · 主力 · 结印 · 练习, then the rest), then the story's boards by their kind, each
+   kind a section (「故事 · 塔防」…) in the order the book first meets it. */
+async function listPage() {
+  const reg = await registry();
+  const live = reg.games.map((g, i) => [g, i]).filter(([g]) => !g.replaced);
+  const kits = await Promise.all(reg.groups.filter((gr) => !isStory(gr)).map(async (gr) => {
+    const rows = live.filter(([g]) => g.group === gr.id);
+    return rows.length ? section(gr[lang()] ?? gr.zh, await Promise.all(rows.map(([g, i]) => tileHtml(g, i)))) : '';
+  }));
+  const kinds = new Map();
+  for (const gr of reg.groups.filter(isStory)) for (const [g, i] of live.filter(([x]) => x.group === gr.id)) {
+    const k = g.mechanic ?? '';
+    if (!kinds.has(k)) kinds.set(k, []);
+    kinds.get(k).push([g, i]);
+  }
+  const story = await Promise.all([...kinds].map(async ([k, rows]) => section(`${w().story} · ${kindOf({ mechanic: k })}`, await Promise.all(rows.map(([g, i]) => tileHtml(g, i))))));
+  root.innerHTML = headHtml() + `${kindsHtml(live.map(([g]) => g))}${kits.join('')}${story.join('')}${await oldHtml(reg)}`;
   for (const b of root.querySelectorAll('.arcade-kindchip')) b.onclick = () => filterBy(b.dataset.kind);
 }
 
@@ -232,12 +255,16 @@ function beatHtml(it) {
   const name = pickL(it.title) || (it.kind === 'riddle' ? it.id : '');
   const to = LINK[it.kind]?.(it);
   const tag = to ? 'a' : 'span';
-  const chip = `<${tag} class="rh-chip${LINK[it.kind] ? '' : ' is-muted'}" data-kind="${esc(it.mechanic ?? '')}"${to ? ` href="${esc(to)}"` : ''}>`
-    + `${it.art ? `<img src="../worlds/jiuding/${esc(it.art)}" alt="" loading="lazy">` : ''}<b>${esc(name || kind)}</b>${name && kind ? `<em>${esc(kind)}</em>` : ''}</${tag}>`;
+  // 主力 (the row's game a kit of 兽潮 or 主力: tools/arcade-rhythm.mjs `zhuli`) marked; the level it deals beside its kind.
+  const tags = [name && kind ? kind : '', it.level ?? ''].filter(Boolean).join(' · ');
+  const chip = `<${tag} class="rh-chip${LINK[it.kind] ? '' : ' is-muted'}${it.zhuli ? ' is-zhuli' : ''}" data-kind="${esc(it.mechanic ?? '')}"${to ? ` href="${esc(to)}"` : ''}>`
+    + `${it.art ? `<img src="../worlds/jiuding/${esc(it.art)}" alt="" loading="lazy">` : ''}<b>${esc(name || kind)}</b>${tags ? `<em>${esc(tags)}</em>` : ''}`
+    + `${it.zhuli ? `<i class="rh-zhuli">${esc(w().zhuli)}</i>` : ''}</${tag}>`;
   return `<li class="rh-beat">${chip}${it.same ? `<span class="rh-same">⚠ ${esc(w().same(kind))}</span>` : ''}</li>`;
 }
 function huiHead(h) {
   const counts = Object.entries(COUNTED[lang()]).filter(([k]) => h.counts[k]).map(([k, label]) => `${label} ${h.counts[k]}`);
+  if (h.zhuli) counts.push(`${w().zhuli} ${h.zhuli}`);
   const extra = [h.roaming ? `${w().roaming} ${h.roaming}` : '', h.side.length ? `${w().side} ${h.side.length}` : '', h.longest ? `${w().longest} ${h.longest}` : ''];
   return `<h3 class="rh-hui-head">${esc(pickL(h.label))}<span>${esc([...counts, ...extra].filter(Boolean).join(' · '))}</span></h3>`;
 }
@@ -247,13 +274,13 @@ async function rhythmPage() {
   const t = r?.ok ? await r.json() : { cap: 1500, chapters: [] };
   const chapters = t.chapters.filter((c) => c.huis.some((h) => h.items.length)).map((c) => `<section class="rh-chapter"><h2>${esc(pickL(c.title))}</h2>`
     + `<div class="rh-huis">${c.huis.map((h) => huiHtml(h, t.cap)).join('')}</div></section>`);
-  root.innerHTML = `<header class="arcade-head"><a href="${href()}">${esc(w().back)}</a><h1>${esc(w().rhythm)}</h1>`
-    + `<a class="arcade-lang" href="${langHref()}">${esc(w().lang)}</a>${home()}</header>`
+  root.innerHTML = headHtml()
     + `<p class="dim small rh-note">${esc(w().rhythmNote.replace('{cap}', t.cap))}</p>${chapters.join('')}`;
 }
 
-const PAGES = { rhythm: rhythmPage };
+const PAGES = { kind: listPage, story: rhythmPage };
 if (devOnly(q)) {
   document.title = `灵境 · ${w().title}`;
-  if (q.get('game')) playPage(q.get('game'), q.get('n')); else (PAGES[view] ?? listPage)();
+  if (q.get('game')) playPage(q.get('game'), q.get('n'));
+  else { storeSet(view); PAGES[view](); }
 } else root.textContent = '—';

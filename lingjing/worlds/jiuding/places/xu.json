@@ -575,7 +575,7 @@
     0.8375,
     0.409
    ],
-   "has": {"games_pool": {"from": ["pintu", "wuziqi"], "today": 1}},
+   "has": {"games_pool": {"from": ["huarong", "wuziqi"], "today": 1}},
    "line": {
     "zh": "外门的院子：晒着的柴，井边的水桶，周衡的账本。",
     "en": "The outer court: firewood drying, buckets by the well, Zhou Heng's ledger."
@@ -711,7 +711,7 @@
     0.8432,
     0.4046
    ],
-   "has": {"games_pool": {"from": ["wuziqi", "pintu"], "today": 1}},
+   "has": {"games_pool": {"from": ["wuziqi", "huarong"], "today": 1}},
    "line": {
     "zh": "外门的讲堂：一排排矮桌，褚先生的山羊胡子一翘一翘。每日辰时上课。",
     "en": "The outer court's lecture hall: rows of low desks, and Master Chu's goat beard bobbing. Lessons every morning at the hour of the dragon."
@@ -796,7 +796,7 @@
    ],
    "has": {
     "creature": "zheng",
-    "games_pool": {"from": ["yaoyuan-zhuochong", "pintu"], "today": 1}
+    "games_pool": {"from": ["yaoyuan-zhuochong", "huarong"], "today": 1}
    },
    "line": {
     "zh": "药园一片银白。最里面那株最贵的紫玉参旁边，夜里常有「咔嚓、咔嚓」的声音。园门上挂着一块牌子：药园重地，偷者必究。",

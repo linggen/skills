@@ -64,10 +64,6 @@
   },
   {
    "card": "board",
-   "id": "dianmao-tiaoshui"
-  },
-  {
-   "card": "board",
    "id": "dianmao-yaoyuan"
   },
   {
@@ -82,7 +78,6 @@
    "dianmao-canju",
    "dianmao-jiangtang",
    "dianmao-maxiaobao",
-   "dianmao-tiaoshui",
    "dianmao-yaoyuan",
    "dianmao-ahe"
   ]

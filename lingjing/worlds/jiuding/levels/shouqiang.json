@@ -637,6 +637,163 @@
     [["yezhu", 9, 0.8, 0], ["yezhu", 5, 0.6, 5]],
     [["yezhu", 12, 0.55, 0], ["yezhu", 8, 0.45, 6]]
    ]
+  },
+  {
+   "id": "xunye",
+   "kit": "shouqiang",
+   "story": "wm-xunye",
+   "jieyin": false,
+   "_story": "断肋 · 半个月 (2026-10-28, Hanli: 「主力的意思是多用」 · 「气走经脉也少一点」; doc/zhuli-placement-2026-10-28.md): wm-xunye's board, was 几何冲刺 `duanlei-dash` — the half month of night watches on a broken rib (「那以后的半个月，沈小满是断着一根肋骨巡的夜」), a defense beat. The player's first 药园 lane board: 聚灵阵 and 剑符 only, 野猪 only (the 狰 was tamed the night before, wm-yaoyuan), 银月 asleep in the 木牌, so every line is the level's own. A touch harder than 兽潮's 药园 · 头一夜 (hpMul 2.0 against 1.6, four waves), gentler than 药园巡夜 · 开春 (第七回, 狰 and 土墙). Bots, 30 seeds ln0–ln29: human 30/30 (★ 2–3), sharp 30/30, lazy 0/30.",
+   "place": "yaoyuan",
+   "opening": false,
+   "art": {
+    "bg": "yaoyuan-bg",
+    "wall": "yaoyuan-wall"
+   },
+   "leadSec": 8,
+   "between": 6,
+   "wall": 1000,
+   "wallY": 770,
+   "rangeY": 196,
+   "spawnY": 96,
+   "approach": 4,
+   "guard": 70,
+   "grid": {
+    "cols": 5,
+    "rows": 5,
+    "top": 300,
+    "bottom": 760
+   },
+   "ling": 50,
+   "sky": {
+    "first": 5,
+    "every": 10,
+    "amount": 25
+   },
+   "autoCollect": 7,
+   "difficulty": 1,
+   "stars": [
+    0.7,
+    0.35
+   ],
+   "title": {
+    "zh": "断肋 · 半个月的夜",
+    "en": "The broken rib · Half a month of nights"
+   },
+   "lead": [
+    {
+     "zh": "那天夜里，子时，他翻不过墙，照旧从豁口里爬出去，爬到药园。",
+     "en": "That night at midnight he couldn't get over the wall, so he crawled out through the gap as before, all the way to the herb garden."
+    },
+    {
+     "zh": "肋骨疼，一口气吸不到底。",
+     "en": "His rib hurts; he can't draw a breath all the way down."
+    },
+    {
+     "zh": "点一张符，再点一格畦地，布下去。",
+     "en": "Tap a talisman, then a patch of bed, to set it."
+    },
+    {
+     "zh": "野猪拱进园子了！",
+     "en": "Boars in the garden!",
+     "big": true
+    }
+   ],
+   "units": [
+    "juling",
+    "jian"
+   ],
+   "fresh": "jian",
+   "twist": "yezhu",
+   "hpMul": 2.0,
+   "growth": 0.04,
+   "huge": [
+    4
+   ],
+   "teach": [
+    "lane",
+    "twist",
+    "wave_cleared",
+    "low",
+    "win"
+   ],
+   "_teach": "Every moment is the level's own line: 银月 sleeps in the 木牌 (wm-zhishi: 「……带根萝卜去。」便又睡了).",
+   "moments": {
+    "lane": [
+     {
+      "zh": "野猪下山了——守住中间这一畦。",
+      "en": "Boars off the mountain. Hold the middle bed."
+     }
+    ],
+    "twist": [
+     {
+      "zh": "野猪认准一畦往下拱。那一畦，先放剑符！",
+      "en": "A boar keeps to its bed. Put a sword talisman in that one!"
+     }
+    ],
+    "wave_cleared": [
+     {
+      "zh": "挑一张！",
+      "en": "Pick one!"
+     },
+     {
+      "zh": "小狰蹲在他脚边，冲着黑地里，一声不吭。",
+      "en": "The little zheng crouches at his feet, facing the dark, without a sound."
+     }
+    ],
+    "low": [
+     {
+      "zh": "墙根要守不住了！",
+      "en": "The wall's foot is giving!"
+     }
+    ],
+    "win": [
+     {
+      "zh": "两个人的数，半个月没差过一株。",
+      "en": "Their two counts didn't differ by a single plant in half a month."
+     }
+    ]
+   },
+   "waves": [
+    [
+     [
+      "yezhu",
+      3,
+      12,
+      24,
+      2
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      5,
+      7,
+      3,
+      [
+       1,
+       2,
+       3
+      ]
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      6,
+      5,
+      3
+     ]
+    ],
+    [
+     [
+      "yezhu",
+      8,
+      3.5,
+      3
+     ]
+    ]
+   ]
   }
  ]
 }

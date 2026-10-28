@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 637,
-  "wealth": 846,
+  "wealth": 826,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -405,11 +405,6 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
-   "dianmao-tiaoshui": {
-    "status": "done",
-    "period": "once",
-    "done_at": "2026-10-01T01:00:00.000Z"
-   },
    "dianmao-yaoyuan": {
     "status": "done",
     "period": "once",
@@ -682,8 +677,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2480,
-   "wealth": 849
+   "progress": 2474,
+   "wealth": 829
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1161,7 +1156,6 @@
     "dianmao-canju": 1,
     "dianmao-jiangtang": 1,
     "dianmao-maxiaobao": 1,
-    "dianmao-tiaoshui": 1,
     "dianmao-yaoyuan": 1,
     "dianmao-ahe": 1,
     "zhishi-zhouheng": 1,
@@ -1225,7 +1219,6 @@
    "dianmao-canju",
    "dianmao-jiangtang",
    "dianmao-maxiaobao",
-   "dianmao-tiaoshui",
    "dianmao-yaoyuan",
    "dianmao-ahe",
    "zhishi-zhouheng",

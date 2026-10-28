@@ -37,6 +37,11 @@
 //
 // The grade: `clean` when no palm landed on him, `clumsy` when one did (the level's `won` lines say which); stars 3
 // clean, 2 clumsy, 1 clumsy with little left of him. Lost at hp 0.
+//
+// A bout to stand through (`outlast: { moves: N }`, 2026-10-28: 秦雁 on the cliff — 「这回的台子是整座崖，没有台边」): won
+// when she has made N moves and he is still up (`end.kind` 'outlast'; her point comes to rest, the book's 「她的剑尖便停在了
+// 他心口上」). Graded by what is left of him: `clean` from OUTLAST_CLEAN of his 血, else `clumsy`; stars 3 · 2 · 1 at
+// OUTLAST_STARS. A stage with no slick (`stage.oil: false`) has no edge to leave by: she never goes off it.
 
 export const STEP_MS = 10; //   one physics step; tick(ms) runs as many as fit (the same ms → the same bout)
 export const BUF_MS = 300; //   how long a press waits for his hands to be free (a chain's next blow, a fast thumb)
@@ -52,6 +57,8 @@ export const HOP_MS = 130; // W let go this soon: a short hop
 
 /* The stage, in units: the boards from `left` to `right`, the slick at the left edge (the corner he chose). */
 export const STAGE = { w: 960, left: 140, right: 930, oil: { from: 140, to: 250 } };
+export const OUTLAST_CLEAN = 0.6; // an outlast bout's `clean`: this share of his 血 or more left
+export const OUTLAST_STARS = [0.6, 0.3]; // ★3 from the first share left, ★2 from the second, else ★1
 
 /* His moves (frames in ms): startup · active · recover; reach in units; dmg to her 稳; push (units); stun on her;
    `hit`: what a blow is called in sounds (hit · heavy). `cancel`: may be cut short into the next blow once it lands. */
@@ -88,7 +95,7 @@ export const FOE = {
   // `driveThrust`, `poke`); `chain`: a poke that lands runs on into a thrust; `qiGain` how fast her 气 fills, `qi0` what
   // she starts with; `edge` / `palmOn` false switch those tricks off (a foe with no blade at his throat).
   ai: { think: 300, block: 0.3, soft: 10, softBy: 0.5, drive: 40, palm: 0.45, qi: 0.6, ice: 0.5, back: 0.35, closePoke: 0.75,
-    thrust: 0.3, driveThrust: 0.5, poke: 0.75, chain: 0, qiGain: 1, qi0: 0, edge: true, palmOn: true },
+    thrust: 0.3, driveThrust: 0.5, poke: 0.75, chain: 0, qiGain: 1, qi0: 0, edge: true, palmOn: true, chip: 0.25 }, // chip: the share of a blow a guard still takes
 };
 
 /* ── A seeded random source (mulberry32), kept in the state as one integer. ── */
@@ -152,6 +159,7 @@ export const foeOnOil = (s) => onOil(s, s.foe.x);
 /* The slick lies at one edge: the left one when it is nearer the left. Its edge is at her back when he stands on the
    other side of her from it. */
 const oilBehind = (s) => {
+  if (!s.R.stage.oil) return false; // no slick (the cliff): no edge to leave by
   const oilAtLeft = s.R.stage.oil.from - s.R.stage.left <= s.R.stage.right - s.R.stage.oil.to;
   return onOil(s, s.foe.x) && side(s) === (oilAtLeft ? -1 : 1);
 };
@@ -490,7 +498,7 @@ function foeStrikes(s) {
     fx(s, 'qi', foe.x, a.k === 'jianqi' ? 40 : 120, { to: foe.x - side(s) * m.reach, big: a.k === 'jianqi' });
     if (dist(s) > m.reach || me.stun > s.t + 300 || me.down > s.t || safe(s)) return;
     const soft = foe.moves <= R.foe.ai.soft ? R.foe.ai.softBy : 1; // 头十招，她只使了五分力
-    if (guarded(s, Math.round(m.dmg * soft * 0.25), m.push)) return;
+    if (guarded(s, Math.round(m.dmg * soft * (R.foe.ai.chip ?? 0.25)), m.push)) return; // a blow stood off: its chip (`ai.chip`)
     hurtMe(s, Math.round(m.dmg * soft), m.push, m.stun ?? 400, { down: m.down ?? 0 });
     if (a.k === 'poke' && R.foe.ai.chain > 0 && roll(s) < R.foe.ai.chain) { foe.chain = s.t; foe.think = s.t; a.m = { ...a.m, recover: Math.min(a.m.recover, 120) }; }
   }
@@ -668,7 +676,7 @@ function bodies(s, dt) {
   me.x = Math.min(hi, Math.max(lo, me.x));
   if (!s.end) {
     const slipping = onOil(s, foe.x) && Math.abs(foe.vx) > 300;
-    if ((foe.x < R.stage.left || foe.x > R.stage.right) && slipping && oilBehind({ ...s, foe: { ...foe, x: Math.min(R.stage.oil.to, Math.max(R.stage.oil.from, foe.x)) } })) out(s);
+    if ((foe.x < R.stage.left || foe.x > R.stage.right) && slipping && R.stage.oil && oilBehind({ ...s, foe: { ...foe, x: Math.min(R.stage.oil.to, Math.max(R.stage.oil.from, foe.x)) } })) out(s);
     else foe.x = Math.min(hi, Math.max(lo, foe.x));
     if (!s.end && !rolling && Math.abs(foe.x - me.x) < GAP - 1) { if (me.x <= lo + 0.5 || me.x >= hi - 0.5) foe.x = me.x + sd * GAP; else me.x = foe.x - sd * GAP; }
   }
@@ -726,7 +734,12 @@ function endStep(s) {
   }
   if (s.t - e.at < END_MS) return;
   s.live = false;
-  if (e.won) {
+  if (e.kind === 'outlast') {
+    const left = s.me.hp / s.R.me.hp;
+    s.won = true;
+    s.grade = left >= OUTLAST_CLEAN ? 'clean' : 'clumsy';
+    s.stars = left >= OUTLAST_STARS[0] ? 3 : left >= OUTLAST_STARS[1] ? 2 : 1;
+  } else if (e.won) {
     s.won = true;
     s.grade = s.palmLanded ? 'clumsy' : 'clean';
     s.stars = s.palmLanded ? (s.me.hp >= 30 ? 2 : 1) : 3;
@@ -763,6 +776,11 @@ function step(s) {
   if (s.combo.n && s.foe.stun <= s.t && s.t - s.combo.at > 200) s.combo = { ...s.combo, n: 0 };
   if (me.hp <= 0 && !s.end) { s.end = { kind: 'down', at: s.t, won: false }; me.down = s.t + END_MS * 2; say(s, 'lost'); bump(s, 'down'); }
   if (!s.end) sparEnd(s);
+  if (!s.end && s.level.outlast?.moves && s.foe.moves >= s.level.outlast.moves && !busy(s.foe, s.t) && !s.edge && !s.palm) {
+    s.end = { kind: 'outlast', at: s.t, won: true }; // she has made her moves and he stands: her point comes to rest
+    s.foe.vx = 0; me.vx = 0;
+    say(s, 'outlast');
+  }
   if (s.cue && s.t - s.cue.at > 900) s.cue = null;
 }
 

@@ -91,7 +91,7 @@ test('one look, ink: the 3D one is gone (Hanli 10-21: 「3D的直接不用就行
   const rows = json('../worlds/jiuding/games.json').games.filter((g) => g.id === 'texie');
   assert.deepEqual(rows.map((r) => r.data.cutin), ['ink'], 'one tile in the 游戏厅');
   assert.ok(!fs.existsSync(new URL('../scripts/games/texie/vrm.js', import.meta.url)) && !fs.existsSync(new URL('../scripts/vendor/three-vrm-0.176.0-3.5.4.min.mjs', import.meta.url)), 'no 3D code left');
-  assert.ok(rows.every((r) => r.group === 'main' && r.mechanic === '结印' && !r.scene && !r.task), 'test-only: no scene, no task');
+  assert.ok(rows.every((r) => r.group === 'seal' && r.mechanic === '结印' && !r.scene && !r.task), 'test-only: no scene, no task');
 });
 
 const canvasDoc = (gl) => ({ createElement: () => ({ getContext: () => (gl ? {} : null) }) });

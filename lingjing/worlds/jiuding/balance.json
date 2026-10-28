@@ -351,6 +351,8 @@
     "chars_per_min": 450,
     "minutes": {"scene": 1, "board": 2, "fight": 4, "fantong": 1, "tale": 15},
     "fight_win_rate": 0.8,
+    "_fight_games": "2026-10-28: a story board played as a fight (格斗: the 秦雁 bouts, tools/balance.mjs bookWalk) takes a fight's minutes and retries, not a board's — it stands where a card fight stood (09-futian).",
+    "fight_games": ["fighter"],
     "fantong_progress": 3,
     "fantong_from": "wm-danlu",
     "errands_at": {
@@ -426,7 +428,11 @@
       "heavy": [1.5, 6],
       "light": [8, 21],
       "_except": "Since 2026-10-16 the story raises no layer: every 层 is ground. With `layer_pay` (修为 by the layer) every 回 from 古四 sits in the one typical band, 5–7.5 days — save 古五 (h07), allowed down to 4.5: the smooth curve keeps 二层 cheap so 古六's two layers fit (see `_layer_pay`). Lowered to 4 on 2026-10-16: the boards cut before 入门 (Hanli 「减少数量, 推动剧情」) shorten the opening, and 古五 lands 4.3 typical days. 2026-10-26: with the book's full text, 古四 (h05) reads 7.7 typical days and 古六 (h08) 10.1 — allowed to 8 and 10.5 until the new small games land and the 层 are re-fit (fit._hold). 2026-10-26 (全文后的小游戏 第二批): 古六's nine new boards add their minutes to the light player (19 → 22 days); its light band allowed to 24, its typical to 11, its heavy to 6.5 while fit._hold keeps 古四–古六 at 470…530. 第八回 (h09)'s three boards (考书 · 用哪颗丹 · 恬惔虚无) lift its typical 7.1 → 7.8, and 今四's six (it rides with 古八) to 8.1: allowed to 8.5, the same hold. 2026-10-27 (pay as a share of the layer, play_pay): a fight won pays its minutes of play (练气四层 ≈ 12, was 30 × layer_pay 3 = 90), so this model — which plays fights, 闭关, the 功课 and, held at a stage quest, practice boards (`practice`) — runs 古六–古八 long (typical 13 · 10.1 · 12.6 days); the bands are widened to what it prints until the 层 are re-fit or the practice share is played in full (doc/games.md § Pay as a share of the layer). 2026-10-27 (数值系统 phase 2): the hours are fitted to the bands (master.lines.gu.hours.fit), so 古六–古八 (h08 · h11 · h09) are back in the one band and their widenings are gone; 古五's light player reads 7.9 days with the rerun run only while it raises him — its light band from 7.5. 古七 (h11) reads 4.5 typical days on the curve's 五–六层 (4 · 4.5 h): dearer layers would stretch it into 5–7.5 only by keeping him at 09-futian's gate (Hanli 10-27: no gate may keep him where there is little to do) — allowed from 4 until its book is longer. 2026-10-28 (妖兽出没: a batch of 3 fights pays as one, and the 层 refit by numbers --apply): 古七 (h11)'s light player reads 7.9 days — allowed from 7.5, as 古五's.",
-      "except": {"h05": {"typical": [5, 8]}, "h07": {"typical": [4, 7.5], "light": [7.5, 21]}, "h11": {"typical": [4, 7.5], "light": [7.5, 21]}}
+      "except": {
+        "h05": {"typical": [5, 8]},
+        "h07": {"typical": [4, 7.5], "light": [7.5, 21]},
+        "h11": {"typical": [4, 7.5], "light": [7.5, 21]}
+      }
     },
     "waking_h": 16,
     "_pills": "灵石 out (2026-10-16): the pills a player carries into a fight and eats — `pills` per fight a player, bought at the mean shelf price of `pills_bought`, only with what he has (tools/balance.mjs --wealth prints the flow).",
@@ -435,7 +441,7 @@
   "_play_pay": "Every 修为 pay is a share of the layer he stands on (Hanli 2026-10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」, then 「一层才要470修为, 我们可否按照百分比奖励, 这样等级高了后, 奖励也合理」; doc/games.md § Pay as a share of the layer; rules/playpay.mjs). A layer is a play-time budget (`hours`, derived since 2026-10-27: the master table's curve — 练气一层 2 h, +0.5 h a layer; 筑基 4 h, +2 h a realm — with the layers a 回 holds fitted to its band and 古五's 渡口 to the gate rule, master.mjs fitHours). The small games and fights carry `games.share` (60%) of its 修为 over `games.time` (35%) of its minutes: a board of m minutes pays m ÷ (0.35 × the layer's minutes) × 60% of the layer's need — 练气一层 a 1-minute board 1.4% (7), a 6-minute 棋牌 8.6% (40) at 2 h; a fight won (`haunt`) its `fight.minutes`. ★ 0.6 · 0.8 · 1.0; the same board again the same day 100 · 50 · 10%. Errands: 15% of the layer over 10% of its time, by `errand.minutes` (练气一层 6.3%, 29). 人间功课 (`chore`): a day's 10%, a week's 20%, a month's 30% of the layer (练气一层 47 · 94 · 141; Hanli 2026-10-27: 「cfo倒入账单应该是每月任务」 — rarer, so more), no ★, no replay. What the book authors — a scene's way on, a pill, a rumor, a 机缘, the tables in `authored.tables` — is read as a share of the 练气一层 it was written against (`authored.base` 470: a scene's 60 is 12.8%). 灵石 stays by the kind and the tables. No daily cap; 修为 stops at the gate and turns to 灵石 (`convert` lists `play` and `haunt`). Supersedes the per-layer `rate` tables and `layer_pay` for fights (2026-10-27).",
   "play_pay": {
     "hours": {
-      "qi": [0, 1.507, 0.772, 0.747, 0.878, 1.003, 1.129, 0.724, 0.796, 0.868],
+      "qi": [0, 1.448, 0.772, 0.747, 0.955, 1.091, 1.228, 0.747, 0.821, 0.896],
       "foundation": 4,
       "core": 6,
       "nascent": 8,

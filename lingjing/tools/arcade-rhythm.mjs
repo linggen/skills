@@ -34,20 +34,34 @@ async function sources() {
   const reg = read('../worlds/jiuding/games.json'), kapai = read('../worlds/jiuding/levels/kapai.json');
   const pieceIds = new Set(Object.values(content.chapters).flatMap((ch) => timelineOf(ch).filter((b) => b.kind === 'piece').map((b) => b.id)));
   const pieces = Object.fromEntries(await Promise.all([...pieceIds].map(async (id) => [id, (await import(`../scripts/setpieces/${id}.js`).catch(() => null))?.TITLE ?? null])));
-  return { content, reg, kapai, pieces, tasks: new Map(content.tasks.tasks.map((t) => [t.id, t])) };
+  return { content, reg, kapai, pieces, tasks: new Map(content.tasks.tasks.map((t) => [t.id, t])), zhuli: zhuliGames(reg) };
 }
 
 /* What may not come twice in a row: the mechanic, or for a kit with subtypes (塔防) the game itself. */
 const BY_GAME = new Set(['塔防']);
 const varietyOf = (mechanic, game) => (BY_GAME.has(mechanic) && game ? `${mechanic}·${game}` : mechanic);
 
+/* 主力 (Hanli 10-28: 「主力的意思是多用」): a board whose game is a kit of the 兽潮 or 主力 groups (games.json `group`, the
+   kit's own row — no task). Read off the registry, never a list kept here. */
+const ZHULI_GROUPS = new Set(['tide', 'main']);
+const zhuliGames = (reg) => new Set(reg.games.filter((g) => !g.task && !g.replaced && ZHULI_GROUPS.has(g.group)).map((g) => g.id));
+/* The level a board deals, by its id where it has one (a kit's level, a 残局, a chat): what the 按故事 row names beside its kind. */
+const levelOf = (task, row) => {
+  const d = task?.deal ?? {}, data = row?.g.data ?? {};
+  const v = d.lv ?? d.level ?? d.puzzle ?? d.chat ?? data.level ?? data.lv ?? row?.g.levels?.[0]?.id ?? null;
+  return v == null ? null : String(v);
+};
 /* A board: its task's title, and the row that plays it (the task's own game first; a row the story replaced never). */
 function boardOf(src, b) {
   const task = src.tasks.get(b.id);
   const rows = src.reg.games.map((g, n) => ({ g, n })).filter(({ g }) => g.task === b.id && !g.replaced);
   const row = rows.find(({ g }) => g.id === (task?.game ?? b.id)) ?? rows[0];
   const mechanic = row?.g.mechanic ?? task?.game ?? b.id;
-  return { title: both((l) => pick(task?.title, l) ?? pick(row?.g.name, l) ?? b.id), mechanic, variety: varietyOf(mechanic, row?.g.id), ...(row ? { game: row.g.id, n: row.n } : {}) };
+  const level = levelOf(task, row);
+  return {
+    title: both((l) => pick(task?.title, l) ?? pick(row?.g.name, l) ?? b.id), mechanic, variety: varietyOf(mechanic, row?.g.id),
+    ...(row ? { game: row.g.id, n: row.n } : {}), ...(level ? { level } : {}), ...(src.zhuli.has(row?.g.id) ? { zhuli: true } : {}),
+  };
 }
 function fightOf(src, b) {
   const key = `${b.id}@${b.scene}/${b.exit}`;
@@ -122,7 +136,8 @@ function tally(src, sec, done) {
   const first = !done.has(sec.id);
   done.add(sec.id);
   const longest = Math.max(0, ...sec.items.filter((x) => x.kind === 'read').map((x) => x.run));
-  return { ...sec, counts, longest, roaming: first ? fights.filter((f) => !f.story).length : 0, side: first ? fights.filter((f) => f.story && !walked.has(f.key)).map((f) => f.key) : [] };
+  const zhuli = sec.items.filter((x) => x.zhuli).length;
+  return { ...sec, counts, zhuli, longest, roaming: first ? fights.filter((f) => !f.story).length : 0, side: first ? fights.filter((f) => f.story && !walked.has(f.key)).map((f) => f.key) : [] };
 }
 
 export async function table() {

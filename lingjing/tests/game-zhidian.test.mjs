@@ -214,5 +214,5 @@ test('the module: meta, pausable; the camera asked only by eye.js after 开始, 
   assert.doesNotMatch(src, /zd-sight|准星 follows/, 'no crosshair');
   assert.match(src, /field = focus\(field, Number\(el\.dataset\.id\)\)/, 'a tap on a beast aims the eggs at it');
   const reg = JSON.parse(read('../worlds/jiuding/games.json'));
-  assert.ok(reg.games.some((g) => g.id === 'zhidian' && g.group === 'main' && g.mechanic === '结印'));
+  assert.ok(reg.games.some((g) => g.id === 'zhidian' && g.group === 'seal' && g.mechanic === '结印'));
 });

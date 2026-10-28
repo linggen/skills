@@ -111,7 +111,8 @@ export function bookWalk(content, model = content.balance.model) {
       const side = sideHui(content, sc.hui) ? huiOf(content, sc.hui).line : null;
       out.push({
         chapter: ch.id, id: sc.id, hui: sc.hui ?? null,
-        minutes: text / model.chars_per_min + m.scene + boards.length * m.board + fight * m.fight / model.fight_win_rate,
+        // a board played as a fight (`model.fight_games`: 格斗) takes a fight's minutes and its retries, not a board's
+        minutes: text / model.chars_per_min + m.scene + boards.reduce((n, t) => n + ((model.fight_games ?? []).includes(t.game) ? m.fight / model.fight_win_rate : m.board), 0) + fight * m.fight / model.fight_win_rate,
         boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0), nboards: boards.length,
         // A 今 board pays the 今 line (rules/lines.mjs): never the 古 ledger this walk keeps, nor 灵石 — `line` and its boards
         // (`line_tasks`) are for the 今 column (tools/numbers.mjs). Until 2026-10-28 the model paid them to the 古.

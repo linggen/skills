@@ -92,6 +92,14 @@ body { overflow: auto; }
 .arcade [data-kind="斗法"] { --kc: var(--fire); }
 .arcade-view { border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; margin-left: auto; }
 .arcade-view + .arcade-lang { margin-left: 0; }
+.arcade-view + .arcade-view { margin-left: 0; }
+/* The two views (按类型 · 按故事), a tab each; the one shown is filled. */
+.arcade-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.arcade-tabs .arcade-tab { padding: 2px 12px; }
+.arcade-tabs .arcade-tab.is-on { background: var(--ling); color: var(--surface); }
+/* A 主力 board in 按故事: its chip a heavier edge and a small mark. */
+.rh-chip.is-zhuli { border-width: 2px; }
+.rh-zhuli { font-style: normal; font-size: 10px; padding: 0 5px; border-radius: 999px; background: var(--kc, var(--ling)); color: var(--surface); white-space: nowrap; }
 .rh-note { margin: 0 0 8px; }
 .rh-chapter h2 { margin-top: 22px; }
 .rh-huis { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px 18px; align-items: start; }

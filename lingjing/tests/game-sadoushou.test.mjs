@@ -28,7 +28,7 @@ test('registered beside 撒豆成兵 (main, 塔防, tall); its ladder off the st
   assert.equal(meta.id, 'sadoushou');
   assert.ok(both(meta.name) && both(meta.how) && meta.tall && meta.pause);
   const row = reg.games.find((g) => g.id === 'sadoushou');
-  assert.ok(row && row.group === 'main' && row.mechanic === '塔防');
+  assert.ok(row && row.group === 'tide' && row.mechanic === '塔防'); // 兽潮's four (Hanli 10-28: 「主力塔防作为兽潮的游戏」)
   assert.ok(!row.scene && !row.task && !row.hui, 'not in the story');
   assert.equal(reg.games.indexOf(row), reg.games.findIndex((g) => g.id === 'sadou') + 1, 'tiled right after 撒豆成兵, to compare');
   assert.doesNotMatch(readFileSync(at('worlds/jiuding/qiyu.json'), 'utf8'), /sadoushou/, 'not in the 秘境 pool');

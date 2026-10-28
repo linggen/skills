@@ -43,15 +43,15 @@ The story's backbone: 格斗 at fights, TD at defense beats, 抚琴/太鼓 at mu
 | 第三回 | 1 | 2 | 0 | 1 | 7 |
 | 第四回 | 3 | 4 → 2 | 2 → 0 | 1 → 2 | 18 → 17 |
 | 今·二 | 2 | 2 | 0 | 0 | 5 |
-| 第五回 | 6 → 5 | 2 | 0 | 0 | 13 |
+| 第五回 | 6 | 2 | 0 | 0 | 13 |
 | 第六回 | 4 | 1 | 0 | 1 (+ 结印 teaching) | 13 |
 | 今·三 | 2 | 1 | 0 | 0 | 5 |
-| 第七回 | 3 → 2 | 0 | 4 → 0 | 1 → 3 | 23 |
-| 第八回 | 1 | 3 → 1 | 3 → 0 | 1 | 24 → 22 |
+| 第七回 | 3 → 2 | 0 | 4 → 0 | 1 → 3 | 23 → 25 |
+| 第八回 | 1 | 3 → 1 | 3 → 0 | 1 | 24 |
 | 今·四 | 2 | 2 | 0 | 0 | 6 |
 | 第九回 | 0 | 2 | 0 | 1 | 7 |
 
-第七回's 主力 3 counts 09-futian's bout as 格斗 (step 4 below, its own commit).
+第七回's 主力 3 counts 09-futian's bout, now a 格斗 board where the card fight stood.
 
 Where a 回 is still over a cap after this plan, see **Over the cap, kept: for Hanli** below. Each of those boards plays the passage's own action. Swapping it would need a new kit or a new fighter's frames.
 
@@ -63,40 +63,41 @@ Where a 回 is still over a cap after this plan, see **Over the cap, kept: for H
 |---|---|---|---|---|
 | `xunye-duanlei` 断肋 | 第四回 · wm-xunye | 几何冲刺 | **守墙关** story level `xunye` (药园, 野猪 only; his rib broken, so the wall is thin) | 「那天夜里，子时……爬到药园，在巡夜簿上十三夜那一格，按了一个手印」: the half month of night watches is a defense beat. It is harder than 守白菜 and 抬鹿下山, and gentler than 药园巡夜 · 开春 (第七回). |
 | `fangshi-liuyun` 流云剑 · 整座崖 | 第七回 · 09-fangshi | 打地鼠 | **格斗** level `liuyun` (秦雁 on the cliff, no stage edge; outlast her sword) | 「这回的台子是整座崖，没有台边」 and 「头一场，不到二十招，她的剑尖便停在了他心口上」. The bout is to stand through her sword. Its end lines end where the book does: her point rests at his heart. |
-| 09-futian's 秦雁 bout (exit `spar`, card duel `futian-qinyan`) | 第七回 · 09-futian | 斗法 | **格斗** level `futian` (the cliff again; longer, she is seventh-layer harder) | 「秦雁照旧一月上来一回」: her monthly bout, a one-on-one duel with a person. Its own commit after `liuyun` lands. If it cascades, it is listed as pending. |
+| `futian-spar` (new; was the exit's card duel `futian-qinyan`) | 第七回 · 09-futian | 斗法 | **格斗** level `futian`: the cliff again, twenty-four moves, heavier | 「秦雁照旧一月上来一回」: her monthly bout, a one-on-one duel with a person. The way on waits on it; the card fight is gone, so the bout is played once. |
 
 ### Classics
 
 | Board (task) | 回 · scene | Was | Now | Why |
 |---|---|---|---|---|
-| `shiting-fanban` 别踩第三块 | 第五回 · wm-shiting | 打地鼠 | **照着走**, its own level `fanban` (the easiest: short runs) | The 翻板 gallery is a path to repeat step by step: 照着走's own action. |
-| `dianmao-jiangtang` 讲堂 | 第四回 · wm-dianmao (pool) | 拼图 | **华容道** level `jiangtang` | Spaces 象棋 → 五子. |
-| `dianmao-yaoyuan` 墙里的药园 | 第四回 · wm-dianmao (pool) | 拼图 | **华容道** level `yaoyuan` | Spaces 五子 → 五子. |
-| `suifeng-shanmen` 山门 | 第七回 · 09-suifeng (pool; the exit waits on it) | 拼图 | **华容道** level `shanmen` | The exit's board; swapped, not dropped. |
-| `nianyao-yaoyuan` 夜里的药园 | 第七回 · 09-nianyao (pool) | 拼图 | **华容道** level `yaoyuan-ye` | Spaces 象棋 → 五子. |
-| `nianyao-jingshi` 正殿 | 第七回 · 09-nianyao (pool) | 拼图 | **华容道** level `zhengdian` | Spaces 象棋 → 五子. |
-| `shenshi-qingshen` 轻身 | 第八回 · 09-shenshi (pool; the exit waits on it) | 几何冲刺 | **华容道** level `laosong` | The exit's board. |
-| `dingfeng-yading` 崖顶的蜡烛 | 第八回 · 09-dingfeng (pool) | 拼图 | **华容道** level `lazhu` | Spaces 五子 → 五子. |
-| `dingfeng-songzhi` 一剑出去 | 第八回 · 09-dingfeng (pool; the exit waits on it) | 几何冲刺 | **照着走**, its own level (the longest runs yet) | The exit's board; it follows 象棋, so it is not a 棋牌. |
+| `dianmao-jiangtang` 讲堂 | 第四回 · wm-dianmao (pool) | 拼图 | **华容道** `tiaoshui` · 挑水 · 矮石墙外头 (the water carriers' pieces, 井台's) | Spaces 象棋 → 五子. |
+| `dianmao-yaoyuan` 墙里的药园 | 第四回 · wm-dianmao (pool) | 拼图 | **华容道** `shiqiang` · 矮石墙 · 墙里的药园 | Spaces 五子 → 五子. |
+| `suifeng-shanmen` 山门 | 第七回 · 09-suifeng (pool; the exit waits on it) | 拼图 | **华容道** `shanmen` · 山门 · 扫帚靠回墙角 | The exit's board; swapped, not dropped. |
+| `nianyao-yaoyuan` 夜里的药园 | 第七回 · 09-nianyao (pool) | 拼图 | **华容道** `yaoyuan-ye` · 夜里的药园 · 东角那三棵禾 | Spaces 象棋 → 五子. |
+| `nianyao-jingshi` 正殿 | 第七回 · 09-nianyao (pool) | 拼图 | **华容道** `zhengdian` · 正殿 · 屋脊的瓦缝 (the rubble's pieces: rafter, bricks, tiles) | Spaces 象棋 → 五子. |
+| `shenshi-qingshen` 轻身 | 第八回 · 09-shenshi (pool; the exit waits on it) | 几何冲刺 | **华容道** `laosong` · 老松 · 挂在树杈里 (「一头扎进了老松的树杈里，挂在那里，上不去，下不来」) | The exit's board. |
+| `suifeng-yading` 崖顶 | 第七回 · 09-suifeng (pool) | 拼图 | **华容道** `kehen` · 老松 · 那一道刻痕 | Spaces 五子 · 秦雁 from 照着走; keeps 年四's sitting. |
+| `futian-suifeng` (new) | 第七回 · 09-futian | — | **照着走** level 5 (4 → 16, between 年五's 2 and 年六's 3) | 「他自己站在巽那一格上……把随风那一式一遍一遍地走」, on the board's own clifftop. It keeps 年五's sitting now that 秦雁's bout is one board. |
+| `shenshi-jiangtang` 讲堂 | 第八回 · 09-shenshi (pool) | 拼图 | **华容道** `shenshi` · 讲堂 · 下了课 (the crowd's pieces) | Keeps 年六's sitting. |
+| `yanceng-mingce` 执事堂 | 第八回 · 09-yanceng (pool) | 拼图 | **华容道** `mingce` · 执事堂 · 内门的名册 (the crowd's pieces) | Keeps 年八's sitting. |
+| `dingfeng-yading` 崖顶的蜡烛 | 第八回 · 09-dingfeng (pool) | 拼图 | **华容道** `lazhu` · 崖顶的蜡烛 · 等它吹完 | Spaces 五子 → 五子. |
+| `dingfeng-songzhi` 一剑出去 | 第八回 · 09-dingfeng (pool; the exit waits on it) | 几何冲刺 | **照着走** level 4 (6 → 20 squares, the quickest yet; on 瞿老's own cliff, the board's painting) | The exit's board; it follows 象棋, so it is not a 棋牌. |
 
-New 华容道 layouts: each grid is proved by `huarong.js solve`. The fewest moves climb by 回: 第四回 < 第七回 < 第八回.
+New 华容道 layouts come from a seeded generator, each grid proved by `huarong.js solve` and asserted in `tests/game-huarong.test.mjs`: 第四回 14 · 16 · 17, 第七回 17 · 18 · 19, 第八回 18 · 19 · 20 moves (the story's cap is 20).
 
 ### Dropped (pool boards only)
 
-`dianmao-tiaoshui` (几何冲刺) · `suifeng-yading` (拼图) · `shenshi-jiangtang` (拼图) · `yanceng-mingce` (拼图).
+`dianmao-tiaoshui` (几何冲刺) only. The other pool 拼图 became 华容道 after all: dropping them made the refit cut 古八's layers so short that a day's 秘境 passed a fifth of 七层 (`tests/mijing.test.mjs`).
 
 ### 拼图 in the 观内 pools
 
 | Place | Pool before | Pool after |
 |---|---|---|
-| 外门 | 拼图 · 五子 | 象棋 · 五子 |
-| 讲堂 | 五子 · 拼图 | 五子 · 象棋 |
-| 饭堂 | 拼图 · 华容道 | 象棋 · 华容道 |
-| 柴房 | 华容道 · 拼图 · 赶黄鼠狼 | 华容道 · 赶黄鼠狼 |
+| 外门 | 拼图 · 五子 | 华容道 · 五子 |
+| 讲堂 | 五子 · 拼图 | 五子 · 华容道 |
 | 药园 | 捉虫 · 拼图 | 捉虫 · 华容道 |
-| 藏经阁 | 华容道 · 拼图 | Kept. The scriptures are pieced together there. |
+| 藏经阁 · 柴房 · 饭堂 | 拼图 kept | The east wall's 杂役 tags piece a worm-eaten scroll, a rotted door god and the stove god back together there, and a tag asks its place to host the board. |
 
-The east wall's 杂役 tags keep their 拼图: a worm-eaten scroll, a rotted door god and a stove god are each pieced back together.
+象棋 stays at the 执事堂 only: it has three endgames a level, so it is not spread over the pools (`tests/guan-rotation.test.mjs`).
 
 ## Over the cap, kept: for Hanli
 
@@ -108,7 +109,7 @@ The east wall's 杂役 tags keep their 拼图: a worm-eaten scroll, a rotted doo
 | 第三回 | 三百级 · 测灵石 (几何冲刺) | 气 | 三步一吸三步一呼 on the steps; the 气 hidden at the stone. |
 | 第四回 | 小周天 · 铁刷子 (几何冲刺) | 气 | The first 周天; 褚先生's probe through the channels. |
 | 第四回 | 一拳 · 一根萝卜 · 一根牛骨头 | small | The punch at the 青石, the 狰 taming, and the 饭桶's first feeding. |
-| 第五回 | 凶崖 · 隐身符 · 暗河 · 谷粒 · 一根萝卜 | small | 暗河 and 踏马符 (几何冲刺) are 邹青松's fight. They move to 格斗 once he has frames (below). The rest are the 秘境's own actions. |
+| 第五回 | 别踩第三块 · 凶崖 · 隐身符 · 暗河 · 谷粒 · 一根萝卜 | small | 暗河 and 踏马符 (几何冲刺) are 邹青松's fight. They move to 格斗 once he has frames (below). The rest are the 秘境's own actions. 别踩第三块 would fit 照着走, but that board is painted as 瞿老's clifftop, not the 秘境's gallery. |
 | 第六回 | 喷嚏符 (何七) · 接镜 (马小宝) · 风掉头 (祁长松) | small | Each is a 大比 bout's climax. They move to 格斗 once those fighters have frames. |
 | 今·一 · 二 · 四 | one 几何冲刺 over the cap each | 气 | 沈芒's line is about breath. 那一圈 · 卧推 · 最后一罚 are its own runs. A swap would want a 今-line classic. |
 | 第九回 | 一口气 · 嗓子 (几何冲刺) | 气 | The breath held to the bottom of the 漳水; 阿禾's 气 sent into the girl's throat. |
@@ -147,3 +148,19 @@ Two tabs in the header, remembered per viewer:
 - **按故事**: the 节奏 page folded in. One section a 回 (第一回…第九回, 今·一…今·四), boards in reading order. Each row shows its kind, a 主力 mark and its level; a tap plays it. The page keeps the reading bars, the counts and the warnings.
 
 The old 节奏 link (`?view=rhythm`) opens 按故事.
+
+## Gates and the model (after the refit)
+
+`tools/balance.mjs` now counts a 格斗 board (`model.fight_games`) at a fight's minutes and retries, not a board's: it stands where a card fight stood. Without that, 古七's light player read 7.7 days, under the 8–21 band.
+
+| Gate | Session wait before | After |
+|---|---|---|
+| wm-chaifang (第四回) | 10m | 10m |
+| wm-qianye (第六回) | 7m | 7m |
+| 09-furnace (第七回) | 0 | 1m |
+| 09-futian (第七回) | 9m | 9m |
+| 09-dingfeng (第八回) | 3m | 0 |
+| 09-yanceng (第八回) | 0 | 6m |
+| the rest | 0 | 0 |
+
+Typical arrival is 100% at every gate, before and after.

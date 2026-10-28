@@ -189,6 +189,7 @@ function paintStage(ctx, st) {
 
 /* The banners on their poles behind the boards: 大比 · 沉鼎, swaying. */
 function banners(ctx, t, look = {}) {
+  if (look.banners === false) return; // the cliff: no 大比 banners
   for (const [x, word, color] of [[260, look.bannerA ?? '大比', '#8e2b22'], [820, look.bannerB ?? '沉鼎', '#2f3a40']]) {
     ctx.strokeStyle = '#3a2e22'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.moveTo(x, FLOOR); ctx.lineTo(x, 170); ctx.stroke();
@@ -397,6 +398,7 @@ const CROUCHED = { light: 'clight', lkick: 'clkick', hpunch: 'chpunch', heavy: '
 /* His clip now: [clip, start (ms on the bout's clock, or null: since the clip began), the move]. */
 function meClip(s) {
   const me = s.me, t = s.t, a = me.act;
+  if (s.end?.kind === 'outlast') return ['idle', 0]; // he stood through it; her point rests at his heart
   if (s.end) return won(s.end) ? ['win', s.end.at] : ['lose', s.end.at];
   if (me.down > t) return ['knock', null];
   if (me.stun > t && !me.guard) return ['hit', null];
@@ -838,7 +840,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
     } else figure(ctx, s.me.x, meY, s.me.face, mp, meLook, meExtra);
     effects(ctx, s);
     ctx.setTransform(k, 0, 0, k, 0, 0);
-    crowd(ctx, s.t, view.lift);
+    if (s.level?.stage?.look?.crowd !== false) crowd(ctx, s.t, view.lift); // the cliff has no crowd below it
     // the bars' ghosts fall behind the bars
     view.ghostMe = Math.max(s.me.hp / s.R.me.hp, view.ghostMe - 0.006 * dtf);
     view.ghostFoe = Math.max(s.foe.bal / s.R.foe.bal, view.ghostFoe - 0.006 * dtf);

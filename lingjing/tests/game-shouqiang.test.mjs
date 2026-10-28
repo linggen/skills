@@ -706,3 +706,27 @@ test('抬鹿下山, a touch harder (第二回): the human hand wins most, not al
   assert.ok(lazy.every((r) => !r.won), 'no card at all: the boars overturn the door');
   assert.ok(human.every((r) => r.t >= 60 && r.t <= 120), `a minute and a half: ${human.map((r) => r.t)}`);
 });
+
+/* 断肋 · 半个月的夜 (wm-xunye, 2026-10-28, Hanli: 「主力的意思是多用」 · 「气走经脉也少一点」): the half month of night watches on
+   a broken rib, a defense beat — 第四回's board where 几何冲刺 stood. The player's first 药园 lane board: 聚灵阵 and 剑符,
+   野猪 only, every line the level's own (银月 asleep in the 木牌); harder than 兽潮's 药园 · 头一夜, gentler than 开春. */
+test('断肋 · 半个月的夜: a story row of wm-xunye — 野猪 only, 聚灵阵 and 剑符, off the 兽潮 and the ladder; a first-timer always holds it', async () => {
+  const row = kit.levels.find((l) => l.id === 'xunye');
+  assert.equal(row.story, 'wm-xunye');
+  const { tideRows } = await import('../scripts/rules/shouchao.mjs');
+  assert.ok(!tideRows(kit).includes(row), '兽潮 skips a story row');
+  assert.deepEqual([...new Set(row.waves.flat().map(([b]) => b))], ['yezhu'], 'the 狰 was tamed the night before');
+  assert.deepEqual(row.units, ['juling', 'jian']);
+  assert.ok(row.teach.length && Object.keys(row.moments).every((m) => row.teach.includes(m)), 'every line the level\'s own: 银月 sleeps');
+  assert.ok(row.lead.some((l) => l.big) && row.lead.every((l) => l.zh && l.en));
+  const first = kit.levels.find((l) => l.id === 'yaoyuan-1'), spring = kit.levels.find((l) => l.id === 'yaoyuan-spring');
+  assert.ok(row.hpMul > first.hpMul && row.hpMul < spring.hpMul * 2, 'past 兽潮\'s first night, short of 开春');
+  const t = JSON.parse(readFileSync(at('worlds/jiuding/tasks/world.json'), 'utf8')).tasks.find((x) => x.id === 'xunye-duanlei');
+  assert.deepEqual([t.game, t.deal.lv], ['shouqiang', 'xunye']);
+  const hall = reg.games.find((x) => x.task === 'xunye-duanlei' && !x.replaced);
+  assert.ok(hall.id === 'shouqiang' && hall.group === 'h05' && hall.data.lv === 'xunye', 'the 游戏厅 row opens it by id');
+  const human = laneRun(row, 'human', 20), lazy = laneRun(row, 'lazy', 4);
+  assert.ok(human.every((r) => r.won), `a first-timer holds it: ${human.map((r) => r.stars).join('')}`);
+  assert.ok(human.some((r) => r.stars < 3), 'but not always clean');
+  assert.ok(lazy.every((r) => !r.won), 'the heroes alone never hold it');
+});

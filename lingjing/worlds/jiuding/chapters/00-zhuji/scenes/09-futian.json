@@ -55,55 +55,39 @@
     "en": "Qin Yan comes up the cliff — stand through her sword"
    },
    "means": "the monthly bout on the cliff: her 流云剑 move after move; just as he is about to lose his feet slide and he is out of the ring — 「你又跑」「我娘说，打不过就跑」; only with her can he say 「我怕」; 阿禾's page of dates, 「秦师姐，又来了」. Then that autumn: 七层, and 瞿老's 入隙 (the bluestone split along a seam he cannot see, 庖丁's 「以无厚入有间」); at New Year 周衡 begs the abbot again — 「要去，也得是个筑了基的」 — and stops outside the woodshed: 「他知道里头是谁」",
-   "game": {
-    "id": "futian-qinyan",
-    "kind": "duel",
-    "creature": "foe-shijie",
-    "retry": true,
-    "foe": {
-     "deck": [
-      "luying",
-      "luying",
-      "luying",
-      "hantan",
-      "changyou",
-      "hantan",
-      "luying",
-      "changyou",
-      "hanquan",
-      "hantan",
-      "shuiwu"
-     ],
-     "trial": {
-      "goal": {
-       "zh": "这回的台子是整座崖，没有台边。看她的脚，撑过八个回合，便算过了。",
-       "en": "This time the stage is the whole cliff, with no edge. Watch her feet; stand eight turns, and you have passed."
-      },
-      "survive": 8
-     },
-     "party": [],
-     "hp": 2.9
-    },
-    "_foe": "秦雁's outlast trial (creatures.json `foe-shijie`) as the 崖顶 has it — 「这回的台子是整座崖，没有台边」 (her own words on her first climb, 09-yishui) — weighed at 六层: by a player who thinks a turn ahead (fightline.js lookahead) her full twelve are outlasted 20% of the time with the 六层 hand the road deals, nine of them 100% (tools/story-fights.mjs `foe-shijie@09-futian/spar`), so the monthly bout is eleven of them (the 回气丹 out), about 52% the first time."
-   },
-   "withdrawn": {
-    "zh": "秦雁把剑收回鞘里：「下个月，我再来。」",
-    "en": "Qin Yan sheathes her sword: \"Next month, I'll come again.\""
-   },
-   "grant": {
-    "table": "trial",
-    "wealth": 20
-   },
-   "_grant": "The trial table's 灵石 20 (its 修为 30 went 2026-10-16: no story 修为).",
    "was_rise": 7,
    "_stage": "No story rise since 2026-10-16 (Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」): `was_rise` keeps the layer the book once lifted him to (state.mjs zeroLayer reads it); he earns it himself, behind the 阶段任务. Before: 阶段任务 (Hanli 2026-10-15): this way waits on 练气六层圆满 — the realm full at the layer he holds — before the book's rise (ladder.json caps.hui.h11.gates: {layer: 6, scene, exits}); year five on the cliff fills 六层; the bout won, that autumn the book carries him to 七层 and 入隙 (the fight may be fought before the bar is full; the way on waits on it).",
    "story": {
     "zh": "每一场收尾都差不多：眼看要输了，他脚底下一滑，人已经出了圈子。秦雁把剑收回鞘里：「你又跑。」小满道：「我娘说，打不过就跑。」秦雁嘴上嫌他，回回却都要看他那一滑——脚往哪里落，身子往哪边歪——看完了，便不再说什么。旁人只当他怕死，她知道那是他活命的本事。他跟谁都说说笑笑，只有跟她，说得出一句「我怕」；她听了，也不笑他。阿禾的小本子上，有一页记的全是日子，每个日子后头，跟着同一句：秦师姐，又来了。\n\n那年秋天，他七层了。瞿老教的是入隙——「巽，入也」，这三个字他头一课就听过了，到七层才教。瞿老把一块青石搁在地上，道：「你砍它一剑。」小满一剑砍下去，火星子迸了一地，剑弹了回来，石头上一道白印子。瞿老拿扫帚把在石头上慢慢地摸，摸到一处，停住，拿扫帚把尖轻轻一点，那块石头便顺着一道看不见的缝，「啪」地裂成了两半。「石头也有缝。」瞿老道，「你没看见，不是没有。」他念了一句书：「《庄子》{典=zhuangzi-wuhou}里有个庖丁，宰了十九年牛，刀还跟新磨的一样。他说：『彼节者有间，而刀刃者无厚，以无厚入有间。』牛有缝，刀没有厚，拿没有厚的，进有缝的。」他把扫帚把一收，「鯥那一回，缝在肉上，眼睛看得见。往上走，碰上的东西，缝在灵力上。你的剑有厚，你看不见缝。」\n\n那年除夕，周衡照旧去正殿求观主，求的还是那一件事：放他去邺城，把漳水上「河伯娶妇」那桩事给断了。邺城年年十月十八往漳水里扔一个姑娘，说是嫁给河伯；他阿姊，就是当年扔下去的一个。这件事，他求了一年又一年。观主照旧是那一句：「要去，也得是个筑了基的。」只是这一回，说完了，他往后殿静室那边看了一眼，没再往下说。\n\n周衡出了正殿，在廊下站了好一会儿。观主那一眼，他翻来覆去地算，算了半辈子账的人，没算明白。他往回走，路过柴房，门缝里透着一点光，有人在里头吐纳，一口一口，吸得极长。周衡在门外站了一站，没敲门。他知道里头是谁。",
     "en": "Every bout ended much the same: just as he was about to lose, his feet slid, and he was out of the ring. Qin Yan sheathed her sword: \"Running again.\" Xiaoman said, \"My Ma says, if you can't win, run.\" Qin Yan grumbled at him out loud, but every time she watched that slide of his, where the feet landed, which way the body leaned, and when she'd watched it she said no more. Others took him for a coward; she knew it was the skill that kept him alive. He joked and laughed with everyone; only with her could he say \"I'm scared,\" and when she heard it, she didn't laugh at him. In Ahe's little notebook there was one page that was all dates, and after every date the same line: Senior sister Qin, here again.\n\nThat autumn he reached the seventh layer. Elder Qu taught him entering the gap. \"Xun is entering\": he had heard those words in his first lesson, and only at the seventh layer was it taught. Elder Qu set a bluestone on the ground and said, \"Cut it.\" Xiaoman brought the sword down; sparks sprayed across the ground, the sword bounced back, and there was a white mark on the stone. Elder Qu ran the broom handle slowly over the stone, stopped at one place, and touched it lightly with the tip of the handle, and the stone split in two with a *crack* along a line no one could see. \"Stone has gaps too,\" said Elder Qu. \"You didn't see it; that doesn't mean it isn't there.\" He recited a line: \"In the *Zhuangzi*{典=zhuangzi-wuhou} there's Cook Ding, who butchered oxen for nineteen years, and his knife was still as if fresh from the whetstone. He said: 'The joints have spaces, and the blade has no thickness. Put what has no thickness into what has space.' The ox has gaps, the knife has no thickness; take the thing with no thickness into the thing with gaps.\" He drew the broom handle back. \"With the lu, the gap was in the flesh, and the eye could see it. Higher up, the things you meet, the gaps are in the spiritual power. Your sword has thickness. You can't see the gap.\"\n\nThat New Year's Eve Zhou Heng went to the main hall to plead with the Abbot as usual, and pleaded for the same thing: to let him go to Ye and put an end to the \"River Lord takes a bride\" business on the Zhang. Every year on the eighteenth of the tenth month, Ye threw a girl into the Zhang River, saying she was married to the River Lord; his sister had been one of the ones thrown in. He had pleaded for it year after year. The Abbot said the same thing as always: \"Whoever goes has to have Foundation Establishment.\" Only this time, when he'd said it, he glanced towards the quiet room in the back hall, and said no more.\n\nZhou Heng came out of the main hall and stood in the gallery a good while. That glance of the Abbot's, he worked over and over; a man who'd kept accounts half his life, and he couldn't make it come out. He walked back, and passing the woodshed saw a little light through the crack in the door. Someone inside was breathing out and in, breath after breath, drawing in very long. Zhou Heng stood outside the door a moment, and didn't knock. He knew who was in there."
    },
-   "next": "09-dabi"
+   "next": "09-dabi",
+   "_was_duel": "Until 2026-10-28 the card duel `futian-qinyan` (秦雁's outlast trial, 斗法, the trial table's 灵石 20); since, the 格斗 board `futian-spar` before the exit (Hanli: 「故事里的战斗可以用格斗」), so the bout is played once, as 格斗.",
+   "needs": {
+    "task": "futian-spar"
+   },
+   "refuse": {
+    "zh": "秦雁的剑还没收回鞘里。",
+    "en": "Qin Yan has not sheathed her sword yet."
+   }
   }
  ],
  "_beats": "古七 (the per-回 plan, 2026-10-15; 年五, played — the end of what 09-year's 伏天 once told in one passage): the cliff year (随风 until dark), then 秦雁's monthly bout as the card fight and the way on (her outlast trial, the 崖顶 goal in the exit's `foe`; a fight's exit is the scene's one way on, tests/won-way-on.test.mjs) — its passage 「你又跑」, then the autumn: 七层 (`rise: 7`, behind 六层圆满), 入隙, 阿禾's Foundation, 周衡 at the door — 「第七回 · 完」 lands on 「他知道里头是谁」, and the way on is 古八's 09-dabi.",
- "_split": "2026-10-27 (doc/gates-2026-10-27.md 古七 (c)): the way on's 碾药 and 阿禾's 筑基 (paragraphs 3–13) cut to 09-nianyao, before this scene and its gate; the way on keeps the bout, 七层 and 入隙, and the 除夕 — 「第七回 · 完」 still lands on 「他知道里头是谁」."
+ "_split": "2026-10-27 (doc/gates-2026-10-27.md 古七 (c)): the way on's 碾药 and 阿禾's 筑基 (paragraphs 3–13) cut to 09-nianyao, before this scene and its gate; the way on keeps the bout, 七层 and 入隙, and the 除夕 — 「第七回 · 完」 still lands on 「他知道里头是谁」.",
+ "show": [
+  {
+   "card": "board",
+   "id": "futian-suifeng"
+  },
+  {
+   "card": "board",
+   "id": "futian-spar"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "futian-suifeng",
+   "futian-spar"
+  ]
+ }
 }

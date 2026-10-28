@@ -90,7 +90,7 @@ export const FIGHTS = [
   { id: 'foe-shijie', name: '秦雁 (试 · 三十招)', at: 'h08b', scene: 'wm-lun2/dodge', trial: true, unforced: true },
   { id: 'foe-maxiaobao', name: '马小宝 (大比)', at: 'h08c', scene: 'wm-juesai/face' },
   { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight', band: [0.5, 0.72], pilled: [0.55, 1], note: 'Hanli 10-16: 55–65 won, really lost ≥20%' },
-  { id: 'foe-shijie', name: '秦雁 (崖顶 · 试)', at: 'h11b', scene: '09-futian/spar', trial: true, unforced: true },
+  // 秦雁 (崖顶 · 试) at 09-futian/spar: 格斗 since 2026-10-28 (the board futian-spar, games/fighter.js) — no card fight to weigh.
   { id: 'foe-jiuceng', name: '九层师兄 (大比决赛)', at: 'h09b', scene: '09-laba/dabi', band: [0.4, 0.75], pilled: [0.6, 1], note: '2026-10-21: weighed across ten save seeds (the 练气 curve deals each player his own ten) — 49% bare on average, 15–67%; this fixture\'s ten 52%' },
   { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', scene: '01-rise/stand', trial: true, band: [0.35, 0.7], note: 'a 试 outlasted: its 气血 does not weigh it' },
   { id: 'foe-laojing', name: '老井 (试 · 河滩)', at: 'h10b', scene: '01-laojing/dodge', trial: true, unforced: true },
