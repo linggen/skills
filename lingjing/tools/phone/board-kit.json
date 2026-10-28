@@ -433,7 +433,7 @@
     },
     "pintu": {
       "_about": "拼图 (games/pintu.js, pure): the place game, the errands' and the 奇遇's; its pictures are the book's paintings.",
-      "module": "scripts/games/pintu.js",
+      "module": "scripts/games/pintu.js", "pics": "mijing",
       "dirs": [],
       "css": [
         "scripts/lingjing.css",

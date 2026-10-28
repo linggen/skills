@@ -226,3 +226,9 @@ test('every sound a kit board names is in the phone bundle (the bank, the sprite
     if (!def.zzfx) for (const slice of [def.slice ?? def.sprite ?? []].flat()) if (typeof slice === 'string') assert.ok(bank.sprite.map[slice], `${s}: ${slice} in the sprite`);
   }
 });
+
+test('the phone\'s 拼图 carries every 秘境 重\'s painting (a 机关 拼图 room deals its 重\'s backdrop: rules/mijing.mjs mijingRow)', () => {
+  const tiers = JSON.parse(fs.readFileSync(path.join(SKILL, 'worlds/jiuding/mijing.json'), 'utf8')).tiers;
+  const have = new Set(boardFiles('pintu'));
+  for (const t of tiers) assert.ok(have.has(`worlds/jiuding/${t.backdrop}`), `${t.id}: ${t.backdrop}`);
+});

@@ -54,6 +54,15 @@ export function itemArt() {
   return [...new Set(rows.map((r) => r.art).filter((a) => typeof a === 'string' && fs.existsSync(path.join(SKILL, 'worlds/jiuding', a))).map((a) => `worlds/jiuding/${a}`))];
 }
 
+/** The 秘境探险 重's paintings (mijing.json `tiers[].backdrop`): the picture a 机关 拼图 room deals (rules/mijing.mjs
+    mijingRow `pics`) — a board kit entry with `"pics": "mijing"` carries them, so the phone's 拼图 is never blank. */
+export function mijingArt() {
+  const file = path.join(SKILL, 'worlds/jiuding/mijing.json');
+  if (!fs.existsSync(file)) return [];
+  const tiers = JSON.parse(fs.readFileSync(file, 'utf8')).tiers ?? [];
+  return [...new Set(tiers.map((t) => t.backdrop).filter((a) => typeof a === 'string' && fs.existsSync(path.join(SKILL, 'worlds/jiuding', a))).map((a) => `worlds/jiuding/${a}`))];
+}
+
 /** The story screen's own files (faces, the pouch's and the shelf's things): `story`, every file under `storyDirs`, and every thing's art. */
 export const storyFiles = () => [...new Set([...(KIT.story ?? []), ...(KIT.storyDirs ?? []).flatMap((d) => filesUnder(path.join(SKILL, d)).map(rel)), ...itemArt()])];
 
@@ -66,6 +75,7 @@ export function boardFiles(game = 'shouqiang') {
   for (const d of g.dirs ?? []) for (const f of filesUnder(path.join(SKILL, d))) all.add(f);
   if (g.art === 'auto') for (const f of pieceArt(g.module)) all.add(path.join(SKILL, f));
   if (g.art === 'cards') for (const f of fightArt()) all.add(path.join(SKILL, f));
+  if (g.pics === 'mijing') for (const f of mijingArt()) all.add(path.join(SKILL, f));
   for (const f of g.exclude ?? []) all.delete(path.join(SKILL, f));
   for (const f of [...KIT.shared, ...(g.css ?? []), ...(g.files ?? [])]) {
     const file = path.join(SKILL, f);

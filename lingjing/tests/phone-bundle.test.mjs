@@ -168,5 +168,11 @@ test("银月's word at a page moment travels in the bundle: 灵石 short on the 
   assert.deepEqual(asleep.pool, poolOf('short', { mode: 'asleep', lang: 'en' }));
   assert.equal(her('short', { ...look, companion: null }), null, 'not met: silent');
   assert.equal(her('short', { ...look, haggle: { marks: {} } }), null, 'nothing short: silent');
+  // 秘境探险: the facts from the rules' own answer (hersay.js mijingWhat), the Mac's pool; an answer with none, silent.
+  const way = her('mijing', look, { lang: 'zh', result: { ok: true, line: '袋子到手。', hp: 3 } });
+  assert.ok(way.facts.startsWith('袋子到手。，气血+3'), way.facts);
+  assert.deepEqual(way.pool, poolOf('mijing', { mode: 'awake', lang: 'zh' }));
+  assert.ok(her('mijing', look, { lang: 'zh', result: { ended: 'left', last: { name: '一重 · 凶崖', how: 'left', reached: 1 } } }).facts.startsWith('一重 · 凶崖，退了出来'));
+  assert.equal(her('mijing', look, { lang: 'zh', result: { ok: true, room: '1a' } }), null);
   fs.rmSync(tmp, { recursive: true, force: true });
 });

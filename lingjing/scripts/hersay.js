@@ -133,6 +133,21 @@ export function momentFacts(kind, what, lang = 'zh', { weight = 'full', max = 26
   return w ? `${w}${sep}${tail}` : tail;
 }
 
+/* 秘境探险's facts (rules/mijing.mjs answers), one place for the Mac's page and the phone's: a 奇遇's way taken (the
+   rules' line and the 气血 it moved), and a run over (its name, how, the rooms walked). Null when the answer holds none. */
+export function mijingWayWhat(r, zh) {
+  if (!r?.line) return null;
+  const hp = r.hp ? (zh ? `，气血${r.hp > 0 ? '+' : ''}${r.hp}` : `, Life ${r.hp > 0 ? '+' : ''}${r.hp}`) : '';
+  return `${r.line}${hp}`;
+}
+export function mijingEndWhat(l, zh) {
+  if (!l) return null;
+  const how = { clear: zh ? '通关了' : 'cleared it', dead: zh ? '力竭出来了' : 'came out spent', left: zh ? '退了出来' : 'came back out' }[l.how] ?? l.how;
+  return zh ? `${l.name}，${how}，走到第${l.reached}间。` : `${l.name}: ${how}, ${l.reached} rooms in.`;
+}
+/* The one word a 秘境 answer gives her: the run's end over the way that ended it. */
+export const mijingWhat = (r, zh) => (r?.ended && r.last ? mijingEndWhat(r.last, zh) : mijingWayWhat(r, zh));
+
 /* ── The pools: moment × asleep/awake × zh/en (weight 'short' and 'react'
    for a repeatable win; the rest are full words). ── */
 export const POOLS = {

@@ -48,7 +48,7 @@ import { thinker, stillAsked } from './think.js';
 import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
-import { CLOSE_AT, POOR_AT, createHerSay, herMode, shortFacts, wayFacts, whyFacts } from './hersay.js';
+import { CLOSE_AT, POOR_AT, createHerSay, herMode, mijingEndWhat, mijingWayWhat, shortFacts, wayFacts, whyFacts } from './hersay.js';
 import { factsFor, prefetchLines } from './games/prefetch.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
 import { NPC_TITLE, npcAsk } from './npc-ask.js';
@@ -2058,12 +2058,10 @@ async function mijingTap(d) {
   if (!r.ok) return noteAWhile(refusal(r));
   const zh = lang() !== 'en';
   if (d.mijing === 'choose' && r.line) {
-    const hp = r.hp ? (zh ? `，气血${r.hp > 0 ? '+' : ''}${r.hp}` : `, Life ${r.hp > 0 ? '+' : ''}${r.hp}`) : '';
-    document.dispatchEvent(new CustomEvent('lingjing:her', { detail: { kind: 'mijing', what: `${r.line}${hp}`, key: `mijing|${r.room}|${Date.now()}` } }));
+    document.dispatchEvent(new CustomEvent('lingjing:her', { detail: { kind: 'mijing', what: mijingWayWhat(r, zh), key: `mijing|${r.room}|${Date.now()}` } }));
   }
   if (r.ended && r.last) {
-    const l = r.last, how = { clear: zh ? '通关了' : 'cleared it', dead: zh ? '力竭出来了' : 'came out spent', left: zh ? '退了出来' : 'came back out' }[l.how] ?? l.how;
-    document.dispatchEvent(new CustomEvent('lingjing:her', { detail: { kind: 'mijing', what: zh ? `${l.name}，${how}，走到第${l.reached}间。` : `${l.name}: ${how}, ${l.reached} rooms in.`, key: `mijing|end|${l.at}` } }));
+    document.dispatchEvent(new CustomEvent('lingjing:her', { detail: { kind: 'mijing', what: mijingEndWhat(r.last, zh), key: `mijing|end|${r.last.at}` } }));
   }
   keep({ spoils: null, doNote: r.say ?? null });
   await refresh();

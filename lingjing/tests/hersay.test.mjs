@@ -178,3 +178,13 @@ test('in a fight, asleep: one 问银月 and only the closing word', async () => 
   await tick(); await tick();
   assert.ok(FALLBACK_ASLEEP.zh.lost.includes(lines.at(-1).text));
 });
+
+test('秘境探险\'s facts: a 奇遇\'s way with the 气血 it moved, a run over by its end (one place for the Mac and the phone)', async () => {
+  const { mijingWhat, mijingWayWhat, mijingEndWhat } = await import('../scripts/hersay.js');
+  assert.equal(mijingWayWhat({ line: '袋子到手。', hp: -4 }, true), '袋子到手。，气血-4');
+  assert.equal(mijingWayWhat({ line: 'Got it.', hp: 2 }, false), 'Got it., Life +2');
+  assert.equal(mijingWayWhat({ ok: true }, true), null);
+  const last = { name: '一重 · 凶崖', how: 'left', reached: 2 };
+  assert.equal(mijingEndWhat(last, true), '一重 · 凶崖，退了出来，走到第2间。');
+  assert.equal(mijingWhat({ line: 'x', ended: 'dead', last: { ...last, how: 'dead' } }, true), '一重 · 凶崖，力竭出来了，走到第2间。');
+});

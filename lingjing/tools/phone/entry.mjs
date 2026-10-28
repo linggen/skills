@@ -11,6 +11,7 @@
 //                                            from the Look, the facts and ask for her model, and her pool's lines —
 //                                            JSON text { mode, facts, pool } (null when she is absent or the moment
 //                                            has nothing to say); `short` builds its facts from the Look's shelf
+//                                            and `mijing` from the rules' answer (opts.result: hersay.js mijingWhat)
 //   Lingjing.drainTrack()                    the play log's lines since the last drain (rules/analytics.mjs), as JSON
 //                                            text — the app keeps them in its own folder, never in the dumped save
 //
@@ -18,7 +19,7 @@
 import { parseArgs } from '../../scripts/rules/files.mjs';
 import { forLing, run } from '../../scripts/rules.mjs';
 import { drainSink } from '../../scripts/rules/analytics.mjs';
-import { MOMENTS, herMode, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
+import { MOMENTS, herMode, mijingWhat, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
 import fs, { dump, restore, seed, stats } from './shims/fs.mjs';
 import { process } from './shims/process.mjs';
 
@@ -65,13 +66,16 @@ function call(verb = 'look', args = {}, { reader = null, save = null, now = null
 
 /* 银月 at a page moment, as the Mac's hersay.js says it: the phone keeps the once-limits (its own prefs), asks its model
    with `facts`, and falls back to `pool`. `short` takes its facts from the Look itself (shortFacts). */
-function her(kind, look = {}, { lang = 'zh', weight = 'full', what = null } = {}) {
+function her(kind, look = {}, { lang = 'zh', weight = 'full', what = null, result = null } = {}) {
   const l = typeof look === 'string' ? JSON.parse(look) : look;
   const mode = herMode(l), zh = lang !== 'en';
   if (mode === 'absent' || !MOMENTS[kind]) return JSON.stringify(null);
   const short = kind === 'short' ? shortFacts(l, zh) : null;
   if (kind === 'short' && !short) return JSON.stringify(null);
-  const said = short?.what ?? what ?? '';
+  // A 秘境 answer (`result`, the rules' own): its facts as the Mac's page gives them (hersay.js mijingWhat); none, no word.
+  const fromResult = kind === 'mijing' && result ? mijingWhat(typeof result === 'string' ? JSON.parse(result) : result, zh) : null;
+  if (kind === 'mijing' && result && !fromResult) return JSON.stringify(null);
+  const said = short?.what ?? fromResult ?? what ?? '';
   const variant = short?.far ? 'far' : null;
   return JSON.stringify({ mode, id: short?.id ?? null, facts: momentFacts(kind, said, zh ? 'zh' : 'en', { weight, mode }), pool: poolOf(kind, { mode, lang: zh ? 'zh' : 'en', weight, variant }) });
 }
