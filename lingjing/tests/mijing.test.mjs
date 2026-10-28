@@ -322,3 +322,17 @@ test('the map forks: every row before the last has a room that leads two ways', 
   const forks = Array.from({ length: 20 }, (_, k) => mapOf(content, t, `fork-${k}`)).filter(m => m.layers.slice(0, -1).every(row => row.some(r => m.ways[r.id].length > 1))).length;
   assert.equal(forks, 20, `${forks}/20 maps fork`);
 });
+
+test('a person in a fight room is named as one (七重\'s 老井 is a 强敌, never a 凶兽); inside a run no road toward the story is offered', () => {
+  let s = call('mijing', atDoor(), { action: 'enter', tier: 1, seed: 'person' }).state;
+  s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'xiong', phase: 'fight', foe: { creature: 'foe-laojing', hp: 3 } };
+  const l = look(s, content, ctx());
+  assert.equal(l.mijing.room.kind_name, '强敌');
+  assert.equal(l.place.encounter.mijing.name, '强敌');
+  s.mijing.run.room.foe = { creature: 'qiuyu', hp: 1 };
+  assert.equal(look(s, content, ctx()).mijing.room.kind_name, '凶兽');
+  // The story's way on: its goal may stand, but held — the page's 下一步 · 去… and the 主页's way stand down.
+  const w = look(s, content, ctx()).waypoint;
+  assert.ok(w?.held && !w.toward, `held: ${JSON.stringify(w)}`);
+  assert.ok(!look(s, content, ctx()).work?.place, 'no work elsewhere to walk to');
+});

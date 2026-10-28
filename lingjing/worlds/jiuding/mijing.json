@@ -1029,7 +1029,7 @@
       "drops": "mijing-outer"
     }
   ],
-  "_kinds": "The rooms, Slay the Spire's: `fight` ones are the card 斗法 (rules/tasks.mjs duel, the run's door), `board` ones a small game of the 主力 kits (the room's task, dealt by the run), `pick` ones a choice on the run's own card. `weight` the draw in rows past the first (the first row is all 妖兽, the last before the 大妖 always holds a 灵泉; a 凶兽 never in the first row); `minutes` about how long it plays (the run's 修为 is the minutes cleared, balance.json master.mijing). `mark` the one glyph the ink map draws.",
+  "_kinds": "The rooms, Slay the Spire's: `fight` ones are the card 斗法 (rules/tasks.mjs duel, the run's door), `board` ones a small game of the 主力 kits (the room's task, dealt by the run), `pick` ones a choice on the run's own card. `weight` the draw in rows past the first (the first row is all 妖兽, the last before the 大妖 always holds a 灵泉; a 凶兽 never in the first row); `minutes` about how long it plays (the run's 修为 is the minutes cleared, balance.json master.mijing). `mark` the one glyph the ink map draws. A fight room whose foe is a person (creatures.json `person`, or a `gender`) is named by `person` instead (七重's 老井 is no 凶兽).",
   "kinds": {
     "yao": {
       "name": {
@@ -1039,7 +1039,11 @@
       "mark": "妖",
       "play": "fight",
       "weight": 40,
-      "minutes": 4
+      "minutes": 4,
+      "person": {
+        "zh": "对手",
+        "en": "A foe"
+      }
     },
     "xiong": {
       "name": {
@@ -1049,7 +1053,11 @@
       "mark": "凶",
       "play": "fight",
       "weight": 10,
-      "minutes": 5
+      "minutes": 5,
+      "person": {
+        "zh": "强敌",
+        "en": "A strong foe"
+      }
     },
     "guan": {
       "name": {
@@ -1119,7 +1127,11 @@
       "mark": "王",
       "play": "fight",
       "weight": 0,
-      "minutes": 6
+      "minutes": 6,
+      "person": {
+        "zh": "守关之人",
+        "en": "The keeper"
+      }
     }
   },
   "_boons": "秘境加持 — run-only, Hades' boons and the Spire's relics: picked from a reward of three (a 凶兽 won, a chest, a 奇遇's way), gone when the run ends. Each lays only on what a game already reads: a 斗法's door (`fight`: `extra` cards in the opening hand, `power` on 主灵根一击, `armor`, `insight` 望气 — battle.js sideOf), the TD level's own fields by kit (`td`: 守墙关's `wall` times, 撒豆成兵's `start` plus), the run's 气血 (`hp_max` a share more; `heal` a share after each fight won), a board room's hurt (`hurt` times).",

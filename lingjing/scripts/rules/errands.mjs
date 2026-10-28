@@ -28,6 +28,7 @@ import { chapterLabel, comingOf } from './hui.mjs';
 import { storyAllows } from './cap.mjs';
 import { gatesOf, stageBrief, stageGate } from './gates.mjs';
 import { errandLine } from './errand-line.mjs';
+import { mijingHold } from './mijing.mjs';
 import { hiddenRoom, sealedOf, allPlaces, poolBeast, poolResting, atScene, creatureOf, grantPass, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
@@ -316,6 +317,8 @@ function poolWork(content, state, ctx, here) {
    to fight — never a 杂役 that pays 灵石 only (review, 2026-10-15). */
 function workOf(content, state, ctx, { anywhere = false, cultivate = false } = {}) {
   if (inMade(state) || (!anywhere && atScene(content, state))) return null;
+  // The world held still (a 秘境探险 run): no work elsewhere to walk to.
+  if (mijingHold(state, 'move')) return null;
   const here = placeOf(content, state.place);
   if (!here) return null;
   const peak = cultivate || waitsOnPeak(content, state, ctx.now);
@@ -430,6 +433,9 @@ function waypointOf(content, state, ctx) {
   if (atScene(content, state) || inMade(state)) return null;
   const thread = threadOf(content, state, ctx.now);
   if (!thread?.place) return thread;
+  // The world held still (a 秘境探险 run, rules/mijing.mjs mijingHold): the goal stands, but no road toward it is offered — any way on it
+  // named would be refused (`held`: the page's 下一步 · 去… and the 主页's way stand down, as for a `gate`).
+  if (mijingHold(state, 'move')) return { ...thread, held: true };
   // A cauldron that waits on the peak is not a road to walk: the card says
   // what it asks and where he stands, so a blocked spine reads as blocked.
   if (waitsOnPeak(content, state, ctx.now)) return { ...thread, gate: gateOf(content, state, ctx.now) };

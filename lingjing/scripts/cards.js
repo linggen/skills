@@ -1047,7 +1047,8 @@ const NEXT_WORDS = {
 };
 function nextTo(look) {
   const g = look?.waypoint;
-  if (g?.gate) return null;
+  // A cauldron's gate, or the world held still (rules/errands.mjs waypointOf `held`): no road to tap.
+  if (g?.gate || g?.held) return null;
   const to = g?.toward ?? g?.place ?? null;
   return to && to.id !== look?.place?.id ? to : null;
 }

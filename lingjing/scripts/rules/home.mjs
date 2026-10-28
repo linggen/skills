@@ -108,7 +108,7 @@ const NEXT = [
   // 1 · the story: set aside → 接着读; the way on open → walk it. (A passage owed the page tells by itself: the 主页
   //     stands only between passages.)
   (c, s, k) => (k.aside?.on ? { kind: 'resume' } : null),
-  (c, s, k) => { const to = k.waypoint?.toward; return to && !k.waypoint.gate && to.id !== here(k) && !wayHeld(c, s) ? { kind: 'way', place: placeRef(to), ...(to.via?.length ? { via: to.via } : {}) } : null; },
+  (c, s, k) => { const to = k.waypoint?.toward; return to && !k.waypoint.gate && !k.waypoint.held && to.id !== here(k) && !wayHeld(c, s) ? { kind: 'way', place: placeRef(to), ...(to.via?.length ? { via: to.via } : {}) } : null; },
   // 2 · something to hand in here: the stage quest met, an errand or a 功课 done.
   (c, s, k) => (k.stage_quest?.met ? { kind: 'turnin', stage: true, title: k.stage_quest.step } : null),
   (c, s, k) => { const q = (k.book ?? []).find(b => b.ready && !b.away); return q ? { kind: 'turnin', id: q.id, title: q.title } : null; },

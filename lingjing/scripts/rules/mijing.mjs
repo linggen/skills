@@ -32,6 +32,10 @@ const tableOf = content => content.mijing ?? null;
 const knobs = content => content.balance?.mijing ?? {};
 const tierRow = (content, n) => (tableOf(content)?.tiers ?? []).find(t => t.n === Number(n)) ?? null;
 const kindRow = (content, kind) => tableOf(content)?.kinds?.[kind] ?? null;
+/* A room's kind by name, for what it holds: a fight room whose foe is a person (creatures.json `person`, or a `gender`)
+   takes its kind's `person` name — the 凶兽 room holding 老井 is a 强敌's. */
+const isPerson = c => Boolean(c?.person || c?.gender);
+const kindName = (content, kind, cid, lang) => pick((isPerson(creatureOf(content, cid)) ? kindRow(content, kind)?.person : null) ?? kindRow(content, kind)?.name, lang);
 const boonRow = (content, id) => (tableOf(content)?.boons ?? []).find(b => b.id === id) ?? null;
 const runOf = state => state?.mijing?.run ?? null;
 const FIGHT = 'mijing:';
@@ -471,7 +475,7 @@ export function mijingEncounter(content, state, now) {
   const brief = duelBrief(content, state, game, now);
   return {
     creature: { id: creature.id, name: pick(creature.name, state.lang) }, game,
-    mijing: { kind: run.room.kind, name: pick(kindRow(content, run.room.kind)?.name, state.lang) },
+    mijing: { kind: run.room.kind, name: kindName(content, run.room.kind, game.creature, state.lang) },
     ...(run.room.kind === 'xiong' ? { elite: true } : {}),
     duel: { ...brief, setup: mijingSetup(content, state, game, now), today: null, stake: pick(tierRow(content, run.tier)?.name, state.lang) },
     won: false, withdrawn: false, tamed: false, beaten: false, likes: null,
@@ -578,7 +582,7 @@ const boonBrief = (content, id, lang) => { const b = boonRow(content, id); retur
 function roomBrief(content, state, run) {
   const room = run.room, lang = state.lang;
   if (!room) return null;
-  const out = { id: room.id, kind: room.kind, phase: room.phase, name: pick(roomOf(run.map, room.id)?.name, lang) ?? null, kind_name: pick(kindRow(content, room.kind)?.name, lang) };
+  const out = { id: room.id, kind: room.kind, phase: room.phase, name: pick(roomOf(run.map, room.id)?.name, lang) ?? null, kind_name: kindName(content, room.kind, room.foe?.creature, lang) };
   if (room.foe) out.foe = { creature: room.foe.creature, name: pick(creatureOf(content, room.foe.creature)?.name, lang), id: mijingFightId(room.id) };
   if (room.board) out.board = room.board.task;
   if (room.kind === 'qiyu' && room.qiyu) {
