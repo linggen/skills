@@ -68,9 +68,20 @@ const PLAN: { piles: string[]; stones: number }[] = [
   { piles: ["tower*", "stack*", "tower*"], stones: 5 },
 ];
 
-/** Rung `n` (1…6): its piles from x 1700 on, each a little apart by its seed; taller and stonier up the rungs. */
-export function rung(n: number): LevelData {
-  const r = seeded(`chaifang-${n}`), plan = PLAN[n - 1];
+/** Past the top (tasks/world.json `climb_top`, rules/climb.mjs): five layouts as hard as rung 6, its piles in other
+    orders, each on its own seed; one a day once all six are won, so the top never deals the same yard two days running. */
+const TOP: string[][] = [
+  ["stack*", "tower*", "tower*"],
+  ["tower*", "tower*", "stack*"],
+  ["tower*", "shelter*", "tower*"],
+  ["shelter*", "tower*", "tower*"],
+  ["tower*", "stack*", "tower*"],
+];
+
+/** Rung `n` (1…6): its piles from x 1700 on, each a little apart by its seed; taller and stonier up the rungs. A top
+    layout (`top` 1…5) is rung 6's size on its own piles and seed. */
+export function rung(n: number, top = 0): LevelData {
+  const r = seeded(top ? `chaifang-top-${top}` : `chaifang-${n}`), plan = top ? { ...PLAN[5], piles: TOP[top - 1] } : PLAN[n - 1];
   const blocks: LevelBlockConfig[] = [], pigs: LevelPigConfig[] = [];
   let x = 1700 + Math.round(r() * 3) * 40;
   for (const kind of plan.piles) {
@@ -84,9 +95,9 @@ export function rung(n: number): LevelData {
     x += 5 * U + Math.round(r() * 4) * 30;
   }
   return {
-    levelId: 20 + n,
-    key: `chaifang-${n}`,
-    name: `The Woodshed ${n}`,
+    levelId: top ? 30 + top : 20 + n,
+    key: top ? `chaifang-top-${top}` : `chaifang-${n}`,
+    name: top ? `The Woodshed, top ${top}` : `The Woodshed ${n}`,
     description: "Weasels in the woodpiles.",
     theme: "forest",
     place: "chaifang",
@@ -102,7 +113,7 @@ export function rung(n: number): LevelData {
   };
 }
 
-export const CHAIFANG_LEVELS: LevelData[] = PLAN.map((_, i) => rung(i + 1));
+export const CHAIFANG_LEVELS: LevelData[] = [...PLAN.map((_, i) => rung(i + 1)), ...TOP.map((_, i) => rung(6, i + 1))];
 
 const NAMES: [string, string, string, string][] = [
   ["柴房 · 头一只", "一根木头横在两根柴上，底下缩着一只黄鼠狼。", "The Woodshed · The first one", "A log laid across two uprights, and a weasel crouched under it."],
@@ -119,3 +130,14 @@ export const CHAIFANG_WORDS: Record<number, Record<"zh" | "en", { name: string; 
     en: { name: en, description: ed, teachingFocus: "Hit the wood, not the hens: bring the pile down on it and it runs." },
   }])
 );
+const TOP_NAMES: [string, string, string, string][] = [
+  ["柴房 · 垛后头", "柴垛挡在前头，两座搭了棚的垛藏在后面。", "The Woodshed · Behind the pile", "A woodpile in front, two roofed piles hidden behind it."],
+  ["柴房 · 两座棚", "近处两座垛上都搭了棚，最远那垛光着顶。", "The Woodshed · Two shelters", "Shelters on the two near piles; the far one is bare on top."],
+  ["柴房 · 中间一只", "中间那只缩在柴底下，两边垛上各蹲一只。", "The Woodshed · One in the middle", "One crouched under the wood in the middle, one up on each pile."],
+  ["柴房 · 门口一只", "最近那只先露了头，后面两座垛，棚顶压着石板。", "The Woodshed · One at the door", "The nearest one shows its head first; behind it two piles with shelters on top."],
+  ["柴房 · 又来了", "昨天赶跑的，今天又回来了，换了地方。", "The Woodshed · Back again", "The ones chased off yesterday are back today, somewhere else."],
+];
+for (const [i, [zn, zd, en, ed]] of TOP_NAMES.entries()) CHAIFANG_WORDS[30 + i + 1] = {
+  zh: { name: zn, description: zd, teachingFocus: "砸柴不砸鸡——把柴垛砸塌在它身上，它就跑了。" },
+  en: { name: en, description: ed, teachingFocus: "Hit the wood, not the hens: bring the pile down on it and it runs." },
+};

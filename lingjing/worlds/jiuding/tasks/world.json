@@ -500,7 +500,8 @@
     },
     {
       "id": "chaifang-huangshulang", "kind": "board", "game": "zhazhai", "period": "day", "hosted": true, "climb": ["chaifang-1", "chaifang-2", "chaifang-3", "chaifang-4", "chaifang-5", "chaifang-6"],
-      "_climb": "柴房 · 赶黄鼠狼 (Hanli 10-27: 「可以, 加吧」; 割绳子's daily generator stays cut): the throw kit's practice rungs at the 柴房 (tools/zhazhai/src/data/chaifang.ts: each made by a seeded generator at build time, proved by the bot), easiest first; the top rung again after it.",
+      "climb_top": ["chaifang-top-1", "chaifang-top-2", "chaifang-top-3", "chaifang-top-4", "chaifang-top-5"],
+      "_climb": "柴房 · 赶黄鼠狼 (Hanli 10-27: 「可以, 加吧」; 割绳子's daily generator stays cut): the throw kit's practice rungs at the 柴房 (tools/zhazhai/src/data/chaifang.ts: each made by a seeded generator at build time, proved by the bot), easiest first; past the top, one of `climb_top` a day (rules/climb.mjs topLv: five layouts as hard as rung 6, by the day and the save's seed, never the same two days running).",
       "title": { "zh": "赶黄鼠狼 · 柴垛里", "en": "Weasels · In the woodpiles" },
       "how": {"zh": "黄鼠狼钻进了柴房前的柴垛，盯着鸡笼。往后拉弹弓，松手扔石子——把柴垛砸塌在它身上，它就跑了。石子不多，省着扔。", "en": "Weasels have got into the woodpiles by the shed, eyes on the hen coop. Pull the sling back and let a stone go: bring the pile down on one and it runs. Few stones: make them count."},
       "grant": { "table": "game", "progress": 5, "wealth": 5 },

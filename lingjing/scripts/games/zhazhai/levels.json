@@ -1,5 +1,5 @@
 {
- "source": "3fbb1ef3ce78cc24338aa4b954d2249c38b86ea830a3e35682d251f9107475c2",
+ "source": "0e02034825b87708a2b7e7e6196b8759d1be3717e68372a64627275324f3ee8d",
  "levels": [
   {
    "id": 1,
@@ -703,6 +703,231 @@
     }
    },
    "key": "chaifang-6",
+   "place": "chaifang",
+   "target": "weasel",
+   "art": [
+    "place-chaifang",
+    "prop-log"
+   ]
+  },
+  {
+   "id": 31,
+   "theme": "forest",
+   "shots": [
+    "red",
+    "red",
+    "red",
+    "red",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 13,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 25000,
+    "threeStars": 35000
+   },
+   "words": {
+    "zh": {
+     "name": "柴房 · 垛后头",
+     "description": "柴垛挡在前头，两座搭了棚的垛藏在后面。",
+     "teachingFocus": "砸柴不砸鸡——把柴垛砸塌在它身上，它就跑了。"
+    },
+    "en": {
+     "name": "The Woodshed · Behind the pile",
+     "description": "A woodpile in front, two roofed piles hidden behind it.",
+     "teachingFocus": "Hit the wood, not the hens: bring the pile down on it and it runs."
+    }
+   },
+   "key": "chaifang-top-1",
+   "place": "chaifang",
+   "target": "weasel",
+   "art": [
+    "place-chaifang",
+    "prop-log"
+   ]
+  },
+  {
+   "id": 32,
+   "theme": "forest",
+   "shots": [
+    "red",
+    "red",
+    "red",
+    "red",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 13,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 25000,
+    "threeStars": 35000
+   },
+   "words": {
+    "zh": {
+     "name": "柴房 · 两座棚",
+     "description": "近处两座垛上都搭了棚，最远那垛光着顶。",
+     "teachingFocus": "砸柴不砸鸡——把柴垛砸塌在它身上，它就跑了。"
+    },
+    "en": {
+     "name": "The Woodshed · Two shelters",
+     "description": "Shelters on the two near piles; the far one is bare on top.",
+     "teachingFocus": "Hit the wood, not the hens: bring the pile down on it and it runs."
+    }
+   },
+   "key": "chaifang-top-2",
+   "place": "chaifang",
+   "target": "weasel",
+   "art": [
+    "place-chaifang",
+    "prop-log"
+   ]
+  },
+  {
+   "id": 33,
+   "theme": "forest",
+   "shots": [
+    "red",
+    "red",
+    "red",
+    "red",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 13,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 25000,
+    "threeStars": 35000
+   },
+   "words": {
+    "zh": {
+     "name": "柴房 · 中间一只",
+     "description": "中间那只缩在柴底下，两边垛上各蹲一只。",
+     "teachingFocus": "砸柴不砸鸡——把柴垛砸塌在它身上，它就跑了。"
+    },
+    "en": {
+     "name": "The Woodshed · One in the middle",
+     "description": "One crouched under the wood in the middle, one up on each pile.",
+     "teachingFocus": "Hit the wood, not the hens: bring the pile down on it and it runs."
+    }
+   },
+   "key": "chaifang-top-3",
+   "place": "chaifang",
+   "target": "weasel",
+   "art": [
+    "place-chaifang",
+    "prop-log"
+   ]
+  },
+  {
+   "id": 34,
+   "theme": "forest",
+   "shots": [
+    "red",
+    "red",
+    "red",
+    "red",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 13,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 25000,
+    "threeStars": 35000
+   },
+   "words": {
+    "zh": {
+     "name": "柴房 · 门口一只",
+     "description": "最近那只先露了头，后面两座垛，棚顶压着石板。",
+     "teachingFocus": "砸柴不砸鸡——把柴垛砸塌在它身上，它就跑了。"
+    },
+    "en": {
+     "name": "The Woodshed · One at the door",
+     "description": "The nearest one shows its head first; behind it two piles with shelters on top.",
+     "teachingFocus": "Hit the wood, not the hens: bring the pile down on it and it runs."
+    }
+   },
+   "key": "chaifang-top-4",
+   "place": "chaifang",
+   "target": "weasel",
+   "art": [
+    "place-chaifang",
+    "prop-log"
+   ]
+  },
+  {
+   "id": 35,
+   "theme": "forest",
+   "shots": [
+    "red",
+    "red",
+    "red",
+    "red",
+    "red"
+   ],
+   "weasels": [
+    "SMALL",
+    "SMALL",
+    "SMALL"
+   ],
+   "blocks": 12,
+   "materials": [
+    "wood",
+    "stone"
+   ],
+   "stars": {
+    "oneStar": 0,
+    "twoStars": 25000,
+    "threeStars": 35000
+   },
+   "words": {
+    "zh": {
+     "name": "柴房 · 又来了",
+     "description": "昨天赶跑的，今天又回来了，换了地方。",
+     "teachingFocus": "砸柴不砸鸡——把柴垛砸塌在它身上，它就跑了。"
+    },
+    "en": {
+     "name": "The Woodshed · Back again",
+     "description": "The ones chased off yesterday are back today, somewhere else.",
+     "teachingFocus": "Hit the wood, not the hens: bring the pile down on it and it runs."
+    }
+   },
+   "key": "chaifang-top-5",
    "place": "chaifang",
    "target": "weasel",
    "art": [

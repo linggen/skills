@@ -74,7 +74,7 @@ test('the east wall posts three a day from its pool, all at once — never a tag
   assert.deepEqual(offers.map((o) => o.id), wallToday(WALL, at('zhishi'), day(0)).map((e) => `wall-20261027-${e}`));
   for (const o of offers) {
     assert.match(o.say, /^东墙/, o.id);
-    assert.equal(o.who, '执事堂 · 东墙的牌子');
+    assert.equal(o.who, '执事堂 · 东墙杂役', 'its own giver, apart from the authored errands of the same wall');
     assert.ok(o.pays.progress > 0 && o.pays.wealth > 0, `${o.id} pays the wall share and 灵石: ${JSON.stringify(o.pays)}`);
   }
   // A day's three together pay about a day's 功课 (balance.json master wall.day, Hanli 10-27: the full errand rate was

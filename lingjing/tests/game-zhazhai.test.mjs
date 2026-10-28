@@ -112,6 +112,15 @@ test('the 柴房\'s practice rungs: six, made by a seeded generator at build tim
     }
   });
   assert.ok(rungs.at(-1).materials.includes('stone'), 'stone lids by the top');
+  // Past the top (rules/climb.mjs `climb_top`): five layouts of rung 6's size, each its own piles and words.
+  const top = forts.levels.filter((l) => /^chaifang-top-\d$/.test(l.key ?? ''));
+  assert.deepEqual(top.map((l) => l.key), t.climb_top);
+  for (const l of top) {
+    assert.equal(l.place, 'chaifang');
+    assert.deepEqual([l.weasels.length, l.shots.length], [rungs.at(-1).weasels.length, rungs.at(-1).shots.length], `${l.key}: as hard as rung 6`);
+    for (const lang of ['zh', 'en']) for (const k of ['name', 'description', 'teachingFocus']) assert.ok(l.words[lang][k], `${l.key} ${lang} ${k}`);
+  }
+  assert.equal(new Set([...rungs, ...top].map((l) => l.words.zh.description)).size, 11, 'each its own line');
   assert.equal(new Set(rungs.map((l) => l.words.zh.description)).size, 6, 'each its own line');
 });
 
@@ -189,12 +198,12 @@ test('each story throw is won by a sensible hand and not by a lazy one, and each
 
 // The 柴房's rungs (data/chaifang.ts): each won by a sensible hand at least once in three (the first three, twice), never by
 // a lazy one. Slow: 30 games.
-test('each 柴房 rung is won by a sensible hand and not by a lazy one', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 1800000 }, async () => {
+test('each 柴房 rung and top layout is won by a sensible hand and not by a lazy one', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 1800000 }, async () => {
   const srv = await serve();
   const browser = await pw.chromium.launch();
   try {
-    for (const n of [1, 2, 3, 4, 5, 6]) {
-      const lv = `chaifang-${n}`, sensible = [], lazy = [];
+    for (const lv of ['chaifang-1', 'chaifang-2', 'chaifang-3', 'chaifang-4', 'chaifang-5', 'chaifang-6', 'chaifang-top-1', 'chaifang-top-2', 'chaifang-top-3', 'chaifang-top-4', 'chaifang-top-5']) {
+      const n = Number(lv.match(/^chaifang-(\d)$/)?.[1] ?? 9), sensible = [], lazy = [];
       for (const seed of [1, 2, 3]) sensible.push(await playLevel(browser, srv.url, lv, 'sensible', seed));
       for (const seed of [1, 2]) lazy.push(await playLevel(browser, srv.url, lv, 'lazy', seed));
       assert.ok(sensible.filter((r) => r.won).length >= (n <= 3 ? 2 : 1), `${lv}: sensible ${JSON.stringify(sensible)}`);

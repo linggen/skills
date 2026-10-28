@@ -474,7 +474,7 @@ function tasksBrief(content, state, ctx) {
     .map(([id, t]) => {
       const task = taskOf(content, id);
       // The deal: the task's own (and its game's levels), a 奇遇's frame, 兽潮's night and a run's find laid over it — one deal.
-      const own = dealOf(content, task, state), q = task.qiyu ? qiyuRow(content, state, id) : {}, rr = task.run ? runRow(content, state, id) : {};
+      const own = dealOf(content, task, state, ctx.now), q = task.qiyu ? qiyuRow(content, state, id) : {}, rr = task.run ? runRow(content, state, id) : {};
       const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : {};
       const deal = own.deal || q.deal || sc.deal || rr.deal ? { deal: { ...own.deal, ...q.deal, ...sc.deal, ...rr.deal } } : {};
       return {
@@ -582,14 +582,14 @@ function boardsLook(content, state, now) {
   return rows.length ? { boards: rows } : {};
 }
 
-function dealOf(content, task, state) {
+function dealOf(content, task, state, now) {
   // A game with a row a level (气走经脉, 10-19: every `qimai` row is one level) deals the row that names this task —
   // never another task's own level (华容道's 人堆, 2026-10-26, is 00-gate's alone): else a ladder row's.
   const games = content.games?.games ?? [], row = task.game ? games.find(g => g.id === task.game && g.task === task.id) ?? games.find(g => g.id === task.game && g.levels && !g.task) ?? games.find(g => g.id === task.game) : null;
   // …and a game whose table holds story or realm levels (守炉) deals only those: the 游戏厅's ladder is never a board's.
   const off = l => l.story || l.realm;
   const levels = row?.levels?.some(off) ? row.levels.filter(off) : row?.levels;
-  const own = dealtOf(content, state, task);
+  const own = dealtOf(content, state, task, now);
   if (!task.deal && !task.climb && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   // A thing a 割藤 deal hangs on the vines, named in both languages (拾遗's 灵芝): the reader's.
