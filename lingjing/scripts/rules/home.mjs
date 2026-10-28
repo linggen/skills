@@ -161,8 +161,8 @@ function todoOf(kept, way = null) {
     out.push({ kind: 'held', id: q.id, title: q.title, ...(at ? { place: placeRef(at) } : {}), ...(q.go ? { go: q.go } : {}), ...(q.ready ? { done: true } : {}) });
   }
   for (const q of choresOpen(kept).filter(c => !c.done)) out.push({ kind: 'gongke', id: q.id, title: q.title, ...(q.means ? { means: q.means } : {}), progress: q.pays.progress });
-  const tide = (kept.tasks ?? []).find(t => t.tide && t.status === 'offered');
-  if (tide) out.push({ kind: 'tide', id: tide.id, title: tide.title });
+  // 兽潮 and 切磋 (rules/qiecuo.mjs), each up: a row each.
+  for (const tide of (kept.tasks ?? []).filter(t => t.tide && t.status === 'offered')) out.push({ kind: 'tide', id: tide.id, title: tide.title, ...(tide.qiecuo ? { qiecuo: true } : {}) });
   for (const w of kept.waits ?? []) out.push({ kind: 'wait', id: w.id, title: w.title, wait_min: w.wait_min });
   // The boards set aside: the count, and the first, which the row's tap opens again.
   const skipped = (kept.aside?.offers ?? []).filter(o => o.kind === 'replay');

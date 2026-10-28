@@ -45,7 +45,8 @@ export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc
         // A story board never settles a loss (doc/game-kit.md § the shell): lost, it is dealt again in place under its
         // lead card, as 砸寨 does itself; the stuck rule's 「算了，往下走」 stays the way out. (Found live 10-26: 守灶台
         // lost stood frozen on its last frame, nothing to tap but the skip.)
-        if (result && !result.won && !result.left) {
+        // …but a deal that is played once (`once`: 切磋's bout, rules/qiecuo.mjs) ends lost: it settles, and the rules count it.
+        if (result && !result.won && !result.left && !g.data?.once) {
           setTimeout(() => {
             if (hosted.get(id) !== entry || boardFor(id) !== g) return;
             forget(id);

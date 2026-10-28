@@ -1126,7 +1126,7 @@ const HOME_TODO = {
     return go || `<button class="act quiet hometodo" data-book>${esc(label)}</button>`;
   },
   gongke: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.gongke, { name: r.means ?? r.title, n: r.progress }))}</button>`,
-  tide: (r, h) => `<button class="act quiet hometodo" data-play="${esc(r.id)}">${esc(h.tide)}</button>`,
+  tide: (r, h) => `<button class="act quiet hometodo" data-play="${esc(r.id)}">${esc(r.qiecuo ? say(h.board, { title: r.title }) : h.tide)}</button>`,
   // A cooldown: the tap says when it opens again, on the clock (Hanli 10-28: every 待办 answers a tap).
   wait: (r, h, ctx) => `<button class="act quiet hometodo" data-home-wait="${esc(say(h.waitAt, { title: r.title, at: clockIn(r.wait_min) }))}">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</button>`,
   skipped: (r, h) => (r.id ? `<button class="act quiet hometodo" data-replay-play="${esc(r.id)}">${esc(say(h.skipped, { n: r.n }))}</button>`

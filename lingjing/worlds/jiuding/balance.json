@@ -313,6 +313,8 @@
   "boards": {"plain": 5, "good": 10, "best": 15},
   "_cooldowns": "`pool_rest_min`: a pool rests that long before the next beast stands — only after `pool_rest_after` wins in a row (Hanli 2026-10-27: 「后山的怪可以加多谢么? 或者做成打不完的」: never after every fight; a pool may say its own `rest` and `rest_after`; world.mjs poolResting). A beast beaten again the same day pays play_pay.replay's falling share. `fantong_min`: after a feed the 饭桶 is full that long (rules/fantong.mjs). `shouchao_h`: 兽潮 comes again that many hours after the last night counted, at any hour (rules/shouchao.mjs; 2026-10-26, replacing the 酉时 window: about once a day, a little slack so the same time tomorrow is open).",
   "cooldowns": {"pool_rest_min": 10, "pool_rest_after": 5, "fantong_min": 60, "shouchao_h": 20},
+  "_qiecuo_h": "切磋's cooldown (rules/qiecuo.mjs; Hanli 2026-10-28: 「冷却3小时」): a bout comes again that many hours after the last was over — won, lost or put down.",
+  "qiecuo_h": 3,
   "_pills": "丹药 in the game (design.md § 丹药; story DESIGN § 六·五): every pill is `tier` (its 阶) and `zhuan` (一至九转) on items.json; a pill that pays 修为 names its family `of` (one of `families`), and content.mjs withBalance folds its effect onto the `pill` table: `share` by 转 × play_pay.authored.base — so eaten it pays that share of the layer he stands on, at every layer (一转 5% · 三转 15% · 九转 30%: 半日 · 一日半 · 三日 of 闭关), `below` a realm past its 阶. Derived from the master table (master.lines.gu.pills; 数值系统 phase 2, 2026-10-27 — Hanli: 「聚气丹修为+20, 3转才加30? 不太对吧」: they had borrowed the puzzle · task · scene tables). Breakthrough pills (ladder.json breakthrough.pill.items) declare no `of`: the throw reads them by 转; fight pills keep `effect.fight` (the 丹囊 bands).",
   "pills": {
     "families": ["qi", "mend"],
@@ -478,6 +480,8 @@
     },
     "stars": {"1": 0.6, "2": 0.8, "3": 1},
     "replay": [1, 0.5, 0.1],
+    "_qiecuo": "切磋 (rules/qiecuo.mjs): a bout won pays `share` of the layer he stands on × ★; the day's first `full` bouts in full, the later ones `replay`'s falling share. 灵石 as a 格斗 board (`wealth`).",
+    "qiecuo": {"share": 0.05, "full": 2},
     "fight": {"minutes": 4},
     "errand": {"share": 0.15, "time": 0.1, "minutes": 5, "wealth": 15},
     "chore": {"day": 0.1, "week": 0.2, "month": 0.3},

@@ -10,6 +10,8 @@ const W = 960, H = 540, FLOOR = 432;
 /* The painted fighters stand ~245 units tall (KOF scale: near half the field); the core counts heights for ~190: what it
    places at a height (a spark, a shot) is drawn that much higher. Her ice flies at the head of a man standing. */
 const FY = 1.3, FY_ICE = 1.85;
+/* The bout ended his way (core.js endWon: `end.won`, an old `out` always his). */
+const won = (e) => Boolean(e && (e.won ?? e.kind === 'out'));
 export const FIELD = { w: W, h: H, floor: FLOOR };
 const SERIF = '"Songti SC","STSong","Noto Serif SC",serif';
 
@@ -395,7 +397,7 @@ const CROUCHED = { light: 'clight', lkick: 'clkick', hpunch: 'chpunch', heavy: '
 /* His clip now: [clip, start (ms on the bout's clock, or null: since the clip began), the move]. */
 function meClip(s) {
   const me = s.me, t = s.t, a = me.act;
-  if (s.end) return s.end.kind === 'out' ? ['win', s.end.at] : ['lose', s.end.at];
+  if (s.end) return won(s.end) ? ['win', s.end.at] : ['lose', s.end.at];
   if (me.down > t) return ['knock', null];
   if (me.stun > t && !me.guard) return ['hit', null];
   if (a) {
@@ -416,7 +418,7 @@ function meClip(s) {
 function foeClip(s) {
   const foe = s.foe, t = s.t, a = foe.act;
   if (s.end?.kind === 'out') return [foe.x < s.R.stage.left - 4 || foe.x > s.R.stage.right + 4 ? 'lose' : 'slip', s.end.at];
-  if (s.end) return ['win', s.end.at];
+  if (s.end) return [won(s.end) ? 'lose' : 'win', s.end.at]; // she yields (切磋) or stands over him
   if (s.palm) return [{ glow: 'glow', hold: 'hold', strike: 'strike', after: 'strike' }[s.palm.phase] ?? 'idle', null];
   if (s.edge) return ['edge', null];
   if (foe.stun > t) return ['hit', null];
@@ -551,6 +553,17 @@ function effects(ctx, s) {
   }
   for (const x of s.shots) {
     const px = x.x, py = FLOOR - x.y * (x.kind === 'ice' ? FY_ICE : FY), d = Math.sign(x.vx);
+    if (x.kind === 'blade') { // 金刃: a white crescent skimming the boards
+      ctx.fillStyle = 'rgba(246,244,232,.96)'; ctx.strokeStyle = 'rgba(90,90,80,.9)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(px + d * 26, py); ctx.quadraticCurveTo(px - d * 4, py - 16, px - d * 22, py - 4); ctx.quadraticCurveTo(px - d * 2, py - 6, px + d * 26, py); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(240,238,220,.45)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(px - d * 20, py - 2); ctx.lineTo(px - d * 56, py - 1); ctx.stroke();
+      continue;
+    }
+    if (x.kind === 'quake') { // 土: the boards heave in a running ridge
+      ctx.fillStyle = 'rgba(150,118,70,.92)'; ctx.strokeStyle = 'rgba(60,44,24,.9)'; ctx.lineWidth = 1.5;
+      for (let i = 0; i < 3; i += 1) { const qx = px - d * i * 18, qh = 22 - i * 6 + Math.sin(s.t / 40 + i) * 3; ctx.beginPath(); ctx.moveTo(qx - 12, FLOOR); ctx.lineTo(qx - 4, FLOOR - qh); ctx.lineTo(qx + 6, FLOOR - qh + 5); ctx.lineTo(qx + 12, FLOOR); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+      continue;
+    }
     if (x.kind === 'ice') {
       ctx.fillStyle = 'rgba(205,234,250,.96)'; ctx.strokeStyle = 'rgba(40,70,90,.9)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(px + d * 24, py); ctx.lineTo(px - d * 16, py - 6); ctx.lineTo(px - d * 10, py); ctx.lineTo(px - d * 16, py + 6); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -800,8 +813,10 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
     if (sheets.foe) {
       const at = sprite(ctx, sheets.foe, pick(sheets.foe, 'foe', s, track.foe, still), s.foe.x, foeY, s.foe.face, k, { ...foeExtra, calm: still, jolt: jolt(s.foe) });
       tip = at.tip;
-      if (qi && tip) handLight(ctx, tip, 26, 'rgba(150,240,200,.7)', 'rgba(90,200,155,0)');
-      if (glow) handLight(ctx, at.handB, 26 + 34 * glow, `rgba(190,255,220,${0.95 * glow})`, 'rgba(80,200,150,0)');
+      // her qi's colour (`foe.look.qi`: [r, g, b] — 秦雁's green by default; 卢方's metal white, 祁长松's earth yellow)
+      const [qr, qg, qb] = lv.foe?.look?.qi ?? [150, 240, 200];
+      if (qi && tip) handLight(ctx, tip, 26, `rgba(${qr},${qg},${qb},.7)`, `rgba(${qr},${qg},${qb},0)`);
+      if (glow) handLight(ctx, (lv.foe?.look?.glowHand === 'F' ? at.handF : at.handB) ?? at.handB, 26 + 34 * glow, `rgba(${qr},${qg},${qb},${0.95 * glow})`, `rgba(${qr},${qg},${qb},0)`);
     } else tip = figure(ctx, s.foe.x, foeY, s.foe.face, fp, foeLook, foeExtra);
     // the sword's trail: where its tip has been these last frames, while it cuts
     if (tip && striking) view.trail.push({ ...tip, at: now }); else if (!striking) view.trail.length = 0;
@@ -838,7 +853,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
     lineBand(ctx, text);
-    if (s.end) seal(ctx, say(s.end.kind === 'out' ? lv.seal?.won : lv.seal?.lost, lang) || (s.end.kind === 'out' ? '胜' : '负'), s.t - s.end.at - 300);
+    if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (won(s.end) ? '胜' : '负'), s.t - s.end.at - 300);
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)
     if (s.cutin && s.cutin !== view.cut) { view.cut = s.cutin; view.cutAt = now; }
     if (view.cut && now - view.cutAt < 900) cutIn(ctx, view.cut, view.cut.who === 'me' ? art.me : art.foe, lang, now - view.cutAt);

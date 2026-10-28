@@ -3704,6 +3704,8 @@ wireLiveGames({ boardFor, lang, paused: () => popOpen() || anyPaused(),
 function beatSettled(g, result) {
   if (g.left) return; // put down (收手): nothing to settle
   if (!result?.won && !result?.left) tracker.boardLost(g.taskId);
+  // A bout played once (切磋, its deal's `once`): lost, it is over — the rules count it and its cooldown starts.
+  if (!result?.won && !result?.left && g.data?.once && !g.sent) { g.sent = true; run(`lost:${g.taskId}`, () => onOnceLost(g)); return; }
   if (!result?.won && !g.sent && !g.skipped) fallBackFrom(g, result);
   if (!result?.won || g.sent || g.skipped) return;
   // A game that gives stars but no grade (结印) is graded by its deal's `grades` (stars → grade), as 砸寨 grades itself.
@@ -3713,6 +3715,16 @@ function beatSettled(g, result) {
   forgetShell(g.taskId);
   openStuckSlots();
   run(`win:${g.taskId}`, () => onWin(g.taskId));
+}
+/* A bout lost that is played once (切磋): the rules take the loss, the board leaves the stage, the page reads again. */
+async function onOnceLost(g) {
+  const r = await write('task', { action: 'lost', id: g.taskId }).catch(failed);
+  if (!r?.ok) keep({ doNote: refusal(r) });
+  forgetShell(g.taskId);
+  boards.delete(g.taskId);
+  show({ opened: view.opened?.id === g.taskId ? null : view.opened });
+  await refresh();
+  render();
 }
 /* A board's game left for the board behind it (caps.js fallBack: the camera refused or failing, or 「改用…」 after
    missing): the row's own board is dealt in its place — same task, same pay, the story never waits on a camera. */

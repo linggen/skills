@@ -2322,5 +2322,1712 @@
     ]
    }
   }
+ },
+ "lufang": {
+  "master": {
+   "seed": 3,
+   "words": "A lean Chinese Taoist inner-sect disciple in his early thirties, a long narrow face with heavy drooping eyelids and a sour, bored look, black hair half streaked with white gathered in a top-knot with a plain wooden pin, wearing a long dark teal-blue cotton Taoist robe to the ankles with a white inner collar and narrow sleeves, a black sash at the waist, dark cloth shoes. EMPTY HANDS, no weapon. He stands sideways in a lazy, contemptuous fighting stance: weight on the back foot, the left hand clasped behind his back, the right hand loose and low in front of him, chin raised. Drawn in soft graphite pencil and light watercolour wash on warm aged paper, in the manner of an old Chinese book illustration, clean confident outlines, gentle shading. The whole figure from the top of the head to the shoes, seen from the SIDE, facing RIGHT, alone on plain empty paper, no ground, no other objects, no text. Set in old rural China (Ming dynasty dress), not Japanese, not Western."
+  },
+  "armed": false,
+  "robe": true,
+  "who": "the same lean Chinese Taoist disciple from the first image — the same long narrow face with drooping eyelids, the same black hair half white in a top-knot with a wooden pin, the same long dark teal-blue Taoist robe with a white inner collar and narrow sleeves, the black sash, dark cloth shoes — ",
+  "frames": {
+   "idle1": {
+    "lean": 6,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -10,
+     -30
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "words": "a lazy contemptuous fighting stance, weight on the back foot, the left hand clasped behind his back, the right hand loose and low in front, chin raised. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "idle2": {
+    "lean": 5,
+    "legF": [
+     23,
+     -3
+    ],
+    "legB": [
+     -10,
+     -29
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "up": 4,
+    "words": "the same lazy stance, breathing in, the left hand behind his back, the right hand low in front. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "idle3": {
+    "lean": 4,
+    "legF": [
+     22,
+     -2
+    ],
+    "legB": [
+     -9,
+     -28
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "up": 7,
+    "words": "the same lazy stance, a breath held, the left hand behind his back, the right hand low in front. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "idle4": {
+    "lean": 5,
+    "legF": [
+     23,
+     -3
+    ],
+    "legB": [
+     -10,
+     -29
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "up": 3,
+    "words": "the same lazy stance, breathing out, the left hand behind his back, the right hand low in front. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk1": {
+    "lean": 8,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -26,
+     -40
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "words": "an unhurried step forward to the right: front foot reaching forward, back heel lifted, left hand behind his back, right hand low. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk2": {
+    "lean": 8,
+    "legF": [
+     22,
+     6
+    ],
+    "legB": [
+     -14,
+     -50
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "up": 6,
+    "words": "walking forward to the right, the back foot lifting to pass, left hand behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk3": {
+    "lean": 8,
+    "legF": [
+     4,
+     -6
+    ],
+    "legB": [
+     6,
+     -20
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "up": 10,
+    "words": "walking forward to the right, the feet passing under the robe, left hand behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk4": {
+    "lean": 8,
+    "legF": [
+     -24,
+     -40
+    ],
+    "legB": [
+     34,
+     0
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "words": "walking forward to the right, the other foot now reaching forward, left hand behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk5": {
+    "lean": 8,
+    "legF": [
+     -12,
+     -50
+    ],
+    "legB": [
+     22,
+     6
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "up": 6,
+    "words": "walking forward to the right, the back foot lifting to pass, left hand behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk6": {
+    "lean": 8,
+    "legF": [
+     6,
+     -20
+    ],
+    "legB": [
+     4,
+     -6
+    ],
+    "armF": [
+     14,
+     40
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "up": 10,
+    "words": "walking forward to the right, the feet passing under the robe, left hand behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "poke1": {
+    "lean": -4,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -12,
+     -32
+    ],
+    "armF": [
+     30,
+     70
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "words": "drawing his right open hand back by his hip before a quick strike, body upright, left hand behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "poke2": {
+    "lean": 16,
+    "legF": [
+     32,
+     0
+    ],
+    "legB": [
+     -20,
+     -36
+    ],
+    "armF": [
+     88,
+     90
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "dx": 20,
+    "width": 1088,
+    "words": "a quick straight jab of the right open palm forward to the right at chest height, leaning in, the left hand still behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "poke3": {
+    "lean": 10,
+    "legF": [
+     28,
+     -2
+    ],
+    "legB": [
+     -14,
+     -32
+    ],
+    "armF": [
+     70,
+     92
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "dx": 10,
+    "words": "recovering from the jab, the right hand coming back, the left hand behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "thrust1": {
+    "lean": -10,
+    "legF": [
+     30,
+     20
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     10,
+     -10
+    ],
+    "armB": [
+     40,
+     120
+    ],
+    "words": "winding up: the right foot raised to stamp, the right palm drawn back by his ear, leaning back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "thrust2": {
+    "lean": 30,
+    "legF": [
+     64,
+     4
+    ],
+    "legB": [
+     -50,
+     -56
+    ],
+    "armF": [
+     90,
+     90
+    ],
+    "armB": [
+     -40,
+     -20
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "a deep stamping step forward to the right with a heavy shove of the right palm fully extended at chest height, front knee bent, back leg straight. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "thrust3": {
+    "lean": 26,
+    "legF": [
+     60,
+     4
+    ],
+    "legB": [
+     -46,
+     -54
+    ],
+    "armF": [
+     86,
+     88
+    ],
+    "armB": [
+     -30,
+     -10
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "holding the deep shove: front knee bent, back leg straight behind, the right palm extended forward to the right, robe swirling. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "thrust4": {
+    "lean": 12,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -24,
+     -40
+    ],
+    "armF": [
+     66,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "dx": 14,
+    "words": "rising out of the shove back into his lazy stance, the right hand coming back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "ice1": {
+    "lean": 2,
+    "legF": [
+     20,
+     2
+    ],
+    "legB": [
+     -14,
+     -20
+    ],
+    "armF": [
+     14,
+     20
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "words": "standing upright, the right hand drawn back low behind his hip with the palm open, about to fling something, the left hand behind his back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "ice2": {
+    "lean": 8,
+    "legF": [
+     26,
+     4
+    ],
+    "legB": [
+     -16,
+     -24
+    ],
+    "armF": [
+     14,
+     24
+    ],
+    "armB": [
+     86,
+     90
+    ],
+    "words": "flinging the right arm forward low and level toward the right, the open palm sweeping out at knee height as if skimming a blade along the floor. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "edge1": {
+    "lean": 20,
+    "legF": [
+     22,
+     0
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     60,
+     70
+    ],
+    "armB": [
+     30,
+     20
+    ],
+    "words": "leaning forward, the left palm pressed down flat toward the ground in front of him as if raising something out of the earth, the right hand forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "glow1": {
+    "lean": -6,
+    "legF": [
+     40,
+     -20
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     -40,
+     -30
+    ],
+    "words": "shifting his weight onto his left heel, beginning to lift the right knee for a stamp, arms out for balance, looking down. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "hold1": {
+    "lean": -10,
+    "legF": [
+     70,
+     -10
+    ],
+    "legB": [
+     -4,
+     0
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     -50,
+     -40
+    ],
+    "air": false,
+    "words": "standing on his left leg only, the right knee raised high, the right foot lifted well above the ground ready to stamp down, arms out, all his weight on the back heel. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "strike1": {
+    "lean": 18,
+    "legF": [
+     34,
+     6
+    ],
+    "legB": [
+     -24,
+     -30
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     88,
+     92
+    ],
+    "words": "stamping down hard with the right foot in front of him, front knee bent, both arms flung down and back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "strike2": {
+    "lean": 10,
+    "legF": [
+     28,
+     4
+    ],
+    "legB": [
+     -20,
+     -26
+    ],
+    "armF": [
+     0,
+     20
+    ],
+    "armB": [
+     66,
+     80
+    ],
+    "words": "just after a hard stamp, the right foot planted forward, straightening up, arms coming back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "sblock": {
+    "lean": -6,
+    "legF": [
+     16,
+     4
+    ],
+    "legB": [
+     -24,
+     -12
+    ],
+    "armF": [
+     30,
+     170
+    ],
+    "armB": [
+     30,
+     120
+    ],
+    "words": "blocking: both forearms crossed up in front of his face and chest, leaning back slightly. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "hit1": {
+    "lean": -20,
+    "legF": [
+     14,
+     0
+    ],
+    "legB": [
+     -30,
+     -16
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     -46,
+     -14
+    ],
+    "words": "struck: he reels backward to the left, head and shoulders thrown back, arms flung out. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "hit2": {
+    "lean": -10,
+    "legF": [
+     18,
+     2
+    ],
+    "legB": [
+     -24,
+     -16
+    ],
+    "armF": [
+     10,
+     30
+    ],
+    "armB": [
+     -20,
+     0
+    ],
+    "words": "staggered, catching himself, bent a little forward, back on his heels. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jianqi1": {
+    "lean": -16,
+    "legF": [
+     40,
+     30
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     -60,
+     -100
+    ],
+    "armB": [
+     20,
+     40
+    ],
+    "words": "gathering a great spell: crouched low, both palms pressed together down by his right knee. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jianqi2": {
+    "lean": 30,
+    "legF": [
+     70,
+     40
+    ],
+    "legB": [
+     -50,
+     -30
+    ],
+    "armF": [
+     100,
+     110
+    ],
+    "armB": [
+     -30,
+     -10
+    ],
+    "width": 1088,
+    "words": "casting with both arms: a deep lunge to the right, both open palms thrust forward and down at knee height, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "slip1": {
+    "lean": -30,
+    "legF": [
+     60,
+     60
+    ],
+    "legB": [
+     10,
+     -10
+    ],
+    "armF": [
+     -50,
+     -80
+    ],
+    "armB": [
+     90,
+     140
+    ],
+    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "slip2": {
+    "lean": -48,
+    "legF": [
+     72,
+     76
+    ],
+    "legB": [
+     32,
+     10
+    ],
+    "armF": [
+     -62,
+     -92
+    ],
+    "armB": [
+     100,
+     142
+    ],
+    "words": "falling backward, both feet sliding out forward, arms flailing. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "win1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     16,
+     0
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "words": "standing straight after a bout, hands clasped behind his back, chin raised, looking down his nose. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "lose1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     10,
+     10
+    ],
+    "armB": [
+     10,
+     -6
+    ],
+    "words": "standing with his shoulders lowered, both hands hanging, his sour face turned away. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   }
+  },
+  "clips": {
+   "idle": {
+    "frames": [
+     "idle1",
+     "idle2",
+     "idle3",
+     "idle4"
+    ],
+    "fps": 4,
+    "loop": true,
+    "calm": [
+     "idle1"
+    ],
+    "fade": true
+   },
+   "walk": {
+    "frames": [
+     "walk1",
+     "walk2",
+     "walk3",
+     "walk4",
+     "walk5",
+     "walk6"
+    ],
+    "fps": 9,
+    "loop": true,
+    "calm": [
+     "walk1",
+     "walk4"
+    ]
+   },
+   "back": {
+    "frames": [
+     "walk6",
+     "walk5",
+     "walk4",
+     "walk3",
+     "walk2",
+     "walk1"
+    ],
+    "fps": 8,
+    "loop": true,
+    "calm": [
+     "walk4",
+     "walk1"
+    ]
+   },
+   "poke": {
+    "frames": [
+     "poke1",
+     "poke2",
+     "poke3"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "poke1",
+     "poke2"
+    ]
+   },
+   "thrust": {
+    "frames": [
+     "thrust1",
+     "thrust2",
+     "thrust3",
+     "thrust4"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "thrust1",
+     "thrust2"
+    ]
+   },
+   "ice": {
+    "frames": [
+     "ice1",
+     "ice2"
+    ],
+    "hit": 1,
+    "fps": 8
+   },
+   "edge": {
+    "frames": [
+     "edge1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "glow": {
+    "frames": [
+     "glow1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hold": {
+    "frames": [
+     "hold1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "strike": {
+    "frames": [
+     "strike1",
+     "strike2"
+    ],
+    "fps": 6,
+    "calm": [
+     "strike1"
+    ]
+   },
+   "block": {
+    "frames": [
+     "sblock"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hit": {
+    "frames": [
+     "hit1",
+     "hit2"
+    ],
+    "fps": 7,
+    "calm": [
+     "hit1"
+    ]
+   },
+   "jianqi": {
+    "frames": [
+     "jianqi1",
+     "jianqi2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "jianqi2"
+    ]
+   },
+   "slip": {
+    "frames": [
+     "slip1",
+     "slip2"
+    ],
+    "fps": 6,
+    "calm": [
+     "slip2"
+    ]
+   },
+   "win": {
+    "frames": [
+     "win1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "lose": {
+    "frames": [
+     "lose1"
+    ],
+    "fps": 1,
+    "loop": true
+   }
+  }
+ },
+ "qichangsong": {
+  "master": {
+   "seed": 3,
+   "words": "A broad, heavy-set Chinese Taoist inner-sect disciple of about forty, a square face with half-closed eyes and a calm, immovable look, black hair in a neat top-knot with a plain wooden pin, a short beard, wearing a long blue-green cotton Taoist robe to the ankles with a white inner collar, the hem dusted pale earth-yellow, a dark sash at the waist, thick cloth shoes. EMPTY HANDS, no weapon. He stands sideways in a low, rooted horse stance, feet planted wide, the right open palm held forward at chest height, the left hand by his waist. Drawn in soft graphite pencil and light watercolour wash on warm aged paper, in the manner of an old Chinese book illustration, clean confident outlines, gentle shading. The whole figure from the top of the head to the shoes, seen from the SIDE, facing RIGHT, alone on plain empty paper, no ground, no other objects, no text. Set in old rural China (Ming dynasty dress), not Japanese, not Western."
+  },
+  "armed": false,
+  "robe": true,
+  "who": "the same broad heavy-set Chinese Taoist disciple of forty from the first image — the same square face with half-closed eyes, short beard, the same top-knot with a wooden pin, the same long blue-green Taoist robe with a white inner collar and the hem dusted earth-yellow, the dark sash, thick cloth shoes — ",
+  "frames": {
+   "idle1": {
+    "lean": 6,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "words": "a low rooted horse stance, feet planted wide, the right open palm held forward at chest height, the left hand by his waist. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "idle2": {
+    "lean": 5,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 4,
+    "words": "the same rooted stance, breathing in, the right palm forward, the left hand by his waist. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "idle3": {
+    "lean": 4,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 7,
+    "words": "the same rooted stance, a breath held, the right palm forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "idle4": {
+    "lean": 5,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 3,
+    "words": "the same rooted stance, breathing out, the right palm forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk1": {
+    "lean": 8,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -26,
+     -40
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "one heavy deliberate step forward to the right: front foot planted flat, back heel lifted, the right palm forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk2": {
+    "lean": 8,
+    "legF": [
+     22,
+     6
+    ],
+    "legB": [
+     -14,
+     -50
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "stepping forward to the right, the back foot lifting to follow, the right palm forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk3": {
+    "lean": 8,
+    "legF": [
+     4,
+     -6
+    ],
+    "legB": [
+     6,
+     -20
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "stepping forward to the right, the feet passing under the robe, the right palm forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk4": {
+    "lean": 8,
+    "legF": [
+     -24,
+     -40
+    ],
+    "legB": [
+     34,
+     0
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "one heavy step forward to the right, the other foot now planted forward, the right palm forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk5": {
+    "lean": 8,
+    "legF": [
+     -12,
+     -50
+    ],
+    "legB": [
+     22,
+     6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "stepping forward to the right, the back foot lifting to follow, the right palm forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "walk6": {
+    "lean": 8,
+    "legF": [
+     6,
+     -20
+    ],
+    "legB": [
+     4,
+     -6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "stepping forward to the right, the feet passing under the robe, the right palm forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "poke1": {
+    "lean": -4,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -12,
+     -32
+    ],
+    "armF": [
+     30,
+     70
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "drawing the right open palm back by his chest before a push, knees bent, the left hand by his waist. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "poke2": {
+    "lean": 16,
+    "legF": [
+     32,
+     0
+    ],
+    "legB": [
+     -20,
+     -36
+    ],
+    "armF": [
+     88,
+     90
+    ],
+    "armB": [
+     -20,
+     20
+    ],
+    "dx": 20,
+    "width": 1088,
+    "words": "a short heavy push of the right open palm straight forward to the right at chest height, leaning in, the left hand by his waist. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "poke3": {
+    "lean": 10,
+    "legF": [
+     28,
+     -2
+    ],
+    "legB": [
+     -14,
+     -32
+    ],
+    "armF": [
+     70,
+     92
+    ],
+    "armB": [
+     10,
+     90
+    ],
+    "dx": 10,
+    "words": "recovering from the push, the right palm coming back to his guard. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "thrust1": {
+    "lean": -10,
+    "legF": [
+     30,
+     20
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     10,
+     -10
+    ],
+    "armB": [
+     40,
+     120
+    ],
+    "words": "gathering: sunk low, both palms drawn back by his right hip, his weight on the back foot. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "thrust2": {
+    "lean": 30,
+    "legF": [
+     64,
+     4
+    ],
+    "legB": [
+     -50,
+     -56
+    ],
+    "armF": [
+     90,
+     90
+    ],
+    "armB": [
+     86,
+     90
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "a great stepping palm strike: one deep step forward to the right, front knee bent, back leg straight, both open palms shoved fully forward at chest height. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "thrust3": {
+    "lean": 26,
+    "legF": [
+     60,
+     4
+    ],
+    "legB": [
+     -46,
+     -54
+    ],
+    "armF": [
+     86,
+     88
+    ],
+    "armB": [
+     80,
+     88
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "holding the great palm strike: front knee bent, back leg straight behind, both palms extended forward to the right, robe swirling. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "thrust4": {
+    "lean": 12,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -24,
+     -40
+    ],
+    "armF": [
+     66,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "dx": 14,
+    "words": "drawing the back foot up after the strike, rising back into his rooted stance. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "ice1": {
+    "lean": 0,
+    "legF": [
+     70,
+     -10
+    ],
+    "legB": [
+     -4,
+     0
+    ],
+    "armF": [
+     120,
+     160
+    ],
+    "armB": [
+     20,
+     60
+    ],
+    "words": "raising the right knee to stamp, the right palm lifted high, looking down at the ground. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "ice2": {
+    "lean": 24,
+    "legF": [
+     40,
+     -30
+    ],
+    "legB": [
+     -30,
+     -40
+    ],
+    "armF": [
+     60,
+     20
+    ],
+    "armB": [
+     20,
+     60
+    ],
+    "words": "stamping the right foot down hard, the right palm slapped flat toward the ground beside it, a deep crouch. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "edge1": {
+    "lean": 4,
+    "legF": [
+     22,
+     0
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     84,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "words": "perfectly still in his rooted stance, the right open palm held straight out forward to the right at a man's chest height. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "glow1": {
+    "lean": 4,
+    "legF": [
+     20,
+     2
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     12,
+     30
+    ],
+    "armB": [
+     56,
+     140
+    ],
+    "words": "gathering his strength, both feet rooted, the right palm drawn back by his shoulder, the left palm open before his chest. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "hold1": {
+    "lean": 14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     -10,
+     60
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "words": "mid-step: his front foot planted, his back foot lifted off the ground coming forward to follow, body leaning forward, the right palm drawn back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "strike1": {
+    "lean": 18,
+    "legF": [
+     34,
+     6
+    ],
+    "legB": [
+     -24,
+     -30
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     88,
+     92
+    ],
+    "words": "a full palm strike: front knee bent, the right open palm shoved straight forward to the right at chest height, the left hand back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "strike2": {
+    "lean": 10,
+    "legF": [
+     28,
+     4
+    ],
+    "legB": [
+     -20,
+     -26
+    ],
+    "armF": [
+     0,
+     20
+    ],
+    "armB": [
+     66,
+     80
+    ],
+    "words": "just after the palm strike, the right palm still forward, settling back into his stance. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "sblock": {
+    "lean": -6,
+    "legF": [
+     16,
+     4
+    ],
+    "legB": [
+     -24,
+     -12
+    ],
+    "armF": [
+     30,
+     170
+    ],
+    "armB": [
+     30,
+     120
+    ],
+    "words": "guarding: both forearms raised before his chest, rooted, leaning back slightly. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "hit1": {
+    "lean": -20,
+    "legF": [
+     14,
+     0
+    ],
+    "legB": [
+     -30,
+     -16
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     -46,
+     -14
+    ],
+    "words": "struck: he rocks backward to the left, head and shoulders thrown back, arms out. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "hit2": {
+    "lean": -10,
+    "legF": [
+     18,
+     2
+    ],
+    "legB": [
+     -24,
+     -16
+    ],
+    "armF": [
+     10,
+     30
+    ],
+    "armB": [
+     -20,
+     0
+    ],
+    "words": "rocked, catching himself, bent a little forward, back on his heels. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jianqi1": {
+    "lean": -16,
+    "legF": [
+     40,
+     30
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     -60,
+     -100
+    ],
+    "armB": [
+     20,
+     40
+    ],
+    "words": "gathering a great strike: sunk very low, both palms pressed down toward the ground, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jianqi2": {
+    "lean": 30,
+    "legF": [
+     70,
+     40
+    ],
+    "legB": [
+     -50,
+     -30
+    ],
+    "armF": [
+     80,
+     84
+    ],
+    "armB": [
+     76,
+     80
+    ],
+    "width": 1088,
+    "words": "the greatest palm strike: a long deep lunge to the right, both open palms driven forward at waist height, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "slip1": {
+    "lean": -30,
+    "legF": [
+     60,
+     60
+    ],
+    "legB": [
+     10,
+     -10
+    ],
+    "armF": [
+     -50,
+     -80
+    ],
+    "armB": [
+     90,
+     140
+    ],
+    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "slip2": {
+    "lean": -48,
+    "legF": [
+     72,
+     76
+    ],
+    "legB": [
+     32,
+     10
+    ],
+    "armF": [
+     -62,
+     -92
+    ],
+    "armB": [
+     100,
+     142
+    ],
+    "words": "falling backward, both feet sliding out forward, arms flailing. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "win1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     16,
+     0
+    ],
+    "armB": [
+     40,
+     100
+    ],
+    "words": "standing straight and calm after a bout, his right fist in his left palm before his chest in a salute. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "lose1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     10,
+     10
+    ],
+    "armB": [
+     10,
+     -6
+    ],
+    "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   }
+  },
+  "clips": {
+   "idle": {
+    "frames": [
+     "idle1",
+     "idle2",
+     "idle3",
+     "idle4"
+    ],
+    "fps": 4,
+    "loop": true,
+    "calm": [
+     "idle1"
+    ],
+    "fade": true
+   },
+   "walk": {
+    "frames": [
+     "walk1",
+     "walk2",
+     "walk3",
+     "walk4",
+     "walk5",
+     "walk6"
+    ],
+    "fps": 9,
+    "loop": true,
+    "calm": [
+     "walk1",
+     "walk4"
+    ]
+   },
+   "back": {
+    "frames": [
+     "walk6",
+     "walk5",
+     "walk4",
+     "walk3",
+     "walk2",
+     "walk1"
+    ],
+    "fps": 8,
+    "loop": true,
+    "calm": [
+     "walk4",
+     "walk1"
+    ]
+   },
+   "poke": {
+    "frames": [
+     "poke1",
+     "poke2",
+     "poke3"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "poke1",
+     "poke2"
+    ]
+   },
+   "thrust": {
+    "frames": [
+     "thrust1",
+     "thrust2",
+     "thrust3",
+     "thrust4"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "thrust1",
+     "thrust2"
+    ]
+   },
+   "ice": {
+    "frames": [
+     "ice1",
+     "ice2"
+    ],
+    "hit": 1,
+    "fps": 8
+   },
+   "edge": {
+    "frames": [
+     "edge1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "glow": {
+    "frames": [
+     "glow1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hold": {
+    "frames": [
+     "hold1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "strike": {
+    "frames": [
+     "strike1",
+     "strike2"
+    ],
+    "fps": 6,
+    "calm": [
+     "strike1"
+    ]
+   },
+   "block": {
+    "frames": [
+     "sblock"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hit": {
+    "frames": [
+     "hit1",
+     "hit2"
+    ],
+    "fps": 7,
+    "calm": [
+     "hit1"
+    ]
+   },
+   "jianqi": {
+    "frames": [
+     "jianqi1",
+     "jianqi2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "jianqi2"
+    ]
+   },
+   "slip": {
+    "frames": [
+     "slip1",
+     "slip2"
+    ],
+    "fps": 6,
+    "calm": [
+     "slip2"
+    ]
+   },
+   "win": {
+    "frames": [
+     "win1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "lose": {
+    "frames": [
+     "lose1"
+    ],
+    "fps": 1,
+    "loop": true
+   }
+  }
  }
 }

@@ -83,7 +83,12 @@ export const FOE = {
     jianqi: { name: { zh: '剑气三尺', en: 'Three Feet of Sword-Qi' }, cut: 800, startup: 520, active: 200, recover: 700, reach: 380, dmg: 9, push: 140, down: 1100 },
     block: { hold: 460 },
   },
-  ai: { think: 300, block: 0.3, soft: 10, softBy: 0.5, drive: 40 },
+  // Her mind (decide below). A foe's level may lay its own on: how often she reads (`think`), blocks, how soft her first
+  // `soft` moves are, when she drives (稳 under `drive`); the odds of each choice (`palm`, `qi`, `ice`, `back`, `thrust`,
+  // `driveThrust`, `poke`); `chain`: a poke that lands runs on into a thrust; `qiGain` how fast her 气 fills, `qi0` what
+  // she starts with; `edge` / `palmOn` false switch those tricks off (a foe with no blade at his throat).
+  ai: { think: 300, block: 0.3, soft: 10, softBy: 0.5, drive: 40, palm: 0.45, qi: 0.6, ice: 0.5, back: 0.35, closePoke: 0.75,
+    thrust: 0.3, driveThrust: 0.5, poke: 0.75, chain: 0, qiGain: 1, qi0: 0, edge: true, palmOn: true },
 };
 
 /* ── A seeded random source (mulberry32), kept in the state as one integer. ── */
@@ -117,7 +122,7 @@ export function newGame(seed = 'fighter', _n = 1, deal = {}) {
     seed: String(seed), rng: hash(seed), t: 0, live: true, won: false, lost: false, grade: null, stars: null,
     level, R,
     me: { x: mid - 70, y: 0, vx: 0, vy: 0, face: 1, hp: R.me.hp, act: null, stun: 0, cd: 0, cdPf: 0, guard: false, air: false, crouch: false, down: 0, qi: 0, airHit: false },
-    foe: { x: mid + 150, y: 0, vx: 0, face: -1, bal: R.foe.bal, act: null, stun: 0, think: 900, cd: { ice: 2500, palm: 0, edge: 0 }, moves: 0, qi: 0 },
+    foe: { x: mid + 150, y: 0, vx: 0, face: -1, bal: R.foe.bal, act: null, stun: 0, think: 900, cd: { ice: 2500, palm: 0, edge: 0 }, moves: 0, qi: R.foe.ai.qi0 ?? 0 },
     in: { dir: 0, block: false, crouch: false }, buf: [], hist: [], last: {}, order: 1,
     shots: [], fx: [], n: 0, freeze: 0,
     edge: null, palm: null, end: null, cutin: null, wall: null,
@@ -135,7 +140,9 @@ const say = (s, key) => { s.line = { key, at: s.t }; };
 const fx = (s, kind, x, y, extra = {}) => { s.n += 1; s.fx.push({ kind, x, y, at: s.t, id: s.n, ...extra }); if (s.fx.length > 28) s.fx.shift(); };
 const side = (s) => s.order ?? (Math.sign(s.foe.x - s.me.x) || 1); // where she stands from him: kept, so a lunge never crosses him
 const dist = (s) => Math.abs(s.foe.x - s.me.x);
-const onOil = (s, x) => x >= s.R.stage.oil.from && x <= s.R.stage.oil.to;
+const onOil = (s, x) => Boolean(s.R.stage.oil) && x >= s.R.stage.oil.from && x <= s.R.stage.oil.to; // a stage may have none (`oil: false`)
+/** Did the bout end his way? (`end.won`; an old state's `out` was always his.) */
+export const endWon = (e) => Boolean(e && (e.won ?? e.kind === 'out'));
 const gainQi = (who, n) => { who.qi = Math.min(QI_MAX, (who.qi ?? 0) + n); };
 /* Untouchable: the first part of a roll. */
 const safe = (s) => s.me.act?.k === 'roll' && s.t - s.me.act.at < s.R.me.roll.safe;
@@ -312,7 +319,7 @@ function hurtMe(s, dmg, push, stun, { lethal = true, down = 0 } = {}) {
   if (down) { me.down = s.t + down; me.stun = me.down + 200; bump(s, 'knock'); }
   me.vx = -side(s) * push * 4;
   gainQi(me, 6);
-  gainQi(s.foe, 4);
+  gainQi(s.foe, 4 * (s.R.foe.ai.qiGain ?? 1));
   s.combo = { n: 0, at: s.t, who: 'me' };
   hitstop(s, down ? 110 : 70);
   fx(s, 'ink', me.x + side(s) * 18, me.y + (me.crouch ? 70 : 110));
@@ -356,7 +363,7 @@ function hurtFoe(s, m, { heavy = false, fire = false, big = false } = {}) {
   const scale = Math.pow(0.85, s.combo.n - 1);
   foe.bal = Math.max(0, foe.bal - m.dmg * scale * (glow ? 0.5 : 1));
   gainQi(s.me, m.qi ?? 5);
-  gainQi(foe, 3);
+  gainQi(foe, 3 * (R.foe.ai.qiGain ?? 1));
   hitstop(s, big ? 140 : heavy ? 90 : 65);
   fx(s, 'ink', foe.x - sd * 16, fire ? 24 : 112, { big: heavy || big });
   bump(s, big ? 'super' : heavy ? 'heavy' : 'hit');
@@ -392,7 +399,7 @@ function hook(s) {
 function out(s) {
   const foe = s.foe, sd = side(s);
   foe.vx = sd * 640;
-  s.end = { kind: 'out', at: s.t, from: foe.x, dir: sd };
+  s.end = { kind: 'out', at: s.t, from: foe.x, dir: sd, won: true };
   say(s, s.palmLanded ? 'outClumsy' : 'out');
   bump(s, 'slip');
 }
@@ -434,24 +441,27 @@ function decide(s) {
   if (me.stun > t + 200 || me.down > t) { foe.vx = 0; return; } // 不踩人: she waits him up
   // His blow coming within her reach: she may stand it off.
   if (me.act && ['light', 'lkick', 'hpunch', 'heavy', 'air'].includes(me.act.k) && d < 170 && roll(s) < ai.block) { startFoe(s, 'block'); return; }
-  if (cornered(s) && foe.moves >= M.edge.after && foe.cd.edge <= 0 && d < M.poke.reach + 20) { startEdge(s); return; }
-  if (d < M.palm.reach + 16 && foe.bal <= M.palm.under && foe.cd.palm <= 0 && roll(s) < 0.45) { startPalm(s, 'close'); return; }
-  if (foe.qi >= QI && d < M.jianqi.reach - 20 && roll(s) < 0.6) { startFoe(s, 'jianqi'); return; }
+  // A poke of hers just landed and she runs on (`ai.chain`): the thrust after it, at once.
+  if (foe.chain && t - foe.chain < 600 && d <= M.thrust.reach) { foe.chain = 0; startFoe(s, 'thrust'); return; }
+  foe.chain = 0;
+  if (ai.edge !== false && cornered(s) && foe.moves >= M.edge.after && foe.cd.edge <= 0 && d < M.poke.reach + 20) { startEdge(s); return; }
+  if (ai.palmOn !== false && d < M.palm.reach + 16 && foe.bal <= M.palm.under && foe.cd.palm <= 0 && roll(s) < ai.palm) { startPalm(s, 'close'); return; }
+  if (foe.qi >= QI && d < M.jianqi.reach - 20 && roll(s) < ai.qi) { startFoe(s, 'jianqi'); return; }
   if (d > 330) {
-    if (foe.cd.ice <= 0 && roll(s) < 0.5) { startFoe(s, 'ice'); return; }
+    if (foe.cd.ice <= 0 && roll(s) < ai.ice) { startFoe(s, 'ice'); return; }
     foe.vx = -side(s) * R.foe.speed;
     return;
   }
   if (d > M.thrust.reach) { foe.vx = -side(s) * R.foe.speed; return; }
   if (d < 120) {
     const r = roll(s);
-    if (r < 0.35) { foe.vx = side(s) * R.foe.back; foe.think = t + 380; return; } // back to her length of blade
-    startFoe(s, r < 0.75 ? 'poke' : 'thrust');
+    if (r < ai.back) { foe.vx = side(s) * R.foe.back; foe.think = t + 380; return; } // back to her length of blade
+    startFoe(s, r < ai.closePoke ? 'poke' : 'thrust');
     return;
   }
   const r = roll(s), driving = foe.bal <= ai.drive;
-  if (r < (driving ? 0.5 : 0.3)) startFoe(s, 'thrust');
-  else if (r < 0.75) startFoe(s, 'poke');
+  if (r < (driving ? ai.driveThrust : ai.thrust)) startFoe(s, 'thrust');
+  else if (r < ai.poke) startFoe(s, 'poke');
   else foe.vx = -side(s) * R.foe.speed * 0.6;
 }
 
@@ -465,7 +475,9 @@ function foeStrikes(s) {
     while (a.shot < m.count && s.t - a.at >= m.startup + a.shot * m.gap) {
       a.shot += 1;
       s.n += 1;
-      s.shots.push({ who: 'foe', kind: 'ice', x: foe.x - side(s) * 30, y: m.at, vx: -side(s) * m.speed, id: s.n });
+      // `kind`: how it looks (ice · blade: 卢方's 金刃 along the boards · quake: 祁长松's stamp through the ground); `low`
+      // ones are jumped, never ducked.
+      s.shots.push({ who: 'foe', kind: m.kind ?? 'ice', x: foe.x - side(s) * 30, y: m.at, vx: -side(s) * m.speed, id: s.n, ...(m.low ? { low: true } : {}) });
       bump(s, 'ice');
     }
     if (a.shot >= m.count) a.hit = true;
@@ -480,6 +492,7 @@ function foeStrikes(s) {
     const soft = foe.moves <= R.foe.ai.soft ? R.foe.ai.softBy : 1; // 头十招，她只使了五分力
     if (guarded(s, Math.round(m.dmg * soft * 0.25), m.push)) return;
     hurtMe(s, Math.round(m.dmg * soft), m.push, m.stun ?? 400, { down: m.down ?? 0 });
+    if (a.k === 'poke' && R.foe.ai.chain > 0 && roll(s) < R.foe.ai.chain) { foe.chain = s.t; foe.think = s.t; a.m = { ...a.m, recover: Math.min(a.m.recover, 120) }; }
   }
 }
 
@@ -676,7 +689,7 @@ function shotsStep(s, dt) {
     if (x.x < 0 || x.x > R.stage.w) { x.gone = true; continue; }
     if (x.who === 'foe' && Math.abs(x.x - me.x) < 26) {
       x.gone = true;
-      if (me.y > 52 || me.crouch || me.down > s.t || safe(s)) continue; // jumped, ducked or rolled under it: it flies on
+      if (me.y > 52 || (me.crouch && !x.low) || me.down > s.t || safe(s)) continue; // jumped, ducked or rolled under it: it flies on (a low one is jumped only)
       const m = R.foe.moves.ice, soft = foe.moves <= R.foe.ai.soft ? R.foe.ai.softBy : 1;
       if (guarded(s, 1, 10)) continue;
       hurtMe(s, Math.max(1, Math.round(m.dmg * soft)), m.push, m.stun);
@@ -684,7 +697,9 @@ function shotsStep(s, dt) {
     if (x.who === 'me' && !x.gone && Math.abs(x.x - foe.x) < 30 && !s.end) {
       x.gone = true;
       const m = x.kind === 'wave' ? R.me.super : x.kind === 'palmfire' ? (x.heavy ? R.me.palmfireH : R.me.palmfire) : R.me.special;
-      hurtFoe(s, m, { fire: x.kind === 'fire', big: x.kind === 'wave' });
+      // 护体灵光 (`foe.armor`, 祁长松's): a spell on him lands at that share
+      const armor = R.foe.armor ?? 1;
+      hurtFoe(s, armor < 1 ? { ...m, dmg: m.dmg * armor } : m, { fire: x.kind === 'fire', big: x.kind === 'wave' });
     }
   }
   s.shots = s.shots.filter((x) => !x.gone);
@@ -711,11 +726,25 @@ function endStep(s) {
   }
   if (s.t - e.at < END_MS) return;
   s.live = false;
-  if (e.kind === 'out') {
+  if (e.won) {
     s.won = true;
     s.grade = s.palmLanded ? 'clumsy' : 'clean';
     s.stars = s.palmLanded ? (s.me.hp >= 30 ? 2 : 1) : 3;
   } else s.lost = true;
+}
+
+/* A bout of sparring (`stage.win: 'yield'`, 切磋 at the 演武场): no slick to send her off — her 稳 gone, she yields
+   (认输); and when the incense is out (`level.time`, `stage.timeUp`) the one standing looser loses, as a judge would
+   call it. The story's bout keeps neither: over the slick, or his fall. */
+function sparEnd(s) {
+  const st = s.R.stage;
+  if (st.win === 'yield' && s.foe.bal <= 0) { s.end = { kind: 'yield', at: s.t, won: true }; s.foe.vx = 0; say(s, 'yield'); bump(s, 'down'); return; }
+  if (st.timeUp && s.t >= (s.level?.time ?? Infinity)) {
+    const mine = s.me.hp / s.R.me.hp, hers = s.foe.bal / s.R.foe.bal, won = mine > hers;
+    s.end = { kind: 'time', at: s.t, won };
+    say(s, won ? 'timeWon' : 'timeLost');
+    bump(s, 'down');
+  }
 }
 
 function step(s) {
@@ -732,7 +761,8 @@ function step(s) {
   bodies(s, STEP_MS);
   shotsStep(s, STEP_MS);
   if (s.combo.n && s.foe.stun <= s.t && s.t - s.combo.at > 200) s.combo = { ...s.combo, n: 0 };
-  if (me.hp <= 0 && !s.end) { s.end = { kind: 'down', at: s.t }; me.down = s.t + END_MS * 2; say(s, 'lost'); bump(s, 'down'); }
+  if (me.hp <= 0 && !s.end) { s.end = { kind: 'down', at: s.t, won: false }; me.down = s.t + END_MS * 2; say(s, 'lost'); bump(s, 'down'); }
+  if (!s.end) sparEnd(s);
   if (s.cue && s.t - s.cue.at > 900) s.cue = null;
 }
 

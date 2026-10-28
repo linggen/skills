@@ -295,6 +295,16 @@ overflow pays more.
 - **Old saves** keep their 层 and how full it stood (state v10 `paceLayer`, `thresholds_were` by
   version: a v8 save is read against the oldest ladder it was played on).
 
+**切磋 · 演武场 — the daily bout** 【已建】 (Hanli, 2026-10-28: 「宗门大比的剧情过后, 可以弄一个每天一次的日常比武切磋, 让用户玩格斗…
+和兽潮并列的一个时间触发游戏, 冷却3小时」): beside 兽潮, a plot the game alone has. After the 大比 beat (wm-jiaxin), at 沉鼎观,
+a fellow disciple waits on the 演武场 for a bout of 格斗 (a sparring stage: her 稳 emptied she yields; the incense out, the
+steadier wins). One bout a cooldown — 3 h from its end, won, lost or put down; a bout waiting is the same bout however
+long. Bout n is dealt from the save's seed and n: the opponent met least (never last bout's when another is open), a
+style never last bout's (稳守 · 抢攻 · 连招 · 运气: the AI's knobs), the climb by his realm, a frame line (who challenges,
+why). Pays a fixed share of the layer × ★, the day's first two in full, then the replay's falling share. Rules:
+rules/qiecuo.mjs; the knobs: tasks/world.json `qiecuo`, balance.json `qiecuo_h` and `play_pay.qiecuo`; the opponents'
+levels: games.json's 切磋 row (the 游戏厅's too).
+
 **兽潮 — the daily tide at 沉鼎观** 【已建】 (Hanli, 2026-10-20: 「兽潮塔防可以作为游戏里才有的一个情节. 比如每天固定时间有兽潮
 攻击沉鼎观. 在游戏里交代一下就好了」; 2026-10-26 「好, 按这样改」: players missed the clock window, so a cooldown as the 秘境
 rerun has): a plot the game alone has, never the book's. 银月 tells it once, on the first night's lead (every so

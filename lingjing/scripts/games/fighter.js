@@ -51,11 +51,23 @@ export function ladderOf(registry) {
   return (registry?.games ?? []).filter((g) => g.id === meta.id).flatMap((g) => (g.levels ?? []).map((l) => ({ name: g.name, ...l })));
 }
 /** The level a mount plays: the deal's own, else the registry's named by `data.level` (else its first). */
-export async function levelFor(data = {}) {
+export async function levelFor(data = {}, search = globalThis.location?.search) {
   if (data.levels?.length) return data.levels[0];
   if (data.level && typeof data.level === 'object') return data.level;
   const reg = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url)).then((r) => r.json()).catch(() => null);
-  const all = ladderOf(reg);
+  return pickLevel(reg, data, search);
+}
+/** The registry's level a deal names: `data.lv` or `?lv=` (the 游戏厅's chips: 1… on the row's own `levels`, or a level
+    id), else `data.level` by id, else the first. */
+export function pickLevel(reg, data = {}, search = '') {
+  const all = ladderOf(reg), lv = data.lv ?? new URLSearchParams(search ?? '').get('lv');
+  if (lv != null) {
+    const row = (reg?.games ?? []).find((g) => g.id === meta.id && g.levels?.some((l) => l.id === data.level)) ?? null;
+    const own = row?.levels ?? [];
+    const byN = /^\d+$/.test(String(lv)) ? own[Number(lv) - 1] : null;
+    const hit = byN ?? all.find((l) => l.id === String(lv));
+    if (hit) return hit;
+  }
   return all.find((l) => l.id === data.level) ?? all[0] ?? {};
 }
 

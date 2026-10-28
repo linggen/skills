@@ -16,6 +16,7 @@ import { playsAgain, taskOf } from './errands.mjs';
 import { fantongBrief } from './fantong.mjs';
 import { sideLine } from './hui.mjs';
 import { isTide, shouchaoHere } from './shouchao.mjs';
+import { isBout, qiecuoHere } from './qiecuo.mjs';
 import { kaoHere } from './kao.mjs';
 import { aside as asideItem } from './tell.mjs';
 import { encounterOf, lockOf, placeOf, sceneOf } from './world.mjs';
@@ -52,8 +53,9 @@ export const ASIDE_KINDS = [
     open: (content, state, view, now) => { const e = encounterOf(content, state, now); return e?.pool ? [{ id: e.game.id, title: e.creature.name }] : []; },
     takes: (verb, args) => (verb === 'duel' && String(args.id ?? '').startsWith('haunt:')) || verb === 'tame' || verb === 'reroll' },
   { kind: 'tide', // 兽潮, out of its cooldown (rules/shouchao.mjs)
-    open: (content, state, view, now) => tasksOf(view).filter(t => t.tide && shouchaoHere(content, state, t.id, now)).map(t => ({ id: t.id, title: t.title })),
-    takes: (verb, args, content) => ['win', 'task'].includes(verb) && isTide(content, String(args.id ?? '')) },
+    // …and 切磋's bout (rules/qiecuo.mjs), the same kind: a cooldown's board at hand
+    open: (content, state, view, now) => tasksOf(view).filter(t => t.tide && (shouchaoHere(content, state, t.id, now) || qiecuoHere(content, state, t.id, now))).map(t => ({ id: t.id, title: t.title })),
+    takes: (verb, args, content) => ['win', 'task'].includes(verb) && (isTide(content, String(args.id ?? '')) || isBout(content, String(args.id ?? ''))) },
   { kind: 'seclusion', // 闭关, where the story has opened it (rules/seclusion.mjs)
     open: (content, state, view) => (view && !(view.locked ?? []).includes('seclusion') && !state.seclusion ? [{ id: 'seclusion' }] : []),
     takes: verb => verb === 'seclude' },

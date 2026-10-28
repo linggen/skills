@@ -53,6 +53,7 @@ import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs
 import { kaoBrief, kaoHosted } from './kao.mjs';
 import { shouchaoHosted, shouchaoRow, shouchaoWait, shouchaoWaiting } from './shouchao.mjs';
 import { mijingBrief, mijingHosted, mijingRow } from './mijing.mjs';
+import { qiecuoHosted, qiecuoRow, qiecuoWait, qiecuoWaiting } from './qiecuo.mjs';
 import { dealtOf } from './climb.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
@@ -461,20 +462,22 @@ function tasksBrief(content, state, ctx) {
   Object.assign(hosted, shouchaoHosted(content, state, ctx.now));
   // 秘境探险 (rules/mijing.mjs): the board of the run's room he stands in.
   Object.assign(hosted, mijingHosted(content, state));
+  // 切磋 (rules/qiecuo.mjs): the day's bout at 沉鼎观, out of its cooldown.
+  Object.assign(hosted, qiecuoHosted(content, state, ctx.now));
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
   const hereShows = new Set((sceneOf(content, state)?.show ?? []).filter(c => c.card === 'board').map(c => c.id));
   const tasks = Object.entries({ ...state.tasks, ...held, ...hosted })
     // …and a board the scene he stands in shows, done (won or left) on an earlier day: still the
     // scene's, so the stage knows it is over and never deals it fresh (a skip, then a night at the scene).
-    .filter(([id, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false) || hereShows.has(id) || shouchaoWaiting(content, state, id, ctx.now))
+    .filter(([id, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false) || hereShows.has(id) || shouchaoWaiting(content, state, id, ctx.now) || qiecuoWaiting(content, state, id, ctx.now))
     // A board whose row is gone (told again: the 调息 cut, 2026-10-20) stays in the save, done, for the record — never drawn.
     .filter(([id]) => taskOf(content, id))
     .map(([id, t]) => {
       const task = taskOf(content, id);
-      // The deal: the task's own (and its game's levels) 兽潮's night and a 秘境探险 room's level laid over it — one deal.
+      // The deal: the task's own (and its game's levels) 兽潮's night (or 切磋's bout) and a 秘境探险 room's level laid over it — one deal.
       const own = dealOf(content, task, state, ctx.now);
-      const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : {}, mj = task.mijing ? mijingRow(content, state, id) : {};
+      const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : task.qiecuo ? qiecuoRow(content, state, ctx.now) : {}, mj = task.mijing ? mijingRow(content, state, id) : {};
       const deal = own.deal || sc.deal || mj.deal ? { deal: { ...own.deal, ...sc.deal, ...mj.deal } } : {};
       return {
         id, title: boardTitle(content, state, id, task, again.has(id)), kind: task.kind, status: t.status,
@@ -792,7 +795,7 @@ export { dealOf, duelBrief, forSale, shopOf, shopOpen, ledgerOf, nameOf, onStage
 /* The cooldowns he waits out now, in one shape (cards.js waitRowHtml): 兽潮's (rules/shouchao.mjs), a pool at rest where he
    stands (world.mjs). Each its own line in the world's words. */
 function waitsOf(content, state, now) {
-  return [shouchaoWait(content, state, now), poolWait(content, state, now)].filter(Boolean);
+  return [shouchaoWait(content, state, now), qiecuoWait(content, state, now), poolWait(content, state, now)].filter(Boolean);
 }
 
 /* The last story step's 所得 as the page shows it: each thing's name, picture, kind and small print. */

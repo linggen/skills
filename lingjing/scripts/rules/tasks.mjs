@@ -26,6 +26,7 @@ import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
 import { isTide, shouchaoDone, shouchaoHere, shouchaoShut } from './shouchao.mjs';
 import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardHere, mijingDuel } from './mijing.mjs';
+import { isBout, qiecuoDone, qiecuoHere, qiecuoOver, qiecuoShut } from './qiecuo.mjs';
 
 /* Each line its own 修为 (rules/lines.mjs, Hanli 2026-10-27): a board pays the line it belongs to — a 今 board the 今, wherever
    it is replayed; on a 今 scene, the 今 — by the same minutes on that line's ladder, and never 灵石. Null: the 古's own. */
@@ -52,8 +53,12 @@ export function task(state, content, ctx, args) {
   if (args.action === 'replay') return replayBoard(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'later') return laterBoard(state, content, ctx, String(args.id ?? ''));
   // 收手: a board he opened by choice, put down (rules/skips.mjs leaveOf).
+  // …切磋's bout put down is over (rules/qiecuo.mjs): skipped, its cooldown started.
+  if (args.action === 'leave' && isBout(content, String(args.id ?? ''))) return qiecuoOver(state, content, ctx, String(args.id), 'skipped');
   if (args.action === 'leave') return leaveBoard(state, content, ctx, String(args.id ?? ''));
-  return refuse('unknown-action', null, { actions: ['list', 'done', 'check', 'skip', 'replay', 'later', 'leave'] });
+  // 切磋's bout lost (the page, as the board ends unwon): over, unpaid, its cooldown started.
+  if (args.action === 'lost') return isBout(content, String(args.id ?? '')) ? qiecuoOver(state, content, ctx, String(args.id), 'lost') : refuse('not-a-bout', null);
+  return refuse('unknown-action', null, { actions: ['list', 'done', 'check', 'skip', 'replay', 'later', 'leave', 'lost'] });
 }
 
 /* An errand held and not yet met that asks for a win on this board. It
@@ -142,6 +147,8 @@ function taskOpen(content, state, id, now) {
   if (isTide(content, id)) return shouchaoHere(content, state, id, now);
   // A 秘境探险 room's board: open while he stands in its room (rules/mijing.mjs).
   if (t.mijing) return mijingBoardHere(content, state, id);
+  // …and 切磋's bout by its own (rules/qiecuo.mjs).
+  if (isBout(content, id)) return qiecuoHere(content, state, id, now);
   if (reopened(content, state, id, now) || hostedHere(content, state, id, now) || catchHere(content, state, id) || stallHere(content, state, id, now) || kaoHere(content, state, id, now) || shouchaoHere(content, state, id, now)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
@@ -156,6 +163,10 @@ function taskDone(state, content, ctx, id) {
   if (t.mijing) return mijingBoardHere(content, state, id) ? mijingBoardDone(state, content, ctx, id) : refuse('not-here', null);
   // 兽潮 (rules/shouchao.mjs): the night counted — its 灵气, the pay by stars, the next night.
   if (shouchaoHere(content, state, id, ctx.now)) return shouchaoDone(state, content, ctx, id);
+  // 切磋 (rules/qiecuo.mjs): the bout won — its pay by stars and the day's share, the next bout, the cooldown.
+  if (qiecuoHere(content, state, id, ctx.now)) return qiecuoDone(state, content, ctx, id);
+  const boutShut = qiecuoShut(content, state, id, ctx.now);
+  if (boutShut) return boutShut;
   // …and inside its cooldown: refused in the world's words, the minutes left.
   const tideShut = shouchaoShut(content, state, id, ctx.now);
   if (tideShut) return tideShut;
@@ -317,7 +328,7 @@ function boardPay(content, s, t, id, paid) {
 export function win(state, content, ctx, args) {
   const id = String(args.id ?? '');
   const inScene = sceneOf(content, state)?.exits.some(e => gameOf(e)?.id === id && gameOf(e).kind !== 'duel');
-  if (!inScene && !taskOpen(content, state, id, ctx.now)) return shouchaoShut(content, state, id, ctx.now) ?? refuse('not-here', null);
+  if (!inScene && !taskOpen(content, state, id, ctx.now)) return shouchaoShut(content, state, id, ctx.now) ?? qiecuoShut(content, state, id, ctx.now) ?? refuse('not-here', null);
   // A scene's boards are played in `show` order: a later one waits for those before it.
   const scene = sceneOf(content, state), order = sceneBoards(scene);
   if (order.slice(0, Math.max(0, order.indexOf(id))).some(b => state.tasks?.[b]?.status !== 'done')) return refuse('board-waits', null);
