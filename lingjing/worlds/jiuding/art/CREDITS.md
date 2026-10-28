@@ -319,6 +319,14 @@ talismans' places before 入门. The local FLUX.2 klein 4B (mflux), `tools/paint
 comic style; seeds 1–5 looked at (1–2 came out in buttoned modern jackets, and the prompt was rewritten for a crossed hemp
 tunic), kept tangong 3 and huoba 4 — one boy, one man across their three steps. No outside source.
 
+守火 · 雪夜柴垛 rebuilt as build boards (2026-10-28, Hanli: 「守火和雪夜守柴, 可否用主力的塔防取代?」 · 「守炉比较好玩」; games.json
+`shouhuo` · `chaiduo` `skin`) — `scripts/games/shoulu/art/` `tower-huodui-1` · `-2` · `-3` (his fire: moss on a rock, ringed, a
+bonfire), `tower-songyan-1` · `-2` · `-3` (pine-resin smoke: a lump, a heap, a clay pot), `tower-laozhou-1` · `-2` · `-3` (老周 next
+door, in a padded cross-collar coat, throwing stones: a pile, a basket, on the snowy wall) and `tower-bingshui-1` · `-2` · `-3`
+(water to ice: a bucket, tipped on a slick, a frozen trough). The local FLUX.2 klein 4B (mflux), `tools/paint-shoulu-flux.py`
+(`SKIN` · `THINGS`), text to image in the comic style, one paint run at a time; seeds 1–3 each looked at, kept laozhou 2 and
+the others 1 (`KEPT`). No outside source.
+
 For 第一回's 收租 塔防 (守山门 kit, sadoushou; 2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」) —
 `scripts/games/sadoushou/art/`: the 马家家丁 `jiading-walk-1` · `-walk-2` · `-hit`, 小宝's 跟班 `genban-walk-1` · `-walk-2` ·
 `-hit`, `maxiaobao-walk-1` (munching the 桂花糕, a wink) · `-roll` (the 糯米团子 ball) · `-hit`, `masan-walk-1` · `-slam` ·

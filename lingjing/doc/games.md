@@ -284,42 +284,39 @@ note and costs the gauge (Piano Tiles' white tile, softened), so mashing loses.
   - **No 今 music room**: no 今 scene has one (j07-dark's earphones are 马小宝's songs, not a thing 沈芒 plays).
 - **Next:** a candidate for Hanli to judge — j07-dark (今三), 马小宝's earphones 「一首歌接一首歌」 in the locked 古籍部 (a 今 board pays the 今 ladder, so the 古 bands would not move); else a passage where the book plays a tune.
 
-## 守炉 in the story — 守火 · 雪夜柴垛 once, the rest the 游戏厅's way (10-28)
+## 守炉 in the story — every story board a build board (10-28)
 
-Hanli 10-28: 「守火那个不太好玩. 那个不要」 · 「雪夜柴垛也不好玩」, then 「这两个在剧情里出现一次, 还可以, 不要让玩家反复玩」 and
-「大厅里的守炉好玩」.
+Hanli 10-28: 「守火那个不太好玩」 · 「雪夜柴垛也不好玩」 · 「大厅里的守炉好玩」, then 「守火和雪夜守柴, 可否用主力的塔防取代?」 ·
+「守炉比较好玩」.
 
-**Why the 游戏厅's is fun and those two are not.** The 游戏厅's 守炉 is decisions: where to build on a long road, which
-talisman (quick and single, slow and wide, frost, thunder), upgrade or save, call a wave early for 灵石, against mixed
-beasts (armour, leapers, fliers) over five to eight waves, 银月 to place. 守火 and 雪夜柴垛 are 小满 alone (`direct`): no
-spots, no money, one beast, four short waves, every tap an order — throw a stone, fetch a branch. Nothing to plan.
+**Why the 游戏厅's is fun and the old 守火 · 雪夜柴垛 were not.** The 游戏厅's 守炉 is decisions: where to build on a long
+road, which piece (quick and single, slow and wide, the slowing one), upgrade or save, call a wave early, against a
+mix of beasts. The old 守火 and 雪夜柴垛 were 小满 alone (`direct`): no spots, no money, one beast, four short waves, every
+tap an order — throw a stone, fetch a branch.
 
-| Board | Was | Now |
-|---|---|---|
-| 守火 · 洞口那堆火 `cave-fire` (第一回) | 守炉 `shouhuo`, direct | **kept, once** — `again: false` |
-| 雪夜柴垛 · 冬月的夜 `halfyear-chaiduo` (第二回) | 守炉 `chaiduo`, direct | **kept, once** — `again: false` |
-| 泗水路 · 路上那一夜 `gate-sishui` (第三回) | 守炉 `sishui`, direct (守火's fire to feed) | **rebuilt** as a build board |
-| 守炉 · 药园巡夜 `yaoyuan-xunye` (第四回) | the 游戏厅's 药园 map | **kept**, its own road and spots |
-| 守炉 · 丹房看炉 `danfang-kanlu` (第八回) | the 游戏厅's 后山 map | **kept**, its own road and spots |
+| Board | Was | Now | Pieces (`skin`) |
+|---|---|---|---|
+| 守火 · 洞口那堆火 `cave-fire` (第一回) | 小满 alone, a fire to feed | **rebuilt** | 火堆 (火符) · 松烟 (寒符) — what he lit; the hurt fox by the fire to keep |
+| 雪夜柴垛 · 冬月的夜 `halfyear-chaiduo` (第二回) | 小满 alone, stones only | **rebuilt** | 老周 (剑阵, throws stones) · 冰面 (寒符, water poured to ice) |
+| 泗水路 · 路上那一夜 `gate-sishui` (第三回) | 守火's fire to feed | **rebuilt** | 弹弓 (剑阵) · 火把 (火符) — the road's camps; 舅舅 to keep |
+| 守炉 · 药园巡夜 `yaoyuan-xunye` (第四回) | the 游戏厅's 药园 map | kept, its own road | 剑阵 · 火符 |
+| 守炉 · 丹房看炉 `danfang-kanlu` (第八回) | the 游戏厅's 后山 map | kept, its own road | 剑阵 · 火符 · 雷符 |
 
-- **Once, never again** (tasks/world.json `again: false`, errands.mjs `playsAgain`): left, the board is not kept to be
-  offered again (skips.mjs `skipBoard`); `replayDue` and 先放一放's skipped list pass over one an older save kept; no
-  errand reopens it. They were never in a place's pool, the daily rotation, 兽潮 or 主页's practice. Won, a once board is
-  done for good as before. tests/skips.test.mjs.
-- **泗水路 rebuilt**: spots by the road, 干粮 to spend, the cheap quick one or the slow wide one, three steps each, waves on a
-  countdown; 舅舅 asleep by the camp fire still to keep (`keep`); 小满 the hero, throwing stones. Before 入门 there are no
-  talismans, so the level's `skin` (core.js `skinOf`) names and paints them as the road's camps — the families going to
-  the 试 sleep along it (「几千户人家，赶的是同一个日子」): 剑阵 → a boy's **弹弓** (it shoots a stone), 火符 → a man's **火把**.
-  The numbers stay the talismans'. The first build board a player meets: gentler than 药园巡夜, yet it bites (hpMul 2.5). Its how-line
-  rewritten (no fire to feed); the book's text untouched.
-- **药园巡夜 · 丹房看炉 own maps**: 巡夜 comes in low from the west cliff's foot (the book's tracks) and winds to the plot
-  by the east wall; 看炉 comes down the east ridge to the 丹炉 where it stood (its lantern glow is painted there), the
-  鬿雀 diving from the west; hpMul 1.4 → 1.7 for its shorter road. A test keeps every story build level off the 游戏厅's
-  and 秘境's roads and spots.
-- Bots (20 seeds, tests/game-shoulu.test.mjs): 泗水路 first-timer 20/20 ★★★, human 20/20 ★★★; two of them alone win but
-  lose fire on most nights, 弹弓 alone loses fire; nothing laid loses, ~160 s. 药园巡夜 first-timer 20/20 (★★–★★★), human 20/20, ~165 s. 丹房看炉 first-timer 20/20, 13
-  losing a little fire; human 20/20 (★–★★★); fire alone loses to the birds; ~170 s.
-- The module, its 游戏厅 rows and the two kept levels stay; nothing cut.
+- **Before 入门 there are no talismans**: a level's `skin` (core.js `skinOf`, shoulu.js `towerName`) names and paints the
+  talisman as the passage's own thing — the numbers stay the talisman's. Each of the three pre-入门 boards has its own
+  pair, so no two read alike; none brings a 大妖 or an elite, so the 结印 dock never opens before 入门. `spotMark` puts the
+  board's own glyph on a free spot (石 · 雪 · 歇), the words its own 灵石 (干柴 · 力气 · 干粮). Art: local FLUX, every seed
+  looked at (worlds/jiuding/art/CREDITS.md).
+- **Maps**: every story build level has its own road and spots — none another level's, each road on average more than
+  35 px from every other (tests/game-shoulu.test.mjs). 守火 climbs from the 谷 floor at the bottom left, back and forth, to
+  the cave mouth at the top; 雪夜柴垛 runs up and down the yard in columns to the 柴垛; 泗水路 an S along the road; 巡夜 in
+  from the west cliff's foot; 看炉 down the east ridge to the 丹炉, the 鬿雀 from the west.
+- **The climb** (bots, 20 seeds; the lazy hand = two pieces, never upgraded): 守火 first-timer and human 20/20 ★★★, lazy
+  20/20 but losing fire most nights; 雪夜柴垛 first-timer and human 20/20 ★★★, lazy 9/20; 泗水路 first-timer and human 20/20
+  ★★★, lazy 0/20; 巡夜 and 看炉 as before, the first-timer losing a little fire. Nothing laid loses on all five. 2–3 min each.
+- Task ids, deals and pay unchanged: old saves play the new boards. The book's text untouched; only each board's own
+  how-line and lead tips rewritten. The once-only rule (`again: false`, 10-28 morning) was retired with them.
+- The fire mode (`fire`, sticks, `direct`, the eyes in the dark) is no longer used by any level.
 
 ## 太鼓 in the story (10-28)
 

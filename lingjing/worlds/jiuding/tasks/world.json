@@ -74,10 +74,10 @@
       "done_line": { "zh": "一个小角包好了，留作明天的早饭。", "en": "A corner wrapped for tomorrow's breakfast." }
     },
     {
-      "_td": "2026-10-21 (Hanli: 第一回 adds two 塔防 boards): 00-cave, at 「火堆挡在洞口，野兽便不敢进来」, before 喂饼 (the 卷一 plan's order: 接雨 · 守白菜 · 忍字 · 拽爹 · 守火 · 喂饼 — the two 割绳子 boards not back to back). 守炉's story level `shouhuo` (games.json `shoulu`, `story: \"00-cave\"`): the fire at the cave mouth is the 炉, the hurt fox beside it; eyes in the dark circle in and shy from the light; the fire burns down and 枯枝 at the cliff's foot keep it up (「守火的人不能睡，睡着了，火就灭了」). 小满 alone — a 柴刀 and stones, no talismans, no 银月. The second 塔防, gentle. Stars by the fire left. Nothing paid before 入门.",
+      "_td": "2026-10-21 (Hanli: 第一回 adds two 塔防 boards): 00-cave, at 「火堆挡在洞口，野兽便不敢进来」, before 喂饼 (the 卷一 plan's order: 接雨 · 守白菜 · 忍字 · 拽爹 · 守火 · 喂饼 — the two 割绳子 boards not back to back). 守炉's story level `shouhuo` (games.json `shoulu`, `story: \"00-cave\"`): the fire at the cave mouth is the 炉, the hurt fox beside it; eyes in the dark circle in and shy from the light; the fire burns down and 枯枝 at the cliff's foot keep it up (「守火的人不能睡，睡着了，火就灭了」). 小满 alone — a 柴刀 and stones, no talismans, no 银月. The second 塔防, gentle. Stars by the fire left. Nothing paid before 入门. Rebuilt 2026-10-28 (Hanli: 「守火和雪夜守柴, 可否用主力的塔防取代?」 · 「守炉比较好玩」): a 守炉 build board now — 火堆 and 松烟 he lights by the road, the fox by the fire to keep; no fire to feed, no eyes in the dark. Id, deal and pay kept.",
       "id": "cave-fire", "kind": "board", "game": "shoulu", "deal": { "lv": "shouhuo" }, "period": "once", "stars": 3,
       "title": { "zh": "守火 · 洞口那堆火", "en": "Keeping the fire · At the cave mouth" },
-      "how": { "zh": "火堆挡在洞口，野兽便不敢进来——火一矮，黑里的眼睛就往里凑。点崖根底下的枯枝，小满折来添火；点一双眼睛，他扔石头撵。守到它们散了。", "en": "A fire across the cave mouth keeps beasts out; when it burns low, the eyes in the dark creep in. Tap a dead branch at the cliff's foot and Xiaoman snaps it for the fire; tap a pair of eyes and he throws a stone. Hold till they give up." },
+      "how": {"zh": "火堆挡在洞口，野兽便不敢进来。野猪顺着谷底拱上来——点洞口边的空处，再生一堆火，或熏一把松烟；点一头野猪，小满扔石头撵。护住火堆，也护住火边那只小银狐。", "en": "A fire across the cave mouth keeps beasts out. Boars come rooting up the valley floor: tap a free spot by the cave to light another fire or smoke some resin; tap a boar and Xiaoman throws a stone. Keep the fire, and the little fox beside it."},
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "火堆挡在洞口，野兽便不敢进来。", "en": "With a fire across the mouth of the cave, animals wouldn't dare come in." }
     },
@@ -132,10 +132,10 @@
       "done_line": {"zh": "出谷的路，认出来了。", "en": "The way out of the valley, found."}
     },
     {
-      "_td": "2026-10-21 (the 卷一 small-game plan; Hanli: 「start building」): 00-halfyear, the passage split after 「夜里坐在柴垛上，手脚也不冷了……自己穿一件单褂。」 — a winter night on the 柴垛 behind the house (the 竹简 hidden at its bottom), 野猪 down from 蒙山 in the snow. 守炉's story level `chaiduo` (games.json `shoulu`, `story: \"00-halfyear\"`): the 柴垛 is the 炉; 小满 alone, no talismans; the snow slows him and the night is longer. The fourth 塔防 on the ladder. Nothing paid before 入门.",
+      "_td": "2026-10-21 (the 卷一 small-game plan; Hanli: 「start building」): 00-halfyear, the passage split after 「夜里坐在柴垛上，手脚也不冷了……自己穿一件单褂。」 — a winter night on the 柴垛 behind the house (the 竹简 hidden at its bottom), 野猪 down from 蒙山 in the snow. 守炉's story level `chaiduo` (games.json `shoulu`, `story: \"00-halfyear\"`): the 柴垛 is the 炉; 小满 alone, no talismans; the snow slows him and the night is longer. The fourth 塔防 on the ladder. Nothing paid before 入门. Rebuilt 2026-10-28 (Hanli: 「守火和雪夜守柴, 可否用主力的塔防取代?」 · 「守炉比较好玩」): a 守炉 build board now — 老周 throwing stones and water poured to ice by the yard's path. Id, deal and pay kept.",
       "id": "halfyear-chaiduo", "kind": "board", "game": "shoulu", "deal": { "lv": "chaiduo" }, "period": "once", "stars": 3,
       "title": { "zh": "雪夜柴垛 · 冬月的夜", "en": "The woodpile on a snowy night · Winter" },
-      "how": { "zh": "冬月夜里，野猪踩着雪从蒙山下来，奔着屋后的柴垛。点一头野猪，小满扔石头撵；点雪地，他走过去守着。守到天亮。", "en": "Winter nights, boars come down from Mount Meng through the snow, making for the woodpile behind the house. Tap a boar and Xiaoman throws a stone; tap the snow and he goes to stand guard there. Hold till dawn." },
+      "how": {"zh": "冬月夜里，野猪踩着雪从蒙山下来，奔着屋后的柴垛。点空处：叫醒隔壁老周扔石头，或往雪路上泼水结冰；点一头野猪，小满扔石头撵。守到天亮。", "en": "Winter nights, boars come down from Mount Meng through the snow, making for the woodpile behind the house. Tap a free spot to wake Old Zhou next door to throw stones, or pour water on the path to freeze; tap a boar and Xiaoman throws a stone. Hold till dawn."},
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "夜里坐在柴垛上，手脚也不冷了。", "en": "Sitting on the woodpile at night, his hands and feet weren't cold any more." }
     },

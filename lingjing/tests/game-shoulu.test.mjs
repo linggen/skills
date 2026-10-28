@@ -588,91 +588,81 @@ test('the two story levels played at night stand on night grounds (丑时 in the
   assert.equal(byId['danfang-kanlu'].ground, 'houshan-night');
 });
 
-/* 守火 (00-cave, 2026-10-21, Hanli: 第一回 adds two 塔防 boards — 「用塔防作为主力」): the fire at the cave mouth is the 炉. It
-   burns down; 枯枝 at the cliff's foot keep it up; eyes in the dark shy from its light and creep in as it sinks; 小满 alone (no
-   talismans, no 银月 skills — she is hurt and only a fox), a 柴刀 and stones. The second 塔防 a player meets: gentle. */
-const shouhuo = () => stories.find((l) => l.id === 'shouhuo');
-test('守火: a story level of 00-cave, before 喂饼 — no talismans, no skills, 小满 the hero, eyes in the dark only', () => {
-  const l = shouhuo();
-  assert.equal(l.story, '00-cave');
-  assert.deepEqual([l.towers, l.spots], [[], []]);
-  assert.deepEqual(beastsOf(l), ['yanjing']);
-  assert.ok(BEASTS.yanjing.shade && BEASTS.yanjing.shy);
-  assert.equal(heroOf(l).who, 'xiaoman');
-  const g = newGame(l, { seed: 'f', headless: true });
-  assert.ok(['q', 'w', 'e', 'r'].every((k) => skillState(g, k).locked && !skillState(g, k).ready), 'no skill: 银月 is hurt');
-  assert.equal(g.hp, l.fire.start);
-  assert.equal(lightOf(g), l.fire.light[0] + l.fire.light[1] * l.fire.start);
-});
-test('守火: the fire burns down; a 枯枝 is fetched, carried back and fed; a tap on a stick sends 小满, a tap on eyes throws', () => {
-  const l = shouhuo(), g = newGame(l, { seed: 'f', headless: true });
-  g.nextTimer = 1e9;
-  for (let i = 0; i < 60 * 3; i += 1) step(g, 1 / 60);
-  assert.ok(g.hp < l.fire.start, 'it burns down');
-  const s = g.sticks[0];
-  assert.equal(stickAt(g, s.x, s.y), s);
-  assert.equal(pointer(g, noSel(), { x: s.x, y: s.y, button: 0, touch: true }).did, 'fetch');
-  const before = g.hp;
-  for (let i = 0; i < 60 * 12 && g.fed === 0; i += 1) step(g, 1 / 60);
-  assert.ok(g.fed >= 1 && g.hp > before - 1, `fed ${g.fed}, fire ${before.toFixed(1)} → ${g.hp.toFixed(1)}`);
-  assert.equal(s.up, false, 'snapped; it grows back later');
-  const b = spawnAt(g, 'yanjing', layLevel(l).road.len * 0.6);
-  assert.equal(pointer(g, noSel(), { x: b.x, y: b.y - 5, button: 0, touch: true }).did, 'attack');
-  const g2 = newGame(l, { seed: 'f', headless: true });
-  g2.nextTimer = 1e9;
-  for (let i = 0; i < 60 * 80; i += 1) step(g2, 1 / 60);
-  assert.equal(g2.over, 'lose', 'left alone, the fire goes out');
-});
-test('守火, gentle: the human hand keeps the fire high; a first-timer who fetches only when it is low still wins; nothing done loses', () => {
-  const l = shouhuo();
-  const line = (rs) => `win ${rs.filter((x) => x.result === 'win').length}/${rs.length}, ★ ${rs.map((x) => x.stars).join('')}, fire ${rs.map((x) => x.hp).join(' ')}`;
-  const rs = run(l, 'human', SEEDS20);
-  assert.ok(allWin(rs) && share(rs, (x) => x.stars === 3) >= 0.9, `human: ${line(rs)}`);
-  const naive = SEEDS20.map((seed) => sim(l, humanBot({ look: 1.6, fetchAt: 5, attack: 0 }), { seed }));
-  assert.ok(allWin(naive), `first-timer: ${line(naive)}`);
-  assert.ok(share(naive, (x) => x.stars < 3) >= 0.5, `first-timer, it bites: ${line(naive)}`);
-  assert.ok(allLose(run(l, 'none')), 'nothing done: the fire goes out');
-  assert.ok(rs.every((x) => x.time < 150), `about two minutes: ${rs.map((x) => x.time)}`);
-  assert.equal(starsFor({ L: { fire: l.fire }, hp: l.fire.stars[0] }), 3);
-  assert.ok(fetchStick);
-});
-
-/* 雪夜柴垛 (00-halfyear) and 泗水路 (00-gate), the 卷一 plan's 塔防 4 and 5 (2026-10-22; Hanli 10-22: 「按你说的改一遍. 关键是能留住
-   玩家」): 小满 alone with stones, no talismans, no 银月 (she sleeps in the 木牌). 雪夜柴垛: the 柴垛 is the 炉 (`furnaceArt`),
-   snow, night — he sees and throws less far, so the player points him. 泗水路: 守火's fire to feed, and 舅舅 asleep by it
-   (`keep`) — a boar passing near him may turn for him; his hp gone, the night is lost. Gentle: 第二回 and 第三回. */
+/* 守火 (00-cave) and 雪夜柴垛 (00-halfyear), rebuilt 2026-10-28 (Hanli: 「守火那个不太好玩」 · 「雪夜柴垛也不好玩」, then 「守火和雪夜守柴,
+   可否用主力的塔防取代?」 · 「守炉比较好玩」): they played as 小满 alone — a fire to feed, every tap an order, nothing to build. Now
+   both are 守炉 build boards like 泗水路, each its own pair of pieces (`skin`, no talismans before 入门) from its own passage:
+   the cave's 火堆 · 松烟 (he lit them himself), the yard's 老周 · 冰面. The story's first three build boards climb: a lazy hand
+   (two pieces, never upgraded) keeps most nights in the cave, about half in the yard, none on the 泗水 road. */
 const story = (id) => stories.find((l) => l.id === id);
 const fiveLine = (rs) => `win ${rs.filter((x) => x.result === 'win').length}/${rs.length}, ★ ${rs.map((x) => x.stars).join('')}`;
-const FIRST = humanBot({ look: 1.6, fetchAt: 5, attack: 0.3 }), SLOW = humanBot({ look: 2.4, fetchAt: 4, attack: 0.25 });
-test('雪夜柴垛: 00-halfyear\'s — the 柴垛 the 炉, 野猪 in the snow, 小满 alone; every tap an order to him', () => {
-  const l = story('chaiduo');
-  assert.equal(l.story, '00-halfyear');
-  assert.deepEqual([l.towers, l.spots, l.fire], [[], [], undefined]);
-  assert.deepEqual(beastsOf(l), ['yezhu']);
-  assert.ok(l.snow && l.furnaceArt === 'chaiduo');
-  assert.equal(heroOf(l).who, 'xiaoman');
-  const g = newGame(l, { seed: 'c', headless: true });
-  assert.ok(['q', 'w', 'e', 'r'].every((k) => skillState(g, k).locked), 'no skill: 银月 sleeps in the 木牌');
-  assert.equal(g.hp, 10);
-  const b = spawnAt(g, 'yezhu', layLevel(l).road.len * 0.5);
-  assert.equal(pointer(g, noSel(), { x: b.x, y: b.y - 5, button: 0, touch: true }).did, 'attack', 'a tap on a boar: he throws at it, selected or not');
-});
-// Hanli 10-22: 「难度可以稍微提高一点」 (守灶台, 706276b8) → 「好的」 for these too: 第二回 a touch harder than 守火 (a first-timer
-// 19/20), 泗水路 (第三回) at least as hard as 雪夜柴垛. Both were 20/20 for a first-timer, ★ all alike.
 const wins = (rs) => rs.filter((x) => x.result === 'win').length;
-test('雪夜柴垛, a touch harder (第二回): a first-timer wins most nights, not all; a slow hand far fewer; the keen one keeps every log; nothing done loses', () => {
-  const l = story('chaiduo');
-  const go = (bot) => SEEDS20.map((seed) => sim(l, bot, { seed }));
-  const keen = go(humanBot({ look: 0.8, attack: 0.8, best: true }));
-  assert.ok(allWin(keen) && share(keen, (x) => x.stars === 3) >= 0.9, `keen: ${fiveLine(keen)}`);
-  assert.ok(allWin(go('human')), `human: ${fiveLine(go('human'))}`);
-  const first = go(FIRST), slow = go(SLOW), none = go('none');
-  assert.ok(wins(first) >= 15 && wins(first) <= 18, `first-timer (was 20/20; now 17): ${fiveLine(first)}`);
-  assert.ok(first.some((x) => x.stars === 1) && first.some((x) => x.stars === 2), `first-timer, stars spread: ${fiveLine(first)}`);
-  assert.ok(wins(slow) <= wins(first) - 5, `slow, clearly fewer (8): ${fiveLine(slow)}`);
-  assert.ok(wins(none) <= 3, `nothing done (2): ${fiveLine(none)}`);
-  assert.ok(keen.every((x) => x.time < 150), `about a minute and a half: ${keen.map((x) => x.time)}`);
+// a first-timer's plain hand on each pre-入门 board: a fixed plan on the spots the eye picks, a look every 1.6 s, then upgrades
+const PLANS = {
+  shouhuo: { plan: [['huo', 0], ['han', 2], ['huo', 1], ['huo', 4], ['han', 6]], ups: [0, 1, 4, 2, 0, 1] },
+  chaiduo: { plan: [['jian', 0], ['han', 3], ['jian', 2], ['jian', 4], ['han', 7], ['jian', 1]], ups: [0, 2, 4, 3, 0, 2] },
+  sishui: { plan: [['huo', 0], ['jian', 1], ['huo', 3], ['jian', 2], ['huo', 7], ['jian', 4]], ups: [0, 3, 1, 7, 2, 0, 3] },
+};
+const planHand = (id) => () => {
+  const { plan, ups } = PLANS[id];
+  let k = 0, u = 0, next = 0;
+  return (g) => {
+    if (g.t < next) return; next = g.t + 1.6;
+    if (k < plan.length && g.money >= TOWERS[plan[k][0]].cost[0]) { if (build(g, plan[k][1], plan[k][0])) k += 1; return; }
+    if ((k >= plan.length || (k >= 3 && g.money >= 80 && u < 2)) && u < ups.length) { const i = ups[u]; if (g.towers[i] && g.money >= upgradeCost(g.towers[i])) { upgrade(g, i); u += 1; } }
+  };
+};
+// the lazy hand: the plan's first two, never an upgrade, a look every 3 s
+const lazyHand = (id) => () => {
+  const { plan } = PLANS[id];
+  let k = 0, next = 0;
+  return (g) => { if (g.t < next || k >= 2) return; next = g.t + 3; if (g.money >= TOWERS[plan[k][0]].cost[0] && build(g, plan[k][1], plan[k][0])) k += 1; };
+};
+const go = (l, mk) => SEEDS20.map((seed) => sim(l, mk(), { seed }));
+const art = () => new Set(readdirSync(new URL('../scripts/games/shoulu/art/', import.meta.url)));
+
+test('守火 · 雪夜柴垛: build boards, no fire to feed — each its own pair of pieces from its passage, painted; 小满 the hero', () => {
+  const have = art();
+  for (const [id, scene, kinds, furnace] of [['shouhuo', '00-cave', ['huo', 'han'], 'campfire'], ['chaiduo', '00-halfyear', ['jian', 'han'], 'chaiduo']]) {
+    const l = story(id);
+    assert.equal(l.story, scene);
+    assert.ok(!l.fire, `${id}: no fire to feed`);
+    assert.deepEqual(l.towers, kinds);
+    assert.ok(l.spots.length >= 6 && l.money > 0, `${id}: spots to build on, something to spend`);
+    assert.deepEqual(beastsOf(l), ['yezhu'], `${id}: 第一回's beast`);
+    assert.equal(heroOf(l).who, 'xiaoman');
+    assert.equal(l.furnaceArt, furnace);
+    assert.equal(direct(newGame(l, { seed: 'd', headless: true })), false, `${id}: not the old every-tap-an-order board`);
+    for (const k of l.towers) {
+      const sk = l.skin?.[k];
+      assert.ok(sk?.name?.zh && sk.name.en && sk.say?.zh && sk.glyph, `${id} ${k}: skinned — no talisman before 入门`);
+      for (const n of [1, 2, 3]) assert.ok(have.has(`tower-${sk.art}-${n}.webp`), `tower-${sk.art}-${n}.webp painted`);
+    }
+    assert.ok(!l.waves.flat().some(([t, , , , o]) => BEASTS[t].boss || o?.elite), `${id}: no 大妖 or elite — the 结印 dock never opens before 入门`);
+  }
+  // the three pre-入门 boards: three different pairs
+  const pairs = ['shouhuo', 'chaiduo', 'sishui'].map((id) => story(id).towers.join('+'));
+  assert.equal(new Set(pairs).size, 3, pairs.join(' · '));
+  assert.ok(story('shouhuo').keep?.art === 'fox-sleep', 'the hurt fox by the cave fire, to keep');
+  assert.equal(towerName(story('chaiduo'), 'jian', 'zh'), '老周');
 });
+
+test('the story\'s first three build boards climb: a first-timer and the human hand ★★★ on 守火 and 雪夜柴垛; a lazy hand keeps fewer nights each board; nothing laid loses', () => {
+  const kept = {};
+  for (const id of ['shouhuo', 'chaiduo', 'sishui']) {
+    const l = story(id), first = go(l, planHand(id)), human = run(l, 'human', SEEDS20), lazy = go(l, lazyHand(id));
+    assert.ok(allWin(first) && allWin(human), `${id}: first-timer ${fiveLine(first)}; human ${fiveLine(human)}`);
+    if (id !== 'sishui') {
+      assert.ok(share(first, (x) => x.stars === 3) >= 0.9 && share(human, (x) => x.stars === 3) >= 0.75, `${id}: ★★★ — first-timer ${fiveLine(first)}; human ${fiveLine(human)}`);
+      assert.ok(lazy.some((x) => x.result !== 'win' || x.hp < 10), `${id}: lazy play bites — ${fiveLine(lazy)}`);
+    }
+    assert.ok(allLose(run(l, 'none', SEEDS20)), `${id}: nothing laid loses`);
+    assert.ok(human.every((x) => x.time < 240), `${id}: a few minutes — ${human.map((x) => x.time)}`);
+    kept[id] = wins(lazy);
+  }
+  assert.ok(kept.shouhuo > kept.chaiduo && kept.chaiduo > kept.sishui, `a lazy hand keeps fewer nights each board: ${JSON.stringify(kept)}`);
+  assert.ok(kept.shouhuo >= 15 && kept.chaiduo <= 12, `the cave gentle, the yard biting: ${JSON.stringify(kept)}`);
+});
+
 /* 泗水路 rebuilt (2026-10-28, Hanli: 「守火那个不太好玩」 · 「雪夜柴垛也不好玩」 · 「大厅里的守炉好玩」): it played as 守火 — 小满
    alone, a fire to feed, nothing to build; now it plays as the 游戏厅's 守炉, its talismans skinned as the road's camps (no
    talismans before 入门): a boy's 弹弓 for 剑阵, a man's 火把 for 火符; 舅舅 asleep by the camp fire still to keep. */
@@ -707,18 +697,9 @@ test("泗水路: 00-gate's — built as the 游戏厅's 守炉, its talismans th
   for (let i = 0; i < 60 * 200 && !lone.over; i += 1) step(lone, 1 / 60);
   assert.deepEqual([lone.over, lone.lostBy], ['lose', 'keep'], '舅舅 gnawed down: the night is lost');
 });
-test('泗水路, the first build board (第三回): gentler than 药园巡夜 — the first-timer\'s hand and the human hand hold it; nothing laid loses', () => {
+test('泗水路 (第三回): gentler than 药园巡夜 — the first-timer\'s hand and the human hand hold it; nothing laid loses', () => {
   const l = story('sishui');
-  // a first-timer: fire by the bends, slingshots up the road, then upgrades; a look every 1.6 s
-  const hand = () => {
-    const PLAN = [['huo', 0], ['jian', 1], ['huo', 3], ['jian', 2], ['huo', 7], ['jian', 4]], UPS = [0, 3, 1, 7, 2, 0, 3];
-    let k = 0, u = 0, next = 0;
-    return (g) => {
-      if (g.t < next) return; next = g.t + 1.6;
-      if (k < PLAN.length && g.money >= TOWERS[PLAN[k][0]].cost[0]) { if (build(g, PLAN[k][1], PLAN[k][0])) k += 1; return; }
-      if ((k >= PLAN.length || (k >= 3 && g.money >= 80 && u < 2)) && u < UPS.length) { const i = UPS[u]; if (g.towers[i] && g.money >= upgradeCost(g.towers[i])) { upgrade(g, i); u += 1; } }
-    };
-  };
+  const hand = planHand('sishui');
   const first = SEEDS20.map((seed) => sim(l, hand(), { seed })), human = run(l, 'human', SEEDS20);
   assert.ok(allWin(first) && share(first, (x) => x.stars === 3) >= 0.9, `first-timer: ${fiveLine(first)}`);
   assert.ok(allWin(human) && share(human, (x) => x.stars >= 2) >= 0.95, `human: ${fiveLine(human)}`);
@@ -730,12 +711,19 @@ test('泗水路, the first build board (第三回): gentler than 药园巡夜 �
   assert.ok(human.every((x) => x.time < 240), `about two and a half minutes: ${human.map((x) => x.time)}`);
 });
 
-/* Each story 守炉 board on its own map (Hanli 10-28: the story's levels are not the 游戏厅's): no story level that builds
-   lays the road or the spots of a 游戏厅 or 秘境 level. */
-test('no story 守炉 level is a 游戏厅 level\'s layout: its own road and its own spots', () => {
-  const others = all.filter((l) => !l.story);
-  for (const l of stories.filter((x) => x.spots.length)) for (const o of others) {
+/* Each story 守炉 board on its own map (Hanli 10-28: the story's levels are not the 游戏厅's, nor each other's): no story level
+   that builds lays the road or the spots of any other level, and its road runs visibly apart — sampled along its length,
+   a point lies on average more than 35 px from the other road (the kept pairs closest: 泗水路 · 黑松岭 40). */
+const apart = (a, b) => {
+  const A = layLevel(a).road, B = layLevel(b).road;
+  const pts = (R) => Array.from({ length: 60 }, (_, i) => posOnPath(R, (R.len * i) / 59));
+  const pb = pts(B);
+  return pts(A).reduce((n, p) => n + Math.min(...pb.map((q) => Math.hypot(p.x - q.x, p.y - q.y))), 0) / 60;
+};
+test('no story 守炉 level lays another level\'s layout: its own road and spots, the road visibly apart', () => {
+  for (const l of stories.filter((x) => x.spots.length)) for (const o of all.filter((x) => x !== l)) {
     assert.notDeepEqual(l.road, o.road, `${l.id}: the road of ${o.id}`);
     assert.notDeepEqual(l.spots, o.spots, `${l.id}: the spots of ${o.id}`);
+    if (o.story || !o.realm) assert.ok(apart(l, o) > 35, `${l.id} runs close to ${o.id}: ${apart(l, o).toFixed(0)} px apart`);
   }
 });
