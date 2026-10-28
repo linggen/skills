@@ -94,6 +94,17 @@ KEPT = {
     'ye-caifeng': {'seed': 23, 'round': 'r2'},
     'ye-xiangzhu': {'seed': 23, 'round': 'r2'},
     'ye-kezhan': {'seed': 23, 'round': 'r2'},
+    'yunmeng': {'seed': 11, 'round': 'r2'},
+    'junshan': {'seed': 11, 'round': 'r2'},
+    'dongting': {'seed': 11, 'round': 'r2'},
+    'xiangshui': {'seed': 11, 'round': 'r2'},
+    'jingshan': {'seed': 11, 'round': 'r2'},
+    'wuxia': {'seed': 11, 'round': 'r2'},
+    'chengdu': {'seed': 11, 'round': 'r2'},
+    'lidui': {'seed': 11, 'round': 'r2'},
+    'minshan': {'seed': 11, 'round': 'r2'},
+    'jiangzhou': {'seed': 11, 'round': 'r2'},
+    'baoxie': {'seed': 11, 'round': 'r2'},
 }
 
 import argparse, json, os, subprocess, time
@@ -181,14 +192,14 @@ PLACES = {
   'zhuolu': ('ji', '涿鹿之野', False, False, 'An ancient battlefield plain: wide windswept grassland under a heavy sky, a few broken bronze halberds and old earth mounds half buried in the grass, distant mountains, a solemn emptiness.'),
   'jieshi': ('ji', '碣石', False, False, 'A great rocky headland above the sea: tall weathered stone pillars and crags, waves breaking white far below, a vast grey-blue sea to the horizon, wind-bent pines on the rock.'),
   'hengshan': ('ji', '恒山', False, False, 'The Northern Peak: steep grey cliffs with a band of cloud around the mountain\'s waist, a temple with upturned eaves clinging to the cliff inside the clouds, pines, a stone stair.'),
-  'ye-doufu': ('ji', '邺城 · 城西豆腐坊', False, False, 'A narrow old city lane; through a plain open doorway with no sign above it, a small tofu workshop: a stone grinding mill, big wooden tubs and steaming pots of soy milk, a door frame marked with rows of short charcoal tally strokes, grey-tiled roofs crowding the lane; no shop signs, no signboards, no hanging scrolls.'),
+  'ye-doufu': ('ji', '邺城 · 城西豆腐坊', False, False, 'A narrow old city lane of bare grey plaster walls at early morning: a plain weathered wooden door frame with rows of short black charcoal tally strokes on its post, a stone grinding mill and big wooden tubs of steaming soy milk by the open door, steam drifting along the lane, grey-tiled eaves overhead. Bare walls: no couplets, no signboards, no writing anywhere.'),
   'ye-caifeng': ('ji', '邺城 · 城南裁缝铺', True, False, 'Inside a small old Chinese tailor\'s shop of wood and plaster: a long low cutting table with bolts of silk, scissors and a bamboo measuring rule, and on a wooden rack a traditional Chinese red bridal robe with wide sleeves and gold embroidery, a wooden paper-lattice window, threads and spools on shelves; no Western dresses.'),
   'ye-xiangzhu': ('ji', '邺城 · 香烛铺', True, False, 'Inside an old Chinese incense and candle shop of dark wood: shelves stacked with bundles of incense sticks and red candles, a red Chinese drum and bamboo pipes hung on the wall, a wooden counter with a few small pieces of carved green jade on a cloth, smoke curling in dim light; no clocks, no lamps on the wall.'),
   'ye-kezhan': ('ji', '邺城 · 城东客栈', False, False, 'The back yard of an old city inn: a stone well with a wide flat rim, a wooden bucket and rope, a back door with a lantern, a kitchen window with a small steaming bowl on the sill, grey-tiled roofs and an old tree.'),
   'ye-sanlao': ('ji', '邺城 · 三老宅', False, False, 'The deserted courtyard of a great old mansion: a tall gate standing open and unguarded, a wide stone-paved court, empty wooden chests left open on the ground, grand halls with upturned eaves behind, weeds between the stones.'),
   'liuwan': ('ji', '柳湾', False, False, 'A small fishing village on a river bend: a row of old willows leaning along the bank, a few thatched huts, fishing nets drying on poles, small boats pulled up on the mud, the river flowing away downstream into haze.'),
   'yunmeng': ('jing', '云梦泽', False, False, 'A vast southern marsh: reeds far taller than a man in endless ranks, winding channels of still water, waterbirds, mist over the wetland, a distant low line of hills.'),
-  'ying': ('jing', '郢', False, False, 'The old capital of Chu: a great city gate and wall, a lively market street of stalls with bright feathers, ivory, hides and red cinnabar in baskets, carved and lacquered eaves, banners. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
+  'ying': ('jing', '郢', False, False, 'The old capital of Chu at dawn before the market opens, deserted: a great city gate and wall in the distance, and in front a row of empty market stalls under lacquered eaves with baskets of bright feathers, bundles of hides, a few ivory tusks and bowls of red cinnabar left out on the counters. No people at all; no shop signs, no signboards, no banners with writing.'),
   'junshan': ('jing', '君山', False, False, 'A small green island hill in a great lake: groves of spotted bamboo with mottled stems, a little shrine among them, the wide lake around, soft rain-haze.'),
   'dongting': ('jing', '洞庭深处', False, False, 'The heart of a vast lake: open water on every side, gentle swells, a low dark shape of something enormous like a turtle\'s shell just under the surface, mist and pale light, no shore in sight.'),
   'xiangshui': ('jing', '湘水', False, False, 'A clear river flowing north toward a great lake: on its bank in the distance a small old shrine with red pillars and a tiled roof, spotted bamboo groves, a misty far shore.'),
@@ -202,12 +213,12 @@ PLACES = {
   'jiangzhou': ('liang', '江州', False, False, 'A hillside city above the meeting of two great rivers: stilt houses climbing steep slopes, long stone stairs down to the water, two rivers of different colours joining below the walls, boats, mist.'),
   'baoxie': ('liang', '褒斜道', False, False, 'An ancient plank road along a sheer cliff in the mountains: wooden beams driven into holes in the rock one after another carrying a narrow boardwalk, a rushing river far below, layered mountains.'),
   'weishui': ('qing', '潍水', False, False, 'A calm river flowing east under a wide sky: on the grassy bank a lone fishing rod with a straight hook resting on a stone by a straw mat, willows, a few distant hills.'),
-  'linzi': ('qing', '临淄', False, False, 'The old capital of Qi: a great city gate, outside it a quiet academy of halls with upturned eaves among trees, inside the gate a busy market lane, grey walls. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
+  'linzi': ('qing', '临淄', False, False, 'The old capital of Qi, seen at a quiet hour with nobody about: a great city gate, outside it a quiet academy of halls with upturned eaves among trees, inside the gate a busy market lane, grey walls. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   'jixia': ('qing', '稷下', False, False, 'An ancient academy under a city gate: a courtyard with open halls, rows of low mats and writing desks, bamboo-slip books, an old tree, the gate tower behind. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
-  'penglai': ('qing', '蓬莱', False, False, 'A mirage city on the sea at dawn: towers, palaces and pavilions floating above the waves in a luminous haze, a rocky shore below with pines, a pale pink sky.'),
+  'penglai': ('qing', '蓬莱', False, False, 'A mirage city on the sea at dawn: Chinese palace halls with upturned eaves, pagodas and pavilions floating above the waves in a luminous haze, a rocky shore below with pines, a pale pink sky.'),
   'liubo': ('qing', '流波山', False, False, 'A strange mountain far out in the open sea at low tide: its rocky root exposed above shining wet sand and pools, waves around, the peak rising into sea mist, no land in sight.'),
   'taishan': ('qing', '泰山', False, False, 'The great sacred mountain: steep stone stairs climbing past pines and gates to a summit with temples, a sea of clouds below, the sunrise and a distant glint of the sea.'),
-  'langya': ('qing', '琅琊台', False, False, 'A high terrace on a coastal hill: an old stone stele with its carved characters half worn away, a broad earthen platform, the wide sea below, wind and grass.'),
+  'langya': ('qing', '琅琊台', False, False, 'A high terrace on a coastal hill: an old weathered stone stele, its face worn almost smooth by wind, only faint shallow marks, no legible characters, a broad earthen platform, the wide sea below, wind and grass.'),
   'chengshan': ('qing', '成山头', False, False, 'The easternmost cape: jagged cliffs plunging into the sea, waves crashing, a few rocks standing offshore, the sun rising from the sea on the horizon.'),
   'laoshan': ('qing', '崂山', False, False, 'A rocky mountain rising straight from the sea: granite peaks and boulders, pines, a small Taoist temple tucked in a ravine, waves breaking at its foot, sea mist.'),
   'pushui': ('yan', '濮水', False, False, 'A clear river under a long line of mulberry trees along the bank, the water bright, fields beyond, a strange flash of lightning in a clear eastern sky.'),
@@ -261,7 +272,8 @@ def others():
   while pid > 1:
     mine.add(pid)
     pid = int(subprocess.run(['ps', '-o', 'ppid=', '-p', str(pid)], capture_output=True, text=True).stdout.strip() or 1)
-  out = subprocess.run(['pgrep', '-f', r'mlx_picture|tools/paint-[a-z0-9-]+\.py'], capture_output=True, text=True).stdout
+  # Only python processes count: a shell that merely mentions a painter (a wait loop, a grep) is not one.
+  out = subprocess.run(['pgrep', '-f', r'^[^ ]*python[^ ]* .*(mlx_picture|tools/paint-[a-z0-9-]+\.py)'], capture_output=True, text=True).stdout
   return [p for p in out.split() if int(p) not in mine]
 
 
