@@ -314,8 +314,8 @@ test('a day\'s 秘境 never breaks the pace: the day\'s cap of runs, cleared, is
   }
 });
 
-test('the map forks: across many seeds some room leads two ways', () => {
+test('the map forks: every row before the last has a room that leads two ways', () => {
   const t = M.tiers[0];
-  const forks = Array.from({ length: 20 }, (_, k) => mapOf(content, t, `fork-${k}`)).filter(m => m.layers.slice(0, -1).flat().some(r => m.ways[r.id].length > 1)).length;
-  assert.ok(forks >= 15, `${forks}/20 maps fork`);
+  const forks = Array.from({ length: 20 }, (_, k) => mapOf(content, t, `fork-${k}`)).filter(m => m.layers.slice(0, -1).every(row => row.some(r => m.ways[r.id].length > 1))).length;
+  assert.equal(forks, 20, `${forks}/20 maps fork`);
 });

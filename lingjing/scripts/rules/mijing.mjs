@@ -111,6 +111,12 @@ export function mapOf(content, tier, seed) {
       ways[r.id] = [...to];
     }
     for (const n of next) if (!here.some(r => ways[r.id].includes(n.id))) ways[nearest(n.at, here).id].push(n.id);
+    // A row that leads only straight up is no choice: one of its rooms forks (drawn), whenever the next row has two.
+    if (next.length > 1 && here.every(r => ways[r.id].length < 2)) {
+      const r = here[Math.floor(u(`${key}|${li}|fork`) * here.length)];
+      const other = next.filter(n => !ways[r.id].includes(n.id)).sort((a, b) => Math.abs(a.at - r.at) - Math.abs(b.at - r.at))[0];
+      if (other) ways[r.id].push(other.id);
+    }
   }
   for (const r of last) ways[r.id] = ['boss'];
   const boss = { id: 'boss', row: layers.length, at: 0.5, kind: 'boss', name: null };
