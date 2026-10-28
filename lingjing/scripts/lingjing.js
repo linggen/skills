@@ -5060,6 +5060,9 @@ window.addEventListener('focus', () => { if (look) refresh(); });
 // moments are weighed and the idle word considered (voice.js).
 document.addEventListener('pointerdown', () => voice.input(), { capture: true, passive: true });
 document.addEventListener('keydown', () => voice.input(), { capture: true, passive: true });
-setInterval(() => voice.tick({ visible: document.visibilityState === 'visible', busy: streaming || saying || Boolean(view.ask), idleFact: IDLE_FACT }), 5000);
+// A board in play is not idle: its taps land inside the game's own frame, never on this page's pointerdown (Hanli 10-28,
+// mid 守炉 in 秘境: 银月 kept saying 「你盯着那撮土半天了」 — the scene's clue, while he was choosing a talisman).
+const boardInPlay = () => [...boards.values()].some((b) => b?.state && !b.sent);
+setInterval(() => voice.tick({ visible: document.visibilityState === 'visible', busy: streaming || saying || Boolean(view.ask) || boardInPlay(), idleFact: IDLE_FACT }), 5000);
 boot();
 watchMemories(); // her memories soak into colour in WebGL (fx-memory.js); the CSS bloom otherwise
