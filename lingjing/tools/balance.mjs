@@ -111,11 +111,15 @@ export function bookWalk(content, model = content.balance.model) {
       const fight = e?.game?.kind === 'duel' ? 1 : 0;
       const text = chars(sc.story) + chars(sc.story_after) + chars(e?.story);
       const rise = e?.rise == null ? null : typeof e.rise === 'object' ? e.rise : { layer: e.rise };
+      const side = sideHui(content, sc.hui) ? huiOf(content, sc.hui).line : null;
       out.push({
         chapter: ch.id, id: sc.id, hui: sc.hui ?? null,
         minutes: text / model.chars_per_min + m.scene + boards.length * m.board + fight * m.fight / model.fight_win_rate,
-        boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0), nboards: boards.length, tasks: boards,
-        wealth: wealthCap(content, e?.grant) + boards.reduce((n, t) => n + wealthCap(content, t.grant), 0) + boardFirst(content, ch, sc, boards),
+        boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0), nboards: boards.length,
+        // A 今 board pays the 今 line (rules/lines.mjs): never the 古 ledger this walk keeps, nor 灵石 — `line` and its boards
+        // (`line_tasks`) are for the 今 column (tools/numbers.mjs). Until 2026-10-28 the model paid them to the 古.
+        ...(side ? { line: side, line_tasks: boards } : {}), tasks: side ? [] : boards,
+        wealth: wealthCap(content, e?.grant) + (side ? 0 : boards.reduce((n, t) => n + wealthCap(content, t.grant), 0) + boardFirst(content, ch, sc, boards)),
         grant: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
         rise, breakthrough: Boolean(e?.breakthrough), fight,
         gate: e ? gates.find(g => g.scene === sc.id && g.exits.includes(e.id)) ?? null : null,
