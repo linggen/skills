@@ -34,7 +34,8 @@ export function arcadeRowOf(search, scratch) {
  * 对对子, the 秘境 rerun): its own test save begun again from its fixture (tools/arcade-saves.mjs —
  * where its card stands; or a fixture it names, `seed`), and no `board=` — Look brings the card, as in the story.
  */
-export const arcadeStageUrl = (stage, days = 0) => `index.html?${new URLSearchParams({ save: stage.save, seed: stage.seed ?? stage.save, ...(days > 0 ? { days: String(days) } : {}) })}`;
+// `open`: a shelf thing whose 砍价 panel opens as the page lands (the 游戏厅's 砍价 · 货郎上山, kanjia.js).
+export const arcadeStageUrl = (stage, days = 0) => `index.html?${new URLSearchParams({ save: stage.save, seed: stage.seed ?? stage.save, ...(days > 0 ? { days: String(days) } : {}), ...(stage.open ? { kanjia: stage.open } : {}) })}`;
 
 /**
  * Days until a visiting shop stands (`visits: { every, offset }` against the local calendar day — rules/visiting.mjs's

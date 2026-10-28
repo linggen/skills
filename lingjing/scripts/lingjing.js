@@ -866,6 +866,7 @@ function riseStats() {
     if (Number.isFinite(before.wealth) && before.wealth >= POOR_AT && now.wealth < POOR_AT) herSay.say('poor', lang() === 'en' ? `${now.wealth} spirit stones left.` : `只剩${now.wealth}块灵石。`);
   }
   shortNudge();
+  kanjiaOnLanding();
   if (before && before.world === now.world) {
     const gained = {};
     for (const key of ['progress', 'wealth']) {
@@ -3044,6 +3045,14 @@ async function kanjia(id) {
 }
 /* 灵石 short of a thing on this shelf, the first time ever (hersay.js `short`): 银月 says it her way — try 砍价, or,
    when the rules say no haggle closes it (`reach: far`), that it will not go that low. The cheapest such thing. */
+/* The 游戏厅's 砍价 row (arcade-board.js `kanjia=`): on a test save, that thing's panel opens once as the shop stands. */
+const KANJIA_OPEN = SCRATCH ? new URLSearchParams(location.search).get('kanjia') : null;
+let kanjiaOpened = false;
+function kanjiaOnLanding() {
+  if (kanjiaOpened || !KANJIA_OPEN || !look?.haggle?.marks?.[KANJIA_OPEN]?.can) return;
+  kanjiaOpened = true;
+  kanjia(KANJIA_OPEN);
+}
 function shortNudge() {
   const marks = look?.haggle?.marks, shelf = look?.place?.shelf ?? [];
   if (!marks || !shelf.length) return;

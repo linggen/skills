@@ -226,8 +226,10 @@ test('the catalogue: a stage row (砍价, 对对子, the 秘境 rerun) stands it
       assert.ok(l[st.look], `${g.id}: Look's ${st.look} stands on that save (+${days} days)`);
       // 砍价's card is the place's shelf (Look's place.show `item`), the 砍价 by each 买.
       assert.ok([...stageCards(l), ...(l.place?.show ?? [])].some((c) => c.card === STAGE_CARD[st.look] || (c.card === 'board' && c.id === g.task)), `${g.id}: its card on the stage`);
+      // 砍价's row opens the shop's haggle panel on a thing its shelf holds.
+      if (st.open) assert.ok(l.place.shelf.some((x) => x.id === st.open) && l.haggle.marks[st.open]?.can, `${g.id}: ${st.open} on the shelf, haggle open`);
     }
-    assert.equal(arcadeStageUrl(st), `index.html?save=${st.save}&seed=${st.seed ?? st.save}`, 'no board= — Look brings the card');
+    assert.equal(arcadeStageUrl(st), `index.html?save=${st.save}&seed=${st.seed ?? st.save}${st.open ? `&kanjia=${st.open}` : ''}`, 'no board= — Look brings the card');
     assert.ok(g.name?.zh && g.name?.en && g.mechanic, `${g.id}: named and typed`);
   }
   // The page reads them so: a stage row links to the game page, a cut row opens nothing.
