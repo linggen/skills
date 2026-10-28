@@ -189,7 +189,8 @@ test('every thing a shop sells has its picture in the common pack', () => {
   const walk = (v) => {
     if (Array.isArray(v)) return v.forEach(walk);
     if (!v || typeof v !== 'object') return;
-    if (Array.isArray(v.goods)) for (const g of v.goods) if (typeof g === 'string') sold.add(g);
+    // A place's own shop and a visiting one (`goods`), and a visit's odd one (rules/visiting.mjs visitorGoods `odd`).
+    for (const k of ['goods', 'odd']) if (Array.isArray(v[k])) for (const g of v[k]) if (typeof g === 'string') sold.add(g);
     Object.values(v).forEach(walk);
   };
   for (const f of fs.readdirSync(path.join(WORLD, 'places'))) if (f.endsWith('.json')) walk(JSON.parse(fs.readFileSync(path.join(WORLD, 'places', f), 'utf8')));
