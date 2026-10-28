@@ -97,6 +97,34 @@ test("卷一's fights: every card a foe deals, and the foe, have their art in th
   for (const c of cards) if (c.art && fs.existsSync(path.join(WORLD, c.art))) assert.ok(kapai.has(`worlds/jiuding/${c.art}`) || boardFiles('kapai').length === 0, `${c.id}'s art`);
 });
 
+// The two seams the URL test cannot read (10-28: 成语接龙's dictionary, 对对子's tones, the 古七/古八 拼图's places and
+// 华容道's 扣子/瓦砾 sets were all missing from the phone): a module's fetch of a world file by a folder URL
+// (`fetch(new URL('chengyu.json', WORLD))`), and the art a board is DEALT (a task's `deal`, a games.json row's data).
+const shipped = (id) => { const { common, games } = kitPacks(); return new Set([...common, ...(games[id] ?? [])]); };
+test('every world file a kit module fetches by a folder URL is in its packs', () => {
+  for (const id of kitGames()) {
+    const have = shipped(id), mod = KIT.games[id].module;
+    for (const f of [mod, ...(KIT.games[id].modules ?? [])]) {
+      const text = fs.readFileSync(path.join(SKILL, f), 'utf8');
+      const world = /const WORLD = new URL\('([^']+)', import\.meta\.url\)/.exec(text)?.[1];
+      if (!world) continue;
+      const dir = path.posix.normalize(path.posix.join(path.posix.dirname(f), world));
+      for (const m of text.matchAll(/fetch\(new URL\('([^']+)', WORLD\)\)/g)) assert.ok(have.has(`${dir}/${m[1]}`.replace(/\/+/g, '/')), `${id}: ${dir}/${m[1]}`);
+    }
+  }
+});
+
+test("the art every kit board is dealt (its tasks' deals, its games.json rows) is in its packs", () => {
+  const rows = [...TASKS.filter((t) => t.game && !t.cut).map((t) => [t.game, t.deal]),
+    ...JSON.parse(fs.readFileSync(path.join(WORLD, 'games.json'), 'utf8')).games.filter((g) => !g.replaced).map((g) => [g.id, { d: g.data, l: g.levels, a: g.art }])];
+  for (const [id, deal] of rows) {
+    if (!KIT.games[id]) continue;
+    const have = shipped(id), text = JSON.stringify(deal ?? {});
+    const named = [...text.matchAll(/"(worlds\/[^"]+\.(?:webp|png|jpg))"/g)].map((m) => m[1]).concat([...text.matchAll(/"(art\/[^"]+\.webp)"/g)].map((m) => `worlds/jiuding/${m[1]}`));
+    for (const f of named) if (fs.existsSync(path.join(SKILL, f))) assert.ok(have.has(f), `${id}: ${f}`);
+  }
+});
+
 test('packs: every file in exactly one, the host page and the table in the common one, within a budget', () => {
   const { common, games } = kitPacks();
   const seen = new Map();

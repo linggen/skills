@@ -178,10 +178,12 @@
       "art": "cards"
     },
     "bingzhai": {
-      "_about": "讨饼债 (games/bingzhai.js), 00-yinyue: no art; 银月's turns come from the app (the host's `talk`, the phone's own Yinyue).",
+      "_about": "讨饼债 (games/bingzhai.js), 00-yinyue: no art; 银月's turns come from the app (the host's `talk`, the phone's own Yinyue). With no deal (the 游戏厅's 试玩) it reads the story task's own from tasks/world.json by a folder URL, so that is listed.",
       "module": "scripts/games/bingzhai.js",
       "dirs": [],
-      "files": [],
+      "files": [
+        "worlds/jiuding/tasks/world.json"
+      ],
       "css": [
         "scripts/lingjing.css",
         "scripts/games/live.css"
@@ -274,7 +276,7 @@
       ]
     },
     "jinchat": {
-      "_about": "聊天 (games/jinchat.js): 今线 and the 古's face-to-face chats; the other half comes from the app (the host's `ask`: the phone's own model). It reads games.json and people.json by a folder URL (not caught by the URL test), so both are listed.",
+      "_about": "聊天 (games/jinchat.js): 今线 and the 古's face-to-face chats; the other half comes from the app (the host's `ask`: the phone's own model). It reads games.json, people.json, aigames.json (二十问's table), tones.json (对对子's tones) and chengyu.json (成语接龙's dictionary) by a folder URL (not caught by the URL test), so all five are listed.",
       "module": "scripts/games/jinchat.js",
       "dirs": [],
       "css": [
@@ -283,7 +285,10 @@
       ],
       "files": [
         "worlds/jiuding/games.json",
-        "worlds/jiuding/people.json"
+        "worlds/jiuding/people.json",
+        "worlds/jiuding/aigames.json",
+        "worlds/jiuding/tones.json",
+        "worlds/jiuding/chengyu.json"
       ],
       "ai": true
     },
@@ -402,7 +407,9 @@
       "module": "scripts/games/huarong.js",
       "dirs": [
         "scripts/games/huarong",
-        "worlds/jiuding/art/games/huarong-crowd"
+        "worlds/jiuding/art/games/huarong-crowd",
+        "worlds/jiuding/art/games/huarong-kouzi",
+        "worlds/jiuding/art/games/huarong-wali"
       ],
       "css": [
         "scripts/lingjing.css",
@@ -451,6 +458,12 @@
         "worlds/jiuding/art/setpiece/chendingshan.webp",
         "worlds/jiuding/art/places/waimen.webp",
         "worlds/jiuding/art/places/zhengdian.webp",
+        "worlds/jiuding/art/places/jiangtang.webp",
+        "worlds/jiuding/art/places/houshan.webp",
+        "worlds/jiuding/art/places/zhishi.webp",
+        "worlds/jiuding/art/places/shanmen.webp",
+        "worlds/jiuding/art/places/yaoyuan.webp",
+        "worlds/jiuding/art/places/yaoyuan-night.webp",
         "worlds/jiuding/art/zheng.webp",
         "worlds/jiuding/art/codex/sanguan.webp"
       ]
@@ -505,7 +518,7 @@
       ]
     },
     "kailu": {
-      "_about": "喂饭桶 · 开炉 (games/kailu.js, Phaser): fed through the app (the host's `rules`: the phone's own `fantong feed`).",
+      "_about": "喂饭桶 · 开炉 (games/kailu.js, Phaser): fed through the app (the host's `rules`: the phone's own `fantong feed`). balance.json (its worth table, numbers phase 2) is read by a folder URL, so it is listed.",
       "module": "scripts/games/kailu.js",
       "modules": [
         "scripts/rules/fantong-roll.mjs"
@@ -521,7 +534,8 @@
       "files": [
         "scripts/vendor/phaser.min.mjs",
         "worlds/jiuding/fantong.json",
-        "worlds/jiuding/items.json"
+        "worlds/jiuding/items.json",
+        "worlds/jiuding/balance.json"
       ]
     },
     "piece-chending": {
@@ -686,6 +700,21 @@
         "scripts/vendor/mediapipe/vision_wasm_internal.wasm",
         "scripts/vendor/mediapipe/hand_landmarker.task",
         "scripts/vendor/mediapipe/LICENSE.txt"
+      ]
+    },
+    "fuqin": {
+      "_about": "抚琴 (games/fuqin.js, Piano Tiles on osu!mania's rules; MIT, games/fuqin/LICENSE): 游戏厅 only for now; its levels from games.json, its art the `art/games/fuqin` paintings it names by URL.",
+      "module": "scripts/games/fuqin.js",
+      "dirs": [
+        "scripts/games/fuqin",
+        "worlds/jiuding/art/games/fuqin"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css"
+      ],
+      "files": [
+        "worlds/jiuding/games.json"
       ]
     }
   },
