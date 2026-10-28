@@ -26,12 +26,12 @@ export const WORDS = {
   zh: {
     feed: '开 炉', press: '按住，压盖！', early: '压早了', late: '压晚了', good: '压住了！', take: '收 下', back: '再配一锅',
     stones: '灵石', have: '（有{n}）', empty: '把东西拖进饭桶嘴里，最多三样', none: '没有能喂的东西。', click: '咔哒！', chew: '咯嘣……咯嘣……',
-    spat: '呸！', fresh: '新！',
+    spat: '呸！', burp: '嗝！', fresh: '新！',
   },
   en: {
     feed: 'FIRE IT', press: 'Hold — press the lid!', early: 'Too early', late: 'Too late', good: 'Pressed!', take: 'Take it', back: 'Another pot',
     stones: 'Spirit stones', have: '(have {n})', empty: 'Drag things into its mouth — three at most', none: 'Nothing here will go in.', click: 'Click!', chew: 'Crunch… crunch…',
-    spat: 'Ptoo!', fresh: 'New!',
+    spat: 'Ptoo!', burp: 'Burp!', fresh: 'New!',
   },
 };
 const fill = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
@@ -414,6 +414,7 @@ export class KailuScene extends Phaser.Scene {
     if (!this.scene.isActive()) return;
     if (!r?.ok) { this.refused(r); return; }
     if (r.spat_back) { this.spat(r); return; }
+    if (r.swallowed) { this.swallow(r); return; }
     for (const o of r.outs ?? []) this.iconLoad(o.id, o.art);
     this.load.once('complete', () => this.reveal(r));
     this.load.start();
@@ -440,6 +441,23 @@ export class KailuScene extends Phaser.Scene {
       it.setScale(70 / Math.max(it.width, it.height));
       this.tweens.add({ targets: it, x: 160 + k * 200, y: TRAY_Y + 40, angle: 540, duration: 700, ease: 'Quad.out', onComplete: () => it.destroy() });
     });
+    this.say('spat');
+    this.time.delayedCall(1300, () => { t.destroy(); this.phase = 'fill'; this.lid.setVisible(false); this.body_.setVisible(false); this.drawFill(); this.status.setText(r.say ?? ''); });
+  }
+
+  /* It chews the pot down and burps: nothing comes out and nothing comes back (the book's pot, storyPot `swallow`) — what
+     went in is gone from the tray. */
+  swallow(r) {
+    this.lid.setY(this.lidY - 60);
+    this.tweens.add({ targets: this.lid, y: this.lidY, duration: 300, ease: 'Bounce.out' });
+    const t = this.text(POT.x, POT.y - 210, this.w.burp, 72, { color: '#ffffff' });
+    this.tweens.add({ targets: t, scale: { from: 0.3, to: 1.1 }, duration: 260, ease: 'Back.out' });
+    this.pot.forEach((id, k) => {
+      const it = this.add.image(POT.x + (k - 1) * 40, this.lidY - 90, this.iconKey(id)).setDepth(D.item);
+      it.setScale(70 / Math.max(it.width, it.height));
+      this.tweens.add({ targets: it, x: POT.x, y: this.lidY + 10, scale: 0, angle: 360, delay: k * 120, duration: 420, ease: 'Quad.in', onComplete: () => it.destroy() });
+    });
+    this.pot = [];
     this.say('spat');
     this.time.delayedCall(1300, () => { t.destroy(); this.phase = 'fill'; this.lid.setVisible(false); this.body_.setVisible(false); this.drawFill(); this.status.setText(r.say ?? ''); });
   }

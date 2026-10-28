@@ -63,6 +63,7 @@ test('`same` flags a board or fight of the variety the last one was (every fight
    in reading order, fails here — but for the pairs below, each kept for its reason. A new pair is a swap to make, not a
    row to add without one. */
 const KEPT_PAIRS = {
+  'diyilu-niugu>diyilu-tama': '第四回, one scene (wm-diyilu): the book\'s two feeds of the 饭桶 in one night (the 牛骨头, then the 银毛 after 1,300 字 of its junk) — 饭桶剧情固定局, each its own pot (Hanli 10-28: 「做一个固定的喂饭桶的, 别用塔防」)',
   'jin-chat-ge>jin-chat-617': '今一, one scene (j01-anatomy): 古籍部 then 六一七 — two chats; the jinchat boards\' own pass',
   'baoming-yinyue>jin-chat-ma': '第四回\'s last chat (银月), 今二\'s first (马小宝\'s video) — a 回 and a line turn between; the jinchat boards\' own pass',
   'jin-chat-dark>jin-quxian': '今三: 闭关三日 (节奏, home-made) cut between them 2026-10-27 (Hanli: 「这个是你发明的吧, 去掉吧」); two chats until a classic board stands there again',
@@ -122,7 +123,8 @@ const CLIMB = {
 test('no story board deals a level an earlier one dealt (古 and 今 alike): the same type, never the same layout', () => {
   const seen = new Map();
   for (const b of boardsInOrder()) {
-    const key = `${b.game}:${JSON.stringify(b.levels ? b.levels.map((l) => [layout(l), l.spots?.length ?? null]) : layout(b.deal))}`;
+    // A fixed pot of the book (开炉 · 饭桶剧情固定局) is its pot: what goes in, what comes out.
+    const key = `${b.game}:${JSON.stringify(b.deal.story?.pot ?? (b.levels ? b.levels.map((l) => [layout(l), l.spots?.length ?? null]) : layout(b.deal)))}`;
     assert.ok(!seen.has(key), `${b.id} deals the layout ${seen.get(key)} dealt (${b.game}): give it its own`);
     seen.set(key, b.id);
   }

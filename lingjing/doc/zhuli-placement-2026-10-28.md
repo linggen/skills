@@ -196,7 +196,9 @@ Hanli, reading the 按故事 counts (「小游戏 25 · 斗法 1 · 大场面 1 
 | 洗髓 | 第二回 | One of the two 调息 Hanli kept (10-27). |
 | 人堆 (华容道) | 第三回 | The crowd to slip to the back of; the 回's one 华容道. |
 | 洛书 | 第三回 | 娘's nine chestnuts: the riddle the second trial turns on. |
+| 喂饭桶 · 一根牛骨头 · 一根银毛 | 第四回 | 饭桶剧情固定局: the book's feeds on the real 开炉, each a fixed pot (the thing in, the book's result out; Hanli 10-28: 「做一个固定的喂饭桶的, 别用塔防」). |
 | 井台 (华容道) | 第四回 | The 回's one 华容道. |
+| 喂饭桶 · 一根萝卜 | 第五回 | 饭桶剧情固定局: the 秘境's spoils swallowed with a burp, the 萝卜 in, the 九转筑基丹 out. |
 | 困阵 (五子) | 第五回 | 「前人留下的一盘棋」: a game of the passage itself. |
 | 七八个口子 (华容道) | 第五回 | The crowd on the riverbank; the 回's one 华容道. |
 | 踏马符 | 第五回 | 邹青松's fight, a 几何冲刺 (主力 since the 今线 pass below); it may go to 格斗 once he has frames. |

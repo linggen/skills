@@ -154,7 +154,7 @@ test('niugurope: the task diyilu-niugu plays it in wm-diyilu; the 柴墩 and the
   const { bot, plans, starPlans } = await import('../scripts/games/bots/niugurope.js');
   const RG = await import('../scripts/games/rope-gen.js');
   const t = content.tasks.tasks.find((x) => x.id === 'diyilu-niugu');
-  assert.notEqual(t.game, 'niugurope', 'the board is a 塔防 level now (2026-10-28)');
+  assert.notEqual(t.game, 'niugurope', 'the board is the fixed 开炉 now (2026-10-28; was a 塔防 level)');
   assert.equal(t.stars, 3);
   const row = content.games.games.find((g) => g.id === 'niugurope');
   assert.deepEqual([row.task ?? null, row.scene ?? null, row.mechanic, row.replaced], [null, null, '割绳子', 'cut'], '旧版: the 游戏厅 only');
@@ -221,7 +221,7 @@ test('luoborope: the task luobo-rope plays it in wm-luobo after 「吃！你吃�
   const { bot, plans, starPlans } = await import('../scripts/games/bots/luoborope.js');
   const RG = await import('../scripts/games/rope-gen.js');
   const t = content.tasks.tasks.find((x) => x.id === 'luobo-rope');
-  assert.notEqual(t.game, 'luoborope', 'the board is a 塔防 level now (2026-10-28)');
+  assert.notEqual(t.game, 'luoborope', 'the board is the fixed 开炉 now (2026-10-28; was a 塔防 level)');
   assert.deepEqual(t.grant, { table: 'task', progress: 5 });
   const row = content.games.games.find((g) => g.id === 'luoborope');
   assert.deepEqual([row.task ?? null, row.scene ?? null, row.mechanic, row.replaced], [null, null, '割绳子', 'cut'], '旧版: the 游戏厅 only');

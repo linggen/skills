@@ -89,3 +89,39 @@ test('the pot is the book\'s: the 银毛 gives the 踏马符 in gold, any other 
     assert.equal(r.outs[0].hint, '足下一踏，马上便走。');
   } finally { globalThis.fetch = fetch0; }
 });
+
+// The other two feedings the book tells (Hanli 10-28: 「喂饭桶的小游戏, 做一个固定的喂饭桶的, 别用塔防」): 一根牛骨头 and 一根萝卜
+// are the same fixed 开炉 on the book's pot, not a 塔防 level — the book's one thing in, the book's result out.
+test('wm-diyilu 牛骨头 and wm-luobo 萝卜: fixed pots of the book — its thing opens it, the rest is spat back free, the spoils are swallowed', async () => {
+  const fetch0 = globalThis.fetch;
+  globalThis.fetch = async (u) => ({ json: async () => JSON.parse(fs.readFileSync(new URL(u), 'utf8')) });
+  try {
+    const { storyPot } = await import('../scripts/games/kailu.js');
+    const { potOf } = await import('../scripts/games/bots/kailu.js');
+    const task = (id) => content.tasks.tasks.find((t) => t.id === id);
+    const bone = task('diyilu-niugu'), radish = task('luobo-rope');
+    for (const t of [bone, radish]) {
+      assert.equal(t.game, 'kailu', `${t.id} is the 开炉`);
+      assert.equal(t.deal.lv, undefined, `${t.id}: no 塔防 level`);
+      assert.deepEqual(t.grant, { table: 'task', progress: 5 }, `${t.id}: pay kept`);
+    }
+    const b = await storyPot('zh', bone.deal.story);
+    assert.deepEqual(b.brief.inputs.map((i) => i.id), ['niu-gutou', 'chaihuo', 'shizi', 'kuye', 'huangqi-canzhu']);
+    assert.equal(b.brief.inputs[0].name, '一根牛骨头');
+    assert.equal((await b.roll(['chaihuo', 'shizi'], 0, false)).spat_back, true, 'a decoy is spat back');
+    assert.equal((await b.roll(['niu-gutou', 'kuye'], 0, false)).spat_back, true, 'the bone with another is not the book\'s pot');
+    const rb = await b.roll(potOf(bone.deal.story), 0, false);
+    assert.deepEqual([rb.ok, rb.grade, rb.story, rb.outs.map((o) => o.id)], [true, 'best', true, ['niuzhi-ganlu']]);
+    assert.equal(rb.outs[0].name, '牛脂甘露');
+
+    const r = await storyPot('zh', radish.deal.story);
+    assert.deepEqual(r.brief.inputs.map((i) => i.id), ['dingtai', 'longxu-cao', 'xizhu', 'luobo']);
+    const eaten = await r.roll(['dingtai', 'longxu-cao', 'xizhu'], 0, false);
+    assert.deepEqual([eaten.ok, eaten.swallowed, eaten.outs, eaten.spat_back], [true, true, [], undefined], 'the spoils are swallowed, nothing out');
+    assert.match(eaten.say, /嗝/);
+    assert.equal((await r.roll(['dingtai', 'luobo'], 0, false)).spat_back, true, 'a spoil with the radish is spat back, not swallowed');
+    const rr = await r.roll(potOf(radish.deal.story), 0, false);
+    assert.deepEqual(rr.outs.map((o) => o.id), ['foundation-pill-9']);
+    assert.equal((await storyPot('en', radish.deal.story).then((p) => p.roll(['xizhu'], 0, false))).say.length > 5, true, 'the burp has its English');
+  } finally { globalThis.fetch = fetch0; }
+});

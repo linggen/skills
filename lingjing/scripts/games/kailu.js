@@ -65,14 +65,18 @@ async function tableOf(lang) {
 /* ── The book's own pot (a story board, Hanli 2026-10-28: 「应该安排一个饭桶的剧情固定游戏. 让玩家按要求放剧情里的东西进饭桶」):
    the board's deal names the tray (`tray`: what lies on the floor, a thing of the book that is no item with its name and
    picture) and the one pot (`pot`: exactly these go in, exactly these come out, the biggest gold reveal). Any other pot
-   is chewed and spat back whole (the table's own 「呸」), nothing spent. The game touches no bag: the grant on its win is
+   is chewed and spat back whole (the table's own 「呸」), nothing spent — unless the deal's `swallow` (`ids`, `say`) names the
+   things the book's pot eats and gives nothing for (the 秘境's spoils): those it swallows, burps, and they are gone from the
+   tray (the board's own things, never the bag). The game touches no bag: the grant on its win is
    the rules'. ── */
 export async function storyPot(lang, story) {
-  const { words, input, brief, out, GRADES } = await tableOf(lang);
+  const { words, input, brief, out, pick, GRADES } = await tableOf(lang);
   const inputs = (story.tray ?? []).map((e) => input(e.id, e.n ?? 1, e));
   const want = [...(story.pot?.in ?? [])].sort().join('|');
+  const eaten = (ids) => ids.length > 0 && ids.every((id) => story.swallow?.ids?.includes(id)); // a thing the book's pot takes and gives nothing back
+  const wrong = (ids) => (eaten(ids) ? { ok: true, swallowed: true, say: pick(story.swallow.say), outs: [] } : { ok: true, spat_back: true, say: words.spat_back, outs: [] });
   const roll = async (ids) => {
-    if ([...ids].sort().join('|') !== want) return { ok: true, spat_back: true, say: words.spat_back, outs: [] };
+    if ([...ids].sort().join('|') !== want) return wrong(ids);
     const outs = story.pot.out.map((id) => out(id, 'best'));
     return { ok: true, outs, out: outs[0], grade: 'best', grade_name: words.grades?.best ?? 'best', story: true, first: outs.map((o) => o.id), power: 0, GRADES };
   };

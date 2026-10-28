@@ -1141,12 +1141,10 @@
         "zh": "喂饭桶 · 一根牛骨头",
         "en": "Feeding the Rice Bucket · A soup bone"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 108,
-       "level": "zl-diyilu-niugu",
-       "zhuli": true
+       "mechanic": "开炉",
+       "variety": "开炉",
+       "game": "kailu",
+       "n": 108
       },
       {
        "kind": "read",
@@ -1165,7 +1163,8 @@
        "mechanic": "开炉",
        "variety": "开炉",
        "game": "kailu",
-       "n": 109
+       "n": 109,
+       "same": true
       },
       {
        "kind": "read",
@@ -1264,7 +1263,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 13,
+     "zhuli": 12,
      "longest": 4535,
      "roaming": 15,
      "side": []
@@ -1721,12 +1720,10 @@
         "zh": "喂饭桶 · 一根萝卜",
         "en": "Feeding the Rice Bucket · A radish"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shoulu",
-       "game": "shoulu",
-       "n": 111,
-       "level": "zl-luobo-rope",
-       "zhuli": true
+       "mechanic": "开炉",
+       "variety": "开炉",
+       "game": "kailu",
+       "n": 111
       },
       {
        "kind": "read",
@@ -1743,7 +1740,7 @@
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 8,
+     "zhuli": 7,
      "longest": 4536,
      "roaming": 4,
      "side": []

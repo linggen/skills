@@ -32,8 +32,10 @@ const KEPT = {
   'sleep-xisui': '第二回: 洗髓 — one of the two 调息 Hanli kept (10-27)',
   'gate-crowd': '第三回: 人堆 — the crowd to slip to the back of; the 回\'s one 华容道',
   'gate-luoshu': '第三回: 洛书 — 娘\'s nine chestnuts, the riddle the second trial turns on',
+  'diyilu-niugu': '第四回: 一根牛骨头 — 饭桶剧情固定局: the book\'s first feed on the real 开炉, the 牛骨头 in, the 牛脂甘露 out (Hanli 10-28: 「喂饭桶的小游戏, 做一个固定的喂饭桶的, 别用塔防」)',
   'diyilu-tama': '第四回: 一根银毛 — the 饭桶\'s own pot, the book\'s fixed 开炉 (Hanli 10-28: 「应该安排一个饭桶的剧情固定游戏」)',
   'dianmao-jingtai': '第四回: 井台 — the 回\'s one 华容道 (the water carriers at the well)',
+  'luobo-rope': '第五回: 一根萝卜 — 饭桶剧情固定局: the 秘境\'s spoils swallowed with a burp, the 萝卜 in, the 九转筑基丹 out (Hanli 10-28: 「喂饭桶的小游戏, 做一个固定的喂饭桶的, 别用塔防」)',
   'mijing-zhenyan': '第五回: 困阵 — 「前人留下的一盘棋」, a game of the passage itself',
   'kouzi-crowd': '第五回: 七八个口子 — the crowd on the riverbank; the 回\'s one 华容道',
   'qianye-qiajue': '第六回: 讲堂试法 — the 结印 teaching beat; its grades are the marks the dock\'s moves wait on',
@@ -70,7 +72,8 @@ const JIN_ZHULI = {
   'jin-shouhuan': '今四: 手环 · 吸四吐六 — the heart brought down (几何冲刺)',
   'jin-lastshot': '今四: 最后一罚 — the run to the line (几何冲刺)',
 };
-const FLOOR = { '第一回': 0.5, '第二回': 0.5, '第三回': 0.5, '第四回': 0.7, '第五回': 0.5, '第六回': 0.46, '第七回': 0.7, '第八回': 0.65, '第九回': 0.5 };
+// 第四回 and 第五回 sit lower since the 饭桶's two feeds are fixed 开炉 pots, not 塔防 (饭桶剧情固定局, Hanli 10-28).
+const FLOOR = { '第一回': 0.5, '第二回': 0.5, '第三回': 0.5, '第四回': 0.66, '第五回': 0.46, '第六回': 0.46, '第七回': 0.7, '第八回': 0.65, '第九回': 0.5 };
 
 const huis = rhythm.chapters.flatMap((c) => c.huis).filter((h) => /^第.回$/.test(h.label.zh));
 const jinHuis = rhythm.chapters.flatMap((c) => c.huis).filter((h) => /^今/.test(h.label.zh));
