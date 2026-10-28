@@ -5,11 +5,15 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { act, chartOf, gradeOf, ladderOf, meta, newGame, readTune, tick, windowsOf, LANES } from '../scripts/games/fuqin.js';
 import { resolve } from '../scripts/games/kit/sound.js';
+import { bot } from '../scripts/games/bots/fuqin.js';
+import { playModule } from '../tools/board-bots.mjs';
 
 const read = (p) => JSON.parse(fs.readFileSync(new URL(p, import.meta.url), 'utf8'));
 const REG = read('../worlds/jiuding/games.json');
 const SOUNDS = read('../scripts/games/kit/audio/sounds.json');
 const LEVELS = ladderOf(REG);
+// the story's own levels (a row with a `task`): off the ladder, held to the same hands
+const STORY = REG.games.filter((g) => g.id === 'fuqin' && g.task).flatMap((g) => g.levels);
 
 /* A player: presses (and releases) in time order, the run stepped 8 ms a frame between them, as a page's frames go. */
 function play(level, inputs) {
@@ -71,7 +75,7 @@ test('the ladder: level 1 is slow, taps only and wide; holds and tempo climb aft
   }
 });
 
-for (const level of LEVELS) {
+for (const level of [...LEVELS, ...STORY]) {
   test(`${level.id}: a steady hand wins it clean (3★); a loose one still wins; one that never plays or mashes loses`, () => {
     const clean = play(level, hand(level, 25));
     assert.equal(clean.phase, 'won', `${level.id}: clean ${JSON.stringify(clean.counts)}`);
@@ -110,5 +114,14 @@ test('every note any level plays sounds its own pitch, and the drone too', () =>
       assert.equal(r.min, 0, 'a note is never dropped for coming close after another');
     }
     if (l.drone != null) assert.equal(resolve(SOUNDS, 'fuqin', 'drone', String(l.drone))?.sounds[0], `qin.${l.drone}`);
+  }
+});
+
+test('a story level (none yet): off the 游戏厅\'s ladder, taps only, and the human-like bot (board-bots.mjs) wins each within three tries', () => {
+  for (const l of STORY) {
+    assert.ok(!LEVELS.some((x) => x.id === l.id), `${l.id} is not on the ladder`);
+    assert.equal(l.holds, false);
+    const r = playModule({ newGame, act, tick }, bot, { tries: 3, deal: { levels: [l] } });
+    assert.ok(r.won, `${l.id}: ${JSON.stringify(r.runs)}`);
   }
 });

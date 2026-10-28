@@ -27,6 +27,11 @@ for (const h of BOOK.volumes.flatMap((v) => v.hui)) paras[h.id] = fs.readFileSyn
 const lastPara = (pair) => norm(pair.zh.split('\n\n').at(-1));
 const firstPara = (pair) => norm(pair.zh.split('\n\n')[0]);
 
+/* A way on that is the player's own act and tells the book's next lines, after a board mid-passage: it picks up where the
+   rest stops by right — each kept with its reason. */
+const CHOICE_ON = {
+  '00-chushan/lookout': '太鼓 · 寿宴锣鼓 (2026-10-28) plays at 吴婆婆\'s 锣鼓 line mid-passage; 「爬上最高的松树眺望」 is his act, and the book\'s next lines tell it',
+};
 test('a game inside its scene\'s passage: the rest is the scene\'s own (`story_after`), never its way on\'s', () => {
   for (const id of ['00-shiao']) { // 00-halfyear's boards were cut 10-16: its passage reads whole
     const sc = scenes[id];
@@ -49,7 +54,7 @@ test('a game inside its scene\'s passage: the rest is the scene\'s own (`story_a
     // A 回's last choice that tells a passage of its own (00-yinyue's 带她出谷 into 古二, 2026-10-22: the dawn has a board since,
     // 二十问): its way on picks up where the run stops by right — the 回 turns there.
     const turn = sc.exits.some((e) => e.story && e.next && scenes[e.next]?.hui && scenes[e.next].hui !== sc.hui);
-    if (!second && !fork && !turn) for (const e of sc.exits) if (e.story) assert.notEqual(book.indexOf(firstPara(e.story)), end(lastPara(sc.story_after)), `${sc.id}/${e.id} starts mid-way through the scene's run`);
+    if (!second && !fork && !turn) for (const e of sc.exits) if (e.story && !CHOICE_ON[`${sc.id}/${e.id}`]) assert.notEqual(book.indexOf(firstPara(e.story)), end(lastPara(sc.story_after)), `${sc.id}/${e.id} starts mid-way through the scene's run`);
     assert.equal(book.indexOf(firstPara(sc.story_after)), end(lastPara(sc.story)), `${sc.id}: the rest follows the lead`);
   }
 });

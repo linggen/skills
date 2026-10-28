@@ -263,6 +263,26 @@ SUBJECTS = {
   'fuqin/bloom': ('sprite', (200, 200), (512, 512), 1,
     'ONE single open red plum blossom seen face on: five round petals in muted vermilion wash, darker at the edges, a pale '
     'centre with fine dark ink stamens and yellow dots. Nothing else.'),
+  # ── 太鼓 (games/taiko.js, the drum board on osu!taiko's rules, 2026-10-28): ink marks roll in along a band to a painted
+  #    堂鼓 on a 庙会 stage; 咚 vermilion, 咔 indigo (Taiko's red and blue, in mineral washes).
+  'taiko/stage': ('vignette', (1280, 720), (1280, 720), 2,
+    'A wide picture of the open wooden opera stage of an old Chinese village temple fair, by day. Top: the deep curved tiled '
+    'eaves of the stage roof across the whole width, dark wooden beams, a few round red paper lanterns hanging from them, faint '
+    'misty hills far behind. Middle: a long wide band across the whole width that is plain EMPTY pale wash, nothing in it. '
+    'Bottom: the worn wooden planks of the stage floor across the whole width, empty. No people. ' + OLD_CHINA),
+  'taiko/drum': ('sprite', (560, 560), (768, 768), 1,
+    'ONE big Chinese hall drum (tanggu) seen straight from the front: its round pale cowhide drumhead faces the viewer as one big '
+    'full circle filling most of the picture, a ring of round brass tacks around the edge of the head, the thick wooden rim '
+    'lacquered dull vermilion showing as a band all around the circle. Nothing else.'),
+  'taiko/don': ('sprite', (180, 180), (512, 512), 2,
+    'ONE round mark of wet ink seen face on: a full even circle of muted vermilion red mineral wash, darker at its rim with a '
+    'soft dark ink edge, a paler centre. Nothing else.'),
+  'taiko/ka': ('sprite', (180, 180), (512, 512), 2,
+    'ONE round mark of wet ink seen face on: a full even circle of muted indigo blue mineral wash, darker at its rim with a '
+    'soft dark ink edge, a paler centre. Nothing else.'),
+  'taiko/roll': ('sprite', (720, 140), (1024, 256), 2,
+    'ONE long straight level horizontal brush stroke of warm ochre yellow ink wash running across the picture from left to '
+    'right, round at both ends, dry flying-white streaks in it. Nothing else.'),
 }
 
 

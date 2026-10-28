@@ -115,12 +115,13 @@ const BEATS = [
 // 认路 cut again 2026-10-21 (第一回's lineup, Hanli: 「按你的建议来」); 00-yinyue has a board again since 10-22 (二十问 · 银月),
 // so it is no longer a scene that reads whole — 认路's own cut is held in the 第一回 lineup test.
 // 拽爹上崖 cut 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」): 00-fall reads whole to 把爹拽回山壁; 守灶台 in 00-zaotai keeps 第一回 at six.
+// 太鼓 · 寿宴锣鼓 on 00-chushan 2026-10-28 (Hanli: 太鼓 into the story): 吴婆婆's memory of the 锣鼓, 太鼓's first level.
 // 洗髓 back on 00-sleep 2026-10-26 (全文后的小游戏) on a new task (`sleep-xisui`): the old `xisui-hold` stays cut.
 const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-fall', 'fall-storm', 'check']];
-const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-zaotai': ['masan-zaotai'], '00-cave': ['cave-fire', 'bread-share'], '00-yinyue': ['yinyue-what'], '00-cliff': ['cliff-shangya'], '00-deer': ['deer-wind'], '00-tailu': ['deer-carry'], '00-rent': ['rent-scale'], '00-bluff': ['rent-bluff'], '00-xiuxian': ['xiuxian-xue'], '00-sleep': ['sleep-xisui'], '00-halfyear': ['halfyear-chaiduo'], '00-uncle': ['uncle-jiujiu'], '00-notice': ['notice-shuitong', 'notice-wupo'], '00-gate': ['gate-sishui', 'gate-crowd'], '00-steps': ['steps-sanbai', 'steps-tuifeng'], '00-luoshu': ['gate-luoshu'], '00-linzi': ['longzhi-shidan'], '00-hall': ['hall-celing'] };
+const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-zaotai': ['masan-zaotai'], '00-chushan': ['chushan-luogu'], '00-cave': ['cave-fire', 'bread-share'], '00-yinyue': ['yinyue-what'], '00-cliff': ['cliff-shangya'], '00-deer': ['deer-wind'], '00-tailu': ['deer-carry'], '00-rent': ['rent-scale'], '00-bluff': ['rent-bluff'], '00-xiuxian': ['xiuxian-xue'], '00-sleep': ['sleep-xisui'], '00-halfyear': ['halfyear-chaiduo'], '00-uncle': ['uncle-jiujiu'], '00-notice': ['notice-shuitong', 'notice-wupo'], '00-gate': ['gate-sishui', 'gate-crowd'], '00-steps': ['steps-sanbai', 'steps-tuifeng'], '00-luoshu': ['gate-luoshu'], '00-linzi': ['longzhi-shidan'], '00-hall': ['hall-celing'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
 
-test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 守白菜 · 忍字 · 守灶台 · 喂饼 · 守火 · 射鹿 · 抬鹿下山 · 算账 · 雪夜柴垛 · 水桶 · 泗水路 · 洛书门', () => {
+test('before 入门 the scenes carry exactly the kept boards (the village maps aside): 接雨 · 守白菜 · 忍字 · 守灶台 · 寿宴锣鼓 · 喂饼 · 守火 · 射鹿 · 抬鹿下山 · 算账 · 雪夜柴垛 · 水桶 · 泗水路 · 洛书门', () => {
   const ch = content.chapters['00-prologue'];
   const boards = {};
   // The 古 line's scenes (the 今 interlude spliced in is its own line, not counted here).
@@ -315,12 +316,15 @@ test('挑水上坡 told again: its row and level gone; a save holding halfyear-c
 /* 第一回's lineup (Hanli 2026-10-21): 接雨 · 忍字 · 拽爹 · 认路 · 喂饼 kept, two 塔防 boards added — 「用塔防作为主力」,
    「7个游戏可以防止阅读过长」, then 「按你的建议来」: six boards, four kits — 接雨 · 守白菜 · 忍字 (气走经脉) · 拽爹 · 喂饼 · 守火,
    认路 cut. 守白菜 plays where the book's 芦花鸡 pokes through the 篱笆; 守火 at 「火堆挡在洞口，野兽便不敢进来」, before 喂饼 (the 卷一 plan's order: 接雨 · 守白菜 · 忍字 · 拽爹 · 守火 · 喂饼). */
-test('第一回 plays seven boards on five kits (二十问 · 银月 the AI one, 10-22), two of them 塔防: 守白菜 at the cabbage, 守火 at the fire before 喂饼 — each passage split word for word', () => {
+test('第一回 plays eight boards on six kits (二十问 · 银月 the AI one, 10-22; 太鼓 · 寿宴锣鼓 10-28), two of them 塔防: 守白菜 at the cabbage, 守火 at the fire before 喂饼 — each passage split word for word', () => {
   const h01 = Object.values(scenes).filter(sc => sc.hui === 'h01');
   const boards = h01.flatMap(sc => (sc.show ?? []).filter(c => c.card === 'board').map(c => c.id)).sort();
-  assert.deepEqual(boards, ['baicai-hens', 'bread-share', 'cave-fire', 'masan-taunt', 'masan-zaotai', 'rain-basins', 'yinyue-what']);
+  assert.deepEqual(boards, ['baicai-hens', 'bread-share', 'cave-fire', 'chushan-luogu', 'masan-taunt', 'masan-zaotai', 'rain-basins', 'yinyue-what']);
   const kit = (id) => content.tasks.tasks.find(x => x.id === id).game;
-  assert.deepEqual(boards.map(kit), ['shouqiang', 'bread', 'shoulu', 'dash', 'sadoushou', 'rain', 'jinchat']);
+  assert.deepEqual(boards.map(kit), ['shouqiang', 'bread', 'shoulu', 'taiko', 'dash', 'sadoushou', 'rain', 'jinchat']);
+  // 寿宴锣鼓 (10-28): 吴婆婆's 锣鼓 memory, the passage split after 「…吃了还饿。」
+  assert.match(scenes['00-chushan'].story.zh, /锣鼓敲了一整天[\s\S]*吃了还饿。」$/);
+  assert.match(scenes['00-chushan'].story_after.zh, /^她问道：「去黑松岭？」/);
   assert.ok(content.tasks.tasks.find(x => x.id === 'fall-storm').cut, '拽爹 cut (10-22): a save holding it lets it go');
   assert.ok(!(scenes['00-yinyue'].show ?? []).some(c => c.id === 'yinyue-way') && !(scenes['00-yinyue'].offers?.tasks ?? []).includes('yinyue-way'), '认路 stays off 00-yinyue');
   assert.equal(content.games.games.find(g => g.id === 'dash' && g.task === 'masan-taunt')?.data.level, 'renzi-dash', '忍字: the breath pressed down, a run (几何冲刺 since 10-27)');

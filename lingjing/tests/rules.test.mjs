@@ -1559,7 +1559,8 @@ test('a key the story still needs cannot be sold', () => {
 test('an exit can grant a thing', () => {
   const c = structuredClone(content);
   c.chapters['00-prologue'].scenes['00-chushan'].exits[0].grant = { table: 'scene', item: 'straw-cloak' };
-  const out = resolve(walk(start(), TO_VALLEY.slice(0, 8), c, NOW), c, ctx(), { exit: 'lookout' });
+  const at = walk(start(), TO_VALLEY.slice(0, 8), c, NOW);
+  const out = resolve({ ...at, tasks: { ...at.tasks, 'chushan-luogu': { status: 'done' } } }, c, ctx(), { exit: 'lookout' }); // 寿宴锣鼓 played first (2026-10-28)
   assert.equal(out.result.ok, true);
   assert.equal(out.result.paid.item, 'straw-cloak');
   assert.deepEqual(out.state.bag, { 'straw-cloak': 1 });
@@ -1634,7 +1635,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   const altar = look(s, content, octx()).scene;
   assert.equal(altar.id, '01-altar');
   assert.ok(!altar.exits.some(e => e.game), 'no 狍鸮 at the altar: the shaman is sent to take word');
-  r = answer(resolve, s, { exit: 'send' });
+  r = answer(resolve, boardsDone(s, 'altar-dagu'), { exit: 'send' }); // 太鼓 · 河伯娶妇 first (2026-10-28)
   assert.equal(r.state.scene, '01-rise'); assert.equal(r.result.paid.progress, 0); // no story 修为 (2026-10-16)
   s = r.state; assert.equal(s.place, 'hebo', 'the river stands up where the wedding was');
   // the chapter's fight: 冰夷's two dragons test the one who would not kneel — a trial, fought again at once
@@ -1686,7 +1687,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
 test('问卦 is the day\'s fight luck alone: its grade turns the lower trigram\'s 功法, reads the beast at 吉 — and never touches pay or a step', () => {
   const castOn = (st, ask, grade, hexagram = 1) => ({ ...st, divination: { day: '2026-10-02', ask, throws: [[3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2]], hexagram, changed: null, grade } });
   const atShrine = () => answer(resolve, boardsDone(answer(resolve, answer(resolve, toJi(), { exit: 'town' }).state, { exit: 'shrine' }).state, 'jingtai-jiayi'), { exit: 'dawn' }).state;
-  const paidBy = st => must(resolve, st, { exit: 'send' }, octx()).result.paid;
+  const paidBy = st => must(resolve, boardsDone(st, 'altar-dagu'), { exit: 'send' }, octx()).result.paid;
   const plain = paidBy(atShrine());
   // A cast made before the merge that asked about cultivation or wealth, and a
   // dire one: pay and the story's steps are untouched (redesign-v2 § 四).
@@ -1749,7 +1750,7 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   assert.equal(s.place, 'ye');
   s = answer(resolve, boardsDone(answer(resolve, s, { exit: 'shrine' }).state, 'jingtai-jiayi'), { exit: 'dawn' }).state; // the well first (2026-10-26)
   assert.equal(s.place, 'hebo', 'the exit walks the one road to the shrine');
-  s = answer(resolve, s, { exit: 'send' }).state;
+  s = answer(resolve, boardsDone(s, 'altar-dagu'), { exit: 'send' }).state; // the drum first (太鼓, 2026-10-28)
   assert.equal(s.scene, '01-rise');
   // lost: a trial (`retry`) withdraws nothing — it may be fought again at once
   const lost = fightOut(s, 'shuanglong-trial', { line: 'pass', c: octx() });

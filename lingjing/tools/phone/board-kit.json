@@ -699,6 +699,21 @@
       "files": [
         "worlds/jiuding/games.json"
       ]
+    },
+    "taiko": {
+      "_about": "太鼓 (games/taiko.js, Taiko on osu!taiko's rules; MIT, games/taiko/LICENSE): its levels from games.json, its art the `art/games/taiko` paintings it names by URL.",
+      "module": "scripts/games/taiko.js",
+      "dirs": [
+        "scripts/games/taiko",
+        "worlds/jiuding/art/games/taiko"
+      ],
+      "css": [
+        "scripts/lingjing.css",
+        "scripts/games/live.css"
+      ],
+      "files": [
+        "worlds/jiuding/games.json"
+      ]
     }
   },
   "_pieces": "`games.piece-<id>`: a 大场面 (setpieces/<id>.js) the story screen plays under its beat (rules/tell.mjs `piece`): `piece` names it, the host page plays it through setpiece.js (`playSetPiece`, auto, cover) and ends like a board. `modules`: more JS whose static imports are walked (setpiece.js loads its piece by a dynamic import). The painting libraries it loads on demand (fx.js) are listed in `files`. `art: \"auto\"`: the piece's paintings are the `'art/…'` strings its module names (the same reading tests/phone-board.test.mjs holds every piece to).",

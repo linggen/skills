@@ -95,8 +95,27 @@
       },
       {
        "kind": "read",
-       "chars": 6494,
-       "run": 6494,
+       "chars": 2656,
+       "run": 2656,
+       "over": true
+      },
+      {
+       "kind": "board",
+       "id": "chushan-luogu",
+       "scene": "00-chushan",
+       "title": {
+        "zh": "寿宴锣鼓 · 一整天",
+        "en": "The birthday drums · All day"
+       },
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "taiko",
+       "n": 185
+      },
+      {
+       "kind": "read",
+       "chars": 3838,
+       "run": 3838,
        "over": true
       },
       {
@@ -239,14 +258,14 @@
       }
      ],
      "counts": {
-      "board": 7,
+      "board": 8,
       "fight": 1,
       "riddle": 0,
       "seen": 1,
       "breakthrough": 0,
       "piece": 3
      },
-     "longest": 6494,
+     "longest": 3838,
      "roaming": 0,
      "side": []
     },
@@ -445,7 +464,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 184
+       "n": 187
       },
       {
        "kind": "read",
@@ -509,7 +528,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 185
+       "n": 188
       },
       {
        "kind": "read",
@@ -566,7 +585,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 186
+       "n": 189
       },
       {
        "kind": "read",
@@ -703,7 +722,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 187
+       "n": 190
       },
       {
        "kind": "read",
@@ -799,7 +818,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 188
+       "n": 191
       },
       {
        "kind": "read",
@@ -854,7 +873,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 189,
+       "n": 192,
        "same": true
       },
       {
@@ -964,7 +983,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 190
+       "n": 193
       },
       {
        "kind": "board",
@@ -1085,7 +1104,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 191
+       "n": 194
       },
       {
        "kind": "read",
@@ -1123,7 +1142,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 192
+       "n": 195
       },
       {
        "kind": "read",
@@ -1207,7 +1226,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 193
+       "n": 196
       },
       {
        "kind": "read",
@@ -1264,7 +1283,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 194
+       "n": 197
       },
       {
        "kind": "read",
@@ -1502,7 +1521,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 195
+       "n": 198
       },
       {
        "kind": "read",
@@ -1540,7 +1559,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 196
+       "n": 199
       },
       {
        "kind": "read",
@@ -1714,7 +1733,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 197
+       "n": 200
       },
       {
        "kind": "read",
@@ -2015,7 +2034,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 198
+       "n": 201
       },
       {
        "kind": "read",
@@ -2673,7 +2692,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 199
+       "n": 202
       },
       {
        "kind": "read",
@@ -2770,7 +2789,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 200
+       "n": 203
       },
       {
        "kind": "read",
@@ -3036,7 +3055,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 201
+       "n": 204
       },
       {
        "kind": "read",
@@ -3074,7 +3093,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 202
+       "n": 205
       },
       {
        "kind": "read",
@@ -3161,8 +3180,27 @@
       },
       {
        "kind": "read",
-       "chars": 3256,
-       "run": 3256,
+       "chars": 607,
+       "run": 607,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "altar-dagu",
+       "scene": "01-altar",
+       "title": {
+        "zh": "河伯娶妇 · 打鼓",
+        "en": "The River Lord's wedding · The drum"
+       },
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "taiko",
+       "n": 186
+      },
+      {
+       "kind": "read",
+       "chars": 2649,
+       "run": 2649,
        "over": true
       },
       {
@@ -3266,7 +3304,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 203
+       "n": 206
       },
       {
        "kind": "read",
@@ -3352,7 +3390,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 204
+       "n": 207
       },
       {
        "kind": "read",
@@ -3362,14 +3400,14 @@
       }
      ],
      "counts": {
-      "board": 6,
+      "board": 7,
       "fight": 2,
       "riddle": 1,
       "seen": 0,
       "breakthrough": 0,
       "piece": 3
      },
-     "longest": 3256,
+     "longest": 2803,
      "roaming": 4,
      "side": []
     }

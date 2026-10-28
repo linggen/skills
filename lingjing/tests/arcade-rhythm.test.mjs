@@ -117,6 +117,9 @@ const CLIMB = {
   qimai: (L) => ({ rise: { speed: L.speed ?? 90 } }),
   // 几何冲刺: the run's speed and its beat (the things' types come in by story order: tests/dash.test.mjs)
   dash: (L) => ({ rise: { speed: dashSpeed(L), bpm: L.bpm ?? 120 } }),
+  // 太鼓 · 抚琴: the beat and the windows (OD) — 太鼓's strokes a beat (div) too
+  taiko: (L) => ({ rise: { bpm: L.bpm, div: L.div ?? 2, od: L.od ?? 5 } }),
+  fuqin: (L) => ({ rise: { bpm: L.bpm, od: L.od ?? 5 } }),
 };
 test('no story board deals a level an earlier one dealt (古 and 今 alike): the same type, never the same layout', () => {
   const seen = new Map();

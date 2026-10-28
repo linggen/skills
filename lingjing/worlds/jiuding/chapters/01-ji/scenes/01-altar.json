@@ -36,8 +36,8 @@
   }
  },
  "story": {
-  "zh": "十月十八，河伯娶妇。那天一早，漳水边上便站满了人。三老坐在一顶大伞底下，穿着新做的绸衫，每人面前摆一盘果子。\n\n打鼓的那个，便是沈小满。\n\n巫祝摇着铃，绕着木船走了三圈，嘴里念念有词，然后停下来，冲着漳水高声叫道：「河伯大人——今年的新娘子，给您送来啦——」",
-  "en": "The eighteenth of the tenth month: the River Lord takes a wife. From early that morning the bank of the Zhang was packed with people. The Three Elders sat under a big parasol in new silk gowns, each with a plate of fruit before him.\n\nThe drummer was Shen Xiaoman.\n\nThe shaman shook her bell and walked three times round the boat, muttering under her breath, then stopped and called out across the Zhang at the top of her voice: \"Lord River Lord — this year's bride, we're sending her to you —\""
+  "zh": "十月十八，河伯娶妇。那天一早，漳水边上便站满了人。三老坐在一顶大伞底下，穿着新做的绸衫，每人面前摆一盘果子。\n\n打鼓的那个，便是沈小满。",
+  "en": "The eighteenth of the tenth month: the River Lord takes a wife. From early that morning the bank of the Zhang was packed with people. The Three Elders sat under a big parasol in new silk gowns, each with a plate of fruit before him.\n\nThe drummer was Shen Xiaoman."
  },
  "lines": [],
  "buttons": [
@@ -68,7 +68,14 @@
      "bingyi"
     ]
    },
-   "_setpiece": "卷一's 大场面, 漳水立起 (setpiece.js + setpieces/zhang.js, doc/design.md § 哇时刻): the story node of this exit carries it, so the whole stage plays the river standing up as he walks into 01-rise."
+   "_setpiece": "卷一's 大场面, 漳水立起 (setpiece.js + setpieces/zhang.js, doc/design.md § 哇时刻): the story node of this exit carries it, so the whole stage plays the river standing up as he walks into 01-rise.",
+   "needs": {
+    "task": "altar-dagu"
+   },
+   "refuse": {
+    "zh": "鼓还没打完——巫祝还在绕船。",
+    "en": "The drumming isn't done: the shaman is still circling the boat."
+   }
   },
   {
    "id": "flee",
@@ -84,5 +91,21 @@
     }
    ]
   }
- ]
+ ],
+ "story_after": {
+  "zh": "巫祝摇着铃，绕着木船走了三圈，嘴里念念有词，然后停下来，冲着漳水高声叫道：「河伯大人——今年的新娘子，给您送来啦——」",
+  "en": "The shaman shook her bell and walked three times round the boat, muttering under her breath, then stopped and called out across the Zhang at the top of her voice: \"Lord River Lord — this year's bride, we're sending her to you —\""
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "altar-dagu"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "altar-dagu"
+  ]
+ },
+ "_board": "01-altar (Hanli 10-28: 太鼓 into the story): 太鼓 `altar-dagu` after 「打鼓的那个，便是沈小满。」; the shaman's bell reads after it, word for word."
 }

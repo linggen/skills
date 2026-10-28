@@ -105,6 +105,17 @@ No upstream file is copied. `games/fuqin.js` ports the osu!mania ruleset's rules
 github.com/ppy/osu, MIT; the licence text is `games/fuqin/LICENSE`, the credit is in the module's header. No osu! asset
 (osu-resources: skins, sounds, beatmaps) is used. Read on 2026-10-27.
 
+## 太鼓 (games/taiko.js) — rules ported, nothing vendored
+
+No upstream file is copied. `games/taiko.js` ports the osu!taiko ruleset's rules into its own code: hit windows by OD
+(`TaikoHitWindows.cs`), hits and the wrong drum (`DrawableHit.cs`), big marks' second key within 30 ms (`StrongNestedHit`),
+drum rolls and their ticks (`DrumRoll.cs`, `DrumRollTick.cs`), the balloon's required hits and alternation (`Swell.cs`,
+`DrawableSwell.cs`, `TaikoBeatmapConverter.cs`), the gauge (`TaikoHealthProcessor.cs`, `AccumulatingHealthProcessor.cs`,
+`TaikoJudgement.cs`, `TaikoSwellJudgement.cs`) and accuracy. Source: osu! by ppy Pty Ltd, github.com/ppy/osu, MIT; the licence
+text is `games/taiko/LICENSE`, the credit is in the module's header. No osu! asset (osu-resources: skins, sounds, beatmaps)
+is used: the tunes are 锣鼓经 (public domain), the drum, gong and cymbal tones are ZzFX recipes (sounds.json `drum.*`), the
+art is our own painting (tools/paint-games.py `taiko/*`). Read on 2026-10-28.
+
 ## 照着走 (games/simon.js) — rules read, nothing vendored
 
 No upstream file is copied and none is ported. Simon's rules (one more square a round; tap the run back) were checked against

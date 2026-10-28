@@ -236,10 +236,17 @@ export function act(s, d = {}) {
       if (s.hp <= 0) s.phase = 'failed';
       return { state: s };
     }
+    if (grade !== 'miss') s.played = { n: (s.played?.n ?? 0) + 1, midi: n.midi };
     judge(s, n, 'head', grade);
     if (n.hold && grade !== 'miss') s.held[lane] = n.i;
     else lose(s, n);
     advance(s, lane);
+    return { state: s };
+  }
+  if (d.g === 'tap') {
+    if (s.down[lane]) act(s, { g: 'release', lane, at });
+    act(s, { g: 'press', lane, at });
+    if (s.held[lane] == null && s.down[lane]) act(s, { g: 'release', lane, at });
     return { state: s };
   }
   if (d.g === 'release') {
@@ -280,19 +287,35 @@ export function tick(s, ms) {
   return s;
 }
 
+/* What a step sounds (the runners' and the bot test's way: games/kit/heard.js): each key struck its own pitch, a miss, a
+   wrong note, the drone on a bar. The page hears the run's events instead (mount's `hear`), the same names. */
+export const soundSnap = (s) => ({ n: s.played?.n ?? 0, midi: s.played?.midi ?? null, miss: s.counts?.miss ?? 0, wrong: s.counts?.wrong ?? 0, bar: s.bar ?? 0, drone: s.level?.drone ?? null });
+export function sounds(b, a) {
+  const out = [];
+  if ((a?.n ?? 0) > (b?.n ?? 0)) out.push({ event: 'note', kind: String(a.midi) });
+  if ((a?.miss ?? 0) > (b?.miss ?? 0)) out.push('miss');
+  if ((a?.wrong ?? 0) > (b?.wrong ?? 0)) out.push('wrong');
+  if ((a?.bar ?? 0) > (b?.bar ?? 0) && a.drone != null) out.push({ event: 'drone', kind: String(a.drone) });
+  return out;
+}
+
 /* ── The ladder (games.json) ─────────────────────────────────────────────────────────────────────────────────── */
 
+/** The 游戏厅's ladder: the `fuqin` rows that hold no story beat (a story row's level is its board's alone). */
 export function ladderOf(registry) {
-  return (registry?.games ?? []).filter((g) => g.id === meta.id).flatMap((g) => g.levels ?? []);
+  return (registry?.games ?? []).filter((g) => g.id === meta.id && !g.task).flatMap((g) => g.levels ?? []);
 }
 /** The level a mount plays: `data.levels[0]`, else the ladder's `data.lv` (1-based, the 游戏厅's chips) or level id
     `data.level`, else the page's `?lv=`, else its first. Answers [level, its 1-based place, the ladder]. */
 export async function levelFor(opts = {}) {
   if (opts.data?.levels?.length) return [opts.data.levels[0], 1, opts.data.levels];
   const res = await fetch(new URL('../../worlds/jiuding/games.json', import.meta.url));
-  const all = ladderOf(await res.json());
+  const reg = await res.json(), all = ladderOf(reg);
   const raw = opts.data?.lv ?? opts.data?.level ?? new URLSearchParams(globalThis.location?.search ?? '').get('lv') ?? opts.level;
   let k = all.findIndex((l) => l.id === raw);
+  // a story row's own level, asked by id (the 游戏厅's story rows): played alone, off the ladder
+  const own = k < 0 && (reg.games ?? []).filter((g) => g.id === meta.id).flatMap((g) => g.levels ?? []).find((l) => l.id === raw);
+  if (own) return [own, 1, [own]];
   if (k < 0) k = Math.max(0, Math.min(all.length - 1, (Number(raw) || 1) - 1));
   return [all[k] ?? null, k + 1, all];
 }

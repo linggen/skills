@@ -274,12 +274,53 @@ note and costs the gauge (Piano Tiles' white tile, softened), so mashing loses.
   bridge (琴码) as the line, a plum blossom where a key is struck.
 - **Tests** (tests/fuqin.test.mjs): osu!'s windows to the half-ms; every level won 3★ by a steady hand (±25 ms), won under 3★ by a
   loose one (±110 ms), lost by one that never plays and by one that mashes every lane.
-- **Story spots, proposed — not wired (Hanli decides after playing):** 今 · 闭关三日 (j07-guan, today 节奏 `shuttle` `dunqi`, the
-  squat board) → the school's music room piano (a 今 look of this board); 古 · 小满 on the threshold through 马家寿宴's 锣鼓
-  (00-chushan, a told memory today) → a Taiko board when it is built; 大比 (09-dabi) → a drum moment, Taiko; 吴婆婆's 锣鼓 line
-  (wm-zhaojing) → the 茉莉花 she hums, here.
-- **Next:** Taiko (咚 · 咔, drumroll, balloon) on osu!taiko's windows (TaikoHitWindows.cs: great 50/35/20, ok 120/80/50, miss
-  135/95/70 ms at OD 0/5/10), the same kit and tone bank.
+- **In the story? Not yet (10-28, Hanli: 「好, 其他都没问题, 可以放进游戏了」)** — each spot read against its passage:
+  - **Tried, then taken out: wm-xiongya (第五回)** — 邹青松 walks off 「哼着一支小曲儿」 and 小满, flat to the wall, waits till it is
+    gone: the one tune a 古 scene hears. Wired after 「…进了人多的那个口子。」, it broke two bands of the balance model: the 秘境
+    rerun's typical 灵石 share fell to 0.09 (band 0.1–0.9) and 第九回's typical days rose to 3.1 (≤ 3); without it both hold.
+    A weak fit too (the player would be playing a killer's hum). Not wired.
+  - **Not wm-zhaojing** (proposed for 茉莉花 here): its line is 吴婆婆 hearing the 寿宴's 锣鼓 — drums, no tune — told again
+    as a memory of 00-chushan's, and the scene already plays 照镜 right after. The 锣鼓 belong to 太鼓, at their first telling.
+  - **No 今 music room**: no 今 scene has one (j07-dark's earphones are 马小宝's songs, not a thing 沈芒 plays).
+- **Next:** a candidate for Hanli to judge — j07-dark (今三), 马小宝's earphones 「一首歌接一首歌」 in the locked 古籍部 (a 今 board pays the 今 ladder, so the 古 bands would not move); else a passage where the book plays a tune.
+
+## 太鼓 in the story (10-28)
+
+- **00-chushan (第一回), `chushan-luogu`** — 「马家在村口摆寿宴，锣鼓敲了一整天」, 吴婆婆 on her threshold: played after
+  「…吃了还饿。」」, the rest read after it. Level `shouyan`: 76 bpm, 咚 only, OD 0 — the kit's easiest. Before 入门, so it
+  pays nothing (as every board there); 第一回 now eight boards (tests/opening-beats.test.mjs).
+- **01-altar (第九回), `altar-dagu`** — 「打鼓的那个，便是沈小满。」 at 河伯娶妇: after that line, the shaman's bell read after
+  it. Level `hebo`: 96 bpm in eighths, 咚 咔, big marks, a roll, OD 4.
+- **Not the 大比**: its text has no drum — the 执事 strikes a 锣 between bouts (wm-fengtou, wm-laoyin, wm-yingjian); 01-altar is
+  the book's own drum moment.
+- Rules held (tests/arcade-rhythm.test.mjs): no two 节奏 back to back; no story level repeats; 太鼓's bpm · strokes a beat · OD
+  only climb (CLIMB). Each pays by the percent model (节奏's share). `numbers.mjs --apply --write` after: two gates one minute
+  longer straight through (wm-qianye, 09-dingfeng: 7 → 8 min), the red list unchanged (18).
+
+## 太鼓 — the drum board (10-28, `taiko`)
+
+Hanli 10-28: 抚琴 「还不错」 → 太鼓 next, on the same kit. A classic, not ours: **Taiko no Tatsujin on osu!taiko's rules.** Marks roll
+along a band to the ring: red 咚 on the drum's head (F J), blue 咔 on its rim (D K); a big mark wants both keys of its kind; a
+yellow roll is drummed; a balloon is struck 咚 咔 in turn until it bursts. Phone: the drum's head is 咚, its rim (or anywhere off
+the head) 咔. The keys stay shown beside the drum the whole run (Hanli 10-28: 「最好在游戏开始后一直保持显示」), a seal filled
+while its key is down; a finger sees 鼓心 · 鼓边 instead.
+
+- **Licence checked (10-28).** Ported: osu! (github.com/ppy/osu, MIT © ppy Pty Ltd) — TaikoHitWindows (great 50/35/20, ok
+  120/80/50, miss 135/95/70 ms at OD 0/5/10), the wrong drum a miss, big marks (second key within 30 ms, a bonus), roll ticks
+  (four a beat, half a tick's window), the balloon's count (seconds × DifficultyRange(OD, 3, 5, 7.5) × 1.65, 咚 咔 in turn),
+  the gauge (TaikoHealthProcessor: it starts empty, cleared at half; great 3.0, ok 1.1, miss −1.0 by their multipliers);
+  licence in `scripts/games/taiko/LICENSE`, credit in the module's header and VENDOR.md. No osu! asset.
+- **Mashing loses on osu!'s own numbers** (tests/taiko.test.mjs: 咚 咔 in turn every 70 ms fails every level) — no house rule
+  added. A press with nothing in reach does nothing, as in osu!.
+- **Tunes, 锣鼓经 (public domain), a strip of strokes per level** (`games.json` row `taiko`, `levels[].chart`): 慢长锤 · 咚 (72
+  bpm, 咚 only, OD 0) → 四击头 (八大 仓 才: 仓 a big 咚, 才 a 咔) → 庙会鼓 (rolls) → 急急风 (its run of 仓 a roll, a balloon,
+  16ths). Tones synthesized (ZzFX, sounds.json `drum.*`): 堂鼓 head and rim, 钹 on a big mark, 小锣 on each bar, 大锣 when a
+  balloon bursts.
+- **Art** (tools/paint-games.py `taiko/*`, local painter, one job at a time, best of three): a 庙会 opera stage, the 堂鼓 face
+  on, 咚 and 咔 as vermilion and indigo ink rounds, an ochre stroke for the roll.
+- **Tests** (tests/taiko.test.mjs): osu!'s windows, gauge and balloon numbers; every level cleared 3★ by a steady hand (±20 ms),
+  under 3★ by a loose one (±75 ms), failed by one that never plays and one that mashes; the human-like bot (bots/taiko.js)
+  clears every story level within three tries.
 
 ## 格斗 — the arcade 1v1 (10-26, first bout: 秦雁)
 
