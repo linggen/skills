@@ -32,10 +32,17 @@
   .phonepiece .sphost { width: 100%; height: 100%; border-radius: 0; background: #f5efe1; }
   .phonepiece canvas { width: 100% !important; height: 100% !important; object-fit: cover; }
   .phonepiece .spstill { width: 100%; height: 100%; object-fit: cover; }
+  /* The side (games/shell.js frameHtml's, here the page's own): 结印's box and its ready card stand in a strip under
+     the field, never over it (Hanli 10-28: 「不要挡住游戏画面」); while a helper is docked the field keeps out of it. */
+  body > [data-shell-side] { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px;
+    align-items: flex-start; justify-content: center; padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); }
+  body > [data-shell-side]:empty { display: none; }
+  body:has(> [data-shell-side]:not(:empty)) #stage { bottom: calc(132px + env(safe-area-inset-bottom)); --jy-strip: 132px; }
 </style>
 </head>
 <body>
 <div id="stage"></div>
+<div data-shell-side></div>
 <script type="module" src="./host.js"></script>
 </body>
 </html>

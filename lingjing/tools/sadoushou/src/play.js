@@ -20,6 +20,8 @@ const SOLDIER_H = 40;             // a 豆兵's height at the wall (px); smaller
 const GOLD = Math.PI * (3 - Math.sqrt(5));
 const SLOTS = Array.from({ length: MAXQ }, (_, i) => { const r = 5.6 * Math.sqrt(i + 0.5), a = i * GOLD; return [r * Math.cos(a) * 1.3, r * Math.sin(a) * 0.4]; });
 const HAND = { u: 0.72, v: 0.3 }; // xiaoman-cast.webp's raised hand (its glowing charm), 0…1 of the picture
+// 结印's spell (Hanli 10-28: 「打怪的法术也让用户看到」): its flight (ms), its number's size, the slow beat at impact (s, at 0.3×).
+const SPELL = { fly: 300, num: 100, slow: 0.4 };
 const D = { ground: 0, beast: 20, boss: 25, belt: 27, shot: 30, squad: 32, rush: 35, wall: 40, man: 41, fx: 3000, num: 3100, hud: 4000 };
 const TIER_TINT = [0xffffff, 0xfff0c8, 0xe0a060];
 const backOut = (t) => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2;
@@ -771,17 +773,34 @@ export class PlayScene extends Phaser.Scene {
       this.hud.banner(this.cfg.level.jieyin.firstCast[this.lang] ?? this.cfg.level.jieyin.firstCast.zh, { color: '#bfe8ff', ribbon: true, y: 420 });
       this.flash(220, 200, 236, 255);
     }
-    const orb = this.add.image(this.squadX, Y0 - 30, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(/^huodan/.test(e.move) ? 0xff8a2a : e.move === 'bingzhui' ? 0x9fe0ff : e.move === 'muteng' ? 0x8fe07a : 0xfff0b0).setScale(3).setDepth(D.fx);
+    const tint = /^huodan/.test(e.move) ? 0xff8a2a : e.move === 'bingzhui' ? 0x9fe0ff : e.move === 'muteng' ? 0x8fe07a : 0xfff0b0;
+    const orb = this.add.image(this.squadX, Y0 - 30, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(tint).setScale(3).setDepth(D.fx);
+    // Its streak up the road (Hanli 10-28: 「打怪的法术也让用户看到」): a light from the squad to the beast, its tail fading.
+    const streak = this.add.graphics().setDepth(D.fx - 0.1).setBlendMode(Phaser.BlendModes.ADD), pts = [];
     this.sfx.go();
-    this.tweens.add({ targets: orb, x, y, scale: 1.4, duration: 260, ease: 'Quad.easeIn', onComplete: () => {
+    this.tweens.add({ targets: orb, x, y, scale: 1.4, duration: SPELL.fly, ease: 'Quad.easeIn', onUpdate: () => {
+      pts.push({ x: orb.x, y: orb.y });
+      if (pts.length > 12) pts.shift();
+      streak.clear();
+      for (let i = 1; i < pts.length; i += 1) {
+        const k = i / (pts.length - 1);
+        streak.lineStyle(22 * k, tint, 0.8 * k).lineBetween(pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y);
+        streak.lineStyle(7 * k, 0xffffff, 0.9 * k).lineBetween(pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y);
+      }
+      if (!this.calm || this.rand() < 0.4) this.em.burst('spark', 1, orb.x, orb.y);
+    }, onComplete: () => {
       orb.destroy();
-      this.shake(260, 0.016);
-      this.flash(110, 255, 210, 150);
+      this.tweens.add({ targets: streak, alpha: 0, duration: 260, onComplete: () => streak.destroy() });
+      this.shake(300, 0.018);
+      this.flash(140, (tint >> 16) & 255, (tint >> 8) & 255, tint & 255);
       this.em.burst('fire', 40, x, y);
-      this.em.burst('stars', 10, x, y);
-      const ring = this.add.image(x, y, 'ring').setDepth(D.fx).setTint(0xffc070).setScale(0.3);
-      this.tweens.add({ targets: ring, scale: 3.4, alpha: 0, duration: 420, onComplete: () => ring.destroy() });
-      this.num(x, y - 40, `-${e.dmg}`, 'numGold', big ? 110 : 80, { rise: 90, life: big ? 1.4 : 1 });
+      this.em.burst('stars', 14, x, y);
+      const glow = this.add.image(x, y, 'glow').setBlendMode(Phaser.BlendModes.ADD).setTint(tint).setScale(6).setDepth(D.fx).setAlpha(0.95);
+      this.tweens.add({ targets: glow, alpha: 0, scale: 7.5, duration: 520, onComplete: () => glow.destroy() });
+      const ring = this.add.image(x, y, 'ring').setDepth(D.fx).setTint(tint).setScale(0.3);
+      this.tweens.add({ targets: ring, scale: 3.8, alpha: 0, duration: 520, onComplete: () => ring.destroy() });
+      this.num(x, y - 40, `-${e.dmg}`, 'numGold', big ? 120 : SPELL.num, { rise: 90, life: big ? 1.5 : 1.4 });
+      if (!this.calm && !big) this.slowT = Math.max(this.slowT ?? 0, SPELL.slow); // the slow beat at every impact (a first cast keeps its longer one)
       if (big) { this.em.burst('stars', 30, x, y - 30); this.em.burst('spark', 40, x, y); this.shake(420, 0.024); }
       this.sfx.slam();
     } });

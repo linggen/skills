@@ -262,3 +262,80 @@ test('the switch on this device: localStorage, a store that throws changes nothi
   assert.equal(await permissionOf({ navigator: { permissions: { query: async () => ({ state: 'granted' }) } } }), 'granted');
   assert.equal(await permissionOf({ navigator: { permissions: { query: async () => ({ state: 'denied' }) } } }), 'denied');
 });
+
+// Hanli 10-28: 「结手印的框调整一下位置, 不要挡住游戏画面」 — the parts stand in the shell's side (games/shell.js
+// `data-shell-side`), never the field; a frame laid again (the story's Look) brings a new side and they move into it.
+test('the box stands in the shell\'s side, off the field; a re-laid frame takes it along', async () => withFetch(async () => {
+  const { host, frame } = page();
+  const slot = (n) => { const s = el('div', host.ownerDocument); s.name = n; s.appended = []; s.append = (...xs) => s.appended.push(...xs); return s; };
+  let side = slot('a');
+  host.closest = (sel) => (sel === '.gshell' ? { querySelector: (q) => (q.includes('data-shell-side') ? side : null) } : null);
+  const h = await offerSeals({ host, moves: ['feijian'], feed: true, available: async () => true, state: () => ({ on: true, ready: true, cool: 0, coolOf: 6 }) });
+  await frame(2);
+  assert.equal(host.appended.length, 0, 'nothing on the field');
+  assert.equal(side.appended.length, 4, 'button, its bubble, the box, the ready card — in the side');
+  const first = side;
+  side = slot('b');
+  await frame(1);
+  assert.equal(side.appended.length, 4, 'the new frame\'s side holds them');
+  assert.equal(first.appended.length, 4);
+  h.close();
+}));
+
+test('a cast flown: the box holds in the move\'s light with 「成」, then steps away for the rest', async () => withFetch(async () => {
+  const { host, frame } = page();
+  let cool = 0;
+  const h = await offerSeals({ host, moves: ['feijian'], feed: true, available: async () => true, cast: () => { cool = 10; return true; },
+    state: () => ({ on: true, ready: cool <= 0, cool, coolOf: 10 }) });
+  await frame(2);
+  const dock = host.appended[1];
+  assert.equal(dock.hidden, false, 'open at the offer');
+  const win = host.ownerDocument.defaultView;
+  assert.equal(win.jieyinFeed.cast('feijian'), true, 'the console\'s cast flies');
+  await frame(1);
+  assert.ok(dock.classList.contains('is-cast'), 'in its light');
+  await frame(60); // ~1 s: still held though the rest has begun
+  assert.equal(dock.hidden, false, 'held, not gone at once');
+  await frame(30); // past the hold (1.3 s)
+  assert.equal(dock.hidden, true, 'then away for the rest');
+  assert.ok(!dock.classList.contains('is-cast'));
+  assert.equal(win.jieyinFeed.cast('feijian'), false, 'resting: nothing flies');
+  h.close();
+}));
+
+test('the ready card (Hanli 10-28: 「结手印前给一个提示, 让用户准备好」): up between the waves before the 大妖, the camera warm; gone as the wave starts', async () => withFetch(async () => {
+  const { host, frame } = page();
+  const cam = camLog();
+  let st = { on: false, soon: true, ready: false, cool: 0, coolOf: 6 };
+  const h = await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf: cam.make, permission: async () => 'granted', store: memStore(), state: () => st });
+  await frame(2);
+  const card = host.appended[2];
+  assert.equal(card.hidden, false, 'the card is up');
+  assert.match(card.innerHTML, /大妖要来了 · 准备结剑诀/);
+  assert.match(card.innerHTML, /剑诀，往摄像头一戳/, 'the move\'s how');
+  assert.ok([...'大妖要来了 · 准备结剑诀'.replace(/ /g, '')].length <= 20);
+  assert.ok(cam.log.includes('start'), 'a camera that opens by itself opens now: warm for the 大妖');
+  assert.equal(card.querySelector('.jyh-soon-on').hidden, true, 'no switch to show: it is on');
+  st = { on: true, soon: false, ready: true, cool: 0, coolOf: 6 };
+  await frame(2);
+  assert.equal(card.hidden, true, 'the 大妖 wave: the card goes, the box opens');
+  assert.equal(host.appended[1].hidden, false);
+  h.close();
+}));
+
+test('the ready card with the camera switched off: its button switches it on now', async () => withFetch(async () => {
+  const { host, frame } = page();
+  const cam = camLog();
+  const h = await offerSeals({ host, moves: ['feijian'], available: async () => true, eyeOf: cam.make, permission: async () => 'granted', store: memStore('off'),
+    state: () => ({ on: false, soon: true, ready: false, cool: 0, coolOf: 6 }) });
+  await frame(2);
+  const card = host.appended[2], on = card.querySelector('.jyh-soon-on');
+  assert.equal(card.hidden, false);
+  assert.equal(on.hidden, false, 'the switch shows');
+  assert.ok(!cam.log.includes('start'), 'off: never by itself');
+  on.fire('click');
+  await frame(2);
+  assert.ok(cam.log.includes('start'), 'tapped: on now');
+  assert.equal(on.hidden, true);
+  h.close();
+}));

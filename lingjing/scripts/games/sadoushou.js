@@ -98,7 +98,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   const wide = (win.innerWidth ?? 0) > (win.innerHeight ?? 1) * 1.05;
   const [a, b] = wide ? [760, 960] : [9, 16];
   box.style.cssText = 'position:relative;overflow:hidden;border-radius:12px;background:#cfd3c6;touch-action:none;'
-    + `aspect-ratio:${a}/${b};width:min(100%, calc((100dvh - var(--game-reserve, 150px)) * ${a} / ${b}));margin:0 auto;user-select:none;-webkit-user-select:none`;
+    + `aspect-ratio:${a}/${b};width:min(100%, calc((100dvh - var(--game-reserve, 150px) - var(--jy-strip, 0px)) * ${a} / ${b}));margin:0 auto;user-select:none;-webkit-user-select:none`;
   container.replaceChildren(box);
   const search = globalThis.location?.search ?? '';
   const dev = /(?:^|[?&])dev=1/.test(search);

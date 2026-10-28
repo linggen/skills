@@ -58,6 +58,14 @@
 .gshell-bubble[data-who]::before { content: attr(data-who) '：'; color: var(--seal); }
 @keyframes gshell-in { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
+/* The side (shell.js frameHtml `data-shell-side`): what a helper docks beside the game, never over it — 结印's box and its
+   ready card (games/jieyin/helper.css). A strip under the stage here (the phone, a narrow stage); on a Mac a tall
+   board's column under the title (below). While a helper is docked, a board sized by the window's height
+   (100dvh − --game-reserve − --jy-strip) leaves the strip its room, so the field never moves as the box comes and goes. */
+.gshell-side { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 8px; }
+.gshell-side:empty { display: none; }
+.gshell:has(> .gshell-side:not(:empty)) { --jy-strip: 132px; }
+
 .gshell-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
 .gshell-foot:empty { display: none; }
 .gshell-won { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--seal); }
@@ -84,16 +92,23 @@
   .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]) { max-width: 720px; }
   .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) { display: flex; --game-reserve: 230px; }
   @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall { display: flex; --game-reserve: 230px; } }
+  /* …and those two play the side as the strip under the stage, its room kept (the column's is free). */
+  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]):has(> .gshell-side:not(:empty)) { --jy-strip: 132px; }
+  @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall:has(> .gshell-side:not(:empty)) { --jy-strip: 132px; } }
 }
 
 /* A Mac window: a tall board takes the window's height, the bar and the result in a column beside it. */
 @media (min-width: 900px) {
-  .gshell.is-tall { display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 18px; }
+  .gshell.is-tall { display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: auto auto 1fr; column-gap: 18px; }
   .gshell.is-tall .gshell-bar { grid-column: 1; grid-row: 1; align-self: start; padding-top: 6px; }
   /* The column is narrow for a title beside four icons (兽潮 · 第1潮 broke in three): the icons stand on their own row,
      at its top right, and the title takes the whole line under them. */
   .gshell.is-tall .gshell-tools { order: -1; flex-basis: 100%; justify-content: flex-end; }
   .gshell.is-tall .gshell-name { flex-basis: 100%; }
-  .gshell.is-tall .gshell-stage { grid-column: 2; grid-row: 1 / span 2; }
-  .gshell.is-tall .gshell-foot { grid-column: 1; grid-row: 2; flex-direction: column; align-items: flex-start; align-self: end; }
+  .gshell.is-tall .gshell-stage { grid-column: 2; grid-row: 1 / span 3; }
+  .gshell.is-tall .gshell-foot { grid-column: 1; grid-row: 3; flex-direction: column; align-items: flex-start; align-self: end; }
+  /* The side in the column, under the title and the how-line (Hanli 10-28: the column stood empty while the box sat on
+     the field): the field keeps its whole height. */
+  .gshell.is-tall .gshell-side { grid-column: 1; grid-row: 2; flex-direction: column; align-items: stretch; justify-content: flex-start; margin-top: 10px; }
+  .gshell.is-tall:has(> .gshell-side:not(:empty)) { --jy-strip: 0px; }
 }

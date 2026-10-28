@@ -593,6 +593,22 @@ export function draw(ctx, g, v) {
     else if (f.k === 'spark') { ctx.fillStyle = `rgba(235,140,50,${a})`; ctx.beginPath(); ctx.arc(f.x, f.y, 2, 0, 6.28); ctx.fill(); }
     else if (f.k === 'drop') { ctx.fillStyle = `rgba(30,25,20,${a * 0.8})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.28); ctx.fill(); }
     else if (f.k === 'bolt') { ctx.strokeStyle = `rgba(150,120,230,${a})`; ctx.lineWidth = 4; ctx.beginPath(); f.pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); ctx.strokeStyle = `rgba(255,250,255,${a})`; ctx.lineWidth = 1.5; ctx.stroke(); }
+    else if (f.k === 'jy') { // 结印's spell (core.js jieyinCast): a streak from the furnace, then its impact
+      const k = 1 - a, fly = 0.22, c = f.col;
+      if (k < fly) {
+        const h = k / fly, tl = Math.max(0, (k - 0.12) / fly), hx = f.x0 + (f.x - f.x0) * h, hy = f.y0 + (f.y - f.y0) * h;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = `rgba(${c},0.85)`; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(f.x0 + (f.x - f.x0) * tl, f.y0 + (f.y - f.y0) * tl); ctx.lineTo(hx, hy); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,250,0.95)'; ctx.lineWidth = 4; ctx.stroke(); ctx.lineCap = 'butt';
+        ctx.fillStyle = `rgba(${c},0.5)`; ctx.beginPath(); ctx.arc(hx, hy, 14, 0, 6.28); ctx.fill();
+      } else {
+        const h = (k - fly) / (1 - fly), r = f.r * (0.5 + 1.4 * h), o = 1 - h;
+        ctx.fillStyle = `rgba(255,250,235,${0.75 * o * o})`; ctx.beginPath(); ctx.arc(f.x, f.y, r * 0.55, 0, 6.28); ctx.fill();
+        ctx.fillStyle = `rgba(${c},${0.35 * o})`; ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, 6.28); ctx.fill();
+        ctx.strokeStyle = `rgba(${c},${0.9 * o})`; ctx.lineWidth = 4 * o + 1; ctx.stroke();
+        ctx.strokeStyle = `rgba(42,18,6,${0.5 * o})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(f.x, f.y, r + 3, 0, 6.28); ctx.stroke();
+      }
+    }
     else if (f.k === 'txt') { ctx.globalAlpha = Math.min(1, a * 2); ctx.font = `${f.bold ? 'bold ' : ''}${f.size}px "Songti SC","STSong",serif`; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(246,239,223,0.9)'; ctx.strokeText(f.s, f.x, f.y); ctx.fillStyle = f.col; ctx.fillText(f.s, f.x, f.y); ctx.textAlign = 'left'; ctx.globalAlpha = 1; }
   }
   const boss = g.beasts.find((b) => BEASTS[b.type].boss);

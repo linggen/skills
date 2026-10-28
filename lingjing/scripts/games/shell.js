@@ -72,6 +72,11 @@ export const restartOf = (mod) => typeof mod?.meta?.restart === 'function';
 export const restartHtml = (id, lang, on = true) =>
   toolHtml('restart', words(lang).restart, `data-g="restart" data-gfor="${plain(id)}"${on ? '' : ' disabled'}`);
 
+/** The side (Hanli 10-28: 「结手印的框调整一下位置, 不要挡住游戏画面」): a slot the shell keeps OUTSIDE the stage for what a
+    helper docks beside a game (结印's camera box, its ready card — games/jieyin/helper.js finds it by `data-shell-side`).
+    On a Mac a tall board's column holds it under the title; elsewhere (a phone, a narrow stage, a landscape field) it is
+    a strip under the stage, and a board sized by the window's height leaves room for it (`--jy-strip`, shell.css).
+    The story lays its frame again on every Look: the slot comes back empty and the helper puts its parts back in it. */
 /** The shell around a game's body. `body` is the game's own node as HTML (its [data-game] / [data-mount]
     host or a slot) and stays exactly as given. `timed`: the game runs in time, so it can be paused.
     `ask` and `close`: the host's own buttons for the bar (toolHtml, or a slot that fills with one), laid in the one
@@ -83,6 +88,7 @@ export function frameHtml({ id, title = '', kind = '', how = '', body = '', time
     + `<header class="gshell-bar"><div class="gshell-name"><b class="gshell-title">${plain(title)}</b>${kind ? `<em class="gshell-kind">${plain(kind)}</em>` : ''}</div>`
     + `<div class="gshell-tools">${ask}${restart}${muteHtml(lang)}${pause}${close}</div>${how ? `<p class="gshell-how">${plain(how)}</p>` : ''}</header>`
     + `<div class="gshell-stage">${body}<div class="gshell-layer">${layerHtml(id, lang)}</div></div>`
+    + `<div class="gshell-side" data-shell-side></div>`
     + `<footer class="gshell-foot">${footHtml(id, lang)}</footer></section>`;
 }
 

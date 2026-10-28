@@ -370,9 +370,9 @@ test('where the dock stands is the host\'s data (offerSeals `dock`): 守山门 t
   const top = page(), low = page();
   const a = await offerSeals({ host: top.host, moves: ['feijian'], feed: true, available: async () => true, dock: sad.jieyinDock });
   const b = await offerSeals({ host: low.host, moves: ['feijian'], feed: true, available: async () => true });
-  assert.deepEqual(top.host.appended.map((x) => x.dataset.at), ['top', 'top']);
+  assert.deepEqual(top.host.appended.slice(0, 2).map((x) => x.dataset.at), ['top', 'top']);
   assert.equal(top.host.appended[1].style['--jyh-w'], '42%');
-  assert.deepEqual(low.host.appended.map((x) => x.dataset.at), ['bottom', 'bottom'], 'no placement: the bottom corner');
+  assert.deepEqual(low.host.appended.slice(0, 2).map((x) => x.dataset.at), ['bottom', 'bottom'], 'no placement: the bottom corner');
   assert.equal(low.host.appended[1].dataset.narrow, undefined, 'no placement: the frame as it was');
   assert.equal(top.host.appended[1].dataset.narrow, '', 'a width: the narrow frame');
   // 守墙关 · 守炉: the bottom corner, their frames narrow — off 小满 (the wide one reached him, checked 10-22)
@@ -395,4 +395,19 @@ test('the play: the spells\' art, the bundle carries the calls, the camera off t
   assert.doesNotMatch(helper, /drawImage|getUserMedia|https?:\/\//, 'no picture, no camera of its own (eye.js), nothing from the network');
   assert.match(helper, /from '\.\/duel\.js'/, 'the hands are read by 手势斗法, not here');
   assert.doesNotMatch(helper, /poke\.js|judge3d|sequence\.js/, 'no recognizer of its own');
+});
+
+test('the ready card\'s moment (jieyinState `soon`, Hanli 10-28): between the waves, the next bringing the 大妖 — not in a wave, not before a plain one, not where spells are always on', () => {
+  const lvl = kit.levels.find((l) => l.waves.findIndex((w) => w.some(([k]) => kit.beasts[k].boss)) > 0);
+  const bossAt = lvl.waves.findIndex((w) => w.some(([k]) => kit.beasts[k].boss));
+  const g = newGame(kit, lvl, { seed: 'soon' });
+  Object.assign(g, { phase: 'pick', wave: bossAt });
+  assert.equal(jieyinState(g).soon, true, `${lvl.id}: after wave ${bossAt}, the 大妖's next`);
+  g.phase = 'count';
+  assert.equal(jieyinState(g).soon, true, 'the count in still');
+  g.phase = 'wave';
+  assert.equal(jieyinState(g).soon, false, 'the wave under way: the box itself, not the card');
+  if (!lvl.waves[bossAt - 1].some(([k]) => kit.beasts[k].boss)) { Object.assign(g, { phase: 'pick', wave: bossAt - 1 }); assert.equal(jieyinState(g).soon, false, 'a plain wave next'); }
+  const g2 = Object.assign(newGame(kit, { ...lvl, jieyinWhen: 'always' }, { seed: 'soon' }), { phase: 'pick', wave: bossAt });
+  assert.equal(jieyinState(g2).soon, false, 'always on: no card to warn of it');
 });

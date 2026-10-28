@@ -396,8 +396,13 @@ const spellOn = (g, c = spellKit(g)) => Boolean(c) && (g.phase === 'waves' || g.
 /** What the dock shows: offered now (`on`), one may fly (`ready`), the rest left (`cool` of `coolOf` s). */
 export function jieyinState(g, c = spellKit(g)) {
   const on = spellOn(g, c);
-  return { on, ready: on && g.spellCool <= 0, cool: g.spellCool, coolOf: c?.cool ?? 0, boss: null };
+  return { on, soon: !on && jieyinSoon(g, c), ready: on && g.spellCool <= 0, cool: g.spellCool, coolOf: c?.cool ?? 0, boss: null };
 }
+
+/** The ready card's moment (Hanli 10-28: 「结手印前给一个提示, 让用户准备好」): a `boss` offer, every wave out on the road and
+    the 大妖 next. */
+export const jieyinSoon = (g, c = spellKit(g)) => Boolean(c) && (c.when ?? 'boss') === 'boss' && g.phase === 'waves'
+  && bossRows(g.level).length > 0 && g.waves.every((w) => w.on) && !g.waves.every((w) => w.done);
 
 const LANE = { left: 'L', middle: 'M', right: 'R' };
 const waveU = (w) => (w.span[0] + w.span[1]) / 2;

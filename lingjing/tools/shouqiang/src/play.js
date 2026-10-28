@@ -20,6 +20,9 @@ const SPARK_ELSE = ['spark', 3];
 export const ZOOM_MAX = 1.5;
 const QUALITY = [{ budget: 1, zoom: null }, { budget: 0.6, zoom: null }, { budget: 0.6, zoom: 1 }, { budget: 0.35, zoom: 1 }];
 const SLOW_MS = 1000 / 45;
+// 结印's impact (Hanli 10-28: 「打怪的法术也让用户看到」): a slow beat (`s` real seconds at `k`× the game's speed), the
+// streak behind the spell in flight (`trail` points), the number bigger than any other (`num` × a big one's).
+const SLOW = { s: 0.4, k: 0.3 }, STREAK = { trail: 14, width: 16 }, SPELL_NUM = 1.6;
 const D = { bg: 0, decal: 2, ground: 3, shadow: 4, beast: 10, wall: 20, hero: 30, shot: 40, fx: 50, num: 60, light: 70, hud: 80, modal: 90 };
 
 export class PlayScene extends Phaser.Scene {
@@ -268,17 +271,20 @@ export class PlayScene extends Phaser.Scene {
     const raw = this.game.loop.rawDelta || 1000 / 60;
     this.frame += 1;
     this.watchFrames(time, raw);
-    const dt = Math.min(raw, 50) / 1000;
+    const real = Math.min(raw, 50) / 1000;
+    // A spell's slow beat at its impact (spellBoom): the world at SLOW.k for SLOW.s, so the struck beast is seen to fall.
+    if (this.slowT > 0 && !this.paused && (this.slowT -= real) <= 0) { this.slowT = 0; this.tweens.timeScale = 1; }
+    const dt = this.slowT > 0 ? real * SLOW.k : real;
     if (!this.paused && !this.hitStop && !this.held) step(this.g, dt);
     if (this.hitStop) this.hitStop = Math.max(0, this.hitStop - dt);
     for (const e of this.g.events) this.on(e);
     this.g.events.length = 0;
     if (this.paused) return;
-    this.sealGlow?.update(dt);
+    this.sealGlow?.update(real);
     this.syncBeasts(time, dt);
     this.syncShots(dt);
     this.syncGrounds();
-    this.moveNums(dt);
+    this.moveNums(real); // the numbers read at their own pace, slow beat or not
     this.heroes(dt);
     this.lanes?.update(dt);
     if (this.zapT > 0 && (this.zapT -= dt) <= 0) this.zap.clear();
@@ -480,7 +486,24 @@ export class PlayScene extends Phaser.Scene {
     const glow = this.add.image(sh.x, sh.y, 'glow').setTint(tint).setBlendMode(Phaser.BlendModes.ADD).setScale(1.1).setDepth(D.shot - 1);
     const body = sh.move === 'feijian' ? this.add.image(sh.x, sh.y, 'sword').setDisplaySize(72, 72)
       : sh.move === 'huodan' || sh.move === 'huodan4' ? this.add.image(sh.x, sh.y, this.tex('jy-huodan', 'glow')).setDisplaySize(52, 52) : null;
-    return body ? [body.setDepth(D.shot), glow] : [glow];
+    // The streak it leaves from 小满's hand (Hanli 10-28: 「打怪的法术也让用户看到」): a comic ink-edged light, its tail fading.
+    const streak = this.add.graphics().setDepth(D.shot - 2).setBlendMode(Phaser.BlendModes.ADD);
+    streak.pts = [{ x: this.g.at.hand.x, y: this.g.at.hand.y }];
+    streak.tint = tint;
+    return body ? [body.setDepth(D.shot), glow, streak] : [glow, streak];
+  }
+
+  /** The streak behind a spell: its last points, wide and bright at the head, thin and faint at the tail. */
+  drawStreak(g, x, y) {
+    g.pts.push({ x, y });
+    if (g.pts.length > STREAK.trail) g.pts.shift();
+    g.clear();
+    for (let i = 1; i < g.pts.length; i += 1) {
+      const k = i / (g.pts.length - 1), a = g.pts[i - 1], b = g.pts[i];
+      g.lineStyle(STREAK.width * k * 1.6, 0x2a1206, 0.18 * k).lineBetween(a.x, a.y, b.x, b.y); // the ink edge
+      g.lineStyle(STREAK.width * k, g.tint, 0.85 * k).lineBetween(a.x, a.y, b.x, b.y);
+      g.lineStyle(STREAK.width * k * 0.35, 0xffffff, 0.9 * k).lineBetween(a.x, a.y, b.x, b.y); // its white core
+    }
   }
 
   poseShot(s, sh, dt) {
@@ -494,7 +517,9 @@ export class PlayScene extends Phaser.Scene {
     if (sh.lob && s.kind === 'spell') {
       const y = sh.y - (sh.z ?? 0) * (sh.move === 'feijian' ? 0.3 : 1);
       p.setPosition(sh.x, y);
-      shadow?.setPosition(sh.x, y);
+      if (!shadow?.pts) shadow?.setPosition(sh.x, y); // (no body: the glow is the spell, the streak its trail)
+      const streak = s.parts.find((o) => o.pts);
+      if (streak) this.drawStreak(streak, sh.x, y);
       if (sh.move === 'feijian') p.setRotation(Math.atan2(sh.toY - sh.fromY, sh.toX - sh.fromX) + Math.PI / 4); else p.setAngle(s.t * 600);
     } else if (sh.lob) {
       p.setPosition(sh.x, sh.y - (sh.z ?? 0)).setAngle(s.t * 900);
@@ -508,7 +533,7 @@ export class PlayScene extends Phaser.Scene {
       if (s.kind === 'foxfire') p.setFrame(`foxfire-${1 + (Math.floor(s.t * 14) % 3)}`).setRotation(a + Math.PI / 2);
     }
     const trail = s.kind === 'spell' ? wuxingOf(sh.wuxing)[0] : TRAILS[s.kind === 'clod' ? 'fox' : s.kind];
-    if (this.em.budget >= 1 || Math.random() < this.em.budget) this.em[trail].emitParticleAt(p.x, p.y, s.kind === 'sword' || s.kind === 'spell' ? 2 : 1);
+    if (this.em.budget >= 1 || Math.random() < this.em.budget) this.em[trail].emitParticleAt(p.x, p.y, s.kind === 'spell' ? 4 : s.kind === 'sword' ? 2 : 1);
   }
 
   syncGrounds() {
@@ -534,13 +559,14 @@ export class PlayScene extends Phaser.Scene {
 
   // ---- numbers -------------------------------------------------------------------------------------------------
 
-  pop(x, y, n, { tint = 0xffffff, big = false, weak = false } = {}) {
+  pop(x, y, n, { tint = 0xffffff, big = false, weak = false, huge = false } = {}) {
     if (this.nums.length > 70) this.nums.shift().o.destroy();
-    const o = this.add.bitmapText(x + (Math.random() - 0.5) * 24, y, big ? 'numBig' : 'num', String(n)).setOrigin(0.5).setDepth(D.num);
+    big ||= huge;
+    const o = this.add.bitmapText(x + (huge ? 0 : (Math.random() - 0.5) * 24), y, big ? 'numBig' : 'num', String(n)).setOrigin(0.5).setDepth(D.num + (huge ? 1 : 0));
     if (!big) o.setTint(tint);
-    const base = big ? 1.05 : weak ? 0.5 : 0.72;
+    const base = huge ? 1.05 * SPELL_NUM : big ? 1.05 : weak ? 0.5 : 0.72;
     o.setScale(0.1);
-    this.nums.push({ o, t: 0, base, vx: (Math.random() - 0.5) * 50, vy: big ? -150 : -110, life: big ? 1 : 0.75 });
+    this.nums.push({ o, t: 0, base, vx: huge ? 0 : (Math.random() - 0.5) * 50, vy: huge ? -90 : big ? -150 : -110, life: huge ? 1.5 : big ? 1 : 0.75 });
   }
 
   // A crowd takes many small hits a second: each beast's damage is summed for a beat and pops as ONE number (the
@@ -594,8 +620,10 @@ export class PlayScene extends Phaser.Scene {
       const s = this.beasts.get(e.id);
       const size = s ? this.kit({ kind: s.kind }).size : 60;
       const y = e.y - size * 0.45;
-      if (s) { s.flashT = 0.05; s.hitT = Math.max(s.hitT, 0.12); }
-      this.tally(e, y - size * 0.3);
+      if (s) { s.flashT = e.kind === 'spell' ? 0.18 : 0.05; s.hitT = Math.max(s.hitT, e.kind === 'spell' ? 0.3 : 0.12); }
+      // a spell's number at once and the biggest on the field, never summed into the crowd's
+      if (e.kind === 'spell') this.pop(e.x, y - size * 0.3, Math.round(e.dmg), { huge: true });
+      else this.tally(e, y - size * 0.3);
       const [preset, n] = SPARK[e.kind] ?? SPARK_ELSE;
       if (preset) this.em.burst(preset, n, e.x, y);
       if (e.big) this.shake(90, 0.004);
@@ -749,8 +777,16 @@ export class PlayScene extends Phaser.Scene {
     };
     (SHAPES[e.shape] ?? SHAPES.one)();
     this.em.burst(burst, 30, e.x, e.y);
-    this.flare(e.x, e.y, (e.r ?? 60) * 2.6, tint);
-    this.shake(160, 0.007);
+    this.em.burst('stars', 10, e.x, e.y - 20);
+    this.flare(e.x, e.y, Math.max(240, (e.r ?? 60) * 3.4), tint);
+    this.ring(e.x, e.y, Math.max(110, e.r ?? 60), tint, 520);
+    // The impact read (Hanli 10-28: 「现在手印成了, 框和被打的怪都很快消失, 没看到效果」): a flash, a hard shake and the slow
+    // beat — none of it under reduced motion, where the light and the number stand.
+    if (this.calm) return;
+    this.cameras.main.flash(140, (tint >> 16) & 255, (tint >> 8) & 255, tint & 255);
+    this.shake(300, 0.014);
+    this.slowT = SLOW.s;
+    this.tweens.timeScale = SLOW.k;
   }
 
   xmCastPose() {

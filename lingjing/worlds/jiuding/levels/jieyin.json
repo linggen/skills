@@ -340,7 +340,12 @@
     "intense": { "zh": "有摄像头：这一关摄像头一直开着，随时可以结印。", "en": "You have a camera: it stays on this level — make hand seals any time." },
     "off": { "zh": "结印关着：想用时点结印按钮，摄像头就开。", "en": "Hand seals are off: tap the Seals button to switch the camera on." }
   }, "live": { "zh": "摄像头开着——比个{seal}就出手。点 × 关掉", "en": "The camera is on — make the {seal} to strike. × turns it off" },
-  "paceOf": { "boss": "rest", "elite": "rest", "waves": "intense", "always": "intense" } },
+  "paceOf": { "boss": "rest", "elite": "rest", "waves": "intense", "always": "intense" },
+  "_soon": "The ready card (Hanli 10-28: 「结手印前给一个提示, 让用户准备好」): between the waves, when the next one brings the 大妖 that opens 结印 (a host's jieyinState `soon`), the box's place holds the seal's picture and name, this line ({seal}: the next move's gesture, ≤20 字) and the move's how; a camera that will not open by itself gets a button to switch it on now, warm for the 大妖. Nothing waits for it.",
+  "soon": { "zh": "大妖要来了 · 准备结{seal}", "en": "A great beast is coming — ready the {seal}" },
+  "_glow": "The seal's light when a cast flies (Hanli 10-28: 「手印可以发个光」): the box blooms in the move's colour and holds 「成」 a beat (helper.js `hold` ms), its own colour per move.",
+  "glow": { "feijian": "#8fd4ff", "dianxue": "#c6ecff", "zhangfeng": "#e8f4ff", "quanjin": "#ffcf6a", "huodan": "#ff7a3a", "huodan4": "#ff6a2a", "bingzhui": "#9fe0ff", "jinren": "#fff2c0", "muteng": "#8fe07a", "tuqiang": "#e0b85a" },
+  "hold": 1300 },
   "_hosts": "结印 inside the tower-defence games (Hanli 10-21: 「不要只有结印攻击, 把结印放到现有的塔防类游戏中」; 「结印可以帮助更快杀敌, 更容易取得3星成就」; 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」). The dock is jieyin/helper.js offerSeals; a host's row says when it offers (`when`: boss — a 大妖 on the field — | always), the rest between casts (`cool` s), the harm on the 大妖 (`bossMul`), and its moves in helper's row shape (`seals` + `motion` jab, or `jieyin` a move id; `from` the marks the save must hold). A level's `pace` lays `paces[pace]` over it: rest (the default) as written; intense — the few levels where casting often is the point: always offered, short rest. Every level is won without a cast (tests/game-shoulu-jieyin.test.mjs).",
   "hosts": {
     "shoulu": {

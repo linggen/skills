@@ -512,3 +512,15 @@ test('the bundle is current, loads the one shared Phaser, and every picture and 
   for (const ch of words.match(/[　-鿿＀-￯]/g)) assert.ok(chars.includes(ch), `font lacks ${ch}`);
   assert.ok(TOP === 100 && COLS.M[0] < 0 && COLS.M[1] > 0);
 });
+
+test('the ready card\'s moment (jieyinState `soon`, Hanli 10-28): every wave out, the 大妖 next; not once it is on the road', () => {
+  const kit = JSON.parse(readFileSync(new URL('../worlds/jiuding/levels/sadoushou.json', import.meta.url), 'utf8'));
+  const l = kit.levels.find((x) => x.boss && (jieyinOf(kit, x)?.when ?? 'boss') === 'boss' && jieyinOf(kit, x));
+  if (!l) return;
+  const g = newGame(kit, l, { seed: 'soon' });
+  assert.equal(jieyinState(g).soon, false, 'the first waves still to come');
+  for (const w of g.waves) w.on = true;
+  assert.equal(jieyinState(g).soon, true, 'every wave out: the 大妖 next');
+  g.phase = 'boss';
+  assert.equal(jieyinState(g).soon, false, 'the 大妖 out: the box, not the card');
+});

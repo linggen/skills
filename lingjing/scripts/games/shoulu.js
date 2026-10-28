@@ -560,7 +560,10 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       last = now;
       if (!g) return;
       const run = !frozen() && !g.over;
-      if (run) { acc += rdt * speed; let n = 0; while (acc >= 1 / 60 && n < 12) { step(g, 1 / 60); acc -= 1 / 60; n += 1; } if (n >= 12) acc = 0; }
+      // 结印's slow beat at its impact (core.js jieyinCast `slowT`: real seconds at 0.3×) — not under reduced motion
+      const slow = g.slowT > 0 && !reducedMotion ? 0.3 : 1;
+      if (g.slowT > 0 && run) g.slowT = Math.max(0, g.slowT - rdt);
+      if (run) { acc += rdt * speed * slow; let n = 0; while (acc >= 1 / 60 && n < 12) { step(g, 1 / 60); acc -= 1 / 60; n += 1; } if (n >= 12) acc = 0; }
       stepFx(g, run ? rdt * speed : g.over ? rdt : 0);
       const was = S;
       S = keepSel(g, S); // she is away: not selected (nor reselected when she is back)

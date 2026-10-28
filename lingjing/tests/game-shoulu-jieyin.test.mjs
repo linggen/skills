@@ -135,3 +135,15 @@ test('stars: ★★★ the 炉火 whole and cleared by par; ★★ from 6; the s
   assert.equal(starsOf(10, 999), 3, 'no par');
   for (const l of levels) assert.equal(l.par != null, !l.story && !l.realm, `${l.id}: par only on the 游戏厅's ladder`);
 });
+
+test('the ready card\'s moment (jieyinState `soon`, Hanli 10-28): the wave out and the next calling a 大妖; never at intense', () => {
+  const l = levels.find((x) => x.pace !== 'intense' && x.waves.findIndex((w) => w.some(([t]) => BEASTS[t]?.boss)) > 0);
+  const at = l.waves.findIndex((w) => w.some(([t]) => BEASTS[t]?.boss));
+  const g = newGame(l, { seed: 'soon', headless: true }), cfg = jieyinCfg(host, l);
+  Object.assign(g, { wave: at, queue: [] });
+  assert.equal(jieyinState(g, cfg).soon, true, `${l.id}: wave ${at} out, the 大妖 next`);
+  g.queue = [{ at: 99, type: 'yezhu' }];
+  assert.equal(jieyinState(g, cfg).soon, false, 'still coming: not yet');
+  g.queue = [];
+  assert.equal(jieyinState(g, { ...cfg, when: 'always' }).soon, false);
+});

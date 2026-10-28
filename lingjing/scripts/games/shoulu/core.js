@@ -1027,7 +1027,15 @@ export function jieyinState(g, cfg = {}) {
   const when = String(cfg.when ?? 'boss').split('|'); // 'always' · 'boss' · 'elite', joined by |
   const on = Boolean(g && !g.over && (when.includes('always') || (when.includes('boss') && boss) || (when.includes('elite') && elite)));
   const cool = Math.max(0, (g.jy?.until ?? 0) - g.t);
-  return { on, ready: on && cool <= 0 && Boolean(jieyinTarget(g, cfg)), cool, coolOf: cfg.cool ?? 0, boss: boss?.type ?? null, elite: elite?.type ?? null };
+  return { on, soon: !on && jieyinSoon(g, cfg), ready: on && cool <= 0 && Boolean(jieyinTarget(g, cfg)), cool, coolOf: cfg.cool ?? 0, boss: boss?.type ?? null, elite: elite?.type ?? null };
+}
+
+/** The ready card's moment (Hanli 10-28: 「结手印前给一个提示, 让用户准备好」): a `boss` offer, the wave out (none left to
+    come) and the next one calling a 大妖. */
+export function jieyinSoon(g, cfg = {}) {
+  const when = String(cfg.when ?? 'boss').split('|');
+  if (!g || g.over || when.includes('always') || !when.includes('boss') || g.queue.length || g.wave >= waves(g)) return false;
+  return (g.L.waves[g.wave] ?? []).some(([type]) => BEASTS[type]?.boss);
 }
 
 /** A move cast: its harm and hold on the target (and those round it), then the rest. → true when it flew. */
@@ -1044,7 +1052,13 @@ export function jieyinCast(g, id, cfg = {}) {
     if (m.dmg) hurt(g, b, m.dmg * mul * (b === t ? 1 : m.around ?? 1), 'jy');
   }
   g.jy = { until: g.t + (cfg.cool ?? 0), last: id, casts: (g.jy?.casts ?? 0) + 1 };
+  // Seen (Hanli 10-28: 「打怪的法术也让用户看到」): a streak from the furnace to the beast, its impact, the number big — and
+  // a slow beat the page plays (shoulu.js; never under reduced motion). The view's only; the harm above is all there is.
+  const tMul = BEASTS[t.type].boss ? cfg.bossMul ?? 1 : t.elite ? cfg.eliteMul ?? 1 : 1;
+  addFx(g, { k: 'jy', x0: g.L.furn.x, y0: g.L.furn.y - 30, x: t.x, y: t.y, r: Math.max(46, R), col: m.glow ?? '255,170,70', life: 0.9, max: 0.9 });
   addFx(g, { k: 'txt', x: t.x, y: t.y - 30, s: m.name?.zh ?? id, col: '#b0412e', life: 0.9, max: 0.9, vy: -24, size: 15 });
+  if (m.dmg) addFx(g, { k: 'txt', x: t.x, y: t.y - 52, s: `-${Math.round(m.dmg * tMul)}`, col: '#c23b22', life: 1.4, max: 1.4, vy: -18, size: 28, bold: true });
+  if (!g.headless) g.slowT = 0.4;
   emit(g, { sound: 'pounce' });
   return true;
 }

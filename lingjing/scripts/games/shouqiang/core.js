@@ -351,7 +351,15 @@ export const jieyinCool = (g) => Math.max(0, g.cool.jieyin ?? 0);
 /** What 结印's button shows: offered now, cooldown left of how long, ready, and the 大妖's element (pick its counter). */
 export function jieyinState(g, c = spellKit(g)) {
   const on = jieyinOn(g, c), cool = jieyinCool(g), boss = g.beasts.find((b) => b.boss && b.hp > 0);
-  return { on, cool, coolOf: c?.cool ?? 0, ready: on && cool <= 0 && Boolean(jieyinTarget(g)), boss: boss ? g.beastKit[boss.kind].root ?? null : null };
+  return { on, soon: jieyinSoon(g, c), cool, coolOf: c?.cool ?? 0, ready: on && cool <= 0 && Boolean(jieyinTarget(g)), boss: boss ? g.beastKit[boss.kind].root ?? null : null };
+}
+
+/** The ready card's moment (Hanli 10-28: 「结手印前给一个提示, 让用户准备好」): between the waves (the pick, the count in),
+    the next wave bringing the 大妖 that opens 结印 — a `boss` offer only (an `always` one is offered every wave). */
+export function jieyinSoon(g, c = spellKit(g)) {
+  if (!c || g.level.jieyin === false || (g.jieyinWhen ?? c.when ?? 'boss') !== 'boss') return false;
+  if (g.phase !== 'pick' && g.phase !== 'count') return false;
+  return (g.level.waves[g.wave] ?? []).some(([kind]) => g.beastKit[kind]?.boss);
 }
 
 /** × on this beast: the 大妖's, and 相克 (the spell's element overcomes the beast's root). */

@@ -65,8 +65,8 @@ const SEEN = 'lingjing.jieyin.first'; // this device has had the first-time line
 const CHOICE = 'lingjing.jieyin.camera'; // the player's own switch on this device: 'on' | 'off' (none: on by itself)
 
 export const WORDS = {
-  zh: { btn: '结印', label: '对着摄像头结印', off: '收印', asking: '请允许摄像头……', rest: '歇一歇', ready: '好了，结印！', tapHere: '点这里结印', who: '小满', make: '照这个手势', camOn: '摄像头开着', camOff: '关掉摄像头' },
-  en: { btn: 'Seals', label: 'Make hand seals at the camera', off: 'Stop', asking: 'Allow the camera…', rest: 'Rest', ready: 'Ready — make the seals!', tapHere: 'Tap here for hand seals', who: 'Xiaoman', make: 'Make this', camOn: 'The camera is on', camOff: 'Switch the camera off' },
+  zh: { btn: '结印', label: '对着摄像头结印', off: '收印', asking: '请允许摄像头……', rest: '歇一歇', ready: '好了，结印！', tapHere: '点这里结印', who: '小满', make: '照这个手势', camOn: '摄像头开着', camOff: '关掉摄像头', done: '成', camNow: '现在开摄像头' },
+  en: { btn: 'Seals', label: 'Make hand seals at the camera', off: 'Stop', asking: 'Allow the camera…', rest: 'Rest', ready: 'Ready — make the seals!', tapHere: 'Tap here for hand seals', who: 'Xiaoman', make: 'Make this', camOn: 'The camera is on', camOff: 'Switch the camera off', done: 'Done', camNow: 'Camera on now' },
 };
 
 /** The lead card's line that 结印 is here (Hanli 10-21: 「有结印要告诉玩家啊」): jieyin.json `helper.lead` by the level's
@@ -145,6 +145,34 @@ export const choiceStore = (win) => ({
 /** The live bubble's words (jieyin.json `helper.live`), the next move's gesture named in it. */
 export const liveLine = (kit, seal, lang = 'zh') => tr(kit?.helper?.live, lang).replace('{seal}', tr(kit?.seals?.[seal]?.name, lang) || (lang === 'en' ? 'seal' : '手印'));
 
+/** The ready card's line (jieyin.json `helper.soon`), the next move's gesture named in it. */
+export const soonLine = (kit, seal, lang = 'zh') => tr(kit?.helper?.soon, lang).replace('{seal}', tr(kit?.seals?.[seal]?.name, lang) || (lang === 'en' ? 'seal' : '手印'));
+/** A move's own light (jieyin.json `helper.glow`, else its spell's `glow`), for the box's bloom when it flies. */
+export const glowOf = (kit, move) => kit?.helper?.glow?.[move] ?? kit?.spells?.[move]?.glow ?? '#ffe7a0';
+/** A move's one-line how (手势斗法's rows: a 小招's, a 大招's, else the 法术's). */
+const howOf = (kit, move, lang) => tr(kit?.doufa?.xiao?.[move]?.how ?? kit?.doufa?.da?.[move]?.how ?? kit?.spells?.[move]?.how, lang);
+
+/** Where the box stands (Hanli 10-28: 「结手印的框调整一下位置, 不要挡住游戏画面」): the shell's side, never the field —
+    the frame's own (`data-shell-side`, games/shell.js frameHtml: the Mac's column under the title, else a strip under
+    the stage), else the page's (the phone's board page); only a page with neither keeps it in the host's corner. */
+export function sideOf(host, doc = host?.ownerDocument) {
+  const frame = host?.closest?.('.gshell')?.querySelector?.(':scope > [data-shell-side]');
+  return frame ?? doc?.body?.querySelector?.(':scope > [data-shell-side]') ?? null;
+}
+
+/** The ready card (Hanli 10-28: 「结手印前给一个提示, 让用户准备好」): the seal to make for the 大妖 the next wave brings —
+    its picture and name, the line, the move's how, and a switch for a camera that will not open by itself. */
+function soonEl(doc, w, kit, seal, move, lang) {
+  const c = doc.createElement('div');
+  c.className = 'jyh-soon';
+  c.hidden = true;
+  const icon = kit.seals?.[seal] ? iconSvg(kit.seals[seal], 44, { lang }) : '';
+  c.innerHTML = `<span class="jyh-soon-icon">${icon}</span><div class="jyh-soon-text"><b class="jyh-soon-line">${plain(soonLine(kit, seal, lang))}</b>`
+    + `<span class="jyh-soon-name">${plain(tr(kit.seals?.[seal]?.name, lang))}</span><span class="jyh-soon-how">${plain(howOf(kit, move, lang))}</span>`
+    + `<button type="button" class="jyh-soon-on">${plain(w.camNow)}</button><i class="jyh-soon-cam">${plain(w.camOn)}</i></div>`;
+  return c;
+}
+
 /** The button: the next move's gesture drawn on it (Hanli 10-21: 「结印要有个框提示手势的」), the word under it. */
 function buttonEl(doc, w, icon = '') {
   const b = doc.createElement('button');
@@ -171,7 +199,7 @@ function dockEl(doc, w) {
   const d = doc.createElement('div');
   d.className = 'jyh-dock';
   d.hidden = true;
-  d.innerHTML = `<div class="jyh-hint"></div><b class="jyh-state"></b><ol class="jyh-chips"></ol>`
+  d.innerHTML = `<div class="jyh-hint"></div><b class="jyh-state"></b><b class="jyh-done" aria-hidden="true">${plain(w.done)}</b><ol class="jyh-chips"></ol>`
     + `<button type="button" class="jyh-off" aria-label="${plain(w.camOff)}" title="${plain(w.camOff)}">×</button><i class="jyh-cam" title="${plain(w.camOn)}"></i>`
     + `<video class="jyh-video" playsinline muted></video>`;
   return d;
@@ -200,13 +228,26 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     ?? (tiers.da[0] ? sequenceFor(kit, D0.da[tiers.da[0]].move, set)[0] : null);
   const btn = buttonEl(doc, w, kit.seals[lead] ? iconSvg(kit.seals[lead], 30, { lang }) : ''), dock = dockEl(doc, w);
   const callout = calloutEl(doc, w, w.tapHere), live = calloutEl(doc, w, liveLine(kit, lead, lang));
-  btn.append(callout); // on the button / the dock, wherever a host puts them
+  const leadMove = tiers.xiao[0] ?? tiers.fa[0] ?? tiers.da[0];
+  const soon = soonEl(doc, w, kit, lead, leadMove, lang);
   dock.append(live);
-  for (const el of [btn, dock]) el.dataset.at = place?.at === 'top' ? 'top' : 'bottom'; // the host's data: where they stand
+  for (const el of [btn, dock]) el.dataset.at = place?.at === 'top' ? 'top' : 'bottom'; // the host's data, where no side is: its corner
   if (place?.w) { dock.dataset.narrow = ''; dock.style.setProperty('--jyh-w', `${Math.round(place.w * 1000) / 10}%`); } // a narrow frame
-  host.append(btn, dock);
+  // In the shell's side (sideOf), every Look: the story lays its frame again and the side comes back empty, so each
+  // frame puts the parts back where they belong (the bubble beside the button there, not over the field).
+  let side = null, laid = false;
+  const dockAt = () => {
+    if (host.isConnected === false) return; // between two frames of a re-laid card
+    const s = sideOf(host, doc);
+    if (laid && s === side) return; // a re-laid frame brings a new side: they move into it
+    side = s;
+    laid = true;
+    for (const el of [btn, dock, soon]) el.toggleAttribute?.('data-side', Boolean(s));
+    if (s) s.append(btn, callout, dock, soon); else { btn.append(callout); host.append(btn, dock, soon); }
+  };
+  dockAt();
   const $ = (s) => dock.querySelector(s);
-  for (const el of [btn, dock]) for (const t of ['pointerdown', 'pointerup', 'click']) el.addEventListener(t, (e) => e.stopPropagation());
+  for (const el of [btn, dock, soon]) for (const t of ['pointerdown', 'pointerup', 'click']) el.addEventListener(t, (e) => e.stopPropagation());
   const hint = handHint($('.jyh-hint'), { lang, size: 'dock', seals: kit.seals, knobs: kit.hint }); // the gesture frame: big enough to read
 
   const offered = new Set(moves), D = kit.doufa;
@@ -214,7 +255,10 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   const shape = tiers.xiao.map((id) => D.xiao[id].shape).find((s) => kit.seals[s]) ?? null; // the hint's rest target: the 小招's shape
   const need = eyeFor(kit, set, bigSeq);
   let duel = duelStart(kit, { set }), held = [], hands = [], image = [], handed = [], aspect = 4 / 3;
-  let wanted = false, cam = 'off', gen = 0, closed = false, loop = 0, last = 0, tried = 0, wasOn = false, wasReady = false, fps = null, firstSaid = false;
+  let wanted = false, cam = 'off', gen = 0, closed = false, loop = 0, last = 0, tried = 0, wasOn = false, wasReady = false, fps = null, firstSaid = false, wasSoon = false;
+  // A cast flown: the box holds a beat in the move's light with 「成」 (Hanli 10-28: 「现在手印成了, 框…很快消失, 没看到效果」).
+  const HOLD = Math.max(0, kit.helper?.hold ?? 1300);
+  let holdTill = 0;
   // The player's switch (store) and his consent for a 'prompt' camera: he has read the lead line, or tapped, or chose on.
   const choice = store ?? choiceStore(win);
   let auto = choice.get() !== 'off', told = perm === 'granted' || choice.get() === 'on';
@@ -256,9 +300,15 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   };
 
   let shownFor = null, liveFor = null, calloutT = 0, liveT = 0;
-  const hud = (st, ready, rest, away = false, still = false) => {
-    btn.hidden = still || !st.on || (wanted && ready); // still: the host is paused (its lead card, the shell's bar) — nothing shows
-    dock.hidden = still || !(wanted && st.on && ready);
+  const hud = (st, ready, rest, away = false, still = false, now = 0) => {
+    const holding = now < holdTill;
+    if (!holding && dock.classList.contains('is-cast')) dock.classList.remove('is-cast');
+    btn.hidden = still || holding || !st.on || (wanted && ready); // still: the host is paused (its lead card, the shell's bar) — nothing shows
+    dock.hidden = still || !((wanted && st.on && ready) || holding);
+    // The ready card: between the waves, the next bringing the 大妖 (st.soon) — gone as that wave starts.
+    soon.hidden = still || !st.soon || st.on || (away && !side);
+    soon.classList.toggle('is-cam', wanted);
+    soon.querySelector('.jyh-soon-on').hidden = wanted;
     // The first time in this level (`level()`, the host's key): where the tap is still wanted (a 'prompt' camera, no lead
     // line read) the bubble on the button points at it; once the dock is open, the bubble on it says sealing is live.
     const key = level?.() ?? 'one';
@@ -277,7 +327,7 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     btn.style.setProperty('--k', String(Math.min(1, rest)));
     btn.querySelector('.jyh-word').textContent = rest > 0 ? w.rest : w.btn;
     $('.jyh-state').textContent = cam === 'asking' ? w.asking : '';
-    if (dock.hidden) return;
+    if (dock.hidden || holding) return; // holding: the gesture made stays as it was, in its light
     const at = bigAt(), next = at >= 2 ? bigSeq[at] : shape;
     chips(at);
     hint.update({ image, aspect, target: next, progress: prog?.k ?? 0, right: false, now: win.performance.now(), world: held.length || !next ? null : hands, handed, held: heldAt(held, handed, hands.length) });
@@ -297,6 +347,9 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     // the 小招's how, once on this device: after the live bubble has had its say, the dock still open
     if (!firstSaid && wanted && cam === 'on' && ready && shape && first && liveFor != null && live.hidden && !dock.hidden) { firstSaid = true; if (firstTime(win)) say(tr(first, lang)); }
     if (!st.on && wasOn) wanted = false;
+    // The ready card is up: a camera that opens by itself opens now, warm for the 大妖 (its red light on the card).
+    if (st.soon && !st.on && !wasSoon && auto && told) { wanted = true; tried = win.performance.now(); }
+    wasSoon = Boolean(st.soon && !st.on);
     wasOn = st.on;
     wasReady = ready;
   };
@@ -311,9 +364,11 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     const ready = st.ready && rest <= 0;
     const still = paused();
     if (!still) cues(st, ready); // the 大妖's call waits for the play to run
-    const run = wanted && st.on && !paused() && !doc.hidden;
+    const warm = Boolean(st.soon) && !st.on; // the ready card's camera: on before the 大妖, reading at its rest rate
+    const run = wanted && (st.on || warm) && !paused() && !doc.hidden;
     camera(run);
-    for (const el of [btn, dock]) el.classList.toggle('is-aside', away);
+    dockAt();
+    for (const el of [btn, dock]) el.classList.toggle('is-aside', away && !side); // in the side, a card pick covers nothing of it
     const live = run && ready && !away;
     rate(live ? (tiers.xiao.length ? fastFps : need.fps) : restFps);
     if (st.on && !paused()) {
@@ -323,23 +378,41 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
       const p = live ? progressOf({ kit, tiers, hands: hands.length, shapes: r.shapes, spells: duel.spells?.hands, bigId, bigAt: bigAt(), bigOf: bigSeq.length, now, mem }) : null;
       let flew = null;
       for (const e of r.events) if (e.type === 'cast' && offered.has(e.move) && cast(e)) flew = e.move;
-      if (flew) { const of = p?.move === flew ? p.of : tiers.xiao.includes(flew) ? 2 : tiers.fa.includes(flew) ? 3 : bigSeq.length || 1; tell({ move: flew, step: of, of, k: 1, cast: true }); mem.since = null; }
+      if (flew) flown(flew, p, now);
       else tell(p);
       if (live && hands.length) tried = now;
     }
     if (!live) { tried = now; if (!(st.on && !paused())) tell(null); }
     else if (now - tried > idle * 1000) wanted = false;
-    hud(st, ready, rest, away, still);
+    hud(st, ready, rest, away, still, now);
     loop = win.requestAnimationFrame(tick);
   };
+  // A cast flew: 小满's hand bursts (onProgress), and the box blooms in the move's light and holds 「成」 (helper.css .is-cast).
+  function flown(move, p, now) {
+    const of = p?.move === move ? p.of : tiers.xiao.includes(move) ? 2 : tiers.fa.includes(move) ? 3 : bigSeq.length || 1;
+    tell({ move, step: of, of, k: 1, cast: true });
+    mem.since = null;
+    holdTill = now + HOLD;
+    dock.style.setProperty('--jyh-glow', glowOf(kit, move));
+    dock.classList.remove('is-cast');
+    void dock.offsetWidth; // the bloom plays again for a second cast inside the hold
+    dock.classList.add('is-cast');
+  }
   const seen = () => { if (doc.hidden) camera(false); }; // a hidden page runs no frames: off now, back via tick
 
   // The button is the switch (on ⇄ off, kept for this device); the dock's × switches it off.
   btn.addEventListener('click', () => { if (!state().on) return; choose(!wanted); btn.classList.remove('is-call'); callout.hidden = true; });
+  soon.querySelector('.jyh-soon-on').addEventListener('click', () => { choose(true); }); // warm before the 大妖 (a 'prompt' camera asks now)
   $('.jyh-off').addEventListener('click', () => { choose(false); });
   doc.addEventListener('visibilitychange', seen);
   if (feed) win.jieyinFeed = (h, img = h, which = []) => { see({ world: h, image: img, handed: which }); aspect = 4 / 3; };
   if (feed) win.jieyinFeed.state = () => duel;
+  // …and a made seal straight from the console (the live check's camera-free cast): the same way as a cast the duel read.
+  if (feed) win.jieyinFeed.cast = (move = moves[0]) => {
+    if (!offered.has(move) || !state().ready || !cast({ type: 'cast', move, lane: 'middle' })) return false;
+    flown(move, null, win.performance.now());
+    return true;
+  };
   last = win.performance.now();
   loop = win.requestAnimationFrame(tick);
 
@@ -354,7 +427,9 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     hint.destroy();
     if (feed && win.jieyinFeed) delete win.jieyinFeed;
     btn.remove();
+    callout.remove();
     dock.remove();
+    soon.remove();
     clearTimeout(calloutT);
     clearTimeout(liveT);
     if (eye) dropModel();
