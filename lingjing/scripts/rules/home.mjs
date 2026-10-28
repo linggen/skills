@@ -154,7 +154,12 @@ function todoOf(kept, way = null) {
   const ready = [...(kept.stage_quest?.met ? [{ title: kept.stage_quest.step }] : []), ...(kept.book ?? []).filter(b => b.ready && !b.away)];
   if (ready.length) out.push({ kind: 'ready', n: ready.length, title: ready[0].title });
   // In hand, and where each is handed in: one done with its giver elsewhere (`away`) points at the giver (Look's `where`).
-  for (const q of (kept.book ?? []).filter(b => !b.chore && (!b.ready || b.away)).slice(0, 3)) out.push({ kind: 'held', id: q.id, title: q.title, ...(q.where ? { place: placeRef(q.where) } : {}), ...(q.ready ? { done: true } : {}) });
+  // Named by the place of its next act (the errand's `go`, rules/errand-line.mjs: 彭城 for the 灵芝, never the 执事堂 he
+  // stands in), and carrying that act, so the tap does what the 事 book's row does (Hanli 10-28: 「点…待办…也没反应」).
+  for (const q of (kept.book ?? []).filter(b => !b.chore && (!b.ready || b.away)).slice(0, 3)) {
+    const at = q.go?.place ?? q.where;
+    out.push({ kind: 'held', id: q.id, title: q.title, ...(at ? { place: placeRef(at) } : {}), ...(q.go ? { go: q.go } : {}), ...(q.ready ? { done: true } : {}) });
+  }
   for (const q of choresOpen(kept).filter(c => !c.done)) out.push({ kind: 'gongke', id: q.id, title: q.title, ...(q.means ? { means: q.means } : {}), progress: q.pays.progress });
   const tide = (kept.tasks ?? []).find(t => t.tide && t.status === 'offered');
   if (tide) out.push({ kind: 'tide', id: tide.id, title: tide.title });

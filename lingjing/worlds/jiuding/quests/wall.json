@@ -151,12 +151,20 @@
       {
        "kind": "visit",
        "place": "fantang",
-       "n": 1
+       "n": 1,
+       "do": {
+        "zh": "到{place}提一壶茶",
+        "en": "fetch a pot of tea at {place}"
+       }
       },
       {
        "kind": "visit",
        "place": "jiangtang",
-       "n": 1
+       "n": 1,
+       "do": {
+        "zh": "把茶送到{place}",
+        "en": "take the tea to {place}"
+       }
       }
      ]
     },
@@ -247,12 +255,20 @@
       {
        "kind": "visit",
        "place": "shanmen",
-       "n": 1
+       "n": 1,
+       "do": {
+        "zh": "到{place}石屋取家信",
+        "en": "fetch the letters at {place}"
+       }
       },
       {
        "kind": "visit",
        "place": "waimen",
-       "n": 1
+       "n": 1,
+       "do": {
+        "zh": "把信送到{place}",
+        "en": "take them to {place}"
+       }
       }
      ]
     },
@@ -274,12 +290,20 @@
       {
        "kind": "visit",
        "place": "fantang",
-       "n": 1
+       "n": 1,
+       "do": {
+        "zh": "到{place}灌一壶灯油",
+        "en": "fill a pot of lamp oil at {place}"
+       }
       },
       {
        "kind": "visit",
        "place": "zhengdian",
-       "n": 1
+       "n": 1,
+       "do": {
+        "zh": "把灯油送到{place}",
+        "en": "take the oil to {place}"
+       }
       }
      ]
     },
@@ -301,12 +325,20 @@
       {
        "kind": "visit",
        "place": "chaifang",
-       "n": 1
+       "n": 1,
+       "do": {
+        "zh": "到{place}取两把锄头",
+        "en": "fetch two hoes at {place}"
+       }
       },
       {
        "kind": "visit",
        "place": "yaoyuan",
-       "n": 1
+       "n": 1,
+       "do": {
+        "zh": "把锄头送到{place}",
+        "en": "take them to {place}"
+       }
       }
      ]
     }

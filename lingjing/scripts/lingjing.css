@@ -1379,3 +1379,6 @@ body.fighting .atmos { display: none; }
 .card.home .homewhy .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .card.home .homewhy .gshell-btn { min-width: 26px; min-height: 26px; padding: 0 8px; flex: none; }
 @media (prefers-reduced-motion: reduce) { .card.home .homebar i { transition: none; } }
+/* An errand's steps (rules/errand-line.mjs): one line each, a step done dimmed. */
+.bookrow.trow .tsteps { color: var(--dim); line-height: 1.5; }
+.bookrow.trow .tsteps .tstep.done { opacity: .6; }

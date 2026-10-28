@@ -25,6 +25,10 @@
         "zh": "灵芝",
         "en": "Lingzhi"
       },
+      "unit": {
+        "zh": "株",
+        "en": "stalk"
+      },
       "art": "art/items/lingzhi.webp",
       "about": {
         "zh": "山中所生，灵兽所喜。",
@@ -1335,6 +1339,10 @@
       "name": {
         "zh": "萝卜",
         "en": "Radish"
+      },
+      "unit": {
+        "zh": "根",
+        "en": "radish"
       },
       "art": "art/items/luobo.webp",
       "about": {

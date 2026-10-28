@@ -99,7 +99,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   assert.match(bookChipHtml(page, true, true), /bookchip ready fresh.*bookpop/s);
   const html = bookPopHtml(page);
   assert.match(html, /吕梁洪的水声/);
-  assert.match(html, /到 0\/1 · 在吕梁洪/);
+  assert.match(html, /class="tstep">到吕梁洪</, 'the step by name and place (rules/errand-line.mjs), never 「到 0/1」');
   assert.match(html, /class="bookrow trow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
   assert.match(html, /可交 · 1.*已接 · 2/s, 'grouped by state: what can be handed in first');
   assert.match(html, /t-day">每日<\/span>.*炼体.*今日.*去 Health 做/s, 'a chore wears its tag, its period and its app\'s page');
@@ -109,7 +109,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   const info = quest(took.state, content, at, { action: 'info', id: 'xu-lvliang-look' }).result;
   assert.deepEqual([info.who, info.taken, info.grant.wealth, info.where.id], ['执事堂 · 东墙的牌子', true, 15, 'lvliang']);
   const opened = bookPopHtml({ ...page, bookRow: 'xu-lvliang-look', bookInfo: info });
-  assert.match(opened, /bookdetail.*孔夫子.*酬<\/span> [^<]*灵石 \+\d+.*data-ask="说说吕梁洪的水声".*data-drop="xu-lvliang-look"/s);
+  assert.match(opened, /bookdetail.*孔夫子.*酬<\/span> [^<]*灵石 \+\d+.*data-ask="说说吕梁洪的水声（到吕梁洪）".*data-drop="xu-lvliang-look"/s);
   // a chain names its next link as `next` — `then` is the wrapper's word to Ling on every result
   const chained = quest({ ...open, place: 'pengcheng' }, content, at, { action: 'info', id: 'xu-elder-herb' }).result;
   assert.deepEqual([chained.next, chained.then, chained.taken, chained.gives], ['林子里的蠪侄', undefined, false, '竹剑']);

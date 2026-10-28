@@ -1133,8 +1133,14 @@ const HOME_ACTS = {
 /* What waits, one quiet row each. */
 const HOME_TODO = {
   ready: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.ready, { n: r.n, title: r.title }))}</button>`,
-  held: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.held, { title: r.title, place: bareName(r.place.name) }))}</button>`
-    : `<button class="act quiet hometodo" data-book>${esc(say(h.heldBare, { title: r.title }))}</button>`),
+  // An errand in hand: named by its next place, and the tap is its row's own next act (rules/errand-line.mjs `go`) —
+  // where that is here and nothing but the book acts (a fight on the stage, 交差), the book (Hanli 10-28: 「点dashboard的待办
+  // "彭城的药钱 · 执事堂" 也没反应」 — a walk to where he stood).
+  held: (r, h, ctx) => {
+    const label = r.place ? say(h.held, { title: r.title, place: bareName(r.place.name) }) : say(h.heldBare, { title: r.title });
+    const go = r.go && r.go.does !== 'turn' ? errandGo({ ...r.go, label }, ctx, 'quiet hometodo') : '';
+    return go || `<button class="act quiet hometodo" data-book>${esc(label)}</button>`;
+  },
   gongke: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.gongke, { name: r.means ?? r.title, n: r.progress }))}</button>`,
   tide: (r, h) => `<button class="act quiet hometodo" data-play="${esc(r.id)}">${esc(h.tide)}</button>`,
   wait: (r, h, ctx) => `<span class="small dim hometodo">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</span>`,
@@ -1336,14 +1342,28 @@ function stageBackRow(look, ctx) {
 /// words, the pay and 问询; only the action is a button of its own.
 /// `thread` — 主线 · 人物线 · 杂务 (design.md § 剧情 × 开放世界): the row's colour, gold · silver · grey,
 /// a line down its left edge; the tag says what kind of task, the thread whose story it is.
-function taskRow({ id, tag, device, title, who, meta, pays, act = "", ready = false, cls = "", expand = true, detail = null, attr = "data-bookrow", thread = null }, ctx) {
+function taskRow({ id, tag, device, title, who, meta, steps = null, pays, act = "", ready = false, cls = "", expand = true, detail = null, attr = "data-bookrow", thread = null }, ctx) {
   const w = ctx.words, open = expand && (ctx.bookRow === id || ctx.offerRow === id);
   const tap = expand ? ` ${attr}="${esc(id)}" role="button" tabindex="0" aria-expanded="${open}"` : '';
   const line = `${device ? `<span class="device">${esc(deviceMark(device))}</span> ` : ''}<b>${esc(title)}</b>${who ? ` <span class="small dim">· ${esc(who)}</span>` : ''}${meta ? ` <span class="small dim tmeta">${esc(meta)}</span>` : ''}`;
   return `<div class="bookrow trow${ready ? ' ready' : ''}${open ? ' open' : ''}${thread ? ` th-${esc(thread)}` : ''}${cls}"${tap}>
     <span class="tag t-${esc(tag)}">${esc(w.tags?.[tag] ?? tag)}</span>
-    <div class="tmain"><div class="tline">${line}</div>${pays ? `<div class="small tpay">${esc(pays)}</div>` : ''}</div>
+    <div class="tmain"><div class="tline">${line}</div>${steps ? stepsHtml(steps) : ''}${pays ? `<div class="small tpay">${esc(pays)}</div>` : ''}</div>
     <div class="tact">${act}</div></div>${open && typeof detail === 'function' ? detail() : ''}`;
+}
+
+/* An errand's steps, one line each with its own place, then who takes it — the rules' words as they are
+   (rules/errand-line.mjs; Hanli 10-28: 「彭城的药钱, 没有提示」 under 「带 0/1 · 就在此处」). */
+const stepsHtml = (lines) => `<div class="small tsteps">${lines.map((l) => `<div class="tstep${l.done ? ' done' : ''}">${l.done ? '✓ ' : ''}${esc(l.text)}</div>`).join('')}</div>`;
+const errandSteps = (q) => (q.steps?.length ? [...q.steps, ...(q.hand ? [{ text: q.hand.text }] : [])] : null);
+/* The errand's one next act, as the rules name it (`go`): the walk, the buy where it is sold, the board where it is hosted,
+   交差 — the same on the 事 book's row and the 主页's 待办. */
+function errandGo(go, ctx, cls = '') {
+  if (!go) return '';
+  if (go.does === 'move') return cls ? `<button class="act go ${cls}" ${goAttr(go.place.id)}>${esc(go.label)}</button>` : bookGo(go.label, go.place.id, ctx);
+  if (go.does === 'buy') return `<button class="act do ${cls}" data-do="buy" data-id="${esc(go.item)}">${esc(go.label)}</button>`;
+  if (go.does === 'play') return `<button class="act ${cls}" data-play="${esc(go.task)}">${esc(go.label)}</button>`;
+  return '';
 }
 
 /* What a row pays, as the rules say it (`pays`). */
@@ -1354,10 +1374,13 @@ const countsOf = (q, w) => q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind}
    names them instead of 交差 (2026-09-29). */
 function errandRow(q, ctx) {
   const w = ctx.words;
+  const steps = errandSteps(q);
   const at = q.where && (!q.ready || q.away) ? (q.where.here ? w.needHere : say(w.needAt, { name: q.where.name })) : '';
+  // An errand the rules worded (`steps`): its lines say it all; 今日传闻 and older rows keep the counts.
+  const meta = steps ? (q.need ?? []).some((n) => n.kept) ? w.keptWin : '' : [countsOf(q, w), at].filter(Boolean).join(' · ');
   const act = q.away ? awayAct(q, ctx)
-    : q.ready ? doBtn(w.turnIn, 'turn', q.id) : q.where && !q.where.here ? bookGo(say(w.go, { name: q.where.name }), q.where.id, ctx) : '';
-  return taskRow({ id: q.id, tag: q.id === 'tale' ? 'tale' : q.tag ?? 'errand', title: q.title, who: q.who, meta: [countsOf(q, w), at].filter(Boolean).join(' · '),
+    : q.ready ? doBtn(w.turnIn, 'turn', q.id) : q.go ? errandGo(q.go, ctx) : q.where && !q.where.here ? bookGo(say(w.go, { name: q.where.name }), q.where.id, ctx) : '';
+  return taskRow({ id: q.id, tag: q.id === 'tale' ? 'tale' : q.tag ?? 'errand', title: q.title, who: q.who, meta, steps,
     pays: paysLine(q.pays, w), act, ready: q.ready && !q.away, thread: q.thread ?? null, detail: () => bookDetail(q, ctx) }, ctx);
 }
 
@@ -1519,8 +1542,11 @@ function bookDetail(q, ctx) {
     ${i.say ? `<div class="say">${esc(i.say)}</div>` : ''}
     ${pays ? `<div class="small"><span class="dim">${esc(w.paysWord)}</span> ${esc(pays)}</div>` : ''}
     ${i.next ? `<div class="small dim">${esc(w.nextWord)} · ${esc(i.next)}</div>` : ''}
-    <div class="acts">${q.where && !q.where.here ? bookGo(say(w.go, { name: q.where.name }), q.where.id, ctx) : ''}${askBtn(w.about, say(w.sayQuestAbout, { title: q.title }))}${i.kind === 'errand' || i.kind === 'tale' ? `<button class="act quiet" data-drop="${esc(q.id)}">${esc(w.drop)}</button>` : ''}</div></div>`;
+    <div class="acts">${q.where && !q.where.here ? bookGo(say(w.go, { name: q.where.name }), q.where.id, ctx) : ''}${askBtn(w.about, askLine(q, w, ctx.lang))}${i.kind === 'errand' || i.kind === 'tale' ? `<button class="act quiet" data-drop="${esc(q.id)}">${esc(w.drop)}</button>` : ''}</div></div>`;
 }
+
+/* 问询 on an errand: its line carries the row's own facts (each step and who takes it), so she answers from them. */
+const askLine = (q, w, lang) => { const l = errandSteps(q); return say(w.sayQuestAbout, { title: q.title }) + (l ? (lang === 'en' ? ` (${l.map((x) => x.text).join('; ')})` : `（${l.map((x) => x.text).join('；')}）`) : ''); };
 
 /// The ask bar: 问问银月's field (问询 sends its line straight, f0603ead). It lives outside the
 /// stage's repaint, so typing in it is never interrupted.

@@ -599,6 +599,14 @@ its colour; the map and the 观's painted plate ring the place where a thread
 is met (cards.js threadsAt — the goal's place gold, an errand's next count
 silver or grey; the strongest wins). Linted to the three.
 
+**An errand's words** (built 2026-10-28, rules/errand-line.mjs; Hanli: 「彭城的药钱,
+没有提示」): every need is a step with its own place — 「带一株灵芝 · 彭城有卖 · 30灵石」
+(where it is sold, from the shops he can walk to), 「在柴房玩「华容道 · …」」, 「到上山路降服蠪侄」 —
+and a walk of steps says what is fetched (`need.do`, `{place}` in it: 「先到饭堂提一壶茶 · 再把茶送到讲堂」;
+counted in order). Who takes it: `to: { place, who }` (彭城坊市的老丈) or a person giver. One next act
+(`go`: move · buy · play · turn) for the 事 book, the 主页's 待办 and the phone. Items may say a `unit` (株 · 根).
+tests/errand-line.test.mjs audits every errand.
+
 **Approved, not built (Hanli 2026-10-23: 「先批准设计」; built with 卷二, not before the 卷一 launch) — 银月's fragments on the map (from 下山 on).** The
 rules are there (a place's `fragment`, kept once where he stops,
 rules/memories.mjs); none is placed. Place one per province of 卷二, never on

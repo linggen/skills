@@ -26,6 +26,7 @@ import { freeSlot, pouchBrief } from './pouch.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
 import { storyAllows } from './cap.mjs';
 import { gatesOf, stageBrief, stageGate } from './gates.mjs';
+import { errandLine } from './errand-line.mjs';
 import { hiddenRoom, sealedOf, allPlaces, poolBeast, poolResting, atScene, creatureOf, grantPass, hauntsOf, huntable, inCorridor, inMade, ofJuan, passed, pathOf, placeName, placeOf, placeOpen, sceneOf, tooHard, towardOf } from './world.mjs';
 
 /* ── 差事 — the errands the player takes (design.md § 差事) ──
@@ -127,11 +128,16 @@ function errandsOf(content, state, lang, now) {
       const ready = need.every(x => x.done), away = ready && !withGiver(state, q);
       // Who gives it and what it pays — the 事 book's row says both under the title (2026-10-15).
       // Its thread (quests' `thread`): the colour the 事 book and the map draw it in; a wall tag's grey unless declared.
+      // What it asks, step by step, each with its place, who takes it, and the one next act (rules/errand-line.mjs):
+      // the 事 book, the 主页's 待办 and the phone show these as they are (Hanli 10-28: 「彭城的药钱, 没有提示」).
+      const line = errandLine(content, state, q, need, lang, now);
       return { id, title: pick(q.title, lang), thread: threadColour(q), who: q.from?.who ? pick(q.from.who, lang) : null, pays: questPays(content, state, now, q),
         need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready,
+        steps: line.steps.map(s => ({ text: s.text, done: s.done, ...(s.at ? { at: s.at } : {}) })), ...(line.hand ? { hand: { text: line.hand.text, ...(line.hand.at ? { at: line.hand.at } : {}) } } : {}),
+        ...(line.go ? { go: line.go } : {}), say: fill(pick(q.say, lang), state, content),
         // Done, but the person it is for is elsewhere: who, and the way there.
         ...(away ? { away: { who: pick(q.from.who, lang) } } : {}),
-        where: away ? whereAt(content, state, placeOf(content, giverAt(q)), lang, now) : whereFor(content, state, q, need, lang, now) };
+        where: away ? whereAt(content, state, placeOf(content, giverAt(q)), lang, now) : whereFor(content, state, q, need, lang, now, line) };
     })
     .filter(Boolean);
 }
@@ -140,9 +146,12 @@ function errandsOf(content, state, lang, now) {
    market that sells it. One line, so the player is never left guessing.
    `now` is the caller's clock, never the wall's: a test's or a replay's day
    decides which provinces are open (review, 2026-09-24). */
-function whereFor(content, state, quest, need, lang, now) {
+function whereFor(content, state, quest, need, lang, now, line = null) {
   const open = need.find(n => !n.done);
   if (!open) return null;
+  // A thing to obtain: where it is sold (errand-line.mjs) — never merely the nearest shop, which
+  // read 「就在此处」 at 执事堂 for a 灵芝 its 库房 never stocks (Hanli 10-28).
+  if (open.kind === 'carry') { const at = line?.steps?.find(s => !s.done)?.at; return at ? whereAt(content, state, placeOf(content, at.id), lang, now) : null; }
   const at = open.kind === 'visit' ? placeOf(content, open.place)
     : open.kind === 'subdue' || open.kind === 'tame' ? (hauntsOf(content, open.creature).map(p => placeOf(content, p.id)).find(p => p && placeOpen(content, state, p, now)) ?? hauntsOf(content, open.creature)[0])
       : open.kind === 'carry' ? nearestPlace(content, state, now, p => p.has?.shop)
@@ -336,6 +345,8 @@ export function advance(content, state, event, ctx = null) {
       if (need.task && need.task !== event.task) return;
       if (need.item && need.item !== event.item) return;
       const held = state.quests[id];
+      // A walk of steps (先到饭堂提茶 · 再送到讲堂) is walked in order: a place counts once the places before it have.
+      if (need.kind === 'visit' && q.need.slice(0, i).some((m, j) => m.kind === 'visit' && (held.have?.[j] ?? 0) < m.n)) return;
       held.have = { ...held.have, [i]: Math.min(need.n, (held.have?.[i] ?? 0) + 1) };
     });
   }

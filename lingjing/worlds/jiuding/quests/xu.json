@@ -98,6 +98,13 @@
       "pass": {
         "to": "pengcheng"
       },
+      "to": {
+        "place": "pengcheng",
+        "who": {
+          "zh": "彭城坊市的老丈",
+          "en": "the old man at the Pengcheng market"
+        }
+      },
       "say": {
         "zh": "东墙一块乌木牌，县里书办代写的：「彭城坊市一老丈，咳了半月，市上灵芝三十灵石一株，买不起。谁捎一株去，赠竹剑一柄。」采办的牌子，揭了凭牌下山。",
         "en": "An ebony tag on the east wall, written for him by a county clerk: \"An old man at the Pengcheng market has coughed for half a month; lingzhi costs thirty stones a stalk there and he cannot pay. Whoever brings him one gets a bamboo sword.\" A buying errand: take it, and the tag is your leave down the mountain."
@@ -301,7 +308,8 @@
         {
           "kind": "board",
           "task": "alchemy-first",
-          "n": 1
+          "n": 1,
+          "at": "yaoyuan"
         }
       ],
       "work": "labor",
@@ -309,7 +317,10 @@
         "table": "labor",
         "wealth": 5,
         "item": "qi-pill-9",
-        "more": { "huangjing-gen": 3, "huangqi-canzhu": 3 },
+        "more": {
+          "huangjing-gen": 3,
+          "huangqi-canzhu": 3
+        },
         "_more": "周衡's culls themselves (Hanli 2026-10-27: the 饭桶's tray is the bag, nothing else) — what 古七's first two 方子 are fed; once by the woodpile, always at hand"
       },
       "opens": {
@@ -391,7 +402,11 @@
         {
           "kind": "visit",
           "place": "dukou",
-          "n": 1
+          "n": 1,
+          "do": {
+            "zh": "到{place}给渡叔捎句话",
+            "en": "take a word to Du Shu at {place}"
+          }
         }
       ],
       "work": "labor",
