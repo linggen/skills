@@ -108,6 +108,10 @@ export function layLevel(row) {
     towers: row.towers ?? TORDER, unlock: row.unlock ?? {}, gap: row.gap ?? 20, first: row.first ?? 25, hpScale: row.hpScale ?? 0.12, hpMul: row.hpMul ?? 1, diff: difficultyOf(row) };
 }
 export const beastsOf = (row) => [...new Set(row.waves.flat().map(([t]) => t))];
+/** A level's `skin` (a story level before 入门 lays no talismans — 泗水路, 2026-10-28): { <tower>: { name, say, glyph, art, shot } }
+    — the talisman's name and line on the build menu, its glyph, its painted art (`tower-<art>-<1…3>.webp`), and `shot`, how
+    its sword is drawn ('stone'). The numbers stay the talisman's (TOWERS): only how it looks and is called changes. */
+export const skinOf = (L, type) => L.skin?.[type] ?? null;
 /** A row's hero: `hero` is 银月's post [x, y], or { at: [x, y], hair, who, skills, stats, throw } — `hair`: 狐毛 charges the
     story has given her (古五 on). A story level may name another hero (`who`: 'xiaoman', 守火): `skills: false` shuts Q W E R,
     `stats` lays its own numbers over HERO's, `throw` gives it stones { range, dmg, rate, speed } for what is out of reach. */
@@ -382,7 +386,8 @@ function towersStep(g, dt) {
     const t = pickTarget(g, tw.x, tw.y, R, D.air);
     if (!t) { tw.cd = 0.05; continue; }
     tw.cd = D.rate[L]; tw.anim = 0.25; tw.ang = Math.atan2(t.y - tw.y, t.x - tw.x);
-    if (tw.type === 'jian') g.proj.push({ k: 'sword', x: tw.x, y: tw.y - 24, t, lx: t.x, ly: t.y, speed: 560, dmg: D.dmg[L], ang: 0 });
+    // a level's `skin` may paint a talisman as something else (泗水路's 弹弓: `shot` 'stone' — drawn a stone, flying as a sword)
+    if (tw.type === 'jian') g.proj.push({ k: 'sword', x: tw.x, y: tw.y - 24, t, lx: t.x, ly: t.y, speed: 560, dmg: D.dmg[L], ang: 0, ...(g.L.skin?.jian?.shot ? { look: g.L.skin.jian.shot } : {}) });
     // 火符 is lobbed at where the mark stood: a fast beast (狰) is gone when it lands, unless 寒符 holds it
     else if (tw.type === 'huo') g.proj.push({ k: 'fire', x: tw.x, y: tw.y - 24, t, lx: t.x, ly: t.y, speed: D.shot, dmg: D.dmg[L], splash: D.splash[L], ang: 0 });
     else if (tw.type === 'lei') { chain(g, tw, t, D.dmg[L]); tw.anim = 0.3; }

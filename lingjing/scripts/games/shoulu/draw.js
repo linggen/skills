@@ -35,7 +35,8 @@ function rnd(seed) { let s = seed; return () => { s = (s * 16807) % 2147483647; 
 /** The board under everything, painted once a level: paper, hills, grass, rocks and pines off the road, the road. */
 export function makePaper(doc, L, label) {
   if (L.fire || L.hero?.who) loadFireArt(doc); // 小满's frames for any level he holds alone (雪夜柴垛 has no fire)
-  for (const n of [L.furnaceArt, L.keep?.art]) if (n) artImg(doc, n); // a story level's own 炉 (the 柴垛) and the one it keeps (舅舅)
+  for (const n of [L.furnaceArt, L.keep?.art]) if (n) artImg(doc, n);
+  for (const sk of Object.values(L.skin ?? {})) if (sk.art) for (let lv = 1; lv <= 3; lv += 1) artImg(doc, `tower-${sk.art}-${lv}`); // a skinned talisman's own art // a story level's own 炉 (the 柴垛) and the one it keeps (舅舅)
   const k = 2, p = doc.createElement('canvas');
   p.width = W * k; p.height = H * k;
   const pics = ['pine', 'rock', 'bush', `ground-${L.ground ?? L.id}`]; // `ground`: another level's painting (the 秘境's rows)
@@ -380,13 +381,13 @@ function drawSword(c, s) {
   c.strokeStyle = INK; c.lineWidth = 2; c.beginPath(); c.moveTo(-6, -4); c.lineTo(-6, 4); c.moveTo(-6, 0); c.lineTo(-11, 0); c.stroke();
   c.restore();
 }
-function drawTower(c, tw, t) {
-  const D = TOWERS[tw.type], x = tw.x, y = tw.y, pic = ART.img[`tower-${tw.type}-${Math.min(3, tw.lvl + 1)}`];
+function drawTower(c, g, tw, t) {
+  const D = TOWERS[tw.type], x = tw.x, y = tw.y, sk = g.L.skin?.[tw.type], pic = ART.img[`tower-${sk?.art ?? tw.type}-${Math.min(3, tw.lvl + 1)}`];
   if (okImg(pic)) { // the painted talisman: it rocks back as it fires, glowing its colour
     const h = 66 + tw.lvl * 6, w = pic.naturalWidth * h / pic.naturalHeight;
     c.fillStyle = 'rgba(40,30,20,0.22)'; c.beginPath(); c.ellipse(x, y + 10, 20, 7, 0, 0, 6.28); c.fill();
     c.save(); c.translate(x, y + 12); c.rotate(tw.anim > 0 ? -0.12 * tw.anim : Math.sin(t * 2 + x * 0.1) * 0.02);
-    if (tw.anim > 0) { c.shadowColor = D.color; c.shadowBlur = 14; }
+    if (tw.anim > 0 && !sk) { c.shadowColor = D.color; c.shadowBlur = 14; } // a talisman glows its colour; a 弹弓 or a 火把 does not
     c.drawImage(pic, -w / 2, -h, w, h); c.restore();
     if (tw.type === 'lei' && tw.anim > 0) { c.strokeStyle = 'rgba(150,110,230,0.85)'; c.lineWidth = 1.4; for (let k = 0; k < 3; k += 1) { const a = Math.random() * 6.28; c.beginPath(); c.moveTo(x, y - h * 0.6); c.lineTo(x + Math.cos(a) * 18, y - h * 0.6 + Math.sin(a) * 12); c.stroke(); } }
     return;
@@ -400,10 +401,10 @@ function drawTower(c, tw, t) {
   if (tw.anim > 0) { c.shadowColor = D.color; c.shadowBlur = 12; }
   c.fillStyle = '#ecd291'; c.fillRect(-w / 2, 2, w, h); c.shadowBlur = 0;
   c.strokeStyle = D.color; c.lineWidth = 1.6; c.strokeRect(-w / 2, 2, w, h); c.lineWidth = 0.7; c.strokeRect(-w / 2 + 2.5, 4.5, w - 5, h - 5);
-  c.fillStyle = D.color; c.font = `bold ${14 + tw.lvl}px "Songti SC","STSong",serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(D.glyph, 0, 2 + h / 2);
+  c.fillStyle = D.color; c.font = `bold ${14 + tw.lvl}px "Songti SC","STSong",serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(sk?.glyph ?? D.glyph, 0, 2 + h / 2);
   c.restore(); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
   for (let k = 0; k <= tw.lvl; k += 1) { const px = x - (tw.lvl * 6) / 2 + k * 6; c.fillStyle = '#b0412e'; c.beginPath(); c.moveTo(px, y + 15); c.lineTo(px + 2.5, y + 18); c.lineTo(px, y + 21); c.lineTo(px - 2.5, y + 18); c.closePath(); c.fill(); }
-  if (tw.type === 'jian') { const a = t * 2.5 + x; c.save(); c.translate(x + Math.cos(a) * 13, y - 26 + Math.sin(a) * 4); c.rotate(tw.anim > 0 ? tw.ang : -1.2); drawSword(c, 0.7); c.restore(); }
+  if (tw.type === 'jian' && !sk) { const a = t * 2.5 + x; c.save(); c.translate(x + Math.cos(a) * 13, y - 26 + Math.sin(a) * 4); c.rotate(tw.anim > 0 ? tw.ang : -1.2); drawSword(c, 0.7); c.restore(); }
   if (tw.type === 'lei' && tw.anim > 0) { c.strokeStyle = 'rgba(110,80,180,0.8)'; c.lineWidth = 1.3; for (let k = 0; k < 3; k += 1) { const a = Math.random() * 6.28; c.beginPath(); c.moveTo(x, y - 18); c.lineTo(x + Math.cos(a) * 16, y - 18 + Math.sin(a) * 16); c.stroke(); } }
 }
 // 银月 is painted (tools/paint-shoulu.py: comic frames on one atlas, art/yinyue.webp + yinyue.json); the code only
@@ -568,14 +569,14 @@ export function draw(ctx, g, v) {
   items.sort((a, b) => a.y - b.y);
   for (const it of items) {
     if (it.hero) drawHero(ctx, g.hero, t, v.heroSel, v.lang, v.says, g);
-    else if (it.tw) drawTower(ctx, it.tw, t);
+    else if (it.tw) drawTower(ctx, g, it.tw, t);
     else drawBeast(ctx, it.b.type, it.b.x, it.b.y, t + it.b.id, it.b.face, it.b.flash, 1, it.b);
   }
   if (g.L.fire) drawNight(ctx, g, t);
   if (g.L.snow) drawSnow(ctx, t);
   for (const b of g.beasts) hpBar(ctx, b);
   for (const p of g.proj) {
-    if (p.k === 'stone') drawStone(ctx, p);
+    if (p.k === 'stone' || p.look === 'stone') drawStone(ctx, p);
     else if (p.k === 'sword') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.ang); ctx.strokeStyle = 'rgba(53,86,110,0.25)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-26, 0); ctx.lineTo(-8, 0); ctx.stroke(); drawSword(ctx, 1); ctx.restore(); }
     else { ctx.fillStyle = 'rgba(240,160,70,0.35)'; ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, 6.28); ctx.fill(); ctx.fillStyle = '#c94a2a'; ctx.beginPath(); ctx.arc(p.x, p.y, 4.5, 0, 6.28); ctx.fill(); }
   }

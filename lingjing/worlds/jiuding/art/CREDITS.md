@@ -312,6 +312,13 @@ cards); `arrow` and `stone` are 砸寨's own `proj-arrow` · `proj-stone`, turne
 ground-shanlu-night 2 · chaiduo 1 · jiujiu-sleep 1 · icons 1 · 2 · 1), every seed looked at for fake writing; the sources
 beside the kits' in `art/games/shouqiang/` and `art/games/shoulu/`. No outside source.
 
+泗水路 rebuilt as a build board (2026-10-28, Hanli: 「大厅里的守炉好玩」; games.json `sishui` `skin`) — `scripts/games/shoulu/art/`
+`tower-tangong-1` · `-2` · `-3` (a camp's boy with a forked-branch 弹弓: on a bundle, on a wheelbarrow, on a handcart with a
+lantern) and `tower-huoba-1` · `-2` · `-3` (a 汉子 with a 火把: by dry branches, by a small fire, two torches by a bonfire), the
+talismans' places before 入门. The local FLUX.2 klein 4B (mflux), `tools/paint-shoulu-flux.py` (`SKIN`), text to image in the
+comic style; seeds 1–5 looked at (1–2 came out in buttoned modern jackets, and the prompt was rewritten for a crossed hemp
+tunic), kept tangong 3 and huoba 4 — one boy, one man across their three steps. No outside source.
+
 For 第一回's 收租 塔防 (守山门 kit, sadoushou; 2026-10-22, Hanli: 「就是在第一次收租那里, 马小宝推倒小满后. 加一个塔防类的」) —
 `scripts/games/sadoushou/art/`: the 马家家丁 `jiading-walk-1` · `-walk-2` · `-hit`, 小宝's 跟班 `genban-walk-1` · `-walk-2` ·
 `-hit`, `maxiaobao-walk-1` (munching the 桂花糕, a wink) · `-roll` (the 糯米团子 ball) · `-hit`, `masan-walk-1` · `-slam` ·

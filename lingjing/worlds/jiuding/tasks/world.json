@@ -295,10 +295,10 @@
       "done_line": { "zh": "成了！", "en": "Done it!" }
     },
     {
-      "_td": "2026-10-21 (the 卷一 small-game plan; Hanli: 「start building」): 00-gate, the passage split after the road — 「越往南……几千户人家，赶的是同一个日子。」 — a night camp on the three days' road to 泗水. 守炉's story level `sishui` (games.json `shoulu`, `story: \"00-gate\"`): the camp fire is the 炉, 舅舅 asleep beside it the one to keep, 野猪 out of the dark; 小满 alone with stones, no talismans. The fifth 塔防 on the ladder, the first with a party. Nothing paid before 入门.",
+      "_td": "2026-10-21 (the 卷一 small-game plan; Hanli: 「start building」): 00-gate, the passage split after the road — 「越往南……几千户人家，赶的是同一个日子。」 — a night camp on the three days' road to 泗水. 守炉's story level `sishui` (games.json `shoulu`, `story: \"00-gate\"`): the camp fire is the 炉, 舅舅 asleep beside it the one to keep, 野猪 out of the dark. Rebuilt 2026-10-28 (Hanli: 「守火那个不太好玩」 · 「大厅里的守炉好玩」): it plays as the 游戏厅's 守炉 now — spots by the road, the camps' boys with 弹弓 and men with 火把 woken there (the level's `skin`: no talismans before 入门), 小满 throwing stones; the id, the deal and the pay kept, so a save holding it offered plays the new board. Nothing paid before 入门.",
       "id": "gate-sishui", "kind": "board", "game": "shoulu", "deal": { "lv": "sishui" }, "period": "once", "stars": 3,
       "title": { "zh": "泗水路 · 路上那一夜", "en": "The road to the Si · A night on the way" },
-      "how": { "zh": "往泗水去的路上，夜里歇在路边，舅舅睡着了。野猪从黑里出来——点一头，小满扔石头撵；火一矮，点路边的枯枝去捡来添。火堆和舅舅，都别叫它们碰着。", "en": "A night by the road to the Si River; Uncle is asleep. Boars come out of the dark: tap one and Xiaoman throws a stone; when the fire sinks, tap a dead branch by the road to fetch it. Don't let them reach the fire or Uncle." },
+      "how": { "zh": "往泗水去的路上，夜里歇在路边，舅舅睡着了。野猪从黑里出来。点路边的空处，叫醒一户歇脚的人家：娃娃打弹弓，汉子举火把；点一头野猪，小满扔石头撵。火堆和舅舅，都别叫它们碰着。", "en": "A night by the road to the Si River; Uncle is asleep. Boars come out of the dark. Tap a free spot by the road to wake a family camped there: a boy with a slingshot, a man with a torch; tap a boar and Xiaoman throws a stone. Don't let them reach the fire or Uncle." },
       "grant": { "table": "task", "progress": 5 },
       "done_line": { "zh": "九月初八傍晚，到了泗水边上。", "en": "At dusk on the eighth day they reached the Si River." }
     },

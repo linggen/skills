@@ -49,6 +49,22 @@ JOBS = {}
 for k, kind in KIND.items():
   for lv, lvl in LEVEL.items():
     JOBS[f'tower-{k}-{lv}'] = dict(w=512, h=640, prompt=TOWER.format(lvl=lvl, kind=kind) + fc.STYLE + ' ' + fc.ON_MAGENTA)
+# 泗水路's skin (2026-10-28, games.json `sishui` `skin`): before 入门 there are no talismans — the 剑阵 is a camp's boy
+# with a 弹弓 and the 火符 a 汉子 with a 火把, woken along the road; three steps each, the same figure growing.
+PEOPLE = 'ONE {who} for a cartoon tower-defense game, seen from the front and a little from above, the whole figure in view: {what}. No writing anywhere. '
+SKIN = {
+  'tangong': ('small ancient Chinese village boy of about ten in a short cross-collar wrapped hemp tunic of faded blue tied with a cloth sash, grey trousers and straw sandals, his hair in a little topknot (old China, nothing modern: no buttons, no pockets)', {
+    1: 'he sits on a tied cloth travelling bundle, holding up a forked-branch Y-shaped slingshot with its band pulled back, a pebble in the pouch',
+    2: 'he stands on a wooden wheelbarrow loaded with cloth bundles, aiming a forked-branch Y-shaped slingshot, its band pulled back with a pebble',
+    3: 'he stands on top of a loaded wooden handcart with a red paper lantern hanging from a bamboo pole stuck in it, aiming a big forked-branch Y-shaped slingshot, its band pulled back with a pebble'}),
+  'huoba': ('sturdy ancient Chinese village man in a short cross-collar wrapped brown hemp tunic tied with a cloth sash, trousers tied at the shin, straw sandals and a cloth headband (old China, nothing modern: no buttons, no pockets)', {
+    1: 'he holds up one burning wooden torch beside a small pile of dry branches',
+    2: 'he holds a burning torch high beside a small crackling campfire ringed with stones',
+    3: 'he swings two burning torches beside a big roaring bonfire ringed with stones'}),
+}
+for art, (who, steps) in SKIN.items():
+  for lv, what in steps.items():
+    JOBS[f'tower-{art}-{lv}'] = dict(w=512, h=640, prompt=PEOPLE.format(who=who, what=what) + fc.STYLE + ' ' + fc.ON_MAGENTA)
 JOBS['furnace'] = dict(w=640, h=640, prompt=(
   'ONE big round bronze alchemy cauldron, a three-legged Chinese ding furnace with two upright square handles and '
   'a lid, a glowing orange fire showing through a round opening in its belly, a wisp of smoke, seen from the front '
@@ -83,7 +99,10 @@ KEPT = {'tower-jian-1': 2, 'tower-jian-2': 2, 'tower-jian-3': 1, 'tower-huo-1': 
         'furnace': 1, 'ground-shiao': 1, 'ground-shanlu': 2, 'ground-yaoyuan': 1, 'ground-houshan': 1, 'ground-heisong': 1,
         'pine': 1, 'rock': 2, 'bush': 2, 'yezhu-walk-2': 1,
         # 2026-10-21 (3 seeds each): seed 1 keeps every leaf and flower of the day's and stays readable; 2 and 3 go near black.
-        'ground-yaoyuan-night': 1, 'ground-houshan-night': 1}
+        'ground-yaoyuan-night': 1, 'ground-houshan-night': 1,
+        # 2026-10-28 (泗水路's skin, seeds 1–5): 1–2 dressed him in a buttoned modern jacket — the prompt asks for a crossed
+        # hemp tunic and a sash now; seed 3 keeps one boy and a readable forked slingshot on all three, seed 4 one man.
+        'tower-tangong-1': 3, 'tower-tangong-2': 3, 'tower-tangong-3': 3, 'tower-huoba-1': 4, 'tower-huoba-2': 4, 'tower-huoba-3': 4}
 
 
 def glow(im, level):

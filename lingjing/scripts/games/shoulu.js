@@ -160,6 +160,10 @@ function ensureCss(doc) {
   doc.head.appendChild(l);
 }
 const word = (o, lang) => o?.[lang] ?? o?.zh ?? '';
+/** A talisman as this level names it: its `skin` (泗水路's 弹弓 · 火把, core.js skinOf), else the talisman's own name, line and glyph. */
+export const towerName = (L, k, lang) => (L.skin?.[k]?.name ? word(L.skin[k].name, lang) : TN[lang][k]);
+const towerSay = (L, k, lang) => (L.skin?.[k]?.say ? word(L.skin[k].say, lang) : TD[lang][k]);
+const towerGlyph = (L, k) => L.skin?.[k]?.glyph ?? TOWERS[k].glyph;
 /** A level's own words over the page's (`words`, a story level's — 守火: 火, 小满, its won and lost lines); `{n}` takes the number. */
 export function wordsFor(base, words, lang) {
   const out = { ...base };
@@ -441,13 +445,13 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       if (!tw) {
         menu.innerHTML = `<h4>${t.build}<span>${t.tap}</span></h4><div class="sl-grid">${TORDER.filter((k) => g.L.towers.includes(k)).map((k) => {
           const D = TOWERS[k], at = g.L.unlock[k];
-          return `<button type="button" class="sl-opt" data-build="${k}"><b style="color:${D.color}">${D.glyph} ${TN[lang][k]}</b><i>${D.cost[0]} ${t.stone}</i>`
-            + `<small>${at ? `<span data-lock>${t.unlockAt(at)} · </span>` : ''}${TD[lang][k]}</small></button>`;
+          return `<button type="button" class="sl-opt" data-build="${k}"><b style="color:${D.color}">${towerGlyph(g.L, k)} ${towerName(g.L, k, lang)}</b><i>${D.cost[0]} ${t.stone}</i>`
+            + `<small>${at ? `<span data-lock>${t.unlockAt(at)} · </span>` : ''}${towerSay(g.L, k, lang)}</small></button>`;
         }).join('')}</div>`;
       } else {
         const D = TOWERS[tw.type], L = tw.lvl;
         const nx = L < 2 ? `${t.nextLv}: ${t.dmg} ${D.dmg[L + 1]}${D.slow ? `, ${t.slow} ${Math.round(D.slow[L + 1] * 100)}%` : ''}, ${t.range} ${D.range[L + 1]}` : t.maxed;
-        menu.innerHTML = `<h4>${TN[lang][tw.type]} · ${t.lv[L]}<span>${t.dmg} ${D.dmg[L]} · ${t.range} ${D.range[L]}</span></h4><div class="sl-info">${TD[lang][tw.type]}<br>${nx}</div>`
+        menu.innerHTML = `<h4>${towerName(g.L, tw.type, lang)} · ${t.lv[L]}<span>${t.dmg} ${D.dmg[L]} · ${t.range} ${D.range[L]}</span></h4><div class="sl-info">${towerSay(g.L, tw.type, lang)}<br>${nx}</div>`
           + `<div class="sl-row"><button type="button" data-up>${L < 2 ? `${t.upg} ${D.cost[L + 1]}` : t.full}</button><button type="button" data-sell>${t.sellFor} +${refund(tw)}</button></div>`;
       }
       menu.hidden = false;
