@@ -343,7 +343,7 @@
       "zh": "鼎气不肯近身。火候未到——时候到了，它自己会来。",
       "en": "The cauldron's breath will not come near. The fire is not ready — when its time comes, it will come to you."
     },
-    "_stage": "阶段任务 (Hanli, 2026-10-15; rules/gates.mjs): `gates` in a 回 are the ways on that wait on 圆满 of a layer — `{layer, scene, exits}`, the 层 as the book names it (`tier` the first unless said). Refused with `stage.refuse` until the realm stands there full or past it; the 事 book shows it, 下一步 and Ling point to the work that raises 修为. A gate stands only where he can walk away to earn it — never inside a key beat's lock or a sealed instance (the lint holds it): 古四: the 柴房 night on 一层圆满; past it 二层 is his to sit into (h05's cap is 二层 since 2026-10-27 — the book has him sit into 二层 on 十月廿五 (wm-yan) and stand at 二层巅峰 the night before the 秘境 (wm-baoming); a cap of 一层 kept the bar a layer under the story). 古五: the 秘境's door on 二层圆满 (息壤 is inside it). 古六: the 大比's eve on 四层圆满. 古七: each rise on the layer below it full (09-year's catch-up as 09-furnace). 古八: 腊八 on 八层圆满, 入秋 on 九层圆满 (the cliff's breakthrough then the player's own throw). 古九 has none. No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): every rise the book had is a gate here — or, where it stood inside a locked beat (第一路's 二层, 息壤's 四层), the next gate asks that layer and more; the one rise left is 入门 (零层 → 一层, the 小周天: 零层 holds no 修为, so nothing is skipped). A stage quest met is handed in (交差) and pays balance.json `pay.stage`, once (rules/gates.mjs).",
+    "_stage": "阶段任务 (Hanli, 2026-10-15; rules/gates.mjs): `gates` in a 回 are the ways on that wait on 圆满 of a layer — `{layer, scene, exits}`, the 层 as the book names it (`tier` the first unless said). Refused with `stage.refuse` until the realm stands there full or past it; the 事 book shows it, 下一步 and Ling point to the work that raises 修为. A gate stands only where he can walk away to earn it — never inside a key beat's lock or a sealed instance (the lint holds it): 古四: the 柴房 night on 一层圆满; past it 二层 is his to sit into (h05's cap is 二层 since 2026-10-27 — the book has him sit into 二层 on 十月廿五 (wm-yan) and stand at 二层巅峰 the night before the 秘境 (wm-baoming); a cap of 一层 kept the bar a layer under the story). 古五: the 秘境's door on 二层圆满 (息壤 is inside it). 古六: the 大比's eve on 三层圆满 (2026-10-27, doc/gates-2026-10-27.md 古六 (b): he stands at 四层 as 褚先生 reads 「四层」; the rest of 四层 is 09-furnace's gate — was 四层圆满, which left the eve a stranding wait). 古七: each rise on the layer below it full (09-year's catch-up as 09-furnace). 古八: 腊八 on 八层圆满, 入秋 on 九层圆满 (the cliff's breakthrough then the player's own throw). 古九 has none. No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): every rise the book had is a gate here — or, where it stood inside a locked beat (第一路's 二层, 息壤's 四层), the next gate asks that layer and more; the one rise left is 入门 (零层 → 一层, the 小周天: 零层 holds no 修为, so nothing is skipped). A stage quest met is handed in (交差) and pays balance.json `pay.stage`, once (rules/gates.mjs).",
     "stage": {
       "title": {
         "zh": "阶段任务 · {step}",
@@ -361,7 +361,7 @@
       "h07": { "tier": "qi", "layer": 2,
         "gates": [{ "layer": 2, "scene": "wm-mijing", "exits": ["pay", "refuse"] }] },
       "h08": { "tier": "qi", "layer": 4,
-        "gates": [{ "layer": 4, "scene": "wm-qianye", "exits": ["eve"] }] },
+        "gates": [{ "layer": 3, "scene": "wm-qianye", "exits": ["eve"] }] },
       "h11": { "tier": "qi", "layer": 6,
         "gates": [
           { "layer": 4, "scene": "09-furnace", "exits": ["fire"] },

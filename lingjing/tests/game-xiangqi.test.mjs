@@ -206,3 +206,14 @@ test('rival turn: act waits, think answers, answer lays the reply in', () => {
   assert.equal(answer(done, m), done);
   assert.equal(answer(w, null), w);
 });
+
+// A story board names its endgame (tasks/h11.json `deal.puzzle`, 2026-10-27): 古七's 崖顶 mates in two, its 丹房 in three.
+test('deal.puzzle deals that endgame at its own level, over the seed and the level asked', () => {
+  const a = newGame('x', 1, { puzzle: 'chema' });
+  assert.equal(a.level, 3);
+  assert.equal(PUZZLES[3][a.pid].id, 'chema');
+  assert.equal(a.left, 3);
+  const b = newGame('y', 1, { puzzle: 'chuanxin' });
+  assert.deepEqual([b.level, PUZZLES[2][b.pid].id, b.left], [2, 'chuanxin', 2]);
+  assert.equal(newGame('z', 2, { puzzle: 'nothing' }).level, 2, 'an unknown puzzle: the level as ever');
+});

@@ -69,7 +69,7 @@ test('古三\'s gate scene: 零层 only — 一层 is 古四\'s 小周天', () =
   assert.equal(named(s), '练气零层');
 });
 
-test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 and no further, 息壤 lifts nothing, 古六 grinds 三层 and 四层', () => {
+test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 and no further, 息壤 lifts nothing, 古六 grinds 三层 to the eve (its gate since 2026-10-27, doc/gates-2026-10-27.md 古六 (b): he stands at 四层 as 褚先生 reads it), 四层 behind 09-furnace', () => {
   const th = content.ladder.tiers[0].thresholds;
   // (留给爹 waits on 喂饭桶 · 一根牛骨头 since 2026-10-21: played)
   const s0 = at('00-waimen', 'wm-diyilu', 'chaifang', ['00-prologue'], { step: 1, progress: th[1], tasks: { 'diyilu-niugu': { status: 'done' } } });
@@ -86,7 +86,7 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 and n
   assert.deepEqual([x.state.step, x.state.progress], [s.step, s.progress], '息壤 lifts nothing');
   s = { ...x.state, scene: 'wm-qianye', place: 'waimen', done_scenes: [...x.state.done_scenes, 'wm-kaikai', 'wm-chu'] };
   grind(s);
-  assert.equal(named(s), '练气四层', '古六: 三层 and 四层 ground');
+  assert.equal(named(s), '练气三层', '古六: 三层 ground to the eve, held there (the gate asks 三层圆满); 四层 is 09-furnace\'s');
   assert.ok(s.progress > threshold(content, s), 'full, and counting on');
 });
 

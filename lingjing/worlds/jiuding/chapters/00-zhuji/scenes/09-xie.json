@@ -46,16 +46,16 @@
   {
    "id": "go",
    "label": {
-    "zh": "上崖顶去",
-    "en": "Up to the clifftop"
+    "zh": "丹房里，那年",
+    "en": "In the pill house, that year"
    },
-   "means": "puts on the boots for good (顺风溜, worn in the 法衣 slot) and goes up to the cliff, where year five is spent",
+   "means": "puts on the boots for good (顺风溜, worn in the 法衣 slot) and goes on into year five: 碾药 at the pill house, then the cliff",
    "grant": {
     "table": "scene",
     "item": "shunfeng-liu"
    },
    "_grant": "A story thing (the 饭桶's, the 黑松岭 glide in 古八 spends it): on the way on, so a skipped board still hands it over.",
-   "next": "09-futian"
+   "next": "09-nianyao"
   }
  ],
  "_beats": "古七 (the per-回 plan, 2026-10-15; 年五开春, played): the 饭桶 eats the 鯥's hide and membrane and spits out the boots; 顺风溜 (xie-wind) plays 「迎着风，往后退了一步」 — ten 丈 a glide, 「噗，噗」 against the wind, three glides half the 丹田; the rest (`story_after`: 银月's first word of the winter, 「这双鞋，不是打架的，是跑的」, 祁长松's Foundation and the 老柏). The boots come with the way on. 2026-10-19 (the standing rule Hanli approved 10-19): xie-wind plays a 气走经脉 level (顺风溜 · 背后有风: the boots' 「鳃」 on a thread of qi, the glide a foot off the ground, the north wind turning) — task id, marks and pay kept. 2026-10-20 (the 调息 cut, Hanli: 「调息感觉太多了」 → 「可以」): **told** — the board is off, the passage reads whole (`story_after` merged back into `story` and `story_full`, word for word); 顺风溜 `xie-wind` is gone — the boots still come with the way on."

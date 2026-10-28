@@ -184,7 +184,8 @@ function take(content, s0, now0, exit, plan, fight) {
 }
 
 /* ── The explorer ── */
-export function explore(content, { fast = false, lang = 'zh', start = new Date('2026-09-29T09:00:00'), chapters = JUAN_ONE, limit = 20000 } = {}) {
+export function explore(content, { fast = false, lang = 'zh', start = new Date('2026-09-29T09:00:00'), chapters = JUAN_ONE, limit = 30000 } = {}) {
+  // `limit`: 30000 since 2026-10-27 — 卷一 holds 20023 distinct saves once 古七's years and 古六's 三层 eve land (19063 before); the cap is headroom, never the count.
   const reads = readsOf(content, chapters);
   const opts = { fast, reads };
   const nodes = new Map(); // key → {key, scene, path, edges:Set<key|END>, problems}

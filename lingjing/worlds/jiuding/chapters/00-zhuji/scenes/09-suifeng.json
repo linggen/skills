@@ -1,0 +1,109 @@
+{
+ "version": 1,
+ "id": "09-suifeng",
+ "chapter": "00-zhuji",
+ "hui": "h11",
+ "at": "houshan",
+ "season": "spring",
+ "_season": "年四开春",
+ "place": {
+  "zh": "沉鼎观 · 后山崖顶 · 年四开春",
+  "en": "Chending Temple · The clifftop · Spring of year four"
+ },
+ "_split": "2026-10-27 (doc/gates-2026-10-27.md 古七 (c), Hanli: 「按你的建议做」): 09-yishui's passage cut at 「随风，他是在沂水东岸学会的。」 — 秦雁's notch in the old pine and the 随风 lesson (年四开春) are this scene's, the book's own words; the red tablet on, 09-yishui's. Seven classic boards (~32 min) before 五层圆满's gate (09-yishui/night): 五子 with 秦雁, 拼图 of the 崖顶, 照着走 after the leaf, a 象棋残局, 华容道 to the 巽 square, 五子 with 瞿老, 拼图 of the 山门 — no kind twice running, each a step past 古四's and 古五's. Pays as 古七's boards: progress 5, and the board's 灵石 on its first clear. Outside every beat: the 观 is open while he reads it.",
+ "setup": {
+  "zh": "年四开春，瞿老教随风。那天崖顶上起风，瞿老站在巽那一格上，手里捏着一片叶子。",
+  "en": "In the spring of year four Elder Qu teaches following the wind. That day a wind rises on the clifftop; Elder Qu stands in the Xun square with a leaf between his fingers."
+ },
+ "recap": {
+  "zh": "秦雁在老松上刻了一道：「下个月，我再来。」年四开春瞿老教随风：「打不透的，别打。等它漏气。」",
+  "en": "Qin Yan cut a notch in the old pine: \"Next month, I'll come again.\" In the spring of year four Elder Qu taught following the wind: \"What you can't break through, don't strike. Wait for it to leak.\""
+ },
+ "cast": [],
+ "people": [
+  "neimen-shijie",
+  "qulao"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「下个月，我再来。」",
+    "「你定住了，看得见风起来。」",
+    "「打不透的，别打。等它漏气。」"
+   ],
+   "en": [
+    "\"Next month, I'll come again.\"",
+    "\"Once you're still, you can see the wind rise.\"",
+    "\"What you can't break through, don't strike. Wait for it to leak.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "秦雁把剑收回鞘里，拿剑鞘尖在崖边那棵老松上刻了一道：「下个月，我再来。」\n\n年四开春，教的是随风。那天崖顶上起风，瞿老站在巽那一格上，手里捏着一片叶子，松开，叶子飞起来，他的扫帚把便跟着那片叶子走，叶子往东，扫帚把往东，叶子打一个旋，扫帚把打一个旋，不快不慢，像一个人牵着一条狗。「你定住了，看得见风起来。」瞿老道，「看见了，别顶。顶是艮，你不是山。跟着它走半截，它的劲就卸了一半；剩下的一半，才是你的。」他念了一句书：「《庄子》{典=zhuangzi-liezi}里说，『列子御风而行，泠然善也』——列子踩着风走路，走得真轻快。底下还有一句：『犹有所待者也』。他还得等风。」他把扫帚靠回墙角，「这门剑诀，借的是风。借风的人，走得再轻，也得有风。祖师留下的只有半卷，到结丹为止；结丹往上，要的是不借东西的本事，这半卷里没有。你先借着。」临走，他又添了一句，像是顺口：「打不透的，别打。等它漏气。」",
+  "en": "Qin Yan sheathed her sword, and with the tip of the scabbard cut a notch in the old pine at the edge of the cliff: \"Next month, I'll come again.\"\n\nIn the spring of the fourth year, the lesson was following the wind. That day a wind rose on the clifftop. Elder Qu stood in the Xun square with a leaf between his fingers and let it go; the leaf flew up, and his broom handle followed it. The leaf went east, the broom handle went east; the leaf turned a circle, the broom handle turned a circle, not fast, not slow, like a man walking a dog on a lead. \"Once you're still, you can see the wind rise,\" said Elder Qu. \"Once you've seen it, don't push against it. Pushing is Gen, and you're not a mountain. Go with it half the way and half its strength is spent; the other half is yours.\" He recited a line: \"The *Zhuangzi*{典=zhuangzi-liezi} says, 'Liezi rode the wind and went, light and lovely.' Liezi walked on the wind, and walked so easily. And there's a line after it: 'Yet there was still something he depended on.' He still had to wait for wind.\" He leaned the broom back in the corner. \"This sword art borrows the wind. A man who borrows wind, however lightly he goes, still needs wind. The founder left only half a scroll, up to Core Formation; above Core Formation, what's wanted is the skill of not borrowing anything, and that isn't in this half. You borrow for now.\" As he left he added, as if in passing: \"What you can't break through, don't hit. Wait for it to leak.\""
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "suifeng-qinyan"
+  },
+  {
+   "card": "board",
+   "id": "suifeng-yading"
+  },
+  {
+   "card": "board",
+   "id": "suifeng-yezi"
+  },
+  {
+   "card": "board",
+   "id": "suifeng-canju"
+  },
+  {
+   "card": "board",
+   "id": "suifeng-xunwei"
+  },
+  {
+   "card": "board",
+   "id": "suifeng-qulao"
+  },
+  {
+   "card": "board",
+   "id": "suifeng-shanmen"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "suifeng-qinyan",
+   "suifeng-yading",
+   "suifeng-yezi",
+   "suifeng-canju",
+   "suifeng-xunwei",
+   "suifeng-qulao",
+   "suifeng-shanmen"
+  ]
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "那年入秋",
+    "en": "That autumn"
+   },
+   "means": "the spring and summer on the cliff over, goes on to the red tablet for the east bank of the Yi",
+   "beat": [],
+   "next": "09-yishui",
+   "needs": {
+    "task": "suifeng-shanmen"
+   },
+   "refuse": {
+    "zh": "崖顶上的功课还没做完。",
+    "en": "The clifftop's lessons aren't done."
+   }
+  }
+ ]
+}

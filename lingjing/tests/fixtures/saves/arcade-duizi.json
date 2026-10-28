@@ -15,8 +15,8 @@
   ],
   "tier": "qi",
   "step": 4,
-  "progress": 679,
-  "wealth": 944,
+  "progress": 630,
+  "wealth": 801,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -662,8 +662,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2135,
-   "wealth": 947
+   "progress": 2334,
+   "wealth": 804
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",

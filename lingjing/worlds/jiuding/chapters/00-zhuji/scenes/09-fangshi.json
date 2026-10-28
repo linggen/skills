@@ -68,12 +68,12 @@
   {
    "id": "autumn",
    "label": {
-    "zh": "那年入秋",
-    "en": "That autumn"
+    "zh": "年四开春",
+    "en": "Spring of year four"
    },
-   "means": "Elder Qu teaches going with the wind; the red tablet for the east bank of the Yi",
+   "means": "Elder Qu teaches going with the wind on the cliff (09-suifeng); the red tablet for the east bank of the Yi after it",
    "beat": [],
-   "next": "09-yishui",
+   "next": "09-suifeng",
    "needs": {
     "task": "fangshi-liuyun"
    },

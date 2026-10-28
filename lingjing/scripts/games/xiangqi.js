@@ -167,7 +167,13 @@ function fresh(level, pid) {
   return { level, pid, n: pz.n, board: parsePos(pz.pos), left: pz.n, sel: null, last: null, outcome: 'open' };
 }
 
-export function newGame(seed, level = 1) {
+/* `opts.puzzle` names a puzzle outright — a story board's own (tasks/world.json `deal.puzzle`: 古七's 崖顶 and 丹房 each
+   their own endgame, never one an earlier board dealt); else the seed picks one of the level's. */
+export function newGame(seed, level = 1, opts = {}) {
+  for (const [k, list] of Object.entries(PUZZLES)) {
+    const pid = list.findIndex((p) => p.id === opts?.puzzle);
+    if (pid >= 0) return fresh(Number(k), pid);
+  }
   const lv = PUZZLES[level] ? Number(level) : 1;
   const list = PUZZLES[lv];
   return fresh(lv, Math.floor(mulberry32(hash(String(seed) + ':' + lv)) * list.length));

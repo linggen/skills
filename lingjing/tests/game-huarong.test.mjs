@@ -343,11 +343,12 @@ test('keyboard-only: Q/E cycle the picked block in reading order, Esc puts it ba
   assert.match(m.html(s0, 'zh'), /Q\/E/);
 });
 
-// The story's four levels (worlds/jiuding/games.json; 井台 at wm-dianmao since 2026-10-27): every one a first encounter, none over 20 moves.
+// The story's five levels (worlds/jiuding/games.json; 井台 at wm-dianmao and 巽那一格 at 09-suifeng since 2026-10-27): none over 20 moves —
+// 巽那一格's 17 · 18 · 19 the climb past 井台's and 口子's (doc/gates-2026-10-27.md 古七).
 test('the story levels in games.json: each layout solvable, none over 20 moves', async () => {
   const { readFileSync } = await import('node:fs');
   const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url)));
-  const STORY = { crowd: [16, 13], jingtai: [14, 17, 17], kouzi: [12, 15, 19], wali: [12, 15, 19] };
+  const STORY = { crowd: [16, 13], jingtai: [14, 17, 17], kouzi: [12, 15, 19], wali: [12, 15, 19], yading: [17, 18, 19] };
   const seen = ladderOf(reg);
   assert.deepEqual(seen.map((l) => l.id).sort(), Object.keys(STORY).sort());
   for (const l of seen) assert.deepEqual(l.layouts[1].map((g) => solve(parseLayout(g))?.length), STORY[l.id], l.id);

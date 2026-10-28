@@ -1,0 +1,113 @@
+{
+ "version": 1,
+ "id": "09-nianyao",
+ "chapter": "00-zhuji",
+ "hui": "h11",
+ "at": "yaoyuan",
+ "season": "autumn",
+ "_season": "年五入秋",
+ "place": {
+  "zh": "沉鼎观 · 丹房 → 药园东角 · 年五",
+  "en": "Chending Temple · The pill house → The east corner of the herb garden · Year five"
+ },
+ "_split": "2026-10-27 (doc/gates-2026-10-27.md 古七 (c), Hanli: 「按你的建议做」): 09-futian's way on held 年五's 碾药 with 闵丹师 and 阿禾's 筑基 after its 七层; they are this scene's now, before 六层圆满's gate (09-futian/spar), the book's own words: `story` the 碾药 and the night of 阿禾's pill, `story_after` the next evening at the east corner (「收利息」). The one change is order: the 七层/入隙 paragraph (「那年秋天，他七层了」) stays on the way on, after the gate, so these two now stand before it — neither names his layer, and both are 年五's. Seven classic boards (~34 min): 象棋残局, 拼图 of the garden at night, 五子 with 闵丹师, 照着走, 象棋残局, 拼图 of the 正殿, 五子 with 阿禾 — no kind twice running, each a step past 年四's. Pays as 古七's boards: progress 5, and the board's 灵石 on its first clear.",
+ "setup": {
+  "zh": "看炉的牌子，你一直没交回去。丹房里，闵丹师那年教你碾药。",
+  "en": "The furnace-tending tablet you never handed back. In the pill house, that year Pill-master Min teaches you grinding."
+ },
+ "recap": {
+  "zh": "闵丹师教你碾药：「碾过了，药气跑了；碾不够，火进不去。」五年里的第三个秋天，阿禾先筑了基——「我先上去，替你看看上头什么样……收利息。」",
+  "en": "Pill-master Min taught you grinding: \"Grind too much and the medicine's breath escapes; not enough and the fire can't get in.\" In the third autumn of the five years Ahe laid her foundation first — \"I'll go up first and see what it's like up there for you… with interest.\""
+ },
+ "cast": [],
+ "people": [
+  "min-danshi",
+  "ahe"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "「黄精，碾到看不见丝。」",
+    "「我筑了。」",
+    "「收利息。」"
+   ],
+   "en": [
+    "\"Solomon's seal, grind it till you can't see a fibre.\"",
+    "\"I've laid it.\"",
+    "\"With interest.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "看炉的牌子，他一直没交回去。丹房里，闵丹师那年教他碾药。碾药是坐在矮凳上，膝盖上一只铜碾船，一只脚踩着碾轮，来来回回。「黄精，碾到看不见丝。」闵丹师道，「当归，碾到闻不见甜。碾过了，药气跑了；碾不够，火进不去。」他碾了一冬，碾到闭着眼睛，手指头一捻，便知道哪一样碾到了哪一步。闵丹师从来不夸人，有一回拿起他碾的黄精闻了闻，没说话，倒进了炉里。那一炉出了三颗一纹的。闵丹师数完了纹，看了他一眼。\n\n五年里的第三个秋天，阿禾十五，《阴符经》头一篇「生」，读到了头。观主把她叫进正殿后头的静室，从袖子里摸出一只小瓷瓶，倒出一颗丹，搁在她手心里，道：「今夜就吃了它。」没有大比，没有名录，周衡的账上，也没有这一笔。那夜没有月亮，锅盖云扣在正殿顶上。她咽下那颗丹，盘腿坐下，丹田里先是一暖，跟着便像开春的地，冻了一冬的土一层一层地松开，底下有什么东西一下一下地往上顶。她怕过一阵——怕自己撑不住，怕辜负了师父袖子里那一颗丹；怕得最多的，却是爹。老周一辈子种那几亩坡田，地薄一年，他的背便弯一分；她进山门那天，他站在篱笆后头，没有送。她想着爹那个弯下去的背，丹田里那股往上顶的东西忽然不顶了，软了，慢了，像一场雨，落进了干透的地里。\n\n那一夜，锅盖云底下起了一阵没来由的暖风，绕着正殿转了三圈，秋虫都叫它吹醒了，叫了半宿。云缝里漏下一线青光，细得像一根丝，直直地落在静室的屋顶上，落到天快亮才收。锅盖云底下，正殿屋脊那一溜瓦缝里，一夜之间钻出一排细细的青芽，秋天里，绿得发亮；药园东角那三棵瘪了半年的禾，到天亮，穗子沉了一沉。观主在静室门外坐了一夜，这些他都看见了。天亮他进去看她，她坐在蒲团上，眼睛是红的，脸上却在笑。观主只说了一句：「《阴符》五篇，『生』你读完了。从今天起，你读第二篇，『长』。」\n\n阿禾点了点头。她心里想的却是另一件事：这件事，头一个告诉谁。",
+  "en": "The furnace-tending tablet he never handed back. In the pill house, that year Pill-master Min taught him grinding. You ground sitting on a low stool with a copper grinding boat on your knees, one foot working the grinding wheel back and forth. \"Solomon's seal, grind it till you can't see a fibre,\" said Pill-master Min. \"Angelica, grind it till you can't smell the sweetness. Grind too much and the medicine's breath escapes; not enough and the fire can't get in.\" He ground all winter, till with his eyes closed he could tell with a pinch of his fingers how far each herb had been ground. Pill-master Min never praised anyone. Once he picked up some solomon's seal Xiaoman had ground, smelled it, said nothing, and tipped it into the furnace. That furnace gave three one-line pills. When Pill-master Min had counted the lines, he gave Xiaoman a look.\n\nIn the third autumn of the five years, Ahe was fifteen, and she read to the end of \"Birth\", the first chapter of *The Hidden Talisman Classic*. The Abbot called her into the quiet room behind the main hall, took a little porcelain bottle from his sleeve, tipped out a pill and set it in her palm, and said, \"Take it tonight.\" No contest, no list, and no line for it in Zhou Heng's ledger. That night there was no moon; a pot-lid cloud sat over the roof of the main hall. She swallowed the pill and sat cross-legged, and first her dantian warmed, then it was like the ground in spring, a winter's frozen soil loosening layer by layer, with something underneath pushing up, push after push. She was afraid for a while: afraid she couldn't hold, afraid of failing the pill in her master's sleeve. But what she feared most was Pa. Old Zhou had farmed those few mu of slope fields all his life, and every thin year his back bent a little more. The day she came through the mountain gate he stood behind the fence and didn't see her off. She thought of Pa's bent back, and the thing pushing up in her dantian suddenly stopped pushing, went soft, went slow, like rain falling into ground dried right through.\n\nThat night, under the pot-lid cloud, a warm wind rose out of nowhere and circled the main hall three times, waking the autumn insects, who sang half the night. A thread of blue light leaked through a gap in the cloud, thin as a silk thread, and fell straight on the roof of the quiet room, and stayed till almost dawn. Under the pot-lid cloud, in the gaps between the tiles along the ridge of the main hall, a row of thin green shoots came up overnight, shining green in the autumn; and in the east corner of the herb garden, the three grain stalks that had been empty for half a year, by dawn, their ears had grown heavier. The Abbot sat outside the quiet room all night, and saw all of it. At dawn he went in to see her. She sat on the cushion with red eyes, but her face was smiling. The Abbot said only one thing: \"Of the five chapters of the *Hidden Talisman*, you've finished 'Birth'. From today, you read the second chapter: 'Growth'.\"\n\nAhe nodded. But what she was thinking about was something else: who to tell first."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "nianyao-canju"
+  },
+  {
+   "card": "board",
+   "id": "nianyao-yaoyuan"
+  },
+  {
+   "card": "board",
+   "id": "nianyao-mindanshi"
+  },
+  {
+   "card": "board",
+   "id": "nianyao-niannian"
+  },
+  {
+   "card": "board",
+   "id": "nianyao-shuangma"
+  },
+  {
+   "card": "board",
+   "id": "nianyao-jingshi"
+  },
+  {
+   "card": "board",
+   "id": "nianyao-ahe"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "nianyao-canju",
+   "nianyao-yaoyuan",
+   "nianyao-mindanshi",
+   "nianyao-niannian",
+   "nianyao-shuangma",
+   "nianyao-jingshi",
+   "nianyao-ahe"
+  ]
+ },
+ "story_after": {
+  "zh": "第二天傍晚，小满巡园巡到东角，照例在矮墙上坐下。阿禾蹲在那几棵禾跟前，掌心悬在土上，头也不回，道：「我筑了。」\n\n小满道：「筑了什么？」话一出口，他自己便懂了。她还是那个背影，两根辫子，一件洗白了的袄；可他往她身上一看，从前看得见的那一点灵力，看不见了，像一盏灯，给人罩上了灯罩。\n\n他先出来的是一声笑，真笑，笑得从矮墙上跳了下来：「真的？」阿禾道：「昨夜。」小满道：「疼不疼？」阿禾想了一想，道：「疼。比你大比那天疼一点。」她又低声补了一句，像怕地里听见：「还有一样。昨夜那一下，丹田里多了一穗谷。」小满低头看她的手：什么也没有，只有她掌心底下那一小撮土，在她话音落下的时候，轻轻拱了一下。她把手收进袖子里，没再说。\n\n他还在笑。\n\n阿禾回过头来，看了他一眼。天擦黑了，她那张鹅蛋脸半边映着西边的余光，眉毛细细弯弯，一双眼睛清清亮亮的，看人的时候像在心里数着什么。小满忽然觉得，她不知什么时候长成了这个样子；他把眼睛挪开，去看那几棵禾，说不上来方才那一下是什么。她把悬在土上的那只手收了回来，拍了拍衣襟，一本正经地道：「我先上去，替你看看上头什么样。哪一级滑，哪儿有坑，一样一样记下来，等你上来，交给你。」顿了一顿，「收利息。」\n\n小满道：「多少？」阿禾道：「还没算。你上来得越晚，利息越多。」\n\n小满又笑了。这一回，一半是真笑，一半是认了。那天夜里，他在柴房里坐到蜡烛烧尽了，在黑地里小声道：「……利息，少算一点。」",
+  "en": "The next evening, Xiaoman's round brought him to the east corner, and as usual he sat on the low wall. Ahe was squatting by the grain stalks, her palm held over the soil, and without turning her head she said, \"I've laid it.\"\n\nXiaoman said, \"Laid what?\" The moment it was out, he understood. She was the same back, two plaits, a jacket washed pale; but when he looked at her, the bit of spiritual power he used to be able to see on her was gone, like a lamp someone had put a shade over.\n\nWhat came out of him first was a laugh, a real laugh, and he jumped down off the low wall laughing: \"Really?\" Ahe said, \"Last night.\" Xiaoman said, \"Did it hurt?\" Ahe thought about it and said, \"It hurt. A bit more than you on contest day.\" She added in a low voice, as if afraid the soil would hear: \"There's one more thing. Last night, at that moment, an ear of grain appeared in my dantian.\" Xiaoman looked down at her hand: nothing there, only the little pinch of soil under her palm, which, as she finished speaking, gently heaved. She drew her hand into her sleeve and said no more.\n\nHe was still laughing.\n\nAhe turned her head and looked at him. It was getting dark; one side of her oval face caught the last light from the west, her eyebrows thin and curved, her eyes clear and bright, and when she looked at someone it was as if she were counting something in her head. Xiaoman suddenly felt she'd grown into this without his noticing when. He moved his eyes away to the grain stalks, and couldn't have said what that moment just now had been. She drew back the hand held over the soil, patted her front, and said, very serious: \"I'll go up first and look at what it's like up there for you. Which step is slippery, where the holes are, I'll write it all down, one by one, and when you come up, I'll hand it over.\" A pause. \"With interest.\"\n\nXiaoman said, \"How much?\" Ahe said, \"Not worked out yet. The later you come up, the more interest.\"\n\nXiaoman laughed again. This time it was half a real laugh and half giving in. That night he sat in the woodshed till the candle burned out, and said quietly in the dark: \"...Go easy on the interest.\""
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "上崖顶去",
+    "en": "Up to the clifftop"
+   },
+   "means": "goes up to the cliff, where the rest of year five is spent, and 秦雁 comes once a month",
+   "beat": [],
+   "next": "09-futian",
+   "needs": {
+    "task": "nianyao-ahe"
+   },
+   "refuse": {
+    "zh": "丹房和药园的事还没完。",
+    "en": "The pill house and the garden aren't done with you."
+   }
+  }
+ ]
+}
