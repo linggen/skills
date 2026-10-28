@@ -23,8 +23,8 @@
 
 import { askInChat, reachable } from './drawguess-ling.js';
 import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './jinchat-rules.js';
-import { stubLine } from './jinchat-games.js';
-import { guessGame, riddleGame, tableOf } from './jinchat-play.js';
+import { dictOf, kindOf, stubLine } from './jinchat-games.js';
+import { chainGame, coupletGame, guessGame, riddleGame, tableOf } from './jinchat-play.js';
 
 export const meta = {
   id: 'jinchat',
@@ -35,6 +35,7 @@ export const meta = {
   rows: true, // the 游戏厅's 试玩 of a story row plays that row's chat (arcade-board.js `row=`)
 };
 
+const PLAY = { riddle: riddleGame, guess: guessGame, couplet: coupletGame, chain: chainGame };
 const TIMEOUT_MS = 45000; // Ling's prompt is the whole game's: a turn is 7–30 s (live 10-22)
 
 const T = {
@@ -46,6 +47,12 @@ const T = {
     twenty: '二十问 · 猜你心里的动物', think: '心里想好一种动物，就在下面这些里挑。只许问是不是，{max} 问之内来猜。想好了，点「想好了」。',
     ready: '想好了', yes: '是', no: '不是', unknown: '不知道', right: '对', wrong: '不对', asked: '已问 {n}/{max}',
     tell: '没猜着。说出来，你心里是什么：', itWas: '它是……', tellGo: '说',
+    duilian: '对对子', upLabel: '上联', downLabel: '下联', downIt: '对下联……', downGo: '对', srcBy: '——{src}',
+    why: { len: '上联 {n} 个字，你对了 {have} 个', tail: '下联末一个字该是平声，「{ch}」是仄声', same: '「{ch}」和上联同一个位置是同一个字',
+      copy: '「{ch}」是上联里用过的字', echo: '上联叠了字，下联同一个位置也该叠', form: '字数平仄都合，可不是这一副的下联' },
+    jielong: '成语接龙', chainRule: '首字接末字 · 接满 {links} 条', chainAt: '已接 {n}/{links}', chainNeed: '下一条的头一个字',
+    linkIt: '「{ch}」字开头的成语……', linkGo: '接', chainStuck: '{name}接不上了。',
+    chainWhy: { unknown: '「{w}」不在成语谱里，换一个（不算错）', mismatch: '得以「{ch}」字开头', used: '「{w}」用过了' },
   },
   en: {
     type: 'Say something…', send: 'Send', typing: 'typing…', left: '{n} lines left', done: 'Chat over', end: 'Leave it there',
@@ -55,6 +62,12 @@ const T = {
     twenty: 'Twenty questions · the animal you think of', think: 'Think of an animal from the ones below. Yes-or-no questions only, and a guess within {max}. Ready? Tap "Got one".',
     ready: 'Got one', yes: 'Yes', no: 'No', unknown: 'Don\'t know', right: 'Right', wrong: 'Wrong', asked: 'Asked {n}/{max}',
     tell: 'Not guessed. Say what you thought of:', itWas: 'It was…', tellGo: 'Say',
+    duilian: 'Couplets', upLabel: 'First line', downLabel: 'Second line', downIt: 'The second line…', downGo: 'Match', srcBy: '— {src}',
+    why: { len: 'the first line has {n} characters, yours {have}', tail: 'the second line should end on a level tone; 「{ch}」 is oblique', same: '「{ch}」 stands where the first line has it',
+      copy: '「{ch}」 is the first line\'s', echo: 'the first line repeats a character; the second should repeat in the same place', form: 'the form holds, but it is not this couplet\'s line' },
+    jielong: 'Idiom chain', chainRule: 'Start from the last character · {links} links', chainAt: 'Linked {n}/{links}', chainNeed: 'the next idiom starts with',
+    linkIt: 'An idiom starting with 「{ch}」…', linkGo: 'Link', chainStuck: '{name} cannot go on.',
+    chainWhy: { unknown: '「{w}」 is not in the idiom list; try another (no miss)', mismatch: 'it must start with 「{ch}」', used: '「{w}」 is used already' },
   },
 };
 const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -63,8 +76,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const WORLD = new URL('../../worlds/jiuding/', import.meta.url);
-let regP = null, peopleP = null, twentyP = null;
+let regP = null, peopleP = null, twentyP = null, tonesP = null, dictP = null;
 const twentyOf = () => (twentyP ??= fetch(new URL('aigames.json', WORLD)).then((r) => r.json()).then((d) => tableOf(d.twenty)));
+const tonesOf = () => (tonesP ??= fetch(new URL('tones.json', WORLD)).then((r) => r.json()));
+const chengyuOf = () => (dictP ??= fetch(new URL('chengyu.json', WORLD)).then((r) => r.json()).then(dictOf));
 const chatsOf = () => (regP ??= fetch(new URL('games.json', WORLD)).then((r) => r.json())
   .then((reg) => reg.games.find((g) => g.id === 'jinchat' && !g.task)?.data?.chats ?? {}).catch(() => ({})));
 const peopleOf = () => (peopleP ??= fetch(new URL('people.json', WORLD)).then((r) => r.json())
@@ -96,7 +111,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     const mine = line.who === 'me';
     const c = g.cast.find((x) => x.id === line.who);
     const name = !mine && g.cast.length > 1 ? `<i class="g-jc-name">${esc(c?.name ?? '')}</i>` : '';
-    const body = line.card === 'video' ? `<span class="g-jc-video"><b>▶</b><span>${esc(line.text)}</span></span>` : esc(line.text);
+    const body = line.html ? line.html : line.card === 'video' ? `<span class="g-jc-video"><b>▶</b><span>${esc(line.text)}</span></span>` : esc(line.text);
     return `<div class="g-jc-row${mine ? ' is-me' : ''}">${mine ? '' : avatar(c)}<div class="g-jc-col">${name}<div class="g-jc-bub">${body}</div></div></div>`;
   };
   const $ = (sel) => root.querySelector(sel);
@@ -230,11 +245,11 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const playGame = async () => {
     const ctx = {
       root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, react, settle, sound, foot, log,
-      table: twentyOf,
+      table: twentyOf, tones: tonesOf, dict: chengyuOf,
       ask: (text) => (g.live && data.seam !== 'stub' ? send(text, 60000) : Promise.resolve({ text: '' })),
     };
-    const kind = g.chat.game.kind;
-    const r = await (kind === 'guess' ? guessGame(ctx) : riddleGame(ctx));
+    // Which game plays is the chat's, in this tongue (对对子 and 成语接龙 play in Chinese; in English, the riddle beside them).
+    const r = await (PLAY[kindOf(g.chat.game, lang)] ?? riddleGame)(ctx);
     end(r);
   };
 
@@ -426,10 +441,44 @@ const STYLE = `
 .g-jc.is-face .g-jc-gbtn { box-shadow: none; border-width: 1.5px; }
 .g-jc.is-face .g-jc-gbtn.is-yes, .g-jc.is-face .g-jc-gbtn.is-main { background: #6f7f3a; }
 .g-jc.is-face .g-jc-gbtn.is-no { background: #9a3b2a; }
+/* 对对子: a pair of red scrolls on wooden rods, 洒金 flecks, ink characters top to bottom; 上联 right, 下联 left. */
+.g-jc-duilian, .g-jc-jl { width: min(100%, 420px); display: flex; flex-direction: column; align-items: center; text-align: center; font-family: var(--serif, serif); }
+.g-jc-dl-label { font-style: normal; font-size: 11.5px; letter-spacing: .18em; color: #9a3b2a; margin-bottom: 6px; }
+.g-jc-dl-pair { display: flex; gap: 26px; justify-content: center; align-items: flex-start; }
+.g-jc-dl-scroll { position: relative; display: flex; flex-direction: column; align-items: center; animation: g-jc-pop .3s ease-out; }
+.g-jc-dl-rod { width: 46px; height: 7px; border-radius: 4px; background: linear-gradient(#8a5a2b, #4e3015); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.g-jc-dl-text { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 36px; padding: 8px 0; margin: -1px 0;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 214, 120, .55) 0 1px, transparent 1.6px) 0 0 / 11px 13px,
+    radial-gradient(circle at 70% 70%, rgba(255, 214, 120, .4) 0 1px, transparent 1.5px) 0 0 / 9px 17px, linear-gradient(#c92a1e, #a91d14);
+  box-shadow: 2px 3px 0 rgba(43, 34, 25, .35), inset 0 0 0 1.5px rgba(120, 20, 10, .45); }
+.g-jc-dl-c { display: grid; place-items: center; width: 26px; height: 26px; font-size: 21px; font-weight: 700; color: #1a0f08; text-shadow: 0 0 1px rgba(255, 220, 140, .4); }
+.g-jc-dl-c.is-blank::after { content: ''; width: 18px; height: 18px; border: 1.5px dashed rgba(255, 228, 170, .55); border-radius: 2px; }
+.g-jc-dl-gap { height: 9px; }
+.g-jc-dl-text.is-his .g-jc-dl-c { animation: g-jc-ink .5s ease-out both; }
+.g-jc-dl-text.is-shown .g-jc-dl-c { color: rgba(30, 15, 8, .55); }
+.g-jc-dl-scroll em { font-style: normal; font-size: 11px; color: var(--jc-dim); margin-top: 3px; letter-spacing: .2em; }
+.g-jc-dl-why { margin: 6px 0 0; font-size: 13px; color: #9a3b2a; }
+.g-jc-duilian .g-jc-hints { color: #6b4d12; }
+.g-jc-duilian .g-jc-ans { font-weight: 500; font-size: 12.5px; color: var(--jc-dim); }
+.g-jc-chips.is-lines .g-jc-chip { font-family: var(--serif, serif); letter-spacing: .08em; }
+/* 成语接龙: each idiom four paper tiles, the link's head and tail sealed red; beads for his links. */
+.g-jc-jl { padding: 8px 14px 10px; border-radius: 3px; background: #fff3dc; box-shadow: 2px 4px 0 rgba(34, 32, 28, .3), 0 0 0 1px rgba(150, 40, 20, .3); }
+.g-jc-jl-rule { margin: 0; font-size: 14px; font-weight: 700; }
+.g-jc-jl-beads { display: flex; gap: 6px; margin: 7px 0 0; }
+.g-jc-jl-beads b { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid #9a3b2a; background: #fbf6ea; transition: background .3s; }
+.g-jc-jl-beads b.is-on { background: radial-gradient(circle at 35% 35%, #f07a5c, #b3241a); }
+.g-jc-tiles { display: inline-flex; gap: 3px; }
+.g-jc-tile { display: grid; place-items: center; width: 30px; height: 32px; font-family: var(--serif, serif); font-size: 19px; font-weight: 700; color: #2b2219;
+  background: linear-gradient(#fffaf0, #f1e4c8); border: 1.5px solid #2b2219; border-radius: 4px; box-shadow: 0 2px 0 #b8a27a; }
+.g-jc-tile.is-tail, .g-jc-tile.is-head { color: #fff6e6; background: radial-gradient(circle at 40% 35%, #e0503a, #a51d13); border-color: #6e0d08; }
+.g-jc-row .g-jc-bub:has(> .g-jc-tiles) { padding: 6px 7px; }
+.g-jc-need { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 6px; font-family: var(--serif, serif); font-size: 22px; font-weight: 800;
+  color: #fff6e6; background: radial-gradient(circle at 40% 35%, #e0503a, #a51d13); border: 2px solid #6e0d08; transform: rotate(-3deg); }
+@keyframes g-jc-ink { from { opacity: 0; transform: scale(1.4); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes g-jc-swing { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
 @keyframes g-jc-pop { from { transform: translateY(6px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes g-jc-dot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
 @keyframes g-jc-blink { 50% { opacity: .25; } }
 @media (max-width: 600px) { .g-jc { height: min(520px, 64dvh); border-radius: 18px; } .g-jc-col { max-width: 80%; } }
-@media (prefers-reduced-motion: reduce) { .g-jc-row, .g-jc-typing span, .g-jc-rec, .g-jc-lan { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .g-jc-row, .g-jc-typing span, .g-jc-rec, .g-jc-lan, .g-jc-dl-scroll, .g-jc-dl-c { animation: none !important; } }
 `;

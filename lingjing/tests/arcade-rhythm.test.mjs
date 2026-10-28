@@ -80,6 +80,25 @@ test('no story board follows one of its own kind in reading order (the kept pair
   assert.deepEqual(Object.keys(KEPT_PAIRS).filter((k) => !met.includes(k)), [], 'a kept pair no longer back to back: drop it from KEPT_PAIRS');
 });
 
+/* No two 对话 word games of one kind back to back within a 回 (2026-10-27: almost every 古 chat had become a 灯谜 — 「先替我
+   做决定」): the chats of a 回, in reading order, the boards between them aside, alternate 灯谜 · 对对子 · 成语接龙 · 二十问 —
+   the kind the Chinese plays (jinchat-games.js kindOf). A pair kept here needs its reason. */
+const KEPT_CHAT_PAIRS = {};
+test('no two chats of one game kind back to back within a 回 (灯谜 · 对对子 · 成语接龙 · 二十问)', async () => {
+  const { kindOf } = await import('../scripts/games/jinchat-games.js');
+  const chats = REG.games.find((g) => g.id === 'jinchat' && !g.task).data.chats;
+  const met = [], kinds = new Set();
+  for (const c of TABLE.chapters) for (const h of c.huis) {
+    const row = h.items.filter((x) => x.kind === 'board' && REG.games[x.n]?.id === 'jinchat').map((x) => ({ id: x.id, chat: chats[REG.games[x.n].data.chat] }));
+    const games = row.filter((x) => x.chat?.game).map((x) => ({ id: x.id, kind: kindOf(x.chat.game, 'zh') }));
+    for (const g of games) kinds.add(g.kind);
+    for (let i = 1; i < games.length; i++) if (games[i].kind === games[i - 1].kind) met.push(`${games[i - 1].id}>${games[i].id}`);
+  }
+  assert.deepEqual(met.filter((k) => !KEPT_CHAT_PAIRS[k]), [], 'two of a kind back to back in a 回: give one another classic');
+  assert.deepEqual(Object.keys(KEPT_CHAT_PAIRS).filter((k) => !met.includes(k)), []);
+  for (const k of ['riddle', 'couplet', 'chain', 'guess']) assert.ok(kinds.has(k), `${k} in the book`);
+});
+
 /* Never the same level twice, and the climb goes on (Hanli 10-27: 「最好小游戏关卡不重复, 比如古线玩过的关卡, 到今线换一个关卡,
    游戏类型不变」 · 「游戏难度可以延续, 因为玩家在古线已经熟悉了小游戏, 后面可以适当难一些」): along the main line, 古 · 今 as
    one reading, each story board deals what look.mjs deals it (dealOf). Its layout — the level less its words, art and id —

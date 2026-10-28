@@ -17,6 +17,8 @@
 // — each handed the page's verdict as a fact and never the answer before he has it. No model, every game still plays:
 // the questions' plain wording is data, and the book's own lines close it.
 
+import { checkCouplet, hanOf } from '../couplet.js';
+
 const pick = (v, lang) => (v == null ? '' : typeof v === 'string' ? v : v[lang] ?? v.zh ?? '');
 const list = (v, lang) => (Array.isArray(v) ? v : v?.[lang] ?? v?.zh ?? []);
 const fill = (t, o) => String(t).replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -153,6 +155,119 @@ export function guessSummary(table, st, { said = '' } = {}, lang = 'zh') {
   return a ? `${st.n} 问猜中了${pick(a.name, 'zh')}` : `${st.n} 问没猜中${said ? `，他心里是：${said}` : ''}`;
 }
 
+/* ════════ Which game, in which tongue ════════ */
+
+/** The kind a chat's game plays in this language: a language's block may carry its own `kind` (对对子 and 成语接龙 play
+    in Chinese; in English the same chat keeps a riddle, `en.kind: 'riddle'` — a couplet or an idiom chain does not
+    translate). */
+export const kindOf = (game, lang = 'zh') => game?.[lang]?.kind ?? game?.kind ?? 'riddle';
+
+/* ════════ 对对子 ════════ */
+
+/** The 对子 as this language plays it: `{ up, answers, hints, choices, tries, src }`. The 上联 and every accepted 下联
+    are a classic's (`src`: the book or the hall it hangs in); the page judges by the list, never by taste. */
+export function coupletOf(game, lang = 'zh') {
+  const g = game?.[lang] ?? game?.zh ?? {};
+  return {
+    up: String(g.up ?? ''),
+    answers: list(g.answers, lang),
+    hints: (g.hints ?? []).map((h) => pick(h, lang)),
+    choices: list(g.choices, lang),
+    tries: Number(game?.tries) || 3,
+    src: pick(g.src, lang),
+    kind: pick(g.label ?? game?.label, lang),
+  };
+}
+
+const hanJoin = (s) => hanOf(s).join('');
+/** His 下联, judged by the data alone: 'right' (one of the accepted 下联, its characters alone compared) · 'wrong' · 'empty'. */
+export function checkDown(c, raw) {
+  const said = hanJoin(raw);
+  if (!said) return 'empty';
+  return c.answers.some((a) => hanJoin(a) === said) ? 'right' : 'wrong';
+}
+
+/* A 上联's repeats (花开花落: the 1st and 3rd the same) the 下联 answers in kind (云卷云舒), and repeats nothing the 上联 does not. */
+const echoOk = (up, down) => up.every((c, i) => up.every((d, j) => (c === d) === (down[i] === down[j])));
+export const FREE = '之乎者也而以于其兮';
+/** What is wrong with a 下联's form, as facts for the miss (couplet.js's checks, plus the repeats): the first that fails,
+    `{ id, … }` — `len` (n, have) · `tail` (ch: ends 仄) · `same` (ch: the 上联's at its place) · `copy` (ch) · `echo` —
+    or null when the form holds (then it is only not this couplet's 下联). A polyphone or an unknown tone never fails. */
+export function shapeOf(c, raw, tones) {
+  const up = hanOf(c.up), down = hanOf(raw);
+  const f = checkCouplet(tones, c.up, raw, { free: FREE });
+  if (f.checks.len !== 'ok') return { id: 'len', n: up.length, have: down.length };
+  if (f.checks.tail === 'bad') return { id: 'tail', ch: down.at(-1) };
+  if (f.checks.same === 'bad') return { id: 'same', ch: down.find((x, i) => x === up[i]) };
+  if (f.checks.copy === 'bad') return { id: 'copy', ch: f.shared[0] };
+  if (!echoOk(up, down)) return { id: 'echo' };
+  return null;
+}
+
+/* ════════ 成语接龙 ════════ */
+
+/** The chain as this language plays it: `{ start, links, tries }` — the person's opening idiom, his links to win. */
+export function chainOf(game, lang = 'zh') {
+  const g = game?.[lang] ?? game?.zh ?? {};
+  return { start: String(g.start ?? ''), links: Number(g.links) || 3, tries: Number(game?.tries) || 3, kind: pick(g.label ?? game?.label, lang) };
+}
+
+/** The dictionary (worlds/<id>/chengyu.json `words`, the commonest first) as a lookup. */
+export function dictOf(doc) {
+  const words = String(doc?.words ?? '').split(/\s+/).filter(Boolean);
+  const byFirst = new Map();
+  for (const w of words) { const k = [...w][0]; if (!byFirst.has(k)) byFirst.set(k, []); byFirst.get(k).push(w); }
+  return { words, set: new Set(words), byFirst };
+}
+
+const lastOf = (w) => [...w].at(-1);
+export const freshChain = (chain) => ({ said: [chain.start], who: ['them'], links: 0, misses: 0, hints: 0, choices: false });
+/** The character his next idiom must start with. */
+export const needOf = (st) => lastOf(st.said.at(-1));
+/** The unused idioms that follow on from a character, the commonest first. */
+export const nextsOf = (dict, ch, used) => (dict.byFirst.get(ch) ?? []).filter((w) => !used.includes(w));
+
+/** His link, judged by the dictionary alone: `{ v, word }` — v 'empty' · 'unknown' (not in the list: no miss) · 'used' ·
+    'mismatch' (it does not start with the character) · 'right'. */
+export function checkLink(dict, st, raw) {
+  const word = hanJoin(raw);
+  if (!word) return { v: 'empty', word };
+  if ([...word][0] !== needOf(st) && dict.set.has(word)) return { v: 'mismatch', word };
+  if (!dict.set.has(word)) return { v: [...word][0] === needOf(st) || [...word].length !== 4 ? 'unknown' : 'mismatch', word };
+  if (st.said.includes(word)) return { v: 'used', word };
+  return { v: 'right', word };
+}
+
+/** The person's link after his: the commonest that follows on and leaves him three or more to choose from (else one or
+    more; else none — they cannot go on, and he has won). The page's pick, never the model's. */
+export function replyOf(dict, said) {
+  const cands = nextsOf(dict, lastOf(said.at(-1)), said);
+  const room = (w) => nextsOf(dict, lastOf(w), [...said, w]).length;
+  return cands.find((w) => room(w) >= 3) ?? cands.find((w) => room(w) >= 1) ?? null;
+}
+
+/** A link played: his (`who: 'me'`) or theirs. */
+export const playLink = (st, word, who) => ({ ...st, said: [...st.said, word], who: [...st.who, who], links: st.links + (who === 'me' ? 1 : 0), misses: who === 'me' ? 0 : st.misses });
+
+/** The way on, for a hint or the choices: the commonest idiom that follows. */
+export const wayOn = (dict, st) => nextsOf(dict, needOf(st), st.said)[0] ?? null;
+/** The k-th hint (1, 2): the way on, its first k+1 characters showing (「欺人□□」). */
+export const chainHint = (dict, st, k) => { const w = wayOn(dict, st); return w ? [...w].map((c, i) => (i <= k ? c : '□')).join('') : ''; };
+/** Four to pick from, one right: the way on, and three that hold the character but not at the head (自欺欺人 for 欺),
+    in a fixed shuffle. */
+export function chainChoices(dict, st) {
+  const ch = needOf(st), right = wayOn(dict, st);
+  if (!right) return [];
+  const others = dict.words.filter((w) => w !== right && [...w].indexOf(ch) > 0 && !st.said.includes(w)).slice(0, 3);
+  for (const w of dict.words) { if (others.length >= 3) break; if ([...w][0] !== ch && !others.includes(w) && !st.said.includes(w)) others.push(w); }
+  const four = [right, ...others];
+  const k = [...ch].reduce((n, c) => n + c.codePointAt(0), 0) % 4;
+  return [...four.slice(4 - k), ...four.slice(0, 4 - k)];
+}
+
+/** How a chain came out: his links all in, no hint and no choices → 3; with them → 2; skipped → 1. Always `won`. */
+export const chainOutcome = ({ done = false, hints = 0, choices = false } = {}) => riddleOutcome({ solved: done, hints, choices });
+
 /* ════════ Their words: the hidden lines (facts only) ════════ */
 
 const W = {
@@ -170,6 +285,18 @@ const W = {
     bank: '这一局是二十问反着玩：他心里想好一种动物，你们只问是或不是，来猜。下面每个问题，照你们平常说话的样子各改写成一句（意思不变，还是只能答是或不是），一行一个，照「编号｜名字：问句」写，名字轮着来；最后一行写「guess｜名字：……{x}……？」——猜的那一句，{x} 原样留着。整段从第一行到最后一行用一对 <!-- 和 --> 包起来（页面读它，聊天里不显示），不要别的字。',
     bankQ: '{id}｜{q}',
     result: '二十问完了（页面判的）：{summary}。说一句收尾，别改这个结果。',
+    couplet: '这一局是对对子：{names}出上联，页面上已经写着——「{up}」{kind}。他对下联，对没对上，页面判。',
+    cOpen: '你先开口，照你平常说话的样子叫他对下联（上联别重复，下联一个字也别说，别替他对）。',
+    cMiss: '他对：「{guess}」。页面判了：没对上（{why}）。下联别说破，也别替他对。回他一句——损他也行，激他也行。{hint}',
+    cSolved: '他对上了：「{guess}」（页面判的）。用一句话认了。',
+    cSkip: '他不对了，跳过；页面亮出了下联：「{answer}」。回他一句，收个尾。',
+    chain: '这一局是成语接龙：{names}先出「{start}」，他接；下一条的头一个字，得是上一条的末一个字，接满{links}条算他赢。接没接上，页面判。',
+    lOpen: '你先开口，照你平常说话的样子叫他接（只说你出的那一条，别替他接，也别提示他）。',
+    lLink: '他接「{guess}」，页面判了：接上了（{n}/{links}）。你接的是「{mine}」，页面已经摆出来了。回他一句，可以念出「{mine}」；别替他想下一条。',
+    lMiss: '他接「{guess}」，页面判了：没接上（{why}）。别替他接，也别提示。回他一句。',
+    lDone: '他接满了{links}条（页面判的），最后一条是「{guess}」。用一句话认了。',
+    lStuck: '他接「{guess}」，你接不上了（页面翻遍了成语谱）。认个输，一句话。',
+    lSkip: '他不接了，跳过。回他一句，收个尾。',
   },
   en: {
     head: '[HIDDEN] [jinchat] {title}, {when}. Not words to you: no Look, no tool at all. Write only what {names} say, in English, one or two lines, each under twenty words{multi}; no narration, never the page.',
@@ -185,6 +312,18 @@ const W = {
     bank: 'This round is twenty questions the other way round: he thinks of an animal and you ask only yes-or-no questions to guess it. Rewrite each question below in your own voice, one line each (same meaning, still yes or no), as "id｜Name: question", taking turns; the last line "guess｜Name: … {x} …?" — the guessing line, {x} left exactly as it is. Wrap the whole list, first line to last, in one <!-- and --> (the page reads it; the chat never shows it). Nothing else.',
     bankQ: '{id}｜{q}',
     result: 'The twenty questions are over (the page judged it): {summary}. Close it with a line; never change that result.',
+    couplet: 'This round is couplets: {names} give the first line, and the page shows it — "{up}"{kind}. He answers with the second; the page judges.',
+    cOpen: 'Speak first, in your own voice, daring him to match it (don\'t repeat the line; never say a word of the answer).',
+    cMiss: 'He answers: "{guess}". The page judged it: no match ({why}). Never give the answer away. Answer him in a line. {hint}',
+    cSolved: 'He has matched it: "{guess}" (the page judged it). Own it in a line.',
+    cSkip: 'He gives up; the page shows the second line: "{answer}". Answer him in a line and close it.',
+    chain: 'This round is an idiom chain: {names} open with "{start}", he follows; each must start with the last character of the one before, {links} links to win. The page judges.',
+    lOpen: 'Speak first, in your own voice, daring him to follow (only your own idiom; never one for him, never a hint).',
+    lLink: 'He follows with "{guess}" — the page judged it: it links ({n}/{links}). Yours is "{mine}", laid out on the page. Answer in a line; you may say "{mine}"; never think of his next.',
+    lMiss: 'He tries "{guess}" — the page judged it: no link ({why}). Never link for him, never hint. Answer in a line.',
+    lDone: 'He has made all {links} links (the page judged it), the last "{guess}". Own it in a line.',
+    lStuck: 'He follows with "{guess}", and you cannot go on (the page searched the whole list). Concede in a line.',
+    lSkip: 'He gives up and skips. Answer in a line and close it.',
   },
 };
 
@@ -204,6 +343,31 @@ export function riddleLine(chat, { event, guess = '', hint = '', choices = false
     miss: () => fill(w.miss, { guess, hint: [hint ? fill(w.hint, { hint }) : '', choices ? w.choices : ''].join('') }),
     solved: () => fill(w.solved, { guess }),
     skip: () => fill(w.skip, { answer: riddle.answers[0] ?? '' }),
+  }[event]?.() ?? '';
+  return event === 'open' ? `${headOf(chat, cast, lang)}${body}` : `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
+}
+
+/** The hidden line for one moment of a 对对子: `event` open · miss · solved · skip (the 下联 only after the page shows it). */
+export function coupletLine(chat, { event, guess = '', why = '', hint = '', c, cast = [], lang = 'zh' }) {
+  const w = W[lang] ?? W.zh;
+  const kind = c.kind ? (lang === 'en' ? ` (${c.kind})` : `（${c.kind}）`) : '';
+  const body = {
+    open: () => `${fill(w.couplet, { names: namesOf(cast, lang), up: c.up, kind })}${w.cOpen}`,
+    miss: () => fill(w.cMiss, { guess, why, hint: hint ? fill(w.hint, { hint }) : '' }),
+    solved: () => fill(w.cSolved, { guess }),
+    skip: () => fill(w.cSkip, { answer: c.answers[0] ?? '' }),
+  }[event]?.() ?? '';
+  return event === 'open' ? `${headOf(chat, cast, lang)}${body}` : `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
+}
+
+/** The hidden line for one moment of a 成语接龙: `event` open · link (his, and the person's own after it) · miss · done ·
+    stuck · skip. The person is told only their own idiom — never one of his. */
+export function chainLine(chat, { event, guess = '', mine = '', why = '', n = 0, ch, cast = [], lang = 'zh' }) {
+  const w = W[lang] ?? W.zh;
+  const o = { guess, mine, why, n, links: ch.links };
+  const body = {
+    open: () => `${fill(w.chain, { names: namesOf(cast, lang), start: ch.start, links: ch.links })}${w.lOpen}`,
+    link: () => fill(w.lLink, o), miss: () => fill(w.lMiss, o), done: () => fill(w.lDone, o), stuck: () => fill(w.lStuck, o), skip: () => w.lSkip,
   }[event]?.() ?? '';
   return event === 'open' ? `${headOf(chat, cast, lang)}${body}` : `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
 }

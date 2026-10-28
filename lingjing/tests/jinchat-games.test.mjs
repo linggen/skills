@@ -6,8 +6,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
-  answerGuess, bankLine, checkRiddle, freshGuess, guessOutcome, guessSummary, judgeGuess, nextMove, normAnswer, parseBank,
-  resultLine, riddleLine, riddleOf, riddleOutcome, stillPossible, tableOf,
+  answerGuess, bankLine, chainChoices, chainHint, chainLine, chainOf, checkDown, checkLink, checkRiddle, coupletLine, coupletOf,
+  dictOf, freshChain, freshGuess, guessOutcome, guessSummary, judgeGuess, kindOf, needOf, nextMove, nextsOf, normAnswer, parseBank,
+  playLink, replyOf, resultLine, riddleLine, riddleOf, riddleOutcome, shapeOf, stillPossible, tableOf,
 } from '../scripts/games/jinchat-games.js';
 import { castOf } from '../scripts/games/jinchat-rules.js';
 
@@ -24,6 +25,11 @@ const flat = (s) => s.replace(/\[([^\]]+)\]\{[^}]+\}/g, '$1').replace(/\*/g, '')
 const BOOK_ZH = flat(BOOKJ.map((h) => read(`../story/jiuding-lu/${h.file}`)).join('\n'));
 const BOOK_EN = flat(BOOKJ.filter((h) => h.file_en).map((h) => read(`../story/jiuding-lu/${h.file_en}`)).join('\n'));
 const LANGS = ['zh', 'en'];
+const TONES = JSON.parse(read('../worlds/jiuding/tones.json'));
+const DICT = dictOf(JSON.parse(read('../worlds/jiuding/chengyu.json')));
+/* Each (chat, tongue) that plays a riddle: a chat whose Chinese is a 对对子 or a 成语接龙 keeps its English riddle. */
+const RIDDLES = GAMES.flatMap(([id, c]) => LANGS.filter((l) => kindOf(c.game, l) === 'riddle').map((lang) => [id, c, lang]));
+const OF = (kind) => GAMES.filter(([, c]) => kindOf(c.game, 'zh') === kind);
 
 test('the boards Hanli named are word games now; the call with his mum is kept as it is', () => {
   assert.equal(CHATS['yinyue-pill'].game?.kind, 'riddle', '最后一颗: a riddle');
@@ -35,8 +41,8 @@ test('the boards Hanli named are word games now; the call with his mum is kept a
 });
 
 test('each riddle: both tongues, tiers of hints, choices with exactly one right, the page\'s answer list', () => {
-  for (const [id, c] of GAMES.filter(([, x]) => x.game.kind === 'riddle')) {
-    for (const lang of LANGS) {
+  for (const [id, c, lang] of RIDDLES) {
+    {
       const r = riddleOf(c.game, lang);
       assert.ok(r.q, `${id} ${lang}: q`);
       assert.ok(r.hints.length >= 2, `${id} ${lang}: hints in tiers`);
@@ -78,8 +84,7 @@ test('the book frames each game, verbatim: the setup line, the closing lines; th
       assert.ok(BOOK_EN.toLowerCase().includes(s.en.toLowerCase()), `${id}: setup "${s.en}" is the book's`);
     }
     for (const lang of LANGS) assert.ok(c.game.facts?.[lang], `${id}: the game's own facts (${lang})`);
-    if (c.game.kind !== 'riddle') continue;
-    for (const lang of LANGS) {
+    for (const lang of LANGS.filter((l) => kindOf(c.game, l) === 'riddle')) {
       const r = riddleOf(c.game, lang);
       // (who they are is no leak: the River Lord is called so — his name is left out of the check)
       const names = castOf(c, PEOPLE, lang).map((p) => p.name).concat(lang === 'en' ? ['River Lord'] : []);
@@ -110,13 +115,15 @@ test('the book frames each game, verbatim: the setup line, the closing lines; th
 test('what the page shows before he answers — the board\'s title, its how, the chat\'s header and opening — never names the answer', () => {
   // Live 10-27: 「周衡 · 灯谜 · 紫玉参」 stood over 周衡's riddle; 「秦雁 · 半瓢水」 over a riddle on 水.
   const boards = reg.games.filter((g) => g.id === 'jinchat' && g.task);
-  for (const [id, c] of GAMES.filter(([, x]) => x.game.kind === 'riddle')) {
+  for (const [id, c] of GAMES.filter(([, x]) => kindOf(x.game, 'zh') !== 'guess')) {
     const row = boards.find((b) => b.data?.chat === id), t = TASKS.find((x) => x.game === 'jinchat' && x.deal?.chat === id);
     const errand = JSON.parse(read('../worlds/jiuding/quests/guan.json')).quests.find((q) => q.need?.some((n) => n.task === t?.id));
     for (const lang of LANGS) {
-      const r = riddleOf(c.game, lang);
+      const kind = kindOf(c.game, lang);
+      if (kind === 'chain') continue; // a chain has no one answer: the page picks from the list as he goes
+      const r = kind === 'couplet' ? coupletOf(c.game, lang) : riddleOf(c.game, lang);
       const shown = [row?.name?.[lang], t?.title?.[lang], t?.how?.[lang], errand?.title?.[lang], c.title[lang], c.when[lang], ...(c.open ?? []).map((l) => l.text[lang]), ...(c.game.setup ?? []).map((l) => l[lang])].filter(Boolean).join(' / ');
-      const a = r.answers[0];
+      const a = kind === 'couplet' ? r.answers[0].replace(/[，,]/g, '').slice(0, 4) : r.answers[0];
       const hit = lang === 'en' ? new RegExp(`\\b${a}\\b`, 'i').test(shown) : shown.includes(a);
       assert.ok(!hit, `${id} ${lang}: 「${a}」 shows before he answers — ${shown}`);
     }
@@ -223,5 +230,108 @@ test('the module: the page judges (no tag, no model verdict); every game is skip
     if (!t) continue;
     assert.equal(t.grant.table, 'task', `${id}: pays as before`);
     assert.ok(!t.grant.progress, `${id}: nothing of its own`);
+  }
+});
+
+/* ════════ 对对子 · 成语接龙 (2026-10-27: the run of 灯谜 broken — no two of a kind back to back in a 回) ════════ */
+
+test('each 对对子: a classic\'s 上联 and its accepted 下联 (`src`), four choices with one right, hints in tiers; every accepted 下联 holds its own form', () => {
+  const ups = new Set();
+  assert.ok(OF('couplet').length >= 4, 'couplets in the book');
+  for (const [id, c] of OF('couplet')) {
+    const d = coupletOf(c.game, 'zh');
+    assert.ok(d.up && d.src, `${id}: a classic, its source named`);
+    assert.ok(!ups.has(d.up), `${id}: never the same couplet twice`);
+    ups.add(d.up);
+    assert.ok(d.answers.length >= 1 && d.hints.length >= 2, id);
+    for (const a of d.answers) {
+      assert.equal(checkDown(d, a), 'right', `${id}: 「${a}」`);
+      assert.equal(shapeOf(d, a, TONES), null, `${id}: 「${a}」 passes the page's own form checks`);
+    }
+    assert.equal(d.choices.length, 4, `${id}: four choices`);
+    assert.equal(d.choices.filter((x) => checkDown(d, x) === 'right').length, 1, `${id}: one right`);
+    assert.equal(checkDown(d, ''), 'empty');
+    assert.equal(kindOf(c.game, 'en'), 'riddle', `${id}: in English, the riddle beside it`);
+    // The 下联 is never in what their voice is handed before he has it.
+    const cast = castOf(c, PEOPLE, 'zh');
+    for (const event of ['open', 'miss']) {
+      const line = coupletLine(c, { event, guess: 'x', why: 'y', hint: d.hints[0], c: d, cast, lang: 'zh' }) + c.game.facts.zh;
+      for (const a of d.answers) assert.ok(!line.includes(a) && !line.includes(a.replace(/[，,]/g, '').slice(0, 4)), `${id} ${event}: no 「${a}」`);
+    }
+    assert.ok(!/谜/.test(c.game.facts.zh), `${id}: the facts say 对子, not 谜`);
+  }
+});
+
+test('对对子: the page says what is off in a 下联\'s form — 字数, a 仄 tail, the same character in place, the 上联\'s character, the repeats', () => {
+  const kou = coupletOf(CHATS['chu-kou'].game, 'zh');
+  assert.equal(checkDown(kou, '灯深村寺钟。'), 'right', 'marks never count');
+  assert.equal(checkDown(kou, '炮镇海城楼'), 'right');
+  assert.deepEqual(shapeOf(kou, '灯深村寺', TONES), { id: 'len', n: 5, have: 4 });
+  assert.equal(shapeOf(kou, '鸟宿池边树', TONES).id, 'tail');
+  assert.equal(shapeOf(kou, '风吹池上亭', TONES).id, 'same');
+  assert.equal(shapeOf(kou, '柳绿花红天', TONES).id, 'copy');
+  assert.equal(shapeOf(kou, '风吹水上亭', TONES), null, 'well formed — only not this couplet\'s');
+  assert.equal(checkDown(kou, '风吹水上亭'), 'wrong');
+  const dan = coupletOf(CHATS['qulao-dan'].game, 'zh');
+  assert.equal(shapeOf(dan, '去留无意漫随天外云卷风舒', TONES)?.id, 'echo', '花开花落 wants 云卷云舒');
+});
+
+test('each 成语接龙: the person opens with an idiom of the list that leaves him three or more; the two of 钱掌柜 open differently', () => {
+  const starts = new Set();
+  assert.ok(OF('chain').length >= 4, 'chains in the book');
+  assert.ok(DICT.words.length > 7000 && DICT.words.every((w) => /^\p{Script=Han}{4}$/u.test(w)), 'four characters each');
+  const doc = JSON.parse(read('../worlds/jiuding/chengyu.json'));
+  assert.match(doc._license, /^MIT License\. Copyright \(c\) 2018 THUNLP/, 'the license travels with the list');
+  assert.match(doc._source, /thunlp\/THUOCL/);
+  for (const [id, c] of OF('chain')) {
+    const ch = chainOf(c.game, 'zh');
+    assert.ok(DICT.set.has(ch.start), `${id}: 「${ch.start}」 in the list`);
+    assert.ok(nextsOf(DICT, [...ch.start].at(-1), [ch.start]).length >= 3, `${id}: room to follow 「${ch.start}」`);
+    assert.ok(!starts.has(ch.start), `${id}: its own opening`);
+    starts.add(ch.start);
+    assert.ok(ch.links >= 3 && ch.links <= 5, id);
+    assert.equal(kindOf(c.game, 'en'), 'riddle', `${id}: in English, the riddle beside it`);
+    assert.ok(!/谜/.test(c.game.facts.zh), `${id}: the facts say 接龙, not 谜`);
+    assert.match(chainLine(c, { event: 'open', ch, cast: castOf(c, PEOPLE, 'zh'), lang: 'zh' }), /^\[HIDDEN\] \[jinchat\] .*成语接龙/);
+  }
+  assert.equal(CHATS['qian-gong'].game.zh.start, '童叟无欺', 'his own catchphrase');
+});
+
+test('成语接龙 is judged by the list alone: the head must be the last one\'s tail, never used twice; an idiom not in the list is no miss', () => {
+  let st = freshChain({ start: '童叟无欺' });
+  assert.equal(needOf(st), '欺');
+  assert.equal(checkLink(DICT, st, '').v, 'empty');
+  assert.deepEqual(checkLink(DICT, st, '欺人太甚！'), { v: 'right', word: '欺人太甚' });
+  assert.equal(checkLink(DICT, st, '自欺欺人').v, 'mismatch');
+  assert.equal(checkLink(DICT, st, '欺天诳地').v, 'unknown', 'a head that fits, but not in the list: no miss');
+  assert.equal(checkLink(DICT, st, '童叟无欺').v, 'mismatch');
+  st = playLink(st, '欺人太甚', 'me');
+  const mine = replyOf(DICT, st.said);
+  assert.equal([...mine][0], '甚', 'theirs follows his');
+  assert.ok(nextsOf(DICT, [...mine].at(-1), [...st.said, mine]).length >= 3, 'and leaves him three or more');
+  st = playLink(st, mine, 'them');
+  assert.equal(st.links, 1);
+  assert.equal(checkLink(DICT, { ...st, said: [...st.said, '欺人太甚'] }, '欺人太甚').v, 'mismatch');
+  // the hint and the choices: the way on, one right among four
+  assert.match(chainHint(DICT, st, 1), new RegExp(`^${needOf(st)}.□□$`));
+  const four = chainChoices(DICT, st);
+  assert.equal(four.length, 4);
+  assert.equal(four.filter((w) => checkLink(DICT, st, w).v === 'right').length, 1);
+});
+
+test('成语接龙 always plays out: a player who takes the commonest way on wins every chain, or they run out first', () => {
+  for (const [id, c] of OF('chain')) {
+    const ch = chainOf(c.game, 'zh');
+    let st = freshChain(ch), over = false;
+    for (let k = 0; k < 20 && !over; k++) {
+      const w = nextsOf(DICT, needOf(st), st.said)[0];
+      assert.ok(w, `${id}: he always has a way on (${st.said.join(' → ')})`);
+      st = playLink(st, w, 'me');
+      if (st.links >= ch.links) { over = true; break; }
+      const r = replyOf(DICT, st.said);
+      if (!r) { over = true; break; }
+      st = playLink(st, r, 'them');
+    }
+    assert.ok(over, id);
   }
 });
