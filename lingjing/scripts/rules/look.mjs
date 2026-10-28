@@ -178,7 +178,9 @@ function panelOf(content, state, scene, buttons) {
   const taps = buttons.map(id => scene.exits.find(e => e.id === id)).filter(e => e && !own(e) && !done(e))
     .map(e => ({ id: e.id, label: say(e.label), ...(called(e) ? { duel: gameOf(e).id } : {}), ...(e.snub && marked(e) ? { spent: true } : {}) }));
   // A painted picture for the beat, when the world has one: it fills the stage behind the dialogue box.
-  return { place: say(scene.place), ...(scene.panel.art ? { art: scene.panel.art } : {}), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps: quietOne(scene, taps), ...(invites(state, taps) ? { invite: true } : {}) };
+  return { place: say(scene.place), ...(scene.panel.art ? { art: scene.panel.art } : {}), caption: (scene.panel.caption?.[state.lang] ?? scene.panel.caption?.zh ?? []).map(l => fill(l, state, content)), taps: quietOne(scene, taps), ...(invites(state, taps) ? { invite: true } : {}),
+    // `ask`: the book's line that puts the choice (Hanli 10-28 at the 秘境 door: 「交, 不交没前言, 突然出现, 看不懂意思」) — over the choices always.
+    ...(scene.panel.ask ? { ask: fill(scene.panel.ask[state.lang] ?? scene.panel.ask.zh, state, content) } : {}) };
 }
 
 /* Only a real decision is a row of buttons (his, 2026-09-29: tapping on felt

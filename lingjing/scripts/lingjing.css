@@ -1386,3 +1386,5 @@ body.fighting .atmos { display: none; }
 .bookrow.trow .tsteps { color: var(--dim); line-height: 1.5; }
 .bookrow.trow .tsteps .tstep.done { opacity: .6; }
 
+
+.sceneask { flex-basis: 100%; text-align: center; font-family: var(--serif, serif); margin-bottom: 6px; }

@@ -1749,7 +1749,8 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   // The errands to take here stand among the scene's choices, one button each (Hanli, 2026-10-14:
   // one place to tap) — the card's own 接下 (data-do take), gone from them once taken.
   const errands = playing ? '' : (ctx.look.offers ?? []).filter((o) => o.id !== ctx.tookOffer?.id).map((o) => `<button class="act paneltap errand" data-do="take" data-id="${esc(o.id)}"${busy ? ' disabled' : ''}>${esc(say(w.takeErrand, { title: o.title }))}</button>`).join('');
-  const taps = (gated ? gateCardHtml(gated, ctx.look, w) : '') + shown.map(tapOf).join('') + errands;
+  const ask = p.ask && shown.length ? `<div class="sceneask">${esc(p.ask)}</div>` : '';
+  const taps = ask + (gated ? gateCardHtml(gated, ctx.look, w) : '') + shown.map(tapOf).join('') + errands;
   const quiet = !errands && !inBox && (p.taps ?? []).length === 1 && p.taps[0].quiet;
   // 「也可以直接说你想怎么做」 — now and then, where the scene waits on a real choice (rules: `invite`).
   const invite = p.invite ? `<div class="sceneinvite">${esc(w.invite)}</div>` : '';

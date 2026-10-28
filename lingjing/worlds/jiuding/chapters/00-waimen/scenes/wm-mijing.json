@@ -25,7 +25,7 @@
   "maxiaobao"
  ],
  "panel": {
-  "caption": {
+  "ask": {"zh": "马小宝眼皮也不抬：「沈小满。两块。」", "en": "Ma Xiaobao doesn't lift his eyelids: \"Shen Xiaoman. Two.\""}, "caption": {
    "zh": [
     "冬月初一，泗水退潮。",
     "「沈小满。两块。」",
