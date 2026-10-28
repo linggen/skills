@@ -34,6 +34,7 @@ function step(s, exit) {
 const roaming = () => {
   let s = fresh(walk(newState(content, 'zh', DAY1), TO_OPEN, content, DAY1));
   for (const exit of ['owe', 'can', 'breathe', 'hide']) s = step(s, exit);
+  s = step(must(move, s, { place: 'jiangtang' }), 'on'); // the 讲堂's month (wm-dianmao, 2026-10-27)
   s = step(must(move, s, { place: 'waimen' }), 'patrol');
   return fresh(s);
 };

@@ -120,14 +120,14 @@ test('修屋顶 is handed in for 灵石 and, since 2026-10-27, its minutes\' 修
   const turned = quest(s, content, ctx, { action: 'turn', id: 'xu-waimen-roof' });
   assert.ok(turned.state, JSON.stringify(turned.result));
   const e = content.balance.play_pay.errand;
-  // 15% of the layer over 10% of its minutes: 5 minutes at 练气一层 (2 h, 470) — 6.25%, 29.
-  assert.equal(turned.result.paid.progress, Math.round((e.share * 470 / (e.time * 120)) * e.minutes), 'an errand\'s minutes at 练气一层');
-  assert.equal(turned.result.paid.progress, 29);
+  // 15% of the layer over 10% of its minutes: 5 minutes at 练气一层 (470 over its hours: 2 h, 29, until 古四 · 柴房's refit 2026-10-27).
+  assert.equal(turned.result.paid.progress, Math.round((e.share * 470 / (e.time * 60 * content.balance.play_pay.hours.qi[1])) * e.minutes), 'an errand\'s minutes at 练气一层');
   assert.equal(turned.result.paid.wealth, 5 + e.wealth, '周衡: 「记你五块灵石」, and the errand\'s own');
   const f = structuredClone(s);
-  // A fight won: its minutes of play at the layer's share (play_pay.fight) — 4 minutes at 练气一层, 27.
+  // A fight won: its minutes of play at the layer's share (play_pay.fight) — 4 minutes at 练气一层 (27 at its 2 h, until 古四 · 柴房's refit 2026-10-27).
   assert.equal(pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress, fightPlay(content, f));
-  assert.equal(fightPlay(content, f), 27);
+  const pp = content.balance.play_pay;
+  assert.equal(fightPlay(content, f), Math.round((pp.games.share * 470 / (pp.games.time * 60 * pp.hours.qi[1])) * pp.fight.minutes));
 });
 
 test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零层); the day\'s pick and 开府 pay 灵石', () => {

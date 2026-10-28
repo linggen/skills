@@ -195,7 +195,7 @@ export function act(state, data = {}) {
   const left = state.left - 1;
   let last = { from: state.sel, to: i, side: 'r' };
   if (!legalMoves(board, 'b').length) {
-    return { state: { ...state, board, left, sel: null, last, outcome: 'won' }, won: true };
+    return { state: { ...state, board, left, sel: null, last, outcome: 'won', won: true }, won: true };
   }
   if (left <= 0) return { state: { ...state, board, left, sel: null, last, outcome: 'lost' }, won: false };
   return { state: { ...state, board, left, sel: null, last, wait: true }, won: false };

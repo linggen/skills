@@ -421,7 +421,8 @@ function gates(ctx) {
     // A day's wall tags on the gate's map pay their share once: the wait takes them where they are quicker than play.
     const walls = wallsOn(g.scene), tagMin = content.balance.play_pay?.errand?.minutes ?? 5;
     const wallMin = walls.reduce((n, w) => n + Math.min(w.posts ?? 3, (w.pool ?? []).length) * tagMin, 0);
-    const wait = x => {
+    // …less what the player took in the routine that day before he came (balance.json `walls`: the arrival holds it).
+    const wait = (x, P) => {
       if (!x?.from) return null;
       const f = x.from, rows = ctx.layers.filter(l => l.tier === at.tier && l.step >= f.step && l.step <= at.step && !l.zero);
       if (f.tier !== at.tier) return null;
@@ -429,13 +430,13 @@ function gates(ctx) {
       const m = rows.reduce((n, l) => n + owed(l) / (rate(l) || Infinity), 0);
       if (!walls.length || !rows.length || !Number.isFinite(m)) return Number.isFinite(m) ? round(m) : null;
       // The wall's day, paid on the first layer he stands on: its 修为 off what that layer owes, its minutes on.
-      const first = rows[0], w = first.wall_day ?? 0, o = owed(first), r = rate(first) || Infinity;
-      const withWall = m - o / r + (o <= w ? (w ? wallMin * (o / w) : 0) : wallMin + (o - w) / r);
+      const left = 1 - Math.min(1, P?.walls ?? 0), first = rows[0], w = (first.wall_day ?? 0) * left, o = owed(first), r = rate(first) || Infinity;
+      const withWall = m - o / r + (o <= w ? (w ? wallMin * left * (o / w) : 0) : wallMin * left + (o - w) / r);
       return round(Math.min(m, withWall));
     };
     return { id: g.scene, scene: g.scene, hui: g.hui, label: huiLabel(content, g.hui, 'zh', 'short') ?? g.hui, layer: L?.name ?? null,
-      typical: { pct: round(g.pct, 2), below: g.below, wait: wait(g), model_min: round(g.wait), days: round(g.days, 1), did: g.did },
-      session: s2 ? { pct: round(s2.pct, 2), below: s2.below, wait: wait(s2), model_min: round(s2.wait), did: s2.did } : null,
+      typical: { pct: round(g.pct, 2), below: g.below, wait: wait(g, M.players.typical), model_min: round(g.wait), days: round(g.days, 1), did: g.did },
+      session: s2 ? { pct: round(s2.pct, 2), below: s2.below, wait: wait(s2, M.session), model_min: round(s2.wait), did: s2.did } : null,
       reach: reach(g.scene), wall: walls.length ? { minutes: wallMin, xw: L?.wall_day ?? null } : null };
   });
 }
@@ -615,7 +616,7 @@ export async function measure(content = loadContent(), { deals = 0, keep = null 
   const F = deals ? await fights(ctx, deals) : keep?.fights ?? [];
   const report = {
     stamp: { date: new Date().toISOString().slice(0, 10), commit: commit(), deals: deals || keep?.stamp?.deals || 0, target: { ...TARGET, games: gamesOf(content) }, limits: LIMITS },
-    defs: { night_h: content.rewards.seclusion.rest_hours, caveats: ['The model plays practice boards only while a stage quest holds him (balance.json model.practice): its days per 回 run long.', 'The model plays no 杂役 errands, no wall tags and no 开府: 灵石 earned is low, affordability pessimistic (a gate\'s wait counts a day\'s wall tags where its map holds the wall).', 'A 回 holds him on its stage quest\'s layer (else its cap); a 今 interlude takes the 古 before it.', 'A day of sitting = one night of 闭关 (rewards.json seclusion rest_hours) at the layer, as the rules pay it.'] },
+    defs: { night_h: content.rewards.seclusion.rest_hours, caveats: ['The model plays practice boards only while a stage quest holds him (balance.json model.practice): its days per 回 run long.', 'The model plays no 杂役 errands and no 开府: 灵石 earned is low, affordability pessimistic. It takes a share of the day\'s wall tags (balance.json `walls`), the rest while a gate holds him (a gate\'s wait counts them).', 'A 回 holds him on its stage quest\'s layer (else its cap); a 今 interlude takes the 古 before it.', 'A day of sitting = one night of 闭关 (rewards.json seclusion rest_hours) at the layer, as the rules pay it.'] },
     layers, huis: Object.entries(hl).map(([h, at]) => ({ hui: h, label: huiLabel(content, h, 'zh', 'short') ?? h, layer: ctx.layer(at)?.name ?? layerName(content, at.tier, at.step), earned: null })),
     paces: paces(content), gates: gates(ctx), kailu: kailu(ctx), pills: P, boards: boards(ctx), errands: errands(ctx), shops: shops(ctx), gear: gear(ctx), cards: cards(ctx),
     fights: F, creatures: creatures(ctx, F), claims: claims(ctx), errors: hardErrors(content),

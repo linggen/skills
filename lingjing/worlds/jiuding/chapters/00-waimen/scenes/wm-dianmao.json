@@ -1,0 +1,117 @@
+{
+ "version": 1,
+ "id": "wm-dianmao",
+ "chapter": "00-waimen",
+ "hui": "h05",
+ "at": "jiangtang",
+ "place": {
+  "zh": "沉鼎观 · 讲堂",
+  "en": "Chending Temple · The lecture hall"
+ },
+ "_split": "2026-10-27 (doc/gates-2026-10-27.md 古四 · 柴房 (c), Hanli: 「按你的建议做, 先从柴房开始」): wm-zhishi's passage cut at 「十月初一」 — the 入门 month before it (the woodpile nights, 褚先生's sneer, the porridge, the roll call, 阿禾's notebook) is this scene's, the book's own words; the office after it stays wm-zhishi's. Eight classic boards (~37 min), the month's lessons: 五子 with 孙二狗 after the roll call, then 华容道 at the well, a 象棋残局, 拼图 of the 讲堂, 五子 with 马小宝, 几何冲刺 with the water past the garden wall, 拼图 of the 药园, 五子 with 阿禾 — no kind twice running. Pays as 古四's boards: progress 5 each, and the board's 灵石 on its first clear. Outside every beat: the 观 is open while he reads it (执事堂's wall, the pool).",
+ "setup": {
+  "zh": "九月底，褚先生点卯。他拿戒尺从第一排点到最后一排，点一个，报一个：「一层。没有。没有。一层……」",
+  "en": "At the end of the ninth month Master Chu took the roll. He pointed with his ruler from the first row to the last, and for each one he pointed at, he called it: \"First layer. Nothing. Nothing. First layer...\""
+ },
+ "recap": {
+  "zh": "那个圈你转圆了；阿禾三天引气，一个月二层。",
+  "en": "You got the circle round again; Ahe drew in qi in three days and made the second layer in a month."
+ },
+ "cast": [],
+ "people": [
+  "chuxiansheng",
+  "sunergou",
+  "ahe"
+ ],
+ "panel": {
+  "caption": {
+   "zh": [
+    "九月底，褚先生点卯。",
+    "「一层。没有。没有。一层……」",
+    "「周禾，二层。」"
+   ],
+   "en": [
+    "At the end of the ninth month, Master Chu takes the roll.",
+    "\"First layer. Nothing. Nothing. First layer...\"",
+    "\"Zhou He. Second layer.\""
+   ]
+  }
+ },
+ "story": {
+  "zh": "那以后的几夜，那个圈，他再也转不圆了。一坐上柴堆，心里便不安分：想起马小宝身上那股青苦的草味儿，那股暖便往外一漏；想起他娘，又一漏。九月廿二，伙房胖大娘的儿媳妇送萝卜上山，背上一个没满周岁的小孙子，往空萝卜筐里一放，就在灶门口睡着了。那孩子喘气，胸口一动也不动，只有肚子一鼓，一落，落的那一下比鼓的那一下长，一只苍蝇落在他脸上，他也不醒，照旧一鼓，一落。那天夜里，小满在柴堆上学那孩子：不去拽那股暖，念头来了也不赶，由它像那只苍蝇一样落一落，飞走。那股暖便不漏了。\n\n过了两日，褚先生在讲堂上见他望着窗外瞿老粘知了，冷笑道：「看那扫地的？他当自己是《庄子》里粘知了的驼背老头——『用志不分，乃凝于神』。粘了五十年，凝出个什么来？三百级台阶！」\n\n那股暖转得圆了，他便又觉出一件事来：这山上的灵气，像他家腊月里熬的那锅粥，米少水多，舀一勺上来，得在勺底里找米粒。只有一处不一样。他每天挑水，要从后山半腰那道矮石墙外头过，墙里是药园，一畦一畦的灵草——就是马小宝身上那股青苦的味儿。隔着一道墙，一口气里的米粒，抵得上柴堆上的十口。可药园是周衡的；夜里进得去的，只有马小宝腰上那块巡夜令。\n\n九月底，褚先生点卯。他看人用不着抬眼皮，拿戒尺从第一排点到最后一排，点一个，报一个：「一层。没有。没有。一层……」点完了，戒尺往讲桌上一搁：「引了气的，不必欢喜。头一瓢水，漏勺也舀得上来。」最后一排，点到小满，「一层」；点到孙二狗，「没有」。孙二狗把脸埋进了袖子里。前头几排，连马小宝都没回头。",
+  "en": "For the next few nights, he could never get that circle to run round again. As soon as he sat on the woodpile his mind wouldn't keep still: he thought of the green, bitter, grassy smell on Ma Xiaobao, and the warmth leaked out; he thought of his mother, and it leaked again. On the twenty-second of the ninth month, the daughter-in-law of the fat woman who ran the kitchen brought radishes up the mountain with her grandson on her back, not yet a year old. She put him down in an empty radish basket, and he fell asleep there by the stove door. When the child breathed, his chest didn't move at all; only his belly rose, and fell, and the fall was longer than the rise. A fly landed on his face and he didn't wake; he just went on, rise, fall. That night on the woodpile Xiaoman copied the child: he didn't try to pull the warmth along, and when a thought came he didn't chase it off; he let it land and lift off again like that fly. And the warmth stopped leaking.\n\nTwo days later, Master Chu saw him in the lecture hall watching Elder Qu catching cicadas outside the window, and sneered, \"Watching the sweeper? He thinks he's the hunchback in the *Zhuangzi* who catches cicadas: 'His will undivided, it gathers into spirit.' Fifty years of catching cicadas, and what has he gathered? Three hundred steps!\"\n\nOnce the warmth ran round properly, he noticed something else: the spirit qi on this mountain was like the pot of porridge his family boiled up in the twelfth month, little rice and lots of water; scoop up a ladle and you had to hunt for grains at the bottom. There was only one place that was different. Every day when he carried water he had to pass outside the low stone wall halfway up the back of the mountain, and inside the wall was the herb garden, bed after bed of spirit herbs: that was the green, bitter smell on Ma Xiaobao. Through just a wall, the grains in one breath were worth ten breaths on the woodpile. But the herb garden was Zhou Heng's, and the only thing that could get you in at night was the night-watch token at Ma Xiaobao's waist.\n\nAt the end of the ninth month Master Chu took the roll. He didn't need to lift his eyelids to look at people. He pointed with his ruler from the first row to the last, and for each one he pointed at, he called it: \"First layer. Nothing. Nothing. First layer...\" When he'd finished he laid the ruler on the lecture table. \"Those who've drawn in qi needn't celebrate. The first ladle of water, even a leaky ladle brings up.\" In the back row he pointed at Xiaoman: \"First layer.\" He pointed at Sun Ergou: \"Nothing.\" Sun Ergou buried his face in his sleeve. In the front few rows, not even Ma Xiaobao turned round."
+ },
+ "show": [
+  {
+   "card": "board",
+   "id": "dianmao-sunergou"
+  },
+  {
+   "card": "board",
+   "id": "dianmao-jingtai"
+  },
+  {
+   "card": "board",
+   "id": "dianmao-canju"
+  },
+  {
+   "card": "board",
+   "id": "dianmao-jiangtang"
+  },
+  {
+   "card": "board",
+   "id": "dianmao-maxiaobao"
+  },
+  {
+   "card": "board",
+   "id": "dianmao-tiaoshui"
+  },
+  {
+   "card": "board",
+   "id": "dianmao-yaoyuan"
+  },
+  {
+   "card": "board",
+   "id": "dianmao-ahe"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "dianmao-sunergou",
+   "dianmao-jingtai",
+   "dianmao-canju",
+   "dianmao-jiangtang",
+   "dianmao-maxiaobao",
+   "dianmao-tiaoshui",
+   "dianmao-yaoyuan",
+   "dianmao-ahe"
+  ]
+ },
+ "story_after": {
+  "zh": "那天傍晚，小满挑水回来，阿禾蹲在井台边上等他，灰袍底下照旧露一线青。她头也不抬：「几层？」小满道：「一层。」她在本子上记了一笔，合上，才道：「周禾，二层。」\n\n小满半天没说出话来，末了道：「……你几天引的气？」\n\n阿禾道：「三天。」\n\n「那二层呢？」\n\n「又半个月。」她把本子合上，「师父那卷经，头一句是『观天之道，执天之行』。我看了三天草。草怎么喝水，我就怎么喝。」顿了一顿，「不是我快。是那卷经快。还有师父的袖子——隔几天，他从袖子里摸一颗丹给我，比外门领的好得多，周衡的账上没有。我这二层，一半是那卷经，一半是那只袖子。」\n\n小满道：「那你该高兴。」\n\n阿禾道：「高兴，在本子上。」她往饭堂那边看了一眼，唱名的那个执事正背着手从门口过。「天灵根，在有些人眼里，是一块肥肉。肥肉，不往外摆。这话你别往外说。」\n\n小满道：「那我呢？我一层，往外摆不摆？」\n\n阿禾道：「随便摆。漏勺，没人偷。」",
+  "en": "That evening, when Xiaoman came back with the water, Ahe was squatting by the well waiting for him, the line of green showing under her grey robe as usual. She didn't look up. \"What layer?\" Xiaoman said, \"First.\" She made a note in her notebook, closed it, and only then said, \"Zhou He. Second layer.\"\n\nFor a long while Xiaoman couldn't say anything. At last he said, \"...How many days did it take you to draw in qi?\"\n\nAhe said, \"Three.\"\n\n\"And the second layer?\"\n\n\"Another half month.\" She closed the notebook. \"Master's scroll, its first line is 'Observe the way of heaven, hold to the workings of heaven.' I watched the grass for three days. However grass drinks water, that's how I drank.\" She paused. \"It's not that I'm quick. It's that the scroll's quick. And Master's sleeve: every few days he takes a pill out of his sleeve for me, much better than what the outer sect hands out, and it's not in Zhou Heng's accounts. This second layer of mine, half is the scroll and half is that sleeve.\"\n\nXiaoman said, \"Then you should be happy.\"\n\nAhe said, \"Happy goes in the notebook.\" She glanced over towards the dining hall, where the name-calling steward was passing the door with his hands behind his back. \"A heavenly spirit root, to some people, is a piece of fat meat. Fat meat, you don't lay out on show. Don't you go telling anyone that.\"\n\nXiaoman said, \"What about me? First layer. Do I lay it out on show or not?\"\n\nAhe said, \"Show it all you like. Nobody steals a leaky ladle.\""
+ },
+ "lines": [],
+ "buttons": [
+  "on"
+ ],
+ "exits": [
+  {
+   "id": "on",
+   "label": {
+    "zh": "十月初一",
+    "en": "The first of the tenth month"
+   },
+   "means": "the month of lessons over, goes on to spirit-stone day and the stewards' office",
+   "beat": [],
+   "next": "wm-zhishi",
+   "needs": {
+    "task": "dianmao-ahe"
+   },
+   "refuse": {
+    "zh": "讲堂的功课还没做完。",
+    "en": "The lecture hall's lessons aren't done."
+   }
+  }
+ ]
+}

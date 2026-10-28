@@ -30,14 +30,14 @@
 // Days per 回: from the day its first scene is reached to the day its last is done (fractional,
 // by the minutes used). 修为 is the clock; 灵石 runs beside it (a fight's 修为 past the mark at the convert
 // rate; a rerun's spoils — drops, the 拾遗 find, the cache — at a shop's sell, the share `model.rerun.sold`;
-// 2026-10-21). The 杂役 errands' and 开府's 灵石 are not played.
+// 2026-10-21). The 杂役 errands' and 开府's 灵石 are not played; 执事堂's east-wall tags are (`walls`, 2026-10-27, playWalls).
 // Grinding stops where the 回's cap says — and, while a stage quest is ahead, at its layer.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
 import { runsPay } from '../scripts/rules/rerun.mjs';
-import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour } from '../scripts/rules/playpay.mjs';
+import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour, wallGrant } from '../scripts/rules/playpay.mjs';
 const NOW = new Date('2026-10-27T12:00:00Z');
 import { gatesOf } from '../scripts/rules/gates.mjs';
 import { lockedOf } from '../scripts/state.mjs';
@@ -221,6 +221,29 @@ export function play(content, player, { model = content.balance.model, ladder = 
      full the layer stood on arrival, then the minutes of play and the days until it opened, and what he played meanwhile. */
   const gates = new Map();
   let before = 0; // minutes played on the days before this one
+  /* 执事堂's east wall (quests/wall.json; doc/gates-2026-10-27.md: the tool did not play it): a day's tags, where he can walk to
+     the wall — its place on his chapter's map, no key beat holding him (world.mjs beatOf), nothing sealed — each tag an
+     errand's minutes (`play_pay.errand.minutes`) and its 体力, paid as the rules pay it (playpay.mjs wallGrant). Once a day:
+     `walls` of a day's tags in the routine (a share under one, its expected worth), and the rest of them while a gate holds him. */
+  let wallsOn = -1, wallsTaken = 0;
+  const wallsLeft = () => (wallsOn === day ? 1 - wallsTaken : 1);
+  const wallsOpen = () => {
+    const w = walk[Math.min(i, walk.length - 1)], ch = content.chapters[w.chapter];
+    if (zero() || !ch?.map?.places || (ch.beats ?? []).some(b => b.scenes.indexOf(w.id) > 0)) return [];
+    return (content.walls ?? []).filter(x => ch.map.places.includes(x.at));
+  };
+  const playWalls = (left, share = 1) => {
+    const tagMin = content.balance.play_pay?.errand?.minutes ?? 5;
+    let used = 0;
+    for (const wall of wallsOpen()) for (let t = 0; t < Math.min(wall.posts ?? 3, (wall.pool ?? []).length); t++) {
+      if (left - used < tagMin * share || !spend(Q.cost.game * share)) return used;
+      const g = wallGrant(content, { ...s, need: need() }, { wall: wall.id });
+      used += tagMin * share;
+      gain((g?.progress ?? 0) * share, false, 'play', 'wall');
+      earn((g?.wealth ?? 0) * share, 'wall');
+    }
+    return used;
+  };
   for (; i < walk.length && day < model.max_days; day += 1) {
     const total = day === 0 ? player.first_minutes : player.minutes, n = player.sittings, sit = total / n;
     const poolCap = pools() * (1 + Math.floor(sit / content.balance.cooldowns.pool_rest_min));
@@ -249,6 +272,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
         for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && left >= T.fight && spend(Q.cost.duel); f++) { left -= T.fight; fought += 1; win(model.fight_win_rate); const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.fights += 1; }
         if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(model.fantong_progress, false, null, 'fantong'); }
         if (k === 0 && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale, false, null, 'tale'); }
+        if (k === 0 && player.walls && wallsOpen().length) { left -= playWalls(left, Math.min(1, player.walls)); wallsOn = day; wallsTaken = Math.min(1, player.walls); }
       }
       let extra = 0;
       for (;;) {
@@ -259,23 +283,34 @@ export function play(content, player, { model = content.balance.model, ladder = 
           if (caps[hui]) capHui = hui;
           const r = row(w.hui ?? hui);
           if (r.start == null) r.start = at();
-          if (w.gate && !gates.has(w.id)) gates.set(w.id, { scene: w.id, hui: w.hui ?? hui, layer: { tier: w.gate.tier, step: w.gate.step }, pct: Math.min(1, gateMet(w.gate) ? 1 : (rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step) ? 0 : s.progress / need())), below: rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step), from: { tier: s.tier, step: s.step, progress: s.progress, need: need() }, at: played(), day: at(), did: { fights: 0, boards: 0, reruns: 0 } });
-          if (w.gate && !gateMet(w.gate)) { gated = true; break; }
-          if (w.gate && gates.get(w.id).wait == null) Object.assign(gates.get(w.id), { wait: played() - gates.get(w.id).at, days: at() - gates.get(w.id).day });
-          if (left < w.minutes * (1 - (w.read ?? 0))) { w.read = (w.read ?? 0) + left / w.minutes; left = 0; break; }
-          // A story step and its boards cost 体力 (a step toward the story's place is free, not counted here).
-          if (!w.paid && !spend((content.chapters[w.chapter]?.free ? 0 : Q.cost.step) + w.nboards * Q.cost.game)) { left = 0; break; }
-          w.paid = true;
-          left -= w.minutes * (1 - (w.read ?? 0));
-          // The sealed rooms, entered here: what holds the way, the boards, the fights.
-          const room = rooms[w.hui]?.first === w.id ? rooms[w.hui] : null;
-          if (room) { gain(room.story + room.boards); win(room.fights * model.fight_win_rate, 'story'); }
-          // The 回's errands, once past 零层: handed in where the 回 is under way.
-          for (const [id, h] of Object.entries(model.errands_at)) if (h === w.hui && !errandsPaid.has(id) && quests.has(id) && !zero()) { errandsPaid.add(id); gain(errandPays(content, quests.get(id)), false, null, 'errand'); earn(wealthCap(content, quests.get(id).grant), 'errand'); }
-          gain(w.boards);
-          // …and each board's play pay, its minutes at the layer he stands on (rules/playpay.mjs playGrant; ★ `model.story_stars`):
-          // the story's boards are where most of a layer's 修为 comes from before its gate (数值系统 phase 2).
-          for (const t of w.tasks ?? []) gain(playGrant(content, { ...s, need: need(), plays: null }, t.id, t, NOW, model.story_stars ?? 2)?.progress ?? 0, false, 'play', 'boards');
+          // A gated scene with boards of its own is read and played before its way on is asked (Hanli 10-27, doc/gates-2026-10-27.md:
+          // 大比前夜's 掐诀 counts toward the 四层 he needs there); one with none is held at the way into it (rules/gates.mjs entryGate).
+          const late = Boolean(w.gate && w.nboards);
+          const arrive = () => {
+            if (!gates.has(w.id)) gates.set(w.id, { scene: w.id, hui: w.hui ?? hui, layer: { tier: w.gate.tier, step: w.gate.step }, pct: Math.min(1, gateMet(w.gate) ? 1 : (rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step) ? 0 : s.progress / need())), below: rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step), from: { tier: s.tier, step: s.step, progress: s.progress, need: need() }, at: played(), day: at(), did: { fights: 0, boards: 0, reruns: 0, walls: 0 } });
+            if (!gateMet(w.gate)) return false;
+            if (gates.get(w.id).wait == null) Object.assign(gates.get(w.id), { wait: played() - gates.get(w.id).at, days: at() - gates.get(w.id).day });
+            return true;
+          };
+          if (w.gate && !late && !arrive()) { gated = true; break; }
+          if (!w.entered) {
+            if (left < w.minutes * (1 - (w.read ?? 0))) { w.read = (w.read ?? 0) + left / w.minutes; left = 0; break; }
+            // A story step and its boards cost 体力 (a step toward the story's place is free, not counted here).
+            if (!w.paid && !spend((content.chapters[w.chapter]?.free ? 0 : Q.cost.step) + w.nboards * Q.cost.game)) { left = 0; break; }
+            w.paid = true;
+            left -= w.minutes * (1 - (w.read ?? 0));
+            // The sealed rooms, entered here: what holds the way, the boards, the fights.
+            const room = rooms[w.hui]?.first === w.id ? rooms[w.hui] : null;
+            if (room) { gain(room.story + room.boards); win(room.fights * model.fight_win_rate, 'story'); }
+            // The 回's errands, once past 零层: handed in where the 回 is under way.
+            for (const [id, h] of Object.entries(model.errands_at)) if (h === w.hui && !errandsPaid.has(id) && quests.has(id) && !zero()) { errandsPaid.add(id); gain(errandPays(content, quests.get(id)), false, null, 'errand'); earn(wealthCap(content, quests.get(id).grant), 'errand'); }
+            gain(w.boards);
+            // …and each board's play pay, its minutes at the layer he stands on (rules/playpay.mjs playGrant; ★ `model.story_stars`):
+            // the story's boards are where most of a layer's 修为 comes from before its gate (数值系统 phase 2).
+            for (const t of w.tasks ?? []) gain(playGrant(content, { ...s, need: need(), plays: null }, t.id, t, NOW, model.story_stars ?? 2)?.progress ?? 0, false, 'play', 'boards');
+            w.entered = true;
+          }
+          if (late && !arrive()) { gated = true; break; }
           if (w.pill9) s.pill9 = true;
           if (w.breakthrough) {
             const next = tiers[tiers.findIndex(t => t.id === s.tier) + 1], over = Math.max(0, s.progress - need());
@@ -303,6 +338,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
         if (!gated) break;
         const waiting = [...gates.values()].find(g => g.wait == null);
         if (extra < player.gate_fights && fought + extra < poolCap && left >= T.fight && spend(Q.cost.duel)) { left -= T.fight; extra += 1; win(model.fight_win_rate); if (waiting) waiting.did.fights += 1; continue; }
+        // …then the day's wall tags he has not taken yet.
+        if (wallsLeft() > 0.01 && wallsOpen().length) { const share = wallsLeft(); wallsOn = day; wallsTaken = 1; const used = playWalls(left, share); if (used) { left -= used; if (waiting) waiting.did.walls += share; continue; } }
         // …then the practice boards (play_pay, 2026-10-27): a board's minutes at the layer's share, `model.practice.factor`
         // for its ★ and the replay's falling share across a sitting.
         const P = model.practice;

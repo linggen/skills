@@ -16,7 +16,7 @@ const content = loadContent();
 const NOW = new Date('2026-10-27T09:00:00-03:00');
 const ctx = { now: NOW };
 const PP = content.balance.play_pay;
-// A minute of a board at 练气一层: 60% of 470 over 35% of its 2 hours (play_pay.games, hours) — 6.71 修为, 1.43% of the layer.
+// A minute of a board at 练气一层: 60% of 470 over 35% of its hours (play_pay.games, hours; 2 h until 古四 · 柴房's refit, 2026-10-27).
 const PER_MIN = (PP.games.share * 470) / (PP.games.time * PP.hours.qi[1] * 60);
 
 test('the kinds at 练气一层: minutes × the layer\'s share a minute, ★ and the replay scaling it; 三层 the same minutes of a bigger layer', () => {
@@ -28,7 +28,9 @@ test('the kinds at 练气一层: minutes × the layer\'s share a minute, ★ and
   const again = { ...s, plays: { day: '2026-10-27', ids: { x: 1 } } };
   assert.equal(playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: '解谜' }] } }, again, 'x', { game: 'x' }, NOW).progress, Math.round(PER_MIN * 4 * 0.5), 'the same board again today: 50%');
   assert.equal(playGrant(content, { tier: 'qi', step: 0 }, 'pintu', { game: 'pintu' }, NOW)?.progress ?? 0, 0, '零层 pays no 修为');
-  assert.deepEqual(['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌'].map((k) => grant(k).progress), [7, 13, 20, 27, 34, 40], 'Hanli\'s 7–40 at 一层');
+  // Hanli's 7–40 at 一层's 2 h (10-27); since 古四 · 柴房's refit (doc/gates-2026-10-27.md, 一层 ~1.5 h) the same minutes of a shorter layer.
+  assert.deepEqual(['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌'].map((k) => grant(k).progress), [1, 2, 3, 4, 5, 6].map((m) => Math.round(PER_MIN * m)), 'the kinds\' minutes at 一层');
+  assert.deepEqual([1, 2, 3, 4, 5, 6].map((m) => Math.round(((PP.games.share * 470) / (PP.games.time * 2 * 60)) * m)), [7, 13, 20, 27, 34, 40], 'Hanli\'s 7–40 at a 2 h 一层');
   const three = (kind) => playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } }, { tier: 'qi', step: 3, plays: null }, 'x', { game: 'x' }, NOW).progress;
   // 三层: its 层 (balance.json layers) over its hours (play_pay.hours, the master table's curve fitted to 古六's band).
   const pp = content.balance.play_pay, perMin3 = (pp.games.share * content.balance.layers.qi[3]) / (pp.games.time * 60 * pp.hours.qi[3]);

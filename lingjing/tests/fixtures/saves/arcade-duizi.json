@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 679,
-  "wealth": 893,
+  "wealth": 944,
   "bag": {
    "fox-token": 1,
    "tuna-jing": 1,
@@ -138,6 +138,7 @@
    "wm-jiangtang",
    "wm-zhoutian",
    "wm-qingshi",
+   "wm-dianmao",
    "wm-zhishi",
    "wm-yaoyuan",
    "wm-chaifang",
@@ -360,6 +361,46 @@
     "done_at": "2026-10-01T01:00:00.000Z"
    },
    "qingshi-yiquan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dianmao-sunergou": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dianmao-jingtai": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dianmao-canju": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dianmao-jiangtang": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dianmao-maxiaobao": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dianmao-tiaoshui": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dianmao-yaoyuan": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dianmao-ahe": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -621,8 +662,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 1703,
-   "wealth": 896
+   "progress": 2135,
+   "wealth": 947
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1089,6 +1130,14 @@
   "boards_paid": [
    "zhoutian-sanguan",
    "qingshi-yiquan",
+   "dianmao-sunergou",
+   "dianmao-jingtai",
+   "dianmao-canju",
+   "dianmao-jiangtang",
+   "dianmao-maxiaobao",
+   "dianmao-tiaoshui",
+   "dianmao-yaoyuan",
+   "dianmao-ahe",
    "zhishi-zhouheng",
    "yaoyuan-xunye",
    "yaoyuan-luobo",
@@ -1132,6 +1181,14 @@
    "day": "2026-10-01",
    "ids": {
     "qingshi-yiquan": 1,
+    "dianmao-sunergou": 1,
+    "dianmao-jingtai": 1,
+    "dianmao-canju": 1,
+    "dianmao-jiangtang": 1,
+    "dianmao-maxiaobao": 1,
+    "dianmao-tiaoshui": 1,
+    "dianmao-yaoyuan": 1,
+    "dianmao-ahe": 1,
     "zhishi-zhouheng": 1,
     "yaoyuan-xunye": 1,
     "yaoyuan-luobo": 1,
@@ -1242,6 +1299,7 @@
    "wm-jiangtang",
    "wm-zhoutian",
    "wm-qingshi",
+   "wm-dianmao",
    "wm-zhishi",
    "wm-yaoyuan",
    "wm-chaifang",

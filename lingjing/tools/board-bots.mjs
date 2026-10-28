@@ -44,8 +44,11 @@ export function playOnce(mod, bot, { seed = 'bot-1', level = 1, deal, reaction =
   const r = rng(seed);
   let state = mod.newGame(seed, level, deal), t = 0, pending = null, nextLook = 0, acts = 0;
   const tick = ms => { if (mod.tick && state.live && !state.won) state = mod.tick(state, ms); };
+  // A board whose rival thinks (象棋残局: think/answer, the page's Worker) answers at once.
+  const reply = () => { if (state.wait && mod.think && mod.answer) state = mod.answer(state, mod.think(state)); };
   const apply = a => { state = mod.act(state, dataOf(a)).state ?? state; acts++; };
   while (t < limit) {
+    reply();
     if (state.won) return { won: true, ms: t, grade: state.grade ?? null, acts };
     if (pending && t >= pending.at) { apply(pending.a); pending = null; nextLook = t + REFRACTORY; continue; }
     if (!pending && t >= nextLook) {
