@@ -685,6 +685,11 @@
    "indoor": false,
    "day": "art/places/qiantang.webp"
   },
+  "dingtao": {
+   "at": "dingtao",
+   "indoor": false,
+   "day": "art/places/dingtao.webp"
+  },
   "jin-track": {
    "scape": [
     "track"

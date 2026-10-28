@@ -84,16 +84,20 @@ test('卷一: every scene stands at a painted place, and every painting is on di
   assert.equal(placeArtOf(tb, { scape: 'dark' }, true).night, true, '古籍部 at night is the night painting');
 });
 
-// 卷一's own province (Hanli 10-27 at 渡口: 「背景图片啥的不太匹配吧」 — the place had none, the 节气's autumn wood stood in):
-// every place of 徐 has its own painting, and the file is there.
-test('every place of 徐 has a painting of its own, on disk', async () => {
+// Every province's places (Hanli 10-27 at 渡口: 「背景图片啥的不太匹配吧」 — a place with none fell back to the 节气's
+// autumn wood): 徐 first, then the other eight; every place has its own painting, and the file is there.
+test('every place of every province has a painting of its own, on disk', async () => {
   const fs = await import('node:fs');
   const dir = new URL('../worlds/jiuding/', import.meta.url);
   const backdrops = JSON.parse(fs.readFileSync(new URL('backdrops.json', dir), 'utf8'));
-  const xu = JSON.parse(fs.readFileSync(new URL('places/xu.json', dir), 'utf8'));
-  for (const p of xu.places) {
+  const files = fs.readdirSync(new URL('places/', dir)).filter((f) => f.endsWith('.json'));
+  assert.ok(files.includes('xu.json') && files.length >= 9);
+  let n = 0;
+  for (const f of files) for (const p of JSON.parse(fs.readFileSync(new URL(`places/${f}`, dir), 'utf8')).places) {
     const art = placeArtOf(backdrops, { at: p.id, name: '' });
-    assert.ok(art, `${p.id} has no painting`);
+    assert.ok(art, `${f}: ${p.id} has no painting`);
     assert.ok(fs.existsSync(new URL(art.src, dir)), `${p.id}: ${art.src} missing`);
+    n++;
   }
+  assert.ok(n > 80);
 });

@@ -143,6 +143,7 @@ KEPT = {
     'gusu': {'seed': 61, 'round': 'r2'},
     'qiantang': {'seed': 61, 'round': 'r2'},
     'luoyi': {'seed': 23, 'round': 'r2'},
+    'dingtao': {'seed': 61, 'round': 'r2'},
 }
 
 import argparse, json, os, subprocess, time
