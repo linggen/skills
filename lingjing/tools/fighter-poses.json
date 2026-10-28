@@ -1,5 +1,5 @@
 {
- "_about": "格斗's painted frames (tools/fighter-frames.py): each fighter's master (txt2img, or an edit of a `base` painting; the kept seed and words), the words naming who it is in every frame, each frame's pose sketch (lean, legF/legB/armF/armB as [upper, lower] degrees from straight down toward the facing side; `up` a lift, `rot` a fall, `width` room for a blade, `air`/`free` not stood on the ground, `fix` {dx, dy, s} placed by eye, `seed` the kept painting) and words, and the clips the board plays (fps, loop, `hit` the strike frame, `calm` the frames reduced motion keeps). 秦雁's master: txt2img seed 2; 沈小满's: an edit of his `base` (the v3 rig's painting, seed 2) toward his guard.",
+ "_about": "格斗's painted frames (tools/fighter-frames.py): each fighter's master (txt2img, or an edit of a `base` painting; the kept seed and words), the words naming who it is in every frame, each frame's pose sketch (lean, legF/legB/armF/armB as [upper, lower] degrees from straight down toward the facing side; `up` a lift, `rot` a fall, `width` room for a blade, `air`/`free` not stood on the ground, `fix` {dx, dy, s} placed by eye, `seed` the kept painting) and words, and the clips the board plays (fps, loop, `hit` the strike frame, `calm` the frames reduced motion keeps). 秦雁's master: txt2img seed 2; 沈小满's: an edit of his `base` (the v3 rig's painting, seed 2) toward his guard. 卢方 and 祁长松 (切磋 · 演武场, 2026-10-28): txt2img masters, seed 3 each; unarmed, their 33 frames on 秦雁's clips.",
  "qinyan": {
   "master": {
    "seed": 2,
@@ -2620,7 +2620,8 @@
      40,
      120
     ],
-    "words": "winding up: the right foot raised to stamp, the right palm drawn back by his ear, leaning back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "winding up: the right foot raised to stamp, the right palm drawn back by his ear, leaning back. He is ALONE, the only person in the picture. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "seed": 4
    },
    "thrust2": {
     "lean": 30,
@@ -2642,7 +2643,10 @@
     ],
     "dx": 30,
     "width": 1088,
-    "words": "a deep stamping step forward to the right with a heavy shove of the right palm fully extended at chest height, front knee bent, back leg straight. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "a deep stamping step forward to the right with a heavy shove of the right palm fully extended at chest height, front knee bent, back leg straight. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.85
+    }
    },
    "thrust3": {
     "lean": 26,
@@ -2664,7 +2668,10 @@
     ],
     "dx": 30,
     "width": 1088,
-    "words": "holding the deep shove: front knee bent, back leg straight behind, the right palm extended forward to the right, robe swirling. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "holding the deep shove: front knee bent, back leg straight behind, the right palm extended forward to the right, robe swirling. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.85
+    }
    },
    "thrust4": {
     "lean": 12,
@@ -2725,7 +2732,10 @@
      86,
      90
     ],
-    "words": "flinging the right arm forward low and level toward the right, the open palm sweeping out at knee height as if skimming a blade along the floor. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "flinging the right arm forward low and level toward the right, the open palm sweeping out at knee height as if skimming a blade along the floor. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 1.2
+    }
    },
    "edge1": {
     "lean": 20,
@@ -2866,7 +2876,10 @@
      -46,
      -14
     ],
-    "words": "struck: he reels backward to the left, head and shoulders thrown back, arms flung out. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "struck: he reels backward to the left, head and shoulders thrown back, arms flung out. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.95
+    }
    },
    "hit2": {
     "lean": -10,
@@ -2906,7 +2919,10 @@
      20,
      40
     ],
-    "words": "gathering a great spell: crouched low, both palms pressed together down by his right knee. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "gathering a great spell: crouched low, both palms pressed together down by his right knee. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.86
+    }
    },
    "jianqi2": {
     "lean": 30,
@@ -2927,7 +2943,10 @@
      -10
     ],
     "width": 1088,
-    "words": "casting with both arms: a deep lunge to the right, both open palms thrust forward and down at knee height, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "casting with both arms: a deep lunge to the right, both open palms thrust forward and down at knee height, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.85
+    }
    },
    "slip1": {
     "lean": -30,
@@ -3496,7 +3515,10 @@
     ],
     "dx": 30,
     "width": 1088,
-    "words": "a great stepping palm strike: one deep step forward to the right, front knee bent, back leg straight, both open palms shoved fully forward at chest height. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "a great stepping palm strike: one deep step forward to the right, front knee bent, back leg straight, both open palms shoved fully forward at chest height. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.85
+    }
    },
    "thrust3": {
     "lean": 26,
@@ -3518,7 +3540,10 @@
     ],
     "dx": 30,
     "width": 1088,
-    "words": "holding the great palm strike: front knee bent, back leg straight behind, both palms extended forward to the right, robe swirling. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "holding the great palm strike: front knee bent, back leg straight behind, both palms extended forward to the right, robe swirling. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.85
+    }
    },
    "thrust4": {
     "lean": 12,
@@ -3559,7 +3584,10 @@
      20,
      60
     ],
-    "words": "raising the right knee to stamp, the right palm lifted high, looking down at the ground. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "raising the right knee to stamp, the right palm lifted high, looking down at the ground. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 1.15
+    }
    },
    "ice2": {
     "lean": 24,
@@ -3579,7 +3607,10 @@
      20,
      60
     ],
-    "words": "stamping the right foot down hard, the right palm slapped flat toward the ground beside it, a deep crouch. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "stamping the right foot down hard, the right palm slapped flat toward the ground beside it, a deep crouch. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.9
+    }
    },
    "edge1": {
     "lean": 4,
@@ -3759,7 +3790,10 @@
      20,
      40
     ],
-    "words": "gathering a great strike: sunk very low, both palms pressed down toward the ground, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "gathering a great strike: sunk very low, both palms pressed down toward the ground, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.88
+    }
    },
    "jianqi2": {
     "lean": 30,
@@ -3780,7 +3814,10 @@
      80
     ],
     "width": 1088,
-    "words": "the greatest palm strike: a long deep lunge to the right, both open palms driven forward at waist height, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "the greatest palm strike: a long deep lunge to the right, both open palms driven forward at waist height, robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 0.88
+    }
    },
    "slip1": {
     "lean": -30,
