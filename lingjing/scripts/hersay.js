@@ -459,3 +459,18 @@ export function whyFacts(o, zh) {
   const lost = o.for?.name ? (zh ? `他输给过${o.for.name}。` : `He lost to ${o.for.name}. `) : '';
   return zh ? `${lost}上面这一步：${wayFact(o, zh, true)}。` : `${lost}The step above: ${wayFact(o, zh, true)}.`;
 }
+
+/* 灵石 short of a thing on the shelf (Look's `haggle.marks` and `place.shelf`): the cheapest one 砍价 could reach first,
+   as facts for her — what he wants, what he holds, how far short, whether haggling closes it (`far`: it cannot).
+   Null when nothing on the shelf is short. The page and the phone (tools/phone/entry.mjs `her`) both say it from here. */
+export function shortFacts(look, zh) {
+  const marks = look?.haggle?.marks, shelf = look?.place?.shelf ?? [];
+  if (!marks || !shelf.length) return null;
+  const short = shelf.filter((i) => marks[i.id]?.short && marks[i.id]?.reach).sort((a, b) => (a.buy ?? 0) - (b.buy ?? 0));
+  const it = short.find((i) => marks[i.id].reach === 'can') ?? short[0];
+  if (!it) return null;
+  const m = marks[it.id], far = m.reach === 'far';
+  const what = zh ? `他想买${it.name}（${it.buy}灵石），手上只有${look.wealth ?? 0}，差${m.short}。${far ? '砍价也砍不到那么低。' : '砍价能砍下来：买旁边就有砍价。'}`
+    : `He wants ${it.name} (${it.buy} stones) and has ${look.wealth ?? 0}: ${m.short} short. ${far ? 'No haggling brings it that low.' : 'Haggling can close it: 砍价 is by the Buy.'}`;
+  return { id: it.id, what, far };
+}

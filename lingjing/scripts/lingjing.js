@@ -48,7 +48,7 @@ import { thinker, stillAsked } from './think.js';
 import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
-import { CLOSE_AT, POOR_AT, createHerSay, herMode, wayFacts, whyFacts } from './hersay.js';
+import { CLOSE_AT, POOR_AT, createHerSay, herMode, shortFacts, wayFacts, whyFacts } from './hersay.js';
 import { factsFor, prefetchLines } from './games/prefetch.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
 import { NPC_TITLE, npcAsk } from './npc-ask.js';
@@ -3044,15 +3044,8 @@ function kanjiaOnLanding() {
   kanjia(KANJIA_OPEN);
 }
 function shortNudge() {
-  const marks = look?.haggle?.marks, shelf = look?.place?.shelf ?? [];
-  if (!marks || !shelf.length) return;
-  const short = shelf.filter((i) => marks[i.id]?.short && marks[i.id]?.reach).sort((a, b) => (a.buy ?? 0) - (b.buy ?? 0));
-  const it = short.find((i) => marks[i.id].reach === 'can') ?? short[0];
-  if (!it) return;
-  const m = marks[it.id], far = m.reach === 'far', zh = lang() !== 'en';
-  const what = zh ? `他想买${it.name}（${it.buy}灵石），手上只有${look.wealth ?? 0}，差${m.short}。${far ? '砍价也砍不到那么低。' : '砍价能砍下来：买旁边就有砍价。'}`
-    : `He wants ${it.name} (${it.buy} stones) and has ${look.wealth ?? 0}: ${m.short} short. ${far ? 'No haggling brings it that low.' : 'Haggling can close it: 砍价 is by the Buy.'}`;
-  herSay.say('short', what, { key: 'first', ...(far ? { variant: 'far' } : {}) });
+  const f = shortFacts(look, lang() !== 'en');
+  if (f) herSay.say('short', f.what, { key: 'first', ...(f.far ? { variant: 'far' } : {}) });
 }
 
 /* 人间功课 handed in: the facts to her — the chore, its meaning in the book, what landed — never a line of ours. */

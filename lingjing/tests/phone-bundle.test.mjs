@@ -145,3 +145,28 @@ test("the novel travels for the phone's 读原著: every 回 book.json names, it
   for (const h of hui) assert.ok(files[h.file]?.length > 1000, `${h.id}: ${h.file}`);
   assert.ok(Object.keys(files).every((f) => !f.includes('..') && f.endsWith('.md')));
 });
+
+test("银月's word at a page moment travels in the bundle: 灵石 short on the shelf, her mode, the facts and the Mac's own pool", async (t) => {
+  const build = await builder();
+  if (!build) return t.skip('esbuild is not installed (npm ci in lingjing/tools/phone)');
+  const { poolOf } = await import('../scripts/hersay.js');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'phone-her-'));
+  const out = await build({ out: path.join(tmp, 'bundle') });
+  const ctx = vm.createContext({});
+  vm.runInContext(fs.readFileSync(out.rules, 'utf8'), ctx);
+  const her = (kind, look, opts) => JSON.parse(ctx.Lingjing.her(kind, JSON.stringify(look), opts));
+  const shelf = [{ id: 'huichun', name: '回春丹', buy: 60 }, { id: 'tie', name: '铁蒺藜', buy: 40 }];
+  const look = { wealth: 30, companion: { joined: true }, place: { shelf }, haggle: { marks: { huichun: { short: 30, reach: 'can' }, tie: { short: 10, reach: 'far' } } } };
+  const awake = her('short', look, { lang: 'zh' });
+  assert.equal(awake.mode, 'awake');
+  assert.equal(awake.id, 'huichun', 'one 砍价 could close comes first');
+  assert.ok(awake.facts.startsWith('他想买回春丹（60灵石），手上只有30，差30。砍价能砍下来'), awake.facts);
+  assert.deepEqual(awake.pool, poolOf('short', { mode: 'awake', lang: 'zh' }));
+  const far = her('short', { ...look, haggle: { marks: { tie: { short: 10, reach: 'far' } } } }, { lang: 'zh' });
+  assert.deepEqual(far.pool, poolOf('short', { mode: 'awake', lang: 'zh', variant: 'far' }));
+  const asleep = her('short', { ...look, companion: { joined: true, asleep: true } }, { lang: 'en' });
+  assert.deepEqual(asleep.pool, poolOf('short', { mode: 'asleep', lang: 'en' }));
+  assert.equal(her('short', { ...look, companion: null }), null, 'not met: silent');
+  assert.equal(her('short', { ...look, haggle: { marks: {} } }), null, 'nothing short: silent');
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
