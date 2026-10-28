@@ -91,7 +91,7 @@ test('the talk component: a face, a bubble, the frame with the shell\'s ✕', ()
   assert.match(f, /g-jc-list[\s\S]*g-jc-typing[\s\S]*g-jc-game/);
 });
 
-test('the shelf: 砍价 by every 买 where a keeper stands; a 买 he cannot pay says 差 X; haggled today, 砍价 greys', () => {
+test('the shelf: ONE 砍价 by the shelf name where a keeper stands, its tap lists what may be haggled; a 买 he cannot pay says 差 X', () => {
   const look = {
     wealth: 50, world: { dir: 'worlds/jiuding' }, words: {},
     place: { shop: { name: '外门库房', keeper: '周衡' }, shelf: [{ id: 'caoren-zha', name: '替身草人', kind: 'treasure', buy: 60 }, { id: 'mend-pill', name: '回春丹', kind: 'pill', buy: 15 }] },
@@ -99,8 +99,13 @@ test('the shelf: 砍价 by every 买 where a keeper stands; a 买 he cannot pay 
   };
   const h = cardHtml({ card: 'item', ids: ['caoren-zha', 'mend-pill'] }, { look, words: WORDS.zh, lang: 'zh', content: {} });
   assert.match(h, /data-do="buy" data-id="caoren-zha" disabled>买 60 · 差 10</);
-  assert.match(h, /data-kanjia="caoren-zha">砍价</);
-  assert.match(h, /data-kanjia="mend-pill" disabled title="今天只照价">砍价</);
+  assert.equal((h.match(/data-kanjia-pick/g) ?? []).length, 1, 'one 砍价 for the shelf');
+  assert.ok(!/data-kanjia="/.test(h), 'no 砍价 by each 买');
+  const picking = cardHtml({ card: 'item', ids: ['caoren-zha', 'mend-pill'] }, { look, words: WORDS.zh, lang: 'zh', content: {}, kanjiaPick: true });
+  assert.match(picking, /砍哪一件？[\s\S]*data-kanjia="caoren-zha">替身草人 · 60</);
+  assert.ok(!/data-kanjia="mend-pill"/.test(picking), 'haggled today: not offered');
+  const allDone = { ...look, haggle: { ...look.haggle, marks: { 'mend-pill': { done: true } } } };
+  assert.match(cardHtml({ card: 'item', ids: ['caoren-zha', 'mend-pill'] }, { look: allDone, words: WORDS.zh, lang: 'zh', content: {} }), /data-kanjia-pick disabled title="今天只照价">砍价</);
   assert.ok(!/data-kanjia/.test(cardHtml({ card: 'item', ids: ['mend-pill'] }, { look: { ...look, haggle: undefined }, words: WORDS.zh, lang: 'zh', content: {} })), 'no keeper: no 砍价');
 });
 

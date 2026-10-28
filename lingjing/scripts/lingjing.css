@@ -369,8 +369,11 @@ button.pl:hover { background: var(--ling-soft); }
 /* Buy and sell look like every other button; only a disabled one is faded. */
 .price { display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; font-family: var(--ui); }
 /* 砍价 by the 买 (kanjia.js): the seal's red, quiet until tapped. */
-.price .act.kanjia { color: var(--seal, #b03a2b); border-color: currentColor; }
-.price .act.kanjia:disabled { color: var(--dim); }
+.shelfhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.shelfhead .act.kanjia { color: var(--seal, #b03a2b); border-color: currentColor; }
+.shelfhead .act.kanjia.on { background: color-mix(in srgb, var(--seal, #b03a2b) 12%, transparent); }
+.shelfhead .act.kanjia:disabled { color: var(--dim); }
+.kanjiapick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; }
 
 /* ── 斗法 ── */
 .duelhead { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
