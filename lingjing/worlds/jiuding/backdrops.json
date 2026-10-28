@@ -495,6 +495,61 @@
    "indoor": false,
    "day": "art/places/baoxie.webp"
   },
+  "weishui": {
+   "at": "weishui",
+   "indoor": false,
+   "day": "art/places/weishui.webp"
+  },
+  "jixia": {
+   "at": "jixia",
+   "indoor": false,
+   "day": "art/places/jixia.webp"
+  },
+  "liubo": {
+   "at": "liubo",
+   "indoor": false,
+   "day": "art/places/liubo.webp"
+  },
+  "taishan": {
+   "at": "taishan",
+   "indoor": false,
+   "day": "art/places/taishan.webp"
+  },
+  "chengshan": {
+   "at": "chengshan",
+   "indoor": false,
+   "day": "art/places/chengshan.webp"
+  },
+  "laoshan": {
+   "at": "laoshan",
+   "indoor": false,
+   "day": "art/places/laoshan.webp"
+  },
+  "pushui": {
+   "at": "pushui",
+   "indoor": false,
+   "day": "art/places/pushui.webp"
+  },
+  "puyang": {
+   "at": "puyang",
+   "indoor": false,
+   "day": "art/places/puyang.webp"
+  },
+  "sangjian": {
+   "at": "sangjian",
+   "indoor": false,
+   "day": "art/places/sangjian.webp"
+  },
+  "leize": {
+   "at": "leize",
+   "indoor": false,
+   "day": "art/places/leize.webp"
+  },
+  "leiyuan": {
+   "at": "leiyuan",
+   "indoor": false,
+   "day": "art/places/leiyuan.webp"
+  },
   "jin-track": {
    "scape": [
     "track"

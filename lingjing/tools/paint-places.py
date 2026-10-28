@@ -105,6 +105,17 @@ KEPT = {
     'minshan': {'seed': 11, 'round': 'r2'},
     'jiangzhou': {'seed': 11, 'round': 'r2'},
     'baoxie': {'seed': 11, 'round': 'r2'},
+    'weishui': {'seed': 11, 'round': 'r2'},
+    'jixia': {'seed': 11, 'round': 'r2'},
+    'liubo': {'seed': 11, 'round': 'r2'},
+    'taishan': {'seed': 11, 'round': 'r2'},
+    'chengshan': {'seed': 11, 'round': 'r2'},
+    'laoshan': {'seed': 11, 'round': 'r2'},
+    'pushui': {'seed': 11, 'round': 'r2'},
+    'puyang': {'seed': 11, 'round': 'r2'},
+    'sangjian': {'seed': 11, 'round': 'r2'},
+    'leize': {'seed': 11, 'round': 'r2'},
+    'leiyuan': {'seed': 11, 'round': 'r2'},
 }
 
 import argparse, json, os, subprocess, time
