@@ -91,7 +91,19 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
   let bed = null; // { board, game, id, src, gain, ducked }
   const heard = { events: 0, played: 0, dropped: 0 };
 
-  const ext = () => (canPlay?.('audio/ogg; codecs="vorbis"') ? 'ogg' : 'm4a');
+  // The format to try first: ogg where the page says it plays it, else m4a. A 「probably」 is not a decode: WebKit's
+  // <audio> answers ogg vorbis 「probably」 while its Web Audio cannot decode it (the phone's WKWebView, 10-28: every
+  // board silent — 「兽潮游戏在手机上没有声音」), so a failed decode falls back to the other file, and stays there.
+  let order = null;
+  const exts = () => (order ??= canPlay?.('audio/ogg; codecs="vorbis"') ? ['ogg', 'm4a'] : ['m4a', 'ogg']);
+  /** `files` ({ ogg, m4a }) decoded in the first format that decodes; a format that failed is not tried first again. */
+  async function decode(files) {
+    let err = null;
+    for (const e of exts().filter((x) => files?.[x])) {
+      try { return await ctx.decodeAudioData(await fetchBuf(url(files[e]))); } catch (x) { err = x; if (order[0] === e) order = [...order.slice(1), e]; }
+    }
+    throw err ?? new Error('no file to decode');
+  }
   const url = (p) => (base ? new URL(p, base).href : p);
 
   async function load() {
@@ -102,7 +114,7 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
       b.getChannelData(0).set(s);
       tones.set(id, b);
     }
-    sprite = await ctx.decodeAudioData(await fetchBuf(url(bank.sprite[ext()])));
+    sprite = await decode(bank.sprite);
     startBed();
   }
 
@@ -173,7 +185,7 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
     want.id = musicOf(maps, want.game);
     const files = bank.music?.[want.id];
     if (!files) return;
-    if (!beds.has(want.id)) beds.set(want.id, fetchBuf(url(files[ext()])).then((b) => ctx.decodeAudioData(b)).catch((e) => { console.warn('[sound] bed', e); return null; }));
+    if (!beds.has(want.id)) beds.set(want.id, decode(files).catch((e) => { console.warn('[sound] bed', e); return null; }));
     const buf = await beds.get(want.id);
     if (!buf || bed !== want || want.src || !audible(settings, 'music')) return;
     const v = voice(buf, { loop: true, vol: 0, bus: musicBus });

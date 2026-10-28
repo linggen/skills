@@ -246,3 +246,24 @@ test('every runner sounds each step: off the story (mount.js), the story\'s cloc
   assert.match(page, /shellFor\(fightShell\(b\), 'kapai'\)/, 'the story\'s card fight sounds as the 游戏厅\'s');
   assert.match(page, /shellFor\(board\.taskId, 'lianliankan'\)\.sound\(event\)/, 'the herb board sounds');
 });
+
+// The phone's WKWebView (10-28, 「兽潮游戏在手机上没有声音」): <audio> answers ogg vorbis 「probably」, Web Audio cannot
+// decode it — the bank never loaded and every board was silent. A failed decode falls back to m4a, and m4a stays first.
+test('a format the page claims but cannot decode falls back to the other file (ogg → m4a), and is not tried first again', async () => {
+  const { AC } = fakeAC();
+  const asked = [];
+  class OggDeaf extends AC {
+    decodeAudioData(b) { return b.ext === 'ogg' ? Promise.reject(new Error('EncodingError: Decoding failed')) : Promise.resolve({ length: 1, duration: 42 }); }
+  }
+  const s = createSound({
+    AC: OggDeaf, storage: memory(), now: () => 1000, canPlay: () => true,
+    fetchJson: async (u) => (u.endsWith('sounds.json') ? SOUNDS : BANK),
+    fetchBuf: async (u) => { asked.push(u); return Object.assign(new ArrayBuffer(8), { ext: u.endsWith('.ogg') ? 'ogg' : 'm4a' }); },
+  });
+  assert.equal(await s.wake(), true, 'the bank loads');
+  assert.equal(s.state().loaded, true);
+  assert.deepEqual(asked.slice(0, 2).map((u) => u.split('.').pop()), ['ogg', 'm4a']);
+  s.music('b', 'shouqiang');
+  await new Promise((ok) => setTimeout(ok, 10));
+  assert.ok(asked.slice(2).every((u) => u.endsWith('.m4a')), `a bed asks m4a first now: ${asked.slice(2)}`);
+});

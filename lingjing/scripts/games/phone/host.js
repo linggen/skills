@@ -194,6 +194,9 @@ async function mountBoard(spec) {
   const picks = [];
   const story = game === 'kapai' ? { onMove: (token) => picks.push(token) } : undefined;
   const dealt = dealOf(game, data, task);
+  // The phone's first tap is often native (the lead card's 开始, the app's own buttons), never a touch in this page, so
+  // the context is woken here: the app's webview plays audio with no gesture asked (mediaTypesRequiringUserAction: none).
+  sound.wake();
   post({ t: 'mounted', game, muted: sound.settings().muted });
   // 「算了，往下走」 by the page's one rule (stuck.js): the board stood unwon long enough, or the game says so
   // (its `stuck(state)`; a pure board's state through mount.js `peek`).
@@ -247,7 +250,7 @@ async function playPiece(id, lang) {
 
 globalThis.LingjingHost = {
   mount: (specJson) => mountBoard(typeof specJson === 'string' ? JSON.parse(specJson) : specJson).catch((e) => post({ t: 'error', error: String(e?.stack ?? e) })),
-  go: () => { go?.(); go = null; },
+  go: () => { sound.wake(); go?.(); go = null; },
   pause: (on) => setPaused(ID, Boolean(on)),
   leave: () => abort?.abort(),
   /// The native ↺ or ?: a click on the hidden bar's button (toolBar), which the board hears as its own.
