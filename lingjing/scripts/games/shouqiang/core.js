@@ -132,7 +132,8 @@ function spawn(g, { kind, mul, lane }, near) {
     x = laneX(g, col);
     y = near ? near.y : (g.level.spawnY ?? -40) - g.rnd() * 20;
   }
-  const hp = Math.round(b.hp * (b.boss ? (g.level.hpMul ?? 1) * (g.level.difficulty ?? 1) : mul));
+  // A 大妖's hp: the level's hpMul and difficulty, × its own `bossHp` (兽潮's small first 大妖, games/shouqiang/tide.js).
+  const hp = Math.round(b.hp * (b.boss ? (g.level.hpMul ?? 1) * (g.level.difficulty ?? 1) * (g.level.bossHp ?? 1) : mul));
   const beast = { id: g.nextId++, kind, x, y, col, path, off, hp, max: hp, shell: b.shell ? Math.round(hp * (1 - b.shell)) : 0, leapt: false, leap: null,
     speed: b.speed * (0.9 + g.rnd() * 0.2), r: b.r,
     fly: Boolean(b.fly), boss: Boolean(b.boss), slow: 0, slowT: 0, freezeT: 0, stunT: 0, burnT: 0, burn: 0,

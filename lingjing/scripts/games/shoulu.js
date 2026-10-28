@@ -191,8 +191,8 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
   loadArt(doc);
   const levels = await levelsOf(data).catch(() => []);
   const asked = levelAsked(data, win?.location?.search), askedAt = levelAt(levels, asked);
-  // a story level plays alone: no level select to wander off to from the story's board
-  const solo = Boolean(levels[askedAt]?.story || levels[askedAt]?.realm), pickBtn = solo ? '' : `<button type="button" data-a="pick">${t.pick}</button>`;
+  // a story level plays alone: no level select to wander off to from the story's board — nor a 兽潮 night (shoulu/tide.js)
+  const solo = Boolean(data?.tide || levels[askedAt]?.story || levels[askedAt]?.realm), pickBtn = solo ? '' : `<button type="button" data-a="pick">${t.pick}</button>`;
   const root = doc.createElement('div');
   root.className = 'g-shoulu';
   root.innerHTML = `<div class="sl-hud"><span class="sl-stat sl-fire">${t.fire} <b data-k="hp">10</b></span><span class="sl-stat sl-stone">${t.stone} <b data-k="money">0</b></span>`
@@ -349,7 +349,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     function showOver() {
       shown = true; closeMenu();
       const win_ = g.over === 'win', st = win_ ? starsFor(g) : 0, row = levels[li];
-      if (win_) keepStars(row.id, st);
+      if (win_ && !row.tide) keepStars(row.id, st); // a 兽潮 night is never dealt twice: no stars to keep
       // in the shell: its foot shows the result and 再来, won or lost; the board stays up under it
       if (shell) { const pk = $('[data-a="pick"]'); if (pk) pk.disabled = true; finish(win_ ? { won: true, stars: st, ...(nextLv(levels, li) ? { next: nextLv(levels, li) } : {}) } : { won: false, stars: 0 }); return; }
       const more = nextLv(levels, li) > 0;

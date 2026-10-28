@@ -224,6 +224,47 @@
         "progress": 30,
         "wealth": 0
       }
+    },
+    {
+      "id": "guan-shouchao",
+      "_about": "兽潮's first night (Hanli 2026-10-28: 「兽潮在故事里没有, 可以在游戏里加上吗? 第一次发生在沉鼎山的后山」 → 「执事堂里加一个兽潮来袭的防御差事就可以了吧」): a game-only tag on the 执事堂's east wall, up after 古四's 小周天 and only while the tide has never been held (`opens.first_tide`: a save with a night held never sees it). Its board is the tide's own (`shouchao`), night 1, at the 后山; counted as the tide's first night (rules/tasks.mjs → rules/shouchao.mjs shouchaoFirst), and once it is done the hourly tide begins (tasks/world.json `shouchao.intro`).",
+      "title": {
+        "zh": "兽潮来袭 · 守后山",
+        "en": "The beast tide · Hold the back hill"
+      },
+      "thread": "chore",
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "执事堂 · 东墙的牌子",
+          "en": "a tag on the stewards' hall's east wall"
+        }
+      },
+      "opens": {
+        "done": "wm-zhoutian",
+        "first_tide": true
+      },
+      "say": {
+        "zh": "东墙新钉了一块朱漆牌，墨迹未干：「后山灵脉上涨，山里的东西闻着灵气，成群往下扑。外门弟子，凡引了气的，到后山崖口守着。」底下一行小字：兽潮不是一回的事，往后隔些时辰就涨一回。",
+        "en": "A new red-lacquered tag on the east wall, the ink still wet: \"The spirit veins under the back hill are swelling; the creatures of these hills smell it and come down in droves. Outer disciples who have drawn qi: to the cliff mouth on the back hill.\" A line of small script beneath: the tide is not a one-time thing; it swells again every few hours."
+      },
+      "done": {
+        "zh": "天亮时，后山崖口只剩一地蹄印。周衡在牌子背面画了个圈：「头一潮守住了。往后它还来，执事堂不再贴牌子——自己听着。」",
+        "en": "By daybreak there are only hoofprints at the cliff mouth. Zhou Heng draws a circle on the back of the tag: \"The first tide is held. It will come again; the hall won't post a tag next time — keep your own ears open.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "shouchao",
+          "n": 1,
+          "at": "houshan"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 10
+      }
     }
   ]
 }

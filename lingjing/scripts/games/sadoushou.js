@@ -13,7 +13,7 @@
 //   mount(container, { lang, data, signal, reducedMotion, seed, lines, onEvent, shell }) → Promise<{ won, stars, stats } | { left }>
 //
 // `data.lv` / the page's `?lv=` picks a level by id or 1-based number; a won level names the next (`next`) so the shell
-// offers 下一关. Nothing touches the save.
+// offers 下一关 (never on a 兽潮 night: `data.tide`, its layout in `data.over`). Nothing touches the save.
 export const meta = {
   id: 'sadoushou',
   // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `sadoushou`; tests/game-sound.test.mjs).
@@ -69,6 +69,10 @@ export function levelAsked(kit, data, search) {
   return byId ?? (Number.isInteger(n) && n >= 1 && n <= ladder.length ? ladder[n - 1] : ladder[0]);
 }
 
+/** The level a mount plays: the one asked for, and over it the layout a host deals (`data.over`: 兽潮's night,
+    games/sadoushou/tide.js — the phone carries an old copy of the level file, so a new night rides in the deal). */
+export const levelDealt = (kit, data, search) => (data?.over ? { ...levelAsked(kit, data, search), ...data.over } : levelAsked(kit, data, search));
+
 /** 下一关 after a won level: the next of the ladder — a story level names none and is none. */
 export function nextOf(kit, level) {
   if (level.story) return null;
@@ -107,8 +111,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     signal?.addEventListener('abort', leave, { once: true });
     Promise.all([fetch(LEVELS).then((r) => r.json()), import('./sadoushou/sadoushou.min.mjs'), loadFont(doc)]).then(([kit, { start }]) => {
       if (done) return;
-      const asked = levelAsked(kit, data, search);
-      let level = { ...asked, jieyin: jieyinOf(kit, asked) }; // its moves from the kit's named set (story: simple; ladder: full)
+      const asked = levelAsked(kit, data, search), dealt = levelDealt(kit, data, search);
+      let level = { ...dealt, jieyin: jieyinOf(kit, dealt) }; // its moves from the kit's named set (story: simple; ladder: full)
       if (dev && /(?:^|[?&])jy=(always|waves|boss)/.test(search)) level = { ...level, jieyin: level.jieyin && { ...level.jieyin, when: search.match(/jy=(\w+)/)[1] } }; // the 游戏厅's dev
       // In the shell: the story lines read on its lead card, over the road standing still; the canvas keeps the big line and its 3-2-1.
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join(lang === 'en' ? ' ' : '') : '';
@@ -119,7 +123,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         onEvent: (f) => { if (f.t === 'end') seals?.then((h) => h?.close()); onEvent?.(f); }, // the level over: the camera off at once
         held: Boolean(said),
         onEnd: (r) => {
-          const nx = nextOf(kit, asked); // 下一关 (the shell's): the ladder's, never a story level
+          const nx = data?.tide ? null : nextOf(kit, asked); // 下一关 (the shell's): the ladder's, never a story level nor a 兽潮 night
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });

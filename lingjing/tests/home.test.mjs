@@ -109,7 +109,7 @@ test('nothing left here today: the board at its floor share, the errands done, å
   // Every board standing here today at its floor share (the day's set, rules/rotation.mjs).
   const floor = Object.fromEntries(bestHere(s, look(s, content, ctx())).all.map((id) => [id, 2]));
   for (const id of ['xu-waimen-roof', 'xu-yaoyuan-shouye']) s = quest(s, content, ctx(), { action: 'take', id }).state;
-  s = { ...s, plays: { day: '2026-10-27', ids: floor }, shouchao: { ...(s.shouchao ?? {}), at: NOW.toISOString() },
+  s = { ...s, plays: { day: '2026-10-27', ids: floor }, shouchao: { ...(s.shouchao ?? {}), n: 1, at: NOW.toISOString() },
     quests: Object.fromEntries(Object.entries(s.quests).map(([id, q]) => [id, { ...q, done_at: NOW.toISOString() }])) };
   const l = look(s, content, ctx());
   assert.notEqual(l.home.next.kind, 'board', JSON.stringify(l.home.next));
@@ -128,7 +128,7 @@ test('nothing left here today: the board at its floor share, the errands done, å
 
 test('mid-cooldown with no work anywhere: the soonest wait, then é—­å…³', () => {
   let s = gate146();
-  s = { ...s, plays: { day: '2026-10-27', ids: { pintu: 2 } }, shouchao: { ...(s.shouchao ?? {}), at: NOW.toISOString() } };
+  s = { ...s, plays: { day: '2026-10-27', ids: { pintu: 2 } }, shouchao: { ...(s.shouchao ?? {}), n: 1, at: NOW.toISOString() } };
   const l = look(s, content, ctx());
   const bare = { ...l, offers: [], book: [], work: null, stage_quest: { ...l.stage_quest, work: null }, waypoint: null, tasks: l.tasks.filter((t) => !t.practice) };
   const h = homeOf(content, s, bare, NOW);

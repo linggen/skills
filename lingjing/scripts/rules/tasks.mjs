@@ -24,7 +24,7 @@ import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, restAfter, sceneOf } from './world.mjs';
 import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
-import { isTide, shouchaoDone, shouchaoHere, shouchaoShut } from './shouchao.mjs';
+import { isTide, shouchaoDone, shouchaoFirst, shouchaoHere, shouchaoShut } from './shouchao.mjs';
 import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardHere, mijingDuel } from './mijing.mjs';
 import { isBout, qiecuoDone, qiecuoHere, qiecuoOver, qiecuoShut } from './qiecuo.mjs';
 
@@ -144,7 +144,7 @@ function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   if (!t) return false;
   // 兽潮 is open by its cooldown alone (rules/shouchao.mjs), never by the generic period: a night counted at 23:00 stays shut the next morning.
-  if (isTide(content, id)) return shouchaoHere(content, state, id, now);
+  if (isTide(content, id)) return shouchaoHere(content, state, id, now) || (shouchaoFirst(content, state, id) && reopened(content, state, id, now));
   // A 秘境探险 room's board: open while he stands in its room (rules/mijing.mjs).
   if (t.mijing) return mijingBoardHere(content, state, id);
   // …and 切磋's bout by its own (rules/qiecuo.mjs).
@@ -170,6 +170,14 @@ function taskDone(state, content, ctx, id) {
   // …and inside its cooldown: refused in the world's words, the minutes left.
   const tideShut = shouchaoShut(content, state, id, ctx.now);
   if (tideShut) return tideShut;
+  // …and its first night, the 执事堂's errand (quests/guan.json, `shouchao.intro`): counted as a night of the tide — its pay,
+  // night 1 held, the hourly tide begun — and the errand's count met.
+  if (shouchaoFirst(content, state, id) && reopened(content, state, id, ctx.now)) {
+    const r = shouchaoDone(state, content, ctx, id);
+    if (!r.state) return r;
+    const handed = advance(content, r.state, { kind: 'board', task: id }, ctx);
+    return { state: r.state, result: { ...r.result, for: 'errand', ...(handed.length ? { handed } : {}) } };
+  }
   const again = reopened(content, state, id, ctx.now);
   // A hosted game won today is counted wherever he stands when it is handed
   // in: the win was at the place (his 五子棋, 2026-09-23: a queued "go to 彭城"

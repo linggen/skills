@@ -12,7 +12,7 @@ SRC = HERE.parent / 'shouqiang' / 'font'
 OUT = HERE.parent.parent / 'scripts' / 'games' / 'sadoushou' / 'font'
 LEVELS = HERE.parent.parent / 'worlds' / 'jiuding' / 'levels' / 'sadoushou.json'
 
-text = ''.join(p.read_text() for p in sorted((HERE / 'src').glob('*.js'))) + LEVELS.read_text() + (HERE.parent.parent / 'scripts' / 'games' / 'sadoushou.js').read_text()
+text = ''.join(p.read_text() for p in sorted((HERE / 'src').glob('*.js'))) + LEVELS.read_text() + (HERE.parent.parent / 'scripts' / 'games' / 'sadoushou.js').read_text() + (HERE.parent.parent / 'scripts' / 'games' / 'sadoushou' / 'tide.js').read_text() + (HERE.parent.parent / 'worlds' / 'jiuding' / 'levels' / 'tide.json').read_text() + '兽潮第潮'  # 兽潮's nights: their lines, the title
 chars = set(chr(c) for c in range(0x20, 0x7f)) | set(re.findall(r'[　-鿿＀-￯—…·×÷−★☆]', text))
 OUT.mkdir(parents=True, exist_ok=True)
 opts = subset.Options()

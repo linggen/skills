@@ -20,6 +20,7 @@ import { buyBack, visitorHere } from './visiting.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
 import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
+import { tideBegun } from './shouchao.mjs';
 import { gamesToday, wallOf, wallPosts } from './rotation.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
@@ -260,6 +261,8 @@ function offersOf(content, state, lang, now) {
       // Story time: after a scene (`done`), or only while it is still ahead (`before`) — 邺城 before and after the 漳水.
       && (!q.opens?.done || passed(content, state, q.opens.done))
       && (!q.opens?.before || !passed(content, state, q.opens.before))
+      // Only before the tide's first night (`first_tide`: the 执事堂's 兽潮 errand — a save that has held a night never sees it).
+      && (!q.opens?.first_tide || !tideBegun(state))
       // A 令 task: one 令 at a time, and never to a place beyond his realm.
       && (!q.pass || (!state.pass && !tooHard(content, state, placeOf(content, q.pass.to) ?? { tier: Infinity })))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier))

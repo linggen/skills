@@ -180,7 +180,7 @@ test('each kind offered only when open by its own rule, and its verbs pass while
   // A walk is the story's: refused.
   assert.equal(call('move', s, now, { place: 'shimen' }).result.refused, 'aside');
   // 兽潮, on its cooldown (rules/shouchao.mjs): open at 古七's 09-snow.
-  const tide = asideAt('00-zhuji/09-snow');
+  const tide = asideAt('00-zhuji/09-snow', { quests: { ...at('00-zhuji/09-snow').s.quests, 'guan-shouchao': { done_at: '2026-10-01T00:00:00.000Z' } } }); // its first night (the 执事堂's errand) held
   assert.ok(has(tide.offers(), 'tide', 'shouchao'));
   notHeld('win', tide.s, tide.now, { id: 'shouchao' });
   // A pool's fight is never open while he stands in a scene (world.mjs encounterOf): not offered.

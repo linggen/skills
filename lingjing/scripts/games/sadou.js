@@ -10,7 +10,8 @@
 // and the result is the shell's; the canvas keeps the big 「撒豆成兵！」 with its scatter and its own 3-2-1 into the run.
 //
 // `data.lv` / the page's `?lv=` picks a level row by id or 1-based number (five, 山道 → 黑松岭); a won level names the
-// next one (`next`, its id) so the shell offers 下一关. Nothing touches the save.
+// next one (`next`, its id) so the shell offers 下一关 — except a 兽潮 night (`data.tide`, sadou/tide.js: the whole
+// layout rides in `data.over`), which names none. Nothing touches the save.
 export const meta = {
   id: 'sadou',
   // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `sadou`; tests/game-sound.test.mjs).
@@ -81,7 +82,8 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         kit, level, seed: seed ?? `sadou|${Date.now()}`, reducedMotion, dev, showFps, lines, onEvent, shell,
         held: Boolean(said), // the road drawn behind the shell's lead card, standing still till it is read (Hanli 10-20: 「开场卡后面先画出画面」)
         onEnd: (r) => {
-          const nx = kit.levels[kit.levels.indexOf(levelAsked(kit, data, search)) + 1]; // 下一关 (the shell's, off the story)
+          // 下一关 (the shell's, off the story) — never on a 兽潮 night (`data.tide`: the night is the rules', not the ladder's)
+          const nx = data.tide ? null : kit.levels[kit.levels.indexOf(levelAsked(kit, data, search)) + 1];
           finish(r.won && nx ? { ...r, next: nx.id } : r);
         },
       });

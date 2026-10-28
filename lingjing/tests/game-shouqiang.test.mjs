@@ -314,7 +314,7 @@ test('the play: bundle current, Phaser the one shared vendored build, every pict
   assert.ok(existsSync(at('scripts/games/shouqiang/font/zcool-kuaile.woff2')));
   assert.match(readFileSync(at('scripts/games/shouqiang/font/OFL.txt'), 'utf8'), /SIL Open Font License/);
   const chars = new Set(readFileSync(at('scripts/games/shouqiang/font/chars.txt'), 'utf8'));
-  const words = JSON.stringify(kit).match(/[㐀-鿿]/g);
+  const words = (JSON.stringify(kit) + readFileSync(at('scripts/games/shouqiang/tide.js'), 'utf8').replace(/\/\/.*$/gm, '')).match(/[㐀-鿿]/g); // …and 兽潮's made nights' lines
   for (const ch of words) assert.ok(chars.has(ch), `the font lacks ${ch}: rebuild`);
 });
 

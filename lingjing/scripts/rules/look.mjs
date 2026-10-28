@@ -503,7 +503,7 @@ function tasksBrief(content, state, ctx) {
         ...(task.kind === 'board' && skipCut(content) != null && !storyBoard(content, state, id) && errandWants(content, state, id, state.place) ? { skip: { cut: skipCut(content) } } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
         ...(task.kao ? { light: true, ...kaoBrief(content, state, ctx.now) } : {}),
-        // 兽潮: tonight's row of 守墙关's table (or the rise past it), its title and lead (rules/shouchao.mjs).
+        // 兽潮: tonight's night — a hand-made row of 守墙关, else one a 主力 塔防 kit made — its kit (`game`), title and deal (rules/shouchao.mjs).
         ...sc,
         ...mj, ...deal,
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,

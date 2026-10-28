@@ -12,12 +12,15 @@
 // night a cooldown. A night missed costs nothing: the senior disciples hold the wall, and only that night's
 // pay is missed.
 //
-// THE NIGHTS: each one the next row of 守墙关's level table (levels/shouqiang.json) that carries a `tide`
-// number, in that order, whose beasts are all of his 回 or before (creatures.json `hui`, read in book
-// order — h11 is 古七, h09 古八). A won night moves him on; a lost one comes again. When the hand-made
-// rows run out, the tide keeps rising on the last of them that fits: more beasts, closer together,
-// tougher each wave, a boss of his 回 (the level's own `difficulty` / `hpMul` / `growth` knobs, handed to
-// the game as `deal.over`). A row added later with a higher `tide` is played first, before the rise goes on.
+// THE NIGHTS: first the hand-made rows of 守墙关's level table (levels/shouqiang.json) that carry a `tide` number, in that
+// order, whose beasts are all of his 回 or before (creatures.json `hui`, read in book order — h11 is 古七, h09 古八); a
+// row added later is played first. Past them (Hanli 2026-10-28: 「最好不要反复」 · 「主力塔防放进兽潮」 · 「关卡要多, 最起码1个月
+// 不重复」), each night is MADE by one of the 游戏厅's 主力 塔防 kits in turn (`rotation`; each kit's maker beside its
+// engine, games/tide.js), never the kit of the night before when another can come, from the save's seed and the
+// night's number; a layout the save has held (`seen`, by its `sig`) is never dealt again. Each kit climbs over its own
+// first `climb` nights; a 大妖 of his 回 comes on the `boss` nights, in a kit with 结印. A won night moves him on;
+// a lost one comes again exactly (nothing it is made from has moved). The day's first nights pay in full, the rest
+// a replay's falling share (tideShare).
 import { dayKey, lockedOf, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { sideLine } from './hui.mjs';
@@ -26,6 +29,7 @@ import { stow, storedLine } from './pouch.mjs';
 import { hashOf } from './travel.mjs';
 import { beatOf, passed, sceneOf } from './world.mjs';
 import { keyDrop } from './mijing.mjs';
+import { TIDES } from '../games/tide.js';
 
 const tideTask = content => (content.tasks?.tasks ?? []).find(t => t.shouchao) ?? null;
 
@@ -44,11 +48,22 @@ export function tideWait(state, t, now) {
 const cooling = (state, t, now) => tideWait(state, t, now) > 0;
 
 /* ── Who may join ── */
+/* Has he held a night of the tide? (A save from before the 执事堂's errand had: it never sees the errand.) */
+export const tideBegun = state => heldN(state.shouchao ?? {}) > 0;
+/* The tide's first night is an errand (`intro`, quests/guan.json — Hanli 2026-10-28: 「执事堂里加一个兽潮来袭的防御差事就可以了吧」):
+   till it is done (or a night was held before it existed) no hourly tide is offered anywhere. */
+const introDone = (content, state, c) => !c.intro || Boolean(state.quests?.[c.intro]?.done_at) || tideBegun(state);
+/* The errand's night: the tide's board, its errand taken and not done, his first night not yet held. */
+export function shouchaoFirst(content, state, id) {
+  const t = tideTask(content);
+  return Boolean(t && t.id === id && t.shouchao.intro && state.quests?.[t.shouchao.intro] && !state.quests[t.shouchao.intro].done_at && !tideBegun(state));
+}
 /* Past the scene that opens it (古四's 小周天), standing at 沉鼎观, on the 古 line, out of any instance,
    run, fight or beat — and after 入门, when the 灵石 are his. */
 function tideUp(content, state, t) {
   const c = t.shouchao;
   if (c.after && !passed(content, state, c.after)) return false;
+  if (!introDone(content, state, c)) return false;
   // …and never inside a key beat's lock (the 柴房 nights: 「你一身是伤，哪儿也去不了」): the story holds him there.
   if (state.sealed || state.rerun || state.fight || beatOf(content, state)) return false;
   if (sideLine(content, sceneOf(content, state))) return false;
@@ -97,65 +112,122 @@ const fits = (content, state, level) => kindsOf(level).every(k => beastOpen(cont
 /* A row a story plays (`story` set: 「药园巡夜 · 开春」 at 09-furnace) is never a night of the tide, `tide` or no. */
 export const tideRows = kit => (kit?.levels ?? []).filter(l => l.tide != null && !l.story).sort((a, b) => a.tide - b.tide);
 
-/* The night he would play now: the first tide row not yet won that fits his 回 — or, past them all, the
-   rise on the last that fits. `n`: which night this is (his wins + 1). */
-export function tonightLevel(content, state) {
+/* How many nights he has held (a save from before 2026-10-28 counted the rows won and the rises). */
+const heldN = held => held.n ?? ((held.won?.length ?? 0) + (held.risen ?? 0));
+/* A kit's level table as its maker reads it: levels/<game>.json, else its games.json row (守炉's levels live there). */
+function tableOf(content, game) {
+  return kitOf(content, game) ?? (content.games?.games ?? []).find(g => g.id === game && Array.isArray(g.levels)) ?? null;
+}
+/* Is night `n` a 大妖's (the task's `boss`: from night `from`, every `every`th)? */
+export function bossNight(c, n) {
+  const b = c.boss ?? {};
+  return n >= (b.from ?? 4) && (n - (b.from ?? 4)) % (b.every ?? 3) === 0;
+}
+/* The kits that turn tonight, in the order they are tried: those met least first, never last night's kit when another can
+   come, then by the night's own draw (the save's seed): so the four come round in turn, in a different order each round. */
+function kitsInTurn(content, state, c, n) {
+  const held = state.shouchao ?? {}, seen = held.kits ?? {}, seed = seedOf(state);
+  const turn = (c.rotation ?? []).filter(k => TIDES[k.game] && (!k.after || passed(content, state, k.after)) && tableOf(content, k.game));
+  const order = (a, b) => (seen[a.game] ?? 0) - (seen[b.game] ?? 0) || hashOf(`${seed}|${n}|${a.game}`) - hashOf(`${seed}|${n}|${b.game}`);
+  const sorted = [...turn].sort(order);
+  return sorted.length > 1 ? [...sorted.filter(k => k.game !== held.last), ...sorted.filter(k => k.game === held.last)] : sorted;
+}
+/* A made night of kit `k`: its maker asked with the night's seed, `salt` stepped on until the layout is one this save has
+   never held (`seen`). The same save, night and history ask the same, so a lost night comes again as it was. */
+/* A maker's night, kept: a maker proves its layout by playing it (tens of ms to a few s), and Look asks every turn. Its
+   answer depends on its ask alone, so the ask is the key (the beasts open written out). */
+const made = new Map();
+function makeOnce(content, game, table, ask, openKey) {
+  const key = `${game}|${ask.seed}|${ask.tier}|${ask.boss}|${openKey}`;
+  if (!made.has(key)) {
+    if (made.size > 400) made.delete(made.keys().next().value);
+    made.set(key, TIDES[game].night(table, ask));
+  }
+  return made.get(key);
+}
+function madeNight(content, state, c, k, n, boss) {
+  const held = state.shouchao ?? {}, seen = new Set(held.seen ?? []), maker = TIDES[k.game], table = tableOf(content, k.game);
+  // First the kit's twenty levels (levels/tide.json, tools/tide-levels.mjs: each proven), in order — a 大妖's night its
+  // next boss level, any other night its next plain one — of beasts he has met and never held; then its maker's own.
+  const fit = l => !seen.has(l.sig) && l.kinds.every(kind => beastOpen(content, state, kind)) && Boolean(l.boss) === Boolean(boss && maker.boss);
+  const level = (kitOf(content, 'tide')?.[k.game]?.levels ?? []).find(fit);
+  if (level) return { deal: level.deal, sig: level.sig, boss: Boolean(level.boss), kinds: level.kinds, game: k.game, level: level.i };
+  const tier = Math.round(Math.min(1, (held.kits?.[k.game] ?? 0) / (c.climb ?? 12)) * 1000) / 1000;
+  const openKey = (content.creatures?.creatures ?? []).filter(x => beastOpen(content, state, x.id)).map(x => x.id).join(',');
+  const ask = { tier, boss: boss && maker.boss, open: kind => beastOpen(content, state, kind) };
+  let first = null;
+  for (let salt = 0; salt < 24; salt += 1) {
+    const made = makeOnce(content, k.game, table, { ...ask, seed: `${seedOf(state)}|${n}${salt ? `|${salt}` : ''}` }, openKey);
+    if (!made) return null;
+    first ??= made;
+    if (!seen.has(made.sig)) return { ...made, game: k.game, tier };
+  }
+  return { ...first, game: k.game, tier };
+}
+
+/* The night he would play now: the first hand-made row of 守墙关's table not yet won that fits his 回 (the tide's opening
+   arc: 野猪, 狰, the 犰狳 and the first young 合窳, the 山门 with its 鬿雀 — a row added later is played first); past
+   them, a night made by one of the 主力 塔防 kits in turn (`rotation`), a 大妖 of his 回 on the task's `boss` nights.
+   `n`: which night this is (the nights held + 1). */
+export function tonight(content, state) {
   const t = tideTask(content), kit = wallKit(content);
   if (!t || !kit) return null;
-  const held = state.shouchao ?? {}, won = new Set(held.won ?? []);
-  const rows = tideRows(kit).filter(l => fits(content, state, l));
-  if (!rows.length) return null;
-  const n = (held.won?.length ?? 0) + (held.risen ?? 0) + 1;
-  const next = rows.find(l => !won.has(l.id));
-  if (next) return { n, row: next, rise: 0 };
-  return { n, row: rows.at(-1), rise: (held.risen ?? 0) + 1 };
+  const c = t.shouchao, held = state.shouchao ?? {}, won = new Set(held.won ?? []), n = heldN(held) + 1;
+  const row = tideRows(kit).filter(l => fits(content, state, l)).find(l => !won.has(l.id));
+  if (row) {
+    const kinds = kindsOf(row);
+    return { n, game: t.game, row, sig: `${t.game}:${row.id}`, kinds, boss: kinds.some(k => kit.beasts?.[k]?.boss), deal: { lv: row.id } };
+  }
+  const boss = bossNight(c, n);
+  const kits = kitsInTurn(content, state, c, n);
+  // A 大妖's night goes to a kit that brings one (and has one of his 回 to bring), the first in turn; else as any night.
+  const tries = boss ? [...kits.filter(k => TIDES[k.game].boss), ...kits] : kits;
+  for (const k of tries) {
+    const made = madeNight(content, state, c, k, n, boss);
+    if (made && (!boss || made.boss || k === tries.at(-1) || !TIDES[k.game].boss)) return { n, ...made };
+  }
+  for (const k of kits) { const made = madeNight(content, state, c, k, n, false); if (made) return { n, ...made }; }
+  return null;
 }
 
-/* The rise past the table (`rise` ≥ 1): the knobs the row carries, turned up by the task's `rise` steps —
-   more beasts and tougher (`difficulty`, which the kit lays on both the count and the hp), each wave
-   tougher than the last (`growth`), closer together (the groups' gaps); and where the row has a boss, one
-   of his 回 in its place — a different one each night when more than one is open (kit beasts `boss`). */
-export function riseOf(content, state, kit, row, rise, step) {
-  const s = step ?? {};
-  const bosses = Object.entries(kit.beasts ?? {}).filter(([k, b]) => !k.startsWith('_') && b?.boss && beastOpen(content, state, k)).map(([k]) => k);
-  const gapMul = Math.max(s.gap_min ?? 0.6, 1 - (s.gap ?? 0.01) * rise);
-  const boss = bosses.length ? bosses[(rise - 1) % bosses.length] : null;
-  const waves = row.waves.map(w => w.flatMap(([kind, count, gap, delay, ...rest]) => {
-    if (!kit.beasts?.[kind]?.boss) return [[kind, count, +(gap * gapMul).toFixed(3), delay, ...rest]];
-    return boss ? [[boss, count, gap, delay, ...rest]] : [];
-  }));
-  return {
-    difficulty: +((row.difficulty ?? 1) * (1 + (s.difficulty ?? 0.02) * rise)).toFixed(3),
-    hpMul: +((row.hpMul ?? 1) * (1 + (s.hp ?? 0) * rise)).toFixed(3),
-    growth: +((row.growth ?? 0) + (s.growth ?? 0.004) * rise).toFixed(3),
-    waves,
-  };
-}
-
-/* What the board is dealt tonight (Look's row, `deal`): the row by id, and over it the night's own words —
-   its title, the lead with 银月's one telling the first time — and, past the table, the rise. */
+/* What the board is dealt tonight (Look's row, `deal`, and the kit that plays it, `game`): the night's own words — its
+   title, the lead with 银月's one telling the first time — over the hand-made row, or the made night's whole deal. */
 export function shouchaoRow(content, state, now) {
-  const t = tideTask(content), kit = wallKit(content), night = tonightLevel(content, state);
-  if (!t || !night) return {};
-  const lang = state.lang, c = t.shouchao, row = night.row;
+  const t = tideTask(content);
+  if (!t) return {};
+  const lang = state.lang, c = t.shouchao;
   const nameOf = n => ({ zh: `${pick(c.title, 'zh')} · 第${n}潮`, en: `${pick(c.title, 'en')} · tide ${n}` });
-  // Inside the cooldown: the row names the night just held, says when the next comes, and deals nothing more.
-  const wait = tideWait(state, t, now);
-  if (wait > 0) return { tide: true, night: night.n - 1, title: pick(nameOf(night.n - 1), lang), wait_min: Math.ceil(wait / 60_000), shut: pick(c.shut, lang) ?? null };
+  // Inside the cooldown: the row names the night just held, says when the next comes, and deals nothing more (nor makes it).
+  const wait = tideWait(state, t, now), held = heldN(state.shouchao ?? {});
+  if (wait > 0 && held > 0) return { tide: true, night: held, title: pick(nameOf(held), lang), wait_min: Math.ceil(wait / 60_000), shut: pick(c.shut, lang) ?? null };
+  // Made only where it may be played (the tide up, or its errand's night): Look asks of every save every turn.
+  if (!shouchaoFirst(content, state, t.id) && !tideUp(content, state, t)) return {};
+  const night = tonight(content, state);
+  if (!night) return {};
   const title = nameOf(night.n);
+  const head = { tide: true, night: night.n, game: night.game, ...(night.boss ? { boss: true } : {}), title: pick(title, lang) };
+  // A made night: its kit's whole deal, the night's title laid on its `over` where it has one (守墙关's top bar reads it).
+  if (!night.row) return { ...head, deal: { ...night.deal, ...(night.deal.over ? { over: { ...night.deal.over, title } } : {}), tide: true, title } };
   // 银月's telling, the first night only (until a night is won): the shell's lead card reads it.
   const told = Boolean(state.shouchao?.told);
-  const lead = [...(told ? [] : c.tell ?? []), ...(row.lead ?? [])];
-  const over = { title, lead, story: t.id, ...(night.rise ? riseOf(content, state, kit, row, night.rise, c.rise) : {}) };
-  return { tide: true, night: night.n, ...(night.rise ? { rise: night.rise } : {}), deal: { lv: row.id, over }, title: pick(title, lang) };
+  const lead = [...(told ? [] : c.tell ?? []), ...(night.row.lead ?? [])];
+  return { ...head, deal: { lv: night.row.id, over: { title, lead, story: t.id } } };
+}
+
+/* The share a night pays (balance.json `play_pay.tide`): the day's first `full` nights in full, then a replay's falling
+   share (`play_pay.replay`, the same rule as a board played again) — the tide every hour is no farm. */
+export function tideShare(content, state, now) {
+  const pp = content.balance?.play_pay ?? {}, full = pp.tide?.full ?? Infinity, fall = pp.replay ?? [1];
+  const held = state.shouchao ?? {}, today = held.day?.key === dayKey(now) ? held.day.count ?? 0 : 0;
+  return today < full ? 1 : fall[Math.min(today - full + 1, fall.length - 1)];
 }
 
 /* ── Counted ── */
-/* Its win handed in (tasks.mjs taskDone): the night's 灵气, the pay by stars, the next night moved on. */
+/* Its win handed in (tasks.mjs taskDone): the night's 灵气, the pay by stars (by the day's share), the next night moved on. */
 export function shouchaoDone(state, content, ctx, id) {
   const t = tideTask(content), c = t.shouchao;
   if (!state.wins?.[id]) return refuse('not-won', null);
-  const night = tonightLevel(content, state);
+  const night = tonight(content, state);
   if (!night) return refuse('not-here', null);
   const s = clone(state);
   const empty = spendStamina(content, s, ctx, c.cost ?? 'game');
@@ -163,23 +235,29 @@ export function shouchaoDone(state, content, ctx, id) {
   delete s.wins[id];
   const stars = Math.max(1, Math.min(3, Number(s.stars?.[id] ?? 1) || 1));
   if (s.stars) delete s.stars[id]; // the night's, not a best ever
-  const row = c.pay?.[stars] ?? {};
-  const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', progress: row.progress ?? 0, wealth: 0 });
-  // 灵石 by the small-game ranks (balance.json `boards`): every night, not a first clear only.
+  const row = c.pay?.[stars] ?? {}, share = tideShare(content, state, ctx.now);
+  const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', progress: row.progress ?? 0, wealth: 0, ...(share < 1 ? { share } : {}) });
+  // 灵石 by the small-game ranks (balance.json `boards`): every night, by the day's share.
   if (!lockedOf(content, s).includes('wealth')) {
-    const amount = content.balance?.boards?.[row.rank] ?? 0;
+    const amount = Math.round((content.balance?.boards?.[row.rank] ?? 0) * share);
     if (amount) { s.wealth += amount; s.day.wealth += amount; paid.wealth = (paid.wealth ?? 0) + amount; paid.board = { rank: row.rank, wealth: amount }; }
   }
-  // An herb the beasts were after, picked by the night (its day and number: two nights may share a day).
+  // An herb the beasts were after, picked by the night (its day and number: two nights may share a day) — a full night's only.
   const herbs = c.herbs ?? [];
-  const herb = row.herb && herbs.length ? herbs[hashOf(`${dayKey(ctx.now)}|${night.n}|${seedOf(s)}|shouchao`) % herbs.length] : null;
+  const herb = row.herb && share >= 1 && herbs.length ? herbs[hashOf(`${dayKey(ctx.now)}|${night.n}|${seedOf(s)}|shouchao`) % herbs.length] : null;
   const full = herb ? storedLine(s, [stow(content, s, herb, row.herb)]) : null;
   if (herb) paid.item = herb;
-  const held = s.shouchao ?? {};
-  s.shouchao = night.rise
-    ? { ...held, risen: night.rise, told: true, at: ctx.now.toISOString() }
-    : { ...held, won: [...(held.won ?? []), night.row.id], told: true, at: ctx.now.toISOString() };
+  const held = s.shouchao ?? {}, today = dayKey(ctx.now);
+  s.shouchao = {
+    ...held, n: night.n, told: true, at: ctx.now.toISOString(),
+    ...(night.row ? { won: [...(held.won ?? []), night.row.id] } : {}),
+    // the layouts held (never dealt again), the nights each kit has had (its climb), the kit last played (never twice running)
+    seen: [...(held.seen ?? []), night.sig].slice(-(c.remember ?? 2000)),
+    kits: { ...(held.kits ?? {}), [night.game]: (held.kits?.[night.game] ?? 0) + 1 }, last: night.game,
+    day: { key: today, count: (held.day?.key === today ? held.day.count ?? 0 : 0) + 1 },
+  };
+  delete s.shouchao.risen;
   s.tasks[id] = { status: 'done', period: dayKey(ctx.now), done_at: ctx.now.toISOString() };
   const key = keyDrop(content, s, ctx, 'shouchao'); // a night won may drop a 秘境令 (rules/mijing.mjs)
-  return { state: s, result: { ok: true, done: id, ...(key ? { key } : {}), night: night.n, level: night.row.id, ...(night.rise ? { rise: night.rise } : {}), stars, paid, gives: null, line: pick(t.done_line, s.lang), ...(full ? { pouch_full: full } : {}) } };
+  return { state: s, result: { ok: true, done: id, ...(key ? { key } : {}), night: night.n, game: night.game, level: night.row?.id ?? night.sig, ...(night.boss ? { boss: true } : {}), ...(share < 1 ? { share } : {}), stars, paid, gives: null, line: pick(t.done_line, s.lang), ...(full ? { pouch_full: full } : {}) } };
 }

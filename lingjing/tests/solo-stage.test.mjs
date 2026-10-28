@@ -26,6 +26,7 @@ function yaoyuan() {
   try { s = playTo(content, newState(content, 'zh', START), 'wm-yaoyuan', { now: START }).state; } finally { delete process.env.LINGJING_STAMINA_LIMIT; }
   s = toldUpTo(content, s);
   s.tell_owed = [];
+  s.quests = { ...(s.quests ?? {}), 'guan-shouchao': { done_at: START.toISOString() } }; // 兽潮's first night (the 执事堂's errand) held
   s.told_scenes = [...new Set([...(s.told_scenes ?? []), s.scene])];
   s.tasks = { ...s.tasks, 'yaoyuan-xunye': { status: 'done' }, 'yaoyuan-luobo': { status: 'done' } }; // and the 萝卜 (2026-10-26)
   s.skipped = [{ task: 'deer-wind', scene: null, line: null, day: '2026-10-24' }];

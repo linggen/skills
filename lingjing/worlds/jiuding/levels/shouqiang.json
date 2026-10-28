@@ -449,6 +449,7 @@
    "title": {"zh": "兽潮 · 硬壳", "en": "The beast tide · the hard shells"},
    "lead": [
     {"zh": "犰狳也来了，一身的硬壳。剑砍不进，火烧得透。", "en": "The qiuyu come too, all hard shell. Swords glance off; fire gets through."},
+    {"zh": "最后头，还跟着一头小合窳。", "en": "And at the very back, a young heyu."},
     {"zh": "兽潮来袭！", "en": "Here they come!", "big": true},
     {"zh": "守住山门！", "en": "Hold the gate!", "big": true}
    ],
@@ -458,8 +459,10 @@
    "wallY": 760,
    "rangeY": 160,
    "difficulty": 1,
-   "hpMul": 2.0,
+   "hpMul": 1.7,
    "growth": 0.42,
+   "_bossHp": "The first 大妖 of the tide (Hanli 10-28: 「后面的兽潮应该就有了吧?」): a young 合窳 at the back of the last wave, its hp × `bossHp` (core.js spawn) — about a third of the 山门's — so 结印 has its moment and is never needed.",
+   "bossHp": 0.3,
    "stars": [0.7, 0.35],
    "moments": {
     "wave_cleared": [{"zh": "挑一张！", "en": "Pick one!"}, {"zh": "这波稳了。", "en": "That wave's done."}, {"zh": "再来多少都一样。", "en": "Bring more."}],
@@ -474,7 +477,7 @@
     [["yezhu", 30, 0.25, 0], ["qiuyu", 8, 0.75, 4]],
     [["qiuyu", 14, 0.6, 0], ["zheng", 22, 0.3, 3]],
     [["yezhu", 30, 0.22, 0], ["zheng", 22, 0.25, 4], ["qiuyu", 10, 0.7, 8]],
-    [["qiuyu", 18, 0.5, 0], ["zheng", 28, 0.22, 3], ["yezhu", 20, 0.3, 8]]
+    [["qiuyu", 18, 0.5, 0], ["zheng", 28, 0.22, 3], ["yezhu", 20, 0.3, 8], ["heyu", 1, 1, 10]]
    ]
   },
   {

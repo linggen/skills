@@ -267,7 +267,8 @@ function dealtBoard(taskId) {
     // A board won and counted, asked for again the same day, is a new game (board-deal.js) — never
     // while its own win is on its way: onWin holds `winning` until Look has caught up.
     const spent = spentBoard(old, task, day);
-    if (!old || old.day !== day || spent) {
+    // …and a task whose game changed (兽潮: each night a 主力 塔防 kit in turn) is dealt by its new game.
+    if (!old || old.day !== day || spent || old.mod !== mod) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
       // A game that keeps only the mount() contract (beat-host.js) is dealt by its own mount, not here.
       if (mountOnly(mod)) boards.set(taskId, { taskId, mod, day, round, data: mountData(task), state: { won: false } });
