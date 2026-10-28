@@ -191,7 +191,7 @@ Hanli, reading the 按故事 counts (「小游戏 25 · 斗法 1 · 大场面 1 
 
 | Board | 回 | Why it stays |
 |---|---|---|
-| 接雨 · 忍字 · 喂饼 | 第一回 | The passages' own actions; Hanli kept them on 10-21. |
+| 接雨 · 喂饼 | 第一回 | The passages' own actions; Hanli kept them on 10-21. (忍字 is 几何冲刺, 主力 since the 今线 pass below.) |
 | 射鹿 | 第二回 | The bow and the wind are the passage (Hanli: 「射鹿可以用砸寨代替」). |
 | 洗髓 | 第二回 | One of the two 调息 Hanli kept (10-27). |
 | 人堆 (华容道) | 第三回 | The crowd to slip to the back of; the 回's one 华容道. |
@@ -199,7 +199,7 @@ Hanli, reading the 按故事 counts (「小游戏 25 · 斗法 1 · 大场面 1 
 | 井台 (华容道) | 第四回 | The 回's one 华容道. |
 | 困阵 (五子) | 第五回 | 「前人留下的一盘棋」: a game of the passage itself. |
 | 七八个口子 (华容道) | 第五回 | The crowd on the riverbank; the 回's one 华容道. |
-| 踏马符 | 第五回 | 邹青松's fight; it goes to 格斗 once he has frames. |
+| 踏马符 | 第五回 | 邹青松's fight, a 几何冲刺 (主力 since the 今线 pass below); it may go to 格斗 once he has frames. |
 | 讲堂试法 | 第六回 | The 结印 teaching beat; its grades are the marks the dock's moves wait on. |
 | 家信 | 第六回 | The picture drawn for 娘 is the passage. |
 | 禹步 · 随风那一式 | 第七回 | 瞿老: 「照着我的脚，走一遍」; walked on the clifftop over and over. |
@@ -233,3 +233,36 @@ Hanli, reading the 按故事 counts (「小游戏 25 · 斗法 1 · 大场面 1 
 The 今 boards that use the kit (捡球递水 · 红薯 · 冬至夜 · 皮褶卡钳 · 纸垫 · 晨脉) were re-skinned earlier (their own beam, basin and spots: a ball, a basket, a wrist); no water drops fall where the scene has none. 捉虫 · 药园的架子底下 is the 药园 practice, not a story board.
 
 **Gates after the pass** (node tools/numbers.mjs --apply --write; typical arrival 100% at every gate): session waits 柴房 10m · 大比前夜 8m (was 7) · 09-futian 9m · 09-yanceng 6m, the rest 0. The model counts a 塔防 board at a board's two minutes like every other; the swapped 守炉 levels play 2 to 4.6 minutes in the sim (the bot), so a sitting runs a little longer than the model says in 古七 and 古八.
+
+## 今线 (2026-10-28 night): 主力 in 沈芒's interludes
+
+Hanli: the 今 line also uses 主力, by the same rule as the 古 line, with an agreed framing (no real-life 塔防 reskin: too much new art). A 今 board is 主力 where its scene can frame one: a character on a phone (the level keeps its art; it is "the phone game"), music playing, a run, an arcade or a judo class. Nothing is kept "for variety". The 今 line's task ids and pay are unchanged (a 今 board pays the 今 line's 修为: rules/lines.mjs).
+
+**What the 今 text can frame.** Read through all four 回 (twelve scenes with a board): phones are in nearly every scene, but a lull with a phone in hand (a place a game could be played) is in one: 今三's last scene, j07-chenmai, bed seventeen, the livestream, the phone on his chest. Music playing (the 街舞社's speakers at the 百团大战, 马小宝's headphones in the dark, the stands' stamping and the 「百分之一」 chant) all sit under boards that are 几何冲刺 already, or under a 对话. There is no arcade, band or judo class in the 今 text.
+
+**几何冲刺 is a 主力 kit** (Hanli: 「踏马符的几何dash也好玩」). It has a `main` row of its own in `games.json` (the kit's tile in the 游戏厅, under 主力), which is how `tools/arcade-rhythm.mjs` reads 主力 off the registry (a kit of 兽潮 or 主力). So the 今 line's seven laps and breaths count as 主力 as they stand, and so do the two 古 dash boards (忍字 and 踏马符), which left the kept lists above. The 古 per-回 counts become 第一回 8 · 5, 第五回 13 · 8.
+
+**Per 今 回, before → after** (boards · 主力; 对话 boards counted in the boards, not in the half):
+
+| 回 | Before | After | 主力 boards |
+|---|---|---|---|
+| 今·一 | 6 · 0 | 6 · 2 | 那一圈 (the 1000 m lap) · 十二正经 (「一条，绕着人跑三圈」), both 几何冲刺 |
+| 今·二 | 5 · 0 | 5 · 2 | 卧推 · 吸四吐六, both 几何冲刺 |
+| 今·三 | 5 · 0 | 5 · 2 | 闭眼单脚站 (几何冲刺) · **十七床 · 手机里那一局 (守炉; was 晨脉 · 六十九, 打地鼠)** |
+| 今·四 | 6 · 0 | 6 · 2 | 手环 · 吸四吐六 · 最后一罚 (几何冲刺) |
+
+Half or more of every 今 回's non-chat boards (2 of 4 · 2 of 4 · 2 of 3 · 2 of 4) is 主力. The one new level: `zl-jin-chenmai`, a 守炉 story level of j07-chenmai (talismans from 入门 on: 剑阵 · 火符 · 寒符; 野猪 · 狰 · 犰狳, all met by 第六回; tier 0.6, between 古六's and 古七's; its own road and spots, the road more than 35 px from every other, bot-proved: the human hand 12 of 12, a hand that does nothing loses). The board's title, `how`, done line and replay name the phone round on bed seventeen, and the way on's refusal reads 「手机里那一局还没打完」; the book's text, the pay and the id stay. The scene's way on still tells the morning of 六十九. The old 晨脉 row is 旧版 (`replaced: shoulu`).
+
+**Kept non-主力, with the passage's reason** (the 对话 boards are the scenes themselves and are not listed: 古籍部 · 讲喘气的书, 六一七 · 别拍, 妈's video call, 黑地里 · 跟着我喘, 阿禾 · 那条线, 决赛前夜 · 正在输入, 随车的大夫; `tests/story-zhuli.test.mjs` holds this list):
+
+| Board | 回 | Why it stays |
+|---|---|---|
+| 投一个给我看看 (砸寨) | 今·一 | 阿禾's line at the 百团大战 stall: the ball over the rim onto 马小宝's shaker. The shot is the passage. |
+| 皮褶卡钳 · 别抖 (打地鼠) | 今·一 | The three pinches in the equipment room; no phone, music or run to frame a game. |
+| 捡球递水 (打地鼠) | 今·二 | Fifty-seven minutes of chores at the end of the bench: he is working, not playing. |
+| 投篮 · 白线上 (砸寨) | 今·二 | The empty gym and the white line; the free throws are the 今 line's spine. |
+| 纸垫 · 一捻一捻 (打地鼠) | 今·三 | 严老师's needle practice: the class itself. |
+| 红薯 · 篮下 (打地鼠) | 今·四 | The stray dog under the basket in the cold. |
+| 冬至夜 · 先听 (打地鼠) | 今·四 | The night after the ambulance, listening to his own pulse in the dark; a game here is wrong in tone. |
+
+**Left.** 抚琴 and 太鼓 are not placed in the 今 line: the beats that carry music (the stamping and the chant under 手环 · 吸四吐六, the 「百分之一」 chant at 最后一罚) are already 几何冲刺 boards,, and 抚琴 and 太鼓 are wired into the 古 story on their own track. 格斗 has no 今 scene with an arcade or a class. If Hanli wants more 主力 in the 今 line the seven kept boards are the pool, and each would need a framing line the book does not give.

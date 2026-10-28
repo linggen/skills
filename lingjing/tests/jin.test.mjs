@@ -181,7 +181,7 @@ test('every 今线 board is a chat, 最后一罚 or 白线上: its task pays not
     // 今二's four (全文后的小游戏 2026-10-26)
     'jin-wotui': 'dash', 'jin-qiu': 'rain', 'jin-xisi': 'dash', // 调息 → 几何冲刺 10-27 (「调息的不太好玩…」); 嘀声 cut 10-27
     // 今三's five (全文后的小游戏 第二批 2026-10-26)
-    'jin-zhizhen': 'rain', 'jin-danjiao': 'dash', 'jin-quxian': 'jinchat', 'jin-chenmai': 'rain' };
+    'jin-zhizhen': 'rain', 'jin-danjiao': 'dash', 'jin-quxian': 'jinchat', 'jin-chenmai': 'shoulu' };
   for (const [id, game] of Object.entries(games)) {
     const t = content.tasks.tasks.find(x => x.id === id);
     assert.equal(t.game, game, id);

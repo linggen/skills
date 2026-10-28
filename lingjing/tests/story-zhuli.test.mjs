@@ -27,7 +27,6 @@ const scenes = new Map();
 /* The boards a 古 回 keeps that are not 主力, each with the story's reason. A conversation (对话) is the scene itself and needs none. */
 const KEPT = {
   'rain-basins': '第一回: 十七个盆接雨水 — the passage\'s own action; Hanli kept it 10-21',
-  'masan-taunt': '第一回: 忍字 — holding in the breath under 马三\'s taunt is the passage; Hanli kept it 10-21',
   'bread-share': '第一回: 喂饼 — the flatbread broken down to the fox; Hanli kept it 10-21',
   'deer-wind': '第二回: 射鹿 — the bow and the wind are the passage (Hanli: 「射鹿可以用砸寨代替」)',
   'sleep-xisui': '第二回: 洗髓 — one of the two 调息 Hanli kept (10-27)',
@@ -37,7 +36,6 @@ const KEPT = {
   'dianmao-jingtai': '第四回: 井台 — the 回\'s one 华容道 (the water carriers at the well)',
   'mijing-zhenyan': '第五回: 困阵 — 「前人留下的一盘棋」, a game of the passage itself',
   'kouzi-crowd': '第五回: 七八个口子 — the crowd on the riverbank; the 回\'s one 华容道',
-  'anhe-tama': '第五回: 踏马符 — 邹青松\'s fight; it moves to 格斗 once he has frames',
   'qianye-qiajue': '第六回: 讲堂试法 — the 结印 teaching beat; its grades are the marks the dock\'s moves wait on',
   'jiaxin-letter': '第六回: 家信 — the picture drawn for 娘 is the passage',
   'jiuge-yubu': '第七回: 禹步 — 瞿老: 「照着我的脚，走一遍」',
@@ -48,9 +46,34 @@ const KEPT = {
   'shijie-tiandan': '第八回: 恬惔虚无 — the second 调息 Hanli kept; 「真气从之」 is the passage',
 };
 const CHAT = new Set(['对话']);
+
+/* The 今 line (沈芒's modern interludes, 今一 … 今四): the same rule (Hanli 10-28: 「今线也用主力」), but a 今 board is 主力 only where the scene can
+   frame it — someone on a phone (the hospital bed), music playing, a run, an arcade. 几何冲刺 is a 主力 kit (a \`main\` row of its own: 「踏马符的
+   几何dash也好玩」), so a 今 board of the laps and breaths is 主力 as it stands. What stays is the passage's own action, each with its reason; a 对话
+   (妈's video call, 六一七's group, 阿禾's typing …) is the scene itself. No 今 scene has an arcade, a band or a judo class. */
+const KEPT_JIN = {
+  'jin-toulan': '今一: 投一个给我看看 — 阿禾\'s line at the stall, the ball over the rim onto 马小宝\'s shaker; the shot is the passage',
+  'jin-biedou': '今一: 皮褶卡钳 — the three pinches in the equipment room; no phone, music or run to frame a game',
+  'jin-qiu': '今二: 捡球递水 — fifty-seven minutes of chores at the end of the bench; he is working, not playing',
+  'jin-whiteline': '今二: 投篮 · 白线上 — the empty gym, the white line: the free throws are the 今 line\'s spine',
+  'jin-zhizhen': '今三: 纸垫 — 严老师\'s needle practice; the class itself',
+  'jin-hongshu': '今四: 红薯 · 篮下 — the stray dog under the basket in the cold; the passage\'s own action',
+  'jin-ting': '今四: 冬至夜 · 先听 — the night after the ambulance, listening to his own pulse in the dark; a game here is wrong in tone',
+};
+const JIN_ZHULI = {
+  'jin-yiquan': '今一: 那一圈 — the 1000 m lap, a run (几何冲刺)',
+  'jin-jingluo': '今一: 十二正经 — 「一条，绕着人跑三圈」, the channels run (几何冲刺)',
+  'jin-wotui': '今二: 卧推 — the out-breath on the push, five reps (几何冲刺)',
+  'jin-xisi': '今二: 吸四吐六 — the breath that runs the channel (几何冲刺)',
+  'jin-danjiao': '今三: 闭眼单脚站 — the balance walked straight (几何冲刺)',
+  'jin-chenmai': '今三: 十七床 · 手机里那一局 — the hospital bed, the phone on his chest (守炉)',
+  'jin-shouhuan': '今四: 手环 · 吸四吐六 — the heart brought down (几何冲刺)',
+  'jin-lastshot': '今四: 最后一罚 — the run to the line (几何冲刺)',
+};
 const FLOOR = { '第一回': 0.5, '第二回': 0.5, '第三回': 0.5, '第四回': 0.7, '第五回': 0.5, '第六回': 0.46, '第七回': 0.7, '第八回': 0.65, '第九回': 0.5 };
 
 const huis = rhythm.chapters.flatMap((c) => c.huis).filter((h) => /^第.回$/.test(h.label.zh));
+const jinHuis = rhythm.chapters.flatMap((c) => c.huis).filter((h) => /^今/.test(h.label.zh));
 const boardsOf = (h) => h.items.filter((i) => i.kind === 'board');
 
 test('a 古 回\'s boards are 主力 unless the story calls for another kind; each kept one has its reason', () => {
@@ -67,6 +90,39 @@ test('主力 is the main content of every 古 回, and a 回 plays at most one �
     assert.ok(z / bs.length >= FLOOR[h.label.zh], `${h.label.zh}: ${z}/${bs.length} 主力`);
     assert.ok(bs.filter((b) => b.game === 'huarong').length <= 1, `${h.label.zh}: more than one 华容道`);
   }
+});
+
+test('a 今 回: every non-chat board is 主力 or listed with the passage\'s reason, and half of them or more are 主力', () => {
+  assert.equal(jinHuis.length, 4);
+  const left = [];
+  for (const h of jinHuis) {
+    for (const b of boardsOf(h)) if (!b.zhuli && !CHAT.has(b.mechanic) && !KEPT_JIN[b.id]) left.push(`${h.label.zh} ${b.id} (${b.game})`);
+    const play = boardsOf(h).filter((b) => !CHAT.has(b.mechanic)), z = play.filter((b) => b.zhuli);
+    assert.ok(z.length * 2 >= play.length, `${h.label.zh}: ${z.length}/${play.length} 主力`);
+  }
+  assert.deepEqual(left, [], 'a non-主力 今 board without a reason: make it 主力 or list it in KEPT_JIN');
+  const all = jinHuis.flatMap(boardsOf);
+  assert.deepEqual(Object.keys(KEPT_JIN).filter((k) => !all.some((b) => b.id === k && !b.zhuli)), [], 'a kept 今 board that is 主力 now (or gone): drop it from KEPT_JIN');
+  assert.deepEqual(Object.keys(JIN_ZHULI).filter((k) => !all.find((b) => b.id === k)?.zhuli), [], 'a listed 今 主力 board that is not 主力');
+  assert.deepEqual(all.filter((b) => b.zhuli).map((b) => b.id).filter((k) => !JIN_ZHULI[k]), [], 'a 今 主力 board without a line in JIN_ZHULI');
+});
+
+test('几何冲刺 is a 主力 kit: a main row of its own, and the story\'s dash boards read as 主力', () => {
+  const kit = reg.games.find((g) => g.id === 'dash' && g.group === 'main' && !g.task && !g.replaced);
+  assert.ok(kit, 'the kit\'s tile');
+  const dash = huis.concat(jinHuis).flatMap(boardsOf).filter((b) => b.game === 'dash');
+  assert.ok(dash.length >= 9);
+  assert.deepEqual(dash.filter((b) => !b.zhuli).map((b) => b.id), []);
+});
+
+test('the phone game on bed seventeen: the 今三 board is a 守炉 level that names the phone, the scene waits on it', () => {
+  const t = tasks.get('jin-chenmai'), row = rowOf(t);
+  assert.equal(t.game, 'shoulu');
+  assert.equal(row.story, 'j07-chenmai');
+  assert.match(row.lead[0].zh, /手机/);
+  assert.match(t.how.zh, /手机/);
+  const sc = scenes.get('j07-chenmai');
+  assert.ok(sc.exits.some((e) => e.needs?.task === 'jin-chenmai' && /手机/.test(e.refuse.zh)));
 });
 
 /* The levels the swap added. */

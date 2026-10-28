@@ -75,7 +75,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 237,
-       "level": "renzi-dash"
+       "level": "renzi-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -276,7 +277,7 @@
       "breakthrough": 0,
       "piece": 3
      },
-     "zhuli": 4,
+     "zhuli": 5,
      "longest": 3838,
      "roaming": 0,
      "side": []
@@ -559,7 +560,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 245,
-       "level": "yiquan-dash"
+       "level": "yiquan-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -619,7 +621,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 246,
-       "level": "jingluo-dash"
+       "level": "jingluo-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -677,7 +680,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 0,
+     "zhuli": 2,
      "longest": 2312,
      "roaming": 0,
      "side": []
@@ -1312,7 +1315,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 257,
-       "level": "wotui-dash"
+       "level": "wotui-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1372,7 +1376,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 258,
-       "level": "xisi-dash"
+       "level": "xisi-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1389,7 +1394,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 0,
+     "zhuli": 2,
      "longest": 4081,
      "roaming": 0,
      "side": []
@@ -1622,7 +1627,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 259,
-       "level": "tama-dash"
+       "level": "tama-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1737,7 +1743,7 @@
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 7,
+     "zhuli": 8,
      "longest": 4536,
      "roaming": 4,
      "side": []
@@ -2164,7 +2170,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 264,
-       "level": "danjiao-dash"
+       "level": "danjiao-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2218,14 +2225,15 @@
        "id": "jin-chenmai",
        "scene": "j07-chenmai",
        "title": {
-        "zh": "晨脉 · 六十九",
-        "en": "Morning pulse · Sixty-nine"
+        "zh": "十七床 · 手机里那一局",
+        "en": "Bed seventeen · One round on the phone"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 137,
-       "level": "chenmai"
+       "mechanic": "塔防",
+       "variety": "塔防·shoulu",
+       "game": "shoulu",
+       "n": 277,
+       "level": "zl-jin-chenmai",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2242,7 +2250,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 0,
+     "zhuli": 2,
      "longest": 4297,
      "roaming": 0,
      "side": []
@@ -3288,7 +3296,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 268,
-       "level": "shouhuan-dash"
+       "level": "shouhuan-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3328,7 +3337,8 @@
        "variety": "几何冲刺",
        "game": "dash",
        "n": 269,
-       "level": "lastshot-dash"
+       "level": "lastshot-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3385,7 +3395,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 0,
+     "zhuli": 2,
      "longest": 2803,
      "roaming": 0,
      "side": []
