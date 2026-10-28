@@ -8341,6 +8341,310 @@
      "lost": "The willow bend fell…"
     }
    }
+  },
+  {
+   "kit": "sadoushou",
+   "story": "j01-weigh",
+   "wall": 100,
+   "stars": [
+    0.75,
+    0.4
+   ],
+   "squad": 10,
+   "dps": 0.25,
+   "shot": {
+    "rate": 3,
+    "perSoldier": 0.08,
+    "max": 20,
+    "speed": 70
+   },
+   "tiers": [
+    {
+     "id": "dou",
+     "power": 1,
+     "name": {
+      "zh": "豆兵",
+      "en": "Bean soldiers"
+     }
+    },
+    {
+     "id": "zhijia",
+     "power": 1.5,
+     "name": {
+      "zh": "纸甲兵",
+      "en": "Paper-armour soldiers"
+     }
+    },
+    {
+     "id": "tongren",
+     "power": 2.2,
+     "name": {
+      "zh": "铜人",
+      "en": "Bronze men"
+     }
+    }
+   ],
+   "press": 0,
+   "jieyin": false,
+   "breach": 8,
+   "rank": 1.5,
+   "perRank": 13,
+   "leadSec": 4.5,
+   "countdown": 3,
+   "id": "zl-jin-biedou",
+   "hui": "j01",
+   "title": {
+    "zh": "皮褶卡钳 · 候着",
+    "en": "The skinfold calipers · Waiting"
+   },
+   "lead": [
+    {
+     "zh": "等钳子的空当，手机里还有一局。",
+     "en": "Waiting for the calipers, a round still open on the phone."
+    },
+    {
+     "zh": "按住左右挪，豆兵自己会打：打两边的卡壮大队伍，打中间的兽。",
+     "en": "Hold left or right: the bean soldiers fire on their own. Hit the side cards to grow the squad, the beasts in the middle."
+    },
+    {
+     "zh": "撒豆成兵！",
+     "en": "Beans into soldiers!",
+     "big": true
+    }
+   ],
+   "belt": {
+    "speed": 7.12,
+    "until": 712,
+    "lines": [
+     {
+      "col": "L",
+      "from": 15,
+      "every": 15,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 10
+       },
+       {
+        "n": 3,
+        "cap": 10
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 30,
+      "every": 16,
+      "cards": [
+       {
+        "n": 3,
+        "cap": 12
+       },
+       {
+        "n": 2,
+        "cap": 12
+       },
+       {
+        "n": -3,
+        "cap": 12
+       },
+       {
+        "n": 1,
+        "cap": 12
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 70,
+      "every": 80,
+      "wall": {
+       "hp": 53
+      }
+     },
+     {
+      "col": "R",
+      "from": 76,
+      "every": 80,
+      "cards": [
+       {
+        "n": 10,
+        "cap": 50,
+        "step": 2,
+        "gold": true
+       }
+      ]
+     },
+     {
+      "col": "R",
+      "from": 80,
+      "every": 160,
+      "wall": {
+       "hp": 69,
+       "gives": "tier"
+      }
+     }
+    ]
+   },
+   "waves": [
+    {
+     "t": 5,
+     "beasts": [
+      [
+       "yezhu",
+       352
+      ]
+     ],
+     "speed": 4.34,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 24,
+     "beasts": [
+      [
+       "yezhu",
+       407
+      ]
+     ],
+     "speed": 4.44,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 41,
+     "beasts": [
+      [
+       "yezhu",
+       462
+      ]
+     ],
+     "speed": 4.54,
+     "span": [
+      -0.38,
+      0.38
+     ]
+    },
+    {
+     "t": 61,
+     "beasts": [
+      [
+       "yezhu",
+       564
+      ]
+     ],
+     "speed": 4.34,
+     "span": [
+      -0.3,
+      0.3
+     ]
+    },
+    {
+     "t": 80,
+     "beasts": [
+      [
+       "yezhu",
+       520
+      ]
+     ],
+     "speed": 4.44
+    }
+   ],
+   "boss": null,
+   "moments": {
+    "_about": "银月's lines at the level's moments (the defaults; the host may send her prefetched ones — doc/game-kit.md § 台词预取). One is picked per moment.",
+    "start": [
+     {
+      "zh": "豆兵自己会打，你只管左右挪！两边的卡越打越大，中间的兽要打死。",
+      "en": "The soldiers fire on their own — just move! Side cards grow as you hit them; the beasts in the middle must die."
+     }
+    ],
+    "card": [
+     {
+      "zh": "那张卡打大了，站过去接住！",
+      "en": "That card's grown — stand under it to take it!"
+     }
+    ],
+    "red": [
+     {
+      "zh": "红卡别接，打到正的再说。",
+      "en": "Don't take a red card — shoot it positive first."
+     }
+    ],
+    "wall": [
+     {
+      "zh": "石墙后面有好东西，打碎它！",
+      "en": "Something good behind that stone wall — break it!"
+     }
+    ],
+    "tier": [
+     {
+      "zh": "豆兵换了甲，更能打了！",
+      "en": "New armour — the soldiers hit harder!"
+     }
+    ],
+    "wave": [
+     {
+      "zh": "又来一拨！",
+      "en": "Another wave!"
+     }
+    ],
+    "low": [
+     {
+      "zh": "山门要撑不住了！",
+      "en": "The gate won't hold much longer!"
+     }
+    ],
+    "boss": [
+     {
+      "zh": "大妖出来了！全都打它！",
+      "en": "The great beast is out! Everyone, at it!"
+     }
+    ],
+    "charge": [
+     {
+      "zh": "它要冲你这一列了，换一列！",
+      "en": "It's charging your column — move to another!"
+     }
+    ],
+    "won": [
+     {
+      "zh": "守住了！豆兵们，好样的。",
+      "en": "We held! Well done, bean soldiers."
+     }
+    ],
+    "lost": [
+     {
+      "zh": "山门破了……差一点，再来一把豆子。",
+      "en": "The gate broke… so close. Another handful of beans."
+     }
+    ]
+   },
+   "difficulty": 0.806,
+   "sky": "fog-night",
+   "tone": {
+    "color": "#14243a",
+    "alpha": 0.14
+   },
+   "words": {
+    "zh": {
+     "horde": "野猪",
+     "wall": "崖脚",
+     "won": "崖脚守住了！",
+     "lost": "崖脚没守住……"
+    },
+    "en": {
+     "horde": "boars",
+     "wall": "the cliff foot",
+     "won": "Held!",
+     "lost": "The cliff foot fell…"
+    }
+   },
+   "par": 98
   }
  ]
 }

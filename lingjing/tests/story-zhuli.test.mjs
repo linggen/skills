@@ -11,6 +11,9 @@ import path from 'node:path';
 import { sim as sqSim, BOTS as sqBots, withRoots } from '../scripts/games/shouqiang/core.js';
 import { sim as slSim } from '../scripts/games/shoulu/core.js';
 import { sim as sdSim, humanBot, BOTS as sdBots } from '../scripts/games/sadoushou/core.js';
+import * as F from '../scripts/games/fighter.js';
+import { bot as fBot } from '../scripts/games/bots/fighter.js';
+import { playModule } from '../tools/board-bots.mjs';
 
 const ROOT = new URL('..', import.meta.url);
 const read = (p) => JSON.parse(fs.readFileSync(new URL(p, ROOT), 'utf8'));
@@ -49,26 +52,28 @@ const KEPT = {
 };
 const CHAT = new Set(['对话']);
 
-/* The 今 line (沈芒's modern interludes, 今一 … 今四): the same rule (Hanli 10-28: 「今线也用主力」), but a 今 board is 主力 only where the scene can
-   frame it — someone on a phone (the hospital bed), music playing, a run, an arcade. 几何冲刺 is a 主力 kit (a \`main\` row of its own: 「踏马符的
-   几何dash也好玩」), so a 今 board of the laps and breaths is 主力 as it stands. What stays is the passage's own action, each with its reason; a 对话
-   (妈's video call, 六一七's group, 阿禾's typing …) is the scene itself. No 今 scene has an arcade, a band or a judo class. */
+/* The 今 line (沈芒's modern interludes, 今一 … 今四): the same rule (Hanli 10-28: 「今线也用主力」), framed two ways. 几何冲刺 is a 主力 kit (a \`main\`
+   row of its own: 「踏马符的几何dash也好玩」), so a 今 board of the laps and breaths is 主力 as it stands. And 沈芒 plays the games of
+   灵根, the app 表舅 installed (今线/定例.md; Hanli 10-28: 「让沈芒玩linggen的游戏就好了」): at a pause in a scene he opens it on his
+   phone and plays a round of a 主力 kit — 撒豆成兵, 格斗, 抚琴, 太鼓, 守炉 — and the board's how-line says so, in twenty characters.
+   What stays is the passage's own action in the middle of the scene, each with its reason; a 对话 (妈's video call, 六一七's group,
+   阿禾's typing …) is the scene itself. */
 const KEPT_JIN = {
   'jin-toulan': '今一: 投一个给我看看 — 阿禾\'s line at the stall, the ball over the rim onto 马小宝\'s shaker; the shot is the passage',
-  'jin-biedou': '今一: 皮褶卡钳 — the three pinches in the equipment room; no phone, music or run to frame a game',
-  'jin-qiu': '今二: 捡球递水 — fifty-seven minutes of chores at the end of the bench; he is working, not playing',
   'jin-whiteline': '今二: 投篮 · 白线上 — the empty gym, the white line: the free throws are the 今 line\'s spine',
-  'jin-zhizhen': '今三: 纸垫 — 严老师\'s needle practice; the class itself',
-  'jin-hongshu': '今四: 红薯 · 篮下 — the stray dog under the basket in the cold; the passage\'s own action',
   'jin-ting': '今四: 冬至夜 · 先听 — the night after the ambulance, listening to his own pulse in the dark; a game here is wrong in tone',
 };
 const JIN_ZHULI = {
+  'jin-biedou': '今一: 皮褶卡钳 · 候着 — 候着钳子, a round of 撒豆成兵 in 灵根',
+  'jin-qiu': '今二: 板凳末端 — a round of 格斗 in 灵根 (秦雁)',
+  'jin-zhizhen': '今三: 纸垫 · 课间 — a tune on the qin (抚琴) in 灵根',
+  'jin-hongshu': '今四: 红薯 · 篮下 — a stretch of the drum (太鼓) in 灵根',
   'jin-yiquan': '今一: 那一圈 — the 1000 m lap, a run (几何冲刺)',
   'jin-jingluo': '今一: 十二正经 — 「一条，绕着人跑三圈」, the channels run (几何冲刺)',
   'jin-wotui': '今二: 卧推 — the out-breath on the push, five reps (几何冲刺)',
   'jin-xisi': '今二: 吸四吐六 — the breath that runs the channel (几何冲刺)',
   'jin-danjiao': '今三: 闭眼单脚站 — the balance walked straight (几何冲刺)',
-  'jin-chenmai': '今三: 十七床 · 手机里那一局 — the hospital bed, the phone on his chest (守炉)',
+  'jin-chenmai': '今三: 十七床 · 手机里那一局 — the hospital bed, the phone on his chest, a round of 守炉 in 灵根',
   'jin-shouhuan': '今四: 手环 · 吸四吐六 — the heart brought down (几何冲刺)',
   'jin-lastshot': '今四: 最后一罚 — the run to the line (几何冲刺)',
 };
@@ -95,13 +100,13 @@ test('主力 is the main content of every 古 回, and a 回 plays at most one �
   }
 });
 
-test('a 今 回: every non-chat board is 主力 or listed with the passage\'s reason, and half of them or more are 主力', () => {
+test('a 今 回: every non-chat board is 主力 or listed with the passage\'s reason, and three in four of them or more are 主力', () => {
   assert.equal(jinHuis.length, 4);
   const left = [];
   for (const h of jinHuis) {
     for (const b of boardsOf(h)) if (!b.zhuli && !CHAT.has(b.mechanic) && !KEPT_JIN[b.id]) left.push(`${h.label.zh} ${b.id} (${b.game})`);
     const play = boardsOf(h).filter((b) => !CHAT.has(b.mechanic)), z = play.filter((b) => b.zhuli);
-    assert.ok(z.length * 2 >= play.length, `${h.label.zh}: ${z.length}/${play.length} 主力`);
+    assert.ok(z.length * 4 >= play.length * 3, `${h.label.zh}: ${z.length}/${play.length} 主力`);
   }
   assert.deepEqual(left, [], 'a non-主力 今 board without a reason: make it 主力 or list it in KEPT_JIN');
   const all = jinHuis.flatMap(boardsOf);
@@ -118,14 +123,43 @@ test('几何冲刺 is a 主力 kit: a main row of its own, and the story\'s dash
   assert.deepEqual(dash.filter((b) => !b.zhuli).map((b) => b.id), []);
 });
 
-test('the phone game on bed seventeen: the 今三 board is a 守炉 level that names the phone, the scene waits on it', () => {
-  const t = tasks.get('jin-chenmai'), row = rowOf(t);
-  assert.equal(t.game, 'shoulu');
-  assert.equal(row.story, 'j07-chenmai');
-  assert.match(row.lead[0].zh, /手机/);
-  assert.match(t.how.zh, /手机/);
-  const sc = scenes.get('j07-chenmai');
+const PHONE = ['jin-biedou', 'jin-qiu', 'jin-zhizhen', 'jin-hongshu', 'jin-chenmai'];
+const howZh = (t) => (typeof t.how.zh === 'string' ? t.how.zh : t.how.zh.desk);
+test('沈芒 plays 灵根: five 今 boards whose how-line (twenty characters) says he opened it on his phone, one kit apiece but never twice in a row', () => {
+  const kinds = new Map();
+  for (const id of PHONE) {
+    const t = tasks.get(id), line = howZh(t).split('。')[0] + '。';
+    assert.match(line, /沈芒.*灵根/, id);
+    assert.ok([...line].length <= 20, `${id}: ${line} is ${[...line].length} characters`);
+    kinds.set(id, t.game);
+    const row = reg.games.find((g) => g.task === id && !g.replaced);
+    assert.ok(row && row.group === 'jin', `${id}: its games.json row`);
+    assert.ok(reg.games.some((g) => g.task === id && g.replaced === row.id && g.id === 'rain'), `${id}: the old 打地鼠 row is 旧版`);
+  }
+  assert.deepEqual([...kinds.values()], ['sadoushou', 'fighter', 'fuqin', 'taiko', 'shoulu'], 'a kit apiece: the 塔防, 格斗, 抚琴, 太鼓');
+  // the order the book plays them, a 回 at a time: no board of a kit right after another of it
+  for (const h of jinHuis) {
+    const order = boardsOf(h);
+    for (let i = 1; i < order.length; i += 1) if (!CHAT.has(order[i].mechanic)) assert.notEqual(order[i].game, order[i - 1].game, `${h.label.zh} ${order[i - 1].id} · ${order[i].id}: one kit twice`);
+  }
+});
+
+test('the board of the phone game on bed seventeen: the scene waits on it', () => {
+  const sc = scenes.get('j07-chenmai'), t = tasks.get('jin-chenmai');
+  assert.ok(/灵根/.test(rowOf(t).lead[0].zh), 'its lead names 灵根');
   assert.ok(sc.exits.some((e) => e.needs?.task === 'jin-chenmai' && /手机/.test(e.refuse.zh)));
+});
+
+test('灵根\'s 格斗: 秦雁 on the phone is a sparring bout a human-like hand wins within three tries (a slow hand too), and a masher, a wall of blocks and an idle hand lose', () => {
+  const row = reg.games.find((g) => g.task === 'jin-qiu' && !g.replaced), L = row.levels[0], d = { levels: [L] };
+  assert.deepEqual([row.id, row.mechanic, row.scene], ['fighter', '格斗', 'j04-line']);
+  assert.equal(L.stage.win, 'yield');
+  assert.match(L.ready.zh, /灵根/);
+  assert.ok(playModule(F, fBot, { tries: 3, deal: d, limit: 180000 }).won, 'a human-like hand');
+  assert.ok(playModule(F, fBot, { tries: 3, deal: d, limit: 180000, reaction: 320 }).won, 'a slower hand (320 ms) too');
+  const mash = (x) => (x.end ? null : { g: (x.t / 150 | 0) % 2 ? 'light' : 'heavy' });
+  const wall = (x) => (x.in.block ? null : { g: 'block', on: true });
+  for (const [name, b] of [['mash', mash], ['wall', wall], ['idle', () => null]]) assert.ok(!playModule(F, b, { tries: 3, deal: d, limit: 180000 }).won, `${name} won`);
 });
 
 /* The levels the swap added. */

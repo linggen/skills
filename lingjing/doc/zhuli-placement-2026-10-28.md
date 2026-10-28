@@ -268,3 +268,18 @@ Half or more of every 今 回's non-chat boards (2 of 4 · 2 of 4 · 2 of 3 · 2
 | 冬至夜 · 先听 (打地鼠) | 今·四 | The night after the ambulance, listening to his own pulse in the dark; a game here is wrong in tone. |
 
 **Left.** 抚琴 and 太鼓 are not placed in the 今 line: the beats that carry music (the stamping and the chant under 手环 · 吸四吐六, the 「百分之一」 chant at 最后一罚) are already 几何冲刺 boards,, and 抚琴 and 太鼓 are wired into the 古 story on their own track. 格斗 has no 今 scene with an arcade or a class. If Hanli wants more 主力 in the 今 line the seven kept boards are the pool, and each would need a framing line the book does not give.
+
+### 今线, second pass: 沈芒 plays 灵根 (2026-10-28, late)
+
+Hanli: 「今线可以让主角玩游戏, linggen在今线出现过了已经, 让沈芒玩linggen的游戏就好了」. 灵根 (Linggen) is the phone app 表舅 installed (今线/定例.md: 记账 in 今二, 对话 and 健康 in 今三, 每日任务 and 师父 in 今四). At a pause in a scene he opens it and plays a round of a 主力 kit; the board's how-line says so in twenty characters (the controls follow it), the book's text is untouched. Id, done line and pay kept; the old 打地鼠 rows are 旧版.
+
+| 回 | Before (boards · 主力) | After | 主力 boards |
+|---|---|---|---|
+| 今·一 | 6 · 2 | 6 · 3 | 那一圈 · 十二正经 (dash) · **皮褶卡钳 · 候着** (撒豆成兵 `zl-jin-biedou`, 候着钳子) |
+| 今·二 | 5 · 2 | 5 · 3 | 卧推 · 吸四吐六 (dash) · **板凳末端 · 五十七分钟** (格斗 `jin-qiu-ge`, 秦雁 from 切磋, a sparring bout) |
+| 今·三 | 5 · 2 | 5 · 3 | **纸垫 · 课间** (抚琴 `jin-zhizhen-qin`, 送别's first lines, taps) · 闭眼单脚站 (dash) · 十七床 (守炉) |
+| 今·四 | 6 · 2 | 6 · 3 | **红薯 · 篮下** (太鼓 `jin-hongshu-gu`) · 手环 · 最后一罚 (dash) |
+
+Three in four of every 今 回's non-chat boards are 主力 (3/4 · 3/4 · 3/3 · 3/4); no kit twice in a row in a 回. Every level is bot-proved (`tests/story-zhuli.test.mjs`; 抚琴 and 太鼓 by their own tests): the 撒豆成兵 round 12 of 12 with no 结印 (j01 is before 入门), the 格斗 bout won by the human and a 320 ms hand while a masher, a wall and an idle hand lose, the qin and the drum within three tries.
+
+**Kept, mid-action or tone** (each with its reason in the test): 投一个给我看看 (the live challenge at the stall), 投篮 · 白线上 (the 今 spine), 冬至夜 · 先听 (the night after the ambulance). The 对话 boards are the scenes. Left: nothing new in the 今 line; 抚琴 and 太鼓 now have a story row each.

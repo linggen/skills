@@ -594,14 +594,15 @@
        "id": "jin-biedou",
        "scene": "j01-weigh",
        "title": {
-        "zh": "皮褶卡钳 · 别抖",
-        "en": "The skinfold calipers · Hold still"
+        "zh": "皮褶卡钳 · 候着",
+        "en": "The skinfold calipers · Waiting"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 119,
-       "level": "biedou"
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 279,
+       "level": "zl-jin-biedou",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -680,7 +681,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 2,
+     "zhuli": 3,
      "longest": 2312,
      "roaming": 0,
      "side": []
@@ -1328,14 +1329,15 @@
        "id": "jin-qiu",
        "scene": "j04-line",
        "title": {
-        "zh": "捡球递水 · 五十七分钟",
-        "en": "Balls and bottles · Fifty-seven minutes"
+        "zh": "板凳末端 · 五十七分钟",
+        "en": "End of the bench · Fifty-seven minutes"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 5,
-       "level": "qiu"
+       "mechanic": "格斗",
+       "variety": "格斗",
+       "game": "fighter",
+       "n": 280,
+       "level": "jin-qiu-ge",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1393,7 +1395,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 2,
+     "zhuli": 3,
      "longest": 4081,
      "roaming": 0,
      "side": []
@@ -2140,14 +2142,15 @@
        "id": "jin-zhizhen",
        "scene": "j07-ankle",
        "title": {
-        "zh": "纸垫 · 一捻一捻",
-        "en": "The paper pad · Twist by twist"
+        "zh": "纸垫 · 课间",
+        "en": "The paper pad · Between classes"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 135,
-       "level": "zhizhen"
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "fuqin",
+       "n": 281,
+       "level": "jin-zhizhen-qin",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2247,7 +2250,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 2,
+     "zhuli": 3,
      "longest": 4297,
      "roaming": 0,
      "side": []
@@ -3269,11 +3272,12 @@
         "zh": "红薯 · 篮下",
         "en": "Sweet Potato · Under the basket"
        },
-       "mechanic": "打地鼠",
-       "variety": "打地鼠",
-       "game": "rain",
-       "n": 75,
-       "level": "hongshu"
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "taiko",
+       "n": 282,
+       "level": "jin-hongshu-gu",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3392,7 +3396,7 @@
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 2,
+     "zhuli": 3,
      "longest": 2803,
      "roaming": 0,
      "side": []
