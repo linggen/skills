@@ -12,7 +12,7 @@ const content = loadContent();
 const NOW = new Date('2026-10-27T10:00:00');
 const ctx = { now: NOW, quests: [] };
 const base = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/waimen.json', import.meta.url), 'utf8'));
-const atDiyilu = () => ({ ...base, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...(base.tasks ?? {}), 'diyilu-niugu': { status: 'done', period: 'once' } }, stamina: 100, stamina_at: NOW.toISOString() });
+const atDiyilu = () => ({ ...base, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...(base.tasks ?? {}), 'diyilu-niugu': { status: 'done', period: 'once' }, 'diyilu-tama': { status: 'done', period: 'once' } }, stamina: 100, stamina_at: NOW.toISOString() });
 
 test('the 饭桶\'s first meeting: the 九转回春丹 it put in his hands is kept as the step\'s 所得, beside the card', () => {
   const r = VERBS.resolve(atDiyilu(), content, ctx, { exit: 'save' });
@@ -46,4 +46,46 @@ test('the page plays every thing gained big, before the step\'s cards, from the 
   assert.match(src, /gainedThings\(look, seen\);\n\s*gainedCards\(look, seen\);/, 'things first, then cards, on every read');
   assert.match(src, /function gainedThings\(was, now\)[\s\S]*?g\.n === was\.gained\?\.n/, 'once per step: its count');
   assert.match(src, /x\?\.thing \? thingCard\(x\.thing\)/, 'a thing is drawn as a card is');
+});
+
+// 踏马符 is the book's at the 饭桶's first feed and nowhere else (Hanli 2026-10-28: 「踏马符游戏里出现地方不对, 我刚打怪得到了,
+// 应该安排一个饭桶的剧情固定游戏. 让玩家按要求放剧情里的东西进饭桶, 开出来踏马符等. 和故事对齐.」): wm-diyilu's second board is a
+// fixed 开炉 (the 银毛 in, the 踏马符 out), blocks the exit, and its win puts the 踏马符 in the bag, shown big as a gain.
+test('wm-diyilu: the 踏马符 board blocks the way on, hands the 踏马符 over once won, and shows it as a gain', async () => {
+  const { win, task } = await import('../scripts/rules.mjs');
+  const open = { ...atDiyilu(), tasks: { ...atDiyilu().tasks, 'diyilu-tama': { status: 'offered' } } };
+  const no = VERBS.resolve(open, content, ctx, { exit: 'save' });
+  assert.equal(no.result.ok, false, 'the exit waits on the second board');
+  const w = win(open, content, ctx, { id: 'diyilu-tama' });
+  assert.equal(w.result.ok, true, JSON.stringify(w.result));
+  const d = task(w.state, content, ctx, { action: 'done', id: 'diyilu-tama' });
+  assert.equal(d.result.ok, true, JSON.stringify(d.result));
+  assert.equal(d.state.bag['tama-fu'], 1);
+  assert.deepEqual(d.state.gained.items, [{ id: 'tama-fu', n: 1 }]);
+  const look = VERBS.look(d.state, content, ctx, {}).result;
+  assert.deepEqual(look.gained.items.map((i) => i.id), ['tama-fu']);
+  assert.ok(VERBS.resolve(d.state, content, ctx, { exit: 'save' }).result.ok, 'the way on opens');
+  // …and a save that never had it still gets it at wm-wangzuo; one that has it is not given a second.
+  const wz = content.chapters['00-waimen'].scenes['wm-wangzuo'].exits.find((e) => e.id === 'open');
+  assert.equal(wz.grant.unless_found, true);
+});
+
+test('the pot is the book\'s: the 银毛 gives the 踏马符 in gold, any other pot is spat back whole', async () => {
+  const fetch0 = globalThis.fetch;
+  globalThis.fetch = async (u) => ({ json: async () => JSON.parse(fs.readFileSync(new URL(u), 'utf8')) });
+  try {
+    const { storyPot } = await import('../scripts/games/kailu.js');
+    const deal = content.tasks.tasks.find((t) => t.id === 'diyilu-tama').deal.story;
+    const { brief, roll } = await storyPot('zh', deal);
+    assert.deepEqual(brief.inputs.map((i) => i.id), ['yinyue-mao', 'shizi', 'kuye', 'chaihuo']);
+    assert.equal(brief.inputs[0].name, '一根银毛');
+    const spat = await roll(['shizi'], 0, false);
+    assert.equal(spat.spat_back, true);
+    assert.equal((await roll(['yinyue-mao', 'shizi'], 0, false)).spat_back, true);
+    const { potOf } = await import('../scripts/games/bots/kailu.js');
+    const r = await roll(potOf(deal), 0, false);
+    assert.deepEqual([r.ok, r.grade, r.story, r.outs.map((o) => o.id)], [true, 'best', true, ['tama-fu']]);
+    assert.equal(r.outs[0].name, '踏马符');
+    assert.equal(r.outs[0].hint, '足下一踏，马上便走。');
+  } finally { globalThis.fetch = fetch0; }
 });

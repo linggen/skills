@@ -10,7 +10,7 @@ import { coolingUntil, oddsOf, throwOn } from './breakthrough.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
-import { stow, storedLine } from './pouch.mjs';
+import { hasFound, stow, storedLine } from './pouch.mjs';
 import { bornRoots, rootName, stoneRoots } from './roots.mjs';
 import { oweExit } from './tell.mjs';
 import { seenMet } from './examine.mjs';
@@ -676,9 +676,12 @@ const replaying = (content, s, scene) => !inMade(s) && (s.ended.includes(s.chapt
    made scene is the model's: its grant is progress and wealth only, whatever
    an older save's scene says, and each of its exits pays once (review,
    2026-09-24 — a well that looped on itself paid 息壤 five times). */
+/* A grant that is a fallback (`unless_found`: 踏马符 at wm-wangzuo for a save that passed wm-diyilu before its board handed
+   it over) hands its thing over only if he never had it. */
+const unlessHad = (s, g) => (g.unless_found && g.item && hasFound(s, g.item) ? Object.fromEntries(Object.entries(g).filter(([k]) => k !== 'item' && k !== 'n')) : g);
 function grantOf(s, scene, exit) {
   if (!exit.grant) return null;
-  if (!inMade(s)) return replaying(null, s, scene) ? null : exit.grant;
+  if (!inMade(s)) return replaying(null, s, scene) ? null : unlessHad(s, exit.grant);
   const key = `${scene.id}/${exit.id}`;
   if ((s.made.paid ?? []).includes(key)) return null;
   s.made.paid = [...(s.made.paid ?? []), key];
@@ -704,7 +707,7 @@ export function judge(state, content, ctx, args) {
   return { state: null, result: { ok: true, right: judgeAnswer(content, args.key, args.answer) } };
 }
 
-export { advanceChapter, clone, paysOf, replaying, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, triedToday };
+export { advanceChapter, clone, gainsOf, paysOf, replaying, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, triedToday };
 
 
 /* One of an item out of the bag (an exit's `take`). Never below nothing: an

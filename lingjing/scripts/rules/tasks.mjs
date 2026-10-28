@@ -9,7 +9,7 @@ import { addStamina, dayKey, lockedOf, periodKey, pick, settleStamina, seedOf } 
 import { drop } from './arms.mjs';
 import { cardCatalog, fightPill, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
 import { POUCH_MAX } from '../battle.js';
-import { clone, pay, refuse, replaying, spendStamina } from './core.mjs';
+import { clone, gainsOf, pay, refuse, replaying, spendStamina } from './core.mjs';
 import { choreCounts, choreGrant, isOnce, kaifuAfter, questDone } from './chores.mjs';
 import { payMeaning } from './gongke.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
@@ -219,6 +219,9 @@ function taskDone(state, content, ctx, id) {
   const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   const paid = pay(content, s, ctx, t.grant);
   boardPay(content, s, t, id, paid);
+  // A thing the board hands over (the 踏马符 of 喂饭桶 · 一根银毛) is shown big as a story step's gain is (core.mjs resolve `gained`, Hanli 10-27/28).
+  const gained = t.grant?.item || t.grant?.more ? gainsOf(t.grant, paid) : null;
+  if (gained) s.gained = { n: (state.gained?.n ?? 0) + 1, scene: here?.id ?? null, ...gained };
   // …and by its minutes (rules/playpay.mjs, 2026-10-27): the story's board is a small game too, paid once.
   // Its 灵石 stays the first clear's grade (`boards`, boardPay above); the minutes pay its 修为.
   // A 今 board pays the 今 line's 修为 (rules/lines.mjs): `paid.line` names it, and its 修为 and levels are that line's.

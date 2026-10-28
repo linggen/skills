@@ -17,6 +17,7 @@ export const meta = {
   id: 'kailu',
   // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `kailu`; tests/game-sound.test.mjs).
   sounds: ['chew', 'reveal'],
+  bot: 'scripts/games/bots/kailu.js', // the book's pot (a story board): tests/story-gains.test.mjs
   name: { zh: '喂饭桶 · 开炉', en: 'Feed the Rice Bucket' },
   how: {
     zh: '把最多三样东西拖进饭桶嘴里，可搭灵石。开炉后饭桶嚼着，盖子冒红烟、金烟——金烟冒起时按住压盖，品级升一档。',
@@ -39,24 +40,49 @@ export const iconOf = (id, art = null) => comicArt(id) ?? (art ? new URL(art, WO
 
 /* ── The sample pot (no save): the bare table, a handful of things of each kind, no wait ── */
 const SAMPLE = ['chaihuo', 'kuye', 'shizi', 'huangjing', 'fuling', 'lingzhi', 'yaodan-1', 'chai-ya', 'lang-pi', 'zhu-ya', 'tie-sha', 'cishi', 'talisman', 'xionghuang', 'grey-robe'];
-async function sample(lang, seed, force) {
-  const [raw, items, balance, { roll, kindOf, familyOfKind, tierOfItem, withWorth, GRADES }] = await Promise.all([
+/* The table, its words and what it knows of each thing: the sample pot's and the book's own pot's one source. */
+async function tableOf(lang) {
+  const [raw, items, balance, fr] = await Promise.all([
     fetch(new URL('fantong.json', WORLD)).then((r) => r.json()), fetch(new URL('items.json', WORLD)).then((r) => r.json()),
     fetch(new URL('balance.json', WORLD)).then((r) => r.json()).catch(() => null), import('../rules/fantong-roll.mjs'),
   ]);
-  const t = withWorth(raw, balance, items.items); // its worth and what it knows of each thing, as content.mjs folds them
+  const t = fr.withWorth(raw, balance, items.items); // its worth and what it knows of each thing, as content.mjs folds them
   const byId = new Map(items.items.map((i) => [i.id, i]));
   const pick = (o) => o?.[lang] ?? o?.zh ?? null;
   const words = t.words?.[lang] ?? t.words?.zh ?? {};
-  const brief = {
+  const input = (id, n, over = {}) => { const kind = over.kind ?? fr.kindOf(t, id, (x) => t.item_info?.[x]); return { id, name: pick(over.name) ?? pick(byId.get(id)?.name) ?? id, art: over.art ?? byId.get(id)?.art, kind, fam: fr.familyOfKind(t, kind), tier: fr.tierOfItem(t, id), n }; };
+  const brief = (inputs, lingshi) => ({
     ready: true, max_in: t.max_in ?? 3, tints: Object.fromEntries(Object.entries(t.kinds).filter(([k]) => k !== '_about').map(([k, v]) => [k, v.tint])),
-    grades: words.grades ?? {}, quips: words.quips ?? {}, lingshi: { max: t.lingshi?.max ?? 3, have: 9 },
+    grades: words.grades ?? {}, quips: words.quips ?? {}, lingshi,
     leans: Object.fromEntries(Object.entries(t.families ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, pick(v.lean)])),
-    inputs: SAMPLE.filter((id) => byId.has(id)).map((id) => { const kind = kindOf(t, id, (x) => t.item_info?.[x]); return { id, name: pick(byId.get(id).name) ?? id, art: byId.get(id).art, kind, fam: familyOfKind(t, kind), tier: tierOfItem(t, id), n: 9 }; }),
-  };
-  let n = 0, dry = 0;
-  const brief1 = (id, grade) => (id === 'lingshi' ? { id, name: words.lingshi ?? '灵石', grade, wealth: true }
+    inputs,
+  });
+  const out = (id, grade) => (id === 'lingshi' ? { id, name: words.lingshi ?? '灵石', grade, wealth: true }
     : { id, name: pick(byId.get(id)?.name) ?? id, hint: pick(byId.get(id)?.hint), art: byId.get(id)?.art ?? null, grade });
+  return { t, byId, pick, words, input, brief, out, ...fr };
+}
+
+/* ── The book's own pot (a story board, Hanli 2026-10-28: 「应该安排一个饭桶的剧情固定游戏. 让玩家按要求放剧情里的东西进饭桶」):
+   the board's deal names the tray (`tray`: what lies on the floor, a thing of the book that is no item with its name and
+   picture) and the one pot (`pot`: exactly these go in, exactly these come out, the biggest gold reveal). Any other pot
+   is chewed and spat back whole (the table's own 「呸」), nothing spent. The game touches no bag: the grant on its win is
+   the rules'. ── */
+export async function storyPot(lang, story) {
+  const { words, input, brief, out, GRADES } = await tableOf(lang);
+  const inputs = (story.tray ?? []).map((e) => input(e.id, e.n ?? 1, e));
+  const want = [...(story.pot?.in ?? [])].sort().join('|');
+  const roll = async (ids) => {
+    if ([...ids].sort().join('|') !== want) return { ok: true, spat_back: true, say: words.spat_back, outs: [] };
+    const outs = story.pot.out.map((id) => out(id, 'best'));
+    return { ok: true, outs, out: outs[0], grade: 'best', grade_name: words.grades?.best ?? 'best', story: true, first: outs.map((o) => o.id), power: 0, GRADES };
+  };
+  return { brief: brief(inputs, { max: 0, have: 0 }), roll };
+}
+
+async function sample(lang, seed, force) {
+  const { t, byId, pick, words, input, brief: briefOf, out: brief1, roll, kindOf, familyOfKind, tierOfItem, GRADES } = await tableOf(lang);
+  const brief = briefOf(SAMPLE.filter((id) => byId.has(id)).map((id) => input(id, 9)), { max: t.lingshi?.max ?? 3, have: 9 });
+  let n = 0, dry = 0;
   const seen = new Set();
   const rollOne = async (ids, lingshi, press) => {
     let r = null;
@@ -125,7 +151,7 @@ export function mount(container, { lang = 'zh', data = null, signal, reducedMoti
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
     const L = lang === 'en' ? 'en' : 'zh';
-    Promise.all([data?.brief ? data : sample(L, seed ?? `kailu|${Date.now()}`, force), import('./kailu/kailu.min.mjs'), loadFont(doc)]).then(([d, { start }]) => {
+    Promise.all([data?.brief ? data : data?.story ? storyPot(L, data.story) : sample(L, seed ?? `kailu|${Date.now()}`, force), import('./kailu/kailu.min.mjs'), loadFont(doc)]).then(([d, { start }]) => {
       if (done) return;
       const icon = (id, art) => iconOf(id, art ?? d.brief.inputs?.find((i) => i.id === id)?.art ?? null);
       game = start({

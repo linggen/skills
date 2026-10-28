@@ -72,7 +72,7 @@ test('古三\'s gate scene: 零层 only — 一层 is 古四\'s 小周天', () =
 test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 and no further, 息壤 lifts nothing, 古六 grinds 三层 to the eve (its gate since 2026-10-27, doc/gates-2026-10-27.md 古六 (b): he stands at 四层 as 褚先生 reads it), 四层 behind 09-furnace', () => {
   const th = content.ladder.tiers[0].thresholds;
   // (留给爹 waits on 喂饭桶 · 一根牛骨头 since 2026-10-21: played)
-  const s0 = at('00-waimen', 'wm-diyilu', 'chaifang', ['00-prologue'], { step: 1, progress: th[1], tasks: { 'diyilu-niugu': { status: 'done' } } });
+  const s0 = at('00-waimen', 'wm-diyilu', 'chaifang', ['00-prologue'], { step: 1, progress: th[1], tasks: { 'diyilu-niugu': { status: 'done' }, 'diyilu-tama': { status: 'done' } } });
   const r = resolve(s0, content, ctx, { exit: 'save' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
   let s = r.state;

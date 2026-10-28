@@ -198,12 +198,12 @@ test('niugurope: the task diyilu-niugu plays it in wm-diyilu; the 柴墩 and the
 test('喂饭桶 · 一根牛骨头 sits where the book feeds the 饭桶: wm-diyilu\'s passage to 「把饭桶抠了出来」, the board, then 「头一样」 on; 留给爹 waits on it', async () => {
   const { stretchesOf, RHYTHM_CAP } = await import('../scripts/rhythm.mjs');
   const sc = content.chapters['00-waimen'].scenes['wm-diyilu'];
-  assert.deepEqual(sc.show, [{ card: 'board', id: 'diyilu-niugu' }]);
-  assert.deepEqual(sc.offers.tasks, ['diyilu-niugu']);
+  assert.deepEqual(sc.show, [{ card: 'board', id: 'diyilu-niugu' }, { card: 'board', id: 'diyilu-tama' }]); // + 踏马符's 开炉 (2026-10-28)
+  assert.deepEqual(sc.offers.tasks, ['diyilu-niugu', 'diyilu-tama']);
   assert.match(sc.story.zh, /把饭桶抠了出来。$/);
   assert.match(sc.story_after.zh, /^喂它，它吐东西——银月就留下这么一句。[\s\S]*一根伙房熬汤剩下的牛骨头/);
   const save = sc.exits.find((e) => e.id === 'save');
-  assert.equal(save.needs.task, 'diyilu-niugu');
+  assert.equal(save.needs.task, 'diyilu-tama', 'the last board of the scene');
   assert.ok(save.refuse.zh && save.refuse.en);
   // the reading cap: 9,360 字 from 药园巡夜 to 今二's 罚球 (the 节本's count) is broken at the bone — with the book's
   // full text (2026-10-26) both sides are over the cap (doc/games.md § 全文后的小游戏)

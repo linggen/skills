@@ -64,9 +64,8 @@
     "twin": 4
   },
   "pools": {
-    "_about": "Per family (`families`), the things it may give. `item` (with `n`, default 1) or `wealth` [min, max] 灵石. `w` its weight; a row's chance also rises the nearer its worth stands to what the grade asks (`worth`: its own, when the shops price it too low for what it is — else its `sell`, else its 品阶's). `hui` the 回 the save must have reached (huiOrder ≤ the 回 it stands in) — the base pool opens with the 饭桶 (古四, h05); `beast`: only once he has beaten that beast (state.beasts won); `with` / `with_chance`: a second thing out with it, now and then. `breach`: a 破境丹 — drawn only while its 阶 (items.json `tier`) is the realm one above his (story DESIGN § 六·五; design.md § 丹药): 筑基丹 while he is 练气, nothing of it once he has laid the foundation. A thing of a `once` kind comes once ever; with the gear spent, a hide-and-ore pot still gives the 妖丹 and the 器料 here, then 符 and odds and ends (`then`). Nothing of a later 卷 (items.json `juan`) is ever drawn. The book's two fixed outputs (火柴, 顺风溜: `recipes.story`) are in no pool.",
+    "_about": "Per family (`families`), the things it may give. `item` (with `n`, default 1) or `wealth` [min, max] 灵石. `w` its weight; a row's chance also rises the nearer its worth stands to what the grade asks (`worth`: its own, when the shops price it too low for what it is — else its `sell`, else its 品阶's). `hui` the 回 the save must have reached (huiOrder ≤ the 回 it stands in) — the base pool opens with the 饭桶 (古四, h05); `beast`: only once he has beaten that beast (state.beasts won); `with` / `with_chance`: a second thing out with it, now and then. `breach`: a 破境丹 — drawn only while its 阶 (items.json `tier`) is the realm one above his (story DESIGN § 六·五; design.md § 丹药): 筑基丹 while he is 练气, nothing of it once he has laid the foundation. A thing of a `once` kind comes once ever; with the gear spent, a hide-and-ore pot still gives the 妖丹 and the 器料 here, then 符 and odds and ends (`then`). Nothing of a later 卷 (items.json `juan`) is ever drawn. The book's two fixed outputs (火柴, 顺风溜: `recipes.story`) are in no pool. 2026-10-28 (Hanli: 「踏马符游戏里出现地方不对…应该安排一个饭桶的剧情固定游戏」): what the book's first feed (wm-diyilu) gave — 踏马符, 牛脂甘露, 含笑半步颠 and 止笑丸, the 九转回春丹 — is in NO pool; the story hands each over on its own beat (踏马符: the board diyilu-tama, a fixed 开炉).",
     "pill": [
-      { "item": "hanxiao-bandian", "w": 2, "with": "zhixiao-wan", "with_chance": 50 },
       { "item": "huiqi-pill", "w": 3 },
       { "item": "mend-pill", "w": 3 },
       { "item": "fangzi-canye", "w": 2, "hui": "h11" },
@@ -74,7 +73,6 @@
       { "item": "qi-pill-3", "w": 2 },
       { "item": "mend-pill-3", "w": 2 },
       { "item": "qi-pill-9", "w": 1 },
-      { "item": "mend-pill-9", "w": 1 },
       { "item": "foundation-pill", "w": 1, "breach": true },
       { "item": "foundation-pill-9", "w": 1, "breach": true }
     ],
@@ -104,7 +102,6 @@
       { "item": "lianxi-fu", "n": 2, "w": 1 },
       { "item": "talisman", "n": 3, "w": 2 },
       { "item": "talisman", "n": 5, "w": 1 },
-      { "item": "tama-fu", "w": 2, "hui": "h07" },
       { "item": "penti-fu", "w": 1, "hui": "h08" },
       { "item": "sang-paper", "w": 2 },
       { "item": "xionghuang", "w": 1 },
@@ -126,7 +123,6 @@
       { "item": "ganliang", "w": 3 },
       { "wealth": [1, 3], "w": 3 },
       { "wealth": [10, 10], "w": 2 },
-      { "item": "niuzhi-ganlu", "w": 1, "hui": "h08" },
       { "item": "baoge-ling", "w": 2, "worth": 40 },
       { "item": "yinyue-lingdang", "w": 1, "worth": 60 }
     ]

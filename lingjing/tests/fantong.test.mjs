@@ -194,9 +194,11 @@ test('opens by 回: the base pool at 古四; 古六\'s treasures, 古五\'s gear
   const reach = (s, id) => Object.values(pots).some(ids => [0, 1, 3].some(lingshi => (chances(T, { ids, realm: 3, lingshi, content, state: s }).items[id] ?? 0) > 0));
   const gu4 = saveWith();
   for (const id of ['yaqian', 'qi-pill', 'baina-dai', 'foundation-pill-9', 'bamboo-sword', 'talisman']) assert.ok(reach(gu4, id), `${id} from 古四`);
-  for (const id of ['tama-fu', 'penti-fu', 'zipai-jing', 'fangzi-canye', 'qingtong-jian', 'duan-dao', 'lipi-kanjian']) assert.ok(!reach(gu4, id), `${id} not yet at 古四`);
+  for (const id of ['penti-fu', 'zipai-jing', 'fangzi-canye', 'qingtong-jian', 'duan-dao', 'lipi-kanjian']) assert.ok(!reach(gu4, id), `${id} not yet at 古四`);
   const g7 = gu7();
-  for (const id of ['tama-fu', 'penti-fu', 'zipai-jing', 'fangzi-canye', 'qingtong-jian', 'duan-dao']) assert.ok(reach(g7, id), `${id} by 古七`);
+  for (const id of ['penti-fu', 'zipai-jing', 'fangzi-canye', 'qingtong-jian', 'duan-dao']) assert.ok(reach(g7, id), `${id} by 古七`);
+  // The book's first feed (wm-diyilu) is the story's alone (Hanli 10-28): no pot, at any 回, hands these out.
+  for (const id of ['tama-fu', 'niuzhi-ganlu', 'hanxiao-bandian', 'zhixiao-wan', 'mend-pill-9']) assert.ok(!reach(g7, id), `${id} comes only from wm-diyilu`);
   assert.ok(!reach(g7, 'lipi-kanjian'), 'the 山狸\'s coat waits for the 山狸 beaten');
   assert.ok(reach(gu7({ beasts: { shanli: { won: 1 } } }), 'lipi-kanjian'));
   assert.ok(!reach(gu7({ found: { 'qingtong-jian': 1 } }), 'qingtong-jian'), 'a sword had once never comes again');

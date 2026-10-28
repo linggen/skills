@@ -177,7 +177,7 @@ test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight
   assert.equal(won.wealth, T.haunt.wealth + Math.round(fightPlay(content, f) * convertRate(content, f)));
   // 第一路 (wm-diyilu): once a rise to 二层; now the story moves nothing — 古五's grinding steps him. (Its way on waits on
   // 喂饭桶 · 一根牛骨头 since 2026-10-21: played.)
-  const r = resolve({ ...s, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...s.tasks, 'diyilu-niugu': { status: 'done' } } }, content, ctx, { exit: 'save' });
+  const r = resolve({ ...s, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...s.tasks, 'diyilu-niugu': { status: 'done' }, 'diyilu-tama': { status: 'done' } } }, content, ctx, { exit: 'save' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
   assert.deepEqual([r.state.step, r.state.progress], [s.step, s.progress], 'the story moved nothing');
   assert.equal(r.result.rose, undefined);
