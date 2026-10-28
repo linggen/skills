@@ -28,6 +28,7 @@ import { askInChat, reachable } from './drawguess-ling.js';
 import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './jinchat-rules.js';
 import { dictOf, kindOf, stubLine } from './jinchat-games.js';
 import { chainGame, coupletGame, guessGame, riddleGame, tableOf } from './jinchat-play.js';
+import { createTalk, talkStyle } from '../npc-talk.js';
 
 export const meta = {
   id: 'jinchat',
@@ -105,38 +106,12 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const g = { chat: null, cast: [], sent: 0, shown: [], busy: false, over: false, mode: 'model', t0: Date.now() };
   let finish = () => {};
 
-  const avatar = (c) => (c?.art
-    ? `<img class="g-jc-av" src="${esc(new URL(c.art, WORLD).href)}" alt="" draggable="false">`
-    : `<span class="g-jc-av is-letter">${esc([...(c?.name ?? '·')][0])}</span>`);
-  const bubbleHtml = (line) => {
-    if (line.who === 'card') return `<div class="g-jc-row is-card">${line.html}</div>`;
-    if (line.who === 'note') return `<div class="g-jc-note">${esc(line.text)}</div>`;
-    const mine = line.who === 'me';
-    const c = g.cast.find((x) => x.id === line.who);
-    const name = !mine && g.cast.length > 1 ? `<i class="g-jc-name">${esc(c?.name ?? '')}</i>` : '';
-    const body = line.html ? line.html : line.card === 'video' ? `<span class="g-jc-video"><b>▶</b><span>${esc(line.text)}</span></span>` : esc(line.text);
-    return `<div class="g-jc-row${mine ? ' is-me' : ''}">${mine ? '' : avatar(c)}<div class="g-jc-col">${name}<div class="g-jc-bub">${body}</div></div></div>`;
-  };
+  // The list, its bubbles, the typing dots and the newest kept in view: the one talk component's (npc-talk.js).
   const $ = (sel) => root.querySelector(sel);
-  const list = () => $('.g-jc-list');
-  const scroll = () => { const l = list(); if (l) l.scrollTop = l.scrollHeight; };
-  // The page lays the chat's node into a fresh host on a redraw (Ling's turn ending, the stuck slot — live 10-22) and the
-  // list comes back at the top. Unless his own hand scrolled up, the last bubble is put back in view.
-  const atBottom = (l) => l.scrollTop + l.clientHeight >= l.scrollHeight - 6;
-  const keepDown = () => {
-    const l = list();
-    if (!l || !root.isConnected || !g.stick || atBottom(l)) return;
-    l.scrollTo({ top: l.scrollHeight, behavior: 'instant' });
-  };
-  const add = (line) => {
-    g.stick = true;
-    g.shown.push(line);
-    if (line.who !== 'card' && line.who !== 'note') sound(line.who === 'me' ? 'send' : 'recv');
-    list()?.insertAdjacentHTML('beforeend', bubbleHtml(line));
-    scroll();
-  };
   const sound = (name) => { try { shell?.sound?.(name); } catch { /* no sound: the chat goes on */ } };
-  const typing = (on) => { $('.g-jc-typing')?.classList.toggle('is-on', on); if (on) scroll(); };
+  const list = createTalk(root, { base: WORLD, sound });
+  const typing = list.typing;
+  const add = (line) => { g.shown.push(line); list.add(line); };
   const foot = (t) => { const f = $('.g-jc-foot'); if (f) f.textContent = t; };
   const lefts = () => { if (!g.chat?.game) foot(g.over ? w.done : fill(w.left, { n: Math.max(0, turns() - g.sent) })); }; // a word game keeps its own count
   const turns = () => Math.max(1, Number(g.chat?.turns) || 5);
@@ -296,14 +271,12 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     g.chat = data.chats?.[data.chat] ?? chats[data.chat] ?? null;
     if (!g.chat) { root.textContent = `jinchat: no chat ${data.chat ?? '(none)'}`; return; }
     g.cast = castOf(g.chat, people, lang);
+    list.setCast(g.cast);
     draw();
     // The card is redrawn around the chat (the stuck gate's 「算了，往下走」 slot, live 10-22): the node is laid into a
     // new host and its list comes back scrolled to the top — keep the last bubble in view whenever it is laid out again.
-    g.stick = true;
-    const l = list(), hand = () => { g.handAt = Date.now(); };
-    for (const ev of ['wheel', 'touchmove', 'pointerdown']) l.addEventListener(ev, hand, { passive: true });
-    l.addEventListener('scroll', () => { if (Date.now() - (g.handAt ?? 0) < 800) g.stick = atBottom(l); }, { passive: true });
-    g.keep = setInterval(keepDown, 300);
+    list.watch();
+    g.keep = setInterval(list.keepDown, 300);
     inputOn(false);
     lefts();
     // A word game's context first (`game.setup`, the book's own narration: 最后一颗 — what the 饭桶 just did).
@@ -335,6 +308,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
 }
 
 function styleOnce(doc) {
+  talkStyle(doc); // the chat's frame, bubbles and looks: the talk component's (npc-talk.js)
   if (doc.getElementById('g-jc-style')) return;
   const el = doc.createElement('style');
   el.id = 'g-jc-style';
@@ -342,73 +316,9 @@ function styleOnce(doc) {
   doc.head.append(el);
 }
 
-// Comic and clean (Hanli 10-20: small games are comic): a phone's own colours in either theme, a thick ink outline
-// and a hard offset shadow on every bubble; the dark is a black room where only the voices show.
+// The word games' own pieces (the frame and the bubbles are npc-talk.js's TALK_STYLE): 灯谜's lantern and slip,
+// 对对子's scrolls, 成语接龙's tiles.
 const STYLE = `
-.g-jc { --jc-bg: #ecebe6; --jc-ink: #22201c; --jc-me: #9de07a; --jc-them: #fff; --jc-dim: #7a756b;
-  position: relative; display: flex; flex-direction: column; height: min(540px, 60vh); min-height: 360px; max-width: 520px; margin: 0 auto;
-  border: 3px solid var(--jc-ink); border-radius: 22px; background: var(--jc-bg); color: var(--jc-ink); overflow: hidden;
-  box-shadow: 5px 6px 0 rgba(34, 32, 28, .85); font-size: 15px; line-height: 1.45; }
-.g-jc-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 2.5px solid var(--jc-ink); background: #f7f6f2; }
-.g-jc-head b { flex: 1; font-size: 16px; font-weight: 700; letter-spacing: .02em; }
-.g-jc-back { font-size: 24px; line-height: 1; font-weight: 700; }
-.g-jc-when { font-size: 12px; color: var(--jc-dim); white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
-.g-jc-rec { width: 8px; height: 8px; border-radius: 50%; background: #e04a3a; animation: g-jc-blink 1.2s infinite; }
-.g-jc-list { flex: 1; overflow-y: auto; padding: 12px 10px 6px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
-.g-jc-row { display: flex; align-items: flex-start; gap: 7px; animation: g-jc-pop .22s ease-out; }
-.g-jc-row.is-me { flex-direction: row-reverse; }
-.g-jc-av { flex: none; width: 36px; height: 36px; border-radius: 10px; border: 2.5px solid var(--jc-ink); object-fit: cover; background: #fff; }
-.g-jc-av.is-letter { display: grid; place-items: center; font-weight: 800; background: #ffd66b; }
-.g-jc-col { display: flex; flex-direction: column; gap: 2px; max-width: 76%; min-width: 0; }
-.g-jc-row.is-me .g-jc-col { align-items: flex-end; }
-.g-jc-name { font-style: normal; font-size: 11.5px; color: var(--jc-dim); padding-left: 4px; }
-.g-jc-bub { padding: 8px 11px; border: 2.5px solid var(--jc-ink); border-radius: 14px 14px 14px 4px; background: var(--jc-them);
-  box-shadow: 2px 3px 0 var(--jc-ink); overflow-wrap: anywhere; }
-.g-jc-row.is-me .g-jc-bub { background: var(--jc-me); border-radius: 14px 14px 4px 14px; }
-.g-jc-video { display: flex; align-items: center; gap: 8px; }
-.g-jc-video b { flex: none; display: grid; place-items: center; width: 44px; height: 32px; border-radius: 6px; background: var(--jc-ink); color: #fff; font-size: 13px; }
-.g-jc-typing { display: none; align-items: center; gap: 4px; padding: 0 16px 6px; color: var(--jc-dim); font-size: 12px; }
-.g-jc-typing.is-on { display: flex; }
-.g-jc-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--jc-dim); animation: g-jc-dot 1s infinite; }
-.g-jc-typing span:nth-child(2) { animation-delay: .15s; } .g-jc-typing span:nth-child(3) { animation-delay: .3s; }
-.g-jc-typing em { font-style: normal; margin-left: 4px; }
-.g-jc-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 10px; }
-.g-jc-chips:empty { display: none; }
-.g-jc-chip { font: inherit; font-size: 13px; padding: 5px 10px; border: 2px dashed var(--jc-ink); border-radius: 999px; background: #fffbe8; color: var(--jc-ink); cursor: pointer; text-align: left; }
-.g-jc-bar { display: flex; gap: 8px; padding: 8px 10px; border-top: 2.5px solid var(--jc-ink); background: #f7f6f2; margin: 6px 0 0; }
-.g-jc-in { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 7px 10px; border: 2.5px solid var(--jc-ink); border-radius: 10px; background: #fff; color: var(--jc-ink); }
-.g-jc-in:disabled { background: #e7e5de; }
-.g-jc-send { font: inherit; font-weight: 700; padding: 6px 14px; border: 2.5px solid var(--jc-ink); border-radius: 10px; background: #5cc23a; color: #fff;
-  box-shadow: 2px 2px 0 var(--jc-ink); cursor: pointer; }
-.g-jc-send:disabled, .g-jc-chip:disabled { opacity: .45; cursor: default; }
-.g-jc-footrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 12px 8px; background: #f7f6f2; font-size: 12px; color: var(--jc-dim); }
-.g-jc-end { font: inherit; font-size: 12.5px; padding: 3px 10px; border: 2px solid var(--jc-ink); border-radius: 999px; background: #fff; color: var(--jc-ink); cursor: pointer; }
-.g-jc.is-call .g-jc-head { background: #2b2a27; color: #fff; }
-.g-jc.is-call .g-jc-when { color: #ddd; }
-.g-jc.is-dark { --jc-bg: #07080b; --jc-ink: #0b0c10; --jc-them: rgba(150, 160, 190, .14); --jc-me: rgba(140, 200, 120, .16); --jc-dim: #6f7690;
-  border-color: #000; color: #c9cede; box-shadow: 5px 6px 0 rgba(0, 0, 0, .6); }
-.g-jc.is-dark .g-jc-dhead { padding: 10px 14px 0; font-size: 12px; color: #4d5266; letter-spacing: .1em; text-align: center; }
-.g-jc.is-dark .g-jc-av { opacity: .35; filter: grayscale(1) brightness(.6); border-color: #222; }
-.g-jc.is-dark .g-jc-bub { border-color: rgba(200, 210, 240, .18); box-shadow: none; color: #d6dbea; font-family: var(--serif, serif); }
-.g-jc.is-dark .g-jc-bar, .g-jc.is-dark .g-jc-footrow { background: #0d0e13; border-color: #1c1e26; }
-.g-jc.is-dark .g-jc-in { background: #14161d; color: #d6dbea; border-color: #2a2d38; }
-.g-jc.is-dark .g-jc-in:disabled { background: #101218; }
-.g-jc.is-dark .g-jc-send { background: #2f5a2a; border-color: #1c1e26; box-shadow: none; }
-.g-jc.is-dark .g-jc-chip { background: #14161d; color: #c9cede; border-color: #3a3e4c; }
-.g-jc.is-dark .g-jc-end { background: #14161d; color: #c9cede; border-color: #3a3e4c; }
-/* 古: face to face — the book's paper and ink, a seal-red for his own lines; no phone chrome. */
-.g-jc.is-face { --jc-bg: #f3ead6; --jc-ink: #2b2219; --jc-them: #fbf6ea; --jc-me: #ecd2b4; --jc-dim: #8a7a60; border-radius: 6px;
-  font-family: var(--serif, serif); box-shadow: 4px 5px 0 rgba(43, 34, 25, .55); }
-.g-jc.is-face .g-jc-head { background: #e8dcc2; justify-content: space-between; }
-.g-jc.is-face .g-jc-bub { border-width: 1.5px; box-shadow: none; border-radius: 4px; }
-.g-jc.is-face .g-jc-av { border-radius: 50%; border-width: 1.5px; }
-.g-jc.is-face .g-jc-bar, .g-jc.is-face .g-jc-footrow { background: #e8dcc2; }
-.g-jc.is-face .g-jc-send { background: #9a3b2a; box-shadow: none; }
-.g-jc.is-face .g-jc-chip { background: #fbf6ea; }
-/* A word game (2026-10-27): the riddle's card in the list, the context's narration line, the controls' strip. */
-.g-jc [hidden] { display: none !important; }
-.g-jc-note { align-self: center; max-width: 92%; font-size: 12.5px; color: var(--jc-dim); text-align: center; font-style: italic; padding: 2px 6px; }
-.g-jc-row.is-card { justify-content: center; }
 .g-jc-riddle { width: min(100%, 420px); text-align: center; display: flex; flex-direction: column; align-items: center; }
 /* 灯谜: a red lantern with gold caps and a tassel, the riddle on a paper slip hung beneath it. */
 .g-jc-lan { position: relative; display: flex; flex-direction: column; align-items: center; transform-origin: 50% 0; animation: g-jc-swing 4.5s ease-in-out infinite; }
@@ -426,31 +336,11 @@ const STYLE = `
 .g-jc-q.is-small { font-size: 14px; font-weight: 600; }
 .g-jc.is-dark .g-jc-strip { filter: brightness(.82) sepia(.15); color: #2b2219; }
 .g-jc.is-dark .g-jc-pool { color: #6b5e48; }
-.g-jc.is-dark .g-jc-list { scrollbar-color: #2a2d38 #0b0c10; }
-.g-jc.is-dark .g-jc-gbtn { box-shadow: none; border-color: #3a3e4c; background: #14161d; color: #c9cede; }
-.g-jc.is-dark .g-jc-gbtn.is-yes, .g-jc.is-dark .g-jc-gbtn.is-main { background: #2f5a2a; color: #e6f0e0; }
-.g-jc.is-dark .g-jc-gbtn.is-no { background: #5a2a24; color: #f0e0dc; }
 .g-jc-q { margin: 4px 0 2px; font-size: 16px; font-weight: 700; line-height: 1.55; }
 .g-jc-hints { margin: 6px 0 0; padding: 0; list-style: none; font-size: 13px; color: #6b4d12; }
 .g-jc-hints li { margin-top: 2px; }
 .g-jc-ans { margin: 6px 0 0; font-weight: 800; color: #9a3b2a; }
 .g-jc-pool { margin: 6px 0 0; font-size: 12.5px; color: var(--jc-dim); line-height: 1.6; }
-.g-jc-game { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 6px; border-top: 2.5px solid var(--jc-ink); background: #f7f6f2; }
-.g-jc.is-face .g-jc-game { background: #e8dcc2; border-top-width: 1.5px; }
-.g-jc.is-dark .g-jc-game { background: #0d0e13; border-color: #1c1e26; }
-.g-jc-game:empty { display: none; }
-.g-jc-game .g-jc-bar { margin: 0; padding: 0; border: 0; background: none; }
-.g-jc-gacts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-.g-jc-gbtn { font: inherit; font-size: 14px; font-weight: 700; padding: 6px 16px; border: 2.5px solid var(--jc-ink); border-radius: 999px; background: #fff; color: var(--jc-ink);
-  box-shadow: 2px 2px 0 var(--jc-ink); cursor: pointer; }
-.g-jc-gbtn:disabled { opacity: .4; cursor: default; }
-.g-jc-gbtn.is-yes, .g-jc-gbtn.is-main { background: #5cc23a; color: #fff; }
-.g-jc-gbtn.is-no { background: #e8674f; color: #fff; }
-.g-jc-gbtn.is-skip { font-weight: 500; font-size: 12.5px; box-shadow: none; border-style: dashed; }
-.g-jc-gnote { margin: 0; font-size: 13px; text-align: center; }
-.g-jc.is-face .g-jc-gbtn { box-shadow: none; border-width: 1.5px; }
-.g-jc.is-face .g-jc-gbtn.is-yes, .g-jc.is-face .g-jc-gbtn.is-main { background: #6f7f3a; }
-.g-jc.is-face .g-jc-gbtn.is-no { background: #9a3b2a; }
 /* 对对子: a pair of red scrolls on wooden rods, 洒金 flecks, ink characters top to bottom; 上联 right, 下联 left. */
 .g-jc-duilian, .g-jc-jl { width: min(100%, 420px); display: flex; flex-direction: column; align-items: center; text-align: center; font-family: var(--serif, serif); }
 .g-jc-dl-label { font-style: normal; font-size: 11.5px; letter-spacing: .18em; color: #9a3b2a; margin-bottom: 6px; }
@@ -486,9 +376,4 @@ const STYLE = `
   color: #fff6e6; background: radial-gradient(circle at 40% 35%, #e0503a, #a51d13); border: 2px solid #6e0d08; transform: rotate(-3deg); }
 @keyframes g-jc-ink { from { opacity: 0; transform: scale(1.4); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes g-jc-swing { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
-@keyframes g-jc-pop { from { transform: translateY(6px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes g-jc-dot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
-@keyframes g-jc-blink { 50% { opacity: .25; } }
-@media (max-width: 600px) { .g-jc { height: min(520px, 64dvh); border-radius: 18px; } .g-jc-col { max-width: 80%; } }
-@media (prefers-reduced-motion: reduce) { .g-jc-row, .g-jc-typing span, .g-jc-rec, .g-jc-lan, .g-jc-dl-scroll, .g-jc-dl-c { animation: none !important; } }
 `;
