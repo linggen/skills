@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 630,
-  "wealth": 854,
+  "wealth": 859,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -435,6 +435,11 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "diyilu-tama": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "xunye-duanlei": {
     "status": "done",
     "period": "once",
@@ -677,8 +682,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2508,
-   "wealth": 857
+   "progress": 2532,
+   "wealth": 862
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1067,11 +1072,11 @@
    "old-bow": 1,
    "grey-robe": 1,
    "danlu": 1,
+   "tama-fu": 1,
    "mend-pill-9": 1,
    "luobo": 1,
    "xirang": 1,
    "talisman": 2,
-   "tama-fu": 1,
    "pouch-low": 1,
    "chitong-hulu": 1,
    "lianxi-fu": 2,
@@ -1162,6 +1167,7 @@
     "yaoyuan-xunye": 1,
     "yaoyuan-luobo": 1,
     "diyilu-niugu": 1,
+    "diyilu-tama": 1,
     "xunye-duanlei": 1,
     "duizhang-ahe": 1,
     "yan-tieshua": 1,
@@ -1225,6 +1231,7 @@
    "yaoyuan-xunye",
    "yaoyuan-luobo",
    "diyilu-niugu",
+   "diyilu-tama",
    "xunye-duanlei",
    "duizhang-ahe",
    "yan-tieshua",

@@ -33,6 +33,7 @@ const KEPT = {
   'sleep-xisui': '第二回: 洗髓 — one of the two 调息 Hanli kept (10-27)',
   'gate-crowd': '第三回: 人堆 — the crowd to slip to the back of; the 回\'s one 华容道',
   'gate-luoshu': '第三回: 洛书 — 娘\'s nine chestnuts, the riddle the second trial turns on',
+  'diyilu-tama': '第四回: 一根银毛 — the 饭桶\'s own pot, the book\'s fixed 开炉 (Hanli 10-28: 「应该安排一个饭桶的剧情固定游戏」)',
   'dianmao-jingtai': '第四回: 井台 — the 回\'s one 华容道 (the water carriers at the well)',
   'mijing-zhenyan': '第五回: 困阵 — 「前人留下的一盘棋」, a game of the passage itself',
   'kouzi-crowd': '第五回: 七八个口子 — the crowd on the riverbank; the 回\'s one 华容道',
