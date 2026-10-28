@@ -173,12 +173,12 @@ test('short by what one thing pays: that thing is the button, named as enough �
   let s = { ...gate146(), progress: 429, hunt_losses: { houshan: 1 }, bag: { ...gate146().bag, 'old-bow': 1 }, wear: {} };
   const l = look(s, content, ctx([LEDGER]));
   assert.equal(l.home.gate.short, 41);
-  assert.deepEqual(l.home.next, { kind: 'gongke', id: 'cfo-import', title: '导入账单', means: '算账', progress: 94, enough: true });
-  assert.match(html(l), /data-book>算账 · 修为 \+94 · 够了</);
+  assert.deepEqual(l.home.next, { kind: 'gongke', id: 'cfo-import', title: '导入账单', means: '算账', progress: 41, enough: true });
+  assert.match(html(l), /data-book>算账 · 修为 \+41 · 够了</);
   // No 功课 that covers it: the best board here today, when it does (拼图 +27 or 残局 +40 for 20 short).
   const near = look({ ...s, progress: 450 }, content, ctx()), b = bestHere({ ...s, progress: 450 }, near);
   assert.deepEqual([near.home.next.kind, near.home.next.id, near.home.next.enough], ['board', b.id, true]);
-  assert.match(html(near), new RegExp(`data-play="${b.id}"[^>]*>开局 · ${b.name}[^<]*· 修为 \\+${b.progress} · 够了<`));
+  assert.match(html(near), new RegExp(`data-play="${b.id}"[^>]*>开局 · ${b.name}[^<]*· 修为 \\+${Math.min(b.progress, near.home.gate.short)} · 够了<`)); // past the mark it is 灵石 (paysOf, 10-28): the button names what lands
   // Short by more than either: the plain ranking.
   assert.equal(look({ ...s, progress: 146 }, content, ctx()).home.next.enough, undefined);
 });
@@ -222,5 +222,5 @@ test('at a sealed instance\'s door, walked off to 渡口: the 主页 says where 
   assert.match(h, new RegExp(`沉鼎秘境 · 石门 · ${l.door.step}即开`));
   assert.match(h, /还在门外 · 在渡口/);
   // The page's top line names where he stands, then the door (lingjing.js paint): never the scene's 「秘境石门前」 alone.
-  assert.match(fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8'), /look\.door\.here \? door : `\$\{look\.place\?\.name \?\? ''\}　\$\{door\}`/);
+  assert.match(fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8'), /look\.door\.here \? door : `\$\{look\.place\?\.name \?\? ''\}　→ \$\{door\}`/);
 });

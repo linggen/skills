@@ -48,7 +48,7 @@ test('on his day the 演武场 has his shelf under his own name; on others nothi
   assert.equal(shelf.length, VISITOR.goods.length + 1, 'and one odd thing');
   assert.ok(VISITOR.odd.includes(shelf.at(-1)));
   assert.notDeepEqual(visitorGoods(VISITOR, HIS).at(-1), visitorGoods(VISITOR, new Date('2026-10-19T08:00:00')).at(-1), 'the odd thing turns with the visit');
-  assert.equal(l.shelf.find(i => i.id === 'qi-pill').buy, 80, '聚气丹 at the catalog\'s price');
+  assert.equal(l.shelf.find(i => i.id === 'qi-pill').buy, 48, '聚气丹 at the catalog\'s price');
   assert.ok(!(placeOf(content, 'yanwu').has.games ?? []).length, 'no 押宝 inside the 观');
   // Off his day: no shop, no shelf, the place's own line.
   const off = look(waimen('yanwu', AFTER), content, ctx(AFTER)).place;
@@ -62,7 +62,7 @@ test('buy and sell at his pole: catalog prices to buy, herbs and hides bought ba
   const s = waimen('yanwu', HIS, { bag: { 'deer-hide': 1, 'qi-pill': 1 } });
   const bought = trade(s, content, ctx(HIS), { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.result.ok, true, JSON.stringify(bought.result));
-  assert.equal(bought.state.wealth, 420);
+  assert.equal(bought.state.wealth, 452);
   assert.equal(bought.state.bag['qi-pill'], 2);
   const sold = trade(s, content, ctx(HIS), { action: 'sell', id: 'deer-hide' });
   assert.equal(sold.result.ok, true, JSON.stringify(sold.result));

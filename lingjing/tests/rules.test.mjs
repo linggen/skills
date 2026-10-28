@@ -903,17 +903,17 @@ test('a layer fills and the next begins, the rest carried over', () => {
   assert.deepEqual(out.result.paid.levels, [{ from: '练气一层', to: '练气二层' }]);
 });
 
-test('at the realm peak the player stays until the chapter opens — the 修为 counting on past the mark (2026-10-15)', () => {
+test('at the realm peak the player stays until the chapter opens — the 修为 past the mark is paid as 灵石, never carried (2026-10-15; the task table too, Hanli 10-28)', () => {
   const s = joined();
   const peak = content.ladder.tiers[0].thresholds[9];
   s.step = 9; s.progress = peak - 10;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  // The grant's 20 is a share of 练气一层, read at 九层 (play_pay.authored): the whole of it counted, past the mark.
-  const g = atLayer(s, 20, 'task');
-  assert.deepEqual([out.state.step, out.state.progress], [9, peak - 10 + g]);
-  assert.deepEqual(out.result.paid.hold, { gate: 1, held: 0, over: g - 10 });
-  assert.equal(out.result.paid.progress, g, 'the whole grant counted');
+  // The grant fills the layer's last 10; the rest of its 修为 converts to 灵石 (rules/core.mjs converting).
+  assert.deepEqual([out.state.step, out.state.progress], [9, peak], 'the mark, not past it');
+  assert.equal(out.result.paid.hold, null, 'nothing held back: the rest went to 灵石');
+  assert.equal(out.result.paid.progress, 10, 'only what fills the layer counted');
+  assert.ok(out.result.paid.converted.progress > 0 && out.result.paid.converted.wealth > 0, 'the 修为 past the mark, paid as 灵石');
 });
 
 test('no day cap: a day full of play pays every time — 灵气 is the only limit', () => {
@@ -1472,21 +1472,21 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const l = look(s, content, ctx());
   assert.equal(l.place.has.shop, true);
   assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'huiqi-pill', 'wangqi-1', 'jade-ring', 'luobo']);
-  assert.equal(l.place.shelf[1].buy, 80);
+  assert.equal(l.place.shelf[1].buy, 48);
   assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'huiqi-pill', 'wangqi-1', 'jade-ring', 'luobo'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
-  assert.equal(bought.state.wealth, 20);
+  assert.equal(bought.state.wealth, 52);
   assert.deepEqual(bought.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1, 'qi-pill': 1 }); // the token from 吴婆婆, the scroll from her, the bow from 爹, the robe from the 入门仪式
   assert.equal(bought.state.stamina, 100, 'the market costs nothing — a tap, no time (2026-09-23)');
   assert.equal(bought.result.item.held, 1);
   assert.deepEqual(look(bought.state, content, ctx()).bag.map(b => b.id), ['fox-token', 'tuna-jing', 'old-bow', 'grey-robe', 'qi-pill']);
   const sold = must(trade, bought.state, { action: 'sell', id: 'qi-pill' });
-  assert.equal(sold.state.wealth, 20 + content.items.items.find(i => i.id === 'qi-pill').sell, 'bought back a third (balance.json master economy)');
+  assert.equal(sold.state.wealth, 52 + content.items.items.find(i => i.id === 'qi-pill').sell, 'bought back a third (balance.json master economy)');
   assert.deepEqual(sold.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1 });
   refused(trade, sold.state, { action: 'sell', id: 'qi-pill' }, 'not-in-bag');
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
-  assert.equal(poor.price, 80);
+  assert.equal(poor.price, 48);
   assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 12, 'the shelf: its ten, and the 丹囊\'s 回春丹 and 回气丹 (2026-10-16)');
   refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
   assert.equal(must(trade, { ...s, stamina: 0 }, { action: 'buy', id: 'straw-cloak' }).result.ok, true, 'spent 体力 still shops');
