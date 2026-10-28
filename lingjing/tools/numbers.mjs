@@ -467,11 +467,12 @@ function paces(content) {
 
 /* ── text that states an amount (design.md § 数值系统: generated or checked) ── */
 
-const CN = { 半: 0.5, 一: 1, 两: 2, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
+// 小半: three tenths — the market 聚气丹's 「抵小半日」 (一转 3% of a layer against a night's 10%, Hanli 10-28).
+const CN = { 小半: 0.3, 半: 0.5, 一: 1, 两: 2, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
 const EN = { half: 0.5, a: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, nine: 9, ten: 10 };
 /* Claims the validator can evaluate: a duration of sitting a thing is worth. `days` turns the match into days. */
 const CLAIMS = [
-  { lang: 'zh', re: /抵(半|[一两二三四五六七八九十\d]+)(日|天|夜)/g, days: m => CN[m[1]] ?? Number(m[1]), unit: /打坐|闭关|坐/ },
+  { lang: 'zh', re: /抵(小半|半|[一两二三四五六七八九十\d]+)(日|天|夜)/g, days: m => CN[m[1]] ?? Number(m[1]), unit: /打坐|闭关|坐/ },
   { lang: 'en', re: /(?:worth|this,|it,) (half|a|one|two|three|four|five|six|seven|nine|ten|\d+) (?:a )?(day|days|night|nights)(?:'s)?/gi, days: m => EN[m[1].toLowerCase()] ?? Number(m[1]), unit: /sitting|seclusion/i },
 ];
 /* Amounts no rule here can evaluate: listed, never dropped. */

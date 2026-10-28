@@ -9,7 +9,7 @@
     },
     "lines": {
       "gu": {
-        "_about": "古's ladder (ladder.json tiers: 练气 九层 from 零层, three steps a realm above). `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm, so 筑基小成 is above 练气九层 and every step above the one below. `hours`: the games' rate — a layer's play hours. `chore`: 人间功课 is 古-line income (Hanli 10-27: 「算古线吧」), a day's 10% and a week's 20% of the layer (Hanli 「按照百分比奖励」). `wall.day`: a day's posted 杂役 tags together (执事堂's east wall, quests/wall.json), as a share of the layer — about a day's 功课; each tag is it over the wall's `posts` (Hanli 10-27: three a day at the full errand rate were half a layer of short fetch-and-deliver chores). `seclusion.night`: a night's 闭关 (rest_hours) as a share of the layer (ruling a: it was 40 × layer_pay, ~23% at 四层) — the idle fallback, and the yardstick 「抵N日打坐」 is checked against. `pills`: a 修为 pill's share by 转 (一转 half a night, 三转 a night and a half, 九转 three nights: the cards' 「抵半日」 · 「抵三日」 hold at every layer); `below`: past its 阶, a quarter a realm.",
+        "_about": "古's ladder (ladder.json tiers: 练气 九层 from 零层, three steps a realm above). `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm, so 筑基小成 is above 练气九层 and every step above the one below. `hours`: the games' rate — a layer's play hours. `chore`: 人间功课 is 古-line income (Hanli 10-27: 「算古线吧」), a day's 10% and a week's 20% of the layer (Hanli 「按照百分比奖励」). `wall.day`: a day's posted 杂役 tags together (执事堂's east wall, quests/wall.json), as a share of the layer — about a day's 功课; each tag is it over the wall's `posts` (Hanli 10-27: three a day at the full errand rate were half a layer of short fetch-and-deliver chores). `seclusion.night`: a night's 闭关 (rest_hours) as a share of the layer (ruling a: it was 40 × layer_pay, ~23% at 四层) — the idle fallback, and the yardstick 「抵N日打坐」 is checked against. `pills`: a 修为 pill's share by 转 (一转 3% — three tenths of a night, 三转 8%, 六转 16%, 九转 three nights at 30%: Hanli 10-28 「三转聚气丹+78, 9转+156」 — each 转 should count; the cards' 「抵小半日」 · 「抵三日」 hold at every layer); `below`: past its 阶, a quarter a realm.",
         "tiers": ["qi", "foundation", "core", "nascent", "deity", "void", "body", "maha", "tribulation"],
         "need": {"first": 470, "layer": 1.1, "realm": 1.3, "round": 10},
         "hours": {
@@ -41,7 +41,7 @@
         "wall": {"day": 0.1},
         "chore": {"day": 0.1, "week": 0.2, "month": 0.3},
         "seclusion": {"night": 0.1},
-        "pills": {"1": 0.05, "3": 0.15, "9": 0.3, "below": 0.25}
+        "pills": {"1": 0.03, "3": 0.08, "6": 0.16, "9": 0.3, "below": 0.25}
       },
       "jin": {
         "_about": "今's ladder (ladder.json `lines.jin`: 新生 九层 from 一层, three steps a realm above; Hanli 2026-10-27, each line its own 修为, starting from zero). Its only 修为 is its boards (no fights, errands, 功课, 闭关 or pills on 今 yet; 人间功课 pays 古): `games` carries the whole layer (`share` 1) over about half its minutes (`time`, the rest is reading). `need`: 新生一层 300, the same steps as 古's (display only: pay is a share of the layer). `hours`: the curve (新生一层 1 h, +0.25 h a layer), then fitted (`fit`, tools/master.mjs fitLine) so a reader of 卷一 who plays every 今 board at `stars` ends `end` layers up: 1.4 is 新生一层 filled and 二层 four tenths (Hanli 2026-10-28: 「今线修为可以开始做了」, the interludes about 一层 → 二层).",
@@ -173,7 +173,7 @@
     "mend-pill": {"buy": 15, "sell": 5},
     "huiqi-pill": {"buy": 10, "sell": 3},
     "lingzhi": {"buy": 30, "sell": 10},
-    "qi-pill": {"buy": 80, "sell": 26},
+    "qi-pill": {"buy": 48, "sell": 16},
     "ginseng": {"buy": 24, "sell": 8},
     "bamboo-sword": {"buy": 51, "sell": 17},
     "straw-cloak": {"buy": 22, "sell": 7},
@@ -339,7 +339,7 @@
   "pills": {
     "families": ["qi", "mend"],
     "table": "pill",
-    "share": [0.05, 0.1, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3],
+    "share": [0.03, 0.055, 0.08, 0.1067, 0.1333, 0.16, 0.2067, 0.2533, 0.3],
     "below": 0.25
   },
   "_dandu": "丹毒 and 补转 (story DESIGN § 六·五: 下品吃多了积毒，体力上限一时降低，闭关可排；上品无毒；九转反能化毒). A 修为 pill eaten (服用 from the pouch, the 闭关 pill, a breakthrough's pill) leaves the turns its furnace left out owing: `owed` by 转 (一转 8 — the nine a 九转 has, less the one it got; 中品 四至六转 看体质, none in 卷一; 上品 none). Each turn owed takes `per_turn` off the 体力 pool's top, `cap` at most (state.mjs staminaMax). 闭关 is 补转 — the body makes up `cure_per_hour` turns an hour of any focus (rules/seclusion.mjs). A pill of `clears` 转 or more clears every turn owed. Fight pills (the 丹囊's 回春丹 · 回气丹) owe nothing for now (Hanli's call: 灵石 buys them, and 丹毒 there would tax the 灵石 once 体力 is on). With these numbers a 聚气丹 a day is made up by one hour's sitting; four at once stand at the cap until a night's 闭关.",
@@ -441,7 +441,7 @@
   "_play_pay": "Every 修为 pay is a share of the layer he stands on (Hanli 2026-10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」, then 「一层才要470修为, 我们可否按照百分比奖励, 这样等级高了后, 奖励也合理」; doc/games.md § Pay as a share of the layer; rules/playpay.mjs). A layer is a play-time budget (`hours`, derived since 2026-10-27: the master table's curve — 练气一层 2 h, +0.5 h a layer; 筑基 4 h, +2 h a realm — with the layers a 回 holds fitted to its band and 古五's 渡口 to the gate rule, master.mjs fitHours). The small games and fights carry `games.share` (60%) of its 修为 over `games.time` (35%) of its minutes: a board of m minutes pays m ÷ (0.35 × the layer's minutes) × 60% of the layer's need — 练气一层 a 1-minute board 1.4% (7), a 6-minute 棋牌 8.6% (40) at 2 h; a fight won (`haunt`) its `fight.minutes`. ★ 0.6 · 0.8 · 1.0; the same board again the same day 100 · 50 · 10%. Errands: 15% of the layer over 10% of its time, by `errand.minutes` (练气一层 6.3%, 29). 人间功课 (`chore`): a day's 10%, a week's 20%, a month's 30% of the layer (练气一层 47 · 94 · 141; Hanli 2026-10-27: 「cfo倒入账单应该是每月任务」 — rarer, so more), no ★, no replay. What the book authors — a scene's way on, a pill, a rumor, a 机缘, the tables in `authored.tables` — is read as a share of the 练气一层 it was written against (`authored.base` 470: a scene's 60 is 12.8%). 灵石 stays by the kind and the tables. No daily cap; 修为 stops at the gate and turns to 灵石 (`convert` lists `play` and `haunt`). Supersedes the per-layer `rate` tables and `layer_pay` for fights (2026-10-27).",
   "play_pay": {
     "hours": {
-      "qi": [0, 1.448, 0.772, 0.747, 0.955, 1.091, 1.228, 0.747, 0.821, 0.896],
+      "qi": [0, 1.448, 0.772, 0.747, 0.942, 1.077, 1.211, 0.748, 0.822, 0.897],
       "foundation": 4,
       "core": 6,
       "nascent": 8,

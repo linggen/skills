@@ -53,12 +53,12 @@
       },
       "art": "art/items/qi-pill.webp",
       "about": {
-        "zh": "一粒抵半日打坐。",
-        "en": "One pill is worth half a day's sitting."
+        "zh": "一粒抵小半日打坐。",
+        "en": "One pill is worth a few hours' sitting."
       },
       "hint": {
-        "zh": "一粒半日。",
-        "en": "One pill, half a day."
+        "zh": "一粒小半日。",
+        "en": "One pill, a few hours."
       },
       "sold": [
         "徐"
@@ -435,15 +435,15 @@
       "tier": "qi",
       "zhuan": 9,
       "of": "qi",
-      "_furnace": "Made in 银月's furnace from the garden's culls (xu-yaoyuan-canzhu): 九转: 30% of the layer he eats it on, six times the market 聚气丹's 5% (balance.json pills, from the master table); not sold. Its card's 「抵三日」 is three nights of 闭关 (10% each) at every layer — tools/numbers.mjs holds it.",
+      "_furnace": "Made in 银月's furnace from the garden's culls (xu-yaoyuan-canzhu): 九转: 30% of the layer he eats it on, ten times the market 聚气丹's 3% (balance.json pills, from the master table); not sold. Its card's 「抵三日」 is three nights of 闭关 (10% each) at every layer — tools/numbers.mjs holds it.",
       "name": {
         "zh": "九转聚气丹",
         "en": "Nine-turn qi-gathering pill"
       },
       "art": "art/items/qi-pill.webp",
       "about": {
-        "zh": "残株炼的聚气丹，出炉九道金纹。坊市的聚气丹抵半日打坐；它抵三日。",
-        "en": "A qi-gathering pill from the garden's culls, nine gold rings on it. The market's is worth half a day's sitting; this, three days."
+        "zh": "残株炼的聚气丹，出炉九道金纹。坊市的聚气丹抵小半日打坐；它抵三日。",
+        "en": "A qi-gathering pill from the garden's culls, nine gold rings on it. The market's is worth a few hours' sitting; this, three days."
       },
       "hint": {
         "zh": "九道，一道不少。",
