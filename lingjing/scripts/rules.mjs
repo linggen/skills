@@ -37,6 +37,7 @@ import { standFit } from './rules/match.mjs';
 import { oddsOn, strongFit } from './rules/strengthen.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { seclusionHold } from './rules/seclusion.mjs';
+import { mijingHold } from './rules/mijing.mjs';
 import { lapseWall } from './rules/rotation.mjs';
 import { VERBS } from './rules/verbs.mjs';
 import { owesRecap, withHerBeat } from './rules/story.mjs';
@@ -83,6 +84,7 @@ export { chooseLang, inPlay, langNow, langOfTag, stateText, writeGlobalLang } fr
 export { chapterLook, owesRecap, recapLook, story, storyNode } from './rules/story.mjs';
 export { lintTale, tale } from './rules/tale.mjs';
 export { seclude, seclusionBrief, seclusionHold } from './rules/seclusion.mjs';
+export { endRun as mijingEnd, keyDrop, mapOf as mijingMap, mapReaches, mijing, mijingBrief, nextRooms, rowsOf, tierOpen } from './rules/mijing.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';
 export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { playTo, summaryOf, targetOf } from './rules/progress.mjs';
@@ -263,7 +265,7 @@ function runLocked(verb, args, stateFile, reader) {
   }
   // While a fight is open, what would change the world waits (tasks.mjs fightHold).
   // While in 闭关, likewise: 出关 first (rules/seclusion.mjs seclusionHold).
-  const held = fightHold(state, verb, args) ?? seclusionHold(state, verb, args);
+  const held = fightHold(state, verb, args) ?? seclusionHold(state, verb, args) ?? mijingHold(state, verb, args);
   if (held) return held.result;
   const reads = reader === 'ling' ? readingHold(state, verb, args, now) : null;
   if (reads) {

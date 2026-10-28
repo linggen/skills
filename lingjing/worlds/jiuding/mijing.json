@@ -1,0 +1,1628 @@
+{
+  "version": 1,
+  "_about": "秘境探险 (Hanli 2026-10-28, option A 秘境令; 「每个秘境给个名字? 和故事对应上?」): a roguelite map run in the classic Slay the Spire / Hades shape — an ink map of layers with branches, the player picks the path, 气血 carries room to room, run-only boons (秘境加持), a 大妖 at the end; death ends the run with part of the loot by the depth reached. Entered at a `doors` place (the stone door, 沉鼎秘境 · 石门) for one `key` (秘境令, a key item that drops from wins in the cooldown events: rules/mijing.mjs keyDrop, its chances and the day's cap balance.json `mijing`). The story's own 秘境 passage (古五) is untouched. rules/mijing.mjs reads this table and names nothing in it; the numbers (pay, loot, hurt, the cap) are balance.json `master.mijing`, derived into `mijing`.",
+  "_tiers": "The nine 重, in order. `name` from the book's own 秘境 and places; `source` the 回 and the scene the name is taken from (a read of story/jiuding-lu/, kept so a reader can check it); `after` the scene that opens it (rules/world.mjs passed: the story has reached that place) — and every 重 past the first also waits on the one before it cleared. `layers` the rows before the 大妖 (3–4), `rooms` how many rooms in them (6–8); a run walks one room a row and the 大妖 (Slay the Spire's act). `beasts`: the 妖兽 rooms' (each its `hp` on the mode's share and its own `deck` where it fights other than its creatures.json row, as a pool's entry does), `xiong` the 凶兽 rooms' (their harder deck: an elite is only that, redesign-v2 § 四), `boss` the 大妖 — every one a beast of that 回 or before (tests/mijing.test.mjs checks it against creatures.json `hui` and the book's fights). `guan` the 守关 boards (a TD task and the level it deals), `jiguan` the 机关 boards, `qiyu` the 奇遇 that may come up, `scale` what a 重 deeper lays on the foes' 气血 and the TD levels' difficulty. `backdrop` the room painting (worlds/jiuding/art/places), `rooms_named` the names the map's rooms are drawn from.",
+  "doors": [
+    "shimen"
+  ],
+  "key": "mijing-ling",
+  "tiers": [
+    {
+      "id": "xiongya",
+      "n": 1,
+      "name": {
+        "zh": "一重 · 凶崖",
+        "en": "First depth · The Deadly Cliff"
+      },
+      "source": {
+        "hui": "h07",
+        "scene": "wm-xiongya",
+        "book": "第五回「他走没人走的凶崖」, 岔口 · 凶崖 · 断崖下 · 蛫"
+      },
+      "say": {
+        "zh": "石厅七八个口子，他又走了刻着「凶」字的那一个。",
+        "en": "Of the seven or eight mouths off the hall, he takes the one cut with 凶 again."
+      },
+      "after": "wm-hetan",
+      "layers": 3,
+      "rooms": 6,
+      "backdrop": "art/places/mijing-cliff.webp",
+      "rooms_named": [
+        {
+          "zh": "岔口",
+          "en": "The fork"
+        },
+        {
+          "zh": "凶崖石阶",
+          "en": "The cliff stair"
+        },
+        {
+          "zh": "断崖下",
+          "en": "Below the drop"
+        },
+        {
+          "zh": "崖根",
+          "en": "The cliff's foot"
+        },
+        {
+          "zh": "石缝",
+          "en": "The crack"
+        },
+        {
+          "zh": "窄道",
+          "en": "The narrow way"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "qiuyu",
+          "weight": 3,
+          "hp": 1.1,
+          "deck": [
+            "tengmiao",
+            "tengmiao",
+            "mafu",
+            "mafu",
+            "mafu",
+            "leipu",
+            "leipu",
+            "fengmao",
+            "fengmao",
+            "peiyuan",
+            "leiming",
+            "chunsheng"
+          ]
+        },
+        {
+          "creature": "yezhu",
+          "weight": 2
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "qiuyu",
+          "hp": 1.3,
+          "deck": [
+            "tengmiao",
+            "leipu",
+            "leipu",
+            "qingteng",
+            "qingteng",
+            "shanjing",
+            "shanjing",
+            "linmu",
+            "linmu",
+            "zhennu",
+            "fengmao",
+            "chunsheng"
+          ]
+        }
+      ],
+      "boss": {
+        "creature": "gui",
+        "hp": 2.0
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-1"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "shandao"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-1"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 1
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "lamp",
+        "moss",
+        "carving",
+        "playdead"
+      ],
+      "drops": "mijing-outer"
+    },
+    {
+      "id": "anhe",
+      "n": 2,
+      "name": {
+        "zh": "二重 · 暗河",
+        "en": "Second depth · The Dark River"
+      },
+      "source": {
+        "hui": "h07",
+        "scene": "wm-anhe",
+        "book": "第五回 暗河黑地，干了的河床，合窳哭得像个娃娃"
+      },
+      "say": {
+        "zh": "河床干着，黑里有东西在哭，像个娃娃。",
+        "en": "The riverbed is dry, and something in the dark is crying like a baby."
+      },
+      "after": "wm-hetan",
+      "layers": 3,
+      "rooms": 7,
+      "backdrop": "art/places/yingu-cave-night.webp",
+      "rooms_named": [
+        {
+          "zh": "河床",
+          "en": "The riverbed"
+        },
+        {
+          "zh": "黑地",
+          "en": "The black ground"
+        },
+        {
+          "zh": "石缝",
+          "en": "The cracks"
+        },
+        {
+          "zh": "回水湾",
+          "en": "The backwater"
+        },
+        {
+          "zh": "河心石",
+          "en": "The midstream rock"
+        },
+        {
+          "zh": "旧水痕",
+          "en": "The old waterline"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "qiuyu",
+          "weight": 2,
+          "hp": 1.25,
+          "deck": [
+            "tengmiao",
+            "tengmiao",
+            "mafu",
+            "mafu",
+            "mafu",
+            "leipu",
+            "leipu",
+            "fengmao",
+            "fengmao",
+            "peiyuan",
+            "leiming",
+            "chunsheng"
+          ]
+        },
+        {
+          "creature": "heyu",
+          "weight": 2,
+          "hp": 1.6
+        },
+        {
+          "creature": "zheng",
+          "weight": 1,
+          "hp": 1.4
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "heyu",
+          "hp": 1.6,
+          "deck": [
+            "shishou",
+            "shishou",
+            "jixiao",
+            "tuou",
+            "tuou",
+            "shanjing",
+            "luoshi",
+            "luoshi",
+            "houtu",
+            "shanjing",
+            "tunshi",
+            "zhuguang"
+          ]
+        }
+      ],
+      "boss": {
+        "creature": "heyu",
+        "hp": 2.4
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-2"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "shandao-ye"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-2"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 2
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "lamp",
+        "moss",
+        "puddle",
+        "playdead"
+      ],
+      "drops": "mijing-outer"
+    },
+    {
+      "id": "shishi",
+      "n": 3,
+      "name": {
+        "zh": "三重 · 石室",
+        "en": "Third depth · The Stone Chamber"
+      },
+      "source": {
+        "hui": "h07",
+        "scene": "wm-shishi",
+        "book": "第五回 石室、七拃、息壤；一撮息壤开五门"
+      },
+      "say": {
+        "zh": "石室五道门，一道一种颜色。",
+        "en": "Five doors in the stone chamber, each its own colour."
+      },
+      "after": "wm-hetan",
+      "layers": 4,
+      "rooms": 7,
+      "backdrop": "art/places/mijing-shishi.webp",
+      "rooms_named": [
+        {
+          "zh": "七拃",
+          "en": "Seven spans"
+        },
+        {
+          "zh": "青门",
+          "en": "The green door"
+        },
+        {
+          "zh": "赤门",
+          "en": "The red door"
+        },
+        {
+          "zh": "黄门",
+          "en": "The yellow door"
+        },
+        {
+          "zh": "白门",
+          "en": "The white door"
+        },
+        {
+          "zh": "黑门",
+          "en": "The black door"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "heyu",
+          "weight": 2,
+          "hp": 1.4
+        },
+        {
+          "creature": "qiuyu",
+          "weight": 2,
+          "hp": 1.25
+        },
+        {
+          "creature": "longzhi",
+          "weight": 1,
+          "hp": 1.3
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "gui",
+          "hp": 2.2
+        }
+      ],
+      "boss": {
+        "creature": "longzhi",
+        "hp": 2.6
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-3"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "houshan"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-3"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 2
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "carving",
+        "doors",
+        "puddle",
+        "lamp"
+      ],
+      "drops": "mijing-outer"
+    },
+    {
+      "id": "lingcao",
+      "n": 4,
+      "name": {
+        "zh": "四重 · 灵草谷",
+        "en": "Fourth depth · Spirit Herb Valley"
+      },
+      "source": {
+        "hui": "h11",
+        "scene": "09-lingcao",
+        "book": "第七回 蒙山北灵草谷，三层之后又见犰狳"
+      },
+      "say": {
+        "zh": "谷里的灵草一丛一丛，草底下都有眼睛。",
+        "en": "The valley's herbs grow clump on clump, and there are eyes under every one."
+      },
+      "after": "09-lingcao",
+      "layers": 4,
+      "rooms": 7,
+      "backdrop": "art/places/mengshan.webp",
+      "rooms_named": [
+        {
+          "zh": "谷口",
+          "en": "The valley mouth"
+        },
+        {
+          "zh": "药畦",
+          "en": "The herb beds"
+        },
+        {
+          "zh": "老树根",
+          "en": "The old roots"
+        },
+        {
+          "zh": "溪边",
+          "en": "The stream"
+        },
+        {
+          "zh": "雾里",
+          "en": "In the mist"
+        },
+        {
+          "zh": "谷底",
+          "en": "The valley floor"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "qiuyu",
+          "weight": 3,
+          "hp": 1.3
+        },
+        {
+          "creature": "zheng",
+          "weight": 1
+        },
+        {
+          "creature": "yezhu",
+          "weight": 2
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "heyu",
+          "hp": 2.4
+        }
+      ],
+      "boss": {
+        "creature": "qiuyu",
+        "hp": 3.45,
+        "deck": [
+          "tengmiao",
+          "leipu",
+          "leipu",
+          "qingteng",
+          "qingteng",
+          "shanjing",
+          "shanjing",
+          "linmu",
+          "linmu",
+          "zhennu",
+          "fengmao",
+          "chunsheng"
+        ]
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-3"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "yaoyuan"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-3"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 3
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "moss",
+        "herb",
+        "playdead",
+        "lamp"
+      ],
+      "drops": "mijing-outer"
+    },
+    {
+      "id": "jiuge",
+      "n": 5,
+      "name": {
+        "zh": "五重 · 九格崖",
+        "en": "Fifth depth · The Nine-Square Cliff"
+      },
+      "source": {
+        "hui": "h11",
+        "scene": "09-jiuge",
+        "book": "第七回 九格崖头学禹步"
+      },
+      "say": {
+        "zh": "崖头九格，一格一步，踏错一步，崖下就是风。",
+        "en": "Nine squares on the cliff top, a step to each; a wrong one, and below is only wind."
+      },
+      "after": "09-jiuge",
+      "layers": 4,
+      "rooms": 8,
+      "backdrop": "art/places/houshan.webp",
+      "rooms_named": [
+        {
+          "zh": "一格",
+          "en": "Square one"
+        },
+        {
+          "zh": "三格",
+          "en": "Square three"
+        },
+        {
+          "zh": "五格",
+          "en": "Square five"
+        },
+        {
+          "zh": "七格",
+          "en": "Square seven"
+        },
+        {
+          "zh": "九格",
+          "en": "Square nine"
+        },
+        {
+          "zh": "崖沿",
+          "en": "The edge"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "qiuyu",
+          "weight": 2,
+          "hp": 1.3
+        },
+        {
+          "creature": "heyu",
+          "weight": 2,
+          "hp": 2.2
+        },
+        {
+          "creature": "zheng",
+          "weight": 1
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "longzhi"
+        }
+      ],
+      "boss": {
+        "creature": "gui",
+        "hp": 2.8
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-4"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "yaoyuan"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-3"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 3
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "carving",
+        "lamp",
+        "wind",
+        "playdead"
+      ],
+      "drops": "mijing-outer"
+    },
+    {
+      "id": "guya",
+      "n": 6,
+      "name": {
+        "zh": "六重 · 孤崖",
+        "en": "Sixth depth · The Lone Cliff"
+      },
+      "source": {
+        "hui": "h09",
+        "scene": "09-cliff",
+        "book": "第八回「孤崖独坐筑仙基」"
+      },
+      "say": {
+        "zh": "崖上只有一个人坐的地方，风从四面来。",
+        "en": "On the cliff there is room for one to sit, and the wind comes from every side."
+      },
+      "after": "09-cliff",
+      "layers": 4,
+      "rooms": 8,
+      "backdrop": "art/places/heisong-cliff.webp",
+      "rooms_named": [
+        {
+          "zh": "崖顶",
+          "en": "The cliff top"
+        },
+        {
+          "zh": "青石",
+          "en": "The blue stone"
+        },
+        {
+          "zh": "松下",
+          "en": "Under the pine"
+        },
+        {
+          "zh": "云口",
+          "en": "The cloud's mouth"
+        },
+        {
+          "zh": "背风处",
+          "en": "The lee"
+        },
+        {
+          "zh": "孤松",
+          "en": "The lone pine"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "heyu",
+          "weight": 2,
+          "hp": 2.4
+        },
+        {
+          "creature": "qique",
+          "weight": 2
+        },
+        {
+          "creature": "zheng",
+          "weight": 1
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "qique",
+          "hp": 2.8
+        }
+      ],
+      "boss": {
+        "creature": "qique",
+        "hp": 3.6
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-4"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "heisong"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-3"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 4
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "lamp",
+        "wind",
+        "herb",
+        "carving"
+      ],
+      "drops": "mijing-outer"
+    },
+    {
+      "id": "zhangyuan",
+      "n": 7,
+      "name": {
+        "zh": "七重 · 漳渊",
+        "en": "Seventh depth · The Zhang Deeps"
+      },
+      "source": {
+        "hui": "h10",
+        "scene": "01-deep",
+        "book": "第九回 漳水河底，九宫锁"
+      },
+      "say": {
+        "zh": "水底下一道锁，九个宫，一宫一口气。",
+        "en": "A lock under the water, nine palaces, one breath to each."
+      },
+      "after": "01-deep",
+      "layers": 4,
+      "rooms": 8,
+      "backdrop": "art/places/zhangyuan.webp",
+      "rooms_named": [
+        {
+          "zh": "河心坑",
+          "en": "The pit midstream"
+        },
+        {
+          "zh": "乾宫",
+          "en": "Palace Qian"
+        },
+        {
+          "zh": "坎宫",
+          "en": "Palace Kan"
+        },
+        {
+          "zh": "离宫",
+          "en": "Palace Li"
+        },
+        {
+          "zh": "中宫",
+          "en": "The middle palace"
+        },
+        {
+          "zh": "水草",
+          "en": "The weeds"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "heyu",
+          "weight": 2,
+          "hp": 2.4
+        },
+        {
+          "creature": "qique",
+          "weight": 1
+        },
+        {
+          "creature": "qiuyu",
+          "weight": 1,
+          "hp": 1.4
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "foe-laojing"
+        }
+      ],
+      "boss": {
+        "creature": "foe-shuanglong"
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-4"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "heisong"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-3"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 4
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "puddle",
+        "lamp",
+        "carving",
+        "doors"
+      ],
+      "drops": "mijing-outer"
+    },
+    {
+      "id": "leize",
+      "n": 8,
+      "name": {
+        "zh": "八重 · 雷泽",
+        "en": "Eighth depth · Lake Lei"
+      },
+      "source": {
+        "hui": null,
+        "scene": "02-lake",
+        "book": "卷二（兖州）雷泽 · 大野泽（纲要：卷二计划，尚未成书）"
+      },
+      "say": {
+        "zh": "雷泽里打着雷，湖心有鼓声。",
+        "en": "Thunder walks on Lake Lei, and a drum beats at its heart."
+      },
+      "after": "02-lake",
+      "layers": 4,
+      "rooms": 8,
+      "backdrop": "art/places/leize.webp",
+      "rooms_named": [
+        {
+          "zh": "岸边",
+          "en": "The shore"
+        },
+        {
+          "zh": "芦荡",
+          "en": "The reeds"
+        },
+        {
+          "zh": "湖心",
+          "en": "The lake's heart"
+        },
+        {
+          "zh": "雷池",
+          "en": "The thunder pool"
+        },
+        {
+          "zh": "沉舟",
+          "en": "The sunk boat"
+        },
+        {
+          "zh": "水鼓",
+          "en": "The water drum"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "heyu",
+          "weight": 2,
+          "hp": 2.4
+        },
+        {
+          "creature": "qique",
+          "weight": 2
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "foe-shuanglong"
+        }
+      ],
+      "boss": {
+        "creature": "leishen"
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-4"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "heisong"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-3"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 4
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "puddle",
+        "lamp",
+        "wind",
+        "doors"
+      ],
+      "drops": "mijing-outer"
+    },
+    {
+      "id": "jiuding",
+      "n": 9,
+      "name": {
+        "zh": "九重 · 九鼎",
+        "en": "Ninth depth · The Nine Cauldrons"
+      },
+      "source": {
+        "hui": null,
+        "scene": "09-cauldron",
+        "book": "九鼎篇终：卷九（豫州）定鼎，九鼎归位（纲要：计划，尚未成书）"
+      },
+      "say": {
+        "zh": "九口鼎，八口空着。",
+        "en": "Nine cauldrons, and eight of them empty."
+      },
+      "after": "09-cauldron",
+      "layers": 4,
+      "rooms": 8,
+      "backdrop": "art/places/luoyi.webp",
+      "rooms_named": [
+        {
+          "zh": "冀鼎",
+          "en": "Ji's cauldron"
+        },
+        {
+          "zh": "兖鼎",
+          "en": "Yan's cauldron"
+        },
+        {
+          "zh": "青鼎",
+          "en": "Qing's cauldron"
+        },
+        {
+          "zh": "徐鼎",
+          "en": "Xu's cauldron"
+        },
+        {
+          "zh": "扬鼎",
+          "en": "Yang's cauldron"
+        },
+        {
+          "zh": "荆鼎",
+          "en": "Jing's cauldron"
+        }
+      ],
+      "beasts": [
+        {
+          "creature": "heyu",
+          "weight": 2,
+          "hp": 2.6
+        },
+        {
+          "creature": "qique",
+          "weight": 2
+        }
+      ],
+      "xiong": [
+        {
+          "creature": "leishen"
+        }
+      ],
+      "boss": {
+        "creature": "taifeng"
+      },
+      "guan": [
+        {
+          "task": "mijing-guan-shouqiang",
+          "lv": "shouchao-4"
+        },
+        {
+          "task": "mijing-guan-sadou",
+          "lv": "heisong"
+        },
+        {
+          "task": "mijing-guan-shoulu",
+          "lv": "mijing-3"
+        }
+      ],
+      "jiguan": [
+        {
+          "task": "mijing-jiguan-huarong"
+        },
+        {
+          "task": "mijing-jiguan-pintu",
+          "lv": 4
+        }
+      ],
+      "qiyu": [
+        "bones",
+        "puddle",
+        "lamp",
+        "carving",
+        "doors"
+      ],
+      "drops": "mijing-outer"
+    }
+  ],
+  "_kinds": "The rooms, Slay the Spire's: `fight` ones are the card 斗法 (rules/tasks.mjs duel, the run's door), `board` ones a small game of the 主力 kits (the room's task, dealt by the run), `pick` ones a choice on the run's own card. `weight` the draw in rows past the first (the first row is all 妖兽, the last before the 大妖 always holds a 灵泉; a 凶兽 never in the first row); `minutes` about how long it plays (the run's 修为 is the minutes cleared, balance.json master.mijing). `mark` the one glyph the ink map draws.",
+  "kinds": {
+    "yao": {
+      "name": {
+        "zh": "妖兽",
+        "en": "Beast"
+      },
+      "mark": "妖",
+      "play": "fight",
+      "weight": 40,
+      "minutes": 4
+    },
+    "xiong": {
+      "name": {
+        "zh": "凶兽",
+        "en": "Fierce beast"
+      },
+      "mark": "凶",
+      "play": "fight",
+      "weight": 10,
+      "minutes": 5
+    },
+    "guan": {
+      "name": {
+        "zh": "守关",
+        "en": "Hold the pass"
+      },
+      "mark": "关",
+      "play": "board",
+      "weight": 16,
+      "minutes": 4
+    },
+    "xinmo": {
+      "name": {
+        "zh": "心魔",
+        "en": "Heart demon"
+      },
+      "mark": "魔",
+      "play": "board",
+      "weight": 0,
+      "minutes": 3
+    },
+    "jiguan": {
+      "name": {
+        "zh": "机关",
+        "en": "Mechanism"
+      },
+      "mark": "机",
+      "play": "board",
+      "weight": 8,
+      "minutes": 3
+    },
+    "qiyu": {
+      "name": {
+        "zh": "奇遇",
+        "en": "Encounter"
+      },
+      "mark": "奇",
+      "play": "pick",
+      "weight": 16,
+      "minutes": 1
+    },
+    "quan": {
+      "name": {
+        "zh": "灵泉",
+        "en": "Spirit spring"
+      },
+      "mark": "泉",
+      "play": "pick",
+      "weight": 4,
+      "minutes": 1
+    },
+    "bao": {
+      "name": {
+        "zh": "宝箱",
+        "en": "Chest"
+      },
+      "mark": "宝",
+      "play": "pick",
+      "weight": 6,
+      "minutes": 1
+    },
+    "boss": {
+      "name": {
+        "zh": "大妖",
+        "en": "Great beast"
+      },
+      "mark": "王",
+      "play": "fight",
+      "weight": 0,
+      "minutes": 6
+    }
+  },
+  "_boons": "秘境加持 — run-only, Hades' boons and the Spire's relics: picked from a reward of three (a 凶兽 won, a chest, a 奇遇's way), gone when the run ends. Each lays only on what a game already reads: a 斗法's door (`fight`: `extra` cards in the opening hand, `power` on 主灵根一击, `armor`, `insight` 望气 — battle.js sideOf), the TD level's own fields by kit (`td`: 守墙关's `wall` times, 撒豆成兵's `start` plus), the run's 气血 (`hp_max` a share more; `heal` a share after each fight won), a board room's hurt (`hurt` times).",
+  "boons": [
+    {
+      "id": "tuna",
+      "name": {
+        "zh": "吐纳在手",
+        "en": "Breath in hand"
+      },
+      "does": {
+        "zh": "每场斗法开局，手里多一张吐纳。",
+        "en": "Each fight opens with Breathing in your hand."
+      },
+      "fight": {
+        "extra": [
+          "tuna"
+        ]
+      }
+    },
+    {
+      "id": "shizi",
+      "name": {
+        "zh": "一兜石子",
+        "en": "A pocket of stones"
+      },
+      "does": {
+        "zh": "每场斗法开局，手里多一把石子。",
+        "en": "Each fight opens with a stone in your hand."
+      },
+      "fight": {
+        "extra": [
+          "shizi"
+        ]
+      }
+    },
+    {
+      "id": "li",
+      "name": {
+        "zh": "崖风灌顶",
+        "en": "Cliff wind"
+      },
+      "does": {
+        "zh": "主灵根一击 +1。",
+        "en": "Root Strike +1."
+      },
+      "fight": {
+        "power": 1
+      }
+    },
+    {
+      "id": "hu",
+      "name": {
+        "zh": "石皮",
+        "en": "Stone skin"
+      },
+      "does": {
+        "zh": "斗法里护体 +1。",
+        "en": "Shield +1 in a fight."
+      },
+      "fight": {
+        "armor": 1
+      }
+    },
+    {
+      "id": "wang",
+      "name": {
+        "zh": "望气",
+        "en": "Read the qi"
+      },
+      "does": {
+        "zh": "看得出妖兽下一招。",
+        "en": "You read the beast's next move."
+      },
+      "fight": {
+        "insight": 1
+      }
+    },
+    {
+      "id": "run",
+      "name": {
+        "zh": "灵泉余润",
+        "en": "The spring lingers"
+      },
+      "does": {
+        "zh": "每赢一场斗法，回两成气血。",
+        "en": "Each fight won gives back a fifth of your Life."
+      },
+      "heal": 0.2
+    },
+    {
+      "id": "gu",
+      "name": {
+        "zh": "固本",
+        "en": "Root firm"
+      },
+      "does": {
+        "zh": "这一趟气血上限多两成。",
+        "en": "Life +20% for this run."
+      },
+      "hp_max": 0.2
+    },
+    {
+      "id": "zhen",
+      "name": {
+        "zh": "阵脚",
+        "en": "Firm footing"
+      },
+      "does": {
+        "zh": "守关时城墙厚两成半，豆兵多五个。",
+        "en": "Holding a pass: the wall a quarter thicker, five more bean soldiers."
+      },
+      "td": {
+        "shouqiang": {
+          "wall": 1.25
+        },
+        "sadou": {
+          "start": 5
+        }
+      }
+    },
+    {
+      "id": "xin",
+      "name": {
+        "zh": "静心",
+        "en": "Still heart"
+      },
+      "does": {
+        "zh": "机关和守关只折一半气血。",
+        "en": "Mechanisms and passes cost half the Life."
+      },
+      "hurt": 0.5
+    }
+  ],
+  "_qiyu": "奇遇 — a situation and two or three ways (the Spire's ? rooms). The rules decide what each way does, from this data: `chance` of the good side (else `miss`), each side's effects — `hp` a share of the run's 气血 (minus hurts), `boon` (`any`: one drawn), `loot` rolls of the 重's drop table, `wealth` 灵石. `frame` and each side's `line` are the page's facts; 银月 says it in her own words when she is awake beside him (the page hands her the facts), and the line stands when she is not.",
+  "qiyu": {
+    "bones": {
+      "frame": {
+        "zh": "石缝里卡着一副白骨，腰上的储物袋还没烂透。",
+        "en": "A skeleton is wedged in a crack; the pouch at its waist has not quite rotted."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "伸手去够",
+            "en": "Reach for it"
+          },
+          "chance": 0.6,
+          "win": {
+            "loot": 2,
+            "line": {
+              "zh": "袋子到手，里头还有东西。",
+              "en": "The pouch comes away, and there is something in it."
+            }
+          },
+          "miss": {
+            "hp": -0.2,
+            "line": {
+              "zh": "骨头底下压着一条火蛇，咬了一口。",
+              "en": "Under the bones a fire snake was coiled; it bites."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "拜一拜，走开",
+            "en": "Bow to it and go"
+          },
+          "win": {
+            "hp": 0.1,
+            "line": {
+              "zh": "心里松了一点。",
+              "en": "Something in you eases."
+            }
+          }
+        }
+      ]
+    },
+    "lamp": {
+      "frame": {
+        "zh": "壁上一盏灯还亮着，不知道谁点的，也不知道点了多少年。",
+        "en": "A lamp still burns on the wall; who lit it, and how many years ago, nobody knows."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "就着灯坐一会",
+            "en": "Sit by it a while"
+          },
+          "win": {
+            "hp": 0.25,
+            "line": {
+              "zh": "灯火暖，气血回来些。",
+              "en": "The light is warm; some of your Life comes back."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "取灯芯",
+            "en": "Take the wick"
+          },
+          "chance": 0.5,
+          "win": {
+            "boon": "any",
+            "line": {
+              "zh": "灯芯里存着一缕前人的气。",
+              "en": "A thread of someone's qi is stored in the wick."
+            }
+          },
+          "miss": {
+            "hp": -0.15,
+            "line": {
+              "zh": "灯一灭，黑里的东西扑了上来。",
+              "en": "The lamp goes out, and what was in the dark comes at you."
+            }
+          }
+        }
+      ]
+    },
+    "moss": {
+      "frame": {
+        "zh": "石缝里长着一层鼎苔，青里透亮。",
+        "en": "A skin of cauldron moss grows in a crack, green with a glow in it."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "刮下来",
+            "en": "Scrape it off"
+          },
+          "win": {
+            "item": {
+              "id": "dingtai",
+              "n": 2
+            },
+            "line": {
+              "zh": "刮了两撮，包好。",
+              "en": "Two pinches, wrapped."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "就地吞了",
+            "en": "Eat it here"
+          },
+          "chance": 0.5,
+          "win": {
+            "hp": 0.3,
+            "line": {
+              "zh": "苦，气血却回来了。",
+              "en": "Bitter, but your Life comes back."
+            }
+          },
+          "miss": {
+            "hp": -0.1,
+            "line": {
+              "zh": "生的不能吃，吐了半天。",
+              "en": "Raw, it does not go down; you retch a long while."
+            }
+          }
+        }
+      ]
+    },
+    "carving": {
+      "frame": {
+        "zh": "崖壁上刻着几行字，前人留的，一半叫水蚀了。",
+        "en": "A few lines are cut in the rock by someone before; water has eaten half of them."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "照着念一遍",
+            "en": "Read them aloud"
+          },
+          "chance": 0.7,
+          "win": {
+            "boon": "any",
+            "line": {
+              "zh": "念到第三行，丹田里热了一下。",
+              "en": "At the third line your dantian warms."
+            }
+          },
+          "miss": {
+            "line": {
+              "zh": "念不通，白费工夫。",
+              "en": "It makes no sense; time wasted."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "不看，走",
+            "en": "Leave it"
+          },
+          "win": {
+            "line": {
+              "zh": "字留在崖上。",
+              "en": "The words stay on the rock."
+            }
+          }
+        }
+      ]
+    },
+    "playdead": {
+      "frame": {
+        "zh": "一只犰狳横在路上装死，后头的路窄，只容一个人。",
+        "en": "A qiuyu lies across the way playing dead; past it the path is one man wide."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "跨过去",
+            "en": "Step over it"
+          },
+          "chance": 0.65,
+          "win": {
+            "wealth": 6,
+            "line": {
+              "zh": "它一动没动。它身底下压着几块灵石。",
+              "en": "It does not stir. Under it lie a few spirit stones."
+            }
+          },
+          "miss": {
+            "hp": -0.2,
+            "line": {
+              "zh": "它醒了，一口咬在小腿上。",
+              "en": "It wakes, and bites your calf."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "等它自己走",
+            "en": "Wait for it to go"
+          },
+          "win": {
+            "line": {
+              "zh": "等了半天，它才慢吞吞挪开。",
+              "en": "A long wait, and at last it shuffles off."
+            }
+          }
+        }
+      ]
+    },
+    "puddle": {
+      "frame": {
+        "zh": "干河床里剩一洼水，水面上浮着一层光。",
+        "en": "In the dry bed one puddle is left, a film of light on its face."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "喝一口",
+            "en": "Drink"
+          },
+          "chance": 0.6,
+          "win": {
+            "hp": 0.3,
+            "line": {
+              "zh": "水是甜的。",
+              "en": "The water is sweet."
+            }
+          },
+          "miss": {
+            "hp": -0.15,
+            "line": {
+              "zh": "水里有东西，肚子绞了一阵。",
+              "en": "Something in it; your belly cramps a while."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "伸手摸底",
+            "en": "Feel the bottom"
+          },
+          "chance": 0.5,
+          "win": {
+            "loot": 1,
+            "line": {
+              "zh": "底下摸着一样硬东西。",
+              "en": "Your hand closes on something hard."
+            }
+          },
+          "miss": {
+            "line": {
+              "zh": "只摸到泥。",
+              "en": "Only mud."
+            }
+          }
+        }
+      ]
+    },
+    "doors": {
+      "frame": {
+        "zh": "两道石门，一道开着，一道虚掩。",
+        "en": "Two stone doors: one open, one ajar."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "进开着的",
+            "en": "The open one"
+          },
+          "win": {
+            "wealth": 4,
+            "line": {
+              "zh": "里头是空的，地上散着几块碎灵石。",
+              "en": "Empty inside, a few chips of spirit stone on the floor."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "推虚掩的",
+            "en": "Push the other"
+          },
+          "chance": 0.5,
+          "win": {
+            "loot": 2,
+            "boon": "any",
+            "line": {
+              "zh": "门后是前人的一间小室。",
+              "en": "Behind it, a small room someone kept."
+            }
+          },
+          "miss": {
+            "hp": -0.25,
+            "line": {
+              "zh": "门后是机关，石头砸了下来。",
+              "en": "A trap: stones come down."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "都不进",
+            "en": "Neither"
+          },
+          "win": {
+            "line": {
+              "zh": "两道门在身后。",
+              "en": "Both doors behind you."
+            }
+          }
+        }
+      ]
+    },
+    "herb": {
+      "frame": {
+        "zh": "一株灵草长在崖缝里，底下守着一只兽，睡着。",
+        "en": "A spirit herb grows in a crack, a beast asleep beneath it."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "轻手轻脚去采",
+            "en": "Pick it, softly"
+          },
+          "chance": 0.55,
+          "win": {
+            "item": {
+              "id": "lingzhi",
+              "n": 1
+            },
+            "line": {
+              "zh": "采到了，兽没醒。",
+              "en": "Picked, and the beast never woke."
+            }
+          },
+          "miss": {
+            "hp": -0.25,
+            "line": {
+              "zh": "兽醒了。",
+              "en": "The beast wakes."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "不惊动它",
+            "en": "Let it sleep"
+          },
+          "win": {
+            "line": {
+              "zh": "草和兽都留在那里。",
+              "en": "Herb and beast stay where they are."
+            }
+          }
+        }
+      ]
+    },
+    "wind": {
+      "frame": {
+        "zh": "崖口的风一阵紧一阵，风里像有人念经。",
+        "en": "The wind at the cliff's mouth gusts and drops; in it, something like chanting."
+      },
+      "ways": [
+        {
+          "label": {
+            "zh": "顶着风坐下调息",
+            "en": "Sit into it and breathe"
+          },
+          "chance": 0.6,
+          "win": {
+            "boon": "any",
+            "line": {
+              "zh": "风过了，一口气长了。",
+              "en": "The wind passes; your breath is longer."
+            }
+          },
+          "miss": {
+            "hp": -0.15,
+            "line": {
+              "zh": "风太硬，呛了一口。",
+              "en": "Too hard a wind; it chokes you."
+            }
+          }
+        },
+        {
+          "label": {
+            "zh": "背过身去",
+            "en": "Turn your back"
+          },
+          "win": {
+            "hp": 0.1,
+            "line": {
+              "zh": "背风处歇了一歇。",
+              "en": "A rest in the lee."
+            }
+          }
+        }
+      ]
+    }
+  },
+  "_quan": "灵泉 — the Spire's rest: heal `heal` of the run's 气血, or 炼一门功法 (+1 ★ on one 功法 of his ten for this run: battle.js costOf — the cost one less, closer to 闭关's ★), from up to `offer` of the spells in his deck.",
+  "quan": {
+    "heal": 0.35,
+    "offer": 3
+  }
+}

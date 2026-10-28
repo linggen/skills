@@ -53,6 +53,7 @@ export const MOMENTS = {
   grind: { group: 'comfort', once: 'day' }, //             a long day of the same fights
   poor: { group: 'comfort', once: 'day' }, //              the purse near empty
   gongke: { group: 'cheer', once: 'key' }, //              a real-life chore handed in (rules/gongke.mjs): once a chore a day
+  mijing: { group: 'advise' }, //                         秘境探险 (rules/mijing.mjs): a 奇遇's way taken, a run over — the facts, her word
   why_strong: { group: 'advise' }, //                      his ? on the 主页's way to grow stronger: why that step (his tap — always)
   short: { group: 'advise', once: 'key' }, //              灵石 short of a thing on the shelf, the first time ever: try 砍价 — or earn more (`far`)
 };
@@ -111,6 +112,7 @@ const ASKS = {
   grind: { zh: '玩家今天已经打了很多场一样的仗。轻轻一句，可以让他歇歇。', en: 'The same fights all day. Light; maybe rest.' },
   poor: { zh: '玩家的灵石快见底了。轻轻一句。', en: 'Nearly out of stones. Light.' },
   gongke: { zh: '玩家在人间做完了一件功课，书里有它的意思。', en: 'A real-life chore done; the book gives it a meaning.' },
+  mijing: { zh: '秘境里：上面是刚发生的事。照事实说一句，不加没有的。', en: 'In the hidden realm: what just happened is above. One line, only the facts.' },
   // Hanli 2026-10-27: 「如果是推荐玩家变强, 应该让yinyue解释一下, 为什么要买东西? 能增强什么」 — he asked; she says why.
   // Hanli 2026-10-28: 「玩家灵石只有80, 要买一颗100的丹…yinyue主动提示玩家, 你钱不够, 试试砍价」 — the facts say whether
   // 砍价 could close it; she says it her way: try the 砍价 by the 买, or plainly that it will not go that low.
@@ -148,6 +150,7 @@ export const POOLS = {
       lost_another: ['可惜了。这只不好惹，换一只再来。', '凡人，别跟它较劲。换一只打。'],
       lost_seclude: ['可惜了，凡人。先闭关攒攒修为。', '打不过就坐下修。闭关去。'],
       lost_gongke: ['可惜了。先把今日的功课做了。', '凡人，歇口气。功课做了再说。'],
+      mijing: ['秘境里的东西，别乱碰——碰了也就碰了。', '往下走。本王看着。'],
       why_strong: ['问本王？手里多一样，它就少一分便宜。去拿。', '凡人，缺什么补什么。这一步补的就是你的短处。'],
       why_strong_wear: ['囊里放着不穿，留着生灰？穿上，打起来硬气些。', '凡人，现成的家伙不用？穿上它，本王才懒得替你挨打。'],
       why_strong_buy: ['你那几张牌，本王都看腻了。添一张，它就没那么好对付你。', '牌薄就挨打。买下这张，下回轮到它头疼。'],
@@ -179,6 +182,7 @@ export const POOLS = {
       lost_another: ['A pity. That one is mean — try another.', 'Mortal, do not fight it head-on. Another one.'],
       lost_seclude: ['A pity, mortal. Go sit in seclusion first.', 'Cannot win? Sit and cultivate. Seclusion.'],
       lost_gongke: ["A pity. Do today's practice first.", "Mortal, breathe. Practice first."],
+      mijing: ['Things in a hidden realm are not to be touched lightly — touched now, so be it.', 'Go on down. This king is watching.'],
       why_strong: ['You ask this king? One more thing in hand, one less edge for it. Go get it.', 'Mortal, mend what is short. This step mends yours.'],
       why_strong_wear: ['Gear in the pouch gathers dust. Wear it; you hit harder.', 'You carry it and do not wear it? Put it on, mortal.'],
       why_strong_buy: ['This king is bored of your hand. One more card, and it stops having its way.', 'A thin hand takes blows. Buy this one; let it worry next time.'],
@@ -213,6 +217,7 @@ export const POOLS = {
       lost_another: ['……可惜。……换一只打。', '……那只凶。……换一只。'],
       lost_seclude: ['……可惜。……闭关去。', '……坐下修吧。'],
       lost_gongke: ['……可惜。……先做功课。', '……功课……做了再说。'],
+      mijing: ['……秘境里……别乱碰……', '……往下……走……'],
       why_strong: ['……问本王？……缺什么……补什么。', '……这一步……补你的短处。……去。'],
       why_strong_wear: ['……囊里的……穿上。……打起来硬些。', '……现成的……不穿？……凡人。'],
       why_strong_buy: ['……牌太薄……添一张……它就难缠不了你。', '……买下它……下回……它头疼。'],
@@ -244,6 +249,7 @@ export const POOLS = {
       lost_another: ['…A pity. …Another one.', '…That one bites. …Another.'],
       lost_seclude: ['…A pity. …Seclusion.', '…Sit and cultivate.'],
       lost_gongke: ['…A pity. …Practice first.', '…Practice, then fight.'],
+      mijing: ['…In the realm… touch nothing lightly…', '…Go on… down…'],
       why_strong: ['…You ask this king? …Mend what is short.', '…This step… mends you. …Go.'],
       why_strong_wear: ['…Wear what you carry. …Hit harder.', '…You carry it… wear it, mortal.'],
       why_strong_buy: ['…Thin hand… one more card.', '…Buy it… let it worry.'],

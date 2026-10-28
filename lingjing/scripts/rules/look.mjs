@@ -52,6 +52,7 @@ import { withoutSealed } from './sealed.mjs';
 import { hotspotsOf, lookHint, seenLog, seenMet, SEEN_KEEP } from './examine.mjs';
 import { kaoBrief, kaoHosted } from './kao.mjs';
 import { shouchaoHosted, shouchaoRow, shouchaoWait, shouchaoWaiting } from './shouchao.mjs';
+import { mijingBrief, mijingHosted, mijingRow } from './mijing.mjs';
 import { dealtOf } from './climb.mjs';
 
 /* The market's shelf: the catalog sold in this province — and, while the
@@ -458,6 +459,8 @@ function tasksBrief(content, state, ctx) {
   Object.assign(hosted, kaoHosted(content, state, ctx.now));
   // 兽潮 (rules/shouchao.mjs): 守墙关's next night at 沉鼎观, out of its cooldown.
   Object.assign(hosted, shouchaoHosted(content, state, ctx.now));
+  // 秘境探险 (rules/mijing.mjs): the board of the run's room he stands in.
+  Object.assign(hosted, mijingHosted(content, state));
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
   const hereShows = new Set((sceneOf(content, state)?.show ?? []).filter(c => c.card === 'board').map(c => c.id));
@@ -469,10 +472,10 @@ function tasksBrief(content, state, ctx) {
     .filter(([id]) => taskOf(content, id))
     .map(([id, t]) => {
       const task = taskOf(content, id);
-      // The deal: the task's own (and its game's levels) and 兽潮's night laid over it — one deal.
+      // The deal: the task's own (and its game's levels) 兽潮's night and a 秘境探险 room's level laid over it — one deal.
       const own = dealOf(content, task, state, ctx.now);
-      const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : {};
-      const deal = own.deal || sc.deal ? { deal: { ...own.deal, ...sc.deal } } : {};
+      const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : {}, mj = task.mijing ? mijingRow(content, state, id) : {};
+      const deal = own.deal || sc.deal || mj.deal ? { deal: { ...own.deal, ...sc.deal, ...mj.deal } } : {};
       return {
         id, title: boardTitle(content, state, id, task, again.has(id)), kind: task.kind, status: t.status,
         won: Boolean(state.wins?.[id]),
@@ -499,7 +502,7 @@ function tasksBrief(content, state, ctx) {
         ...(task.kao ? { light: true, ...kaoBrief(content, state, ctx.now) } : {}),
         // 兽潮: tonight's row of 守墙关's table (or the rise past it), its title and lead (rules/shouchao.mjs).
         ...sc,
-        ...deal,
+        ...mj, ...deal,
         asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
         // A practice board shows what its next play lands (rules/playpay.mjs): 修为 and 灵石, the replay's share counted.
@@ -650,7 +653,8 @@ export function look(state, content, ctx) {
     // 所见 — what was looked at, the newest scenes, and what was passed by (rules/examine.mjs).
     ...(state.looked?.length ? { seen: seenLog(content, state, SEEN_KEEP) } : {}),
     waypoint: waypointOf(content, state, ctx),
-    place: placeBrief(content, state, ctx.now),
+    // Inside a 秘境探险 run the roads wait outside (rules/mijing.mjs mijingHold): the map's rooms are the only ways.
+    place: state.mijing?.run ? { ...placeBrief(content, state, ctx.now), roads: [] } : placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
     companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, ...(state.companion.asleep && !herGameNow(state, ctx.now) ? { asleep: true } : {}), ...(state.companion.asleep && herGameNow(state, ctx.now) ? { out_for: state.her_game.task } : {}), ...(herAway(content, state) ? { away: herAway(content, state) } : {}), recalled: recalledOf(content, state), card: herCard(content, state) } : null,
     // 银月的记忆 (rules/memories.mjs): the ones unlocked, and what Ling may say of them — never one still locked.
@@ -691,6 +695,8 @@ export function look(state, content, ctx) {
     ...taleLook(content, state, ctx),
     // A board left on an earlier day, offered again now the stage is idle (rules/skips.mjs): the page's optional beat.
     ...(replayBrief(content, state, ctx.now) ? { replay: replayBrief(content, state, ctx.now) } : {}),
+    // 秘境探险 (rules/mijing.mjs): inside a run its map and room; at the door the 重 and the 秘境令; after, what it paid.
+    ...(mijingBrief(content, state, ctx.now) ? { mijing: mijingBrief(content, state, ctx.now) } : {}),
     // Every cooldown he waits out, one shape: { id, title, shut, wait_min } — the page draws each as one waiting row.
     ...(waitsOf(content, state, ctx.now).length ? { waits: waitsOf(content, state, ctx.now) } : {}),
     ended: state.ended, story: state.story,

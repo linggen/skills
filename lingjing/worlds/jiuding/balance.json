@@ -66,6 +66,26 @@
       "gear_minutes": {"weapon": 8, "robe": 7, "pendant": 8},
       "sell_back": 0.33334,
       "convert": 0.333
+    },
+    "mijing": {
+      "_about": "秘境探险 (rules/mijing.mjs; Hanli 2026-10-28): the run's knobs, derived into `mijing` (tools/master.mjs mijingOf). `key`: a 秘境令's chance on a win in each cooldown event (兽潮 `shouchao` — a night, so about one a day; 比武切磋 `qiecuo`; 妖兽出没 `yaoshou`, a pool's beast won) under `cap_day` a day, so a day holds at most that many runs. `pay`: a run's 修为 is its minutes of rooms cleared at the games' rate (play_pay: the same per minute as any board, so a run never runs ahead of the pace) × `rate` (0.12 since 2026-10-28: a 练气 layer is about an hour of play, so a full-rate run was half a layer and the day's two a whole one — the run pays mostly in loot and 灵石; a day's two runs are about a tenth of a 练气 layer); a run not cleared pays `short` of it, and keeps its loot by the depth reached (`keep_min` at least). `hurt`: a board room's 气血 cost by its stars (a share of the run's), `yield` leaving one unplayed. `foe_step` · `td_step`: a 重 deeper, the foes' 气血 and the TD levels' difficulty. `wealth`: 灵石 in minutes of the typical income (economy.income) — a room won `room`, a chest `chest`, a clear `clear` — each 重 deeper `step` more. `clear.items`: the pills a clear pays (by 重, `from` · `to`); an arm and the 大妖's card come from the drop table and the beast.",
+      "key": {"cap_day": 2, "drops": {"shouchao": 1, "qiecuo": 0.5, "yaoshou": 0.2}},
+      "pay": {"rate": 0.12, "short": 0.5, "keep_min": 0.25},
+      "hurt": {"1": 0.2, "2": 0.1, "3": 0},
+      "yield": 0.25,
+      "foe_step": 0.06,
+      "boss_more": 0,
+      "td_step": 0.08,
+      "wealth": {"room": [0.6, 1.2], "chest": [2, 3], "clear": 10, "step": 0.25},
+      "chest_rolls": 2,
+      "offer": 3,
+      "clear": {
+        "items": [
+          {"item": "qi-pill", "n": [1, 2], "to": 3},
+          {"item": "qi-pill-3", "n": [1, 1], "from": 4},
+          {"item": "mend-pill", "n": [1, 1]}
+        ]
+      }
     }
   },
   "_overrides": "Numbers that do not follow their formula, each with its reason; --apply lays them on last and the 数值 page lists them.",
@@ -198,6 +218,7 @@
     "zixu-zhi": {"buy": 0, "sell": 0},
     "zou-purse": {"buy": 0, "sell": 0},
     "neimen-map": {"buy": 0, "sell": 0},
+    "mijing-ling": {"buy": 0, "sell": 0},
     "fox-token": {"buy": 0, "sell": 0},
     "deer-hide": {"buy": 40, "sell": 13},
     "old-bow": {"buy": 51, "sell": 17},
@@ -485,5 +506,26 @@
     "lines": {"jin": {"games": {"share": 1, "time": 0.5}}}
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
-  "lock_fight": {"losses": 3}
+  "lock_fight": {"losses": 3},
+  "mijing": {
+    "cap_day": 2,
+    "drops": {"shouchao": 1, "qiecuo": 0.5, "yaoshou": 0.2},
+    "pay": {"rate": 0.12, "short": 0.5},
+    "keep_min": 0.25,
+    "hurt": {"1": 0.2, "2": 0.1, "3": 0},
+    "yield": 0.25,
+    "foe_step": 0.06,
+    "boss_more": 0,
+    "td_step": 0.08,
+    "wealth": {"room": [2, 4], "chest": [6, 10], "clear": 32, "step": 0.25},
+    "chest_rolls": 2,
+    "offer": 3,
+    "clear": {
+      "items": [
+        {"item": "qi-pill", "n": [1, 2], "to": 3},
+        {"item": "qi-pill-3", "n": [1, 1], "from": 4},
+        {"item": "mend-pill", "n": [1, 1]}
+      ]
+    }
+  }
 }

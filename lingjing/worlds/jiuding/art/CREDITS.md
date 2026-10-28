@@ -345,3 +345,7 @@ picture model (FLUX.2 klein 4B, mflux) with `tools/paint-zhuigu.py` (paint-yaowa
 `places/heisong-cliff.webp` (ya, gun) and `places/yingu.webp` (tai) as the style references: ya seed 1 of 1–3, gun seed 5 of
 1–7, tai seed 3 of 1–3 (`KEPT`, with what was wrong with the rest). Every picture looked at; no seal, no writing. No outside
 source.
+
+`items/mijing-ling.webp` — 秘境令, the key of 秘境探险 (2026-10-28): painted by the local picture model (FLUX.2 klein 4B,
+mflux) as an edit pass from the house's `items/fox-token.webp` (the ink-wash style and paper): seed 2 of 1–3 (seed 3 drew a
+fake seal in the corner; seed 1 sat off-centre). Looked at; no seal, no writing. No outside source.

@@ -169,6 +169,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
     // The small games' registry (games.json, 2026-10-16): each standalone module and its levels.
     games: fs.existsSync(path.join(dir, 'games.json')) ? readJson(path.join(dir, 'games.json')) : null,
+    // 秘境探险 (rules/mijing.mjs, 2026-10-28): the nine 重, their rooms, boons and 奇遇.
+    mijing: fs.existsSync(path.join(dir, 'mijing.json')) ? readJson(path.join(dir, 'mijing.json')) : null,
     // 人间功课 as cultivation (rules/gongke.mjs): a chore's `kind` → its meaning in the book.
     gongke: fs.existsSync(path.join(dir, 'gongke.json')) ? readJson(path.join(dir, 'gongke.json')) : null,
     // AI mini-games (rules/aigames.mjs): 二十问's animals, 砍价's band and rubric (断案 cut 2026-10-27).

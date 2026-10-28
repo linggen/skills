@@ -1354,6 +1354,15 @@
       ]
     },
     {
+      "id": "mijing-ling",
+      "kind": "key",
+      "name": { "zh": "秘境令", "en": "Realm token" },
+      "art": "art/items/mijing-ling.webp",
+      "about": { "zh": "一块青铜小令，背面一个「沉」字。贴着石门，门缝就松一松，放一个人进去。", "en": "A little bronze token with 沉 on its back. Laid against the stone door, the crack loosens and lets one in." },
+      "_doc": "秘境探险's key (rules/mijing.mjs, worlds/jiuding/mijing.json): one is spent at the stone door for a run. It drops from wins in the cooldown events (兽潮 · 比武切磋 · 妖兽出没), at balance.json `mijing.drops`, under the day's cap.",
+      "effect": { "key": true }
+    },
+    {
       "id": "danlu",
       "kind": "key",
       "named": "furnace_name",

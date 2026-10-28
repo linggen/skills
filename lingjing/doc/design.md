@@ -556,7 +556,7 @@ trial); 暗河 合窳 and 犰狳 (pool `mijing-anhe`) and 拾遗 (games/gather.j
 cracks, 灵芝 and 灵石). Fights pay the haunt table (修为), boards their grants, gleaning stones and a
 herb; their sums are balance.json's. A natural player: about 20 minutes inside.
 **Reruns** (Hanli, 2026-10-15) — **retired 2026-10-28** (Hanli: 「按你说的来」): the outer rooms no longer reopen; the
-day's cooldown events are 兽潮 · 比武切磋 · 妖兽出没 (§ Pacing), and the 秘境 comes back as a roguelite map run (§ Backlog).
+day's cooldown events are 兽潮 · 比武切磋 · 妖兽出没 (§ Pacing), and the 秘境 comes back as a roguelite map run (§ 秘境探险).
 A save inside a run leaves it on load (state.mjs fitWorld runLeft). What it was: after the story run the **outer rooms** (岔口 · 凶崖 · 暗河)
 reopen **3 h after the last run ends** — one slot of the daily routine, through 古七/古八 too (the
 rerun's `also`: the same 观). Each run rolls its spawns
@@ -1476,12 +1476,22 @@ person, no gender marks, and the game follows 原神 (story DESIGN § 四, § �
   plan's players get a larger 体力 pool · a healthy user gets a better Linggen
   (to talk through).
 
-## Backlog 【远景】
+## 秘境探险 — the map run 【已建 · 第一重 played】
 
-- **秘境 as a roguelite map run** (Hanli 2026-10-28: 「按你说的来」; after the 秘境 rerun was retired). A run is a
-  random map of 5–7 rooms with a choice of path, in the shape of *Slay the Spire* or *Hades*. The rooms are 斗法, TD,
-  格斗, a puzzle (华容道 / 推箱子), an 奇遇 or a chest. A 大妖 waits at the end, then the loot. There is no story
-  re-reading: the book's 秘境 passage is told once and stays the story's.
-  - The 主力 games are the main course and the small games the seasoning.
-  - The 奇遇 pool and frames (worlds/jiuding/qiyu.json, its boards) and the drop tables (rewards.json) are kept for it.
-  - Starts only after the three cooldown events (兽潮 · 比武切磋 · 妖兽出没) are stable.
+(Hanli, 2026-10-28, option A 秘境令; 「每个秘境给个名字? 和故事对应上?」)
+The classic roguelite act (Slay the Spire's map, Hades' boons), at the stone door after 古五's 秘境 passage (the passage
+itself untouched). `worlds/jiuding/mijing.json` (the nine 重, rooms, beasts, boons, 奇遇) · `rules/mijing.mjs` · the
+card `scripts/mijing.js` · numbers `balance.json master.mijing`.
+- **The key:** one 秘境令 a run. It drops from wins in the cooldown events (兽潮 a night, a pool's beast now and then,
+  比武切磋 once built: `keyDrop(content, s, ctx, 'qiecuo')`), under the day's cap. The 秘境 has no cooldown of its own.
+- **The map:** 3–4 rows of 6–8 rooms with branches, a 大妖 at the head; every room on a way to it. First row 妖兽, a 灵泉
+  before the 大妖, a 守关 in the second row, a 奇遇 past the first. Rooms: 妖兽 / 凶兽 / 大妖 (the card 斗法, the
+  page's own room), 守关 (守墙关 · 撒豆成兵 · 守炉 levels), 机关 (华容道 · 拼图 of the 重's painting), 奇遇 (data decides,
+  银月 says it), 灵泉 (rest or temper a 功法), 宝箱. 心魔 (格斗 against 沈小满's shadow) is in the table at weight 0
+  until the fighter takes a mirror foe.
+- **The run:** 气血 carries (a fight's door takes it as `wounds`, a board costs it by its stars, never below 1; 撤 off a
+  board costs a quarter). Boons lie on what each game reads. The 大妖 clears it: all the loot, 灵石, pills, an arm, its
+  card, the next 重 open. Death or leaving keeps the loot by the depth reached. 修为 is the minutes cleared at a low
+  share of the games' rate (a day's two runs about a tenth of a 练气 layer).
+- **The nine 重** follow the book's places, each open once its scene is passed: 凶崖 · 暗河 · 石室 (古五: the 沉鼎秘境 itself, 第一重 its 凶崖), 灵草谷 ·
+  九格崖 (古七), 孤崖 (古八), 漳渊 (古九), 雷泽 (卷二), 九鼎 (九鼎篇终).

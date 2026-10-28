@@ -25,6 +25,7 @@ import { beastOpen, kitOf } from './reveal.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { hashOf } from './travel.mjs';
 import { beatOf, passed, sceneOf } from './world.mjs';
+import { keyDrop } from './mijing.mjs';
 
 const tideTask = content => (content.tasks?.tasks ?? []).find(t => t.shouchao) ?? null;
 
@@ -179,5 +180,6 @@ export function shouchaoDone(state, content, ctx, id) {
     ? { ...held, risen: night.rise, told: true, at: ctx.now.toISOString() }
     : { ...held, won: [...(held.won ?? []), night.row.id], told: true, at: ctx.now.toISOString() };
   s.tasks[id] = { status: 'done', period: dayKey(ctx.now), done_at: ctx.now.toISOString() };
-  return { state: s, result: { ok: true, done: id, night: night.n, level: night.row.id, ...(night.rise ? { rise: night.rise } : {}), stars, paid, gives: null, line: pick(t.done_line, s.lang), ...(full ? { pouch_full: full } : {}) } };
+  const key = keyDrop(content, s, ctx, 'shouchao'); // a night won may drop a 秘境令 (rules/mijing.mjs)
+  return { state: s, result: { ok: true, done: id, ...(key ? { key } : {}), night: night.n, level: night.row.id, ...(night.rise ? { rise: night.rise } : {}), stars, paid, gives: null, line: pick(t.done_line, s.lang), ...(full ? { pouch_full: full } : {}) } };
 }

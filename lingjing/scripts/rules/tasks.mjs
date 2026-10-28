@@ -25,6 +25,7 @@ import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, po
 import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
 import { isTide, shouchaoDone, shouchaoHere, shouchaoShut } from './shouchao.mjs';
+import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardHere, mijingDuel } from './mijing.mjs';
 
 /* Each line its own 修为 (rules/lines.mjs, Hanli 2026-10-27): a board pays the line it belongs to — a 今 board the 今, wherever
    it is replayed; on a 今 scene, the 今 — by the same minutes on that line's ladder, and never 灵石. Null: the 古's own. */
@@ -139,6 +140,8 @@ function taskOpen(content, state, id, now) {
   if (!t) return false;
   // 兽潮 is open by its cooldown alone (rules/shouchao.mjs), never by the generic period: a night counted at 23:00 stays shut the next morning.
   if (isTide(content, id)) return shouchaoHere(content, state, id, now);
+  // A 秘境探险 room's board: open while he stands in its room (rules/mijing.mjs).
+  if (t.mijing) return mijingBoardHere(content, state, id);
   if (reopened(content, state, id, now) || hostedHere(content, state, id, now) || catchHere(content, state, id) || stallHere(content, state, id, now) || kaoHere(content, state, id, now) || shouchaoHere(content, state, id, now)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
@@ -149,6 +152,8 @@ function taskDone(state, content, ctx, id) {
   if (!t) return refuse('unknown-task', null);
   // 本王考考你 (rules/kao.mjs): a word's first clear, paid by its looks.
   if (kaoHere(content, state, id, ctx.now)) return kaoDone(state, content, ctx, id);
+  // A 秘境探险 room's board (rules/mijing.mjs): the 气血 it cost, the room behind him; the run pays at its end.
+  if (t.mijing) return mijingBoardHere(content, state, id) ? mijingBoardDone(state, content, ctx, id) : refuse('not-here', null);
   // 兽潮 (rules/shouchao.mjs): the night counted — its 灵气, the pay by stars, the next night.
   if (shouchaoHere(content, state, id, ctx.now)) return shouchaoDone(state, content, ctx, id);
   // …and inside its cooldown: refused in the world's words, the minutes left.
@@ -370,6 +375,8 @@ function gradeOf(content, id, grade) {
    own picks settle it. */
 export function duel(state, content, ctx, args) {
   const id = String(args.id ?? '');
+  // A 秘境探险 room's fight (rules/mijing.mjs): the run's own door and settle.
+  if (isMijingFight(id)) return mijingDuel(state, content, ctx, args);
   const exit = sceneOf(content, state)?.exits.find(e => gameOf(e)?.id === id && gameOf(e).kind === 'duel');
   const haunt = !exit && id.startsWith('haunt:') ? encounterOf(content, state, ctx.now) : null;
   if (!exit && !(haunt && haunt.game.id === id)) return refuse('not-here', null);
@@ -455,6 +462,8 @@ export function duel(state, content, ctx, args) {
   if (exit && won && s.fight_losses?.[id] != null) { const { [id]: _, ...rest } = s.fight_losses; if (Object.keys(rest).length) s.fight_losses = rest; else delete s.fight_losses; }
   // A pool's fights won, by the place (a guarded room counts them, world.mjs guardOf).
   if (won && hunt) s.hunted = { ...s.hunted, [game.hunt]: (s.hunted?.[game.hunt] ?? 0) + 1 };
+  // 妖兽出没 (a pool's beast won) may drop a 秘境令 (rules/mijing.mjs keyDrop, under the day's cap).
+  const ling = won && haunt?.pool && !game.run ? keyDrop(content, s, ctx, 'yaoshou') : null;
   // …and those not won there: a guard lost to often enough lets him by (world.mjs guardOf, 2026-10-27).
   if (!won && hunt) s.hunt_losses = { ...s.hunt_losses, [game.hunt]: (s.hunt_losses?.[game.hunt] ?? 0) + 1 };
   // A beast met on the road, beaten, has been met: it leaves the road.
@@ -478,7 +487,7 @@ export function duel(state, content, ctx, args) {
   // Not won: what beat him, and the ways to grow stronger now (rules/strengthen.mjs) — facts for 银月's
   // word and the result card's one button (Hanli 2026-10-27: a loss never strands him).
   const way = won || exit ? null : lossWay(content, s, ctx, game, setup, played);
-  return { state: s, result: { ok: true, ...(way ? way : {}), outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  return { state: s, result: { ok: true, ...(way ? way : {}), outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}), ...(ling ? { key: ling } : {}) } };
 }
 
 /* A fight not won: `beat` — the beast's 护主 (bodies it stood up), its 气血 left, the turns he lasted —
@@ -516,7 +525,7 @@ const FIGHT_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, haggle: true, duizi: a => ['open', 'reverse'].includes(a.action),
-  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', quest: a => !['info', 'kaifu'].includes(a.action),
+  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', quest: a => !['info', 'kaifu'].includes(a.action), mijing: a => !['info', 'close'].includes(a.action ?? 'info'),
   seclude: a => a.action === 'enter',
 };
 export function fightHold(state, verb, args = {}) {

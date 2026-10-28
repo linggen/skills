@@ -8,6 +8,7 @@ import { hashOf, provinceOf } from './travel.mjs';
 import { buyBack, visitorHere } from './visiting.mjs';
 import { huiNow, huiOrder, sceneHui } from './hui.mjs';
 import { waitsTheBook } from './codex.mjs';
+import { mijingDoors, mijingEncounter } from './mijing.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
 
@@ -147,6 +148,8 @@ function leaveOf(content, state, now) {
   const scene = !inMade(state) && state.scene ? content.chapters[state.chapter]?.scenes?.[state.scene] : null;
   if (scene?.at && !base.has(scene.at) && !(state.done_scenes ?? []).includes(scene.id)) for (const id of roadFrom(content, base, scene.at, now)) open.add(id);
   for (const id of state.pass?.places ?? []) open.add(id);
+  // 秘境探险 (rules/mijing.mjs): while a 秘境令 waits in his bag for a 重 open to him (or a run is on), the road to its door.
+  for (const door of mijingDoors(content, state)) if (!base.has(door)) for (const id of roadFrom(content, base, door, now)) open.add(id);
   return open;
 }
 /* A 令 for this errand, when it declares one and the chapter's map walls it
@@ -488,6 +491,9 @@ const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature
 
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
+  // Inside a 秘境探险 run the room's beast (rules/mijing.mjs), and nothing else of the place.
+  const mj = mijingEncounter(content, state, now);
+  if (mj !== undefined) return mj;
   if (place && !place.has?.creature && poolOf(content, place) && !atScene(content, state)) {
     if (poolResting(content, state, place, now)) return null;
     const cid = poolBeast(content, state, place, now);

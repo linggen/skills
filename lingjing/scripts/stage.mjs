@@ -151,6 +151,8 @@ export const CARD_KINDS = {
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
   // A board left on an earlier day, offered again (rules/skips.mjs): optional — 再试一回 or 改日, never asking.
   replay: { holds: false },
+  // 秘境探险 (rules/mijing.mjs, Look's `mijing`): inside a run the map is the business at hand (it holds); at the door, the way in — optional.
+  mijing: { holds: look => Boolean(look?.mijing?.inside) },
   goal: { holds: false }, building: { holds: false }, empty: { holds: false },
   // 下一步: where the story goes and the one tap toward it, when nothing else stands (withNext).
   next: { holds: false },
@@ -279,6 +281,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
     // AI mini-games: 对对子 where the teacher is. (砍价 is the shelf's own button, 2026-10-28.)
     if (look.duizi && !has('duizi')) cards.push({ card: 'duizi' });
+    // 秘境探险: the run's map inside, the door's 重 at the door, what a run paid after it (rules/mijing.mjs).
+    if (look.mijing && (look.mijing.inside || look.mijing.door || look.mijing.last || (look.mijing.away && !look.scene?.panel)) && !has('mijing')) cards.push({ card: 'mijing' });
     // Every board open here: the story's, an errand's, and the games this place hosts.
     // A place's game open only as practice (Look's `practice`) waits in the tray for his 开局 — never dealt by itself;
     // so does 兽潮's night when its time comes (Look's `tide`; Hanli 10-27: 「兽潮时间到了不要自动开始, 让玩家点击开始」).
@@ -433,7 +437,7 @@ export const MAIN = [
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
   { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
-  { kinds: ['board', 'duel', 'lundao', 'duizi'] }, //  a game to play here
+  { kinds: ['board', 'duel', 'lundao', 'duizi', 'mijing'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices
   { kinds: ['next'] }, //                                                where the story goes, when nothing else is a thing to do
@@ -489,12 +493,14 @@ export const mainIsStep = (look, main = []) => main.some(c => STEP_KINDS.has(c.c
    choices itself, at its last beat — lingjing.js footRowHtml). */
 export function stageSlots(look, cards = [], { skip = [] } = {}) {
   const header = HEADER.flatMap(k => cards.filter(c => c.card === k));
-  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, cards, look));
+  // 秘境探险's card (the map, the door's 重, a run's pay) rides under whatever stands — never queued behind the room's fight or board.
+  const rider = cards.find(c => c.card === 'mijing') ?? null;
+  const things = MAIN.flatMap((rank, r) => thingsOf(rank, r, rider ? cards.filter(c => c !== rider) : cards, look));
   const real = things.filter(t => !t.filler);
   const order = t => { const put = skip.indexOf(t.key); return put < 0 ? t.rank * 1000 + t.i : 1e6 + put; };
   const [now = null, ...queue] = (real.length ? real : things).sort((a, b) => order(a) - order(b));
   const roads = stageHolds(look, cards) && !look?.seclusion && !look?.director?.corridor;
-  const main = [...(now?.cards ?? [])];
+  const main = [...(now?.cards ?? []), ...(rider ? [rider] : [])];
   const step = mainIsStep(look, main);
   const waits = queue.map(t => ({ key: t.key, cards: t.cards }));
   return { header, main, key: now?.key ?? null, queue: waits, footer: { roads, step, waiting: step ? 0 : waits.length, next: step ? null : waits[0] ?? null } };

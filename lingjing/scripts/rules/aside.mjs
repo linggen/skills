@@ -76,7 +76,7 @@ export const ASIDE_ALWAYS = new Set(['look', 'show', 'progress', 'story', 'bag',
 /* Verbs that move the story, or take him elsewhere: refused while the book is set aside (Move and Go
    too: no kind takes them since the 秘境 rerun was retired, 2026-10-28). */
 export const ASIDE_REFUSED = new Set(['move', 'go', 'resolve', 'judge', 'travel', 'fly', 'meet', 'ring', 'make', 'enter', 'leave', 'build',
-  'worlds', 'amend', 'art']);
+  'worlds', 'amend', 'art', 'mijing']);
 /* Verbs some kind may take (a call each kind's `takes` answers); else refused. */
 export const ASIDE_KIND_VERBS = new Set(['task', 'win', 'duel', 'reroll', 'tame', 'fantong', 'seclude', 'duizi', 'kao', 'tale',
   'lundao', 'divine', 'fate']);

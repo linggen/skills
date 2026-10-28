@@ -2047,6 +2047,27 @@ function boardItems(paid) {
   return typeof name === 'string' ? [{ id: paid.item, name, n: 1 }] : [];
 }
 
+/// 秘境探险 (rules/mijing.mjs): the run's own taps — in at the door, a room of the map, a 奇遇's way or a 灵泉's, a boon,
+/// 撤 off a board, out. The rules decide; the card redraws from Look. What a 奇遇's way did, and a run's end, go to her as
+/// facts (hersay.js `mijing`): her word, the data line standing when she is asleep or away.
+async function mijingTap(d) {
+  const args = { action: d.mijing, ...(d.tier ? { tier: d.tier } : {}), ...(d.room ? { room: d.room } : {}), ...(d.way != null ? { way: d.way } : {}),
+    ...(d.card ? { card: d.card } : {}), ...(d.boon ? { id: d.boon } : {}), ...(d.skip ? { skip: true } : {}) };
+  const r = await write('mijing', args).catch(failed);
+  if (!r.ok) return noteAWhile(refusal(r));
+  const zh = lang() !== 'en';
+  if (d.mijing === 'choose' && r.line) {
+    const hp = r.hp ? (zh ? `，气血${r.hp > 0 ? '+' : ''}${r.hp}` : `, Life ${r.hp > 0 ? '+' : ''}${r.hp}`) : '';
+    document.dispatchEvent(new CustomEvent('lingjing:her', { detail: { kind: 'mijing', what: `${r.line}${hp}`, key: `mijing|${r.room}|${Date.now()}` } }));
+  }
+  if (r.ended && r.last) {
+    const l = r.last, how = { clear: zh ? '通关了' : 'cleared it', dead: zh ? '力竭出来了' : 'came out spent', left: zh ? '退了出来' : 'came back out' }[l.how] ?? l.how;
+    document.dispatchEvent(new CustomEvent('lingjing:her', { detail: { kind: 'mijing', what: zh ? `${l.name}，${how}，走到第${l.reached}间。` : `${l.name}: ${how}, ${l.reached} rooms in.`, key: `mijing|end|${l.at}` } }));
+  }
+  keep({ spoils: null, doNote: r.say ?? null });
+  await refresh();
+}
+
 /// A board won while 体力 was empty, paid now it is back — the same day,
 /// as the rules keep it. Once per Look, one at a time. Never while 闭关 holds
 /// the world, and a refusal never redraws: a refused pay that refreshed ran
@@ -3634,6 +3655,7 @@ const CLICKS = [
   ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
   // 去X, 喂它X, 炼化: the page's own verbs — no word to Ling.
   ['[data-go]', (el) => { if (!el.matches(':disabled')) run(`go:${el.dataset.go}`, () => goTo(el.dataset.go)); }],
+  ['[data-mijing]', (el) => { if (!el.matches(':disabled')) run(`mijing:${el.dataset.mijing}:${el.dataset.room ?? el.dataset.way ?? el.dataset.boon ?? ''}`, () => mijingTap({ ...el.dataset })); }],
   ['[data-tame]', (el) => { if (!el.matches(':disabled')) run(`tame:${el.dataset.tame}`, () => tameTap(el.dataset.tame)); }],
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
   ['[data-value-pick]', (el) => show({ valuePick: el.dataset.valuePick, valueText: '', valueNote: null })],

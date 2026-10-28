@@ -80,6 +80,17 @@ export function pricesOf(raw, items, shares) {
   return out;
 }
 
+/* 秘境探险's numbers (rules/mijing.mjs): the knobs as the rules read them, 灵石 turned from minutes of income to stones. */
+export function mijingOf(K, E) {
+  const ls = m => Math.max(1, Math.round(m * (E?.income ?? 3)));
+  return {
+    cap_day: K.key.cap_day, drops: { ...K.key.drops }, pay: { rate: K.pay.rate, short: K.pay.short }, keep_min: K.pay.keep_min,
+    hurt: { ...K.hurt }, yield: K.yield, foe_step: K.foe_step, boss_more: K.boss_more, td_step: K.td_step,
+    wealth: { room: K.wealth.room.map(ls), chest: K.wealth.chest.map(ls), clear: ls(K.wealth.clear), step: K.wealth.step },
+    chest_rolls: K.chest_rolls, offer: K.offer, clear: structuredClone(K.clear),
+  };
+}
+
 /* A dotted path into the raw balance (`prices.yaodan-1.sell`), set. */
 export function setPath(obj, path, value) {
   const keys = path.split('.');
@@ -125,6 +136,7 @@ export function derive(raw0, { ladder, items }) {
   raw.pay.seclusion = { progress: 100000, wealth: 0 };
   raw.convert = { ...raw.convert, rate: M.economy.convert };
   raw.prices = pricesOf(raw, items, shares);
+  if (M.mijing) raw.mijing = mijingOf(M.mijing, M.economy);
   for (const o of raw.overrides ?? []) setPath(raw, o.path, structuredClone(o.value));
   return raw;
 }
