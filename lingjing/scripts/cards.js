@@ -690,7 +690,9 @@ function huntBadge(e, lang) {
   if (!e?.pool) return '';
   const fresh = e.new ? ` <span class="chip cnew">${lang === 'en' ? 'New' : '新'}</span>` : '';
   const tally = e.pool.of ? ` <span class="chip ctally">${esc(e.pool.name ?? '')} · ${lang === 'en' ? `met ${e.pool.met}/${e.pool.of}` : `见过 ${e.pool.met}/${e.pool.of}`}</span>` : '';
-  return fresh + tally;
+  // 妖兽出没 (rules/yaoshou.mjs): how many of this batch are left.
+  const batch = e.batch ? ` <span class="chip cbatch">${lang === 'en' ? `this batch ${e.batch.left}/${e.batch.of}` : `这一批 ${e.batch.left}/${e.batch.of}`}</span>` : '';
+  return fresh + tally + batch;
 }
 
 /// 「换一只」 on a pool's beast (rules/match.mjs reroll): another of the beasts that fit him stands — free once a visit, then 体力.
