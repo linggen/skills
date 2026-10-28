@@ -81,7 +81,7 @@ function reopened(content, state, id, now) {
   // A game a place hosts is played at that place: the errand sends him there
   // (his screen, 2026-09-23: 碣石's 洛书 stood on the stage at 邺城).
   // Where the errand names a place (`at`, 云龙山's eight herbs), there only (2026-10-15: the 令 is what takes him there).
-  return Boolean(t) && !t.hosted && (!held || spent) && errandWants(content, state, id, state.place);
+  return Boolean(t) && !t.hosted && t.again !== false && (!held || spent) && errandWants(content, state, id, state.place);
 }
 
 /* A game the place hosts (places' has.games) is played there when an errand

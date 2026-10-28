@@ -12,7 +12,7 @@
 // key beat's lock (world.mjs lockOf: the map is shut there anyway).
 import { dayKey, pick } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
-import { taskOf } from './errands.mjs';
+import { playsAgain, taskOf } from './errands.mjs';
 import { fantongBrief } from './fantong.mjs';
 import { sideLine } from './hui.mjs';
 import { isTide, shouchaoHere } from './shouchao.mjs';
@@ -30,7 +30,7 @@ const held = (state, verb) => refuse('aside', pick(HELD, state.lang), { verb });
 /* The skipped boards of the line the story stands on (rules/skips.mjs): every one, not only the day's. */
 const lineAt = (content, state) => { const sc = sceneOf(content, state); return sc ? sideLine(content, sc) ?? null : null; };
 export const skippedHere = (content, state) => (state.skipped ?? [])
-  .filter(e => (e.line ?? null) === lineAt(content, state) && taskOf(content, e.task)).map(e => e.task);
+  .filter(e => (e.line ?? null) === lineAt(content, state) && playsAgain(content, e.task)).map(e => e.task);
 
 /* ── The one rule: what may be played while the book is set aside ──
    Each kind: whether its own system has it open now (`open`, from Look's reading as the page gets it —

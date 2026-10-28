@@ -245,3 +245,29 @@ test('a 前情 stays in the box: only 银月\'s lines are copied into the chat, 
   assert.match(fn, /if \(who\(b\) !== 'yy'\) continue;/);
   assert.doesNotMatch(fn, /'ling'/);
 });
+
+/* 守火 · 雪夜柴垛 are played once in the story and never again (Hanli 2026-10-28: 「这两个在剧情里出现一次, 还可以, 不要让玩家
+   反复玩」; tasks/world.json `again: false`): won, left, or held left by an older save, neither comes back as an offer. */
+test('守火 and 雪夜柴垛: once in the story — won or left, never offered again', () => {
+  for (const [key, id] of [['00-prologue/00-cave', 'cave-fire'], ['00-prologue/00-halfyear', 'halfyear-chaiduo']]) {
+    const { s, now } = at(key);
+    const offeredLater = (st, days) => look(st, content, ctxAt(later(now, days)));
+    const idle = (st) => ({ ...st, tell_owed: [], told_scenes: [...(st.told_scenes ?? []), st.scene] });
+    // Won: done for good — never offered, never reopened, never paid twice.
+    const won = must(task, must(win, s, now, { id }), now, { action: 'done', id });
+    for (const d of [1, 3, 30]) {
+      const lk = offeredLater(idle(won), d);
+      assert.ok(!lk.tasks.some((t) => t.id === id && t.status === 'offered'), `${id} won: not offered on day +${d}`);
+      assert.notEqual(lk.replay?.task, id, `${id} won: no 再试一回`);
+    }
+    assert.equal(task(won, content, ctxAt(later(now)), { action: 'done', id }).result.ok, false, `${id}: never paid twice`);
+    // Left: over for good — not kept to be offered again.
+    const left = must(task, s, now, { action: 'skip', id });
+    assert.ok(!(left.skipped ?? []).some((e) => e.task === id), `${id} left: not kept to come back`);
+    for (const d of [1, 3]) assert.notEqual(offeredLater(idle(left), d).replay?.task, id, `${id} left: no 再试一回 on day +${d}`);
+    // An older save that kept it left: it still never comes back, and 再试一回 is refused.
+    const old = { ...idle(left), skipped: [{ task: id, scene: key.split('/')[1], line: null, day: dayKey(now) }] };
+    assert.notEqual(offeredLater(old, 1).replay?.task, id, `${id}: an old save's left board stays left`);
+    assert.equal(task(old, content, ctxAt(later(now)), { action: 'replay', id }).result.ok, false, `${id}: 再试一回 refused`);
+  }
+});

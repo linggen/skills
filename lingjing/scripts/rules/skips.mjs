@@ -16,7 +16,7 @@
 //      handed over even on a skip), never its `grant` (the reward, withheld).
 import { dayKey, periodKey, pick } from '../state.mjs';
 import { clone, pay, refuse } from './core.mjs';
-import { taskOf } from './errands.mjs';
+import { playsAgain, taskOf } from './errands.mjs';
 import { sideLine } from './hui.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { owesTell } from './tell.mjs';
@@ -61,8 +61,9 @@ export function skipBoard(state, content, ctx, id) {
   if (!again && scene?.story_after && order[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${scene.id}`];
   // Kept to be offered again: where it was left, on which line, on which day.
   // A board offered again and left again keeps where it was first left.
+  // One the story plays once (`again: false`) is over for good: never kept to be offered again.
   const from = again ? held.from ?? {} : { scene: scene?.id ?? null, line: lineAt(content, scene) };
-  s.skipped = [...(s.skipped ?? []).filter(e => e.task !== id), { task: id, scene: from.scene ?? null, line: from.line ?? null, day }];
+  s.skipped = [...(s.skipped ?? []).filter(e => e.task !== id), ...(playsAgain(content, id) ? [{ task: id, scene: from.scene ?? null, line: from.line ?? null, day }] : [])];
   // A thing the story needs from the board (`gives`) is handed over all the same; the reward is not.
   const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
   return { state: s, result: { ok: true, skipped: id, paid: null, gives: t.gives ?? null, ...(full ? { pouch_full: full } : {}) } };
@@ -83,7 +84,7 @@ export function replayDue(content, state, now) {
   if (sceneBoards(scene).some(b => !boardOver(state, b))) return null;
   if ((scene?.exits ?? []).some(e => e.game?.kind === 'duel' && !state.wins?.[e.game.id])) return null;
   const line = lineAt(content, scene);
-  return list.find(e => e.day < today && e.later !== today && (e.line ?? null) === line && taskOf(content, e.task)) ?? null;
+  return list.find(e => e.day < today && e.later !== today && (e.line ?? null) === line && playsAgain(content, e.task)) ?? null;
 }
 
 /* What Look carries of it: the board, and the world's line that offers it — the task's own
