@@ -225,6 +225,24 @@
       }
     }
   ],
+  "_lines": "Each line its own 修为 and ladder (Hanli 2026-10-27, story 宇宙.md § 三条线，各自一套修为与境界; design.md § 境界 in the game): 古, 今 and 未来 don't advance together, so a line other than the book's own (`tiers`, 古) has its ladder here — its `hero` (people.json: the name the top bar shows on that line's scenes), its nine realms in `tiers` (ids never shared with another line's, so balance.json `layers` and `play_pay.hours` key them as they key 古's). Its first realm has nine 层 from 一层 (no 零层: no story rise lifts it), each realm above three steps (小成 · 中成 · 大成), named with `phases` and `full` as 古's. No caps, no gates, no breakthrough throw yet: at a realm's top the bar fills and waits. The save keeps each line's place in `lines.<line>` (state.mjs lineStart; rules/lines.mjs).",
+  "lines": {
+    "jin": {
+      "_about": "今 (沈芒's line): the social ladder — 新生 初来乍到 · 立身 站住脚 · 成器 一门本事 · 立业 自己一摊事 · 通达 读得懂人 · 担当 替人扛事 · 有容 容得下人 · 知命 不慌 · 从心 不逾矩 (宇宙.md). Thresholds are balance.json's (`master.lines.jin`).",
+      "hero": "jin-shenmang",
+      "tiers": [
+        {"id": "xinsheng", "name": {"zh": "新生", "en": "Newcomer"}, "steps": {"zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"], "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]}},
+        {"id": "lishen", "name": {"zh": "立身", "en": "Footing"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "chengqi", "name": {"zh": "成器", "en": "Craft"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "liye", "name": {"zh": "立业", "en": "Enterprise"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "tongda", "name": {"zh": "通达", "en": "Insight"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "dandang", "name": {"zh": "担当", "en": "Bearing"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "yourong", "name": {"zh": "有容", "en": "Breadth"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "zhiming", "name": {"zh": "知命", "en": "Knowing Fate"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "congxin", "name": {"zh": "从心", "en": "Following the Heart"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}}
+      ]
+    }
+  },
   "phases": {
     "zh": [
       "小成",

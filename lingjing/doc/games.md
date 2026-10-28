@@ -567,7 +567,7 @@ is at most 60% reading, with no stretch over about 2,200. The rules, briefly:
   split** (marked "split" below), as 00-tailu, 00-baicai and 00-zaotai were.
 - Pay follows the standing rules. Before 入门 (古一–古三) a board pays nothing, and its grade writes a mark. After
   入门 (古四 on), the first clear pays 5 · 10 · 15 灵石 for plain · good · best (balance.json `boards`), and a replay
-  pays nothing. A 今 board pays nothing (不跨线).
+  pays nothing. A 今 board pays the 今 line's own 修为 by its minutes, and no 灵石 (rules/lines.mjs; each line its own, Hanli 2026-10-27).
 - "¶" is the paragraph the board sits under, numbered as in the scene file: s = `story`, a = `story_after`, e = the
   main way on's passage. Every board is a new level of a kit that is already built: no new kit, no new engine.
 
@@ -1315,7 +1315,7 @@ theirs is Ling's**, as that person: each line he sends goes to her in the game's
 chat's facts and goal (jinchat-rules.js turnLine; SKILL.md § 今 chat: no Look, no tool, their message only), through
 drawguess-ling.js (the one way to a model turn — no picture). **The rules decide** (jinchat-rules.js outcome): Ling
 judges only whether the goal has happened, by one tag, an HTML comment `<!--成-->` (the chat panel drops every `<!-- -->` before it renders, linggen ui MarkdownContent.tsx; the bubbles strip it — the player never sees it); met after he spoke → ★★★ `met`, his `turns` used up → ★
-`talked`. Either way the story goes on; the 今 pays nothing (不跨线). Never stuck on a model: `&her=stub` answers on the
+`talked`. Either way the story goes on; it pays the 今 line's 修为 by its minutes, never the 古's (rules/lines.mjs). Never stuck on a model: `&her=stub` answers on the
 page, `&chat=off` / no engine / two failed turns play the book's own exchange (`book`) and 「就到这儿」; the stuck gate's
 「算了，往下走」 after 75 s as on every board. 游戏厅: AI · 聊天 · 今线 (617), and each story row plays its own chat
 (`&row=<task>`, arcade-board.js).

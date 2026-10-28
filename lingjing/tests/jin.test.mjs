@@ -144,8 +144,8 @@ test('今 · 三 opens 筑基\'s chapter (古七, the old 古九) without spendi
   const wealth = s.wealth;
   s = throughJin(s, content, NOW);
   assert.equal(s.scene, '09-snow');
-  // 不跨线: past 入门 a 今 board (the dark's chat) pays no 灵石 — found live 10-22 (灵石 +5 on 今三)
-  assert.equal(s.wealth, wealth, 'the 今 pays nothing, past 入门 too');
+  // 灵石 is the 古's: past 入门 a 今 board (the dark's chat) pays no 灵石 — found live 10-22 (灵石 +5 on 今三); it pays the 今's 修为
+  assert.equal(s.wealth, wealth, 'the 今 pays no 灵石, past 入门 too');
   assert.equal(s.tasks['jin-chat-dark']?.status, 'done');
   const snow = look(s, content, ctx);
   assert.equal(snow.chapter.fresh, true, 'and comes up there');

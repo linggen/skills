@@ -350,8 +350,9 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
 
 **Phase 2 (built 2026-10-27, Hanli 「数值系统继续做吧」): `balance.json` `master`, everything else derived.**
 - **The knobs** (`master`; tools/master.mjs reads them):
-  - `lines.gu` — a line is a ladder of its own (古 · 今 · 未来 each their own 修为 and realms, Hanli 10-27). Only 古 is
-    built; 今 and 未来 get a row of their own, with their own pace, when their pay is built.
+  - `lines.gu` — a line is a ladder of its own (古 · 今 · 未来 each their own 修为 and realms, Hanli 10-27). 古 and 今
+    are built (`lines.jin`, 2026-10-28: its own `need`, `hours` and `games`, below § each line its own 修为); 未来 gets a
+    row of its own, with its own pace, when its pay is built.
     - `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm. Every pay is a share of the layer, so these are the
       numbers he reads, never the pace. 筑基小成 (1310) is above 练气九层 (1010).
     - `hours`: a layer's play hours (the games' rate), a curve (练气 2 h +0.5 h a layer; 筑基 4 h, +2 h a realm), then
@@ -382,7 +383,7 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
   the story's boards pay their play pay on the way (`model.story_stars`), as the rules do.
 - **Old saves** (state v13): the 层 kept, the bar and its stretch as full as they stood (ladder.json `thresholds_were["13"]`).
 
-### 境界 in the game 【已建】 · each line its own 修为 【设计 · 待建】 (Hanli, 2026-10-27)
+### 境界 in the game 【已建】 · each line its own 修为 【今 已建 2026-10-28; 未来 待建】 (Hanli, 2026-10-27)
 
 **Each line has its own 修为 and ladder** (story `宇宙.md` § 三条线，各自一套修为与境界). 古, 今 and 未来 don't advance together, so one bar can't line up across them.
 - Every line has nine realms under its own names:
@@ -394,11 +395,26 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
 - The top bar keeps the character's name and that line's realm.
 - **Levels never repeat across lines.** A game type may recur, but the layout or level does not, and difficulty continues from what the player has played (`rules/climb.mjs` counts across lines).
 - **Items and cards** are per line.
-- **To build:**
-  - `ladder.json` per line, and `state` holding a 修为/tier per line;
-  - the bar reading `sideLineOf(look)`;
-  - the numbers tool's master table taking the line as a parameter;
-  - 人间功课 pays the 古 line's 修为 (Hanli, 2026-10-27: 「算古线吧」), the main line.
+- 人间功课 pays the 古 line's 修为 (Hanli, 2026-10-27: 「算古线吧」), the main line.
+- **Built for 今 (2026-10-28, Hanli 「今线修为可以开始做了」; rules/lines.mjs):**
+  - `ladder.json` `lines.jin`: its hero (`jin-shenmang`, 沈芒) and nine realms — 新生 九层 from 一层 (no 零层: no story
+    lifts it), three steps (小成 · 中成 · 大成) a realm above, with 古's `phases` and `full` words. Tier ids are the line's
+    own (`xinsheng` …), so `layers` and `play_pay.hours` key them beside 古's. No caps, no stage gates, no throw yet.
+  - The save: the 古 stays the save's own `tier` · `step` · `progress` · `stretch` (no old save moves); 今 is
+    `lines.jin {tier, step, progress, stretch?}`, from zero (state v14; fitWorld fills a line never held, and starts over
+    one on a tier the line lost).
+  - Pay: every 今 board (one shown or offered on a 今 scene, wherever it is replayed) pays the 今 its minutes by the same
+    share of the layer as 古's (playpay.mjs playGrant on the 今 ladder), never 灵石, never the roots' speed or a cap. The
+    古's story locks are the 古's: 沈芒's line counts from 今 · 一's first board, before 入门.
+  - Look: `tier` · `progress` · `next` stay the 古's; `lines.jin` carries the 今's (hero, tier, progress, next). The strip
+    (stage.mjs `barOf`, FURNITURE `line`) reads 「沈芒 新生一层 · 修为 x/y」 on a 今 scene. A 今 rise is one plain fact on the
+    page (新生一层 → 新生二层): no seal, no rays, no 银月 (she is away). The 主页 and its gate bar stand on the 古 only.
+  - Numbers: `master.lines.jin` (新生一层 300, the curve 1 h +0.25 h; `games` share 1 over time 0.5 — boards are the 今's
+    whole 修为), fitted by tools/master.mjs `fitLine` so a reader who plays every 今 board of 卷一 at the model's ★ ends
+    1.4 layers up (新生二层, four tenths); the numbers report's 今 column (`lines.jin`) shows where each 今 回 leaves him.
+  - The phone runs the same rules; it shows no realm bar (its 主页 card reads `home.gate`, which never stands on a 今).
+- **Design only (今 has no fights or shops yet):** items and cards per line — a line's bag, cards and shops its own; and a
+  breakthrough between 今 realms (新生 → 立身) is not built: at 新生九层 the bar fills and waits.
 
 The world's nine realms and their names are story DESIGN § 道统 (补丁①).
 `ladder.json` says 合道 (Union with the Dao) · 归真 (Return to Truth) since

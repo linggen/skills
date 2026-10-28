@@ -8,7 +8,7 @@
   "zh": "沂中医 · 城里的医院 · 十一月底",
   "en": "Yizhong · the hospital in town · late November"
  },
- "_board": "j07-guan (全文后的小游戏 第二批 2026-10-26): 闭关三日 day one (时机 `shendun`) after 「…玻璃上映着一排器械和他自己。」; 阿禾 at the bed with the drip chart (jinchat `quxian`, face) after 眼镜's 「积伤至尽」; the curve, the 半决 on the phone and the hospital door go on in j07-chenmai. Pays nothing (不跨线). 2026-10-27 (Hanli: 「这个是你发明的吧, 去掉吧」 · 「你不要自己发明这种游戏了」): its 节奏 board `jin-shendun` cut — a home-made game; the passage reads whole (story_after back into story, word for word).",
+ "_board": "j07-guan (全文后的小游戏 第二批 2026-10-26): 闭关三日 day one (时机 `shendun`) after 「…玻璃上映着一排器械和他自己。」; 阿禾 at the bed with the drip chart (jinchat `quxian`, face) after 眼镜's 「积伤至尽」; the curve, the 半决 on the phone and the hospital door go on in j07-chenmai. Pays the 今 line's 修为 (rules/lines.mjs), no 灵石. 2026-10-27 (Hanli: 「这个是你发明的吧, 去掉吧」 · 「你不要自己发明这种游戏了」): its 节奏 board `jin-shendun` cut — a home-made game; the passage reads whole (story_after back into story, word for word).",
  "setup": {
   "zh": "「凑数的。」他背着人「闭关三日」，晨脉八十八，回了一句「好，不练」，照样蹲完了。夜里尿成可乐色：横纹肌溶解。出院那天，阿禾的纸上三条。",
   "en": "\"Just making up the numbers.\" He \"goes into seclusion for three days\" behind everyone's back; morning pulse 88; he answers \"Fine, no training\" and finishes the squats anyway. That night his urine is the colour of cola: rhabdomyolysis. On the day he's discharged, three lines on Ahe's paper."

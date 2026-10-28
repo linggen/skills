@@ -8,7 +8,7 @@
   "zh": "沂中医 · 体育馆一楼 · 试训",
   "en": "Yizhong · the sports hall · tryouts"
  },
- "_board": "j04-trial (全文后的小游戏 2026-10-26): 时机 `didi` — the shuttle run's beeps, each quicker; j04-gym's passage split at the tryouts. Pays nothing (不跨线). 2026-10-27 (Hanli: 「这个是你发明的吧, 去掉吧」 · 「你不要自己发明这种游戏了」): its 节奏 board `jin-didi` cut — a home-made game; the passage reads whole (story_after back into story, word for word).",
+ "_board": "j04-trial (全文后的小游戏 2026-10-26): 时机 `didi` — the shuttle run's beeps, each quicker; j04-gym's passage split at the tryouts. Pays the 今 line's 修为 (rules/lines.mjs), no 灵石. 2026-10-27 (Hanli: 「这个是你发明的吧, 去掉吧」 · 「你不要自己发明这种游戏了」): its 节奏 board `jin-didi` cut — a home-made game; the passage reads whole (story_after back into story, word for word).",
  "setup": {
   "zh": "十月十七日，早上八点，试训：体能、技术、力量。头一项，二十米往返跑。",
   "en": "The seventeenth of October, eight in the morning, tryouts: fitness, skills, strength. First, the twenty-metre shuttle."

@@ -10,7 +10,7 @@
  },
  "weather": "clear",
  "_weather": "「此后三夜，六一七熄灯以后，下铺一直在念经」: the nights in the dorm",
- "_board": "2026-10-26 (全文后的小游戏): j01-anatomy's first week split off — 气走经脉 `jingluo` after 「两只胳膊举过头顶」: the twelve channels as one line round the body, three laps, the bead his arms tracing it. Pays nothing (不跨线).",
+ "_board": "2026-10-26 (全文后的小游戏): j01-anatomy's first week split off — 气走经脉 `jingluo` after 「两只胳膊举过头顶」: the twelve channels as one line round the body, three laps, the bead his arms tracing it. Pays the 今 line's 修为 (rules/lines.mjs), no 灵石.",
  "setup": {
   "zh": "开课头一天，默写十二正经，交了白卷；当着半个球馆，背不出第二条。那夜他没背书，站到宿舍正中，两只胳膊举过头顶。",
   "en": "The first day of term, a blank sheet for the twelve channels; in front of half the gym he couldn't say the second one. That night he learned nothing by heart: he stood in the middle of the room and raised both arms."

@@ -210,7 +210,10 @@ export function withBalance(content) {
   if (!b) return content;
   const c = b.cooldowns ?? {};
   const ladder = { ...content.ladder, ...(b.overflow_stretch != null ? { overflow_stretch: b.overflow_stretch } : {}),
-    tiers: content.ladder.tiers.map(t => (b.layers?.[t.id] ? { ...t, thresholds: [...b.layers[t.id]] } : t)) };
+    tiers: content.ladder.tiers.map(t => (b.layers?.[t.id] ? { ...t, thresholds: [...b.layers[t.id]] } : t)),
+    // Each other line's ladder (ladder.json `lines`, rules/lines.mjs): its thresholds from the same `layers`, by its own tier ids.
+    ...(content.ladder.lines ? { lines: Object.fromEntries(Object.entries(content.ladder.lines).map(([id, L]) => [id, !L?.tiers ? L
+      : { ...L, tiers: L.tiers.map(t => (b.layers?.[t.id] ? { ...t, thresholds: [...b.layers[t.id]] } : t)) }])) } : {}) };
   const rewards = { ...content.rewards, ...(b.pay ? { tables: structuredClone(b.pay) } : {}), ...(b.convert ? { xiuwei_to_lingshi: structuredClone(b.convert) } : {}) };
   if (c.rerun_h != null) for (const ch of Object.values(content.chapters ?? {})) for (const beat of ch.beats ?? []) if (beat.sealed?.rerun) beat.sealed.rerun.every_h = c.rerun_h;
   const fantong0 = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
@@ -1080,6 +1083,17 @@ function lintLadder(ladder, bad) {
   for (const t of ladder.tiers) {
     const n = t.thresholds.length;
     if (t.steps.zh.length !== n) bad(`tier ${t.id}`, `${t.steps.zh.length} steps but ${n} thresholds`);
+  }
+  // Each other line's ladder (rules/lines.mjs): thresholds for every step, ids never another line's, no 零层 (no story lifts it).
+  const seen = new Set(ladder.tiers.map(t => t.id));
+  for (const [id, L] of Object.entries(ladder.lines ?? {}).filter(([k]) => !k.startsWith('_'))) {
+    if (!L?.hero || !Array.isArray(L.tiers) || !L.tiers.length) { bad(`ladder lines ${id}`, 'needs a hero and its tiers'); continue; }
+    for (const t of L.tiers) {
+      if (seen.has(t.id)) bad(`ladder lines ${id}`, `tier ${t.id} is another line's`);
+      seen.add(t.id);
+      if (t.zero) bad(`ladder lines ${id}`, `tier ${t.id}: no 零层 on a line no story lifts`);
+      if (!Array.isArray(t.thresholds) || t.thresholds.length !== t.steps?.zh?.length || !t.thresholds.every(x => x > 0)) bad(`ladder lines ${id}`, `tier ${t.id}: a threshold above 0 for each step`);
+    }
   }
 }
 

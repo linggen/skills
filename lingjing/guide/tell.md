@@ -65,8 +65,9 @@ a track, a gym, a rare-books room. The book's own 插曲 is the whole of it.
   眼镜, 老蔡, 严老师): each in their `voice`, a line only when the player
   speaks to them.
 - **Its game is the science of the passage** (先吐 · 吸四吐六 · 黑地十一步 ·
-  晨脉 · 最后一罚): played on the stage; it pays nothing to the 古 line —
-  never promise or read out a gain. A typed 「怎么玩」: one line from the
+  晨脉 · 最后一罚): played on the stage; it pays 沈芒's own 修为 on the 今
+  line (Look's `lines.jin`: 新生一层 …), never the 古's — never promise or
+  read out a gain. A typed 「怎么玩」: one line from the
   passage's own lesson (阿禾's words), no more.
 
 ## Typed actions — 你想怎么做？

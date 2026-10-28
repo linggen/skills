@@ -10,7 +10,8 @@
 //   - the rules here decide: how many lines he sends (`turns`), when it is over, and the grade. Ling judges only the
 //     fuzzy part — whether what the goal says has happened — by one tag on its own line (TAG), and the rules take it
 //     only after he has sent a line (never on her own initiative before he speaks).
-// The 今 never pays the 古 (「不跨线」): its task's grant is the task table with nothing in it, like every 今 board.
+// A 今 board's task grant is the task table with nothing in it, like every 今 board: what it pays is its minutes on the 今
+// line's own 修为 (rules/lines.mjs, Hanli 2026-10-27: each line its own), never the 古's.
 
 // The tag is an HTML comment (10-22: the tag must never show to the player — 「【成】」 stood in the chat panel): the engine's chat panel drops
 // every `<!-- … -->` before it renders a reply (linggen ui MarkdownContent.tsx), and the bubbles never carry it. The

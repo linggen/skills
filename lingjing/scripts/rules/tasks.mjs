@@ -19,6 +19,7 @@ import { gamesToday } from './rotation.mjs';
 import { stow, storedLine } from './pouch.mjs';
 import { laterBoard, leaveBoard, replayBoard, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
+import { boardLine, lineGrant, linePay } from './lines.mjs';
 import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, restAfter, sceneOf } from './world.mjs';
 import { runBoardHere, runFindDone, runSpoils } from './rerun.mjs';
@@ -26,6 +27,17 @@ import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
 import { qiyuDone, qiyuHere } from './qiyu.mjs';
 import { isTide, shouchaoDone, shouchaoHere, shouchaoShut } from './shouchao.mjs';
+
+/* Each line its own 修为 (rules/lines.mjs, Hanli 2026-10-27): a board pays the line it belongs to — a 今 board the 今, wherever
+   it is replayed; on a 今 scene, the 今 — by the same minutes on that line's ladder, and never 灵石. Null: the 古's own. */
+const lineOfBoard = (content, s, id) => boardLine(content, id) ?? sideLine(content, sceneOf(content, s));
+/* A board's play pay: the grant on its line, and paid there (`linePay`), else the 古's (playGrant, core.mjs pay). */
+const boardGrant = (content, s, id, t, now, stars) => {
+  const line = lineOfBoard(content, s, id);
+  return line ? lineGrant(content, s, line, id, t, now, stars) : playGrant(content, s, id, t, now, stars);
+};
+const payBoard = (content, s, ctx, grant) => (grant?.line ? linePay(content, s, grant.line, grant) : pay(content, s, ctx, grant));
+
 
 /* ── Tasks and quests ── */
 
@@ -170,9 +182,9 @@ function taskDone(state, content, ctx, id) {
       const empty = spendStamina(content, s, ctx, 'game');
       if (empty) return empty;
     }
-    // A board pays by its minutes (rules/playpay.mjs, Hanli 2026-10-27) — the errand it was for pays too; the 今 never pays the 古.
-    const play = sideLine(content, sceneOf(content, s)) ? null : playGrant(content, s, id, t, ctx.now, s.play_stars?.[id] ?? null);
-    const paid = play ? pay(content, s, ctx, play) : null;
+    // A board pays by its minutes (rules/playpay.mjs, Hanli 2026-10-27) — the errand it was for pays too; a 今 board pays the 今.
+    const play = boardGrant(content, s, id, t, ctx.now, s.play_stars?.[id] ?? null);
+    const paid = play ? payBoard(content, s, ctx, play) : null;
     if (play) playCounted(s, id, ctx.now);
     const handed = advance(content, s, { kind: 'board', task: id }, ctx);
     return { state: s, result: { ok: true, done: id, paid, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
@@ -190,10 +202,12 @@ function taskDone(state, content, ctx, id) {
   boardPay(content, s, t, id, paid);
   // …and by its minutes (rules/playpay.mjs, 2026-10-27): the story's board is a small game too, paid once.
   // Its 灵石 stays the first clear's grade (`boards`, boardPay above); the minutes pay its 修为.
-  const playFull = replayed || sideLine(content, here) ? null : playGrant(content, s, id, t, ctx.now, s.play_stars?.[id] ?? null);
+  // A 今 board pays the 今 line's 修为 (rules/lines.mjs): `paid.line` names it, and its 修为 and levels are that line's.
+  const playFull = replayed ? null : boardGrant(content, s, id, t, ctx.now, s.play_stars?.[id] ?? null);
   const play = playFull?.progress ? { ...playFull, wealth: 0 } : null;
   if (play) {
-    const more = pay(content, s, ctx, play);
+    const more = payBoard(content, s, ctx, play) ?? {};
+    if (more.line) paid.line = more.line;
     paid.progress = (paid.progress ?? 0) + (more.progress ?? 0);
     paid.wealth = (paid.wealth ?? 0) + (more.wealth ?? 0);
     if (more.levels?.length) paid.levels = [...(paid.levels ?? []), ...more.levels];
@@ -225,9 +239,9 @@ function errandSkip(state, content, ctx, id) {
     const empty = spendStamina(content, s, ctx, 'game');
     if (empty) return empty;
   }
-  const full = sideLine(content, sceneOf(content, s)) ? null : playGrant(content, s, id, t, ctx.now, null);
+  const full = boardGrant(content, s, id, t, ctx.now, null);
   const play = full ? { ...full, progress: Math.round(full.progress * cut), wealth: Math.round(full.wealth * cut) } : null;
-  const paid = play && (play.progress || play.wealth) ? pay(content, s, ctx, play) : null;
+  const paid = play && (play.progress || play.wealth) ? payBoard(content, s, ctx, play) : null;
   if (full) playCounted(s, id, ctx.now);
   const held = s.quests[q.id];
   const at = q.need.findIndex(n => n.kind === 'board' && n.task === id);
@@ -286,9 +300,9 @@ function boardPay(content, s, t, id, paid) {
   const table = content.balance?.boards;
   if (!table || t.kind !== 'board' || !t.game || (s.boards_paid ?? []).includes(id)) return;
   if (lockedOf(content, s).includes('wealth')) return;
-  // The 今 never pays the 古 (Hanli: 不跨线): a board won on a side line (沈芒's 今) earns no 灵石 — found live 10-22,
-  // 今三's chat paid 灵石 +5, and so did every 今 board past 入门 since the small-game pay (10-16).
-  if (sideLine(content, sceneOf(content, s))) return;
+  // 灵石 is the 古's: a 今 board (or one won on 沈芒's line) pays the 今 its 修为 (rules/lines.mjs) and no 灵石 — found live
+  // 10-22, 今三's chat paid 灵石 +5, and so did every 今 board past 入门 since the small-game pay (10-16).
+  if (lineOfBoard(content, s, id)) return;
   const rank = boardRank(t, s.grades?.[id] ?? null, s.stars?.[id]);
   const amount = table[rank] ?? 0;
   s.boards_paid = [...(s.boards_paid ?? []), id];

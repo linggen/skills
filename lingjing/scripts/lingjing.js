@@ -29,7 +29,7 @@ import { newBoard, tapHeard } from './board.js';
 import { sounded } from './games/kit/heard.js';
 import { REALMS, begin, missingCards, view as boutView } from './battle.js';
 import { fightOdds, oddsKey } from './fightodds.js';
-import { withNext, FOOTER, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
+import { withNext, FOOTER, barOf, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -773,20 +773,23 @@ const spillPct = (progress, next) => (next && progress > next ? Math.min(100, Ma
 /// they use no model.
 function statusHtml() {
   const w = words();
-  const pct = look.next ? Math.min(100, Math.round((look.progress / look.next) * 100)) : 0;
-  // Past the full mark (Hanli, 2026-10-15: 「230/200」): the bar stands full and the 修为 over it glows on top.
-  const over = spillPct(look.progress, look.next);
-  // A scene on another line (a 今 interlude) keeps only the language here: the rest is the 古's (stage.mjs FURNITURE).
+  // A scene on another line (a 今 interlude) keeps only the language here, and that line's own who and realm (stage.mjs
+  // FURNITURE, barOf: 「沈芒 新生一层 · 修为 x/y」); the rest is the 古's.
   // Read off the header that stands (headLook): under 「今 · 二 · 完」 the strip is still the 今's, never the 古's beside 沈芒.
-  const head = headLook(), has = (part) => stands(head, part);
-  const name = look.name && has('name') ? `<span class="daohao">${esc(look.name)}</span>` : '';
+  const head = headLook(), has = (part) => stands(head, part), bar = barOf(head);
+  const pct = bar.next ? Math.min(100, Math.round((bar.progress / bar.next) * 100)) : 0;
+  // Past the full mark (Hanli, 2026-10-15: 「230/200」): the bar stands full and the 修为 over it glows on top.
+  const over = spillPct(bar.progress, bar.next);
+  const name = bar.name && has('name') ? `<span class="daohao">${esc(bar.name)}</span>` : '';
   // Before the prologue's gate (Look's `locked`) a mortal: no realm, no 修为 bar, no 灵石, no coins — not greyed, not there.
-  const realm = !has('realm') ? '' : isShut(look, 'cultivation') ? `<span class="realm">${esc(w.mortal)}</span>`
+  // The gate is the 古's (修行 begins at 入门): 沈芒's line counts from its first board.
+  const realm = !has('realm') ? '' : !bar.line && isShut(look, 'cultivation') ? `<span class="realm">${esc(w.mortal)}</span>`
     // 零层 (Look's `tier.bar` false): the realm's name only — the 修为 bar stands from the 小周天 on.
-    : look.tier?.bar === false ? `<span class="realm">${esc(look.tier.name)}</span>`
-    : `<span class="realm">${esc(look.tier.name)}</span>
+    : bar.tier?.bar === false ? `<span class="realm">${esc(bar.tier.name)}</span>`
+    : !bar.tier ? ''
+    : `<span class="realm">${esc(bar.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar${over ? ' over' : ''}"><i style="width:${pct || 0}%"></i><em class="spill" style="width:${over}%"></em></div>
-      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span>${capSay()}</div>`;
+      <span class="num"><span data-count="progress">${esc(bar.progress)}</span>/${esc(bar.next)}</span>${bar.line ? '' : capSay()}</div>`;
   const stones = !has('wealth') || isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
   return `${name}${realm}
     ${has('pool') ? qiHtml() : ''}
@@ -825,8 +828,10 @@ function watchDrain() {
   if (draining) { console.info('[lingjing] drain', draining.spent); if (!riseFrame) riseFrame = requestAnimationFrame(paintRise); }
 }
 function riseStats() {
-  const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id),
-    rank: look.tier?.name, step: look.tier?.step, chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
+  // The strip's bar (stage.mjs barOf): the 古's, or on a 今 scene the 今's — its own tier ids, so a walk across lines is never a gain.
+  const bar = barOf(look);
+  const now = { world: look.world?.id, line: bar.line, tier: bar.tier?.id, progress: bar.progress, wealth: look.wealth, next: bar.next, cast: (look.cast ?? []).map((b) => b.id),
+    rank: bar.tier?.name, step: bar.tier?.step, chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
     her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null };
   const before = shown;
   shown = now;
@@ -839,7 +844,11 @@ function riseStats() {
       const at = clock(look.stamina?.rest_at ?? look.stamina?.returns_at);
       askHer('spent', `玩家的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请玩家回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (ready to go again at ${at}). The game waits: send them back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
-    if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank, false, riseGains(before, now), herGrew(before, now) ? { from: before.her, to: now.her } : null);
+    // Each line its own: walking into the 今 (or back) is no rise. A rise on the 今 is real life — no seal, no rays, no 银月:
+    // one plain fact on the page (新生一层 → 新生二层).
+    if (now.rank && before.rank && now.rank !== before.rank && now.line !== before.line) { /* another line's bar, not a rise */ }
+    else if (now.rank && before.rank && now.rank !== before.rank && now.line) keep({ doNote: `${before.rank} → ${now.rank}` });
+    else if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank, false, riseGains(before, now), herGrew(before, now) ? { from: before.her, to: now.her } : null);
     // A cauldron found tells her on its own (the story node, with its facts); the seal still shows.
     // A 回 begun — where the scenes' 回 turns, inside a chapter or across one (rules/hui.mjs).
     else if (now.hui && before.hui && now.hui !== before.hui) feat('chapter', look.chapter.title, '', nodeFresh(['cauldron', 'chapter']));

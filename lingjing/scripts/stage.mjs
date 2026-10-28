@@ -59,15 +59,26 @@ export const sideLineOf = look => look?.scene?.line ?? null;
    scene is on the book's own line; back on it, all of it returns. */
 export const FURNITURE = {
   every: ['lang', 'books'],
+  // Each line its own: the strip's who and realm stand on any line that has its own 修为 (Look's `lines`, rules/lines.mjs;
+  // Hanli 2026-10-27: 「顶栏显示还是角色名字」) — read off that line (barOf): 沈芒 新生一层 on the 今, 沈小满 练气二层 on the 古.
+  line: ['name', 'realm'],
   // `her`: 银月's 木牌 in the footer (2026-10-14) — she is the 古's; 今线 keeps only the 书 chip (九鼎录 · 读原著).
-  main: ['name', 'realm', 'pool', 'wealth', 'omen', 'her', 'festival', 'weather', 'roads', 'errands', 'bag', 'tray'],
+  main: ['pool', 'wealth', 'omen', 'her', 'festival', 'weather', 'roads', 'errands', 'bag', 'tray'],
 };
 /* The footer's chips, in their order (Hanli, 2026-10-15: 「top bar and bottom bar both have too
    much widgets」): 银月's 木牌 · the festival · the sky (an icon and degrees) · 书 (九鼎录 and 读原著
    in one popover) · 事 · 物品. The roads and what waits are the footer's other row (footRowHtml).
    Each is a part of FURNITURE, so a 今 interlude keeps only what stands on every line. */
 export const FOOTER = ['her', 'festival', 'weather', 'books', 'errands', 'bag'];
-export const stands = (look, part) => !sideLineOf(look) || FURNITURE.every.includes(part);
+export const stands = (look, part) => !sideLineOf(look) || FURNITURE.every.includes(part)
+  || (FURNITURE.line.includes(part) && Boolean(look?.lines?.[sideLineOf(look)]));
+/* The strip's who and realm: on the book's own line the save's name and Look's `tier` · `progress` · `next` (古); on a line
+   beside it with its own 修为, that line's (Look's `lines.<line>`: its hero, its realm, its bar). `line`: null on the 古. */
+export function barOf(look) {
+  const line = sideLineOf(look), own = line ? look?.lines?.[line] : null;
+  return own ? { line, name: own.hero, tier: own.tier, progress: own.progress, next: own.next }
+    : { line: null, name: look?.name, tier: look?.tier, progress: look?.progress, next: look?.next };
+}
 /* On a side line the stage holds the scene alone: its picture, its people,
    the cards that name a value, the game it offers (`scene.games`) and the
    ending card — never the 古's goal, coins, errands, road or beasts. */

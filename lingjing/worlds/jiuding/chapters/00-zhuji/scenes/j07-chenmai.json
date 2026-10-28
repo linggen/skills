@@ -8,7 +8,7 @@
   "zh": "城里的医院 · 十七床 → 六一七",
   "en": "The city hospital · bed seventeen → room 617"
  },
- "_board": "j07-chenmai (全文后的小游戏 第二批 2026-10-26): j07-guan's passage split after 阿禾's visit — the curve, the 半决 watched from bed, the hospital door; 晨脉 (时机 `chenmai`: count to the beat) after 「…比大夫那几句记得还牢。」, the morning of 六十九 told after it. Pays nothing (不跨线).",
+ "_board": "j07-chenmai (全文后的小游戏 第二批 2026-10-26): j07-guan's passage split after 阿禾's visit — the curve, the 半决 watched from bed, the hospital door; 晨脉 (时机 `chenmai`: count to the beat) after 「…比大夫那几句记得还牢。」, the morning of 六十九 told after it. Pays the 今 line's 修为 (rules/lines.mjs), no 灵石.",
  "setup": {
   "zh": "下午阿禾下了课来了。她在床尾坐下，从床头抽出一张输液单，翻到背面，画了一条横线。",
   "en": "In the afternoon Ahe came after class. She sat at the foot of the bed, turned an infusion chart over, and drew a horizontal line."

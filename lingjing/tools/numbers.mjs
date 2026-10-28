@@ -28,8 +28,10 @@ import { wallOf } from '../scripts/rules/rotation.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
 import { runsPay } from '../scripts/rules/rerun.mjs';
 import { chances, realmOf } from '../scripts/rules/fantong.mjs';
-import { BALANCE_FILE, balanceText, grindLayers, play, table as paceTable } from './balance.mjs';
-import { derive, diffOf, fitHours, setPath } from './master.mjs';
+import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, table as paceTable } from './balance.mjs';
+import { derive, diffOf, fitHours, fitLine, lineWalk, setPath } from './master.mjs';
+import { boardLine, lineGrant, linePay, linesOf, lineWorld } from '../scripts/rules/lines.mjs';
+import { lineStart } from '../scripts/state.mjs';
 
 export const OUT = new URL('../worlds/jiuding/levels/numbers.json', import.meta.url);
 const FIXTURE = new URL('../tests/fixtures/saves/waimen.json', import.meta.url);
@@ -273,7 +275,14 @@ function boards(ctx) {
   return (content.games?.games ?? []).filter(g => g.task && !g.replaced).map(g => {
     const t = content.tasks.tasks.find(x => x.id === g.task);
     if (!t) return null;
-    const h = hui.get(g.scene) ?? null, at = h ? layerAt(h) : null, s = at ? saveFor(at) : null;
+    const h = hui.get(g.scene) ?? null;
+    // A 今 board pays the 今 (rules/lines.mjs): weighed on the 今 layer its 回 starts on, never on the 古's.
+    const line = boardLine(content, t.id), L = line ? ctx.lineLayer?.(line, h) : null;
+    if (line) {
+      const pp = L ? lineGrant(content, { lang: 'zh', plays: null, lines: { [line]: { tier: L.tier, step: L.step, progress: 0 } } }, line, t.id, t, NOW, 3) : null;
+      return inUnits({ id: t.id, name: zh(t.title), kind: g.mechanic, hui: h, line, xw: pp?.progress ?? 0, own: 0, layer_need: L?.need ?? null, play: pp?.progress ?? 0, minutes: pp?.minutes ?? mm[g.mechanic] ?? mm.default ?? null, ls: 0 }, L);
+    }
+    const at = h ? layerAt(h) : null, s = at ? saveFor(at) : null;
     const paid = s ? paysOf(content, s, NOW, t.grant) : null, own = paid?.progress ?? 0, pp = s ? playGrant(content, s, t.id, t, NOW, 3) : null;
     const xw = own + (pp?.progress ?? 0);
     return inUnits({ id: t.id, name: zh(t.title), kind: g.mechanic, hui: h, xw, own, layer_need: at ? ctx.layer(at)?.need ?? null : null, play: pp?.progress ?? 0, minutes: pp?.minutes ?? mm[g.mechanic] ?? mm.default ?? null, ls: (paid?.wealth ?? 0) + (pp?.wealth ?? 0) }, at ? ctx.layer(at) : null);
@@ -590,10 +599,38 @@ function redList(report) {
   const by = new Map();
   for (const b of report.boards ?? []) if (b.pct > LIMITS.thing_pct) (by.get(b.layer) ?? by.set(b.layer, []).get(b.layer)).push(b);
   for (const [layer, bs] of by) {
-    const L = report.layers.find(l => l.name === layer), top = bs.sort((a, b) => b.pct - a.pct)[0];
-    out.push({ src: 'layers', id: L?.key ?? layer, say: `${layer}: ${L?.target_h} h of play a layer — ${bs.length} boards pay over ${pct(LIMITS.thing_pct)} of it each (${top.name}, ${top.minutes} min: ${pct(top.pct)})${L?.curve_h != null && L.curve_h !== L.target_h ? ` — the curve's ${L.curve_h} h, fitted down so the 回 holding it lands in its band` : ''}` });
+    // A 今 layer is the 今 column's (its hours its own, rules/lines.mjs).
+    const line = bs[0].line, L = line ? report.lines?.[line]?.layers.find(l => l.name === layer) : report.layers.find(l => l.name === layer), top = bs.sort((a, b) => b.pct - a.pct)[0];
+    out.push({ src: 'layers', id: L?.key ?? layer, say: `${layer}: ${line ? L?.hours : L?.target_h} h of play a layer — ${bs.length} boards pay over ${pct(LIMITS.thing_pct)} of it each (${top.name}, ${top.minutes} min: ${pct(top.pct)})${L?.curve_h != null && L.curve_h !== L.target_h ? ` — the curve's ${L.curve_h} h, fitted down so the 回 holding it lands in its band` : ''}` });
   }
   for (const [src, rules] of Object.entries(RED)) for (const row of src === 'claims' ? report.claims.checked.filter(c => c.lang === 'zh') : report[src] ?? []) for (const [when, say] of rules) if (when(row)) out.push({ src, id: row.id ?? row.key ?? row.hui, say: say(row) });
+  return out;
+}
+
+/* ── each other line (今): its own ladder, paid by its own boards (rules/lines.mjs) ── */
+
+const LINE_RULES = { lineGrant, linePay, lineStart, now: NOW };
+/* A line's column: its layers in their units (the 修为 a minute of its boards, the hours a layer is), and where each of its
+   回 in 卷一 leaves a reader who plays every board — at the model's ★ (`model.story_stars`) and at three. */
+export function lineColumns(content) {
+  const out = {}, walk = bookWalk(content), kinds = kindTasks(content);
+  for (const line of linesOf(content)) {
+    const W = lineWorld(content, line), name = s => `${zh(tierOf(W, s.tier)?.name)}${tierOf(W, s.tier)?.steps?.zh?.[s.step] ?? ''}`;
+    const layers = [];
+    for (const t of W.ladder.tiers.slice(0, 1)) for (let step = 0; step < t.thresholds.length; step++) {
+      const s = { lang: 'zh', plays: null, lines: { [line]: { tier: t.id, step, progress: 0 } } };
+      const rates = [...kinds.values()].map(k => lineGrant(content, s, line, k.id, k, NOW, 3)).filter(g => g?.minutes).map(g => g.progress / g.minutes);
+      const rate = median(rates) ?? 0, need = t.thresholds[step];
+      layers.push({ key: `${t.id}:${step}`, name: name({ tier: t.id, step }), need, rate: round(rate, 2), board_min: rate ? round(need / rate, 1) : null, hours: (content.balance.play_pay.hours?.[t.id] ?? [])[step] ?? null });
+    }
+    const at = stars => lineWalk(content, line, walk, stars, LINE_RULES);
+    const model = at(content.balance.model.story_stars ?? 2), best = at(3);
+    const huis = model.huis.map(h => {
+      const b = best.huis.find(x => x.hui === h.hui), where = r => `${name(r.at)} ${Math.round(r.at.progress)}/${tierOf(W, r.at.tier).thresholds[r.at.step]}`;
+      return { hui: h.hui, label: huiLabel(content, h.hui, 'zh', 'short') ?? h.hui, boards: h.boards, minutes: h.minutes, progress: h.progress, at: where(h), climbed: h.climbed, best: b ? where(b) : null, best_climbed: b?.climbed ?? null };
+    });
+    out[line] = { hero: content.ladder.lines[line].hero, stars: content.balance.model.story_stars ?? 2, layers, huis, end: model.climbed, end_best: best.climbed, walk: model.huis.map(h => h.at) };
+  }
   return out;
 }
 
@@ -611,7 +648,16 @@ const commit = () => { try { return execSync('git rev-parse --short HEAD', { cwd
 export async function measure(content = loadContent(), { deals = 0, keep = null } = {}) {
   const base = JSON.parse(fs.readFileSync(FIXTURE, 'utf8')), layers = layersOf(content, base);
   const hl = huiLayers(content), byKey = new Map(layers.map(l => [l.key, l]));
-  const ctx = { content, layers, met: itemsMet(content), layerAt: h => hl[h] ?? null, saveFor: at => saveAt(base, at), layer: at => (at ? byKey.get(keyOf(at)) ?? null : null) };
+  const cols = lineColumns(content);
+  // The 今 layer a 今 回 starts on (the walk at the model's ★): the 回 before it's end, else the line's start.
+  const lineLayer = (line, h) => {
+    const C = cols[line], i = C?.huis.findIndex(x => x.hui === h) ?? -1;
+    if (!C || i < 0) return null;
+    const at = i ? C.walk[i - 1] : { tier: C.layers[0].key.split(':')[0], step: 0 };
+    const row = C.layers.find(l => l.key === `${at.tier}:${at.step}`);
+    return row ? { ...row, tier: at.tier, step: at.step } : null;
+  };
+  const ctx = { content, layers, met: itemsMet(content), layerAt: h => hl[h] ?? null, saveFor: at => saveAt(base, at), layer: at => (at ? byKey.get(keyOf(at)) ?? null : null), lineLayer };
   const P = pills(ctx);
   const F = deals ? await fights(ctx, deals) : keep?.fights ?? [];
   const report = {
@@ -622,6 +668,8 @@ export async function measure(content = loadContent(), { deals = 0, keep = null 
     fights: F, creatures: creatures(ctx, F), claims: claims(ctx), errors: hardErrors(content),
     // The master table's knobs and the overrides laid on what it derives (tools/master.mjs; the 数值 page's 总表).
     master: masterOf(content),
+    // Each other line's column (今): its layers, and where its 回 leave a reader of 卷一.
+    lines: Object.fromEntries(Object.entries(cols).map(([k, { walk, ...v }]) => [k, v])),
   };
   const by = earnedBy(content);
   for (const h of report.huis) h.earned = round(by[h.hui]);
@@ -637,6 +685,10 @@ function summary(r) {
   lines.push('层          need  修为/min  night  功课/day  功课/mo  rule h  target h  model h (typical days)');
   for (const l of r.layers) lines.push(`${l.name.padEnd(8)} ${String(l.need).padStart(6)} ${String(l.rate).padStart(8)} ${String(l.night).padStart(6)} ${String(l.chore_day ?? '—').padStart(8)} ${String(l.chore_month ?? '—').padStart(8)} ${String(l.rule_h ?? '—').padStart(7)} ${String(l.target_h ?? '—').padStart(9)} ${String(l.model_h ?? '—').padStart(8)} (${l.model_days.typical ?? '—'})`);
   lines.push('回 days (light · typical · heavy): ' + r.paces.map(p => `${p.hui} ${p.light}·${p.typical}·${p.heavy}`).join('  '));
+  for (const [line, L] of Object.entries(r.lines ?? {})) {
+    lines.push(`── ${line}: ${L.layers.slice(0, 3).map(l => `${l.name} ${l.need} (${l.hours} h, ${l.board_min} board-min)`).join(' · ')}`);
+    lines.push(`   ${L.huis.map(h => `${h.label} ${h.boards} boards ${h.minutes} min → ${h.at} (★3 ${h.best})`).join('  ')}; 卷一 ends ${L.end} layers up (★3 ${L.end_best})`);
+  }
   for (const e of r.errors) lines.push(`ERROR ${e.where}: ${e.say}`);
   const bySrc = {};
   for (const x of r.red) (bySrc[x.src] ??= []).push(x);
@@ -655,8 +707,14 @@ export function applied() {
   const world = withBalance({ ...loadContent(), balance: structuredClone(next) });
   const fit = fitHours(world, { grindLayers, table: paceTable, play });
   next.play_pay.hours.qi = fit.qi;
+  // Each other line's pace (master.mjs fitLine): its boards in the book's order, on its own ladder.
+  const lines = {};
+  for (const line of linesOf(world).filter(l => world.balance.master.lines[l]?.hours?.fit)) {
+    lines[line] = fitLine(world, line, bookWalk(world), LINE_RULES);
+    next.play_pay.hours[world.ladder.lines[line].tiers[0].id] = lines[line].row;
+  }
   for (const o of next.overrides ?? []) if (o.path.startsWith('play_pay.hours')) setPath(next, o.path, structuredClone(o.value));
-  return { raw, next, fit, diff: diffOf(raw, next) };
+  return { raw, next, fit, lines, diff: diffOf(raw, next) };
 }
 
 const arg = (name, d) => { const i = process.argv.indexOf(name); return i < 0 ? null : Number(process.argv[i + 1]) || d; };
@@ -671,9 +729,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   const write = process.argv.includes('--write');
   if (process.argv.includes('--apply')) {
-    const { next, diff, fit } = applied();
+    const { next, diff, fit, lines: applied_lines } = applied();
     for (const f of fit.fitted) console.log(`fit ${f.hui}: 层 ${f.layers.join('·')} ${f.curve.join('·')} h → ${f.hours.join('·')} h (typical ${round(f.days_were, 1)} → ${round(f.days, 1)} days)${f.gate ? ' — cut for its gates' : ''}${f.out ? ` — OUT of its band ${f.out.join('–')}` : ''}`);
     for (const w of fit.waits) console.log(`gate ${w.hui}: ${w.say}`);
+    for (const [line, f] of Object.entries(applied_lines ?? {})) console.log(`fit ${line}: ${f.row.slice(0, 3).join('·')} h (×${f.k}) → 卷一 ends ${f.climbed} layers up${f.out ? ` — ${f.out}: out of the fit's range` : ''}`);
     for (const f of fit.unfit) console.log(f.short ? `short ${f.hui}: 层 ${f.layers.join('·')} — typical ${round(f.days, 1)} days, under its band; kept at the curve (dearer layers would only lengthen its gates)` : `unfit ${f.hui}: 层 ${f.layers.join('·')} at ${round(f.days, 1)} days; no hours reach the band (${f.reach.map(x => round(x, 1)).join(' – ')})`);
     for (const d of diff) console.log(`${d.path}: ${JSON.stringify(d.was)} → ${JSON.stringify(d.now)}`);
     console.log(diff.length ? `${diff.length} rows ${write ? 'written' : 'would change (dry run: --write to write)'}` : 'the master table and balance.json agree');

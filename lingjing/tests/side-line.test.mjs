@@ -1,9 +1,10 @@
 // A scene on a line beside the book's own (Hanli, 2026-10-05, 「都按你说的」):
 // a 今 interlude is 沈芒's world — no 灵气, no 银月 (DESIGN § 四·六). Read off
 // the scene's 回 (book.json `line`), never an id:
-// 1. the page keeps the 古's furniture off — realm, 修为, 灵石, 体力, the roads,
-//    事, 袋, the tray — and keeps the 回 and place, the box, the game, the
-//    language, the 九鼎录 and the book; back on the 古, all of it returns;
+// 1. the page keeps the 古's furniture off — 灵石, 体力, the roads, 事, 袋, the
+//    tray — and keeps the 回 and place, the box, the game, the language, the
+//    九鼎录 and the book; who and realm stand, read off the 今's own 修为 (沈芒
+//    新生…, rules/lines.mjs since 2026-10-28); back on the 古, all of it returns;
 // 2. 银月 is away: the engine's presence flag drops, the page tells her
 //    nothing, and her read of the game says only that she is not there;
 // 3. 目前任务 is never left empty in a scene: the scene's own written words.
@@ -39,6 +40,8 @@ test('the 今 stage keeps none of the 古\'s furniture; the 古 stage keeps all 
   assert.equal(sideLineOf(l), 'jin');
   for (const part of FURNITURE.main) assert.equal(stands(l, part), false, `${part} is the 古's`);
   for (const part of FURNITURE.every) assert.equal(stands(l, part), true, `${part} stands on every line`);
+  // Each line its own 修为 (rules/lines.mjs, Hanli 2026-10-27): the strip's who and realm stand, read off the 今 (沈芒 新生…).
+  for (const part of FURNITURE.line) assert.equal(stands(l, part), true, `${part} stands on a line with its own 修为`);
   // The stage holds the scene alone: no goal line, no coins, no errand, no beast.
   const kinds = stageCards({ ...l, waypoint: { goal: '外门大比' }, offers: [{ id: 'x' }], place: { ...l.place, encounter: { game: { id: 'haunt:x' }, creature: { id: 'x' } } } }).map(c => c.card);
   assert.ok(kinds.every(k => ['meet', 'panel', 'people', 'value', 'born', 'closed', 'board'].includes(k)), kinds.join());
@@ -50,18 +53,18 @@ test('the 今 stage keeps none of the 古\'s furniture; the 古 stage keeps all 
   // Back on the 古 (古三's gate): every part stands again.
   const gate = look({ ...s, scene: '00-gate', place: 'shanmen' }, content, ctx);
   assert.equal(sideLineOf(gate), null);
-  for (const part of [...FURNITURE.main, ...FURNITURE.every]) assert.equal(stands(gate, part), true, part);
+  for (const part of [...FURNITURE.line, ...FURNITURE.main, ...FURNITURE.every]) assert.equal(stands(gate, part), true, part);
 });
 
 test('the page reads the furniture table for the strip, the footer and the tray', () => {
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   for (const part of ['name', 'realm', 'pool', 'wealth', 'omen']) assert.match(src, new RegExp(`has\\('${part}'\\)`), part);
   // The footer's chips come from stage.mjs FOOTER, each one a part of the table (Hanli, 2026-10-15).
-  for (const part of FOOTER) assert.ok([...FURNITURE.main, ...FURNITURE.every].includes(part), part);
+  for (const part of FOOTER) assert.ok([...FURNITURE.line, ...FURNITURE.main, ...FURNITURE.every].includes(part), part);
   assert.match(src, /FOOTER\.filter\(has\)/);
   // Read off the header that stands (headLook): under an interlude's 「完」 the furniture is still the 今's (2026-10-15).
   for (const part of ['roads', 'tray']) assert.match(src, new RegExp(`stands\\(headLook\\(\\), '${part}'\\)`), part);
-  assert.match(src, /const head = headLook\(\), has = \(part\) => stands\(head, part\);/, 'the strip');
+  assert.match(src, /const head = headLook\(\), has = \(part\) => stands\(head, part\), bar = barOf\(head\);/, 'the strip');
   assert.match(src, /const herHere = \(\) => Boolean\([^)]*!look\?\.companion\?\.away\)/, 'away, nothing goes to her');
 });
 

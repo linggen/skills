@@ -38,6 +38,18 @@
         "chore": {"day": 0.1, "week": 0.2, "month": 0.3},
         "seclusion": {"night": 0.1},
         "pills": {"1": 0.05, "3": 0.15, "9": 0.3, "below": 0.25}
+      },
+      "jin": {
+        "_about": "今's ladder (ladder.json `lines.jin`: 新生 九层 from 一层, three steps a realm above; Hanli 2026-10-27, each line its own 修为, starting from zero). Its only 修为 is its boards (no fights, errands, 功课, 闭关 or pills on 今 yet; 人间功课 pays 古): `games` carries the whole layer (`share` 1) over about half its minutes (`time`, the rest is reading). `need`: 新生一层 300, the same steps as 古's (display only: pay is a share of the layer). `hours`: the curve (新生一层 1 h, +0.25 h a layer), then fitted (`fit`, tools/master.mjs fitLine) so a reader of 卷一 who plays every 今 board at `stars` ends `end` layers up: 1.4 is 新生一层 filled and 二层 four tenths (Hanli 2026-10-28: 「今线修为可以开始做了」, the interludes about 一层 → 二层).",
+        "tiers": ["xinsheng", "lishen", "chengqi", "liye", "tongda", "dandang", "yourong", "zhiming", "congxin"],
+        "need": {"first": 300, "layer": 1.1, "realm": 1.3, "round": 10},
+        "hours": {
+          "xinsheng": [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3],
+          "realm_first": 4,
+          "realm_step": 2,
+          "fit": {"stars": 2, "end": 1.4, "range": [0.1, 8], "floor": 0.3}
+        },
+        "games": {"share": 1, "time": 0.5}
       }
     },
     "pills_families": ["qi", "mend"],
@@ -76,7 +88,16 @@
     "void": [8020, 8820, 9700],
     "body": [12610, 13870, 15260],
     "maha": [19840, 21820, 24010],
-    "tribulation": [31210, 34330, 37760]
+    "tribulation": [31210, 34330, 37760],
+    "xinsheng": [300, 330, 360, 400, 440, 480, 530, 580, 640],
+    "lishen": [840, 920, 1010],
+    "chengqi": [1320, 1450, 1590],
+    "liye": [2070, 2280, 2500],
+    "tongda": [3250, 3580, 3940],
+    "dandang": [5120, 5630, 6190],
+    "yourong": [8050, 8860, 9740],
+    "zhiming": [12660, 13930, 15320],
+    "congxin": [19920, 21910, 24100]
   },
   "_overflow_stretch": "Hanli, 2026-10-15 (approved): a step up — the story's rise, a throw, or grinding the 回's cap allows — carries the 修为 over the last mark in whole, and the new step asks this share of it more (state.mjs stepUp, `state.stretch`): 100 over 一层's mark enters 二层 at 100/450, not 0/400. Grinders stay only somewhat ahead; nothing is held or lost.",
   "overflow_stretch": 0.5,
@@ -395,7 +416,16 @@
       "body": 14,
       "maha": 16,
       "tribulation": 18,
-      "default": 20
+      "default": 20,
+      "xinsheng": [0.677, 0.846, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3],
+      "lishen": 4,
+      "chengqi": 6,
+      "liye": 8,
+      "tongda": 10,
+      "dandang": 12,
+      "yourong": 14,
+      "zhiming": 16,
+      "congxin": 18
     },
     "games": {"share": 0.6, "time": 0.35},
     "minutes": {
@@ -466,7 +496,8 @@
       ]
     },
     "seclusion": {"night": 0.1},
-    "wall": {"day": 0.1}
+    "wall": {"day": 0.1},
+    "lines": {"jin": {"games": {"share": 1, "time": 0.5}}}
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
   "lock_fight": {"losses": 3}

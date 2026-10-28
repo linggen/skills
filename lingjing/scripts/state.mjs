@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 13;
+export const STATE_VERSION = 14;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -31,6 +31,8 @@ export function newState(content, lang, now) {
     version: STATE_VERSION, world: content.world.id, lang: lang === 'en' ? 'en' : 'zh',
     name: hero?.name ?? null, gender: hero?.gender ?? null, traits: null,
     tier: content.ladder.tiers[0].id, step: 0, progress: 0, wealth: 0,
+    // Each other line's own 修为 (rules/lines.mjs), from zero: 今 at 新生一层 · 0.
+    ...linesStart(content),
     bag: {}, cast: [], wear: {}, duels: {}, arts: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
     place: first.scenes[first.first_scene]?.at ?? content.places[first.province]?.start ?? null,
@@ -320,6 +322,30 @@ export function addStamina(content, state, n, now) {
 
 export const tierOf = (content, id) => content.ladder.tiers.find(t => t.id === id);
 
+/* Each line its own ladder (ladder.json `lines.<line>.tiers`, rules/lines.mjs): its tiers, and where a save starts on it —
+   its first step, nothing in it (Hanli 2026-10-27: each line starts from zero). The book's own line (古) is the save's own
+   `tier` · `step` · `progress`, as it always was. */
+export const lineTiers = (content, line) => content?.ladder?.lines?.[line]?.tiers ?? null;
+export const lineStart = (content, line) => ({ tier: lineTiers(content, line)?.[0]?.id ?? null, step: 0, progress: 0 });
+const lineIds = content => Object.keys(content?.ladder?.lines ?? {}).filter(k => !k.startsWith('_') && lineTiers(content, k)?.length);
+export const linesStart = content => (lineIds(content).length ? { lines: Object.fromEntries(lineIds(content).map(l => [l, lineStart(content, l)])) } : {});
+/* A save's lines fitted to the world: a line it never held starts at zero; a place on a tier the line no longer has starts
+   over; a step past the tier's top is its top. The 古 is never touched. Null when it fits. */
+function fitLines(content, state) {
+  const out = {};
+  let changed = false;
+  for (const l of lineIds(content)) {
+    const held = state.lines?.[l], t = held && lineTiers(content, l).find(x => x.id === held.tier);
+    if (!t) { out[l] = lineStart(content, l); changed = true; continue; }
+    if (!(held.step >= 0 && held.step < t.thresholds.length) || !Number.isFinite(held.progress)) {
+      out[l] = { ...held, step: Math.max(0, Math.min(t.thresholds.length - 1, Number.isInteger(held.step) ? held.step : 0)), progress: Number.isFinite(held.progress) ? held.progress : 0 };
+      changed = true; continue;
+    }
+    out[l] = held;
+  }
+  return changed ? { lines: { ...state.lines, ...out } } : null;
+}
+
 /* What the step asks: the ladder's threshold, plus its stretch — the share of the
    修为 carried in over the last step's full mark (ladder.json `overflow_stretch`,
    Hanli 2026-10-15: a grinder stays only somewhat ahead). `state.stretch` keeps
@@ -509,6 +535,10 @@ const MIGRATIONS = [
   // layer, 筑基 above 练气九层). Every pay is a share of the layer, so only the numbers move: the 层 kept, the bar as full as
   // it stood, the stretch with it (paceLayer; ladder.json `thresholds_were["13"]`, 练气 and 筑基).
   [13, m => { m.ladder_pace ??= 13; }],
+  // v14 (2026-10-28, Hanli: 「今线修为可以开始做了」): each line its own 修为. The 古 stays exactly where it stands (the save's
+  // own `tier` · `step` · `progress` · `stretch`, untouched: no mark, so paceLayer never runs); 今 starts at zero in `lines.jin`,
+  // filled by fitWorld (fitLines) — the line's ladder is the world's.
+  [14, m => { m.lines ??= {}; }],
 ];
 
 export function migrate(state, content = null) {
@@ -689,6 +719,8 @@ export function fitWorld(saved, content) {
     ...renamedCards(content, state),
     // Its own seed (seedOf), fixed once: the name it was given, else its creation time.
     ...(state.seed == null ? { seed: state.name && state.name !== hero?.name ? state.name : (state.created ?? '') } : {}),
+    // Each other line's place (rules/lines.mjs): one never held starts at zero (v14).
+    ...fitLines(content, state),
   };
   // A scene given a board after the save walked into it (the opening's beats, 2026-10-14):
   // its tasks are offered now, as entering it would have — a save standing there is never shut out.

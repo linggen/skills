@@ -22,15 +22,16 @@
 
 const round10 = (x, r = 10) => Math.round(x / r) * r;
 
-/* The 修为 each step asks, tier by tier along the line's ladder: 练气 from 零层 (0), one size a realm above it. */
+/* The 修为 each step asks, tier by tier along the line's ladder: a first realm with 零层 (古's 练气, `zero`) from 0, one
+   without (今's 新生) from its 一层; one size a realm above it. */
 export function needsOf(line, tiers) {
   const N = line.need, out = {};
   let last = null;
   for (const t of tiers) {
     if (t.id === tiers[0].id) {
-      const row = [0];
-      for (let l = 1; l < t.steps; l++) row.push(round10(N.first * N.layer ** (l - 1), N.round));
-      out[t.id] = row; last = N.first * N.layer ** (t.steps - 2);
+      const z = t.zero ? 1 : 0, row = z ? [0] : [];
+      for (let l = 1; l <= t.steps - z; l++) row.push(round10(N.first * N.layer ** (l - 1), N.round));
+      out[t.id] = row; last = N.first * N.layer ** (t.steps - z - 1);
       continue;
     }
     const first = last * N.realm, row = [];
@@ -40,10 +41,11 @@ export function needsOf(line, tiers) {
   return out;
 }
 
-/* A layer's play hours: 练气 by 层 (`qi`, 零层 0), each realm above one number, +`realm_step` a realm. */
+/* A layer's play hours: the first realm by 层 (its row keyed by its id — 古's `qi`, 零层 0; 今's `xinsheng`), each realm
+   above one number, +`realm_step` a realm. */
 export function hoursOf(line, tiers) {
   const H = line.hours, out = {};
-  tiers.forEach((t, r) => { out[t.id] = r === 0 ? [...H.qi] : H.realm_first + H.realm_step * (r - 1); });
+  tiers.forEach((t, r) => { out[t.id] = r === 0 ? [...H[t.id]] : H.realm_first + H.realm_step * (r - 1); });
   out.default = H.realm_first + H.realm_step * (tiers.length - 1);
   return out;
 }
@@ -91,10 +93,21 @@ export function getPath(obj, path) { return path.split('.').reduce((o, k) => (o 
    items.json's (kind, 转, family, effect) — read, never written. */
 export function derive(raw0, { ladder, items }) {
   const raw = structuredClone(raw0), M = raw.master, gu = M.lines.gu;
-  const tiers = ladder.tiers.filter(t => gu.tiers.includes(t.id)).map(t => ({ id: t.id, steps: raw.layers?.[t.id]?.length ?? 3 }));
+  const tiers = ladder.tiers.filter(t => gu.tiers.includes(t.id)).map(t => ({ id: t.id, zero: Boolean(t.zero), steps: raw.layers?.[t.id]?.length ?? (t.zero ? 10 : 3) }));
   raw.layers = { ...raw.layers, ...needsOf(gu, tiers) };
   const pp = raw.play_pay;
   pp.hours = hoursOf(gu, tiers);
+  // Every other line's ladder (ladder.json `lines`, Hanli 2026-10-27: each line its own 修为): its layers and hours beside
+  // 古's (its tier ids are its own), its games' share in `play_pay.lines.<line>` (rules/lines.mjs reads it on that line).
+  for (const [id, L] of Object.entries(M.lines).filter(([k]) => k !== 'gu' && !k.startsWith('_'))) {
+    const own = ladder.lines?.[id]?.tiers ?? [];
+    const lt = own.filter(t => L.tiers.includes(t.id)).map(t => ({ id: t.id, steps: t.steps.zh.length }));
+    if (!lt.length) continue;
+    raw.layers = { ...raw.layers, ...needsOf(L, lt) };
+    const { default: _, ...h } = hoursOf(L, lt);
+    Object.assign(pp.hours, h);
+    pp.lines = { ...pp.lines, [id]: { games: { share: L.games.share, time: L.games.time } } };
+  }
   pp.games = { share: gu.games.share, time: gu.games.time };
   pp.errand = { ...pp.errand, share: gu.errand.share, time: gu.errand.time };
   if (gu.wall) pp.wall = { day: gu.wall.day };
@@ -188,4 +201,42 @@ export function fitHours(content, { grindLayers, table, play }) {
     if (k1 !== 1) fitted.push({ hui, layers, curve: layers.map(l => gu.hours.qi[l]), hours: layers.map(l => qi[l]), days_were: d, days: dn, gate: k1 < k0, out: dn < lo || dn > hi ? [lo, hi] : null });
   }
   return { qi, fitted, unfit, waits };
+}
+
+/* A line beside the book's own (今, Hanli 2026-10-27: each line its own 修为): its boards are its whole 修为, so its pace is
+   the book's 今 boards played in order. `lineWalk(content, line, stars)` plays them (each at `stars`, its first play, on the
+   line's own ladder) and says where he ends and where each 回 leaves him. `fitLine` scales the first realm's hours of the
+   layers that walk reaches (`hours.fit.end`: 1.4 = 一层 filled and 二层 four tenths) until a reader at `fit.stars` ends
+   there, never under `fit.floor` hours a layer. `walk`: tools/balance.mjs bookWalk. Returns { row, k, end, huis }. */
+export function lineWalk(content, line, walk, stars, { lineGrant, linePay, lineStart, now }) {
+  const tasks = walk.filter(w => w.line === line);
+  const s = { lang: 'zh', plays: null, lines: { [line]: lineStart(content, line) } }, huis = [];
+  const tiers = content.ladder.lines[line].tiers, climbed = () => {
+    const v = s.lines[line], t = tiers.find(x => x.id === v.tier);
+    return tiers.slice(0, tiers.indexOf(t)).reduce((n, x) => n + x.thresholds.length, 0) + v.step + Math.min(1, v.progress / t.thresholds[v.step]);
+  };
+  for (const w of tasks) {
+    let row = huis.find(h => h.hui === w.hui);
+    if (!row) huis.push(row = { hui: w.hui, boards: 0, minutes: 0, progress: 0 });
+    for (const t of w.line_tasks ?? []) {
+      const g = lineGrant(content, s, line, t.id, t, now, stars);
+      const paid = g ? linePay(content, s, line, g) : null;
+      row.boards += 1; row.minutes += g?.minutes ?? 0; row.progress += paid?.progress ?? 0;
+    }
+    Object.assign(row, { at: { ...s.lines[line] }, climbed: Math.round(climbed() * 100) / 100 });
+  }
+  return { end: { ...s.lines[line] }, climbed: Math.round(climbed() * 1000) / 1000, huis };
+}
+export function fitLine(content, line, walk, rules) {
+  const L = content.balance.master.lines[line], F = L.hours.fit, first = content.ladder.lines[line].tiers[0].id;
+  const curve = L.hours[first], hours = content.balance.play_pay.hours, reach = Math.ceil(F.end);
+  const set = k => { hours[first] = curve.map((h, i) => (i < reach ? Math.max(F.floor ?? 0, Math.round(h * k * 1000) / 1000) : h)); };
+  const at = k => { set(k); return lineWalk(content, line, walk, F.stars, rules).climbed; };
+  let a = F.range[0], b = F.range[1];
+  // Dearer layers climb less: the end falls as k grows. Out of reach, the nearer edge (and it is told).
+  const out = at(a) < F.end ? 'short' : at(b) > F.end ? 'over' : null;
+  if (!out) for (let i = 0; i < 40; i++) { const m = Math.sqrt(a * b); if (at(m) > F.end) a = m; else b = m; }
+  const k = out === 'short' ? a : out === 'over' ? b : Math.sqrt(a * b);
+  set(k);
+  return { row: [...hours[first]], k: Math.round(k * 1000) / 1000, out, ...lineWalk(content, line, walk, F.stars, rules) };
 }
