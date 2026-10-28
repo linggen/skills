@@ -444,8 +444,9 @@ are 几何冲刺 (games/dash.js): Geometry Dash's cube, the runner on its own, a
 pads, spikes · blocks · pits · low roofs, a hit starts over (attempts counted), practice checkpoints, a progress bar, ↺. Physics from
 famidash (github.com/tfdsoft/famidash, MIT: cube speed, jump, gravity, fall cap, pad and orb, hold-buffered jump); our level
 format, collision, drawing; none of its art or music. The beat is the music: no bed (a loop can't stay in step through restarts);
-things laid so each press falls on a beat; a kick each beat, a tick each off-beat, from the runner's clock. Painted on the local
-FLUX (tools/paint-dash-flux.py: spike, block, pad, orb); the runner is 气走经脉's 灵珠, the lands its skies and rock. Each level its
+things laid so each press falls on a beat; a kick each beat, a tick each off-beat, from the runner's clock. Drawn in code as flat comic
+SVG since 10-28 (Hanli: 「做成漫画风格就行. 背景简单一些. 现在障碍物看不清」): one calm sky band per scene palette, red spikes,
+outlined blocks, yellow pads, cyan orbs, a 灵珠 with a short trail; the FLUX pieces and their painter are gone. Each level its
 own (tests/arcade-rhythm.test.mjs: no layout twice), speed and beat never falling, its kinds coming in by story order (s · b · pit
 · bb · ss · ceil · pad · sss · orb); 忍字 slow, single spikes and low blocks. Earlier the same day: things in the 调息 channel
 (礁石 · 灵珠 · 护体 · 定神) and 镜光 · 脉枕 cut; those things stay for the two kept boards and the 游戏厅.
