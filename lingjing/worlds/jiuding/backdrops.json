@@ -370,6 +370,76 @@
    "indoor": true,
    "day": "art/places/zhishi.webp"
   },
+  "ye": {
+   "at": "ye",
+   "indoor": false,
+   "day": "art/places/ye.webp"
+  },
+  "hebo": {
+   "at": "hebo",
+   "indoor": false,
+   "day": "art/places/hebo.webp"
+  },
+  "zhangyuan": {
+   "at": "zhangyuan",
+   "indoor": false,
+   "day": "art/places/zhangyuan.webp"
+  },
+  "taihang": {
+   "at": "taihang",
+   "indoor": false,
+   "day": "art/places/taihang.webp"
+  },
+  "fajiu": {
+   "at": "fajiu",
+   "indoor": false,
+   "day": "art/places/fajiu.webp"
+  },
+  "zhuolu": {
+   "at": "zhuolu",
+   "indoor": false,
+   "day": "art/places/zhuolu.webp"
+  },
+  "jieshi": {
+   "at": "jieshi",
+   "indoor": false,
+   "day": "art/places/jieshi.webp"
+  },
+  "hengshan": {
+   "at": "hengshan",
+   "indoor": false,
+   "day": "art/places/hengshan.webp"
+  },
+  "ye-sanlao": {
+   "at": "ye-sanlao",
+   "indoor": false,
+   "day": "art/places/ye-sanlao.webp"
+  },
+  "liuwan": {
+   "at": "liuwan",
+   "indoor": false,
+   "day": "art/places/liuwan.webp"
+  },
+  "zhangnan": {
+   "at": "zhangnan",
+   "indoor": false,
+   "day": "art/places/zhangnan.webp"
+  },
+  "ye-caifeng": {
+   "at": "ye-caifeng",
+   "indoor": true,
+   "day": "art/places/ye-caifeng.webp"
+  },
+  "ye-xiangzhu": {
+   "at": "ye-xiangzhu",
+   "indoor": true,
+   "day": "art/places/ye-xiangzhu.webp"
+  },
+  "ye-kezhan": {
+   "at": "ye-kezhan",
+   "indoor": false,
+   "day": "art/places/ye-kezhan.webp"
+  },
   "jin-track": {
    "scape": [
     "track"

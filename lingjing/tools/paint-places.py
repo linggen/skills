@@ -79,6 +79,21 @@ KEPT = {
     'cangjing': {'seed': 11, 'round': 'r2'},
     'fantang': {'seed': 11, 'round': 'r2'},
     'zhishi': {'seed': 11, 'round': 'r2'},
+    # r2, the other eight provinces (2026-10-27; picked by the builder's coordinator for Hanli), one province a batch.
+    'ye': {'seed': 11, 'round': 'r2'},
+    'hebo': {'seed': 11, 'round': 'r2'},
+    'zhangyuan': {'seed': 11, 'round': 'r2'},
+    'taihang': {'seed': 11, 'round': 'r2'},
+    'fajiu': {'seed': 11, 'round': 'r2'},
+    'zhuolu': {'seed': 11, 'round': 'r2'},
+    'jieshi': {'seed': 11, 'round': 'r2'},
+    'hengshan': {'seed': 11, 'round': 'r2'},
+    'ye-sanlao': {'seed': 11, 'round': 'r2'},
+    'liuwan': {'seed': 11, 'round': 'r2'},
+    'zhangnan': {'seed': 23, 'round': 'r2'},
+    'ye-caifeng': {'seed': 23, 'round': 'r2'},
+    'ye-xiangzhu': {'seed': 23, 'round': 'r2'},
+    'ye-kezhan': {'seed': 23, 'round': 'r2'},
 }
 
 import argparse, json, os, subprocess, time
@@ -157,7 +172,7 @@ PLACES = {
   'fantang':       ('chending-in', '沉鼎观 · 饭堂', True, False, 'Inside a plain temple refectory: long wooden tables and benches, coarse rice in wooden buckets and a basket of radishes, an elm-wood table by the door with a ledger on it, a big stove at the back with steam, grey walls.'),
   'zhishi':        ('chending-in', '沉鼎观 · 执事堂', True, False, 'Inside a bare temple stewards\' room: no statue, plain walls, on one wall rows of small black ebony wooden tags hanging from pegs, a plain desk and stool, light from a lattice door, quiet and orderly.'),
   # The other eight provinces (2026-10-27): every place a painting of its own, from its `line` (places/<province>.json).
-  'zhangnan': ('ji', '漳水南岸', False, False, 'The south bank of a broad muddy yellow river: churning ochre water, a low sandy bank with sparse reeds, on the far north shore the grey walls of a city, the river surface swelling oddly as if something huge breathes beneath.'),
+  'zhangnan': ('ji', '漳水南岸', False, False, 'The south bank of a broad muddy yellow river: churning ochre water, a low sandy bank with sparse reeds, on the far north shore the long grey rammed-earth wall of an old Chinese city with a gate tower and tiled roofs, the river surface swelling oddly as if something huge breathes beneath.'),
   'ye': ('ji', '邺城', False, False, 'An old walled city on a yellow river: a tall gate in a rammed-earth wall with a paper notice pasted beside it, through the gate a market street of grey-tiled shops with awnings to the east, willows, the river beyond.'),
   'hebo': ('ji', '河伯祠', False, False, 'A small river-god shrine at the water\'s edge: a weathered tiled shrine with red pillars, a great heap of grey incense ash piled before it, faded red cloth streamers, stone steps going straight down into the muddy yellow river.'),
   'zhangyuan': ('ji', '漳渊', False, False, 'The deepest dark pool of a river behind a shrine: still, very dark green-black water in a steep-banked bend, no boats at all, a faint golden haze rising from the surface, gnarled willows, foreboding silence.'),
@@ -166,29 +181,29 @@ PLACES = {
   'zhuolu': ('ji', '涿鹿之野', False, False, 'An ancient battlefield plain: wide windswept grassland under a heavy sky, a few broken bronze halberds and old earth mounds half buried in the grass, distant mountains, a solemn emptiness.'),
   'jieshi': ('ji', '碣石', False, False, 'A great rocky headland above the sea: tall weathered stone pillars and crags, waves breaking white far below, a vast grey-blue sea to the horizon, wind-bent pines on the rock.'),
   'hengshan': ('ji', '恒山', False, False, 'The Northern Peak: steep grey cliffs with a band of cloud around the mountain\'s waist, a temple with upturned eaves clinging to the cliff inside the clouds, pines, a stone stair.'),
-  'ye-doufu': ('ji', '邺城 · 城西豆腐坊', False, False, 'A narrow old city lane with a small tofu workshop: an open wooden shopfront with a stone grinding mill, big wooden tubs and steaming pots of soy milk, a door frame marked with rows of charcoal tally strokes, grey-tiled roofs crowding the lane.'),
-  'ye-caifeng': ('ji', '邺城 · 城南裁缝铺', True, False, 'Inside a small old tailor\'s shop: a long cutting table with bolts of cloth, scissors and a measuring rule, and hanging on the wall a bright red embroidered bridal gown, a window with a paper lattice, threads and spools on shelves.'),
-  'ye-xiangzhu': ('ji', '邺城 · 香烛铺', True, False, 'Inside an old incense and candle shop: shelves stacked with bundles of incense sticks and red candles, a drum and pipes hung on the wall, a counter with a few small pieces of carved jade on a cloth, smoke curling in dim light.'),
-  'ye-kezhan': ('ji', '邺城 · 城东客栈', False, False, 'The back yard of an old city inn: a stone well with a wide flat rim, a wooden bucket and rope, a back door with a lantern, a window where a steaming bowl of noodle soup sits, grey-tiled roofs and an old tree.'),
+  'ye-doufu': ('ji', '邺城 · 城西豆腐坊', False, False, 'A narrow old city lane; through a plain open doorway with no sign above it, a small tofu workshop: a stone grinding mill, big wooden tubs and steaming pots of soy milk, a door frame marked with rows of short charcoal tally strokes, grey-tiled roofs crowding the lane; no shop signs, no signboards, no hanging scrolls.'),
+  'ye-caifeng': ('ji', '邺城 · 城南裁缝铺', True, False, 'Inside a small old Chinese tailor\'s shop of wood and plaster: a long low cutting table with bolts of silk, scissors and a bamboo measuring rule, and on a wooden rack a traditional Chinese red bridal robe with wide sleeves and gold embroidery, a wooden paper-lattice window, threads and spools on shelves; no Western dresses.'),
+  'ye-xiangzhu': ('ji', '邺城 · 香烛铺', True, False, 'Inside an old Chinese incense and candle shop of dark wood: shelves stacked with bundles of incense sticks and red candles, a red Chinese drum and bamboo pipes hung on the wall, a wooden counter with a few small pieces of carved green jade on a cloth, smoke curling in dim light; no clocks, no lamps on the wall.'),
+  'ye-kezhan': ('ji', '邺城 · 城东客栈', False, False, 'The back yard of an old city inn: a stone well with a wide flat rim, a wooden bucket and rope, a back door with a lantern, a kitchen window with a small steaming bowl on the sill, grey-tiled roofs and an old tree.'),
   'ye-sanlao': ('ji', '邺城 · 三老宅', False, False, 'The deserted courtyard of a great old mansion: a tall gate standing open and unguarded, a wide stone-paved court, empty wooden chests left open on the ground, grand halls with upturned eaves behind, weeds between the stones.'),
   'liuwan': ('ji', '柳湾', False, False, 'A small fishing village on a river bend: a row of old willows leaning along the bank, a few thatched huts, fishing nets drying on poles, small boats pulled up on the mud, the river flowing away downstream into haze.'),
   'yunmeng': ('jing', '云梦泽', False, False, 'A vast southern marsh: reeds far taller than a man in endless ranks, winding channels of still water, waterbirds, mist over the wetland, a distant low line of hills.'),
-  'ying': ('jing', '郢', False, False, 'The old capital of Chu: a great city gate and wall, a lively market street of stalls with bright feathers, ivory, hides and red cinnabar in baskets, carved and lacquered eaves, banners.'),
+  'ying': ('jing', '郢', False, False, 'The old capital of Chu: a great city gate and wall, a lively market street of stalls with bright feathers, ivory, hides and red cinnabar in baskets, carved and lacquered eaves, banners. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   'junshan': ('jing', '君山', False, False, 'A small green island hill in a great lake: groves of spotted bamboo with mottled stems, a little shrine among them, the wide lake around, soft rain-haze.'),
   'dongting': ('jing', '洞庭深处', False, False, 'The heart of a vast lake: open water on every side, gentle swells, a low dark shape of something enormous like a turtle\'s shell just under the surface, mist and pale light, no shore in sight.'),
-  'xiangshui': ('jing', '湘水', False, False, 'A clear river flowing north toward a great lake: on its bank a small old shrine with two seated lady figures carved on the gate in the distance, spotted bamboo groves, a misty far shore.'),
+  'xiangshui': ('jing', '湘水', False, False, 'A clear river flowing north toward a great lake: on its bank in the distance a small old shrine with red pillars and a tiled roof, spotted bamboo groves, a misty far shore.'),
   'jingshan': ('jing', '荆山', False, False, 'Rugged wooded mountains in the south: rocky ravines, a stream, an old miner\'s path, a big cracked boulder showing pale jade-green stone inside, pines and mist.'),
   'wuxia': ('jing', '巫峡', False, False, 'A deep river gorge: towering sheer cliffs on both sides leaving only a thin strip of sky, a dark river below, drifting cloud and fine rain clinging to the peaks, a tiny boat far down.'),
-  'minjiang': ('liang', '岷江', False, False, 'A swift river coming down from distant snow-capped mountains, a rocky bank where an old carved stone rhinoceros crouches facing the water, willows, bamboo, the wide valley.'),
-  'chengdu': ('liang', '成都', False, False, 'A prosperous old southwestern city: a market street hung with colourful brocade cloth on poles, a silversmith\'s shop with a small anvil, hibiscus trees, grey-tiled roofs, a river and misty hills.'),
+  'minjiang': ('liang', '岷江', False, False, 'A swift river coming down from distant snow-capped mountains, on a rocky bank a weathered grey stone statue of a rhinoceros, plainly carved stone on a low stone plinth, facing the water, willows, bamboo, the wide valley.'),
+  'chengdu': ('liang', '成都', False, False, 'A prosperous old southwestern city: a market street hung with colourful brocade cloth on poles, a silversmith\'s shop with a small anvil, hibiscus trees, grey-tiled roofs, a river and misty hills. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   'lidui': ('liang', '离堆', False, False, 'An ancient irrigation cut: a hill sliced through by a narrow channel, the river dividing in two around a long stone fish-mouth levee, bamboo-cage weirs, mountains behind.'),
-  'shiniu': ('liang', '石纽', False, False, 'A secluded mountain hollow: steep green slopes, a small clear round pool among mossy rocks, an old carved stone marker beside it, ferns, a stream falling in from above, mist.'),
+  'shiniu': ('liang', '石纽', False, False, 'A secluded mountain hollow: steep green slopes, a small clear round pool among mossy rocks, a plain weathered standing stone beside it, bare, with no writing, ferns, a stream falling in from above, mist.'),
   'minshan': ('liang', '岷山', False, False, 'High snow mountains: white peaks above dark forested slopes, a young river springing from a valley and running out between the ridges, clouds below the summits.'),
   'jiangzhou': ('liang', '江州', False, False, 'A hillside city above the meeting of two great rivers: stilt houses climbing steep slopes, long stone stairs down to the water, two rivers of different colours joining below the walls, boats, mist.'),
   'baoxie': ('liang', '褒斜道', False, False, 'An ancient plank road along a sheer cliff in the mountains: wooden beams driven into holes in the rock one after another carrying a narrow boardwalk, a rushing river far below, layered mountains.'),
   'weishui': ('qing', '潍水', False, False, 'A calm river flowing east under a wide sky: on the grassy bank a lone fishing rod with a straight hook resting on a stone by a straw mat, willows, a few distant hills.'),
-  'linzi': ('qing', '临淄', False, False, 'The old capital of Qi: a great city gate, outside it a quiet academy of halls with upturned eaves among trees, inside the gate a busy market lane, grey walls.'),
-  'jixia': ('qing', '稷下', False, False, 'An ancient academy under a city gate: a courtyard with open halls, rows of low mats and writing desks, bamboo-slip books, an old tree, the gate tower behind.'),
+  'linzi': ('qing', '临淄', False, False, 'The old capital of Qi: a great city gate, outside it a quiet academy of halls with upturned eaves among trees, inside the gate a busy market lane, grey walls. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
+  'jixia': ('qing', '稷下', False, False, 'An ancient academy under a city gate: a courtyard with open halls, rows of low mats and writing desks, bamboo-slip books, an old tree, the gate tower behind. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   'penglai': ('qing', '蓬莱', False, False, 'A mirage city on the sea at dawn: towers, palaces and pavilions floating above the waves in a luminous haze, a rocky shore below with pines, a pale pink sky.'),
   'liubo': ('qing', '流波山', False, False, 'A strange mountain far out in the open sea at low tide: its rocky root exposed above shining wet sand and pools, waves around, the peak rising into sea mist, no land in sight.'),
   'taishan': ('qing', '泰山', False, False, 'The great sacred mountain: steep stone stairs climbing past pines and gates to a summit with temples, a sea of clouds below, the sunrise and a distant glint of the sea.'),
@@ -196,31 +211,31 @@ PLACES = {
   'chengshan': ('qing', '成山头', False, False, 'The easternmost cape: jagged cliffs plunging into the sea, waves crashing, a few rocks standing offshore, the sun rising from the sea on the horizon.'),
   'laoshan': ('qing', '崂山', False, False, 'A rocky mountain rising straight from the sea: granite peaks and boulders, pines, a small Taoist temple tucked in a ravine, waves breaking at its foot, sea mist.'),
   'pushui': ('yan', '濮水', False, False, 'A clear river under a long line of mulberry trees along the bank, the water bright, fields beyond, a strange flash of lightning in a clear eastern sky.'),
-  'puyang': ('yan', '濮阳', False, False, 'An old city of Wei: a city gate with mulberry trees outside, a notice pasted beside the door, a market lane within, grey-tiled roofs, plain fields.'),
+  'puyang': ('yan', '濮阳', False, False, 'An old city of Wei: a city gate with mulberry trees outside, a notice pasted beside the door, a market lane within, grey-tiled roofs, plain fields. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   'sangjian': ('yan', '桑间', False, False, 'Deep in a grove of mulberry trees where a river bends: dappled green shade, baskets left under the trees, the river curving past, soft and lyrical.'),
   'leize': ('yan', '雷泽', False, False, 'A great lake under a stormy sky: flashes of white light on the water, rolling dark clouds, reeds on the shore, a small old fishing boat pulled up.'),
   'leiyuan': ('yan', '雷泽深处', False, False, 'The middle of a vast lake under a thundering sky: open dark water, lightning reflected on it, ripples spreading as if something below were drumming, no shore in sight.'),
   'zhenze': ('yang', '震泽', False, False, 'A huge lake swollen high: flooded willows and drowned field banks at its edge, small boats, wide grey water, low green hills in mist.'),
-  'gusu': ('yang', '姑苏', False, False, 'An old water city of the south: a great gate tower, outside it a canal crowded with wooden boats moored side by side, arched stone bridges, white walls and grey roofs, a market inside.'),
+  'gusu': ('yang', '姑苏', False, False, 'An old water city of the south: a great gate tower, outside it a canal crowded with wooden boats moored side by side, arched stone bridges, white walls and grey roofs, a market inside. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   'kuaiji': ('yang', '会稽山', False, False, 'A quiet sacred mountain in the south: green forested slopes, an ancient shrine and stone tomb gate among old trees, bamboo, mist.'),
   'yuxue': ('yang', '禹穴', True, False, 'Inside the mouth of a dark mountain cave looking out: rough rock walls, moss, a narrow opening to green misty hills outside, water dripping.'),
   'guangling': ('yang', '广陵', False, False, 'An old city wall beside a long straight canal: boats on the canal, an earthen rampart, willows, flat land to a broad river on the horizon.'),
   'pengli': ('yang', '彭蠡', False, False, 'A wide lake in winter: shallow water and mudflats, huge flocks of wild geese settling and rising, reeds, pale low hills, a cold clear sky.'),
   'qiantang': ('yang', '钱塘', False, False, 'A river mouth with a great tidal bore: a wall of white water rolling up the estuary, spray, an embankment and a pagoda on a hill, a wide sky.'),
   'weihe': ('yong', '渭水', False, False, 'A dried-up river bed on the loess plain: cracked mud, a thin trickle in the middle, bleached stones, old willows dying on the bank, dusty yellow hills.'),
-  'yongcheng': ('yong', '雍城', False, False, 'An old northwestern capital of rammed-earth walls: a plain gate, a market inside with stalls of jade and red stones, yellow loess hills, a dry wind.'),
+  'yongcheng': ('yong', '雍城', False, False, 'An old northwestern capital of rammed-earth walls: a plain gate, a market inside with stalls of jade and red stones, yellow loess hills, a dry wind. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   'taihua': ('yong', '太华山', False, False, 'A towering mountain of sheer granite cut square on four sides, impossibly high and bare, no birds, clouds clinging to its walls, a tiny path far below.'),
   'chencang': ('yong', '陈仓', False, False, 'A small old shrine on a northern slope above a river: a weathered stone sitting in the shrine, pines, dusk light, loess terraces, the river below.'),
   'qianlai': ('yong', '钱来山', False, False, 'A mountain with pines on its upper slopes and pale smooth stones scattered in a stream below, rocky ridges, a clear sky.'),
   'qishan': ('yong', '岐山', False, False, 'A gentle sacred mountain above a fertile plain: terraced fields, an old ancestral temple among cypresses, and high above a phoenix-like bird gliding in the clouds.'),
   'longshan': ('yong', '陇山', False, False, 'A high mountain ridge where a small spring splits and runs down both sides, a lonely road over the pass, wind-bent grass, endless folding mountains.'),
   'hangu': ('yu', '函谷关', False, False, 'An ancient pass between two steep mountains: a narrow deep road in a gorge, a fortified gate tower across it, a keeper\'s small hut, mist.'),
-  'luoyi': ('yu', '洛邑', False, False, 'The old royal capital: a great city with palace halls, and in a stone-paved square nine square stone pedestals standing empty in a row, a river beside the city.'),
+  'luoyi': ('yu', '洛邑', False, False, 'The old royal capital: a great city with palace halls, and in a stone-paved square nine square stone pedestals standing empty in a row, a river beside the city. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   'heshan': ('yu', '和山', False, False, 'A mountain where nine streams rise from springs and join into one river flowing north, cascades and pools, green hills, mist.'),
   'luoshui': ('yu', '洛水', False, False, 'A calm river at night under a full moon reflected as a single moon on the water, willows, a faint far bank, a tortoise on a stone by the water.'),
   'yique': ('yu', '伊阙', False, False, 'A river flowing between two steep hills facing each other like a gate, cliffs carved with small niches, the river bright between them.'),
   'songshan': ('yu', '嵩山', False, False, 'The Central Peak: layered rocky mountains, a temple among pines at the foot, and a huge boulder split cleanly in two beside the path.'),
-  'dingtao': ('yu', '定陶', False, False, 'A busy old merchant town on a flat plain: crowded market streets, warehouses, carts and boats on a canal, grey-tiled roofs, a sense of trade and plenty.'),
+  'dingtao': ('yu', '定陶', False, False, 'A busy old merchant town on a flat plain: crowded market streets, warehouses, carts and boats on a canal, grey-tiled roofs, a sense of trade and plenty. The street is empty, no people at all; no shop signs, no signboards, no banners with writing.'),
   # 今线 · 沂州中医药大学
   'jin-track':     ('jin', '沂中医 · 体育场 (scape track)', False, False, 'A university sports field: a red running track around a green football pitch, a low concrete grandstand, floodlight towers, teaching buildings and trees beyond.'),
   'jin-court':     ('jin', '沂中医 · 体育馆 (scape court)', True, False, 'Inside a university sports hall: a polished wooden basketball court, high steel roof trusses, big windows, folded bleachers along the wall, a hoop at the far end.'),
@@ -238,9 +253,21 @@ def prompt(pid, night=False):
   return f'{scene}{dark} {STAGE} {era} Style: {STYLE}'
 
 
+def others():
+  # Any other painter job on the machine: a bare mlx_picture render, or another tools/paint-*.py (some run FLUX
+  # in-process, so they never show as mlx_picture). Two at once halve each other — a 45 s render took 15 min.
+  # Not this job: itself, and the shells that launched it (their command line names this script too).
+  mine, pid = set(), os.getpid()
+  while pid > 1:
+    mine.add(pid)
+    pid = int(subprocess.run(['ps', '-o', 'ppid=', '-p', str(pid)], capture_output=True, text=True).stdout.strip() or 1)
+  out = subprocess.run(['pgrep', '-f', r'mlx_picture|tools/paint-[a-z0-9-]+\.py'], capture_output=True, text=True).stdout
+  return [p for p in out.split() if int(p) not in mine]
+
+
 def wait_turn():
-  while subprocess.run(['pgrep', '-f', 'envs/pictures/bin/python .*mlx_picture'], capture_output=True).stdout.strip():
-    time.sleep(0.5)
+  while others():
+    time.sleep(2)
 
 
 def render(p, seed, png):
