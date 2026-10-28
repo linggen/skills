@@ -307,6 +307,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       root.classList.toggle('no-skills', Boolean(g.noSkills));
       root.classList.toggle('no-towers', !g.L.towers.length);
       $('.sl-fire').firstChild.textContent = `${t.fire} `;
+      $('.sl-stone').firstChild.textContent = `${t.stone} `; // 泗水路's 干粮
       $('.sl-hinfo b').textContent = t.yinyue;
       panel.face = false;
       paper = makePaper(doc, g.L, word(row.name, lang).split(' · ')[0]);
@@ -323,7 +324,9 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       held = true; sagaQ.length = 0; sagaT = 0;
       const tok = ++leadTok;
       // the lead card says 结印 is here where it is (jieyin/lead.js)
-      leadWith(said, seals, row.pace ?? 'rest', lang).then((told) => !done && tok === leadTok && shell.lead(told, { auto: 'read', lang, reducedMotion }))
+      // …only on a level the dock can open on (a 大妖 or an elite comes): 小满 alone before 入门 has none
+      const sealable = row.waves.flat().some(([type, , , , o]) => BEASTS[type]?.boss || o?.elite);
+      leadWith(said, sealable ? seals : null, row.pace ?? 'rest', lang).then((told) => !done && tok === leadTok && shell.lead(told, { auto: 'read', lang, reducedMotion }))
         .then(() => { if (!done && tok === leadTok) go(); });
     }
     function pickLevels() {

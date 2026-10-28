@@ -549,7 +549,7 @@ export function draw(ctx, g, v) {
     const sel = v.sel === i;
     ctx.fillStyle = sel ? 'rgba(176,65,46,0.12)' : 'rgba(250,244,230,0.5)'; ctx.beginPath(); ctx.arc(x, y, 21, 0, 6.28); ctx.fill();
     ctx.setLineDash([4, 4]); ctx.strokeStyle = sel ? '#b0412e' : 'rgba(42,36,29,0.45)'; ctx.lineWidth = sel ? 2 : 1.4; ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = sel ? 'rgba(176,65,46,0.6)' : 'rgba(42,36,29,0.28)'; ctx.font = '14px "Songti SC",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('符', x, y + 1); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = sel ? 'rgba(176,65,46,0.6)' : 'rgba(42,36,29,0.28)'; ctx.font = '14px "Songti SC",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(g.L.spotMark ?? '符', x, y + 1); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   });
   if (v.sel >= 0 && g.towers[v.sel]) {
     const tw = g.towers[v.sel], R = TOWERS[tw.type].range[tw.lvl];
