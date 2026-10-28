@@ -1496,12 +1496,12 @@ card `scripts/mijing.js` · numbers `balance.json master.mijing`.
   比武切磋 once built: `keyDrop(content, s, ctx, 'qiecuo')`), under the day's cap. The 秘境 has no cooldown of its own.
 - **The map:** 3–4 rows of 6–8 rooms with branches, a 大妖 at the head; every room on a way to it. First row 妖兽, a 灵泉
   before the 大妖, a 守关 in the second row, a 奇遇 past the first. Rooms: 妖兽 / 凶兽 / 大妖 (the card 斗法, the
-  page's own room), 守关 (守墙关 · 撒豆成兵 · 守炉 levels), 机关 (华容道 · 拼图 of the 重's painting), 奇遇 (data decides,
-  银月 says it), 灵泉 (rest or temper a 功法), 宝箱. 心魔 (格斗 against 沈小满's shadow) is in the table at weight 0
-  until the fighter takes a mirror foe.
+  page's own room), 守关 (守墙关 · 撒豆成兵 · 守山门 · 守炉 levels), 机关 (华容道 · 拼图 of the 重's painting), 奇遇 (data decides,
+  银月 says it), 灵泉 (rest or temper a 功法), 宝箱. 心魔 (格斗 against 沈小满's shadow) is in the table at weight 0:
+  the fighter's foe plays 秦雁's clips (edge · glow · hold · ice · jianqi …), which 小满's sheet has none of.
 - **The run:** 气血 carries (a fight's door takes it as `wounds`, a board costs it by its stars, never below 1; 撤 off a
   board costs a quarter). Boons lie on what each game reads. The 大妖 clears it: all the loot, 灵石, pills, an arm, its
-  card, the next 重 open. Death or leaving keeps the loot by the depth reached. 修为 is the minutes cleared at a low
+  card (the 大妖's gift, else a beast of the 重's he lacks), the next 重 open. Death or leaving keeps the loot by the depth reached. 修为 is the minutes cleared at a low
   share of the games' rate (a day's two runs about a tenth of a 练气 layer).
 - **The nine 重** follow the book's places, each open once its scene is passed: 凶崖 · 暗河 · 石室 (古五: the 沉鼎秘境 itself, 第一重 its 凶崖), 灵草谷 ·
   九格崖 (古七), 孤崖 (古八), 漳渊 (古九), 雷泽 (卷二), 九鼎 (九鼎篇终).

@@ -115,6 +115,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-1"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "yaoyuan"
         }
       ],
       "jiguan": [
@@ -248,6 +252,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-2"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "yaoyuan"
         }
       ],
       "jiguan": [
@@ -353,6 +361,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-3"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "yaoyuan"
         }
       ],
       "jiguan": [
@@ -470,6 +482,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-3"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "yaoyuan"
         }
       ],
       "jiguan": [
@@ -573,6 +589,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-3"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "yaoyuan"
         }
       ],
       "jiguan": [
@@ -676,6 +696,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-3"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "heisong"
         }
       ],
       "jiguan": [
@@ -778,6 +802,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-3"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "heisong"
         }
       ],
       "jiguan": [
@@ -875,6 +903,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-3"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "heisong"
         }
       ],
       "jiguan": [
@@ -972,6 +1004,10 @@
         {
           "task": "mijing-guan-shoulu",
           "lv": "mijing-3"
+        },
+        {
+          "task": "mijing-guan-sadoushou",
+          "lv": "heisong"
         }
       ],
       "jiguan": [

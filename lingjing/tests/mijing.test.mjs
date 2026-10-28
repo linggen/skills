@@ -207,6 +207,10 @@ test('a run: 气血 carried from fight to fight, a board\'s stars cost it, a 灵
     const last = s.mijing.last;
     assert.ok(last.paid.wealth > 0 && (last.paid.progress > 0 || s.wealth > before2.wealth), `a clear pays: ${JSON.stringify(last.paid)}`);
     assert.ok(last.items.some(i => i.id === 'mend-pill'), 'its pills');
+    // A card: the 大妖's gift, else the first a beast of the 重 gives that he lacks (none only when he holds them all).
+    const t1 = M.tiers[0], held = new Set(door.state.cards ?? []);
+    const gifts = [t1.boss, ...t1.xiong, ...t1.beasts].flatMap(b => content.cards.cards.filter(c => (c.from ?? []).some(f => f.kind === 'beast' && f.creature === b.creature)).map(c => c.id));
+    if (gifts.some(id => !held.has(id))) assert.ok(last.card?.card, `a card on the clear: ${JSON.stringify(last.card)}`);
     assert.ok(tierOpen(content, s, 2), '二重 opens');
   }
   assert.ok(!run(s), 'the run was walked to its end');
@@ -216,18 +220,17 @@ test('a run: 气血 carried from fight to fight, a board\'s stars cost it, a 灵
 test('boons lie on what the fight reads; death ends the run with loot by the depth; leaving keeps a share too', () => {
   let s = call('mijing', atDoor(), { action: 'enter', tier: 1, seed: 'boons' }).state;
   s.mijing.run.boons = ['li', 'hu', 'tuna', 'gu'];
-  s.mijing.run.hp_max = 30; s.mijing.run.hp = 12;
+  s.mijing.run.hp_max = 30; s.mijing.run.hp = 2;
   const first = nextRooms(run(s))[0];
   s = call('mijing', s, { action: 'go', room: first }).state;
   const door = call('duel', s, { id: `mijing:${first}` });
   const you = door.state.fight.setup.you;
   assert.ok(you.extra.includes('tuna'), '吐纳在手');
   assert.ok(you.power >= 1 && you.armor >= 1, '力 · 护');
-  assert.equal(begin(door.state.fight.setup, cardCatalog(content)).you.hp, 12, 'the run\'s 气血, the 固本 cap over the fight\'s');
+  assert.equal(begin(door.state.fight.setup, cardCatalog(content)).you.hp, 2, 'the run\'s 气血, the 固本 cap over the fight\'s');
   // Lose it on purpose: end every turn.
   const lose = Array(80).fill('end').join(',');
   const lost = call('duel', door.state, { id: `mijing:${first}`, picks: lose });
-  if (lost.result.refused === 'unfinished') return; // a beast too soft to kill him in 80 turns: nothing to check
   assert.equal(lost.result.ended, 'dead');
   assert.ok(!run(lost.state));
   assert.equal(lost.state.mijing.last.how, 'dead');

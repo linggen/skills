@@ -389,7 +389,10 @@ export function endRun(s, content, ctx, how, extra = {}) {
   const shut = lockedOf(content, s);
   const paid = pay(content, s, ctx, { table: 'play', progress, wealth: shut.includes('wealth') ? 0 : wealth });
   const stowed = items.map(i => stow(content, s, i.id, i.n));
-  const card = how === 'clear' ? winCard(content, s, creatureOf(content, t.boss.creature), ctx.now) : null;
+  // A card on a clear: the 大妖's own gift, else the first a beast of this 重 gives that he does not yet hold (cards.json
+  // `from: {kind: 'beast'}` — never a card at random; none when he holds them all).
+  const card = how === 'clear' ? [t.boss, ...(t.xiong ?? []), ...(t.beasts ?? [])].map(b => creatureOf(content, b.creature)).filter(Boolean)
+    .reduce((got, c) => got ?? winCard(content, s, c, ctx.now), null) : null;
   const named = stowed.map((g, i) => ({ id: items[i].id, name: g.name, n: items[i].n, ...(g.stored ? { stored: true } : {}) }));
   const last = { tier: t.n, name: pick(t.name, s.lang), how, reached, of, minutes: r.minutes, paid: { progress: paid.progress, wealth: paid.wealth }, items: named, ...(card ? { card } : {}), at: ctx.now.toISOString() };
   const cleared = how === 'clear' ? [...new Set([...(s.mijing.cleared ?? []), t.n])].sort((a, b) => a - b) : s.mijing.cleared ?? [];
