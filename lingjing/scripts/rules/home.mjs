@@ -165,8 +165,9 @@ function todoOf(kept, way = null) {
   if (tide) out.push({ kind: 'tide', id: tide.id, title: tide.title });
   for (const w of kept.waits ?? []) out.push({ kind: 'wait', id: w.id, title: w.title, wait_min: w.wait_min });
   if (kept.rerun?.open && !kept.rerun.inside) out.push({ kind: 'rerun', place: placeRef(kept.rerun.door), title: kept.rerun.label ?? null });
-  const skipped = (kept.aside?.offers ?? []).filter(o => o.kind === 'replay').length;
-  if (skipped) out.push({ kind: 'skipped', n: skipped });
+  // The boards set aside: the count, and the first, which the row's tap opens again.
+  const skipped = (kept.aside?.offers ?? []).filter(o => o.kind === 'replay');
+  if (skipped.length) out.push({ kind: 'skipped', n: skipped.length, id: skipped[0].id });
   return out;
 }
 

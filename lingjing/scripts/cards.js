@@ -1092,15 +1092,17 @@ const HOME_WORDS = {
     resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}',
     boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',
     ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}',
-    tide: '兽潮 · 开局', rerun: '{title} · 已开', skipped: '先放下的 {n} 局', enough: '{what} · 够了',
+    tide: '兽潮 · 开局', rerun: '{title} · 已开', skipped: '先放下的 {n} 局', waitAt: '{title} · {at} 再开', enough: '{what} · 够了',
     door: '{door} · {step}即开', doorOpen: '{door} · 门已开', doorAt: '还在门外 · 在{here}' },
   en: { stage: 'Stage quest · {step}', short: '{n} cultivation to go', chores: 'chores +{n}', plays: 'about {n} games', playsMore: 'then about {n} games', todo: 'Waiting',
     resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}',
     boardPays: 'Play · {title} · cultivation +{n}', take: 'Take · {title}', go: 'Go to {name} ›', goWhat: 'To {name} · {what}', wait: '{title} · in {t}', seclude: 'Seclusion',
     ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}',
-    tide: 'Beast tide · play', rerun: '{title} · open', skipped: '{n} games set aside', enough: '{what} · enough',
+    tide: 'Beast tide · play', rerun: '{title} · open', skipped: '{n} games set aside', waitAt: '{title} · opens again at {at}', enough: '{what} · enough',
     door: '{door} · opens at {step}', doorOpen: '{door} · open', doorAt: 'Not inside yet · at {here}' },
 };
+/* The clock time `min` minutes from now, 「15:40」. */
+const clockIn = (min) => { const d = new Date(Date.now() + Math.max(0, min ?? 0) * 60000); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
 const homeWait = (min, w) => { const m = Math.max(1, Math.round(min ?? 0)); return m >= 60 ? say(w.chanceHM, { h: Math.floor(m / 60), m: m % 60 }) : say(w.chanceM, { m }); };
 const bareName = (name) => String(name ?? '').split(' · ').at(-1);
 /* A way to grow stronger (rules/strengthen.mjs): its button, and under it ONE fact line — what the thing is and does, the
@@ -1143,9 +1145,11 @@ const HOME_TODO = {
   },
   gongke: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.gongke, { name: r.means ?? r.title, n: r.progress }))}</button>`,
   tide: (r, h) => `<button class="act quiet hometodo" data-play="${esc(r.id)}">${esc(h.tide)}</button>`,
-  wait: (r, h, ctx) => `<span class="small dim hometodo">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</span>`,
+  // A cooldown: the tap says when it opens again, on the clock (Hanli 10-28: every 待办 answers a tap).
+  wait: (r, h, ctx) => `<button class="act quiet hometodo" data-home-wait="${esc(say(h.waitAt, { title: r.title, at: clockIn(r.wait_min) }))}">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</button>`,
   rerun: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.rerun, { title: r.title ?? r.place.name }))}</button>` : ''),
-  skipped: (r, h) => `<span class="small dim hometodo">${esc(say(h.skipped, { n: r.n }))}</span>`,
+  skipped: (r, h) => (r.id ? `<button class="act quiet hometodo" data-replay-play="${esc(r.id)}">${esc(say(h.skipped, { n: r.n }))}</button>`
+    : `<span class="small dim hometodo">${esc(say(h.skipped, { n: r.n }))}</span>`),
   strengthen: (r, h, ctx) => homeWay(r.way, 'todo', ctx),
 };
 /// 秘境石门 (Look's `door`, world.mjs doorOf): the story at a sealed instance's door, he not yet in — where the door is

@@ -3627,6 +3627,7 @@ const CLICKS = [
   // 主页's one way to grow stronger after a loss (rules/home.mjs → strengthen.mjs): the loss card's own verb.
   ['[data-home-way]', (el) => run('home-way', () => takeWay(homeWayOf(el.dataset.homeWay)))],
   // …and its ?: 银月 says why that step, from its facts (hersay.js whyFacts) — his tap, so always heard.
+  ['[data-home-wait]', (el) => { show({ doNote: el.dataset.homeWait }); return true; }],
   ['[data-home-why]', (el) => askWhyStrong(homeWayOf(el.dataset.homeWhy))],
   ['[data-duel-start]', (el) => run(`duel:${el.dataset.duelStart}`, () => { keep({ walkedOut: null }); return onDuelStart(el.dataset.duelStart); })],
   // 丹囊 at the door (danang.js): one more pill packed, or the pouch emptied — the page's own until 出手.
