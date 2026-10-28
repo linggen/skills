@@ -290,7 +290,7 @@ const W = {
     skip: '他不猜了，跳过；页面亮出了谜底：「{answer}」。回他一句，收个尾。',
     result: '二十问完了（页面判的）：{summary}。说一句收尾，别改这个结果。',
     free: '这一局是二十问反着玩：他心里想好了一种动物（什么动物都行），你们只问是或不是来猜，{max} 问之内，猜一回也算一问。',
-    freeTurn: '{log}现在是第 {n} 问（还剩 {left} 问）。{push}用你自己的口吻，只写一句{who}：要么问一个只能答「是」或「不是」的问题，要么猜。句首加一个标记——问就写 <!--问-->，猜就写 <!--猜:动物名-->（页面读它，聊天里不显示）。别重复问过的；「是什么」「哪种」「几条」这样答不了是不是的，不许问。',
+    freeTurn: '{log}现在是第 {n} 问（还剩 {left} 问）。{push}用你自己的口吻，只写一句{who}：要么问一个只能答「是」或「不是」的问题，要么猜。句首加一个标记——问就写 <!--问-->，猜就写 <!--猜:动物名-->（页面读它，聊天里不显示），标记后面接着写你说出口的那句话。别重复问过的；「是什么」「哪种」「几条」这样答不了是不是的，不许问。',
     freeWho: '，开头写说话人的名字加冒号，轮着来',
     freePush: '心里有了谱就猜，别光问；只剩这几问了，该猜了。', freeMid: '问过一半了，心里有谱就猜。',
     freeLog: '已经问过：\n{rows}\n',
@@ -323,7 +323,7 @@ const W = {
     skip: 'He gives up and skips; the page shows the answer: "{answer}". Answer him in a line and close it.',
     result: 'The twenty questions are over (the page judged it): {summary}. Close it with a line; never change that result.',
     free: 'This round is twenty questions the other way round: he has thought of an animal (any animal at all), and you ask only yes-or-no questions to guess it, within {max}; a guess counts as one.',
-    freeTurn: '{log}This is question {n} ({left} left). {push}In your own voice, write one line only{who}: either a question he can answer only yes or no, or a guess. Start it with a mark — a question <!--ask-->, a guess <!--guess:animal--> (the page reads it; the chat never shows it). Never repeat one asked; never "what is it", "which kind", "how many" — nothing that is not yes or no.',
+    freeTurn: '{log}This is question {n} ({left} left). {push}In your own voice, write one line only{who}: either a question he can answer only yes or no, or a guess. Start it with a mark — a question <!--ask-->, a guess <!--guess:animal--> (the page reads it; the chat never shows it) — and then the line you say aloud. Never repeat one asked; never "what is it", "which kind", "how many" — nothing that is not yes or no.',
     freeWho: ', starting with the speaker\'s name and a colon, taking turns',
     freePush: 'Few questions left: guess, don\'t only ask. ', freeMid: 'Half your questions are gone; guess once you have a fair idea. ',
     freeLog: 'Asked so far:\n{rows}\n',
@@ -424,11 +424,15 @@ export function yesNoOf(text, cast = [], lang = 'zh') {
   const names = cast.map((c) => c.name);
   if (n && names.includes(n[1].trim())) { who = cast[names.indexOf(n[1].trim())].id; line = n[2].trim(); }
   line = line.replace(/^[「"](.*)[」"]$/, '$1').trim();
-  if (!line || [...line].length > 60 || !/[?？]\s*$/.test(line)) return null;
   const x = guess ? String(m[2] ?? '').trim() : '';
-  if (guess && !x) return null;
-  if (!guess && NOT_YES_NO[lang === 'en' ? 'en' : 'zh'].test(line)) return null;
-  return guess ? { kind: 'guess', text: line, who, x } : { kind: 'ask', text: line, who };
+  if (guess) {
+    // Live 10-28: her guesses came as the bare mark (<!--猜:猞猁-->) — the animal is the guess; the page says it plainly.
+    if (!x || [...x].length > 12) return null;
+    return { kind: 'guess', text: [...line].length <= 60 ? line : '', who, x };
+  }
+  if (!line || [...line].length > 60 || !/[?？]\s*$/.test(line)) return null;
+  if (NOT_YES_NO[lang === 'en' ? 'en' : 'zh'].test(line)) return null;
+  return { kind: 'ask', text: line, who };
 }
 
 export const freshFree = () => ({ log: [], over: false, won: null });

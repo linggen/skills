@@ -201,6 +201,9 @@ test('the open 二十问 (any animal, 10-28): their line is held to yes-or-no; a
   assert.equal(yesNoOf('<!--问-->老蔡：这玩意儿能上天不？', cast)?.who, 'jin-laocai');
   assert.deepEqual(yesNoOf('<!--猜:袋鼠-->眼镜：我赌是袋鼠，对不对？', cast), { kind: 'guess', text: '我赌是袋鼠，对不对？', who: 'jin-yanjing', x: '袋鼠' });
   for (const bad of ['<!--问-->它是什么颜色？', '<!--问-->它有几条腿？', '它会飞吗？', '<!--问-->它会飞。', '<!--猜-->是袋鼠吗？', '']) assert.equal(yesNoOf(bad, cast), null, bad);
+  // Live 10-28: a guess as the bare mark is a guess (the page says it plainly); one said aloud keeps her words.
+  assert.deepEqual(yesNoOf('<!--猜:猞猁-->', cast), { kind: 'guess', text: '', who: 'jin-laocai', x: '猞猁' });
+  assert.equal(yesNoOf('<!--猜:猞猁-->本王猜是猞猁！', cast).text, '本王猜是猞猁！');
   assert.equal(yesNoOf('<!--ask-->Yinyue: Does it fly?', [{ id: 'yinyue', name: 'Yinyue' }], 'en')?.kind, 'ask');
   assert.equal(yesNoOf('<!--ask-->What colour is it?', [], 'en'), null);
   assert.deepEqual(yesNoOf('<!--问:它有尾巴吗？-->', cast), { kind: 'ask', text: '它有尾巴吗？', who: 'jin-laocai' }, 'the question inside the mark');

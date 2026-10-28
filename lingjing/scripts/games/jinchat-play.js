@@ -146,7 +146,7 @@ export async function guessGame(ctx) {
       const r = await ctx.ask(freeLine(chat, st, { max, cast, lang, bad })).catch(() => null);
       const t = yesNoOf(r?.text, cast, lang);
       ctx.log({ kind: 'free-turn', chat: ctx.id, n: st.log.length + 1, ok: Boolean(t), err: r?.err ?? r?.refused ?? null });
-      if (t) return t;
+      if (t) return t.kind === 'guess' && !t.text ? { ...t, text: fill(pick(table.guess, lang) || '{x}？', { x: t.x }) } : t;
       if (!r?.text) break; // no model at all: the table, at once
     }
     const mv = nextMove(table, { ...tst, n: st.log.length });
