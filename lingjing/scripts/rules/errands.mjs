@@ -627,6 +627,8 @@ const EFFECT_BRIEF = {
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
   charm: () => ({ charm: true }),
+  // 回春丹 · 回气丹: what it does in a fight (rules/cards.mjs fightPill) — the card's 「斗法里服下」 line, never 「可买卖的货物」.
+  fight: e => ({ fight: { ...(e.fight.heal ? { heal: e.fight.heal } : {}), ...(e.fight.mana ? { mana: e.fight.mana } : {}) } }),
   pouch: e => ({ pouch: e.pouch }),
   waive: e => ({ waive: e.waive }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),

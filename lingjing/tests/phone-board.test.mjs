@@ -178,3 +178,50 @@ test('the pack holds every file byte for byte', () => {
     assert.ok(pack.subarray(4 + head + at, 4 + head + at + len).equals(fs.readFileSync(path.join(SKILL, f))), f);
   }
 });
+
+// The phone's shelf and pouch draw a thing's picture from the common pack (the story screen's, never a board's): every
+// thing any shop sells — a place's own shop (`has.shop.goods`) or a visiting one — has its art there (Hanli 10-28:
+// 「有的物品有图片有的没有, mac上都有图片」 — 回气丹 · 铁蒺藜 · 散火诀 · 草人 wear their card's art under art/cards).
+test('every thing a shop sells has its picture in the common pack', () => {
+  const { common } = kitPacks(), have = new Set(common);
+  const items = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(WORLD, 'items.json'), 'utf8')).items.map((i) => [i.id, i]));
+  const sold = new Set();
+  const walk = (v) => {
+    if (Array.isArray(v)) return v.forEach(walk);
+    if (!v || typeof v !== 'object') return;
+    if (Array.isArray(v.goods)) for (const g of v.goods) if (typeof g === 'string') sold.add(g);
+    Object.values(v).forEach(walk);
+  };
+  for (const f of fs.readdirSync(path.join(WORLD, 'places'))) if (f.endsWith('.json')) walk(JSON.parse(fs.readFileSync(path.join(WORLD, 'places', f), 'utf8')));
+  for (const f of ['world.json', 'rewards.json']) walk(JSON.parse(fs.readFileSync(path.join(WORLD, f), 'utf8')));
+  for (const id of ['mend-pill', 'huiqi-pill', 'tieji-bao', 'sanhuo-jian', 'caoren-zha', 'bamboo-sword']) assert.ok(sold.has(id), `${id} is sold (外门库房)`);
+  for (const id of sold) {
+    const art = items[id]?.art;
+    if (art && fs.existsSync(path.join(WORLD, art))) assert.ok(have.has(`worlds/jiuding/${art}`), `${id}: ${art} in the common pack`);
+  }
+});
+
+// A board's sound on the phone (Hanli 10-28: 「兽潮游戏在手机上没有声音」): the shell plays every board's sounds from one
+// bank (games/kit/audio: sounds.json, bank.json, the sprite and each kit's bed, ogg or m4a by what the webview plays).
+// Every file the bank names for a sound a kit board can make is in the common pack.
+test('every sound a kit board names is in the phone bundle (the bank, the sprite, its kit\'s bed, both formats)', () => {
+  const have = new Set(kitPacks().common);
+  const AUDIO = 'scripts/games/kit/audio';
+  const maps = JSON.parse(fs.readFileSync(path.join(SKILL, AUDIO, 'sounds.json'), 'utf8'));
+  const bank = JSON.parse(fs.readFileSync(path.join(SKILL, AUDIO, 'bank.json'), 'utf8'));
+  for (const f of ['sounds.json', 'bank.json', bank.sprite.ogg, bank.sprite.m4a]) assert.ok(have.has(`${AUDIO}/${f}`), f);
+  for (const id of kitGames()) {
+    const kit = maps.games?.[id]?.kit ?? 'board', bed = maps.kits?.[kit]?.music;
+    if (!bed) continue;
+    for (const ext of ['ogg', 'm4a']) assert.ok(have.has(`${AUDIO}/${bank.music[bed][ext]}`), `${id}: its ${kit} bed (${bank.music[bed][ext]})`);
+  }
+  // Every sound id a rule names is in the bank: a slice of the sprite or a ZzFX recipe.
+  const named = [maps.base, ...Object.values(maps.kits ?? {}).map((k) => k.events), ...Object.values(maps.games ?? {}).map((g) => g.events)]
+    .flatMap((r) => Object.values(r ?? {}).flatMap((v) => (v == null ? [] : typeof v === 'string' || Array.isArray(v) ? [v].flat() : [v.sound].flat())))
+    .filter(Boolean);
+  for (const s of new Set(named)) {
+    const def = maps.sounds?.[s];
+    assert.ok(def, `${s} is a sound`);
+    if (!def.zzfx) for (const slice of [def.slice ?? def.sprite ?? []].flat()) if (typeof slice === 'string') assert.ok(bank.sprite.map[slice], `${s}: ${slice} in the sprite`);
+  }
+});

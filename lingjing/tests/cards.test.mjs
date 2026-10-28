@@ -679,3 +679,20 @@ test('an errand finished: what it found stands on the stage, with the way back t
   assert.match(src, /action === 'turn' && r\.turned\) show\(\{ bookOpen: false, handin:/, 'and a hand-in');
   assert.match(src, /'emerged', 'handin'\]\) if \(view\[k\] && view\[k\]\.place !== here\)/, 'walked on, it is put away');
 });
+
+test("外门库房's shelf: 回春丹 · 回气丹 say their fight from Look's effect (never 「可买卖的货物」), the shop a 库房", async () => {
+  const { WORDS, itemDoes } = await import('../scripts/cards.js');
+  const { look } = await import('../scripts/rules.mjs');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const content = loadContent();
+  const now = new Date('2026-10-28T12:00:00');
+  const s = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/zhishi-09year.json', import.meta.url), 'utf8')).state;
+  const seen = look({ ...newState(content, 'zh', now), ...s, place: 'zhishi' }, content, { now, quests: [] });
+  const shelf = Object.fromEntries((seen.place.shelf ?? []).map((i) => [i.id, i]));
+  assert.ok(shelf['mend-pill'] && shelf['huiqi-pill'], JSON.stringify(Object.keys(shelf)));
+  assert.deepEqual(shelf['mend-pill'].effect, { fight: { heal: 10 } });
+  assert.equal(itemDoes(shelf['mend-pill'].effect, { words: WORDS.zh }), '斗法里服下：气血 +10');
+  assert.equal(itemDoes(shelf['huiqi-pill'].effect, { words: WORDS.zh }), '斗法里服下：灵力 +3');
+  assert.equal((seen.shops ?? []).find((x) => x.steps === 0)?.label, '库房');
+});

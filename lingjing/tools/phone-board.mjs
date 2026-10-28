@@ -46,8 +46,16 @@ export function fightArt() {
   return [...new Set(rows.map((r) => r.art).filter((a) => typeof a === 'string' && fs.existsSync(path.join(SKILL, 'worlds/jiuding', a))).map((a) => `worlds/jiuding/${a}`))];
 }
 
-/** The story screen's own files (faces, the pouch's things): `story`, and every file under `storyDirs`. */
-export const storyFiles = () => [...(KIT.story ?? []), ...(KIT.storyDirs ?? []).flatMap((d) => filesUnder(path.join(SKILL, d)).map(rel))];
+/** Every thing's picture as items.json names it, wherever it lies: a thing sold for its card (铁蒺藜, 散火诀玉简, 回气丹)
+    wears its card's art under art/cards, which only the fight's pack held — so the phone's shelf and pouch drew it bare
+    (Hanli 10-28: 「有的物品有图片有的没有, mac上都有图片」). */
+export function itemArt() {
+  const rows = JSON.parse(fs.readFileSync(path.join(SKILL, 'worlds/jiuding/items.json'), 'utf8')).items ?? [];
+  return [...new Set(rows.map((r) => r.art).filter((a) => typeof a === 'string' && fs.existsSync(path.join(SKILL, 'worlds/jiuding', a))).map((a) => `worlds/jiuding/${a}`))];
+}
+
+/** The story screen's own files (faces, the pouch's and the shelf's things): `story`, every file under `storyDirs`, and every thing's art. */
+export const storyFiles = () => [...new Set([...(KIT.story ?? []), ...(KIT.storyDirs ?? []).flatMap((d) => filesUnder(path.join(SKILL, d)).map(rel)), ...itemArt()])];
 
 /** Every file `game` needs, as sorted skill-relative paths. */
 export function boardFiles(game = 'shouqiang') {
