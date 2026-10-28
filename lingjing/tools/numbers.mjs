@@ -31,7 +31,7 @@ import { chances, realmOf } from '../scripts/rules/fantong.mjs';
 import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, table as paceTable } from './balance.mjs';
 import { derive, diffOf, fitHours, fitLine, lineWalk, setPath } from './master.mjs';
 import { boardLine, lineGrant, linePay, linesOf, lineWorld } from '../scripts/rules/lines.mjs';
-import { lineStart } from '../scripts/state.mjs';
+import { lineStart, lockedOf } from '../scripts/state.mjs';
 
 export const OUT = new URL('../worlds/jiuding/levels/numbers.json', import.meta.url);
 const FIXTURE = new URL('../tests/fixtures/saves/waimen.json', import.meta.url);
@@ -227,7 +227,6 @@ function itemsMet(content) {
 /* Every string under a node: the ids a pool or a drop table can hand out. */
 const idsIn = (node, out = new Set()) => { if (typeof node === 'string') out.add(node); else if (node && typeof node === 'object') for (const v of Object.values(node)) idsIn(v, out); return out; };
 
-/* Every shop's goods → the first 回 whose map holds the shop (a place's own `has.shop`, or its province's catalog). */
 /* Each place → the first 回 whose chapter map holds it. */
 function placesMet(content) {
   const firstHui = new Map();
@@ -238,13 +237,24 @@ function placesMet(content) {
   return firstHui;
 }
 
+/* Every shop's goods → the first 回 he can buy them (a place's own `has.shop`, its province's catalog, a visiting shop). */
 function shopsMet(content) {
-  const out = new Map(), firstHui = placesMet(content);
+  // A shelf is the 灵石's (rules/locks.mjs: before them a shop shows nothing and Trade is refused): a place's shop sells
+  // from the first scene whose chapter map holds it with 灵石 open — not the first map that shows it. A visiting shop
+  // (`has.visitor`, rules/visiting.mjs) stands only while that map is walled (`home`); its goods and its turning `odd`.
+  const open = new Map(), walled = new Map();
+  let hui = null;
+  for (const w of bookWalk(content)) {
+    if (w.hui) hui = w.hui;
+    if (!hui || lockedOf(content, { chapter: w.chapter, scene: w.id }).includes('wealth')) continue;
+    const map = content.chapters[w.chapter]?.map;
+    for (const id of map?.places ?? []) for (const into of map.home ? [open, walled] : [open]) if (!into.has(id)) into.set(id, hui);
+  }
+  const out = new Map(), sell = (ids, h) => { for (const id of ids) if (!out.has(id) || huiOrder(content, h) < huiOrder(content, out.get(id))) out.set(id, h); };
   for (const d of Object.values(content.places)) for (const p of d.places) {
-    const h = firstHui.get(p.id), shop = p.has?.shop;
-    if (!h || !shop) continue;
-    const goods = shop === true ? content.items.items.filter(i => (i.sold ?? []).includes(d.province)).map(i => i.id) : shop.goods ?? [];
-    for (const id of goods) if (!out.has(id) || huiOrder(content, h) < huiOrder(content, out.get(id))) out.set(id, h);
+    const shop = p.has?.shop, visitor = typeof p.has?.visitor === 'object' ? p.has.visitor : null;
+    if (shop && open.has(p.id)) sell(shop === true ? content.items.items.filter(i => (i.sold ?? []).includes(d.province)).map(i => i.id) : shop.goods ?? [], open.get(p.id));
+    if (visitor && walled.has(p.id)) sell([...(visitor.goods ?? []), ...(visitor.odd ?? [])], walled.get(p.id));
   }
   return out;
 }
