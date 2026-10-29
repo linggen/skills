@@ -33,6 +33,10 @@
 // what it sounds like, and the result chimes at the end. iOS wakes the AudioContext on the first touch in the page.
 import { forget, setPaused, settle, shellFor } from '../shell.js';
 import { sound, unlockOn } from '../kit/sound.js';
+import { enablePlayback } from './audio-session.js';
+
+// The native audio session does not set WebKit's own Web Audio category.
+enablePlayback();
 import { stuckNow } from '../../stuck.js';
 import { mountPure } from '../mount.js';
 
@@ -64,7 +68,7 @@ async function sheets(files) {
 let traced = false;
 /* What the board's own state says of a tap (接雨: its note, the hand's busy-until, the clock), when it hands a look. */
 const stateBrief = () => { const g = state(); return g ? { note: g.note ?? null, busy: g.busy ?? null, t: g.t ?? null } : {}; };
-const soundBrief = () => { const st = sound.state(); return { ctx: st.ctx, loaded: st.loaded, played: st.played, dropped: st.dropped, muted: st.settings?.muted ?? null, sfx: st.settings?.sfx, music: st.settings?.music, bed: st.bed?.playing ?? null }; };
+const soundBrief = () => { const st = sound.state(); return { webSession: globalThis.navigator?.audioSession?.type ?? null, ctx: st.ctx, loaded: st.loaded, played: st.played, dropped: st.dropped, muted: st.settings?.muted ?? null, sfx: st.settings?.sfx, music: st.settings?.music, bed: st.bed?.playing ?? null }; };
 function traceTaps() {
   if (traced) return;
   traced = true;
@@ -252,7 +256,7 @@ async function playPiece(id, lang) {
 
 globalThis.LingjingHost = {
   mount: (specJson) => mountBoard(typeof specJson === 'string' ? JSON.parse(specJson) : specJson).catch((e) => post({ t: 'error', error: String(e?.stack ?? e) })),
-  go: () => { sound.wake(); go?.(); go = null; },
+  go: () => { enablePlayback(); sound.wake(); go?.(); go = null; },
   pause: (on) => setPaused(ID, Boolean(on)),
   leave: () => abort?.abort(),
   /// The native ↺ or ?: a click on the hidden bar's button (toolBar), which the board hears as its own.
