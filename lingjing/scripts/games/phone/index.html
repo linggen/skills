@@ -36,8 +36,8 @@
      the field, never over it (Hanli 10-28: 「不要挡住游戏画面」); while a helper is docked the field keeps out of it. */
   body > [data-shell-side] { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px;
     align-items: flex-start; justify-content: center; padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); }
-  body > [data-shell-side]:empty { display: none; }
-  body:has(> [data-shell-side]:not(:empty)) #stage { bottom: calc(164px + env(safe-area-inset-bottom)); --jy-strip: 164px; }
+  body > [data-shell-side]:not(:has(> :not([hidden]))) { display: none; }
+  body:has(> [data-shell-side] > :not([hidden])) #stage { bottom: calc(164px + env(safe-area-inset-bottom)); --jy-strip: 164px; }
 </style>
 </head>
 <body>

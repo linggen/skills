@@ -64,7 +64,7 @@ async function sheets(files) {
 let traced = false;
 /* What the board's own state says of a tap (接雨: its note, the hand's busy-until, the clock), when it hands a look. */
 const stateBrief = () => { const g = state(); return g ? { note: g.note ?? null, busy: g.busy ?? null, t: g.t ?? null } : {}; };
-const soundBrief = () => { const st = sound.state(); return { ctx: st.ctx, loaded: st.loaded, played: st.played, dropped: st.dropped, muted: st.settings?.muted ?? null, bed: st.bed?.playing ?? null }; };
+const soundBrief = () => { const st = sound.state(); return { ctx: st.ctx, loaded: st.loaded, played: st.played, dropped: st.dropped, muted: st.settings?.muted ?? null, sfx: st.settings?.sfx, music: st.settings?.music, bed: st.bed?.playing ?? null }; };
 function traceTaps() {
   if (traced) return;
   traced = true;
@@ -75,10 +75,12 @@ function traceTaps() {
     document.addEventListener(type, (e) => {
       const el = spot(e);
       const touches = type === 'touchstart' ? e.touches?.length : undefined;
-      // A click carries the sound's state (Hanli 10-28: 「兽潮游戏在手机上没有声音」): the context woken or not, the bank in, what played.
-      const snd = type === 'click' ? soundBrief() : undefined;
+      // Phaser consumes touch/pointer events without necessarily emitting click. Record audio state on the real touch too.
+      const snd = type === 'pointerdown' || type === 'click' ? soundBrief() : undefined;
       const line = { at: at(), type, g: el?.dataset?.g ?? null, i: el?.dataset?.i ?? null, primary: e.isPrimary, touches, snd };
       post({ t: 'trace', line });
+      // Decode and context resume are asynchronous; capture the settled state even when the game consumes the tap.
+      if (type === 'pointerdown') setTimeout(() => post({ t: 'trace', line: { at: at(), type: 'sound', snd: soundBrief() } }), 1000);
       if (type === 'pointerdown' && el) setTimeout(() => post({ t: 'trace', line: { at: at(), type: 'after', i: el.dataset?.i ?? null, cls: el.className?.baseVal ?? el.className, ...stateBrief() } }), 60);
     }, { capture: true, passive: true });
   }
