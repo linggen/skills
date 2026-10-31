@@ -9,6 +9,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState, threshold } from '../scripts/state.mjs';
 import { look, move, playTo, resolve, targetOf } from '../scripts/rules.mjs';
 import { health } from '../scripts/rules/health.mjs';
+import { sealedOf } from '../scripts/rules/world.mjs';
 import { gatesOf, stageGate, stageNow } from '../scripts/rules/gates.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { WORDS, bookPopHtml, panelActsHtml } from '../scripts/cards.js';
@@ -27,7 +28,7 @@ test('every 回 past 古三 holds one (古九 aside); 古七\'s four as the book
   const by = {};
   for (const g of gatesOf(content)) (by[g.hui] ??= []).push(`${g.scene}@${g.layer}`);
   assert.deepEqual(by, {
-    h05: ['wm-chaifang@1'], h07: ['wm-mijing@2'], h08: ['wm-qianye@3'],
+    h05: ['wm-chaifang@1'], h07: ['wm-mijing@2', 'wm-kaikai@4'], h08: ['wm-qianye@4'], // 古五's 石室 and 古六's eve on 四层圆满 since 2026-10-31
     h11: ['09-furnace@4', '09-year@4', '09-yishui@5', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-yanceng@9'],
   });
   assert.equal(content.ladder.caps.hui.h11.layer, 6, '古七 grinds to 六层 (its rises come behind its gates)');
@@ -110,8 +111,11 @@ test('every gate stands where he can walk away to earn it, and come back: refuse
     const st = { ...s0, tasks: { ...s0.tasks, ...(ex.needs?.task ? { [ex.needs.task]: { status: 'done' } } : {}) }, marks: [...(s0.marks ?? []), ...(ex.needs?.mark ? [ex.needs.mark] : [])], wins: { ...s0.wins, ...(ex.game ? { [ex.game.id]: now.toISOString() } : {}) } };
     assert.equal(resolve(st, content, c, { exit: way }).result.refused, 'stage', id);
     assert.deepEqual(health(content, st, now).filter(p => p.level === 'error'), [], `${id}: healthy while it waits`);
-    // To the pool (后山崖顶), or — the scene standing there — to 外门 and the work it points at.
-    const away = content.chapters[st.chapter].scenes[id].at === 'houshan' ? 'waimen' : 'houshan';
+    // To the pool (后山崖顶), or — the scene standing there — to 外门 and the work it points at. Inside a sealed instance (古五's
+    // 石室, 2026-10-31) the walk is to another of its rooms: the work is the room's own practice boards.
+    const sealed = sealedOf(content, st);
+    if (sealed) assert.ok(look(st, content, c).tasks.some(t => t.practice && (t.pays?.progress ?? 0) > 0), `${id}: a practice board here pays 修为`);
+    const away = sealed ? sealed.places.find(p => p !== content.chapters[st.chapter].scenes[id].at) : content.chapters[st.chapter].scenes[id].at === 'houshan' ? 'waimen' : 'houshan';
     const out = move(st, content, c, { place: away });
     assert.equal(out.result.ok, true, `${id}: ${JSON.stringify(out.result).slice(0, 200)}`);
     const l = look(out.state, content, c);

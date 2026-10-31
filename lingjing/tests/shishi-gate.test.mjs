@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { fitWorld, migrate, newState, threshold } from '../scripts/state.mjs';
-import { look, resolve, task, win } from '../scripts/rules.mjs';
+import { look, quest, resolve, task, win } from '../scripts/rules.mjs';
 import { capOf, rankOf, settleHeld, underCap } from '../scripts/rules/cap.mjs';
 import { gatesOf, settleStages, stageGate, stageNow } from '../scripts/rules/gates.mjs';
 import { earnedFor } from './earn.mjs';
@@ -80,7 +80,11 @@ test('at wm-kaikai, short of 四层圆满: refused in the room\'s own words; the
   const played = task(win(s, content, ctx, { id: 'shishi-lingqi' }).state ?? s, content, ctx, { action: 'done', id: 'shishi-lingqi' });
   assert.equal(played.result.ok, true, JSON.stringify(played.result).slice(0, 300));
   assert.ok(played.state.progress > 100 || played.state.step > 3, `${played.state.step} · ${played.state.progress}`);
-  // 四层圆满: through, onto 「第三天天快亮」.
+  // 四层圆满: the stage quest handed in where it stands, inside (交差 is the instance's own, rules/sealed.mjs) …
+  const turned = quest(atShishi(4, th[4]), content, ctx, { id: 'stage', action: 'turn' });
+  assert.equal(turned.result.ok, true, JSON.stringify(turned.result).slice(0, 200));
+  assert.equal(turned.result.key, 'wm-kaikai/sit');
+  // … and through, onto 「第三天天快亮」.
   const full = resolve(atShishi(4, th[4]), content, ctx, { exit: 'sit' });
   assert.equal(full.result.ok, true, JSON.stringify(full.result).slice(0, 300));
   assert.equal(full.state.scene, 'wm-chu');

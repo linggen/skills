@@ -163,7 +163,8 @@ test('灵根\'s 格斗: 秦雁 on the phone is a sparring bout a human-like hand
 });
 
 /* The levels the swap added. */
-const swapped = [...tasks.values()].filter((t) => t.deal?.lv?.startsWith?.('zl-'));
+// (A hosted practice board — the 石室's, 2026-10-31 — deals its scene's own level again: not a swap.)
+const swapped = [...tasks.values()].filter((t) => t.deal?.lv?.startsWith?.('zl-') && !t.hosted);
 const rowOf = (t) => (t.game === 'shoulu' ? kits.shoulu.levels : kits[t.game].levels).find((l) => l.id === t.deal.lv);
 const SEEDS = 10;
 

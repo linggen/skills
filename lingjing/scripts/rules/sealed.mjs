@@ -54,7 +54,9 @@ export function withoutSealed(content, state, brief) {
 /* The verbs of the world outside: an errand taken or handed in, a rumour, the
    road's meet, a chore checked, 闭关, 论道, 御剑 away. */
 const OUTSIDE_VERBS = new Set(['quest', 'tale', 'meet', 'seclude', 'lundao', 'fly', 'haggle']);
-const outsideVerb = (verb, args) => OUTSIDE_VERBS.has(verb) || (verb === 'task' && args?.action === 'check');
+// The stage quest is the instance's own where its gate stands inside (古五's 石室, 2026-10-31): 交差 is never the world outside's.
+const stageTurn = (verb, args) => verb === 'quest' && args?.id === 'stage' && args?.action === 'turn';
+const outsideVerb = (verb, args) => (OUTSIDE_VERBS.has(verb) && !stageTurn(verb, args)) || (verb === 'task' && args?.action === 'check');
 
 /* The refusal for a verb of the world outside while sealed, or null. */
 export function sealedVerb(content, state, verb, args = {}) {

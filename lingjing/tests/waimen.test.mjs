@@ -487,7 +487,8 @@ test('息壤 keeps his 修为 and lifts nothing; its moment is the five doors op
   // The dry river's throw first (wm-anhe, 2026-10-20: 砸寨 anhe-dark), then 息壤 · 五门.
   const lit0 = resolve(before(swallowed.state, 'light'), content, ctx(), { exit: 'light' }).state;
   const lit = resolve(before(lit0, 'after'), content, ctx(), { exit: 'after' }).state; // wm-tama's 踏马符 and 谷粒 (2026-10-26)
-  const played = before(lit, 'sit'); // 息壤 · 五门 won: its own pay, the board's
+  // 息壤 · 五门 won: its own pay, the board's — and 四层圆满 earned in the 石室 (its stage quest since 2026-10-31)
+  const played = earnedFor(content, before(lit, 'sit'), 'sit');
   const out = resolve(played, content, ctx(), { exit: 'sit' });
   // No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): the realm stands as he earned it.
   assert.deepEqual([swallowed.state.step, swallowed.state.progress], [2, 33], 'the swallow moved nothing');

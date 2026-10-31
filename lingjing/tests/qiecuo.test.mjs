@@ -140,7 +140,8 @@ test('the climb: with his realm her blows weigh more, her reads come quicker, he
 
 test('pay: a share of the layer × ★, the day\'s first two in full, then the replay\'s falling share', () => {
   const pp = content.balance.play_pay;
-  let s = save(AFTER), now = at(8);
+  // At the bottom of his layer: since 2026-10-31 he leaves the 大比 at 四层圆满 (古五's 石室), where a bout's 修为 turns to 灵石.
+  let s = { ...save(AFTER), progress: 0 }, now = at(8);
   const got = [];
   for (let i = 0; i < 5; i += 1) {
     const before = s.progress, need = s.tier === 'qi' ? content.ladder.tiers[0].thresholds[s.step] : null;

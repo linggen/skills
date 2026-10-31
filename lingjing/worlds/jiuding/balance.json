@@ -73,9 +73,9 @@
       "convert": 0.333
     },
     "mijing": {
-      "_about": "秘境探险 (rules/mijing.mjs; Hanli 2026-10-28): the run's knobs, derived into `mijing` (tools/master.mjs mijingOf). `key`: a 秘境令's chance on a win in each cooldown event (兽潮 `shouchao` — a night, so about one a day; 比武切磋 `qiecuo`; 妖兽出没 `yaoshou`, a pool's beast won) under `cap_day` a day, so a day holds at most that many runs. `pay`: a run's 修为 is its minutes of rooms cleared at the games' rate (play_pay: the same per minute as any board, so a run never runs ahead of the pace) × `rate` (0.12 since 2026-10-28: a 练气 layer is about an hour of play, so a full-rate run was half a layer and the day's two a whole one — the run pays mostly in loot and 灵石; a day's two runs are about a tenth of a 练气 layer); a run not cleared pays `short` of it, and keeps its loot by the depth reached (`keep_min` at least). `hurt`: a board room's 气血 cost by its stars (a share of the run's), `yield` leaving one unplayed. `foe_step` · `td_step`: a 重 deeper, the foes' 气血 and the TD levels' difficulty. `wealth`: 灵石 in minutes of the typical income (economy.income) — a room won `room`, a chest `chest`, a clear `clear` — each 重 deeper `step` more. `clear.items`: the pills a clear pays (by 重, `from` · `to`); an arm and the 大妖's card come from the drop table and the beast.",
+      "_about": "秘境探险 (rules/mijing.mjs; Hanli 2026-10-28): the run's knobs, derived into `mijing` (tools/master.mjs mijingOf). `key`: a 秘境令's chance on a win in each cooldown event (兽潮 `shouchao` — a night, so about one a day; 比武切磋 `qiecuo`; 妖兽出没 `yaoshou`, a pool's beast won) under `cap_day` a day, so a day holds at most that many runs. `pay`: a run's 修为 is its minutes of rooms cleared at the games' rate (play_pay: the same per minute as any board, so a run never runs ahead of the pace) × `rate` (0.1 since 2026-10-31, when 古五's 二·三·四层 went to the 0.6 h floor — at 0.12 a day's two runs were 22% of those layers; 0.12 since 2026-10-28: a 练气 layer is about an hour of play, so a full-rate run was half a layer and the day's two a whole one — the run pays mostly in loot and 灵石; a day's two runs are about a tenth of a 练气 layer); a run not cleared pays `short` of it, and keeps its loot by the depth reached (`keep_min` at least). `hurt`: a board room's 气血 cost by its stars (a share of the run's), `yield` leaving one unplayed. `foe_step` · `td_step`: a 重 deeper, the foes' 气血 and the TD levels' difficulty. `wealth`: 灵石 in minutes of the typical income (economy.income) — a room won `room`, a chest `chest`, a clear `clear` — each 重 deeper `step` more. `clear.items`: the pills a clear pays (by 重, `from` · `to`); an arm and the 大妖's card come from the drop table and the beast.",
       "key": {"cap_day": 2, "drops": {"shouchao": 1, "qiecuo": 0.5, "yaoshou": 0.2}},
-      "pay": {"rate": 0.12, "short": 0.5, "keep_min": 0.25},
+      "pay": {"rate": 0.1, "short": 0.5, "keep_min": 0.25},
       "hurt": {"1": 0.2, "2": 0.1, "3": 0},
       "yield": 0.25,
       "foe_step": 0.06,
@@ -548,7 +548,7 @@
   "mijing": {
     "cap_day": 2,
     "drops": {"shouchao": 1, "qiecuo": 0.5, "yaoshou": 0.2},
-    "pay": {"rate": 0.12, "short": 0.5},
+    "pay": {"rate": 0.1, "short": 0.5},
     "keep_min": 0.25,
     "hurt": {"1": 0.2, "2": 0.1, "3": 0},
     "yield": 0.25,
