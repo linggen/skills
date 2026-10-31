@@ -316,6 +316,15 @@ overflow pays more.
 - **Old saves** keep their 层 and how full it stood (state v10 `paceLayer`, `thresholds_were` by
   version: a v8 save is read against the oldest ladder it was played on).
 
+**格斗 in the story — every 大比 bout** 【已建】 (Hanli, 2026-10-28: 「故事里的战斗可以用格斗」; 2026-10-31): 古六's 宗门大比 is
+bout after bout of 格斗 (games/fighter.js; doc/games.md § 格斗), each its own opponent painted frame by frame — 何七 (his 稳
+emptied, the 喷嚏符 as the 符文) · 卢方 (the tallow on the rim, hook the stamp) · 秦雁 (thirty moves stood, then 迎剑's edge and
+palm) · 马小宝 (the beams no guard stops, then six at the edge, the last caught) · 祁长松 (the final, lost in the book: stood through
+his 护体灵光 until the wind turns). Ids, pay and marks kept; 阿禾's 底册 and 相克 reach the bout as lines on its lead card by his
+marks (look.mjs dealOf `hints`). His hands carry two 结印 spells beside the KOF four: I 飞剑 (a sword on the 结印's loop onto her)
+and U 符文 (a talisman that binds her where it lies), each its cooldown and its number. The other story fights (邹青松, 九层师兄,
+老井) wait on their frames.
+
 **切磋 · 演武场 — the daily bout** 【已建】 (Hanli, 2026-10-28: 「宗门大比的剧情过后, 可以弄一个每天一次的日常比武切磋, 让用户玩格斗…
 和兽潮并列的一个时间触发游戏, 冷却3小时」): beside 兽潮, a plot the game alone has. After the 大比 beat (wm-jiaxin), at 沉鼎观,
 a fellow disciple waits on the 演武场 for a bout of 格斗 (a sparring stage: her 稳 emptied she yields; the incense out, the
@@ -1519,8 +1528,8 @@ card `scripts/mijing.js` · numbers `balance.json master.mijing`.
 - **The map:** 3–4 rows of 6–8 rooms with branches, a 大妖 at the head; every room on a way to it. First row 妖兽, a 灵泉
   before the 大妖, a 守关 in the second row, a 奇遇 past the first. Rooms: 妖兽 / 凶兽 / 大妖 (the card 斗法, the
   page's own room), 守关 (守墙关 · 撒豆成兵 · 守山门 · 守炉 levels), 机关 (华容道 · 拼图 of the 重's painting), 奇遇 (data decides,
-  银月 says it), 灵泉 (rest or temper a 功法), 宝箱. 心魔 (格斗 against 沈小满's shadow) is in the table at weight 0:
-  the fighter's foe plays 秦雁's clips (edge · glow · hold · ice · jianqi …), which 小满's sheet has none of.
+  银月 says it), 灵泉 (rest or temper a 功法), 宝箱, 心魔 (10-31: 格斗 against 沈小满's own shadow, level `xinmo` — his sheet
+  washed dark, his clips for a foe's moves (`look.clips`), his own moves turned on him: 掌心火, the 绝's fire, the 飞剑; weight 6).
 - **The run:** 气血 carries (a fight's door takes it as `wounds`, a board costs it by its stars, never below 1; 撤 off a
   board costs a quarter). Boons lie on what each game reads. The 大妖 clears it: all the loot, 灵石, pills, an arm, its
   card (the 大妖's gift, else a beast of the 重's he lacks), the next 重 open. Death or leaving keeps the loot by the depth reached. 修为 is the minutes cleared at a low

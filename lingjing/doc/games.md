@@ -402,6 +402,14 @@ Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街
   沈小满 44 frames (612 KB), 秦雁 33 (424 KB): ~1 MB for both, one webp sheet each (2048 px wide), figures ~430 px tall · preview: scripts/fighter-preview.html?dev=1&who=qinyan|xiaoman.
 - **Bot** (200 ms, chains, 技 and 绝 as the phone's buttons): wins 8/8 seeds in 41–65 s; 320 ms 8/8; masher, wall of blocks, idle lose.
 - **Skipped**: a mount-only board's skip shows the page's 「没走完，往下走了。」, as every board's; `won.skipped` kept in the level.
+- **v5 (10-31)** — the story's fights (Hanli 10-28: 「故事里的战斗可以用格斗」): every 古六 大比 bout a 格斗 board (design.md § 格斗 in
+  the story), 何七 and 马小宝 painted (tools/fighter-frames.py, unarmed, 33 frames each on 秦雁's clips; 马小宝 lifts his bronze
+  mirror for the beam). **Spells**: I 飞剑 (a flying sword up, one loop over the stage on jieyin/flight.js's path, the 结印's blade and
+  trail, down on her where she stands; 6 s) · U 符文 (a talisman at her feet arms, then binds her if she still stands on it; 8 s) —
+  blockable, a ring each by his 气 and 剑 · 符 stacked by 技 on the phone; the 稳 taken pops as a number (spells, 掌心火, the 绝).
+  **Level knobs**: `clumsyUnder` (a win under that share of 血 is clumsy), a move's tell line (`lines.foe_<move>`), `pierce` (a shot no
+  guard stops), `ai.burst` (a chain that long and the foe breaks out), `ai.iceAt` (her shot's own range), `ai.feijian` (a foe's 飞剑),
+  `jianqi.wave` (a 剑气 that runs along the boards), `look.clips` / `look.tint` (a foe on another fighter's sheet: 心魔).
 
 ## 全文后的小游戏 — the second batch, 古五 → 古九 (plan 2026-10-26; Hanli 「都开吧」)
 

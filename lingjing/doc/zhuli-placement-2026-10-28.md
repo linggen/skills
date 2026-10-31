@@ -122,11 +122,11 @@ New 华容道 layouts come from a seeded generator, each grid proved by `huarong
 | 蠪侄 | 第三回 · 00-longzhi | longzhi | beast | 斗法 | stays 斗法 |
 | 蛫 | 第五回 · wm-wangzuo | gui | beast | 斗法 | stays 斗法 |
 | 邹青松 (the 黄袍 with the 赤铜葫芦) | 第五回 · wm-xirang | foe-zou | person | 斗法, then 暗河 投掷 and 踏马符 几何冲刺 | → 格斗; **needs 邹青松's frames** |
-| 何七 (大比 first round) | 第六回 · wm-dabi | — (board 喷嚏符) | person | 打地鼠 | → 格斗; **needs 何七's frames** |
-| 卢方 | 第六回 · wm-fushi | foe-lufang | person | 斗法 | → 格斗; **needs 卢方's frames** |
-| 秦雁 (大比) | 第六回 · wm-lun2 → wm-yingjian | foe-shijie | person | 斗法 (30 moves) → 格斗 (迎剑 · 那三分) | **Kept as is.** The card duel is the 30 moves and 迎剑 is the same bout's climax, in 格斗 already. Making both 格斗 would play one bout twice, back to back. |
-| 马小宝 | 第六回 · wm-juesai → wm-jiejing | foe-maxiaobao | person | 斗法, then 接镜 打地鼠 | → 格斗; **needs 马小宝's frames** |
-| 祁长松 (final) | 第六回 · wm-fengtou | — (board 风掉头) | person | 打地鼠 | → 格斗; **needs 祁长松's frames** |
+| 何七 (大比 first round) | 第六回 · wm-dabi | — (board 喷嚏符) | person | 打地鼠 → 撒豆成兵 | **→ 格斗 10-31** (`heqi`; 喷嚏符 is the 符文; frames painted) |
+| 卢方 | 第六回 · wm-fushi | foe-lufang | person | 斗法 | **→ 格斗 10-31** (`fushi-lufang`, board `dabi-lu`: the tallow on the rim, hook the stamp) |
+| 秦雁 (大比) | 第六回 · wm-lun2 → wm-yingjian | foe-shijie | person | 斗法 (30 moves) → 格斗 (迎剑 · 那三分) | **→ 格斗 10-31** (Hanli: every 大比 bout): the thirty moves an outlast (`lun2-qinyan`, board `dabi-shijie`), then 迎剑 the edge and the palm — one bout, two wins. |
+| 马小宝 | 第六回 · wm-juesai → wm-jiejing | foe-maxiaobao | person | 斗法, then 接镜 守炉 | **→ 格斗 10-31** (`juesai-ma` his 稳 emptied, the beams ducked; `jiejing-ma` six beams at the edge, the last caught; frames painted) |
+| 祁长松 (final) | 第六回 · wm-fengtou | — (board 风掉头) | person | 打地鼠 → 守墙关 | **→ 格斗 10-31** (`fengtou`: lost in the book — stand twenty moves through his 护体灵光 until the wind turns) |
 | 犰狳 | 第七回 · 09-lingcao | qiuyu | beast | 斗法 | stays 斗法 |
 | 秦雁 · 流云剑 | 第七回 · 09-fangshi | (board) | person | 打地鼠 | **→ 格斗 now** (`liuyun`) |
 | 秦雁 · monthly bout | 第七回 · 09-futian | foe-shijie | person | 斗法 | **→ 格斗 now** (`futian`) |
@@ -135,7 +135,7 @@ New 华容道 layouts come from a seeded generator, each grid proved by `huarong
 | 老井 (太一宫's white-robed steward) | 第九回 · 01-laojing | foe-laojing | person | 斗法 | → 格斗; **needs 老井's frames** |
 | 雷神 · 夔 · 无支祁 · 防风氏 · 巴蛇 · 夔牛 · 肥遗 · 泰逢 | 卷二–九 bosses | — | beasts and gods | 斗法 | stay 斗法 |
 
-**Frames to paint next**, in book order: 邹青松, 何七, 卢方, 马小宝, 祁长松, 九层师兄, 老井. Each turns its bout to 格斗 and frees a small board in 第五回 and 第六回.
+**Frames painted**: 卢方, 祁长松 (10-28), 何七, 马小宝 (10-31) — every 古六 大比 bout is 格斗. **Next**, in book order: 邹青松, 九层师兄, 老井.
 
 ## 抚琴 and 太鼓
 
