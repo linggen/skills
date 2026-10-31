@@ -2464,6 +2464,7 @@
    "leadSec": 4.5,
    "countdown": 3,
    "id": "zl-steps-sanbai",
+   "replaced": "dash",
    "hui": "h04",
    "title": {
     "zh": "三百级 · 一炷香",
@@ -3047,6 +3048,7 @@
    "leadSec": 4.5,
    "countdown": 3,
    "id": "zl-qingshi-yiquan",
+   "replaced": "dash",
    "hui": "h05",
    "title": {
     "zh": "一拳 · 大青石",
@@ -6826,6 +6828,7 @@
    "leadSec": 4.5,
    "countdown": 3,
    "id": "zl-shenshi-qingshen",
+   "replaced": "dash",
    "hui": "h09",
    "title": {
     "zh": "老松 · 挂在树杈里",

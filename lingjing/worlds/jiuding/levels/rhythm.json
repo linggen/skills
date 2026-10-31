@@ -600,7 +600,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 286,
+       "n": 289,
        "level": "zl-jin-biedou",
        "zhuli": true
       },
@@ -763,11 +763,11 @@
         "zh": "三百级 · 一炷香",
         "en": "Three hundred steps · One stick of incense"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 254,
-       "level": "zl-steps-sanbai",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 253,
+       "level": "sanbai-dash",
        "zhuli": true
       },
       {
@@ -943,11 +943,11 @@
         "zh": "一拳 · 大青石",
         "en": "One punch · The bluestone"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 123,
-       "level": "zl-qingshi-yiquan",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 262,
+       "level": "houshan-dash",
        "zhuli": true
       },
       {
@@ -1225,7 +1225,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 262,
+       "n": 263,
        "level": "zl-yan-tieshua",
        "zhuli": true
       },
@@ -1314,7 +1314,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 263,
+       "n": 264,
        "level": "wotui-dash",
        "zhuli": true
       },
@@ -1335,7 +1335,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 292,
+       "n": 295,
        "level": "zl-jin-lunkong",
        "zhuli": true
       },
@@ -1356,7 +1356,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 287,
+       "n": 290,
        "level": "jin-qiu-ge",
        "zhuli": true
       },
@@ -1397,7 +1397,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 264,
+       "n": 265,
        "level": "xisi-dash",
        "zhuli": true
       },
@@ -1648,7 +1648,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 265,
+       "n": 266,
        "level": "tama-dash",
        "zhuli": true
       },
@@ -1690,7 +1690,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 267,
+       "n": 268,
        "level": "zl-xirang-wumen",
        "zhuli": true
       },
@@ -1873,7 +1873,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 269,
+       "n": 270,
        "level": "zl-zhaojing-mirror",
        "zhuli": true
       },
@@ -2176,7 +2176,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 288,
+       "n": 291,
        "level": "jin-zhizhen-qin",
        "zhuli": true
       },
@@ -2197,7 +2197,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 270,
+       "n": 271,
        "level": "danjiao-dash",
        "zhuli": true
       },
@@ -2238,7 +2238,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 293,
+       "n": 296,
        "level": "zl-jin-daoxing",
        "zhuli": true
       },
@@ -2279,7 +2279,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 284,
+       "n": 287,
        "level": "zl-jin-chenmai",
        "zhuli": true
       },
@@ -2582,11 +2582,11 @@
         "zh": "巽那一格 · 跟着风走",
         "en": "The Xun square · Going with the wind"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shoulu",
-       "game": "shoulu",
-       "n": 24,
-       "level": "zl-suifeng-xunwei",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 272,
+       "level": "suifeng-dash",
        "zhuli": true
       },
       {
@@ -2953,11 +2953,11 @@
         "zh": "老松 · 挂在树杈里",
         "en": "The old pine · Caught in the branches"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 272,
-       "level": "zl-shenshi-qingshen",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 273,
+       "level": "qingshen-dash",
        "zhuli": true
       },
       {
@@ -3065,7 +3065,7 @@
        "mechanic": "记忆",
        "variety": "记忆",
        "game": "simon",
-       "n": 273,
+       "n": 276,
        "level": "4"
       },
       {
@@ -3329,7 +3329,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 289,
+       "n": 292,
        "level": "jin-hongshu-gu",
        "zhuli": true
       },
@@ -3350,7 +3350,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 274,
+       "n": 277,
        "level": "shouhuan-dash",
        "zhuli": true
       },
@@ -3391,7 +3391,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 275,
+       "n": 278,
        "level": "lastshot-dash",
        "zhuli": true
       },
@@ -3610,11 +3610,11 @@
         "zh": "一口气 · 河心坑",
         "en": "One breath · The pit mid-river"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 277,
-       "level": "zl-qianshui-qi",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 279,
+       "level": "qianshui-dash",
        "zhuli": true
       },
       {
@@ -3702,7 +3702,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 279,
+       "n": 282,
        "level": "zl-end-sangzi",
        "zhuli": true
       },
