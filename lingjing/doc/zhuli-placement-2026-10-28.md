@@ -315,6 +315,8 @@ Each run sits in the kit's climb (speed and bpm never ease in reading order, 古
 | 第九回 | 3 · 0 · 0 · 1 | 2 · 0 · 1 · 1 |
 | 古 | 68 · 9 · 2 · 2 (塔防 84%) | 63 · 9 · 7 · 2 (塔防 78%) |
 
+*(Superseded by § 主力 spread, second pass below: 暗河, 碾药 and twelve pool/story boards converted, 塔防 63%.)*
+
 **Why not ~65%.** About half the 塔防 boards stand in the gate pools (wm-dianmao · 09-suifeng · 09-nianyao · 09-shenshi · 09-dingfeng · 09-yanceng), which were made 塔防 on 10-28 because no passage plays them; turning them into another kind would be for variety. 格斗 stays at 9: every fight with painted frames is 格斗 already (秦雁's monthly bout at 09-suifeng is the 流云剑 bout just played; at 09-shenshi the text says 「那一下午没比剑」); 邹青松, 九层师兄 and 老井 wait for frames. No passage under a 塔防 board plays music, a drum, a chant or a march.
 
 **Left for Hanli** (each a fit the rule does not settle):
