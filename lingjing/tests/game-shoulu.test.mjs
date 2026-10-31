@@ -7,8 +7,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
-import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, fetchStick, humanBot, lightOf, starsFor, stickAt, build, upgrade, upgradeCost, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
-  direct, keepSel, posOnPath, sendHero, sim, STRATS, skillState, spawnAt, step, toggleAuto, waves } from '../scripts/games/shoulu/core.js';
+import { ARMOR, BEASTS, HERO, SKILLS, TOWERS, beastsOf, humanBot, starsFor, build, upgrade, upgradeCost, callWave, cast, countAt, difficultyOf, heroOf, human, layLevel, levelsFrom, newGame, noSel, offRoad, orderAttack, orderMove, pointer, pressKey,
+  keepSel, posOnPath, sendHero, sim, STRATS, skillState, spawnAt, step, toggleAuto, waves } from '../scripts/games/shoulu/core.js';
 import { ladderOf, leadSplit, levelAsked, levelAt, meta, nextLv, towerName } from '../scripts/games/shoulu.js';
 
 const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
@@ -62,8 +62,7 @@ test('every level is sound: its road, its spots, its furnace, its words, 卷一 
       assert.ok(Math.hypot(x - r.furnace[0], y - r.furnace[1]) > 60, `${r.id}: spot ${x},${y} clear of the furnace`);
     }
     r.spots.forEach(([x, y], i) => r.spots.slice(i + 1).forEach(([x2, y2]) => assert.ok(Math.hypot(x - x2, y - y2) >= 50, `${r.id}: spots ${x},${y} and ${x2},${y2} apart`)));
-    // a `shade` (守火's eyes in the dark) is no beast of the world, and stands only where a fire shies it off
-    for (const b of beastsOf(r)) { assert.ok(BEASTS[b], `${r.id}: beast ${b}`); assert.ok(BEASTS[b].shade ? Boolean(r.fire) : creatures.has(b), `${r.id}: ${b} in creatures.json`); }
+    for (const b of beastsOf(r)) { assert.ok(BEASTS[b], `${r.id}: beast ${b}`); assert.ok(creatures.has(b), `${r.id}: ${b} in creatures.json`); }
     assert.ok(r.towers.every((k) => TOWERS[k]));
     if (beastsOf(r).some((b) => BEASTS[b].fly)) assert.ok(r.air, `${r.id}: fliers need a start`);
   }
@@ -492,7 +491,7 @@ test('a story level uses only beasts the book has met by its 回 (野猪 on 蒙�
     || Object.values(pools).some((p) => (p.beasts ?? []).some((b) => b.creature === beast && before(b.from, hui)));
   for (const l of stories) {
     const hui = sceneOf(l.story).hui;
-    for (const b of beastsOf(l)) assert.ok(BEASTS[b].shade || met(b, hui), `${l.id} (${hui}): ${b} is met on the mountain by then`);
+    for (const b of beastsOf(l)) assert.ok(met(b, hui), `${l.id} (${hui}): ${b} is met on the mountain by then`);
     assert.ok(!beastsOf(l).includes('zheng') || HUI.indexOf(hui) > HUI.indexOf('h05'), `${l.id}: no 狰 fought in 古四 — the book tames it with a 萝卜`);
   }
   const xunye = stories.find((l) => l.id === 'yaoyuan-xunye');
@@ -631,7 +630,6 @@ test('守火 · 雪夜柴垛: build boards, no fire to feed — each its own pai
     assert.deepEqual(beastsOf(l), ['yezhu'], `${id}: 第一回's beast`);
     assert.equal(heroOf(l).who, 'xiaoman');
     assert.equal(l.furnaceArt, furnace);
-    assert.equal(direct(newGame(l, { seed: 'd', headless: true })), false, `${id}: not the old every-tap-an-order board`);
     for (const k of l.towers) {
       const sk = l.skin?.[k];
       assert.ok(sk?.name?.zh && sk.name.en && sk.say?.zh && sk.glyph, `${id} ${k}: skinned — no talisman before 入门`);
@@ -674,7 +672,6 @@ test("泗水路: 00-gate's — built as the 游戏厅's 守炉, its talismans th
   assert.ok(l.spots.length >= 6 && l.money > 0, 'spots to build on, 干粮 to spend');
   assert.deepEqual(beastsOf(l), ['yezhu']);
   assert.equal(heroOf(l).who, 'xiaoman', '小满 the hero: 银月 sleeps in the 木牌');
-  assert.equal(direct(newGame(l, { seed: 'd', headless: true })), false, "not 守火's every-tap-an-order board");
   const art = new Set(readdirSync(new URL('../scripts/games/shoulu/art/', import.meta.url)));
   for (const k of l.towers) {
     const sk = l.skin?.[k];
@@ -726,4 +723,14 @@ test('no story 守炉 level lays another level\'s layout: its own road and spots
     assert.notDeepEqual(l.spots, o.spots, `${l.id}: the spots of ${o.id}`);
     if (o.story || !o.realm) assert.ok(apart(l, o) > 35, `${l.id} runs close to ${o.id}: ${apart(l, o).toFixed(0)} px apart`);
   }
+});
+
+test('the old 添火 play is gone (2026-10-31): no level feeds a fire, no eyes in the dark, no 枯枝, every board a build board', () => {
+  for (const l of all) {
+    assert.ok(!l.fire, `${l.id}: a fire to feed`);
+    assert.ok(l.towers.length > 0, `${l.id}: nothing to build`);
+  }
+  assert.equal(BEASTS.yanjing, undefined);
+  const g = newGame(all.find((l) => l.hero?.who), { seed: 'f', headless: true });
+  assert.ok(!('sticks' in g) && !('carry' in g.hero), 'no 枯枝 to fetch');
 });

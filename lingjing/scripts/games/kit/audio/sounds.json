@@ -1696,8 +1696,6 @@
      "min": 90,
      "vol": 0.5
     },
-    "snap": "latch",
-    "feed": "tone.fire",
     "kill": {
      "sound": "hit.soft",
      "min": 70,

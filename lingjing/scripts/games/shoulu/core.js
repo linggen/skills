@@ -39,9 +39,6 @@ export const BEASTS = {
   qiuyu: { hp: 150, speed: 28, reward: 10, r: 12, color: '#6d7a5a', armor: true, bite: 9 },
   qique: { hp: 40, speed: 46, reward: 7, r: 10, color: '#2a2a31', fly: true },
   heyu: { hp: 2400, speed: 19, reward: 80, r: 24, color: '#c49a3a', boss: true, dmg: 3, bite: 40, cry: { every: 9, for: 3, guard: 0.6, mult: 1.6 } },
-  // 守火's eyes in the dark (00-cave, 2026-10-21): `shade` — no beast of the world (the book names none: 「野兽便不敢进来」),
-  // `shy` — it shies from a fire's light (a level's `fire`): its hp is its nerve; beaten, it slinks off into the dark.
-  yanjing: { hp: 30, speed: 26, reward: 0, r: 11, color: '#1f1d26', bite: 3, shade: true, shy: true },
 };
 
 /** 银月, a hero as in 魔兽争霸 III: orders (move, attack, queued moves), a guard post, and four skills.
@@ -131,12 +128,11 @@ export function newGame(row, { seed = 'shoulu', headless = false, show = false, 
   const L = layLevel(row);
   const { at: [hx, hy], hair, who = 'yinyue', skills = true, stats: own, throw: THROW = null } = heroOf(row);
   const stats = own ? { ...HERO, ...own } : HERO, g = { HS: stats };
-  const F = row.fire;
-  return { L, seed, t: 0, hp: F ? F.start : HP, money: row.money, HS: stats, THROW, who, noSkills: !skills,
-    sticks: F ? F.sticks.map(([x, y], i) => ({ i, x, y, up: true, t: 0 })) : [], fed: 0, wave: 0, queue: [], nextTimer: L.first, beasts: [], towers: row.spots.map(() => null), proj: [], fx: [], fires: [],
+  return { L, seed, t: 0, hp: HP, money: row.money, HS: stats, THROW, who, noSkills: !skills,
+    wave: 0, queue: [], nextTimer: L.first, beasts: [], towers: row.spots.map(() => null), proj: [], fx: [], fires: [],
     hero: { x: hx, y: hy, tx: hx, ty: hy, hp: hs(g).hp[0], lvl: 0, xp: 0, cd: 0, dead: 0, face: -1, anim: 0, say: null, held: [],
       post: { x: hx, y: hy }, orders: [], foe: null, homing: false, dash: null, cast: null, act: null, wanderT: 4, moving: false,
-      cds: { q: SKILLS.q.first, w: 0, e: 0, r: 0 }, auto: { q: skills }, hair, carry: 0, rnd: rng(`${seed}|yinyue`) },
+      cds: { q: SKILLS.q.first, w: 0, e: 0, r: 0 }, auto: { q: skills }, hair, rnd: rng(`${seed}|yinyue`) },
     home: { x: hx, y: hy }, shake: 0, furnFlash: 0, over: null, headless, show, calm, uid: 0, seen: {}, events: [], rnd: rng(seed),
     keep: row.keep ? { x: row.keep.at[0], y: row.keep.at[1], hp: row.keep.hp, max: row.keep.hp, flash: 0 } : null,
     stats: { kills: 0, leaks: {}, built: {} } };
@@ -289,7 +285,7 @@ function hurt(g, b, d, src) {
   const C = BEASTS[b.type].cry;
   if (C) d *= b.crying > 0 ? C.mult : bare ? 1 : C.guard;
   b.hp -= d;
-  const ticks = src === 'fox' || src === 'light'; // a burn or the fire's light ticks every frame: no flash, no number
+  const ticks = src === 'fox'; // a burn ticks every frame: no flash, no number
   if (!ticks) b.flash = 0.1;
   if (!g.headless && src !== 'han' && src !== 'jy' && !ticks) addFx(g, { k: 'txt', x: b.x + (Math.random() * 10 - 5), y: b.y - BEASTS[b.type].r - 4, s: String(Math.round(d)), col: src === 'jian' && b.armor ? '#7a7066' : b.crying > 0 ? '#b0412e' : '#2a241d', life: 0.6, max: 0.6, vy: -30, size: b.crying > 0 ? 14 : 11 });
   if (b.hp > 0) return d;
@@ -335,7 +331,7 @@ function beastsStep(g, dt) {
     }
     if (b.spooked > 0) b.spooked -= dt;
     if (keepStep(g, b, dt)) continue;
-    if (!b.held && !(b.stunT > 0) && !(b.crying > 0) && !(b.spooked > 0)) b.d += b.speed * (1 - b.slowF) * (b.lit ? 1 - g.L.fire.slow : 1) * dt;
+    if (!b.held && !(b.stunT > 0) && !(b.crying > 0) && !(b.spooked > 0)) b.d += b.speed * (1 - b.slowF) * dt;
     b.flash -= dt;
     if (b.d < b.len) { place(g, b); continue; }
     b.dead = true;
@@ -349,10 +345,10 @@ function beastsStep(g, dt) {
 /** One kept by the road (a level's `keep`, 泗水路's 舅舅 asleep by the fire, 2026-10-21): a ground beast passing within `lure`
     of him turns off the road for him one time in `chance` (rolled once, seeded), walks straight at him and, within `r`,
     stops and gnaws (its `bite` a second) until it falls; his hp gone, the level is lost. True while it is his. */
-export const keepNear = (g, b) => Boolean(g.keep && g.keep.hp > 0 && !b.fly && !BEASTS[b.type].shade && dist(b, g.keep) <= g.L.keep.r);
+export const keepNear = (g, b) => Boolean(g.keep && g.keep.hp > 0 && !b.fly && dist(b, g.keep) <= g.L.keep.r);
 function keepStep(g, b, dt) {
   const K = g.L.keep;
-  if (!K || !g.keep || g.keep.hp <= 0 || b.fly || BEASTS[b.type].shade) return false;
+  if (!K || !g.keep || g.keep.hp <= 0 || b.fly) return false;
   if (b.toKeep == null && dist(b, g.keep) <= (K.lure ?? K.r)) { b.toKeep = g.rnd() < (K.chance ?? 1); if (b.toKeep) emit(g, { keep: 'lured' }); }
   if (!b.toKeep) return false;
   b.flash -= dt;
@@ -645,50 +641,6 @@ export function heroBot(g) {
   }
 }
 
-// ── 守火: a fire that is the 炉 (a story level's `fire`, 00-cave 2026-10-21) ─────────────────────────────────
-/** How far the fire's light reaches now: `light[0]` + `light[1]` × the fire. */
-export const lightOf = (g) => (g.L.fire ? g.L.fire.light[0] + g.L.fire.light[1] * Math.max(0, g.hp) : 0);
-/** The 枯枝 at a board point (a tap): the nearest one standing, within 34. */
-export function stickAt(g, x, y) {
-  let best = null, bd = 34;
-  for (const s of g.sticks) { if (!s.up) continue; const d = Math.hypot(s.x - x, s.y - (y + 6)); if (d < bd) { bd = d; best = s; } }
-  return best;
-}
-/** Send the hero for a 枯枝: he walks there, snaps it, and brings it back to the fire. */
-export function fetchStick(g, s) {
-  if (!s?.up || g.hero.dead > 0) return false;
-  return issue(g, { k: 'move', x: s.x, y: s.y }, false);
-}
-/** The fire burns down; what shies from it loses its nerve in the light and is slowed; 枯枝 snapped, carried and fed. */
-function fireStep(g, dt) {
-  const F = g.L.fire;
-  if (!F) return;
-  const before = g.hp;
-  g.hp = Math.max(0, g.hp - dt / F.burn);
-  if (Math.ceil(g.hp) < Math.ceil(before) && g.hp <= F.max * 0.4) emit(g, { low: Math.ceil(g.hp) });
-  if (g.hp <= 0) { g.over = 'lose'; return; }
-  const R = lightOf(g), k = g.hp / F.max;
-  for (const b of g.beasts) {
-    if (b.dead) continue;
-    b.lit = BEASTS[b.type].shy && dist(b, g.L.furn) <= R;
-    if (b.lit) hurt(g, b, F.fear * k * dt, 'light');
-  }
-  for (const s of g.sticks) if (!s.up && (s.t -= dt) <= 0) s.up = true;
-  const h = g.hero;
-  if (h.dead > 0) return;
-  for (const s of g.sticks) {
-    if (!s.up || h.carry >= F.carry || dist(h, s) > 24) continue;
-    s.up = false; s.t = F.regrow; h.carry += 1;
-    emit(g, { sound: 'snap', snap: [s.x, s.y] });
-    if (!h.orders.length || (h.orders[0].k === 'move' && Math.hypot(h.orders[0].x - s.x, h.orders[0].y - s.y) < 4)) { h.orders = [{ k: 'move', x: g.home.x, y: g.home.y }]; h.foe = null; }
-  }
-  if (h.carry > 0 && dist(h, g.L.furn) <= F.reach) {
-    const add = Math.min(F.max - g.hp, h.carry * F.feed);
-    g.hp += add; g.fed += h.carry; h.carry = 0;
-    emit(g, { fed: Math.round(add * 10) / 10, sound: 'feed' });
-  }
-}
-
 /** One step of `dt` seconds: the countdown, the spawns, the beasts, 银月, the towers, the shots. */
 export function step(g, dt) {
   if (g.over) return g;
@@ -696,7 +648,6 @@ export function step(g, dt) {
   while (g.queue.length && g.queue[0].at <= g.t) { const e = g.queue.shift(); spawn(g, e.type, e.elite); }
   if (g.wave < waves(g) && !g.queue.length) { g.nextTimer -= dt; if (g.nextTimer <= 0) callWave(g, false); }
   jieyinFlyStep(g);
-  fireStep(g, dt);
   if (g.over) return g;
   beastsStep(g, dt);
   heroStep(g, dt);
@@ -710,9 +661,9 @@ export function step(g, dt) {
 /** Stars: ★★★ the 炉火 whole AND the level cleared by its `par` s (Hanli 10-21: fast clears are 结印's help); ★★ 炉火
     from 6; else ★. A level with no par: 炉火 alone. */
 export const starsOf = (hp, t = 0, par = null) => (hp >= HP && (par == null || t <= par) ? 3 : hp >= 6 ? 2 : 1);
-/** A won game's stars: the 炉 left against the level's `stars` [★★★, ★★] (a `fire` level's in `fire`, 守火; any other's on the
-    row, 雪夜柴垛's 柴垛, 2026-10-22); else starsOf (炉火 and `par`). */
-export const starsFor = (g) => { const s = g.L.fire?.stars ?? g.L.stars; return s ? (g.hp >= s[0] ? 3 : g.hp >= s[1] ? 2 : 1) : starsOf(g.hp, g.wonAt ?? g.t, g.L.par); };
+/** A won game's stars: the 炉 left against the level's `stars` [★★★, ★★] (on the row, 雪夜柴垛's 柴垛, 2026-10-22); else
+    starsOf (炉火 and `par`). */
+export const starsFor = (g) => { const s = g.L.stars; return s ? (g.hp >= s[0] ? 3 : g.hp >= s[1] ? 2 : 1) : starsOf(g.hp, g.wonAt ?? g.t, g.L.par); };
 /** Waves held: all on a win; else the ones fully past. */
 export const cleared = (g) => (g.over === 'win' ? waves(g) : (g.queue.length || g.beasts.length) ? Math.max(0, g.wave - 1) : g.wave);
 
@@ -750,7 +701,6 @@ export function pressKey(g, sel, key, t = 0) {
     did 'select' · 'deselect' · 'move' · 'attack' · 'cast' · 'spot' (open its menu) · 'cancel' · null. */
 export function pointer(g, sel, p) {
   const h = g.hero, alive = h.dead <= 0;
-  if (direct(g)) return firePointer(g, sel, p);
   if (sel.aim) { // aiming: a left click casts there, a right click cancels
     if (p.button === 2) return { sel: { ...sel, aim: null }, did: 'cancel' };
     const b = SKILLS[sel.aim].aim === 'any' ? beastAt(g, p.x, p.y, p.touch ? 22 : 14) : null;
@@ -773,23 +723,6 @@ export function pointer(g, sel, p) {
     return { sel, did: 'move' };
   }
   return { sel: noSel(), did: sel.hero || sel.spot >= 0 ? 'deselect' : null };
-}
-
-/** 小满 alone on the board — a `fire` level, or any level whose hero is not 银月 and that lays no talismans (雪夜柴垛): every
-    tap is an order to him. */
-export const direct = (g) => Boolean(g.L.fire) || (g.who !== 'yinyue' && !g.L.towers.length);
-/** 守火's board (a `fire` level): no talismans, no skills — every tap is an order to 小满, selected or not: a beast, he
-    throws at it; a 枯枝, he fetches it; anywhere else, he goes there (the fire: back to it). */
-function firePointer(g, sel, p) {
-  const on = { ...sel, hero: true, spot: -1, aim: null };
-  if (g.hero.dead > 0) return { sel, did: null };
-  const b = beastAt(g, p.x, p.y, p.touch ? 26 : 18);
-  if (b && orderAttack(g, b, p.shift)) return { sel: on, did: 'attack' };
-  const s = stickAt(g, p.x, p.y);
-  if (s && fetchStick(g, s)) return { sel: on, did: 'fetch' };
-  if (dist(p, g.L.furn) < 44) { orderMove(g, g.home.x, g.home.y, p.shift); return { sel: on, did: 'move' }; }
-  orderMove(g, p.x, p.y, p.shift);
-  return { sel: on, did: 'move' };
 }
 
 // ── The sim: a player's build, headless ────────────────────────────────────────────────────────
@@ -959,31 +892,10 @@ function humanHero(g, hb, o) {
     if (!skillState(g, key).ready) sk.at = null;
   }
 }
-/** 守火's player: looks up every ~1.2 s; when the fire has room for what he carries, sends 小满 for the nearest 枯枝 (a
-    beat late); now and then points him at the eyes nearest the fire. `fetchAt`: fetch only below this much fire (a
-    first-timer waits till it is low); `attack`: the share of looks that point him at a beast. */
-function humanFire(g, hb, o) {
-  const F = g.L.fire, h = g.hero;
-  if (g.t < (hb.lookAt ?? 0)) return;
-  hb.lookAt = g.t + (o.look ?? 1.2) * (0.8 + hb.rnd() * 0.4);
-  if (h.dead > 0 || h.orders.length || h.carry > 0) return;
-  if (F) { // a fire to keep: fetch when there is room for what he carries
-    const room = F.max - g.hp, want = o.fetchAt != null ? g.hp <= o.fetchAt : room >= F.feed * F.carry * 0.6;
-    const sticks = g.sticks.filter((s) => s.up).sort((a, b) => dist(a, g.home) - dist(b, g.home));
-    if (want && sticks.length) { fetchStick(g, sticks[o.best ? 0 : Math.min(sticks.length - 1, Math.floor(hb.rnd() * 2))]); return; }
-  }
-  // one gnawing at the kept first (泗水路's 舅舅), when he looks that way
-  const gnaw = g.keep && g.beasts.find((b) => !b.dead && b.toKeep);
-  if (gnaw && hb.rnd() < (o.attack ?? 0.5) + 0.3) { orderAttack(g, gnaw); return; }
-  if (hb.rnd() < (o.attack ?? 0.5)) {
-    const near = g.beasts.filter((b) => !b.dead && !b.fly).sort((a, b) => (a.len - a.d) - (b.len - b.d))[0];
-    if (near && (!F || dist(near, g.L.furn) < lightOf(g) + 80)) orderAttack(g, near);
-  }
-}
 /** The human-like player, called four times a second like every strategy. */
 export const humanBot = (opts = {}) => {
   const o = { move: true, delay: true, best: false, late: true, ...opts };
-  return (g) => { const hb = humanOf(g); if (direct(g)) { humanFire(g, hb, o); return; } humanBuild(g, hb, o); humanHero(g, hb, o); };
+  return (g) => { const hb = humanOf(g); humanBuild(g, hb, o); humanHero(g, hb, o); };
 };
 export const human = humanBot();
 
@@ -1006,7 +918,7 @@ export function sim(row, strategy = 'mixed', { seed = 'sim', dt = 1 / 30 } = {})
   let lp = -1;
   while (!g.over && g.t < 4000) { if (g.t - lp >= 0.25) { pol(g); lp = g.t; } step(g, dt); }
   return { strategy: typeof strategy === 'string' ? strategy : 'custom', result: g.over || 'timeout', wave: g.wave, waves: waves(g), cleared: cleared(g),
-    hp: Math.round(g.hp * 10) / 10, stars: g.over === 'win' ? starsFor(g) : 0, fed: g.fed, time: Math.round(g.t), money: g.money, kills: g.stats.kills, leaks: g.stats.leaks,
+    hp: Math.round(g.hp * 10) / 10, stars: g.over === 'win' ? starsFor(g) : 0, time: Math.round(g.t), money: g.money, kills: g.stats.kills, leaks: g.stats.leaks,
     towers: g.towers.map((t) => (t ? `${t.type}${t.lvl + 1}` : '·')).join(' ') };
 }
 

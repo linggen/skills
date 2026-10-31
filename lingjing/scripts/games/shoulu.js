@@ -64,7 +64,7 @@ export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside,
 export const meta = {
   id: 'shoulu',
   // What it names (its bundle or loop, through the shell; games/kit/audio/sounds.json `shoulu`; tests/game-sound.test.mjs).
-  sounds: ['build', 'hit', 'bite', 'wave', 'howl', 'pounce', 'foxfire', 'hair', 'throw', 'snap', 'feed', 'kill', 'zap', 'boom', 'heroDown', 'heroUp', 'cry', 'low', 'early'],
+  sounds: ['build', 'hit', 'bite', 'wave', 'howl', 'pounce', 'foxfire', 'hair', 'throw', 'kill', 'zap', 'boom', 'heroDown', 'heroUp', 'cry', 'low', 'early'],
   pause: true, // the shell's bar pauses the play (its own loop reads `shell.onPause`)
   tall: true, // its field plays tall: on a Mac the shell's bar stands beside it (games/shell.js tallOf)
   aspect: 600 / 760, // the field's width : height — the story's card is as wide as the field at the stage's height
@@ -118,10 +118,10 @@ const TD = {
   zh: { jian: '快·单体·可击飞禽', huo: '慢·溅射·不及飞禽', han: '范围减速', lei: '连锁三跳·可击飞禽' },
   en: { jian: 'fast · one · hits fliers', huo: 'slow · splash · ground only', han: 'slows all near', lei: 'chains thrice · hits fliers' },
 };
-const BN = { zh: { yezhu: '野猪', zheng: '狰', qiuyu: '犰狳', qique: '鬿雀', heyu: '合窳', yanjing: '黑影' }, en: { yezhu: 'Boar', zheng: 'Zheng', qiuyu: 'Qiuyu', qique: 'Qique', heyu: 'Heyu', yanjing: 'Eyes' } };
+const BN = { zh: { yezhu: '野猪', zheng: '狰', qiuyu: '犰狳', qique: '鬿雀', heyu: '合窳' }, en: { yezhu: 'Boar', zheng: 'Zheng', qiuyu: 'Qiuyu', qique: 'Qique', heyu: 'Heyu' } };
 const INTRO = {
-  zh: { yanjing: '黑里的眼睛：怕火。火旺，它们就退；火一矮，就往里凑', zheng: '狰：快，银月拦不住，火符难沾身——寒符冻住它', qiuyu: '犰狳：一身硬甲，剑阵只伤四成', qique: '鬿雀：飞越山道，唯剑阵、雷符可击', heyu: '合窳来了！一蹄入炉，损三点炉火' },
-  en: { yanjing: 'Eyes in the dark: they fear the fire. Keep it high and they back off; let it sink and they creep in.', zheng: 'Zheng: too quick to hold or burn. Frost it.', qiuyu: 'Qiuyu: hard hide; swords do 40%.', qique: 'Qique fly over the road: only swords and thunder reach them.', heyu: 'The heyu! One hoof in the furnace costs 3 fire.' },
+  zh: { zheng: '狰：快，银月拦不住，火符难沾身——寒符冻住它', qiuyu: '犰狳：一身硬甲，剑阵只伤四成', qique: '鬿雀：飞越山道，唯剑阵、雷符可击', heyu: '合窳来了！一蹄入炉，损三点炉火' },
+  en: { zheng: 'Zheng: too quick to hold or burn. Frost it.', qiuyu: 'Qiuyu: hard hide; swords do 40%.', qique: 'Qique fly over the road: only swords and thunder reach them.', heyu: 'The heyu! One hoof in the furnace costs 3 fire.' },
 };
 const STARS_KEY = 'lingjing.shoulu.stars';
 const loadStars = () => { try { return JSON.parse(globalThis.localStorage?.getItem(STARS_KEY) ?? '{}') ?? {}; } catch { return {}; } };
@@ -301,9 +301,8 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       const row = levels[i];
       root.classList.remove('is-picking');
       g = newGame(row, { seed: `shoulu|${Date.now()}`, show: true, calm: reducedMotion }); // show: 结印 flies before it lands (core.js jieyinCast)
-      // a story level's own words and hero (守火: 小满, no talismans, no skills); the HUD and the hero bar follow
+      // a story level's own words and hero (小满 before 入门, no skills); the HUD and the hero bar follow
       t = wordsFor(T[lang], row.words, lang);
-      root.classList.toggle('is-fire', Boolean(g.L.fire));
       root.classList.toggle('no-skills', Boolean(g.noSkills));
       root.classList.toggle('no-towers', !g.L.towers.length);
       $('.sl-fire').firstChild.textContent = `${t.fire} `;
@@ -504,11 +503,10 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       if (e.heroDown) toast(t.heroDown(e.heroDown));
       if (e.heroUp) toast(t.heroUp(e.heroUp));
       if (e.cry) toast(t.cry);
-      if (e.low && t.lowFire) toast(t.lowFire);
       markEvent(g, e);
     }
     function hud() {
-      $('[data-k="hp"]').textContent = g.L.fire ? `${Math.ceil(g.hp)} / ${g.L.fire.max}` : String(g.hp);
+      $('[data-k="hp"]').textContent = String(g.hp);
       $('[data-k="money"]').textContent = String(g.money);
       $('[data-k="wave"]').textContent = String(g.wave);
       const nb = $('[data-a="next"]'), n = waves(g);

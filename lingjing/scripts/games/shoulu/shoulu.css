@@ -95,5 +95,5 @@
 .g-shoulu.is-side .sl-portrait { flex: none; }
 .g-shoulu.is-side .sl-skills { grid-template-columns: repeat(2, 1fr); }
 
-/* 守火 (a story level with a `fire`, 2026-10-21): 小满 has no skills, no talismans are laid — their bar and the 灵石 go */
+/* A level 小满 holds without skills (`hero.skills: false`), or one that lays no talismans: their bar and the 灵石 go */
 .g-shoulu.no-skills .sl-skills, .g-shoulu.no-skills [data-k="hlv"], .g-shoulu.no-towers .sl-stone { display: none; }

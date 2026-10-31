@@ -291,8 +291,8 @@ For 第一回's two 塔防 boards (2026-10-21, Hanli: 「用塔防作为主力�
 `baicai-bg` (阿禾's vegetable plot, the 篱笆 at the top), `baicai-wall` (the cabbage bed), `ahe-idle` · `ahe-cast` (阿禾 from
 behind with her 竹竿), `xiaoman-side` (小满 shooing), `luhuaji-walk-1` · `-walk-2` · `-hit` (the 芦花鸡), `zhugan`, `kela`,
 `icon-gan-more` · `icon-gan-sweep` · `icon-gan-back`; 守火 (守炉 `shouhuo`, 00-cave) — `scripts/games/shoulu/art/`
-`ground-yingu-night`, `campfire`, `kuzhi`, `fox-sleep` (the hurt fox in his jacket, an edit pass from 银月's frame),
-`yanjing` (eyes in the dark), `xiaoman-idle` · `xiaoman-throw` · `xiaoman-carry`. The local FLUX.2 klein 4B (mflux),
+`ground-yingu-night`, `campfire`, `fox-sleep` (the hurt fox in his jacket, an edit pass from 银月's frame),
+`xiaoman-idle` · `xiaoman-throw` (`kuzhi`, `yanjing` and `xiaoman-carry` went with the old 添火 play, 2026-10-31). The local FLUX.2 klein 4B (mflux),
 `tools/paint-gu1-td-flux.py`: edit passes from 守墙关's own art (小满, 野猪, 狰, the 剑阵 medallion, the 山门 wall) so the set
 keeps the kit's comic style; every seed looked at for fake writing; the sources kept beside 守墙关's and 守炉's in
 `art/games/shouqiang/` and `art/games/shoulu/`. 阿禾's two repainted 2026-10-22 (Hanli: 「收白菜里阿禾是黄毛吗?」 — the first prompt said
