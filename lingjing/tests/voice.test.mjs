@@ -14,10 +14,13 @@ function rig() {
   return { v, posts, seen, at: (ms) => { t += ms; }, ids: () => posts.map((p) => p.id) };
 }
 
-test('flags: big moments converse, asked ones are asked, low ones are plain', () => {
-  // A seal on the stage: she is woken at once (now), so her word meets it.
-  assert.deepEqual(flagsOf('rise'), { big: true, converse: true, now: true });
-  assert.deepEqual(flagsOf('finale'), { big: true, converse: true });
+test('flags: story nodes converse, the other big ones are hers alone, asked ones are asked, low ones are plain', () => {
+  // A seal on the stage: she is woken at once (now), so her word meets it. Her joy is hers: no turn of Ling's after it
+  // (2026-10-31 — he answered SILENT, at a whole turn's tokens, 22 times in 27).
+  assert.deepEqual(flagsOf('rise'), { big: true, now: true });
+  assert.deepEqual(flagsOf('finale'), { big: true });
+  for (const id of ['scene_end', 'cauldron', 'memory']) assert.equal(flagsOf(id).converse, true, id);
+  for (const id of ['rise', 'chapter', 'tamed', 'finale', 'tale_end', 'spent', 'node_quiet']) assert.equal(flagsOf(id).converse, undefined, id);
   assert.deepEqual(flagsOf('reading'), { asked: true });
   assert.deepEqual(flagsOf('lost'), { big: true });
   assert.deepEqual(flagsOf('won'), {});

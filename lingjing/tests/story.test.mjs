@@ -337,11 +337,15 @@ test('her beat on the page: its own moment is hers alone (big, no converse); wit
   const alone = nodeMoment({ kind: 'beat', at: NOW.toISOString(), her_beat: her });
   assert.equal(alone.id, 'her_beat');
   assert.match(alone.zh, /「离在南。」/); assert.match(alone.zh, /参考/); assert.match(alone.en, /say it your way, same meaning/);
-  // With a scene passed: the node's one moment carries it (converse, as ever) — not a second one.
+  // With a scene passed: the node's one moment carries it — not a second one. Ling answers her only where the node has
+  // something to talk over (a riddle, a memory, the ending; 2026-10-31): a plain scene passed is hers alone.
   const plain = nodeMoment({ kind: 'scene', at: NOW.toISOString(), recap: '过了泗口。' });
   const both = nodeMoment({ kind: 'scene', at: NOW.toISOString(), recap: '过了泗口。', her_beat: her });
   assert.equal(both.id, plain.id);
-  assert.equal(flagsOf(both.id).converse, true);
+  assert.equal(flagsOf(both.id).converse, undefined, 'nothing to talk over: no turn of Ling\'s');
+  const open = nodeMoment({ kind: 'scene', at: NOW.toISOString(), recap: '过了泗口。', mystery: '木牌上为什么刻着九尾？', her_beat: her });
+  assert.equal(flagsOf(open.id).converse, true, 'a riddle still open: they talk it over');
+  assert.equal(flagsOf(nodeMoment({ kind: 'memory', at: NOW.toISOString(), memory: ['青丘的雪'] }).id).converse, true);
   assert.match(both.zh, /过了泗口/); assert.match(both.zh, /「离在南。」/);
   assert.doesNotMatch(plain.zh, /离在南/);
   assert.doesNotMatch(both.zh, /说说你觉得这意味着什么/, 'one line from her: her beat, not a second ask');

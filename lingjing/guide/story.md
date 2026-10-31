@@ -33,6 +33,9 @@ whole book — you tell it.
   what it means. Answer her once, one line, on the meaning — the mystery as
   the result words it, a doubt — never a fact the results do not hold, never
   the beat again, never ahead of the story; or `SILENT` when it needs no answer.
+  You are woken for it only when the node holds something to talk over (a
+  riddle, a memory, the ending). Answer from her line and what you already
+  know — no tool call, no Look: one line, or `SILENT`.
 - **The ending** (`ending`): the story is complete; call it by its `title`.
 
 ## 渡劫 — the breakthrough is a throw

@@ -7,7 +7,11 @@
 // - Ling and Yinyue together: at most one unprompted line per QUIET_MS,
 //   except big moments (a realm broken, a chapter opened, a beast won over,
 //   a rumor's finale won, 今日传闻 finished, 体力 spent, a story node) — those
-//   are always told, and carry `converse` (Ling may answer her once).
+//   are always told. Only a story node with something to talk over (a riddle
+//   still open or answered, a memory back, the ending, the next riddle) carries
+//   `converse` (Ling may answer her once): the engine wakes Ling with a whole
+//   turn for it, and on a cheer or a plain scene passed he answered SILENT 22
+//   times in 27 (Lingjing's chats to 10-30) — about 6k tokens each for nothing.
 // - Asked moments (the player turned to her: the cast, the 命格, the day's
 //   greeting) are the player's own doing: always told.
 // - A small moment has its own cooldown too; but once nobody has spoken for
@@ -35,16 +39,19 @@ const ACTIVE_MS = 60_000;
 export const MOMENTS = {
   // now: the stage is showing it (a seal) — she is woken at once, so her
   // word meets the picture (his, 2026-09-24: 突破了, 银月反应有点平淡, 还有点晚).
-  rise: { who: 'both', priority: 'big', now: true },
-  chapter: { who: 'both', priority: 'big', now: true },
-  tamed: { who: 'both', priority: 'big', now: true },
-  finale: { who: 'both', priority: 'big' },
-  tale_end: { who: 'both', priority: 'big' },
-  spent: { who: 'both', priority: 'big' },
-  // 九鼎录's story nodes (redesign-v2 § 六): she and Ling talk over what it means.
+  // Her joy or her care, hers alone (2026-10-31: Ling's answer to them was SILENT or a filler line).
+  rise: { who: 'yinyue', priority: 'big', now: true },
+  chapter: { who: 'yinyue', priority: 'big', now: true },
+  tamed: { who: 'yinyue', priority: 'big', now: true },
+  finale: { who: 'yinyue', priority: 'big' },
+  tale_end: { who: 'yinyue', priority: 'big' },
+  spent: { who: 'yinyue', priority: 'big' },
+  // 九鼎录's story nodes (redesign-v2 § 六): she and Ling talk over what it means — when there is something to talk over
+  // (nodeMoment: a riddle, a memory, the ending, what lies ahead); a node with none is hers alone (`node_quiet`).
   scene_end: { who: 'both', priority: 'big' },
   cauldron: { who: 'both', priority: 'big' },
   memory: { who: 'both', priority: 'big' },
+  node_quiet: { who: 'yinyue', priority: 'big' },
   // A line the story wrote for her, said by her (a node's moment carries it when there is one).
   her_beat: { who: 'yinyue', priority: 'big' },
   // Her price showing as a chapter ends (unease.js): the stage shows it on
@@ -265,7 +272,10 @@ export function nodeMoment(n) {
     // The unease leads: one moment, one line from her, the price first.
     return n.unease ? `${uneaseFacts(n.unease, zh)}${zh ? '然后，' : ' Then, '}${self}${said}` : `${self}${said}`;
   };
-  const id = n.unease ? 'unease' : { scene: 'scene_end', cauldron: 'cauldron', chapter: 'cauldron', memory: 'memory', beat: 'her_beat' }[n.kind];
-  if (!id) return null;
+  const kind = n.unease ? 'unease' : { scene: 'scene_end', cauldron: 'cauldron', chapter: 'cauldron', memory: 'memory', beat: 'her_beat' }[n.kind];
+  if (!kind) return null;
+  // Something to talk over, or her line alone (no turn of Ling's to end in SILENT).
+  const talk = Boolean(n.mystery || n.memory?.length || n.ending || n.next?.mystery);
+  const id = MOMENTS[kind]?.who === 'both' && !talk ? 'node_quiet' : kind;
   return { id, zh: facts(true), en: facts(false), mood: n.unease ? 'sad' : n.kind === 'scene' || n.kind === 'beat' ? 'neutral' : n.memory?.length ? 'relaxed' : 'happy' };
 }
