@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_about": "秘境探险 (Hanli 2026-10-28, option A 秘境令; 「每个秘境给个名字? 和故事对应上?」): a roguelite map run in the classic Slay the Spire / Hades shape — an ink map of layers with branches, the player picks the path, 气血 carries room to room, run-only boons (秘境加持), a 大妖 at the end; death ends the run with part of the loot by the depth reached. Entered at a `doors` place (the stone door, 沉鼎秘境 · 石门) for one `key` (秘境令, a key item that drops from wins in the cooldown events: rules/mijing.mjs keyDrop, its chances and the day's cap balance.json `mijing`). The story's own 秘境 passage (古五) is untouched. rules/mijing.mjs reads this table and names nothing in it; the numbers (pay, loot, hurt, the cap) are balance.json `master.mijing`, derived into `mijing`.",
-  "_tiers": "The nine 重, in order. `name` from the book's own 秘境 and places; `source` the 回 and the scene the name is taken from (a read of story/jiuding-lu/, kept so a reader can check it); `after` the scene that opens it (rules/world.mjs passed: the story has reached that place) — and every 重 past the first also waits on the one before it cleared. `layers` the rows before the 大妖 (3–4), `rooms` how many rooms in them (6–8); a run walks one room a row and the 大妖 (Slay the Spire's act). `beasts`: the 妖兽 rooms' (each its `hp` on the mode's share and its own `deck` where it fights other than its creatures.json row, as a pool's entry does), `xiong` the 凶兽 rooms' (their harder deck: an elite is only that, redesign-v2 § 四), `boss` the 大妖 — every one a beast of that 回 or before (tests/mijing.test.mjs checks it against creatures.json `hui` and the book's fights). `guan` the 守关 boards (a TD task and the level it deals), `jiguan` the 机关 boards, `qiyu` the 奇遇 that may come up, `scale` what a 重 deeper lays on the foes' 气血 and the TD levels' difficulty. `backdrop` the room painting (worlds/jiuding/art/places), `rooms_named` the names the map's rooms are drawn from.",
+  "_tiers": "The nine 重, in order. `name` from the book's own 秘境 and places; `source` the 回 and the scene the name is taken from (a read of story/jiuding-lu/, kept so a reader can check it); `after` the scene that opens it (rules/world.mjs passed: the story has reached that place) — and every 重 past the first also waits on the one before it cleared. `layers` the rows before the 大妖 (3–4), `rooms` how many rooms in them (6–8); a run walks one room a row and the 大妖 (Slay the Spire's act). `beasts`: the 妖兽 rooms' (each its `hp` on the mode's share and its own `deck` where it fights other than its creatures.json row, as a pool's entry does), `xiong` the 凶兽 rooms' (their harder deck: an elite is only that, redesign-v2 § 四), `boss` the 大妖 — every one a beast of that 回 or before (tests/mijing.test.mjs checks it against creatures.json `hui` and the book's fights). `guan` the 守关 boards (a TD task and the level it deals), `jiguan` the 机关 boards, `xinmo` the 心魔 room's (格斗 against 沈小满's own shadow, level `xinmo`), `qiyu` the 奇遇 that may come up, `scale` what a 重 deeper lays on the foes' 气血 and the TD levels' difficulty. `backdrop` the room painting (worlds/jiuding/art/places), `rooms_named` the names the map's rooms are drawn from.",
   "doors": [
     "shimen"
   ],
@@ -128,6 +128,12 @@
         {
           "task": "mijing-jiguan-pintu",
           "lv": 1
+        }
+      ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
         }
       ],
       "qiyu": [
@@ -267,6 +273,12 @@
           "lv": 2
         }
       ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
+        }
+      ],
       "qiyu": [
         "bones",
         "lamp",
@@ -374,6 +386,12 @@
         {
           "task": "mijing-jiguan-pintu",
           "lv": 2
+        }
+      ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
         }
       ],
       "qiyu": [
@@ -497,6 +515,12 @@
           "lv": 3
         }
       ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
+        }
+      ],
       "qiyu": [
         "bones",
         "moss",
@@ -602,6 +626,12 @@
         {
           "task": "mijing-jiguan-pintu",
           "lv": 3
+        }
+      ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
         }
       ],
       "qiyu": [
@@ -711,6 +741,12 @@
           "lv": 4
         }
       ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
+        }
+      ],
       "qiyu": [
         "bones",
         "lamp",
@@ -817,6 +853,12 @@
           "lv": 4
         }
       ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
+        }
+      ],
       "qiyu": [
         "bones",
         "puddle",
@@ -916,6 +958,12 @@
         {
           "task": "mijing-jiguan-pintu",
           "lv": 4
+        }
+      ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
         }
       ],
       "qiyu": [
@@ -1019,6 +1067,12 @@
           "lv": 4
         }
       ],
+      "xinmo": [
+        {
+          "task": "mijing-xinmo",
+          "lv": "xinmo"
+        }
+      ],
       "qiyu": [
         "bones",
         "puddle",
@@ -1076,7 +1130,7 @@
       },
       "mark": "魔",
       "play": "board",
-      "weight": 0,
+      "weight": 6,
       "minutes": 3
     },
     "jiguan": {
