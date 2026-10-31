@@ -55,7 +55,26 @@
    },
    "means": "goes on to the team scrimmage",
    "beat": [],
-   "next": "j04-line"
+   "next": "j04-line",
+   "needs": {
+    "task": "jin-lunkong"
+   },
+   "refuse": {
+    "zh": "还没轮到他上场。",
+    "en": "It is not his turn on court yet."
+   }
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "jin-lunkong"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "jin-lunkong"
+  ]
+ },
+ "_zhuli_gap": "2026-10-31 (the reading gaps, ling-mem b2fNMipemI): `jin-lunkong` stands here — 沈芒 plays a round of 灵根 while he sits out."
 }

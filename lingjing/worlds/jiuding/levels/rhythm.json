@@ -1320,9 +1320,30 @@
       },
       {
        "kind": "read",
-       "chars": 4081,
-       "run": 4081,
+       "chars": 3493,
+       "run": 3493,
        "over": true
+      },
+      {
+       "kind": "board",
+       "id": "jin-lunkong",
+       "scene": "j04-trial",
+       "title": {
+        "zh": "轮空 · 场边",
+        "en": "Sitting out · By the court"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 292,
+       "level": "zl-jin-lunkong",
+       "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 588,
+       "run": 588,
+       "over": false
       },
       {
        "kind": "board",
@@ -1388,15 +1409,15 @@
       }
      ],
      "counts": {
-      "board": 5,
+      "board": 6,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 3,
-     "longest": 4081,
+     "zhuli": 4,
+     "longest": 3493,
      "roaming": 0,
      "side": []
     },
@@ -2202,9 +2223,30 @@
       },
       {
        "kind": "read",
-       "chars": 4297,
-       "run": 4297,
+       "chars": 2609,
+       "run": 2609,
        "over": true
+      },
+      {
+       "kind": "board",
+       "id": "jin-daoxing",
+       "scene": "j07-guan",
+       "title": {
+        "zh": "倒着下楼 · 场边",
+        "en": "Down the stairs backwards · By the court"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 293,
+       "level": "zl-jin-daoxing",
+       "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 1688,
+       "run": 1688,
+       "over": false
       },
       {
        "kind": "board",
@@ -2218,8 +2260,7 @@
        "variety": "对话",
        "game": "jinchat",
        "n": 232,
-       "level": "quxian",
-       "same": true
+       "level": "quxian"
       },
       {
        "kind": "read",
@@ -2250,15 +2291,15 @@
       }
      ],
      "counts": {
-      "board": 5,
+      "board": 6,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 3,
-     "longest": 4297,
+     "zhuli": 4,
+     "longest": 2628,
      "roaming": 0,
      "side": []
     },
@@ -2600,14 +2641,14 @@
       },
       {
        "kind": "read",
-       "chars": 4224,
-       "run": 4224,
+       "chars": 3454,
+       "run": 3454,
        "over": true
       },
       {
        "kind": "board",
        "id": "nianyao-canju",
-       "scene": "09-nianyao",
+       "scene": "09-xie",
        "title": {
         "zh": "碾船 · 丹房",
         "en": "The grinding boat · The pill house"
@@ -2621,8 +2662,8 @@
       },
       {
        "kind": "read",
-       "chars": 598,
-       "run": 598,
+       "chars": 770,
+       "run": 770,
        "over": false
       },
       {
@@ -2639,6 +2680,12 @@
        "n": 32,
        "level": "zl-nianyao-yaoyuan",
        "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 598,
+       "run": 598,
+       "over": false
       },
       {
        "kind": "board",
@@ -2766,7 +2813,7 @@
       "piece": 1
      },
      "zhuli": 18,
-     "longest": 4224,
+     "longest": 3454,
      "roaming": 3,
      "side": []
     },

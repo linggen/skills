@@ -65,7 +65,9 @@ const KEPT_JIN = {
 };
 const JIN_ZHULI = {
   'jin-biedou': '今一: 皮褶卡钳 · 候着 — 候着钳子, a round of 撒豆成兵 in 灵根',
+  'jin-lunkong': '今二: 轮空 · 场边 — sitting out at the tryouts, a round of 撒豆成兵 in 灵根 (the reading gaps, 2026-10-31)',
   'jin-qiu': '今二: 板凳末端 — a round of 格斗 in 灵根 (秦雁)',
+  'jin-daoxing': '今三: 倒着下楼 — legs too sore for the stairs, a round of 撒豆成兵 in 灵根 (the reading gaps, 2026-10-31)',
   'jin-zhizhen': '今三: 纸垫 · 课间 — a tune on the qin (抚琴) in 灵根',
   'jin-hongshu': '今四: 红薯 · 篮下 — a stretch of the drum (太鼓) in 灵根',
   'jin-yiquan': '今一: 那一圈 — the 1000 m lap, a run (几何冲刺)',

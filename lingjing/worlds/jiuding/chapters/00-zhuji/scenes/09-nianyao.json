@@ -45,10 +45,6 @@
  "show": [
   {
    "card": "board",
-   "id": "nianyao-canju"
-  },
-  {
-   "card": "board",
    "id": "nianyao-yaoyuan"
   },
   {
@@ -74,7 +70,6 @@
  ],
  "offers": {
   "tasks": [
-   "nianyao-canju",
    "nianyao-yaoyuan",
    "nianyao-mindanshi",
    "nianyao-niannian",

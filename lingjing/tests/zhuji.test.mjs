@@ -62,7 +62,7 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
 
 test('the winter and the years: 火柴 at the move, the furnace\'s culls, the seasons and the five years — the story\'s own, free of 体力 but a story step (Hanli, 2026-10-01), in order, once; the layers one at a time (2026-10-15)', () => {
   // Every 古七 board counted and its two fights won (tests/gu7.test.mjs plays them): the ways on are the story's.
-  const H11 = ['jiuge-xunsi', 'jiuge-yubu', 'furnace-recipe', 'furnace-deng', 'furnace-ding', 'danfang-min', 'year-smell', 'year-kanlu', 'fangshi-qian', 'fangshi-liuyun', 'yishui-reed', 'futian-suifeng', 'futian-spar', ...CH.scenes['09-suifeng'].offers.tasks, ...CH.scenes['09-nianyao'].offers.tasks]; // + 第二批 (2026-10-26); + 年四 · 年五's (2026-10-27)
+  const H11 = ['jiuge-xunsi', 'jiuge-yubu', 'furnace-recipe', 'furnace-deng', 'furnace-ding', 'danfang-min', 'year-smell', 'year-kanlu', 'fangshi-qian', 'fangshi-liuyun', 'yishui-reed', 'futian-suifeng', 'futian-spar', ...CH.scenes['09-suifeng'].offers.tasks, ...CH.scenes['09-xie'].offers.tasks, ...CH.scenes['09-nianyao'].offers.tasks]; // + 第二批 (2026-10-26); + 年四 · 年五's (2026-10-27)
   const placed = (s) => full({ ...s, place: CH.scenes[s.scene]?.at ?? s.place });
   let s = { ...atSnow({ step: 4 }), tasks: Object.fromEntries(H11.map(id => [id, { status: 'done' }])), wins: { 'lingcao-qiuyu': NOW.toISOString(), 'futian-qinyan': NOW.toISOString() } };
   assert.deepEqual(buttons(s), ['feed'], 'the gourd and the shards tossed into the 饭桶 to be rid of them — nothing asked (Hanli 2026-10-06)');

@@ -35,7 +35,8 @@ const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i
 const H11 = ['09-snow', '09-jiuge', '09-furnace', '09-danfang', '09-year', '09-lingcao', '09-fangshi', '09-suifeng', '09-yishui', '09-xie', '09-nianyao', '09-futian'];
 // 古七's years (doc/gates-2026-10-27.md 古七 (c), 2026-10-27): 09-suifeng (年四, 随风) off 09-yishui's head, 09-nianyao (年五, 碾药 and
 // 阿禾's 筑基) off 09-futian's way on — each with seven classic boards before its gate.
-const YEARS = { '09-suifeng': ['suifeng-qinyan', 'suifeng-yading', 'suifeng-yezi', 'suifeng-canju', 'suifeng-xunwei', 'suifeng-qulao', 'suifeng-shanmen'], '09-nianyao': ['nianyao-canju', 'nianyao-yaoyuan', 'nianyao-mindanshi', 'nianyao-niannian', 'nianyao-shuangma', 'nianyao-jingshi', 'nianyao-ahe'] };
+const YEARS = { '09-suifeng': ['suifeng-qinyan', 'suifeng-yading', 'suifeng-yezi', 'suifeng-canju', 'suifeng-xunwei', 'suifeng-qulao', 'suifeng-shanmen'], '09-nianyao': ['nianyao-yaoyuan', 'nianyao-mindanshi', 'nianyao-niannian', 'nianyao-shuangma', 'nianyao-jingshi', 'nianyao-ahe'] };
+// The years' first, 碾船 · 丹房, stands at 09-xie since 2026-10-31 (the reading gaps: 09-yishui → 09-nianyao read 4,224 字 without play).
 // 全文后的小游戏 第二批 (2026-10-26): 09-danfang (闵丹师's pill) split off 09-year's head, 09-fangshi (钱掌柜 · 秦雁's 流云剑) off 09-yishui's.
 // 09-snow has no board since 2026-10-19: its feeding is the 大场面 扔了干净 (tests/setpiece-huochai.test.mjs).
 const BOARDS = { '09-jiuge': ['jiuge-yubu'], '09-furnace': ['furnace-recipe', 'furnace-ding'], '09-yishui': ['yishui-reed'] };
@@ -44,7 +45,7 @@ const FIGHTS = { '09-lingcao': ['fight', 'lingcao-qiuyu', 'qiuyu'] }; // 09-futi
 // 认方 cut 2026-10-19 (the standing rule Hanli approved 10-19: a memory puzzle): 定风 is 09-furnace's one board.
 BOARDS['09-furnace'] = ['furnace-ding'];
 // 第二批 (2026-10-26): 瞿老 on 巽 before the 禹步, 邓执事 before 开春, 闵丹师 in 09-danfang, 看炉 in 09-year, 钱掌柜 and 流云剑 in 09-fangshi.
-Object.assign(BOARDS, { '09-jiuge': ['jiuge-xunsi', 'jiuge-yubu'], '09-furnace': ['furnace-deng', 'furnace-ding'], '09-danfang': ['danfang-min'], '09-year': ['year-kanlu'], '09-fangshi': ['fangshi-qian', 'fangshi-liuyun'], '09-futian': ['futian-suifeng', 'futian-spar'] }, YEARS);
+Object.assign(BOARDS, { '09-xie': ['nianyao-canju'], '09-jiuge': ['jiuge-xunsi', 'jiuge-yubu'], '09-furnace': ['furnace-deng', 'furnace-ding'], '09-danfang': ['danfang-min'], '09-year': ['year-kanlu'], '09-fangshi': ['fangshi-qian', 'fangshi-liuyun'], '09-futian': ['futian-suifeng', 'futian-spar'] }, YEARS);
 const RISES = { '09-furnace/fire': 5, '09-year/futian': 5, '09-yishui/night': 6, '09-futian/spar': 7 };
 
 test('古七 runs in the book\'s order on the `next` chain — twelve scenes, every one h11, then 古八\'s 09-dabi', () => {
@@ -135,10 +136,10 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   assert.equal(s.scene, '09-yishui');
   s = go(play(s, 'yishui-reed', 'still'), 'night');
   assert.deepEqual([s.scene, s.step], ['09-xie', 5], '沂水 waited on 五层圆满, earned; it lifts nothing');
-  s = go(s, 'go'); // 顺风溜 told (the 调息 cut): the boots with the way on
+  s = go(play(s, 'nianyao-canju'), 'go'); // 顺风溜 told (the 调息 cut): the boots with the way on; 碾船 · 丹房 first (2026-10-31)
   assert.equal(s.bag['shunfeng-liu'], 1);
   assert.equal(s.scene, '09-nianyao');
-  s = go(YEARS['09-nianyao'].reduce((x, id) => play(x, id), s), 'on'); // 年五's seven boards (2026-10-27)
+  s = go(YEARS['09-nianyao'].reduce((x, id) => play(x, id), s), 'on'); // 年五's boards (2026-10-27; six since the first went to 09-xie, 2026-10-31)
   assert.equal(s.scene, '09-futian');
   // 秦雁's monthly bout: 格斗 since 2026-10-28 (Hanli: 「故事里的战斗可以用格斗」) — the board futian-spar, the cliff's own level.
   assert.equal(resolve(s, content, ctx(), { exit: 'spar' }).result.ok, false, 'the autumn waits on her bout');

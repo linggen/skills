@@ -21,10 +21,7 @@
    "jin": {
     "tier": "xinsheng",
     "step": 1,
-    "progress": 103,
-    "stretch": {
-     "xinsheng:1": 6
-    }
+    "progress": 117
    }
   },
   "bag": {
@@ -461,6 +458,11 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "jin-lunkong": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "jin-qiu": {
     "status": "done",
     "period": "once",
@@ -632,6 +634,11 @@
     "done_at": "2026-10-01T01:00:00.000Z"
    },
    "jin-chat-dark": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "jin-daoxing": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -1148,6 +1155,7 @@
     "baoming-yinyue": 1,
     "jin-chat-ma": 1,
     "jin-wotui": 1,
+    "jin-lunkong": 1,
     "jin-qiu": 1,
     "jin-whiteline": 1,
     "jin-xisi": 1,
@@ -1184,6 +1192,7 @@
     "jin-zhizhen": 1,
     "jin-danjiao": 1,
     "jin-chat-dark": 1,
+    "jin-daoxing": 1,
     "jin-quxian": 1,
     "jin-chenmai": 1,
     "jiuge-xunsi": 1,
