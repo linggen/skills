@@ -702,12 +702,18 @@ export const duelTitle = (creature, w, lang) => {
 
 /// A pool's beast on its card (不打重复的怪, 2026-10-15): 「新」 the first time it is met, and the
 /// stretch's count — how many of the beasts it holds now he has fought (world.mjs poolTally).
+/// Its words, one table (the phone's pool card says the same: linggen-mobile tool/lingjing_assets.sh carries it as `hunt`).
+export const HUNT_WORDS = {
+  zh: { fresh: '新', met: '{pool} · 见过 {met}/{of}', batch: '这一批 {left}/{of}' },
+  en: { fresh: 'New', met: '{pool} · met {met}/{of}', batch: 'this batch {left}/{of}' },
+};
 function huntBadge(e, lang) {
   if (!e?.pool) return '';
-  const fresh = e.new ? ` <span class="chip cnew">${lang === 'en' ? 'New' : '新'}</span>` : '';
-  const tally = e.pool.of ? ` <span class="chip ctally">${esc(e.pool.name ?? '')} · ${lang === 'en' ? `met ${e.pool.met}/${e.pool.of}` : `见过 ${e.pool.met}/${e.pool.of}`}</span>` : '';
+  const h = HUNT_WORDS[lang] ?? HUNT_WORDS.zh;
+  const fresh = e.new ? ` <span class="chip cnew">${esc(h.fresh)}</span>` : '';
+  const tally = e.pool.of ? ` <span class="chip ctally">${esc(say(h.met, { pool: e.pool.name ?? '', met: e.pool.met, of: e.pool.of }))}</span>` : '';
   // 妖兽出没 (rules/yaoshou.mjs): how many of this batch are left.
-  const batch = e.batch ? ` <span class="chip cbatch">${lang === 'en' ? `this batch ${e.batch.left}/${e.batch.of}` : `这一批 ${e.batch.left}/${e.batch.of}`}</span>` : '';
+  const batch = e.batch ? ` <span class="chip cbatch">${esc(say(h.batch, { left: e.batch.left, of: e.batch.of }))}</span>` : '';
   return fresh + tally + batch;
 }
 
@@ -1088,7 +1094,7 @@ function next(card, ctx) {
 /// 主页 (Hanli 10-27; rules/home.mjs `home`): the 回 and the gate's bar with what it still asks (修为, today's 功课, about
 /// how many boards), the ONE thing to do next (the rules' ranking), and what waits — each row a tap into its own sheet.
 /// Facts from Look, words from here; the bar moves from where it stood (`ctx.homeFrom`, the page's last) to now.
-const HOME_WORDS = {
+export const HOME_WORDS = {
   zh: { stage: '阶段任务 · {step}', short: '还差 {n} 修为', chores: '功课 +{n}', plays: '约 {n} 局', playsMore: '再约 {n} 局', todo: '待办',
     resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}',
     boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',

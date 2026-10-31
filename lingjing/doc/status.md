@@ -4,13 +4,14 @@ The one list of what is in flight, parked, not started, and waiting on Hanli.
 Every agent reads it before starting and edits its own row when it lands (hash or tag, date).
 Systems themselves live in `design.md` (【已建】 · 【在建】 · 【远景】); this file is only the work.
 
-Updated 2026-10-30.
+Updated 2026-10-31.
 
 ## In flight
 
 None.
 
 ## Done lately
+- 10-31 — **Phone parity with the Mac page** (audit of every Mac surface against linggen-mobile; the table is its doc/lingjing-phone.md § Parity with the Mac page): cards.js exports `HOME_WORDS` and a new `HUNT_WORDS` (新 · 见过 n/m · 这一批 n/m) so the phone carries the 主页's and the pool card's words instead of retyping them. linggen-mobile `539145a`: ONE 砍价 by the shop's name with 「砍哪一件？」 (the per-买 砍价 gone); 切磋's 待办 row by the bout's title, a lost bout counted by the rules (`task lost`, its cooldown; no 再来); 妖兽出没's 待办 row and the pool's batch badge; the tray drops a board played today; the 事 goal's 去{name} ›; 圆满's 「修为已满 · 灵石 +n」; `panel.ask` over the choices; the header's sealed / door line; 主页 cooldowns in 时 分. Packs rebuilt (结印 strip `992c563a`, 秘境 pictures in). Left: the phone 游戏厅's 按类型/按故事 tabs (dev-only there), 银月's idle nudges (none on the phone).
 - 10-30 — **Small games done, no design check** (Hanli: 「小游戏已经做完了, 设计文档不用再审核了」): doc/games.md no longer waits on his review; mechanic changes go ahead without it (was In flight since 10-16).
 - 10-30 — **The 10-19 open-source games survey and the 守炉 prototype committed** (`91452ebc`): doc/research-2026-10-19-open-source-games.md (web games and kits for 砸寨, 守炉, moving portraits; licences and activity via gh) and tools/proto/shoulu/index.html, untracked since that day.
 - 10-29 — **Phone boards: the seal strip, sound, no black screen**: the 结印 strip shows only while a helper in it is visible, so the stage keeps its height (`992c563a`, phone/index.html); the page asks WebKit for a `playback` audio session (iOS Web Audio was ambient), and taps trace the sound's state (`112c0230`, phone/audio-session.js). linggen-mobile `f2e4ca7`: the board server pings itself and binds a new loopback port when iOS has reclaimed its socket, so after the app sat in the background the games no longer open black.
