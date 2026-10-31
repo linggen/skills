@@ -43,7 +43,8 @@ function night(s, now, stars = 3) {
 
 test('the row: a board of 守墙关, on a cooldown from balance.json, opened by 古四\'s 小周天, every tide row of beasts that have a 回', () => {
   assert.equal(T.game, 'shouqiang');
-  assert.equal(T.shouchao.every_h, content.balance.cooldowns.shouchao_h, 'the cooldown is balance.json\'s');
+  assert.equal(content.balance.events.shouchao.every_h, 1, 'the cooldown is balance.json\'s, a cooldown event (rules/events.mjs)');
+  assert.ok(!('every_h' in T.shouchao) && !('shouchao_h' in content.balance.cooldowns) && !('tide' in content.balance.play_pay), 'no clock of its own');
   assert.ok(!('hours' in T.shouchao) && !('grace_min' in T.shouchao), 'no clock window');
   assert.equal(T.shouchao.after, 'wm-zhoutian');
   assert.equal(content.chapters['00-waimen'].scenes['wm-zhoutian'].hui, 'h05', '小周天 is 古四\'s');
@@ -67,7 +68,7 @@ test('offered at any hour — no clock window; only at 沉鼎观', () => {
 });
 
 test('one night a cooldown: refused inside it in the world\'s words, offered again once it has passed', () => {
-  const s = at('wm-yaoyuan'), H = T.shouchao.every_h;
+  const s = at('wm-yaoyuan'), H = content.balance.events.shouchao.every_h;
   assert.equal(H, 1, 'an hour (Hanli 10-28: 「改成1小时一次也行」)');
   // Counted at 23:00: half an hour on, past midnight, it is still inside the cooldown (the task's day period never reopens it).
   const one = night(s, day(20, 23, 0));
@@ -226,7 +227,7 @@ test('the night\'s board waits in the tray at 沉鼎观, titled by the night —
 });
 
 test('waiting out the cooldown: the row stands past midnight with the time left, and the page draws it in the world\'s words', () => {
-  const s = at('wm-yaoyuan'), H = T.shouchao.every_h;
+  const s = at('wm-yaoyuan'), H = content.balance.events.shouchao.every_h;
   const one = night(s, day(20, 23, 30));
   const next = { ...structuredClone(one.state), stamina: 100 };
   // Just past midnight: still on Look, done, with the wait and the line.

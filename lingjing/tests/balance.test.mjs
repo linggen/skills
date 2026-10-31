@@ -34,7 +34,7 @@ test('balance.json is the numbers\' one home: the ladder, the pay tables, the co
   assert.deepEqual(content.rewards.xiuwei_to_lingshi, B.convert);
   assert.equal(content.ladder.overflow_stretch, B.overflow_stretch);
   assert.equal(content.fantong.limit.cooldown_min, B.cooldowns.fantong_min);
-  assert.equal(content.tasks.tasks.find(t => t.shouchao).shouchao.every_h, B.cooldowns.shouchao_h, '兽潮\'s cooldown');
+  assert.equal(B.events.shouchao.every_h, 1, '兽潮\'s cooldown: a cooldown event (rules/events.mjs)');
   // Nowhere else: a second copy would drift.
   assert.ok(raw('ladder.json').tiers.every(t => !('thresholds' in t)), 'ladder.json holds no thresholds');
   assert.equal('overflow_stretch' in raw('ladder.json'), false);

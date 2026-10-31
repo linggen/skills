@@ -39,7 +39,7 @@ for (let i = 0; i < N; i += 1) {
   const w = win({ ...s, stamina: 100 }, content, { now, quests: [] }, { id: T.id, stars: 3 });
   if (!w.state) throw new Error(`night ${t.n}: ${JSON.stringify(w.result)}`);
   s = task(w.state, content, { now, quests: [] }, { action: 'done', id: T.id }).state;
-  now = new Date(now.getTime() + (T.shouchao.every_h ?? 1) * 3600_000 + 60_000);
+  now = new Date(now.getTime() + (content.balance.events?.shouchao?.every_h ?? 1) * 3600_000 + 60_000);
 }
 for (const [g, p] of Object.entries(per)) console.log(`${g}: ${p.nights} nights proven (${p.boss} with a 大妖), the human hand ${Math.round(100 * p.won / p.all)}%`);
 console.log(`${sigs.size}/${N} layouts distinct; nights under half: ${worst.length ? worst.join(' · ') : 'none'}`);

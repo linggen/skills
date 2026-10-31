@@ -318,8 +318,9 @@ levels: games.json's 切磋 row (the 游戏厅's too).
 攻击沉鼎观. 在游戏里交代一下就好了」; 2026-10-26 「好, 按这样改」: players missed the clock window, so a cooldown as the 秘境
 rerun has): a plot the game alone has, never the book's. 银月 tells it once, on the first night's lead (every so
 often the 九鼎 veins swell and draw the beasts down; the outer disciples man the wall). Rules: rules/shouchao.mjs;
-the knobs: tasks/world.json `shouchao`, its cooldown balance.json `cooldowns.shouchao_h`.
-- **When**: at any hour, once a cooldown — offered again 20 h after the last night counted (a little under a day, so
+the knobs: tasks/world.json `shouchao`, its cooldown balance.json `events.shouchao` (§ 冷却事件, rules/events.mjs, since
+2026-10-31; a save counted before keeps its clock).
+- **When**: at any hour, once a cooldown — offered again `events.shouchao.every_h` (1 h since 10-28) after the last night counted (it was 20 h, so
   the same time tomorrow is open; inside it `win`/`task done` are refused `shut` in the world's words with
   `left_min`; Look keeps the row through the whole cooldown, past midnight, with `wait_min` and `shut`, and carries it in
   `waits` — § Pacing's one waiting row), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at

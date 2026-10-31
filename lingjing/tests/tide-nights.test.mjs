@@ -4,14 +4,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { dayKey, newState } from '../scripts/state.mjs';
 import { look, playTo, quest, task, win } from '../scripts/rules.mjs';
 import { bossNight, shouchaoHosted, shouchaoRow, tideShare, tonight } from '../scripts/rules/shouchao.mjs';
 import { TIDES } from '../scripts/games/tide.js';
 
 const content = loadContent();
 const T = content.tasks.tasks.find((t) => t.shouchao);
-const C = T.shouchao;
+const C = T.shouchao, EV = content.balance.events.shouchao;
 const START = new Date(2026, 9, 20, 9, 0);
 const ctx = (now) => ({ now, quests: [] });
 const HOUR = 3600_000;
@@ -41,13 +41,13 @@ function run(s, count, from = new Date(2026, 10, 1, 0, 5)) {
     out.push({ n: t.n, game: t.game, sig: t.sig, boss: t.boss, kinds: t.kinds });
     const r = night({ ...s, stamina: 100 }, now);
     s = r.state;
-    now = new Date(now.getTime() + C.every_h * HOUR + 60_000);
+    now = new Date(now.getTime() + EV.every_h * HOUR + 60_000);
   }
   return { nights: out, state: s };
 }
 
 test('the task row: an hour\'s cooldown, the 主力 塔防 kits in turn, a 大妖 every 3rd night from night 4', () => {
-  assert.equal(C.every_h, 1);
+  assert.equal(EV.every_h, 1);
   const main = (content.games?.games ?? []).filter((g) => g.group === 'tide' && g.mechanic === '塔防').map((g) => g.id);
   assert.deepEqual(C.rotation.map((k) => k.game).sort(), [...new Set(main)].sort(), 'the 游戏厅\'s 兽潮 塔防 boards (games.json group tide)');
   assert.ok(TIDES.shouqiang, 'every turning kit has its maker');
@@ -104,7 +104,7 @@ test('the day\'s pay: the first two nights in full, then a replay\'s falling sha
 
 test('one night at a time (Hanli 10-28: 「触发后如果用户不玩, 就不触发下一个」): idle 10 h → one night up; played → the next an hour on, never two', () => {
   let s = run(at('09-qulao'), 2).state;
-  const played = new Date(s.shouchao.at);
+  const played = new Date(s.events.shouchao.at);
   // Ten hours away: exactly one night waits — the next one, not ten.
   const back = new Date(played.getTime() + 10 * HOUR);
   const up = shouchaoRow(content, s, back);
@@ -162,4 +162,22 @@ test('the first night is the 执事堂\'s errand 「兽潮来袭 · 守后山」
   const old = { ...fresh, quests: {}, shouchao: { won: ['shouchao-1', 'shouchao-2'], told: true, at: '2026-10-28T14:00:00.000Z' } };
   assert.ok(!offers(old).includes(Q));
   assert.deepEqual(Object.keys(shouchaoHosted(content, { ...old, place: 'waimen' }, at0)), [T.id]);
+});
+
+test('兽潮 on rules/events.mjs: a save counted before keeps its clock and its day\'s count (shouchao.at · shouchao.day)', () => {
+  const s = at('09-qulao');
+  const counted = new Date(2026, 10, 3, 9, 30);
+  const old = { ...s, events: { ...s.events }, shouchao: { ...(s.shouchao ?? {}), n: 2, told: true, at: counted.toISOString(), day: { key: dayKey(counted), count: 2 } } };
+  delete old.events.shouchao;
+  // Mid-cooldown: still shut half an hour on, up an hour on.
+  assert.deepEqual(shouchaoHosted(content, old, new Date(counted.getTime() + 30 * 60_000)), {});
+  assert.deepEqual(Object.keys(shouchaoHosted(content, old, new Date(counted.getTime() + HOUR + 60_000))), [T.id]);
+  // The day's count carries: the third night of that day pays half.
+  const later = new Date(counted.getTime() + HOUR + 60_000);
+  assert.equal(tideShare(content, old, later), 0.5);
+  const r = night({ ...old, stamina: 100 }, later);
+  assert.ok(r.result.ok, JSON.stringify(r.result));
+  assert.equal(r.result.share, 0.5);
+  assert.deepEqual(r.state.events.shouchao, { at: later.toISOString(), day: dayKey(later), n: 3 });
+  assert.ok(!('at' in r.state.shouchao) && !('day' in r.state.shouchao), 'the clock lives in one place');
 });
