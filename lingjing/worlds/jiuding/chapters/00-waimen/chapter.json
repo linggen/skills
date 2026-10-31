@@ -83,7 +83,7 @@
         "zh": "沉鼎秘境",
         "en": "The hidden realm"
       },
-      "_scenes": "2026-10-26 (全文后的小游戏 第二批): wm-xiongya (the cleft and the climb, 时机 `xiongya`) is the first scene inside, walked down to from `home` past the 凶崖's 犰狳 (world.mjs fitSealed); wm-kouzi and wm-shiting play at the door before it, outside the beat, as the rerun rooms hold no story scene. wm-shishi plays in the chamber before wm-xirang's fight. wm-tama (the ledge, after the dry river) is inside, in the 崖壁 room. wm-hetan (阿禾 on the mudflat, the riverbed outside the door) is its last scene, told in the 崖壁 room as wm-chu is; its way home lets the seal go.",
+      "_scenes": "2026-10-26 (全文后的小游戏 第二批): wm-xiongya (the cleft and the climb, 时机 `xiongya`) is the first scene inside, walked down to from `home` past the 凶崖's 犰狳 (world.mjs fitSealed); wm-kouzi and wm-shiting play at the door before it, outside the beat, as the rerun rooms hold no story scene. wm-shishi plays in the chamber before wm-xirang's fight. wm-anhe (the dry river's throw, split from wm-xirang's swallow 2026-10-20) is inside too — left off this list until 2026-10-31, so the seal let go there and came back at wm-tama. wm-tama (the ledge, after the dry river) is inside, in the 崖壁 room. wm-hetan (阿禾 on the mudflat, the riverbed outside the door) is its last scene, told in the 崖壁 room as wm-chu is; its way home lets the seal go.",
       "scenes": [
         "wm-mijing",
         "wm-xiongya",
@@ -91,6 +91,7 @@
         "wm-kunzhen",
         "wm-shishi",
         "wm-xirang",
+        "wm-anhe",
         "wm-tama",
         "wm-kaikai",
         "wm-chu",
@@ -144,6 +145,10 @@
             "n": 1,
             "unit": "night"
           },
+          "wm-anhe": {
+            "n": 1,
+            "unit": "night"
+          },
           "wm-tama": {
             "n": 1,
             "unit": "night"
@@ -181,6 +186,10 @@
           "wm-xirang": {
             "zh": "护住那撮息壤",
             "en": "Keep the pinch of living soil"
+          },
+          "wm-anhe": {
+            "zh": "黑里听声，射那团红光",
+            "en": "In the dark, by ear, shoot at the red glow"
           },
           "wm-tama": {
             "zh": "背贴着崖根，活过那四条火蛇",

@@ -23,6 +23,10 @@
 //     sealed rooms' play, the 回's errands (`errands_at`); a way on behind a stage quest
 //     (ladder.json caps.hui gates) waits until the layer is full;
 //   - minutes left while it waits go to more pool fights, as the pool's rest allows;
+//   - inside a sealed instance (a key beat that declares `sealed`, world.mjs sealedOf: from the scene after its entry
+//     through its last) the world outside is frozen as the rules freeze it — no 功课, 闭关, 饭桶, 今日传闻, wall tags or
+//     errands, and the 妖兽出没 batches stand outside; what pays is the instance's own: its open rooms' pools (the old rest)
+//     and the practice boards its rooms host (hosted, not a stall), each at the replay's falling share by the day;
 //   - 体力 ON, as players will have it: full after the night, refilled between sittings
 //     (`waking_h` spread over the sittings), a fight, a story step and a board its rewards.json
 //     price — out of it, the sitting stops. (While we test the switch is off: rules.mjs.)
@@ -37,7 +41,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour, wallGrant } from '../scripts/rules/playpay.mjs';
 const NOW = new Date('2026-10-27T12:00:00Z');
 import { gatesOf } from '../scripts/rules/gates.mjs';
-import { lockedOf } from '../scripts/state.mjs';
+import { dayKey, lockedOf } from '../scripts/state.mjs';
 import { huiOf } from '../scripts/rules/hui.mjs';
 
 const sideHui = (content, id) => { const h = huiOf(content, id); return Boolean(h?.line && h.line !== 'gu'); };
@@ -129,6 +133,12 @@ export function bookWalk(content, model = content.balance.model) {
 }
 
 /* ── one player through 卷一 ── */
+/* The sealed beat that holds scene `id` (world.mjs sealedOf: past its entry), or null. */
+export function sealedBeat(content, id) {
+  for (const ch of Object.values(content.chapters)) for (const b of ch.beats ?? []) if (b.sealed && b.scenes.indexOf(id) > 0) return { ...b.sealed, beat: b.id };
+  return null;
+}
+
 export function play(content, player, { model = content.balance.model, ladder = content.ladder } = {}) {
   const tiers = ladder.tiers, caps = ladder.caps.hui, ratio = ladder.overflow_stretch ?? 0;
   const pay = content.rewards.tables;
@@ -195,6 +205,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
      the sittings spread over the waking day (`waking_h`), each at its own hour. Elsewhere the old rest (`pool_rest_min`). */
   const EV = content.balance.events?.yaoshou, evPools = new Set(EV?.pools ?? []);
   const batched = () => {
+    if (inside()) return false;
     const map = content.chapters[chapterOf()]?.map?.places;
     const ps = EV && map ? map.map(id => places.get(id)?.has?.pool).filter(Boolean) : [];
     return ps.length > 0 && ps.every(p => evPools.has(p));
@@ -207,12 +218,27 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const evFight = h => { if (!batched()) return; E.taken += 1; if (E.taken >= EV.batch) { E.n = evToday() + 1; E.day = day; E.at = h; E.taken = 0; } };
   const chapterOf = () => walk[Math.min(i, walk.length - 1)].chapter;
   const walled = () => Boolean(content.chapters[chapterOf()]?.map?.home);
+  /* Inside a sealed instance (world.mjs sealedOf) where the story stands: its rooms open now (a room in `opens` once
+     that scene is behind him, or the scene's own room) — the whole map while he is in. Null outside. */
+  const inside = () => {
+    const w = walk[Math.min(i, walk.length - 1)], sealed = sealedBeat(content, w.id);
+    if (!sealed) return null;
+    const at = content.chapters[w.chapter]?.scenes?.[w.id]?.at;
+    return { ...sealed, rooms: sealed.places.filter(id => !sealed.opens?.[id] || done.has(sealed.opens[id]) || id === at).map(id => places.get(id)).filter(Boolean) };
+  };
+  /* The practice boards the instance's open rooms host (rules/tasks.mjs hostedHere: hosted, a board, not a stall). */
+  const roomBoards = sealed => sealed.rooms.flatMap(p => p.has?.games ?? []).map(id => content.tasks.tasks.find(t => t.id === id))
+    .filter(t => t?.hosted && t.kind === 'board' && !t.stall);
   const pools = () => {
+    const sealed = inside();
+    if (sealed) return sealed.rooms.some(p => p.has?.pool) ? 1 : 0;
     const map = content.chapters[chapterOf()]?.map?.places;
     const ids = map ?? [...places.keys()];
     return ids.filter(id => places.get(id)?.has?.pool).length > 0 ? 1 : 0;
   };
-  const holdsFantong = () => walk.slice(0, i).some(w => w.id === model.fantong_from);
+  const holdsFantong = () => !inside() && walk.slice(0, i).some(w => w.id === model.fantong_from);
+  /* A day's plays of each board inside (the replay's falling share, play_pay.replay; rules/playpay.mjs playsToday). */
+  let roomPlays = { day: -1, ids: {} };
   const rows = new Map(), row = id => { if (!rows.has(id)) rows.set(id, { hui: id, start: null, end: null }); return rows.get(id); };
   const T = model.minutes, Q = content.rewards.stamina;
   let qi = Q.max;
@@ -268,16 +294,18 @@ export function play(content, player, { model = content.balance.model, ladder = 
       const hour = () => day * 24 + k * (model.waking_h / n) + (sit - left) / 60;
       /* One pool fight: in a batch (妖兽出没) it takes a slot and pays the batch's day share; its 修为 booked as `yaoshou`. */
       const poolFight = () => { const b = batched(), mult = b ? evShare() * (EV.fight_scale ?? 1) : 1; win(model.fight_win_rate, b ? 'yaoshou' : 'pool', mult); evFight(hour()); };
+      // Inside a sealed instance the routine of the world outside is frozen (rules/sealed.mjs): only its own pools are fought.
+      const sealedNow = Boolean(inside());
       if (!zero()) {
         // The day's 功课: its share of the layer he stands on (rules/playpay.mjs chorePlay, 2026-10-27).
-        if (k === 0) gain((chorePlay(content, { ...s, need: need() }, 'day') ?? 0) * player.gongke, false, 'gongke', 'gongke');
-        if (k === 0) earn((pay.gongke.wealth ?? 0) * player.gongke, 'gongke');
+        if (k === 0 && !sealedNow) gain((chorePlay(content, { ...s, need: need() }, 'day') ?? 0) * player.gongke, false, 'gongke', 'gongke');
+        if (k === 0 && !sealedNow) earn((pay.gongke.wealth ?? 0) * player.gongke, 'gongke');
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night at an hour's share of the layer (play_pay.seclusion).
-        if (k === 0 && day > 0 && player.seclude) gain(Math.floor(Math.min(player.seclude, content.rewards.seclusion.cap_hours) * (secludeHour(content, { ...s, need: need() }) ?? 0)), false, 'seclusion', 'seclusion');
+        if (k === 0 && day > 0 && player.seclude && !sealedNow) gain(Math.floor(Math.min(player.seclude, content.rewards.seclusion.cap_hours) * (secludeHour(content, { ...s, need: need() }) ?? 0)), false, 'seclusion', 'seclusion');
         for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && evLeft(hour()) > 0 && left >= T.fight && spend(Q.cost.duel); f++) { left -= T.fight; fought += 1; poolFight(); const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.fights += 1; }
         if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(model.fantong_progress, false, null, 'fantong'); }
-        if (k === 0 && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale, false, null, 'tale'); }
+        if (k === 0 && !sealedNow && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale, false, null, 'tale'); }
         if (k === 0 && player.walls && wallsOpen().length) { left -= playWalls(left, Math.min(1, player.walls)); wallsOn = day; wallsTaken = Math.min(1, player.walls); }
       }
       let extra = 0;
@@ -309,7 +337,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
             const room = rooms[w.hui]?.first === w.id ? rooms[w.hui] : null;
             if (room) { gain(room.story + room.boards); win(room.fights * model.fight_win_rate, 'story'); }
             // The 回's errands, once past 零层: handed in where the 回 is under way.
-            for (const [id, h] of Object.entries(model.errands_at)) if (h === w.hui && !errandsPaid.has(id) && quests.has(id) && !zero()) { errandsPaid.add(id); gain(errandPays(content, quests.get(id)), false, null, 'errand'); earn(wealthCap(content, quests.get(id).grant), 'errand'); }
+            for (const [id, h] of Object.entries(model.errands_at)) if (h === w.hui && !inside() && !errandsPaid.has(id) && quests.has(id) && !zero()) { errandsPaid.add(id); gain(errandPays(content, quests.get(id)), false, null, 'errand'); earn(wealthCap(content, quests.get(id).grant), 'errand'); }
             gain(w.boards);
             // …and each board's play pay, its minutes at the layer he stands on (rules/playpay.mjs playGrant; ★ `model.story_stars`):
             // the story's boards are where most of a layer's 修为 comes from before its gate (数值系统 phase 2).
@@ -349,6 +377,24 @@ export function play(content, player, { model = content.balance.model, ladder = 
         // …then the practice boards (play_pay, 2026-10-27): a board's minutes at the layer's share, `model.practice.factor`
         // for its ★ and the replay's falling share across a sitting.
         const P = model.practice;
+        // Inside a sealed instance: only the boards its rooms host, each at the day's replay share, while one still pays
+        // above the last share (rules/home.mjs boardHere) — none, and the day's sitting is over.
+        const sealed = inside();
+        if (sealed) {
+          if (roomPlays.day !== day) roomPlays = { day, ids: {} };
+          const replay = content.balance.play_pay?.replay ?? [1], floor = replay.at(-1);
+          const plays = { day: dayKey(NOW), ids: roomPlays.ids };
+          const best = roomBoards(sealed).map(t => ({ t, g: playGrant(content, { ...s, need: need(), plays }, t.id, t, NOW, model.story_stars ?? 2) }))
+            .filter(x => x.g && replay[Math.min(roomPlays.ids[x.t.id] ?? 0, replay.length - 1)] > floor)
+            .sort((a, b) => (b.g.progress ?? 0) - (a.g.progress ?? 0))[0];
+          if (!best || left < best.g.minutes || !spend(Q.cost.game)) break;
+          left -= best.g.minutes;
+          roomPlays.ids[best.t.id] = (roomPlays.ids[best.t.id] ?? 0) + 1;
+          if (waiting) waiting.did.boards += 1;
+          gain(best.g.progress ?? 0, false, 'play', 'boards');
+          earn(best.g.wealth ?? 0, 'boards');
+          continue;
+        }
         if (!P || left < P.minutes || !spend(Q.cost.game)) break;
         left -= P.minutes;
         if (waiting) waiting.did.boards += 1;
