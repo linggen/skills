@@ -283,3 +283,44 @@ Hanli: 「今线可以让主角玩游戏, linggen在今线出现过了已经, �
 Three in four of every 今 回's non-chat boards are 主力 (3/4 · 3/4 · 3/3 · 3/4); no kit twice in a row in a 回. Every level is bot-proved (`tests/story-zhuli.test.mjs`; 抚琴 and 太鼓 by their own tests): the 撒豆成兵 round 12 of 12 with no 结印 (j01 is before 入门), the 格斗 bout won by the human and a 320 ms hand while a masher, a wall and an idle hand lose, the qin and the drum within three tries.
 
 **Kept, mid-action or tone** (each with its reason in the test): 投一个给我看看 (the live challenge at the stall), 投篮 · 白线上 (the 今 spine), 冬至夜 · 先听 (the night after the ambulance). The 对话 boards are the scenes. Left: nothing new in the 今 line; 抚琴 and 太鼓 now have a story row each.
+
+## 主力 spread (2026-10-31): runs where the book runs
+
+Hanli 10-28 (ling-mem DBYD94TmXs): 「尽力让主力游戏多吧, 除非剧情需要其他类型」 · 「故事里的战斗可以用格斗」; the calls delegated. The 古 主力 boards were nearly all 塔防 (68 of 81). **Rule:** a board whose book moment is a fight (one-on-one, a duel, a brawl) becomes 格斗; a chase, run, flight or race becomes 几何冲刺; music, drumming, chanting, ritual rhythm or marching becomes 节奏; defending a place, waves or holding a line stays 塔防. Every 塔防 board's passage was read; a board converts only where its own action fits, never for variety.
+
+**Converted** (`672f1a1f`; id, pay, done line and marks kept; the task's `how` is the only text changed; the 塔防 row and its `zl-` level are `replaced: dash`, the 游戏厅's 旧版):
+
+| Board | 回 | Was | Now | The book |
+|---|---|---|---|---|
+| `steps-sanbai` 三百级 · 一炷香 | 第三回 | 撒豆成兵 | 几何冲刺 `sanbai-dash` (its 10-27 row back, re-laid: steps as blocks, no low roof yet; half · 112) | three hundred knee-high steps against one stick of incense |
+| `qingshi-yiquan` 一拳 · 大青石 | 第四回 | 撒豆成兵 | 几何冲刺 `houshan-dash` (new; the first pad is the 丈-wide 山涧; half · 118) | 「墙外是后山，他一口气冲了上去，一道…山涧，脚尖一点便纵了过去」, then the punch |
+| `suifeng-xunwei` 巽那一格 · 跟着风走 | 第七回 | 守炉 | 几何冲刺 `suifeng-dash` (new; orbs and pads the wind; normal · 136) | 「叶子往东，扫帚把往东」; 「列子御风而行」, walking on the wind |
+| `shenshi-qingshen` 老松 · 挂在树杈里 | 第八回 | 撒豆成兵 | 几何冲刺 `qingshen-dash` (new; low roofs the pine boughs; normal · 137) | 轻身: 「顺风溜一步出去，比平日远了两丈」, into the pine, then thirty-odd jumps down |
+| `qianshui-qi` 一口气 · 河心坑 | 第九回 | 守墙关 | 几何冲刺 `qianshui-dash` (its 10-27 row back as it was; normal · 144) | one held breath down the pit: 「能靠的只有你自己憋住的那一口气」 |
+
+Each run sits in the kit's climb (speed and bpm never ease in reading order, 古 and 今 as one; new kinds in the kit's order, tests/dash.test.mjs) and is bot-proved: the perfect bot first try at a 10 and a 50 ms clock, the human-like hand (200 ms) within three tries, an idle hand never.
+
+**Per 回, 主力 kinds before → after** (塔防 · 格斗 · 几何冲刺 · 节奏):
+
+| 回 | Before | After |
+|---|---|---|
+| 第一回 | 3 · 0 · 1 · 1 | 3 · 0 · 1 · 1 |
+| 第二回 | 6 · 0 · 0 · 0 | 6 · 0 · 0 · 0 |
+| 第三回 | 4 · 0 · 0 · 0 | 3 · 0 · 1 · 0 |
+| 第四回 | 12 · 0 · 0 · 0 | 11 · 0 · 1 · 0 |
+| 第五回 | 6 · 0 · 1 · 0 | 6 · 0 · 1 · 0 |
+| 第六回 | 2 · 7 · 0 · 0 | 2 · 7 · 0 · 0 |
+| 第七回 | 16 · 2 · 0 · 0 | 15 · 2 · 1 · 0 |
+| 第八回 | 16 · 0 · 0 · 0 | 15 · 0 · 1 · 0 |
+| 第九回 | 3 · 0 · 0 · 1 | 2 · 0 · 1 · 1 |
+| 古 | 68 · 9 · 2 · 2 (塔防 84%) | 63 · 9 · 7 · 2 (塔防 78%) |
+
+**Why not ~65%.** About half the 塔防 boards stand in the gate pools (wm-dianmao · 09-suifeng · 09-nianyao · 09-shenshi · 09-dingfeng · 09-yanceng), which were made 塔防 on 10-28 because no passage plays them; turning them into another kind would be for variety. 格斗 stays at 9: every fight with painted frames is 格斗 already (秦雁's monthly bout at 09-suifeng is the 流云剑 bout just played; at 09-shenshi the text says 「那一下午没比剑」); 邹青松, 九层师兄 and 老井 wait for frames. No passage under a 塔防 board plays music, a drum, a chant or a march.
+
+**Left for Hanli** (each a fit the rule does not settle):
+- `anhe-dark` 暗河 (第五回): a real chase (the fire snakes through the dark), but it comes right before 踏马符, a run already — two runs back to back.
+- `cliff-shangya` 上崖 (第二回): a hand-over-hand climb to his father's hand, not a run; 第二回 stays all 塔防 among its 主力.
+- 碾药 (`nianyao-canju` at 09-xie or `nianyao-niannian`): the treadle 「来来回回」 all winter is a work rhythm, not music; a 节奏 board would be a stretch.
+- The pool boards, if he wants other kinds there for variety after all.
+
+**Numbers.** 几何冲刺 counts 1 min and no 灵石 against 塔防's 4 and 5, so the refit ran (`node tools/numbers.mjs --apply --write`): 七·八·九层 0.733 · 0.807 · 0.88 → 0.71 · 0.782 · 0.853 h; typical days a 回 unchanged (第四回 5.9 · 第五回 5.9 · 第六回 6.8 · 第七回 5.1 · 第八回 5.7 · 第九回 2.9); gate waits unchanged (the longest 35 min, wm-xiqi; every other ≤ 25); red 15 unchanged.
