@@ -116,9 +116,9 @@ function playThrough() {
   s = fresh(s);
   s = on(s, 'up', DAY2);
   s = must(resolve, s, { exit: 'hold' }, DAY2);
-  s = pass(must(resolve, won(s, 'dabi-lu', DAY2), { exit: 'flip' }, DAY2), 'up', DAY2); // 秦雁 at the vat (wm-shuigang)
-  s = pass(must(resolve, won(s, 'dabi-shijie', DAY2), { exit: 'dodge' }, DAY2), 'on', DAY2); // 迎剑 (wm-yingjian)
-  s = pass(must(resolve, won(s, 'dabi-ma', DAY2), { exit: 'face' }, DAY2), 'on', DAY2); // 接镜 (wm-jiejing)
+  s = pass(pass(s, 'flip', DAY2), 'up', DAY2); // 秦雁 at the vat (wm-shuigang)
+  s = pass(pass(s, 'dodge', DAY2), 'on', DAY2); // 迎剑 (wm-yingjian)
+  s = pass(pass(s, 'face', DAY2), 'on', DAY2); // 接镜 (wm-jiejing)
   s = pass(on(s, 'final', DAY2), 'down', DAY2); // 祁长松's chat, then the wind (wm-fengtou) // 掌心的烙印, then the final lost (wm-laoyin, 古六)
   for (const exit of ['rest', 'follow', 'step', 'sign', 'read']) s = on(s, exit, DAY2); // 刮鞋底 or not, before the 拜师帖 (古六, 2026-10-15)
   return s;
@@ -289,15 +289,17 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   for (const gone of ['fall', 'fight']) refused(resolve, s, { exit: gone }, 'unknown-exit', DAY2);
   s = must(resolve, s, { exit: 'hold' }, DAY2);
   assert.ok(s.ledger.some(e => e.who === 'sunergou' && e.kind === '恩'), 'he pulls 孙二狗 up from the steps');
-  assert.equal(look(s, content, ctx(DAY2)).scene.exits.find(e => e.id === 'flip').duel.creature.name, '卢方');
-  // three duels on this path: 卢方 (内门六层), 秦雁 (外门排头), 马小宝 in the semi — each fought again at once
-  for (const [exit, game, foe] of [['flip', 'dabi-lu', 'foe-lufang'], ['dodge', 'dabi-shijie', 'foe-shijie'], ['face', 'dabi-ma', 'foe-maxiaobao']]) {
-    const sc = look(s, content, ctx(DAY2)).scene;
-    const e = sc.exits.find(x => x.id === exit);
-    assert.equal(e.game.creature, foe);
-    assert.equal(e.game.retry, true);
-    refused(resolve, s, { exit }, 'game-not-won', DAY2);
-    s = must(resolve, won(s, game, DAY2), { exit }, DAY2);
+  // three bouts on this path: 卢方 (内门六层), 秦雁 (外门排头), 马小宝 in the semi — each a 格斗 board the exit waits on
+  // (2026-10-31; the card duels before), played again at once when lost (the board deals it again)
+  for (const [exit, task, level] of [['flip', 'dabi-lu', 'fushi-lufang'], ['dodge', 'dabi-shijie', 'lun2-qinyan'], ['face', 'dabi-ma', 'juesai-ma']]) {
+    const l = look(s, content, ctx(DAY2));
+    const e = l.scene.exits.find(x => x.id === exit);
+    assert.equal(e.game, undefined, 'no card duel');
+    const row = l.tasks.find(t => t.id === task);
+    assert.equal(row?.game, 'fighter', task);
+    assert.equal(row.deal.levels[0].id, level);
+    assert.ok(resolve(s, content, ctx(DAY2), { exit }).result.refused, `${exit} waits on ${task}`);
+    s = pass(s, exit, DAY2);
     s = pass(s, { flip: 'up', dodge: 'on', face: 'on' }[exit], DAY2); // the vat, 迎剑, 接镜 (2026-10-26)
   }
   s = pass(on(s, 'final', DAY2), 'down', DAY2); // 掌心的烙印, then the final (wm-laoyin, 古六)
@@ -369,15 +371,14 @@ test('the scratch fixture for live checks stands at the chapter\'s first scene (
   assert.equal(look(s, content, ctx()).scene.id, 'wm-ahe');
 });
 
-test('the 大比 is a 比试, not a 降妖: its three foes are people, and the fight card says so; a beast stays 降妖 (live, 2026-09-29)', () => {
-  const s = { ...opened(), scene: 'wm-juesai', place: 'zhengdian' };
+test('a person\'s card fight is a 比试, not a 降妖 (the 大比\'s bouts are 格斗 since 2026-10-31; 邹青松\'s stays a card fight), and the card says so; a beast stays 降妖 (live, 2026-09-29)', () => {
+  const s = { ...opened(), scene: 'wm-xirang', place: 'mijing-shishi' };
   const l = look(s, content, ctx());
-  const exit = l.scene.exits.find(e => e.id === 'face');
+  const exit = l.scene.exits.find(e => e.id === 'swallow');
   assert.equal(exit.duel.creature.person, true);
-  // 卢方 has no portrait yet, so no people.json row: his fight names itself a bout
-  const lu = look({ ...opened(), scene: 'wm-fushi', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'flip').duel.creature;
-  assert.equal(duelTitle(lu, WORDS.zh, 'zh'), '比试');
-  const html = cardHtml({ card: 'duel', id: 'dabi-ma' }, { look: l, lang: 'zh', words: WORDS.zh, content: {}, artBase: '' });
+  // no people.json row: his fight names itself a bout
+  assert.equal(duelTitle(exit.duel.creature, WORDS.zh, 'zh'), '比试');
+  const html = cardHtml({ card: 'duel', id: 'mijing-zou' }, { look: l, lang: 'zh', words: WORDS.zh, content: {}, artBase: '' });
   assert.match(html, /比试/);
   assert.doesNotMatch(html, /降妖/);
   assert.equal(duelTitle({ id: 'zheng' }, WORDS.zh), '降妖');
@@ -390,7 +391,8 @@ test('the 大比 is a 比试, not a 降妖: its three foes are people, and the f
 
 test('a scene waiting on a game stands with it: the round fight and the 蛫 at the wall sit under the scene card, never behind 还有 1 件 (live, 2026-09-29)', () => {
   const kinds = slots => slots.main.map(c => `${c.card}:${c.id ?? ''}`);
-  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'duel:dabi-shijie', 'wm-dabi'], ['wm-fushi', 'zhengdian', 'duel:dabi-lu', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'duel:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'mijing-duanya', 'duel:mijing-gui', 'wm-mijing']]) {
+  // the 大比's three rounds are 格斗 boards since 2026-10-31: the board stands under the scene card as the duel did
+  for (const [scene, place, game, before] of [['wm-lun2', 'zhengdian', 'board:dabi-shijie', 'wm-dabi'], ['wm-fushi', 'zhengdian', 'board:dabi-lu', 'wm-dabi'], ['wm-juesai', 'zhengdian', 'board:dabi-ma', 'wm-dabi'], ['wm-wangzuo', 'mijing-duanya', 'duel:mijing-gui', 'wm-mijing']]) {
     const s = { ...opened(), scene, place, tasks: {} };
     s.done_scenes = [...s.done_scenes, 'wm-ahe', before]; // its 回 under way: no close of the 回 before stands over the scene
     const l = look(s, content, ctx());
@@ -444,21 +446,21 @@ test('what is for a person is handed where that person is: 周衡 at 外门, 阿
   assert.ok(s.bag.talisman > 0, 'the 符 for the 大比');
 });
 
-test('卢方, a person with no people.json row yet, is one by his own gender: the win card says 他退了下去, never 它退入雾中', async () => {
+test('a person with no people.json row (邹青松; 卢方 until his bout was 格斗, 2026-10-31) is one by his own gender: the win card says 他退了下去, never 它退入雾中', async () => {
   const { WORDS: BW, boutWords } = await import('../scripts/battle-card.js');
-  const lu = look({ ...opened(), scene: 'wm-fushi', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'flip').duel.creature;
+  const lu = look({ ...opened(), scene: 'wm-xirang', place: 'mijing-shishi' }, content, ctx()).scene.exits.find(e => e.id === 'swallow').duel.creature;
   assert.equal(lu.person, true);
   assert.equal(lu.gender, 'male');
   assert.equal(boutWords(BW.zh, lu, 'zh').wonSay, '他退了下去。');
   assert.equal(boutWords(BW.en, lu, 'en').wonSay, 'He steps down.');
-  assert.ok(content.creatures.creatures.find(c => c.id === 'foe-zou').gender, '邹青松 too');
+  assert.equal(content.creatures.creatures.find(c => c.id === 'foe-lufang').gender, 'male', '卢方 too (切磋 · 演武场 and the 大比 name him)');
   assert.ok(!content.creatures.creatures.find(c => c.id === 'foe-shuanglong').gender, "冰夷's dragons stay beasts");
 });
 
 test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 「今日已比过」, 「他退了下去」 — never 妖, 它 or 今日已降 (his, 2026-09-29)', async () => {
   const { WORDS: BW, boutWords, sayEffect, challengeHtml } = await import('../scripts/battle-card.js');
-  const l = look({ ...opened(), scene: 'wm-juesai', place: 'zhengdian' }, content, ctx());
-  const ma = l.scene.exits.find(e => e.id === 'face').duel.creature;
+  const l = look({ ...opened(), scene: 'wm-xirang', place: 'mijing-shishi' }, content, ctx());
+  const ma = l.scene.exits.find(e => e.id === 'swallow').duel.creature; // 邹青松 (the 大比's bouts are 格斗 since 2026-10-31)
   assert.equal(ma.gender, 'male');
   const w = boutWords(BW.zh, ma, 'zh');
   for (const k of ['theirs', 'withdrew', 'wonSay', 'withdrewSay', 'pickCard', 'pickRank', 'pickTarget', 'wonToday', 'lostToday', 'spentToday']) {
@@ -472,10 +474,9 @@ test('a bout with a person speaks of him or her: 他/她 by the person, 认输, 
   assert.equal(boutWords(BW.zh, { id: 'zheng' }, 'zh'), BW.zh, 'a beast keeps its words');
   assert.match(sayEffect({ effect: { sweep: 2 } }, { lang: 'zh', words: w }), /^他阵前每个 2 点/);
   assert.match(sayEffect({ effect: { sweep: 2 } }, { lang: 'zh', words: BW.zh }), /^它阵前/);
-  const done = challengeHtml({ id: 'dabi-ma', creature: ma, today: { outcome: 'won' } }, { lang: 'zh', words: w, title: '比试' });
+  const done = challengeHtml({ id: 'mijing-zou', creature: ma, today: { outcome: 'won' } }, { lang: 'zh', words: w, title: '比试' });
   assert.match(done, /今日已比过/);
-  const shijie = look({ ...opened(), scene: 'wm-lun2', place: 'zhengdian' }, content, ctx()).scene.exits.find(e => e.id === 'dodge').duel.creature;
-  assert.equal(shijie.gender, 'female');
+  assert.equal(content.people.people.find(p => p.id === 'neimen-shijie').gender, 'female', '秦雁 (her bouts 格斗 now)');
 });
 
 test('息壤 keeps his 修为 and lifts nothing; its moment is the five doors opening one by one, in ink (his, 2026-09-29)', async () => {

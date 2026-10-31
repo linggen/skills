@@ -382,6 +382,9 @@ function hurtFoeBy(s, m, { heavy = false, fire = false, big = false } = {}) {
   }
   // a chain: blows into a foe still reeling
   const chained = foe.stun > s.t && s.combo.who === 'me' && s.combo.n > 0;
+  // `ai.burst`: a foe pinned by that many blows in a chain breaks out (气 burst) and throws him back — mashing one
+  // button never holds her down for good (a level's knob; none by default)
+  if (chained && s.combo.n >= (R.foe.ai.burst ?? Infinity)) { burst(s); return; }
   s.combo = { n: chained ? s.combo.n + 1 : 1, at: s.t, who: 'me' };
   s.best = Math.max(s.best, s.combo.n);
   if (s.combo.n >= 2) bump(s, 'combo');
@@ -403,6 +406,18 @@ function hurtFoeBy(s, m, { heavy = false, fire = false, big = false } = {}) {
   if (fire) { foe.hop = s.t; say(s, 'fireHop'); }
   // A big blow over the slick, its edge at her back: she skids off, as the hook takes her.
   if (big && oilBehind(s)) out(s);
+}
+
+/* Her burst out of a chain: her stagger gone, him thrown back a step and stiff a moment. */
+function burst(s) {
+  const me = s.me, foe = s.foe, sd = side(s);
+  foe.stun = s.t; foe.act = null; foe.think = s.t + 200;
+  s.combo = { n: 0, at: s.t, who: 'me' };
+  me.act = null; me.stun = s.t + 420; me.vx = -sd * 900;
+  hitstop(s, 90);
+  fx(s, 'spark', foe.x - sd * 30, 110);
+  if (s.level?.lines?.burst) say(s, 'burst');
+  bump(s, 'block');
 }
 
 /* 勾: his foot at the rear foot she sits back on. Over the slick, she skids off the edge; elsewhere she staggers. */
@@ -435,6 +450,7 @@ function startFoe(s, k) {
   foe.act = { k, at: s.t, m: { startup: m.startup ?? 0, active: m.active ?? 0, recover: m.recover ?? m.hold ?? 0 }, hit: false, shot: 0 };
   foe.vx = 0;
   if (k !== 'block') { foe.moves += 1; bump(s, 'swing'); }
+  if (k !== 'jianqi' && s.level?.lines?.[`foe_${k}`]) say(s, `foe_${k}`); // a level's tell for a move (马小宝's blotches flush before the beam)
   if (k === 'thrust') bump(s, 'tell');
   if (k === 'ice') { bump(s, 'tell'); foe.cd.ice = m.cd; }
   if (k === 'feijian') { bump(s, 'tell'); foe.cd.feijian = m.cd; }
@@ -476,6 +492,7 @@ function decide(s) {
   if (ai.feijian > 0 && M.feijian && foe.cd.feijian <= 0 && d > 180 && roll(s) < ai.feijian) { startFoe(s, 'feijian'); return; }
   // A talisman under her feet: she may step off it before it arms.
   if ((s.runes ?? []).some((r) => !r.done && Math.abs(foe.x - r.x) <= s.R.me.fuwen.r) && roll(s) < (ai.runeStep ?? 0)) { foe.vx = side(s) * R.foe.back * 1.6; foe.think = t + 420; return; }
+  if (ai.iceAt != null && d > ai.iceAt && foe.cd.ice <= 0 && roll(s) < ai.ice) { startFoe(s, 'ice'); return; } // a level's own range for her shot (马小宝 at the edge)
   if (d > 330) {
     if (foe.cd.ice <= 0 && roll(s) < ai.ice) { startFoe(s, 'ice'); return; }
     foe.vx = -side(s) * R.foe.speed;
@@ -506,7 +523,7 @@ function foeStrikes(s) {
       s.n += 1;
       // `kind`: how it looks (ice · blade: 卢方's 金刃 along the boards · quake: 祁长松's stamp through the ground); `low`
       // ones are jumped, never ducked.
-      s.shots.push({ who: 'foe', kind: m.kind ?? 'ice', mv: 'ice', x: foe.x - side(s) * 30, y: m.at, vx: -side(s) * m.speed, id: s.n, ...(m.low ? { low: true } : {}) });
+      s.shots.push({ who: 'foe', kind: m.kind ?? 'ice', mv: 'ice', from: foe.x - side(s) * 30, x: foe.x - side(s) * 30, y: m.at, vx: -side(s) * m.speed, id: s.n, ...(m.low ? { low: true } : {}) });
       bump(s, 'ice');
     }
     if (a.shot >= m.count) a.hit = true;
@@ -790,7 +807,7 @@ function shotsStep(s, dt) {
       x.gone = true;
       if (me.y > 52 || (me.crouch && !x.low) || me.down > s.t || safe(s)) continue; // jumped, ducked or rolled under it: it flies on (a low one is jumped only)
       const m = R.foe.moves[x.mv ?? 'ice'] ?? R.foe.moves.ice, soft = foe.moves <= R.foe.ai.soft ? R.foe.ai.softBy : 1;
-      if (guarded(s, 1, 10)) continue;
+      if (!m.pierce && guarded(s, 1, 10)) continue; // `pierce`: no guard stops it (马小宝's mirror: 「光是躲不掉的」 — only ducked or jumped)
       hurtMe(s, Math.max(1, Math.round(m.dmg * soft)), m.push, m.stun ?? 400, { down: x.big ? m.down ?? 0 : 0 });
     }
     if (x.who === 'me' && !x.gone && Math.abs(x.x - foe.x) < 30 && !s.end) {
@@ -832,8 +849,10 @@ function endStep(s) {
     s.stars = left >= OUTLAST_STARS[0] ? 3 : left >= OUTLAST_STARS[1] ? 2 : 1;
   } else if (e.won) {
     s.won = true;
-    s.grade = s.palmLanded ? 'clumsy' : 'clean';
-    s.stars = s.palmLanded ? (s.me.hp >= 30 ? 2 : 1) : 3;
+    // `level.clumsyUnder`: a bout with no palm (何七's, 马小宝's) is clumsy when he won with less than that share of his 血
+    const worn = s.level?.clumsyUnder != null && s.me.hp / s.R.me.hp < s.level.clumsyUnder;
+    s.grade = s.palmLanded || worn ? 'clumsy' : 'clean';
+    s.stars = s.palmLanded || worn ? (s.me.hp >= 30 ? 2 : 1) : 3;
   } else s.lost = true;
 }
 

@@ -53,70 +53,31 @@
     "en": "Watch her feet; last thirty moves"
    },
    "means": "fights Qin Yan, outlasting her moves while edging toward the spilt tallow; at the edge steps into her thrust — its edge-light ploughs his left arm open — seizes her scabbard, hooks her back foot as she pulls her palm, and her heel slides on the oil off the stage",
-   "game": {
-    "id": "dabi-shijie",
-    "kind": "duel",
-    "creature": "foe-shijie",
-    "retry": true,
-    "sight": {
-     "mark": "diche",
-     "level": 1
-    },
-    "hints": [
-     {
-      "mark": [
-       "xiangke",
-       "xiangke-rough"
-      ],
-      "say": {
-       "zh": "相克：对面的冰锥来了，立一堵土墙，全扎在土里——「水得土而绝」。",
-       "en": "What eats what: when the ice spikes come, an earth wall takes them all — \"water is stopped by earth.\""
-      }
-     },
-     {
-      "mark": "diche",
-      "say": {
-       "zh": "阿禾的底册：秦雁，剑气三尺。到了台边，往前送一寸。出手留三分。不踩人。",
-       "en": "Ahe's records: Qin Yan — sword-qi three feet. At the edge, one inch more. Holds back three parts. Never stamps."
-      }
-     }
-    ],
-    "foe": {
-     "hp": 6,
-     "trial": {
-      "survive": 7,
-      "goal": {
-       "zh": "三十招：看她的脚，在台上撑过七个回合，便算过了。",
-       "en": "Thirty moves: watch her feet and stand seven turns on the stage, and you have passed."
-      }
-     },
-     "deck": [
-      "shuiwu",
-      "luying",
-      "luying",
-      "hantan",
-      "changyou",
-      "hantan",
-      "luying",
-      "changyou",
-      "hanquan",
-      "hantan",
-      "shuiwu",
-      "huiqi"
-     ]
-    },
-    "_foe": "三十招 (第六回): 撑过她七个回合便算过 —— 打不穿她 (hp 6)。2026-10-16 起得牌都在剧情里、银月不上台，牌少了：她的寒潭两张换成水雾、一只鹿影换成水雾 (lookahead 57%)。"
-   },
-   "withdrawn": {
-    "zh": "秦雁把剑收回半寸，退后一步：「再来。」",
-    "en": "Qin Yan draws her sword back half an inch and steps back. \"Again.\""
-   },
    "beat": [],
    "next": "wm-yingjian",
    "story": {
     "zh": "这一场，跟方才那一场大不一样。秦雁的剑是真剑，招是真招——那是一口下阶的法器，在她手里，剑尖递出去，剑上那一道青气还要往前再走三尺，人在一丈开外，剑气已到了跟前。一剑一剑递过来，又快又稳，逼得台下的人屏住了气。头十招，她只使了五分力：一个四层，把卢方扔下了台，她要看看是怎么扔的。小满不看她的剑，看她的脚：剑往哪里去，脚先往哪里挪；脚往哪里挪，肩膀先往哪里沉。可她的脚，比卢方的干净得多，挪得又小又快，他看得见，身子总慢半步。第七招，剑尖挑破了他的袖子；第十五招，挑破了他的肩头；第二十招上，一道血口子从他右颊上拉过去，热乎乎的，淌进了领子里。他两只手里扣着诀，挡不得，只能躲，东一跳，西一滚，躲得极难看，有两回简直是连滚带爬。\n\n可他没有乱躲。东一跳，西一滚，二十招里，他往台子的西北角上挪了七步。那一角的台沿上，有一摊红油，花椒粒子还粘在石缝里。\n\n第二十二招上，秦雁握鞘的左手腾出两根指头，一掐，三根冰锥齐齐射了过来。小满一掌按在青石板上，身前拱起一片土墙，冰锥「噗噗噗」扎进土里；另一只手里已经冒出一团火，朝她脚底下打过去——她跳开的那一霎，他抢回了半步。台下有人叫起来：「两样！又是两样！」秦雁落了地，看了他一眼，那一眼里，是吃了一惊。\n\n有一剑来得太快，他来不及看脚，只得往后一仰，剑尖贴着他的鼻子过去，削下了他额前的一绺头发。那绺头发在半空里飘啊飘，飘到台下，正落在阿禾的小本子上。阿禾低头看了一眼，把它夹进了本子里，面无表情。她拿笔的那只手，大拇指的指甲，一直掐在另一只手的掌心里。\n\n可躲着躲着，小满觉出一样东西来，是他打记事起没有过的：他在笑。剑尖一回一回从他鼻子底下、耳朵边上过去，他浑身是口子，肋下那根骨头一喘一疼，嘴角却是往上的——这是头一回，对面站着一个比他强的人，一招一招都是真的，不藏，不让，不图他什么。他跟着那口剑转，像跟着爹在林子里追一头最好的鹿，追得心口发烫。台下的人起先屏着气，后来有人叫了一声好，再后来，一片一片地叫起来。\n\n三十招上，他到底给逼到了台边——他自己挑的那一段台边。脚后跟底下，青石板只剩半寸，再往后，是冻土；左脚边上一尺，便是那摊油。秦雁的剑尖，抵在了他喉咙上，凉丝丝的。台下静了。\n\n秦雁右手的袖子里，一直扣着一张黄纸雷符，符上的朱砂纹里有一线细细的蓝光游来游去，从第一招扣到这时候，始终没有掏出来。小满离她只有一剑远，看得见袖口里露出来的那一角。她往台下看了一眼：头一排蹲着几个刚进门的小孩子，正张着嘴看她，挤在台沿底下，离那几块青石板，不到一臂。那张符，她没有掏。小满的右手垂在袖子里，指头碰着了那三根痒痒针，碰了一碰，松开了。\n\n她不用掏。剑尖抵在他喉咙上，她只要往前送一寸，他便只有往后退，一退，便下去了。阿禾那张纸上写的就是这一寸：两回大比，赢的四场，场场如此。这一寸要来，他早晨在灶口就知道了；拿什么去换，是他自己定的。\n\n小满没有退。剑尖往前一送的那一霎，他往前迎了上去——身子一侧，让过喉咙，人贴着剑脊撞了进去。剑上那道青气从他左臂外侧犁过去，从肘弯一直犁到肩头，犁开一道口子，深的地方见了白，疼得他眼前白了一片；再偏半寸，这条胳膊便留在台上了。可他人已经到了秦雁跟前。三尺的剑气，到了一尺之内，使不开。他拿那只淌着血的左手，一把攥住了她左手里那截剑鞘。",
     "en": "This bout was nothing like the one before. Qin Yan's sword was a real sword and her moves were real moves. It was a magic tool of the lower grade, and in her hand, when the point went out, a streak of green qi on the blade went on another three feet; you could be ten feet away and the sword qi was already at you. Thrust after thrust came in, quick and steady, and below the stage people held their breath. For the first ten moves she used only half her strength: a fourth layer had thrown Lu Fang off the stage, and she wanted to see how. Xiaoman didn't watch her sword. He watched her feet: wherever the sword went, the feet moved there first; wherever the feet moved, the shoulder sank there first. But her feet were far cleaner than Lu Fang's, moving small and fast; he could see them, but his body was always half a step slow. At the seventh move the point slit his sleeve; at the fifteenth it slit his shoulder; at the twentieth a cut ran across his right cheek, hot, trickling down into his collar. His two hands were holding signs, so he couldn't block, only dodge, jumping this way, rolling that, dodging very uglily; twice it was little short of scrambling on all fours.\n\nBut he wasn't dodging at random. A jump this way, a roll that, and in twenty moves he had worked seven steps towards the north-west corner of the stage. On the stage's edge at that corner was a slick of red oil, Sichuan peppercorns still stuck in the cracks.\n\nAt the twenty-second move, Qin Yan freed two fingers of the left hand that held her scabbard and pinched, and three ice spikes shot at him together. Xiaoman slapped a palm onto the bluestone and a patch of earth wall heaved up in front of him; the ice spikes went *thup thup thup* into the earth. In his other hand a ball of fire had already come up, and he threw it at her feet; in the instant she jumped clear, he won back half a step. Someone below cried out: \"Two! Two again!\" Qin Yan landed and gave him one look, and in that look was surprise.\n\nOne thrust came too fast for him to watch the feet, and he could only lean back; the point passed along his nose and sheared off a lock of hair from his forehead. The lock of hair floated and floated in mid-air, floated down off the stage, and landed right on Ahe's little notebook. Ahe glanced down, tucked it into the notebook, her face blank. On the hand that held the pen, the thumbnail had been digging into the palm of her other hand all along.\n\nBut dodging and dodging, Xiaoman felt something he had never had since he could remember: he was smiling. Time after time the point went past under his nose, past his ear; he was cut all over, the bone in his side hurt with every breath, but the corners of his mouth turned up. This was the first time someone stronger than him stood facing him, every move real, nothing hidden, nothing given way, wanting nothing from him. He turned with that sword like following his father through the woods after the finest deer, following till his chest burned. At first the people below held their breath; later someone shouted \"Good!\", and later still it came in shout after shout.\n\nAt the thirtieth move he was forced at last to the stage's edge. The stretch of edge he had chosen himself. Under his heels there was half an inch of bluestone left; further back was frozen earth; a foot from his left foot was that slick of oil. The point of Qin Yan's sword rested against his throat, cool. Below, everything went quiet.\n\nUp the right sleeve of Qin Yan's robe, all this time, she had been holding a yellow paper thunder talisman; in the cinnabar lines of it a thin thread of blue light wandered to and fro. She had held it from the first move to now and never brought it out. Xiaoman was only a sword's length from her and could see its corner at her cuff. She looked down off the stage: crouched in the front row were a few small children just come into the sect, watching her open-mouthed, squeezed in under the stage's edge, less than an arm's length from those bluestone slabs. She didn't bring that talisman out. Xiaoman's right hand hung in his sleeve, and his fingers touched the three Tickle Needles, touched them once, and let them go.\n\nShe didn't need to bring it out. With the point against his throat, she had only to push one inch forward, and he could only step back; and one step back, he was off. That one inch was what Ahe's paper said: in two contests, four bouts won, every one of them like this. He had known at the stove that morning this inch was coming; what to trade for it, he had decided himself.\n\nXiaoman didn't step back. In the instant the point pushed forward, he went forward to meet it: body turned sideways to let it past his throat, he drove in along the flat of the blade. The green qi on the sword ploughed along the outside of his left arm, from the crook of the elbow right up to the shoulder, ploughed open a gash, and where it was deepest the white showed; the pain turned everything in front of him white. Half an inch further over and that arm would have stayed on the stage. But he was already right in front of Qin Yan. Three feet of sword qi, inside a foot, has no room to work. With his bleeding left hand, he seized the length of scabbard in her left hand."
-   }
+   },
+   "needs": {
+    "task": "dabi-shijie"
+   },
+   "refuse": {
+    "zh": "她的剑还没递过来。",
+    "en": "Her sword has not come at you yet."
+   },
+   "_was_duel": "Until 2026-10-31 the card duel `dabi-shijie` (foe-shijie, 斗法); since, the 格斗 board `dabi-shijie` before the exit (Hanli 10-28: 「故事里的战斗可以用格斗」), so the bout is played once, as 格斗; 阿禾's 底册 and the 相克 lines its level's `ready`."
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "dabi-shijie"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "dabi-shijie"
+  ]
+ }
 }

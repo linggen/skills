@@ -1660,6 +1660,7 @@
   },
   {
    "id": "zl-fengtou-pig",
+   "replaced": "fighter",
    "kit": "shouqiang",
    "story": "wm-fengtou",
    "title": {

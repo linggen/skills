@@ -108,21 +108,21 @@
         "zh": "纸上的字，他已经一个一个记进了肚子里。",
         "en": "Every word on it was already in his belly."
       },
-      "_reward": "The mark `diche` (all three lines by heart): 望气 in the 卢方 and 秦雁 bouts (the exits' game `sight`), and their lines at the door (`hints`)."
+      "_reward": "The mark `diche` (all three lines by heart): 望气 in the 卢方 and 秦雁 bouts (the exits' game `sight`), and their lines at the door (`hints`). Since 2026-10-31 those bouts are 格斗 boards: 阿禾's lines are in each level's `ready`, read to every player."
     },
     {
       "id": "dabi-sneeze",
       "_was": "时机 → 打地鼠 (2026-10-27, Hanli: 「游戏厅里都是经典游戏类型了吧, 还有你自己编的吗?」 — the last 时机 story board; sneeze.js stays a module the tests drive)",
       "kind": "board",
-      "game": "sadoushou",
-      "how": { "zh": "守住五行台：按住左右挪，撒豆成兵；打两边的卡壮大队伍，打中间的兽。", "en": "Hold the Five Elements stage: hold left or right to scatter beans; hit the side cards to grow the squad, the beasts in the middle." },
+      "game": "fighter",
+      "how": {"zh": {"desk": "何七一拳当胸打过来——背向他按住是挡，或让开。U 符文：喷嚏符落在他脚下，他打着喷嚏站不住；打空他的「稳」，他自己下台。WASD 走跳蹲，K 轻拳 · L 轻腿 · O 重拳 · ; 重腿。", "touch": "何七一拳当胸打过来——背向他按住是挡，或让开。点「符」：喷嚏符落在他脚下；打空他的「稳」，他自己下台。"}, "en": {"desk": "He Qi throws a fist at your chest: hold away to guard, or step aside. U talisman: the sneezing charm at his feet and he can't stand still; empty his footing and he walks off the stage. WASD walk, jump, crouch; K light punch · L light kick · O heavy punch · ; heavy kick.", "touch": "He Qi throws a fist at your chest: hold away to guard, or step aside. Tap 符: the sneezing charm at his feet; empty his footing and he walks off the stage."}},
       "period": "once",
       "title": { "zh": "喷嚏符 · 让一拳", "en": "The sneezing charm · Let the punch go by" },
       "grant": { "table": "task", "progress": 5 },
       "marks": { "clean": "sneeze-clean", "clumsy": "sneeze-clumsy" },
       "done_line": { "zh": "「沈小满，胜。」", "en": "\"Shen Xiaoman wins.\"" },
-      "deal": { "lv": "zl-dabi-sneeze" },
-      "_zhuli2": "2026-10-28 (Hanli: 「尽力让主力游戏多吧, 除非剧情需要其他类型」; doc/zhuli-placement-2026-10-28.md): a 主力 塔防 board — the story level `zl-dabi-sneeze` of sadoushou (`story: wm-dabi`; 兽潮 never deals it, the 游戏厅 keeps it off the ladder). Was rain. Id, pay and done line kept."
+      "_zhuli2": "2026-10-28 (Hanli: 「尽力让主力游戏多吧, 除非剧情需要其他类型」; doc/zhuli-placement-2026-10-28.md): a 主力 塔防 board — the story level `zl-dabi-sneeze` of sadoushou (`story: wm-dabi`; 兽潮 never deals it, the 游戏厅 keeps it off the ladder). Was rain. Id, pay and done line kept.",
+      "_gedou": "2026-10-31 (Hanli 10-28: 「故事里的战斗可以用格斗」): a 格斗 board, level `heqi` (its games.json fighter row) — 何七's fist let go by, the 喷嚏符 as the 符文, his 稳 emptied and he walks off; the grade clumsy under half of his 血 (`clumsyUnder`), so the marks hold. Id, pay, marks and done line kept; was sadoushou `zl-dabi-sneeze` (the row `replaced`)."
     },
     {
       "_cut": "Off wm-laoyin 2026-10-19 (Hanli: 「时机, 调息不好玩的可以删掉或者改进」): no board before 摸出那个油纸包; the task, row and module stay for the 游戏厅, and `cut` lets a save holding it offered let it go on load (state.mjs fitWorld).",

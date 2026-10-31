@@ -85,7 +85,7 @@ test("卷一's fights: every card a foe deals, and the foe, have their art in th
   const creatures = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(WORLD, 'creatures.json'), 'utf8')).creatures.map((c) => [c.id, c]));
   const kapai = new Set(boardFiles('kapai'));
   const fights = scenes1.flatMap((s) => (s.exits ?? []).filter((e) => e.game?.kind === 'duel').map((e) => e.game));
-  assert.ok(fights.length >= 10, "卷一's fights");
+  assert.ok(fights.length >= 8, "卷一's fights"); // the 大比's three rounds are 格斗 boards since 2026-10-31
   for (const f of fights) {
     for (const id of [...(f.foe?.deck ?? []), ...(f.foe?.extra ?? [])]) if (byId[id]?.art) assert.ok(kapai.has(`worlds/jiuding/${byId[id].art}`), `${f.id}: ${id}'s art`);
     const c = creatures[f.creature];

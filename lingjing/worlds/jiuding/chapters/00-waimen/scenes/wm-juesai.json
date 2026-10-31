@@ -55,37 +55,31 @@
     "en": "Watch his face; read out the common fund"
    },
    "means": "fights Ma Xiaobao: moves whenever the blotches flare, reads the common-fund account at every dodge, and at the edge catches the mirror's last beam in his palm and throws it back into Ma Xiaobao's face",
-   "game": {
-    "id": "dabi-ma",
-    "kind": "duel",
-    "creature": "foe-maxiaobao",
-    "retry": true,
-    "hints": [
-     {
-      "mark": [
-       "xiangke",
-       "xiangke-rough"
-      ],
-      "say": {
-       "zh": "相克：对面使金刃，火弹迎上去，刃口便卷——「金得火而缺」。",
-       "en": "What eats what: against a metal blade, a fireball curls the edge — \"metal is notched by fire.\""
-      }
-     }
-    ],
-    "foe": {
-     "hp": 2.35
-    }
-   },
-   "withdrawn": {
-    "zh": "马小宝的铜镜又亮了，他笑得更开心了。——再来。",
-    "en": "Ma Xiaobao's mirror flashes again, and he smiles even wider. — Again."
-   },
    "beat": [],
    "next": "wm-jiejing",
    "story": {
     "zh": "他两手捧起镜子。小满不看镜子，看他的脸。那脸上的斑「腾」地一红——小满已经往左边挪了两步，挪到了马小宝的右手边上。镜面这才一亮，一道黄光扑在他方才站的那块青石板上，石缝里的草登时白了一片。马小宝咬着牙，捧着镜子往右转。他吞了一夜的丹，身子是沉的，转得慢；他转过来，斑一红，小满又挪了，挪到了他的背后。小满落了地，开口道：「九月初十，公中，一块。」马小宝一愣，又转身，又照，照了个空：「十月初一，一块。」又转，又照：「冬月初一，两块。因由：畜生也要吃饭。」台下有人「噗」地笑出了声。马小宝咬着牙再照，他再挪：「腊月初一，两块。」一笔一笔，日子、数目，张口就来，一个也不错。\n\n人堆里忽然有人跟着喊了一嗓子，又尖又哑：「九月初十，我也一块！」是孙二狗。跟着便是第二个：「我两块！」第三个：「我也两块——他说我夜里打呼！」台下「哈哈哈」笑倒了一片。外门一百多号人，一个月一个月往那只描金匣子里交的，谁心里没有一本账？方才喊「跪」的那拨人，这时候一个接一个，报的全是数，报到后来，竟也有了节拍。台北面竹椅上，观主拢着手，没有动；周衡站在他身后，翻开了账簿，提起笔，记了一行。马小宝的表伯在台角咳了一声，又咳了一声，咳得谁也没理他。马小宝每照一回，脸上的斑便鼓一回，红一回，捧镜子的手一回比一回抖，喘气一口比一口粗。他站住了，咬着牙道：「躲？你就会躲？」小满没有答。",
     "en": "He held the mirror up in both hands. Xiaoman didn't watch the mirror. He watched his face. The blotches on it flushed red all at once, and Xiaoman had already moved two steps left, round to Ma Xiaobao's right-hand side. Only then did the mirror's face light, and a beam of yellow light struck the bluestone slab where he'd been standing, and the grass in the cracks went white in a patch. Ma Xiaobao set his teeth and turned right with the mirror. He'd swallowed a night's worth of pills and his body was heavy; he turned slowly. When he came round, the blotches flushed, and Xiaoman moved again, round behind him. Xiaoman landed and spoke: \"Tenth of the ninth month, Common Fund, one.\" Ma Xiaobao was thrown, turned again, shone again, shone at nothing: \"First of the tenth month, one.\" Turned again, shone again: \"First of the eleventh month, two. Reason: beasts have to eat too.\" Someone below snorted with laughter. Ma Xiaobao shone again through his teeth, and Xiaoman moved again: \"First of the twelfth month, two.\" Item by item, dates and amounts, straight off, not one wrong.\n\nSuddenly someone in the crowd joined in with a shout, shrill and hoarse: \"Tenth of the ninth month, me too, one!\" It was Sun Ergou. Then a second: \"Me, two!\" A third: \"Me too, two! He said I snore at night!\" Below the stage a whole stretch of people collapsed laughing. A hundred and more in the outer sect had been paying month after month into that gilded box; who didn't have an account of it in his head? The lot who'd been shouting \"Kneel!\" just now, one after another, were now all calling out numbers, and in the end it even had a beat. On the north side of the stage, in the bamboo chair, the Abbot sat with his hands tucked in and didn't move; Zhou Heng, standing behind him, opened the ledger, took up his brush, and wrote a line. Ma Xiaobao's uncle coughed at the stage's corner, coughed again, and nobody paid him any attention. Every time Ma Xiaobao shone the mirror, the blotches on his face swelled again, flushed again; the hands holding the mirror shook worse each time, and each breath came heavier. He stood still and said through his teeth: \"Dodging? Is dodging all you can do?\" Xiaoman didn't answer."
-   }
+   },
+   "needs": {
+    "task": "dabi-ma"
+   },
+   "refuse": {
+    "zh": "马小宝的铜镜还亮着。",
+    "en": "Ma Xiaobao's mirror is still shining."
+   },
+   "_was_duel": "Until 2026-10-31 the card duel `dabi-ma` (foe-maxiaobao, 斗法); since, the 格斗 board `dabi-ma` before the exit (Hanli 10-28: 「故事里的战斗可以用格斗」), so the bout is played once, as 格斗; 阿禾's 底册 and the 相克 lines its level's `ready`."
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "dabi-ma"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "dabi-ma"
+  ]
+ }
 }

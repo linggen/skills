@@ -33,8 +33,10 @@ test('the table is the road\'s, never edited by hand: tools/arcade-fights.mjs ma
 test('the 游戏厅 lists every fight foe of 卷一 — the story\'s and the roaming pools\' — grouped by 回, each with a name, a line and a portrait', async () => {
   const want = [...new Set(FIGHTS.filter((f) => f.reach !== false).map(keyOf))];
   assert.deepEqual(TABLE.fights.map((f) => f.key).sort(), [...want].sort());
-  for (const id of ['longzhi', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao', 'qiuyu', 'foe-shuanglong', 'foe-laojing', 'foe-jiuceng', 'zheng'])
+  for (const id of ['longzhi', 'gui', 'foe-zou', 'qiuyu', 'foe-shuanglong', 'foe-laojing', 'foe-jiuceng', 'zheng'])
     assert.ok(TABLE.fights.some((f) => f.id === id), id);
+  // the 大比's 卢方 · 秦雁 · 马小宝 are 格斗 boards since 2026-10-31: no card fight of theirs to list
+  for (const key of ['foe-lufang@wm-fushi/flip', 'foe-shijie@wm-lun2/dodge', 'foe-maxiaobao@wm-juesai/face']) assert.ok(!TABLE.fights.some((f) => f.key === key), key);
   for (const f of TABLE.fights) {
     for (const l of ['zh', 'en']) { assert.ok(f.name[l], `${f.key} name ${l}`); assert.ok(f.hint[l], `${f.key} hint ${l}`); assert.ok(f.brief[l]?.creature?.name, `${f.key} brief ${l}`); }
     assert.ok(f.art && fs.existsSync(new URL(f.art, WORLD)), `${f.key} portrait ${f.art}`);
@@ -46,7 +48,7 @@ test('the 游戏厅 lists every fight foe of 卷一 — the story\'s and the roa
   assert.deepEqual(at('qiuyu@09-lingcao/fight').setup.you.party.map((m) => m.id), ['ahe', 'sun']);
   assert.deepEqual(at('foe-laojing@01-laojing/dodge').setup.you.party.map((m) => m.id), ['ahe']);
   assert.equal(at('longzhi@00-longzhi/subdue').setup.you.pouch, undefined);
-  assert.deepEqual(at('foe-lufang@wm-fushi/flip').setup.you.pouch.map((p) => p.id), ['mend-pill', 'huiqi-pill']);
+  assert.deepEqual(at('foe-zou@wm-xirang/swallow').setup.you.pouch.map((p) => p.id), ['mend-pill', 'huiqi-pill']); // 卢方's bout is 格斗 since 2026-10-31
   // The picker's rows: the story's first, then the roaming beasts, every foe once.
   stubFetch();
   const { pickRows } = await import('../scripts/games/kapai.js');

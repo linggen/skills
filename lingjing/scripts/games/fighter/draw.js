@@ -639,6 +639,14 @@ function effects(ctx, s, art = {}, calm = false) {
       ctx.strokeStyle = 'rgba(240,238,220,.45)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(px - d * 20, py - 2); ctx.lineTo(px - d * 56, py - 1); ctx.stroke();
       continue;
     }
+    if (x.kind === 'beam') { // 马小宝's 铜镜: a bar of yellow light from the mirror to its head
+      const from = x.from ?? px + d * 200, g = ctx.createLinearGradient(from, 0, px, 0);
+      g.addColorStop(0, 'rgba(255,236,150,0)'); g.addColorStop(1, 'rgba(255,226,110,.95)');
+      ctx.strokeStyle = g; ctx.lineWidth = 14; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(from, py); ctx.lineTo(px, py); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,250,220,.95)'; ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2); ctx.fill();
+      continue;
+    }
     if (x.kind === 'quake') { // 土: the boards heave in a running ridge
       ctx.fillStyle = 'rgba(150,118,70,.92)'; ctx.strokeStyle = 'rgba(60,44,24,.9)'; ctx.lineWidth = 1.5;
       for (let i = 0; i < 3; i += 1) { const qx = px - d * i * 18, qh = 22 - i * 6 + Math.sin(s.t / 40 + i) * 3; ctx.beginPath(); ctx.moveTo(qx - 12, FLOOR); ctx.lineTo(qx - 4, FLOOR - qh); ctx.lineTo(qx + 6, FLOOR - qh + 5); ctx.lineTo(qx + 12, FLOOR); ctx.closePath(); ctx.fill(); ctx.stroke(); }

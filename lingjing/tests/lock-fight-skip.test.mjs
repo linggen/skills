@@ -79,5 +79,6 @@ test('a forward run that cannot win 马小宝 leaves him and goes on (the clock 
   const now = new Date('2026-10-27T07:00:00-03:00');
   const out = playTo(content, newState(content, 'zh', now), 'wm-laoyin', { now });
   assert.equal(out.state.scene, 'wm-laoyin');
-  assert.ok(out.state.wins?.['dabi-ma'] || out.state.fights_left?.['dabi-ma']);
+  // 马小宝's bout is a 格斗 board since 2026-10-31: played (or left by the page's clock), it is done either way
+  assert.equal(out.state.tasks?.['dabi-ma']?.status, 'done');
 });

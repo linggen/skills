@@ -354,6 +354,11 @@ function take(content, r, s, exit, policy) {
     r.nextDay();
     out = r.call('resolve', s, { ...argsFor(content, s, exit, r.now), ...pass });
   }
+  // 体力 spent (a run that leaves its boards spends no days on them): a player rests until it is back, then goes on.
+  for (let d = 0; d < 2 && out.result.refused === 'no-stamina'; d += 1) {
+    r.nextDay();
+    out = r.call('resolve', s, { ...(pass.pass && exit.key ? { exit: exit.id } : argsFor(content, s, exit, r.now)), ...pass });
+  }
   // 渡劫's throw missed (a 95% throw misses one save in twenty — 2026-10-21, a seed at 01-altar stuck at 09-cliff with
   // 「every way taken」): a player waits out the cauldron's cooldown, sits the 修为 it took back, and throws again.
   for (let k = 0; k < THROWS && out.result.ok && out.result.breakthrough?.success === false; k += 1) {

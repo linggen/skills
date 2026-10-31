@@ -758,6 +758,14 @@ export function fitWorld(saved, content) {
   // 银月 held out of the 木牌 for a board cut since: back in.
   const drop = known && state.her_game?.task && !known.has(state.her_game.task) ? ['her_game'] : [];
   // A system cut whole leaves its state behind (密室 2026-10-27: the room open, a rerun's 暗室, the day's count): gone.
+  // A card duel open (state.fight) whose id is a board now (the 大比's three rounds, 格斗 since 2026-10-31): let go, unplayed —
+  // the board stands in the scene (offered above), and no verb is held for a fight that no longer exists.
+  const boardNow = id => content.tasks?.tasks?.some(t => t.id === id && t.kind === 'board');
+  if (state.fight && boardNow(state.fight.game)) {
+    drop.push('fight');
+    const cid = state.fight.creature;
+    if (cid && state.duels?.[cid]?.outcome === 'open') { const { [cid]: _, ...duels } = state.duels; fix.duels = duels; }
+  }
   // An open 秘境 rerun (retired 2026-10-28) is left first, as leaving would have.
   const left = runLeft(state);
   Object.assign(fix, left.fix);

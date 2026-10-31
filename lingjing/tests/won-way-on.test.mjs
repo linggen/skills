@@ -116,8 +116,9 @@ test('every exit duel in the world goes the same way: one per scene, with a way 
       duels.push(`${sc.id}/${e.id}`);
     }
   }
-  // 三试, the 外门大比's three rounds, 秘境, 药园, 冰夷's 双龙, and the nine 鼎 fights.
-  for (const at of ['00-longzhi/subdue', 'wm-fushi/flip', 'wm-lun2/dodge', 'wm-juesai/face', '01-rise/stand', '02-lake/subdue']) assert.ok(duels.includes(at), at);
+  // 三试, 秘境, 药园, 冰夷's 双龙, and the nine 鼎 fights (the 外门大比's three rounds are 格斗 boards since 2026-10-31).
+  for (const at of ['00-longzhi/subdue', '01-rise/stand', '02-lake/subdue']) assert.ok(duels.includes(at), at);
+  for (const at of ['wm-fushi/flip', 'wm-lun2/dodge', 'wm-juesai/face']) assert.ok(!duels.includes(at), `${at}: 格斗 now`);
 });
 
 /* The same class (2026-10-15, live at 00-hall): the story view played the

@@ -6,8 +6,6 @@ import assert from 'node:assert/strict';
 import { loadContent, lint } from '../scripts/content.mjs';
 import { fitWorld, newState } from '../scripts/state.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
-import { fightSetup, readOf } from '../scripts/rules/cards.mjs';
-import { foeOf } from '../scripts/rules/world.mjs';
 import { TO_OPEN, walk } from './prologue.mjs';
 import * as sneeze from '../scripts/games/sneeze.js';
 import { earnedFor } from './earn.mjs';
@@ -168,18 +166,19 @@ test('刮鞋底 at the 草屋: a choice before the 拜师帖 — 瞿老\'s 「�
   }
 });
 
-test('the 大比 reads what 古六 taught: 底册 lends 望气 to the 卢方 and 秦雁 bouts, 相克 puts the foe\'s line at the door', () => {
-  const lu = CH.scenes['wm-fushi'].exits.find((e) => e.id === 'flip').game;
-  const s = at('wm-fushi', 'zhengdian');
-  assert.equal(readOf(s, lu), 0);
-  assert.equal(fightSetup(content, s, foeOf(content, lu), NOW, lu.id).you.insight ?? 0, 0);
+test('the 大比 reads what 古六 taught: 底册 and 相克 put the foe\'s lines on the 卢方 and 秦雁 bouts\' lead card (格斗 since 2026-10-31)', () => {
+  // the bouts are 格斗 boards now (the exits wait on them); a mark lends its line through the deal (look.mjs dealOf `hints`)
+  assert.equal(CH.scenes['wm-fushi'].exits.find((e) => e.id === 'flip').needs.task, 'dabi-lu');
+  const s = { ...at('wm-fushi', 'zhengdian'), tasks: { 'dabi-lu': { status: 'offered' } } };
+  const row = (x) => look(x, content, ctx()).tasks.find((t) => t.id === 'dabi-lu');
+  assert.equal(row(s).deal.hints, undefined, 'nothing learned, nothing shown');
+  assert.equal(row(s).deal.levels[0].id, 'fushi-lufang');
   const read = { ...s, marks: [...s.marks, 'diche', 'xiangke'] };
-  assert.equal(fightSetup(content, read, foeOf(content, lu), NOW, lu.id, null, readOf(read, lu)).you.insight, 1);
-  const door = look(read, content, ctx()).scene.exits.find((e) => e.id === 'flip').duel;
-  assert.equal(door.setup.you.insight, 1);
-  assert.ok(door.creature.hints.some((h) => /金得火而缺/.test(h)));
-  assert.ok(door.creature.hints.some((h) => /使完金刃，要喘一口气/.test(h)));
-  assert.equal(look(s, content, ctx()).scene.exits.find((e) => e.id === 'flip').duel.creature.hints, undefined, 'nothing learned, nothing shown');
+  const hints = row(read).deal.hints;
+  assert.ok(hints.some((h) => /金得火而缺/.test(h)));
+  assert.ok(hints.some((h) => /使完金刃，要喘一口气/.test(h)));
+  const qin = { ...at('wm-lun2', 'zhengdian'), marks: [...s.marks, 'diche'], tasks: { 'dabi-shijie': { status: 'offered' } } };
+  assert.ok(look(qin, content, ctx()).tasks.find((t) => t.id === 'dabi-shijie').deal.hints.some((h) => /剑气三尺/.test(h)));
 });
 
 /* ── the boards themselves ── */

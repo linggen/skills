@@ -28,6 +28,9 @@ export function bot(s, see = {}) {
   }
   // A flying sword coming down on him: stand it off as it lands.
   if (s.shots.some((x) => x.who === 'foe' && x.kind === 'feijian' && x.land - t < 260 + lead / 2)) return s.in.block ? null : { g: 'block', on: true };
+  // A beam no guard stops (马小宝's mirror): his face flushes in its wind-up — be in the air when it comes.
+  const fa = foe.act;
+  if (fa?.k === 'ice' && M.ice?.pierce && !fa.hit && t - fa.at >= fa.m.startup - 200 - lead / 2 && !me.air) return { g: 'jump' };
   // Ice coming: hop it.
   if (s.shots.some((x) => x.who === 'foe' && Math.abs(x.x - me.x) < 150 && Math.sign(x.vx) === -sd) && !me.air) return { g: 'jump' };
   // Her blade drawn back within reach: stand it off.
@@ -37,9 +40,10 @@ export function bot(s, see = {}) {
   // A chain: the first 拳 landed and she reels — 拳 again, then 腿.
   if (s.combo.n >= 1 && foe.stun > t && d < 140) return { g: s.combo.n >= 2 ? 'heavy' : 'light' };
   if (me.qi >= QI && d < 300 && !me.act) return { g: 'super' };
-  // Past twenty moves, lead her to the corner with the slick (the book's: 「往台子的西北角上挪了七步」), backing off as he blocks.
+  // Past twenty moves, lead her to the corner with the slick, where her point at his throat comes (a foe with no edge
+  // push — 卢方 — is driven onto the slick instead, by the blows as they come) (the book's: 「往台子的西北角上挪了七步」), backing off as he blocks.
   const toOil = -1, atEdge = me.x - (s.R?.stage?.left ?? 40) < 70;
-  if (foe.moves >= (M.edge.after ?? 24) - 6 && sd === -toOil && !atEdge) return s.in.dir === toOil ? null : { g: 'walk', dir: toOil };
+  if (s.R?.foe?.ai?.edge !== false && foe.moves >= (M.edge.after ?? 24) - 6 && sd === -toOil && !atEdge) return s.in.dir === toOil ? null : { g: 'walk', dir: toOil };
   // The spells (v4, 10-31): the 飞剑 from range, the 符文 under her while she is busy with a move.
   if (s.R?.me?.feijian && (me.cdFj ?? 0) <= 0 && d > 220 && !me.act && !me.air) return s.in.dir ? { g: 'walk', dir: 0 } : { g: 'feijian' };
   if (s.R?.me?.fuwen && (me.cdFw ?? 0) <= 0 && foe.act && foe.act.k !== 'block' && d < 300 && !me.act && !me.air) return s.in.dir ? { g: 'walk', dir: 0 } : { g: 'fuwen' };

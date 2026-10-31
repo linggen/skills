@@ -596,7 +596,11 @@ function dealOf(content, task, state, now) {
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   // A thing a 割藤 deal hangs on the vines, named in both languages (拾遗's 灵芝): the reader's.
   const item = task.deal?.item?.zh ? { item: { ...(task.deal.item.id ? { id: task.deal.item.id } : {}), name: pick(task.deal.item, state.lang) } } : {};
-  return { deal: { ...own, ...item, ...(levels ? { levels } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}) } };
+  // A level's lines a mark lends (格斗's 大比 bouts: 阿禾's 底册, the 相克 he learned in 古六 — `hints: [{ mark, say }]`): only
+  // those whose mark he holds, in his tongue; the board reads them on its lead card.
+  const marks = new Set(state.marks ?? []), held = m => [m].flat().some(x => marks.has(x));
+  const hints = (levels?.[0]?.hints ?? []).filter(h => held(h.mark)).map(h => pick(h.say, state.lang));
+  return { deal: { ...own, ...item, ...(levels ? { levels } : {}), ...(hints.length ? { hints } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}) } };
 }
 
 export function look(state, content, ctx) {

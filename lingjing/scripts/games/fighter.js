@@ -169,7 +169,7 @@ export function mount(container, opts = {}) {
   return levelFor(data).then((level) => run(container, opts, level));
 }
 
-function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell, peek, winHold = 0 } = {}, level = {}) {
+function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell, peek, winHold = 0, data = {} } = {}, level = {}) {
   const doc = container.ownerDocument, win = doc.defaultView, kind = inputKind(doc);
   sheet(doc);
   const root = doc.createElement('div');
@@ -326,7 +326,9 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   }
   // The lead card: the book's line, then (smaller) the keys or the buttons.
   const ready = say(level.ready, lang), hint = forInput(level.hint?.[lang] ?? level.hint?.zh ?? '', kind);
-  const leadText = [ready, hint].filter(Boolean).join('\n\n');
+  // …and what he learned that bears on this foe (the deal's `hints`: 阿禾's 底册, 相克 — rules/look.mjs dealOf, by his marks)
+  const learned = (data.hints ?? []).join('\n');
+  const leadText = [ready, learned, hint].filter(Boolean).join('\n\n');
   Promise.resolve(shell?.lead && leadText ? shell.lead(leadText, { auto: 'read', lang }) : null).then(() => {
     if (done) return;
     started = true;

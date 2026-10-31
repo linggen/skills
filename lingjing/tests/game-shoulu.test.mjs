@@ -15,7 +15,7 @@ const reg = JSON.parse(readFileSync(new URL('../worlds/jiuding/games.json', impo
 const row = reg.games.find((g) => g.id === 'shoulu' && g.levels);
 const all = levelsFrom(row);
 const levels = ladderOf(all); // the 游戏厅's ladder; the story levels (a `story` scene) stand after it
-const stories = all.filter((l) => l.story);
+const stories = all.filter((l) => l.story && !l.replaced); // a story level whose board a newer game took (`replaced`: 接镜, 格斗 since 2026-10-31) is the 游戏厅's 旧版 only
 const creatures = new Set(JSON.parse(readFileSync(new URL('../worlds/jiuding/creatures.json', import.meta.url), 'utf8')).creatures.map((c) => c.id));
 const places = new Set(['ji', 'jing', 'liang', 'qing', 'xu', 'yan', 'yang', 'yong', 'yu'].flatMap((p) => JSON.parse(readFileSync(new URL(`../worlds/jiuding/places/${p}.json`, import.meta.url), 'utf8')).places.map((x) => x.id)));
 const SEEDS = ['a', 'b', 'c', 'd', 'e'];

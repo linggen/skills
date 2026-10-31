@@ -67,6 +67,10 @@ const KEPT_PAIRS = {
   'jin-chat-ge>jin-chat-617': '今一, one scene (j01-anatomy): 古籍部 then 六一七 — two chats; the jinchat boards\' own pass',
   'baoming-yinyue>jin-chat-ma': '第四回\'s last chat (银月), 今二\'s first (马小宝\'s video) — a 回 and a line turn between; the jinchat boards\' own pass',
   'jin-chat-dark>jin-quxian': '今三: 闭关三日 (节奏, home-made) cut between them 2026-10-27 (Hanli: 「这个是你发明的吧, 去掉吧」); two chats until a classic board stands there again',
+  'dabi-sneeze>dabi-lu': '第六回, the 大比: bout after bout on the 五行台, each 格斗 (Hanli 10-28: 「故事里的战斗可以用格斗」 — every 大比 bout, 2026-10-31); each pair differs by its win — 何七 yields (his 稳 emptied), 卢方 skids off the tallow (the hook as he stamps)',
+  'dabi-shijie>yingjian-hook': '第六回, the 大比: bout after bout on the 五行台, each 格斗 (Hanli 10-28: 「故事里的战斗可以用格斗」 — every 大比 bout, 2026-10-31); each pair differs by its win — 秦雁\'s thirty moves stood through, then the book\'s 迎 and 勾 at the edge',
+  'yingjian-hook>dabi-ma': '第六回, the 大比: bout after bout on the 五行台, each 格斗 (Hanli 10-28: 「故事里的战斗可以用格斗」 — every 大比 bout, 2026-10-31); each pair differs by its win — 秦雁 off the oil, then 马小宝\'s beams ducked while his 稳 is emptied',
+  'dabi-ma>jiejing-mirror': '第六回, the 大比: bout after bout on the 五行台, each 格斗 (Hanli 10-28: 「故事里的战斗可以用格斗」 — every 大比 bout, 2026-10-31); each pair differs by its win — 马小宝 winded, then six beams at the edge, the last caught',
 };
 test('no story board follows one of its own kind in reading order (the kept pairs aside, each with its reason)', () => {
   let last = null;

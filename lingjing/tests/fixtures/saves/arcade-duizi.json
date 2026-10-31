@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 630,
-  "wealth": 1356,
+  "wealth": 1473,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -42,6 +42,7 @@
    "longxu-cao": 1,
    "zixu-zhi": 1,
    "zou-purse": 1,
+   "talisman": 1,
    "duan-dao": 1,
    "qi-pill": 6,
    "dingtai": 3,
@@ -59,6 +60,7 @@
    "zheng"
   ],
   "wear": {
+   "weapon": "old-bow",
    "robe": "grey-robe"
   },
   "duels": {
@@ -85,18 +87,6 @@
     "outcome": "won"
    },
    "foe-zou": {
-    "day": "2026-10-01",
-    "outcome": "won"
-   },
-   "foe-lufang": {
-    "day": "2026-10-01",
-    "outcome": "won"
-   },
-   "foe-shijie": {
-    "day": "2026-10-01",
-    "outcome": "won"
-   },
-   "foe-maxiaobao": {
     "day": "2026-10-01",
     "outcome": "won"
    }
@@ -581,12 +571,27 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "dabi-lu": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "shuigang-qinyan": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "dabi-shijie": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "yingjian-hook": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
+   "dabi-ma": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -683,8 +688,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 3260,
-   "wealth": 1359
+   "progress": 3671,
+   "wealth": 1476
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -927,9 +932,6 @@
    "tuqiang",
    "mutang",
    "yangzhen",
-   "houtu",
-   "luying",
-   "suijin",
    "huochai"
   ],
   "card_from": {
@@ -1034,30 +1036,6 @@
     "chapter": "00-waimen",
     "scene": "wm-zhaojing"
    },
-   "houtu": {
-    "how": "win",
-    "creature": "foe-lufang",
-    "day": "2026-10-01",
-    "place": "zhengdian",
-    "chapter": "00-waimen",
-    "scene": "wm-fushi"
-   },
-   "luying": {
-    "how": "win",
-    "creature": "foe-shijie",
-    "day": "2026-10-01",
-    "place": "zhengdian",
-    "chapter": "00-waimen",
-    "scene": "wm-lun2"
-   },
-   "suijin": {
-    "how": "win",
-    "creature": "foe-maxiaobao",
-    "day": "2026-10-01",
-    "place": "zhengdian",
-    "chapter": "00-waimen",
-    "scene": "wm-juesai"
-   },
    "huochai": {
     "how": "story",
     "day": "2026-10-01",
@@ -1136,11 +1114,6 @@
     "met": 1,
     "won": 1,
     "first": "2026-10-01"
-   },
-   "foe-lufang": {
-    "met": 1,
-    "won": 1,
-    "first": "2026-10-01"
    }
   },
   "companion": {
@@ -1198,8 +1171,11 @@
     "koujue-kou": 1,
     "zhaojing-mirror": 1,
     "dabi-sneeze": 1,
+    "dabi-lu": 1,
     "shuigang-qinyan": 1,
+    "dabi-shijie": 1,
     "yingjian-hook": 1,
+    "dabi-ma": 1,
     "jiejing-mirror": 1,
     "laoyin-qi": 1,
     "fengtou-pig": 1,
@@ -1256,8 +1232,11 @@
    "koujue-kou",
    "zhaojing-mirror",
    "dabi-sneeze",
+   "dabi-lu",
    "shuigang-qinyan",
+   "dabi-shijie",
    "yingjian-hook",
+   "dabi-ma",
    "jiejing-mirror",
    "laoyin-qi",
    "fengtou-pig",
@@ -1284,9 +1263,14 @@
    "mijing-xiongya": 1
   },
   "cards_new": [
+   "huoshe",
    "huiqi",
+   "huodan",
+   "jinren",
+   "bingzhui",
+   "tuqiang",
    "mutang",
-   "suijin",
+   "yangzhen",
    "huochai"
   ],
   "stretch": {

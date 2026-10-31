@@ -62,7 +62,9 @@ for (const policy of ['win', 'skip']) {
     assert.ok(late.traits?.length, 'roots read');
     assert.ok((late.cards ?? []).length > (at.get('古三').s.cards ?? []).length, 'cards won on the way');
     // 狰 is won with a 萝卜 at the 药园, not fought (cards.md § 1): it walks with him instead.
-    for (const id of ['longzhi', 'gui', 'foe-zou', 'foe-lufang', 'foe-shijie', 'foe-maxiaobao']) assert.equal(late.duels?.[id]?.outcome, 'won', `${id} won by the settle`);
+    for (const id of ['longzhi', 'gui', 'foe-zou']) assert.equal(late.duels?.[id]?.outcome, 'won', `${id} won by the settle`);
+    // the 大比's bouts are 格斗 boards since 2026-10-31: played (or left) on the way
+    for (const id of ['dabi-sneeze', 'dabi-lu', 'dabi-shijie', 'yingjian-hook', 'dabi-ma', 'jiejing-mirror', 'fengtou-pig']) assert.equal(late.tasks?.[id]?.status, 'done', `${id} done`);
     assert.ok(late.cast.includes('zheng'), '小狰 walks with him');
     assert.ok(late.hunted?.['mijing-xiongya'] >= 1, 'the 凶崖\'s guard fought down');
     assert.notEqual(late.tier, at.get('古一').s.tier, 'a realm climbed');
@@ -91,8 +93,9 @@ test('the command: seed --at writes only the scratch save, says where it stands,
     assert.equal(out.ok, true, JSON.stringify(out));
     assert.equal(out.scene, 'j09-noise');
     for (const k of ['place', 'realm', 'xiuwei', 'lingshi']) assert.ok(out[k] != null, k);
-    assert.ok(out.days >= 1, 'a real day waited on the way: the scratch clock shifted');
-    assert.ok(fs.existsSync(path.join(data, 'saves', 'sd-a', 'clock.json')));
+    // the days the run waited (the 大比's card duels lost overnight once cost one; its bouts are 格斗 boards since 2026-10-31)
+    assert.ok(Number.isInteger(out.days) && out.days >= 0, 'the days the run waited, said');
+    assert.equal(fs.existsSync(path.join(data, 'saves', 'sd-a', 'clock.json')), out.days > 0, 'a day waited: the scratch clock shifted');
     assert.equal(fs.existsSync(path.join(data, 'state.json')), false, 'the player\'s own save untouched');
     const lk = cli('look', '--save=sd-a').out;
     assert.equal(lk.scene?.id, 'j09-noise');

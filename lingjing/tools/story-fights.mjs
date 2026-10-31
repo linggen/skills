@@ -86,9 +86,8 @@ export const FIGHTS = [
   { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', scene: '00-longzhi/subdue', band: [0.6, 0.92], nopills: true, note: 'tutorial; before the 灵根 test he holds no 灵石 and no pill' },
   { id: 'gui', name: '蛫 (秘境)', at: 'h07', scene: 'wm-wangzuo/open' },
   { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', scene: 'wm-xirang/swallow', trial: true, unforced: true },
-  { id: 'foe-lufang', name: '卢方 (大比)', at: 'h08', scene: 'wm-fushi/flip' },
-  { id: 'foe-shijie', name: '秦雁 (试 · 三十招)', at: 'h08b', scene: 'wm-lun2/dodge', trial: true, unforced: true },
-  { id: 'foe-maxiaobao', name: '马小宝 (大比)', at: 'h08c', scene: 'wm-juesai/face' },
+  // 卢方 · 秦雁 (试 · 三十招) · 马小宝 at the 大比 (wm-fushi/flip · wm-lun2/dodge · wm-juesai/face): 格斗 since 2026-10-31 (the boards
+  // dabi-lu · dabi-shijie · dabi-ma, games/fighter.js) — no card fight to weigh.
   { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight', band: [0.5, 0.72], pilled: [0.55, 1], note: 'Hanli 10-16: 55–65 won, really lost ≥20%' },
   // 秦雁 (崖顶 · 试) at 09-futian/spar: 格斗 since 2026-10-28 (the board futian-spar, games/fighter.js) — no card fight to weigh.
   { id: 'foe-jiuceng', name: '九层师兄 (大比决赛)', at: 'h09b', scene: '09-laba/dabi', band: [0.4, 0.75], pilled: [0.6, 1], note: '2026-10-21: weighed across ten save seeds (the 练气 curve deals each player his own ten) — 49% bare on average, 15–67%; this fixture\'s ten 52%' },
