@@ -55,7 +55,7 @@ test('a won exit duel: the page finds its way on from Look, Resolves it, and the
   assert.equal(way?.id, 'subdue', 'the exit the win belongs to');
   const on = resolve(fought.state, content, ctx(), { exit: way.id });
   assert.equal(on.result.ok, true, JSON.stringify(on.result));
-  assert.equal(on.state.scene, '00-hall');
+  assert.equal(on.state.scene, '00-queue'); // the queue in the 正殿 before the stone (the reading gaps, 2026-10-31)
   // The exit's own story is owed to the story view (Look's tell_owed → the page draws it).
   assert.equal(look(on.state, content, ctx()).tell_owed, true);
   assert.match(tellOf(content, on.state).tell.find(t => t.id === '00-longzhi/subdue').text, /……左边/);
@@ -95,7 +95,7 @@ test('heal: a save left with the win in hand and the exit untaken shows its way 
   const before = panelActsHtml(page(look(atLongzhi(), content, ctx())));
   assert.match(before, /data-panel-duel="gate-longzhi"/);
   // And the way on, tapped, goes where the win goes.
-  assert.equal(resolve(stuck, content, ctx(), { exit: 'subdue' }).state.scene, '00-hall');
+  assert.equal(resolve(stuck, content, ctx(), { exit: 'subdue' }).state.scene, '00-queue');
 });
 
 test('every exit duel in the world goes the same way: one per scene, with a way on', () => {

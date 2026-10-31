@@ -142,6 +142,8 @@ export const TO_HALL = [
   ['resolve', { exit: 'on' }],
   ['won', { id: 'gate-longzhi' }],
   ['resolve', { exit: 'subdue' }],
+  // the queue in the 正殿 (00-queue, the reading gaps 2026-10-31): its way on waits on the 空石座 (boardsFor looks)
+  ['resolve', { exit: 'on' }],
   // 测灵石 (气走经脉, 2026-10-26): his hand on the stone, before it lights (the 生辰 card's way on waits for it)
   ['win', { id: 'hall-celing' }],
   ['task', { action: 'done', id: 'hall-celing' }],

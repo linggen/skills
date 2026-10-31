@@ -15,6 +15,10 @@ import { placeOf } from '../scripts/rules/world.mjs';
 process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
 const EV = content.balance.events.yaoshou;
+// The walk and the pool's deals read the local clock (dayKey, the hour): one fixed instant plays a different save and
+// deals a different hand in another timezone — under CI's UTC the haunt test drew no winning line (red from 2026-10-31,
+// green here at -03:00). The file runs on one clock wherever it runs: the zone it was written in.
+process.env.TZ = 'America/Sao_Paulo';
 const MIN = 60_000, HOUR = 60 * MIN;
 const at = now => ({ now, quests: [] });
 

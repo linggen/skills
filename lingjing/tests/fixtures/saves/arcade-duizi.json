@@ -128,6 +128,7 @@
    "00-luoshu",
    "00-linzi",
    "00-longzhi",
+   "00-queue",
    "00-hall",
    "00-waimen",
    "00-mijing",
@@ -1057,6 +1058,7 @@
    "00-chushan/tracks",
    "00-heisong/stone",
    "00-halfyear/incense",
+   "00-queue/seat",
    "wm-jiangtang/beard",
    "wm-tonglu/body",
    "wm-mingpai/tag"
@@ -1328,6 +1330,7 @@
    "00-luoshu",
    "00-linzi",
    "00-longzhi",
+   "00-queue",
    "00-hall",
    "00-waimen",
    "00-mijing",

@@ -884,8 +884,24 @@
       },
       {
        "kind": "read",
-       "chars": 5146,
-       "run": 5146,
+       "chars": 2816,
+       "run": 2816,
+       "over": true
+      },
+      {
+       "kind": "seen",
+       "id": "seat",
+       "scene": "00-queue",
+       "exit": "on",
+       "title": {
+        "zh": "空石座",
+        "en": "The empty stone seat"
+       }
+      },
+      {
+       "kind": "read",
+       "chars": 2330,
+       "run": 2330,
        "over": true
       },
       {
@@ -914,12 +930,12 @@
       "board": 7,
       "fight": 1,
       "riddle": 0,
-      "seen": 0,
+      "seen": 1,
       "breakthrough": 0,
       "piece": 1
      },
      "zhuli": 4,
-     "longest": 5146,
+     "longest": 2816,
      "roaming": 0,
      "side": []
     }
