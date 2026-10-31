@@ -117,8 +117,10 @@ export function chorePlay(content, state, period) {
    a pill is a share of the layer by its 转, at its own realm; one below is a lesser thing). 1 at or under its 阶. */
 export function pillBelow(content, state, tier) {
   const below = content.balance?.pills?.below, tiers = content.ladder?.tiers ?? [];
-  const gap = tiers.findIndex(t => t.id === state?.tier) - tiers.findIndex(t => t.id === tier);
-  return below != null && tier && gap > 0 ? below ** gap : 1;
+  // A 阶 off the ladder (仙阶, balance.json pills `by_tier`) is never below him: 仙气自己找路.
+  const own = tiers.findIndex(t => t.id === tier);
+  const gap = tiers.findIndex(t => t.id === state?.tier) - own;
+  return below != null && tier && own >= 0 && gap > 0 ? below ** gap : 1;
 }
 
 /* What a night's 闭关 is a share of the layer (play_pay.seclusion.night over rewards.json seclusion `rest_hours`): an hour's

@@ -774,7 +774,7 @@ locks the two apart.
   champion's prize): `foundation-pill` (一转, `zhuan: 1`) and
   `foundation-pill-9` are `sold: []` — a gift, the sect's, or the furnace's.
 
-### 丹药 in the game 【已建】 (炸炉 · 仙丹 【在建 · proposals】)
+### 丹药 in the game 【已建】
 
 The grades — 阶 by realm, 转 一至九, 品 by toxin, 仙丹, the furnace's origin and
 its rule (破境丹 one 阶 above its owner), where herbs come from — are story DESIGN § 六·五.
@@ -800,17 +800,28 @@ The furnace's pills are their own items (`mend-pill-9` 第一炉, `qi-pill-9` fr
   he is 练气 — none once he has laid the foundation; 结丹's come with 卷二's rows.
 - **方子 that give more than one** (fantong.json recipes `n`): 古八's 九节聚气 — the 十年黄精 fed alone gives three
   三转聚气丹, the book's pot (§ Per-回 › 古八).
-- **炸炉 for mortal furnaces — proposal** 【在建】 (no build): the book's 凡人丹炉十炉炸七 belongs to a furnace he
-  tends himself, which 卷一 has only as the 丹房's 旁炉 (古八, 「料你自己碾，火你自己看。炼糊了，碾了做药引」). Proposal:
-  a 旁炉 verb from 古八 on, at the 丹房 (a place `has.furnace`), fed herbs he holds; the rules roll each batch from a
-  table — 炸 · 糊 (the herbs to 药引, a material) · 一转 · 二转 — whose odds move with what he has done there (a count
-  per save, 闵丹师's 「首尾武，中间文」 as the step that lifts 二转), never the 饭桶's lottery; a 炸 costs the herbs and a
-  little 体力, nothing more. The 饭桶 never 炸s (it is 老君's). Asks Hanli first: is the 旁炉 a thing he plays at all, or
-  the book's cover story only (memory 2026-10-09: 「小满 has no furnace of his own」)?
-- **仙丹 after the finale — proposal** 【在建】 (no build): 仙阶, no 纹, its own glow (story § 六·五); never in 卷一.
-  Proposal: items with `tier: "xian"` (a tier outside the ladder's nine, read by the lint as 仙阶), `zhuan` absent,
-  `of` its family at `by_tier.xian`; edible at any realm (仙气自己找路), clears 丹毒 like a 九转; the 饭桶 may give one
-  only after 卷一's last scene (a pool row with `after`). Waits for 卷二's opening re-plan.
+- **炸炉 · the 旁炉** 【已建】 (2026-10-31; rules/panglu.mjs, worlds/jiuding/panglu.json; tests/panglu.test.mjs): the
+  book's 凡人丹炉十炉炸七 belongs to a furnace he tends himself — the 丹房's 旁炉, his from 09-laba (「料你自己碾，火你自己看。
+  炼糊了，碾了做药引。」). It stands where a place `has.furnace` (the 药园: the 丹房's scenes stand there), opens once
+  `after` (09-laba) is done, and shows as the 储物袋's 旁炉 tab (Mac panglu.js; phone lingjing_today.dart). One herb a
+  batch, from `herbs` (the 丹房's 下脚料 黄精烂根 · 黄芪残株 and the plain herbs of the hills — none a shelf sells, so no
+  shop arbitrage); `per_day` 2 batches (the book: 一个月三四炉). The rules roll each batch from `bands` by how many
+  batches this save has fired (`state.panglu.n`), seeded by the save, the day and that count (firing again never
+  re-rolls): 炸 (nothing; the herb and 2 体力, rewards.json stamina.cost `panglu`) · 糊 (药引 `yaoyin`, a material — a herb
+  to the 饭桶) · 一转 (the 聚气丹) · 二转 (`qi-pill-2`, 5.5% of the layer). 炸 falls and pills rise with the count
+  (40 · 30 · 20 · 10% 炸 at 0 · 4 · 8 · 16 batches); 闵丹师's 「首尾武，中间文」 is said on the batch that reaches `lesson`
+  (8), and only bands from it have 二转. A batch pays no 修为 — a pill eaten does (丹毒 as any). Never the 饭桶's
+  lottery: the 饭桶 is 老君's and never 炸s. tools/numbers.mjs meets its pills at 古八 (h09); the pacing model does not
+  count it (two batches a day, ≤ ~5% of a layer at the best band). The odds, `lesson`, `per_day`, one pill a batch and
+  the 药园 as the furnace's place: the agent's picks (Hanli delegated, 10-31).
+- **仙丹** 【已建】 (2026-10-31; tests/xiandan.test.mjs): 仙阶, no 纹, its own glow (story § 六·五); never in 卷一. One item,
+  `xian-pill` (仙丹, family `qi`): `tier: "xian"` — a 阶 off the ladder that balance.json pills `by_tier` names (the
+  lint lets such a pill stand only with no `zhuan`); its share `by_tier.xian` 0.4 of the layer (above 九转's 0.3; from the
+  master table, master.lines.gu.pills.xian); never `below` him at any realm (仙气自己找路, playpay.mjs pillBelow); it
+  clears 丹毒 as a 九转 (balance.json dandu `clears_tiers`). The pouch draws it with no 纹 and a glow (`glow` on its
+  brief). The 饭桶 gives one only after 卷一's last scene: a pool row with `after: "01-end"` (rules/fantong.mjs rowOpen),
+  so the 图鉴 of a 卷一 save never counts it. The share, one item, and the pool row (weight 1, 品阶 4): the agent's picks
+  (Hanli delegated, 10-31).
 
 **丹囊 — 灵石 buys pills for fights** (Hanli 2026-10-16, 「灵石要有用」): at a fight's door he packs up to
 three pills from the bag (his last pick remembered); in the fight each is a free action, one a turn

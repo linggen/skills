@@ -359,6 +359,7 @@ const view = {
   pouchToss: null, //    the thing asking 丢? on the pane, until answered
   pouchPane: null, //    'held' (洞府 · 待取), 'deck' (牌组) or 'fantong' (饭桶) in the grid's place
   fantong: null, //      the rules' 饭桶 brief (rules/fantong.mjs), read when its board opens
+  pangluLast: null, //   the 旁炉's last batch here (rules/panglu.mjs fire): its outcome and words, shown in its pane
   handin: null, //       an errand handed in: { place, title, seen, paid }, until put away or walked on
   spoils: null, //       what a won fight left: { place, cards, items }, until put away or walked on
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
@@ -3205,7 +3206,7 @@ function drawPouch() {
   el.hidden = !open;
   if (!open) { drawnPouch = null; ftKailu.stop(); return; }
   const fantongPane = view.pouchPane === 'fantong' ? kailuPaneHtml(lang()) : null;
-  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongPane },
+  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongPane, pangluLast: view.pangluLast },
     { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
   if (view.pouchPane === 'fantong') ftKailu.show(view.fantong, { lang: lang(), reducedMotion: stillMotion() });
@@ -3223,6 +3224,14 @@ const feedFantong = (ids, lingshi, press) => write('fantong', { action: 'feed', 
 async function fedFantong(r) {
   if (!r?.ok) return;
   keep({ fantong: r.fantong ?? view.fantong });
+  const g = await verb('gear').catch(() => null);
+  if (view.gearOpen && g?.gear) keep({ gear: g.gear });
+  await refresh();
+}
+/* 旁炉 (rules/panglu.mjs): a herb in, one batch — the page's own verb; the bag and Look read again, the words kept in the pane. */
+async function firePanglu(id) {
+  const r = await write('panglu', { action: 'fire', id }).catch(failed);
+  keep({ pangluLast: r?.ok ? { outcome: r.outcome, say: r.say } : null, gearNote: r?.ok ? null : refusal(r) });
   const g = await verb('gear').catch(() => null);
   if (view.gearOpen && g?.gear) keep({ gear: g.gear });
   await refresh();
@@ -3626,6 +3635,7 @@ const CLICKS = [
     show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null });
     if (el.dataset.pouchPane === 'fantong') run('fantong:look', loadFantong);
   }],
+  ['[data-panglu-fire]', (el) => { if (!el.matches(':disabled')) run(`panglu:fire:${el.dataset.pangluFire}`, () => firePanglu(el.dataset.pangluFire)); }],
   ['[data-pouch-item]', (el) => show({ pouchSel: el.dataset.pouchItem, pouchToss: null, pouchPane: null })],
   ['[data-sell]', (el) => run(`item:sell:${el.dataset.sell}`, () => useItem(el.dataset.sell, 'sell'))],
   ['[data-toss]', (el) => show({ pouchToss: el.dataset.toss })],

@@ -15,6 +15,7 @@ import { fightStuck } from './skips.mjs';
 import { clone, paysOf, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { danduBrief } from './dandu.mjs';
+import { pangluBrief } from './panglu.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief, prng } from './fortune.mjs';
 import { withoutLocked } from './locks.mjs';
@@ -718,6 +719,8 @@ export function look(state, content, ctx) {
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
     ...(danduBrief(content, state) ? { dandu: danduBrief(content, state) } : {}),
+    // 旁炉 (rules/panglu.mjs): at the 丹房's side furnace once it is his — the herbs he can put in, today's batches left.
+    ...(pangluBrief(content, state, ctx.now) ? { panglu: pangluBrief(content, state, ctx.now) } : {}),
     // 闭关 running: the hours in and what 出关 would grow now (rules/seclusion.mjs).
     ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : {}),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },

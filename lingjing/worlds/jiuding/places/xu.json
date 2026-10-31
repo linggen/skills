@@ -796,6 +796,7 @@
    ],
    "has": {
     "creature": "zheng",
+    "furnace": true,
     "games_pool": {"from": ["yaoyuan-zhuochong", "huarong"], "today": 1}
    },
    "line": {

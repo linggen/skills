@@ -16,9 +16,11 @@ const turnsOf = state => Math.max(0, Number(state.dandu) || 0);
    Returns what changed ({ owed } or { cleared }), or null when nothing did. */
 export function eatPill(content, s, id) {
   const D = RULE(content), item = itemOf(content, id);
-  if (!D || item?.kind !== 'pill' || !item.zhuan) return null;
+  // A 仙丹 (`clears_tiers`: 仙阶, no 转) clears them as a 九转 does.
+  const xian = (D?.clears_tiers ?? []).includes(item?.tier);
+  if (!D || item?.kind !== 'pill' || (!item.zhuan && !xian)) return null;
   const had = turnsOf(s);
-  if (item.zhuan >= (D.clears ?? Infinity)) {
+  if (xian || item.zhuan >= (D.clears ?? Infinity)) {
     if (!had) return null;
     delete s.dandu;
     return { cleared: had };

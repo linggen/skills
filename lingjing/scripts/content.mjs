@@ -192,6 +192,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     festivals: fs.existsSync(path.join(dir, 'festivals.json')) ? readJson(path.join(dir, 'festivals.json')) : null,
     // 喂饭桶's free play (rules/fantong.mjs): inputs → pools → outputs, the limit, the 方子.
     fantong: fs.existsSync(path.join(dir, 'fantong.json')) ? readJson(path.join(dir, 'fantong.json')) : null,
+    // 旁炉 · 炸炉 (rules/panglu.mjs): the 丹房's side furnace he tends himself — herbs in, a batch rolled by his count.
+    panglu: fs.existsSync(path.join(dir, 'panglu.json')) ? readJson(path.join(dir, 'panglu.json')) : null,
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -231,9 +233,17 @@ export function withBalance(content) {
 /* 丹药 (balance.json `pills`, 数值系统 phase 2): a pill of a family (`of`) pays its 转's share of the layer (`share`, 一转 5% ·
    三转 15% · 九转 30% — derived by tools/numbers.mjs --apply from the master table), on the `pill` table, read as the
    练气一层 the book is written against (play_pay.authored.base) and so a share at every layer (core.mjs amountsOf); past its
-   own 阶 less (`below`, playpay.mjs pillBelow). null for a pill of no family. */
+   own 阶 less (`below`, playpay.mjs pillBelow). A 仙丹 (a 阶 outside the ladder, `by_tier`: 仙阶) has no 转: its share is
+   its 阶's. null for a pill of no family. */
+export const pillShare = (balance, item) => {
+  const P = balance?.pills;
+  return P?.by_tier?.[item?.tier] ?? P?.share?.[(item?.zhuan ?? 1) - 1] ?? null;
+};
+/* A 阶 outside the ladder that the pills know (balance.json pills `by_tier`: 仙阶) — no 转, no 纹, never below him. */
+export const offLadderTier = (content, tier) => Boolean(tier && content?.balance?.pills?.by_tier?.[tier] != null
+  && !(content.ladder?.tiers ?? []).some(t => t.id === tier));
 export function pillPay(balance, item) {
-  const P = balance?.pills, share = P?.share?.[(item?.zhuan ?? 1) - 1];
+  const P = balance?.pills, share = pillShare(balance, item);
   if (item?.of == null || !P?.families?.includes(item.of) || share == null) return null;
   return Math.round(share * (balance.play_pay?.authored?.base ?? 470) * 10) / 10;
 }
@@ -1691,8 +1701,13 @@ function lintFrom(content, bad) {
 /* 丹药 (design.md § 丹药): every pill says its 阶 (`tier`, a realm of the ladder) and its 转 (一至九); a family
    (`of`) is one balance.json `pills` prices, and only for a pill that pays 修为. */
 function lintPill(content, item, where, bad) {
-  if (!content.ladder.tiers.some(t => t.id === item.tier)) bad(where, `a pill's 阶 (tier) is a realm of the ladder, not ${item.tier}`);
-  if (!(Number.isInteger(item.zhuan) && item.zhuan >= 1 && item.zhuan <= 9)) bad(where, 'a pill\'s 转 (zhuan) is a whole number, 一 to 九');
+  // 仙阶 (balance.json pills `by_tier`, story DESIGN § 六·五: 仙丹没有纹): a 阶 outside the ladder, and no 转 at all.
+  if (offLadderTier(content, item.tier)) {
+    if (item.zhuan != null) bad(where, `a pill of ${item.tier} has no 转 (zhuan)`);
+  } else {
+    if (!content.ladder.tiers.some(t => t.id === item.tier)) bad(where, `a pill's 阶 (tier) is a realm of the ladder, not ${item.tier}`);
+    if (!(Number.isInteger(item.zhuan) && item.zhuan >= 1 && item.zhuan <= 9)) bad(where, 'a pill\'s 转 (zhuan) is a whole number, 一 to 九');
+  }
   if (item.of != null && !(content.balance?.pills?.families ?? []).includes(item.of)) bad(where, `of an unknown pill family ${item.of}`);
   if (item.of != null && item.effect?.table == null) bad(where, 'a pill of a family pays 修为: it names its table');
 }

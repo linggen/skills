@@ -21,7 +21,7 @@
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { loadContent, withBalance } from '../scripts/content.mjs';
+import { loadContent, pillShare, withBalance } from '../scripts/content.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
 import { chorePlay, errandGrant, pillBelow, playGrant, secludeHour, wallGrant, workGrant } from '../scripts/rules/playpay.mjs';
 import { wallOf } from '../scripts/rules/rotation.mjs';
@@ -203,6 +203,9 @@ function wallDay(content, s) {
 const sceneHuiOf = content => { const m = new Map(); for (const ch of Object.values(content.chapters)) for (const sc of Object.values(ch.scenes)) m.set(sc.id, sc.hui ?? null); return m; };
 const earliest = (content, huis) => huis.filter(Boolean).sort((a, b) => huiOrder(content, a) - huiOrder(content, b))[0] ?? null;
 
+/* The 饭桶's rows gated `after` a scene (仙丹: 01-end, 卷一's last) — after 卷一, so never weighed in it. */
+const laterOnly = content => new Set(Object.values(content.fantong?.pools ?? {}).filter(Array.isArray).flat().filter(r => r.after).map(r => r.item));
+
 /* Each item's first 回 and how: a scene's grant, an errand's, a board's gift, a shop's shelf. */
 function itemsMet(content) {
   const hui = sceneHuiOf(content), met = new Map(), add = (id, h, how) => { if (id && h) (met.get(id) ?? met.set(id, []).get(id)).push({ hui: h, how }); };
@@ -215,10 +218,14 @@ function itemsMet(content) {
   for (const [id, h] of shopsMet(content)) add(id, h, 'shop');
   // The 饭桶's (开炉's) pools, from the scene that hands it over. (rewards.json `drop_tables` stay for the 秘境 roguelite to come,
   // design.md § Backlog: since the rerun was retired, 2026-10-28, nothing drops from them.)
+  // A row gated `after` a scene (仙丹: 01-end, 卷一's last) is met nowhere in 卷一 — it waits for that scene's next 回.
+  const after = laterOnly(content);
   const fantong = idsIn(content.fantong?.pools);
   for (const i of content.items.items) {
-    if (fantong.has(i.id)) add(i.id, hui.get(content.balance.model.fantong_from), 'fantong');
+    if (fantong.has(i.id) && !after.has(i.id)) add(i.id, hui.get(content.balance.model.fantong_from), 'fantong');
   }
+  // The 旁炉's batches (rules/panglu.mjs), from the scene that gives it (panglu.json `after`).
+  for (const o of Object.values(content.panglu?.outs ?? {})) add(o.item, hui.get(content.panglu.after), 'panglu');
   return id => { const all = met.get(id) ?? []; const h = earliest(content, all.map(x => x.hui)); return h ? { hui: h, how: all.find(x => x.hui === h).how, all: [...new Set(all.map(x => `${x.hui} ${x.how}`))] } : null; };
 }
 
@@ -267,12 +274,13 @@ function inUnits(row, L) {
 
 function pills(ctx) {
   const { content, layerAt, met, saveFor } = ctx;
-  return content.items.items.filter(i => i.kind === 'pill' && i.effect?.progress && (i.juan ?? 1) <= 1).map(i => {
+  const later = laterOnly(content);
+  return content.items.items.filter(i => i.kind === 'pill' && i.effect?.progress && (i.juan ?? 1) <= 1 && !(later.has(i.id) && !met(i.id))).map(i => {
     const where = met(i.id), at = where ? paying(content, layerAt(where.hui)) : null;
     const xw = at ? paysOf(content, saveFor(at), NOW, { table: i.effect.table, progress: i.effect.progress, tier: i.effect.tier })?.progress ?? 0 : i.effect.progress;
     const L = at ? ctx.layer(at) : null;
     const price = i.buy ?? 0;
-    const share = i.of ? content.balance.pills?.share?.[(i.zhuan ?? 1) - 1] : null;
+    const share = i.of ? pillShare(content.balance, i) : null; // 仙丹: its 阶's (by_tier), no 转
     const want_pct = share != null && at ? share * pillBelow(content, saveFor(at), i.tier) : null;
     return { ...inUnits({ id: i.id, name: zh(i.name), hui: where?.hui ?? null, how: where?.how ?? null, sources: where?.all ?? [], xw, raw: i.effect.progress, table: i.effect.table, zhuan: i.zhuan ?? null, buy: price || null }, L), want_pct, price_min: price && L?.ls_min ? round(price / L.ls_min, 1) : null };
   });

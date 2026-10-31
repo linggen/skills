@@ -50,6 +50,8 @@ function rowOpen(content, state, t, row) {
   if (!state || !content) return true; // the bare roll (tests, the 游戏厅's sample) sees every row
   if (row.hui && huiOrder(content, row.hui) > huiOrder(content, huiNow(content, state))) return false;
   if (row.breach && !breachFits(content, state, row.item)) return false;
+  // `after`: a scene he has finished (仙丹: 卷一's last, 01-end — never in 卷一; design.md § 丹药).
+  if (row.after && !(state.done_scenes ?? []).includes(row.after)) return false;
   if (row.beast && !(state.beasts?.[row.beast]?.won > 0)) return false;
   if (row.wealth) return !isLocked(content, state, 'wealth'); // no 灵石 out while 灵石 are not his yet
   if (!row.item) return true;

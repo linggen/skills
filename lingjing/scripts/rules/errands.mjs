@@ -1,6 +1,6 @@
 // rules/errands.mjs — 差事: the errands taken and handed in, the book, the director's brief, the gear panel.
 // Part of the rules engine; rules.mjs is its one door.
-import { ARM_SLOTS } from '../content.mjs';
+import { ARM_SLOTS, offLadderTier } from '../content.mjs';
 import { costOf } from '../battle.js';
 import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, staminaMax, staminaRest, threshold, tierOf, seedOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
@@ -673,6 +673,8 @@ function itemBrief(content, state, item) {
     worn: Object.values(state.wear ?? {}).includes(item.id),
     // A furnace pill's 转 (丹纹): the card draws that many lines, nine in gold (story/jiuding-lu/DESIGN.md § 丹药等级).
     ...(item.zhuan ? { zhuan: item.zhuan } : {}),
+    // A 仙丹 (仙阶, a 阶 off the ladder): no 纹 — it glows (story DESIGN § 六·五).
+    ...(item.kind === 'pill' && offLadderTier(content, item.tier) ? { glow: true } : {}),
     ...(item.made?.from ? { made_from: pick(itemOf(content, item.made.from)?.name, lang) } : {}),
     ...(tamesOf(content, state, item).length ? { tames: tamesOf(content, state, item) } : {}),
     // A scroll (《吐纳经》): the passage for the layer the player stands on (rules/scrolls.mjs).

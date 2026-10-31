@@ -65,6 +65,7 @@ export { lostFight, shopsInReach, strengthen, strongFit, weighOdds } from './rul
 export { fightsNear } from './rules/fights.mjs';
 export { pickStand, reroll, standFit, MATCH } from './rules/match.mjs';
 export { yaoshou, yaoshouBatch, yaoshouBrief, yaoshouWait, YAOSHOU } from './rules/yaoshou.mjs';
+export { panglu, pangluBrief, pangluOpen } from './rules/panglu.mjs';
 export { eventDone, eventShare, eventUp, eventWait } from './rules/events.mjs';
 import { fitPresence } from './rules/companion.mjs';
 import { pageHerGame } from './rules/hergame.mjs';

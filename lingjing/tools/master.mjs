@@ -16,7 +16,8 @@
 //              the wall's `posts` (rules/playpay.mjs wallGrant) — lighter than an errand: a short fetch-and-deliver chore;
 //   chore      人间功课 (古-line income, Hanli 「算古线吧」): a day's and a week's chore as a share of the layer;
 //   seclusion  a night of 闭关 (rewards.json seclusion `rest_hours`) as a share of the layer;
-//   pills      a 修为 pill's share of the layer by 转 (named 转 between them run straight), `below` a realm past its 阶.
+//   pills      a 修为 pill's share of the layer by 转 (named 转 between them run straight), `below` a realm past its 阶,
+//              `xian` a 仙丹's (仙阶, no 转).
 // `difficulty`: the fight bands (story · pool), the bot's slack. `economy`: 灵石 a minute of play (`income`), a 修为 pill's
 // price in minutes of income per 1% of a layer, gear's per point by kind, the buy-back share, the 圆满 → 灵石 rate.
 
@@ -130,7 +131,8 @@ export function derive(raw0, { ladder, items }) {
   // 闭关 is a share now (ruling a, 2026-10-27): `layer_pay` scaled it by the layer; nothing does any more.
   delete raw.layer_pay; delete raw._layer_pay;
   const shares = pillShares(gu.pills);
-  raw.pills = { families: M.pills_families, table: 'pill', share: shares, below: gu.pills.below };
+  // 仙阶 (`xian`, a 阶 off the ladder: no 转): its own share, read by content.mjs pillShare.
+  raw.pills = { families: M.pills_families, table: 'pill', share: shares, ...(gu.pills.xian != null ? { by_tier: { xian: gu.pills.xian } } : {}), below: gu.pills.below };
   // A share pays what it is: the tables it rides on cap nothing.
   raw.pay.pill = { progress: 100000, wealth: 0 };
   raw.pay.seclusion = { progress: 100000, wealth: 0 };

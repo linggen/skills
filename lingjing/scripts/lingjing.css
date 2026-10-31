@@ -653,6 +653,14 @@ body.fighting .footrow { display: none; }
 .pzhuan { margin: 4px 0 2px; }
 .pzhuan .zhuan { width: 64px; gap: 3px; }
 .pzhuan .zhuan i { height: 3px; }
+/* 仙丹: no 纹, its own light (story DESIGN § 六·五). */
+.plherbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.plherb { display: inline-flex; align-items: center; gap: 6px; }
+.plherb img { width: 22px; height: 22px; object-fit: contain; }
+.plout { margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: var(--card, rgb(127 127 127 / .08)); }
+.plout.zha { color: #c0503a; }
+.plout.er { box-shadow: inset 3px 0 0 #8fb5d9; }
+.ptile.glow img, .pdetail.glow > img { filter: drop-shadow(0 0 6px rgb(255 236 170 / .9)) brightness(1.12); }
 .ptile .pmark { position: absolute; top: 4px; left: 5px; font-size: 10.5px; padding: 0 5px; border-radius: 4px; background: var(--jade-soft); color: var(--jade); }
 .ptile.free { border-style: dashed; }
 .ptile:hover { border-color: var(--ling); }

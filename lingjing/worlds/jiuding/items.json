@@ -455,6 +455,75 @@
       }
     },
     {
+      "id": "qi-pill-2",
+      "kind": "pill",
+      "tier": "qi",
+      "zhuan": 2,
+      "of": "qi",
+      "_panglu": "The 旁炉's (rules/panglu.mjs, design.md § 丹药 · 炸炉): his own fire, after 闵丹师's 「首尾武，中间文」 — 二转, 5.5% of the layer (balance.json pills); never sold.",
+      "name": {
+        "zh": "二转聚气丹",
+        "en": "Two-turn qi-gathering pill"
+      },
+      "art": "art/items/qi-pill.webp",
+      "about": {
+        "zh": "丹房角上那口旁炉炼的聚气丹，青白，两道纹。头尾的武火下足了，中间的文火守住了。",
+        "en": "A qi-gathering pill from the side furnace in the corner of the pill house, pale, two rings. Strong fire at both ends, gentle fire held in the middle."
+      },
+      "hint": {
+        "zh": "两道纹，自己炼的。",
+        "en": "Two rings, your own fire."
+      },
+      "sold": [],
+      "effect": {
+        "table": "pill"
+      }
+    },
+    {
+      "id": "xian-pill",
+      "kind": "pill",
+      "tier": "xian",
+      "of": "qi",
+      "_xian": "仙丹 (story DESIGN § 六·五: 九转之上是仙丹，仙界所出; 不分境界，仙气自己找路; 没有纹，自己发光): 仙阶 — a 阶 off the ladder, no 转 (the lint holds it), its share balance.json pills `by_tier.xian`; edible at any realm, never `below`; clears 丹毒 as a 九转 (dandu `clears_tiers`). Only the 饭桶 gives one, and only once 卷一's last scene is done (fantong.json pool row `after`): never in 卷一. Never sold.",
+      "name": {
+        "zh": "仙丹",
+        "en": "Immortal pill"
+      },
+      "art": "art/items/qi-pill.webp",
+      "about": {
+        "zh": "饭桶吐出来的，一道纹也没有，自己发光。不分境界，仙气自己找路——凡丹没有一颗能比。",
+        "en": "Out of the Rice Bucket, not one ring on it, and it shines by itself. It knows no realm; the immortal qi finds its own way. No mortal pill comes near it."
+      },
+      "hint": {
+        "zh": "没有纹，自己亮。",
+        "en": "No rings. It glows."
+      },
+      "sold": [],
+      "effect": {
+        "table": "pill"
+      }
+    },
+    {
+      "id": "yaoyin",
+      "kind": "material",
+      "_panglu": "The 旁炉's 糊 (rules/panglu.mjs): 「炼糊了，碾了做药引」 — the burnt batch ground down. A herb to the 饭桶 (fantong.json kinds.herb); worth nothing at a counter.",
+      "name": {
+        "zh": "药引",
+        "en": "Medicine starter"
+      },
+      "art": "art/items/huangjing.webp",
+      "about": {
+        "zh": "旁炉里炼糊了的一炉，碾成了末。闵丹师说的：「炼糊了，碾了做药引。」",
+        "en": "A burnt batch from the side furnace, ground to powder. As Pill-master Min said: \"Burn it, grind it, use it to lead the next medicine.\""
+      },
+      "hint": {
+        "zh": "糊了的，也不白糊。",
+        "en": "Burnt, but not for nothing."
+      },
+      "sold": [],
+      "art_source": "The 黄精's picture until its own is painted."
+    },
+    {
       "id": "wangqi-1",
       "kind": "scroll",
       "name": {

@@ -32,7 +32,8 @@ const eat = (s, id, now = T0) => {
 };
 
 test('every pill says its 阶 and its 转; a family\'s 修为 is its 转\'s share of the layer (数值系统: 一转 3% · 三转 8% · 六转 16% · 九转 30%, Hanli 10-28)', () => {
-  for (const p of pills) {
+  // (仙丹, 仙阶: a 阶 off the ladder and no 转 — tests/xiandan.test.mjs.)
+  for (const p of pills.filter(x => x.tier !== 'xian')) {
     assert.ok(content.ladder.tiers.some(t => t.id === p.tier), `${p.id} has a 阶`);
     assert.ok(p.zhuan >= 1 && p.zhuan <= 9, `${p.id} has a 转`);
   }

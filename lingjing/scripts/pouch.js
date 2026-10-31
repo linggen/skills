@@ -7,6 +7,7 @@
 import { esc } from './esc.js';
 import { deckHtml, gearFightHtml, herCardHtml, itemDoes, liftSaid, tamesLine } from './cards.js';
 import { GONGKE_WORDS, gongkeHtml } from './gongke.js';
+import { PANGLU_WORDS, pangluHtml } from './panglu.js';
 
 export const POUCH_WORDS = {
   zh: {
@@ -53,7 +54,7 @@ function wornHtml(g, ctx) {
 const artOf = (i, ctx) => (i.art ? `<img src="${esc((ctx.artBase ?? '') + i.art)}" alt="" loading="lazy">` : '<i class="noart" aria-hidden="true"></i>');
 
 function tileHtml(i, ctx, sel) {
-  return `<button class="ptile${sel === i.id ? ' sel' : ''}${i.worn ? ' worn' : ''}${i.free ? ' free' : ''}" data-pouch-item="${esc(i.id)}" aria-pressed="${sel === i.id}">
+  return `<button class="ptile${sel === i.id ? ' sel' : ''}${i.worn ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}" data-pouch-item="${esc(i.id)}" aria-pressed="${sel === i.id}">
     ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${zhuanHtml(i.zhuan, ctx.lang)}${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${i.worn ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}</button>`;
 }
 
@@ -92,7 +93,8 @@ function detailHtml(i, g, ctx, pw, ui) {
   // 丢 asks here, on the pane — the page's own confirm, never window.confirm.
   const ask = ui.toss === i.id ? `<div class="ptoss" role="alertdialog"><span>${esc(say(pw.tossAsk, { name: i.name, n: i.n }))}</span>
     <button class="act danger" data-toss-yes="${esc(i.id)}">${esc(pw.tossYes)}</button><button class="act quiet" data-toss-no>${esc(pw.tossNo)}</button></div>` : '';
-  return `<div class="pdetail">${artOf(i, ctx)}<div class="pdbody"><b class="pdname">${esc(i.name)}</b>${i.n > 1 ? ` <span class="dim">×${esc(i.n)}</span>` : ''}
+  // A 仙丹 has no 纹: it glows (`glow`, story DESIGN § 六·五).
+  return `<div class="pdetail${i.glow ? ' glow' : ''}">${artOf(i, ctx)}<div class="pdbody"><b class="pdname">${esc(i.name)}</b>${i.n > 1 ? ` <span class="dim">×${esc(i.n)}</span>` : ''}
     ${i.zhuan ? `<div class="pzhuan">${zhuanHtml(i.zhuan, ctx.lang)}</div>` : ''}
     <div class="small dim">${esc(kind)}${kind ? ' · ' : ''}${esc(itemDoes(e, ctx))}</div>
     ${i.about ? `<div class="small about">${esc(i.about)}</div>` : ''}${tamesLine(i, ctx)}${readsHtml(i.reads, w)}
@@ -108,7 +110,7 @@ function heldHtml(p, ctx, pw) {
 }
 
 /// The panel. `ui` is the page's own view of it: `tab`, `sel` (the item
-/// tapped), `toss` (the item asking 丢?), `pane` ('held' | 'deck' | 'fantong' | 'gongke' | null).
+/// tapped), `toss` (the item asking 丢?), `pane` ('held' | 'deck' | 'fantong' | 'gongke' | 'panglu' | null).
 /// Its head is one row of segments — 储物袋 (the grid) · 待取 · 饭桶 · 人间功课 — and one 合上 at
 /// the right; a segment is the way between them, so no pane carries a 「回储物袋」 of its own
 /// (Hanli 10-27: 「回储物袋这个按钮和其他几个关系不合理」). The 牌组 is its own panel, off its own chip.
@@ -122,12 +124,14 @@ export function pouchHtml(ctx, ui = {}) {
   // 人间功课 (gongke.js): the 洞府's board of today's real-life chores — Look's `gongke`, from 入门 on.
   const board = ctx.look?.gongke ?? null;
   const pane = ui.pane === 'held' && heldN ? 'held' : ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong'
-    : ui.pane === 'gongke' && board ? 'gongke' : null;
+    : ui.pane === 'gongke' && board ? 'gongke' : ui.pane === 'panglu' && g.panglu ? 'panglu' : null;
   const note = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
   const used = p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : '';
   const seg = (id, label, extra = '') => `<button role="tab" class="pseg${pane === id ? ' on' : ''}" data-pouch-pane="${id ?? ''}" aria-selected="${pane === id}">${esc(label)}${extra}</button>`;
   const segs = [seg(null, pw.title, used), heldN ? seg('held', say(pw.held, { n: heldN })) : '', g.fantong ? seg('fantong', pw.fantong) : '',
     board ? seg('gongke', (GONGKE_WORDS[ctx.lang] ?? GONGKE_WORDS.zh).chip) : '',
+    // 旁炉 (panglu.js): at the 丹房's side furnace once it is his (rules/panglu.mjs) — Look's `panglu`, the last batch the page's.
+    g.panglu ? seg('panglu', (PANGLU_WORDS[ctx.lang] ?? PANGLU_WORDS.zh).chip) : '',
     // 牌组 — the last tab (Hanli, 2026-10-27: 「牌组合进储物袋吧, 放到功课后面」), 新 n on cards not yet played.
     g.cards?.length ? seg('deck', pw.deck, ctx.look?.cards_new?.length ? ` <b class="pnew">${esc(say(pw.deckNew, { n: ctx.look.cards_new.length }))}</b>` : '') : ''].join('');
   const head = `<header class="luhead phead"><div class="psegs" role="tablist">${segs}</div>${close}</header>`;
@@ -135,6 +139,7 @@ export function pouchHtml(ctx, ui = {}) {
   if (pane === 'fantong') return shell(ctx.fantongPane ?? '');
   if (pane === 'held') return shell(heldHtml(p, ctx, pw));
   if (pane === 'gongke') return shell(gongkeHtml(board, ctx.lang));
+  if (pane === 'panglu') return shell(pangluHtml(ctx.look?.panglu ?? null, ctx.pangluLast ?? null, ctx.lang, ctx.artBase ?? ''));
   if (pane === 'deck') return shell(`<section class="psec">${deckHtml(g, ctx)}</section>`);
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
   const grown = p.grown?.length ? `<p class="small dim">${esc(say(pw.grown, { names: p.grown.join(ctx.lang === 'en' ? ', ' : '、') }))}</p>` : '';

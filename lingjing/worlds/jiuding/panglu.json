@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "_about": "旁炉 · 炸炉 (rules/panglu.mjs; design.md § 丹药; story DESIGN § 六·五 「凡人丹炉十炉炸七」): the 丹房's side furnace 闵丹师 gives him in 09-laba (「料你自己碾，火你自己看。炼糊了，碾了做药引。」). A mortal furnace he tends himself — never the 饭桶's lottery (the 饭桶 is 老君's and never 炸s). It stands where a place `has.furnace` (the 丹房's scenes stand at the 药园, places/xu.json `yaoyuan`), open once `after` is done. One herb of `herbs` a batch (the 丹房's 下脚料 and the plain herbs of the hills — no shelf sells them); the rules roll the batch from `bands` (炸 · 糊 · 一转 · 二转), the band picked by how many batches this save has fired (`state.panglu.n`), seeded by the day, the save and that count, so firing again never re-rolls. `lesson`: the batch count at which 闵丹师 says 「首尾武，中间文」 — the step that lifts 二转 (no band before it has any). What each comes to is `outs` (糊 → 药引, a material); a 炸 gives nothing and costs the herb and a little 体力 (rewards.json stamina.cost `panglu`), nothing more. `per_day`: batches a local day (the book: 一个月不过三四炉). The agent's picks (Hanli delegated, 2026-10-31): the odds, `lesson` 8, `per_day` 2, one pill a batch.",
+  "after": "09-laba",
+  "herbs": ["huangjing-gen", "huangqi-canzhu", "huangjing", "fuling", "cangzhu", "chaihu", "yuanzhi", "banxia", "songmo"],
+  "per_day": 2,
+  "lesson": 8,
+  "bands": [
+    { "from": 0, "odds": { "zha": 40, "hu": 45, "yi": 15 } },
+    { "from": 4, "odds": { "zha": 30, "hu": 35, "yi": 35 } },
+    { "from": 8, "odds": { "zha": 20, "hu": 25, "yi": 40, "er": 15 } },
+    { "from": 16, "odds": { "zha": 10, "hu": 20, "yi": 45, "er": 25 } }
+  ],
+  "outs": {
+    "hu": { "item": "yaoyin" },
+    "yi": { "item": "qi-pill" },
+    "er": { "item": "qi-pill-2" }
+  },
+  "words": {
+    "zh": {
+      "name": "旁炉",
+      "line": "丹房角上那口小炉，炉壁裂过一道缝，拿泥糊上了。「料你自己碾，火你自己看。炼糊了，碾了做药引。」",
+      "fire": "炼一炉",
+      "results": {
+        "zha": "「嘭」的一声，炉盖跳起半尺，一炉料全成了灰。你抹了一把脸上的黑。",
+        "hu": "三颗全糊了，黑乎乎一团。你把它碾了，做药引。",
+        "yi": "出了一颗{name}，青白，一道纹，歪歪扭扭的。",
+        "er": "出了一颗{name}，两道纹，直的。"
+      },
+      "lesson": "闵丹师在正炉那头闻了闻，头也不回：「火小了。」你道：「怕糊。」「怕糊，就一辈子一道纹。首尾武，中间文。」",
+      "fired": "这口炉你炼过{n}炉。",
+      "full": "今天的料碾完了，明天再来。",
+      "no_herb": "炉边没有料——带一把草药来。",
+      "not_here": "旁炉在丹房角上，不在这里。",
+      "not_herb": "这一样炼不了。"
+    },
+    "en": {
+      "name": "The side furnace",
+      "line": "The little furnace in the corner of the pill house, a crack in its wall patched with clay. \"Grind your own herbs, watch your own fire. Burn it, grind it, use it to lead the next medicine.\"",
+      "fire": "Fire a batch",
+      "results": {
+        "zha": "Bang — the lid jumps half a foot and the whole batch is ash. You wipe the soot off your face.",
+        "hu": "All three burnt to a black lump. You grind it down for a medicine starter.",
+        "yi": "One {name} comes out, pale, one ring, crooked.",
+        "er": "One {name} comes out, two rings, straight."
+      },
+      "lesson": "From the main furnace Pill-master Min sniffs without turning round: \"Your fire's too low.\" \"I'm afraid of burning it.\" \"Afraid of burning it, one ring all your life. Strong at both ends, gentle in the middle.\"",
+      "fired": "You have fired this furnace {n} times.",
+      "full": "Today's herbs are ground. Come back tomorrow.",
+      "no_herb": "Nothing to put in — bring a handful of herbs.",
+      "not_here": "The side furnace is in the corner of the pill house, not here.",
+      "not_herb": "That will not go in this furnace."
+    }
+  }
+}

@@ -18,7 +18,7 @@
   "kinds": {
     "_about": "What a thing IS to the pot (Hanli 2026-10-27: 「我扔的草药, 最好能出丹药. 扔物品出装备, 武器. 其他出符文等」): a kind that lists it (`items`), else the kind whose `item_kinds` holds its items.json kind, else `junk`. Each kind leads to a `family` (below); a kind with none is a mixed handful. `tint`: the colour the steam over the mouth takes as the pot fills (the page's hint, never a number). No item id is named in code.",
     "junk": { "tint": "#9aa0a6" },
-    "herb": { "tint": "#6fcf6a", "family": "pill", "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "luobo", "huangjing", "huangjing-10", "heshouwu", "fuling", "cangzhu", "chaihu", "yuanzhi", "chonglou", "shihu", "banxia", "songmo", "zixu-zhi", "juyou", "longxu-cao"] },
+    "herb": { "tint": "#6fcf6a", "family": "pill", "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "luobo", "huangjing", "huangjing-10", "heshouwu", "fuling", "cangzhu", "chaihu", "yuanzhi", "chonglou", "shihu", "banxia", "songmo", "zixu-zhi", "juyou", "longxu-cao", "yaoyin"] },
     "pill": { "tint": "#9be08f", "family": "pill", "item_kinds": ["pill"] },
     "beast": { "tint": "#e0703a", "family": "gear", "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "houer-jiu", "yike-daya"] },
     "ore": { "tint": "#5aa9e6", "family": "gear", "items": ["tongkuang", "tie-sha", "yunmu", "cishi", "chishizhi", "langgan", "qi-salt", "shujin"] },
@@ -37,7 +37,7 @@
     "1": ["huangjing", "fuling", "cangzhu", "chaihu", "yuanzhi", "banxia", "songmo", "yaodan-1", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "houer-jiu", "tie-sha", "cishi", "xionghuang", "chishizhi", "dansha", "talisman", "lianxi-fu", "tama-fu", "penti-fu", "qi-pill", "mend-pill", "huiqi-pill", "bamboo-sword", "duan-dao", "iron-sword", "pi-kanjian", "shi-zhui", "qiuyu-ci", "baina-dai", "pouch-low", "baoge-ling", "yinyue-lingdang", "fangzi-canye", "sang-paper", "jade-fish"],
     "2": ["lingzhi", "ginseng", "huangjing-10", "heshouwu", "chonglou", "shihu", "yaodan-2", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "yunmu", "shujin", "qi-pill-3", "mend-pill-3", "wulei-fu", "yangyang-zhen", "zipai-jing", "niuzhi-ganlu", "lipi-kanjian", "chaiya-zhui", "jade-ring", "heyu-dao", "heyu-ao", "shisui-zhui", "chitong-hulu"],
     "3": ["yaodan-3", "zixu-zhi", "langgan", "qingtong-jian", "anhe-yu", "foundation-pill", "qi-pill-9", "mend-pill-9", "xizhu"],
-    "4": ["foundation-pill-9"]
+    "4": ["foundation-pill-9", "xian-pill"]
   },
   "odds": {
     "_about": "The roll: first a grade (凡 junk · 有用 useful · 珍品 rare · 逆天 best — grey, blue, purple, gold), then a thing of the pot's family (`families`) worth about what the grade asks: the pot's worth (what went in, and its 灵石) × the grade's `x`, at least its `floor` (balance.json `kailu`, tools/numbers.mjs weighs it). `grades`: the weights at power 0 (a 凡物 fed by a 练气零层 with no 灵石: 70/25/4/1). POWER = `power.in` × the pot's tier + `power.realm` × his realm + `power.lingshi` × the 灵石. His realm counts `realm_per_tier` a whole realm (练气 0–2.7 by 层, 筑基 3+, …). Each grade's weight × `growth[grade]`^power — so a high thing is never impossible, only rare, and grows likelier smoothly with both what goes in and who feeds it. 压盖 (`press` 1): the grade rolled goes up one notch (逆天 stays).",
@@ -64,7 +64,7 @@
     "twin": 4
   },
   "pools": {
-    "_about": "Per family (`families`), the things it may give. `item` (with `n`, default 1) or `wealth` [min, max] 灵石. `w` its weight; a row's chance also rises the nearer its worth stands to what the grade asks (`worth`: its own, when the shops price it too low for what it is — else its `sell`, else its 品阶's). `hui` the 回 the save must have reached (huiOrder ≤ the 回 it stands in) — the base pool opens with the 饭桶 (古四, h05); `beast`: only once he has beaten that beast (state.beasts won); `with` / `with_chance`: a second thing out with it, now and then. `breach`: a 破境丹 — drawn only while its 阶 (items.json `tier`) is the realm one above his (story DESIGN § 六·五; design.md § 丹药): 筑基丹 while he is 练气, nothing of it once he has laid the foundation. A thing of a `once` kind comes once ever; with the gear spent, a hide-and-ore pot still gives the 妖丹 and the 器料 here, then 符 and odds and ends (`then`). Nothing of a later 卷 (items.json `juan`) is ever drawn. The book's two fixed outputs (火柴, 顺风溜: `recipes.story`) are in no pool. 2026-10-28 (Hanli: 「踏马符游戏里出现地方不对…应该安排一个饭桶的剧情固定游戏」): what the book's first feed (wm-diyilu) gave — 踏马符, 牛脂甘露, 含笑半步颠 and 止笑丸, the 九转回春丹 — is in NO pool; the story hands each over on its own beat (踏马符: the board diyilu-tama, a fixed 开炉).",
+    "_about": "Per family (`families`), the things it may give. `item` (with `n`, default 1) or `wealth` [min, max] 灵石. `w` its weight; a row's chance also rises the nearer its worth stands to what the grade asks (`worth`: its own, when the shops price it too low for what it is — else its `sell`, else its 品阶's). `hui` the 回 the save must have reached (huiOrder ≤ the 回 it stands in) — the base pool opens with the 饭桶 (古四, h05); `beast`: only once he has beaten that beast (state.beasts won); `with` / `with_chance`: a second thing out with it, now and then. `after`: only once he has finished that scene (仙丹: 卷一's last, 01-end — never in 卷一; design.md § 丹药). `breach`: a 破境丹 — drawn only while its 阶 (items.json `tier`) is the realm one above his (story DESIGN § 六·五; design.md § 丹药): 筑基丹 while he is 练气, nothing of it once he has laid the foundation. A thing of a `once` kind comes once ever; with the gear spent, a hide-and-ore pot still gives the 妖丹 and the 器料 here, then 符 and odds and ends (`then`). Nothing of a later 卷 (items.json `juan`) is ever drawn. The book's two fixed outputs (火柴, 顺风溜: `recipes.story`) are in no pool. 2026-10-28 (Hanli: 「踏马符游戏里出现地方不对…应该安排一个饭桶的剧情固定游戏」): what the book's first feed (wm-diyilu) gave — 踏马符, 牛脂甘露, 含笑半步颠 and 止笑丸, the 九转回春丹 — is in NO pool; the story hands each over on its own beat (踏马符: the board diyilu-tama, a fixed 开炉).",
     "pill": [
       { "item": "huiqi-pill", "w": 3 },
       { "item": "mend-pill", "w": 3 },
@@ -73,6 +73,7 @@
       { "item": "qi-pill-3", "w": 2 },
       { "item": "mend-pill-3", "w": 2 },
       { "item": "qi-pill-9", "w": 1 },
+      { "item": "xian-pill", "w": 1, "after": "01-end" },
       { "item": "foundation-pill", "w": 1, "breach": true },
       { "item": "foundation-pill-9", "w": 1, "breach": true }
     ],
