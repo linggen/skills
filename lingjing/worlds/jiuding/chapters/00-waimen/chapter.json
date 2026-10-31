@@ -65,6 +65,7 @@
       },
       "scenes": [
         "wm-chaifang",
+        "wm-tonglu",
         "wm-danlu",
         "wm-diyilu",
         "wm-xunye",
@@ -93,6 +94,7 @@
         "wm-xirang",
         "wm-anhe",
         "wm-tama",
+        "wm-mingpai",
         "wm-kaikai",
         "wm-xiqi",
         "wm-chu",
@@ -154,6 +156,10 @@
             "n": 1,
             "unit": "night"
           },
+          "wm-mingpai": {
+            "n": 1,
+            "unit": "night"
+          },
           "wm-kaikai": {
             "n": 2,
             "unit": "night"
@@ -199,6 +205,10 @@
           "wm-tama": {
             "zh": "背贴着崖根，活过那四条火蛇",
             "en": "Back to the cliff, outlive the four fire snakes"
+          },
+          "wm-mingpai": {
+            "zh": "了结邹青松",
+            "en": "Finish it with Zou Qingsong"
           },
           "wm-kaikai": {
             "zh": "守在土里，等息壤长成",

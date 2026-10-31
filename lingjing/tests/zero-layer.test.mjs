@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { cultivating, migrate, newState, realmName, threshold } from '../scripts/state.mjs';
-import { look, resolve, task, win } from '../scripts/rules.mjs';
+import { look, resolve, task, VERBS, win } from '../scripts/rules.mjs';
 import { TO_OPEN, walk } from './prologue.mjs';
 
 const content = loadContent();
@@ -23,7 +23,7 @@ function must(fn, s, args) {
 /* Into 古四 and up to the woodpile: 欠条, 讲堂, then the 三关 board won. */
 function toZhoutian(lang) {
   let s = opened(lang);
-  for (const exit of ['owe', 'can']) s = must(resolve, s, { exit }).state;
+  for (const exit of ['owe', 'can']) s = must(resolve, exit === 'can' ? must(VERBS.look, s, { at: 'beard' }).state ?? s : s, { exit }).state; // 「漏勺能打水吗？」 waits on the 胡子 (the reading gaps, 2026-10-31)
   assert.equal(s.scene, 'wm-zhoutian');
   s = must(win, s, { id: 'zhoutian-sanguan' }).state;
   return must(task, s, { action: 'done', id: 'zhoutian-sanguan' }).state;

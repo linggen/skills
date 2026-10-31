@@ -1560,7 +1560,8 @@ test('an exit can grant a thing', () => {
   const c = structuredClone(content);
   c.chapters['00-prologue'].scenes['00-chushan'].exits[0].grant = { table: 'scene', item: 'straw-cloak' };
   const at = walk(start(), TO_VALLEY.slice(0, 8), c, NOW);
-  const out = resolve({ ...at, tasks: { ...at.tasks, 'chushan-luogu': { status: 'done' } } }, c, ctx(), { exit: 'lookout' }); // 寿宴锣鼓 played first (2026-10-28)
+  const seen = VERBS.look(at, c, ctx(), { at: 'tracks' }).state; // 满地的狗爪印 looked at first (the reading gaps, 2026-10-31)
+  const out = resolve({ ...seen, tasks: { ...seen.tasks, 'chushan-luogu': { status: 'done' } } }, c, ctx(), { exit: 'lookout' }); // 寿宴锣鼓 played first (2026-10-28)
   assert.equal(out.result.ok, true);
   assert.equal(out.result.paid.item, 'straw-cloak');
   assert.deepEqual(out.state.bag, { 'straw-cloak': 1 });

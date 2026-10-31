@@ -117,6 +117,8 @@ const BEATS = [
 // 拽爹上崖 cut 2026-10-22 (Hanli: 「拽爹上崖 有点奇怪」): 00-fall reads whole to 把爹拽回山壁; 守灶台 in 00-zaotai keeps 第一回 at six.
 // 太鼓 · 寿宴锣鼓 on 00-chushan 2026-10-28 (Hanli: 太鼓 into the story): 吴婆婆's memory of the 锣鼓, 太鼓's first level.
 // 洗髓 back on 00-sleep 2026-10-26 (全文后的小游戏) on a new task (`sleep-xisui`): the old `xisui-hold` stays cut.
+/* What a scene's ways on wait to have seen (看, needs.seen — 黑松岭's clue; the reading gaps' looks, 2026-10-31): looked at. */
+const seenHere = (s) => walk(s, [...new Set((scenes[s.scene]?.exits ?? []).flatMap(e => e.needs?.seen ?? []))].map(at => ['look', { at }]), content, NOW);
 const CUT = [['00-kitchen', 'kitchen-griddle', 'go'], ['00-halfyear', 'halfyear-carry', 'on'], ['00-fall', 'fall-storm', 'check']];
 const KEPT = { '00-shiao': ['rain-basins'], '00-baicai': ['baicai-hens'], '00-masan': ['masan-taunt'], '00-zaotai': ['masan-zaotai'], '00-chushan': ['chushan-luogu'], '00-cave': ['cave-fire', 'bread-share'], '00-yinyue': ['yinyue-what'], '00-cliff': ['cliff-shangya'], '00-deer': ['deer-wind'], '00-tailu': ['deer-carry'], '00-rent': ['rent-scale'], '00-bluff': ['rent-bluff'], '00-xiuxian': ['xiuxian-xue'], '00-sleep': ['sleep-xisui'], '00-halfyear': ['halfyear-chaiduo'], '00-uncle': ['uncle-jiujiu'], '00-notice': ['notice-shuitong', 'notice-wupo'], '00-gate': ['gate-sishui', 'gate-crowd'], '00-steps': ['steps-sanbai', 'steps-tuifeng'], '00-luoshu': ['gate-luoshu'], '00-linzi': ['longzhi-shidan'], '00-hall': ['hall-celing'] };
 const VILLAGE = new Set(['village-day', 'village-dong', 'village-eve']);
@@ -144,6 +146,7 @@ test('a cut board has left its scene — not shown, not offered, no way on waits
     assert.equal(s.tasks[tid], undefined, `${sid}: never offered`);
     s = tellOf(content, s)?.keep ?? s;
     for (const kept of KEPT[sid] ?? []) s = won({ ...s, stamina: 100 }, kept); // the board the scene keeps (雪夜柴垛) is played
+    s = seenHere(s);
     const on = resolve(s, content, ctx(), { exit });
     assert.equal(on.result.ok, true, `${sid}: ${JSON.stringify(on.result)}`);
     assert.notEqual(on.state.scene, sid, `${sid}: the story moved on`);
@@ -165,7 +168,7 @@ test('each scene stands its board on the stage, offers it, and its way on waits 
     const s = atScene(sid);
     assert.ok(s, `walked to ${sid}`);
     assert.equal(s.tasks[tid]?.status, 'offered', `${sid}: offered on entry`);
-    const before = resolve(sid === '00-heisong' ? walk(s, [['look', { at: 'stone' }]], content, NOW) : s, content, ctx(), { exit });
+    const before = resolve(seenHere(s), content, ctx(), { exit });
     assert.equal(before.result.refused, 'needs', `${sid}: not before the board`);
     assert.ok(before.result.say, `${sid}: in the world's words`);
     const l = look(s, content, ctx());
@@ -177,7 +180,7 @@ test('well or badly, each scene goes on — the grade only writes its mark', () 
   for (const [sid, tid, exit, grades, marks] of BEATS) {
     for (const grade of grades) {
       let s = atScene(sid);
-      if (sid === '00-heisong') s = walk(s, [['look', { at: 'stone' }]], content, NOW);
+      s = seenHere(s);
       s = won({ ...s, stamina: 100 }, tid, grade);
       if (grade !== undefined) {
         assert.ok(s.marks.includes(marks[grade]), `${sid} ${grade}`);
@@ -270,7 +273,7 @@ test('抬鹿下山 · 雪夜柴垛 · 泗水路: each at its book line, the pass
     for (const k of ['progress', 'wealth', 'tier', 'step']) assert.deepEqual(after[k], s[k], `${tid}: ${k} unchanged`);
     // 00-gate's second board comes before its way on too (00-halfyear's 镜光 cut 2026-10-27)
     const ready = sid === '00-gate' ? won(after, 'gate-crowd') : after;
-    const on = resolve(tellOf(content, ready)?.keep ?? ready, content, ctx(), { exit });
+    const on = resolve(seenHere(tellOf(content, ready)?.keep ?? ready), content, ctx(), { exit });
     assert.equal(on.result.ok, true, `${sid}: ${JSON.stringify(on.result)}`);
     assert.equal(on.state.scene, next, sid);
   }
@@ -305,11 +308,11 @@ test('挑水上坡 told again: its row and level gone; a save holding halfyear-c
   const offered = fitWorld({ ...s, tasks: { ...s.tasks, 'halfyear-carry': { status: 'offered' } } }, content);
   assert.equal(offered.tasks['halfyear-carry'], undefined, 'offered: let go');
   assert.equal(offered.tasks['halfyear-chaiduo'].status, 'offered', '雪夜柴垛 is the board now');
-  const on = resolve(won({ ...offered, stamina: 100 }, 'halfyear-chaiduo'), content, ctx(), { exit: 'on' }); // 镜光 cut 2026-10-27: 雪夜柴垛 alone
+  const on = resolve(seenHere(won({ ...offered, stamina: 100 }, 'halfyear-chaiduo')), content, ctx(), { exit: 'on' }); // 镜光 cut 2026-10-27: 雪夜柴垛 alone
   assert.equal(on.state.scene, '00-uncle', JSON.stringify(on.result));
   const done = fitWorld({ ...s, tasks: { ...s.tasks, 'halfyear-carry': { status: 'done', done_at: NOW.toISOString() } } }, content);
   assert.equal(done.tasks['halfyear-carry'].status, 'done', 'done: kept, for the record');
-  assert.equal(resolve(won({ ...done, stamina: 100 }, 'halfyear-chaiduo'), content, ctx(), { exit: 'on' }).state.scene, '00-uncle');
+  assert.equal(resolve(seenHere(won({ ...done, stamina: 100 }, 'halfyear-chaiduo')), content, ctx(), { exit: 'on' }).state.scene, '00-uncle');
   assert.ok(look(done, content, ctx()).scene, 'it draws');
 });
 

@@ -44,7 +44,8 @@
    "text": {
     "zh": "胡子一翘一翘，倒像在替他点头；你暗暗数了，他讲一段，要翘七回。",
     "en": "The goatee bobs up and down as if nodding for him. You count on the quiet: seven bobs to a passage."
-   }
+   },
+   "clue": true
   },
   {
    "id": "ruler",
@@ -79,7 +80,21 @@
     "en": "Xiaoman said, \"It can.\"\n\nThe whole hall was taken aback. Master Chu was taken aback too, his goatee stuck in mid-twitch, and only after a long moment said, \"...How?\"\n\nXiaoman said, \"Draw it more times.\"\n\nThe whole hall laughed again, only this time the laughter went a slightly different way from before. The front few rows turned round to look at him, the way you look at a fool talking nonsense; the mixed roots in the back few rows didn't turn round. They kept their heads down, and their shoulders shook. Xiaoman sat down, and from the wooden tablet at his chest a sleepy, impatient voice said in his ear, \"...Who's making a racket?\" He bent his head. \"The master says mixed spirit roots are leaky ladles.\" The voice snorted. \"He knows nothing.\"\n\nMaster Chu wasn't annoyed, though. Those four words, every three years when the gate opened, he always heard once. He rapped the ruler on the lecture table. \"Draw it more times. Good. In the *Liezi* there's a Foolish Old Man, nearly ninety, who was tired of two great mountains blocking his door and set about carrying the earth away basket by basket with his sons and grandsons. The Wise Old Man next door laughed at him, and he said: when I die, there'll be my sons; my sons will have grandsons, sons and grandsons without end, and the mountains won't grow any taller. And then what? The Emperor of Heaven was moved by his sincerity and sent two giants to carry the mountains away on their backs.\" He pointed the ruler at the back row. \"Remember this, all of you: the mountains were carried off by gods. The Foolish Old Man dug his whole life, and how many baskets of earth did he get down? Shen Xiaoman, have you got sons and grandsons at home to dig for you? Have you got a god?\"\n\nThe front few rows laughed again. Xiaoman opened his mouth. A moment ago the tablet had said \"He knows nothing.\" The words were on the tip of his tongue, and one word held them down: hide. He said, \"...No.\"\n\nMaster Chu said, \"Then remember: a leaky ladle is a leaky ladle. Sit down.\"\n\nThis time nobody in the back rows bent their heads and laughed."
    },
    "beat": [],
-   "next": "wm-zhoutian"
+   "next": "wm-zhoutian",
+   "needs": {
+    "seen": [
+     "beard"
+    ]
+   },
+   "refuse": {
+    "zh": "褚先生叫道：「沈小满。你说，漏勺能打水吗？」",
+    "en": "Master Chu called out, \"Shen Xiaoman. Tell me, can a leaky ladle draw water?\""
+   }
   }
- ]
+ ],
+ "look_hint": {
+  "zh": "山羊胡子一翘，目光不偏不倚停在小满身上。",
+  "en": "His goatee twitched, and his gaze came to rest squarely on Xiaoman."
+ },
+ "_gap": "2026-10-31 (the reading gaps, ling-mem b2fNMipemI: ≤8 min of reading between plays; Hanli's calls delegated): the start of 古四 → wm-zhoutian read 3,918 字 without a play; the answer waits on 褚先生的山羊胡子."
 }

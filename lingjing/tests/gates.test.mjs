@@ -48,7 +48,7 @@ test('the 柴房 night waits on 一层圆满: refused in the world\'s words with
   assert.equal(short.result.stage.met, false);
   const full = resolve(atChaifang(th[1]), content, ctx, { exit: 'count' });
   assert.equal(full.result.ok, true, JSON.stringify(full.result));
-  assert.equal(full.state.scene, 'wm-danlu');
+  assert.equal(full.state.scene, 'wm-tonglu'); // the gift's night, cut from wm-danlu (the reading gaps, 2026-10-31)
   assert.match(resolve({ ...atChaifang(0), lang: 'en' }, content, ctx, { exit: 'count' }).result.say, /Stage quest.*Layer 1, Consummation/);
 });
 

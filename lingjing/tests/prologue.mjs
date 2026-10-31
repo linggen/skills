@@ -216,7 +216,9 @@ export function everyJuan(content) {
 export function boardsFor(state, content, exitId) {
   const scene = content.chapters[state.chapter]?.scenes?.[state.scene];
   const need = scene?.exits?.find(e => e.id === exitId)?.needs;
-  if (!need?.task || state.tasks?.[need.task]?.status === 'done') return [];
+  // A way on that waits on a 看 (needs.seen, rules/examine.mjs — the reading gaps, 2026-10-31): looked at, free, after its boards.
+  const looks = [need?.seen ?? []].flat().map(at => ['look', { at }]);
+  if (!need?.task || state.tasks?.[need.task]?.status === 'done') return looks;
   // A scene's boards are played in `show` order (batch two, 2026-10-14: 吹鹅毛 before 练功):
   // every one before the board this exit waits on is played first.
   const order = (scene.show ?? []).filter(c => c.card === 'board').map(c => c.id);
@@ -226,8 +228,11 @@ export function boardsFor(state, content, exitId) {
     const grade = wanted != null ? [wanted].flat()[0] : marks ? Object.keys(marks)[0] : null;
     return [['win', { id, ...(grade ? { grade } : {}) }], ['task', { action: 'done', id }]];
   };
-  return [...before.flatMap(id => one(id)), ...one(need.task, need.grade)];
+  return [...before.flatMap(id => one(id)), ...one(need.task, need.grade), ...looks];
 }
+
+/* A boardsFor step's verb: 赢 · 交 · 看. */
+export const stepVerb = verb => FNS[verb];
 
 /* Every board the scene stands on the stage, not yet done, played and handed in (a test that
    taps one of the scene's ways on by hand, after the page has played its games). */

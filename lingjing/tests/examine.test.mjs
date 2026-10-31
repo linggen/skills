@@ -52,7 +52,7 @@ test('looking is free and written on the save; looked at again, the same line an
   assert.equal(out.result.ok, true);
   assert.equal(out.result.looked.label, '蹄印');
   assert.match(out.result.looked.text, /还不到一个时辰/);
-  assert.deepEqual(out.state.looked, ['00-heisong/prints']);
+  assert.deepEqual(out.state.looked, ['00-chushan/tracks', '00-heisong/prints']); // 满地的狗爪印 looked on the way (00-chushan's way on waits on it: the reading gaps, 2026-10-31)
   assert.equal(out.state.stamina, s.stamina, 'no 体力');
   assert.equal(out.state.scene, s.scene, 'the story does not move');
   const again = examine(out.state, 'prints');
@@ -89,12 +89,13 @@ test(`stuck: ${STALL_LOOKS} looks without the key bring the scene's hint, in the
 test('所见: Look hands Ling what was found and what was passed by; 录 lists it; the page notes the look for her', () => {
   let s = examine(examine(atHeisong(), 'grass').state, 'stone').state;
   const here = look(s, content, ctx()).seen;
-  assert.deepEqual(here.map(r => r.scene), ['00-heisong']);
-  assert.equal(here[0].missed, undefined, 'the scene he stands in misses nothing yet');
+  assert.deepEqual(here.map(r => r.scene), ['00-chushan', '00-heisong']); // 00-chushan's 狗爪印, looked on the way (2026-10-31)
+  assert.equal(here.find(r => r.scene === '00-heisong').missed, undefined, 'the scene he stands in misses nothing yet');
   s = walk({ ...s, stamina: 100 }, [['resolve', { exit: 'carve' }]], content, NOW);
   const seen = forLing(look(s, content, ctx())).seen;
-  assert.deepEqual(seen[0].found.map(f => f.label), ['枯草', '石上的痕迹'], 'in the order found');
-  assert.deepEqual(seen[0].missed, ['蹄印']);
+  const hs = seen.find(r => r.scene === '00-heisong'); // 00-chushan's 狗爪印 is a row too (looked on the way, 2026-10-31)
+  assert.deepEqual(hs.found.map(f => f.label), ['枯草', '石上的痕迹'], 'in the order found');
+  assert.deepEqual(hs.missed, ['蹄印']);
   const book = story(s, content, ctx(), {}).result;
   assert.deepEqual(book.seen, seen);
   assert.equal(story(s, content, ctx(), { short: 'true' }).result.seen, undefined, 'Ling\'s short book stays short');
@@ -154,7 +155,7 @@ test('fewer taps: a transition\'s one way on is quiet (its own words when it end
     return look(s, content, ctx()).scene.panel.taps;
   };
   assert.deepEqual(quietOf('00-kitchen').map(t => t.quiet), ['label'], 'a lone choice keeps its words (跟爹进山)');
-  assert.deepEqual(quietOf('wm-jiangtang').map(t => [t.label, t.quiet]), [['能。', 'label']], 'the book\'s answer, never 「接着」');
+  assert.deepEqual(quietOf('wm-jiangtang', { looked: ['wm-jiangtang/beard'] }).map(t => [t.label, t.quiet]), [['能。', 'label']], 'the book\'s answer, never 「接着」');
   assert.deepEqual(quietOf('00-mijing').map(t => t.quiet), ['label'], '回去歇下 keeps its words');
   assert.ok(quietOf('00-masan').every(t => !t.quiet), 'a decision is buttons');
 });

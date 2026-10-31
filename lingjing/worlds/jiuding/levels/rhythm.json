@@ -122,8 +122,24 @@
       },
       {
        "kind": "read",
-       "chars": 3838,
-       "run": 3838,
+       "chars": 657,
+       "run": 657,
+       "over": false
+      },
+      {
+       "kind": "seen",
+       "id": "tracks",
+       "scene": "00-chushan",
+       "exit": "lookout",
+       "title": {
+        "zh": "满地的狗爪印",
+        "en": "The dog tracks everywhere"
+       }
+      },
+      {
+       "kind": "read",
+       "chars": 3181,
+       "run": 3181,
        "over": true
       },
       {
@@ -273,12 +289,12 @@
       "board": 8,
       "fight": 1,
       "riddle": 0,
-      "seen": 1,
+      "seen": 2,
       "breakthrough": 0,
       "piece": 3
      },
      "zhuli": 5,
-     "longest": 3838,
+     "longest": 3181,
      "roaming": 0,
      "side": []
     },
@@ -456,9 +472,25 @@
       },
       {
        "kind": "read",
-       "chars": 4024,
-       "run": 4024,
+       "chars": 3488,
+       "run": 3488,
        "over": true
+      },
+      {
+       "kind": "seen",
+       "id": "incense",
+       "scene": "00-halfyear",
+       "exit": "on",
+       "title": {
+        "zh": "柴垛底下",
+        "en": "The foot of the woodpile"
+       }
+      },
+      {
+       "kind": "read",
+       "chars": 514,
+       "run": 514,
+       "over": false
       },
       {
        "kind": "board",
@@ -526,12 +558,12 @@
       "board": 11,
       "fight": 0,
       "riddle": 0,
-      "seen": 0,
+      "seen": 1,
       "breakthrough": 0,
       "piece": 0
      },
      "zhuli": 6,
-     "longest": 4024,
+     "longest": 3488,
      "roaming": 0,
      "side": []
     },
@@ -910,9 +942,25 @@
      "items": [
       {
        "kind": "read",
-       "chars": 3918,
-       "run": 3918,
+       "chars": 3186,
+       "run": 3186,
        "over": true
+      },
+      {
+       "kind": "seen",
+       "id": "beard",
+       "scene": "wm-jiangtang",
+       "exit": "can",
+       "title": {
+        "zh": "褚先生的山羊胡子",
+        "en": "Master Chu's goatee"
+       }
+      },
+      {
+       "kind": "read",
+       "chars": 732,
+       "run": 732,
+       "over": false
       },
       {
        "kind": "board",
@@ -1130,9 +1178,25 @@
       },
       {
        "kind": "read",
-       "chars": 4535,
-       "run": 4535,
+       "chars": 3084,
+       "run": 3084,
        "over": true
+      },
+      {
+       "kind": "seen",
+       "id": "body",
+       "scene": "wm-tonglu",
+       "exit": "on",
+       "title": {
+        "zh": "铜肚子",
+        "en": "The bronze belly"
+       }
+      },
+      {
+       "kind": "read",
+       "chars": 1451,
+       "run": 1451,
+       "over": false
       },
       {
        "kind": "board",
@@ -1260,12 +1324,12 @@
       "board": 18,
       "fight": 0,
       "riddle": 0,
-      "seen": 0,
+      "seen": 2,
       "breakthrough": 0,
       "piece": 0
      },
      "zhuli": 12,
-     "longest": 4535,
+     "longest": 3186,
      "roaming": 15,
      "side": []
     },
@@ -1676,9 +1740,25 @@
       },
       {
        "kind": "read",
-       "chars": 4536,
-       "run": 4536,
+       "chars": 3498,
+       "run": 3498,
        "over": true
+      },
+      {
+       "kind": "seen",
+       "id": "tag",
+       "scene": "wm-mingpai",
+       "exit": "over",
+       "title": {
+        "zh": "腰上的名牌",
+        "en": "The name tag at his waist"
+       }
+      },
+      {
+       "kind": "read",
+       "chars": 1019,
+       "run": 1019,
+       "over": false
       },
       {
        "kind": "board",
@@ -1760,12 +1840,12 @@
       "board": 13,
       "fight": 2,
       "riddle": 0,
-      "seen": 0,
+      "seen": 1,
       "breakthrough": 0,
       "piece": 1
      },
      "zhuli": 7,
-     "longest": 4536,
+     "longest": 3498,
      "roaming": 4,
      "side": []
     },

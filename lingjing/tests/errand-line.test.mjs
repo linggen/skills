@@ -7,7 +7,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState, pick } from '../scripts/state.mjs';
 import { look, move, quest } from '../scripts/rules.mjs';
 import { resolve, task, win } from '../scripts/rules.mjs';
-import { boardsFor, TO_OPEN, walk } from './prologue.mjs';
+import { boardsFor, stepVerb, TO_OPEN, walk } from './prologue.mjs';
 
 const content = loadContent();
 const DAY1 = new Date('2026-09-29T09:00:00');
@@ -20,7 +20,7 @@ const must = (fn, s, args) => {
 const fresh = (s) => ({ ...s, stamina: 100, stamina_at: DAY1.toISOString() });
 function step(s, exit) {
   if (exit === 'breathe') { s = must(win, s, { id: 'zhoutian-sanguan' }); s = must(task, s, { action: 'done', id: 'zhoutian-sanguan' }); }
-  for (const [verb, args] of boardsFor(s, content, exit)) s = must(verb === 'win' ? win : task, s, args);
+  for (const [verb, args] of boardsFor(s, content, exit)) s = must(stepVerb(verb), s, args);
   return must(resolve, s, { exit });
 }
 const roaming = (lang = 'zh') => {

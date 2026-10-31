@@ -139,6 +139,7 @@
    "wm-zhishi",
    "wm-yaoyuan",
    "wm-chaifang",
+   "wm-tonglu",
    "wm-danlu",
    "wm-diyilu",
    "wm-xunye",
@@ -159,6 +160,7 @@
    "wm-xirang",
    "wm-anhe",
    "wm-tama",
+   "wm-mingpai",
    "wm-kaikai",
    "wm-xiqi",
    "wm-chu",
@@ -1051,6 +1053,14 @@
     "scene": "09-snow"
    }
   },
+  "looked": [
+   "00-chushan/tracks",
+   "00-heisong/stone",
+   "00-halfyear/incense",
+   "wm-jiangtang/beard",
+   "wm-tonglu/body",
+   "wm-mingpai/tag"
+  ],
   "found": {
    "fox-token": 1,
    "deer-hide": 1,
@@ -1093,9 +1103,6 @@
     }
    ]
   },
-  "looked": [
-   "00-heisong/stone"
-  ],
   "beasts": {
    "foe-yinhu": {
     "met": 1,
@@ -1331,6 +1338,7 @@
    "wm-zhishi",
    "wm-yaoyuan",
    "wm-chaifang",
+   "wm-tonglu",
    "wm-danlu",
    "wm-diyilu",
    "wm-xunye",
@@ -1351,6 +1359,7 @@
    "wm-xirang",
    "wm-anhe",
    "wm-tama",
+   "wm-mingpai",
    "wm-kaikai",
    "wm-xiqi",
    "wm-chu",

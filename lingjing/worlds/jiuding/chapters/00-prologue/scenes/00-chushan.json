@@ -56,7 +56,8 @@
    "text": {
     "zh": "狗爪印、马蹄印一层叠着一层，连兔子洞都给刨开了——马家篦过的山，连根兔毛都不剩。",
     "en": "Dog prints and hoofprints lie layer on layer; even the rabbit holes are dug open. Where the Mas have combed a hill, not a rabbit hair is left."
-   }
+   },
+   "clue": true
   }
  ],
  "story": {
@@ -91,7 +92,10 @@
    "beat": [],
    "next": "00-duanbei",
    "needs": {
-    "task": "chushan-luogu"
+    "task": "chushan-luogu",
+    "seen": [
+     "tracks"
+    ]
    },
    "refuse": {
     "zh": "村口的锣鼓还没歇。",
@@ -114,5 +118,10 @@
    "chushan-luogu"
   ]
  },
- "_board": "00-chushan (Hanli 10-28): 太鼓 `chushan-luogu` after 「…吃了还饿。」 — the 寿宴's 锣鼓 as 吴婆婆 heard them; the rest of the passage reads after it, word for word."
+ "_board": "00-chushan (Hanli 10-28): 太鼓 `chushan-luogu` after 「…吃了还饿。」 — the 寿宴's 锣鼓 as 吴婆婆 heard them; the rest of the passage reads after it, word for word.",
+ "look_hint": {
+  "zh": "前山什么也没有，满地都是狗爪印、马蹄印。",
+  "en": "The near hills had nothing in them. The ground was all dog prints and hoof prints."
+ },
+ "_gap": "2026-10-31 (the reading gaps, ling-mem b2fNMipemI: ≤8 min of reading between plays; Hanli's calls delegated): 00-chushan → 00-heisong read 3,838 字 without a play; the way on waits on 满地的狗爪印, the book's own line."
 }
