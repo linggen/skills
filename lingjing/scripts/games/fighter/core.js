@@ -23,6 +23,14 @@
 // slower one), →↓→ 升勾, ↓→↓→ the 绝 (one stock).
 // Hits stop the clock a beat (`freeze`, hit-stop); a 绝 stops it for its cut-in.
 //
+// Two spells of the 结印 (Hanli 10-28: 「故事里的战斗可以用格斗」; 10-31 the xianxia moves): I 飞剑 — a flying sword leaves
+// his hand, sweeps one loop over the stage (jieyin/flight.js draws it) and dives on her where she stands when it lands
+// (`fly` ms later: a step back never outruns it, a guard takes its chip); U 符文 — a talisman laid at her feet that arms
+// (`arm` ms, its circle drawn) and binds her where it lies (a stun, a little 稳), unless she has stepped off it or
+// stands guarded. Each its own cooldown (`me.cdFj`, `me.cdFw`), shown on its button and a ring by his 气; each shows
+// the 稳 it took as a number (fx `num`). A foe may cast the 飞剑 too (`foe.moves.feijian`, `ai.feijian`: 心魔, his own
+// moves turned on him).
+//
 // Her moves (`foe.moves`) are data; two are tricks the book has (doc/games.md § 格斗):
 //   edge   at the stage's edge, her point at his throat (Ahe's 底册: 「到了台边，往前送一寸」): a guard, then the push
 //          (`tell`). A fresh press in the tell — 迎, forward, or any blow — takes him in along the flat of the blade (a cut
@@ -76,6 +84,8 @@ export const ME = {
   palmfire: { kind: 'palmfire', startup: 240, recover: 300, speed: 760, dmg: 8, push: 120, stun: 420, cd: 2200, at: 108, qi: 6 },
   palmfireH: { kind: 'palmfire', startup: 320, recover: 360, speed: 560, dmg: 11, push: 170, stun: 520, cd: 2200, at: 108, qi: 8, big: true },
   super: { name: { zh: '两样', en: 'Two at Once' }, cut: 900, startup: 120, recover: 600, speed: 700, dmg: 26, push: 340, stun: 1000 },
+  feijian: { startup: 240, recover: 280, fly: 950, dmg: 9, push: 120, stun: 460, cd: 6000, qi: 6 },
+  fuwen: { startup: 200, recover: 260, arm: 650, r: 64, bind: 1100, dmg: 5, cd: 8000, qi: 6 },
 };
 
 /* Her moves and her mind. `share` is what lands of a held-back palm. */
@@ -89,13 +99,14 @@ export const FOE = {
     palm: { glow: 900, hold: 560, strike: 120, after: 1150, reach: 104, dmg: 100, share: 0.3, push: 70, cd: 9000, under: 55 },
     jianqi: { name: { zh: '剑气三尺', en: 'Three Feet of Sword-Qi' }, cut: 800, startup: 520, active: 200, recover: 700, reach: 380, dmg: 9, push: 140, down: 1100 },
     block: { hold: 460 },
+    feijian: { startup: 420, recover: 520, fly: 950, dmg: 6, push: 90, stun: 380, cd: 7000 },
   },
   // Her mind (decide below). A foe's level may lay its own on: how often she reads (`think`), blocks, how soft her first
   // `soft` moves are, when she drives (稳 under `drive`); the odds of each choice (`palm`, `qi`, `ice`, `back`, `thrust`,
   // `driveThrust`, `poke`); `chain`: a poke that lands runs on into a thrust; `qiGain` how fast her 气 fills, `qi0` what
   // she starts with; `edge` / `palmOn` false switch those tricks off (a foe with no blade at his throat).
   ai: { think: 300, block: 0.3, soft: 10, softBy: 0.5, drive: 40, palm: 0.45, qi: 0.6, ice: 0.5, back: 0.35, closePoke: 0.75,
-    thrust: 0.3, driveThrust: 0.5, poke: 0.75, chain: 0, qiGain: 1, qi0: 0, edge: true, palmOn: true, chip: 0.25 }, // chip: the share of a blow a guard still takes
+    thrust: 0.3, driveThrust: 0.5, poke: 0.75, chain: 0, qiGain: 1, qi0: 0, edge: true, palmOn: true, chip: 0.25, feijian: 0, runeStep: 0.5 }, // chip: the share of a blow a guard still takes
 };
 
 /* ── A seeded random source (mulberry32), kept in the state as one integer. ── */
@@ -128,10 +139,10 @@ export function newGame(seed = 'fighter', _n = 1, deal = {}) {
   return {
     seed: String(seed), rng: hash(seed), t: 0, live: true, won: false, lost: false, grade: null, stars: null,
     level, R,
-    me: { x: mid - 70, y: 0, vx: 0, vy: 0, face: 1, hp: R.me.hp, act: null, stun: 0, cd: 0, cdPf: 0, guard: false, air: false, crouch: false, down: 0, qi: 0, airHit: false },
-    foe: { x: mid + 150, y: 0, vx: 0, face: -1, bal: R.foe.bal, act: null, stun: 0, think: 900, cd: { ice: 2500, palm: 0, edge: 0 }, moves: 0, qi: R.foe.ai.qi0 ?? 0 },
+    me: { x: mid - 70, y: 0, vx: 0, vy: 0, face: 1, hp: R.me.hp, act: null, stun: 0, cd: 0, cdPf: 0, cdFj: 0, cdFw: 0, guard: false, air: false, crouch: false, down: 0, qi: 0, airHit: false },
+    foe: { x: mid + 150, y: 0, vx: 0, face: -1, bal: R.foe.bal, act: null, stun: 0, think: 900, cd: { ice: 2500, palm: 0, edge: 0, feijian: 3000 }, moves: 0, qi: R.foe.ai.qi0 ?? 0 },
     in: { dir: 0, block: false, crouch: false }, buf: [], hist: [], last: {}, order: 1,
-    shots: [], fx: [], n: 0, freeze: 0,
+    shots: [], runes: [], fx: [], n: 0, freeze: 0,
     edge: null, palm: null, end: null, cutin: null, wall: null,
     palmLanded: 0, hooked: false, early: 0, parried: 0, supers: 0, best: 0,
     combo: { n: 0, at: 0, who: 'me' },
@@ -141,7 +152,7 @@ export function newGame(seed = 'fighter', _n = 1, deal = {}) {
 }
 
 /* ── Small helpers ── */
-const clone = (s) => ({ ...s, me: { ...s.me }, foe: { ...s.foe, cd: { ...s.foe.cd } }, in: { ...s.in }, buf: [...s.buf], hist: [...s.hist], last: { ...s.last }, shots: s.shots.map((x) => ({ ...x })), fx: [...s.fx], snd: { ...s.snd }, combo: { ...s.combo } });
+const clone = (s) => ({ ...s, me: { ...s.me }, foe: { ...s.foe, cd: { ...s.foe.cd } }, in: { ...s.in }, buf: [...s.buf], hist: [...s.hist], last: { ...s.last }, shots: s.shots.map((x) => ({ ...x })), runes: (s.runes ?? []).map((x) => ({ ...x })), fx: [...s.fx], snd: { ...s.snd }, combo: { ...s.combo } });
 const bump = (s, k) => { s.snd[k] = (s.snd[k] ?? 0) + 1; };
 const say = (s, key) => { s.line = { key, at: s.t }; };
 const fx = (s, kind, x, y, extra = {}) => { s.n += 1; s.fx.push({ kind, x, y, at: s.t, id: s.n, ...extra }); if (s.fx.length > 28) s.fx.shift(); };
@@ -181,7 +192,7 @@ const phaseOf = (act, t) => {
 const busy = (who, t) => Boolean(who.act) || who.stun > t;
 
 /* ── His hands ── */
-const PRESS = new Set(['jump', 'light', 'lkick', 'hpunch', 'heavy', 'special', 'ying', 'skill', 'super']);
+const PRESS = new Set(['jump', 'light', 'lkick', 'hpunch', 'heavy', 'special', 'ying', 'skill', 'super', 'feijian', 'fuwen']);
 const PUNCH = new Set(['light', 'hpunch']);
 const PAIRED = new Set(['super', 'roll', 'blow']); // a press that takes the place of the pair's first key
 const tapped = (s, k) => s.hist.filter((h) => h.k === k && s.t - h.at <= TAP_MS).length >= 2;
@@ -349,7 +360,13 @@ function guarded(s, chip, push) {
 }
 
 /* What a blow of his does to her: her 稳, her stagger, how far she slides (looser, further; on the slick, further still). */
-function hurtFoe(s, m, { heavy = false, fire = false, big = false } = {}) {
+function hurtFoe(s, m, o = {}) {
+  const was = s.foe.bal;
+  hurtFoeBy(s, m, o);
+  const lost = Math.round(was - s.foe.bal);
+  if (o.num && lost > 0) fx(s, 'num', s.foe.x, 200, { n: lost, who: 'foe' });
+}
+function hurtFoeBy(s, m, { heavy = false, fire = false, big = false } = {}) {
   const foe = s.foe, R = s.R, sd = side(s);
   const glow = s.palm?.phase === 'glow';
   const loose = s.palm && (s.palm.phase === 'hold' || s.palm.phase === 'after');
@@ -420,6 +437,7 @@ function startFoe(s, k) {
   if (k !== 'block') { foe.moves += 1; bump(s, 'swing'); }
   if (k === 'thrust') bump(s, 'tell');
   if (k === 'ice') { bump(s, 'tell'); foe.cd.ice = m.cd; }
+  if (k === 'feijian') { bump(s, 'tell'); foe.cd.feijian = m.cd; }
   if (k === 'jianqi') { foe.qi -= QI; s.cutin = { who: 'foe', name: m.name, at: s.t }; hitstop(s, m.cut); bump(s, 'cutin'); say(s, 'jianqi'); }
 }
 
@@ -455,6 +473,9 @@ function decide(s) {
   if (ai.edge !== false && cornered(s) && foe.moves >= M.edge.after && foe.cd.edge <= 0 && d < M.poke.reach + 20) { startEdge(s); return; }
   if (ai.palmOn !== false && d < M.palm.reach + 16 && foe.bal <= M.palm.under && foe.cd.palm <= 0 && roll(s) < ai.palm) { startPalm(s, 'close'); return; }
   if (foe.qi >= QI && d < M.jianqi.reach - 20 && roll(s) < ai.qi) { startFoe(s, 'jianqi'); return; }
+  if (ai.feijian > 0 && M.feijian && foe.cd.feijian <= 0 && d > 180 && roll(s) < ai.feijian) { startFoe(s, 'feijian'); return; }
+  // A talisman under her feet: she may step off it before it arms.
+  if ((s.runes ?? []).some((r) => !r.done && Math.abs(foe.x - r.x) <= s.R.me.fuwen.r) && roll(s) < (ai.runeStep ?? 0)) { foe.vx = side(s) * R.foe.back * 1.6; foe.think = t + 420; return; }
   if (d > 330) {
     if (foe.cd.ice <= 0 && roll(s) < ai.ice) { startFoe(s, 'ice'); return; }
     foe.vx = -side(s) * R.foe.speed;
@@ -485,10 +506,24 @@ function foeStrikes(s) {
       s.n += 1;
       // `kind`: how it looks (ice · blade: 卢方's 金刃 along the boards · quake: 祁长松's stamp through the ground); `low`
       // ones are jumped, never ducked.
-      s.shots.push({ who: 'foe', kind: m.kind ?? 'ice', x: foe.x - side(s) * 30, y: m.at, vx: -side(s) * m.speed, id: s.n, ...(m.low ? { low: true } : {}) });
+      s.shots.push({ who: 'foe', kind: m.kind ?? 'ice', mv: 'ice', x: foe.x - side(s) * 30, y: m.at, vx: -side(s) * m.speed, id: s.n, ...(m.low ? { low: true } : {}) });
       bump(s, 'ice');
     }
     if (a.shot >= m.count) a.hit = true;
+    return;
+  }
+  if (a.k === 'feijian' && s.t - a.at >= a.m.startup) {
+    const m = R.foe.moves.feijian;
+    a.hit = true; s.n += 1;
+    s.shots.push({ who: 'foe', kind: 'feijian', x: foe.x, y: 150, vx: 0, from: { x: foe.x, y: 150 }, at: s.t, land: s.t + m.fly, id: s.n });
+    bump(s, 'feijian');
+    return;
+  }
+  if (a.k === 'jianqi' && R.foe.moves.jianqi.wave && ph === 'active') { // a mirror's 绝: the fire along the boards, as his
+    const m = R.foe.moves.jianqi;
+    a.hit = true; s.n += 1;
+    s.shots.push({ who: 'foe', kind: 'wave', mv: 'jianqi', x: foe.x - side(s) * 50, y: 30, vx: -side(s) * (m.speed ?? 700), id: s.n, low: true, big: true });
+    bump(s, 'super');
     return;
   }
   if ((a.k === 'poke' || a.k === 'thrust' || a.k === 'jianqi') && ph === 'active') {
@@ -570,6 +605,15 @@ function startMe(s, k) {
     bump(s, 'cast');
     return true;
   }
+  if (k === 'feijian' || k === 'fuwen') {
+    const m = R.me[k], cdKey = k === 'feijian' ? 'cdFj' : 'cdFw';
+    if (!m || me[cdKey] > 0 || me.air) return false;
+    me[cdKey] = m.cd;
+    me.act = { k, at: s.t, m: { startup: m.startup, active: 0, recover: m.recover }, hit: false };
+    me.vx = 0;
+    bump(s, 'cast');
+    return true;
+  }
   if (k === 'super') {
     if (me.qi < QI || me.air) return false;
     const m = R.me.super;
@@ -630,6 +674,13 @@ function meStep(s) {
     s.shots.push({ who: 'me', kind: m.kind, x: me.x + toward * 34, y: m.at ?? 22, vx: toward * m.speed, id: s.n, ...(m.big ? { heavy: true } : {}) });
     bump(s, a.k === 'special' ? 'fire' : 'palmfire');
   }
+  if (a && !a.hit && (a.k === 'feijian' || a.k === 'fuwen') && t - a.at >= a.m.startup) {
+    a.hit = true;
+    const m = R.me[a.k];
+    s.n += 1;
+    if (a.k === 'feijian') { s.shots.push({ who: 'me', kind: 'feijian', x: me.x, y: 150, vx: 0, from: { x: me.x, y: 150 }, at: t, land: t + m.fly, id: s.n }); bump(s, 'feijian'); }
+    else { s.runes.push({ who: 'me', x: s.foe.x, at: t, arm: t + m.arm, id: s.n }); bump(s, 'rune'); }
+  }
   if (a && !a.hit && a.k === 'super' && t - a.at >= a.m.startup) {
     a.hit = true;
     const m = R.me.super;
@@ -683,31 +734,71 @@ function bodies(s, dt) {
   for (const who of [me, foe]) if (!who.act && who.stun <= s.t) who.face = Math.sign((who === me ? foe.x - me.x : me.x - foe.x)) || who.face;
 }
 
+/* 飞剑: a sword in the air lands where its mark stands when its time comes (the flight is the picture's). */
+function swordsStep(s) {
+  for (const x of s.shots) {
+    if (x.kind !== 'feijian' || x.gone || s.t < x.land) continue;
+    x.gone = true;
+    if (s.end) continue;
+    if (x.who === 'me') {
+      fx(s, 'flash', s.foe.x, 120);
+      hurtFoe(s, s.R.me.feijian, { num: true });
+      continue;
+    }
+    const me = s.me, m = s.R.foe.moves.feijian;
+    fx(s, 'flash', me.x, 120);
+    if (me.down > s.t || safe(s)) continue;
+    if (guarded(s, Math.round(m.dmg * (s.R.foe.ai.chip ?? 0.25)), m.push)) continue;
+    hurtMe(s, m.dmg, m.push, m.stun);
+    fx(s, 'num', me.x, 200, { n: m.dmg, who: 'me' });
+  }
+}
+/* 符文: a talisman at her feet arms, then binds her if she still stands on it (a guard breaks it for a chip). */
+function runesStep(s) {
+  if (!s.runes?.length) return;
+  const m = s.R.me.fuwen, foe = s.foe;
+  for (const r of s.runes) {
+    if (r.done || s.t < r.arm) continue;
+    r.done = true;
+    if (s.end) continue;
+    if (Math.abs(foe.x - r.x) > m.r) { r.fizzled = true; bump(s, 'whiff'); continue; }
+    r.bound = true;
+    bump(s, 'bind');
+    say(s, 'bind'); // the level's line, if it has one (何七's 喷嚏符: 「阿——嚏！」)
+    fx(s, 'bind', r.x, 0);
+    hurtFoe(s, { dmg: m.dmg, push: 0, stun: m.bind, qi: m.qi }, { num: true });
+  }
+  s.runes = s.runes.filter((r) => !r.done || s.t - r.arm < 600);
+}
+
 function shotsStep(s, dt) {
   const k = dt / 1000, R = s.R, me = s.me, foe = s.foe;
-  for (const x of s.shots) x.x += x.vx * k;
+  swordsStep(s);
+  runesStep(s);
+  for (const x of s.shots) if (x.kind !== 'feijian') x.x += x.vx * k;
   // Fire meets ice: both gone in steam. The earth wall eats ice.
-  for (const f of s.shots.filter((x) => x.who === 'me' && !x.gone)) for (const i of s.shots.filter((x) => x.who === 'foe' && !x.gone)) {
+  const flat = (x) => !x.gone && x.kind !== 'feijian';
+  for (const f of s.shots.filter((x) => x.who === 'me' && flat(x))) for (const i of s.shots.filter((x) => x.who === 'foe' && flat(x))) {
     if (Math.abs(f.x - i.x) < 26) { i.gone = true; if (!f.big) f.gone = true; fx(s, 'steam', (f.x + i.x) / 2, 60); bump(s, 'steam'); }
   }
-  if (s.wall && s.t < s.wall.until) for (const i of s.shots.filter((x) => x.who === 'foe' && !x.gone)) if (Math.abs(i.x - s.wall.x) < 20) { i.gone = true; fx(s, 'spark', s.wall.x, 100); bump(s, 'block'); }
+  if (s.wall && s.t < s.wall.until) for (const i of s.shots.filter((x) => x.who === 'foe' && flat(x))) if (Math.abs(i.x - s.wall.x) < 20) { i.gone = true; fx(s, 'spark', s.wall.x, 100); bump(s, 'block'); }
   if (s.wall && s.t >= s.wall.until) s.wall = null;
   for (const x of s.shots) {
-    if (x.gone) continue;
+    if (x.gone || x.kind === 'feijian') continue;
     if (x.x < 0 || x.x > R.stage.w) { x.gone = true; continue; }
     if (x.who === 'foe' && Math.abs(x.x - me.x) < 26) {
       x.gone = true;
       if (me.y > 52 || (me.crouch && !x.low) || me.down > s.t || safe(s)) continue; // jumped, ducked or rolled under it: it flies on (a low one is jumped only)
-      const m = R.foe.moves.ice, soft = foe.moves <= R.foe.ai.soft ? R.foe.ai.softBy : 1;
+      const m = R.foe.moves[x.mv ?? 'ice'] ?? R.foe.moves.ice, soft = foe.moves <= R.foe.ai.soft ? R.foe.ai.softBy : 1;
       if (guarded(s, 1, 10)) continue;
-      hurtMe(s, Math.max(1, Math.round(m.dmg * soft)), m.push, m.stun);
+      hurtMe(s, Math.max(1, Math.round(m.dmg * soft)), m.push, m.stun ?? 400, { down: x.big ? m.down ?? 0 : 0 });
     }
     if (x.who === 'me' && !x.gone && Math.abs(x.x - foe.x) < 30 && !s.end) {
       x.gone = true;
       const m = x.kind === 'wave' ? R.me.super : x.kind === 'palmfire' ? (x.heavy ? R.me.palmfireH : R.me.palmfire) : R.me.special;
       // 护体灵光 (`foe.armor`, 祁长松's): a spell on him lands at that share
       const armor = R.foe.armor ?? 1;
-      hurtFoe(s, armor < 1 ? { ...m, dmg: m.dmg * armor } : m, { fire: x.kind === 'fire', big: x.kind === 'wave' });
+      hurtFoe(s, armor < 1 ? { ...m, dmg: m.dmg * armor } : m, { fire: x.kind === 'fire', big: x.kind === 'wave', num: x.kind !== 'fire' });
     }
   }
   s.shots = s.shots.filter((x) => !x.gone);
@@ -769,6 +860,8 @@ function step(s) {
   const me = s.me;
   me.cd = Math.max(0, me.cd - STEP_MS);
   me.cdPf = Math.max(0, me.cdPf - STEP_MS);
+  me.cdFj = Math.max(0, (me.cdFj ?? 0) - STEP_MS);
+  me.cdFw = Math.max(0, (me.cdFw ?? 0) - STEP_MS);
   meStep(s);
   if (!s.end) foeStep(s); // hooked this step: her slide is the end's now
   bodies(s, STEP_MS);
@@ -794,7 +887,7 @@ export function tick(state, ms) {
 }
 
 /** What a step sounded (games/kit/heard.js): each counter that rose names its event. */
-export const SOUNDS = ['swing', 'whiff', 'hit', 'heavy', 'hurt', 'block', 'jump', 'land', 'dash', 'roll', 'cast', 'fire', 'palmfire', 'ice', 'steam', 'tell', 'early', 'ying', 'glow', 'hold', 'palm', 'hook', 'rise', 'combo', 'cutin', 'super', 'wall', 'knock', 'getup', 'slip', 'down'];
+export const SOUNDS = ['swing', 'whiff', 'hit', 'heavy', 'hurt', 'block', 'jump', 'land', 'dash', 'roll', 'cast', 'fire', 'palmfire', 'ice', 'steam', 'tell', 'early', 'ying', 'glow', 'hold', 'palm', 'hook', 'rise', 'combo', 'cutin', 'super', 'wall', 'knock', 'getup', 'slip', 'down', 'feijian', 'rune', 'bind'];
 export function sounds(b, a) {
   if (!b?.snd || !a?.snd) return [];
   return SOUNDS.filter((k) => (a.snd[k] ?? 0) > (b.snd[k] ?? 0));
@@ -814,5 +907,6 @@ export const MOVES = [
   { k: 'dash', keys: 'D D · A A', touch: '▶▶ · ◀◀' }, { k: 'hop', keys: 'W 轻点 · 按住', touch: '▲' },
   { k: 'chain', keys: 'K K L · K O · 跳 ; K', touch: '拳 拳 腿' },
   { k: 'palmfire', keys: 'S D + K/O', touch: '技' }, { k: 'rise', keys: 'D S D + K/O', touch: '▶ + 技' },
-  { k: 'super', keys: 'S D S D + K/O', touch: '技（气满：绝）' }, { k: 'guard', keys: 'A/D 背向她 · S+背向 低挡', touch: '◀/▶ 背向她' },
+  { k: 'super', keys: 'S D S D + K/O', touch: '技（气满：绝）' },
+  { k: 'feijian', keys: 'I', touch: '剑', name: { zh: '飞剑', en: 'Flying sword' } }, { k: 'fuwen', keys: 'U', touch: '符', name: { zh: '符文', en: 'Talisman' } }, { k: 'guard', keys: 'A/D 背向她 · S+背向 低挡', touch: '◀/▶ 背向她' },
 ];

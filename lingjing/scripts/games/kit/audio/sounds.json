@@ -1387,7 +1387,13 @@
      "sound": "cloth",
      "min": 200,
      "vol": 0.5
-    }
+    },
+    "feijian": {
+     "sound": "blade.slice",
+     "min": 150
+    },
+    "rune": "tone.cast",
+    "bind": "tone.chime"
    }
   },
   "dash": {

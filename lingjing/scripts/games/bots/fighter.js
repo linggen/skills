@@ -1,7 +1,7 @@
 // The human-like player for 格斗 (games/fighter.js; tools/board-bots.mjs): it reads what a person reads — her point
 // at his throat, the green in her palm going dim, her blade drawn back — and answers a beat late, as a hand does.
 // v2 (10-27): it chains 拳 拳 腿 when the first lands, throws 掌心火 from range and the 绝 when its 气 is full, as the
-// phone's buttons give them (技 · 绝), so the playtest sees every new move.
+// phone's buttons give them (技 · 绝), so the playtest sees every new move. v4 (10-31): the 飞剑 and the 符文 as they cool.
 import { FOE, QI } from '../fighter/core.js';
 
 const side = (s) => s.order ?? (Math.sign(s.foe.x - s.me.x) || 1);
@@ -26,6 +26,8 @@ export function bot(s, see = {}) {
     if ((s.palm.phase === 'hold' || s.palm.phase === 'after') && !me.act) return { g: 'heavy' };
     return s.in.dir ? { g: 'walk', dir: 0 } : null;
   }
+  // A flying sword coming down on him: stand it off as it lands.
+  if (s.shots.some((x) => x.who === 'foe' && x.kind === 'feijian' && x.land - t < 260 + lead / 2)) return s.in.block ? null : { g: 'block', on: true };
   // Ice coming: hop it.
   if (s.shots.some((x) => x.who === 'foe' && Math.abs(x.x - me.x) < 150 && Math.sign(x.vx) === -sd) && !me.air) return { g: 'jump' };
   // Her blade drawn back within reach: stand it off.
@@ -38,6 +40,9 @@ export function bot(s, see = {}) {
   // Past twenty moves, lead her to the corner with the slick (the book's: 「往台子的西北角上挪了七步」), backing off as he blocks.
   const toOil = -1, atEdge = me.x - (s.R?.stage?.left ?? 40) < 70;
   if (foe.moves >= (M.edge.after ?? 24) - 6 && sd === -toOil && !atEdge) return s.in.dir === toOil ? null : { g: 'walk', dir: toOil };
+  // The spells (v4, 10-31): the 飞剑 from range, the 符文 under her while she is busy with a move.
+  if (s.R?.me?.feijian && (me.cdFj ?? 0) <= 0 && d > 220 && !me.act && !me.air) return s.in.dir ? { g: 'walk', dir: 0 } : { g: 'feijian' };
+  if (s.R?.me?.fuwen && (me.cdFw ?? 0) <= 0 && foe.act && foe.act.k !== 'block' && d < 300 && !me.act && !me.air) return s.in.dir ? { g: 'walk', dir: 0 } : { g: 'fuwen' };
   if (me.cdPf <= 0 && d > 240 && d < 520 && !me.act) return s.in.dir ? { g: 'walk', dir: 0 } : { g: 'skill' };
   if (d > 120) return s.in.dir === sd ? null : { g: 'walk', dir: sd };
   if (s.in.dir) return { g: 'walk', dir: 0 };

@@ -6,6 +6,8 @@
 // (`stage.look`). Game feel lives here too: the sword-qi trail, ink-splash sparks, dust, screen shake, the 绝's cut-in,
 // the crowd bobbing on a big blow, and the KO's vignette. Nothing here plays: it reads a state.
 
+import { loopAt } from '../jieyin/flight.js';
+
 const W = 960, H = 540, FLOOR = 432;
 /* The painted fighters stand ~245 units tall (KOF scale: near half the field); the core counts heights for ~190: what it
    places at a height (a spark, a shot) is drawn that much higher. Her ice flies at the head of a man standing. */
@@ -406,7 +408,7 @@ function meClip(s) {
     if (a.k === 'roll') return ['roll', a.at];
     if (a.k === 'ying' || a.k === 'dash') return ['dash', a.at];
     if (a.k === 'backstep') return ['back', a.at];
-    if (a.k === 'special' || a.k === 'palmfire' || a.k === 'palmfireH') return ['cast', a.at, a.m];
+    if (['special', 'palmfire', 'palmfireH', 'feijian', 'fuwen'].includes(a.k)) return ['cast', a.at, a.m];
     if (CROUCHED[a.k]) return [me.crouch ? CROUCHED[a.k] : a.k, a.at, a.m];
     if (['blow', 'super', 'air', 'rise'].includes(a.k)) return [a.k, a.at, a.m];
   }
@@ -426,7 +428,7 @@ function foeClip(s) {
   if (foe.stun > t) return ['hit', null];
   if (a) {
     if (a.k === 'block') return ['block', a.at];
-    if (['ice', 'poke', 'thrust', 'jianqi'].includes(a.k)) return [a.k, a.at, a.m];
+    if (['ice', 'poke', 'thrust', 'jianqi', 'feijian'].includes(a.k)) return [a.k, a.at, a.m];
   }
   if (Math.abs(foe.vx) > 20) return [Math.sign(foe.vx) === foe.face ? 'walk' : 'back', 0];
   return ['idle', 0];
@@ -435,9 +437,11 @@ function foeClip(s) {
 /* The frame a fighter shows: its clip, how far in, its frame; `track` remembers when a clip with no clock of its own
    began (a hit, a crouch, a fall). A fall's frames go by what is left of it: thrown, down, getting up. */
 function pick(sheet, who, s, track, calm) {
-  const [name, at, m] = who === 'me' ? meClip(s) : foeClip(s);
+  const [said, at, m] = who === 'me' ? meClip(s) : foeClip(s);
+  // a foe on another fighter's sheet (心魔 on 小满's) names its clips by its own moves: `foe.look.clips` maps them
+  const name = (who === 'foe' && s.level?.foe?.look?.clips?.[said]) || said;
   const clips = sheet.meta.clips;
-  const clip = clips[name] ?? clips.idle;
+  const clip = clips[name] ?? (said === 'feijian' ? clips.ice : null) ?? clips.idle;
   if (track.name !== name) { track.name = name; track.at = s.t; }
   const e = s.t - (at ?? track.at);
   if (name === 'knock') {
@@ -514,7 +518,69 @@ function splat(ctx, x, y, age, id, big) {
     }
   }
 }
-function effects(ctx, s) {
+/* 飞剑 in flight (jieyin/flight.js's loop, the 结印 look): from his hand up over the stage and down on her where she
+   stands; a glowing trail behind it. Reduced motion: no loop — the sword hangs over her and drops. */
+function flyingSword(ctx, s, x, art, calm) {
+  const target = x.who === 'me' ? s.foe : s.me;
+  const a = { x: x.from.x, y: FLOOR - x.from.y * FY }, b = { x: target.x, y: FLOOR - 120 * FY };
+  const k = Math.max(0, Math.min(1, (s.t - x.at) / Math.max(1, x.land - x.at)));
+  const at = (kk) => (calm ? { x: b.x, y: b.y - 120 * (1 - kk), rot: Math.PI / 2 } : loopAt(a, b, kk, { w: W, h: H }));
+  const p = at(k), rgb = x.who === 'me' ? '143,212,255' : '120,90,160';
+  if (!calm) {
+    ctx.lineCap = 'round';
+    for (let i = 1; i <= 8; i += 1) {
+      const q0 = at(Math.max(0, k - i * 0.025)), q1 = at(Math.max(0, k - (i - 1) * 0.025));
+      ctx.strokeStyle = `rgba(${rgb},${0.5 * (1 - i / 9)})`; ctx.lineWidth = 12 * (1 - i / 9) + 2;
+      ctx.beginPath(); ctx.moveTo(q0.x, q0.y); ctx.lineTo(q1.x, q1.y); ctx.stroke();
+    }
+  }
+  const img = art.feijian, size = 92;
+  ctx.save();
+  ctx.translate(p.x, p.y); ctx.rotate(p.rot + Math.PI / 4);
+  ctx.shadowColor = `rgba(${rgb},.95)`; ctx.shadowBlur = 16;
+  if (img?.complete && img.naturalWidth) ctx.drawImage(img, -size / 2, -size / 2, size, size);
+  else { ctx.rotate(-Math.PI / 4); ctx.fillStyle = '#e8f4fb'; ctx.fillRect(-30, -3, 60, 6); ctx.fillStyle = '#5b4f42'; ctx.fillRect(-38, -4, 10, 8); }
+  ctx.restore();
+}
+/* 符文 on the boards: a yellow talisman strip and its rune circle, turning as it arms; bound, it flares; fizzled, it fades. */
+function rune(ctx, s, r) {
+  const arming = Math.min(1, (s.t - r.at) / Math.max(1, r.arm - r.at)), after = s.t - r.arm;
+  const fade = r.done ? Math.max(0, 1 - after / 600) : 1;
+  if (fade <= 0) return;
+  const cx = r.x, cy = FLOOR + 4, R = 58;
+  ctx.save();
+  ctx.globalAlpha = fade * (r.fizzled ? 0.5 : 1);
+  ctx.translate(cx, cy); ctx.scale(1, 0.28);
+  ctx.strokeStyle = r.bound ? 'rgba(255,214,90,.95)' : `rgba(226,170,60,${0.5 + 0.5 * arming})`; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.arc(0, 0, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * arming); ctx.stroke();
+  ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, R * 0.66, 0, Math.PI * 2); ctx.stroke();
+  ctx.rotate(s.t / 500);
+  ctx.fillStyle = ctx.strokeStyle; ctx.font = `700 22px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ['敕', '令', '缚', '镇'].forEach((c, i) => { const a = (i / 4) * Math.PI * 2; ctx.fillText(c, Math.cos(a) * R * 0.83, Math.sin(a) * R * 0.83); });
+  ctx.restore();
+  if (!r.done) { // the strip itself, standing on the boards over the circle
+    ctx.save(); ctx.globalAlpha = fade;
+    ctx.fillStyle = '#e8c45a'; ctx.strokeStyle = '#7a2a18'; ctx.lineWidth = 1.5;
+    const y0 = FLOOR - 52 - Math.sin(s.t / 160) * 3;
+    ctx.fillRect(cx - 9, y0, 18, 44); ctx.strokeRect(cx - 9, y0, 18, 44);
+    ctx.fillStyle = '#a3261c'; ctx.font = `700 13px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('敕', cx, y0 + 13); ctx.fillText('令', cx, y0 + 31);
+    ctx.restore();
+  }
+}
+/* A number off a blow: what it took (her 稳, his 血), rising and fading. */
+function numberPop(ctx, f, x, y, age) {
+  const k = Math.min(1, age / 120), up = age / 14, a = age < 600 ? 1 : 1 - (age - 600) / 300;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, a);
+  ctx.translate(x, y - up);
+  ctx.scale(1.4 - 0.4 * k, 1.4 - 0.4 * k);
+  ctx.font = `800 30px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(246,238,220,.95)'; ctx.strokeText(`-${f.n}`, 0, 0);
+  ctx.fillStyle = f.who === 'me' ? '#a3261c' : '#2f6a8a'; ctx.fillText(`-${f.n}`, 0, 0);
+  ctx.restore();
+}
+function effects(ctx, s, art = {}, calm = false) {
   for (const f of s.fx) {
     const age = s.t - f.at, x = f.x, y = FLOOR - f.y * FY;
     if (f.kind === 'ink' || f.kind === 'cut') splat(ctx, x, y, age, f.id, f.big || f.kind === 'cut');
@@ -542,6 +608,16 @@ function effects(ctx, s) {
       ctx.fillStyle = `rgba(250,250,250,${0.7 * (1 - age / 600)})`;
       for (let i = 0; i < 4; i += 1) { ctx.beginPath(); ctx.arc(x + (i - 1.5) * 12, y - age / 20 - i * 4, 10 + age / 60, 0, Math.PI * 2); ctx.fill(); }
     }
+    if (f.kind === 'flash' && age < 260) { // a flying sword strikes home
+      const g = ctx.createRadialGradient(x, y, 2, x, y, 70);
+      g.addColorStop(0, `rgba(235,248,255,${1 - age / 260})`); g.addColorStop(1, 'rgba(143,212,255,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 70, 0, Math.PI * 2); ctx.fill();
+    }
+    if (f.kind === 'bind' && age < 700) { // the talisman closes: gold chains of light rise round her
+      ctx.strokeStyle = `rgba(240,196,80,${0.9 * (1 - age / 700)})`; ctx.lineWidth = 3;
+      for (let i = 0; i < 3; i += 1) { ctx.beginPath(); ctx.ellipse(x, FLOOR - 40 - i * 46 - age / 12, 46 - i * 4, 10, 0, 0, Math.PI * 2); ctx.stroke(); }
+    }
+    if (f.kind === 'num' && age < 900) numberPop(ctx, f, x, FLOOR - f.y * FY, age);
     if (f.kind === 'dust' && age < 420) {
       ctx.fillStyle = `rgba(150,138,112,${0.55 * (1 - age / 420)})`;
       const n = f.small ? 2 : 4;
@@ -553,7 +629,9 @@ function effects(ctx, s) {
     ctx.fillStyle = '#6f5a3e'; ctx.strokeStyle = '#2a2016'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(s.wall.x - 18, FLOOR); ctx.lineTo(s.wall.x - 14, FLOOR - h); ctx.lineTo(s.wall.x + 2, FLOOR - h - 8); ctx.lineTo(s.wall.x + 16, FLOOR - h + 4); ctx.lineTo(s.wall.x + 18, FLOOR); ctx.closePath(); ctx.fill(); ctx.stroke();
   }
+  for (const r of s.runes ?? []) rune(ctx, s, r);
   for (const x of s.shots) {
+    if (x.kind === 'feijian') { flyingSword(ctx, s, x, art, calm); continue; }
     const px = x.x, py = FLOOR - x.y * (x.kind === 'ice' ? FY_ICE : FY), d = Math.sign(x.vx);
     if (x.kind === 'blade') { // 金刃: a white crescent skimming the boards
       ctx.fillStyle = 'rgba(246,244,232,.96)'; ctx.strokeStyle = 'rgba(90,90,80,.9)'; ctx.lineWidth = 1.5;
@@ -650,6 +728,8 @@ function hud(ctx, s, art, lang, view) {
     ctx.fillStyle = '#f6eedc'; ctx.font = `700 10px ${SERIF}`; ctx.textAlign = 'center'; ctx.fillText(label, cx, 83);
   };
   ring(96, say(lv.words?.palmfire, lang)?.[0] || '掌', 1 - (s.me.cdPf ?? 0) / s.R.me.palmfire.cd); // 掌心火's readiness
+  if (s.R.me.feijian) ring(120, say(lv.words?.feijian, lang)?.[0] || '剑', 1 - (s.me.cdFj ?? 0) / s.R.me.feijian.cd); // 飞剑's
+  if (s.R.me.fuwen) ring(144, say(lv.words?.fuwen, lang)?.[0] || '符', 1 - (s.me.cdFw ?? 0) / s.R.me.fuwen.cd); // 符文's
   // the incense (the bout's clock, burning down) and her count of moves, small
   const total = lv.time ?? 120000, left = Math.max(0.06, 1 - s.t / total), ix = W / 2, top = 14, len = 34;
   ctx.fillStyle = '#6b4b2a'; ctx.fillRect(ix - 1.5, top + len * (1 - left), 3, len * left);
@@ -831,14 +911,14 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
         ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
       }
     }
-    const casting = ['special', 'palmfire', 'palmfireH', 'super'].includes(s.me.act?.k) ? 1 : 0;
+    const casting = ['special', 'palmfire', 'palmfireH', 'super', 'feijian', 'fuwen'].includes(s.me.act?.k) ? 1 : 0;
     const rollK = s.me.act?.k === 'roll' ? Math.min(1, (s.t - s.me.act.at) / s.R.me.roll.ms) : null;
     const meExtra = { t: s.t, fire: casting, sway: sway.me, breath: s.me.act || s.me.air ? 0 : breath(s.t), floorAt: s.me.y, inv, spin: rollK == null ? 0 : rollK * 360 * (s.me.act.dir === s.me.face ? 1 : -1) };
     if (sheets.me) {
       const at = sprite(ctx, sheets.me, pick(sheets.me, 'me', s, track.me, still), s.me.x, meY, s.me.face, k, { ...meExtra, calm: still, jolt: jolt(s.me) });
       if (casting) handLight(ctx, at.handF, 28, 'rgba(255,226,130,.95)', 'rgba(220,70,30,0)');
     } else figure(ctx, s.me.x, meY, s.me.face, mp, meLook, meExtra);
-    effects(ctx, s);
+    effects(ctx, s, art, still);
     ctx.setTransform(k, 0, 0, k, 0, 0);
     if (s.level?.stage?.look?.crowd !== false) crowd(ctx, s.t, view.lift); // the cliff has no crowd below it
     // the bars' ghosts fall behind the bars

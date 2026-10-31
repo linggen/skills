@@ -32,8 +32,8 @@ export const meta = {
   id: 'fighter',
   name: { zh: '格斗', en: 'Fight' },
   how: {
-    zh: { desk: 'WASD 走跳蹲，背向她按住是挡；K 轻拳 · L 轻腿 · O 重拳 · ; 重腿。', touch: '左边走跳蹲（背向她按住是挡）；右边拳 腿 重拳 重腿，技。' },
-    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K light punch · L light kick · O heavy punch · ; heavy kick.', touch: 'Left: walk, jump, crouch (hold away to guard). Right: punch, kick, heavy punch, heavy kick, and skill.' },
+    zh: { desk: 'WASD 走跳蹲，背向她按住是挡；K 轻拳 · L 轻腿 · O 重拳 · ; 重腿；I 飞剑 · U 符文。', touch: '左边走跳蹲（背向她按住是挡）；右边拳 腿 重拳 重腿，技，剑 飞剑 · 符 符文。' },
+    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K light punch · L light kick · O heavy punch · ; heavy kick; I flying sword · U talisman.', touch: 'Left: walk, jump, crouch (hold away to guard). Right: punch, kick, heavy punch, heavy kick, skill; 剑 flying sword · 符 talisman.' },
   },
   pause: true, // its own loop reads the shell's pause
   beat: 'mount', // the story mounts it (its hands are its own)
@@ -74,7 +74,7 @@ export function pickLevel(reg, data = {}, search = '') {
 /** The move list, as lines (the pause veil's note): each move's name, then its keys (desk) or its buttons (touch). */
 export function moveLines(level = {}, lang = 'zh', kind = 'desk') {
   const names = level.moves ?? {};
-  return core.MOVES.map((m) => `${say(names[m.k], lang) || m.k}　${kind === 'touch' ? m.touch : m.keys}`);
+  return core.MOVES.map((m) => `${say(names[m.k], lang) || say(m.name, lang) || m.k}　${kind === 'touch' ? m.touch : m.keys}`);
 }
 
 /* ── The page's pieces ── */
@@ -89,6 +89,10 @@ const CSS = `
 .g-fighter .gf-dirs [data-k=crouch] { grid-column: 2; grid-row: 2; }
 .g-fighter .gf-dirs [data-k=right] { grid-column: 3; grid-row: 2; }
 .g-fighter .gf-acts { display: flex; gap: 10px; align-items: center; }
+/* the spells, stacked by 技: 剑 (飞剑) · 符 (符文) · 技 — a thumb's reach, never wider than the pad */
+.g-fighter .gf-spells { display: flex; flex-direction: column; gap: 6px; }
+.g-fighter button[data-k=feijian] { background: #cfe3ee; }
+.g-fighter button[data-k=fuwen] { background: #efd98f; }
 /* KOF on a phone: the four in a diamond — C 重拳 on top, A 轻拳 left, D 重腿 right, B 轻腿 below — and 技 beside it */
 .g-fighter .gf-diamond { display: grid; grid-template-columns: repeat(3, auto); grid-template-rows: repeat(3, auto); gap: 0 4px; }
 .g-fighter .gf-diamond [data-k=hpunch] { grid-column: 2; grid-row: 1; }
@@ -110,11 +114,11 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '2') return;
+  if (old?.dataset.v === '3') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '2';
+  st.dataset.v = '3';
   st.textContent = CSS;
   doc.head.append(st);
 }
@@ -122,12 +126,12 @@ function sheet(doc) {
 const BUTTONS = {
   jump: { face: '▲', key: 'W' }, left: { face: '◀', key: 'A' }, crouch: { face: '▼', key: 'S' }, right: { face: '▶', key: 'D' },
   light: { face: '拳', key: 'K' }, lkick: { face: '腿', key: 'L' }, hpunch: { face: '重拳', key: 'O' }, heavy: { face: '重腿', key: ';' },
-  skill: { face: '技', key: 'SD+K' },
+  skill: { face: '技', key: 'SD+K' }, feijian: { face: '剑', key: 'I' }, fuwen: { face: '符', key: 'U' },
 };
 /* Keys by where they sit (event.code): any layout plays alike; `;` is Semicolon wherever it is printed. KOF '97's four:
    K A 轻拳 · L B 轻腿 · O C 重拳 · ; D 重腿. */
 const CODES = {
-  KeyA: 'left', KeyD: 'right', KeyW: 'jump', KeyS: 'crouch', KeyK: 'light', KeyL: 'lkick', KeyO: 'hpunch', Semicolon: 'heavy',
+  KeyA: 'left', KeyD: 'right', KeyW: 'jump', KeyS: 'crouch', KeyK: 'light', KeyL: 'lkick', KeyO: 'hpunch', Semicolon: 'heavy', KeyI: 'feijian', KeyU: 'fuwen',
   ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'jump', ArrowDown: 'crouch', Space: 'jump',
 };
 const HELD = new Set(['left', 'right', 'crouch']);
@@ -141,7 +145,21 @@ function padHtml(level, lang) {
     return `<button type="button" data-k="${k}" aria-label="${face}">${face}<small>${BUTTONS[k].key}</small></button>`;
   };
   return `<div class="gf-pad"><div class="gf-dirs">${b('jump')}${b('left')}${b('crouch')}${b('right')}</div>`
-    + `<div class="gf-acts">${b('skill')}<div class="gf-diamond">${b('hpunch')}${b('light')}${b('heavy')}${b('lkick')}</div></div></div>`;
+    + `<div class="gf-acts"><div class="gf-spells">${b('feijian')}${b('fuwen')}${b('skill')}</div><div class="gf-diamond">${b('hpunch')}${b('light')}${b('heavy')}${b('lkick')}</div></div></div>`;
+}
+
+/** A sheet washed in one colour once, on its own canvas (心魔: 小满's own frames in shadow) — no per-frame filter, which
+    the phone's web view may not have. `tint`: [r, g, b, strength 0…1]. */
+function tinted(doc, img, [r, g, b, k = 0.7]) {
+  const c = doc.createElement('canvas');
+  c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const x = c.getContext('2d');
+  x.drawImage(img, 0, 0);
+  x.globalCompositeOperation = 'source-atop';
+  x.globalAlpha = k;
+  x.fillStyle = `rgb(${r},${g},${b})`;
+  x.fillRect(0, 0, c.width, c.height);
+  return c;
 }
 
 /** The small-game contract: this bout alone in a container (the 游戏厅, the story's card, the phone). */
@@ -171,6 +189,9 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   // code until then. Reduced motion (the OS's setting) plays fewer frames.
   const sheets = {};
   const still = win.matchMedia?.('(prefers-reduced-motion: reduce)');
+  // 飞剑's blade: the 结印's own painting (games/jieyin/art/feijian.webp), the same sword the 兽潮 boards fly
+  art.feijian = new win.Image();
+  art.feijian.src = new URL('./jieyin/art/feijian.webp', import.meta.url).href;
   for (const who of ['me', 'foe']) {
     const look = level[who]?.look;
     if (!look?.sheet) continue;
@@ -179,7 +200,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     const loaded = new Promise((ok, no) => { img.onload = ok; img.onerror = no; });
     img.src = `${base}.webp`;
     Promise.all([fetch(`${base}.json`).then((r) => r.json()), loaded])
-      .then(([meta]) => { sheets[who] = makeSheet(meta, img, look.height); })
+      .then(([meta]) => { sheets[who] = makeSheet(meta, look.tint ? tinted(doc, img, look.tint) : img, look.height); })
       .catch((e) => console.warn('[fighter] frames', who, e));
   }
   const draw = painter(canvas, { art, sheets, calm: () => Boolean(still?.matches) });
@@ -278,6 +299,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     resolve(r);
   };
   const skillBtn = root.querySelector('button[data-k=skill]'), skillFace = skillBtn.firstChild;
+  const spellBtn = { feijian: root.querySelector('button[data-k=feijian]'), fuwen: root.querySelector('button[data-k=fuwen]') };
   const skillNames = [say(level.me?.buttons?.skill, lang) || BUTTONS.skill.face, say(level.me?.buttons?.super, lang) || '绝'];
   const frame = (now) => {
     raf = win.requestAnimationFrame(frame);
@@ -291,6 +313,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
       const full = g.state.me.qi >= core.QI;
       if (skillBtn.classList.contains('is-ready') !== full) { skillBtn.classList.toggle('is-ready', full); skillFace.textContent = skillNames[full ? 1 : 0]; }
       skillBtn.classList.toggle('is-cool', !full && g.state.me.cdPf > 0);
+      for (const [k, cd] of [['feijian', 'cdFj'], ['fuwen', 'cdFw']]) spellBtn[k]?.classList.toggle('is-cool', (g.state.me[cd] ?? 0) > 0);
       if (g.state.won) { const s = g.state; win.setTimeout(() => finish({ won: true, grade: s.grade, stars: s.stars }), winHold); started = false; }
       else if (g.state.lost) { win.setTimeout(() => finish({ won: false }), 500); started = false; }
     }

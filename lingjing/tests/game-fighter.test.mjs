@@ -352,3 +352,72 @@ test('撑过她的剑 · 你又跑: 09-futian\'s bout is a 格斗 board, a longe
   const wall = (x) => (x.in.block ? null : { g: 'block', on: true });
   for (const [name, b] of [['mash', mash], ['wall', wall], ['idle', () => null]]) assert.ok(!playModule(F, b, { tries: 3, deal: d, limit: 180000 }).won, `${name} won`);
 });
+
+/* ── v4 (10-31): the 结印's spells in the fighter — I 飞剑 · U 符文, each its cooldown, its number ── */
+
+test('飞剑: I sends a flying sword that lands where she stands after its flight, shows the 稳 it took, and cools down', () => {
+  let s = dummy('feijian', 320);
+  const bal = s.foe.bal, M = s.R.me.feijian;
+  s = press(s, { g: 'feijian' });
+  s = run(s, M.startup + 20);
+  const sword = s.shots.find((x) => x.kind === 'feijian' && x.who === 'me');
+  assert.ok(sword, 'in the air');
+  assert.equal(sword.land - sword.at, M.fly);
+  s.foe.x -= 60; // she steps: it still finds her
+  s = run(s, M.fly);
+  assert.ok(s.foe.bal < bal, 'it lands');
+  const num = s.fx.find((f) => f.kind === 'num');
+  assert.equal(num.n, Math.round(bal - s.foe.bal), 'the number is the 稳 it took');
+  assert.ok(s.me.cdFj > 0, 'cooling');
+  const again = press(run(s, 600), { g: 'feijian' });
+  assert.ok(!run(again, 300).shots.some((x) => x.kind === 'feijian'), 'not again while it cools');
+  // a guard takes it as a chip
+  let g = dummy('feijian-guard', 320);
+  g = run(press(g, { g: 'feijian' }), M.startup + 20);
+  g.foe.act = { k: 'block', at: g.t, m: { startup: 0, active: 0, recover: 5000 } };
+  const b0 = g.foe.bal;
+  g = run(g, M.fly);
+  assert.ok(b0 - g.foe.bal < M.dmg * 0.5, 'stood off: a chip');
+});
+
+test('符文: U lays a talisman at her feet; it binds her if she still stands on it when it arms, and fizzles if she stepped off', () => {
+  const M = F.newGame('x', 1, deal).R.me.fuwen;
+  let s = dummy('fuwen', 160);
+  s = run(press(s, { g: 'fuwen' }), M.startup + 20);
+  assert.equal(s.runes.length, 1);
+  assert.ok(Math.abs(s.runes[0].x - s.foe.x) < 1, 'under her feet');
+  const bal = s.foe.bal;
+  s = run(s, M.arm);
+  assert.ok(s.runes[0].bound, 'bound');
+  assert.ok(s.foe.stun > s.t + M.bind / 2, 'held where she stands');
+  assert.ok(s.foe.bal < bal && s.fx.some((f) => f.kind === 'num'), 'a little 稳, its number');
+  let off = dummy('fuwen-off', 160);
+  off = run(press(off, { g: 'fuwen' }), M.startup + 20);
+  off.foe.x += M.r + 40;
+  off = run(off, M.arm);
+  assert.ok(off.runes[0].fizzled && !(off.foe.stun > off.t), 'stepped off: nothing');
+  assert.ok(off.me.cdFw > 0);
+});
+
+test('a foe may cast the 飞剑 too (心魔): it comes down on him, and a guard stands it off', () => {
+  const lv = { ...LEVEL, foe: { ...LEVEL.foe, rules: { ai: { feijian: 1, edge: false, palmOn: false } } } };
+  let s = F.newGame('foe-sword', 1, { levels: [lv] });
+  s.me.x = 300; s.foe.x = 640; s.foe.think = 0; s.foe.cd.feijian = 0; s.foe.cd.ice = 1e9;
+  s = until(s, (x) => x.shots.some((y) => y.who === 'foe' && y.kind === 'feijian'));
+  const hp = s.me.hp;
+  s = press(s, { g: 'block', on: true });
+  s = until(s, (x) => !x.shots.some((y) => y.kind === 'feijian'));
+  assert.ok(hp - s.me.hp < s.R.foe.moves.feijian.dmg, 'guarded: a chip');
+});
+
+test('the spells are in the move list and the pad: I · U on the desk, 剑 · 符 on the phone', () => {
+  const desk = F.moveLines(LEVEL, 'zh', 'desk').join('\n'), touch = F.moveLines(LEVEL, 'zh', 'touch').join('\n');
+  assert.match(desk, /飞剑　I/); assert.match(desk, /符文　U/);
+  assert.match(touch, /飞剑　剑/); assert.match(touch, /符文　符/);
+  const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
+  assert.match(src, /KeyI: 'feijian', KeyU: 'fuwen'/);
+  assert.match(src, /gf-spells/);
+  for (const e of ['feijian', 'rune', 'bind']) assert.ok(F.meta.sounds.includes(e), e);
+  const snd = read('../scripts/games/kit/audio/sounds.json');
+  for (const e of ['feijian', 'rune', 'bind']) assert.ok(snd.kits.fight.events[e], `sounds.json fight · ${e}`);
+});
