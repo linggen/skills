@@ -1802,6 +1802,7 @@
   },
   {
    "id": "zl-suifeng-yezi",
+   "replaced": "fuqin",
    "kit": "shouqiang",
    "story": "09-suifeng",
    "title": {
@@ -2219,6 +2220,7 @@
   },
   {
    "id": "zl-nianyao-shuangma",
+   "replaced": "dash",
    "kit": "shouqiang",
    "story": "09-nianyao",
    "title": {
@@ -2561,6 +2563,7 @@
   },
   {
    "id": "zl-shenshi-qinyan",
+   "replaced": "fighter",
    "kit": "shouqiang",
    "story": "09-shenshi",
    "title": {
@@ -2742,6 +2745,7 @@
   },
   {
    "id": "zl-dingfeng-yading",
+   "replaced": "dash",
    "kit": "shouqiang",
    "story": "09-dingfeng",
    "title": {
@@ -3118,6 +3122,7 @@
   },
   {
    "id": "zl-yanceng-zhuochong",
+   "replaced": "taiko",
    "kit": "shouqiang",
    "story": "09-yanceng",
    "title": {

@@ -69,6 +69,7 @@ const KEPT_PAIRS = {
   'dabi-sneeze>dabi-lu': '第六回, the 大比: bout after bout on the 五行台, each 格斗 (Hanli 10-28: 「故事里的战斗可以用格斗」 — every 大比 bout, 2026-10-31); each pair differs by its win — 何七 yields (his 稳 emptied), 卢方 skids off the tallow (the hook as he stamps)',
   'dabi-shijie>yingjian-hook': '第六回, the 大比: bout after bout on the 五行台, each 格斗 (Hanli 10-28: 「故事里的战斗可以用格斗」 — every 大比 bout, 2026-10-31); each pair differs by its win — 秦雁\'s thirty moves stood through, then the book\'s 迎 and 勾 at the edge',
   'yingjian-hook>dabi-ma': '第六回, the 大比: bout after bout on the 五行台, each 格斗 (Hanli 10-28: 「故事里的战斗可以用格斗」 — every 大比 bout, 2026-10-31); each pair differs by its win — 秦雁 off the oil, then 马小宝\'s beams ducked while his 稳 is emptied',
+  'anhe-dark>anhe-tama': '第五回, the 秘境: two runs back to back — 暗河, the stalk through the dark toward the gourd\'s light, then 踏马符 skimming off through the fire snakes; the 主力 spread\'s second pass (2026-10-31, Hanli\'s calls delegated: 「暗河 … its closeness to 踏马符\'s run is acceptable」)',
   'dabi-ma>jiejing-mirror': '第六回, the 大比: bout after bout on the 五行台, each 格斗 (Hanli 10-28: 「故事里的战斗可以用格斗」 — every 大比 bout, 2026-10-31); each pair differs by its win — 马小宝 winded, then six beams at the edge, the last caught',
 };
 test('no story board follows one of its own kind in reading order (the kept pairs aside, each with its reason)', () => {

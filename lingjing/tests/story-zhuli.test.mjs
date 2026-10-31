@@ -171,7 +171,7 @@ const rowOf = (t) => (t.game === 'shoulu' ? kits.shoulu.levels : kits[t.game].le
 const SEEDS = 10;
 
 test('each swapped board deals a level of its own: in its scene, a games.json row opens it, one layout apiece', () => {
-  assert.ok(swapped.length >= 55, `${swapped.length} swapped boards`); // 63 on 10-28; less the 格斗 bouts (10-31) and the five runs of the 主力 spread (10-31: 几何冲刺)
+  assert.ok(swapped.length >= 43, `${swapped.length} swapped boards`); // 63 on 10-28; less the 格斗 bouts (10-31), the five runs of the 主力 spread (10-31: 几何冲刺) and its second pass (10-31: twelve more to 几何冲刺 · 节奏 · 格斗)
   const seen = new Set();
   for (const t of swapped) {
     const row = rowOf(t);

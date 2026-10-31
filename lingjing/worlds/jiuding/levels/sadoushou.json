@@ -3663,6 +3663,7 @@
    "leadSec": 4.5,
    "countdown": 3,
    "id": "zl-dianmao-yaoyuan",
+   "replaced": "dash",
    "hui": "h05",
    "title": {
     "zh": "矮石墙 · 墙里的药园",
@@ -4943,6 +4944,7 @@
    "leadSec": 4.5,
    "countdown": 3,
    "id": "zl-suifeng-qinyan",
+   "replaced": "fighter",
    "hui": "h11",
    "title": {
     "zh": "秦雁 · 崖顶",
@@ -7814,6 +7816,7 @@
    "leadSec": 4.5,
    "countdown": 3,
    "id": "zl-yanceng-xilang",
+   "replaced": "dash",
    "hui": "h09",
    "title": {
     "zh": "西廊 · 搬铺",

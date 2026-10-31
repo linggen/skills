@@ -353,6 +353,30 @@ test('撑过她的剑 · 你又跑: 09-futian\'s bout is a 格斗 board, a longe
   for (const [name, b] of [['mash', mash], ['wall', wall], ['idle', () => null]]) assert.ok(!playModule(F, b, { tries: 3, deal: d, limit: 180000 }).won, `${name} won`);
 });
 
+/* 秦雁 in the gate pools (主力 spread, second pass, 2026-10-31): 秦雁 · 崖顶 (09-suifeng) and 秦雁 · 后山崖顶 (09-shenshi), each
+   the cliff's outlast bout re-weighed on her painted sheet — 崖顶 between 流云剑's twenty and 撑过她的剑's twenty-four, 后山崖顶
+   past both. Ids, pay and done lines kept; a human-like hand stands each, the rest go down. */
+test('秦雁 in the pools: 崖顶 and 后山崖顶 are 格斗 outlast bouts on the climb; a human-like hand stands each, the rest go down', () => {
+  const lv = (t) => REG.games.find((g) => g.task === t && !g.replaced);
+  const liu = lv('fangshi-liuyun').levels[0], fu = lv('futian-spar').levels[0];
+  const H09 = read('../worlds/jiuding/tasks/h09.json').tasks, H11 = read('../worlds/jiuding/tasks/h11.json').tasks;
+  for (const [task, tasks, lo, hi] of [['suifeng-qinyan', H11, liu, fu], ['shenshi-qinyan', H09, fu, null]]) {
+    const r = lv(task);
+    assert.deepEqual([r.id, r.mechanic], ['fighter', '格斗'], task);
+    const t = tasks.find((x) => x.id === task);
+    assert.equal(t.game, 'fighter'); assert.deepEqual(t.how, r.how); assert.equal(t.deal, undefined);
+    const L = r.levels[0], d = { levels: [L] };
+    assert.equal(L.stage.oil, false);
+    assert.equal(L.foe.look.sheet, 'art/games/fighter/qinyan', 'her painted sheet');
+    assert.ok(L.outlast.moves > lo.outlast.moves && (!hi || L.outlast.moves < hi.outlast.moves), `${task}: ${L.outlast.moves} moves`);
+    assert.ok(playModule(F, bot, { tries: 3, deal: d, limit: 180000 }).won, `${task}: a human-like hand`);
+    assert.ok(playModule(F, bot, { tries: 3, deal: d, limit: 180000, reaction: 320 }).won, `${task}: a slower hand (320 ms) too`);
+    const mash = (x) => (x.end ? null : { g: (x.t / 150 | 0) % 2 ? 'light' : 'heavy' });
+    const wall = (x) => (x.in.block ? null : { g: 'block', on: true });
+    for (const [name, b] of [['mash', mash], ['wall', wall], ['idle', () => null]]) assert.ok(!playModule(F, b, { tries: 3, deal: d, limit: 180000 }).won, `${task}: ${name} won`);
+  }
+});
+
 /* ── v4 (10-31): the 结印's spells in the fighter — I 飞剑 · U 符文, each its cooldown, its number ── */
 
 test('飞剑: I sends a flying sword that lands where she stands after its flight, shows the 稳 it took, and cools down', () => {

@@ -45,15 +45,15 @@
  "show": [
   {
    "card": "board",
-   "id": "suifeng-qinyan"
-  },
-  {
-   "card": "board",
    "id": "suifeng-yading"
   },
   {
    "card": "board",
    "id": "suifeng-yezi"
+  },
+  {
+   "card": "board",
+   "id": "suifeng-qinyan"
   },
   {
    "card": "board",
@@ -74,9 +74,9 @@
  ],
  "offers": {
   "tasks": [
-   "suifeng-qinyan",
    "suifeng-yading",
    "suifeng-yezi",
+   "suifeng-qinyan",
    "suifeng-canju",
    "suifeng-xunwei",
    "suifeng-qulao",

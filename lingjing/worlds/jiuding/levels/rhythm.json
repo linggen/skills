@@ -1014,11 +1014,11 @@
         "zh": "挑水 · 矮石墙外头",
         "en": "Carrying water · Outside the low wall"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shoulu",
-       "game": "shoulu",
-       "n": 207,
-       "level": "zl-dianmao-jiangtang",
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "taiko",
+       "n": 307,
+       "level": "tiaoshui-gu",
        "zhuli": true
       },
       {
@@ -1044,11 +1044,11 @@
         "zh": "矮石墙 · 墙里的药园",
         "en": "The low wall · The garden behind it"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 211,
-       "level": "zl-dianmao-yaoyuan",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 308,
+       "level": "qiangwai-dash",
        "zhuli": true
       },
       {
@@ -1624,11 +1624,11 @@
         "zh": "暗河 · 葫芦一开，就有光",
         "en": "The dry river · Open the gourd and there's light"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shoulu",
-       "game": "shoulu",
-       "n": 181,
-       "level": "zl-anhe-dark",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 306,
+       "level": "anhe-dash",
        "zhuli": true
       },
       {
@@ -1650,7 +1650,8 @@
        "game": "dash",
        "n": 266,
        "level": "tama-dash",
-       "zhuli": true
+       "zhuli": true,
+       "same": true
       },
       {
        "kind": "read",
@@ -2516,21 +2517,6 @@
       },
       {
        "kind": "board",
-       "id": "suifeng-qinyan",
-       "scene": "09-suifeng",
-       "title": {
-        "zh": "秦雁 · 崖顶",
-        "en": "Qin Yan · The clifftop"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 16,
-       "level": "zl-suifeng-qinyan",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
        "id": "suifeng-yading",
        "scene": "09-suifeng",
        "title": {
@@ -2552,11 +2538,26 @@
         "zh": "一片叶子 · 崖顶",
         "en": "A single leaf · The clifftop"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 20,
-       "level": "zl-suifeng-yezi",
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "fuqin",
+       "n": 298,
+       "level": "yezi-qin",
+       "zhuli": true
+      },
+      {
+       "kind": "board",
+       "id": "suifeng-qinyan",
+       "scene": "09-suifeng",
+       "title": {
+        "zh": "秦雁 · 崖顶",
+        "en": "Qin Yan · The clifftop"
+       },
+       "mechanic": "格斗",
+       "variety": "格斗",
+       "game": "fighter",
+       "n": 297,
+       "level": "suifeng-qinyan-ge",
        "zhuli": true
       },
       {
@@ -2710,11 +2711,11 @@
         "zh": "闭着眼睛 · 药园",
         "en": "Eyes closed · The herb garden"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shoulu",
-       "game": "shoulu",
-       "n": 36,
-       "level": "zl-nianyao-niannian",
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "taiko",
+       "n": 299,
+       "level": "niannian-gu",
        "zhuli": true
       },
       {
@@ -2725,11 +2726,11 @@
         "zh": "双马饮泉 · 药园",
         "en": "Two horses at the spring · The garden"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 38,
-       "level": "zl-nianyao-shuangma",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 300,
+       "level": "shuangma-dash",
        "zhuli": true
       },
       {
@@ -2923,11 +2924,11 @@
         "zh": "纸雀儿 · 讲堂",
         "en": "The paper sparrow · The lecture hall"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shoulu",
-       "game": "shoulu",
-       "n": 49,
-       "level": "zl-shenshi-zhique",
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "fuqin",
+       "n": 301,
+       "level": "zhique-qin",
        "zhuli": true
       },
       {
@@ -2938,11 +2939,11 @@
         "zh": "秦雁 · 后山崖顶",
         "en": "Qin Yan · The back-hill clifftop"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 51,
-       "level": "zl-shenshi-qinyan",
+       "mechanic": "格斗",
+       "variety": "格斗",
+       "game": "fighter",
+       "n": 302,
+       "level": "shenshi-qinyan-ge",
        "zhuli": true
       },
       {
@@ -2989,11 +2990,11 @@
         "zh": "崖顶的蜡烛 · 等它吹完",
         "en": "The candle on the clifftop · Wait till it's blown out"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 55,
-       "level": "zl-dingfeng-yading",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 303,
+       "level": "lazhu-dash",
        "zhuli": true
       },
       {
@@ -3161,11 +3162,11 @@
         "zh": "捉虫 · 阿禾那一小条地",
         "en": "Catching bugs · Ahe's little strip"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 70,
-       "level": "zl-yanceng-zhuochong",
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "taiko",
+       "n": 304,
+       "level": "zhuochong-gu",
        "zhuli": true
       },
       {
@@ -3176,11 +3177,11 @@
         "zh": "西廊 · 搬铺",
         "en": "The West Gallery · Moving in"
        },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 72,
-       "level": "zl-yanceng-xilang",
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 305,
+       "level": "xilang-dash",
        "zhuli": true
       },
       {
