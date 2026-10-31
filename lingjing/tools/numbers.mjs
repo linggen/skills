@@ -27,7 +27,7 @@ import { chorePlay, errandGrant, pillBelow, playGrant, secludeHour, wallGrant, w
 import { wallOf } from '../scripts/rules/rotation.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
 import { chances, realmOf } from '../scripts/rules/fantong.mjs';
-import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, table as paceTable } from './balance.mjs';
+import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, sealedBeat, table as paceTable } from './balance.mjs';
 import { derive, diffOf, fitHours, fitLine, lineWalk, setPath } from './master.mjs';
 import { boardLine, lineGrant, linePay, linesOf, lineWorld } from '../scripts/rules/lines.mjs';
 import { lineStart, lockedOf } from '../scripts/state.mjs';
@@ -416,18 +416,19 @@ function kailu(ctx) {
 function gates(ctx) {
   const { content } = ctx, M = content.balance.model, kinds = kindTasks(content);
   const typ = play(content, M.players.typical).gates, ses = M.session ? play(content, M.session).gates : [];
+  // Inside a sealed instance (古五's 石室) the map is its rooms, and nothing on a wall outside is reachable.
+  const mapOf = sceneId => sealedBeat(content, sceneId)?.places ?? Object.values(content.chapters).find(c => c.scenes?.[sceneId])?.map?.places ?? [];
   const reach = sceneId => {
-    const ch = Object.values(content.chapters).find(c => c.scenes?.[sceneId]);
     const all = new Map(Object.values(content.places).flatMap(d => d.places).map(p => [p.id, p]));
     // A day's boards at a place: its fixed and the day's of its pool (rules/rotation.mjs).
     const nGames = p => (p.has?.games ?? []).length + (p.has?.games_pool?.today ?? 0);
     const posts = p => (content.walls ?? []).filter(w => w.at === p.id).reduce((n, w) => n + Math.min(w.posts ?? 3, (w.pool ?? []).length), 0);
-    return (ch?.map?.places ?? []).map(id => all.get(id)).filter(p => p && (p.has?.pool || nGames(p) || posts(p)))
+    return mapOf(sceneId).map(id => all.get(id)).filter(p => p && (p.has?.pool || nGames(p) || posts(p)))
       .map(p => `${zh(p.name) || p.id}${p.has?.pool ? ' 斗法' : ''}${nGames(p) ? ` ${nGames(p)} 局` : ''}${posts(p) ? ` 墙上 ${posts(p)} 牌` : ''}`);
   };
   /* A day's wall tags his gate's map holds (quests/wall.json, rules/rotation.mjs): their minutes (an errand's each) — once a day. */
   const wallsOn = sceneId => {
-    const ch = Object.values(content.chapters).find(c => c.scenes?.[sceneId]), on = new Set(ch?.map?.places ?? []);
+    const on = new Set(sealedBeat(content, sceneId) ? [] : mapOf(sceneId));
     return (content.walls ?? []).filter(w => on.has(w.at));
   };
   return typ.map(g => {

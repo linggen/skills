@@ -278,11 +278,19 @@ overflow pays more.
 - **修为 stage quest (阶段任务)** (rules/gates.mjs; ladder.json `caps.hui.<回>.gates`): the 回's next
   stage waits on 圆满 of the layer he holds — refused `stage` in the world's words; the 事 book
   shows it with progress, 下一步 and Ling point to the work that raises 修为; 银月 says her word
-  when it fills. Only where he can walk away to earn it (never inside a beat's lock or the 秘境):
-  古四 the 柴房 night @一层 · 古五 the 秘境's door @二层 · 古六 the 大比's eve @四层 · 古七 定风 @四层,
+  when it fills. Only where he can walk away to earn it (never inside a beat's lock) — or, inside a sealed instance,
+  where its own room hosts the work (practice boards; the lint holds it):
+  古四 the 柴房 night @一层 · 古五 the 秘境's door @二层 and the 石室 @四层 · 古六 the 大比's eve @四层 · 古七 定风 @四层,
   the 沂水 night @五层, the autumn @六层 · 古八 腊八 @八层, 入秋 @九层. While a quest is ahead, grinding stops at
   the layer it asks (rules/cap.mjs heldBy; a gate is passed with its scene, or by a stay that marks it — 腊八). 古九
   has none. A scene passed is never gated again.
+  **The 层 matches the book wherever it states one** (Hanli 2026-10-28: 「故事里是4层圆满, 游戏里保持一致」): a gate right
+  before the beat, the layer earned by play there, the bar stepping with the text. 古五's 石室 (2026-10-31): wm-kaikai's way
+  on (`sit`) waits on 四层圆满 after 老蔫's fall, right before 「第三天天快亮…再吸半天，第五层的门槛也许便摸得着了」 (the way on's
+  first five paragraphs moved to `story_after`, word for word); inside the 秘境 the 石室 hosts its two 主力 levels as practice
+  (`shishi-lingqi` · `shishi-yinshen`) and the gate says so in its own `say`. The rooms before it still have him at 二层, so
+  古五's cap holds there (`holds: [{layer: 2, until: 'wm-kaikai'}]`, rules/cap.mjs heldBy). The bar trails `story_after`'s
+  「第二天晌午，他冲开了第四层」 until the gate fills. tools/balance.mjs plays a sealed instance on its own sources only.
   **Handed in** (2026-10-16, Hanli: 「七层圆满的任务大成了应该可以交任务拿奖励」): met, the row is 可交 with 交差 and
   pays balance.json `pay.stage` (60 灵石 — at 圆满 修为 cannot rise), once; then 已交. A quest behind him never
   handed in (crossed before stage quests paid, or walked through) is paid once on the next load, with a
@@ -467,7 +475,7 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
 - **修为 caps per 回** (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」;
   rules/cap.mjs, `ladder.json → caps`): each 古 回 declares how far the
   player's own work reaches (`tier` + `layer`, a 层 of 练气 or a step above it) and, where its scenes carry him
-  further, its `story` — 古三 一层 · 古四 一层 · 古五 二层 · 古六
+  further, its `story` — 古三 一层 · 古四 二层 · 古五 四层 (二层 until the 石室) · 古六
   四层 · 古七 六层 · 古八 九层 (story 筑基小成, the breakthrough) · 古九 筑基小成; a 今 interlude takes the 古
   before it; after 卷一 the save waits in 古九's chapter, so 筑基小成 holds
   until 卷二 gets its caps. At the cap the step fills (圆满) and further

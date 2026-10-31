@@ -882,6 +882,8 @@
   {"id": "mijing-yabi", "plate": {"id": "mijing", "at": [0.17, 0.66]}, "name": {"zh": "沉鼎秘境 · 崖壁", "en": "The hidden realm · The cliff wall"}, "tier": 0, "roads": ["mijing-duanya"], "map": [0.8106, 0.4438],
    "line": {"zh": "石台外沿是崖壁，一根锈烂的铁橛子钉在崖沿上；再往外，就是不见底的崖口。", "en": "The ledge's outer edge is the cliff wall, a rusted iron stake driven into its lip; beyond it, the bottomless drop."}},
   {"id": "mijing-shishi", "plate": {"id": "mijing", "at": [0.76, 0.56]}, "name": {"zh": "沉鼎秘境 · 石室", "en": "The hidden realm · The stone chamber"}, "tier": 0, "roads": ["mijing-duanya", "mijing-anhe"], "map": [0.8122, 0.4434],
+   "_has": "2026-10-31: the 石室's two 主力 levels hosted as practice — the 修为 for wm-kaikai's stage quest (四层圆满) is earned in the room, the world outside frozen.",
+   "has": {"games": ["shishi-lingqi", "shishi-yinshen"]},
    "line": {"zh": "墙后一间石室，方方正正，四壁青石磨得照得出人影。地上四个方坑，正中一张石台。", "en": "Behind the wall, a square stone chamber, its blue-stone walls polished to a mirror. Four square pits in the floor; a stone altar in the middle."}},
   {"id": "mijing-anhe", "plate": {"id": "mijing", "at": [0.8, 0.86]}, "name": {"zh": "沉鼎秘境 · 暗河", "en": "The hidden realm · The dry river"}, "tier": 0, "roads": ["mijing-shishi"], "map": [0.8128, 0.4446],
    "has": {"pool": "mijing-anhe", "games": ["mijing-gather"]},

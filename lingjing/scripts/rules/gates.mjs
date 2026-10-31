@@ -25,7 +25,7 @@ export function gatesOf(content) {
   const out = Object.entries(content.ladder.caps?.hui ?? {}).filter(([id]) => !id.startsWith('_'))
     .flatMap(([hui, cap]) => (cap.gates ?? []).map(g => {
       const tier = g.tier ?? first;
-      return { hui, tier, layer: g.layer, step: stepOfLayer(content, tier, g.layer), scene: g.scene, exits: g.exits };
+      return { hui, tier, layer: g.layer, step: stepOfLayer(content, tier, g.layer), scene: g.scene, exits: g.exits, ...(g.say ? { say: g.say } : {}) };
     }));
   GATES.set(content, out);
   return out;
@@ -141,9 +141,10 @@ export function stagesPaid(content, state) {
   return gatesOf(content).filter(g => g.hui === hui && paid.has(gateKey(g))).map(g => fullName(content, g.tier, g.step, state.lang));
 }
 
-/* The refusal's line, in the world's words (ladder.json `caps.stage.refuse`, `{step}` filled). */
+/* The refusal's line, in the world's words (the gate's own `say` where the usual work is out of reach — 古五's 石室, inside
+   the 秘境 — else ladder.json `caps.stage.refuse`; `{step}` filled). */
 export const stageSay = (content, state, gate, lang = state.lang) =>
-  (pick(content.ladder.caps?.stage?.refuse, lang) ?? '').replace('{step}', fullName(content, gate.tier, gate.step, lang));
+  (pick(gate.say ?? content.ladder.caps?.stage?.refuse, lang) ?? '').replace('{step}', fullName(content, gate.tier, gate.step, lang));
 
 /* Earned: the realm at the gate's layer, full — for a test or the explorer that plays a 回's
    routine as one move ("he did the work"); never called by the game itself. Returns a copy. */

@@ -34,8 +34,8 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
   assert.deepEqual(Object.fromEntries(Object.keys(caps).map(id => [id, row(id)])), {
     h04: ['qi0', null], // 古三: 入门 at 零层 (the book; the game's too since 2026-10-15)
     h05: ['qi2', null], // 古四: the 小周天 → 一层 (入门, the one rise); past the 柴房 gate 二层 ground (十月廿五 「自己坐上了二层」, 2026-10-27)
-    h07: ['qi2', null], // 古五: 二层 ground; 息壤 lifts nothing
-    h08: ['qi4', null], // 古六: 三层 and 四层 ground, 大比 on 四层
+    h07: ['qi4', null], // 古五: 二层 ground to the door, held there through the rooms (`holds`); 三层 and 四层 ground in the 石室 (2026-10-31: 四层圆满, the book's)
+    h08: ['qi4', null], // 古六: 大比 on 四层 (ground in 古五's 石室; an older save grinds it here)
     h11: ['qi6', null], // 古七 (its first half since 2026-10-07): 五层 and 六层 ground behind its stage quests
     h09: ['qi9', 'foundation1'], // 古八: 七层 to 九层圆满 ground (腊八 on 八层, 入秋 on 九层), the cliff → 筑基 by his throw
     h10: ['foundation1', null], // 古九: 筑基小成
@@ -69,7 +69,7 @@ test('古三\'s gate scene: 零层 only — 一层 is 古四\'s 小周天', () =
   assert.equal(named(s), '练气零层');
 });
 
-test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 and no further, 息壤 lifts nothing, 古六 grinds 三层 to the eve (its gate since 2026-10-27, doc/gates-2026-10-27.md 古六 (b): he stands at 四层 as 褚先生 reads it), 四层 behind 09-furnace', () => {
+test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 through the 秘境\'s rooms, 息壤 lifts nothing, then 四层 in the 石室 (2026-10-31: the book\'s 四层圆满); 古六 holds there to the eve', () => {
   const th = content.ladder.tiers[0].thresholds;
   // (留给爹 waits on 喂饭桶 · 一根牛骨头 since 2026-10-21: played)
   const s0 = at('00-waimen', 'wm-diyilu', 'chaifang', ['00-prologue'], { step: 1, progress: th[1], tasks: { 'diyilu-niugu': { status: 'done' }, 'diyilu-tama': { status: 'done' } } });
@@ -84,9 +84,15 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 and n
   const x = resolve(s, content, ctx, { exit: 'swallow' });
   assert.equal(x.result.ok, true, JSON.stringify(x.result));
   assert.deepEqual([x.state.step, x.state.progress], [s.step, s.progress], '息壤 lifts nothing');
-  s = { ...x.state, scene: 'wm-qianye', place: 'waimen', done_scenes: [...x.state.done_scenes, 'wm-kaikai', 'wm-chu'] };
+  s = x.state;
   grind(s);
-  assert.equal(named(s), '练气三层', '古六: 三层 ground to the eve, held there (the gate asks 三层圆满); 四层 is 09-furnace\'s');
+  assert.equal(named(s), '练气二层', 'through the rooms before the 石室, still 二层 (the hold)');
+  s = { ...s, scene: 'wm-kaikai', place: 'mijing-shishi', done_scenes: [...s.done_scenes, 'wm-mijing', 'wm-xirang', 'wm-anhe', 'wm-tama'] };
+  grind(s);
+  assert.equal(named(s), '练气四层', '古五: in the 石室, 四层 — the book\'s 「第五层的门槛」, no further');
+  s = { ...s, scene: 'wm-qianye', place: 'waimen', done_scenes: [...s.done_scenes, 'wm-kaikai', 'wm-chu'] };
+  grind(s);
+  assert.equal(named(s), '练气四层', '古六: 四层 to the eve (the gate asks 四层圆满); 五层 is 古七\'s'),
   assert.ok(s.progress > threshold(content, s), 'full, and counting on');
 });
 

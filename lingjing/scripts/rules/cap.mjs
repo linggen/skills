@@ -4,7 +4,8 @@
 // The world declares, per 回 (ladder.json `caps.hui`), the highest step a player's
 // own work reaches there (`tier` + `layer`) and, when the 回's scenes carry him
 // further (息壤's 四层, the cliff's 筑基), the highest its story reaches
-// (`story`; else the same). A 回 with no entry takes the nearest earlier one's
+// (`story`; else the same). `holds` keep grinding lower until the story reaches a
+// scene of the 回 (`{layer, until}`): the cap opens where the book climbs, not at the 回's door. A 回 with no entry takes the nearest earlier one's
 // in the book's order (a 今 interlude takes the 古 回 before it). After 卷一 the
 // save waits in 古九's chapter (卷二 · 即将开放), so 古九's cap holds: 筑基小成.
 // A chapter with no 回 yet (the old spine) has none — its realm gate rules it,
@@ -54,8 +55,15 @@ export function capOf(content, state) {
 function heldBy(content, state, e) {
   const first = content.ladder.tiers[0].id;
   const ahead = (e.gates ?? []).filter(g => !gatePassed(content, state, g)).map(g => rankAt(content, { tier: g.tier ?? first, layer: g.layer }));
-  return ahead.length ? Math.min(...ahead) : Infinity;
+  // …and a hold of the 回 (`holds`, 2026-10-31): until the story reaches its scene, no further than its layer — the 回's
+  // cap opens mid-回 where the book climbs (古五: 二层 through the 秘境's rooms, 四层圆满 only in the 石室, wm-kaikai).
+  const holds = (e.holds ?? []).filter(h => !holdReached(state, h)).map(h => rankAt(content, { tier: h.tier ?? first, layer: h.layer }));
+  const all = [...ahead, ...holds];
+  return all.length ? Math.min(...all) : Infinity;
 }
+
+/* A hold (ladder.json caps.hui.<回>.holds `{layer, until}`) is let go once the story stands at its scene or past it. */
+export const holdReached = (state, h) => state.scene === h.until || (state.done_scenes ?? []).includes(h.until);
 
 /* A gate (ladder.json caps.hui.<回>.gates) walked through: its scene passed, or one of its ways
    taken that stays in the scene and marks it (古八's 腊八 · 再上五行台, `mark: y-dabi`, before 入秋

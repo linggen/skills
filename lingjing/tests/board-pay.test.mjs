@@ -15,7 +15,9 @@ const ctx = (now) => ({ now, quests: [] });
 function at(key) {
   const got = crawl.states.get(key);
   assert.ok(got, `the crawl reached ${key}`);
-  return { s: { ...got.s, skipped: [], stamina: 100, stamina_at: got.now.toISOString() }, now: got.now };
+  // At the bottom of his layer: since 2026-10-31 he comes to 千叶 at 四层圆满 (古五's 石室), where a board's 修为 past the mark
+  // turns to 灵石 (convert) — this counts the board's own 灵石 only.
+  return { s: { ...got.s, progress: 0, skipped: [], stamina: 100, stamina_at: got.now.toISOString() }, now: got.now };
 }
 function clear(s, now, id, grade, stars) {
   const won = win(s, content, ctx(now), { id, grade, stars });

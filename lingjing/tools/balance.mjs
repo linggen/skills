@@ -156,7 +156,10 @@ export function play(content, player, { model = content.balance.model, ladder = 
   // …and, while a stage quest of the 回 is ahead, no further than the lowest layer one asks (rules/cap.mjs heldBy).
   // A gate on a way the walk does not take (腊八, a stay before 入秋 in the same scene) is passed with the one it does.
   const walked = new Set(walk.filter(w => w.gate).map(w => `${w.gate.scene}/${w.gate.exits[0]}`));
-  const heldBy = c => Math.min(Infinity, ...(c.gates ?? []).filter(g => !done.has(g.scene) && walked.has(`${g.scene}/${g.exits[0]}`)).map(g => rank(g.tier ?? tiers[0].id, stepOf(g.tier ?? tiers[0].id, g.layer))));
+  // A hold of the 回 (`holds`, rules/cap.mjs): no further than its layer until the story reaches its scene.
+  const reached = id => done.has(id) || walk[Math.min(i, walk.length - 1)].id === id;
+  const heldBy = c => Math.min(Infinity, ...(c.gates ?? []).filter(g => !done.has(g.scene) && walked.has(`${g.scene}/${g.exits[0]}`)).map(g => rank(g.tier ?? tiers[0].id, stepOf(g.tier ?? tiers[0].id, g.layer))),
+    ...(c.holds ?? []).filter(h => !reached(h.until)).map(h => rank(h.tier ?? tiers[0].id, stepOf(h.tier ?? tiers[0].id, h.layer))));
   const capAt = () => { const c = caps[capHui]; if (!c) return null; const st = c.story ?? c; return { grind: Math.max(Math.min(rank(c.tier, stepOf(c.tier, c.layer)), heldBy(c)), rank(s.tier, s.step)), story: rank(st.tier, stepOf(st.tier, st.layer)) }; };
   /* 修为 in; a fight's past a mark he may not leave is 灵石 (nothing here). */
   /* `table`: a routine table balance.json `layer_pay` scales by the layer he stands on. */

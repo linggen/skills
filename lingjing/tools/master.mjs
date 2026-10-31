@@ -167,6 +167,8 @@ export function fitHours(content, { grindLayers, table, play }) {
   const groups = [];
   let below = 1;
   for (const g of grindLayers(content)) {
+    // A 回 whose gates ask only layers an earlier 回 already holds (古六's eve on 四层圆满, ground in 古五's 石室) grinds none.
+    if (!g.layers.length) continue;
     const top = Math.max(...g.layers), layers = [];
     for (let l = below; l <= top; l++) layers.push(l);
     below = top + 1;

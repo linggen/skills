@@ -1104,10 +1104,18 @@ function lintCaps(content, bad) {
   if (!caps) return;
   if (!caps.say?.zh || !caps.say?.en || !caps.refuse?.zh || !caps.refuse?.en) bad(where, 'say and refuse in zh and en');
   const layerOk = at => { const t = content.ladder.tiers.find(x => x.id === at?.tier); return t && Number.isInteger(at.layer) && stepOfLayer(content, t.id, at.layer) >= 0 && stepOfLayer(content, t.id, at.layer) < t.thresholds.length; };
+  const first0 = content.ladder.tiers[0].id;
   for (const [id, e] of Object.entries(caps.hui ?? {})) {
     if (!huiOf(content, id)) bad(where, `${id} is not a 回 of the book`);
     if (!layerOk(e) || (e.story && !layerOk(e.story))) { bad(where, `${id}: a tier the ladder has and a layer of it`); continue; }
     if (e.story && rankOf(content, e.story.tier, stepOfLayer(content, e.story.tier, e.story.layer)) < rankOf(content, e.tier, stepOfLayer(content, e.tier, e.layer))) bad(where, `${id}: story under the player's own reach`);    for (const g of e.gates ?? []) lintGate(content, id, e, g, bad);
+    // A hold (rules/cap.mjs heldBy): a layer the tier has, under the 回's own, let go at a scene of that 回.
+    for (const h of e.holds ?? []) {
+      const sc = Object.values(content.chapters ?? {}).map(ch => ch.scenes?.[h.until]).find(Boolean);
+      if (!sc || sc.hui !== id) bad(where, `${id}: hold until ${h.until}, not a scene of the 回`);
+      const ht = h.tier ?? first0;
+      if (!layerOk({ tier: ht, layer: h.layer }) || rankOf(content, ht, stepOfLayer(content, ht, h.layer)) >= rankOf(content, e.tier, stepOfLayer(content, e.tier, e.layer))) bad(where, `${id}: hold at ${h.layer}, a layer under the 回's own`);
+    }
   }
   const first = content.ladder.tiers[0].id;
   for (const ch of Object.values(content.chapters ?? {})) for (const sc of Object.values(ch.scenes ?? {})) {
@@ -1128,9 +1136,14 @@ function lintGate(content, hui, cap, g, bad) {
   const where = `ladder caps ${hui} gate ${g.scene}`, tier = g.tier ?? content.ladder.tiers[0].id;
   const sc = Object.values(content.chapters ?? {}).map(ch => ch.scenes?.[g.scene]).find(Boolean);
   if (!sc || sc.hui !== hui) return bad(where, `no scene ${g.scene} in ${hui}`);
-  // Never where he cannot walk away to earn it: inside a key beat's lock (after its entry) or a corridor chapter.
+  // Never where he cannot walk away to earn it: inside a key beat's lock (after its entry) or a corridor chapter — save a
+  // sealed instance whose rooms hold the work (2026-10-31, 古五's 石室: 「故事里是4层圆满, 游戏里保持一致」): the gate's own
+  // room hosts a practice board (hosted, not a stall), so the 修为 is earned where the book has him earn it.
   const ch = Object.values(content.chapters ?? {}).find(c => c.scenes?.[g.scene]);
-  if (ch.corridor || (ch.beats ?? []).some(b => b.scenes.indexOf(g.scene) > 0)) bad(where, 'inside a locked beat: he could not leave to earn it');
+  const beat = (ch.beats ?? []).find(b => b.scenes.indexOf(g.scene) > 0);
+  const room = beat?.sealed?.places?.includes(sc.at) ? Object.values(content.places ?? {}).flatMap(d => d.places ?? []).find(p => p.id === sc.at) : null;
+  const works = (room?.has?.games ?? []).some(id => { const t = content.tasks?.tasks?.find(x => x.id === id); return t?.hosted && t.kind === 'board' && !t.stall; });
+  if (ch.corridor || (beat && !works)) bad(where, beat?.sealed ? 'inside a sealed instance whose room hosts no practice board: nothing to earn it with' : 'inside a locked beat: he could not leave to earn it');
   for (const x of g.exits ?? []) if (!sc.exits.some(e => e.id === x)) bad(where, `no exit ${x}`);
   if (!(g.exits ?? []).length) bad(where, 'no exits');
   const t = content.ladder.tiers.find(x => x.id === tier), step = stepOfLayer(content, tier, g.layer);
