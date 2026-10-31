@@ -81,17 +81,18 @@
       "jiushou",
       "jiushou",
       "jiushou",
+      "jiushou",
+      "jiushou",
+      "longzhi",
+      "longzhi",
       "longzhi",
       "longzhi",
       "longzhi",
       "jinzhua",
-      "jinzhua",
-      "jinzhua",
-      "suijin",
-      "jinzhen"
+      "suijin"
      ]
     },
-    "_foe": "三试是胆子，不是降妖 (cards.md § 4): 站住四个回合便过；白给一张「一滚」、一颗「石子」 —— 书里他往右一滚，石头已经出手。蠪侄的虎爪重一分 (一张碎金)：站不住的人真会输 (lookahead 90/10)。"
+    "_foe": "三试是胆子，不是降妖 (cards.md § 4): 站住四个回合便过；白给一张「一滚」、一颗「石子」 —— 书里他往右一滚，石头已经出手。蠪侄的虎爪重一分 (一张碎金)：站不住的人真会输。2026-10-31 (agent's pick, for Hanli to confirm): more heads, fewer spells (九首×6 · 蠪侄×5 · 金爪×1 · 碎金×1, was 4 · 3 · 3 · 1 + 金针雨) — a save that played the boards wins 90% (lookahead, 1000 deals; was 86%), one that skipped every board (no 一箭) 33% (was 15%); the story's gate is not near-impossible, and no 修为 is given."
    },
    "withdrawn": {
     "zh": "蠪侄缩回古松后面，九个头龇着牙。守林的执事：「再来。」",
