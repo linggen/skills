@@ -89,8 +89,11 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 throu
   assert.equal(named(s), '练气二层', 'through the rooms before the 石室, still 二层 (the hold)');
   s = { ...s, scene: 'wm-kaikai', place: 'mijing-shishi', done_scenes: [...s.done_scenes, 'wm-mijing', 'wm-xirang', 'wm-anhe', 'wm-tama'] };
   grind(s);
+  assert.equal(named(s), '练气三层', '古五: the 石室\'s first night, 三层 — 「第二天晌午，他冲开了第四层」 waits on it');
+  s = { ...s, scene: 'wm-xiqi', done_scenes: [...s.done_scenes, 'wm-kaikai'] };
+  grind(s);
   assert.equal(named(s), '练气四层', '古五: in the 石室, 四层 — the book\'s 「第五层的门槛」, no further');
-  s = { ...s, scene: 'wm-qianye', place: 'waimen', done_scenes: [...s.done_scenes, 'wm-kaikai', 'wm-chu'] };
+  s = { ...s, scene: 'wm-qianye', place: 'waimen', done_scenes: [...s.done_scenes, 'wm-xiqi', 'wm-chu'] };
   grind(s);
   assert.equal(named(s), '练气四层', '古六: 四层 to the eve (the gate asks 四层圆满); 五层 is 古七\'s'),
   assert.ok(s.progress > threshold(content, s), 'full, and counting on');

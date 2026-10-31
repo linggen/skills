@@ -94,6 +94,7 @@
         "wm-anhe",
         "wm-tama",
         "wm-kaikai",
+        "wm-xiqi",
         "wm-chu",
         "wm-hetan"
       ],
@@ -157,6 +158,10 @@
             "n": 2,
             "unit": "night"
           },
+          "wm-xiqi": {
+            "n": 2,
+            "unit": "night"
+          },
           "wm-chu": {
             "n": 3,
             "unit": "day"
@@ -198,6 +203,10 @@
           "wm-kaikai": {
             "zh": "守在土里，等息壤长成",
             "en": "Stay in the soil until it has grown in"
+          },
+          "wm-xiqi": {
+            "zh": "埋在土里，把石室的灵气吸足",
+            "en": "Buried in the soil, draw the chamber's qi in full"
           },
           "wm-chu": {
             "zh": "等石门再开，走出秘境",

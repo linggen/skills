@@ -110,7 +110,7 @@ function playThrough() {
   assert.equal(refused(resolve, s, { exit: 'radish' }, 'unknown-exit').refused, 'unknown-exit');
   // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
   // 2026-10-26: the chamber's 隐身符 (wm-shishi · wait), the ledge's 踏马符 and 谷粒 (wm-tama · after), 阿禾 on the mudflat (wm-hetan · rest), the 萝卜 (wm-luobo · on)
-  for (const exit of ['go', 'wait', 'swallow', 'light', 'after', 'sit', 'out', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : exit === 'go' ? s : boardsFor(fresh(s), content, exit).reduce((x, [verb, args]) => must(verb === 'win' ? win : task, x, args), fresh(s)), { exit });
+  for (const exit of ['go', 'wait', 'swallow', 'light', 'after', 'sit', 'draw', 'out', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : exit === 'go' ? s : boardsFor(fresh(s), content, exit).reduce((x, [verb, args]) => must(verb === 'win' ? win : task, x, args), fresh(s)), { exit });
   s = must(move, fresh(s), { place: 'waimen' });
   s = throughEve(fresh(s));
   s = fresh(s);
@@ -176,7 +176,7 @@ test('a scene nobody can reach, or a beat naming a stranger, does not ship: ever
     for (const e of CH.scenes[id].exits) if (e.next) todo.push(e.next);
   }
   assert.deepEqual([...seen].sort(), Object.keys(CH.scenes).sort());
-  assert.equal(Object.keys(CH.scenes).length, 51); // + wm-dianmao (the 讲堂's month, 2026-10-27); + wm-yaban, wm-koujue, wm-shuigang, wm-yingjian, wm-jiejing, wm-fengtou (第六回, 2026-10-26); + wm-kouzi, wm-shiting, wm-xiongya, wm-shishi, wm-tama, wm-hetan (全文后的小游戏 第二批 2026-10-26: 古五's splits); + j04-trial (今二's tryouts, 2026-10-26); + wm-zhishi, wm-xunye, wm-duizhang, wm-yan, wm-baoming (全文后的小游戏 2026-10-26: 古四's splits); + wm-anhe (暗河, 砸寨's anhe-dark: the swallow passage split at its throw, 2026-10-20); + wm-zhaojing, wm-laba (古六's eve split, 2026-10-15); + wm-luobo (喂息珠, the reading cap, 2026-10-20)
+  assert.equal(Object.keys(CH.scenes).length, 52); // + wm-xiqi (古五's 石室 cut at its two layers, 2026-10-31); + wm-dianmao (the 讲堂's month, 2026-10-27); + wm-yaban, wm-koujue, wm-shuigang, wm-yingjian, wm-jiejing, wm-fengtou (第六回, 2026-10-26); + wm-kouzi, wm-shiting, wm-xiongya, wm-shishi, wm-tama, wm-hetan (全文后的小游戏 第二批 2026-10-26: 古五's splits); + j04-trial (今二's tryouts, 2026-10-26); + wm-zhishi, wm-xunye, wm-duizhang, wm-yan, wm-baoming (全文后的小游戏 2026-10-26: 古四's splits); + wm-anhe (暗河, 砸寨's anhe-dark: the swallow passage split at its throw, 2026-10-20); + wm-zhaojing, wm-laba (古六's eve split, 2026-10-15); + wm-luobo (喂息珠, the reading cap, 2026-10-20)
   // // + wm-kaikai (老蔫, 古五) and wm-laoyin (the brand, 古六); + 今 · 二's three (2026-10-05)
   for (const b of CH.beats) for (const id of b.scenes) assert.ok(CH.scenes[id], id);
   // 观内 (2026-10-15): every scene stands in the 观 — but the 秘境's, at 石门, whose road the story itself opens (world.mjs leaveOf).
@@ -272,7 +272,7 @@ test('the 大比\'s eve is a scene, not a real day: 周衡\'s notice, 大比前�
   s = must(resolve, won(s, 'mijing-gui'), { exit: 'open' });
   // The chase is a trial he cannot win by force (古五, 2026-10-02: 邹青松, foe-zou); the turn is the story's.
   // 2026-10-26: the chamber's 隐身符 (wm-shishi · wait), the ledge's 踏马符 and 谷粒 (wm-tama · after), 阿禾 on the mudflat (wm-hetan · rest), the 萝卜 (wm-luobo · on)
-  for (const exit of ['go', 'wait', 'swallow', 'light', 'after', 'sit', 'out', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : exit === 'go' ? s : boardsFor(fresh(s), content, exit).reduce((x, [verb, args]) => must(verb === 'win' ? win : task, x, args), fresh(s)), { exit });
+  for (const exit of ['go', 'wait', 'swallow', 'light', 'after', 'sit', 'draw', 'out', 'rest', 'on']) s = must(resolve, exit === 'swallow' ? won(s, 'mijing-zou') : exit === 'go' ? s : boardsFor(fresh(s), content, exit).reduce((x, [verb, args]) => must(verb === 'win' ? win : task, x, args), fresh(s)), { exit });
   assert.equal(s.scene, 'wm-yaban'); // 钱掌柜 and the pulse pillow before the lesson (2026-10-26)
   // The 秘境 over, he walks back up with the others (观内, 2026-10-15): set down at 外门 in the story's words, where the eve stands.
   const back = look(s, content, ctx(DAY1));
@@ -487,9 +487,12 @@ test('息壤 keeps his 修为 and lifts nothing; its moment is the five doors op
   // The dry river's throw first (wm-anhe, 2026-10-20: 砸寨 anhe-dark), then 息壤 · 五门.
   const lit0 = resolve(before(swallowed.state, 'light'), content, ctx(), { exit: 'light' }).state;
   const lit = resolve(before(lit0, 'after'), content, ctx(), { exit: 'after' }).state; // wm-tama's 踏马符 and 谷粒 (2026-10-26)
-  // 息壤 · 五门 won: its own pay, the board's — and 四层圆满 earned in the 石室 (its stage quest since 2026-10-31)
-  const played = earnedFor(content, before(lit, 'sit'), 'sit');
-  const out = resolve(played, content, ctx(), { exit: 'sit' });
+  // 息壤 · 五门 won: its own pay, the board's — and the 石室's stage quests earned (三层圆满, then 四层圆满; 2026-10-31)
+  const noon = resolve(earnedFor(content, before(lit, 'sit'), 'sit'), content, ctx(), { exit: 'sit' });
+  assert.equal(noon.result.ok, true, JSON.stringify(noon.result).slice(0, 200));
+  assert.equal(noon.result.node?.doors, undefined, 'not at noon of the second day: the soil has not cracked open');
+  const played = earnedFor(content, noon.state, 'draw');
+  const out = resolve(played, content, ctx(), { exit: 'draw' });
   // No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): the realm stands as he earned it.
   assert.deepEqual([swallowed.state.step, swallowed.state.progress], [2, 33], 'the swallow moved nothing');
   assert.deepEqual([out.state.step, out.state.progress, out.result.rose], [played.step, played.progress, undefined], 'the story moved nothing');

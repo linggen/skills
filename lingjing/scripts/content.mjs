@@ -11,6 +11,7 @@ import { FRAMES, PARTICLES } from './atmos.js';
 import { lintCodex } from './codex.js';
 import { bookEntries, idsOf } from './book-order.js';
 import { rankOf, storyAllows } from './rules/cap.mjs';
+import { roomWorks } from './rules/gates.mjs';
 import { withWorth } from './rules/fantong-roll.mjs';
 import { rhythm } from './rhythm.mjs';
 import { huiOf } from './rules/hui.mjs';
@@ -1141,8 +1142,7 @@ function lintGate(content, hui, cap, g, bad) {
   // room hosts a practice board (hosted, not a stall), so the 修为 is earned where the book has him earn it.
   const ch = Object.values(content.chapters ?? {}).find(c => c.scenes?.[g.scene]);
   const beat = (ch.beats ?? []).find(b => b.scenes.indexOf(g.scene) > 0);
-  const room = beat?.sealed?.places?.includes(sc.at) ? Object.values(content.places ?? {}).flatMap(d => d.places ?? []).find(p => p.id === sc.at) : null;
-  const works = (room?.has?.games ?? []).some(id => { const t = content.tasks?.tasks?.find(x => x.id === id); return t?.hosted && t.kind === 'board' && !t.stall; });
+  const works = Boolean(beat?.sealed?.places?.includes(sc.at)) && roomWorks(content, sc.at);
   if (ch.corridor || (beat && !works)) bad(where, beat?.sealed ? 'inside a sealed instance whose room hosts no practice board: nothing to earn it with' : 'inside a locked beat: he could not leave to earn it');
   for (const x of g.exits ?? []) if (!sc.exits.some(e => e.id === x)) bad(where, `no exit ${x}`);
   if (!(g.exits ?? []).length) bad(where, 'no exits');

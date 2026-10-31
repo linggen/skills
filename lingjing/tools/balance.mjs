@@ -40,7 +40,7 @@ import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
 import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour, wallGrant } from '../scripts/rules/playpay.mjs';
 const NOW = new Date('2026-10-27T12:00:00Z');
-import { gatesOf } from '../scripts/rules/gates.mjs';
+import { gatesOf, roomWorks } from '../scripts/rules/gates.mjs';
 import { dayKey, lockedOf } from '../scripts/state.mjs';
 import { huiOf } from '../scripts/rules/hui.mjs';
 
@@ -322,7 +322,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
           if (r.start == null) r.start = at();
           // A gated scene with boards of its own is read and played before its way on is asked (Hanli 10-27, doc/gates-2026-10-27.md:
           // 大比前夜's 掐诀 counts toward the 四层 he needs there); one with none is held at the way into it (rules/gates.mjs entryGate).
-          const late = Boolean(w.gate && w.nboards);
+          const late = Boolean(w.gate && (w.nboards || roomWorks(content, content.chapters[w.chapter]?.scenes?.[w.id]?.at)));
           const arrive = () => {
             if (!gates.has(w.id)) gates.set(w.id, { scene: w.id, hui: w.hui ?? hui, layer: { tier: w.gate.tier, step: w.gate.step }, pct: Math.min(1, gateMet(w.gate) ? 1 : (rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step) ? 0 : s.progress / need())), below: rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step), from: { tier: s.tier, step: s.step, progress: s.progress, need: need() }, at: played(), day: at(), did: { fights: 0, boards: 0, walls: 0 } });
             if (!gateMet(w.gate)) return false;

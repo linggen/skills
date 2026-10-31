@@ -35,7 +35,10 @@ function atChu(lang) {
   s = { ...s, scene: 'wm-kaikai', place: 'mijing-shishi', step: 2, progress: 0, done_scenes: [...(s.done_scenes ?? []), 'wm-ahe', 'wm-mijing', 'wm-wangzuo', 'wm-kunzhen', 'wm-xirang'], tell_owed: [] };
   s = win({ ...s, tasks: { 'xirang-wumen': { status: 'offered' }, ...s.tasks } }, content, ctx(), { id: 'xirang-wumen' }).state;
   s = task(s, content, ctx(), { action: 'done', id: 'xirang-wumen' }).state;
-  const out = resolve(earnedFor(content, s, 'sit'), content, ctx(), { exit: 'sit' });
+  const noon = resolve(earnedFor(content, s, 'sit'), content, ctx(), { exit: 'sit' });
+  assert.equal(noon.result.ok, true, JSON.stringify(noon.result).slice(0, 200));
+  // wm-xiqi (2026-10-31): the climb and fall, then the way on behind 四层圆满
+  const out = resolve(earnedFor(content, noon.state, 'draw'), content, ctx(), { exit: 'draw' });
   assert.equal(out.result.ok, true, JSON.stringify(out.result).slice(0, 200));
   s = out.state;
   assert.equal(s.scene, 'wm-chu');

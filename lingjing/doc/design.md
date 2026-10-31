@@ -285,12 +285,16 @@ overflow pays more.
   the layer it asks (rules/cap.mjs heldBy; a gate is passed with its scene, or by a stay that marks it — 腊八). 古九
   has none. A scene passed is never gated again.
   **The 层 matches the book wherever it states one** (Hanli 2026-10-28: 「故事里是4层圆满, 游戏里保持一致」): a gate right
-  before the beat, the layer earned by play there, the bar stepping with the text. 古五's 石室 (2026-10-31): wm-kaikai's way
-  on (`sit`) waits on 四层圆满 after 老蔫's fall, right before 「第三天天快亮…再吸半天，第五层的门槛也许便摸得着了」 (the way on's
-  first five paragraphs moved to `story_after`, word for word); inside the 秘境 the 石室 hosts its two 主力 levels as practice
-  (`shishi-lingqi` · `shishi-yinshen`) and the gate says so in its own `say`. The rooms before it still have him at 二层, so
-  古五's cap holds there (`holds: [{layer: 2, until: 'wm-kaikai'}]`, rules/cap.mjs heldBy). The bar trails `story_after`'s
-  「第二天晌午，他冲开了第四层」 until the gate fills. tools/balance.mjs plays a sealed instance on its own sources only.
+  before the beat, the layer earned by play there, the bar stepping with the text. 古五's 石室 (2026-10-31), two gates: wm-kaikai's
+  way on (`sit`) on 三层圆满 right before 「第二天晌午，他冲开了第四层」, and wm-xiqi's (`draw`; the scene split off for 老蔫's climb
+  and fall) on 四层圆满 right before 「第三天天快亮…再吸半天，第五层的门槛也许便摸得着了」 — the passages split word for word. Inside
+  the 秘境 the 石室 hosts its two 主力 levels as practice (`shishi-lingqi` · `shishi-yinshen`), each gate says so in its own `say`,
+  and a gated scene whose room hosts practice is waited in, never at its way in (gates.mjs entryGate · roomWorks). The rooms
+  before it still have him at 二层, so 古五's cap holds there (`holds: [{layer: 2, until: 'wm-kaikai'}]`, rules/cap.mjs heldBy).
+  The survey of every level 卷一 states (2026-10-31) found the rest matched by the gates already there (古四 一层 → wm-yan's 二层;
+  the 秘境 door's 二层; 古六's 「四层了」; 古七 五 · 六 · 七层; 古八 七 · 八 · 九层圆满; the cliff's 筑基). Not gated: wm-baoming's 「二层巅峰」,
+  which the cauldron drains in the same passage (二层 left empty) — a bar cannot be taken back. tools/balance.mjs plays a sealed
+  instance on its own sources only.
   **Handed in** (2026-10-16, Hanli: 「七层圆满的任务大成了应该可以交任务拿奖励」): met, the row is 可交 with 交差 and
   pays balance.json `pay.stage` (60 灵石 — at 圆满 修为 cannot rise), once; then 已交. A quest behind him never
   handed in (crossed before stage quests paid, or walked through) is paid once on the next load, with a

@@ -44,6 +44,13 @@ export function stageGate(content, state, sceneId, exitId) {
   return g && !gateMet(content, state, g) ? g : null;
 }
 
+/* The scene's room hosts practice — a board open to play again (hosted, not a stall; rules/tasks.mjs hostedHere): there is
+   work where it stands (古五's 石室, 2026-10-31), so its gate waits in the scene, never at the way in. */
+export function roomWorks(content, placeId) {
+  const room = Object.values(content.places ?? {}).flatMap(d => d.places ?? []).find(p => p.id === placeId);
+  return (room?.has?.games ?? []).some(id => { const t = content.tasks?.tasks?.find(x => x.id === id); return Boolean(t?.hosted && t.kind === 'board' && !t.stall); });
+}
+
 /* A gate held at the way INTO its scene (Hanli 10-27: 「读了一段剧情, 两个按钮都不能点…感觉卡住了」): where every way on
    of the gated scene is gated and the scene gives nothing to do first (no board, no fight), the passage would be read
    only to stop at two dead buttons — so the way that leads there waits instead, where he stands and can walk off to
@@ -54,7 +61,7 @@ export function entryGate(content, state, exit) {
   const g = gatesOf(content).find(x => x.scene === to);
   if (!g || gateMet(content, state, g)) return null;
   const sc = Object.values(content.chapters).map(ch => ch.scenes?.[to]).find(Boolean);
-  if (!sc || (sc.show ?? []).some(c => c.card === 'board') || sc.exits.some(e => e.game)) return null;
+  if (!sc || (sc.show ?? []).some(c => c.card === 'board') || sc.exits.some(e => e.game) || roomWorks(content, sc.at)) return null;
   const ways = sc.exits.filter(e => !e.stay);
   return ways.length && ways.every(e => g.exits.includes(e.id)) ? g : null;
 }

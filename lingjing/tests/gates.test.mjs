@@ -28,7 +28,7 @@ test('every 回 past 古三 holds one (古九 aside); 古七\'s four as the book
   const by = {};
   for (const g of gatesOf(content)) (by[g.hui] ??= []).push(`${g.scene}@${g.layer}`);
   assert.deepEqual(by, {
-    h05: ['wm-chaifang@1'], h07: ['wm-mijing@2', 'wm-kaikai@4'], h08: ['wm-qianye@4'], // 古五's 石室 and 古六's eve on 四层圆满 since 2026-10-31
+    h05: ['wm-chaifang@1'], h07: ['wm-mijing@2', 'wm-kaikai@3', 'wm-xiqi@4'], h08: ['wm-qianye@4'], // 古五's 石室 on 三层 then 四层圆满, 古六's eve on 四层圆满, since 2026-10-31
     h11: ['09-furnace@4', '09-year@4', '09-yishui@5', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-yanceng@9'],
   });
   assert.equal(content.ladder.caps.hui.h11.layer, 6, '古七 grinds to 六层 (its rises come behind its gates)');

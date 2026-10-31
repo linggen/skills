@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 630,
-  "wealth": 1296,
+  "wealth": 1356,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -173,6 +173,7 @@
    "wm-anhe",
    "wm-tama",
    "wm-kaikai",
+   "wm-xiqi",
    "wm-chu",
    "wm-hetan",
    "wm-luobo",
@@ -683,7 +684,7 @@
   "day": {
    "key": "2026-10-01",
    "progress": 3260,
-   "wealth": 1299
+   "wealth": 1359
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1273,6 +1274,7 @@
    "wm-chaifang/count",
    "wm-mijing/pay",
    "wm-kaikai/sit",
+   "wm-xiqi/draw",
    "wm-qianye/eve",
    "09-furnace/fire",
    "09-year/futian"
@@ -1357,6 +1359,7 @@
    "wm-anhe",
    "wm-tama",
    "wm-kaikai",
+   "wm-xiqi",
    "wm-chu",
    "wm-hetan",
    "wm-luobo",
