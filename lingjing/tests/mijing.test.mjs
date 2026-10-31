@@ -287,6 +287,75 @@ test('a board room: hosted while he stands in it, dealt the run\'s level, its �
   assert.ok(!look(done.state, content, ctx()).tasks.some(t => t.id === id), 'the board leaves with the room');
 });
 
+test('a 塔防 room\'s level is made by its kit\'s tide maker, seeded per room, deeper 重 a higher tier; boons lie on it', () => {
+  const base = call('mijing', atDoor(), { action: 'enter', tier: 1, seed: 'td' }).state;
+  const sigs = new Set();
+  for (const task of ['mijing-guan-shouqiang', 'mijing-guan-shoulu', 'mijing-guan-sadoushou', 'mijing-guan-sadou']) {
+    for (const room of ['2a', '2b']) {
+      const s = structuredClone(base);
+      s.mijing.run.tier = 1;
+      // the room's board as boardFor deals it: the only guan of the 重 is this kit's
+      const t = content.mijing.tiers.find(x => x.n === 1), keep = t.guan;
+      t.guan = keep.filter(b => b.task === task);
+      try {
+        s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'yao', phase: 'done' };
+        s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: room, kind: 'guan' };
+        s.mijing.run.map.ways['1a'] = [room];
+        const out = call('mijing', s, { action: 'go', room });
+        assert.ok(out.result.ok, JSON.stringify(out.result));
+        const b = run(out.state).room.board;
+        assert.equal(b.task, task);
+        assert.ok(b.made && b.sig, `${task} ${room}: a made level`);
+        sigs.add(b.sig);
+        const row = look(out.state, content, ctx()).tasks.find(x => x.id === task);
+        assert.ok(row.deal?.tide && row.deal.lv === b.lv, `${task}: Look deals the made level (no 下一关)`);
+      } finally { t.guan = keep; }
+    }
+  }
+  assert.equal(sigs.size, 8, 'every room its own layout');
+  // 阵 (zhen) widens 守墙关's wall on the made layout
+  const s = structuredClone(base), t = content.mijing.tiers.find(x => x.n === 1), keep = t.guan;
+  t.guan = keep.filter(b => b.task === 'mijing-guan-shouqiang');
+  try {
+    s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'yao', phase: 'done' };
+    s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: '2z', kind: 'guan' };
+    s.mijing.run.map.ways['1a'] = ['2z'];
+    const plain = call('mijing', s, { action: 'go', room: '2z' }).state;
+    const wall = look(plain, content, ctx()).tasks.find(x => x.id === 'mijing-guan-shouqiang').deal.over.wall;
+    plain.mijing.run.boons = ['zhen'];
+    assert.equal(look(plain, content, ctx()).tasks.find(x => x.id === 'mijing-guan-shouqiang').deal.over.wall, Math.round(wall * 1.25));
+  } finally { t.guan = keep; }
+});
+
+test('a made 塔防 room is winnable at the first 重 and the last, and reads as the room (its title, the task\'s how — no 兽潮 words)', async () => {
+  const { TIDES } = await import('../scripts/games/tide.js');
+  const { kitOf } = await import('../scripts/rules/reveal.mjs');
+  const creatures = content.creatures.creatures;
+  const base = call('mijing', atDoor(), { action: 'enter', tier: 1, seed: 'deep' }).state;
+  for (const task of ['mijing-guan-shouqiang', 'mijing-guan-shoulu', 'mijing-guan-sadoushou', 'mijing-guan-sadou']) {
+    const game = content.tasks.tasks.find(x => x.id === task).game;
+    const table = kitOf(content, game) ?? content.games.games.find(g => g.id === game && Array.isArray(g.levels));
+    for (const tier of [1, 9]) {
+      const s = structuredClone(base), t = content.mijing.tiers.find(x => x.n === tier), keep = t.guan;
+      s.mijing.run.tier = tier;
+      t.guan = keep.filter(b => b.task === task);
+      try {
+        s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'yao', phase: 'done' };
+        s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: '2a', kind: 'guan' };
+        s.mijing.run.map.ways['1a'] = ['2a'];
+        const out = call('mijing', s, { action: 'go', room: '2a' });
+        const deal = look(out.state, content, ctx()).tasks.find(x => x.id === task).deal;
+        const won = ['m0', 'm1', 'm2'].filter(seed => TIDES[game].prove(table, deal, seed, creatures)).length;
+        assert.ok(won >= 1, `${task} at 重 ${tier}: the human-like hand lost all three`);
+        const row = deal.over ?? deal.levels.find(l => l.id === deal.lv);
+        const said = JSON.stringify([row.lead, row.title ?? row.name]);
+        assert.ok(!/兽潮|沉鼎观/.test(said), `${task}: ${said}`);
+        assert.equal(row.lead[0].zh, deal.title.zh);
+      } finally { t.guan = keep; }
+    }
+  }
+});
+
 test('the card: the ink map with the lit rooms a tap, 气血, the room\'s business; the door\'s 重; a run\'s pay', async () => {
   const { mijingCardHtml } = await import('../scripts/cards.js').then(() => import('../scripts/mijing.js'));
   const s = call('mijing', atDoor(), { action: 'enter', tier: 1, seed: 'card' }).state;

@@ -26,7 +26,8 @@ import { stow, storedLine } from './pouch.mjs';
 import { creatureOf, foeOf, meetBeast, passed, placeName, placeOf } from './world.mjs';
 import { boardPlay } from './playpay.mjs';
 import { duelBrief } from './look.mjs';
-import { kitOf } from './reveal.mjs';
+import { beastOpen, kitOf } from './reveal.mjs';
+import { TIDES } from '../games/tide.js';
 
 const tableOf = content => content.mijing ?? null;
 const knobs = content => content.balance?.mijing ?? {};
@@ -192,12 +193,29 @@ function foeFor(content, run, tier, room) {
   const hp = Math.round((pickd.hp ?? c?.hp ?? 1) * grow * 100) / 100;
   return { creature: pickd.creature, hp, ...(pickd.deck ? { deck: pickd.deck } : {}) };
 }
-/* A board room's board: one of the 重's `guan` (守关) or `jiguan` (机关), avoiding the one the run played last. */
-function boardFor(content, run, tier, room) {
+/* A board room's board: one of the 重's `guan` (守关) or `jiguan` (机关), avoiding the one the run played last. A 塔防
+   kit's board is a level of its own, made by the kit's tide maker (games/<kit>/tide.js — as the story's 主力 boards and
+   兽潮's nights are) from the run's seed and the room, its tier the 重's depth, of the beasts he has met; the deal is kept
+   on the room (a maker proves its layout by playing it, so Look never makes it again). The row's `lv` stays the fallback
+   when the maker has nothing to make. */
+function boardFor(content, state, run, tier, room) {
   const list = room.kind === 'guan' ? tier.guan : room.kind === 'jiguan' ? tier.jiguan : tier.xinmo ?? [];
   const fresh = list.filter(b => b.task !== run.last_board);
   const from = fresh.length ? fresh : list;
-  return from.length ? { ...from[Math.floor(u(`${run.seed}|${room.id}|board`) * from.length)] } : null;
+  if (!from.length) return null;
+  const b = { ...from[Math.floor(u(`${run.seed}|${room.id}|board`) * from.length)] };
+  const made = madeBoard(content, state, run, tier, room, b.task);
+  return made ? { ...b, lv: made.deal.lv ?? b.lv, made: made.deal, sig: made.sig } : b;
+}
+/* The tide maker's level for a 塔防 room (null: not a 塔防 kit, or nothing fits). `tier` 0 at the first 重, 1 at the last. */
+function madeBoard(content, state, run, tier, room, taskId) {
+  const game = content.tasks.tasks.find(x => x.id === taskId)?.game, maker = TIDES[game];
+  if (!maker) return null;
+  const table = kitOf(content, game) ?? (content.games?.games ?? []).find(g => g.id === game && Array.isArray(g.levels)) ?? null;
+  if (!table) return null;
+  const last = Math.max(1, ...(tableOf(content)?.tiers ?? []).map(t => t.n)) - 1;
+  const depth = last ? Math.round(Math.min(1, (tier.n - 1) / last) * 1000) / 1000 : 0;
+  return maker.night(table, { seed: `${run.seed}|${room.id}|td`, tier: depth, boss: false, open: kind => beastOpen(content, state, kind) }) ?? null;
 }
 /* A 奇遇 room's situation: one of the 重's `qiyu` not yet met this run. */
 function qiyuFor(content, run, tier, room) {
@@ -272,7 +290,7 @@ function goRoom(state, content, ctx, args) {
   const play = kindRow(content, room.kind)?.play;
   const here = { id, kind: room.kind, phase: play === 'fight' ? 'fight' : play === 'board' ? 'board' : 'pick' };
   if (play === 'fight') here.foe = foeFor(content, r, t, room);
-  if (play === 'board') { here.board = boardFor(content, r, t, room); if (!here.board) here.phase = 'done'; }
+  if (play === 'board') { here.board = boardFor(content, s, r, t, room); if (!here.board) here.phase = 'done'; }
   if (room.kind === 'qiyu') { here.qiyu = qiyuFor(content, r, t, room); if (here.qiyu) r.met = [...(r.met ?? []), here.qiyu]; else here.phase = 'done'; }
   if (room.kind === 'quan') here.temper = temperable(content, s, r);
   if (room.kind === 'bao') {
@@ -541,6 +559,7 @@ export function mijingHosted(content, state) {
 export function mijingRow(content, state, id) {
   if (!mijingBoardHere(content, state, id)) return {};
   const run = runOf(state), room = run.room, b = room.board, t = tierRow(content, run.tier), task = content.tasks.tasks.find(x => x.id === id);
+  if (b.made) return { mijing: true, title: roomTitle(content, state, run, room, task, t), deal: madeDeal(content, run, task, t, b.made) };
   const kit = task?.game ? kitOf(content, task.game) : null, row = kit?.levels?.find(l => l.id === b.lv) ?? null;
   const over = {};
   const step = 1 + (knobs(content).td_step ?? 0) * (t.n - 1);
@@ -554,6 +573,29 @@ export function mijingRow(content, state, id) {
   if (row) over.title = { zh: `${pick(t.name, 'zh')} · ${pick(name, 'zh') ?? ''}`, en: `${pick(t.name, 'en')} · ${pick(name, 'en') ?? ''}` };
   const deal = { ...(b.lv != null ? { lv: b.lv } : {}), ...(Object.keys(over).length ? { over } : {}), ...(task?.game === 'pintu' && t.backdrop ? { pics: [{ src: `worlds/jiuding/${t.backdrop}`, a: 1.5 }] } : {}) };
   return { mijing: true, title, ...(Object.keys(deal).length ? { deal } : {}) };
+}
+const roomTitle = (content, state, run, room, task, t) => {
+  const name = roomOf(run.map, room.id)?.name;
+  return `${pick(kindRow(content, room.kind)?.name, state.lang)} · ${pick(name, state.lang) ?? pick(task?.title, state.lang)}`;
+};
+/* A made level's deal: the boons' `td` fields laid on the layout it carries (`over`, or the level row itself where the kit's
+   deal holds the whole level), and the room's own words over the maker's 兽潮 ones — the 重 and the room as its title
+   (`title`, and `name` where the row is the whole level), its lead the title and the task's `how`, then the maker's
+   tips (the lines after its first big one: which talisman for which beast). The 重's depth is already the maker's tier. */
+function madeDeal(content, run, task, t, made) {
+  const deal = structuredClone(made), name = roomOf(run.map, run.room.id)?.name;
+  const target = deal.over ?? deal.levels?.find(l => l.id === deal.lv) ?? null;
+  const title = { zh: `${pick(t.name, 'zh')} · ${pick(name, 'zh') ?? ''}`, en: `${pick(t.name, 'en')} · ${pick(name, 'en') ?? ''}` };
+  if (target) {
+    for (const boon of boonsOf(content, run)) for (const [field, v] of Object.entries(boon.td?.[task?.game] ?? {})) {
+      if (typeof target[field] === 'number') target[field] = field === 'wall' ? Math.round(target[field] * v) : target[field] + v;
+    }
+    const lead = Array.isArray(target.lead) ? target.lead : [], big = lead.findIndex(l => l?.big);
+    const tips = big < 0 ? [] : lead.slice(big + 1).filter(l => !l?.big);
+    target.lead = [{ ...title, big: true }, ...(task?.how ? [{ zh: pick(task.how, 'zh'), en: pick(task.how, 'en') }] : []), ...tips];
+    if (deal.over) target.title = title; else target.name = title;
+  }
+  return { ...deal, title };
 }
 /* Its win handed in (tasks.mjs taskDone): the 气血 it cost by its stars, a little loot, the room behind him. */
 export function mijingBoardDone(state, content, ctx, id) {
