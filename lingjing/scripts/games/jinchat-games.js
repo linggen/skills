@@ -54,6 +54,17 @@ export function riddleOf(game, lang = 'zh') {
   };
 }
 
+/** A chat's riddle pool (games.json `game.pool`, 周衡's 灯谜): the `n`th play's game — the pool in order, the chat's own
+    riddle last, then round again — so a replay repeats only after the whole pool. Each pool riddle lays its `zh` · `en`
+    over the game's, and the pool's own `pool_facts` stand for the model in place of the story's. No pool: the game. */
+export function poolRiddle(game, n = 0) {
+  const pool = Array.isArray(game?.pool) ? game.pool : [];
+  if (!pool.length) return game;
+  const all = [...pool, { id: 'own', zh: game.zh, en: game.en }];
+  const r = all[((Math.floor(Number(n)) || 0) % all.length + all.length) % all.length];
+  return { ...game, zh: r.zh, en: r.en, riddle: r.id, ...(r.id !== 'own' && game.pool_facts ? { facts: game.pool_facts } : {}) };
+}
+
 /** His answer, judged by the data alone: 'right' · 'wrong' · 'empty'. Right is his words naming one of the answers —
     the same after the filler goes, or (an answer two characters or more, or a word in English) inside what he said; a
     denial (「不是丹」) is never right. */

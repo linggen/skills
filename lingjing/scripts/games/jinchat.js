@@ -26,7 +26,7 @@
 
 import { askInChat, reachable } from './drawguess-ling.js';
 import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './jinchat-rules.js';
-import { dictOf, kindOf, stubLine } from './jinchat-games.js';
+import { dictOf, kindOf, poolRiddle, stubLine } from './jinchat-games.js';
 import { chainGame, coupletGame, guessGame, riddleGame, tableOf } from './jinchat-play.js';
 import { createTalk, talkStyle } from '../npc-talk.js';
 
@@ -88,6 +88,18 @@ const chatsOf = () => (regP ??= fetch(new URL('games.json', WORLD)).then((r) => 
   .then((reg) => reg.games.find((g) => g.id === 'jinchat' && !g.task)?.data?.chats ?? {}).catch(() => ({})));
 const peopleOf = () => (peopleP ??= fetch(new URL('people.json', WORLD)).then((r) => r.json())
   .then((d) => Object.fromEntries((Array.isArray(d.people) ? d.people : Object.values(d.people ?? d)).filter((p) => p?.id).map((p) => [p.id, p]))).catch(() => ({})));
+
+/** Which play of a chat's riddle pool this is (games.json `data.pool`): counted in this browser, so the next is the next
+    riddle; storage that throws or is empty starts from the clock's count instead. */
+function poolTurn(chat) {
+  const key = `lingjing.jinchat.pool.${chat}`;
+  try {
+    const n = Number(globalThis.localStorage?.getItem(key) ?? NaN);
+    const at = Number.isFinite(n) ? n : Math.floor(Date.now() / 60000);
+    globalThis.localStorage?.setItem(key, String(at + 1));
+    return at;
+  } catch { return Math.floor(Date.now() / 60000); }
+}
 
 /** Every chat turn, for the console (and a live check's script): what was sent, what came back, how long. */
 function log(row) {
@@ -270,6 +282,8 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     const [chats, people] = await Promise.all([chatsOf(), peopleOf()]);
     g.chat = data.chats?.[data.chat] ?? chats[data.chat] ?? null;
     if (!g.chat) { root.textContent = `jinchat: no chat ${data.chat ?? '(none)'}`; return; }
+    // A row that plays the chat's riddle pool (`data.pool`: the 游戏厅's 周衡 · 一个灯谜): the next of it, this browser's place kept.
+    if (data.pool && g.chat.game?.pool?.length) g.chat = { ...g.chat, game: poolRiddle(g.chat.game, poolTurn(data.chat)) };
     g.cast = castOf(g.chat, people, lang);
     list.setCast(g.cast);
     draw();

@@ -355,3 +355,36 @@ test('成语接龙 always plays out: a player who takes the commonest way on win
     assert.ok(over, id);
   }
 });
+
+test('周衡\'s 灯谜 pool: enough riddles that a replay rarely repeats, each fair in both tongues, none another riddle\'s; the story always asks 人参', async () => {
+  const { poolRiddle } = await import('../scripts/games/jinchat-games.js');
+  const shen = CHATS.shen.game, pool = shen.pool;
+  assert.ok(pool.length >= 12, `a pool of ${pool.length}`);
+  assert.equal(new Set(pool.map((r) => r.id)).size, pool.length, 'ids unique');
+  const others = [
+    ...Object.values(JSON.parse(read('../worlds/jiuding/riddles/zh.json')).riddles).map((r) => r.q),
+    ...GAMES.filter(([id]) => id !== 'shen').map(([, c]) => c.game.zh?.q).filter(Boolean),
+  ];
+  const seen = new Set();
+  for (const [n] of pool.entries()) {
+    const game = poolRiddle(shen, n);
+    assert.equal(game.facts, shen.pool_facts, `${game.riddle}: the pool's own facts, not the 紫玉参's`);
+    for (const lang of ['zh', 'en']) {
+      const r = riddleOf(game, lang);
+      assert.ok(r.q && r.answers.length && r.hints.length >= 2 && r.choices.length === 4, `${game.riddle} ${lang}: whole`);
+      assert.equal(r.choices.filter((x) => checkRiddle(r, x, lang) === 'right').length, 1, `${game.riddle} ${lang}: one right choice`);
+      for (const a of r.answers) assert.equal(checkRiddle(r, a, lang), 'right', `${game.riddle} ${lang}: ${a}`);
+      for (const a of r.answers) if (lang === 'zh' ? [...a].length > 1 : true) assert.ok(!r.q.toLowerCase().includes(a.toLowerCase()), `${game.riddle} ${lang}: the riddle names its answer ${a}`);
+      assert.ok(!seen.has(`${lang}|${r.q}`) && !others.includes(r.q), `${game.riddle} ${lang}: a riddle of its own`);
+      seen.add(`${lang}|${r.q}`);
+    }
+  }
+  // The pool walks in order and comes round to the chat's own riddle last.
+  assert.equal(poolRiddle(shen, pool.length).riddle, 'own');
+  assert.equal(poolRiddle(shen, pool.length).zh.q, shen.zh.q);
+  assert.equal(poolRiddle(shen, pool.length + 1).riddle, pool[0].id);
+  // The 游戏厅's row plays the pool; the story's board (the task's own deal) never does — the plot turns on 人参.
+  assert.equal(reg.games.find((g) => g.id === 'jinchat' && g.task === 'zhishi-shen').data.pool, true);
+  assert.ok(!TASKS.find((t) => t.id === 'zhishi-shen').deal.pool);
+  assert.ok(fs.readFileSync(new URL('../scripts/games/jinchat.js', import.meta.url), 'utf8').includes('data.pool && g.chat.game?.pool?.length'));
+});
