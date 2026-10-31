@@ -324,3 +324,36 @@ Each run sits in the kit's climb (speed and bpm never ease in reading order, 古
 - The pool boards, if he wants other kinds there for variety after all.
 
 **Numbers.** 几何冲刺 counts 1 min and no 灵石 against 塔防's 4 and 5, so the refit ran (`node tools/numbers.mjs --apply --write`): 七·八·九层 0.733 · 0.807 · 0.88 → 0.71 · 0.782 · 0.853 h; typical days a 回 unchanged (第四回 5.9 · 第五回 5.9 · 第六回 6.8 · 第七回 5.1 · 第八回 5.7 · 第九回 2.9); gate waits unchanged (the longest 35 min, wm-xiqi; every other ≤ 25); red 15 unchanged.
+
+## 主力 spread, second pass (2026-10-31): the pools mixed
+
+Hanli's calls delegated (10-31): ≤ 65% 塔防 of 古 主力; the lever is the gate pools (no passage plays them), mixed with 格斗 (painted opponents only), 几何冲刺 and 节奏; 暗河 a run (next to 踏马符's, accepted), 碾药 a rhythm board; 上崖 only if the dash kit had a climb form (it has none: stays 塔防).
+
+**Converted** (`75cf92e9`; id, pay, done line and marks kept; the task's game and how changed, its deal dropped; the 塔防 row and its `zl-` level `replaced`, 旧版):
+
+| Board | 回 · scene | Now |
+|---|---|---|
+| `anhe-dark` 暗河 | 第五回 · wm-anhe | 几何冲刺 `anhe-dash` (cave, normal · 129) |
+| `dianmao-jiangtang` 挑水 | 第四回 · wm-dianmao (pool) | 太鼓 `tiaoshui-gu` (咚 only, 80 · div 1 · OD 0) |
+| `dianmao-yaoyuan` 矮石墙 | 第四回 · wm-dianmao (pool) | 几何冲刺 `qiangwai-dash` (half · 120) |
+| `suifeng-qinyan` 秦雁 · 崖顶 | 第七回 · 09-suifeng (pool; moved third) | 格斗 `suifeng-qinyan-ge` (秦雁's sheet; outlast 22 moves) |
+| `suifeng-yezi` 一片叶子 | 第七回 · 09-suifeng (pool) | 抚琴 `yezi-qin` (茉莉花, taps · 70 · OD 1) |
+| `nianyao-niannian` 碾药 · 闭着眼睛 | 第七回 · 09-nianyao (pool) | 太鼓 `niannian-gu` (「来来回回」; 84 · div 2 · OD 1) |
+| `nianyao-shuangma` 双马饮泉 | 第七回 · 09-nianyao (pool) | 几何冲刺 `shuangma-dash` (normal · 136) |
+| `shenshi-zhique` 纸雀儿 | 第八回 · 09-shenshi (pool) | 抚琴 `zhique-qin` (送别, taps · 74 · OD 2) |
+| `shenshi-qinyan` 秦雁 · 后山崖顶 | 第八回 · 09-shenshi (pool) | 格斗 `shenshi-qinyan-ge` (outlast 26 moves) |
+| `dingfeng-yading` 崖顶的蜡烛 | 第八回 · 09-dingfeng (pool) | 几何冲刺 `lazhu-dash` (normal · 137) |
+| `yanceng-zhuochong` 捉虫 | 第八回 · 09-yanceng (pool) | 太鼓 `zhuochong-gu` (88 · div 2 · OD 2) |
+| `yanceng-xilang` 西廊 · 搬铺 | 第八回 · 09-yanceng (pool) | 几何冲刺 `xilang-dash` (normal · 138) |
+
+Each level sits in its kit's climb (tests/arcade-rhythm.test.mjs CLIMB: dash speed and bpm, 太鼓 bpm · div · OD, 抚琴 bpm · OD never ease along the story) and is bot-proved by its kit's tests (tests/dash · taiko · fuqin · game-fighter). No two boards of a kind back to back but 暗河 → 踏马符 (KEPT_PAIRS, accepted).
+
+| 回 | Before | After |
+|---|---|---|
+| 第四回 | 11 · 0 · 1 · 0 | 9 · 0 · 2 · 1 |
+| 第五回 | 6 · 0 · 1 · 0 | 5 · 0 · 2 · 0 |
+| 第七回 | 15 · 2 · 1 · 0 | 11 · 3 · 2 · 2 |
+| 第八回 | 15 · 0 · 1 · 0 | 10 · 1 · 3 · 2 |
+| 古 | 63 · 9 · 7 · 2 (塔防 78%) | 51 · 11 · 12 · 7 (塔防 63%) |
+
+(塔防 · 格斗 · 几何冲刺 · 节奏; 第一 · 二 · 三 · 六 · 九回 unchanged.) **Numbers:** the refit agrees (no hour moved); gate waits unchanged (the longest 35 min, wm-xiqi; every gate reached); red 15. **Left for Hanli:** 上崖 (no dash climb form); 格斗 for 邹青松 · 九层师兄 · 老井 waits on their frames.
