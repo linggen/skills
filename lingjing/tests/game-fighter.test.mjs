@@ -445,3 +445,25 @@ test('the spells are in the move list and the pad: I · U on the desk, 剑 · �
   const snd = read('../scripts/games/kit/audio/sounds.json');
   for (const e of ['feijian', 'rune', 'bind']) assert.ok(snd.kits.fight.events[e], `sounds.json fight · ${e}`);
 });
+
+test('the round pad (touch): 8 ways by the thumb\'s angle, a diagonal two at once, nothing in the dead zone', () => {
+  const r = 66, at = (deg, far = 50) => F.dialDirs(Math.cos((deg * Math.PI) / 180) * far, Math.sin((deg * Math.PI) / 180) * far, r);
+  const sorted = (a) => [...a].sort();
+  // screen angles, y down: 0 → · 90 ↓ · 180 ← · 270 ↑
+  assert.deepEqual(at(0), ['right']);
+  assert.deepEqual(sorted(at(45)), ['crouch', 'right']);
+  assert.deepEqual(at(90), ['crouch']);
+  assert.deepEqual(sorted(at(135)), ['crouch', 'left'], '↙ = left + crouch: the low guard');
+  assert.deepEqual(at(180), ['left']);
+  assert.deepEqual(at(-180), ['left']);
+  assert.deepEqual(sorted(at(225)), ['jump', 'left'], '↖ = left + jump');
+  assert.deepEqual(at(270), ['jump']);
+  assert.deepEqual(sorted(at(315)), ['jump', 'right']);
+  assert.deepEqual(at(20), ['right'], 'within 22.5° of → is →');
+  assert.deepEqual(sorted(at(25)), ['crouch', 'right']);
+  assert.deepEqual(at(200, 10), [], 'the dead zone: no way, walk 0 (▶▶ dash still reads)');
+  assert.deepEqual(at(0, 200), ['right'], 'past the rim still counts');
+  const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
+  assert.match(src, /kind === 'touch' \? dial :/, 'the pad on touch only; the desk keeps its four buttons');
+  assert.match(src, /dataset\.v = '4'/);
+});

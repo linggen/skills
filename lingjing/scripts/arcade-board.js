@@ -47,6 +47,17 @@ export function visitDays(visits, now = new Date()) {
   return (((visits.offset ?? 0) - day) % visits.every + visits.every) % visits.every;
 }
 
+/** What the 游戏厅 deals a registry row: what the story deals it (rules/look.mjs dealOf) — the row's `data` (the phone
+    falls to its task's `deal`), and a story row's own `levels` (only those marked story or realm, where it marks some).
+    A story row with no `data` (宗门大比's 格斗 bouts: 喷嚏符 is 何七's level) dealt nothing, so its board played its
+    registry's first level — 秦雁, whatever the row (Hanli on the phone 10-31). linggen-mobile's arcadeGames mirrors it. */
+export function arcadeDeal(row, task = null) {
+  const own = row?.data ?? task?.deal ?? {};
+  if (!row?.task || !Array.isArray(row.levels) || !row.levels.length) return own;
+  const off = (l) => l.story || l.realm;
+  return { ...own, levels: row.levels.some(off) ? row.levels.filter(off) : row.levels };
+}
+
 /** The registry row a 试玩 deals from: the story row asked for (`task`, one that carries its own deal), else the game's
     own row (no story task), else its first. */
 export function arcadeRow(registry, id, task = null) {

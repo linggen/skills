@@ -15,8 +15,10 @@
 // to the click after it (live-games.js tapGate's lesson: a fast tap is acted on once). Keys by `event.code` (the same
 // keys on any layout): W A S D move — A/D walk, W jump, S crouch; held away from her, a guard — and KOF '97's four
 // (Hanli 10-27: 「97那个就4个key?」): K A 轻拳 · L B 轻腿 · O C 重拳 · ; D 重腿; K+L a roll (迎), O+; a blowback; specials
-// are motions + 拳. Arrows and Space are quiet aliases. The phone: ▲ ◀ ▼ ▶, the four in a diamond, and 技 (掌心火; with
-// ▶ 升勾; a stock full, the 绝). The fighters are painted frame by frame (tools/fighter-frames.py → one sheet each; fighter/draw.js plays the clips).
+// are motions + 拳. Arrows and Space are quiet aliases. The phone: one round pad under the left thumb (Hanli 10-31: 「方向键
+// 不好操作, 请改成圆盘」 · 「最好能8个方向」 — the thumb's angle from its middle is one of 8, a diagonal two at once: ↖ walk
+// left + jump, ↙ left + crouch), the four in a diamond, and 技 (掌心火; with ▶ 升勾; a stock full, the 绝). Turned on its
+// side, the field fills the page and the hands lie over its lower corners (「横屏可以占全屏, 按钮叠加上去就好了」). The fighters are painted frame by frame (tools/fighter-frames.py → one sheet each; fighter/draw.js plays the clips).
 // In the shell: its pause stops the clock and the hands and shows the move list; its lead card reads the level's
 // `ready` and the keys; every step sounds what it made (games/kit/heard.js, the names in sounds.json `fighter`).
 // Lost, it settles { won: false } and the host deals it again (the story) or offers 再来 (the 游戏厅).
@@ -111,14 +113,34 @@ const CSS = `
 .g-fighter.is-touch button { width: 48px; height: 48px; font-size: 20px; }
 html[data-board=fighter] #stage .g-fighter { height: 100%; justify-content: center; padding: 6px 8px calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; }
 html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px) * 16 / 9)); margin: auto; } /* the field in the middle, the buttons under the thumbs */
+/* The round pad (touch): the thumb anywhere in it, its angle one of 8; the knob under the thumb, the way it points lit. */
+.g-fighter .gf-dial { position: relative; width: 132px; height: 132px; border-radius: 50%; flex: none; touch-action: none;
+  background: radial-gradient(circle, rgba(243,234,214,.92) 0 30%, rgba(228,214,184,.92) 31% 100%); border: 2px solid #2a241c; box-sizing: border-box; }
+.g-fighter .gf-dial i { position: absolute; left: 50%; top: 50%; width: 0; height: 0; font: normal 600 13px/1 ui-sans-serif, system-ui, sans-serif; color: #2a241c; opacity: .55;
+  transform: rotate(var(--a)) translateY(-50px) rotate(calc(-1 * var(--a))); display: grid; place-items: center; }
+.g-fighter .gf-dial i::before { content: attr(data-f); position: absolute; transform: translate(-50%, -50%); }
+.g-fighter .gf-dial i.is-on { opacity: 1; color: #b0412e; }
+.g-fighter .gf-dial b { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%;
+  background: #2a241c; opacity: .35; transform: translate(var(--x, 0px), var(--y, 0px)); pointer-events: none; }
+.g-fighter .gf-dial.is-held b { opacity: .7; }
+/* Turned on its side on a phone: the field as tall as the page (the app's bar above it holds ✕ and Ⅱ), the hands over
+   its lower corners, see-through, clear of the notch and the home bar. The Mac and the upright phone as they were. */
+@media (orientation: landscape) {
+  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch { position: relative; display: block; width: min(100%, calc(100dvh * 16 / 9)); height: auto; margin: auto; padding: 0; }
+  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-field { width: 100%; margin: 0; border-radius: 0; }
+  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad { position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none;
+    padding: 0 max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
+  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad > * { pointer-events: auto; opacity: .62; }
+  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad > :is(.is-held, :has(.is-down)) { opacity: .85; }
+}
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '3') return;
+  if (old?.dataset.v === '4') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '3';
+  st.dataset.v = '4';
   st.textContent = CSS;
   doc.head.append(st);
 }
@@ -138,13 +160,25 @@ const HELD = new Set(['left', 'right', 'crouch']);
 /* W is a press when it goes down (the jump) and a word when it comes up (let go soon: a short hop). */
 const LIFT = { jump: 'jumpRelease' };
 
-function padHtml(level, lang) {
+/* The round pad's 8 ways, clockwise from → (screen angles, y down): each the held directions it presses. */
+const DIAL = [['right'], ['right', 'crouch'], ['crouch'], ['left', 'crouch'], ['left'], ['left', 'jump'], ['jump'], ['right', 'jump']];
+const DIAL_FACE = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
+/** The directions a thumb at (dx, dy) from the pad's middle presses (screen px, y down; `r` the pad's radius): none in
+    the dead zone (`dead` of the radius), else one of 8 by its angle — a diagonal two at once. */
+export function dialDirs(dx, dy, r = 66, dead = 0.28) {
+  if (Math.hypot(dx, dy) < r * dead) return [];
+  return DIAL[dialWay(dx, dy)];
+}
+const dialWay = (dx, dy) => ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8;
+
+function padHtml(level, lang, kind = 'desk') {
   const names = level.me?.buttons ?? {};
   const b = (k) => {
     const face = say(names[k], lang) || BUTTONS[k].face;
     return `<button type="button" data-k="${k}" aria-label="${face}">${face}<small>${BUTTONS[k].key}</small></button>`;
   };
-  return `<div class="gf-pad"><div class="gf-dirs">${b('jump')}${b('left')}${b('crouch')}${b('right')}</div>`
+  const dial = `<div class="gf-dial" role="group" aria-label="${lang === 'en' ? 'Move' : '方向'}">${DIAL_FACE.map((f, i) => `<i data-w="${i}" data-f="${f}" style="--a:${i * 45 + 90}deg"></i>`).join('')}<b></b></div>`;
+  return `<div class="gf-pad">${kind === 'touch' ? dial : `<div class="gf-dirs">${b('jump')}${b('left')}${b('crouch')}${b('right')}</div>`}`
     + `<div class="gf-acts"><div class="gf-spells">${b('feijian')}${b('fuwen')}${b('skill')}</div><div class="gf-diamond">${b('hpunch')}${b('light')}${b('heavy')}${b('lkick')}</div></div></div>`;
 }
 
@@ -174,7 +208,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   sheet(doc);
   const root = doc.createElement('div');
   root.className = `g-fighter${kind === 'touch' ? ' is-touch' : ''}`;
-  root.innerHTML = `<div class="gf-field"><canvas></canvas></div>${padHtml(level, lang)}`;
+  root.innerHTML = `<div class="gf-field"><canvas></canvas></div>${padHtml(level, lang, kind)}`;
   container.replaceChildren(root);
   const canvas = root.querySelector('canvas');
   const art = {};
@@ -245,8 +279,42 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     apply({ g: k });
   };
   const lift = (k, who) => { if (LIFT[k]) apply({ g: LIFT[k] }); if (HELD.has(k) && held[k].delete(who)) sync(); };
-  const liftAll = () => { for (const s of Object.values(held)) s.clear(); sync(); };
+  const liftAll = () => { dialOff(); for (const s of Object.values(held)) s.clear(); sync(); };
   const pads = new Map(); // pointer id → the button it went down on
+  /* The round pad: one thumb on it at a time (its pointer id); what it presses changes only as the way does, through
+     press/lift as the buttons do — ↑ to ↖ keeps the jump (no second one), ← to ↙ adds the crouch. */
+  const dial = root.querySelector('.gf-dial'), knob = dial?.querySelector('b');
+  let dialBy = null, dialOn = [];
+  const dialTo = (dirs, way, x = 0, y = 0) => {
+    const who = `dial:${dialBy}`;
+    for (const k of dialOn) if (!dirs.includes(k)) lift(k, who);
+    for (const k of dirs) if (!dialOn.includes(k)) press(k, who);
+    dialOn = dirs;
+    knob?.style.setProperty('--x', `${x}px`); knob?.style.setProperty('--y', `${y}px`);
+    for (const i of dial.querySelectorAll('i')) i.classList.toggle('is-on', Number(i.dataset.w) === way);
+  };
+  const dialAt = (e) => {
+    const r = dial.getBoundingClientRect(), rad = r.width / 2;
+    const dx = e.clientX - (r.left + rad), dy = e.clientY - (r.top + rad), far = Math.hypot(dx, dy), k = far > rad * 0.62 ? (rad * 0.62) / far : 1;
+    const dirs = dialDirs(dx, dy, rad);
+    dialTo(dirs, dirs.length ? dialWay(dx, dy) : -1, dx * k, dy * k);
+  };
+  const dialOff = () => { if (dialBy == null) return; dialTo([], -1); dialBy = null; dial.classList.remove('is-held'); };
+  if (dial) {
+    on(dial, 'pointerdown', (e) => {
+      e.preventDefault();
+      if (dialBy != null && dialBy !== e.pointerId) dialOff();
+      dialBy = e.pointerId;
+      try { dial.setPointerCapture(e.pointerId); } catch { /* the document still hears it */ }
+      dial.classList.add('is-held');
+      dialAt(e);
+    });
+    on(dial, 'pointermove', (e) => { if (e.pointerId === dialBy) dialAt(e); });
+    const dialUp = (e) => { if (e.pointerId === dialBy) dialOff(); };
+    on(dial, 'pointerup', dialUp);
+    on(dial, 'pointercancel', dialUp);
+    on(dial, 'lostpointercapture', dialUp);
+  }
   on(root, 'pointerdown', (e) => {
     const b = e.target.closest?.('button[data-k]');
     if (!b) return;

@@ -11,7 +11,7 @@ import { esc } from './esc.js';
 import { forInput } from './games/kit/device.js';
 import { mountPure } from './games/mount.js';
 import { playAlone, restartOf, timedOf, tallOf } from './games/shell.js';
-import { arcadePlayUrl, arcadeStageUrl, visitDays } from './arcade-board.js';
+import { arcadeDeal, arcadePlayUrl, arcadeStageUrl, visitDays } from './arcade-board.js';
 import { devPrefetch } from './games/prefetch-ling.js';
 
 const q = new URLSearchParams(location.search);
@@ -192,7 +192,8 @@ async function playPage(id, n) {
   const mod = await modOf(id), mount = mountOf(mod);
   if (mod?.meta?.ai) { location.replace(arcadePlayUrl(id)); return; }
   // A row with a ladder (兽潮's nights) deals its own level unless a chip named one (`lv`): the module reads `data.lv` first.
-  const data = row.ladder && q.get('lv') ? { ...(row.data ?? {}), lv: q.get('lv') } : row.data ?? {};
+  // Else what the story deals the row (arcadeDeal: a story row's own levels — 喷嚏符 is 何七's bout, not the first one's).
+  const data = row.ladder && q.get('lv') ? { ...(row.data ?? {}), lv: q.get('lv') } : q.get('lv') ? row.data ?? {} : arcadeDeal(row);
   // A game played against one of many (斗法: every foe of the book, `meta.pick`) opens on its picker; `foe` plays it.
   const foe = mod?.meta?.pick ? q.get('foe') : null;
   if (mod?.meta?.pick && !/^[\w@/-]+$/.test(foe ?? '')) { pickPage(id, n, row, mod); return; }
