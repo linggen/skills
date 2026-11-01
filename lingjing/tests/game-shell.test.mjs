@@ -206,6 +206,7 @@ test('the catalogue: a stage row (砍价, 对对子) stands its card on its own 
   const { stageCards } = await import('../scripts/stage.mjs');
   const STAGE_CARD = { haggle: 'item', duizi: 'duizi' }; // 砍价: the shop's shelf, its button by each 买
   const { arcadeStageUrl, visitDays } = await import('../scripts/arcade-board.js');
+  const { addDays } = await import('../scripts/rules/files.mjs');
   const content = loadContent();
   const stages = REG.games.filter((g) => g.stage);
   assert.ok(stages.length >= 2);
@@ -221,8 +222,8 @@ test('the catalogue: a stage row (砍价, 对对子) stands its card on its own 
     const visits = pid ? JSON.parse(read(`../worlds/jiuding/places/${prov}.json`)).places.find((p) => p.id === pid)?.has?.visitor?.visits : null;
     if (pid) assert.ok(visits?.every, `${g.id}: ${st.visitor} is a visiting shop`);
     for (let k = 0; k < (visits?.every ?? 1); k++) {
-      const now = new Date(Date.now() + k * 86400000), days = visitDays(visits, now);
-      const l = look(saved, content, { now: new Date(now.getTime() + days * 86400000), quests: [] });
+      const now = addDays(new Date(), k), days = visitDays(visits, now);
+      const l = look(saved, content, { now: addDays(now, days), quests: [] });
       assert.ok(l[st.look], `${g.id}: Look's ${st.look} stands on that save (+${days} days)`);
       // 砍价's card is the place's shelf (Look's place.show `item`), the 砍价 by each 买.
       assert.ok([...stageCards(l), ...(l.place?.show ?? [])].some((c) => c.card === STAGE_CARD[st.look] || (c.card === 'board' && c.id === g.task)), `${g.id}: its card on the stage`);

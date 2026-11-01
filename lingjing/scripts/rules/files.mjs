@@ -78,10 +78,17 @@ const shiftDays = () => {
   if (!scratchName()) return 0;
   try { const d = Number(JSON.parse(fs.readFileSync(shiftFile(), 'utf8')).days); return Number.isFinite(d) ? d : 0; } catch { return 0; }
 };
+/* `n` calendar days on, at the same local hour: a day is not always 24 h (a DST change; 2026-11-01 the 游戏厅's
+   货郎 day, 48 h from just after midnight, landed on the day before his and opened an empty shelf). */
+const addDays = (when, n) => {
+  const at = new Date(when);
+  at.setDate(at.getDate() + n);
+  return at;
+};
 const clock = () => {
   const base = process.env.LINGJING_NOW ? new Date(process.env.LINGJING_NOW) : new Date();
   const days = shiftDays();
-  return days ? new Date(base.getTime() + days * 86_400_000) : base;
+  return days ? addDays(base, days) : base;
 };
 /* How many messages the player has sent this session, the engine's count
    (LINGGEN_USER_TURNS); null on an engine that does not say. */
@@ -182,4 +189,4 @@ export function parseArgs(argv) {
   return args;
 }
 
-export { holderGone, clock, dataDir, newRun, withRun, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
+export { addDays, holderGone, clock, dataDir, newRun, withRun, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };

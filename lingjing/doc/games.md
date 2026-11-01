@@ -386,7 +386,7 @@ Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街
   O C 重拳 · ; D 重腿; guard by holding back (low: S + back); K+L the roll (迎; back + K+L rolls back); O+; a blowback.
   Motions + 拳 (K or O): S D 掌心火 (O: heavier, slower) · D S D 升勾 · S D S D the 绝 (one stock). Chains K K L, K O, jump-in ;
   then K; a 重 cancels into the specials. Story finale: 迎 = the K+L roll; 勾 = **升勾** (D S D + 拳; a 重 in her held-back palm
-  hooks too). Phone: ▲ ◀ ▼ ▶; 拳 腿 重拳 重腿 in a diamond; 技 (掌心火, ▶ + 技 升勾, 绝 while a stock is full); 拳+腿 together rolls.
+  hooks too). Phone: one round dial, eight ways (a diagonal presses two; 2026-10-31); 拳 腿 重拳 重腿 in a diamond; 技 (掌心火, ▶ + 技 升勾, 绝 while a stock is full); 拳+腿 together rolls.
 - **v4 (10-27) — painted frame by frame**, as KOF '97 is made: the rig 「像纸片人」 (joint circles, paper cut-outs) → every pose
   painted by hand; Hanli on 秦雁's 17-frame preview: 「很好」. tools/fighter-frames.py: a MASTER per fighter (秦雁 txt2img seed 2;
   沈小满 an edit of his v3 painting toward his guard, seed 1), then every frame a FLUX.2 klein EDIT with two references — the
