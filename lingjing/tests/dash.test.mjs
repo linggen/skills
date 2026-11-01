@@ -181,3 +181,26 @@ test('the story\'s runs climb: their kinds come in one by one in reading order, 
   }
   assert.deepEqual(met, ORDER.filter((k) => met.includes(k)), `new kinds in order: ${met.join(' ')}`);
 });
+
+test('the climb (form `climb`, 上崖 2026-10-31): the run turned up a cliff face — the same rules and bots, a standing board', () => {
+  const rows = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced && g.levels[0].form === 'climb');
+  assert.ok(rows.some((r) => r.task === 'cliff-shangya'), '上崖 climbs');
+  for (const r of rows) {
+    const L = r.levels[0];
+    for (const step of [10, 50]) { const s = play(L, perfect, { step }); assert.ok(s.won && s.attempt === 1, `${L.id} perfect at ${step} ms`); }
+    assert.equal(play(L, () => null, { limit: 40000 }).won, false, `${L.id}: idle never`);
+    const h = playModule(d, bot, { tries: 3, deal: { levels: [L] }, limit: 200000 });
+    assert.ok(h.won, `${L.id}: a human-like hand within three tries`);
+  }
+  const L = { ...rows[0].levels[0] };
+  let s = d.newGame('t', 1, { levels: [L] });
+  const h = d.html(s, 'zh');
+  assert.match(h, new RegExp(`viewBox="0 0 ${d.CW} ${d.CH}"`), 'a standing board');
+  assert.match(h, /g-dash-board g-hold is-climb/);
+  assert.match(h, /class="g-dash-world" transform="matrix\(0 -1 -1 0 /, 'the run turned on its end');
+  assert.match(h, /class="g-dash-stem"/, '荆条 on the face');
+  assert.match(h, /class="g-dash-gust"/, 'the wind drawn');
+  assert.match(h, new RegExp(`class="g-dash-runner" transform="translate\\(${d.FACE} `), 'the runner against the face');
+  // a run's board stays as it was
+  assert.match(d.html(d.newGame('t', 1, { levels: [flat([[2, 's']])] }), 'zh'), new RegExp(`viewBox="0 0 ${d.W} ${d.H}"[^]*class="g-dash-world" transform="translate\\(`));
+});

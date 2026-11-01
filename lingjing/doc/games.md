@@ -534,6 +534,13 @@ own (tests/arcade-rhythm.test.mjs: no layout twice), speed and beat never fallin
 · bb · ss · ceil · pad · sss · orb); 忍字 slow, single spikes and low blocks. Earlier the same day: things in the 调息 channel
 (礁石 · 灵珠 · 护体 · 定神) and 镜光 · 脉枕 cut; those things stay for the two kept boards and the 游戏厅.
 
+**The climb (2026-10-31, 上崖; Hanli's call delegated):** a level's `form: 'climb'` turns the run on its end — the same rules,
+things and bots, only the look: a standing board (220 × 360), the face on the left, the runner going up it by itself; a press pushes
+off the face and the pull brings it back. A spike is a loose rock (grit streaks above it: it is coming down), a block a ledge to climb
+over, a pit a stretch of bare rock with no 荆条; wind and falling grit are drawn only. 上崖 (00-cliff, `shangya-climb`) is its one
+level: slow · 104, s · b · pit · bb (第二回 sits between 忍字 and 那一圈, so neither the climb lock nor the kinds' order allows a pad or
+a roof there). tests/dash.test.mjs: perfect first try at 10 and 50 ms, a human-like hand within three, idle never.
+
 **The 调息 cap held (2026-10-27, the coordinator for Hanli: at most two a 回):** 凶崖 and 风掉头 above, and 第五回's 隐身符
 (`yinshen`, wm-shishi: wherever 邹青松's spirit sense sweeps, go still), are 打地鼠 now, painted; 第五回 keeps 踏马符 · 息壤,
 第六回 脉枕 · 藏息. 凶崖 follows 别踩第三块 (both 打地鼠, a scene apart): 踏马符 would have stood beside 谷粒 in one scene.

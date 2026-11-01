@@ -23,6 +23,10 @@
 //     pad            a pad on the ground at the beat that throws the runner over a wide pit (no press)
 //     orb (n tiles)  a jump, then a press on the orb at its height over a pit n tiles wide
 //   land  the sky's palette (dawn · dusk · jade · mist · moon · star · cave: dash.css), or  backdrop  a picture under worlds/jiuding/art/
+//   form  'run' (default) · 'climb': the same run turned on its end — up a cliff face (上崖, 2026-10-31). The rules, the bots and
+//         the things are the run's, untouched; only the look turns: the ground is the face on the left, the runner goes up it
+//         by itself, a press pushes off the face and the pull brings it back; a spike is a loose rock, a block a ledge to climb
+//         over, a pit a stretch of bare rock with no 荆条 to hold; wind and falling grit drift by, drawn only.
 // Pure model (newGame / act / tick: the bots and tests); the page is `mount` (its own frame loop, pointer and Space).
 import { forInput } from './kit/device.js';
 
@@ -44,6 +48,9 @@ export const W = 360;
 export const H = 200;
 export const GROUND = 160; //            the ground's top on the screen
 export const RX = 96; //                 where the runner stands on the screen; the world scrolls under it
+// The climb (form 'climb'): a standing board; the face's line at FACE from the left, the runner's foot at RY from the top.
+export const CW = 220, CH = 360, FACE = 70, RY = 296;
+export const isClimb = (L) => L?.form === 'climb';
 
 export const meta = {
   pause: true,
@@ -260,7 +267,7 @@ function orbSvg(o) {
 
 /** The world, in world units (y down from the screen's top; the ground's top at GROUND), scrolled by one transform. */
 function worldSvg(s) {
-  const L = s.lay, y = (h) => GROUND - h, X0 = -RX - 40, X1 = L.end + W, B = H + 20;
+  const climb = isClimb(s.level), L = s.lay, y = (h) => GROUND - h, X0 = climb ? -(CH - RY) - 40 : -RX - 40, X1 = L.end + (climb ? CH : W), B = climb ? GROUND + FACE + 20 : H + 20;
   // the ground: a flat band from GROUND down, cut where the pits are, each piece outlined (its top the jump line)
   const cuts = [...L.pits].sort((a, b) => a.x - b.x);
   let from = X0;
@@ -278,22 +285,51 @@ function worldSvg(s) {
   const cps = s.practice ? L.cps.map((c) => `<path class="g-dash-cp" d="M${fmt(c)} ${GROUND}v-30l12 6l-12 6"/>`).join('') : '';
   const gx = L.end, goal = `<g class="g-dash-goal"><path class="g-dash-goal-flag" d="M${fmt(gx)} ${GROUND - 64}h26l-7 9l7 9h-26z"/>`
     + `<path class="g-dash-ink" d="M${fmt(gx)} ${GROUND}V${GROUND - 66}"/><path class="g-dash-ink" d="M${fmt(gx)} ${GROUND - 64}h26l-7 9l7 9h-26z"/></g>`;
-  return `${pits}${ceils}${groundSvg}${L.pads.map(padSvg).join('')}${L.blocks.map(blockSvg).join('')}${L.spikes.map(spikeSvg).join('')}${L.orbs.map(orbSvg).join('')}${cps}${goal}`;
+  const face = climb ? climbSvg(L, X0, X1) : '';
+  return `${pits}${ceils}${groundSvg}${face}${L.pads.map(padSvg).join('')}${L.blocks.map(blockSvg).join('')}${L.spikes.map(spikeSvg).join('')}${L.orbs.map(orbSvg).join('')}${cps}${goal}`;
+}
+
+/** The climb's face, drawn in the run's own frame (the world group turns it up): a 荆条 every so often out of the rock
+   (none over a pit: bare rock), and a streak of grit above each loose rock (it is coming down). Drawn only. */
+function climbSvg(L, X0, X1) {
+  const out = [];
+  for (let x = Math.ceil(X0 / 23) * 23; x < X1; x += 23) {
+    if (L.pits.some((p) => x > p.x - 6 && x < p.x + p.w + 6) || L.blocks.some((b) => x > b.x - 4 && x < b.x + b.w + 4)) continue;
+    const k = (Math.abs(Math.round(x / 23)) % 3) - 1;
+    out.push(`<path class="g-dash-stem" d="M${fmt(x)} ${GROUND + 2}q${fmt(5 + k * 2)} -7 ${fmt(11 + k * 3)} -${fmt(14 + k * 3)}"/>`);
+  }
+  for (const k of L.spikes) out.push(`<path class="g-dash-grit" d="M${fmt(k.x + TILE * 0.3)} ${fmt(GROUND - 6)}h${fmt(TILE * 1.6)}M${fmt(k.x + TILE * 0.55)} ${fmt(GROUND - 13)}h${fmt(TILE * 1.1)}"/>`);
+  return out.join('');
+}
+
+/* Where things stand on the screen: the run (x along, the ground at GROUND) or the climb (the run turned: x up the
+   screen from RY, h out from the face at FACE). The world group's transform, the runner's, a trail point's. */
+const worldAt = (s) => (isClimb(s.level) ? `matrix(0 -1 -1 0 ${FACE + GROUND} ${fmt(RY + s.x)})` : `translate(${fmt(RX - s.x)} 0)`);
+const farAt = (s) => (isClimb(s.level) ? `matrix(0 -1 -1 0 ${FACE + GROUND} ${fmt(RY + s.x * FAR_K)})` : `translate(${fmt(-s.x * FAR_K)} 0)`);
+const runnerAt = (s) => (isClimb(s.level) ? `translate(${fmt(FACE + s.h)} ${fmt(RY - SIZE)})` : `translate(${RX} ${fmt(GROUND - s.h - SIZE)})`);
+const trailAt = (s, p) => {
+  const r = SIZE / 2;
+  return isClimb(s.level) ? [FACE + p.h + r, RY + s.x - p.x - r] : [RX + r + p.x - s.x, GROUND - p.h - r];
+};
+
+/** The climb's wind: a few streaks across the board, drifting (still under reduced motion: dash.css). */
+function windSvg() {
+  return `<g class="g-dash-wind">${[46, 118, 205, 262].map((y, i) => `<path class="g-dash-gust" style="animation-delay:${-i * 0.7}s" d="M-40 ${y}q30 -6 60 0t60 0"/>`).join('')}</g>`;
 }
 
 /** One faint ridge far back, scrolled at a tenth of the pace (the only thing behind the play line). */
 export const FAR_K = 0.1;
 function farSvg(L) {
-  const x1 = (L.end + W) * FAR_K + W + 40, pts = [];
+  const x1 = (L.end + CH) * FAR_K + W + 40, pts = [];
   for (let x = -20; x <= x1; x += 10) pts.push(`${x} ${fmt(GROUND - 22 - 13 * Math.sin(x / 47) - 7 * Math.sin(x / 19 + 1.3))}`);
   return `<path class="g-dash-far" d="M-20 ${GROUND + 2}L${pts.join('L')}L${fmt(x1)} ${GROUND + 2}Z"/>`;
 }
 
 /** The runner: a white 灵珠, outlined, a gold fleck that turns as it spins, a short trail behind. */
 function runnerSvg(s) {
-  const r = SIZE / 2, ty = fmt(GROUND - s.h - SIZE);
-  const trail = Array.from({ length: TRAIL }, (_, i) => `<circle cx="${fmt(RX + r)}" cy="${fmt(GROUND - s.h - r)}" r="${fmt(r * (0.78 - i * 0.12))}" style="opacity:0"/>`).join('');
-  return `<g class="g-dash-trail">${trail}</g><g class="g-dash-runner" transform="translate(${RX} ${ty})">`
+  const r = SIZE / 2, [cx, cy] = trailAt(s, s);
+  const trail = Array.from({ length: TRAIL }, (_, i) => `<circle cx="${fmt(cx)}" cy="${fmt(cy)}" r="${fmt(r * (0.78 - i * 0.12))}" style="opacity:0"/>`).join('');
+  return `<g class="g-dash-trail">${trail}</g><g class="g-dash-runner" transform="${runnerAt(s)}">`
     + `<circle class="g-dash-pearl" cx="${fmt(r)}" cy="${fmt(r)}" r="${fmt(r)}"/>`
     + `<path class="g-dash-pearl-shade" d="M${fmt(r * 0.25)} ${fmt(r * 1.55)}A${fmt(r)} ${fmt(r)} 0 0 0 ${fmt(r * 1.9)} ${fmt(r * 0.7)}A${fmt(r * 1.1)} ${fmt(r * 1.1)} 0 0 1 ${fmt(r * 0.25)} ${fmt(r * 1.55)}Z"/>`
     + `<g class="g-dash-spin" transform="rotate(${fmt(s.spin)} ${fmt(r)} ${fmt(r)})"><circle class="g-dash-seam" cx="${fmt(r * 1.42)}" cy="${fmt(r * 1.2)}" r="${fmt(r * 0.2)}"/></g>`
@@ -322,13 +358,14 @@ function sayOf(s, t, lang) {
 export function html(s, lang = 'zh') {
   const t = T[lang] || T.zh;
   if (!s.level) return `<div class="g-dash g-ink"><p class="g-line-say">—</p></div>`;
+  const climb = isClimb(s.level);
   const card = `<div class="g-qm-card g-dash-card"><b>${esc(tr(s.level.title, lang))}</b><span>${esc(tr(s.level.book, lang))}</span></div>`;
   return `<div class="g-dash g-ink${s.won ? ' is-won' : ''}${s.phase === 'ready' && s.first ? ' is-titled' : ''}${s.practice ? ' is-practice' : ''}" data-level="${esc(s.level.id ?? '')}">`
     + `<div class="g-head g-dash-head">${headHtml(s, t)}</div>`
-    + `<div class="g-dash-board g-hold" data-g-hold="" data-land="${landOf(s.level)}">${backHtml(s.level)}`
-    + `<svg class="g-scene g-dash-scene" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tr(s.level.title ?? meta.name, lang))}" focusable="false">`
-    + `${s.level.backdrop ? '' : `<g class="g-dash-far-g" transform="translate(${fmt(-s.x * FAR_K)} 0)">${farSvg(s.lay)}</g>`}`
-    + `<g class="g-dash-world" transform="translate(${fmt(RX - s.x)} 0)">${worldSvg(s)}</g>${runnerSvg(s)}<g class="g-dash-fx"></g></svg>${card}</div>`
+    + `<div class="g-dash-board g-hold${climb ? ' is-climb' : ''}" data-g-hold="" data-land="${landOf(s.level)}">${backHtml(s.level)}`
+    + `<svg class="g-scene g-dash-scene" viewBox="0 0 ${climb ? CW : W} ${climb ? CH : H}" role="img" aria-label="${esc(tr(s.level.title ?? meta.name, lang))}" focusable="false">`
+    + `${s.level.backdrop ? '' : `<g class="g-dash-far-g" transform="${farAt(s)}">${farSvg(s.lay)}</g>`}${climb ? windSvg() : ''}`
+    + `<g class="g-dash-world" transform="${worldAt(s)}">${worldSvg(s)}</g>${runnerSvg(s)}<g class="g-dash-fx"></g></svg>${card}</div>`
     + `<p class="g-line-say">${esc(sayOf(s, t, lang))}</p>`
     + `<div class="g-qm-row"><span class="g-qm-hint">${forInput(t.hint)}</span><span class="g-dash-tools"><button type="button" class="g-btn g-btn-quiet g-dash-practice" data-g="practice">${s.practice ? t.practiceOn : t.practice}</button></span></div>`
     + `</div>`;
@@ -386,11 +423,11 @@ export async function mount(container, opts = {}) {
   const paintTrail = () => {
     if (s.phase !== 'play' || (past.length && s.x < past[past.length - 1].x)) past = [];
     if (s.phase === 'play') { past.push({ x: s.x, h: s.h }); if (past.length > TRAIL * 3 + 1) past.shift(); }
-    const r = SIZE / 2;
     trail.forEach((c, i) => {
       const p = past[past.length - 1 - (i + 1) * 3];
       if (!p) { c.style.opacity = '0'; return; }
-      c.setAttribute('cx', fmt(RX + r + p.x - s.x)); c.setAttribute('cy', fmt(GROUND - p.h - r)); c.style.opacity = '';
+      const [cx, cy] = trailAt(s, p);
+      c.setAttribute('cx', fmt(cx)); c.setAttribute('cy', fmt(cy)); c.style.opacity = '';
     });
   };
   const paint = () => {
@@ -398,10 +435,10 @@ export async function mount(container, opts = {}) {
     for (const e of sounds(heard, now)) shell?.sound?.(e);
     heard = now;
     if (s.practice !== last.practice) { last = { head: '', say: '', practice: s.practice }; lay(); }
-    worldG.setAttribute('transform', `translate(${fmt(RX - s.x)} 0)`);
-    runner.setAttribute('transform', `translate(${RX} ${fmt(GROUND - s.h - SIZE)})`);
+    worldG.setAttribute('transform', worldAt(s));
+    runner.setAttribute('transform', runnerAt(s));
     spin.setAttribute('transform', `rotate(${fmt(s.spin)} ${fmt(SIZE / 2)} ${fmt(SIZE / 2)})`);
-    farG?.setAttribute('transform', `translate(${fmt(-s.x * FAR_K)} 0)`);
+    farG?.setAttribute('transform', farAt(s));
     paintTrail();
     const h = headHtml(s, t);
     if (h !== last.head) { head.innerHTML = h; last.head = h; }

@@ -359,3 +359,8 @@ Each level sits in its kit's climb (tests/arcade-rhythm.test.mjs CLIMB: dash spe
 | 古 | 63 · 9 · 7 · 2 (塔防 78%) | 51 · 11 · 12 · 7 (塔防 63%) |
 
 (塔防 · 格斗 · 几何冲刺 · 节奏; 第一 · 二 · 三 · 六 · 九回 unchanged.) **Numbers:** the refit agrees (no hour moved); gate waits unchanged (the longest 35 min, wm-xiqi; every gate reached); red 15. **Left for Hanli:** 上崖 (no dash climb form); 格斗 for 邹青松 · 九层师兄 · 老井 waits on their frames.
+
+**上崖, after (2026-10-31, the calls delegated):** the dash kit has a climb form now (`form: 'climb'`, doc/games.md § 调息 → 几何冲刺,
+the climb): the run turned up a cliff face, same rules and bots. `cliff-shangya` → 几何冲刺 `shangya-climb` (slow · 104; loose rocks,
+ledges, a bare stretch; wind and grit drawn), its 塔防 row and `zl-cliff-shangya` `replaced`. 第二回 6 · 0 · 0 · 0 → 5 · 0 · 1 · 0
+(塔防 · 格斗 · 几何冲刺 · 节奏); 古 51 · 11 · 12 · 7 → 50 · 11 · 13 · 7 (塔防 62%). Refit agrees (no hour moved).

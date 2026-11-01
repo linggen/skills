@@ -12,6 +12,13 @@
   background: linear-gradient(180deg, var(--dash-sky-top) 0%, var(--dash-sky-bot) 78%); }
 .g-dash-back.is-picture { background: #1d2740 center / cover no-repeat; filter: saturate(.45) brightness(.92) contrast(.8); }
 .g-dash-scene.g-scene { position: relative; display: block; width: 100%; height: auto; border: 0; border-radius: 0; background: none; }
+/* the climb (form 'climb'): a standing board, as tall as the screen allows; the sky runs top to bottom as before */
+.g-dash-board.is-climb { align-self: center; width: min(100%, calc(min(64vh, 560px) * 220 / 360)); }
+.g-dash-scene .g-dash-stem { fill: none; stroke: #5d7a3a; stroke-width: 2.4; stroke-linecap: round; }
+.g-dash-scene .g-dash-grit { fill: none; stroke: var(--dash-ink); stroke-opacity: .35; stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 2 5; }
+.g-dash-scene .g-dash-gust { fill: none; stroke: #fff; stroke-opacity: .45; stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 26 140;
+  animation: g-dash-gust 2.6s linear infinite; }
+@keyframes g-dash-gust { from { stroke-dashoffset: 166; } to { stroke-dashoffset: 0; } }
 
 /* the palette, one per land: a calm sky (cool or muted where the play line runs, so the red reads), one faint ridge,
    solid ground; the things' colours stay the same everywhere */
@@ -69,4 +76,5 @@
 @media (prefers-reduced-motion: reduce) {
   .g-dash.is-dead .g-dash-runner { animation: none; opacity: .4; }
   .g-dash-scene .g-dash-pad .g-dash-pulse, .g-dash-scene .g-dash-orb .g-dash-pulse { transform-box: fill-box; transform-origin: center; animation: none; }
+  .g-dash-scene .g-dash-gust { animation: none; }
 }
