@@ -1672,9 +1672,11 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   assert.equal(r.state.scene, '01-laojing');
   s = r.state;
   const well = look(s, content, octx()).scene.exits.find(e => e.id === 'dodge');
-  assert.deepEqual(well.game, { id: 'laojing-trial', kind: 'duel', creature: 'foe-laojing', retry: true });
-  refused(resolve, s, { exit: 'dodge' }, 'game-not-won', octx());
-  s = { ...s, wins: { ...s.wins, 'laojing-trial': OCT.toISOString() } };
+  // 格斗 since 2026-10-31: the way on waits on the board `laojing-trial` (老井's sheet)
+  assert.equal(well.game, undefined, 'no card duel');
+  assert.deepEqual(content.chapters['01-ji'].scenes['01-laojing'].exits.find(e => e.id === 'dodge').needs, { task: 'laojing-trial' });
+  refused(resolve, s, { exit: 'dodge' }, 'needs', octx());
+  s = boardsDone(s, 'laojing-trial');
   r = answer(resolve, s, { exit: 'dodge' });
   assert.equal(r.state.scene, '01-end');
   r = answer(resolve, boardsDone(r.state, 'end-sangzi'), { exit: 'rest' });

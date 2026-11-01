@@ -53,7 +53,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 166,
+       "n": 169,
        "level": "baicai",
        "zhuli": true
       },
@@ -74,7 +74,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 243,
+       "n": 246,
        "level": "renzi-dash",
        "zhuli": true
       },
@@ -95,7 +95,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 167,
+       "n": 170,
        "level": "zaotai",
        "zhuli": true
       },
@@ -116,7 +116,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 248,
+       "n": 251,
        "level": "shouyan",
        "zhuli": true
       },
@@ -204,7 +204,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 173,
+       "n": 176,
        "level": "shouhuo",
        "zhuli": true
       },
@@ -260,7 +260,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 197,
+       "n": 200,
        "level": "yinyue-bing"
       },
       {
@@ -322,7 +322,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 244,
+       "n": 247,
        "level": "shangya-climb",
        "zhuli": true
       },
@@ -343,7 +343,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 179,
+       "n": 182,
        "level": "deer-wind"
       },
       {
@@ -363,7 +363,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 168,
+       "n": 171,
        "level": "tailu",
        "zhuli": true
       },
@@ -405,7 +405,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 221,
+       "n": 224,
        "level": "masan"
       },
       {
@@ -466,7 +466,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 174,
+       "n": 177,
        "level": "chaiduo",
        "zhuli": true
       },
@@ -503,7 +503,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 202,
+       "n": 205,
        "level": "jiujiu"
       },
       {
@@ -523,7 +523,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 251,
+       "n": 254,
        "level": "zl-notice-shuitong",
        "zhuli": true
       },
@@ -544,7 +544,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 222,
+       "n": 225,
        "level": "wupo"
       },
       {
@@ -591,7 +591,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 252,
+       "n": 255,
        "level": "yiquan-dash",
        "zhuli": true
       },
@@ -612,7 +612,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 186,
+       "n": 189,
        "level": "toulan"
       },
       {
@@ -632,7 +632,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 290,
+       "n": 293,
        "level": "zl-jin-biedou",
        "zhuli": true
       },
@@ -653,7 +653,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 253,
+       "n": 256,
        "level": "jingluo-dash",
        "zhuli": true
       },
@@ -674,7 +674,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 191,
+       "n": 194,
        "level": "ge"
       },
       {
@@ -694,7 +694,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 188,
+       "n": 191,
        "level": "617",
        "same": true
       },
@@ -742,7 +742,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 175,
+       "n": 178,
        "level": "sishui",
        "zhuli": true
       },
@@ -798,7 +798,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 254,
+       "n": 257,
        "level": "sanbai-dash",
        "zhuli": true
       },
@@ -915,7 +915,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 257,
+       "n": 260,
        "level": "zl-hall-celing",
        "zhuli": true
       },
@@ -989,7 +989,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 259,
+       "n": 262,
        "level": "zl-zhoutian-sanguan",
        "zhuli": true
       },
@@ -1010,7 +1010,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 263,
+       "n": 266,
        "level": "houshan-dash",
        "zhuli": true
       },
@@ -1031,7 +1031,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 204,
+       "n": 207,
        "level": "zl-dianmao-sunergou",
        "zhuli": true
       },
@@ -1052,7 +1052,7 @@
        "mechanic": "解谜",
        "variety": "解谜",
        "game": "huarong",
-       "n": 205,
+       "n": 208,
        "level": "jingtai"
       },
       {
@@ -1066,7 +1066,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 215,
+       "n": 218,
        "level": "zl-dianmao-canju",
        "zhuli": true
       },
@@ -1081,7 +1081,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 308,
+       "n": 311,
        "level": "tiaoshui-gu",
        "zhuli": true
       },
@@ -1096,7 +1096,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 213,
+       "n": 216,
        "level": "zl-dianmao-maxiaobao",
        "zhuli": true
       },
@@ -1111,7 +1111,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 309,
+       "n": 312,
        "level": "qiangwai-dash",
        "zhuli": true
       },
@@ -1126,7 +1126,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 209,
+       "n": 212,
        "level": "zl-dianmao-ahe",
        "zhuli": true
       },
@@ -1147,7 +1147,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 216,
+       "n": 219,
        "level": "zhouheng"
       },
       {
@@ -1167,7 +1167,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 176,
+       "n": 179,
        "level": "yaoyuan-xunye",
        "zhuli": true
       },
@@ -1264,7 +1264,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 261,
+       "n": 264,
        "level": "xunye",
        "zhuli": true
       },
@@ -1285,7 +1285,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 217,
+       "n": 220,
        "level": "duizhang"
       },
       {
@@ -1305,7 +1305,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 264,
+       "n": 267,
        "level": "zl-yan-tieshua",
        "zhuli": true
       },
@@ -1326,7 +1326,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 218,
+       "n": 221,
        "level": "yinyue-pill"
       },
       {
@@ -1373,7 +1373,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 192,
+       "n": 195,
        "level": "ma",
        "same": true
       },
@@ -1394,7 +1394,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 265,
+       "n": 268,
        "level": "wotui-dash",
        "zhuli": true
       },
@@ -1415,7 +1415,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 296,
+       "n": 299,
        "level": "zl-jin-lunkong",
        "zhuli": true
       },
@@ -1436,7 +1436,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 291,
+       "n": 294,
        "level": "jin-qiu-ge",
        "zhuli": true
       },
@@ -1457,7 +1457,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 187,
+       "n": 190,
        "level": "faqiu"
       },
       {
@@ -1477,7 +1477,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 266,
+       "n": 269,
        "level": "xisi-dash",
        "zhuli": true
       },
@@ -1525,7 +1525,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 223,
+       "n": 226,
        "level": "laonian"
       },
       {
@@ -1565,7 +1565,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 224,
+       "n": 227,
        "level": "ergou"
       },
       {
@@ -1677,18 +1677,19 @@
        "over": false
       },
       {
-       "kind": "fight",
-       "id": "foe-zou",
+       "kind": "board",
+       "id": "mijing-zou",
        "scene": "wm-xirang",
-       "exit": "swallow",
        "title": {
-        "zh": "邹青松",
-        "en": "Zou Qingsong"
+        "zh": "不藏了 · 被追着打",
+        "en": "No more hiding · Chased and beaten"
        },
-       "mechanic": "斗法",
-       "variety": "斗法",
-       "art": "art/items/huojing.webp",
-       "key": "foe-zou@wm-xirang/swallow"
+       "mechanic": "格斗",
+       "variety": "格斗",
+       "game": "fighter",
+       "n": 137,
+       "level": "zou-chase",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -1707,7 +1708,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 307,
+       "n": 310,
        "level": "anhe-dash",
        "zhuli": true
       },
@@ -1728,7 +1729,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 267,
+       "n": 270,
        "level": "tama-dash",
        "zhuli": true,
        "same": true
@@ -1787,7 +1788,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 269,
+       "n": 272,
        "level": "zl-xirang-wumen",
        "zhuli": true
       },
@@ -1823,7 +1824,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 225,
+       "n": 228,
        "level": "chumen"
       },
       {
@@ -1853,14 +1854,14 @@
       }
      ],
      "counts": {
-      "board": 13,
-      "fight": 2,
+      "board": 14,
+      "fight": 1,
       "riddle": 0,
       "seen": 1,
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 7,
+     "zhuli": 8,
      "longest": 3498,
      "roaming": 4,
      "side": []
@@ -1889,7 +1890,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 226,
+       "n": 229,
        "level": "qian-gong"
       },
       {
@@ -1909,7 +1910,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 228,
+       "n": 231,
        "level": "zl-yaban-maxiaobao",
        "zhuli": true
       },
@@ -1930,7 +1931,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 182,
+       "n": 185,
        "level": "jiangtang"
       },
       {
@@ -1970,7 +1971,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 271,
+       "n": 274,
        "level": "zl-zhaojing-mirror",
        "zhuli": true
       },
@@ -2049,7 +2050,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 229,
+       "n": 232,
        "level": "qinyan"
       },
       {
@@ -2156,7 +2157,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 230,
+       "n": 233,
        "level": "qichangsong"
       },
       {
@@ -2197,7 +2198,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 231,
+       "n": 234,
        "level": "zhouheng-laba"
       },
       {
@@ -2217,7 +2218,7 @@
        "mechanic": "你画我猜",
        "variety": "你画我猜",
        "game": "drawguess",
-       "n": 158
+       "n": 161
       },
       {
        "kind": "read",
@@ -2273,7 +2274,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 292,
+       "n": 295,
        "level": "jin-zhizhen-qin",
        "zhuli": true
       },
@@ -2294,7 +2295,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 272,
+       "n": 275,
        "level": "danjiao-dash",
        "zhuli": true
       },
@@ -2315,7 +2316,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 193,
+       "n": 196,
        "level": "dark"
       },
       {
@@ -2335,7 +2336,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 297,
+       "n": 300,
        "level": "zl-jin-daoxing",
        "zhuli": true
       },
@@ -2356,7 +2357,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 232,
+       "n": 235,
        "level": "quxian"
       },
       {
@@ -2376,7 +2377,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 288,
+       "n": 291,
        "level": "zl-jin-chenmai",
        "zhuli": true
       },
@@ -2439,7 +2440,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 233,
+       "n": 236,
        "level": "xunsi"
       },
       {
@@ -2459,7 +2460,7 @@
        "mechanic": "记忆",
        "variety": "记忆",
        "game": "simon",
-       "n": 144,
+       "n": 147,
        "level": "0"
       },
       {
@@ -2479,7 +2480,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 234,
+       "n": 237,
        "level": "deng"
       },
       {
@@ -2499,7 +2500,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shouqiang",
        "game": "shouqiang",
-       "n": 185,
+       "n": 188,
        "level": "yaoyuan-spring",
        "zhuli": true
       },
@@ -2520,7 +2521,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 235,
+       "n": 238,
        "level": "min"
       },
       {
@@ -2581,7 +2582,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 236,
+       "n": 239,
        "level": "qian-dan"
       },
       {
@@ -2637,7 +2638,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 299,
+       "n": 302,
        "level": "yezi-qin",
        "zhuli": true
       },
@@ -2652,7 +2653,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 298,
+       "n": 301,
        "level": "suifeng-qinyan-ge",
        "zhuli": true
       },
@@ -2682,7 +2683,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 273,
+       "n": 276,
        "level": "suifeng-dash",
        "zhuli": true
       },
@@ -2733,7 +2734,7 @@
        "mechanic": "投掷",
        "variety": "投掷",
        "game": "zhazhai",
-       "n": 184,
+       "n": 187,
        "level": "yishui-reed"
       },
       {
@@ -2810,7 +2811,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 300,
+       "n": 303,
        "level": "niannian-gu",
        "zhuli": true
       },
@@ -2825,7 +2826,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 301,
+       "n": 304,
        "level": "shuangma-dash",
        "zhuli": true
       },
@@ -2938,7 +2939,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 241,
+       "n": 244,
        "level": "kaoshu"
       },
       {
@@ -2958,7 +2959,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 177,
+       "n": 180,
        "level": "danfang-kanlu",
        "zhuli": true
       },
@@ -3023,7 +3024,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 302,
+       "n": 305,
        "level": "zhique-qin",
        "zhuli": true
       },
@@ -3038,7 +3039,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 303,
+       "n": 306,
        "level": "shenshi-qinyan-ge",
        "zhuli": true
       },
@@ -3053,7 +3054,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 274,
+       "n": 277,
        "level": "qingshen-dash",
        "zhuli": true
       },
@@ -3089,7 +3090,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 304,
+       "n": 307,
        "level": "lazhu-dash",
        "zhuli": true
       },
@@ -3162,7 +3163,7 @@
        "mechanic": "记忆",
        "variety": "记忆",
        "game": "simon",
-       "n": 277,
+       "n": 280,
        "level": "4"
       },
       {
@@ -3172,18 +3173,19 @@
        "over": false
       },
       {
-       "kind": "fight",
-       "id": "foe-jiuceng",
+       "kind": "board",
+       "id": "dabi-final",
        "scene": "09-laba",
-       "exit": "dabi",
        "title": {
-        "zh": "九层师兄",
-        "en": "The ninth-layer senior"
+        "zh": "腊八 · 再上五行台",
+        "en": "Laba · Up on the stage again"
        },
-       "mechanic": "斗法",
-       "variety": "斗法",
-       "art": "art/items/iron-sword.webp",
-       "key": "foe-jiuceng@09-laba/dabi"
+       "mechanic": "格斗",
+       "variety": "格斗",
+       "game": "fighter",
+       "n": 138,
+       "level": "laba-jiuceng",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3261,7 +3263,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 305,
+       "n": 308,
        "level": "zhuochong-gu",
        "zhuli": true
       },
@@ -3276,7 +3278,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 306,
+       "n": 309,
        "level": "xilang-dash",
        "zhuli": true
       },
@@ -3312,7 +3314,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 242,
+       "n": 245,
        "level": "qulao-dan"
       },
       {
@@ -3380,14 +3382,14 @@
       }
      ],
      "counts": {
-      "board": 24,
-      "fight": 1,
+      "board": 25,
+      "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 1,
       "piece": 2
      },
-     "zhuli": 16,
+     "zhuli": 17,
      "longest": 3596,
      "roaming": 2,
      "side": []
@@ -3426,7 +3428,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 293,
+       "n": 296,
        "level": "jin-hongshu-gu",
        "zhuli": true
       },
@@ -3447,7 +3449,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 278,
+       "n": 281,
        "level": "shouhuan-dash",
        "zhuli": true
       },
@@ -3468,7 +3470,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 194,
+       "n": 197,
        "level": "ahe"
       },
       {
@@ -3488,7 +3490,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 279,
+       "n": 282,
        "level": "lastshot-dash",
        "zhuli": true
       },
@@ -3509,7 +3511,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 237,
+       "n": 240,
        "level": "jijiu"
       },
       {
@@ -3576,7 +3578,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 238,
+       "n": 241,
        "level": "jiayi"
       },
       {
@@ -3596,7 +3598,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 249,
+       "n": 252,
        "level": "hebo",
        "zhuli": true
       },
@@ -3669,7 +3671,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 239,
+       "n": 242,
        "level": "bingyi"
       },
       {
@@ -3710,7 +3712,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 280,
+       "n": 283,
        "level": "qianshui-dash",
        "zhuli": true
       },
@@ -3759,7 +3761,7 @@
        "mechanic": "对话",
        "variety": "对话",
        "game": "jinchat",
-       "n": 240,
+       "n": 243,
        "level": "zhaoang"
       },
       {
@@ -3769,18 +3771,19 @@
        "over": false
       },
       {
-       "kind": "fight",
-       "id": "foe-laojing",
+       "kind": "board",
+       "id": "laojing-trial",
        "scene": "01-laojing",
-       "exit": "dodge",
        "title": {
-        "zh": "老井",
-        "en": "Old Well"
+        "zh": "九宫在心里铺开",
+        "en": "The nine squares laid out"
        },
-       "mechanic": "斗法",
-       "variety": "斗法",
-       "art": "art/people/laojing.webp",
-       "key": "foe-laojing@01-laojing/dodge"
+       "mechanic": "格斗",
+       "variety": "格斗",
+       "game": "fighter",
+       "n": 139,
+       "level": "laojing-hetan",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3799,7 +3802,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 283,
+       "n": 286,
        "level": "zl-end-sangzi",
        "zhuli": true
       },
@@ -3811,14 +3814,14 @@
       }
      ],
      "counts": {
-      "board": 7,
-      "fight": 2,
+      "board": 8,
+      "fight": 1,
       "riddle": 1,
       "seen": 0,
       "breakthrough": 0,
       "piece": 3
      },
-     "zhuli": 4,
+     "zhuli": 5,
      "longest": 2803,
      "roaming": 4,
      "side": []

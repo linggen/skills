@@ -85,7 +85,7 @@ test("卷一's fights: every card a foe deals, and the foe, have their art in th
   const creatures = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(WORLD, 'creatures.json'), 'utf8')).creatures.map((c) => [c.id, c]));
   const kapai = new Set(boardFiles('kapai'));
   const fights = scenes1.flatMap((s) => (s.exits ?? []).filter((e) => e.game?.kind === 'duel').map((e) => e.game));
-  assert.ok(fights.length >= 8, "卷一's fights"); // the 大比's three rounds are 格斗 boards since 2026-10-31
+  assert.ok(fights.length >= 5, "卷一's fights"); // the 大比's three rounds, 邹青松, 九层师兄 and 老井 are 格斗 boards since 2026-10-31
   for (const f of fights) {
     for (const id of [...(f.foe?.deck ?? []), ...(f.foe?.extra ?? [])]) if (byId[id]?.art) assert.ok(kapai.has(`worlds/jiuding/${byId[id].art}`), `${f.id}: ${id}'s art`);
     const c = creatures[f.creature];
@@ -153,7 +153,8 @@ test('packs: every file in exactly one, the host page and the table in the commo
   // 卷一's boards (24 games), the fight with every card and creature, and eight 大场面 (10-26 step 2: ~44 MB; step 1's
   // 第一回 alone was ~17.8 MB). The phone keeps them bundled until ~100 MB (doc/lingjing-phone.md, decided 10-26).
   // 10-27: + the camera 结印's pack (the hand model, ~19 MB).
-  assert.ok(bytes < 76 * 1024 * 1024, `all packs ${bytes} B`);
+  // 10-31: + 邹青松's, 九层师兄's and 老井's fighter sheets (~1.3 MB with their faces).
+  assert.ok(bytes < 80 * 1024 * 1024, `all packs ${bytes} B`);
 });
 
 test('nothing outside the kit: no other game, no art of another board, within a budget', () => {

@@ -322,8 +322,9 @@ emptied, the 喷嚏符 as the 符文) · 卢方 (the tallow on the rim, hook the
 palm) · 马小宝 (the beams no guard stops, then six at the edge, the last caught) · 祁长松 (the final, lost in the book: stood through
 his 护体灵光 until the wind turns). Ids, pay and marks kept; 阿禾's 底册 and 相克 reach the bout as lines on its lead card by his
 marks (look.mjs dealOf `hints`). His hands carry two 结印 spells beside the KOF four: I 飞剑 (a sword on the 结印's loop onto her)
-and U 符文 (a talisman that binds her where it lies), each its cooldown and its number. The other story fights (邹青松, 九层师兄,
-老井) wait on their frames.
+and U 符文 (a talisman that binds her where it lies), each its cooldown and its number. The story's other person fights followed
+(10-31): 邹青松's chase (outlast; the fire snakes no guard stops), the 腊八 final against 九层师兄 (one blade, one breath), 老井 on the
+河滩 (outlast; the finger, the mirror's beam) — each painted, each its own stage; the beasts and gods stay 斗法.
 
 **切磋 · 演武场 — the daily bout** 【已建】 (Hanli, 2026-10-28: 「宗门大比的剧情过后, 可以弄一个每天一次的日常比武切磋, 让用户玩格斗…
 和兽潮并列的一个时间触发游戏, 冷却3小时」): beside 兽潮, a plot the game alone has. After the 大比 beat (wm-jiaxin), at 沉鼎观,

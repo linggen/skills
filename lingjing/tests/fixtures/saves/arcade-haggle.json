@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 4,
   "progress": 630,
-  "wealth": 1473,
+  "wealth": 1502,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -33,17 +33,17 @@
    "mend-pill-9": 1,
    "luobo": 1,
    "xirang": 1,
+   "talisman": 1,
+   "duan-dao": 1,
+   "qi-pill": 6,
+   "dingtai": 3,
+   "neimen-map": 1,
    "pouch-low": 1,
    "lianxi-fu": 2,
    "mend-pill": 3,
    "longxu-cao": 1,
    "zixu-zhi": 1,
    "zou-purse": 1,
-   "talisman": 1,
-   "duan-dao": 1,
-   "qi-pill": 6,
-   "dingtai": 3,
-   "neimen-map": 1,
    "xizhu": 1,
    "zipai-jing": 1,
    "penti-fu": 1,
@@ -80,10 +80,6 @@
     ]
    },
    "gui": {
-    "day": "2026-10-01",
-    "outcome": "won"
-   },
-   "foe-zou": {
     "day": "2026-10-01",
     "outcome": "won"
    }
@@ -516,6 +512,11 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
+   "mijing-zou": {
+    "status": "done",
+    "period": "once",
+    "done_at": "2026-10-01T01:00:00.000Z"
+   },
    "anhe-dark": {
     "status": "done",
     "period": "once",
@@ -698,8 +699,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 3671,
-   "wealth": 1476
+   "progress": 3751,
+   "wealth": 1505
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -934,8 +935,8 @@
    "zheng",
    "mucao",
    "zhennu",
-   "huoshe",
    "huiqi",
+   "huoshe",
    "huodan",
    "jinren",
    "bingzhui",
@@ -989,15 +990,14 @@
     "chapter": "00-waimen",
     "scene": "wm-xiongya"
    },
-   "huoshe": {
-    "how": "win",
-    "creature": "foe-zou",
+   "huiqi": {
+    "how": "story",
     "day": "2026-10-01",
     "place": "mijing-shishi",
     "chapter": "00-waimen",
     "scene": "wm-xirang"
    },
-   "huiqi": {
+   "huoshe": {
     "how": "story",
     "day": "2026-10-01",
     "place": "mijing-shishi",
@@ -1074,7 +1074,11 @@
    "mend-pill-9": 1,
    "luobo": 1,
    "xirang": 1,
-   "talisman": 2,
+   "talisman": 1,
+   "duan-dao": 1,
+   "qi-pill": 6,
+   "dingtai": 3,
+   "neimen-map": 1,
    "pouch-low": 1,
    "chitong-hulu": 1,
    "lianxi-fu": 2,
@@ -1082,10 +1086,6 @@
    "longxu-cao": 1,
    "zixu-zhi": 1,
    "zou-purse": 1,
-   "duan-dao": 1,
-   "qi-pill": 6,
-   "dingtai": 3,
-   "neimen-map": 1,
    "xizhu": 1,
    "zipai-jing": 1,
    "penti-fu": 1,
@@ -1122,11 +1122,6 @@
     "first": "2026-10-01"
    },
    "gui": {
-    "met": 1,
-    "won": 1,
-    "first": "2026-10-01"
-   },
-   "foe-zou": {
     "met": 1,
     "won": 1,
     "first": "2026-10-01"
@@ -1176,6 +1171,7 @@
     "wangzuo-xiongya": 1,
     "mijing-zhenyan": 1,
     "xirang-yinshen": 1,
+    "mijing-zou": 1,
     "anhe-dark": 1,
     "anhe-tama": 1,
     "anhe-guli": 1,
@@ -1238,6 +1234,7 @@
    "wangzuo-xiongya",
    "mijing-zhenyan",
    "xirang-yinshen",
+   "mijing-zou",
    "anhe-dark",
    "anhe-tama",
    "anhe-guli",
@@ -1281,8 +1278,8 @@
    "mijing-xiongya": 1
   },
   "cards_new": [
-   "huoshe",
    "huiqi",
+   "huoshe",
    "huodan",
    "jinren",
    "bingzhui",

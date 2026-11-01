@@ -1,5 +1,5 @@
 {
- "_about": "格斗's painted frames (tools/fighter-frames.py): each fighter's master (txt2img, or an edit of a `base` painting; the kept seed and words), the words naming who it is in every frame, each frame's pose sketch (lean, legF/legB/armF/armB as [upper, lower] degrees from straight down toward the facing side; `up` a lift, `rot` a fall, `width` room for a blade, `air`/`free` not stood on the ground, `fix` {dx, dy, s} placed by eye, `seed` the kept painting) and words, and the clips the board plays (fps, loop, `hit` the strike frame, `calm` the frames reduced motion keeps). 秦雁's master: txt2img seed 2; 沈小满's: an edit of his `base` (the v3 rig's painting, seed 2) toward his guard. 卢方 and 祁长松 (切磋 · 演武场, 2026-10-28): txt2img masters, seed 3 each; unarmed, their 33 frames on 秦雁's clips. 何七 and 马小宝 (the 大比, 2026-10-31): txt2img masters (何七 seed 5, 马小宝 seed 3), 33 frames each on 秦雁's clips, unarmed — 马小宝 lifts his bronze mirror for the beam (ice · jianqi); 何七's thrust4 re-rolled (seed 3) for a stick in his hand.",
+ "_about": "格斗's painted frames (tools/fighter-frames.py): each fighter's master (txt2img, or an edit of a `base` painting; the kept seed and words), the words naming who it is in every frame, each frame's pose sketch (lean, legF/legB/armF/armB as [upper, lower] degrees from straight down toward the facing side; `up` a lift, `rot` a fall, `width` room for a blade, `air`/`free` not stood on the ground, `fix` {dx, dy, s} placed by eye, `seed` the kept painting) and words, and the clips the board plays (fps, loop, `hit` the strike frame, `calm` the frames reduced motion keeps). 秦雁's master: txt2img seed 2; 沈小满's: an edit of his `base` (the v3 rig's painting, seed 2) toward his guard. 卢方 and 祁长松 (切磋 · 演武场, 2026-10-28): txt2img masters, seed 3 each; unarmed, their 33 frames on 秦雁's clips. 何七 and 马小宝 (the 大比, 2026-10-31): txt2img masters (何七 seed 5, 马小宝 seed 3), 33 frames each on 秦雁's clips, unarmed — 马小宝 lifts his bronze mirror for the beam (ice · jianqi); 何七's thrust4 re-rolled (seed 3) for a stick in his hand. 邹青松, 九层师兄 and 老井 (the story's last person fights, 2026-10-31): txt2img masters (邹青松 seed 5, 九层师兄 seed 7, 老井 seed 6), 33 frames each on 秦雁's clips, unarmed — 邹青松 carries his red-copper gourd and shield, 老井 his bronze mirror; 九层师兄's idle, walk, ice and thrust4 re-rolled (seed 2) for a knife the edit kept putting in his hand.",
  "qinyan": {
   "master": {
    "seed": 2,
@@ -5641,6 +5641,2608 @@
      -6
     ],
     "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   }
+  },
+  "clips": {
+   "idle": {
+    "frames": [
+     "idle1",
+     "idle2",
+     "idle3",
+     "idle4"
+    ],
+    "fps": 4,
+    "loop": true,
+    "calm": [
+     "idle1"
+    ],
+    "fade": true
+   },
+   "walk": {
+    "frames": [
+     "walk1",
+     "walk2",
+     "walk3",
+     "walk4",
+     "walk5",
+     "walk6"
+    ],
+    "fps": 9,
+    "loop": true,
+    "calm": [
+     "walk1",
+     "walk4"
+    ]
+   },
+   "back": {
+    "frames": [
+     "walk6",
+     "walk5",
+     "walk4",
+     "walk3",
+     "walk2",
+     "walk1"
+    ],
+    "fps": 8,
+    "loop": true,
+    "calm": [
+     "walk4",
+     "walk1"
+    ]
+   },
+   "poke": {
+    "frames": [
+     "poke1",
+     "poke2",
+     "poke3"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "poke1",
+     "poke2"
+    ]
+   },
+   "thrust": {
+    "frames": [
+     "thrust1",
+     "thrust2",
+     "thrust3",
+     "thrust4"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "thrust1",
+     "thrust2"
+    ]
+   },
+   "ice": {
+    "frames": [
+     "ice1",
+     "ice2"
+    ],
+    "hit": 1,
+    "fps": 8
+   },
+   "edge": {
+    "frames": [
+     "edge1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "glow": {
+    "frames": [
+     "glow1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hold": {
+    "frames": [
+     "hold1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "strike": {
+    "frames": [
+     "strike1",
+     "strike2"
+    ],
+    "fps": 6,
+    "calm": [
+     "strike1"
+    ]
+   },
+   "block": {
+    "frames": [
+     "sblock"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hit": {
+    "frames": [
+     "hit1",
+     "hit2"
+    ],
+    "fps": 7,
+    "calm": [
+     "hit1"
+    ]
+   },
+   "jianqi": {
+    "frames": [
+     "jianqi1",
+     "jianqi2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "jianqi2"
+    ]
+   },
+   "slip": {
+    "frames": [
+     "slip1",
+     "slip2"
+    ],
+    "fps": 6,
+    "calm": [
+     "slip2"
+    ]
+   },
+   "win": {
+    "frames": [
+     "win1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "lose": {
+    "frames": [
+     "lose1"
+    ],
+    "fps": 1,
+    "loop": true
+   }
+  }
+ },
+ "zouqingsong": {
+  "master": {
+   "seed": 5,
+   "words": "A slim, pale-faced Chinese Taoist cultivator of about thirty with a soft, smiling, narrow-eyed face, clean-shaven, black hair in a neat top-knot under a small dark crown-pin, wearing a long bright ochre-yellow Taoist robe to the ankles with wide sleeves, a red-brown collar and a red sash, black cloth boots. In his RIGHT hand a small red-copper calabash gourd (a double-bulbed wine gourd with a narrow waist and a stopper) held by its waist, mouth forward; strapped on his LEFT forearm a small round red-copper shield chased with flame patterns. No sword. He stands sideways in an easy, confident fighting stance, knees slightly bent, the gourd held forward, the shield arm across his body, smiling. Drawn in soft graphite pencil and light watercolour wash on warm aged paper, in the manner of an old Chinese book illustration, clean confident outlines, gentle shading. The whole figure from the top of the head to the shoes, seen from the SIDE, facing RIGHT, alone on plain empty paper, no ground, no other objects, no text. Set in old rural China (Ming dynasty dress), not Japanese, not Western."
+  },
+  "armed": false,
+  "robe": true,
+  "who": "the same slim pale-faced smiling Chinese Taoist cultivator from the first image — the same narrow smiling eyes, the same neat top-knot with a dark crown-pin, the same long bright ochre-yellow Taoist robe with wide sleeves, red-brown collar and red sash, black cloth boots, the same small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand and the small round red-copper flame-chased shield strapped on his left forearm —",
+  "frames": {
+   "idle1": {
+    "lean": 6,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "words": "a fighting stance, feet planted wide, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "idle2": {
+    "lean": 5,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 4,
+    "words": "the same stance, breathing in, the gourd held forward, the shield arm across his body, the left hand by his waist. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "idle3": {
+    "lean": 4,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 7,
+    "words": "the same stance, a breath held, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "idle4": {
+    "lean": 5,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 3,
+    "words": "the same stance, breathing out, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "walk1": {
+    "lean": 8,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -26,
+     -40
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "one heavy deliberate step forward to the right: front foot planted flat, back heel lifted, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "walk2": {
+    "lean": 8,
+    "legF": [
+     22,
+     6
+    ],
+    "legB": [
+     -14,
+     -50
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "stepping forward to the right, the back foot lifting to follow, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "walk3": {
+    "lean": 8,
+    "legF": [
+     4,
+     -6
+    ],
+    "legB": [
+     6,
+     -20
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "stepping forward to the right, the feet passing under the robe, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "walk4": {
+    "lean": 8,
+    "legF": [
+     -24,
+     -40
+    ],
+    "legB": [
+     34,
+     0
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "one heavy step forward to the right, the other foot now planted forward, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "walk5": {
+    "lean": 8,
+    "legF": [
+     -12,
+     -50
+    ],
+    "legB": [
+     22,
+     6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "stepping forward to the right, the back foot lifting to follow, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "walk6": {
+    "lean": 8,
+    "legF": [
+     6,
+     -20
+    ],
+    "legB": [
+     4,
+     -6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "stepping forward to the right, the feet passing under the robe, the gourd held forward, the shield arm across his body. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "poke1": {
+    "lean": -4,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -12,
+     -32
+    ],
+    "armF": [
+     30,
+     70
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "drawing the right open palm back by his chest before a push, knees bent, the left hand by his waist. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "poke2": {
+    "lean": 16,
+    "legF": [
+     32,
+     0
+    ],
+    "legB": [
+     -20,
+     -36
+    ],
+    "armF": [
+     88,
+     90
+    ],
+    "armB": [
+     -20,
+     20
+    ],
+    "dx": 20,
+    "width": 1088,
+    "words": "a short heavy push of the right open palm straight forward to the right at chest height, leaning in, the left hand by his waist. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword.",
+    "fix": {
+     "s": 0.9
+    }
+   },
+   "poke3": {
+    "lean": 10,
+    "legF": [
+     28,
+     -2
+    ],
+    "legB": [
+     -14,
+     -32
+    ],
+    "armF": [
+     70,
+     92
+    ],
+    "armB": [
+     10,
+     90
+    ],
+    "dx": 10,
+    "words": "recovering from the push, the right palm coming back to his guard. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "thrust1": {
+    "lean": -10,
+    "legF": [
+     30,
+     20
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     10,
+     -10
+    ],
+    "armB": [
+     40,
+     120
+    ],
+    "words": "gathering: sunk low, both palms drawn back by his right hip, his weight on the back foot. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "thrust2": {
+    "lean": 30,
+    "legF": [
+     64,
+     4
+    ],
+    "legB": [
+     -50,
+     -56
+    ],
+    "armF": [
+     90,
+     90
+    ],
+    "armB": [
+     86,
+     90
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "a great stepping palm strike: one deep step forward to the right, front knee bent, back leg straight, both open palms shoved fully forward at chest height. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword.",
+    "fix": {
+     "s": 0.85
+    }
+   },
+   "thrust3": {
+    "lean": 26,
+    "legF": [
+     60,
+     4
+    ],
+    "legB": [
+     -46,
+     -54
+    ],
+    "armF": [
+     86,
+     88
+    ],
+    "armB": [
+     80,
+     88
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "holding the great palm strike: front knee bent, back leg straight behind, both palms extended forward to the right, robe swirling. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword.",
+    "fix": {
+     "s": 0.85
+    }
+   },
+   "thrust4": {
+    "lean": 12,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -24,
+     -40
+    ],
+    "armF": [
+     66,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "dx": 14,
+    "words": "drawing the back foot up after the strike, rising back into his planted stance. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "ice1": {
+    "lean": 0,
+    "legF": [
+     70,
+     -10
+    ],
+    "legB": [
+     -4,
+     0
+    ],
+    "armF": [
+     120,
+     160
+    ],
+    "armB": [
+     20,
+     60
+    ],
+    "words": "thumbing the stopper out of the small red-copper gourd held forward in his right hand, its mouth turned to the right, smiling, the shield arm at his side. He holds ONLY the small red-copper gourd; the round shield stays strapped on his left forearm."
+   },
+   "ice2": {
+    "lean": 24,
+    "legF": [
+     40,
+     -30
+    ],
+    "legB": [
+     -30,
+     -40
+    ],
+    "armF": [
+     60,
+     20
+    ],
+    "armB": [
+     20,
+     60
+    ],
+    "words": "thrusting the small red-copper gourd forward to the right at arm's length, its open mouth to the right, leaning in, smiling. He holds ONLY the small red-copper gourd; the round shield stays strapped on his left forearm."
+   },
+   "edge1": {
+    "lean": 4,
+    "legF": [
+     22,
+     0
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     84,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "words": "perfectly still in his planted stance, the right open palm held straight out forward to the right at a man's chest height. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "glow1": {
+    "lean": 4,
+    "legF": [
+     20,
+     2
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     12,
+     30
+    ],
+    "armB": [
+     56,
+     140
+    ],
+    "words": "gathering his strength, both feet planted, the right palm drawn back by his shoulder, the left palm open before his chest. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "hold1": {
+    "lean": 14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     -10,
+     60
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "words": "mid-step: his front foot planted, his back foot lifted off the ground coming forward to follow, body leaning forward, the right palm drawn back. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "strike1": {
+    "lean": 18,
+    "legF": [
+     34,
+     6
+    ],
+    "legB": [
+     -24,
+     -30
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     88,
+     92
+    ],
+    "words": "a full palm strike: front knee bent, the right open palm shoved straight forward to the right at chest height, the left hand back. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "strike2": {
+    "lean": 10,
+    "legF": [
+     28,
+     4
+    ],
+    "legB": [
+     -20,
+     -26
+    ],
+    "armF": [
+     0,
+     20
+    ],
+    "armB": [
+     66,
+     80
+    ],
+    "words": "just after the palm strike, the right palm still forward, settling back into his stance. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "sblock": {
+    "lean": -6,
+    "legF": [
+     16,
+     4
+    ],
+    "legB": [
+     -24,
+     -12
+    ],
+    "armF": [
+     30,
+     170
+    ],
+    "armB": [
+     30,
+     120
+    ],
+    "words": "guarding behind the small round red-copper shield: his left forearm raised before his chest with the shield facing right, the gourd held back by his hip, planted, smiling. The round shield is strapped on his left forearm."
+   },
+   "hit1": {
+    "lean": -20,
+    "legF": [
+     14,
+     0
+    ],
+    "legB": [
+     -30,
+     -16
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     -46,
+     -14
+    ],
+    "words": "struck: he rocks backward to the left, head and shoulders thrown back, arms out. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "hit2": {
+    "lean": -10,
+    "legF": [
+     18,
+     2
+    ],
+    "legB": [
+     -24,
+     -16
+    ],
+    "armF": [
+     10,
+     30
+    ],
+    "armB": [
+     -20,
+     0
+    ],
+    "words": "rocked, catching himself, bent a little forward, back on his heels. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "jianqi1": {
+    "lean": -16,
+    "legF": [
+     40,
+     30
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     -60,
+     -100
+    ],
+    "armB": [
+     20,
+     40
+    ],
+    "words": "raising the small red-copper gourd high above his head in his right hand, its open mouth tilted to the right, the shield arm across his chest, smiling widely. He holds ONLY the small red-copper gourd; the round shield stays strapped on his left forearm."
+   },
+   "jianqi2": {
+    "lean": 30,
+    "legF": [
+     70,
+     40
+    ],
+    "legB": [
+     -50,
+     -30
+    ],
+    "armF": [
+     80,
+     84
+    ],
+    "armB": [
+     76,
+     80
+    ],
+    "width": 1088,
+    "words": "a long lunge to the right sweeping the small red-copper gourd forward at arm's length, its open mouth to the right. He holds ONLY the small red-copper gourd; the round shield stays strapped on his left forearm.",
+    "fix": {
+     "s": 0.88
+    }
+   },
+   "slip1": {
+    "lean": -30,
+    "legF": [
+     60,
+     60
+    ],
+    "legB": [
+     10,
+     -10
+    ],
+    "armF": [
+     -50,
+     -80
+    ],
+    "armB": [
+     90,
+     140
+    ],
+    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "slip2": {
+    "lean": -48,
+    "legF": [
+     72,
+     76
+    ],
+    "legB": [
+     32,
+     10
+    ],
+    "armF": [
+     -62,
+     -92
+    ],
+    "armB": [
+     100,
+     142
+    ],
+    "words": "falling backward, both feet sliding out forward, arms flailing. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "win1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     16,
+     0
+    ],
+    "armB": [
+     40,
+     100
+    ],
+    "words": "standing straight and calm after a bout, his right fist in his left palm before his chest in a salute. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "lose1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     10,
+     10
+    ],
+    "armB": [
+     10,
+     -6
+    ],
+    "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   }
+  },
+  "clips": {
+   "idle": {
+    "frames": [
+     "idle1",
+     "idle2",
+     "idle3",
+     "idle4"
+    ],
+    "fps": 4,
+    "loop": true,
+    "calm": [
+     "idle1"
+    ],
+    "fade": true
+   },
+   "walk": {
+    "frames": [
+     "walk1",
+     "walk2",
+     "walk3",
+     "walk4",
+     "walk5",
+     "walk6"
+    ],
+    "fps": 9,
+    "loop": true,
+    "calm": [
+     "walk1",
+     "walk4"
+    ]
+   },
+   "back": {
+    "frames": [
+     "walk6",
+     "walk5",
+     "walk4",
+     "walk3",
+     "walk2",
+     "walk1"
+    ],
+    "fps": 8,
+    "loop": true,
+    "calm": [
+     "walk4",
+     "walk1"
+    ]
+   },
+   "poke": {
+    "frames": [
+     "poke1",
+     "poke2",
+     "poke3"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "poke1",
+     "poke2"
+    ]
+   },
+   "thrust": {
+    "frames": [
+     "thrust1",
+     "thrust2",
+     "thrust3",
+     "thrust4"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "thrust1",
+     "thrust2"
+    ]
+   },
+   "ice": {
+    "frames": [
+     "ice1",
+     "ice2"
+    ],
+    "hit": 1,
+    "fps": 8
+   },
+   "edge": {
+    "frames": [
+     "edge1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "glow": {
+    "frames": [
+     "glow1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hold": {
+    "frames": [
+     "hold1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "strike": {
+    "frames": [
+     "strike1",
+     "strike2"
+    ],
+    "fps": 6,
+    "calm": [
+     "strike1"
+    ]
+   },
+   "block": {
+    "frames": [
+     "sblock"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hit": {
+    "frames": [
+     "hit1",
+     "hit2"
+    ],
+    "fps": 7,
+    "calm": [
+     "hit1"
+    ]
+   },
+   "jianqi": {
+    "frames": [
+     "jianqi1",
+     "jianqi2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "jianqi2"
+    ]
+   },
+   "slip": {
+    "frames": [
+     "slip1",
+     "slip2"
+    ],
+    "fps": 6,
+    "calm": [
+     "slip2"
+    ]
+   },
+   "win": {
+    "frames": [
+     "win1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "lose": {
+    "frames": [
+     "lose1"
+    ],
+    "fps": 1,
+    "loop": true
+   }
+  }
+ },
+ "jiuceng": {
+  "master": {
+   "seed": 7,
+   "words": "A tall, lean, hard-faced Chinese Taoist inner-sect disciple of about thirty-five with a long jaw, a thin moustache, sharp straight eyebrows and a grim, intent look, black hair in a tight top-knot with a plain iron pin, wearing a long pale grey-white cotton Taoist robe to the ankles with a dark iron-grey collar and narrow sleeves, a black leather belt, dark trousers and black cloth shoes. BOTH HANDS EMPTY: no knife, no sword, no weapon, nothing held in either hand. He stands sideways in a deep, forward-leaning fighting stance, knees bent, the right hand an empty open palm held forward, fingers straight and together, at chest height, the left hand drawn back by his waist. Drawn in soft graphite pencil and light watercolour wash on warm aged paper, in the manner of an old Chinese book illustration, clean confident outlines, gentle shading. The whole figure from the top of the head to the shoes, seen from the SIDE, facing RIGHT, alone on plain empty paper, no ground, no other objects, no text. Set in old rural China (Ming dynasty dress), not Japanese, not Western."
+  },
+  "armed": false,
+  "robe": true,
+  "who": "the same tall lean hard-faced Chinese Taoist disciple from the first image — the same long jaw, thin moustache and sharp straight eyebrows, the same tight top-knot with an iron pin, the same long pale grey-white Taoist robe with a dark iron-grey collar and narrow sleeves, the black leather belt, black cloth shoes —",
+  "frames": {
+   "idle1": {
+    "lean": 6,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "words": "a fighting stance, feet planted wide, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "idle2": {
+    "lean": 5,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 4,
+    "words": "the same stance, breathing in, the right hand an empty open palm held forward, fingers together, the left hand by his waist. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "idle3": {
+    "lean": 4,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 7,
+    "words": "the same stance, a breath held, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "idle4": {
+    "lean": 5,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 3,
+    "words": "the same stance, breathing out, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "walk1": {
+    "lean": 8,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -26,
+     -40
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "one heavy deliberate step forward to the right: front foot planted flat, back heel lifted, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "walk2": {
+    "lean": 8,
+    "legF": [
+     22,
+     6
+    ],
+    "legB": [
+     -14,
+     -50
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "stepping forward to the right, the back foot lifting to follow, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "walk3": {
+    "lean": 8,
+    "legF": [
+     4,
+     -6
+    ],
+    "legB": [
+     6,
+     -20
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "stepping forward to the right, the feet passing under the robe, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "walk4": {
+    "lean": 8,
+    "legF": [
+     -24,
+     -40
+    ],
+    "legB": [
+     34,
+     0
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "one heavy step forward to the right, the other foot now planted forward, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "walk5": {
+    "lean": 8,
+    "legF": [
+     -12,
+     -50
+    ],
+    "legB": [
+     22,
+     6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "stepping forward to the right, the back foot lifting to follow, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "walk6": {
+    "lean": 8,
+    "legF": [
+     6,
+     -20
+    ],
+    "legB": [
+     4,
+     -6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "stepping forward to the right, the feet passing under the robe, the right hand an empty open palm held forward, fingers together. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "poke1": {
+    "lean": -4,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -12,
+     -32
+    ],
+    "armF": [
+     30,
+     70
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "drawing the right open palm back by his chest before a push, knees bent, the left hand by his waist. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "poke2": {
+    "lean": 16,
+    "legF": [
+     32,
+     0
+    ],
+    "legB": [
+     -20,
+     -36
+    ],
+    "armF": [
+     88,
+     90
+    ],
+    "armB": [
+     -20,
+     20
+    ],
+    "dx": 20,
+    "width": 1088,
+    "words": "a short heavy push of the right open palm straight forward to the right at chest height, leaning in, the left hand by his waist. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "poke3": {
+    "lean": 10,
+    "legF": [
+     28,
+     -2
+    ],
+    "legB": [
+     -14,
+     -32
+    ],
+    "armF": [
+     70,
+     92
+    ],
+    "armB": [
+     10,
+     90
+    ],
+    "dx": 10,
+    "words": "recovering from the push, the right palm coming back to his guard. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "thrust1": {
+    "lean": -10,
+    "legF": [
+     30,
+     20
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     10,
+     -10
+    ],
+    "armB": [
+     40,
+     120
+    ],
+    "words": "gathering: sunk low, both palms drawn back by his right hip, his weight on the back foot. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "thrust2": {
+    "lean": 30,
+    "legF": [
+     64,
+     4
+    ],
+    "legB": [
+     -50,
+     -56
+    ],
+    "armF": [
+     90,
+     90
+    ],
+    "armB": [
+     86,
+     90
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "a great stepping palm strike: one deep step forward to the right, front knee bent, back leg straight, both open palms shoved fully forward at chest height. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "fix": {
+     "s": 0.85
+    }
+   },
+   "thrust3": {
+    "lean": 26,
+    "legF": [
+     60,
+     4
+    ],
+    "legB": [
+     -46,
+     -54
+    ],
+    "armF": [
+     86,
+     88
+    ],
+    "armB": [
+     80,
+     88
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "holding the great palm strike: front knee bent, back leg straight behind, both palms extended forward to the right, robe swirling. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "fix": {
+     "s": 0.85
+    }
+   },
+   "thrust4": {
+    "lean": 12,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -24,
+     -40
+    ],
+    "armF": [
+     66,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "dx": 14,
+    "words": "drawing the back foot up after the strike, rising back into his planted stance. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "ice1": {
+    "lean": 0,
+    "legF": [
+     70,
+     -10
+    ],
+    "legB": [
+     -4,
+     0
+    ],
+    "armF": [
+     120,
+     160
+    ],
+    "armB": [
+     20,
+     60
+    ],
+    "words": "drawing his empty right hand back up beside his right ear, the open palm turned forward, fingers straight together, ready to chop down, his left hand forward, eyes narrowed. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "ice2": {
+    "lean": 24,
+    "legF": [
+     40,
+     -30
+    ],
+    "legB": [
+     -30,
+     -40
+    ],
+    "armF": [
+     60,
+     20
+    ],
+    "armB": [
+     20,
+     60
+    ],
+    "words": "a hard chop: the right open empty hand slashed forward to the right, fingers straight together, at chest height, leaning in, the left hand by his waist. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
+   },
+   "edge1": {
+    "lean": 4,
+    "legF": [
+     22,
+     0
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     84,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "words": "perfectly still in his planted stance, the right open palm held straight out forward to the right at a man's chest height. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "glow1": {
+    "lean": 4,
+    "legF": [
+     20,
+     2
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     12,
+     30
+    ],
+    "armB": [
+     56,
+     140
+    ],
+    "words": "gathering his strength, both feet planted, the right palm drawn back by his shoulder, the left palm open before his chest. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "hold1": {
+    "lean": 14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     -10,
+     60
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "words": "mid-step: his front foot planted, his back foot lifted off the ground coming forward to follow, body leaning forward, the right palm drawn back. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "strike1": {
+    "lean": 18,
+    "legF": [
+     34,
+     6
+    ],
+    "legB": [
+     -24,
+     -30
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     88,
+     92
+    ],
+    "words": "a full palm strike: front knee bent, the right open palm shoved straight forward to the right at chest height, the left hand back. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "strike2": {
+    "lean": 10,
+    "legF": [
+     28,
+     4
+    ],
+    "legB": [
+     -20,
+     -26
+    ],
+    "armF": [
+     0,
+     20
+    ],
+    "armB": [
+     66,
+     80
+    ],
+    "words": "just after the palm strike, the right palm still forward, settling back into his stance. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "sblock": {
+    "lean": -6,
+    "legF": [
+     16,
+     4
+    ],
+    "legB": [
+     -24,
+     -12
+    ],
+    "armF": [
+     30,
+     170
+    ],
+    "armB": [
+     30,
+     120
+    ],
+    "words": "guarding: both forearms raised before his chest, planted, leaning back slightly. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "hit1": {
+    "lean": -20,
+    "legF": [
+     14,
+     0
+    ],
+    "legB": [
+     -30,
+     -16
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     -46,
+     -14
+    ],
+    "words": "struck: he rocks backward to the left, head and shoulders thrown back, arms out. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "hit2": {
+    "lean": -10,
+    "legF": [
+     18,
+     2
+    ],
+    "legB": [
+     -24,
+     -16
+    ],
+    "armF": [
+     10,
+     30
+    ],
+    "armB": [
+     -20,
+     0
+    ],
+    "words": "rocked, catching himself, bent a little forward, back on his heels. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "jianqi1": {
+    "lean": -16,
+    "legF": [
+     40,
+     30
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     -60,
+     -100
+    ],
+    "armB": [
+     20,
+     40
+    ],
+    "words": "both hands pressed together flat and raised high above his head like one great blade, his whole body drawn up and back, eyes fierce. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "jianqi2": {
+    "lean": 30,
+    "legF": [
+     70,
+     40
+    ],
+    "legB": [
+     -50,
+     -30
+    ],
+    "armF": [
+     80,
+     84
+    ],
+    "armB": [
+     76,
+     80
+    ],
+    "width": 1088,
+    "words": "a long lunge to the right, both hands together chopping down and forward at arm's length like one great blade, robe flying. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "fix": {
+     "s": 0.85
+    }
+   },
+   "slip1": {
+    "lean": -30,
+    "legF": [
+     60,
+     60
+    ],
+    "legB": [
+     10,
+     -10
+    ],
+    "armF": [
+     -50,
+     -80
+    ],
+    "armB": [
+     90,
+     140
+    ],
+    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "slip2": {
+    "lean": -48,
+    "legF": [
+     72,
+     76
+    ],
+    "legB": [
+     32,
+     10
+    ],
+    "armF": [
+     -62,
+     -92
+    ],
+    "armB": [
+     100,
+     142
+    ],
+    "words": "falling backward, both feet sliding out forward, arms flailing. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "fix": {
+     "s": 1.1
+    }
+   },
+   "win1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     16,
+     0
+    ],
+    "armB": [
+     40,
+     100
+    ],
+    "words": "standing straight and calm after a bout, his right fist in his left palm before his chest in a salute. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "lose1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     10,
+     10
+    ],
+    "armB": [
+     10,
+     -6
+    ],
+    "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   }
+  },
+  "clips": {
+   "idle": {
+    "frames": [
+     "idle1",
+     "idle2",
+     "idle3",
+     "idle4"
+    ],
+    "fps": 4,
+    "loop": true,
+    "calm": [
+     "idle1"
+    ],
+    "fade": true
+   },
+   "walk": {
+    "frames": [
+     "walk1",
+     "walk2",
+     "walk3",
+     "walk4",
+     "walk5",
+     "walk6"
+    ],
+    "fps": 9,
+    "loop": true,
+    "calm": [
+     "walk1",
+     "walk4"
+    ]
+   },
+   "back": {
+    "frames": [
+     "walk6",
+     "walk5",
+     "walk4",
+     "walk3",
+     "walk2",
+     "walk1"
+    ],
+    "fps": 8,
+    "loop": true,
+    "calm": [
+     "walk4",
+     "walk1"
+    ]
+   },
+   "poke": {
+    "frames": [
+     "poke1",
+     "poke2",
+     "poke3"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "poke1",
+     "poke2"
+    ]
+   },
+   "thrust": {
+    "frames": [
+     "thrust1",
+     "thrust2",
+     "thrust3",
+     "thrust4"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "thrust1",
+     "thrust2"
+    ]
+   },
+   "ice": {
+    "frames": [
+     "ice1",
+     "ice2"
+    ],
+    "hit": 1,
+    "fps": 8
+   },
+   "edge": {
+    "frames": [
+     "edge1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "glow": {
+    "frames": [
+     "glow1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hold": {
+    "frames": [
+     "hold1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "strike": {
+    "frames": [
+     "strike1",
+     "strike2"
+    ],
+    "fps": 6,
+    "calm": [
+     "strike1"
+    ]
+   },
+   "block": {
+    "frames": [
+     "sblock"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "hit": {
+    "frames": [
+     "hit1",
+     "hit2"
+    ],
+    "fps": 7,
+    "calm": [
+     "hit1"
+    ]
+   },
+   "jianqi": {
+    "frames": [
+     "jianqi1",
+     "jianqi2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "jianqi2"
+    ]
+   },
+   "slip": {
+    "frames": [
+     "slip1",
+     "slip2"
+    ],
+    "fps": 6,
+    "calm": [
+     "slip2"
+    ]
+   },
+   "win": {
+    "frames": [
+     "win1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "lose": {
+    "frames": [
+     "lose1"
+    ],
+    "fps": 1,
+    "loop": true
+   }
+  }
+ },
+ "laojing": {
+  "master": {
+   "seed": 6,
+   "words": "A tall, thin, ageless Chinese Taoist steward with a smooth, bloodless white face that shows no age, no beard, heavy-lidded calm eyes and a thin unsmiling mouth, black hair combed back into a high top-knot with a white jade pin, wearing a long plain white silk Taoist robe to the ankles with wide sleeves, a pale grey sash, white cloth shoes. A flat round bronze mirror (a thin disc, not a bowl) lies face up on his open LEFT palm at waist height, carried level like a bowl of water; his RIGHT hand, empty, lifts one straight forefinger before his chest. No sword. He stands sideways, upright and still, feet a little apart, the forefinger pointed forward. Drawn in soft graphite pencil and light watercolour wash on warm aged paper, in the manner of an old Chinese book illustration, clean confident outlines, gentle shading. The whole figure from the top of the head to the shoes, seen from the SIDE, facing RIGHT, alone on plain empty paper, no ground, no other objects, no text. Set in old rural China (Ming dynasty dress), not Japanese, not Western."
+  },
+  "armed": false,
+  "robe": true,
+  "who": "the same tall thin ageless Chinese Taoist steward from the first image — the same smooth bloodless white face with heavy-lidded calm eyes, the same high top-knot with a white jade pin, the same long plain white silk Taoist robe with wide sleeves, the pale grey sash, white cloth shoes, the same round bronze mirror held face up on his left palm —",
+  "frames": {
+   "idle1": {
+    "lean": 6,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "words": "standing upright and still, feet a little apart, the round bronze mirror held face up on his left palm before his waist like a bowl of water, the right forefinger lifted forward. He holds ONLY the round bronze mirror; no sword."
+   },
+   "idle2": {
+    "lean": 5,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 4,
+    "words": "the same stance, breathing in, the right forefinger lifted forward, the bronze mirror face up on his left palm, the left hand by his waist. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "idle3": {
+    "lean": 4,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 7,
+    "words": "the same stance, a breath held, the right forefinger lifted forward, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "idle4": {
+    "lean": 5,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -26,
+     -10
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "up": 3,
+    "words": "the same stance, breathing out, the right forefinger lifted forward, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "walk1": {
+    "lean": 8,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -26,
+     -40
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "one heavy deliberate step forward to the right: front foot planted flat, back heel lifted, the right forefinger lifted forward, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "walk2": {
+    "lean": 8,
+    "legF": [
+     22,
+     6
+    ],
+    "legB": [
+     -14,
+     -50
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "stepping forward to the right, the back foot lifting to follow, the right forefinger lifted forward, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "walk3": {
+    "lean": 8,
+    "legF": [
+     4,
+     -6
+    ],
+    "legB": [
+     6,
+     -20
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "stepping forward to the right, the feet passing under the robe, the right forefinger lifted forward, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "walk4": {
+    "lean": 8,
+    "legF": [
+     -24,
+     -40
+    ],
+    "legB": [
+     34,
+     0
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "one heavy step forward to the right, the other foot now planted forward, the right forefinger lifted forward, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "walk5": {
+    "lean": 8,
+    "legF": [
+     -12,
+     -50
+    ],
+    "legB": [
+     22,
+     6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 6,
+    "words": "stepping forward to the right, the back foot lifting to follow, the right forefinger lifted forward, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "walk6": {
+    "lean": 8,
+    "legF": [
+     6,
+     -20
+    ],
+    "legB": [
+     4,
+     -6
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "up": 10,
+    "words": "stepping forward to the right, the feet passing under the robe, the right forefinger lifted forward, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "poke1": {
+    "lean": -4,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -12,
+     -32
+    ],
+    "armF": [
+     30,
+     70
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "drawing the right forefinger back by his chest before a jab, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror; no sword."
+   },
+   "poke2": {
+    "lean": 16,
+    "legF": [
+     32,
+     0
+    ],
+    "legB": [
+     -20,
+     -36
+    ],
+    "armF": [
+     88,
+     90
+    ],
+    "armB": [
+     -20,
+     20
+    ],
+    "dx": 20,
+    "width": 1088,
+    "words": "a quick straight jab of one right forefinger forward to the right at chest height, leaning in, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror; no sword."
+   },
+   "poke3": {
+    "lean": 10,
+    "legF": [
+     28,
+     -2
+    ],
+    "legB": [
+     -14,
+     -32
+    ],
+    "armF": [
+     70,
+     92
+    ],
+    "armB": [
+     10,
+     90
+    ],
+    "dx": 10,
+    "words": "recovering from the finger jab, the right forefinger coming back up before him, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror; no sword."
+   },
+   "thrust1": {
+    "lean": -10,
+    "legF": [
+     30,
+     20
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     10,
+     -10
+    ],
+    "armB": [
+     40,
+     120
+    ],
+    "words": "gathering: sunk low, both palms drawn back by his right hip, his weight on the back foot. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "thrust2": {
+    "lean": 30,
+    "legF": [
+     64,
+     4
+    ],
+    "legB": [
+     -50,
+     -56
+    ],
+    "armF": [
+     90,
+     90
+    ],
+    "armB": [
+     86,
+     90
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "a great stepping palm strike: one deep step forward to the right, front knee bent, back leg straight, both open palms shoved fully forward at chest height. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "fix": {
+     "s": 0.85
+    }
+   },
+   "thrust3": {
+    "lean": 26,
+    "legF": [
+     60,
+     4
+    ],
+    "legB": [
+     -46,
+     -54
+    ],
+    "armF": [
+     86,
+     88
+    ],
+    "armB": [
+     80,
+     88
+    ],
+    "dx": 30,
+    "width": 1088,
+    "words": "holding the great palm strike: front knee bent, back leg straight behind, both palms extended forward to the right, robe swirling. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "fix": {
+     "s": 0.85
+    }
+   },
+   "thrust4": {
+    "lean": 12,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -24,
+     -40
+    ],
+    "armF": [
+     66,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "dx": 14,
+    "words": "drawing the back foot up after the strike, rising back into his planted stance. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "ice1": {
+    "lean": 0,
+    "legF": [
+     70,
+     -10
+    ],
+    "legB": [
+     -4,
+     0
+    ],
+    "armF": [
+     120,
+     160
+    ],
+    "armB": [
+     20,
+     60
+    ],
+    "words": "the right forefinger drawn back beside his ear, a cold stare, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror; no sword."
+   },
+   "ice2": {
+    "lean": 24,
+    "legF": [
+     40,
+     -30
+    ],
+    "legB": [
+     -30,
+     -40
+    ],
+    "armF": [
+     60,
+     20
+    ],
+    "armB": [
+     20,
+     60
+    ],
+    "words": "flicking the right forefinger straight out forward to the right at arm's length, as if shooting something from its tip, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror; no sword."
+   },
+   "edge1": {
+    "lean": 4,
+    "legF": [
+     22,
+     0
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     84,
+     88
+    ],
+    "armB": [
+     20,
+     120
+    ],
+    "words": "perfectly still in his planted stance, the right open palm held straight out forward to the right at a man's chest height. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "glow1": {
+    "lean": 4,
+    "legF": [
+     20,
+     2
+    ],
+    "legB": [
+     -12,
+     -26
+    ],
+    "armF": [
+     12,
+     30
+    ],
+    "armB": [
+     56,
+     140
+    ],
+    "words": "gathering his strength, both feet planted, the right palm drawn back by his shoulder, the left palm open before his chest. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "hold1": {
+    "lean": 14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     -10,
+     60
+    ],
+    "armB": [
+     20,
+     100
+    ],
+    "words": "mid-step: his front foot planted, his back foot lifted off the ground coming forward to follow, body leaning forward, the right palm drawn back. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "strike1": {
+    "lean": 18,
+    "legF": [
+     34,
+     6
+    ],
+    "legB": [
+     -24,
+     -30
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     88,
+     92
+    ],
+    "words": "a full palm strike: front knee bent, the right open palm shoved straight forward to the right at chest height, the left hand back. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "strike2": {
+    "lean": 10,
+    "legF": [
+     28,
+     4
+    ],
+    "legB": [
+     -20,
+     -26
+    ],
+    "armF": [
+     0,
+     20
+    ],
+    "armB": [
+     66,
+     80
+    ],
+    "words": "just after the palm strike, the right palm still forward, settling back into his stance. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "sblock": {
+    "lean": -6,
+    "legF": [
+     16,
+     4
+    ],
+    "legB": [
+     -24,
+     -12
+    ],
+    "armF": [
+     30,
+     170
+    ],
+    "armB": [
+     30,
+     120
+    ],
+    "words": "guarding: the right forearm raised upright before his chest, leaning back slightly, the bronze mirror face up on his left palm held low. He holds ONLY the round bronze mirror; no sword."
+   },
+   "hit1": {
+    "lean": -20,
+    "legF": [
+     14,
+     0
+    ],
+    "legB": [
+     -30,
+     -16
+    ],
+    "armF": [
+     -20,
+     10
+    ],
+    "armB": [
+     -46,
+     -14
+    ],
+    "words": "struck: he rocks backward to the left, head and shoulders thrown back, arms out. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "hit2": {
+    "lean": -10,
+    "legF": [
+     18,
+     2
+    ],
+    "legB": [
+     -24,
+     -16
+    ],
+    "armF": [
+     10,
+     30
+    ],
+    "armB": [
+     -20,
+     0
+    ],
+    "words": "rocked, catching himself, bent a little forward, back on his heels. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "jianqi1": {
+    "lean": -16,
+    "legF": [
+     40,
+     30
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     -60,
+     -100
+    ],
+    "armB": [
+     20,
+     40
+    ],
+    "words": "turning the round bronze mirror over in his left hand and lifting it before his face, its face turning to the right, the right hand open at his side. He holds ONLY the round bronze mirror; no sword."
+   },
+   "jianqi2": {
+    "lean": 30,
+    "legF": [
+     70,
+     40
+    ],
+    "legB": [
+     -50,
+     -30
+    ],
+    "armF": [
+     80,
+     84
+    ],
+    "armB": [
+     76,
+     80
+    ],
+    "width": 1088,
+    "words": "holding the round bronze mirror straight out forward to the right at arm's length in his left hand, its face to the right, leaning in, the right hand back. He holds ONLY the round bronze mirror; no sword."
+   },
+   "slip1": {
+    "lean": -30,
+    "legF": [
+     60,
+     60
+    ],
+    "legB": [
+     10,
+     -10
+    ],
+    "armF": [
+     -50,
+     -80
+    ],
+    "armB": [
+     90,
+     140
+    ],
+    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "slip2": {
+    "lean": -48,
+    "legF": [
+     72,
+     76
+    ],
+    "legB": [
+     32,
+     10
+    ],
+    "armF": [
+     -62,
+     -92
+    ],
+    "armB": [
+     100,
+     142
+    ],
+    "words": "falling backward, both feet sliding out forward, arms flailing. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "win1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     16,
+     0
+    ],
+    "armB": [
+     40,
+     100
+    ],
+    "words": "standing straight and calm after a bout, his right fist in his left palm before his chest in a salute. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "lose1": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     10,
+     10
+    ],
+    "armB": [
+     10,
+     -6
+    ],
+    "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. He holds ONLY the round bronze mirror face up on his left palm; no sword."
    }
   },
   "clips": {

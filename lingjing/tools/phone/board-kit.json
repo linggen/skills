@@ -253,7 +253,7 @@
       ]
     },
     "fighter": {
-      "_about": "格斗 (games/fighter.js): the 1v1 bouts games.json gives it (秦雁's in 第六回's 大比; 切磋 · 演武场's daily bouts, rules/qiecuo.mjs — 秦雁, 卢方, 祁长松; 第六回's 大比 bouts, 何七 · 卢方 · 秦雁 · 马小宝 · 祁长松; 心魔 in 秘境探险). Drawn on its own canvas (fighter/draw.js) with a painted sheet per fighter, so no `css` (the page does not scroll); the faces by its bars — 卢方's and 祁长松's sit beside their sheets in the fighter folder (`dirs`), shipped with it. The 飞剑's blade is the 结印's own painting (jieyin/art/feijian.webp), listed here since the 结印 pack is its own.",
+      "_about": "格斗 (games/fighter.js): the 1v1 bouts games.json gives it (秦雁's in 第六回's 大比; 切磋 · 演武场's daily bouts, rules/qiecuo.mjs — 秦雁, 卢方, 祁长松; 第六回's 大比 bouts, 何七 · 卢方 · 秦雁 · 马小宝 · 祁长松; 邹青松 · 九层师兄 · 老井 in the story's fights; 心魔 in 秘境探险). Drawn on its own canvas (fighter/draw.js) with a painted sheet per fighter, so no `css` (the page does not scroll); the faces by its bars — 卢方's and 祁长松's sit beside their sheets in the fighter folder (`dirs`), shipped with it. The 飞剑's blade is the 结印's own painting (jieyin/art/feijian.webp), listed here since the 结印 pack is its own.",
       "module": "scripts/games/fighter.js",
       "dirs": ["worlds/jiuding/art/games/fighter"],
       "files": [
@@ -261,6 +261,7 @@
         "worlds/jiuding/art/people/xiaoman.webp",
         "worlds/jiuding/art/people/neimen-shijie.webp",
         "worlds/jiuding/art/people/maxiaobao.webp",
+"worlds/jiuding/art/people/laojing.webp",
         "scripts/games/jieyin/art/feijian.webp"
       ]
     },

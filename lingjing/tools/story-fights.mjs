@@ -85,14 +85,14 @@ export const FIGHTS = [
   { id: 'foe-yinhu', name: '坑底的小银狐 (教学 · 试)', at: 'h01', scene: '00-fox/save', trial: true, teach: true, band: [0.95, 1], nopills: true, note: 'teaching fight (Hanli 10-22): stand three turns; it bites for 1–2, he stands 20 — never lost' },
   { id: 'longzhi', name: '蠪侄 (三试)', at: 'h04r', scene: '00-longzhi/subdue', band: [0.6, 0.92], nopills: true, note: 'tutorial; before the 灵根 test he holds no 灵石 and no pill' },
   { id: 'gui', name: '蛫 (秘境)', at: 'h07', scene: 'wm-wangzuo/open' },
-  { id: 'foe-zou', name: '邹青松 (试 · 追)', at: 'h07z', scene: 'wm-xirang/swallow', trial: true, unforced: true },
+  // 邹青松 (试 · 追) at wm-xirang/swallow: 格斗 since 2026-10-31 (the board mijing-zou, games/fighter.js) — no card fight to weigh.
   // 卢方 · 秦雁 (试 · 三十招) · 马小宝 at the 大比 (wm-fushi/flip · wm-lun2/dodge · wm-juesai/face): 格斗 since 2026-10-31 (the boards
   // dabi-lu · dabi-shijie · dabi-ma, games/fighter.js) — no card fight to weigh.
   { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight', band: [0.5, 0.72], pilled: [0.55, 1], note: 'Hanli 10-16: 55–65 won, really lost ≥20%' },
   // 秦雁 (崖顶 · 试) at 09-futian/spar: 格斗 since 2026-10-28 (the board futian-spar, games/fighter.js) — no card fight to weigh.
-  { id: 'foe-jiuceng', name: '九层师兄 (大比决赛)', at: 'h09b', scene: '09-laba/dabi', band: [0.4, 0.75], pilled: [0.6, 1], note: '2026-10-21: weighed across ten save seeds (the 练气 curve deals each player his own ten) — 49% bare on average, 15–67%; this fixture\'s ten 52%' },
+  // 九层师兄 (大比决赛) at 09-laba/dabi: 格斗 since 2026-10-31 (the board dabi-final) — no card fight to weigh.
   { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', scene: '01-rise/stand', trial: true, band: [0.35, 0.7], note: 'a 试 outlasted: its 气血 does not weigh it' },
-  { id: 'foe-laojing', name: '老井 (试 · 河滩)', at: 'h10b', scene: '01-laojing/dodge', trial: true, unforced: true },
+  // 老井 (试 · 河滩) at 01-laojing/dodge: 格斗 since 2026-10-31 (the board laojing-trial) — no card fight to weigh.
   { id: 'qiuyu', name: '犰狳 (秘境 凶崖, guards the way)', at: 'h07', pool: 'mijing-ya' },
   { id: 'heyu', name: '合窳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },
   { id: 'qiuyu', name: '犰狳 (秘境 暗河)', at: 'h07z', pool: 'mijing-anhe' },

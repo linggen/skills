@@ -55,21 +55,6 @@
     "zh": "腊八 · 再上五行台",
     "en": "Laba · Up on the stage again"
    },
-   "game": {
-    "id": "dabi-final",
-    "kind": "duel",
-    "creature": "foe-jiuceng",
-    "retry": true,
-    "foe": {
-     "hp": 3.2,
-     "party": []
-    },
-    "_foe": "The 腊八 大比's final (古八): a 内门 九层圆满 whose 金刃 come one breath at a time (creatures.json foe-jiuceng — 火柴 in his hand from the first turn, the book's sword), alone on the stage (`party: []`); weighed at 八层 (he comes at 九层, 09-dingfeng's gate behind him) (tools/story-fights.mjs `foe-jiuceng@09-laba/dabi`, 2026-10-21): hp 3.2 → a player who thinks a turn ahead wins about 49% bare on average over ten save seeds (each deals its own ten, 15–67%), the fixture's ten 52%, with two pills 97%; the careless one-ply line 8%. tests/fight-band.test.mjs holds it."
-   },
-   "withdrawn": {
-    "zh": "执事的锣槌在手里转了两转：「歇一口，再上。」",
-    "en": "The steward turns the gong-stick twice in his hand: \"Catch your breath, then up again.\""
-   },
    "means": "year six 闵丹师's lesson in the 丹房 (choosing stock by winters, the 君), the 九节聚气 recipe and a ten-year 黄精; the 饭桶 fed by it gives three-line pills; 八层 that winter; year seven 飘风不终朝 (定风 = waiting it out), 进退 (「初六：进退，利武人之贞」; the pine bough), 九层, the 火柴's line of sparks; a furnace of his own, a true 一纹 pill on the fifth batch — 「有火气。」「能吃。」; at the Laba of year seven (the book's 第五年腊八) he goes up again after four years away, Shopkeeper Qian lists him at one-pays-fifty, Ahe's single cash is the only stake; the final against a 九层圆满 won by an instant with 随风, waiting out his gasp between blades, a cut under the ribs; Qian counts out fifty-one cash to her; the sect's one-turn pill resealed with rice water into the storage pouch; 闵丹师's sniff after five years at one furnace; five brides on the Zhang",
    "mark": "y-dabi",
    "once": true,
@@ -81,7 +66,26 @@
     "table": "scene",
     "item": "foundation-pill"
    },
-   "next": "09-yanceng"
+   "next": "09-yanceng",
+   "needs": {
+    "task": "dabi-final"
+   },
+   "refuse": {
+    "zh": "执事的锣槌在手里转了两转：「歇一口，再上。」",
+    "en": "The steward turns the gong-stick twice in his hand: \"Catch your breath, then up again.\""
+   },
+   "_was_duel": "Until 2026-10-31 the card duel `dabi-final` (foe-jiuceng, 斗法); since, the 格斗 board `dabi-final` before the exit (Hanli 10-28: 「故事里的战斗可以用格斗」), so the fight is played once, as 格斗."
   }
- ]
+ ],
+ "show": [
+  {
+   "card": "board",
+   "id": "dabi-final"
+  }
+ ],
+ "offers": {
+  "tasks": [
+   "dabi-final"
+  ]
+ }
 }

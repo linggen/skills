@@ -25,6 +25,6 @@ for (const clock of ['2026-10-21T14:00:00', '2026-10-05T12:00:00', '2026-10-21T1
     const out = playTo(content, newState(content, 'zh', now), '01-end', { now });
     assert.equal(out.state.scene, '01-end');
     assert.ok(out.state.done_scenes.includes('01-laojing'), '老井\'s scene is behind him');
-    assert.equal(out.state.duels?.['foe-laojing']?.outcome, 'won', '老井 was fought and won');
+    assert.equal(out.state.tasks?.['laojing-trial']?.status, 'done', '老井 was fought (格斗 since 2026-10-31)');
   });
 }

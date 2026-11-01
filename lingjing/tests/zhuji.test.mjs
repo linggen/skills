@@ -120,7 +120,7 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
     assert.equal(s.bag['foundation-pill'], undefined, 'not yet: the 官丹 waits for the 腊八');
   }
   assert.ok(s.step === 8 && s.progress >= threshold(content, s), '年七 waited on 八层圆满, earned (the book\'s 「那年腊月之前，他九层了」: what he earns next steps him)');
-  s = go({ ...placed(s), wins: { ...placed(s).wins, 'dabi-final': NOW.toISOString() } }, 'dabi').state; // the 腊八 final won (2026-10-21)
+  s = go({ ...placed(s), tasks: { ...placed(s).tasks, 'dabi-final': { status: 'done' } } }, 'dabi').state; // the 腊八 final played (格斗 since 2026-10-31)
   assert.equal(s.scene, '09-yanceng', '年八 after the 大比');
   s = { ...s, place: CH.scenes[s.scene].at, stamina: 0, resting: true };
   assert.equal(s.bag['foundation-pill'], 1, 'the year-five 大比: the sect\'s 一转 is his, resealed into 饭桶');
@@ -263,7 +263,7 @@ test('the sect\'s 筑基丹 comes from the five-year skip, not from 古六: 古�
   assert.equal(s.step, 6, '六层: 七层 is ground in 古八, not given by the autumn');
   s = { ...s, tasks: { ...s.tasks, ...Object.fromEntries(H08.map(id => [id, { status: 'done' }])) } };
   for (const exit of ['on', 'winter', 'laba']) { s = go(full({ ...s, place: CH.scenes[s.scene].at }), exit).state; assert.equal(s.bag['foundation-pill'], undefined, exit); }
-  s = go({ ...full(s), place: 'yanwu', wins: { ...s.wins, 'dabi-final': NOW.toISOString() } }, 'dabi').state; // the 腊八 final won (2026-10-21)
+  s = go({ ...full(s), place: 'yanwu', tasks: { ...s.tasks, 'dabi-final': { status: 'done' } } }, 'dabi').state; // the 腊八 final played (格斗 since 2026-10-31)
   assert.equal(s.bag['foundation-pill'], 1);
   assert.equal(s.step, 9, '九层');
 });

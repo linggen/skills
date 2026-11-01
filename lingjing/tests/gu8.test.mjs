@@ -72,9 +72,11 @@ test('the boards: 考书 and 看炉 in 09-dabi, the years\' twenty in theirs —
   }
   assert.equal(Object.values(YEARS).flat().length, 20); // the years' 拼图 became 华容道, 2026-10-28 (Hanli: 「拼图也少一点」)
   const dabi = CH.scenes['09-laba'].exits.find((e) => e.id === 'dabi');
-  assert.equal(dabi.needs, undefined, 'a fight\'s way on has nothing but the win before it');
-  assert.ok(!(CH.scenes['09-laba'].show ?? []).some((c) => c.card === 'board'), '09-laba: the year\'s boards are 09-dingfeng\'s');
-  assert.deepEqual([dabi.game.id, dabi.game.kind, dabi.game.creature, dabi.game.foe.party], ['dabi-final', 'duel', 'foe-jiuceng', []], 'alone on the stage');
+  // the final is 格斗 since 2026-10-31: its board alone before the way on (the year's boards are 09-dingfeng's)
+  assert.deepEqual(dabi.needs, { task: 'dabi-final' });
+  assert.deepEqual((CH.scenes['09-laba'].show ?? []).filter((c) => c.card === 'board').map((c) => c.id), ['dabi-final']);
+  assert.equal(dabi.game, undefined, 'no card duel');
+  assert.equal(content.games.games.find((g) => g.task === 'dabi-final' && !g.replaced).levels[0].foe.name.zh, '九层师兄');
   assert.deepEqual([dabi.mark, dabi.once, dabi.stay, dabi.grant.item, dabi.next], ['y-dabi', true, undefined, 'foundation-pill', '09-yanceng']);
   assert.deepEqual(CH.scenes['09-qulao'].show.filter((c) => c.card === 'board').map((c) => c.id), ['qulao-dan']);
   assert.deepEqual(CH.scenes['09-shijie'].show.filter((c) => c.card === 'board').map((c) => c.id), ['shijie-tiandan']);
@@ -109,9 +111,8 @@ test('walking 古八: the boards, the 十年黄精 and the 饭桶\'s three; each
     s = go(s, exit);
     assert.equal(s.scene, next);
   }
-  assert.equal(resolve(s, content, ctx(), { exit: 'dabi' }).result.refused, 'game-not-won', 'the 大比 waits on its final');
-  assert.equal(look(s, content, ctx()).scene.exits.find((e) => e.id === 'dabi').duel.creature.id, 'foe-jiuceng');
-  s = go({ ...s, wins: { ...s.wins, 'dabi-final': NOW.toISOString() } }, 'dabi');
+  assert.equal(resolve(s, content, ctx(), { exit: 'dabi' }).result.refused, 'needs', 'the 大比 waits on its final');
+  s = go(play(s, 'dabi-final'), 'dabi');
   assert.equal(s.scene, '09-yanceng');
   assert.equal(s.bag['foundation-pill'], 1, 'the sect\'s one 一转, sealed again');
   assert.equal(resolve(s, content, ctx(), { exit: 'ruqiu' }).result.ok, false, '入秋 waits on 年八\'s boards');

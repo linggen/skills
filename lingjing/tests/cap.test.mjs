@@ -80,7 +80,7 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 throu
   s = { ...s, scene: 'wm-mijing', place: 'shimen' }; // past 今 · 二, at 古五's 秘境 gate
   grind(s);
   assert.equal(named(s), '练气二层', '古五 grinds to 二层, no further');
-  s = { ...s, scene: 'wm-xirang', place: 'shimen', wins: { ...s.wins, 'mijing-zou': NOW.toISOString() } }; // the fight on the stage, won
+  s = { ...s, scene: 'wm-xirang', place: 'shimen', tasks: { ...s.tasks, 'mijing-zou': { status: 'done' } } }; // the chase (格斗 since 2026-10-31), played
   const x = resolve(s, content, ctx, { exit: 'swallow' });
   assert.equal(x.result.ok, true, JSON.stringify(x.result));
   assert.deepEqual([x.state.step, x.state.progress], [s.step, s.progress], '息壤 lifts nothing');

@@ -121,7 +121,7 @@ New 华容道 layouts come from a seeded generator, each grid proved by `huarong
 | 坑底的小银狐 | 第一回 · 00-fox | foe-yinhu | beast | 斗法 | stays 斗法 |
 | 蠪侄 | 第三回 · 00-longzhi | longzhi | beast | 斗法 | stays 斗法 |
 | 蛫 | 第五回 · wm-wangzuo | gui | beast | 斗法 | stays 斗法 |
-| 邹青松 (the 黄袍 with the 赤铜葫芦) | 第五回 · wm-xirang | foe-zou | person | 斗法, then 暗河 投掷 and 踏马符 几何冲刺 | → 格斗; **needs 邹青松's frames** |
+| 邹青松 (the 黄袍 with the 赤铜葫芦) | 第五回 · wm-xirang | foe-zou | person | 斗法, then 暗河 投掷 and 踏马符 几何冲刺 | **→ 格斗 10-31** (`mijing-zou`, level `zou-chase`: outlast 22 moves — his shield breaks for nothing short of 结丹; the fire snakes no guard stops; the 秘境's dark; his 储物袋 and 火蛇 on the exit's grant; frames painted) |
 | 何七 (大比 first round) | 第六回 · wm-dabi | — (board 喷嚏符) | person | 打地鼠 → 撒豆成兵 | **→ 格斗 10-31** (`heqi`; 喷嚏符 is the 符文; frames painted) |
 | 卢方 | 第六回 · wm-fushi | foe-lufang | person | 斗法 | **→ 格斗 10-31** (`fushi-lufang`, board `dabi-lu`: the tallow on the rim, hook the stamp) |
 | 秦雁 (大比) | 第六回 · wm-lun2 → wm-yingjian | foe-shijie | person | 斗法 (30 moves) → 格斗 (迎剑 · 那三分) | **→ 格斗 10-31** (Hanli: every 大比 bout): the thirty moves an outlast (`lun2-qinyan`, board `dabi-shijie`), then 迎剑 the edge and the palm — one bout, two wins. |
@@ -130,12 +130,12 @@ New 华容道 layouts come from a seeded generator, each grid proved by `huarong
 | 犰狳 | 第七回 · 09-lingcao | qiuyu | beast | 斗法 | stays 斗法 |
 | 秦雁 · 流云剑 | 第七回 · 09-fangshi | (board) | person | 打地鼠 | **→ 格斗 now** (`liuyun`) |
 | 秦雁 · monthly bout | 第七回 · 09-futian | foe-shijie | person | 斗法 | **→ 格斗 now** (`futian`) |
-| 九层师兄 (腊八 final) | 第八回 · 09-laba | foe-jiuceng | person | 斗法 | → 格斗; **needs 九层师兄's frames** |
+| 九层师兄 (腊八 final) | 第八回 · 09-laba | foe-jiuceng | person | 斗法 | **→ 格斗 10-31** (`dabi-final`, level `laba-jiuceng`: won — blade after blade low along the boards, one breath after each; 第十一道; the 演武场 in a north wind; frames painted) |
 | 冰夷双龙 | 第九回 · 01-rise | foe-shuanglong | beast (dragons) | 斗法 | stays 斗法 |
-| 老井 (太一宫's white-robed steward) | 第九回 · 01-laojing | foe-laojing | person | 斗法 | → 格斗; **needs 老井's frames** |
+| 老井 (太一宫's white-robed steward) | 第九回 · 01-laojing | foe-laojing | person | 斗法 | **→ 格斗 10-31** (`laojing-trial`, level `laojing-hetan`: outlast 20 moves — the glow runs to his fingertip before the finger, the mirror's beam no guard stops, 潮起; the 河滩 by moonlight; frames painted) |
 | 雷神 · 夔 · 无支祁 · 防风氏 · 巴蛇 · 夔牛 · 肥遗 · 泰逢 | 卷二–九 bosses | — | beasts and gods | 斗法 | stay 斗法 |
 
-**Frames painted**: 卢方, 祁长松 (10-28), 何七, 马小宝 (10-31) — every 古六 大比 bout is 格斗. **Next**, in book order: 邹青松, 九层师兄, 老井.
+**Frames painted**: 卢方, 祁长松 (10-28), 何七, 马小宝, then 邹青松, 九层师兄, 老井 (10-31) — every person fight of the story is 格斗; the beasts and gods stay 斗法. The three's card fights left the 游戏厅's 斗法 table with them (as the 大比's did).
 
 ## 抚琴 and 太鼓
 
@@ -364,3 +364,7 @@ Each level sits in its kit's climb (tests/arcade-rhythm.test.mjs CLIMB: dash spe
 the climb): the run turned up a cliff face, same rules and bots. `cliff-shangya` → 几何冲刺 `shangya-climb` (slow · 104; loose rocks,
 ledges, a bare stretch; wind and grit drawn), its 塔防 row and `zl-cliff-shangya` `replaced`. 第二回 6 · 0 · 0 · 0 → 5 · 0 · 1 · 0
 (塔防 · 格斗 · 几何冲刺 · 节奏); 古 51 · 11 · 12 · 7 → 50 · 11 · 13 · 7 (塔防 62%). Refit agrees (no hour moved).
+
+**The last three fights, after (2026-10-31):** 邹青松 (第五回 · wm-xirang), 九层师兄 (第八回 · 09-laba), 老井 (第九回 · 01-laojing) are 格斗
+boards (§ 格斗: every story fight); per 回 第五回 5 · 0 · 2 · 0 → 5 · 1 · 2 · 0, 第八回 10 · 1 · 3 · 2 → 10 · 2 · 3 · 2, 第九回 2 · 0 · 1 · 1 →
+2 · 1 · 1 · 1; 古 50 · 11 · 13 · 7 → 50 · 14 · 13 · 7 (塔防 60%).

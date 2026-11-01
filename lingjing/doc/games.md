@@ -410,6 +410,11 @@ Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街
   **Level knobs**: `clumsyUnder` (a win under that share of 血 is clumsy), a move's tell line (`lines.foe_<move>`), `pierce` (a shot no
   guard stops), `ai.burst` (a chain that long and the foe breaks out), `ai.iceAt` (her shot's own range), `ai.feijian` (a foe's 飞剑),
   `jianqi.wave` (a 剑气 that runs along the boards), `look.clips` / `look.tint` (a foe on another fighter's sheet: 心魔).
+- **v6 (10-31)** — the story's last person fights, painted (tools/fighter-frames.py, 33 frames each on 秦雁's clips, unarmed):
+  邹青松 (`zou-chase`, wm-xirang: the gourd's fire snakes as a shot no guard stops, his shield as `armor`, outlast 22 moves in the 秘境's
+  dark), 九层师兄 (`laba-jiuceng`, 09-laba: 金刃 low along the boards with a long recover — the breath — `stage.win: yield`, a north wind),
+  老井 (`laojing-hetan`, 01-laojing: the finger with its tell `foe_poke`, the mirror's beam, `armor`, outlast 20 moves by moonlight).
+  Their card duels are gone from the scenes and the 游戏厅's 斗法 table; 邹青松's 储物袋 and 火蛇 are his exit's grant. tests/story-gedou.
 
 ## 全文后的小游戏 — the second batch, 古五 → 古九 (plan 2026-10-26; Hanli 「都开吧」)
 

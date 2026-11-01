@@ -62,9 +62,9 @@ for (const policy of ['win', 'skip']) {
     assert.ok(late.traits?.length, 'roots read');
     assert.ok((late.cards ?? []).length > (at.get('古三').s.cards ?? []).length, 'cards won on the way');
     // 狰 is won with a 萝卜 at the 药园, not fought (cards.md § 1): it walks with him instead.
-    for (const id of ['longzhi', 'gui', 'foe-zou']) assert.equal(late.duels?.[id]?.outcome, 'won', `${id} won by the settle`);
+    for (const id of ['longzhi', 'gui']) assert.equal(late.duels?.[id]?.outcome, 'won', `${id} won by the settle`);
     // the 大比's bouts are 格斗 boards since 2026-10-31: played (or left) on the way
-    for (const id of ['dabi-sneeze', 'dabi-lu', 'dabi-shijie', 'yingjian-hook', 'dabi-ma', 'jiejing-mirror', 'fengtou-pig']) assert.equal(late.tasks?.[id]?.status, 'done', `${id} done`);
+    for (const id of ['mijing-zou', 'dabi-sneeze', 'dabi-lu', 'dabi-shijie', 'yingjian-hook', 'dabi-ma', 'jiejing-mirror', 'fengtou-pig']) assert.equal(late.tasks?.[id]?.status, 'done', `${id} done`);
     assert.ok(late.cast.includes('zheng'), '小狰 walks with him');
     assert.ok(late.hunted?.['mijing-xiongya'] >= 1, 'the 凶崖\'s guard fought down');
     assert.notEqual(late.tier, at.get('古一').s.tier, 'a realm climbed');

@@ -2131,6 +2131,8 @@
     },
     {
       "id": "foe-laojing",
+      "hui": "h10",
+      "_hui": "First met on 古九's 河滩 (01-laojing; a 格斗 board since 2026-10-31, so no card duel there names him): a 秘境 room may deal him from 古九 on.",
       "gender": "male",
       "title": {
         "zh": "河滩 · 老井",
