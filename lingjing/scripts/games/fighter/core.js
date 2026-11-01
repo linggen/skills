@@ -68,17 +68,23 @@ export const STAGE = { w: 960, left: 140, right: 930, oil: { from: 140, to: 250 
 export const OUTLAST_CLEAN = 0.6; // an outlast bout's `clean`: this share of his 血 or more left
 export const OUTLAST_STARS = [0.6, 0.3]; // ★3 from the first share left, ★2 from the second, else ★1
 
-/* His moves (frames in ms): startup · active · recover; reach in units; dmg to her 稳; push (units); stun on her;
-   `hit`: what a blow is called in sounds (hit · heavy). `cancel`: may be cut short into the next blow once it lands. */
+/* His moves (frames in ms): startup · active · recover; reach in units (his feet to hers, where the blow lands); dmg to
+   her 稳; push (units); stun on her; `lunge`: a 上步 — the step in during the startup, so the blow lands from further off
+   (reach + lunge) — thrown walking toward her (KOF's → + a heavy), and only as far as she stands past the reach; `blocked`: what a guard adds to its recovery (a heavy
+   stood off is unsafe, a light is not); `limb`: how far his arm or leg stays out past his body while it strikes and comes back (her blow lands
+   on it: a whiffed heavy is punished). `cancel`: may be cut short into the next blow once it lands.
+   2026-11-01 (Hanli: 「拳脚都很短, 很难打到对手」 · 「参考拳皇97」): KOF '97's roles — the lights short and quick (冲拳,
+   弹腿), the heavies 上步 and long (上步冲拳, 上步侧踹 the longest poke); the lights reach where an unarmed foe stands to
+   strike (her rest band, ~120–180), the heavies past it. Was light 108 · lkick 134 · hpunch 120 · heavy 134. */
 export const ME = {
   hp: 100, speed: 250, jump: 880, hop: 420, dash: 620, step: 480,
-  light: { startup: 70, active: 90, recover: 150, reach: 108, dmg: 3, push: 24, stun: 300, cancel: true, qi: 4 },
-  heavy: { startup: 160, active: 110, recover: 320, reach: 134, dmg: 7, push: 70, stun: 440, hook: true, qi: 7, cancelTo: ['palmfire', 'palmfireH', 'rise', 'super'] },
-  lkick: { startup: 80, active: 100, recover: 170, reach: 134, dmg: 3, push: 26, stun: 300, cancel: true, qi: 4 },
-  hpunch: { startup: 150, active: 110, recover: 300, reach: 120, dmg: 7, push: 60, stun: 440, hook: true, qi: 7, cancelTo: ['palmfire', 'palmfireH', 'rise', 'super'] },
-  blow: { startup: 200, active: 110, recover: 360, reach: 132, dmg: 8, push: 230, stun: 620, qi: 6 },
-  air: { startup: 90, active: 260, recover: 120, reach: 118, dmg: 6, push: 40, stun: 560, qi: 6 },
-  rise: { startup: 110, active: 160, recover: 480, reach: 116, dmg: 11, push: 120, stun: 620, hook: true, qi: 9, lift: 520 },
+  light: { startup: 60, active: 90, recover: 150, reach: 150, limb: 24, dmg: 3, push: 30, stun: 300, cancel: true, qi: 4 },
+  heavy: { startup: 200, active: 110, recover: 360, reach: 176, lunge: 40, limb: 60, blocked: 200, dmg: 7, push: 80, stun: 460, hook: true, qi: 7, cancelTo: ['palmfire', 'palmfireH', 'rise', 'super'] },
+  lkick: { startup: 80, active: 100, recover: 180, reach: 166, limb: 34, dmg: 3, push: 30, stun: 300, cancel: true, qi: 4 },
+  hpunch: { startup: 170, active: 110, recover: 320, reach: 160, lunge: 36, limb: 50, blocked: 160, dmg: 7, push: 70, stun: 460, hook: true, qi: 7, cancelTo: ['palmfire', 'palmfireH', 'rise', 'super'] },
+  blow: { startup: 200, active: 110, recover: 360, reach: 152, lunge: 30, limb: 40, blocked: 200, dmg: 8, push: 230, stun: 620, qi: 6 },
+  air: { startup: 90, active: 260, recover: 120, reach: 150, dmg: 6, push: 40, stun: 560, qi: 6 },
+  rise: { startup: 110, active: 160, recover: 480, reach: 132, dmg: 11, push: 120, stun: 620, hook: true, qi: 9, lift: 520 },
   roll: { ms: 380, safe: 300, speed: 760 },
   special: { kind: 'fire', startup: 210, recover: 260, speed: 640, dmg: 6, push: 260, stun: 300, cd: 5000, qi: 5 },
   palmfire: { kind: 'palmfire', startup: 240, recover: 300, speed: 760, dmg: 8, push: 120, stun: 420, cd: 2200, at: 108, qi: 6 },
@@ -190,6 +196,15 @@ const phaseOf = (act, t) => {
   return 'done';
 };
 const busy = (who, t) => Boolean(who.act) || who.stun > t;
+const NORMALS = new Set(['light', 'lkick', 'hpunch', 'heavy', 'blow']);
+/** How far his arm or leg is out past his body now (a blow's `limb`, while it strikes and comes back): her blow lands on
+    it from that much further off — a whiffed heavy is punished (KOF's hurtbox on the limb). */
+export function limbOut(s) {
+  const a = s.me.act;
+  if (!a || !NORMALS.has(a.k)) return 0;
+  const ph = phaseOf(a, s.t);
+  return ph === 'active' || ph === 'recover' ? (a.m.limb ?? 0) : 0;
+}
 
 /* ── His hands ── */
 const PRESS = new Set(['jump', 'light', 'lkick', 'hpunch', 'heavy', 'special', 'ying', 'skill', 'super', 'feijian', 'fuwen']);
@@ -371,9 +386,17 @@ function hurtFoeBy(s, m, { heavy = false, fire = false, big = false } = {}) {
   const glow = s.palm?.phase === 'glow';
   const loose = s.palm && (s.palm.phase === 'hold' || s.palm.phase === 'after');
   if (heavy && m.hook && loose) return hook(s);
-  if (foe.act?.k === 'block' && !fire && !loose && !big) {
+  // KOF's walk back is a guard: stepping away from him, free, she stands a blow off (`ai.backGuard` of the time)
+  const backing = !foe.act && foe.stun <= s.t && foe.vx * sd > 10 && roll(s) < (R.foe.ai.backGuard ?? 0.7);
+  if ((foe.act?.k === 'block' || backing) && !fire && !loose && !big) {
     foe.bal = Math.max(0, foe.bal - m.dmg * 0.15);
     foe.vx = sd * m.push * 2.2;
+    // KOF's frame disadvantage: a heavy stood off leaves him open a beat (`blocked`), a light is safe; she lets the guard
+    // go and answers (decide: the riposte)
+    if (m.blocked && s.me.act?.m === m) {
+      s.me.act.m = { ...m, recover: m.recover + m.blocked };
+      foe.act = null; foe.riposte = s.t; foe.think = Math.min(foe.think, s.t + (R.foe.ai.react ?? 250));
+    }
     gainQi(s.me, 2);
     hitstop(s, 50);
     fx(s, 'spark', foe.x - sd * 22, 110);
@@ -400,6 +423,7 @@ function hurtFoeBy(s, m, { heavy = false, fire = false, big = false } = {}) {
   if (s.edge) { s.edge = null; s.cue = null; }
   foe.act = null;
   foe.stun = s.t + m.stun;
+  foe.hitAt = s.t;
   const looser = 1 + (R.foe.bal - foe.bal) / (R.foe.bal * 0.6);
   foe.vx = sd * m.push * 4 * (fire ? 1 : looser) * (onOil(s, foe.x) && !fire ? 1.6 : 1);
   if (m.lift) foe.lift = s.t;
@@ -445,9 +469,9 @@ function out(s) {
 }
 
 /* ── Her moves ── */
-function startFoe(s, k) {
+function startFoe(s, k, quick = 1) {
   const foe = s.foe, m = s.R.foe.moves[k];
-  foe.act = { k, at: s.t, m: { startup: m.startup ?? 0, active: m.active ?? 0, recover: m.recover ?? m.hold ?? 0 }, hit: false, shot: 0 };
+  foe.act = { k, at: s.t, m: { startup: Math.round((m.startup ?? 0) * quick), active: m.active ?? 0, recover: m.recover ?? m.hold ?? 0 }, hit: false, shot: 0 };
   foe.vx = 0;
   if (k !== 'block') { foe.moves += 1; bump(s, 'swing'); }
   if (k !== 'jianqi' && s.level?.lines?.[`foe_${k}`]) say(s, `foe_${k}`); // a level's tell for a move (马小宝's blotches flush before the beam)
@@ -481,8 +505,28 @@ function decide(s) {
   const foe = s.foe, me = s.me, R = s.R, ai = R.foe.ai, M = R.foe.moves, d = dist(s), t = s.t;
   foe.think = t + ai.think * (0.8 + roll(s) * 0.5);
   if (me.stun > t + 200 || me.down > t) { foe.vx = 0; return; } // 不踩人: she waits him up
-  // His blow coming within her reach: she may stand it off.
-  if (me.act && ['light', 'lkick', 'hpunch', 'heavy', 'air'].includes(me.act.k) && d < 170 && roll(s) < ai.block) { startFoe(s, 'block'); return; }
+  // His blow coming, within its own reach (a 上步 heavy's step counted): she may stand it off.
+  // A hand that swings and swings (three blows in 1.5 s) is read: she guards it far more often (`ai.read`).
+  const pressing = (me.swings ?? []).filter((x) => t - x < 1500).length >= 3;
+  if (me.act && ['light', 'lkick', 'hpunch', 'heavy', 'air', 'blow'].includes(me.act.k) && !me.act.whiff && d < (me.act.m.reach ?? 0) + (me.act.m.lunge ?? 0) + 20 && roll(s) < (pressing ? Math.max(ai.block, ai.read ?? 0.75) : ai.block)) { startFoe(s, 'block'); return; }
+  // His blow gone by her (a whiff), his arm or leg still out — or one she just stood off: she punishes it (`ai.punish`), on
+  // her own reaction (foeStep), quicker than her usual wind-up (`ai.quick`: she saw it coming).
+  const whiffed = me.act?.whiff && !me.act.landed && !me.act.punished && phaseOf(me.act, t) === 'recover';
+  const stood = foe.riposte && t - foe.riposte < 500;
+  if (whiffed || stood) {
+    if (whiffed) me.act.punished = true;
+    foe.riposte = 0;
+    if (roll(s) < (ai.punish ?? 0.5)) {
+      const ext = limbOut(s);
+      if (d <= M.poke.reach + ext) { startFoe(s, 'poke', ai.quick ?? 0.5); return; }
+      if (d <= M.thrust.reach + M.thrust.lunge + ext) { startFoe(s, 'thrust', ai.quick ?? 0.5); return; }
+    }
+  }
+  // Hit a moment ago: she gives ground (`ai.backHit`), then comes again.
+  if (foe.hitAt && t - foe.hitAt < 900) {
+    foe.hitAt = 0;
+    if (roll(s) < (ai.backHit ?? 0.45)) { foe.vx = side(s) * R.foe.back; foe.think = t + 340; return; }
+  }
   // A poke of hers just landed and she runs on (`ai.chain`): the thrust after it, at once.
   if (foe.chain && t - foe.chain < 600 && d <= M.thrust.reach) { foe.chain = 0; startFoe(s, 'thrust'); return; }
   foe.chain = 0;
@@ -498,17 +542,35 @@ function decide(s) {
     foe.vx = -side(s) * R.foe.speed;
     return;
   }
-  if (d > M.thrust.reach) { foe.vx = -side(s) * R.foe.speed; return; }
-  if (d < 120) {
+  // Footsies (2026-11-01, Hanli: 「机器人也有点傻, 一直往前跑」): she keeps her own range (`ai.range`, by default where
+  // her poke just lands), coming on in steps with a pause between (`ai.pace`), and in it she waits, sways in and out,
+  // and strikes; a mistake (`ai.err`) is a strike from where she stands, in range or not.
+  // by default just past his longest blow (the 上步 heavy, its step counted), as KOF's footsies stand
+  const range = ai.range ?? Math.max(M.poke.reach - 10, R.me.heavy.reach + (R.me.heavy.lunge ?? 0) + 10), band = ai.band ?? 24;
+  if (roll(s) < (ai.err ?? 0)) { startFoe(s, roll(s) < 0.5 ? 'poke' : 'thrust'); return; }
+  if (d > range + band) {
+    if (roll(s) < (ai.pace ?? 0.3)) { foe.vx = 0; foe.think = t + ai.think * 0.7; return; }
+    foe.vx = -side(s) * R.foe.speed;
+    foe.think = t + ai.think * 0.6;
+    return;
+  }
+  if (d < Math.min(120, range - band)) {
     const r = roll(s);
     if (r < ai.back) { foe.vx = side(s) * R.foe.back; foe.think = t + 380; return; } // back to her length of blade
     startFoe(s, r < ai.closePoke ? 'poke' : 'thrust');
     return;
   }
   const r = roll(s), driving = foe.bal <= ai.drive;
-  if (r < (driving ? ai.driveThrust : ai.thrust)) startFoe(s, 'thrust');
-  else if (r < ai.poke) startFoe(s, 'poke');
-  else foe.vx = -side(s) * R.foe.speed * 0.6;
+  if (r < (driving ? ai.driveThrust : ai.thrust) && d <= M.thrust.reach + (M.thrust.lunge ?? 0)) startFoe(s, 'thrust');
+  else if (r < ai.poke) {
+    if (d <= M.poke.reach + 6) startFoe(s, 'poke');
+    else if (d <= M.thrust.reach + (M.thrust.lunge ?? 0) && roll(s) < 0.5) startFoe(s, 'thrust'); // her long one, from where she stands
+    else { foe.vx = -side(s) * R.foe.speed; foe.think = t + ai.think * 0.5; } // a step in to her poke's length
+  } else { // sway: a half step out or in about her range, then look again
+    const out = d < range ? roll(s) < 0.7 : roll(s) < 0.3;
+    foe.vx = (out ? side(s) : -side(s)) * R.foe.speed * 0.5;
+    foe.think = t + ai.think * 0.8;
+  }
 }
 
 /* What her blade does to him this step (her move's active frames, once a move). */
@@ -548,7 +610,7 @@ function foeStrikes(s) {
     if (a.k === 'thrust' && !a.lunged) { a.lunged = true; foe.x -= side(s) * m.lunge; }
     a.hit = true;
     fx(s, 'qi', foe.x, a.k === 'jianqi' ? 40 : 120, { to: foe.x - side(s) * m.reach, big: a.k === 'jianqi' });
-    if (dist(s) > m.reach || me.stun > s.t + 300 || me.down > s.t || safe(s)) return;
+    if (dist(s) > m.reach + limbOut(s) || me.stun > s.t + 300 || me.down > s.t || safe(s)) return;
     const soft = foe.moves <= R.foe.ai.soft ? R.foe.ai.softBy : 1; // 头十招，她只使了五分力
     if (guarded(s, Math.round(m.dmg * soft * (R.foe.ai.chip ?? 0.25)), m.push)) return; // a blow stood off: its chip (`ai.chip`)
     hurtMe(s, Math.round(m.dmg * soft), m.push, m.stun ?? 400, { down: m.down ?? 0 });
@@ -646,7 +708,8 @@ function startMe(s, k) {
   }
   if (me.air && ['heavy', 'lkick', 'hpunch', 'light'].includes(k)) { if (me.airHit) return false; me.airHit = true; me.act = { k: 'air', at: s.t, m: R.me.air, hit: false }; bump(s, 'swing'); return true; } // a jump-in blow
   if (me.air) return false;
-  me.act = { k, at: s.t, m: R.me[k], hit: false };
+  me.act = { k, at: s.t, m: R.me[k], hit: false, fwd: s.in.dir === side(s) }; // `fwd`: thrown walking at her — a 上步
+  me.swings = [...(me.swings ?? []).filter((x) => s.t - x < 1500), s.t];
   if (!me.air) me.vx = 0;
   if (k === 'rise') { me.vx = side(s) * 90; me.vy = 520; me.air = true; me.airHit = true; bump(s, 'rise'); }
   bump(s, 'swing');
@@ -679,10 +742,16 @@ function meStep(s) {
   if (me.act?.k === 'roll' || me.act?.k === 'dash') me.vx = me.act.k === 'roll' ? me.act.dir * R.me.roll.speed * (1 - (t - me.act.at) / (R.me.roll.ms + 120)) : me.vx;
   // His blow's active frames: once a move.
   const a = me.act;
+  // 上步: a heavy's step in, spread over its startup (never into her: the bodies keep GAP)
+  if (a?.m?.lunge && !a.hit && phaseOf(a, t) === 'startup') {
+    if (a.stepTo == null) { const d0 = dist(s); a.stepTo = a.fwd && d0 > a.m.reach ? Math.min(a.m.lunge, d0 - a.m.reach + 12) : 0; } // toward her, the far heavy steps in; the close one needn't
+    const go = Math.min(Math.max(0, dist(s) - GAP - 2), (a.stepTo * STEP_MS) / Math.max(STEP_MS, a.m.startup));
+    me.x += toward * go;
+  }
   if (a && !a.hit && ['light', 'lkick', 'hpunch', 'heavy', 'air', 'rise', 'blow'].includes(a.k) && phaseOf(a, t) === 'active') {
     const reach = a.m.reach, high = Math.abs(s.foe.y - me.y) < 120;
     if (dist(s) <= reach && high) { a.hit = true; a.landed = true; hurtFoe(s, a.m, { heavy: ['heavy', 'rise', 'hpunch', 'blow'].includes(a.k) }); }
-    else if (a.k !== 'air' || t - a.at > a.m.startup + a.m.active - STEP_MS) { a.hit = true; bump(s, 'whiff'); }
+    else if (a.k !== 'air' || t - a.at > a.m.startup + a.m.active - STEP_MS) { a.hit = true; a.whiff = t; bump(s, 'whiff'); }
   }
   if (a && !a.hit && (a.k === 'special' || a.k === 'palmfire' || a.k === 'palmfireH') && t - a.at >= a.m.startup) {
     a.hit = true;
@@ -828,6 +897,9 @@ function foeStep(s) {
   if (s.palm) { palmStep(s); if (!s.palm && foe.act?.k === 'palm') foe.act = null; else return; }
   if (foe.act && foe.act.k !== 'edge' && phaseOf(foe.act, t) === 'done') foe.act = null;
   foeStrikes(s);
+  // his whiff seen: she looks again `ai.react` ms after it, whatever her rhythm (a sharp foe punishes, a sloppy one is late)
+  const w = s.me.act?.whiff;
+  if (w && !s.me.act.punished && !busy(foe, t)) foe.think = Math.min(foe.think, w + (s.R.foe.ai.react ?? 250));
   if (!busy(foe, t) && t >= foe.think) decide(s);
 }
 

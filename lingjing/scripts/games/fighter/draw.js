@@ -7,6 +7,7 @@
 // the crowd bobbing on a big blow, and the KO's vignette. Nothing here plays: it reads a state.
 
 import { loopAt } from '../jieyin/flight.js';
+import { QI } from './core.js';
 
 const W = 960, H = 540, FLOOR = 432;
 /* The painted fighters stand ~245 units tall (KOF scale: near half the field); the core counts heights for ~190: what it
@@ -402,6 +403,8 @@ function meClip(s) {
   const me = s.me, t = s.t, a = me.act;
   if (s.end?.kind === 'outlast') return ['idle', 0]; // he stood through it; her point rests at his heart
   if (s.end) return won(s.end) ? ['win', s.end.at] : ['lose', s.end.at];
+  // the hero's stance before the first exchange (Hanli 11-01: 「主角光环还是要有」): his 抱拳 as the bout opens
+  if (t < 700 && !a && !me.air && Math.abs(me.vx) < 20 && me.stun <= t) return ['win', 0];
   if (me.down > t) return ['knock', null];
   if (me.stun > t && !me.guard) return ['hit', null];
   if (a) {
@@ -483,6 +486,25 @@ function sprite(ctx, sheet, got, x, y, face, k, extra) {
   }
   const field = (p) => (p ? { x: x + face * (p[0] - ax) * u, y: y + (p[1] - ay) * u } : null);
   return { tip: field(fr.tip), handF: field(fr.handF), handB: field(fr.handB) };
+}
+
+/* A builder's check, never on in play (globalThis.LINGJING_HITBOX): his blow's reach from his feet (red while it can land,
+   grey before and after), the step his 上步 may take (dashed), and her poke's and thrust's reach (blue). */
+function hitboxes(ctx, s, meY, foeY) {
+  const me = s.me, a = me.act, sd = s.order ?? 1;
+  ctx.save(); ctx.lineWidth = 3;
+  if (a?.m?.reach) {
+    const e = s.t - a.at, live = e >= a.m.startup && e < a.m.startup + (a.m.active ?? 0);
+    ctx.strokeStyle = live ? 'rgba(220,30,30,.9)' : 'rgba(80,80,80,.6)';
+    ctx.beginPath(); ctx.moveTo(me.x, meY - 120); ctx.lineTo(me.x + sd * a.m.reach, meY - 120); ctx.stroke();
+    if (a.m.lunge) { ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.moveTo(me.x + sd * a.m.reach, meY - 120); ctx.lineTo(me.x + sd * (a.m.reach + a.m.lunge), meY - 120); ctx.stroke(); ctx.setLineDash([]); }
+  }
+  const M = s.R.foe.moves;
+  ctx.strokeStyle = 'rgba(40,90,220,.7)';
+  for (const [r, y] of [[M.poke.reach, 100], [M.thrust.reach, 90]]) { ctx.beginPath(); ctx.moveTo(s.foe.x, foeY - y); ctx.lineTo(s.foe.x - sd * r, foeY - y); ctx.stroke(); }
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.font = '14px sans-serif';
+  ctx.fillText(`d ${Math.round(Math.abs(s.foe.x - me.x))}`, (me.x + s.foe.x) / 2 - 20, meY - 250);
+  ctx.restore();
 }
 
 /* What lights a hand: her palm's green, his fire. */
@@ -922,11 +944,19 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
     const casting = ['special', 'palmfire', 'palmfireH', 'super', 'feijian', 'fuwen'].includes(s.me.act?.k) ? 1 : 0;
     const rollK = s.me.act?.k === 'roll' ? Math.min(1, (s.t - s.me.act.at) / s.R.me.roll.ms) : null;
     const meExtra = { t: s.t, fire: casting, sway: sway.me, breath: s.me.act || s.me.air ? 0 : breath(s.t), floorAt: s.me.y, inv, spin: rollK == null ? 0 : rollK * 360 * (s.me.act.dir === s.me.face ? 1 : -1) };
+    // 灵气 about him while a stock of 气 is full: a faint pale shimmer behind the figure, breathing (still under reduced motion)
+    if (sheets.me && (s.me.qi ?? 0) >= QI) {
+      const a = still ? 0.2 : 0.16 + 0.08 * Math.sin(now / 380), cy = meY - 120;
+      const g = ctx.createRadialGradient(s.me.x, cy, 20, s.me.x, cy, 150);
+      g.addColorStop(0, `rgba(255,246,214,${a})`); g.addColorStop(0.6, `rgba(236,222,170,${a * 0.5})`); g.addColorStop(1, 'rgba(236,222,170,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(s.me.x, cy, 110, 160, 0, 0, Math.PI * 2); ctx.fill();
+    }
     if (sheets.me) {
       const at = sprite(ctx, sheets.me, pick(sheets.me, 'me', s, track.me, still), s.me.x, meY, s.me.face, k, { ...meExtra, calm: still, jolt: jolt(s.me) });
       if (casting) handLight(ctx, at.handF, 28, 'rgba(255,226,130,.95)', 'rgba(220,70,30,0)');
     } else figure(ctx, s.me.x, meY, s.me.face, mp, meLook, meExtra);
     effects(ctx, s, art, still);
+    if (globalThis.LINGJING_HITBOX) hitboxes(ctx, s, meY, foeY);
     ctx.setTransform(k, 0, 0, k, 0, 0);
     if (s.level?.stage?.look?.crowd !== false) crowd(ctx, s.t, view.lift); // the cliff has no crowd below it
     // the bars' ghosts fall behind the bars
