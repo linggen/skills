@@ -1,5 +1,5 @@
 {
- "_about": "格斗's painted frames (tools/fighter-frames.py): each fighter's master (txt2img, or an edit of a `base` painting; the kept seed and words), the words naming who it is in every frame, each frame's pose sketch (lean, legF/legB/armF/armB as [upper, lower] degrees from straight down toward the facing side; `up` a lift, `rot` a fall, `width` room for a blade, `air`/`free` not stood on the ground, `fix` {dx, dy, s} placed by eye, `seed` the kept painting) and words, and the clips the board plays (fps, loop, `hit` the strike frame, `calm` the frames reduced motion keeps). 秦雁's master: txt2img seed 2; 沈小满's: an edit of his `base` (the v3 rig's painting, seed 2) toward his guard. 卢方 and 祁长松 (切磋 · 演武场, 2026-10-28): txt2img masters, seed 3 each; unarmed, their 33 frames on 秦雁's clips. 何七 and 马小宝 (the 大比, 2026-10-31): txt2img masters (何七 seed 5, 马小宝 seed 3), 33 frames each on 秦雁's clips, unarmed — 马小宝 lifts his bronze mirror for the beam (ice · jianqi); 何七's thrust4 re-rolled (seed 3) for a stick in his hand. 邹青松, 九层师兄 and 老井 (the story's last person fights, 2026-10-31): txt2img masters (邹青松 seed 5, 九层师兄 seed 7, 老井 seed 6), 33 frames each on 秦雁's clips, unarmed — 邹青松 carries his red-copper gourd and shield, 老井 his bronze mirror; 九层师兄's idle, walk, ice and thrust4 re-rolled (seed 2) for a knife the edit kept putting in his hand.",
+ "_about": "格斗's painted frames (tools/fighter-frames.py): each fighter's master (txt2img, or an edit of a `base` painting; the kept seed and words), the words naming who it is in every frame, each frame's pose sketch (lean, legF/legB/armF/armB as [upper, lower] degrees from straight down toward the facing side; `up` a lift, `rot` a fall, `width` room for a blade, `air`/`free` not stood on the ground, `fix` {dx, dy, s} placed by eye, `seed` the kept painting) and words, and the clips the board plays (fps, loop, `hit` the strike frame, `calm` the frames reduced motion keeps). 秦雁's master: txt2img seed 2; 沈小满's (2026-11-01, repainted: 「和故事里的人物志差异比较大, 看起来有点胖」): his 人物志 portrait (`ref`, art/people/xiaoman.webp) is the reference of every frame (`fromRef`: an edit of the guard master copied the guard over the sketches), his poses named kung fu forms (虚步 guard, 冲拳, 弹腿, 上步冲拳, 上步侧踹, 扫堂腿, 架), the master kept only as the look check. 卢方 and 祁长松 (切磋 · 演武场, 2026-10-28): txt2img masters, seed 3 each; unarmed, their 33 frames on 秦雁's clips. 何七 and 马小宝 (the 大比, 2026-10-31): txt2img masters (何七 seed 5, 马小宝 seed 3), 33 frames each on 秦雁's clips, unarmed — 马小宝 lifts his bronze mirror for the beam (ice · jianqi); 何七's thrust4 re-rolled (seed 3) for a stick in his hand. 邹青松, 九层师兄 and 老井 (the story's last person fights, 2026-10-31): txt2img masters (邹青松 seed 5, 九层师兄 seed 7, 老井 seed 6), 33 frames each on 秦雁's clips, unarmed — 邹青松 carries his red-copper gourd and shield, 老井 his bronze mirror; 九层师兄's idle, walk, ice and thrust4 re-rolled (seed 2) for a knife the edit kept putting in his hand.",
  "qinyan": {
   "master": {
    "seed": 2,
@@ -1003,106 +1003,103 @@
   "master": {
    "seed": 1,
    "pose": "idle1",
-   "words": "Repaint the same thin Chinese peasant boy from the first image — the same face, small top-knot of black hair with loose short hair, the same loose grey-brown patched hemp jacket tied with a rope belt, sleeves rolled to the forearm, the same baggy hemp trousers with frayed hems above the ankle, rope-bound straw sandals, EMPTY HANDS, no weapon, no bow, nothing on his back — in the pose of the second image: a martial-arts guard stance, knees bent, weight low and springy, both fists raised in front of his face and chest, chin tucked. Drawn in the same soft graphite pencil and light watercolour wash on warm aged paper as the first image, in the manner of an old Chinese book illustration, the whole figure from the top-knot to the sandals, seen from the side facing right, alone on plain empty paper, no ground, no other objects, no text. The second image is only a pose guide: copy its body pose exactly, never its grey shapes.",
-   "base": {
-    "seed": 2,
-    "words": "A thin Chinese peasant boy of fourteen with a small top-knot of black hair and loose short hair, wearing a plain loose grey-brown patched hemp jacket tied with a rope belt, sleeves rolled to the forearm, baggy hemp trousers ending above the ankle with frayed hems, rope-bound straw sandals. Seen exactly from the SIDE in full profile, the whole body from the top of the head to the feet, facing RIGHT. Standing in a wide stance like a paper shadow-puppet figure laid out for cutting: feet planted far apart, the front leg forward and the back leg behind with a clear gap of empty paper between the legs; the front arm held straight out forward and slightly down, away from the body, the back arm held straight out behind and slightly down, away from the body, both hands open, clear empty paper between each arm and the body. Calm face in profile.Drawn in soft graphite pencil and light watercolour wash on warm aged paper, in the manner of an old Chinese book illustration, clean confident outlines, gentle shading.  The subject ALONE in the middle of the picture with wide plain empty paper all around it, the paper even and clean, no ground, no shadow, no landscape, no other objects. Set in old rural China (Ming dynasty dress), not Japanese, not Western. Style: Chinese ink wash painting (shuimo with light colour) on warm aged sepia rice paper, loose xieyi brushwork, soft ink gradations from black to pale grey, the faintest muted mineral tint only where it carries meaning, in the manner of an old Chinese album leaf. No bright or saturated colour, no white paper, no pen hatching, no Western field-guide rendering, no photograph, no 3D. No text, no characters, no calligraphy, no seal, no signature, no border, no frame."
-   }
+   "ref": "worlds/jiuding/art/people/xiaoman.webp",
+   "words": "Repaint the same very thin twelve-year-old Chinese hunter's son from the first image, thin as a bamboo pole — the same narrow face with bright eyes and a cheeky grin, the same short messy black hair with a small top-knot, the same loose grey hemp jacket with a crossed collar and square patches, tied with a knotted rope belt whose ends hang down, sleeves rolled to the elbow, a thin cord round one wrist, the same baggy grey hemp trousers ending at mid-calf with frayed hems, cords wrapped round his ankles, rope straw sandals; skinny wrists and ankles, narrow shoulders, a slight wiry body, EMPTY HANDS, no weapon, no bow, nothing on his back — in the pose of the second image: a sharp, ready martial-arts guard stance, knees bent, weight low and springy, both fists raised in front of his face and chest, chin tucked, eyes on his opponent. Drawn in the same soft graphite pencil and light grey wash on warm aged paper as the first image, in the manner of an old Chinese book illustration, the whole figure from the top-knot to the sandals, seen from the side facing right, alone on plain empty paper, no ground, no other objects, no text. The second image is only a pose guide: copy its body pose exactly, never its grey shapes. Keep him as thin as in the first image."
   },
   "armed": false,
   "robe": false,
-  "who": "the same thin Chinese peasant boy from the first image — the same face, small top-knot of black hair with loose short hair, the same loose grey-brown patched hemp jacket tied with a rope belt, sleeves rolled to the forearm, the same baggy hemp trousers with frayed hems above the ankle, rope-bound straw sandals, EMPTY HANDS, no weapon, no bow, nothing on his back — ",
+  "who": "the same very thin twelve-year-old Chinese hunter's son from the first image, thin as a bamboo pole — the same narrow face with bright eyes and a cheeky grin, the same short messy black hair with a small top-knot, the same loose grey hemp jacket with a crossed collar and square patches, tied with a knotted rope belt whose ends hang down, sleeves rolled to the elbow, a thin cord round one wrist, the same baggy grey hemp trousers ending at mid-calf with frayed hems, cords wrapped round his ankles, rope straw sandals; skinny wrists and ankles, narrow shoulders, a slight wiry body, EMPTY HANDS, no weapon, no bow, nothing on his back — ",
   "frames": {
    "idle1": {
-    "lean": 8,
+    "lean": 4,
     "legF": [
-     24,
-     -6
+     30,
+     10
     ],
     "legB": [
-     -14,
-     -30
+     -10,
+     -40
     ],
     "armF": [
-     30,
-     150
+     50,
+     120
     ],
     "armB": [
      44,
      160
     ],
-    "words": "a martial-arts guard stance, knees bent, weight low and springy, both fists raised in front of his face and chest, chin tucked.",
+    "words": "a kung fu guard in an empty stance (xu bu): his weight sunk on the bent back leg, the front foot light on its toe, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
      "s": 1.0
     }
    },
    "idle2": {
-    "lean": 7,
+    "lean": 4,
     "legF": [
-     23,
-     -5
+     30,
+     10
     ],
     "legB": [
-     -13,
-     -29
+     -10,
+     -43
     ],
     "armF": [
-     30,
-     148
+     50,
+     117
     ],
     "armB": [
      44,
-     158
+     160
     ],
-    "words": "the same fighting guard, bouncing up a little on the balls of his feet, both fists up.",
+    "words": "a kung fu guard in an empty stance (xu bu), breathing: his weight sunk on the bent back leg, the front foot light on its toe, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "up": 4,
     "fix": {
      "s": 1.0
     }
    },
    "idle3": {
-    "lean": 6,
+    "lean": 4,
     "legF": [
-     22,
-     -4
+     30,
+     10
     ],
     "legB": [
-     -12,
-     -28
+     -10,
+     -46
     ],
     "armF": [
-     30,
-     146
+     50,
+     114
     ],
     "armB": [
      44,
-     156
+     160
     ],
-    "words": "the same fighting guard at the top of a little bounce, both fists up.",
+    "words": "a kung fu guard in an empty stance (xu bu), breathing: his weight sunk on the bent back leg, the front foot light on its toe, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "up": 8,
     "fix": {
      "s": 1.0
     }
    },
    "idle4": {
-    "lean": 7,
+    "lean": 4,
     "legF": [
-     23,
-     -5
+     30,
+     10
     ],
     "legB": [
-     -13,
-     -29
+     -10,
+     -43
     ],
     "armF": [
-     30,
-     148
+     50,
+     117
     ],
     "armB": [
      44,
-     158
+     160
     ],
-    "words": "the same fighting guard, settling down from a little bounce, both fists up.",
+    "words": "a kung fu guard in an empty stance (xu bu), breathing: his weight sunk on the bent back leg, the front foot light on its toe, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "up": 3,
     "fix": {
      "s": 1.0
@@ -1119,65 +1116,66 @@
      -40
     ],
     "armF": [
-     30,
-     150
+     50,
+     120
     ],
     "armB": [
      44,
      160
     ],
-    "words": "stepping forward to the right in his fighting guard: front foot reaching forward, back heel lifted, both fists up.",
+    "words": "stepping forward to the right in his kung fu guard: front foot reaching forward, back heel lifted, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
      "s": 1.0
-    }
+    },
+    "seed": 8
    },
    "walk2": {
-    "lean": 6,
+    "lean": 8,
     "legF": [
-     40,
-     10
+     22,
+     6
     ],
     "legB": [
-     -10,
-     -30
+     -14,
+     -50
     ],
     "armF": [
-     40,
+     50,
      120
     ],
     "armB": [
-     50,
-     130
-    ],
-    "words": "falling down through the air after a jump, his feet off the ground, both legs hanging down straight together with toes pointed down, arms raised out for balance. No ground under him.",
-    "fix": {
-     "s": 1.08
-    },
-    "seed": 3
-   },
-   "walk3": {
-    "lean": 10,
-    "legF": [
-     100,
-     10
-    ],
-    "legB": [
-     60,
-     -60
-    ],
-    "armF": [
-     60,
-     150
-    ],
-    "armB": [
-     60,
+     44,
      160
     ],
-    "words": "leaping high up in the air, his feet far off the ground, both knees pulled up tight to his chest, feet tucked under him, fists up. No ground under him.",
+    "words": "walking forward to the right in his kung fu guard, the back foot lifting to pass, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
      "s": 1.0
     },
-    "seed": 3
+    "seed": 7
+   },
+   "walk3": {
+    "lean": 8,
+    "legF": [
+     4,
+     -6
+    ],
+    "legB": [
+     6,
+     -20
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "walking forward to the right in his kung fu guard, the feet passing each other under him, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "fix": {
+     "s": 1.0
+    },
+    "seed": 7
    },
    "crouch1": {
     "lean": 18,
@@ -1199,7 +1197,7 @@
     ],
     "words": "dropping into a crouch, knees bending deep, fists up by his face.",
     "fix": {
-     "s": 1.024
+     "s": 0.9
     }
    },
    "crouch2": {
@@ -1222,7 +1220,7 @@
     ],
     "words": "crouching low on bent knees, the back knee near the ground, both fists up guarding his face.",
     "fix": {
-     "s": 0.929
+     "s": 0.88
     }
    },
    "jump1": {
@@ -1245,7 +1243,7 @@
     ],
     "words": "crouched to spring, about to jump up, arms swung low behind.",
     "fix": {
-     "s": 1.083
+     "s": 1.0
     }
    },
    "jump2": {
@@ -1294,9 +1292,8 @@
     "words": "falling down through the air after a jump, his feet off the ground, both legs hanging down straight together with toes pointed down, arms raised out for balance. No ground under him.",
     "air": true,
     "fix": {
-     "s": 1.03
-    },
-    "seed": 2
+     "s": 1.0
+    }
    },
    "air1": {
     "lean": -6,
@@ -1316,159 +1313,160 @@
      -30,
      20
     ],
-    "words": "a flying kick in mid-air: his front leg kicked straight out forward to the right, the other leg tucked, arms out for balance.",
+    "words": "a flying kick (fei jiao) in mid-air: his front leg kicked straight out forward to the right, the other leg tucked, arms out for balance. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "air": true,
     "fix": {
-     "s": 1.182
-    }
+     "s": 1.1
+    },
+    "seed": 2
    },
    "lp1": {
-    "lean": 12,
+    "lean": 6,
     "legF": [
-     26,
-     -4
+     34,
+     0
     ],
     "legB": [
-     -18,
-     -30
+     -30,
+     -34
     ],
     "armF": [
-     60,
-     110
+     -24,
+     84
     ],
     "armB": [
      44,
      160
     ],
-    "words": "starting a quick jab, his front fist beginning to shoot forward, the other fist up by his chin.",
+    "words": "starting a straight kung fu punch (chong quan) from the waist: his front fist drawn back to his hip, hips turning, stepping into a bow stance. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.016
+     "s": 1.0
     }
    },
    "lp2": {
-    "lean": 16,
+    "lean": 10,
     "legF": [
-     28,
-     -2
+     44,
+     0
     ],
     "legB": [
-     -22,
-     -30
+     -44,
+     -44
     ],
     "armF": [
      88,
      90
     ],
     "armB": [
-     44,
-     160
+     -30,
+     92
     ],
-    "words": "a quick straight jab: his front arm fully extended forward to the right at face height with a fist, the other fist up by his chin.",
+    "words": "a straight kung fu punch (chong quan) from the waist in a bow stance (gong bu): the front knee bent over the foot, the back leg long and straight, his hips turned in, the punching arm fully extended forward to the right at chest height with a level fist, the other fist pulled back to his hip. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.083
+     "s": 1.05
     }
    },
    "lk1": {
     "lean": 0,
     "legF": [
-     70,
-     -40
+     76,
+     -30
     ],
     "legB": [
-     -10,
-     -10
+     -8,
+     -8
     ],
     "armF": [
-     30,
-     140
+     -30,
+     90
     ],
     "armB": [
-     50,
-     150
+     -30,
+     92
     ],
-    "words": "chambering a quick kick, his front knee raised high, fists up.",
+    "words": "chambering a kung fu snap kick (tan tui): his front knee raised to the waist, the foot hanging, fists at his hips. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.3
+     "s": 1.25
     }
    },
    "lk2": {
-    "lean": -8,
+    "lean": -4,
     "legF": [
-     84,
-     88
+     80,
+     84
     ],
     "legB": [
-     -14,
+     -6,
      -6
     ],
     "armF": [
-     30,
-     130
+     -30,
+     90
     ],
     "armB": [
-     50,
-     150
+     -30,
+     92
     ],
-    "words": "a quick front kick: his front leg kicked straight out forward to the right at waist height, standing on the other leg, fists up.",
+    "words": "a kung fu snap kick (tan tui): his front leg snapped straight out forward to the right at knee-to-waist height, toes pointed, standing straight on the other leg, fists at his hips. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.13
+     "s": 1.0
     }
    },
    "hp1": {
-    "lean": -4,
+    "lean": 4,
     "legF": [
-     24,
-     0
+     36,
+     -14
     ],
     "legB": [
-     -20,
+     -26,
      -30
     ],
     "armF": [
-     -20,
-     60
+     -30,
+     86
     ],
     "armB": [
      40,
      150
     ],
-    "words": "winding up a big punch: his rear fist drawn back by his ear, body twisted, weight on the back foot.",
+    "words": "stepping in (shang bu) for a big punch: his front foot stepping far forward, his fist chambered at his hip, body coiled. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.016
+     "s": 1.0
     }
    },
    "hp2": {
-    "lean": 26,
+    "lean": 18,
     "legF": [
-     44,
-     10
-    ],
-    "legB": [
-     -34,
-     -16
-    ],
-    "armF": [
-     92,
-     92
-    ],
-    "armB": [
-     -24,
-     16
-    ],
-    "words": "a big straight punch thrown with his whole body: his arm fully extended forward to the right at head height with a fist, front knee bent, the other arm pulled back.",
-    "fix": {
-     "s": 1.13
-    }
-   },
-   "hp3": {
-    "lean": 14,
-    "legF": [
-     34,
+     56,
      4
     ],
     "legB": [
-     -24,
-     -20
+     -52,
+     -52
+    ],
+    "armF": [
+     90,
+     92
+    ],
+    "armB": [
+     -30,
+     92
+    ],
+    "words": "a stepping straight punch (shang bu chong quan): landed in a deep bow stance (gong bu), the front knee bent deep, the back leg long and straight, hips and shoulders turned fully in, his arm fully extended forward to the right at head height with a fist, the other fist pulled hard to his hip. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "fix": {
+     "s": 1.05
+    }
+   },
+   "hp3": {
+    "lean": 8,
+    "legF": [
+     40,
+     4
+    ],
+    "legB": [
+     -34,
+     -30
     ],
     "armF": [
      60,
@@ -1478,59 +1476,59 @@
      30,
      140
     ],
-    "words": "recovering from a big punch, drawing the fist back toward his guard.",
+    "words": "recovering from a stepping punch, sinking back, drawing the fist back toward his guard. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.016
+     "s": 0.97
     }
    },
    "hk1": {
-    "lean": -6,
+    "lean": -10,
     "legF": [
-     50,
-     10
+     80,
+     -40
     ],
     "legB": [
-     30,
-     -36
+     -10,
+     -10
     ],
     "armF": [
-     36,
-     82
+     50,
+     130
     ],
     "armB": [
-     10,
-     52
+     -30,
+     40
     ],
-    "words": "twisting to throw a low hooking kick, his front leg swinging back to start, arms out.",
+    "words": "stepping in (shang bu) and chambering a side kick (ce chuai): the front knee drawn up high across his body, the hips turning side-on, arms guarding. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.182
+     "s": 1.08
     }
    },
    "hk2": {
-    "lean": -16,
+    "lean": -28,
     "legF": [
-     84,
-     94
+     92,
+     92
     ],
     "legB": [
-     44,
-     -44
+     -8,
+     -8
     ],
     "armF": [
-     46,
-     70
+     60,
+     120
     ],
     "armB": [
-     -40,
-     -12
+     -60,
+     -40
     ],
-    "words": "a low hooking sweep kick: dropping low, his front leg swept out along the ground forward to the right to hook an ankle, the back knee bent, arms out for balance.",
+    "words": "a stepping side kick (shang bu ce chuai): his front leg thrust straight out to the right at waist height, the sole of the foot leading, hips turned fully side-on, his body leaning back from it in one long line, standing on the straight back leg, the front arm guarding, the rear arm out behind for balance. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.238
+     "s": 1.06
     }
    },
    "clp1": {
-    "lean": 28,
+    "lean": 10,
     "legF": [
      80,
      -6
@@ -1544,18 +1542,18 @@
      90
     ],
     "armB": [
-     60,
-     160
+     -30,
+     92
     ],
-    "words": "crouching low and throwing a quick jab forward to the right, his front arm extended with a fist at chest height.",
+    "words": "a low punch (chong quan) from a horse stance (ma bu): squatting low, thighs level, his front arm extended forward to the right at chest height with a fist, the other fist at his hip. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.13
+     "s": 1.15
     }
    },
    "clk1": {
-    "lean": 20,
+    "lean": 14,
     "legF": [
-     90,
+     88,
      90
     ],
     "legB": [
@@ -1567,16 +1565,16 @@
      150
     ],
     "armB": [
-     60,
-     160
+     -30,
+     92
     ],
-    "words": "crouching low and kicking his front foot straight out forward along the ground, fists up.",
+    "words": "a low snap kick (tan tui) from a squat: his front foot kicked straight out forward along the ground at the shin, fists up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.182
+     "s": 1.15
     }
    },
    "chp1": {
-    "lean": 10,
+    "lean": 12,
     "legF": [
      70,
      -10
@@ -1587,15 +1585,15 @@
     ],
     "armF": [
      150,
-     170
+     120
     ],
     "armB": [
-     50,
-     150
+     -30,
+     92
     ],
-    "words": "rising from a crouch with an upward punch, his front fist driven straight up above his head.",
+    "words": "a chopping fist (pi quan) out of a horse stance: rising from the squat, his front fist chopping down from above his head, the other fist at his hip. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.13
+     "s": 1.0
     }
    },
    "chk1": {
@@ -1616,20 +1614,20 @@
      40,
      20
     ],
-    "words": "a crouching sweep: very low, one hand on the ground, his front leg swept out flat along the ground forward to the right.",
+    "words": "a sweeping kick (sao tang tui): very low on the bent back leg, one hand touching the ground, his front leg swept out flat along the ground forward to the right. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.238
+     "s": 1.18
     }
    },
    "block1": {
-    "lean": -6,
+    "lean": -4,
     "legF": [
-     16,
-     2
+     24,
+     6
     ],
     "legB": [
-     -24,
-     -10
+     -14,
+     -36
     ],
     "armF": [
      64,
@@ -1639,10 +1637,10 @@
      48,
      152
     ],
-    "words": "blocking: both forearms raised crossed in front of his face, leaning back, bracing.",
+    "words": "a kung fu blocking frame (jia): his front forearm raised up across in front of his forehead to frame the blow, the rear hand guarding his chest, weight sunk back in an empty stance (xu bu). A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "head": -6,
     "fix": {
-     "s": 1.083
+     "s": 1.0
     }
    },
    "cblock1": {
@@ -1666,7 +1664,7 @@
     "words": "crouching low, both forearms raised crossed in front of his face, blocking.",
     "head": -4,
     "fix": {
-     "s": 0.963
+     "s": 0.83
     }
    },
    "hit1": {
@@ -1690,7 +1688,7 @@
     "words": "struck: he reels backward to the left, his head and shoulders thrown back, arms flung out.",
     "head": -18,
     "fix": {
-     "s": 1.083
+     "s": 1.05
     }
    },
    "hit2": {
@@ -1713,7 +1711,7 @@
     ],
     "words": "staggered, hunched over in pain, catching himself on his heels, arms low.",
     "fix": {
-     "s": 1.083
+     "s": 1.0
     }
    },
    "knock1": {
@@ -1737,8 +1735,9 @@
     "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward.",
     "air": true,
     "fix": {
-     "s": 1.238
-    }
+     "s": 1.0
+    },
+    "seed": 2
    },
    "knock2": {
     "lean": 0,
@@ -1762,7 +1761,7 @@
     "rot": -88,
     "free": true,
     "fix": {
-     "s": 1.25
+     "s": 1.05
     }
    },
    "getup1": {
@@ -1785,7 +1784,7 @@
     ],
     "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, rising.",
     "fix": {
-     "s": 1.238
+     "s": 0.95
     }
    },
    "rise1": {
@@ -1808,7 +1807,7 @@
     ],
     "words": "crouched low, coiling to spring upward, his fist drawn down by his hip.",
     "fix": {
-     "s": 0.963
+     "s": 0.95
     }
    },
    "rise2": {
@@ -1829,10 +1828,10 @@
      -20,
      10
     ],
-    "words": "a rising uppercut leaping upward: his front fist driven straight up high above his head, body stretched up, one knee raised.",
+    "words": "a rising uppercut leaping upward (chong tian pao): his front fist driven straight up high above his head, body stretched up, one knee raised. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "up": 40,
     "fix": {
-     "s": 1.238
+     "s": 1.15
     }
    },
    "cast1": {
@@ -1853,9 +1852,9 @@
      60,
      140
     ],
-    "words": "gathering his inner breath: his right palm drawn back by his hip, the left hand open in front, knees bent, focused.",
+    "words": "gathering spirit-qi for a palm strike: his open palm drawn back to his hip, the other hand forward, sinking into a bow stance. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.04
+     "s": 1.0
     }
    },
    "cast2": {
@@ -1876,9 +1875,9 @@
      80,
      92
     ],
-    "words": "pushing both open palms straight forward to the right at chest height, as if releasing a burst of fire from his palms, front knee bent.",
+    "words": "a pushing palm strike (tui zhang): one open palm thrust straight forward to the right at chest height, the other fist at his hip, in a bow stance (gong bu). A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.083
+     "s": 1.0
     }
    },
    "super1": {
@@ -1899,9 +1898,9 @@
      -20,
      30
     ],
-    "words": "dropping to one knee and slapping one open palm flat on the ground in front of him, the other hand drawn back.",
+    "words": "dropping to one knee and slapping one open palm flat on the ground in front of him, the other hand drawn back. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.182
+     "s": 0.9
     }
    },
    "super2": {
@@ -1922,20 +1921,20 @@
      -60,
      -40
     ],
-    "words": "springing up from the ground and thrusting one open palm straight forward to the right, the other arm swept back, a fierce shout.",
+    "words": "springing up from the ground into a bow stance and thrusting one open palm (tui zhang) straight forward to the right, the other arm swept back, a fierce shout. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.13
+     "s": 0.9
     }
    },
    "blow1": {
-    "lean": 20,
+    "lean": 14,
     "legF": [
-     46,
-     10
+     52,
+     4
     ],
     "legB": [
-     -38,
-     -16
+     -48,
+     -48
     ],
     "armF": [
      88,
@@ -1945,9 +1944,9 @@
      84,
      76
     ],
-    "words": "a two-handed shove: both open palms pushed straight forward to the right at chest height, front knee bent, leaning in.",
+    "words": "a double palm strike (shuang tui zhang): both open palms pushed straight forward to the right at chest height, heels of the hands leading, in a deep bow stance (gong bu), hips turned in. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.083
+     "s": 1.05
     }
    },
    "dash1": {
@@ -1968,9 +1967,9 @@
      -40,
      -10
     ],
-    "words": "dashing forward to the right in a low running lunge, leaning far forward, fists up.",
+    "words": "dashing forward to the right in a low, fast running lunge, leaning forward, fists up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.182
+     "s": 0.95
     }
    },
    "roll1": {
@@ -1994,31 +1993,32 @@
     "words": "curled into a tight ball rolling forward on the ground, head tucked, knees to chest, arms hugging his shins.",
     "free": true,
     "fix": {
-     "s": 1.0
+     "s": 0.85
     }
    },
    "win1": {
     "lean": 0,
     "legF": [
-     14,
+     10,
      0
     ],
     "legB": [
-     -12,
+     -10,
      0
     ],
     "armF": [
-     170,
-     170
+     70,
+     140
     ],
     "armB": [
-     20,
-     10
+     60,
+     150
     ],
-    "words": "cheering after winning: standing tall with one fist punched straight up in the air above his head, grinning.",
+    "words": "a hero's stance after winning: standing tall and calm, his right fist pressed into his left palm before his chest in a kung fu salute (bao quan li), chin up, a confident grin. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.04
-    }
+     "s": 1.0
+    },
+    "seed": 3
    },
    "lose1": {
     "lean": -10,
@@ -2041,7 +2041,7 @@
     "words": "sitting down on the ground after losing, legs out in front, leaning back on one hand, rueful.",
     "free": true,
     "fix": {
-     "s": 1.3
+     "s": 1.2
     }
    }
   },
@@ -2321,7 +2321,8 @@
      "lose1"
     ]
    }
-  }
+  },
+  "fromRef": true
  },
  "lufang": {
   "master": {

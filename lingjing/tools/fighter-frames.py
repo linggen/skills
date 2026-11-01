@@ -178,25 +178,35 @@ def paint(who, raw, only, seeds, master):
   ms = spec['master']
   mpng = raw / f"{who}-master-s{ms['seed']}.png"
   jobs = []
+  sk_args = (spec.get('armed', True), spec.get('robe', True))
   if master:
-    base = ms.get('base')
-    if base:  # the master is an edit of a base painting (txt2img) toward the guard
+    base, ref = ms.get('base'), ms.get('ref')
+    if ref:  # the master is an edit of a painting the book already shows (沈小满's 人物志 portrait) toward the guard
+      bpng = raw / f"{who}-ref.png"
+      Image.open(HERE.parent / ref).convert('RGB').resize((W, H), Image.LANCZOS).save(bpng)
+      sketch(spec['frames'][ms['pose']], raw / f"pose-{ms['pose']}.png", *sk_args)
+    elif base:  # the master is an edit of a base painting (txt2img) toward the guard
       bpng = raw / f"{who}-base-s{base['seed']}.png"
       jobs.append({'seed': base['seed'], 'prompt': base['words'], 'out': str(bpng)})
-      sketch(spec['frames'][ms['pose']], raw / f"pose-{ms['pose']}.png", spec.get('armed', True), spec.get('robe', True))
+      sketch(spec['frames'][ms['pose']], raw / f"pose-{ms['pose']}.png", *sk_args)
     for sd in seeds:
       job = {'seed': sd, 'prompt': ms['words'], 'out': str(raw / f'{who}-master-s{sd}.png')}
-      if base:
+      if base or ref:
         job['refs'] = [str(bpng), str(raw / f"pose-{ms['pose']}.png")]
       jobs.append(job)
   else:
-    if not mpng.exists():
+    if spec.get('fromRef'):  # each frame an edit of the book's own portrait, not of the master: an edit of a painting
+      # already in a fighting stance copies that stance over the sketch (沈小满, 2026-11-01); a plain standing portrait
+      # takes the sketch's pose and keeps the face
+      mpng = raw / f"{who}-ref.png"
+      Image.open(HERE.parent / ms['ref']).convert('RGB').resize((W, H), Image.LANCZOS).save(mpng)
+    elif not mpng.exists():
       raise SystemExit(f'{who}: paint the master first (--master), kept seed {ms["seed"]}')
     for name, p in spec['frames'].items():
       if only and name not in only:
         continue
       sk = raw / f'pose-{name}.png'
-      sketch(p, sk, spec.get('armed', True), spec.get('robe', True))
+      sketch(p, sk, *sk_args)
       for sd in seeds:
         jobs.append({'seed': sd, 'out': str(raw / f'{who}-{name}-s{sd}.png'), 'refs': [str(mpng), str(sk)], 'width': p.get('width', W),
                      'prompt': f"Repaint {spec['who']} in the pose of the second image: {p['words']} {EDIT_STYLE}"})
