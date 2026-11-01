@@ -1386,7 +1386,7 @@
     ],
     "words": "chambering a kung fu snap kick (tan tui): his front knee raised to the waist, the foot hanging, fists at his hips. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.25
+     "s": 1.15
     }
    },
    "lk2": {
@@ -1409,7 +1409,7 @@
     ],
     "words": "a kung fu snap kick (tan tui): his front leg snapped straight out forward to the right at knee-to-waist height, toes pointed, standing straight on the other leg, fists at his hips. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 1.0
+     "s": 0.95
     }
    },
    "hp1": {
@@ -1855,6 +1855,12 @@
     "words": "gathering spirit-qi for a palm strike: his open palm drawn back to his hip, the other hand forward, sinking into a bow stance. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
      "s": 1.0
+    },
+    "points": {
+     "handF": [
+      564.4,
+      361.5
+     ]
     }
    },
    "cast2": {
@@ -1878,6 +1884,12 @@
     "words": "a pushing palm strike (tui zhang): one open palm thrust straight forward to the right at chest height, the other fist at his hip, in a bow stance (gong bu). A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
      "s": 1.0
+    },
+    "points": {
+     "handF": [
+      647.7,
+      322.3
+     ]
     }
    },
    "super1": {
@@ -1923,7 +1935,13 @@
     ],
     "words": "springing up from the ground into a bow stance and thrusting one open palm (tui zhang) straight forward to the right, the other arm swept back, a fierce shout. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
     "fix": {
-     "s": 0.9
+     "s": 1.05
+    },
+    "points": {
+     "handF": [
+      585.9,
+      316.9
+     ]
     }
    },
    "blow1": {
