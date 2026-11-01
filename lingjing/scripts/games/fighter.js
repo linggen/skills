@@ -117,7 +117,7 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 .g-fighter .gf-dial { position: relative; width: 132px; height: 132px; border-radius: 50%; flex: none; touch-action: none;
   background: radial-gradient(circle, rgba(243,234,214,.92) 0 30%, rgba(228,214,184,.92) 31% 100%); border: 2px solid #2a241c; box-sizing: border-box; }
 .g-fighter .gf-dial i { position: absolute; left: 50%; top: 50%; width: 0; height: 0; font: normal 600 13px/1 ui-sans-serif, system-ui, sans-serif; color: #2a241c; opacity: .55;
-  transform: rotate(var(--a)) translateY(-50px) rotate(calc(-1 * var(--a))); display: grid; place-items: center; }
+  transform: rotate(var(--a)) translateY(-50px) rotate(calc(-1 * var(--a))); display: grid; place-items: center; z-index: 1; } /* the lit way shows over the knob */
 .g-fighter .gf-dial i::before { content: attr(data-f); position: absolute; transform: translate(-50%, -50%); }
 .g-fighter .gf-dial i.is-on { opacity: 1; color: #b0412e; }
 .g-fighter .gf-dial b { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%;
