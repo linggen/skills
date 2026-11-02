@@ -1293,6 +1293,17 @@ function lintQian(content, bad) {
     if (!Array.isArray(e.poem) || e.poem.length !== 4 || e.poem.some(l => typeof l !== 'string' || !l)) bad(at, 'needs its 签诗 as four lines');
     if (!e.url && !q.source?.url) bad(at, 'needs its source');
     if (!e.gloss) bad(at, 'needs its English gloss');
+    // 问签 v2: its 白话签解, its 宜 kind (tagged once, by the rule in qian.json `_about`), a tone for each of the five 项.
+    if (q.version >= 2) {
+      if (typeof e.jie !== 'string' || !e.jie) bad(at, 'needs its 白话签解 (jie)');
+      if (!(q.yi?.kinds ?? []).some(k => k.id === e.kind)) bad(at, `kind ${e.kind} is not one of the 宜 kinds`);
+      const tones = ['up', 'even', 'slow'], n = (q.aspects?.list ?? []).length;
+      if (!Array.isArray(e.luck) || e.luck.length !== n || e.luck.some(t => !tones.includes(t))) bad(at, `needs a tone (up · even · slow) for each of the ${n} 项`);
+    }
+  }
+  for (const a of q.aspects?.list ?? []) {
+    for (const t of ['up', 'even', 'slow']) if (!(a.lines?.[t] ?? []).length || a.lines[t].some(l => !l.zh || !l.en)) bad(`qian aspect ${a.id}`, `needs ${t} lines in zh and en`);
+    for (const id of [...(a.yi ?? []), ...(a.ji ?? [])]) if (!q.almanac?.acts?.[id]) bad(`qian aspect ${a.id}`, `reads unknown 黄历 act ${id}`);
   }
   if (!(q.qian ?? []).length) bad('qian', 'needs at least one 签');
   if (!(q.yi?.pay >= 1) || !(q.yi?.kinds ?? []).length) bad('qian yi', 'needs a pay ≥ 1 and its kinds');

@@ -333,7 +333,10 @@ const view = {
   casting: false, //     起一卦 tapped: the coins are in the air until the cast lands
   castSeen: undefined, // the cast last drawn — a new one is drawn line by line, once
   castFresh: false,
-  qianShaking: false, qianShakeAt: 0, qianNote: null, qianAsk: null, qianAskText: '', qianBookOpen: false, qianBook: null, qianOpen: false, // 问签 (qian-page.js): the tube shaking, what he asks, the 签谱 open, the chip's popover
+  qianShaking: false, qianShakeAt: 0, qianNote: null, qianBookOpen: false, qianBook: null, qianOpen: false, // 问签 (qian-page.js): the tube shaking, a draw gone wrong, the 签谱 open, the chip's popover
+  // 问签 v2: his reading and her line on it; 替人求签's form and the friend's card; the share pictures made, what this browser can do with them
+  qianMine: null, qianMineLang: null, qianHer: null, qianHerWaiting: false, qianFriendOpen: false, qianFriendName: '', qianFriendBirth: '', qianFriendNoKeep: false, qianFriendNote: null,
+  qianFriend: null, qianFriendHer: null, qianFriendWaiting: false, qianFriendFresh: false, qianPngReady: null, qianCan: null, qianShareNote: null, qianShown: null,
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
@@ -448,7 +451,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianAsk: view.qianAsk, qianAskText: view.qianAskText, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianHer: view.qianHer, qianHerWaiting: view.qianHerWaiting, qianFriendOpen: view.qianFriendOpen, qianFriendName: view.qianFriendName, qianFriendBirth: view.qianFriendBirth, qianFriendNoKeep: view.qianFriendNoKeep, qianFriendNote: view.qianFriendNote, qianFriend: view.qianFriend, qianFriendHer: view.qianFriendHer, qianFriendWaiting: view.qianFriendWaiting, qianFriendFresh: view.qianFriendFresh, qianPngReady: view.qianPngReady, qianCan: view.qianCan, qianShareNote: view.qianShareNote, qianShown: view.qianShown, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1773,7 +1776,9 @@ function draw() {
   $('askHerBtn').hidden = true;
   const cast = look.divination?.poem ? `${look.today?.date ?? ''}|${look.divination.n}` : null;
   keep({ castFresh: view.castSeen !== undefined && cast !== null && cast !== view.castSeen, castSeen: cast });
-  if (view.castFresh) qianPage.reading(look.divination);
+  // 问签 v2: his reading kept for the card and its picture — read again when it is new, another day's, or in another language.
+  const dv = look.divination;
+  if (dv?.poem && (view.castFresh || view.qianMine?.n !== dv.n || view.qianMine?.day !== dv.day || view.qianMineLang !== lang())) { keep({ qianMineLang: lang() }); qianPage.reading(dv, { fresh: view.castFresh }); }
   qianPage.evening(look);
   // The slots stay put; only what fills them changes. The header and the
   // footer are redrawn only when they changed (a stream token must not
@@ -3455,7 +3460,13 @@ async function setFate(kind) {
   askHer('fate', `玩家刚在问签的卡上留了生辰：属${f.zodiac.name}${sign}，日主${f.stem.name}${f.element.name}。生辰的日子只在本机算过、没留下；生肖和星座留着给你解签用。斗法时他主灵根一击属${f.element.name}。用你自己的话说一两句。`,
     `The player has just given their birthday on the fortune-stick card: year of the ${f.zodiac.name}${signEn}, day master ${f.stem.name} (${f.element.name}). The date itself was read on this machine and not kept; the animal and sign are kept for your readings. Their root strike in a fight is ${f.element.name}. A line or two, in your own words.`, 'happy');
 }
-document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false }); if (e.target.id === 'qian-ask-text') keep({ qianAskText: e.target.value }); });
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false });
+  // 替人求签's form: kept as typed; 求一签 lights once a 称呼 is there.
+  if (e.target.id === 'qian-friend-name') { const had = Boolean(view.qianFriendName?.trim()); keep({ qianFriendName: e.target.value }); if (had !== Boolean(e.target.value.trim())) { const b = document.querySelector('[data-qian-friend-go]'); if (b) b.disabled = !e.target.value.trim() || !(look?.qian?.friend_left > 0); } }
+  if (e.target.id === 'qian-friend-birth') keep({ qianFriendBirth: e.target.value });
+  if (e.target.id === 'qian-friend-nokeep') keep({ qianFriendNoKeep: e.target.checked });
+});
 
 function toggleOffer(id) { show({ offerRow: view.offerRow === id ? null : id }); }
 
@@ -3805,7 +3816,12 @@ const CLICKS = [
   // 问签 from the tray or 先放一放: the 签 card opens over the stage — the shake is its own (never a draw with no ritual).
   ['[data-divine]', () => show({ qianOpen: true })],
   ['[data-qian-shake]', (el) => { if (!el.matches(':disabled')) run('divine', () => qianPage.tap()); }],
-  ['[data-qian-ask]', (el) => show({ qianAsk: view.qianAsk === el.dataset.qianAsk ? null : el.dataset.qianAsk })],
+  // 问签 v2: 替人求签 and the share picture.
+  ['[data-qian-friend-go]', (el) => { if (!el.matches(':disabled')) run('qian-friend', () => qianPage.friendAsk()); }],
+  ['[data-qian-friend-ask]', (el) => run('qian-friend', () => qianPage.friendAsk(el.dataset.qianFriendAsk))],
+  ['[data-qian-friend-forget]', (el) => run('qian-friend', () => qianPage.friendForget(el.dataset.qianFriendForget))],
+  ['[data-qian-friend]', (el) => (el.dataset.qianFriend === 'back' ? qianPage.friendBack() : qianPage.friendOpen(el.dataset.qianFriend === 'open'))],
+  ['[data-qian-share]', (el) => { if (!el.matches(':disabled')) qianPage.shareTap(el.dataset.qianShare, el.dataset.qianWho); }],
   ['[data-qian-book]', (el) => run('qian-book', () => qianPage.book(el.dataset.qianBook === 'open'))],
   ['[data-qian-chip]', () => show({ qianOpen: !view.qianOpen })], // the top bar's own popover, not the footer's
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
@@ -4057,6 +4073,19 @@ function herMomentAsk(kind, facts, { mode, mood }) {
   const id = HER_MOMENT_ID[kind] ?? (mood === 'sad' ? 'comfort' : 'cheer');
   const r = voice.moment(id, { zh: facts, en: facts }, { mood });
   return { sent: r.said, line };
+}
+/* 问签's one line (qian-page.js): her answer to the reading's facts, caught as a moment's is (herMomentAsk) — the first
+   new line of hers in this chat, or her stream; null when nobody will hear it or none comes in time (the card then
+   stands without her line). */
+async function herReadingLine(id, facts, mood) {
+  if (!herHere() || CHATLESS) return null;
+  if (HER_SEAM === 'stub') return new Promise((done) => setTimeout(() => done(`[stub] ${id} · ${[...facts].length}`), 1500));
+  const sid = chat?.getSessionId?.() ?? null;
+  const line = Promise.race([herNextLine(), herNewLine(sid, herLinesIn(sid))]);
+  const heard = await voice.moment(id, { zh: facts, en: facts }, { mood }).said;
+  if (!heard) return null;
+  const got = await Promise.race([line, new Promise((done) => setTimeout(() => done(null), 30000))]);
+  return got ? String(got).trim() : null;
 }
 /* The day's counts (first win today, the streak, the last short word) — this
    browser's, per save; never the save. */
@@ -4533,7 +4562,7 @@ async function mountChat() {
 /* ── 银月 on the stage: the cast, the rise, her body ── */
 
 /// 问签 (qian-page.js): the shake, the draw through the rules, 银月's reading as facts, the evening's 应验 question.
-const qianPage = createQianPage({ write, refresh: () => refresh(), show, keep, view, askHer, tellHer: tellYinyue, herHere, lang, refusal, failed });
+const qianPage = createQianPage({ write, refresh: () => refresh(), show, keep, view, herLine: herReadingLine, tellHer: tellYinyue, herHere, lang, refusal, failed, saveKey: () => herKey() });
 
 /// Something won in Ling's turn — 修为, or 灵石 not from a sale: 银月 hears the
 /// rise as facts and says what she will, in her own words (his rule: Yinyue

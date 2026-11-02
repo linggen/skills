@@ -1,48 +1,28 @@
-// qian-page.js — 问签's page side (rules/fortune.mjs; the card is qian-card.js): the shake (a tap on the Mac; on a
-// phone the device's own shake, asked for on iOS inside the tap, or a tap), the draw through the rules, 银月's reading
-// as facts (her rules: guide/qian.md § 银月 · 解签 — the facts are the rules', the words hers), the evening's 应验
-// question once, and the 签谱. lingjing.js makes one with its own helpers.
+// qian-page.js — 问签's page side (rules/fortune.mjs; the card is qian-card.js + qian-reading.js): the shake (a tap on
+// the Mac; on a phone the device's own shake, asked for on iOS inside the tap, or a tap), the draw through the rules,
+// 银月's one line as facts (qian-facts.js; her rules: guide/qian.md § 银月 · 解签 — the facts are the rules', the words
+// hers), kept on the card for the day (this browser's, never the save), 替人求签, the share image (qian-share.js) made
+// before any tap, the evening's 应验 question once, and the 签谱. lingjing.js makes one with its own helpers.
+import { friendFacts, qianFacts } from './qian-facts.js';
+import { copyPng, savePng, shareBlob, shareCan, shareLines, sharePng } from './qian-share.js';
+
 
 const SHAKE_MS = 1300; //    the tube shakes this long before the 签 drops
 const JOLT = 18; //          m/s² over gravity, twice within the window, counts as a shake
 const JOLT_WINDOW_MS = 900;
 const STUCK_MS = 45000; //   a shake never answered by then (the channel's own timeout is 30 s) is taken as lost
 
-/* 银月's rules for the reading, read once from guide/qian.md (the section `## 银月 · 解签`); a short fallback inline. */
-const FALLBACK = '解签：一句，≤80字，俏皮；游戏里说今日修为倍数与宜的玩法；生活里只说宜/忌，钱、病、官司只说宜谨慎；下签也落到一件今天做得到的小事上。';
-let rules = null;
-async function herRules() {
-  if (rules) return rules;
-  try {
-    const text = await (await fetch('../guide/qian.md')).text();
-    const m = /## 银月 · 解签\n([\s\S]*?)(?=\n## |$)/.exec(text);
-    rules = m ? m[1].trim() : FALLBACK;
-  } catch { rules = FALLBACK; }
-  return rules;
-}
+export { qianFacts };
 
-/* The facts of the day's 签, as the rules gave them — never a word of what they mean. */
-export function qianFacts(d, zh) {
-  const al = d.almanac;
-  const list = (xs) => (xs?.length ? xs.map((x) => x.name).join('、') : zh ? '无' : 'none');
-  const day = al ? (zh
-    ? `黄历：${al.ganzhi.year}年 ${al.ganzhi.month}月 ${al.ganzhi.day}日，${al.officer.name}日，冲${al.chong.name ?? al.chong.branch}，煞${al.sha.name}；宜：${list(al.yi)}；忌：${list(al.ji)}。`
-    : `Almanac: ${al.ganzhi.day} day of ${al.ganzhi.month} month, ${al.ganzhi.year} year; officer ${al.officer.name}; clashes with the ${al.chong.name ?? al.chong.branch}; 煞 ${al.sha.name}; good for: ${list(al.yi)}; avoid: ${list(al.ji)}.`) : '';
-  const signs = d.signs ? (zh
-    ? `他属${d.signs.zodiac.name}${d.signs.sign ? `，${d.signs.sign.name}` : ''}${d.clash ? `（今日正冲${d.signs.zodiac.name}）` : ''}。`
-    : `He is a ${d.signs.zodiac.name}${d.signs.sign ? `, ${d.signs.sign.name}` : ''}${d.clash ? ' (today clashes with his animal)' : ''}.`) : (zh ? '他没留生辰。' : 'He gave no birthday.');
-  const asked = d.ask || d.ask_text ? (zh ? `他问的是：${[d.ask?.name, d.ask_text].filter(Boolean).join('·')}。` : `He asked about: ${[d.ask?.name, d.ask_text].filter(Boolean).join(' · ')}.`) : (zh ? '他没说问什么。' : 'He asked nothing in particular.');
-  const game = zh
-    ? `游戏里：今日修为 ×${d.speed}${d.yi ? `；宜${d.yi.name}（${d.yi.games}），这类玩法修为 ×${d.yi.pay}` : ''}。`
-    : `In the game: cultivation ×${d.speed} today${d.yi ? `; good for ${d.yi.name} (${d.yi.games}), that kind pays ×${d.yi.pay}` : ''}.`;
-  const poem = zh ? `签诗：${d.poem.join('，')}。` : `The verse: ${d.poem.join(' / ')}${d.gloss ? ` (plainly: ${d.gloss})` : ''}.`;
-  return zh
-    ? `他刚摇了今日的签：第${d.n}签，${d.grade.name}。${poem}${day}${signs}${asked}${game}`
-    : `He has just drawn today's fortune stick: no. ${d.n}, ${d.grade.name}. ${poem} ${day} ${signs} ${asked} ${game}`;
-}
+/* 银月's line on a card, this browser's, by save · day · whose — her words are never written into the save. */
+const lineKey = (who, d) => `lingjing:qian-her:${who}:${d?.day ?? ''}:${d?.n ?? ''}`;
 
-export function createQianPage({ write, refresh, show, keep, view, askHer, tellHer, herHere, lang, refusal, failed }) {
+export function createQianPage({ write, refresh, show, keep, view, herLine, herHere, lang, refusal, failed, tellHer, saveKey = () => '' }) {
   let motionOn = false, jolts = [];
+  const store = {
+    get: (k) => { try { return localStorage.getItem(`${saveKey()}|${k}`); } catch { return null; } },
+    set: (k, v) => { try { localStorage.setItem(`${saveKey()}|${k}`, v); } catch { /* a private window: the line lives this page only */ } },
+  };
 
   /* A phone's shake: the motion listener, asked for (iOS) inside the tap that first wants it. */
   function onMotion(e) {
@@ -66,14 +46,13 @@ export function createQianPage({ write, refresh, show, keep, view, askHer, tellH
 
   /* 摇签: the tube shakes, the rules draw, the 签 drops and its verse inks in; 银月 reads it if she is here.
      The draw is asked before anything is painted, and the shake always ends (live, Hanli 2026-11-02 「点按钮也没反应」:
-     no `divine` ever reached the rules — the one way every later tap goes silent: a shake that threw between its start
-     and its end left `qianShaking` set, and each tap returned at the first line under a 签筒 that still read 摇签). A shake older than STUCK_MS is
-     taken as lost: the next tap draws again. What went wrong is said on the card itself, never only far off. */
+     a shake that threw between its start and its end left `qianShaking` set, and every later tap returned at the
+     first line). A shake older than STUCK_MS is taken as lost: the next tap draws again. What went wrong is said on
+     the card itself. 问签 v2: nothing is asked first. */
   async function shake() {
     if (view.qianShaking && Date.now() - (view.qianShakeAt ?? 0) < STUCK_MS) return;
-    const args = { ...(view.qianAsk ? { ask: view.qianAsk } : {}), ...(view.qianAskText ? { ask_text: view.qianAskText } : {}) };
     keep({ qianShaking: true, qianShakeAt: Date.now(), qianNote: null });
-    const drawing = Promise.resolve().then(() => write('divine', args)).catch(failed);
+    const drawing = Promise.resolve().then(() => write('divine', {})).catch(failed);
     try { show({}); } catch (e) { console.warn('[lingjing] qian paint', e); }
     let r = { ok: false };
     try {
@@ -81,7 +60,7 @@ export function createQianPage({ write, refresh, show, keep, view, askHer, tellH
     } finally {
       const note = r?.ok || r?.refused === 'cast-today' ? null : refusal(r ?? {});
       // The 签 drops into the top bar's popover: the stage gives the 签筒's place back, the verse inks in up there.
-      keep({ qianShaking: false, qianShakeAt: 0, qianNote: note, ...(note ? { doNote: note } : { qianAsk: null, qianAskText: '' }), qianOpen: Boolean(r?.ok) || view.qianOpen });
+      keep({ qianShaking: false, qianShakeAt: 0, qianNote: note, ...(note ? { doNote: note } : {}), qianOpen: Boolean(r?.ok) || view.qianOpen });
     }
     await refresh();
   }
@@ -91,17 +70,76 @@ export function createQianPage({ write, refresh, show, keep, view, askHer, tellH
     return shake();
   }
 
-  /* 银月 reads the 签 just drawn: the facts, and her rules from the guide. Not here: the card stands alone. */
-  async function reading(d) {
-    if (!d?.poem || !herHere()) return;
-    const zh = lang() !== 'en', how = await herRules(), facts = qianFacts(d, zh);
-    const layers = zh
-      ? `替他解这支签：一段话，两层——先一句游戏里的（照着说：今日修为 ×${d.speed}${d.yi ? `、宜${d.yi.name}` : ''}）；再一句生活里的（拿他的生肖对今天的黄历：冲不冲、宜什么忌什么，再落到他问的事上）。像平时逗他那样俏皮，总共不过八十字。`
-      : `Read this stick for him in one short paragraph, two layers: first the game (say it as given: cultivation ×${d.speed} today${d.yi ? `, good for ${d.yi.name}` : ''}); then life (his animal against today's almanac — a clash or not, what is good or to avoid — landing on what he asked). Playful, as you tease him; about 40 words.`;
-    const text = `${facts}\n${layers}\n${zh ? '解签的规矩' : 'How to read it'}：${how}`;
-    const mood = { great: 'happy', even: 'relaxed', ill: 'sad' }[d.grade.tone] ?? 'neutral';
-    askHer('reading', text, text, mood);
+  /* The share image of a card ('mine' | 'friend'), made as soon as the card can say all it says — before any tap
+     (Safari shares and copies only inside the tap itself). */
+  const pngs = {};
+  async function prepare(who) {
+    const d = who === 'friend' ? view.qianFriend : view.qianMine;
+    if (!d?.poem) return;
+    const her = who === 'friend' ? view.qianFriendHer : view.qianHer;
+    const rows = shareLines(d, { friend: who === 'friend' ? d.name : null, her: her ?? null, lang: lang() });
+    const key = JSON.stringify(rows);
+    if (pngs[who]?.key === key) return;
+    try {
+      const blob = await shareBlob(rows);
+      pngs[who] = { key, blob, d };
+      show({ qianPngReady: { ...(view.qianPngReady ?? {}), [who]: true }, qianCan: shareCan() });
+    } catch (e) { console.warn('[lingjing] qian png', e); }
   }
+
+  /* 银月 reads the 签 just drawn — or, the card opened again, her line of today comes back from this browser. */
+  async function reading(d, { fresh = false } = {}) {
+    if (!d?.poem) return;
+    keep({ qianMine: d });
+    const had = store.get(lineKey('mine', d));
+    if (had) { show({ qianHer: had, qianHerWaiting: false }); prepare('mine'); return; }
+    prepare('mine');
+    if (!fresh || !herHere()) return;
+    const zh = lang() !== 'en', mood = { great: 'happy', even: 'relaxed', ill: 'sad' }[d.grade.tone] ?? 'neutral';
+    show({ qianHerWaiting: true });
+    const line = await herLine('reading', qianFacts(d, zh), mood);
+    if (line) { store.set(lineKey('mine', d), line); show({ qianHer: line, qianHerWaiting: false }); prepare('mine'); } else show({ qianHerWaiting: false });
+  }
+
+  /* 替人求签: the form opened or closed; the 称呼, the birthday and 不保存 as typed (read when 求一签 is tapped). */
+  function friendOpen(open) { show({ qianFriendOpen: open, qianFriendNote: null, ...(open ? {} : { qianFriendName: '', qianFriendBirth: '' }) }); }
+  function friendBack() { show({ qianFriend: null, qianFriendHer: null, qianFriendOpen: false }); }
+  async function friendAsk(name) {
+    const birth = name ? '' : view.qianFriendBirth ?? '', who = (name ?? view.qianFriendName ?? '').trim();
+    if (!who) return;
+    const r = await write('divine', { action: 'friend', name: who, ...(birth ? { birth } : {}), keep: !view.qianFriendNoKeep }).catch(failed);
+    if (!r.ok) { show({ qianFriendNote: refusal(r) }); return; }
+    const f = r.friend, had = store.get(lineKey(`friend:${f.name}`, f));
+    // The birthday typed is let go at once: it lives in the form only until the 签 is drawn.
+    keep({ qianFriend: f, qianFriendHer: had ?? null, qianFriendFresh: true, qianFriendOpen: false, qianFriendName: '', qianFriendBirth: '', qianFriendNote: null });
+    await refresh();
+    prepare('friend');
+    if (had || !herHere()) return;
+    show({ qianFriendWaiting: true });
+    const line = await herLine('reading', friendFacts(f, lang() !== 'en'), 'relaxed');
+    if (view.qianFriend?.name !== f.name) return;
+    if (line) { store.set(lineKey(`friend:${f.name}`, f), line); show({ qianFriendHer: line, qianFriendWaiting: false }); prepare('friend'); } else show({ qianFriendWaiting: false });
+  }
+  async function friendForget(name) {
+    const r = await write('divine', { action: 'forget_friend', name }).catch(failed);
+    if (!r.ok) show({ qianFriendNote: refusal(r) }); else await refresh();
+  }
+
+  /* 分享 · 拷贝图片 · 保存图片 — inside the tap, with the picture already made. Whatever was done, the picture is
+     shown too (a shell that saves nothing still lets him take it from there). */
+  function shareTap(kind, who) {
+    const p = pngs[who];
+    if (!p) return;
+    const done = (what) => show({ qianShareNote: { who, what }, qianShown: { who, url: shownUrl(p.blob) } });
+    const fail = (e) => { if (e?.name !== 'AbortError') { console.warn('[lingjing] qian share', e); done('shareFail'); } };
+    try {
+      if (kind === 'share') sharePng(p.blob, p.d, who === 'friend').then(() => done('shared'), fail);
+      else if (kind === 'copy') copyPng(p.blob).then(() => done('copied'), fail);
+      else { savePng(p.blob, p.d, who === 'friend'); done('saved'); }
+    } catch (e) { fail(e); }
+  }
+  let shown = null;
+  function shownUrl(blob) { if (shown) URL.revokeObjectURL(shown); shown = URL.createObjectURL(blob); return shown; }
 
   /* The evening's 应验 question, once a day: she hears the day's 宜 and may ask; the rules mark it asked. */
   let askedOn = null;
@@ -125,5 +163,5 @@ export function createQianPage({ write, refresh, show, keep, view, askHer, tellH
     show({ qianBookOpen: Boolean(r.ok), qianBook: r.ok ? r.book : null });
   }
 
-  return { tap, shake, reading, evening, book };
+  return { tap, shake, reading, evening, book, prepare, friendOpen, friendBack, friendAsk, friendForget, shareTap };
 }

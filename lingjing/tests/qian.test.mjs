@@ -202,11 +202,11 @@ test('the card stands with 银月 away: the 签筒, then the 签诗 and the 宜�
   const after = qianCardHtml({ look: l1, lang: 'zh', herHere: false, castFresh: true });
   for (const line of l1.divination.poem) assert.ok(after.includes(line));
   assert.doesNotMatch(after, /银月在看/);
-  assert.match(qianCardHtml({ look: l1, lang: 'zh', herHere: true, castFresh: true }), /银月在看/);
+  assert.match(qianCardHtml({ look: l1, lang: 'zh', herHere: true, castFresh: true, qianHerWaiting: true }), /银月在看/); // 问签 v2: while her line is asked for
   assert.match(qianChipHtml(l1, 'zh'), /今日 .签 · 修为 ×/);
   // The facts handed to her name the 签, the 黄历 and the game, never a birthday.
   const facts = qianFacts(l1.divination, true);
-  assert.match(facts, /第\d+签/); assert.match(facts, /黄历/); assert.match(facts, /修为 ×/);
+  assert.match(facts, /第\d+签/); assert.match(facts, /黄历/); assert.match(facts, /五项/); // 问签 v2: her line is life's — the card says the 修为
   // English keeps it working: the original verse with the game's gloss.
   const en = look(draw({ ...alone, lang: 'en' }).state, content, ctx()).divination;
   assert.ok(en.gloss && en.poem.length === 4);

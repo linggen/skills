@@ -11,7 +11,8 @@
 //                                            from the Look, the facts and ask for her model, and her pool's lines —
 //                                            JSON text { mode, facts, pool } (null when she is absent or the moment
 //                                            has nothing to say); `short` builds its facts from the Look's shelf
-//                                            and `mijing` from the rules' answer (opts.result: hersay.js mijingWhat)
+//                                            and `mijing` from the rules' answer (opts.result: hersay.js mijingWhat);
+//                                            `qian` / `qian_friend` (问签 v2): the 签 card's one line, qian-facts.js
 //   Lingjing.quests({app: doc})             the apps' menus (/quests/<app>.json) the host hands in; null drops one
 //   Lingjing.drainTrack()                    the play log's lines since the last drain (rules/analytics.mjs), as JSON
 //                                            text — the app keeps them in its own folder, never in the dumped save
@@ -20,7 +21,8 @@
 import { parseArgs } from '../../scripts/rules/files.mjs';
 import { forLing, run } from '../../scripts/rules.mjs';
 import { drainSink } from '../../scripts/rules/analytics.mjs';
-import { MOMENTS, herMode, mijingWhat, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
+import { MOMENTS, REGISTER, REGISTER_ASLEEP, herMode, mijingWhat, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
+import { friendFacts, qianFacts } from '../../scripts/qian-facts.js';
 import fs, { dump, restore, seed, stats } from './shims/fs.mjs';
 import { process } from './shims/process.mjs';
 
@@ -71,6 +73,15 @@ function call(verb = 'look', args = {}, { reader = null, save = null, now = null
 function her(kind, look = {}, { lang = 'zh', weight = 'full', what = null, result = null } = {}) {
   const l = typeof look === 'string' ? JSON.parse(look) : look;
   const mode = herMode(l), zh = lang !== 'en';
+  // 问签 v2: her one line on the 签 card (`qian`: his, from Look's divination; `qian_friend`: a friend's, the rules'
+  // answer to 替人求签) — the Mac's qian-facts.js; no pool: without her the card shows without her line.
+  if (kind === 'qian' || kind === 'qian_friend') {
+    const r = typeof result === 'string' ? JSON.parse(result) : result;
+    const d = kind === 'qian' ? r ?? l.divination : r?.friend ?? r;
+    if (mode === 'absent' || !d?.poem) return JSON.stringify(null);
+    const facts = (kind === 'qian' ? qianFacts : friendFacts)(d, zh) + (mode === 'asleep' ? REGISTER_ASLEEP : REGISTER)[zh ? 'zh' : 'en'];
+    return JSON.stringify({ mode, id: null, facts, pool: [] });
+  }
   if (mode === 'absent' || !MOMENTS[kind]) return JSON.stringify(null);
   const short = kind === 'short' ? shortFacts(l, zh) : null;
   if (kind === 'short' && !short) return JSON.stringify(null);

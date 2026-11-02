@@ -11,6 +11,14 @@
 //     who words the reading (guide/qian.md); asleep or away, the card shows the 签诗 and the 宜忌 alone;
 //   · 签谱 (every 签 drawn, with a count), 连签 (days in a row: a finer 签筒 at 3 / 7 / 30), and 应验 — in the
 //     evening 银月 may ask once whether the day's 宜 came true; an answer pays a little, kept in the save.
+//
+// 问签 v2 (Hanli 2026-11-02, 「可以, 按你说的做」): one shake, one full reading — no ask picker. The brief now carries
+//   · the 白话签解 (`jie`: the game's own plain rendering, qian.json; English `gloss`), and the 签's own 宜 kind
+//     (`kind`, tagged once by the rule in qian.json `_about` — no longer `(n − 1) mod 4`);
+//   · 五项运势 (`aspects`: 事业 · 感情 · 财运 · 出行 · 健康): rules-side lines from the 签's tone for each 项 and today's
+//     黄历 (aspectsOf) — 财运 in 宜/忌 only, 健康 light and never medical;
+//   · 替人求签 (`action: friend`): someone else's 签 for today, seeded by the 称呼, the day and the save; at most
+//     `friends.per_day` a day; never 修为, never the 宜; kept (称呼 and signs, never the birthday) unless 不保存.
 // The old cast (`state.divination`, 问卦) is left in the save as it was and read by nothing now: a save that cast
 // today may still draw today's 签 (agent's pick, Hanli delegated 11-02 — the old cast gives nothing any more).
 import { localDay } from '../calendar.js';
@@ -52,8 +60,12 @@ export function qianOf(content, state, now) {
   const set = setOf(content);
   return set.length ? set[hashOf(`${dayKey(now)}|${seedOf(state)}|qian`) % set.length] : null;
 }
-/* The 宜 the 签 names: one of the kinds, by its number. */
-export const yiKindOf = (content, entry) => { const k = book(content)?.yi?.kinds ?? []; return entry && k.length ? k[(entry.n - 1) % k.length] : null; };
+/* The 宜 the 签 names: its own `kind` (问签 v2, tagged by meaning); a set without tags, by its number (v1). */
+export const yiKindOf = (content, entry) => {
+  const k = book(content)?.yi?.kinds ?? [];
+  if (!entry || !k.length) return null;
+  return k.find(x => x.id === entry.kind) ?? k[(entry.n - 1) % k.length];
+};
 const gradeOf = (content, entry) => book(content)?.grades?.[entry?.grade] ?? null;
 
 /* The day's 修为 speed by the 签 drawn today — 1 before it, and never below 1. */
@@ -123,6 +135,22 @@ function signsOf(content, state, lang) {
   return { zodiac: { id: f.zodiac, name: pick(z, lang) }, ...(s ? { sign: { id: s.id, name: pick(s.name, lang) } } : {}) };
 }
 
+/* 五项运势 (问签 v2): each 项's line from the 签's tone (`luck`) and today's 黄历 — the first of the 项's `ji` acts the
+   day avoids, else the first of its `yi` acts the day favours, added after it. Rules-side words, from qian.json. */
+export function aspectsOf(content, entry, al, lang) {
+  const A = book(content)?.aspects;
+  if (!A || !entry) return [];
+  const has = (list, id) => (list ?? []).some(x => x.id === id);
+  return (A.list ?? []).map((a, i) => {
+    const tone = entry.luck?.[i] ?? 'even', lines = a.lines?.[tone] ?? a.lines?.even ?? [];
+    const base = lines.length ? pick(lines[(entry.n + i) % lines.length], lang) : '';
+    const ji = (a.ji ?? []).find(id => has(al?.ji, id)), yi = ji ? null : (a.yi ?? []).find(id => has(al?.yi, id));
+    const act = ji ?? yi, actName = act ? pick(book(content).almanac?.acts?.[act], lang) : null;
+    const day = act ? pick(A.almanac?.[ji ? 'ji' : 'yi'], lang)?.replace('{act}', actName) : null;
+    return { id: a.id, name: pick(a.name, lang), tone, line: day ? `${base}${lang === 'en' ? ' · ' : '，'}${day}` : base, ...(act ? { day: { [ji ? 'ji' : 'yi']: act } } : {}) };
+  });
+}
+
 /* The day's 黄历, as Look and the card tell it — before the draw too. */
 export function almanacToday(content, state, now) {
   return book(content)?.almanac ? almanacOf(book(content).almanac, content.traits.fate.zodiac, ymd(now), state.lang) : null;
@@ -142,19 +170,29 @@ function yingyanBrief(content, state, now) {
 export function divinationBrief(content, state, now) {
   const d = drawnToday(state, now), e = d && entryOf(content, d.n);
   if (!e) return null;
-  const lang = state.lang, g = gradeOf(content, e), yi = yiKindOf(content, e), signs = signsOf(content, state, lang), al = almanacToday(content, state, now);
-  const ask = (book(content).asks ?? []).find(a => a.id === d.ask);
+  const lang = state.lang, yi = yiKindOf(content, e), signs = signsOf(content, state, lang);
   const yy = yingyanBrief(content, state, now);
+  // An old save's draw may still hold v1's ask (`ask`, `ask_text`): kept there, read by nothing now.
   return {
-    n: e.n, of: book(content).of ?? 100, grade: { id: e.grade, name: pick(g?.name, lang) ?? e.grade, tone: g?.tone ?? 'even' },
-    ...(e.title ? { title: pick(e.title, lang) } : {}),
-    poem: e.poem, ...(lang === 'en' && e.gloss ? { gloss: e.gloss } : {}), source: e.url ?? book(content).source?.url ?? null,
+    ...readingOf(content, e, signs, now, lang),
     speed: qianSpeedOf(content, state, now),
     yi: yi ? { id: yi.id, name: pick(yi.name, lang), games: pick(yi.games, lang), pay: book(content).yi.pay } : null,
-    ...(ask ? { ask: { id: ask.id, name: pick(ask.name, lang) } } : {}), ...(d.ask_text ? { ask_text: d.ask_text } : {}),
-    almanac: al, ...(signs ? { signs, ...(al?.chong?.zodiac && signs.zodiac.id === al.chong.zodiac ? { clash: true } : {}) } : {}),
     count: state.qian_book?.counts?.[e.n] ?? 1,
     ...(yy ? { yingyan: yy } : {}),
+  };
+}
+
+/* One 签's full reading for a day, whoever it is for: number, grade, 签诗, 签解, 五项, 黄历, the signs and a clash —
+   the part a friend's card shares with his (no 修为, no 宜). */
+function readingOf(content, e, signs, now, lang) {
+  const g = gradeOf(content, e), al = almanacToday(content, { lang }, now);
+  const jie = lang === 'en' ? e.gloss ?? null : e.jie ?? null;
+  return {
+    n: e.n, of: book(content).of ?? 100, day: dayKey(now), grade: { id: e.grade, name: pick(g?.name, lang) ?? e.grade, tone: g?.tone ?? 'even' },
+    ...(e.title ? { title: pick(e.title, lang) } : {}),
+    poem: e.poem, ...(lang === 'en' && e.gloss ? { gloss: e.gloss } : {}), ...(jie ? { jie } : {}), source: e.url ?? book(content).source?.url ?? null,
+    aspects: aspectsOf(content, e, al, lang),
+    almanac: al, ...(signs ? { signs, ...(al?.chong?.zodiac && signs.zodiac.id === al.chong.zodiac ? { clash: true } : {}) } : {}),
   };
 }
 
@@ -166,7 +204,7 @@ export function qianLook(content, state, now) {
   return {
     drawn: Boolean(drawnToday(state, now)),
     almanac: almanacToday(content, state, now),
-    asks: (book(content).asks ?? []).map(a => ({ id: a.id, name: pick(a.name, lang) })),
+    friends: friendsKept(content, state, lang), friend_left: friendLeft(content, state, now),
     birth: !state.fate ? 'ask' : state.fate.zodiac && !state.fate.sign && state.fate.source === 'birth' ? 'sign' : null,
     streak: run, tube: tubeOf(content, run), next: (book(content).streak ?? []).find(x => x.days > run)?.days ?? null,
     book: { kinds: Object.keys(counts).length, draws: Object.values(counts).reduce((a, b) => a + b, 0), of: book(content).of ?? setOf(content).length },
@@ -181,19 +219,17 @@ export function qianBook(content, state) {
     : { n: e.n, count: 0 }));
 }
 
-const ASK_TEXT_MAX = 20, SAID_MAX = 60;
+const SAID_MAX = 60;
 const clean = (v, max) => String(v ?? '').replace(/\s+/gu, ' ').trim().slice(0, max);
 
-/* 摇签: once a day. `ask` (one of qian.json `asks`) and `ask_text` (his own words, ≤20) are what he asks about —
-   kept with the day's draw, for 银月's reading; they never change the 签. */
-function draw(state, content, ctx, args) {
+/* 摇签: once a day (问签 v2: nothing is asked first — an old page's `ask` is let go). */
+function draw(state, content, ctx) {
   const now = ctx.now;
   if (drawnToday(state, now)) return refuse('cast-today', null, { divination: divinationBrief(content, state, now) });
   const e = qianOf(content, state, now);
   if (!e) return refuse('no-qian', null);
   const s = clone(state), day = dayKey(now);
-  const ask = (book(content).asks ?? []).some(a => a.id === args.ask) ? args.ask : null, text = clean(args.ask_text, ASK_TEXT_MAX);
-  s.qian = { day, n: e.n, ...(ask ? { ask } : {}), ...(text ? { ask_text: text } : {}), at: now.toISOString() };
+  s.qian = { day, n: e.n, at: now.toISOString() };
   const b = { ...(s.qian_book ?? {}) };
   b.counts = { ...(b.counts ?? {}), [e.n]: (b.counts?.[e.n] ?? 0) + 1 };
   const prev = b.streak;
@@ -230,6 +266,65 @@ function verify(state, content, ctx, args) {
   return { state: s, result: { ok: true, verified: row, paid } };
 }
 
+/* ── 替人求签 (问签 v2) ── */
+
+const friendRules = content => ({ per_day: 3, keep: 12, name_max: 12, ...(book(content)?.friends ?? {}) });
+/* A 称呼 as one person: NFC, spaces folded, cut to the limit. */
+const nameOf = (content, v) => clean(String(v ?? '').normalize('NFC'), friendRules(content).name_max);
+const friendKey = name => hashOf(`friend|${name}`).toString(36);
+const friendDay = (state, now) => (state.qian_friend_day?.day === dayKey(now) ? state.qian_friend_day.keys ?? [] : []);
+const friendLeft = (content, state, now) => Math.max(0, friendRules(content).per_day - friendDay(state, now).length);
+/* The friends he kept: 称呼 and the signs a birthday gave — never a date. */
+function friendsKept(content, state, lang) {
+  return (state.qian_friends ?? []).map(f => ({ name: f.name, ...(signsOfFate(content, f, lang) ? { signs: signsOfFate(content, f, lang) } : {}) }));
+}
+function signsOfFate(content, f, lang) {
+  if (!f?.zodiac) return null;
+  const z = content.traits.fate.zodiac.find(x => x.id === f.zodiac), s = (book(content)?.signs ?? []).find(x => x.id === f.sign);
+  return { zodiac: { id: f.zodiac, name: pick(z, lang) }, ...(s ? { sign: { id: s.id, name: pick(s.name, lang) } } : {}) };
+}
+/* That person's 签 today: the same all day, by the 称呼, the day and his save. */
+export function friendQianOf(content, state, now, name) {
+  const set = setOf(content);
+  return set.length ? set[hashOf(`${dayKey(now)}|${seedOf(state)}|friend|${name}`) % set.length] : null;
+}
+
+/* 替人求签: `name` (the 称呼, required), `birth` (optional, YYYY-MM-DD: read here for the 生肖 and 星座, then let go —
+   never kept, never logged), `keep` (false: 不保存 — nothing of the friend stays but the day's count). The page's
+   alone: never a tool's. Pays nothing; never the 宜; his own 签 untouched. */
+function friend(state, content, ctx, args) {
+  const now = ctx.now, name = nameOf(content, args.name), rules = friendRules(content);
+  if (!name) return refuse('no-name', null);
+  const kept = (state.qian_friends ?? []).find(f => f.name === name);
+  let signs = kept?.zodiac ? { zodiac: kept.zodiac, ...(kept.sign ? { sign: kept.sign } : {}) } : null;
+  if (args.birth) {
+    const got = fateOf(content, args.birth);
+    if (!got || new Date(`${args.birth}T00:00:00`) > now) return refuse('birth-invalid', null);
+    signs = { zodiac: got.zodiac, ...(got.sign ? { sign: got.sign } : {}) };
+  }
+  const key = friendKey(name), today = friendDay(state, now);
+  if (!today.includes(key) && today.length >= rules.per_day) return refuse('friends-today', null, { per_day: rules.per_day });
+  const e = friendQianOf(content, state, now, name);
+  if (!e) return refuse('no-qian', null);
+  const s = clone(state);
+  s.qian_friend_day = { day: dayKey(now), keys: today.includes(key) ? today : [...today, key] };
+  if (args.keep !== false && args.keep !== 'false') {
+    const row = { name, ...(signs ?? {}) };
+    s.qian_friends = [row, ...(state.qian_friends ?? []).filter(f => f.name !== name)].slice(0, rules.keep);
+  }
+  const lang = state.lang;
+  return { state: s, result: { ok: true, friend: { name, ...readingOf(content, e, signsOfFate(content, signs, lang), now, lang) }, qian: qianLook(content, s, now) } };
+}
+/* A kept friend let go (by 称呼). */
+function forgetFriend(state, content, ctx, args) {
+  const name = nameOf(content, args.name);
+  if (!(state.qian_friends ?? []).some(f => f.name === name)) return refuse('no-friend', null);
+  const s = clone(state);
+  s.qian_friends = (state.qian_friends ?? []).filter(f => f.name !== name);
+  return { state: s, result: { ok: true, qian: qianLook(content, s, ctx.now) } };
+}
+const PAGE_ONLY = new Set(['friend', 'forget_friend', 'asked']);
+
 /* 银月's read (`--for=yinyue`): the day's 签 and its facts, and what she may do with them. */
 const HER_NOTE = 'The day\'s 签 and its facts. In the evening (yingyan.open) you may ask him once whether the day\'s 宜 came true; when he answers, call Qian with action verify and `said` (his words, short). Never invent a 签 line; quote only `poem`.';
 function herView(content, state, now) {
@@ -239,15 +334,16 @@ function herView(content, state, now) {
 
 /* Divine — 问签. `action`: draw (the default; the page's tap or Ling's word), book (the 签谱, read), asked (the
    page: the evening's question was put), verify (应验: his answer — the page, Ling, or 银月's own tool). */
-const ACTIONS = { draw, asked, verify };
+const ACTIONS = { draw, asked, verify, friend, forget_friend: forgetFriend };
 export function divine(state, content, ctx, args = {}) {
   if (!book(content)) return refuse('no-qian', null);
   const action = String(args.action ?? '') || 'draw';
   if (action === 'book') return { state: null, result: { ok: true, book: qianBook(content, state), qian: qianLook(content, state, ctx.now) } };
+  // 替人求签 is the page's alone (a friend's 称呼 and birthday are typed on the card, never in a chat).
+  if (PAGE_ONLY.has(action) && ctx.reader) return refuse('page-only', null);
   if (ctx.reader === 'yinyue') return action === 'verify' ? verify(state, content, ctx, args) : { state: null, result: herView(content, state, ctx.now) };
-  if (action === 'asked' && ctx.reader) return refuse('page-only', null);
   const run = ACTIONS[action];
-  return run ? run(state, content, ctx, args) : refuse('unknown-action', null, { actions: ['draw', 'book', 'asked', 'verify'] });
+  return run ? run(state, content, ctx, args) : refuse('unknown-action', null, { actions: ['draw', 'book', 'asked', 'verify', 'friend', 'forget_friend'] });
 }
 
 /* ── 命格 — the player's lifelong signs ── */

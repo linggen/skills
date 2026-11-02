@@ -1,35 +1,37 @@
-// qian-card.js — 问签's card (rules/fortune.mjs, 问签 v1, Hanli 2026-11-02): the 签筒 to shake, the 签 that drops with
-// its 签诗 revealed line by line in ink, the day's 黄历 under it, the 生辰 asked once, what he asks about, 连签's 签筒 and
+// qian-card.js — 问签's card (rules/fortune.mjs, 问签 v1 → v2, Hanli 2026-11-02; v2: no ask, one full reading, 替人求签,
+// a share image — the drawn card's body is qian-reading.js): the 签筒 to shake, the 签 that drops with
+// its 签诗 revealed line by line in ink, the day's 黄历 under it, the 生辰 asked once, 连签's 签筒 and
 // the 签谱. Facts only, from Look (`qian` before and after the draw, `divination` once drawn): every sentence a person
 // reads about what the 签 means is 银月's (lingjing.js readingByHer, guide/qian.md) — asleep or away, the card stands
 // alone with the 签诗 and the rules' 宜忌, and no reading.
 import { esc } from './esc.js';
 import { dayKey } from './state.mjs';
+import { friendCardHtml, friendFormHtml, readingBody, readingWords, shareHtml, yijiHtml } from './qian-reading.js';
 
 export const QIAN_WORDS = {
   zh: {
     title: '问签 · 今日', drawn: '今日之签', notYet: '还没摇 · 点签筒摇一摇', notYetPhone: '还没摇 · 摇一摇手机，或点签筒', chip: '今日签 · 未摇', shake: '摇 签', shaking: '签筒摇着……', hint: '一日一签。心里想着一件事，摇一摇。', hintPhone: '一日一签。心里想着一件事，摇一摇手机，或点一下。',
-    ask: '想问什么（可不选）', askText: '或写一句（可不写）', no: '第{n}签', of: '共{of}签',
+    no: '第{n}签', of: '共{of}签',
     speed: '今日修为 ×{x}', yi: '宜{name}（{games}）修为 ×{x}', even: '今日修为照常',
-    almanac: '{y}年 {m}月 {d}日 · {officer}日 · 冲{chong} · 煞{sha}', yiLabel: '宜', jiLabel: '忌', none: '无大事',
-    signs: '属{zodiac}', sign: '{sign}', clash: '今日冲{zodiac}', asked: '问：{what}',
+    almanac: '{y}年 {m}月 {d}日 · {officer}日 · 冲{chong} · 煞{sha}', yiLabel: '宜', jiLabel: '忌',
+    signs: '属{zodiac}', sign: '{sign}', clash: '今日冲{zodiac}',
     streak: '连签 {n} 日', streakNext: '再 {n} 日换{name}', tube: { plain: '竹签筒', jade: '青玉签筒', cinnabar: '朱漆签筒', gold: '鎏金签筒' },
     book: '签谱 · {kinds}/{of}', bookClose: '合上', bookTimes: '×{n}', bookNever: '未得',
     birthTitle: '生辰（只问一次）', birthHint: '可选填。生辰只在本机推算生肖（以立春换年）与星座：日期不入存档；生肖、星座记在存档里，只给银月解签用。',
     birthSign: '再填一次生辰，补上星座（可不填）', birthSet: '定', birthSkip: '不必了', birthBad: '这一天不在历中，再看看。',
-    reading: '银月在看这支签……', source: '出处', yingyan: '已应验：{said}',
+    reading: '银月在看这支签……', yingyan: '已应验：{said}',
   },
   en: {
     title: "Today's fortune stick", drawn: "Today's stick", notYet: 'Not drawn yet · tap the tube to shake', notYetPhone: 'Not drawn yet · shake the phone, or tap the tube', chip: "Today's stick · not drawn", shake: 'Shake', shaking: 'Shaking…', hint: 'One stick a day. Hold one thing in mind and shake.', hintPhone: 'One stick a day. Hold one thing in mind — shake the phone, or tap.',
-    ask: 'What is it about (optional)', askText: 'or a line of your own (optional)', no: 'Stick {n}', of: 'of {of}',
+    no: 'Stick {n}', of: 'of {of}',
     speed: 'Cultivation today ×{x}', yi: 'Good for {name} ({games}): cultivation ×{x}', even: 'Cultivation as usual today',
-    almanac: '{y} year · {m} month · {d} day · {officer} · clashes {chong} · 煞 {sha}', yiLabel: 'Good for', jiLabel: 'Avoid', none: 'nothing much',
-    signs: 'Year of the {zodiac}', sign: '{sign}', clash: 'today clashes with the {zodiac}', asked: 'Asked about: {what}',
+    almanac: '{y} year · {m} month · {d} day · {officer} · clashes {chong} · 煞 {sha}', yiLabel: 'Good for', jiLabel: 'Avoid',
+    signs: 'Year of the {zodiac}', sign: '{sign}', clash: 'today clashes with the {zodiac}',
     streak: '{n} days in a row', streakNext: '{n} more for {name}', tube: { plain: 'a bamboo tube', jade: 'a jade tube', cinnabar: 'a cinnabar tube', gold: 'a gilt tube' },
     book: 'Sticks drawn · {kinds}/{of}', bookClose: 'Close', bookTimes: '×{n}', bookNever: 'not yet',
     birthTitle: 'Birthday (asked once)', birthHint: 'Optional. Read on this machine for your zodiac animal (the year turns at 立春) and star sign: the date is never saved; the animal and sign are kept in the save, only for Yinyue\'s reading.',
     birthSign: 'Your birthday once more, for your star sign (optional)', birthSet: 'Set', birthSkip: 'Not now', birthBad: 'That day is not in the calendar — look again.',
-    reading: 'Yinyue is looking at the stick…', source: 'source', yingyan: 'Came true: {said}',
+    reading: 'Yinyue is looking at the stick…', yingyan: 'Came true: {said}',
   },
 };
 
@@ -38,11 +40,11 @@ const wordsOf = (ctx) => QIAN_WORDS[ctx.lang === 'en' ? 'en' : 'zh'];
 const isPhone = () => typeof window !== 'undefined' && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
 
 /* The day's 黄历 line and its 宜 · 忌 chips (rules/almanac.mjs). */
+/* (问签 v2: a day with no 宜 shows no 宜 row — never 「无大事」; nor a 忌 row on a day with none.) */
+const almanacLine = (al, w) => (al ? `<div class="small">${esc(say(w.almanac, { y: al.ganzhi.year, m: al.ganzhi.month, d: al.ganzhi.day, officer: al.officer.name, chong: al.chong.name ?? al.chong.branch, sha: al.sha.name }))}</div>` : '');
 export function almanacHtml(al, w) {
   if (!al) return '';
-  const chips = (list) => (list.length ? list.map((x) => `<span class="qchip">${esc(x.name)}</span>`).join('') : `<span class="dim">${esc(w.none)}</span>`);
-  return `<div class="qalmanac"><div class="small">${esc(say(w.almanac, { y: al.ganzhi.year, m: al.ganzhi.month, d: al.ganzhi.day, officer: al.officer.name, chong: al.chong.name ?? al.chong.branch, sha: al.sha.name }))}</div>
-    <div class="qyiji"><b class="yi">${esc(w.yiLabel)}</b>${chips(al.yi)}</div><div class="qyiji"><b class="ji">${esc(w.jiLabel)}</b>${chips(al.ji)}</div></div>`;
+  return `<div class="qalmanac">${almanacLine(al, w)}${yijiHtml(al, w)}</div>`;
 }
 
 /* The 签筒: its look by 连签, and the sticks; the whole tube is the button. */
@@ -67,38 +69,35 @@ function birthHtml(q, ctx, w) {
     ${ctx.fateError ? `<div class="small seal">${esc(w.birthBad)}</div>` : ''}</div>`;
 }
 
-/* What he may ask about: one tap picks (again: none), or a line of his own. */
-function askHtml(q, ctx, w) {
-  const chips = q.asks.map((a) => `<button class="qchip ask${ctx.qianAsk === a.id ? ' on' : ''}" data-qian-ask="${esc(a.id)}">${esc(a.name)}</button>`).join('');
-  return `<div class="qask"><div class="small dim">${esc(w.ask)}</div><div class="qasks">${chips}</div>
-    <input type="text" id="qian-ask-text" maxlength="20" autocomplete="off" placeholder="${esc(w.askText)}" value="${esc(ctx.qianAskText ?? '')}"></div>`;
-}
-
 /* The 签谱: all of the set, each drawn one with its count. */
 function bookHtml(ctx, w) {
   const rows = ctx.qianBook ?? [];
   const cells = rows.map((r) => (r.count
     ? `<div class="qcell got ${esc(r.tone)}" title="${esc(`${r.title ?? ''} ${r.first ?? ''}`)}"><b>${esc(r.n)}</b><span>${esc(r.grade)}</span><em>${esc(say(w.bookTimes, { n: r.count }))}</em></div>`
     : `<div class="qcell" title="${esc(w.bookNever)}"><b>${esc(r.n)}</b></div>`)).join('');
-  return `<div class="qbook"><div class="qgrid">${cells}</div><div class="acts"><button class="act" data-qian-book="close">${esc(w.bookClose)}</button></div></div>`;
+  // Where the verses are from: one plain line, no link (Hanli 11-02 — the 出处 link mid-game read as a bug; the URLs
+  // stay in qian.json as the record).
+  return `<div class="qbook"><div class="qgrid">${cells}</div><div class="small dim qsrc">${esc(readingWords(ctx.lang).source)}</div><div class="acts"><button class="act" data-qian-book="close">${esc(w.bookClose)}</button></div></div>`;
 }
 const bookChip = (q, w) => `<button class="chip qbookchip" data-qian-book="open">${esc(say(w.book, { kinds: q.book.kinds, of: q.book.of }))}</button>`;
 
-/* The drawn 签: number, grade, title; the 签诗 a line at a time (inked in order when it is new); what it does today. */
+/* The drawn 签 (问签 v2): the full reading (qian-reading.js) — the verse inked in when new, the 签解, the five, the 宜忌,
+   银月's line; what it does today (his only); 分享 · 拷贝 · 保存; 替人求签. A friend's card stands in its place while open. */
 function drawnHtml(d, q, ctx, w) {
+  const rw = readingWords(ctx.lang), rctx = { ...ctx, noOf: (n) => say(w.no, { n }), almanacLine: (al) => almanacLine(al, w) };
+  if (ctx.qianFriend?.poem) return friendCardHtml(ctx.qianFriend, rctx, rw);
   const fresh = ctx.castFresh;
-  const poem = d.poem.map((l, i) => `<div class="qline${fresh ? ' ink' : ''}" style="--d:${(0.6 + i * 0.9).toFixed(1)}s">${esc(l)}</div>`).join('');
   const does = [d.speed > 1 ? say(w.speed, { x: d.speed }) : w.even, d.yi ? say(w.yi, { name: d.yi.name, games: d.yi.games, x: d.yi.pay }) : ''].filter(Boolean);
   const signs = d.signs ? [say(w.signs, { zodiac: d.signs.zodiac.name }), d.signs.sign ? d.signs.sign.name : '', d.clash ? say(w.clash, { zodiac: d.signs.zodiac.name }) : ''].filter(Boolean).join(' · ') : '';
-  const asked = d.ask || d.ask_text ? `<div class="small dim">${esc(say(w.asked, { what: [d.ask?.name, d.ask_text].filter(Boolean).join(' · ') }))}</div>` : '';
-  const her = fresh && ctx.herHere ? `<div class="small ling">${esc(w.reading)}</div>` : '';
   const came = d.yingyan?.said ? `<div class="small dim">${esc(say(w.yingyan, { said: d.yingyan.said }))}</div>` : '';
+  const head = signs ? `<div class="small">${esc(signs)}</div>` : '';
+  const friendBtn = q ? `<button class="act" data-qian-friend="open">${esc(rw.friendOpen)}</button>` : '';
   return `<div class="card qian drawn tone-${esc(d.grade.tone)}${fresh ? ' fresh' : ''}">
-    <div class="qhead"><span class="qstick">${esc(say(w.no, { n: d.n }))}</span><span class="grade">${esc(d.grade.name)}</span>${d.title ? `<span class="qtitle">${esc(d.title)}</span>` : ''}</div>
-    <div class="qpoem">${poem}</div>${d.gloss ? `<div class="small dim qgloss">${esc(d.gloss)}</div>` : ''}
-    <div class="small castfx">${esc(does.join(' · '))}</div>${signs ? `<div class="small">${esc(signs)}</div>` : ''}${asked}
-    ${almanacHtml(d.almanac, w)}${her}${came}
-    <div class="qfoot">${q ? bookChip(q, w) : ''}${d.source ? `<a class="small dim" href="${esc(d.source)}" target="_blank" rel="noopener">${esc(w.source)}</a>` : ''}</div>
+    ${readingBody(d, rctx, rw, { fresh, her: ctx.qianHer, waiting: !ctx.qianHer && ctx.qianHerWaiting, head })}
+    <div class="small castfx">${esc(does.join(' · '))}</div>${came}
+    ${shareHtml(rctx, rw, 'mine')}
+    ${ctx.qianFriendOpen && q ? friendFormHtml(q, rctx, rw) : ''}
+    <div class="qfoot">${q ? bookChip(q, w) : ''}${ctx.qianFriendOpen ? '' : friendBtn}</div>
     ${ctx.qianBookOpen ? bookHtml(ctx, w) : ''}</div>`;
 }
 
@@ -112,7 +111,7 @@ export function qianCardHtml(ctx) {
   return `<div class="card qian uncast tube-${esc(q.tube)}"><div class="cardtitle">${esc(w.title)}</div>${state}
     <div class="qbody">${tubeHtml(q, w, ctx)}<div class="qside">
       <div class="hextext">${esc(isPhone() ? w.hintPhone : w.hint)}</div>${streakHtml(q, w)}
-      ${birthHtml(q, ctx, w)}${askHtml(q, ctx, w)}</div></div>
+      ${birthHtml(q, ctx, w)}</div></div>
     ${almanacHtml(q.almanac, w)}
     <div class="qfoot">${q.book.draws ? bookChip(q, w) : ''}</div>${ctx.qianBookOpen ? bookHtml(ctx, w) : ''}</div>`;
 }

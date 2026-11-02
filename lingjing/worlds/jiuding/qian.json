@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "_about": "问签 v1 (Hanli 2026-11-02: 「可以, 按你说的做」 — the rewards, then the v1 scope; rules/fortune.mjs, rules/almanac.mjs, guide/qian.md, doc/design.md § 问签). One 签 a real day from the 签筒, seeded by the day and the save. `qian`: the traditional 观音灵签, all one hundred, each 签诗 and grade quoted exactly from the temple's own page (`source`, and each 签's `url`; typos kept as published, e.g. 签20's 开睛); `gloss` is the game's plain English rendering, not a translation of record (no faithful public-domain English translation was found). `grades`: the 签's grade as the source states it, and the day's 修为 `speed` it gives (上上 ×1.2, stepping down to ×1.0 at 中 and below — never under 1: a bad draw takes nothing). `yi`: the one kind of play the 签 names 宜 today (`kinds[(n − 1) mod 4]`), whose 修为 pays ×`pay` today; `weight` is what the 时辰 pool may lean a game of that kind by (fortune.mjs yiWeightOf). A kind matches a grant by its system's tag (`plays`), else a board's mechanic (`mechanics`), else its table (`tables`). `asks`: what he may ask about (optional). `streak`: 连签 — days in a row draw a finer 签筒. `yingyan`: 应验 — from `after_hour` 银月 may ask once whether the 宜 came true; an answer pays `pay` (the small `game` table) and is kept in the save. `signs`: the twelve 星座 by month·day (MMDD, from · to). `almanac`: the 黄历 tables (rules/almanac.mjs).",
+  "version": 2,
+  "_about": "问签 v1 → v2 (Hanli 2026-11-02: 「可以, 按你说的做」 — the rewards, the v1 scope, then v2: one full reading, 替人求签, a share image; rules/fortune.mjs, rules/almanac.mjs, guide/qian.md, doc/design.md § 问签). One 签 a real day from the 签筒, seeded by the day and the save. `qian`: the traditional 观音灵签, all one hundred, each 签诗 and grade quoted exactly from the temple's own page (`source`, and each 签's `url`; typos kept as published, e.g. 签20's 开睛); `jie` (白话签解, 问签 v2) is the game's own plain Chinese rendering of what the verse says, and `gloss` its plain English one — neither a translation of record nor a reading of a life (no faithful public-domain English translation was found); no line of verse is ever added. `grades`: the 签's grade as the source states it, and the day's 修为 `speed` it gives (上上 ×1.2, stepping down to ×1.0 at 中 and below — never under 1: a bad draw takes nothing). `yi`: the one kind of play the 签 names 宜 today — each 签's own `kind`, tagged once and fixed (问签 v2) by THE TAGGING RULE: the kind whose play is nearest the verse's main image — 斗法 (doufa) a match of wits, a rival or a hidden arrow, a net or trap to see through, gossip and empty words; 守御 (shouyu) waiting, keeping still, holding to the old, shelter, enduring the cold till spring; 文 (wen) learning and 功名, an upright heart, hidden worth recognised by a patron, family, marriage and song; 武 (wu) rising by effort, leaping the Dragon Gate, soaring, setting out, the road, the horse and the sword; where two fit, the verse's last line (its counsel) decides. Counts: 守御 31 · 文 25 · 斗法 22 · 武 22, whose 修为 pays ×`pay` today; `weight` is what the 时辰 pool may lean a game of that kind by (fortune.mjs yiWeightOf). A kind matches a grant by its system's tag (`plays`), else a board's mechanic (`mechanics`), else its table (`tables`). `streak`: 连签 — days in a row draw a finer 签筒. `yingyan`: 应验 — from `after_hour` 银月 may ask once whether the 宜 came true; an answer pays `pay` (the small `game` table) and is kept in the save. `signs`: the twelve 星座 by month·day (MMDD, from · to). `almanac`: the 黄历 tables (rules/almanac.mjs). `luck`: the 签's tone for each of the five 项 (事业 · 感情 · 财运 · 出行 · 健康; `aspects`). `aspects`: the 五项's lines. `friends`: 替人求签's limits.",
   "of": 100,
   "grades": {
     "上签": {
@@ -110,43 +110,6 @@
       }
     ]
   },
-  "asks": [
-    {
-      "id": "career",
-      "name": {
-        "zh": "事业",
-        "en": "Work"
-      }
-    },
-    {
-      "id": "love",
-      "name": {
-        "zh": "感情",
-        "en": "Love"
-      }
-    },
-    {
-      "id": "travel",
-      "name": {
-        "zh": "出行",
-        "en": "Travel"
-      }
-    },
-    {
-      "id": "study",
-      "name": {
-        "zh": "学业",
-        "en": "Study"
-      }
-    },
-    {
-      "id": "other",
-      "name": {
-        "zh": "其他",
-        "en": "Other"
-      }
-    }
-  ],
   "streak": [
     {
       "days": 3,
@@ -635,6 +598,318 @@
     "titles": "not shipped: the temple gives no 典故 title, and the only titles found (buyiju) conflict with a second site in 27 of 100.",
     "english": "no faithful public-domain or freely licensed English translation was found (the temple's English is All Rights Reserved; Karcher's The Kuan Yin Oracle, 2009, is in copyright): `gloss` is the game's own plain rendering."
   },
+  "aspects": {
+    "_about": "五项运势 (问签 v2, Hanli 2026-11-02; rules/fortune.mjs aspectsOf). Each 签 carries one tone per 项 (`luck`, in this order: up · even · slow), read once from its verse; the line is `lines[tone][(n + i) mod len]` (i the 项's place), then today's 黄历: the first of the 项's `ji` acts the day avoids, else the first of its `yi` acts the day favours, is added as 「今日忌…」/「今日宜…」. 财运 speaks in 宜/忌 only and never decides; 健康 stays light (sleep, water, a walk) and reads no 黄历 act — never a cure, a doctor or a medicine.",
+    "list": [
+      {
+        "id": "career",
+        "name": {
+          "zh": "事业",
+          "en": "Work"
+        },
+        "yi": [
+          "banshi",
+          "mouhua"
+        ],
+        "ji": [
+          "shangren",
+          "susong"
+        ],
+        "lines": {
+          "up": [
+            {
+              "zh": "宜放手去做",
+              "en": "go ahead and do it"
+            },
+            {
+              "zh": "宜主动揽事",
+              "en": "take the work on"
+            },
+            {
+              "zh": "有人赏识，宜开口",
+              "en": "someone notices — speak up"
+            }
+          ],
+          "even": [
+            {
+              "zh": "按部就班即可",
+              "en": "step by step will do"
+            },
+            {
+              "zh": "宜做完手头的事",
+              "en": "finish what is in hand"
+            },
+            {
+              "zh": "稳中求进",
+              "en": "steady, a little forward"
+            }
+          ],
+          "slow": [
+            {
+              "zh": "宜缓，先理清再动",
+              "en": "slow down; sort it out first"
+            },
+            {
+              "zh": "少揽新事",
+              "en": "take on nothing new"
+            },
+            {
+              "zh": "宜守本分",
+              "en": "keep to your own part"
+            }
+          ]
+        }
+      },
+      {
+        "id": "love",
+        "name": {
+          "zh": "感情",
+          "en": "Love"
+        },
+        "yi": [
+          "huiqin",
+          "yihun",
+          "yanyin"
+        ],
+        "ji": [
+          "jieqin"
+        ],
+        "lines": {
+          "up": [
+            {
+              "zh": "宜主动说句好话",
+              "en": "say a kind word first"
+            },
+            {
+              "zh": "宜见想见的人",
+              "en": "see the one you miss"
+            },
+            {
+              "zh": "缘分正好",
+              "en": "the timing is kind"
+            }
+          ],
+          "even": [
+            {
+              "zh": "平平淡淡也好",
+              "en": "quiet is good too"
+            },
+            {
+              "zh": "宜多听少争",
+              "en": "listen more, argue less"
+            },
+            {
+              "zh": "宜陪陪家人",
+              "en": "spend time with family"
+            }
+          ],
+          "slow": [
+            {
+              "zh": "少计较，别翻旧账",
+              "en": "let small things go"
+            },
+            {
+              "zh": "宜缓，别急着表态",
+              "en": "no rush to decide"
+            },
+            {
+              "zh": "闲话别当真",
+              "en": "pay no mind to gossip"
+            }
+          ]
+        }
+      },
+      {
+        "id": "wealth",
+        "name": {
+          "zh": "财运",
+          "en": "Money"
+        },
+        "yi": [],
+        "ji": [
+          "jiaoyi",
+          "nacai",
+          "chucai",
+          "jiedai",
+          "jingying",
+          "kaishi",
+          "kaicang"
+        ],
+        "lines": {
+          "up": [
+            {
+              "zh": "宜开源",
+              "en": "good for new income"
+            },
+            {
+              "zh": "宜收旧账",
+              "en": "good for collecting what is owed"
+            },
+            {
+              "zh": "宜小进，宜记账",
+              "en": "small gains; keep the books"
+            }
+          ],
+          "even": [
+            {
+              "zh": "宜量入为出",
+              "en": "spend within your means"
+            },
+            {
+              "zh": "宜守不宜攻",
+              "en": "hold rather than chase"
+            },
+            {
+              "zh": "宜记一笔账",
+              "en": "good for writing it down"
+            }
+          ],
+          "slow": [
+            {
+              "zh": "忌冒进，宜守财",
+              "en": "avoid rash moves; hold on"
+            },
+            {
+              "zh": "忌大花销",
+              "en": "avoid big spending"
+            },
+            {
+              "zh": "宜谨慎，少出手",
+              "en": "be careful; hold back"
+            }
+          ]
+        }
+      },
+      {
+        "id": "travel",
+        "name": {
+          "zh": "出行",
+          "en": "Travel"
+        },
+        "yi": [
+          "chuxing"
+        ],
+        "ji": [
+          "yuanxing",
+          "yuanzheng",
+          "chuxing"
+        ],
+        "lines": {
+          "up": [
+            {
+              "zh": "宜出门走走",
+              "en": "good for getting out"
+            },
+            {
+              "zh": "宜访友",
+              "en": "good for visiting a friend"
+            },
+            {
+              "zh": "顺风顺水",
+              "en": "smooth going"
+            }
+          ],
+          "even": [
+            {
+              "zh": "近处走走即可",
+              "en": "somewhere near will do"
+            },
+            {
+              "zh": "宜照计划走",
+              "en": "keep to the plan"
+            },
+            {
+              "zh": "出门带把伞",
+              "en": "take an umbrella"
+            }
+          ],
+          "slow": [
+            {
+              "zh": "宜近不宜远",
+              "en": "near, not far"
+            },
+            {
+              "zh": "宜缓行，多留些时间",
+              "en": "go slow; leave time"
+            },
+            {
+              "zh": "少赶路",
+              "en": "no rushing about"
+            }
+          ]
+        }
+      },
+      {
+        "id": "health",
+        "name": {
+          "zh": "健康",
+          "en": "Health"
+        },
+        "yi": [],
+        "ji": [],
+        "lines": {
+          "up": [
+            {
+              "zh": "精神好，宜走走路",
+              "en": "good spirits — take a walk"
+            },
+            {
+              "zh": "宜早起晒晒太阳",
+              "en": "up early, a little sun"
+            },
+            {
+              "zh": "宜多喝水",
+              "en": "drink more water"
+            }
+          ],
+          "even": [
+            {
+              "zh": "宜早睡",
+              "en": "to bed early"
+            },
+            {
+              "zh": "宜伸伸懒腰",
+              "en": "stretch a little"
+            },
+            {
+              "zh": "少久坐",
+              "en": "do not sit too long"
+            }
+          ],
+          "slow": [
+            {
+              "zh": "少熬夜",
+              "en": "no late nights"
+            },
+            {
+              "zh": "宜早睡，少操心",
+              "en": "early to bed, fewer worries"
+            },
+            {
+              "zh": "宜歇歇，别硬撑",
+              "en": "rest; do not push"
+            }
+          ]
+        }
+      }
+    ],
+    "almanac": {
+      "yi": {
+        "zh": "今日宜{act}",
+        "en": "today: good for {act}"
+      },
+      "ji": {
+        "zh": "今日忌{act}",
+        "en": "today: avoid {act}"
+      }
+    }
+  },
+  "friends": {
+    "_about": "替人求签 (问签 v2): a reading for someone else — their 签 seeded by the 称呼, the day and the save, the same all day; at most `per_day` people a day (a 称呼 asked again the same day takes no second place); never 修为, never the 宜. Kept in the save only by 称呼 and the signs a birthday gives (生肖 · 星座) — never the birthday — at most `keep` people, newest first; 「不保存」 keeps nothing but the day's count (a hash of the 称呼).",
+    "per_day": 3,
+    "keep": 12,
+    "name_max": 12
+  },
   "qian": [
     {
       "n": 1,
@@ -645,7 +920,16 @@
         "若得此签非小可",
         "人行忠正帝王宣"
       ],
+      "jie": "天地开出一段良缘，时日正好，万事俱全；抽到这签非同小可，为人忠正，自有上头赏识。",
       "gloss": "Heaven and earth begin a good match; the day is right and all is whole. An upright heart is called to honour.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/1"
     },
     {
@@ -657,7 +941,16 @@
         "异日峥嵘身变化",
         "许君一跃跳龙门"
       ],
+      "jie": "鲤鱼还没化龙，先守着江河，别急着往高处跳；等时候到了，自会一跃过龙门。",
       "gloss": "The carp still keeps to the river and cannot rise yet; one day it changes and leaps the Dragon Gate.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/2"
     },
     {
@@ -669,7 +962,16 @@
         "衔得泥来欲作垒",
         "到头垒坏复须泥"
       ],
+      "jie": "冒着风雨回乡，像燕子衔泥筑巢，巢坏了又得重新衔泥；事要反复做，辛苦难免。",
       "gloss": "Home through wind and rain like a swallow: it carries mud to build its nest, and the nest crumbles, and it carries mud again.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "slow"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/3"
     },
     {
@@ -681,7 +983,16 @@
         "自此门庭重改换",
         "更添福禄在儿孙"
       ],
+      "jie": "古镜破了又重圆，断了的缘分再续上；家门从此焕然一新，福禄还传到儿孙。",
       "gloss": "An old mirror made whole again: broken bonds mend, the house is renewed, and good fortune passes to the children.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/4"
     },
     {
@@ -693,7 +1004,16 @@
         "无意偶然遇知己",
         "相逢携手上青天"
       ],
+      "jie": "拿锥子凿地找泉，用力去求反而最难；无心之间遇上知己，携手一起往上走。",
       "gloss": "An awl digging for a spring: hard work finds little, but by chance a true friend appears and you rise together.",
+      "kind": "wu",
+      "luck": [
+        "even",
+        "up",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/5"
     },
     {
@@ -705,7 +1025,16 @@
         "拾得营谋谁可得",
         "通行天地此人无"
       ],
+      "jie": "躲在岩下像鸟儿栖身，终究要像个大丈夫站出来；光靠算计，走不了多远。",
       "gloss": "Sheltering under the cliff like a nesting bird, one must stand up as a grown man; schemes alone carry no one far.",
+      "kind": "wu",
+      "luck": [
+        "even",
+        "even",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/6"
     },
     {
@@ -717,7 +1046,16 @@
         "更望他乡求用事",
         "千乡万里未能还"
       ],
+      "jie": "一路奔波，处处受阻，涉水又翻山；再跑到外乡去求事，千里万里难回头。",
       "gloss": "Rushing on, blocked again and again, through mud and over mountains; looking for work far away, the road home is long.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "slow"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/7"
     },
     {
@@ -729,7 +1067,16 @@
         "异日忽然成大用",
         "功名成就栋梁材"
       ],
+      "jie": "松柏长得正茂，风霜雨雪都奈何不了；有朝一日成了栋梁，功名自成。",
       "gloss": "Pines and cypresses stand strong; snow and frost do them no harm. One day they become the beams of a great hall.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "even",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/8"
     },
     {
@@ -741,7 +1088,16 @@
         "一片明心光皎洁",
         "宛如皎月正天心"
       ],
+      "jie": "别做私心的事，有话摊开来说；心里光明磊落，像明月正挂中天。",
       "gloss": "Do nothing for selfish ends; speak it openly. A clear heart shines like the moon at the height of the sky.",
+      "kind": "wen",
+      "luck": [
+        "even",
+        "up",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/9"
     },
     {
@@ -753,7 +1109,16 @@
         "宛如持灯更觅火",
         "不如收拾枉劳心"
       ],
+      "jie": "宝贝就藏在身边，偏要跑到外乡去找，像提着灯去找火；不如收心，看看近处。",
       "gloss": "Treasure lies hidden at home while you search far away — like carrying a lamp to look for fire. Stop and look nearer.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/10"
     },
     {
@@ -765,7 +1130,16 @@
         "到头竟必成鹿剑",
         "贵人指引贵人乡"
       ],
+      "jie": "想做成大事是可以的，只是家里的亲事一时忙乱；到头来必有所成，有贵人指路。",
       "gloss": "Great things can be done, though family matters keep you busy; in the end a patron shows the way.",
+      "kind": "doufa",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/11"
     },
     {
@@ -777,7 +1151,16 @@
         "若逢虎兔佳音信",
         "立志忙中事即闲"
       ],
+      "jie": "坏运转好运只在咫尺；有君子下山来相交，虎兔之年有好消息；立定志向，忙事也变闲。",
       "gloss": "Bad turns to good in a moment; a worthy friend comes down the mountain. Good news comes in the years of the tiger and the hare.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/12"
     },
     {
@@ -789,7 +1172,16 @@
         "蒙君赐紫金腰带",
         "四海声名定可夸"
       ],
+      "jie": "生在富贵人家，眼前样样华美；得人赐下紫金腰带，四海扬名。",
       "gloss": "Born in a rich house, surrounded by fine things, given a purple-and-gold sash: a good name across the land.",
+      "kind": "wen",
+      "luck": [
+        "even",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/13"
     },
     {
@@ -801,7 +1193,16 @@
         "南北东西无阻碍",
         "任君直上九霄宫"
       ],
+      "jie": "像仙鹤出了笼子，条条路都通；东南西北没有阻碍，尽可直上九霄。",
       "gloss": "Like a crane let out of its cage: every road opens, nothing blocks you, straight up to the ninth heaven.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "up",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/14"
     },
     {
@@ -813,7 +1214,16 @@
         "巢破林鸟无所宿",
         "可寻深处稳安身"
       ],
+      "jie": "出门的人一肚子怨气，忽有灾事别往前凑；巢破了鸟没处歇，找个深处安稳待着。",
       "gloss": "The traveller fumes at the day; when trouble comes, stay back. The nest is broken — find a quiet, deep place to rest.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "slow"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/15"
     },
     {
@@ -825,7 +1235,16 @@
         "宛如粪土中藏玉",
         "良工荐举出尘埃"
       ],
+      "jie": "愁眉暂时舒开，喜事从云外来；像泥土里藏着美玉，终有良工把你荐出来。",
       "gloss": "The furrowed brow eases; joy comes out of the clouds. Jade hidden in the dirt is found by a good craftsman.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/16"
     },
     {
@@ -837,7 +1256,16 @@
         "若将狂话为真实",
         "画饼如何止得饥"
       ],
+      "jie": "别听闲话是非，早晚静下心来；把狂话当真，就像画饼充饥。",
       "gloss": "Do not listen to idle talk of right and wrong; keep a quiet mind. Taking wild words as true is like eating a painted cake.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "slow",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/17"
     },
     {
@@ -849,7 +1277,16 @@
         "僧道得知无不利",
         "士农工商各从心"
       ],
+      "jie": "日落月升，古往今来循环不息；不论做哪一行的人，都能各遂心意。",
       "gloss": "The sun sets, the moon rises, round and round since ancient times: whoever you are, things go your way.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/18"
     },
     {
@@ -861,7 +1298,16 @@
         "若要安然求稳静",
         "等待浪静过此危"
       ],
+      "jie": "急流滩头放船回家，风浪正起；想要平安，就等浪静了再过这一关。",
       "gloss": "Steering a boat home over the rapids, with wind and waves rising: to be safe, wait for calm water before you cross.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/19"
     },
     {
@@ -873,7 +1319,16 @@
         "旧事消散新事遂",
         "看看一跳过龙门"
       ],
+      "jie": "春天久雨终于放晴，日月渐渐明亮；旧事散去，新事顺遂，眼看一跃过龙门。",
       "gloss": "After long spring rain the sky clears; sun and moon grow bright. Old troubles fade, new things go well — a leap past the Dragon Gate.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/20"
     },
     {
@@ -885,7 +1340,16 @@
         "但见龙蛇相会合",
         "熊罴入梦乐团圆"
       ],
+      "jie": "阴阳相合，都由天定；男婚女嫁，欢欢喜喜，一家团圆。",
       "gloss": "Yin and yang meet as heaven wills: a happy marriage, dragon and snake together, a family made whole.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/21"
     },
     {
@@ -897,7 +1361,16 @@
         "花果草木皆润泽",
         "始知一雨值千金"
       ],
+      "jie": "久旱田里都枯了，一场甘雨淋下来，花果草木都润了，才知一场雨值千金。",
       "gloss": "In the drought the fields are parched; then sweet rain pours. Everything grows green — one rain is worth a thousand gold.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/22"
     },
     {
@@ -909,7 +1382,16 @@
         "忽遇一般音信好",
         "人人欢笑喜庆来"
       ],
+      "jie": "想去月宫折桂，何必担心天门不开；忽然来个好消息，人人笑逐颜开。",
       "gloss": "Reaching for the laurel in the moon palace, why fear heaven's gate is shut? Good news comes, and everyone laughs.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/23"
     },
     {
@@ -921,7 +1403,16 @@
         "若问君恩须得力",
         "到头方见事如麻"
       ],
+      "jie": "理说不清，家也不成，心性像落花随水漂；想求人帮忙得自己出力，到头来事情乱如麻。",
       "gloss": "No reason, no home; a fickle heart like a falling flower. Ask for favour and you will need effort; in the end things are tangled.",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "slow",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/24"
     },
     {
@@ -933,7 +1424,16 @@
         "宽心自有宽心计",
         "得遇高人立大功"
       ],
+      "jie": "几重忧患都过去了，从今重新站稳；放宽心自有办法，遇到高人还能立大功。",
       "gloss": "Past several worries and dangers, from now on you stand firm. A calm mind finds its own way; a wise person helps you to great things.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/25"
     },
     {
@@ -945,7 +1445,16 @@
         "书中许我功名遂",
         "直到终时亦是虚"
       ],
+      "jie": "消息上下传来传去，越传越虚；远方来信说功名能成，到头来也是一场空。",
       "gloss": "Word passes up and down and turns to nothing; a letter from far away promises success, yet to the end it is empty.",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/26"
     },
     {
@@ -957,7 +1466,16 @@
         "时到贵人相助力",
         "如山壁立可安居"
       ],
+      "jie": "每个机会都前思后想，不敢动手；时候一到有贵人相助，便像山壁一样稳稳立住。",
       "gloss": "Each plan, each chance, weighed back and forth, never dared. When the time comes a patron helps, and you stand as firm as a mountain.",
+      "kind": "shouyu",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/27"
     },
     {
@@ -969,7 +1487,16 @@
         "或有圆时还有缺",
         "更言非者亦闲言"
       ],
+      "jie": "东边月亮升起正美，转眼被云遮住却还在；月有圆缺，说它不好的话也只是闲话。",
       "gloss": "The moon rises in the east, lovely; clouds cover it for a while. It waxes and wanes — and talk against it is only talk.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/28"
     },
     {
@@ -981,7 +1508,16 @@
         "今得贵人携出现",
         "有威有势众人钦"
       ],
+      "jie": "宝剑在匣里不沾尘，被贵人拿出来便光芒耀眼，有威有势，人人敬服。",
       "gloss": "A sword in its sheath gathers no dust; drawn out by a patron, it shines, and everyone respects it.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/29"
     },
     {
@@ -993,7 +1529,16 @@
         "若去采薪蛇在草",
         "恐遭毒口也忧愁"
       ],
+      "jie": "劝你别去求人：像鹤飞来撞上暗箭，像上山砍柴草里藏蛇，小心被人中伤。",
       "gloss": "Do not go asking others for help: like a crane flying into a hidden arrow, like a snake in the grass when you gather firewood.",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/30"
     },
     {
@@ -1005,7 +1550,16 @@
         "放下身心不用忙",
         "必定不招冤与祸"
       ],
+      "jie": "安安静静坐着，没什么好愁；饿了吃，困了睡，放下身心别忙，自然不招冤祸。",
       "gloss": "Sit in peace with nothing to worry about; eat when hungry, sleep when tired. Let go and no wrong or harm will come.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/31"
     },
     {
@@ -1017,7 +1571,16 @@
         "一朝良匠分明剖",
         "始觉安然碧玉期"
       ],
+      "jie": "前程看着渺茫其实没错；美玉藏在石头里没人知道，一朝良匠剖开，才见碧玉。",
       "gloss": "The way ahead is dim but sure: jade hides inside the stone, and when a good craftsman cuts it open, all is well.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/32"
     },
     {
@@ -1029,7 +1592,16 @@
         "不如等待高人识",
         "宽心犹且更宽心"
       ],
+      "jie": "你身上就藏着无价之宝，何必向外找；不如等识货的高人来，心放宽些，再宽些。",
       "gloss": "You hold priceless treasure within; why look outside? Wait for someone who knows its worth, and keep your heart easy.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/33"
     },
     {
@@ -1041,7 +1613,16 @@
         "心不了然且静澈",
         "光明红日正当空"
       ],
+      "jie": "进退出入都讲礼义，说话忠实守信；心里不明白时先静下来，自会像正午的太阳一样亮。",
       "gloss": "Courteous in going and coming, true in word and deed; if the heart is unclear, be still — the red sun stands at noon.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/34"
     },
     {
@@ -1053,7 +1634,16 @@
         "扫却当途荆棘碍",
         "三人共议事和同"
       ],
+      "jie": "重整家风，看似无功其实有功；扫掉路上的荆棘，三人一起商量，事情就和顺。",
       "gloss": "Put the family's old ways back in order; what looks like no merit is merit. Clear the thorns from the road; three agree as one.",
+      "kind": "doufa",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/35"
     },
     {
@@ -1065,7 +1655,16 @@
         "恰似猿猴今锁脱",
         "自归山洞去来悠"
       ],
+      "jie": "眼前的病与讼都不必忧心，好地方的钱财尽可去求；像猴子脱了锁链，自在回山去。",
       "gloss": "Illness and lawsuits need no worry; there is wealth to be sought. Like a monkey freed from its chain, back home to its cave.",
+      "kind": "wu",
+      "luck": [
+        "even",
+        "even",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/36"
     },
     {
@@ -1077,7 +1676,16 @@
         "不如收拾深堂坐",
         "庶免光摇静处明"
       ],
+      "jie": "想等身安运顺，风里的灯烛最不稳；不如收拾好在深堂静坐，灯光才不摇。",
       "gloss": "Wait for peace and better luck; a candle in the wind is no good. Better sit quietly inside, where the light stays steady.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "even",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/37"
     },
     {
@@ -1089,7 +1697,16 @@
         "宽心祈信云霞散",
         "此时更改好施为"
       ],
+      "jie": "月照着安静的屋子，忽然云雾一遮又昏暗了；放宽心，云散之后，正好改个做法。",
       "gloss": "Moonlight on a quiet house, suddenly lost in cloud and mist. Keep faith and the clouds will part; then is the time to act.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/38"
     },
     {
@@ -1101,7 +1718,16 @@
         "若把石头磨作镜",
         "曾知枉费己工夫"
       ],
+      "jie": "远方的消息难以揣测，别多心也别强求；把石头磨成镜子，只是白费功夫。",
       "gloss": "News from far away is hard to read; do not hope too hard. Grinding a stone into a mirror is wasted work.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/39"
     },
     {
@@ -1113,7 +1739,16 @@
         "若是女人宜望用",
         "增添财禄福其心"
       ],
+      "jie": "日落月升，阴长阳消，百事亨通；若是女子来问，更添财禄福气。",
       "gloss": "The sun sets, the moon rises; yin grows and all goes well. For a woman especially: wealth and blessing increase.",
+      "kind": "wen",
+      "luck": [
+        "even",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/40"
     },
     {
@@ -1125,7 +1760,16 @@
         "莫贪眼下有些甜",
         "更虑他时还受苦"
       ],
+      "jie": "这些好话要记住：别认贼作子；别贪眼前一点甜，往后还要吃苦。",
       "gloss": "Remember these good words: do not take a thief for your son. Do not crave a little sweetness now and suffer later.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "slow",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/41"
     },
     {
@@ -1137,7 +1781,16 @@
         "一切有情皆受用",
         "人间天上得期亨"
       ],
+      "jie": "圣恩终会降下，再祈福还能添福；众生都受益，天上人间都亨通。",
       "gloss": "The ruler's grace returns; pray and blessings grow. Everyone shares in it, in heaven and on earth.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/42"
     },
     {
@@ -1149,7 +1802,16 @@
         "森罗万象皆精彩",
         "事事如心谢圣贤"
       ],
+      "jie": "天地变通，万物俱全；自己经营自己养，安然自得，事事如意。",
       "gloss": "Heaven and earth turn and all things are whole; you keep and care for yourself in peace. Everything goes as you wish.",
+      "kind": "shouyu",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/43"
     },
     {
@@ -1161,7 +1823,16 @@
         "皆因一着知胜败",
         "须教自有好推宜"
       ],
+      "jie": "棋逢对手，黑白还没分出胜负；输赢只在一着，要好好推敲。",
       "gloss": "Evenly matched at the board, black and white still undecided: one move decides it, so think it through.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/44"
     },
     {
@@ -1173,7 +1844,16 @@
         "若是有人占此卦",
         "宛如正渴遇琼浆"
       ],
+      "jie": "自古柔能克刚，积善人家大吉大昌；抽到这签，就像口渴时遇到琼浆。",
       "gloss": "Gentleness has always beaten force; a house that does good prospers. Like finding sweet drink when you are thirsty.",
+      "kind": "doufa",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/45"
     },
     {
@@ -1185,7 +1865,16 @@
         "直待有人轻着力",
         "枯枝老树再生花"
       ],
+      "jie": "劝你耐心守着老本行，定住心别起坏念；等有人轻轻一助，枯树也会再开花。",
       "gloss": "Keep to your old work patiently, keep your heart steady and do no wrong; when help comes, the old tree flowers again.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/46"
     },
     {
@@ -1197,7 +1886,16 @@
         "时人莫恨功名晚",
         "一举登科四海传"
       ],
+      "jie": "锦上添花，颜色更鲜；运来禄马双全，别怨功名来得晚，一举成名天下知。",
       "gloss": "Flowers on brocade, the colours brighter still; luck brings rank and wealth together. Late success is still success, known far and wide.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/47"
     },
     {
@@ -1209,7 +1907,16 @@
         "翱翔万里云霄去",
         "余外诸禽总不能"
       ],
+      "jie": "秋天小鸟化作大鹏，自在高飞，翱翔万里云霄，别的鸟都追不上。",
       "gloss": "In autumn the small bird becomes the great roc and soars ten thousand miles, where no other bird can follow.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/48"
     },
     {
@@ -1221,7 +1928,16 @@
         "只好守己静处坐",
         "待时兴变自然明"
       ],
+      "jie": "天寒地冻，水都结了冰，何必贪着去求功名；守着自己静静坐，等时候变了自然明白。",
       "gloss": "Heaven is cold, the earth frozen, the water turned to ice: do not chase fame now. Keep still; the time will change.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "even",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/49"
     },
     {
@@ -1233,7 +1949,16 @@
         "若得顺风随即至",
         "满船宝贝喜层层"
       ],
+      "jie": "五湖四海任你走，高挂风帆自在行；顺风一到，满船宝贝，喜事一层又一层。",
       "gloss": "Sail the five lakes and four seas, sails high; with a fair wind you arrive, the boat full of treasure.",
+      "kind": "wu",
+      "luck": [
+        "even",
+        "even",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/50"
     },
     {
@@ -1245,7 +1970,16 @@
         "天地也解知人意",
         "熏风拂拂自然凉"
       ],
+      "jie": "夏天日长天热，人人闷得慌；天地也懂人心，一阵和风自然吹凉。",
       "gloss": "The long hot summer day, everyone sweltering; heaven understands, and a cool breeze comes by itself.",
+      "kind": "shouyu",
+      "luck": [
+        "up",
+        "up",
+        "even",
+        "even",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/51"
     },
     {
@@ -1257,7 +1991,16 @@
         "莫说闲言并乱语",
         "枉劳心力强身孤"
       ],
+      "jie": "水里捞月，费尽功夫还是一场空；别说闲话乱语，白白劳神，反落得孤单。",
       "gloss": "Fishing the moon out of the water: all that effort and nothing caught. Say nothing idle; do not wear yourself out alone.",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/52"
     },
     {
@@ -1269,7 +2012,16 @@
         "青天自有通霄路",
         "许我功名必可期"
       ],
+      "jie": "失意转成得意，龙吟虎啸正相宜；青天自有通天的路，功名一定可期。",
       "gloss": "Disappointment turns to success; dragon and tiger call together. The blue sky has its road; success will come.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/53"
     },
     {
@@ -1281,7 +2033,16 @@
         "若问婚姻并问病",
         "别寻道路好相通"
       ],
+      "jie": "梦里得宝，醒来就没了，像南柯一梦一场空；问婚姻或问病，都该另找门路。",
       "gloss": "Treasure found in a dream, gone on waking — an empty dream. For marriage or illness, look for another way.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "slow",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/54"
     },
     {
@@ -1293,7 +2054,16 @@
         "堂上椿萱人快乐",
         "饥饭渴饮困时眠"
       ],
+      "jie": "父亲贤德传给子孙，衣食丰足全靠天；堂上父母快乐，饿了吃，渴了喝，困了睡。",
       "gloss": "A good father passes it down to his sons and grandsons; enough food and clothing; parents happy; eat, drink and sleep in peace.",
+      "kind": "wen",
+      "luck": [
+        "even",
+        "up",
+        "even",
+        "even",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/55"
     },
     {
@@ -1305,7 +2075,16 @@
         "路须借问何方去",
         "莫取林中花草香"
       ],
+      "jie": "小溪石滩水声响，清风明月下贵人正忙；路要问清楚往哪走，别贪林中花草香。",
       "gloss": "The stream sounds over small stones; the breeze and the moon keep the great busy. Ask the way, and leave the flowers in the wood alone.",
+      "kind": "wen",
+      "luck": [
+        "even",
+        "slow",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/56"
     },
     {
@@ -1317,7 +2096,16 @@
         "君莫记取当年事",
         "汝意还如我意同"
       ],
+      "jie": "是非闲话像风吹过耳边；好衣好禄自然丰足；别记着当年的事，你我想的其实一样。",
       "gloss": "Gossip is wind past the ear; good clothes and fortune come by themselves. Forget the old grudges: you and I think alike.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "up",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/57"
     },
     {
@@ -1329,7 +2117,16 @@
         "切须守己旧生涯",
         "除此其余都不利"
       ],
+      "jie": "直话要记住：别到外乡学别的手艺；守住老本行，其他的都不利。",
       "gloss": "Remember plain words: do not seek a new trade far away. Keep to your old work; anything else will not go well.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/58"
     },
     {
@@ -1341,7 +2138,16 @@
         "天高君命长和短",
         "得一番成失二人"
       ],
+      "jie": "爬上高楼躲起来，四周荆棘围成林；寿数长短由天，得到一个却失去两个。",
       "gloss": "Hiding high in a tower ringed with thorns; how long one lives is heaven's. Gain one, lose two.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/59"
     },
     {
@@ -1353,7 +2159,16 @@
         "若问荣华并出入",
         "不如收拾枉劳心"
       ],
+      "jie": "抱着柴去救火，只会越烧越旺；问荣华或问出门，不如收手，别白费心。",
       "gloss": "Fighting fire with firewood only spreads the blaze. For honour or for going out, better to put it away and stop.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "slow",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/60"
     },
     {
@@ -1365,7 +2180,16 @@
         "相逢会遇难藏隐",
         "唱彩齐唱连理罗"
       ],
+      "jie": "日落吟诗，月下唱歌，逢场作戏笑呵呵；遇见的事藏不住，大家一起唱和。",
       "gloss": "Poems at sunset, songs under the moon, laughing along with it all; what is met cannot be hidden, and all sing together.",
+      "kind": "wen",
+      "luck": [
+        "even",
+        "up",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/61"
     },
     {
@@ -1377,7 +2201,16 @@
         "若得贵人相引处",
         "那时财帛亦相随"
       ],
+      "jie": "早晚都有神佛扶持，遇到危险也不危；得贵人引路时，钱财也跟着来。",
       "gloss": "Morning and evening the Buddha holds you up; danger comes and is not danger. When a patron leads you, wealth follows.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/62"
     },
     {
@@ -1389,7 +2222,16 @@
         "若然寻得原针在",
         "也费工夫也费心"
       ],
+      "jie": "往年行船丢了针，今天还在海里找；就算找着了，也费工夫费心思。",
       "gloss": "The needle lost at sea from a boat long ago, searched for again today: even if you find it, it costs time and heart.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "even",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/63"
     },
     {
@@ -1401,7 +2243,16 @@
         "思量无计翻身出",
         "事到头来惹是非"
       ],
+      "jie": "鱼在碧池里游，撞上四面的罗网；想不出办法翻身，到头来惹出是非。",
       "gloss": "A fish in a green pool runs into a net on every side; it finds no way out, and trouble follows.",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "slow",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/64"
     },
     {
@@ -1413,7 +2264,16 @@
         "割肉补疮为甚事",
         "不如守旧待时光"
       ],
+      "jie": "眼前的欢喜还算不上欢喜，不危险也不安稳；割肉补疮何必，不如守旧等时机。",
       "gloss": "Joy now is not yet joy; neither danger nor peace. Cutting flesh to patch a sore is no help — keep to the old and wait.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/65"
     },
     {
@@ -1425,7 +2285,16 @@
         "滩高风浪船棹破",
         "日暮花残天降霜"
       ],
+      "jie": "路险马乏人又急，像掉队的兵困在一处；滩高浪大船桨断，天晚花残又降霜。",
       "gloss": "The road is steep, the horse tired, the traveller hurried; soldiers cut off; the boat broken by waves; flowers fade in the frost.",
+      "kind": "wu",
+      "luck": [
+        "slow",
+        "slow",
+        "slow",
+        "slow",
+        "slow"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/66"
     },
     {
@@ -1437,7 +2306,16 @@
         "为人平生心正直",
         "文章全具艺光明"
       ],
+      "jie": "一条金线称你的心，不增不减不偏不倚；为人一生正直，文章才艺都光明。",
       "gloss": "A golden thread weighs your heart: nothing more, nothing less. Upright all your life, your learning and skill shine.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/67"
     },
     {
@@ -1449,7 +2327,16 @@
         "婚姻田蚕诸事遂",
         "病逢妙药即安康"
       ],
+      "jie": "门庭喜庆非常，积善人家大吉大昌；婚姻田蚕样样顺，有病遇上好药就安康。",
       "gloss": "Joy at the gate; a house that does good prospers. Marriage, fields and silkworms all go well; illness meets its cure.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/68"
     },
     {
@@ -1461,7 +2348,16 @@
         "但得阳春悄急至",
         "依然还我作花魁"
       ],
+      "jie": "冬天岭上一枝梅，叶落枝枯也不折；只等春天悄悄到来，依旧开成花中第一。",
       "gloss": "A plum branch on the winter ridge: leaves fall, the branch is bare, but it never breaks. When spring comes it flowers first.",
+      "kind": "shouyu",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/69"
     },
     {
@@ -1473,7 +2369,16 @@
         "春尽花残无觅处",
         "此心不变旧行踪"
       ],
+      "jie": "天天像采花的蜂，飞了西南又飞东；春尽花残没处找，心却还守着老路线。",
       "gloss": "Every day like a bee among flowers, flying south-west, then east; when spring ends there is nothing to find, yet it keeps its old path.",
+      "kind": "wu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/70"
     },
     {
@@ -1485,7 +2390,16 @@
         "自是一弓施两箭",
         "骑龙跨马上安居"
       ],
+      "jie": "苍龙降到大街上；一张弓射出两支箭；骑龙跨马，终能安居。",
       "gloss": "The green dragon comes down to the road; one bow, two arrows; riding the dragon, you settle in peace.",
+      "kind": "wu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/71"
     },
     {
@@ -1497,7 +2411,16 @@
         "须是眼前有异路",
         "暗里深如荆棘林"
       ],
+      "jie": "养蜂想要蜜，就怕被尾针蛰；眼前虽有别的路，暗里却深如荆棘林。",
       "gloss": "To keep bees for honey, beware the sting; there may be another road ahead, but it is dark and thorny.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "slow",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/72"
     },
     {
@@ -1509,7 +2432,16 @@
         "始知出入还来往",
         "一朝变化便成龙"
       ],
+      "jie": "春雷一响百虫都醒，一翻身离开泥里；出入来往之间，有朝一日化成龙。",
       "gloss": "Spring thunder wakes the insects; turning over, out of the mud; going out and coming back, one day it becomes a dragon.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/73"
     },
     {
@@ -1521,7 +2453,16 @@
         "南北东西都难出",
         "此卦诚恐恨无穹"
       ],
+      "jie": "像天鹅自己飞进笼子，想翻身却出不去，东南西北都难脱身。",
       "gloss": "Like a swan flying into a cage: it tries to turn but cannot get out, north, south, east or west.",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "slow",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/74"
     },
     {
@@ -1533,7 +2474,16 @@
         "幸得山前逢妙手",
         "方能保得一身安"
       ],
+      "jie": "像抱着老虎翻高山，战战兢兢吓破了胆；幸好山前遇到高手，才保住一身平安。",
       "gloss": "Like carrying a tiger over a high mountain, trembling with fear; luckily a skilled hand ahead keeps you safe.",
+      "kind": "wu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/75"
     },
     {
@@ -1545,7 +2495,16 @@
         "不觉一朝头耸出",
         "禹门一跳过龙宫"
       ],
+      "jie": "鱼龙混在一起；耐心守在深潭等运通，不知不觉一朝出头，跃过龙门。",
       "gloss": "Fish and dragon mixed together; wait in the deep pool for luck to turn. One morning you rise and leap the Dragon Gate.",
+      "kind": "shouyu",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/76"
     },
     {
@@ -1557,7 +2516,16 @@
         "水远山遥难信实",
         "贵人指点笑颜开"
       ],
+      "jie": "梦里说发了大财，名声远在云外，终究是虚的；路远山遥难以当真，等贵人指点才笑开颜。",
       "gloss": "Riches talked of in a dream; fame beyond the clouds is empty; far roads, hard to trust — until a patron points the way and you smile.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "even",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/77"
     },
     {
@@ -1569,7 +2537,16 @@
         "要行天下无他事",
         "为有身中百艺强"
       ],
+      "jie": "冷水还没烧开，不冷不热刚好温；走遍天下也没事，因为你身上本事多。",
       "gloss": "Cold water not yet boiled: neither cold nor hot, just warm. Travel anywhere and no harm comes, for you have many skills.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "up",
+        "up"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/78"
     },
     {
@@ -1581,7 +2558,16 @@
         "莫忘神圣宜还了",
         "此知神语莫轻慢"
       ],
+      "jie": "许愿求平安，平安得了愿还没还；别忘了该还的要还，神明的话别轻慢。",
       "gloss": "A vow made for peace: the peace was kept but the vow not yet repaid. Do not forget to repay it; do not take the gods' word lightly.",
+      "kind": "wen",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/79"
     },
     {
@@ -1593,7 +2579,16 @@
         "青天日月常明照",
         "心正声名四海传"
       ],
+      "jie": "一路登上仙岩去学仙，有一天被帝王召见；青天日月常照，心正名声传四海。",
       "gloss": "Climbing the immortals' cliff to learn the way, one day you are called to court. Sun and moon shine; an upright heart is known far and wide.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/80"
     },
     {
@@ -1605,7 +2600,16 @@
         "谢得天公高着力",
         "顺风船载珍宝归"
       ],
+      "jie": "梧桐叶落，秋天将尽，行人归心似箭；多谢天公出力，顺风船载着珍宝回来。",
       "gloss": "Plane leaves fall as autumn ends; the traveller hurries home like a cloud. Thanks to heaven, a fair wind brings the boat home full of treasure.",
+      "kind": "wu",
+      "luck": [
+        "even",
+        "even",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/81"
     },
     {
@@ -1617,7 +2621,16 @@
         "到底得成终不害",
         "枝叶生长根依然"
       ],
+      "jie": "烈火冲天，火里却长出一朵莲；到底成了也不受害，枝叶生长，根还在。",
       "gloss": "Flames fill the sky, and in the fire a lotus grows. In the end no harm is done; the leaves grow and the root holds.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/82"
     },
     {
@@ -1629,7 +2642,16 @@
         "等待十五良宵夜",
         "到处光明到处圆"
       ],
+      "jie": "像初三、四、五的月亮，一半有一半无还没圆；等到十五的好夜，处处光明处处圆。",
       "gloss": "Like the moon on the third, fourth and fifth nights, half there, not yet full: wait for the fifteenth, and it shines everywhere.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/83"
     },
     {
@@ -1641,7 +2663,16 @@
         "酒醉不知何处去",
         "青松影里梦朦胧"
       ],
+      "jie": "为了名声丢了德行，图什么呢，只怕吉里变凶；喝醉了不知往哪去，在青松影里迷迷糊糊做梦。",
       "gloss": "Losing virtue for a name, what is the use? Luck may turn to trouble. Drunk, not knowing where you are going, dreaming under the pines.",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "slow"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/84"
     },
     {
@@ -1653,7 +2684,16 @@
         "若得诗书沉梦醒",
         "贵人指引步天台"
       ],
+      "jie": "云雾遮住山前的路，春残花尽又会再开；若能读书醒梦，贵人引你一步步登高。",
       "gloss": "Clouds and fog hide the mountain road; spring ends, flowers fall and bloom again. Wake from the dream through study, and a patron leads you up.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/85"
     },
     {
@@ -1665,7 +2705,16 @@
         "若得禹门三级浪",
         "恰如平地一声雷"
       ],
+      "jie": "春来花开照亮阳台，万里外车马运来宝财；像跃过禹门三级浪，平地一声雷。",
       "gloss": "Spring flowers light the terrace; carts come from afar with treasure. Like leaping the Dragon Gate's three waves — thunder on flat ground.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/86"
     },
     {
@@ -1677,7 +2726,16 @@
         "仰望上天为护佑",
         "此身犹在太平间"
       ],
+      "jie": "人走到半山，太阳已落到山头，陡崖还不安稳；抬头求天保佑，这身子依旧太平。",
       "gloss": "Halfway up the ridge with the sun on the hills, the cliffs not safe yet; look to heaven for protection, and you are still at peace.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/87"
     },
     {
@@ -1689,7 +2747,16 @@
         "分明说是无防事",
         "忧恼迟疑恐惊心"
       ],
+      "jie": "门口一只木头老虎，看着威风却不伤人；分明没什么可防的，只是心里忧疑，自己吓自己。",
       "gloss": "A tiger of wood stands at the gate: it looks fierce but harms no one. It is plainly nothing to fear, yet worry keeps you uneasy.",
+      "kind": "doufa",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/88"
     },
     {
@@ -1701,7 +2768,16 @@
         "若得贵人来指引",
         "斯时得宝喜风光"
       ],
+      "jie": "出门谋事大吉大昌，像无瑕美玉藏在石里；得贵人指引时，便得宝风光。",
       "gloss": "Going out and making plans: great luck. Flawless jade hidden in the stone; when a patron guides you, you find the treasure and shine.",
+      "kind": "doufa",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/89"
     },
     {
@@ -1713,7 +2789,16 @@
         "若问路途成好事",
         "前头仍有贵人推"
       ],
+      "jie": "忽然一封信飞上天，泰山宝贝满船回；问路途，好事能成，前面还有贵人推一把。",
       "gloss": "Word flies up to heaven; the boat comes home full of treasure. Ask about the road: it goes well, and there is still help ahead.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/90"
     },
     {
@@ -1725,7 +2810,16 @@
         "一条大路如天阔",
         "凡有施财尽畅怀"
       ],
+      "jie": "舒开愁眉，走到人前来；前途一变，喜事多财；一条大路宽如天，肯施舍的人都会畅快。",
       "gloss": "Lift your brows and step forward; the way ahead changes, with joy and wealth. A road as wide as the sky; whatever you give comes back.",
+      "kind": "wu",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "up",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/91"
     },
     {
@@ -1737,7 +2831,16 @@
         "若是进身谋望事",
         "秀才出去状元游"
       ],
+      "jie": "从小经商会谋划，财禄丰足不用去求；若是求上进，秀才出门，状元回来。",
       "gloss": "A trader since youth, full of plans, with wealth that comes unasked. If you seek advancement: the scholar goes out and comes back first in the land.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "even",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/92"
     },
     {
@@ -1749,7 +2852,16 @@
         "忽朝一日云霄霁",
         "依旧还教振羽衣"
       ],
+      "jie": "鸾凤的羽毛被雨压垂，此时被麻雀欺负；忽有一天云开雨霁，照样展翅高飞。",
       "gloss": "The phoenix's feathers weighed down by rain, mocked by sparrows; one day the sky clears and it spreads its wings again.",
+      "kind": "shouyu",
+      "luck": [
+        "even",
+        "even",
+        "even",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/93"
     },
     {
@@ -1761,7 +2873,16 @@
         "琴鸣须用知音听",
         "守常安静得相宜"
       ],
+      "jie": "君子别学小人的做法，事情一出差错就惹是非；琴要知音来听，守常安静才合宜。",
       "gloss": "A gentleman does not act like a petty man; a slip brings trouble. A zither needs a friend who knows its music; keep steady and calm.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/94"
     },
     {
@@ -1773,7 +2894,16 @@
         "若见金鸡报君语",
         "钱财福禄与君招"
       ],
+      "jie": "志气功业天天在长，如今却沉迷酒色收不住；等金鸡报晓，钱财福禄自会招来。",
       "gloss": "Your will and work grow day by day, but wine and pleasure are too much. When the golden rooster calls, wealth and blessing come.",
+      "kind": "wu",
+      "luck": [
+        "even",
+        "slow",
+        "even",
+        "even",
+        "slow"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/95"
     },
     {
@@ -1785,7 +2915,16 @@
         "劝君立志勤顶礼",
         "作善苍天降福祥"
       ],
+      "jie": "巍峨的宝塔非同寻常，八面玲珑都放光；劝你立志勤修，行善自有上天降福。",
       "gloss": "A great pagoda, out of the ordinary, shining on all eight sides: set your heart on doing good, and heaven sends blessing.",
+      "kind": "wen",
+      "luck": [
+        "up",
+        "up",
+        "up",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/96"
     },
     {
@@ -1797,7 +2936,16 @@
         "几度儿童来收拾",
         "岂知收拾总成空"
       ],
+      "jie": "风里点烛只照出空影，恍惚像镜中的花；孩子们来回收拾几次，到头来总是一场空。",
       "gloss": "A candle in the wind casts empty shadows, like flowers in a mirror; the children come again and again to gather them, and gather nothing.",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "even",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/97"
     },
     {
@@ -1809,7 +2957,16 @@
         "如鸟飞入罗网内",
         "脱困能有几多时"
       ],
+      "jie": "出门谋事要慢；一急怕惹出闲愁是非；像鸟飞进罗网，要脱身得等好些时候。",
       "gloss": "Plans for going out should wait; hurry brings worry and trouble. Like a bird flown into a net — how long until it gets free?",
+      "kind": "doufa",
+      "luck": [
+        "slow",
+        "slow",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/98"
     },
     {
@@ -1821,7 +2978,16 @@
         "恰似遭火焚烧屋",
         "天降时雨荡成灰"
       ],
+      "jie": "勒马扬鞭直冲过来，一半是忧一半是灾；像房子遭了火，天降及时雨，把灰都冲净了。",
       "gloss": "Riding straight in with whip in hand: half worry, half trouble, like a house burned down — and then heaven's rain washes the ashes away.",
+      "kind": "wu",
+      "luck": [
+        "slow",
+        "slow",
+        "slow",
+        "slow",
+        "slow"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/99"
     },
     {
@@ -1833,7 +2999,16 @@
         "老人求得灵签去",
         "不如守旧待时来"
       ],
+      "jie": "神佛灵验，你心里明白；糊涂人说事只会越说越乱；老人求了签走了，不如守旧等时机。",
       "gloss": "The gods are clear to you; a foolish person only grows more confused. The old man takes his stick and goes: better to keep to the old ways and wait.",
+      "kind": "shouyu",
+      "luck": [
+        "slow",
+        "even",
+        "slow",
+        "slow",
+        "even"
+      ],
       "url": "https://bwmonastery.org.sg/gylot-c/100"
     }
   ]

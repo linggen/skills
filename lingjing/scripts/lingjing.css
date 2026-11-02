@@ -1517,3 +1517,18 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 .qcell.got { color: var(--text); background: var(--raised); } .qcell.got.great { border-color: var(--ling); } .qcell.got.ill { border-color: var(--seal); }
 @media (max-width: 520px) { .card.qian .qbody { flex-direction: column; align-items: center; } .qgrid { grid-template-columns: repeat(5, 1fr); } }
 .qiantong .sticks i:nth-child(3n) { height: 40px; } .qiantong .sticks i:nth-child(3n+1) { height: 30px; }
+/* 问签 v2 (qian-reading.js): the 签解, the five 项, her line, 替人求签, the share buttons. */
+.qjie { margin: 4px 0 8px; font-size: 13.5px; line-height: 1.7; } .qjie .dim { font-size: 11px; letter-spacing: .04em; }
+.qaspects { display: grid; gap: 3px; margin: 6px 0 8px; font-size: 13px; }
+.qasp { display: flex; gap: 10px; } .qasp b { flex: none; width: 3.2em; font-family: var(--serif); font-weight: 600; color: var(--dim); }
+.qasp.tone-up span { color: var(--jade); } .qasp.tone-slow span { color: var(--seal); }
+.qher { margin: 8px 0 2px; } .qher b { margin-right: .5em; font-family: var(--serif); }
+.qshare { margin-top: 8px; } .qsharenote { margin-top: 2px; }
+.qfor { margin: 2px 0 4px; letter-spacing: .04em; }
+.qfriendform { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); display: grid; gap: 6px; }
+.qfriendform input[type=text], .qfriendform input[type=date] { font: inherit; font-size: 13px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); box-sizing: border-box; }
+.qfriendform input[type=text] { width: 100%; } .qfb { display: grid; gap: 3px; } .qnokeep { display: flex; gap: 6px; align-items: center; }
+.qfriend { display: inline-flex; align-items: center; margin: 0 6px 3px 0; } .qfriend .qchip { margin: 0; }
+.qfriend .qx { font: inherit; font-size: 13px; line-height: 1; border: none; background: none; color: var(--faint); cursor: pointer; padding: 2px 4px; }
+.qsrc { margin-top: 8px; text-align: center; }
+.qshown { display: block; width: 100%; max-width: 260px; margin: 8px auto 0; border: 1px solid var(--line); border-radius: 6px; }

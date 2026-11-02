@@ -96,8 +96,9 @@ export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { playTo, summaryOf, targetOf } from './rules/progress.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
 
-/* A birthday (the 生辰 card, the 命格 form) is read and let go: never in the log. */
-const logged = ({ birth, ...rest }) => rest;
+/* A birthday (the 生辰 card, the 命格 form, 替人求签) is read and let go: never in the log. Nor a friend's 称呼
+   (问签 v2 替人求签): kept in the save only when he keeps the friend, never in the log either way. */
+const logged = ({ birth, name, ...rest }, verb) => (verb === 'divine' || name === undefined ? rest : { ...rest, name });
 
 /* Answers handed over as they are — no question, no stage: Progress is for
    a pet that only wants to know how the game stands; Story is a book to read. */
@@ -325,7 +326,7 @@ function runLocked(verb, args, stateFile, reader) {
     // The last player verb (state.mjs awayFit reads the gap from it).
     if (player) next.last_seen = now.toISOString();
     writeAtomic(stateFile, stateText(next));
-    if (!(standOnly && !out.state)) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args), before: unconfirmed(raw ?? state) }) + '\n');
+    if (!(standOnly && !out.state)) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args, verb), before: unconfirmed(raw ?? state) }) + '\n');
     trackPay(verb, args, out.result, raw ?? state, next, content, now);
   }
   // …a read or a refusal is the player here too: stamped, never logged.
