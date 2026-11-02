@@ -47,7 +47,9 @@ senses: [weather, user_words]
 # `@银月` runs no turn and the page says 「查无此人。」, and no app moment
 # reaches her (Hanli, 2026-09-25 / 09-28). At the table she reads the game
 # and never moves it: her tools here are her own read of it (AppTool →
-# Progress) and the book (Story) — no Resolve, no question widget.
+# Progress) and the book (Story) — no Resolve, no question widget — and
+# WebSearch, the world outside, when asked for it (开府 问天: 「今天有什么大新闻？」
+# on the 事 card, 2026-11-02); it moves nothing in the game.
 members: [ling, yinyue]
 # A chat may be bound to a test save (skill-spec § Session parameters): the
 # page's `?save=<name>` binds its session, and every tool below carries
@@ -60,7 +62,7 @@ session-params:
     description: A test save under data/saves/<name>/.
 place:
   yinyue:
-    tools: [AppTool, Story]
+    tools: [AppTool, Story, WebSearch]
     text: >-
       You are inside Lingjing 《灵境》, the player's companion. Speak in the
       game's language, as yourself; Ling tells the world and runs every turn —
