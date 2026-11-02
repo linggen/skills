@@ -15,18 +15,20 @@ export const POUCH_WORDS = {
     held: '待取 {n}', heldTitle: '洞府 · 待取', heldNote: '储物袋满时得的东西在这里等着。有空位就能收进。', claim: '收进',
     tabs: { all: '全部', pill: '丹药', arms: '法器', material: '材料', charm: '符', story: '剧情' },
     deck: '牌组', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
-    take: '服用', wear: '佩戴', study: '参悟', carry: '换上', sell: '卖 {n}', toss: '丢',
+    take: '服用', wear: '佩戴', study: '参悟', carry: '换上 · 多 {n} 格', sell: '卖 {n}', toss: '丢',
     tossAsk: '丢掉{name} ×{n}？丢了就找不回了。', tossYes: '丢掉', tossNo: '留着',
-    free: '剧情所需，不占格', grown: '已换上：{names}', fantong: '饭桶',
+    free: '剧情所需，不占格', fantong: '饭桶',
+    pouchSlot: '储物袋', pouchPlain: '随身储物袋', pouchCap: '{name} · {n} 格', pouchDup: '这样的储物袋已在身上，再用无益。',
   },
   en: {
     title: 'Storage Pouch', close: 'Close', used: '{used}/{cap} slots', over: '{n} over: new things wait at the abode first.',
     held: '{n} waiting', heldTitle: 'The abode · waiting', heldNote: 'What came while the pouch was full waits here. Take it in when there is room.', claim: 'Take in',
     tabs: { all: 'All', pill: 'Pills', arms: 'Arms', material: 'Materials', charm: 'Talismans', story: 'Story' },
     deck: 'Deck', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
-    take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it', sell: 'Sell {n}', toss: 'Drop',
+    take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it · +{n} slots', sell: 'Sell {n}', toss: 'Drop',
     tossAsk: 'Throw away {name} ×{n}? It is gone for good.', tossYes: 'Throw away', tossNo: 'Keep it',
-    free: 'the story needs it — takes no slot', grown: 'Carried: {names}', fantong: 'Rice Bucket',
+    free: 'the story needs it — takes no slot', fantong: 'Rice Bucket',
+    pouchSlot: 'Pouch', pouchPlain: 'Plain pouch', pouchCap: '{name} · {n} slots', pouchDup: 'You carry one like it already; another adds nothing.',
   },
 };
 const say = (t, vars) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
@@ -48,14 +50,26 @@ function wornHtml(g, ctx) {
   const treasure = t ? cell(w.gearSlots.treasure, `<b>${esc(t.name)}</b><span class="small dim">${esc(t.step)} · ${esc(t.element_name)}</span>`) : '';
   const lift = g.her?.item ? liftSaid(g.her.item.effect, w) : '';
   const her = g.her ? cell(say(w.gearHer, { name: g.her.name }), `${name(g.her.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`) : '';
-  return `<div class="pwornrow">${slots}${treasure}${her}</div>${gearFightHtml(g.fight, ctx)}${g.her ? herCardHtml(g.her, ctx) : ''}`;
+  return `<div class="pwornrow">${slots}${pouchCellHtml(g.pouch, ctx)}${treasure}${her}</div>${gearFightHtml(g.fight, ctx)}${g.her ? herCardHtml(g.her, ctx) : ''}`;
 }
+
+/* 储物袋 — the pouch he carries, a cell of the worn row: the bigger ones put to use (rules/pouch.mjs `carried`,
+   biggest first), or the realm's plain one, and the room it gives (Hanli 11-02: 「看不出来在身上」). Used for good: no 卸下. */
+function pouchCellHtml(p, ctx) {
+  if (p?.cap == null) return '';
+  const pw = POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh;
+  const name = p.carried?.length ? p.carried.map((c) => c.name).join(ctx.lang === 'en' ? ' + ' : '、') : pw.pouchPlain;
+  return `<div class="pworn ppouch"><span class="lbl">${esc(pw.pouchSlot)}</span><b>${esc(say(pw.pouchCap, { name, n: p.cap }))}</b></div>`;
+}
+/* A bigger pouch of a kind he already carries: another adds nothing (travel.mjs `pouch-used`), so it shows as on him. */
+const carriedKind = (i, g) => Boolean(i.effect?.pouch && g?.pouch?.carried?.some((c) => c.id === i.id));
 
 const artOf = (i, ctx) => (i.art ? `<img src="${esc((ctx.artBase ?? '') + i.art)}" alt="" loading="lazy">` : '<i class="noart" aria-hidden="true"></i>');
 
-function tileHtml(i, ctx, sel) {
-  return `<button class="ptile${sel === i.id ? ' sel' : ''}${i.worn ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}" data-pouch-item="${esc(i.id)}" aria-pressed="${sel === i.id}">
-    ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${zhuanHtml(i.zhuan, ctx.lang)}${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${i.worn ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}</button>`;
+function tileHtml(i, ctx, sel, g) {
+  const on = i.worn || carriedKind(i, g);
+  return `<button class="ptile${sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}" data-pouch-item="${esc(i.id)}" aria-pressed="${sel === i.id}">
+    ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${zhuanHtml(i.zhuan, ctx.lang)}${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${on ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}</button>`;
 }
 
 /// 丹纹 — a pill's 转 as lines across it: one per turn, the ninth turn's all
@@ -85,7 +99,7 @@ function detailHtml(i, g, ctx, pw, ui) {
   const acts = [];
   if (e.progress != null) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.take)}</button>`);
   else if (e.learn) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.study)}</button>`);
-  else if (e.pouch) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.carry)}</button>`);
+  else if (e.pouch && !carriedKind(i, g)) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(say(pw.carry, { n: e.pouch }))}</button>`);
   if (i.slot && !i.worn) acts.push(`<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`);
   if (i.worn && (g.slots ?? []).some((s) => s.item?.id === i.id)) acts.push(`<button class="act quiet" data-remove="${esc(i.id)}">${esc(w.gearOff)}</button>`);
   if (g.market && i.sell > 0 && !i.free) acts.push(`<button class="act quiet" data-sell="${esc(i.id)}">${esc(say(pw.sell, { n: i.sell }))}</button>`);
@@ -98,7 +112,7 @@ function detailHtml(i, g, ctx, pw, ui) {
     ${i.zhuan ? `<div class="pzhuan">${zhuanHtml(i.zhuan, ctx.lang)}</div>` : ''}
     <div class="small dim">${esc(kind)}${kind ? ' · ' : ''}${esc(itemDoes(e, ctx))}</div>
     ${i.about ? `<div class="small about">${esc(i.about)}</div>` : ''}${tamesLine(i, ctx)}${readsHtml(i.reads, w)}
-    ${i.free ? `<div class="small dim">${esc(pw.free)}</div>` : ''}
+    ${i.free ? `<div class="small dim">${esc(pw.free)}</div>` : ''}${carriedKind(i, g) ? `<div class="small dim">${esc(pw.pouchDup)}</div>` : ''}
     ${acts.length ? `<div class="acts">${acts.join('')}</div>` : ''}${ask}</div></div>`;
 }
 
@@ -142,7 +156,6 @@ export function pouchHtml(ctx, ui = {}) {
   if (pane === 'panglu') return shell(pangluHtml(ctx.look?.panglu ?? null, ctx.pangluLast ?? null, ctx.lang, ctx.artBase ?? ''));
   if (pane === 'deck') return shell(`<section class="psec">${deckHtml(g, ctx)}</section>`);
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
-  const grown = p.grown?.length ? `<p class="small dim">${esc(say(pw.grown, { names: p.grown.join(ctx.lang === 'en' ? ', ' : '、') }))}</p>` : '';
   // 丹毒 (rules/dandu.mjs): the turns owed and what they take off the 体力 pool, in the rules' words — a fact on the page.
   const dandu = ctx.look?.dandu ? `<p class="small pdandu">${esc(ctx.look.dandu.say)}</p>` : '';
   const worn = `<section class="psec">${wornHtml(g, ctx)}</section>`;
@@ -151,7 +164,7 @@ export function pouchHtml(ctx, ui = {}) {
   const tabs = `<div class="ptabs" role="tablist">${TABS.map((t) => `<button role="tab" class="ptab${t === tab ? ' on' : ''}${count(t) ? '' : ' none'}" data-pouch-tab="${t}" aria-selected="${t === tab}">${esc(pw.tabs[t])}<span>${count(t)}</span></button>`).join('')}</div>`;
   const shown = g.bag.filter((i) => tab === 'all' || tabOf(i) === tab);
   const sel = g.bag.find((i) => i.id === ui.sel) ?? null;
-  const grid = shown.length ? `<div class="pgrid">${shown.map((i) => tileHtml(i, ctx, ui.sel)).join('')}</div>`
+  const grid = shown.length ? `<div class="pgrid">${shown.map((i) => tileHtml(i, ctx, ui.sel, g)).join('')}</div>`
     : `<p class="small dim">${esc(g.bag.length ? pw.tabEmpty : pw.empty)}</p>`;
-  return shell(`${worn}<section class="psec">${over}${grown}${dandu}${tabs}<div class="pbody">${grid}${g.bag.length ? detailHtml(sel, g, ctx, pw, ui) : ''}</div></section>`);
+  return shell(`${worn}<section class="psec">${over}${dandu}${tabs}<div class="pbody">${grid}${g.bag.length ? detailHtml(sel, g, ctx, pw, ui) : ''}</div></section>`);
 }

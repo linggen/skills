@@ -226,3 +226,61 @@ test('a pill from 银月\'s furnace is its own 九转 item — more 修为 than 
   const pop = pouchHtml({ gear, words: WORDS.zh, lang: 'zh', look: {} }, { sel: 'mend-pill-9' });
   assert.match(pop, /class="pzhuan"><span class="zhuan gold"/);
 });
+
+test('the pouch he carries is named: the brief holds the realm\'s room and each bigger pouch put to use (Hanli 11-02: 「看不出来在身上」)', () => {
+  const before = VERBS.gear(at({ 'pouch-low': 1 }, { tier: 'qi' }), content, ctx()).result.gear.pouch;
+  assert.deepEqual([before.cap, before.base, before.carried], [24, 24, undefined]);
+  const s = at({ 'pouch-low': 1, 'pouch-mid': 2 }, { tier: 'qi', place: 'ye' });
+  const r = trade(s, content, ctx(), { action: 'use', id: 'pouch-low' });
+  assert.equal(r.state.bag['pouch-low'], undefined, 'used for good: it leaves the bag');
+  const p = r.result.pouch;
+  assert.deepEqual([p.cap, p.base], [30, 24]);
+  assert.deepEqual(p.carried, [{ id: 'pouch-low', name: '下品储物袋', art: itemOf(content, 'pouch-low').art, adds: 6 }]);
+  const both = trade(r.state, content, ctx(), { action: 'use', id: 'pouch-mid' }).result.pouch;
+  assert.deepEqual(both.carried.map(c => [c.id, c.adds]), [['pouch-mid', 12], ['pouch-low', 6]], 'biggest first');
+  assert.equal(both.cap, 42);
+});
+
+test('the panel: a 储物袋 cell in the worn row, the header 24/30, 换上 says what it adds, a carried kind shows as on him — zh and en', async () => {
+  const { WORDS } = await import('../scripts/cards.js');
+  const { pouchHtml } = await import('../scripts/pouch.js');
+  const unused = at({ 'pouch-low': 1, 'pouch-mid': 2, 'qi-pill': 1 }, { tier: 'qi', place: 'ye' });
+  const used = trade(trade(unused, content, ctx(), { action: 'use', id: 'pouch-low' }).state, content, ctx(), { action: 'use', id: 'pouch-mid' }).state;
+  const ctxOf = (s, lang) => ({ look: { lang, words: content.dictionary.words?.[lang] ?? {} }, gear: VERBS.gear({ ...s, lang }, content, ctx()).result.gear, lang, words: WORDS[lang] });
+  for (const lang of ['zh', 'en']) {
+    const zh = lang === 'zh';
+    const cell = (h) => h.match(/<div class="pworn ppouch">([\s\S]*?)<\/div>/)?.[1] ?? '';
+    const before = pouchHtml(ctxOf(unused, lang), { sel: 'pouch-low' });
+    assert.match(cell(before), zh ? /储物袋<\/span><b>随身储物袋 · 24 格<\/b>/ : /Pouch<\/span><b>Plain pouch · 24 slots<\/b>/);
+    assert.match(before, zh ? /data-use="pouch-low">换上 · 多 6 格</ : /data-use="pouch-low">Carry it · \+6 slots</);
+    assert.doesNotMatch(cell(before), /data-remove/, 'used for good: no 卸下');
+    const after = pouchHtml(ctxOf(used, lang), { sel: 'pouch-mid' });
+    assert.match(after, zh ? /2\/42 格/ : /2\/42 slots/, 'the header counts the room he carries');
+    assert.match(cell(after), zh ? /<b>中品储物袋、下品储物袋 · 42 格<\/b>/ : /<b>Middle-grade storage pouch \+ Low-grade storage pouch · 42 slots<\/b>/);
+    assert.doesNotMatch(after, /data-pouch-item="pouch-low"/, 'the one used left the bag');
+    // A second 中品储物袋 adds nothing: marked as on him, no 换上, said so.
+    assert.match(after, new RegExp(`class="ptile sel worn"[^>]*data-pouch-item="pouch-mid"[\\s\\S]*?<span class="pmark">${WORDS[lang].worn}</span>`));
+    assert.doesNotMatch(after, /data-use="pouch-mid"/);
+    assert.match(after, zh ? /这样的储物袋已在身上/ : /You carry one like it already/);
+    assert.doesNotMatch(after, /已换上|Carried:/, 'the worn row names it, not a line under the head');
+    assert.doesNotMatch(before + after, /undefined|\{[a-z]+\}|\[object/);
+  }
+});
+
+test('the open panel reads the gear again after every bag verb — a use that landed redraws its count and 格数 at once (Hanli 11-02: 「服用聚气丹时, UI没刷新, 数量没减少」)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  // openGear on an open panel only switches its pane (600754dd); each write path rereads the rules' gear itself.
+  for (const fn of ['useItem', 'bagTap', 'fedFantong', 'firePanglu']) {
+    const body = src.match(new RegExp(`async function ${fn}\\([^)]*\\) \\{([\\s\\S]*?)\\n\\}`))?.[1] ?? '';
+    assert.match(body, /await rereadGear\(\)/, `${fn} rereads the gear`);
+  }
+  assert.match(src, /async function rereadGear\(\) \{\s*const g = await verb\('gear'\)[\s\S]*?keep\(\{ gear: g\.gear \}\)/);
+  // …and what the reread carries is the use: one pill fewer, the panel's tile says so.
+  const { WORDS } = await import('../scripts/cards.js');
+  const { pouchHtml } = await import('../scripts/pouch.js');
+  const s = at({ 'qi-pill': 6 }, { tier: 'qi' });
+  const after = trade(s, content, ctx(), { action: 'use', id: 'qi-pill' }).state;
+  const html = pouchHtml({ look: {}, gear: VERBS.gear(after, content, ctx()).result.gear, lang: 'zh', words: WORDS.zh }, { sel: 'qi-pill' });
+  assert.match(html, /data-pouch-item="qi-pill"[\s\S]*?<b class="pn">×5<\/b>/);
+});

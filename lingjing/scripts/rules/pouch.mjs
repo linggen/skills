@@ -21,15 +21,14 @@ const RULE = content => content.rewards.pouch ?? { by_tier: {} };
 
 /* The room: the highest realm row at or below his, plus every bigger pouch
    he has put to use. A world without the table has no cap. */
-function pouchCap(content, state) {
+function baseCap(content, state) {
   const rows = Object.entries(RULE(content).by_tier ?? {});
   if (!rows.length) return Infinity;
   const rank = tierIndex(content, state);
   const fits = rows.filter(([tier]) => tierRank(content, tier) <= rank).sort((a, b) => tierRank(content, b[0]) - tierRank(content, a[0]));
-  const base = (fits[0] ?? rows.sort((a, b) => tierRank(content, a[0]) - tierRank(content, b[0]))[0])[1];
-  const more = (state.pouch ?? []).reduce((n, id) => n + (itemOf(content, id)?.effect?.pouch ?? 0), 0);
-  return base + more;
+  return (fits[0] ?? rows.sort((a, b) => tierRank(content, a[0]) - tierRank(content, b[0]))[0])[1];
 }
+const pouchCap = (content, state) => baseCap(content, state) + (state.pouch ?? []).reduce((n, id) => n + (itemOf(content, id)?.effect?.pouch ?? 0), 0);
 
 /* A thing that takes no slot: a key, a story thing (items.json `story`: kept,
    never sold — 紫须芝 he carries back to 阿禾), one the chapter or a taken
@@ -78,15 +77,20 @@ function storedLine(state, got) {
 const fullSay = lang => pick({ zh: '储物袋已满，先卖或丢一样。', en: 'The storage pouch is full — sell or drop something first.' }, lang);
 const bagFull = (content, state, extra = {}) => refuse('bag-full', fullSay(state.lang), { used: slotsUsed(content, state), cap: pouchCap(content, state), ...extra });
 
-/* The pouch as the panel reads it: used / cap, and what waits at the 洞府. */
+/* The pouch as the panel reads it: used / cap, the realm's room (`base`), each bigger pouch he
+   carries (`carried`, biggest first: what it adds), and what waits at the 洞府. */
 function pouchBrief(content, state) {
-  const cap = pouchCap(content, state), lang = state.lang;
+  const cap = pouchCap(content, state), base = baseCap(content, state), lang = state.lang;
+  const carried = (state.pouch ?? []).map(id => {
+    const item = itemOf(content, id);
+    return { id, name: pick(item?.name, lang) ?? id, art: item?.art ?? null, adds: item?.effect?.pouch ?? 0 };
+  }).sort((a, b) => b.adds - a.adds);
   const held = Object.entries(state.held ?? {}).filter(([, n]) => n > 0).map(([id, n]) => {
     const item = itemOf(content, id);
     return { id, name: pick(item?.name, lang) ?? id, kind: item?.kind ?? null, art: item?.art ?? null, n };
   });
-  return { used: slotsUsed(content, state), cap: Number.isFinite(cap) ? cap : null, held,
-    ...((state.pouch ?? []).length ? { grown: state.pouch.map(id => pick(itemOf(content, id)?.name, lang) ?? id) } : {}) };
+  return { used: slotsUsed(content, state), cap: Number.isFinite(cap) ? cap : null, base: Number.isFinite(base) ? base : null, held,
+    ...(carried.length ? { carried, grown: carried.map(c => c.name) } : {}) };
 }
 
 /* Bag — the panel's own verb: `claim` moves a thing waiting at the 洞府 into

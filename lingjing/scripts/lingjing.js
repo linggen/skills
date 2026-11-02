@@ -3178,6 +3178,7 @@ async function useItem(id, action = 'use') {
   // A refusal is said where he tapped — a pill kept on a full day said
   // nothing, and looked like a button that did not work.
   await openGear();
+  await rereadGear();
   keep({ gearNote: r.ok ? null : refusal(r) });
   await refresh();
 }
@@ -3191,10 +3192,18 @@ async function openGear(pane = null) {
   if (view.gearOpen && view.pouchPane === 'fantong') await loadFantong();
 }
 
+/* After a write, the open panel reads the rules' gear again: openGear on an open panel only switches its pane, so
+   a 换上 that landed left 24/24 and the pouch's tile up, and his second tap was refused 「囊中没有」 (Hanli 11-02). */
+async function rereadGear() {
+  const g = await verb('gear').catch(() => null);
+  if (view.gearOpen && g?.gear) keep({ gear: g.gear });
+}
+
 /* 待取 taken in, or a slot thrown away — the panel's own verb (rules/pouch.mjs). */
 async function bagTap(action, id) {
   const r = await write('bag', { action, id }).catch(failed);
   await openGear();
+  await rereadGear();
   keep({ gearNote: r.ok ? null : refusal(r), pouchToss: null, ...(r.ok && action === 'toss' ? { pouchSel: null } : {}),
     ...(r.ok && action === 'claim' && !r.pouch?.held?.length ? { pouchPane: null } : {}) });
   await refresh();
@@ -3228,16 +3237,14 @@ const feedFantong = (ids, lingshi, press) => write('fantong', { action: 'feed', 
 async function fedFantong(r) {
   if (!r?.ok) return;
   keep({ fantong: r.fantong ?? view.fantong });
-  const g = await verb('gear').catch(() => null);
-  if (view.gearOpen && g?.gear) keep({ gear: g.gear });
+  await rereadGear();
   await refresh();
 }
 /* 旁炉 (rules/panglu.mjs): a herb in, one batch — the page's own verb; the bag and Look read again, the words kept in the pane. */
 async function firePanglu(id) {
   const r = await write('panglu', { action: 'fire', id }).catch(failed);
   keep({ pangluLast: r?.ok ? { outcome: r.outcome, say: r.say } : null, gearNote: r?.ok ? null : refusal(r) });
-  const g = await verb('gear').catch(() => null);
-  if (view.gearOpen && g?.gear) keep({ gear: g.gear });
+  await rereadGear();
   await refresh();
 }
 /* A cooldown row counts down by the minute (Hanli 10-27: 「这个倒计时好像不变呢, 一直是7刻」 — the minutes were
