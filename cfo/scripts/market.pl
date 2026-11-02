@@ -1718,7 +1718,8 @@ sub watch_notice {
 }
 
 # One line's facts, as the phone builds them: who it is about (their tickers
-# only), what happened, how much it matters, and the one figure it carries.
+# only), what happened, how much it matters. Never their money — a notice
+# shows no figure of what they hold or what moved (Hanli 2026-11-02).
 sub watch_fact {
     my ($it, $mine) = @_;
     my %theirs = %$mine ? %$mine : map { $_ => 1 } @{ $it->{holdings} || [] };
@@ -1727,22 +1728,10 @@ sub watch_fact {
         : @{ $it->{holdings} || [] };
     my %seen;
     @syms = grep { !$seen{$_}++ } @syms;
-    my $held = $it->{held} ? 1 : 0;
-    my $num = sub { my $v = $it->{ $_[0] } // 0; return $held && $v =~ /^-?[\d.]+$/ ? $v : 0 };
-    my ($stake, $exposure) = ($num->('stake'), $num->('exposure'));
-    my %money;
-    if (defined $it->{currency}) {
-        if ($it->{moved}) {
-            %money = (their_money_moved => sprintf('%d %s', int($stake + 0.5), $it->{currency})) if $stake > 0;
-        } elsif ($exposure > 0) {
-            %money = (their_holding_it_touches => sprintf('%d %s', int($exposure + 0.5), $it->{currency}));
-        }
-    }
     return {
         about         => @syms ? join(', ', @syms) : 'the economy',
         what_happened => $it->{line},
         matters       => $it->{materiality} // 'low',
-        %money,
     };
 }
 

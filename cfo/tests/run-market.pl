@@ -826,14 +826,13 @@ t('with Toronto held, the check runs any weekday until 16:00 (US Thanksgiving; a
     t('one fact per line the brief names, unknown ids dropped', $n && @{ $n->{facts} } == 2);
     my ($aapl, $fed) = @{ $n->{facts} || [] };
     t('a company line names its ticker and their other tickers, never a stranger\'s', $aapl && $aapl->{about} eq 'AAPL, MSFT');
-    t('money that moved is the figure', $aapl && $aapl->{their_money_moved} eq '812 USD' && !exists $aapl->{their_holding_it_touches});
-    t('an economy line names the holdings it touches and what they are worth',
-      $fed && $fed->{about} eq 'VFV.TO' && $fed->{their_holding_it_touches} eq '12001 CAD' && !exists $fed->{their_money_moved});
+    t('a notice carries none of their money', !grep { /^their_/ } map { keys %$_ } @{ $n->{facts} || [] });
+    t('an economy line names the holdings it touches', $fed && $fed->{about} eq 'VFV.TO');
     t('what happened and how much it matters ride along', $fed && $fed->{what_happened} eq 'The Fed held.' && $fed->{matters} eq 'medium');
     t('a quiet night says nothing', !defined watch_notice($doc, '2026-10-26', {}));
     t('a brief for another day says nothing', !defined watch_notice($doc, '2026-10-28', {}));
     my $stranger = watch_fact($doc->{items}[2], {});
-    t('a line with no stake carries no figure', !exists $stranger->{their_money_moved} && !exists $stranger->{their_holding_it_touches});
+    t('a line with no stake carries no figure', !grep { /^their_/ } keys %$stranger);
 }
 
 print "\n$pass passed, $fail failed\n";
