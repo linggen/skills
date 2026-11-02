@@ -146,7 +146,7 @@
   },
   "_cases": "断案 · 药园那株紫玉参 cut 2026-10-27 (Hanli: 「紫玉参断案也不好玩, 删了吧, 改成灯谜之类的, 猜动物也行」): in its place at the 执事堂 after wm-diyilu, 周衡's 灯谜 on the 紫玉参 (quests/guan.json `guan-zhishi-shen`, task `zhishi-shen`, games.json jinchat `shen`), its 10 灵石 (an errand's board is 杂役: 灵石 and its minutes' 修为). Old saves drop `cases` (state.mjs fitWorld).",
   "duizi": {
-    "_about": "对对子 (Hanli, 2026-10-16) — 先生出上联, the player writes the 下联. The RULES check the form at once, on the page as he types and again on submit (scripts/couplet.js): as many characters; the 下联 ends 平 (新韵 by worlds/jiuding/tones.json — a polyphone or an unknown character is never failed); no character at the same place as the 上联's; no more of the 上联's characters than the rung's `allow` (`free` never count). Ling grades only the fuzzy parts, 0–2 each, on the rubric; the rules combine both by `marks` (the first that fits) and pay. Reverse: he gives a 上联, the teacher answers — no score, no pay, `reverse` a day. Only in Chinese: in English there is no door (an open question, design.md).",
+    "_about": "对对子 (Hanli, 2026-10-16) — 先生出上联, the player writes the 下联. The RULES check the form at once, on the page as he types and again on submit (scripts/couplet.js): as many characters; the 下联 ends 平 (新韵 by worlds/jiuding/tones.json — a polyphone or an unknown character is never failed); no character at the same place as the 上联's; no more of the 上联's characters than the rung's `allow` (`free` never count). Ling grades only the fuzzy parts, 0–2 each, on the rubric; the rules combine both by `marks` (the first that fits) and pay. Reverse: he gives a 上联, the teacher answers — no score, no pay, `reverse` a day. In English (2026-11-02) the same game runs on a rhyming-couplet ladder: `english` below.",
     "_ladder": "From 《声律启蒙》 (车万育, Qing, public domain), 《笠翁对韵》 (李渔, Qing) and a few Tang lines, each as [上联, the classic 下联, source] — oriented so the 上联 ends 仄 under 新韵 (云对雨 is dealt 雨 → 云); a pair whose 上联 ends 平 today (入声 lost: 直 竹 白 实) is left out. The classic 下联 is Ling's to judge by and the card's to show once graded — never before. A rung says its teacher's 卷 through the teacher: a later teacher (the 稷下先生, 七言 and 绝对) is a row in `teachers` with `juan`, and rungs of its own — data only.",
     "_pay": "Declared defaults for balance.json: a good answer pays by its mark (the `game` table caps it); `rounds` paid rounds a day, each a game's 体力 at open. Reverse pays nothing.",
     "rounds": 3,
@@ -207,6 +207,64 @@
           ["野火烧不尽", "春风吹又生", "白居易《赋得古原草送别》"]
         ]
       }
-    ]
+    ],
+    "english": {
+      "lang": "en",
+      "_about": "English 对对子 (Hanli 2026-11-02: 「可以, 按你说的做」) — the same teacher, place, day limits, marks and pay; a rhyming-couplet ladder in place of the Chinese one. The RULES check the form (scripts/rhyme.js, worlds/jiuding/rhymes.json from the CMU Pronouncing Dictionary): opposites — one word, not a form of the prompt's; the other rungs — as many syllables as the prompt, a rhyme on the last stressed syllable, no more of the prompt's words than `allow` (`free` never count). An unknown word is counted by its spelling and never failed. Ling grades the fuzzy parts on this `rubric` (the ids are the Chinese ones, so Duizi takes the same flags). `teachers`: a teacher's English rungs, by his id.",
+      "_ladder": "Public-domain lines quoted as printed in the Project Gutenberg editions (Shakespeare's Complete Works #100 and Sonnets #1041; Pope's Essay on Criticism #7409 and Essay on Man #2428; Dryden, Works vol. 9 #49221; Blake #1934; Stevenson #136; The Real Mother Goose #10607; the King James Bible #10; Dickens #98; Milton #26) or old proverbs, each as [prompt, the classic answer, source]. A pair whose rhyme is lost today (proved · loved, join · divine) or whose metre leans on an elision (th', dang'rous) is left out, as the Chinese ladder leaves out 入声.",
+      "free": ["a", "an", "the", "and", "or", "but", "nor", "of", "to", "in", "on", "at", "by", "for", "with", "from", "as", "is", "are", "was", "were", "be", "am", "it", "its", "i", "me", "my", "we", "our", "you", "your", "thou", "thee", "thy", "he", "his", "him", "she", "her", "they", "their", "them", "this", "that", "so", "not", "no", "all", "if", "then", "than", "when", "what", "who", "o", "oh", "shall", "will", "do", "doth", "hath", "have", "has", "can", "may", "must"],
+      "teachers": { "chu": ["opposites", "pairs", "short", "heroic"] },
+      "rubric": [
+        { "id": "pos", "name": { "en": "contrast", "zh": "对照" }, "about": "The answer pairs with the prompt part for part: an opposite or a matching picture in the same frame, word kinds answering word kinds (noun to noun, verb to verb), a turn answered by a turn. For one word: a true opposite. 2: a true pair; 1: loosely paired; 0: unrelated." },
+        { "id": "sense", "name": { "en": "fit", "zh": "妥帖" }, "about": "The answer reads as real, natural English in the prompt's register and beat, and completes it — the line one would want after the first. 2: it completes it; 1: grammatical but flat or forced; 0: nonsense." },
+        { "id": "art", "name": { "en": "wit", "zh": "巧思" }, "about": "Above the form: an image, wit, a turn, an echo of the poets. 2: it would stand in a book; 1: plain but sound; 0: none. The classic answer recited is sound but not his: at most 1 here." }
+      ],
+      "rungs": [
+        {
+          "id": "opposites", "kind": "word", "n": 1, "allow": 0, "name": { "en": "Opposites", "zh": "反义词" },
+          "ladder": [
+            ["born", "die", "Ecclesiastes 3:2 (KJV)"], ["kill", "heal", "Ecclesiastes 3:3 (KJV)"], ["weep", "laugh", "Ecclesiastes 3:4 (KJV)"], ["mourn", "dance", "Ecclesiastes 3:4 (KJV)"],
+            ["get", "lose", "Ecclesiastes 3:6 (KJV)"], ["rend", "sew", "Ecclesiastes 3:7 (KJV)"], ["love", "hate", "Ecclesiastes 3:8 (KJV)"], ["war", "peace", "Ecclesiastes 3:8 (KJV)"],
+            ["best", "worst", "Dickens, A Tale of Two Cities"], ["wisdom", "foolishness", "Dickens, A Tale of Two Cities"], ["light", "darkness", "Dickens, A Tale of Two Cities"], ["hope", "despair", "Dickens, A Tale of Two Cities"],
+            ["heaven", "hell", "Milton, Paradise Lost I"], ["fair", "foul", "Shakespeare, Macbeth I.i"], ["lost", "won", "Shakespeare, Macbeth I.i"], ["rise", "fall", "Shakespeare, Measure for Measure II.i"],
+            ["sin", "virtue", "Shakespeare, Measure for Measure II.i"], ["day", "night", "Shakespeare, Hamlet I.iii"]
+          ]
+        },
+        {
+          "id": "pairs", "kind": "line", "n": 5, "allow": 1, "name": { "en": "Rhyming pairs", "zh": "押韵短语" },
+          "ladder": [
+            ["Jack shall have Jill;", "Nought shall go ill;", "Shakespeare, A Midsummer Night's Dream III.ii"], ["Fast bind,", "fast find.", "Shakespeare, The Merchant of Venice II.v"],
+            ["I'll apply", "To your eye,", "Shakespeare, A Midsummer Night's Dream III.ii"],
+            ["Man proposes,", "God disposes.", "English proverb, after Thomas à Kempis"], ["Little strokes", "fell great oaks.", "English proverb (Franklin, Poor Richard's Almanack)"],
+            ["Well begun", "is half done.", "English proverb"], ["Finders keepers,", "losers weepers.", "English children's saying"],
+            ["Red sky at night,", "shepherd's delight.", "English weather saying"], ["East or west,", "home is best.", "English proverb"]
+          ]
+        },
+        {
+          "id": "short", "kind": "line", "n": 8, "allow": 1, "name": { "en": "Short lines", "zh": "短句" },
+          "ladder": [
+            ["Under the greenwood tree,", "Who loves to lie with me", "Shakespeare, As You Like It II.v"], ["Blow, blow, thou winter wind,", "Thou art not so unkind", "Shakespeare, As You Like It II.vii"],
+            ["Where the bee sucks, there suck I:", "In a cowslip's bell I lie;", "Shakespeare, The Tempest V.i"], ["Fillet of a fenny snake,", "In the cauldron boil and bake;", "Shakespeare, Macbeth IV.i"],
+            ["By the pricking of my thumbs,", "Something wicked this way comes.", "Shakespeare, Macbeth IV.i"], ["Double, double, toil and trouble;", "Fire, burn; and cauldron, bubble.", "Shakespeare, Macbeth IV.i"],
+            ["If we shadows have offended,", "Think but this, and all is mended,", "Shakespeare, A Midsummer Night's Dream V.i"], ["All that glisters is not gold,", "Often have you heard that told.", "Shakespeare, The Merchant of Venice II.vii"],
+            ["When the hurlyburly's done,", "When the battle's lost and won.", "Shakespeare, Macbeth I.i"], ["Tiger, tiger, burning bright", "In the forests of the night,", "Blake, The Tiger"],
+            ["Monday's child is fair of face,", "Tuesday's child is full of grace,", "Mother Goose"], ["In winter I get up at night", "And dress by yellow candle-light.", "Stevenson, Bed in Summer"]
+          ]
+        },
+        {
+          "id": "heroic", "kind": "line", "n": 10, "allow": 2, "name": { "en": "Heroic couplets", "zh": "英雄双韵体" },
+          "ladder": [
+            ["Hope springs eternal in the human breast:", "Man never is, but always to be blest:", "Pope, An Essay on Man I"], ["Know, then, thyself, presume not God to scan;", "The proper study of mankind is man.", "Pope, An Essay on Man II"],
+            ["Nay, fly to altars; there they'll talk you dead,", "For fools rush in where angels fear to tread", "Pope, An Essay on Criticism"], ["Words are like leaves, and where they most abound", "Much fruit of sense beneath is rarely found.", "Pope, An Essay on Criticism"],
+            ["Be not the first by whom the new are tried,", "Nor yet the last to lay the old aside", "Pope, An Essay on Criticism"], ["Some praise at morning what they blame at night,", "But always think the last opinion right.", "Pope, An Essay on Criticism"],
+            ["A perfect judge will read each work of wit", "With the same spirit that its author writ", "Pope, An Essay on Criticism"], ["Great wits are sure to madness near allied,", "And thin partitions do their bounds divide;", "Dryden, Absalom and Achitophel"],
+            ["So long as men can breathe, or eyes can see,", "So long lives this, and this gives life to thee.", "Shakespeare, Sonnet 18"], ["For thy sweet love remember'd such wealth brings", "That then I scorn to change my state with kings.", "Shakespeare, Sonnet 29"],
+            ["But if the while I think on thee, dear friend,", "All losses are restor'd and sorrows end.", "Shakespeare, Sonnet 30"], ["So, till the judgement that yourself arise,", "You live in this, and dwell in lovers' eyes.", "Shakespeare, Sonnet 55"],
+            ["And yet to times in hope, my verse shall stand.", "Praising thy worth, despite his cruel hand.", "Shakespeare, Sonnet 60"], ["O! none, unless this miracle have might,", "That in black ink my love may still shine bright.", "Shakespeare, Sonnet 65"],
+            ["Pity the world, or else this glutton be,", "To eat the world's due, by the grave and thee.", "Shakespeare, Sonnet 1"]
+          ]
+        }
+      ]
+    }
   }
 }

@@ -275,7 +275,7 @@ tools:
   - name: Duizi
     description: >-
       对对子 — grade the player's 下联, answer his 上联, or submit what he typed
-      (guide `duizi`).
+      (guide `duizi`; in English, the rhyming couplets — the same verbs).
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs duizi --action={{action}} --down={{down}} --pos={{pos}} --sense={{sense}} --art={{art}} --save={{session.save}} --for=ling"
     tier: edit
     others_read: [duizi.round.up, duizi.round.down, graded, mark.name]
@@ -290,13 +290,13 @@ tools:
         description: For answer — your 下联; for submit — the player's 下联, verbatim.
       pos:
         type: string
-        description: For grade — 词性对仗, 0, 1 or 2.
+        description: For grade — 词性对仗 (English — contrast), 0, 1 or 2.
       sense:
         type: string
-        description: For grade — 意思工整, 0, 1 or 2.
+        description: For grade — 意思工整 (English — fit), 0, 1 or 2.
       art:
         type: string
-        description: For grade — 意境 · 巧, 0, 1 or 2.
+        description: For grade — 意境 · 巧 (English — wit), 0, 1 or 2.
 
   - name: Couplet
     # 对对子's 银月 half (AppTool → this tool, `--for=yinyue`): one hint a round,
@@ -317,7 +317,7 @@ tools:
         description: read, hint (once a round, before your pointer) or offer (your own 下联).
       down:
         type: string
-        description: For offer — your 下联, as many characters as the 上联.
+        description: For offer — your 下联, as many characters as the 上联 (English — your line, as many syllables, rhyming; one word for opposites).
 
   - name: Tame
     description: >-

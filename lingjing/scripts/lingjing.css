@@ -858,6 +858,11 @@ button.gcard { cursor: pointer; font: inherit; }
   background: color-mix(in srgb, var(--seal-soft) 55%, var(--surface)); font-family: var(--serif); font-size: 30px; line-height: 1.3; color: var(--text); }
 .card.duizi .dzline.down { color: var(--ling); }
 .card.duizi .dzform input[type=text] { font-family: var(--serif); font-size: 17px; letter-spacing: .15em; }
+/* English: the line above, the answer below, read across (rhyme.js) — no hanging columns. */
+.card.duizi .dzpair.row { flex-direction: column; align-items: stretch; gap: 8px; }
+.card.duizi .dzrow { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.card.duizi .dzpair.row .dzline { display: block; min-width: 0; max-width: 100%; padding: 8px 14px; font-size: 19px; line-height: 1.4; text-align: center; font-style: italic; overflow-wrap: anywhere; }
+.card.duizi .dzform input[lang=en] { letter-spacing: normal; }
 .card.duizi .dzchecks { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin: 6px 0 2px; }
 .card.duizi .dzchk { font-size: 11.5px; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--dim); }
 .card.duizi .dzchk.ok { color: var(--jade); border-color: var(--jade-soft); background: var(--jade-soft); }

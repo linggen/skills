@@ -1095,7 +1095,7 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 | Later | 猜灯谜 | festivals, both ways |
 | Later | 银月的心事 | her questions → 恩仇簿; no win or loss |
 | Later | 斗嘴 | with 马小宝, judged by rubric |
-| **Built** | 对对子 | 卷一: 褚先生 at the 讲堂 after 古六, 一字 → 五言 (2026-10-16, below); 七言 and the 绝对 are the 稷下先生's, a later 卷 — a row of data |
+| **Built** | 对对子 | 卷一: 褚先生 at the 讲堂 after 古六, 一字 → 五言 (2026-10-16, below); 七言 and the 绝对 are the 稷下先生's, a later 卷 — a row of data. English (2026-11-02): a rhyming-couplet ladder, opposites → heroic couplets |
 | Later | 论道 · 飞花令 | with the 稷下先生, 银月 joins |
 | Later | 说书接龙 | 吴婆婆讲古 |
 | Later | 下棋陪聊 | the engine moves, 银月/Ling talk |
@@ -1129,7 +1129,7 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 - **Reverse:** he sets a 上联 (1–5), the teacher answers through Duizi `answer` (the rules check its form); 2 a day, no pay.
 - **银月**, awake only: one hint a round, her own 下联 (pet tool Couplet), checked, never scored. Asleep in the token, absent.
 - **Teachers and rungs are data** (`teachers` with `at` · `after` · `juan`): the 稷下先生 (七言, 绝对) is a row when his 卷 opens.
-- **Open question: English.** Couplets do not translate; in English there is no door (`zh-only`). An English counterpart (e.g. matching proverbs), or none, is Hanli's call.
+- **English: a rhyming-couplet ladder** (Hanli 2026-11-02, 「可以, 按你说的做」; aigames.json `duizi.english`, scripts/rhyme.js, rhymes.json from the CMU Pronouncing Dictionary). The same teacher, place, limits, marks and pay; an English save meets the English ladder — Opposites (one word) → Rhyming pairs → Short lines → Heroic couplets (ten syllables; Pope, Dryden, Shakespeare's couplets as the classic answers). The rules check syllables, the rhyme on the last stressed syllable and copying (an unknown word never failed); Ling grades contrast · fit · wit.
 
 ## A day, 今日传闻, real-life chores 【已建】
 

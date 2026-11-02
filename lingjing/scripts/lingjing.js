@@ -45,7 +45,7 @@ import { revealCards, whenceLine } from './card-reveal.js';
 import { pickAfter, pickNow } from './danang.js';
 import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
-import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf } from './aigames-cards.js';
+import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf, duiziTableOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
 import { CLOSE_AT, POOR_AT, createHerSay, herMode, mijingEndWhat, mijingWayWhat, shortFacts, wayFacts, whyFacts } from './hersay.js';
@@ -3125,11 +3125,15 @@ async function aiTap(name, args) {
    it (the card waits, quietly, meanwhile). The reverse: his 上联, Ling answers.
    银月's hint and her own 下联 are asked of her in the chat — only while she is awake. */
 const duiziWords = () => DUIZI_WORDS[lang() === 'en' ? 'en' : 'zh'];
-let duiziTones; // the 平仄 table (worlds/<id>/tones.json): undefined not asked, null on its way or missing
+// The form's table by file: the 平仄 (worlds/<id>/tones.json) for Chinese, the syllables and rhymes
+// (rhymes.json, ~340 KB, only when English plays) — absent not asked, null on its way or missing.
+const duiziTables = new Map();
 function tonesNow() {
-  if (duiziTones !== undefined || !look?.duizi) return duiziTones ?? null;
-  duiziTones = null;
-  content(authored?.dir ?? look.world.dir, 'tones.json').then((t) => { duiziTones = t; render(); }).catch((e) => console.warn('[lingjing] tones', e));
+  if (!look?.duizi) return null;
+  const file = duiziTableOf(look.duizi, lang());
+  if (duiziTables.has(file)) return duiziTables.get(file) ?? null;
+  duiziTables.set(file, null);
+  content(authored?.dir ?? look.world.dir, file).then((t) => { duiziTables.set(file, t); render(); }).catch((e) => console.warn('[lingjing] ' + file, e));
   return null;
 }
 const DUIZI_LATE_MS = 60000;

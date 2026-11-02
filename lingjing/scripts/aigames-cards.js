@@ -5,6 +5,7 @@
 // never carry the floor or the truth (Look does not have them).
 import { esc } from './esc.js';
 import { CHECK_IDS, checkCouplet } from './couplet.js';
+import { RHYME_CHECK_IDS, checkRhyme } from './rhyme.js';
 
 export const AI_WORDS = { zh: {}, en: {} };
 
@@ -13,7 +14,8 @@ const note = (ctx) => (ctx.aiNote ? `<div class="donote">${esc(ctx.aiNote)}</div
 
 /* ════════ 对对子 (rules/duizi.mjs) ════════
    The 上联 big and vertical (right), the 下联 beside it (left), as a pair is
-   hung; the form's checks (couplet.js) drawn as he types — the page updates
+   hung (in English, a rhyming-couplet ladder: the line above, the answer
+   below, rhyme.js's checks); the form's checks (couplet.js) drawn as he types — the page updates
    them in place (lingjing.js) — and the teacher's grades once Ling has
    graded. 银月's two buttons only while she is awake (Look's `duizi.her`). */
 export const DUIZI_WORDS = {
@@ -29,35 +31,50 @@ export const DUIZI_WORDS = {
     say: '先生请看，我对：「{down}」', revSay: '先生，我出个上联：「{up}」，请对。', hintSay: '@银月 这一联「{up}」我卡住了，给点提示？', offerSay: '@银月 「{up}」这一联，你也对一句？',
   },
   en: {
-    title: 'Couplets · {who}', offer: '{who} sets the upper line; you write the lower.', begin: 'Ask for an upper line', again: 'Another ({n} left today)',
-    done: 'Enough couplets for today · tomorrow', rung: '{name} · good {good}/{need}', rungShut: '{name} (not yet)', up: 'Upper', down: 'Lower', write: 'Write the lower line…',
+    row: true, input: 'en',
+    title: 'Couplets · {who}', offer: '{who} gives a line; you answer it. Syllables, rhyme and copying show as you type; contrast, fit and wit are his to judge.', begin: 'Ask for a line', again: 'Another ({n} left today)',
+    done: 'Enough couplets for today · come back tomorrow', rung: '{name} · good {good}/{need}', rungShut: '{name} (not yet)', up: 'Line', down: 'Answer', write: 'Write your answer…',
     send: 'Answer', skip: 'Let this one go', waiting: '{who} strokes his beard over your line', resend: 'Ask him to look again',
-    checks: { len: 'length', tail: 'tone', same: 'no same place', copy: 'not copied' }, verdict: { ok: '✓', bad: '✗', unsure: '?', wait: '…' },
-    tailNote: 'The lower line ends on a level tone', sameNote: 'Not the same character at the same place', copyNote: 'Do not copy the upper line',
+    checks: { one: 'one word', len: 'syllables', rhyme: 'rhyme', copy: 'not copied' }, verdict: { ok: '✓', bad: '✗', unsure: '?', wait: '…' },
+    oneNote: 'One word only', lenNote: 'As many syllables as his line', rhymeNote: 'End on a rhyme for his last word', copyNote: 'Do not reuse his words',
     ref: 'The classic answer: {down} ({src})', paid: 'Earned {what}', unlocked: '{name} opened',
-    revTitle: 'You set, he answers', revWrite: 'An upper line (1–{max})', revSend: 'Ask him', revWait: '{who} is thinking', revLeft: '{n} more today',
+    revTitle: 'You set, he answers', revWrite: 'A line for him (up to {max} syllables)', revSend: 'Ask him', revWait: '{who} is thinking', revLeft: '{n} more today',
     herHint: 'Ask Yinyue for a hint', herOffer: 'Yinyue, you try', herSays: 'Yinyue: ', herUsed: 'Yinyue has hinted',
-    say: 'Master, my answer: "{down}"', revSay: 'Master, an upper line for you: "{up}"', hintSay: '@Yinyue I am stuck on "{up}" — a hint?', offerSay: '@Yinyue your answer to "{up}"?',
+    say: 'Master, my answer: "{down}"', revSay: 'Master, a line for you: "{up}" — your answer?', hintSay: '@银月 I am stuck on "{up}" — a hint?', offerSay: '@银月 your answer to "{up}"?',
   },
+
 };
 
-const NOTE_OF = { tail: 'tailNote', same: 'sameNote', copy: 'copyNote' };
-const WAITING = { checks: Object.fromEntries(CHECK_IDS.map((id) => [id, 'wait'])), ready: false };
-/// The form as he has typed it so far — every check waiting until the 平仄 table is in (lingjing.js loads it).
-export const duiziFormOf = (d, up, draft, tones) => (tones ? checkCouplet(tones, up, draft ?? '', { allow: d.round?.allow ?? 0, free: d.free ?? '' }) : WAITING);
+const NOTE_OF = { tail: 'tailNote', same: 'sameNote', copy: 'copyNote', one: 'oneNote', len: 'lenNote', rhyme: 'rhymeNote' };
+const waitingOf = (ids) => ({ checks: Object.fromEntries(ids.map((id) => [id, 'wait'])), ready: false });
+const WAITING = waitingOf(CHECK_IDS);
+/// The form as he has typed it so far — every check waiting until the table is in (lingjing.js loads it):
+/// the 平仄 table for a Chinese round, the syllable and rhyme table for an English one (its `kind`).
+export function duiziFormOf(d, up, draft, table) {
+  const kind = d.round?.kind;
+  if (kind) return table ? checkRhyme(table, up, draft ?? '', { kind, allow: d.round?.allow ?? 0, free: d.free ?? [] }) : waitingOf(RHYME_CHECK_IDS[kind] ?? RHYME_CHECK_IDS.line);
+  return table ? checkCouplet(table, up, draft ?? '', { allow: d.round?.allow ?? 0, free: d.free ?? '' }) : WAITING;
+}
+/// Which table the form is read by (lingjing.js fetches it): English's rhymes, else the 平仄.
+export const duiziTableOf = (d, lang) => (d?.round?.kind || lang === 'en' ? 'rhymes.json' : 'tones.json');
 /// The form's checks as chips — the card draws them, and the page redraws them as he types.
 export function duiziChecksHtml(form, w) {
   if (!form) return '';
   const chips = Object.entries(form.checks).map(([id, v]) => `<span class="dzchk ${esc(v)}">${esc(w.checks[id] ?? id)} ${esc(w.verdict[v] ?? v)}</span>`).join('');
-  const notes = Object.entries(form.checks).filter(([id, v]) => v === 'bad' && NOTE_OF[id]).map(([id]) => w[NOTE_OF[id]]);
+  const notes = Object.entries(form.checks).filter(([id, v]) => v === 'bad' && NOTE_OF[id] && w[NOTE_OF[id]]).map(([id]) => w[NOTE_OF[id]]);
   return `${chips}${notes.length ? `<div class="small dim dznote">${notes.map(esc).join(' · ')}</div>` : ''}`;
 }
 
 const dzLine = (t, cls) => `<div class="dzline ${cls}">${[...String(t ?? '')].map((c) => `<span>${esc(c)}</span>`).join('')}</div>`;
+/* English: the line above, the answer below, each read left to right. */
+const rowsHtml = (up, down, w) => `<div class="dzpair row"><div class="dzrow"><div class="dzcap">${esc(w.up)}</div><div class="dzline up">${esc(up)}</div></div>${down ? `<div class="dzrow"><div class="dzcap">${esc(w.down)}</div><div class="dzline down">${esc(down)}</div></div>` : ''}</div>`;
 /* The pair as hung: 上联 on the right, 下联 on the left, each read top to bottom. */
-const pairHtml = (up, down, w) => `<div class="dzpair">${down ? `<div class="dzcol"><div class="dzcap">${esc(w.down)}</div>${dzLine(down, 'down')}</div>` : ''}<div class="dzcol"><div class="dzcap">${esc(w.up)}</div>${dzLine(up, 'up')}</div></div>`;
+const pairHtml = (up, down, w) => (w.row ? rowsHtml(up, down, w) : `<div class="dzpair">${down ? `<div class="dzcol"><div class="dzcap">${esc(w.down)}</div>${dzLine(down, 'down')}</div>` : ''}<div class="dzcol"><div class="dzcap">${esc(w.up)}</div>${dzLine(up, 'up')}</div></div>`);
 const dots = (n) => [0, 1].map((i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
-const paidSay = (p) => [p?.progress ? `修为 ${p.progress}` : '', p?.wealth ? `灵石 ${p.wealth}` : ''].filter(Boolean).join(' · ');
+const PAID = { zh: ['修为', '灵石'], en: ['cultivation', 'spirit stones'] };
+const paidSay = (p, w) => { const [a, b] = PAID[w.input === 'en' ? 'en' : 'zh']; return [p?.progress ? `${a} ${p.progress}` : '', p?.wealth ? `${b} ${p.wealth}` : ''].filter(Boolean).join(' · '); };
+/* The input's language and room: a Chinese line's characters, or an English line's letters. */
+const fieldOf = (w, n) => (w.input === 'en' ? 'lang="en" maxlength="160"' : `lang="zh" maxlength="${n * 2 + 4}"`);
 const waitHtml = (t) => `<div class="dzwait" role="status"><span>${esc(t)}</span><i></i><i></i><i></i></div>`;
 
 function rungsHtml(d, w) {
@@ -73,7 +90,7 @@ function gradedHtml(d, r, w, ctx) {
   const offer = d.her && !r.her ? `<div class="acts"><button class="act quiet" data-duizi-her="offer">${esc(w.herOffer)}</button></div>` : '';
   return `${pairHtml(r.up, r.down, w)}<div class="dzmark${r.mark?.good ? ' good' : ''}">${esc(r.mark?.name ?? '')}</div>
     <div class="dzgrades">${grades}</div><div class="dzchecks">${duiziChecksHtml(r.form, w)}</div>
-    ${r.ref ? `<div class="small dim dzref">${esc(say(w.ref, { down: r.ref, src: r.src ?? '' }))}</div>` : ''}${r.paid ? `<div class="small dzpaid">${esc(say(w.paid, { what: paidSay(r.paid) }))}</div>` : ''}
+    ${r.ref ? `<div class="small dim dzref">${esc(say(w.ref, { down: r.ref, src: r.src ?? '' }))}</div>` : ''}${r.paid ? `<div class="small dzpaid">${esc(say(w.paid, { what: paidSay(r.paid, w) }))}</div>` : ''}
     ${r.unlocked ? `<div class="small dzopen">${esc(say(w.unlocked, { name: r.unlocked }))}</div>` : ''}${her}${offer}`;
 }
 
@@ -81,7 +98,7 @@ function gradedHtml(d, r, w, ctx) {
 function openHtml(d, r, w, ctx) {
   const form = duiziFormOf(d, r.up, ctx.duiziDraft, ctx.duiziTones);
   const hint = d.her ? (r.hint_used ? `<span class="small dim">${esc(w.herUsed)}</span>` : `<button class="act quiet" data-duizi-her="hint">${esc(w.herHint)}</button>`) : '';
-  return `${pairHtml(r.up, '', w)}<div class="fateform dzform"><input type="text" id="duizi-down" lang="zh" maxlength="${[...r.up].length * 2 + 4}" autocomplete="off" placeholder="${esc(w.write)}" value="${esc(ctx.duiziDraft ?? '')}">
+  return `${pairHtml(r.up, '', w)}<div class="fateform dzform"><input type="text" id="duizi-down" ${fieldOf(w, [...r.up].length)} autocomplete="off" placeholder="${esc(w.write)}" value="${esc(ctx.duiziDraft ?? '')}">
     <button class="act" data-duizi-submit${form?.ready ? '' : ' disabled'}>${esc(w.send)}</button></div>
     <div class="dzchecks" id="duizi-checks">${duiziChecksHtml(form, w)}</div>
     <div class="acts"><button class="act quiet" data-duizi-skip>${esc(w.skip)}</button>${hint}</div>`;
@@ -97,7 +114,7 @@ function pendingHtml(d, r, w, ctx) {
 function reverseHtml(d, w, ctx) {
   const v = d.rev;
   const shown = v ? `${pairHtml(v.up, v.down ?? '', w)}${v.down ? `<div class="dzchecks">${duiziChecksHtml(v.form, w)}</div>` : waitHtml(say(w.revWait, { who: d.teacher }))}` : '';
-  const form = (!v || v.down) && d.reverse_left ? `<div class="fateform"><input type="text" id="duizi-up" lang="zh" maxlength="${d.max * 2 + 4}" autocomplete="off" placeholder="${esc(say(w.revWrite, { max: d.max }))}" value="${esc(ctx.duiziUp ?? '')}">
+  const form = (!v || v.down) && d.reverse_left ? `<div class="fateform"><input type="text" id="duizi-up" ${fieldOf(w, d.max)} autocomplete="off" placeholder="${esc(say(w.revWrite, { max: d.max }))}" value="${esc(ctx.duiziUp ?? '')}">
     <button class="act quiet" data-duizi-reverse>${esc(w.revSend)}</button></div><div class="small dim">${esc(say(w.revLeft, { n: d.reverse_left }))}</div>` : '';
   if (!shown && !form) return '';
   return `<details class="dzrev"${v || ctx.duiziRevOpen ? ' open' : ''}><summary class="small">${esc(w.revTitle)}</summary>${shown}${form}</details>`;

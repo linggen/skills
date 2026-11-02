@@ -10,29 +10,56 @@
 // 银月, awake, may give one hint a round and offer her own 下联 (her tool,
 // `--for=yinyue`); asleep in the token, her part is not there at all.
 // The classic 下联 reaches Ling's judging only, and the card once graded.
+// English (Hanli 2026-11-02): the same teacher, place, limits, marks and pay on a
+// rhyming-couplet ladder — aigames.json `duizi.english`, laid over the Chinese
+// (cfgOf); its form is scripts/rhyme.js (syllables, rhyme, not copied) on
+// rhymes.json. A round or a reverse in English carries `lang: 'en'`; one with
+// none is Chinese, as every save before it.
 import { dayKey, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { hashOf } from './travel.mjs';
 import { herAwake, herAway } from './companion.mjs';
 import { ofJuan } from './world.mjs';
 import { checkCouplet, checkUpper, hanOf } from '../couplet.js';
+import { checkPrompt, checkRhyme } from '../rhyme.js';
 
-const cfgOf = content => content.aigames?.duizi ?? null;
+const baseOf = content => content.aigames?.duizi ?? null;
+/* The game in a language: the Chinese as authored; another, its overlay (`duizi.english`, `lang`)
+   over the Chinese — its rungs, rubric and free words, each teacher's rungs in it by his id;
+   `rounds`, `need`, `reverse` and `marks` shared. No overlay for the language: no game in it. */
+const OVER = new WeakMap();
+function cfgOf(content, lang = 'zh') {
+  const base = baseOf(content);
+  if (!base || lang === 'zh') return base;
+  const over = base.english?.lang === lang ? base.english : null;
+  if (!over) return null;
+  if (!OVER.has(base)) {
+    const teachers = (base.teachers ?? []).filter(t => over.teachers?.[t.id]).map(t => ({ ...t, rungs: over.teachers[t.id] }));
+    OVER.set(base, { ...base, rungs: over.rungs, rubric: over.rubric, free: over.free ?? [], teachers, lang });
+  }
+  return OVER.get(base);
+}
+/* A round's (or a reverse's) language: English says so; a Chinese one never did. */
+const langOf = r => r?.lang ?? 'zh';
+const mine = (r, lang) => Boolean(r) && langOf(r) === lang;
+const isEn = r => langOf(r) === 'en';
+/* The syllable table, read on first use (content.mjs `rhymes`). */
+const rhymesOf = content => (typeof content.rhymes === 'function' ? content.rhymes() : content.rhymes) ?? null;
 const text = v => String(v ?? '').trim();
 const SEEN_KEEP = 60;
 
 /* ════════ Where, who, which rungs ════════ */
 
 /* The teacher where he stands: his place, his scene behind the player, his 卷
-   open — and only in Chinese (couplets do not translate; design.md). */
+   open — in the save's language, when the game has a ladder in it (Chinese; English since 11-02). */
 function teacherHere(content, state, now) {
-  const cfg = cfgOf(content);
-  if (!cfg || state.lang !== 'zh') return null;
+  const cfg = cfgOf(content, state.lang);
+  if (!cfg) return null;
   const done = state.done_scenes ?? [];
   return (cfg.teachers ?? []).find(t => t.at === state.place && done.includes(t.after) && ofJuan(content, t, now)) ?? null;
 }
-const teacherOf = (content, id) => (cfgOf(content)?.teachers ?? []).find(t => t.id === id) ?? null;
-const rungOf = (content, id) => (cfgOf(content)?.rungs ?? []).find(r => r.id === id) ?? null;
+const teacherOf = (content, id, lang = 'zh') => (cfgOf(content, lang)?.teachers ?? []).find(t => t.id === id) ?? null;
+const rungOf = (content, id) => [...(baseOf(content)?.rungs ?? []), ...(baseOf(content)?.english?.rungs ?? [])].find(r => r.id === id) ?? null;
 const whoName = (content, t, lang) => pick((content.people?.people ?? []).find(p => p.id === t.who)?.name, lang) ?? t.who;
 
 /* Today's slot, the day's counts begun again; what was won stays. */
@@ -49,7 +76,7 @@ const roundPending = r => Boolean(r?.down) && !r.mark;
 
 /* ════════ What the page and Ling see — never the classic 下联 before the grade ════════ */
 
-const markBrief = (content, id, lang) => { const m = (cfgOf(content).marks ?? []).find(x => x.id === id); return m ? { id, name: pick(m.name, lang), good: Boolean(m.good) } : { id, name: id, good: false }; };
+const markBrief = (content, id, lang) => { const m = (baseOf(content).marks ?? []).find(x => x.id === id); return m ? { id, name: pick(m.name, lang), good: Boolean(m.good) } : { id, name: id, good: false }; };
 
 function roundBrief(content, state, r) {
   if (!r) return null;
@@ -63,13 +90,14 @@ function roundBrief(content, state, r) {
     ...(r.unlocked ? { unlocked: r.unlocked } : {}),
     ...(r.hint ? { hint_used: true } : {}),
     ...(r.her ? { her: r.her } : {}),
+    ...(isEn(r) ? { lang: r.lang, kind: rung?.kind ?? 'line' } : {}),
   };
 }
 
 export function duiziBrief(content, state, now) {
   const t = teacherHere(content, state, now);
   if (!t) return null;
-  const cfg = cfgOf(content), d = dayOf(state, now), lang = state.lang;
+  const lang = state.lang, cfg = cfgOf(content, lang), d = dayOf(state, now);
   const open = rungsOpen(t, d);
   const her = herHere(content, state);
   return {
@@ -77,19 +105,20 @@ export function duiziBrief(content, state, now) {
     rungs: t.rungs.map(id => ({ id, name: pick(rungOf(content, id)?.name, lang), n: rungOf(content, id)?.n, open: open.includes(id), good: d.good[id] ?? 0, need: cfg.need })),
     rung: open.at(-1), max: Math.max(...t.rungs.map(id => rungOf(content, id)?.n ?? 0)), free: cfg.free ?? '',
     rubric: cfg.rubric.map(x => ({ id: x.id, name: pick(x.name, lang) })),
-    ...(d.round ? { round: roundBrief(content, state, d.round) } : {}),
-    ...(d.rev ? { rev: d.rev } : {}),
+    ...(mine(d.round, lang) ? { round: roundBrief(content, state, d.round) } : {}),
+    ...(mine(d.rev, lang) ? { rev: d.rev } : {}),
     ...(her ? { her: true } : {}),
   };
 }
 
 /* Ling's view: the brief, and while a 下联 waits, the rubric to grade by and the classic 下联 to judge by. */
 const JUDGE_NOTE = 'Grade only the three rubric parts, 0–2 each, on the 下联 as written — never length, tone or repeated characters (the rules checked them: `form`). `reference` is the classic 下联, to judge by only: never say it before the grade lands; the card shows it after. Then speak as the teacher in his `voice`: one or two lines on THIS answer, no numbers, no rubric names.';
+const JUDGE_NOTE_EN = 'English couplets: grade only the three rubric parts, 0–2 each, on the answer as written — never syllables, rhyme or copied words (the rules checked them: `form`). `reference` is the classic answer, to judge by only: never say it before the grade lands; the card shows it after. Then speak as the teacher in his `voice`, in English: one or two lines on THIS answer, no numbers, no rubric names.';
 function lingView(content, state, now, extra = {}) {
-  const d = dayOf(state, now), r = d.round, cfg = cfgOf(content), t = teacherOf(content, r?.teacher) ?? teacherHere(content, state, now);
+  const d = dayOf(state, now), r = d.round, rl = langOf(r), cfg = cfgOf(content, rl), t = teacherOf(content, r?.teacher) ?? teacherHere(content, state, now);
   return {
     ok: true, ...extra, duizi: duiziBrief(content, state, now) ?? (r ? { round: roundBrief(content, state, r) } : null),
-    ...(roundPending(r) ? { judge: { note: JUDGE_NOTE, up: r.up, down: r.down, form: r.form, reference: r.ref, rubric: cfg.rubric.map(x => ({ id: x.id, name: pick(x.name, 'zh'), about: x.about })) } } : {}),
+    ...(roundPending(r) ? { judge: { note: rl === 'en' ? JUDGE_NOTE_EN : JUDGE_NOTE, up: r.up, down: r.down, form: r.form, reference: r.ref, rubric: cfg.rubric.map(x => ({ id: x.id, name: pick(x.name, rl), about: x.about })) } } : {}),
     ...(t ? { voice: pick(t.voice, state.lang) } : {}),
   };
 }
@@ -101,9 +130,14 @@ const HER_NOTE = [
   'offer (once a round): your own 下联 to the same 上联 — call Couplet with action offer and `down` (as many characters as the 上联). Sometimes better than his, sometimes deliberately crooked for the fun of it — then own it, proudly. It scores nothing.',
   '【对对子】先生出上联，他对下联。你是他身边那位骄傲的妖王：可以逗他，不奉承。提示（每回合一次，他开口要或卡住时）：先调 Couplet（action hint），再给一点点——词性、该配的意象——绝不说出整句下联。你也可以对一句（每回合一次）：调 Couplet（action offer，down 与上联同字数）。有时比他对得好，有时故意歪一点，歪了也理直气壮。不计分。',
 ].join(' ');
+const HER_NOTE_EN = [
+  'English couplets — the teacher sets a line, the player answers with a rhyming one (opposites: one word, its opposite). You are the proud 妖王 at his side: tease, never flatter.',
+  'hint (once a round, only when the player asks or is stuck): call Couplet with action hint, then give ONE small pointer — a rhyme sound, an image to set against his — never the whole line, never the classic one.',
+  'offer (once a round): your own answer to the same line — call Couplet with action offer and `down` (as many syllables, rhyming; one word for opposites). Sometimes better than his, sometimes deliberately crooked for the fun of it — then own it, proudly. It scores nothing. Speak English.',
+].join(' ');
 function herView(content, state, now, extra = {}) {
   const r = dayOf(state, now).round;
-  return { how: HER_NOTE, ok: true, ...extra, ...(r ? { round: { up: r.up, ...(r.down ? { his: r.down, form: r.form } : {}), ...(r.mark ? { mark: markBrief(content, r.mark, state.lang).name } : {}), hint_used: Boolean(r.hint), offered: Boolean(r.her) } } : { round: null, how_none: 'No couplet is set today.' }) };
+  return { how: state.lang === 'en' ? HER_NOTE_EN : HER_NOTE, ok: true, ...extra, ...(r ? { round: { up: r.up, ...(r.down ? { his: r.down, form: r.form } : {}), ...(r.mark ? { mark: markBrief(content, r.mark, state.lang).name } : {}), hint_used: Boolean(r.hint), offered: Boolean(r.her) } } : { round: null, how_none: 'No couplet is set today.' }) };
 }
 
 const VIEWS = { ling: lingView, yinyue: herView, page: (content, state, now, extra) => ({ ok: true, ...extra, duizi: duiziBrief(content, state, now) }) };
@@ -111,6 +145,30 @@ const viewFor = (ctx, content, state, extra) => VIEWS[ctx.reader ?? 'page'](cont
 const done = (ctx, content, s, extra) => ({ state: s, result: viewFor(ctx, content, s, extra) });
 
 /* ════════ The actions — who may take each ════════ */
+
+/* What a refusal says: the Chinese as it always was; the English for an English save or round. */
+const SAYS = {
+  zh: {
+    notHere: () => '这里没有出对子的先生。', pending: () => '上一联先生还在看。', roundsDone: n => `今天的对子对够了（${n} 联）。明日再来。`, rungShut: () => '这一级还没到。',
+    notMatched: f => `上联 ${f.n} 个字，下联也要 ${f.n} 个字。`, sent: () => '这一联已经交了，先生在看。', revPending: () => '先生还在想你那一联。',
+    revDone: n => `今天出给先生的上联够了（${n} 联）。明日再来。`, badUpper: max => `上联要 1 到 ${max} 个字。`,
+  },
+  en: {
+    notHere: () => 'No one sets couplets here.', pending: () => 'The master is still reading your last line.', roundsDone: n => `Enough couplets for today (${n}). Come back tomorrow.`, rungShut: () => 'That rung is not open yet.',
+    notMatched: (f, kind) => (kind === 'word' ? 'One word: its opposite.' : `The line has ${f.n} syllables; the answer needs as many.`), sent: () => 'That answer is in; the master is reading it.', revPending: () => 'The master is still thinking over your line.',
+    revDone: n => `Enough lines set for the master today (${n}). Come back tomorrow.`, badUpper: max => `A line of 1 to ${max} syllables.`,
+  },
+};
+const saysOf = lang => SAYS[lang === 'en' ? 'en' : 'zh'];
+
+/* An answer as the rules keep it, and its form against the round's line — by the round's language. */
+const cleanOf = (r, v) => (isEn(r) ? String(v ?? '').replace(/\s+/g, ' ').trim() : hanOf(v).join(''));
+function formOf(content, r, up, down) {
+  const rung = rungOf(content, r.rung), cfg = cfgOf(content, langOf(r));
+  return isEn(r)
+    ? checkRhyme(rhymesOf(content), up, down, { kind: rung?.kind ?? 'line', allow: rung?.allow ?? 0, free: cfg.free ?? [] })
+    : checkCouplet(content.tones, up, down, { allow: rung?.allow ?? 0, free: cfg.free ?? '' });
+}
 
 /* The round's 上联: one not dealt lately on this rung, seeded by day, save and round. */
 function dealUp(content, state, rung, d) {
@@ -121,19 +179,21 @@ function dealUp(content, state, rung, d) {
 }
 
 function open(state, content, ctx, args, s, d) {
-  const t = teacherHere(content, state, ctx.now), cfg = cfgOf(content);
-  if (!t) return refuse('not-here', '这里没有出对子的先生。');
-  if (roundPending(d.round)) return refuse('pending', '上一联先生还在看。', viewFor(ctx, content, state, {}));
-  if (d.round && !roundGraded(d.round) && !d.round.skipped) return { state: null, result: viewFor(ctx, content, state, { again: true }) };
-  if (d.played >= cfg.rounds) return refuse('rounds-done', `今天的对子对够了（${cfg.rounds} 联）。明日再来。`);
+  const lang = state.lang, t = teacherHere(content, state, ctx.now), cfg = cfgOf(content, lang), w = saysOf(lang);
+  if (!t) return refuse('not-here', w.notHere());
+  // A round in the other language (he switched) is left as it lies; only this language's blocks a new one.
+  const cur = mine(d.round, lang) ? d.round : null;
+  if (roundPending(cur)) return refuse('pending', w.pending(), viewFor(ctx, content, state, {}));
+  if (cur && !roundGraded(cur) && !cur.skipped) return { state: null, result: viewFor(ctx, content, state, { again: true }) };
+  if (d.played >= cfg.rounds) return refuse('rounds-done', w.roundsDone(cfg.rounds));
   const open_ = rungsOpen(t, d), id = text(args.rung) || open_.at(-1);
-  if (!open_.includes(id)) return refuse('rung-shut', '这一级还没到。', { open: open_ });
+  if (!open_.includes(id)) return refuse('rung-shut', w.rungShut(), { open: open_ });
   const empty = spendStamina(content, s, ctx, 'game');
   if (empty) return empty;
   const rung = rungOf(content, id), [up, ref, src] = dealUp(content, s, rung, d);
   d.played += 1;
   d.seen = [...d.seen.filter(x => x !== up), up].slice(-SEEN_KEEP);
-  d.round = { teacher: t.id, rung: id, up, ref, src, down: null, at: ctx.now.toISOString() };
+  d.round = { teacher: t.id, rung: id, up, ref, src, down: null, at: ctx.now.toISOString(), ...(lang === 'zh' ? {} : { lang }) };
   s.duizi = d;
   return done(ctx, content, s, { opened: true });
 }
@@ -141,11 +201,11 @@ function open(state, content, ctx, args, s, d) {
 function submit(state, content, ctx, args, s, d) {
   const r = d.round;
   if (!r || roundGraded(r) || r.skipped) return refuse('not-open', null, viewFor(ctx, content, state, {}));
-  const down = hanOf(args.down).join('');
+  const down = cleanOf(r, args.down), w = saysOf(langOf(r));
   if (r.down === down) return { state: null, result: viewFor(ctx, content, state, { again: true }) };
-  if (r.down) return refuse('pending', '这一联已经交了，先生在看。', viewFor(ctx, content, state, {}));
-  const form = checkCouplet(content.tones, r.up, down, { allow: rungOf(content, r.rung)?.allow ?? 0, free: cfgOf(content).free ?? '' });
-  if (form.checks.len !== 'ok') return refuse('not-matched', `上联 ${form.n} 个字，下联也要 ${form.n} 个字。`, { form });
+  if (r.down) return refuse('pending', w.sent(), viewFor(ctx, content, state, {}));
+  const form = formOf(content, r, r.up, down);
+  if (!form.ready) return refuse('not-matched', w.notMatched(form, rungOf(content, r.rung)?.kind), { form });
   Object.assign(r, { down, form, sent_at: ctx.now.toISOString() });
   s.duizi = d;
   return done(ctx, content, s, { submitted: true, form });
@@ -164,7 +224,7 @@ const gradeOf = v => (v === '' || v == null || !Number.isFinite(Number(v)) ? nul
 export const markFor = (cfg, sum, formOk) => cfg.marks.find(m => sum >= m.min && (!m.form || formOk)) ?? cfg.marks.at(-1);
 
 function grade(state, content, ctx, args, s, d) {
-  const cfg = cfgOf(content), r = d.round;
+  const r = d.round, cfg = cfgOf(content, langOf(r));
   if (!roundPending(r)) return refuse('not-pending', null, viewFor(ctx, content, state, {}));
   const grades = Object.fromEntries(cfg.rubric.map(x => [x.id, gradeOf(args[x.id])]));
   const missing = Object.keys(grades).filter(k => grades[k] == null);
@@ -181,31 +241,43 @@ function grade(state, content, ctx, args, s, d) {
 
 /* A good answer counts on its rung; `need` of them opens the teacher's next rung. */
 function stepLadder(content, d, r) {
-  const cfg = cfgOf(content), t = teacherOf(content, r.teacher);
+  const lang = langOf(r), cfg = cfgOf(content, lang), t = teacherOf(content, r.teacher, lang);
   d.good = { ...d.good, [r.rung]: (d.good[r.rung] ?? 0) + 1 };
   const next = t?.rungs[t.rungs.indexOf(r.rung) + 1];
   if (!next || d.open.includes(next) || d.good[r.rung] < cfg.need) return null;
   d.open = [...d.open, next];
-  return { id: next, name: pick(rungOf(content, next)?.name, 'zh') };
+  return { id: next, name: pick(rungOf(content, next)?.name, lang) };
 }
 
 /* Reverse — his 上联 (the page's), the teacher's 下联 (Ling's): checked, shown, never scored. */
 function reverse(state, content, ctx, args, s, d) {
-  const t = teacherHere(content, state, ctx.now), cfg = cfgOf(content);
-  if (!t) return refuse('not-here', '这里没有出对子的先生。');
-  if (d.rev && !d.rev.down) return refuse('pending', '先生还在想你那一联。', viewFor(ctx, content, state, {}));
-  if (d.reversed >= cfg.reverse) return refuse('reverse-done', `今天出给先生的上联够了（${cfg.reverse} 联）。明日再来。`);
+  const lang = state.lang, t = teacherHere(content, state, ctx.now), cfg = cfgOf(content, lang), w = saysOf(lang);
+  if (!t) return refuse('not-here', w.notHere());
+  if (mine(d.rev, lang) && !d.rev.down) return refuse('pending', w.revPending(), viewFor(ctx, content, state, {}));
+  if (d.reversed >= cfg.reverse) return refuse('reverse-done', w.revDone(cfg.reverse));
   const max = Math.max(...t.rungs.map(id => rungOf(content, id)?.n ?? 0));
-  const up = hanOf(args.up).join(''), shape = checkUpper(content.tones, up, max);
-  if (!shape.fits) return refuse('bad-upper', `上联要 1 到 ${max} 个字。`, { shape });
+  const en = lang === 'en', up = cleanOf(en ? { lang } : null, args.up);
+  const shape = en ? checkPrompt(rhymesOf(content), up, max) : checkUpper(content.tones, up, max);
+  if (!shape.fits) return refuse('bad-upper', w.badUpper(max), { shape });
   d.reversed += 1;
-  d.rev = { up, tail: shape.tail, down: null, at: ctx.now.toISOString() };
+  d.rev = en ? { up, kind: shape.kind, n: shape.n, down: null, at: ctx.now.toISOString(), lang } : { up, tail: shape.tail, down: null, at: ctx.now.toISOString() };
   s.duizi = d;
   return done(ctx, content, s, { reversed: true, shape });
 }
 
+/* His English line answered: one word for one word (not a form of his), else his syllables and a rhyme, one word of his allowed. */
+function answerEn(state, content, ctx, args, s, d) {
+  const down = cleanOf(d.rev, args.down), cfg = cfgOf(content, 'en');
+  const form = checkRhyme(rhymesOf(content), d.rev.up, down, { kind: d.rev.kind, allow: d.rev.kind === 'word' ? 0 : 1, free: cfg?.free ?? [] });
+  if (!form.ready) return refuse('not-matched', null, { form, need: d.rev.n });
+  Object.assign(d.rev, { down, form });
+  s.duizi = d;
+  return done(ctx, content, s, { answered: true, form });
+}
+
 function answer(state, content, ctx, args, s, d) {
   if (!d.rev || d.rev.down) return refuse('not-open', null, viewFor(ctx, content, state, {}));
+  if (isEn(d.rev)) return answerEn(state, content, ctx, args, s, d);
   const down = hanOf(args.down).join(''), n = hanOf(d.rev.up).length;
   const rung = (cfgOf(content).rungs ?? []).find(x => x.n === n);
   const form = checkCouplet(content.tones, d.rev.up, down, { allow: rung?.allow ?? 1, free: cfgOf(content).free ?? '' });
@@ -229,9 +301,9 @@ function offer(state, content, ctx, args, s, d) {
   const r = d.round;
   if (!r || r.skipped) return refuse('not-open', null, viewFor(ctx, content, state, {}));
   if (r.her) return refuse('offered', null, viewFor(ctx, content, state, {}));
-  const down = hanOf(args.down).join('');
-  const form = checkCouplet(content.tones, r.up, down, { allow: rungOf(content, r.rung)?.allow ?? 0, free: cfgOf(content).free ?? '' });
-  if (form.checks.len !== 'ok') return refuse('not-matched', null, { form, need: form.n });
+  const down = cleanOf(r, args.down);
+  const form = formOf(content, r, r.up, down);
+  if (!form.ready) return refuse('not-matched', null, { form, need: form.n });
   r.her = { down, form };
   s.duizi = d;
   return done(ctx, content, s, { offered: true, form });
@@ -255,7 +327,7 @@ const ACTIONS = {
 
 export function duizi(state, content, ctx, args = {}) {
   if (!cfgOf(content)) return refuse('not-here', null);
-  if (state.lang !== 'zh') return refuse('zh-only', null);
+  if (!cfgOf(content, state.lang)) return refuse('not-in-lang', null);
   const reader = ctx.reader ?? 'page', action = text(args.action) || 'read', a = ACTIONS[action];
   if (!a) return refuse('unknown-action', null, { actions: Object.keys(ACTIONS) });
   if (!a.by.includes(reader)) return refuse('not-yours', null, { by: a.by });

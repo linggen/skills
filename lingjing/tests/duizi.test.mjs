@@ -131,7 +131,7 @@ test('marks: the first that fits the sum and the form; a broken form is never go
 
 /* ════════ the door ════════ */
 
-test('the door: at the 讲堂 after 古六\'s 掐诀 lesson, in Chinese only', () => {
+test('the door: at the 讲堂 after 古六\'s 掐诀 lesson; in English the English ladder (tests/duizi-en)', () => {
   const d = look(base, content, ctx()).duizi;
   assert.ok(d, 'offered at the 讲堂');
   assert.equal(d.teacher, '褚先生');
@@ -140,8 +140,8 @@ test('the door: at the 讲堂 after 古六\'s 掐诀 lesson, in Chinese only', (
   const before = { ...base, done_scenes: (base.done_scenes ?? []).filter(id => id !== 'wm-qianye') };
   assert.equal(look(before, content, ctx()).duizi, undefined, 'not before the lesson');
   const en = { ...base, lang: 'en' };
-  assert.equal(look(en, content, ctx()).duizi, undefined, 'no door in English');
-  assert.equal(run(en, { action: 'open' }).r.refused, 'zh-only');
+  assert.deepEqual(look(en, content, ctx()).duizi.rungs.map(r => r.id), ['opposites', 'pairs', 'short', 'heroic'], 'English: its own ladder, never the Chinese');
+  assert.equal(run({ ...base, lang: 'fr' }, { action: 'open' }).r.refused, 'not-in-lang', 'a language with no ladder has no door');
 });
 
 test('a later teacher (卷 not open) is never met — the 稷下 tier is data', () => {
@@ -322,7 +322,7 @@ test('the guide and the tools: Ling has `duizi`, 银月 has Couplet', () => {
 });
 
 test('no personal name in what 对对子 ships', () => {
-  for (const f of ['scripts/rules/duizi.mjs', 'scripts/couplet.js', 'guide/duizi.md', 'worlds/jiuding/aigames.json', 'tools/tone-table.py']) {
+  for (const f of ['scripts/rules/duizi.mjs', 'scripts/couplet.js', 'scripts/rhyme.js', 'scripts/aigames-cards.js', 'guide/duizi.md', 'worlds/jiuding/aigames.json', 'worlds/jiuding/rhymes.json', 'tools/tone-table.py', 'tools/rhyme-table.py']) {
     assert.ok(!/Liang/.test(fs.readFileSync(path.join(ROOT, f), 'utf8')), f);
   }
 });
