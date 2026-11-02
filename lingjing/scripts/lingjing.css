@@ -1480,6 +1480,8 @@ button.omenchip.qianchip { cursor: pointer; font: inherit; font-size: 11px; back
 @keyframes qshake { from { transform: rotate(-9deg) translateY(-2px); } to { transform: rotate(9deg) translateY(2px); } }
 @keyframes qdrop { 0%, 60% { transform: translateY(0); } 100% { transform: translateY(-26px) rotate(8deg); } }
 .qstreak { letter-spacing: .02em; }
+.card.qian .qstate { margin: 2px 0 10px; font-family: var(--serif); font-size: 15px; color: var(--ling); letter-spacing: .06em; }
+.card.qian .qnote { margin: -4px 0 8px; }
 .qask .qasks { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
 .qask input { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
 .qchip { display: inline-block; font-size: 12px; padding: 1px 7px; border: 1px solid var(--line); border-radius: 10px; color: var(--dim); background: var(--surface); margin: 0 4px 3px 0; }

@@ -333,7 +333,7 @@ const view = {
   casting: false, //     起一卦 tapped: the coins are in the air until the cast lands
   castSeen: undefined, // the cast last drawn — a new one is drawn line by line, once
   castFresh: false,
-  qianShaking: false, qianAsk: null, qianAskText: '', qianBookOpen: false, qianBook: null, qianOpen: false, // 问签 (qian-page.js): the tube shaking, what he asks, the 签谱 open, the chip's popover
+  qianShaking: false, qianShakeAt: 0, qianNote: null, qianAsk: null, qianAskText: '', qianBookOpen: false, qianBook: null, qianOpen: false, // 问签 (qian-page.js): the tube shaking, what he asks, the 签谱 open, the chip's popover
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
   refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
@@ -447,7 +447,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianAsk: view.qianAsk, qianAskText: view.qianAskText, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianAsk: view.qianAsk, qianAskText: view.qianAskText, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -1120,7 +1120,7 @@ function paintDrain(t) {
 }
 const FLOAT_MS = 2200;
 
-/// Today's 签 on the strip (问签 v1, 2026-11-02): 「今日 上签 · 修为 ×1.2 · 宜斗法」, or 「求签」 before the draw —
+/// Today's 签 on the strip (问签 v1, 2026-11-02): 「今日 上签 · 修为 ×1.2 · 宜斗法」, or 「今日签 · 未摇」 before the draw —
 /// a tap opens the 签 card over the stage, wherever the story stands.
 function omenChip() {
   const chip = qianChipHtml(look, lang());

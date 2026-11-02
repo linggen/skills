@@ -8,7 +8,7 @@ import { dayKey } from './state.mjs';
 
 export const QIAN_WORDS = {
   zh: {
-    title: '问签 · 今日', drawn: '今日之签', shake: '摇 签', shaking: '签筒摇着……', hint: '一日一签。心里想着一件事，摇一摇。', hintPhone: '一日一签。心里想着一件事，摇一摇手机，或点一下。',
+    title: '问签 · 今日', drawn: '今日之签', notYet: '还没摇 · 点签筒摇一摇', notYetPhone: '还没摇 · 摇一摇手机，或点签筒', chip: '今日签 · 未摇', shake: '摇 签', shaking: '签筒摇着……', hint: '一日一签。心里想着一件事，摇一摇。', hintPhone: '一日一签。心里想着一件事，摇一摇手机，或点一下。',
     ask: '想问什么（可不选）', askText: '或写一句（可不写）', no: '第{n}签', of: '共{of}签',
     speed: '今日修为 ×{x}', yi: '宜{name}（{games}）修为 ×{x}', even: '今日修为照常',
     almanac: '{y}年 {m}月 {d}日 · {officer}日 · 冲{chong} · 煞{sha}', yiLabel: '宜', jiLabel: '忌', none: '无大事',
@@ -20,7 +20,7 @@ export const QIAN_WORDS = {
     reading: '银月在看这支签……', source: '出处', yingyan: '已应验：{said}',
   },
   en: {
-    title: "Today's fortune stick", drawn: "Today's stick", shake: 'Shake', shaking: 'Shaking…', hint: 'One stick a day. Hold one thing in mind and shake.', hintPhone: 'One stick a day. Hold one thing in mind — shake the phone, or tap.',
+    title: "Today's fortune stick", drawn: "Today's stick", notYet: 'Not drawn yet · tap the tube to shake', notYetPhone: 'Not drawn yet · shake the phone, or tap the tube', chip: "Today's stick · not drawn", shake: 'Shake', shaking: 'Shaking…', hint: 'One stick a day. Hold one thing in mind and shake.', hintPhone: 'One stick a day. Hold one thing in mind — shake the phone, or tap.',
     ask: 'What is it about (optional)', askText: 'or a line of your own (optional)', no: 'Stick {n}', of: 'of {of}',
     speed: 'Cultivation today ×{x}', yi: 'Good for {name} ({games}): cultivation ×{x}', even: 'Cultivation as usual today',
     almanac: '{y} year · {m} month · {d} day · {officer} · clashes {chong} · 煞 {sha}', yiLabel: 'Good for', jiLabel: 'Avoid', none: 'nothing much',
@@ -107,7 +107,9 @@ export function qianCardHtml(ctx) {
   const look = ctx.look ?? {}, q = look.qian, d = look.divination, w = wordsOf(ctx);
   if (d?.poem) return drawnHtml(d, q, ctx, w);
   if (!q) return '';
-  return `<div class="card qian uncast tube-${esc(q.tube)}"><div class="cardtitle">${esc(w.title)}</div>
+  // Plainly not drawn yet (Hanli 11-02: 「这个是已经算完了吗? 不太明显」), and what went wrong on the card itself.
+  const state = `<div class="qstate">${esc(isPhone() ? w.notYetPhone : w.notYet)}</div>${ctx.qianNote ? `<div class="small seal qnote" role="status">${esc(ctx.qianNote)}</div>` : ''}`;
+  return `<div class="card qian uncast tube-${esc(q.tube)}"><div class="cardtitle">${esc(w.title)}</div>${state}
     <div class="qbody">${tubeHtml(q, w, ctx)}<div class="qside">
       <div class="hextext">${esc(isPhone() ? w.hintPhone : w.hint)}</div>${streakHtml(q, w)}
       ${birthHtml(q, ctx, w)}${askHtml(q, ctx, w)}</div></div>
@@ -115,12 +117,13 @@ export function qianCardHtml(ctx) {
     <div class="qfoot">${q.book.draws ? bookChip(q, w) : ''}</div>${ctx.qianBookOpen ? bookHtml(ctx, w) : ''}</div>`;
 }
 
-/* The top bar's chip: 「今日 上上签 · 修为 ×1.2 · 宜斗法」 once drawn; before, 「求签」 to open the card. */
+/* The top bar's chip: 「今日 上上签 · 修为 ×1.2 · 宜斗法」 once drawn; before, 「今日签 · 未摇」 (not 「求签」, which read
+   as either) to open the card. */
 export function qianChipHtml(look, lang) {
   const d = look?.divination, zh = lang !== 'en';
   if (d?.poem) {
     const text = zh ? `今日 ${d.grade.name} · 修为 ×${d.speed}${d.yi ? ` · 宜${d.yi.name}` : ''}` : `${d.grade.name} · ×${d.speed}${d.yi ? ` · good for ${d.yi.name}` : ''}`;
     return `<button class="omenchip qianchip ${esc(d.grade.tone)}" data-qian-chip>${esc(text)}</button>`;
   }
-  return look?.qian ? `<button class="omenchip qianchip uncast" data-qian-chip>${esc(zh ? '求签' : 'Draw a stick')}</button>` : '';
+  return look?.qian ? `<button class="omenchip qianchip uncast" data-qian-chip>${esc(QIAN_WORDS[zh ? 'zh' : 'en'].chip)}</button>` : '';
 }

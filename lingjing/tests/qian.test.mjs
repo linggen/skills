@@ -11,7 +11,7 @@ import { almanacOf, ganzhi, monthIndexOf, pillarsOfDay } from '../scripts/rules/
 import { gameOfEntry, yiWeightOfEntry, divine, fate, fateOf, qianOf, qianPayOf, qianSpeedOf, signOf, yiToday, yiWeightOf, isOfKind } from '../scripts/rules/fortune.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
 import { qianCardHtml, qianChipHtml } from '../scripts/qian-card.js';
-import { qianFacts } from '../scripts/qian-page.js';
+import { createQianPage, qianFacts } from '../scripts/qian-page.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
@@ -210,6 +210,51 @@ test('the card stands with 银月 away: the 签筒, then the 签诗 and the 宜�
   // English keeps it working: the original verse with the game's gloss.
   const en = look(draw({ ...alone, lang: 'en' }).state, content, ctx()).divination;
   assert.ok(en.gloss && en.poem.length === 4);
+});
+
+/* Live, Hanli 2026-11-02 「点按钮也没反应」: no `divine` ever reached the rules. A shake that threw between its start and its
+   end (the paint) left `qianShaking` set, and every later tap returned at its first line under a 签筒 still reading 摇签. */
+function fakePage({ paintThrows = 0, answer = () => ({ ok: true }) } = {}) {
+  const view = { qianShaking: false, qianAsk: 'travel', qianAskText: '', qianOpen: false };
+  const writes = [];
+  let paints = 0;
+  const page = createQianPage({
+    view, lang: () => 'zh', herHere: () => false, askHer() {}, tellHer() {},
+    keep: (p) => Object.assign(view, p),
+    show: (p) => { Object.assign(view, p); if (paints++ < paintThrows) throw new Error('render threw'); },
+    write: async (name, args) => { writes.push({ name, args }); return answer(name, args); },
+    refresh: async () => {}, refusal: (r) => r.say || '这一下没成，稍后再点。', failed: (e) => ({ ok: false, error: String(e) }),
+  });
+  return { page, view, writes };
+}
+
+test('摇签 always reaches the rules and always ends: a paint that throws never leaves the tube dead', async () => {
+  const { page, view, writes } = fakePage({ paintThrows: 1 });
+  await page.shake().catch(() => {});
+  assert.deepEqual(writes.map((w) => w.name), ['divine'], 'the draw is asked though the paint threw');
+  assert.equal(writes[0].args.ask, 'travel');
+  assert.equal(view.qianShaking, false, 'the shake ends');
+  assert.equal(view.qianOpen, true, 'the 签 shows in the top bar');
+  await page.shake();
+  assert.equal(writes.length, 2, 'a second tap is heard');
+});
+
+test('摇签 that does not go through says so on the card, and the next tap draws again', async () => {
+  const { page, view, writes } = fakePage({ answer: () => { throw new Error('Control channel request timeout'); } });
+  await page.shake();
+  assert.equal(view.qianShaking, false);
+  assert.equal(view.qianNote, '这一下没成，稍后再点。');
+  assert.equal(view.qianAsk, 'travel', 'what he asked is kept for the next tap');
+  // A shake never answered (stuck) is let go after a while: the next tap draws.
+  Object.assign(view, { qianShaking: true, qianShakeAt: Date.now() - 60000 });
+  await page.shake();
+  assert.equal(writes.length, 2);
+  const l0 = look(base, content, ctx());
+  const card = qianCardHtml({ look: l0, lang: 'zh', qianNote: view.qianNote });
+  assert.match(card, /还没摇 · 点签筒摇一摇/);
+  assert.match(card, /这一下没成/);
+  assert.match(qianChipHtml(l0, 'zh'), /今日签 · 未摇/);
+  assert.doesNotMatch(qianChipHtml(l0, 'zh'), /求签/);
 });
 
 test('the verb is the page\'s and Ling\'s; before the gate it is shut', () => {

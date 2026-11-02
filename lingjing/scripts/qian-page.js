@@ -6,6 +6,7 @@
 const SHAKE_MS = 1300; //    the tube shakes this long before the 签 drops
 const JOLT = 18; //          m/s² over gravity, twice within the window, counts as a shake
 const JOLT_WINDOW_MS = 900;
+const STUCK_MS = 45000; //   a shake never answered by then (the channel's own timeout is 30 s) is taken as lost
 
 /* 银月's rules for the reading, read once from guide/qian.md (the section `## 银月 · 解签`); a short fallback inline. */
 const FALLBACK = '解签：一句，≤80字，俏皮；游戏里说今日修为倍数与宜的玩法；生活里只说宜/忌，钱、病、官司只说宜谨慎；下签也落到一件今天做得到的小事上。';
@@ -46,7 +47,7 @@ export function createQianPage({ write, refresh, show, keep, view, askHer, tellH
   /* A phone's shake: the motion listener, asked for (iOS) inside the tap that first wants it. */
   function onMotion(e) {
     const a = e.accelerationIncludingGravity ?? e.acceleration;
-    if (!a || view.qianShaking || !document.querySelector('[data-qian-shake]')) return;
+    if (!a || (view.qianShaking && Date.now() - (view.qianShakeAt ?? 0) < STUCK_MS) || !document.querySelector('[data-qian-shake]')) return;
     const g = Math.hypot(a.x ?? 0, a.y ?? 0, a.z ?? 0) - (e.accelerationIncludingGravity ? 9.8 : 0);
     const t = Date.now();
     if (g < JOLT) return;
@@ -63,15 +64,25 @@ export function createQianPage({ write, refresh, show, keep, view, askHer, tellH
     motionOn = true;
   }
 
-  /* 摇签: the tube shakes, the rules draw, the 签 drops and its verse inks in; 银月 reads it if she is here. */
+  /* 摇签: the tube shakes, the rules draw, the 签 drops and its verse inks in; 银月 reads it if she is here.
+     The draw is asked before anything is painted, and the shake always ends (live, Hanli 2026-11-02 「点按钮也没反应」:
+     no `divine` ever reached the rules — the one way every later tap goes silent: a shake that threw between its start
+     and its end left `qianShaking` set, and each tap returned at the first line under a 签筒 that still read 摇签). A shake older than STUCK_MS is
+     taken as lost: the next tap draws again. What went wrong is said on the card itself, never only far off. */
   async function shake() {
-    if (view.qianShaking) return;
-    show({ qianShaking: true });
+    if (view.qianShaking && Date.now() - (view.qianShakeAt ?? 0) < STUCK_MS) return;
     const args = { ...(view.qianAsk ? { ask: view.qianAsk } : {}), ...(view.qianAskText ? { ask_text: view.qianAskText } : {}) };
-    const [r] = await Promise.all([write('divine', args).catch(failed), new Promise((ok) => setTimeout(ok, SHAKE_MS))]);
-    if (!r.ok && r.refused !== 'cast-today') keep({ doNote: refusal(r) });
-    // The 签 drops into the top bar's popover: the stage gives the 签筒's place back, the verse inks in up there.
-    keep({ qianShaking: false, qianAsk: null, qianAskText: '', qianOpen: Boolean(r.ok) || view.qianOpen });
+    keep({ qianShaking: true, qianShakeAt: Date.now(), qianNote: null });
+    const drawing = Promise.resolve().then(() => write('divine', args)).catch(failed);
+    try { show({}); } catch (e) { console.warn('[lingjing] qian paint', e); }
+    let r = { ok: false };
+    try {
+      [r] = await Promise.all([drawing, new Promise((ok) => setTimeout(ok, SHAKE_MS))]);
+    } finally {
+      const note = r?.ok || r?.refused === 'cast-today' ? null : refusal(r ?? {});
+      // The 签 drops into the top bar's popover: the stage gives the 签筒's place back, the verse inks in up there.
+      keep({ qianShaking: false, qianShakeAt: 0, qianNote: note, ...(note ? { doNote: note } : { qianAsk: null, qianAskText: '' }), qianOpen: Boolean(r?.ok) || view.qianOpen });
+    }
     await refresh();
   }
   /* The first tap also asks the phone for its motion (iOS wants it inside a tap); the tap itself shakes. */
