@@ -37,7 +37,7 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
   const now = ctx.now ?? new Date(), offered = new Set(state.aside ? asideOffers.map(o => o.id) : []);
   const ways = new Map(), way = id => (ways.has(id) ? ways.get(id) : ways.set(id, wayTo(content, state, ctx, id)).get(id));
   const name = id => placeName(content, state, placeOf(content, id));
-  const rows = PLAY_KINDS.filter(k => k.tray).flatMap(k => k.tray(content, state, view, now).map(e => ({ kind: k.kind, ...e })))
+  const rows = PLAY_KINDS.filter(k => k.tray && k.in !== 'shi').flatMap(k => k.tray(content, state, view, now).map(e => ({ kind: k.kind, ...e })))
     .filter(e => !offered.has(e.id))
     .flatMap((e) => {
       const { places = null, notice, ...row } = e;

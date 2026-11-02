@@ -58,7 +58,7 @@ export const WORDS = {
     trayLeft: { night: '第{n}潮', batch: '这一批 {n}/{of}', couplets: '今日 {n} 联', rounds: '今日 {n} 回', errands: '{n} 件', keys: '秘境令 ×{n}', ends: '还剩 {t}', today: '今日可用', tomorrow: '明日上山' },
     trayGo: '去{name} ›', trayOpen: '开局', trayKe: '{n} 刻', trayShi: '{n} 时辰',
     // 小游戏池 (rules/pool.mjs): the 时辰 in the head, when the next three come; all played; 体力 spent.
-    shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{tray} · {hour}', trayNext: '{next}换一批 · {n} 分',
+    shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour} · {n} 分换一批', trayHourTip: '{next}换一批',
     trayAllPlayed: '这个时辰的都玩过了 · {next}再来', trayRest: '闭关中 · 约 {n} 分钟体力回满', trayRestUp: '起炉', trayRestFeed: '喂饭桶',
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；满{rest}小时体力回满。',
@@ -121,7 +121,7 @@ export const WORDS = {
     trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Cast the coins', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
     trayGo: 'Go to {name} ›', trayOpen: 'Play', trayKe: '{n} min', trayShi: '{n} h',
-    shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{tray} · {hour}', trayNext: 'New three at {next} · {n} min',
+    shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour} · new three in {n} min', trayHourTip: 'New three at {next}',
     trayAllPlayed: "All of this hour's played · back at {next}", trayRest: 'In seclusion · stamina full in about {n} min', trayRestUp: 'Seclude', trayRestFeed: 'Feed the Rice Bucket',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. {rest} hours or more refills stamina.',
@@ -2036,7 +2036,7 @@ function trayMeta(e, ctx) {
 function trayGameHtml(e, ctx) {
   const w = ctx.words, title = e.title ?? w.trayName[e.id] ?? w.trayName[e.kind] ?? e.id;
   const open = e.act === 'open' && TRAY_OPEN[e.opens];
-  const btn = open ? `<button class="act" ${open(e)}>${esc(w.trayOpen)}</button>`
+  const btn = open ? `<button class="act" ${open(e)}>${esc(e.resume ? w.playOn : w.trayOpen)}</button>`
     : e.act === 'go' ? `<button class="act go" data-go="${esc(e.go.id)}">${esc(say(w.trayGo, { name: e.go.name }))}</button>` : '';
   const meta = trayMeta(e, ctx);
   return `<div class="card task timed${e.seg === 'notice' ? ' notice' : ''}" data-tray="${esc(e.id)}"><div class="tasktitle">${esc(title)}</div>${meta ? `<div class="small dim">${esc(meta)}</div>` : ''}${btn ? `<div class="taskfoot">${btn}</div>` : ''}</div>`;
@@ -2047,12 +2047,12 @@ const trayCoolHtml = (e, ctx) => {
   return waitRowHtml({ ...e, title: [name, l ? say(ctx.words.trayLeft[l.unit] ?? '', { n: l.n ?? '', of: l.of ?? '' }) : ''].filter(Boolean).join(' · ') }, ctx);
 };
 
-/// The tray's head (小游戏池, rules/pool.mjs): 「手边的棋局 · 未时」, and on the right when the next three come.
-export function trayHeadHtml(ctx) {
+/// The 时辰 chip in the footer, beside the sky (小游戏池, rules/pool.mjs; the tray has no title line, Hanli 11-02:
+/// 「手边的棋局 这几个字去掉, 省点空间」): 「未时 · 47 分换一批」. Nothing to tap.
+export function trayHourChipHtml(ctx) {
   const w = ctx.words, h = ctx.look?.tray_hour;
-  if (!h) return esc(w.tray);
-  const next = w.shichen[(h.i + 1) % 12];
-  return `<span>${esc(say(w.trayHour, { tray: w.tray, hour: w.shichen[h.i] }))}</span><span class="traynext">${esc(say(w.trayNext, { next, n: h.ends_min }))}</span>`;
+  if (!h) return '';
+  return `<span class="bookchip hourchip" title="${esc(say(w.trayHourTip, { next: w.shichen[(h.i + 1) % 12] }))}">${esc(say(w.trayHour, { hour: w.shichen[h.i], n: h.ends_min }))}</span>`;
 }
 /// 体力 spent (Look's `stamina`, its own rules): the row is one card — when the pool is full again, 起炉 (闭关 fills it) and 喂饭桶.
 function trayRestHtml(ctx) {

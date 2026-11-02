@@ -34,7 +34,7 @@ import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } fro
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt, asideOpens, doorLine, trayHeadHtml } from './cards.js';
+import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
 import { slotNext } from './stuck.js';
 import { pouchHtml } from './pouch.js';
 import { fantongKailu, kailuPaneHtml } from './fantong-kailu.js';
@@ -1324,6 +1324,8 @@ const FOOT_CHIPS = {
   her: () => herTokenHtml(),
   festival: () => festChipHtml(),
   weather: () => wxChipHtml(wxHere(), { lang: lang(), open: view.wxOpen, sense: view.wxSense, note: view.wxNote, wind: PREVIEW.wind ?? look?.wind }),
+  // The 时辰 and when its three change (rules/pool.mjs), beside the sky.
+  hour: () => trayHourChipHtml(ctx()),
   books: () => shelfChipHtml(),
   errands: (slots) => `<span class="errands">${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}${moreHtml(slots)}</span>`,
   bag: () => gearChipHtml(ctx(), view.gearOpen),
@@ -1779,7 +1781,6 @@ function draw() {
   drawPouch();
   // The tray holds the world's boards; with none today it is not there at all
   // — 「今日无事」 under a book with things in it was a contradiction.
-  $('trayTitle').innerHTML = trayHeadHtml(ctx());
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
   // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
@@ -4927,7 +4928,6 @@ function gate(note = '') {
   $('stage').hidden = true;
   holdHerVoice(false);
   $('tray').innerHTML = '';
-  $('trayTitle').textContent = '';
   $('focus').innerHTML = `<div class="card gate-card"><div class="cardtitle">${esc(w.signTitle)}</div>
     <p>${esc(w.signBody)}</p><button class="act" id="signin">${esc(w.signBtn)}</button>
     ${note ? `<div class="note">${esc(note)}</div>` : ''}</div>`;

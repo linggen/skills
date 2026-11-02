@@ -127,7 +127,7 @@ export const PLAY_KINDS = [
     tray: (content, state, view, now) => [
       ...(view ? duiziTray(content, state, now) : []),
       ...tasksOf(view).filter(t => t.light && t.her && t.status === 'offered' && t.left > 0)
-        .map(t => ({ id: 'kao', task: t.id, title: t.title, left: { unit: 'rounds', n: t.left }, opens: 'play', arg: t.id, stage: `board:${t.id}` })),
+        .map(t => ({ id: 'kao', task: t.id, title: t.title, left: { unit: 'rounds', n: t.left }, opens: 'play', arg: t.id, stage: `board:${t.id}`, ...(t.open ? { resume: true } : {}) })),
       ...(view && !view.divination && !lockedIn(view, 'divine') ? [{ id: 'divine', left: { unit: 'today' }, opens: 'divine', stage: 'hexagram' }] : []),
     ],
     // In the pool: 对对子 and 银月出题 (AI games: a day's rest). 问卦 is not: once a day, fixed, as it was.
@@ -135,10 +135,11 @@ export const PLAY_KINDS = [
       row: e => HER_POOL[e.id] ?? null,
       plays: (verb, args) => (verb === 'duizi' && ['open', 'submit'].includes(args.action) ? 'duizi' : verb === 'kao' && args.action === 'open' ? 'kao' : null),
     } },
-  { kind: 'errands', // 执事堂's work (errands.mjs workOf): where errands wait to be taken, how many
+  // `in: 'shi'`: the 事 book lists it (cards.js bookPopHtml) — one place for one thing, the tray holds games only
+  // (Hanli 11-02: 「在事里有的, 是否不用放下面显示?」). Declared here, drawn there.
+  { kind: 'errands', in: 'shi', // 执事堂's work (errands.mjs workOf): where errands wait to be taken, how many
     tray: (content, state, view) => (view?.work?.kind === 'errand' && view.work.titles?.length
-      ? [{ id: 'errands', left: { unit: 'errands', n: view.work.titles.length }, places: [view.work.place.id], opens: 'book', stage: 'offer' }] : []),
-    pool: { row: () => ({ cooldown_min: 120, when: ['wu', 'wei'], cost: null }), plays: (verb, args) => (verb === 'quest' && (args.action ?? 'take') === 'take' && !['tale', 'stage'].includes(String(args.id ?? '')) ? 'errands' : null) } },
+      ? [{ id: 'errands', left: { unit: 'errands', n: view.work.titles.length }, places: [view.work.place.id], opens: 'book', stage: 'offer' }] : []) },
   { kind: 'board', // a board a place on his painted map hosts today as practice (rules/rotation.mjs, tasks.mjs hostedHere): 周衡's 灯谜,
     // a story board hosted again where it was played (药园巡夜, 守火 …) — wherever on the map, the place where he stands first
     tray: (content, state, view, now) => boardsAround(content, state, now),
@@ -148,9 +149,9 @@ export const PLAY_KINDS = [
     } },
   { kind: 'mijing', // 秘境探险 (rules/mijing.mjs): a 秘境令 in hand, away from the door — the door's run is its card there
     tray: (content, state, view) => (view?.mijing?.away ? [{ id: 'mijing', left: { unit: 'keys', n: view.mijing.keys }, places: [view.mijing.door.id], stage: 'mijing' }] : []) },
-  { kind: 'chance', // the day's 机缘 (road.mjs chanceBrief): where, the minutes left — met on arrival
+  { kind: 'chance', in: 'shi', // the day's 机缘 (road.mjs chanceBrief): where, the minutes left — met on arrival
     tray: (content, state, view) => { const c = view?.chance; return c?.minutes_left > 0 && !c.here ? [{ id: 'chance', left: { unit: 'ends', n: c.minutes_left }, places: [c.place.id] }] : []; } },
-  { kind: 'visitor', // a visiting shop (rules/visiting.mjs): standing today, or up tomorrow (a notice)
+  { kind: 'visitor', in: 'shi', // a visiting shop (rules/visiting.mjs): standing today, or up tomorrow (a notice)
     tray: (content, state, view, now) => (view ? visitorsTray(content, state, now) : []) },
 ];
 /* 先放一放's facet of the registry: the kinds that may be played while the book is set aside. */

@@ -1294,16 +1294,17 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   rules/tray.mjs, cards.js trayHtml): one row under the stage, scrolling sideways (the phone too). First what opens
   here — the 回's story boards (gold border; the old exclusions kept: done, played today, on the stage, `boardWaits`,
   the aside's own board), then the timed and daily games that open here or anywhere (jade, 开局) — then those a walk
-  away (jade, 去X ›, only where Move would take him), a notice (货郎 明日上山), and last, muted, the cooldowns back
+  away (jade, 去X ›, only where Move would take him), and last, muted, the cooldowns back
   within hours (「约 N 时辰后」; a game done for today is not in it). Each game declares its entry in the one registry
   with 先放一放 (rules/aside.mjs `PLAY_KINDS` `tray`: what is left, where, its opener, the stage card it would repeat);
   Look carries `tray`; the page draws whatever comes. Empty, 「手边无局，随处走走。」. Agent's picks (Hanli delegated
   11-02) in status.md.
   **小游戏池** (Hanli's design, 11-02: 「可以, 按照你设计的做吧」; rules/pool.mjs): the repeatable small games (对对子, 银月出题,
-  执事堂, 饭桶, 闭关, the practice boards on his map) are a pool, each declaring its cooldown, its 时辰's lean (a weight),
+  饭桶, 闭关, the practice boards on his map) are a pool, each declaring its cooldown, its 时辰's lean (a weight),
   its 体力 cost and the verb that plays it. Each 时辰 draws three (seed: save + day + 时辰); played, a game leaves the row
-  and rests its cooldown. The world's events, 问卦 and the story's boards stand outside it. The head reads
-  「手边的棋局 · 未时 … 申时换一批 · 47 分」; 体力 spent, one 闭关 card; all three played, 「这个时辰的都玩过了」.
+  and rests its cooldown. The world's events, 问卦 and the story's boards stand outside it. No title line over the row
+  (Hanli 11-02); the 时辰 is a footer chip, 「未时 · 47 分换一批」; 体力 spent, one 闭关 card; all three played,
+  「这个时辰的都玩过了」. The tray holds games only: what the 事 book lists (差事, 机缘, 货郎) is declared `in: 'shi'`.
 - **Yinyue on the stage:** one device, one Yinyue. The game stage is
   voice-only (`?pet=1&stage=1&body=0`, engine a250a04) — no 3D body in the
   game.

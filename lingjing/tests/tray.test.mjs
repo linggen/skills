@@ -28,7 +28,13 @@ const draw = (l, extra = {}) => trayHtml({ look: l, lang: 'zh', words: WORDS.zh,
 
 test('one registry: 先放一放 is a facet of it (its kinds unchanged); every tray kind declares itself there', () => {
   assert.deepEqual(ASIDE_KINDS.map((k) => k.kind), ['replay', 'gongke', 'fantong', 'pool', 'tide', 'seclusion', 'her']);
-  assert.deepEqual(PLAY_KINDS.filter((k) => k.tray).map((k) => k.kind), ['fantong', 'pool', 'yaoshou', 'tide', 'seclusion', 'her', 'errands', 'board', 'mijing', 'chance', 'visitor']);
+  assert.deepEqual(PLAY_KINDS.filter((k) => k.tray && k.in !== 'shi').map((k) => k.kind), ['fantong', 'pool', 'yaoshou', 'tide', 'seclusion', 'her', 'board', 'mijing']);
+  // What the 事 book lists stays there only (Hanli 11-02: 「在事里有的, 是否不用放下面显示?」): the tray holds games.
+  assert.deepEqual(PLAY_KINDS.filter((k) => k.in === 'shi').map((k) => k.kind), ['errands', 'chance', 'visitor']);
+  for (let h = 1; h < 24; h += 2) {
+    const rows = trayOf(at('waimen'), new Date(2026, 9, 20, h, 10));
+    assert.ok(!rows.some((e) => ['errands', 'chance', 'visitor'].includes(e.kind)), `${h}:10`);
+  }
   assert.ok(PLAY_KINDS.filter((k) => !k.open).every((k) => !k.takes), 'a kind never played while set aside takes no verb');
 });
 
@@ -138,4 +144,26 @@ test('the empty state: only when all of it is empty', () => {
   assert.doesNotMatch(draw({ tasks: [], tray: [{ kind: 'pool', id: 'pool:x', title: 'x', wait_min: 30, seg: 'cool' }] }), /trayempty/);
   assert.doesNotMatch(draw({ tasks: [{ id: 'b1', kind: 'board', title: '一局', status: 'offered' }] }), /trayempty/);
   assert.equal(trayHtml({ look: { tasks: [] }, lang: 'en', words: WORDS.en }), `<div class="small dim trayempty">${WORDS.en.trayEmpty}</div>`);
+});
+
+test('a tray 开局 opens what it names, whatever the stage holds: each opener has the page\'s handler, a board stands by the tray\'s own hold', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const cards = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
+  const table = cards.slice(cards.indexOf('const TRAY_OPEN = {'), cards.indexOf('};', cards.indexOf('const TRAY_OPEN = {')));
+  const attrs = [...table.matchAll(/'?(data-[a-z-]+)/g)].map((m) => m[1]);
+  assert.ok(attrs.length >= 8, attrs.join());
+  for (const a of new Set(attrs)) assert.ok(src.includes(`['[${a}]'`), `${a}: the page handles it`);
+  // A board from the tray (data-play → openFromTray) is held before him (view.opened) and added to the stage's cards
+  // whatever else stands there (a 降妖 card, the 秘境令): it is never left to the stage's own rule for light boards.
+  assert.match(src, /\['\[data-play\]', \(el\) => !el\.matches\(':disabled'\) && openFromTray\(el\.dataset\.play\)\]/);
+  assert.match(src, /if \(view\.opened && !cards\.some\(\(c\) => c\.card === 'board' && c\.id === view\.opened\.id\)\) cards = \[\.\.\.cards, \{ card: 'board', id: view\.opened\.id \}\];/);
+  // Every entry of the registry that offers 开局 names one of those openers — with a 降妖 card standing too.
+  const s = at('houshan');
+  const busy = look(s, content, ctx());
+  assert.ok((busy.stage ?? []).some((c) => c.card === 'duel'), 'a 降妖 card stands');
+  for (let h = 1; h < 24; h += 2) for (const e of trayOf(s, new Date(2026, 9, 20, h, 10)).filter((x) => x.act === 'open')) assert.ok(table.includes(`${e.opens}:`), `${e.id}: ${e.opens}`);
+  // An open round of 本王考考你 (a reload mid-round) reads 继续, not a new 开局.
+  const html = draw({ tasks: [], tray: [{ kind: 'her', id: 'kao', task: 'benwang-kao', title: '本王考考你', seg: 'open', act: 'open', opens: 'play', arg: 'benwang-kao', resume: true }] });
+  assert.match(html, />继续</);
 });
