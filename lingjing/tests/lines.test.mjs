@@ -323,9 +323,9 @@ test('English sentences keep their space when laid side by side (快\'s column, 
 });
 test('跳过 in 全文 turns the column to its last page (Hanli 2026-10-16: 「点跳过没有反应」)', () => {
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
-  assert.match(src, /function skipPassage\(\) \{\n(?:[^\n]*\n){1,3}  if \(pager\.on\) \{ while \(pager\.turn\(1\)\); return; \}/);
+  assert.match(src, /function skipPassage\(\) \{\n(?:[^\n]*\n){1,6}  if \(pager\.on\) \{ while \(pager\.turn\(1\)\); return; \}/);
   // …but never past a set piece playing under the beat (Hanli 2026-10-19: 「跳过不能跳过大场面」): its last frame first.
-  assert.match(src, /function skipPassage\(\) \{\n[^\n]*\n  if \(piecePlays\(\)\) \{ pieceToEnd\(\); return; \}/);
+  assert.match(src, /function skipPassage\(\) \{\n(?:[^\n]*\n){1,4}  if \(piecePlays\(\)\) \{ pieceToEnd\(\); pieceStood = lines\.key; lines\.finish\(\); return; \}/);
 });
 test('after Restart or Load Ling says nothing more: the fresh chat asks for the opening (Hanli 2026-10-16)', () => {
   const steer = fs.readFileSync(path.join(ROOT, 'guide/steer.md'), 'utf8');

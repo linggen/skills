@@ -184,7 +184,7 @@ test('跳过 skips words only: it stops at the piece\'s beat; 全文\'s column e
   }
   // The page (generic, tests/setpiece-yaowang.test.mjs holds its shape): 跳过 and a double tap bring the last frame.
   const page = read('scripts/lingjing.js');
-  assert.match(page, /function skipPassage\(\) \{\n[^\n]*\n  if \(piecePlays\(\)\) \{ pieceToEnd\(\); return; \}/);
+  assert.match(page, /function skipPassage\(\) \{\n(?:[^\n]*\n){1,4}  if \(piecePlays\(\)\) \{ pieceToEnd\(\); pieceStood = lines\.key; lines\.finish\(\); return; \}/);
   assert.match(page, /if \(now - gateTapAt < DOUBLE_TAP_MS\) \{ gateTapAt = 0; pieceToEnd\(\); \}/);
   assert.doesNotMatch(page, /huochai/, 'no piece named in code');
 });

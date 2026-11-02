@@ -187,7 +187,9 @@ test('跳过 skips words only: it stops at each piece\'s beat; 全文\'s column 
   const fn = page.slice(page.indexOf('function beatPiece('), page.indexOf('function beatPiece(') + 900);
   assert.match(fn, /if \(!beat\?\.piece \|\| beat\.recap\) return dropBeatPiece\(\);/);
   assert.doesNotMatch(fn, /yaowang|tengyun|00-yinyue/, 'no scene or piece named in code');
-  assert.match(page, /function skipPassage\(\) \{\n[^\n]*\n  if \(piecePlays\(\)\) \{ pieceToEnd\(\); return; \}/, '跳过 during a piece: its last frame');
+  assert.match(page, /function skipPassage\(\) \{\n(?:[^\n]*\n){1,4}  if \(piecePlays\(\)\) \{ pieceToEnd\(\); pieceStood = lines\.key; lines\.finish\(\); return; \}/, '跳过 during a piece: its last frame');
+  // …and its words whole at once, the page standing there till his next tap (Hanli 11-02: 「点「跳过」有时要 4–8 秒」).
+  assert.match(page, /if \(!tapped && pieceStood === key\) return;/, 'the stood beat waits for his tap');
 });
 
 test('reduced motion: the last frame, standing as long as the beat would play', () => {

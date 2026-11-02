@@ -86,7 +86,9 @@ test('the page asks queue.js: the games are held, every moment waits its turn, a
 
 test('a board won: its last line is read first, then the scene\'s way on that waited on it is taken; the tray lets it go', async () => {
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /async function onWin\(taskId\) \{[\s\S]{0,300}await pause\(stillMotion\(\) \? 1200 : WIN_LINE_MS\);/);
+  assert.match(page, /async function onWin\(taskId\) \{[\s\S]{0,300}await pause\(winLineMs\(grade\)\);/);
+  // A board left by its own 跳过 (grade `skipped`) has no last line: no pause (Hanli 11-02: 「点「跳过」有时要 4–8 秒」).
+  assert.match(page, /const winLineMs = \(grade\) => \(grade === 'skipped' \? 0 : stillMotion\(\) \? 1200 : WIN_LINE_MS\);/);
   // The grade is read off the won board before that pause: the board is not dealt again under it.
   assert.match(page, /const won = boards\.get\(taskId\), grade = won\?\.state\?\.grade \?\? null;\s*if \(won\) won\.winning = true;/);
   assert.match(fs.readFileSync(new URL('../scripts/board-deal.js', import.meta.url), 'utf8'), /&& !old\.winning &&/); // the deal rule (board-deal.js; its own test)

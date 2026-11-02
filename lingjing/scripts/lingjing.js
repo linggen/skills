@@ -1927,6 +1927,9 @@ const refusal = (r) => r?.say || words().refused?.[r?.refused] || words().notDon
 /* A board's last line is read before it closes (2026-10-01: 「手指一松…轰然倒下」
    never showed — the win took the board off the stage at once). */
 const WIN_LINE_MS = 2800;
+/* A board left by its own 跳过 (二十问 · 猜谜 · 对对子 · 接龙: won, `grade: 'skipped'`) has no last line to read: it
+   goes on at once (Hanli 11-02: 「点「跳过」有时要 4–8 秒」 — 讨饼债's 跳过 stood still 4.5–5 s, 2.8 s of it this pause). */
+const winLineMs = (grade) => (grade === 'skipped' ? 0 : stillMotion() ? 1200 : WIN_LINE_MS);
 /* The scene's way on that waited on this board (exit `needs.task`): the win
    is that deed, so it is taken — live, 射鹿 won still offered 往左偏半寸 /
    照直射, 洗髓 still offered 泡进去 / 爬出来. A board that ends with a
@@ -1951,7 +1954,7 @@ async function onWin(taskId) {
   // How it went, read off the board that was won — before the pause, while it is still that board.
   const won = boards.get(taskId), grade = won?.state?.grade ?? null;
   if (won) won.winning = true;
-  try { await pause(stillMotion() ? 1200 : WIN_LINE_MS); return await settleWin(taskId, won, grade); } finally { if (won) won.winning = false; }
+  try { await pause(winLineMs(grade)); return await settleWin(taskId, won, grade); } finally { if (won) won.winning = false; }
 }
 async function settleWin(taskId, won, grade) {
   // A board the scene stands on its stage is a story beat (the opening's 接雨, 射鹿 …), not a day's practice.
@@ -2736,6 +2739,8 @@ function storyDone(key, tapped = false) {
   clearTimeout(doneWait);
   const r = readingHere();
   if (!playing(r) || beatKey(r, lang()) !== key) return;
+  // 跳过 stood this beat whole on its set piece's last frame (skipPassage): it waits for his tap, never goes on by itself.
+  if (!tapped && pieceStood === key) return;
   const last = atLast(r, lang());
   if (last && $('dlg')?.querySelector('.story .ways')) { if (tapped) nudgeWays(); return; }
   // 快's column is his to read: it goes on only at his 「接着往下」 (or a key), never by itself —
@@ -2779,9 +2784,12 @@ function storyTap() {
    the paint fits the passage to it (matchPace, dialogue.js fitMode). */
 function setSpeed(v) { if (v === 'skip') return skipPassage(); keepSpeed(v); render(); }
 /* 跳过 — once (Hanli, 2026-10-16: 「点一次, 只能跳过一次」): this passage to its end and its choices; the next reads as he reads. */
+let pieceStood = null; // the beat (lines key) 跳过 stood whole on its set piece's last frame
 function skipPassage() {
   // Words only (Hanli, 2026-10-19: 「跳过不能跳过大场面」): during a set piece, its last frame — never past it.
-  if (piecePlays()) { pieceToEnd(); return; }
+  // Its words are words: they stand whole at once, over that frame, and the page waits there for his next tap or 跳过 (Hanli
+  // 11-02: 「点「跳过」有时要 4–8 秒」 — the words had gone on by themselves at 自动's pace, ~9–10 s to the next beat at 腾云 and 沉鼎山).
+  if (piecePlays()) { pieceToEnd(); pieceStood = lines.key; lines.finish(); return; }
   // 全文: the passage already stands whole as a column; 跳过 turns to its last page (its choices).
   if (pager.on) { while (pager.turn(1)); return; }
   const r = readingHere();
