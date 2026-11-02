@@ -1271,7 +1271,7 @@ function toastsHtml() {
   for (const k of ['spoils', 'trialTold', 'emerged', 'handin']) if (view[k] && view[k].place !== here) keep({ [k]: null });
   // 储物袋满了: what came while the pouch was full, at the door until he chooses — nothing else waits on it.
   return titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '')
-    + fullOfferHtml(look?.full_offer, { ...ctx(), gear: view.gear }, { swap: view.offerSwap, tab: view.pouchTab })
+    + (view.gearOpen ? '' : fullOfferHtml(look?.full_offer, { ...ctx(), gear: view.gear }, { swap: view.offerSwap, tab: view.pouchTab }))
     + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '')
     + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (spoilsShown() ? spoilsHtml(view.spoils, spoilsCtx()) : '')
     + (view.handin ? handinHtml(view.handin, ctx()) : '');
@@ -3253,7 +3253,7 @@ function drawPouch() {
   const fantongPane = view.pouchPane === 'fantong' ? kailuPaneHtml(lang(), { brief: view.fantong, bag: view.gear?.bag ?? [], pot: view.ftPot, lingshi: view.ftLingshi,
     phase: view.ftPhase, tab: view.pouchTab, words: words(), artBase: artBase() }) : null;
   const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongPane, pangluLast: view.pangluLast },
-    { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane });
+    { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane, offerSwap: view.offerSwap });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
   if (view.pouchPane === 'fantong') ftKailu.show(view.fantong, { lang: lang(), reducedMotion: stillMotion() });
   else ftKailu.stop();

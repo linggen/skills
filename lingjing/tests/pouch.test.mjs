@@ -332,7 +332,8 @@ test('储物袋满了: the card shows the new thing on the bag\'s tile, 丢一�
     assert.match(card, /class="ptile[^"]*"[^>]*>[\s\S]*?<span class="pname">[^<]+<\/span>[\s\S]*?×2/);
     assert.match(card, zh ? /data-offer-swap="qi-pill">丢一样换它</ : /data-offer-swap="qi-pill">Drop one for it</);
     assert.match(card, zh ? /data-offer-letgo="qi-pill">不要了</ : /data-offer-letgo="qi-pill">Let it go</);
-    assert.match(card, zh ? /还有 1 样等着/ : /1 more waiting/);
+    assert.equal((card.match(/class="fullrow"/g) ?? []).length, 2, 'the queue: a row each, one choice each');
+    assert.match(card, /data-offer-letgo="ginseng"/);
     assert.doesNotMatch(card, /data-offer-drop/, 'the grid opens on 丢一样换它');
     const pick = fullOfferHtml(l.full_offer, c, { swap: 'qi-pill' });
     assert.match(pick, /class="ptabs"[\s\S]*class="pgrid"/, 'the bag\'s own tabs and grid');
@@ -342,6 +343,10 @@ test('储物袋满了: the card shows the new thing on the bag\'s tile, 丢一�
     assert.doesNotMatch(card + pick, /undefined|\{[a-z]+\}|\[object/);
   }
   assert.equal(fullOfferHtml(undefined, { lang: 'zh', words: WORDS.zh }), '');
+  // In the panel too, over every pane (the 饭桶's outputs land while he is in it).
+  const { pouchHtml } = await import('../scripts/pouch.js');
+  const l = look(s, content, ctx()), gear = VERBS.gear(s, content, ctx()).result.gear;
+  for (const pane of [null, 'deck']) assert.match(pouchHtml({ look: l, gear, lang: 'zh', words: WORDS.zh }, { pane }), /<\/header><div class="card fulloffer"/);
   // Room once more: the card says 收下.
   const room = look(at({}, { full_offer: [{ id: 'qi-pill', n: 1 }] }), content, ctx());
   assert.match(fullOfferHtml(room.full_offer, { look: room, lang: 'zh', words: WORDS.zh }), /data-offer-take="qi-pill">收下</);

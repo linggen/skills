@@ -12,7 +12,7 @@ import { PANGLU_WORDS, pangluHtml } from './panglu.js';
 export const POUCH_WORDS = {
   zh: {
     title: '储物袋', close: '合上', used: '{used}/{cap} 格', over: '超出 {n} 格：新得的东西要你定夺。',
-    fullTitle: '储物袋满了', fullSwap: '丢一样换它', fullTake: '收下', fullLet: '不要了', fullPick: '点一样丢掉，换{name}', fullBack: '先不换', fullMore: '还有 {n} 样等着',
+    fullTitle: '储物袋满了', fullSwap: '丢一样换它', fullTake: '收下', fullLet: '不要了', fullPick: '点一样丢掉，换{name}', fullBack: '先不换',
     tabs: { all: '全部', pill: '丹药', arms: '法器', material: '材料', charm: '符', story: '剧情' },
     deck: '牌组', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
     take: '服用', wear: '佩戴', study: '参悟', carry: '换上 · 多 {n} 格', sell: '卖 {n}', toss: '丢',
@@ -22,7 +22,7 @@ export const POUCH_WORDS = {
   },
   en: {
     title: 'Storage Pouch', close: 'Close', used: '{used}/{cap} slots', over: '{n} over: new things wait on your choice.',
-    fullTitle: 'The pouch is full', fullSwap: 'Drop one for it', fullTake: 'Take it', fullLet: 'Let it go', fullPick: 'Tap a thing to drop for {name}', fullBack: 'Not now', fullMore: '{n} more waiting',
+    fullTitle: 'The pouch is full', fullSwap: 'Drop one for it', fullTake: 'Take it', fullLet: 'Let it go', fullPick: 'Tap a thing to drop for {name}', fullBack: 'Not now',
     tabs: { all: 'All', pill: 'Pills', arms: 'Arms', material: 'Materials', charm: 'Talismans', story: 'Story' },
     deck: 'Deck', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
     take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it · +{n} slots', sell: 'Sell {n}', toss: 'Drop',
@@ -69,8 +69,9 @@ const artOf = (i, ctx) => (i.art ? `<img src="${esc((ctx.artBase ?? '') + i.art)
 /// One tile of the bag. `o.attr` is the tap it carries (the panel's data-pouch-item; the 饭桶's, the swap's);
 /// `o.off` a short reason it cannot be had here (the rules' words) — dimmed, said on a chip, no tap.
 export function tileHtml(i, ctx, o = {}) {
-  const on = i.worn || carriedKind(i, o.g), attr = o.attr ?? 'data-pouch-item', off = o.off ?? null;
-  return `<button class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${off ? ' off' : ''}"${off ? ' aria-disabled="true"' : ` ${attr}="${esc(i.id)}"`} aria-pressed="${o.sel === i.id}">
+  // `off` '' : resting (a cooldown) — no tap, no chip.
+  const on = i.worn || carriedKind(i, o.g), attr = o.attr ?? 'data-pouch-item', off = o.off ?? null, dead = off != null;
+  return `<button class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${dead ? ' off' : ''}"${dead ? ' aria-disabled="true"' : ` ${attr}="${esc(i.id)}"`} aria-pressed="${o.sel === i.id}">
     ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${zhuanHtml(i.zhuan, ctx.lang)}${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${on && !off ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}${off ? `<span class="poff">${esc(off)}</span>` : ''}</button>`;
 }
 
@@ -91,19 +92,18 @@ export function bagGridHtml(items, ctx, o = {}) {
 /// stack for it) or 不要了; 收下 once there is room. A queue is one card, the first open, the rest counted.
 export function fullOfferHtml(offers, ctx, ui = {}) {
   if (!offers?.length) return '';
-  const pw = POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh, [o] = offers;
-  const it = { ...o, free: false, worn: false };
-  const acts = o.room ? `<button class="act primary" data-offer-take="${esc(o.id)}">${esc(pw.fullTake)}</button>`
-    : `<button class="act primary" data-offer-swap="${esc(o.id)}">${esc(pw.fullSwap)}</button>`;
-  const more = offers.length > 1 ? `<span class="small dim">${esc(say(pw.fullMore, { n: offers.length - 1 }))}</span>` : '';
-  const picking = ui.swap === o.id && ctx.gear?.bag;
-  const pick = picking ? (() => {
-    const { tabs, grid } = bagGridHtml(ctx.gear.bag, ctx, { tab: ui.tab, tile: (i) => tileHtml(i, ctx, { attr: 'data-offer-drop', off: i.free ? pw.free : i.worn ? ctx.words.worn : null, g: ctx.gear }) });
-    return `<div class="fullpick"><p class="small">${esc(say(pw.fullPick, { name: o.name }))}</p>${tabs}${grid}<button class="act quiet" data-offer-swap="">${esc(pw.fullBack)}</button></div>`;
-  })() : '';
-  return `<div class="card fulloffer" role="status" data-full-offer="${esc(o.id)}"><b class="lbl">${esc(pw.fullTitle)}</b>
-    <div class="fullrow"><div class="pgrid one">${tileHtml(it, ctx, { attr: 'data-offer-look' })}</div>
-    <div class="acts">${acts}<button class="act quiet" data-offer-letgo="${esc(o.id)}">${esc(pw.fullLet)}</button>${more}</div></div>${pick}</div>`;
+  const pw = POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh;
+  const row = (o) => {
+    const acts = o.room ? `<button class="act primary" data-offer-take="${esc(o.id)}">${esc(pw.fullTake)}</button>`
+      : `<button class="act primary" data-offer-swap="${esc(o.id)}">${esc(pw.fullSwap)}</button>`;
+    const pick = ui.swap === o.id && ctx.gear?.bag ? (() => {
+      const { tabs, grid } = bagGridHtml(ctx.gear.bag, ctx, { tab: ui.tab, tile: (i) => tileHtml(i, ctx, { attr: 'data-offer-drop', off: i.free ? pw.free : i.worn ? ctx.words.worn : null, g: ctx.gear }) });
+      return `<div class="fullpick"><p class="small">${esc(say(pw.fullPick, { name: o.name }))}</p>${tabs}${grid}<button class="act quiet" data-offer-swap="">${esc(pw.fullBack)}</button></div>`;
+    })() : '';
+    return `<div class="fullrow" data-full-offer="${esc(o.id)}"><div class="pgrid one">${tileHtml({ ...o, free: false, worn: false }, ctx, { attr: 'data-offer-look' })}</div>
+    <div class="acts">${acts}<button class="act quiet" data-offer-letgo="${esc(o.id)}">${esc(pw.fullLet)}</button></div></div>${pick}`;
+  };
+  return `<div class="card fulloffer" role="status"><b class="lbl">${esc(pw.fullTitle)}</b>${offers.map(row).join('')}</div>`;
 }
 
 /// 丹纹 — a pill's 转 as lines across it: one per turn, the ninth turn's all
@@ -164,7 +164,8 @@ export function pouchHtml(ctx, ui = {}) {
   // 人间功课 is the 事 book's (cards.js choreRow; Hanli 11-02: 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」).
   const pane = ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong'
     : ui.pane === 'panglu' && g.panglu ? 'panglu' : null;
-  const note = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
+  // 储物袋满了 stands in the panel too, over every pane: the 饭桶's outputs land while he is in here.
+  const note = (ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '') + fullOfferHtml(ctx.look?.full_offer, ctx, { swap: ui.offerSwap, tab: ui.tab });
   const used = p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : '';
   const seg = (id, label, extra = '') => `<button role="tab" class="pseg${pane === id ? ' on' : ''}" data-pouch-pane="${id ?? ''}" aria-selected="${pane === id}">${esc(label)}${extra}</button>`;
   const segs = [seg(null, pw.title, used), g.fantong ? seg('fantong', pw.fantong) : '',

@@ -679,7 +679,9 @@ body.fighting .footrow { display: none; }
 .ptile .poff { position: absolute; top: 4px; left: 5px; right: 5px; font-size: 10.5px; padding: 0 4px; border-radius: 4px; background: var(--raised); color: var(--dim); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* 储物袋满了 (pouch.js fullOfferHtml): the new thing on the bag's tile, its two choices; 丢一样换它 opens the bag's grid under it. */
 .card.fulloffer { display: flex; flex-direction: column; gap: 8px; }
-.fulloffer .fullrow { display: flex; align-items: center; gap: 12px; }
+.fulloffer .fullrow { display: flex; align-items: center; gap: 12px; padding-top: 6px; border-top: 1px dashed var(--line); }
+.fulloffer .fullrow:first-of-type { border-top: 0; padding-top: 0; }
+.lu.pouch > .card.fulloffer { margin: 8px 12px; }
 .fulloffer .pgrid.one { grid-template-columns: 96px; flex: none; }
 .fulloffer .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .fulloffer .fullpick .pgrid { max-height: 46vh; overflow-y: auto; }

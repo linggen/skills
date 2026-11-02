@@ -471,6 +471,13 @@ test('the 开炉 page: the 饭桶\'s places, 灵石 and 开炉, and the 储物�
   // While it chews the bag folds away.
   assert.match(kailuPaneHtml('zh', { brief, bag, pot, phase: 'chew', words: WORDS.zh }), /class="psec ftong kailu ftk busy"/);
   assert.doesNotMatch(html + full, /undefined|\{[a-z]+\}|\[object/);
+  // Through the cooldown the bag stands (only the chew and the reveal fold it), its taps resting, the wait said.
+  const cool = kailuPaneHtml('zh', { brief: { ...brief, ready: false, wait: '饭桶还撑着，四刻后再喂。' }, bag, pot: [], phase: 'full', words: WORDS.zh });
+  assert.doesNotMatch(cool, /ftk busy/);
+  assert.match(cool, /class="ftk-bag"/);
+  assert.match(cool, /class="small dim ftk-wait">饭桶还撑着/);
+  assert.doesNotMatch(cool, /data-ft-add=/, 'resting: no tap');
+  assert.match(cool, /data-ft-fire disabled/);
   // English words.
   const en = kailuPaneHtml('en', { brief: VERBS.fantong({ ...s, lang: 'en' }, content, ctx(), { action: 'look' }).result.fantong, bag, pot, words: WORDS.en });
   assert.match(en, /Fire it/);

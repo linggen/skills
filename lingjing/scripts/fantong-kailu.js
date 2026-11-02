@@ -50,7 +50,9 @@ export function kailuPaneHtml(lang = 'zh', o = {}) {
   const ctx = { lang: L, words: o.words ?? {}, artBase: o.artBase ?? '' };
   const frame = frameHtml({ id: KAILU_SHELL, title: NAME[L], how: HOW[L], body: '<div class="gshell-slot" data-ft-kailu></div>', timed: false, lang: L, close: toolHtml('close', BACK[L], 'data-pouch-pane=""') });
   const byId = new Map((o.bag ?? []).map((i) => [i.id, i]));
-  const filling = (o.phase ?? 'fill') === 'fill' && b?.ready !== false;
+  // The bag folds away only while the pot chews and reveals; through a cooldown (`full`) it stands, the taps resting.
+  const phase = o.phase ?? 'fill', busy = ['chew', 'wait', 'reveal', 'done'].includes(phase);
+  const filling = phase === 'fill' && b?.ready !== false;
   const places = Array.from({ length: max }, (_, k) => {
     const id = pot[k], it = id ? byId.get(id) ?? b?.inputs?.find((i) => i.id === id) : null;
     return it ? `<button class="ftk-place on" data-ft-slot="${k}" aria-label="${esc(it.name)}">${it.art ? `<img src="${esc(ctx.artBase + it.art)}" alt="">` : ''}<span>${esc(it.name)}</span></button>`
@@ -63,12 +65,12 @@ export function kailuPaneHtml(lang = 'zh', o = {}) {
   const left = potLeft(b, pot), full = pot.length >= max;
   const tile = (i) => {
     const back = b?.held_back?.[i.id];
-    const off = back ? back.say || w.none : left[i.id] == null ? w.none : !(left[i.id] > 0) ? w.none : full ? w.max : null;
+    const off = back ? back.say || w.none : left[i.id] == null ? w.none : !(left[i.id] > 0) ? w.none : full ? w.max : !filling ? '' : null;
     const shown = left[i.id] != null ? { ...i, n: left[i.id] } : i;
     return tileHtml(shown, ctx, { attr: 'data-ft-add', off, g: null }).replace('<button class="ptile', `<button draggable="${off ? 'false' : 'true'}" class="ptile`);
   };
   const { tabs, grid } = bagGridHtml(o.bag ?? [], ctx, { tab: o.tab, tile });
-  return `<section class="psec ftong kailu ftk${filling ? '' : ' busy'}">`
+  return `<section class="psec ftong kailu ftk${busy ? ' busy' : ''}">`
     + `<div class="ftk-pot" data-ft-drop>${frame}<div class="ftk-ctl"><div class="ftk-places">${places}</div>${stones}${wait}</div></div>`
     + `<div class="ftk-bag">${tabs}${grid}</div><div class="ftk-go">${fire}</div></section>`;
 }
