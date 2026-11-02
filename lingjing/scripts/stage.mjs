@@ -289,7 +289,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // modal on the day's first open, and waits unshaken as the tray's 问签 card (rules/aside.mjs); drawn, nothing of it stays.
   // So an empty stage is its own fact now, never read off the coins' card: 本王考考你 stood only where the hexagram
   // did, and with the coins gone from the stage it never stood at all (11-02, light-yields).
-  const empty = !shown.length && !(line || naming || look.scene?.panel || look.offers?.length || look.place?.meet);
+  // Nor is a stage empty while the 主页 has a next act to show (Look's `home.next`, rules/home.mjs): the 下一步 card wins
+  // the slot and the light board waits in the tray (11-02, home.test: 「nothing left here today」 stood 本王考考你 over it).
+  const empty = !shown.length && !(line || naming || look.scene?.panel || look.offers?.length || look.place?.meet || look.home?.next);
   const cards = shown.length ? [...shown] : [];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
   // 本王考考你 (rules/kao.mjs) is light: offered only on an empty stage, never over a scene's business. A round left open (the page reloaded
