@@ -279,9 +279,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // 本王考考你 (rules/kao.mjs) is light: offered only on an empty stage, never over a scene's business. A round left open (the page reloaded
   // mid-round) never stands up by itself: it waits in the tray, 「继续」, for his tap (Hanli 10-27, as 兽潮 waits).
   // (The 游戏厅's 试玩 — `arcade:<game>`, a test save's — is a light board standing open by design: it stands.)
+  const lightIds = new Set();
   for (const b of (look.tasks ?? []).filter(t => t.light && t.kind === 'board' && t.status !== 'done' && !t.won)) {
     const arcade = String(b.id).startsWith('arcade:');
-    if (((has('hexagram') && !b.open) || (arcade && b.open)) && !has('board', b.id)) cards.push({ card: 'board', id: b.id });
+    if (((has('hexagram') && !b.open) || (arcade && b.open)) && !has('board', b.id)) { cards.push({ card: 'board', id: b.id }); if (!arcade) lightIds.add(b.id); }
   }
 
   if (!line) {
@@ -313,6 +314,13 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     if (haunt && !haunt.tamed && !(haunt.catch && haunt.beaten) && !has('duel', haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
     // 先降后收: beaten, it may be won over — on its own card (cards.js creature).
     if (winnable(haunt) && !has('creature', haunt.creature.id)) cards.push({ card: 'creature', id: haunt.creature.id });
+  }
+  // …and it yields to any other game standing here: one place, one thing, and a round he started stays in reach (Hanli;
+  // 11-02: 本王考考你 took the game slot ahead of 对对子 and hid its open round). The 对对子 or 论道 card, a board or a
+  // fight wins the slot; the light board waits in the tray as it does on a busy stage. Chosen over standing side by side.
+  const light = c => c.card === 'board' && lightIds.has(c.id);
+  if (lightIds.size && cards.some(c => ['duizi', 'lundao', 'duel'].includes(c.card) || (c.card === 'board' && !light(c) && !String(c.id).startsWith('arcade:')))) {
+    for (let k = cards.length - 1; k >= 0; k -= 1) if (light(cards[k])) cards.splice(k, 1);
   }
   // The people of the scene stand first: whoever is speaking is seen.
   const people = look.scene?.people?.length && !line ? [{ card: 'people' }] : [];
