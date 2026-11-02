@@ -84,7 +84,10 @@ export function createQianPage({ write, refresh, show, keep, view, askHer, tellH
   async function reading(d) {
     if (!d?.poem || !herHere()) return;
     const zh = lang() !== 'en', how = await herRules(), facts = qianFacts(d, zh);
-    const text = `${facts}\n${zh ? '解签的规矩' : 'How to read it'}：${how}`;
+    const layers = zh
+      ? `替他解这支签：一段话，两层——先一句游戏里的（照着说：今日修为 ×${d.speed}${d.yi ? `、宜${d.yi.name}` : ''}）；再一句生活里的（拿他的生肖对今天的黄历：冲不冲、宜什么忌什么，再落到他问的事上）。像平时逗他那样俏皮，总共不过八十字。`
+      : `Read this stick for him in one short paragraph, two layers: first the game (say it as given: cultivation ×${d.speed} today${d.yi ? `, good for ${d.yi.name}` : ''}); then life (his animal against today's almanac — a clash or not, what is good or to avoid — landing on what he asked). Playful, as you tease him; about 40 words.`;
+    const text = `${facts}\n${layers}\n${zh ? '解签的规矩' : 'How to read it'}：${how}`;
     const mood = { great: 'happy', even: 'relaxed', ill: 'sad' }[d.grade.tone] ?? 'neutral';
     askHer('reading', text, text, mood);
   }

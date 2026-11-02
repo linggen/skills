@@ -1457,7 +1457,8 @@ body.fighting .atmos { display: none; }
 .qianwrap { position: relative; display: inline-block; }
 button.omenchip.qianchip { cursor: pointer; font: inherit; font-size: 11px; background: transparent; }
 .omenchip.qianchip.uncast { color: var(--ling); border-style: dashed; }
-.bookpop.qianpop { width: min(520px, 92vw); padding: 0; }
+/* fixed: the top bar clips what overflows it (overflow: hidden) */
+.bookpop.qianpop { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 60; width: min(520px, 92vw); max-height: calc(100vh - 80px); padding: 0; }
 .bookpop.qianpop .card { margin: 0; border: 0; }
 .card.qian .qbody { display: flex; gap: 14px; align-items: flex-start; }
 .card.qian .qside { flex: 1; min-width: 0; display: grid; gap: 8px; }
@@ -1467,10 +1468,11 @@ button.omenchip.qianchip { cursor: pointer; font: inherit; font-size: 11px; back
 .qiantong.tube-jade .tube { background: linear-gradient(90deg, #2c6b4f, #6fb393 45%, #2c6b4f); }
 .qiantong.tube-cinnabar .tube { background: linear-gradient(90deg, #7e1f16, #c8432f 45%, #7e1f16); }
 .qiantong.tube-gold .tube { background: linear-gradient(90deg, #8a6a1c, #e9c45a 45%, #8a6a1c); box-shadow: inset 0 -6px 0 rgba(0,0,0,.18), 0 0 12px rgba(233,196,90,.5); }
-.qiantong .sticks { position: absolute; left: 14px; right: 14px; bottom: 70px; height: 44px; }
-.qiantong .sticks i { position: absolute; bottom: 0; left: calc(var(--i) * 5px); width: 4px; height: calc(34px + (var(--i) * 7 % 11) * 1px);
-  background: #d9b77a; border-radius: 2px 2px 0 0; transform-origin: bottom center; transform: rotate(calc((var(--i) - 4) * 3deg)); }
-.qiantong .sticks i:nth-child(odd) { background: #c9a466; }
+.qiantong .sticks { position: absolute; left: 16px; right: 14px; bottom: 76px; height: 44px; z-index: 0; }
+.qiantong .tube { z-index: 1; }
+.qiantong .sticks i { position: absolute; bottom: 0; left: calc(var(--i) * 5px); width: 4px; height: 34px;
+  background: #b98d4e; border: 1px solid #7d5a2c; border-bottom: 0; border-radius: 2px 2px 0 0; transform-origin: bottom center; transform: rotate(calc((var(--i) - 4) * 3deg)); }
+.qiantong .sticks i:nth-child(odd) { background: #a57a3e; }
 .qiantong .lbl { position: absolute; left: 0; right: 0; bottom: 0; font-size: 12px; color: var(--ling); text-align: center; letter-spacing: .3em; }
 .qiantong:hover .tube { filter: brightness(1.06); }
 .qiantong.shaking { animation: qshake .16s ease-in-out infinite alternate; }
@@ -1502,3 +1504,4 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 .qcell b { font-size: 11px; font-weight: 500; } .qcell span, .qcell em { display: block; font-style: normal; font-size: 9px; }
 .qcell.got { color: var(--text); background: var(--raised); } .qcell.got.great { border-color: var(--ling); } .qcell.got.ill { border-color: var(--seal); }
 @media (max-width: 520px) { .card.qian .qbody { flex-direction: column; align-items: center; } .qgrid { grid-template-columns: repeat(5, 1fr); } }
+.qiantong .sticks i:nth-child(3n) { height: 40px; } .qiantong .sticks i:nth-child(3n+1) { height: 30px; }
