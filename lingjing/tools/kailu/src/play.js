@@ -7,6 +7,9 @@
 //   开奖  「咔哒」, the lid pops, the thing spins out in its grade's glow — grey, blue, purple, gold (with a shake).
 //   收下  the result goes to the shell; the page carries on.
 //
+// On a save's page (`data.outside`, the 物品 panel's 饭桶 · 开炉 — Hanli 11-02: the bag and the 饭桶 on one page) the
+// tray, the three places, the 灵石 and 开炉 are the page's HTML, the same bag as the 储物袋's: the page hands the pot in
+// (`setPot(ids, lingshi)`), fires it (`fire()`), and hears each change of beat (`data.onPhase`) to fold the bag away.
 // Nothing here knows the odds: `data.roll(ids, lingshi, press)` is the rules' (the page's `fantong feed`, or the
 // 游戏厅's sample). The press is the only thing this scene decides, and it is only an input to the roll.
 import * as Phaser from 'phaser';
@@ -57,6 +60,7 @@ export class KailuScene extends Phaser.Scene {
     this.w = WORDS[this.lang];
     this.brief = cfg.data.brief;
     this.calm = Boolean(cfg.reducedMotion);
+    this.outside = Boolean(cfg.data.outside);
   }
 
   preload() {
@@ -94,6 +98,7 @@ export class KailuScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    if (this.phase !== this.toldPhase) { this.toldPhase = this.phase; this.cfg.data.onPhase?.(this.phase); }
     if (this.fpsText && time - this.fpsAt > 500) { this.fpsText.setText(`FPS:${Math.round(this.game.loop.actualFps)}`); this.fpsAt = time; }
   }
 
@@ -202,6 +207,7 @@ export class KailuScene extends Phaser.Scene {
       this.status.setText(this.brief.wait ?? '');
       if (!this.calm) this.zzz();
     } else this.status.setText(this.pot.length ? this.leanLine() : inputs.length ? this.w.empty : this.w.none);
+    if (this.outside) { this.leanShow(); return; } // the places, the 灵石, the tray and 开炉 are the page's
     // The pot's three places.
     for (let k = 0; k < (this.brief.max_in ?? 3); k++) {
       const x = W / 2 + (k - 1) * 130, id = this.pot[k];
@@ -294,6 +300,24 @@ export class KailuScene extends Phaser.Scene {
     this.time.delayedCall(220, () => this.puffs.explode(6, MOUTH.x, MOUTH.y));
     this.drawFill();
   }
+  /** The page's pot (outside): what it holds now and its 灵石; a thing new to it flies up into the mouth. */
+  setPot(ids, lingshi = 0) {
+    if (this.phase !== 'fill') return;
+    const was = [...this.pot], fresh = [...ids];
+    for (const id of was) { const k = fresh.indexOf(id); if (k >= 0) fresh.splice(k, 1); }
+    this.pot = [...ids].slice(0, this.brief.max_in ?? 3);
+    this.lingshi = Math.max(0, Number(lingshi) || 0);
+    fresh.forEach((id, k) => {
+      const it = this.add.image(W / 2, H - 60, this.iconKey(id)).setDepth(D.drag);
+      it.setScale(60 / Math.max(it.width, it.height));
+      this.tweens.add({ targets: it, x: MOUTH.x, y: MOUTH.y + 20, scale: 0.1, delay: k * 120, duration: 320, ease: 'Quad.in', onComplete: () => it.destroy() });
+      this.time.delayedCall(200 + k * 120, () => this.puffs.explode(6, MOUTH.x, MOUTH.y));
+    });
+    if (fresh.length) this.tweens.add({ targets: this.potOpen, scaleY: POT.s * 0.94, scaleX: POT.s * 1.05, duration: 90, yoyo: true, delay: 200 });
+    this.drawFill();
+  }
+  /** 开炉 from the page (outside). */
+  fire() { this.chew(); }
   takeOut(k) {
     if (this.phase !== 'fill') return;
     const [id] = this.pot.splice(k, 1);

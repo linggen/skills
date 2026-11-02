@@ -726,7 +726,7 @@ function gearBrief(content, state, now = new Date()) {
     ...(canPick(content, state) ? { can_pick: true } : {}),
     ...(Array.isArray(state.deck) && canPick(content, state) ? { picking: true } : {}),
     bag,
-    // 储物袋: used / cap and what waits at the 洞府 (pouch.mjs); a 卖 is drawn only at a 坊市.
+    // 储物袋: used / cap and what waits at the door (pouch.mjs); a 卖 is drawn only at a 坊市.
     pouch: pouchBrief(content, state),
     ...(shop ? { market: true } : {}),
     // 牌 — every card he holds, cheapest first, and which ten a fight deals

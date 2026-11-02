@@ -68,6 +68,7 @@ export { yaoshou, yaoshouBatch, yaoshouBrief, yaoshouWait, YAOSHOU } from './rul
 export { panglu, pangluBrief, pangluOpen } from './rules/panglu.mjs';
 export { eventDone, eventShare, eventUp, eventWait } from './rules/events.mjs';
 import { fitPresence } from './rules/companion.mjs';
+import { fitHeld } from './rules/pouch.mjs';
 import { pageHerGame } from './rules/hergame.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';
 export { heardOf, openPromises, remember, settlePromise, writeLedger } from './rules/ledger.mjs';
@@ -225,7 +226,8 @@ function runLocked(verb, args, stateFile, reader) {
   // only when they no longer hold — read as the stand is: written, never logged.
   // …and a full layer whose door has opened since steps up (rules/cap.mjs settleHeld).
   // …and a wall's tag of an earlier day gone with its day (rules/rotation.mjs lapseWall).
-  const fitted = raw && raw.world === worldId ? settleHeld(content, settleStages(content, fitPresence(content, lapseWall(closeStaleFight(migrate(raw, content), now), now), now), now)) : raw;
+  // …and what waited at the 洞府 (待取, retired 11-02) into the pouch, or to the door's 「储物袋满了」 (rules/pouch.mjs fitHeld).
+  const fitted = raw && raw.world === worldId ? fitHeld(content, settleHeld(content, settleStages(content, fitPresence(content, lapseWall(closeStaleFight(migrate(raw, content), now), now), now), now))) : raw;
   const saved = fitted && raw?.world === worldId ? strongFit(content, standFit(content, fitted, now), now) : fitted;
   // Only the stand moved (a read): written, never logged — Undo takes back moves, not a beast chosen.
   const standOnly = Boolean(raw) && fitted === raw && saved !== raw;

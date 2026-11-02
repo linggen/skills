@@ -18,7 +18,7 @@ import { dayKey, periodKey, pick } from '../state.mjs';
 import { clone, pay, refuse } from './core.mjs';
 import { taskOf } from './errands.mjs';
 import { sideLine } from './hui.mjs';
-import { stow, storedLine } from './pouch.mjs';
+import { stow, fullLine } from './pouch.mjs';
 import { owesTell } from './tell.mjs';
 import { skippedHere } from './aside.mjs';
 import { sceneOf } from './world.mjs';
@@ -64,7 +64,7 @@ export function skipBoard(state, content, ctx, id) {
   const from = again ? held.from ?? {} : { scene: scene?.id ?? null, line: lineAt(content, scene) };
   s.skipped = [...(s.skipped ?? []).filter(e => e.task !== id), { task: id, scene: from.scene ?? null, line: from.line ?? null, day }];
   // A thing the story needs from the board (`gives`) is handed over all the same; the reward is not.
-  const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
+  const full = t.gives?.bag ? fullLine(s, [stow(content, s, t.gives.bag, 1, 'task')]) : null;
   return { state: s, result: { ok: true, skipped: id, paid: null, gives: t.gives ?? null, ...(full ? { pouch_full: full } : {}) } };
 }
 

@@ -36,8 +36,8 @@ import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
 import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
 import { slotNext } from './stuck.js';
-import { pouchHtml } from './pouch.js';
-import { fantongKailu, kailuPaneHtml } from './fantong-kailu.js';
+import { fullOfferHtml, pouchHtml } from './pouch.js';
+import { fantongKailu, kailuPaneHtml, potLeft } from './fantong-kailu.js';
 import { spentBoard } from './board-deal.js';
 import { esc } from './esc.js';
 import { forInput } from './games/kit/device.js';
@@ -85,7 +85,9 @@ import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, gameAlone, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
 // 喂饭桶 · 开炉 (fantong-kailu.js): the game is made once here, so every draw may lay it into its host.
-const ftKailu = fantongKailu({ feed: (ids, lingshi, press) => feedFantong(ids, lingshi, press), onFed: (r) => fedFantong(r) });
+const ftKailu = fantongKailu({ feed: (ids, lingshi, press) => feedFantong(ids, lingshi, press), onFed: (r) => fedFantong(r),
+  // The pot's beat: while it chews and reveals, the bag folds away (fantong-kailu.js `busy`); a fresh pot empties the places.
+  onPhase: (p) => { if (view.ftPhase !== p) show({ ftPhase: p }); }, onStart: () => keep({ ftPot: [], ftLingshi: 0 }) });
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -357,8 +359,12 @@ const view = {
   pouchTab: 'all', //    the panel's tab (pouch.js TABS)
   pouchSel: null, //     the thing tapped, in the detail pane
   pouchToss: null, //    the thing asking 丢? on the pane, until answered
-  pouchPane: null, //    'held' (洞府 · 待取), 'deck' (牌组) or 'fantong' (饭桶) in the grid's place
+  pouchPane: null, //    'deck' (牌组), 'fantong' (饭桶) or 'panglu' (旁炉) in the grid's place
+  offerSwap: null, //    储物袋满了: the offer whose 丢一样换它 grid is open (pouch.js fullOfferHtml)
   fantong: null, //      the rules' 饭桶 brief (rules/fantong.mjs), read when its board opens
+  ftPot: [], //         the 饭桶's three places, the page's own until 开炉 (fantong-kailu.js)
+  ftLingshi: 0, //      …and its 灵石
+  ftPhase: 'fill', //   the pot's beat (play.js): fill · chew · wait · reveal · done · full
   pangluLast: null, //   the 旁炉's last batch here (rules/panglu.mjs fire): its outcome and words, shown in its pane
   handin: null, //       an errand handed in: { place, title, seen, paid }, until put away or walked on
   spoils: null, //       what a won fight left: { place, cards, items }, until put away or walked on
@@ -1263,7 +1269,9 @@ function toastsHtml() {
   // Walked on, the spoils are put away by themselves.
   const here = look?.place?.id ?? null;
   for (const k of ['spoils', 'trialTold', 'emerged', 'handin']) if (view[k] && view[k].place !== here) keep({ [k]: null });
+  // 储物袋满了: what came while the pouch was full, at the door until he chooses — nothing else waits on it.
   return titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '')
+    + fullOfferHtml(look?.full_offer, { ...ctx(), gear: view.gear }, { swap: view.offerSwap, tab: view.pouchTab })
     + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '')
     + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (spoilsShown() ? spoilsHtml(view.spoils, spoilsCtx()) : '')
     + (view.handin ? handinHtml(view.handin, ctx()) : '');
@@ -2051,9 +2059,9 @@ async function payWin(id) {
   return r;
 }
 
-const boardPaid = (r) => Boolean(r.paid?.progress || r.paid?.wealth || (r.paid?.item && !r.paid.stored));
+const boardPaid = (r) => Boolean(r.paid?.progress || r.paid?.wealth || (r.paid?.item && !r.paid.offered));
 function boardItems(paid) {
-  if (!paid?.item || paid.stored) return [];
+  if (!paid?.item || paid.offered) return [];
   const it = authored?.codexFiles?.items?.items?.find((i) => i.id === paid.item);
   const name = it?.name?.[lang()] ?? it?.name?.zh ?? it?.name;
   return typeof name === 'string' ? [{ id: paid.item, name, n: 1 }] : [];
@@ -3208,13 +3216,28 @@ async function rereadGear() {
   if (view.gearOpen && g?.gear) keep({ gear: g.gear });
 }
 
-/* 待取 taken in, or a slot thrown away — the panel's own verb (rules/pouch.mjs). */
+/* A slot thrown away — the panel's own verb (rules/pouch.mjs). */
 async function bagTap(action, id) {
   const r = await write('bag', { action, id }).catch(failed);
   await openGear();
   await rereadGear();
-  keep({ gearNote: r.ok ? null : refusal(r), pouchToss: null, ...(r.ok && action === 'toss' ? { pouchSel: null } : {}),
-    ...(r.ok && action === 'claim' && !r.pouch?.held?.length ? { pouchPane: null } : {}) });
+  keep({ gearNote: r.ok ? null : refusal(r), pouchToss: null, ...(r.ok && action === 'toss' ? { pouchSel: null } : {}) });
+  await refresh();
+}
+
+/* 储物袋满了 at the door (rules/pouch.mjs `full_offer`): 丢一样换它 opens the bag's grid on the card (the gear read
+   for its tiles), a tile tapped drops that stack for the new thing; 收下 once there is room; 不要了 lets it go.
+   The page's own verb, no model turn; the card and the panel redraw from the rules. */
+async function offerSwap(id) {
+  if (!id) return show({ offerSwap: null });
+  show({ offerSwap: id });
+  const g = await verb('gear').catch(() => null);
+  if (g?.gear) show({ gear: g.gear });
+}
+async function offerTap(action, args) {
+  const r = await write('bag', { action, ...args }).catch(failed);
+  keep({ offerSwap: null, doNote: r.ok ? null : refusal(r) });
+  await rereadGear();
   await refresh();
 }
 
@@ -3227,12 +3250,42 @@ function drawPouch() {
   if (open) document.body.classList.add('reading');
   el.hidden = !open;
   if (!open) { drawnPouch = null; ftKailu.stop(); return; }
-  const fantongPane = view.pouchPane === 'fantong' ? kailuPaneHtml(lang()) : null;
+  const fantongPane = view.pouchPane === 'fantong' ? kailuPaneHtml(lang(), { brief: view.fantong, bag: view.gear?.bag ?? [], pot: view.ftPot, lingshi: view.ftLingshi,
+    phase: view.ftPhase, tab: view.pouchTab, words: words(), artBase: artBase() }) : null;
   const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongPane, pangluLast: view.pangluLast },
     { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
   if (view.pouchPane === 'fantong') ftKailu.show(view.fantong, { lang: lang(), reducedMotion: stillMotion() });
   else ftKailu.stop();
+}
+
+/* 开炉's places, from the bag on the same page: a tile in (the first empty place, as many as the bag spares), a place
+   out, the 灵石 up or down, 开炉 — the page's own pot, handed to the live game (fantong-kailu.js); no write until 开炉. */
+function ftAdd(id) {
+  const b = view.fantong, pot = view.ftPot;
+  if (!b || b.ready === false || view.ftPhase !== 'fill' || pot.length >= (b.max_in ?? 3) || !(potLeft(b, pot)[id] > 0)) return;
+  ftSet([...pot, id], view.ftLingshi);
+}
+function ftSet(pot, lingshi) {
+  show({ ftPot: pot, ftLingshi: lingshi });
+  ftKailu.setPot(pot, lingshi);
+}
+/* On the Mac a tile may also be dragged onto the 饭桶 (its side of the page): the same ftAdd as a tap. */
+document.addEventListener('dragstart', (e) => {
+  const el = e.target?.closest?.('[data-ft-add]');
+  if (el && e.dataTransfer) { e.dataTransfer.setData('text/plain', el.dataset.ftAdd); e.dataTransfer.effectAllowed = 'copy'; }
+});
+document.addEventListener('dragover', (e) => { if (e.target?.closest?.('[data-ft-drop]')) e.preventDefault(); });
+document.addEventListener('drop', (e) => {
+  if (!e.target?.closest?.('[data-ft-drop]')) return;
+  e.preventDefault();
+  const id = e.dataTransfer?.getData('text/plain');
+  if (id) ftAdd(id);
+});
+function ftStones(d) {
+  const ls = view.fantong?.lingshi;
+  if (!ls || view.ftPhase !== 'fill') return;
+  ftSet(view.ftPot, Math.max(0, Math.min(ls.max ?? 0, ls.have ?? 0, view.ftLingshi + d)));
 }
 
 /* 喂饭桶 · 开炉 (rules/fantong.mjs): the brief, read when the pane opens and again when the bucket may eat; a feed is
@@ -3650,9 +3703,11 @@ const CLICKS = [
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
   ['[data-deck-auto]', busy('deck:auto', () => deckTap({ action: 'auto' }))],
   ['[data-pouch-close]', () => show({ gearOpen: false, pouchToss: null })],
-  ['[data-pouch-tab]', (el) => show({ pouchTab: el.dataset.pouchTab, pouchToss: null, pouchPane: null })],
+  // A refusal is said where he tapped and goes when he moves on: kept, it stood over every pane (「囊中没有」 over the 饭桶).
+  // The bag's tabs are one component: on the 饭桶's page they narrow its bag and keep the page (fantong-kailu.js).
+  ['[data-pouch-tab]', (el) => show({ pouchTab: el.dataset.pouchTab, pouchToss: null, pouchPane: view.pouchPane === 'fantong' ? 'fantong' : null, gearNote: null })],
   ['[data-pouch-pane]', (el) => {
-    show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null });
+    show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null, gearNote: null });
     if (el.dataset.pouchPane === 'fantong') run('fantong:look', loadFantong);
   }],
   ['[data-panglu-fire]', (el) => { if (!el.matches(':disabled')) run(`panglu:fire:${el.dataset.pangluFire}`, () => firePanglu(el.dataset.pangluFire)); }],
@@ -3661,7 +3716,14 @@ const CLICKS = [
   ['[data-toss]', (el) => show({ pouchToss: el.dataset.toss })],
   ['[data-toss-no]', () => show({ pouchToss: null })],
   ['[data-toss-yes]', (el) => run(`bag:toss:${el.dataset.tossYes}`, () => bagTap('toss', el.dataset.tossYes))],
-  ['[data-claim]', (el) => run(`bag:claim:${el.dataset.claim}`, () => bagTap('claim', el.dataset.claim))],
+  ['[data-ft-add]', (el) => ftAdd(el.dataset.ftAdd)],
+  ['[data-ft-slot]', (el) => { if (view.ftPhase === 'fill') ftSet(view.ftPot.filter((_, k) => k !== Number(el.dataset.ftSlot)), view.ftLingshi); }],
+  ['[data-ft-ls]', (el) => ftStones(Number(el.dataset.ftLs))],
+  ['[data-ft-fire]', () => { if (view.ftPot.length && view.ftPhase === 'fill') ftKailu.fire(); }],
+  ['[data-offer-swap]', (el) => run(`offer:swap:${el.dataset.offerSwap}`, () => offerSwap(el.dataset.offerSwap || null))],
+  ['[data-offer-drop]', (el) => run(`offer:drop:${el.dataset.offerDrop}`, () => offerTap('swap', { id: el.dataset.offerDrop, take: view.offerSwap }))],
+  ['[data-offer-take]', (el) => run(`offer:take:${el.dataset.offerTake}`, () => offerTap('take', { id: el.dataset.offerTake }))],
+  ['[data-offer-letgo]', (el) => run(`offer:letgo:${el.dataset.offerLetgo}`, () => offerTap('letgo', { id: el.dataset.offerLetgo }))],
   ['[data-wear],[data-use],[data-remove]', (el) => {
     const id = el.dataset.wear ?? el.dataset.use ?? el.dataset.remove, action = el.dataset.remove ? 'remove' : 'use';
     run(`item:${action}:${id}`, () => useItem(id, action));
@@ -4186,8 +4248,8 @@ async function settleBout(b, out = {}) {
   else if (!b.say?.st.told.has(r.outcome)) toldOutcome(brief, r.outcome);
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.
-  // What waits at the 洞府 (储物袋 full) is not 所得 in hand: the rules' line says where it went.
-  const got = r.outcome === 'won' ? (r.dropped ?? []).filter((d) => !d.stored) : [];
+  // What waits at the door (储物袋满了) is not 所得 in hand: the rules' line says so, the card asks.
+  const got = r.outcome === 'won' ? (r.dropped ?? []).filter((d) => !d.offered) : [];
   if (r.pouch_full) keep({ doNote: r.pouch_full });
   const paid = r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
   // A 符 played is spent from the bag, won or lost: the card says so (page fact).

@@ -12,7 +12,7 @@ import { dayKey, itemName, pick } from '../state.mjs';
 import { clone, refuse, spendStamina } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { hash, stream, weighted } from './fantong-roll.mjs';
-import { pouchBrief, stow, storedLine } from './pouch.mjs';
+import { pouchBrief, stow, fullLine } from './pouch.mjs';
 import { placeOf } from './world.mjs';
 
 export const OUTCOMES = ['zha', 'hu', 'yi', 'er'];
@@ -93,16 +93,16 @@ function fire(state, content, ctx, args, t, w) {
   s.bag[id] -= 1;
   if (s.bag[id] <= 0) delete s.bag[id];
   const out = t.outs?.[outcome] ?? null;
-  const got = out?.item && itemOf(content, out.item) ? stow(content, s, out.item, out.n ?? 1) : null;
+  const got = out?.item && itemOf(content, out.item) ? stow(content, s, out.item, out.n ?? 1, 'panglu') : null;
   const made = { ...(state.panglu?.made ?? {}), [outcome]: (state.panglu?.made?.[outcome] ?? 0) + 1 };
   s.panglu = { n: fired + 1, day: today, today: todayOf(state, now) + 1, made };
   const taught = fired + 1 === t.lesson;
   const name = got ? itemName(itemOf(content, out.item), s, lang) ?? out.item : null;
-  const say = [fill(w.results?.[outcome], { name }), taught ? w.lesson : null, storedLine(s, got ? [got] : [])].filter(Boolean).join(' ');
+  const say = [fill(w.results?.[outcome], { name }), taught ? w.lesson : null, fullLine(s, got ? [got] : [])].filter(Boolean).join(' ');
   const item = got ? itemOf(content, out.item) : null;
   return { state: s, result: {
     ok: true, outcome, fed: { id, name: itemName(itemOf(content, id), s, lang) ?? id },
-    ...(got ? { out: { id: out.item, name, n: out.n ?? 1, hint: pick(item?.hint, lang), art: item?.art ?? null, ...(item?.zhuan ? { zhuan: item.zhuan } : {}), ...(got.stored ? { stored: true } : {}), ...(got.new ? { new: true } : {}) } } : {}),
+    ...(got ? { out: { id: out.item, name, n: out.n ?? 1, hint: pick(item?.hint, lang), art: item?.art ?? null, ...(item?.zhuan ? { zhuan: item.zhuan } : {}), ...(got.offered ? { offered: true } : {}), ...(got.new ? { new: true } : {}) } } : {}),
     ...(taught ? { lesson: w.lesson } : {}), say,
     panglu: pangluBrief(content, s, now), pouch: pouchBrief(content, s),
   } };

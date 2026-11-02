@@ -22,7 +22,7 @@ import { clone, pay, refuse } from './core.mjs';
 import { battle, POUCH_MAX, REALMS } from '../battle.js';
 import { cardCatalog, deckFor, fightPill, fightSetup, winCard } from './cards.mjs';
 import { hashOf } from './travel.mjs';
-import { stow, storedLine } from './pouch.mjs';
+import { stow, fullLine } from './pouch.mjs';
 import { creatureOf, foeOf, meetBeast, passed, placeName, placeOf } from './world.mjs';
 import { boardPlay } from './playpay.mjs';
 import { duelBrief } from './look.mjs';
@@ -167,7 +167,7 @@ export function keyDrop(content, s, ctx, source) {
   // drew nothing is the save it was.
   if (u(`${ctx.now.toISOString()}|${seedOf(s)}|${source}|${n}|key`) >= chance) return null;
   s.mijing = { ...s.mijing, drops: { day, n: n + 1 } };
-  return stow(content, s, key, 1);
+  return stow(content, s, key, 1, 'mijing');
 }
 
 /* ── The run's numbers ── */
@@ -410,17 +410,17 @@ export function endRun(s, content, ctx, how, extra = {}) {
   const progress = Math.round((boardPlay(content, s, r.minutes) ?? 0) * share);
   const shut = lockedOf(content, s);
   const paid = pay(content, s, ctx, { table: 'play', progress, wealth: shut.includes('wealth') ? 0 : wealth });
-  const stowed = items.map(i => stow(content, s, i.id, i.n));
+  const stowed = items.map(i => stow(content, s, i.id, i.n, 'mijing'));
   // A card on a clear: the 大妖's own gift, else the first a beast of this 重 gives that he does not yet hold (cards.json
   // `from: {kind: 'beast'}` — never a card at random; none when he holds them all).
   const card = how === 'clear' ? [t.boss, ...(t.xiong ?? []), ...(t.beasts ?? [])].map(b => creatureOf(content, b.creature)).filter(Boolean)
     .reduce((got, c) => got ?? winCard(content, s, c, ctx.now), null) : null;
-  const named = stowed.map((g, i) => ({ id: items[i].id, name: g.name, n: items[i].n, ...(g.stored ? { stored: true } : {}) }));
+  const named = stowed.map((g, i) => ({ id: items[i].id, name: g.name, n: items[i].n, ...(g.offered ? { offered: true } : {}) }));
   const last = { tier: t.n, name: pick(t.name, s.lang), how, reached, of, minutes: r.minutes, paid: { progress: paid.progress, wealth: paid.wealth }, items: named, ...(card ? { card } : {}), at: ctx.now.toISOString() };
   const cleared = how === 'clear' ? [...new Set([...(s.mijing.cleared ?? []), t.n])].sort((a, b) => a - b) : s.mijing.cleared ?? [];
   s.mijing = { ...s.mijing, cleared, last };
   delete s.mijing.run;
-  const full = storedLine(s, stowed);
+  const full = fullLine(s, stowed);
   return { state: s, result: { ok: true, ended: how, ...extra, last, ...(full ? { pouch_full: full } : {}) } };
 }
 function leaveRun(state, content, ctx) {

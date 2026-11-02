@@ -26,7 +26,7 @@ import { dayKey, lockedOf, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { sideLine } from './hui.mjs';
 import { beastOpen, kitOf } from './reveal.mjs';
-import { stow, storedLine } from './pouch.mjs';
+import { stow, fullLine } from './pouch.mjs';
 import { hashOf } from './travel.mjs';
 import { beatOf, passed, sceneOf } from './world.mjs';
 import { keyDrop } from './mijing.mjs';
@@ -260,7 +260,7 @@ export function shouchaoDone(state, content, ctx, id) {
   // An herb the beasts were after, picked by the night (its day and number: two nights may share a day) — a full night's only.
   const herbs = c.herbs ?? [];
   const herb = row.herb && share >= 1 && herbs.length ? herbs[hashOf(`${dayKey(ctx.now)}|${night.n}|${seedOf(s)}|shouchao`) % herbs.length] : null;
-  const full = herb ? storedLine(s, [stow(content, s, herb, row.herb)]) : null;
+  const full = herb ? fullLine(s, [stow(content, s, herb, row.herb, 'shouchao')]) : null;
   if (herb) paid.item = herb;
   const held = s.shouchao ?? {};
   s.shouchao = {

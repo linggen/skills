@@ -759,9 +759,20 @@ locks the two apart.
   `opens.done` (a scene ahead / behind): the innkeeper and the old drummer before
   the 漳水; 刘船匠's boat that does not leak and 老胡's bowl for 柳湾 after.
 - **储物袋** (2026-09-25): room in slots by realm (`pouch.by_tier`: 24/36/48/60),
-  bigger pouches used once; story things take no slot; what does not fit
-  waits at the 洞府 (`state.held`, 待取). The pouch panel (pouch.js): tabs,
-  tiles, 服用 · 佩戴 · 卖 · 丢, the deck pane. A story thing (`story: true`, e.g.
+  bigger pouches used once (gone from the bag, named in the worn row's 储物袋
+  cell with its 格数 — 「下品储物袋 · 30 格」; 换上 says what it adds, Hanli
+  11-02); story things take no slot. **Full** (Hanli 2026-11-02: 「待取感觉应该
+  删掉」 — 待取 at the 洞府 made the pouch's size mean nothing; the shape is the
+  agent's pick, Hanli delegated 11-02): what a fight, an errand, a grant, a
+  秘境 or the 饭桶 gives waits at the door (`state.full_offer`, a short queue
+  of { id, n, from }), Look's 「储物袋满了」 card on the bag's own tile — 丢一样
+  换它 (the bag's grid; a tile drops that stack for it), 收下 once there is
+  room, 不要了; nothing stashed, nothing silently lost, nothing else waits on
+  it. A find on the road and a purchase are refused, as before. An old save's
+  `held` goes into the bag on load while there is room, the rest to the card.
+  The pouch panel (pouch.js): 储物袋 · 饭桶 · 旁炉 · 牌组; the tabs and grid
+  are one component (bagGridHtml) — the 饭桶's 开炉 page and the card's swap
+  draw the same bag. Tiles, 服用 · 佩戴 · 卖 · 丢. A story thing (`story: true`, e.g.
   紫须芝 carried back to 阿禾, 邹青松's letter) takes no slot, like a key.
 - **杀人必摸尸** (the author, 2026-10-03: 「小满杀人后要捡走东西。游戏玩法」):
   a kill leaves 所得, in the book and the game alike. A foe's `drops` may be a
@@ -839,6 +850,11 @@ onto the items; items.json carries none). The fights are weighed so the lookahea
 
 Built as 喂饭桶 · 开炉: up to three things and 0–3 灵石 in, the lid pressed, one thing out, 1 h cooldown — games/kailu.js,
 rules/fantong-roll.mjs, fantong.json; doc/games.md § 喂饭桶 · 开炉.
+On one page with the bag (Hanli 2026-11-02; fantong-kailu.js): the 饭桶 (its canvas, three places, 灵石, 开炉) and the
+储物袋's own tabs and grid — side by side on the Mac and a phone held sideways, stacked on a phone held upright (开炉
+held at the bottom); a tap flies a tile into the first empty place, a drag too on the Mac, a tap on a place returns
+it; what may not go in stays, dimmed, with the rules' reason (`held_back`: 穿着 · 剧情要用 · 留 n 个X用 · 开炉要用),
+and with three in the rest say 最多三样. While it chews and reveals the bag folds away.
 
 ## 斗法 v3 — one card game, 《炉石传说》's shape 【已建】 (PvE; PvP and the raid 【远景】)
 
@@ -1171,11 +1187,13 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   30 灵石 once (`chore_week`). `per_day` caps what meanings add (15 灵石, 10
   修为, 2 things). Paid with the chore's own hand-in, so once per occurrence;
   never 体力-gated, never needed by the main line; 开府 takes none; no kind →
-  as before. Rules: rules/gongke.mjs (names no app). **The board** — 储物袋 ›
-  「人间功课」 (the 洞府's pane, gongke.js), from 入门 on: each of today's
-  chores with its meaning, the app's title, 💻/📱, a seal 已做 hh:mm (the app's
-  time) or 已领, what it adds, one tap (交差, or the app's page); the ward, the
-  week rows, the day against its cap. Labels only; on a hand-in the facts go
+  as before. Rules: rules/gongke.mjs (names no app). **On the 事 book** (Hanli
+  2026-11-02: 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」 — the
+  物品 panel's tab is gone; 事 is their one place), from 入门 on: each of today's
+  chores' rows carries its meaning, the app's title, 💻/📱, a seal 已做 hh:mm (the
+  app's time), what it adds with its meaning's share and thing, one tap (交差, or
+  the app's page); a paid one sits in 已交 with 已领 hh:mm; over the chores, the
+  ward, the week rows, the day against its cap (gongke.js). Labels only; on a hand-in the facts go
   to 银月 (lingjing.js tellGongke) and she says it — asleep in the 木牌, its
   drowsy word from hersay.js's pool, once a chore a day. The apps' files carry
   `kind` from each app's next write; until then a chore shows with no meaning. A scratch save may hold its

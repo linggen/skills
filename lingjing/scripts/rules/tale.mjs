@@ -20,7 +20,7 @@ import { clone, pay, paysOf, refuse, spendStamina } from './core.mjs';
 import { HANDED_KEEP, itemOf, whereAt, withinRoads } from './errands.mjs';
 import { gameLevel, lundaoForm } from './tasks.mjs';
 import { hashOf } from './travel.mjs';
-import { stow, storedLine } from './pouch.mjs';
+import { stow, fullLine } from './pouch.mjs';
 import { allPlaces, atScene, creatureOf, huntable, ofJuan, placeName, placeOf, placeOpen, tierIndex, tooHard } from './world.mjs';
 import { herNear } from './companion.mjs';
 
@@ -305,8 +305,8 @@ function dropOf(content, state, t) {
 function giveDrop(content, s, d, from = null) {
   if (!d) return null;
   if (d.card) return gainCard(content, s, d.card, from);
-  const got = stow(content, s, d.item);
-  return { id: got.id, name: got.name, ...(got.stored ? { stored: true } : {}) };
+  const got = stow(content, s, d.item, 1, 'tale');
+  return { id: got.id, name: got.name, ...(got.offered ? { offered: true } : {}) };
 }
 
 /* ── Playing it ── */
@@ -345,7 +345,7 @@ function settle(content, s, ctx, { skipped = false } = {}) {
   const given = [gives?.name, charm?.name].filter(Boolean).join(' · ');
   const h = { id: boardId(t, n), tale: true, n, place: s.place, at, paid, ...(link.end ? { end: true } : {}), ...(given ? { gives: given } : {}) };
   s.handed = [...(s.handed ?? []), h].slice(-HANDED_KEEP);
-  const full = storedLine(s, [gives, charm]);
+  const full = fullLine(s, [gives, charm]);
   return { handed: [taleHanded(content, s, h)], ...(full ? { pouch_full: full } : {}), ...(link.end ? { ended: true, ...(grew ? { treasure_grew: grew } : {}) } : { step: stepBrief(content, s, ctx.now) }) };
 }
 

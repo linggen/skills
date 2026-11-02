@@ -8,6 +8,7 @@ import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, 
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup, heldMark, pouchBrief, readOf } from './cards.mjs';
+import { doorOffers } from './pouch.mjs';
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, herGameNow, questBrief, recalledOf } from './companion.mjs';
@@ -536,7 +537,7 @@ function tasksBrief(content, state, ctx) {
     // What it means in the book (rules/gongke.mjs): its kind's in-world name, and the facts for her.
     ...(meaningOf(content, q) ? { kind: q.kind, means: pick(meaningOf(content, q).name, lang), means_about: pick(meaningOf(content, q).about, lang) } : {}),
   }));
-  // The 人间功课 board (the 洞府's): today's chores as facts, from 入门 on — never before the gate.
+  // The 人间功课 board (drawn on the 事 book's chore rows): today's chores as facts, from 入门 on — never before the gate.
   const gongke = shut.includes('chores') ? null : gongkeBoard(content, state, chores, ctx.now, lang, questDone);
   const kaifu = shut.includes('kaifu') ? null : kaifuBrief(state, menu, ctx.now, lang, content);
   // The open 一次 step's pay, so the book's row says it before it is done.
@@ -720,6 +721,8 @@ export function look(state, content, ctx) {
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
     ...(danduBrief(content, state) ? { dandu: danduBrief(content, state) } : {}),
+    // 储物袋满了 (rules/pouch.mjs): what came while the pouch was full, waiting at the door for his choice — swap, take, let go.
+    ...(doorOffers(content, state).length ? { full_offer: doorOffers(content, state) } : {}),
     // 旁炉 (rules/panglu.mjs): at the 丹房's side furnace once it is his — the herbs he can put in, today's batches left.
     ...(pangluBrief(content, state, ctx.now) ? { panglu: pangluBrief(content, state, ctx.now) } : {}),
     // 闭关 running: the hours in and what 出关 would grow now (rules/seclusion.mjs).

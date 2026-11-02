@@ -13,7 +13,7 @@ import { hasFound, stow } from './pouch.mjs';
    (creatures.json `drops`: one id, or a list — a man killed is searched,
    杀人必摸尸, design.md § Items), and on one win in `fight_one_in` a 符 (rewards.json
    `growth.charm` — 写符 was cut, redesign-v2 § 四). The 妖丹 it left went with
-   强化. Both go into the 储物袋 — or, full, wait at the 洞府 (pouch.mjs). */
+   强化. Both go into the 储物袋 — or, full, wait at the door for his choice (pouch.mjs). */
 function drop(content, state, creature, now, { loot = false } = {}) {
   const got = [];
   const one = content.rewards.growth?.charm?.fight_one_in, charm = charmOf(content);
@@ -24,11 +24,11 @@ function drop(content, state, creature, now, { loot = false } = {}) {
   for (const [id, n] of counts) {
     // A thing of a 卷 not open is never dropped (world.mjs ofJuan).
     if (!itemOf(content, id) || !ofJuan(content, itemOf(content, id), now)) continue;
-    got.push(stow(content, state, id, n));
+    got.push(stow(content, state, id, n, 'fight'));
   }
   // A beast of the wild (a pool's, a haunt's) leaves one thing more off its `loot`.
   const rolled = loot ? lootOf(content, state, creature, now) : null;
-  if (rolled) got.push(rolled.dup ? convertDup(content, state, rolled) : stow(content, state, rolled.item, rolled.n ?? 1));
+  if (rolled) got.push(rolled.dup ? convertDup(content, state, rolled) : stow(content, state, rolled.item, rolled.n ?? 1, 'fight'));
   return got;
 }
 
@@ -52,7 +52,7 @@ function lootOf(content, state, creature, now) {
 /* A one-off had before, turned into what it is worth: the row's `dup`, else its price in 灵石. */
 function convertDup(content, state, row) {
   const item = itemOf(content, row.item), lang = state.lang, name = pick(item.name, lang);
-  if (row.dup?.item && itemOf(content, row.dup.item)) return { ...stow(content, state, row.dup.item, row.dup.n ?? 1), instead_of: { id: item.id, name } };
+  if (row.dup?.item && itemOf(content, row.dup.item)) return { ...stow(content, state, row.dup.item, row.dup.n ?? 1, 'fight'), instead_of: { id: item.id, name } };
   // Before the 灵石 are the story's (state.mjs lockedOf), a one-off had before is simply not found again.
   const wealth = lockedOf(content, state).includes('wealth') ? 0 : Math.max(0, Math.round(row.dup?.wealth ?? item.sell ?? 0));
   state.wealth = (state.wealth ?? 0) + wealth;
@@ -67,7 +67,7 @@ export const dropsOf = creature => [creature?.drops ?? []].flat().filter(Boolean
 function giveCharm(content, state) {
   const charm = charmOf(content), n = content.rewards.growth?.charm?.tale_end ?? 0;
   if (!charm || !n) return null;
-  return stow(content, state, charm.id, n);
+  return stow(content, state, charm.id, n, 'charm');
 }
 
 /* 一重 … 九重. The treasure grows with the story, never from a daily tap

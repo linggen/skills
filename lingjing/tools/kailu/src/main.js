@@ -32,5 +32,7 @@ export function start(opts) {
   game.scene.add('kailu', KailuScene, true, { ...opts, zoom });
   if (opts.dev) globalThis.__kailu = game; // ?dev=1 only: a live check reads fps and the phase from here
   // refresh(): the canvas was laid into a new host (the pouch pane redraws round it) — fit it again.
-  return { destroy: () => game.destroy(true), refresh: () => game.scale?.refresh() };
+  // setPot / fire: the page's own pot and 开炉 (play.js `outside`), passed to the scene once it stands.
+  const scene = () => game.scene.getScene('kailu');
+  return { destroy: () => game.destroy(true), refresh: () => game.scale?.refresh(), setPot: (ids, lingshi) => scene()?.setPot?.(ids, lingshi), fire: () => scene()?.fire?.() };
 }

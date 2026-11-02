@@ -16,7 +16,7 @@ import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { gamesToday } from './rotation.mjs';
-import { stow, storedLine } from './pouch.mjs';
+import { stow, fullLine } from './pouch.mjs';
 import { laterBoard, leaveBoard, replayBoard, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
 import { boardLine, lineGrant, linePay } from './lines.mjs';
@@ -216,7 +216,7 @@ function taskDone(state, content, ctx, id) {
   const here = sceneOf(content, s);
   // With two boards (batch two: 00-cave, 00-halfyear) the split belongs to the first in `show`; the second comes after the rest.
   if (!replayed && here?.story_after && sceneBoards(here)[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
-  const full = t.gives?.bag ? storedLine(s, [stow(content, s, t.gives.bag)]) : null;
+  const full = t.gives?.bag ? fullLine(s, [stow(content, s, t.gives.bag, 1, 'task')]) : null;
   const paid = pay(content, s, ctx, t.grant);
   boardPay(content, s, t, id, paid);
   // A thing the board hands over (the 踏马符 of 喂饭桶 · 一根银毛) is shown big as a story step's gain is (core.mjs resolve `gained`, Hanli 10-27/28).
@@ -509,7 +509,7 @@ export function duel(state, content, ctx, args) {
   const replay = haunt && pays ? fightReplay(content, s, creature.id, ctx.now) * batchShare : 1;
   const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth, share: replay }) : null;
   if (haunt && pays) playCounted(s, hauntPlayId(creature.id), ctx.now);
-  const full = storedLine(s, dropped);
+  const full = fullLine(s, dropped);
   // Not won: what beat him, and the ways to grow stronger now (rules/strengthen.mjs) — facts for 银月's
   // word and the result card's one button (Hanli 2026-10-27: a loss never strands him).
   const way = won || exit ? null : lossWay(content, s, ctx, game, setup, played);

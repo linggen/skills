@@ -17,6 +17,7 @@ import { inkLayerHtml, provinceLineHtml, pvState } from './inkmap.js';
 import { boardDoneToday, boardWaits, herAwake, onRoad, sideLineOf, sideStep, winnable, wonWayOn } from './stage.mjs';
 import { dayKey, fitValue } from './state.mjs';
 import { mijingCardHtml } from './mijing.js';
+import { gongkeBits, gongkeMarksHtml } from './gongke.js';
 /// 秘境探险 (rules/mijing.mjs, Look's `mijing`): its own module draws it (scripts/mijing.js).
 const mijing = (card, ctx) => mijingCardHtml(card, ctx);
 
@@ -1294,7 +1295,9 @@ export function bookPopHtml(ctx) {
     ${g.gate ? `<div class="small dim">${esc(say(w.goalNow, g.gate.now))} · ${esc(w.goalGrow)}</div>` : ''}</div>` : '';
   const group = (key, rows) => (rows.length ? `<div class="tgroup ${key}"><div class="thead small dim">${esc(say(w[key], { n: rows.length }))}</div>${rows.join('')}</div>` : '');
   const body = group('groupReady', groups.ready) + group('groupHeld', groups.held) + group('groupOpen', groups.open) + doneFold(groups.done, w);
-  return `<div class="bookpop" role="dialog">${head}${body || (g ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
+  // 人间功课's marks — the 护山大阵, the week's rows, the day against its cap — over the chores (Look's `gongke`, from 入门 on).
+  const marks = gongkeMarksHtml(ctx.look?.gongke, ctx.lang);
+  return `<div class="bookpop" role="dialog">${head}${marks}${body || (g ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
 }
 
 /* The rows by state. Read from Look alone (book, quests, kaifu, offers, work,
@@ -1335,7 +1338,7 @@ function taskGroups(ctx) {
   }
   // 已交: today's chores counted and the 一次 steps handed in.
   out.done = [
-    ...quests.filter((q) => q.paid && q.period !== 'once').map((q) => ({ tag: periodTag(q.period), title: q.title, device: q.device })),
+    ...quests.filter((q) => q.paid && q.period !== 'once').map((q) => ({ tag: periodTag(q.period), title: q.title, device: q.device, stamp: gongkeBits(look.gongke?.rows?.find((r) => r.id === q.id), ctx.lang).stamp })),
     ...(ctx.kaifu ?? []).filter((r) => r.paid).map((r) => ({ tag: 'once', title: r.title, device: r.device })),
     ...(look.stages_paid ?? []).map((step) => ({ tag: 'stage', title: say(w.stageDone, { step }) })),
   ];
@@ -1367,13 +1370,13 @@ function stageBackRow(look, ctx) {
 /// words, the pay and 问询; only the action is a button of its own.
 /// `thread` — 主线 · 人物线 · 杂务 (design.md § 剧情 × 开放世界): the row's colour, gold · silver · grey,
 /// a line down its left edge; the tag says what kind of task, the thread whose story it is.
-function taskRow({ id, tag, device, title, who, meta, steps = null, pays, act = "", ready = false, cls = "", expand = true, detail = null, attr = "data-bookrow", thread = null }, ctx) {
+function taskRow({ id, tag, device, title, who, meta, steps = null, pays, paysHtml = '', act = "", ready = false, cls = "", expand = true, detail = null, attr = "data-bookrow", thread = null }, ctx) {
   const w = ctx.words, open = expand && (ctx.bookRow === id || ctx.offerRow === id);
   const tap = expand ? ` ${attr}="${esc(id)}" role="button" tabindex="0" aria-expanded="${open}"` : '';
   const line = `${device ? `<span class="device">${esc(deviceMark(device))}</span> ` : ''}<b>${esc(title)}</b>${who ? ` <span class="small dim">· ${esc(who)}</span>` : ''}${meta ? ` <span class="small dim tmeta">${esc(meta)}</span>` : ''}`;
   return `<div class="bookrow trow${ready ? ' ready' : ''}${open ? ' open' : ''}${thread ? ` th-${esc(thread)}` : ''}${cls}"${tap}>
     <span class="tag t-${esc(tag)}">${esc(w.tags?.[tag] ?? tag)}</span>
-    <div class="tmain"><div class="tline">${line}</div>${steps ? stepsHtml(steps) : ''}${pays ? `<div class="small tpay">${esc(pays)}</div>` : ''}</div>
+    <div class="tmain"><div class="tline">${line}</div>${steps ? stepsHtml(steps) : ''}${paysHtml ? `<div class="small tpay">${paysHtml}</div>` : pays ? `<div class="small tpay">${esc(pays)}</div>` : ''}</div>
     <div class="tact">${act}</div></div>${open && typeof detail === 'function' ? detail() : ''}`;
 }
 
@@ -1435,11 +1438,14 @@ function bookGo(label, id, ctx) {
 const periodTag = (period) => (['week', 'month', 'once'].includes(period) ? period : 'day');
 
 /* A 每日 / 每周 / 每月 chore of his apps: where it is done, its app's page one tap away, 交差 when done. */
+/* …with its 人间功课 bits (gongke.js; the 物品 panel's board moved here, Hanli 11-02): what it means in the book,
+   the seal 已做 hh:mm, and what it pays with the meaning's share. */
 function choreRow(q, life, ctx) {
-  const w = ctx.words, c = q.chore;
-  const meta = [countsOf(q, w), w.periods?.[c.period] ?? ''].filter(Boolean).join(' · ');
+  const w = ctx.words, c = q.chore, gk = gongkeBits(ctx.look?.gongke?.rows?.find((r) => r.id === q.id), ctx.lang);
+  const meta = [gk.name, countsOf(q, w), w.periods?.[c.period] ?? ''].filter(Boolean).join(' · ');
   const act = q.ready ? doBtn(w.turnIn, 'turn', q.id) : c.open ? openBtn(c, w) : '';
-  return taskRow({ id: q.id, tag: periodTag(c.period), device: c.device, title: q.title, meta, pays: paysLine(life?.pays, w), act, ready: q.ready, detail: () => bookDetail(q, ctx) }, ctx);
+  const paysHtml = gk.stamp || gk.adds ? `${gk.stamp}${gk.adds || esc(paysLine(life?.pays, w))}` : '';
+  return taskRow({ id: q.id, tag: periodTag(c.period), device: c.device, title: q.title, meta, pays: paysLine(life?.pays, w), paysHtml, act, ready: q.ready, detail: () => bookDetail(q, ctx) }, ctx);
 }
 
 /* A 一次 setup step: the open one (with 跳过 while it is not done — never stuck),
@@ -1473,7 +1479,7 @@ function turnedRow(t, ctx) {
 /* 「▸ 已交 n」 — what was counted, folded; it opens on a tap. */
 function doneFold(done, w) {
   if (!done.length) return '';
-  const rows = done.map((d) => `<div class="bookrow trow done"><span class="tag t-${esc(d.tag)}">${esc(w.tags?.[d.tag] ?? d.tag)}</span><div class="tmain"><div class="tline">${d.device ? `<span class="device">${esc(deviceMark(d.device))}</span> ` : ''}<b>${esc(d.title)}</b></div></div><div class="tact"></div></div>`).join('');
+  const rows = done.map((d) => `<div class="bookrow trow done"><span class="tag t-${esc(d.tag)}">${esc(w.tags?.[d.tag] ?? d.tag)}</span><div class="tmain"><div class="tline">${d.device ? `<span class="device">${esc(deviceMark(d.device))}</span> ` : ''}<b>${esc(d.title)}</b></div>${d.stamp ? `<div class="small tpay">${d.stamp}</div>` : ''}</div><div class="tact"></div></div>`).join('');
   return `<details class="tgroup tdone"><summary class="thead small dim">${esc(say(w.groupDone, { n: done.length }))}</summary>${rows}</details>`;
 }
 

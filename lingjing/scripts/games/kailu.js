@@ -8,7 +8,8 @@
 //   (`onGame(g)`: the live game's handle, `g.refresh()` after its node is laid into a new host.)
 //
 // `data` (the page, fantong-kailu.js): { brief: the rules' fantong brief, roll(ids, lingshi, press) → the `fantong feed`
-// answer }. Without it (the 游戏厅, the try page) it plays a sample pot on the bare table with no save and no wait —
+// answer, outside, onPhase(phase) }. `outside`: the tray, the three places, the 灵石 and 开炉 are the page's (the 物品
+// panel's bag, Hanli 11-02) — the handle's setPot(ids, lingshi) and fire() drive the pot, and the stage fills its host. Without it (the 游戏厅, the try page) it plays a sample pot on the bare table with no save and no wait —
 // `?force=best` (or rare / useful) rolls until that grade, to look at a reveal. 银月's line at the reveal goes to the
 // shell's bubble (`shell.say`); the shell's result line reads the grade, its stars the grade's place (0–3).
 import { comicArt } from './items-comic.js';
@@ -143,7 +144,9 @@ export function mount(container, { lang = 'zh', data = null, signal, reducedMoti
   box.style.cssText = 'position:relative;overflow:hidden;border-radius:12px;background:#2a1a12;touch-action:none;margin:0 auto;'
     + 'user-select:none;-webkit-user-select:none;aspect-ratio:2/3;width:min(100%, calc((100dvh - var(--game-reserve, 170px)) * 2 / 3))';
   container.replaceChildren(box);
-  const fit = fitter(box);
+  const outside = Boolean(data?.outside);
+  if (outside) box.style.width = '100%'; // its host (fantong-kailu.js) sizes it, and crops it while the pot fills
+  const fit = outside ? Object.assign(() => fit.canvas?.(), { stop: () => {} }) : fitter(box);
   fit();
   const q = new URLSearchParams(globalThis.location?.search ?? '');
   const dev = q.get('dev') === '1', showFps = dev && q.get('fps') === '1';
@@ -161,7 +164,7 @@ export function mount(container, { lang = 'zh', data = null, signal, reducedMoti
       game = start({
         parent: box, base: new URL('./kailu/', import.meta.url).href, lang: L, reducedMotion, dev, showFps, shell,
         onEvent: (f) => { shell?.sound?.(f.t, { kind: f.grade }); onEvent?.(f); }, // its facts sound too (games/kit/audio/sounds.json kailu)
-        data: { brief: d.brief, roll: d.roll, icon },
+        data: { brief: d.brief, roll: d.roll, icon, outside, onPhase: data?.onPhase },
         onEnd: (r) => { fit.stop(); finish(r); },
       });
       // Laid into a new host (the pouch pane redraws round it): fitted to its room again, then the canvas.

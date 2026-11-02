@@ -101,7 +101,6 @@ const PAGE_DID = {
       : r.breakthrough?.chance != null ? thrownDid(r, x)
         // A scene card's choice: which, and what the 恩仇簿 wrote — the story is the stage's (rules/tell.mjs).
         : r.chose ? `chose 「${r.chose}」 under the picture${r.ledger?.length ? ` — 恩仇簿: ${r.ledger.map(e => `${e.kind} ${e.who}`).join(', ')}` : ''}` : null),
-  // 储物袋: a thing waiting at the 洞府 taken in, a slot thrown away.
   // 喂饭桶 (rules/fantong.mjs): what went in, what came out with its small print.
   fantong: (r, a) => (a.action !== 'feed' ? null
     : r.spat_back ? `fed the 饭桶 ${(r.fed?.ids ?? []).join(', ')} — it chewed and spat the pot back whole, nothing spent`
@@ -109,7 +108,9 @@ const PAGE_DID = {
   // 旁炉 (rules/panglu.mjs): the herb in, what the batch came to.
   panglu: (r, a) => (a.action !== 'fire' ? null
     : `fired the 旁炉 with ${r.fed?.name} — ${r.outcome === 'zha' ? 'it blew (炸炉), the herb and a little 体力 gone' : r.outcome === 'hu' ? `burnt; ground to ${r.out?.name}` : `out came ${r.out?.name}`}${r.lesson ? '; 闵丹师 taught 「首尾武，中间文」' : ''}`),
-  bag: byAction({ claim: (r) => `took ${r.claimed?.name} from the abode into the storage pouch`, toss: (r) => `threw away ${r.tossed?.name}` }),
+  // 储物袋: a slot thrown away; at the door (the pouch full), a stack dropped for the new thing, taken in, or let go.
+  bag: byAction({ toss: (r) => `threw away ${r.tossed?.name}`, take: (r) => `took ${r.took?.name} into the storage pouch`,
+    swap: (r) => `threw away ${r.tossed?.name} to make room for ${r.took?.name}`, letgo: (r) => `let ${r.let_go?.name} go — the pouch was full` }),
   // AI mini-games (rules/aigames.mjs): the page's taps on their cards — facts only, never a secret.
   // 砍价 in the shop's own panel (rules/aigames.mjs): the keeper spoke there, not in the chat — only the outcome is told.
   haggle: (r, a) => (a.action === 'deal' && r.deal ? `haggled at the shop and bought ${r.item?.name ?? r.bought}${r.qty > 1 ? ` ×${r.qty}` : ''} at ${r.price} each (saved ${r.saved})`

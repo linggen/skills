@@ -177,6 +177,8 @@
       "lingshi": "灵石",
       "page": "又一张方子残页（{n}/{need}）。",
       "too_many": "一锅最多三样。",
+      "_why": "The short chip on a tile of the bag that cannot go in now (rules/fantong.mjs whyNot; Hanli 11-02): the bucket itself, worn, the story's, the one kept for a breakthrough.",
+      "why": { "needs": "开炉要用", "worn": "穿着", "story": "剧情要用", "keep": "留 {n} 个{for}用" },
       "grades": { "junk": "凡", "useful": "有用", "rare": "珍品", "best": "逆天" },
       "_quips": "银月's line at the reveal, by grade (games/kailu.js says one in the shell's bubble): the data's until 台词预取 writes hers.",
       "quips": {
@@ -203,6 +205,7 @@
       "lingshi": "Spirit stones",
       "page": "Another torn recipe page ({n}/{need}).",
       "too_many": "Three things to a pot at most.",
+      "why": { "needs": "fires the pot", "worn": "worn", "story": "the story needs it", "keep": "keep {n} for {for}" },
       "grades": { "junk": "Common", "useful": "Useful", "rare": "Treasure", "best": "Heaven-defying" },
       "quips": {
         "junk": ["So-so.", "It eats with relish and spits with relish.", "That one… you keep it."],

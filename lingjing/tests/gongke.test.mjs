@@ -17,9 +17,9 @@ import { gongkeBoard, meaningGrant, meaningOf } from '../scripts/rules/gongke.mj
 import { questDone } from '../scripts/rules/chores.mjs';
 import { roll } from '../scripts/rules/fantong-roll.mjs';
 import { GRADES } from '../scripts/rules/fantong.mjs';
-import { gongkeHtml } from '../scripts/gongke.js';
+import { gongkeMarksHtml } from '../scripts/gongke.js';
 import { pouchHtml } from '../scripts/pouch.js';
-import { bookChipHtml, WORDS } from '../scripts/cards.js';
+import { bookChipHtml, bookPopHtml, WORDS } from '../scripts/cards.js';
 import { TO_WAIMEN, walk } from './prologue.mjs';
 import { MOMENTS } from '../scripts/voice.js';
 import { MOMENTS as HER_MOMENTS, POOLS } from '../scripts/hersay.js';
@@ -205,23 +205,25 @@ test('the board shows facts only: the meaning, the app\'s title, a stamp with th
   assert.ok(by['x-paid'].paid_at);
   assert.equal(board.day.items, 1);
   assert.deepEqual(board.weeks.map(w => w.name), ['宗门月俸']);
-  const html = gongkeHtml(board, 'zh');
-  assert.match(html, /练功/);
-  assert.match(html, /已做 09:00/);
-  assert.match(html, /已领 \d\d:\d\d/);
-  assert.match(html, /data-do="turn" data-id="x-workout"/);
+  // On the 事 book (Hanli 11-02: 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」): each chore's row
+  // carries its meaning, the seal with the app's time, what it pays; 交差 when done; a paid one in 已交 with 已领.
+  const l = look(s, content, ctxOf(quests));
+  const html = bookPopHtml({ lang: 'zh', look: l, words: WORDS.zh });
+  const row = (id) => html.match(new RegExp(`<div class="bookrow trow[^"]*"[^>]*data-bookrow="${id}"[\\s\\S]*?<div class="tact">[\\s\\S]*?</div></div>`))?.[0] ?? '';
+  assert.match(row('x-workout'), /练功/);
+  assert.match(row('x-workout'), /已做 09:00/);
+  assert.match(row('x-workout'), /晨练符/);
+  assert.match(row('x-workout'), /data-do="turn" data-id="x-workout"/);
   assert.doesNotMatch(html, /data-do="turn" data-id="x-paid"/, 'paid: no tap');
-  assert.doesNotMatch(html, /[。！？]/, 'no sentence: she says them');
+  assert.match(html, /<details class="tgroup tdone">[\s\S]*已领 \d\d:\d\d/);
+  assert.match(html, /class="gkmarks"[\s\S]*护山大阵 · 未立[\s\S]*宗门月俸[\s\S]*今日 灵石/);
   // The ward stands once its banner is planted at the abode.
   const flown = gongkeBoard(content, { ...s, wear: { abode: 'hushan-qi' } }, quests, NOW, 'zh', questDone);
   assert.equal(flown.ward.name, '护山阵旗');
-  assert.match(gongkeHtml(flown, 'zh'), /护山大阵 · 护山阵旗/);
-  // In the pouch: its chip, and the pane.
-  const l = { ...look(s, content, ctxOf(quests)) };
+  assert.match(gongkeMarksHtml(flown, 'zh'), /护山大阵 · 护山阵旗/);
+  // No longer a pane of the 物品 panel.
   const gear = VERBS.gear(s, content, ctxOf(quests), {}).result.gear;
-  assert.match(pouchHtml({ lang: 'zh', look: l, gear, words: WORDS.zh }, {}), /data-pouch-pane="gongke"/);
-  assert.match(pouchHtml({ lang: 'zh', look: l, gear, words: WORDS.zh }, { pane: 'gongke' }), /人间功课 · 洞府/);
-  assert.doesNotMatch(pouchHtml({ lang: 'zh', look: { ...l, gongke: undefined }, gear, words: WORDS.zh }, {}), /data-pouch-pane="gongke"/);
+  for (const pane of [null, 'gongke']) assert.doesNotMatch(pouchHtml({ lang: 'zh', look: l, gear, words: WORDS.zh }, { pane }), /data-pouch-pane="gongke"|人间功课/);
 });
 
 test('a scratch save reads its own quests dir; the main save never does', () => {

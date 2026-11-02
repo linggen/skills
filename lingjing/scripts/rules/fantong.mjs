@@ -17,7 +17,7 @@ import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
 import { isLocked } from './locks.mjs';
-import { freeSlot, hasFound, pouchBrief, stow, storedLine } from './pouch.mjs';
+import { freeSlot, hasFound, pouchBrief, stow, fullLine } from './pouch.mjs';
 import { LINGSHI, familyOfKind, kindOf, odds, roll, tierOfItem } from './fantong-roll.mjs';
 
 export { GRADES, familyOf, gradeWeights, kindOf, powerOf, tierOfItem, worthOf } from './fantong-roll.mjs';
@@ -91,14 +91,33 @@ function readAhead(content, state, id) {
 }
 const keptOf = (content, t, state, id) => (readAhead(content, state, id) ? t.keep?.items?.[id] ?? 0 : 0);
 const spareOf = (content, t, state, id) => Math.max(0, (state.bag?.[id] ?? 0) - keptOf(content, t, state, id));
-function feedable(content, state, t, id) {
-  if (!id || !itemOf(content, id)) return null;
-  if (!(spareOf(content, t, state, id) > 0) || id === t.needs?.item) return null;
-  if (freeSlot(content, state, id) || Object.values(state.wear ?? {}).includes(id)) return null;
-  if ((t.never?.kinds ?? []).includes(itemOf(content, id).kind) || (t.never?.items ?? []).includes(id)) return null;
+/* Why a thing of the bag may not go in, as a reason the board names on its tile (Hanli 11-02: what cannot be fed
+   still shows, dimmed, with why): `needs` the bucket itself · `worn` · `story` (a thing the story needs, never in,
+   or the book's pot waiting on its scene) · `keep` (all he has is what the story still reads). null: it may. */
+function whyNot(content, state, t, id) {
+  if (!id || !itemOf(content, id)) return 'unknown';
+  if (id === t.needs?.item) return 'needs';
+  if (Object.values(state.wear ?? {}).includes(id)) return 'worn';
+  if (freeSlot(content, state, id)) return 'story';
+  if ((t.never?.kinds ?? []).includes(itemOf(content, id).kind) || (t.never?.items ?? []).includes(id)) return 'story';
   // The book's own pot: its inputs wait for the scene that feeds them (recipes.story `after`).
-  if (storyIn(content, t, [id]).some(r => !(state.done_scenes ?? []).includes(r.after))) return null;
-  return {};
+  if (storyIn(content, t, [id]).some(r => !(state.done_scenes ?? []).includes(r.after))) return 'story';
+  if (!(spareOf(content, t, state, id) > 0)) return (state.bag?.[id] ?? 0) > 0 ? 'keep' : 'unknown';
+  return null;
+}
+const feedable = (content, state, t, id) => (whyNot(content, state, t, id) ? null : {});
+/* The tier a kept thing is kept for: the first breakthrough still ahead that reaches for it (ladder.json), named. */
+function keptFor(content, state, id) {
+  const tiers = content.ladder?.tiers ?? [], at = tiers.findIndex(x => x.id === state.tier);
+  const ahead = Object.entries(content.ladder?.breakthrough?.pill?.items ?? {}).filter(([, ids]) => [].concat(ids).includes(id))
+    .map(([tier]) => tiers.findIndex(x => x.id === tier)).filter(k => k > at).sort((a, b) => a - b)[0];
+  return ahead != null ? pick(tiers[ahead]?.name, state.lang) ?? '' : '';
+}
+/* Every thing of the bag that may not go in now, with its reason in the world's words (fantong.json `why`). */
+function heldBack(content, state, t) {
+  const why = wordsOf(t, state.lang).why ?? {};
+  return Object.fromEntries(Object.keys(state.bag ?? {}).filter(id => (state.bag[id] ?? 0) > 0 && itemOf(content, id)).map(id => [id, whyNot(content, state, t, id)])
+    .filter(([, k]) => k && k !== 'unknown').map(([id, k]) => [id, { why: k, say: fill(why[k] ?? '', { n: keptOf(content, t, state, id), for: keptFor(content, state, id) }) }]));
 }
 
 /* ── The limit: when the bucket may eat again (null = now). ── */
@@ -126,7 +145,7 @@ function outBrief(content, state, t, got, grade) {
   if (got.id === LINGSHI) return { id: LINGSHI, name: wordsOf(t, state.lang).lingshi ?? '灵石', n: got.n, wealth: true, grade };
   const item = itemOf(content, got.id);
   return { id: got.id, name: itemName(item, state, state.lang) ?? got.id, hint: pick(item?.hint, state.lang), art: item?.art ?? null, grade,
-    ...(item?.zhuan ? { zhuan: item.zhuan } : {}), n: got.n, ...(got.stored ? { stored: true } : {}), ...(got.new ? { new: true } : {}) };
+    ...(item?.zhuan ? { zhuan: item.zhuan } : {}), n: got.n, ...(got.offered ? { offered: true } : {}), ...(got.new ? { new: true } : {}) };
 }
 
 /* The 方子 found so far, as 录 and the board read them. */
@@ -183,7 +202,7 @@ export function fantongBrief(content, state, now) {
   return {
     name: itemName(itemOf(content, t.needs.item), state, lang), ready: !next, ...(next ? { next_at: next.toISOString(), wait: fullSay(t, lang, next, now) } : {}),
     limit: { ...(t.limit?.cooldown_min ? { cooldown_min: t.limit.cooldown_min } : {}), ...(t.limit?.per_day ? { per_day: t.limit.per_day, today: state.fantong?.day === dayKey(now) ? state.fantong.today ?? 0 : 0 } : {}) },
-    inputs, leans, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {}, quips: wordsOf(t, lang).quips ?? {},
+    inputs, held_back: heldBack(content, state, t), leans, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {}, quips: wordsOf(t, lang).quips ?? {},
     lingshi: locked ? null : { max: t.lingshi?.max ?? 0, have: state.wealth ?? 0 },
     recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0, seen: (state.fantong?.seen ?? []).length, of: new Set([...fantongAll(t, content, state), ...(state.fantong?.seen ?? []).map(s => s.id)]).size,
   };
@@ -257,7 +276,7 @@ function feed(state, content, ctx, args, t) {
   const landed = [];
   const land = (id, grade, k = 1, wealth = 0) => {
     if (wealth) { s.wealth = (s.wealth ?? 0) + wealth; landed.push({ got: { id: LINGSHI, n: wealth }, grade }); return; }
-    landed.push({ got: stow(content, s, id, k), grade });
+    landed.push({ got: stow(content, s, id, k, 'fantong'), grade });
   };
   for (const o of roll.outs) { land(o.out, o.grade, o.n ?? 1, o.wealth ?? 0); if (o.with) land(o.with, o.grade); }
   const found = new Set(f.recipes ?? []);
@@ -284,7 +303,7 @@ function feed(state, content, ctx, args, t) {
   const line = ev ? pick(ev.say, lang) : fill(w.spit, { name: named(out) });
   const pageLine = P && pages > (f.pages ?? 0) && !paged ? fill(w.page, { n: Math.min(pages, P.need), need: P.need }) : null;
   const say = [line, extra ? fill(w.with, { name: named(extra) }) : null, twin ? fill(w.twin, { name: named(twin) }) : null, pageLine,
-    storedLine(s, landed.map(l => l.got))].filter(Boolean).join(' ');
+    fullLine(s, landed.map(l => l.got))].filter(Boolean).join(' ');
   const nextNow = nextAt(t, s, now);
   const newRecipe = discovered ?? paged;
   return { state: s, result: {

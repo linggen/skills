@@ -10,7 +10,7 @@ import { coolingUntil, oddsOf, throwOn } from './breakthrough.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
-import { hasFound, stow, storedLine } from './pouch.mjs';
+import { hasFound, stow, fullLine } from './pouch.mjs';
 import { bornRoots, rootName, stoneRoots } from './roots.mjs';
 import { oweExit } from './tell.mjs';
 import { seenMet } from './examine.mjs';
@@ -124,17 +124,17 @@ function pay(content, state, ctx, grant, landing = state) {
   const day = dayKey(ctx.now);
   const cards = [[grant.cast, { how: 'tame', creature: grant.cast, day }], [grant.card, { how: 'story', day }]]
     .map(([id, from]) => (id ? gainCard(content, state, id, from) : null)).filter(Boolean);
-  // A thing granted goes into the 储物袋 — or, full, waits at the 洞府 (pouch.mjs).
+  // A thing granted goes into the 储物袋 — or, full, waits at the door for his choice (pouch.mjs `full_offer`).
   // `n`: how many of it (古五's 鼎苔, scraped clean off four pits — 杀人必摸尸's habit, design.md § Items).
-  const stowed = grant.item ? stow(content, state, grant.item, grant.n ?? 1) : null;
+  const stowed = grant.item ? stow(content, state, grant.item, grant.n ?? 1, grant.table ?? 'grant') : null;
   // `more`: the rest of what the scene put in his hands, {id: n} (杀人必摸尸 — 古五's 石室).
-  const extra = Object.entries(grant.more ?? {}).map(([id, n]) => stow(content, state, id, n));
-  const full = storedLine(state, [stowed, ...extra]);
+  const extra = Object.entries(grant.more ?? {}).map(([id, n]) => stow(content, state, id, n, grant.table ?? 'grant'));
+  const full = fullLine(state, [stowed, ...extra]);
   // An art is taught by a person, in a scene — never by the beast itself.
   const learned = grant.art ? learn(content, state, grant.art) : null;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { stored: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
+  return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { offered: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
 /* What a story grant put in his hands: its thing (`n` of it), the rest (`more`), and the 灵石 it paid. Null: nothing. */
