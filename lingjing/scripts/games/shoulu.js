@@ -43,6 +43,13 @@ export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (r
 /** The host's numbers for a level: hosts.shoulu with its pace's laid on. */
 export const jieyinCfg = (host, level) => ({ ...host, ...(host?.paces?.[level?.pace ?? 'rest'] ?? {}), pace: level?.pace ?? 'rest' });
 const OFF = { on: false, ready: false, cool: 0, coolOf: 0, boss: null };
+/** The call when the dock first opens: what opened it, by name — the 大妖 (`say`), the last wave's gold-ringed elite
+    (`sayElite`; a night with no 大妖 opens on one, so 「合窳出来了」 there named a beast that never came: Hanli 11-02,
+    兽潮 第6潮), else an always-on level's own (`sayOpen`). `st`: jieyinState's. */
+export function callFor(host, st, lang) {
+  const beast = st?.boss ?? st?.elite, line = st?.boss ? host?.say : st?.elite ? host?.sayElite ?? host?.say : host?.sayOpen ?? host?.say;
+  return word(line, lang).replace('{beast}', beast ? BN[lang === 'en' ? 'en' : 'zh'][beast] ?? beast : '');
+}
 /** A host row's id in the 手势斗法 kit (jieyin.json `doufa`): its `jieyin`, else its own. */
 export const duelId = (row) => row.jieyin ?? row.id;
 /** Offer the dock for this mount: → Promise<handle | null> (null and nothing drawn without a camera — helper.js). */
@@ -56,7 +63,7 @@ export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside,
     state: () => { const c = cfg(); return c ? jieyinState(now().g, c) : OFF; },
     cast: (e) => { const c = cfg(), row = moves.find((m) => duelId(m) === (e?.move ?? e)); return c && row ? jieyinCast(now().g, row.id, c) : false; },
     fizzle: () => toast(lang === 'en' ? 'Pfft — it fizzled.' : '噗——走火了。'), say: toast,
-    call: () => word(host.say, lang), first: moves.some((m) => m.motion === 'jab' && !m.from) ? host.first : null,
+    call: () => { const n = now(); return callFor(host, n.g ? jieyinState(n.g, cfg()) : null, lang); }, first: moves.some((m) => m.motion === 'jab' && !m.from) ? host.first : null,
     paused, aside, level, dock: host.dock, // where the frame stands (jieyin.json hosts.shoulu.dock)
   })).catch((e) => { console.warn('[shoulu] 结印', e); return null; });
 }

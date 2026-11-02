@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { BEASTS, human, jieyinCast, jieyinState, jieyinTarget, levelsFrom, newGame, sim, spawnAt, step, withSeals } from '../scripts/games/shoulu/core.js';
-import { gateOpen, jieyinCfg, offerJieyin } from '../scripts/games/shoulu.js';
+import { callFor, gateOpen, jieyinCfg, offerJieyin } from '../scripts/games/shoulu.js';
 
 const read = (p) => JSON.parse(fs.readFileSync(new URL(p, import.meta.url), 'utf8'));
 const reg = read('../worlds/jiuding/games.json'), kit = read('../worlds/jiuding/levels/jieyin.json');
@@ -146,4 +146,19 @@ test('the ready card\'s moment (jieyinState `soon`, Hanli 10-28): the wave out a
   assert.equal(jieyinState(g, cfg).soon, false, 'still coming: not yet');
   g.queue = [];
   assert.equal(jieyinState(g, { ...cfg, when: 'always' }).soon, false);
+});
+
+test('the dock\'s call names what opened it (Hanli 11-02, 兽潮 第6潮: 「最后说合窳, boss出来了, 但是并没有看到」 — an elite night)', () => {
+  assert.equal(callFor(host, { on: true, boss: 'heyu', elite: null }, 'zh'), '合窳出来了——结印！');
+  assert.equal(callFor(host, { on: true, boss: null, elite: 'yezhu' }, 'zh'), '金框的凶野猪来了——结印打它！');
+  assert.doesNotMatch(callFor(host, { on: true, boss: null, elite: 'yezhu' }, 'zh'), /合窳|大妖/);
+  assert.equal(callFor(host, { on: true, boss: null, elite: null }, 'zh'), '摄像头开着——结印助战！', 'an always-on level: nothing named');
+  assert.match(callFor(host, { on: true, boss: null, elite: 'zheng' }, 'en'), /gold-ringed Zheng/);
+  // On the field: a gold-ringed 野猪 out, no 大妖 — the dock opens on it, and its call names it.
+  const g = newGame(lv('shiao'), { seed: 'e', headless: true }), cfg = jieyinCfg(host, lv('shiao'));
+  g.queue.push({ at: 0, type: 'yezhu', elite: 2 });
+  step(g, 1 / 30);
+  const st = jieyinState(g, cfg);
+  assert.equal(st.on, true);
+  assert.equal(callFor(host, st, 'zh'), '金框的凶野猪来了——结印打它！');
 });
