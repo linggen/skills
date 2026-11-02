@@ -3284,7 +3284,7 @@ async function useItem(id, action = 'use') {
 
 /* `pane`: null opens the 储物袋, 'deck' the 牌组 — two chips, one panel's read. An open panel on the other one switches. */
 async function openGear(pane = null) {
-  if (view.gearOpen) return show({ pouchPane: pane, pouchToss: null });
+  if (view.gearOpen) { show({ pouchPane: pane, pouchToss: null }); if (pane === 'fantong') await loadFantong(); return; }
   show({ gearOpen: true, luOpen: false, ...othersShut('gearOpen'), gear: null, pouchToss: null, pouchPane: pane });
   const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
   if (view.gearOpen) show({ gear: r?.gear ?? null, gearNote: null });
@@ -3794,6 +3794,8 @@ const CLICKS = [
   ['[data-mem-replay]', (el) => { const play = replayOf(view.lu?.album, el.dataset.memReplay); if (play) show({ luOpen: false, memory: { n: play.n, i: 0, play, at: performance.now() } }); }],
   ['[data-close-chapter]', (el) => { closeSeen(el.dataset.closeChapter, true); render(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
+  // A door to one pane of the panel (the tray's 饭桶 opens on 饭桶, not the 储物袋 — Hanli 11-02).
+  ['[data-gear-open]', (el) => run(`gear:${el.dataset.gearOpen}`, () => openGear(el.dataset.gearOpen || null))],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
   ['[data-kanjia-pick]', (el) => { if (!el.matches(':disabled')) show({ kanjiaPick: !view.kanjiaPick }); return true; }],
   ['[data-kanjia]', (el) => { if (!el.matches(':disabled')) { keep({ kanjiaPick: false }); run(`kanjia:${el.dataset.kanjia}`, () => kanjia(el.dataset.kanjia)); } }],

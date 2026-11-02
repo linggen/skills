@@ -2004,7 +2004,7 @@ function waitRowHtml(w, ctx) {
 /* 先放一放 (rules/aside.mjs): the book set aside — what Look says may be played meanwhile, each by the page's own
    opener for it (one table), and 接着读. A kind with no opener of its own stands where it always does. */
 const ASIDE_OPEN = {
-  replay: (o) => `data-replay-play="${esc(o.id)}"`, fantong: () => 'data-gear', pool: (o) => `data-duel-start="${esc(o.id)}"`,
+  replay: (o) => `data-replay-play="${esc(o.id)}"`, fantong: () => 'data-gear-open="fantong"', pool: (o) => `data-duel-start="${esc(o.id)}"`,
   tide: (o) => `data-play="${esc(o.id)}"`, seclusion: () => 'data-seclude-open', duizi: () => 'data-duizi-open', divine: () => 'data-divine',
 };
 /* An offer the page can open where the book was set aside (the others stand where they always do). */
