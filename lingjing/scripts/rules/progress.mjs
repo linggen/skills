@@ -141,7 +141,8 @@ function makeRunner(content, opts) {
     if (out.result?.refused !== 'no-stamina') return out;
     const was = r.now;
     r.nextDay();
-    const rested = awayFit(content, { ...s, last_seen: was.toISOString() }, r.now);
+    // (the rest is the run's own: no `away` note is left on the seeded save for the page to tell)
+    const { away, ...rested } = awayFit(content, { ...s, last_seen: was.toISOString() }, r.now);
     const again = VERBS[verb](rested, content, ctx(), args);
     return again.state || !again.result?.ok ? again : { ...again, state: rested };
   };
