@@ -120,7 +120,7 @@ test('a spent pool rests to its lowered top, never past it — 丹毒 never keep
   // Six hours away (time away counts as 闭关 for 体力 — no clock refills it since 2026-11-02).
   const s = awayFit(content, { ...player({ stamina: 0, resting: true, dandu: 40 }), last_seen: T0.toISOString() }, at(6));
   const l = look(s, content, ctx(at(6)));
-  assert.ok(l.stamina.max < content.rewards.stamina.rest, 'the top is under the rest mark');
+  assert.ok(content.rewards.stamina.rest <= l.stamina.max, 'what 闭关 brings back plays at once (Hanli 11-02: 「回多少就能玩多少」): no rest mark above the top');
   assert.ok(!l.stamina.resting, 'six hours on, the lowered pool is whole and he plays');
   assert.equal(l.director.pool, 'full', 'and Ling reads it as the page draws it — full, not empty (review 2026-10-21)');
 });

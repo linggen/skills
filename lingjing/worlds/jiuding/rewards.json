@@ -113,7 +113,7 @@
   "_stamina": "体力是控制单次游戏时长的: 1 体力 ≈ 1 分钟 (Hanli 2026-11-02: 「或者简单点, 给用户100体力, 1体力玩大约1分钟?」 · 「体力不要自动回, 只有闭关才回. 或者体力卡」 · 「完成任务不奖励体力」; design.md § 体力). `max` 100, and a spent pool rests until whole (`rest`). No clock refill (`refill.clock_hours` null): it comes back in 闭关 only — the real one (rules/seclusion.mjs) or time away, `refill.away_min` or more with no player verb counted as 闭关 for 体力 alone (state.mjs awayFit) — the whole pool in `refill.seclusion_hours`, linear on real minutes; and by the 体力卡. `refill.quest` false: no chore, 开府 row or app quest pays 体力, whatever its row says. `cost`: each act its minutes × `per_minute` (state.mjs staminaCost) — a word names balance.json model.minutes (`practice`: the practice board's; `reading`: the scene's own text at model.chars_per_min, plus `scene`), a number is the act's minutes where the model has none, `move` a trip by its roads.",
   "stamina": {
     "max": 100,
-    "rest": 100,
+    "rest": 0,
     "per_minute": 1,
     "refill": {
       "clock_hours": null,

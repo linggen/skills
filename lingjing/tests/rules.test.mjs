@@ -3490,7 +3490,7 @@ test('体力 says three hours by name: back to rest (rest_at), full (full_at), a
   // No clock: each is when a 闭关 (or time away) begun now brings it back.
   const at = n => new Date(NOW.getTime() + n * (q.refill.seclusion_hours * 3600_000 / q.max)).toISOString();
   const empty = look({ ...toOpenWorld(), stamina: 0, stamina_at: NOW.toISOString(), resting: true }, content, c).stamina;
-  assert.equal(empty.rest_at, at(q.rest ?? 1));
+  assert.equal(empty.rest_at, at(Math.max(1, q.rest ?? 1)), 'the first point back: what comes back plays (Hanli 11-02)');
   assert.equal(empty.full_at, at(q.max));
   assert.equal(empty.returns_at, empty.rest_at, 'resting: the old field is the rest hour');
   const half = look({ ...toOpenWorld(), stamina: 50, stamina_at: NOW.toISOString() }, content, c).stamina;

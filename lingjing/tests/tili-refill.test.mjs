@@ -36,8 +36,8 @@ function onDisk(state) {
   return { cli, saved, done: () => fs.rmSync(data, { recursive: true, force: true }) };
 }
 
-test('the pool: 100, rest to full, no clock, no quest pays it — every number declared', () => {
-  assert.deepEqual([Q.max, Q.rest, Q.per_minute], [100, 100, 1]);
+test('the pool: 100, no rest lock (what comes back plays — Hanli 11-02: 「回多少就能玩多少」), no clock, no quest pays it — every number declared', () => {
+  assert.deepEqual([Q.max, Q.rest, Q.per_minute], [100, 0, 1]);
   assert.deepEqual(Q.refill, { clock_hours: null, seclusion_hours: 1, away_min: 10, quest: false });
 });
 
@@ -90,7 +90,8 @@ test('spent and away for an hour: full again, and he plays', () => {
   const { cli, done } = onDisk(player({ stamina: 0, resting: true }));
   try {
     cli(T0, 'look');
-    assert.equal(cli(at(30), 'move', '--place=sibei').refused, 'no-stamina', 'half an hour away: still resting');
+    const half = cli(at(30), 'look');
+    assert.ok(half.stamina.now >= 45 && half.stamina.empty === false, 'half an hour away: half back, and it plays at once (no rest to full)');
     const back = cli(at(30 + 60 * Q.refill.seclusion_hours), 'look');
     assert.equal(back.stamina.now, Q.max);
     assert.equal(back.stamina.empty, false);
