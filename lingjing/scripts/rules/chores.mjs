@@ -175,10 +175,11 @@ export const choreOpen = q => (onHost(q.open) ? q.open : appEntry(q.app));
    `kaifu.order`), then an app's own numeric `order`, then the menu's; the
    rules name no milestone. */
 function kaifuOrder(content, quests) {
-  const listed = content?.world?.kaifu?.order ?? [];
+  const listed = content?.world?.kaifu?.order ?? [], retired = new Set(content?.world?.kaifu?.retired ?? []);
   const rank = q => (listed.includes(q.id) ? listed.indexOf(q.id) : Infinity);
   const own = q => (Number.isFinite(q.order) ? q.order : Infinity);
-  return quests.filter(isOnce).map((q, i) => ({ q, i }))
+  // A retired id (world.json `kaifu.retired`) is never a row, though an app's file still holds it till it writes again.
+  return quests.filter(q => isOnce(q) && !retired.has(q.id)).map((q, i) => ({ q, i }))
     .sort((a, b) => rank(a.q) - rank(b.q) || own(a.q) - own(b.q) || a.i - b.i).map(x => x.q);
 }
 /* The rows this player's devices can do, in order. */
@@ -244,7 +245,8 @@ function kaifuOther(content, quests, list, lang) {
    rows the player's devices can do), how many are `ready` to hand in, the
    rows to show (`rows`: ready, then the hints revealed), `next` (the first
    open hint), `opens: 'tomorrow'` when every revealed hint is done and more
-   wait, and `other` once all is done on one device. */
+   wait (`waiting`, how many: their hint, not their hand-in, is what waits — a row
+   done before its hint shows is 交差 at once), and `other` once all is done on one device. */
 export function kaifuBrief(state, quests, now, lang, content) {
   const list = kaifuList(state, quests, now, lang, content);
   if (!list.length) return null;
@@ -252,7 +254,7 @@ export function kaifuBrief(state, quests, now, lang, content) {
   const rows = [...list.filter(k => k.step === 'ready'), ...list.filter(k => k.step === 'open')].map(k => ({ ...pick1(k), step: k.step }));
   const next = list.find(k => k.step === 'open'), waits = list.some(k => k.step === 'waits'), other = kaifuOther(content, quests, list, lang);
   return { done: list.filter(k => k.paid).length, of: list.length, ready: list.filter(k => k.step === 'ready').length, rows,
-    ...(next ? { next: pick1(next) } : waits ? { opens: 'tomorrow' } : {}), ...(other ? { other } : {}) };
+    ...(next ? { next: pick1(next) } : waits ? { opens: 'tomorrow', waiting: list.filter(k => k.step === 'waits').length } : {}), ...(other ? { other } : {}) };
 }
 
 /* The rows done and unpaid: handed in like any chore — all of them, at once. */

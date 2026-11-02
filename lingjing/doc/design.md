@@ -852,7 +852,7 @@ Built as 喂饭桶 · 开炉: up to three things and 0–3 灵石 in, the lid pr
 rules/fantong-roll.mjs, fantong.json; doc/games.md § 喂饭桶 · 开炉.
 On one page with the bag (Hanli 2026-11-02; fantong-kailu.js): the 饭桶 (its canvas, three places, 灵石, 开炉) and the
 储物袋's own tabs and grid — side by side on the Mac and a phone held sideways, stacked on a phone held upright (开炉
-held at the bottom); a tap flies a tile into the first empty place, a drag too on the Mac, a tap on a place returns
+held at the bottom); a tap picks a tile and shows what it is (kind · effect · about, the 储物袋's lines; held back, why) with 「放进饭桶」, which puts it in the first empty place (Hanli 11-02: 「防止玩家丢错东西进饭桶了」); a drag on the Mac drops it straight in; a tap on a place returns
 it; what may not go in stays, dimmed, with the rules' reason (`held_back`: 穿着 · 剧情要用 · 留 n 个X用 · 开炉要用),
 and with three in the rest say 最多三样. While it chews and reveals the bag folds away.
 
@@ -1223,7 +1223,7 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   - **Hand in at once.** Every done row is 可交 now — each its own 交差, and 「全部交差 · n」 (Quest
     `turn`, `id: "kaifu"`) for all. Only the **hint** of an undone row drips: one more a day, in
     world.json `kaifu.order` (`state.kaifu.shown` and `shown_on`, written like the stand —
-    chores.mjs `kaifuFit`). All revealed and done, more waiting: 「下一件明日开」. 跳过 is gone.
+    chores.mjs `kaifuFit`). All revealed and done, more waiting: 「还有 n 件 · 明日再揭一件，做了随时可交」 (the hint waits, never the hand-in — 「下一件明日开」 read as one; Hanli 11-02). A retired id an app's file still holds (world.json `kaifu.retired`) is never listed or counted. 跳过 is gone.
   - **Pay.** 50 灵石 each, as the row says (`once` table, capped at 50) — and no 体力 since 2026-11-02 (§ 体力: no quest pays it); the card says the 灵石
     (Look's `pays` carries no `stamina`), and so does the hand-in line.
   - **Progress.** 「开府 3/7」 is the group's own line in the 事 panel, never beside one row (Hanli:

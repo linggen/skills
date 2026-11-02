@@ -23,7 +23,8 @@
  ],
  "authored": true,
  "kaifu": {
-  "_about": "开府 — the first steps of Linggen and its apps (Hanli, 2026-11-02; rules/chores.mjs). Only the rows the player's devices can do are listed; done ones are handed in at once; one more undone hint shows a day, in this order: talk to her first, then the news, her voice, the books, a song, Health, notifications, a sweep, a picture, and the pairing — listed only once both devices are there. An id not listed comes after, in the app's own order. `other`: the one uncounted card a one-device player sees once all is done — the device they lack.",
+  "_about": "开府 — the first steps of Linggen and its apps (Hanli, 2026-11-02; rules/chores.mjs). Only the rows the player's devices can do are listed; done ones are handed in at once; one more undone hint shows a day, in this order: talk to her first, then the news, her voice, the books, a song, Health, notifications, a sweep, a picture, and the pairing — listed only once both devices are there. An id not listed comes after, in the app's own order. `retired`: ids taken out of the list — an app drops its own from its quests file only when it next writes it (CFO's cfo-first-stock stood in Hanli's cfo.json after the 开府 restart, so his read 「开府 7/11」 for 10, 2026-11-02): never listed or counted; a save keeps what it was paid for them. `other`: the one uncounted card a one-device player sees once all is done — the device they lack.",
+  "retired": ["cfo-first-stock", "linggen-skill", "linggen-mcp", "linggen-model", "linggen-account", "linggen-memory", "linggen-remote", "linggen-mission", "linggen-browser", "linggen-chatgpt", "linggen-phone-chat"],
   "order": [
    "linggen-chat",
    "linggen-ask-news",

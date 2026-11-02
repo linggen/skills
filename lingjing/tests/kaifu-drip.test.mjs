@@ -84,6 +84,22 @@ test('only the hint drips: one more undone row a day, in the world order', () =>
   const t = k(s, day(1, 20), both);
   assert.equal(t.next, undefined);
   assert.equal(t.opens, 'tomorrow');
+  assert.equal(t.waiting, 5, 'how many hints wait (the Mac-only list of 7, two done)');
+  // the line says the HINT waits, never the hand-in (Hanli 11-02: 「下一件明日开」 read as the next hand-in held a day)
+  const book = bookPopHtml({ look: look(s, content, ctx(day(1, 20), both)), lang: 'zh', words: { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' } });
+  assert.match(book, /还有 5 件 · 明日再揭一件，做了随时可交/);
+  assert.doesNotMatch(book, /下一件明日开/);
+});
+
+test('a retired id an app\'s file still holds is never listed or counted (Hanli 11-02: 「开府 7/11」 with both devices — CFO\'s cfo-first-stock)', () => {
+  const stale = { id: 'cfo-first-stock', app: 'cfo', period: 'once', due: true, reward: 50, stamina: 20, device: 'both', title: { zh: '开仓', en: 'stock' }, done_at: '2026-10-16T13:34:43Z' };
+  const paired = [...withDone(['linggen-pair']), stale];
+  const s = { ...start(), chores: { 'cfo-first-stock': { period: 'once', paid_at: '2026-11-02T18:34:43Z' } } };
+  const brief = k(s, NOW, paired);
+  assert.equal(brief.of, 10);
+  assert.ok(!rows(s, NOW, paired).some(r => r.id === 'cfo-first-stock'));
+  assert.ok(content.world.kaifu.retired.includes('cfo-first-stock'));
+  assert.ok(s.chores['cfo-first-stock'], 'what it paid is kept');
 });
 
 test('a save that handed in the old ones keeps what it was paid; they are no longer listed or counted', () => {
