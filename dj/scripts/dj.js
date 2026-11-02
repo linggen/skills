@@ -10,7 +10,7 @@
 
 import '/shared/chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from '/shared/api.js';
-import { runAction as action } from './bash.js';
+import { noteQuest, runAction as action } from './bash.js';
 import { loadConfig, loadLibrary } from './library.js';
 import { backfillLyrics } from './lyrics-backfill.js';
 import { phoneDevices } from './phone.js';
@@ -102,6 +102,7 @@ document.addEventListener('visibilitychange', () => {
   wirePlayNow();
   restoreSet();
   watchQueue();
+  noteQuest('due'); // the chores' due, from the library as it opens (quest.mjs)
   wireButtons();
   wireResizer();
   wireBuild();

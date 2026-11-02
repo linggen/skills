@@ -7,7 +7,7 @@
 import '/shared/chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from '/shared/api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
-import { stampQuest, noteFirstStock } from './quest.js';
+import { stampQuest, publishDue, dueFacts } from './quest.js';
 import { guessType, labelFromFilename, bestAccountMatch } from './accounts.js';
 import { toLedgerRows, mergeImport, onFileIds, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, stampCurrencies, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
@@ -430,6 +430,19 @@ function applyEdits() {
   ACCOUNTS = accountsOf(EDITS);
   EXTERNAL = externalOf(EDITS);
   LEDGER = activeRows(EDITS, RAW_LEDGER);
+  noteChoresDue();
+}
+
+/// Each chore's `due` from what the page holds (quest.js publishDue): an
+/// account to review, a transaction left in Other, an investment, a ledger
+/// imported before. Settled a moment after the last change; silent.
+let DUE_TIMER = null;
+function noteChoresDue() {
+  clearTimeout(DUE_TIMER);
+  DUE_TIMER = setTimeout(() => {
+    const uncategorised = LEDGER.filter((row) => !row.transfer && row.amount < 0 && effCategory(row) === 'other').length;
+    publishDue(runBash, dueFacts({ ledger: LEDGER, accounts: ACCOUNTS, uncategorised, investments: investmentsOf(EDITS) }));
+  }, 1500);
 }
 
 /// Write one cell and re-derive. `save=false` batches several writes into one
@@ -1089,7 +1102,6 @@ async function resumeState() {
     RAW_LEDGER = await loadLedger();
     EDITS = await loadEdits(RAW_LEDGER);
     applyEdits(); // ACCOUNTS / COMMITMENTS / BUDGETS / overrides / LEDGER
-    noteFirstStock(runBash, investmentsOf(EDITS)); // a stock already listed is the 开府 fact (quest.js)
     await migrateCurrencies();
     INSIGHTS = await loadInsights();
     SUGGESTIONS = await loadSuggestions();
@@ -1237,15 +1249,20 @@ function applyVisibility() {
 // out of sight, or flicked past, is not a read. Once a day per page.
 const REPORT_READ_MS = 15000;
 let READ_TIMER = null;
-let READ_DAY = '';
-const reportInView = () => VIEW_MODE === 'report' && LEDGER.length > 0 && document.visibilityState === 'visible';
+// The same for Investments (cfo-invest, 2026-11-02: on the Mac too): its tab,
+// holding an investment, in front of the player as long.
+const READ_QUEST = { report: 'cfo-review', invest: 'cfo-invest' };
+const READ_DAYS = {};
+const reportInView = () => VIEW_MODE in READ_QUEST && document.visibilityState === 'visible'
+  && (VIEW_MODE === 'report' ? LEDGER.length > 0 : Object.keys(investmentsOf(EDITS)).length > 0);
 function watchReportRead() {
-  if (READ_TIMER || READ_DAY === localToday() || !reportInView()) return;
+  const mode = VIEW_MODE;
+  if (READ_TIMER || READ_DAYS[mode] === localToday() || !reportInView()) return;
   READ_TIMER = setTimeout(() => {
     READ_TIMER = null;
-    if (READ_DAY === localToday() || !reportInView()) return;
-    READ_DAY = localToday();
-    stampQuest(runBash, 'cfo-review');
+    if (VIEW_MODE !== mode || READ_DAYS[mode] === localToday() || !reportInView()) return;
+    READ_DAYS[mode] = localToday();
+    stampQuest(runBash, READ_QUEST[mode]);
   }, REPORT_READ_MS);
 }
 document.addEventListener('visibilitychange', watchReportRead);

@@ -75,14 +75,21 @@ function doable(state, q, now) {
   return !done && !paid;
 }
 
-/* The day's one: a pool entry, seeded by the day and the save. Days alternate
-   mac and phone (always mac with no phone); a `both` fits either; when the
-   day's device has none, the other's may serve. Highest-hash-wins, so an
-   entry appearing mid-day moves the pick only if it outranks it. */
+/* Shown at all: the app says it can be done now (`due`; a row the app cannot
+   offer publishes `due: false` and is never shown as not done), or it was done
+   in its period anyway; and it fits the devices the player has (fitsDevices). */
+const offered = (q, has, now) => (q.due !== false || questDone(q, now)) && fitsDevices(q, has);
+
+/* The day's one: a pool entry, seeded by the day and the save — only one the
+   player can do (offered), so a row its app hides or a device he lacks never
+   wins the day. Days alternate mac and phone when he has both; a `both` fits
+   either; when the day's device has none, the other's may serve.
+   Highest-hash-wins, so an entry appearing mid-day moves the pick only if it
+   outranks it. */
 export function dailyPick(state, quests, now) {
-  const phone = phoneReady(quests);
-  const pool = quests.filter(q => isPool(q) && (phone || deviceOf(q) !== 'phone') && doable(state, q, now));
-  const device = phone && (dayNumber(now) + mix(seedOf(state))) % 2 ? 'phone' : 'mac';
+  const has = playerDevices(quests), phone = has.phone;
+  const pool = quests.filter(q => isPool(q) && offered(q, has, now) && doable(state, q, now));
+  const device = has.mac && has.phone ? ((dayNumber(now) + mix(seedOf(state))) % 2 ? 'phone' : 'mac') : has.phone ? 'phone' : 'mac';
   const fits = pool.filter(q => [device, 'both'].includes(deviceOf(q)));
   const from = fits.length ? fits : pool;
   const key = q => mix(`${dayKey(now)}|${seedOf(state)}|${q.id}`);
@@ -90,11 +97,14 @@ export function dailyPick(state, quests, now) {
   return { pick: best, device, phone };
 }
 
-/* Today's 人间功课: the fixed ones and the pick — due or done, in that order. */
+/* Today's 人间功课: the fixed ones (the dailies) the player can do, then the pick. */
 export function todayChores(state, quests, now) {
-  const { pick: one } = dailyPick(state, quests, now);
-  return [...quests.filter(isFixed), ...(one ? [one] : [])].filter(q => q.due || questDone(q, now));
+  const has = playerDevices(quests), { pick: one } = dailyPick(state, quests, now);
+  return [...quests.filter(q => isFixed(q) && offered(q, has, now)), ...(one ? [one] : [])];
 }
+
+/* How it is done, the app's own words (`how`, ≤20 words), or null. */
+export const choreHow = (q, lang) => (q?.how && typeof q.how === 'object' ? pick(q.how, lang) ?? null : null);
 
 /* May it be handed in today: a fixed one, the pick, or a milestone that is
    open or was skipped (the drip, below). */
@@ -115,12 +125,22 @@ export function choreCounts(state, quests, q, now, content) {
 const choreTable = (content, q, state) => (isOnce(q) ? 'once' : !isFixed(q) ? 'life'
   : state && content.rewards.tables.gongke_zero && zeroAt(content, state.tier, state.step) ? 'gongke_zero' : 'gongke');
 const FLAT = new Set(['once', 'gongke_zero']); // the table's own 灵石, not the chore's `reward`
-export function choreGrant(content, q, state = null) {
+/* A day holds `shares_per_day` (gongke.json) dailies that pay their share of the layer; the rest pay their
+   灵石 and meaning only (2026-11-02: six dailies instead of one, the day's 修为 from chores kept where it was —
+   the fixed one and a daily pick). `now` counts the day's already paid; without it, no limit. */
+function dayShareLeft(content, q, state, now) {
+  const n = content.gongke?.shares_per_day;
+  if (!now || !state || q.period !== 'day' || !Number.isFinite(n)) return true;
+  const today = periodKey('day', now);
+  return Object.entries(state.chores ?? {}).filter(([id, c]) => id !== q.id && c?.period === today).length < n;
+}
+export function choreGrant(content, q, state = null, now = null) {
   const table = choreTable(content, q, state), cap = content.rewards.tables[table] ?? {};
   // The day's and the week's chores pay a share of the layer (rules/playpay.mjs chorePlay, 2026-10-27).
   // A share of the save's layer (play_pay.chore); with no save, none (a world declaring no `chore` pays the chore's `reward`).
   const minutes = Boolean(content.balance?.play_pay?.chore);
-  const played = FLAT.has(table) ? 0 : minutes ? chorePlay(content, state, q.period) ?? 0 : q.reward ?? 0;
+  const share = dayShareLeft(content, q, state, now);
+  const played = FLAT.has(table) || !share ? 0 : minutes ? chorePlay(content, state, q.period) ?? 0 : q.reward ?? 0;
   return {
     table,
     progress: played,

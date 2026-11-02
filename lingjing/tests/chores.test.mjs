@@ -199,3 +199,52 @@ test('the devices the player has: the host, and the other once a pair row (or it
   assert.equal(fitsDevices({ device: 'pair' }, mac), false);
   assert.equal(fitsDevices({ device: 'pair' }, both), true);
 });
+
+// 2026-11-02 (Hanli 「任务设计可以, 按你说的做」): the new set — six dailies, due published by the apps, device-filtered.
+const daily = (id, extra = {}) => entry(id, { period: 'day', pool: undefined, device: 'both', ...extra });
+const NEW_SET = [
+  daily('linggen-greet', { kind: 'greet', how: { zh: '跟银月说句话', en: 'Say a word to Yinyue' } }),
+  daily('health-steps', { device: 'phone', kind: 'body' }), daily('health-sleep', { device: 'phone', kind: 'rest', due: false }),
+  daily('cfo-review', { kind: 'ledger' }), daily('dj-listen', { kind: 'song' }), daily('shifu-glance', { device: 'mac', kind: 'sweep' }),
+  entry('shifu-scan'), entry('shifu-clear', { device: 'both', due: false }), entry('health-report', { device: 'phone' }),
+  entry('cfo-sort', { device: 'both' }), entry('dj-pick', { device: 'both' }),
+];
+const ids = rows => rows.map(q => q.id);
+
+test('a Mac-only player: the Mac and both dailies, never a phone one, and the pick is one he can do on the Mac', async () => {
+  const { todayChores } = await import('../scripts/rules/chores.mjs');
+  const s = start();
+  for (let n = 0; n < 10; n += 1) {
+    const today = todayChores(s, NEW_SET, day(n));
+    assert.deepEqual(ids(today).slice(0, 4), ['linggen-greet', 'cfo-review', 'dj-listen', 'shifu-glance'], `day ${n}`);
+    for (const q of today) assert.notEqual(q.device, 'phone', `day ${n}: ${q.id}`);
+  }
+});
+
+test('a two-device player gets the phone dailies too; a due:false row is hidden as a daily and never the pick', async () => {
+  const { todayChores } = await import('../scripts/rules/chores.mjs');
+  const s = start(), quests = [...NEW_SET, paired];
+  const today = todayChores(s, quests, day(0));
+  assert.ok(ids(today).includes('health-steps'));
+  assert.ok(!ids(today).includes('health-sleep'), 'the app says sleep cannot be done: hidden');
+  for (let n = 0; n < 30; n += 1) assert.notEqual(dailyPick(s, quests, day(n)).pick?.id, 'shifu-clear');
+  // done anyway in its period: shown as done
+  const slept = quests.map(q => (q.id === 'health-sleep' ? { ...q, done_at: day(0, 7).toISOString() } : q));
+  assert.ok(ids(todayChores(s, slept, day(0))).includes('health-sleep'));
+});
+
+test('the book row carries the app\'s how; only shares_per_day dailies pay their share of the layer', async () => {
+  const { choreGrant } = await import('../scripts/rules/chores.mjs');
+  const s = start(), q = NEW_SET[0];
+  const book = look(s, content, ctx(NEW_SET, day(0))).book ?? [];
+  const row = book.find(b => b.id === 'linggen-greet');
+  assert.equal(row?.chore?.how, '跟银月说句话');
+  const n = content.gongke.shares_per_day;
+  assert.ok(Number.isFinite(n));
+  const paidToday = Object.fromEntries([...Array(n).keys()].map(i => [`x-${i}`, { period: periodKey('day', day(0)), paid_at: day(0, 9).toISOString() }]));
+  assert.ok(choreGrant(content, q, s, day(0)).progress > 0, 'the first pays its share');
+  assert.equal(choreGrant(content, q, { ...s, chores: paidToday }, day(0)).progress, 0, 'past the day\'s shares, no 修为');
+  assert.ok(choreGrant(content, q, { ...s, chores: paidToday }, day(0)).wealth > 0, 'its 灵石 still');
+  const week = { ...NEW_SET[6] };
+  assert.ok(choreGrant(content, week, { ...s, chores: paidToday }, day(0)).progress > 0, 'a weekly is not a daily share');
+});

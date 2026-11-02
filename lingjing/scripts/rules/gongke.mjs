@@ -13,7 +13,7 @@
 // 开府's one-time milestones never take a meaning.
 import { dayKey, periodKey, pick, weekKey, zeroAt } from '../state.mjs';
 import { paysOf } from './core.mjs';
-import { choreGrant, choreOpen, isOnce } from './chores.mjs';
+import { choreGrant, choreHow, choreOpen, isOnce } from './chores.mjs';
 
 const kindOf = q => (typeof q?.kind === 'string' ? q.kind : null);
 
@@ -95,10 +95,10 @@ export function gongkeBoard(content, state, chores, now, lang, questDone) {
     const paid = state.chores?.[q.id]?.period === periodKey(q.period, now);
     const done = questDone(q, now);
     return {
-      id: q.id, kind: kindOf(q), name: m ? pick(m.name, lang) : null, title: pick(q.title, lang), device: q.device ?? null, period: q.period, open: choreOpen(q),
+      id: q.id, kind: kindOf(q), name: m ? pick(m.name, lang) : null, title: pick(q.title, lang), how: choreHow(q, lang), device: q.device ?? null, period: q.period, open: choreOpen(q),
       done, done_at: done ? q.done_at : null, paid, paid_at: paid ? state.chores[q.id].paid_at ?? null : null,
       // The chore's own pay, as it would land now (2026-10-27: a share of the layer in 修为, chores.mjs choreGrant).
-      ...(!paid ? { pays: paysOf(content, state, now, choreGrant(content, q, state)) ?? { progress: 0, wealth: 0 } } : {}),
+      ...(!paid ? { pays: paysOf(content, state, now, choreGrant(content, q, state, now)) ?? { progress: 0, wealth: 0 } } : {}),
       ...(m && !paid ? { adds: { ...landsOf(content, state, now, g), ...(g.item ? { item: itemName(content, g.item, lang) } : {}) } } : {}),
       ...(m?.item ? { leaves: itemName(content, m.item, lang) } : {}),
     };

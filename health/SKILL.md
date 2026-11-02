@@ -27,6 +27,8 @@ quests:
   stamp: node scripts/quest.mjs stamp {id} {at}
   facts:
     health-doctor: health-doctor
+    health-steps: health-steps
+    health-sleep: health-sleep
 permission:
   paths:
     # `edit`, not `read`: a tool's tier is checked against the session's CWD —
@@ -39,8 +41,8 @@ permission:
     agent exchange reach the model, never the samples. The grant lets it file
     what your phone sends and record the lines you say. Health's memory is
     scoped to Health alone — it never reads or writes your other apps' memory.
-    A finished workout, or the week's letter read on your phone, leaves one
-    note in ~/.linggen/quests — when, nothing else.
+    5,000 steps, a full night, the week's letter or a doctor's note read on
+    your phone leaves one note in ~/.linggen/quests — when, nothing else.
 tools:
   - name: Report
     description: >-

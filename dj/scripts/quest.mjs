@@ -1,23 +1,31 @@
 // quest.mjs — DJ's quest facts, for any app that counts real-life practice
 // (Lingjing reads ~/.linggen/quests/*.json). The file is DJ's MENU — every
 // chore a player can do here — and each entry's `done_at` is DJ's own record
-// of the last time it saw that chore done. `pool: true` offers an entry to the
-// game's one-chore-a-day pick; `device` is where the player does it; `kind`
-// is what sort of practice it is (a plain word — a game reads it, DJ names no
-// game): every DJ chore is `song`.
+// of the last time it saw that chore done; `due` says whether it can be done
+// now (a row DJ cannot offer publishes false, and a game hides it). `pool:
+// true` offers an entry to the game's one-chore-a-day pick; `device` is where
+// the player does it; `kind` is what sort of practice it is (a plain word — a
+// game reads it, DJ names no game): every DJ chore is `song`; `how` says in a
+// line how it is done.
+//
+//   dj-listen  one song played to its end — the Mac's player (its `ended`), or
+//              the phone's (fact `dj-listen`). Due while the library holds a
+//              song with its file.
+//   dj-pick    a song the agent suggested, played: a play started from the
+//              set it pushed (PageUpdate `play`, or ▶ on its proposed set).
+//              Always due.
 //
 //   quest.mjs <id>     stamp <id> done now; prints one JSON line
-//   quest.mjs dj-sync  look at what the phones hold (witnessSync) and stamp
-//                      dj-sync only when one gained songs
+//   quest.mjs due      no stamp: bring the menu and every `due` up to date
 //   quest.mjs stamp <id> <at>   the engine's door for a phone fact (SKILL.md
 //                      `quests:`): done at <at> (2026-09-24T14:03:11Z); exit
 //                      0 once the file holds it or a later time, else 1
 //
 // Only the fact crosses — due, done, when — never which song, which list or
-// what was sung. Read-merge-write: every other entry keeps its `done_at`, and
-// an entry this menu does not know stays as it is. A stamp never moves an
-// entry's `done_at` back. A failure here never fails
-// the action it follows: the CLI always exits 0, and callers swallow errors.
+// what was sung. Read-merge-write: every other entry keeps its `done_at`, a
+// retired one leaves, and an entry this menu does not know stays as it is. A
+// stamp never moves an entry's `done_at` back. A failure here never fails the
+// action it follows: the CLI always exits 0, and callers swallow errors.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,36 +35,35 @@ const OPEN = '/apps/dj/scripts/index.html';
 
 export const MENU = [
   {
-    id: 'dj-fetch', kind: 'song', period: 'day', reward: 20, stamina: 10, device: 'mac', pool: true, open: OPEN,
-    title: { zh: '采风 · 在 DJ 收一首新曲', en: 'Gather a song · download a new track in DJ' },
+    id: 'dj-listen', kind: 'song', period: 'day', reward: 20, stamina: 10, device: 'both', open: OPEN,
+    title: { zh: '琴心 · 听一首歌', en: 'The heart of the zither · hear one song' },
+    how: { zh: '在 DJ 里放一首歌，听到最后', en: 'Play one song in DJ through to its end' },
   },
   {
-    id: 'dj-sing', kind: 'song', period: 'day', reward: 25, stamina: 15, device: 'mac', pool: true, open: OPEN,
-    title: { zh: '对歌 · 唱一首卡拉OK', en: 'Sing one · a karaoke song' },
-  },
-  {
-    id: 'dj-playlist', kind: 'song', period: 'week', reward: 25, stamina: 15, device: 'mac', pool: true, open: OPEN,
-    title: { zh: '编曲 · 建一个新歌单', en: 'Make a set · create a playlist' },
-  },
-  {
-    id: 'dj-sync', kind: 'song', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: OPEN,
-    title: { zh: '携曲 · 把新歌同步到手机', en: 'Carry the songs · sync new tracks to your phone' },
-  },
-  {
-    id: 'dj-listen', kind: 'song', period: 'day', reward: 20, stamina: 10, device: 'phone', pool: true, open: OPEN,
-    title: { zh: '听曲 · 在手机上听完一个歌单', en: 'Hear the set · play a playlist through on your phone' },
-  },
-  {
-    id: 'dj-karaoke', kind: 'song', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: OPEN,
-    title: { zh: '随口唱 · 在手机上唱一首卡拉OK', en: 'Sing on the road · a karaoke song on your phone' },
+    id: 'dj-pick', kind: 'song', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: OPEN,
+    title: { zh: '点歌 · 让银月推荐一首歌', en: 'Ask for a song · let Yinyue pick one' },
+    how: { zh: '问银月听什么，放她推荐的那首', en: 'Ask Yinyue what to hear; play the song she picks' },
   },
 ];
+
+/// Rows taken out of the menu (2026-11-02): they leave the file, done or not.
+export const RETIRED = ['dj-fetch', 'dj-sing', 'dj-playlist', 'dj-sync', 'dj-karaoke'];
 
 /// Where quest facts live. A library kept elsewhere (DJ_DIR — a test) writes
 /// beside itself, so it can never overwrite the real file.
 export const questsDir = (env = process.env) =>
   env.DJ_QUESTS ||
   (env.DJ_DIR ? path.join(env.DJ_DIR, 'data', 'quests') : path.join(env.HOME || '', '.linggen', 'quests'));
+
+/// The library DJ reads `due` from.
+export const libraryFile = (env = process.env) =>
+  path.join(env.DJ_DIR || path.join(env.HOME || '', '.linggen', 'skills', 'dj'), 'library.json');
+
+/// Whether each row can be done now: a song to hear needs a song. Pure.
+export function dueOf(library) {
+  const songs = Array.isArray(library?.tracks) ? library.tracks.filter((t) => t && t.file) : [];
+  return { 'dj-listen': songs.length > 0, 'dj-pick': true };
+}
 
 /// The later of two times, either possibly missing or unreadable.
 export function later(a, b) {
@@ -67,8 +74,9 @@ export function later(a, b) {
 }
 
 /// The file's next body: the menu, each entry's `done_at` the later of what
-/// the file held and `stamps` — a stamp never moves an entry back.
-export function merged(doc, stamps, menu = MENU, app = 'dj') {
+/// the file held and `stamps` — a stamp never moves an entry back — and its
+/// `due` from `due`, else as held, else false.
+export function merged(doc, stamps, menu = MENU, app = 'dj', due = {}) {
   const held = Array.isArray(doc?.quests) ? doc.quests.filter((q) => q && typeof q === 'object') : [];
   const was = new Map(held.map((q) => [q.id, q]));
   const mine = new Set(menu.map((m) => m.id));
@@ -77,84 +85,42 @@ export function merged(doc, stamps, menu = MENU, app = 'dj') {
     quests: [
       ...menu.map((m) => {
         const had = was.get(m.id)?.done_at ?? null;
-        return { ...m, due: true, done_at: m.id in stamps ? later(had, stamps[m.id]) : had };
+        const d = m.id in due ? Boolean(due[m.id]) : was.get(m.id)?.due === true;
+        return { ...m, due: d, done_at: m.id in stamps ? later(had, stamps[m.id]) : had };
       }),
-      ...held.filter((q) => !mine.has(q.id)),
+      ...held.filter((q) => !mine.has(q.id) && !RETIRED.includes(q.id)),
     ],
   };
 }
 
-/// Stamp `id` done at `now`, written whole (tmp + rename). Throws on an id
-/// the menu does not know — nothing is written then.
-export function stamp(id, { dir = questsDir(), now = new Date() } = {}) {
-  if (!MENU.some((m) => m.id === id)) throw new Error(`unknown quest ${id}`);
-  const file = path.join(dir, 'dj.json');
-  let doc = null;
+const readJson = (file) => {
   try {
-    doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
   } catch {
-    /* none yet, or torn — the menu starts it again */
+    return null; // none yet, or torn — the menu starts it again
   }
-  const body = merged(doc, { [id]: now.toISOString() });
+};
+
+/// Write the file with `stamps` (id → time), `due` read from the library.
+function write(stamps, { dir = questsDir(), library = libraryFile() } = {}) {
+  const file = path.join(dir, 'dj.json');
+  const body = merged(readJson(file), stamps, MENU, 'dj', dueOf(readJson(library)));
   fs.mkdirSync(dir, { recursive: true });
   const tmp = `${file}.tmp-${process.pid}`;
   fs.writeFileSync(tmp, `${JSON.stringify(body)}\n`);
   fs.renameSync(tmp, file);
-  return body.quests.find((q) => q.id === id);
+  return body;
 }
 
-// ── dj-sync: the Mac's own record of what a phone holds ─────────────────────
-// A phone reports its inventory to the engine (`/api/skill-sync/dj/have`),
-// which keeps ~/.linggen/sync/dj.json: { <device>: { files, last_fetch } },
-// last_fetch in epoch seconds. A song a phone holds now that it did not the
-// last time DJ looked is a sync of new songs, done at that last_fetch. DJ's
-// memo of what it last saw lives in its own data dir, never in the quest file.
-
-export const syncLedger = (env = process.env) =>
-  env.DJ_SYNC_LEDGER || path.join(env.HOME || '', '.linggen', 'sync', 'dj.json');
-
-/// Pure: the next memo, and when the newest new song reached a phone (ISO), or
-/// null. A device DJ has not seen before is a baseline, never a sync.
-export function syncFact(ledger, memo) {
-  const next = {};
-  let at = 0;
-  for (const [device, row] of Object.entries(ledger && typeof ledger === 'object' ? ledger : {})) {
-    const songs = (Array.isArray(row?.files) ? row.files : []).filter((f) => /\.mp3$/i.test(f));
-    const t = Number(row?.last_fetch) || 0;
-    next[device] = { songs, last_fetch: t };
-    const was = memo?.[device];
-    if (!was || !Array.isArray(was.songs)) continue;
-    const had = new Set(was.songs);
-    if (t > (Number(was.last_fetch) || 0) && songs.some((f) => !had.has(f))) at = Math.max(at, t);
-  }
-  return { memo: next, at: at ? new Date(at * 1000).toISOString() : null };
+/// Stamp `id` done at `now`, written whole (tmp + rename). Throws on an id
+/// the menu does not know — nothing is written then.
+export function stamp(id, { dir = questsDir(), now = new Date(), library = libraryFile() } = {}) {
+  if (!MENU.some((m) => m.id === id)) throw new Error(`unknown quest ${id}`);
+  return write({ [id]: now.toISOString() }, { dir, library }).quests.find((q) => q.id === id);
 }
 
-/// Look at the ledger, remember it, and stamp dj-sync when a phone gained songs.
-export function witnessSync({
-  ledgerFile = syncLedger(),
-  memoFile = path.join(process.env.DJ_DIR || path.join(process.env.HOME || '', '.linggen', 'skills', 'dj'), 'data', 'quest-sync.json'),
-  dir = questsDir(),
-} = {}) {
-  let ledger = null;
-  try {
-    ledger = JSON.parse(fs.readFileSync(ledgerFile, 'utf8'));
-  } catch {
-    return null; // no phone has reported yet
-  }
-  let memo = null;
-  try {
-    memo = JSON.parse(fs.readFileSync(memoFile, 'utf8'));
-  } catch {
-    /* first look: a baseline */
-  }
-  const fact = syncFact(ledger, memo);
-  fs.mkdirSync(path.dirname(memoFile), { recursive: true });
-  const tmp = `${memoFile}.tmp-${process.pid}`;
-  fs.writeFileSync(tmp, `${JSON.stringify(fact.memo)}\n`);
-  fs.renameSync(tmp, memoFile);
-  return fact.at ? stamp('dj-sync', { dir, now: new Date(fact.at) }) : null;
-}
+/// Bring every `due` up to date, stamping nothing.
+export const publishDue = (opts = {}) => write({}, opts);
 
 /// For a verb that already ran: stamp, and never let the stamp fail it.
 export function stampQuietly(id) {
@@ -175,11 +141,11 @@ const real = (p) => {
 const STAMP_AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/;
 
 /// The engine's door: `stamp <id> <at>` → the exit code (0 once held).
-export function stampCli(id, at, { dir = questsDir() } = {}) {
+export function stampCli(id, at, { dir = questsDir(), library = libraryFile() } = {}) {
   const when = new Date(at);
   if (!STAMP_AT.test(String(at || '')) || Number.isNaN(when.getTime())) return 1;
   try {
-    stamp(id, { dir, now: when });
+    stamp(id, { dir, now: when, library });
     return 0;
   } catch {
     return 1;
@@ -191,7 +157,7 @@ if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.
 } else if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url))) {
   try {
     const id = String(process.argv[2] || '');
-    const q = id === 'dj-sync' ? witnessSync() : stamp(id);
+    const q = id === 'due' ? (publishDue(), null) : stamp(id);
     console.log(JSON.stringify({ ok: true, id, done_at: q?.done_at ?? null }));
   } catch (e) {
     console.log(JSON.stringify({ ok: false, error: String(e?.message || e) }));

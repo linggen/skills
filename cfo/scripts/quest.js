@@ -4,7 +4,11 @@
 // of the last time it saw that chore done. `pool: true` offers an entry to the
 // game's one-chore-a-day pick; `device` is where the player does it; `kind`
 // is what sort of practice it is (a plain word — a game reads it, CFO names
-// no game): every CFO chore is `ledger`.
+// no game): every CFO chore is `ledger`; `how` says in a line how it is done.
+// `due` says whether it can be done now — the page publishes it from what it
+// holds (publishDue): no account, no review; nothing uncategorised, no sort;
+// no investment, no survey; never imported, no monthly import. A row whose
+// due was never published reads false, and a game hides it.
 //
 // Only the fact crosses — due, done, when — never an amount, a merchant, a
 // category or a file name. Read-merge-write under the same lock and atomic
@@ -23,36 +27,39 @@ const OPEN = '/apps/cfo/scripts/index.html';
 
 export const MENU = [
   {
+    id: 'cfo-review', kind: 'ledger', period: 'day', reward: 20, stamina: 10, device: 'both', open: `${OPEN}?tab=report`,
+    title: { zh: '核账 · 看一眼今天的花销', en: "Check the accounts · glance at today's spending" },
+    how: { zh: '打开 CFO 的报告页，看上十几秒', en: 'Open the Report in CFO and read it a few seconds' },
+  },
+  {
+    id: 'cfo-sort', kind: 'ledger', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: `${OPEN}?tab=txn`,
+    title: { zh: '分账 · 给新交易归类', en: 'Sort the ledger · categorise new transactions' },
+    how: { zh: '在 CFO 交易页给一笔「其他」选个类别', en: "Give one 'Other' transaction a category in CFO" },
+  },
+  {
+    id: 'cfo-invest', kind: 'ledger', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: `${OPEN}?tab=invest`,
+    title: { zh: '观宝库 · 看一遍投资', en: 'Survey the vault · look over your investments' },
+    how: { zh: '打开 CFO 的投资页，看上十几秒', en: 'Open Investments in CFO and look a few seconds' },
+  },
+  {
     id: 'cfo-import', kind: 'ledger', period: 'month', reward: 30, stamina: 20, device: 'both', pool: true, open: `${OPEN}?tab=report`,
-    title: { zh: '清点府库 · 在 CFO 导入一份账单', en: 'Balance the treasury · import a statement in CFO' },
-  },
-  {
-    id: 'cfo-review', kind: 'ledger', period: 'day', reward: 20, stamina: 10, device: 'both', pool: true, open: `${OPEN}?tab=report`,
-    title: { zh: '核账 · 看一遍本月的报告', en: "Check the accounts · read this month's report" },
-  },
-  {
-    id: 'cfo-sort', kind: 'ledger', period: 'week', reward: 25, stamina: 15, device: 'mac', pool: true, open: `${OPEN}?tab=txn`,
-    title: { zh: '分账 · 给未分类的交易归类', en: 'Sort the ledger · categorize uncategorized transactions' },
-  },
-  {
-    id: 'cfo-invest', kind: 'ledger', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: `${OPEN}?tab=invest`,
-    title: { zh: '观宝库 · 在手机上看一遍投资', en: 'Survey the vault · look over your investments on the phone' },
-  },
-  // 开府 — one time: Investments lists a stock (the linggen.json `once` shape).
-  {
-    id: 'cfo-first-stock', kind: 'ledger', period: 'once', reward: 50, stamina: 20, device: 'both', open: `${OPEN}?tab=invest`,
-    title: { zh: '开仓 · 在 CFO 的投资里添一支股票', en: 'Open a position · add a stock to Investments in CFO' },
+    title: { zh: '清点府库 · 导入一份账单', en: 'Balance the treasury · import a statement' },
+    how: { zh: '把这个月的银行账单拖进 CFO', en: "Drop this month's bank statement into CFO" },
   },
 ];
 
-/// Investments lists a stock: any ticker in `investmentsOf`, watched or held —
-/// 0 shares counts too.
-export const listsStock = (inv) => Object.keys(inv || {}).length > 0;
+/// Rows taken out of the menu: they leave the file, done or not (2026-11-02:
+/// the one-time stock milestone went with the 开府 redesign).
+export const RETIRED = ['cfo-first-stock'];
 
-/// The 开府 fact: stamp `cfo-first-stock` when Investments lists a stock —
-/// only that it does, never which or how many. Resolves to whether it stamped.
-export async function noteFirstStock(runBash, inv, opts) {
-  return listsStock(inv) ? stampQuest(runBash, 'cfo-first-stock', opts) : false;
+/// The facts the page holds, as each row's `due` (publishDue). Pure.
+export function dueFacts({ ledger = [], accounts = {}, uncategorised = 0, investments = {} } = {}) {
+  return {
+    'cfo-review': ledger.length > 0 || Object.keys(accounts || {}).length > 0,
+    'cfo-sort': uncategorised > 0,
+    'cfo-invest': Object.keys(investments || {}).length > 0,
+    'cfo-import': ledger.length > 0,
+  };
 }
 
 export const QUEST_FILE = '$HOME/.linggen/quests/cfo.json';
@@ -65,14 +72,11 @@ export function later(a, b) {
   return t(b) > t(a) ? b : a;
 }
 
-/// A stamp's effect on one entry: a one-time milestone keeps its first time;
-/// any other keeps the later.
-const stamped = (m, had, at) => (m.period === 'once' ? had ?? at : later(had, at));
-
 /// The file's next body: the menu, each entry's `done_at` the later of what
-/// the file held and `stamps` — a stamp never moves an entry back (and never
-/// moves a one-time milestone at all).
-export function merged(doc, stamps, menu = MENU) {
+/// the file held and `stamps` — a stamp never moves an entry back — and its
+/// `due` from `due` (id → bool), else as the file held it, else false.
+/// Retired rows leave; rows this menu does not know stay.
+export function merged(doc, stamps, menu = MENU, due = {}) {
   const held = Array.isArray(doc?.quests) ? doc.quests.filter((q) => q && typeof q === 'object') : [];
   const was = new Map(held.map((q) => [q.id, q]));
   const mine = new Set(menu.map((m) => m.id));
@@ -81,9 +85,10 @@ export function merged(doc, stamps, menu = MENU) {
     quests: [
       ...menu.map((m) => {
         const had = was.get(m.id)?.done_at ?? null;
-        return { ...m, due: true, done_at: m.id in stamps ? stamped(m, had, stamps[m.id]) : had };
+        const d = m.id in due ? Boolean(due[m.id]) : was.get(m.id)?.due === true;
+        return { ...m, due: d, done_at: m.id in stamps ? later(had, stamps[m.id]) : had };
       }),
-      ...held.filter((q) => !mine.has(q.id)),
+      ...held.filter((q) => !mine.has(q.id) && !RETIRED.includes(q.id)),
     ],
   };
 }
@@ -91,9 +96,24 @@ export function merged(doc, stamps, menu = MENU) {
 /// Stamp `id` done at `now`. Resolves either way; an unknown id writes nothing.
 export async function stampQuest(runBash, id, { file = QUEST_FILE, now = new Date() } = {}) {
   if (!MENU.some((m) => m.id === id)) return false;
+  return write(runBash, file, { [id]: now.toISOString() }, {});
+}
+
+/// Publish each row's `due` from the page's facts (dueFacts), stamping nothing.
+/// Resolves to whether it wrote; the same facts as the last write write nothing.
+let LAST_DUE = '';
+export async function publishDue(runBash, due, { file = QUEST_FILE } = {}) {
+  const key = JSON.stringify(due);
+  if (key === LAST_DUE) return false;
+  const ok = await write(runBash, file, {}, due);
+  if (ok) LAST_DUE = key;
+  return ok;
+}
+
+async function write(runBash, file, stamps, due) {
   try {
     await updateJsonFile(runBash, file, (obj) => {
-      const next = merged(obj, { [id]: now.toISOString() });
+      const next = merged(obj, stamps, MENU, due);
       for (const k of Object.keys(obj)) delete obj[k];
       Object.assign(obj, next);
     });

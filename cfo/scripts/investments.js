@@ -12,7 +12,6 @@
 // and holds its switch (the cfo:watch mission) and level.
 
 import { investmentsOf } from './lww.js';
-import { noteFirstStock } from './quest.js';
 import { investChips } from './chips.js';
 import { t, intlLocale, language } from './strings.js';
 
@@ -994,7 +993,6 @@ async function addSymbol(sym) {
   if (!investmentsOf(deps.edits())[sym]) {
     deps.edits().set(`inv:${sym}|watch`, true);
     await persist();
-    noteStock();
   }
   draw();
   refresh([sym]);
@@ -1079,7 +1077,6 @@ async function saveHolding(sym, form) {
   writeHolding(sym, { shares: parseAmount(read('shares')), avg_cost: parseAmount(read('avg_cost')), account: read('account').trim() || null });
   editing = null;
   await persist();
-  noteStock();
   draw();
 }
 
@@ -1091,7 +1088,6 @@ async function applyProposals(symbols) {
   for (const p of plans) writeHolding(p.symbol, p.after);
   proposed = proposed.filter((p) => !plans.includes(p));
   await persist();
-  noteStock();
   draw();
   refresh(plans.map((p) => p.symbol));
 }
@@ -1123,8 +1119,6 @@ async function persist() {
   await writeSnapshot();
 }
 
-/// A ticker or holding was saved: the 开府 fact, if Investments lists a stock (quest.js).
-const noteStock = () => noteFirstStock(deps.runBash, investmentsOf(deps.edits()));
 
 const writeSnapshot = () =>
   deps.writeB64(`${deps.data}/investments.json`, `${JSON.stringify(snapshotOf(rowsNow()), null, 2)}\n`);

@@ -24,7 +24,7 @@ import { chanceBrief } from './road.mjs';
 import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
-import { choreGrant, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
+import { choreGrant, choreHow, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gongkeBoard, meaningOf } from './gongke.mjs';
 import { catchHere, errandAsking, errandWants, gameLevel, hostedHere, lundaoBrief, reopened, skipCut, stallHere } from './tasks.mjs';
 import { haggleBrief } from './aigames.mjs';
@@ -528,12 +528,12 @@ function tasksBrief(content, state, ctx) {
   const menu = ctx.quests ?? [];
   const chores = shut.includes('chores') ? [] : todayChores(state, menu, ctx.now), ready = shut.includes('kaifu') ? [] : kaifuReady(state, menu, ctx.now, content);
   const quests = [...chores, ...ready].map(q => ({
-    id: q.id, app: q.app, title: pick(q.title, lang), device: q.device ?? null,
+    id: q.id, app: q.app, title: pick(q.title, lang), how: choreHow(q, lang), device: q.device ?? null,
     done: questDone(q, ctx.now), paid: state.chores[q.id]?.period === periodKey(q.period, ctx.now),
     done_at: questDone(q, ctx.now) ? q.done_at : null, // when its app saw it done — the scene says so
     period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null,
     // What lands (2026-10-15: the workout 修为, the pick and 开府 灵石), so Ling tells the practice right.
-    pays: paysOf(content, state, ctx.now, choreGrant(content, q, state)),
+    pays: paysOf(content, state, ctx.now, choreGrant(content, q, state, ctx.now)),
     // What it means in the book (rules/gongke.mjs): its kind's in-world name, and the facts for her.
     ...(meaningOf(content, q) ? { kind: q.kind, means: pick(meaningOf(content, q).name, lang), means_about: pick(meaningOf(content, q).about, lang) } : {}),
   }));
@@ -542,7 +542,7 @@ function tasksBrief(content, state, ctx) {
   const kaifu = shut.includes('kaifu') ? null : kaifuBrief(state, menu, ctx.now, lang, content);
   // The open 一次 step's pay, so the book's row says it before it is done.
   const open = kaifu?.next && menu.find(q => q.id === kaifu.next.id);
-  if (open) kaifu.next.pays = paysOf(content, state, ctx.now, choreGrant(content, open, state));
+  if (open) kaifu.next.pays = paysOf(content, state, ctx.now, choreGrant(content, open, state, ctx.now));
   if (shut.includes('cultivation')) for (const t of tasks) t.pays = null;
   return { tasks, quests, ...(kaifu ? { kaifu } : {}), ...(gongke ? { gongke } : {}) };
 }

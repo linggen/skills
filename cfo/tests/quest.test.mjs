@@ -6,8 +6,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { MENU, cli, merged, stampQuest, listsStock, noteFirstStock } from '../scripts/quest.js';
-import { Register, investmentsOf } from '../scripts/lww.js';
+import { MENU, RETIRED, cli, dueFacts, merged, publishDue, stampQuest } from '../scripts/quest.js';
 
 const NOW = new Date('2026-09-24T15:00:00Z');
 
@@ -24,13 +23,15 @@ test('every entry carries the protocol fields, and each pool chore is modest', (
     assert.match(m.id, /^cfo-/);
     assert.ok(['day', 'week', 'month', 'once'].includes(m.period), m.id);
     assert.ok(['mac', 'phone', 'both'].includes(m.device), m.id);
-    if (m.period === 'once') assert.ok(m.reward === 50 && m.stamina === 20 && !('pool' in m), m.id); // linggen.json's 开府 shape
-    else assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina >= 10 && m.stamina <= 20, m.id);
-    assert.ok(m.title.zh && m.title.en && m.open.startsWith('/apps/cfo/'), m.id);
+    assert.notEqual(m.period, 'once', `${m.id}: 开府 is not CFO's`);
+    assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina >= 10 && m.stamina <= 20, m.id);
+    assert.ok(m.title.zh && m.title.en && m.open.startsWith('/apps/cfo/scripts/index.html?tab='), m.id);
+    assert.ok(m.how.zh && m.how.en && m.how.en.split(/\s+/).length <= 20, m.id);
   }
+  assert.equal(MENU.find((m) => m.id === 'cfo-review').pool, undefined, 'the review is the daily');
   const doc = merged(null, {});
   assert.equal(doc.app, 'cfo');
-  assert.ok(doc.quests.every((q) => q.due === true && q.done_at === null));
+  assert.ok(doc.quests.every((q) => q.due === false && q.done_at === null), 'never published: hidden');
 });
 
 test('importing a statement is a month\'s chore (Hanli 2026-10-27): a stamp moves it on like any repeating chore, never held like 开府', () => {
@@ -112,46 +113,24 @@ test('the engine door: stamp <id> <at> exits 0 once held, 1 for a bad call', asy
   fs.rmSync(s.home, { recursive: true, force: true });
 });
 
-// 开府 — Investments lists a stock, watched or held (0 shares counts). The
-// same note runs after a ticker or holding is saved and when CFO loads.
-const inv = (cells) => {
-  const reg = new Register('mac');
-  for (const [k, v] of Object.entries(cells)) reg.set(k, v);
-  return investmentsOf(reg);
-};
-
-test('any ticker in Investments counts — watched, held or 0 shares; a removed or rank-only one does not', () => {
-  assert.equal(listsStock(inv({ 'inv:VFV.TO|shares': 12, 'inv:VFV.TO|watch': true })), true);
-  assert.equal(listsStock(inv({ 'inv:AAPL|watch': true })), true);
-  assert.equal(listsStock(inv({ 'inv:AAPL|watch': true, 'inv:AAPL|shares': 0 })), true);
-  assert.equal(listsStock(inv({ 'inv:AAPL|watch': null, 'inv:AAPL|shares': null })), false);
-  assert.equal(listsStock(inv({ 'inv:AAPL|rank': 0 })), false);
-  assert.equal(listsStock({}), false);
-});
-
-test('adding a ticker stamps cfo-first-stock — a watch-only add too; an empty list writes nothing', async () => {
-  const s = scratch();
-  assert.equal(await noteFirstStock(s.runBash, inv({}), { file: s.file, now: NOW }), false);
-  assert.ok(!fs.existsSync(s.file));
-  assert.equal(await noteFirstStock(s.runBash, inv({ 'inv:AAPL|watch': true }), { file: s.file, now: NOW }), true);
-  const q = s.read().quests.find((x) => x.id === 'cfo-first-stock');
-  assert.equal(q.done_at, NOW.toISOString());
-  assert.equal(q.period, 'once');
-  const text = fs.readFileSync(s.file, 'utf8');
-  for (const leak of ['AAPL', '"shares"', 'avg_cost']) assert.ok(!text.includes(leak), `${leak} must not cross`);
-  fs.rmSync(s.home, { recursive: true, force: true });
-});
-
-test('a stock already listed when CFO loads counts — and the first time stands', async () => {
+test('due comes from what the page holds; a stamp keeps it; a retired row leaves the file', async () => {
+  assert.deepEqual(dueFacts({}), { 'cfo-review': false, 'cfo-sort': false, 'cfo-invest': false, 'cfo-import': false });
+  assert.deepEqual(dueFacts({ ledger: [{}], uncategorised: 2, investments: { AAPL: {} } }),
+    { 'cfo-review': true, 'cfo-sort': true, 'cfo-invest': true, 'cfo-import': true });
+  assert.equal(dueFacts({ accounts: { chq: {} } })['cfo-review'], true, 'an account and no ledger yet');
   const s = scratch();
   fs.mkdirSync(path.dirname(s.file), { recursive: true });
-  fs.writeFileSync(s.file, JSON.stringify({ app: 'cfo', quests: [{ id: 'cfo-review', done_at: '2026-09-23T10:00:00.000Z' }] }));
-  const listed = inv({ 'inv:XEQT.TO|watch': true });
-  await noteFirstStock(s.runBash, listed, { file: s.file, now: NOW });
-  await noteFirstStock(s.runBash, listed, { file: s.file, now: new Date('2026-10-16T09:00:00Z') }); // the next load
+  fs.writeFileSync(s.file, JSON.stringify({ app: 'cfo', quests: [{ id: 'cfo-first-stock', period: 'once', done_at: 'x' }, { id: 'other', y: 1 }] }));
+  assert.equal(await publishDue(s.runBash, dueFacts({ ledger: [{}] }), { file: s.file }), true);
+  assert.equal(await publishDue(s.runBash, dueFacts({ ledger: [{}] }), { file: s.file }), false, 'the same facts write nothing');
+  await stampQuest(s.runBash, 'cfo-review', { file: s.file, now: NOW });
   const byId = Object.fromEntries(s.read().quests.map((q) => [q.id, q]));
-  assert.equal(byId['cfo-first-stock'].done_at, NOW.toISOString(), 'a one-time milestone keeps its first time');
-  assert.equal(byId['cfo-review'].done_at, '2026-09-23T10:00:00.000Z');
+  assert.equal(byId['cfo-review'].due, true);
+  assert.equal(byId['cfo-sort'].due, false);
+  assert.equal(byId['cfo-review'].done_at, NOW.toISOString());
+  assert.ok(RETIRED.includes('cfo-first-stock'));
+  assert.equal(byId['cfo-first-stock'], undefined, 'retired');
+  assert.deepEqual(byId.other, { id: 'other', y: 1 });
   fs.rmSync(s.home, { recursive: true, force: true });
 });
 

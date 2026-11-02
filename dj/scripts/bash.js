@@ -101,3 +101,9 @@ export const serveCopyCmd = (src, dst) => `ln -f ${sq(src)} "${dst}" 2>/dev/null
 export const FFMPEG_SH =
   'FF=""; for f in "$(command -v ffmpeg 2>/dev/null)" "$HOME/.linggen/bin/ffmpeg" /opt/homebrew/bin/ffmpeg /usr/local/bin/ffmpeg; ' +
   'do if [ -n "$f" ] && [ -x "$f" ]; then FF="$f"; break; fi; done';
+
+/// A quest fact (quest.mjs): `dj-listen`, `dj-pick`, or `due` (no stamp — every
+/// row's due brought up to date). Silent: a failure never fails the play.
+export function noteQuest(id) {
+  return runBash(`bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/quest.mjs" ${sq(id)}`, { timeoutMs: 15000 }).catch(() => {});
+}

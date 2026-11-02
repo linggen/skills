@@ -5,7 +5,7 @@
 //            (the daemon serves the skill dir; localhost load is instant)
 //   lyrics — parse the .lrc sidecar, highlight + auto-scroll the active line
 
-import { runBash, sq } from './bash.js';
+import { noteQuest, runBash, sq } from './bash.js';
 import { esc } from './ui.js';
 import { t as tr } from './strings.js';
 
@@ -212,6 +212,7 @@ export async function openPlayer(startTrack, opts = {}) {
   }
   function go(n) { index = (n + queue.length) % queue.length; load(queue[index]); }
   audio.addEventListener('ended', () => {
+    noteQuest('dj-listen'); // a song heard to its end (quest.mjs)
     if (repeat === 'one') { audio.currentTime = 0; audio.play(); return; }
     const n = pickNext();
     if (n >= queue.length && repeat !== 'all') { $('#pl-play').textContent = '▶'; return; } // end of queue

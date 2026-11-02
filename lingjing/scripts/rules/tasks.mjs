@@ -287,7 +287,7 @@ function questCheck(state, content, ctx, id) {
   s.chores[id] = { period, paid_at: ctx.now.toISOString() };
   // 开府 drips: the open one handed in, the next opens tomorrow (chores.mjs).
   if (isOnce(q)) s.kaifu = kaifuAfter(state, content, quests, ctx.now, id);
-  const grant = choreGrant(content, q, state);
+  const grant = choreGrant(content, q, state, ctx.now);
   const paid = pay(content, s, ctx, grant);
   // 开府 may open before the 灵石 are his (chapter `locks`, Hanli 2026-10-22: 开府 on meeting 银月):
   // what it would have paid is owed, and lands the move the gate opens (core.mjs landOwed).

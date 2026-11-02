@@ -1164,9 +1164,31 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   daily chore. 论道: 飞花令 · 成语接龙 · 对对联.
 - **Real-life chores** (`~/.linggen/quests/<app>.json`, each app's **menu**):
   the game names no app; done is the app's own record (`done_at`), never
-  self-reported; only due/done/when cross. The book shows the **fixed** chore
-  (the workout) and **one pick a day** from the `pool` entries (hash of day +
-  save + id; alternating 💻/📱); others done anyway are `not-today`. **一次**
+  self-reported; only due/done/when cross. The book shows the **dailies**
+  (fixed: no `pool`) and **one pick a day** from the `pool` entries (the
+  weeklies and monthlies; hash of day + save + id; alternating 💻/📱 when he
+  has both); others done anyway are `not-today`.
+- **The set, 2026-11-02** (Hanli 「任务设计可以, 按你说的做」). Principles: always
+  finishable (an app publishes `due: false` when a chore can't be done now,
+  and the rules hide it — never shown as not done); ≤3 taps except real-life
+  acts; device-filtered (rules/chores.mjs `playerDevices` · `fitsDevices`, the
+  one helper 开府 shares: a Mac-only player never sees a phone row, nor wins
+  one as the pick). Row fields: `id kind period device due how open title
+  reward stamina pool done_at` (`how` {zh,en}, ≤20 words, shown on the 事 row
+  as 怎么做 beside the app's button). Daily: 问安 linggen-greet (engine, a
+  message to 银月 that day) · 炼体 health-steps (5000 steps, the phone's fact) ·
+  养神 health-sleep (≥7 h, the phone's fact; due only with sleep data) · 核账
+  cfo-review · 琴心 dj-listen (a song to its end) · 巡山 shifu-glance (Mac, the
+  System page). Weekly pool: 分账 cfo-sort (due: something uncategorised) · 观宝库
+  cfo-invest · 问诊 health-report (due: this week's letter) · 清扫洞府 shifu-scan ·
+  护阵 shifu-security · 扫尘 shifu-clear (due: a clearable) · 点歌 dj-pick (a play
+  from the agent's suggested set). Monthly/event pool: 清点府库 cfo-import (due:
+  imported before) · 藏珍 shifu-backup (due: a destination and photos not kept)
+  · 求医问药 health-doctor (due: a note worth a doctor newer than the last read).
+  Six dailies, so only `gongke.json` `shares_per_day` (2) of a day's dailies pay
+  their share of the layer in 修为 — the day's chore 修为 stays where one fixed
+  and one daily pick had it; the rest pay 灵石, 体力 and meaning. `per_day`
+  unchanged. **一次**
   (`period: "once"`, the setup milestones, once 开府) drip **one a day**
   (Hanli, 2026-10-15): one open, in world.json `kaifu.order`; handed in or
   skipped (跳过, `state.kaifu`), the next opens the next calendar day; a
@@ -1176,9 +1198,9 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   Apps: CFO, DJ, Shifu, Health (writers named in each app).
 - **人间功课 as cultivation 【已建】** (Hanli, 2026-10-22: 「游戏里还要有和其他app如cfo,
   shifu, health等互动」 → 「可以」): each menu entry names its `kind`, a plain
-  word of the app's (body · heal · rest · ledger · sweep · ward · song); the
+  word of the app's (body · heal · rest · ledger · sweep · ward · song · greet); the
   world's `gongke.json`, keyed by kind, is what it means in the book —
-  练功 · 调息 · 养神 · 算账 · 洒扫 · 护山 · 琴心 — with facts for 银月 (`about`,
+  练功 · 调息 · 养神 · 算账 · 洒扫 · 护山 · 琴心 · 问安 — with facts for 银月 (`about`,
   never shown) and a little on top of the chore's own pay (`chore_kind`
   table: ≤10 灵石, ≤6 修为) and a chore-only thing: 晨练符 (body: used, 修为
   +8), 安神香 (heal/rest: 闭关 hours ×1.25), 净炉符 (sweep: the next 开炉 a
@@ -1197,10 +1219,10 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   to 银月 (lingjing.js tellGongke) and she says it — asleep in the 木牌, its
   drowsy word from hersay.js's pool, once a chore a day. The apps' files carry
   `kind` from each app's next write; until then a chore shows with no meaning. A scratch save may hold its
-  own menus (`data/saves/<name>/quests/`) for a live check. **Not yet:** steps
-  (小满's climb) and a night's sleep need a daily total the phone sends — the
-  Mac mirror has raw samples only (sleep last 2026-06), so Health offers no
-  `rest` chore yet; the row waits in the table.
+  own menus (`data/saves/<name>/quests/`) for a live check. Steps and sleep
+  come from the phone's HealthKit totals as facts (`health-steps`,
+  `health-sleep`; the Mac mirror's samples overlap Watch and iPhone), the Mac
+  publishing only their `due`.
 
 ## 问签 v1 — the day's opener 【已建】 (Hanli, 2026-11-02: 「可以, 按你说的做」 — the rewards, then the v1 scope)
 

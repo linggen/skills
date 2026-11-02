@@ -21,7 +21,6 @@ quests:
   stamp: node scripts/quest.mjs stamp {id} {at}
   facts:
     dj-listen: dj-listen
-    dj-karaoke: dj-karaoke
 permission:
   paths:
     # Pre-grant the skill's own directory so the agent never prompts — not

@@ -6,6 +6,7 @@
 import { loadQueue, isOwned, ownedRow, trackId, trackKey } from './library.js';
 import { enqueue, queueVerb } from './download.js';
 import { drainStep } from './drain.js';
+import { noteQuest } from './bash.js';
 import { play, refreshLibrary } from './lib-view.js';
 import { state, toast } from './state.js';
 import { thumbUrl } from './thumbs.js';
@@ -87,6 +88,7 @@ function applyAgentPlay(pp) {
   const queue = (pp.tracks || []).map((t) => byKey.get(trackId(t))).filter(Boolean);
   if (!queue.length) { toast(tr('dj.noneOfThoseAre')); return; }
   play(queue[0], queue);
+  noteQuest('dj-pick'); // a song the agent picked, playing (quest.mjs)
 }
 
 export function applyPageUpdate(args) {
@@ -190,6 +192,7 @@ function playFromSet(i) {
   const lib = ownedRow(state.library, state.set.tracks[i]);
   if (!lib) return;
   play(lib, state.set.tracks.map((x) => ownedRow(state.library, x)).filter(Boolean));
+  noteQuest('dj-pick'); // a song of the set the agent proposed, playing (quest.mjs)
 }
 
 const CELLS = {

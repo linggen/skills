@@ -36,7 +36,6 @@ quests:
     cfo-import: cfo-import
     cfo-trends: cfo-review
     cfo-invest: cfo-invest
-    cfo-first-stock: cfo-first-stock
 # Lines Yinyue may tell a closed phone, pushed by the Mac (engine
 # doc/phone-push-spec.md). The Watch's morning line: raised when the nightly
 # watch mission ends; pushed at the phone's morning hour only when the phone

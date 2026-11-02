@@ -11,13 +11,13 @@ import { fileURLToPath } from 'node:url';
 const SH = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'quest.sh');
 const scratch = () => fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'shifu-quest-')));
 const run = (home, args, env = {}) => spawnSync('bash', [SH, ...args], {
-  encoding: 'utf8', env: { ...process.env, HOME: home, SHIFU_DATA: '', SHIFU_QUESTS: '', ...env },
+  encoding: 'utf8', env: { ...process.env, HOME: home, SHIFU_DATA: '', SHIFU_QUESTS: '', SHIFU_STATE: path.join(home, 'state'), ...env },
 });
 const fileOf = (home) => path.join(home, '.linggen', 'quests', 'apple-shifu.json');
 const read = (home) => JSON.parse(fs.readFileSync(fileOf(home), 'utf8'));
 const byId = (doc) => Object.fromEntries(doc.quests.map((q) => [q.id, q]));
 
-test('the menu: every entry in the protocol shape, each in the pool', () => {
+test('the menu: every entry in the protocol shape — the glance a daily, the rest in the pool', () => {
   const home = scratch();
   const res = run(home, []);
   assert.equal(res.status, 0);
@@ -25,14 +25,15 @@ test('the menu: every entry in the protocol shape, each in the pool', () => {
   const doc = read(home);
   assert.equal(doc.app, 'apple-shifu');
   const ids = doc.quests.map((q) => q.id);
-  assert.deepEqual(ids, ['shifu-scan', 'shifu-security', 'shifu-clear', 'shifu-backup']);
+  assert.deepEqual(ids, ['shifu-glance', 'shifu-scan', 'shifu-security', 'shifu-clear', 'shifu-backup']);
   for (const q of doc.quests) {
-    assert.ok(['day', 'week'].includes(q.period), q.id);
+    assert.ok(['day', 'week', 'month'].includes(q.period), q.id);
     assert.ok(['mac', 'phone', 'both'].includes(q.device), q.id);
-    assert.equal(q.pool, true, q.id);
-    assert.equal(q.due, true, q.id);
-    assert.ok(q.reward >= 20 && q.reward <= 30 && q.stamina >= 10 && q.stamina <= 20, q.id);
-    assert.ok(q.title.zh && q.title.en && q.open.startsWith('/apps/apple-shifu/'), q.id);
+    assert.equal(q.pool, q.id === 'shifu-glance' ? undefined : true, q.id);
+    assert.equal(typeof q.due, 'boolean', q.id);
+    assert.ok(q.reward >= 15 && q.reward <= 30 && q.stamina >= 10 && q.stamina <= 20, q.id);
+    assert.ok(q.title.zh && q.title.en && q.open.startsWith('/apps/apple-shifu/scripts/index.html?tab='), q.id);
+    assert.ok(q.how.zh && q.how.en && q.how.en.split(/\s+/).length <= 20, q.id);
   }
   assert.match(byId(doc)['shifu-scan'].done_at, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/, 'no id is the old caller: a scan');
   assert.equal(byId(doc)['shifu-clear'].done_at, null);
@@ -135,6 +136,30 @@ test('every chore names its kind: a scan or a clear sweeps, a security check or 
   const home = scratch();
   assert.equal(run(home, ['shifu-backup']).status, 0);
   const kinds = Object.fromEntries(read(home).quests.map((q) => [q.id, q.kind]));
-  assert.deepEqual(kinds, { 'shifu-scan': 'sweep', 'shifu-security': 'ward', 'shifu-clear': 'sweep', 'shifu-backup': 'ward' });
+  assert.deepEqual(kinds, { 'shifu-glance': 'sweep', 'shifu-scan': 'sweep', 'shifu-security': 'ward', 'shifu-clear': 'sweep', 'shifu-backup': 'ward' });
+  fs.rmSync(home, { recursive: true, force: true });
+});
+
+test('due: a clear only when the last Clearable scan left a row; a backup only with a destination and a photo not yet kept', () => {
+  const home = scratch(), state = path.join(home, 'state');
+  const due = () => Object.fromEntries(read(home).quests.map((q) => [q.id, q.due]));
+  assert.equal(run(home, ['due']).status, 0);
+  assert.deepEqual(due(), { 'shifu-glance': true, 'shifu-scan': true, 'shifu-security': true, 'shifu-clear': false, 'shifu-backup': false });
+  assert.equal(byId(read(home))['shifu-scan'].done_at, null, '`due` stamps nothing');
+  fs.mkdirSync(path.join(state, 'files', 'clearables'), { recursive: true });
+  fs.writeFileSync(path.join(state, 'files', 'clearables', 'rows.txt'), 'S|1\nP|2\nR|cargo-target|1|ok|1|0|x|/tmp/t\n');
+  fs.mkdirSync(path.join(state, 'media'), { recursive: true });
+  fs.writeFileSync(path.join(state, 'media', 'manifest.jsonl'), `${JSON.stringify({ sha256: 'a' })}\n${JSON.stringify({ sha256: 'b' })}\n`);
+  fs.writeFileSync(path.join(state, 'media', 'archive.jsonl'), `${JSON.stringify({ sha256: 'a' })}\n`);
+  run(home, ['due']);
+  assert.equal(due()['shifu-clear'], true);
+  assert.equal(due()['shifu-backup'], false, 'no destination yet');
+  fs.writeFileSync(path.join(state, 'media', 'backup-dest'), '/Volumes/X');
+  run(home, ['shifu-glance']);
+  assert.equal(due()['shifu-backup'], true, 'a stamp brings due up to date too');
+  fs.appendFileSync(path.join(state, 'media', 'archive.jsonl'), `${JSON.stringify({ sha256: 'b' })}\n`);
+  run(home, ['due']);
+  assert.equal(due()['shifu-backup'], false, 'everything kept');
+  assert.ok(byId(read(home))['shifu-glance'].done_at);
   fs.rmSync(home, { recursive: true, force: true });
 });

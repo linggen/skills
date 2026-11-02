@@ -15,7 +15,7 @@ import { initShell, registerTab, setActiveTab, getActiveTab, getSource, onSource
 import { renderPhoneSystem, phoneFacts } from './phone-system.js';
 import { setFileIndex } from './widget-renderers.js';
 import { startLiveTopBar } from './live.js';
-import { flashToast, showToast } from './shifu-io.js';
+import { bash as ioBash, flashToast, showToast } from './shifu-io.js';
 import { overviewCards, parseLayout, orderCards, securityFromReadout } from './overview.js';
 import { renderOverview } from './overview-view.js';
 import { loadLanguage, watchDom } from './strings.js';
@@ -236,6 +236,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('shifu:clearable', () => refreshOverview());
   wireSysViews();
   applySystemSource(getSource());
+  watchGlance();
 
   // App mode: per-skill override in localStorage('apple-shifu:model') if set.
   // Otherwise leave modelId empty so the engine uses the user's global
@@ -1072,4 +1073,30 @@ function fmtGb(gb) {
   if (gb >= 1) return `${gb.toFixed(1)} GB`;
   if (gb >= 0.001) return `${Math.round(gb * 1024)} MB`;
   return '0 MB';
+}
+
+// ── 巡山: the quest fact for "glance at your Mac" (quest.sh) ─────────────────
+// The System tab in front of the player for GLANCE_MS — a page loaded out of
+// sight is not a look. Once a local day per page. As the page opens, the menu's
+// `due` is brought up to date (something to clear, photos to keep). Silent.
+const QUEST = '"$HOME/.linggen/skills/apple-shifu/scripts/quest.sh"';
+const GLANCE_MS = 5000;
+let glanceTimer = null;
+let glanceDay = '';
+const localDay = () => new Date().toLocaleDateString('en-CA');
+const glancing = () => getActiveTab() === 'system' && document.visibilityState === 'visible';
+function watchGlance() {
+  if (!watchGlance.armed) {
+    watchGlance.armed = true;
+    ioBash(`${QUEST} due`, 15000).catch(() => {});
+    onTabChange(() => watchGlance());
+    document.addEventListener('visibilitychange', () => watchGlance());
+  }
+  if (glanceTimer || glanceDay === localDay() || !glancing()) return;
+  glanceTimer = setTimeout(() => {
+    glanceTimer = null;
+    if (glanceDay === localDay() || !glancing()) return;
+    glanceDay = localDay();
+    ioBash(`${QUEST} shifu-glance`, 15000).catch(() => {});
+  }, GLANCE_MS);
 }
