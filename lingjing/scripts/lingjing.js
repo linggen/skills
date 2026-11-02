@@ -74,7 +74,7 @@ import { advance, asidePlace, atLast, beatKey, choicesUp, readingAt as readingSe
 import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lines.js';
 import { isSight, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
-import { qianChipHtml, qianCardHtml } from './qian-card.js';
+import { qianCardHtml } from './qian-card.js';
 import { createQianPage } from './qian-page.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { answered, tapNope, wireLiveGames } from './live-games.js';
@@ -821,7 +821,7 @@ function statusHtml() {
   const stones = !has('wealth') || isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
   return `${name}${realm}
     ${has('pool') ? qiHtml() : ''}
-    ${stones}${has('omen') ? omenChip() : ''}
+    ${stones}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
 }
 
@@ -1137,18 +1137,38 @@ function paintDrain(t) {
 }
 const FLOAT_MS = 2200;
 
-/// Today's 签 on the strip (问签 v1, 2026-11-02): 「今日 上签 · 修为 ×1.2 · 宜斗法」, or 「今日签 · 未摇」 before the draw —
-/// a tap opens the 签 card over the stage, wherever the story stands.
-function omenChip() {
-  const chip = qianChipHtml(look, lang());
-  if (!chip) return '';
-  // The header is drawn before render() marks a cast fresh (castSeen, below): a 签 new since the last draw inks in
-  // here for a few seconds — the same HTML each redraw meanwhile, so the strip is not redrawn and the ink runs once.
+/// 问签 (v2 placement, Hanli 2026-11-02: 「上面已经过于拥挤了, 算卦的换个地方吧, 每日一次, 放最下面吧, 每天用户第一次打开
+/// 自动弹出来, 如果不摇, 放下面卡片, 摇过了就可以不显示了」): no chip on the top bar. The 签 card is a modal over the stage —
+/// it pops up by itself the first time he opens the game on a day not yet drawn (qianAutoPop); closed unshaken, the
+/// tray's 问签 card stays until he shakes (rules/aside.mjs); shaken, the reading shows in the same modal, and once
+/// closed nothing of the 签 stays on screen. Today's 签 again: 书 → 「今日签」 (shelfChipHtml).
+let qianDrawn = '';
+function qianModalHtml() {
+  if (!view.qianOpen || !look?.qian || bout) return '';
+  // A 签 new since the last paint inks in for a few seconds — the same HTML each paint meanwhile, so the ink runs once.
   const cast = look?.divination?.poem ? `${look.today?.date ?? ''}|${look.divination.n}` : null;
   if (cast && view.castSeen !== undefined && cast !== view.castSeen) view.qianInkUntil = Date.now() + 6000;
-  const inking = Date.now() < (view.qianInkUntil ?? 0);
-  const pop = view.qianOpen ? `<div class="bookpop qianpop" role="dialog">${qianCardHtml({ ...ctx(), castFresh: inking })}</div>` : '';
-  return `<span class="qianwrap">${chip}${pop}</span>`;
+  const inking = Date.now() < (view.qianInkUntil ?? 0), zh = lang() !== 'en';
+  return `<div class="qianmodal" data-qian-backdrop><div class="qianbox" role="dialog" aria-modal="true">
+    <button class="qclose" data-qian-close aria-label="${zh ? '合上' : 'Close'}">×</button>${qianCardHtml({ ...ctx(), castFresh: inking })}</div></div>`;
+}
+function paintQianModal() {
+  let host = document.getElementById('qianModal');
+  if (!host) { host = document.createElement('div'); host.id = 'qianModal'; document.body.appendChild(host); }
+  const html = qianModalHtml();
+  if (html === qianDrawn) return;
+  // Typing in 替人求签's form survives a repaint: the field and its caret are put back.
+  const a = document.activeElement, id = a && host.contains(a) ? a.id : null, at = id && 'selectionStart' in a ? [a.selectionStart, a.selectionEnd] : null;
+  host.innerHTML = html; qianDrawn = html;
+  if (id) { const el = document.getElementById(id); el?.focus({ preventScroll: true }); if (at && el?.setSelectionRange) try { el.setSelectionRange(...at); } catch { /* a date field has no caret */ } }
+}
+/// The first open of a day not yet drawn: the card pops up once (this browser's, per save and day).
+function qianAutoPop() {
+  const day = look?.today?.date;
+  if (!day || !look.qian || look.divination || bout || (look.locked ?? []).includes('divine') || view.qianOpen) return;
+  const key = `lingjing:qian-pop:${herKey()}:${day}`;
+  try { if (localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch { if (view.qianPopped === day) return; }
+  keep({ qianPopped: day, qianOpen: true });
 }
 
 /// The game's language, at a tap — the rules' Lang, the same word Ling
@@ -1372,7 +1392,9 @@ function footChipsHtml(slots) {
 /* 书: the 九鼎录 and the novel behind one chip (Hanli, 2026-10-15) — a tap opens both. */
 function shelfChipHtml() {
   const w = words(), open = view.shelfOpen;
-  const pop = open ? `<div class="bookpop shelfpop" role="dialog">${luChipHtml(lang(), view.luOpen)}${readChipHtml(ctx())}</div>` : '';
+  // Today's 签, once drawn: one quiet line here to see it again (问签 v2 placement — nothing of it on the screen otherwise).
+  const d = look?.divination, qian = d?.poem ? `<button class="bookchip qianagain" data-divine>${esc(lang() === 'en' ? `Today's stick · ${d.n} · ${d.grade.name}` : `今日签 · 第${d.n}签 ${d.grade.name}`)}</button>` : '';
+  const pop = open ? `<div class="bookpop shelfpop" role="dialog">${luChipHtml(lang(), view.luOpen)}${readChipHtml(ctx())}${qian}</div>` : '';
   return `<span class="bookwrap"><button class="bookchip shelfchip" data-shelf aria-expanded="${open ? 'true' : 'false'}">${esc(w.shelfChip)}</button>${pop}</span>`;
 }
 
@@ -1780,6 +1802,7 @@ function draw() {
   const dv = look.divination;
   if (dv?.poem && (view.castFresh || view.qianMine?.n !== dv.n || view.qianMine?.day !== dv.day || view.qianMineLang !== lang())) { keep({ qianMineLang: lang() }); qianPage.reading(dv, { fresh: view.castFresh }); }
   qianPage.evening(look);
+  qianAutoPop();
   // The slots stay put; only what fills them changes. The header and the
   // footer are redrawn only when they changed (a stream token must not
   // restart a portrait's fade or reset a chip's pop).
@@ -1834,6 +1857,7 @@ function draw() {
     });
   }
   restoreFocus(had);
+  paintQianModal();
   // Held wins go after the draw, never from inside it.
   sendHeldWins();
   // A won fight's way on, once its passage is read and its 所得 put away (watchWayOn; tried once per exit).
@@ -3814,7 +3838,7 @@ const CLICKS = [
   ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
   // 问签 from the tray or 先放一放: the 签 card opens over the stage — the shake is its own (never a draw with no ritual).
-  ['[data-divine]', () => show({ qianOpen: true })],
+  ['[data-divine]', () => show({ qianOpen: true, shelfOpen: false })],
   ['[data-qian-shake]', (el) => { if (!el.matches(':disabled')) run('divine', () => qianPage.tap()); }],
   // 问签 v2: 替人求签 and the share picture.
   ['[data-qian-friend-go]', (el) => { if (!el.matches(':disabled')) run('qian-friend', () => qianPage.friendAsk()); }],
@@ -3823,7 +3847,9 @@ const CLICKS = [
   ['[data-qian-friend]', (el) => (el.dataset.qianFriend === 'back' ? qianPage.friendBack() : qianPage.friendOpen(el.dataset.qianFriend === 'open'))],
   ['[data-qian-share]', (el) => { if (!el.matches(':disabled')) qianPage.shareTap(el.dataset.qianShare, el.dataset.qianWho); }],
   ['[data-qian-book]', (el) => run('qian-book', () => qianPage.book(el.dataset.qianBook === 'open'))],
-  ['[data-qian-chip]', () => show({ qianOpen: !view.qianOpen })], // the top bar's own popover, not the footer's
+  // The modal closes by its ×, or a tap on the dim around it (问签 v2 placement); the friend's card goes back to his.
+  ['[data-qian-close]', () => show({ qianOpen: false, qianFriend: null, qianFriendOpen: false, qianBookOpen: false, qianShown: null })],
+  ['[data-qian-backdrop]', (el, e) => { if (e?.target !== el) return false; show({ qianOpen: false, qianFriend: null, qianFriendOpen: false, qianBookOpen: false, qianShown: null }); }],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
   ['[data-tale-answer]', (el) => run('tale', () => taleAnswer(el.dataset.taleAnswer))],
   ['[data-drop]', (el) => run(`drop:${el.dataset.drop}`, () => dropErrand(el.dataset.drop))],

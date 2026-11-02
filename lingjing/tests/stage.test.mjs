@@ -11,13 +11,13 @@ const world = (over = {}) => ({ place: { id: 'ye', name: '邺城' }, scene: null
 
 test('the stage is one ordered list, and Ling\'s own cards stand whatever else is true', () => {
   // nothing shown, nothing waiting: the day's coins fill it — and 下一步 stands, never a blank stage (withNext, 2026-10-15)
-  assert.deepEqual(kinds(stageCards(world())), ['hexagram', 'next']);
+  assert.deepEqual(kinds(stageCards(world())), ['next']);
   // what she showed — and, a card that only tells, 下一步 before it (withNext, 2026-10-15)
   assert.deepEqual(kinds(stageCards(world(), { focus: [{ card: 'creature', id: 'fuzhu' }] })), ['creature:fuzhu', 'next']);
   assert.deepEqual(kinds(stageCards(world(), { focus: [{ card: 'item', ids: ['a'] }] })), ['item'], 'a shelf is a thing to do');
   // the head cards come first, in order
   const busy = world({ building: { paint: [1] }, stamina: { empty: true }, quest: { step: 'bell' } });
-  assert.deepEqual(kinds(stageCards(busy)), ['building', 'empty', 'quest', 'hexagram']);
+  assert.deepEqual(kinds(stageCards(busy)), ['building', 'empty', 'quest']);
   // a fight takes the whole column
   assert.deepEqual(kinds(stageCards(busy, { fight: true })), ['fight']);
 });
@@ -31,7 +31,7 @@ test('a line running under his feet takes the stage, and the page adds nothing o
   // …and off the line, the same place shows all of it
   const walking = { ...atWater, quest: { step: 'ring', at_water: false } };
   assert.equal(lineHere(walking), null);
-  assert.deepEqual(kinds(stageCards(walking)), ['quest', 'hexagram', 'board:b', 'duel:haunt:x']);
+  assert.deepEqual(kinds(stageCards(walking)), ['quest', 'board:b', 'duel:haunt:x']);
   // the market he stands in counts as the line too
   assert.ok(lineHere(world({ quest: { step: 'bell', shop_here: true } })));
   assert.equal(lineHere(world({ quest: { step: 'bell', shop_here: false, market: { id: 'puyang' } } })), null);
@@ -65,13 +65,13 @@ test('the goal is one slim line on the stage; its road is the question\'s to off
   // crowded」); the line stays, with nothing to tap, so the chat keeps the road.
   const { stageCards, stageOwns, askMinusStage } = await import('../scripts/stage.mjs');
   const look = { ...AWAKE, place: { id: 'sibei' }, tasks: [], waypoint: { scene: '03-cauldron', place: { id: 'liubo', name: '流波山' }, province: '青州', text: '路通向流波山。', toward: { id: 'liubo', name: '流波山' } } };
-  assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'hexagram', 'next']);
+  assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'next']);
   const owns = stageOwns(look, stageCards(look));
   assert.ok(!owns.has('move:liubo'), 'a line with no button owns no road');
   const ask = { header: '泗水北岸', question: '何去何从？', options: [{ label: '流波山', move: 'liubo' }, { label: '云龙山', move: 'yunlong' }] };
   assert.deepEqual(askMinusStage(ask, owns).options.map(o => o.label), ['流波山', '云龙山']);
   // no thread left: no line (下一步 still stands: never a blank stage)
-  assert.deepEqual(stageCards({ ...look, waypoint: null }).map(c => c.card), ['hexagram', 'next']);
+  assert.deepEqual(stageCards({ ...look, waypoint: null }).map(c => c.card), ['next']);
 });
 
 test('差事: an offer is what the stage is about — the book is behind the chip, the creature card gives way', async () => {
@@ -84,7 +84,7 @@ test('差事: an offer is what the stage is about — the book is behind the chi
   assert.deepEqual(stageCards(look, { focus: [{ card: 'item', ids: ['lingzhi'] }, ...focus] }).map(c => c.card), ['offer', 'item']);
   // 接下 is on its own card, and the question never offers it: the card owns no key
   assert.ok(![...stageOwns(look, stageCards(look))].some(k => k.startsWith('quest:')), 'no key the question cannot carry');
-  assert.deepEqual(stageCards({ ...AWAKE, place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram', 'next']);
+  assert.deepEqual(stageCards({ ...AWAKE, place: { id: 'p' }, tasks: [] }).map(c => c.card), ['next']);
   // two errands at one place: ONE card, and both 接下 are on it (彭城, 2026-09-22)
   const two = { ...look, offers: [...look.offers, { id: 'daily-20260922-patrol-sishui', title: '榜文' }] };
   assert.deepEqual(stageCards(two).map(c => c.card), ['offer']);
@@ -227,10 +227,10 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   assert.doesNotMatch(strip.slice(0, strip.indexOf('\n}')), /ChipHtml/, 'the chips are the footer\'s');
 });
 
-test('问签 (2026-11-02): the 签筒 fills an empty stage with 银月 awake, asleep in the token or not yet met; shut (no `qian`), nothing', () => {
-  assert.deepEqual(kinds(stageCards(world())), ['hexagram', 'next']);
-  assert.deepEqual(kinds(stageCards(world({ companion: { joined: true, asleep: true } }))), ['hexagram', 'next']);
-  assert.deepEqual(kinds(stageCards(world({ companion: null }))), ['hexagram', 'next']);
+test('问签 v2 placement (Hanli 2026-11-02 「…放最下面吧…」): the 签筒 never fills the stage — the page\'s modal and the tray hold it', () => {
+  assert.deepEqual(kinds(stageCards(world())), ['next']);
+  assert.deepEqual(kinds(stageCards(world({ companion: { joined: true, asleep: true } }))), ['next']);
+  assert.deepEqual(kinds(stageCards(world({ companion: null }))), ['next']);
   assert.deepEqual(kinds(stageCards(world({ qian: undefined }))), ['next']);
 });
 

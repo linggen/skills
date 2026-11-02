@@ -272,8 +272,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // A picture-book beat is not an empty stage either.
   // Before a story gate the 签筒 is not his yet (Look's `locked`, rules/locks.mjs). 问签 (2026-11-02) stands with 银月
   // asleep too: the card shows the 签 and its 宜忌 then, and she reads it only when she is here.
-  // Drawn, the 签 stays on the top bar's chip (its popover), never over the 主页 for the rest of the day.
-  const coins = !(look.locked ?? []).includes('divine') && Boolean(look.qian) && !look.divination;
+  // 问签 v2 placement (Hanli 2026-11-02 「…放最下面吧…」): the 签 never fills the stage now — it pops up as the page's own
+  // modal on the day's first open, and waits unshaken as the tray's 问签 card (rules/aside.mjs); drawn, nothing of it stays.
+  const coins = false;
   const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet || !coins ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
   // 本王考考你 (rules/kao.mjs) is light: offered only on an empty stage, never over a scene's business. A round left open (the page reloaded

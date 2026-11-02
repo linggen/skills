@@ -233,3 +233,16 @@ test('the card: the full reading, no ask, no 出处 link; no 宜 row on a day wi
   assert.match(fh, /替 阿星 求签/); assert.match(fh, /data-qian-who="friend"/);
   assert.doesNotMatch(fh, /修为 ×/);
 });
+
+test('placement (Hanli 11-02 「…放最下面吧…」): no top-bar chip; a modal that pops once a day; the tray until shaken; 书 shows it again', async () => {
+  const src = fs.readFileSync(path.join(here, '../scripts/lingjing.js'), 'utf8');
+  assert.doesNotMatch(src, /omenChip|qianChipHtml|data-qian-chip/, 'nothing of the 签 on the top bar');
+  assert.match(src, /function qianAutoPop\(\)[\s\S]*?lingjing:qian-pop:/, 'the first open of the day pops it, once');
+  assert.match(src, /qianagain" data-divine/, '书 → 今日签 opens it again');
+  const { stageCards } = await import('../scripts/stage.mjs');
+  const { look } = await import('../scripts/rules.mjs');
+  assert.ok(!stageCards(look(base, content, ctx())).some((c) => c.card === 'hexagram'), 'never on the stage');
+  const tray = look(base, content, ctx()).tray ?? [];
+  assert.ok(tray.some((r) => r.id === 'divine'), 'unshaken: the tray card');
+  assert.ok(!(look(call(base).state, content, ctx()).tray ?? []).some((r) => r.id === 'divine'), 'shaken: gone');
+});

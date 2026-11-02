@@ -1267,9 +1267,7 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 Replaces 问卦 (三钱 · 卦力 · 望气 at 吉 — removed). rules/fortune.mjs · rules/almanac.mjs · worlds/jiuding/qian.json ·
 qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling) · tests/qian.test.mjs.
 
-- **Once a real day, fixed, never in a pool.** One 签 seeded by the day and the save (undo cannot fish). The card fills
-  the empty stage from the first look of the day; the top bar's chip 「求签」 opens it over any stage; after the draw the
-  chip reads 「今日 上签 · 修为 ×1.2 · 宜斗法」. The 签筒 stands with 银月 asleep or away too.
+- **Once a real day, fixed, never in a pool.** One 签 seeded by the day and the save (undo cannot fish). (v1 placement — the stage filler and the top bar's chip — replaced by v2's modal.) The 签筒 stands with 银月 asleep or away too.
 - **Rewards.** A day 修为 speed by the grade — 上签 ×1.2, 中签 ×1.0, 下签 ×1.0, never below 1 — in `amountsOf` beside
   the roots' speed, so `paysOf` and every card's shown pay already hold it. One **宜 kind** named by the 签
   (v1: `kinds[(n − 1) mod 4]`; v2: the 签's own `kind`, by meaning): 斗法 (卡牌 · 降妖: mechanic 斗法, table haunt) · 守御 (塔防 · 兽潮: mechanic 塔防/结印, 兽潮's
@@ -1307,6 +1305,13 @@ qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling)
 
 Over v1 (below). rules/fortune.mjs · qian.json · qian-reading.js · qian-facts.js · qian-share.js · tests/qian2.test.mjs.
 
+- **Where it stands** (Hanli 11-02: 「上面已经过于拥挤了, 算卦的换个地方吧, 每日一次, 放最下面吧, 每天用户第一次打开自动弹出来,
+  如果不摇, 放下面卡片, 摇过了就可以不显示了」): no chip on the top bar. The 签 card is a modal over the stage
+  (lingjing.js qianModalHtml): it pops up by itself on the first open of a day not yet drawn (once a day, per save, this
+  browser), the 签筒 wobbling under 「还没摇 · 点签筒摇一摇」. Closed unshaken, the tray's 问签 card waits until he shakes
+  (rules/aside.mjs); it never fills the stage any more (stage.mjs). Shaken, the full reading shows in the same modal; closed,
+  nothing of the 签 stays on screen. **Today's 签 again** — agent's pick: one quiet line in the 书 popover, 「今日签 · 第N签
+  上签」, which opens the modal (替人求签 and the 签谱 from there).
 - **No 「想问什么」.** The ask picker and the free line are gone; one shake gives one complete card. An old save's
   `ask` / `ask_text` stay in its draw, read by nothing.
 - **The card:** 第N签 · grade; the 签诗 (verbatim, inked in); the **白话签解** (`jie`, marked 「白话签解（灵境自译）」 —

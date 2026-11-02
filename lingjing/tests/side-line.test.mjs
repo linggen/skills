@@ -58,7 +58,7 @@ test('the 今 stage keeps none of the 古\'s furniture; the 古 stage keeps all 
 
 test('the page reads the furniture table for the strip, the footer and the tray', () => {
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
-  for (const part of ['name', 'realm', 'pool', 'wealth', 'omen']) assert.match(src, new RegExp(`has\\('${part}'\\)`), part);
+  for (const part of ['name', 'realm', 'pool', 'wealth']) // 'omen' left the top bar (问签 v2 placement, 11-02) assert.match(src, new RegExp(`has\\('${part}'\\)`), part);
   // The footer's chips come from stage.mjs FOOTER, each one a part of the table (Hanli, 2026-10-15).
   for (const part of FOOTER) assert.ok([...FURNITURE.line, ...FURNITURE.main, ...FURNITURE.every].includes(part), part);
   assert.match(src, /FOOTER\.filter\(has\)/);

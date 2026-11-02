@@ -1532,3 +1532,12 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 .qfriend .qx { font: inherit; font-size: 13px; line-height: 1; border: none; background: none; color: var(--faint); cursor: pointer; padding: 2px 4px; }
 .qsrc { margin-top: 8px; text-align: center; }
 .qshown { display: block; width: 100%; max-width: 260px; margin: 8px auto 0; border: 1px solid var(--line); border-radius: 6px; }
+/* 问签 v2 placement: the 签 card is a modal over the stage (lingjing.js qianModalHtml), never a top-bar chip. */
+.qianmodal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: color-mix(in srgb, var(--ground) 55%, rgba(0,0,0,.35)); }
+.qianbox { position: relative; width: 100%; max-width: 560px; max-height: calc(100vh - 32px); overflow-y: auto; border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.22); }
+.qianbox > .card.qian { margin: 0; }
+.qclose { position: absolute; top: 6px; right: 8px; z-index: 2; font: inherit; font-size: 20px; line-height: 1; border: none; background: none; color: var(--dim); cursor: pointer; padding: 4px 8px; }
+.qianmodal .qiantong:not(.shaking) { animation: qwobble 2.6s ease-in-out infinite; transform-origin: 50% 90%; }
+@keyframes qwobble { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-5deg); } 82% { transform: rotate(4deg); } 88% { transform: rotate(-2deg); } }
+@media (prefers-reduced-motion: reduce) { .qianmodal .qiantong:not(.shaking) { animation: none; } }
+.bookchip.qianagain { display: block; margin-top: 6px; }

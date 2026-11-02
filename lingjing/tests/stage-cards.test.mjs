@@ -87,7 +87,7 @@ for (const [name, [state, c]] of Object.entries(SITUATIONS)) {
 test('the situations cover the stage\'s own cards', () => {
   const seen = new Set(Object.values(SITUATIONS).flatMap(([s, c]) => look(s, content, c).stage.map(x => x.card)));
   // no 'value': the hero is fixed (2026-09-30) and no shipped scene names a thing on the card (tests/naming.test.mjs draws it)
-  for (const kind of ['goal', 'offer', 'item', 'creature', 'hexagram', 'road', 'tale', 'born', 'people', 'panel']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
+  for (const kind of ['goal', 'offer', 'item', 'creature', 'road', 'tale', 'born', 'people', 'panel']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
 });
 
 test('the 事 chip: how many in hand, what can be handed in — and its popover holds the goal and the rows', () => {
