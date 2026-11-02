@@ -26,7 +26,7 @@
 
 import { askInChat, reachable } from './drawguess-ling.js';
 import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './jinchat-rules.js';
-import { dictOf, kindOf, poolRiddle, stubLine } from './jinchat-games.js';
+import { dictOf, kindOf, poolPick, poolPlay, stubLine } from './jinchat-games.js';
 import { chainGame, coupletGame, guessGame, riddleGame, tableOf } from './jinchat-play.js';
 import { createTalk, talkStyle } from '../npc-talk.js';
 
@@ -88,6 +88,10 @@ const chatsOf = () => (regP ??= fetch(new URL('games.json', WORLD)).then((r) => 
   .then((reg) => reg.games.find((g) => g.id === 'jinchat' && !g.task)?.data?.chats ?? {}).catch(() => ({})));
 const peopleOf = () => (peopleP ??= fetch(new URL('people.json', WORLD)).then((r) => r.json())
   .then((d) => Object.fromEntries((Array.isArray(d.people) ? d.people : Object.values(d.people ?? d)).filter((p) => p?.id).map((p) => [p.id, p]))).catch(() => ({})));
+
+/** A riddle pool's file (games.json `game.pool` names it: worlds/jiuding/<pool>.json, 周衡’s dengmi.json), once per page; unreadable, an empty pool. */
+const poolOf = (id) => (POOLS[id] ??= /^[a-z0-9-]+$/.test(String(id)) ? fetch(new URL(`${id}.json`, WORLD)).then((r) => r.json()).catch(() => ({})) : Promise.resolve({}));
+const POOLS = {};
 
 /** Which play of a chat's riddle pool this is (games.json `data.pool`): counted in this browser, so the next is the next
     riddle; storage that throws or is empty starts from the clock's count instead. */
@@ -282,8 +286,9 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     const [chats, people] = await Promise.all([chatsOf(), peopleOf()]);
     g.chat = data.chats?.[data.chat] ?? chats[data.chat] ?? null;
     if (!g.chat) { root.textContent = `jinchat: no chat ${data.chat ?? '(none)'}`; return; }
-    // A row that plays the chat's riddle pool (`data.pool`: the 游戏厅's 周衡 · 一个灯谜): the next of it, this browser's place kept.
-    if (data.pool && g.chat.game?.pool?.length) g.chat = { ...g.chat, game: poolRiddle(g.chat.game, poolTurn(data.chat)) };
+    // A deal that plays the chat's riddle pool (`data.pool`, 周衡 · 一个灯谜): the story's by his wins so far (`data.n`,
+    // Look's; none or 0 → the chat's own riddle, 人参), the 游戏厅's (`data.walk`) the next of it in this browser.
+    if (data.pool && g.chat.game?.pool) g.chat = { ...g.chat, game: poolPick(g.chat.game, await poolOf(g.chat.game.pool), poolPlay(data, lang, () => poolTurn(data.chat))) };
     g.cast = castOf(g.chat, people, lang);
     list.setCast(g.cast);
     draw();

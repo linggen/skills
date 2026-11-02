@@ -356,35 +356,69 @@ test('成语接龙 always plays out: a player who takes the commonest way on win
   }
 });
 
-test('周衡\'s 灯谜 pool: enough riddles that a replay rarely repeats, each fair in both tongues, none another riddle\'s; the story always asks 人参', async () => {
-  const { poolRiddle } = await import('../scripts/games/jinchat-games.js');
-  const shen = CHATS.shen.game, pool = shen.pool;
-  assert.ok(pool.length >= 12, `a pool of ${pool.length}`);
-  assert.equal(new Set(pool.map((r) => r.id)).size, pool.length, 'ids unique');
+test('周衡\'s 灯谜 pool: every riddle an old one with its source, its own answer, two hints and four choices, judged fair; none another riddle\'s', async () => {
+  const shen = CHATS.shen.game, POOL = JSON.parse(read(`../worlds/jiuding/${shen.pool}.json`));
+  assert.ok(POOL.zh.length >= 40, `zh: a pool of ${POOL.zh.length}`);
+  assert.ok(POOL.en.length >= 20, `en: a pool of ${POOL.en.length}`);
   const others = [
     ...Object.values(JSON.parse(read('../worlds/jiuding/riddles/zh.json')).riddles).map((r) => r.q),
-    ...GAMES.filter(([id]) => id !== 'shen').map(([, c]) => c.game.zh?.q).filter(Boolean),
+    ...Object.values(JSON.parse(read('../worlds/jiuding/riddles/en.json')).riddles).map((r) => r.q),
+    ...GAMES.filter(([id]) => id !== 'shen').flatMap(([, c]) => [c.game.zh?.q, c.game.en?.q]).filter(Boolean),
   ];
-  const seen = new Set();
-  for (const [n] of pool.entries()) {
-    const game = poolRiddle(shen, n);
-    assert.equal(game.facts, shen.pool_facts, `${game.riddle}: the pool's own facts, not the 紫玉参's`);
-    for (const lang of ['zh', 'en']) {
-      const r = riddleOf(game, lang);
-      assert.ok(r.q && r.answers.length && r.hints.length >= 2 && r.choices.length === 4, `${game.riddle} ${lang}: whole`);
-      assert.equal(r.choices.filter((x) => checkRiddle(r, x, lang) === 'right').length, 1, `${game.riddle} ${lang}: one right choice`);
-      for (const a of r.answers) assert.equal(checkRiddle(r, a, lang), 'right', `${game.riddle} ${lang}: ${a}`);
-      for (const a of r.answers) if (lang === 'zh' ? [...a].length > 1 : true) assert.ok(!r.q.toLowerCase().includes(a.toLowerCase()), `${game.riddle} ${lang}: the riddle names its answer ${a}`);
-      assert.ok(!seen.has(`${lang}|${r.q}`) && !others.includes(r.q), `${game.riddle} ${lang}: a riddle of its own`);
-      seen.add(`${lang}|${r.q}`);
+  for (const lang of LANGS) {
+    const list = POOL[lang];
+    assert.equal(new Set(list.map((r) => r.id)).size, list.length, `${lang}: ids unique`);
+    assert.equal(new Set(list.map((r) => r.q)).size, list.length, `${lang}: no riddle twice`);
+    for (const e of list) {
+      const src = POOL.sources[e.source];
+      assert.ok(src?.title && /^https:\/\//.test(src.url), `${e.id}: a source with its title and page`);
+      assert.equal(e.hints.length, 2, `${e.id}: two hints`);
+      assert.ok(e.hints.every((h) => typeof h === 'string' && h.length > 3), `${e.id}: hints written`);
+      const r = riddleOf({ [lang]: e }, lang);
+      assert.ok(r.q && r.answers.length && r.choices.length === 4, `${e.id}: whole`);
+      assert.equal(r.choices.filter((x) => checkRiddle(r, x, lang) === 'right').length, 1, `${e.id}: one right choice`);
+      for (const a of r.answers) assert.equal(checkRiddle(r, a, lang), 'right', `${e.id}: ${a}`);
+      for (const a of r.answers) if (lang === 'zh' ? [...a].length > 1 : true) assert.ok(!r.q.toLowerCase().includes(a.toLowerCase()), `${e.id}: the riddle names its answer ${a}`);
+      assert.ok(!others.includes(r.q), `${e.id}: a riddle of its own`);
     }
   }
-  // The pool walks in order and comes round to the chat's own riddle last.
-  assert.equal(poolRiddle(shen, pool.length).riddle, 'own');
-  assert.equal(poolRiddle(shen, pool.length).zh.q, shen.zh.q);
-  assert.equal(poolRiddle(shen, pool.length + 1).riddle, pool[0].id);
-  // The 游戏厅's row plays the pool; the story's board (the task's own deal) never does — the plot turns on 人参.
-  assert.equal(reg.games.find((g) => g.id === 'jinchat' && g.task === 'zhishi-shen').data.pool, true);
-  assert.ok(!TASKS.find((t) => t.id === 'zhishi-shen').deal.pool);
-  assert.ok(fs.readFileSync(new URL('../scripts/games/jinchat.js', import.meta.url), 'utf8').includes('data.pool && g.chat.game?.pool?.length'));
+  assert.ok(POOL._about && Object.keys(POOL.sources).every((k) => POOL._about.length && POOL.sources[k].note), 'the sources said');
+});
+
+test('周衡\'s 灯谜: the first play (n 0, or no count) always asks 人参; each win after draws the pool, none twice till all are asked, the order the save\'s', async () => {
+  const { poolOrder, poolPick, poolPlay } = await import('../scripts/games/jinchat-games.js');
+  const shen = CHATS.shen.game, POOL = JSON.parse(read(`../worlds/jiuding/${shen.pool}.json`));
+  // The story's board: the task's own deal names the pool; Look adds `seed` and `n` (rules/pool.mjs poolDeal).
+  const deal = TASKS.find((t) => t.id === 'zhishi-shen').deal;
+  assert.equal(deal.pool, shen.pool, 'the story deal draws the chat\'s pool');
+  for (const lang of LANGS) {
+    // A fresh save (n 0), an errand's first play (n 0), and a deal no count reached: 人参, the chat's own.
+    for (const d of [{ ...deal }, { ...deal, n: 0, seed: 'fresh' }, { ...deal, seed: 'x' }]) {
+      const g = poolPick(shen, POOL, poolPlay(d, lang));
+      assert.equal(g.riddle, 'own', `${lang} ${JSON.stringify(d)}`);
+      assert.equal(riddleOf(g, lang).q, riddleOf(shen, lang).q);
+      assert.ok(riddleOf(g, 'zh').answers.includes('人参'));
+      assert.equal(g.facts, shen.facts, 'the story\'s own facts');
+    }
+    const len = POOL[lang].length;
+    for (const seed of ['save-a', 'save-b']) {
+      const at = (n) => poolPick(shen, POOL, poolPlay({ ...deal, n, seed }, lang));
+      const round = Array.from({ length: len }, (_, i) => at(i + 1));
+      assert.equal(new Set(round.map((g) => g.riddle)).size, len, `${lang} ${seed}: each riddle once in a round`);
+      assert.ok(round.every((g) => g.facts === shen.pool_facts && riddleOf(g, lang).q !== riddleOf(shen, lang).q), 'pool facts, never 人参');
+      const next = Array.from({ length: len }, (_, i) => at(len + i + 1));
+      assert.equal(new Set(next.map((g) => g.riddle)).size, len, `${lang} ${seed}: the second round asks each once too`);
+      assert.notEqual(next[0].riddle, round.at(-1).riddle, `${lang} ${seed}: no riddle twice running across the rounds`);
+      for (let c = 1; c < 6; c += 1) assert.notEqual(poolOrder(POOL[lang], seed, lang, c)[0].id, poolOrder(POOL[lang], seed, lang, c - 1).at(-1).id);
+      // The same save, the same play: the same riddle.
+      assert.equal(at(7).riddle, at(7).riddle);
+    }
+    const ids = (seed) => poolOrder(POOL[lang], seed, lang, 0).map((r) => r.id).join();
+    assert.notEqual(ids('save-a'), ids('save-b'), `${lang}: another save, another order`);
+  }
+  // The 游戏厅's row walks the pool in this browser: always a pool riddle, never the story's.
+  const row = reg.games.find((g) => g.id === 'jinchat' && g.task === 'zhishi-shen').data;
+  assert.equal(row.walk, true);
+  assert.notEqual(poolPick(shen, POOL, poolPlay(row, 'zh', () => 0)).riddle, 'own');
+  assert.ok(fs.readFileSync(new URL('../scripts/games/jinchat.js', import.meta.url), 'utf8').includes('data.pool && g.chat.game?.pool'));
 });

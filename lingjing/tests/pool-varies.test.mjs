@@ -22,13 +22,16 @@ const everIn = (c, s, id) => Array.from({ length: 84 }, (_, i) => new Date(2026,
   .some(now => (look(structuredClone(s), c, { now, quests: [] }).tray ?? []).some(e => e.id === id));
 const RIDDLE = 'zhishi-shen';
 const task = (c, id) => c.tasks.tasks.find(t => t.id === id);
+/* 周衡's 灯谜 as it stood before its riddle pool (deal.pool 'dengmi', 2026-11-02): the fixed board these tests stand on. */
+const fixedContent = () => { const c = structuredClone(content); const { pool: _, ...deal } = task(c, RIDDLE).deal; task(c, RIDDLE).deal = deal; return c; };
 
 test('every hosted board says whether it varies: a content pool, a ladder, or `varies` plainly', () => {
   for (const t of content.tasks.tasks.filter(t => t.hosted && t.kind === 'board' && !t.stall)) {
     const inferred = (t.climb?.length ?? 0) > 1 || (t.deal?.levels?.length ?? 0) > 1 || ['pool', 'riddles', 'deck'].some(k => t.deal?.[k]);
     assert.ok(inferred || typeof t.varies === 'boolean', `${t.id}: declare \`varies\` (true or false)`);
   }
-  assert.equal(boardVaries(task(content, RIDDLE)), false, '周衡\'s 灯谜: one riddle');
+  assert.equal(boardVaries(task(fixedContent(), RIDDLE)), false, '周衡\'s 灯谜 without its pool: one riddle');
+  assert.equal(boardVaries(task(content, RIDDLE)), true, '周衡\'s 灯谜: its riddle pool (deal.pool)');
   for (const id of ['wuziqi', 'xiangqi', 'huarong', 'pintu', 'alchemy-daily', 'yaoyuan-zhuochong', 'chaifang-huangshulang']) assert.equal(boardVaries(task(content, id)), true, id);
   // The hook: a content pool in the deal wins over a plain `varies: false`.
   assert.equal(boardVaries({ varies: false, deal: { chat: 'shen', pool: true } }), true);
@@ -37,11 +40,11 @@ test('every hosted board says whether it varies: a content pool, a ladder, or `v
 });
 
 test('a fixed board once won is never drawn again; unwon, it is', () => {
-  const s = at('zhishi');
-  assert.ok(everIn(content, s, RIDDLE), 'unwon: in the row in some 时辰');
-  assert.ok(!everIn(content, { ...s, pool_won: { [RIDDLE]: START.toISOString() } }, RIDDLE), 'won: never again');
+  const s = at('zhishi'), fixed = fixedContent();
+  assert.ok(everIn(fixed, s, RIDDLE), 'unwon: in the row in some 时辰');
+  assert.ok(!everIn(fixed, { ...s, pool_won: { [RIDDLE]: START.toISOString() } }, RIDDLE), 'won: never again');
   // A save from before the pool's own stamp: the best ★ the page kept on the win is a win (his four, 10-28 · 11-02).
-  assert.ok(!everIn(content, { ...s, stars: { ...(s.stars ?? {}), [RIDDLE]: 3 } }, RIDDLE), 'won before (stars): never again');
+  assert.ok(!everIn(fixed, { ...s, stars: { ...(s.stars ?? {}), [RIDDLE]: 3 } }, RIDDLE), 'won before (stars): never again');
 });
 
 test('a board that varies, won, is still drawn', () => {
@@ -107,6 +110,20 @@ test('an older save won by its ★ alone counts one — and its next win two, ne
 });
 
 test('a deal without a pool is as it was: no seed, no n', () => {
-  const d = dealIn(content, at('zhishi'));
-  assert.deepEqual(d, task(content, RIDDLE).deal);
+  const fixed = fixedContent(), d = dealIn(fixed, at('zhishi'));
+  assert.deepEqual(d, task(fixed, RIDDLE).deal);
+});
+
+test('the board on the rules\' deal: a fresh save\'s first play asks 人参; a save that has won draws its pool (jinchat-games.js poolPick)', async () => {
+  const { poolPick, poolPlay } = await import('../scripts/games/jinchat-games.js');
+  const fs = await import('node:fs');
+  const reg = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
+  const shen = reg.games.find(g => g.id === 'jinchat' && !g.task).data.chats.shen.game;
+  const POOL = JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/${shen.pool}.json`, import.meta.url), 'utf8'));
+  const fresh = dealIn(content, at('zhishi'));
+  assert.equal(fresh.n, 0);
+  assert.equal(poolPick(shen, POOL, poolPlay(fresh, 'zh')).riddle, 'own', 'a fresh save: 人参');
+  const won = dealIn(content, at('zhishi', { stars: { [RIDDLE]: 3 } }));
+  assert.ok(won.n >= 1);
+  assert.ok(POOL.zh.some(r => r.id === poolPick(shen, POOL, poolPlay(won, 'zh')).riddle), 'won before: a pool riddle');
 });

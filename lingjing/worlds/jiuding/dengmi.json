@@ -1,0 +1,1622 @@
+{
+ "_about": "灯谜 for 周衡's replays (Hanli 2026-11-02: the story's 人参 riddle won four times). Every riddle here is old and public domain, copied from the source it names (`source`, a key of `sources`; `at` where in it) with the answer that source itself gives — none written for this game. Chinese texts are simplified from the sources' traditional characters; the ——打一物 tail is the board's, as the 红楼梦's own riddles carry one; a riddle whose wordplay works only in traditional glyphs (習 · 圖 · 畢 · 資 · 蘭, the 车中猴 申) is left out. English lines keep the source's spelling, its verse lines joined by ' / '. `answers` are the source's answer and the plain ways a player names it (the page judges, jinchat-games.js checkRiddle); `hints` (two, graded) and `choices` (four, one right) are this game's, not the source's. The story deals it by `deal.pool: 'dengmi'` (tasks/world.json zhishi-shen): the first play — n 0, a fresh save and an errand's first play alike — asks the chat's own 人参 riddle; each win after it (Look's `n`, rules/pool.mjs poolDeal) draws the next of this pool in the board's language, in an order its save's `seed` decides, every one asked once before any comes round again (jinchat-games.js poolPick). The 游戏厅's row walks the same pool in this browser.",
+ "sources": {
+  "hlm22": {
+   "title": "曹雪芹《红楼梦》第二十二回「制灯谜贾政悲谶语」",
+   "url": "https://zh.wikisource.org/wiki/紅樓夢/第022回",
+   "note": "the answers are the novel's own: 贾政 guesses each and its maker says 是"
+  },
+  "hlm50": {
+   "title": "曹雪芹《红楼梦》第五十回「暖香坞创制春灯谜」",
+   "url": "https://zh.wikisource.org/wiki/紅樓夢/第050回",
+   "note": "宝琴 / 宝玉 guess them and their makers confirm"
+  },
+  "ssxy": {
+   "title": "刘义庆《世说新语·捷悟》（杨修）",
+   "url": "https://zh.wikisource.org/wiki/世說新語/捷悟",
+   "note": "杨修 reads each and says the answer"
+  },
+  "gjtsjc": {
+   "title": "《钦定古今图书集成·理学汇编·文学典》第二百五十八卷「隐语部」",
+   "url": "https://zh.wikisource.org/wiki/欽定古今圖書集成/理學彙編/文學典/第258卷",
+   "note": "quotes 周密《齐东野语》, 庄绰《鸡肋编》, 惠洪《冷斋夜话》, 《魏书·咸阳王禧传》, 吴处厚《青箱杂记》, 《瑯嬛记》 and 鲍照's 字谜三首, each with its answer named"
+  },
+  "xhyl": {
+   "title": "田汝成《西湖游览志余》卷二十五「委巷丛谈」",
+   "url": "https://zh.wikisource.org/wiki/西湖遊覽志 (四庫全書本)/餘卷25",
+   "note": "names each riddle by its answer (「门字谜」「一字谜」)"
+  },
+  "dmyd": {
+   "title": "《灯谜雅调》（又题《灯谜雅集》，晚明刻本，伦敦大学亚非学院马礼逊藏书 RM c.500.y.2）",
+   "url": "https://babelstone.co.uk/Morrison/Texts/DengmiYadiao.html",
+   "note": "the answers are the book's own key (目录字号), each riddle headed by its 千字文 character"
+  },
+  "halliwell": {
+   "title": "J. O. Halliwell, The Nursery Rhymes of England, Seventh Class: Riddles (5th ed., London: Warne, 1886)",
+   "url": "https://www.gutenberg.org/ebooks/32415",
+   "note": "the answer stands in brackets over each riddle"
+  },
+  "apollodorus": {
+   "title": "Apollodorus, The Library 3.5.8, trans. J. G. Frazer (Loeb, 1921)",
+   "url": "https://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0022:text=Library:book=3:chapter=5:section=8",
+   "note": "Oedipus answers: man"
+  },
+  "judges": {
+   "title": "Judges 14:14 and 14:18, King James Version (1611)",
+   "url": "https://en.wikisource.org/wiki/Bible_(King_James)/Judges",
+   "note": "the answer given in 14:18: honey, out of the lion"
+  }
+ },
+ "zh": [
+  {
+   "id": "hlm-lizhi",
+   "source": "hlm22",
+   "at": "贾母出，贾政猜",
+   "q": "猴子身轻站树梢。——打一果名。",
+   "answers": [
+    "荔枝",
+    "荔枝儿",
+    "立枝"
+   ],
+   "hints": [
+    "猴子站上枝头——「立枝」，念快些。",
+    "岭南的果子，红壳白肉。"
+   ],
+   "choices": [
+    "荔枝",
+    "桂圆",
+    "樱桃",
+    "杨梅"
+   ]
+  },
+  {
+   "id": "hlm-yantai",
+   "source": "hlm22",
+   "at": "贾政出，贾母猜",
+   "q": "身自端方，体自坚硬。虽不能言，有言必应。——打一用物。",
+   "answers": [
+    "砚台",
+    "砚",
+    "砚池",
+    "石砚",
+    "砚台儿"
+   ],
+   "hints": [
+    "书案上的，写字离不了它。",
+    "磨墨用的那块方石头——「有言（研）必应」。"
+   ],
+   "choices": [
+    "砚台",
+    "镇纸",
+    "笔筒",
+    "算盘"
+   ]
+  },
+  {
+   "id": "hlm-baozhu",
+   "source": "hlm22",
+   "at": "元春作",
+   "q": "能使妖魔胆尽摧，身如束帛气如雷。一声震得人方恐，回首相看已化灰。——打一物。",
+   "answers": [
+    "爆竹",
+    "炮竹",
+    "鞭炮",
+    "炮仗",
+    "爆仗",
+    "爆竹儿"
+   ],
+   "hints": [
+    "过年才放，一点就响。",
+    "竹筒里装着火药，响一声就成了灰。"
+   ],
+   "choices": [
+    "爆竹",
+    "灯笼",
+    "铜锣",
+    "香炉"
+   ]
+  },
+  {
+   "id": "hlm-suanpan",
+   "source": "hlm22",
+   "at": "迎春作",
+   "q": "天运人功理不穷，有功无运也难逢。因何镇日纷纷乱，只为阴阳数不同。——打一物。",
+   "answers": [
+    "算盘",
+    "算盘子",
+    "珠算",
+    "一把算盘"
+   ],
+   "hints": [
+    "执事堂里，周衡天天拨它。",
+    "上珠是阳，下珠是阴，拨来拨去为的是一个数。"
+   ],
+   "choices": [
+    "算盘",
+    "账簿",
+    "杆秤",
+    "竹筹"
+   ]
+  },
+  {
+   "id": "hlm-fengzheng",
+   "source": "hlm22",
+   "at": "探春作",
+   "q": "阶下儿童仰面时，清明妆点最堪宜。游丝一断浑无力，莫向东风怨别离。——打一物。",
+   "answers": [
+    "风筝",
+    "纸鸢",
+    "纸鹞",
+    "风鸢",
+    "风筝儿"
+   ],
+   "hints": [
+    "孩子仰着脸看它，清明前后最多。",
+    "一根线牵着它，线一断就飘走了。"
+   ],
+   "choices": [
+    "风筝",
+    "秋千",
+    "竹蜻蜓",
+    "灯笼"
+   ]
+  },
+  {
+   "id": "hlm-haideng",
+   "source": "hlm22",
+   "at": "惜春作",
+   "q": "前身色相总无成，不听菱歌听佛经。莫道此生沉黑海，性中自有大光明。——打一物。",
+   "answers": [
+    "海灯",
+    "佛前海灯",
+    "长明灯",
+    "佛灯",
+    "佛前的灯"
+   ],
+   "hints": [
+    "佛堂里供着，昼夜不灭。",
+    "一大碗油，一根灯芯，点在佛前。"
+   ],
+   "choices": [
+    "海灯",
+    "木鱼",
+    "香炉",
+    "念珠"
+   ]
+  },
+  {
+   "id": "hlm-hua",
+   "source": "hlm50",
+   "at": "李绮作，宝琴猜",
+   "q": "萤。——打一字。",
+   "answers": [
+    "花",
+    "花字"
+   ],
+   "hints": [
+    "古人说，萤火虫是腐草化成的。",
+    "「草」字头，底下一个「化」。"
+   ],
+   "choices": [
+    "花",
+    "草",
+    "火",
+    "化"
+   ]
+  },
+  {
+   "id": "hlm-hou",
+   "source": "hlm50",
+   "at": "史湘云《点绛唇》，宝玉猜",
+   "q": "溪壑分离，红尘游戏，真何趣？名利犹虚，后事终难继。——打一俗物。",
+   "answers": [
+    "耍的猴儿",
+    "耍猴",
+    "猴子",
+    "猴儿",
+    "猴",
+    "耍猴的猴子",
+    "猕猴"
+   ],
+   "hints": [
+    "众人猜过和尚、道士、偶戏人，都不是。",
+    "离了山林，在街上翻跟头给人看；末一句——它的尾巴是剁了的。"
+   ],
+   "choices": [
+    "猴子",
+    "和尚",
+    "道士",
+    "木偶"
+   ]
+  },
+  {
+   "id": "ss-kuo",
+   "source": "ssxy",
+   "at": "魏武题门作「活」字，杨修解",
+   "q": "新修的相国府门上，题一个「活」字。——打一字。",
+   "answers": [
+    "阔",
+    "阔字",
+    "闊"
+   ],
+   "hints": [
+    "曹操题在门上，杨修看了，叫人把门拆了重修。",
+    "嫌门太大了——门里一个「活」。"
+   ],
+   "choices": [
+    "阔",
+    "闹",
+    "闲",
+    "闷"
+   ]
+  },
+  {
+   "id": "ss-juemiao",
+   "source": "ssxy",
+   "at": "曹娥碑背八字，杨修解",
+   "q": "黄绢幼妇，外孙齑臼。——打四个字。",
+   "answers": [
+    "绝妙好辞",
+    "绝妙好词",
+    "绝妙好辭",
+    "绝妙好辤"
+   ],
+   "hints": [
+    "拆着读：黄绢是有颜色的丝，幼妇是少女……",
+    "色丝合成「绝」；照这个法子，少女、女子、受辛各是一个字。"
+   ],
+   "choices": [
+    "绝妙好辞",
+    "孝女曹娥",
+    "千古文章",
+    "天下无双"
+   ]
+  },
+  {
+   "id": "ss-heyikou",
+   "source": "ssxy",
+   "at": "魏武题「合」，杨修解",
+   "q": "一杯酪，盖上题个「合」字，传给众人。——打一句话。",
+   "answers": [
+    "一人一口",
+    "每人一口",
+    "一人吃一口",
+    "一人尝一口",
+    "人一口"
+   ],
+   "hints": [
+    "把「合」字拆开看。",
+    "上头「人」，中间「一」，底下「口」。"
+   ],
+   "choices": [
+    "一人一口",
+    "盖好再吃",
+    "合而为一",
+    "留到明日"
+   ]
+  },
+  {
+   "id": "qd-yong",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「用字谜」",
+   "q": "一月复一月，两月共半边，上有可耕之田，下有长流之川；六口共一室，两口不团圆。——打一字。",
+   "answers": [
+    "用",
+    "用字"
+   ],
+   "hints": [
+    "两个「月」各借半边，并在一处。",
+    "「田」在上，「川」在下，数一数里头的「口」。"
+   ],
+   "choices": [
+    "用",
+    "朋",
+    "册",
+    "周"
+   ]
+  },
+  {
+   "id": "qd-ri",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「日谜」",
+   "q": "画时圆，写时方，寒时短，热时长。——打一字。",
+   "answers": [
+    "日",
+    "日字",
+    "太阳"
+   ],
+   "hints": [
+    "画它是一个圈，写它是一个方框。",
+    "冬天它待得短，夏天待得长。"
+   ],
+   "choices": [
+    "日",
+    "月",
+    "田",
+    "口"
+   ]
+  },
+  {
+   "id": "qd-ri-yu",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「日谜」又云",
+   "q": "东海有一鱼，无头亦无尾，除去脊梁骨，便是这个字。——打一字。",
+   "answers": [
+    "日",
+    "日字"
+   ],
+   "hints": [
+    "从「鱼」字下手。",
+    "去了头、去了尾，剩一个「田」；再抽掉中间一竖。"
+   ],
+   "choices": [
+    "日",
+    "田",
+    "由",
+    "鱼"
+   ]
+  },
+  {
+   "id": "qd-yinzhang",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「印章」",
+   "q": "方圆大小随人，腹里文章儒雅。有时满面红妆，常在风前月下。——打一物。",
+   "answers": [
+    "印章",
+    "印",
+    "图章",
+    "印信",
+    "章",
+    "私章"
+   ],
+   "hints": [
+    "账上落款，最后要按它一下。",
+    "蘸了印泥，一脸通红。"
+   ],
+   "choices": [
+    "印章",
+    "砚台",
+    "毛笔",
+    "折扇"
+   ]
+  },
+  {
+   "id": "qd-modou",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「墨斗」",
+   "q": "我有一张琴，丝弦长在腹。时时马上弹，弹尽天下曲。——打一物。",
+   "answers": [
+    "墨斗",
+    "木匠的墨斗",
+    "墨线",
+    "墨斗线"
+   ],
+   "hints": [
+    "木匠的家什，「马」是他架木头的木马。",
+    "线缠在肚里，拉出来一弹，木头上一道直直的黑线。"
+   ],
+   "choices": [
+    "墨斗",
+    "琵琶",
+    "刨子",
+    "纺车"
+   ]
+  },
+  {
+   "id": "qd-rili",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「日历」",
+   "q": "都来一尺长，上面都是节。两头非常冷，中间非常热。——打一物。",
+   "answers": [
+    "日历",
+    "历书",
+    "历日",
+    "历本",
+    "黄历",
+    "皇历",
+    "年历",
+    "月份牌"
+   ],
+   "hints": [
+    "一年一本，过一天翻一页。",
+    "上面的「节」是节气；两头是冬，中间是夏。"
+   ],
+   "choices": [
+    "日历",
+    "竹竿",
+    "算盘",
+    "尺子"
+   ]
+  },
+  {
+   "id": "qd-shouzhi",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「手指」",
+   "q": "大者两支，小者三支，十枚共计二十八支。——打一物。",
+   "answers": [
+    "手指",
+    "手指头",
+    "指头",
+    "指节",
+    "十个指头",
+    "手"
+   ],
+   "hints": [
+    "长在你身上，一共十个。",
+    "大拇指两节，别的都是三节。"
+   ],
+   "choices": [
+    "手指",
+    "筷子",
+    "竹筹",
+    "算珠"
+   ]
+  },
+  {
+   "id": "qd-shoujin",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「手巾」",
+   "q": "八尺一片，四角两面，所识是人面，不识畜生面。——打一物。",
+   "answers": [
+    "手巾",
+    "毛巾",
+    "面巾",
+    "帕子",
+    "手帕",
+    "巾",
+    "洗脸巾"
+   ],
+   "hints": [
+    "每天早上都要用它。",
+    "只擦人的脸，不擦牲口的脸。"
+   ],
+   "choices": [
+    "手巾",
+    "被单",
+    "草席",
+    "门帘"
+   ]
+  },
+  {
+   "id": "qd-qi",
+   "source": "gjtsjc",
+   "at": "《冷斋夜话》，王安石笑曰「此特棋隐语也」",
+   "q": "彼亦不敢先，此亦不敢先，惟其不敢先，是以无所争，惟其无所争，故能入于不死不生。——打一物。",
+   "answers": [
+    "棋",
+    "下棋",
+    "围棋",
+    "棋局",
+    "象棋",
+    "一盘棋"
+   ],
+   "hints": [
+    "两个人对坐，谁也不肯先动。",
+    "一盘下成了不死不生——黑白双活。"
+   ],
+   "choices": [
+    "棋",
+    "琴",
+    "鼓",
+    "骰子"
+   ]
+  },
+  {
+   "id": "qd-muji",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「木屐」",
+   "q": "可以托六尺之孤，可以寄百里之命。遇刚则铿尔有声，遇柔则没齿无怨。——打一物。",
+   "answers": [
+    "木屐",
+    "屐",
+    "木屐子",
+    "木拖鞋",
+    "木鞋",
+    "屐子"
+   ],
+   "hints": [
+    "穿在脚上，一个人全身都托给它。",
+    "踩在石板上咯噔响，踩进泥里，「齿」就没了进去。"
+   ],
+   "choices": [
+    "木屐",
+    "草鞋",
+    "拐杖",
+    "轿子"
+   ]
+  },
+  {
+   "id": "qd-zhuzhang",
+   "source": "gjtsjc",
+   "at": "《齐东野语》「拄杖」",
+   "q": "用之则行，舍之则藏，惟我与尔。危而不持，颠而不扶，将焉用彼。——打一物。",
+   "answers": [
+    "拄杖",
+    "拐杖",
+    "手杖",
+    "杖",
+    "拐棍",
+    "拄杖子",
+    "拐棍儿"
+   ],
+   "hints": [
+    "老人家出门才带上它。",
+    "人走不稳了靠它扶——它不扶，要它何用？"
+   ],
+   "choices": [
+    "拄杖",
+    "扁担",
+    "雨伞",
+    "鱼竿"
+   ]
+  },
+  {
+   "id": "xh-men",
+   "source": "xhyl",
+   "at": "「门字谜」",
+   "q": "倚阑干东君去也，眺花间红日西沉，闪多娇情人不见，闷淹淹笑语无心。——打一字。",
+   "answers": [
+    "门",
+    "门字",
+    "門"
+   ],
+   "hints": [
+    "每一句头一个字，都有同一个字框。",
+    "阑去了「柬」，间去了「日」，闪去了「人」，闷去了「心」。"
+   ],
+   "choices": [
+    "门",
+    "心",
+    "间",
+    "闲"
+   ]
+  },
+  {
+   "id": "xh-yi",
+   "source": "xhyl",
+   "at": "「一字谜」",
+   "q": "上不在上，下不在下，不可在上，止宜在下。——打一字。",
+   "answers": [
+    "一"
+   ],
+   "hints": [
+    "在「上」「下」「不」「止」四个字里，找它们都有的那一笔。",
+    "一笔就写完。"
+   ],
+   "choices": [
+    "一",
+    "丁",
+    "卜",
+    "十"
+   ]
+  },
+  {
+   "id": "bz-jing",
+   "source": "gjtsjc",
+   "at": "鲍照《字谜三首》「井字」",
+   "q": "二形一体，四支八头。四八一八，飞泉仰流。——打一字。",
+   "answers": [
+    "井",
+    "井字",
+    "水井",
+    "一口井"
+   ],
+   "hints": [
+    "这是最早有名的字谜，南朝鲍照作的。",
+    "两横两竖；打水往上提，泉水是倒着流的。"
+   ],
+   "choices": [
+    "井",
+    "卅",
+    "田",
+    "并"
+   ]
+  },
+  {
+   "id": "qx-ya",
+   "source": "gjtsjc",
+   "at": "《青箱杂记》，陈亚自为亚字谜",
+   "q": "若教有口便哑，且要无心为恶。中间全没肚肠，外面强生棱角。——打一字。",
+   "answers": [
+    "亚",
+    "亚字",
+    "亞"
+   ],
+   "hints": [
+    "作谜的人姓陈，这个字就是他的名。",
+    "添个「口」是「哑」，添个「心」是「恶」。"
+   ],
+   "choices": [
+    "亚",
+    "业",
+    "恶",
+    "哑"
+   ]
+  },
+  {
+   "id": "ws-zhu",
+   "source": "gjtsjc",
+   "at": "《魏书·咸阳王禧传》，尹龙虎谓之是箸（禧解作眼）",
+   "q": "眠则俱眠，起则俱起，贪如豺狼，赃不入己。——打一物。",
+   "answers": [
+    "箸",
+    "筷子",
+    "一双筷子",
+    "筷",
+    "箸子",
+    "眼",
+    "眼睛"
+   ],
+   "hints": [
+    "一对儿，总是一起躺下、一起起来。",
+    "饭菜都经它夹，一口也落不到它自己肚里。"
+   ],
+   "choices": [
+    "筷子",
+    "汤勺",
+    "饭碗",
+    "筛子"
+   ]
+  },
+  {
+   "id": "lh-ci",
+   "source": "gjtsjc",
+   "at": "《瑯嬛记》，赵明诚梦中三句",
+   "q": "言与司合，安上已脱，芝芙草拔。——打四个字。",
+   "answers": [
+    "词女之夫",
+    "词女之夫婿"
+   ],
+   "hints": [
+    "「言」与「司」合成一个字；「安」去了上头；「芝」「芙」拔了草。",
+    "这是赵明诚梦里的话，后来他娶了李清照。"
+   ],
+   "choices": [
+    "词女之夫",
+    "安居乐业",
+    "才子佳人",
+    "诗书传家"
+   ]
+  },
+  {
+   "id": "jl-fu",
+   "source": "gjtsjc",
+   "at": "《鸡肋编》「妇字谜」",
+   "q": "左七右七，横山倒出。——打一字。",
+   "answers": [
+    "妇",
+    "妇字",
+    "婦"
+   ],
+   "hints": [
+    "左边是「女」。",
+    "「山」横过来倒着写，是「彐」。"
+   ],
+   "choices": [
+    "妇",
+    "好",
+    "妈",
+    "姐"
+   ]
+  },
+  {
+   "id": "dm-jingzi",
+   "source": "dmyd",
+   "at": "「盈」字号，金钱花",
+   "q": "一轮月傍窗纱。光明其实堪夸。忽然遇着你和咱。咱觑你，你疑咱。好共歹，莫嗟呀。——打一物。",
+   "answers": [
+    "镜子",
+    "镜",
+    "铜镜",
+    "镜儿",
+    "一面镜子"
+   ],
+   "hints": [
+    "圆圆一面，亮得像月亮。",
+    "你看它，它也看你——里头那个就是你自己。"
+   ],
+   "choices": [
+    "镜子",
+    "灯笼",
+    "月饼",
+    "团扇"
+   ]
+  },
+  {
+   "id": "dm-hong",
+   "source": "dmyd",
+   "at": "「昃」字号，清江引",
+   "q": "长桥两座谁能砌。彩色真奇异。明主赋新诗。日出天初霁。为多情，惊散了。襄王云雨。——打一物。",
+   "answers": [
+    "虹",
+    "彩虹",
+    "虹霓",
+    "天虹"
+   ],
+   "hints": [
+    "雨刚停，太阳一出来才有。",
+    "天上一座彩色的桥。"
+   ],
+   "choices": [
+    "彩虹",
+    "晚霞",
+    "闪电",
+    "流星"
+   ]
+  },
+  {
+   "id": "dm-tianping",
+   "source": "dmyd",
+   "at": "「辰」字号，西江月（原答「天平针」）",
+   "q": "堪笑对头两个。终朝卖弄家私。磨来去去堪参差。总为货财交易。只管掂近播两。那知上下高低。营盘人马两边齐。打个遂心如意。——打一物。",
+   "answers": [
+    "天平",
+    "天平秤",
+    "戥子",
+    "等子",
+    "天秤"
+   ],
+   "hints": [
+    "两头各一个盘子，面对面。",
+    "称银子用的，两边一样重才平。"
+   ],
+   "choices": [
+    "天平",
+    "算盘",
+    "磨盘",
+    "扁担"
+   ]
+  },
+  {
+   "id": "dm-yugou",
+   "source": "dmyd",
+   "at": "「暑」字号，西江月",
+   "q": "一物生来尖巧。皮肤黑似乌油。朝朝流荡碧滩头。夜静方才罢手。此日难容梗直。全凭委曲相求。昔贤以此傲王侯。传得高名甚久。——打一物。",
+   "answers": [
+    "鱼钩",
+    "钓钩",
+    "鱼钩子",
+    "钩",
+    "鱼钩儿"
+   ],
+   "hints": [
+    "天天在水边，直的可不行。",
+    "姜太公靠它钓来了周文王——不过他那一枚是直的。"
+   ],
+   "choices": [
+    "鱼钩",
+    "针",
+    "锥子",
+    "秤钩"
+   ]
+  },
+  {
+   "id": "dm-jidan",
+   "source": "dmyd",
+   "at": "「雨」字号，西江月",
+   "q": "混沌初分出世。阴阳二气生成。元元不损本来真。暂尔藏头缩颈。悟破其中关窍。方才跳出红尘。金蝉脱壳好翻身。早把迷人唤醒。——打一物。",
+   "answers": [
+    "鸡蛋",
+    "蛋",
+    "鸡子",
+    "鸡子儿",
+    "卵",
+    "鸡卵"
+   ],
+   "hints": [
+    "里头一黄一白，像阴阳还没分开。",
+    "壳一破，钻出来的那只，天亮了叫人起床。"
+   ],
+   "choices": [
+    "鸡蛋",
+    "蚕茧",
+    "核桃",
+    "蝉"
+   ]
+  },
+  {
+   "id": "dm-yandai",
+   "source": "dmyd",
+   "at": "「珠」字号",
+   "q": "火嘴儿窝业的好。只是喉咙小。一条黑肚肠。闷气知多少。——打一物。",
+   "answers": [
+    "烟袋",
+    "烟斗",
+    "烟袋锅",
+    "旱烟袋",
+    "烟杆",
+    "烟管",
+    "烟袋杆"
+   ],
+   "hints": [
+    "嘴上点着火。",
+    "老汉吧嗒吧嗒，吸的是它。"
+   ],
+   "choices": [
+    "烟袋",
+    "笛子",
+    "火钳",
+    "吹火筒"
+   ]
+  },
+  {
+   "id": "dm-chuan",
+   "source": "dmyd",
+   "at": "「崗」字号，西江月",
+   "q": "自幼深知水性。江湖游览逍遥。黄家坝与段家桥。却也有时走到。明月常为伴侣。身边落落无交。风流摆摆又摇摇。赚了许多钱钞。——打一物。",
+   "answers": [
+    "船",
+    "小船",
+    "渡船",
+    "舟",
+    "船儿",
+    "一条船"
+   ],
+   "hints": [
+    "一辈子在水上。",
+    "摇摇摆摆载人过河，收几文渡钱。"
+   ],
+   "choices": [
+    "船",
+    "鸭子",
+    "木筏",
+    "水车"
+   ]
+  },
+  {
+   "id": "dm-mabu",
+   "source": "dmyd",
+   "at": "「劍」字号，挂枝儿",
+   "q": "好日子，也曾过。到如今，没奈何。两片皮任你来点污。清白莫要讲。身子在水里拖。尝尽了苦辣酸甜。哥，揉搓杀了我。——打一物。",
+   "answers": [
+    "抹布",
+    "抹桌布",
+    "揩布",
+    "洗碗布",
+    "擦桌布"
+   ],
+   "hints": [
+    "厨房里、桌子上，哪里脏就到哪里。",
+    "原是一块好布，如今天天在水里搓。"
+   ],
+   "choices": [
+    "抹布",
+    "扫帚",
+    "围裙",
+    "竹篮"
+   ]
+  },
+  {
+   "id": "dm-lazhu",
+   "source": "dmyd",
+   "at": "「號」字号，劈破玉",
+   "q": "曾伴你，曾伴你，花前月下。曾伴你，曾伴你，绣阁窗纱。曾伴你，曾伴你，清宵余话。奴本心儿细。你把我当作个寡油花。逞起了风狂。哥，消磨也无半霎。——打一物。",
+   "answers": [
+    "蜡烛",
+    "烛",
+    "蜡",
+    "红烛",
+    "灯烛",
+    "一支蜡烛"
+   ],
+   "hints": [
+    "夜里点着，陪人说话。",
+    "心儿细细一根，风一狂就灭了。"
+   ],
+   "choices": [
+    "蜡烛",
+    "灯笼",
+    "团扇",
+    "香炉"
+   ]
+  },
+  {
+   "id": "dm-dingzhen",
+   "source": "dmyd",
+   "at": "「闕」字号（原答「针箍」）",
+   "q": "一道黄墙。两条湾路。眼放金光。不知其数。——打一物。",
+   "answers": [
+    "顶针",
+    "针箍",
+    "顶针儿",
+    "顶针箍",
+    "顶指"
+   ],
+   "hints": [
+    "做针线活时戴在指头上。",
+    "铜的一圈，满身小坑，顶着针尾往里推。"
+   ],
+   "choices": [
+    "顶针",
+    "戒指",
+    "手镯",
+    "铜钱"
+   ]
+  },
+  {
+   "id": "dm-canjian",
+   "source": "dmyd",
+   "at": "「冬」字号，黄莺儿",
+   "q": "囫囵一家当。俏身躯，此内藏。心思万种怎安放。东风过墙。空怀怨伤。一朝了却生前帐。俊娇娘。莹莹玉体。载取上吴航。——打一物。",
+   "answers": [
+    "蚕茧",
+    "茧",
+    "蚕茧子",
+    "茧子",
+    "蚕",
+    "蚕茧儿"
+   ],
+   "hints": [
+    "里头那个，是吐丝把自己裹起来的。",
+    "缫出丝来，好织绸缎。"
+   ],
+   "choices": [
+    "蚕茧",
+    "鸡蛋",
+    "莲蓬",
+    "蒜头"
+   ]
+  },
+  {
+   "id": "dm-dou",
+   "source": "dmyd",
+   "at": "「往」字号，黄莺儿",
+   "q": "体势甚圆全。木装成，铁裹边。周身内外多光旋。齐头并肩。从无怨言。公平到处人争羡。好寻钱。堆金积玉。买卖已多年。——打一物。",
+   "answers": [
+    "斗",
+    "米斗",
+    "量斗",
+    "升斗",
+    "一斗"
+   ],
+   "hints": [
+    "米店里量米用的。",
+    "装满了，拿一根木条一刮——正好一斗。"
+   ],
+   "choices": [
+    "斗",
+    "木桶",
+    "算盘",
+    "秤"
+   ]
+  }
+ ],
+ "en": [
+  {
+   "id": "hal-sunshine",
+   "source": "halliwell",
+   "at": "CLXXXV",
+   "q": "Hick-a-more, Hack-a-more, / On the king's kitchen-door; / All the king's horses, / And all the king's men, / Couldn't drive Hick-a-more, Hack-a-more, / Off the king's kitchen-door!",
+   "answers": [
+    "sunshine",
+    "sunlight",
+    "the sun",
+    "sun",
+    "sunbeam",
+    "sunbeams"
+   ],
+   "hints": [
+    "It comes in at the kitchen door every fine morning.",
+    "No horse can push it out; only a cloud can take it away."
+   ],
+   "choices": [
+    "sunshine",
+    "a cat",
+    "the wind",
+    "a beggar"
+   ]
+  },
+  {
+   "id": "hal-pen",
+   "source": "halliwell",
+   "at": "CLXXXVI",
+   "q": "When I was taken from the fair body, / They then cut off my head, / And thus my shape was altered; / It's I that make peace between king and king, / And many a true lover glad: / All this I do and ten times more, / And more I could do still, / But nothing can I do, / Without my guider's will.",
+   "answers": [
+    "pen",
+    "a pen",
+    "quill",
+    "a quill",
+    "quill pen",
+    "feather pen"
+   ],
+   "hints": [
+    "It was once a feather on a bird.",
+    "Treaties and love letters alike are written with it."
+   ],
+   "choices": [
+    "a pen",
+    "a sword",
+    "a letter",
+    "a ring"
+   ]
+  },
+  {
+   "id": "hal-gloves",
+   "source": "halliwell",
+   "at": "CLXXXIX",
+   "q": "As I was going o'er London Bridge, / I met a cart full of fingers and thumbs!",
+   "answers": [
+    "gloves",
+    "glove",
+    "a cart of gloves",
+    "a cartload of gloves"
+   ],
+   "hints": [
+    "Fingers and thumbs, but no hands inside them.",
+    "You wear a pair of them in winter."
+   ],
+   "choices": [
+    "gloves",
+    "rings",
+    "sausages",
+    "children"
+   ]
+  },
+  {
+   "id": "hal-walnut",
+   "source": "halliwell",
+   "at": "CXCII",
+   "q": "As soft as silk, as white as milk, / As bitter as gall, a thick wall, / And a green coat covers me all.",
+   "answers": [
+    "walnut",
+    "a walnut",
+    "nut",
+    "a nut"
+   ],
+   "hints": [
+    "It grows on a tree and falls in autumn.",
+    "A green husk, a hard shell, a bitter skin, and white meat inside."
+   ],
+   "choices": [
+    "a walnut",
+    "an egg",
+    "a pear",
+    "a pea pod"
+   ]
+  },
+  {
+   "id": "hal-bees",
+   "source": "halliwell",
+   "at": "CXCIII",
+   "q": "As I was going o'er Tipple Tine, / I met a flock of bonny swine; / Some green-lapp'd, / Some green-back'd; / They were the very bonniest swine / That e'er went over Tipple Tine.",
+   "answers": [
+    "a swarm of bees",
+    "swarm of bees",
+    "bees",
+    "bee",
+    "swarm",
+    "a swarm"
+   ],
+   "hints": [
+    "They aren't swine at all: they fly, and they hum.",
+    "They live in a hive and make honey."
+   ],
+   "choices": [
+    "bees",
+    "pigs",
+    "frogs",
+    "grasshoppers"
+   ]
+  },
+  {
+   "id": "hal-egg",
+   "source": "halliwell",
+   "at": "CCIII",
+   "q": "In marble walls as white as milk, / Lined with a skin as soft as silk; / Within a fountain crystal clear, / A golden apple doth appear. / No doors there are to this strong-hold. / Yet things break in and steal the gold.",
+   "answers": [
+    "egg",
+    "an egg",
+    "eggs",
+    "a hen's egg",
+    "hen egg"
+   ],
+   "hints": [
+    "A hen leaves it in the straw.",
+    "Crack the white wall: the golden apple is the yolk."
+   ],
+   "choices": [
+    "an egg",
+    "a pearl",
+    "an orange",
+    "a snowball"
+   ]
+  },
+  {
+   "id": "hal-wind",
+   "source": "halliwell",
+   "at": "CXCV",
+   "q": "Arthur O'Bower has broken his band, / He comes roaring up the land;-- / The King of Scots, with all his power, / Cannot turn Arthur of the Bower!",
+   "answers": [
+    "a storm of wind",
+    "storm of wind",
+    "wind",
+    "the wind",
+    "storm",
+    "a storm",
+    "gale",
+    "a gale",
+    "windstorm"
+   ],
+   "hints": [
+    "You can hear him roaring, but you never see him.",
+    "He breaks branches and lifts roofs; no king can turn him back."
+   ],
+   "choices": [
+    "the wind",
+    "a bull",
+    "a river",
+    "a lion"
+   ]
+  },
+  {
+   "id": "hal-pudding",
+   "source": "halliwell",
+   "at": "CXCVIII",
+   "q": "Flour of England, fruit of Spain, / Met together in a shower of rain; / Put in a bag tied round with a string, / If you'll tell me this riddle, I'll give you a ring.",
+   "answers": [
+    "plum pudding",
+    "a plum pudding",
+    "pudding",
+    "a pudding",
+    "christmas pudding",
+    "plum duff"
+   ],
+   "hints": [
+    "You eat it at Christmas.",
+    "Flour and raisins, boiled in a cloth bag."
+   ],
+   "choices": [
+    "a plum pudding",
+    "a loaf of bread",
+    "a bowl of porridge",
+    "a cup of tea"
+   ]
+  },
+  {
+   "id": "hal-star",
+   "source": "halliwell",
+   "at": "CCXV",
+   "q": "Higher than a house, higher than a tree; / Oh, whatever can that be?",
+   "answers": [
+    "star",
+    "a star",
+    "stars",
+    "the stars"
+   ],
+   "hints": [
+    "You only see it at night.",
+    "It twinkles."
+   ],
+   "choices": [
+    "a star",
+    "a bird",
+    "a kite",
+    "a chimney"
+   ]
+  },
+  {
+   "id": "hal-needle",
+   "source": "halliwell",
+   "at": "CCII",
+   "q": "Old mother Twitchett had but one eye, / And a long tail which she let fly; / And every time she went over a gap, / She left a bit of her tail in a trap.",
+   "answers": [
+    "a needle and thread",
+    "needle and thread",
+    "needle",
+    "a needle",
+    "thread"
+   ],
+   "hints": [
+    "She lives in the sewing basket.",
+    "Her one eye is where the thread goes in."
+   ],
+   "choices": [
+    "a needle and thread",
+    "a mouse",
+    "a comet",
+    "a kite"
+   ]
+  },
+  {
+   "id": "hal-candle",
+   "source": "halliwell",
+   "at": "CCIX",
+   "q": "Little Nancy Etticoat, / In a white petticoat, / And a red nose; / The longer she stands, / The shorter she grows.",
+   "answers": [
+    "candle",
+    "a candle",
+    "candles",
+    "taper",
+    "a taper",
+    "a lit candle"
+   ],
+   "hints": [
+    "You light her at night.",
+    "The red nose is her flame; she melts as she burns."
+   ],
+   "choices": [
+    "a candle",
+    "a goose",
+    "a carrot",
+    "a snowman"
+   ]
+  },
+  {
+   "id": "hal-tongs",
+   "source": "halliwell",
+   "at": "CCX",
+   "q": "Long legs, crooked thighs, / Little head and no eyes.",
+   "answers": [
+    "tongs",
+    "a pair of tongs",
+    "pair of tongs",
+    "fire tongs",
+    "fire-tongs"
+   ],
+   "hints": [
+    "They live by the fireplace.",
+    "Two long iron legs that pinch up the coals."
+   ],
+   "choices": [
+    "a pair of tongs",
+    "a spider",
+    "a stork",
+    "a ladder"
+   ]
+  },
+  {
+   "id": "hal-teeth",
+   "source": "halliwell",
+   "at": "CCXIII",
+   "q": "Thirty white horses upon a red hill, / Now they tramp, now they champ, now they stand still.",
+   "answers": [
+    "teeth",
+    "teeth and gums",
+    "tooth",
+    "your teeth",
+    "my teeth"
+   ],
+   "hints": [
+    "Every one of you has them, in your mouth.",
+    "The red hill is your gums."
+   ],
+   "choices": [
+    "teeth",
+    "snowflakes",
+    "sheep",
+    "pebbles"
+   ]
+  },
+  {
+   "id": "hal-coal",
+   "source": "halliwell",
+   "at": "CCXIV",
+   "q": "Black we are, but much admired; / Men seek for us till they are tired. / We tire the horse, but comfort man / Tell me this riddle if you can.",
+   "answers": [
+    "coal",
+    "coals",
+    "lumps of coal",
+    "a lump of coal"
+   ],
+   "hints": [
+    "Miners dig for it deep underground.",
+    "Horses haul it in heavy carts; it keeps the hearth warm."
+   ],
+   "choices": [
+    "coal",
+    "crows",
+    "ink",
+    "beetles"
+   ]
+  },
+  {
+   "id": "hal-rainbow",
+   "source": "halliwell",
+   "at": "CCXVII",
+   "q": "Purple, yellow, red, and green, / The king cannot reach it nor the queen; / Nor can old Noll, whose power's so great: / Tell me this riddle while I count eight.",
+   "answers": [
+    "rainbow",
+    "a rainbow",
+    "the rainbow"
+   ],
+   "hints": [
+    "You see it after rain.",
+    "Colours bent across the sky in a bow."
+   ],
+   "choices": [
+    "a rainbow",
+    "a flower garden",
+    "a sunset",
+    "a peacock"
+   ]
+  },
+  {
+   "id": "hal-chimney",
+   "source": "halliwell",
+   "at": "CCXX",
+   "q": "Black within, and red without; / Four corners round about.",
+   "answers": [
+    "chimney",
+    "a chimney",
+    "fireplace",
+    "a fireplace",
+    "chimney stack"
+   ],
+   "hints": [
+    "It stands on the roof.",
+    "Soot inside, red bricks outside, and smoke coming out of the top."
+   ],
+   "choices": [
+    "a chimney",
+    "a lantern",
+    "a box",
+    "a well"
+   ]
+  },
+  {
+   "id": "hal-hedgehog",
+   "source": "halliwell",
+   "at": "CCXXII",
+   "q": "As I went over Lincoln bridge / I met mister Rusticap; / Pins and needles on his back, / A going to Thorney fair.",
+   "answers": [
+    "hedgehog",
+    "a hedgehog",
+    "hedgehogs",
+    "urchin",
+    "an urchin"
+   ],
+   "hints": [
+    "A small animal that rolls into a ball.",
+    "The pins and needles are his spines."
+   ],
+   "choices": [
+    "a hedgehog",
+    "a pincushion",
+    "a tailor",
+    "a cat"
+   ]
+  },
+  {
+   "id": "hal-bed",
+   "source": "halliwell",
+   "at": "CCXXIV",
+   "q": "Formed long ago, yet made to-day, / Employed while others sleep; / What few would like to give away, / Nor any wish to keep.",
+   "answers": [
+    "bed",
+    "a bed",
+    "your bed",
+    "my bed"
+   ],
+   "hints": [
+    "You make it every morning.",
+    "You lie in it at night; nobody wants to give up theirs, and nobody wants to keep to it when ill."
+   ],
+   "choices": [
+    "a bed",
+    "a promise",
+    "a coat",
+    "a candle"
+   ]
+  },
+  {
+   "id": "hal-sieve",
+   "source": "halliwell",
+   "at": "CCXXV",
+   "q": "A riddle, a riddle, as I suppose, / A hundred eyes, and never a nose.",
+   "answers": [
+    "a cinder-sifter",
+    "cinder-sifter",
+    "cinder sifter",
+    "sieve",
+    "a sieve",
+    "sifter",
+    "a sifter",
+    "strainer",
+    "a strainer",
+    "colander",
+    "a colander"
+   ],
+   "hints": [
+    "It's used to sift the ashes in the kitchen.",
+    "All holes and a rim: the eyes are the holes."
+   ],
+   "choices": [
+    "a sieve",
+    "a peacock",
+    "a potato",
+    "a spider"
+   ]
+  },
+  {
+   "id": "hal-well",
+   "source": "halliwell",
+   "at": "CCXXVI",
+   "q": "As round as an apple, as deep as a cup, / And all the king's horses can't pull it up.",
+   "answers": [
+    "well",
+    "a well",
+    "water well",
+    "a water well",
+    "the well"
+   ],
+   "hints": [
+    "You draw water from it.",
+    "A round hole dug in the ground, lined with stones."
+   ],
+   "choices": [
+    "a well",
+    "a pond",
+    "a cup",
+    "a hill"
+   ]
+  },
+  {
+   "id": "hal-cherry",
+   "source": "halliwell",
+   "at": "CCXXVII",
+   "q": "As I went through the garden gap, / Who should I meet but Dick Red-cap! / A stick in his hand, a stone in his throat, / If you'll tell me this riddle, I'll give you a groat.",
+   "answers": [
+    "cherry",
+    "a cherry",
+    "cherries"
+   ],
+   "hints": [
+    "A small red fruit.",
+    "The stick is its stalk, the stone its pit."
+   ],
+   "choices": [
+    "a cherry",
+    "a robin",
+    "a strawberry",
+    "a soldier"
+   ]
+  },
+  {
+   "id": "hal-holly",
+   "source": "halliwell",
+   "at": "CCXXX",
+   "q": "Highty, tighty, paradighty clothed in green, / The king could not read it, no more could the queen; / They sent for a wise man out of the East, / Who said it had horns, but was not a beast!",
+   "answers": [
+    "holly",
+    "the holly tree",
+    "holly tree",
+    "a holly tree",
+    "holly bush",
+    "a holly bush"
+   ],
+   "hints": [
+    "It stays green all winter.",
+    "Its prickly leaves are the horns; it bears red berries at Christmas."
+   ],
+   "choices": [
+    "holly",
+    "a goat",
+    "ivy",
+    "a pine tree"
+   ]
+  },
+  {
+   "id": "hal-icicle",
+   "source": "halliwell",
+   "at": "CCXXXIII",
+   "q": "Lives in winter, / Dies in summer, / And grows with its root upwards!",
+   "answers": [
+    "icicle",
+    "an icicle",
+    "icicles"
+   ],
+   "hints": [
+    "It hangs from the roof in winter.",
+    "It drips away and is gone in the sun."
+   ],
+   "choices": [
+    "an icicle",
+    "a bat",
+    "a carrot",
+    "a snowman"
+   ]
+  },
+  {
+   "id": "hal-smith",
+   "source": "halliwell",
+   "at": "CCIV",
+   "q": "What shoe-maker makes shoes without leather, / With all the four elements put together? / Fire and water, earth and air; / Ev'ry customer has two pair.",
+   "answers": [
+    "a horse-shoer",
+    "horse-shoer",
+    "horse shoer",
+    "horseshoer",
+    "farrier",
+    "a farrier",
+    "blacksmith",
+    "a blacksmith",
+    "smith",
+    "a smith"
+   ],
+   "hints": [
+    "His customers have four feet.",
+    "He works with fire and an anvil, nailing iron to hooves."
+   ],
+   "choices": [
+    "a blacksmith",
+    "a cobbler",
+    "a tailor",
+    "a baker"
+   ]
+  },
+  {
+   "id": "hal-thorn",
+   "source": "halliwell",
+   "at": "CLXXXIV",
+   "q": "I went to the wood and got it, / I sat me down and looked at it; / The more I looked at it the less I liked it, / And I brought it home because I couldn't help it.",
+   "answers": [
+    "thorn",
+    "a thorn",
+    "splinter",
+    "a splinter",
+    "a thorn in my foot"
+   ],
+   "hints": [
+    "He never meant to get it in the wood.",
+    "It's stuck in his foot: the more he looks, the less he likes it."
+   ],
+   "choices": [
+    "a thorn",
+    "a mushroom",
+    "a stick",
+    "a bird's nest"
+   ]
+  },
+  {
+   "id": "apollodorus-sphinx",
+   "source": "apollodorus",
+   "q": "What is that which has one voice and yet becomes four-footed and two-footed and three-footed?",
+   "answers": [
+    "man",
+    "a man",
+    "human",
+    "a human",
+    "mankind",
+    "people",
+    "a person",
+    "human being",
+    "a human being"
+   ],
+   "hints": [
+    "The Sphinx asked it at Thebes; Oedipus answered.",
+    "A baby crawls, a grown-up walks, an old man leans on a stick."
+   ],
+   "choices": [
+    "a man",
+    "a dog",
+    "a chair",
+    "a horse"
+   ]
+  },
+  {
+   "id": "judges-samson",
+   "source": "judges",
+   "q": "Out of the eater came forth meat, and out of the strong came forth sweetness.",
+   "answers": [
+    "honey",
+    "honey in a lion",
+    "honey in the lion",
+    "honey from a lion",
+    "honey from the lion",
+    "bees in a lion",
+    "a lion and honey",
+    "honey and a lion"
+   ],
+   "hints": [
+    "Samson set it at his wedding feast; he had killed a lion on the road.",
+    "When he passed the lion's carcass again, bees had made something sweet inside it."
+   ],
+   "choices": [
+    "honey in a dead lion",
+    "bread from an oven",
+    "milk from a cow",
+    "fruit from a tree"
+   ]
+  }
+ ]
+}

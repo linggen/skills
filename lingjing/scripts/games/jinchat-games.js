@@ -20,6 +20,7 @@
 // the questions' plain wording is data, and the book's own lines close it.
 
 import { checkCouplet, hanOf } from '../couplet.js';
+import { rng, shuffled } from './seeded.js';
 
 const pick = (v, lang) => (v == null ? '' : typeof v === 'string' ? v : v[lang] ?? v.zh ?? '');
 const list = (v, lang) => (Array.isArray(v) ? v : v?.[lang] ?? v?.zh ?? []);
@@ -54,15 +55,38 @@ export function riddleOf(game, lang = 'zh') {
   };
 }
 
-/** A chat's riddle pool (games.json `game.pool`, 周衡's 灯谜): the `n`th play's game — the pool in order, the chat's own
-    riddle last, then round again — so a replay repeats only after the whole pool. Each pool riddle lays its `zh` · `en`
-    over the game's, and the pool's own `pool_facts` stand for the model in place of the story's. No pool: the game. */
-export function poolRiddle(game, n = 0) {
-  const pool = Array.isArray(game?.pool) ? game.pool : [];
-  if (!pool.length) return game;
-  const all = [...pool, { id: 'own', zh: game.zh, en: game.en }];
-  const r = all[((Math.floor(Number(n)) || 0) % all.length + all.length) % all.length];
-  return { ...game, zh: r.zh, en: r.en, riddle: r.id, ...(r.id !== 'own' && game.pool_facts ? { facts: game.pool_facts } : {}) };
+/** A chat's riddle pool (games.json `game.pool` names its file, worlds/jiuding/<pool>.json — 周衡's 灯谜, dengmi.json): the play's game.
+    `n` is his wins of this board before this play (Look's deal, rules/pool.mjs poolDeal): 0 — a fresh save, an errand's
+    first play, or no count at all — is the chat's own riddle (the story's 人参); the `n`th win after it draws the pool
+    of this tongue in the order the save's `seed` decides, each riddle once before any comes round again — a new round
+    in a new order, never opening on the one the last ended on. A drawn riddle lays its `q` · `answers` · `hints` ·
+    `choices` over the game's for this tongue, and the pool's `pool_facts` stand for the model in place of the story's. */
+export function poolPick(game, pool, { n = 0, seed = '', lang = 'zh' } = {}) {
+  const list = Array.isArray(pool?.[lang]) ? pool[lang] : [];
+  const k = Math.floor(Number(n)) || 0;
+  if (k < 1 || !list.length) return { ...game, riddle: 'own' };
+  const r = poolOrder(list, seed, lang, Math.floor((k - 1) / list.length))[(k - 1) % list.length];
+  return { ...game, [lang]: { q: r.q, answers: r.answers, hints: r.hints, choices: r.choices }, riddle: r.id, ...(game.pool_facts ? { facts: game.pool_facts } : {}) };
+}
+
+/** Which play of the pool a deal asks for: the story's by his wins (`n`, Look's) and the save's `seed`; the 游戏厅's walk
+    (`walk`) by this browser's count (`turn()`), never the chat's own; neither — the chat's own riddle (a story deal
+    before the rules count it plays 人参, never a pool riddle). */
+export function poolPlay(data = {}, lang = 'zh', turn = () => 0) {
+  if (Number.isInteger(data.n)) return { n: data.n, seed: String(data.seed ?? ''), lang };
+  if (data.walk) return { n: (Number(turn()) || 0) + 1, seed: 'walk', lang };
+  return { n: 0, lang };
+}
+
+/** Round `round` of a pool: its riddles in the seed's order, a round never opening on the one before it ended on. */
+export function poolOrder(list, seed = '', lang = 'zh', round = 0) {
+  let last = null, order = [];
+  for (let c = 0; c <= round; c += 1) {
+    order = shuffled(list, rng(`${seed}|${lang}|${c}`));
+    if (last && order.length > 1 && order[0].id === last) [order[0], order[1]] = [order[1], order[0]];
+    last = order.at(-1).id;
+  }
+  return order;
 }
 
 /** His answer, judged by the data alone: 'right' · 'wrong' · 'empty'. Right is his words naming one of the answers —
