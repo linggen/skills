@@ -745,7 +745,7 @@ export function look(state, content, ctx) {
   const tray = trayLook(content, state, kept, ctx, aside?.aside?.offers ?? []);
   // 主页 (rules/home.mjs): the gate's bar, the one thing to do next, what waits — from this same reading.
   const home = homeOf(content, state, { ...kept, ...aside }, ctx.now);
-  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(tray.length ? { tray } : {}), ...(home ? { home } : {}) };
+  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(tray.rows.length ? { tray: tray.rows } : {}), ...(tray.hour ? { tray_hour: tray.hour } : {}), ...(home ? { home } : {}) };
 }
 
 /* 传闻 as Look carries it: the tale, the people met in finished ones, and a nudge. */

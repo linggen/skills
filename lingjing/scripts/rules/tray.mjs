@@ -11,6 +11,7 @@ import { gated } from './locks.mjs';
 import { move } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
 import { PLAY_KINDS } from './aside.mjs';
+import { drawPool } from './pool.mjs';
 
 /* A cooldown is in the tray while it comes back within this many minutes (agent's pick, Hanli delegated 11-02: 6 时辰).
    兽潮 · 切磋 · 妖兽出没 · 饭桶 · a pool at rest wait 1–3 h; nothing daily waits past this, and a wait that long is tomorrow's. */
@@ -32,7 +33,7 @@ function wayTo(content, state, ctx, id) {
 /* Look's `tray`: the registry's entries, each placed and given its button; the book set aside, only what
    先放一放 does not already offer, and no walk (Move waits for the book). */
 export function trayLook(content, state, view, ctx, asideOffers = []) {
-  if (!view || state.mijing?.run) return [];
+  if (!view || state.mijing?.run) return { rows: [], hour: null };
   const now = ctx.now ?? new Date(), offered = new Set(state.aside ? asideOffers.map(o => o.id) : []);
   const ways = new Map(), way = id => (ways.has(id) ? ways.get(id) : ways.set(id, wayTo(content, state, ctx, id)).get(id));
   const name = id => placeName(content, state, placeOf(content, id));
@@ -48,5 +49,10 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
       const to = state.aside ? null : (places ?? []).filter(id => id !== state.place).map(way).find(Boolean);
       return [to ? { ...row, seg: 'go', act: 'go', where: to, go: to } : { ...row, seg: 'notice', ...(where ? { where } : {}) }];
     });
-  return rows.map((r, i) => [r, i]).sort((a, b) => RANK[a[0].seg] - RANK[b[0].seg] || a[1] - b[1]).map(([r]) => r);
+  // 小游戏池 (rules/pool.mjs): of the pool's members only the 时辰's three stand, until played.
+  const { drawn, members, shichen } = drawPool(content, state, rows, PLAY_KINDS, now);
+  const shown = new Set(drawn.filter(d => !d.played).map(d => d.id));
+  const kept = rows.filter(r => !members.has(r.id) || shown.has(r.id));
+  const sorted = kept.map((r, i) => [r, i]).sort((a, b) => RANK[a[0].seg] - RANK[b[0].seg] || a[1] - b[1]).map(([r]) => r);
+  return { rows: sorted, hour: { i: shichen.i, ends_min: Math.max(1, Math.ceil((shichen.end - now) / 60_000)), drawn: drawn.length, played: drawn.filter(d => d.played).length } };
 }

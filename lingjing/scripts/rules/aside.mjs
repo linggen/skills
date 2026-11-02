@@ -19,7 +19,9 @@ import { isTide, shouchaoHere, shouchaoTray } from './shouchao.mjs';
 import { isBout, qiecuoHere, qiecuoTray } from './qiecuo.mjs';
 import { kaoHere } from './kao.mjs';
 import { aside as asideItem } from './tell.mjs';
-import { encounterOf, lockOf, placeOf, poolWait, sceneOf } from './world.mjs';
+import { allPlaces, encounterOf, lockOf, placeOf, poolWait, sceneOf } from './world.mjs';
+import { gamesToday } from './rotation.mjs';
+import { hostedHere } from './tasks.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { visitorsTray } from './visiting.mjs';
 import { yaoshouPlace, yaoshouTray } from './yaoshou.mjs';
@@ -51,8 +53,23 @@ const lockedIn = (view, system) => (view?.locked ?? []).includes(system);
 /* 对对子's teachers whose scene is behind him: each one's brief as it reads standing at his place (rules/duizi.mjs). */
 const duiziTray = (content, state, now) => (content.aigames?.duizi?.teachers ?? []).flatMap((t) => {
   const b = duiziBrief(content, { ...state, place: t.at }, now);
-  return b?.rounds_left > 0 ? [{ id: 'duizi', title: b.teacher, left: { unit: 'couplets', n: b.rounds_left }, places: [t.at], opens: 'duizi', stage: 'duizi' }] : [];
+  return b?.rounds_left > 0 ? [{ id: 'duizi', left: { unit: 'couplets', n: b.rounds_left }, places: [t.at], opens: 'duizi', stage: 'duizi' }] : [];
 }).slice(0, 1);
+/* 小游戏池's rows for 银月's games (rules/pool.mjs): an AI game rests a day; its 时辰's lean. */
+const HER_POOL = { duizi: { cooldown_min: 24 * 60, when: ['wu', 'wei'], cost: 'game' }, kao: { cooldown_min: 24 * 60, when: ['you', 'xu'], cost: 'game' } };
+/* A practice board's lean by the kind of game it is (agent's pick, Hanli delegated 11-02): a riddle at dusk, a night watch at night. */
+const BOARD_LEAN = { jinchat: ['you', 'xu'], shoulu: ['hai', 'zi'], shouqiang: ['hai', 'zi'], sadoushou: ['hai', 'zi'] };
+/* The practice boards of every place on the painted map he stands on (the 观), each once, where he stands first. */
+function boardsAround(content, state, now) {
+  const here = placeOf(content, state.place), plate = here?.plate?.id;
+  const places = plate ? [here, ...allPlaces(content).filter(p => p.plate?.id === plate && p.id !== here.id)] : here ? [here] : [];
+  const seen = new Set();
+  return places.flatMap(p => gamesToday(content, p, now).filter(id => !seen.has(id) && hostedHere(content, { ...state, place: p.id }, id, now)).map((id) => {
+    seen.add(id);
+    const t = taskOf(content, id);
+    return { id, task: id, game: t.game ?? null, title: String(pick(t.title, state.lang) ?? id), places: [p.id], opens: 'play', arg: id, stage: `board:${id}` };
+  }));
+}
 export const PLAY_KINDS = [
   { kind: 'replay', // a board skipped earlier, offered again at once (not only the day's one)
     open: (content, state) => skippedHere(content, state).map(id => ({ id, title: pick(taskOf(content, id).title, state.lang) })),
@@ -71,7 +88,8 @@ export const PLAY_KINDS = [
       const row = { id: 'fantong', title: b.name ?? null, opens: 'gear' };
       if (!b.ready) return b.next_at ? [{ ...row, wait_min: Math.ceil((new Date(b.next_at) - now) / 60_000) }] : [];
       return [{ ...row, left: lim.per_day ? { unit: 'rounds', n: lim.per_day - lim.today } : { unit: 'today' } }];
-    } },
+    },
+    pool: { row: () => ({ cooldown_min: 60, when: [], cost: null }), plays: (verb, args) => (verb === 'fantong' && args.action === 'feed' ? 'fantong' : null) } },
   { kind: 'pool', // a pool's fight at the place he stands, rested (world.mjs encounterOf; 体力 is the fight's own)
     open: (content, state, view, now) => { const e = encounterOf(content, state, now); return e?.pool ? [{ id: e.game.id, title: e.creature.name }] : []; },
     takes: (verb, args) => (verb === 'duel' && String(args.id ?? '').startsWith('haunt:')) || verb === 'tame' || verb === 'reroll' || verb === 'yaoshou',
@@ -92,7 +110,8 @@ export const PLAY_KINDS = [
   { kind: 'seclusion', // 闭关, where the story has opened it (rules/seclusion.mjs)
     open: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion' }] : []),
     takes: verb => verb === 'seclude',
-    tray: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion', left: { unit: 'today' }, opens: 'seclude', stage: 'seclude' }] : []) },
+    tray: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion', left: { unit: 'today' }, opens: 'seclude', stage: 'seclude' }] : []),
+    pool: { row: () => ({ cooldown_min: 240, when: ['hai', 'zi'], cost: null }), plays: (verb, args) => (verb === 'seclude' && args.action === 'enter' ? 'seclusion' : null) } },
   { kind: 'her', // 银月's games open to him, 今日传闻 and 问卦 (rules/aigames.mjs, kao.mjs, duizi.mjs, tale.mjs, fortune.mjs)
     open: (content, state, view) => [
       ...['duizi'].filter(k => view?.[k]).map(id => ({ id })),
@@ -110,10 +129,23 @@ export const PLAY_KINDS = [
       ...tasksOf(view).filter(t => t.light && t.her && t.status === 'offered' && t.left > 0)
         .map(t => ({ id: 'kao', task: t.id, title: t.title, left: { unit: 'rounds', n: t.left }, opens: 'play', arg: t.id, stage: `board:${t.id}` })),
       ...(view && !view.divination && !lockedIn(view, 'divine') ? [{ id: 'divine', left: { unit: 'today' }, opens: 'divine', stage: 'hexagram' }] : []),
-    ] },
+    ],
+    // In the pool: 对对子 and 银月出题 (AI games: a day's rest). 问卦 is not: once a day, fixed, as it was.
+    pool: {
+      row: e => HER_POOL[e.id] ?? null,
+      plays: (verb, args) => (verb === 'duizi' && ['open', 'submit'].includes(args.action) ? 'duizi' : verb === 'kao' && args.action === 'open' ? 'kao' : null),
+    } },
   { kind: 'errands', // 执事堂's work (errands.mjs workOf): where errands wait to be taken, how many
     tray: (content, state, view) => (view?.work?.kind === 'errand' && view.work.titles?.length
-      ? [{ id: 'errands', left: { unit: 'errands', n: view.work.titles.length }, places: [view.work.place.id], opens: 'book', stage: 'offer' }] : []) },
+      ? [{ id: 'errands', left: { unit: 'errands', n: view.work.titles.length }, places: [view.work.place.id], opens: 'book', stage: 'offer' }] : []),
+    pool: { row: () => ({ cooldown_min: 120, when: ['wu', 'wei'], cost: null }), plays: (verb, args) => (verb === 'quest' && (args.action ?? 'take') === 'take' && !['tale', 'stage'].includes(String(args.id ?? '')) ? 'errands' : null) } },
+  { kind: 'board', // a board a place on his painted map hosts today as practice (rules/rotation.mjs, tasks.mjs hostedHere): 周衡's 灯谜,
+    // a story board hosted again where it was played (药园巡夜, 守火 …) — wherever on the map, the place where he stands first
+    tray: (content, state, view, now) => boardsAround(content, state, now),
+    pool: {
+      row: e => ({ cooldown_min: 360, when: BOARD_LEAN[e.game] ?? [], cost: 'game' }),
+      plays: (verb, args, content) => (['task'].includes(verb) && ['done', 'lost'].includes(args.action) && taskOf(content, String(args.id ?? ''))?.hosted ? String(args.id) : null),
+    } },
   { kind: 'mijing', // 秘境探险 (rules/mijing.mjs): a 秘境令 in hand, away from the door — the door's run is its card there
     tray: (content, state, view) => (view?.mijing?.away ? [{ id: 'mijing', left: { unit: 'keys', n: view.mijing.keys }, places: [view.mijing.door.id], stage: 'mijing' }] : []) },
   { kind: 'chance', // the day's 机缘 (road.mjs chanceBrief): where, the minutes left — met on arrival

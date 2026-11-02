@@ -28,7 +28,7 @@ const draw = (l, extra = {}) => trayHtml({ look: l, lang: 'zh', words: WORDS.zh,
 
 test('one registry: 先放一放 is a facet of it (its kinds unchanged); every tray kind declares itself there', () => {
   assert.deepEqual(ASIDE_KINDS.map((k) => k.kind), ['replay', 'gongke', 'fantong', 'pool', 'tide', 'seclusion', 'her']);
-  assert.deepEqual(PLAY_KINDS.filter((k) => k.tray).map((k) => k.kind), ['fantong', 'pool', 'yaoshou', 'tide', 'seclusion', 'her', 'errands', 'mijing', 'chance', 'visitor']);
+  assert.deepEqual(PLAY_KINDS.filter((k) => k.tray).map((k) => k.kind), ['fantong', 'pool', 'yaoshou', 'tide', 'seclusion', 'her', 'errands', 'board', 'mijing', 'chance', 'visitor']);
   assert.ok(PLAY_KINDS.filter((k) => !k.open).every((k) => !k.takes), 'a kind never played while set aside takes no verb');
 });
 
@@ -38,7 +38,8 @@ test('each entry: what it is, what is left, where, and its button — 开局 her
   const tide = rows.find((e) => e.id === T.id);
   assert.deepEqual({ seg: tide.seg, act: tide.act, opens: tide.opens, arg: tide.arg, left: tide.left, task: tide.task },
     { seg: 'open', act: 'open', opens: 'play', arg: T.id, left: { unit: 'night', n: 1 }, task: T.id }, '兽潮 in the 观: 开局');
-  for (const id of ['seclusion', 'divine']) {
+  // (闭关 is in the 小游戏池, drawn by the 时辰 — tests/pool.test.mjs; 问卦 stands every 时辰.)
+  for (const id of ['divine']) {
     const e = rows.find((x) => x.id === id);
     assert.equal(e?.act, 'open', `${id} opens anywhere`);
     assert.equal(e.where, undefined, `${id}: no place`);
@@ -63,19 +64,22 @@ test('each entry: what it is, what is left, where, and its button — 开局 her
   const html = draw({ tasks: [], tray: trayOf(out) });
   assert.match(html, new RegExp(`data-go="${away.go.id}"[^>]*>去${away.go.name}`));
   assert.match(draw({ tasks: [], tray: rows }), new RegExp(`data-play="${T.id}"`));
-  assert.match(draw({ tasks: [], tray: rows }), /data-seclude-open/);
+  assert.match(draw({ tasks: [], tray: rows }), /data-divine/);
 });
 
 test('对对子 once its scene is behind him: today\'s couplets at the 讲堂, walked to from elsewhere', () => {
   const t = content.aigames.duizi.teachers[0];
   const s = at('waimen', { done_scenes: [...BASE.done_scenes, t.after] });
-  const e = trayOf(s).find((x) => x.id === 'duizi');
+  // In the 小游戏池: drawn by some 时辰 of the day (tests/pool.test.mjs).
+  const hours = Array.from({ length: 12 }, (_, i) => new Date(2026, 9, 20, 1 + 2 * i, 10));
+  const drawnAt = (st) => hours.map((h) => trayOf(st, h).find((x) => x.id === 'duizi')).find(Boolean);
+  const e = drawnAt(s);
   assert.equal(e.left.unit, 'couplets');
   assert.equal(e.left.n, content.aigames.duizi.rounds);
   assert.equal(e.act, 'go');
   assert.equal(e.go.id, t.at);
-  assert.equal(trayOf({ ...s, place: t.at }).find((x) => x.id === 'duizi').act, 'open', 'at the 讲堂: 开局');
-  assert.equal(trayOf(at('waimen')).find((x) => x.id === 'duizi'), undefined, 'before its scene: not there');
+  assert.equal(drawnAt({ ...s, place: t.at }).act, 'open', 'at the 讲堂: 开局');
+  assert.equal(drawnAt(at('waimen')), undefined, 'before its scene: not there');
 });
 
 test('exclusions: a card on the stage, a game done for today, a road Move refuses', () => {

@@ -9,7 +9,8 @@
 import { lockedOf, lockSay, pick } from '../state.mjs';
 import { isOnce } from './chores.mjs';
 import { sealedVerb } from './sealed.mjs';
-import { asideVerb } from './aside.mjs';
+import { asideVerb, PLAY_KINDS } from './aside.mjs';
+import { stampPlay } from './pool.mjs';
 
 /* A chore by id: the apps' menu (`ctx.quests`), 开府's milestones are its `once` rows. */
 const choreSystem = (ctx, id) => {
@@ -41,8 +42,13 @@ export function lockedVerb(content, state, verb, args = {}, ctx = {}) {
 }
 
 /* Every verb of the table, kept to the gates — and, while the book is set aside, to what may be played meanwhile (rules/aside.mjs). */
+/* …and a verb that plays a 小游戏池 member stamps when (rules/pool.mjs `pool_played`): its cooldown and the 时辰's row read it. */
 export const gated = verbs => Object.fromEntries(Object.entries(verbs).map(([verb, fn]) => [verb,
-  (state, content, ctx, args) => lockedVerb(content, state, verb, args, ctx) ?? sealedVerb(content, state, verb, args) ?? asideVerb(content, state, verb, args, ctx) ?? fn(state, content, ctx, args)]));
+  (state, content, ctx, args) => lockedVerb(content, state, verb, args, ctx) ?? sealedVerb(content, state, verb, args) ?? asideVerb(content, state, verb, args, ctx) ?? played(fn(state, content, ctx, args), content, state, verb, args, ctx)]));
+function played(out, content, state, verb, args = {}, ctx = {}) {
+  if (out?.state && out.result?.ok && out.state !== state) stampPlay(PLAY_KINDS, content, state, out.state, verb, args, ctx.now ?? new Date());
+  return out;
+}
 
 /* The fields of Look (and Progress) each shut system takes out. The book, the
    chores and 开府 are filtered where they are made (errands.mjs bookOf,
