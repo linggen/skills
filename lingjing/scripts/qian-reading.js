@@ -61,7 +61,7 @@ export function readingBody(d, ctx, w, { fresh = false, her = null, waiting = fa
    let go; how many are left today. */
 export function friendFormHtml(q, ctx, w) {
   const left = q.friend_left ?? 0;
-  const kept = (q.friends ?? []).map((f) => `<span class="qfriend"><button class="qchip ask" data-qian-friend-ask="${esc(f.name)}"${left || ctx.qianFriendAsked?.includes(f.name) ? '' : ' disabled'}>${esc(f.name)}${f.signs ? ` · ${esc(say(w.friendSigns, { zodiac: f.signs.zodiac.name }))}` : ''}</button><button class="qx" data-qian-friend-forget="${esc(f.name)}" aria-label="${esc(say(w.friendForget, { name: f.name }))}" title="${esc(say(w.friendForget, { name: f.name }))}">×</button></span>`).join('');
+  const kept = (q.friends ?? []).map((f) => `<span class="qfriend"><button class="qchip ask" data-qian-friend-ask="${esc(f.name)}">${esc(f.name)}${f.signs ? ` · ${esc(say(w.friendSigns, { zodiac: f.signs.zodiac.name }))}` : ''}</button><button class="qx" data-qian-friend-forget="${esc(f.name)}" aria-label="${esc(say(w.friendForget, { name: f.name }))}" title="${esc(say(w.friendForget, { name: f.name }))}">×</button></span>`).join('');
   return `<div class="qfriendform"><div class="cardtitle">${esc(w.friendTitle)}</div>
     <div class="small dim">${esc(left ? say(w.friendLeft, { n: left }) : w.friendNone)}</div>
     ${kept ? `<div class="small dim">${esc(w.friendKept)}</div><div class="qasks">${kept}</div>` : ''}

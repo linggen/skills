@@ -20,7 +20,7 @@ test('问签 on one card: the 签筒 waits for one tap (her asleep too), then th
   const ctx = (look, extra = {}) => ({ look: { companion: { joined: true, asleep: true }, ...look }, lang: 'zh', words: WORDS.zh, content, ...extra });
   const waiting = cardHtml({ card: 'hexagram' }, ctx({ qian, divination: null }));
   assert.match(waiting, /data-qian-shake/, 'asleep in the token: the 签筒 still stands');
-  assert.match(waiting, /data-qian-ask="career"/);
+  assert.doesNotMatch(waiting, /data-qian-ask/, '问签 v2: nothing is asked first');
   assert.match(waiting, /<input type="date" id="fate-birth"/);
   assert.doesNotMatch(waiting, /data-say/, 'a tap, not a word to Ling');
   assert.doesNotMatch(cardHtml({ card: 'hexagram' }, ctx({ qian: { ...qian, birth: null }, divination: null, fate: { declined: true } })), /fate-birth/, 'asked once');
