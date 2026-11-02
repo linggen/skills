@@ -479,13 +479,13 @@ export function spoilsHtml(spoils, ctx) {
   const gained = faces || things || pays || spoils.line;
   // Paid when the rules answered — the bar rose then: the card says so, and 收起 only puts it away (Hanli 11-02:
   // 「所得收起的卡, 在点之前已经收到奖励了吧, 点了收起好像没变化」).
-  return `<div class="card spoils"><div class="cardtitle">${esc(gained ? w.spoils : w.spentTitle)}</div>
+  return `<div class="card spoils" data-spoils-close title="${esc(w.spoilsClose)}"><div class="cardtitle">${esc(gained ? w.spoils : w.spentTitle)}</div>
     ${pays ? `<div class="spoilpays">${esc(pays)} <span class="small dim spoilin">· ${esc(w.spoilsIn)}</span></div>` : ''}
     ${spoils.line ? `<div class="small">${esc(spoils.line)}</div>` : ''}
     ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}
     ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
     ${spent ? `<div class="small dim">${esc(w.spoilsSpent)}${spent}</div>` : ''}
-    <div class="acts"><button class="act" data-spoils-close>${esc(w.spoilsClose)}</button></div></div>`;
+    </div>`;
 }
 
 /* One thing in the bag's line: 新 if first had, its rarity, ×n, and what a

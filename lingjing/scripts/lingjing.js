@@ -1334,7 +1334,7 @@ function toastsHtml() {
   return titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '')
     + (view.gearOpen ? '' : fullOfferHtml(look?.full_offer, { ...ctx(), gear: view.gear }, { swap: view.offerSwap, tab: view.pouchTab }))
     + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '')
-    + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (spoilsShown() ? spoilsHtml(view.spoils, spoilsCtx()) : '')
+    + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (spoilsShown() ? (queueMicrotask(armSpoils), spoilsHtml(view.spoils, spoilsCtx())) : '')
     + (view.handin ? handinHtml(view.handin, ctx()) : '');
 }
 
@@ -1344,6 +1344,16 @@ function toastsHtml() {
    and holds the way on (watchWayOn) until it is put away or he takes the way on himself. */
 const spoilsUp = () => Boolean(view.spoils && view.spoils.place === (look?.place?.id ?? null));
 const spoilsShown = () => spoilsUp() && !view.spoils.pending && !storyAhead();
+/* 所得 puts itself away (Hanli 11-02: 「这个收起卡没用吧, 已经自动收起了」): the pay landed when the win was counted, so the
+   card is a notice — a tap on it, or SPOILS_MS after it first shows, and it goes. No 收起 button. */
+const SPOILS_MS = 6000;
+let spoilsTimer = null, spoilsTimed = null;
+function armSpoils() {
+  if (!spoilsShown() || spoilsTimed === view.spoils) return;
+  const mine = (spoilsTimed = view.spoils);
+  clearTimeout(spoilsTimer);
+  spoilsTimer = setTimeout(() => { if (view.spoils === mine) show({ spoils: null }); }, SPOILS_MS);
+}
 
 /// 此地 — the people of the scene and the goal line; the place is its own line.
 const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));

@@ -5,11 +5,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { WORDS, spoilsHtml } from '../scripts/battle-card.js';
 
-test('the card says the pay is already in; 收起 puts it away', () => {
+test('the card says the pay is already in; no 收起 button — a tap on it, or a few seconds, puts it away (Hanli 11-02)', () => {
   const html = spoilsHtml({ cards: [], items: [], paid: { progress: 30, wealth: 5 }, spent: [] }, { lang: 'zh', words: WORDS.zh, catalog: {} });
   assert.match(html, /修为 \+30 · 灵石 \+5 <span class="small dim spoilin">· 已入账<\/span>/);
-  assert.match(html, /data-spoils-close>收起/);
+  assert.doesNotMatch(html, /<button[^>]*data-spoils-close/, 'no 收起 button');
+  assert.match(html, /class="card spoils" data-spoils-close/, 'the card itself puts it away on a tap');
   assert.doesNotMatch(spoilsHtml({ cards: [], items: [], paid: {}, spent: ['x'] }, { lang: 'zh', words: WORDS.zh, catalog: {} }), /已入账/, 'nothing paid: nothing said in');
   const page = readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /\['\[data-spoils-close\]', \(\) => show\(\{ spoils: null \}\)\]/);
+  assert.match(page, /const SPOILS_MS = \d+;/, 'and it goes by itself');
 });
