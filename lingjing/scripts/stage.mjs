@@ -79,6 +79,19 @@ export function barOf(look) {
   return own ? { line, name: own.hero, tier: own.tier, progress: own.progress, next: own.next }
     : { line: null, name: look?.name, tier: look?.tier, progress: look?.progress, next: look?.next };
 }
+/* The 修为 bar in three 段 (Hanli 2026-11-02: 「9层用于计算, 小, 中, 大成用于显示」 · 「筑基以后再分3段UI吧」). The
+   switch is the Look's, per tier: a tier whose `duan` the rules give reads 「筑基 · 中成」 over three segments, one per 层
+   of the 段 (`at` 1–3 the one he is in); the 层 only in the tooltip (`layer`, 「第四层」). A tier without it (练气) keeps
+   the plain bar and its named 层. Nothing here counts the ladder: every name and index is Look's. */
+export function duanOf(tier) {
+  const d = tier?.duan;
+  if (!d?.name || !(d.at >= 1 && d.at <= 3)) return null;
+  return { label: tier.realm ? `${tier.realm} · ${d.name}` : d.name, at: d.at, layer: tier.layer ?? '', full: tier.name ?? '' };
+}
+/* What the bar draws, segment by segment: past 层 full, the 层 he is in by its share, the rest empty. */
+export function duanSegments(at, pct) {
+  return [1, 2, 3].map(k => (k < at ? { kind: 'past', pct: 100 } : k === at ? { kind: 'now', pct } : { kind: 'ahead', pct: 0 }));
+}
 /* On a side line the stage holds the scene alone: its picture, its people,
    the cards that name a value, the game it offers (`scene.games`) and the
    ending card — never the 古's goal, coins, errands, road or beasts. */

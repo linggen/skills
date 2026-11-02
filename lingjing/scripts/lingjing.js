@@ -29,7 +29,7 @@ import { newBoard, tapHeard } from './board.js';
 import { sounded } from './games/kit/heard.js';
 import { REALMS, begin, missingCards, view as boutView } from './battle.js';
 import { fightOdds, oddsKey } from './fightodds.js';
-import { withNext, FOOTER, barOf, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
+import { withNext, FOOTER, barOf, duanOf, duanSegments, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -813,6 +813,21 @@ const capSay = () => (look.capped?.say ? `<span class="capseal" role="note" titl
 /// How far past the full mark the 修为 stands, as a share of the bar (0 when it is not; at most the whole bar).
 const spillPct = (progress, next) => (next && progress > next ? Math.min(100, Math.round(((progress - next) / next) * 100)) : 0);
 
+/// The realm and its 修为 bar. A tier the Look gives in 段 (stage.mjs duanOf — 筑基 and above): 「筑基 · 中成」 and three
+/// segments, the 层 only in the tooltip; else (练气) the 层 named and one plain bar. The segment he is in is `.now`, the one
+/// the rise paints (paintRise).
+function xwHtml(bar, pct, over, w) {
+  const d = duanOf(bar.tier);
+  const num = `<span class="num"><span data-count="progress">${esc(bar.progress)}</span>/${esc(bar.next)}</span>${bar.line ? '' : capSay()}`;
+  const fillBar = (cls, p, spill) => `<div class="bar ${cls}${spill ? ' over' : ''}"><i style="width:${p || 0}%"></i>${cls === 'now' ? `<em class="spill" style="width:${spill}%"></em>` : ''}</div>`;
+  if (!d) return `<span class="realm">${esc(bar.tier.name)}</span>
+    <div class="xw"><span class="lbl">${esc(w.xw)}</span>${fillBar('now', pct, over)}${num}</div>`;
+  const tip = [d.layer, `${bar.progress}/${bar.next}`].filter(Boolean).join(' · ');
+  const segs = duanSegments(d.at, pct).map((g) => fillBar(g.kind, g.pct, g.kind === 'now' ? over : 0)).join('');
+  return `<span class="realm" title="${esc(d.full || tip)}">${esc(d.label)}</span>
+    <div class="xw duan" title="${esc(tip)}"><span class="lbl">${esc(w.xw)}</span><div class="segs" role="progressbar" aria-label="${esc(d.label)}" aria-valuemin="0" aria-valuemax="${esc(bar.next)}" aria-valuenow="${esc(bar.progress)}">${segs}</div>${num}</div>`;
+}
+
 /// One line in the world while the window is spent — and the boards stay:
 /// they use no model.
 function statusHtml() {
@@ -831,9 +846,7 @@ function statusHtml() {
     // 零层 (Look's `tier.bar` false): the realm's name only — the 修为 bar stands from the 小周天 on.
     : bar.tier?.bar === false ? `<span class="realm">${esc(bar.tier.name)}</span>`
     : !bar.tier ? ''
-    : `<span class="realm">${esc(bar.tier.name)}</span>
-    <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar${over ? ' over' : ''}"><i style="width:${pct || 0}%"></i><em class="spill" style="width:${over}%"></em></div>
-      <span class="num"><span data-count="progress">${esc(bar.progress)}</span>/${esc(bar.next)}</span>${bar.line ? '' : capSay()}</div>`;
+    : xwHtml(bar, pct, over, w);
   const stones = !has('wealth') || isShut(look, 'wealth') ? '' : `<span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>`;
   return `${name}${realm}
     ${has('pool') ? qiHtml() : ''}
@@ -880,7 +893,8 @@ function riseStats() {
   // The strip's bar (stage.mjs barOf): the 古's, or on a 今 scene the 今's — its own tier ids, so a walk across lines is never a gain.
   const bar = barOf(look);
   const now = { world: look.world?.id, line: bar.line, tier: bar.tier?.id, progress: bar.progress, wealth: look.wealth, next: bar.next, cast: (look.cast ?? []).map((b) => b.id),
-    rank: bar.tier?.name, step: bar.tier?.step, chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
+    // A tier in 段 rises by its 段 (「筑基 · 中成」): a 层 within it is the bar's, never a seal (duanOf).
+    rank: duanOf(bar.tier)?.label ?? bar.tier?.name, step: bar.tier?.step, chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
     her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null };
   const before = shown;
   shown = now;
@@ -1103,9 +1117,9 @@ function paintRise() {
     el.textContent = String(value);
     el.classList.toggle('rising', k < 1);
     // The bar fills with the number, not ahead of it.
-    const bar = key === 'progress' && r.next ? document.querySelector('.status .xw .bar i') : null;
+    const bar = key === 'progress' && r.next ? document.querySelector('.status .xw .bar.now i') : null;
     if (bar) bar.style.width = `${Math.min(100, (value / r.next) * 100)}%`;
-    const spill = key === 'progress' && r.next ? document.querySelector('.status .xw .bar .spill') : null;
+    const spill = key === 'progress' && r.next ? document.querySelector('.status .xw .bar.now .spill') : null;
     if (spill) { spill.style.width = `${spillPct(value, r.next)}%`; spill.parentElement.classList.toggle('over', value > r.next); }
     if (age > GAIN_MS) { rising.delete(key); continue; }
     // The gain floats off the number; redrawn, it picks up where it was.

@@ -1541,3 +1541,8 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 @keyframes qwobble { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-5deg); } 82% { transform: rotate(4deg); } 88% { transform: rotate(-2deg); } }
 @media (prefers-reduced-motion: reduce) { .qianmodal .qiantong:not(.shaking) { animation: none; } }
 .bookchip.qianagain { display: block; margin-top: 6px; }
+
+/* 修为 in three 段 (筑基 and above, stage.mjs duanOf; Hanli 2026-11-02): one segment per 层 of the 段, small gaps between —
+   the past 层 full, the one he is in by its share, the next empty. The 段's name stands as the realm, beside the bar. */
+.xw.duan .segs { flex: 1; display: flex; gap: 3px; min-width: 66px; }
+.xw.duan .segs .bar { flex: 1 1 0; min-width: 0; }
