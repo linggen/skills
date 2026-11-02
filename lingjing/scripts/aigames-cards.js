@@ -37,7 +37,7 @@ export const DUIZI_WORDS = {
     send: 'Answer', skip: 'Let this one go', waiting: '{who} strokes his beard over your line', resend: 'Ask him to look again',
     checks: { one: 'one word', len: 'syllables', rhyme: 'rhyme', copy: 'not copied' }, verdict: { ok: '✓', bad: '✗', unsure: '?', wait: '…' },
     oneNote: 'One word only', lenNote: 'As many syllables as his line', rhymeNote: 'End on a rhyme for his last word', copyNote: 'Do not reuse his words',
-    ref: 'The classic answer: {down} ({src})', paid: 'Earned {what}', unlocked: '{name} opened',
+    ref: 'The classic answer: {down} ({src})', paid: 'Earned: {what}', unlocked: '{name} opened',
     revTitle: 'You set, he answers', revWrite: 'A line for him (up to {max} syllables)', revSend: 'Ask him', revWait: '{who} is thinking', revLeft: '{n} more today',
     herHint: 'Ask Yinyue for a hint', herOffer: 'Yinyue, you try', herSays: 'Yinyue: ', herUsed: 'Yinyue has hinted',
     say: 'Master, my answer: "{down}"', revSay: 'Master, a line for you: "{up}" — your answer?', hintSay: '@银月 I am stuck on "{up}" — a hint?', offerSay: '@银月 your answer to "{up}"?',
@@ -71,8 +71,9 @@ const rowsHtml = (up, down, w) => `<div class="dzpair row"><div class="dzrow"><d
 /* The pair as hung: 上联 on the right, 下联 on the left, each read top to bottom. */
 const pairHtml = (up, down, w) => (w.row ? rowsHtml(up, down, w) : `<div class="dzpair">${down ? `<div class="dzcol"><div class="dzcap">${esc(w.down)}</div>${dzLine(down, 'down')}</div>` : ''}<div class="dzcol"><div class="dzcap">${esc(w.up)}</div>${dzLine(up, 'up')}</div></div>`);
 const dots = (n) => [0, 1].map((i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
-const PAID = { zh: ['修为', '灵石'], en: ['cultivation', 'spirit stones'] };
-const paidSay = (p, w) => { const [a, b] = PAID[w.input === 'en' ? 'en' : 'zh']; return [p?.progress ? `${a} ${p.progress}` : '', p?.wealth ? `${b} ${p.wealth}` : ''].filter(Boolean).join(' · '); };
+/* What was paid: 「修为 3 · 灵石 5」; in English the number first, 「3 cultivation · 5 spirit stones」. */
+const PAID = { zh: (n, k) => `${['修为', '灵石'][k]} ${n}`, en: (n, k) => `${n} ${['cultivation', 'spirit stones'][k]}` };
+const paidSay = (p, w) => { const one = PAID[w.input === 'en' ? 'en' : 'zh']; return [p?.progress ? one(p.progress, 0) : '', p?.wealth ? one(p.wealth, 1) : ''].filter(Boolean).join(' · '); };
 /* The input's language and room: a Chinese line's characters, or an English line's letters. */
 const fieldOf = (w, n) => (w.input === 'en' ? 'lang="en" maxlength="160"' : `lang="zh" maxlength="${n * 2 + 4}"`);
 const waitHtml = (t) => `<div class="dzwait" role="status"><span>${esc(t)}</span><i></i><i></i><i></i></div>`;

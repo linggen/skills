@@ -12,6 +12,11 @@ given on the command line), plus every word of the English ladder (aigames.json
 `duizi.english`; the few CMU lacks are in EXTRA, transcribed by hand). A word outside the table is unknown to scripts/rhyme.js: counted by
 its spelling, never failed.
 
+The shipped table (2026-11-02): MIN = 4 over these 39 Project Gutenberg plain texts
+(https://www.gutenberg.org/cache/epub/<id>/pg<id>.txt; #2005 was fetched and left out):
+  10 11 16 20 26 74 76 84 98 100 113 136 158 345 768 932 1041 1260 1342 1400 1661 1934 1952 2199
+  2428 2591 2701 3207 5200 6130 7409 10607 15349 16456 22120 22403 23794 47383 49221
+  for id in ...; do curl -sSLo pg$id.txt https://www.gutenberg.org/cache/epub/$id/pg$id.txt; done
   curl -O https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict
   curl -O https://raw.githubusercontent.com/cmusphinx/cmudict/master/LICENSE
   python3 -I tools/rhyme-table.py cmudict.dict LICENSE worlds/jiuding/aigames.json pg*.txt > worlds/jiuding/rhymes.json

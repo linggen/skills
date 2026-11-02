@@ -21,7 +21,7 @@ import { hashOf } from './travel.mjs';
 import { herAwake, herAway } from './companion.mjs';
 import { ofJuan } from './world.mjs';
 import { checkCouplet, checkUpper, hanOf } from '../couplet.js';
-import { checkPrompt, checkRhyme } from '../rhyme.js';
+import { checkPrompt, checkRhyme, hasRhyme, wordsOf } from '../rhyme.js';
 import { rhymesTable } from '../content.mjs';
 
 const baseOf = content => content.aigames?.duizi ?? null;
@@ -266,11 +266,13 @@ function reverse(state, content, ctx, args, s, d) {
   return done(ctx, content, s, { reversed: true, shape });
 }
 
-/* His English line answered: one word for one word (not a form of his), else his syllables and a rhyme, one word of his allowed. */
+/* His English line answered: one word for one word (not a form of his), else his syllables and a rhyme, one word of his allowed.
+   The teacher's line must rhyme — unless his last word has no rhyme in the table (orange), then the count is enough. */
 function answerEn(state, content, ctx, args, s, d) {
-  const down = cleanOf(d.rev, args.down), cfg = cfgOf(content, 'en');
-  const form = checkRhyme(rhymesOf(content), d.rev.up, down, { kind: d.rev.kind, allow: d.rev.kind === 'word' ? 0 : 1, free: cfg?.free ?? [] });
+  const down = cleanOf(d.rev, args.down), cfg = cfgOf(content, 'en'), table = rhymesOf(content);
+  const form = checkRhyme(table, d.rev.up, down, { kind: d.rev.kind, allow: d.rev.kind === 'word' ? 0 : 1, free: cfg?.free ?? [] });
   if (!form.ready) return refuse('not-matched', null, { form, need: d.rev.n });
+  if (form.checks.rhyme === 'bad' && hasRhyme(table, wordsOf(d.rev.up).at(-1))) return refuse('not-matched', null, { form, need: d.rev.n, rhyme_with: wordsOf(d.rev.up).at(-1) });
   Object.assign(d.rev, { down, form });
   s.duizi = d;
   return done(ctx, content, s, { answered: true, form });

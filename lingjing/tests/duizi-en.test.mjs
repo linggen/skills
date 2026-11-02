@@ -335,3 +335,13 @@ test('手边的棋局 in English: the couplets entry is the English ladder\'s, i
   assert.equal(e.who, 'Master Chu');
   assert.equal(e.left.n, cfg.rounds);
 });
+
+test('reverse: the teacher\'s answer must rhyme — unless his last word has none (orange), then the count is enough', () => {
+  const { s } = must(base, { action: 'reverse', up: 'The night is long and cold upon the town' });
+  const miss = run(s, { action: 'answer', down: 'The dawn is first and gold upon the hill' }, asLing()).r;
+  assert.equal(miss.refused, 'not-matched');
+  assert.equal(miss.rhyme_with, 'town');
+  assert.equal(must(s, { action: 'answer', down: 'The dawn is first and gold upon the crown' }, asLing()).r.answered, true);
+  const o = must(base, { action: 'reverse', up: 'I ate a ripe orange' });
+  assert.equal(must(o.s, { action: 'answer', down: 'You drank a cool lemon' }, asLing()).r.answered, true, 'orange: no rhyme in English, so the count holds');
+});

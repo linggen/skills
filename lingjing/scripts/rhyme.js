@@ -78,6 +78,13 @@ export function rhymeOf(table, a, b) {
   return spellTail(a) === spellTail(b) ? 'ok' : 'unsure';
 }
 
+/* Has a word any rhyme in the table but itself? (orange, month: none — a line ending so can only be answered by its count.) */
+export function hasRhyme(table, word) {
+  const ps = soundsOf(table, word);
+  if (!ps || !table?.tails) return false;
+  return ps.some((p) => (table.tails[p.tail] ?? '').split(' ').some((e) => e.replace(/\d+$/, '') !== word));
+}
+
 const baseOf = (w) => w.replace(/'s$/, '');
 /* The prompt's words the answer reuses — distinct, past the free ones. */
 export const sharedOf = (up, down, free = []) => {
