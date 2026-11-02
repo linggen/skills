@@ -343,9 +343,10 @@
       "_about": "比武切磋 (rules/qiecuo.mjs; Hanli 2026-10-28: 「冷却3小时」): a bout comes again `every_h` after the last was over — won, lost or put down; a bout won pays `share` of the layer he stands on × ★, the day's first `full` in full, then play_pay.replay's share; 灵石 as a 格斗 board (play_pay.wealth)."
     },
     "yaoshou": {
+      "_about": "妖兽出没 (rules/yaoshou.mjs): one fight a batch since 2026-11-02 (Hanli: 「降妖等也是, 都一局就可以了」; was 3). Agent's pick (Hanli delegated 11-02): `batch` 1, so `fight_scale` derives to 1 (master `batch_plays` 1 ÷ 1) — the one fight pays what the batch of three paid together; `every_h` 1.5 and `full` 2 kept, so a day's 降妖 pay is as before (a shorter wait would raise it). Fewer fights a day: the 秘境令's `mijing.key.drops.yaoshou` (0.2 a win) now comes a third as often.",
       "every_h": 1.5,
-      "fight_scale": 0.3333,
-      "batch": 3,
+      "fight_scale": 1,
+      "batch": 1,
       "full": 2,
       "pools": ["yaoyuan-wai", "songlin"],
       "title": {"zh": "妖兽出没", "en": "Beasts abroad"},

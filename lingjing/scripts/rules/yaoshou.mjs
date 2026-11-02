@@ -18,15 +18,16 @@ const ev = content => eventOf(content, YAOSHOU);
 
 /* A place whose pool the event holds. */
 export const yaoshouPlace = (content, place) => Boolean(ev(content)) && (ev(content).pools ?? []).includes(place?.has?.pool);
-/* Fights taken from the batch up now. */
-const takenOf = state => eventRec(state, YAOSHOU)?.taken ?? 0;
+/* Fights taken from the batch up now — never the whole batch (its last completes it): a save that took 1 or 2 of a batch
+   of 3 before the batch went to 1 (2026-11-02) still has its one fight. */
+const takenOf = (state, e) => Math.min(eventRec(state, YAOSHOU)?.taken ?? 0, Math.max(0, e.batch - 1));
 /* The batch now: up (how many left of how many), or waiting (the minutes). Null where the world has no such event. */
 export function yaoshouBatch(content, state, now) {
   const e = ev(content);
   if (!e) return null;
   const wait = eventWait(content, state, YAOSHOU, now);
   if (wait > 0) return { up: false, wait_min: Math.ceil(wait / 60_000) };
-  return { up: true, left: Math.max(0, e.batch - takenOf(state)), of: e.batch, share: eventShare(content, state, YAOSHOU, now) * (e.fight_scale ?? 1) };
+  return { up: true, left: Math.max(0, e.batch - takenOf(state, e)), of: e.batch, share: eventShare(content, state, YAOSHOU, now) * (e.fight_scale ?? 1) };
 }
 /* The share a fight at the event's pools pays now (1 elsewhere): the batch's day share × `fight_scale` (a whole batch pays
    as one play of the haunt table — about one 兽潮 night; tools/master.mjs derives it from `master.events.yaoshou`). */
@@ -36,7 +37,7 @@ export const yaoshouShare = (content, state, place, now) => (yaoshouPlace(conten
 export function yaoshouFought(content, state, place, now) {
   const e = ev(content);
   if (!e || !yaoshouPlace(content, place) || !eventUp(content, state, YAOSHOU, now)) return null;
-  const taken = takenOf(state) + 1;
+  const taken = takenOf(state, e) + 1;
   if (taken >= e.batch) return { done: true, rec: eventDone(state, YAOSHOU, now) };
   return { done: false, rec: eventKeep(state, YAOSHOU, { taken }) };
 }

@@ -511,7 +511,8 @@ const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature
 function eventBatch(content, state, place) {
   const ev = eventPool(content, place), row = ev ? content.balance.events[ev] : null;
   if (!row?.batch) return {};
-  return { batch: { event: ev, left: Math.max(0, row.batch - (eventRec(state, ev)?.taken ?? 0)), of: row.batch } };
+  // Never 0 while up (the last fight completes it): a save mid-batch from a bigger `batch` has its one fight.
+  return { batch: { event: ev, left: Math.max(1, row.batch - (eventRec(state, ev)?.taken ?? 0)), of: row.batch } };
 }
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);

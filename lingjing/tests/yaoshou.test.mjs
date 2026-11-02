@@ -1,5 +1,5 @@
 // 妖兽出没 (Hanli 2026-10-28: 「按你说的来」): one of the three cooldown events (rules/events.mjs). The pools of 后山 · 上山路
-// (balance.json `events.yaoshou.pools`) hold a batch of `batch` fights; each fight settled there takes one; the last
+// (balance.json `events.yaoshou.pools`) hold a batch of `batch` fights (one since 2026-11-02, Hanli: 「降妖等也是, 都一局就可以了」); each fight settled there takes one; the last
 // completes it and the next batch comes `every_h` hours later — from completion, never stacking. The day's first
 // `full` batches pay in full, then play_pay.replay's falling share; the beast's own replay share still applies.
 import test from 'node:test';
@@ -43,24 +43,25 @@ function foughtOut(s, now) {
   return end.state;
 }
 
-test('declared in balance.json: 1.5 h, a batch of 3, the first 2 a day in full, at 后山 and 上山路; a batch pays as one fight', () => {
+test('declared in balance.json: 1.5 h, a batch of one fight, the first 2 a day in full, at 后山 and 上山路; a batch pays as one fight', () => {
   assert.equal(EV.fight_scale, Math.round((content.balance.master.events.yaoshou.batch_plays / EV.batch) * 10000) / 10000, 'derived (tools/master.mjs)');
   assert.ok(Math.abs(EV.fight_scale * EV.batch - 1) < 0.001);
-  assert.deepEqual({ every_h: EV.every_h, batch: EV.batch, full: EV.full }, { every_h: 1.5, batch: 3, full: 2 });
+  assert.deepEqual({ every_h: EV.every_h, batch: EV.batch, full: EV.full, fight_scale: EV.fight_scale }, { every_h: 1.5, batch: 1, full: 2, fight_scale: 1 }, 'Hanli 11-02: one fight a batch, paid as the whole batch was');
   assert.deepEqual([...EV.pools].sort(), ['songlin', 'yaoyuan-wai']);
   for (const id of ['houshan', 'shanlu']) assert.ok(EV.pools.includes(placeOf(content, id).has.pool), id);
 });
 
-test('a batch: three fights, won or lost, then the pool waits 1.5 h — shown as a wait — and a new batch comes', () => {
+test('a batch: its fights (one), won or lost, then the pool waits 1.5 h — shown as a wait — and a new batch comes', () => {
   let s = fresh(), now = PLAYED.now;
-  assert.deepEqual(encounter(s, now).batch, { event: 'yaoshou', left: 3, of: 3 });
-  s = foughtOut(s, now);
-  assert.deepEqual(encounter(s, now).batch, { event: 'yaoshou', left: 2, of: 3 });
+  const B = EV.batch;
+  assert.deepEqual(encounter(s, now).batch, { event: 'yaoshou', left: B, of: B });
   // 换一只 still works inside a batch, and takes no slot.
   const r = reroll(s, content, at(now));
-  if (r.result.ok) { s = r.state; assert.equal(encounter(s, now).batch.left, 2); }
-  s = foughtOut(s, now);
-  s = foughtOut(s, now);
+  if (r.result.ok) { s = r.state; assert.equal(encounter(s, now).batch.left, B); }
+  for (let k = 0; k < B; k += 1) {
+    if (k) assert.deepEqual(encounter(s, now).batch, { event: 'yaoshou', left: B - k, of: B });
+    s = foughtOut(s, now);
+  }
   // Done: no beast, the wait on Look in the world's words, the brief says when.
   assert.equal(encounter(s, now), null, 'the pool is quiet');
   const lk = look(s, content, at(now));
@@ -69,17 +70,17 @@ test('a batch: three fights, won or lost, then the pool waits 1.5 h — shown as
   assert.ok(!lk.waits.some(x => x.id === 'pool:houshan'), 'one row, the event\'s');
   assert.equal(lk.yaoshou.up, false);
   assert.equal(reroll(s, content, at(now)).result.refused, 'resting');
-  // 89 minutes on: still quiet. 90: a new batch of three.
+  // 89 minutes on: still quiet. 90: a new batch.
   assert.equal(encounter(s, new Date(now.getTime() + 89 * MIN)), null);
   const later = new Date(now.getTime() + 90 * MIN);
-  assert.deepEqual(encounter(s, later).batch, { event: 'yaoshou', left: 3, of: 3 });
+  assert.deepEqual(encounter(s, later).batch, { event: 'yaoshou', left: B, of: B });
   assert.equal(look(s, content, at(later)).waits?.find(x => x.id === 'yaoshou'), undefined);
 });
 
-test('never stacks: away ten hours he finds one batch of three, not six; the wait outlasts midnight', () => {
+test('never stacks: away ten hours he finds one batch, not several; the wait outlasts midnight', () => {
   const s = fresh(), now = PLAYED.now;
   eventDone(s, 'yaoshou', now);
-  assert.deepEqual(encounter(s, new Date(now.getTime() + 10 * HOUR)).batch, { event: 'yaoshou', left: 3, of: 3 });
+  assert.deepEqual(encounter(s, new Date(now.getTime() + 10 * HOUR)).batch, { event: 'yaoshou', left: EV.batch, of: EV.batch });
   // Completed at 23:30: at 00:30 it still waits (the cooldown is the event's, not the day's).
   const late = new Date('2026-10-21T23:30:00+08:00'), t = fresh();
   eventDone(t, 'yaoshou', late);
@@ -121,7 +122,7 @@ test('a batch up, he elsewhere: one 主页 row says where (a tap walks there); s
   const away = move(s, content, at(now), { place: 'waimen' });
   assert.equal(away.result.ok, true);
   const row = look(away.state, content, at(now)).home?.todo?.find(r => r.kind === 'yaoshou');
-  assert.ok(row && row.left === 3 && row.place?.id, JSON.stringify(row));
+  assert.ok(row && row.left === EV.batch && row.place?.id, JSON.stringify(row));
   assert.ok(!look(s, content, at(now)).home?.todo?.some(r => r.kind === 'yaoshou'), 'at the pool the fight is the stage\'s');
 });
 
@@ -142,8 +143,21 @@ test('a win at the pool pays its haunt grant × the batch\'s share: the third ba
   // At the layer's full mark the 修为 is paid as 灵石 (converted): count both.
   const worth = p => p.progress + p.wealth + (p.converted?.progress ?? 0);
   assert.ok(worth(first) > 0);
-  // A batch pays as one fight: each of its fights a third of an ordinary win's 修为 (playpay.mjs fightPlay).
+  // A batch pays as one fight: each of its fights `fight_scale` of an ordinary win's 修为 — one fight a batch, the whole (playpay.mjs fightPlay).
   const xw = p => p.progress + (p.converted?.progress ?? 0), one = fightPlay(content, fresh());
   assert.ok(Math.abs(xw(first) - one * EV.fight_scale) <= 2, `${xw(first)} vs ${one} × ${EV.fight_scale}`);
   assert.ok(Math.abs(worth(third) - worth(first) * content.balance.play_pay.replay[1]) <= 2, `${worth(third)} vs ${worth(first)}`);
+});
+
+test('a save mid-batch from the batch of three (taken 1 or 2): its one fight still stands, and fighting it completes the batch', () => {
+  const now = PLAYED.now;
+  for (const taken of [1, 2]) {
+    let s = fresh();
+    s.events = { yaoshou: { taken } };
+    assert.deepEqual(encounter(s, now).batch, { event: 'yaoshou', left: EV.batch, of: EV.batch }, `taken ${taken}`);
+    assert.equal(look(s, content, at(now)).yaoshou.left, EV.batch);
+    assert.ok(look(s, content, at(now)).tray?.some(e => e.id === 'yaoshou'), 'in the tray');
+    s = foughtOut(s, now);
+    assert.equal(encounter(s, now), null, 'done after the one fight');
+  }
 });

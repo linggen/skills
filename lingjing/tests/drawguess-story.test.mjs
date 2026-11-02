@@ -12,6 +12,8 @@ import { look, playTo, tale, task, win, VERBS } from '../scripts/rules.mjs';
 import { letterGrade, matches, normalize, roundsOf, stubReply } from '../scripts/games/drawguess-rules.js';
 import { kaoWords } from '../scripts/rules/kao.mjs';
 import { stageCards } from '../scripts/stage.mjs';
+import { WORDS, trayHtml } from '../scripts/cards.js';
+import { PLAY_KINDS } from '../scripts/rules/aside.mjs';
 import { everyJuan } from './prologue.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
@@ -135,40 +137,50 @@ test('本王考考你: offered at any hour she is beside him, after 入门 — f
   assert.ok(!words.includes('鯥'), 'not met yet: not a word');
 });
 
-test('本王考考你: each round counted as it begins, three a calendar day (`per_day`); a word\'s first clear pays by its looks, once', () => {
-  const now = night(), K = 'benwang-kao';
+test('本王考考你: each round counted as it begins, `per_day` a calendar day (one since 2026-11-02); a word\'s first clear pays by its looks, once', () => {
+  const now = night(), K = 'benwang-kao', CAP = taskOf(K).per_day;
+  assert.equal(CAP, 1, 'Hanli 11-02: 「1局就可以了」');
   let s = past();
   const w0 = s.wealth;
+  assert.equal(kaoRow(s, now)?.left, CAP, 'the day\'s allowance on the row');
   const o1 = VERBS.kao(s, content, at(now), { action: 'open' });
   s = ok(o1);
   const first = o1.result.word.zh;
+  assert.equal(o1.result.left, CAP - 1, 'counted as it begins');
   assert.ok(kaoWords(content, s).some((w) => w.zh === first));
+  // Under way, it is still the day's round: the row and the tray keep it (「今日 1 回」, 继续 after a reload).
+  assert.equal(kaoRow(s, now)?.left, CAP, 'an open round is still left');
+  assert.ok(kaoRow(s, now)?.open, 'a round under way stands');
+  // Its tray entry (aside.mjs, before the 时辰's draw — rules/pool.mjs decides whether it stands this 时辰): 「今日 1 回」, 继续.
+  const lk = look(s, content, at(now)), her = PLAY_KINDS.find((k) => k.kind === 'her');
+  const tray = her.tray(content, s, lk, now).find((e) => e.id === 'kao');
+  assert.deepEqual([tray?.left, tray?.resume], [{ unit: 'rounds', n: CAP }, true], 'the round under way keeps its entry');
+  assert.match(trayHtml({ look: { ...lk, tray: [{ kind: 'her', ...tray, seg: 'open', act: 'open' }] }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' } }), new RegExp(`今日 ${CAP} 回`));
+  // The page reloaded mid-round: `open` again resumes it — the same word, nothing counted (Hanli 10-27: 「不能开始」).
+  const resumed = VERBS.kao(s, content, at(now), { action: 'open' });
+  assert.equal(resumed.state, null);
+  assert.equal(resumed.result.resumed, true);
+  assert.equal(resumed.result.word.zh, first);
   s = ok(win(s, content, at(now), { id: K, stars: 3 }));
   const paid = task(s, content, at(now), { action: 'done', id: K });
   s = ok(paid);
   assert.equal(paid.result.first, true);
   assert.equal(s.wealth - w0, content.balance.boards.best, 'one look: best');
-  // Two more rounds (one lost, never won) and the day is spent.
-  s = ok(VERBS.kao(s, content, at(now), { action: 'open' }));
-  assert.ok(kaoRow(s, now)?.open, 'a round under way stands');
-  // The page reloaded mid-round: `open` again resumes it — the same word, nothing counted (Hanli 10-27: 「不能开始」).
-  const resumed = VERBS.kao(s, content, at(now), { action: 'open' });
-  assert.equal(resumed.state, null);
-  assert.equal(resumed.result.resumed, true);
-  assert.equal(resumed.result.word.zh, s.kao.open.word);
-  s = ok(VERBS.kao(s, content, at(now), { action: 'open', next: 1 }));
-  assert.ok(kaoRow(s, now), 'the third, open, still stands');
-  const capped = VERBS.kao(s, content, at(now), { action: 'open', next: 1 }).result;
-  assert.equal(capped.refused, 'cap');
-  assert.notEqual(s.kao.drawn[1], first, 'never the same word twice a day');
-  assert.equal(content.tasks.tasks.find((t) => t.kao).per_day, 3, 'the allowance is `per_day`');
+  // Any rounds past the first (none at one a day): each a new word, never the same twice a day.
+  for (let i = 1; i < CAP; i += 1) s = ok(VERBS.kao(s, content, at(now), { action: 'open', next: 1 }));
+  assert.equal(new Set(s.kao.drawn).size, s.kao.drawn.length, 'never the same word twice a day');
+  assert.equal(s.kao.drawn.length, CAP);
+  // The day spent: refused, not offered, in the tray no more.
+  assert.equal(VERBS.kao(s, content, at(now), { action: 'open', next: 1 }).result.refused, 'cap');
+  assert.equal(VERBS.kao(s, content, at(now), { action: 'open' }).result.refused, 'cap');
   assert.equal(s.kao.day, dayKey(now), 'keyed by the calendar day');
-  // Still capped later the same day; past midnight a fresh day's rounds (no night spans two days).
+  const closed = { ...s, kao: { ...s.kao, open: null } };
   const late = new Date(now); late.setHours(23, 50);
-  assert.equal(VERBS.kao(s, content, at(late), { action: 'open', next: 1 }).result.refused, 'cap');
-  assert.equal(kaoRow({ ...s, kao: { ...s.kao, open: null } }, late), null, 'spent: not offered');
+  assert.equal(VERBS.kao(closed, content, at(late), { action: 'open', next: 1 }).result.refused, 'cap', 'still capped later the same day');
+  assert.equal(kaoRow(closed, late), null, 'spent: not offered');
+  // Past midnight a fresh day's rounds (no night spans two days).
   const after = new Date(now); after.setDate(after.getDate() + 1); after.setHours(0, 10);
-  assert.equal(kaoRow({ ...s, kao: { ...s.kao, open: null } }, after)?.left, 3, 'a new day: three again');
+  assert.equal(kaoRow(closed, after)?.left, CAP, 'a new day: the allowance again');
   // The next day: the first word cleared pays nothing again.
   const next = new Date(now.getTime() + 864e5);
   let t = { ...s, kao_cleared: [first] };
@@ -180,6 +192,27 @@ test('本王考考你: each round counted as it begins, three a calendar day (`p
   const again = task(t, content, at(next), { action: 'done', id: K });
   assert.equal(again.result.first, false);
   assert.equal(again.state.wealth, t0, 'a word cleared before pays nothing');
+});
+
+test('本王考考你: the day\'s last round missed is closed (`kao miss`) — never resumed for fresh looks; the tray lets it go', () => {
+  const now = night(), CAP = taskOf('benwang-kao').per_day;
+  let s = past();
+  for (let i = 0; i < CAP; i += 1) s = ok(VERBS.kao(s, content, at(now), { action: 'open', ...(i ? { next: 1 } : {}) }));
+  const word = s.kao.open.word;
+  const m = VERBS.kao(s, content, at(now), { action: 'miss' });
+  s = ok(m);
+  assert.equal(m.result.missed, word);
+  assert.equal(m.result.left, 0);
+  assert.equal(s.kao.open, null, 'the round over, unwon');
+  assert.equal(VERBS.kao(s, content, at(now), { action: 'open' }).result.refused, 'cap', 'no resume: the day is spent');
+  assert.equal(kaoRow(s, now), null, 'not offered');
+  assert.equal(VERBS.kao(s, content, at(now), { action: 'miss' }).result.refused, 'no-round');
+  // The page's half: 下一题 only while a round is left; the miss reported to the rules.
+  const src = fs.readFileSync(new URL('../scripts/games/drawguess.js', import.meta.url), 'utf8');
+  assert.match(src, /const last = g\.roundsLeft === 0;/);
+  assert.match(src, /result\(false, \{ acts: true, next: !last \}\)/);
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /deal\.missed = \(\) => verb\(name, \{ action: 'miss' \}\);/);
 });
 
 test('the stage: 本王考考你 stands only on an empty stage (as 二十问); a round left open waits in the tray (继续), never standing by itself', () => {

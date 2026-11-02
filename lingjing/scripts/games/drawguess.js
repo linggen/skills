@@ -360,7 +360,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   });
   /* How the round went, over his drawing: the seal (胜 / 负), the word, her last guess, and — a miss in the story —
      下一题 or 收手 (Hanli 10-27: 「成功失败也看不太出来」). */
-  const result = (won, { acts = false, stars = null } = {}) => {
+  const result = (won, { acts = false, next = true, stars = null } = {}) => {
     const el = $('.g-dg-result'), lastGuess = [...g.guesses].reverse().find(Boolean) ?? g.right ?? null;
     el.classList.toggle('is-lost', !won);
     const line = (cls, text) => Object.assign(doc.createElement('div'), { className: cls, textContent: text });
@@ -371,7 +371,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     if (acts) {
       const row = doc.createElement('div');
       row.className = 'g-dg-acts';
-      row.innerHTML = `<button type="button" class="g-btn g-btn-main" data-r="next">${w.nextQ}</button><button type="button" class="g-btn g-btn-soft" data-r="leave">${w.leave}</button>`;
+      row.innerHTML = `${next ? `<button type="button" class="g-btn g-btn-main" data-r="next">${w.nextQ}</button>` : ''}<button type="button" class="g-btn ${next ? 'g-btn-soft' : 'g-btn-main'}" data-r="leave">${w.leave}</button>`;
       parts.push(row);
     }
     el.replaceChildren(...parts);
@@ -551,6 +551,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
       if (r?.ok) g.begun = true;
       if (!r?.ok) { foot(r?.say ?? ''); goBtn.disabled = Boolean(r?.done); return; }
       word = r.word ?? word;
+      g.roundsLeft = Number.isInteger(r.left) ? r.left : null; // the day's rounds after this one (本王考考你: one a day)
       if (Number.isInteger(r.n) && r.n > 0) g.n = r.n - 1; // the day's round (本王考考你: 第二题), not this mount's
     }
     g.word = word ?? g.next ?? pickWord(g.words, Math.random, lastWord);
@@ -652,7 +653,10 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
       setPhase('between');
       tools(false);
       shell?.sound?.('result.lose');
-      result(false, { acts: true });
+      // The day's last round (本王考考你, `left` 0): no 下一题 — the round is closed on the rules (`data.missed`), 收手 alone.
+      const last = g.roundsLeft === 0;
+      if (last && typeof data.missed === 'function') Promise.resolve(data.missed()).catch(() => null);
+      result(false, { acts: true, next: !last });
       return;
     }
     setPhase('over');

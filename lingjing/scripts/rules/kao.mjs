@@ -5,7 +5,9 @@
 //
 // A light offer (its board stands only on an empty stage, as 二十问 does — stage.mjs), after 入门 only
 // (the 灵石 are the story's then), at most the task's `per_day` rounds a calendar day, each counted as it
-// begins (`kao open`: the page's tap, a look's tokens are spent from there), whatever its end. The word
+// begins (`kao open`: the page's tap, a look's tokens are spent from there), whatever its end — one a day since
+// 2026-11-02 (Hanli: 「本王考考你, 直接是玩3局, 1局就可以了」). A round missed with none left is closed (`kao miss`),
+// never resumed for fresh looks. The word
 // is the rules': one of games.json drawguess `met`, open once the save has passed its `after` scene or
 // walks with its `cast` beast, one not yet drawn today, a word never cleared first. The page is the
 // only witness to the picture named (as for every board): its win counted (`task done`) pays a word's
@@ -22,7 +24,7 @@ const metWords = content => (content.games?.games ?? []).find(g => g.id === 'dra
 
 /* Today's rounds (a calendar day, `dayKey`); a save from before 2026-10-26 kept them by `night`. */
 const today = (state, now) => ((state.kao?.day ?? state.kao?.night) === dayKey(now) ? state.kao : null);
-const capOf = t => t.per_day ?? 3;
+const capOf = t => t.per_day ?? 1;
 
 /* Whether she may set him one now: any hour, she beside him on her own line — from the 木牌 too: the
    round wakes her (rules/hergame.mjs) — after 入门, out of any instance, run or fight. */
@@ -58,10 +60,20 @@ export function kaoHosted(content, state, now) {
 }
 /* A round under way today: its win may be counted. */
 export const kaoHere = (content, state, id, now) => kaoTask(content)?.id === id && Boolean(today(state, now)?.open);
-/* For the Look row: rounds left today, and whether one is open. */
+/* For the Look row: rounds left today — a round under way still one of them (with one a day, the tray's 「今日 1 回」
+   and its 继续 stand until it ends) — and whether one is open. */
 export function kaoBrief(content, state, now) {
-  const t = kaoTask(content), k = today(state, now);
-  return t ? { left: Math.max(0, capOf(t) - (k?.n ?? 0)), open: Boolean(k?.open) } : null;
+  const t = kaoTask(content), k = today(state, now), open = Boolean(k?.open);
+  return t ? { left: Math.max(0, capOf(t) - (k?.n ?? 0) + (open ? 1 : 0)), open } : null;
+}
+
+/* `kao miss` — the page's miss shown with no round left today: the round is over, unwon (the word stays drawn). */
+function miss(state, content, ctx) {
+  const k = today(state, ctx.now);
+  if (!k?.open) return refuse('no-round', null);
+  const s = clone(state);
+  s.kao = { ...s.kao, open: null };
+  return { state: s, result: { ok: true, missed: k.open.word, left: Math.max(0, capOf(kaoTask(content)) - k.n) } };
 }
 
 /* `kao open` — the page's tap as a round begins: counted, a game's 体力 spent, the word handed back. */
@@ -104,10 +116,11 @@ export function kaoDone(state, content, ctx, id) {
   return { state: s, result: { ok: true, done: id, word, first, paid, line: null, gives: null } };
 }
 
-/* The verb: `kao open` (the page's), `kao info` (anyone's). */
+/* The verb: `kao open` · `kao miss` (the page's), `kao info` (anyone's). */
 export function kao(state, content, ctx, args = {}) {
   const action = String(args.action ?? 'info');
   if (action === 'open') return open(state, content, ctx, args);
+  if (action === 'miss') return miss(state, content, ctx);
   if (action === 'info') return { state: null, result: { ok: true, kao: kaoUp(content, state, ctx.now) ? kaoBrief(content, state, ctx.now) : null } };
-  return refuse('unknown-action', null, { actions: ['open', 'info'] });
+  return refuse('unknown-action', null, { actions: ['open', 'miss', 'info'] });
 }

@@ -60,8 +60,10 @@ test('the matched beast is the one fought: its door and its settle find the same
   for (let g = 0; g < 400 && st.outcome === 'open'; g += 1) { if (st.whose === 'foe') { foeTurn(st); continue; } act(st, { kind: 'end' }, 'you'); picks.push('end'); }
   const r = duel(started.state, content, ctx, { id, picks: picks.join(',') });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
-  // After a fight the next beast stands (the record's count moved): chosen again, never the one just fought.
-  const next = standFit(content, r.state, NOW);
+  // After a fight the next beast stands (the record's count moved): chosen again, never the one just fought — once the
+  // 妖兽出没 batch it was of has come again (one fight a batch since 2026-11-02).
+  const ev = content.balance.events.yaoshou, again = new Date(NOW.getTime() + (ev.batch === 1 ? ev.every_h * 3600_000 + 1000 : 0));
+  const next = standFit(content, r.state, again);
   assert.ok(standAt(next) && standAt(next).cid !== id.slice(6), JSON.stringify(standAt(next)));
 });
 
