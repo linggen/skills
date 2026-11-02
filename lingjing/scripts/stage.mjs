@@ -274,8 +274,10 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // asleep too: the card shows the 签 and its 宜忌 then, and she reads it only when she is here.
   // 问签 v2 placement (Hanli 2026-11-02 「…放最下面吧…」): the 签 never fills the stage now — it pops up as the page's own
   // modal on the day's first open, and waits unshaken as the tray's 问签 card (rules/aside.mjs); drawn, nothing of it stays.
-  const coins = false;
-  const cards = shown.length ? [...shown] : line || naming || look.scene?.panel || look.offers?.length || look.place?.meet || !coins ? [] : [{ card: 'hexagram' }];
+  // So an empty stage is its own fact now, never read off the coins' card: 本王考考你 stood only where the hexagram
+  // did, and with the coins gone from the stage it never stood at all (11-02, light-yields).
+  const empty = !shown.length && !(line || naming || look.scene?.panel || look.offers?.length || look.place?.meet);
+  const cards = shown.length ? [...shown] : [];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
   // 本王考考你 (rules/kao.mjs) is light: offered only on an empty stage, never over a scene's business. A round left open (the page reloaded
   // mid-round) never stands up by itself: it waits in the tray, 「继续」, for his tap (Hanli 10-27, as 兽潮 waits).
@@ -283,7 +285,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const lightIds = new Set();
   for (const b of (look.tasks ?? []).filter(t => t.light && t.kind === 'board' && t.status !== 'done' && !t.won)) {
     const arcade = String(b.id).startsWith('arcade:');
-    if (((has('hexagram') && !b.open) || (arcade && b.open)) && !has('board', b.id)) { cards.push({ card: 'board', id: b.id }); if (!arcade) lightIds.add(b.id); }
+    if (((empty && !b.open) || (arcade && b.open)) && !has('board', b.id)) { cards.push({ card: 'board', id: b.id }); if (!arcade) lightIds.add(b.id); }
   }
 
   if (!line) {
