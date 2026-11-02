@@ -8,7 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { monthKey, newState, periodKey, periodStart } from '../scripts/state.mjs';
 import { chorePlay } from '../scripts/rules/playpay.mjs';
 import { look, quest, task, progress } from '../scripts/rules.mjs';
-import { dailyPick, phoneReady } from '../scripts/rules/chores.mjs';
+import { dailyPick, fitsDevices, phoneReady, playerDevices } from '../scripts/rules/chores.mjs';
 import { readQuests } from '../scripts/rules/files.mjs';
 
 const content = loadContent();
@@ -184,3 +184,18 @@ function refused(out, code) {
   assert.equal(out.result.refused, code);
   assert.equal(out.state, null);
 }
+
+test('the devices the player has: the host, and the other once a pair row (or its own row) is done', () => {
+  const pair = { id: 'p', period: 'once', device: 'pair', done_at: null };
+  assert.deepEqual(playerDevices([pair], 'mac'), { mac: true, phone: false });
+  assert.deepEqual(playerDevices([pair], 'phone'), { mac: false, phone: true });
+  assert.deepEqual(playerDevices([{ ...pair, done_at: '2026-11-01T00:00:00Z' }], 'phone'), { mac: true, phone: true });
+  assert.deepEqual(playerDevices([{ id: 'x', device: 'mac', done_at: '2026-11-01T00:00:00Z' }], 'phone'), { mac: true, phone: true });
+  const mac = { mac: true, phone: false }, both = { mac: true, phone: true };
+  assert.equal(fitsDevices({ device: 'mac' }, mac), true);
+  assert.equal(fitsDevices({ device: 'phone' }, mac), false);
+  assert.equal(fitsDevices({ device: 'both' }, mac), true);
+  assert.equal(fitsDevices({}, mac), true);
+  assert.equal(fitsDevices({ device: 'pair' }, mac), false);
+  assert.equal(fitsDevices({ device: 'pair' }, both), true);
+});

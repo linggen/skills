@@ -25,7 +25,9 @@ import { dayKey, periodKey, periodStart, pick, seedOf, zeroAt } from '../state.m
 const isOnce = q => q.period === 'once';
 const isPool = q => q.pool === true && !isOnce(q);
 const isFixed = q => !q.pool && !isOnce(q);
-const deviceOf = q => (['mac', 'phone', 'both'].includes(q.device) ? q.device : 'both');
+/* `device`: where a row is done — `mac`, `phone`, `both` (either one) or `pair`
+   (needs both: listed only to a player who has a Mac and a phone). Unknown reads `both`. */
+const deviceOf = q => (['mac', 'phone', 'both', 'pair'].includes(q.device) ? q.device : 'both');
 
 /* Done by the app's own record, within the current period (all time for once). */
 export function questDone(q, now) {
@@ -44,12 +46,25 @@ function mix(text) {
 const dayNumber = now => Math.round(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 864e5);
 // The save's own id: made once, synced with it, so two devices pick alike.
 
-/* A phone is known to be paired when Linggen's own milestone says so, or a
-   phone-only chore was ever seen done. No signal, no phone: a phone chore the
-   player cannot do is never the day's one. */
-export function phoneReady(quests) {
-  return quests.some(q => (q.id === 'linggen-pair' || deviceOf(q) === 'phone') && q.done_at);
+/* Which devices the player has — the ONE device filter (the 开府 list and the
+   day's chores both use it). The host the rules run on is one (LINGJING_HOST:
+   `phone` in the phone bundle, else the Mac); the other is known once a `pair`
+   row is done, or a row only the other device can do was ever seen done. No
+   signal, no other device: a row the player cannot do is never shown. */
+export const hostOf = (env = process.env) => (env.LINGJING_HOST === 'phone' ? 'phone' : 'mac');
+export function playerDevices(quests, host = hostOf()) {
+  const other = host === 'phone' ? 'mac' : 'phone';
+  const seen = quests.some(q => q.done_at && [other, 'pair'].includes(deviceOf(q)));
+  return { mac: host === 'mac' || seen, phone: host === 'phone' || seen };
 }
+/* Doable on the devices the player has (`has`, playerDevices). */
+export function fitsDevices(q, has) {
+  const d = deviceOf(q);
+  if (d === 'pair') return Boolean(has.mac && has.phone);
+  return d === 'both' || Boolean(has[d]);
+}
+/* A phone is known (on the Mac): the old name, kept for its callers. */
+export const phoneReady = quests => playerDevices(quests, 'mac').phone;
 
 /* Still doable this period: not done, nor paid, before today. What happened
    today keeps it in, so doing the pick never re-rolls the day. */
@@ -204,4 +219,4 @@ export function kaifuBrief(state, quests, now, lang, content) {
 export const kaifuReady = (state, quests, now, content) =>
   quests.filter(q => isOnce(q) && questDone(q, now) && !paidNow(state, q, now) && kaifuMay(state, content, quests, q, now));
 
-export { isFixed, isOnce, isPool };
+export { deviceOf, isFixed, isOnce, isPool };
