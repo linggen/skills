@@ -374,6 +374,7 @@ test('周衡\'s 灯谜 pool: every riddle an old one with its source, its own an
       assert.ok(src?.title && /^https:\/\//.test(src.url), `${e.id}: a source with its title and page`);
       assert.equal(e.hints.length, 2, `${e.id}: two hints`);
       assert.ok(e.hints.every((h) => typeof h === 'string' && h.length > 3), `${e.id}: hints written`);
+      for (const a of e.answers) if (lang === 'zh' ? [...a].length > 1 : true) assert.ok(e.hints.every((h) => !h.toLowerCase().includes(a.toLowerCase())), `${e.id}: a hint names the answer ${a}`);
       const r = riddleOf({ [lang]: e }, lang);
       assert.ok(r.q && r.answers.length && r.choices.length === 4, `${e.id}: whole`);
       assert.equal(r.choices.filter((x) => checkRiddle(r, x, lang) === 'right').length, 1, `${e.id}: one right choice`);
@@ -421,4 +422,11 @@ test('周衡\'s 灯谜: the first play (n 0, or no count) always asks 人参; ea
   assert.equal(row.walk, true);
   assert.notEqual(poolPick(shen, POOL, poolPlay(row, 'zh', () => 0)).riddle, 'own');
   assert.ok(fs.readFileSync(new URL('../scripts/games/jinchat.js', import.meta.url), 'utf8').includes('data.pool && g.chat.game?.pool'));
+  // …counted from the clock's minutes where storage is empty: still a quick pick, still no riddle twice running.
+  const big = Math.floor(Date.now() / 60000), t0 = Date.now();
+  for (let k = 0; k < 90; k += 1) poolPick(shen, POOL, poolPlay(row, 'en', () => big + k));
+  assert.ok(Date.now() - t0 < 500, `the walk's picks are quick (${Date.now() - t0} ms)`);
+  for (const lang of LANGS) for (let k = big; k < big + 3 * POOL[lang].length; k += 1) {
+    assert.notEqual(poolPick(shen, POOL, poolPlay(row, lang, () => k)).riddle, poolPick(shen, POOL, poolPlay(row, lang, () => k + 1)).riddle, `${lang} ${k}`);
+  }
 });

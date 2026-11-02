@@ -78,14 +78,14 @@ export function poolPlay(data = {}, lang = 'zh', turn = () => 0) {
   return { n: 0, lang };
 }
 
-/** Round `round` of a pool: its riddles in the seed's order, a round never opening on the one before it ended on. */
+/** Round `round` of a pool: its riddles in the seed's order, a round never opening on the one before it ended on. Two
+    shuffles at most, whatever the round (the 游戏厅's walk counts from the clock's minutes): a swap of the first two never
+    moves the last, so the round before ended on its own shuffle's last. A pool of two keeps one order (a b a b…). */
 export function poolOrder(list, seed = '', lang = 'zh', round = 0) {
-  let last = null, order = [];
-  for (let c = 0; c <= round; c += 1) {
-    order = shuffled(list, rng(`${seed}|${lang}|${c}`));
-    if (last && order.length > 1 && order[0].id === last) [order[0], order[1]] = [order[1], order[0]];
-    last = order.at(-1).id;
-  }
+  const raw = (c) => shuffled(list, rng(`${seed}|${lang}|${c}`));
+  if (list.length <= 2) return raw(0);
+  const order = raw(round);
+  if (round > 0 && order[0].id === raw(round - 1).at(-1).id) [order[0], order[1]] = [order[1], order[0]];
   return order;
 }
 

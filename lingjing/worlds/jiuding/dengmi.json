@@ -1,5 +1,5 @@
 {
- "_about": "灯谜 for 周衡's replays (Hanli 2026-11-02: the story's 人参 riddle won four times). Every riddle here is old and public domain, copied from the source it names (`source`, a key of `sources`; `at` where in it) with the answer that source itself gives — none written for this game. Chinese texts are simplified from the sources' traditional characters; the ——打一物 tail is the board's, as the 红楼梦's own riddles carry one; a riddle whose wordplay works only in traditional glyphs (習 · 圖 · 畢 · 資 · 蘭, the 车中猴 申) is left out. English lines keep the source's spelling, its verse lines joined by ' / '. `answers` are the source's answer and the plain ways a player names it (the page judges, jinchat-games.js checkRiddle); `hints` (two, graded) and `choices` (four, one right) are this game's, not the source's. The story deals it by `deal.pool: 'dengmi'` (tasks/world.json zhishi-shen): the first play — n 0, a fresh save and an errand's first play alike — asks the chat's own 人参 riddle; each win after it (Look's `n`, rules/pool.mjs poolDeal) draws the next of this pool in the board's language, in an order its save's `seed` decides, every one asked once before any comes round again (jinchat-games.js poolPick). The 游戏厅's row walks the same pool in this browser.",
+ "_about": "灯谜 for 周衡's replays (Hanli 2026-11-02: the story's 人参 riddle won four times). Every riddle here is old and public domain, copied from the source it names (`source`, a key of `sources`; `at` where in it) with the answer that source itself gives — none written for this game; the two of 世说 that are a deed, not a verse (`retold`: 曹操's 「活」 on the gate, his 「合」 on the lid), are told in a line of ours, their riddle and answer 世说's. Chinese texts are simplified from the sources' traditional characters; the ——打一物 tail is the board's, as the 红楼梦's own riddles carry one; a riddle whose wordplay works only in traditional glyphs (習 · 圖 · 畢 · 資 · 蘭, the 车中猴 申) is left out. English lines keep the source's spelling, its verse lines joined by ' / '. `answers` are the source's answer and the plain ways a player names it (the page judges, jinchat-games.js checkRiddle); `hints` (two, graded) and `choices` (four, one right) are this game's, not the source's. The story deals it by `deal.pool: 'dengmi'` (tasks/world.json zhishi-shen): the first play — n 0, a fresh save and an errand's first play alike — asks the chat's own 人参 riddle; each win after it (Look's `n`, rules/pool.mjs poolDeal) draws the next of this pool in the board's language, in an order its save's `seed` decides, every one asked once before any comes round again (jinchat-games.js poolPick). The 游戏厅's row walks the same pool in this browser.",
  "sources": {
   "hlm22": {
    "title": "曹雪芹《红楼梦》第二十二回「制灯谜贾政悲谶语」",
@@ -55,8 +55,7 @@
    "q": "猴子身轻站树梢。——打一果名。",
    "answers": [
     "荔枝",
-    "荔枝儿",
-    "立枝"
+    "荔枝儿"
    ],
    "hints": [
     "猴子站上枝头——「立枝」，念快些。",
@@ -233,6 +232,7 @@
    "id": "ss-kuo",
    "source": "ssxy",
    "at": "魏武题门作「活」字，杨修解",
+   "retold": true,
    "q": "新修的相国府门上，题一个「活」字。——打一字。",
    "answers": [
     "阔",
@@ -276,6 +276,7 @@
    "id": "ss-heyikou",
    "source": "ssxy",
    "at": "魏武题「合」，杨修解",
+   "retold": true,
    "q": "一杯酪，盖上题个「合」字，传给众人。——打一句话。",
    "answers": [
     "一人一口",
@@ -961,7 +962,7 @@
    "id": "dm-dou",
    "source": "dmyd",
    "at": "「往」字号，黄莺儿",
-   "q": "体势甚圆全。木装成，铁裹边。周身内外多光旋。齐头并肩。从无怨言。公平到处人争羡。好寻钱。堆金积玉。买卖已多年。——打一物。",
+   "q": "体势甚圆全。木装成，铁裹边。周身内外多光镟。齐头并肩。从无怨言。公平到处人争羡。好寻钱。堆金积玉。买卖已多年。——打一物。",
    "answers": [
     "斗",
     "米斗",
@@ -970,8 +971,8 @@
     "一斗"
    ],
    "hints": [
-    "米店里量米用的。",
-    "装满了，拿一根木条一刮——正好一斗。"
+    "木头箍的，量米用。",
+    "米店里装满了，拿一根木条一刮，量得公平。"
    ],
    "choices": [
     "斗",
@@ -1208,7 +1209,7 @@
    ],
    "hints": [
     "She lives in the sewing basket.",
-    "Her one eye is where the thread goes in."
+    "Her one eye is very small, and her long tail goes through it."
    ],
    "choices": [
     "a needle and thread",
@@ -1584,7 +1585,7 @@
    ],
    "hints": [
     "The Sphinx asked it at Thebes; Oedipus answered.",
-    "A baby crawls, a grown-up walks, an old man leans on a stick."
+    "A baby crawls, a grown-up walks, and the old lean on a stick."
    ],
    "choices": [
     "a man",
