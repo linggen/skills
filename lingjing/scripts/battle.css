@@ -351,7 +351,7 @@
 .bfloat { position: absolute; z-index: 7; transform: translate(-50%, 0); font-family: var(--serif); font-size: 30px; font-weight: 700; pointer-events: none; text-shadow: 0 0 6px rgba(243, 238, 226, 0.9), 0 0 2px rgba(243, 238, 226, 1); animation: leap 1s cubic-bezier(.2, .8, .2, 1) forwards; }
 .bfloat.hurt { color: var(--cinnabar); }
 .bfloat.heal { color: var(--jade); }
-.bfloat.armor { color: var(--lingli); font-size: 26px; letter-spacing: .04em; text-shadow: 0 0 6px rgba(243, 238, 226, 0.95), 0 0 2px #fff, 0 0 14px rgba(45, 76, 108, 0.45); animation-duration: 1.3s; }
+.bfloat.armor { color: var(--lingli); font-size: 26px; margin-top: -26px; letter-spacing: .04em; text-shadow: 0 0 6px rgba(243, 238, 226, 0.95), 0 0 2px #fff, 0 0 14px rgba(45, 76, 108, 0.45); animation-duration: 1.3s; }
 @keyframes leap { 0% { opacity: 0; transform: translate(-50%, 6px) scale(.7); } 25% { opacity: 1; transform: translate(-50%, -6px) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -40px) scale(1); } }
 /* A body driven off: its ghost goes to ink and is gone. */
 .bghost { position: absolute; z-index: 5; margin: 0; pointer-events: none; }
