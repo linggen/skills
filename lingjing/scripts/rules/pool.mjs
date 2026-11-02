@@ -11,6 +11,7 @@
 import { dayKey, seedOf } from '../state.mjs';
 import { placeOf } from './world.mjs';
 import { yiWeightOfEntry } from './fortune.mjs';
+import { onCooldownReset } from './events.mjs';
 
 export const DRAW = 3;
 /* The weights (agent's pick, Hanli delegated 11-02): not played in a day ×2, its 时辰's lean ×3, where he stands ×2,
@@ -80,3 +81,10 @@ export function drawPool(content, state, rows, kinds, now) {
   const drawn = scored.sort((a, b) => b.key - a.key || String(a.e.id).localeCompare(String(b.e.id))).slice(0, DRAW);
   return { shichen: sc, drawn: drawn.map(d => ({ ...d.e, ...(d.played ? { played: true } : {}) })), members: new Set(members.map(e => e.id)) };
 }
+
+/* The 体力卡 (test only) clears the pool's cooldowns too: every game played comes back to the draw at once. */
+onCooldownReset('pool-played', (content, state) => {
+  if (!state.pool_played || !Object.keys(state.pool_played).length) return false;
+  delete state.pool_played;
+  return true;
+});
