@@ -30,8 +30,8 @@ const HOW = {
 };
 
 const WORDS = {
-  zh: { fire: '开 炉', stones: '灵石', have: '有 {n}', max: '最多三样', place: '空', none: '不能喂' },
-  en: { fire: 'Fire it', stones: 'Stones', have: 'have {n}', max: 'three at most', place: 'empty', none: "won't go in" },
+  zh: { fire: '开 炉', stones: '灵石', have: '有 {n}', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里' },
+  en: { fire: 'Fire it', stones: 'Stones', have: 'have {n}', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot' },
 };
 const say = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 
@@ -65,7 +65,7 @@ export function kailuPaneHtml(lang = 'zh', o = {}) {
   const left = potLeft(b, pot), full = pot.length >= max;
   const tile = (i) => {
     const back = b?.held_back?.[i.id];
-    const off = back ? back.say || w.none : left[i.id] == null ? w.none : !(left[i.id] > 0) ? w.none : full ? w.max : !filling ? '' : null;
+    const off = back ? back.say || w.none : left[i.id] == null ? w.none : !(left[i.id] > 0) ? (pot.includes(i.id) ? w.inPot : w.none) : full ? w.max : !filling ? '' : null;
     const shown = left[i.id] != null ? { ...i, n: left[i.id] } : i;
     return tileHtml(shown, ctx, { attr: 'data-ft-add', off, g: null }).replace('<button class="ptile', `<button draggable="${off ? 'false' : 'true'}" class="ptile`);
   };

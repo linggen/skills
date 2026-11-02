@@ -467,6 +467,8 @@ test('the 开炉 page: the 饭桶\'s places, 灵石 and 开炉, and the 储物�
   assert.match(full, /<span class="poff">最多三样<\/span>/);
   assert.doesNotMatch(full, /data-ft-fire disabled/);
   assert.equal(potLeft(brief, pot).chaihuo, 7);
+  const all = kailuPaneHtml('zh', { brief, bag, pot: ['ginseng'], words: WORDS.zh });
+  assert.match(all, /人参<\/span><span class="poff">在饭桶里<\/span>/, 'a stack all in the pot says so');
   assert.match(full, /柴火棍<\/span><b class="pn">×7<\/b><span class="poff">最多三样/, 'a stack shows what is left');
   // While it chews the bag folds away.
   assert.match(kailuPaneHtml('zh', { brief, bag, pot, phase: 'chew', words: WORDS.zh }), /class="psec ftong kailu ftk busy"/);
