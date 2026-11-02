@@ -112,9 +112,9 @@
   },
   "_stamina": "stamina is the pace — design.md § 灵气. Refills by the clock, full in refill_hours; actions cost it; a quest paid refills it (the app's own `qi`, else refill.quest). `shouchao`: a night of 兽潮 (2026-10-20) costs a fight's, taken as the night is counted.",
   "stamina": {
-    "max": 100,
-    "refill_hours": 5,
-    "rest": 100,
+    "max": 150,
+    "refill_hours": 1,
+    "rest": 150,
     "cost": {
       "move": {
         "base": 3,
@@ -135,7 +135,7 @@
       "amend": 5
     },
     "refill": {
-      "quest": 20
+      "quest": 30
     }
   },
   "_her_card": "银月's card grows both ways (Hanli, 2026-09-24: 两个都做). `realm`: with the player's realm, as the player's 气血/灵力 grow — the lift at the highest realm listed at or below theirs (the fight's own realm table, battle.js REALMS, ends at 元婴, so hers does too). `gifts`: the story gives her an ability at the 3rd, 6th and 9th cauldron found, each costing one of her reflections (companion.json secret); `lift` is what it adds to her card in a fight. No relationship score (redesign-v2 § 四). Numbers weighed by the gate (tools/battle-sim.mjs § 银月).",

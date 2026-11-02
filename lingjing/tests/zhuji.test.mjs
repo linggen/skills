@@ -27,7 +27,7 @@ const CH = content.chapters['00-zhuji'];
 const atSnow = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-snow', place: 'chaifang',
   ended: ['00-prologue', '00-waimen'], tier: 'qi', step: 5, progress: 0, traits: ['wood', 'water', 'fire', 'earth', 'metal'],
-  stamina: 100, stamina_at: NOW.toISOString(), bag: { danlu: 1 }, tasks: { 'snow-fantong': { status: 'done' } }, ...extra, // 喂饭桶 played (tests/gu7.test.mjs)
+  stamina: content.rewards.stamina.max, stamina_at: NOW.toISOString(), bag: { danlu: 1 }, tasks: { 'snow-fantong': { status: 'done' } }, ...extra, // 喂饭桶 played (tests/gu7.test.mjs)
 });
 const go = (s, exit, extra = {}) => {
   const r = resolve(earnedFor(content, s, exit), content, ctx, { exit, ...extra });
@@ -37,7 +37,7 @@ const go = (s, exit, extra = {}) => {
 const buttons = s => look(s, content, ctx).scene.buttons.map(b => b.id);
 // 古八's boards (2026-10-28): the 看炉 and the three years'.
 const H08 = ['dabi-kaoshu', 'danfang-kanlu', ...CH.scenes['09-shenshi'].offers.tasks, ...CH.scenes['09-dingfeng'].offers.tasks, ...CH.scenes['09-yanceng'].offers.tasks];
-const full = s => ({ ...s, stamina: 100, stamina_at: NOW.toISOString() });
+const full = s => ({ ...s, stamina: content.rewards.stamina.max, stamina_at: NOW.toISOString() });
 
 test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Foundation\'s gate, every scene reached', () => {
   assert.deepEqual([CH.province, CH.gate, CH.first_scene, CH.coming], ['徐', 1, 'j07-ankle', undefined], '今 · 三 first, then 09-snow (2026-10-05)');
@@ -128,7 +128,7 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'stage', '入秋 waits on 九层圆满, earned');
   assert.equal(resolve(earnedFor(content, s, 'ruqiu'), content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
   const autumn = go(full(s), 'ruqiu').state;
-  assert.equal(100 - autumn.stamina, content.rewards.stamina.cost.step, '入秋: one story step');
+  assert.equal(content.rewards.stamina.max - autumn.stamina, content.rewards.stamina.cost.step, '入秋: one story step');
   assert.equal(autumn.step, 9, '九层');
   assert.equal(autumn.progress, threshold(content, autumn), '圆满: the lake full');
   assert.equal(autumn.scene, '09-qulao');

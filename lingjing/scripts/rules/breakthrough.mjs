@@ -20,6 +20,7 @@ import { itemOf } from './errands.mjs';
 import { strongRoots } from './roots.mjs';
 import { hashOf } from './travel.mjs';
 import { eatPill } from './dandu.mjs';
+import { onCooldownReset } from './events.mjs';
 
 const HOUR = 3600_000;
 export const RULE = content => content.ladder.breakthrough ?? null;
@@ -106,6 +107,13 @@ export function coolingUntil(state, now) {
   const until = state.breakthrough?.until;
   return until && new Date(until) > now ? until : null;
 }
+/* 重置冷却 (rules/events.mjs resetCooldowns): the cauldron open again — the shut hour let go; the tries and the last throw kept. */
+onCooldownReset('breakthrough', (content, state) => {
+  if (!state.breakthrough?.until) return false;
+  const { until, ...rest } = state.breakthrough;
+  state.breakthrough = rest;
+  return true;
+});
 
 /* The die for this try: 0–99, the same for the same save, realm and try. */
 export const rollOf = (state, to) => hashOf(`${seedOf(state)}|breakthrough|${to}|${state.breakthrough?.tries?.[to] ?? 0}`) % 100;

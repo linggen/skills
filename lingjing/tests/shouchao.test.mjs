@@ -32,7 +32,7 @@ function at(target) {
   }
   // The 执事堂's errand (its first night) done — the hourly tide is what these tests ask of (tide-nights tests the errand).
   const s = structuredClone(cache.get(target));
-  return { ...s, quests: { ...(s.quests ?? {}), 'guan-shouchao': { done_at: START.toISOString() } }, place: 'waimen', stamina: 100, stamina_at: day(20, 17).toISOString() };
+  return { ...s, quests: { ...(s.quests ?? {}), 'guan-shouchao': { done_at: START.toISOString() } }, place: 'waimen', stamina: content.rewards.stamina.max, stamina_at: day(20, 17).toISOString() };
 }
 /* A night played to its end: the page's win with its stars, then counted. */
 function night(s, now, stars = 3) {
@@ -73,7 +73,7 @@ test('one night a cooldown: refused inside it in the world\'s words, offered aga
   // Counted at 23:00: half an hour on, past midnight, it is still inside the cooldown (the task's day period never reopens it).
   const one = night(s, day(20, 23, 0));
   assert.ok(one.result.ok, JSON.stringify(one.result));
-  const next = { ...structuredClone(one.state), stamina: 100 };
+  const next = { ...structuredClone(one.state), stamina: content.rewards.stamina.max };
   const morning = day(20, 23, 30);
   assert.equal(shouchaoHosted(content, next, morning)[T.id], undefined, 'not offered half an hour on');
   const shut = win(next, content, ctx(morning), { id: T.id, stars: 3 }).result;
@@ -131,7 +131,7 @@ test('once a cooldown; a night missed costs nothing — the next one is the same
   assert.equal(win(one.state, content, ctx(day(20, 18, 0)), { id: T.id, stars: 3 }).result.refused, 'shut', 'not twice a cooldown');
   assert.ok(offered(one.state, day(20, 18, 0)).wait_min > 0 && offered(one.state, day(20, 18, 0)).shut, 'the row says when it comes again');
   // Three nights missed: nothing taken, nothing lost; the tide is back, on night 2.
-  const back = { ...structuredClone(one.state), stamina: 100 };
+  const back = { ...structuredClone(one.state), stamina: content.rewards.stamina.max };
   const o = offered(back, day(24, 17, 10));
   assert.ok(o);
   assert.equal(o.night, 2);
@@ -150,7 +150,7 @@ test('each night is the next tide row; past them a night a 主力 塔防 kit mak
     seen.push({ lv: o.deal.lv, game: o.game, over: o.deal.over, deal: o.deal });
     const r = night(s, now);
     assert.ok(r.result.ok, JSON.stringify(r.result));
-    s = { ...r.state, stamina: 100 };
+    s = { ...r.state, stamina: content.rewards.stamina.max };
   }
   // 古四: 野猪 and 狰 only — the three rows of them, then made nights (Hanli 10-28: 「最好不要反复」).
   assert.deepEqual(seen.slice(0, 3).map((x) => x.lv), ['shouchao-1', 'shouchao-2', 'shouchao-3']);
@@ -229,7 +229,7 @@ test('the night\'s board waits in the tray at 沉鼎观, titled by the night —
 test('waiting out the cooldown: the row stands past midnight with the time left, and the page draws it in the world\'s words', () => {
   const s = at('wm-yaoyuan'), H = content.balance.events.shouchao.every_h;
   const one = night(s, day(20, 23, 30));
-  const next = { ...structuredClone(one.state), stamina: 100 };
+  const next = { ...structuredClone(one.state), stamina: content.rewards.stamina.max };
   // Just past midnight: still on Look, done, with the wait and the line.
   const row = offered(next, day(21, 0, 10));
   assert.ok(row, 'the row stands past midnight');

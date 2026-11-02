@@ -651,6 +651,8 @@ const EFFECT_BRIEF = {
   fight: e => ({ fight: { ...(e.fight.heal ? { heal: e.fight.heal } : {}), ...(e.fight.mana ? { mana: e.fight.mana } : {}) } }),
   pouch: e => ({ pouch: e.pouch }),
   waive: e => ({ waive: e.waive }),
+  // The test-only 体力卡: the pool full at once, and (`reset`) every cooldown cleared (travel.mjs trade use).
+  stamina: e => ({ stamina: e.stamina, ...(e.reset ? { reset: e.reset } : {}) }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
   def: e => ({ def: e.def }),
   ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),
@@ -709,7 +711,7 @@ function gearBrief(content, state, now = new Date()) {
     // A `wear` goes on her (once she walks with him) or at the abode (人间功课's 护山阵旗, rules/gongke.mjs).
     const slot = e.wear ? (e.wear === her?.id || e.wear === 'abode' ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
     // `free`: a thing the story still needs, which takes no slot of the 储物袋.
-    return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch ? { usable: true } : {}),
+    return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch || e.stamina ? { usable: true } : {}),
       ...(freeSlot(content, state, id) ? { free: true } : {}) };
   });
   return {

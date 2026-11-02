@@ -288,7 +288,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
     ledger.push(D);
     for (let k = 0; k < n && i < walk.length; k++) {
       let left = sit, fought = 0;
-      // 体力 ON, as players will have it (rewards.json stamina; the switch stays off while testing):
+      // 体力 ON, as players will have it (rewards.json stamina; on in play again since 2026-11-02):
       // full after the night, refilled between sittings spread over the waking day.
       qi = k === 0 ? Q.max : Math.min(Q.max, qi + Q.max * (model.waking_h / n) / Q.refill_hours);
       const at = () => day + (k * sit + (sit - left)) / total;

@@ -46,6 +46,14 @@ None.
   - The card in English: the line above, the answer below, read across; no right-to-left 上联/下联; rung names in English — agent's pick (Hanli delegated 11-02).
   - Reverse: the teacher's answer must rhyme with his line (refused, Ling tries again), unless his last word has no rhyme in the table (orange, month) — then the count is enough; 银月's offer may stay crooked — agent's pick (Hanli delegated 11-02).
   - **Live 11-02** (9527, scratch save `duizi-en` seeded at 古七, switched to En, at the 讲堂): the English card, live checks as typed (one word ✓ · not copied ✓); 「wisdom → folly」 graded by Ling through Duizi 1·1·1 「it matches」, +6 spirit stones, Master Chu: “Folly against wisdom. Hm, passable.”; a reverse 「The night's long shadow falls on the town」 answered by Ling 「The dawn's first golden light crowns the hill」 — spaces and apostrophes through `--down` intact, but no rhyme (✗ on the card), which led to the rhyme gate above.
+- 11-02 — **体力 on again, at testing numbers; the test-only 体力卡** (Hanli: 「你把体力也打开加回来吧」 · 「体力给多点, 一次上线玩1个小时, 下线(闭关)1小时, 体力恢复满」 · 「或者商店里加一个体力卡也行, 测试阶段物品, 正式上线后删除了」 · 「让体力卡重置冷却?」; design.md § 体力). The command and the phone bundle no longer default `LINGJING_STAMINA_LIMIT=0`; rewards.json stamina max 150 · refill_hours 1 · rest 150; the page's 体力 chip is back (it was only hidden while `off`). **体力卡** (`tili-ka`, `test: true`): 10 灵石 at 外门库房 · 钱掌柜's stall · the pedlar up the mountain (演武场) · 石坳村's pedlar; used from the bag, the pool full at once (`effect.stamina: "full"`) and every cooldown cleared (`effect.reset: "cooldowns"` → rules/events.mjs `resetCooldowns`, the hook a cooldown owner registers with by `onCooldownReset(name, clear)`: `events` · `pool-rest` · `fantong` · `breakthrough` · `shouchao-clock`). Agent's picks (Hanli delegated 11-02):
+  - `refill.quest` 20 → 30: a quest paid still refills a fifth of the pool — agent's pick (Hanli delegated 11-02).
+  - 丹毒 `cap` kept at 30: now a fifth of the pool's top, not three tenths (milder while we test) — agent's pick (Hanli delegated 11-02).
+  - The 带伤 row is `ceil(max × body.share)`, half the pool at any max — nothing to change; a failed throw now takes 45 (150 × `fail.wound`) — agent's pick (Hanli delegated 11-02).
+  - The drain: refill is 2.5 a minute; play spends 1.5 (boards) · 2 (fights) · 3 (scenes) · 4 (walking) a minute (`model.minutes` × `stamina.cost`), so an hour of ordinary play barely drains the pool and an hour of walking and scenes takes about 60 of 150. At these numbers 体力 hardly binds; the 1 h rest from empty is what Hanli asked for — agent's pick (Hanli delegated 11-02).
+  - The 体力卡's art: the talisman picture (a paper 符 under a seal), no new ink for a thing that goes before launch; no comic icon (the small games draw their glyph) — agent's pick (Hanli delegated 11-02).
+  - Where it is sold: every shop of the 沉鼎 area he can reach (外门库房 is the one open where he stands, 上山路 has none) and 石坳村 — agent's pick (Hanli delegated 11-02).
+  - What the reset clears: the three events' clocks (妖兽出没's batch progress with them, so a fresh batch stands), a pool's rest after its streak, the 饭桶's wait after a feed, the cauldron shut after a failed throw. Kept, as day limits, not cooldowns: an event's paid-in-full count (`n`), the 饭桶's `per_day`, 对对子's three, 问卦's one. The 秘境 rerun was retired 10-28: nothing to clear — agent's pick (Hanli delegated 11-02).
 
 - 11-01 — **格斗 v7: KOF '97 brought in** (Hanli on the Mac: 「好多了. 都改一下吧, 尽量接近拳皇97」; doc/games.md § 格斗 v7; tests/fighter-kof). Each call below is the agent's pick (Hanli delegated 11-01):
   - Run on a double tap toward her, held; it stops when let go (the old fixed dash is gone) — agent's pick (Hanli delegated 11-01).
@@ -231,6 +239,11 @@ None.
 - 10-16 — fights calibrated on the lookahead player (`81c72985`); lookahead win rates ~57–70%, tutorials ~80%.
 - 10-16 — 9527 on linggen `171d18e` (Settings reorg), verified live.
 - 10-15 — 古七 five years played (`14578b8d`), 秘境 reruns (3 h), 饭桶 (1 h), 圆满 pays 灵石, 零层, 密室, AI games 二十问 · 讨价还价 · 断案, 银月 companion lines.
+
+## Before launch: delete
+
+- The 体力卡 (`tili-ka`, items.json `test: true`): its item, its price (balance.json `prices`), the four shelves' `goods` (worlds/jiuding/places/xu.json: zhishi, fangshi, yanwu's visitor, shiao), tests/tili-ka.test.mjs. The `stamina` / `reset` effect and rules/events.mjs `resetCooldowns` may stay (nothing else uses them) or go with it.
+- Review the 体力 numbers back to launch values (rewards.json stamina: max 150 · refill_hours 1 · rest 150 · refill.quest 30 are testing numbers, 11-02; they were 100 · 5 · 100 · 20), then `node tools/balance.mjs` and a hand-played hour.
 
 ## Partly built (【在建】 in design.md)
 

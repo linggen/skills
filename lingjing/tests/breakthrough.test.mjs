@@ -27,12 +27,16 @@ const rule = content.ladder.breakthrough;
 const NOW = new Date('2026-09-28T12:00:00');
 const ctx = { now: NOW, quests: [] };
 const HOUR = 3600_000;
+// The 体力 pool's numbers as the world holds them (rewards.json stamina; 150 for testing since 2026-11-02).
+const MAX = content.rewards.stamina.max;
+const WOUND = Math.ceil(MAX * rule.fail.wound); // the 体力 a failed throw takes
+
 
 /* On the 沉鼎观 cliff (古九, 09-cliff: the Foundation is laid there since 2026-09-30),
    the peak of 练气, full 体力, the four roots — nothing prepared. */
 const atJi = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-cliff', place: 'houshan', ended: ['00-prologue', '00-waimen'],
-  tier: 'qi', step: 9, progress: PEAK, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
+  tier: 'qi', step: 9, progress: PEAK, name: '清玄', traits: ['wood', 'water', 'fire', 'earth'], stamina: MAX, stamina_at: NOW.toISOString(),
   wealth: 300, bag: { lingzhi: 2 }, ...extra,
 });
 /* At 青鼎, the peak of 结丹, 银月 found — the third cauldron's gift is hers. */
@@ -148,8 +152,8 @@ test('the throw fails: hurt, a share of the peak step\'s 修为, the cauldron sh
   assert.equal(b.success, false);
   assert.equal(r.result.took, null);
   const step = content.rewards.stamina.cost.step;
-  assert.deepEqual(b.lost, { stamina: Math.ceil(100 * rule.fail.wound), progress: Math.round(PEAK * rule.fail.progress) });
-  assert.equal(r.state.stamina, 100 - step - b.lost.stamina);
+  assert.deepEqual(b.lost, { stamina: WOUND, progress: Math.round(PEAK * rule.fail.progress) });
+  assert.equal(r.state.stamina, MAX - step - b.lost.stamina);
   assert.equal(r.state.progress, PEAK - b.lost.progress);
   assert.equal(r.state.tier, 'qi', 'the realm is never lost');
   assert.equal(r.state.step, 9, 'nor the step');
@@ -209,7 +213,7 @@ test('the card stands on the stage; the chat offers no throw and Ling is told th
 
 test('the odds card draws: the chance, each row, the price of failing, the throw — and shut, the hour', () => {
   for (const lang of ['zh', 'en']) {
-    const l = look(atQing({ lang, bag: { 'pojing-pill': 1 }, stamina: 30 }), content, ctx);
+    const l = look(atQing({ lang, bag: { 'pojing-pill': 1 }, stamina: Math.floor(MAX / 2) - 1 }), content, ctx);
     const pageCtx = (extra = {}) => ({ look: l, lang, words: WORDS[lang], content: {}, ...extra });
     const html = cardHtml({ card: 'breakthrough', id: 'take' }, pageCtx());
     const o = l.scene.exits.find(e => e.id === 'take').breakthrough.odds;
@@ -217,7 +221,7 @@ test('the odds card draws: the chance, each row, the price of failing, the throw
     assert.match(html, new RegExp(`<b>${o.chance}%</b>`));
     assert.equal((html.match(/<li /g) ?? []).length, 1 + o.parts.length, 'the base and a row a factor');
     const lost = o.risk.progress; // a share of 结丹圆满's 修为 (ladder.json breakthrough.fail)
-    assert.match(html, lang === 'zh' ? new RegExp(`渡劫 · 元婴[\\s\\S]*破境丹[\\s\\S]*带伤 · 体力不足一半[\\s\\S]*−10[\\s\\S]*银月相伴[\\s\\S]*失手：体力 −30 · 修为 −${lost}`) : new RegExp(`Tribulation · Nascent Soul[\\s\\S]*Breach pill[\\s\\S]*Hurt · stamina under half[\\s\\S]*Yinyue beside you[\\s\\S]*If it fails: Stamina −30 · cultivation −${lost}`));
+    assert.match(html, lang === 'zh' ? new RegExp(`渡劫 · 元婴[\\s\\S]*破境丹[\\s\\S]*带伤 · 体力不足一半[\\s\\S]*−10[\\s\\S]*银月相伴[\\s\\S]*失手：体力 −${WOUND} · 修为 −${lost}`) : new RegExp(`Tribulation · Nascent Soul[\\s\\S]*Breach pill[\\s\\S]*Hurt · stamina under half[\\s\\S]*Yinyue beside you[\\s\\S]*If it fails: Stamina −${WOUND} · cultivation −${lost}`));
     assert.match(html, /data-throw="take">/, 'the throw, open');
     const shut = look({ ...atQing({ lang }), breakthrough: { until: new Date(NOW.getTime() + 2 * HOUR).toISOString() } }, content, ctx);
     const shutHtml = cardHtml({ card: 'breakthrough', id: 'take' }, { ...pageCtx(), look: shut });
@@ -246,7 +250,7 @@ test('the page writes what fell down for Ling and Yinyue, and Undo takes the thr
   const first = cli('resolve', '--exit=take');
   assert.equal(first.breakthrough.success, false);
   const after = state();
-  assert.match(after.page_did.at(-1).what, new RegExp(`tried the breakthrough to 筑基小成 on the page's card \\(\\d+% chance\\) and the tribulation threw them back: 体力 −30, −${Math.round(PEAK * content.ladder.breakthrough.fail.progress)} 修为; the cauldron is shut until .*The realm is kept`));
+  assert.match(after.page_did.at(-1).what, new RegExp(`tried the breakthrough to 筑基小成 on the page's card \\(\\d+% chance\\) and the tribulation threw them back: 体力 −${WOUND}, −${Math.round(PEAK * content.ladder.breakthrough.fail.progress)} 修为; the cauldron is shut until .*The realm is kept`));
   assert.equal(cli('undo').ok, true);
   assert.equal(state().progress, PEAK, 'taken back');
   const again = cli('resolve', '--exit=take');

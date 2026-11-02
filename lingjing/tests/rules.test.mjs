@@ -62,6 +62,8 @@ const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 // Today's 机缘 already dealt: for tests that mean "a Look that changes nothing else".
 const DEALT = { day: dayKey(NOW), place: 'none', until: NOW.toISOString(), taken: NOW.toISOString() };
 const start = (lang = 'zh') => newState(content, lang, NOW);
+// The 体力 pool as the world holds it (rewards.json stamina — testing numbers since 2026-11-02): its top, a point's minutes.
+const MAX = content.rewards.stamina.max, POINT_MS = content.rewards.stamina.refill_hours * 3600_000 / MAX;
 /* A save past the prologue's story gate (chapter.json `locks`): the outer
    court's first night, where 灵石, 功课 and the coins open — at 练气一层, as
    if past 古四's 小周天, so 修为 counts too (零层 takes none: state.mjs zeroAt). */
@@ -959,22 +961,22 @@ test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 
 test('灵气 refills by the clock, whole points, never over the top', () => {
   const s = start();
   s.stamina = 40; s.stamina_at = NOW.toISOString();
-  const later = look(s, content, ctx({ now: new Date(NOW.getTime() + 90 * 60_000) }));
-  assert.equal(later.stamina.now, 70); // 1.5 h × 20
+  const later = look(s, content, ctx({ now: new Date(NOW.getTime() + 30 * POINT_MS + POINT_MS / 2) }));
+  assert.equal(later.stamina.now, 70); // thirty whole points by the clock, the half point not yet
   const full = look(s, content, ctx({ now: new Date(NOW.getTime() + 24 * 3600_000) }));
-  assert.equal(full.stamina.now, 100);
+  assert.equal(full.stamina.now, MAX);
   // an old save with no 灵气 wakes full
   delete s.stamina; delete s.stamina_at;
-  assert.equal(look(s, content, ctx()).stamina.now, 100);
+  assert.equal(look(s, content, ctx()).stamina.now, MAX);
 });
 
 test('a checked quest refills 灵气 — the app\'s own amount, capped', () => {
   const s = start();
-  s.stamina = 80; s.stamina_at = NOW.toISOString();
+  s.stamina = MAX - 20; s.stamina_at = NOW.toISOString();
   const quests = [{ id: 'health-workout', app: 'health', period: 'day', due: true, done_at: NOW.toISOString(), reward: 20, stamina: 30 }];
   const out = must(task, s, { action: 'check', id: 'health-workout' }, ctx({ quests }));
-  assert.equal(out.result.stamina, 20); // 80 + 30, capped at 100
-  assert.equal(out.state.stamina, 100);
+  assert.equal(out.result.stamina, 20); // 20 short + 30, capped at the top
+  assert.equal(out.state.stamina, MAX);
 });
 
 test('Make with nothing is the template; a scene in its shape is kept and played; a bad one is refused with its problems', () => {
@@ -989,7 +991,7 @@ test('Make with nothing is the template; a scene in its shape is kept and played
     exits: [{ id: 'land', label: { en: 'Land' }, means: 'lands, steps off', ends: 'made' }] };
   s = must(make, s, { scene: JSON.stringify(second) }).state;
   s = must(make, s, { scene: JSON.stringify(t.template) }).state;
-  assert.equal(s.stamina, 90); // 5 each
+  assert.equal(s.stamina, MAX - 10); // 5 each
   assert.deepEqual(Object.keys(s.made.scenes).sort(), ['made-ferry', 'made-ferry-2']);
   // enter it; the spine keeps its place
   s = must(enter, s, { scene: 'made-ferry' }).state;
@@ -1605,7 +1607,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   let s = toJi();
   // arrive → Ye: the scene moves, and the exit walks the player the one road there
   let r = answer(resolve, s, { exit: 'town' });
-  assert.equal(r.state.stamina, 97, 'chapter 1 is not free: a step costs three');
+  assert.equal(r.state.stamina, MAX - 3, 'chapter 1 is not free: a step costs three');
   assert.equal(r.state.scene, '01-ye'); assert.equal(r.state.place, 'ye');
   assert.deepEqual(r.result.walked.to.id, 'ye'); assert.equal(r.result.waypoint, null); assert.equal(r.result.scene.id, '01-ye');
   // farther off, the road waits: with no road from Zhangnan to Ye the scene is a waypoint
@@ -1733,8 +1735,8 @@ test('past the prologue a story step costs 灵气; an empty 丹田 refuses with 
   s.stamina = 0; s.stamina_at = OCT.toISOString();
   const r = refused(resolve, s, { exit: 'shrine' }, 'no-stamina', octx());
   assert.equal(r.cost, 3);
-  // one point back at 20 an hour = 3 minutes
-  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 3 * 60_000);
+  // one point back by the clock (rewards.json stamina: refill_hours for the whole pool)
+  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + POINT_MS);
   assert.match(r.say, /体力耗尽了。回到现实里歇一歇/);
   const seen = look(s, content, octx());
   assert.equal(seen.stamina.empty, true);
@@ -2085,7 +2087,7 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.deepEqual(home.travelled, { from: 'the-yunmeng-marsh', to: 'jiuding', fresh: false });
     assert.equal(home.scene.id, '00-shiao');
     assert.equal(home.building, undefined, 'a shipped world never builds');
-    assert.equal(home.stamina.now, 90, 'building cost the save it was built from');
+    assert.equal(home.stamina.now, MAX - 10, 'building cost the save it was built from');
     assert.equal(run('travel', '--world=the-yunmeng-marsh').place.id, 'shrine', 'restored where it stood');
     assert.equal(run('travel', '--world=nowhere').refused, 'unknown-world');
     assert.equal(run('build', `--world=${JSON.stringify(bare)}`).refused, 'world-in-play');
@@ -2134,7 +2136,7 @@ test('Amend adds a creature where it haunts, or a place with its roads laid back
   assert.ok(added.paint[0].prompt.startsWith('A white heron taller than a man. Traditional Chinese ink wash'));
   const look = run('look', '--said=hi');
   assert.equal(look.place.has.creature.id, 'heron-king');
-  assert.equal(look.stamina.now, 95, 'the build was paid by the save it was built from; the amend by this one');
+  assert.equal(look.stamina.now, MAX - 5, 'the build was paid by the save it was built from; the amend by this one');
   assert.ok(run('amend', `--creature=${JSON.stringify(beast)}`, '--at=shrine').problems.some(p => /id already taken/.test(p)));
   // as a model hands it over: quotes escaped, bare strings for words, the existing place under `place` meaning where
   const bare = JSON.stringify({ id: 'marsh-ox', name: 'The marsh ox', quote: '泽中有牛，其角如芦。', look: 'An ox with reed-like horns.', root: 'earth' }).replace(/"/g, '\\"');
@@ -3474,7 +3476,7 @@ test('体力 says three hours by name: back to rest (rest_at), full (full_at), a
   assert.equal(empty.full_at, at(q.max));
   assert.equal(empty.returns_at, empty.rest_at, 'resting: the old field is the rest hour');
   const half = look({ ...toOpenWorld(), stamina: 50, stamina_at: NOW.toISOString() }, content, c).stamina;
-  assert.deepEqual([half.rest_at, half.returns_at, half.full_at], [null, null, at(50)]);
+  assert.deepEqual([half.rest_at, half.returns_at, half.full_at], [null, null, at(q.max - 50)]);
   assert.equal(look({ ...toOpenWorld(), stamina: q.max, stamina_at: NOW.toISOString() }, content, c).stamina.full_at, null);
 });
 
@@ -3617,11 +3619,11 @@ test('a hosted game costs a step\'s 体力 when it is counted; with the pool emp
   assert.equal(paid.state.stamina, 100 - cost);
   assert.ok(paid.result.handed[0].paid.wealth > 0);
   // Empty: refused, the win kept — still refused while the pool refills
-  // (rest = max: the player is away until it is whole, 5 h); then counted.
+  // (rest = max: the player is away until it is whole, refill_hours); then counted.
   const empty = { ...won.state, stamina: 0, resting: true, stamina_at: NOW.toISOString() };
   const r = refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', at);
   assert.ok(r.say);
-  refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', ctx({ now: new Date(NOW.getTime() + 90 * 60_000) }));
+  refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', ctx({ now: new Date(NOW.getTime() + content.rewards.stamina.refill_hours * 3600_000 / 2) }));
   const later = ctx({ now: new Date(NOW.getTime() + content.rewards.stamina.refill_hours * 3600_000) });
   assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.handed[0].paid.wealth > 0);
   // A task that is not a hosted game (the story's 二试) stays free.

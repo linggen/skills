@@ -260,14 +260,10 @@ export function rollDay(state, now) {
 
 /* ── Stamina: the pace ── */
 
-/* Whether 体力 limits play. Off while we test (his, 2026-10-01: 「先不要用体力
-   限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): nothing spends
-   it, nothing is refused for it, the pool stays full. Every cost and rule is
-   kept: the switch is thrown where the game is played — rules.mjs run as the
-   command (the page's and Ling's door) sets LINGJING_STAMINA_LIMIT=0 unless
-   it is already set — so the rules' own tests still play the pool as it was.
-   `LINGJING_STAMINA_LIMIT=1` (or `rewards.stamina.limit: false` to force it
-   off anywhere) is the one place to change. */
+/* Whether 体力 limits play. On (Hanli 2026-11-02: 「你把体力也打开加回来吧」; it was off
+   from 2026-10-01 while we tested). `LINGJING_STAMINA_LIMIT=0` turns it off for a run
+   (nothing spends it, nothing is refused for it, the pool reads full), and
+   `rewards.stamina.limit: false` turns it off anywhere — the one place to change. */
 const limitEnv = () => (typeof process === 'undefined' ? undefined : process.env?.LINGJING_STAMINA_LIMIT);
 export const staminaLimited = content => content.rewards?.stamina?.limit !== false && limitEnv() !== '0';
 

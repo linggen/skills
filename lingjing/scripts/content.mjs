@@ -1778,6 +1778,8 @@ function lintItems(content, bad) {
     if (seen.has(item.id)) bad(where, 'duplicate id');
     seen.add(item.id);
     if (!ITEM_KINDS.has(item.kind)) bad(where, `unknown kind ${item.kind}`);
+    // A test-only thing (`test: true`) says in its `_about` that it goes before launch (doc/status.md § Before launch).
+    if (item.test != null && (item.test !== true || !/launch/i.test(item._about ?? ''))) bad(where, 'test is true, and its _about says it goes before launch');
     if (!item.art) bad(where, 'needs art');
     else if (!fs.existsSync(path.join(content.dir, item.art))) bad(where, `art ${item.art} is missing`);
     // A made thing (a 符 from paper) is sold in no province's shop and never bought back;
@@ -1799,8 +1801,12 @@ function lintItems(content, bad) {
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
     // 伤势 and 强化 were cut (redesign-v2 § 四): no `mend`, no `temper`.
-    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card', 'fight', 'waive', 'kailu'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, fight, waive, kailu, or arms (atk, def, ward)');
+    const kinds = ['key', 'progress', 'wear', 'charm', 'core', 'learn', 'pouch', 'card', 'fight', 'waive', 'kailu', 'stamina'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, core, learn, pouch, card, fight, waive, kailu, stamina, or arms (atk, def, ward)');
+    // `stamina: "full"`: the 体力 pool full at once (travel.mjs trade use); `reset: "cooldowns"` rides with it — every
+    // cooldown cleared too (rules/events.mjs resetCooldowns). The test-only 体力卡 (Hanli 2026-11-02).
+    if (e.stamina != null && e.stamina !== 'full') bad(where, 'stamina is full');
+    if (e.reset != null && (e.reset !== 'cooldowns' || e.stamina == null)) bad(where, 'reset is cooldowns, with a stamina effect');
     // `kailu`: the next 开炉 a grade up, the thing spent with it (净炉符, rules/fantong.mjs liftOf).
     if (e.kailu != null && e.kailu !== 'lift') bad(where, 'kailu is lift');
     // `waive`: one cost of that kind not paid, the thing spent instead (饱嗝令, rules/core.mjs spendStamina) — a kind with a cost.

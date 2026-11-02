@@ -23,7 +23,7 @@ const D = content.balance.dandu;
 const player = (extra = {}) => ({
   ...newState(content, 'zh', T0), name: '清玄', traits: ['metal', 'wood', 'water', 'fire', 'earth'], tier: 'qi', step: 5, progress: 10,
   chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'],
-  bag: { 'qi-pill': 6, 'qi-pill-9': 1, 'qi-pill-3': 1 }, stamina: 100, stamina_at: T0.toISOString(), ...extra,
+  bag: { 'qi-pill': 6, 'qi-pill-9': 1, 'qi-pill-3': 1 }, stamina: content.rewards.stamina.max, stamina_at: T0.toISOString(), ...extra,
 });
 const eat = (s, id, now = T0) => {
   const r = trade(s, content, ctx(now), { action: 'use', id });

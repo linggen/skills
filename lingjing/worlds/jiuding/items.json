@@ -1893,6 +1893,30 @@
       "art_source": "The talisman picture until its own ink is painted; the small games show its comic icon (art/items-comic/baoge-ling.webp)."
     },
     {
+      "id": "tili-ka",
+      "kind": "treasure",
+      "test": true,
+      "name": {
+        "zh": "体力卡",
+        "en": "Stamina card"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "一张黄纸卡，盖着执事堂的朱印。撕开即用：体力回满，诸般冷却一并作罢。",
+        "en": "A yellow paper card under the stewards' red seal. Tear it and use it: stamina full, every cooldown let go."
+      },
+      "hint": {
+        "zh": "体力回满，冷却尽消。",
+        "en": "Stamina full, cooldowns gone."
+      },
+      "effect": {
+        "stamina": "full",
+        "reset": "cooldowns"
+      },
+      "_about": "TEST ONLY — delete before launch (doc/status.md § Before launch; Hanli 2026-11-02: 「或者商店里加一个体力卡也行, 测试阶段物品, 正式上线后删除了」 · 「让体力卡重置冷却?」). Used from the bag: the 体力 pool full at once (`stamina: full`) and every cooldown cleared (`reset: cooldowns`, rules/events.mjs resetCooldowns — the day's counts stay). 10 灵石 (balance.json prices) at 外门库房, 钱掌柜's stall, the pedlar up the mountain and 石坳村's pedlar.",
+      "art_source": "The talisman picture (a paper 符 under a seal), no ink of its own: a test thing, gone before launch. No comic icon: the small games draw their glyph (comicArt null)."
+    },
+    {
       "id": "yinyue-lingdang",
       "kind": "artifact",
       "name": {

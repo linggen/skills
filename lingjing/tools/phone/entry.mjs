@@ -43,7 +43,7 @@ const SAVE = /^[a-z0-9][a-z0-9_-]{0,31}$/i;
 process.env.LINGJING_DATA = DATA;
 process.env.LINGJING_QUESTS = QUESTS;
 process.env.LINGJING_TRACK_SINK = '1'; // the play log waits for the app (drainTrack), never in /data
-process.env.LINGJING_STAMINA_LIMIT ??= '0'; // as the command line sets it while the game is tested (rules.mjs)
+// 体力 on, as the command line has it since 2026-11-02 (rules.mjs; Hanli: 「你把体力也打开加回来吧」).
 
 /* `{k: v}` through the command line's own reading (`--k=v`: strings, true / false, empty dropped). */
 const argsOf = (args = {}) => parseArgs(Object.entries(args).filter(([, v]) => v != null).map(([k, v]) => `--${k}=${typeof v === 'object' ? JSON.stringify(v) : v}`));

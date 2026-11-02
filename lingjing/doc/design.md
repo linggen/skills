@@ -272,7 +272,7 @@ overflow pays more.
   typical and a heavy player (`model.players`: minutes, sittings, what each does daily) through 卷一
   day by day and prints days per 回; `--fit` re-derives the 练气 thresholds the quests hold
   (练气 [0, 250, 480, 500, 520, 540, 560, 1150, 1170, 1190]); tests/balance.test.mjs holds the bands.
-  The model plays 体力 on, as players will have it (the switch stays off while we test).
+  The model plays 体力 on, as players will have it (on again since 2026-11-02).
   The model's minutes, reading speed and players are guesses — **balance changes are hand-played
   on the live page**.
 - **修为 stage quest (阶段任务)** (rules/gates.mjs; ladder.json `caps.hui.<回>.gates`): the 回's next
@@ -1245,14 +1245,15 @@ qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling)
 
 ## 体力 and 闭关 【已建】
 
-- **The day is paced by the routine's caps and cooldowns** (§ Pacing); 体力 is kept as a pool (`rewards.json → stamina`): 100, full in five
-  hours; empty rests until **20** (`rest_at`); shown as points, never a clock.
+- **The day is paced by the routine's caps and cooldowns** (§ Pacing); 体力 is kept as a pool (`rewards.json → stamina`): 150, full in one
+  hour (testing numbers since 2026-11-02; launch values to review, doc/status.md § Before launch); empty rests until full (`rest`); shown as points, never a clock.
   Prices: a road 3 (+1 a road, ≤6), a story step 3, a fight 8, a 抉择 3, 驯 3,
   a mini-game 3 (at the count), 论道 3 (at open), make a scene 5, a world 10,
   amend 5; the market, errands, talk and 问签 are free; the prologue's own steps
-  cost nothing. A real-life chore refills its own amount (default 20).
+  cost nothing. A real-life chore refills its own amount (default 30, `refill.quest`).
   Empty: `no-stamina` with the hour; 银月 sends the player to rest.
-- **体力 is OFF while we test** (Hanli, 2026-10-01: 「我是说先不要用体力限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): played through the command (`rules.mjs`, the page's and Ling's door), nothing spends 体力, nothing is refused for it, and the pool reads full — `staminaLimited` in state.mjs, thrown by `LINGJING_STAMINA_LIMIT=0`, which the command sets unless it is already set. Every cost and rule below is kept and still tested; `LINGJING_STAMINA_LIMIT=1` (or removing the default in rules.mjs) brings the pool back as it was. 体力 as a play-time limit is designed later.
+- **体力卡 — test only, deleted before launch** (Hanli 2026-11-02: 「或者商店里加一个体力卡也行, 测试阶段物品, 正式上线后删除了」 · 「让体力卡重置冷却?」): `tili-ka`, `test: true`, 10 灵石 at the 沉鼎 area's shops. Used from the bag: the pool full at once (`effect.stamina: "full"`) and every cooldown cleared (`effect.reset: "cooldowns"`). The reset is one hook, rules/events.mjs `resetCooldowns`: each cooldown's owner registers how its clock is cleared (`onCooldownReset(name, clear)` — the events, a pool's rest, the 饭桶, the cauldron); the day's counts (an event's `n`, the 饭桶's `per_day`, 对对子's three, 问卦's one) are day limits and stay.
+- **体力 is ON again since 2026-11-02** (Hanli: 「你把体力也打开加回来吧」; `LINGJING_STAMINA_LIMIT=0` still turns it off for a run). Testing numbers (Hanli 11-02: 「体力给多点, 一次上线玩1个小时, 下线(闭关)1小时, 体力恢复满」): max 150, full again in 1 hour, a spent pool rests until full (`rest` 150). Was: **体力 is OFF while we test** (Hanli, 2026-10-01: 「我是说先不要用体力限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): played through the command (`rules.mjs`, the page's and Ling's door), nothing spends 体力, nothing is refused for it, and the pool reads full — `staminaLimited` in state.mjs, thrown by `LINGJING_STAMINA_LIMIT=0`, which the command sets unless it is already set. Every cost and rule below is kept and still tested; `LINGJING_STAMINA_LIMIT=1` (or removing the default in rules.mjs) brings the pool back as it was. 体力 as a play-time limit is designed later.
 - **主线赶路不扣体力** (Hanli, 2026-10-01: 「可以，主线赶路不扣体力」): a trip toward
   the place the goal line names (Look's `waypoint`) is free — the place itself or
   one on a shortest road to it (rules/errands.mjs `onStoryRoad`); 古七–古八's

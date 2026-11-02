@@ -30,7 +30,7 @@ test('the switch: LINGJING_STAMINA_LIMIT=0 or rewards.stamina.limit false turns 
   }
 });
 
-test('played through the command, 体力 is off by default: Look shows a full pool that is never empty', () => {
+test('played through the command, 体力 is on by default (Hanli 11-02): Look shows the pool, not off', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-stamina-'));
   const rules = path.resolve(import.meta.dirname, '../scripts/rules.mjs');
   const env = { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() };
@@ -38,9 +38,9 @@ test('played through the command, 体力 is off by default: Look shows a full po
   try {
     const out = spawnSync(process.execPath, [rules, 'look'], { env, encoding: 'utf8' });
     const look = JSON.parse(out.stdout.trim().split('\n').pop());
-    assert.equal(look.stamina?.now, look.stamina?.max);
+    assert.equal(look.stamina?.now, look.stamina?.max, 'a new save starts full');
     assert.equal(look.stamina?.empty, false);
-    assert.equal(look.stamina?.off, true, 'off: Look says so, and the page shows no pool (Hanli, 2026-10-05)');
+    assert.equal(look.stamina?.off, undefined, 'on: the page shows the pool');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

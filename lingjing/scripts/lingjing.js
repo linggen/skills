@@ -743,7 +743,7 @@ function reloadForEngine(r) {
 /// a player decides whether there is another fight in the day.
 function qi() {
   const q = look?.stamina;
-  // 体力 off (state.mjs staminaLimited — off while we test): no pool on the strip at all.
+  // 体力 off (state.mjs staminaLimited — LINGJING_STAMINA_LIMIT=0 for a run): no pool on the strip at all.
   if (!q || !q.max || q.off) return null;
   const { p, st } = qiState(q.now, q.max, Boolean(q.empty));
   // When the player can go on again: the pool full (rest = max — his,

@@ -609,8 +609,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       process.exit(0);
     }
     if (save != null) process.env.LINGJING_SAVE = String(save);
-    // 体力 does not limit play while we test (his, 2026-10-01; state.mjs staminaLimited).
-    process.env.LINGJING_STAMINA_LIMIT ??= '0';
+    // 体力 limits play again (Hanli 2026-11-02: 「你把体力也打开加回来吧」); LINGJING_STAMINA_LIMIT=0 still turns it off
+    // for a test run (state.mjs staminaLimited).
     // Lang writes Linggen's language before the verb runs (rules/language.mjs),
     // so its answer is already in the new one.
     const chose = verb === 'lang' ? await chooseLang(String(args.lang ?? '')) : null;
