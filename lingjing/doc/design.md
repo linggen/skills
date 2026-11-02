@@ -1272,7 +1272,7 @@ qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling)
   chip reads 「今日 上签 · 修为 ×1.2 · 宜斗法」. The 签筒 stands with 银月 asleep or away too.
 - **Rewards.** A day 修为 speed by the grade — 上签 ×1.2, 中签 ×1.0, 下签 ×1.0, never below 1 — in `amountsOf` beside
   the roots' speed, so `paysOf` and every card's shown pay already hold it. One **宜 kind** named by the 签
-  (`kinds[(n − 1) mod 4]`): 斗法 (卡牌 · 降妖: mechanic 斗法, table haunt) · 守御 (塔防 · 兽潮: mechanic 塔防/结印, 兽潮's
+  (v1: `kinds[(n − 1) mod 4]`; v2: the 签's own `kind`, by meaning): 斗法 (卡牌 · 降妖: mechanic 斗法, table haunt) · 守御 (塔防 · 兽潮: mechanic 塔防/结印, 兽潮's
   `play: tide`) · 文 (灯谜 · 棋局 · 解谜: mechanic 对话/棋牌/解谜/你画我猜) · 武 (格斗 · 切磋: mechanic 格斗/投掷, 切磋's
   `play: qiecuo`); that kind's 修为 ×1.3 today. **The 宜 hook** for the 时辰 pool: `yiWeightOfEntry(content, state, now, row)` on a pool row (a board by its
   mechanic, 对对子 · 银月出题 as 文), over `yiWeightOf(content, state, now, game)` → `qian.json yi.weight` (2), else 1.
@@ -1302,6 +1302,51 @@ qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling)
 - **Phone:** the bundle carries all of it (deterministic, no fs); the Flutter app draws no 签 card yet, so the phone
   pays the day's speed and 宜 but shows nothing of the 签 until it does; and there is no phone path for
   her reading (hersay.js has no 签 moment, so `Lingjing.her` gives none). Tarot is v2.
+
+## 问签 v2 — one full reading, 替人求签, a share image 【已建】 (Hanli, 2026-11-02: 「可以, 按你说的做」)
+
+Over v1 (below). rules/fortune.mjs · qian.json · qian-reading.js · qian-facts.js · qian-share.js · tests/qian2.test.mjs.
+
+- **No 「想问什么」.** The ask picker and the free line are gone; one shake gives one complete card. An old save's
+  `ask` / `ask_text` stay in its draw, read by nothing.
+- **The card:** 第N签 · grade; the 签诗 (verbatim, inked in); the **白话签解** (`jie`, marked 「白话签解（灵境自译）」 —
+  the game's own plain rendering of what the verse says, written once per 签 into qian.json, all 100 in zh; the English
+  is the v1 `gloss`); **五项运势** (事业 · 感情 · 财运 · 出行 · 健康, one line each); today's 黄历 宜忌 — **no 宜 row on a day
+  without 宜** (and no 忌 row on a day without 忌; never 「无大事」); the 修为 and 宜 kind (his card only); 银月's one line.
+- **五项** are rules-side (fortune.mjs `aspectsOf`): each 签 holds one tone per 项 (`luck`: up · even · slow, read from
+  the verse), the line is `aspects.list[i].lines[tone][(n + i) mod 3]`, then today's 黄历 adds the first act the 项 reads —
+  出行 「今日忌远行」/「今日宜出行」, 财运 「今日忌出财」…, 事业 宜办事 · 谋划 / 忌上任 · 诉讼, 感情 宜会亲友 · 议婚 · 宴饮 /
+  忌结亲. **财运 speaks 宜/忌 only, never a decision. 健康 stays light** (宜早睡 · 少熬夜 · 多喝水) and reads no 黄历 act.
+- **The 宜 kind follows the 签's meaning**, not `(n − 1) mod 4`: each 签 is tagged once (`kind`) by the rule in qian.json
+  `_about` — 斗法 a match of wits, a rival, a trap or empty words; 守御 waiting, keeping still, holding the old; 文 learning
+  and 功名, an upright heart, a patron who sees hidden worth, family and song; 武 rising by effort, the Dragon Gate, the road,
+  the horse and the sword; the last line (the counsel) decides a tie. 守御 31 · 文 25 · 斗法 22 · 武 22.
+- **银月's line**, personal: his 生肖 against today, landing on one of the five (qian-facts.js; guide/qian.md § 银月 · 解签).
+  The ask goes first, then the facts, under the engine's 300-character moment cap. She is told to use no name and nothing
+  of the save — the line is printed on the share image. Her line is caught from the chat (the moment's own path) and kept
+  on the card for the day in this browser, never in the save. Not here, or no answer in 30 s: the card stands without it.
+- **替人求签** (`divine action: friend`, the page's alone — Ling and 银月 are refused): a 称呼 (required, ≤12) and an
+  optional birthday (its 生肖 · 星座 read in the rules, the date let go — never in the save, never in the log); that
+  person's 签 is seeded by 称呼 + day + save, the same all day; at most 3 people a day (`friends.per_day`; the same person
+  again takes no second place; the count keeps a hash, not the name); never 修为, never the 宜, his own 签 untouched. Kept
+  friends (称呼 and signs, newest first, at most 12) re-ask in one tap and can be deleted (`forget_friend`); 「不保存」 keeps
+  nothing. Her line talks about the friend (「你那位朋友属牛……」).
+- **The share image** (qian-share.js, a canvas page-side, 1080 wide): number and grade, the 签诗 as four ink columns right
+  to left, the 签解, the five, today's 宜忌, her line, the date, 「灵境 · linggen.dev」; a friend's card adds 「替 X 求签」.
+  `shareLines` reads only those fields: never a birthday, a sign, his 名字 or his 修为 (tested on the drawn text). Fixed 宣纸
+  colours, not the theme's. Fonts: the game ships no CJK web font (its --serif is a system stack), so there is no subset to
+  miss a glyph — the first of Noto Serif SC / Songti SC / STSong the browser has, else serif.
+  分享 (`navigator.share` with the PNG, shown only where `canShare({files})`), 拷贝图片 (an image/png ClipboardItem),
+  保存图片 (a download); each also shows the picture under the buttons, so a shell that saves nothing still shows it.
+  The PNG is made before any tap (Safari shares and copies only inside the tap).
+- **No 出处 link** (Hanli 11-02: it opened the temple's page mid-game and read as a bug). The 签谱 ends with one plain line,
+  「签文出自观音灵签（据新加坡宝聚寺所传本）」; the per-签 URLs stay in qian.json as the record. The share image has no source line.
+- **Phone:** the bundle carries it all, and `Lingjing.her('qian' | 'qian_friend', look, {result})` gives her facts
+  (qian-facts.js) for the phone's own Yinyue; the Flutter card is linggen-mobile's.
+- **Agent's picks (Hanli delegated 11-02):** the 五项 as three tones × three lines per 项 rather than 500 free phrases (the
+  verse's meaning in the tone, the variety in the line) · the English 签解 is the v1 gloss · a 忌 row hidden too on a day
+  without 忌 · the 宜 kind's tie-break by the last line · 12 kept friends · the friend's 称呼 kept out of the log even when
+  kept · her line kept per browser, not in the save · a 签 drawn before v2 shipped may read another 宜 kind now (its tag).
 
 ## 体力 and 闭关 【已建】
 
