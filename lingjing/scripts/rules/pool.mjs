@@ -53,7 +53,8 @@ function coin(key) {
 /* The 时辰's draw over the pool's members (tray entries whose kind declares `pool`): each member's weight, the
    members cooling out, then the three with the highest seeded keys (Efraimidis–Spirakis: u^(1/w)) — so a member
    going out of the pool never reshuffles the others. A member played in this 时辰 still holds its place in the draw
-   (it is `played`, out of the row) — else the row would deal another in its stead. */
+   (it is `played`, out of the row) — else the row would deal another in its stead. A member whose round is still
+   open (`resume`) is not out: drawn, it stays in the row unplayed; begun in an earlier 时辰, it is `open`, shown beside. */
 export function drawPool(content, state, rows, kinds, now) {
   const sc = shichenOf(now), here = placeOf(content, state.place), plate = here?.plate?.id ?? null;
   const pools = new Map(kinds.filter(k => k.pool).map(k => [k.kind, k.pool]));
@@ -66,9 +67,11 @@ export function drawPool(content, state, rows, kinds, now) {
   const key = (id, w) => coin(`${seedOf(state)}|${sc.day}|${sc.i}|${id}`) ** (1 / w);
   const scored = members.flatMap((e) => {
     const p = pools.get(e.kind).row(e), at = playedAt(state, e.id);
-    const played = Boolean(at && at >= sc.start);
-    if (played) return [{ e, played, key: key(e.id, MAX) }];
-    // Played before this 时辰 and still inside its cooldown (as the 时辰 began): out of the pool.
+    // A round under way (`resume`: 本王考考你's word, 对对子's couplet) is played but not over: it holds its slot and
+    // stays in the row, 继续, until it ends — a reload mid-round never loses it (Hanli 11-02).
+    if (at && at >= sc.start) return [{ e, played: !e.resume, key: key(e.id, MAX) }];
+    // Played before this 时辰 and still inside its cooldown (as the 时辰 began): out of the pool — but a round begun
+    // then and still open stands beside the draw (`open`), never dealt into it.
     if (at && sc.start - at < p.cooldown_min * 60_000) return [];
     const places = e.places ?? null;
     const w = (!at || sc.start - at > LATELY_MS ? WEIGHT.fresh : 1) * ((p.when ?? []).includes(BRANCH[sc.i]) ? WEIGHT.lean : 1)
@@ -79,7 +82,9 @@ export function drawPool(content, state, rows, kinds, now) {
   const inRows = new Set(members.map(e => e.id));
   for (const [id, t] of Object.entries(state.pool_played ?? {})) if (!inRows.has(id) && new Date(t) >= sc.start) scored.push({ e: { id, gone: true }, played: true, key: key(id, MAX) });
   const drawn = scored.sort((a, b) => b.key - a.key || String(a.e.id).localeCompare(String(b.e.id))).slice(0, DRAW);
-  return { shichen: sc, drawn: drawn.map(d => ({ ...d.e, ...(d.played ? { played: true } : {}) })), members: new Set(members.map(e => e.id)) };
+  const inDraw = new Set(drawn.map(d => d.e.id));
+  const open = new Set(members.filter(e => e.resume && !inDraw.has(e.id)).map(e => e.id));
+  return { shichen: sc, drawn: drawn.map(d => ({ ...d.e, ...(d.played ? { played: true } : {}) })), members: new Set(members.map(e => e.id)), open };
 }
 
 /* The 体力卡 (test only) clears the pool's cooldowns too: every game played comes back to the draw at once. */

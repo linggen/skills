@@ -53,7 +53,9 @@ const lockedIn = (view, system) => (view?.locked ?? []).includes(system);
 /* 对对子's teachers whose scene is behind him: each one's brief as it reads standing at his place (rules/duizi.mjs). */
 const duiziTray = (content, state, now) => (content.aigames?.duizi?.teachers ?? []).flatMap((t) => {
   const b = duiziBrief(content, { ...state, place: t.at }, now);
-  return b?.rounds_left > 0 ? [{ id: 'duizi', who: b.teacher, left: { unit: 'couplets', n: b.rounds_left }, places: [t.at], opens: 'duizi', stage: 'duizi' }] : [];
+  // A couplet set and not yet graded (or skipped) is a round under way: it stands, 继续, even as the day's last.
+  const open = Boolean(b?.round && !b.round.grades && !b.round.skipped);
+  return b?.rounds_left > 0 || open ? [{ id: 'duizi', who: b.teacher, left: { unit: 'couplets', n: b.rounds_left }, places: [t.at], opens: 'duizi', stage: 'duizi', ...(open ? { resume: true } : {}) }] : [];
 }).slice(0, 1);
 /* 小游戏池's rows for 银月's games (rules/pool.mjs), each with its 时辰's lean. 本王考考你 rests a day (one a day).
    对对子 rests one 时辰 (Hanli 2026-11-02: three 联 a day, one a sitting): played, it is out of the row for the rest

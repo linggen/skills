@@ -18,7 +18,9 @@ import { itemOf } from '../scripts/rules/errands.mjs';
 const content = everyJuan(loadContent());
 const NOW = new Date('2026-09-25T12:00:00');
 const ctx = () => ({ now: NOW, quests: [] });
-const base = { ...newState(content, 'zh', NOW), scene: null, chapter: '02-yan', ended: ['00-prologue', '01-ji'], name: '清玄', traits: ['wood', 'water'], place: 'pengcheng', wealth: 5000 };
+// A fixed seed: a new save's is its creation instant, and NOW is wall-clock local time — under another time zone it is
+// another instant, another seed, and the fights' 1-in-3 符 coin (arms.mjs drop) falls otherwise.
+const base = { ...newState(content, 'zh', NOW), seed: 'pouch', scene: null, chapter: '02-yan', ended: ['00-prologue', '01-ji'], name: '清玄', traits: ['wood', 'water'], place: 'pengcheng', wealth: 5000 };
 // Things that each take a slot: no key, no bell, no pouch, none the story needs.
 const plain = content.items.items.filter(i => !freeSlot(content, base, i.id) && i.kind !== 'pouch' && !i.made).map(i => i.id);
 const fill = (n, extra = {}, skip = []) => Object.fromEntries([...plain.filter(id => !skip.includes(id)).slice(0, n).map(id => [id, 1]), ...Object.entries(extra)]);
@@ -46,6 +48,7 @@ test('full: a fight\'s drop and a grant wait at the door for his choice, said in
   const creature = content.creatures.creatures.find(c => c.drops);
   const s = at(fill(24, {}, [creature.drops, 'talisman']));
   const got = drop(content, s, creature, NOW);
+  assert.ok(!got.some(g => g.id === 'talisman'), 'this save\'s coin leaves no 符 off the fight (the seed is pinned above)');
   const mine = got.find(g => g.id === creature.drops);
   assert.equal(mine.offered, true);
   assert.equal(s.bag[creature.drops], undefined, 'nothing new in the pouch');

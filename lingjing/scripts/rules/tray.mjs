@@ -49,9 +49,9 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
       const to = state.aside ? null : (places ?? []).filter(id => id !== state.place).map(way).find(Boolean);
       return [to ? { ...row, seg: 'go', act: 'go', where: to, go: to } : { ...row, seg: 'notice', ...(where ? { where } : {}) }];
     });
-  // 小游戏池 (rules/pool.mjs): of the pool's members only the 时辰's three stand, until played.
-  const { drawn, members, shichen } = drawPool(content, state, rows, PLAY_KINDS, now);
-  const shown = new Set(drawn.filter(d => !d.played).map(d => d.id));
+  // 小游戏池 (rules/pool.mjs): of the pool's members only the 时辰's three stand, until played — and a round still open.
+  const { drawn, members, shichen, open } = drawPool(content, state, rows, PLAY_KINDS, now);
+  const shown = new Set([...drawn.filter(d => !d.played).map(d => d.id), ...open]);
   const kept = rows.filter(r => !members.has(r.id) || shown.has(r.id));
   const sorted = kept.map((r, i) => [r, i]).sort((a, b) => RANK[a[0].seg] - RANK[b[0].seg] || a[1] - b[1]).map(([r]) => r);
   return { rows: sorted, hour: { i: shichen.i, ends_min: Math.max(1, Math.ceil((shichen.end - now) / 60_000)), drawn: drawn.length, played: drawn.filter(d => d.played).length } };

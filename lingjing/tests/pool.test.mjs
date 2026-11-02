@@ -140,3 +140,36 @@ test('the page: the 时辰 chip in the footer; 体力 spent, one 闭关 card; al
   assert.doesNotMatch(trayHtml({ words: w, lang: 'zh', look: { tasks: [], tray_hour: { i: 7, ends_min: 47, drawn: 3, played: 2 } } }), /都玩过了/);
   assert.match(trayHourChipHtml({ words: WORDS.en, look: { tray_hour: { i: 7, ends_min: 47 } } }), /Monkey hour.*Goat hour · new three in 47 min/);
 });
+
+test('a round under way stays in the row, 继续, through a reload and past its 时辰 — until it ends (本王考考你, 对对子)', () => {
+  const s = at('waimen'), ctx = now => ({ now, quests: [] });
+  const kaoOf = (st, now) => (lookAt(st, now).tray ?? []).find(e => e.id === 'kao');
+  const begun = VERBS.kao(s, content, ctx(AT(19, 20)), { action: 'open' });
+  assert.equal(begun.result.ok, true, JSON.stringify(begun.result).slice(0, 200));
+  assert.ok(begun.state.pool_played?.kao, 'stamped as played');
+  // A reload in the same 时辰: still there, resumable, holding its slot (not counted played).
+  const same = kaoOf(begun.state, AT(19, 50));
+  assert.equal(same?.resume, true, '继续 after a reload');
+  assert.equal(same.act, 'open');
+  const h = lookAt(begun.state, AT(19, 50)).tray_hour;
+  assert.equal(h.played, 0, 'an open round is not played yet');
+  // The next 时辰, inside its cooldown: still there while the round is open.
+  assert.equal(kaoOf(begun.state, AT(21, 10))?.resume, true, 'past its 时辰');
+  // The round ends (missed): played, out of the row.
+  const over = VERBS.kao(begun.state, content, ctx(AT(19, 55)), { action: 'miss' });
+  assert.equal(over.result.ok, true);
+  assert.equal(kaoOf(over.state, AT(19, 58)), undefined, 'ended: out of the row');
+  assert.equal(lookAt(over.state, AT(19, 58)).tray_hour.played, 1);
+  // 对对子: a couplet set and not yet answered is a round under way too.
+  const t = content.aigames.duizi.teachers[0];
+  const d0 = { ...s, place: t.at, done_scenes: [...s.done_scenes, t.after] };
+  const set = VERBS.duizi(d0, content, ctx(AT(13, 20)), { action: 'open' });
+  assert.equal(set.result.ok, true, JSON.stringify(set.result).slice(0, 200));
+  assert.ok(set.state.pool_played?.duizi);
+  const duiziOf = (st, now) => (lookAt(st, now).tray ?? []).find(e => e.id === 'duizi');
+  assert.equal(duiziOf(set.state, AT(14, 30))?.resume, true, '对对子 继续 after a reload');
+  assert.equal(duiziOf(set.state, AT(15, 10))?.resume, true, '对对子 past its 时辰');
+  const skipped = VERBS.duizi(set.state, content, ctx(AT(14, 40)), { action: 'skip' });
+  assert.equal(skipped.result.ok, true, JSON.stringify(skipped.result).slice(0, 200));
+  assert.equal(duiziOf(skipped.state, AT(14, 50)), undefined, 'skipped: out of the row');
+});
