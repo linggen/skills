@@ -563,6 +563,18 @@ function refreshSoon(ms = 400) {
 }
 let refreshTimer = null;
 
+/* A Look that did not come back is asked again by itself (2026-11-02): the
+   page used to sit on 「灵境还没醒来」 until a reload when its first Look
+   waited out the data channel. 2, 4, 8, then every 15 s — and at once when
+   the channel opens or the page comes back into view. */
+let lookMisses = 0;
+function lookAgainSoon() {
+  lookMisses += 1;
+  refreshSoon(Math.min(2000 * 2 ** (lookMisses - 1), 15000));
+}
+window.addEventListener('linggen-channel', (e) => { if (lookMisses && e.detail?.state === 'open') refreshSoon(0); });
+document.addEventListener('visibilitychange', () => { if (lookMisses && !document.hidden) refreshSoon(0); });
+
 /* 遇 in the mist (Hanli, 2026-09-24; was his 2026-09-22 veil card): an
    arrival with something veiled on the road plays a short ink mist over the
    stage, then the page reveals it itself — Meet `reveal`, a fact of the
@@ -688,9 +700,13 @@ async function readOnce() {
     contentStale = false;
   } catch (e) {
     console.warn('[lingjing] look', e);
-    if (!authored) $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh.offline)} · ${esc(WORDS.en.offline)}</div>`;
+    // Not reached yet (the data channel is still coming up): say so, and look again.
+    const word = e?.name === 'NotConnectedError' ? 'connecting' : 'offline';
+    if (!authored) $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh[word])} · ${esc(WORDS.en[word])}</div>`;
+    lookAgainSoon();
     return;
   }
+  lookMisses = 0;
   // The stage came back with Look — what Ling showed, what the scene was
   // authored with, what the place holds. The optimistic copy has served its
   // purpose; a board he opened himself stays until he walks on.

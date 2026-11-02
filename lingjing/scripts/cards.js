@@ -49,7 +49,7 @@ export const WORDS = {
     questTitle: '月下之约', questSteps: { bell: '先寻一只银月铃。', water: '带铃到有水照月处。', ring: '此处水面有月——摇铃。', riddle: '她在等你答。' },
     questAt: '坊市在{name}', questWater: '最近的水在{name}', ringBell: '摇一摇铃', sayRing: '摇一摇铃', sayQuest: '说说月下之约',
     gateTitle: '下一鼎', opens: '开启于', gateNeed: '入{to}，须{step} · {xw} {n}', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
-    loading: '正在展开……', offline: '灵境还没醒来。',
+    loading: '正在展开……', offline: '灵境还没醒来。', connecting: '正在连通灵境……',
     elite: '精英',
     // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
     tamesFor: '收服{names}所需',
@@ -115,7 +115,7 @@ export const WORDS = {
     fateSet: 'Set my birth sign', fateRandom: 'Random', fateSkip: 'Not now', fateBad: 'That day is not in the calendar — look again.', fateMark: 'sign', fated: 'your sign agrees',
     why: { 'no-qi': 'not enough 灵力', 'art-used': 'once a fight', 'art-needs-tier': 'realm too low', 'art-no-sword': 'no weapon in hand', 'charm-used': 'one a fight', 'no-charm': 'none in the bag', 'fight-over': 'decided', 'not-your-root': 'not your root', 'already-guard': 'already guarding', 'already-focus': 'already gathered' },
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
-    loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
+    loading: 'Unfolding…', offline: 'Lingjing has not woken yet.', connecting: 'Reaching Lingjing…',
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
     replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.',
