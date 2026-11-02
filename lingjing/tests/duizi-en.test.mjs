@@ -10,6 +10,7 @@ import { forLing, look, playTo, VERBS } from '../scripts/rules.mjs';
 import { checkPrompt, checkRhyme, guessSyllables, rhymeOf, soundsOf, syllablesOf, wordsOf } from '../scripts/rhyme.js';
 import { markFor } from '../scripts/rules/duizi.mjs';
 import { cardHtml, WORDS } from '../scripts/cards.js';
+import { PLAY_KINDS } from '../scripts/rules/aside.mjs';
 import { duiziFormOf, duiziTableOf } from '../scripts/aigames-cards.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
@@ -301,8 +302,21 @@ test('银月 in English: her note in English, her answer checked by the English 
   assert.equal(o.s.wealth, s.wealth);
 });
 
+/* The row deals its 时辰's three one at a time (rules/tray.mjs): 对对子 drawn behind another stands once the ones before it
+   are played — as he would, playing what the row shows. The save with those played (at `t`), else as it was. */
+const upAt = (s, t) => {
+  for (let i = 0; i < 3; i++) {
+    const tray = look(s, content, { now: t, quests: [] }).tray ?? [];
+    if (tray.some(e => e.id === 'duizi' && e.act === 'open')) return s;
+    const ahead = tray.filter(e => e.id !== 'duizi' && PLAY_KINDS.find(k => k.kind === e.kind)?.pool?.row(e));
+    if (!ahead.length) return s;
+    s = { ...s, pool_played: { ...(s.pool_played ?? {}), ...Object.fromEntries(ahead.map(e => [e.id, t.toISOString()])) } };
+  }
+  return s;
+};
+
 test('the English card: across, English words, the input in English; its checks by rhyme.js, waiting for the table', () => {
-  const offered = cardHtml({ card: 'duizi' }, { look: look(base, content, ctx()), words: WORDS.en, lang: 'en' });
+  const offered = cardHtml({ card: 'duizi' }, { look: look(upAt(base, NOW), content, ctx()), words: WORDS.en, lang: 'en' });
   assert.match(offered, /Opposites · good 0\/3/);
   assert.match(offered, /Rhyming pairs \(not yet\)/);
   assert.match(offered, /Ask for a line/);

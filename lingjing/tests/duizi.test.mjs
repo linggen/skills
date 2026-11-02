@@ -289,6 +289,18 @@ const at = (t, extra = {}) => ctx({ now: t, ...extra });
    from 23:00 it is the pool's next day (pool.mjs shichenOf) but the calendar's today (duizi.mjs dayOf, dayKey). */
 const ZI = (() => { let t = shichenOf(NOW).end; while (shichenOf(t).i !== 0) t = shichenOf(t).end; return t; })();
 const SITTINGS = Array.from({ length: 11 }, (_, i) => new Date(ZI.getTime() + (i + 1) * HOUR2 + 40 * 60_000));
+/* The row deals its 时辰's three one at a time (rules/tray.mjs): 对对子 drawn behind another stands once the ones before it
+   are played — as he would, playing what the row shows. The save with those played (at `t`), else as it was. */
+const upAt = (s, t) => {
+  for (let i = 0; i < 3; i++) {
+    const tray = look(s, content, { now: t, quests: [] }).tray ?? [];
+    if (tray.some(e => e.id === 'duizi' && e.act === 'open')) return s;
+    const ahead = tray.filter(e => e.id !== 'duizi' && PLAY_KINDS.find(k => k.kind === e.kind)?.pool?.row(e));
+    if (!ahead.length) return s;
+    s = { ...s, pool_played: { ...(s.pool_played ?? {}), ...Object.fromEntries(ahead.map(e => [e.id, t.toISOString()])) } };
+  }
+  return s;
+};
 const drawnHere = (s, t) => (look(s, content, at(t)).tray ?? []).some(e => e.id === 'duizi' && e.act === 'open');
 const html = (s, t, lang = 'zh') => cardHtml({ card: 'duizi' }, { look: look(s, content, at(t)), words: WORDS[lang], lang });
 /* One sitting at `t`: open (the gated verb stamps the pool), the classic 下联, Ling's grade. */
@@ -353,11 +365,13 @@ test('one 联 a sitting: the pool brings 对对子 back the very next 时辰, th
   const today = SITTINGS;
   assert.equal(new Set(today.map(t => shichenOf(t).day)).size, 1, 'one day of 时辰');
   for (const t of today) {
-    if (n === cfg.rounds || !drawnHere(s, t)) continue;
+    if (n === cfg.rounds) continue;
+    s = upAt(s, t);
+    if (!drawnHere(s, t)) continue;
     s = must(sitting(s, t), { action: 'close' }, at(new Date(+t + 300_000))).s;
     n += 1;
   }
-  assert.equal(n, cfg.rounds, `three drawn 时辰 in a day (${today.filter(t => drawnHere(base, t)).length} drawn on a fresh save)`);
+  assert.equal(n, cfg.rounds, `three 时辰 in a day reach 对对子 (${today.filter(t => drawnHere(upAt(base, t), t)).length} on a fresh save)`);
   assert.equal(s.duizi.played, cfg.rounds);
   for (const t of today.filter(x => x > new Date(s.pool_played.duizi))) {
     const L = look(s, content, at(t));
