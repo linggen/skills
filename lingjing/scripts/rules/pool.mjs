@@ -10,6 +10,7 @@
 // `events`) and the story's own boards keep their own clocks and are never drawn.
 import { dayKey, seedOf } from '../state.mjs';
 import { placeOf } from './world.mjs';
+import { yiWeightOfEntry } from './fortune.mjs';
 
 export const DRAW = 3;
 /* The weights (agent's pick, Hanli delegated 11-02): not played in a day ×2, its 时辰's lean ×3, where he stands ×2,
@@ -60,7 +61,7 @@ export function drawPool(content, state, rows, kinds, now) {
   // Weighed as the 时辰 began (`sc.start`), so the draw holds all through it. A member played in it is weighed at the
   // most it could be — its key only rises, so it keeps its place and moves no other; one that has left the pool since
   // (its rounds used) still holds that place.
-  const MAX = WEIGHT.fresh * WEIGHT.lean * WEIGHT.here;
+  const MAX = WEIGHT.fresh * WEIGHT.lean * WEIGHT.here * (content.qian?.weight ?? 2);
   const key = (id, w) => coin(`${seedOf(state)}|${sc.day}|${sc.i}|${id}`) ** (1 / w);
   const scored = members.flatMap((e) => {
     const p = pools.get(e.kind).row(e), at = playedAt(state, e.id);
@@ -70,7 +71,8 @@ export function drawPool(content, state, rows, kinds, now) {
     if (at && sc.start - at < p.cooldown_min * 60_000) return [];
     const places = e.places ?? null;
     const w = (!at || sc.start - at > LATELY_MS ? WEIGHT.fresh : 1) * ((p.when ?? []).includes(BRANCH[sc.i]) ? WEIGHT.lean : 1)
-      * (!places || places.includes(state.place) ? WEIGHT.here : plate && places.some(id => placeOf(content, id)?.plate?.id === plate) ? WEIGHT.near : 1);
+      * (!places || places.includes(state.place) ? WEIGHT.here : plate && places.some(id => placeOf(content, id)?.plate?.id === plate) ? WEIGHT.near : 1)
+      * yiWeightOfEntry(content, state, sc.start, e); // the day's 签: its 宜 kind weighs more (问签, Hanli 11-02)
     return [{ e, played: false, key: key(e.id, w) }];
   });
   const inRows = new Set(members.map(e => e.id));

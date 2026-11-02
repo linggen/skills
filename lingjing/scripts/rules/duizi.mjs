@@ -233,7 +233,7 @@ function grade(state, content, ctx, args, s, d) {
   const sum = Object.values(grades).reduce((a, b) => a + b, 0);
   const mark = markFor(cfg, sum, r.form.ok);
   Object.assign(r, { grades, sum, mark: mark.id, graded_at: ctx.now.toISOString() });
-  r.paid = mark.pay ? pay(content, s, ctx, mark.pay) : null;
+  r.paid = mark.pay ? pay(content, s, ctx, { ...mark.pay, play: 'duizi' }) : null; // `play`: 问签's 宜文 (fortune.mjs)
   const unlocked = mark.good ? stepLadder(content, d, r) : null;
   if (unlocked) r.unlocked = unlocked.name;
   s.duizi = d;
