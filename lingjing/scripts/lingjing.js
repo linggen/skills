@@ -3768,7 +3768,8 @@ const CLICKS = [
   ['[data-throw]', (el) => { if (!el.matches(':disabled')) run(`throw:${el.dataset.throw}`, () => throwTap(el.dataset.throw)); }],
   ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
-  ['[data-divine]', () => run('divine', () => qianPage.tap())],
+  // 问签 from the tray or 先放一放: the 签 card opens over the stage — the shake is its own (never a draw with no ritual).
+  ['[data-divine]', () => show({ qianOpen: true })],
   ['[data-qian-shake]', (el) => { if (!el.matches(':disabled')) run('divine', () => qianPage.tap()); }],
   ['[data-qian-ask]', (el) => show({ qianAsk: view.qianAsk === el.dataset.qianAsk ? null : el.dataset.qianAsk })],
   ['[data-qian-book]', (el) => run('qian-book', () => qianPage.book(el.dataset.qianBook === 'open'))],

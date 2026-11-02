@@ -56,7 +56,7 @@ export const WORDS = {
     replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。',
     keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽', waitShi: '约 {n} 时辰后', waitKe: '约 {n} 刻后',
     // 手边的棋局 (rules/tray.mjs): a game's name where the rules give none, what is left by its unit, the walk there.
-    trayName: { duizi: '对对子', seclusion: '闭关', divine: '银月卜卦', errands: '执事堂差事', mijing: '秘境', chance: '机缘', fantong: '饭桶', yaoshou: '妖兽出没' },
+    trayName: { duizi: '对对子', seclusion: '闭关', divine: '问签', errands: '执事堂差事', mijing: '秘境', chance: '机缘', fantong: '饭桶', yaoshou: '妖兽出没' },
     trayLeft: { night: '第{n}潮', batch: '这一批 {n}/{of}', couplets: '今日 {n} 联', rounds: '今日 {n} 回', errands: '{n} 件', keys: '秘境令 ×{n}', ends: '还剩 {t}', today: '今日可用', tomorrow: '明日上山' },
     trayGo: '去{name} ›', trayOpen: '开局', trayKe: '{n} 刻', trayShi: '{n} 时辰',
     // 小游戏池 (rules/pool.mjs): the 时辰 in the head, when the next three come; all played; 体力 spent.
@@ -120,7 +120,7 @@ export const WORDS = {
     tamesFor: 'Wins over {names}',
     replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.',
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
-    trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Cast the coins', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
+    trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Draw a stick', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
     trayGo: 'Go to {name} ›', trayOpen: 'Play', trayKe: '{n} min', trayShi: '{n} h',
     shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour} · new three in {n} min', trayHourTip: 'New three at {next}',
