@@ -1190,8 +1190,8 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   Six dailies, so only `gongke.json` `shares_per_day` (1) of a day's dailies
   pays its share of the layer in 修为 (10%); the rest pay 灵石, 体力 and
   meaning. With the pick now always a weekly or monthly (20–30%, the old pick
-  10–30%), a day's chore 修为 is 0–10 points of a layer above the old. **Waits
-  on Hanli** (the set was approved, not this pay rule). `per_day` unchanged. **一次**
+  10–30%), a day's chore 修为 is 0–10 points of a layer above the old. **Hanli 11-02:
+  「按你建议1项吧」** — one share a day, confirmed. `per_day` unchanged. **一次**
   (`period: "once"`, 开府 — the first steps, redesigned 2026-11-02; § 开府).
   The 事 book is one list, every row tagged (差事 · 一次 ·
   每日 · 每周 · 令), grouped 可交 → 已接 → 可接, 已交 folded.
