@@ -1905,6 +1905,9 @@ function run(key, fn) {
   inFlight.add(key);
   const done = verbChain.then(fn).catch((e) => {
     console.warn('[lingjing]', key, e);
+    // A tap's error is caught here, so the window never sees it: log it, with the first frame, or it leaves no
+    // trace (2026-11-02: 摇签 swallowed, only a stray Look to show for it).
+    tracker.error(`run:${key}`, `${e?.message ?? e} @ ${String(e?.stack ?? '').split('\n').slice(1, 2).join('').trim()}`);
     keep({ doNote: words().notDone });
     return refresh();
   }).finally(() => inFlight.delete(key));
