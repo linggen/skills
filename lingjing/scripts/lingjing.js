@@ -3039,7 +3039,6 @@ async function chooseWay(n) {
 const DOES = {
   take: (id) => write('quest', { action: 'take', id }),
   turn: (id) => write('quest', { action: 'turn', id }),
-  skip: (id) => write('quest', { action: 'skip', id }), // 跳过 on the open 一次 step: the next opens tomorrow
   buy: (id) => write('trade', { action: 'buy', id }),
   sell: (id) => write('trade', { action: 'sell', id }),
   use: (id) => write('trade', { action: 'use', id }),
@@ -3051,7 +3050,7 @@ async function doTap(action, id) {
   keep({ doNote: r.ok ? r.paid?.pouch_full ?? r.pouch_full ?? null : refusal(r) });
   if (r.ok && action === 'take') tookOffer(id);
   await refresh();
-  if (r.ok && (action === 'turn' || action === 'skip') && view.bookOpen) await loadKaifu();
+  if (r.ok && action === 'turn' && view.bookOpen) await loadKaifu();
   if (r.ok && action === 'turn') showTurned(id, r);
   // A real-life chore that means something in the book (rules/gongke.mjs): she hears the facts and says it her way.
   if (r.ok && action === 'turn' && r.meaning) tellGongke(r);
@@ -3116,7 +3115,9 @@ let handedTimer = null;
 /* A 交差 seen where it was tapped: its pay (and a 修为 the cap held) tops the 事 book a moment. */
 function showTurned(id, r) {
   const at = Date.now();
-  show({ turned: { id, title: r.title ?? '', paid: r.paid ?? r.handed?.[0]?.paid ?? null, at } });
+  // A chore's 体力 rides its hand-in (r.stamina): the row says it with the 灵石, as it was paid.
+  const paid = r.paid ?? r.handed?.[0]?.paid ?? null, stamina = Number(r.stamina) || 0;
+  show({ turned: { id, title: r.title ?? '', paid: stamina ? { ...(paid ?? {}), stamina } : paid, at } });
   setTimeout(() => { if (view.turned?.at === at) show({ turned: null }); }, TURNED_MS + 50);
 }
 /* 今日传闻 finished — a big moment for her (a fight that ends it is its finale). */
